@@ -1,0 +1,15 @@
+c PARAMETER FILE - FOR BASIS FUNCTIONS, ETC
+c ntq : Number of atoms in part of the system treated
+c quantum-mechanically
+c
+c ntc : Number of 'solvent' classically treated molecules
+c ns : numer of atoms in each solvent molecule
+c
+c nt : Number total atoms,   
+c ng0 : number of functions, ngd0 : number aux. funct.
+c nl : number of primitives in a given contraction
+c
+      parameter (ntq=45,ntc=600,nss=3)
+      parameter (nt=ntq+nss*ntc)
+      parameter (ng0=20,ng=ntq*ng0,nl=10)
+      parameter (ngd0=20,ngd=ntq*ngd0)

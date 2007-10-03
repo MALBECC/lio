@@ -44,6 +44,7 @@ c
       do 43 l=1,3
  43    Ll(l)=l*(l-1)/2
 c
+c     Loop entre todos los atomos: RR(i,j): dist entre atomo i y j
       do 44 i=1,natom
       do 44 j=1,natom
        t0=(r(i,1)-r(j,1))**2+(r(i,2)-r(j,2))**2+(r(i,3)-r(j,3))**2

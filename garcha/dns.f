@@ -59,6 +59,7 @@ c
   10  continue
 c
 c--- p  case -------------
+c va de a tres, para luego ir por esos 3
       do 20 i=ns+1,ns+np,3
 c
       di=ds(Nuc(i))
@@ -190,3 +191,4 @@ c
 c
 
       end
+C 

@@ -1,10 +1,9 @@
 # -*- mode: make -*-
 
+CUDA_SOURCES=$(wildcard *.cu)
 include Makefile.cuda
 
-OBJ=test.cu_o
-
-all: $(OBJ)
+all: $(CUDA_OBJ)
 
 clean:
-	rm -f $(OBJ)
+	rm -f *.cu_o

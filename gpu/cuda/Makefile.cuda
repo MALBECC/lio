@@ -101,7 +101,7 @@ COMMONFLAGS = $(INCLUDES) -DUNIX
 
 # Debug/release configuration
 ifeq ($(dbg),1)
-	COMMONFLAGS += -g
+	COMMONFLAGS += -g -D_DEBUG
 	NVCCFLAGS   += -D_DEBUG
 	BINSUBDIR   := debug
 	LIBSUFFIX   := D
@@ -156,6 +156,9 @@ endif
 ################################################################################
 # Rules
 ################################################################################
+
+CUDA_OBJ=$(CUDA_SOURCES:%.cu=%.cu_o)
+
 %.cu_o : %.cu
 	$(NVCC) -o $@ -c $< $(NVCCFLAGS)
 

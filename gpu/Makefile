@@ -1,15 +1,16 @@
 # -*- mode: make -*-
 
-OBJ=timer.o
-CUDA_OBJ=$(wildcard cuda/*.cu_o)
+OBJ=timer.o matrix.o common.o
+
+CUDA_SOURCES=$(wildcard cuda/*.cu)
 
 include cuda/Makefile.cuda
 include Makefile.common
 
-all: libg2g.so
+all: libg2g.so dist_test accum_test
 
-cuda_test: libg2g.so main.o
-	$(LINK) $(LDFLAGS) -o cuda_test $(OBJ) $(LIB) main.o -lg2g -L.
+%_test: libg2g.so %_test.o
+	$(LINK) $(LDFLAGS) -o $@ $(OBJ) $(LIB) $@.o -lg2g -L.
 
 libg2g.so: $(OBJ) $(CUDA_OBJ)
 	$(MAKE) -C cuda
@@ -17,5 +18,5 @@ libg2g.so: $(OBJ) $(CUDA_OBJ)
 
 clean:
 	make -C cuda clean
-	rm -f *.o *.so
+	rm -f tests/*_test tests/*.o *.o *.so
 

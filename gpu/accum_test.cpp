@@ -8,8 +8,8 @@ using namespace G2G;
 
 int main(void) {
 	unsigned int n = 32;
-	Matrix input(n, n);
-	Matrix output(-57.0f);
+	HostMatrix input(n, n);
+	HostMatrix output(-57.0f);
 	
 	for (unsigned int i = 0; i < n * n; i++) input.data[i] = 1.0;
 	
@@ -18,8 +18,6 @@ int main(void) {
 		actual.start();
 		calc_accum(input, output);
 		actual.stop();
-		cout << actual << endl;
+		cout << "resultado: " << *output.data << " (" << actual << ")" << endl;
 	}
-	
-	cout << "resultado: " << *output.data << endl;
 }

@@ -11,26 +11,35 @@ using namespace std;
 
 __global__ void accum_kernel(const float* input, float* output);
 
-extern "C" void calc_accum(const Matrix& input, Matrix& output)
-{
-	float* gpu_input;
-	float* gpu_output;
-	
-	cudaMalloc((void**)&gpu_input, input.bytes());
-	cudaMalloc((void**)&gpu_output, output.bytes());
-	
-	cudaMemcpy(gpu_input, input.data, input.bytes(), cudaMemcpyHostToDevice);	
+extern "C" void calc_accum(const HostMatrix& input, HostMatrix& output)
+{	
+	// por el momento asume que dimSize.x es potencia de 2
+	CudaMatrix gpu_input(input);
 
+	// define sizes
 	dim3 dimBlock(BLOCK_SIZE);
 	dim3 dimSize((input.width * input.height) / (BLOCK_SIZE * 2));
-	accum_kernel<<<dimSize, dimBlock>>>(gpu_input, gpu_output);
+
+	CudaMatrix gpu_output(dimSize.x);
 	
-	cudaMemcpy(output.data, gpu_output, output.bytes(), cudaMemcpyDeviceToHost);
+	// accumulate with blocks of BLOCK_SIZE, do this until there are no more block to process
+	float* gpu_input_data = gpu_input.data;
+	
+	do {
+		printf("Pasada\n");
+		accum_kernel<<<dimSize, dimBlock>>>(gpu_input_data, gpu_output.data);
+
+		/*float test;
+		cudaMemcpy(&test, gpu_output.data, sizeof(float), cudaMemcpyDeviceToHost);
+		printf("----- %f\n", test);*/
+		
+		dimSize.x /= (BLOCK_SIZE * 2);
+		gpu_input_data = gpu_output.data;
+	} while (dimSize.x >= 1);
 	
 	cudaThreadSynchronize();
-		
-	cudaFree(gpu_input);
-	cudaFree(gpu_output);	
+
+	output.copy_submatrix(gpu_output, 1);
 }
 
 /** TODO: probar sin cargar a shared **/
@@ -38,7 +47,7 @@ __global__ void accum_kernel(const float* input, float* output)
 {
 	
 	__shared__ float shared_data[BLOCK_SIZE * 2];
-	const uint pos = index(blockDim, blockIdx, threadIdx).x * 2;
+	const uint pos = (blockDim.x * blockIdx.x + threadIdx.x) * 2;
 	const uint shared_pos = threadIdx.x * 2;
 	
 	shared_data[shared_pos] = input[pos];
@@ -54,7 +63,8 @@ __global__ void accum_kernel(const float* input, float* output)
 
 		__syncthreads();		
 	}
-	
-	if (threadIdx.x == 0) *output = shared_data[shared_pos];
+
+	// printf("t: %i, b: %i\n", threadIdx.x, blockIdx.x);
+	if (threadIdx.x == 0) output[blockIdx.x] = shared_data[shared_pos];
 }
 

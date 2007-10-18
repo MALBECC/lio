@@ -9,7 +9,7 @@ include Makefile.common
 
 all: libg2g.so dist_test accum_test
 
-%_test: libg2g.so %_test.o
+%_test: %_test.o libg2g.so
 	$(LINK) $(LDFLAGS) -o $@ $(OBJ) $(LIB) $@.o -lg2g -L.
 
 libg2g.so: $(OBJ) $(CUDA_OBJ)
@@ -18,5 +18,5 @@ libg2g.so: $(OBJ) $(CUDA_OBJ)
 
 clean:
 	make -C cuda clean
-	rm -f tests/*_test tests/*.o *.o *.so
+	rm -f *_test *.o *.o *.so *.cu_o
 

@@ -1,9 +1,7 @@
 #ifndef __CUTOOLS_H__
 #define __CUTOOLS_H__
 
-#include <cuda.h>
-
-extern CUcontext CUDAContext;
+#include <cuda_runtime.h>
 
 #ifdef _DEBUG
 #define MESSAGE(call) printf("[" #call "] @ %s %i\n", __FILE__, __LINE__);

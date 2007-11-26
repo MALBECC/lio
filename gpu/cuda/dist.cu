@@ -1,8 +1,10 @@
 /*-*- mode: c -*-*/
 
+#include <cstdio>
 #include "cuda_extra.h"
+using namespace std;
 
-#define BLOCK_SIZE 16
+#define BLOCK_SIZE 32
 
 __global__ void dists_kernel(float* coords, float* dists, int atoms);
 __global__ void dists_cached_kernel(float* coords, float* dists, int atoms);
@@ -21,8 +23,8 @@ extern "C" void calc_dists(float* coords_cpu, float* dists_cpu, int atoms) {
 
 	dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE);
 	dim3 dimSize(atoms / dimBlock.x, atoms / dimBlock.y);
-	//dists_kernel<<<dimSize, dimBlock>>>(coords, dists, atoms);
-	dists_cached_kernel<<<dimSize, dimBlock>>>(coords, dists, atoms);
+	dists_kernel<<<dimSize, dimBlock>>>(coords, dists, atoms);
+	//dists_cached2_kernel<<<dimSize, dimBlock>>>(coords, dists, atoms);
 	
 	cudaMemcpy(dists_cpu, dists, atoms * atoms * sizeof(float), cudaMemcpyDeviceToHost);
 		
@@ -33,6 +35,7 @@ extern "C" void calc_dists(float* coords_cpu, float* dists_cpu, int atoms) {
 __global__ void dists_cached_kernel(float* coords, float* dists, int atoms)
 {
 	const uint3 pos = index(blockDim, blockIdx, threadIdx);
+	
 
 	__shared__ float coords_block[BLOCK_SIZE * BLOCK_SIZE];
 	unsigned int shared_x = threadIdx.x * 2;
@@ -59,6 +62,9 @@ __global__ void dists_cached2_kernel(float* coords, float* dists, int atoms)
 {
 	const uint3 pos = index(blockDim, blockIdx, threadIdx);
 
+	__syncthreads();
+	_EMU(printf("t: %i, b: %i\n", threadIdx.x, blockIdx.x));
+	
 	__shared__ float coords_block[2 * (BLOCK_SIZE + BLOCK_SIZE / NUM_BANKS)];
 	unsigned int shared_x = threadIdx.x * 2;
 	unsigned int shared_y = threadIdx.y * 2 + 1;
@@ -78,5 +84,6 @@ __global__ void dists_cached2_kernel(float* coords, float* dists, int atoms)
 __global__ void dists_kernel(float* coords, float* dists, int atoms)
 {
 	const uint3 pos = index(blockDim, blockIdx, threadIdx);
+	_EMU(printf("Hola %i\n", pos.x));
 	dists[pos.x + atoms * pos.y] = coords[pos.x] - coords[pos.y];
 }

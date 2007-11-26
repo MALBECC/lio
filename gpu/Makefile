@@ -7,7 +7,7 @@ CUDA_SOURCES=$(wildcard cuda/*.cu)
 include cuda/Makefile.cuda
 include Makefile.common
 
-all: libg2g.so dist_test accum_test
+all: libg2g.so dist_test accum_test #exchnum_test
 
 %_test: %_test.o libg2g.so
 	$(LINK) $(LDFLAGS) -o $@ $(OBJ) $(LIB) $@.o -lg2g -L.

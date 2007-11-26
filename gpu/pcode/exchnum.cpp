@@ -1,12 +1,12 @@
 
 // Energia de Intercambio y Correlacion
 // Input:  posicion de los atomos ('pos_atomos'), cantidad de capas segun tipo de atomos ('capas'), tipo de los atomos ('tipos'),
-//         atomo sobre el cual se tiene centrada la grilla ('atomo_actual'), el tipo de grilla a usar ('tipo_grilla'), la posicion relativa al centro de los puntos de
+//         el tipo de grilla a usar ('tipo_grilla'), la posicion relativa al centro de los puntos de
 //         la grilla ('pos_puntos'), arreglo Rm, un valor por cada tipo de atomo ('Rm'), la cantidad de funciones s, p y d ('cant_funcs'), M ('m'), Nucleo del orbital (numero
 //         de atomo en el centro de la funcion) ('nuc')
 // Output: energia de intercambio y correlacion
 
-double exch_corr(array<double3> pos_atomos, array<int> capas, array<int> tipos, int atomo_actual, TipoGrilla tipo_grilla, array<double3> pos_puntos,
+double exch_corr(array<double3> pos_atomos, array<int> capas, array<int> tipos, TipoGrilla tipo_grilla, array<double3> pos_puntos,
 								 array<double> Rm, int3 cant_funcs, double m, array<double> nuc, array<int> contracciones, array<double> factor_a, array<double> factor_c)
 {
 	double exc_total = 0;
@@ -39,10 +39,10 @@ double exch_corr(array<double3> pos_atomos, array<int> capas, array<int> tipos, 
 			double x = cos(tmp1)
 			double w = tmp0 * abs(sin(tmp1))
 			double r1 = Rm(tipo_atomo_i) * (1 + x) / (1 - x)
-			double wrad = w * (r1 * r1) * Rm(tipo_atomo_i) * 2 / ((1 - x) * (1 - x))
-
+			double wrad = w * (r1 * r1) * Rm(tipo_atomo_i) * 2 / ((1 - x) * (1 - x));
+										
 			for each punto in 1,puntos_grilla {
-				double posicion_punto = pos_atomos(atomo_actual) + r1 * (tipo_grilla == TipoGrilla1 ? pos_puntos(punto) : pos_puntos_alt(punto));
+				double posicion_punto = pos_atomos(atomo_i) + r1 * (tipo_grilla == TipoGrilla1 ? pos_puntos(punto) : pos_puntos_alt(punto));
 				double peso_integracion = wrad * (tipo_grilla == TipoGrilla1 ? wang(punto) : wang_alt(punto));
 
 				double3 distancias_punto_atomos(atomos);
@@ -53,7 +53,7 @@ double exch_corr(array<double3> pos_atomos, array<int> capas, array<int> tipos, 
 				double exc_actual, ecorr_actual;
 				calcular_densidad(&exc_actual, &ecorr_actual, cant_funcs, m, distancias_punto_atomos, nuc, contracciones, factor_a, factor_c, posicion_punto, posiciones_atomos, ...);
 				calcular_pot(...);
-						
+
 				// integracion numerica
 				double P_total = 0;
 				

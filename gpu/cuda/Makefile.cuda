@@ -48,20 +48,28 @@ CXX        := g++
 CC         := gcc
 LINK       := g++ -fPIC
 
+ARCHFLAGS	 := 
+
 # Includes
 INCLUDES  += -I. -I$(CUDA_INSTALL_PATH)/include -I$(COMMONDIR)/inc
 
+# detect if 32 bit or 64 bit system
+ARCH=$(shell arch)
+
+ifeq ($(ARCH), x86_64)
+	ARCHFLAGS += -m64
+else
+	ARCHFLAGS += -m32
+endif
+	
 # OpenGL is used or not (if it is used, then it is necessary to include GLEW)
 OPENGLLIB := -lGL -lGLU
 ifeq ($(USEGLLIB),1)
 
-	# detect if 32 bit or 64 bit system
-	HP_64 =	$(shell uname -i | grep 64)
-
-	ifeq "$(strip $(HP_64))" ""
-		OPENGLLIB += -lGLEW
-	else
+	ifeq ($(ARCH), x86_64)
 		OPENGLLIB += -lGLEW_x86_64
+	else
+		OPENGLLIB += -lGLEW
 	endif
 endif
 
@@ -92,46 +100,39 @@ CWARN_FLAGS := $(CXXWARN_FLAGS) \
 	-Wmain \
 
 # Compiler-specific flags
-NVCCFLAGS := 
-CXXFLAGS  := $(CXXWARN_FLAGS)
-CFLAGS    := $(CWARN_FLAGS)
+NVCCFLAGS   := $(ARCHFLAGS) -shared --compiler-options -fPIC --compiler-options -Wall
+CXXFLAGS    := $(CXXWARN_FLAGS) -fPIC
+CFLAGS      := $(CWARN_FLAGS)
 
 # Common flags
 COMMONFLAGS = $(INCLUDES) -DUNIX
 
 # Debug/release configuration
 ifeq ($(dbg),1)
-	COMMONFLAGS += -g -D_DEBUG
-	NVCCFLAGS   += -D_DEBUG
-	BINSUBDIR   := debug
-	LIBSUFFIX   := D
+	COMMONFLAGS += -g -D_DEBUG -O3
+	NVCCFLAGS   += -G --compiler-options -O3,-fno-strict-aliasing
+	CXXFLAGS  	+= -fno-strict-aliasing
+	CFLAGS  		+= -fno-strict-aliasing
 else 
-	COMMONFLAGS += -O3 
-	BINSUBDIR   := release
-	LIBSUFFIX   :=
+	COMMONFLAGS += -O3
 	NVCC_FLAGS  += --compiler-options -fno-strict-aliasing
 	CXXFLAGS  	+= -fno-strict-aliasing
 	CFLAGS  		+= -fno-strict-aliasing
 endif
 
 # Lib/exe configuration
-ifneq ($(STATIC_LIB),)
-	TARGET   := $(subst .a,$(LIBSUFFIX).a,$(STATIC_LIB))
-	LINKLINE  = ar qv $(TARGET) $(OBJS) 
-else
-	LIB += -lcutil$(LIBSUFFIX)
-	# Device emulation configuration
-	ifeq ($(emu), 1)
-		NVCCFLAGS   += -deviceemu
-		CUDACCFLAGS += 
-		BINSUBDIR   := emu$(BINSUBDIR)
-		# consistency, makes developing easier
-		CXXFLAGS		+= -D__DEVICE_EMULATION__
-		CFLAGS			+= -D__DEVICE_EMULATION__
-	endif
-	TARGET    := $(EXECUTABLE)
-	LINKLINE  = $(LINK) -o $(TARGET) $(OBJS) $(LIB)
+LIB += #-lcutil$(LIBSUFFIX)
+# Device emulation configuration
+ifeq ($(emu), 1)
+	NVCCFLAGS   += -deviceemu
+	CUDACCFLAGS += 
+	#BINSUBDIR   := emu$(BINSUBDIR)
+	# consistency, makes developing easier
+	CXXFLAGS		+= -D__DEVICE_EMULATION__
+	CFLAGS			+= -D__DEVICE_EMULATION__
 endif
+TARGET    := $(EXECUTABLE)
+LINKLINE  = $(LINK) -o $(TARGET) $(OBJS) $(LIB)
 
 ################################################################################
 # Check for input flags and set compiler flags appropriately
@@ -148,8 +149,11 @@ NVCCFLAGS += $(COMMONFLAGS)
 CXXFLAGS  += $(COMMONFLAGS)
 CFLAGS    += $(COMMONFLAGS)
 
+# Add NVCC Compiler Flags
+NVCCFLAGS += --linker-options -fPIC #--verbose
+
 ifeq ($(nvcc_warn_verbose),1)
-	NVCCFLAGS += $(addprefix --compiler-options ,$(CXXWARN_FLAGS)) 
+	NVCCFLAGS += $(addprefix --compiler-options ,$(CXXWARN_FLAGS))
 	NVCCFLAGS += --compiler-options -fno-strict-aliasing
 endif
 
@@ -163,6 +167,6 @@ CUDA_OBJ=$(CUDA_SOURCES:%.cu=%.cu_o)
 	$(NVCC) -o $@ -c $< $(NVCCFLAGS)
 
 %.cubin: %.cu
-	$(NVCC) -m32 -o $@ -cubin $< $(NVCCFLAGS)
+	$(NVCC) -o $@ -cubin $< $(NVCCFLAGS)
 
 

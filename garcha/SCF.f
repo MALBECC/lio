@@ -47,6 +47,7 @@ c
       common/Ngeom/ ngeo
       common /ENum/ GRAD
       common /propt/ idip,ipop,ispin,icharge,map(ntq)
+      common /intg2/ e_(116,3),wang(116),Nr(0:54),e3(194,3),wang3(194)
 c
       common /sol1/ Nsol,natsol,alpha,Em,Rm,pc,sol,free
 
@@ -700,9 +701,17 @@ c--------------------------------------------------------------
           write(*,615)
           write(*,625) Es
          endif
-        endif
+       endif
+/* -- G2G -- */
+       write(*,*) 'exchnum SCF'
+#ifdef GPU
+       call exchnum_gpu(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
+     >              M18,NCO,Exc,nopt,Iexch, igrid, e_, e3, wang,
+     >   wang3, Ndens)
+#else
        call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,NCO,Exc,nopt)
+#endif
        E=E+Exc-Ex
 c
 c--------------------------------------------------------------

@@ -148,9 +148,19 @@ c
       endif
 c
       if (.not.OPEN) then
-c
+
+        write(*,*) 'exchnum GPU'
+#ifdef GPU
+        call exchnum_gpu(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
+     >  M18,NCO,Exc,nopt,Iexch, igrid2, e, e3, wang, wang3, Ndens)
+        
+#else
+      
+
         call exchnum2(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,NCO,Exc,f)
+#endif
+      
 c
        else
 c

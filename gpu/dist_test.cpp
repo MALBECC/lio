@@ -6,7 +6,8 @@ using namespace std;
 using namespace G2G;
 
 int main(void) {
-	unsigned int atoms = 16;
+	unsigned int atoms = 4096;
+	
 	float* coords = new float[atoms];
 	float* dists = new float[atoms * atoms];
 	
@@ -26,13 +27,13 @@ int main(void) {
 		cout << actual << endl;
 	}
 	
-	for (unsigned int i = 0; i < atoms; i++) {
+	/*for (unsigned int i = 0; i < atoms; i++) {
 		for (unsigned int j = 0; j < atoms; j++) {
 			cout << dists[i * atoms + j] << " ";
 		}
 		cout << endl;
 	}
-	cout << endl;
+	cout << endl;*/
 	
 	delete[] coords;
 	delete[] dists;

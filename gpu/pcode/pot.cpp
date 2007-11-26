@@ -1,6 +1,6 @@
 /*
  * function for evaluating exchange correlation density and
- * potential , depends of Iexch, index that says which potential
+ * potential, depends of Iexch, index that says which potential
  * will be used
  * - 1 X alpha
  * - 2 Gunnarson-Lundqvist
@@ -13,7 +13,7 @@ void cal_pot(...) {
 	// data X alpha
 	const double alpha = -0.738558766382022447;
 	const double gl = 0.620350490899400087;
-	const double vosko_a1 = 0.03109205, vokso_b1 = 3.72744, vosko_c1 = 12.9352, vosko_x0 = -0.10498, vosko_q = 6.15199066246304849,
+	const double vosko_a1 = 0.03109205, vosko_b1 = 3.72744, vosko_c1 = 12.9352, vosko_x0 = -0.10498, vosko_q = 6.15199066246304849,
 		vosko_a16 = 0.005182008333, vosko_a2 = 0.015546025, vosko_b2 = 7.06042, vosko_c2 = 18.0578, vosko_x02 = -0.32500, vosko_q2 = 4.7309269, vosko_a26 = 0.0025910042;
 	
 

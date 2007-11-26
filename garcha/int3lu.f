@@ -422,8 +422,15 @@ c
 
         NCOa=NCO
         NCOb=NCO+Nunp
-       call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
+        write(*,*) 'exchnum int3lu'
+c#ifdef GPU
+c        call exchnum_gpu(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
+c     >  M18,NCO,Exc,nopt,Iexch, igrid2, e, e3, wang, wang3, Ndens)
+c        
+c#else
+      call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
      >               M,M18,NCOa,NCOb,RMM,Ex)
+c#endif
        Ndens=Ndens+1
        endif
 c

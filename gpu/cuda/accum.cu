@@ -10,36 +10,55 @@ using namespace std;
 #define BLOCK_SIZE 16
 
 __global__ void accum_kernel(const float* input, float* output);
-
-extern "C" void calc_accum(const HostMatrix& input, HostMatrix& output)
+void iterative_run(const CudaMatrixFloat gpu_input, CudaMatrixFloat& intermediate_output, dim3 dimSize, const dim3& blockSize);
+	
+extern "C" void calc_accum(const HostMatrixFloat& input, HostMatrixFloat& output)
 {	
 	// por el momento asume que dimSize.x es potencia de 2
-	CudaMatrix gpu_input(input);
-
+	CudaMatrixFloat gpu_input(input);
+	
 	// define sizes
 	dim3 dimBlock(BLOCK_SIZE);
 	dim3 dimSize((input.width * input.height) / (BLOCK_SIZE * 2));
 
-	CudaMatrix gpu_output(dimSize.x);
+	CudaMatrixFloat intermediate_output(dimSize.x);
 	
+	iterative_run(gpu_input, intermediate_output, dimSize, dimBlock);
+	
+	output.copy_submatrix(intermediate_output, 1);
+}
+
+extern "C" void calc_accum_cuda(const CudaMatrixFloat& input, CudaMatrixFloat& output) {
+	// define sizes
+	dim3 dimBlock(BLOCK_SIZE);
+	dim3 dimSize((input.width * input.height) / (BLOCK_SIZE * 2));
+
+	CudaMatrixFloat intermediate_output(dimSize.x);
+	
+	iterative_run(input, intermediate_output, dimSize, dimBlock);
+
+	output.copy_submatrix(intermediate_output, 1);
+}
+
+void iterative_run(const CudaMatrixFloat gpu_input, CudaMatrixFloat& intermediate_output,
+									 dim3 dimSize, const dim3& dimBlock)
+{
 	// accumulate with blocks of BLOCK_SIZE, do this until there are no more block to process
 	float* gpu_input_data = gpu_input.data;
 	
 	do {
 		printf("Pasada\n");
-		accum_kernel<<<dimSize, dimBlock>>>(gpu_input_data, gpu_output.data);
+		accum_kernel<<<dimSize, dimBlock>>>(gpu_input_data, intermediate_output.data);
 
 		/*float test;
 		cudaMemcpy(&test, gpu_output.data, sizeof(float), cudaMemcpyDeviceToHost);
 		printf("----- %f\n", test);*/
 		
 		dimSize.x /= (BLOCK_SIZE * 2);
-		gpu_input_data = gpu_output.data;
+		gpu_input_data = intermediate_output.data;
 	} while (dimSize.x >= 1);
 	
-	cudaThreadSynchronize();
-
-	output.copy_submatrix(gpu_output, 1);
+	cudaThreadSynchronize();	
 }
 
 /** TODO: probar sin cargar a shared **/
@@ -64,7 +83,8 @@ __global__ void accum_kernel(const float* input, float* output)
 		__syncthreads();		
 	}
 
-	// printf("t: %i, b: %i\n", threadIdx.x, blockIdx.x);
+	
+	_EMU(printf("t: %i, b: %i\n", threadIdx.x, blockIdx.x));
 	if (threadIdx.x == 0) output[blockIdx.x] = shared_data[shared_pos];
 }
 

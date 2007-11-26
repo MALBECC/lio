@@ -9,15 +9,15 @@ using namespace std;
  * Matrix
  */
 
-Matrix::Matrix(void) : data(NULL), width(0), height(0) /*, components(0)*/ {}
+template<class T> Matrix<T>::Matrix(void) : data(NULL), width(0), height(0) /*, components(0)*/ {}
 
-Matrix::~Matrix(void) { }
+template<class T> Matrix<T>::~Matrix(void) { } 
 
-unsigned int Matrix::bytes(void) const {
-	return elements() * sizeof(float);	
+template<class T> unsigned int Matrix<T>::bytes(void) const {
+	return elements() * sizeof(T);	
 }
 
-unsigned int Matrix::elements(void) const {
+template<class T> unsigned int Matrix<T>::elements(void) const {
 	return width * height /* * components */;
 }
 
@@ -25,105 +25,175 @@ unsigned int Matrix::elements(void) const {
  * HostMatrix
  */
 
-HostMatrix::HostMatrix(void) : Matrix() { }
+template<class T> HostMatrix<T>::HostMatrix(void) : Matrix<T>() { }
 
-HostMatrix::HostMatrix(float elem) : Matrix() {
-	width = height = 1;
-	data = new float[1];
-	data[0] = elem;
+/*HostMatrix::HostMatrix(const HostMatrix& c) : Matrix() {
+	*this = c;
+}*/
+
+template<class T> HostMatrix<T>::HostMatrix(unsigned int _width, unsigned _height) : Matrix<T>() {
+	this->width = _width; this->height = _height;
+	this->data = new T[this->elements()];
 }
 
-HostMatrix::HostMatrix(unsigned int _width, unsigned _height) : Matrix() {
-	width = _width; height = _height;
-	data = new float[elements()];
+template<class T> HostMatrix<T>::HostMatrix(const CudaMatrix<T>& c) : Matrix<T>() {
+	*this = c;
 }
 
-HostMatrix::~HostMatrix(void) {
-	delete[] data;	
+template<class T> HostMatrix<T>::~HostMatrix(void) {
+	delete[] this->data;	
 }
 
-void HostMatrix::copy_submatrix(const CudaMatrix& c, unsigned int _elements) {
-	unsigned int _bytes = (_elements == 0 ? bytes() : _elements * sizeof(float));
+/*const HostMatrix& HostMatrix::operator=(const HostMatrix& c) {
+	if (!c.data) delete[] data;
+	else {
+		if (data) {
+			if (bytes != c.bytes()) { delete[] data; width = c.width; height = c.height; data = new float[this->elements()]; }
+		}
+		else { width = c.width; height = c.height; data = new float[this->elements()]; }
+		
+		copy_submatrix(c);
+	}
+	return *this;
+}*/
+
+template <class T> HostMatrix<T>& HostMatrix<T>::operator=(const CudaMatrix<T>& c) {
+	if (!c.data) {
+		if (this->data) { cudaFree(this->data); this->width = this->height = 0; }
+	}
+	else {
+		if (this->data) {
+			if (this->bytes() != c.bytes()) {
+				delete[] this->data;
+				this->width = c.width; this->height = c.height;
+				this->data = new T[c.elements()];
+			}			
+		}
+		else {
+			this->width = c.width; this->height = c.height;
+			this->data = new T[c.elements()];
+		}
+		
+		copy_submatrix(c);
+	}
+
+	return *this;		
+}
+
+template<class T> void HostMatrix<T>::copy_submatrix(const CudaMatrix<T>& c, unsigned int _elements) {
+	unsigned int _bytes = (_elements == 0 ? this->bytes() : _elements * sizeof(T));
 	//cout << "bytes: " << _bytes << ", c.bytes: " << c.bytes() << endl;
 	if (_bytes > c.bytes()) throw runtime_error("Can't copy more elements than what operator has");
 	
-	cudaMemcpy(data, c.data, _bytes, cudaMemcpyDeviceToHost);
+	cudaMemcpy(this->data, c.data, _bytes, cudaMemcpyDeviceToHost);
 }
 
 /*
  * CudaMatrix
  */
 
-CudaMatrix::CudaMatrix(void) : Matrix() { }
+template<class T> CudaMatrix<T>::CudaMatrix(void) : Matrix<T>() { }
 
-CudaMatrix::CudaMatrix(unsigned int _width, unsigned int _height) : Matrix() {
-	width = _width; height = _height;
- 	cudaMalloc((void**)&data, bytes());
+template<class T> CudaMatrix<T>::CudaMatrix(unsigned int _width, unsigned int _height) : Matrix<T>() {
+	this->width = _width; this->height = _height;
+ 	cudaMalloc((void**)&this->data, this->bytes());
 }
 
-CudaMatrix::CudaMatrix(const CudaMatrix& c) : Matrix() {
+template<class T> CudaMatrix<T>::CudaMatrix(const CudaMatrix<T>& c) : Matrix<T>() {
 	*this = c;
 }
 
-CudaMatrix::CudaMatrix(const HostMatrix& c) : Matrix() {
+template<class T> CudaMatrix<T>::CudaMatrix(const HostMatrix<T>& c) : Matrix<T>() {
 	*this = c;
 }
 
-CudaMatrix::~CudaMatrix(void) {
-	if (data) cudaFree(data);	
+template<class T> CudaMatrix<T>::~CudaMatrix(void) {
+	if (this->data) cudaFree(this->data);
 }
 
-void CudaMatrix::copy_submatrix(const HostMatrix& c, unsigned int _elements) {
-	unsigned int _bytes = (_elements == 0 ? bytes() : _elements * sizeof(float));
+template<class T> void CudaMatrix<T>::copy_submatrix(const HostMatrix<T>& c, unsigned int _elements) {
+	unsigned int _bytes = (_elements == 0 ? this->bytes() : _elements * sizeof(T));
 	//cout << "bytes: " << _bytes << ", c.bytes: " << c.bytes() << endl;
-	if (_bytes > c.bytes()) throw runtime_error("CudaMatrix: Can't copy more elements than what operator has");
+	if (_bytes > c.bytes()) throw runtime_error("CudaMatrix: Can't copy more elements than what operand has");
 
-	cudaMemcpy(data, c.data, _bytes, cudaMemcpyHostToDevice);
+	cudaMemcpy(this->data, c.data, _bytes, cudaMemcpyHostToDevice);
 }
 
-CudaMatrix& CudaMatrix::operator=(const HostMatrix& c) {
+template<class T> void CudaMatrix<T>::copy_submatrix(const CudaMatrix<T>& c, unsigned int _elements) {
+	unsigned int _bytes = (_elements == 0 ? this->bytes() : _elements * sizeof(T));
+	if (_bytes > c.bytes()) throw runtime_error("CudaMatrix: Can't copy more elements than what operand has");
+	cudaMemcpy(c.data, this->data, _bytes, cudaMemcpyDeviceToDevice);
+}
+
+template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const HostMatrix<T>& c) {
 	if (!c.data) {
-		if (data) { cudaFree(data); width = height = 0; }
+		if (this->data) { cudaFree(this->data); this->width = this->height = 0; }
 	}
 	else {
-		if (data) {
-			if (bytes() != c.bytes()) {
-				cudaFree(data);
-				width = c.width; height = c.height;
-				cudaMalloc((void**)&data, bytes());
+		if (this->data) {
+			if (this->bytes() != c.bytes()) {
+				cudaFree(this->data);
+				this->width = c.width; this->height = c.height;
+				cudaMalloc((void**)&this->data, this->bytes());
 			}			
 		}
 		else {
-			width = c.width; height = c.height;
-			cudaMalloc((void**)&data, bytes());
+			this->width = c.width; this->height = c.height;
+			cudaMalloc((void**)&this->data, this->bytes());
 		}
 		
 		copy_submatrix(c);
 	}
+
+	return *this;
+}
+
+template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const CudaMatrix<T>& c) {
+	// copies data from c, only if necessary (always frees this's data, if any)
+	if (!c.data) {
+		if (this->data) { cudaFree(this->data); this->width = this->height = 0; }
+	}
+	else {
+		if (this->data) {
+			if (this->bytes() != c.bytes()) {
+				cudaFree(this->data);
+				this->width = c.width; this->height = c.height;
+				cudaMalloc((void**)&this->data, this->bytes());
+			}
+		}
+		else {
+			this->width = c.width; this->height = c.height;
+			cudaMalloc((void**)&this->data, this->bytes());
+		}
+		
+		cudaMemcpy(this->data, c.data, this->bytes(), cudaMemcpyDeviceToDevice);		
+	}
 	
 	return *this;
 }
 
-CudaMatrix& CudaMatrix::operator=(const CudaMatrix& c) {
-	// copies data from c, only if necessary (always frees this's data, if any)
-	if (!c.data) {
-		if (data) { cudaFree(data); width = height = 0; }
-	}
-	else {
-		if (data) {
-			if (bytes() != c.bytes()) {
-				cudaFree(data);
-				width = c.width; height = c.height;
-				cudaMalloc((void**)&data, bytes());
-			}
-		}
-		else {
-			width = c.width; height = c.height;
-			cudaMalloc((void**)&data, bytes());
-		}
-		
-		cudaMemcpy(data, c.data, bytes(), cudaMemcpyDeviceToDevice);		
-	}
-	
-	return *this;
-}
+/**
+ * Instantiations
+ */
+template class Matrix<float>;
+template class Matrix<float1>;
+template class Matrix<float2>;
+template class Matrix<float3>;
+template class Matrix<float4>;
+template class Matrix<uint1>;
+template class Matrix<uint>;
+
+template class HostMatrix<float>;
+template class HostMatrix<float1>;
+template class HostMatrix<float2>;
+template class HostMatrix<float3>;
+template class HostMatrix<float4>;
+template class HostMatrix<uint1>;
+template class HostMatrix<uint>;
+
+template class CudaMatrix<float>;
+template class CudaMatrix<float1>;
+template class CudaMatrix<float2>;
+template class CudaMatrix<float3>;
+template class CudaMatrix<float4>;
+template class CudaMatrix<uint>;

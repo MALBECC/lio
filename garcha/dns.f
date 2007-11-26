@@ -4,7 +4,7 @@ c everything on every iteration
 c
       SUBROUTINE DNS(Dens,F,Xi,ds,NORM,Nuc,ncont,nshell,a,c,r,
      >               M,M18,NCO,RMM)
-    
+
 c
       implicit real*8 (a-h,o-z)
       logical NORM
@@ -48,25 +48,42 @@ c
 c
       do 15 ni=1,ncont(i)
 c
-      rexp=a(i,ni)*di
+        rexp=a(i,ni)*di
+c        write(*,*) 'rexp',i,ni,rexp,c(i,ni)
+c        write(*,*) 'func: ', i, ' cont: ', ni, ' a: ',
+c     >    a(i,ni),' c: ',c(i,ni)
 c
       if (rexp.gt.30.D0) go to 16
       t=exp(-rexp)
       F(i)=F(i)+t*c(i,ni)
   16  continue
   15  continue
-c
+      if (rexp.gt.30.D0) then
+      else
+c        write(213,*) 'F(',i-1,') s:',F(i)
+      endif
+
   10  continue
+
+c DEBUG DEBUG DEBUG
+c      do i=1,ns
+c        write(*,*) 's: F(',i-1,')=',F(i)
+c      enddo
+      
 c
 c--- p  case -------------
-c va de a tres, para luego ir por esos 3
+*c va de a tres, para luego ir por esos 3
       do 20 i=ns+1,ns+np,3
 c
-      di=ds(Nuc(i))
+        di=ds(Nuc(i))
+c        write(214,*) 'cont:',ncont(i)
 c
       do 20 ni=1,ncont(i)
 
-      rexp=a(i,ni)*di
+        rexp=a(i,ni)*di
+c        write(*,*) 'rexp',i,ni,rexp,c(i,ni)
+c        write(*,*) 'func: ', i, ' cont: ', ni, ' a: ',
+c     >    a(i,ni), ' c: ', c(i,ni)        
       if (rexp.gt.30.D0) goto 21
       t=exp(-rexp)*c(i,ni)
       do 25 l1=1,3
@@ -79,7 +96,20 @@ c
   25  continue
 c
   21  continue
+      if (rexp.gt.30.D0) then
+      else      
+c        write(214,*) 'F(',i-1,') p:',F(i),F(i+1),F(i+2)
+      endif
   20  continue
+
+c DEBUG DEBUG DEBUG
+c      do i=ns+1,ns+np,3
+c        t=0.0
+c        do l1=1,3
+c          t=t + F(i + l1 - 1)
+c        enddo
+c        write(*,*) 'p: F(',i-1,')=',t
+c      enddo      
 c
 c-- d case  ------------
       do 40 i=ns+np+1,M,6
@@ -88,8 +118,11 @@ c
 c
       do 40 ni=1,ncont(i)
 c
-      rexp=a(i,ni)*di
+        rexp=a(i,ni)*di
+c        write(*,*) 'rexp',i,ni,rexp,c(i,ni)
 c
+c      write(*,*) 'func: ', i, ' cont: ', ni, ' a: ',
+c     >  a(i,ni), ' c: ', c(i,ni)      
       if (rexp.gt.30.) goto 41
       t=exp(-rexp)*c(i,ni)
       do 45 l1=1,3
@@ -106,14 +139,31 @@ c
       ii=i+l12-1
 c
       F(ii)=F(ii)+term
+      
   45  continue
 c
   41  continue
+
+      if (rexp.gt.30.D0) then
+      else
+c      write(215,*)'F(',i-1,')d:',F(i),F(i+1),F(i+2),F(i+3),F(i+4),F(i+5)
+      endif
+      
   40  continue
+
+c DEBUG DEBUG DEBUG
+c      do i=ns+np+1,M,6
+c        t=0.0
+c        do l1=1,6
+c          t=t + F(i + l1 - 1)
+c        enddo
+c        write(*,*) 'd: F(',i-1,')=',t
+c      enddo
 c
 c now calculation of vector W : density matrix scalar F
 c
-c 
+c
+
       if (Ndens.eq.1) then
       k=0
       do 50 j=1,M
@@ -124,7 +174,8 @@ c
        endif
 c
       do 51 i=j,M
-       k=k+1
+        k=k+1
+c        write(*,*) 'Ndens1 RMM(',k-1,')=',RMM(k)
  51   W(j)=W(j)+RMM(k)*F(i)
  50   continue
 c
@@ -160,28 +211,42 @@ c
 c
       kk=M18-1
 c
-      if (k.lt.M/2) then
-
-      do jj=1,NCO
-       W(jj)=0.0D0     
-       do ii=1,k
-        ik=indx(ii)
-        W(jj)=W(jj)+F(ik)*RMM(kk+ik)
-       enddo
-       kk=kk+M
+c DEBUG DEBUG DEBUG Matias
+c      if (k.lt.M/2) then
+c
+c      do jj=1,NCO
+c       W(jj)=0.0D0     
+c       do ii=1,k
+c        ik=indx(ii)
+c        W(jj)=W(jj)+F(ik)*RMM(kk+ik)
+c       enddo
+c       kk=kk+M
+c      enddo
+c
+c      else
+c
+#ifndef GPU     
+      do i=1,M
+c        write(*,*) 'F(',i-1,')=',F(i)
       enddo
-c
-      else
-c
+#endif
+      
       do 153 jj=1,NCO
       do 154 ii=1,M
        kk=kk+1
        W(jj)=W(jj)+RMM(kk)*F(ii)
+#ifndef GPU       
+c       write(*,*) 'W(',jj,') RMM(',kk-M18+1,')=',RMM(kk)
+c       write(*,*) F(ii),RMM(kk)*F(ii),ii-1
+#endif
  154    continue
  153    continue
-       endif
+c       endif
 c ---------------------------------------
-      do 61 ii=1,NCO
+        do 61 ii=1,NCO
+#ifndef GPU
+c       write(*,*) 'W(',ii-1,')=',W(ii)
+#endif
  61    DENS=DENS+W(ii)**2
 c
       DENS=DENS*2.D0

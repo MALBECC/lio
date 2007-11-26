@@ -84,8 +84,9 @@ c w: weight
 c multiply also by radial part
 c
        r1=Rm(Iz(na))*(1.D0+x)/(1.D0-x)
-c      write(*,*) n,x,r1
+c       write(*,*) 'zz',na,n,Rm(Iz(na)),t0,t1,x
        wrad=w * r1**2
+c       write(*,*) 'r1',r1
 c
        wrad=wrad*Rm(Iz(na)) * 2.D0 /(1.D0-x)**2
 c
@@ -95,16 +96,25 @@ c  110 points or 194 points, according to igrid
 c
       do 15 i=1,npoint
 c
+c      write(*,*) 'Grilla ',igrid
       if(igrid.eq.1) then
          xi(1)=r(na,1)+r1*e(i,1)
          xi(2)=r(na,2)+r1*e(i,2)
          xi(3)=r(na,3)+r1*e(i,3)
          tmp0=wrad*wang(i)
+c         write(*,*) 'wang(',i-1,')=',wang(i),' e(i)=(',e(i,1),',',
+c     >     e(i,2),',',e(i,3),')'
+c         write(*,*) 'atomo: ',na,' punto: ',i,'Iz:',Iz(na),
+c     > 'Nr:',Nr(Iz(na)),'tmp',tmp0,'pos:',xi(1),xi(2),xi(3)
        else
          xi(1)=r(na,1)+r1*e3(i,1)
          xi(2)=r(na,2)+r1*e3(i,2)
          xi(3)=r(na,3)+r1*e3(i,3)
          tmp0=wrad*wang3(i)
+c         write(*,*) 'wang(',i-1,')=',wang3(i),' e(i)=(',e3(i,1),',',
+c     >     e3(i,2),',',e3(i,3),')'         
+c         write(*,*) 'atomo: ',na,' punto: ',i,'Iz:',Iz(na),
+c     > 'Nr:',Nr(Iz(na)),'tmp',tmp0,'pos:',xi(1),xi(2),xi(3)
        endif
 c
 c
@@ -117,10 +127,15 @@ c
 c
         if (Iexch.le.3) then
 c local density functionals, no gradients needed
+         write(213,*) 'indice',npoint*((na-1)*60+n-1)+i-1
+         write(214,*) 'indice',npoint*((na-1)*60+n-1)+i-1
+         write(215,*) 'indice',npoint*((na-1)*60+n-1)+i-1
+         write(*,*) 'indice',npoint*((na-1)*60+n-1)+i-1
          call DNS(DENS,aux,Xi,ds,NORM,Nuc,ncont,nshell,a,c,r,
      >            M,M18,NCO,RMM)
          dxi=DENS
          call pot(Iexch,dxi,yiex,yiec,y2i)
+c         write(*,*) 'dens:',DENS,'ex',yiex,'cor',yiec
         else
 c non local density functionals, gradients and 2nd derivatives needed
          call DNSG(DENS,aux,Dx,Dy,Dz,Dxx,Dyy,Dzz,Dxy,Dyz,Dxz,
@@ -176,8 +191,16 @@ c
         PF=P(na)/PP
 c ss : integrated density, check
         t1=PF*dens*tmp0
+c        write(*,*) 't1',t1
+c        if (igrid.eq.1) then
+c        write(*,*) 'wang',wang(i),'wrad',wrad
+c        else
+c          write(*,*) 'wang3',wang3(i),'wrad',wrad
+c        endif
         excha = excha + t1*yiex
         ecorr = ecorr + t1*yiec
+        PP=t1*yiex + t1*yiec
+        write(*,*) 'zz',npoint*((na-1)*60+n-1)+i-1,dens,PP
         ss0=ss0 + t1
         Npt=Npt+1
 c---------------------------------------------------------

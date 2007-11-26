@@ -158,7 +158,7 @@ c local density functionals, no gradients needed
      >                   a,c,r,M,M18,NCOa,NCOb,RMM)
               call potop(Iexch,DENSA,DENSB,yiex,yiec,y2a,y2b)
               dens=DENSA+DENSB
-           else
+            else
               call DNS(DENS,F,Xi,ds,NORM,Nuc,ncont,nshell,
      >                a,c,r,M,M18,NCO,RMM)
                dxi=DENS
@@ -257,6 +257,7 @@ c
         tmp=tmp0*PF
 c
         Ex=Ex+dens*yi*tmp
+c        write(999,*) 'Energiaycapa: ',dens*yi*tmp,n
         ss0=ss0+dens*tmp
 c
         if (dens.eq.0.0D0) then

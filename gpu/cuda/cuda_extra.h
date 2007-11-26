@@ -9,28 +9,10 @@
 #define MESSAGE(call)
 #endif
 
-#ifdef NOCUDA
-#define CUDA_SAFE_CALL( call, exc, mess, RETURN ) { } while(0)
-#define CU_SAFE_CALL( call, exc, mess, RETURN ) { } while(0)
+#ifdef __DEVICE_EMULATION__
+#define _EMU(code) code
 #else
-#define CUDA_SAFE_CALL( call, exc, mess, RETURN ) do {                       \
-    MESSAGE(#call);                                                          \
-    cudaError err = call;                                                    \
-    if( cudaSuccess != err) {                                                \
-        PyErr_Format( exc, mess                                              \
-	              ":CUDA error in file '%s' in line %i : %s.",           \
-                      __FILE__, __LINE__, cudaGetErrorString( err ) );       \
-        RETURN;                                                              \
-    } } while (0)
-#define CU_SAFE_CALL( call, exc, mess, RETURN ) do {                         \
-    MESSAGE(#call);                                                          \
-    CUresult err = call;                                                     \
-    if( CUDA_SUCCESS != err) {                                               \
-        PyErr_Format( exc, mess                                              \
-	              ":CUDA driver error in file '%s' in line %i.\n",       \
-                      __FILE__, __LINE__ );                                  \
-        RETURN;                                                              \
-    } } while (0)
+#define _EMU(code)
 #endif
 
 inline __device__ __host__ float dot(const float4 a, const float4 b)
@@ -93,14 +75,69 @@ inline __device__ __host__ void swap(float4 &a, float4 &b)
 inline __device__ __host__ void negate(float2 &a)
 { a.x = -a.x; a.y = -a.y; }
 
-inline int iDivUp(int a, int b)
-{ return ((a % b) != 0) ? (a / b + 1) : (a / b); }
-
 inline __device__ __host__ const float4& min(const float4 &a, const float4 &b) 
 { return (a.x < b.x)? a: b; }
 
 inline __device__ __host__ const float4& max(const float4 &a, const float4 &b) 
 { return (a.x > b.x)? a: b; }
+
+inline __device__ __host__ float3 operator*(const float3& a, const float b)
+{ return make_float3(a.x * b, a.y * b, a.z * b); }
+
+inline __device__ __host__ float1 operator*(const float1 &a, const float b)
+{ return make_float1(a.x * b); }
+
+inline __device__ __host__ float distance2(const float3& a, const float3& b)
+{
+	float x = a.x - b.x;
+	float y = a.y - b.y;
+	float z = a.z - b.z;
+	return x * x + y * y + z * z;
+}
+
+inline __device__ __host__ float distance(const float3& a, const float3& b)
+{ return sqrtf(distance2(a, b)); }
+
+inline __device__ __host__ uint index_from3d(const dim3& size, const dim3& pos)
+{
+	return size.z * (pos.x * size.y + pos.y) + pos.z;
+}
+
+inline __device__ __host__ float elem(const float3& a, uint i)
+{
+	switch(i) {
+		case 0: return a.x;
+		case 1: return a.y;
+		case 2: return a.z;
+		default: return a.x;
+	}
+}
+
+inline __device__ __host__ float sum(const float3& a)
+{ return (a.x + a.y + a.z); }
+
+inline __device__ __host__ uint sum(const uint3& a)
+{ return (a.x + a.y + a.z); }
+
+inline __device__ __host__ float3& operator+=(float3& a, const float3& b)
+{ a.x += b.x; a.y += b.y; a.z += b.z; return a; }
+
+inline __device__ __host__ dim3 operator/(const dim3& a, const uint b)
+{ return dim3(a.x / b, a.y / b, a.z / b); }
+
+inline __device__ __host__ dim3 operator/(const dim3& a, const dim3& b)
+{ return dim3(a.x / b.x, a.y / b.y, a.z / b.z); }
+
+inline __device__ __host__ dim3 operator%(const dim3& a, const dim3& b)
+{ return dim3(a.x % b.x, a.y % b.y, a.z % b.z); }
+
+inline __device__ __host__ int divUp(int a, int b)
+{ return ((a % b) != 0) ? (a / b + 1) : (a / b); }
+
+inline __device__ __host__ dim3 divUp(const dim3& a, const dim3& b)
+{ return dim3(divUp(a.x, b.x), divUp(a.y, b.y), divUp(a.z, b.z)); }
+
+
 
 #endif /* __CUTOOLS_H__ */
 

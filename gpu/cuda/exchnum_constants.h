@@ -2,7 +2,7 @@
 #define __EXCHNUM_CONSTANTS_H__
 
 #define BLOCK_SIZE_X 4
-#define BLOCK_SIZE_Y 8
+#define BLOCK_SIZE_Y 4
 #define BLOCK_SIZE_Z 8
 
 #define PI 3.141592654f

@@ -109,10 +109,10 @@ COMMONFLAGS = $(INCLUDES) -DUNIX
 
 # Debug/release configuration
 ifeq ($(dbg),1)
-	COMMONFLAGS += -g -D_DEBUG -O3
-	NVCCFLAGS   += -G --compiler-options -O3,-fno-strict-aliasing
-	CXXFLAGS  	+= -fno-strict-aliasing
-	CFLAGS  		+= -fno-strict-aliasing
+	COMMONFLAGS += -g -D_DEBUG #-O3
+	NVCCFLAGS   += #-G --compiler-options -fno-strict-aliasing,-O3
+	CXXFLAGS  	+= #-fno-strict-aliasing
+	CFLAGS  		+= #-fno-strict-aliasing
 else 
 	COMMONFLAGS += -O3
 	NVCC_FLAGS  += --compiler-options -fno-strict-aliasing
@@ -131,6 +131,11 @@ ifeq ($(emu), 1)
 	CXXFLAGS		+= -D__DEVICE_EMULATION__
 	CFLAGS			+= -D__DEVICE_EMULATION__
 endif
+
+ifeq ($(keep), 1)
+	NVCCFLAGS   += -keep
+endif
+
 TARGET    := $(EXECUTABLE)
 LINKLINE  = $(LINK) -o $(TARGET) $(OBJS) $(LIB)
 

@@ -28,10 +28,6 @@ template <unsigned int grid_n>
 #define FORTRAN_NG 900
 #define FORTRAN_NL 10
 
-extern "C" void probar_rmm_(const double* rmm, const unsigned int* i) {
-	printf("RMM: %.12f\n", rmm[*i]);
-}
-
 /**
  * Parametros innecesarios: m (es sum(num_funcs))
  */
@@ -118,10 +114,6 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
  * Host <-> CUDA Communication function
  */
 
-__global__ void test_kernel(uint* nuc) {
-	_EMU(printf("p: %i\n", nuc[3]));
-}
-
 void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& types, uint grid_type,
 								 const HostMatrixFloat3& point_positions, HostMatrixFloat& energy, const HostMatrixFloat& wang,
 								 uint Iexch, bool Ndens, uint nco, uint3 num_funcs, const HostMatrixUInt& nuc,
@@ -142,7 +134,6 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	CudaMatrixFloat3 gpu_point_positions(point_positions);
 
 	printf("threads: %i %i %i, blockSize: %i %i %i, gridSize: %i %i %i\n", threads.x, threads.y, threads.z, blockSize.x, blockSize.y, blockSize.z, gridSize.x, gridSize.y / gridSizeZ, gridSizeZ);
-	//test_kernel<<<1,1>>>(gpu_nuc.data);
 		
 	if (grid_type == 1) {
 		energy_kernel<EXCHNUM_GRIDA_SIZE><<< gridSize, blockSize >>>(gridSizeZ, gpu_atom_positions.data, gpu_types.data, gpu_point_positions.data, gpu_energy.data,
@@ -156,7 +147,10 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	}
 	
 	/** CPU Accumulation */
+	printf("energy %i gpu_energy %i\n", energy.data, gpu_energy.data);
 	energy = gpu_energy;
+	printf("energy %i gpu_energy %i\n", energy.data, gpu_energy.data);	
+	
 	double energy_double = 0.0;
 	for (unsigned int i = 0; i < threads.x; i++) {
 		printf("atomo: %i, capas: %i\n", i, cpu_layers[i]);
@@ -170,6 +164,7 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 			}
 		}
 	}
+	
 	//for (unsigned int i = 1; i < energy.elements(); i++) { energy_double += energy.data[i]; energy.data[0] += energy.data[i]; }
 	printf("Energy (double): %f\n", energy_double);
 	
@@ -177,6 +172,9 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 
 	// TODO: esta copia es redundante con la que hay en calc_acuum (esa es GPU<->GPU)
 	// energy.copy_submatrix(gpu_total_energy, 1);
+	// 
+	cudaError_t error = cudaGetLastError();
+	if (error != cudaSuccess) printf("CUDA ERROR: %s\n", cudaGetErrorString(error));
 }
 
 /**
@@ -194,9 +192,9 @@ template <unsigned int grid_n>
 	dim3 pos = index(blockDim, dim3(blockIdx.x, blockIdx.y / gridSizeZ, blockIdx.y % gridSizeZ), threadIdx);
 	uint big_index = index_from3d(energySize, pos);
 
-	uint atom_i = pos.x;
- 	uint layer_atom_i = pos.y;
-	uint point_atom_i = pos.z;
+	const uint& atom_i = pos.x;
+ 	const uint& layer_atom_i = pos.y;
+	const uint& point_atom_i = pos.z;
 	
 	// Hay varios lugares donde se podrian compartir entre threads, solo calculando una vez
 	
@@ -205,23 +203,23 @@ template <unsigned int grid_n>
 	uint atom_i_layers = layers[atom_i_type];
 	
 	/* load atom and point positions */
-	__shared__ float3 atom_positions_local[MAX_ATOMS];
+	/*__shared__ float3 atom_positions_local[MAX_ATOMS];
 	__shared__ float3 point_positions_local[grid_n];
 	
 	if (layer_atom_i == 0 && point_atom_i == 0) atom_positions_local[atom_i] = atom_positions[atom_i];
-	if (atom_i == 0 && layer_atom_i == 0) point_positions_local[point_atom_i] = point_positions[point_atom_i];
+	if (atom_i == 0 && layer_atom_i == 0) point_positions_local[point_atom_i] = point_positions[point_atom_i];*/
 
 	__syncthreads();
 			
 	// atom_positions = atom_positions_local;
-	point_positions = point_positions_local;
+	// point_positions = point_positions_local;
 
 	/* skip things that shouldn't be computed */
 	// CUIDADO al hacer __syncthreads despues de esto
 	if (atom_i >= atoms_n) return;
 	if (layer_atom_i >= atom_i_layers) return;	
 	if (point_atom_i >= grid_n) return;
-	
+		
 	// Datos por capa
 	float rm = rm_factor[atom_i_type];
 	float tmp0 = (PI / (atom_i_layers + 1.0f));
@@ -230,7 +228,7 @@ template <unsigned int grid_n>
 	float r1 = rm * (1.0f + x) / (1.0f - x);
 	float w = tmp0 * fabsf(sinf(tmp1));
 	float wrad = w * (r1 * r1) * rm * 2.0f / ((1.0f - x) * (1.0f - x));
-	//if (point_atom_i == 0) printf("atom: %i layer: %i rm: %.12e tmp0: %.12e tmp1: %.12e x: %.12e\n", atom_i, layer_atom_i, rm, tmp0, tmp1, x);
+	//if (point_atom_i == 0) printf("atom: %i layer: %i rm: %.12e tmp0: %.12e tmp1: %.12e x: %.12e\n", atom_i, layer_atom_i, rm, tmp0, tmp1, x);	
 	
 	// Datos por punto
 	float3 point_position = atom_positions[atom_i] + point_positions[point_atom_i] * r1;
@@ -240,10 +238,12 @@ template <unsigned int grid_n>
 	float exc_curr = 1.0f;
 	float corr_curr = 1.0f;
 	float dens = 0.0f;
+	
 	// float exc_curr, corr_current;
 	density_kernel/*<Ndens>*/(dens, num_funcs, nuc, contractions, point_position, atom_positions, normalize, factor_a, factor_c, rmm, nco, big_index);
 	pot_kernel(dens, exc_curr, corr_curr, Iexch);
-
+	
+	
 	/* Numerical Integration */
 	float P_total = 0.0f;
 	float P_atom_i = 1.0f;
@@ -256,7 +256,7 @@ template <unsigned int grid_n>
 			float rr = distance(atom_positions[atomo_j],atom_positions[atomo_k]);
 			float u = distance(point_position,atom_positions[atomo_j]) - distance(point_position, atom_positions[atomo_k]); // revisar que se haga igual que abajo			
 			u /= rr;
-			
+
 			float x = rm_factor[types[atomo_j]] / rm_factor[types[atomo_k]];
 			float x1 = (x - 1.0f) / (x + 1.0f);
 			float Aij = x1 / (x1 * x1 - 1.0f);
@@ -272,14 +272,13 @@ template <unsigned int grid_n>
 		if (atomo_j == atom_i) P_atom_i = P_curr;
 		P_total += P_curr;
 	}
+	
+	// output index
 
 	tmp0 = (P_atom_i / P_total) * dens * integration_weight;
-
-	// output index
-	//energy[index_from3d(energySize, pos)] = tmp0 * exc_curr + tmp0 * corr_curr;
-	energy[index_from3d(energySize, pos)] = 1;
+		
+	energy[index_from3d(energySize, pos)] = tmp0 * exc_curr + tmp0 * corr_curr;
   _EMU(printf("idx: %i dens: %.12e t: %.12e e: %.12e\n", big_index,  dens, tmp0, tmp0 * exc_curr + tmp0 * corr_curr));
-	//energy[atom_i][layer_atom_i][point_atom_i] = tmp0 * exc_curr + tmp0 * corr_curr;	// PCODE: ver como direccionar
 }
 
 
@@ -294,8 +293,9 @@ template <unsigned int grid_n>
 	 * 1 electron matrix elements, but doing only products
 	 * then, the particular density functional wanted is calculated
 	 */
-	
+
 	density = 0.0f;
+
 	const uint& funcs_s = num_funcs.x;
 	const uint& funcs_p = num_funcs.y;
 	uint funcs_total = sum(num_funcs);
@@ -427,6 +427,7 @@ template <unsigned int grid_n>
 		//if (big_index == 13624) printf("W(%i)=%f\n", i, W[i]);
 		density += W[i] * W[i];
 	}
+
 	density *= 2.0f;
 }
 

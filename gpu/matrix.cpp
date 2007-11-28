@@ -14,7 +14,7 @@ template<class T> Matrix<T>::Matrix(void) : data(NULL), width(0), height(0) /*, 
 template<class T> Matrix<T>::~Matrix(void) { } 
 
 template<class T> unsigned int Matrix<T>::bytes(void) const {
-	return elements() * sizeof(T);	
+	return elements() * sizeof(T);
 }
 
 template<class T> unsigned int Matrix<T>::elements(void) const {
@@ -59,7 +59,7 @@ template<class T> HostMatrix<T>::~HostMatrix(void) {
 
 template <class T> HostMatrix<T>& HostMatrix<T>::operator=(const CudaMatrix<T>& c) {
 	if (!c.data) {
-		if (this->data) { cudaFree(this->data); this->width = this->height = 0; }
+		if (this->data) { delete[] this->data; this->width = this->height = 0; this->data = NULL; }
 	}
 	else {
 		if (this->data) {
@@ -73,7 +73,7 @@ template <class T> HostMatrix<T>& HostMatrix<T>::operator=(const CudaMatrix<T>& 
 			this->width = c.width; this->height = c.height;
 			this->data = new T[c.elements()];
 		}
-		
+
 		copy_submatrix(c);
 	}
 
@@ -127,7 +127,7 @@ template<class T> void CudaMatrix<T>::copy_submatrix(const CudaMatrix<T>& c, uns
 
 template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const HostMatrix<T>& c) {
 	if (!c.data) {
-		if (this->data) { cudaFree(this->data); this->width = this->height = 0; }
+		if (this->data) { cudaFree(this->data); this->width = this->height = 0; this->data = NULL; }
 	}
 	else {
 		if (this->data) {
@@ -151,7 +151,7 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const HostMatrix<T>& c
 template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const CudaMatrix<T>& c) {
 	// copies data from c, only if necessary (always frees this's data, if any)
 	if (!c.data) {
-		if (this->data) { cudaFree(this->data); this->width = this->height = 0; }
+		if (this->data) { cudaFree(this->data); this->width = this->height = 0; this->data = NULL; }
 	}
 	else {
 		if (this->data) {

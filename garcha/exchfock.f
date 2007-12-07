@@ -111,7 +111,8 @@ c
         wang0(i)=wang3(i)
         wang0(i)=wang3(i)
        endif
-       enddo
+      enddo
+c
 c
 c-------------------------------------------------------------
 c loop 12 , over all grid  -----------------------------
@@ -163,6 +164,13 @@ c local density functionals, no gradients needed
      >                a,c,r,M,M18,NCO,RMM)
                dxi=DENS
                call pot(Iexch,dxi,yiex,yiec,y2a)
+c               write(*,*) 'bleh',na,n,iang,DENS
+               
+               if (Nang*((na-1)*60+n-1)+iang-1.eq.716) then
+                 do j=1,M
+                   write(*,*) 'F(',j,')=',F(j)
+                 enddo
+               endif               
             endif
         else
 c non local density functionals, gradients and 2nd derivatives needed
@@ -206,6 +214,7 @@ c
         yi = yiex + yiec
 c
 c
+c      write(*,*) na,n,iang,'--weight',wrad*wang0(iang),xi(1),xi(2),xi(3)
       do 1 i1=1,M
  1      W(i1)=0.D0
 c
@@ -238,6 +247,7 @@ c
          u=u+aij*(1.D0-u**2)
 c
 c
+c
          p1=1.5D0*u-0.5D0*u**3
          p2=1.5D0*p1-0.5D0*p1**3
          p3=1.5D0*p2-0.5D0*p2**3
@@ -245,6 +255,10 @@ c        p4=1.5D0*p3-0.5D0*p3**3
 c        p5=1.5D0*p4-0.5D0*p4**3
          s=0.5D0*(1.D0-p3)
          P(nb)=P(nb)*s
+         
+         if (Nang*((na-1)*60+n-1)+iang-1.eq.716) then
+         write(*,*) 'cosas',u,aij,s,p1,p2,p3
+         endif
 c
 c
  121   continue
@@ -257,7 +271,8 @@ c
         tmp=tmp0*PF
 c
         Ex=Ex+dens*yi*tmp
-c        write(999,*) 'Energiaycapa: ',dens*yi*tmp,n
+        write(*,*) 'double: ',Nang*((na-1)*60+n-1)+iang-1,P(na)
+c        write(*,*) 'double: ',Nang*((na-1)*60+n-1)+iang-1,dens,yi,tmp
         ss0=ss0+dens*tmp
 c
         if (dens.eq.0.0D0) then
@@ -294,7 +309,15 @@ c M5 pointer of alpha spin Fock matrix, M3 beta
  102  continue
  101  continue
 c
-       else
+      else
+
+c DEBUG DEBUG DEBUG
+
+      nb=Nang*((na-1)*60+n-1)+iang-1
+      if (nb.eq.996) then
+      write(957,*) 'indice',Nang*((na-1)*60+n-1)+iang-1
+      endif        
+      
       tmpa=tmp*y2a
       kk=0
       do 201 j=1,M
@@ -302,16 +325,24 @@ c
 c for the case in which basis function is 0
        if (F(j).eq.0.0D0) then
         kk=kk+M-j+1
+       if (nb.eq.996) then
+        write(957,*) 'rmm nuevo salteo',kk
+        endif
         goto 201
        endif
 c
        tmpja=tmpa*F(j)
       do 202 i=j,M
 c
-        kk=kk+1
+      kk=kk+1
 c Fock matrix
-c M5 pointer 
-        RMM(M5+kk-1)=RMM(M5+kk-1)+F(i)*tmpja
+c M5 pointer
+
+      if (nb.eq.996) then
+      tmpjb=RMM(M5+kk-1)+F(i)*tmpja
+      write(957,*) 'rmmn',kk-1,F(i)*tmpja,RMM(M5+kk-1),tmpjb
+      endif
+      RMM(M5+kk-1)=RMM(M5+kk-1)+F(i)*tmpja
  202  continue
  201  continue
       endif

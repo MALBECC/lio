@@ -103,6 +103,11 @@ inline __device__ __host__ uint index_from3d(const dim3& size, const dim3& pos)
 	return size.z * (pos.x * size.y + pos.y) + pos.z;
 }
 
+inline __device__ __host__ uint index_from4d(const uint4& size, const uint4& pos)
+{
+	return size.w * (size.z * (size.y * pos.x + pos.y) + pos.z) + pos.w;
+}
+
 inline __device__ __host__ float elem(const float3& a, uint i)
 {
 	switch(i) {
@@ -137,7 +142,8 @@ inline __device__ __host__ int divUp(int a, int b)
 inline __device__ __host__ dim3 divUp(const dim3& a, const dim3& b)
 { return dim3(divUp(a.x, b.x), divUp(a.y, b.y), divUp(a.z, b.z)); }
 
-
+inline __device__ __host__ uint4 operator +(const dim3& a, const uint4& b)
+{ return make_uint4(a.x + b.x, a.y + b.y, a.z + b.z, b.w); }
 
 #endif /* __CUTOOLS_H__ */
 

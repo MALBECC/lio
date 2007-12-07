@@ -32,7 +32,7 @@ c
       implicit real*8 (a-h,o-z)
       logical NORM,dens,OPEN,SVD,ATRHO,integ
       logical VCINP,DIRECT,EXTR,SHFT,write
-      integer nopt,iconst,igrid,igrid2
+      integer nopt,iconst,igrid,igrid2,ndens_local
       INCLUDE 'param'
       parameter(pi52=34.9868366552497108D0,pi=3.14159265358979312D0)
       parameter (rmax=25.D0)
@@ -67,6 +67,8 @@ c    >            EXTR,SHFT,write,NMAX,NCO,IDAMP,Nunp,nopt
       common /coef2/ B
 c     common /index/ iii(ng),iid(ng)
       common /Nc/ Ndens
+      common /intg1/ e_(50,3),wang(50)
+      common /intg2/ e_2(116,3),wang2(116),Nr(0:54),e3(194,3),wang3(194)
 c
 c------------------------------------------------------------------
 c now 16 loops for all combinations, first 2 correspond to 
@@ -420,17 +422,24 @@ c
 c
        if (integ) then
 
-        NCOa=NCO
-        NCOb=NCO+Nunp
-        write(*,*) 'exchnum int3lu'
-c#ifdef GPU
-c        call exchnum_gpu(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
-c     >  M18,NCO,Exc,nopt,Iexch, igrid2, e, e3, wang, wang3, Ndens)
-c        
-c#else
-      call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
-     >               M,M18,NCOa,NCOb,RMM,Ex)
-c#endif
+       NCOa=NCO
+       NCOb=NCO+Nunp
+       write(*,*) 'exchnum int3lu'
+#ifdef GPU
+       if (Ndens.eq.1) then
+       call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
+     >        M,M18,NCOa,NCOb,RMM,Ex)
+       write(*,*) 'energia final',Ex
+       else
+       call exchnum_gpu(NORM, natom, r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
+     >    M18,M5,NCO,Exc,nopt,Iexch, igrid2, e_, e_2, e3, wang, wang2,
+     >    wang3,Ndens, 1)
+       endif
+#else
+       call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
+     >        M,M18,NCOa,NCOb,RMM,Ex)
+       write(*,*) 'energia final',Ex
+#endif
        Ndens=Ndens+1
        endif
 c

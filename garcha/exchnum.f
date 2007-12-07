@@ -127,10 +127,7 @@ c
 c
         if (Iexch.le.3) then
 c local density functionals, no gradients needed
-         write(213,*) 'indice',npoint*((na-1)*60+n-1)+i-1
-         write(214,*) 'indice',npoint*((na-1)*60+n-1)+i-1
-         write(215,*) 'indice',npoint*((na-1)*60+n-1)+i-1
-         write(*,*) 'indice',npoint*((na-1)*60+n-1)+i-1
+c         write(*,*) 'indice',npoint*((na-1)*60+n-1)+i-1
          call DNS(DENS,aux,Xi,ds,NORM,Nuc,ncont,nshell,a,c,r,
      >            M,M18,NCO,RMM)
          dxi=DENS
@@ -200,7 +197,7 @@ c        endif
         excha = excha + t1*yiex
         ecorr = ecorr + t1*yiec
         PP=t1*yiex + t1*yiec
-        write(*,*) 'zz',npoint*((na-1)*60+n-1)+i-1,dens,PP
+c        write(*,*) 'zz',npoint*((na-1)*60+n-1)+i-1,dens,PP
         ss0=ss0 + t1
         Npt=Npt+1
 c---------------------------------------------------------

@@ -7,12 +7,14 @@
 
 #define PI 3.141592654f
 
-#define MAX_ATOMS 100
+#define MAX_ATOMS 2 /* era 100 */
 #define MAX_NCO 500
 #define MAX_CONTRACTIONS 20
+#define MAX_FUNCTIONS (15 * MAX_ATOMS)
 
-// This should correspond to the maximum number in 'layers'
-#define MAX_LAYERS 60
+// This should correspond to the maximum number in 'layers' and 'layers2'
+#define MAX_LAYERS 50
+#define MAX_LAYERS2 60
 
 const uint cpu_layers[] = {
   30,30,35,35,35,35,35,35,35,35,
@@ -23,9 +25,25 @@ const uint cpu_layers[] = {
 
 __device__ __constant__ uint layers[] = {
   30,30,35,35,35,35,35,35,35,35,
-  40,40,40,40,40,40,40,40,
+	40,40,40,40,40,40,40,40,
   45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,
   50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50
+};
+
+const uint cpu_layers2[] = {
+	20,20,25,25,25,25,25,25,25,25,
+	30,30,30,30,30,30,30,30,
+	60,30,30,30,30,30,30,60,
+	35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,
+	40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40
+};
+
+__device__ __constant__ uint layers2[] = {
+	20,20,25,25,25,25,25,25,25,25,
+	30,30,30,30,30,30,30,30,
+	60,30,30,30,30,30,30,60,
+	35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,
+	40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40
 };	
 
 __device__ __constant__ float rm_factor[] = {

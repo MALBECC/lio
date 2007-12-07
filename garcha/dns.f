@@ -58,16 +58,16 @@ c
       F(i)=F(i)+t*c(i,ni)
   16  continue
   15  continue
-      if (rexp.gt.30.D0) then
-      else
+c      if (rexp.gt.30.D0) then
+c      else
 c        write(213,*) 'F(',i-1,') s:',F(i)
-      endif
+c      endif
 
   10  continue
 
 c DEBUG DEBUG DEBUG
 c      do i=1,ns
-c        write(*,*) 's: F(',i-1,')=',F(i)
+c        write(*,*) 's:',F(i)
 c      enddo
       
 c
@@ -96,19 +96,16 @@ c
   25  continue
 c
   21  continue
-      if (rexp.gt.30.D0) then
-      else      
+c      if (rexp.gt.30.D0) then
+c      else      
 c        write(214,*) 'F(',i-1,') p:',F(i),F(i+1),F(i+2)
-      endif
+c      endif
   20  continue
 
 c DEBUG DEBUG DEBUG
 c      do i=ns+1,ns+np,3
 c        t=0.0
-c        do l1=1,3
-c          t=t + F(i + l1 - 1)
-c        enddo
-c        write(*,*) 'p: F(',i-1,')=',t
+c        write(*,*) 'p:',F(i),F(i+1),F(i+2)
 c      enddo      
 c
 c-- d case  ------------
@@ -144,10 +141,10 @@ c
 c
   41  continue
 
-      if (rexp.gt.30.D0) then
-      else
+c      if (rexp.gt.30.D0) then
+c      else
 c      write(215,*)'F(',i-1,')d:',F(i),F(i+1),F(i+2),F(i+3),F(i+4),F(i+5)
-      endif
+c      endif
       
   40  continue
 

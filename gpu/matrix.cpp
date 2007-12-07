@@ -32,8 +32,7 @@ template<class T> HostMatrix<T>::HostMatrix(void) : Matrix<T>() { }
 }*/
 
 template<class T> HostMatrix<T>::HostMatrix(unsigned int _width, unsigned _height) : Matrix<T>() {
-	this->width = _width; this->height = _height;
-	this->data = new T[this->elements()];
+	resize(_width, _height);
 }
 
 template<class T> HostMatrix<T>::HostMatrix(const CudaMatrix<T>& c) : Matrix<T>() {
@@ -42,6 +41,18 @@ template<class T> HostMatrix<T>::HostMatrix(const CudaMatrix<T>& c) : Matrix<T>(
 
 template<class T> HostMatrix<T>::~HostMatrix(void) {
 	delete[] this->data;	
+}
+
+template<class T> HostMatrix<T>& HostMatrix<T>::resize(unsigned int _width, unsigned _height) {
+	if (this->data) delete[] this->data;
+	this->width = _width; this->height = _height;
+	this->data = new T[this->elements()];
+	return *this;
+}
+
+template<class T> HostMatrix<T>& HostMatrix<T>::fill(const T& value) {
+	for (uint i = 0; i < this->elements(); i++) this->data[i] = value;
+	return *this;
 }
 
 /*const HostMatrix& HostMatrix::operator=(const HostMatrix& c) {
@@ -95,8 +106,14 @@ template<class T> void HostMatrix<T>::copy_submatrix(const CudaMatrix<T>& c, uns
 template<class T> CudaMatrix<T>::CudaMatrix(void) : Matrix<T>() { }
 
 template<class T> CudaMatrix<T>::CudaMatrix(unsigned int _width, unsigned int _height) : Matrix<T>() {
+	resize(_width, _height);
+}
+
+template<class T> CudaMatrix<T>& CudaMatrix<T>::resize(unsigned int _width, unsigned int _height) {
+	if (this->data) cudaFree(this->data);
 	this->width = _width; this->height = _height;
- 	cudaMalloc((void**)&this->data, this->bytes());
+	cudaMalloc((void**)&this->data, this->bytes());
+	return *this;		
 }
 
 template<class T> CudaMatrix<T>::CudaMatrix(const CudaMatrix<T>& c) : Matrix<T>() {
@@ -175,6 +192,7 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const CudaMatrix<T>& c
 /**
  * Instantiations
  */
+template class Matrix<double>;
 template class Matrix<float>;
 template class Matrix<float1>;
 template class Matrix<float2>;
@@ -183,6 +201,7 @@ template class Matrix<float4>;
 template class Matrix<uint1>;
 template class Matrix<uint>;
 
+template class HostMatrix<double>;
 template class HostMatrix<float>;
 template class HostMatrix<float1>;
 template class HostMatrix<float2>;

@@ -13,7 +13,7 @@ namespace G2G {
 			// unsigned int components;
 	
 			unsigned int bytes(void) const;
-			unsigned int elements(void) const;		
+			unsigned int elements(void) const;
 	};
 	
 	template<class T> class CudaMatrix;
@@ -22,12 +22,15 @@ namespace G2G {
 		public:
 			HostMatrix(void);
 			HostMatrix(const CudaMatrix<T>& c);
-			HostMatrix(unsigned int width, unsigned height = 1);
+			HostMatrix(unsigned int width, unsigned int height = 1);
 			~HostMatrix(void);
 		
 			HostMatrix<T>& operator=(const CudaMatrix<T>& c);
 			
 			void copy_submatrix(const CudaMatrix<T>& c, unsigned int elements = 0);
+		
+			HostMatrix<T>& resize(unsigned int width, unsigned int height = 1);
+			HostMatrix<T>& fill(const T& value);
 		
 		// TODO: implement these
 		private:
@@ -41,8 +44,10 @@ namespace G2G {
 			CudaMatrix(void);
 			CudaMatrix(const CudaMatrix<T>& c);
 			CudaMatrix(const HostMatrix<T>& c);		
-			CudaMatrix(unsigned int width, unsigned height = 1);
-			~CudaMatrix(void);		
+			CudaMatrix(unsigned int width, unsigned int height = 1);
+			~CudaMatrix(void);
+		
+			CudaMatrix<T>& resize(unsigned int width, unsigned int height = 1);
 
 			CudaMatrix& operator=(const HostMatrix<T>& c);
 			CudaMatrix& operator=(const CudaMatrix<T>& c);
@@ -51,7 +56,8 @@ namespace G2G {
 			void copy_submatrix(const CudaMatrix<T>& c, unsigned int elements = 0);
 	};
 	
-	typedef HostMatrix<float> HostMatrixFloat;	
+	typedef HostMatrix<double> HostMatrixDouble;
+	typedef HostMatrix<float> HostMatrixFloat;
 	typedef HostMatrix<float1> HostMatrixFloat1;
 	typedef HostMatrix<float2> HostMatrixFloat2;
 	typedef HostMatrix<float3> HostMatrixFloat3;

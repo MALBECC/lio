@@ -300,7 +300,7 @@ template <unsigned int grid_n, const uint* const curr_layers>
 	if (layer_atom_i == 0 && point_atom_i == 0) atom_positions_local[atom_i] = atom_positions[atom_i];
 	if (atom_i == 0 && layer_atom_i == 0) point_positions_local[point_atom_i] = point_positions[point_atom_i];*/
 
-	__syncthreads();
+	// __syncthreads();
 			
 	// atom_positions = atom_positions_local;
 	// point_positions = point_positions_local;
@@ -598,8 +598,7 @@ __device__ void density_kernel(float& density, uint3 num_funcs, const uint* nuc,
 	if (dens == 0) { ex = 0.0f; ec = 0.0f; y2a = 0.0f; return; }
 	
 	float y = powf(dens, 0.333333333333333333f);
-	float e0 = pot_alpha * y;
-	
+	float e0 = pot_alpha * y;	
 	float v0 = -0.984745021842697f * y; // 4/3 * pot_alpha * y
 	
 	switch(Iexch) {

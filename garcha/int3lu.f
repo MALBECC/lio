@@ -426,15 +426,15 @@ c
        NCOb=NCO+Nunp
        write(*,*) 'exchnum int3lu'
 #ifdef GPU
-       if (Ndens.eq.1) then
-       call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
-     >        M,M18,NCOa,NCOb,RMM,Ex)
-       write(*,*) 'energia final',Ex
-       else
+c       if (Ndens.eq.1) then
+c       call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
+c     >        M,M18,NCOa,NCOb,RMM,Ex)
+c       write(*,*) 'energia final',Ex
+c       else
        call exchnum_gpu(NORM, natom, r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >    M18,M5,NCO,Exc,nopt,Iexch, igrid2, e_, e_2, e3, wang, wang2,
      >    wang3,Ndens, 1)
-       endif
+c       endif
 #else
        call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
      >        M,M18,NCOa,NCOb,RMM,Ex)

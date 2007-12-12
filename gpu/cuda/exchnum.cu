@@ -271,6 +271,42 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	if (error != cudaSuccess) printf("CUDA ERROR: %s\n", cudaGetErrorString(error));
 }
 
+__device__ void	atom_weight(const float3* atom_positions, uint atoms_n, uint atom_i, float3 point_position,
+														const float* rm_factor, const uint* types, float& P_atom_i, float& P_total)
+{
+	P_total = 0.0f;
+	P_atom_i = 1.0f;
+	
+	for (uint atomo_j = 0; atomo_j < atoms_n; atomo_j++) {
+		float P_curr = 1.0f;
+		
+		float3 pos_atomo_j = atom_positions[atomo_j];
+		float r_atomo_j = distance(point_position,atom_positions[atomo_j]);
+
+		for (uint atomo_k = 0; atomo_k < atoms_n; atomo_k++) {
+			if (atomo_k == atomo_j) continue;
+			float rr = distance(pos_atomo_j, atom_positions[atomo_k]);
+			float u = r_atomo_j - distance(point_position, atom_positions[atomo_k]); // revisar que se haga igual que abajo
+			u /= rr;
+
+			float x = rm_factor[types[atomo_j]] / rm_factor[types[atomo_k]];
+			float x1 = (x - 1.0f) / (x + 1.0f);
+			float Aij = x1 / (x1 * x1 - 1.0f);
+			u += Aij * (1.0f - u * u);
+
+			float p1 = 1.5f * u - 0.5f * (u * u * u);
+			float p2 = 1.5f * p1 - 0.5f * (p1 * p1 * p1);
+			float p3 = 1.5f * p2 - 0.5f * (p2 * p2 * p2);
+			float s = 0.5f * (1.0f - p3);
+
+			P_curr *= s;
+		}
+
+		if (atomo_j == atom_i) P_atom_i = P_curr;
+		P_total += P_curr;
+	}	
+}
+
 /**
  * Main Energy Kernel
  */
@@ -286,6 +322,143 @@ template <unsigned int grid_n, const uint* const curr_layers>
 	dim3 pos = index(blockDim, dim3(blockIdx.x, blockIdx.y / gridSizeZ, blockIdx.y % gridSizeZ), threadIdx);
 	uint big_index = index_from3d(energySize, pos);
 	const uint& m = num_funcs.x + num_funcs.y * 3 + num_funcs.z * 6;	
+
+	const uint& atom_i = pos.x;	
+ 	const uint& layer_atom_i = pos.y;
+	const uint& point_atom_i = pos.z;
+	
+	// Hay varios lugares donde se podrian compartir entre threads, solo calculando una vez
+		
+	/* load atom and point positions */
+	/*__shared__ float3 atom_positions_local[MAX_ATOMS];
+	__shared__ float3 point_positions_local[grid_n];
+	
+	if (layer_atom_i == 0 && point_atom_i == 0) atom_positions_local[atom_i] = atom_positions[atom_i];
+	if (atom_i == 0 && layer_atom_i == 0) point_positions_local[point_atom_i] = point_positions[point_atom_i];*/
+
+	// __syncthreads();
+			
+	// atom_positions = atom_positions_local;
+	// point_positions = point_positions_local;
+
+	/* skip things that shouldn't be computed */
+	// CUIDADO al hacer __syncthreads despues de esto
+	if (atom_i >= atoms_n) return;
+	if (point_atom_i >= grid_n) return;
+	
+	// Datos por atomo
+	// printf("atomo: %i, punto: %i, layer: %i\n", atom_i, point_atom_i, layer_atom_i);
+	uint atom_i_type = types[atom_i];
+	uint atom_i_layers = curr_layers[atom_i_type];
+	
+	if (layer_atom_i >= atom_i_layers) return;	
+		
+	// Datos por capa
+	float rm = rm_factor[atom_i_type];
+	float tmp0 = (PI / (atom_i_layers + 1.0f));
+	float tmp1 = tmp0 * (layer_atom_i + 1.0f);
+	float x = cosf(tmp1);
+	float r1 = rm * (1.0f + x) / (1.0f - x);
+ 	float w = tmp0 * fabsf(sinf(tmp1));
+	float wrad = w * (r1 * r1) * rm * 2.0f / ((1.0f - x) * (1.0f - x));
+	//if (point_atom_i == 0) printf("atom: %i layer: %i rm: %.12e tmp0: %.12e tmp1: %.12e x: %.12e\n", atom_i, layer_atom_i, rm, tmp0, tmp1, x);
+	
+	// Datos por punto
+	float3 point_position = atom_positions[atom_i] + point_positions[point_atom_i] * r1;
+	float integration_weight = wang[point_atom_i] * wrad;
+
+	float exc_curr = 1.0f;
+	float corr_curr = 1.0f;
+	float dens = 0.0f;
+	float y2a = 0.0f;
+	// float y2b = 0.0f; sin usar por ahora
+	
+	float F[MAX_FUNCTIONS];
+	
+	// float exc_curr, corr_current;
+	density_kernel(dens, num_funcs, nuc, contractions, point_position, atom_positions, normalize, factor_a, factor_c, rmm, nco, big_index, F, Ndens);
+	pot_kernel(dens, exc_curr, corr_curr, y2a, Iexch, big_index);
+	
+	//printf("atomo: %i layer: %i punto: %i dens: %.12e\n", atom_i, layer_atom_i, point_atom_i, dens);
+	
+	/* Numerical Integration */
+	float P_total, P_atom_i;
+	atom_weight(atom_positions, atoms_n, atom_i, point_position, rm_factor, types, P_atom_i, P_total);
+	
+	// store result
+	float energy_curr = exc_curr + corr_curr;
+	tmp0 = (P_atom_i / P_total) * integration_weight;
+	float result = (dens * tmp0) * energy_curr;
+
+	energy[index_from3d(energySize, pos)] = result;
+
+	if (update_rmm) {
+		if (dens == 0.0f) {
+			tmp0 = 0.0f;
+			energy_curr = 0.0f;
+			y2a = 0.0f;
+			// y2b = 0.0f;
+		}
+		
+		float tmp1 = tmp0 * y2a;
+		
+		uint big_k = index_from4d(energySize + make_uint4(0, 0, 0, MAX_FUNCTIONS * MAX_FUNCTIONS), pos + make_uint4(0,0,0,0));
+		uint k = 0;
+		//if (tmp1 != 0.0f) {
+			for (uint i = 0; i < m; i++) {
+				float tmp2 = tmp1 * F[i];
+				
+				/*if (tmp2 == 0.0f) {
+					for (uint j = i; j < m; j++) {
+						rmm_output[k] = 0.0f;
+						k++;
+					}
+				}
+				else {*/
+					for (uint j = i; j < m; j++) {
+						// rmm_output[k] = F[j] * tmp2;
+						if (big_index == 996)
+						  _EMU(printf("rmm_out_calculo: %i %.12e %.12e %.12e %.12e %.12e %.12e %.12e %.12e\n", k, F[j], tmp2, tmp1, y2a, tmp0, P_atom_i / P_total, integration_weight, F[j] * tmp2));
+						rmm_output[big_k + k] = F[j] * tmp2;
+						k++;
+					}
+				//}
+			}
+		//}
+ 	}	
+  //_EMU(printf("idx: %i dens: %.12e e: %.12e r: %.12e\n", big_index,  dens, energy_curr, result));
+}
+
+#if 0
+/*
+ * Funcion llamada para cada (i,j) en RMM, para calcular RMM(i,j) = RMM'(i * M + j)
+ */
+template <unsigned int grid_n, const uint* const curr_layers>
+	__global__ void update_rmm(const float3* atom_positions, const uint* types, const float3* point_positions,
+														 const float* wang, const uint atoms_n, uint Iexch, uint nco, uint3 num_funcs,
+														 const uint* nuc, const uint* contractions, bool normalize, const float* factor_a, const float* factor_c,
+														 const float* rmm, float* rmm_output)
+{
+	const uint& m = num_funcs.x + num_funcs.y * 3 + num_funcs.z * 6;
+	
+	dim3 pos = index(blockDim, blockIdx, threadIdx);
+	uint rmm_idx = index_from2d(m, pos);
+	const uint& i = pos.x;
+	const uint& j = pos.y;	
+	
+	// calculate this rmm
+	rmm_output[rmm_idx] = 0.0f;
+	
+	for each (v in vs) {
+		float factor = y2a * tmp
+		rmm_output[rmm_idx] = calc_function(v, pos.x) * calc_function(v, pos.y) * factor;
+	}
+	
+	
+	dim3 energySize(atoms_n, MAX_LAYERS, grid_n);	
+
+	uint big_index = index_from3d(energySize, pos);
+
 
 	const uint& atom_i = pos.x;	
  	const uint& layer_atom_i = pos.y;
@@ -421,6 +594,7 @@ template <unsigned int grid_n, const uint* const curr_layers>
  	}	
   //_EMU(printf("idx: %i dens: %.12e e: %.12e r: %.12e\n", big_index,  dens, energy_curr, result));
 }
+#endif
 
 __device__ void calc_function_s(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
 																const float3* atom_positions, const float* factor_a, const float* factor_c, uint big_index, uint func_index, float* func_value)
@@ -501,7 +675,6 @@ __device__ void calc_function(const uint3& num_funcs, const uint* nuc, const uin
 		calc_function_p(num_funcs, nuc, contractions, point_position, atom_positions, factor_a, factor_c, big_index, func_index, &func_value[funcs_s + (func_index - funcs_s) *  3]);
 	else {
 		float normalization_factor = (normalize ? rsqrtf(3.0f) : 1.0f);		
-		uint p_index = funcs_s + (func_index - funcs_s) *  3;
 		calc_function_d(num_funcs, nuc, contractions, point_position, atom_positions, factor_a, factor_c, big_index, func_index,
 										normalization_factor, &func_value[funcs_s + funcs_p * 3 + (func_index - funcs_s - funcs_p) *  6]);
 	}

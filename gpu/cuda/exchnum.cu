@@ -488,6 +488,24 @@ __device__ void calc_function_d(const uint3& num_funcs, const uint* nuc, const u
 	}
 }
 
+__device__ void calc_function(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
+																const float3* atom_positions, const float* factor_a, const float* factor_c, uint big_index, uint func_index,
+																bool normalize, float* func_value)
+{
+	const uint& funcs_s = num_funcs.x;
+	const uint& funcs_p = num_funcs.y;
+	
+	if (func_index < funcs_s)
+		calc_function_s(num_funcs, nuc, contractions, point_position, atom_positions, factor_a, factor_c, big_index, func_index, &func_value[func_index]);
+	else if (func_index < funcs_s + funcs_p)
+		calc_function_p(num_funcs, nuc, contractions, point_position, atom_positions, factor_a, factor_c, big_index, func_index, &func_value[funcs_s + (func_index - funcs_s) *  3]);
+	else {
+		float normalization_factor = (normalize ? rsqrtf(3.0f) : 1.0f);		
+		uint p_index = funcs_s + (func_index - funcs_s) *  3;
+		calc_function_d(num_funcs, nuc, contractions, point_position, atom_positions, factor_a, factor_c, big_index, func_index,
+										normalization_factor, &func_value[funcs_s + funcs_p * 3 + (func_index - funcs_s - funcs_p) *  6]);
+	}
+}
 
 /* Local Density Functionals */
 __device__ void density_kernel(float& density, uint3 num_funcs, const uint* nuc, const uint* contractions, float3 point_position,
@@ -507,7 +525,7 @@ __device__ void density_kernel(float& density, uint3 num_funcs, const uint* nuc,
 	uint funcs_total = sum(num_funcs);
 	const uint& m = num_funcs.x + num_funcs.y * 3 + num_funcs.z * 6;
 	uint func_real = 0;
-	
+
 	/* s functions */
 	for (uint func = 0; func < funcs_s; func++, func_real++)
 		calc_function_s(num_funcs, nuc, contractions, point_position, atom_positions, factor_a, factor_c, big_index, func, &F[func_real]);

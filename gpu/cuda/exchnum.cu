@@ -349,11 +349,6 @@ template <unsigned int grid_n, const uint* const curr_layers>
 	float P_total = 0.0f;
 	float P_atom_i = 1.0f;
 	
-	/**
-	 * 
-	 * SEGUIR CON EL BARDO ESTE
-	 */
-	
 	for (uint atomo_j = 0; atomo_j < atoms_n; atomo_j++) {
 		float P_curr = 1.0f;
 		
@@ -427,6 +422,72 @@ template <unsigned int grid_n, const uint* const curr_layers>
   //_EMU(printf("idx: %i dens: %.12e e: %.12e r: %.12e\n", big_index,  dens, energy_curr, result));
 }
 
+__device__ void calc_function_s(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
+																const float3* atom_positions, const float* factor_a, const float* factor_c, uint big_index, uint func_index, float* func_value)
+{
+	uint atom_nuc = nuc[func_index];
+	float dist = distance2(point_position, atom_positions[atom_nuc]);
+
+	uint func_contractions = contractions[func_index];
+	*func_value = 0.0f;
+
+	for (uint contraction = 0; contraction < func_contractions; contraction++) {
+		float rexp = factor_a[func_index * MAX_CONTRACTIONS + contraction] * dist;
+		if (rexp > 30.0f) continue;
+		*func_value += expf(-rexp) * factor_c[func_index * MAX_CONTRACTIONS + contraction];
+	}	
+}
+
+__device__ void calc_function_p(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
+																const float3* atom_positions, const float* factor_a, const float* factor_c, uint big_index, uint func_index, float* func_value)
+{
+	uint atom_nuc = nuc[func_index];
+	float dist = distance2(point_position, atom_positions[atom_nuc]);
+
+	uint func_contractions = contractions[func_index];
+	for (uint i = 0; i < 3; i++) func_value[i] = 0.0f;
+
+	for (uint contraction = 0; contraction < func_contractions; contraction++) {
+		float rexp = factor_a[func_index * MAX_CONTRACTIONS + contraction] * dist;
+		if (rexp > 30.0f) continue;
+
+		float t = expf(-rexp) * factor_c[func_index * MAX_CONTRACTIONS + contraction];
+		float3 v = (point_position - atom_positions[atom_nuc]) * t;
+		
+		for (uint i = 0; i < 3; i++) func_value[i] += elem(v,i);
+	}
+}
+
+__device__ void calc_function_d(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
+																const float3* atom_positions, const float* factor_a, const float* factor_c, uint big_index, uint func_index,
+																float normalization_factor, float* func_value)
+{
+	uint atom_nuc = nuc[func_index];
+	float dist = distance2(point_position, atom_positions[atom_nuc]);
+
+	uint func_contractions = contractions[func_index];
+	for (uint i = 0; i < 6; i++) func_value[i] = 0.0f;
+
+	for (uint contraction = 0; contraction < func_contractions; contraction++) {
+		float rexp = factor_a[func_index * MAX_CONTRACTIONS + contraction] * dist;
+		if (rexp > 30.0f) continue;
+
+		float t = expf(-rexp) * factor_c[func_index * MAX_CONTRACTIONS + contraction];
+
+		float3 v = point_position - atom_positions[atom_nuc];
+
+		uint ij = 0;
+		for (uint i = 0; i < 3; i++) {
+			float t1 = elem(v, i);
+			for (uint j = 0; j <= i; j++) {
+				float t2 = (i == j ? elem(v, j) * normalization_factor : elem(v, j));
+				func_value[ij] += t * t1 * t2;
+				ij++;
+			}
+		}
+	}
+}
+
 
 /* Local Density Functionals */
 __device__ void density_kernel(float& density, uint3 num_funcs, const uint* nuc, const uint* contractions, float3 point_position,
@@ -447,107 +508,21 @@ __device__ void density_kernel(float& density, uint3 num_funcs, const uint* nuc,
 	const uint& m = num_funcs.x + num_funcs.y * 3 + num_funcs.z * 6;
 	uint func_real = 0;
 	
-	// funciones s
-	for (uint func = 0; func < funcs_s; func++, func_real++) {
-		uint atom_nuc = nuc[func];
-		//printf("func: %i, nuc: %i\n", func, atom_nuc);
-		float dist = distance2(point_position, atom_positions[atom_nuc]);
-
-		uint func_contractions = contractions[func];
-		float func_value = 0.0f;
-		
-		for (uint contraction = 0; contraction < func_contractions; contraction++) {
-		  float rexp = factor_a[func * MAX_CONTRACTIONS + contraction] * dist;
-			//printf("func: %i, cont: %i, rexp: %.12e, c: %.12e\n", func, contraction, rexp, factor_c[func * MAX_CONTRACTIONS + contraction]);
-			if (rexp > 30.0f) continue;
-			func_value += expf(-rexp) * factor_c[func * MAX_CONTRACTIONS + contraction];
-		}
-		
-		// printf("F(%i) s: %.12e\n", func_real, func_value);
-		
-		// printf("s: func: %i, value: %.12e\n", func, func_value);
-		F[func_real] = func_value;
-	}
+	/* s functions */
+	for (uint func = 0; func < funcs_s; func++, func_real++)
+		calc_function_s(num_funcs, nuc, contractions, point_position, atom_positions, factor_a, factor_c, big_index, func, &F[func_real]);
 	
-	// funciones p
-	for (uint func = funcs_s; func <  funcs_s + funcs_p; func++, func_real+=3) {
-		uint atom_nuc = nuc[func];
-		//printf("func: %i, nuc: %i\n", func, atom_nuc);		
-		float dist = distance2(point_position, atom_positions[atom_nuc]);
-		// float dist = distancias_punto_atomos[atomo_nucleo];
-		
-		uint func_contractions = contractions[func];
-		float func_value[3];
-		func_value[0] = func_value[1] = func_value[2] = 0.0f;
-
-		//if (big_index == 3624) printf("cont: %i\n", func_contractions);
-		for (uint contraction = 0; contraction < func_contractions; contraction++) {
-      //float rexp = factor_a[func][contraction] * dist;
-			float rexp = factor_a[func * MAX_CONTRACTIONS + contraction] * dist;
-			//printf("func: %i, cont: %i, rexp: %.12e, c: %.12e\n", func, contraction, rexp, factor_c[func * MAX_CONTRACTIONS + contraction]);
-      if (rexp > 30.0f) continue;
-			
-			float t = expf(-rexp) * factor_c[func * MAX_CONTRACTIONS + contraction];
-				
-			float3 v = (point_position - atom_positions[atom_nuc]) * t;
-			for (uint i = 0; i < 3; i++) {
-  			//if (big_index == 13624) printf("F(%i) p: %.12e\n", func_real + i, elem(v,i));
-				func_value[i] += elem(v,i);
-			}
-		}
-
-		// printf("p: func: %i, value: %.12e %.12e %.12e\n", func, func_value[0], func_value[1], func_value[2]);
-		F[func_real + 0] = func_value[0];
-		F[func_real + 1] = func_value[1];
-		F[func_real + 2] = func_value[2];
-	}
+	/* p functions */
+	for (uint func = funcs_s; func <  funcs_s + funcs_p; func++, func_real+=3)
+		calc_function_p(num_funcs, nuc, contractions, point_position, atom_positions, factor_a, factor_c, big_index, func, &F[func_real]);
 	
-	//float fc = (normalize ? rsqrtf(3.0f) : 1.0f);	// TODO: ver si efectivamente es 1 / sqrtf(3);
-	float fc = (normalize ? rsqrtf(3.0f) : 1.0f);
+	/* d functions */
+	float normalization_factor = (normalize ? rsqrtf(3.0f) : 1.0f);
 	
-	// funciones d
-	for (uint func = (funcs_s + funcs_p); func < funcs_total; func++, func_real+=6) {
-		uint atom_nuc = nuc[func];
-		//printf("func: %i, nuc: %i\n", func, atom_nuc);		
-		float dist = distance2(point_position, atom_positions[atom_nuc]);
-		//float dist = distancias_punto_atomos(atomo_nucleo);
-		
-		uint func_contractions = contractions[func];
-		float func_value[6];
-		func_value[0] = func_value[1] = func_value[2] = func_value[3] = func_value[4] = func_value[5] = 0.0f;
-		
-		for (uint contraction = 0; contraction < func_contractions; contraction++) {
-			float rexp = factor_a[func * MAX_CONTRACTIONS + contraction] * dist;
-			//printf("func: %i, cont: %i, rexp: %.12e, c: %.12e\n", func, contraction, rexp, factor_c[func * MAX_CONTRACTIONS + contraction]);
-			if (rexp > 30.0f) continue;
-			
-			float t = expf(-rexp) * factor_c[func * MAX_CONTRACTIONS + contraction];
-			
-			// TODO: esto quizas se puede reescribir sin tanto ciclo
-			float3 v = point_position - atom_positions[atom_nuc];
-			
-			uint ij = 0;
-			for (uint i = 0; i < 3; i++) {
-				float t1 = elem(v, i);
-				for (uint j = 0; j <= i; j++) {
-					float t2 = (i == j ? elem(v, j) * fc : elem(v, j));
-					//if (big_index == 13624) printf("F(%i) d: %.12e\n", func_real + i + j, t * t1 * t2);
-					func_value[ij] += t * t1 * t2;
-					ij++;
-					//printf("d(%i)=%.12e\n", i + j, t * t1 * t2);
-				}
-			}
-		}
-		
-		F[func_real + 0] = func_value[0];
-		F[func_real + 1] = func_value[1];
-		F[func_real + 2] = func_value[2];
-		F[func_real + 3] = func_value[3];
-		F[func_real + 4] = func_value[4];
-		F[func_real + 5] = func_value[5];		
-		// printf("d: func: %i, value: %.12e %.12e %.12e %.12e %.12e %.12e\n", func, func_value[0], func_value[1], func_value[2], func_value[3], func_value[4], func_value[5]);
-	}
+	for (uint func = (funcs_s + funcs_p); func < funcs_total; func++, func_real+=6)
+		calc_function_d(num_funcs, nuc, contractions, point_position, atom_positions, factor_a, factor_c, big_index, func, normalization_factor, &F[func_real]);
 
+	/* density */
 	if (Ndens == 1) {
 		uint k = 0;
 		

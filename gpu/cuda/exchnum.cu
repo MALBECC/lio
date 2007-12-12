@@ -271,11 +271,11 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	if (error != cudaSuccess) printf("CUDA ERROR: %s\n", cudaGetErrorString(error));
 }
 
-__device__ void	atom_weight(const float3* atom_positions, uint atoms_n, uint atom_i, float3 point_position,
-														const float* rm_factor, const uint* types, float& P_atom_i, float& P_total)
+__device__ void	calc_atom_weight(const float3* atom_positions, uint atoms_n, uint atom_i, float3 point_position,
+														const float* rm_factor, const uint* types, float& atom_weight)
 {
-	P_total = 0.0f;
-	P_atom_i = 1.0f;
+	float P_total = 0.0f;
+	float P_atom_i = 1.0f;
 	
 	for (uint atomo_j = 0; atomo_j < atoms_n; atomo_j++) {
 		float P_curr = 1.0f;
@@ -304,7 +304,9 @@ __device__ void	atom_weight(const float3* atom_positions, uint atoms_n, uint ato
 
 		if (atomo_j == atom_i) P_atom_i = P_curr;
 		P_total += P_curr;
-	}	
+	}
+	
+	atom_weight = (P_atom_i / P_total);
 }
 
 /**
@@ -382,12 +384,12 @@ template <unsigned int grid_n, const uint* const curr_layers>
 	//printf("atomo: %i layer: %i punto: %i dens: %.12e\n", atom_i, layer_atom_i, point_atom_i, dens);
 	
 	/* Numerical Integration */
-	float P_total, P_atom_i;
-	atom_weight(atom_positions, atoms_n, atom_i, point_position, rm_factor, types, P_atom_i, P_total);
+	float atom_weight;
+	calc_atom_weight(atom_positions, atoms_n, atom_i, point_position, rm_factor, types, atom_weight);
 	
 	// store result
 	float energy_curr = exc_curr + corr_curr;
-	tmp0 = (P_atom_i / P_total) * integration_weight;
+	tmp0 = atom_weight * integration_weight;
 	float result = (dens * tmp0) * energy_curr;
 
 	energy[index_from3d(energySize, pos)] = result;

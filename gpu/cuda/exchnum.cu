@@ -186,7 +186,7 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	uint gridSizeZ = gridSize3d.z;
 	dim3 gridSize = dim3(gridSize3d.x, gridSize3d.y * gridSize3d.z, 1);
 
-	CudaMatrixFloat gpu_energy(threads.x * threads.y * threads.z), gpu_total_energy, gpu_wang(wang), gpu_factor_a(factor_a), gpu_factor_c(factor_c),
+	CudaMatrixFloat gpu_energy/*(threads.x * threads.y * threads.z)*/, gpu_total_energy, gpu_wang(wang), gpu_factor_a(factor_a), gpu_factor_c(factor_c),
 									gpu_rmm(rmm);
 	CudaMatrixFloat3 gpu_point_positions(point_positions);
 	
@@ -201,8 +201,10 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 		printf("creando espacio para rmm output: size: %i data: %i\n", gpu_rmm_output.elements(), (bool)gpu_rmm_output.data);
 	
 	}
+	else gpu_energy.resize(threads.x * threads.y * threads.z);
 #else
 	if (is_int3lu) gpu_rmm_output.resize(threads.x * threads.y * threads.z * MAX_FUNCTIONS * MAX_FUNCTIONS);
+	gpu_energy.resize(threads.x * threads.y * threads.z);
 #endif	
 	
 	printf("threads: %i %i %i, blockSize: %i %i %i, gridSize: %i %i %i\n", threads.x, threads.y, threads.z, blockSize.x, blockSize.y, blockSize.z, gridSize.x, gridSize.y / gridSizeZ, gridSizeZ);
@@ -394,11 +396,11 @@ __global__ void calc_new_rmm(const float3* atom_positions, const uint* types, co
 {
 	uint i = blockIdx.x;
 	uint j = blockIdx.y;
-	if (j < i) return;
+	if (j < i) { __syncthreads(); return; }
 	
 	uint point_atom_i = threadIdx.x;
 
-	const uint& m = num_funcs.x + num_funcs.y * 3 + num_funcs.z * 6;	
+	const uint& m = num_funcs.x + num_funcs.y * 3 + num_funcs.z * 6;
 	uint rmm_idx = (i * m - i * (i - 1) / 2) + (j - i);
 	
 	dim3 energySize(atoms_n, MAX_LAYERS, grid_n);
@@ -415,6 +417,19 @@ __global__ void calc_new_rmm(const float3* atom_positions, const uint* types, co
 
 		float3 atom_i_position = atom_positions[atom_i];
 		float rm = rm_factor[atom_i_type];
+		
+		/*__shared__ uint atom_i_type, atom_i_layers;
+		__shared__ float3 atom_i_position;
+		__shared__ float rm;
+		
+		if (threadIdx.x == 0) {
+			atom_i_type = types[atom_i];
+			atom_i_layers = curr_layers[atom_i_type];
+			atom_i_position = atom_positions[atom_i];
+			rm = rm_factor[atom_i_type];
+		}
+		
+		__syncthreads();*/
 
 		float tmp0 = (PI / (atom_i_layers + 1.0f));
 		
@@ -428,7 +443,6 @@ __global__ void calc_new_rmm(const float3* atom_positions, const uint* types, co
 			float factor = factors[factor_idx];
 
 			float3 point_position = atom_i_position + point_positions[point_atom_i] * r1;
-
 
 			// Fi
 			if (i < num_funcs.x) {

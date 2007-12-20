@@ -1,7 +1,7 @@
 #ifndef __TIMER_H__
 #define __TIMER_H__
 
-#include <iostream>
+// #include <iostream>
 
 namespace G2G {
 	class Timer {
@@ -16,17 +16,19 @@ namespace G2G {
 		
 			bool isStarted(void) const;
 			
-			friend std::ostream& operator<<(std::ostream& o, const Timer& t);
+//			friend std::ostream& operator<<(std::ostream& o, const Timer& t);
 		
 			/* to compare stopped timers */
 			bool operator<(const Timer& other) const;
+		
+			void print(void);
 	 
 		private:
 			timeval t0, t1, res;
 			bool started;
 	};
 	
-	std::ostream& operator<<(std::ostream& o, const Timer& t);	
+//	std::ostream& operator<<(std::ostream& o, const Timer& t);	
 }
 
 

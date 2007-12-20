@@ -5,6 +5,7 @@
 #include "accum.h"
 #include "exchnum.h"
 #include "exchnum_constants.h"
+#include "../timer.h"
 using namespace G2G;
 using namespace std;
 
@@ -48,6 +49,9 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 														 const double* fort_wang, const double* fort_wang2, const double* fort_wang3,
 														 const unsigned int& Ndens, const unsigned int& is_int3lu)
 {
+	Timer timer_exchnum;
+	timer_exchnum.start();
+	
 	printf("<======= exchnum_gpu (from %s) ============>\n", is_int3lu ? "int3lu" : "SCF");
 	printf("Ndens: %i\n", Ndens);
 	uint3 num_funcs = make_uint3(nshell[0], nshell[1], nshell[2]);
@@ -147,6 +151,9 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 	
 	HostMatrixDouble rmm_partial_out(m * m);
 	rmm_partial_out.fill(0.0f);
+	
+	timer_exchnum.stop();
+	printf("TIMER: exchnum_gpu:"); timer_exchnum.print(); printf("\n");	
 		
 	HostMatrixFloat energy(1);
 	calc_energy(atom_positions, types, igrid, point_positions, energy, wang,
@@ -170,6 +177,9 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 								 const HostMatrixUInt& contractions, bool normalize, const HostMatrixFloat& factor_a, const HostMatrixFloat& factor_c,
 								 const HostMatrixFloat& rmm, double* cpu_rmm_output, bool is_int3lu, const dim3& threads, const dim3& blockSize, const dim3& gridSize3d)
 {	
+	Timer timer_calc_energy;
+	timer_calc_energy.start();
+	
 	const CudaMatrixFloat3 gpu_atom_positions(atom_positions);
 	const CudaMatrixUInt gpu_types(types), gpu_nuc(nuc), gpu_contractions(contractions);
 	
@@ -293,7 +303,7 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	
 
 	/** CPU Accumulation */
-	energy = gpu_energy;
+	if (!is_int3lu) energy = gpu_energy;
 	
 	HostMatrixFloat gpu_rmm_output_copy(gpu_rmm_output);
 
@@ -309,10 +319,12 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 				for (unsigned int k = 0; k < threads.z; k++) {
 					uint idx = index_from3d(threads, dim3(i, j, k));
 					printf("idx: %i size: %i\n", idx, energy.elements());
-					double energy_curr = energy.data[idx];
-					printf("atomo: %i, capa: %i, punto: %i, valor: %.12e idx: %i\n", i, j, k, energy_curr, idx);
-					energy_double += energy_curr;
-					energy.data[0] += energy_curr;
+					if (!is_int3lu) {
+						double energy_curr = energy.data[idx];
+						printf("atomo: %i, capa: %i, punto: %i, valor: %.12e idx: %i\n", i, j, k, energy_curr, idx);
+						energy_double += energy_curr;
+						energy.data[0] += energy_curr;
+					}
 
 #ifndef CICLO_INVERTIDO
 					uint big_rmm_idx = index_from4d(threads + make_uint4(0,0,0,MAX_FUNCTIONS * MAX_FUNCTIONS), make_uint4(i, j, k, 0));
@@ -333,7 +345,7 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 				}
 			}
 		}
-		printf("Energy (double): %.12e\n", energy_double);		
+		if (!is_int3lu) printf("Energy (double): %.12e\n", energy_double);		
 	}
 	
 #ifdef CICLO_INVERTIDO
@@ -359,6 +371,10 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	// 
 	cudaError_t error = cudaGetLastError();
 	if (error != cudaSuccess) fprintf(stderr, "=!=!=!=!=====> CUDA ERROR <=====!=!=!=!=: %s\n", cudaGetErrorString(error));
+		
+//	cudaThreadSynchronize();		
+	timer_calc_energy.stop();
+//	printf("TIMER: calc_energy:"); timer_calc_energy.print(); printf("\n");
 }
 
 /***************************************** ENERGY KERNEL ******************************************/

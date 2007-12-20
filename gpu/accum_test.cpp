@@ -20,6 +20,6 @@ int main(void) {
 		actual.start();
 		calc_accum(input, output);
 		actual.stop();
-		cout << "resultado: " << *output.data << " (" << actual << ")" << endl;
+//		cout << "resultado: " << *output.data << " (" << actual << ")" << endl;
 	}
 }

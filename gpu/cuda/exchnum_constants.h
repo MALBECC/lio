@@ -7,7 +7,7 @@
 
 #define PI 3.141592654f
 
-#define MAX_ATOMS 2 /* era 100 */
+#define MAX_ATOMS 4 /* era 100 */
 #define MAX_NCO 500
 #define MAX_CONTRACTIONS 20
 #define MAX_FUNCTIONS (15 * MAX_ATOMS)

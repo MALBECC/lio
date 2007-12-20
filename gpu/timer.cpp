@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <sys/time.h>
 #include "timer.h"
 using namespace G2G;
@@ -34,6 +35,7 @@ bool Timer::operator<(const Timer& other) const {
 					(res.tv_sec == other.res.tv_sec && res.tv_usec < other.res.tv_usec));
 }
 
+#if 0
 std::ostream& G2G::operator<<(std::ostream& o, const Timer& t) {
 	if (t.getSec() != 0)
 		o << t.getSec() << "s. " << t.getMicrosec() << "us.";
@@ -42,4 +44,11 @@ std::ostream& G2G::operator<<(std::ostream& o, const Timer& t) {
 	
 	return o;
 }
+#endif
 
+void Timer::print(void) {
+	if (getSec() != 0)
+		printf("%ulis. %ulius.", getSec(), getMicrosec());
+	else
+		printf("%ulius.", getMicrosec());
+}

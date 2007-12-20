@@ -24,7 +24,7 @@ int main(void) {
 		actual.start();
 		calc_dists(coords, dists, atoms);
 		actual.stop();
-		cout << actual << endl;
+//		cout << actual << endl;
 	}
 	
 	/*for (unsigned int i = 0; i < atoms; i++) {

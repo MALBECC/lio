@@ -132,6 +132,12 @@ ifeq ($(emu), 1)
 	CFLAGS			+= -D__DEVICE_EMULATION__
 endif
 
+ifeq ($(ciclo_invertido),1)
+	NVCCFLAGS   += -DCICLO_INVERTIDO
+	CXXFLAGS		+= -DCICLO_INVERTIDO
+	CFLAGS			+= -DCICLO_INVERTIDO
+endif	
+
 ifeq ($(keep), 1)
 	NVCCFLAGS   += -keep
 endif
@@ -168,10 +174,10 @@ endif
 
 CUDA_OBJ=$(CUDA_SOURCES:%.cu=%.cu_o)
 
-%.cu_o : %.cu
+%.cu_o : %.cu $(CUDA_HEADERS)
 	$(NVCC) -o $@ -c $< $(NVCCFLAGS)
 
-%.cubin: %.cu
+%.cubin: %.cu $(CUDA_HEADERS)
 	$(NVCC) -o $@ -cubin $< $(NVCCFLAGS)
 
 

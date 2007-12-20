@@ -38,10 +38,10 @@ clean-gpu:
 clean: clean-cpu clean-gpu
 
 garcha-gpu: $(OBJ:%.o=gpu_obj/%.o)
-	ifort -o $@ $(OBJ:%.o=gpu_obj/%.o) $(LINKFLG) $(LIBS)
+	ifort -o $@ $(OBJ:%.o=gpu_obj/%.o) $(LINKFLG) $(LIBS) $(EXTRA_FLAGS)
 	
 garcha-cpu: $(OBJ:%.o=cpu_obj/%.o)
-	ifort -o $@ $(OBJ:%.o=cpu_obj/%.o) $(LINKFLG) $(LIBS)
+	ifort -o $@ $(OBJ:%.o=cpu_obj/%.o) $(LINKFLG) $(LIBS) $(EXTRA_FLAGS)
 
 # CPU Object files
 cpu_obj/init.o    : init.f

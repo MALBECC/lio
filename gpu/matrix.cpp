@@ -1,6 +1,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <cuda_runtime.h>
+#include <cassert>
 #include "matrix.h"
 using namespace G2G;
 using namespace std;
@@ -103,24 +104,30 @@ template<class T> void HostMatrix<T>::copy_submatrix(const CudaMatrix<T>& c, uns
  * CudaMatrix
  */
 
-template<class T> CudaMatrix<T>::CudaMatrix(void) : Matrix<T>() { }
+template<class T> CudaMatrix<T>::CudaMatrix(void) : Matrix<T>() {
+	assert(this->data == NULL);
+}
 
 template<class T> CudaMatrix<T>::CudaMatrix(unsigned int _width, unsigned int _height) : Matrix<T>() {
+	assert(this->data == NULL);
 	resize(_width, _height);
 }
 
 template<class T> CudaMatrix<T>& CudaMatrix<T>::resize(unsigned int _width, unsigned int _height) {
 	if (this->data) cudaFree(this->data);
 	this->width = _width; this->height = _height;
-	cudaMalloc((void**)&this->data, this->bytes());
+	cudaError_t error_status = cudaMalloc((void**)&this->data, this->bytes());
+	assert(error_status != cudaErrorMemoryAllocation);
 	return *this;		
 }
 
 template<class T> CudaMatrix<T>::CudaMatrix(const CudaMatrix<T>& c) : Matrix<T>() {
+	assert(this->data == NULL);	
 	*this = c;
 }
 
 template<class T> CudaMatrix<T>::CudaMatrix(const HostMatrix<T>& c) : Matrix<T>() {
+	assert(this->data == NULL);	
 	*this = c;
 }
 

@@ -6,6 +6,9 @@
 #include "exchnum.h"
 #include "exchnum_constants.h"
 #include "../timer.h"
+
+#include <cassert>
+
 using namespace G2G;
 using namespace std;
 
@@ -13,15 +16,9 @@ using namespace std;
  * TODO: revisar distance / distance2 cuando sea necesario
  */
 
-template <unsigned int grid_n, const uint* const curr_layers>
-	__global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, const uint* types, const float3* point_positions,
-																float* energy, const float* wang, const uint atoms_n, uint Iexch, uint nco, uint3 num_funcs,
-																const uint* nuc, const uint* contractions, bool normalize, const float* factor_a, const float* factor_c,
-																const float* rmm, float* output_rmm, uint Ndens, float* factor_output, bool is_int3lu);
-
 template <const uint* const curr_layers, uint grid_n>
 __global__ void calc_new_rmm(const float3* atom_positions, const uint* types, const float3* point_positions,
-														 const float* wang, const uint atoms_n, uint Iexch, uint nco, uint3 num_funcs,
+														 const float* wang, const uint atoms_n, uint nco, uint3 num_funcs,
 														 const uint* nuc, const uint* contractions, bool normalize, const float* factor_a, const float* factor_c,
 														 const float* rmm, float* rmm_output, float* factors);
 
@@ -29,6 +26,14 @@ __global__ void calc_new_rmm(const float3* atom_positions, const uint* types, co
 __device__ void calc_function(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
 															const float3* atom_positions, const float* factor_a, const float* factor_c, uint big_func_index,
 															bool normalize, float& func_value);
+
+/***************************************** ENERGY KERNEL ******************************************/
+#include "energy.h"
+
+/*************************************** ACTUALIZACION DE RMM *************************************/
+#include "rmm.h"
+
+
 /**
  * Fortran interface
  */
@@ -108,6 +113,7 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 	}
 	
 	HostMatrixFloat rmm;
+	assert(Iexch == 1);
 	printf("NCO: %i, M: %i, Iexch: %i\n", nco, total_funcs, Iexch);
 	{
 		if (Ndens == 1) {
@@ -157,7 +163,7 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 		
 	HostMatrixFloat energy(1);
 	calc_energy(atom_positions, types, igrid, point_positions, energy, wang,
-							Iexch, Ndens, nco, num_funcs_div, nuc, contractions, norm, factor_a, factor_c, rmm, &RMM[m5-1],
+							Ndens, nco, num_funcs_div, nuc, contractions, norm, factor_a, factor_c, rmm, &RMM[m5-1],
 							is_int3lu, threads, blockSize, gridSize3d);
 
 	if (!is_int3lu) {
@@ -173,7 +179,7 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 
 void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& types, uint grid_type,
 								 const HostMatrixFloat3& point_positions, HostMatrixFloat& energy, const HostMatrixFloat& wang,
-								 uint Iexch, uint Ndens, uint nco, uint3 num_funcs, const HostMatrixUInt& nuc,
+								 uint Ndens, uint nco, uint3 num_funcs, const HostMatrixUInt& nuc,
 								 const HostMatrixUInt& contractions, bool normalize, const HostMatrixFloat& factor_a, const HostMatrixFloat& factor_c,
 								 const HostMatrixFloat& rmm, double* cpu_rmm_output, bool is_int3lu, const dim3& threads, const dim3& blockSize, const dim3& gridSize3d)
 {	
@@ -187,7 +193,7 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	dim3 gridSize = dim3(gridSize3d.x, gridSize3d.y * gridSize3d.z, 1);
 
 	CudaMatrixFloat gpu_energy/*(threads.x * threads.y * threads.z)*/, gpu_total_energy, gpu_wang(wang), gpu_factor_a(factor_a), gpu_factor_c(factor_c),
-									gpu_rmm(rmm);
+									gpu_rmm(rmm), gpu_functions;
 	CudaMatrixFloat3 gpu_point_positions(point_positions);
 	
 	uint m = num_funcs.x + num_funcs.y * 3 + num_funcs.z * 6;
@@ -197,9 +203,10 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	CudaMatrixFloat gpu_rmm_output;
 #ifdef CICLO_INVERTIDO
 	if (is_int3lu) {
-		gpu_rmm_output.resize(m * m);
-		printf("creando espacio para rmm output: size: %i data: %i\n", gpu_rmm_output.elements(), (bool)gpu_rmm_output.data);
-	
+		gpu_rmm_output.resize((m * (m + 1)) / 2);
+		printf("creando espacio para rmm output: size: %i (%i bytes) data: %i\n", gpu_rmm_output.elements(), gpu_rmm_output.bytes(), (bool)gpu_rmm_output.data);
+		gpu_functions.resize(m *  threads.x * threads.y * threads.z);
+		printf("creando espacio para funcs output: size: %i (%i bytes) data: %i\n", gpu_functions.elements(), gpu_functions.bytes(), (bool)gpu_functions.data);
 	}
 	else gpu_energy.resize(threads.x * threads.y * threads.z);
 #else
@@ -218,30 +225,32 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 #ifdef CICLO_INVERTIDO
 	CudaMatrixFloat gpu_factor_output(threads.x * threads.y * threads.z);
 	factor_output = gpu_factor_output.data;
+	
+	dim3 rmmThreads(divUp(m, 2), m + 1);
+	dim3 rmmBlockSize(8,16);
+	dim3 rmmGridSize = divUp(rmmThreads, rmmBlockSize);
+	printf("rmm threads: %i %i, blockSize: %i %i, gridSize: %i %i\n", rmmThreads.x, rmmThreads.y, rmmBlockSize.x, rmmBlockSize.y, rmmGridSize.x, rmmGridSize.y);		
 #endif
-
+	
 	switch(grid_type) {
 		case 0:
 		{
 			energy_kernel<EXCHNUM_SMALL_GRID_SIZE, layers2><<< gridSize, blockSize >>>(gridSizeZ, gpu_atom_positions.data, gpu_types.data, gpu_point_positions.data, gpu_energy.data,
-																																								 gpu_wang.data, gpu_atom_positions.width, Iexch, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
-																																								 normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_rmm_output.data, Ndens,
-																																								 factor_output, is_int3lu);
+																																								 gpu_wang.data, gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
+																																								 normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_functions.data, /*gpu_rmm_output.data,*/
+																																								 Ndens, factor_output, is_int3lu);
 			
 #ifdef CICLO_INVERTIDO
 			if (is_int3lu) {				
 				cudaError_t error = cudaGetLastError();
 				if (error != cudaSuccess) fprintf(stderr, "=!=!=!=!=====> CUDA ERROR <=====!=!=!=!=: %s\n", cudaGetErrorString(error));
 				
-				dim3 rmmBlockSize = dim3(EXCHNUM_SMALL_GRID_SIZE);
-				dim3 rmmGridSize(m, m);
-				
 				//cudaThreadSynchronize();
 				
 				calc_new_rmm<layers2, EXCHNUM_SMALL_GRID_SIZE><<<rmmGridSize, rmmBlockSize>>>(gpu_atom_positions.data, gpu_types.data, gpu_point_positions.data, gpu_wang.data,
-																																											gpu_atom_positions.width, Iexch, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
+																																											gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
 																																											normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_rmm_output.data,
-																																											factor_output);
+																																											factor_output, gpu_functions.data);
 				//cudaThreadSynchronize();
 				
 			}
@@ -252,22 +261,19 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 		case 1:
 		{
 			energy_kernel<EXCHNUM_MEDIUM_GRID_SIZE, layers><<< gridSize, blockSize >>>(gridSizeZ, gpu_atom_positions.data, gpu_types.data, gpu_point_positions.data, gpu_energy.data,
-																																								 gpu_wang.data, gpu_atom_positions.width, Iexch, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
-																																								 normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_rmm_output.data, Ndens,
-																																								 factor_output, is_int3lu);
+																																								 gpu_wang.data, gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
+																																								 normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_functions.data, /*gpu_rmm_output.data,*/
+																																								 Ndens, factor_output, is_int3lu);
 #ifdef CICLO_INVERTIDO
 			if (is_int3lu) {
 				cudaError_t error = cudaGetLastError();
 				if (error != cudaSuccess) fprintf(stderr, "=!=!=!=!=====> CUDA ERROR <=====!=!=!=!=: %s\n", cudaGetErrorString(error));
 
-				dim3 rmmBlockSize = dim3(EXCHNUM_MEDIUM_GRID_SIZE);
-				dim3 rmmGridSize(m, m);
-				
 				//cudaThreadSynchronize();
 				calc_new_rmm<layers, EXCHNUM_MEDIUM_GRID_SIZE><<<rmmGridSize, rmmBlockSize>>>(gpu_atom_positions.data, gpu_types.data, gpu_point_positions.data, gpu_wang.data,
-																																											 gpu_atom_positions.width, Iexch, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
+																																											 gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
 																																											 normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_rmm_output.data,
-																																											 factor_output);
+																																											 factor_output, gpu_functions.data);
 				//cudaThreadSynchronize();
 				
 			}
@@ -278,22 +284,19 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 		case 2:
 		{
 			energy_kernel<EXCHNUM_BIG_GRID_SIZE, layers><<< gridSize, blockSize >>>(gridSizeZ, gpu_atom_positions.data, gpu_types.data, gpu_point_positions.data, gpu_energy.data,
-																																							gpu_wang.data, gpu_atom_positions.width, Iexch, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
-																																							normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_rmm_output.data, Ndens,
-																																							factor_output, is_int3lu);
+																																							gpu_wang.data, gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
+																																							normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_functions.data, /*gpu_rmm_output.data,*/
+																																							Ndens, factor_output, is_int3lu);
 #ifdef CICLO_INVERTIDO
 			if (is_int3lu) {
 				cudaError_t error = cudaGetLastError();
 				if (error != cudaSuccess) fprintf(stderr, "=!=!=!=!=====> CUDA ERROR <=====!=!=!=!=: %s\n", cudaGetErrorString(error));
 				
-				dim3 rmmBlockSize = dim3(EXCHNUM_BIG_GRID_SIZE);
-				dim3 rmmGridSize(m, m);
-				
 				//cudaThreadSynchronize();
 				calc_new_rmm<layers, EXCHNUM_BIG_GRID_SIZE><<<rmmGridSize, rmmBlockSize>>>(gpu_atom_positions.data, gpu_types.data, gpu_point_positions.data, gpu_wang.data,
-																																										gpu_atom_positions.width, Iexch, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
+																																										gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
 																																										normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_rmm_output.data,
-																																										factor_output);
+																																										factor_output, gpu_functions.data);
 				//cudaThreadSynchronize();
 				
 			}
@@ -379,120 +382,6 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 //	printf("TIMER: calc_energy:"); timer_calc_energy.print(); printf("\n");
 }
 
-/***************************************** ENERGY KERNEL ******************************************/
-#include "energy.h"
-
-/*************************************** ACTUALIZACION DE RMM *************************************/
-
-#ifdef CICLO_INVERTIDO
-/*
- * Funcion llamada para cada (i,j) en RMM, para calcular RMM(i,j) -> un thread por cada punto
- */
-template <const uint* const curr_layers, uint grid_n>
-__global__ void calc_new_rmm(const float3* atom_positions, const uint* types, const float3* point_positions,
-														 const float* wang, const uint atoms_n, uint Iexch, uint nco, uint3 num_funcs,
-														 const uint* nuc, const uint* contractions, bool normalize, const float* factor_a, const float* factor_c,
-														 const float* rmm, float* rmm_output, float* factors)
-{
-	uint i = blockIdx.x;
-	uint j = blockIdx.y;
-	if (j < i) { __syncthreads(); return; }
-	
-	uint point_atom_i = threadIdx.x;
-
-	const uint& m = num_funcs.x + num_funcs.y * 3 + num_funcs.z * 6;
-	uint rmm_idx = (i * m - i * (i - 1) / 2) + (j - i);
-	
-	dim3 energySize(atoms_n, MAX_LAYERS, grid_n);
-	
-	__shared__ float rmm_local[grid_n];
-	float Fi = 0.0f, Fj = 0.0f;
-	
-	// calculate this rmm
-	rmm_local[threadIdx.x] = 0;
-	
-	for (uint atom_i = 0; atom_i < atoms_n; atom_i++) {
-		uint atom_i_type = types[atom_i];
-		uint atom_i_layers = curr_layers[atom_i_type];
-
-		float3 atom_i_position = atom_positions[atom_i];
-		float rm = rm_factor[atom_i_type];
-		
-		/*__shared__ uint atom_i_type, atom_i_layers;
-		__shared__ float3 atom_i_position;
-		__shared__ float rm;
-		
-		if (threadIdx.x == 0) {
-			atom_i_type = types[atom_i];
-			atom_i_layers = curr_layers[atom_i_type];
-			atom_i_position = atom_positions[atom_i];
-			rm = rm_factor[atom_i_type];
-		}
-		
-		__syncthreads();*/
-
-		float tmp0 = (PI / (atom_i_layers + 1.0f));
-		
-		for (uint layer_atom_i = 0; layer_atom_i < atom_i_layers; layer_atom_i++) {
-
-			float tmp1 = tmp0 * (layer_atom_i + 1.0f);
-			float x = cosf(tmp1);
-			float r1 = rm * (1.0f + x) / (1.0f - x);
-
-			uint factor_idx = index_from3d(energySize, dim3(atom_i, layer_atom_i, point_atom_i));
-			float factor = factors[factor_idx];
-
-			float3 point_position = atom_i_position + point_positions[point_atom_i] * r1;
-
-			// Fi
-			if (i < num_funcs.x) {
-				calc_function_s(num_funcs, nuc, contractions, point_position, atom_positions, factor_a, factor_c, i, &Fi);
-			}
-			else if (i < num_funcs.x + num_funcs.y * 3) {
-				uint subfunc = (i - num_funcs.x) % 3;
-				uint little_i = num_funcs.x + (i - num_funcs.x) / 3;
-				calc_single_function_p(num_funcs, nuc, contractions, point_position, atom_positions, factor_a, factor_c, little_i, subfunc, &Fi);
-			}
-			else {
-				float normalization_factor = (normalize ? rsqrtf(3.0f) : 1.0f);				
-				uint subfunc = (i - num_funcs.x - num_funcs.y * 3) % 6;
-				uint little_i = num_funcs.x + num_funcs.y + (i - num_funcs.x - num_funcs.y * 3) / 6;
-				calc_single_function_d(num_funcs, nuc, contractions, point_position, atom_positions, factor_a, factor_c, little_i, subfunc, normalization_factor, &Fi);
-			}
-			
-			// Fj
-			if (j < num_funcs.x) {
-				calc_function_s(num_funcs, nuc, contractions, point_position, atom_positions, factor_a, factor_c, j, &Fj);
-			}
-			else if (j < num_funcs.x + num_funcs.y * 3) {
-				uint subfunc = (j - num_funcs.x) % 3;				
-				uint little_j = num_funcs.x + (j - num_funcs.x) / 3;
-				calc_single_function_p(num_funcs, nuc, contractions, point_position, atom_positions, factor_a, factor_c, little_j, subfunc, &Fj);
-			}
-			else {
-				float normalization_factor = (normalize ? rsqrtf(3.0f) : 1.0f);				
-				uint subfunc = (j - num_funcs.x - num_funcs.y * 3) % 6;				
-				uint little_j = num_funcs.x + num_funcs.y + (j - num_funcs.x - num_funcs.y * 3) / 6;				
-				calc_single_function_d(num_funcs, nuc, contractions, point_position, atom_positions, factor_a, factor_c, little_j, subfunc, normalization_factor, &Fj);
-			}		
-			
-			rmm_local[point_atom_i] += factor * Fi * Fj;
-		}
-	}
-	
-	__syncthreads();
-	
-	if (threadIdx.x == 0) {
-		float rmm_final = 0.0f;
-		for (uint i = 0; i < grid_n; i++) {
-			rmm_final += rmm_local[i];
-		}
-		rmm_output[rmm_idx] = rmm_final;
-
-		_EMU(printf("rmm value(%i) %.12e\n", rmm_idx, rmm_output[rmm_idx]));		
-	}
-}
-#endif
 
 /************************************************** FUNCTIONS ****************************************/
 #include "functions.h"

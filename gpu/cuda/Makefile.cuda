@@ -163,6 +163,10 @@ CFLAGS    += $(COMMONFLAGS)
 # Add NVCC Compiler Flags
 NVCCFLAGS += --linker-options -fPIC #--verbose
 
+ifeq ($(verbose),1)
+	NVCCFLAGS += --verbose
+endif
+	
 ifeq ($(nvcc_warn_verbose),1)
 	NVCCFLAGS += $(addprefix --compiler-options ,$(CXXWARN_FLAGS))
 	NVCCFLAGS += --compiler-options -fno-strict-aliasing

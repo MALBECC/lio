@@ -18,27 +18,6 @@ __device__ void calc_function_s(const uint3& num_funcs, const uint* nuc, const u
 
 
 // ****** P *******
-__device__ void calc_single_function_p(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
-																			 const float3* atom_positions, const float* factor_a, const float* factor_c, uint func_index, uint subfunc, float* func_value)
-{
-	uint atom_nuc = nuc[func_index];
-	float dist = distance2(point_position, atom_positions[atom_nuc]);
-
-	uint func_contractions = contractions[func_index];
-	*func_value = 0.0f;
-
-	for (uint contraction = 0; contraction < func_contractions; contraction++) {
-		float rexp = factor_a[func_index * MAX_CONTRACTIONS + contraction] * dist;
-		if (rexp > 30.0f) continue;
-
-		float t = expf(-rexp) * factor_c[func_index * MAX_CONTRACTIONS + contraction];
-		
-		float v = (elem(point_position,subfunc) - elem(atom_positions[atom_nuc],subfunc)) * t;
-		
-		*func_value += v;
-	}
-}
-
 __device__ void calc_function_p(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
 																const float3* atom_positions, const float* factor_a, const float* factor_c, uint func_index, float* func_value)
 {
@@ -60,56 +39,6 @@ __device__ void calc_function_p(const uint3& num_funcs, const uint* nuc, const u
 }
 
 // ************** D **************
-__device__ void calc_single_function_d(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
-																			 const float3* atom_positions, const float* factor_a, const float* factor_c, uint func_index, uint subfunc,
-																			 float normalization_factor, float* func_value)
-{
-	uint atom_nuc = nuc[func_index];
-	float dist = distance2(point_position, atom_positions[atom_nuc]);
-
-	uint func_contractions = contractions[func_index];
-	*func_value = 0.0f;
-
-	for (uint contraction = 0; contraction < func_contractions; contraction++) {
-		float rexp = factor_a[func_index * MAX_CONTRACTIONS + contraction] * dist;
-		if (rexp > 30.0f) continue;
-
-		float t = expf(-rexp) * factor_c[func_index * MAX_CONTRACTIONS + contraction];
-
-		float3 v = point_position - atom_positions[atom_nuc];
-		
-		float t1 = 1.0f, t2 = 1.0f;
-		switch(subfunc) {
-			case 0:
-				t1 = elem(v, 0);
-				t2 = elem(v, 0) * normalization_factor;
-			break;
-			case 1:
-				t1 = elem(v, 1);
-				t2 = elem(v, 0);			
-			break;
-			case 2:
-				t1 = elem(v, 1);
-				t2 = elem(v, 1) * normalization_factor;			
-			break;
-			case 3:
-				t1 = elem(v, 2);
-				t2 = elem(v, 0);			
-			break;
-			case 4:
-				t1 = elem(v, 2);
-				t2 = elem(v, 1);			
-			break;
-			case 5:
-				t1 = elem(v, 2);
-				t2 = elem(v, 2) * normalization_factor;			
-			break;
-		}
-		
-		*func_value += t * t1 * t2;
-	}
-}
-
 __device__ void calc_function_d(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
 																const float3* atom_positions, const float* factor_a, const float* factor_c, uint func_index,
 																float normalization_factor, float* func_value)

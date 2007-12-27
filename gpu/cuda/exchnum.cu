@@ -181,7 +181,7 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 								 const HostMatrixFloat3& point_positions, HostMatrixFloat& energy, const HostMatrixFloat& wang,
 								 uint Ndens, uint nco, uint3 num_funcs, const HostMatrixUInt& nuc,
 								 const HostMatrixUInt& contractions, bool normalize, const HostMatrixFloat& factor_a, const HostMatrixFloat& factor_c,
-								 const HostMatrixFloat& rmm, double* cpu_rmm_output, bool is_int3lu, const dim3& threads, const dim3& blockSize, const dim3& gridSize3d)
+								 const HostMatrixFloat& rmm, double* cpu_rmm_output, bool update_rmm, const dim3& threads, const dim3& blockSize, const dim3& gridSize3d)
 {	
 	Timer timer_calc_energy;
 	timer_calc_energy.start();
@@ -191,57 +191,63 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	
 	uint gridSizeZ = gridSize3d.z;
 	dim3 gridSize = dim3(gridSize3d.x, gridSize3d.y * gridSize3d.z, 1);
-
-	CudaMatrixFloat gpu_energy/*(threads.x * threads.y * threads.z)*/, gpu_total_energy, gpu_wang(wang), gpu_factor_a(factor_a), gpu_factor_c(factor_c),
-									gpu_rmm(rmm), gpu_functions;
-	CudaMatrixFloat3 gpu_point_positions(point_positions);
 	
-	uint m = num_funcs.x + num_funcs.y * 3 + num_funcs.z * 6;
+	uint m = num_funcs.x + num_funcs.y * 3 + num_funcs.z * 6;	
 	uint small_m = sum(num_funcs);
 	
+	CudaMatrixFloat gpu_energy/*(threads.x * threads.y * threads.z)*/, gpu_total_energy, gpu_wang(wang), gpu_factor_a(factor_a), gpu_factor_c(factor_c),
+									gpu_rmm(rmm), gpu_functions(m *  threads.x * threads.y * threads.z);
+	CudaMatrixFloat3 gpu_point_positions(point_positions);
+	
+	printf("creando espacio para funcs output: size: %i (%i bytes) data: %i\n", gpu_functions.elements(), gpu_functions.bytes(), (bool)gpu_functions.data);	
+
 	// optional update of RMM(M5)
 	CudaMatrixFloat gpu_rmm_output;
-#ifdef CICLO_INVERTIDO
-	if (is_int3lu) {
-		gpu_rmm_output.resize((m * (m + 1)) / 2);
+	if (update_rmm) {
+		// gpu_rmm_output.resize((m * (m + 1)) / 2);
+		gpu_rmm_output.resize(m * m);
 		printf("creando espacio para rmm output: size: %i (%i bytes) data: %i\n", gpu_rmm_output.elements(), gpu_rmm_output.bytes(), (bool)gpu_rmm_output.data);
-		gpu_functions.resize(m *  threads.x * threads.y * threads.z);
-		printf("creando espacio para funcs output: size: %i (%i bytes) data: %i\n", gpu_functions.elements(), gpu_functions.bytes(), (bool)gpu_functions.data);
 	}
-	else gpu_energy.resize(threads.x * threads.y * threads.z);
-#else
-	if (is_int3lu) gpu_rmm_output.resize(threads.x * threads.y * threads.z * MAX_FUNCTIONS * MAX_FUNCTIONS);
-	gpu_energy.resize(threads.x * threads.y * threads.z);
-#endif	
+	#ifndef _DEBUG
+	else
+	#endif
+		gpu_energy.resize(threads.x * threads.y * threads.z);
 	
 	printf("threads: %i %i %i, blockSize: %i %i %i, gridSize: %i %i %i\n", threads.x, threads.y, threads.z, blockSize.x, blockSize.y, blockSize.z, gridSize.x, gridSize.y / gridSizeZ, gridSizeZ);
-	if (is_int3lu) printf("GPU RMM SIZE: %i (%i bytes)\n", gpu_rmm_output.elements(), gpu_rmm_output.bytes());
+	if (update_rmm) printf("GPU RMM SIZE: %i (%i bytes)\n", gpu_rmm_output.elements(), gpu_rmm_output.bytes());
 	printf("energy data elements: %i data: %i\n", gpu_energy.elements(), (bool)gpu_energy.data);
-	// TODO: is_int3lu should be a template parameter
+	// TODO: update_rmm should be a template parameter
 	const uint* curr_cpu_layers = NULL;
 	
 	float* factor_output = NULL;
 	
-#ifdef CICLO_INVERTIDO
 	CudaMatrixFloat gpu_factor_output(threads.x * threads.y * threads.z);
 	factor_output = gpu_factor_output.data;
-	
+
+	#if 0
 	dim3 rmmThreads(divUp(m, 2), m + 1);
 	dim3 rmmBlockSize(8,16);
 	dim3 rmmGridSize = divUp(rmmThreads, rmmBlockSize);
+	#else
+	/*dim3 rmmThreads(m,m);
+	dim3 rmmBlockSize(1);
+	dim3 rmmGridSize(m,m);*/
+	dim3 rmmThreads(m, m);
+	dim3 rmmBlockSize(8,16);
+	dim3 rmmGridSize = divUp(rmmThreads, rmmBlockSize);
+	#endif
+	
 	printf("rmm threads: %i %i, blockSize: %i %i, gridSize: %i %i\n", rmmThreads.x, rmmThreads.y, rmmBlockSize.x, rmmBlockSize.y, rmmGridSize.x, rmmGridSize.y);		
-#endif
 	
 	switch(grid_type) {
 		case 0:
 		{
 			energy_kernel<EXCHNUM_SMALL_GRID_SIZE, layers2><<< gridSize, blockSize >>>(gridSizeZ, gpu_atom_positions.data, gpu_types.data, gpu_point_positions.data, gpu_energy.data,
 																																								 gpu_wang.data, gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
-																																								 normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_functions.data, /*gpu_rmm_output.data,*/
-																																								 Ndens, factor_output, is_int3lu);
+																																								 normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_functions.data,
+																																								 Ndens, factor_output, update_rmm);
 			
-#ifdef CICLO_INVERTIDO
-			if (is_int3lu) {				
+			if (update_rmm) {				
 				cudaError_t error = cudaGetLastError();
 				if (error != cudaSuccess) fprintf(stderr, "=!=!=!=!=====> CUDA ERROR <=====!=!=!=!=: %s\n", cudaGetErrorString(error));
 				
@@ -254,7 +260,7 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 				//cudaThreadSynchronize();
 				
 			}
-#endif
+
 			curr_cpu_layers = cpu_layers2;
 		}
 		break;
@@ -262,10 +268,9 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 		{
 			energy_kernel<EXCHNUM_MEDIUM_GRID_SIZE, layers><<< gridSize, blockSize >>>(gridSizeZ, gpu_atom_positions.data, gpu_types.data, gpu_point_positions.data, gpu_energy.data,
 																																								 gpu_wang.data, gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
-																																								 normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_functions.data, /*gpu_rmm_output.data,*/
-																																								 Ndens, factor_output, is_int3lu);
-#ifdef CICLO_INVERTIDO
-			if (is_int3lu) {
+																																								 normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_functions.data, 
+																																								 Ndens, factor_output, update_rmm);
+			if (update_rmm) {
 				cudaError_t error = cudaGetLastError();
 				if (error != cudaSuccess) fprintf(stderr, "=!=!=!=!=====> CUDA ERROR <=====!=!=!=!=: %s\n", cudaGetErrorString(error));
 
@@ -277,7 +282,7 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 				//cudaThreadSynchronize();
 				
 			}
-#endif
+
 			curr_cpu_layers = cpu_layers;
 		}
 		break;
@@ -285,10 +290,9 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 		{
 			energy_kernel<EXCHNUM_BIG_GRID_SIZE, layers><<< gridSize, blockSize >>>(gridSizeZ, gpu_atom_positions.data, gpu_types.data, gpu_point_positions.data, gpu_energy.data,
 																																							gpu_wang.data, gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
-																																							normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_functions.data, /*gpu_rmm_output.data,*/
-																																							Ndens, factor_output, is_int3lu);
-#ifdef CICLO_INVERTIDO
-			if (is_int3lu) {
+																																							normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_functions.data,
+																																							Ndens, factor_output, update_rmm);
+			if (update_rmm) {
 				cudaError_t error = cudaGetLastError();
 				if (error != cudaSuccess) fprintf(stderr, "=!=!=!=!=====> CUDA ERROR <=====!=!=!=!=: %s\n", cudaGetErrorString(error));
 				
@@ -300,7 +304,6 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 				//cudaThreadSynchronize();
 				
 			}
-#endif
 			curr_cpu_layers = cpu_layers;
 		}
 		break;
@@ -308,53 +311,38 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	
 
 	/** CPU Accumulation */
-	if (!is_int3lu) energy = gpu_energy;
+	#ifndef _DEBUG
+	if (!update_rmm)
+	#endif
+		energy = gpu_energy;
 	
 	HostMatrixFloat gpu_rmm_output_copy(gpu_rmm_output);
+	
+	//cudaThreadSynchronize();
 
 	double energy_double = 0.0;
- 
-#ifdef CICLO_INVERTIDO
-	if (!is_int3lu) {
-#else
+
+	#ifndef _DEBUG
+	if (!update_rmm)
+	#endif
 	{
-#endif
 		for (unsigned int i = 0; i < threads.x; i++) {
 			for (unsigned int j = 0; j < curr_cpu_layers[types.data[i]]; j++) {
 				for (unsigned int k = 0; k < threads.z; k++) {
 					uint idx = index_from3d(threads, dim3(i, j, k));
 					printf("idx: %i size: %i\n", idx, energy.elements());
-					if (!is_int3lu) {
-						double energy_curr = energy.data[idx];
-						printf("atomo: %i, capa: %i, punto: %i, valor: %.12e idx: %i\n", i, j, k, energy_curr, idx);
-						energy_double += energy_curr;
-						energy.data[0] += energy_curr;
-					}
 
-#ifndef CICLO_INVERTIDO
-					uint big_rmm_idx = index_from4d(threads + make_uint4(0,0,0,MAX_FUNCTIONS * MAX_FUNCTIONS), make_uint4(i, j, k, 0));
-
-					if (is_int3lu) {
-						uint rmm_idx = 0;
-						for (uint func_i = 0; func_i < m; func_i++) {
-							for (uint func_j = func_i; func_j < m; func_j++) {
-								if (idx == 996) printf("idx: %i rmm_out(%i): %.12e %.12e %.12e\n", idx, rmm_idx, gpu_rmm_output_copy.data[big_rmm_idx + rmm_idx], cpu_rmm_output[rmm_idx],
-																			 cpu_rmm_output[rmm_idx] + gpu_rmm_output_copy.data[big_rmm_idx + rmm_idx]);
-								cpu_rmm_output[rmm_idx] += gpu_rmm_output_copy.data[big_rmm_idx + rmm_idx];
-
-								rmm_idx++;
-							}
-						}
-					}
-#endif
+					double energy_curr = energy.data[idx];
+					printf("atomo: %i, capa: %i, punto: %i, valor: %.12e idx: %i\n", i, j, k, energy_curr, idx);
+					energy_double += energy_curr;
+					energy.data[0] += energy_curr;
 				}
 			}
 		}
-		if (!is_int3lu) printf("Energy (double): %.12e\n", energy_double);		
+		printf("Energy (double): %.12e\n", energy_double);		
 	}
 	
-#ifdef CICLO_INVERTIDO
-	if (is_int3lu) {
+	if (update_rmm) {
 		uint rmm_idx = 0;
 		for (uint func_i = 0; func_i < m; func_i++) {
 			for (uint func_j = func_i; func_j < m; func_j++) {
@@ -364,10 +352,6 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 			}
 		}
 	}
-#endif
-	
-	//for (unsigned int i = 1; i < energy.elements(); i++) { energy_double += energy.data[i]; energy.data[0] += energy.data[i]; }
-
 	
 	// calc_accum_cuda(gpu_energy, gpu_total_energy);
 

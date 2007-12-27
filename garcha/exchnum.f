@@ -127,10 +127,14 @@ c
 c
         if (Iexch.le.3) then
 c local density functionals, no gradients needed
-c         write(*,*) 'indice',npoint*((na-1)*60+n-1)+i-1
          call DNS(DENS,aux,Xi,ds,NORM,Nuc,ncont,nshell,a,c,r,
      >            M,M18,NCO,RMM)
          dxi=DENS
+
+c         do l=1,m
+c           write(958,*) 'func',npoint*((na-1)*60+n-1)+i-1,aux(l)
+c         enddo
+         
          call pot(Iexch,dxi,yiex,yiec,y2i)
 c         write(*,*) 'dens:',DENS,'ex',yiex,'cor',yiec
         else

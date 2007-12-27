@@ -3,12 +3,6 @@ __device__ void density_kernel(float& density, uint3 num_funcs, const uint* nuc,
 															 const float3* atom_positions, bool normalize, const float* factor_a,
 															 const float* factor_c, const float* rmm, uint nco, uint big_index, float* F, uint Ndens)
 {
-	/*
-	 * now we should evaluate all same loops as the ones used for
-	 * 1 electron matrix elements, but doing only products
-	 * then, the particular density functional wanted is calculated
-	 */
-
 	density = 0.0f;
 
 	const uint& funcs_s = num_funcs.x;
@@ -30,6 +24,11 @@ __device__ void density_kernel(float& density, uint3 num_funcs, const uint* nuc,
 	
 	for (uint func = (funcs_s + funcs_p); func < funcs_total; func++, func_real+=6)
 		calc_function_d(num_funcs, nuc, contractions, point_position, atom_positions, factor_a, factor_c, func, normalization_factor, &F[func_real]);
+	
+	#ifdef _DEBUG
+	for (uint i = 0; i < m; i++)
+		_EMU(printf("func %i %.12e\n", big_index, F[i]));
+	#endif
 
 	/* density */
 	if (Ndens == 1) {

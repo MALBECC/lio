@@ -10,11 +10,12 @@
 #define MAX_ATOMS 7 /* era 100 */
 #define MAX_NCO 500
 #define MAX_CONTRACTIONS 20
-#define MAX_FUNCTIONS (15 * MAX_ATOMS)
+// #define MAX_FUNCTIONS (15 * MAX_ATOMS)
 
 // This should correspond to the maximum number in 'layers' and 'layers2'
-#define MAX_LAYERS 50
-#define MAX_LAYERS2 60
+//#define MAX_LAYERS 50
+//#define MAX_LAYERS2 60
+#define MAX_LAYERS 60
 
 const uint cpu_layers[] = {
   30,30,35,35,35,35,35,35,35,35,

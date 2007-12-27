@@ -2,12 +2,11 @@
  * Main Energy Kernel
  */
 
-/*, bool Ndens, unsigned int Iexch*/
 template <unsigned int grid_n, const uint* const curr_layers>
 __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, const uint* types, const float3* point_positions,
 		float* energy, const float* wang, const uint atoms_n, uint nco, uint3 num_funcs,
 		const uint* nuc, const uint* contractions, bool normalize, const float* factor_a, const float* factor_c,
-		const float* rmm, /*float* rmm_output,*/ float* all_functions,  uint Ndens, float* output_factor, bool update_rmm)
+		const float* rmm, float* all_functions,  uint Ndens, float* output_factor, bool update_rmm)
 {
 	dim3 energySize(atoms_n, MAX_LAYERS, grid_n);
 	dim3 pos = index(blockDim, dim3(blockIdx.x, blockIdx.y / gridSizeZ, blockIdx.y % gridSizeZ), threadIdx);
@@ -52,17 +51,14 @@ __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, cons
 	float y2a = 0.0f;
 	// float y2b = 0.0f; sin usar por ahora
 	
-	float F[MAX_FUNCTIONS];
+	//float F[MAX_ATOMS * 15];
+	float* F = all_functions + big_index * m;
+	/*float F_local[2 * 15];
+	float* F = F_local;*/
 	
 	// float exc_curr, corr_current;
 	density_kernel(dens, num_funcs, nuc, contractions, point_position, atom_positions, normalize, factor_a, factor_c, rmm, nco, big_index, F, Ndens);
 	pot_kernel(dens, exc_curr, corr_curr, y2a,  big_index);
-	
-#ifdef CICLO_INVERTIDO
-	if (update_rmm) {
-		for (uint i = 0; i < m; i++) { all_functions[big_index * m + i] = F[i]; }
-	}		
-#endif
 	
 	//printf("atomo: %i layer: %i punto: %i dens: %.12e\n", atom_i, layer_atom_i, point_atom_i, dens);
 	
@@ -79,7 +75,7 @@ __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, cons
 		for (uint atomo_k = 0; atomo_k < atoms_n; atomo_k++) {
 			if (atomo_k == atomo_j) continue;
 			float rr = distance(pos_atomo_j, atom_positions[atomo_k]);
-			float u = r_atomo_j - distance(point_position, atom_positions[atomo_k]); // revisar que se haga igual que abajo
+			float u = r_atomo_j - distance(point_position, atom_positions[atomo_k]);
 			u /= rr;
 
 			float x = rm_factor[types[atomo_j]] / rm_factor[types[atomo_k]];
@@ -106,49 +102,15 @@ __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, cons
 	tmp0 = atom_weight * integration_weight;
 	float result = (dens * tmp0) * energy_curr;
 
-#ifdef CICLO_INVERTIDO
-	if (!update_rmm) energy[big_index] = result;
-#else
-	energy[big_index] = result;
-#endif
-
+	// store either the resulting energy or the factor needed to update RMM later
 	if (update_rmm) {
-#ifndef CICLO_INVERTIDO
-		if (dens == 0.0f) {
-			tmp0 = 0.0f;
-			energy_curr = 0.0f;
-			y2a = 0.0f;
-			// y2b = 0.0f;
-		}
-		
-		float tmp1 = tmp0 * y2a;
-		
-		uint big_k = index_from4d(energySize + make_uint4(0, 0, 0, MAX_FUNCTIONS * MAX_FUNCTIONS), pos + make_uint4(0,0,0,0));
-		uint k = 0;
-		//if (tmp1 != 0.0f) {
-			for (uint i = 0; i < m; i++) {
-				float tmp2 = tmp1 * F[i];
-				
-				/*if (tmp2 == 0.0f) {
-					for (uint j = i; j < m; j++) {
-						rmm_output[k] = 0.0f;
-						k++;
-					}
-				}
-				else {*/
-					for (uint j = i; j < m; j++) {
-						// rmm_output[k] = F[j] * tmp2;
-						if (big_index == 996)
-						  _EMU(printf("rmm_out_calculo: %i %.12e %.12e %.12e %.12e %.12e %.12e %.12e %.12e\n", k, F[j], tmp2, tmp1, y2a, tmp0, P_atom_i / P_total, integration_weight, F[j] * tmp2));
-						rmm_output[big_k + k] = F[j] * tmp2;
-						k++;
-					}
-				//}
-			}
-		//}
-#else
 		output_factor[index_from3d(energySize, pos)] = tmp0 * y2a;
-#endif
+		//_EMU(printf("factor %i %.12e\n", index_from3d(energySize, pos), output_factor[index_from3d(energySize, pos)]));
  	}	
+	#ifndef _DEBUG
+	else
+	#endif
+		energy[big_index] = result;
+
   //_EMU(printf("idx: %i dens: %.12e e: %.12e r: %.12e\n", big_index,  dens, energy_curr, result));
 }

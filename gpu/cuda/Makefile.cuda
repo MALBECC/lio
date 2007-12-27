@@ -109,10 +109,10 @@ COMMONFLAGS = $(INCLUDES) -DUNIX
 
 # Debug/release configuration
 ifeq ($(dbg),1)
-	COMMONFLAGS += -g -D_DEBUG #-O3
-	NVCCFLAGS   += #-G --compiler-options -fno-strict-aliasing,-O3
-	CXXFLAGS  	+= #-fno-strict-aliasing
-	CFLAGS  		+= #-fno-strict-aliasing
+	COMMONFLAGS += -g -D_DEBUG
+	NVCCFLAGS   += 
+#	CXXFLAGS  	+= 
+#	CFLAGS  		+= 
 else 
 	COMMONFLAGS += -O3
 	NVCC_FLAGS  += --compiler-options -fno-strict-aliasing
@@ -179,9 +179,9 @@ endif
 CUDA_OBJ=$(CUDA_SOURCES:%.cu=%.cu_o)
 
 %.cu_o : %.cu $(CUDA_HEADERS)
-	$(NVCC) -o $@ -c $< $(NVCCFLAGS)
+	$(NVCC) $(NVCCFLAGS) -o $@ -c $<
 
 %.cubin: %.cu $(CUDA_HEADERS)
-	$(NVCC) -o $@ -cubin $< $(NVCCFLAGS)
+	$(NVCC) $(NVCCFLAGS) -o $@ -cubin $<
 
 

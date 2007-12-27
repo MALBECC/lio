@@ -164,13 +164,10 @@ c local density functionals, no gradients needed
      >                a,c,r,M,M18,NCO,RMM)
                dxi=DENS
                call pot(Iexch,dxi,yiex,yiec,y2a)
-c               write(*,*) 'bleh',na,n,iang,DENS
-               
-               if (Nang*((na-1)*60+n-1)+iang-1.eq.716) then
-                 do j=1,M
-                   write(*,*) 'F(',j,')=',F(j)
-                 enddo
-               endif               
+
+c               do j=1,M
+c                 write(958,*) 'func',Nang*((na-1)*60+n-1)+iang-1,F(j)
+c               enddo
             endif
         else
 c non local density functionals, gradients and 2nd derivatives needed
@@ -256,9 +253,9 @@ c        p5=1.5D0*p4-0.5D0*p4**3
          s=0.5D0*(1.D0-p3)
          P(nb)=P(nb)*s
          
-         if (Nang*((na-1)*60+n-1)+iang-1.eq.716) then
-         write(*,*) 'cosas',u,aij,s,p1,p2,p3
-         endif
+c         if (Nang*((na-1)*60+n-1)+iang-1.eq.716) then
+c         write(*,*) 'cosas',u,aij,s,p1,p2,p3
+c         endif
 c
 c
  121   continue
@@ -271,7 +268,7 @@ c
         tmp=tmp0*PF
 c
         Ex=Ex+dens*yi*tmp
-        write(*,*) 'double: ',Nang*((na-1)*60+n-1)+iang-1,P(na)
+c        write(*,*) 'double: ',Nang*((na-1)*60+n-1)+iang-1,P(na)
 c        write(*,*) 'double: ',Nang*((na-1)*60+n-1)+iang-1,dens,yi,tmp
         ss0=ss0+dens*tmp
 c
@@ -313,10 +310,8 @@ c
 
 c DEBUG DEBUG DEBUG
 
-      nb=Nang*((na-1)*60+n-1)+iang-1
-      if (nb.eq.996) then
-      write(957,*) 'indice',Nang*((na-1)*60+n-1)+iang-1
-      endif        
+c      nb=Nang*((na-1)*60+n-1)+iang-1
+c      write(957,*) 'factor',Nang*((na-1)*60+n-1)+iang-1,tmp*y2a
       
       tmpa=tmp*y2a
       kk=0
@@ -325,9 +320,9 @@ c
 c for the case in which basis function is 0
        if (F(j).eq.0.0D0) then
         kk=kk+M-j+1
-       if (nb.eq.996) then
-        write(957,*) 'rmm nuevo salteo',kk
-        endif
+c        if (nb.eq.996) then
+c        write(957,*) 'rmm nuevo salteo',kk
+c        endif
         goto 201
        endif
 c
@@ -340,7 +335,7 @@ c M5 pointer
 
       if (nb.eq.996) then
       tmpjb=RMM(M5+kk-1)+F(i)*tmpja
-      write(957,*) 'rmmn',kk-1,F(i)*tmpja,RMM(M5+kk-1),tmpjb
+c      write(957,*) 'rmmn',kk-1,F(i)*tmpja,RMM(M5+kk-1),tmpjb
       endif
       RMM(M5+kk-1)=RMM(M5+kk-1)+F(i)*tmpja
  202  continue

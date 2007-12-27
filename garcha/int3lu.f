@@ -425,7 +425,8 @@ c
        NCOa=NCO
        NCOb=NCO+Nunp
        write(*,*) 'exchnum int3lu'
-       write(957,*) 'int3lu'
+c       write(957,*) 'int3lu'
+       call timer_start
 #ifdef GPU
        call exchnum_gpu(NORM, natom, r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >    M18,M5,NCO,Exc,nopt,Iexch, igrid2, e_, e_2, e3, wang, wang2,
@@ -435,12 +436,14 @@ c
      >        M,M18,NCOa,NCOb,RMM,Ex)
       write(*,*) 'energia final',Ex
 
-      do kk=1,m
-        do jj=kk,m
-          write(*,*) 'rmm output',RMM(i)
-        enddo
-      enddo
+c      do kk=1,m
+c        do jj=kk,m
+c          write(*,*) 'rmm output',RMM(i)
+c        enddo
+c      enddo
 #endif
+      call timer_stop('exchfock')
+      
        Ndens=Ndens+1
        endif
 c

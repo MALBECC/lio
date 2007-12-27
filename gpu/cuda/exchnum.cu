@@ -54,9 +54,6 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 														 const double* fort_wang, const double* fort_wang2, const double* fort_wang3,
 														 const unsigned int& Ndens, const unsigned int& is_int3lu)
 {
-	Timer timer_exchnum;
-	timer_exchnum.start();
-	
 	printf("<======= exchnum_gpu (from %s) ============>\n", is_int3lu ? "int3lu" : "SCF");
 	printf("Ndens: %i\n", Ndens);
 	uint3 num_funcs = make_uint3(nshell[0], nshell[1], nshell[2]);
@@ -158,9 +155,7 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 	HostMatrixDouble rmm_partial_out(m * m);
 	rmm_partial_out.fill(0.0f);
 	
-	timer_exchnum.stop();
-	printf("TIMER: exchnum_gpu:"); timer_exchnum.print(); printf("\n");	
-		
+
 	HostMatrixFloat energy(1);
 	calc_energy(atom_positions, types, igrid, point_positions, energy, wang,
 							Ndens, nco, num_funcs_div, nuc, contractions, norm, factor_a, factor_c, rmm, &RMM[m5-1],
@@ -183,9 +178,6 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 								 const HostMatrixUInt& contractions, bool normalize, const HostMatrixFloat& factor_a, const HostMatrixFloat& factor_c,
 								 const HostMatrixFloat& rmm, double* cpu_rmm_output, bool update_rmm, const dim3& threads, const dim3& blockSize, const dim3& gridSize3d)
 {	
-	Timer timer_calc_energy;
-	timer_calc_energy.start();
-	
 	const CudaMatrixFloat3 gpu_atom_positions(atom_positions);
 	const CudaMatrixUInt gpu_types(types), gpu_nuc(nuc), gpu_contractions(contractions);
 	
@@ -360,10 +352,6 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	// 
 	cudaError_t error = cudaGetLastError();
 	if (error != cudaSuccess) fprintf(stderr, "=!=!=!=!=====> CUDA ERROR <=====!=!=!=!=: %s\n", cudaGetErrorString(error));
-		
-//	cudaThreadSynchronize();		
-	timer_calc_energy.stop();
-//	printf("TIMER: calc_energy:"); timer_calc_energy.print(); printf("\n");
 }
 
 

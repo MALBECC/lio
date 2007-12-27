@@ -22,7 +22,9 @@ namespace G2G {
 			bool operator<(const Timer& other) const;
 		
 			void print(void);
-	 
+		
+			static void sync(void);
+		
 		private:
 			timeval t0, t1, res;
 			bool started;

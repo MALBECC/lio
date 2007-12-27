@@ -8,6 +8,10 @@ CUDA_HEADERS=$(wildcard cuda/*.h)
 include cuda/Makefile.cuda
 include Makefile.common
 
+ifeq ($(time), 1)
+	CXXFLAGS += -DDO_TIMINGS
+endif
+
 all: libg2g.so dist_test accum_test #exchnum_test
 
 %_test: %_test.o libg2g.so

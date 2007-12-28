@@ -57,6 +57,8 @@ c    >             IDAMP,EXTR,SHFT,SHI,GOLD,told,write,Nunp
       common /coef2/ B
 c     common /index/ iii(ng),iid(ng)
       common /Nc/ Ndens
+      common /intg1/ e_(50,3),wang(50)
+      common /intg2/ e_2(116,3),wang2(116),Nr(0:54),e3(194,3),wang3(194)
 c
 c------------------------------------------------------------------
 c now 16 loops for all combinations, first 2 correspond to 
@@ -4843,10 +4845,9 @@ c
 
         write(*,*) 'exchnum int3'        
 #ifdef GPU
-
-        call exchnum_gpu(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
-     >  M18,NCO,Exc,nopt,Iexch, igrid2, e, e3, wang, wang3, Ndens)
-        
+       call exchnum_gpu(NORM, natom, r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
+     >    M18,M5,NCO,Ex,nopt,Iexch, igrid2, e_, e_2, e3, wang, wang2,
+     >    wang3,Ndens, 1)        
 #else
         
        call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,

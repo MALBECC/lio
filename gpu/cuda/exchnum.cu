@@ -39,8 +39,8 @@ __device__ void calc_function(const uint3& num_funcs, const uint* nuc, const uin
  */
 
 /** TODO: ----- ARREGLAR ESTO ---------- */
-#define FORTRAN_MAX_ATOMS 1845
-#define FORTRAN_NG 900
+#define FORTRAN_MAX_ATOMS 1860
+#define FORTRAN_NG 1200
 #define FORTRAN_NL 10
 
 /**
@@ -110,8 +110,8 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 	}
 	
 	HostMatrixFloat rmm;
-	assert(Iexch == 1);
 	printf("NCO: %i, M: %i, Iexch: %i\n", nco, total_funcs, Iexch);
+	assert(Iexch == 1);	
 	{
 		if (Ndens == 1) {
 			rmm.resize(m * m);

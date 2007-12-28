@@ -13,13 +13,15 @@ __global__ void calc_new_rmm(const float3* atom_positions, const uint* types, co
 
 #if 0
 	uint abs_idx = abs_idx3d.x * divUp(m, 2) + abs_idx3d.y;
-	uint rmm_idx = abs_idx;	
+	uint rmm_idx = abs_idx;
+
+	if (abs_idx > (m * (m + 1)) / 2) return;
 
 	uint i = (uint)floor((-((-(m + 1.0f) + 0.5f) + sqrtf(((m + 1.0f) - 0.5f) * ((m + 1) - 0.5f) - 2.0f * abs_idx))));
 	uint j = abs_idx - ((m + 1) * i - i * (i + 1) / 2);
-	_EMU(printf("rmm i: %i j: %i rmm_idx: %i\n", i, j, rmm_idx);
+	_EMU(printf("rmm i: %i j: %i rmm_idx: %i\n", i, j, rmm_idx));
 	
-	if (abs_idx > (m * (m + 1)) / 2) return;
+	if (i >= m || j >= m || i > j) return;
 	
 #else
 	uint i = abs_idx3d.x;
@@ -72,5 +74,5 @@ __global__ void calc_new_rmm(const float3* atom_positions, const uint* types, co
 
 	rmm_output[rmm_idx] = rmm_local;
 
-	_EMU(printf("rmm value(%i) %.12e\n", rmm_idx, rmm_output[rmm_idx]));		
+	_EMU(printf("rmm value(%i) %.12e\n", rmm_idx, rmm_output[rmm_idx]));
 }

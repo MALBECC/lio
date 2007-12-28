@@ -243,14 +243,10 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 				cudaError_t error = cudaGetLastError();
 				if (error != cudaSuccess) fprintf(stderr, "=!=!=!=!=====> CUDA ERROR <=====!=!=!=!=: %s\n", cudaGetErrorString(error));
 				
-				//cudaThreadSynchronize();
-				
 				calc_new_rmm<layers2, EXCHNUM_SMALL_GRID_SIZE><<<rmmGridSize, rmmBlockSize>>>(gpu_atom_positions.data, gpu_types.data, gpu_point_positions.data, gpu_wang.data,
 																																											gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
 																																											normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_rmm_output.data,
 																																											factor_output, gpu_functions.data);
-				//cudaThreadSynchronize();
-				
 			}
 
 			curr_cpu_layers = cpu_layers2;
@@ -266,13 +262,10 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 				cudaError_t error = cudaGetLastError();
 				if (error != cudaSuccess) fprintf(stderr, "=!=!=!=!=====> CUDA ERROR <=====!=!=!=!=: %s\n", cudaGetErrorString(error));
 
-				//cudaThreadSynchronize();
 				calc_new_rmm<layers, EXCHNUM_MEDIUM_GRID_SIZE><<<rmmGridSize, rmmBlockSize>>>(gpu_atom_positions.data, gpu_types.data, gpu_point_positions.data, gpu_wang.data,
 																																											 gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
 																																											 normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_rmm_output.data,
 																																											 factor_output, gpu_functions.data);
-				//cudaThreadSynchronize();
-				
 			}
 
 			curr_cpu_layers = cpu_layers;
@@ -288,13 +281,10 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 				cudaError_t error = cudaGetLastError();
 				if (error != cudaSuccess) fprintf(stderr, "=!=!=!=!=====> CUDA ERROR <=====!=!=!=!=: %s\n", cudaGetErrorString(error));
 				
-				//cudaThreadSynchronize();
 				calc_new_rmm<layers, EXCHNUM_BIG_GRID_SIZE><<<rmmGridSize, rmmBlockSize>>>(gpu_atom_positions.data, gpu_types.data, gpu_point_positions.data, gpu_wang.data,
 																																										gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
 																																										normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_rmm_output.data,
 																																										factor_output, gpu_functions.data);
-				//cudaThreadSynchronize();
-				
 			}
 			curr_cpu_layers = cpu_layers;
 		}
@@ -306,18 +296,10 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	#ifndef _DEBUG
 	if (!update_rmm)
 	#endif
-		energy = gpu_energy;
-	
-	HostMatrixFloat gpu_rmm_output_copy(gpu_rmm_output);
-	
-	//cudaThreadSynchronize();
-
-	double energy_double = 0.0;
-
-	#ifndef _DEBUG
-	if (!update_rmm)
-	#endif
 	{
+		double energy_double = 0.0;		
+		energy = gpu_energy;
+		
 		for (unsigned int i = 0; i < threads.x; i++) {
 			for (unsigned int j = 0; j < curr_cpu_layers[types.data[i]]; j++) {
 				for (unsigned int k = 0; k < threads.z; k++) {
@@ -333,8 +315,11 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 		}
 		printf("Energy (double): %.12e\n", energy_double);		
 	}
-	
+
+	/** RMM update **/
 	if (update_rmm) {
+		HostMatrixFloat gpu_rmm_output_copy(gpu_rmm_output);
+		
 		uint rmm_idx = 0;
 		for (uint func_i = 0; func_i < m; func_i++) {
 			for (uint func_j = func_i; func_j < m; func_j++) {

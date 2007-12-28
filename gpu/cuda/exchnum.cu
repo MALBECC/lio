@@ -70,7 +70,7 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 	}
 	
 	dim3 threads(natom, MAX_LAYERS, points);
-	dim3 blockSize(BLOCK_SIZE_X, BLOCK_SIZE_Y, BLOCK_SIZE_Z);
+	dim3 blockSize(4, 4, 8);
 	dim3 gridSize3d = divUp(threads, blockSize);	
 	
 	HostMatrixFloat3 atom_positions(natom), point_positions(points);
@@ -152,10 +152,6 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 		//printf("wang: %f, e: (%f,%f,%f)\n", wang.data[i], point_positions.data[i].x, point_positions.data[i].y, point_positions.data[i].z);
 	}
 	
-	HostMatrixDouble rmm_partial_out(m * m);
-	rmm_partial_out.fill(0.0f);
-	
-
 	HostMatrixFloat energy(1);
 	calc_energy(atom_positions, types, igrid, point_positions, energy, wang,
 							Ndens, nco, num_funcs_div, nuc, contractions, norm, factor_a, factor_c, rmm, &RMM[m5-1],
@@ -187,7 +183,7 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	uint m = num_funcs.x + num_funcs.y * 3 + num_funcs.z * 6;	
 	uint small_m = sum(num_funcs);
 	
-	CudaMatrixFloat gpu_energy/*(threads.x * threads.y * threads.z)*/, gpu_total_energy, gpu_wang(wang), gpu_factor_a(factor_a), gpu_factor_c(factor_c),
+	CudaMatrixFloat gpu_energy, gpu_total_energy, gpu_wang(wang), gpu_factor_a(factor_a), gpu_factor_c(factor_c),
 									gpu_rmm(rmm), gpu_functions(m *  threads.x * threads.y * threads.z);
 	CudaMatrixFloat3 gpu_point_positions(point_positions);
 	
@@ -197,7 +193,7 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	CudaMatrixFloat gpu_rmm_output;
 	if (update_rmm) {
 		// gpu_rmm_output.resize((m * (m + 1)) / 2);
-		gpu_rmm_output.resize(m * m);
+		gpu_rmm_output.resize(m * m); // TODO: ajustar
 		printf("creando espacio para rmm output: size: %i (%i bytes) data: %i\n", gpu_rmm_output.elements(), gpu_rmm_output.bytes(), (bool)gpu_rmm_output.data);
 	}
 	#ifndef _DEBUG

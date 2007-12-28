@@ -51,10 +51,7 @@ __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, cons
 	float y2a = 0.0f;
 	// float y2b = 0.0f; sin usar por ahora
 	
-	//float F[MAX_ATOMS * 15];
 	float* F = all_functions + big_index * m;
-	/*float F_local[2 * 15];
-	float* F = F_local;*/
 	
 	// float exc_curr, corr_current;
 	density_kernel(dens, num_funcs, nuc, contractions, point_position, atom_positions, normalize, factor_a, factor_c, rmm, nco, big_index, F, Ndens);

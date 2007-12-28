@@ -4849,9 +4849,11 @@ c
      >    M18,M5,NCO,Ex,nopt,Iexch, igrid2, e_, e_2, e3, wang, wang2,
      >    wang3,Ndens, 1)        
 #else
-        
-       call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
+
+      call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
      >  M,M18,NCOa,NCOb,RMM,Ex)
+
+      write(*,*) 'energia final',Ex
 #endif
        endif
 c

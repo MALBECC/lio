@@ -13,6 +13,9 @@
 //#define MAX_LAYERS2 60
 #define MAX_LAYERS 60
 
+#define RMM_BLOCK_SIZE_X 8
+#define RMM_BLOCK_SIZE_Y 16
+
 const uint cpu_layers[] = {
   30,30,35,35,35,35,35,35,35,35,
   40,40,40,40,40,40,40,40,

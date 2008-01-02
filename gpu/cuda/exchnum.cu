@@ -235,7 +235,7 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	dim3 rmmBlockSize(1);
 	dim3 rmmGridSize(m,m);*/
 	dim3 rmmThreads(m, m);
-	dim3 rmmBlockSize(8,16);
+	dim3 rmmBlockSize(RMM_BLOCK_SIZE_X, RMM_BLOCK_SIZE_Y);
 	dim3 rmmGridSize = divUp(rmmThreads, rmmBlockSize);
 	#endif
 	

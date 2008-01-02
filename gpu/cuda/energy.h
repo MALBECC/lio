@@ -78,7 +78,7 @@ __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, cons
 	
 	// float exc_curr, corr_current;
 	density_kernel(dens, num_funcs, nuc, contractions, point_position, atom_positions, normalize, factor_a, factor_c, rmm, nco, big_index, F, Ndens);
-	pot_kernel(dens, exc_curr, corr_curr, y2a,  big_index);
+	pot_kernel(dens, exc_curr, corr_curr, y2a, big_index);
 	
 	//printf("atomo: %i layer: %i punto: %i dens: %.12e\n", atom_i, layer_atom_i, point_atom_i, dens);
 	
@@ -117,10 +117,8 @@ __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, cons
 	
 	float atom_weight = (P_atom_i / P_total);
 	
-	// store result
 	float energy_curr = exc_curr + corr_curr;
 	tmp0 = atom_weight * integration_weight;
-	float result = (dens * tmp0) * energy_curr;
 
 	// store either the resulting energy or the factor needed to update RMM later
 	if (update_rmm) {
@@ -131,6 +129,7 @@ __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, cons
 	else
 	#endif
 	{
+		float result = (dens * tmp0) * energy_curr;		
 		energy[big_index] = result;
 		_EMU(printf("aca: %i %i %i %.12e %.12e %i\n", atom_i, layer_atom_i, point_atom_i, energy[big_index], result, big_index));
 	}

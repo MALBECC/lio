@@ -8,28 +8,51 @@ __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, cons
 		const uint* nuc, const uint* contractions, bool normalize, const float* factor_a, const float* factor_c,
 		const float* rmm, float* all_functions,  uint Ndens, float* output_factor, bool update_rmm)
 {
+	const uint& m = num_funcs.x + num_funcs.y * 3 + num_funcs.z * 6;				 
+	
 	dim3 energySize(atoms_n, MAX_LAYERS, grid_n);
+	
+	#ifdef ENERGY3D
 	dim3 pos = index(blockDim, dim3(blockIdx.x, blockIdx.y / gridSizeZ, blockIdx.y % gridSizeZ), threadIdx);
-	uint big_index = index_from3d(energySize, pos);
-	const uint& m = num_funcs.x + num_funcs.y * 3 + num_funcs.z * 6;	
+	const uint atom_i = pos.x;
+	if (atom_i >= atoms_n) return;
+	
+ 	const uint layer_atom_i = pos.y;
+	const uint point_atom_i = pos.z;
+	
+	if (point_atom_i >= grid_n) return;
+	
+	uint atom_i_type = types[atom_i];
+	uint atom_i_layers = curr_layers[atom_i_type];
 
-	const uint& atom_i = pos.x;	
- 	const uint& layer_atom_i = pos.y;
-	const uint& point_atom_i = pos.z;
+	if (layer_atom_i >= atom_i_layers) return;	
+	
+	#else
+	dim3 pos2d = index(blockDim, blockIdx, threadIdx);
+	
+	const uint atom_i = pos2d.x;
+	if (atom_i >= atoms_n) return;
+	
+	const uint point_atom_i = pos2d.y;
+	if (point_atom_i >= grid_n) return;	
+	
+	uint atom_i_type = types[atom_i];
+	uint atom_i_layers = curr_layers[atom_i_type];
+	_EMU(printf("atom %i type %i layers %i\n", atom_i, atom_i_type, atom_i_layers));
+	
+	for (uint layer_atom_i = 0; layer_atom_i < atom_i_layers; layer_atom_i++) {
+	dim3 pos = dim3(pos2d.x, layer_atom_i, pos2d.y);
+	#endif
+	
+	uint big_index = index_from3d(energySize, pos);
 	
 	// Hay varios lugares donde se podrian compartir entre threads, solo calculando una vez
 		
 	/* skip things that shouldn't be computed */
 	// CUIDADO al hacer __syncthreads despues de esto
-	if (atom_i >= atoms_n) return;
-	if (point_atom_i >= grid_n) return;
 	
 	// Datos por atomo
 	// printf("atomo: %i, punto: %i, layer: %i\n", atom_i, point_atom_i, layer_atom_i);
-	uint atom_i_type = types[atom_i];
-	uint atom_i_layers = curr_layers[atom_i_type];
-	
-	if (layer_atom_i >= atom_i_layers) return;	
 		
 	// Datos por capa
 	float rm = rm_factor[atom_i_type];
@@ -101,13 +124,20 @@ __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, cons
 
 	// store either the resulting energy or the factor needed to update RMM later
 	if (update_rmm) {
-		output_factor[index_from3d(energySize, pos)] = tmp0 * y2a;
+		output_factor[big_index] = tmp0 * y2a;
 		//_EMU(printf("factor %i %.12e\n", index_from3d(energySize, pos), output_factor[index_from3d(energySize, pos)]));
  	}	
 	#ifndef _DEBUG
 	else
 	#endif
+	{
 		energy[big_index] = result;
+		_EMU(printf("aca: %i %i %i %.12e %.12e %i\n", atom_i, layer_atom_i, point_atom_i, energy[big_index], result, big_index));
+	}
+		
+	#ifndef ENERGY3D
+	}
+	#endif
 
   //_EMU(printf("idx: %i dens: %.12e e: %.12e r: %.12e\n", big_index,  dens, energy_curr, result));
 }

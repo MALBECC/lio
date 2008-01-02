@@ -69,9 +69,15 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 		case 2: points = EXCHNUM_BIG_GRID_SIZE;			break;
 	}
 	
+	#ifdef ENERGY3D
 	dim3 threads(natom, MAX_LAYERS, points);
-	dim3 blockSize(4, 4, 8);
-	dim3 gridSize3d = divUp(threads, blockSize);	
+	dim3 blockSize(1, 8, 16);
+	dim3 gridSize3d = divUp(threads, blockSize);
+	#else
+	dim3 threads(natom, points);
+	dim3 blockSize(1, 128);
+	dim3 gridSize3d = divUp(threads, blockSize);
+	#endif
 	
 	HostMatrixFloat3 atom_positions(natom), point_positions(points);
 	/* output_rmm size: TODO: divUp(m * (m - 1),2) */
@@ -173,18 +179,26 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 								 uint Ndens, uint nco, uint3 num_funcs, const HostMatrixUInt& nuc,
 								 const HostMatrixUInt& contractions, bool normalize, const HostMatrixFloat& factor_a, const HostMatrixFloat& factor_c,
 								 const HostMatrixFloat& rmm, double* cpu_rmm_output, bool update_rmm, const dim3& threads, const dim3& blockSize, const dim3& gridSize3d)
-{	
+{
 	const CudaMatrixFloat3 gpu_atom_positions(atom_positions);
 	const CudaMatrixUInt gpu_types(types), gpu_nuc(nuc), gpu_contractions(contractions);
 	
+	#ifdef ENERGY3D
 	uint gridSizeZ = gridSize3d.z;
 	dim3 gridSize = dim3(gridSize3d.x, gridSize3d.y * gridSize3d.z, 1);
+	#else
+	uint gridSizeZ = 1;
+	dim3 gridSize = gridSize3d;
+	#endif
 	
 	uint m = num_funcs.x + num_funcs.y * 3 + num_funcs.z * 6;	
 	uint small_m = sum(num_funcs);
 	
+	uint natoms = atom_positions.width;
+	uint npoints = point_positions.width;
+	
 	CudaMatrixFloat gpu_energy, gpu_total_energy, gpu_wang(wang), gpu_factor_a(factor_a), gpu_factor_c(factor_c),
-									gpu_rmm(rmm), gpu_functions(m *  threads.x * threads.y * threads.z);
+									gpu_rmm(rmm), gpu_functions(m *  natoms * MAX_LAYERS * npoints);
 	CudaMatrixFloat3 gpu_point_positions(point_positions);
 	
 	printf("creando espacio para funcs output: size: %i (%i bytes) data: %i\n", gpu_functions.elements(), gpu_functions.bytes(), (bool)gpu_functions.data);	
@@ -199,7 +213,7 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	#ifndef _DEBUG
 	else
 	#endif
-		gpu_energy.resize(threads.x * threads.y * threads.z);
+		gpu_energy.resize(natoms * MAX_LAYERS * npoints);
 	
 	printf("threads: %i %i %i, blockSize: %i %i %i, gridSize: %i %i %i\n", threads.x, threads.y, threads.z, blockSize.x, blockSize.y, blockSize.z, gridSize.x, gridSize.y / gridSizeZ, gridSizeZ);
 	if (update_rmm) printf("GPU RMM SIZE: %i (%i bytes)\n", gpu_rmm_output.elements(), gpu_rmm_output.bytes());
@@ -209,7 +223,7 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	
 	float* factor_output = NULL;
 	
-	CudaMatrixFloat gpu_factor_output(threads.x * threads.y * threads.z);
+	CudaMatrixFloat gpu_factor_output(natoms * MAX_LAYERS * npoints);
 	factor_output = gpu_factor_output.data;
 
 	#if 0
@@ -296,10 +310,14 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 		double energy_double = 0.0;		
 		energy = gpu_energy;
 		
-		for (unsigned int i = 0; i < threads.x; i++) {
+		for (unsigned int i = 0; i < natoms; i++) {
 			for (unsigned int j = 0; j < curr_cpu_layers[types.data[i]]; j++) {
-				for (unsigned int k = 0; k < threads.z; k++) {
+				for (unsigned int k = 0; k < npoints; k++) {
+					#ifdef ENERGY3D
 					uint idx = index_from3d(threads, dim3(i, j, k));
+					#else
+					uint idx = index_from3d(dim3(threads.x, MAX_LAYERS, threads.y), dim3(i, j, k));
+					#endif
 					printf("idx: %i size: %i\n", idx, energy.elements());
 
 					double energy_curr = energy.data[idx];

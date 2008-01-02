@@ -69,32 +69,3 @@ __device__ void calc_function_d(const uint3& num_funcs, const uint* nuc, const u
 	}
 }
 
-#if 0
-__device__ void calc_function(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
-															const float3* atom_positions, const float* factor_a, const float* factor_c, uint big_func_index,
-															bool normalize, float& func_value)
-{
-	uint funcs_s = num_funcs.x;
-	uint funcs_p = num_funcs.y;
-	
-	uint funcs_sp = funcs_s + funcs_p * 3;
-
-	if (big_func_index < funcs_s) {
-		calc_function_s(num_funcs, nuc, contractions, point_position, atom_positions, factor_a, factor_c, big_func_index, &func_value);
-	}
-	else if (big_func_index < funcs_sp) {
-		uint func_index = (big_func_index - funcs_s) / 3;
-		float complete_func_value[3];
-		calc_function_p(num_funcs, nuc, contractions, point_position, atom_positions, factor_a, factor_c, func_index, complete_func_value);
-		func_value = complete_func_value[(big_func_index - funcs_s) % 3];
-	}
-	else {
-		float normalization_factor = (normalize ? rsqrtf(3.0f) : 1.0f);
-		uint func_index = (big_func_index - funcs_s - funcs_p * 3) / 6;
-		float complete_func_value[6];
-		calc_function_d(num_funcs, nuc, contractions, point_position, atom_positions, factor_a, factor_c, func_index,
-										normalization_factor, complete_func_value);
-		func_value = complete_func_value[(big_func_index - funcs_s - funcs_p * 3) % 6];
-	}
-}
-#endif

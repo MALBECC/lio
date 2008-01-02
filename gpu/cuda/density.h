@@ -7,8 +7,8 @@ __device__ void density_kernel(float& density, uint3 num_funcs, const uint* nuc,
 
 	const uint& funcs_s = num_funcs.x;
 	const uint& funcs_p = num_funcs.y;
-	uint funcs_total = sum(num_funcs);
-	const uint& m = num_funcs.x + num_funcs.y * 3 + num_funcs.z * 6;
+	const uint& funcs_d = num_funcs.z;
+	const uint& m = funcs_s + funcs_p * 3 + funcs_d * 6;
 	uint func_real = 0;
 
 	/* s functions */
@@ -22,13 +22,13 @@ __device__ void density_kernel(float& density, uint3 num_funcs, const uint* nuc,
 	/* d functions */
 	float normalization_factor = (normalize ? rsqrtf(3.0f) : 1.0f);
 	
-	for (uint func = (funcs_s + funcs_p); func < funcs_total; func++, func_real+=6)
+	for (uint func = (funcs_s + funcs_p); func < (funcs_s + funcs_p + funcs_d); func++, func_real+=6)
 		calc_function_d(num_funcs, nuc, contractions, point_position, atom_positions, factor_a, factor_c, func, normalization_factor, &F[func_real]);
 	
-	#ifdef _DEBUG
+	/*#ifdef _DEBUG
 	for (uint i = 0; i < m; i++)
 		_EMU(printf("func %i %.12e\n", big_index, F[i]));
-	#endif
+	#endif*/
 
 	/* density */
 	if (Ndens == 1) {

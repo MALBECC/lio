@@ -98,7 +98,7 @@ CWARN_FLAGS := $(CXXWARN_FLAGS) \
 	-Wmissing-declarations \
 	-Wnested-externs \
 	-Wmain \
-
+	
 # Compiler-specific flags
 NVCCFLAGS   := $(ARCHFLAGS) -shared --compiler-options -fPIC --compiler-options -Wall
 CXXFLAGS    := $(CXXWARN_FLAGS) -fPIC
@@ -119,6 +119,11 @@ else
 	CXXFLAGS  	+= -fno-strict-aliasing
 	CFLAGS  		+= -fno-strict-aliasing
 endif
+
+ifeq ($(energy3d), 1)
+	CXXFLAGS += -DENERGY3D
+	NVCCFLAGS +=  -DENERGY3D
+endif	
 
 # Lib/exe configuration
 LIB += #-lcutil$(LIBSUFFIX)

@@ -223,9 +223,9 @@ c
 c      else
 c
 #ifndef GPU     
-      do i=1,M
+c      do i=1,M
 c        write(*,*) 'F(',i-1,')=',F(i)
-      enddo
+c      enddo
 #endif
       
       do 153 jj=1,NCO

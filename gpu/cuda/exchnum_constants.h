@@ -16,6 +16,11 @@
 #define RMM_BLOCK_SIZE_X 8
 #define RMM_BLOCK_SIZE_Y 16
 
+#define ENERGY_BLOCK_SIZE_X 1 
+#define ENERGY_BLOCK_SIZE_Y 128
+
+#define ENERGY_SHARED_ATOM_POSITIONS 35
+
 const uint cpu_layers[] = {
   30,30,35,35,35,35,35,35,35,35,
   40,40,40,40,40,40,40,40,

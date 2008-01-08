@@ -70,12 +70,13 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 	}
 	
 	#ifdef ENERGY3D
+	#error "Block size, definir bien"
 	dim3 threads(natom, MAX_LAYERS, points);
 	dim3 blockSize(1, 8, 16);
 	dim3 gridSize3d = divUp(threads, blockSize);
 	#else
 	dim3 threads(natom, points);
-	dim3 blockSize(1, 128);
+	dim3 blockSize(ENERGY_BLOCK_SIZE_X, ENERGY_BLOCK_SIZE_Y);
 	dim3 gridSize3d = divUp(threads, blockSize);
 	#endif
 	

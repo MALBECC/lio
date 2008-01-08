@@ -48,6 +48,8 @@ __global__ void calc_new_rmm(const float3* atom_positions, const uint* types, co
 		for (uint layer_atom_i = 0; layer_atom_i < atom_i_layers; layer_atom_i++) {
 			for (uint point_atom_i = 0; point_atom_i < grid_n; point_atom_i++) {
 				uint factor_idx = index_from3d(energySize, dim3(atom_i, layer_atom_i, point_atom_i));
+				
+				__syncthreads();				 // por si el escritor se adelanta a los lectores				
 
 				/* cache into local memory */
 				if (threadIdx.x == 0 && threadIdx.y == 0) {
@@ -73,7 +75,6 @@ __global__ void calc_new_rmm(const float3* atom_positions, const uint* types, co
 											functions_i_local[threadIdx.x], functions_j_local[threadIdx.y],
 											factor_idx, threadIdx.x, threadIdx.y));					
 				}
-				__syncthreads();				 // por si el escritor se adelanta a los lectores
 				
 				/* compute */
 				if (valid_thread) { rmm_local += factor * Fi * Fj; }				

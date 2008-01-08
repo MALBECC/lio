@@ -9,7 +9,7 @@
  * Self interaction corrections are used in correlation part
  */
 	
-__device__ void pot_kernel(float dens, float& ex, float& ec, float& y2a, uint big_index)
+__device__ void local_pot_kernel(float dens, float& ex, float& ec, float& y2a, uint big_index)
 {
 	// data X alpha
 

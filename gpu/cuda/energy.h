@@ -19,9 +19,6 @@ __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, cons
 	dim3 energySize(atoms_n, MAX_LAYERS, grid_n);
 	dim3 pos2d = index(blockDim, blockIdx, threadIdx);
 	
-	__shared__ float rm_factor_shared[ENERGY_BLOCK_SIZE_X];
-	__shared__ uint atom_i_layers_shared[ENERGY_BLOCK_SIZE_X];
-	//__shared__ float3 atom_i_position_shared[ENERGY_BLOCK_SIZE_X];
 	__shared__ float3 atom_positions_shared[ENERGY_SHARED_ATOM_POSITIONS];
 	
 	const uint atom_i = pos2d.x;
@@ -31,10 +28,6 @@ __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, cons
 
 	// load shared data
 	if (threadIdx.y == 0) {
-		uint atom_i_type = types[atom_i];
-		rm_factor_shared[threadIdx.x] = rm_factor[atom_i_type];
-		atom_i_layers_shared[threadIdx.x] = curr_layers[atom_i_type];
-		//atom_i_position_shared[threadIdx.x] = atom_positions[atom_i];
 		for (uint i = 0; i < min(atoms_n, ENERGY_SHARED_ATOM_POSITIONS); i++) atom_positions_shared[i] = atom_positions[i];
 	}
 	
@@ -48,24 +41,29 @@ __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, cons
 	float wang_point_i = wang[point_atom_i];
 	
 	// fill local variables from shared data
-	uint atom_i_layers = 0;
-	float rm = 0.0f;
 	float3 atom_i_position = make_float3(0.0f,0.0f,0.0f);
 	
-	__syncthreads();
+	float rm = 0.0f;
+	uint atom_i_layers = 0;
+	float tmp0 = 0.0f;
+
 	if (valid_thread) {
-		atom_i_layers = atom_i_layers_shared[threadIdx.x];
-		rm = rm_factor_shared[threadIdx.x];
-		//atom_i_position = atom_i_position_shared[threadIdx.x];
-		atom_i_position = get_atom_position(atom_i, atom_positions_shared, atom_positions);
+		uint atom_i_type = types[atom_i];
+		rm = rm_factor[atom_i_type];
+		atom_i_layers = curr_layers[atom_i_type];
+		tmp0 = (PI / (atom_i_layers + 1.0f));
 	}
 	
+	__syncthreads();
+	
 	if (!valid_thread) return;
-
+	else {
+		atom_i_position = get_atom_position(atom_i, atom_positions_shared, atom_positions);
+	}	
+	
 	_EMU(printf("atom %i type %i layers %i\n", atom_i, atom_i_type, atom_i_layers));
 
-	float tmp0 = (PI / (atom_i_layers + 1.0f));
-	
+	// compute
 	for (uint layer_atom_i = 0; layer_atom_i < atom_i_layers; layer_atom_i++) {
 		dim3 pos = dim3(pos2d.x, layer_atom_i, pos2d.y);
 		uint big_index = index_from3d(energySize, pos);

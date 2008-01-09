@@ -45,7 +45,7 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 														 const double* fort_wang, const double* fort_wang2, const double* fort_wang3,
 														 const unsigned int& Ndens, const unsigned int& is_int3lu)
 {
-	printf("<======= exchnum_gpu (from %s) ============>\n", is_int3lu ? "int3/int3lu" : "SCF");
+	printf("<======= exchnum_gpu (from %s) ============>\n", is_int3lu ? "int3/int3lu/int3N" : "SCF");
 	printf("Ndens: %i\n", Ndens);
 	uint3 num_funcs = make_uint3(nshell[0], nshell[1], nshell[2]);
 	uint3 num_funcs_div = num_funcs / make_uint3(1, 3, 6);

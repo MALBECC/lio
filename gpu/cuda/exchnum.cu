@@ -45,7 +45,7 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 														 const double* fort_wang, const double* fort_wang2, const double* fort_wang3,
 														 const unsigned int& Ndens, const unsigned int& is_int3lu)
 {
-	printf("<======= exchnum_gpu (from %s) ============>\n", is_int3lu ? "int3lu" : "SCF");
+	printf("<======= exchnum_gpu (from %s) ============>\n", is_int3lu ? "int3/int3lu" : "SCF");
 	printf("Ndens: %i\n", Ndens);
 	uint3 num_funcs = make_uint3(nshell[0], nshell[1], nshell[2]);
 	uint3 num_funcs_div = num_funcs / make_uint3(1, 3, 6);
@@ -320,10 +320,10 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 			for (unsigned int j = 0; j < curr_cpu_layers[types.data[i]]; j++) {
 				for (unsigned int k = 0; k < npoints; k++) {
 					uint idx = index_from3d(dim3(threads.x, MAX_LAYERS, threads.y), dim3(i, j, k));
-					printf("idx: %i size: %i\n", idx, energy.elements());
+					//printf("idx: %i size: %i\n", idx, energy.elements());
 
 					double energy_curr = energy.data[idx];
-					printf("atomo: %i, capa: %i, punto: %i, valor: %.12e idx: %i\n", i, j, k, energy_curr, idx);
+					//printf("atomo: %i, capa: %i, punto: %i, valor: %.12e idx: %i\n", i, j, k, energy_curr, idx);
 					energy_double += energy_curr;
 					energy.data[0] += energy_curr;
 				}
@@ -339,7 +339,7 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 		uint rmm_idx = 0;
 		for (uint func_i = 0; func_i < m; func_i++) {
 			for (uint func_j = func_i; func_j < m; func_j++) {
-				printf("rmm_output(%i): %.12e\n", rmm_idx, gpu_rmm_output_copy.data[rmm_idx]);
+				//printf("rmm_output(%i): %.12e\n", rmm_idx, gpu_rmm_output_copy.data[rmm_idx]);
 				cpu_rmm_output[rmm_idx] += gpu_rmm_output_copy.data[rmm_idx];
 				rmm_idx++;
 			}

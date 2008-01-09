@@ -70,6 +70,15 @@ __device__ __constant__ float rm_factor[] = {
 	1.32280881444205, 1.32280881444205, 1.2377711049422
 };
 
+/* grid */
+__device__ __constant__ float3 small_grid_positions[EXCHNUM_SMALL_GRID_SIZE];
+__device__ __constant__ float3 medium_grid_positions[EXCHNUM_MEDIUM_GRID_SIZE];
+__device__ __constant__ float3 big_grid_positions[EXCHNUM_BIG_GRID_SIZE];
+
+__device__ __constant__ float small_wang[EXCHNUM_SMALL_GRID_SIZE];
+__device__ __constant__ float medium_wang[EXCHNUM_MEDIUM_GRID_SIZE];
+__device__ __constant__ float big_wang[EXCHNUM_BIG_GRID_SIZE];
+
 /* pot_kernel constants */
 __device__ __constant__ float pot_alpha = -0.738558766382022447;
 __device__ __constant__ float pot_gl = 0.620350490899400087;

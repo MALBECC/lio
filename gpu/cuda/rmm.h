@@ -2,9 +2,9 @@
 /*
  * Funcion llamada para cada (i,j) en RMM, para calcular RMM(i,j) -> un thread por cada punto
  */
-template <const uint* const curr_layers, uint grid_n>
+template <uint grid_n, const uint* const curr_layers>
 __global__ void calc_new_rmm(const float3* atom_positions, const uint* types, const float3* point_positions,
-														 const float* wang, const uint atoms_n, uint nco, uint3 num_funcs,
+														 const uint atoms_n, uint nco, uint3 num_funcs,
 														 const uint* nuc, const uint* contractions, bool normalize, const float* factor_a, const float* factor_c,
 														 const float* rmm, float* rmm_output, const float* factors, const float* all_functions)
 {

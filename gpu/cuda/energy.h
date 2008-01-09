@@ -8,12 +8,39 @@ __device__ float3 get_atom_position(uint atom_number, const float3* atom_positio
 }
 
 
-template <unsigned int grid_n, const uint* const curr_layers>
-__global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, const uint* types, const float3* point_positions,
-		float* energy, const float* wang, const uint atoms_n, uint nco, uint3 num_funcs,
+template <uint grid_type/*, unsigned int grid_n, const uint* const curr_layers*/>
+__global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, const uint* types,
+		float* energy, const uint atoms_n, uint nco, uint3 num_funcs,
 		const uint* nuc, const uint* contractions, bool normalize, const float* factor_a, const float* factor_c,
 		const float* rmm, float* all_functions,  uint Ndens, float* output_factor, bool update_rmm)
 {
+	/** TODO: estos ifs se hacen porque no puedo pasar estos punteros por parametro ni por template
+	 * (esto ultimo porque el compilador de NVIDIA muere) **/
+	uint grid_n = 0;
+	const uint* curr_layers = NULL;
+	const float3* point_positions = NULL;
+	const float* wang = NULL;
+	
+	if (grid_type == 0) {
+		grid_n = EXCHNUM_SMALL_GRID_SIZE;
+		curr_layers = layers2;
+		point_positions = small_grid_positions;
+		wang = small_wang;
+	}
+	else if (grid_type == 1) {
+		grid_n = EXCHNUM_MEDIUM_GRID_SIZE;
+		curr_layers = layers;
+		point_positions = medium_grid_positions;
+		wang = medium_wang;		
+	}
+	else if (grid_type == 2) {
+		grid_n = EXCHNUM_BIG_GRID_SIZE;
+		curr_layers = layers;
+		point_positions = big_grid_positions;
+		wang = big_wang;		
+	}
+	
+	
 	const uint& m = num_funcs.x + num_funcs.y * 3 + num_funcs.z * 6;				 
 	
 	dim3 energySize(atoms_n, MAX_LAYERS, grid_n);
@@ -36,10 +63,10 @@ __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, cons
 	if (atom_i >= atoms_n) valid_thread = false;
 	if (point_atom_i >= grid_n) valid_thread = false;
 	
-	// not loaded from shared, since ENERGY_BLOCK_SIZE_X is currently 1
-	float3 rel_point_position = point_positions[point_atom_i];
-	float wang_point_i = wang[point_atom_i];
-	
+	// not loaded from shared
+	float3 rel_point_position = point_positions[point_atom_i];	// constant memory
+	float wang_point_i = wang[point_atom_i]; // constant memory
+
 	// fill local variables from shared data
 	float3 atom_i_position = make_float3(0.0f,0.0f,0.0f);
 	
@@ -49,8 +76,8 @@ __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, cons
 
 	if (valid_thread) {
 		uint atom_i_type = types[atom_i];
-		rm = rm_factor[atom_i_type];
-		atom_i_layers = curr_layers[atom_i_type];
+		rm = rm_factor[atom_i_type]; // constant memory
+		atom_i_layers = curr_layers[atom_i_type];	// constant memory
 		tmp0 = (PI / (atom_i_layers + 1.0f));
 	}
 	
@@ -61,7 +88,7 @@ __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, cons
 		atom_i_position = get_atom_position(atom_i, atom_positions_shared, atom_positions);
 	}	
 	
-	_EMU(printf("atom %i type %i layers %i\n", atom_i, atom_i_type, atom_i_layers));
+	//_EMU(printf("atom %i type %i layers %i\n", atom_i, atom_i_type, atom_i_layers));
 
 	// compute
 	for (uint layer_atom_i = 0; layer_atom_i < atom_i_layers; layer_atom_i++) {
@@ -109,7 +136,6 @@ __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, cons
 		for (uint atomo_j = 0; atomo_j < atoms_n; atomo_j++) {
 			float P_curr = 1.0f;
 
-			//float3 pos_atomo_j = atom_positions[atomo_j];
 			float3 pos_atomo_j = get_atom_position(atomo_j, atom_positions_shared, atom_positions);
 			float r_atomo_j = distance(abs_point_position,pos_atomo_j);
 			float rm_atomo_j = rm_factor[types[atomo_j]];
@@ -157,5 +183,4 @@ __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, cons
 		}
 
 	}
-  //_EMU(printf("idx: %i dens: %.12e e: %.12e r: %.12e\n", big_index,  dens, energy_curr, result));
 }

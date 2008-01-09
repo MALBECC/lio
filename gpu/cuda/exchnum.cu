@@ -176,7 +176,7 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 	
 		
 	HostMatrixFloat energy(1);
-	calc_energy(atom_positions, types, igrid, points, energy, 
+	calc_energy(atom_positions, types, igrid, points, energy,
 							Ndens, nco, num_funcs_div, nuc, contractions, norm, factor_ac, rmm, &RMM[m5-1],
 							is_int3lu, threads, blockSize, gridSize3d);
 
@@ -215,8 +215,8 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	// optional update of RMM(M5)
 	CudaMatrixFloat gpu_rmm_output;
 	if (update_rmm) {
-		// gpu_rmm_output.resize((m * (m + 1)) / 2);
-		gpu_rmm_output.resize(m * m); // TODO: ajustar
+		gpu_rmm_output.resize((m * (m + 1)) / 2);
+		//gpu_rmm_output.resize(m * m); // TODO: ajustar
 		printf("creando espacio para rmm output: size: %i (%i bytes) data: %i\n", gpu_rmm_output.elements(), gpu_rmm_output.bytes(), (bool)gpu_rmm_output.data);
 	}
 	#ifndef _DEBUG
@@ -231,7 +231,7 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	const uint* curr_cpu_layers = NULL;
 	
 	float* factor_output = NULL;
-	
+
 	CudaMatrixFloat gpu_factor_output(natoms * MAX_LAYERS * npoints);
 	factor_output = gpu_factor_output.data;
 

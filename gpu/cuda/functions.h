@@ -3,7 +3,7 @@
 // ********* S ***********
 __device__ void calc_function_s(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
 																const float3* atom_positions, const float3* atom_positions_shared,
-																const float* factor_a, const float* factor_c, uint func_index, float* func_value)
+																const float2* factor_ac, uint func_index, float* func_value)
 {
 	uint atom_nuc = nuc[func_index];
 	float3 atom_nuc_position = get_atom_position(atom_nuc, atom_positions_shared, atom_positions);
@@ -13,9 +13,10 @@ __device__ void calc_function_s(const uint3& num_funcs, const uint* nuc, const u
 	*func_value = 0.0f;
 
 	for (uint contraction = 0; contraction < func_contractions; contraction++) {
-		float rexp = factor_a[func_index * MAX_CONTRACTIONS + contraction] * dist;
+		float2 curr_factor_ac = factor_ac[func_index * MAX_CONTRACTIONS + contraction];
+		float rexp = curr_factor_ac.x * dist;
 		if (rexp > 30.0f) continue;
-		*func_value += expf(-rexp) * factor_c[func_index * MAX_CONTRACTIONS + contraction];
+		*func_value += expf(-rexp) * curr_factor_ac.y;
 	}	
 }
 
@@ -23,7 +24,7 @@ __device__ void calc_function_s(const uint3& num_funcs, const uint* nuc, const u
 // ****** P *******
 __device__ void calc_function_p(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
 																const float3* atom_positions, const float3* atom_positions_shared,
-																const float* factor_a, const float* factor_c, uint func_index, float* func_value)
+																const float2* factor_ac, uint func_index, float* func_value)
 {
 	uint atom_nuc = nuc[func_index];
 	float3 atom_nuc_position = get_atom_position(atom_nuc, atom_positions_shared, atom_positions);
@@ -33,10 +34,11 @@ __device__ void calc_function_p(const uint3& num_funcs, const uint* nuc, const u
 	for (uint i = 0; i < 3; i++) func_value[i] = 0.0f;
 
 	for (uint contraction = 0; contraction < func_contractions; contraction++) {
-		float rexp = factor_a[func_index * MAX_CONTRACTIONS + contraction] * dist;
+		float2 curr_factor_ac = factor_ac[func_index * MAX_CONTRACTIONS + contraction];
+		float rexp = curr_factor_ac.x * dist;
 		if (rexp > 30.0f) continue;
 
-		float t = expf(-rexp) * factor_c[func_index * MAX_CONTRACTIONS + contraction];
+		float t = expf(-rexp) * curr_factor_ac.y;
 		float3 v = (point_position - atom_nuc_position) * t;
 		
 		for (uint i = 0; i < 3; i++) func_value[i] += elem(v,i);
@@ -46,7 +48,7 @@ __device__ void calc_function_p(const uint3& num_funcs, const uint* nuc, const u
 // ************** D **************
 __device__ void calc_function_d(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
 																const float3* atom_positions, const float3* atom_positions_shared,
-																const float* factor_a, const float* factor_c, uint func_index, float normalization_factor, float* func_value)
+																const float2* factor_ac, uint func_index, float normalization_factor, float* func_value)
 {
 	uint atom_nuc = nuc[func_index];
 	float3 atom_nuc_position = get_atom_position(atom_nuc, atom_positions_shared, atom_positions);	
@@ -56,10 +58,11 @@ __device__ void calc_function_d(const uint3& num_funcs, const uint* nuc, const u
 	for (uint i = 0; i < 6; i++) func_value[i] = 0.0f;
 
 	for (uint contraction = 0; contraction < func_contractions; contraction++) {
-		float rexp = factor_a[func_index * MAX_CONTRACTIONS + contraction] * dist;
+		float2 curr_factor_ac = factor_ac[func_index * MAX_CONTRACTIONS + contraction];
+		float rexp = curr_factor_ac.x * dist;
 		if (rexp > 30.0f) continue;
 
-		float t = expf(-rexp) * factor_c[func_index * MAX_CONTRACTIONS + contraction];
+		float t = expf(-rexp) * curr_factor_ac.y;
 
 		float3 v = point_position - atom_nuc_position;
 

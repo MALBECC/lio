@@ -11,7 +11,7 @@ __device__ float3 get_atom_position(uint atom_number, const float3* atom_positio
 template <uint grid_type/*, unsigned int grid_n, const uint* const curr_layers*/>
 __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, const uint* types,
 		float* energy, const uint atoms_n, uint nco, uint3 num_funcs,
-		const uint* nuc, const uint* contractions, bool normalize, const float* factor_a, const float* factor_c,
+		const uint* nuc, const uint* contractions, bool normalize, const float2* factor_ac, /*const float* factor_c,*/
 		const float* rmm, float* all_functions,  uint Ndens, float* output_factor, bool update_rmm)
 {
 	/** TODO: estos ifs se hacen porque no puedo pasar estos punteros por parametro ni por template
@@ -116,7 +116,7 @@ __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, cons
 
 		//if (Iexch < 3) {
 		local_density_kernel(dens, num_funcs, nuc, contractions, abs_point_position, atom_positions, atom_positions_shared,
-												 normalize, factor_a, factor_c, rmm, nco, big_index, F, Ndens);
+												 normalize, factor_ac/*, factor_c*/, rmm, nco, big_index, F, Ndens);
 		local_pot_kernel(dens, exc_curr, corr_curr, y2a, big_index);
 		/*}
 		 else {

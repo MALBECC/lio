@@ -74,7 +74,7 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 	HostMatrixFloat3 atom_positions(natom);
 	
 	/* output_rmm size: TODO: divUp(m * (m - 1),2) */
-	HostMatrixFloat factor_a(total_funcs, MAX_CONTRACTIONS), factor_c(total_funcs, MAX_CONTRACTIONS);
+	HostMatrixFloat2 factor_ac(total_funcs, MAX_CONTRACTIONS);
 	HostMatrixUInt types(natom), nuc(total_funcs_div), contractions(total_funcs_div);
 	
 	// REVISAR: nuc: imagen y dominio (especialmente por la parte de * 3 y * 6)
@@ -101,8 +101,7 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 			contractions.data[j] = ncont[i];
 			
 			for (unsigned int k = 0; k < ncont[i]; k++) {
-				factor_a.data[j * MAX_CONTRACTIONS + k] = a[FORTRAN_NG * k + i];
-				factor_c.data[j * MAX_CONTRACTIONS + k] = c[FORTRAN_NG * k + i];
+				factor_ac.data[j * MAX_CONTRACTIONS + k] = make_float2(a[FORTRAN_NG * k + i], c[FORTRAN_NG * k + i]);
 				//printf("cont: %i, a: %f, c: %f\n", k, factor_a.data[j * MAX_CONTRACTIONS + k], factor_c.data[j * MAX_CONTRACTIONS + k]);
 			}			
 		}
@@ -178,7 +177,7 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 		
 	HostMatrixFloat energy(1);
 	calc_energy(atom_positions, types, igrid, points, energy, 
-							Ndens, nco, num_funcs_div, nuc, contractions, norm, factor_a, factor_c, rmm, &RMM[m5-1],
+							Ndens, nco, num_funcs_div, nuc, contractions, norm, factor_ac, rmm, &RMM[m5-1],
 							is_int3lu, threads, blockSize, gridSize3d);
 
 	if (!is_int3lu) {
@@ -194,7 +193,7 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 
 void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& types, uint grid_type,
 								 uint npoints, HostMatrixFloat& energy, uint Ndens, uint nco, uint3 num_funcs, const HostMatrixUInt& nuc,
-								 const HostMatrixUInt& contractions, bool normalize, const HostMatrixFloat& factor_a, const HostMatrixFloat& factor_c,
+								 const HostMatrixUInt& contractions, bool normalize, const HostMatrixFloat2& factor_ac, 
 								 const HostMatrixFloat& rmm, double* cpu_rmm_output, bool update_rmm, const dim3& threads, const dim3& blockSize, const dim3& gridSize3d)
 {
 	const CudaMatrixFloat3 gpu_atom_positions(atom_positions);
@@ -208,8 +207,8 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	
 	uint natoms = atom_positions.width;
 		
-	CudaMatrixFloat gpu_energy, gpu_total_energy, gpu_factor_a(factor_a), gpu_factor_c(factor_c),
-									gpu_rmm(rmm), gpu_functions(m *  natoms * MAX_LAYERS * npoints);
+	CudaMatrixFloat gpu_energy, gpu_total_energy, gpu_rmm(rmm), gpu_functions(m *  natoms * MAX_LAYERS * npoints);
+	CudaMatrixFloat2 gpu_factor_ac(factor_ac);
 	
 	printf("creando espacio para funcs output: size: %i (%i bytes) data: %i\n", gpu_functions.elements(), gpu_functions.bytes(), (bool)gpu_functions.data);	
 
@@ -253,7 +252,7 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 		{
 			energy_kernel<0><<< gridSize, blockSize >>>(gridSizeZ, gpu_atom_positions.data, gpu_types.data, gpu_energy.data,
 																									gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
-																									normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_functions.data,
+																									normalize, gpu_factor_ac.data, gpu_rmm.data, gpu_functions.data,
 																									Ndens, factor_output, update_rmm);
 			
 			if (update_rmm) {				
@@ -262,7 +261,7 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 				
 				calc_new_rmm<EXCHNUM_SMALL_GRID_SIZE, layers2><<<rmmGridSize, rmmBlockSize>>>(gpu_atom_positions.data, gpu_types.data, NULL, 
 																																											gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
-																																											normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_rmm_output.data,
+																																											normalize, gpu_factor_ac.data, gpu_rmm.data, gpu_rmm_output.data,
 																																											factor_output, gpu_functions.data);
 			}
 
@@ -273,7 +272,7 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 		{
 			energy_kernel<1><<< gridSize, blockSize >>>(gridSizeZ, gpu_atom_positions.data, gpu_types.data, gpu_energy.data,
 																									gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
-																									normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_functions.data,
+																									normalize, gpu_factor_ac.data, gpu_rmm.data, gpu_functions.data,
 																									Ndens, factor_output, update_rmm);
 			if (update_rmm) {
 				cudaError_t error = cudaGetLastError();
@@ -281,7 +280,7 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 
 				calc_new_rmm<EXCHNUM_MEDIUM_GRID_SIZE, layers><<<rmmGridSize, rmmBlockSize>>>(gpu_atom_positions.data, gpu_types.data, NULL, 
 																																											gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
-																																											normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_rmm_output.data,
+																																											normalize, gpu_factor_ac.data, gpu_rmm.data, gpu_rmm_output.data,
 																																											factor_output, gpu_functions.data);
 			}
 
@@ -292,7 +291,7 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 		{
 			energy_kernel<2><<< gridSize, blockSize >>>(gridSizeZ, gpu_atom_positions.data, gpu_types.data, gpu_energy.data,
 																									gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
-																									normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_functions.data,
+																									normalize, gpu_factor_ac.data, gpu_rmm.data, gpu_functions.data,
 																									Ndens, factor_output, update_rmm);
 			if (update_rmm) {
 				cudaError_t error = cudaGetLastError();
@@ -300,7 +299,7 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 				
 				calc_new_rmm<EXCHNUM_BIG_GRID_SIZE, layers><<<rmmGridSize, rmmBlockSize>>>(gpu_atom_positions.data, gpu_types.data, NULL, 
 																																									 gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
-																																									 normalize, gpu_factor_a.data, gpu_factor_c.data, gpu_rmm.data, gpu_rmm_output.data,
+																																									 normalize, gpu_factor_ac.data, gpu_rmm.data, gpu_rmm_output.data,
 																																									 factor_output, gpu_functions.data);
 			}
 			curr_cpu_layers = cpu_layers;

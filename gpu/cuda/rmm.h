@@ -5,7 +5,7 @@
 template <uint grid_n, const uint* const curr_layers>
 __global__ void calc_new_rmm(const float3* atom_positions, const uint* types, const float3* point_positions,
 														 const uint atoms_n, uint nco, uint3 num_funcs,
-														 const uint* nuc, const uint* contractions, bool normalize, const float* factor_a, const float* factor_c,
+														 const uint* nuc, const uint* contractions, bool normalize, const float2* factor_ac,
 														 const float* rmm, float* rmm_output, const float* factors, const float* all_functions)
 {
 	const uint m = num_funcs.x + num_funcs.y * 3 + num_funcs.z * 6;

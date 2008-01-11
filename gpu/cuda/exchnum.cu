@@ -221,7 +221,6 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	CudaMatrixFloat gpu_rmm_output;
 	if (update_rmm) {
 		gpu_rmm_output.resize((m * (m + 1)) / 2);
-		//gpu_rmm_output.resize(m * m); // TODO: ajustar
 		printf("creando espacio para rmm output: size: %i (%i bytes) data: %i\n", gpu_rmm_output.elements(), gpu_rmm_output.bytes(), (bool)gpu_rmm_output.data);
 	}
 	#ifndef _DEBUG

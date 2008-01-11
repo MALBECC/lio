@@ -28,7 +28,7 @@ __global__ void calc_new_rmm(const float3* atom_positions, const uint* types, co
 	bool valid_thread = true;
 	if (i >= m || j >= m || i > j) valid_thread = false;	// quiero triangulo inferior solamente
 	
-	_EMU(printf("rmm i: %i j: %i rmm_idx: %i\n", i, j, rmm_idx));
+	//_EMU(printf("rmm i: %i j: %i rmm_idx: %i\n", i, j, rmm_idx));
 	
 	dim3 energySize(atoms_n, MAX_LAYERS, grid_n);
 	
@@ -43,7 +43,7 @@ __global__ void calc_new_rmm(const float3* atom_positions, const uint* types, co
 		uint atom_i_type = types[atom_i];
 		uint atom_i_layers = curr_layers[atom_i_type];
 
-		_EMU(printf("layers: %i\n", atom_i_layers));
+		//_EMU(printf("layers: %i\n", atom_i_layers));
 
 		for (uint layer_atom_i = 0; layer_atom_i < atom_i_layers; layer_atom_i++) {
 			for (uint point_atom_i = 0; point_atom_i < grid_n; point_atom_i++) {
@@ -54,7 +54,7 @@ __global__ void calc_new_rmm(const float3* atom_positions, const uint* types, co
 				/* cache into local memory */
 				if (threadIdx.x == 0 && threadIdx.y == 0) {
 					factor_local = factors[factor_idx];
-					_EMU(printf("load %.12e %.12e %i %i %i\n", factor_local, factors[factor_idx], factor_idx, threadIdx.x, threadIdx.y));
+					//_EMU(printf("load %.12e %.12e %i %i %i\n", factor_local, factors[factor_idx], factor_idx, threadIdx.x, threadIdx.y));
 				}
 				
 				if (threadIdx.y == 0) { functions_i_local[threadIdx.x] = all_functions[factor_idx * m + i]; }
@@ -70,10 +70,10 @@ __global__ void calc_new_rmm(const float3* atom_positions, const uint* types, co
 					Fi = functions_i_local[threadIdx.x];
 					Fj = (i == j ? Fi : functions_j_local[threadIdx.y]);
 					
-					_EMU(printf("read %.12e %.12e %i %i %i\n", factor, factors[factor_idx], factor_idx, threadIdx.x, threadIdx.y));
+					/*_EMU(printf("read %.12e %.12e %i %i %i\n", factor, factors[factor_idx], factor_idx, threadIdx.x, threadIdx.y));
 					_EMU(printf("read %.12e %.12e %.12e %.12e %i %i %i\n", all_functions[factor_idx * m + i], all_functions[factor_idx * m + j],
 											functions_i_local[threadIdx.x], functions_j_local[threadIdx.y],
-											factor_idx, threadIdx.x, threadIdx.y));					
+											factor_idx, threadIdx.x, threadIdx.y));*/
 				}
 				
 				/* compute */
@@ -84,6 +84,6 @@ __global__ void calc_new_rmm(const float3* atom_positions, const uint* types, co
 
 	if (valid_thread) {
 		rmm_output[rmm_idx] = rmm_local;
-		_EMU(printf("rmm value(%i) %.12e\n", rmm_idx, rmm_output[rmm_idx]));
+		//_EMU(printf("rmm value(%i) %.12e\n", rmm_idx, rmm_output[rmm_idx]));
 	}
 }

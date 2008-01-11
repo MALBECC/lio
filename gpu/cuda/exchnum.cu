@@ -176,14 +176,19 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 	
 		
 	HostMatrixFloat energy(1);
-	calc_energy(atom_positions, types, igrid, points, energy,
+	double energy_double;
+	calc_energy(atom_positions, types, igrid, points, energy, energy_double,
 							Ndens, nco, num_funcs_div, nuc, contractions, norm, factor_ac, rmm, &RMM[m5-1],
 							is_int3lu, threads, blockSize, gridSize3d);
 
-	if (!is_int3lu) {
+	#ifndef _DEBUG
+	if (!is_int3lu)
+	#endif
+	{
 		/* update fortran variables */
-		Exc = energy.data[0];
-		printf("Exc: %f\n", energy.data[0]);
+		//Exc = energy.data[0];
+		Exc = energy_double;
+		printf("Exc: %f\n", Exc);
 	}
 }
 
@@ -192,7 +197,7 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
  */
 
 void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& types, uint grid_type,
-								 uint npoints, HostMatrixFloat& energy, uint Ndens, uint nco, uint3 num_funcs, const HostMatrixUInt& nuc,
+								 uint npoints, HostMatrixFloat& energy, double& energy_double, uint Ndens, uint nco, uint3 num_funcs, const HostMatrixUInt& nuc,
 								 const HostMatrixUInt& contractions, bool normalize, const HostMatrixFloat2& factor_ac, 
 								 const HostMatrixFloat& rmm, double* cpu_rmm_output, bool update_rmm, const dim3& threads, const dim3& blockSize, const dim3& gridSize3d)
 {
@@ -313,7 +318,7 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 	if (!update_rmm)
 	#endif
 	{
-		double energy_double = 0.0;		
+		energy_double = 0.0;		
 		energy = gpu_energy;
 		
 		for (unsigned int i = 0; i < natoms; i++) {
@@ -329,7 +334,8 @@ void calc_energy(const HostMatrixFloat3& atom_positions, const HostMatrixUInt& t
 				}
 			}
 		}
-		printf("Energy (double): %.12e\n", energy_double);		
+		printf("Energy (double): %.12e\n", energy_double);
+		printf("Energy (single): %.12e\n", energy.data[0]);
 	}
 
 	/** RMM update **/

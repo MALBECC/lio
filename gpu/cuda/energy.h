@@ -179,7 +179,7 @@ __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, cons
 			float energy_curr = exc_curr + corr_curr;			
 			float result = (dens * combined_weight) * energy_curr;
 			energy[big_index] = result;
-			_EMU(printf("aca: %i %i %i %.12e %.12e %i\n", atom_i, layer_atom_i, point_atom_i, energy[big_index], result, big_index));
+			//_EMU(printf("aca: %i %i %i %.12e %.12e %i\n", atom_i, layer_atom_i, point_atom_i, energy[big_index], result, big_index));
 		}
 
 	}

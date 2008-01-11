@@ -425,11 +425,12 @@ c
        NCOa=NCO
        NCOb=NCO+Nunp
        write(*,*) 'exchnum int3lu'
+       write(*,*) 'Ndens',Ndens
 c       write(957,*) 'int3lu'
        call timer_start
 #ifdef GPU
        call exchnum_gpu(NORM, natom, r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
-     >    M18,M5,NCO,Ex,nopt,Iexch, igrid2, e_, e_2, e3, wang, wang2,
+     >    M18,M5,NCOa,Ex,nopt,Iexch, igrid2, e_, e_2, e3, wang, wang2,
      >    wang3,Ndens, 1)
 #else
        call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,

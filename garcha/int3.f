@@ -74,8 +74,7 @@ c
 c
 c------------------------------------------------------------------
 c # of calls
-      Ncall=Ncall+1
-      Ndens=1
+c      Ncall=Ncall+1
       ns=nshell(0)
       np=nshell(1)
       nd=nshell(2)
@@ -4844,10 +4843,11 @@ c
         NCOb=NCO+Nunp
 
         write(*,*) 'exchnum int3'
+        write(*,*) 'Ndens',Ndens,Ncall
        call timer_start        
 #ifdef GPU
        call exchnum_gpu(NORM, natom, r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
-     >    M18,M5,NCO,Ex,nopt,Iexch, igrid2, e_, e_2, e3, wang, wang2,
+     >    M18,M5,NCOa,Ex,nopt,Iexch, igrid2, e_, e_2, e3, wang, wang2,
      >    wang3,Ndens, 1)        
 #else
 
@@ -4857,11 +4857,12 @@ c
       write(*,*) 'energia final',Ex
 #endif
       call timer_stop('exchfock')      
-       endif
+c      Ndens=Ndens+1
+      endif
 c
 c
 c
       E2=Ea-Eb/2.D0+Ex
 c
-      return
+      return      
       end

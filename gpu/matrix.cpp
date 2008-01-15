@@ -25,29 +25,39 @@ template<class T> unsigned int Matrix<T>::elements(void) const {
 /*
  * HostMatrix
  */
+template<class T> void HostMatrix<T>::alloc_data(void) {
+	if (pinned) cudaMallocHost((void**)&this->data, this->bytes());
+	else this->data = new T[this->elements()];
+}
 
-template<class T> HostMatrix<T>::HostMatrix(void) : Matrix<T>() { }
+template<class T> void HostMatrix<T>::dealloc_data(void) {
+	if (pinned) cudaFreeHost(this->data);
+	else delete[] this->data;
+}
+
+template<class T> HostMatrix<T>::HostMatrix(bool _pinned) : Matrix<T>(), pinned(_pinned) { }
 
 /*HostMatrix::HostMatrix(const HostMatrix& c) : Matrix() {
 	*this = c;
 }*/
 
-template<class T> HostMatrix<T>::HostMatrix(unsigned int _width, unsigned _height) : Matrix<T>() {
+template<class T> HostMatrix<T>::HostMatrix(unsigned int _width, unsigned _height) : Matrix<T>(), pinned(false) {
 	resize(_width, _height);
 }
 
-template<class T> HostMatrix<T>::HostMatrix(const CudaMatrix<T>& c) : Matrix<T>() {
+template<class T> HostMatrix<T>::HostMatrix(const CudaMatrix<T>& c) : Matrix<T>(), pinned(false) {
 	*this = c;
 }
 
 template<class T> HostMatrix<T>::~HostMatrix(void) {
-	delete[] this->data;	
+	alloc_data();
 }
 
 template<class T> HostMatrix<T>& HostMatrix<T>::resize(unsigned int _width, unsigned _height) {
-	if (this->data) delete[] this->data;
-	this->width = _width; this->height = _height;
-	this->data = new T[this->elements()];
+	if (this->data) dealloc_data();
+	this->width = _width; this->height = _height;	
+	alloc_data();
+	
 	return *this;
 }
 
@@ -71,19 +81,19 @@ template<class T> HostMatrix<T>& HostMatrix<T>::fill(const T& value) {
 
 template <class T> HostMatrix<T>& HostMatrix<T>::operator=(const CudaMatrix<T>& c) {
 	if (!c.data) {
-		if (this->data) { delete[] this->data; this->width = this->height = 0; this->data = NULL; }
+		if (this->data) { dealloc_data(); this->width = this->height = 0; this->data = NULL; }
 	}
 	else {
 		if (this->data) {
 			if (this->bytes() != c.bytes()) {
-				delete[] this->data;
+				dealloc_data();
 				this->width = c.width; this->height = c.height;
-				this->data = new T[c.elements()];
+				alloc_data();
 			}			
 		}
 		else {
 			this->width = c.width; this->height = c.height;
-			this->data = new T[c.elements()];
+			alloc_data();
 		}
 
 		copy_submatrix(c);
@@ -104,12 +114,9 @@ template<class T> void HostMatrix<T>::copy_submatrix(const CudaMatrix<T>& c, uns
  * CudaMatrix
  */
 
-template<class T> CudaMatrix<T>::CudaMatrix(void) : Matrix<T>() {
-	assert(this->data == NULL);
-}
+template<class T> CudaMatrix<T>::CudaMatrix(void) : Matrix<T>() { }
 
 template<class T> CudaMatrix<T>::CudaMatrix(unsigned int _width, unsigned int _height) : Matrix<T>() {
-	assert(this->data == NULL);
 	resize(_width, _height);
 }
 
@@ -122,12 +129,10 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::resize(unsigned int _width, unsi
 }
 
 template<class T> CudaMatrix<T>::CudaMatrix(const CudaMatrix<T>& c) : Matrix<T>() {
-	assert(this->data == NULL);	
 	*this = c;
 }
 
 template<class T> CudaMatrix<T>::CudaMatrix(const HostMatrix<T>& c) : Matrix<T>() {
-	assert(this->data == NULL);	
 	*this = c;
 }
 

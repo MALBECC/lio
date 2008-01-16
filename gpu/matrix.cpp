@@ -35,6 +35,8 @@ template<class T> void HostMatrix<T>::dealloc_data(void) {
 	else delete[] this->data;
 }
 
+template<class T> HostMatrix<T>::HostMatrix(void) : Matrix<T>(), pinned(false) { }
+
 template<class T> HostMatrix<T>::HostMatrix(bool _pinned) : Matrix<T>(), pinned(_pinned) { }
 
 /*HostMatrix::HostMatrix(const HostMatrix& c) : Matrix() {
@@ -50,7 +52,7 @@ template<class T> HostMatrix<T>::HostMatrix(const CudaMatrix<T>& c) : Matrix<T>(
 }
 
 template<class T> HostMatrix<T>::~HostMatrix(void) {
-	alloc_data();
+	dealloc_data();
 }
 
 template<class T> HostMatrix<T>& HostMatrix<T>::resize(unsigned int _width, unsigned _height) {

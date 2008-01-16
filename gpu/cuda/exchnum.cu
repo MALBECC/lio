@@ -45,7 +45,7 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 														 const double* fort_wang, const double* fort_wang2, const double* fort_wang3,
 														 const unsigned int& Ndens, const unsigned int& update_rmm)
 {
-	printf("<======= exchnum_gpu (from %s) ============>\n", update_rmm ? "actualizacion rmm" : "resultado energias");
+	printf("<======= exchnum_gpu (from %s) ============>\n", update_rmm ? "actualizar rmm" : "calculo energia");
 	printf("Ndens: %i\n", Ndens);
 	uint3 num_funcs = make_uint3(nshell[0], nshell[1], nshell[2]);
 	uint3 num_funcs_div = num_funcs / make_uint3(1, 3, 6);
@@ -64,32 +64,31 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 	dim3 blockSize(ENERGY_BLOCK_SIZE_X, ENERGY_BLOCK_SIZE_Y);
 	dim3 gridSize3d = divUp(threads, blockSize);
 	
+	HostMatrixUInt types(natom, 1);
+	
+	/* output_rmm size: TODO: divUp(m * (m - 1),2) */
+	
+	// REVISAR: nuc: imagen y dominio (especialmente por la parte de * 3 y * 6)
+
 	CudaMatrixFloat3 gpu_atom_positions;
-	CudaMatrixUInt gpu_types;
 	printf("%i atoms\n", natom);
 	{
-		HostMatrixFloat3 atom_positions(natom);
-		HostMatrixUInt types(natom);
-		
+		HostMatrixFloat3 atom_positions(natom, 1);		
 		for (unsigned int i = 0; i < natom; i++) {
+			float3 bleh = make_float3(r[FORTRAN_MAX_ATOMS * 0 + i], r[i + FORTRAN_MAX_ATOMS * 1], r[i + FORTRAN_MAX_ATOMS * 2]);
+			//printf("Pos(%i): %f %f %f\n", i, bleh.x, bleh.y, bleh.z);
 			atom_positions.data[i] = make_float3(r[FORTRAN_MAX_ATOMS * 0 + i], r[i + FORTRAN_MAX_ATOMS * 1], r[i + FORTRAN_MAX_ATOMS * 2]);
-			//printf("Pos(%i): %f %f %f, Types(%i): %i\n", i, atom_positions.data[i].x, atom_positions.data[i].y, atom_positions.data[i].z, i, Iz[i]);
 			types.data[i] = Iz[i] - 1;
 		}
-		gpu_types = types;
 		gpu_atom_positions = atom_positions;
 	}
 	
-	CudaMatrixUInt gpu_nuc, gpu_contractions;
 	CudaMatrixFloat2 gpu_factor_ac;
+	CudaMatrixUInt gpu_nuc, gpu_contractions;
 	printf("ns: %i, np: %i, nd: %i, Total_Funcs: %i\n", num_funcs.x, num_funcs.y, num_funcs.z, total_funcs);
 	{
-		HostMatrixUInt nuc(true), contractions(true);		
-		nuc.resize(total_funcs_div);
-		contractions.resize(total_funcs_div);
-		
-		HostMatrixFloat2 factor_ac(true);		
-		factor_ac.resize(total_funcs, MAX_CONTRACTIONS);
+		HostMatrixFloat2 factor_ac(total_funcs, MAX_CONTRACTIONS);
+		HostMatrixUInt nuc(total_funcs_div, 1), contractions(total_funcs_div, 1);
 		
 		uint inc = 1;
 		uint i, j;
@@ -108,17 +107,16 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 				//printf("cont: %i, a: %f, c: %f\n", k, factor_a.data[j * MAX_CONTRACTIONS + k], factor_c.data[j * MAX_CONTRACTIONS + k]);
 			}			
 		}
-		
+		gpu_factor_ac = factor_ac;
 		gpu_nuc = nuc;
 		gpu_contractions = contractions;
-		gpu_factor_ac = factor_ac;
 	}
 	
 	CudaMatrixFloat gpu_rmm;
 	printf("NCO: %i, M: %i, Iexch: %i\n", nco, total_funcs, Iexch);
 	assert(Iexch == 1);	
 	{
-		HostMatrixFloat rmm(true);
+		HostMatrixFloat rmm;
 		
 		if (Ndens == 1) {
 			rmm.resize(m * m);
@@ -142,7 +140,6 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 				}
 			}
 		}
-		
 		gpu_rmm = rmm;
 	}
 
@@ -159,9 +156,9 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 			case 1: real_e = e2; real_wang = fort_wang2; 	break;
 			case 2: real_e = e3; real_wang = fort_wang3; 	break;
 		}
-
-		HostMatrixFloat wang(points);
-		HostMatrixFloat3 point_positions(points);
+		
+		HostMatrixFloat wang(points, 1);
+		HostMatrixFloat3 point_positions(points, 1);
 
 		for (unsigned int i = 0; i < points; i++) {
 			wang.data[i] = real_wang[i];
@@ -187,7 +184,7 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 	
 		
 	double energy_double;
-	calc_energy(gpu_atom_positions, gpu_types, igrid, points, energy_double,
+	calc_energy(gpu_atom_positions, types, igrid, points, energy_double,
 							Ndens, nco, num_funcs_div, gpu_nuc, gpu_contractions, norm, gpu_factor_ac, gpu_rmm, &RMM[m5-1],
 							update_rmm, threads, blockSize, gridSize3d);
 
@@ -206,11 +203,13 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
  * Host <-> CUDA Communication function
  */
 
-void calc_energy(const CudaMatrixFloat3& gpu_atom_positions, const CudaMatrixUInt& gpu_types, uint grid_type,
+void calc_energy(const CudaMatrixFloat3& gpu_atom_positions, const HostMatrixUInt& types, uint grid_type,
 								 uint npoints, double& energy_double, uint Ndens, uint nco, uint3 num_funcs, const CudaMatrixUInt& gpu_nuc,
-								 const CudaMatrixUInt& gpu_contractions, bool normalize, const CudaMatrixFloat2& gpu_factor_ac,
+								 const CudaMatrixUInt& gpu_contractions, bool normalize, const CudaMatrixFloat2& gpu_factor_ac, 
 								 const CudaMatrixFloat& gpu_rmm, double* cpu_rmm_output, bool update_rmm, const dim3& threads, const dim3& blockSize, const dim3& gridSize3d)
 {
+	const CudaMatrixUInt gpu_types(types);
+	
 	uint gridSizeZ = 1;
 	dim3 gridSize = gridSize3d;
 	
@@ -324,30 +323,25 @@ void calc_energy(const CudaMatrixFloat3& gpu_atom_positions, const CudaMatrixUIn
 	#endif
 	{
 		energy_double = 0.0;
-		HostMatrixFloat energy(true);
-		energy = gpu_energy;
+		HostMatrixFloat energy(gpu_energy);
 		
 		for (unsigned int i = 0; i < natoms; i++) {
-			for (unsigned int j = 0; j < curr_cpu_layers[gpu_types.data[i]]; j++) {
+			for (unsigned int j = 0; j < curr_cpu_layers[types.data[i]]; j++) {
 				for (unsigned int k = 0; k < npoints; k++) {
 					uint idx = index_from3d(dim3(threads.x, MAX_LAYERS, threads.y), dim3(i, j, k));
 					//printf("idx: %i size: %i\n", idx, energy.elements());
 
-					double energy_curr = energy.data[idx];
 					//printf("atomo: %i, capa: %i, punto: %i, valor: %.12e idx: %i\n", i, j, k, energy_curr, idx);
-					energy_double += energy_curr;
-					energy.data[0] += energy_curr;
+					energy_double += energy.data[idx];
 				}
 			}
 		}
 		printf("Energy (double): %.12e\n", energy_double);
-		printf("Energy (single): %.12e\n", energy.data[0]);
 	}
 
 	/** RMM update **/
 	if (update_rmm) {
-		HostMatrixFloat gpu_rmm_output_copy(true);
-		gpu_rmm_output_copy = gpu_rmm_output;
+		HostMatrixFloat gpu_rmm_output_copy(gpu_rmm_output);
 		
 		uint rmm_idx = 0;
 		for (uint func_i = 0; func_i < m; func_i++) {

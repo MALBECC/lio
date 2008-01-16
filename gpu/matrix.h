@@ -20,9 +20,9 @@ namespace G2G {
 	
 	template<class T> class HostMatrix : public Matrix<T> {
 		public:
-			HostMatrix(bool pinned = false);
+			HostMatrix(void);
+			HostMatrix(unsigned int width, unsigned int height);
 			HostMatrix(const CudaMatrix<T>& c);
-			HostMatrix(unsigned int width, unsigned int height = 1);
 			~HostMatrix(void);
 		
 			HostMatrix<T>& operator=(const CudaMatrix<T>& c);
@@ -34,6 +34,7 @@ namespace G2G {
 		
 		// TODO: implement these
 		private:
+			HostMatrix(bool pinned); // TODO: habilitar
 			HostMatrix(const HostMatrix<T>& c);
 			const HostMatrix& operator=(const HostMatrix<T>& c);
 			void copy_submatrix(const HostMatrix<T>& c, unsigned int elements = 0);

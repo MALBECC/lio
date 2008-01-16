@@ -35,7 +35,8 @@ __device__ void local_density_kernel(float& density, uint3 num_funcs, const uint
 		uint k = 0;
 		
 		for (uint i = 0; i < m; i++) {
-			if (F[i] == 0.0f) {
+			float Fi = F[i];
+			if (Fi == 0.0f) {
 				k += m - i;
 				continue;
 			}
@@ -46,7 +47,7 @@ __device__ void local_density_kernel(float& density, uint3 num_funcs, const uint
 				k++;				
 			}
 			
-			density += F[i] * w;
+			density += Fi * w;
 		}
 	}
 	else {
@@ -65,11 +66,11 @@ __device__ void local_density_kernel(float& density, uint3 num_funcs, const uint
 
 
 #if 0
-/*---------------------------------------------- Non-Local Density Functionals --------------------------------------------------------------*/
-__device__ void nonlocal_density_kernel(float& density, uint3 num_funcs, const uint* nuc, const uint* contractions, float3 point_position,
-																				const float3* atom_positions, bool normalize, const float* factor_a,
-																				const float* factor_c, const float* rmm, uint nco, uint big_index, float* F, uint Ndens,
-																				float Dx, float Dy, float Dz,float Dxx, float Dxy, float Dxz, float Dyy, float Dzz, float Dyz)
+/*---------------------------------------------- Density Functionals with Force Calculation --------------------------------------------------------------*/
+__device__ void density_deriv_kernel(float& density, uint3 num_funcs, const uint* nuc, const uint* nuc_inverse, const uint* contractions,
+																		 float3 point_position, const float3* atom_positions, bool normalize, const float* factor_a,
+																		 const float* factor_c, const float* rmm, uint nco, uint big_index, float4* F, uint Ndens,
+																		 float* forces)
 {
 	const uint& funcs_s = num_funcs.x;
 	const uint& funcs_p = num_funcs.y;
@@ -78,7 +79,6 @@ __device__ void nonlocal_density_kernel(float& density, uint3 num_funcs, const u
 	uint func_real = 0;
 	
 	density = 0.0f;
-	Dx = Dy = Dz = Dxx = Dxy = Dxz = Dyy = Dzz = Dyz = 0.0f;	
 
 	/* s functions */
 	for (uint func = 0; func < funcs_s; func++, func_real++)
@@ -98,25 +98,32 @@ __device__ void nonlocal_density_kernel(float& density, uint3 num_funcs, const u
 	for (uint i = 0; i < m; i++)
 		_EMU(printf("func %i %.12e\n", big_index, F[i]));
 	#endif*/
+		
 
+	// On each float4 of F: f.w is function value; F.x,F.y,F.z is the gradient
+		
 	/* density */
 	if (Ndens == 1) {
 		uint k = 0;
 		
 		for (uint i = 0; i < m; i++) {
-			if (F[i] == 0.0f) {
+			float4 Fi = F[i];
+			
+			if (Fi.w == 0.0f) {
 				k += m - i;
 				continue;
 			}
 			
-			float w = 0.0f;			
+			float w = 0.0f;
 			for (uint j = i; j < m; j++) {
-				w += rmm[k] * F[j];
+				w += rmm[k] * F[j].w;
 				k++;				
 			}
 			
-			density += F[i] * w;
+			density += Fi.w * w;						
 		}
+		
+		/* TODO: agregar lo que agrego abajo (para calcular fuerzas cuando Ndens == 1) */
 	}
 	else {
 		uint k = 0;

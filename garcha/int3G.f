@@ -149,11 +149,12 @@ c
 c
       if (.not.OPEN) then
 
-        write(*,*) 'exchnum GPU'
-#ifdef GPU
-        call exchnum_gpu(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
-     >  M18,NCO,Exc,nopt,Iexch, igrid2, e, e3, wang, wang3, Ndens)
-        
+        write(*,*) 'exchnum int3G'
+#ifdef _GPU
+#error Actualizar        
+       call exchnum_gpu(NORM, natom, r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
+     >    M18,M5,NCO,Ex,nopt,Iexch, igrid2, e_, e_2, e3, wang, wang2,
+     >    wang3,Ndens, 1)        
 #else
       
 

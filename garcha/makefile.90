@@ -19,13 +19,19 @@ OBJ =      int.o init.o drive.o SCF.o  func.o     \
 #           -ffast-math  -falign-functions=2
 
 COMPFLG  = -mp1 -ip -O3 -c $(CFLAGS)
-COMPFLG2 = -O     -c $(CFLAGS) 
+COMPFLG2 = -O3     -c $(CFLAGS) 
 #more or less general
 LINKFLG = -lm 
 CPPFLAGS =  -P -traditional-cpp
 DEFINE   = -Dpack
 LIBS= -L/usr/lib -lblas -L../gpu -lg2g #-L/opt/intel/mkl/9.0/lib/em64t -lmkl_lapack64 -lmkl_em64t -lguide
 GPU_CFLAGS=-DGPU
+
+ifeq ($(profile),1)
+	COMPFLG += -pg
+	COMPFLG2 += -pg	
+	LINKFLG += -pg
+endif
 
 all: garcha-gpu garcha-cpu
 

@@ -443,7 +443,7 @@ c          write(*,*) 'rmm output',RMM(i)
 c        enddo
 c      enddo
 #endif
-      call timer_stop('exchfock')
+      call timer_stop('exchfock')      
       
        Ndens=Ndens+1
        endif

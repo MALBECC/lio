@@ -37,6 +37,10 @@ ifeq ($(ultima_cpu),1)
 	GPU_CFLAGS += -DULTIMA_CPU
 endif
 
+ifeq ($(convergencia_cpu),1)
+	GPU_CFLAGS += -DINT3N_CPU
+endif
+
 ifeq ($(ultima_gpu),1)
 	COMPFLG += -DULTIMA_GPU
 	COMPFLG2 += -DULTIMA_GPU

@@ -706,12 +706,23 @@ c--------------------------------------------------------------
 /* -- G2G -- */
        write(*,*) 'exchnum SCF'
 #ifdef GPU
-       call exchnum_gpu(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
-     >              M18,M5,NCO,Exc,nopt,Iexch, igrid, e_, e_2, e3,
-     >              wang, wang2, wang3, Ndens, 0)
-#else
+#ifdef ULTIMA_CPU
        call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,NCO,Exc,nopt)
+#else
+      call exchnum_gpu(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
+     >              M18,M5,NCO,Exc,nopt,Iexch, igrid, e_, e_2, e3,
+     >              wang, wang2, wang3, Ndens, 0)
+#endif
+#else
+#ifdef ULTIMA_GPU
+      call exchnum_gpu(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
+     >              M18,M5,NCO,Exc,nopt,Iexch, igrid, e_, e_2, e3,
+     >              wang, wang2, wang3, Ndens, 0)
+#else      
+      call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
+     >              M18,NCO,Exc,nopt)
+#endif       
 #endif
        E=E+Exc-Ex
 c

@@ -431,19 +431,18 @@ c       write(957,*) 'int3lu'
 #ifdef GPU
        call exchnum_gpu(NORM, natom, r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >    M18,M5,NCOa,Ex,nopt,Iexch, igrid2, e_, e_2, e3, wang, wang2,
-     >    wang3,Ndens, 1)
+     >    wang3,Ndens, 0, 1)
 #else
        call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
      >        M,M18,NCOa,NCOb,RMM,Ex)
-      write(*,*) 'energia final',Ex
-
+       write(*,*) 'energia cpu',Ex       
 c      do kk=1,m
 c        do jj=kk,m
 c          write(*,*) 'rmm output',RMM(i)
 c        enddo
 c      enddo
 #endif
-      call timer_stop('exchfock')      
+       call timer_stop('exchfock')
       
        Ndens=Ndens+1
        endif

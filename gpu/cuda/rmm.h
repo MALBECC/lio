@@ -3,8 +3,7 @@
  * Funcion llamada para cada (i,j) en RMM, para calcular RMM(i,j) -> un thread por cada punto
  */
 template <uint grid_n, const uint* const curr_layers>
-__global__ void calc_new_rmm(const float3* atom_positions, const uint* types, const float3* point_positions,
-														 const uint atoms_n, uint nco, uint3 num_funcs,
+__global__ void calc_new_rmm(const float3* atom_positions, const uint* types, const uint atoms_n, uint nco, uint3 num_funcs,
 														 const uint* nuc, const uint* contractions, bool normalize, const float2* factor_ac,
 														 const float* rmm, float* rmm_output, const float* factors, const float* all_functions)
 {
@@ -34,6 +33,7 @@ __global__ void calc_new_rmm(const float3* atom_positions, const uint* types, co
 	
 	// calculate this rmm
 	float rmm_local = 0.0f;
+	//float3 force = make_float3(0.0f,0.0f,0.0f);
 	
 	__shared__ float factor_local;
 	__shared__ float functions_i_local[RMM_BLOCK_SIZE_X];
@@ -73,11 +73,11 @@ __global__ void calc_new_rmm(const float3* atom_positions, const uint* types, co
 					/*_EMU(printf("read %.12e %.12e %i %i %i\n", factor, factors[factor_idx], factor_idx, threadIdx.x, threadIdx.y));
 					_EMU(printf("read %.12e %.12e %.12e %.12e %i %i %i\n", all_functions[factor_idx * m + i], all_functions[factor_idx * m + j],
 											functions_i_local[threadIdx.x], functions_j_local[threadIdx.y],
-											factor_idx, threadIdx.x, threadIdx.y));*/
+											factor_idx, threadIdx.x, threadIdx.y));*/ 
+					//if (all_forces && j == 0 && i < atoms_n) force = force + dd[factor_idx * m + i] * factor_local;
+
+					rmm_local += factor * Fi * Fj; 					
 				}
-				
-				/* compute */
-				if (valid_thread) { rmm_local += factor * Fi * Fj; }				
 			}			
 		}
 	}
@@ -85,5 +85,7 @@ __global__ void calc_new_rmm(const float3* atom_positions, const uint* types, co
 	if (valid_thread) {
 		rmm_output[rmm_idx] = rmm_local;
 		//_EMU(printf("rmm value(%i) %.12e\n", rmm_idx, rmm_output[rmm_idx]));
+		
+		//if (all_forces && j == 0 && i < atoms_n) all_forces[i] = force;
 	}
 }

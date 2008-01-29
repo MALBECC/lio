@@ -9,13 +9,14 @@ __device__ float3 get_atom_position(uint atom_number, const float3* atom_positio
 
 
 template <uint grid_type/*, unsigned int grid_n, const uint* const curr_layers*/>
-__global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, const uint* types,
+__global__ void energy_kernel(const float3* atom_positions, const uint* types,
 		float* energy, const uint atoms_n, uint nco, uint3 num_funcs,
-		const uint* nuc, const uint* contractions, bool normalize, const float2* factor_ac, /*const float* factor_c,*/
-		const float* rmm, float* all_functions,  uint Ndens, float* output_factor, bool update_rmm)
+		const uint* nuc, const uint* contractions, bool normalize, const float2* factor_ac,
+		const float* rmm, float* all_functions,  uint Ndens, float* output_factor, float3* dd, float3* Fg,
+    bool compute_energy, bool update_rmm, bool compute_forces)
 {
 	/** TODO: estos ifs se hacen porque no puedo pasar estos punteros por parametro ni por template
-	 * (esto ultimo porque el compilador de NVIDIA muere) **/
+	 * (esto ultimo porque el compilador de NVIDIA muere =S ) **/
 	uint grid_n = 0;
 	const uint* curr_layers = NULL;
 	const float3* point_positions = NULL;
@@ -115,17 +116,18 @@ __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, cons
 
 
 		//if (Iexch < 3) {
-		local_density_kernel(dens, num_funcs, nuc, contractions, abs_point_position, atom_positions, atom_positions_shared,
-												 normalize, factor_ac/*, factor_c*/, rmm, nco, big_index, F, Ndens);
+		if (compute_forces) {
+			float3* this_dd = dd + big_index * atoms_n;
+			float3* this_Fg = Fg + big_index * m;
+			density_deriv_kernel(dens, num_funcs, nuc, contractions, abs_point_position, atom_positions, atom_positions_shared,
+													 normalize, factor_ac, rmm, nco, big_index, F, Ndens, this_dd, this_Fg, atoms_n);
+		}
+		else {
+			local_density_kernel(dens, num_funcs, nuc, contractions, abs_point_position, atom_positions, atom_positions_shared,
+													 normalize, factor_ac, rmm, nco, big_index, F, Ndens);
+		}
+		
 		local_pot_kernel(dens, exc_curr, corr_curr, y2a, big_index);
-		/*}
-		 else {
-		 float Dx,Dy,Dz,Dxx,Dxy,Dxz,Dyy,Dzz,Dyz;
-		 nonlocal_density_kernel(dens, num_funcs, nuc, contractions, abs_point_position, atom_positions, normalize, factor_a, factor_c, rmm, nco, big_index, F, Ndens,
-		 Dx,Dy,Dz,Dxx,Dxy,Dxz,Dyy,Dzz,Dyz);
-		 nonlocal_pot_kernel(dens, exc_curr, corr_curr, y2a, big_index,
-		 Dx,Dy,Dz,Dxx,Dxy,Dxz,Dyy,Dzz,Dyz);
-		 }*/
 
 		//printf("atomo: %i layer: %i punto: %i dens: %.12e\n", atom_i, layer_atom_i, point_atom_i, dens);
 
@@ -166,21 +168,19 @@ __global__ void energy_kernel(uint gridSizeZ, const float3* atom_positions, cons
 
 		float atom_weight = (P_atom_i / P_total);
 		float combined_weight = atom_weight * integration_weight;
-
+		
 		// store either the resulting energy or the factor needed to update RMM later
-		if (update_rmm) {
+		if (update_rmm || compute_forces) {
 			output_factor[big_index] = combined_weight * y2a;
 			//_EMU(printf("factor %i %.12e\n", index_from3d(energySize, pos), output_factor[index_from3d(energySize, pos)]));
 		}
-#ifndef _DEBUG
-		else
-#endif
+		
+		if (compute_energy)
 		{
 			float energy_curr = exc_curr + corr_curr;			
 			float result = (dens * combined_weight) * energy_curr;
 			energy[big_index] = result;
 			//_EMU(printf("aca: %i %i %i %.12e %.12e %i\n", atom_i, layer_atom_i, point_atom_i, energy[big_index], result, big_index));
 		}
-
 	}
 }

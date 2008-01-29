@@ -43,11 +43,11 @@ c
       ss0=0.0D0
 c
 *
-*      do na=1,natom 
-*       forza(na,1)=0.D0
-*       forza(na,2)=0.D0
-*       forza(na,3)=0.D0
-*      enddo
+c      do na=1,natom 
+c       forza(na,1)=0.D0
+c       forza(na,2)=0.D0
+c       forza(na,3)=0.D0
+c      enddo
 *
 c ------------------------------------------------
 c
@@ -203,19 +203,18 @@ c
  16   continue
  12   continue
 c-------------------------------------------------------
-*
-*       do 789 iina=1,natom
-*       write (*,*) 'Atomo numero ',iina
-*       write(*,900) iina,forza(iina,1), forza(iina,2),forza(iina,3)
-*       write(*,*) 'Valore di g ',Exc*ss0
-* 789   continue
-*
-*      write(*,*) 'Exchange Energy  ',excha 
-*      write(*,*) 'Correlation Energy  ',ecorr 
-*      write(*,*) 'Density  ',ss0
-*
+
+      do 789 iina=1,natom
+      write(*,*) 'fuerza',iina,forza(iina,1),forza(iina,2),forza(iina,3)
+c      write(*,*) 'Valor de g ',Exc*ss0
+ 789  continue
+c
+c      write(*,*) 'Exchange Energy  ',excha 
+c      write(*,*) 'Correlation Energy  ',ecorr 
+c      write(*,*) 'Density  ',ss0
+
       return
- 900  format ('forze per atomo ',I2,' valori ',3f25.18)
- 989  format (3f27.18)
+c 900  format ('fuerza por atomo ',I2,' valor ',3f25.18)
+c 989  format (3f27.18)
       END
 c-------------------------------------------------------------

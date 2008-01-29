@@ -14,6 +14,8 @@ namespace G2G {
 	
 			unsigned int bytes(void) const;
 			unsigned int elements(void) const;
+		
+			bool is_allocated(void) const;
 	};
 	
 	template<class T> class CudaMatrix;
@@ -21,6 +23,7 @@ namespace G2G {
 	template<class T> class HostMatrix : public Matrix<T> {
 		public:
 			HostMatrix(void);
+			HostMatrix(bool pinned); // TODO: habilitar		
 			HostMatrix(unsigned int width, unsigned int height);
 			HostMatrix(const CudaMatrix<T>& c);
 			~HostMatrix(void);
@@ -32,9 +35,11 @@ namespace G2G {
 			HostMatrix<T>& resize(unsigned int width, unsigned int height = 1);
 			HostMatrix<T>& fill(const T& value);
 		
+			void deallocate(void);
+		
 		// TODO: implement these
 		private:
-			HostMatrix(bool pinned); // TODO: habilitar
+
 			HostMatrix(const HostMatrix<T>& c);
 			const HostMatrix& operator=(const HostMatrix<T>& c);
 			void copy_submatrix(const HostMatrix<T>& c, unsigned int elements = 0);
@@ -59,6 +64,8 @@ namespace G2G {
 		
 			void copy_submatrix(const HostMatrix<T>& c, unsigned int elements = 0);
 			void copy_submatrix(const CudaMatrix<T>& c, unsigned int elements = 0);
+		
+			void deallocate(void);		
 	};
 	
 	typedef HostMatrix<double> HostMatrixDouble;

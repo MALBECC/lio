@@ -3,21 +3,24 @@
 
 #define PI 3.141592654f
 
-#define MAX_ATOMS 7 /* era 100 */
+#define MAX_ATOMS 35
 #define MAX_NCO 500
 #define MAX_CONTRACTIONS 20
-// #define MAX_FUNCTIONS (15 * MAX_ATOMS)
 
 // This should correspond to the maximum number in 'layers' and 'layers2'
 //#define MAX_LAYERS 50
 //#define MAX_LAYERS2 60
 #define MAX_LAYERS 60
 
+// TODO jugar bajando estos valores
 #define RMM_BLOCK_SIZE_X 8
 #define RMM_BLOCK_SIZE_Y 16
 
 #define ENERGY_BLOCK_SIZE_X 1 
-#define ENERGY_BLOCK_SIZE_Y 128
+//#define ENERGY_BLOCK_SIZE_Y 128 --> no andan con forces incluido
+#define ENERGY_BLOCK_SIZE_Y 64
+
+#define FORCE_BLOCK_SIZE 128
 
 #define ENERGY_SHARED_ATOM_POSITIONS 35
 

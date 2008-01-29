@@ -712,13 +712,13 @@ c--------------------------------------------------------------
 #else
       call exchnum_gpu(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,M5,NCO,Exc,nopt,Iexch, igrid, e_, e_2, e3,
-     >              wang, wang2, wang3, Ndens, 0)
+     >              wang, wang2, wang3, Ndens, 0, 0)
 #endif
 #else
 #ifdef ULTIMA_GPU
       call exchnum_gpu(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,M5,NCO,Exc,nopt,Iexch, igrid, e_, e_2, e3,
-     >              wang, wang2, wang3, Ndens, 0)
+     >              wang, wang2, wang3, Ndens, 0, 0)
 #else      
       call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,NCO,Exc,nopt)
@@ -847,7 +847,7 @@ c
 c
 
  500  format('SCF TIME ',I6,' sec')
- 450  format ('SCF ENERGY = ',F14.7)
+ 450  format ('SCF ENERGY = ',F19.12)
  400  format(4(E14.7E2,2x))
  300  format(I3,E14.6,2x,F14.7)
  600  format('  ENERGY CONTRIBUTIONS IN A.U.')

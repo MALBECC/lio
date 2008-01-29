@@ -22,17 +22,31 @@ template<class T> unsigned int Matrix<T>::elements(void) const {
 	return width * height /* * components */;
 }
 
+template<class T> bool Matrix<T>::is_allocated(void) const {
+	return data;
+}
+
 /*
  * HostMatrix
  */
 template<class T> void HostMatrix<T>::alloc_data(void) {
-	if (pinned) cudaMallocHost((void**)&this->data, this->bytes());
+	if (pinned) {
+		cudaError_t error_status = cudaMallocHost((void**)&this->data, this->bytes());
+		assert(error_status != cudaErrorMemoryAllocation);
+	}	
 	else this->data = new T[this->elements()];
+	
+	assert(this->data);
 }
 
 template<class T> void HostMatrix<T>::dealloc_data(void) {
 	if (pinned) cudaFreeHost(this->data);
 	else delete[] this->data;
+}
+
+template<class T> void HostMatrix<T>::deallocate(void) {
+	dealloc_data();
+	this->data = NULL;	
 }
 
 template<class T> HostMatrix<T>::HostMatrix(void) : Matrix<T>(), pinned(false) { }
@@ -52,7 +66,7 @@ template<class T> HostMatrix<T>::HostMatrix(const CudaMatrix<T>& c) : Matrix<T>(
 }
 
 template<class T> HostMatrix<T>::~HostMatrix(void) {
-	dealloc_data();
+	deallocate();
 }
 
 template<class T> HostMatrix<T>& HostMatrix<T>::resize(unsigned int _width, unsigned _height) {
@@ -142,6 +156,11 @@ template<class T> CudaMatrix<T>::~CudaMatrix(void) {
 	if (this->data) cudaFree(this->data);
 }
 
+template<class T> void CudaMatrix<T>::deallocate(void) {
+	if (this->data) cudaFree(this->data);	
+	this->data = NULL;
+}
+
 template<class T> void CudaMatrix<T>::copy_submatrix(const HostMatrix<T>& c, unsigned int _elements) {
 	unsigned int _bytes = (_elements == 0 ? this->bytes() : _elements * sizeof(T));
 	//cout << "bytes: " << _bytes << ", c.bytes: " << c.bytes() << endl;
@@ -165,12 +184,14 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const HostMatrix<T>& c
 			if (this->bytes() != c.bytes()) {
 				cudaFree(this->data);
 				this->width = c.width; this->height = c.height;
-				cudaMalloc((void**)&this->data, this->bytes());
+				cudaError_t error_status = cudaMalloc((void**)&this->data, this->bytes());
+				assert(error_status != cudaErrorMemoryAllocation);
 			}			
 		}
 		else {
 			this->width = c.width; this->height = c.height;
-			cudaMalloc((void**)&this->data, this->bytes());
+			cudaError_t error_status = cudaMalloc((void**)&this->data, this->bytes());
+			assert(error_status != cudaErrorMemoryAllocation);			
 		}
 		
 		copy_submatrix(c);
@@ -189,12 +210,14 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const CudaMatrix<T>& c
 			if (this->bytes() != c.bytes()) {
 				cudaFree(this->data);
 				this->width = c.width; this->height = c.height;
-				cudaMalloc((void**)&this->data, this->bytes());
+				cudaError_t error_status = cudaMalloc((void**)&this->data, this->bytes());
+				assert(error_status != cudaErrorMemoryAllocation);				
 			}
 		}
 		else {
 			this->width = c.width; this->height = c.height;
-			cudaMalloc((void**)&this->data, this->bytes());
+			cudaError_t error_status = cudaMalloc((void**)&this->data, this->bytes());
+			assert(error_status != cudaErrorMemoryAllocation);			
 		}
 		
 		cudaMemcpy(this->data, c.data, this->bytes(), cudaMemcpyDeviceToDevice);		

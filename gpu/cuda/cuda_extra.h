@@ -33,14 +33,17 @@ inline __device__ __host__ float2 Cscale(float2 a, float s)
 inline __device__ __host__ float2 operator -(const float2 a)
 { return make_float2(-a.x, -a.y); }
 
-inline __device__ __host__ float3 operator *(const float3 a, const float3 b)
+inline __device__ __host__ float3 operator *(const float3& a, const float3& b)
 { return make_float3(a.x*b.x, a.y*b.y, a.z*b.z); }
 
-inline __device__ __host__ float3 operator /(const float3 a, const float3 b)
+inline __device__ __host__ float3 operator /(const float3& a, const float3& b)
 { return make_float3(a.x/b.x, a.y/b.y, a.z/b.z); }
 
-inline __device__ __host__ float3 operator +(const float3 a, const float3 b)
+inline __device__ __host__ float3 operator +(const float3& a, const float3& b)
 { return make_float3(a.x+b.x, a.y+b.y, a.z+b.z); }
+
+inline __device__ __host__ float3 operator +(const float3& a, const float& b)
+{ return make_float3(a.x+b, a.y+b, a.z+b); }
 
 inline __device__ __host__ float3 operator -(const float3 a, const float3 b)
 { return make_float3(a.x-b.x, a.y-b.y, a.z-b.z); }
@@ -108,7 +111,17 @@ inline __device__ __host__ uint index_from4d(const uint4& size, const uint4& pos
 	return size.w * (size.z * (size.y * pos.x + pos.y) + pos.z) + pos.w;
 }
 
-inline __device__ __host__ float elem(const float3& a, uint i)
+inline __device__ __host__ const float& elem(const float3& a, uint i)
+{
+	switch(i) {
+		case 0: return a.x;
+		case 1: return a.y;
+		case 2: return a.z;
+		default: return a.x;
+	}
+}
+
+inline __device__ __host__ float& elem(float3& a, uint i)
 {
 	switch(i) {
 		case 0: return a.x;
@@ -124,8 +137,17 @@ inline __device__ __host__ float sum(const float3& a)
 inline __device__ __host__ uint sum(const uint3& a)
 { return (a.x + a.y + a.z); }
 
+inline __device__ __host__ float3& operator-=(float3& a, const float& b)
+{ a.x -= b; a.y -= b; a.z -= b; return a; }
+
+inline __device__ __host__ float3& operator-=(float3& a, const float3& b)
+{ a.x -= b.x; a.y -= b.y; a.z -= b.z; return a; }
+
 inline __device__ __host__ float3& operator+=(float3& a, const float3& b)
 { a.x += b.x; a.y += b.y; a.z += b.z; return a; }
+
+inline __device__ __host__ float3& operator+=(float3& a, const float& b)
+{ a.x += b; a.y += b; a.z += b; return a; }
 
 inline __device__ __host__ dim3 operator/(const dim3& a, const uint b)
 { return dim3(a.x / b, a.y / b, a.z / b); }
@@ -144,6 +166,14 @@ inline __device__ __host__ dim3 divUp(const dim3& a, const dim3& b)
 
 inline __device__ __host__ uint4 operator +(const dim3& a, const uint4& b)
 { return make_uint4(a.x + b.x, a.y + b.y, a.z + b.z, b.w); }
+
+inline void cudaAssertNoError(const char* msg = NULL) {
+	cudaError_t error = cudaGetLastError();
+	if (error != cudaSuccess) {
+		fprintf(stderr, "CUDA ERROR: %s (%s)\n", cudaGetErrorString(error), msg ? msg : "??");
+		abort();
+	}
+}
 
 #endif /* __CUTOOLS_H__ */
 

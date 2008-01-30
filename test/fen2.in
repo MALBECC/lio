@@ -145,7 +145,7 @@ gaussian
 endbasis
 &SCFINP 
  OPEN = F, 
- NMAX = 150, 
+ NMAX = 250,
  NCO = 54, 
  NUNP = 0, 
  ATRHO = F, 
@@ -156,12 +156,12 @@ endbasis
  SHI =  1., 
  IDAMP = 0, 
  GOLD =  20., 
- TOLD =  1.E-06, 
+ TOLD =  1.E-06,
  WRITE = T, 
  MEMO = F/
 &EXCH 
  IEXCH = 1, 
  INTEG = T, 
  DENS = T, 
- IGRID = 2, 
- IGRID2 = 1/
+ IGRID = 2,
+ IGRID2 = 2/

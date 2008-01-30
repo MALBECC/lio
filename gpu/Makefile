@@ -13,7 +13,7 @@ ifeq ($(time), 1)
 endif
 
 
-all: libg2g.so #dist_test accum_test exchnum_test
+all: libg2g.so #accum_test dist_test exchnum_test
 
 %_test: %_test.o libg2g.so
 	$(LINK) $(LDFLAGS) -o $@ $(OBJ) $(LIB) $@.o -lg2g -L.

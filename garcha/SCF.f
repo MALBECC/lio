@@ -11,7 +11,7 @@ c---------------------------------------------------
      >     nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write1)
 c
       implicit real*8 (a-h,o-z)
-      logical NORM,ATRHO,VCINP,DIRECT,EXTR,dens,write1
+      logical NORM,ATRHO,VCINP,DIRECT,EXTR,dens,write1,just_int3n
       logical OPEN,SVD,SHFT,GRAD,BSSE,integ,field,sol,free
       logical exter,MEMO
       INCLUDE 'param'
@@ -51,6 +51,7 @@ c
       common /intg2/ e_2(116,3),wang2(116),Nr(0:54),e3(194,3),wang3(194)
 c
       common /sol1/ Nsol,natsol,alpha,Em,Rm,pc,sol,free
+      just_int3n = false
 
 
 c------------------------------------------------------------------
@@ -433,7 +434,7 @@ c
      >               ncontd,nshelld,cd,ad,RMM,XX,E2,Ex,
      >     nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write1)
       else                            
-      if (good.gt.3.0D0*told) then
+      if ((.not.just_int3n).and.(good.gt.3.0D0*told)) then
 c
       call int3(NORM,natom,Iz,r,Nuc,M,ncont,nshell,c,a,
      >     Nucd,Md,ncontd,nshelld,cd,ad,RMM,XX,E2,Ex,
@@ -441,6 +442,7 @@ c
 c
 c------------------
       else
+      just_int3n = true
       call int3N(NORM,natom,Iz,r,Nuc,M,ncont,nshell,c,a,
      >     Nucd,Md,ncontd,nshelld,cd,ad,RMM,XX,E2,Ex,
      >     nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write1)

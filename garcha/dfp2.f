@@ -340,9 +340,9 @@ c
 27    CONTINUE
       PAUSE 'too many iterations in DFPMIN'
 c
- 450  format ('NORM OF GRADIENT ',F12.5)
- 480  format ('SCF ENERGY = ',F14.7)
- 500  format (I3,2x,3(F12.5,2x))
+ 450  format ('NORM OF GRADIENT ',F17.10)
+ 480  format ('SCF ENERGY = ',F17.10)
+ 500  format (I3,2x,3(F17.10,2x))
  501  format (3(F12.6,2x))
       RETURN
       END

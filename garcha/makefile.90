@@ -46,6 +46,8 @@ ifeq ($(ultima_gpu),1)
 	COMPFLG2 += -DULTIMA_GPU
 endif
 
+GPU_CFLAGS += -DCALCULO_ASYNC
+
 all: garcha-gpu garcha-cpu
 
 clean-cpu:

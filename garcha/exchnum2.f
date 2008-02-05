@@ -214,7 +214,7 @@ c      write(*,*) 'Correlation Energy  ',ecorr
 c      write(*,*) 'Density  ',ss0
 
       return
- 900  format ('fuerza ',I2,3f16.12)
+ 900  format ('fuerza ',I2,3(2x,f16.12))
 c 989  format (3f27.18)
       END
 c-------------------------------------------------------------

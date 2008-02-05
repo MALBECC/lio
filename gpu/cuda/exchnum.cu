@@ -238,7 +238,7 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 		printf("gpu_forces: %i (%i bytes) data: %i\n", gpu_forces.elements(), gpu_forces.bytes(), (bool)gpu_forces.data);
 		gpu_dd.resize(natoms * (natoms * MAX_LAYERS * npoints));
 		printf("gpu_dd: %i (%i bytes) data: %i\n", gpu_dd.elements(), gpu_dd.bytes(), (bool)gpu_dd.data);
-		gpu_Fg.resize(m * (natoms * MAX_LAYERS * npoints));
+		gpu_Fg.resize(m * (natoms * npoints));
 		printf("gpu_Fg: %i (%i bytes) data: %i\n", gpu_Fg.elements(), gpu_Fg.bytes(), (bool)gpu_Fg.data);		
 	}
 	
@@ -266,6 +266,7 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 		case 0:
 		{
 			printf("energy_kernel\n");
+
 			energy_kernel<0>
 				<<< energy_gridSize, energy_blockSize >>>(gpu_atom_positions.data, gpu_types.data, gpu_energy.data,
 																									gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
@@ -274,7 +275,7 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 			cudaAssertNoError("energy kernel");
 			
 			if (update_rmm) {				
-				printf("calc_new_rmm\n");				
+				printf("calc_new_rmm\n");
 				calc_new_rmm<EXCHNUM_SMALL_GRID_SIZE, layers2>
 					<<<rmm_gridSize, rmm_blockSize>>>(gpu_atom_positions.data, gpu_types.data,
 																						gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
@@ -298,17 +299,16 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 		break;
 		case 1:
 		{
-			printf("energy_kernel\n");			
+			printf("energy_kernel\n");
 			energy_kernel<1>
 				<<< energy_gridSize, energy_blockSize >>>(gpu_atom_positions.data, gpu_types.data, gpu_energy.data,
 																									gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
 																									normalize, gpu_factor_ac.data, gpu_rmm.data, gpu_functions.data,
 																									Ndens, gpu_factor_output.data, gpu_dd.data, gpu_Fg.data, compute_energy, update_rmm, compute_forces);
 			cudaAssertNoError("energy kernel");
-
 			
 			if (update_rmm) {
-				printf("calc_new_rmm\n");				
+				printf("calc_new_rmm\n");
 				calc_new_rmm<EXCHNUM_MEDIUM_GRID_SIZE, layers>
 					<<<rmm_gridSize, rmm_blockSize>>>(gpu_atom_positions.data, gpu_types.data,
 																						gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
@@ -332,22 +332,23 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 		break;
 		case 2:
 		{
-			printf("energy_kernel\n");			
+			printf("energy_kernel\n");
 			energy_kernel<2>
 				<<< energy_gridSize, energy_blockSize >>>(gpu_atom_positions.data, gpu_types.data, gpu_energy.data,
 																		gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
 																		normalize, gpu_factor_ac.data, gpu_rmm.data, gpu_functions.data,
 																		Ndens, gpu_factor_output.data, gpu_dd.data, gpu_Fg.data, compute_energy, update_rmm, compute_forces);
-			cudaAssertNoError("energy kernel");
+			cudaAssertNoError("energy kernel");			
 
 			if (update_rmm) {
-				printf("calc_new_rmm\n");				
+				printf("calc_new_rmm\n");
+				
 				calc_new_rmm<EXCHNUM_BIG_GRID_SIZE, layers>
 					<<<rmm_gridSize, rmm_blockSize>>>(gpu_atom_positions.data, gpu_types.data,
 																						gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
 																						normalize, gpu_factor_ac.data, gpu_rmm.data, gpu_rmm_output.data,
 																						gpu_factor_output.data, gpu_functions.data);
-				cudaAssertNoError("rmm kernel");
+				cudaAssertNoError("rmm kernel");				
 			}
 			
 			if (compute_forces) {
@@ -364,15 +365,16 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 		}
 		break;
 	}
-	
-
+		
 	/** Energy Accumulation */
 	if (compute_energy)
-	{
+	{		
+		printf("copia energias\n");
 		energy = 0.0;
 		HostMatrixFloat cpu_energy(true);
 		cpu_energy = gpu_energy;
 		
+		printf("acumulacion energias\n");
 		for (uint i = 0; i < natoms; i++) {
 			for (uint j = 0; j < curr_cpu_layers[types.data[i]]; j++) {
 				for (uint k = 0; k < npoints; k++) {
@@ -389,9 +391,12 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 
 	/** RMM update **/
 	if (update_rmm) {
+		
+		printf("copia rmm\n");
 		HostMatrixFloat gpu_rmm_output_copy(true);
 		gpu_rmm_output_copy = gpu_rmm_output;
-		
+
+		printf("acumulacion rmm\n");		
 		uint rmm_idx = 0;
 		for (uint func_i = 0; func_i < m; func_i++) {
 			for (uint func_j = func_i; func_j < m; func_j++) {
@@ -404,9 +409,11 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 	
 	/** Force update **/
 	if (compute_forces) {
+		printf("copia fuerzas\n");
 		HostMatrixFloat3 cpu_forces;
 		cpu_forces = gpu_forces;
 		
+		printf("acumulacion fuerzas\n");		
 		for (uint i = 0; i < natoms; i++) {
 			cpu_forces_output[0 * FORTRAN_MAX_ATOMS + i] += cpu_forces.data[i].x;
 			cpu_forces_output[1 * FORTRAN_MAX_ATOMS + i] += cpu_forces.data[i].y;
@@ -440,6 +447,7 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 		}		
 	}*/
 	
+	printf("fin gpu\n");	
 	cudaAssertNoError("final");
 }
 

@@ -118,7 +118,7 @@ __global__ void energy_kernel(const float3* atom_positions, const uint* types,
 		//if (Iexch < 3) {
 		if (compute_forces) {
 			float3* this_dd = dd + big_index * atoms_n;
-			float3* this_Fg = Fg + big_index * m;
+			float3* this_Fg = &Fg[index_from3d(dim3(atoms_n, grid_n, m), dim3(atom_i, point_atom_i, 0))];
 			density_deriv_kernel(dens, num_funcs, nuc, contractions, abs_point_position, atom_positions, atom_positions_shared,
 													 normalize, factor_ac, rmm, nco, big_index, F, Ndens, this_dd, this_Fg, atoms_n);
 		}

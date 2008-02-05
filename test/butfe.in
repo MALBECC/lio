@@ -189,7 +189,7 @@ endbasis
  SHI =  1., 
  IDAMP = 0, 
  GOLD =  20., 
- TOLD =  1.E-07, 
+ TOLD =  1.E-06,
  WRITE = T, 
  MEMO = F/
 &EXCH 

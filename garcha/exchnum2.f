@@ -205,7 +205,7 @@ c
 c-------------------------------------------------------
 
       do 789 iina=1,natom
-      write(*,*) 'fuerza',iina,forza(iina,1),forza(iina,2),forza(iina,3)
+      write(*,900) iina,forza(iina,1),forza(iina,2),forza(iina,3)
 c      write(*,*) 'Valor de g ',Exc*ss0
  789  continue
 c
@@ -214,7 +214,7 @@ c      write(*,*) 'Correlation Energy  ',ecorr
 c      write(*,*) 'Density  ',ss0
 
       return
-c 900  format ('fuerza por atomo ',I2,' valor ',3f25.18)
+ 900  format ('fuerza ',I2,3f16.12)
 c 989  format (3f27.18)
       END
 c-------------------------------------------------------------

@@ -418,7 +418,7 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 			cpu_forces_output[0 * FORTRAN_MAX_ATOMS + i] += cpu_forces.data[i].x;
 			cpu_forces_output[1 * FORTRAN_MAX_ATOMS + i] += cpu_forces.data[i].y;
 			cpu_forces_output[2 * FORTRAN_MAX_ATOMS + i] += cpu_forces.data[i].z;
-			printf("fuerza(%i)=%.12e %.12e %.12e\n", i, cpu_forces_output[0 * FORTRAN_MAX_ATOMS + i], cpu_forces_output[1 * FORTRAN_MAX_ATOMS + i],
+			printf("fuerza %i %.12e %.12e %.12e\n", i, cpu_forces_output[0 * FORTRAN_MAX_ATOMS + i], cpu_forces_output[1 * FORTRAN_MAX_ATOMS + i],
 						 cpu_forces_output[2 * FORTRAN_MAX_ATOMS + i]);
 			//printf("fuerza(%i)=%.12e %.12e %.12e (gpu)\n", i, cpu_forces.data[i].x, cpu_forces.data[i].y, cpu_forces.data[i].z);
 		}

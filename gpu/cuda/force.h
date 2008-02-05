@@ -15,6 +15,7 @@ __global__ void calc_forces(const float3* atom_positions, const uint* types, con
 	
 	dim3 energySize(atoms_n, MAX_LAYERS, grid_n);
 
+	float3 lost_numbers = make_float3(0.0f,0.0f,0.0f);	
 	float3 atom_force = make_float3(0.0f,0.0f,0.0f);
 	
 	__shared__ float factor_local;
@@ -37,7 +38,14 @@ __global__ void calc_forces(const float3* atom_positions, const uint* types, con
 			  /* fill local variables from local cache */
 				__syncthreads();	// por si los lectores se adelantan al escritor
 				
-				if (valid_thread) { atom_force = atom_force + (dds[factor_idx * atoms_n + atom_i] * 4.0f * factor_local); }
+				if (valid_thread) {
+					/*float3 temp_force = ((dds[factor_idx * atoms_n + atom_i] * 4.0f * factor_local) - lost_numbers);
+					float3 temp_force2 = atom_force + temp_force;
+					lost_numbers = (temp_force2 - atom_force) - temp_force;
+					atom_force = temp_force2;*/
+					
+					atom_force = atom_force + (dds[factor_idx * atoms_n + atom_i] * 4.0f * factor_local);
+				}
 			}			
 		}
 	}

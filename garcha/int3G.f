@@ -156,6 +156,7 @@ c
        call exchnum_gpu(NORM, natom, r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >    M18,M5,NCO,Exc,nopt,Iexch, igrid, e_, e_2, e3, wang, wang2,
      >    wang3,2, f, 2)
+       call gpu_copy_rmm(RMM, M5, M)
 #else
         call exchnum2(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,NCO,Exc,f)

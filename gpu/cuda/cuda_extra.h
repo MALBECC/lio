@@ -2,6 +2,7 @@
 #define __CUTOOLS_H__
 
 #include <cuda_runtime.h>
+#include <cuda.h>
 
 #ifdef _DEBUG
 #define MESSAGE(call) printf("[" #call "] @ %s %i\n", __FILE__, __LINE__);

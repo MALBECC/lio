@@ -37,6 +37,8 @@ HostMatrixUInt types;
 CudaMatrixUInt gpu_types;
 uint nco;
 
+bool cuda_init = false;
+
 /**
  * Parametros innecesarios: m (es sum(num_funcs))
  */
@@ -55,6 +57,13 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 		case 1: compute_energy = false; update_rmm = true; compute_forces = false; break;
 		case 2: compute_energy = true; update_rmm = false; compute_forces = true; break;		
 	}
+
+#ifdef _DEBUG	
+	if (!cuda_init) {
+		cuInit(0);
+		cuda_init = true;
+	}
+#endif	
 	
 	#ifdef _DEBUG
 	compute_energy = true;
@@ -261,6 +270,12 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 	dim3 force_blockSize(natoms < FORCE_BLOCK_SIZE ? natoms : FORCE_BLOCK_SIZE);
 	dim3 force_gridSize = divUp(force_threads, force_blockSize);
 	printf("force threads: %i %i, blockSize: %i %i, gridSize: %i %i\n", force_threads.x, force_threads.y, force_blockSize.x, force_blockSize.y, force_gridSize.x, force_gridSize.y);
+	
+#ifdef _DEBUG	
+	uint free_memory, total_memory;
+	cuMemGetInfo(&free_memory, &total_memory);
+	printf("Memoria libre: %i de %i => Memoria usada: %i\n", free_memory, total_memory, total_memory - free_memory);
+#endif	
 
 	switch(grid_type) {
 		case 0:

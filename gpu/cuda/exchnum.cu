@@ -37,8 +37,6 @@ HostMatrixUInt types;
 CudaMatrixUInt gpu_types;
 uint nco;
 
-CudaMatrixFloat gpu_rmm_output;
-
 bool cuda_init = false;
 
 /**
@@ -208,13 +206,13 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 		}
 	}
 			
-	calc_energy(igrid, points, Ndens, num_funcs_div, norm, Exc, fort_forces, compute_energy, update_rmm, compute_forces);
+	calc_energy(igrid, points, Ndens, num_funcs_div, norm, Exc, &RMM[m5-1], fort_forces, compute_energy, update_rmm, compute_forces);
 }
 
 /**
  * Host <-> CUDA Communication function
  */
-void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool normalize, double& energy, double* cpu_forces_output,
+void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool normalize, double& energy, double* cpu_rmm_output, double* cpu_forces_output,
 								 bool compute_energy, bool update_rmm, bool compute_forces)
 {
 	uint m = num_funcs.x + num_funcs.y * 3 + num_funcs.z * 6;	
@@ -226,6 +224,7 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 	CudaMatrixFloat gpu_energy, gpu_functions(m *  (natoms * MAX_LAYERS * npoints));
 	printf("gpu_functions: %i (%i bytes) data: %i\n", gpu_functions.elements(), gpu_functions.bytes(), (bool)gpu_functions.data);
 	
+	CudaMatrixFloat gpu_rmm_output;
 	if (update_rmm) {
 		gpu_rmm_output.resize((m * (m + 1)) / 2);
 		printf("gpu_rmm_output: %i (%i bytes) data: %i\n", gpu_rmm_output.elements(), gpu_rmm_output.bytes(), (bool)gpu_rmm_output.data);
@@ -404,6 +403,24 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 		}
 		printf("energia gpu: %.15e\n", energy);
 	}
+
+	/** RMM update **/
+	if (update_rmm) {
+		
+		printf("copia rmm\n");
+		HostMatrixFloat gpu_rmm_output_copy(true);
+		gpu_rmm_output_copy = gpu_rmm_output;
+
+		printf("acumulacion rmm\n");		
+		uint rmm_idx = 0;
+		for (uint func_i = 0; func_i < m; func_i++) {
+			for (uint func_j = func_i; func_j < m; func_j++) {
+				//printf("rmm_output(%i): %.12e\n", rmm_idx, gpu_rmm_output_copy.data[rmm_idx]);
+				cpu_rmm_output[rmm_idx] += gpu_rmm_output_copy.data[rmm_idx];
+				rmm_idx++;
+			}
+		}
+	}
 	
 	/** Force update **/
 	if (compute_forces) {
@@ -447,26 +464,6 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 	
 	printf("fin gpu\n");	
 	cudaAssertNoError("final");
-}
-
-extern "C" void gpu_copy_rmm_(double* fortran_rmm_output, const unsigned int& offset, const unsigned int& m) {
-	double* cpu_rmm_output = &fortran_rmm_output[offset - 1];
-		
-	printf("copia rmm\n");
-	HostMatrixFloat gpu_rmm_output_copy(true);
-	gpu_rmm_output_copy = gpu_rmm_output;
-
-	printf("acumulacion rmm\n");		
-	uint rmm_idx = 0;
-	for (uint func_i = 0; func_i < m; func_i++) {
-		for (uint func_j = func_i; func_j < m; func_j++) {
-			//printf("rmm_output(%i): %.12e\n", rmm_idx, gpu_rmm_output_copy.data[rmm_idx]);
-			cpu_rmm_output[rmm_idx] += gpu_rmm_output_copy.data[rmm_idx];
-			rmm_idx++;
-		}
-	}	
-	
-	gpu_rmm_output.deallocate();
 }
 
 

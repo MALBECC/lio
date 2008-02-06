@@ -109,20 +109,7 @@ c
       NCOa=NCO
       NCOb=NCO+Nunp
 
-#ifdef CALCULO_ASYNC      
-      if (integ) then
-        NCOa=NCO
-        NCOb=NCO+Nunp
-        write(*,*) 'int3N (calculo async)'
-        call timer_start
-        call timer_start
-        call exchnum_gpu(NORM, natom, r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
-     >    M18,M5,NCOa,Ex,nopt,Iexch, igrid2, e_, e_2, e3, wang, wang2,
-     >    wang3,Ndens, 0, 1)
-      endif
-#endif      
 
-      
 c end ------------------------------------------------
       if (NORM) then
       sq3=sqrt(3.D0)
@@ -2601,20 +2588,16 @@ c
         NCOa=NCO
         NCOb=NCO+Nunp
         write(*,*) 'int3N'
+      call timer_start        
 #ifdef GPU
 #ifdef INT3N_CPU
-       call timer_start        
        call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
      >               M,M18,NCOa,NCOb,RMM,Ex)
       write(*,*) 'energia fortran (double)',Ex
 #else
-#ifndef CALCULO_ASYNC
-      call timer_start
       call exchnum_gpu(NORM, natom, r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >    M18,M5,NCOa,Ex,nopt,Iexch, igrid2, e_, e_2, e3, wang, wang2,
      >    wang3,Ndens, 0, 1)
-#endif      
-      call gpu_copy_rmm(RMM, M5, M)
 #endif      
 #else
        call timer_start      

@@ -84,6 +84,7 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 	
 	// REVISAR: nuc: imagen y dominio (especialmente por la parte de * 3 y * 6)
 
+	assert(natom < MAX_ATOMS);
 	printf("%i atoms\n", natom);
 	//if (!gpu_atom_positions.is_allocated())
 	{
@@ -109,7 +110,7 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 		uint i, j;
 		for (i = 0, j = 0; i < total_funcs; i += inc, j++) {
 			if (i == num_funcs.x) inc = 3;
-			else if (i == num_funcs.x + num_funcs.y) inc = 6;
+			else if (i == (num_funcs.x + num_funcs.y)) inc = 6;
 
 			//printf("i: %i, j: %i\n", i, j);
 			//printf("Nuc(%i) = %i\n", i, Nuc[i] - 1);

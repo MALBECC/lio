@@ -85,10 +85,10 @@ inline __device__ __host__ const float4& min(const float4 &a, const float4 &b)
 inline __device__ __host__ const float4& max(const float4 &a, const float4 &b) 
 { return (a.x > b.x)? a: b; }
 
-inline __device__ __host__ float3 operator*(const float3& a, const float b)
+inline __device__ __host__ float3 operator*(const float3& a, float b)
 { return make_float3(a.x * b, a.y * b, a.z * b); }
 
-inline __device__ __host__ float1 operator*(const float1 &a, const float b)
+inline __device__ __host__ float1 operator*(const float1 &a, float b)
 { return make_float1(a.x * b); }
 
 inline __device__ __host__ float distance2(const float3& a, const float3& b)

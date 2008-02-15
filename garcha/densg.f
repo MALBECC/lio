@@ -81,7 +81,7 @@ c
       Fg(i,2)=Fg(i,1)*ty
       Fg(i,3)=Fg(i,1)*tz
       Fg(i,1)=Fg(i,1)*tx
-c      write(*,*) 'Fg',Fg(i,1),Fg(i,2),Fg(i,3)
+c      write(123,*) 'Fg',Fg(i,1),Fg(i,2),Fg(i,3)
   10  continue
 c
 c--- p  case -------------
@@ -173,6 +173,7 @@ c
 c
       F(ii)=F(ii)+term
       term=term*a(i,ni)
+      
       Fg(ii,1)=Fg(ii,1)+tx*term
       Fg(ii,2)=Fg(ii,2)+ty*term
       Fg(ii,3)=Fg(ii,3)+tz*term
@@ -300,25 +301,27 @@ c
           W(j)=W(j)+tmp*F(i)
           Wx(Nuc(i),j)=Wx(Nuc(i),j)+tmp*Fg(i,1)
           Wy(Nuc(i),j)=Wy(Nuc(i),j)+tmp*Fg(i,2)
-          Wz(Nuc(i),j)=Wz(Nuc(i),j)+tmp*Fg(i,3) 
+          Wz(Nuc(i),j)=Wz(Nuc(i),j)+tmp*Fg(i,3)
  52     continue
 c
         do 61 k=1,natom
-         tx = 0.0
-         ty = 0.0
-         tz = 0.0
+c         tx = 0.0
+c         ty = 0.0
+c         tz = 0.0
          do 60 j=1,NCO
            Dx(k)=Dx(k) + W(j)*Wx(k,j)
            Dy(k)=Dy(k) + W(j)*Wy(k,j)
            Dz(k)=Dz(k) + W(j)*Wz(k,j)
-           tx = tx + W(j)*Wx(k,j)
-           ty = ty + W(j)*Wy(k,j)
-           tz = tz + W(j)*Wz(k,j)
+c           tx = tx + W(j)*Wx(k,j)
+c           ty = ty + W(j)*Wy(k,j)
+c           tz = tz + W(j)*Wz(k,j)
  60      continue
         Dx(k)=4.D0*Dx(k)
         Dy(k)=4.D0*Dy(k)
         Dz(k)=4.D0*Dz(k)
-c        write(*,*) 'dd',k,tx,ty,tz
+c        write(123,'("dd",I,D,D,D)') k,tx,ty,tz
  61   continue
       return
       end
+
+

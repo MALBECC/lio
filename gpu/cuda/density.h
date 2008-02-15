@@ -64,8 +64,6 @@ __device__ void density_deriv_kernel(float& density, uint3 num_funcs, const uint
 	
 	density = 0.0f;
 	
-	//float3 Fg[MAX_ATOMS * 15];
-
 	/* s functions */
 	for (uint func = 0; func < funcs_s; func++, func_real++)
 		calc_function_s(num_funcs, nuc, contractions, point_position, atom_positions, atom_positions_shared, factor_ac, func, &F[func_real], &Fg[func_real]);
@@ -86,30 +84,33 @@ __device__ void density_deriv_kernel(float& density, uint3 num_funcs, const uint
 	
 
 	// density (Ndens is never 1 here)
+	uint k = 0; 
 	for (uint i = 0; i < nco; i++) {
 		float w = 0.0f;
 		float3 w3[MAX_ATOMS];
 		for (uint atom_i = 0; atom_i < atoms_n; atom_i++) { w3[atom_i] = make_float3(0.0f,0.0f,0.0f); }
 														
 		func_real = 0;
-		uint k = i * m;
-		for (uint func = 0; func < funcs_s; func++, func_real++) {
+		for (uint func = 0; func < funcs_s; func++, func_real++, k++) {
+			float this_rmm = rmm[k];
 			uint atom_nuc = nuc[func];
-			w3[atom_nuc] = w3[atom_nuc] + Fg[func_real] * rmm[k + func_real];
-			w += rmm[k + func_real] * F[func_real];
+			w += this_rmm * F[func_real];			
+			w3[atom_nuc] = w3[atom_nuc] + Fg[func_real] * this_rmm;
 		}		
 		for (uint func = funcs_s; func < funcs_s + funcs_p; func++) {
 			uint atom_nuc = nuc[func];
-			for (uint subfunc = 0; subfunc < 3; subfunc++, func_real++) {
-				w3[atom_nuc] = w3[atom_nuc] + Fg[func_real] * rmm[k + func_real];
-				w += rmm[k + func_real] * F[func_real];				
+			for (uint subfunc = 0; subfunc < 3; subfunc++, func_real++, k++) {
+				float this_rmm = rmm[k];
+				w += this_rmm * F[func_real];				
+				w3[atom_nuc] = w3[atom_nuc] + Fg[func_real] * this_rmm;
 			}
 		}		
 		for (uint func = (funcs_s + funcs_p); func < (funcs_s + funcs_p + funcs_d); func++) {
 			uint atom_nuc = nuc[func];
-			for (uint subfunc = 0; subfunc < 6; subfunc++, func_real++) {
-				w3[atom_nuc] = w3[atom_nuc] + Fg[func_real] * rmm[k + func_real];
-				w += rmm[k + func_real] * F[func_real];
+			for (uint subfunc = 0; subfunc < 6; subfunc++, func_real++, k++) {
+				float this_rmm = rmm[k];
+				w += this_rmm * F[func_real];				
+				w3[atom_nuc] = w3[atom_nuc] + Fg[func_real] * this_rmm;
 			}
 		}
 		// TODO: ver si el ciclo se puede hacer por cada atomo

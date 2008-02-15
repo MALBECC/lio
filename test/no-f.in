@@ -94,7 +94,7 @@ endbasis
  GOLD =  5., 
  TOLD =  5.E-07, 
  WRITE = F, 
- MEMO = T/
+ MEMO = F/
 &EXCH 
  IEXCH = 1, 
  INTEG = T, 

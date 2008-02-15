@@ -1,6 +1,8 @@
 #ifndef __G2G_MATRIX_H__
 #define __G2G_MATRIX_H__
 
+#include "cuda/double.h"
+
 namespace G2G {
 	template<class T> class Matrix {
 		public:
@@ -69,6 +71,7 @@ namespace G2G {
 	};
 	
 	typedef HostMatrix<double> HostMatrixDouble;
+	typedef HostMatrix<double3> HostMatrixDouble3;
 	typedef HostMatrix<float> HostMatrixFloat;
 	typedef HostMatrix<float1> HostMatrixFloat1;
 	typedef HostMatrix<float2> HostMatrixFloat2;

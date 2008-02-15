@@ -1,7 +1,7 @@
 #include <iostream>
 #include <stdexcept>
-#include <cuda_runtime.h>
 #include <cassert>
+#include <cuda_runtime.h>
 #include "matrix.h"
 using namespace G2G;
 using namespace std;
@@ -229,6 +229,7 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const CudaMatrix<T>& c
 /**
  * Instantiations
  */
+template class Matrix<double3>;
 template class Matrix<double>;
 template class Matrix<float>;
 template class Matrix<float1>;
@@ -238,6 +239,7 @@ template class Matrix<float4>;
 template class Matrix<uint1>;
 template class Matrix<uint>;
 
+template class HostMatrix<double3>;
 template class HostMatrix<double>;
 template class HostMatrix<float>;
 template class HostMatrix<float1>;

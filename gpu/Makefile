@@ -19,7 +19,7 @@ all: libg2g.so #accum_test dist_test exchnum_test
 	$(LINK) $(LDFLAGS) -o $@ $(OBJ) $(LIB) $@.o -lg2g -L.
 
 # $(CUDA_HEADERS)
-libg2g.so: $(OBJ) $(CUDA_OBJ) 
+libg2g.so: $(CUDA_OBJ) $(OBJ) 
 	$(MAKE) -C cuda
 	$(LINK) -shared $(LDFLAGS) $(EXTRA_FLAGS) -o libg2g.so $(OBJ) $(CUDA_OBJ) $(LIB)
 

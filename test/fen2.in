@@ -144,8 +144,8 @@ gaussian
       1.0000000    1.000000
 endbasis
 &SCFINP 
- OPEN = F, 
- NMAX = 250,
+ OPEN = F,
+ NMAX = 400,
  NCO = 54, 
  NUNP = 0, 
  ATRHO = F, 
@@ -164,4 +164,4 @@ endbasis
  INTEG = T, 
  DENS = T, 
  IGRID = 2,
- IGRID2 = 2/
+ IGRID2 = 1/

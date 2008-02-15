@@ -16,6 +16,8 @@
 #define _EMU(code)
 #endif
 
+#include "double.h"
+
 inline __device__ __host__ float dot(const float4 a, const float4 b)
 { return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w; }
 
@@ -33,6 +35,18 @@ inline __device__ __host__ float2 Cscale(float2 a, float s)
 
 inline __device__ __host__ float2 operator -(const float2 a)
 { return make_float2(-a.x, -a.y); }
+
+inline __host__ double3 operator+(const double3& a, const double3& b) {
+	double3 ret;
+	ret.x = a.x + b.x; ret.y = a.y + b.y; ret.z = a.z + b.z;
+	return ret;
+}
+
+inline __host__ double3 operator+(const double3& a, const float3& b) {
+	double3 ret;
+	ret.x = a.x + b.x; ret.y = a.y + b.y; ret.z = a.z + b.z;
+	return ret;
+}
 
 inline __device__ __host__ float3 operator *(const float3& a, const float3& b)
 { return make_float3(a.x*b.x, a.y*b.y, a.z*b.z); }
@@ -71,7 +85,7 @@ inline __device__ __host__ uint reference(const uint3 i, const uint3 g)
 { return i.x + i.y * g.x + i.z * g.x * g.y; }
 
 inline __device__ __host__ uint len2(const float3 a)
-{ return a.x*a.x + a.y*a.y + a.z*a.z; }
+{ return (uint)a.x * (uint)a.x + (uint)a.y * (uint)a.y + (uint)a.z * (uint)a.z; }
 
 inline __device__ __host__ void swap(float4 &a, float4 &b)
 { float4 tmp = a; a = b; b = tmp; }

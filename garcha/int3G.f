@@ -160,7 +160,11 @@ c
         call exchnum2(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,NCO,Exc,f)
 #endif
-      
+
+c DEBUG DEBUG
+      do k=1,natom
+        write(*,'("fuerza",I,D,D,D)') k,f(k,1),f(k,2),f(k,3)
+      enddo      
 c
        else
 c

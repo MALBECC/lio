@@ -101,7 +101,7 @@ c later 110, etc
 c
       do 15 i=1,npoint
 c
-      if(igrid.eq.1) then 
+      if(igrid.eq.1) then
          xi(1)=r(na,1)+r1*e(i,1)
          xi(2)=r(na,2)+r1*e(i,2)
          xi(3)=r(na,3)+r1*e(i,3)
@@ -124,6 +124,8 @@ c local density functionals, no gradients needed
      >            M,M18,NCO,RMM)
          dxi=DENS
          call pot(Iexch,dxi,yiex,yiec,y2i)
+
+c         write (123,*) npoint*((na-1)*50+n-1)+i-1,na,n,i
          call DENSG(Ddx,Ddy,Ddz,Xi,ds,NORM,Nuc,ncont,nshell,
      >              a,c,r,M,M18,NCO,RMM,natom)
         else
@@ -204,17 +206,17 @@ c
  12   continue
 c-------------------------------------------------------
 
-      do 789 iina=1,natom
-      write(*,900) iina,forza(iina,1),forza(iina,2),forza(iina,3)
+c      do 789 iina=1,natom
+c      write(*,900) iina,forza(iina,1),forza(iina,2),forza(iina,3)
 c      write(*,*) 'Valor de g ',Exc*ss0
- 789  continue
+c 789  continue
 c
 c      write(*,*) 'Exchange Energy  ',excha 
 c      write(*,*) 'Correlation Energy  ',ecorr 
 c      write(*,*) 'Density  ',ss0
 
       return
- 900  format ('fuerza ',I2,3(2x,f16.12))
+c 900  format ('fuerza ',I2,3(2x,f16.12))
 c 989  format (3f27.18)
       END
 c-------------------------------------------------------------

@@ -73,7 +73,7 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 	printf("calcular energias: %s | actualizar rmm: %s | calcular fuerzas: %s\n",
 				 compute_energy ? "si" : "no", update_rmm ? "si" : "no", compute_forces ? "si" : "no");
 	
-	printf("Ndens: %i\n", Ndens);
+	_DBG(printf("Ndens: %i\n", Ndens));
 	
 	uint3 num_funcs = make_uint3(nshell[0], nshell[1], nshell[2]);
 	uint3 num_funcs_div = num_funcs / make_uint3(1, 3, 6);
@@ -85,8 +85,7 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 	
 	// REVISAR: nuc: imagen y dominio (especialmente por la parte de * 3 y * 6)
 
-	assert(natom < MAX_ATOMS);
-	printf("%i atoms\n", natom);
+	_DBG(printf("%i atoms\n", natom));
 	//if (!gpu_atom_positions_matrix.is_allocated())
 	{
 		HostMatrixFloat3 atom_positions_matrix(natom, 1);
@@ -102,7 +101,7 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 		gpu_types = types;
 	}
 	
-	printf("ns: %i, np: %i, nd: %i, Total_Funcs: %i\n", num_funcs.x, num_funcs.y, num_funcs.z, total_funcs);
+	_DBG(printf("ns: %i, np: %i, nd: %i, Total_Funcs: %i\n", num_funcs.x, num_funcs.y, num_funcs.z, total_funcs));
 	if (!gpu_factor_ac.is_allocated())	
 	{
 		HostMatrixFloat2 factor_ac_matrix(total_funcs, MAX_CONTRACTIONS);
@@ -131,7 +130,7 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 	}
 	
 	nco = fort_nco;
-	printf("NCO: %i, M: %i, Iexch: %i\n", nco, total_funcs, Iexch);
+	_DBG(printf("NCO: %i, M: %i, Iexch: %i\n", nco, total_funcs, Iexch));
 	assert(Iexch == 1);
 	{
 		HostMatrixFloat rmm;
@@ -172,7 +171,7 @@ extern "C" void exchnum_gpu_(const unsigned int& norm, const unsigned int& natom
 	
 	/** load grid if it changes **/
 	if (using_grid_type != igrid) {
-		printf("Nueva Grilla: %i:\n", igrid);
+		_DBG(printf("Nueva Grilla: %i:\n", igrid));
 		
 		using_grid_type = igrid;	
 		
@@ -225,35 +224,35 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 		
 	/* outputs */
 	CudaMatrixFloat gpu_energy, gpu_functions(m *  (natoms * MAX_LAYERS * npoints));
-	printf("gpu_functions: %i (%i bytes) data: %i\n", gpu_functions.elements(), gpu_functions.bytes(), (bool)gpu_functions.data);
+	_DBG(printf("gpu_functions: %i (%i bytes) data: %i\n", gpu_functions.elements(), gpu_functions.bytes(), (bool)gpu_functions.data));
 	
 	CudaMatrixFloat gpu_rmm_output;
 	if (update_rmm) {
 		gpu_rmm_output.resize((m * (m + 1)) / 2);
-		printf("gpu_rmm_output: %i (%i bytes) data: %i\n", gpu_rmm_output.elements(), gpu_rmm_output.bytes(), (bool)gpu_rmm_output.data);
+		_DBG(printf("gpu_rmm_output: %i (%i bytes) data: %i\n", gpu_rmm_output.elements(), gpu_rmm_output.bytes(), (bool)gpu_rmm_output.data));
 	}
 		
 	if (compute_energy) {
 		gpu_energy.resize(natoms * MAX_LAYERS * npoints);
-		printf("gpu_energy: %i (%i bytes) data: %i\n", gpu_energy.elements(), gpu_energy.bytes(), (bool)gpu_energy.data);
+		_DBG(printf("gpu_energy: %i (%i bytes) data: %i\n", gpu_energy.elements(), gpu_energy.bytes(), (bool)gpu_energy.data));
 	}
 	
 	CudaMatrixFloat gpu_factor_output;
 	if (update_rmm || compute_forces) {
 		gpu_factor_output.resize(natoms * MAX_LAYERS * npoints);
-		printf("gpu_factor_output: %i (%i bytes) data: %i\n", gpu_factor_output.elements(), gpu_factor_output.bytes(), (bool)gpu_factor_output.data);
+		_DBG(printf("gpu_factor_output: %i (%i bytes) data: %i\n", gpu_factor_output.elements(), gpu_factor_output.bytes(), (bool)gpu_factor_output.data));
 	}
 	
 	CudaMatrixFloat3 gpu_forces, gpu_dd, gpu_Fg, gpu_w3;
 	if (compute_forces) {
 		gpu_forces.resize(natoms);
-		printf("gpu_forces: %i (%i bytes) data: %i\n", gpu_forces.elements(), gpu_forces.bytes(), (bool)gpu_forces.data);
+		_DBG(printf("gpu_forces: %i (%i bytes) data: %i\n", gpu_forces.elements(), gpu_forces.bytes(), (bool)gpu_forces.data));
 		gpu_dd.resize(natoms * (natoms * MAX_LAYERS * npoints));
-		printf("gpu_dd: %i (%i bytes) data: %i\n", gpu_dd.elements(), gpu_dd.bytes(), (bool)gpu_dd.data);
+		_DBG(printf("gpu_dd: %i (%i bytes) data: %i\n", gpu_dd.elements(), gpu_dd.bytes(), (bool)gpu_dd.data));
 		gpu_Fg.resize(m * (natoms * npoints));
-		printf("gpu_Fg: %i (%i bytes) data: %i\n", gpu_Fg.elements(), gpu_Fg.bytes(), (bool)gpu_Fg.data);
+		_DBG(printf("gpu_Fg: %i (%i bytes) data: %i\n", gpu_Fg.elements(), gpu_Fg.bytes(), (bool)gpu_Fg.data));
 		gpu_w3.resize(natoms * (natoms * npoints));
-		printf("gpu_w3: %i (%i bytes) data: %i\n", gpu_w3.elements(), gpu_w3.bytes(), (bool)gpu_w3.data);
+		_DBG(printf("gpu_w3: %i (%i bytes) data: %i\n", gpu_w3.elements(), gpu_w3.bytes(), (bool)gpu_w3.data));
 	}
 	
 	// TODO: update_rmm should be a template parameter
@@ -263,29 +262,29 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 	dim3 energy_threads(natoms, npoints);
 	dim3 energy_blockSize(ENERGY_BLOCK_SIZE_X, ENERGY_BLOCK_SIZE_Y);
 	dim3 energy_gridSize = divUp(energy_threads, energy_blockSize);
-	printf("energy threads: %i %i, blockSize: %i %i, gridSize: %i %i\n", energy_threads.x, energy_threads.y,
-				 energy_blockSize.x, energy_blockSize.y, energy_gridSize.x, energy_gridSize.y);	
+	_DBG(printf("energy threads: %i %i, blockSize: %i %i, gridSize: %i %i\n", energy_threads.x, energy_threads.y,
+				 energy_blockSize.x, energy_blockSize.y, energy_gridSize.x, energy_gridSize.y));
 	
 	dim3 rmm_threads(m, m);
 	dim3 rmm_blockSize(RMM_BLOCK_SIZE_X, RMM_BLOCK_SIZE_Y);
 	dim3 rmm_gridSize = divUp(rmm_threads, rmm_blockSize);	
-	printf("rmm threads: %i %i, blockSize: %i %i, gridSize: %i %i\n", rmm_threads.x, rmm_threads.y, rmm_blockSize.x, rmm_blockSize.y, rmm_gridSize.x, rmm_gridSize.y);
+	_DBG(printf("rmm threads: %i %i, blockSize: %i %i, gridSize: %i %i\n", rmm_threads.x, rmm_threads.y, rmm_blockSize.x, rmm_blockSize.y, rmm_gridSize.x, rmm_gridSize.y));
 	
 	dim3 force_threads(natoms);
 	dim3 force_blockSize(natoms < FORCE_BLOCK_SIZE ? natoms : FORCE_BLOCK_SIZE);
 	dim3 force_gridSize = divUp(force_threads, force_blockSize);
-	printf("force threads: %i %i, blockSize: %i %i, gridSize: %i %i\n", force_threads.x, force_threads.y, force_blockSize.x, force_blockSize.y, force_gridSize.x, force_gridSize.y);
+	_DBG(printf("force threads: %i %i, blockSize: %i %i, gridSize: %i %i\n", force_threads.x, force_threads.y, force_blockSize.x, force_blockSize.y, force_gridSize.x, force_gridSize.y));
 	
 //#ifdef _DEBUG	
 	uint free_memory, total_memory;
 	cuMemGetInfo(&free_memory, &total_memory);
-	printf("Memoria libre: %i de %i => Memoria usada: %i\n", free_memory, total_memory, total_memory - free_memory);
+	_DBG(printf("Memoria libre: %i de %i => Memoria usada: %i\n", free_memory, total_memory, total_memory - free_memory));
 //#endif
 	
 	switch(grid_type) {
 		case 0:
 		{
-			printf("energy_kernel\n");
+			_DBG(printf("energy_kernel\n"));
 
 			energy_kernel<0>
 				<<< energy_gridSize, energy_blockSize >>>(gpu_atom_positions.data, gpu_types.data, gpu_energy.data,
@@ -295,7 +294,7 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 			cudaAssertNoError("energy kernel");
 			
 			if (update_rmm) {
-				printf("calc_new_rmm\n");
+				_DBG(printf("calc_new_rmm\n"));
 				calc_new_rmm<EXCHNUM_SMALL_GRID_SIZE, layers2>
 					<<<rmm_gridSize, rmm_blockSize>>>(gpu_atom_positions.data, gpu_types.data,
 																						gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
@@ -305,7 +304,7 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 			}
 			
 			if (compute_forces) {
-				printf("calc_forces\n");
+				_DBG(printf("calc_forces\n"));
 				calc_forces<EXCHNUM_SMALL_GRID_SIZE, layers2>
 					<<<force_gridSize, force_blockSize>>>(gpu_atom_positions.data, gpu_types.data, gpu_atom_positions.width,
 																								num_funcs, gpu_nuc.data, gpu_contractions.data,
@@ -319,7 +318,7 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 		break;
 		case 1:
 		{
-			printf("energy_kernel\n");
+			_DBG(printf("energy_kernel\n"));
 			energy_kernel<1>
 				<<< energy_gridSize, energy_blockSize >>>(gpu_atom_positions.data, gpu_types.data, gpu_energy.data,
 																									gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
@@ -328,7 +327,7 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 			cudaAssertNoError("energy kernel");
 			
 			if (update_rmm) {
-				printf("calc_new_rmm\n");
+				_DBG(printf("calc_new_rmm\n"));
 				calc_new_rmm<EXCHNUM_MEDIUM_GRID_SIZE, layers>
 					<<<rmm_gridSize, rmm_blockSize>>>(gpu_atom_positions.data, gpu_types.data,
 																						gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
@@ -338,7 +337,7 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 			}
 
 			if (compute_forces) {
-				printf("calc_forces\n");
+				_DBG(printf("calc_forces\n"));
 				calc_forces<EXCHNUM_MEDIUM_GRID_SIZE, layers>
 					<<<force_gridSize, force_blockSize>>>(gpu_atom_positions.data, gpu_types.data, gpu_atom_positions.width,
 																								num_funcs, gpu_nuc.data, gpu_contractions.data,
@@ -352,7 +351,7 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 		break;
 		case 2:
 		{
-			printf("energy_kernel\n");
+			_DBG(printf("energy_kernel\n"));
 			energy_kernel<2>
 				<<< energy_gridSize, energy_blockSize >>>(gpu_atom_positions.data, gpu_types.data, gpu_energy.data,
 																		gpu_atom_positions.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
@@ -361,7 +360,7 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 			cudaAssertNoError("energy kernel");			
 
 			if (update_rmm) {
-				printf("calc_new_rmm\n");
+				_DBG(printf("calc_new_rmm\n"));
 				
 				calc_new_rmm<EXCHNUM_BIG_GRID_SIZE, layers>
 					<<<rmm_gridSize, rmm_blockSize>>>(gpu_atom_positions.data, gpu_types.data,
@@ -372,7 +371,7 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 			}
 			
 			if (compute_forces) {
-				printf("calc_forces\n");				
+				_DBG(printf("calc_forces\n"));
 				calc_forces<EXCHNUM_BIG_GRID_SIZE, layers>
 					<<<force_gridSize, force_blockSize>>>(gpu_atom_positions.data, gpu_types.data, gpu_atom_positions.width,
 																								num_funcs, gpu_nuc.data, gpu_contractions.data,
@@ -389,12 +388,12 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 	/** Energy Accumulation */
 	if (compute_energy)
 	{		
-		printf("copia energias\n");
+		_DBG(printf("copia energias\n"));
 		energy = 0.0;
 		HostMatrixFloat cpu_energy(true);
 		cpu_energy = gpu_energy;
 		
-		printf("acumulacion energias\n");
+		_DBG(printf("acumulacion energias\n"));
 		for (uint i = 0; i < natoms; i++) {
 			for (uint j = 0; j < curr_cpu_layers[types.data[i]]; j++) {
 				for (uint k = 0; k < npoints; k++) {
@@ -406,17 +405,17 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 				}
 			}
 		}
-		printf("energia gpu: %.15e\n", energy);
+		_DBG(printf("energia gpu: %.15e\n", energy));
 	}
 
 	/** RMM update **/
 	if (update_rmm) {
 		
-		printf("copia rmm\n");
+		_DBG(printf("copia rmm\n"));
 		HostMatrixFloat gpu_rmm_output_copy(true);
 		gpu_rmm_output_copy = gpu_rmm_output;
 
-		printf("acumulacion rmm\n");		
+		_DBG(printf("acumulacion rmm\n"));
 		uint rmm_idx = 0;
 		for (uint func_i = 0; func_i < m; func_i++) {
 			for (uint func_j = func_i; func_j < m; func_j++) {
@@ -429,11 +428,11 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 	
 	/** Force update **/
 	if (compute_forces) {
-		printf("copia fuerzas\n");
+		_DBG(printf("copia fuerzas\n"));
 		HostMatrixFloat3 cpu_forces;
 		cpu_forces = gpu_forces;
 		
-		printf("acumulacion fuerzas\n");		
+		_DBG(printf("acumulacion fuerzas\n"));
 		for (uint i = 0; i < natoms; i++) {
 			cpu_forces_output[0 * FORTRAN_MAX_ATOMS + i] += cpu_forces.data[i].x;
 			cpu_forces_output[1 * FORTRAN_MAX_ATOMS + i] += cpu_forces.data[i].y;
@@ -472,7 +471,7 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 	
 
 	
-	printf("fin gpu\n");	
+	printf("<======= FIN GPU ========>\n");	
 	cudaAssertNoError("final");
 }
 

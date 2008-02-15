@@ -5,9 +5,11 @@
 #include <cuda.h>
 
 #ifdef _DEBUG
-#define MESSAGE(call) printf("[" #call "] @ %s %i\n", __FILE__, __LINE__);
+#	define MESSAGE(call) printf("[" #call "] @ %s %i\n", __FILE__, __LINE__);
+#define _DBG(x) x
 #else
 #define MESSAGE(call)
+#define _DBG(x)
 #endif
 
 #ifdef __DEVICE_EMULATION__

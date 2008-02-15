@@ -3,17 +3,16 @@
 
 #define PI 3.141592654f
 
-#define MAX_ATOMS 35
 #define MAX_CONTRACTIONS 10
 
 // This should correspond to the maximum number in 'layers' and 'layers2'
 #define MAX_LAYERS 50
 
 // TODO jugar bajando estos valores
-#define RMM_BLOCK_SIZE_X 8
+#define RMM_BLOCK_SIZE_X 16
 #define RMM_BLOCK_SIZE_Y 16
 
-#define ENERGY_BLOCK_SIZE_X 1 
+#define ENERGY_BLOCK_SIZE_X 1
 //#define ENERGY_BLOCK_SIZE_Y 128 --> no andan con forces incluido
 #define ENERGY_BLOCK_SIZE_Y 64
 
@@ -50,7 +49,6 @@ __device__ __constant__ uint layers2[] = {
 };	
 
 __device__ __constant__ float rm_factor[] = {
-	/* 0.944863438887178, */ 
 	0.330702203610512, 0.878722998165075, 1.37005198638641, 0.992106610831537,
 	0.803133923054101, 0.661404407221024, 0.614161235276665, 0.566918063332307,
 	0.472431719443589, 0.670853041609896, 3.40150837999384, 1.41729515833077,

@@ -191,7 +191,7 @@ endbasis
  GOLD =  20., 
  TOLD =  1.E-06,
  WRITE = T, 
- MEMO = F/
+ MEMO = T/
 &EXCH 
  IEXCH = 1, 
  INTEG = T, 

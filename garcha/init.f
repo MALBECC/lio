@@ -19,14 +19,15 @@ c     parameter (ngDyn=66)
 c     parameter (ngdDyn=95)
 
  
-      parameter (norbit=80,Ngrid=6000)
+c      parameter (norbit=80,Ngrid=6000)
+      parameter (norbit=400,Ngrid=6000)      
 c
       parameter (ng3=4*ngDyn)
       parameter (ng2=7*ngDyn*(ngDyn+1)/2+3*ngdDyn*(ngdDyn+1)/2+
      >           ngDyn+ngDyn*norbit+Ngrid)
 c para version en memoria
-c     parameter (ng2=5*ngDyn*(ngDyn+1)/2+3*ngdDyn*(ngdDyn+1)/2+
-c    >           ngDyn+ngDyn*norbit+Ngrid+ngDyn*(NgDyn+1)/2*NgdDyn)
+c      parameter (ng2=5*ngDyn*(ngDyn+1)/2+3*ngdDyn*(ngdDyn+1)/2+
+c     >           ngDyn+ngDyn*norbit+Ngrid+ngDyn*(NgDyn+1)/2*NgdDyn)
 c
       dimension X(ngDyn,ng3),XX(ngdDyn,ngdDyn),P(ng2)
       write(*,*) (ngDyn*ng3+ngdDyn**2+ng2)*8*1.0D-06, '  Memoria en MB'

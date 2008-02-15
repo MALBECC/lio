@@ -12,7 +12,7 @@ template <uint grid_type/*, unsigned int grid_n, const uint* const curr_layers*/
 __global__ void energy_kernel(const float3* atom_positions, const uint* types,
 		float* energy, const uint atoms_n, uint nco, uint3 num_funcs,
 		const uint* nuc, const uint* contractions, bool normalize, const float2* factor_ac,
-		const float* rmm, float* all_functions,  uint Ndens, float* output_factor, float3* dd, float3* Fg,
+		const float* rmm, float* all_functions,  uint Ndens, float* output_factor, float3* dd, float3* Fg, float3* w3,
     bool compute_energy, bool update_rmm, bool compute_forces)
 {
 	/** TODO: estos ifs se hacen porque no puedo pasar estos punteros por parametro ni por template
@@ -119,8 +119,9 @@ __global__ void energy_kernel(const float3* atom_positions, const uint* types,
 		if (compute_forces) {
 			float3* this_dd = dd + big_index * atoms_n;
 			float3* this_Fg = &Fg[index_from3d(dim3(atoms_n, grid_n, m), dim3(atom_i, point_atom_i, 0))];
+			float3* this_w3 = &w3[index_from3d(dim3(atoms_n, grid_n, atoms_n), dim3(atom_i, point_atom_i, 0))];
 			density_deriv_kernel(dens, num_funcs, nuc, contractions, abs_point_position, atom_positions, atom_positions_shared,
-													 normalize, factor_ac, rmm, nco, big_index, F, Ndens, this_dd, this_Fg, atoms_n);
+													 normalize, factor_ac, rmm, nco, big_index, F, Ndens, this_dd, this_Fg, this_w3, atoms_n);
 		}
 		else {
 			local_density_kernel(dens, num_funcs, nuc, contractions, abs_point_position, atom_positions, atom_positions_shared,

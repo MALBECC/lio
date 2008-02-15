@@ -137,10 +137,6 @@ ifeq ($(emu), 1)
 	CFLAGS			+= -D__DEVICE_EMULATION__
 endif
 
-ifeq ($(fuerzas_cpu), 1)
-	COMMONFLAGS += -DFUERZAS_CPU
-endif
-
 ifeq ($(keep), 1)
 	NVCCFLAGS   += -keep
 endif

@@ -54,7 +54,7 @@ __device__ void local_density_kernel(float& density, uint3 num_funcs, const uint
 /*---------------------------------------------- Density Functionals with Force Calculation --------------------------------------------------------------*/
 __device__ void density_deriv_kernel(float& density, uint3 num_funcs, const uint* nuc, const uint* contractions, float3 point_position,
 																		 const float3* atom_positions, const float3* atom_positions_shared, bool normalize, const float2* factor_ac,
-																		 const float* rmm, uint nco, uint big_index, float* F, uint Ndens, float3* dd, float3* Fg, uint atoms_n)
+																		 const float* rmm, uint nco, uint big_index, float* F, uint Ndens, float3* dd, float3* Fg, float3* w3, uint atoms_n)
 {
 	const uint& funcs_s = num_funcs.x;
 	const uint& funcs_p = num_funcs.y;
@@ -87,7 +87,6 @@ __device__ void density_deriv_kernel(float& density, uint3 num_funcs, const uint
 	uint k = 0; 
 	for (uint i = 0; i < nco; i++) {
 		float w = 0.0f;
-		float3 w3[MAX_ATOMS];
 		for (uint atom_i = 0; atom_i < atoms_n; atom_i++) { w3[atom_i] = make_float3(0.0f,0.0f,0.0f); }
 														
 		func_real = 0;

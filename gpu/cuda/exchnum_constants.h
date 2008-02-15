@@ -4,8 +4,7 @@
 #define PI 3.141592654f
 
 #define MAX_ATOMS 35
-#define MAX_NCO 500
-#define MAX_CONTRACTIONS 20
+#define MAX_CONTRACTIONS 10
 
 // This should correspond to the maximum number in 'layers' and 'layers2'
 #define MAX_LAYERS 50

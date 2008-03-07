@@ -767,7 +767,7 @@ c--------------------------------------------------------------
      >              wang, wang2, wang3, Ndens, 0, 0)
 #else      
       call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
-     >              M18,NCO,Exc,nopt)
+     >              M18,NCO,Exc,nopt,IT,ITEL,NIN,IPR1)
 #endif       
 #endif       
        E=E+Exc-Ex

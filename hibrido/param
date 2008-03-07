@@ -17,10 +17,10 @@ c
 
 
 
-      parameter (ntq=20,ntc=3000,nss=3)
+      parameter (ntq=30,ntc=600,nss=3)
       parameter (nt=ntq+nss*ntc)
-      parameter (ng0=350,ng=ntq*ng0,nl=350)
-      parameter (ngd0=350,ngd=ntq*ngd0)
+      parameter (ng0=50,ng=ntq*ng0,nl=10)
+      parameter (ngd0=50,ngd=ntq*ngd0)
  
 
 

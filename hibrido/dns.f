@@ -159,18 +159,18 @@ c
 c
       kk=M18-1
 c
-      if (k.lt.M/2) then
-
-      do jj=1,NCO
-       W(jj)=0.0D0     
-       do ii=1,k
-        ik=indx(ii)
-        W(jj)=W(jj)+F(ik)*RMM(kk+ik)
-       enddo
-       kk=kk+M
-      enddo
+c      if (k.lt.M/2) then
 c
-      else
+c      do jj=1,NCO
+c       W(jj)=0.0D0     
+c       do ii=1,k
+c        ik=indx(ii)
+c        W(jj)=W(jj)+F(ik)*RMM(kk+ik)
+c       enddo
+c       kk=kk+M
+c      enddo
+c
+c      else
 c
       do 153 jj=1,NCO
       do 154 ii=1,M
@@ -178,7 +178,7 @@ c
        W(jj)=W(jj)+RMM(kk)*F(ii)
  154    continue
  153    continue
-       endif
+c       endif
 c ---------------------------------------
       do 61 ii=1,NCO
  61    DENS=DENS+W(ii)**2

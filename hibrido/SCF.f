@@ -15,7 +15,7 @@ c---------------------------------------------------
 
 c
       implicit real*8 (a-h,o-z)
-      logical NORM,ATRHO,VCINP,DIRECT,EXTR,dens,write1
+      logical NORM,ATRHO,VCINP,DIRECT,EXTR,dens,write1,just_int3n      
       logical OPEN,SVD,SHFT,GRAD,BSSE,integ,field,sol,free
       logical exter,MEMO
       INCLUDE 'param'
@@ -54,8 +54,12 @@ c
       common/Ngeom/ ngeo
       common /ENum/ GRAD
       common /propt/ idip,ipop,ispin,icharge,map(ntq)
+      common /intg1/ e_(50,3),wang(50)
+      common /intg2/ e_2(116,3),wang2(116),Nr(0:54),e3(194,3),wang3(194)
+      
 c
       common /sol1/ Nsol,natsol,alpha,Em,Rm,sol,free
+      just_int3n = false      
 c------------------------------------------------------------------
 c---chequeo posiciones y cargas
 c      do i=1,natom+nsol*natsol
@@ -460,7 +464,8 @@ c
      >               ncontd,nshelld,cd,ad,RMM,XX,E2,Ex,
      >     nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write1)
       else                            
-      if (good.gt.3.0D0*told) then
+      if ((.not.just_int3n).and.(good.gt.3.0D0*told)) then
+          
 c
       call int3(NORM,natom,Iz,r,Nuc,M,ncont,nshell,c,a,
      >     Nucd,Md,ncontd,nshelld,cd,ad,RMM,XX,E2,Ex,
@@ -468,6 +473,7 @@ c
 c
 c------------------
       else
+      just_int3n = true        
       call int3N(NORM,natom,Iz,r,Nuc,M,ncont,nshell,c,a,
      >     Nucd,Md,ncontd,nshelld,cd,ad,RMM,XX,E2,Ex,
      >     nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write1)
@@ -742,9 +748,28 @@ c--------------------------------------------------------------
           write(*,625) Es
          ENDIF
          endif
-        endif
+       endif
+/* -- G2G -- */
+       write(*,*) 'exchnum SCF'
+#ifdef GPU
+#ifdef ULTIMA_CPU       
        call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,NCO,Exc,nopt,IT,ITEL,NIN,IPR1)
+#else
+      call exchnum_gpu(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
+     >              M18,M5,NCO,Exc,nopt,Iexch, igrid, e_, e_2, e3,
+     >              wang, wang2, wang3, Ndens, 0, 0)
+#endif
+#else
+#ifdef ULTIMA_GPU
+      call exchnum_gpu(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
+     >              M18,M5,NCO,Exc,nopt,Iexch, igrid, e_, e_2, e3,
+     >              wang, wang2, wang3, Ndens, 0, 0)
+#else      
+      call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
+     >              M18,NCO,Exc,nopt)
+#endif       
+#endif       
        E=E+Exc-Ex
 c
 c--------------------------------------------------------------
@@ -885,7 +910,7 @@ c
 c
 
   500  format('SCF TIME ',I6,' sec')
-  450  format ('SCF ENERGY = ',F14.7)
+  450  format ('SCF ENERGY = ',F19.12)       
   400  format(4(E14.7E2,2x))
   300  format(I3,E14.6,2x,F14.7)
   600  format('  ENERGY CONTRIBUTIONS IN A.U.')

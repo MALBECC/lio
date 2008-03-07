@@ -26,8 +26,8 @@ c Ngrid may be set to 0 , in the case of using Num. Integ.
       INCLUDE 'param'
       INTEGER SPC
       COMMON /tipsol/SPC
-      parameter (ngDyn=350)
-      parameter (ngdDyn=380)
+      parameter (ngDyn=450)
+      parameter (ngdDyn=450)
       parameter (norbit=250,Ngrid=8000)
 
       parameter (ng3=4*ngDyn)

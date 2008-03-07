@@ -55,6 +55,9 @@ c    >             IDAMP,EXTR,SHFT,SHI,GOLD,told,write,Nunp
       common /Nc/ Ndens
       common /coef/ af
       common /coef2/ B
+      common /intg1/ e_(50,3),wang(50)
+      common /intg2/ e_2(116,3),wang2(116),Nr(0:54),e3(194,3),wang3(194)      
+      
 c
 c------------------------------------------------------------------
 c now 16 loops for all combinations, first 2 correspond to 
@@ -2583,8 +2586,25 @@ c
        if (integ) then
         NCOa=NCO
         NCOb=NCO+Nunp
+        write(*,*) 'int3N'
+      call timer_start        
+#ifdef GPU
+#ifdef INT3N_CPU        
+      call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
+     >               M,M18,NCOa,NCOb,RMM,Ex)
+      write(*,*) 'energia fortran (double)',Ex
+#else
+      call exchnum_gpu(NORM, natom, r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
+     >    M18,M5,NCOa,Ex,nopt,Iexch, igrid2, e_, e_2, e3, wang, wang2,
+     >    wang3,Ndens, 0, 1)
+#endif      
+#else
+       call timer_start      
        call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
      >               M,M18,NCOa,NCOb,RMM,Ex)
+       write(*,*) 'energia fortran (double)',Ex
+#endif
+       call timer_stop('exchfock')       
        endif
 c
 c

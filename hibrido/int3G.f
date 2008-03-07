@@ -59,6 +59,9 @@ c     common /HF/ nopt,OPEN,NMAX,NCO,ATRHO,VCINP,DIRECT,
 c    >         IDAMP,EXTR,SHFT,SHI,GOLD,told,write,Nunp
       common /coef/ af(ngd)
       common /coef2/ B
+      common /intg1/ e_(50,3),wang(50)
+      common /intg2/ e_2(116,3),wang2(116),Nr(0:54),e3(194,3),wang3(194)      
+      
 c
 c------------------------------------------------------------------
 c now 16 loops for all combinations, first 2 correspond to 
@@ -155,9 +158,20 @@ c
 c
       if (.not.OPEN) then
 c
-        call exchnum2(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
+#ifdef GPU
+       call exchnum_gpu(NORM, natom, r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
+     >    M18,M5,NCO,Exc,nopt,Iexch, igrid, e_, e_2, e3, wang, wang2,
+     >    wang3,2, f, 2)
+#else        
+      call exchnum2(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >               M18,NCO,Exc,f)
-c     >    ,FXH2,FYH2,FZH2)
+c     >    ,FXH2,FYH2,FZH2)      
+#endif
+
+c DEBUG DEBUG
+      do k=1,natom
+        write(*,'("fuerza",I,D,D,D)') k,f(k,1),f(k,2),f(k,3)
+      enddo
 c
        else
 c

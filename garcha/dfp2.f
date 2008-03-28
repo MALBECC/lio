@@ -338,7 +338,10 @@ c
 25        CONTINUE
 26      CONTINUE
 27    CONTINUE
-      PAUSE 'too many iterations in DFPMIN'
+c      PAUSE 'too many iterations in DFPMIN'
+      write(*,*) 'too many iterations in DFPMIN'
+      return
+      
 c
  450  format ('NORM OF GRADIENT ',F17.10)
  480  format ('SCF ENERGY = ',F17.10)

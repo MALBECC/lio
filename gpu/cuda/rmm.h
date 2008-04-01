@@ -3,7 +3,7 @@
  * Funcion llamada para cada (i,j) en RMM, para calcular RMM(i,j) -> un thread por cada punto
  */
 template <uint grid_n, const uint* const curr_layers>
-__global__ void calc_new_rmm(const float3* atom_positions, const uint* types, const uint atoms_n, uint nco, uint3 num_funcs,
+__global__ void calc_new_rmm(const uint atoms_n, uint nco, uint3 num_funcs,
 														 const uint* nuc, const uint* contractions, bool normalize, const float2* factor_ac,
 														 const float* rmm, float* rmm_output, const float* factors, const float* all_functions)
 {
@@ -11,18 +11,10 @@ __global__ void calc_new_rmm(const float3* atom_positions, const uint* types, co
 
 	uint3 abs_idx3d = index(blockDim, blockIdx, threadIdx);
 
-#if 0
-	uint abs_idx = abs_idx3d.x * divUp(m, 2) + abs_idx3d.y;
-	uint rmm_idx = abs_idx;
-
-	uint i = (uint)floor((-((-(m + 1.0f) + 0.5f) + sqrtf(((m + 1.0f) - 0.5f) * ((m + 1) - 0.5f) - 2.0f * abs_idx))));
-	uint j = abs_idx - ((m + 1) * i - i * (i + 1) / 2);	
-#else
 	uint i = abs_idx3d.x; // columna
 	uint j = abs_idx3d.y; // fila
 	
 	uint rmm_idx = (i * m - (i * (i - 1)) / 2) + (j - i);
-#endif
 	
 	bool valid_thread = true;
 	if (i >= m || j >= m || i > j) valid_thread = false;	// quiero triangulo inferior solamente
@@ -40,7 +32,7 @@ __global__ void calc_new_rmm(const float3* atom_positions, const uint* types, co
 	__shared__ float functions_j_local[RMM_BLOCK_SIZE_Y];
 
 	for (uint atom_i = 0; atom_i < atoms_n; atom_i++) {
-		uint atom_i_type = types[atom_i];
+		uint atom_i_type = gpu_types[atom_i];
 		uint atom_i_layers = curr_layers[atom_i_type];
 
 		//_EMU(printf("layers: %i\n", atom_i_layers));

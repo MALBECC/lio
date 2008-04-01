@@ -1,6 +1,6 @@
 /*--------------------------------------------------- Local Density Functionals -------------------------------------------------------------*/
 __device__ void local_density_kernel(float& density, uint3 num_funcs, const uint* nuc, const uint* contractions, float3 point_position,
-																		 const float3* atom_positions, const float3* atom_positions_shared, bool normalize, const float2* factor_ac,
+																		 bool normalize, const float2* factor_ac,
 																		 const float* rmm, uint nco, uint big_index, float* F, uint Ndens)
 {
 	const uint& funcs_s = num_funcs.x;
@@ -8,25 +8,24 @@ __device__ void local_density_kernel(float& density, uint3 num_funcs, const uint
 	const uint& funcs_d = num_funcs.z;
 	const uint& m = funcs_s + funcs_p * 3 + funcs_d * 6;
 	uint func_real = 0;
-	
+
+	float normalization_factor = (normalize ? rsqrtf(3.0f) : 1.0f);	
 	density = 0.0f;
 
 	/* s functions */
 	for (uint func = 0; func < funcs_s; func++, func_real++)
-		calc_function_s(num_funcs, nuc, contractions, point_position, atom_positions, atom_positions_shared, factor_ac, func, &F[func_real]);
-	
+		calc_function_s(num_funcs, nuc, contractions, point_position, factor_ac, func, &F[func_real]);
+
 	/* p functions */
 	for (uint func = funcs_s; func <  funcs_s + funcs_p; func++, func_real+=3)
-		calc_function_p(num_funcs, nuc, contractions, point_position, atom_positions, atom_positions_shared, factor_ac, func, &F[func_real]);
-	
+		calc_function_p(num_funcs, nuc, contractions, point_position, factor_ac, func, &F[func_real]);
+
 	/* d functions */
-	float normalization_factor = (normalize ? rsqrtf(3.0f) : 1.0f);
-	
 	for (uint func = (funcs_s + funcs_p); func < (funcs_s + funcs_p + funcs_d); func++, func_real+=6)
-		calc_function_d(num_funcs, nuc, contractions, point_position, atom_positions, atom_positions_shared, factor_ac, func, normalization_factor, &F[func_real]);
+		calc_function_d(num_funcs, nuc, contractions, point_position, factor_ac, func, normalization_factor, &F[func_real]);	
 	
-	/* density */
-	if (Ndens == 1) {
+	/* density */	
+	if (Ndens == 1) {		
 		uint k = 0;
 		
 		for (uint i = 0; i < m; i++) {
@@ -53,7 +52,7 @@ __device__ void local_density_kernel(float& density, uint3 num_funcs, const uint
 
 /*---------------------------------------------- Density Functionals with Force Calculation --------------------------------------------------------------*/
 __device__ void density_deriv_kernel(float& density, uint3 num_funcs, const uint* nuc, const uint* contractions, float3 point_position,
-																		 const float3* atom_positions, const float3* atom_positions_shared, bool normalize, const float2* factor_ac,
+																		 bool normalize, const float2* factor_ac,
 																		 const float* rmm, uint nco, uint big_index, float* F, uint Ndens, float3* dd, float3* Fg, float3* w3, uint atoms_n)
 {
 	const uint& funcs_s = num_funcs.x;
@@ -66,17 +65,17 @@ __device__ void density_deriv_kernel(float& density, uint3 num_funcs, const uint
 	
 	/* s functions */
 	for (uint func = 0; func < funcs_s; func++, func_real++)
-		calc_function_s(num_funcs, nuc, contractions, point_position, atom_positions, atom_positions_shared, factor_ac, func, &F[func_real], &Fg[func_real]);
+		calc_function_s(num_funcs, nuc, contractions, point_position, factor_ac, func, &F[func_real], &Fg[func_real]);
 	
 	/* p functions */
 	for (uint func = funcs_s; func <  funcs_s + funcs_p; func++, func_real+=3)
-		calc_function_p(num_funcs, nuc, contractions, point_position, atom_positions, atom_positions_shared, factor_ac, func, &F[func_real], &Fg[func_real]);
+		calc_function_p(num_funcs, nuc, contractions, point_position, factor_ac, func, &F[func_real], &Fg[func_real]);
 	
 	/* d functions */
 	float normalization_factor = (normalize ? rsqrtf(3.0f) : 1.0f);
 	
 	for (uint func = (funcs_s + funcs_p); func < (funcs_s + funcs_p + funcs_d); func++, func_real+=6)
-		calc_function_d(num_funcs, nuc, contractions, point_position, atom_positions, atom_positions_shared, factor_ac, func, normalization_factor, &F[func_real], &Fg[func_real]);
+		calc_function_d(num_funcs, nuc, contractions, point_position, factor_ac, func, normalization_factor, &F[func_real], &Fg[func_real]);
 	
 	for (uint j = 0; j < atoms_n; j++) {
 		dd[j] = make_float3(0.0f,0.0f,0.0f);

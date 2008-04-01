@@ -3,7 +3,7 @@
  * Called for each atom
  */
 template <uint grid_n, const uint* const curr_layers>
-__global__ void calc_forces(const float3* atom_positions, const uint* types, const uint atoms_n, uint3 num_funcs,
+__global__ void calc_forces(const uint atoms_n, uint3 num_funcs,
 													 const uint* nuc, const uint* contractions, bool normalize, const float2* factor_ac,
 													 const float* factors, const float3* dds, float3* forces)
 {
@@ -21,7 +21,7 @@ __global__ void calc_forces(const float3* atom_positions, const uint* types, con
 	__shared__ float factor_local;
 
 	for (uint atom_j = 0; atom_j < atoms_n; atom_j++) {
-		uint atom_j_type = types[atom_j];
+		uint atom_j_type = gpu_types[atom_j];
 		uint atom_j_layers = curr_layers[atom_j_type];
 
 		for (uint layer_atom_j = 0; layer_atom_j < atom_j_layers; layer_atom_j++) {

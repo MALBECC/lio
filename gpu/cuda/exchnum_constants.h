@@ -12,13 +12,25 @@
 #define RMM_BLOCK_SIZE_X 16
 #define RMM_BLOCK_SIZE_Y 16
 
-#define ENERGY_BLOCK_SIZE_X 1
-//#define ENERGY_BLOCK_SIZE_Y 128 --> no andan con forces incluido
-#define ENERGY_BLOCK_SIZE_Y 64
+#define ENERGY_FORCE_BLOCK_SIZE_X 1
+#define ENERGY_FORCE_BLOCK_SIZE_Y 64
+
+#define ENERGY_S_BLOCK_SIZE_X 1
+//#define ENERGY_S_BLOCK_SIZE_X 4
+#define ENERGY_M_BLOCK_SIZE_X 1
+//#define ENERGY_M_BLOCK_SIZE_X 2
+#define ENERGY_B_BLOCK_SIZE_X 1
+
+#define ENERGY_S_BLOCK_SIZE_Y 128
+//#define ENERGY_S_BLOCK_SIZE_Y 32
+#define ENERGY_M_BLOCK_SIZE_Y 128
+//#define ENERGY_M_BLOCK_SIZE_Y 64
+#define ENERGY_B_BLOCK_SIZE_Y 128
 
 #define FORCE_BLOCK_SIZE 128
 
-#define ENERGY_SHARED_ATOM_POSITIONS 35
+// used for "types" constant memory
+#define MAX_ATOMS 60
 
 const uint cpu_layers[] = {
 	30,30,35,35,35,35,35,35,35,35,
@@ -66,13 +78,11 @@ __device__ __constant__ float rm_factor[] = {
 };
 		
 /* grid */
-__device__ __constant__ float3 small_grid_positions[EXCHNUM_SMALL_GRID_SIZE];
-__device__ __constant__ float3 medium_grid_positions[EXCHNUM_MEDIUM_GRID_SIZE];
-__device__ __constant__ float3 big_grid_positions[EXCHNUM_BIG_GRID_SIZE];
+__device__ __constant__ float3 gpu_point_positions[EXCHNUM_BIG_GRID_SIZE];
+__device__ __constant__ float gpu_wang[EXCHNUM_BIG_GRID_SIZE];
 
-__device__ __constant__ float small_wang[EXCHNUM_SMALL_GRID_SIZE];
-__device__ __constant__ float medium_wang[EXCHNUM_MEDIUM_GRID_SIZE];
-__device__ __constant__ float big_wang[EXCHNUM_BIG_GRID_SIZE];
+__device__ __constant__ uint gpu_types[MAX_ATOMS];
+__device__ __constant__ float3 gpu_atom_positions[MAX_ATOMS];
 
 /* pot_kernel constants */
 __device__ __constant__ float pot_alpha = -0.738558766382022447;

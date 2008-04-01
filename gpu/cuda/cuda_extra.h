@@ -18,6 +18,9 @@
 #define _EMU(code)
 #endif
 
+#define WARP_SIZE 32
+#define BANKS 16
+
 #include "double.h"
 
 inline __device__ __host__ float dot(const float4 a, const float4 b)

@@ -2,7 +2,9 @@
 
 #include <cstdio>
 #include "cuda_extra.h"
+#include "../matrix.h"
 using namespace std;
+using namespace G2G;
 
 #define BLOCK_SIZE 32
 
@@ -10,26 +12,17 @@ __global__ void dists_kernel(float* coords, float* dists, int atoms);
 __global__ void dists_cached_kernel(float* coords, float* dists, int atoms);
 __global__ void dists_cached2_kernel(float* coords, float* dists, int atoms);
 
-extern "C" void calc_dists(float* coords_cpu, float* dists_cpu, int atoms) {
-	float* coords;
-	float* dists;
+void calc_dists(const HostMatrixFloat& coords, HostMatrixFloat& dists) {
+	CudaMatrixFloat gpu_coords(coords);
+	CudaMatrixFloat gpu_dists(coords.width, coords.width);
 	
-	cudaMalloc((void**)&coords, atoms * sizeof(float));
-	cudaMemcpy(coords, coords_cpu, atoms * sizeof(float), cudaMemcpyHostToDevice);
+	dim3 blockSize(BLOCK_SIZE, BLOCK_SIZE);
+	dim3 threads(coords.width, coords.width);
+	dim3 gridSize = divUp(threads, blockSize);
 	
-	//int pitch;	
-	//cudaMallocPitch(&dists, &pitch, atoms * atoms * sizeof(float), atoms);
-	cudaMalloc((void**)&dists, atoms * atoms * sizeof(float));
-
-	dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE);
-	dim3 dimSize(atoms / dimBlock.x, atoms / dimBlock.y);
-	dists_kernel<<<dimSize, dimBlock>>>(coords, dists, atoms);
-	//dists_cached2_kernel<<<dimSize, dimBlock>>>(coords, dists, atoms);
+	dists_kernel<<<gridSize, blockSize>>>(gpu_coords.data, gpu_dists.data, gpu_coords.width);
 	
-	cudaMemcpy(dists_cpu, dists, atoms * atoms * sizeof(float), cudaMemcpyDeviceToHost);
-		
-	cudaFree(coords);
-	cudaFree(dists);	
+	dists = gpu_dists;
 }
 
 __global__ void dists_cached_kernel(float* coords, float* dists, int atoms)

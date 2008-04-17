@@ -23,14 +23,14 @@ __global__ void energy_kernel(float* energy, const uint atoms_n, uint nco, uint3
 	if (!valid_thread) return;
 	
 	// not loaded from shared
+	uint atom_i_type = gpu_types[atom_i]; // constant memory
 	float3 rel_point_position = gpu_point_positions[point_atom_i];	// constant memory
 	float wang_point_i = gpu_wang[point_atom_i]; // constant memory
 
-	uint atom_i_type = gpu_types[atom_i]; // constant memory
 	float rm = rm_factor[atom_i_type]; // constant memory
 	uint atom_i_layers = curr_layers[atom_i_type];	// constant memory
-	float tmp0 = (PI / (atom_i_layers + 1.0f));
 	float3 atom_i_position = gpu_atom_positions[atom_i]; // constant memory
+	float tmp0 = (PI / (atom_i_layers + 1.0f));	
 	
 	//_EMU(printf("atom %i type %i layers %i\n", atom_i, atom_i_type, atom_i_layers));
 
@@ -93,17 +93,17 @@ __global__ void energy_kernel(float* energy, const uint atoms_n, uint nco, uint3
 				float u = r_atomo_j - distance(abs_point_position, pos_atomo_k);
 				u /= rr;
 
-				float x = rm_atomo_j / rm_factor[gpu_types[atomo_k]];
-				float x1 = (x - 1.0f) / (x + 1.0f);
-				float Aij = x1 / (x1 * x1 - 1.0f);
-				u += Aij * (1.0f - u * u);
+				float x;
+				x = rm_atomo_j / rm_factor[gpu_types[atomo_k]];
+				x = (x - 1.0f) / (x + 1.0f);
+				u += (x / (x * x - 1.0f)) * (1.0f - u * u);
 
-				float p1 = 1.5f * u - 0.5f * (u * u * u);
-				float p2 = 1.5f * p1 - 0.5f * (p1 * p1 * p1);
-				float p3 = 1.5f * p2 - 0.5f * (p2 * p2 * p2);
-				float s = 0.5f * (1.0f - p3);
-
-				P_curr *= s;
+				u = 1.5f * u - 0.5f * (u * u * u);
+				u = 1.5f * u - 0.5f * (u * u * u);
+				u = 1.5f * u - 0.5f * (u * u * u);
+				u = 0.5f * (1.0f - u);
+				
+				P_curr *= u;
 			}
 
 			if (atomo_j == atom_i) P_atom_i = P_curr;

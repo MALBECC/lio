@@ -707,6 +707,7 @@ c--------------------------------------------------------------
        endif
 /* -- G2G -- */
        write(*,*) 'exchnum SCF'
+       call timer_start       
 #ifdef GPU
 #ifdef ULTIMA_CPU
        call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
@@ -726,6 +727,7 @@ c--------------------------------------------------------------
      >              M18,NCO,Exc,nopt)
 #endif       
 #endif
+       call timer_stop('exchnum')      
        E=E+Exc-Ex
 c
 c--------------------------------------------------------------

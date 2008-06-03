@@ -333,10 +333,10 @@ c
 c Fock matrix
 c M5 pointer
 
-      if (nb.eq.996) then
-      tmpjb=RMM(M5+kk-1)+F(i)*tmpja
+c      if (nb.eq.996) then
+c      tmpjb=RMM(M5+kk-1)+F(i)*tmpja
 c      write(957,*) 'rmmn',kk-1,F(i)*tmpja,RMM(M5+kk-1),tmpjb
-      endif
+c      endif
       RMM(M5+kk-1)=RMM(M5+kk-1)+F(i)*tmpja
  202  continue
  201  continue

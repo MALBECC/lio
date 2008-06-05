@@ -1,14 +1,14 @@
 // -*- mode: c -*-
 
 // ********* S ***********
-__device__ void calc_function_s(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
+__device__ void calc_function_s(const uint3& num_funcs, const uint2* nuc_contractions, const float3& point_position,
 																const float2* factor_ac, uint func_index, float* func_value)
 {
-	uint atom_nuc = nuc[func_index];
+	uint atom_nuc = nuc_contractions[func_index].x;
 	float3 atom_nuc_position = gpu_atom_positions[atom_nuc];
 	float dist = distance2(point_position, atom_nuc_position);
 
-	uint func_contractions = contractions[func_index];
+	uint func_contractions = nuc_contractions[func_index].y;
 	float func_value_local = 0.0f;
 
 	for (uint contraction = 0; contraction < func_contractions; contraction++) {
@@ -21,14 +21,14 @@ __device__ void calc_function_s(const uint3& num_funcs, const uint* nuc, const u
 	*func_value = func_value_local;
 }
 
-__device__ void calc_function_s(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
+__device__ void calc_function_s(const uint3& num_funcs, const uint2* nuc_contractions, const float3& point_position,
 															  const float2* factor_ac, uint func_index, float* func_value, float3* Fg)
 {
-	uint atom_nuc = nuc[func_index];
+	uint atom_nuc = nuc_contractions[func_index].x;
 	float3 atom_nuc_position = gpu_atom_positions[atom_nuc];
 	float dist = distance2(point_position, atom_nuc_position);
 
-	uint func_contractions = contractions[func_index];
+	uint func_contractions = nuc_contractions[func_index].y;
 	float func_value_local = 0.0f;
 	float Fgx = 0.0f;
 
@@ -47,14 +47,14 @@ __device__ void calc_function_s(const uint3& num_funcs, const uint* nuc, const u
 }
 
 // ****** P *******
-__device__ void calc_function_p(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
+__device__ void calc_function_p(const uint3& num_funcs, const uint2* nuc_contractions, const float3& point_position,
 																const float2* factor_ac, uint func_index, float* func_value)
 {
-	uint atom_nuc = nuc[func_index];
+	uint atom_nuc = nuc_contractions[func_index].x;
 	float3 atom_nuc_position = gpu_atom_positions[atom_nuc];
 	float dist = distance2(point_position, atom_nuc_position);
 
-	uint func_contractions = contractions[func_index];
+	uint func_contractions = nuc_contractions[func_index].y;
 	
 	float func_value_local[3];
 	for (uint i = 0; i < 3; i++) func_value_local[i] = 0.0f;
@@ -73,14 +73,14 @@ __device__ void calc_function_p(const uint3& num_funcs, const uint* nuc, const u
 	for (uint i = 0; i < 3; i++) func_value[i] = func_value_local[i];
 }
 
-__device__ void calc_function_p(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
+__device__ void calc_function_p(const uint3& num_funcs, const uint2* nuc_contractions, const float3& point_position,
 																const float2* factor_ac, uint func_index, float* func_value, float3* Fg)
 {
-	uint atom_nuc = nuc[func_index];
+	uint atom_nuc = nuc_contractions[func_index].x;
 	float3 atom_nuc_position = gpu_atom_positions[atom_nuc];
 	float dist = distance2(point_position, atom_nuc_position);
 
-	uint func_contractions = contractions[func_index];
+	uint func_contractions = nuc_contractions[func_index].y;
 	
 	float func_value_local[3];
 	float3 local_Fg[3];
@@ -110,14 +110,14 @@ __device__ void calc_function_p(const uint3& num_funcs, const uint* nuc, const u
 }
 
 // ************** D **************
-__device__ void calc_function_d(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
+__device__ void calc_function_d(const uint3& num_funcs, const uint2* nuc_contractions, const float3& point_position,
 																const float2* factor_ac, uint func_index, float normalization_factor, float* func_value)
 {
-	uint atom_nuc = nuc[func_index];
+	uint atom_nuc = nuc_contractions[func_index].x;
 	float3 atom_nuc_position = gpu_atom_positions[atom_nuc];
 	float dist = distance2(point_position, atom_nuc_position);
 
-	uint func_contractions = contractions[func_index];
+	uint func_contractions = nuc_contractions[func_index].y;
 	
 	float func_value_local[6];
 	for (uint i = 0; i < 6; i++) func_value_local[i] = 0.0f;
@@ -145,14 +145,14 @@ __device__ void calc_function_d(const uint3& num_funcs, const uint* nuc, const u
 	for (uint i = 0; i < 6; i++) func_value[i] = func_value_local[i];
 }
 
-__device__ void calc_function_d(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
+__device__ void calc_function_d(const uint3& num_funcs, const uint2* nuc_contractions, const float3& point_position,
 																const float2* factor_ac, uint func_index, float normalization_factor, float* func_value, float3* Fg)
 {
-	uint atom_nuc = nuc[func_index];
+	uint atom_nuc = nuc_contractions[func_index].x;
 	float3 atom_nuc_position = gpu_atom_positions[atom_nuc];
 	float dist = distance2(point_position, atom_nuc_position);
 
-	uint func_contractions = contractions[func_index];
+	uint func_contractions = nuc_contractions[func_index].y;
 	
 	float func_value_local[6];
 	float3 local_Fg[6];

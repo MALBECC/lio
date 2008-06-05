@@ -3,9 +3,7 @@
  * Called for each atom
  */
 template <uint grid_n, uint curr_layers>
-__global__ void calc_forces(const uint atoms_n, uint3 num_funcs,
-													 const uint* nuc, const uint* contractions, bool normalize, const float2* factor_ac,
-													 const float* factors, const float3* dds, float3* forces)
+__global__ void calc_forces(const uint atoms_n, uint3 num_funcs, bool normalize, const float* factors, const float3* dds, float3* forces)
 {
 	uint3 pos = index(blockDim, blockIdx, threadIdx);
 	uint atom_i = pos.x;

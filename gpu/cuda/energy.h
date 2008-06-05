@@ -4,7 +4,7 @@
 
 template <bool compute_forces, unsigned int grid_n, uint curr_layers>
 __global__ void energy_kernel(float* energy, const uint atoms_n, uint nco, uint3 num_funcs,
-		const uint* nuc, const uint* contractions, bool normalize, const float2* factor_ac,
+		const uint2* nuc_contractions, bool normalize, const float2* factor_ac,
 		const float* rmm, float* all_functions,  uint Ndens, float* output_factor, float3* dd, float3* Fg, float3* w3,
     bool compute_energy, bool update_rmm)
 {
@@ -60,17 +60,16 @@ __global__ void energy_kernel(float* energy, const uint atoms_n, uint nco, uint3
 
 		float* F = all_functions + big_index * m;
 
-
  		//if (Iexch < 3) {
 		if (compute_forces) {
 			float3* this_dd = dd + big_index * atoms_n;
 			float3* this_Fg = &Fg[index_from3d(dim3(atoms_n, grid_n, m), dim3(atom_i, point_atom_i, 0))];
 			float3* this_w3 = &w3[index_from3d(dim3(atoms_n, grid_n, atoms_n), dim3(atom_i, point_atom_i, 0))];
-			density_deriv_kernel(dens, num_funcs, nuc, contractions, abs_point_position, 
+			density_deriv_kernel(dens, num_funcs, nuc_contractions, abs_point_position, 
 													 normalize, factor_ac, rmm, nco, big_index, F, Ndens, this_dd, this_Fg, this_w3, atoms_n);
 		}
 		else {
-			local_density_kernel(dens, num_funcs, nuc, contractions, abs_point_position,
+			local_density_kernel(dens, num_funcs, nuc_contractions, abs_point_position,
 													 normalize, factor_ac, rmm, nco, big_index, F, Ndens);
 		}
 		

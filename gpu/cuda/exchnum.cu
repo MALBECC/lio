@@ -14,6 +14,9 @@ using namespace G2G;
 using namespace std;
 
 /** KERNELS **/
+#include "functions.h"
+#include "density.h"
+#include "pot.h"
 #include "energy.h"
 #include "rmm.h"
 #include "force.h"
@@ -296,14 +299,14 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 			_DBG(printf("energy_kernel\n"));
 
 			if (compute_forces) {
-				energy_kernel<true, EXCHNUM_SMALL_GRID_SIZE, layers2>
+				energy_kernel<true, EXCHNUM_SMALL_GRID_SIZE, GPU_LAYERS_2>
 					<<< energy_gridSize, energy_blockSize >>>(gpu_energy.data,
 																										types.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
 																										normalize, gpu_factor_ac.data, gpu_rmm.data, gpu_functions.data,
 																										Ndens, gpu_factor_output.data, gpu_dd.data, gpu_Fg.data, gpu_w3.data, compute_energy, update_rmm);
 			}
 			else {
-				energy_kernel<false, EXCHNUM_SMALL_GRID_SIZE, layers2>
+				energy_kernel<false, EXCHNUM_SMALL_GRID_SIZE, GPU_LAYERS_2>
 					<<< energy_gridSize, energy_blockSize >>>(gpu_energy.data,
 																										types.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
 																										normalize, gpu_factor_ac.data, gpu_rmm.data, gpu_functions.data,
@@ -313,7 +316,7 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 			
 			if (update_rmm) {
 				_DBG(printf("calc_new_rmm\n"));
-				calc_new_rmm<EXCHNUM_SMALL_GRID_SIZE, layers2>
+				calc_new_rmm<EXCHNUM_SMALL_GRID_SIZE, GPU_LAYERS_2>
 					<<<rmm_gridSize, rmm_blockSize>>>(types.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
 																						normalize, gpu_factor_ac.data, gpu_rmm.data, gpu_rmm_output.data,
 																						gpu_factor_output.data, gpu_functions.data);
@@ -322,7 +325,7 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 			
 			if (compute_forces) {
 				_DBG(printf("calc_forces\n"));
-				calc_forces<EXCHNUM_SMALL_GRID_SIZE, layers2>
+				calc_forces<EXCHNUM_SMALL_GRID_SIZE, GPU_LAYERS_2>
 					<<<force_gridSize, force_blockSize>>>(types.width,
 																								num_funcs, gpu_nuc.data, gpu_contractions.data,
 																								normalize, gpu_factor_ac.data, gpu_factor_output.data, gpu_dd.data,
@@ -337,14 +340,14 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 		{
 			_DBG(printf("energy_kernel\n"));
 			if (compute_forces) {
-			energy_kernel<true, EXCHNUM_MEDIUM_GRID_SIZE, layers>
+			energy_kernel<true, EXCHNUM_MEDIUM_GRID_SIZE, GPU_LAYERS_1>
 				<<< energy_gridSize, energy_blockSize >>>(gpu_energy.data,
 																									types.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
 																									normalize, gpu_factor_ac.data, gpu_rmm.data, gpu_functions.data,
 																									Ndens, gpu_factor_output.data, gpu_dd.data, gpu_Fg.data, gpu_w3.data, compute_energy, update_rmm);
 			}
 			else {
-				energy_kernel<false, EXCHNUM_MEDIUM_GRID_SIZE, layers>
+				energy_kernel<false, EXCHNUM_MEDIUM_GRID_SIZE, GPU_LAYERS_1>
 				<<< energy_gridSize, energy_blockSize >>>(gpu_energy.data,
 																									types.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
 																									normalize, gpu_factor_ac.data, gpu_rmm.data, gpu_functions.data,
@@ -354,7 +357,7 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 			
 			if (update_rmm) {
 				_DBG(printf("calc_new_rmm\n"));
-				calc_new_rmm<EXCHNUM_MEDIUM_GRID_SIZE, layers>
+				calc_new_rmm<EXCHNUM_MEDIUM_GRID_SIZE, GPU_LAYERS_1>
 					<<<rmm_gridSize, rmm_blockSize>>>(types.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
 																						normalize, gpu_factor_ac.data, gpu_rmm.data, gpu_rmm_output.data,
 																						gpu_factor_output.data, gpu_functions.data);
@@ -363,7 +366,7 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 
 			if (compute_forces) {
 				_DBG(printf("calc_forces\n"));
-				calc_forces<EXCHNUM_MEDIUM_GRID_SIZE, layers>
+				calc_forces<EXCHNUM_MEDIUM_GRID_SIZE, GPU_LAYERS_1>
 					<<<force_gridSize, force_blockSize>>>(types.width,
 																								num_funcs, gpu_nuc.data, gpu_contractions.data,
 																								normalize, gpu_factor_ac.data, gpu_factor_output.data, gpu_dd.data,
@@ -378,14 +381,14 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 		{
 			_DBG(printf("energy_kernel\n"));
 			if (compute_forces) {
-				energy_kernel<true, EXCHNUM_BIG_GRID_SIZE, layers>
+				energy_kernel<true, EXCHNUM_BIG_GRID_SIZE, GPU_LAYERS_1>
 					<<< energy_gridSize, energy_blockSize >>>(gpu_energy.data,
 																										types.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
 																										normalize, gpu_factor_ac.data, gpu_rmm.data, gpu_functions.data,
 																										Ndens, gpu_factor_output.data, gpu_dd.data, gpu_Fg.data, gpu_w3.data, compute_energy, update_rmm);
 			}
 			else {
-				energy_kernel<false, EXCHNUM_BIG_GRID_SIZE, layers>
+				energy_kernel<false, EXCHNUM_BIG_GRID_SIZE, GPU_LAYERS_1>
 					<<< energy_gridSize, energy_blockSize >>>(gpu_energy.data,
 																										types.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
 																										normalize, gpu_factor_ac.data, gpu_rmm.data, gpu_functions.data,
@@ -396,7 +399,7 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 			if (update_rmm) {
 				_DBG(printf("calc_new_rmm\n"));
 				
-				calc_new_rmm<EXCHNUM_BIG_GRID_SIZE, layers>
+				calc_new_rmm<EXCHNUM_BIG_GRID_SIZE, GPU_LAYERS_1>
 					<<<rmm_gridSize, rmm_blockSize>>>(types.width, nco, num_funcs, gpu_nuc.data, gpu_contractions.data,
 																						normalize, gpu_factor_ac.data, gpu_rmm.data, gpu_rmm_output.data,
 																						gpu_factor_output.data, gpu_functions.data);
@@ -405,7 +408,7 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 			
 			if (compute_forces) {
 				_DBG(printf("calc_forces\n"));
-				calc_forces<EXCHNUM_BIG_GRID_SIZE, layers>
+				calc_forces<EXCHNUM_BIG_GRID_SIZE, GPU_LAYERS_1>
 					<<<force_gridSize, force_blockSize>>>(types.width,
 																								num_funcs, gpu_nuc.data, gpu_contractions.data,
 																								normalize, gpu_factor_ac.data, gpu_factor_output.data, gpu_dd.data,
@@ -507,15 +510,3 @@ void calc_energy(uint grid_type, uint npoints, uint Ndens, uint3 num_funcs, bool
 	printf("<======= FIN GPU ========>\n");	
 	cudaAssertNoError("final");
 }
-
-
-/************************************************** FUNCTIONS ****************************************/
-#include "functions.h"
-
-/************************************* DENSITY KERNEL ******************************/
-
-#include "density.h"
-
-/******************************** POT KERNEL ***********************************/
-
-#include "pot.h"

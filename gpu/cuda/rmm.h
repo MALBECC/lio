@@ -2,7 +2,7 @@
 /*
  * Funcion llamada para cada (i,j) en RMM, para calcular RMM(i,j) -> un thread por cada punto
  */
-template <uint grid_n, const uint* const curr_layers>
+template <uint grid_n, uint curr_layers>
 __global__ void calc_new_rmm(const uint atoms_n, uint nco, uint3 num_funcs,
 														 const uint* nuc, const uint* contractions, bool normalize, const float2* factor_ac,
 														 const float* rmm, float* rmm_output, const float* factors, const float* all_functions)
@@ -33,7 +33,9 @@ __global__ void calc_new_rmm(const uint atoms_n, uint nco, uint3 num_funcs,
 
 	for (uint atom_i = 0; atom_i < atoms_n; atom_i++) {
 		uint atom_i_type = gpu_types[atom_i];
-		uint atom_i_layers = curr_layers[atom_i_type];
+		uint atom_i_layers;
+		if (curr_layers == GPU_LAYERS_1) atom_i_layers = gpu_layers_1[atom_i_type];
+		else atom_i_layers = gpu_layers_2[atom_i_type];		
 
 		//_EMU(printf("layers: %i\n", atom_i_layers));
 

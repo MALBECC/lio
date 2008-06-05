@@ -237,6 +237,7 @@ template class Matrix<float2>;
 template class Matrix<float3>;
 template class Matrix<float4>;
 template class Matrix<uint1>;
+template class Matrix<uint2>;
 template class Matrix<uint>;
 
 template class HostMatrix<double3>;
@@ -247,6 +248,7 @@ template class HostMatrix<float2>;
 template class HostMatrix<float3>;
 template class HostMatrix<float4>;
 template class HostMatrix<uint1>;
+template class HostMatrix<uint2>;
 template class HostMatrix<uint>;
 
 template class CudaMatrix<float>;
@@ -255,3 +257,5 @@ template class CudaMatrix<float2>;
 template class CudaMatrix<float3>;
 template class CudaMatrix<float4>;
 template class CudaMatrix<uint>;
+template class CudaMatrix<uint1>;
+template class CudaMatrix<uint2>;

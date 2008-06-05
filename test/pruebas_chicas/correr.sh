@@ -2,7 +2,7 @@
 
 primera_grilla=1
 
-for i in no; do
+for i in agua9; do
   cd ${i}
   
   echo "${i} (con grilla ${primera_grilla})"

@@ -25,5 +25,5 @@ libg2g.so: $(CUDA_OBJ) $(OBJ)
 
 clean:
 	make -C cuda clean
-	rm -f *_test *.o *.o *.so *.cu_o
+	rm -f *_test *.o *.o *.so *.cu_o *.i *.ii *.cudafe?.* *.cubin *.fatbin.* *.hash *.ptx *.cu.cpp
 

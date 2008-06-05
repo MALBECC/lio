@@ -2,7 +2,7 @@
  * Main Energy Kernel
  */
 
-template <bool compute_forces, unsigned int grid_n, const uint* const curr_layers>
+template <bool compute_forces, unsigned int grid_n, uint curr_layers>
 __global__ void energy_kernel(float* energy, const uint atoms_n, uint nco, uint3 num_funcs,
 		const uint* nuc, const uint* contractions, bool normalize, const float2* factor_ac,
 		const float* rmm, float* all_functions,  uint Ndens, float* output_factor, float3* dd, float3* Fg, float3* w3,
@@ -28,7 +28,10 @@ __global__ void energy_kernel(float* energy, const uint atoms_n, uint nco, uint3
 	float wang_point_i = gpu_wang[point_atom_i]; // constant memory
 
 	float rm = rm_factor[atom_i_type]; // constant memory
-	uint atom_i_layers = curr_layers[atom_i_type];	// constant memory
+	uint atom_i_layers;
+	if (curr_layers == GPU_LAYERS_1) atom_i_layers = gpu_layers_1[atom_i_type];	// constant memory
+	else atom_i_layers = gpu_layers_2[atom_i_type];	// constant memory
+	
 	float3 atom_i_position = gpu_atom_positions[atom_i]; // constant memory
 	float tmp0 = (PI / (atom_i_layers + 1.0f));	
 	

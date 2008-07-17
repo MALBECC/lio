@@ -1,0 +1,11 @@
+# -*- mode: make -*-
+CXXFLAGS:=$(CXXFLAGS) $(EXTRA_FLAGS) -Wall -pedantic -ansi -Wno-long-long
+
+%.o:%.cpp %.h
+	g++ $(CXXFLAGS) -c $< -o $@
+  
+%.o:%.cpp
+	g++ $(CXXFLAGS) -c $< -o $@
+  
+%.o:%.c %.h
+	gcc $(CFLAGS) -c $< -o $@

@@ -19,10 +19,7 @@ __device__ void local_pot_kernel(float dens, float& ex, float& ec, float& y2a, u
 	float e0 = pot_alpha * y;	
 	float v0 = -0.984745021842697f * y; // 4/3 * pot_alpha * y
 	
-	// DEBUG
-	uint Iexch = 1;
-	
-	switch(Iexch) {
+	switch(Iexch_gpu) {
 		case 1:
 		{
 			ex = e0;

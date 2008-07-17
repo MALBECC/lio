@@ -12,6 +12,10 @@ ifeq ($(time), 1)
 	CXXFLAGS += -DDO_TIMINGS
 endif
 
+ifeq ($(profile),1)
+	CXXFLAGS += -pg
+	LDFLAGS += -pg
+endif
 
 all: libg2g.so #accum_test dist_test exchnum_test
 

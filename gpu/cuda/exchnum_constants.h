@@ -32,6 +32,9 @@
 // used for "types" constant memory
 #define MAX_ATOMS 60
 
+#define GPU_LAYERS_1 0
+#define GPU_LAYERS_2 1
+
 const uint cpu_layers[] = {
 	30,30,35,35,35,35,35,35,35,35,
 	40,40,40,40,40,40,40,40,
@@ -39,7 +42,7 @@ const uint cpu_layers[] = {
 	50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50
 };
 
-__device__ __constant__ uint layers[] = {
+__device__ __constant__ uint gpu_layers_1[] = {
   30,30,35,35,35,35,35,35,35,35,
   40,40,40,40,40,40,40,40,
   45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,
@@ -53,7 +56,7 @@ const uint cpu_layers2[] = {
 	40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40
 };
 
-__device__ __constant__ uint layers2[] = {
+__device__ __constant__ uint gpu_layers_2[] = {
 	20,20,25,25,25,25,25,25,25,25,
 	30,30,30,30,30,30,30,30,
 	35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,
@@ -100,5 +103,7 @@ __device__ __constant__ float pot_vosko_c2 = 18.0578;
 __device__ __constant__ float pot_vosko_x02 = -0.32500;
 __device__ __constant__ float pot_vosko_q2 = 4.7309269;
 __device__ __constant__ float pot_vosko_a26 = 0.0025910042;
+
+__device__ __constant__ uint Iexch_gpu = 0;
 
 #endif

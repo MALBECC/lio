@@ -1,7 +1,7 @@
 &INT0 
  TITLE = 'NO3', 
- NATOM = 6,
- NOPT = 2,
+ NATOM = 2,
+ NOPT = 0,
  NORM = T, 
  ANG = T,
  EX = T, 
@@ -11,13 +11,8 @@
  FIELD = F, 
  SOL = F, 
  RESP1 = F/
- 1 1.0 0.2 0.0
- 1 0.0 1.0 0.0
- 1 0.2 0.0 1.0
- 1 1.0 0.0 1.0
- 1 0.0 1.0 1.0
- 1 1.0 1.0 0.2
-&geo/
+ 1 -0.140080431288924       8.793715625748652E-002  8.793877981069341E-002
+ 1 0.563429949048092      -8.793893982396560E-002 -8.794086200731448E-002
 gaussian
  1   6   3
  4 1 1
@@ -38,8 +33,8 @@ gaussian
 endbasis
 &SCFINP
  OPEN = F, 
- NMAX = 150, 
- NCO = 3,
+ NMAX = 150,
+ NCO = 1,
  NUNP = 0, 
  ATRHO = F, 
  VCINP = F, 
@@ -51,12 +46,10 @@ endbasis
  GOLD =  5., 
  TOLD =  1.E-06, 
  WRITE = F, 
- MEMO = F/
+ MEMO = T/
 &EXCH 
- IEXCH = 1, 
+ IEXCH = 3,
  INTEG = T, 
  DENS = T, 
  IGRID = 2, 
  IGRID2 = 1/
-
-

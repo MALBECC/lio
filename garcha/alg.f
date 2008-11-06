@@ -548,6 +548,7 @@ C        dx(i + 4) = da*dx(i + 4)
 C   50 continue
 C      return
 C      end
+#ifndef pack      
       double precision function dasum(n,dx,incx)
 c
 c     takes the sum of the absolute values.
@@ -590,6 +591,7 @@ c
    60 dasum = dtemp
       return
       end
+#endif      
       subroutine dppfa(ap,n,info)
       integer n,info
       double precision ap(1)
@@ -679,3 +681,4 @@ c     ......exit
    40 continue
       return
       end
+

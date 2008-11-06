@@ -13,10 +13,10 @@ c norbit : number of MO
 c
 c Ngrid may be set to 0 , in the case of using Num. Integ.
 c
-c      parameter (ngDyn=800)
-c      parameter (ngdDyn=880)
-      parameter (ngDyn=450)
-      parameter (ngdDyn=450)
+      parameter (ngDyn=700)
+      parameter (ngdDyn=700)
+c      parameter (ngDyn=450)
+c      parameter (ngdDyn=450)
 
       
 c     parameter (ngDyn=66)

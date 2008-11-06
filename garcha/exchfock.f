@@ -268,6 +268,7 @@ c
         tmp=tmp0*PF
 c
         Ex=Ex+dens*yi*tmp
+c        write(*,*),na,n,iang,tmp,P(na)
 c        write(*,*) 'double: ',Nang*((na-1)*60+n-1)+iang-1,P(na)
 c        write(*,*) 'double: ',Nang*((na-1)*60+n-1)+iang-1,dens,yi,tmp
         ss0=ss0+dens*tmp
@@ -314,6 +315,7 @@ c      nb=Nang*((na-1)*60+n-1)+iang-1
 c      write(957,*) 'factor',Nang*((na-1)*60+n-1)+iang-1,tmp*y2a
       
       tmpa=tmp*y2a
+c      write(*,*),'factor',na,n,iang,tmpa
       kk=0
       do 201 j=1,M
 c
@@ -333,10 +335,8 @@ c
 c Fock matrix
 c M5 pointer
 
-c      if (nb.eq.996) then
-c      tmpjb=RMM(M5+kk-1)+F(i)*tmpja
-c      write(957,*) 'rmmn',kk-1,F(i)*tmpja,RMM(M5+kk-1),tmpjb
-c      endif
+c      tmpjb=F(i)*tmpja
+c      write(*,*) 'RMM',kk-1,na,n,iang,RMM(M5+kk-1),tmpjb
       RMM(M5+kk-1)=RMM(M5+kk-1)+F(i)*tmpja
  202  continue
  201  continue

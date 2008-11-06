@@ -198,13 +198,13 @@ c
 c construction of sparse F vector   -----------------------
 c slower (at least for moderately small molecules)
 c
-        k=0
-      do i=1,M
-       if (F(i).ne.0.0D0) then
-        k=k+1
-        indx(k)=i
-       endif
-       enddo
+c        k=0
+c      do i=1,M
+c       if (F(i).ne.0.0D0) then
+c        k=k+1
+c        indx(k)=i
+c       endif
+c       enddo
 c
       kk=M18-1
 c
@@ -224,7 +224,7 @@ c      else
 c
 #ifndef GPU     
 c      do i=1,M
-c        write(*,*) 'F(',i-1,')=',F(i)
+c        write(*,*) 'energia punto',F(5)
 c      enddo
 #endif
       

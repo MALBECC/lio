@@ -1,197 +1,73 @@
 // -*- mode: c -*-
-
-// ********* S ***********
-__device__ void calc_function_s(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
-																const float2* factor_ac, uint func_index, float* func_value)
+__device__ float compute_function(uint idx, float3 point_position, uint* contractions, float2* factor_ac, float3 atom_nuc_position,
+                                  uint spd)
 {
-	uint atom_nuc = nuc[func_index];
-	float3 atom_nuc_position = gpu_atom_positions[atom_nuc];
 	float dist = distance2(point_position, atom_nuc_position);
+	uint func_contractions = contractions[idx];
 
-	uint func_contractions = contractions[func_index];
-	float func_value_local = 0.0f;
+	float t = 0.0f;
 
 	for (uint contraction = 0; contraction < func_contractions; contraction++) {
-		float2 curr_factor_ac = factor_ac[func_index * MAX_CONTRACTIONS + contraction];
+		float2 curr_factor_ac = factor_ac[contraction * spd + idx];
 		float rexp = curr_factor_ac.x * dist;
-		if (rexp > 30.0f) continue;
-		func_value_local += expf(-rexp) * curr_factor_ac.y;
+		if (rexp > 30.0f) continue; // TODO: esto se puede sacar?
+		t += expf(-rexp) * curr_factor_ac.y;
+		//_EMU(printf("func(%i): %f, a: %f, c: %f (%i/%i contractions) spd: %i\n", idx, t, curr_factor_ac.x, curr_factor_ac.y, contraction, func_contractions, spd));
 	}
-	
-	*func_value = func_value_local;
+	return t;
 }
 
-__device__ void calc_function_s(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
-															  const float2* factor_ac, uint func_index, float* func_value, float3* Fg)
+/**
+ * gpu_compute_functions
+ * 	grid: points 
+ *  TODO: agregar otra dimension para parelelizar las funciones
+ *  TODO: paralelizar por puntos (pueden cargar cosas comunes)
+ */
+__global__ void gpu_compute_functions(float3* point_positions, uint points, uint* contractions, float2* factor_ac, uint* nuc,
+																			float* function_values, uint4 functions, uint spd)
 {
-	uint atom_nuc = nuc[func_index];
-	float3 atom_nuc_position = gpu_atom_positions[atom_nuc];
-	float dist = distance2(point_position, atom_nuc_position);
-
-	uint func_contractions = contractions[func_index];
-	float func_value_local = 0.0f;
-	float Fgx = 0.0f;
-
-	for (uint contraction = 0; contraction < func_contractions; contraction++) {
-		float2 curr_factor_ac = factor_ac[func_index * MAX_CONTRACTIONS + contraction];
-		float rexp = curr_factor_ac.x * dist;
-		if (rexp > 30.0f) continue;
-		
-		float term = expf(-rexp) * curr_factor_ac.y;
-		func_value_local += term;
-    Fgx += term * curr_factor_ac.x;
-	}
-
-	*Fg = (point_position - atom_nuc_position) * 2.0f * Fgx;
-	*func_value = func_value_local;
-}
-
-// ****** P *******
-__device__ void calc_function_p(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
-																const float2* factor_ac, uint func_index, float* func_value)
-{
-	uint atom_nuc = nuc[func_index];
-	float3 atom_nuc_position = gpu_atom_positions[atom_nuc];
-	float dist = distance2(point_position, atom_nuc_position);
-
-	uint func_contractions = contractions[func_index];
+	dim3 pos = index(blockDim, blockIdx, threadIdx);
+	uint point = pos.x;
 	
-	float func_value_local[3];
-	for (uint i = 0; i < 3; i++) func_value_local[i] = 0.0f;
+	/**** Load Point Information ****/
+	if (point >= points) return; 	// esto se puede evitar computando basura	
+	float3 point_position = point_positions[point];
 
-	for (uint contraction = 0; contraction < func_contractions; contraction++) {
-		float2 curr_factor_ac = factor_ac[func_index * MAX_CONTRACTIONS + contraction];
-		float rexp = curr_factor_ac.x * dist;
-		if (rexp > 30.0f) continue;
-
-		float t = expf(-rexp) * curr_factor_ac.y;
-		float3 v = (point_position - atom_nuc_position) * t;
-		
-		for (uint i = 0; i < 3; i++) func_value_local[i] += elem(v,i);
+	/** Compute functions ***/
+	uint base = point * functions.w;
+	
+	// s functions
+	for (uint i = 0; i < functions.x; i++) {
+		float3 atom_nuc_position = gpu_atom_positions[nuc[i]];
+		function_values[base + i] = compute_function(i, point_position, contractions, factor_ac, atom_nuc_position,spd);
 	}
 	
-	for (uint i = 0; i < 3; i++) func_value[i] = func_value_local[i];
-}
-
-__device__ void calc_function_p(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
-																const float2* factor_ac, uint func_index, float* func_value, float3* Fg)
-{
-	uint atom_nuc = nuc[func_index];
-	float3 atom_nuc_position = gpu_atom_positions[atom_nuc];
-	float dist = distance2(point_position, atom_nuc_position);
-
-	uint func_contractions = contractions[func_index];
-	
-	float func_value_local[3];
-	float3 local_Fg[3];
-	for (uint i = 0; i < 3; i++) { func_value_local[i] = 0.0f; local_Fg[i] = make_float3(0.0f,0.0f,0.0f); }
-	
-	float3 txyz = (point_position - atom_nuc_position) * 2.0f;
-
-	for (uint contraction = 0; contraction < func_contractions; contraction++) {
-		float2 curr_factor_ac = factor_ac[func_index * MAX_CONTRACTIONS + contraction];
-		float rexp = curr_factor_ac.x * dist;
-		if (rexp > 30.0f) continue;
-
-		float t = expf(-rexp) * curr_factor_ac.y;
-		float3 term = (point_position - atom_nuc_position) * t;
-		
-		func_value_local[0] += term.x;
-		local_Fg[0] = local_Fg[0] + txyz * term.x * curr_factor_ac.x - make_float3(t, 0.0f,0.0f);
-		
-		func_value_local[1] += term.y;
-		local_Fg[1] = local_Fg[1] + txyz * term.y * curr_factor_ac.x - make_float3(0.0f, t, 0.0f);
-
-		func_value_local[2] += term.z;
-		local_Fg[2] = local_Fg[2] + txyz * term.z * curr_factor_ac.x - make_float3(0.0f, 0.0f, t);
-	}
-	
-	for (uint i = 0; i < 3; i++) { func_value[i] = func_value_local[i]; Fg[i] = local_Fg[i]; }
-}
-
-// ************** D **************
-__device__ void calc_function_d(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
-																const float2* factor_ac, uint func_index, float normalization_factor, float* func_value)
-{
-	uint atom_nuc = nuc[func_index];
-	float3 atom_nuc_position = gpu_atom_positions[atom_nuc];
-	float dist = distance2(point_position, atom_nuc_position);
-
-	uint func_contractions = contractions[func_index];
-	
-	float func_value_local[6];
-	for (uint i = 0; i < 6; i++) func_value_local[i] = 0.0f;
-
-	for (uint contraction = 0; contraction < func_contractions; contraction++) {
-		float2 curr_factor_ac = factor_ac[func_index * MAX_CONTRACTIONS + contraction];
-		float rexp = curr_factor_ac.x * dist;
-		if (rexp > 30.0f) continue;
-
-		float t = expf(-rexp) * curr_factor_ac.y;
-
-		float3 v = point_position - atom_nuc_position;
-
-		uint ij = 0;
-		for (uint i = 0; i < 3; i++) {
-			float t1 = elem(v, i);
-			for (uint j = 0; j <= i; j++) {
-				float t2 = (i == j ? elem(v, j) * normalization_factor : elem(v, j));
-				func_value_local[ij] += t * t1 * t2;
-				ij++;
-			}
+	// p functions
+	base += functions.x;
+	for (uint i = 0; i < functions.y; i++) {
+		float3 atom_nuc_position = gpu_atom_positions[nuc[functions.x + i]];
+		float t = compute_function(functions.x + i, point_position, contractions, factor_ac, atom_nuc_position,spd);
+		for (uint j = 0; j < 3; j++) {
+			function_values[base + i * 3 + j] = (float3_elem(point_position, j) - float3_elem(atom_nuc_position, j)) * t;
 		}
 	}
 	
-	for (uint i = 0; i < 6; i++) func_value[i] = func_value_local[i];
-}
-
-__device__ void calc_function_d(const uint3& num_funcs, const uint* nuc, const uint* contractions, const float3& point_position,
-																const float2* factor_ac, uint func_index, float normalization_factor, float* func_value, float3* Fg)
-{
-	uint atom_nuc = nuc[func_index];
-	float3 atom_nuc_position = gpu_atom_positions[atom_nuc];
-	float dist = distance2(point_position, atom_nuc_position);
-
-	uint func_contractions = contractions[func_index];
+	// d functions
+	base += functions.y * 3;
+	for (uint i = 0; i < functions.z; i++) {
+		float3 atom_nuc_position = gpu_atom_positions[nuc[functions.x + functions.y + i]];
+		float t = compute_function(functions.y + functions.x + i, point_position, contractions, factor_ac, atom_nuc_position,spd);
 	
-	float func_value_local[6];
-	float3 local_Fg[6];
-	for (uint i = 0; i < 6; i++) { func_value_local[i] = 0.0f; local_Fg[i] = make_float3(0.0f,0.0f,0.0f); }
-
-	float3 t3 = (point_position - atom_nuc_position) * 2.0f;
-
-	for (uint contraction = 0; contraction < func_contractions; contraction++) {
-		float2 curr_factor_ac = factor_ac[func_index * MAX_CONTRACTIONS + contraction];
-		float rexp = curr_factor_ac.x * dist;
-		if (rexp > 30.0f) continue;
-
-		float t0 = expf(-rexp) * curr_factor_ac.y;
-
 		float3 v = point_position - atom_nuc_position;
 
-		uint ij = 0;
-		for (uint i = 0; i < 3; i++) {
-			float t1 = elem(v, i);
-			for (uint j = 0; j <= i; j++) {
-				float t = (i == j ? normalization_factor * t0 : t0);
-				float t2 = elem(v,j);
-				float term = t * t1 * t2;
-				func_value_local[ij] += term;
-				local_Fg[ij] = local_Fg[ij] + t3 * term * curr_factor_ac.x;
-				
-				if (i == 0) local_Fg[ij].x = local_Fg[ij].x - t * t2;
-				else if (i == 1) local_Fg[ij].y = local_Fg[ij].y - t * t2;
-				else if (i == 2) local_Fg[ij].z = local_Fg[ij].z - t * t2;
-
-				if (j == 0) local_Fg[ij].x = local_Fg[ij].x - t * t1;
-				else if (j == 1) local_Fg[ij].y = local_Fg[ij].y - t * t1;
-				else if (j == 2) local_Fg[ij].z = local_Fg[ij].z - t * t1;
-
-				ij++;
+		uint jk = 0;
+		for (uint j = 0; j < 3; j++) {
+			float t1 = float3_elem(v, j);
+			for (uint k = 0; k <= j; k++) {
+				float t2 = (j == k ? float3_elem(v, k) * gpu_normalization_factor : float3_elem(v, k));
+				function_values[base + i * 6 + jk] = t * t1 * t2;
+				jk++;
 			}
 		}
 	}
-	
-	for (uint i = 0; i < 6; i++) { func_value[i] = func_value_local[i]; Fg[i] = local_Fg[i]; }
 }
-

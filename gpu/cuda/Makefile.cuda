@@ -107,6 +107,10 @@ CFLAGS      := $(CWARN_FLAGS)
 # Common flags
 COMMONFLAGS = $(INCLUDES) -DUNIX
 
+ifeq ($(profile),1)
+	NVCCFLAGS += --compiler-options -pg
+endif
+	
 # Debug/release configuration
 ifeq ($(dbg),1)
 	COMMONFLAGS += -g -D_DEBUG
@@ -119,11 +123,6 @@ else
 	CXXFLAGS  	+= -fno-strict-aliasing
 	CFLAGS  		+= -fno-strict-aliasing
 endif
-
-ifeq ($(energy3d), 1)
-	CXXFLAGS += -DENERGY3D
-	NVCCFLAGS +=  -DENERGY3D
-endif	
 
 # Lib/exe configuration
 LIB += #-lcutil$(LIBSUFFIX)

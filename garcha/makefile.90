@@ -9,10 +9,11 @@ OBJ =      int.o init.o drive.o SCF.o  func.o     \
            densg.o  exchfock.o\
            nwrite.o dfp2.o lsearch.o SCFop.o\
            densgop.o dns2op.o dnsop.o exchnum2op.o\
-           exchnumop.o potop.o alg.o eig.o svd.o \
+           exchnumop.o potop.o \
            dnsgop.o potgop.o elec.o charge.o dip2.o vol.o\
             mmsol.o mmsolG.o intsolG.o intsol.o resp.o\
-            efield.o lalg.o popu.o int3mem.o int3lu.o
+            efield.o lalg.o popu.o int3mem.o int3lu.o alg.o
+#OTHER_OBJ = alg.o eig.o svd.o
 
 #COMPFLG =  -march=athlon-xp -O3 -pipe -fomit-frame-pointer -c\
 #           -falign-loops=2 -fno-strength-reduce \
@@ -24,7 +25,10 @@ COMPFLG2 = -O3     -c $(CFLAGS)
 LINKFLG = -lm 
 CPPFLAGS =  -P -traditional-cpp
 DEFINE   = -Dpack
-LIBS= -L/usr/lib -lblas -L../gpu -lg2g #-L/opt/intel/mkl/9.0/lib/em64t -lmkl_lapack64 -lmkl_em64t -lguide
+CUDA_COMMONDIR := $(CUDA_INSTALL_PATH)/../sdk/common
+CUDA_LIBS=-L$(CUDA_INSTALL_PATH)/lib -L$(CUDA_COMMONDIR)/lib -lcuda -lcudart
+LIBS= -L/usr/lib -lblas -L../gpu -lg2g -lstdc++ $(CUDA_LIBS) -L/opt/intel/mkl/9.0/lib/em64t -lmkl_lapack64 -lmkl_em64t -lguide \
+ 	-lpthread
 GPU_CFLAGS=-DGPU
 
 ifeq ($(profile),1)
@@ -154,7 +158,7 @@ cpu_obj/potgop.o     : potgop.f
 cpu_obj/dnsgop.o     : dnsgop.f param
 	ifort -o $@ $(COMPFLG) dnsgop.f
 cpu_obj/alg.o     : alg.f 
-	ifort -o $@ $(COMPFLG) alg.f
+	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) alg.f
 cpu_obj/eig.o     : eig.f
 	ifort -o $@ $(COMPFLG2) eig.f
 cpu_obj/svd.o     : svd.f
@@ -272,7 +276,7 @@ gpu_obj/potgop.o     : potgop.f
 gpu_obj/dnsgop.o     : dnsgop.f param
 	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) dnsgop.f
 gpu_obj/alg.o     : alg.f 
-	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) alg.f
+	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) $(GPU_CFLAGS) alg.f
 gpu_obj/eig.o     : eig.f
 	ifort -o $@ $(COMPFLG2) $(GPU_CFLAGS) eig.f
 gpu_obj/svd.o     : svd.f

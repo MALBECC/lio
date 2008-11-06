@@ -23,7 +23,7 @@ c input
       dimension xi(3),aux(ng)
       dimension RMM(*),ds(ntq)
 c Rm: 1/2 Slater's radius, Nr : # shells
-      dimension RR(ntq,ntq),P(ntq)
+      dimension RR(ntq,ntq),P(ntq)      
 c
 c
 c
@@ -69,7 +69,7 @@ c
         npoint=116
       else
         npoint=194
-      endif
+      endif      
 c------------------------------
       DO 12 na=1,natom
 c
@@ -116,6 +116,7 @@ c     >     e3(i,2),',',e3(i,3),')'
 c         write(*,*) 'atomo: ',na,' punto: ',i,'Iz:',Iz(na),
 c     > 'Nr:',Nr(Iz(na)),'tmp',tmp0,'pos:',xi(1),xi(2),xi(3)
        endif
+c       
 c
 c
 c
@@ -198,6 +199,7 @@ c        write(*,*) 'wang',wang(i),'wrad',wrad
 c        else
 c          write(*,*) 'wang3',wang3(i),'wrad',wrad
 c        endif
+c				write(*,*) 'energia punto',na,n,i,Rm(Iz(na))
         excha = excha + t1*yiex
         ecorr = ecorr + t1*yiec
         PP=t1*yiex + t1*yiec

@@ -19,7 +19,7 @@ c
       dimension cd(ngd,nl),ad(ngd,nl),Nucd(Md),ncontd(Md)
       dimension c(ng,nl),a(ng,nl),Nuc(M),ncont(M),Iz(nt)
 c
-      dimension Em(ntq+nss),Rm(ntq+nss),pc(nss),alpha(nss)
+      dimension Em(ntq+nss),pc(nss),alpha(nss)
       dimension pci(nt,4),ighost(ntq)
 c
 c
@@ -47,10 +47,12 @@ c
       common/Ngeom/ ngeo
       common /ENum/ GRAD
       common /propt/ idip,ipop,ispin,icharge,map(ntq)
-      common /intg1/ e_(50,3),wang(50)
-      common /intg2/ e_2(116,3),wang2(116),Nr(0:54),e3(194,3),wang3(194)
+      common /intg1/ e_(50,3),wang(50),Nr(0:54)
+      common /intg2/ e_2(116,3),wang2(116),Nr2(0:54),e3(194,3),
+     > wang3(194)
+			common /radii/ Rm(0:54)
 c
-      common /sol1/ Nsol,natsol,alpha,Em,Rm,pc,sol,free
+      common /sol1/ Nsol,natsol,alpha,Em,pc,sol,free
       just_int3n = false
 
 
@@ -102,6 +104,14 @@ c
       M20 = M19 + natom*50*Nang   
 c
       Nel=2*NCO+Nunp
+#ifdef GPU
+c------- GPU Initialization ---------------------
+      call gpu_init(NORM, natom, r, Rm, Iz, Nr, Nr2, Nuc, M,
+     > ncont, nshell, c, a, RMM, M18, M5, NCO, nopt, Iexch,
+     > e_, e_2, e3, wang, wang2, wang3)
+			call gpu_reload_atom_positions()
+      call gpu_new_grid(igrid2)
+#endif
 c------------------------------------------------
 c Initializations/Defaults
 c
@@ -706,25 +716,27 @@ c--------------------------------------------------------------
          endif
        endif
 /* -- G2G -- */
-       write(*,*) 'exchnum SCF'
        call timer_start       
 #ifdef GPU
 #ifdef ULTIMA_CPU
        call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,NCO,Exc,nopt)
 #else
-      call exchnum_gpu(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
-     >              M18,M5,NCO,Exc,nopt,Iexch, igrid, e_, e_2, e3,
-     >              wang, wang2, wang3, Ndens, 0, 0)
+			 if (igrid.ne.igrid2) then
+       call gpu_new_grid(igrid)
+			 endif
+       call gpu_solve_cubes(0, Exc, 0)
 #endif
 #else
 #ifdef ULTIMA_GPU
-      call exchnum_gpu(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
-     >              M18,M5,NCO,Exc,nopt,Iexch, igrid, e_, e_2, e3,
-     >              wang, wang2, wang3, Ndens, 0, 0)
+			 if (igrid.ne.igrid2) then
+       call gpu_new_grid(igrid)
+			 endif
+       call gpu_solve_cubes(0, Exc, 0)
 #else      
       call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,NCO,Exc,nopt)
+			write(*,*) 'total final:',Exc
 #endif       
 #endif
        call timer_stop('exchnum')      

@@ -425,14 +425,11 @@ c
        NCOa=NCO
        NCOb=NCO+Nunp
        write(*,*) 'exchnum int3lu'
-       write(*,*) 'Ndens',Ndens
 c       write(957,*) 'int3lu'
-       call timer_start
 #ifdef GPU
-       call exchnum_gpu(NORM, natom, r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
-     >    M18,M5,NCOa,Ex,nopt,Iexch, igrid2, e_, e_2, e3, wang, wang2,
-     >    wang3,Ndens, 0, 1)
+       call gpu_solve_cubes(1, 0, 0)
 #else
+       call timer_start       
        call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
      >        M,M18,NCOa,NCOb,RMM,Ex)
        write(*,*) 'energia cpu',Ex       
@@ -441,8 +438,8 @@ c        do jj=kk,m
 c          write(*,*) 'rmm output',RMM(i)
 c        enddo
 c      enddo
+       call timer_stop('exchfock')       
 #endif
-       call timer_stop('exchfock')
       
        Ndens=Ndens+1
        endif

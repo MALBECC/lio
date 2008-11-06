@@ -6,9 +6,9 @@
 using namespace G2G;
 using namespace std;
 
-/*
+/***************************
  * Matrix
- */
+ ***************************/
 
 template<class T> Matrix<T>::Matrix(void) : data(NULL), width(0), height(0) /*, components(0)*/ {}
 
@@ -26,9 +26,9 @@ template<class T> bool Matrix<T>::is_allocated(void) const {
 	return data;
 }
 
-/*
+/***************************
  * HostMatrix
- */
+ ***************************/
 template<class T> void HostMatrix<T>::alloc_data(void) {
 	if (pinned) {
 		cudaError_t error_status = cudaMallocHost((void**)&this->data, this->bytes());
@@ -51,7 +51,7 @@ template<class T> void HostMatrix<T>::deallocate(void) {
 
 template<class T> HostMatrix<T>::HostMatrix(void) : Matrix<T>(), pinned(false) { }
 
-template<class T> HostMatrix<T>::HostMatrix(bool _pinned) : Matrix<T>(), pinned(_pinned) { }
+//template<class T> HostMatrix<T>::HostMatrix(bool _pinned) : Matrix<T>(), pinned(_pinned) { }
 
 /*HostMatrix::HostMatrix(const HostMatrix& c) : Matrix() {
 	*this = c;
@@ -63,6 +63,10 @@ template<class T> HostMatrix<T>::HostMatrix(unsigned int _width, unsigned _heigh
 
 template<class T> HostMatrix<T>::HostMatrix(const CudaMatrix<T>& c) : Matrix<T>(), pinned(false) {
 	*this = c;
+}
+
+template<class T> HostMatrix<T>::HostMatrix(const HostMatrix<T>& m) : Matrix<T>(), pinned(false) {
+	*this = m;
 }
 
 template<class T> HostMatrix<T>::~HostMatrix(void) {
@@ -82,18 +86,30 @@ template<class T> HostMatrix<T>& HostMatrix<T>::fill(const T& value) {
 	return *this;
 }
 
-/*const HostMatrix& HostMatrix::operator=(const HostMatrix& c) {
-	if (!c.data) delete[] data;
+template<class T> HostMatrix<T>& HostMatrix<T>::operator=(const HostMatrix<T>& c) {
+	assert(!this->pinned);
+	
+	if (!c.data) {
+		if (this->data) { dealloc_data(); this->width = this->height = 0; this->data = NULL; }
+	}
 	else {
-		if (data) {
-			if (bytes != c.bytes()) { delete[] data; width = c.width; height = c.height; data = new float[this->elements()]; }
+		if (this->data) {
+			if (this->bytes() != c.bytes()) {
+				dealloc_data();
+				this->width = c.width; this->height = c.height; 
+				alloc_data();
+			}
 		}
-		else { width = c.width; height = c.height; data = new float[this->elements()]; }
+		else {
+			this->width = c.width; this->height = c.height;
+			alloc_data();
+		}
 		
 		copy_submatrix(c);
 	}
+	
 	return *this;
-}*/
+}
 
 template <class T> HostMatrix<T>& HostMatrix<T>::operator=(const CudaMatrix<T>& c) {
 	if (!c.data) {
@@ -118,17 +134,45 @@ template <class T> HostMatrix<T>& HostMatrix<T>::operator=(const CudaMatrix<T>& 
 	return *this;		
 }
 
+template<class T> void HostMatrix<T>::copy_submatrix(const HostMatrix<T>& c, unsigned int _elements) {
+	unsigned int _bytes = (_elements == 0 ? this->bytes() : _elements * sizeof(T));
+	//cout << "bytes: " << _bytes << ", c.bytes: " << c.bytes() << endl;
+	if (_bytes > c.bytes()) throw runtime_error("Can't copy more elements than what operator has");
+	memcpy(this->data, c.data, _bytes);
+}
+
 template<class T> void HostMatrix<T>::copy_submatrix(const CudaMatrix<T>& c, unsigned int _elements) {
 	unsigned int _bytes = (_elements == 0 ? this->bytes() : _elements * sizeof(T));
 	//cout << "bytes: " << _bytes << ", c.bytes: " << c.bytes() << endl;
 	if (_bytes > c.bytes()) throw runtime_error("Can't copy more elements than what operator has");
 	
-	cudaMemcpy(this->data, c.data, _bytes, cudaMemcpyDeviceToHost);
+	cudaError_t ret = cudaMemcpy(this->data, c.data, _bytes, cudaMemcpyDeviceToHost);
+	assert(ret == cudaSuccess);
 }
 
-/*
+template<class T> void HostMatrix<T>::to_constant(const char* symbol) {
+	cudaMemcpyToSymbol(symbol, this->data, this->bytes(), 0, cudaMemcpyHostToDevice);	
+}
+
+/*template<class T, class S> void HostMatrix<T>::to_constant<S>(const char* constant, const S& value) {
+	cudaMemcpyToSymbol(constant, &value, sizeof(S), 0, cudaMemcpyHostToDevice);	
+}*/
+
+/*template<class T> const T& HostMatrix<T>::get(unsigned int i, unsigned int j) const{
+	assert(i < this->width);
+	assert(j < this->height);
+	return this->data[j * this->width + i];
+}
+
+template<class T> T& HostMatrix<T>::get(unsigned int i, unsigned int j) {
+	assert(i < this->width);
+	assert(j < this->height);
+	return this->data[j * this->width + i];
+}*/
+
+/******************************
  * CudaMatrix
- */
+ ******************************/
 
 template<class T> CudaMatrix<T>::CudaMatrix(void) : Matrix<T>() { }
 
@@ -226,6 +270,32 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const CudaMatrix<T>& c
 	return *this;
 }
 
+/*************************************
+ * FortranMatrix
+ *************************************/
+template<class T> FortranMatrix<T>::FortranMatrix(void)
+	: Matrix<T>(), fortran_width(0)
+{ }
+
+template<class T> FortranMatrix<T>::FortranMatrix(T* _data, unsigned int _width, unsigned int _height, unsigned int _fortran_width)
+	: Matrix<T>(), fortran_width(_fortran_width)
+{
+	this->data = _data;
+	this->width = _width; this->height = _height;
+}
+
+/*template<class T> const T& FortranMatrix<T>::get(unsigned int x, unsigned int y) const{
+	assert(x < this->width);
+	assert(y < this->height);
+	return this->data[y * fortran_width + x];
+}
+
+template<class T> T& FortranMatrix<T>::get(unsigned int x, unsigned int y) {
+	assert(x < this->width);
+	assert(y < this->height);
+	return this->data[y * fortran_width + x];
+}*/
+
 /**
  * Instantiations
  */
@@ -255,3 +325,7 @@ template class CudaMatrix<float2>;
 template class CudaMatrix<float3>;
 template class CudaMatrix<float4>;
 template class CudaMatrix<uint>;
+template class CudaMatrix<double>;
+
+template class FortranMatrix<double>;
+template class FortranMatrix<uint>;

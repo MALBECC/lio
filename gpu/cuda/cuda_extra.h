@@ -4,14 +4,6 @@
 #include <cuda_runtime.h>
 #include <cuda.h>
 
-#ifdef _DEBUG
-#	define MESSAGE(call) printf("[" #call "] @ %s %i\n", __FILE__, __LINE__);
-#define _DBG(x) x
-#else
-#define MESSAGE(call)
-#define _DBG(x)
-#endif
-
 #ifdef __DEVICE_EMULATION__
 #define _EMU(code) code
 #else
@@ -23,35 +15,9 @@
 
 #include "double.h"
 
-inline __device__ __host__ float dot(const float4 a, const float4 b)
-{ return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w; }
-
-inline __device__ __host__ float4 dot(const float4 a[4], const float4 b)
-{ return make_float4( dot(a[0], b), dot(a[1], b), dot(a[2], b), dot(a[3], b) ); }
-
-inline __device__ __host__ float2 Cmul(float2 a, float2 b)
-{ return make_float2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x); }
-
-inline __device__ __host__ float2 Csum(float2 a, float2 b)
-{ return make_float2(a.x + b.x, a.y + a.x); }
-
-inline __device__ __host__ float2 Cscale(float2 a, float s)
-{ return make_float2(a.x * s, a.y * s); }
-
+/** operators **/
 inline __device__ __host__ float2 operator -(const float2 a)
 { return make_float2(-a.x, -a.y); }
-
-inline __host__ double3 operator+(const double3& a, const double3& b) {
-	double3 ret;
-	ret.x = a.x + b.x; ret.y = a.y + b.y; ret.z = a.z + b.z;
-	return ret;
-}
-
-inline __host__ double3 operator+(const double3& a, const float3& b) {
-	double3 ret;
-	ret.x = a.x + b.x; ret.y = a.y + b.y; ret.z = a.z + b.z;
-	return ret;
-}
 
 inline __device__ __host__ float3 operator *(const float3& a, const float3& b)
 { return make_float3(a.x*b.x, a.y*b.y, a.z*b.z); }
@@ -80,11 +46,17 @@ inline __device__ __host__ uint3 operator *(const dim3 a, const uint3 b)
 inline __device__ __host__ uint3 operator +(const uint3 a, const uint3 b)
 { return make_uint3(a.x+b.x, a.y+b.y, a.z+b.z); }
 
-inline __device__ __host__ uint3 index(const dim3 bd, const uint3 bi, const uint3 ti)
-{ return bd * bi + ti; }
-
 inline __device__ __host__ bool operator < (const uint3 i, const uint3 r)
 { return i.x < r.x && i.y < r.y && i.z < r.z; }
+
+inline __device__ __host__ float3 operator*(const float3& a, float b)
+{ return make_float3(a.x * b, a.y * b, a.z * b); }
+
+inline __device__ __host__ float1 operator*(const float1 &a, float b)
+{ return make_float1(a.x * b); }
+
+inline __device__ __host__ uint3 index(const dim3 bd, const uint3 bi, const uint3 ti)
+{ return bd * bi + ti; }
 
 inline __device__ __host__ uint reference(const uint3 i, const uint3 g)
 { return i.x + i.y * g.x + i.z * g.x * g.y; }
@@ -103,12 +75,6 @@ inline __device__ __host__ const float4& min(const float4 &a, const float4 &b)
 
 inline __device__ __host__ const float4& max(const float4 &a, const float4 &b) 
 { return (a.x > b.x)? a: b; }
-
-inline __device__ __host__ float3 operator*(const float3& a, float b)
-{ return make_float3(a.x * b, a.y * b, a.z * b); }
-
-inline __device__ __host__ float1 operator*(const float1 &a, float b)
-{ return make_float1(a.x * b); }
 
 inline __device__ __host__ float distance2(const float3& a, const float3& b)
 {
@@ -131,7 +97,7 @@ inline __device__ __host__ uint index_from4d(const uint4& size, const uint4& pos
 	return size.w * (size.z * (size.y * pos.x + pos.y) + pos.z) + pos.w;
 }
 
-inline __device__ __host__ const float& elem(const float3& a, uint i)
+inline __device__ __host__ const float& float3_elem(const float3& a, uint i)
 {
 	switch(i) {
 		case 0: return a.x;
@@ -141,7 +107,7 @@ inline __device__ __host__ const float& elem(const float3& a, uint i)
 	}
 }
 
-inline __device__ __host__ float& elem(float3& a, uint i)
+inline __device__ __host__ float& float3_elem(float3& a, uint i)
 {
 	switch(i) {
 		case 0: return a.x;
@@ -188,11 +154,14 @@ inline __device__ __host__ uint4 operator +(const dim3& a, const uint4& b)
 { return make_uint4(a.x + b.x, a.y + b.y, a.z + b.z, b.w); }
 
 inline void cudaAssertNoError(const char* msg = NULL) {
+#ifdef _DEBUG
+	cudaThreadSynchronize();
 	cudaError_t error = cudaGetLastError();
 	if (error != cudaSuccess) {
-		fprintf(stderr, "CUDA ERROR: %s (%s)\n", cudaGetErrorString(error), msg ? msg : "??");
+		cerr << "CUDA ERROR: " << cudaGetErrorString(error) << " " << (msg ? msg : "??") << endl;
 		abort();
 	}
+#endif
 }
 
 #endif /* __CUTOOLS_H__ */

@@ -79,6 +79,9 @@ c
        k=k+1
        r(i,3)=x1(k)
       enddo
+
+c      call gpu_reload_atom_positions()
+c      call gpu_new_grid()
 c
       GRAD=.true.
       if (OPEN) then

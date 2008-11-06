@@ -4842,17 +4842,13 @@ c
         NCOa=NCO
         NCOb=NCO+Nunp
 
-        call timer_start
-#ifdef GPU
         write(*,*) 'exchnum int3'
-        write(*,*) 'Ndens',Ndens,Ncall
-        call exchnum_gpu(NORM, natom, r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
-     >    M18,M5,NCOa,Ex,nopt,Iexch, igrid2, e_, e_2, e3, wang, wang2,
-     >    wang3,Ndens, 0, 1)
+        call timer_start        
+#ifdef GPU
+        call gpu_solve_cubes(1, 0, 0)
 #else
       call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
      >  M,M18,NCOa,NCOb,RMM,Ex)
-
       write(*,*) 'energia final',Ex
 #endif
       call timer_stop('exchfock')      

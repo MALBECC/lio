@@ -1,6 +1,6 @@
 # -*- mode: make -*-
 
-OBJ=timer.o matrix.o common.o
+OBJ=init.o timer.o matrix.o cubes.o functions.o weight.o
 
 CUDA_SOURCES=$(wildcard cuda/*.cu)
 CUDA_HEADERS=$(wildcard cuda/*.h)
@@ -17,17 +17,27 @@ ifeq ($(profile),1)
 	LDFLAGS += -pg
 endif
 
-all: libg2g.so #accum_test dist_test exchnum_test
+ifeq ($(static),1)
+	LIBRARY=libg2g.a
+else
+	LIBRARY=libg2g.so
+endif
 
-%_test: %_test.o libg2g.so
-	$(LINK) $(LDFLAGS) -o $@ $(OBJ) $(LIB) $@.o -lg2g -L.
+all: $(LIBRARY) #accum_test dist_test exchnum_test
 
-# $(CUDA_HEADERS)
+#%_test: %_test.o libg2g.so 
+#	$(LINK) $(LDFLAGS) -o $@ $(OBJ) $(LIB) $@.o -lg2g -L.
+
+libg2g.a: $(CUDA_OBJ) $(OBJ)
+	$(MAKE) -C cuda
+	ar cru libg2g.a $(CUDA_OBJ) $(OBJ) 
+	ranlib libg2g.a
+	
 libg2g.so: $(CUDA_OBJ) $(OBJ) 
 	$(MAKE) -C cuda
 	$(LINK) -shared $(LDFLAGS) $(EXTRA_FLAGS) -o libg2g.so $(OBJ) $(CUDA_OBJ) $(LIB)
 
 clean:
 	make -C cuda clean
-	rm -f *_test *.o *.o *.so *.cu_o
+	rm -f *_test *.o *.o *.so *.a *.cu_o
 

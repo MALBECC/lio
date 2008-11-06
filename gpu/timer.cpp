@@ -9,14 +9,18 @@ Timer::Timer(void) : started(false) {
 }
 
 void Timer::start(void) {
+#ifdef DO_TIMINGS
 	gettimeofday(&t0, NULL);
 	started = true;
+#endif
 }
 
 void Timer::stop(void) {
+#ifdef DO_TIMINGS
 	gettimeofday(&t1, NULL);
 	timersub(&t1, &t0, &res);
 	started = false;
+#endif
 }
 
 bool Timer::isStarted(void) const {
@@ -37,25 +41,33 @@ bool Timer::operator<(const Timer& other) const {
 }
 
 void Timer::sync(void) {
+#ifdef DO_TIMINGS
 	cudaThreadSynchronize();
+#endif
 }
 
-#if 0
 std::ostream& G2G::operator<<(std::ostream& o, const Timer& t) {
+#ifdef DO_TIMINGS
 	if (t.getSec() != 0)
 		o << t.getSec() << "s. " << t.getMicrosec() << "us.";
 	else
 		o << t.getMicrosec() << "us.";
 	
+#else
+	o << "[TIMINGS NOT ENABLED]";
+#endif
 	return o;
 }
-#endif
 
 void Timer::print(void) {
+#ifdef DO_TIMINGS
 	if (getSec() != 0)
 		printf("%lus. %luus.", getSec(), getMicrosec());
 	else
 		printf("%luus.", getMicrosec());
+#else
+	printf("%s","[TIMINGS NOT ENABLED]");
+#endif
 }
 
 /**** to be used by fortran ****/

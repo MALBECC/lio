@@ -158,18 +158,6 @@ template<class T> void HostMatrix<T>::to_constant(const char* symbol) {
 	cudaMemcpyToSymbol(constant, &value, sizeof(S), 0, cudaMemcpyHostToDevice);	
 }*/
 
-/*template<class T> const T& HostMatrix<T>::get(unsigned int i, unsigned int j) const{
-	assert(i < this->width);
-	assert(j < this->height);
-	return this->data[j * this->width + i];
-}
-
-template<class T> T& HostMatrix<T>::get(unsigned int i, unsigned int j) {
-	assert(i < this->width);
-	assert(j < this->height);
-	return this->data[j * this->width + i];
-}*/
-
 /******************************
  * CudaMatrix
  ******************************/
@@ -283,18 +271,6 @@ template<class T> FortranMatrix<T>::FortranMatrix(T* _data, unsigned int _width,
 	this->data = _data;
 	this->width = _width; this->height = _height;
 }
-
-/*template<class T> const T& FortranMatrix<T>::get(unsigned int x, unsigned int y) const{
-	assert(x < this->width);
-	assert(y < this->height);
-	return this->data[y * fortran_width + x];
-}
-
-template<class T> T& FortranMatrix<T>::get(unsigned int x, unsigned int y) {
-	assert(x < this->width);
-	assert(y < this->height);
-	return this->data[y * fortran_width + x];
-}*/
 
 /**
  * Instantiations

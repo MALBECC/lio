@@ -28,8 +28,4 @@ extern std::list<LittleCube> final_cube;
 
 void regenerate_cubes(void);
 
-const uint max_function_exponent = 8;
-const double little_cube_size = 5.0/*2.0*/; // largo de una arista de los cubos chiquitos [Angstrom]
-const uint min_points_per_cube = 5;
-
 #endif

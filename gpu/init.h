@@ -33,6 +33,10 @@ namespace G2G {
 	};
 	
 	extern FortranVars fortran_vars;
+	
+	extern uint max_function_exponent;
+	extern double little_cube_size; // largo de una arista de los cubos chiquitos [Angstrom]
+	extern uint min_points_per_cube;
 }
 
 #endif

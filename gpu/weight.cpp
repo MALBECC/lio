@@ -66,7 +66,6 @@ double compute_point_weight(const double3& point_position, double wrad, uint ato
 	}
 
 	double atom_weight = (P_total == 0.0 ? 0.0 : (P_atom / P_total));
-	//double atom_weight = P_atom / P_total;
 	double integration_weight = wrad * fortran_vars.wang.get(point);
 	double point_weight = atom_weight * integration_weight;
 	

@@ -1,5 +1,7 @@
 /* headers */
 #include <iostream>
+#include <fstream>
+#include <stdexcept>
 #include <cassert>
 #include "common.h"
 #include "init.h"
@@ -9,6 +11,9 @@ using namespace G2G;
 
 /* external function prototypes */
 void gpu_compute_cube_functions(void);
+
+/* internal function prototypes */
+void read_options(void);
 
 /* global variables */
 namespace G2G {
@@ -28,9 +33,7 @@ extern "C" void gpu_init_(const unsigned int& norm, const unsigned int& natom, d
 {
 	printf("<======= GPU Code Initialization ========>\n");
 	fortran_vars.atoms = natom;
-	_DBG(cout << natom << " atoms" << endl);
 	assert(natom <= MAX_ATOMS);
-
 	assert(nopt == 0);
 
 	cudaMemcpyToSymbol("gpu_atoms", &fortran_vars.atoms, sizeof(fortran_vars.atoms), 0, cudaMemcpyHostToDevice);
@@ -46,9 +49,7 @@ extern "C" void gpu_init_(const unsigned int& norm, const unsigned int& natom, d
 	fortran_vars.m = M;	
 	fortran_vars.nco = nco;
 	cudaMemcpyToSymbol("gpu_nco", &fortran_vars.nco, sizeof(uint), 0, cudaMemcpyHostToDevice);	
-	
-	_DBG(cout << boolalpha << "normalize? " << fortran_vars.normalize << " | spd: " << fortran_vars.s_funcs << " " << fortran_vars.p_funcs << " " << fortran_vars.d_funcs << " | m: " << fortran_vars.m << " nco: " << fortran_vars.nco << endl);
-	
+		
 	fortran_vars.iexch = Iexch;	
 	cudaMemcpyToSymbol("gpu_Iexch", &Iexch, sizeof(Iexch), 0, cudaMemcpyHostToDevice);	
 	//HostMatrix<uint>::to_constant<uint>("gpu_iexch", Iexch);
@@ -60,18 +61,16 @@ extern "C" void gpu_init_(const unsigned int& norm, const unsigned int& natom, d
 	
 	fortran_vars.shells1.resize(fortran_vars.atoms);
 	fortran_vars.shells2.resize(fortran_vars.atoms);
-	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells1.get(i) = Nr[Iz[i] /* - 1*/]; }
-	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells2.get(i) = Nr2[Iz[i] /*- 1*/]; }
-		
 	fortran_vars.rm.resize(fortran_vars.atoms);
-	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.rm.get(i) = Rm[Iz[i] /*-1*/]; }
+	/* ignore the 0th element on these */
+	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells1.get(i) = Nr[Iz[i]]; }
+	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells2.get(i) = Nr2[Iz[i]]; }		
+	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.rm.get(i) = Rm[Iz[i]]; }
 	
-	fortran_vars.nucleii = FortranMatrix<uint>(Nuc, fortran_vars.m, 1, 1);
-	
+	fortran_vars.nucleii = FortranMatrix<uint>(Nuc, fortran_vars.m, 1, 1);	
 	fortran_vars.contractions = FortranMatrix<uint>(ncont, fortran_vars.m, 1, 1);
 	fortran_vars.a_values = FortranMatrix<double>(a, fortran_vars.m, MAX_CONTRACTIONS, FORTRAN_NG);
 	fortran_vars.c_values = FortranMatrix<double>(c, fortran_vars.m, MAX_CONTRACTIONS, FORTRAN_NG);		
-	//fortran_vars.rmm_input_ndens1 = FortranMatrix<double>(RMM, (fortran_vars.m * (fortran_vars.m + 1)) / 2);
 	fortran_vars.rmm_input = FortranMatrix<double>(RMM + (M18 - 1), fortran_vars.m, fortran_vars.nco, fortran_vars.m);
 	fortran_vars.rmm_output = FortranMatrix<double>(RMM + (M5 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
 	
@@ -84,6 +83,8 @@ extern "C" void gpu_init_(const unsigned int& norm, const unsigned int& natom, d
 
 	fortran_vars.atom_atom_dists = HostMatrix<double>(fortran_vars.atoms, fortran_vars.atoms);
 	fortran_vars.nearest_neighbor_dists = HostMatrix<double>(fortran_vars.atoms);
+	
+	read_options();
 }
 
 extern "C" void gpu_reload_atom_positions_(void) {	
@@ -120,4 +121,32 @@ extern "C" void gpu_new_grid_(const unsigned int& grid_type) {
 	
 	regenerate_cubes();
 	gpu_compute_cube_functions();
+}
+
+/* general options */
+namespace G2G {
+	uint max_function_exponent = 8;
+	double little_cube_size = 5.0;
+	uint min_points_per_cube = 5;
+}
+
+void read_options(void) {
+	cout << "<====== read_options ========>" << endl;
+	ifstream f("gpu_options");
+	if (!f) throw runtime_error("Could not open gpu options file for reading");
+	
+	string option;
+	while (f >> option) {
+		cout << "\t" << option << " ";
+
+		if (option == "max_function_exponent")
+			{ f >> max_function_exponent; cout << max_function_exponent; }
+		else if (option == "little_cube_size")
+			{ f >> little_cube_size; cout << little_cube_size; }
+		else if (option == "min_points_per_cube")
+			{ f >> min_points_per_cube; cout << min_points_per_cube; }
+
+		cout << endl;
+		if (!f) throw runtime_error(string("Error reading gpu options file (last option: ") + option + string(")"));
+	}
 }

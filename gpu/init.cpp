@@ -6,6 +6,7 @@
 #include "common.h"
 #include "init.h"
 #include "cubes.h"
+#include "cuda/cuda_extra.h"
 using namespace std;
 using namespace G2G;
 
@@ -133,11 +134,11 @@ namespace G2G {
 void read_options(void) {
 	cout << "<====== read_options ========>" << endl;
 	ifstream f("gpu_options");
-	if (!f) throw runtime_error("Could not open gpu options file for reading");
+	if (!f) { cout << "No \"gpu_options\" file: using defaults" << endl; return; }
 	
 	string option;
 	while (f >> option) {
-		cout << "\t" << option << " ";
+		cout << option << " ";
 
 		if (option == "max_function_exponent")
 			{ f >> max_function_exponent; cout << max_function_exponent; }
@@ -145,6 +146,7 @@ void read_options(void) {
 			{ f >> little_cube_size; cout << little_cube_size; }
 		else if (option == "min_points_per_cube")
 			{ f >> min_points_per_cube; cout << min_points_per_cube; }
+		else throw runtime_error(string("Invalid option: ") + option);
 
 		cout << endl;
 		if (!f) throw runtime_error(string("Error reading gpu options file (last option: ") + option + string(")"));

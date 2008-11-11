@@ -162,6 +162,7 @@ void regenerate_cubes(void)
 	
 	final_cube.clear();
 
+	Timer t_functions, t_weights;
 	t_total.start();
 	for (uint i = 0; i < big_cube_size.x; i++) {
 		for (uint j = 0; j < big_cube_size.y; j++) {
@@ -171,11 +172,17 @@ void regenerate_cubes(void)
 				double3 cube_coord_abs = x0 + make_uint3(i,j,k) * little_cube_size;
 				if (little_cube.number_of_points < min_points_per_cube) { /*cout << "cubo vacio" << endl;*/ continue; }
 				
+				//t_functions.start();
 				assign_significative_functions(little_cube, cube_coord_abs, min_exps_func);
+				//t_functions.stop();
+				//cout << "assign functions: " << t_functions << endl;
 				if (little_cube.functions.empty()) { /*cout << "cubo sin funciones" << endl;*/ continue; }
 
 #if WEIGHT_CUTOFFS
+				//t_weights.start();
 				assign_cube_weights(little_cube);
+				//t_weights.stop();
+				//cout << "assign weights: " << t_weights << endl;
 				if (little_cube.number_of_points < min_points_per_cube) { /*cout << "cubo vacio" << endl;*/ continue; }
 #endif
 				

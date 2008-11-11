@@ -13,6 +13,7 @@
 #define WARP_SIZE 32
 #define BANKS 16
 
+#include <stdexcept>
 #include "double.h"
 
 /** operators **/
@@ -162,6 +163,15 @@ inline void cudaAssertNoError(const char* msg = NULL) {
 		abort();
 	}
 #endif
+}
+
+inline void cudaPrintMemoryInfo(void) {
+	uint free = 0, total = 0;
+	CUresult res = cuMemGetInfo(&free, &total);
+	if (res != CUDA_SUCCESS) {
+		throw std::runtime_error("cuMemGetInfo");
+	}
+	std::cout << "free: " << (free / (1024.0 * 1024.0)) << "/" << (total / (1024.0 * 1024.0)) << " used: " << (total - free) / (1024.0 * 1024.0) << " (" << ((double)free / (double)total) * 100.0 << "%)" << std::endl;
 }
 
 #endif /* __CUTOOLS_H__ */

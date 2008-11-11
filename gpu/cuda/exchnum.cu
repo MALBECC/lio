@@ -132,8 +132,6 @@ extern "C" void gpu_solve_cubes_(const unsigned int& computation_type_n, double&
 	
 	double total_energy = 0.0;
 	
-	/*ofstream points_salida("points", ios_base::app);
-	points_salida << "paso" << endl;*/
 	Timer t1;
 	t1.sync();
 	t1.start();								
@@ -155,9 +153,6 @@ extern "C" void gpu_solve_cubes_(const unsigned int& computation_type_n, double&
 		/** Load cube functions **/
 		uint cube_m = cube.s_functions + cube.p_functions * 3 + cube.d_functions * 6;
 		
-		//cout << "func " << cube_m << " ptos " << cube.number_of_points << endl;
-		//points_salida << cube.number_of_points * cube_m * cube_m << endl;
-		
 		/* load RDM */
 		{
 			HostMatrixFloat rdm_cpu;
@@ -165,7 +160,6 @@ extern "C" void gpu_solve_cubes_(const unsigned int& computation_type_n, double&
 			for (unsigned int i = 0; i < fortran_vars.nco; i++) {
 				uint j = 0;
 				for (set<uint>::const_iterator func = cube.functions.begin(); func != cube.functions.end(); ++func) {
-				//i * fortran_vars.m + *func + k
 					if (*func < fortran_vars.s_funcs) {
 						rdm_cpu.get(j, i) = fortran_vars.rmm_input.get(*func, i);
 						j++;

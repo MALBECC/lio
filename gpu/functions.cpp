@@ -42,7 +42,6 @@ void assign_significative_functions(LittleCube& cube, const double3& cube_coord,
 		uint atom_nuc = fortran_vars.nucleii.get(func) - 1;		
 		double max_radius = sqrt(max_function_exponent / min_exps[func]);
 
-		_DBG(cout << "dist atom cube: " << atom_cube_dists.get(atom_nuc) << " max_radius: " << max_radius << " func: " << func << endl);
 		if (atom_cube_dists.get(atom_nuc) < max_radius || assign_all) {
 			cube.functions.insert(func); cube.s_functions++;
 			cube.nucleii.insert(atom_nuc);

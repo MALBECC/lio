@@ -86,7 +86,7 @@ void gpu_compute_cube_functions(void)
 		cube.function_values.resize(cube.number_of_points, cube_functions.w);
 		
 		dim3 threads(cube.number_of_points);
-		dim3 threadBlock(256);
+		dim3 threadBlock(FUNCTIONS_BLOCK_SIZE);
 		dim3 threadGrid = divUp(threads, threadBlock);		
 		
 		gpu_compute_functions<<<threadGrid, threadBlock>>>(points_position_gpu.data, cube.number_of_points,
@@ -183,7 +183,7 @@ extern "C" void gpu_solve_cubes_(const unsigned int& computation_type_n, double&
 							
 		dim3 threads(cube.number_of_points);
 		dim3 threadBlock, threadGrid;
-		threadBlock = dim3(256);
+		threadBlock = dim3(DENSITY_BLOCK_SIZE);
 		threadGrid = divUp(threads, threadBlock);
 		
 		/*** Compute Energy ***/

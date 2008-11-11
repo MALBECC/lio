@@ -14,7 +14,7 @@
 
 /** KERNELS **/
 #include "functions.h"
-#include "energy_new.h"
+#include "energy.h"
 #include "rmm.h"
 //#include "force.h"
 

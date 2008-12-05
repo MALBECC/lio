@@ -99,7 +99,7 @@ void assign_cube_weights(LittleCube& cube)
 
 		double P_total = 0.0;
 		double P_atom = 0.0;
-					
+
 		for (set<uint>::iterator atom_j_it = cube.nucleii.begin(); atom_j_it != cube.nucleii.end(); ++atom_j_it) {
 			double P_curr = 1.0;
 			uint atom_j = *atom_j_it;
@@ -130,7 +130,8 @@ void assign_cube_weights(LittleCube& cube)
 					u = 2.1875 * (ua * (1 - ua) * (1 + ua)) + 1.3125 * pow(ua, 5) - 0.3125 * pow(ua, 7);
 					u = 0.5 * (1.0 - u);
 				}
-#endif
+#endif	
+				//cout << u << endl;
 
 				P_curr *= u;
 				if (P_curr == 0.0) break;
@@ -147,11 +148,12 @@ void assign_cube_weights(LittleCube& cube)
 		
 		double atom_weight = (P_total == 0.0 ? 0.0 : (P_atom / P_total));
 		it->weight *= atom_weight;
+		//cout << "peso " << P_atom << " " << P_total << " " << it->weight << endl;
 
-		if (it->weight == 0.0) {
+		/*if (it->weight == 0.0) {
 			it = cube.points.erase(it);
 			cube.number_of_points--;
 		}
-		else ++it;
+		else*/ ++it;
 	}
 }

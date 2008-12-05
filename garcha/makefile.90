@@ -74,7 +74,7 @@ cpu_obj/int.o    : int.f param
 cpu_obj/int1G.o    : int1G.f param
 	ifort -o $@ $(COMPFLG2) int1G.f 
 cpu_obj/drive.o : drive.f param 
-	ifort -o $@ $(COMPFLG2) drive.f 
+	ifort -o $@ -cpp $(DEFINE) $(COMPFLG2) drive.f 
 cpu_obj/func.o : func.f
 	ifort -o $@ $(COMPFLG) func.f 
 cpu_obj/int2.o    : int2.f param
@@ -106,9 +106,9 @@ cpu_obj/geom.o     : geom.f param
 cpu_obj/intSG.o     : intSG.f param
 	ifort -o $@ $(COMPFLG) intSG.f 
 cpu_obj/dfp2.o     : dfp2.f param
-	ifort -o $@ $(COMPFLG) dfp2.f 
+	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) dfp2.f 
 cpu_obj/lsearch.o     : lsearch.f param
-	ifort -o $@ $(COMPFLG) lsearch.f 
+	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) lsearch.f 
 cpu_obj/write.o     : write.f param
 	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) write.f
 cpu_obj/nwrite.o     : nwrite.f param
@@ -192,7 +192,7 @@ gpu_obj/int.o    : int.f param
 gpu_obj/int1G.o    : int1G.f param
 	ifort -o $@ $(COMPFLG2) $(GPU_CFLAGS) int1G.f 
 gpu_obj/drive.o : drive.f param 
-	ifort -o $@ $(COMPFLG2) $(GPU_CFLAGS) drive.f 
+	ifort -o $@ -cpp $(DEFINE) $(COMPFLG2) $(GPU_CFLAGS) drive.f 
 gpu_obj/func.o : func.f
 	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) func.f 
 gpu_obj/int2.o    : int2.f param
@@ -224,9 +224,9 @@ gpu_obj/geom.o     : geom.f param
 gpu_obj/intSG.o     : intSG.f param
 	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) intSG.f 
 gpu_obj/dfp2.o     : dfp2.f param
-	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) dfp2.f 
+	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) $(GPU_CFLAGS) dfp2.f 
 gpu_obj/lsearch.o     : lsearch.f param
-	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) lsearch.f 
+	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) $(GPU_CFLAGS) lsearch.f 
 gpu_obj/write.o     : write.f param
 	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) $(GPU_CFLAGS) write.f
 gpu_obj/nwrite.o     : nwrite.f param

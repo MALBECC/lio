@@ -3,6 +3,11 @@
 
 #include "matrix.h"
 
+/* definitions */
+#define FORTRAN_MAX_ATOMS 1875
+#define FORTRAN_NG 1500
+#define FORTRAN_NL 10
+
 namespace G2G {
 	enum GridType {
 		SMALL_GRID, MEDIUM_GRID, BIG_GRID
@@ -18,6 +23,7 @@ namespace G2G {
 		uint s_funcs, p_funcs, d_funcs, spd_funcs, m;
 		uint nco;
 		uint iexch;
+		bool do_forces;
 		GridType grid_type;
 		GridSize grid_size;
 		FortranMatrix<double> atom_positions_pointer;

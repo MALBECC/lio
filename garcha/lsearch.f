@@ -80,8 +80,11 @@ c
        r(i,3)=x1(k)
       enddo
 
-c      call gpu_reload_atom_positions()
-c      call gpu_new_grid()
+#ifdef GPU
+		  write(*,*) 'movimiento de posiciones por lsearch (con igrid2)'
+	  	call gpu_reload_atom_positions()
+      call gpu_new_grid(igrid2)
+#endif
 c
       GRAD=.true.
       if (OPEN) then

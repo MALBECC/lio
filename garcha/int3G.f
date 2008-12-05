@@ -26,11 +26,12 @@ c this subroutine calls the fitting for exchange-correlation
 c-----------------------------------------------------------------
       subroutine int3G(NORM,natom,Iz,r,Nuc,M,ncont,nshell,c,a,
      >     Nucd,Md,ncontd,nshelld,cd,ad,RMM,Exc,f,
-     > nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write)
+     > nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write,
+     > calc_energy)
 c
 c
       implicit real*8 (a-h,o-z)
-      logical NORM,dens,OPEN,SVD,integ
+      logical NORM,dens,OPEN,SVD,integ,calc_energy
       logical ATRHO,VCINP,DIRECT,EXTR,SHFT,write
       integer nopt,iconst,igrid,iforce,igrid2
       INCLUDE 'param'
@@ -152,10 +153,13 @@ c
       if (.not.OPEN) then
 
         write(*,*) 'exchnum int3G'
+
 #ifdef GPU
-c       call exchnum_gpu(NORM, natom, r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
-c     >    M18,M5,NCO,Exc,nopt,Iexch, igrid, e_, e_2, e3, wang, wang2,
-c     >    wang3,2, f, 2)
+			if (calc_energy) then
+				call gpu_solve_cubes(2, Exc, f)
+			else
+				call gpu_solve_cubes(3, 0, f)
+			endif
 #else
         call exchnum2(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,NCO,Exc,f)

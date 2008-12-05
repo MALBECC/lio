@@ -107,7 +107,7 @@ void regenerate_cubes(void)
 
 		double t0 = M_PI / (atom_shells + 1);
 		double rm = fortran_vars.rm.get(atom);
-	
+
 		for (uint shell = 0; shell < atom_shells; shell++) {			
 			double t1 = t0 * (shell + 1);
 			double x = cos(t1);
@@ -134,7 +134,7 @@ void regenerate_cubes(void)
 					double point_weight = wrad * fortran_vars.wang.get(point); // integration weight
 #else
 					double point_weight = compute_point_weight(point_position, wrad, atom, point);
-					if (point_weight == 0.0) continue;
+					//if (point_weight == 0.0) continue;
 #endif
 
 					/* insert into corresponding cube */

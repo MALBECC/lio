@@ -14,6 +14,7 @@
 #define BANKS 16
 
 #include <stdexcept>
+#include <iostream>
 #include "double.h"
 
 /** operators **/
@@ -76,6 +77,10 @@ inline __device__ __host__ const float4& min(const float4 &a, const float4 &b)
 
 inline __device__ __host__ const float4& max(const float4 &a, const float4 &b) 
 { return (a.x > b.x)? a: b; }
+
+inline __device__ __host__ float length2(const float3& a) {
+	return (a.x * a.x + a.y * a.y + a.z * a.z);
+}
 
 inline __device__ __host__ float distance2(const float3& a, const float3& b)
 {
@@ -159,7 +164,7 @@ inline void cudaAssertNoError(const char* msg = NULL) {
 	cudaThreadSynchronize();
 	cudaError_t error = cudaGetLastError();
 	if (error != cudaSuccess) {
-		cerr << "CUDA ERROR: " << cudaGetErrorString(error) << " " << (msg ? msg : "??") << endl;
+		std::cerr << "CUDA ERROR: " << cudaGetErrorString(error) << " " << (msg ? msg : "??") << std::endl;
 		abort();
 	}
 #endif

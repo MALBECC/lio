@@ -104,14 +104,14 @@ c
       M20 = M19 + natom*50*Nang   
 c
       Nel=2*NCO+Nunp
-#ifdef GPU
+c#ifdef GPU
 c------- GPU Initialization ---------------------
-      call gpu_init(NORM, natom, r, Rm, Iz, Nr, Nr2, Nuc, M,
-     > ncont, nshell, c, a, RMM, M18, M5, NCO, nopt, Iexch,
-     > e_, e_2, e3, wang, wang2, wang3)
-			call gpu_reload_atom_positions()
-      call gpu_new_grid(igrid2)
-#endif
+c      call gpu_init(NORM, natom, r, Rm, Iz, Nr, Nr2, Nuc, M,
+c     > ncont, nshell, c, a, RMM, M18, M5, NCO, nopt, Iexch,
+c     > e_, e_2, e3, wang, wang2, wang3)
+c			call gpu_reload_atom_positions()
+c      call gpu_new_grid(igrid2)
+c#endif
 c------------------------------------------------
 c Initializations/Defaults
 c
@@ -715,7 +715,7 @@ c--------------------------------------------------------------
           write(*,625) Es
          endif
        endif
-/* -- G2G -- */
+			 write(*,*) 'ultimo paso SCF'
        call timer_start       
 #ifdef GPU
 #ifdef ULTIMA_CPU
@@ -725,14 +725,14 @@ c--------------------------------------------------------------
 			 if (igrid.ne.igrid2) then
        call gpu_new_grid(igrid)
 			 endif
-       call gpu_solve_cubes(0, Exc, 0)
+       call gpu_solve_cubes(1, Exc, 0)
 #endif
 #else
 #ifdef ULTIMA_GPU
 			 if (igrid.ne.igrid2) then
        call gpu_new_grid(igrid)
 			 endif
-       call gpu_solve_cubes(0, Exc, 0)
+       call gpu_solve_cubes(1, Exc, 0)
 #else      
       call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,NCO,Exc,nopt)

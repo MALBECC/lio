@@ -13,7 +13,7 @@ c
       IMPLICIT REAL*8 (A-H,O-Z)
       INCLUDE 'param'
 c  STPMX 0.05 original
-      PARAMETER (NMAX=3*nt,STPMX=0.01D0,ITMAX=50,EPS=3.E-08)
+      PARAMETER (NMAX=3*nt,STPMX=0.01D0,ITMAX=10,EPS=3.E-08)
       PARAMETER (TOLX=4.D0*EPS)
       DIMENSION P(NMAX),HESSIN(NMAX,NMAX),XI(NMAX),G(NMAX),DG(NMAX),
      > HDG(NMAX),f(NMAX/3,3),PNEW(NMAX)
@@ -32,7 +32,7 @@ c
 
 c
       COMMON /TABLE/ STR(880,0:21)
-      common /fit/ Nang,dens,integ,Iexch,igrid
+      common /fit/ Nang,dens,integ,Iexch,igrid,igrid2
 c     common /HF/ nopt,OPEN,NMX,NCO,ATRHO,VCINP,DIRECT,
 c    >             IDAMP,EXTR,SHFT,SHI,GOLD,told,write,Nunp
       common /Sys/ SVD,iconst
@@ -76,6 +76,13 @@ c
 c
 c first call , needs also E , not only gradients -----------
 c
+
+#ifdef GPU
+			write(*,*) 'primera carga de posiciones (con igrid2)'
+			call gpu_reload_atom_positions()
+      call gpu_new_grid(igrid2)
+#endif
+
       GRAD=.false.
       if (OPEN) then
       call SCFop(MEMO,NORM,natom,Iz,r,Nuc,M,ncont,nshell,c,a,
@@ -90,12 +97,17 @@ c
 c now gradients 
 c
 c
+#ifdef GPU
+			write(*,*) 'cambio de grilla para fuerza+energia (igrid)'
+      call gpu_new_grid(igrid)
+#endif
+
       call int1G(NORM,natom,r,Nuc,Iz,M,Md,ncont,nshell,c,a,RMM,En,f)
 c
 c
       call int3G(NORM,natom,Iz,r,Nuc,M,ncont,nshell,c,a,
      >     Nucd,Md,ncontd,nshelld,cd,ad,RMM,Exc,f,
-     > nopt,OPEN,NMX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write)
+     > nopt,OPEN,NMX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write,.true.)
 c
       call intSG(NORM,natom,r,Nuc,M,Md,ncont,nshell,c,a,RMM,f)
 c
@@ -220,6 +232,12 @@ c
         DO 15 I=1,N
           DG(I)=G(I)
 15      CONTINUE
+
+#ifdef GPU
+			write(*,*) 'actualizacion de posiciones por movimiento'
+			call gpu_reload_atom_positions()
+      call gpu_new_grid(igrid2)
+#endif
 c
       GRAD=.false.
       if (OPEN) then
@@ -236,11 +254,17 @@ c
 c now gradients
 c
 c
+#ifdef GPU
+			write(*,*) 'cambio de grilla para fuerza+energia (igrid)'
+      call gpu_new_grid(igrid)
+#endif
+
+
       call int1G(NORM,natom,r,Nuc,Iz,M,Md,ncont,nshell,c,a,RMM,En,f)
 c
       call int3G(NORM,natom,Iz,r,Nuc,M,ncont,nshell,c,a,
      >     Nucd,Md,ncontd,nshelld,cd,ad,RMM,Exc,f,
-     > nopt,OPEN,NMX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write)
+     > nopt,OPEN,NMX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write,.false.)
 c
       call intSG(NORM,natom,r,Nuc,M,Md,ncont,nshell,c,a,RMM,f)
 c reaction field case ------

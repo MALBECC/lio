@@ -50,6 +50,9 @@ c
       namelist /fieldx/ a0,epsilon,exter,Fx,Fy,Fz
       namelist /solx/ Nsol,natsol,solv,free
       namelist /rfield/ F
+      common /intg1/ e_(50,3),wang(50),Nr(0:54)
+      common /intg2/ e_2(116,3),wang2(116),Nr2(0:54),e3(194,3),
+     > wang3(194)
 c
       dimension x(nt),y(nt),z(nt),Pm(nt),vx(nt),vy(nt),vz(nt)
 c
@@ -70,6 +73,7 @@ c
       common /masses/ xmass(216)
 c
       common /sol1/ Nsol1,natsol1,alpha,Em,Rm,pc,sol1,free1
+			common /radii/ Rm2
 c
 c Everything is dimensioned for 2 basis, normal and density
 c ncf, lt,at,ct parameters for atomic basis sets
@@ -1147,8 +1151,21 @@ c calculation of fragment orbital populations
        stop
        endif
 c-----------------------------
+#ifdef GPU
+c------- GPU Initialization ---------------------
+      call gpu_init(NORM, natom, r, Rm2, Iz, Nr, Nr2, Nuc, M,
+     > ncont, nshell, c, a, P, M18, M5, NCO, nopt, Iexch,
+     > e_, e_2, e3, wang, wang2, wang3)
+#endif
 c nopt 0 static SCF calculation --------------------------------------
       if (nopt.eq.0) then
+
+#ifdef GPU
+			write(*,*) 'primera carga de posiciones'
+			call gpu_reload_atom_positions()
+      call gpu_new_grid(igrid2)
+#endif
+
       if (OPEN) then
 c Nunp : number of unpaired electrons
 c

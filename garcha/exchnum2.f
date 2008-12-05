@@ -125,7 +125,7 @@ c local density functionals, no gradients needed
          dxi=DENS
          call pot(Iexch,dxi,yiex,yiec,y2i)
 
-c         write (123,*) npoint*((na-1)*50+n-1)+i-1,na,n,i
+c         write (*,*) na-1,n-1,i-1
          call DENSG(Ddx,Ddy,Ddz,Xi,ds,NORM,Nuc,ncont,nshell,
      >              a,c,r,M,M18,NCO,RMM,natom)
         else
@@ -191,6 +191,9 @@ c ss : integrated density, check
 c
 *
        do ina=1,natom
+c	  		 DEBUG
+c         write(*,*) 'factor',na-1,n-1,i-1,ina-1,DDx(ina)
+c		  	 DEBUG
          forza(ina,1)=forza(ina,1) + PF*DDx(ina)*y2i*tmp0
          forza(ina,2)=forza(ina,2) + PF*DDy(ina)*y2i*tmp0
          forza(ina,3)=forza(ina,3) + PF*DDz(ina)*y2i*tmp0

@@ -22,6 +22,7 @@ struct LittleCube {
 	std::set<uint> functions;
 	std::set<uint> nucleii;
 	G2G::CudaMatrixFloat function_values;
+	G2G::CudaMatrixFloat3 gradient_values;
 };
 
 extern std::list<LittleCube> final_cube;

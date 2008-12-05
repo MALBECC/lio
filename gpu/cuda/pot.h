@@ -9,23 +9,27 @@
  * Self interaction corrections are used in correlation part
  */
 	
-template<bool compute_y2a> __device__ void gpu_pot(float dens, float& ex, float& ec, float& y2a)
+template<bool compute_exc, bool compute_y2a> __device__ void gpu_pot(float dens, float& ex, float& ec, float& y2a)
 {
 	// data X alpha
 
-	if (dens == 0) { ex = 0.0f; ec = 0.0f; y2a = 0.0f; return; }
+	if (dens == 0) {
+		if (compute_exc) { ex = 0.0f; ec = 0.0f; }
+		if (compute_y2a) y2a = 0.0f;
+		return;
+	}
 	
 	float y = powf(dens, 0.333333333333333333f);
 	float e0 = pot_alpha * y;	
 	float v0 = -0.984745021842697f * y; // 4/3 * pot_alpha * y
 
-	if (!compute_y2a) ex = e0;
+	if (compute_exc) ex = e0;
 	
 	switch(gpu_Iexch) {
 		case 1:
 		{		
-			if (!compute_y2a) ec = 0;
-			else y2a = v0;
+			if (compute_exc) ec = 0;
+			if (compute_y2a) y2a = v0;
 		}
 		break;
 		case 2:

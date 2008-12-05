@@ -270,6 +270,7 @@ template<class T> FortranMatrix<T>::FortranMatrix(T* _data, unsigned int _width,
 {
 	this->data = _data;
 	this->width = _width; this->height = _height;
+	assert(this->data);
 }
 
 /**

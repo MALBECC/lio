@@ -21,11 +21,6 @@ namespace G2G {
 	FortranVars fortran_vars;
 }
 
-/* definitions */
-#define FORTRAN_MAX_ATOMS 1875
-#define FORTRAN_NG 1500
-#define FORTRAN_NL 10
-
 /* methods */
 extern "C" void gpu_init_(const unsigned int& norm, const unsigned int& natom, double* r, double* Rm, const unsigned int* Iz, const unsigned int* Nr,
 										 const unsigned int* Nr2, unsigned int* Nuc, const unsigned int& M, unsigned int* ncont, const unsigned int* nshell, double* c,
@@ -35,7 +30,10 @@ extern "C" void gpu_init_(const unsigned int& norm, const unsigned int& natom, d
 	printf("<======= GPU Code Initialization ========>\n");
 	fortran_vars.atoms = natom;
 	assert(natom <= MAX_ATOMS);
-	assert(nopt == 0);
+	
+	fortran_vars.do_forces = (nopt == 2);
+	cout << "do_forces: " << boolalpha << fortran_vars.do_forces << endl;
+	//fortran_vars.do_forces = false;
 
 	cudaMemcpyToSymbol("gpu_atoms", &fortran_vars.atoms, sizeof(fortran_vars.atoms), 0, cudaMemcpyHostToDevice);
 

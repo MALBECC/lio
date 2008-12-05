@@ -296,7 +296,7 @@ c
 c
         call int3G(NORM,natom,Iz,r,Nuc,M,ncont,nshell,c,a,
      >             Nucd,Md,ncontd,nshelld,cd,ad,RMM,E2,f1,
-     > nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write)
+     > nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write,true)
 
 c continuum solvent case
       if (field) then
@@ -344,7 +344,7 @@ c
         call int1G(NORM,natom,r,Nuc,Iz,M,Md,ncont,nshell,c,a,RMM,En,f2)
         call int3G(NORM,natom,Iz,r,Nuc,M,ncont,nshell,c,a,
      >             Nucd,Md,ncontd,nshelld,cd,ad,RMM,E2,f2,
-     > nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write)
+     > nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write,true)
 *
 c continuum solvent case ----
       if (field) then

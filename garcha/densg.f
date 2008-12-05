@@ -81,7 +81,8 @@ c
       Fg(i,2)=Fg(i,1)*ty
       Fg(i,3)=Fg(i,1)*tz
       Fg(i,1)=Fg(i,1)*tx
-c      write(123,*) 'Fg',Fg(i,1),Fg(i,2),Fg(i,3)
+c      write(*,*) 'Fg(s)',i,Fg(i,1),Fg(i,2),Fg(i,3),F(i)
+			
   10  continue
 c
 c--- p  case -------------
@@ -142,6 +143,9 @@ c
 c
   21  continue
   20  continue
+
+c      write(*,*) 'Fg(p)',i-1,Fg(i,1),Fg(i,2),Fg(i,3),F(i)
+
  920  continue
 c
 c-- d case  ------------

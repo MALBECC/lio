@@ -427,7 +427,7 @@ c
        write(*,*) 'exchnum int3lu'
 c       write(957,*) 'int3lu'
 #ifdef GPU
-       call gpu_solve_cubes(1, 0, 0)
+       call gpu_solve_cubes(0,0,0)
 #else
        call timer_start       
        call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,

@@ -18,13 +18,12 @@ OBJ =      int.o init.o drive.o SCF.o  func.o     \
 #COMPFLG =  -march=athlon-xp -O3 -pipe -fomit-frame-pointer -c\
 #           -falign-loops=2 -fno-strength-reduce \
 #           -ffast-math  -falign-functions=2
-
-COMPFLG  = -mp1 -ip -O3 -c $(CFLAGS)
-COMPFLG2 = -O3     -c $(CFLAGS) 
+DEFINE   = -Dpack
+COMPFLG  = -mp1 -ip -O3 -c $(CFLAGS) -cpp $(DEFINE)
+COMPFLG2 = -O3     -c $(CFLAGS) -cpp $(DEFINE)
 #more or less general
 LINKFLG = -lm 
 CPPFLAGS =  -P -traditional-cpp
-DEFINE   = -Dpack
 CUDA_COMMONDIR := $(CUDA_INSTALL_PATH)/../sdk/common
 CUDA_LIBS=-L$(CUDA_INSTALL_PATH)/lib -L$(CUDA_COMMONDIR)/lib -lcuda -lcudart
 LIBS= -L/usr/lib -lblas -L../gpu -lg2g -lstdc++ $(CUDA_LIBS) -L/opt/intel/mkl/9.0/lib/em64t -lmkl_lapack64 -lmkl_em64t -lguide \
@@ -74,45 +73,45 @@ cpu_obj/int.o    : int.f param
 cpu_obj/int1G.o    : int1G.f param
 	ifort -o $@ $(COMPFLG2) int1G.f 
 cpu_obj/drive.o : drive.f param 
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG2) drive.f 
+	ifort -o $@ $(COMPFLG2) drive.f 
 cpu_obj/func.o : func.f
 	ifort -o $@ $(COMPFLG) func.f 
 cpu_obj/int2.o    : int2.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) int2.f 
+	ifort -o $@ $(COMPFLG) int2.f 
 cpu_obj/int2G.o    : int2G.f param
 	ifort -o $@ $(COMPFLG) int2G.f 
 cpu_obj/int3G.o    : int3G.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG2) int3G.f
+	ifort -o $@ $(COMPFLG2) int3G.f
 cpu_obj/int3.o    : int3.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG2) int3.f
+	ifort -o $@ $(COMPFLG2) int3.f
 cpu_obj/int3N.o    : int3N.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG2) int3N.f
+	ifort -o $@ $(COMPFLG2) int3N.f
 cpu_obj/int3lu.o    : int3lu.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG2) int3lu.f
+	ifort -o $@ $(COMPFLG2) int3lu.f
 cpu_obj/int3mem.o    : int3mem.f param
 	ifort -o $@ $(COMPFLG2) int3mem.f
 cpu_obj/exch.o    : exch.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) exch.f
+	ifort -o $@ $(COMPFLG) exch.f
 cpu_obj/exch2.o    : exch2.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) exch2.f
+	ifort -o $@ $(COMPFLG) exch2.f
 cpu_obj/pot.o    : pot.f 
 	ifort -o $@ $(COMPFLG) pot.f 
 cpu_obj/SCF.o    : SCF.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) SCF.f
+	ifort -o $@ $(COMPFLG) SCF.f
 cpu_obj/MD2.o     : MD2.f param
 	ifort -o $@ $(COMPFLG) MD2.f 
 cpu_obj/geom.o     : geom.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) geom.f
+	ifort -o $@ $(COMPFLG) geom.f
 cpu_obj/intSG.o     : intSG.f param
 	ifort -o $@ $(COMPFLG) intSG.f 
 cpu_obj/dfp2.o     : dfp2.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) dfp2.f 
+	ifort -o $@ $(COMPFLG) dfp2.f 
 cpu_obj/lsearch.o     : lsearch.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) lsearch.f 
+	ifort -o $@ $(COMPFLG) lsearch.f 
 cpu_obj/write.o     : write.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) write.f
+	ifort -o $@ $(COMPFLG) write.f
 cpu_obj/nwrite.o     : nwrite.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) nwrite.f
+	ifort -o $@ $(COMPFLG) nwrite.f
 cpu_obj/dns.o     : dns.f param
 	ifort -o $@ -cpp $(COMPFLG) dns.f 
 cpu_obj/dns2.o     : dns2.f param
@@ -140,7 +139,7 @@ cpu_obj/exchnum2.o     : exchnum2.f param
 cpu_obj/exchfock.o     : exchfock.f param
 	ifort -o $@ $(COMPFLG) exchfock.f 
 cpu_obj/SCFop.o    : SCFop.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) SCFop.f
+	ifort -o $@ $(COMPFLG) SCFop.f
 cpu_obj/densgop.o     : densgop.f param
 	ifort -o $@ $(COMPFLG) densgop.f
 cpu_obj/dns2op.o     : dns2op.f param
@@ -158,7 +157,7 @@ cpu_obj/potgop.o     : potgop.f
 cpu_obj/dnsgop.o     : dnsgop.f param
 	ifort -o $@ $(COMPFLG) dnsgop.f
 cpu_obj/alg.o     : alg.f 
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) alg.f
+	ifort -o $@ $(COMPFLG) alg.f
 cpu_obj/eig.o     : eig.f
 	ifort -o $@ $(COMPFLG2) eig.f
 cpu_obj/svd.o     : svd.f
@@ -166,7 +165,7 @@ cpu_obj/svd.o     : svd.f
 cpu_obj/elec.o     : elec.f param
 	ifort -o $@ $(COMPFLG) elec.f 
 cpu_obj/charge.o   : charge.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) charge.f
+	ifort -o $@ $(COMPFLG) charge.f
 cpu_obj/intsol.o    : intsol.f param
 	ifort -o $@ $(COMPFLG) intsol.f 
 cpu_obj/mmsol.o    : mmsol.f param
@@ -192,45 +191,45 @@ gpu_obj/int.o    : int.f param
 gpu_obj/int1G.o    : int1G.f param
 	ifort -o $@ $(COMPFLG2) $(GPU_CFLAGS) int1G.f 
 gpu_obj/drive.o : drive.f param 
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG2) $(GPU_CFLAGS) drive.f 
+	ifort -o $@ $(COMPFLG2) $(GPU_CFLAGS) drive.f 
 gpu_obj/func.o : func.f
 	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) func.f 
 gpu_obj/int2.o    : int2.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) $(GPU_CFLAGS) int2.f 
+	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) int2.f 
 gpu_obj/int2G.o    : int2G.f param
 	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) int2G.f 
 gpu_obj/int3G.o    : int3G.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG2) $(GPU_CFLAGS) int3G.f
+	ifort -o $@ $(COMPFLG2) $(GPU_CFLAGS) int3G.f
 gpu_obj/int3.o    : int3.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG2) $(GPU_CFLAGS) int3.f
+	ifort -o $@ $(COMPFLG2) $(GPU_CFLAGS) int3.f
 gpu_obj/int3N.o    : int3N.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG2) $(GPU_CFLAGS) int3N.f
+	ifort -o $@ $(COMPFLG2) $(GPU_CFLAGS) int3N.f
 gpu_obj/int3lu.o    : int3lu.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG2) $(GPU_CFLAGS) int3lu.f
+	ifort -o $@ $(COMPFLG2) $(GPU_CFLAGS) int3lu.f
 gpu_obj/int3mem.o    : int3mem.f param
 	ifort -o $@ $(COMPFLG2) $(GPU_CFLAGS) int3mem.f
 gpu_obj/exch.o    : exch.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) $(GPU_CFLAGS) exch.f
+	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) exch.f
 gpu_obj/exch2.o    : exch2.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) $(GPU_CFLAGS) exch2.f
+	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) exch2.f
 gpu_obj/pot.o    : pot.f 
 	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) pot.f 
 gpu_obj/SCF.o    : SCF.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) $(GPU_CFLAGS) SCF.f
+	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) SCF.f
 gpu_obj/MD2.o     : MD2.f param
 	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) MD2.f 
 gpu_obj/geom.o     : geom.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) $(GPU_CFLAGS) geom.f
+	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) geom.f
 gpu_obj/intSG.o     : intSG.f param
 	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) intSG.f 
 gpu_obj/dfp2.o     : dfp2.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) $(GPU_CFLAGS) dfp2.f 
+	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) dfp2.f 
 gpu_obj/lsearch.o     : lsearch.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) $(GPU_CFLAGS) lsearch.f 
+	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) lsearch.f 
 gpu_obj/write.o     : write.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) $(GPU_CFLAGS) write.f
+	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) write.f
 gpu_obj/nwrite.o     : nwrite.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) $(GPU_CFLAGS) nwrite.f
+	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) nwrite.f
 gpu_obj/dns.o     : dns.f param
 	ifort -o $@ -cpp $(COMPFLG) $(GPU_CFLAGS) dns.f 
 gpu_obj/dns2.o     : dns2.f param
@@ -258,7 +257,7 @@ gpu_obj/exchnum2.o     : exchnum2.f param
 gpu_obj/exchfock.o     : exchfock.f param
 	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) exchfock.f 
 gpu_obj/SCFop.o    : SCFop.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) $(GPU_CFLAGS) SCFop.f
+	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) SCFop.f
 gpu_obj/densgop.o     : densgop.f param
 	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) densgop.f
 gpu_obj/dns2op.o     : dns2op.f param
@@ -276,7 +275,7 @@ gpu_obj/potgop.o     : potgop.f
 gpu_obj/dnsgop.o     : dnsgop.f param
 	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) dnsgop.f
 gpu_obj/alg.o     : alg.f 
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) $(GPU_CFLAGS) alg.f
+	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) alg.f
 gpu_obj/eig.o     : eig.f
 	ifort -o $@ $(COMPFLG2) $(GPU_CFLAGS) eig.f
 gpu_obj/svd.o     : svd.f
@@ -284,7 +283,7 @@ gpu_obj/svd.o     : svd.f
 gpu_obj/elec.o     : elec.f param
 	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) elec.f 
 gpu_obj/charge.o   : charge.f param
-	ifort -o $@ -cpp $(DEFINE) $(COMPFLG) $(GPU_CFLAGS) charge.f
+	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) charge.f
 gpu_obj/intsol.o    : intsol.f param
 	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) intsol.f 
 gpu_obj/mmsol.o    : mmsol.f param

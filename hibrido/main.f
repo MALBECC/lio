@@ -26,9 +26,12 @@ c Ngrid may be set to 0 , in the case of using Num. Integ.
       INCLUDE 'param'
       INTEGER SPC
       COMMON /tipsol/SPC
-      parameter (ngDyn=450)
-      parameter (ngdDyn=450)
-      parameter (norbit=250,Ngrid=8000)
+      parameter (ngDyn=700)
+      parameter (ngdDyn=700)
+c      parameter (ngDyn=450)
+c      parameter (ngdDyn=450)
+c      parameter (norbit=250,Ngrid=8000)
+      parameter (norbit=80,Ngrid=6000)
 
       parameter (ng3=4*ngDyn)
 c     parameter (ng2=7*ngDyn*(ngDyn+1)/2+3*ngdDyn*(ngdDyn+1)/2+
@@ -56,6 +59,8 @@ C-----DIMENSIONES DE TODO
       CHARACTER*4 date
       common /sol1/ Nsol,natsol,alpha,Em,Rm,sol,free,pcx
       common /dyn/Pm
+      common /fit/ Nang_,dens,integ,Iexch,igrid,igrid2
+
       TEMPAV=ZERO
       TEMPOL=ZERO
       TEMPSLV=ZERO
@@ -332,6 +337,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DO 390 IT = NIN , NOUT
       ITEL = IT -1
 
+      write(*,*) ITEL
+
 
 C-----LLAMA A 'NEWXYZ':PONE EN X1 Y1 Z1 SITIOS REALES
 C-----Y EN XYZ LOS SITIOS CON CARGA (TIP4P)  
@@ -444,6 +451,11 @@ C-----LLAMA A 'SCF': CALCULA ENERGIA SUBS. QUANTICO
        WRITE(*,*)
       ENDIF
 
+#ifdef GPU
+      write(*,*) 'carga de posiciones, igrid2'
+			call gpu_reload_atom_positions()
+      call gpu_new_grid(igrid2)
+#endif
 
          IF(OPEN)THEN
 
@@ -470,6 +482,11 @@ C-----LLAMA A 'SCF': CALCULA ENERGIA SUBS. QUANTICO
       ESCF = E
       E1s0 = E1s
       EKS  = ESCF-E1s0
+
+#ifdef GPU
+			write(*,*) 'cambio de grilla para fuerza (igrid)'
+      call gpu_new_grid(igrid)
+#endif
 
 C-----LLAMA A RUTINAS QUE CALCULAN GRADIENTES DE EKS:
 

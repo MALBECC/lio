@@ -117,6 +117,10 @@ c
 c
       common /sol1/ Nsol1,natsol1,alpha,Em,Rm,sol1,free1
 
+      common /radii/ Rm2
+      common /intg1/ e_(50,3),wang(50),Nr(0:54)
+      common /intg2/ e_2(116,3),wang2(116),Nr2(0:54),e3(194,3),
+     > wang3(194)
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 c
@@ -1133,6 +1137,16 @@ c        pause
        r1(i,2)=r(i,2)
        r1(i,3)=r(i,3)
       enddo
+
+      write(*,*) 'acaaaaaaaaaaaaaaa'
+
+#ifdef GPU
+c------- GPU Initialization ---------------------
+      call gpu_init(NORM, natom, r, Rm2, Iz, Nr, Nr2, Nuc, M,
+     > ncont, nshell, c, a, P, M18, M5, NCO, 2, Iexch,
+     > e_, e_2, e3, wang, wang2, wang3)
+c DEBUG DEBUG: nopt se fuerza a 2
+#endif
 
 
  100  format (A8)

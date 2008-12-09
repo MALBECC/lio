@@ -30,6 +30,7 @@ extern "C" void gpu_init_(const unsigned int& norm, const unsigned int& natom, d
 	printf("<======= GPU Code Initialization ========>\n");
 	fortran_vars.atoms = natom;
 	assert(natom <= MAX_ATOMS);
+	_DBG(cout << "atoms: " << natom << endl);
 	
 	fortran_vars.do_forces = (nopt == 2);
 	cout << "do_forces: " << boolalpha << fortran_vars.do_forces << endl;

@@ -54,10 +54,6 @@ c
       common/Ngeom/ ngeo
       common /ENum/ GRAD
       common /propt/ idip,ipop,ispin,icharge,map(ntq)
-      common /intg1/ e_(50,3),wang(50)
-      common /intg2/ e_2(116,3),wang2(116),Nr(0:54),e3(194,3),wang3(194)
-      
-c
       common /sol1/ Nsol,natsol,alpha,Em,Rm,sol,free
       just_int3n = false      
 c------------------------------------------------------------------
@@ -749,27 +745,31 @@ c--------------------------------------------------------------
          ENDIF
          endif
        endif
-/* -- G2G -- */
-       write(*,*) 'exchnum SCF'
+       write(*,*) 'ultimo paso SCF'
+       call timer_start
 #ifdef GPU
 #ifdef ULTIMA_CPU       
        call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,NCO,Exc,nopt,IT,ITEL,NIN,IPR1)
 #else
-      call exchnum_gpu(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
-     >              M18,M5,NCO,Exc,nopt,Iexch, igrid, e_, e_2, e3,
-     >              wang, wang2, wang3, Ndens, 0, 0)
+			 if (igrid.ne.igrid2) then
+       call gpu_new_grid(igrid)
+			 endif
+       call gpu_solve_cubes(1, Exc, 0)
 #endif
 #else
 #ifdef ULTIMA_GPU
-      call exchnum_gpu(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
-     >              M18,M5,NCO,Exc,nopt,Iexch, igrid, e_, e_2, e3,
-     >              wang, wang2, wang3, Ndens, 0, 0)
+			 if (igrid.ne.igrid2) then
+       call gpu_new_grid(igrid)
+			 endif
+       call gpu_solve_cubes(1, Exc, 0)
 #else      
       call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,NCO,Exc,nopt,IT,ITEL,NIN,IPR1)
+			write(*,*) 'total final:',Exc
 #endif       
 #endif       
+       call timer_stop('ultimo paso SCF')
        E=E+Exc-Ex
 c
 c--------------------------------------------------------------

@@ -103,10 +103,10 @@ c      WRITE (6,56) (WWM(I),I=1,NSPECQ+NATSOL+1)
       WRITE (6,578)(ZZZ(I),I=1,NATSOL)
       READ (51,*)
       READ (51,*) (DA(I),I=1,3)
-c      WRITE (6,113) DA(1),DA(2),DA(3)
+      WRITE (6,113) DA(1),DA(2),DA(3)
       READ (51,*)
       READ (51,*) SPC
-c     write(*,*) 'SPC=',SPC
+      write(*,*) 'SPC=',SPC
 
       IF(SPC.EQ.1)THEN
 
@@ -135,19 +135,23 @@ c     write(*,*) 'SPC=',SPC
       READ (51,*)
       READ (51,*) 
       READ (51,*) RHO
+      write(*,*) 'rho',RHO
       ENDIF
       READ (51,*)
       READ (51,*) XFAX,RBUF
       READ (51,*)
       READ (51,*) IEWLD
+      write(*,*) 'iewld',IEWLD
       WRITE (6,115) IEWLD
       READ (51,*)
       READ (51,*) KMAX
+      write(*,*) 'kmax',KMAX
       READ (51,*)
       READ (51,*) IUNID
       READ (51,*)
       READ (51,*) ELFIELD,D,NQ
       READ (51,*)
+      write(*,*) 'aca'
 c      READ (51,*)IDIPCOR,PMAX,PZMAX 
 
 

@@ -104,15 +104,6 @@ c
       M20 = M19 + natom*50*Nang   
 c
       Nel=2*NCO+Nunp
-c#ifdef GPU
-c------- GPU Initialization ---------------------
-c      call gpu_init(NORM, natom, r, Rm, Iz, Nr, Nr2, Nuc, M,
-c     > ncont, nshell, c, a, RMM, M18, M5, NCO, nopt, Iexch,
-c     > e_, e_2, e3, wang, wang2, wang3)
-c			call gpu_reload_atom_positions()
-c      call gpu_new_grid(igrid2)
-c#endif
-c------------------------------------------------
 c Initializations/Defaults
 c
       write(*,*) ' SCF CALCULATION  '

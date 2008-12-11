@@ -90,6 +90,8 @@ void gpu_compute_cube_functions(void)
 		dim3 threads(cube.number_of_points);
 		dim3 threadBlock(FUNCTIONS_BLOCK_SIZE);
 		dim3 threadGrid = divUp(threads, threadBlock);		
+
+		//cout << "points: " << threads.x << " " << threadGrid.x << " " << threadBlock.x << endl;
 		
 		if (fortran_vars.do_forces)
 			gpu_compute_functions<true><<<threadGrid, threadBlock>>>(points_position_gpu.data, cube.number_of_points, contractions_gpu.data, factor_ac_gpu.data, nuc_gpu.data, cube.function_values.data, cube.gradient_values.data, cube_functions, cube_spd);

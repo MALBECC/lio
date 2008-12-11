@@ -16,10 +16,10 @@ __global__ void gpu_compute_forces(uint points, float* force_factors, float3* de
 
 	for (uint point = 0; point < points; point++) {
 		__syncthreads();
-		if (threadIdx.x == 0) factor_sh = force_factors[point];
+		if (threadIdx.x == 0) factor_sh = 4.0f * force_factors[point];
 		__syncthreads();
 
-		if (valid_thread) atom_force = atom_force + density_deriv[point * nucleii_count + atom] * 4.0f * factor_sh;
+		if (valid_thread) atom_force = atom_force + density_deriv[point * nucleii_count + atom] * factor_sh;
 	}
 
 	if (valid_thread) forces[atom] = atom_force;

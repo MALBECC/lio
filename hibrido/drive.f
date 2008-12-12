@@ -1138,11 +1138,9 @@ c        pause
        r1(i,3)=r(i,3)
       enddo
 
-      write(*,*) 'acaaaaaaaaaaaaaaa'
-
 #ifdef GPU
 c------- GPU Initialization ---------------------
-      call gpu_init(NORM, natom, r, Rm2, Iz, Nr, Nr2, Nuc, M,
+      call gpu_init(NORM, natom, r1, Rm2, Iz, Nr, Nr2, Nuc, M,
      > ncont, nshell, c, a, P, M18, M5, NCO, 2, Iexch,
      > e_, e_2, e3, wang, wang2, wang3)
 c DEBUG DEBUG: nopt se fuerza a 2

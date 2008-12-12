@@ -451,6 +451,7 @@ C-----LLAMA A 'SCF': CALCULA ENERGIA SUBS. QUANTICO
        WRITE(*,*)
       ENDIF
 
+
 #ifdef GPU
       write(*,*) 'carga de posiciones, igrid2'
 			call gpu_reload_atom_positions()
@@ -485,7 +486,9 @@ C-----LLAMA A 'SCF': CALCULA ENERGIA SUBS. QUANTICO
 
 #ifdef GPU
 			write(*,*) 'cambio de grilla para fuerza (igrid)'
-      call gpu_new_grid(igrid)
+      if (igrid.ne.igrid2) then
+        call gpu_new_grid(igrid)
+      endif
 #endif
 
 C-----LLAMA A RUTINAS QUE CALCULAN GRADIENTES DE EKS:

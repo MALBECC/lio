@@ -176,6 +176,12 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::resize(unsigned int _width, unsi
 	return *this;		
 }
 
+template<class T> CudaMatrix<T>& CudaMatrix<T>::fill(int value) {
+	assert(this->data);
+	cudaMemset(this->data, value, this->bytes());	
+	return *this;
+}
+
 template<class T> CudaMatrix<T>::CudaMatrix(const CudaMatrix<T>& c) : Matrix<T>() {
 	*this = c;
 }

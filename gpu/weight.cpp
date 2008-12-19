@@ -17,11 +17,14 @@ double compute_point_weight(const double3& point_position, double wrad, uint ato
 {
 	double P_total = 0.0;
 	double P_atom = 1.0;
+	double atom_weight;
 
 #if !BECKE
 	double a = 0.64; // sacado de paper de DFT lineal
-	if ((point_position - fortran_vars.atom_positions.get(atom)).length() < (0.5 * (1 - a) * fortran_vars.nearest_neighbor_dists.get(atom)))
-		return 1.0;
+	if ((point_position - fortran_vars.atom_positions.get(atom)).length() < (0.5 * (1 - a) * fortran_vars.nearest_neighbor_dists.get(atom))) {
+		atom_weight = 1.0;
+	}
+	{
 #endif
 					
 	for (uint atom_j = 0; atom_j < fortran_vars.atoms; atom_j++) {
@@ -65,7 +68,11 @@ double compute_point_weight(const double3& point_position, double wrad, uint ato
 		P_total += P_curr;
 	}
 
-	double atom_weight = (P_total == 0.0 ? 0.0 : (P_atom / P_total));
+	atom_weight = (P_total == 0.0 ? 0.0 : (P_atom / P_total));
+#if !BECKE
+	}
+#endif
+
 	double integration_weight = wrad * fortran_vars.wang.get(point);
 	double point_weight = atom_weight * integration_weight;
 	
@@ -77,24 +84,25 @@ void assign_cube_weights(LittleCube& cube)
 	list<Point>::iterator it = cube.points.begin();
 	while (it != cube.points.end()) {
 		uint atom = it->atom;
+		double atom_weight;
 
-#if !BECKE
+//#if !BECKE
 		if (cube.nucleii.find(atom) == cube.nucleii.end()) {
 			it = cube.points.erase(it);
-			cube.number_of_points--;
+			cube.number_of_points--; // TODO: probar poner peso cero nada mas
 			continue;
 		}
-#endif
+//#endif
 
 		const double3& point_position = it->position;
 		double a = 0.64; // sacado de paper de DFT lineal
 
 #if !BECKE
 		if ((point_position - fortran_vars.atom_positions.get(atom)).length() < (0.5 * (1 - a) * fortran_vars.nearest_neighbor_dists.get(atom))) {
-			it->weight = 1.0;
-			++it;
-			continue;
+			atom_weight = 1.0;
+			//cout << "precondicion" << endl;
 		}
+		{
 #endif
 
 		double P_total = 0.0;
@@ -134,19 +142,31 @@ void assign_cube_weights(LittleCube& cube)
 				//cout << u << endl;
 
 				P_curr *= u;
-				if (P_curr == 0.0) break;
+#if BECKE && BECKE_CUTOFF
+				if (P_curr < becke_cutoff) { /*cout << "product" << endl;*/ P_curr = 0.0; break; }
+#else
+				if (P_curr == 0.0) { /*cout << "product" << endl;*/ break; }
+#endif
 			}
 
 			if (atom_j == atom) {
 				P_atom = P_curr;
-				if (P_atom == 0.0) break;
+#if BECKE && BECKE_CUTOFF
+				if (P_atom < becke_cutoff) { /*cout << "curr" << endl;*/ P_atom = 0.0; break; }
+#else
+				if (P_atom == 0.0) { /*cout << "curr" << endl;*/ break; }
+#endif
 			}
 
 			P_total += P_curr;
 		}
 
 		
-		double atom_weight = (P_total == 0.0 ? 0.0 : (P_atom / P_total));
+		atom_weight = (P_total == 0.0 ? 0.0 : (P_atom / P_total));
+#if !BECKE
+		}
+#endif
+
 		it->weight *= atom_weight;
 		//cout << "peso " << P_atom << " " << P_total << " " << it->weight << endl;
 

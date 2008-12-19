@@ -82,8 +82,7 @@ c
 
 #ifdef GPU
 		  write(*,*) 'movimiento de posiciones por lsearch (con igrid2)'
-	  	call gpu_reload_atom_positions()
-      call gpu_new_grid(igrid2)
+	  	call gpu_reload_atom_positions(igrid2)
 #endif
 c
       GRAD=.true.

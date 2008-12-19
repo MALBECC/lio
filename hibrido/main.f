@@ -454,8 +454,7 @@ C-----LLAMA A 'SCF': CALCULA ENERGIA SUBS. QUANTICO
 
 #ifdef GPU
       write(*,*) 'carga de posiciones, igrid2'
-			call gpu_reload_atom_positions()
-      call gpu_new_grid(igrid2)
+			call gpu_reload_atom_positions(igrid2)
 #endif
 
          IF(OPEN)THEN

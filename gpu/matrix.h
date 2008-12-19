@@ -4,6 +4,9 @@
 #include "cuda/double.h"
 #include <cassert>
 
+// TODO: this should work without the macro
+#define COALESCED_DIMENSION(d) (d + 16 - (d % 16))
+
 namespace G2G {
 	template<class T> class Matrix {
 		public:
@@ -73,6 +76,7 @@ namespace G2G {
 			~CudaMatrix(void);
 		
 			CudaMatrix<T>& resize(unsigned int width, unsigned int height = 1);
+			CudaMatrix<T>& fill(int);
 
 			CudaMatrix& operator=(const HostMatrix<T>& c);
 			CudaMatrix& operator=(const CudaMatrix<T>& c);

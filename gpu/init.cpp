@@ -87,20 +87,8 @@ extern "C" void gpu_init_(const unsigned int& norm, const unsigned int& natom, d
 	read_options();
 }
 
-extern "C" void gpu_reload_atom_positions_(void) {	
-	printf("<======= GPU Reload Atom Positions ========>\n");
-	HostMatrix<float3> atom_positions(fortran_vars.atoms);	// gpu version (float3)
-	fortran_vars.atom_positions.resize(fortran_vars.atoms);	// cpu version (double3)
-	for (uint i = 0; i < fortran_vars.atoms; i++) {
-		double3 pos(fortran_vars.atom_positions_pointer.get(i, 0), fortran_vars.atom_positions_pointer.get(i, 1), fortran_vars.atom_positions_pointer.get(i, 2));
-		fortran_vars.atom_positions.get(i) = pos;
-		atom_positions.get(i) = make_float3(pos.x, pos.y, pos.z);		
-	}
-	atom_positions.to_constant("gpu_atom_positions");
-}
-
-extern "C" void gpu_new_grid_(const unsigned int& grid_type) {
-	cout << "<======= GPU New Grid Loading (" << grid_type << ")========>" << endl;
+void compute_new_grid(const unsigned int grid_type) {
+	cout << "loading new grid " << grid_type << endl;
 	switch(grid_type) {
 		case 0:
 			fortran_vars.grid_type = SMALL_GRID; fortran_vars.grid_size = SMALL_GRID_SIZE;
@@ -123,11 +111,34 @@ extern "C" void gpu_new_grid_(const unsigned int& grid_type) {
 	gpu_compute_cube_functions();
 }
 
+extern "C" void gpu_reload_atom_positions_(const unsigned int& grid_type) {	
+	cout  << "<======= GPU Reload Atom Positions ========>" << endl;
+	HostMatrix<float3> atom_positions(fortran_vars.atoms);	// gpu version (float3)
+	fortran_vars.atom_positions.resize(fortran_vars.atoms);	// cpu version (double3)
+	for (uint i = 0; i < fortran_vars.atoms; i++) {
+		double3 pos(fortran_vars.atom_positions_pointer.get(i, 0), fortran_vars.atom_positions_pointer.get(i, 1), fortran_vars.atom_positions_pointer.get(i, 2));
+		fortran_vars.atom_positions.get(i) = pos;
+		atom_positions.get(i) = make_float3(pos.x, pos.y, pos.z);		
+	}
+	atom_positions.to_constant("gpu_atom_positions");
+
+	compute_new_grid(grid_type);
+}
+
+extern "C" void gpu_new_grid_(const unsigned int& grid_type) {
+	cout << "<======= GPU New Grid (" << grid_type << ")========>" << endl;
+	if (grid_type == (uint)fortran_vars.grid_type)
+		cout << "not loading, same grid as loaded" << endl;
+	else
+		compute_new_grid(grid_type);
+}
+
 /* general options */
 namespace G2G {
 	uint max_function_exponent = 8;
 	double little_cube_size = 5.0;
 	uint min_points_per_cube = 5;
+	double becke_cutoff = 1e-7;
 }
 
 void read_options(void) {
@@ -145,6 +156,8 @@ void read_options(void) {
 			{ f >> little_cube_size; cout << little_cube_size; }
 		else if (option == "min_points_per_cube")
 			{ f >> min_points_per_cube; cout << min_points_per_cube; }
+		else if (option == "becke_cutoff")
+			{ f >> becke_cutoff; cout << becke_cutoff; }
 		else throw runtime_error(string("Invalid option: ") + option);
 
 		cout << endl;

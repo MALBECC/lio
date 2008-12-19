@@ -79,8 +79,7 @@ c
 
 #ifdef GPU
 			write(*,*) 'primera carga de posiciones (con igrid2)'
-			call gpu_reload_atom_positions()
-      call gpu_new_grid(igrid2)
+			call gpu_reload_atom_positions(igrid2)
 #endif
 
       GRAD=.false.
@@ -235,8 +234,7 @@ c
 
 #ifdef GPU
 			write(*,*) 'actualizacion de posiciones por movimiento'
-			call gpu_reload_atom_positions()
-      call gpu_new_grid(igrid2)
+			call gpu_reload_atom_positions(igrid2)
 #endif
 c
       GRAD=.false.

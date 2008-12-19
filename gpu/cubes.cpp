@@ -89,7 +89,7 @@ void regenerate_cubes(void)
 			const double3& atom_j_position(fortran_vars.atom_positions.get(j));
 			double dist = (atom_i_position - atom_j_position).length();
 			fortran_vars.atom_atom_dists.get(i, j) = dist;
-			nearest_neighbor_dist = min(nearest_neighbor_dist, dist);
+			if (i != j) nearest_neighbor_dist = min(nearest_neighbor_dist, dist);
 		}
 		fortran_vars.nearest_neighbor_dists.get(i) = nearest_neighbor_dist;
 	}
@@ -130,12 +130,14 @@ void regenerate_cubes(void)
 
 				if (inside_cube) {					
 					/* Numerical Integration */
+					_DBG(cout << "point: " << atom << " " << shell << " " << point << endl);
 #if WEIGHT_CUTOFFS
 					double point_weight = wrad * fortran_vars.wang.get(point); // integration weight
 #else
 					double point_weight = compute_point_weight(point_position, wrad, atom, point);
 					//if (point_weight == 0.0) continue;
 #endif
+					_DBG(cout << "weight: " << point_weight << endl);
 
 					/* insert into corresponding cube */
 					uint3 little_cube_coordinate = floor_uint3((point_position - x0) / little_cube_size);

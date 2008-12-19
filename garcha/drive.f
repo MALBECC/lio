@@ -1162,8 +1162,7 @@ c nopt 0 static SCF calculation --------------------------------------
 
 #ifdef GPU
 			write(*,*) 'primera carga de posiciones'
-			call gpu_reload_atom_positions()
-      call gpu_new_grid(igrid2)
+			call gpu_reload_atom_positions(igrid2)
 #endif
 
       if (OPEN) then

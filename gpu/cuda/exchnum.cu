@@ -13,6 +13,8 @@
 #include "double.h"
 #include "cubes.h"
 
+#define OLD_DENSITY_KERNEL 1
+
 /** KERNELS **/
 #include "functions.h"
 #include "energy.h"
@@ -150,6 +152,9 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 	CudaMatrixFloat4 points_position_weight_gpu;
 	CudaMatrixFloat rdm_gpu;
 	CudaMatrixUInt nuc_gpu;
+	CudaMatrixFloat2 factor_ac_gpu;
+	CudaMatrixUInt contractions_gpu;
+	
 
 	FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS);
 	
@@ -177,11 +182,13 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 		uint cube_m = cube.s_functions + cube.p_functions * 3 + cube.d_functions * 6;
 		uint cube_spd = cube.s_functions + cube.p_functions + cube.d_functions;
 		uint4 cube_functions = make_uint4(cube.s_functions, cube.p_functions, cube.d_functions, cube_m);
+		//cout << "s: " << cube_functions.x << " p: " << cube_functions.y << " d: " << cube_functions.z << endl;
 		
 		/* load RDM */
 		{
 			HostMatrixFloat rdm_cpu;
-			rdm_cpu.resize(cube_m, fortran_vars.nco);
+			//cout << "cube_m " << (cube_m + (16 - cube_m % 16)) << endl;
+			rdm_cpu.resize(COALESCED_DIMENSION(cube_m), fortran_vars.nco);
 			for (unsigned int i = 0; i < fortran_vars.nco; i++) {
 				uint j = 0;
 				for (set<uint>::const_iterator func = cube.functions.begin(); func != cube.functions.end(); ++func) {
@@ -199,16 +206,45 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 			}
 			rdm_gpu = rdm_cpu;
 		}
+
+#if !OLD_DENSITY_KERNEL
+		{
+			HostMatrixFloat2 factor_ac_cpu(cube_spd, MAX_CONTRACTIONS);
+			HostMatrixUInt nuc_cpu(cube_spd, 1), contractions_cpu(cube_spd, 1);
+			
+			uint i = 0;
+			for (set<uint>::const_iterator func = cube.functions.begin(); func != cube.functions.end(); ++func, ++i) {
+				nuc_cpu.get(i) = fortran_vars.nucleii.get(*func) - 1;
+				contractions_cpu.get(i) = fortran_vars.contractions.get(*func);
+				assert(contractions_cpu.get(i) <= MAX_CONTRACTIONS);
+				
+				for (unsigned int k = 0; k < contractions_cpu.get(i); k++)
+					factor_ac_cpu.get(i, k) = make_float2(fortran_vars.a_values.get(*func, k), fortran_vars.c_values.get(*func, k));
+			}
+
+			factor_ac_gpu = factor_ac_cpu;
+			nuc_gpu = nuc_cpu;
+			contractions_gpu = contractions_cpu;
+		}
+#endif
 							
 		dim3 threads(cube.number_of_points);
 		dim3 threadBlock, threadGrid;
+#if OLD_DENSITY_KERNEL
 		threadBlock = dim3(DENSITY_BLOCK_SIZE);
+#else
+		threadBlock = dim3(DENSITY_BLOCK_SIZE_X);
+#endif
 		threadGrid = divUp(threads, threadBlock);
 
 		/* compute energy */
 		if (computation_type == COMPUTE_ENERGY_ONLY) {
 			CudaMatrixFloat energy_gpu(cube.number_of_points);
+#if OLD_DENSITY_KERNEL
 			gpu_compute_density<true, false><<<threadGrid, threadBlock>>>(energy_gpu.data, NULL, points_position_weight_gpu.data, cube.number_of_points, rdm_gpu.data, cube.function_values.data, NULL, NULL, NULL, 0, cube_functions);
+#else
+			gpu_compute_density2<true, false><<<threadGrid, threadBlock>>>(energy_gpu.data, NULL, points_position_weight_gpu.data, cube.number_of_points, rdm_gpu.data, nuc_gpu.data, cube_functions, cube_spd, contractions_gpu.data, factor_ac_gpu.data);
+#endif
 			cudaAssertNoError("compute_density");
 
 			HostMatrixFloat energy_cpu(energy_gpu);

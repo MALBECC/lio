@@ -29,9 +29,13 @@ __global__ void gpu_compute_density(float* energy, float* factor, float4* point_
 	float3 point_position = make_float3(point_weight_position.x, point_weight_position.y, point_weight_position.z);
 	float point_weight = point_weight_position.w;
 	
-	uint base = (point % points) * m;
-  uint grad_base = (point % points) * m;
-	uint deriv_base = (point % points) * nucleii_count;
+	uint base = point * COALESCED_DIMENSION(m);
+  uint grad_base = point * m;
+	uint deriv_base = point * nucleii_count;
+
+  if (compute_derivs) {
+    if (valid_thread) { for (uint i = 0; i < nucleii_count; i++) density_deriv[deriv_base + i] = make_float3(0.0f,0.0f,0.0f); }
+  }
 
 	/* density */	
 	for (uint i = 0; i < gpu_nco; i++) {
@@ -41,11 +45,13 @@ __global__ void gpu_compute_density(float* energy, float* factor, float4* point_
 		/* coalesced access to RDM */
 		for (uint j = 0; j < m; j += DENSITY_BLOCK_SIZE) {
 			if (j + threadIdx.x < m) rdm_sh[threadIdx.x] = rdm[rdm_idx + j + threadIdx.x];
+
 			__syncthreads();
 			
 			if (valid_thread) {
-				for (uint jj = 0; jj < DENSITY_BLOCK_SIZE && (j + jj < m); jj++)
+				for (uint jj = 0; jj < DENSITY_BLOCK_SIZE && (j + jj < m); jj++) {
 					w += function_values[base + j + jj] * rdm_sh[jj];
+				}
 			}
 
 			__syncthreads();
@@ -53,27 +59,29 @@ __global__ void gpu_compute_density(float* energy, float* factor, float4* point_
 
 		// TODO: coalescear RDM aca tambien
 		if (compute_derivs) {
-			uint jj = 0, j = 0;
+      if (valid_thread) {
+        uint jj = 0, j = 0;
 
-			for (; j < functions.x; j++, jj++) {
-				density_deriv[deriv_base + nuc[j]] += gradient_values[grad_base + j] * rdm[rdm_idx + j] * w;
-			}
-			for (; j < functions.x + functions.y; j++, jj+=3) {
-				uint deriv_idx = deriv_base + nuc[j];
-				uint grad_idx = grad_base + jj;
-				density_deriv[deriv_idx] += gradient_values[grad_idx + 0] * rdm[rdm_idx + jj + 0] * w;	
-				density_deriv[deriv_idx] += gradient_values[grad_idx + 1] * rdm[rdm_idx + jj + 1] * w;	
-				density_deriv[deriv_idx] += gradient_values[grad_idx + 2] * rdm[rdm_idx + jj + 2] * w;
-			}
-			for (; j < functions.x + functions.y + functions.z; j++, jj+=6) {
-				uint deriv_idx = deriv_base + nuc[j];
-				uint grad_idx = grad_base + jj;
-				density_deriv[deriv_idx] += gradient_values[grad_idx + 0] * rdm[rdm_idx + jj + 0] * w;	
-				density_deriv[deriv_idx] += gradient_values[grad_idx + 1] * rdm[rdm_idx + jj + 1] * w;	
-				density_deriv[deriv_idx] += gradient_values[grad_idx + 2] * rdm[rdm_idx + jj + 2] * w;	
-				density_deriv[deriv_idx] += gradient_values[grad_idx + 3] * rdm[rdm_idx + jj + 3] * w;	
-				density_deriv[deriv_idx] += gradient_values[grad_idx + 4] * rdm[rdm_idx + jj + 4] * w;	
-				density_deriv[deriv_idx] += gradient_values[grad_idx + 5] * rdm[rdm_idx + jj + 5] * w;
+        for (; j < functions.x; j++, jj++) {
+          density_deriv[deriv_base + nuc[j]] += gradient_values[grad_base + j] * rdm[rdm_idx + j] * w;
+        }
+        for (; j < functions.x + functions.y; j++, jj+=3) {
+          uint deriv_idx = deriv_base + nuc[j];
+          uint grad_idx = grad_base + jj;
+          density_deriv[deriv_idx] += gradient_values[grad_idx + 0] * rdm[rdm_idx + jj + 0] * w;
+          density_deriv[deriv_idx] += gradient_values[grad_idx + 1] * rdm[rdm_idx + jj + 1] * w;
+          density_deriv[deriv_idx] += gradient_values[grad_idx + 2] * rdm[rdm_idx + jj + 2] * w;
+        }
+        for (; j < functions.x + functions.y + functions.z; j++, jj+=6) {
+          uint deriv_idx = deriv_base + nuc[j];
+          uint grad_idx = grad_base + jj;
+          density_deriv[deriv_idx] += gradient_values[grad_idx + 0] * rdm[rdm_idx + jj + 0] * w;
+          density_deriv[deriv_idx] += gradient_values[grad_idx + 1] * rdm[rdm_idx + jj + 1] * w;
+          density_deriv[deriv_idx] += gradient_values[grad_idx + 2] * rdm[rdm_idx + jj + 2] * w;
+          density_deriv[deriv_idx] += gradient_values[grad_idx + 3] * rdm[rdm_idx + jj + 3] * w;
+          density_deriv[deriv_idx] += gradient_values[grad_idx + 4] * rdm[rdm_idx + jj + 4] * w;
+          density_deriv[deriv_idx] += gradient_values[grad_idx + 5] * rdm[rdm_idx + jj + 5] * w;
+        }
 			}
 		}
 

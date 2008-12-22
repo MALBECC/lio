@@ -2,7 +2,7 @@
 
 primera_grilla=1
 
-for i in agu12; do
+for i in agu24; do
   cd ${i}
   
   echo "${i} (con grilla ${primera_grilla})"
@@ -12,9 +12,9 @@ for i in agu12; do
   echo ${i}.i > t
   /usr/bin/time -p ../../garcha/garcha-gpu < t &> ${i}-igrid${primera_grilla}.g
 
-  echo 'Single-point CPU'
-  echo ${i}.i > t
-  /usr/bin/time -p ../../garcha/garcha-cpu < t &> ${i}-igrid${primera_grilla}.c
+  #echo 'Single-point CPU'
+  #echo ${i}.i > t
+  #/usr/bin/time -p ../../garcha/garcha-cpu < t &> ${i}-igrid${primera_grilla}.c
 
   #echo 'Optimizacion GPU Normal'
   #echo ${i}f.i > t

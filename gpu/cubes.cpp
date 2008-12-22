@@ -130,14 +130,14 @@ void regenerate_cubes(void)
 
 				if (inside_cube) {					
 					/* Numerical Integration */
-					_DBG(cout << "point: " << atom << " " << shell << " " << point << endl);
+//					_DBG(cout << "point: " << atom << " " << shell << " " << point << endl);
 #if WEIGHT_CUTOFFS
 					double point_weight = wrad * fortran_vars.wang.get(point); // integration weight
 #else
 					double point_weight = compute_point_weight(point_position, wrad, atom, point);
 					//if (point_weight == 0.0) continue;
 #endif
-					_DBG(cout << "weight: " << point_weight << endl);
+//					_DBG(cout << "weight: " << point_weight << endl);
 
 					/* insert into corresponding cube */
 					uint3 little_cube_coordinate = floor_uint3((point_position - x0) / little_cube_size);

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <map>
+#include <string>
 #include "common.h"
 #include "init.h"
 #include "cuda_extra.h"
@@ -86,7 +87,7 @@ void gpu_compute_cube_functions(void)
 		}
 		
 		/** Compute Functions **/		
-		cube.function_values.resize(cube_functions.w, cube.number_of_points);
+		cube.function_values.resize(COALESCED_DIMENSION(cube_functions.w), cube.number_of_points);
 		if (fortran_vars.do_forces) cube.gradient_values.resize(cube_functions.w, cube.number_of_points);
 		
 		dim3 threads(cube.number_of_points);
@@ -147,6 +148,10 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 		case COMPUTE_ENERGY_FORCE: cout << "energia+fuerzas"; break;
 	}
 	cout << "] ==========>" << endl;
+	
+	Timer t1;
+	t1.sync();
+	t1.start();									
 		
 	/*** Computo sobre cada cubo ****/
 	CudaMatrixFloat4 points_position_weight_gpu;
@@ -159,11 +164,7 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 	FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS);
 	
 	double total_energy = 0.0;
-	
-	Timer t1;
-	t1.sync();
-	t1.start();								
-	
+		
 	for (list<LittleCube>::const_iterator it = final_cube.begin(); it != final_cube.end(); ++it) {
 		const LittleCube& cube = *it;
 				
@@ -258,7 +259,7 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 
 			/*** Compute RMM update ***/
 			threads = dim3(cube_m, cube_m);
-			threadBlock = dim3(RMM_BLOCK_SIZE_X, RMM_BLOCK_SIZE_Y);
+			threadBlock = dim3(RMM_BLOCK_SIZE_XY, RMM_BLOCK_SIZE_XY);
 			threadGrid = divUp(threads, threadBlock);
 			
 			CudaMatrixFloat rmm_output_gpu((cube_m * (cube_m + 1))/2);
@@ -332,7 +333,7 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 			cudaAssertNoError("compute_density");
 
 			threads = dim3(cube.nucleii.size());
-			threadBlock = dim3(256);
+			threadBlock = dim3(FORCE_BLOCK_SIZE);
 			threadGrid = divUp(threads, threadBlock);
 
 #if 0
@@ -341,7 +342,11 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 			uint point_idx = 0;
 			for (list<Point>::const_iterator it = cube.points.begin(); it != cube.points.end(); ++it, point_idx++) {
 				for (map<uint, uint>::iterator nuc_it = nuc_map.begin(); nuc_it != nuc_map.end(); ++nuc_it) {
-					cout << "factor: " << it->atom << " " << it->shell << " " << it->point << " " << nuc_it->first << " " << nuc_it->second << " " << density_deriv_cpu.get(nuc_it->second, point_idx).x * 4.0 << endl;
+					cout << "factor: " << point_idx << " " << nuc_it->second << " " <<
+            density_deriv_cpu.get(nuc_it->second, point_idx).x << " " <<
+            density_deriv_cpu.get(nuc_it->second, point_idx).y << " " <<
+            density_deriv_cpu.get(nuc_it->second, point_idx).z << " " <<
+          endl;
 				}
 			}
 			/* DEBUG */
@@ -354,20 +359,21 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 			HostMatrixFloat3 cpu_forces(gpu_forces);
 			for (map<uint, uint>::iterator nuc_it = nuc_map.begin(); nuc_it != nuc_map.end(); ++nuc_it) {
 				float3 atom_force = cpu_forces.get(nuc_it->second);
+        //cout << "atom force: " << atom_force.x << " " << atom_force.y << " " << atom_force.z << endl;
 				fort_forces.get(nuc_it->first, 0) += atom_force.x;
 				fort_forces.get(nuc_it->first, 1) += atom_force.y;
 				fort_forces.get(nuc_it->first, 2) += atom_force.z;
 			}
 		}
 	}
-	
-	t1.sync();
-	t1.stop();
-	cout << "density/rmm/forces" << t1 << endl;
-	
+		
 	/** pass results to fortran */
 	if (computation_type == COMPUTE_ENERGY_ONLY || computation_type == COMPUTE_ENERGY_FORCE) {
 		cout << "total energy: " << total_energy << endl;
 		*fort_energy_ptr = total_energy;
-	}		
+	}
+	
+	t1.sync();
+	t1.stop();
+	cout << "TIMER: gpu_solve_cubes " << t1 << endl;
 }

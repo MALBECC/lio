@@ -14,7 +14,7 @@ __device__ __host__ void compute_function(uint idx, float3 point_position, uint*
 	for (uint contraction = 0; contraction < func_contractions; contraction++) {
 		float2 curr_factor_ac = factor_ac[contraction * spd + idx];
 		float rexp = curr_factor_ac.x * dist;
-		if (rexp > 30.0f) continue; // TODO: esto se puede sacar?
+		//if (rexp > 30.0f) continue;
 		float t0 = expf(-rexp) * curr_factor_ac.y;
 		t += t0;
 		if (do_forces) tg += t0 * curr_factor_ac.x;

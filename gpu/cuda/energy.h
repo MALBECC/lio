@@ -6,7 +6,7 @@
  *  TODO: paralelizar por puntos (pueden cargar cosas comunes)
  */
 
-// TODO: revisar bank conflicts
+#define NEW_DERIVS 0
 
 template<bool compute_energy, bool compute_derivs>
 __global__ void gpu_compute_density(float* energy, float* factor, float4* point_weight_positions, uint points, float* rdm,
@@ -31,7 +31,7 @@ __global__ void gpu_compute_density(float* energy, float* factor, float4* point_
 	
 	uint base = point * COALESCED_DIMENSION(m);
   uint grad_base = point * m;
-	uint deriv_base = point * nucleii_count;
+	uint deriv_base = point * COALESCED_DIMENSION(nucleii_count);
 
   if (compute_derivs) {
     if (valid_thread) { for (uint i = 0; i < nucleii_count; i++) density_deriv[deriv_base + i] = make_float3(0.0f,0.0f,0.0f); }
@@ -60,28 +60,44 @@ __global__ void gpu_compute_density(float* energy, float* factor, float4* point_
 		// TODO: coalescear RDM aca tambien
 		if (compute_derivs) {
       if (valid_thread) {
-        uint jj = 0, j = 0;
+        // TODO: esto se tiene que poder hacer mejor
+        #if NEW_DERIVS
+        uint j = 0;
+        for (uint jj = 0; jj < m; jj++) {
+          if (jj < functions.x) j = jj;
+          else if (jj < functions.x + 3 * functions.y) j = (jj - functions.x)/3;
+          else j = (jj - functions.x - functions.y * 3) / 6;
 
+          /* TODO: nuc podria ser uno por cada jj o se podria cargar cada 3, 6 */
+          density_deriv[deriv_base + nuc[j]] += gradient_values[grad_base + jj] * rdm[rdm_idx + jj] * w;
+        }
+        #else
+        uint j = 0, jj = 0;
         for (; j < functions.x; j++, jj++) {
           density_deriv[deriv_base + nuc[j]] += gradient_values[grad_base + j] * rdm[rdm_idx + j] * w;
         }
         for (; j < functions.x + functions.y; j++, jj+=3) {
           uint deriv_idx = deriv_base + nuc[j];
           uint grad_idx = grad_base + jj;
-          density_deriv[deriv_idx] += gradient_values[grad_idx + 0] * rdm[rdm_idx + jj + 0] * w;
-          density_deriv[deriv_idx] += gradient_values[grad_idx + 1] * rdm[rdm_idx + jj + 1] * w;
-          density_deriv[deriv_idx] += gradient_values[grad_idx + 2] * rdm[rdm_idx + jj + 2] * w;
+          float3 partial_result = make_float3(0.0f,0.0f,0.0f);
+          partial_result += gradient_values[grad_idx + 0] * rdm[rdm_idx + jj + 0];
+          partial_result += gradient_values[grad_idx + 1] * rdm[rdm_idx + jj + 1];
+          partial_result += gradient_values[grad_idx + 2] * rdm[rdm_idx + jj + 2];
+          density_deriv[deriv_idx] += partial_result * w;
         }
         for (; j < functions.x + functions.y + functions.z; j++, jj+=6) {
           uint deriv_idx = deriv_base + nuc[j];
           uint grad_idx = grad_base + jj;
-          density_deriv[deriv_idx] += gradient_values[grad_idx + 0] * rdm[rdm_idx + jj + 0] * w;
-          density_deriv[deriv_idx] += gradient_values[grad_idx + 1] * rdm[rdm_idx + jj + 1] * w;
-          density_deriv[deriv_idx] += gradient_values[grad_idx + 2] * rdm[rdm_idx + jj + 2] * w;
-          density_deriv[deriv_idx] += gradient_values[grad_idx + 3] * rdm[rdm_idx + jj + 3] * w;
-          density_deriv[deriv_idx] += gradient_values[grad_idx + 4] * rdm[rdm_idx + jj + 4] * w;
-          density_deriv[deriv_idx] += gradient_values[grad_idx + 5] * rdm[rdm_idx + jj + 5] * w;
+          float3 partial_result = make_float3(0.0f,0.0f,0.0f);
+          partial_result += gradient_values[grad_idx + 0] * rdm[rdm_idx + jj + 0];
+          partial_result += gradient_values[grad_idx + 1] * rdm[rdm_idx + jj + 1];
+          partial_result += gradient_values[grad_idx + 2] * rdm[rdm_idx + jj + 2];
+          partial_result += gradient_values[grad_idx + 3] * rdm[rdm_idx + jj + 3];
+          partial_result += gradient_values[grad_idx + 4] * rdm[rdm_idx + jj + 4];
+          partial_result += gradient_values[grad_idx + 5] * rdm[rdm_idx + jj + 5];
+          density_deriv[deriv_idx] += partial_result * w;
         }
+        #endif
 			}
 		}
 

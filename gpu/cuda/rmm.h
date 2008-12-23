@@ -4,7 +4,6 @@
  */
 
 // TODO: esto desperdicia la mitad de los threads -> quizas se puede armar una grilla sin los bloques que no hagan nada
-// TODO: ver de hacer m multiplo de 16
 // TODO: medir bien cuanto esta coalesceando y cuanto no
 
 __global__ void gpu_update_rmm(float* factors, uint points, float* rmm, float* function_values, uint m)

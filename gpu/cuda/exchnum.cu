@@ -319,7 +319,7 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 			CudaMatrixFloat energy_gpu;
 
 			/* energy may be needed at this step */
-			CudaMatrixFloat3 density_deriv(cube.nucleii.size(), cube.number_of_points);
+			CudaMatrixFloat3 density_deriv(COALESCED_DIMENSION(cube.nucleii.size()), cube.number_of_points);
 			if (computation_type == COMPUTE_ENERGY_FORCE) {
 				energy_gpu.resize(cube.number_of_points);
 				gpu_compute_density<true, true><<<threadGrid, threadBlock>>>(energy_gpu.data, force_factor_gpu.data, points_position_weight_gpu.data, cube.number_of_points, rdm_gpu.data, cube.function_values.data, cube.gradient_values.data, density_deriv.data, nuc_gpu.data, cube.nucleii.size(), cube_functions);

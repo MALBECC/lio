@@ -34,8 +34,9 @@ CPPFLAGS =  -P -traditional-cpp
 
 CUDA_COMMONDIR := $(CUDA_INSTALL_PATH)/../sdk/common
 CUDA_LIBS=-L$(CUDA_INSTALL_PATH)/lib -L$(CUDA_COMMONDIR)/lib -lcuda -lcudart
-LIBS= -L/usr/lib -lblas -L../gpu -lg2g -lstdc++ $(CUDA_LIBS) -L/opt/intel/mkl/9.0/lib/em64t -lmkl_em64t -lguide \
- 	-lpthread
+LIBS= -L/usr/lib -lblas -lstdc++ -L/opt/intel/mkl/9.0/lib/em64t -lmkl_em64t -lguide -lpthread
+CPU_LIBS=$(LIBS)
+GPU_LIBS=$(LIBS) -L../gpu -lg2g  $(CUDA_LIBS) 
 GPU_CFLAGS=-DGPU
 
 ifeq ($(profile),1)
@@ -68,10 +69,10 @@ clean-gpu:
 clean: clean-cpu clean-gpu
 
 hibrido-gpu: $(OBJ:%.o=gpu_obj/%.o)
-	ifort -o $@ $(OBJ:%.o=gpu_obj/%.o) $(LINKFLG) $(LIBS) $(EXTRA_FLAGS)
+	ifort -o $@ $(OBJ:%.o=gpu_obj/%.o) $(LINKFLG) $(GPU_LIBS) $(EXTRA_FLAGS)
 	
 hibrido-cpu: $(OBJ:%.o=cpu_obj/%.o)
-	ifort -o $@ $(OBJ:%.o=cpu_obj/%.o) $(LINKFLG) $(LIBS) $(EXTRA_FLAGS)
+	ifort -o $@ $(OBJ:%.o=cpu_obj/%.o) $(LINKFLG) $(CPU_LIBS) $(EXTRA_FLAGS)
 
 # CPU OBJs
 cpu_obj/config.o    : config.f COMM

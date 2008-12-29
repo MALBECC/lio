@@ -1,6 +1,9 @@
 #define MAX_ATOMS_PER_CUBE 20
 
-__global__ gpu_compute_weights(uint points, uint* nuc_atom, float3* point_positions, uint nucleii_count, float* weights)
+// TODO: precomputar/precargar las cosas por atomo una sola vez para todos los puntos
+// TODO: pasar esto a nucleii_count, etc
+
+__global__ void gpu_compute_weights(uint points, uint* nuc_atom, float3* point_positions, uint nucleii_count, float* weights, uint* atom_of_points)
 {
   uint3 pos = index(blockDim, blockIdx, threadIdx);
   uint point = pos.x;
@@ -9,7 +12,7 @@ __global__ gpu_compute_weights(uint points, uint* nuc_atom, float3* point_positi
 	if (!valid_thread) return;
 
   float3 point_position = point_positions[point];
-  uint atom_of_point = atoms_of_points[point];
+  uint atom_of_point = atom_of_points[point];
 
   float P_total = 0.0f;
   float P_atom = 0.0f;
@@ -36,7 +39,7 @@ __global__ gpu_compute_weights(uint points, uint* nuc_atom, float3* point_positi
       float3 atom_j_pos = gpu_atom_positions[atom_j];
       float rm_atom_j = gpu_rm[atom_j];
 
-      float u = (distance(point_position,atom_i_pos) - distance(point_position, pos_atom_j)) / distance(atom_i_pos, atom_j_pos);
+      float u = (::distance(point_position,atom_i_pos) - ::distance(point_position, atom_j_pos)) / ::distance(atom_i_pos, atom_j_pos);
 
 			float x;
 			x = rm_atom_i / rm_atom_j;

@@ -10,4 +10,6 @@ void assign_cube_weights(LittleCube& cube);
 #define BECKE 1
 #define WEIGHT_CUTOFFS 1
 
+#define WEIGHT_GPU 1
+
 #endif

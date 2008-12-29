@@ -30,7 +30,7 @@ namespace G2G {
 		HostMatrix<double3> atom_positions;
 		HostMatrix<uint> atom_types;
 		HostMatrix<uint> shells, shells1, shells2;
-		HostMatrix<float> rm;
+		HostMatrix<double> rm;
 		HostMatrix<double> atom_atom_dists, nearest_neighbor_dists;
 		FortranMatrix<uint> nucleii, contractions;
 		FortranMatrix<double> a_values, c_values;

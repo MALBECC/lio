@@ -21,6 +21,7 @@
 #include "energy.h"
 #include "rmm.h"
 #include "force.h"
+#include "weight.h"
 
 using namespace G2G;
 using namespace std;
@@ -135,6 +136,45 @@ void gpu_compute_cube_functions(void)
 	t1.sync();
 	t1.stop();
 	cout << "TIMER: funcs: " << t1 << endl;
+}
+
+void gpu_compute_cube_weights(LittleCube& cube)
+{
+  //cout << "gpu_compute_cube_weights" << endl;
+  /*Timer t;
+  t.sync();
+  t.start();*/
+
+  CudaMatrixFloat3 point_positions_gpu;
+  CudaMatrixUInt atom_of_point_gpu;
+  {
+    HostMatrixFloat3 points_positions_cpu(cube.number_of_points, 1);
+    HostMatrixUInt atom_of_point_cpu(cube.number_of_points, 1);
+
+		uint i = 0;
+		for (list<Point>::const_iterator p = cube.points.begin(); p != cube.points.end(); ++p, ++i) {
+			points_positions_cpu.get(i) = make_float3(p->position.x, p->position.y, p->position.z);
+      atom_of_point_cpu.get(i) = p->atom;
+		}
+		point_positions_gpu = points_positions_cpu;
+    atom_of_point_gpu = atom_of_point_cpu;
+	}
+
+  CudaMatrixFloat weights_gpu(cube.number_of_points);
+  dim3 threads(cube.number_of_points);
+  dim3 blockSize(256);
+  dim3 gridSize = divUp(threads, blockSize);
+  gpu_compute_weights<<<gridSize,blockSize>>>(cube.number_of_points, NULL, point_positions_gpu.data, 0, weights_gpu.data, atom_of_point_gpu.data);
+
+  HostMatrixFloat weights_cpu(weights_gpu);
+  uint i = 0;
+  for (list<Point>::iterator p = cube.points.begin(); p != cube.points.end(); ++p, ++i) {
+    p->weight *= weights_cpu.get(i);
+  }
+
+  /*t.sync()
+  t.stop();*/
+  //cout << "time: " << t << endl;
 }
 
 extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr, double* fort_forces_ptr)

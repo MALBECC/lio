@@ -23,6 +23,8 @@ using namespace G2G;
 /* global variables */
 list<LittleCube> final_cube;
 
+void gpu_compute_cube_weights(LittleCube& cube);
+
 
 /* methods */
 void regenerate_cubes(void)
@@ -131,7 +133,8 @@ void regenerate_cubes(void)
 				if (inside_cube) {					
 					/* Numerical Integration */
 //					_DBG(cout << "point: " << atom << " " << shell << " " << point << endl);
-#if WEIGHT_CUTOFFS
+
+#if !WEIGHT_GPU || WEIGHT_CUTOFFS
 					double point_weight = wrad * fortran_vars.wang.get(point); // integration weight
 #else
 					double point_weight = compute_point_weight(point_position, wrad, atom, point);
@@ -180,6 +183,9 @@ void regenerate_cubes(void)
 				//cout << "assign functions: " << t_functions << endl;
 				if (little_cube.functions.empty()) { /*cout << "cubo sin funciones" << endl;*/ continue; }
 
+#if WEIGHT_GPU
+        gpu_compute_cube_weights(little_cube);
+#else
 #if WEIGHT_CUTOFFS
 				//t_weights.start();
 				assign_cube_weights(little_cube);
@@ -187,7 +193,7 @@ void regenerate_cubes(void)
 				//cout << "assign weights: " << t_weights << endl;
 				if (little_cube.number_of_points < min_points_per_cube) { /*cout << "cubo vacio" << endl;*/ continue; }
 #endif
-				
+#endif
 				final_cube.push_back(little_cube);
 
 				_DBG(cout << "[" << i << "][" << j << "][" << k << "]: " << little_cube.number_of_points << " " << little_cube.s_functions << " " << little_cube.p_functions << " " << little_cube.d_functions << endl);

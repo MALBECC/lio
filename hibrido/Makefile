@@ -34,9 +34,9 @@ CPPFLAGS =  -P -traditional-cpp
 
 CUDA_COMMONDIR := $(CUDA_INSTALL_PATH)/../sdk/common
 CUDA_LIBS=-L$(CUDA_INSTALL_PATH)/lib -L$(CUDA_COMMONDIR)/lib -lcuda -lcudart
-LIBS= -L/usr/lib -lblas -lstdc++ -L/opt/intel/mkl/9.0/lib/em64t -lmkl_em64t -lguide -lpthread
+LIBS= -L/usr/lib -lblas -lstdc++ -L/opt/intel/mkl/9.0/lib/em64t -lmkl_em64t -lguide -lpthread  -L../gpu -lg2g
 CPU_LIBS=$(LIBS)
-GPU_LIBS=$(LIBS) -L../gpu -lg2g  $(CUDA_LIBS) 
+GPU_LIBS=$(LIBS) $(CUDA_LIBS) 
 GPU_CFLAGS=-DGPU
 
 ifeq ($(profile),1)

@@ -13,12 +13,11 @@ __global__ void gpu_update_rmm(float* factors, uint points, float* rmm, float* f
 	uint i = pos.x; // columna
 	uint j = pos.y; // fila
 	
-	bool valid_thread = true;
-	if (i >= m || j >= m || i > j) valid_thread = false;	// quiero triangulo inferior solamente TODO: sacar esto
+	bool valid_thread = (i < m && j < m && i <= j); // quiero triangulo inferior solamente TODO: sacar esto
 
 	uint rmm_idx = (i * m - (i * (i - 1)) / 2) + (j - i);
-	
-	// calculate this rmm
+
+  // calculate this rmm
 	float rmm_local = 0.0f;
 
   __shared__ float functions_i_local[RMM_BLOCK_SIZE_XY][RMM_BLOCK_SIZE_XY];	// Fi[point][i]
@@ -64,5 +63,5 @@ __global__ void gpu_update_rmm(float* factors, uint points, float* rmm, float* f
 		}
 	}
 
-	if (valid_thread) rmm[rmm_idx] = rmm_local;
+  if (valid_thread) rmm[rmm_idx] = rmm_local;
 }

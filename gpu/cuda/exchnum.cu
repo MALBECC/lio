@@ -43,7 +43,6 @@ void gpu_compute_cube_functions(void)
 	CudaMatrixFloat2 factor_ac_gpu;
 	CudaMatrixUInt nuc_gpu;
 	CudaMatrixUInt contractions_gpu;
-	CudaMatrixUInt atom_of_point_gpu;	
 	
 	Timer t1;
 	t1.sync();
@@ -261,15 +260,15 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 			threads = dim3(cube_m, cube_m);
 			threadBlock = dim3(RMM_BLOCK_SIZE_XY, RMM_BLOCK_SIZE_XY);
 			threadGrid = divUp(threads, threadBlock);
-			
+
 			CudaMatrixFloat rmm_output_gpu((cube_m * (cube_m + 1))/2);
 			gpu_update_rmm<<<threadGrid, threadBlock>>>(rmm_factor_gpu.data, cube.number_of_points, rmm_output_gpu.data, cube.function_values.data, cube_m);
 			cudaAssertNoError("update_rmm");
 			
 			HostMatrixFloat rmm_output_cpu(rmm_output_gpu);
 
-			/*** Contribute this RMM to the total RMM ***/
-			uint small_index = 0;
+      /*** Contribute this RMM to the total RMM ***/
+      uint small_index = 0;
 			for (set<uint>::iterator it_fi = cube.functions.begin(); it_fi != cube.functions.end(); ++it_fi) {
 				uint fi_advance;
 				if (*it_fi < fortran_vars.s_funcs) fi_advance = 1;
@@ -287,8 +286,8 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 							uint fi = *it_fi + i; uint fj = *it_fj + j;
 							if (fi > fj) continue;
 							uint big_index = (fi * fortran_vars.m - (fi * (fi - 1)) / 2) + (fj - fi);
-							fortran_vars.rmm_output.get(big_index) += rmm_output_cpu.get(small_index);							
-							small_index++;
+              fortran_vars.rmm_output.get(big_index) += rmm_output_cpu.get(small_index);
+              small_index++;
 						}					
 					}
 				}

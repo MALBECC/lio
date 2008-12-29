@@ -6,7 +6,7 @@ double compute_point_weight(const double3& point_position, double wrad, uint ato
 void assign_cube_weights(LittleCube& cube);
 
 // TODO: volver a poner en 1 lo de abajo (es para probar las fuerzas)
-#define BECKE_CUTOFF 0
+#define BECKE_CUTOFF 1
 #define BECKE 1
 #define WEIGHT_CUTOFFS 1
 

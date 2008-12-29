@@ -74,9 +74,11 @@ template<class T> HostMatrix<T>::~HostMatrix(void) {
 }
 
 template<class T> HostMatrix<T>& HostMatrix<T>::resize(unsigned int _width, unsigned _height) {
-	if (this->data) dealloc_data();
-	this->width = _width; this->height = _height;	
-	alloc_data();
+  if (_width != this->width || _height != this->height) {
+    if (this->data) dealloc_data();
+    this->width = _width; this->height = _height;
+    alloc_data();
+  }
 	
 	return *this;
 }
@@ -169,10 +171,12 @@ template<class T> CudaMatrix<T>::CudaMatrix(unsigned int _width, unsigned int _h
 }
 
 template<class T> CudaMatrix<T>& CudaMatrix<T>::resize(unsigned int _width, unsigned int _height) {
-	if (this->data) cudaFree(this->data);
-	this->width = _width; this->height = _height;
-	cudaError_t error_status = cudaMalloc((void**)&this->data, this->bytes());
-	assert(error_status != cudaErrorMemoryAllocation);
+  if (_width != this->width || _height != this->height) {
+    if (this->data) cudaFree(this->data);
+    this->width = _width; this->height = _height;
+    cudaError_t error_status = cudaMalloc((void**)&this->data, this->bytes());
+    assert(error_status != cudaErrorMemoryAllocation);
+  }
 	return *this;		
 }
 
@@ -191,7 +195,7 @@ template<class T> CudaMatrix<T>::CudaMatrix(const HostMatrix<T>& c) : Matrix<T>(
 }
 
 template<class T> CudaMatrix<T>::~CudaMatrix(void) {
-	if (this->data) cudaFree(this->data);
+  deallocate();
 }
 
 template<class T> void CudaMatrix<T>::deallocate(void) {

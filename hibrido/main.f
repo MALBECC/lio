@@ -57,7 +57,9 @@ C-----DIMENSIONES DE TODO
       DIMENSION IZTE(NAT)
       DIMENSION HISTO(100,100),HISTO2(100)
       CHARACTER*4 date
-      common /sol1/ Nsol,natsol,alpha,Em,Rm,sol,free,pcx
+
+      common /sol1/Nsol,natsol,alpha,Em,Rm,sol,free,pcx
+
       common /dyn/Pm
       common /fit/ Nang_,dens,integ,Iexch,igrid,igrid2
 
@@ -327,6 +329,7 @@ C-- Para reacomodar el solvente a TIP4P o SPC:
        enddo
 C-- Fin reacomodo 
 
+      RCTSQ2=RCTSQ/(a0**2)
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 CC
@@ -456,7 +459,18 @@ C-----LLAMA A 'SCF': CALCULA ENERGIA SUBS. QUANTICO
       write(*,*) 'carga de posiciones, igrid2'
 			call gpu_reload_atom_positions(igrid2)
 #endif
+c-------Cálculo de vecinos para el sistema cuántico
+           nwatq=0
+      do 333 iw=natom+1,natsol*Nsol+natom,3
+         DDW= R(iw,1)**2+ R(iw,2)**2+ R(iw,3)**2
+           if(DDW.LT.RCTSQ2) then
+              nwatq=nwatq + 1
+              jwatc(nwatq)= iw
+           endif
 
+333    continue
+ 
+c-------fin calculo de vecinos
          IF(OPEN)THEN
 
       CALL SCFop(MEMO,NORM,NATOM,IZ,R,NUC,M,NCONT,NSHELL,C,A
@@ -508,9 +522,6 @@ C---  INT3G:GRADIENTES DE INTEGRALES DE 2E (Q)
 C---  INTSG:GRADIENTES DE INTEGRAL DE OVERLAP (Q)
       CALL INTSG(NORM,natom,nsol,natsol,r,Nuc,M,Md,ncont,
      > nshell,c,a,RMM,f1,FXH2,FYH2,FZH2)
-       FXH2 =  f1(1,1)
-       FYH2 =  f1(2,1)
-       FZH2 =  f1(3,1)
 
 543   CONTINUE     
 

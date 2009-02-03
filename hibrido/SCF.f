@@ -6,8 +6,8 @@ c and P matrix in lower storage mode ( symmetric matrices)
 c
 c Dario Estrin, 1992
 c---------------------------------------------------
-       subroutine SCF(MEMO,NORM,natom,Iz,r,Nuc,M,ncont,nshell,
-     > c,a,Nucd,Md,ncontd,nshelld,cd,ad,
+       subroutine SCF(MEMO,NORM,natom,Iz,r,Nuc,M,ncont,
+     >  nshell, c,a,Nucd,Md,ncontd,nshelld,cd,ad,
      >    RMM,X,XX,E,nopt,pc,
      > OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write1,FQQ,Q,
      > IT,ITEL,NIN,IPR1,E1s,EAC,
@@ -56,6 +56,8 @@ c
       common /propt/ idip,ipop,ispin,icharge,map(ntq)
       common /sol1/ Nsol,natsol,alpha,Em,Rm,sol,free
       just_int3n = false      
+
+
 c------------------------------------------------------------------
 c---chequeo posiciones y cargas
 c      do i=1,natom+nsol*natsol
@@ -143,7 +145,8 @@ c
       
 c----- SOLVENT CASE -----------------------------------
       if (sol) then
-      call intsol(NORM,natom,Nsol,natsol,r,Nuc,Iz,M,Md,ncont,nshell,
+      call intsol(NORM,natom,Nsol,natsol,r,Nuc,Iz,M,Md
+     >    ,ncont,nshell,
      >   c,a,pc,RMM,E1s,FQQ,IT,ITEL,NIN,IPR1,EAC,NPAS)
 c      call intsoln(NORM,natom,Nsol,natsol,pc,r,Nucd,M,Md,
 c     > ncontd,nshelld,cd,ad,Esoln,E1s)
@@ -716,7 +719,8 @@ c
 c
 c -- SOLVENT CASE --------------------------------------
       if (sol) then
-      call intsol(NORM,natom,Nsol,natsol,r,Nuc,Iz,M,Md,ncont,nshell,
+      call intsol(NORM,natom,Nsol,natsol,r,Nuc,Iz,
+     > M,Md,ncont,nshell,
      > c,a,pc,RMM,E1s,FQQ,IT,ITEL,NIN,IPR1,EAC,NPAS)
 
 c      call mmsol(natom,Nsol,natsol,Iz,pc,r,Em,Rm,Es)

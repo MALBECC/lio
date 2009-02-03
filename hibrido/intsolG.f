@@ -35,13 +35,15 @@ c
       PARAMETER (A0=0.52918 D0)      
       PARAMETER (NAT=6000)  
       dimension c(ng,nl),a(ng,nl),Nuc(M),ncont(M),Iz(nt)
-      dimension r(nt,3),nshell(0:3),dw(nt,3),jwatc(nt) 
+      dimension r(nt,3),nshell(0:3),dw(nt,3) 
       dimension ff(nt,3),pc(natom+nsol*natsol)
       dimension RMM(*)
 c
       COMMON /TABLE/ STR(880,0:21)
       COMMON/BLOC08/FX(NAT),FY(NAT),FZ(NAT),RCT,RCTSQ,RKAPPA,RKAPPA2  
+
       COMMON/BLOC11/BXLGTH 
+      COMMON/BLOC45/NWATQ,JWATC(NAT)
       INTEGER SPC
       COMMON/tipsol/SPC
 c auxiliar quantities
@@ -162,33 +164,23 @@ c (0|0) calculation
 c
 C-------nano minima distancia y cutoff
       
-      nwatc=0
-      do 333 iw=natom+1,natsol*Nsol+natom,3
+      iw2=0
+      do 333 iw=1,nwatq*3,3
+            iw2=iw2+1
         do   jw=1,3
-      Dw(iw,jw)= (r(iw,jw) - Q(jw))/box
-      Ncaj(jw)= ANINT(Dw(iw,jw))
-C      Ncaj(jw)=0
-      Dw(iw,jw)= (Dw(iw,jw)-Ncaj(jw))*box 
-       enddo
-      DDW= Dw(iw,1)**2+ Dw(iw,2)**2+ Dw(iw,3)**2
- 
-      if(DDW.LT.RCTSQ2) then
-      nwatc=nwatc + 1
-      jwatc(nwatc)= iw
-      endif
-      do jw=1,3
-      do kw=1,2
-      iw2=iw+kw
-      Dw(iw2,jw)= (r(iw2,jw) - Q(jw))/box
-      Dw(iw2,jw)= (Dw(iw2,jw)- Ncaj(jw))*box
+
+      Dw(iw,jw)= (r(jwatc(iw2),jw) - Q(jw))
+      Dw(iw+1,jw)= (r(jwatc(iw2)+1,jw) - Q(jw))
+      Dw(iw+2,jw)= (r(jwatc(iw2)+2,jw) - Q(jw))
       enddo
-      enddo
- 
+
 C---- TIP4P
       do jw=1,3
-      Dw(iw,jw)=alpha*Dw(iw,jw)+alpha2*(Dw(iw+1,jw)+dw(iw+2,jw))
+      Dw(iw,jw)=alpha*Dw(iw,jw)+alpha2*
+     > (Dw(iw+1,jw)+dw(iw+2,jw))
       enddo
-c      write(*,*)'iw y cosas',iw,Dw(iw,1),Dw(iw,2),Dw(iw,3) 
+
+
 333   continue
 
       ss=pi32*exp(-alf*dd)/(zij*sqrt(zij))
@@ -201,7 +193,7 @@ c
        tna=0.D0
        temp0=2.D0*sqrt(zij/pi)*ss
 c
-      do 202 n1=1,nwatc
+      do 202 n1=1,nwatq
       do 202 k1=1,natsol
        n=jwatc(n1)+k1-1
 
@@ -234,7 +226,7 @@ c
 c
 c loop over classical nuclei
                   
-      do 203 n1=1,nwatc
+      do 203 n1=1,nwatq
       do 203 k1=1,natsol
        n=jwatc(n1)+k1-1
 
@@ -294,31 +286,22 @@ c
 
 C-------nano minima distancia y cutoff
  
-      nwatc=0
-      do 334 iw=natom+1,natsol*Nsol+natom,3
+      iw2=0
+      do 334 iw=1,nwatq*3,3
+            iw2=iw2+1
         do   jw=1,3
-      Dw(iw,jw)= (r(iw,jw) - Q(jw))/box
-      Ncaj(jw)= ANINT(Dw(iw,jw))
-      Dw(iw,jw)= (Dw(iw,jw)-Ncaj(jw))*box 
-       enddo
-      DDW= Dw(iw,1)**2+ Dw(iw,2)**2+ Dw(iw,3)**2
- 
-      if(DDW.LT.RCTSQ2) then
-      nwatc=nwatc + 1
-      jwatc(nwatc)= iw
-      endif
-      do jw=1,3
-      do kw=1,2
-      iw2=iw+kw
-      Dw(iw2,jw)= (r(iw2,jw) - Q(jw))/box
-      Dw(iw2,jw)= (Dw(iw2,jw)- Ncaj(jw))*box
+
+      Dw(iw,jw)= (r(jwatc(iw2),jw) - Q(jw))
+      Dw(iw+1,jw)= (r(jwatc(iw2)+1,jw) - Q(jw))
+      Dw(iw+2,jw)= (r(jwatc(iw2)+2,jw) - Q(jw))
+
       enddo
-      enddo
- 
 C---- TIP4P
       do jw=1,3
-      Dw(iw,jw)=alpha*Dw(iw,jw)+alpha2*(Dw(iw+1,jw)+dw(iw+2,jw))
+      Dw(iw,jw)=alpha*Dw(iw,jw)+alpha2*
+     > (Dw(iw+1,jw)+dw(iw+2,jw))
       enddo
+
 
 334   continue
 c
@@ -327,7 +310,7 @@ c loop over nuclei, part common for all shell
       temp0=2.D0*sqrt(zij/pi)*ss
 c
       n=natom
-      do 302 n1=1,nwatc
+      do 302 n1=1,nwatq
       do 302 k1=1,natsol
        n=jwatc(n1)+k1-1
 c
@@ -363,7 +346,7 @@ c
 cc nuclear attraction part
 c
                   
-      do 303 n1=1,nwatc
+      do 303 n1=1,nwatq
       do 303 k1=1,natsol
        n=jwatc(n1)+k1-1
 
@@ -448,31 +431,22 @@ c
 
 C-------nano minima distancia y cutoff
  
-      nwatc=0
-      do 335 iw=natom+1,natsol*Nsol+natom,3
+      iw2=0
+      do 335 iw=1,nwatq*3,3
+            iw2=iw2+1
         do   jw=1,3
-      Dw(iw,jw)= (r(iw,jw) - Q(jw))/box
-      Ncaj(jw)= ANINT(Dw(iw,jw))
-      Dw(iw,jw)= (Dw(iw,jw)-Ncaj(jw))*box 
-       enddo
-      DDW= Dw(iw,1)**2+ Dw(iw,2)**2+ Dw(iw,3)**2
- 
-      if(DDW.LT.RCTSQ2) then
-      nwatc=nwatc + 1
-      jwatc(nwatc)= iw
-      endif
-      do jw=1,3
-      do kw=1,2
-      iw2=iw+kw
-      Dw(iw2,jw)= (r(iw2,jw) - Q(jw))/box
-      Dw(iw2,jw)= (Dw(iw2,jw)- Ncaj(jw))*box
+
+      Dw(iw,jw)= (r(jwatc(iw2),jw) - Q(jw))
+      Dw(iw+1,jw)= (r(jwatc(iw2)+1,jw) - Q(jw))
+      Dw(iw+2,jw)= (r(jwatc(iw2)+2,jw) - Q(jw))
+
       enddo
-      enddo
- 
 C---- TIP4P
       do jw=1,3
-      Dw(iw,jw)=alpha*Dw(iw,jw)+alpha2*(Dw(iw+1,jw)+dw(iw+2,jw))
+      Dw(iw,jw)=alpha*Dw(iw,jw)+alpha2*
+     > (Dw(iw+1,jw)+dw(iw+2,jw))
       enddo
+
 
 335   continue
 
@@ -480,7 +454,7 @@ C---- TIP4P
 
 c loop over nuclei, part common for all shell
                  
-      do 402 n1=1,nwatc
+      do 402 n1=1,nwatq
       do 402 k1=1,natsol
        n=jwatc(n1)+k1-1
 c
@@ -514,7 +488,7 @@ c
       ccoef=c(i,ni)*c(j,nj)
 c Nuclear attraction part ----------
                   
-      do 403 n1=1,nwatc
+      do 403 n1=1,nwatq
       do 403 k1=1,natsol
        n=jwatc(n1)+k1-1
 
@@ -644,32 +618,22 @@ c
 c
 C-------nano minima distancia y cutoff
  
-      nwatc=0
-      do 336 iw=natom+1,natsol*Nsol+natom,3
+      iw2=0
+      do 336 iw=1,nwatq*3,3
+            iw2=iw2+1
         do   jw=1,3
-      Dw(iw,jw)= (r(iw,jw) - Q(jw))/box
-      Ncaj(jw)= ANINT(Dw(iw,jw))
-      Dw(iw,jw)= (Dw(iw,jw)-Ncaj(jw))*box 
-       enddo
-      DDW= Dw(iw,1)**2+ Dw(iw,2)**2+ Dw(iw,3)**2
- 
-      if(DDW.LT.RCTSQ2) then
-      nwatc=nwatc + 1
-      jwatc(nwatc)= iw
-      endif
 
-      do jw=1,3
-      do kw=1,2
-      iw2=iw+kw
-      Dw(iw2,jw)= (r(iw2,jw) - Q(jw))/box
-      Dw(iw2,jw)= (Dw(iw2,jw)- Ncaj(jw))*box
+      Dw(iw,jw)= (r(jwatc(iw2),jw) - Q(jw))
+      Dw(iw+1,jw)= (r(jwatc(iw2)+1,jw) - Q(jw))
+      Dw(iw+2,jw)= (r(jwatc(iw2)+2,jw) - Q(jw))
+
       enddo
-      enddo
- 
 C---- TIP4P
       do jw=1,3
-      Dw(iw,jw)=alpha*Dw(iw,jw)+alpha2*(Dw(iw+1,jw)+dw(iw+2,jw))
+      Dw(iw,jw)=alpha*Dw(iw,jw)+alpha2*
+     > (Dw(iw+1,jw)+dw(iw+2,jw))
       enddo
+
 
 336   continue
 
@@ -679,7 +643,7 @@ C---- TIP4P
 
 c loop over nuclei, part common for all shell
                   
-      do 502 n1=1,nwatc
+      do 502 n1=1,nwatq
       do 502 k1=1,natsol
        n=jwatc(n1)+k1-1
 
@@ -714,7 +678,7 @@ c
 cc nuclear attraction part 
 c
                   
-      do 503 n1=1,nwatc
+      do 503 n1=1,nwatq
       do 503 k1=1,natsol
        n=jwatc(n1)+k1-1
 c
@@ -846,39 +810,30 @@ c
 c
 
 C-------nano minima distancia y cutoff
- 
-      nwatc=0
-      do 337 iw=natom+1,natsol*Nsol+natom,3
+      iw2=0
+      do 337 iw=1,nwatq*3,3
+            iw2=iw2+1
         do   jw=1,3
-      Dw(iw,jw)= (r(iw,jw) - Q(jw))/box
-      Ncaj(jw)= ANINT(Dw(iw,jw))
-      Dw(iw,jw)= (Dw(iw,jw)-Ncaj(jw))*box 
-       enddo
-      DDW= Dw(iw,1)**2+ Dw(iw,2)**2+ Dw(iw,3)**2
- 
-      if(DDW.LT.RCTSQ2) then
-      nwatc=nwatc + 1
-      jwatc(nwatc)= iw
-      endif
-      do jw=1,3
-      do kw=1,2
-      iw2=iw+kw
-      Dw(iw2,jw)= (r(iw2,jw) - Q(jw))/box
-      Dw(iw2,jw)= (Dw(iw2,jw)-Ncaj(jw))*box
+
+      Dw(iw,jw)= (r(jwatc(iw2),jw) - Q(jw))
+      Dw(iw+1,jw)= (r(jwatc(iw2)+1,jw) - Q(jw))
+      Dw(iw+2,jw)= (r(jwatc(iw2)+2,jw) - Q(jw))
+
       enddo
-      enddo
- 
 C---- TIP4P
       do jw=1,3
-      Dw(iw,jw)=alpha*Dw(iw,jw)+alpha2*(Dw(iw+1,jw)+dw(iw+2,jw))
+      Dw(iw,jw)=alpha*Dw(iw,jw)+alpha2*
+     > (Dw(iw+1,jw)+dw(iw+2,jw))
       enddo
 
+
 337   continue
+ 
 
 cLoop over nuclei, part common for all shell
 
                   
-      do 602 n1=1,nwatc
+      do 602 n1=1,nwatq
       do 602 k1=1,natsol
        n=jwatc(n1)+k1-1
 c
@@ -918,7 +873,7 @@ c
 c
 c Nuclear attraction part ----------
                   
-      do 603 n1=1,nwatc
+      do 603 n1=1,nwatq
       do 603 k1=1,natsol
        n=jwatc(n1)+k1-1
 c
@@ -1132,32 +1087,22 @@ c
 
 C-------nano minima distancia y cutoff
  
-      nwatc=0
-      do 338 iw=natom+1,natsol*Nsol+natom,3
+      iw2=0
+      do 338 iw=1,nwatq*3,3
+            iw2=iw2+1
         do   jw=1,3
-      Dw(iw,jw)= (r(iw,jw) - Q(jw))/box
-      Ncaj(jw)= ANINT(Dw(iw,jw))
-      Dw(iw,jw)= (Dw(iw,jw)-Ncaj(jw))*box 
-       enddo
-      DDW= Dw(iw,1)**2+ Dw(iw,2)**2+ Dw(iw,3)**2
- 
-      if(DDW.LT.RCTSQ2) then
-      nwatc=nwatc + 1
-      jwatc(nwatc)= iw
-      endif
 
-      do jw=1,3
-      do kw=1,2
-      iw2=iw+kw
-      Dw(iw2,jw)= (r(iw2,jw) - Q(jw))/box
-      Dw(iw2,jw)= (Dw(iw2,jw)- Ncaj(jw))*box
+      Dw(iw,jw)= (r(jwatc(iw2),jw) - Q(jw))
+      Dw(iw+1,jw)= (r(jwatc(iw2)+1,jw) - Q(jw))
+      Dw(iw+2,jw)= (r(jwatc(iw2)+2,jw) - Q(jw))
+
       enddo
-      enddo
- 
 C---- TIP4P
       do jw=1,3
-      Dw(iw,jw)=alpha*Dw(iw,jw)+alpha2*(Dw(iw+1,jw)+dw(iw+2,jw))
+      Dw(iw,jw)=alpha*Dw(iw,jw)+alpha2*
+     > (Dw(iw+1,jw)+dw(iw+2,jw))
       enddo
+
 
 338   continue
 
@@ -1166,7 +1111,7 @@ C---- TIP4P
 c
 c loop over nuclei, part common for all shell
                   
-      do 702 n1=1,nwatc
+      do 702 n1=1,nwatq
       do 702 k1=1,natsol
        n=jwatc(n1)+k1-1
 c
@@ -1210,7 +1155,7 @@ c
 c
 c Loop over nuclei - Nuclear attraction part ---
                   
-      do 703 n1=1,nwatc
+      do 703 n1=1,nwatq
       do 703 k1=1,natsol
        n=jwatc(n1)+k1-1
 c

@@ -6,7 +6,8 @@ c and P matrix in lower storage mode ( symmetric matrices)
 c
 c Dario Estrin, 1992
 c---------------------------------------------------
-       subroutine SCFOP(MEMO,NORM,natom,Iz,r,Nuc,M,ncont,nshell,c,a,
+       subroutine SCFOP(MEMO,NORM,natom,Iz,r,Nuc,M,ncont
+     >    ,nshell,c,a,
      >     Nucd,Md,ncontd,nshelld,cd,ad,RMM,X,XX,E,
      > nopt,pc,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write1,
      > FQQ,Q,IT,ITEL,NIN,IPR1,E1s,EAC,

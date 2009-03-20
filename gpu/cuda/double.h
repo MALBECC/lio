@@ -3,11 +3,19 @@
 
 #include <cuda_runtime.h>
 #include <cmath>
+#include <stdexcept>
 
 struct double3 {
-	double3(void) : x(0.0), y(0.0), z(0.0) {}
-	double3(double _x, double _y, double _z) : x(_x), y(_y), z(_z) {} 
-	double x; double y; double z;
+  union {
+    struct {
+      double x, y, z;
+    };
+    double elements[3];
+  };
+  
+  double3(void) : x(0),y(0),z(0) {  }
+
+	double3(double _x, double _y, double _z) : x(_x),y(_y),z(_z) { }
 	
 	inline double length(void) const {
 		return sqrt(x * x + y * y + z * z);
@@ -16,6 +24,23 @@ struct double3 {
 	inline double length_square(void) const {
 		return x * x + y * y + z * z;
 	}
+
+  inline double& operator[](unsigned int axis) {
+    if (axis > 3) throw std::runtime_error("Axis number out of bounds");
+    return elements[axis];
+  }
+
+  inline const double& operator[](unsigned int axis) const {
+    if (axis > 3) throw std::runtime_error("Axis number out of bounds");
+    return elements[axis];
+  }
+
+  inline double3& operator=(const double3& other) {
+    x = other.x;
+    y = other.y;
+    z = other.z;
+    return *this;
+  }
 };
 
 inline double3 operator-(const double3& a, const double3& b) {
@@ -53,16 +78,6 @@ inline uint3 floor_uint3(const double3& a) {
 	return make_uint3(static_cast<uint>(floor(a.x)),
 										static_cast<uint>(floor(a.y)),
 										static_cast<uint>(floor(a.z)));
-}
-
-inline double elem(const double3& a, uint i)
-{
-	switch(i) {
-		case 0: return a.x;
-		case 1: return a.y;
-		case 2: return a.z;
-		default: return a.x;
-	}
 }
 
 inline double3 operator*(const uint3& a, double b) {

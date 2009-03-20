@@ -56,20 +56,20 @@ INCLUDES  += -I. -I$(CUDA_INSTALL_PATH)/include -I$(COMMONDIR)/inc
 # detect if 32 bit or 64 bit system
 ARCH=$(shell arch)
 
-ifeq ($(ARCH), x86_64)
-	ARCHFLAGS += -m64
-else
+ifeq ($(ARCH), x86)
 	ARCHFLAGS += -m32
+else
+	ARCHFLAGS += -m64
 endif
 	
 # OpenGL is used or not (if it is used, then it is necessary to include GLEW)
 OPENGLLIB := -lGL -lGLU
 ifeq ($(USEGLLIB),1)
 
-	ifeq ($(ARCH), x86_64)
-		OPENGLLIB += -lGLEW_x86_64
-	else
+	ifeq ($(ARCH), x86)
 		OPENGLLIB += -lGLEW
+	else
+		OPENGLLIB += -lGLEW_x86_64
 	endif
 endif
 

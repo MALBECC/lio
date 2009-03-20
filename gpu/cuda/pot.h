@@ -10,12 +10,14 @@
  */
 
 /* pot_kernel constants */
-#define POT_ALPHA 		-0.738558766382022447
+#define POT_ALPHA 		-0.738558766382022447 // -(3/PI)^(1/3)
 #define POT_GL 				0.620350490899400087
+
 #define POT_VOSKO_A1 	0.03109205
 #define POT_VOSKO_B1 	3.72744
 #define POT_VOSKO_C1 	12.9352
 #define POT_VOSKO_X0 	-0.10498
+
 #define POT_VOSKO_Q 	6.15199066246304849
 #define POT_VOSKO_A16 0.005182008333
 #define POT_VOSKO_A2 	0.015546025
@@ -35,11 +37,10 @@ template<bool compute_exc, bool compute_y2a> __device__ void gpu_pot(float dens,
 		return;
 	}
 	
-	float y = powf(dens, 0.333333333333333333f);
-	float e0 = POT_ALPHA * y;	
-	float v0 = -0.984745021842697f * y; // 4/3 * pot_alpha * y
+	float y = powf(dens, 0.333333333333333333f);  // rho^(1/3)
+	float v0 = -0.984745021842697f * y; // -4/3 * (3/PI)^(1/3) * rho^(1/3)
 
-	if (compute_exc) ex = e0;
+	if (compute_exc) ex = POT_ALPHA * y; // -(3/PI)^(1/3) * rho^(1/3)
 	
 	switch(gpu_Iexch) {
 		case 1:

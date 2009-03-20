@@ -2,10 +2,10 @@
 CXXFLAGS:=$(CXXFLAGS) $(EXTRA_FLAGS) -Wall -Wno-long-long -ansi
 
 %.o:%.cpp %.h
-	g++ $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
   
 %.o:%.cpp
-	g++ $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
   
 %.o:%.c %.h
-	gcc $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@

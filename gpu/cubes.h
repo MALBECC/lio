@@ -21,8 +21,13 @@ struct LittleCube {
 	uint s_functions, p_functions, d_functions;
 	std::set<uint> functions;
 	std::set<uint> nucleii;
-	G2G::CudaMatrixFloat function_values;
+	#ifdef COMPUTE_FUNCTIONS_CPU
+  G2G::HostMatrixFloat function_values;
+  G2G::HostMatrixFloat3 gradient_values;
+  #else
+  G2G::CudaMatrixFloat function_values;
 	G2G::CudaMatrixFloat3 gradient_values;
+  #endif
 };
 
 extern std::list<LittleCube> final_cube;

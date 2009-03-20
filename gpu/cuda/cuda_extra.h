@@ -18,6 +18,7 @@
 #include "double.h"
 
 /** operators **/
+// TODO: usar cutil_math.h
 inline __device__ __host__ float2 operator -(const float2 a)
 { return make_float2(-a.x, -a.y); }
 

@@ -78,7 +78,8 @@ void regenerate_cubes(void)
 	cout << "x1 " << x1.x << " " << x1.y << " " << x1.z << endl;
 	uint3 big_cube_size = ceil_uint3((x1 - x0) / little_cube_size);
 	cout << "generating cube (" << big_cube_size.x << "," << big_cube_size.y << "," << big_cube_size.z << ")..." << endl;
-	
+
+  // TODO: ver de convertir esto en un map/hash (evaluar tiempo de creacion, acceso y cuanta memoria desperdicia esto)
 	vector< vector < vector< LittleCube > > > big_cube(big_cube_size.x,
 					vector< vector < LittleCube > >(big_cube_size.y,
 									vector < LittleCube >(big_cube_size.z)));
@@ -131,7 +132,6 @@ void regenerate_cubes(void)
 														(x0.z <= point_position.z && point_position.z <= x1.z));
 
 				if (inside_cube) {					
-					/* Numerical Integration */
 //					_DBG(cout << "point: " << atom << " " << shell << " " << point << endl);
 
 #if !WEIGHT_GPU || WEIGHT_CUTOFFS

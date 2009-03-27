@@ -79,14 +79,9 @@ void regenerate_cubes(void)
 	uint3 big_cube_size = ceil_uint3((x1 - x0) / little_cube_size);
 	cout << "generating cube (" << big_cube_size.x << "," << big_cube_size.y << "," << big_cube_size.z << ")..." << endl;
 
-  // TODO: ver de convertir esto en un map/hash (evaluar tiempo de creacion, acceso y cuanta memoria desperdicia esto)
-  Timer vector_timer;
-  vector_timer.start();
 	vector< vector < vector< LittleCube > > > big_cube(big_cube_size.x,
 					vector< vector < LittleCube > >(big_cube_size.y,
 									vector < LittleCube >(big_cube_size.z)));
-  vector_timer.stop();
-  cout << "Vector creation: " << vector_timer << endl;
 
 	cout << "precomputing distances..." << endl;
 	for (uint i = 0; i < fortran_vars.atoms; i++) {
@@ -121,9 +116,6 @@ void regenerate_cubes(void)
 			double w = t0 * abs(sin(t1));
 			double r1 = rm * (1.0 + x) / (1.0 - x);
       double wrad = w * (r1 * r1) * rm * 2.0 / ((1.0 - x) * (1.0 - x));
-
-			double3 rel_point_position(fortran_vars.e.get(0,0), fortran_vars.e.get(0,1), fortran_vars.e.get(0,2));	
-			double3 first_point_position = atom_position + rel_point_position * r1;
 			
 			for (uint point = 0; point < (uint)fortran_vars.grid_size; point++) {
 				puntos_totales++;
@@ -136,17 +128,14 @@ void regenerate_cubes(void)
 														(x0.z <= point_position.z && point_position.z <= x1.z));
 
 				if (inside_cube) {					
-//					_DBG(cout << "point: " << atom << " " << shell << " " << point << endl);
-
-#if !WEIGHT_GPU || WEIGHT_CUTOFFS
+#if WEIGHT_GPU || WEIGHT_CUTOFFS
 					double point_weight = wrad * fortran_vars.wang.get(point); // integration weight
 #else
 					double point_weight = compute_point_weight(point_position, wrad, atom, point);
 					//if (point_weight == 0.0) continue;
 #endif
-//					_DBG(cout << "weight: " << point_weight << endl);
 
-					/* insert into corresponding cube */
+          /* insert into corresponding cube */
 					uint3 little_cube_coordinate = floor_uint3((point_position - x0) / little_cube_size);
 					LittleCube& little_cube = big_cube[little_cube_coordinate.x][little_cube_coordinate.y][little_cube_coordinate.z];
 				
@@ -190,13 +179,13 @@ void regenerate_cubes(void)
 #if WEIGHT_GPU
         gpu_compute_cube_weights(little_cube);
 #else
-#if WEIGHT_CUTOFFS
-				//t_weights.start();
+  #if WEIGHT_CUTOFFS
+    		//t_weights.start();
 				assign_cube_weights(little_cube);
 				//t_weights.stop();
 				//cout << "assign weights: " << t_weights << endl;
 				if (little_cube.number_of_points < min_points_per_cube) { /*cout << "cubo vacio" << endl;*/ continue; }
-#endif
+  #endif
 #endif
 				final_cube.push_back(little_cube);
 

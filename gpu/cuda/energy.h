@@ -26,7 +26,7 @@ __global__ void gpu_compute_density(float* energy, float* factor, float4* point_
 	
 	float4 point_weight_position;
 	if (valid_thread) point_weight_position = point_weight_positions[point];
-	float3 point_position = make_float3(point_weight_position.x, point_weight_position.y, point_weight_position.z);
+	//float3 point_position = make_float3(point_weight_position.x, point_weight_position.y, point_weight_position.z);
 	float point_weight = point_weight_position.w;
 	
 	uint base = point * COALESCED_DIMENSION(m);

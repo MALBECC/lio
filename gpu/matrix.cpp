@@ -49,16 +49,13 @@ template<class T> void HostMatrix<T>::deallocate(void) {
 	this->data = NULL;	
 }
 
-template<class T> HostMatrix<T>::HostMatrix(void) : Matrix<T>(), pinned(false) { }
+template<class T> HostMatrix<T>::HostMatrix(PinnedFlag _pinned) : Matrix<T>() {
+  pinned = (_pinned == Pinned);
+}
 
-//template<class T> HostMatrix<T>::HostMatrix(bool _pinned) : Matrix<T>(), pinned(_pinned) { }
-
-/*HostMatrix::HostMatrix(const HostMatrix& c) : Matrix() {
-	*this = c;
-}*/
-
-template<class T> HostMatrix<T>::HostMatrix(unsigned int _width, unsigned _height) : Matrix<T>(), pinned(false) {
-	resize(_width, _height);
+template<class T> HostMatrix<T>::HostMatrix(unsigned int _width, unsigned _height, PinnedFlag _pinned) : Matrix<T>() {
+  pinned = (_pinned == Pinned);
+  resize(_width, _height);
 }
 
 template<class T> HostMatrix<T>::HostMatrix(const CudaMatrix<T>& c) : Matrix<T>(), pinned(false) {

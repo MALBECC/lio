@@ -4843,7 +4843,7 @@ c
         NCOb=NCO+Nunp
 
         write(*,*) 'exchnum int3'
-        call timer_start        
+        call timer_start('exchfock')
 #ifdef GPU
         call gpu_solve_cubes(0, 0, 0)
 #else
@@ -4851,7 +4851,7 @@ c
      >  M,M18,NCOa,NCOb,RMM,Ex)
       write(*,*) 'energia final',Ex
 #endif
-      call timer_stop('exchfock')      
+      call timer_pause('exchfock')
 c      Ndens=Ndens+1
       endif
 c

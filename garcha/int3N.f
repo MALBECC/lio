@@ -2588,7 +2588,7 @@ c
         NCOa=NCO
         NCOb=NCO+Nunp
         write(*,*) 'int3N'
-      call timer_start        
+      call timer_start('exchfock')
 #ifdef GPU
 #ifdef INT3N_CPU
        call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
@@ -2602,7 +2602,7 @@ c
      >               M,M18,NCOa,NCOb,RMM,Ex)
        write(*,*) 'energia fortran (double)',Ex
 #endif
-       call timer_stop('exchfock')       
+       call timer_pause('exchfock')
        endif
 c
 c

@@ -4,7 +4,7 @@
 #include "cuda/double.h"
 #include <cassert>
 
-// TODO: this should work without the macro
+// TODO: deshacerse del macro
 #define COALESCED_DIMENSION(d) (d + 16 - (d % 16))
 
 namespace G2G {
@@ -28,9 +28,10 @@ namespace G2G {
 	
 	template<class T> class HostMatrix : public Matrix<T> {
 		public:
-			HostMatrix(void);
-			//HostMatrix(bool pinned); // TODO: habilitar		
-			HostMatrix(unsigned int width, unsigned int height);
+      enum PinnedFlag { Pinned, NonPinned };
+
+      HostMatrix(PinnedFlag pinned = NonPinned);
+			HostMatrix(unsigned int width, unsigned int height, PinnedFlag pinned = NonPinned);
 			HostMatrix(const CudaMatrix<T>& c);
 			HostMatrix(const HostMatrix<T>& c);
 			~HostMatrix(void);

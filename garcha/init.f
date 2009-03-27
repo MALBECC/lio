@@ -37,7 +37,9 @@ c para version en memoria
 c version en memoria
 c
 c--------------------------------------------------------
+      call timer_start('total')
       call drive(ng2,ngDyn,ngdDyn,P,X,XX)
+      call timer_stop('total')
 c
       end
 c---------------------------------------------------------------------

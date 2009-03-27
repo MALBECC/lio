@@ -18,7 +18,6 @@
 #include "double.h"
 
 /** operators **/
-// TODO: usar cutil_math.h
 inline __device__ __host__ float2 operator -(const float2 a)
 { return make_float2(-a.x, -a.y); }
 
@@ -102,26 +101,6 @@ inline __device__ __host__ uint index_from3d(const dim3& size, const dim3& pos)
 inline __device__ __host__ uint index_from4d(const uint4& size, const uint4& pos)
 {
 	return size.w * (size.z * (size.y * pos.x + pos.y) + pos.z) + pos.w;
-}
-
-inline __device__ __host__ const float& float3_elem(const float3& a, uint i)
-{
-	switch(i) {
-		case 0: return a.x;
-		case 1: return a.y;
-		case 2: return a.z;
-		default: return a.x;
-	}
-}
-
-inline __device__ __host__ float& float3_elem(float3& a, uint i)
-{
-	switch(i) {
-		case 0: return a.x;
-		case 1: return a.y;
-		case 2: return a.z;
-		default: return a.x;
-	}
 }
 
 inline __device__ __host__ float sum(const float3& a)

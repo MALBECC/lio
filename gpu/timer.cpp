@@ -1,11 +1,18 @@
 #include <cuda_runtime.h>
 #include <cstdio>
 #include <sys/time.h>
+#include <map>
+#include <string>
 #include "timer.h"
 using namespace G2G;
 using namespace std;
 
 Timer::Timer(void) : started(false) {
+  timerclear(&res);
+}
+
+Timer::Timer(const timeval& t) : started(false) {
+  res = t;
 }
 
 void Timer::start(void) {
@@ -15,10 +22,21 @@ void Timer::start(void) {
 #endif
 }
 
+void Timer::pause(void) {
+#ifdef DO_TIMINGS
+  gettimeofday(&t1, NULL);
+  timeval partial_res;
+	timersub(&t1, &t0, &partial_res);
+  timeradd(&res, &partial_res, &res);
+  timerclear(&t0);
+#endif
+}
+
 void Timer::stop(void) {
 #ifdef DO_TIMINGS
 	gettimeofday(&t1, NULL);
 	timersub(&t1, &t0, &res);
+  timerclear(&t0);
 	started = false;
 #endif
 }
@@ -72,18 +90,28 @@ void Timer::print(void) {
 
 /**** to be used by fortran ****/
 Timer global_timer;
-extern "C" void timer_start_(void) {
+map<string, Timer> fortran_timers;
+
+extern "C" void timer_start_(const char* timer_name) {
 #ifdef DO_TIMINGS
-	global_timer.start();
+  if (fortran_timers.find(timer_name) == fortran_timers.end()) fortran_timers[timer_name] = Timer();
+  Timer::sync();
+	fortran_timers[timer_name].start();
 #endif
 }
 
-extern "C" void timer_stop_(const char* what) {
+extern "C" void timer_stop_(const char* timer_name) {
 #ifdef DO_TIMINGS
 	Timer::sync();
-	global_timer.stop();
-	printf("TIMER (%s): ", what);
-	global_timer.print();
-	printf("\n");
+	fortran_timers[timer_name].stop();
+  cout << "TIMER [" << timer_name << "]: " << fortran_timers[timer_name] << endl;
+#endif
+}
+
+extern "C" void timer_pause_(const char* timer_name) {
+#ifdef DO_TIMINGS
+	Timer::sync();
+	fortran_timers[timer_name].pause();
+  cout << "TIMER [" << timer_name << "]: " << fortran_timers[timer_name] << "(so far)" << endl;
 #endif
 }

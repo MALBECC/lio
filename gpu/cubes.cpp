@@ -80,9 +80,13 @@ void regenerate_cubes(void)
 	cout << "generating cube (" << big_cube_size.x << "," << big_cube_size.y << "," << big_cube_size.z << ")..." << endl;
 
   // TODO: ver de convertir esto en un map/hash (evaluar tiempo de creacion, acceso y cuanta memoria desperdicia esto)
+  Timer vector_timer;
+  vector_timer.start();
 	vector< vector < vector< LittleCube > > > big_cube(big_cube_size.x,
 					vector< vector < LittleCube > >(big_cube_size.y,
 									vector < LittleCube >(big_cube_size.z)));
+  vector_timer.stop();
+  cout << "Vector creation: " << vector_timer << endl;
 
 	cout << "precomputing distances..." << endl;
 	for (uint i = 0; i < fortran_vars.atoms; i++) {
@@ -155,7 +159,7 @@ void regenerate_cubes(void)
 	t_total.stop();
 	cout << "total: " << t_total << endl;
 
-	cout << "puntos totales (grilla): " << puntos_totales << " funciones: " << puntos_totales * fortran_vars.m << endl;
+	cout << "Grilla original: " << puntos_totales << " funciones totales: " << puntos_totales * fortran_vars.m << endl;
 	
 	cout << "filling cube..." << endl;
 	
@@ -164,7 +168,7 @@ void regenerate_cubes(void)
 
 	puntos_totales = 0;
 	uint funciones_totales = 0;
-	
+
 	final_cube.clear();
 
 	Timer t_functions, t_weights;
@@ -210,5 +214,6 @@ void regenerate_cubes(void)
 	}
 	t_total.stop();
 	cout << "total: " << t_total << endl;
-	cout << "puntos totales: " << puntos_totales << " funciones: " << funciones_totales << endl;
+	cout << "Grilla final: " << puntos_totales << " funciones totales: " << funciones_totales << " puntos x cubo: " << (double)puntos_totales / final_cube.size() << " funciones x cubo: " << (double)funciones_totales / final_cube.size() << endl;
+  cout << "Cubo final: " << final_cube.size() << " cubo original: " << big_cube_size.x * big_cube_size.y * big_cube_size.z << endl;
 }

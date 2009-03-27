@@ -139,8 +139,8 @@ extern "C" void gpu_new_grid_(const unsigned int& grid_type) {
 /* general options */
 namespace G2G {
 	uint max_function_exponent = 8;
-	double little_cube_size = 5.0;
-	uint min_points_per_cube = 5;
+	double little_cube_size = 6.0;
+	uint min_points_per_cube = 1;
 	double becke_cutoff = 1e-7;
 }
 

@@ -426,10 +426,10 @@ c
        NCOb=NCO+Nunp
        write(*,*) 'exchnum int3lu'
 c       write(957,*) 'int3lu'
+       call timer_start('exchfock')
 #ifdef GPU
        call gpu_solve_cubes(0,0,0)
 #else
-       call timer_start       
        call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
      >        M,M18,NCOa,NCOb,RMM,Ex)
        write(*,*) 'energia cpu',Ex       
@@ -438,8 +438,9 @@ c        do jj=kk,m
 c          write(*,*) 'rmm output',RMM(i)
 c        enddo
 c      enddo
-       call timer_stop('exchfock')       
+       
 #endif
+       call timer_pause('exchfock')
       
        Ndens=Ndens+1
        endif

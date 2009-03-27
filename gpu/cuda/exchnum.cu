@@ -4,15 +4,15 @@
 #include <fstream>
 #include <map>
 #include <string>
-#include "common.h"
-#include "init.h"
+#include "../common.h"
+#include "../init.h"
 #include "cuda_extra.h"
 #include "../matrix.h"
 #include "exchnum.h"
 #include "gpu_variables.h"
 #include "../timer.h"
 #include "double.h"
-#include "cubes.h"
+#include "../cubes.h"
 
 #define OLD_DENSITY_KERNEL 1
 
@@ -140,11 +140,6 @@ void gpu_compute_cube_functions(void)
 
 void gpu_compute_cube_weights(LittleCube& cube)
 {
-  //cout << "gpu_compute_cube_weights" << endl;
-  /*Timer t;
-  t.sync();
-  t.start();*/
-
   CudaMatrixFloat3 point_positions_gpu;
   CudaMatrixUInt atom_of_point_gpu;
   {
@@ -171,10 +166,6 @@ void gpu_compute_cube_weights(LittleCube& cube)
   for (list<Point>::iterator p = cube.points.begin(); p != cube.points.end(); ++p, ++i) {
     p->weight *= weights_cpu.get(i);
   }
-
-  /*t.sync()
-  t.stop();*/
-  //cout << "time: " << t << endl;
 }
 
 extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr, double* fort_forces_ptr)
@@ -188,9 +179,9 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 	}
 	cout << "] ==========>" << endl;
 	
-	Timer t1;
-	t1.sync();
-	t1.start();									
+	Timer t_total;
+	t_total.sync();
+	t_total.start();
 		
 	/*** Computo sobre cada cubo ****/
 	CudaMatrixFloat4 points_position_weight_gpu;
@@ -198,7 +189,8 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 	CudaMatrixUInt nuc_gpu;
 	CudaMatrixFloat2 factor_ac_gpu;
 	CudaMatrixUInt contractions_gpu;
-	
+
+  Timer t_density, t_rmm;
 
 	FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS);
 	
@@ -210,7 +202,7 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 		/** Load cube points **/
 		{
 			HostMatrixFloat4 points_position_weight_cpu(cube.number_of_points, 1);
-						
+
 			uint i = 0;		
 			for (list<Point>::const_iterator p = cube.points.begin(); p != cube.points.end(); ++p, ++i) {
 				points_position_weight_cpu.get(i) = make_float4(p->position.x, p->position.y, p->position.z, p->weight);
@@ -226,9 +218,8 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 		
 		/* load RDM */
 		{
-			HostMatrixFloat rdm_cpu;
+			HostMatrixFloat rdm_cpu(COALESCED_DIMENSION(cube_m), fortran_vars.nco);
 			//cout << "cube_m " << (cube_m + (16 - cube_m % 16)) << endl;
-			rdm_cpu.resize(COALESCED_DIMENSION(cube_m), fortran_vars.nco);
 			for (unsigned int i = 0; i < fortran_vars.nco; i++) {
 				uint j = 0;
 				for (set<uint>::const_iterator func = cube.functions.begin(); func != cube.functions.end(); ++func) {
@@ -293,8 +284,12 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 		/* compute necessary factor **/
 		else if (computation_type == COMPUTE_RMM) {
 			CudaMatrixFloat rmm_factor_gpu(cube.number_of_points);
+      Timer::sync();
+      t_density.start();
 			gpu_compute_density<false, false><<<threadGrid, threadBlock>>>(NULL, rmm_factor_gpu.data, points_position_weight_gpu.data, cube.number_of_points, rdm_gpu.data, cube.function_values.data, NULL, NULL, NULL, 0, cube_functions);
 			cudaAssertNoError("compute_density");
+      Timer::sync();
+      t_density.pause();
 
 			/*** Compute RMM update ***/
 			threads = dim3(cube_m, cube_m);
@@ -302,9 +297,12 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 			threadGrid = divUp(threads, threadBlock);
 
 			CudaMatrixFloat rmm_output_gpu((cube_m * (cube_m + 1))/2);
+      Timer::sync();
+      t_rmm.start();
 			gpu_update_rmm<<<threadGrid, threadBlock>>>(rmm_factor_gpu.data, cube.number_of_points, rmm_output_gpu.data, cube.function_values.data, cube_m);
 			cudaAssertNoError("update_rmm");
-			
+      Timer::sync();
+      t_rmm.pause();
 			HostMatrixFloat rmm_output_cpu(rmm_output_gpu);
 
       /*** Contribute this RMM to the total RMM ***/
@@ -412,7 +410,10 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 		*fort_energy_ptr = total_energy;
 	}
 	
-	t1.sync();
-	t1.stop();
-	cout << "TIMER: gpu_solve_cubes " << t1 << endl;
+	t_total.sync();
+	t_total.stop();
+
+	cout << "TIMER: gpu_solve_cubes " << t_total << endl;
+  cout << "TIMER: density " << t_density << endl;
+  cout << "TIMER: rmm: " << t_rmm << endl;
 }

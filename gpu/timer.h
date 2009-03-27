@@ -7,9 +7,11 @@ namespace G2G {
 	class Timer {
 		public:
 			Timer(void);
+      Timer(const timeval& t);
 		
 			void start(void);
 			void stop(void);
+      void pause(void);
 		
 			unsigned long getMicrosec(void) const;
 			unsigned long getSec(void) const;

@@ -53,6 +53,9 @@ c
 			common /radii/ Rm(0:54)
 c
       common /sol1/ Nsol,natsol,alpha,Em,pc,sol,free
+
+      call timer_start('SCF')
+
       just_int3n = false
 
 
@@ -328,7 +331,7 @@ c
      >     Nucd,Md,ncontd,nshelld,cd,ad,RMM,XX,E2,Ex,
      >     nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write1)
 c
-        endif
+      endif
 
         do 720 i=1,M
         do 720 j=1,M
@@ -406,6 +409,7 @@ c
  840   RMM(k)=RMM(M3+k-1)
 c
       endif
+
 c
 c-------------------------------------------------------------------
 c-------------------------------------------------------------------
@@ -707,7 +711,7 @@ c--------------------------------------------------------------
          endif
        endif
 			 write(*,*) 'ultimo paso SCF'
-       call timer_start       
+       call timer_start('exchnum')
 #ifdef GPU
 #ifdef ULTIMA_CPU
        call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
@@ -874,6 +878,7 @@ c---- DEBUGGINGS
 c      write(*,*) 'Exc, integrated and calculated',Exc,Ex
 c      write(*,*) 'Coulomb energy',E2-Ex
 c
+      call timer_stop('SCF')
        return
        end
 C  -------------------------                                            

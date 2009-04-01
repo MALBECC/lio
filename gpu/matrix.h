@@ -61,7 +61,6 @@ namespace G2G {
 			void to_constant(const char* constant);
 			//template<class S> static void to_constant(const char* constant, const S& value);
 		
-		// TODO: implement these
 		private:
 			bool pinned;
 			void alloc_data(void);

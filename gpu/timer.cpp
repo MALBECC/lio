@@ -41,6 +41,21 @@ void Timer::stop(void) {
 #endif
 }
 
+void Timer::start_and_sync(void) {
+  sync();
+  start();
+}
+
+void Timer::stop_and_sync(void) {
+  sync();
+  stop();
+}
+
+void Timer::pause_and_sync(void) {
+  sync();
+  pause();
+}
+
 bool Timer::isStarted(void) const {
 	return started;	
 }

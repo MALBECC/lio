@@ -33,10 +33,9 @@ using namespace std;
 #define COMPUTE_FORCE_ONLY		3
 
 
-/**
- * Methods
- */
-
+/*******************************
+ * Cube Functions
+ *******************************/
 void gpu_compute_cube_functions(void)
 {
 	cout << "<===== computing functions ========>" << endl;
@@ -87,7 +86,8 @@ void gpu_compute_cube_functions(void)
 		}
 		
 		/** Compute Functions **/		
-		cube.function_values.resize(COALESCED_DIMENSION(cube_functions.w), cube.number_of_points);
+		//cube.function_values.resize(COALESCED_DIMENSION(cube_functions.w), cube.number_of_points);
+    cube.function_values.resize(COALESCED_DIMENSION(cube.number_of_points), cube_functions.w);
 		if (fortran_vars.do_forces) cube.gradient_values.resize(cube_functions.w, cube.number_of_points);
 		
 		dim3 threads(cube.number_of_points);
@@ -138,28 +138,28 @@ void gpu_compute_cube_functions(void)
 	cout << "TIMER: funcs: " << t1 << endl;
 }
 
+/*******************************
+ * Cube Weights
+ *******************************/
+
 void gpu_compute_cube_weights(LittleCube& cube)
 {
-  CudaMatrixFloat3 point_positions_gpu;
-  CudaMatrixUInt atom_of_point_gpu;
+  CudaMatrixFloat4 point_positions_gpu;
   {
-    HostMatrixFloat3 points_positions_cpu(cube.number_of_points, 1);
-    HostMatrixUInt atom_of_point_cpu(cube.number_of_points, 1);
+    HostMatrixFloat4 points_positions_cpu(cube.number_of_points, 1);
 
 		uint i = 0;
 		for (list<Point>::const_iterator p = cube.points.begin(); p != cube.points.end(); ++p, ++i) {
-			points_positions_cpu.get(i) = make_float3(p->position.x, p->position.y, p->position.z);
-      atom_of_point_cpu.get(i) = p->atom;
+			points_positions_cpu.get(i) = make_float4(p->position.x, p->position.y, p->position.z, p->atom);
 		}
 		point_positions_gpu = points_positions_cpu;
-    atom_of_point_gpu = atom_of_point_cpu;
 	}
 
   CudaMatrixFloat weights_gpu(cube.number_of_points);
   dim3 threads(cube.number_of_points);
   dim3 blockSize(256);
   dim3 gridSize = divUp(threads, blockSize);
-  gpu_compute_weights<<<gridSize,blockSize>>>(cube.number_of_points, NULL, point_positions_gpu.data, 0, weights_gpu.data, atom_of_point_gpu.data);
+  gpu_compute_weights<<<gridSize,blockSize>>>(cube.number_of_points, point_positions_gpu.data, weights_gpu.data);
 
   HostMatrixFloat weights_cpu(weights_gpu);
   uint i = 0;
@@ -168,6 +168,9 @@ void gpu_compute_cube_weights(LittleCube& cube)
   }
 }
 
+/********************************
+ * Solve Cubes
+ ********************************/
 extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr, double* fort_forces_ptr)
 {
 	cout << "<================ calculo de: [";
@@ -184,13 +187,11 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 	t_total.start();
 		
 	/*** Computo sobre cada cubo ****/
-	CudaMatrixFloat4 points_position_weight_gpu;
+	CudaMatrixFloat point_weights_gpu;
 	CudaMatrixFloat rdm_gpu;
 	CudaMatrixUInt nuc_gpu;
-	CudaMatrixFloat2 factor_ac_gpu;
-	CudaMatrixUInt contractions_gpu;
 
-  Timer t_density, t_rmm;
+  Timer t_density, t_rmm, t_energy;
 
 	FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS);
 	
@@ -201,25 +202,23 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 				
 		/** Load cube points **/
 		{
-			HostMatrixFloat4 points_position_weight_cpu(cube.number_of_points, 1);
+			HostMatrixFloat point_weights_cpu(cube.number_of_points, 1);
 
 			uint i = 0;		
 			for (list<Point>::const_iterator p = cube.points.begin(); p != cube.points.end(); ++p, ++i) {
-				points_position_weight_cpu.get(i) = make_float4(p->position.x, p->position.y, p->position.z, p->weight);
+				point_weights_cpu.get(i) = p->weight;
 			}
-			points_position_weight_gpu = points_position_weight_cpu;
+			point_weights_gpu = point_weights_cpu;
 		}
 		
 		/** Load cube functions **/
 		uint cube_m = cube.s_functions + cube.p_functions * 3 + cube.d_functions * 6;
 		uint cube_spd = cube.s_functions + cube.p_functions + cube.d_functions;
 		uint4 cube_functions = make_uint4(cube.s_functions, cube.p_functions, cube.d_functions, cube_m);
-		//cout << "s: " << cube_functions.x << " p: " << cube_functions.y << " d: " << cube_functions.z << endl;
 		
 		/* load RDM */
 		{
 			HostMatrixFloat rdm_cpu(COALESCED_DIMENSION(cube_m), fortran_vars.nco);
-			//cout << "cube_m " << (cube_m + (16 - cube_m % 16)) << endl;
 			for (unsigned int i = 0; i < fortran_vars.nco; i++) {
 				uint j = 0;
 				for (set<uint>::const_iterator func = cube.functions.begin(); func != cube.functions.end(); ++func) {
@@ -237,46 +236,19 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 			}
 			rdm_gpu = rdm_cpu;
 		}
-
-#if !OLD_DENSITY_KERNEL
-		{
-			HostMatrixFloat2 factor_ac_cpu(cube_spd, MAX_CONTRACTIONS);
-			HostMatrixUInt nuc_cpu(cube_spd, 1), contractions_cpu(cube_spd, 1);
-			
-			uint i = 0;
-			for (set<uint>::const_iterator func = cube.functions.begin(); func != cube.functions.end(); ++func, ++i) {
-				nuc_cpu.get(i) = fortran_vars.nucleii.get(*func) - 1;
-				contractions_cpu.get(i) = fortran_vars.contractions.get(*func);
-				assert(contractions_cpu.get(i) <= MAX_CONTRACTIONS);
-				
-				for (unsigned int k = 0; k < contractions_cpu.get(i); k++)
-					factor_ac_cpu.get(i, k) = make_float2(fortran_vars.a_values.get(*func, k), fortran_vars.c_values.get(*func, k));
-			}
-
-			factor_ac_gpu = factor_ac_cpu;
-			nuc_gpu = nuc_cpu;
-			contractions_gpu = contractions_cpu;
-		}
-#endif
 							
 		dim3 threads(cube.number_of_points);
 		dim3 threadBlock, threadGrid;
-#if OLD_DENSITY_KERNEL
 		threadBlock = dim3(DENSITY_BLOCK_SIZE);
-#else
-		threadBlock = dim3(DENSITY_BLOCK_SIZE_X);
-#endif
 		threadGrid = divUp(threads, threadBlock);
 
 		/* compute energy */
 		if (computation_type == COMPUTE_ENERGY_ONLY) {
+      t_energy.start_and_sync();
 			CudaMatrixFloat energy_gpu(cube.number_of_points);
-#if OLD_DENSITY_KERNEL
-			gpu_compute_density<true, false><<<threadGrid, threadBlock>>>(energy_gpu.data, NULL, points_position_weight_gpu.data, cube.number_of_points, rdm_gpu.data, cube.function_values.data, NULL, NULL, NULL, 0, cube_functions);
-#else
-			gpu_compute_density2<true, false><<<threadGrid, threadBlock>>>(energy_gpu.data, NULL, points_position_weight_gpu.data, cube.number_of_points, rdm_gpu.data, nuc_gpu.data, cube_functions, cube_spd, contractions_gpu.data, factor_ac_gpu.data);
-#endif
+			gpu_compute_density<true, false><<<threadGrid, threadBlock>>>(energy_gpu.data, NULL, point_weights_gpu.data, cube.number_of_points, rdm_gpu.data, cube.function_values.data, NULL, NULL, NULL, 0, cube_functions);
 			cudaAssertNoError("compute_density");
+      t_energy.pause_and_sync();
 
 			HostMatrixFloat energy_cpu(energy_gpu);
 			for (uint i = 0; i < cube.number_of_points; i++) { total_energy += energy_cpu.get(i); }
@@ -284,29 +256,36 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 		/* compute necessary factor **/
 		else if (computation_type == COMPUTE_RMM) {
 			CudaMatrixFloat rmm_factor_gpu(cube.number_of_points);
-      Timer::sync();
-      t_density.start();
-			gpu_compute_density<false, false><<<threadGrid, threadBlock>>>(NULL, rmm_factor_gpu.data, points_position_weight_gpu.data, cube.number_of_points, rdm_gpu.data, cube.function_values.data, NULL, NULL, NULL, 0, cube_functions);
+      t_density.start_and_sync();
+			gpu_compute_density<false, false><<<threadGrid, threadBlock>>>(NULL, rmm_factor_gpu.data, point_weights_gpu.data, cube.number_of_points, rdm_gpu.data, cube.function_values.data, NULL, NULL, NULL, 0, cube_functions);
 			cudaAssertNoError("compute_density");
-      Timer::sync();
-      t_density.pause();
+      t_density.pause_and_sync();
 
 			/*** Compute RMM update ***/
 			threads = dim3(cube_m, cube_m);
 			threadBlock = dim3(RMM_BLOCK_SIZE_XY, RMM_BLOCK_SIZE_XY);
 			threadGrid = divUp(threads, threadBlock);
 
-			CudaMatrixFloat rmm_output_gpu((cube_m * (cube_m + 1))/2);
-      Timer::sync();
-      t_rmm.start();
+			//CudaMatrixFloat rmm_output_gpu((cube_m * (cube_m + 1))/2);
+      CudaMatrixFloat rmm_output_gpu(COALESCED_DIMENSION(cube_m), cube_m);
+      #if 0
+      /* create a nested matrix */
+      CudaMatrixUInt rmm_output_gpu(cube_m);
+      for (uint i = 0; i < cube_m; i++) {
+        rmm_output_gpu.get(i) = new CudaMatrixFloat(cube_m - i);
+      }
+      #endif
+
+      t_rmm.start_and_sync();
 			gpu_update_rmm<<<threadGrid, threadBlock>>>(rmm_factor_gpu.data, cube.number_of_points, rmm_output_gpu.data, cube.function_values.data, cube_m);
 			cudaAssertNoError("update_rmm");
-      Timer::sync();
-      t_rmm.pause();
+      t_rmm.pause_and_sync();
 			HostMatrixFloat rmm_output_cpu(rmm_output_gpu);
 
       /*** Contribute this RMM to the total RMM ***/
       uint small_index = 0;
+      uint small_fi = 0;
+
 			for (set<uint>::iterator it_fi = cube.functions.begin(); it_fi != cube.functions.end(); ++it_fi) {
 				uint fi_advance;
 				if (*it_fi < fortran_vars.s_funcs) fi_advance = 1;
@@ -314,6 +293,8 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 				else fi_advance = 6;
 				
 				for (uint i = 0; i < fi_advance; i++) {
+
+          uint small_fj = 0;
 					for (set<uint>::iterator it_fj = cube.functions.begin(); it_fj != cube.functions.end(); ++it_fj) {					
 						uint fj_advance;
 						if (*it_fj < fortran_vars.s_funcs) fj_advance = 1;
@@ -324,10 +305,13 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 							uint fi = *it_fi + i; uint fj = *it_fj + j;
 							if (fi > fj) continue;
 							uint big_index = (fi * fortran_vars.m - (fi * (fi - 1)) / 2) + (fj - fi);
-              fortran_vars.rmm_output.get(big_index) += rmm_output_cpu.get(small_index);
-              small_index++;
+              //fortran_vars.rmm_output.get(big_index) += rmm_output_cpu.get(small_index);
+              //cout << "small (" << cube_m << "): " << small_fj + small_fi << " " << small_fi<< ": " << rmm_output_cpu.get(small_fi, small_fj + small_fi) << endl;
+              fortran_vars.rmm_output.get(big_index) += rmm_output_cpu.get(small_fi, small_fj + small_fi);
+              small_fj++;
 						}					
 					}
+          small_fi++;
 				}
 			}
 		}
@@ -359,13 +343,13 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 			CudaMatrixFloat3 density_deriv(COALESCED_DIMENSION(cube.nucleii.size()), cube.number_of_points);
 			if (computation_type == COMPUTE_ENERGY_FORCE) {
 				energy_gpu.resize(cube.number_of_points);
-				gpu_compute_density<true, true><<<threadGrid, threadBlock>>>(energy_gpu.data, force_factor_gpu.data, points_position_weight_gpu.data, cube.number_of_points, rdm_gpu.data, cube.function_values.data, cube.gradient_values.data, density_deriv.data, nuc_gpu.data, cube.nucleii.size(), cube_functions);
+				gpu_compute_density<true, true><<<threadGrid, threadBlock>>>(energy_gpu.data, force_factor_gpu.data, point_weights_gpu.data, cube.number_of_points, rdm_gpu.data, cube.function_values.data, cube.gradient_values.data, density_deriv.data, nuc_gpu.data, cube.nucleii.size(), cube_functions);
 
 				HostMatrixFloat energy_cpu(energy_gpu);
 				for (uint i = 0; i < cube.number_of_points; i++) { total_energy += energy_cpu.get(i); }
 			}
 			else
-				gpu_compute_density<false, true><<<threadGrid, threadBlock>>>(energy_gpu.data, force_factor_gpu.data, points_position_weight_gpu.data, cube.number_of_points, rdm_gpu.data, cube.function_values.data, cube.gradient_values.data, density_deriv.data, nuc_gpu.data, cube.nucleii.size(), cube_functions);
+				gpu_compute_density<false, true><<<threadGrid, threadBlock>>>(energy_gpu.data, force_factor_gpu.data, point_weights_gpu.data, cube.number_of_points, rdm_gpu.data, cube.function_values.data, cube.gradient_values.data, density_deriv.data, nuc_gpu.data, cube.nucleii.size(), cube_functions);
 
 			cudaAssertNoError("compute_density");
 
@@ -409,11 +393,10 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 		cout << "total energy: " << total_energy << endl;
 		*fort_energy_ptr = total_energy;
 	}
-	
-	t_total.sync();
-	t_total.stop();
+	t_total.stop_and_sync();
 
 	cout << "TIMER: gpu_solve_cubes " << t_total << endl;
   cout << "TIMER: density " << t_density << endl;
+  cout << "TIMER: energy " << t_energy << endl;
   cout << "TIMER: rmm: " << t_rmm << endl;
 }

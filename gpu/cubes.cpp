@@ -99,7 +99,7 @@ void regenerate_cubes(void)
 	cout << "computing points..." << endl;	
 	uint puntos_totales = 0;
 	
-	Timer t_total, t_atomo, t_capa, t_punto;
+	Timer t_total;
 	t_total.start();
 	/* computa las posiciones de los puntos (y los guarda) */
 	for (uint atom = 0; atom < fortran_vars.atoms; atom++) {		
@@ -121,7 +121,6 @@ void regenerate_cubes(void)
 				puntos_totales++;
 				
 				double3 rel_point_position(fortran_vars.e.get(point,0), fortran_vars.e.get(point,1), fortran_vars.e.get(point,2));
-				
 				double3 point_position = atom_position + rel_point_position * r1;
 				bool inside_cube = ((x0.x <= point_position.x && point_position.x <= x1.x) &&
 														(x0.y <= point_position.y && point_position.y <= x1.y) &&
@@ -146,21 +145,16 @@ void regenerate_cubes(void)
 		}		
 	}
 	t_total.stop();
-	cout << "total: " << t_total << endl;
-
-	cout << "Grilla original: " << puntos_totales << " funciones totales: " << puntos_totales * fortran_vars.m << endl;
+  
+	cout << "Time: " << t_total << endl;
+	cout << "Grilla original: " << puntos_totales << " funciones totales: " << puntos_totales * fortran_vars.m << endl;	
 	
-	cout << "filling cube..." << endl;
-	
-	/* DEBUG: imprime */
-	_DBG(ofstream archivo_xyz("puntos.xyz"));	
-
 	puntos_totales = 0;
 	uint funciones_totales = 0;
 
 	final_cube.clear();
 
-	Timer t_functions, t_weights;
+	cout << "filling cube..." << endl;
 	t_total.start();
 	for (uint i = 0; i < big_cube_size.x; i++) {
 		for (uint j = 0; j < big_cube_size.y; j++) {
@@ -170,34 +164,26 @@ void regenerate_cubes(void)
 				double3 cube_coord_abs = x0 + make_uint3(i,j,k) * little_cube_size;
 				if (little_cube.number_of_points < min_points_per_cube) { /*cout << "cubo vacio" << endl;*/ continue; }
 				
-				//t_functions.start();
 				assign_significative_functions(little_cube, cube_coord_abs, min_exps_func);
-				//t_functions.stop();
-				//cout << "assign functions: " << t_functions << endl;
 				if (little_cube.functions.empty()) { /*cout << "cubo sin funciones" << endl;*/ continue; }
 
 #if WEIGHT_GPU
         gpu_compute_cube_weights(little_cube);
 #else
   #if WEIGHT_CUTOFFS
-    		//t_weights.start();
 				assign_cube_weights(little_cube);
-				//t_weights.stop();
-				//cout << "assign weights: " << t_weights << endl;
 				if (little_cube.number_of_points < min_points_per_cube) { /*cout << "cubo vacio" << endl;*/ continue; }
   #endif
 #endif
 				final_cube.push_back(little_cube);
 
-				_DBG(cout << "[" << i << "][" << j << "][" << k << "]: " << little_cube.number_of_points << " " << little_cube.s_functions << " " << little_cube.p_functions << " " << little_cube.d_functions << endl);
+        // para hacer histogramas
+        #if 0
+        cout << "cubo: " << little_cube.number_of_points << " puntos; " << little_cube.s_functions + little_cube.p_functions * 3 + little_cube.d_functions * 6 << " funciones" << endl;
+        #endif
+
 				puntos_totales += little_cube.number_of_points;
 				funciones_totales += little_cube.number_of_points * (little_cube.s_functions + little_cube.p_functions * 3 + little_cube.d_functions * 6);
-				
-#ifdef _DEBUG
-				for (list<Point>::const_iterator it = little_cube.points.begin(); it != little_cube.points.end(); ++it) {
-					archivo_xyz << "H " << it->position.x << " " << it->position.y << " " << it->position.z << endl;
-				}
-#endif
 			}
 		}
 	}

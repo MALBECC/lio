@@ -7,12 +7,9 @@ void assign_cube_weights(LittleCube& cube);
 
 #define WEIGHT_GPU 1
 
-/* pesos en GPU */
-#define GPU_WEIGHT_CUTOFF 0 // TODO: esta funcando?
-
 /* pesos en CPU */
 #define BECKE_CUTOFF 0    // cota minima para el peso
-#define BECKE 1           // formula de Becke o de Stratman
-#define WEIGHT_CUTOFFS 1  // acota vecinos por nucleo
+#define BECKE 0           // formula de Becke o de Stratman
+#define WEIGHT_CUTOFFS 0  // acota vecinos por nucleo
 
 #endif

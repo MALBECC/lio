@@ -12,6 +12,10 @@ namespace G2G {
 			void start(void);
 			void stop(void);
       void pause(void);
+
+      void start_and_sync(void);
+			void stop_and_sync(void);
+      void pause_and_sync(void);
 		
 			unsigned long getMicrosec(void) const;
 			unsigned long getSec(void) const;

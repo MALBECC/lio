@@ -1,4 +1,6 @@
 // -*- mode: c -*-
+
+/* TODO: coalescear contractions y demas */
 template<bool do_forces>
 __device__ __host__ void compute_function(uint idx, float3 point_position, uint* contractions, float2* factor_ac, uint* nuc,
 																uint spd, float& t, float& tg, float3& v)
@@ -24,9 +26,6 @@ __device__ __host__ void compute_function(uint idx, float3 point_position, uint*
 
 /**
  * gpu_compute_functions
- * 	grid: points 
- *  TODO: agregar otra dimension para parelelizar las funciones
- *  TODO: paralelizar por puntos (pueden cargar cosas comunes)
  */
 template<bool do_forces>
 __global__ void gpu_compute_functions(float3* point_positions, uint points, uint* contractions, float2* factor_ac,
@@ -40,27 +39,30 @@ __global__ void gpu_compute_functions(float3* point_positions, uint points, uint
 	float3 point_position = point_positions[point];
 
 	/** Compute functions ***/
-	uint base = point * COALESCED_DIMENSION(functions.w);
+	//uint base = point * COALESCED_DIMENSION(functions.w);
+  uint func_base = 0;
   uint grad_base = point * functions.w;
 
 	float t, tg;
 	float3 v;
 	
 	// s functions
-	for (uint i = 0; i < functions.x; i++, base++, grad_base++) {
+	for (uint i = 0; i < functions.x; i++, func_base++, grad_base++) {
 		compute_function<do_forces>(i, point_position, contractions, factor_ac, nuc, spd, t, tg, v);
 
+    uint base = COALESCED_DIMENSION(points) * func_base + point;
 		function_values[base] = t;
 		if (do_forces) gradient_values[grad_base] = v * (2.0f * tg);
 	}
 	
 	// p functions
-	for (uint i = 0; i < functions.y; i++, base += 3, grad_base+=3) {
+	for (uint i = 0; i < functions.y; i++, func_base+=3, grad_base+=3) {
 		compute_function<do_forces>(functions.x + i, point_position, contractions, factor_ac, nuc, spd, t, tg, v);
 
-		function_values[base + 0] = v.x * t;
-		function_values[base + 1] = v.y * t;
-		function_values[base + 2] = v.z * t;
+    
+		function_values[COALESCED_DIMENSION(points) * (func_base + 0) + point] = v.x * t;
+		function_values[COALESCED_DIMENSION(points) * (func_base + 1) + point] = v.y * t;
+		function_values[COALESCED_DIMENSION(points) * (func_base + 2) + point] = v.z * t;
 
 		if (do_forces) {
 			gradient_values[grad_base + 0] = v * 2.0f * v.x * tg - make_float3(t, 0, 0);
@@ -70,19 +72,19 @@ __global__ void gpu_compute_functions(float3* point_positions, uint points, uint
 	}
 	
 	// d functions
-	for (uint i = 0; i < functions.z; i++, base += 6, grad_base+=6) {
+	for (uint i = 0; i < functions.z; i++, func_base+=6, grad_base+=6) {
 		compute_function<do_forces>(functions.x + functions.y + i, point_position, contractions, factor_ac, nuc, spd, t, tg, v);
 		
 		float tx = t * v.x;
 		float ty = t * v.y;
 		float tz = t * v.z;
 
-		function_values[base + 0] = tx * v.x * gpu_normalization_factor;
-		function_values[base + 1] = ty * v.x;
-		function_values[base + 2] = ty * v.y * gpu_normalization_factor;
-		function_values[base + 3] = tz * v.x;
-		function_values[base + 4] = tz * v.y;
-		function_values[base + 5] = tz * v.z * gpu_normalization_factor;
+		function_values[COALESCED_DIMENSION(points) * (func_base + 0) + point] = tx * v.x * gpu_normalization_factor;
+		function_values[COALESCED_DIMENSION(points) * (func_base + 1) + point] = ty * v.x;
+		function_values[COALESCED_DIMENSION(points) * (func_base + 2) + point] = ty * v.y * gpu_normalization_factor;
+		function_values[COALESCED_DIMENSION(points) * (func_base + 3) + point] = tz * v.x;
+		function_values[COALESCED_DIMENSION(points) * (func_base + 4) + point] = tz * v.y;
+		function_values[COALESCED_DIMENSION(points) * (func_base + 5) + point] = tz * v.z * gpu_normalization_factor;
 
 		if (do_forces) {
 			float tgx = tg * v.x;

@@ -4,7 +4,6 @@
  */
 
 // TODO: esto desperdicia la mitad de los threads -> quizas se puede armar una grilla sin los bloques que no hagan nada
-// TODO: medir bien cuanto esta coalesceando y cuanto no
 
 __global__ void gpu_update_rmm(float* factors, uint points, float* rmm, float* function_values, uint m)
 {
@@ -37,17 +36,27 @@ __global__ void gpu_update_rmm(float* factors, uint points, float* rmm, float* f
 
 		for (uint point_sub = 0; point_sub < (RMM_BLOCK_SIZE_XY * RMM_BLOCK_SIZE_XY) && (point_base + point_sub < points); point_sub++) {
 			uint point = (point_base + point_sub);
+      uint point_mod = (point_sub % RMM_BLOCK_SIZE_XY);
 			
 			/* every RMM_BLOCK_SIZE_XY iterations, Fi and Fj get filled with RMM_BLOCK_SIZE_XY functions, for RMM_BLOCK_SIZE_XY different points */
-      if (point_sub % RMM_BLOCK_SIZE_XY == 0) {
+      if (point_mod == 0) {
 				
 				__syncthreads();
 				
-				if (point + threadIdx.y < points) {
-					/* every row of the block loads functions for a different point, and every column loads a different function */
-	        if (i < m) functions_i_local[threadIdx.y][threadIdx.x] = function_values[(point + threadIdx.y) * COALESCED_DIMENSION(m) + i];
-  	      if ((blockDim.y * blockIdx.y + threadIdx.x) < m) functions_j_local[threadIdx.y][threadIdx.x] = function_values[(point + threadIdx.y) * COALESCED_DIMENSION(m) + (blockIdx.y * blockDim.y + threadIdx.x)];
+				if (point + threadIdx.x < points) {
+          if ((blockIdx.x * blockDim.x + threadIdx.y) < m) {
+            functions_i_local[threadIdx.x][threadIdx.y] = function_values[COALESCED_DIMENSION(points) * (blockIdx.x * blockDim.x + threadIdx.y) + (point + threadIdx.x)];
+            functions_i_local[threadIdx.x][threadIdx.y] *= factor_local[point_sub + threadIdx.x];
+          }
+          else functions_i_local[threadIdx.x][threadIdx.y] = 0.0f;
+
+          if ((blockIdx.y * blockDim.y + threadIdx.y) < m) functions_j_local[threadIdx.x][threadIdx.y] = function_values[COALESCED_DIMENSION(points) * (blockIdx.y * blockDim.y + threadIdx.y) + (point + threadIdx.x)];
+          else functions_j_local[threadIdx.x][threadIdx.y] = 0.0f;
 				}
+        else {
+          functions_i_local[threadIdx.x][threadIdx.y] = 0.0f;
+          functions_j_local[threadIdx.x][threadIdx.y] = 0.0f;
+        }
 				
   			__syncthreads();				
       }
@@ -55,13 +64,17 @@ __global__ void gpu_update_rmm(float* factors, uint points, float* rmm, float* f
 			float Fi = 0.0f, Fj = 0.0f;		
 				
 		 	/* fill local variables from local cache */
-			if (valid_thread) {
-				Fi = functions_i_local[point_sub % RMM_BLOCK_SIZE_XY][threadIdx.x];
-				Fj = (i == j ? Fi : functions_j_local[point_sub % RMM_BLOCK_SIZE_XY][threadIdx.y]);
-				rmm_local += factor_local[point_sub] * Fi * Fj; 					
+      /* NOTE: this condition avoids computation on blocks where no thread is valid, on blocks with some valid threads, the computation
+       * is still performed but contributes 0 to rmm_local (this avoids instruction serialization) */
+      if (blockIdx.x * blockDim.x <= blockIdx.y * blockDim.y) {
+				Fi = functions_i_local[point_mod][threadIdx.x];
+        Fj = functions_j_local[point_mod][threadIdx.y];
+        rmm_local += Fi * Fj;
 			}
 		}
 	}
 
-  if (valid_thread) rmm[rmm_idx] = rmm_local;
+  // TODO: coalescear (escribir usando dos indices)
+  //if (valid_thread) rmm[rmm_idx] = rmm_local;
+  if (valid_thread) rmm[COALESCED_DIMENSION(m) * j + i] = rmm_local;
 }

@@ -3,13 +3,10 @@
 /**
  * gpu_compute_functions
  * 	grid: points 
- *  TODO: paralelizar por puntos (pueden cargar cosas comunes)
  */
 
-#define NEW_DERIVS 0
-
 template<bool compute_energy, bool compute_derivs>
-__global__ void gpu_compute_density(float* energy, float* factor, float4* point_weight_positions, uint points, float* rdm,
+__global__ void gpu_compute_density(float* energy, float* factor, float* point_weights, uint points, float* rdm,
 																		float* function_values, float3* gradient_values, float3* density_deriv, uint* nuc,
 																		uint nucleii_count, uint4 functions)
 {
@@ -24,12 +21,9 @@ __global__ void gpu_compute_density(float* energy, float* factor, float4* point_
 	
 	bool valid_thread = (point < points);
 	
-	float4 point_weight_position;
-	if (valid_thread) point_weight_position = point_weight_positions[point];
-	//float3 point_position = make_float3(point_weight_position.x, point_weight_position.y, point_weight_position.z);
-	float point_weight = point_weight_position.w;
+	float point_weight;
+	if (valid_thread) point_weight = point_weights[point];
 	
-	uint base = point * COALESCED_DIMENSION(m);
   uint grad_base = point * m;
 	uint deriv_base = point * COALESCED_DIMENSION(nucleii_count);
 
@@ -50,7 +44,8 @@ __global__ void gpu_compute_density(float* energy, float* factor, float4* point_
 			
 			if (valid_thread) {
 				for (uint jj = 0; jj < DENSITY_BLOCK_SIZE && (j + jj < m); jj++) {
-					w += function_values[base + j + jj] * rdm_sh[jj];
+          uint base = COALESCED_DIMENSION(points) * (j + jj) + point;
+					w += function_values[base] * rdm_sh[jj];
 				}
 			}
 
@@ -61,17 +56,6 @@ __global__ void gpu_compute_density(float* energy, float* factor, float4* point_
 		if (compute_derivs) {
       if (valid_thread) {
         // TODO: esto se tiene que poder hacer mejor
-        #if NEW_DERIVS
-        uint j = 0;
-        for (uint jj = 0; jj < m; jj++) {
-          if (jj < functions.x) j = jj;
-          else if (jj < functions.x + 3 * functions.y) j = (jj - functions.x)/3;
-          else j = (jj - functions.x - functions.y * 3) / 6;
-
-          /* TODO: nuc podria ser uno por cada jj o se podria cargar cada 3, 6 */
-          density_deriv[deriv_base + nuc[j]] += gradient_values[grad_base + jj] * rdm[rdm_idx + jj] * w;
-        }
-        #else
         uint j = 0, jj = 0;
         for (; j < functions.x; j++, jj++) {
           density_deriv[deriv_base + nuc[j]] += gradient_values[grad_base + j] * rdm[rdm_idx + j] * w;
@@ -97,7 +81,6 @@ __global__ void gpu_compute_density(float* energy, float* factor, float4* point_
           partial_result += gradient_values[grad_idx + 5] * rdm[rdm_idx + jj + 5];
           density_deriv[deriv_idx] += partial_result * w;
         }
-        #endif
 			}
 		}
 
@@ -111,9 +94,8 @@ __global__ void gpu_compute_density(float* energy, float* factor, float4* point_
 			gpu_pot<true, true>(partial_density, exc, corr, y2a);
 			if (valid_thread) factor[point] = point_weight * y2a;
 		}
-		else {
-			gpu_pot<true, false>(partial_density, exc, corr, y2a);
-		}
+		else gpu_pot<true, false>(partial_density, exc, corr, y2a);
+    
 		if (valid_thread) energy[point] = (partial_density * point_weight) * (exc + corr);
 	}
 	else {
@@ -122,6 +104,7 @@ __global__ void gpu_compute_density(float* energy, float* factor, float4* point_
 	}
 }	
 
+#if 0
 /*********** test **************/
 #define NCO_PER_BATCH 4
 
@@ -251,3 +234,4 @@ __global__ void gpu_compute_density2(float* energy, float* factor, float4* point
 		if (valid_thread) factor[point] = point_weight * y2a;
 	}
 }	
+#endif

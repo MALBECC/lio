@@ -44,6 +44,7 @@ namespace G2G {
 	extern double little_cube_size; // largo de una arista de los cubos chiquitos [Angstrom]
 	extern uint min_points_per_cube;
 	extern double becke_cutoff;
+  extern bool assign_all_functions;
 }
 
 #endif

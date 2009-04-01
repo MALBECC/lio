@@ -9,12 +9,14 @@
 
 #define MAX_CONTRACTIONS 10
 
+// TODO: ver cuanto se pueden subir
 #define RMM_BLOCK_SIZE_XY 16
 
 #define DENSITY_BLOCK_SIZE 256
-#define DENSITY_BLOCK_SIZE_X 256
+#define DENSITY_BLOCK_SIZE_X 256  
 #define FUNCTIONS_BLOCK_SIZE 256
 #define FORCE_BLOCK_SIZE 256
+#define WEIGHT_BLOCK_SIZE 256
 
 // used for "types" constant memory
 #define MAX_ATOMS 80

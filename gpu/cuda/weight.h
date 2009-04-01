@@ -3,8 +3,7 @@
 
 __global__ void gpu_compute_weights(uint points, float4* point_positions, float* weights)
 {
-  uint3 pos = index(blockDim, blockIdx, threadIdx);
-  uint point = pos.x;
+  uint point = index(blockDim, blockIdx, threadIdx).x;
 
   bool valid_thread = (point < points);
 	if (!valid_thread) return;

@@ -14,8 +14,6 @@ __global__ void gpu_update_rmm(float* factors, uint points, float* rmm, float* f
 	
 	bool valid_thread = (i < m && j < m && i <= j); // quiero triangulo inferior solamente TODO: sacar esto
 
-	uint rmm_idx = (i * m - (i * (i - 1)) / 2) + (j - i);
-
   // calculate this rmm
 	float rmm_local = 0.0f;
 
@@ -24,7 +22,7 @@ __global__ void gpu_update_rmm(float* factors, uint points, float* rmm, float* f
 	__shared__ float factor_local[RMM_BLOCK_SIZE_XY * RMM_BLOCK_SIZE_XY];			// factor[point]
 
 	for (uint point_base = 0; point_base < points; point_base += (RMM_BLOCK_SIZE_XY * RMM_BLOCK_SIZE_XY)) {
-		uint abs_threadIdx = threadIdx.y * blockDim.x + threadIdx.x;
+		uint abs_threadIdx = threadIdx.y * blockDim.x + threadIdx.x;  // absolute threadId inside block
 		
 		__syncthreads();
 
@@ -38,19 +36,22 @@ __global__ void gpu_update_rmm(float* factors, uint points, float* rmm, float* f
 			uint point = (point_base + point_sub);
       uint point_mod = (point_sub % RMM_BLOCK_SIZE_XY);
 			
-			/* every RMM_BLOCK_SIZE_XY iterations, Fi and Fj get filled with RMM_BLOCK_SIZE_XY functions, for RMM_BLOCK_SIZE_XY different points */
+			/* every RMM_BLOCK_SIZE_X iterations, Fi and Fj get filled with RMM_BLOCK_SIZE_Y functions, for RMM_BLOCK_SIZE_X different points */
       if (point_mod == 0) {
 				
 				__syncthreads();
 				
 				if (point + threadIdx.x < points) {
-          if ((blockIdx.x * blockDim.x + threadIdx.y) < m) {
-            functions_i_local[threadIdx.x][threadIdx.y] = function_values[COALESCED_DIMENSION(points) * (blockIdx.x * blockDim.x + threadIdx.y) + (point + threadIdx.x)];
+          uint first_fi = blockIdx.x * blockDim.x;
+          uint first_fj = blockIdx.y * blockDim.y;
+
+          if ((first_fi + threadIdx.y) < m) {
+            functions_i_local[threadIdx.x][threadIdx.y] = function_values[COALESCED_DIMENSION(points) * (first_fi + threadIdx.y) + (point + threadIdx.x)];
             functions_i_local[threadIdx.x][threadIdx.y] *= factor_local[point_sub + threadIdx.x];
           }
           else functions_i_local[threadIdx.x][threadIdx.y] = 0.0f;
 
-          if ((blockIdx.y * blockDim.y + threadIdx.y) < m) functions_j_local[threadIdx.x][threadIdx.y] = function_values[COALESCED_DIMENSION(points) * (blockIdx.y * blockDim.y + threadIdx.y) + (point + threadIdx.x)];
+          if ((first_fj + threadIdx.y) < m) functions_j_local[threadIdx.x][threadIdx.y] = function_values[COALESCED_DIMENSION(points) * (first_fj + threadIdx.y) + (point + threadIdx.x)];
           else functions_j_local[threadIdx.x][threadIdx.y] = 0.0f;
 				}
         else {

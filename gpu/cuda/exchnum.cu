@@ -157,9 +157,10 @@ void gpu_compute_cube_weights(LittleCube& cube)
 
   CudaMatrixFloat weights_gpu(cube.number_of_points);
   dim3 threads(cube.number_of_points);
-  dim3 blockSize(256);
+  dim3 blockSize(WEIGHT_BLOCK_SIZE);
   dim3 gridSize = divUp(threads, blockSize);
   gpu_compute_weights<<<gridSize,blockSize>>>(cube.number_of_points, point_positions_gpu.data, weights_gpu.data);
+  cudaAssertNoError("compute_weights");
 
   HostMatrixFloat weights_cpu(weights_gpu);
   uint i = 0;
@@ -283,7 +284,6 @@ extern "C" void gpu_solve_cubes_(uint& computation_type, double* fort_energy_ptr
 			HostMatrixFloat rmm_output_cpu(rmm_output_gpu);
 
       /*** Contribute this RMM to the total RMM ***/
-      uint small_index = 0;
       uint small_fi = 0;
 
 			for (set<uint>::iterator it_fi = cube.functions.begin(); it_fi != cube.functions.end(); ++it_fi) {

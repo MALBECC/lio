@@ -142,6 +142,7 @@ namespace G2G {
 	double little_cube_size = 6.0;
 	uint min_points_per_cube = 1;
 	double becke_cutoff = 1e-7;
+  bool assign_all_functions = false;
 }
 
 void read_options(void) {
@@ -161,6 +162,8 @@ void read_options(void) {
 			{ f >> min_points_per_cube; cout << min_points_per_cube; }
 		else if (option == "becke_cutoff")
 			{ f >> becke_cutoff; cout << becke_cutoff; }
+    else if (option == "assign_all_functions")
+      { f >> assign_all_functions; cout << assign_all_functions; }
 		else throw runtime_error(string("Invalid option: ") + option);
 
 		cout << endl;

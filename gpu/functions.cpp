@@ -12,8 +12,6 @@
 using namespace std;
 using namespace G2G;
 
-bool assign_all = false;
-
 void assign_significative_functions(LittleCube& cube, const double3& cube_coord, const vector<double>& min_exps)
 {
 	uint func = 0;
@@ -32,24 +30,14 @@ void assign_significative_functions(LittleCube& cube, const double3& cube_coord,
         dist_vec[j] = 0;
     }
 		
-		/*if (atom_dist.x < cube_coord.x) dist_vec.x = cube_coord.x - atom_dist.x;
-		else if (atom_dist.x > (cube_coord.x + little_cube_size)) dist_vec.x = atom_dist.x - (cube_coord.x + little_cube_size);
-		if (atom_dist.y < cube_coord.y) dist_vec.y = cube_coord.y - atom_dist.y;
-		else if (atom_dist.y > (cube_coord.y + little_cube_size)) dist_vec.y = atom_dist.y - (cube_coord.y + little_cube_size);
-		if (atom_dist.z < cube_coord.z) dist_vec.z = cube_coord.z - atom_dist.z;
-		else if (atom_dist.z > (cube_coord.z + little_cube_size)) dist_vec.z = atom_dist.z - (cube_coord.z + little_cube_size);*/
-
-    double len = dist_vec.length();
+		double len = dist_vec.length();
 		atom_cube_dists.get(i) = len * len;
 	}
 	
 	/** S **/
 	while (func < fortran_vars.s_funcs) {
-    /** TODO: esto se puede sacar, no? **/
-		//if (cube.functions.find(func) != cube.functions.end()) { func++; continue; }
-
     uint atom_nuc = fortran_vars.nucleii.get(func) - 1;
-		if (assign_all || (min_exps[func] * atom_cube_dists.get(atom_nuc)) < max_function_exponent) {
+		if (assign_all_functions || (min_exps[func] * atom_cube_dists.get(atom_nuc)) < max_function_exponent) {
 			cube.functions.insert(func); cube.s_functions++;
 			cube.nucleii.insert(atom_nuc);
 		}
@@ -58,10 +46,8 @@ void assign_significative_functions(LittleCube& cube, const double3& cube_coord,
 	
 	/** P **/
 	while (func < fortran_vars.s_funcs + fortran_vars.p_funcs * 3) {
-		//if (cube.functions.find(func) != cube.functions.end()) { func += 3; continue; }
-
     uint atom_nuc = fortran_vars.nucleii.get(func) - 1;
-		if (assign_all || (min_exps[func] * atom_cube_dists.get(atom_nuc)) < max_function_exponent) {
+		if (assign_all_functions || (min_exps[func] * atom_cube_dists.get(atom_nuc)) < max_function_exponent) {
 			cube.functions.insert(func); cube.p_functions++;
 			cube.nucleii.insert(atom_nuc);
 		}
@@ -71,10 +57,8 @@ void assign_significative_functions(LittleCube& cube, const double3& cube_coord,
 	
 	/** D **/
 	while (func < fortran_vars.s_funcs + fortran_vars.p_funcs * 3 + fortran_vars.d_funcs * 6) {
-		//if (cube.functions.find(func) != cube.functions.end()) { func += 6; continue; }
-
     uint atom_nuc = fortran_vars.nucleii.get(func) - 1;
-		if (assign_all || (min_exps[func] * atom_cube_dists.get(atom_nuc)) < max_function_exponent) {
+		if (assign_all_functions || (min_exps[func] * atom_cube_dists.get(atom_nuc)) < max_function_exponent) {
 			cube.functions.insert(func); cube.d_functions++; 
 			cube.nucleii.insert(atom_nuc);
 		}

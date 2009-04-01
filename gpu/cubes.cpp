@@ -178,9 +178,9 @@ void regenerate_cubes(void)
 				final_cube.push_back(little_cube);
 
         // para hacer histogramas
-        #if 0
-        cout << "cubo: " << little_cube.number_of_points << " puntos; " << little_cube.s_functions + little_cube.p_functions * 3 + little_cube.d_functions * 6 << " funciones" << endl;
-        #endif
+#ifdef HISTOGRAM
+        cout << "[" << fortran_vars.grid_type << "] cubo: " << little_cube.number_of_points << " puntos; " << little_cube.s_functions + little_cube.p_functions * 3 + little_cube.d_functions * 6 << " funciones" << endl;
+#endif
 
 				puntos_totales += little_cube.number_of_points;
 				funciones_totales += little_cube.number_of_points * (little_cube.s_functions + little_cube.p_functions * 3 + little_cube.d_functions * 6);

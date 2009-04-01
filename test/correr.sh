@@ -8,13 +8,13 @@ for i in agu24; do
   echo "${i} (con grilla ${primera_grilla})"
   sed -ri "s|IGRID2\s*=\s*.|IGRID2 = ${primera_grilla}|" ${i}.i
  
-  echo 'Single-point GPU'
-  echo ${i}.i > t
-  /usr/bin/time -p ../../garcha/garcha-gpu < t &> ${i}-igrid${primera_grilla}.g
-
-  #echo 'Single-point CPU'
+  #echo 'Single-point GPU'
   #echo ${i}.i > t
-  #/usr/bin/time -p ../../garcha/garcha-cpu < t &> ${i}-igrid${primera_grilla}.c
+  #/usr/bin/time -p ../../garcha/garcha-gpu < t &> ${i}-igrid${primera_grilla}.g
+
+  echo 'Single-point CPU'
+  echo ${i}.i > t
+  /usr/bin/time -p ../../garcha/garcha-cpu < t &> ${i}-igrid${primera_grilla}.c
 
   #echo 'Optimizacion GPU Normal'
   #echo ${i}f.i > t

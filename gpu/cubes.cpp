@@ -44,7 +44,7 @@ void regenerate_cubes(void)
 		}
 	}
 
-	vector<double> min_exps_func(fortran_vars.m, numeric_limits<double>::max());	// uno por elemento de la tabla periodica
+	vector<double> min_exps_func(fortran_vars.m, numeric_limits<double>::max());	// uno por funcion
 	for (uint i = 0; i < fortran_vars.m; i++) {
 		uint contractions = fortran_vars.contractions.get(i);
 		for (uint j = 0; j < contractions; j++) {
@@ -175,11 +175,11 @@ void regenerate_cubes(void)
 				if (little_cube.number_of_points < min_points_per_cube) { /*cout << "cubo vacio" << endl;*/ continue; }
   #endif
 #endif
-				final_cube.push_back(little_cube);
+        final_cube.push_back(little_cube);
 
         // para hacer histogramas
 #ifdef HISTOGRAM
-        cout << "[" << fortran_vars.grid_type << "] cubo: " << little_cube.number_of_points << " puntos; " << little_cube.s_functions + little_cube.p_functions * 3 + little_cube.d_functions * 6 << " funciones" << endl;
+        cout << "[" << fortran_vars.grid_type << "] cubo: (" << i << "," << j << "," << k << "): " << little_cube.number_of_points << " puntos; " << little_cube.s_functions + little_cube.p_functions * 3 + little_cube.d_functions * 6 << " funciones" << endl;
 #endif
 
 				puntos_totales += little_cube.number_of_points;

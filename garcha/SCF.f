@@ -720,14 +720,14 @@ c--------------------------------------------------------------
 			 if (igrid.ne.igrid2) then
        call gpu_new_grid(igrid)
 			 endif
-       call gpu_solve_cubes(1, Exc, 0)
+       call gpu_solve_groups(1, Exc, 0)
 #endif
 #else
 #ifdef ULTIMA_GPU
 			 if (igrid.ne.igrid2) then
        call gpu_new_grid(igrid)
 			 endif
-       call gpu_solve_cubes(1, Exc, 0)
+       call gpu_solve_groups(1, Exc, 0)
 #else      
       call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,NCO,Exc,nopt)

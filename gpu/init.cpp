@@ -5,14 +5,14 @@
 #include <cassert>
 #include "common.h"
 #include "init.h"
-#include "cubes.h"
+#include "partition.h"
 #include "cuda/cuda_extra.h"
 #include "matrix.h"
 using namespace std;
 using namespace G2G;
 
 /* external function prototypes */
-void gpu_compute_cube_functions(void);
+void gpu_compute_group_functions(void);
 
 /* internal function prototypes */
 void read_options(void);
@@ -110,8 +110,8 @@ void compute_new_grid(const unsigned int grid_type) {
 		break;
 	}	
 	
-	regenerate_cubes();
-	gpu_compute_cube_functions();
+	regenerate_partition();
+	gpu_compute_group_functions();
 }
 
 extern "C" void gpu_reload_atom_positions_(const unsigned int& grid_type) {	
@@ -143,6 +143,7 @@ namespace G2G {
 	uint min_points_per_cube = 1;
 	double becke_cutoff = 1e-7;
   bool assign_all_functions = false;
+  double sphere_radius = 0.0;
 }
 
 void read_options(void) {
@@ -164,6 +165,8 @@ void read_options(void) {
 			{ f >> becke_cutoff; cout << becke_cutoff; }
     else if (option == "assign_all_functions")
       { f >> assign_all_functions; cout << assign_all_functions; }
+    else if (option == "sphere_radius")
+      { f >> sphere_radius; cout << sphere_radius; }
 		else throw runtime_error(string("Invalid option: ") + option);
 
 		cout << endl;

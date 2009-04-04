@@ -156,9 +156,9 @@ c
 
 #ifdef GPU
 			if (calc_energy) then
-				call gpu_solve_cubes(2, Exc, f)
+				call gpu_solve_groups(2, Exc, f)
 			else
-				call gpu_solve_cubes(3, 0, f)
+				call gpu_solve_groups(3, 0, f)
 			endif
 #else
         call exchnum2(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,

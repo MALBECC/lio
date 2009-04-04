@@ -3,8 +3,6 @@
 
 double compute_point_weight(const double3& point_position, double wrad, uint atom, uint point);
 
-void assign_cube_weights(LittleCube& cube);
-
 #define WEIGHT_GPU 1
 
 /* pesos en CPU */

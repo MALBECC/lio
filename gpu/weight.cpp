@@ -7,8 +7,7 @@
 #include "init.h"
 #include "cuda/double.h"
 #include "matrix.h"
-#include "cuda/exchnum.h"
-#include "cubes.h"
+#include "partition.h"
 #include "weight.h"
 using namespace std;
 using namespace G2G;
@@ -79,6 +78,7 @@ double compute_point_weight(const double3& point_position, double wrad, uint ato
 	return point_weight;
 }
 
+#if !WEIGHT_GPU
 void assign_cube_weights(LittleCube& cube)
 {
 	list<Point>::iterator it = cube.points.begin();
@@ -177,3 +177,6 @@ void assign_cube_weights(LittleCube& cube)
 		else*/ ++it;
 	}
 }
+
+#endif
+

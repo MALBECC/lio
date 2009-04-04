@@ -1,6 +1,6 @@
 # -*- mode: make -*-
 
-OBJ=init.o timer.o matrix.o cubes.o functions.o weight.o
+OBJ=init.o timer.o matrix.o partition.o functions.o weight.o
 
 CUDA_SOURCES=$(wildcard cuda/*.cu)
 CUDA_HEADERS=$(wildcard cuda/*.h)
@@ -10,6 +10,10 @@ include Makefile.common
 
 ifeq ($(time), 1)
 	CXXFLAGS += -DDO_TIMINGS
+endif
+
+ifeq ($(histo), 1)
+  CXXFLAGS += -DHISTOGRAM
 endif
 
 ifeq ($(profile),1)

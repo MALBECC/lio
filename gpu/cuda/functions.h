@@ -5,6 +5,7 @@ template<bool do_forces>
 __device__ __host__ void compute_function(uint idx, float3 point_position, uint* contractions, float2* factor_ac, uint* nuc,
 																uint spd, float& t, float& tg, float3& v)
 {
+  _EMU(printf("idx: %i nuc: %i cont: %i\n", idx, nuc[idx], contractions[idx]));
 	float3 atom_nuc_position = gpu_atom_positions[nuc[idx]];
 	v = point_position - atom_nuc_position;
 	float dist = length2(v);

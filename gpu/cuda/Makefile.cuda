@@ -39,8 +39,8 @@
 # Basic directory setup for SDK
 # (override directories only if they are not already defined)
 ROOTDIR    ?= $(CUDA_INSTALL_PATH)/cuda
-LIBDIR := $(CUDA_INSTALL_PATH)/../sdk/lib
-COMMONDIR  := $(CUDA_INSTALL_PATH)/../sdk/common
+LIBDIR := $(CUDA_INSTALL_PATH)/sdk/lib
+COMMONDIR  := $(CUDA_INSTALL_PATH)/sdk/common
 
 # Compilers
 NVCC       := nvcc 
@@ -109,6 +109,10 @@ COMMONFLAGS = $(INCLUDES) -DUNIX
 
 ifeq ($(profile),1)
 	NVCCFLAGS += --compiler-options -pg
+endif
+
+ifeq ($(regcount),1)
+  NVCCFLAGS += --ptxas-options=-v
 endif
 	
 # Debug/release configuration

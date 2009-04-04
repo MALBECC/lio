@@ -45,6 +45,7 @@ namespace G2G {
 	extern uint min_points_per_cube;
 	extern double becke_cutoff;
   extern bool assign_all_functions;
+  extern double sphere_radius;  // between 0 and 1!
 }
 
 #endif

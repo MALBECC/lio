@@ -10,7 +10,6 @@
 #include "cuda/double.h"
 #include "matrix.h"
 #include "partition.h"
-#include "functions.h"
 #include "weight.h"
 #include "timer.h"
 using namespace std;
@@ -37,13 +36,13 @@ void PointGroup::compute_weights(void) {
 /**********************
  * Sphere
  **********************/
-Sphere::Sphere(void) : PointGroup(), atom(0), radius(0) {}
-Sphere::Sphere(uint _atom, double _radius) : PointGroup(), atom(_atom), radius(_radius) { }
+Sphere::Sphere(void) : PointGroup(), atom(0), radius(0) { is_sphere = true; is_cube = false; }
+Sphere::Sphere(uint _atom, double _radius) : PointGroup(), atom(_atom), radius(_radius) { is_sphere = true; is_cube = false; }
 
 /**********************
  * Cube
  **********************/
-Cube::Cube(void) : PointGroup() {}
+Cube::Cube(void) : PointGroup() { is_sphere = false; is_cube = true; }
 
 /************************************************************
  * Construct partition
@@ -86,7 +85,7 @@ void regenerate_partition(void)
 
 		uint atom_type = fortran_vars.atom_types.get(atom);
 		double max_radius = sqrt(max_function_exponent / min_exps[atom_type]);
-		//_DBG(cout << "tipo: " << atom_type << " " << min_exps[atom_type] << " radio: " << max_radius << endl);
+		_DBG(cout << "tipo: " << atom_type << " " << min_exps[atom_type] << " radio: " << max_radius << endl);
 		if (atom == 0) { x0 = x1 = atom_position; }
 		else {
 			if ((atom_position.x - max_radius) < x0.x) x0.x = (atom_position.x - max_radius);
@@ -100,8 +99,8 @@ void regenerate_partition(void)
 	}
 
 	/* el prisma tiene vertices (x,y) */
-	cout << "x0 " << x0.x << " " << x0.y << " " << x0.z << endl;
-	cout << "x1 " << x1.x << " " << x1.y << " " << x1.z << endl;
+	cout << "x0 " << x0.x << " " << x0.y << " " << x0.z << endl;  // vertice inferior, izquierdo y mas lejano
+	cout << "x1 " << x1.x << " " << x1.y << " " << x1.z << endl;  // vertice superior, derecho y mas cercano
 
   /* la particion en cubos */
 	uint3 prism_size = ceil_uint3((x1 - x0) / little_cube_size);
@@ -125,7 +124,7 @@ void regenerate_partition(void)
 	  	radius = rm * (1.0 + x) / (1.0 - x);
 		}
 		
-		//_DBG(cout << "esfera incluye " << included_shells << " capas de " << atom_shells << " (radio: " << radius << ")" << endl);    
+		_DBG(cout << "esfera incluye " << included_shells << " capas de " << atom_shells << " (radio: " << radius << ")" << endl);
     sphere_array[atom] = Sphere(atom, radius);
   }
 
@@ -140,8 +139,10 @@ void regenerate_partition(void)
 			const double3& atom_j_position(fortran_vars.atom_positions.get(j));
 			double dist = (atom_i_position - atom_j_position).length();
 			fortran_vars.atom_atom_dists.get(i, j) = dist;
+      //_DBG(cout << "distancia atomo " << i << " -> " << j << " : " << dist << endl);
 			if (i != j) {
-				nearest_neighbor_dist = min(nearest_neighbor_dist, dist);			
+				nearest_neighbor_dist = min(nearest_neighbor_dist, dist);
+        if (dist <= sphere_i_radius || dist <= sphere_array[j].radius) { throw runtime_error("other atom contained in sphere"); }
 				if ((sphere_i_radius + sphere_array[j].radius) >= dist) { throw runtime_error("Overlapping sphere radius!"); }
 			}
 		}
@@ -243,14 +244,17 @@ void regenerate_partition(void)
 
         // para hacer histogramas
 #ifdef HISTOGRAM
-        cout << "[" << fortran_vars.grid_type << "] cubo: (" << i << "," << j << "," << k << "): " << cube.number_of_points << " puntos; " << cube.total_functions() << " funciones" << endl;
+        cout << "[" << fortran_vars.grid_type << "] cubo: (" << i << "," << j << "," << k << "): " << cube.number_of_points << " puntos; " <<
+          cube.total_functions() << " funciones, vecinos: " << cube.nucleii.size() << endl;
 #endif
 
 				puntos_finales += cube.number_of_points;
 				funciones_finales += cube.number_of_points * cube.total_functions();
+        //cout << "cubo: funcion x punto: " << cube.total_functions() / (double)cube.number_of_points << endl;
 			}
 		}
 	}
+  t_total.sync();
 	t_total.stop();
 
 	if (sphere_radius > 0) {
@@ -260,19 +264,20 @@ void regenerate_partition(void)
 	
 			assert(sphere.number_of_points > 0);
 			
-			sphere.assign_significative_functions(min_exps);
+			sphere.assign_significative_functions(min_exps_func);
 	
 			assert(sphere.total_functions() > 0);
 			
 #ifdef HISTOGRAM		
-			cout << "sphere: " << sphere.number_of_points << " puntos, " << sphere.total_functions() << " funciones" << endl;
+			cout << "sphere: " << sphere.number_of_points << " puntos, " << sphere.total_functions() << " funciones | funcion x punto: " << 
+        sphere.total_functions() / (double)sphere.number_of_points << " vecinos: " << sphere.nucleii.size() << endl;
 #endif		
 		
-	    sphere.compute_weights(); // TODO: cuidado, esto implica que los pesos se copian GPU<->GPU		
+	    sphere.compute_weights(); // TODO: cuidado, esto implica que los pesos se copian GPU<->GPU
+      t_total.sync();
 			
 	    puntos_finales += sphere.number_of_points;
-	    funciones_finales += sphere.number_of_points * sphere.total_functions();
-			
+	    funciones_finales += sphere.number_of_points * sphere.total_functions();			
 	    final_partition.push_front(sphere);
 	  }
 	}

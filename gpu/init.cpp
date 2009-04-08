@@ -23,7 +23,14 @@ namespace G2G {
 }
 
 /* methods */
-extern "C" void gpu_init_(const unsigned int& norm, const unsigned int& natom, double* r, double* Rm, const unsigned int* Iz, const unsigned int* Nr,
+extern "C" void gpu_init_(void)
+{
+  cout << "<====== Initializing GPU... ";
+  cuInit(0);
+  cout << "done ======>" << endl;
+}
+
+extern "C" void gpu_parameter_init_(const unsigned int& norm, const unsigned int& natom, double* r, double* Rm, const unsigned int* Iz, const unsigned int* Nr,
 										 const unsigned int* Nr2, unsigned int* Nuc, const unsigned int& M, unsigned int* ncont, const unsigned int* nshell, double* c,
 					           double* a, double* RMM, const unsigned int& M18, const unsigned int& M5, const unsigned int& nco, const unsigned int& nopt,
                      const unsigned int& Iexch, double* e, double* e2, double* e3, double* wang, double* wang2, double* wang3)
@@ -121,7 +128,7 @@ extern "C" void gpu_reload_atom_positions_(const unsigned int& grid_type) {
 	for (uint i = 0; i < fortran_vars.atoms; i++) {
 		double3 pos(fortran_vars.atom_positions_pointer.get(i, 0), fortran_vars.atom_positions_pointer.get(i, 1), fortran_vars.atom_positions_pointer.get(i, 2));
 		fortran_vars.atom_positions.get(i) = pos;
-		atom_positions.get(i) = make_float3(pos.x, pos.y, pos.z);		
+		atom_positions.get(i) = make_float3(pos.x, pos.y, pos.z);
 	}
 	atom_positions.to_constant("gpu_atom_positions");
 

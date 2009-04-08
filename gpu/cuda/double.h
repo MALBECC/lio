@@ -41,7 +41,14 @@ struct double3 {
     z = other.z;
     return *this;
   }
+
+  friend std::ostream& operator<<(std::ostream& o, const double3& v);
 };
+
+inline std::ostream& operator<<(std::ostream& o, const double3& v) {
+  o << "(" << v.x << "," << v.y << "," << v.z << ")";
+  return o;
+}
 
 inline double3 operator-(const double3& a, const double3& b) {
 	return double3(a.x - b.x, a.y - b.y, a.z - b.z);

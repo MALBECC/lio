@@ -19,6 +19,8 @@ using namespace G2G;
 void Cube::assign_significative_functions(const double3& cube_coord, const vector<double>& min_exps)
 {
 	uint func = 0;
+  uint contenidos = 0;
+
 
 	HostMatrix<double> atom_cube_dists(fortran_vars.atoms);
 	for (uint i = 0; i < fortran_vars.atoms; i++) {
@@ -36,6 +38,7 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
 		
 		double len = dist_vec.length();
 		atom_cube_dists.get(i) = len * len;
+    if (len == 0) contenidos++;
 	}
 	
 	/** S **/
@@ -68,6 +71,8 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
 		}
 		func += 6;
 	}
+
+  //cout << "vecinos: " << nucleii.size() << endl;
 }
 
 /*****************************
@@ -83,8 +88,9 @@ void Sphere::assign_significative_functions(const std::vector<double>& min_exps)
     if (i == atom) atom_sphere_dists.get(i) = 0;
     else {
       const double3& atom_pos = fortran_vars.atom_positions.get(i);
-			double dist_to_atom = (atom_pos - own_atom_pos).length();
-			assert(radius < dist_to_atom);
+      double3 dist_vec = (atom_pos - own_atom_pos);
+			double dist_to_atom = dist_vec.length();
+			assert(radius <= dist_to_atom);
 			double dist = dist_to_atom - radius;
       atom_sphere_dists.get(i) = dist * dist;
     }
@@ -123,4 +129,5 @@ void Sphere::assign_significative_functions(const std::vector<double>& min_exps)
 		}
 		func += 6;
 	}
+  //cout << "sphere: vecinos: " << nucleii.size() << endl;
 }

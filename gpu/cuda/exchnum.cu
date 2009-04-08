@@ -198,6 +198,7 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 		
 	for (list<PointGroup>::const_iterator it = final_partition.begin(); it != final_partition.end(); ++it) {
 		const PointGroup& group = *it;
+    //cout << "group is " << (group.is_sphere ? "sphere" : "cube") << endl;
 				
 		/** Load points from group **/
 		{
@@ -240,6 +241,7 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 		dim3 threadBlock, threadGrid;
 		threadBlock = dim3(DENSITY_BLOCK_SIZE);
 		threadGrid = divUp(threads, threadBlock);
+    //cout << "density/energy threads: " << threads.x << " blocks: " << threadGrid.x << " blockSize: " << threadBlock.x << endl;
 
 		/* compute energy */
 		if (computation_type == COMPUTE_ENERGY_ONLY) {
@@ -259,11 +261,14 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 			gpu_compute_density<false, false><<<threadGrid, threadBlock>>>(NULL, rmm_factor_gpu.data, point_weights_gpu.data, group.number_of_points, rdm_gpu.data, group.function_values.data, NULL, NULL, NULL, 0, group_functions);
 			cudaAssertNoError("compute_density");
       t_density.pause_and_sync();
+      //cout << "us/thread: " << t_density.getMicrosec() / (double)threads.x << endl;
 
 			/*** Compute RMM update ***/
 			threads = dim3(group_m, group_m);
 			threadBlock = dim3(RMM_BLOCK_SIZE_XY, RMM_BLOCK_SIZE_XY);
 			threadGrid = divUp(threads, threadBlock);
+
+      //cout << "rmm threads: " << threads.x << " blocks: " << threadGrid.x << " blockSize: " << threadBlock.x << endl;
 
       CudaMatrixFloat rmm_output_gpu(COALESCED_DIMENSION(group_m), group_m);
 
@@ -272,6 +277,7 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 			cudaAssertNoError("update_rmm");
       t_rmm.pause_and_sync();
 			HostMatrixFloat rmm_output_cpu(rmm_output_gpu);
+      //cout << "us/thread: " << t_rmm.getMicrosec() / (double)threads.x << endl;
 
       /*** Contribute this RMM to the total RMM ***/
       uint small_fi = 0;

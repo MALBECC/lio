@@ -1,5 +1,0 @@
-#ifndef _SIGNIFICATIVE_FUNCTIONS_H
-#define _SIGNIFICATIVE_FUNCTIONS_H
-
-
-#endif

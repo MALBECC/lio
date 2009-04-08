@@ -9,7 +9,7 @@ include cuda/Makefile.cuda
 include Makefile.common
 
 ifeq ($(time), 1)
-	CXXFLAGS += -DDO_TIMINGS
+	CXXFLAGS += -DTIMINGS
 endif
 
 ifeq ($(histo), 1)

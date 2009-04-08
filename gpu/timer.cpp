@@ -3,6 +3,7 @@
 #include <sys/time.h>
 #include <map>
 #include <string>
+#include <cassert>
 #include "timer.h"
 using namespace G2G;
 using namespace std;
@@ -16,14 +17,14 @@ Timer::Timer(const timeval& t) : started(false) {
 }
 
 void Timer::start(void) {
-#ifdef DO_TIMINGS
+#ifdef TIMINGS
 	gettimeofday(&t0, NULL);
 	started = true;
 #endif
 }
 
 void Timer::pause(void) {
-#ifdef DO_TIMINGS
+#ifdef TIMINGS
   gettimeofday(&t1, NULL);
   timeval partial_res;
 	timersub(&t1, &t0, &partial_res);
@@ -33,7 +34,7 @@ void Timer::pause(void) {
 }
 
 void Timer::stop(void) {
-#ifdef DO_TIMINGS
+#ifdef TIMINGS
 	gettimeofday(&t1, NULL);
 	timersub(&t1, &t0, &res);
   timerclear(&t0);
@@ -74,13 +75,13 @@ bool Timer::operator<(const Timer& other) const {
 }
 
 void Timer::sync(void) {
-#ifdef DO_TIMINGS
+#ifdef TIMINGS
 	cudaThreadSynchronize();
 #endif
 }
 
 std::ostream& G2G::operator<<(std::ostream& o, const Timer& t) {
-#ifdef DO_TIMINGS
+#ifdef TIMINGS
 	if (t.getSec() != 0)
 		o << t.getSec() << "s. " << t.getMicrosec() << "us.";
 	else
@@ -93,7 +94,7 @@ std::ostream& G2G::operator<<(std::ostream& o, const Timer& t) {
 }
 
 void Timer::print(void) {
-#ifdef DO_TIMINGS
+#ifdef TIMINGS
 	if (getSec() != 0)
 		printf("%lus. %luus.", getSec(), getMicrosec());
 	else
@@ -108,7 +109,7 @@ Timer global_timer;
 map<string, Timer> fortran_timers;
 
 extern "C" void timer_start_(const char* timer_name) {
-#ifdef DO_TIMINGS
+#ifdef TIMINGS
   if (fortran_timers.find(timer_name) == fortran_timers.end()) fortran_timers[timer_name] = Timer();
   Timer::sync();
 	fortran_timers[timer_name].start();
@@ -116,17 +117,19 @@ extern "C" void timer_start_(const char* timer_name) {
 }
 
 extern "C" void timer_stop_(const char* timer_name) {
-#ifdef DO_TIMINGS
+#ifdef TIMINGS
 	Timer::sync();
+  if (fortran_timers.find(timer_name) == fortran_timers.end()) cout << "no existe timer!" << endl;
 	fortran_timers[timer_name].stop();
   cout << "TIMER [" << timer_name << "]: " << fortran_timers[timer_name] << endl;
 #endif
 }
 
 extern "C" void timer_pause_(const char* timer_name) {
-#ifdef DO_TIMINGS
+#ifdef TIMINGS
 	Timer::sync();
-	fortran_timers[timer_name].pause();
+	if (fortran_timers.find(timer_name) == fortran_timers.end()) cout << "no existe timer!" << endl;
+  fortran_timers[timer_name].pause();
   cout << "TIMER [" << timer_name << "]: " << fortran_timers[timer_name] << "(so far)" << endl;
 #endif
 }

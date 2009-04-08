@@ -38,6 +38,9 @@ class PointGroup {
     void add_point(const Point& p);
     uint total_functions(void);
     void compute_weights(void);
+
+    bool is_sphere; // for debugging
+    bool is_cube;
 };
 
 class Sphere : public PointGroup {

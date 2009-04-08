@@ -5,6 +5,8 @@
  * 	grid: points 
  */
 
+#define NCO_PER_BATCH 4
+
 template<bool compute_energy, bool compute_derivs>
 __global__ void gpu_compute_density(float* energy, float* factor, float* point_weights, uint points, float* rdm,
 																		float* function_values, float3* gradient_values, float3* density_deriv, uint* nuc,
@@ -18,6 +20,7 @@ __global__ void gpu_compute_density(float* energy, float* factor, float* point_w
 	float partial_density = 0.0f;
 
 	__shared__ float rdm_sh[DENSITY_BLOCK_SIZE];
+	__shared__ float f_sh[DENSITY_BLOCK_SIZE * NCO_PER_BATCH];
 	
 	bool valid_thread = (point < points);
 	

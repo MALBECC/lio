@@ -34,12 +34,10 @@ c para version en memoria
 
       dimension X(ngDyn,ng3),XX(ngdDyn,ngdDyn),P(ng2)
       write(*,*) (ngDyn*ng3+ngdDyn**2+ng2)*8*1.0D-06, '  Memoria en MB'
+      call gpu_init()
 c version en memoria
 c
 c--------------------------------------------------------
-      call timer_start('total')
       call drive(ng2,ngDyn,ngdDyn,P,X,XX)
-      call timer_stop('total')
-c
       end
 c---------------------------------------------------------------------

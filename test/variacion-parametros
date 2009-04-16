@@ -31,10 +31,10 @@ begin
   VERBOSE=false
 
   ranges = {
-    :little_cube_size => StepRange.new((4.0..8.0),0.5),
-    :max_function_exponent => StepRange.new((8..10),2),
+    :little_cube_size => StepRange.new((11.5..30.5),0.5),
+    :max_function_exponent => StepRange.new((8..8),2),
     :min_points_per_cube => StepRange.new((1..1),1),
-    :sphere_radius => StepRange.new((0.0..0.5),0.1)
+    :sphere_radius => StepRange.new((0.0..0.6),0.6)
 #    :assign_all_functions => 1
   }
 

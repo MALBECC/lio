@@ -67,7 +67,7 @@ garcha-cpu: $(OBJ:%.o=cpu_obj/%.o)
 
 # CPU Object files
 cpu_obj/init.o    : init.f
-	ifort -o $@ $(COMPFLG) init.f
+	ifort -o $@ -cpp $(COMPFLG) init.f
 cpu_obj/int.o    : int.f param
 	ifort -o $@ $(COMPFLG) int.f 
 cpu_obj/int1G.o    : int1G.f param
@@ -185,7 +185,7 @@ cpu_obj/popu.o    : popu.f param
 
 # CPU Object files	
 gpu_obj/init.o    : init.f
-	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) init.f 
+	ifort -o $@ -cpp $(COMPFLG) $(GPU_CFLAGS) init.f 
 gpu_obj/int.o    : int.f param
 	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) int.f 
 gpu_obj/int1G.o    : int1G.f param

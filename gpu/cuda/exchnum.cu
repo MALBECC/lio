@@ -190,7 +190,7 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 	CudaMatrixFloat rdm_gpu;
 	CudaMatrixUInt nuc_gpu;
 
-  Timer t_density, t_rmm, t_energy;
+  Timer t_density, t_rmm, t_energy, t_forces;
 
 	FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS);
 	
@@ -313,22 +313,27 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 		}
 		/* compute forces */
 		else {
-			map<uint, uint> nuc_map;
+      map<uint, uint> nuc_mapping;
 			{
-				HostMatrixUInt nuc_cpu(group_spd, 1);
+				HostMatrixUInt nuc_cpu(group_m, 1);
 				uint i = 0;
-				uint curr_idx = 0;
+        uint small_atom_idx = 0;
 
-				for (set<uint>::const_iterator func = group.functions.begin(); func != group.functions.end(); ++func, ++i) {
-					uint func_nuc = fortran_vars.nucleii.get(*func) - 1;
-					map<uint, uint>::iterator nuc_idx = nuc_map.find(func_nuc);
-					if (nuc_idx == nuc_map.end()) {
-						nuc_map[func_nuc] = curr_idx;
-						nuc_cpu.get(i) = curr_idx;
-						curr_idx++;
-					}
-					else nuc_cpu.get(i) = nuc_idx->second;
-				}
+        for (set<uint>::iterator func = group.functions.begin(); func != group.functions.end(); ++func) {
+          uint f_advance;
+          if (*func < fortran_vars.s_funcs) f_advance = 1;
+          else if (*func < fortran_vars.s_funcs + fortran_vars.p_funcs * 3) f_advance = 3;
+          else f_advance = 6;
+
+          for (uint j = 0; j < f_advance; j++, i++) {
+            uint big_atom_idx = fortran_vars.nucleii.get(*func) - 1;
+            if (nuc_mapping.find(big_atom_idx) == nuc_mapping.end()) {
+              nuc_mapping[big_atom_idx] = small_atom_idx;
+              small_atom_idx++;
+            }
+            nuc_cpu.get(i) = nuc_mapping[big_atom_idx];
+          }
+        }
 				nuc_gpu = nuc_cpu;
 			}
 
@@ -339,16 +344,20 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 			CudaMatrixFloat4 density_deriv(COALESCED_DIMENSION(group.number_of_points), group.nucleii.size());
 			if (computation_type == COMPUTE_ENERGY_FORCE) {
 				energy_gpu.resize(group.number_of_points);
+        t_energy.start_and_sync();
 				gpu_compute_density<true, true><<<threadGrid, threadBlock>>>(energy_gpu.data, force_factor_gpu.data, point_weights_gpu.data, group.number_of_points, rdm_gpu.data, group.function_values.data, group.gradient_values.data, density_deriv.data, nuc_gpu.data, group.nucleii.size(), group_functions);
+        t_energy.pause_and_sync();
+        cudaAssertNoError("compute_density");
 
 				HostMatrixFloat energy_cpu(energy_gpu);
 				for (uint i = 0; i < group.number_of_points; i++) { total_energy += energy_cpu.get(i); }
 			}
 			else {
+        t_density.start_and_sync();
 				gpu_compute_density<false, true><<<threadGrid, threadBlock>>>(energy_gpu.data, force_factor_gpu.data, point_weights_gpu.data, group.number_of_points, rdm_gpu.data, group.function_values.data, group.gradient_values.data, density_deriv.data, nuc_gpu.data, group.nucleii.size(), group_functions);
+        t_density.pause_and_sync();
+        cudaAssertNoError("compute_density");
       }
-
-			cudaAssertNoError("compute_density");
 
 			threads = dim3(group.nucleii.size());
 			threadBlock = dim3(FORCE_BLOCK_SIZE);
@@ -371,17 +380,19 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 #endif
 
 			CudaMatrixFloat4 gpu_forces(group.nucleii.size());
+      t_forces.start_and_sync();
 			gpu_compute_forces<<<threadGrid, threadBlock>>>(group.number_of_points, force_factor_gpu.data, density_deriv.data, gpu_forces.data, group.nucleii.size());
+      t_forces.pause_and_sync();
 			cudaAssertNoError("gpu_compute_forces");
 
 			HostMatrixFloat4 cpu_forces(gpu_forces);
-			for (map<uint, uint>::iterator nuc_it = nuc_map.begin(); nuc_it != nuc_map.end(); ++nuc_it) {
+			for (map<uint, uint>::iterator nuc_it = nuc_mapping.begin(); nuc_it != nuc_mapping.end(); ++nuc_it) {
 				float4 atom_force = cpu_forces.get(nuc_it->second);
         //cout << "atom force: " << atom_force.x << " " << atom_force.y << " " << atom_force.z << endl;
 				fort_forces.get(nuc_it->first, 0) += atom_force.x;
 				fort_forces.get(nuc_it->first, 1) += atom_force.y;
 				fort_forces.get(nuc_it->first, 2) += atom_force.z;
-			}
+      }
 		}
 	}
 		
@@ -395,5 +406,6 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 	cout << "TIMER: gpu_solve_cubes " << t_total << endl;
   cout << "TIMER: density " << t_density << endl;
   cout << "TIMER: energy " << t_energy << endl;
+  cout << "TIMER: forces " << t_forces << endl;
   cout << "TIMER: rmm: " << t_rmm << endl;
 }

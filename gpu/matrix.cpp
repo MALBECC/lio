@@ -256,7 +256,7 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const CudaMatrix<T>& c
 		else {
 			this->width = c.width; this->height = c.height;
 			cudaError_t error_status = cudaMalloc((void**)&this->data, this->bytes());
-			assert(error_status != cudaErrorMemoryAllocation);			
+			if (error_status == cudaErrorMemoryAllocation) throw runtime_error("Copy failed! CudaMatrix::operator=");
 		}
 		
 		cudaMemcpy(this->data, c.data, this->bytes(), cudaMemcpyDeviceToDevice);		

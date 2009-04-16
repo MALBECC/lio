@@ -19,8 +19,6 @@ using namespace G2G;
 void Cube::assign_significative_functions(const double3& cube_coord, const vector<double>& min_exps)
 {
 	uint func = 0;
-  uint contenidos = 0;
-
 
 	HostMatrix<double> atom_cube_dists(fortran_vars.atoms);
 	for (uint i = 0; i < fortran_vars.atoms; i++) {
@@ -38,7 +36,6 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
 		
 		double len = dist_vec.length();
 		atom_cube_dists.get(i) = len * len;
-    if (len == 0) contenidos++;
 	}
 	
 	/** S **/

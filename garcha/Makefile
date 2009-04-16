@@ -26,7 +26,7 @@ LINKFLG = -lm
 CPPFLAGS =  -P -traditional-cpp
 CUDA_COMMONDIR := $(CUDA_INSTALL_PATH)/../sdk/common
 CUDA_LIBS=-L$(CUDA_INSTALL_PATH)/lib -L$(CUDA_COMMONDIR)/lib -lcuda -lcudart
-LIBS= -L/usr/lib -lblas -L../gpu -lg2g -lstdc++ $(CUDA_LIBS) -L/opt/intel/mkl/9.0/lib/em64t -lmkl_lapack64 -lmkl_em64t -lguide \
+LIBS= -L/usr/lib -lblas -L../gpu -lg2g -lstdc++ $(CUDA_LIBS) -L$(MKL_LIBRARY_PATH) -lmkl_lapack64 -lmkl_em64t -lguide \
  	-lpthread
 GPU_CFLAGS=-DGPU
 

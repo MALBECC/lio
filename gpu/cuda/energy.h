@@ -5,11 +5,9 @@
  * 	grid: points 
  */
 
-#define NCO_PER_BATCH 4
-
 template<bool compute_energy, bool compute_derivs>
 __global__ void gpu_compute_density(float* energy, float* factor, float* point_weights, uint points, float* rdm,
-																		float* function_values, float3* gradient_values, float3* density_deriv, uint* nuc,
+																		float* function_values, float4* gradient_values, float4* density_deriv, uint* nuc,
 																		uint nucleii_count, uint4 functions)
 {
 	dim3 pos = index(blockDim, blockIdx, threadIdx);
@@ -20,18 +18,14 @@ __global__ void gpu_compute_density(float* energy, float* factor, float* point_w
 	float partial_density = 0.0f;
 
 	__shared__ float rdm_sh[DENSITY_BLOCK_SIZE];
-	__shared__ float f_sh[DENSITY_BLOCK_SIZE * NCO_PER_BATCH];
 	
 	bool valid_thread = (point < points);
 	
 	float point_weight;
 	if (valid_thread) point_weight = point_weights[point];
-	
-  uint grad_base = point * m;
-	uint deriv_base = point * COALESCED_DIMENSION(nucleii_count);
 
   if (compute_derivs) {
-    if (valid_thread) { for (uint i = 0; i < nucleii_count; i++) density_deriv[deriv_base + i] = make_float3(0.0f,0.0f,0.0f); }
+    if (valid_thread) { for (uint i = 0; i < nucleii_count; i++) density_deriv[COALESCED_DIMENSION(points) * i + point] = make_float4(0.0f,0.0f,0.0f,0.0f); }
   }
 
 	/* density */	
@@ -57,36 +51,25 @@ __global__ void gpu_compute_density(float* energy, float* factor, float* point_w
 
 		// TODO: coalescear RDM aca tambien
 		if (compute_derivs) {
-      if (valid_thread) {
-        // TODO: esto se tiene que poder hacer mejor
-        uint j = 0, jj = 0;
-        for (; j < functions.x; j++, jj++) {
-          density_deriv[deriv_base + nuc[j]] += gradient_values[grad_base + j] * rdm[rdm_idx + j] * w;
-        }
-        for (; j < functions.x + functions.y; j++, jj+=3) {
-          uint deriv_idx = deriv_base + nuc[j];
-          uint grad_idx = grad_base + jj;
-          float3 partial_result = make_float3(0.0f,0.0f,0.0f);
-          partial_result += gradient_values[grad_idx + 0] * rdm[rdm_idx + jj + 0];
-          partial_result += gradient_values[grad_idx + 1] * rdm[rdm_idx + jj + 1];
-          partial_result += gradient_values[grad_idx + 2] * rdm[rdm_idx + jj + 2];
-          density_deriv[deriv_idx] += partial_result * w;
-        }
-        for (; j < functions.x + functions.y + functions.z; j++, jj+=6) {
-          uint deriv_idx = deriv_base + nuc[j];
-          uint grad_idx = grad_base + jj;
-          float3 partial_result = make_float3(0.0f,0.0f,0.0f);
-          partial_result += gradient_values[grad_idx + 0] * rdm[rdm_idx + jj + 0];
-          partial_result += gradient_values[grad_idx + 1] * rdm[rdm_idx + jj + 1];
-          partial_result += gradient_values[grad_idx + 2] * rdm[rdm_idx + jj + 2];
-          partial_result += gradient_values[grad_idx + 3] * rdm[rdm_idx + jj + 3];
-          partial_result += gradient_values[grad_idx + 4] * rdm[rdm_idx + jj + 4];
-          partial_result += gradient_values[grad_idx + 5] * rdm[rdm_idx + jj + 5];
-          density_deriv[deriv_idx] += partial_result * w;
-        }
-			}
-		}
+      for (uint j = 0; j < m; j += DENSITY_BLOCK_SIZE) {
+        if (j + threadIdx.x < m) rdm_sh[threadIdx.x] = rdm[rdm_idx + j + threadIdx.x];
+        //rdm_sh[threadIdx.x] *= w;
+        __syncthreads();
 
+        if (valid_thread) {
+          for (uint jj = 0; jj < DENSITY_BLOCK_SIZE && (j + jj < m); jj++) {
+            uint k;
+            if ((j + jj) < functions.x) k = (j+jj);
+            else if ((j + jj) < functions.x + functions.y * 3) k = ((j + jj) - functions.x) / 3 + functions.x;
+            else k = ((j + jj) - (functions.x + functions.y * 3)) / 6 + (functions.x + functions.y);
+            density_deriv[COALESCED_DIMENSION(points) * nuc[k] + point] +=
+                gradient_values[COALESCED_DIMENSION(points) * (j + jj) + point] * (rdm_sh[jj] * w); // TODO: mover el w
+          }
+        }
+
+        __syncthreads();
+      }
+		}
 		partial_density += w * w;
 	}
 	partial_density *= 2.0f;

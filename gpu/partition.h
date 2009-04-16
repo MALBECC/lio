@@ -29,10 +29,10 @@ class PointGroup {
   	std::set<uint> nucleii;
   	#ifdef COMPUTE_FUNCTIONS_CPU
     G2G::HostMatrixFloat function_values;
-    G2G::HostMatrixFloat3 gradient_values;
+    G2G::HostMatrixFloat4 gradient_values;
     #else
     G2G::CudaMatrixFloat function_values;
-  	G2G::CudaMatrixFloat3 gradient_values;
+  	G2G::CudaMatrixFloat4 gradient_values;
     #endif
 
     void add_point(const Point& p);

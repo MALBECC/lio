@@ -16,12 +16,9 @@ __device__ __host__ void compute_function(uint idx, float3 point_position, uint*
 
 	for (uint contraction = 0; contraction < func_contractions; contraction++) {
 		float2 curr_factor_ac = factor_ac[contraction * spd + idx];
-		float rexp = curr_factor_ac.x * dist;
-		//if (rexp > 30.0f) continue;
-		float t0 = expf(-rexp) * curr_factor_ac.y;
+		float t0 = expf(-(curr_factor_ac.x * dist)) * curr_factor_ac.y;
 		t += t0;
 		if (do_forces) tg += t0 * curr_factor_ac.x;
-		//_EMU(printf("func(%i): %f, a: %f, c: %f (%i/%i contractions) spd: %i\n", idx, t, curr_factor_ac.x, curr_factor_ac.y, contraction, func_contractions, spd));
 	}
 }
 
@@ -30,7 +27,7 @@ __device__ __host__ void compute_function(uint idx, float3 point_position, uint*
  */
 template<bool do_forces>
 __global__ void gpu_compute_functions(float3* point_positions, uint points, uint* contractions, float2* factor_ac,
-																			uint* nuc, float* function_values, float3* gradient_values, uint4 functions, uint spd)
+																			uint* nuc, float* function_values, float4* gradient_values, uint4 functions, uint spd)
 {
 	dim3 pos = index(blockDim, blockIdx, threadIdx);
 	uint point = pos.x;
@@ -40,64 +37,67 @@ __global__ void gpu_compute_functions(float3* point_positions, uint points, uint
 	float3 point_position = point_positions[point];
 
 	/** Compute functions ***/
-	//uint base = point * COALESCED_DIMENSION(functions.w);
-  uint func_base = 0;
-  uint grad_base = point * functions.w;
+  uint base_idx = 0;
 
 	float t, tg;
 	float3 v;
-	
+
 	// s functions
-	for (uint i = 0; i < functions.x; i++, func_base++, grad_base++) {
+	for (uint i = 0; i < functions.x; i++, base_idx++) {
 		compute_function<do_forces>(i, point_position, contractions, factor_ac, nuc, spd, t, tg, v);
 
-    uint base = COALESCED_DIMENSION(points) * func_base + point;
-		function_values[base] = t;
-		if (do_forces) gradient_values[grad_base] = v * (2.0f * tg);
+    uint idx = COALESCED_DIMENSION(points) * base_idx + point;
+		function_values[idx] = t;
+		if (do_forces) { gradient_values[idx] = to_float4(v * (2.0f * tg)); }
 	}
 	
 	// p functions
-	for (uint i = 0; i < functions.y; i++, func_base+=3, grad_base+=3) {
+	for (uint i = 0; i < functions.y; i++, base_idx+=3) {
 		compute_function<do_forces>(functions.x + i, point_position, contractions, factor_ac, nuc, spd, t, tg, v);
 
-    
-		function_values[COALESCED_DIMENSION(points) * (func_base + 0) + point] = v.x * t;
-		function_values[COALESCED_DIMENSION(points) * (func_base + 1) + point] = v.y * t;
-		function_values[COALESCED_DIMENSION(points) * (func_base + 2) + point] = v.z * t;
+    uint3 idx;
+    idx.x = COALESCED_DIMENSION(points) * (base_idx + 0) + point;
+    idx.y = COALESCED_DIMENSION(points) * (base_idx + 1) + point;
+    idx.z = COALESCED_DIMENSION(points) * (base_idx + 2) + point;
+
+		function_values[idx.x] = v.x * t;
+		function_values[idx.y] = v.y * t;
+		function_values[idx.z] = v.z * t;
 
 		if (do_forces) {
-			gradient_values[grad_base + 0] = v * 2.0f * v.x * tg - make_float3(t, 0, 0);
-			gradient_values[grad_base + 1] = v * 2.0f * v.y * tg - make_float3(0, t, 0);
-			gradient_values[grad_base + 2] = v * 2.0f * v.z * tg - make_float3(0, 0, t);
+      float3 c = v * (2.0f * tg);
+			gradient_values[idx.x] = to_float4(v * c.x - make_float3(t, 0, 0));
+			gradient_values[idx.y] = to_float4(v * c.y - make_float3(0, t, 0));
+			gradient_values[idx.z] = to_float4(v * c.z - make_float3(0, 0, t));
 		}
 	}
 	
 	// d functions
-	for (uint i = 0; i < functions.z; i++, func_base+=6, grad_base+=6) {
+	for (uint i = 0; i < functions.z; i++, base_idx+=6) {
 		compute_function<do_forces>(functions.x + functions.y + i, point_position, contractions, factor_ac, nuc, spd, t, tg, v);
 		
-		float tx = t * v.x;
-		float ty = t * v.y;
-		float tz = t * v.z;
+    uint3 idx1, idx2;
+    idx1.x = COALESCED_DIMENSION(points) * (base_idx + 0) + point;
+    idx1.y = COALESCED_DIMENSION(points) * (base_idx + 1) + point;
+    idx1.z = COALESCED_DIMENSION(points) * (base_idx + 2) + point;
+    idx2.x = COALESCED_DIMENSION(points) * (base_idx + 3) + point;
+    idx2.y = COALESCED_DIMENSION(points) * (base_idx + 4) + point;
+    idx2.z = COALESCED_DIMENSION(points) * (base_idx + 5) + point;
 
-		function_values[COALESCED_DIMENSION(points) * (func_base + 0) + point] = tx * v.x * gpu_normalization_factor;
-		function_values[COALESCED_DIMENSION(points) * (func_base + 1) + point] = ty * v.x;
-		function_values[COALESCED_DIMENSION(points) * (func_base + 2) + point] = ty * v.y * gpu_normalization_factor;
-		function_values[COALESCED_DIMENSION(points) * (func_base + 3) + point] = tz * v.x;
-		function_values[COALESCED_DIMENSION(points) * (func_base + 4) + point] = tz * v.y;
-		function_values[COALESCED_DIMENSION(points) * (func_base + 5) + point] = tz * v.z * gpu_normalization_factor;
+		function_values[idx1.x] = t * v.x * v.x * gpu_normalization_factor;
+		function_values[idx1.y] = t * v.y * v.x;
+		function_values[idx1.z] = t * v.y * v.y * gpu_normalization_factor;
+		function_values[idx2.x] = t * v.z * v.x;
+		function_values[idx2.y] = t * v.z * v.y;
+		function_values[idx2.z] = t * v.z * v.z * gpu_normalization_factor;
 
 		if (do_forces) {
-			float tgx = tg * v.x;
-			float tgy = tg * v.y;
-			float tgz = tg * v.z;
-
-			gradient_values[grad_base + 0] = v * 2.0f * tgx * v.x * gpu_normalization_factor - make_float3(2 * tx * gpu_normalization_factor, 0, 0);
-			gradient_values[grad_base + 1] = v * 2.0f * tgy * v.x                            - make_float3(ty, tx, 0);
-			gradient_values[grad_base + 2] = v * 2.0f * tgy * v.y * gpu_normalization_factor - make_float3(0, 2 * ty * gpu_normalization_factor, 0);
-			gradient_values[grad_base + 3] = v * 2.0f * tgz * v.x                            - make_float3(tz, 0, tx);
-			gradient_values[grad_base + 4] = v * 2.0f * tgz * v.y                            - make_float3(0, tz, ty);
-			gradient_values[grad_base + 5] = v * 2.0f * tgz * v.z * gpu_normalization_factor - make_float3(0, 0, 2 * tz * gpu_normalization_factor);
+			gradient_values[idx1.x] = to_float4(v * 2.0f * tg * v.x * v.x * gpu_normalization_factor - make_float3(2 * t * v.x * gpu_normalization_factor, 0, 0));
+			gradient_values[idx1.y] = to_float4(v * 2.0f * tg * v.y * v.x                            - make_float3(t * v.y, t * v.x, 0));
+			gradient_values[idx1.z] = to_float4(v * 2.0f * tg * v.y * v.y * gpu_normalization_factor - make_float3(0, 2 * t * v.y * gpu_normalization_factor, 0));
+			gradient_values[idx2.x] = to_float4(v * 2.0f * tg * v.z * v.x                            - make_float3(t * v.z, 0, t * v.x));
+			gradient_values[idx2.y] = to_float4(v * 2.0f * tg * v.z * v.y                            - make_float3(0, t * v.z, t * v.y));
+			gradient_values[idx2.z] = to_float4(v * 2.0f * tg * v.z * v.z * gpu_normalization_factor - make_float3(0, 0, 2 * t * v.z * gpu_normalization_factor));
 		}
 	}
 }

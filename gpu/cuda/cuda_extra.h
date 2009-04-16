@@ -54,6 +54,10 @@ inline __device__ __host__ bool operator < (const uint3 i, const uint3 r)
 inline __device__ __host__ float3 operator*(const float3& a, float b)
 { return make_float3(a.x * b, a.y * b, a.z * b); }
 
+inline __device__ __host__ float4 operator*(const float4& a, float b)
+{ return make_float4(a.x * b, a.y * b, a.z * b, a.w * b); }
+
+
 inline __device__ __host__ float1 operator*(const float1 &a, float b)
 { return make_float1(a.x * b); }
 
@@ -121,6 +125,9 @@ inline __device__ __host__ float3& operator+=(float3& a, const float3& b)
 inline __device__ __host__ float3& operator+=(float3& a, const float& b)
 { a.x += b; a.y += b; a.z += b; return a; }
 
+inline __device__ __host__ float4& operator+=(float4& a, const float4& b)
+{ a.x += b.x; a.y += b.y; a.z += b.z; a.w += b.w; return a; }
+
 inline __device__ __host__ dim3 operator/(const dim3& a, const uint b)
 { return dim3(a.x / b, a.y / b, a.z / b); }
 
@@ -138,6 +145,12 @@ inline __device__ __host__ dim3 divUp(const dim3& a, const dim3& b)
 
 inline __device__ __host__ uint4 operator +(const dim3& a, const uint4& b)
 { return make_uint4(a.x + b.x, a.y + b.y, a.z + b.z, b.w); }
+
+inline __device__ __host__ float4 to_float4(const float3& f)
+{ return make_float4(f.x, f.y, f.z, 0.0f); }
+
+inline __device__ __host__ float3 to_float3(const float4& f)
+{ return make_float3(f.x, f.y, f.z); }
 
 inline void cudaAssertNoError(const char* msg = NULL) {
 #ifdef _DEBUG

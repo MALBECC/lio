@@ -41,9 +41,8 @@ __global__ void gpu_compute_density(float* energy, float* factor, float* point_w
       __syncthreads();
 
       if (valid_thread) {
-        for (uint jj = 0; jj < DENSITY_BLOCK_SIZE && (j + jj < m); jj++) {
-          uint base = COALESCED_DIMENSION(points) * (j + jj) + point;
-          w += function_values[base] * rdm_sh[jj];
+        for (uint jj = 0; jj < DENSITY_BLOCK_SIZE && (j + jj < m) ; jj++) {
+          w += function_values[COALESCED_DIMENSION(points) * (j + jj) + point] * rdm_sh[jj];
         }
       }
 
@@ -52,8 +51,10 @@ __global__ void gpu_compute_density(float* energy, float* factor, float* point_w
 
     if (compute_derivs) {
       for (uint j = 0; j < m; j += DENSITY_BLOCK_SIZE) {
-        if (j + threadIdx.x < m) rdm_sh[threadIdx.x] = rdm[rdm_idx + j + threadIdx.x];
-        if (j + threadIdx.x < m) nuc_sh[threadIdx.x] = nuc[j + threadIdx.x];
+        if (j + threadIdx.x < m) {
+          rdm_sh[threadIdx.x] = rdm[rdm_idx + j + threadIdx.x];
+          nuc_sh[threadIdx.x] = nuc[j + threadIdx.x];
+        }
         __syncthreads();
 
         if (valid_thread) {

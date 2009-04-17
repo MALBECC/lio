@@ -64,7 +64,6 @@ void gpu_compute_group_functions(void)
 		uint group_m = group.s_functions + group.p_functions * 3 + group.d_functions * 6;
 		uint group_spd = group.s_functions + group.p_functions + group.d_functions;
 		uint4 group_functions = make_uint4(group.s_functions, group.p_functions, group.d_functions, group_m);
-    //cout << "m: " << group_m << " spd " << group_spd << endl;
 		{
 			HostMatrixFloat2 factor_ac_cpu(group_spd, MAX_CONTRACTIONS);
 			HostMatrixUInt nuc_cpu(group_spd, 1), contractions_cpu(group_spd, 1);

@@ -75,7 +75,5 @@ __global__ void gpu_update_rmm(float* factors, uint points, float* rmm, float* f
 		}
 	}
 
-  // TODO: coalescear (escribir usando dos indices)
-  //if (valid_thread) rmm[rmm_idx] = rmm_local;
   if (valid_thread) rmm[COALESCED_DIMENSION(m) * j + i] = rmm_local;
 }

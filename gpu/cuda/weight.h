@@ -1,5 +1,4 @@
-// TODO: precomputar/precargar las cosas por atomo una sola vez para todos los puntos
-// TODO: pasar esto a nucleii_count, etc
+// TODO: precomputar/precargar las cosas por atomo una sola vez para todos los puntos, pasar esto a nucleii_count, etc, coalescing
 
 __global__ void gpu_compute_weights(uint points, float4* point_positions, float* weights)
 {

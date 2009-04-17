@@ -4,7 +4,6 @@
 #include "cuda/double.h"
 #include <cassert>
 
-// TODO: deshacerse del macro
 #define COALESCED_DIMENSION(d) (d + 16 - (d % 16))
 
 namespace G2G {

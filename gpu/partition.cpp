@@ -232,15 +232,15 @@ void regenerate_partition(void)
         cube.assign_significative_functions(cube_coord_abs, min_exps_func);
 				if (cube.functions.empty()) { /*cout << "cubo sin funciones" << endl;*/ continue; }
 
+        final_partition.push_back(cube);
+
 #if WEIGHT_GPU
-        cube.compute_weights();
+        final_partition.back().compute_weights();
 #else
   #if WEIGHT_CUTOFFS
 				assign_cube_weights(cube);
-				if (little_cube.number_of_points < min_points_per_cube) { /*cout << "cubo vacio" << endl;*/ continue; }
   #endif
-#endif
-        final_partition.push_back(cube);
+#endif        
 
         // para hacer histogramas
 #ifdef HISTOGRAM
@@ -272,13 +272,14 @@ void regenerate_partition(void)
 			cout << "sphere: " << sphere.number_of_points << " puntos, " << sphere.total_functions() << " funciones | funcion x punto: " << 
         sphere.total_functions() / (double)sphere.number_of_points << " vecinos: " << sphere.nucleii.size() << endl;
 #endif		
-		
-	    sphere.compute_weights(); // TODO: cuidado, esto implica que los pesos se copian GPU<->GPU
+
+      final_partition.push_front(sphere);
+	    final_partition.front().compute_weights();
       t_total.sync();
 			
+	    
 	    puntos_finales += sphere.number_of_points;
 	    funciones_finales += sphere.number_of_points * sphere.total_functions();			
-	    final_partition.push_front(sphere);
 	  }
 	}
 

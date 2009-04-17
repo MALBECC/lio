@@ -9,7 +9,7 @@
 
 #define MAX_CONTRACTIONS 10
 
-// TODO: ver cuanto se pueden subir
+// TODO: usar la calculadora de la mucha ocupacion para esto
 #define RMM_BLOCK_SIZE_XY 16
 
 #define DENSITY_BLOCK_SIZE 256

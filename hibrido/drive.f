@@ -1140,9 +1140,10 @@ c        pause
 
 #ifdef GPU
 c------- GPU Initialization ---------------------
-      call gpu_init(NORM, natom, r1, Rm2, Iz, Nr, Nr2, Nuc, M,
+      call gpu_parameter_init(NORM, natom, r1, Rm2, Iz, Nr, Nr2, Nuc, M,
      > ncont, nshell, c, a, P, M18, M5, NCO, 2, Iexch,
      > e_, e_2, e3, wang, wang2, wang3)
+c-----------------------------
 c DEBUG DEBUG: nopt se fuerza a 2
 #endif
 

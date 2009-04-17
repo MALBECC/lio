@@ -63,6 +63,10 @@ C-----DIMENSIONES DE TODO
       common /dyn/Pm
       common /fit/ Nang_,dens,integ,Iexch,igrid,igrid2
 
+#ifdef GPU
+      call gpu_init()
+#endif
+
       TEMPAV=ZERO
       TEMPOL=ZERO
       TEMPSLV=ZERO

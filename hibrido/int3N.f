@@ -2594,7 +2594,7 @@ c
      >               M,M18,NCOa,NCOb,RMM,Ex)
       write(*,*) 'energia fortran (double)',Ex
 #else
-      call gpu_solve_cubes(0,0,0)
+      call gpu_solve_groups(0,0,0)
 #endif      
 #else
        call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,

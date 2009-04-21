@@ -186,10 +186,10 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 		
 	/*** Computo sobre cada cubo ****/
 	CudaMatrixFloat point_weights_gpu;
-	CudaMatrixFloat rdm_gpu;
+	CudaMatrixFloat rdm_gpu, rdmt_gpu;
 	CudaMatrixUInt nuc_gpu;
 
-  Timer t_density, t_rmm, t_energy, t_forces;
+  Timer t_density, t_rmm, t_forces;
 
 	FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS);
 	
@@ -212,28 +212,40 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 		
 		/** Load functions from group **/
 		uint group_m = group.s_functions + group.p_functions * 3 + group.d_functions * 6;
-		uint group_spd = group.s_functions + group.p_functions + group.d_functions;
 		uint4 group_functions = make_uint4(group.s_functions, group.p_functions, group.d_functions, group_m);
 		
 		/* load RDM */
 		{
 			HostMatrixFloat rdm_cpu(COALESCED_DIMENSION(group_m), fortran_vars.nco);
+      HostMatrixFloat rdmt_cpu;
+
+      if (computation_type == COMPUTE_ENERGY_FORCE || computation_type == COMPUTE_FORCE_ONLY)
+        rdmt_cpu.resize(COALESCED_DIMENSION(fortran_vars.nco), group_m);
+
 			for (unsigned int i = 0; i < fortran_vars.nco; i++) {
 				uint j = 0;
 				for (set<uint>::const_iterator func = group.functions.begin(); func != group.functions.end(); ++func) {
 					if (*func < fortran_vars.s_funcs) {
 						rdm_cpu.get(j, i) = fortran_vars.rmm_input.get(*func, i);
+            if (rdmt_cpu.is_allocated()) rdmt_cpu.get(i, j) = rdm_cpu.get(j, i);
 						j++;
 					}
 					else if (*func < (fortran_vars.s_funcs + fortran_vars.p_funcs * 3)) {
-						for (uint k = 0; k < 3; k++, j++) { rdm_cpu.get(j, i) = fortran_vars.rmm_input.get(*func + k, i); }
+						for (uint k = 0; k < 3; k++, j++) {
+              rdm_cpu.get(j, i) = fortran_vars.rmm_input.get(*func + k, i);
+              if (rdmt_cpu.is_allocated()) rdmt_cpu.get(i, j) = rdm_cpu.get(j, i);
+            }
 					}
 					else {
-						for (uint k = 0; k < 6; k++, j++) { rdm_cpu.get(j, i) = fortran_vars.rmm_input.get(*func + k, i); }
+						for (uint k = 0; k < 6; k++, j++) {
+              rdm_cpu.get(j, i) = fortran_vars.rmm_input.get(*func + k, i);
+              if (rdmt_cpu.is_allocated()) rdmt_cpu.get(i, j) = rdm_cpu.get(j, i);
+            }
 					}
 				}
 			}
 			rdm_gpu = rdm_cpu;
+      if (rdmt_cpu.is_allocated()) rdmt_gpu = rdmt_cpu;
 		}
 							
 		dim3 threads(group.number_of_points);
@@ -244,11 +256,12 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 
 		/* compute energy */
 		if (computation_type == COMPUTE_ENERGY_ONLY) {
-      t_energy.start_and_sync();
+      t_density.start_and_sync();
 			CudaMatrixFloat energy_gpu(group.number_of_points);
-			gpu_compute_density<true, false><<<threadGrid, threadBlock>>>(energy_gpu.data, NULL, point_weights_gpu.data, group.number_of_points, rdm_gpu.data, group.function_values.data, NULL, NULL, NULL, 0, group_functions);
+			gpu_compute_density<true, false><<<threadGrid, threadBlock>>>(energy_gpu.data, NULL, point_weights_gpu.data, group.number_of_points,
+                                                                    rdm_gpu.data, group.function_values.data, group_m, NULL);
 			cudaAssertNoError("compute_density");
-      t_energy.pause_and_sync();
+      t_density.pause_and_sync();
 
 			HostMatrixFloat energy_cpu(energy_gpu);
 			for (uint i = 0; i < group.number_of_points; i++) { total_energy += energy_cpu.get(i); }
@@ -257,7 +270,8 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 		else if (computation_type == COMPUTE_RMM) {
 			CudaMatrixFloat rmm_factor_gpu(group.number_of_points);
       t_density.start_and_sync();
-			gpu_compute_density<false, false><<<threadGrid, threadBlock>>>(NULL, rmm_factor_gpu.data, point_weights_gpu.data, group.number_of_points, rdm_gpu.data, group.function_values.data, NULL, NULL, NULL, 0, group_functions);
+			gpu_compute_density<false, false><<<threadGrid, threadBlock>>>(NULL, rmm_factor_gpu.data, point_weights_gpu.data, group.number_of_points,
+                                                                     rdm_gpu.data, group.function_values.data, group_m, NULL);
 			cudaAssertNoError("compute_density");
       t_density.pause_and_sync();
       //cout << "density us/thread: " << t_density.getMicrosec() / (double)threads.x << endl;
@@ -338,25 +352,38 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 
 			CudaMatrixFloat force_factor_gpu(group.number_of_points);
 			CudaMatrixFloat energy_gpu;
+      CudaMatrixFloat w_gpu(COALESCED_DIMENSION(group.number_of_points), fortran_vars.nco);
 
 			/* energy may be needed at this step */
 			CudaMatrixFloat4 density_deriv(COALESCED_DIMENSION(group.number_of_points), group.nucleii.size());
 			if (computation_type == COMPUTE_ENERGY_FORCE) {
 				energy_gpu.resize(group.number_of_points);
-        t_energy.start_and_sync();
-				gpu_compute_density<true, true><<<threadGrid, threadBlock>>>(energy_gpu.data, force_factor_gpu.data, point_weights_gpu.data, group.number_of_points, rdm_gpu.data, group.function_values.data, group.gradient_values.data, density_deriv.data, nuc_gpu.data, group.nucleii.size(), group_functions);
-        t_energy.pause_and_sync();
+        t_density.start_and_sync();
+
+				gpu_compute_density<true, true><<<threadGrid, threadBlock>>>(energy_gpu.data, force_factor_gpu.data, point_weights_gpu.data, group.number_of_points,
+                                                               rdm_gpu.data, group.function_values.data, group_m, w_gpu.data);
         cudaAssertNoError("compute_density");
+        t_density.pause_and_sync();
 
 				HostMatrixFloat energy_cpu(energy_gpu);
 				for (uint i = 0; i < group.number_of_points; i++) { total_energy += energy_cpu.get(i); }
 			}
 			else {
         t_density.start_and_sync();
-				gpu_compute_density<false, true><<<threadGrid, threadBlock>>>(energy_gpu.data, force_factor_gpu.data, point_weights_gpu.data, group.number_of_points, rdm_gpu.data, group.function_values.data, group.gradient_values.data, density_deriv.data, nuc_gpu.data, group.nucleii.size(), group_functions);
+				gpu_compute_density<false, true><<<threadGrid, threadBlock>>>(energy_gpu.data, force_factor_gpu.data, point_weights_gpu.data, group.number_of_points,
+                                                                rdm_gpu.data, group.function_values.data, group_m, w_gpu.data);
         t_density.pause_and_sync();
         cudaAssertNoError("compute_density");
       }
+
+      threadBlock = dim3(DENSITY_DERIV_BLOCK_SIZE);
+      threadGrid = divUp(threads, threadBlock);
+
+      t_density.start_and_sync();
+			gpu_compute_density_derivs<<<threadGrid, threadBlock>>>(group.number_of_points, rdmt_gpu.data, group.gradient_values.data, density_deriv.data, nuc_gpu.data,
+                                                              group.nucleii.size(), group_m, w_gpu.data);
+      t_density.pause_and_sync();
+      cudaAssertNoError("compute_density_deriv");
 
 			threads = dim3(group.nucleii.size());
 			threadBlock = dim3(FORCE_BLOCK_SIZE);
@@ -403,8 +430,7 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 	t_total.stop_and_sync();
 
 	cout << "TIMER: gpu_solve_cubes " << t_total << endl;
-  cout << "TIMER: density " << t_density << endl;
-  cout << "TIMER: energy " << t_energy << endl;
+  cout << "TIMER: density/energy " << t_density << endl;
   cout << "TIMER: forces " << t_forces << endl;
   cout << "TIMER: rmm: " << t_rmm << endl;
 }

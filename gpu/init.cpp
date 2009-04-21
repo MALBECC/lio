@@ -37,7 +37,8 @@ extern "C" void gpu_parameter_init_(const unsigned int& norm, const unsigned int
 {
 	printf("<======= GPU Code Initialization ========>\n");
 	fortran_vars.atoms = natom;
-	assert(natom <= MAX_ATOMS);
+	if (natom > MAX_ATOMS) throw runtime_error("Maximum atom number exceeded");
+
 	_DBG(cout << "atoms: " << natom << endl);
 	
 	fortran_vars.do_forces = (nopt == 2);

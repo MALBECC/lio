@@ -155,6 +155,8 @@ void regenerate_partition(void)
 
   uint puntos_finales = 0;
   uint funciones_finales = 0;
+
+  uint costo = 0;
 	
 	final_partition.clear();
 	
@@ -250,6 +252,7 @@ void regenerate_partition(void)
 
 				puntos_finales += cube.number_of_points;
 				funciones_finales += cube.number_of_points * cube.total_functions();
+        costo += cube.number_of_points * (cube.total_functions() * cube.total_functions());
         //cout << "cubo: funcion x punto: " << cube.total_functions() / (double)cube.number_of_points << endl;
 			}
 		}
@@ -279,11 +282,13 @@ void regenerate_partition(void)
 			
 	    
 	    puntos_finales += sphere.number_of_points;
-	    funciones_finales += sphere.number_of_points * sphere.total_functions();			
+	    funciones_finales += sphere.number_of_points * sphere.total_functions();
+      costo += sphere.number_of_points * (sphere.total_functions() * sphere.total_functions());
 	  }
 	}
 
 	cout << "total: " << t_total << endl;
 	cout << "Grilla final: " << puntos_finales << " puntos, " << funciones_finales << " funciones" << endl;
+  cout << "Costo: " << costo << endl;
   cout << "Particion final: " << final_partition.size() << " grupos" << endl;
 }

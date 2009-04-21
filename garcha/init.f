@@ -14,7 +14,7 @@ c
 c Ngrid may be set to 0 , in the case of using Num. Integ.
 c
       parameter (ngDyn=700)
-      parameter (ngdDyn=700)
+      parameter (ngdDyn=850)
 c      parameter (ngDyn=450)
 c      parameter (ngdDyn=450)
 

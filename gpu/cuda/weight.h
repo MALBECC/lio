@@ -5,9 +5,9 @@ __global__ void gpu_compute_weights(uint points, float4* point_positions, float*
   uint point = index(blockDim, blockIdx, threadIdx).x;
 
   bool valid_thread = (point < points);
-	if (!valid_thread) return;
+  if (!valid_thread) return;
 
-  float4 point_position4 = point_positions[point];
+    float4 point_position4 = point_positions[point];
   float3 point_position = make_float3(point_position4.x, point_position4.y, point_position4.z);
   uint atom_of_point = (uint)floor(point_position4.w);
 

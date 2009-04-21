@@ -13,11 +13,12 @@
 #define RMM_BLOCK_SIZE_XY 16
 
 #define DENSITY_BLOCK_SIZE 256
+#define DENSITY_DERIV_BLOCK_SIZE 256
 #define FUNCTIONS_BLOCK_SIZE 128
 #define FORCE_BLOCK_SIZE 256
 #define WEIGHT_BLOCK_SIZE 256
 
 // used for "types" constant memory
-#define MAX_ATOMS 80
+#define MAX_ATOMS 100
 
 #endif

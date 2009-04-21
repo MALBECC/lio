@@ -152,16 +152,18 @@ inline __device__ __host__ float4 to_float4(const float3& f)
 inline __device__ __host__ float3 to_float3(const float4& f)
 { return make_float3(f.x, f.y, f.z); }
 
-inline void cudaAssertNoError(const char* msg = NULL) {
 #ifdef _DEBUG
+#define cudaAssertNoError(s)
+#else
+inline void cudaAssertNoError(const char* msg = NULL) {
 	cudaThreadSynchronize();
 	cudaError_t error = cudaGetLastError();
 	if (error != cudaSuccess) {
 		std::cerr << "CUDA ERROR: " << cudaGetErrorString(error) << " " << (msg ? msg : "??") << std::endl;
 		abort();
 	}
-#endif
 }
+#endif
 
 inline void cudaPrintMemoryInfo(void) {
 	uint free = 0, total = 0;

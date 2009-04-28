@@ -5,8 +5,7 @@
 
 __global__ void gpu_compute_forces(uint points, float* force_factors, float4* density_deriv, float4* forces, uint nucleii_count)
 {
-	uint3 pos = index(blockDim, blockIdx, threadIdx);
-	uint atom = pos.x;
+	uint atom = index_x(blockDim, blockIdx, threadIdx);
 	
 	bool valid_thread = (atom < nucleii_count);
 
@@ -22,8 +21,7 @@ __global__ void gpu_compute_forces(uint points, float* force_factors, float4* de
 
 		if (valid_thread) {
       for (uint point_sub = 0; point_sub < FORCE_BLOCK_SIZE && (point_base + point_sub < points); point_sub++) {
-        uint point = point_base + point_sub;
-        float4 density_deriv_local = density_deriv[COALESCED_DIMENSION(points) * atom + point];
+        float4 density_deriv_local = density_deriv[COALESCED_DIMENSION(points) * atom + (point_base + point_sub)];
         atom_force += density_deriv_local * factor_sh[point_sub];
       }
 		}

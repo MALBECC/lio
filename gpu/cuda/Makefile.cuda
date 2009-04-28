@@ -144,6 +144,10 @@ ifeq ($(keep), 1)
 	NVCCFLAGS   += -keep
 endif
 
+ifeq ($(cpu),1)
+	NVCCFLAGS += -DCPU_KERNELS=1
+endif
+
 TARGET    := $(EXECUTABLE)
 LINKLINE  = $(LINK) -o $(TARGET) $(OBJS) $(LIB)
 

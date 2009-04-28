@@ -5,6 +5,10 @@ OBJ=init.o timer.o matrix.o partition.o functions.o weight.o
 CUDA_SOURCES=$(wildcard cuda/*.cu)
 CUDA_HEADERS=$(wildcard cuda/*.h)
 
+ifeq ($(cpu),1)
+	CXXFLAGS += -DCPU_KERNELS=1
+endif
+
 include cuda/Makefile.cuda
 include Makefile.common
 
@@ -27,17 +31,14 @@ else
 	LIBRARY=libg2g.so
 endif
 
-all: $(LIBRARY) #accum_test dist_test exchnum_test
-
-#%_test: %_test.o libg2g.so 
-#	$(LINK) $(LDFLAGS) -o $@ $(OBJ) $(LIB) $@.o -lg2g -L.
+all: $(LIBRARY)
 
 libg2g.a: $(CUDA_OBJ) $(OBJ)
 	$(MAKE) -C cuda
-	ar cru libg2g.a $(CUDA_OBJ) $(OBJ) 
+	ar cru libg2g.a $(CUDA_OBJ) $(OBJ)
 	ranlib libg2g.a
 	
-libg2g.so: $(CUDA_OBJ) $(OBJ) 
+libg2g.so: $(CUDA_OBJ) $(OBJ)
 	$(MAKE) -C cuda
 	$(LINK) -shared $(LDFLAGS) $(EXTRA_FLAGS) -o libg2g.so $(OBJ) $(CUDA_OBJ) $(LIB)
 

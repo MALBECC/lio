@@ -50,10 +50,9 @@ void cpu_compute_density_forces(float* energy, float* point_weights, uint points
         for (uint i = 0; i < fortran_vars.nco; i++) {
           wrdm += rdm[COALESCED_DIMENSION(m) * i + j] * w.get(i);
         }
-        density_deriv.get(nuc[j]) += gradient_values[COALESCED_DIMENSION(points) * j + point] * wrdm;
+        density_deriv.get(nuc[j]) += gradient_values[m * point + j] * wrdm;
       }      
     }
-    t.pause();
 
     /* compute energy / functional */
     float exc, corr, y2a;
@@ -68,12 +67,14 @@ void cpu_compute_density_forces(float* energy, float* point_weights, uint points
   		else cpu_pot<true, false>(partial_density, exc, corr, y2a);
 
       energy[point] = (partial_density * point_weight) * (exc + corr);
+      t.pause();
     }
     else {
   		cpu_pot<false, true>(partial_density, exc, corr, y2a);
       factor = point_weight * y2a;
+      t.pause();
 
-      trmm.start();
+      trmm.start();      
       for (uint i = 0; i < m; i++) {
         for (uint j = i; j < m; j++) {
           float Fi = function_values[m * point + i];

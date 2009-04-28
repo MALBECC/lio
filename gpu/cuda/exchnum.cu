@@ -392,7 +392,8 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
         energy_cpu.resize(group.number_of_points);
         HostMatrixFloat function_values_cpu(group.function_values.height, group.function_values.width);
         function_values_cpu.copy_transpose(group.function_values);
-        HostMatrixFloat4 gradient_values_cpu(group.gradient_values);
+        HostMatrixFloat4 gradient_values_cpu(group.gradient_values.height, group.gradient_values.width);
+        gradient_values_cpu.copy_transpose(group.gradient_values);
 
         t_cpu.start_and_sync();
         cpu_compute_density_forces<true, true>(energy_cpu.data, point_weights_cpu.data, group.number_of_points, rdm_cpu.data, NULL,
@@ -404,7 +405,8 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
       else {
         HostMatrixFloat function_values_cpu(group.function_values.height, group.function_values.width);
         function_values_cpu.copy_transpose(group.function_values);
-        HostMatrixFloat4 gradient_values_cpu(group.gradient_values);
+        HostMatrixFloat4 gradient_values_cpu(group.gradient_values.height, group.gradient_values.width);
+        gradient_values_cpu.copy_transpose(group.gradient_values);
         
         t_cpu.start_and_sync();
         cpu_compute_density_forces<false,true>(NULL, point_weights_cpu.data, group.number_of_points, rdm_cpu.data, NULL,

@@ -153,6 +153,16 @@ template<class T> void HostMatrix<T>::to_constant(const char* symbol) {
 	cudaMemcpyToSymbol(symbol, this->data, this->bytes(), 0, cudaMemcpyHostToDevice);	
 }
 
+template<class T> void HostMatrix<T>::copy_transpose(const CudaMatrix<T>& cuda_matrix) {
+  if (cuda_matrix.width != this->height || cuda_matrix.height != this->width) throw runtime_error("Matrix dimensions for copy_transpose don't agree");
+  HostMatrix<T> cuda_matrix_copy(cuda_matrix);
+  for (uint i = 0; i < cuda_matrix.width; i++) {
+    for (uint j = 0; j < cuda_matrix.height; j++) {
+      this->get(j, i) = cuda_matrix_copy.get(i, j);
+    }
+  }
+}
+
 /*template<class T, class S> void HostMatrix<T>::to_constant<S>(const char* constant, const S& value) {
 	cudaMemcpyToSymbol(constant, &value, sizeof(S), 0, cudaMemcpyHostToDevice);	
 }*/

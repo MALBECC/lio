@@ -51,6 +51,8 @@ namespace G2G {
 			
 			void copy_submatrix(const CudaMatrix<T>& c, unsigned int elements = 0);
 			void copy_submatrix(const HostMatrix<T>& c, unsigned int elements = 0);
+
+      void copy_transpose(const CudaMatrix<T>& cuda_matrix);
 		
 			HostMatrix<T>& resize(unsigned int width, unsigned int height = 1);
 			HostMatrix<T>& fill(const T& value);

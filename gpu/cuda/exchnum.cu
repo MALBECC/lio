@@ -22,6 +22,9 @@
 #include "force.h"
 #include "weight.h"
 
+/** CPU Kernels **/
+#include "../exchnum.cpp"
+
 using namespace G2G;
 using namespace std;
 
@@ -190,6 +193,7 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 	CudaMatrixUInt nuc_gpu;
 
   Timer t_density, t_rmm, t_forces;
+  Timer t_cpu;
 
 	FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS);
 	
@@ -200,7 +204,9 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
     //cout << "group is " << (group.is_sphere ? "sphere" : "cube") << endl;
 				
 		/** Load points from group **/
+    #if !CPU_KERNELS
 		{
+    #endif
 			HostMatrixFloat point_weights_cpu(group.number_of_points, 1);
 
 			uint i = 0;		
@@ -208,14 +214,18 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 				point_weights_cpu.get(i) = p->weight;
 			}
 			point_weights_gpu = point_weights_cpu;
+    #if !CPU_KERNELS
 		}
+    #endif
 		
 		/** Load functions from group **/
 		uint group_m = group.s_functions + group.p_functions * 3 + group.d_functions * 6;
 		uint4 group_functions = make_uint4(group.s_functions, group.p_functions, group.d_functions, group_m);
 		
 		/* load RDM */
+    #if !CPU_KERNELS
 		{
+    #endif
 			HostMatrixFloat rdm_cpu(COALESCED_DIMENSION(group_m), fortran_vars.nco);
       HostMatrixFloat rdmt_cpu;
 
@@ -246,7 +256,9 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 			}
 			rdm_gpu = rdm_cpu;
       if (rdmt_cpu.is_allocated()) rdmt_gpu = rdmt_cpu;
+    #if !CPU_KERNELS
 		}
+    #endif
 							
 		dim3 threads(group.number_of_points);
 		dim3 threadBlock, threadGrid;
@@ -256,41 +268,61 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 
 		/* compute energy */
 		if (computation_type == COMPUTE_ENERGY_ONLY) {
+      #if CPU_KERNELS
+      HostMatrixFloat energy_cpu(group.number_of_points);
+      HostMatrixFloat function_values_cpu(group.function_values.height, group.function_values.width);
+      function_values_cpu.copy_transpose(group.function_values);
+
+      t_cpu.start_and_sync();
+      cpu_compute_density_forces<true, false>(energy_cpu.data, point_weights_cpu.data, group.number_of_points, rdm_cpu.data,
+        NULL, function_values_cpu.data, NULL, NULL, NULL, 0, group_m, t_density, t_rmm);
+      t_cpu.pause_and_sync();
+      #else
       t_density.start_and_sync();
 			CudaMatrixFloat energy_gpu(group.number_of_points);
 			gpu_compute_density<true, false><<<threadGrid, threadBlock>>>(energy_gpu.data, NULL, point_weights_gpu.data, group.number_of_points,
                                                                     rdm_gpu.data, group.function_values.data, group_m, NULL);
 			cudaAssertNoError("compute_density");
       t_density.pause_and_sync();
-
-			HostMatrixFloat energy_cpu(energy_gpu);
+      HostMatrixFloat energy_cpu(energy_gpu);
+      #endif
+			
 			for (uint i = 0; i < group.number_of_points; i++) { total_energy += energy_cpu.get(i); }
 		}
 		/* compute necessary factor **/
 		else if (computation_type == COMPUTE_RMM) {
+      #if CPU_KERNELS
+
+      HostMatrixFloat function_values_cpu(group.function_values.height, group.function_values.width);
+      function_values_cpu.copy_transpose(group.function_values);
+      HostMatrixFloat rmm_output_cpu(COALESCED_DIMENSION(group_m), group_m);
+      t_cpu.start_and_sync();
+      cpu_compute_density_forces<false, false>(NULL, point_weights_cpu.data, group.number_of_points, rdm_cpu.data,
+        rmm_output_cpu.data, function_values_cpu.data, NULL, NULL, NULL, 0, group_m, t_density, t_rmm);
+      t_cpu.pause_and_sync();
+      
+      #else
+
 			CudaMatrixFloat rmm_factor_gpu(group.number_of_points);
       t_density.start_and_sync();
 			gpu_compute_density<false, false><<<threadGrid, threadBlock>>>(NULL, rmm_factor_gpu.data, point_weights_gpu.data, group.number_of_points,
                                                                      rdm_gpu.data, group.function_values.data, group_m, NULL);
 			cudaAssertNoError("compute_density");
       t_density.pause_and_sync();
-      //cout << "density us/thread: " << t_density.getMicrosec() / (double)threads.x << endl;
 
 			/*** Compute RMM update ***/
 			threads = dim3(group_m, group_m);
 			threadBlock = dim3(RMM_BLOCK_SIZE_XY, RMM_BLOCK_SIZE_XY);
 			threadGrid = divUp(threads, threadBlock);
 
-      //cout << "rmm threads: " << threads.x << " blocks: " << threadGrid.x << " blockSize: " << threadBlock.x << endl;
-
       CudaMatrixFloat rmm_output_gpu(COALESCED_DIMENSION(group_m), group_m);
-
       t_rmm.start_and_sync();
 			gpu_update_rmm<<<threadGrid, threadBlock>>>(rmm_factor_gpu.data, group.number_of_points, rmm_output_gpu.data, group.function_values.data, group_m);
 			cudaAssertNoError("update_rmm");
       t_rmm.pause_and_sync();
+
 			HostMatrixFloat rmm_output_cpu(rmm_output_gpu);
-      //cout << "rmm us/thread: " << t_rmm.getMicrosec() / (double)threads.x << endl;
+      #endif
 
       /*** Contribute this RMM to the total RMM ***/
       uint small_fi = 0;
@@ -314,8 +346,6 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 							uint fi = *it_fi + i; uint fj = *it_fj + j;
 							if (fi > fj) continue;
 							uint big_index = (fi * fortran_vars.m - (fi * (fi - 1)) / 2) + (fj - fi);
-              //fortran_vars.rmm_output.get(big_index) += rmm_output_cpu.get(small_index);
-              //cout << "small (" << cube_m << "): " << small_fj + small_fi << " " << small_fi<< ": " << rmm_output_cpu.get(small_fi, small_fj + small_fi) << endl;
               fortran_vars.rmm_output.get(big_index) += rmm_output_cpu.get(small_fi, small_fj + small_fi);
               small_fj++;
 						}					
@@ -327,7 +357,9 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 		/* compute forces */
 		else {
       map<uint, uint> nuc_mapping;
+      #if !CPU_KERNELS
 			{
+      #endif
 				HostMatrixUInt nuc_cpu(group_m, 1);
 				uint i = 0;
         uint small_atom_idx = 0;
@@ -348,7 +380,38 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
           }
         }
 				nuc_gpu = nuc_cpu;
+      #if !CPU_KERNELS
 			}
+      #endif
+
+      #if CPU_KERNELS
+      HostMatrixFloat energy_cpu;;
+      HostMatrixFloat4 forces_cpu(group.nucleii.size());
+
+      if (computation_type == COMPUTE_ENERGY_FORCE) {
+        energy_cpu.resize(group.number_of_points);
+        HostMatrixFloat function_values_cpu(group.function_values.height, group.function_values.width);
+        function_values_cpu.copy_transpose(group.function_values);
+        HostMatrixFloat4 gradient_values_cpu(group.gradient_values);
+
+        t_cpu.start_and_sync();
+        cpu_compute_density_forces<true, true>(energy_cpu.data, point_weights_cpu.data, group.number_of_points, rdm_cpu.data, NULL,
+          function_values_cpu.data, gradient_values_cpu.data, forces_cpu.data, nuc_cpu.data, group.nucleii.size(), group_m, t_density, t_rmm);
+        t_cpu.pause_and_sync();
+
+        for (uint i = 0; i < group.number_of_points; i++) { total_energy += energy_cpu.get(i); }
+      }
+      else {
+        HostMatrixFloat function_values_cpu(group.function_values.height, group.function_values.width);
+        function_values_cpu.copy_transpose(group.function_values);
+        HostMatrixFloat4 gradient_values_cpu(group.gradient_values);
+        
+        t_cpu.start_and_sync();
+        cpu_compute_density_forces<false,true>(NULL, point_weights_cpu.data, group.number_of_points, rdm_cpu.data, NULL,
+          function_values_cpu.data, gradient_values_cpu.data, forces_cpu.data, nuc_cpu.data, group.nucleii.size(), group_m, t_density, t_rmm);
+        t_cpu.pause_and_sync();
+      }
+      #else
 
 			CudaMatrixFloat force_factor_gpu(group.number_of_points);
 			CudaMatrixFloat energy_gpu;
@@ -389,31 +452,16 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 			threadBlock = dim3(FORCE_BLOCK_SIZE);
 			threadGrid = divUp(threads, threadBlock);
 
-#if 0
-			/* TODO: remover DEBUG */
-			HostMatrixFloat3 density_deriv_cpu(density_deriv);
-			uint point_idx = 0;
-			for (list<Point>::const_iterator it = group.points.begin(); it != group.points.end(); ++it, point_idx++) {
-				for (map<uint, uint>::iterator nuc_it = nuc_map.begin(); nuc_it != nuc_map.end(); ++nuc_it) {
-					cout << "factor: " << point_idx << " " << nuc_it->second << " " <<
-            density_deriv_cpu.get(nuc_it->second, point_idx).x << " " <<
-            density_deriv_cpu.get(nuc_it->second, point_idx).y << " " <<
-            density_deriv_cpu.get(nuc_it->second, point_idx).z << " " <<
-          endl;
-				}
-			}
-			/* DEBUG */
-#endif
-
-			CudaMatrixFloat4 gpu_forces(group.nucleii.size());
+			CudaMatrixFloat4 forces_gpu(group.nucleii.size());
       t_forces.start_and_sync();
-			gpu_compute_forces<<<threadGrid, threadBlock>>>(group.number_of_points, force_factor_gpu.data, density_deriv.data, gpu_forces.data, group.nucleii.size());
+			gpu_compute_forces<<<threadGrid, threadBlock>>>(group.number_of_points, force_factor_gpu.data, density_deriv.data, forces_gpu.data, group.nucleii.size());
       t_forces.pause_and_sync();
 			cudaAssertNoError("gpu_compute_forces");
+      HostMatrixFloat4 forces_cpu(forces_gpu);
+      #endif
 
-			HostMatrixFloat4 cpu_forces(gpu_forces);
 			for (map<uint, uint>::iterator nuc_it = nuc_mapping.begin(); nuc_it != nuc_mapping.end(); ++nuc_it) {
-				float4 atom_force = cpu_forces.get(nuc_it->second);
+				float4 atom_force = forces_cpu.get(nuc_it->second);
         //cout << "atom force: " << atom_force.x << " " << atom_force.y << " " << atom_force.z << endl;
 				fort_forces.get(nuc_it->first, 0) += atom_force.x;
 				fort_forces.get(nuc_it->first, 1) += atom_force.y;
@@ -433,4 +481,7 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
   cout << "TIMER: density/energy " << t_density << endl;
   cout << "TIMER: forces " << t_forces << endl;
   cout << "TIMER: rmm: " << t_rmm << endl;
+  #if CPU_KERNELS
+  cout << "TIMER: cpu: " << t_cpu << endl;
+  #endif
 }

@@ -64,8 +64,7 @@ __global__ void gpu_compute_density(float* energy, float* factor, float* point_w
 __global__ void gpu_compute_density_derivs(uint points, float* rdmt, float4* gradient_values, float4* density_deriv, uint* nuc,
                                            uint nucleii_count, uint m, float* w)
 {
-  dim3 pos = index(blockDim, blockIdx, threadIdx);
-  uint point = pos.x;
+  uint point = index_x(blockDim, blockIdx, threadIdx);
   bool valid_thread = (point < points);
   
   __shared__ uint nuc_sh[DENSITY_DERIV_BLOCK_SIZE];

@@ -64,6 +64,9 @@ inline __device__ __host__ float1 operator*(const float1 &a, float b)
 inline __device__ __host__ uint3 index(const dim3 bd, const uint3 bi, const uint3 ti)
 { return bd * bi + ti; }
 
+inline __device__ __host__ uint index_x(const dim3 bd, const uint3 bi, const uint3 ti)
+{ return bd.x * bi.x + ti.x; }
+
 inline __device__ __host__ uint reference(const uint3 i, const uint3 g)
 { return i.x + i.y * g.x + i.z * g.x * g.y; }
 

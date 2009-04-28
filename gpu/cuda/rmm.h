@@ -61,15 +61,13 @@ __global__ void gpu_update_rmm(float* factors, uint points, float* rmm, float* f
 				
   			__syncthreads();				
       }
-
-			float Fi = 0.0f, Fj = 0.0f;		
 				
 		 	/* fill local variables from local cache */
       /* NOTE: this condition avoids computation on blocks where no thread is valid; on blocks with some valid threads, the computation
        * is still performed but contributes 0 to rmm_local (this avoids instruction serialization) */
       if (blockIdx.x * blockDim.x <= blockIdx.y * blockDim.y) {
-				Fi = functions_i_local[point_mod][threadIdx.x];
-        Fj = functions_j_local[point_mod][threadIdx.y];
+				float Fi = functions_i_local[point_mod][threadIdx.x];
+        float Fj = functions_j_local[point_mod][threadIdx.y];
         rmm_local += Fi * Fj;
 			}
 		}

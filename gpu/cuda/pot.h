@@ -10,40 +10,39 @@
  */
 
 /* pot_kernel constants */
-#define POT_ALPHA 		-0.738558766382022447 // -(3/PI)^(1/3)
-#define POT_GL 				0.620350490899400087
+#define POT_ALPHA 		-0.738558766382022447f // -(3/PI)^(1/3)
+#define POT_GL 				0.620350490899400087f
 
-#define POT_VOSKO_A1 	0.03109205
-#define POT_VOSKO_B1 	3.72744
-#define POT_VOSKO_C1 	12.9352
-#define POT_VOSKO_X0 	-0.10498
+#define POT_VOSKO_A1 	0.03109205f
+#define POT_VOSKO_B1 	3.72744f
+#define POT_VOSKO_C1 	12.9352f
+#define POT_VOSKO_X0 	-0.10498f
 
-#define POT_VOSKO_Q 	6.15199066246304849
-#define POT_VOSKO_A16 0.005182008333
-#define POT_VOSKO_A2 	0.015546025
-#define POT_VOSKO_B2 	7.06042
-#define POT_VOSKO_C2 	18.0578
-#define POT_VOSKO_X02 -0.32500
-#define POT_VOSKO_Q2 	4.7309269
-#define POT_VOSKO_A26 0.0025910042
+#define POT_VOSKO_Q 	6.15199066246304849f
+#define POT_VOSKO_A16 0.005182008333f
+#define POT_VOSKO_A2 	0.015546025f
+#define POT_VOSKO_B2 	7.06042f
+#define POT_VOSKO_C2 	18.0578f
+#define POT_VOSKO_X02 -0.32500f
+#define POT_VOSKO_Q2 	4.7309269f
+#define POT_VOSKO_A26 0.0025910042f
 
-#define POT_XX0 12.5549141492 // POT_VOSKO_X0 * POT_VOSKO_X0 + POT_VOSKO_B1 * POT_VOSKO_X0 + POT_VOSKO_C1
-#define POT_T6 -0.00836166609762834 // POT_VOSKO_X0 / POT_XX0
-#define POT_T4 -0.0311676086789438 // POT_VOSKO_B1 * POT_VOSKO_X0 / POT_XX0
-#define POT_VOSKO_2C1 25.8704 // 2 * POT_VOSKO_C1
+#define POT_XX0 12.5549141492f // POT_VOSKO_X0 * POT_VOSKO_X0 + POT_VOSKO_B1 * POT_VOSKO_X0 + POT_VOSKO_C1
+#define POT_T6 -0.00836166609762834f // POT_VOSKO_X0 / POT_XX0
+#define POT_T4 -0.0311676086789438f // POT_VOSKO_B1 * POT_VOSKO_X0 / POT_XX0
+#define POT_VOSKO_2C1 25.8704f // 2 * POT_VOSKO_C1
 
-#define POT_VOSKO_2B1Q 1.21178337371132 // 2 * POT_VOSKO_B1 / POT_VOSKO_Q
-#define POT_VOSKO_B2X0Q 1.14352579286644 // 2 * (POT_VOSKO_B1 + 2 * POT_VOSKO_X0) / POT_VOSKO_Q
-#define POT_VOSKO_4B1 14.90976 // 4.0 * POT_VOSKO_B1
-#define POT_VOSKO_QSQ 37.8469891110325 // POT_VOSKO_Q * POT_VOSKO_Q
-#define POT_VOSKO_B1X0 1.0329232240928 // (1.0f - t6 * (POT_VOSKO_B1 - 2.0f * POT_VOSKO_X0))
+#define POT_VOSKO_2B1Q 1.21178337371132f // 2 * POT_VOSKO_B1 / POT_VOSKO_Q
+#define POT_VOSKO_B2X0Q 1.14352579286644f // 2 * (POT_VOSKO_B1 + 2 * POT_VOSKO_X0) / POT_VOSKO_Q
+#define POT_VOSKO_QSQ 37.8469891110325f // POT_VOSKO_Q * POT_VOSKO_Q
+#define POT_VOSKO_4B1B1X0 15.4006373696499f // 4.0 * POT_VOSKO_B1 * (1.0f - t6 * (POT_VOSKO_B1 - 2.0f * POT_VOSKO_X0))
 	
 template<bool compute_exc, bool compute_y2a> __device__ void gpu_pot(float dens, float& ex, float& ec, float& y2a)
 {
 	// data X alpha
 
 	if (dens == 0) {
-		if (compute_exc) { ex = 0.0f; ec = 0.0f; }
+		if (compute_exc) { ex = ec = 0.0f; }
 		if (compute_y2a) y2a = 0.0f;
 		return;
 	}
@@ -87,14 +86,14 @@ template<bool compute_exc, bool compute_y2a> __device__ void gpu_pot(float dens,
 			float Xx = rs + POT_VOSKO_B1 * x1 + POT_VOSKO_C1;
 			float t1 = 2 * x1 + POT_VOSKO_B1;
 			float t2 = logf(Xx);
-			float t3 = atanf(POT_VOSKO_Q/t1);
-      float t5 = (POT_VOSKO_B1 * x1 + POT_VOSKO_2C1) / x1;
 			
-      ec = POT_VOSKO_A1 * (2 * logf(x1) - t2 + POT_VOSKO_2B1Q * t3 - POT_T4 * (2 * logf(x1 - POT_VOSKO_X0) - t2 + POT_VOSKO_B2X0Q * t3));
+      ec = POT_VOSKO_A1 * (2 * logf(x1) - t2 + POT_VOSKO_2B1Q * atanf(POT_VOSKO_Q/t1)
+        - POT_T4 * (2 * logf(x1 - POT_VOSKO_X0) - t2 + POT_VOSKO_B2X0Q * atanf(POT_VOSKO_Q/t1)));
 			
 			float vc;
       if (compute_y2a) {
-				vc = ec - POT_VOSKO_A16 * x1 * (t5 / Xx - POT_VOSKO_4B1 / (t1 * t1 + POT_VOSKO_QSQ) * POT_VOSKO_B1X0 - POT_T4 * (2.0f / (x1 - POT_VOSKO_X0) - t1 / Xx));
+				vc = ec - POT_VOSKO_A16 * x1 * (((POT_VOSKO_B1 * x1 + POT_VOSKO_2C1) / (x1 * Xx)) -
+          POT_VOSKO_4B1B1X0 / (t1 * t1 + POT_VOSKO_QSQ) - POT_T4 * (2.0f / (x1 - POT_VOSKO_X0) - t1 / Xx));
 				y2a = v0 + vc;
 			}
 		}

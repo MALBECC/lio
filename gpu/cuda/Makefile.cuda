@@ -114,6 +114,9 @@ endif
 ifeq ($(regcount),1)
   NVCCFLAGS += --ptxas-options=-v
 endif
+
+# test!
+# NVCCFLAGS += --maxrregcount=32
 	
 # Debug/release configuration
 ifeq ($(dbg),1)

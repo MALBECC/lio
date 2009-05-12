@@ -145,7 +145,7 @@ endbasis
  SHFT = F, 
  SHI =  1., 
  IDAMP = 0, 
- GOLD =  5., 
+ GOLD =  5.,
  TOLD =  1.E-06,
  WRITE = F, 
  MEMO = T/
@@ -154,6 +154,6 @@ endbasis
  INTEG = T, 
  DENS = T, 
  IGRID = 2,
- IGRID2 = 2/
+ IGRID2 = 1/
 
 

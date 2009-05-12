@@ -7,16 +7,25 @@
 #define _DBG(x)
 #endif
 
-#define MAX_CONTRACTIONS 10
+#define MAX_CONTRACTIONS 7
 
-// TODO: usar la calculadora de la mucha ocupacion para esto
+/* Los block sizes deben ser multiplos de 16 */
+
+#define FUNCTIONS_BLOCK_SIZE 128
+#define WEIGHT_BLOCK_SIZE 256
 #define RMM_BLOCK_SIZE_XY 16
 
-#define DENSITY_BLOCK_SIZE 256
+#if STORE_FUNCTIONS
+#define DENSITY_BLOCK_SIZE 128
+#else
+#define DENSITY_BLOCK_SIZE 16
+
+// para BLOCK_SIZE de 32, va mejor con 21 (eso no coalescea)
+#define NCO_BATCH_SIZE 16 // <= a DENSITY_BLOCK_SIZE
+#endif
+
 #define DENSITY_DERIV_BLOCK_SIZE 256
-#define FUNCTIONS_BLOCK_SIZE 128
 #define FORCE_BLOCK_SIZE 256
-#define WEIGHT_BLOCK_SIZE 256
 
 // used for "types" constant memory
 #define MAX_ATOMS 100

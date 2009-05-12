@@ -80,6 +80,9 @@ extern "C" void gpu_parameter_init_(const unsigned int& norm, const unsigned int
 	
 	fortran_vars.nucleii = FortranMatrix<uint>(Nuc, fortran_vars.m, 1, 1);	
 	fortran_vars.contractions = FortranMatrix<uint>(ncont, fortran_vars.m, 1, 1);
+  for (uint i = 0; i < fortran_vars.m; i++) {
+    if ((fortran_vars.contractions.get(i) - 1) > MAX_CONTRACTIONS) throw runtime_error("Maximum functions per contraction reached!");
+  }
 	fortran_vars.a_values = FortranMatrix<double>(a, fortran_vars.m, MAX_CONTRACTIONS, FORTRAN_NG);
 	fortran_vars.c_values = FortranMatrix<double>(c, fortran_vars.m, MAX_CONTRACTIONS, FORTRAN_NG);		
 	fortran_vars.rmm_input = FortranMatrix<double>(RMM + (M18 - 1), fortran_vars.m, fortran_vars.nco, fortran_vars.m);

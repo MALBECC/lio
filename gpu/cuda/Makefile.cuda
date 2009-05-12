@@ -111,6 +111,10 @@ ifeq ($(profile),1)
 	NVCCFLAGS += --compiler-options -pg
 endif
 
+ifeq ($(store),1)
+  NVCCFLAGS += -DSTORE_FUNCTIONS
+endif
+
 ifeq ($(regcount),1)
   NVCCFLAGS += --ptxas-options=-v
 endif

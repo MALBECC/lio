@@ -37,12 +37,12 @@
 #define POT_VOSKO_QSQ 37.8469891110325f // POT_VOSKO_Q * POT_VOSKO_Q
 #define POT_VOSKO_4B1B1X0 15.4006373696499f // 4.0 * POT_VOSKO_B1 * (1.0f - t6 * (POT_VOSKO_B1 - 2.0f * POT_VOSKO_X0))
 	
-template<bool compute_exc, bool compute_y2a> __device__ void gpu_pot(float dens, float& ex, float& ec, float& y2a)
+template<bool compute_exc, bool compute_y2a> __device__ void gpu_pot(float dens, float& exc_corr, float& y2a)
 {
 	// data X alpha
 
 	if (dens == 0) {
-		if (compute_exc) { ex = ec = 0.0f; }
+		if (compute_exc) { exc_corr = 0.0f; }
 		if (compute_y2a) y2a = 0.0f;
 		return;
 	}
@@ -50,12 +50,12 @@ template<bool compute_exc, bool compute_y2a> __device__ void gpu_pot(float dens,
 	float y = powf(dens, 0.333333333333333333f);  // rho^(1/3)
 	float v0 = -0.984745021842697f * y; // -4/3 * (3/PI)^(1/3) * rho^(1/3)
 
-	if (compute_exc) ex = POT_ALPHA * y; // -(3/PI)^(1/3) * rho^(1/3)
+  float ec;
+	if (compute_exc) exc_corr = POT_ALPHA * y; // -(3/PI)^(1/3) * rho^(1/3)
 	
 	switch(gpu_Iexch) {
 		case 1:
 		{		
-			if (compute_exc) ec = 0;
 			if (compute_y2a) y2a = v0;
 		}
 		break;
@@ -77,6 +77,7 @@ template<bool compute_exc, bool compute_y2a> __device__ void gpu_pot(float dens,
         if (compute_y2a) vc = 0.0111f * x1 * (3.0f * t3 * t2 - t1 / (x1 * (x1 + 1.0f)) - 2.0f * x1 + 0.5f);
 			}
 			if (compute_y2a) y2a = v0 + ec + vc;
+      if (compute_exc) exc_corr += ec;
 		}
 		break;
 		case 3:
@@ -90,12 +91,13 @@ template<bool compute_exc, bool compute_y2a> __device__ void gpu_pot(float dens,
       ec = POT_VOSKO_A1 * (2 * logf(x1) - t2 + POT_VOSKO_2B1Q * atanf(POT_VOSKO_Q/t1)
         - POT_T4 * (2 * logf(x1 - POT_VOSKO_X0) - t2 + POT_VOSKO_B2X0Q * atanf(POT_VOSKO_Q/t1)));
 			
-			float vc;
       if (compute_y2a) {
+        float vc;
 				vc = ec - POT_VOSKO_A16 * x1 * (((POT_VOSKO_B1 * x1 + POT_VOSKO_2C1) / (x1 * Xx)) -
           POT_VOSKO_4B1B1X0 / (t1 * t1 + POT_VOSKO_QSQ) - POT_T4 * (2.0f / (x1 - POT_VOSKO_X0) - t1 / Xx));
 				y2a = v0 + vc;
 			}
+      if (compute_exc) exc_corr += ec;
 		}
 		break;		
 	}

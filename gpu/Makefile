@@ -31,6 +31,10 @@ else
 	LIBRARY=libg2g.so
 endif
 
+ifeq ($(store),1)
+	CXXFLAGS += -DSTORE_FUNCTIONS
+endif
+
 all: $(LIBRARY)
 
 libg2g.a: $(CUDA_OBJ) $(OBJ)

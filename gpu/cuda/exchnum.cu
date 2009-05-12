@@ -17,11 +17,20 @@
 #include "functions.h"
 
 #if !CPU_KERNELS
+
+#include "pot.h"
+
+#if STORE_FUNCTIONS
 #include "energy.h"
+#else
+#include "energy_recalc.h"
 #endif
 
+#include "energy_derivs.h"
 #include "rmm.h"
 #include "force.h"
+#endif
+
 #include "weight.h"
 
 #if CPU_KERNELS
@@ -32,6 +41,9 @@
 using namespace G2G;
 using namespace std;
 
+#if CPU_KERNELS && !STORE_FUNCTIONS
+#error "Esta combinacion no anda!"
+#endif
 
 #define COMPUTE_RMM 					0
 #define COMPUTE_ENERGY_ONLY		1
@@ -172,9 +184,16 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 	t_total.start();
 		
 	/*** Computo sobre cada cubo ****/
+  #if STORE_FUNCTIONS
 	CudaMatrixFloat point_weights_gpu;
+  #else
+  CudaMatrixFloat4 point_weights_gpu;
+  #endif
+
 	CudaMatrixFloat rdm_gpu, rdmt_gpu;
   CudaMatrixUInt nuc_gpu;
+  CudaMatrixFloat2 factor_ac_gpu;
+	CudaMatrixUInt2 nuc_contractions_gpu;
 
   Timer t_density, t_rmm, t_forces;
   Timer t_cpu;
@@ -185,82 +204,91 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 		
 	for (list<PointGroup>::const_iterator it = final_partition.begin(); it != final_partition.end(); ++it) {
 		const PointGroup& group = *it;
-    //cout << "group is " << (group.is_sphere ? "sphere" : "cube") << endl;
 				
 		/** Load points from group **/
-    #if !CPU_KERNELS
-		{
+    #if STORE_FUNCTIONS
+    HostMatrixFloat point_weights_cpu(group.number_of_points, 1);
+    #else
+    HostMatrixFloat4 point_weights_cpu(group.number_of_points, 1);
     #endif
-			HostMatrixFloat point_weights_cpu(group.number_of_points, 1);
 
-			uint i = 0;		
-			for (list<Point>::const_iterator p = group.points.begin(); p != group.points.end(); ++p, ++i) {
-				point_weights_cpu.get(i) = p->weight;
-			}
-			point_weights_gpu = point_weights_cpu;
-    #if !CPU_KERNELS
+		uint i = 0;		
+		for (list<Point>::const_iterator p = group.points.begin(); p != group.points.end(); ++p, ++i) {
+      #if STORE_FUNCTIONS
+			point_weights_cpu.get(i) = p->weight;
+      #else
+      point_weights_cpu.get(i) = make_float4(p->position.x, p->position.y, p->position.z, p->weight);
+      #endif
 		}
+    #if !CPU_KERNELS
+		point_weights_gpu = point_weights_cpu;
     #endif
 		
 		/** Load functions from group **/
 		uint group_m = group.s_functions + group.p_functions * 3 + group.d_functions * 6;
-
-    #if 0
-    /* el alto de rdm es el multiplo de DENSITY_BLOCK_SIZE mas chico que es mayor que group_m
-       esto asume que DENSITY_BLOCK_SIZE es multiplo de 16, sino no estaria coalesceando */
-    uint rdmt_width = fortran_vars.nco;
-    if (rdmt_width % DENSITY_BLOCK_SIZE != 0) rdmt_width += (DENSITY_BLOCK_SIZE - (fortran_vars.nco % DENSITY_BLOCK_SIZE));
-    #endif
-		
-		/* load RDM */
-    #if !CPU_KERNELS
+		uint4 group_functions = make_uint4(group.s_functions, group.p_functions, group.d_functions, group_m);
 		{
-    #endif
-			HostMatrixFloat rdm_cpu(COALESCED_DIMENSION(group_m), fortran_vars.nco);
-      HostMatrixFloat rdmt_cpu;
+			HostMatrixFloat2 factor_ac_cpu(COALESCED_DIMENSION(group_m), MAX_CONTRACTIONS);
+			HostMatrixUInt2 nuc_contractions_cpu(group_m, 1);
 
-      if (computation_type == COMPUTE_ENERGY_FORCE || computation_type == COMPUTE_FORCE_ONLY)
-        rdmt_cpu.resize(COALESCED_DIMENSION(fortran_vars.nco), group_m);
+			uint i = 0;
+      uint ii = 0;
+			for (set<uint>::const_iterator func = group.functions.begin(); func != group.functions.end(); ++func, ++i) {
+        uint inc;
+        if (i < group.s_functions) inc = 1;
+        else if (i < group.s_functions + group.p_functions) inc = 3;
+        else inc = 6;
 
-			for (unsigned int i = 0; i < fortran_vars.nco; i++) {
-				uint j = 0;
-				for (set<uint>::const_iterator func = group.functions.begin(); func != group.functions.end(); ++func) {
-					if (*func < fortran_vars.s_funcs) {
-						rdm_cpu.get(j, i) = fortran_vars.rmm_input.get(*func, i);
-            if (rdmt_cpu.is_allocated()) rdmt_cpu.get(i, j) = rdm_cpu.get(j, i);
-						j++;
-					}
-					else if (*func < (fortran_vars.s_funcs + fortran_vars.p_funcs * 3)) {
-						for (uint k = 0; k < 3; k++, j++) {
-              rdm_cpu.get(j, i) = fortran_vars.rmm_input.get(*func + k, i);
-              if (rdmt_cpu.is_allocated()) rdmt_cpu.get(i, j) = rdm_cpu.get(j, i);
-            }
-					}
-					else {
-						for (uint k = 0; k < 6; k++, j++) {
-              rdm_cpu.get(j, i) = fortran_vars.rmm_input.get(*func + k, i);
-              if (rdmt_cpu.is_allocated()) rdmt_cpu.get(i, j) = rdm_cpu.get(j, i);
-            }
-					}
-				}
+        uint this_nuc = fortran_vars.nucleii.get(*func) - 1;
+        uint this_cont = fortran_vars.contractions.get(*func);
+
+        for (uint j = 0; j < inc; j++) {
+          nuc_contractions_cpu.get(ii) = make_uint2(this_nuc, this_cont);
+  				for (unsigned int k = 0; k < this_cont; k++)
+            factor_ac_cpu.get(ii, k) = make_float2(fortran_vars.a_values.get(*func, k), fortran_vars.c_values.get(*func, k));
+          ii++;
+        }
 			}
-      #if 0
-      /* fill the rest with zeros */
-      for (uint i = fortran_vars.nco; i < rdmt_width; i++) {
-        for (uint j = 0; j < group_m; j++) rdmt_cpu.get(i, j) = 0;
-      }
-      #endif
-			rdm_gpu = rdm_cpu;
-      if (rdmt_cpu.is_allocated()) rdmt_gpu = rdmt_cpu;
-    #if !CPU_KERNELS
+
+			factor_ac_gpu = factor_ac_cpu;
+			nuc_contractions_gpu = nuc_contractions_cpu;
 		}
-    #endif
+
+		/* load RDM */
+    HostMatrixFloat rdm_cpu(COALESCED_DIMENSION(group_m), fortran_vars.nco);
+    HostMatrixFloat rdmt_cpu(COALESCED_DIMENSION(fortran_vars.nco), group_m);
+
+    for (unsigned int i = 0; i < fortran_vars.nco; i++) {
+      uint j = 0;
+      for (set<uint>::const_iterator func = group.functions.begin(); func != group.functions.end(); ++func) {
+        if (*func < fortran_vars.s_funcs) {
+          rdm_cpu.get(j, i) = fortran_vars.rmm_input.get(*func, i);
+          rdmt_cpu.get(i, j) = rdm_cpu.get(j, i);
+          j++;
+        }
+        else if (*func < (fortran_vars.s_funcs + fortran_vars.p_funcs * 3)) {
+          for (uint k = 0; k < 3; k++, j++) {
+            rdm_cpu.get(j, i) = fortran_vars.rmm_input.get(*func + k, i);
+            rdmt_cpu.get(i, j) = rdm_cpu.get(j, i);
+          }
+        }
+        else {
+          for (uint k = 0; k < 6; k++, j++) {
+            rdm_cpu.get(j, i) = fortran_vars.rmm_input.get(*func + k, i);
+            rdmt_cpu.get(i, j) = rdm_cpu.get(j, i);
+          }
+        }
+      }
+      #if !CPU_KERNELS
+			rdm_gpu = rdm_cpu;
+      rdmt_gpu = rdmt_cpu;
+      #endif
+    }
 
 		dim3 threads(group.number_of_points);
 		dim3 threadBlock, threadGrid;
 		threadBlock = dim3(DENSITY_BLOCK_SIZE);
 		threadGrid = divUp(threads, threadBlock);
-    //cout << "density/energy threads: " << threads.x << " blocks: " << threadGrid.x << " blockSize: " << threadBlock.x << endl;
 
 		/* compute energy */
 		if (computation_type == COMPUTE_ENERGY_ONLY) {
@@ -276,8 +304,13 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
       #else
       t_density.start_and_sync();
 			CudaMatrixFloat energy_gpu(group.number_of_points);
+      #if STORE_FUNCTIONS
 			gpu_compute_density<true, false><<<threadGrid, threadBlock>>>(energy_gpu.data, NULL, point_weights_gpu.data, group.number_of_points,
                                                                     rdm_gpu.data, group.function_values.data, group_m, NULL);
+      #else
+			gpu_compute_density<true><<<threadGrid, threadBlock>>>(energy_gpu.data, point_weights_gpu.data, group.number_of_points,
+                                                             rdmt_gpu.data, group_functions, nuc_contractions_gpu.data, factor_ac_gpu.data);
+      #endif
 			cudaAssertNoError("compute_density");
       t_density.pause_and_sync();
       HostMatrixFloat energy_cpu(energy_gpu);
@@ -301,8 +334,13 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 
 			CudaMatrixFloat rmm_factor_gpu(group.number_of_points);
       t_density.start_and_sync();
+      #if STORE_FUNCTIONS
 			gpu_compute_density<false, false><<<threadGrid, threadBlock>>>(NULL, rmm_factor_gpu.data, point_weights_gpu.data, group.number_of_points,
                                                                      rdm_gpu.data, group.function_values.data, group_m, NULL);
+      #else
+			gpu_compute_density<false><<<threadGrid, threadBlock>>>(rmm_factor_gpu.data, point_weights_gpu.data, group.number_of_points,
+                                                             rdmt_gpu.data, group_functions, nuc_contractions_gpu.data, factor_ac_gpu.data);
+      #endif
 			cudaAssertNoError("compute_density");
       t_density.pause_and_sync();
 
@@ -350,34 +388,31 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 				}
 			}
 		}
+    #if 0
 		/* compute forces */
 		else {
       map<uint, uint> nuc_mapping;
-      #if !CPU_KERNELS
-			{
-      #endif
-				HostMatrixUInt nuc_cpu(group_m, 1);
-				uint i = 0;
-        uint small_atom_idx = 0;
+			HostMatrixUInt nuc_cpu(group_m, 1);
+			uint i = 0;
+      uint small_atom_idx = 0;
 
-        for (set<uint>::iterator func = group.functions.begin(); func != group.functions.end(); ++func) {
-          uint f_advance;
-          if (*func < fortran_vars.s_funcs) f_advance = 1;
-          else if (*func < fortran_vars.s_funcs + fortran_vars.p_funcs * 3) f_advance = 3;
-          else f_advance = 6;
+      for (set<uint>::iterator func = group.functions.begin(); func != group.functions.end(); ++func) {
+        uint f_advance;
+        if (*func < fortran_vars.s_funcs) f_advance = 1;
+        else if (*func < fortran_vars.s_funcs + fortran_vars.p_funcs * 3) f_advance = 3;
+        else f_advance = 6;
 
-          for (uint j = 0; j < f_advance; j++, i++) {
-            uint big_atom_idx = fortran_vars.nucleii.get(*func) - 1;
-            if (nuc_mapping.find(big_atom_idx) == nuc_mapping.end()) {
-              nuc_mapping[big_atom_idx] = small_atom_idx;
-              small_atom_idx++;
-            }
-            nuc_cpu.get(i) = nuc_mapping[big_atom_idx];
+        for (uint j = 0; j < f_advance; j++, i++) {
+          uint big_atom_idx = fortran_vars.nucleii.get(*func) - 1;
+          if (nuc_mapping.find(big_atom_idx) == nuc_mapping.end()) {
+            nuc_mapping[big_atom_idx] = small_atom_idx;
+            small_atom_idx++;
           }
+          nuc_cpu.get(i) = nuc_mapping[big_atom_idx];
         }
-				nuc_gpu = nuc_cpu;
+      }
       #if !CPU_KERNELS
-			}
+			nuc_gpu = nuc_cpu;
       #endif
 
       #if CPU_KERNELS
@@ -466,6 +501,7 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 				fort_forces.get(nuc_it->first, 2) += atom_force.z;
       }
 		}
+    #endif
 	}
 		
 	/** pass results to fortran */

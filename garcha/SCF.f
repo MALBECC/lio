@@ -149,6 +149,7 @@ c      write(*,*) Ef(1),Ef(2),Ef(3)
 c end prueba------
       call mmsol(natom,Nsol,natsol,Iz,pc,r,Em,Rm,Es)
       endif
+      write(*,*) 'int1'
 c test ---------------------------------------------------------
 c to check if MO are normalized
 c       kki=0
@@ -190,6 +191,7 @@ c LAPACK OPTION -----------------------------------------
 #ifdef pack
        call dspev('V','L',M,RMM(M5),RMM(M13),X,M,RMM(M15),info)
 #endif
+       write(*,*) 'dspev'
 c-----------------------------------------------------------
 c 
 c LINEAR DEPENDENCY ELIMINATION
@@ -234,6 +236,8 @@ c
         do 249 i=1,M
          RMM(M15+i-1)=0.D0
  249      RMM(M13+i-1)=0.D0
+
+          write(*,*) 'cosas'
 c
 c ESSL OPTION
 #ifdef essl
@@ -244,6 +248,7 @@ c LAPACK OPTION -----------------------------------------
 c
        call dspev('V','L',M,RMM(M5),RMM(M13),X(1,M+1),M,RMM(M15),info)
 #endif
+       write(*,*) 'dspev'
 c-----------------------------------------------------------
        do 250 i=1,M
        do 250 j=1,M
@@ -285,13 +290,15 @@ c
 
       call int22(NORM,natom,r,Nucd,M,Md,ncontd,
      >          nshelld,cd,ad,RMM,XX)
-c     
+c
+      write(*,*) 'int22'
 **
       if (MEMO) then
          call int3mem(NORM,natom,r,Nuc,M,M20,ncont,nshell,c,a,Nucd,Md,
      >                 ncontd,nshelld,RMM,cd,ad,
      >     nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write1)
       endif
+      write(*,*) 'int3mem'
 ****        
 c---------------------------------------------------------------------
 c Now, damping is performed on the density matrix
@@ -371,6 +378,8 @@ c LAPACK OPTION -----------------------------------------
 c
        call dspev('V','L',M,RMM(M5),RMM(M13),X(1,M+1),M,RMM(M15),info)
 #endif
+
+       write(*,*) 'dspev'
 c-----------------------------------------------------------
 c
 c new coefficients
@@ -573,6 +582,7 @@ c LAPACK OPTION -----------------------------------------
 #ifdef pack
        call dspev('V','L',M,RMM(M5),RMM(M13),X(1,M+1),M,RMM(M15),info)
 #endif
+       write(*,*) 'DONE dspev'
 c-----------------------------------------------------------
 c
 c diagonalization now
@@ -587,6 +597,8 @@ c
        do 52 k=1,M
   52    X(i,M2+j)=X(i,M2+j)+X(i,k)*X(k,M+j)
   50    continue
+
+        write(*,*) 'coeff'
 c
 c --- For the first iteration, damping on density matrix 
 c Important for the case of strating guess of AO

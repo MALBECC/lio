@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 VERBOSE=false
-USE_EXISTING_OPTIONS=true
+USE_EXISTING_OPTIONS=false
 
 require 'fileutils'
 StepRange = Struct.new(:range,:step)
@@ -54,10 +54,10 @@ end
 
 begin
   ranges = {
-    :little_cube_size => StepRange.new((11.5..30.5),0.5),
-    :max_function_exponent => StepRange.new((8..8),2),
+    :little_cube_size => StepRange.new((6.0..20.0),1.0),
+    :max_function_exponent => StepRange.new((7..8),2),
     :min_points_per_cube => StepRange.new((1..1),1),
-    :sphere_radius => StepRange.new((0.0..0.6),0.6)
+    :sphere_radius => StepRange.new((0.6..0.6),0.6)
 #    :assign_all_functions => 1
   }
 

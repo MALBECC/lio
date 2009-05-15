@@ -12,7 +12,7 @@
 /* Los block sizes deben ser multiplos de 16 */
 
 #define FUNCTIONS_BLOCK_SIZE 128
-#define WEIGHT_BLOCK_SIZE 256
+#define WEIGHT_BLOCK_SIZE 128
 #define RMM_BLOCK_SIZE_XY 16
 
 #if STORE_FUNCTIONS

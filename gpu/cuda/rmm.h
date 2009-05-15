@@ -7,6 +7,9 @@
 
 __global__ void gpu_update_rmm(float* factors, uint points, float* rmm, float* function_values, uint m)
 {
+  // skip computation on blocks outside of the valid triangle
+  if (blockIdx.x * blockDim.x > blockIdx.y * blockDim.y) return;
+
 	uint3 pos = index(blockDim, blockIdx, threadIdx);
 
 	uint i = pos.x; // columna
@@ -64,12 +67,8 @@ __global__ void gpu_update_rmm(float* factors, uint points, float* rmm, float* f
           __syncthreads();
         }
 
-        /* fill local variables from local cache */
-        /* NOTE: this condition avoids computation on blocks where no thread is valid; on blocks with some valid threads, the computation
-         * is still performed but contributes 0 to rmm_local (this avoids instruction serialization) */
-        if (blockIdx.x * blockDim.x <= blockIdx.y * blockDim.y) {
-          rmm_local += functions_i_local[point_mod][threadIdx.x] * functions_j_local[point_mod][threadIdx.y];
-        }
+        /* on blocks with some invalid threads, the computation contributes 0 to rmm_local (this avoids instruction serialization) */
+        rmm_local += functions_i_local[point_mod][threadIdx.x] * functions_j_local[point_mod][threadIdx.y];
       }
     }
 	}

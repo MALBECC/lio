@@ -75,8 +75,7 @@ extern "C" void gpu_parameter_init_(const unsigned int& norm, const unsigned int
 	/* ignore the 0th element on these */
 	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells1.get(i) = Nr[Iz[i]]; }
 	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells2.get(i) = Nr2[Iz[i]]; }		
-	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.rm.get(i) = Rm[Iz[i]]; rm_float.get(i) = Rm[Iz[i]]; }
-  rm_float.to_constant("gpu_rm");
+	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.rm.get(i) = Rm[Iz[i]]; }
 	
 	fortran_vars.nucleii = FortranMatrix<uint>(Nuc, fortran_vars.m, 1, 1);	
 	fortran_vars.contractions = FortranMatrix<uint>(ncont, fortran_vars.m, 1, 1);

@@ -1,6 +1,6 @@
 
 /* TODO: juntar esto con la version en functions.h */
-__device__ __host__ void compute_function_(float3 point_position, uint contractions,
+__device__ void compute_function_(float3 point_position, uint contractions,
   float* factor_a, float* factor_c, uint nuc, float& fj, uint4 functions, uint idx)
 {
 	float3 atom_nuc_position = gpu_atom_positions[nuc]; // TODO: ver si al usar memoria compartida para esto, pago menos precio por todos los misses

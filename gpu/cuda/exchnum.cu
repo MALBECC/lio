@@ -20,14 +20,21 @@
 
 #include "pot.h"
 
+#define RMM_STORE_FUNCTIONS 1
+
 #if STORE_FUNCTIONS
 #include "energy.h"
 #else
 #include "energy_recalc.h"
 #endif
 
-#include "energy_derivs.h"
+#if RMM_STORE_FUNCTIONS
 #include "rmm.h"
+#else
+#include "rmm_recalc.h"
+#endif
+
+#include "energy_derivs.h"
 #include "force.h"
 #endif
 
@@ -140,28 +147,44 @@ void gpu_compute_group_functions(void)
 
 void gpu_compute_group_weights(PointGroup& group)
 {
+  cout << "group" << endl;
   CudaMatrixFloat4 point_positions_gpu;
+  CudaMatrixFloat4 atom_position_rm_gpu;
   {
     HostMatrixFloat4 points_positions_cpu(group.number_of_points, 1);
+    HostMatrixFloat4 atom_position_rm_cpu(fortran_vars.atoms, 1);
 
 		uint i = 0;
 		for (list<Point>::const_iterator p = group.points.begin(); p != group.points.end(); ++p, ++i) {
-			points_positions_cpu.get(i) = make_float4(p->position.x, p->position.y, p->position.z, p->atom);
+      set<uint>::const_iterator atom_it = group.nucleii.find(p->atom);
+      uint atom_idx;
+      if (atom_it == group.nucleii.end()) atom_idx = MAX_ATOMS;
+      else atom_idx = distance(group.nucleii.begin(), atom_it);
+			points_positions_cpu.get(i) = make_float4(p->position.x, p->position.y, p->position.z, atom_idx);
 		}
+
+    i = 0;
+    for (set<uint>::const_iterator it = group.nucleii.begin(); it != group.nucleii.end(); ++it, i++) {
+      cout << "atom: " << *it << endl;
+      double3 atom_pos = fortran_vars.atom_positions.get(*it);
+      atom_position_rm_cpu.get(i) = make_float4(atom_pos.x, atom_pos.y, atom_pos.z, fortran_vars.rm.get(*it));
+    }
 		point_positions_gpu = points_positions_cpu;
+    atom_position_rm_gpu = atom_position_rm_cpu;
 	}
 
   CudaMatrixFloat weights_gpu(group.number_of_points);
   dim3 threads(group.number_of_points);
   dim3 blockSize(WEIGHT_BLOCK_SIZE);
   dim3 gridSize = divUp(threads, blockSize);
-  gpu_compute_weights<<<gridSize,blockSize>>>(group.number_of_points, point_positions_gpu.data, weights_gpu.data);
+  gpu_compute_weights<<<gridSize,blockSize>>>(group.number_of_points, point_positions_gpu.data, atom_position_rm_gpu.data, weights_gpu.data, group.nucleii.size());
   cudaAssertNoError("compute_weights");
 
   HostMatrixFloat weights_cpu(weights_gpu);
   uint i = 0;
   for (list<Point>::iterator p = group.points.begin(); p != group.points.end(); ++p, ++i) {
     p->weight *= weights_cpu.get(i);
+    cout << "peso: " << weights_cpu.get(i) << endl;
   }
 }
 
@@ -230,6 +253,7 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 		{
 			HostMatrixFloat2 factor_ac_cpu(COALESCED_DIMENSION(group_m), MAX_CONTRACTIONS);
 			HostMatrixUInt2 nuc_contractions_cpu(group_m, 1);
+      HostMatrixUInt nuc_cpu(group_m, 1);
 
 			uint i = 0;
       uint ii = 0;
@@ -243,15 +267,21 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
         uint this_cont = fortran_vars.contractions.get(*func);
 
         for (uint j = 0; j < inc; j++) {
+          nuc_cpu.get(ii) = this_nuc;
+
           nuc_contractions_cpu.get(ii) = make_uint2(this_nuc, this_cont);
   				for (unsigned int k = 0; k < this_cont; k++)
             factor_ac_cpu.get(ii, k) = make_float2(fortran_vars.a_values.get(*func, k), fortran_vars.c_values.get(*func, k));
+  				for (unsigned int k = this_cont; k < MAX_CONTRACTIONS; k++)
+            factor_ac_cpu.get(ii, k) = make_float2(0.0f,0.0f);
+
           ii++;
         }
 			}
 
 			factor_ac_gpu = factor_ac_cpu;
 			nuc_contractions_gpu = nuc_contractions_cpu;
+      nuc_gpu = nuc_cpu;
 		}
 
 		/* load RDM */
@@ -351,7 +381,12 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 
       CudaMatrixFloat rmm_output_gpu(COALESCED_DIMENSION(group_m), group_m);
       t_rmm.start_and_sync();
+      #if RMM_STORE_FUNCTIONS
 			gpu_update_rmm<<<threadGrid, threadBlock>>>(rmm_factor_gpu.data, group.number_of_points, rmm_output_gpu.data, group.function_values.data, group_m);
+      #else
+      gpu_update_rmm<<<threadGrid, threadBlock>>>(rmm_factor_gpu.data, group.number_of_points, point_weights_gpu.data, group_functions, rmm_output_gpu.data,
+        nuc_gpu.data, factor_ac_gpu.data);
+      #endif
 			cudaAssertNoError("update_rmm");
       t_rmm.pause_and_sync();
 

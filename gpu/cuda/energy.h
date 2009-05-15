@@ -41,9 +41,8 @@ __global__ void gpu_compute_density(float* const energy, float* const factor, co
   partial_density *= 2.0f;
 
   /***** compute energy / factor *****/
-  float y2a;
+  float y2a, exc_corr;
   if (compute_energy) {
-    float exc_corr;
     if (compute_derivs) {
 			gpu_pot<true, true>(partial_density, exc_corr, y2a);
       if (valid_thread) factor[point] = point_weight * y2a;

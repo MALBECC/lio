@@ -147,7 +147,7 @@ void gpu_compute_group_functions(void)
 
 void gpu_compute_group_weights(PointGroup& group)
 {
-  cout << "group" << endl;
+  //cout << "group" << endl;
   CudaMatrixFloat4 point_positions_gpu;
   CudaMatrixFloat4 atom_position_rm_gpu;
   {
@@ -165,7 +165,7 @@ void gpu_compute_group_weights(PointGroup& group)
 
     i = 0;
     for (set<uint>::const_iterator it = group.nucleii.begin(); it != group.nucleii.end(); ++it, i++) {
-      cout << "atom: " << *it << endl;
+      //cout << "atom: " << *it << endl;
       double3 atom_pos = fortran_vars.atom_positions.get(*it);
       atom_position_rm_cpu.get(i) = make_float4(atom_pos.x, atom_pos.y, atom_pos.z, fortran_vars.rm.get(*it));
     }
@@ -184,7 +184,7 @@ void gpu_compute_group_weights(PointGroup& group)
   uint i = 0;
   for (list<Point>::iterator p = group.points.begin(); p != group.points.end(); ++p, ++i) {
     p->weight *= weights_cpu.get(i);
-    cout << "peso: " << weights_cpu.get(i) << endl;
+    //cout << "peso: " << weights_cpu.get(i) << endl;
   }
 }
 
@@ -309,11 +309,11 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
           }
         }
       }
-      #if !CPU_KERNELS
-			rdm_gpu = rdm_cpu;
-      rdmt_gpu = rdmt_cpu;
-      #endif
     }
+    #if !CPU_KERNELS
+    rdm_gpu = rdm_cpu;
+    rdmt_gpu = rdmt_cpu;
+    #endif
 
 		dim3 threads(group.number_of_points);
 		dim3 threadBlock, threadGrid;

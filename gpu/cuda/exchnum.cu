@@ -75,6 +75,7 @@ void gpu_compute_group_functions(void)
 	
 	for (list<PointGroup>::iterator it = final_partition.begin(); it != final_partition.end(); ++it) {
 		PointGroup& group = *it;
+    cout << "points: " << group.number_of_points << endl;
 		/** Load points from group **/
 		{
 			HostMatrixFloat4 points_position_cpu(group.number_of_points, 1);
@@ -180,12 +181,35 @@ void gpu_compute_group_weights(PointGroup& group)
   gpu_compute_weights<<<gridSize,blockSize>>>(group.number_of_points, point_positions_gpu.data, atom_position_rm_gpu.data, weights_gpu.data, group.nucleii.size());
   cudaAssertNoError("compute_weights");
 
+  #if REMOVE_ZEROS
+  std::list<Point> nonzero_points;
+  uint nonzero_number_of_points = 0;
+  #endif
+
+  uint ceros = 0;
+
   HostMatrixFloat weights_cpu(weights_gpu);
   uint i = 0;
   for (list<Point>::iterator p = group.points.begin(); p != group.points.end(); ++p, ++i) {
     p->weight *= weights_cpu.get(i);
-    //cout << "peso: " << weights_cpu.get(i) << endl;
+
+    if (p->weight == 0.0) {
+      ceros++;
+    }
+    #if REMOVE_ZEROS
+    else {
+      nonzero_points.push_back(*p);
+      nonzero_number_of_points++;
+    }
+    #endif
   }
+
+  cout << "ceros: " << ceros << "/" << group.number_of_points << " (" << (ceros / (double)group.number_of_points) * 100 << "%)" << endl;
+  
+  #if REMOVE_ZEROS
+  group.points = nonzero_points;
+  group.number_of_points = nonzero_number_of_points;
+  #endif
 }
 
 /********************************
@@ -335,8 +359,13 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
       t_density.start_and_sync();
 			CudaMatrixFloat energy_gpu(group.number_of_points);
       #if STORE_FUNCTIONS
+      #if DENSITY_ALT
+			gpu_compute_density<true, false><<<threadGrid, threadBlock>>>(energy_gpu.data, NULL, point_weights_gpu.data, group.number_of_points,
+                                                                    rdmt_gpu.data, group.function_values.data, group_m, NULL);
+      #else
 			gpu_compute_density<true, false><<<threadGrid, threadBlock>>>(energy_gpu.data, NULL, point_weights_gpu.data, group.number_of_points,
                                                                     rdm_gpu.data, group.function_values.data, group_m, NULL);
+      #endif
       #else
 			gpu_compute_density<true><<<threadGrid, threadBlock>>>(energy_gpu.data, point_weights_gpu.data, group.number_of_points,
                                                              rdmt_gpu.data, group_functions, nuc_contractions_gpu.data, factor_ac_gpu.data);
@@ -365,8 +394,13 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 			CudaMatrixFloat rmm_factor_gpu(group.number_of_points);
       t_density.start_and_sync();
       #if STORE_FUNCTIONS
+      #if DENSITY_ALT
+			gpu_compute_density<false, false><<<threadGrid, threadBlock>>>(NULL, rmm_factor_gpu.data, point_weights_gpu.data, group.number_of_points,
+                                                                     rdmt_gpu.data, group.function_values.data, group_m, NULL);
+      #else
 			gpu_compute_density<false, false><<<threadGrid, threadBlock>>>(NULL, rmm_factor_gpu.data, point_weights_gpu.data, group.number_of_points,
                                                                      rdm_gpu.data, group.function_values.data, group_m, NULL);
+      #endif
       #else
 			gpu_compute_density<false><<<threadGrid, threadBlock>>>(rmm_factor_gpu.data, point_weights_gpu.data, group.number_of_points,
                                                              rdmt_gpu.data, group_functions, nuc_contractions_gpu.data, factor_ac_gpu.data);

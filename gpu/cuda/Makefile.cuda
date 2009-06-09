@@ -111,8 +111,14 @@ ifeq ($(profile),1)
 	NVCCFLAGS += --compiler-options -pg
 endif
 
-ifeq ($(store),1)
-  NVCCFLAGS += -DSTORE_FUNCTIONS
+ifeq ($(store),0)
+	NVCCFLAGS += -DSTORE_FUNCTIONS=0
+else
+	ifeq ($(store),1)
+		NVCCFLAGS += -DSTORE_FUNCTIONS=1 -DDENSITY_ALT=0
+	else
+		NVCCFLAGS += -DSTORE_FUNCTIONS=1 -DDENSITY_ALT=1
+	endif
 endif
 
 ifeq ($(regcount),1)

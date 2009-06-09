@@ -31,8 +31,14 @@ else
 	LIBRARY=libg2g.so
 endif
 
-ifeq ($(store),1)
-	CXXFLAGS += -DSTORE_FUNCTIONS
+ifeq ($(store),0)
+	CXXFLAGS += -DSTORE_FUNCTIONS=0
+else
+	ifeq ($(store),1)
+		CXXFLAGS += -DSTORE_FUNCTIONS=1 -DDENSITY_ALT=0
+	else
+		CXXFLAGS += -DSTORE_FUNCTIONS=1 -DDENSITY_ALT=1
+	endif
 endif
 
 all: $(LIBRARY)

@@ -220,6 +220,9 @@ void regenerate_partition(void)
   
 	cout << "Time: " << t_total << endl;
 	cout << "Grilla original: " << puntos_totales << " puntos, " << puntos_totales * fortran_vars.m << " funciones" << endl;
+
+  uint nco_m = 0;
+  uint m_m = 0;
 	
 	cout << "filling cube parameters and adding to partition..." << endl;
 	t_total.start();
@@ -229,31 +232,37 @@ void regenerate_partition(void)
 				Cube& cube = prism[i][j][k];
 
 				double3 cube_coord_abs = x0 + make_uint3(i,j,k) * little_cube_size;
-				if (cube.number_of_points < min_points_per_cube) { /*cout << "cubo vacio" << endl;*/ continue; }
-
+			
         cube.assign_significative_functions(cube_coord_abs, min_exps_func);
 				if (cube.functions.empty()) { /*cout << "cubo sin funciones" << endl;*/ continue; }
 
         final_partition.push_back(cube);
 
+        PointGroup& group = final_partition.back();
+
 #if WEIGHT_GPU
-        final_partition.back().compute_weights();
+        group.compute_weights();
 #else
   #if WEIGHT_CUTOFFS
 				assign_cube_weights(cube);
   #endif
-#endif        
+#endif
+
+        if (group.number_of_points < min_points_per_cube) { final_partition.pop_back(); continue; }
 
         // para hacer histogramas
 #ifdef HISTOGRAM
-        cout << "[" << fortran_vars.grid_type << "] cubo: (" << i << "," << j << "," << k << "): " << cube.number_of_points << " puntos; " <<
-          cube.total_functions() << " funciones, vecinos: " << cube.nucleii.size() << endl;
+        cout << "[" << fortran_vars.grid_type << "] cubo: (" << i << "," << j << "," << k << "): " << group.number_of_points << " puntos; " <<
+          group.total_functions() << " funciones, vecinos: " << group.nucleii.size() << endl;
 #endif
 
-				puntos_finales += cube.number_of_points;
-				funciones_finales += cube.number_of_points * cube.total_functions();
-        costo += cube.number_of_points * (cube.total_functions() * cube.total_functions());
+				puntos_finales += group.number_of_points;
+				funciones_finales += group.number_of_points * group.total_functions();
+        costo += group.number_of_points * (group.total_functions() * group.total_functions());
         //cout << "cubo: funcion x punto: " << cube.total_functions() / (double)cube.number_of_points << endl;
+
+        nco_m += group.total_functions() * fortran_vars.nco;
+        m_m += group.total_functions() * group.total_functions();
 			}
 		}
 	}
@@ -270,25 +279,33 @@ void regenerate_partition(void)
 			sphere.assign_significative_functions(min_exps_func);
 	
 			assert(sphere.total_functions() > 0);
-			
-#ifdef HISTOGRAM		
-			cout << "sphere: " << sphere.number_of_points << " puntos, " << sphere.total_functions() << " funciones | funcion x punto: " << 
-        sphere.total_functions() / (double)sphere.number_of_points << " vecinos: " << sphere.nucleii.size() << endl;
-#endif		
-
+			      
       final_partition.push_front(sphere);
-	    final_partition.front().compute_weights();
+
+      PointGroup& group = final_partition.front();
+	    group.compute_weights();
       t_total.sync();
-			
-	    
-	    puntos_finales += sphere.number_of_points;
-	    funciones_finales += sphere.number_of_points * sphere.total_functions();
-      costo += sphere.number_of_points * (sphere.total_functions() * sphere.total_functions());
+
+      if (group.number_of_points < min_points_per_cube) { final_partition.pop_front(); continue; }
+
+#ifdef HISTOGRAM
+			cout << "sphere: " << group.number_of_points << " puntos, " << group.total_functions() <<
+        " funciones | funcion x punto: " << group.total_functions() / (double)group.number_of_points <<
+        " vecinos: " << group.nucleii.size() << endl;
+#endif
+
+	    puntos_finales += group.number_of_points;
+	    funciones_finales += group.number_of_points * group.total_functions();
+      costo += group.number_of_points * (group.total_functions() * group.total_functions());
+
+      nco_m += group.total_functions() * fortran_vars.nco;
+      m_m += group.total_functions() * group.total_functions();
 	  }
 	}
 
 	cout << "total: " << t_total << endl;
 	cout << "Grilla final: " << puntos_finales << " puntos, " << funciones_finales << " funciones" << endl;
   cout << "Costo: " << costo << endl;
+  cout << "NCOxM: " << nco_m << " MxM: " << m_m << endl;
   cout << "Particion final: " << final_partition.size() << " grupos" << endl;
 }

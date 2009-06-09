@@ -90,6 +90,7 @@ extern "C" void gpu_parameter_init_(const unsigned int& norm, const unsigned int
 	fortran_vars.e1 = FortranMatrix<double>(e, SMALL_GRID_SIZE, 3, SMALL_GRID_SIZE);
 	fortran_vars.e2 = FortranMatrix<double>(e2, MEDIUM_GRID_SIZE, 3, MEDIUM_GRID_SIZE);
 	fortran_vars.e3 = FortranMatrix<double>(e3, BIG_GRID_SIZE, 3, BIG_GRID_SIZE);
+	//for (uint i = 0; i < BIG_GRID_SIZE; i++) cout << "[" << fortran_vars.e3.get(i,0) << ", " << fortran_vars.e3.get(i,1) << ", " << fortran_vars.e3.get(i,2) << "]," << endl;
 	fortran_vars.wang1 = FortranMatrix<double>(wang, SMALL_GRID_SIZE, 1, SMALL_GRID_SIZE);
 	fortran_vars.wang2 = FortranMatrix<double>(wang2, MEDIUM_GRID_SIZE, 1, MEDIUM_GRID_SIZE);
 	fortran_vars.wang3 = FortranMatrix<double>(wang3, BIG_GRID_SIZE, 1, BIG_GRID_SIZE);

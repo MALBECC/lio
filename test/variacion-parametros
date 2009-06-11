@@ -48,7 +48,8 @@ def run_gpu
       :density => output[/TIMER: density\/energy ((\d+s\. )?\d+us\.)/,1],
       :rmm => output[/TIMER: rmm: ((\d+s\. )?\d+us\.)/,1],
       :NCOxM => output[/NCOxM: (\d+)/,1],
-      :MxM => output[/MxM: (\d+)/,1]
+      :MxM => output[/MxM: (\d+)/,1],
+      :costo => output[/Costo: (\d+)/,1]      
     }
     results.map {|k,v| print "#{k}: #{v.nil? ? '-' : v} "}; puts
   end

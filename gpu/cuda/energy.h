@@ -19,7 +19,7 @@ __global__ void gpu_compute_density(float* const energy, float* const factor, co
 
     for (uint j = 0; j < m; j++) {
       __syncthreads();
-      if (i + threadIdx.x < NCO_BATCH_SIZE) {
+      if (threadIdx.x < NCO_BATCH_SIZE) {
         if (i + threadIdx.x < gpu_nco) rdm_sh[threadIdx.x] = rdm[COALESCED_DIMENSION(gpu_nco) * j + (i + threadIdx.x)];
         else rdm_sh[threadIdx.x] = 0.0f;
       }

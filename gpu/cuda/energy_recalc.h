@@ -83,7 +83,7 @@ __global__ void gpu_compute_density(float* output, float4* point_weight_position
 
           __syncthreads();
 
-          if (i + threadIdx.x < NCO_BATCH_SIZE) {
+          if (threadIdx.x < NCO_BATCH_SIZE) {
             if  (i + threadIdx.x < gpu_nco) rdm_sh[threadIdx.x] = rdm[COALESCED_DIMENSION(gpu_nco) * (j + jj) + (i + threadIdx.x)];
             else rdm_sh[threadIdx.x] = 0.0f;
           }

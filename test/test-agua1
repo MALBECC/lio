@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/bin/env ruby
 
 Dir.chdir('agua1')
 

@@ -234,7 +234,8 @@ void regenerate_partition(void)
 				double3 cube_coord_abs = x0 + make_uint3(i,j,k) * little_cube_size;
 			
         cube.assign_significative_functions(cube_coord_abs, min_exps_func);
-				if (cube.functions.empty()) { /*cout << "cubo sin funciones" << endl;*/ continue; }
+				if (cube.functions.empty()) { continue; }
+        if (cube.number_of_points < min_points_per_cube) { continue; }
 
         final_partition.push_back(cube);
 
@@ -276,13 +277,14 @@ void regenerate_partition(void)
 	
 			assert(sphere.number_of_points > 0);
 			
-			sphere.assign_significative_functions(min_exps_func);
-	
+			sphere.assign_significative_functions(min_exps_func);	
 			assert(sphere.total_functions() > 0);
-			      
+
+      if (sphere.number_of_points < min_points_per_cube) { continue; }
       final_partition.push_front(sphere);
 
       PointGroup& group = final_partition.front();
+      assert(group.number_of_points != 0);
 	    group.compute_weights();
       t_total.sync();
 
@@ -293,6 +295,8 @@ void regenerate_partition(void)
         " funciones | funcion x punto: " << group.total_functions() / (double)group.number_of_points <<
         " vecinos: " << group.nucleii.size() << endl;
 #endif
+
+      assert(group.number_of_points > 0);
 
 	    puntos_finales += group.number_of_points;
 	    funciones_finales += group.number_of_points * group.total_functions();

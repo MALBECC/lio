@@ -30,6 +30,8 @@ template<class T> bool Matrix<T>::is_allocated(void) const {
  * HostMatrix
  ***************************/
 template<class T> void HostMatrix<T>::alloc_data(void) {
+  assert(this->bytes() != 0);
+  
 	if (pinned) {
 		cudaError_t error_status = cudaMallocHost((void**)&this->data, this->bytes());
 		assert(error_status != cudaErrorMemoryAllocation);
@@ -178,6 +180,8 @@ template<class T> CudaMatrix<T>::CudaMatrix(unsigned int _width, unsigned int _h
 }
 
 template<class T> CudaMatrix<T>& CudaMatrix<T>::resize(unsigned int _width, unsigned int _height) {
+  assert(_width * _height != 0);
+  
   if (_width != this->width || _height != this->height) {
     if (this->data) cudaFree(this->data);
     this->width = _width; this->height = _height;

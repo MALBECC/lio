@@ -114,11 +114,7 @@ endif
 ifeq ($(store),0)
 	NVCCFLAGS += -DSTORE_FUNCTIONS=0
 else
-	ifeq ($(store),1)
-		NVCCFLAGS += -DSTORE_FUNCTIONS=1 -DDENSITY_ALT=0
-	else
-		NVCCFLAGS += -DSTORE_FUNCTIONS=1 -DDENSITY_ALT=1
-	endif
+	NVCCFLAGS += -DSTORE_FUNCTIONS=1
 endif
 
 ifeq ($(regcount),1)

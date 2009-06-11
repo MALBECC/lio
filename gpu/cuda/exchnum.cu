@@ -75,7 +75,6 @@ void gpu_compute_group_functions(void)
 	
 	for (list<PointGroup>::iterator it = final_partition.begin(); it != final_partition.end(); ++it) {
 		PointGroup& group = *it;
-    cout << "points: " << group.number_of_points << endl;
 		/** Load points from group **/
 		{
 			HostMatrixFloat4 points_position_cpu(group.number_of_points, 1);
@@ -359,13 +358,8 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
       t_density.start_and_sync();
 			CudaMatrixFloat energy_gpu(group.number_of_points);
       #if STORE_FUNCTIONS
-      #if DENSITY_ALT
 			gpu_compute_density<true, false><<<threadGrid, threadBlock>>>(energy_gpu.data, NULL, point_weights_gpu.data, group.number_of_points,
                                                                     rdmt_gpu.data, group.function_values.data, group_m, NULL);
-      #else
-			gpu_compute_density<true, false><<<threadGrid, threadBlock>>>(energy_gpu.data, NULL, point_weights_gpu.data, group.number_of_points,
-                                                                    rdm_gpu.data, group.function_values.data, group_m, NULL);
-      #endif
       #else
 			gpu_compute_density<true><<<threadGrid, threadBlock>>>(energy_gpu.data, point_weights_gpu.data, group.number_of_points,
                                                              rdmt_gpu.data, group_functions, nuc_contractions_gpu.data, factor_ac_gpu.data);
@@ -394,13 +388,8 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 			CudaMatrixFloat rmm_factor_gpu(group.number_of_points);
       t_density.start_and_sync();
       #if STORE_FUNCTIONS
-      #if DENSITY_ALT
 			gpu_compute_density<false, false><<<threadGrid, threadBlock>>>(NULL, rmm_factor_gpu.data, point_weights_gpu.data, group.number_of_points,
                                                                      rdmt_gpu.data, group.function_values.data, group_m, NULL);
-      #else
-			gpu_compute_density<false, false><<<threadGrid, threadBlock>>>(NULL, rmm_factor_gpu.data, point_weights_gpu.data, group.number_of_points,
-                                                                     rdm_gpu.data, group.function_values.data, group_m, NULL);
-      #endif
       #else
 			gpu_compute_density<false><<<threadGrid, threadBlock>>>(rmm_factor_gpu.data, point_weights_gpu.data, group.number_of_points,
                                                              rdmt_gpu.data, group_functions, nuc_contractions_gpu.data, factor_ac_gpu.data);

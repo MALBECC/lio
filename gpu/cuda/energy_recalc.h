@@ -44,7 +44,7 @@ __global__ void gpu_compute_density(float* output, float4* point_weight_position
 
   float partial_density = 0.0f;
 
-  __shared__ float rdm_sh[DENSITY_BLOCK_SIZE];
+  __shared__ float rdm_sh[NCO_BATCH_SIZE];
   __shared__ uint nuc_sh[DENSITY_BLOCK_SIZE];
   __shared__ uint contractions_sh[DENSITY_BLOCK_SIZE];
   __shared__ float factor_a_sh[DENSITY_BLOCK_SIZE][MAX_CONTRACTIONS];
@@ -83,8 +83,10 @@ __global__ void gpu_compute_density(float* output, float4* point_weight_position
 
           __syncthreads();
 
-          if (i + threadIdx.x < gpu_nco) rdm_sh[threadIdx.x] = rdm[COALESCED_DIMENSION(gpu_nco) * (j + jj) + (i + threadIdx.x)];
-          else rdm_sh[threadIdx.x] = 0.0f;
+          if (i + threadIdx.x < NCO_BATCH_SIZE && i + threadIdx.x < gpu_nco)
+            rdm_sh[threadIdx.x] = rdm[COALESCED_DIMENSION(gpu_nco) * (j + jj) + (i + threadIdx.x)];
+          else
+            rdm_sh[threadIdx.x] = 0.0f;
 
           __syncthreads();
 

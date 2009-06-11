@@ -16,13 +16,8 @@
 #define RMM_BLOCK_SIZE_XY 16
 
 #if STORE_FUNCTIONS
-#if DENSITY_ALT
 #define NCO_BATCH_SIZE 8
 #define DENSITY_BLOCK_SIZE 128
-#else
-#define DENSITY_BLOCK_SIZE 128
-#endif
-
 #else
 #define DENSITY_BLOCK_SIZE 16
 

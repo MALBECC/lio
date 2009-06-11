@@ -258,7 +258,7 @@ void regenerate_partition(void)
 
 				puntos_finales += group.number_of_points;
 				funciones_finales += group.number_of_points * group.total_functions();
-        costo += group.number_of_points * (group.total_functions() * group.total_functions());
+        costo += group.number_of_points * (group.total_functions() * group.total_functions()) + group.total_functions() * fortran_vars.nco;
         //cout << "cubo: funcion x punto: " << cube.total_functions() / (double)cube.number_of_points << endl;
 
         nco_m += group.total_functions() * fortran_vars.nco;
@@ -296,7 +296,7 @@ void regenerate_partition(void)
 
 	    puntos_finales += group.number_of_points;
 	    funciones_finales += group.number_of_points * group.total_functions();
-      costo += group.number_of_points * (group.total_functions() * group.total_functions());
+      costo += group.number_of_points * (group.total_functions() * group.total_functions()) + group.total_functions() * fortran_vars.nco;
 
       nco_m += group.total_functions() * fortran_vars.nco;
       m_m += group.total_functions() * group.total_functions();

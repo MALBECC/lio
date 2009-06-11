@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 VERBOSE=false
-USE_EXISTING_OPTIONS=false
+USE_EXISTING_OPTIONS=true
 
 require 'fileutils'
 StepRange = Struct.new(:range,:step)
@@ -46,7 +46,9 @@ def run_gpu
       :funcs => output[/Grilla final: \d+ puntos, (\d+)/,1],
       :first_solve => output[/gpu_solve_cubes ((\d+s\. )?\d+us\.)/,1],
       :density => output[/TIMER: density\/energy ((\d+s\. )?\d+us\.)/,1],
-      :rmm => output[/TIMER: rmm: ((\d+s\. )?\d+us\.)/,1]          
+      :rmm => output[/TIMER: rmm: ((\d+s\. )?\d+us\.)/,1],
+      :NCOxM => output[/NCOxM: (\d+)/,1],
+      :MxM => output[/MxM: (\d+)/,1]
     }
     results.map {|k,v| print "#{k}: #{v.nil? ? '-' : v} "}; puts
   end
@@ -54,7 +56,7 @@ end
 
 begin
   ranges = {
-    :little_cube_size => StepRange.new((6.0..20.0),1.0),
+    :little_cube_size => StepRange.new((4.0..10.0),0.5),
     :max_function_exponent => StepRange.new((7..8),2),
     :min_points_per_cube => StepRange.new((1..1),1),
     :sphere_radius => StepRange.new((0.6..0.6),0.6)

@@ -1,16 +1,29 @@
 #!/bin/env ruby
-VERBOSE=false
-USE_EXISTING_OPTIONS=false
-
 require 'fileutils'
 StepRange = Struct.new(:range,:step)
+
+class Combination < Hash
+  def save(file)
+    File.open(file,'w') do |f|
+      self.map {|k,v| f.puts "#{k} #{v}"}
+    end    
+  end
+  
+  def to_s
+    self.map {|k,v| "#{k} = #{v}"}.join('; ') + "\n"
+  end
+end
 
 if (ARGV.first.nil?)
   STDERR.puts "usage: #{$0} <dir> [.. <dir>]"
   exit(1)
 end
 
-def variation(ranges, combination = {}, block = Proc.new)
+VERBOSE=ARGV.include?('-v')
+USE_EXISTING_OPTIONS=ARGV.include?('-existing')
+SAVE_BEST=ARGV.include?('-save')
+
+def variation(ranges, combination = Combination.new, block = Proc.new)
   if (ranges.empty?) then block.call(combination)
   else
     ranges = ranges.dup
@@ -34,6 +47,7 @@ def run_gpu
   else
     # run
     output = `/usr/bin/time -p -a -o /dev/stdout ../../garcha/garcha-gpu < t`
+    if ($? != 0) then raise 'Execution failed!' end
     
     # analyze
     results = {
@@ -53,6 +67,8 @@ def run_gpu
       :costo => output[/Costo: (\d+)/,1]      
     }
     results.map {|k,v| print "#{k}: #{v.nil? ? '-' : v} "}; puts
+    
+    return results
   end
 end
 
@@ -65,23 +81,34 @@ begin
 #    :assign_all_functions => 1
   }
 
-  ARGV.each do |dir|
+  dirs = ARGV.reject {|arg| arg =~ /^-/}
+  dirs.each do |dir|
     Dir.chdir(dir)
     puts "=> #{dir}"
   
     if (USE_EXISTING_OPTIONS)
       run_gpu()
     else
+      best = nil
+      lowest_time = Float::MAX
+      
       variation(ranges) do |combination|
-        File.open('gpu_options','w') do |f|
-          combination.each_pair {|k,v| print "#{k} = #{v}; "}; puts
-          combination.map {|k,v| f.puts "#{k} #{v}"}
-        end
+        combination.save('gpu_options')
+        puts combination
+        results = run_gpu()
         
-        run_gpu()
+        current_time = results[:first_solve]
+        current_time = current_time[/(\d+)s./,1].to_i + (current_time[/(\d+)us./,1].to_f / 1000000)
+        if (current_time < lowest_time)
+          lowest_time = current_time
+          best = combination
+        end
       end
     
       FileUtils.rm('gpu_options', :force => true)
+      
+      if (SAVE_BEST && !best.nil?) then best.save('gpu_options.best') end
+      puts 'BEST COMBINATION:',best,"BEST TIME: #{lowest_time}s"
     end
     
     Dir.chdir('..')      

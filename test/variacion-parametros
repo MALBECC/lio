@@ -109,7 +109,7 @@ begin
     
       FileUtils.rm('gpu_options', :force => true)
       
-      if (SAVE_BEST && !best.nil?) then best_combination.save("gpu_options.#{best_results[:impl]}.best") end
+      if (SAVE_BEST && !best_combination.nil?) then best_combination.save("gpu_options.#{best_results[:impl]}.best") end
       puts 'BEST COMBINATION:',best_combination,"BEST TIME: #{lowest_time}s"
     end
     

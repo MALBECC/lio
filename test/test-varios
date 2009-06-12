@@ -14,7 +14,7 @@
   puts 'CPU...'
   cpu_output = `../../garcha/garcha-cpu < t`[/SCF ENERGY\s+=\s+(-?\d+\.\d+)/,1].to_f
   delta = ((gpu_output - cpu_output) * 627.5).abs
-  delta_ref = 0.00100951948859063
+  delta_ref = 0.006
 
   puts "Energia GPU: #{gpu_output}"
   puts "Energia CPU: #{cpu_output}"

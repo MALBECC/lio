@@ -64,7 +64,7 @@ def run_gpu
       :NCOxM => output[/NCOxM: (\d+)/,1],
       :MxM => output[/MxM: (\d+)/,1],
       :NCOvsM =>  output[/NCOxM: (\d+)/,1].to_f / output[/MxM: (\d+)/,1].to_f,
-      :costo => output[/Costo: (\d+)/,1]      
+      :impl => output[/GPU Implementation: (store|recalc)/,1],
     }
     results.map {|k,v| print "#{k}: #{v.nil? ? '-' : v} "}; puts
     
@@ -74,10 +74,10 @@ end
 
 begin
   ranges = {
-    :little_cube_size => StepRange.new((5.5..10.0),0.5),
+    :little_cube_size => StepRange.new((5.5..20.0),0.5),
     :max_function_exponent => StepRange.new((7..7),1),
     :min_points_per_cube => StepRange.new((1..1),1),
-    :sphere_radius => StepRange.new((0.0..0.6),0.6)
+    :sphere_radius => StepRange.new((0.6..0.6),0.6)
 #    :assign_all_functions => 1
   }
 
@@ -89,7 +89,8 @@ begin
     if (USE_EXISTING_OPTIONS)
       run_gpu()
     else
-      best = nil
+      best_combination = nil
+      best_results = nil
       lowest_time = Float::MAX
       
       variation(ranges) do |combination|
@@ -101,14 +102,15 @@ begin
         current_time = current_time[/(\d+)s./,1].to_i + (current_time[/(\d+)us./,1].to_f / 1000000)
         if (current_time < lowest_time)
           lowest_time = current_time
-          best = combination
+          best_combination = combination
+          best_results = results
         end
       end
     
       FileUtils.rm('gpu_options', :force => true)
       
-      if (SAVE_BEST && !best.nil?) then best.save('gpu_options.best') end
-      puts 'BEST COMBINATION:',best,"BEST TIME: #{lowest_time}s"
+      if (SAVE_BEST && !best.nil?) then best_combination.save("gpu_options.#{best_results[:impl]}.best") end
+      puts 'BEST COMBINATION:',best_combination,"BEST TIME: #{lowest_time}s"
     end
     
     Dir.chdir('..')      

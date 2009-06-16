@@ -1,5 +1,6 @@
 #!/bin/env ruby
 require 'fileutils'
+require 'ftools'
 StepRange = Struct.new(:range,:step)
 
 class Combination < Hash
@@ -22,6 +23,8 @@ end
 VERBOSE=ARGV.include?('-v')
 USE_EXISTING_OPTIONS=ARGV.include?('-existing')
 SAVE_BEST=ARGV.include?('-save')
+USE_BEST_RECALC=ARGV.include?('-best-recalc')
+USE_BEST_STORE=ARGV.include?('-best-store')
 
 def variation(ranges, combination = Combination.new, block = Proc.new)
   if (ranges.empty?) then block.call(combination.dup)
@@ -87,6 +90,8 @@ begin
     puts "=> #{dir}"
   
     if (USE_EXISTING_OPTIONS)
+      if (USE_BEST_RECALC) then File.copy('gpu_options.recalc.best', 'gpu_options'); puts 'Using best recalc' end
+      if (USE_BEST_STORE) then File.copy('gpu_options.store.best', 'gpu_options'); puts 'Using best store' end
       run_gpu()
     else
       best_combination = nil
@@ -109,8 +114,10 @@ begin
     
       FileUtils.rm('gpu_options', :force => true)
       
-      if (SAVE_BEST && !best_combination.nil?) then best_combination.save("gpu_options.#{best_results[:impl]}.best") end
-      puts 'BEST COMBINATION:',best_combination,"BEST TIME: #{lowest_time}s"
+      if (SAVE_BEST && !best_combination.nil?) then
+        best_combination.save("gpu_options.#{best_results[:impl]}.best")
+        puts 'BEST COMBINATION:',best_combination,"BEST TIME: #{lowest_time}s"
+      end
     end
     
     Dir.chdir('..')      

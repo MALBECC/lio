@@ -1,0 +1,9 @@
+#!/bin/env ruby
+matchear=ARGV.first
+
+while (s = STDIN.gets)
+  if (s =~ /#{matchear}/)
+    segundos = s[/#{matchear}: (\d+)us/,1].to_f / 1000000
+    puts segundos
+  end
+end

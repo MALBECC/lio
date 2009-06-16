@@ -1,6 +1,5 @@
 #!/bin/env ruby
 require 'fileutils'
-require 'ftools'
 StepRange = Struct.new(:range,:step)
 
 class Combination < Hash
@@ -90,8 +89,8 @@ begin
     puts "=> #{dir}"
   
     if (USE_EXISTING_OPTIONS)
-      if (USE_BEST_RECALC) then File.copy('gpu_options.recalc.best', 'gpu_options'); puts 'Using best recalc' end
-      if (USE_BEST_STORE) then File.copy('gpu_options.store.best', 'gpu_options'); puts 'Using best store' end
+      if (USE_BEST_RECALC) then FileUtils.cp('gpu_options.recalc.best', 'gpu_options'); puts 'Using best recalc' end
+      if (USE_BEST_STORE) then FileUtils.cp('gpu_options.store.best', 'gpu_options'); puts 'Using best store' end
       run_gpu()
     else
       best_combination = nil

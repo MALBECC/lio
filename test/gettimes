@@ -1,9 +1,17 @@
 #!/bin/env ruby
 matchear=ARGV.first
+i = 1
 
 while (s = STDIN.gets)
   if (s =~ /#{matchear}/)
-    segundos = s[/#{matchear}: (\d+)us/,1].to_f / 1000000
-    puts "#{i} #{segundos}"
+    if (matchear == 'NCOvsM')
+      r = s[/#{matchear}: (\d+(\.\d+)?)/,1].to_f
+      puts "#{i} #{r}"
+    else
+      segundos = s[/#{matchear}: (\d+)us/,1].to_f / 1000000
+      puts "#{i} #{segundos}"
+    end
+
+    i = i+1
   end
 end

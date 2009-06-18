@@ -76,7 +76,7 @@ end
 
 begin
   ranges = {
-    :little_cube_size => StepRange.new((5.5..20.0),0.5),
+    :little_cube_size => StepRange.new((5.5..30.0),0.5),
     :max_function_exponent => StepRange.new((7..7),1),
     :min_points_per_cube => StepRange.new((1..1),1),
     :sphere_radius => StepRange.new((0.6..0.6),0.6)

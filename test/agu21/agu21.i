@@ -127,7 +127,7 @@ endbasis
 &SCFINP
  OPEN = F,
  NMAX=300
- NCO = 110
+ NCO = 105
  NUNP = 0, 
  ATRHO = F, 
  VCINP = F, 

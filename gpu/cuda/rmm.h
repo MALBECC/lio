@@ -39,7 +39,7 @@ __global__ void gpu_update_rmm(float* factors, uint points, float* rmm, float* f
 		for (uint point_sub = 0; point_sub < (RMM_BLOCK_SIZE_XY * RMM_BLOCK_SIZE_XY); point_sub++) {
       if (point_base + point_sub < points) {
         uint point = (point_base + point_sub);
-        uint point_mod = (point_sub % RMM_BLOCK_SIZE_XY);
+        uint point_mod = (point_sub % RMM_BLOCK_SIZE_XY); // TODO: esto puede reemplazarse con dos ciclos de RMM_BLOCK_SIZE_XY
 
         /* every RMM_BLOCK_SIZE_X iterations, Fi and Fj get filled with RMM_BLOCK_SIZE_Y functions, for RMM_BLOCK_SIZE_X different points */
         if (point_mod == 0) {

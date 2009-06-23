@@ -203,7 +203,7 @@ void gpu_compute_group_weights(PointGroup& group)
     #endif
   }
 
-  cout << "ceros: " << ceros << "/" << group.number_of_points << " (" << (ceros / (double)group.number_of_points) * 100 << "%)" << endl;
+  //cout << "ceros: " << ceros << "/" << group.number_of_points << " (" << (ceros / (double)group.number_of_points) * 100 << "%)" << endl;
   
   #if REMOVE_ZEROS
   group.points = nonzero_points;
@@ -351,7 +351,7 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
       function_values_cpu.copy_transpose(group.function_values);
 
       t_cpu.start_and_sync();
-      cpu_compute_density_forces<true, false>(energy_cpu.data, point_weights_cpu.data, group.number_of_points, rdm_cpu.data,
+      cpu_compute_density_forces<true, false>(energy_cpu.data, point_weights_cpu.data, group.number_of_points, rdmt_cpu.data,
         NULL, function_values_cpu.data, NULL, NULL, NULL, 0, group_m, t_density, t_rmm);
       t_cpu.pause_and_sync();
       #else
@@ -379,7 +379,7 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
       function_values_cpu.copy_transpose(group.function_values);
       HostMatrixFloat rmm_output_cpu(COALESCED_DIMENSION(group_m), group_m);
       t_cpu.start_and_sync();
-      cpu_compute_density_forces<false, false>(NULL, point_weights_cpu.data, group.number_of_points, rdm_cpu.data,
+      cpu_compute_density_forces<false, false>(NULL, point_weights_cpu.data, group.number_of_points, rdmt_cpu.data,
         rmm_output_cpu.data, function_values_cpu.data, NULL, NULL, NULL, 0, group_m, t_density, t_rmm);
       t_cpu.pause_and_sync();
       

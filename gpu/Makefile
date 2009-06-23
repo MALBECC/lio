@@ -5,12 +5,12 @@ OBJ=init.o timer.o matrix.o partition.o functions.o weight.o
 CUDA_SOURCES=$(wildcard cuda/*.cu)
 CUDA_HEADERS=$(wildcard cuda/*.h)
 
+include cuda/Makefile.cuda
+include Makefile.common
+
 ifeq ($(cpu),1)
 	CXXFLAGS += -DCPU_KERNELS=1
 endif
-
-include cuda/Makefile.cuda
-include Makefile.common
 
 ifeq ($(time), 1)
 	CXXFLAGS += -DTIMINGS

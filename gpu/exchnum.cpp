@@ -13,11 +13,14 @@ template<bool compute_energy, bool do_forces>
 void cpu_compute_density_forces(float* energy, float* point_weights, uint points, float* rdm, float* rmm_output,
   float* function_values, float4* gradient_values, float4* forces, uint* nuc, uint nucleii_count, uint m, Timer& t, Timer& trmm)
 {
-  /* initialize forces */
-  HostMatrixFloat4 density_deriv;
-  if (do_forces) {
-    for (uint atom = 0; atom < nucleii_count; atom++) { forces[atom] = make_float4(0,0,0,0); }
-    density_deriv.resize(nucleii_count);
+  if (!compute_energy) {
+    trmm.start();
+     for (uint i = 0; i < m; i++) {
+       for (uint j = i; j < m; j++) {
+         rmm_output[COALESCED_DIMENSION(m) * j + i] = 0.0f;
+       }
+     }
+    trmm.pause();
   }
 
   for (uint point = 0; point < points; point++) {
@@ -25,34 +28,19 @@ void cpu_compute_density_forces(float* energy, float* point_weights, uint points
     //cout << "punto" << endl;
     float partial_density = 0.0f;
 
-    /* initialize derivs */
-    if (do_forces) { for (uint atom = 0; atom < nucleii_count; atom++) density_deriv.get(atom) = make_float4(0.0f,0.0f,0.0f,0.0f);}
+    HostMatrixFloat w(fortran_vars.nco, 1);
+    for (uint i = 0; i < fortran_vars.nco; i++) w.get(i) = 0.0f;
 
-    /* compute w */
-    HostMatrixFloat w;
-    if (do_forces) w.resize(fortran_vars.nco);
-
-    for (uint i = 0; i < fortran_vars.nco; i++) {
-      float w_local = 0;
-      for (uint j = 0; j < m; j++) {
-        w_local += function_values[m * point + j] * rdm[COALESCED_DIMENSION(m) * i + j];
-      }
-      partial_density += w_local * w_local;
-      if (do_forces) w.get(i) = w_local;
+    for (uint j = 0; j < m; j++) {
+      float f = function_values[m * point + j];
+      for (uint i = 0; i < fortran_vars.nco; i++) {
+        float r = rdm[COALESCED_DIMENSION(fortran_vars.nco) * j + i];
+        w.get(i) += f * r;
+      }	// TODO: usar rmmt
     }
-    /* density */
+
+    for (uint i = 0; i < fortran_vars.nco; i++) { partial_density += w.get(i) * w.get(i); }
     partial_density *= 2;
-
-    /* compute density derivative */
-    if (do_forces) {
-      for (uint j = 0; j < m; j++) {
-        float wrdm = 0;
-        for (uint i = 0; i < fortran_vars.nco; i++) {
-          wrdm += rdm[COALESCED_DIMENSION(m) * i + j] * w.get(i);
-        }
-        density_deriv.get(nuc[j]) += gradient_values[m * point + j] * wrdm;
-      }      
-    }
 
     /* compute energy / functional */
     float exc, corr, y2a;
@@ -60,21 +48,16 @@ void cpu_compute_density_forces(float* energy, float* point_weights, uint points
     float factor = 0;
 
     if (compute_energy) {
-      if (do_forces) {
-  			cpu_pot<true, true>(partial_density, exc, corr, y2a);
-        factor = point_weight * y2a;
-  		}
-  		else cpu_pot<true, false>(partial_density, exc, corr, y2a);
-
+      cpu_pot<true, false>(partial_density, exc, corr, y2a);
       energy[point] = (partial_density * point_weight) * (exc + corr);
       t.pause();
     }
     else {
-  		cpu_pot<false, true>(partial_density, exc, corr, y2a);
+      cpu_pot<false, true>(partial_density, exc, corr, y2a);
       factor = point_weight * y2a;
       t.pause();
 
-      trmm.start();      
+      trmm.start();
       for (uint i = 0; i < m; i++) {
         for (uint j = i; j < m; j++) {
           float Fi = function_values[m * point + i];
@@ -83,13 +66,6 @@ void cpu_compute_density_forces(float* energy, float* point_weights, uint points
         }
       }
       trmm.pause();
-    }
-
-    /* forces */
-    if (do_forces) {
-      for (uint atom = 0; atom < nucleii_count; atom++) {
-        forces[atom] += density_deriv.get(atom) * factor * 4;
-      }
     }
   }
 }

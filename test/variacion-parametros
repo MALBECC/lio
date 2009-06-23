@@ -24,6 +24,7 @@ USE_EXISTING_OPTIONS=ARGV.include?('-existing')
 SAVE_BEST=ARGV.include?('-save')
 USE_BEST_RECALC=ARGV.include?('-best-recalc')
 USE_BEST_STORE=ARGV.include?('-best-store')
+USE_BEST_CPU=ARGV.include?('-best-cpu')
 
 def variation(ranges, combination = Combination.new, block = Proc.new)
   if (ranges.empty?) then block.call(combination.dup)
@@ -66,7 +67,7 @@ def run_gpu
       :NCOxM => output[/NCOxM: (\d+)/,1],
       :MxM => output[/MxM: (\d+)/,1],
       :NCOvsM =>  output[/NCOxM: (\d+)/,1].to_f / output[/MxM: (\d+)/,1].to_f,
-      :impl => output[/GPU Implementation: (store|recalc)/,1],
+      :impl => output[/GPU Implementation: (store|recalc|cpu)/,1],
     }
     results.map {|k,v| print "#{k}: #{v.nil? ? '-' : v} "}; puts
     
@@ -76,7 +77,7 @@ end
 
 begin
   ranges = {
-    :little_cube_size => StepRange.new((5.5..30.0),0.5),
+    :little_cube_size => StepRange.new((5.5..20.0),0.5),
     :max_function_exponent => StepRange.new((7..7),1),
     :min_points_per_cube => StepRange.new((1..1),1),
     :sphere_radius => StepRange.new((0.6..0.6),0.6)

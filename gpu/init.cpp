@@ -35,16 +35,14 @@ extern "C" void gpu_init_(void)
   if (cudaGetDeviceProperties(&devprop, devnum) != cudaSuccess) throw runtime_error("Could not get device propierties!");
 
   cout << "GPU Device used: " << devprop.name << endl;
-  #if STORE_FUNCTIONS
-  cout << "GPU Implementation: store" << endl;
-  #else
-  cout << "GPU Implementation: recalc" << endl;
-  #endif
-
   #if CPU_KERNELS
-  cout << "Kernels: CPU" << endl;
+    cout << "GPU Implementation: cpu" << endl;
   #else
-  cout << "Kernels: GPU" << endl;
+    #if STORE_FUNCTIONS
+    cout << "GPU Implementation: store" << endl;
+    #else
+    cout << "GPU Implementation: recalc" << endl;
+    #endif
   #endif
 }
 

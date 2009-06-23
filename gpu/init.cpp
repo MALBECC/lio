@@ -40,6 +40,12 @@ extern "C" void gpu_init_(void)
   #else
   cout << "GPU Implementation: recalc" << endl;
   #endif
+
+  #if CPU_KERNELS
+  cout << "Kernels: CPU" << endl;
+  #else
+  cout << "Kernels: GPU" << endl;
+  #endif
 }
 
 extern "C" void gpu_parameter_init_(const unsigned int& norm, const unsigned int& natom, double* r, double* Rm, const unsigned int* Iz, const unsigned int* Nr,

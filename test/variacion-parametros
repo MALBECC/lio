@@ -46,10 +46,10 @@ end
 
 def run_gpu
   if (VERBOSE)
-    system('/usr/bin/time -p -a -o /dev/stdout ../../garcha/garcha-gpu < t')
+    system('/usr/bin/time -a -o /dev/stdout -f "real %e\nuser %U\nsys %S\nswaps %F" ../../garcha/garcha-gpu < t')
   else
     # run
-    output = `/usr/bin/time -p -a -o /dev/stdout ../../garcha/garcha-gpu < t`
+    output = `/usr/bin/time -a -o /dev/stdout -f "real %e\nuser %U\nsys %S\nswaps %F" ../../garcha/garcha-gpu < t`
     if ($? != 0) then raise 'Execution failed!' end
     
     # analyze
@@ -68,6 +68,7 @@ def run_gpu
       :MxM => output[/MxM: (\d+)/,1],
       :NCOvsM =>  output[/NCOxM: (\d+)/,1].to_f / output[/MxM: (\d+)/,1].to_f,
       :impl => output[/GPU Implementation: (store|recalc|cpu)/,1],
+      :swaps => output[/swaps (\d+)/,1],
     }
     results.map {|k,v| print "#{k}: #{v.nil? ? '-' : v} "}; puts
     
@@ -102,6 +103,8 @@ begin
         combination.save('gpu_options')
         puts combination
         results = run_gpu()
+        
+        if (results[:swaps].to_i > 0) then raise 'Swaps detected!' end
         
         current_time = results[:first_solve]
         current_time = current_time[/(\d+)s./,1].to_i + (current_time[/(\d+)us./,1].to_f / 1000000)

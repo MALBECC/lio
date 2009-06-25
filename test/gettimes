@@ -3,15 +3,13 @@ matchear=ARGV.first
 i = 1
 
 while (s = STDIN.gets)
-  if (s =~ /#{matchear}/)
-    if (matchear == 'NCOvsM')
-      r = s[/#{matchear}: (\d+(\.\d+)?)/,1].to_f
-      puts "#{i} #{r}"
-    else
-      segundos = s[/#{matchear}: (\d+)us/,1].to_f / 1000000
-      puts "#{i} #{segundos}"
-    end
-
-    i = i+1
+  if (matchear == 'NCOvsM' || matchear == 'e')
+    r = s[/ #{matchear}: -?(\d+(\.\d+)?)/,1] or next
+    puts "#{i} #{r.to_f}" unless r.nil?
+  else
+    segundos = s[/#{matchear}: (\d+)us/,1] or next
+    puts "#{i} #{segundos.to_f / 1000000}"
   end
+  
+  i = i+1
 end

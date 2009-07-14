@@ -7,8 +7,9 @@ while (s = STDIN.gets)
     r = s[/ #{matchear}: -?(\d+(\.\d+)?)/,1] or next
     puts "#{i} #{r.to_f}" unless r.nil?
   else
-    segundos = s[/#{matchear}: (\d+)us/,1] or next
-    puts "#{i} #{segundos.to_f / 1000000}"
+    if (s !~ /#{matchear}: ((\d+)s. )?(\d+)us/) then next end
+    segundos = $2.to_i + ($3.to_f / 1000000)
+    puts "#{i} #{segundos}"
   end
   
   i = i+1

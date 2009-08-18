@@ -30,7 +30,11 @@ uint PointGroup::total_functions(void) {
 }
 
 void PointGroup::compute_weights(void) {
+#if WEIGHT_GPU
   gpu_compute_group_weights(*this);
+#else
+	cpu_compute_group_weights(*this);
+#endif
 }
 
 /**********************
@@ -241,12 +245,8 @@ void regenerate_partition(void)
 
         PointGroup& group = final_partition.back();
 
-#if WEIGHT_GPU
+#if WEIGHT_GPU || WEIGHT_CUTOFFS
         group.compute_weights();
-#else
-  #if WEIGHT_CUTOFFS
-				assign_cube_weights(cube);
-  #endif
 #endif
 
         if (group.number_of_points < min_points_per_cube) { final_partition.pop_back(); continue; }

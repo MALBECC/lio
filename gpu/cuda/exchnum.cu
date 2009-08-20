@@ -150,34 +150,37 @@ void gpu_compute_group_weights(PointGroup& group)
   //cout << "group" << endl;
   CudaMatrixFloat4 point_positions_gpu;
   CudaMatrixFloat4 atom_position_rm_gpu;
+  CudaMatrixUInt nucleii_gpu;
   {
     HostMatrixFloat4 points_positions_cpu(group.number_of_points, 1);
-    HostMatrixFloat4 atom_position_rm_cpu(fortran_vars.atoms, 1);
-
 		uint i = 0;
 		for (list<Point>::const_iterator p = group.points.begin(); p != group.points.end(); ++p, ++i) {
-      set<uint>::const_iterator atom_it = group.nucleii.find(p->atom);
-      uint atom_idx;
-      if (atom_it == group.nucleii.end()) atom_idx = MAX_ATOMS;
-      else atom_idx = distance(group.nucleii.begin(), atom_it);
-			points_positions_cpu.get(i) = make_float4(p->position.x, p->position.y, p->position.z, atom_idx);
+			points_positions_cpu.get(i) = make_float4(p->position.x, p->position.y, p->position.z, p->atom);
 		}
+    point_positions_gpu = points_positions_cpu;
 
-    i = 0;
-    for (set<uint>::const_iterator it = group.nucleii.begin(); it != group.nucleii.end(); ++it, i++) {
-      //cout << "atom: " << *it << endl;
-      double3 atom_pos = fortran_vars.atom_positions.get(*it);
-      atom_position_rm_cpu.get(i) = make_float4(atom_pos.x, atom_pos.y, atom_pos.z, fortran_vars.rm.get(*it));
+    HostMatrixFloat4 atom_position_rm_cpu(fortran_vars.atoms, 1);
+    for (uint i = 0; i < fortran_vars.atoms; i++) {
+      double3 atom_pos = fortran_vars.atom_positions.get(i);
+      atom_position_rm_cpu.get(i) = make_float4(atom_pos.x, atom_pos.y, atom_pos.z, fortran_vars.rm.get(i));
     }
-		point_positions_gpu = points_positions_cpu;
     atom_position_rm_gpu = atom_position_rm_cpu;
+    
+    HostMatrixUInt nucleii_cpu(group.nucleii.size(), 1);
+    i = 0;
+    for (set<uint>::iterator it = group.nucleii.begin(); it != group.nucleii.end(); ++it, i++) {
+      nucleii_cpu.get(i) = *it;
+    }
+    nucleii_gpu = nucleii_cpu;
+    cout << "nucleii: " << group.nucleii.size() << " " << i << endl;
 	}
 
   CudaMatrixFloat weights_gpu(group.number_of_points);
   dim3 threads(group.number_of_points);
   dim3 blockSize(WEIGHT_BLOCK_SIZE);
   dim3 gridSize = divUp(threads, blockSize);
-  gpu_compute_weights<<<gridSize,blockSize>>>(group.number_of_points, point_positions_gpu.data, atom_position_rm_gpu.data, weights_gpu.data, group.nucleii.size());
+  gpu_compute_weights<<<gridSize,blockSize>>>(group.number_of_points, point_positions_gpu.data, atom_position_rm_gpu.data,
+                                              weights_gpu.data, nucleii_gpu.data, group.nucleii.size());
   cudaAssertNoError("compute_weights");
 
   #if REMOVE_ZEROS

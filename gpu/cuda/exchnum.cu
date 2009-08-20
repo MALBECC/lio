@@ -172,7 +172,6 @@ void gpu_compute_group_weights(PointGroup& group)
       nucleii_cpu.get(i) = *it;
     }
     nucleii_gpu = nucleii_cpu;
-    cout << "nucleii: " << group.nucleii.size() << " " << i << endl;
 	}
 
   CudaMatrixFloat weights_gpu(group.number_of_points);

@@ -17,17 +17,11 @@ __global__ void gpu_compute_weights(uint points, float4* point_positions, float4
     }
   }
 
-  if (threadIdx.x == 0) {
-    for (uint i = 0; i < nucleii_count; i++) {
-      nucleii_sh[i] = nucleii[i];
-    }
-  }
-
-  /*for (uint i = 0; i < nucleii_count; i += WEIGHT_BLOCK_SIZE) {
+  for (uint i = 0; i < nucleii_count; i += WEIGHT_BLOCK_SIZE) {
     if (i + threadIdx.x < nucleii_count) {
       nucleii_sh[i + threadIdx.x] = nucleii[i + threadIdx.x];
     }
-  }*/
+  }
 
   __syncthreads();
 

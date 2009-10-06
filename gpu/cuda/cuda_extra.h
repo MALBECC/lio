@@ -174,7 +174,7 @@ inline void cudaPrintMemoryInfo(void) {
 	if (res != CUDA_SUCCESS) {
 		throw std::runtime_error("cuMemGetInfo");
 	}
-	std::cout << "free: " << (free / (1024.0 * 1024.0)) << "/" << (total / (1024.0 * 1024.0)) << " used: " << (total - free) / (1024.0 * 1024.0) << " (" << ((double)free / (double)total) * 100.0 << "%)" << std::endl;
+	std::cout << "mem_used: " << (total - free) / (1024.0 * 1024.0) << "MB | mem_perc: " << ((double)(total - free) / (double)total) * 100.0 << "%" << std::endl;
 }
 
 #endif /* __CUTOOLS_H__ */

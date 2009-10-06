@@ -139,6 +139,8 @@ void gpu_compute_group_functions(void)
 	t1.sync();
 	t1.stop();
 	cout << "TIMER: funcs: " << t1 << endl;
+
+  cudaPrintMemoryInfo();
 }
 
 /*******************************

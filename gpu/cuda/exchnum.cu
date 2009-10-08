@@ -140,7 +140,7 @@ void gpu_compute_group_functions(void)
 	t1.stop();
 	cout << "TIMER: funcs: " << t1 << endl;
 
-  cudaPrintMemoryInfo();
+  //cudaPrintMemoryInfo();
 }
 
 /*******************************
@@ -247,6 +247,8 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 
   Timer t_density, t_rmm, t_forces;
   Timer t_cpu;
+
+  uint max_used_memory = 0;
 
 	FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS);
 	
@@ -374,6 +376,10 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
       #endif
 			
 			for (uint i = 0; i < group.number_of_points; i++) { total_energy += energy_cpu.get(i); }
+
+      uint free_memory, total_memory;
+      cudaGetMemoryInfo(free_memory, total_memory);
+      max_used_memory = max(max_used_memory, total_memory - free_memory);
 		}
 		/* compute necessary factor **/
 		else if (computation_type == COMPUTE_RMM) {
@@ -449,6 +455,10 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
           small_fi++;
 				}
 			}
+
+      uint free_memory, total_memory;
+      cudaGetMemoryInfo(free_memory, total_memory);
+      max_used_memory = max(max_used_memory, total_memory - free_memory);
 		}
     #if 0
 		/* compute forces */
@@ -580,4 +590,9 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
   #if CPU_KERNELS
   cout << "TIMER: cpu: " << t_cpu << endl;
   #endif
+
+  uint free_memory, total_memory;
+  cudaGetMemoryInfo(free_memory, total_memory);
+  cout << "Maximum used memory: " << (double)max_used_memory / (1024 * 1024) << "MB (" << ((double)max_used_memory / total_memory) * 100.0 << "%)" << endl;
+
 }

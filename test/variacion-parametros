@@ -69,8 +69,8 @@ def run_gpu
       :NCOvsM =>  output[/NCOxM: (\d+)/,1].to_f / output[/MxM: (\d+)/,1].to_f,
       :impl => output[/GPU Implementation: (store|recalc|cpu)/,1],
       :swaps => output[/swaps (\d+)/,1],
-      :mem_used => output[/mem_used: (\d+(\.\d+)?MB)/,1],
-      :mem_perc => output[/mem_perc: (\d+)(\.\d+)?/,1] + '%'
+      :mem_used => output[/Maximum used memory: (\d+(\.\d+)?MB)/,1],
+      :mem_perc => output[/Maximum used memory: \S+ \((\d+(\.\d+)?%)\)/,1],
     }
     results.map {|k,v| print "#{k}: #{v.nil? ? '-' : v} "}; puts
     

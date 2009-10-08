@@ -168,12 +168,14 @@ inline void cudaAssertNoError(const char* msg = NULL) {
 }
 #endif
 
+inline void cudaGetMemoryInfo(uint& free, uint& total) {
+	if (cuMemGetInfo(&free, &total) != CUDA_SUCCESS)
+    throw std::runtime_error("cuMemGetInfo");
+}
+
 inline void cudaPrintMemoryInfo(void) {
-	uint free = 0, total = 0;
-	CUresult res = cuMemGetInfo(&free, &total);
-	if (res != CUDA_SUCCESS) {
-		throw std::runtime_error("cuMemGetInfo");
-	}
+  uint free = 0, total = 0;
+  cudaGetMemoryInfo(free, total);
 	std::cout << "mem_used: " << (total - free) / (1024.0 * 1024.0) << "MB | mem_perc: " << ((double)(total - free) / (double)total) * 100.0 << "%" << std::endl;
 }
 

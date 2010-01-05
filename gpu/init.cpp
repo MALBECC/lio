@@ -36,13 +36,9 @@ extern "C" void gpu_init_(void)
 
   cout << "GPU Device used: " << devprop.name << endl;
   #if CPU_KERNELS
-    cout << "GPU Implementation: cpu" << endl;
+    cout << "Kernels: cpu" << endl;
   #else
-    #if STORE_FUNCTIONS
-    cout << "GPU Implementation: store" << endl;
-    #else
-    cout << "GPU Implementation: recalc" << endl;
-    #endif
+    cout << "Kernels: gpu" << endl;
   #endif
 }
 

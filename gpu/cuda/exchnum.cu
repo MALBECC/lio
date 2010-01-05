@@ -15,42 +15,20 @@
 
 /** KERNELS **/
 #include "functions.h"
+#include "weight.h"
 
-#if !CPU_KERNELS
-
+#if CPU_KERNELS
+#include "../exchnum.cpp"
+#else
 #include "pot.h"
-
-#define RMM_STORE_FUNCTIONS 1
-
-#if STORE_FUNCTIONS
 #include "energy.h"
-#else
-#include "energy_recalc.h"
-#endif
-
-#if RMM_STORE_FUNCTIONS
 #include "rmm.h"
-#else
-#include "rmm_recalc.h"
-#endif
-
 #include "energy_derivs.h"
 #include "force.h"
 #endif
 
-#include "weight.h"
-
-#if CPU_KERNELS
-/** CPU Kernels **/
-#include "../exchnum.cpp"
-#endif
-
 using namespace G2G;
 using namespace std;
-
-#if CPU_KERNELS && !STORE_FUNCTIONS
-#error "Esta combinacion no anda!"
-#endif
 
 #define COMPUTE_RMM 					0
 #define COMPUTE_ENERGY_ONLY		1
@@ -234,12 +212,7 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 	t_total.start();
 		
 	/*** Computo sobre cada cubo ****/
-  #if STORE_FUNCTIONS
 	CudaMatrixFloat point_weights_gpu;
-  #else
-  CudaMatrixFloat4 point_weights_gpu;
-  #endif
-
 	CudaMatrixFloat rdm_gpu, rdmt_gpu;
   CudaMatrixUInt nuc_gpu;
   CudaMatrixFloat2 factor_ac_gpu;
@@ -258,19 +231,11 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 		const PointGroup& group = *it;
 				
 		/** Load points from group **/
-    #if STORE_FUNCTIONS
     HostMatrixFloat point_weights_cpu(group.number_of_points, 1);
-    #else
-    HostMatrixFloat4 point_weights_cpu(group.number_of_points, 1);
-    #endif
 
 		uint i = 0;		
 		for (list<Point>::const_iterator p = group.points.begin(); p != group.points.end(); ++p, ++i) {
-      #if STORE_FUNCTIONS
 			point_weights_cpu.get(i) = p->weight;
-      #else
-      point_weights_cpu.get(i) = make_float4(p->position.x, p->position.y, p->position.z, p->weight);
-      #endif
 		}
     #if !CPU_KERNELS
 		point_weights_gpu = point_weights_cpu;
@@ -363,13 +328,8 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
       #else
       t_density.start_and_sync();
 			CudaMatrixFloat energy_gpu(group.number_of_points);
-      #if STORE_FUNCTIONS
 			gpu_compute_density<true, false><<<threadGrid, threadBlock>>>(energy_gpu.data, NULL, point_weights_gpu.data, group.number_of_points,
                                                                     rdmt_gpu.data, group.function_values.data, group_m, NULL);
-      #else
-			gpu_compute_density<true><<<threadGrid, threadBlock>>>(energy_gpu.data, point_weights_gpu.data, group.number_of_points,
-                                                             rdmt_gpu.data, group_functions, nuc_contractions_gpu.data, factor_ac_gpu.data);
-      #endif
 			cudaAssertNoError("compute_density");
       t_density.pause_and_sync();
       HostMatrixFloat energy_cpu(energy_gpu);
@@ -397,13 +357,8 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 
 			CudaMatrixFloat rmm_factor_gpu(group.number_of_points);
       t_density.start_and_sync();
-      #if STORE_FUNCTIONS
 			gpu_compute_density<false, false><<<threadGrid, threadBlock>>>(NULL, rmm_factor_gpu.data, point_weights_gpu.data, group.number_of_points,
                                                                      rdmt_gpu.data, group.function_values.data, group_m, NULL);
-      #else
-			gpu_compute_density<false><<<threadGrid, threadBlock>>>(rmm_factor_gpu.data, point_weights_gpu.data, group.number_of_points,
-                                                             rdmt_gpu.data, group_functions, nuc_contractions_gpu.data, factor_ac_gpu.data);
-      #endif
 			cudaAssertNoError("compute_density");
       t_density.pause_and_sync();
 
@@ -414,12 +369,7 @@ extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_pt
 
       CudaMatrixFloat rmm_output_gpu(COALESCED_DIMENSION(group_m), group_m);
       t_rmm.start_and_sync();
-      #if RMM_STORE_FUNCTIONS
 			gpu_update_rmm<<<threadGrid, threadBlock>>>(rmm_factor_gpu.data, group.number_of_points, rmm_output_gpu.data, group.function_values.data, group_m);
-      #else
-      gpu_update_rmm<<<threadGrid, threadBlock>>>(rmm_factor_gpu.data, group.number_of_points, point_weights_gpu.data, group_functions, rmm_output_gpu.data,
-        nuc_gpu.data, factor_ac_gpu.data);
-      #endif
 			cudaAssertNoError("update_rmm");
       t_rmm.pause_and_sync();
 

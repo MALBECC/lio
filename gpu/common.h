@@ -15,15 +15,8 @@
 #define WEIGHT_BLOCK_SIZE 128
 #define RMM_BLOCK_SIZE_XY 16
 
-#if STORE_FUNCTIONS
 #define NCO_BATCH_SIZE 8
 #define DENSITY_BLOCK_SIZE 128
-#else
-#define DENSITY_BLOCK_SIZE 16
-
-// para BLOCK_SIZE de 32, va mejor con 21 (eso no coalescea)
-#define NCO_BATCH_SIZE 16 // <= a DENSITY_BLOCK_SIZE
-#endif
 
 #define DENSITY_DERIV_BLOCK_SIZE 256
 #define FORCE_BLOCK_SIZE 256

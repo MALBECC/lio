@@ -77,9 +77,9 @@ c
 c first call , needs also E , not only gradients -----------
 c
 
-#ifdef GPU
+#ifdef G2G
 			write(*,*) 'primera carga de posiciones (con igrid2)'
-			call gpu_reload_atom_positions(igrid2)
+			call g2g_reload_atom_positions(igrid2)
 #endif
 
       GRAD=.false.
@@ -96,9 +96,9 @@ c
 c now gradients 
 c
 c
-#ifdef GPU
+#ifdef G2G
 			write(*,*) 'cambio de grilla para fuerza+energia (igrid)'
-      call gpu_new_grid(igrid)
+      call g2g_new_grid(igrid)
 #endif
 
       call int1G(NORM,natom,r,Nuc,Iz,M,Md,ncont,nshell,c,a,RMM,En,f)
@@ -232,9 +232,9 @@ c
           DG(I)=G(I)
 15      CONTINUE
 
-#ifdef GPU
+#ifdef G2G
 			write(*,*) 'actualizacion de posiciones por movimiento'
-			call gpu_reload_atom_positions(igrid2)
+			call g2g_reload_atom_positions(igrid2)
 #endif
 c
       GRAD=.false.
@@ -252,9 +252,9 @@ c
 c now gradients
 c
 c
-#ifdef GPU
+#ifdef G2G
 			write(*,*) 'cambio de grilla para fuerza+energia (igrid)'
-      call gpu_new_grid(igrid)
+      call g2g_new_grid(igrid)
 #endif
 
 

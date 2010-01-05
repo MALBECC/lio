@@ -1151,18 +1151,18 @@ c calculation of fragment orbital populations
        stop
        endif
 c-----------------------------
-#ifdef GPU
-c------- GPU Initialization ---------------------
-      call gpu_parameter_init(NORM, natom, r, Rm2, Iz, Nr, Nr2, Nuc, M,
+#ifdef G2G
+c------- G2G Initialization ---------------------
+      call g2g_parameter_init(NORM, natom, r, Rm2, Iz, Nr, Nr2, Nuc, M,
      > ncont, nshell, c, a, P, M18, M5, NCO, nopt, Iexch,
      > e_, e_2, e3, wang, wang2, wang3)
 #endif
 c nopt 0 static SCF calculation --------------------------------------
       if (nopt.eq.0) then
 
-#ifdef GPU
+#ifdef G2G
 			write(*,*) 'primera carga de posiciones'
-			call gpu_reload_atom_positions(igrid2)
+			call g2g_reload_atom_positions(igrid2)
 #endif
 
       if (OPEN) then

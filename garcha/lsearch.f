@@ -80,9 +80,9 @@ c
        r(i,3)=x1(k)
       enddo
 
-#ifdef GPU
+#ifdef G2G
 		  write(*,*) 'movimiento de posiciones por lsearch (con igrid2)'
-	  	call gpu_reload_atom_positions(igrid2)
+	  	call g2g_reload_atom_positions(igrid2)
 #endif
 c
       GRAD=.true.

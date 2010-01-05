@@ -724,22 +724,22 @@ c--------------------------------------------------------------
        endif
 			 write(*,*) 'ultimo paso SCF'
        call timer_start('exchnum')
-#ifdef GPU
+#ifdef G2G
 #ifdef ULTIMA_CPU
        call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,NCO,Exc,nopt)
 #else
 			 if (igrid.ne.igrid2) then
-       call gpu_new_grid(igrid)
+       call g2g_new_grid(igrid)
 			 endif
-       call gpu_solve_groups(1, Exc, 0)
+       call g2g_solve_groups(1, Exc, 0)
 #endif
 #else
-#ifdef ULTIMA_GPU
+#ifdef ULTIMA_G2G
 			 if (igrid.ne.igrid2) then
-       call gpu_new_grid(igrid)
+       call g2g_new_grid(igrid)
 			 endif
-       call gpu_solve_groups(1, Exc, 0)
+       call g2g_solve_groups(1, Exc, 0)
 #else      
       call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,NCO,Exc,nopt)

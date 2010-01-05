@@ -196,7 +196,7 @@ void gpu_compute_group_weights(PointGroup& group)
 /********************************
  * Solve Cubes
  ********************************/
-extern "C" void gpu_solve_groups_(uint& computation_type, double* fort_energy_ptr, double* fort_forces_ptr)
+extern "C" void g2g_solve_groups_(uint& computation_type, double* fort_energy_ptr, double* fort_forces_ptr)
 {
 	cout << "<================ calculo de: [";
 	switch(computation_type) {

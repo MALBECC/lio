@@ -34,8 +34,8 @@ c para version en memoria
 
       dimension X(ngDyn,ng3),XX(ngdDyn,ngdDyn),P(ng2)
       write(*,*) (ngDyn*ng3+ngdDyn**2+ng2)*8*1.0D-06, '  Memoria en MB'
-#ifdef GPU
-      call gpu_init()
+#ifdef G2G
+      call g2g_init()
 #endif
 c version en memoria
 c

@@ -222,7 +222,7 @@ c      enddo
 c
 c      else
 c
-#ifndef GPU     
+#ifndef G2G     
 c      do i=1,M
 c        write(*,*) 'energia punto',F(5)
 c      enddo
@@ -232,7 +232,7 @@ c      enddo
       do 154 ii=1,M
        kk=kk+1
        W(jj)=W(jj)+RMM(kk)*F(ii)
-#ifndef GPU       
+#ifndef G2G       
 c       write(*,*) 'W(',jj,') RMM(',kk-M18+1,')=',RMM(kk)
 c       write(*,*) F(ii),RMM(kk)*F(ii),ii-1
 #endif
@@ -241,7 +241,7 @@ c       write(*,*) F(ii),RMM(kk)*F(ii),ii-1
 c       endif
 c ---------------------------------------
         do 61 ii=1,NCO
-#ifndef GPU
+#ifndef G2G
 c       write(*,*) 'W(',ii-1,')=',W(ii)
 #endif
  61    DENS=DENS+W(ii)**2

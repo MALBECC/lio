@@ -427,8 +427,8 @@ c
        write(*,*) 'exchnum int3lu'
 c       write(957,*) 'int3lu'
        call timer_start('exchfock')
-#ifdef GPU
-       call gpu_solve_groups(0,0,0)
+#ifdef G2G
+       call g2g_solve_groups(0,0,0)
 #else
        call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
      >        M,M18,NCOa,NCOb,RMM,Ex)

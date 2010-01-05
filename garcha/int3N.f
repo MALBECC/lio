@@ -2589,13 +2589,13 @@ c
         NCOb=NCO+Nunp
         write(*,*) 'int3N'
       call timer_start('exchfock')
-#ifdef GPU
+#ifdef G2G
 #ifdef INT3N_CPU
        call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
      >               M,M18,NCOa,NCOb,RMM,Ex)
       write(*,*) 'energia fortran (double)',Ex
 #else
-      call gpu_solve_groups(0, 0, 0)
+      call g2g_solve_groups(0, 0, 0)
 #endif      
 #else
        call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,

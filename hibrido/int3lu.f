@@ -427,8 +427,8 @@ c
         NCOb=NCO+Nunp
        write(*,*) 'exchnum int3lu',Ndens
 c       write(957,*) 'int3lu'
-#ifdef GPU
-      call gpu_solve_groups(0,0,0)
+#ifdef G2G
+      call g2g_solve_groups(0,0,0)
 #else        
       call timer_start
       call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,

@@ -159,8 +159,8 @@ c
       if (.not.OPEN) then
        write(*,*) 'int3G'
 c
-#ifdef GPU
-      call gpu_solve_groups(3, 0, f)
+#ifdef G2G
+      call g2g_solve_groups(3, 0, f)
 #else        
       call exchnum2(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >               M18,NCO,Exc,f)

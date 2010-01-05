@@ -63,8 +63,8 @@ C-----DIMENSIONES DE TODO
       common /dyn/Pm
       common /fit/ Nang_,dens,integ,Iexch,igrid,igrid2
 
-#ifdef GPU
-      call gpu_init()
+#ifdef G2G
+      call g2g_init()
 #endif
 
       TEMPAV=ZERO
@@ -459,9 +459,9 @@ C-----LLAMA A 'SCF': CALCULA ENERGIA SUBS. QUANTICO
       ENDIF
 
 
-#ifdef GPU
+#ifdef G2G
       write(*,*) 'carga de posiciones, igrid2'
-			call gpu_reload_atom_positions(igrid2)
+			call g2g_reload_atom_positions(igrid2)
 #endif
 c-------Cálculo de vecinos para el sistema cuántico
            nwatq=0
@@ -501,10 +501,10 @@ c-------fin calculo de vecinos
       E1s0 = E1s
       EKS  = ESCF-E1s0
 
-#ifdef GPU
+#ifdef G2G
 			write(*,*) 'cambio de grilla para fuerza (igrid)'
       if (igrid.ne.igrid2) then
-        call gpu_new_grid(igrid)
+        call g2g_new_grid(igrid)
       endif
 #endif
 

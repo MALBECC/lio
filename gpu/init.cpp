@@ -23,7 +23,7 @@ namespace G2G {
 }
 
 /* methods */
-extern "C" void gpu_init_(void)
+extern "C" void g2g_init_(void)
 {
   cout << "<====== Initializing GPU... ";
   cuInit(0);
@@ -42,7 +42,7 @@ extern "C" void gpu_init_(void)
   #endif
 }
 
-extern "C" void gpu_parameter_init_(const unsigned int& norm, const unsigned int& natom, double* r, double* Rm, const unsigned int* Iz, const unsigned int* Nr,
+extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int& natom, double* r, double* Rm, const unsigned int* Iz, const unsigned int* Nr,
 										 const unsigned int* Nr2, unsigned int* Nuc, const unsigned int& M, unsigned int* ncont, const unsigned int* nshell, double* c,
 					           double* a, double* RMM, const unsigned int& M18, const unsigned int& M5, const unsigned int& nco, const unsigned int& nopt,
                      const unsigned int& Iexch, double* e, double* e2, double* e3, double* wang, double* wang2, double* wang3)
@@ -138,7 +138,7 @@ void compute_new_grid(const unsigned int grid_type) {
 	gpu_compute_group_functions();
 }
 
-extern "C" void gpu_reload_atom_positions_(const unsigned int& grid_type) {	
+extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
 	cout  << "<======= GPU Reload Atom Positions ========>" << endl;
 	HostMatrix<float3> atom_positions(fortran_vars.atoms);	// gpu version (float3)
 	fortran_vars.atom_positions.resize(fortran_vars.atoms);	// cpu version (double3)
@@ -152,7 +152,7 @@ extern "C" void gpu_reload_atom_positions_(const unsigned int& grid_type) {
 	compute_new_grid(grid_type);
 }
 
-extern "C" void gpu_new_grid_(const unsigned int& grid_type) {
+extern "C" void g2g_new_grid_(const unsigned int& grid_type) {
 	cout << "<======= GPU New Grid (" << grid_type << ")========>" << endl;
 	if (grid_type == (uint)fortran_vars.grid_type)
 		cout << "not loading, same grid as loaded" << endl;

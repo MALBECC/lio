@@ -21,9 +21,6 @@ OBJ =     config.o cvemot.o  cvemotn.o  cvemotnn.o cvemotnnn.o\
            lalg.o int3mem.o int3lu.o ungles.o \
            cvemot1.o  proton.o dipcor.o  furim.o
 
-#COMPFLG =   -O3 -pipe -march=i686 -fomit-frame-pointer -c\
-#           -falign-loops=2 -fno-strength-reduce \
-#           -ffast-math  -falign-functions=2 -static
 DEFINE   = -Dpack
 COMPFLG  = -mp1 -ip -O3 -c $(CFLAGS) -cpp $(DEFINE)
 COMPFLG2 = -O3     -c $(CFLAGS) -cpp $(DEFINE)
@@ -33,11 +30,11 @@ CPPFLAGS =  -P -traditional-cpp
 
 
 CUDA_COMMONDIR := $(CUDA_INSTALL_PATH)/../sdk/common
-CUDA_LIBS=-L$(CUDA_INSTALL_PATH)/lib -L$(CUDA_COMMONDIR)/lib -lcuda -lcudart
+CUDA_LIBS=-L$(CUDA_INSTALL_PATH)/lib64 -L$(CUDA_COMMONDIR)/lib64 -lcuda -lcudart
 LIBS= -L/usr/lib -lblas -lstdc++ -L/opt/intel/mkl/9.0/lib/em64t -lmkl_em64t -lguide -lpthread  -L../gpu -lg2g
 CPU_LIBS=$(LIBS)
-GPU_LIBS=$(LIBS) $(CUDA_LIBS) 
-GPU_CFLAGS=-DGPU
+G2G_LIBS=$(LIBS) $(CUDA_LIBS) 
+G2G_CFLAGS=-DG2G
 
 ifeq ($(profile),1)
 	COMPFLG += -pg
@@ -46,362 +43,362 @@ ifeq ($(profile),1)
 endif
 
 ifeq ($(ultima_cpu),1)
-	GPU_CFLAGS += -DULTIMA_CPU
+	G2G_CFLAGS += -DULTIMA_GARCHA
 endif
 
 ifeq ($(convergencia_cpu),1)
-	GPU_CFLAGS += -DINT3N_CPU
+	G2G_CFLAGS += -DINT3N_GARCHA
 endif
 
-ifeq ($(ultima_gpu),1)
-	COMPFLG += -DULTIMA_GPU
-	COMPFLG2 += -DULTIMA_GPU
+ifeq ($(ultima_g2g),1)
+	COMPFLG += -DULTIMA_G2G
+	COMPFLG2 += -DULTIMA_G2G
 endif
 
-all: hibrido-gpu hibrido-cpu
+all: hibrido-g2g hibrido
 
-clean-cpu:
-	rm -f cpu_obj/* hibrido-cpu
+clean-original:
+	rm -f obj/* hibrido
 	
-clean-gpu:
-	rm -f gpu_obj/* hibrido-gpu	
+clean-g2g:
+	rm -f g2g_obj/* hibrido-g2g
 	
-clean: clean-cpu clean-gpu
+clean: clean-original clean-g2g
 
-hibrido-gpu: $(OBJ:%.o=gpu_obj/%.o)
-	ifort -o $@ $(OBJ:%.o=gpu_obj/%.o) $(LINKFLG) $(GPU_LIBS) $(EXTRA_FLAGS)
+hibrido-g2g: $(OBJ:%.o=g2g_obj/%.o)
+	ifort -o $@ $(OBJ:%.o=g2g_obj/%.o) $(LINKFLG) $(G2G_LIBS) $(EXTRA_FLAGS)
 	
-hibrido-cpu: $(OBJ:%.o=cpu_obj/%.o)
-	ifort -o $@ $(OBJ:%.o=cpu_obj/%.o) $(LINKFLG) $(CPU_LIBS) $(EXTRA_FLAGS)
+hibrido: $(OBJ:%.o=obj/%.o)
+	ifort -o $@ $(OBJ:%.o=obj/%.o) $(LINKFLG) $(CPU_LIBS) $(EXTRA_FLAGS)
 
 # CPU OBJs
-cpu_obj/config.o    : config.f COMM
+obj/config.o    : config.f COMM
 	ifort -o $@  $(COMPFLG) config.f
-cpu_obj/corecte.o   : corecte.f COMM
+obj/corecte.o   : corecte.f COMM
 	ifort -o $@  $(COMPFLG) corecte.f
-cpu_obj/finte.o     : finte.f COMM
+obj/finte.o     : finte.f COMM
 	ifort -o $@  $(COMPFLG) finte.f
-cpu_obj/cvemot.o    : cvemot.f COMM
+obj/cvemot.o    : cvemot.f COMM
 	ifort -o $@  $(COMPFLG) cvemot.f 
-cpu_obj/cvemotn.o   : cvemotn.f COMM
+obj/cvemotn.o   : cvemotn.f COMM
 	ifort -o $@  $(COMPFLG) cvemotn.f 
-cpu_obj/cvemotnn.o  : cvemotnn.f COMM
+obj/cvemotnn.o  : cvemotnn.f COMM
 	ifort -o $@  $(COMPFLG) cvemotnn.f
-cpu_obj/cvemotnnn.o  : cvemotnnn.f COMM
+obj/cvemotnnn.o  : cvemotnnn.f COMM
 	ifort -o $@  $(COMPFLG) cvemotnnn.f
-cpu_obj/cvemot1.o   : cvemot1.f COMM
+obj/cvemot1.o   : cvemot1.f COMM
 	ifort -o $@  $(COMPFLG) cvemot1.f 
-cpu_obj/cvemotn1.o   : cvemotn1.f COMM
+obj/cvemotn1.o   : cvemotn1.f COMM
 	ifort -o $@  $(COMPFLG) cvemotn1.f 
-cpu_obj/gamma.o     : gamma.f COMM
+obj/gamma.o     : gamma.f COMM
 	ifort -o $@  $(COMPFLG) gamma.f
-cpu_obj/gauss.o    : gauss.f COMM
+obj/gauss.o    : gauss.f COMM
 	ifort -o $@  $(COMPFLG) gauss.f 
-cpu_obj/newxyz.o    : newxyz.f COMM
+obj/newxyz.o    : newxyz.f COMM
 	ifort -o $@  $(COMPFLG) newxyz.f 
-cpu_obj/lath.o     : lath.f COMM
+obj/lath.o     : lath.f COMM
 	ifort -o $@  $(COMPFLG) lath.f 
-cpu_obj/main.o    : main.f COMM param
+obj/main.o    : main.f COMM param
 	ifort -o $@  $(COMPFLG) main.f 
-cpu_obj/doda.o    : doda.f COMM 
+obj/doda.o    : doda.f COMM 
 	ifort -o $@  $(COMPFLG) doda.f 
-cpu_obj/dado.o    : dado.f COMM param
+obj/dado.o    : dado.f COMM param
 	ifort -o $@  $(COMPFLG) dado.f 
-cpu_obj/tepchr.o     : tepchr.f COMM
+obj/tepchr.o     : tepchr.f COMM
 	ifort -o $@  $(COMPFLG) tepchr.f
-cpu_obj/tepchr2.o     : tepchr2.f COMM
+obj/tepchr2.o     : tepchr2.f COMM
 	ifort -o $@  $(COMPFLG) tepchr2.f
-cpu_obj/corect.o    : corect.f COMM
+obj/corect.o    : corect.f COMM
 	ifort -o $@  $(COMPFLG) corect.f 
-cpu_obj/corect2.o    : corect2.f COMM
+obj/corect2.o    : corect2.f COMM
 	ifort -o $@  $(COMPFLG) corect2.f
-cpu_obj/fspher.o     : fspher.f COMM
+obj/fspher.o     : fspher.f COMM
 	ifort -o $@  $(COMPFLG) fspher.f
-cpu_obj/fspher2.o     : fspher2.f COMM
+obj/fspher2.o     : fspher2.f COMM
 	ifort -o $@  $(COMPFLG) fspher2.f
-cpu_obj/furim.o    : furim.f COMM
+obj/furim.o    : furim.f COMM
 	ifort -o $@  $(COMPFLG) furim.f
-cpu_obj/printer.o     : printer.f COMM
+obj/printer.o     : printer.f COMM
 	ifort -o $@  $(COMPFLG) printer.f
-cpu_obj/dipolos.o     : dipolos.f COMM
+obj/dipolos.o     : dipolos.f COMM
 	ifort -o $@  $(COMPFLG) dipolos.f
-cpu_obj/qemot.o      : qemot.f COMM
+obj/qemot.o      : qemot.f COMM
 	ifort -o $@  $(COMPFLG) qemot.f
-cpu_obj/qtmotb.o      : qtmotb.f COMM
+obj/qtmotb.o      : qtmotb.f COMM
 	ifort -o $@  $(COMPFLG) qtmotb.f
-cpu_obj/tepq.o      : tepq.f COMM
+obj/tepq.o      : tepq.f COMM
 	ifort -o $@  $(COMPFLG) tepq.f
-cpu_obj/inicio.o      : inicio.f COMM
+obj/inicio.o      : inicio.f COMM
 	ifort -o $@  $(COMPFLG) inicio.f
-cpu_obj/fint.o      : fint.f COMM
+obj/fint.o      : fint.f COMM
 	ifort -o $@  $(COMPFLG) fint.f
-cpu_obj/fint2.o      : fint2.f COMM
+obj/fint2.o      : fint2.f COMM
 	ifort -o $@  $(COMPFLG) fint2.f
-cpu_obj/grilla.o      : grilla.f COMM
+obj/grilla.o      : grilla.f COMM
 	ifort -o $@  $(COMPFLG) grilla.f
-cpu_obj/optim.o      : optim.f COMM
+obj/optim.o      : optim.f COMM
 	ifort -o $@  $(COMPFLG) optim.f
-cpu_obj/optimq.o      : optimq.f COMM
+obj/optimq.o      : optimq.f COMM
 	ifort -o $@  $(COMPFLG) optimq.f
-cpu_obj/proton.o      : proton.f COMM
+obj/proton.o      : proton.f COMM
 	ifort -o $@  $(COMPFLG) proton.f
-cpu_obj/int.o    : int.f param
+obj/int.o    : int.f param
 	ifort -o $@  $(COMPFLG) int.f 
-cpu_obj/int1G.o    : int1G.f param
+obj/int1G.o    : int1G.f param
 	ifort -o $@  $(COMPFLG) int1G.f 
-cpu_obj/drive.o : drive.f COMM param 
+obj/drive.o : drive.f COMM param 
 	ifort -o $@  $(COMPFLG2) drive.f 
-cpu_obj/func.o : func.f
+obj/func.o : func.f
 	ifort -o $@  $(COMPFLG) func.f 
-cpu_obj/int2.o    : int2.f param
+obj/int2.o    : int2.f param
 	ifort -o $@ $(COMPFLG) int2.f
-cpu_obj/int2G.o    : int2G.f param
+obj/int2G.o    : int2G.f param
 	ifort -o $@  $(COMPFLG) int2G.f 
-cpu_obj/int3G.o    : int3G.f param
+obj/int3G.o    : int3G.f param
 	ifort -o $@  $(COMPFLG) $(COMPFLG) int3G.f 
-cpu_obj/int3.o    : int3.f param
+obj/int3.o    : int3.f param
 	ifort -o $@ $(COMPFLG) int3.f
-cpu_obj/int3N.o    : int3N.f param
+obj/int3N.o    : int3N.f param
 	ifort -o $@ $(COMPFLG) int3N.f
-cpu_obj/int3lu.o    : int3lu.f param
+obj/int3lu.o    : int3lu.f param
 	ifort -o $@ $(COMPFLG) int3lu.f
-cpu_obj/int3mem.o    : int3mem.f param
+obj/int3mem.o    : int3mem.f param
 	ifort -o $@  $(COMPFLG) int3mem.f
-cpu_obj/exch.o    : exch.f param
+obj/exch.o    : exch.f param
 	ifort -o $@  $(COMPFLG) exch.f
-cpu_obj/exch2.o    : exch2.f param
+obj/exch2.o    : exch2.f param
 	ifort -o $@  $(COMPFLG) exch2.f
-cpu_obj/pot.o    : pot.f 
+obj/pot.o    : pot.f 
 	ifort -o $@  $(COMPFLG) pot.f 
-cpu_obj/SCF.o    : SCF.f param 
+obj/SCF.o    : SCF.f param 
 	ifort -o $@  $(COMPFLG) SCF.f
-cpu_obj/intSG.o     : intSG.f param
+obj/intSG.o     : intSG.f param
 	ifort -o $@  $(COMPFLG) intSG.f 
-cpu_obj/write.o     : write.f param
+obj/write.o     : write.f param
 	ifort -o $@  $(COMPFLG) write.f
-cpu_obj/nwrite.o     : nwrite.f param
+obj/nwrite.o     : nwrite.f param
 	ifort -o $@  $(COMPFLG) nwrite.f
-cpu_obj/dns.o     : dns.f param
+obj/dns.o     : dns.f param
 	ifort -o $@  $(COMPFLG) dns.f 
-cpu_obj/dns2.o     : dns2.f param
+obj/dns2.o     : dns2.f param
 	ifort -o $@  $(COMPFLG) dns2.f 
-cpu_obj/dnsg.o     : dnsg.f param
+obj/dnsg.o     : dnsg.f param
 	ifort -o $@  $(COMPFLG) dnsg.f 
-cpu_obj/densg.o     : densg.f param
+obj/densg.o     : densg.f param
 	ifort -o $@  $(COMPFLG) densg.f 
-cpu_obj/potg.o     : potg.f 
+obj/potg.o     : potg.f 
 	ifort -o $@  $(COMPFLG) potg.f 
-cpu_obj/dip.o     : dip.f param
+obj/dip.o     : dip.f param
 	ifort -o $@  $(COMPFLG) dip.f 
-cpu_obj/dipG.o     : dipG.f param
+obj/dipG.o     : dipG.f param
 	ifort -o $@  $(COMPFLG) dipG.f 
-cpu_obj/dip2.o     : dip2.f param
+obj/dip2.o     : dip2.f param
 	ifort -o $@  $(COMPFLG) dip2.f 
-cpu_obj/exchnum.o     : exchnum.f param
+obj/exchnum.o     : exchnum.f param
 	ifort -o $@  $(COMPFLG) exchnum.f 
-cpu_obj/grid.o     : grid.f
+obj/grid.o     : grid.f
 	ifort -o $@  $(COMPFLG) grid.f 
-cpu_obj/exchnum2.o     : exchnum2.f param
+obj/exchnum2.o     : exchnum2.f param
 	ifort -o $@  $(COMPFLG) exchnum2.f 
-cpu_obj/exchfock.o     : exchfock.f param
+obj/exchfock.o     : exchfock.f param
 	ifort -o $@  $(COMPFLG) exchfock.f 
-cpu_obj/SCFop.o    : SCFop.f param COMM
+obj/SCFop.o    : SCFop.f param COMM
 	ifort -o $@  $(COMPFLG) SCFop.f
-cpu_obj/densgop.o     : densgop.f param
+obj/densgop.o     : densgop.f param
 	ifort -o $@  $(COMPFLG) densgop.f
-cpu_obj/dns2op.o     : dns2op.f param
+obj/dns2op.o     : dns2op.f param
 	ifort -o $@  $(COMPFLG) dns2op.f
-cpu_obj/dnsop.o     : dnsop.f param
+obj/dnsop.o     : dnsop.f param
 	ifort -o $@  $(COMPFLG) dnsop.f
-cpu_obj/exchnum2op.o     : exchnum2op.f param
+obj/exchnum2op.o     : exchnum2op.f param
 	ifort -o $@  $(COMPFLG) exchnum2op.f
-cpu_obj/exchnumop.o     : exchnumop.f param
+obj/exchnumop.o     : exchnumop.f param
 	ifort -o $@  $(COMPFLG) exchnumop.f
-cpu_obj/potop.o     : potop.f param
+obj/potop.o     : potop.f param
 	ifort -o $@  $(COMPFLG) potop.f
-cpu_obj/potgop.o     : potgop.f 
+obj/potgop.o     : potgop.f 
 	ifort -o $@  $(COMPFLG) potgop.f
-cpu_obj/dnsgop.o     : dnsgop.f param
+obj/dnsgop.o     : dnsgop.f param
 	ifort -o $@  $(COMPFLG) dnsgop.f
-cpu_obj/alg.o     : alg.f 
+obj/alg.o     : alg.f 
 	ifort -o $@  $(COMPFLG) alg.f
-cpu_obj/eig.o     : eig.f
+obj/eig.o     : eig.f
 	ifort -o $@  $(COMPFLG) eig.f
-cpu_obj/svd.o     : svd.f
+obj/svd.o     : svd.f
 	ifort -o $@  $(COMPFLG) svd.f
-cpu_obj/intsol.o    : intsol.f param
+obj/intsol.o    : intsol.f param
 	ifort -o $@  $(COMPFLG) intsol.f 
-cpu_obj/intsolG.o    : intsolG.f param
+obj/intsolG.o    : intsolG.f param
 	ifort -o $@  $(COMPFLG) intsolG.f 
-cpu_obj/lalg.o    : lalg.f param
+obj/lalg.o    : lalg.f param
 	ifort -o $@  $(COMPFLG) lalg.f 
-cpu_obj/ungles.o    : ungles.f COMM param
+obj/ungles.o    : ungles.f COMM param
 	ifort -o $@  $(COMPFLG) ungles.f 
-cpu_obj/dipcor.o    : dipcor.f COMM 
+obj/dipcor.o    : dipcor.f COMM 
 	ifort -o $@  $(COMPFLG) dipcor.f
 	
-# GPU OBJs
-gpu_obj/config.o    : config.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU config.f
-gpu_obj/corecte.o   : corecte.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU corecte.f
-gpu_obj/finte.o     : finte.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU finte.f
-gpu_obj/cvemot.o    : cvemot.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU cvemot.f 
-gpu_obj/cvemotn.o   : cvemotn.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU cvemotn.f 
-gpu_obj/cvemotnn.o  : cvemotnn.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU cvemotnn.f
-gpu_obj/cvemotnnn.o  : cvemotnnn.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU cvemotnnn.f
-gpu_obj/cvemot1.o   : cvemot1.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU cvemot1.f 
-gpu_obj/cvemotn1.o   : cvemotn1.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU cvemotn1.f 
-gpu_obj/gamma.o     : gamma.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU gamma.f
-gpu_obj/gauss.o    : gauss.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU gauss.f 
-gpu_obj/newxyz.o    : newxyz.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU newxyz.f 
-gpu_obj/lath.o     : lath.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU lath.f 
-gpu_obj/main.o    : main.f COMM param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU main.f 
-gpu_obj/doda.o    : doda.f COMM 
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU doda.f 
-gpu_obj/dado.o    : dado.f COMM param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU dado.f 
-gpu_obj/tepchr.o     : tepchr.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU tepchr.f
-gpu_obj/tepchr2.o     : tepchr2.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU tepchr2.f
-gpu_obj/corect.o    : corect.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU corect.f 
-gpu_obj/corect2.o    : corect2.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU corect2.f
-gpu_obj/fspher.o     : fspher.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU fspher.f
-gpu_obj/fspher2.o     : fspher2.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU fspher2.f
-gpu_obj/furim.o    : furim.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU furim.f
-gpu_obj/printer.o     : printer.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU printer.f
-gpu_obj/dipolos.o     : dipolos.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU dipolos.f
-gpu_obj/qemot.o      : qemot.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU qemot.f
-gpu_obj/qtmotb.o      : qtmotb.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU qtmotb.f
-gpu_obj/tepq.o      : tepq.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU tepq.f
-gpu_obj/inicio.o      : inicio.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU inicio.f
-gpu_obj/fint.o      : fint.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU fint.f
-gpu_obj/fint2.o      : fint2.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU fint2.f
-gpu_obj/grilla.o      : grilla.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU grilla.f
-gpu_obj/optim.o      : optim.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU optim.f
-gpu_obj/optimq.o      : optimq.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU optimq.f
-gpu_obj/proton.o      : proton.f COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU proton.f
-gpu_obj/int.o    : int.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU int.f 
-gpu_obj/int1G.o    : int1G.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU int1G.f 
-gpu_obj/drive.o : drive.f COMM param 
-	ifort -o $@  $(COMPFLG2) $(GPU_CFLAGS) drive.f
-gpu_obj/func.o : func.f
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU func.f 
-gpu_obj/int2.o    : int2.f param
-	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) -DGPU int2.f
-gpu_obj/int2G.o    : int2G.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU int2G.f 
-gpu_obj/int3G.o    : int3G.f param
-	ifort -o $@ $(COMPFLG) $(COMPFLG) $(GPU_CFLAGS) -DGPU int3G.f 
-gpu_obj/int3.o    : int3.f param
-	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) -DGPU int3.f
-gpu_obj/int3N.o    : int3N.f param
-	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) -DGPU int3N.f
-gpu_obj/int3lu.o    : int3lu.f param
-	ifort -o $@ $(COMPFLG) $(GPU_CFLAGS) -DGPU int3lu.f
-gpu_obj/int3mem.o    : int3mem.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU int3mem.f
-gpu_obj/exch.o    : exch.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU exch.f
-gpu_obj/exch2.o    : exch2.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU exch2.f
-gpu_obj/pot.o    : pot.f 
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU pot.f 
-gpu_obj/SCF.o    : SCF.f param 
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU SCF.f
-gpu_obj/intSG.o     : intSG.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU intSG.f 
-gpu_obj/write.o     : write.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU write.f
-gpu_obj/nwrite.o     : nwrite.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU nwrite.f
-gpu_obj/dns.o     : dns.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU dns.f 
-gpu_obj/dns2.o     : dns2.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU dns2.f 
-gpu_obj/dnsg.o     : dnsg.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU dnsg.f 
-gpu_obj/densg.o     : densg.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU densg.f 
-gpu_obj/potg.o     : potg.f 
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU potg.f 
-gpu_obj/dip.o     : dip.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU dip.f 
-gpu_obj/dipG.o     : dipG.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU dipG.f 
-gpu_obj/dip2.o     : dip2.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU dip2.f 
-gpu_obj/exchnum.o     : exchnum.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU exchnum.f 
-gpu_obj/grid.o     : grid.f
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU grid.f 
-gpu_obj/exchnum2.o     : exchnum2.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU exchnum2.f 
-gpu_obj/exchfock.o     : exchfock.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU exchfock.f 
-gpu_obj/SCFop.o    : SCFop.f param COMM
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU SCFop.f
-gpu_obj/densgop.o     : densgop.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU densgop.f
-gpu_obj/dns2op.o     : dns2op.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU dns2op.f
-gpu_obj/dnsop.o     : dnsop.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU dnsop.f
-gpu_obj/exchnum2op.o     : exchnum2op.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU exchnum2op.f
-gpu_obj/exchnumop.o     : exchnumop.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU exchnumop.f
-gpu_obj/potop.o     : potop.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU potop.f
-gpu_obj/potgop.o     : potgop.f 
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU potgop.f
-gpu_obj/dnsgop.o     : dnsgop.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU dnsgop.f
-gpu_obj/alg.o     : alg.f 
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU alg.f
-gpu_obj/eig.o     : eig.f
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU eig.f
-gpu_obj/svd.o     : svd.f
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU svd.f
-gpu_obj/intsol.o    : intsol.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU intsol.f 
-gpu_obj/intsolG.o    : intsolG.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU intsolG.f 
-gpu_obj/lalg.o    : lalg.f param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU lalg.f 
-gpu_obj/ungles.o    : ungles.f COMM param
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU ungles.f 
-gpu_obj/dipcor.o    : dipcor.f COMM 
-	ifort -o $@  $(COMPFLG) $(GPU_CFLAGS) -DGPU dipcor.f	
+# G2G OBJs
+g2g_obj/config.o    : config.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G config.f
+g2g_obj/corecte.o   : corecte.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G corecte.f
+g2g_obj/finte.o     : finte.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G finte.f
+g2g_obj/cvemot.o    : cvemot.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G cvemot.f 
+g2g_obj/cvemotn.o   : cvemotn.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G cvemotn.f 
+g2g_obj/cvemotnn.o  : cvemotnn.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G cvemotnn.f
+g2g_obj/cvemotnnn.o  : cvemotnnn.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G cvemotnnn.f
+g2g_obj/cvemot1.o   : cvemot1.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G cvemot1.f 
+g2g_obj/cvemotn1.o   : cvemotn1.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G cvemotn1.f 
+g2g_obj/gamma.o     : gamma.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G gamma.f
+g2g_obj/gauss.o    : gauss.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G gauss.f 
+g2g_obj/newxyz.o    : newxyz.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G newxyz.f 
+g2g_obj/lath.o     : lath.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G lath.f 
+g2g_obj/main.o    : main.f COMM param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G main.f 
+g2g_obj/doda.o    : doda.f COMM 
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G doda.f 
+g2g_obj/dado.o    : dado.f COMM param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G dado.f 
+g2g_obj/tepchr.o     : tepchr.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G tepchr.f
+g2g_obj/tepchr2.o     : tepchr2.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G tepchr2.f
+g2g_obj/corect.o    : corect.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G corect.f 
+g2g_obj/corect2.o    : corect2.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G corect2.f
+g2g_obj/fspher.o     : fspher.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G fspher.f
+g2g_obj/fspher2.o     : fspher2.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G fspher2.f
+g2g_obj/furim.o    : furim.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G furim.f
+g2g_obj/printer.o     : printer.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G printer.f
+g2g_obj/dipolos.o     : dipolos.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G dipolos.f
+g2g_obj/qemot.o      : qemot.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G qemot.f
+g2g_obj/qtmotb.o      : qtmotb.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G qtmotb.f
+g2g_obj/tepq.o      : tepq.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G tepq.f
+g2g_obj/inicio.o      : inicio.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G inicio.f
+g2g_obj/fint.o      : fint.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G fint.f
+g2g_obj/fint2.o      : fint2.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G fint2.f
+g2g_obj/grilla.o      : grilla.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G grilla.f
+g2g_obj/optim.o      : optim.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G optim.f
+g2g_obj/optimq.o      : optimq.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G optimq.f
+g2g_obj/proton.o      : proton.f COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G proton.f
+g2g_obj/int.o    : int.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G int.f 
+g2g_obj/int1G.o    : int1G.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G int1G.f 
+g2g_obj/drive.o : drive.f COMM param 
+	ifort -o $@  $(COMPFLG2) $(G2G_CFLAGS) drive.f
+g2g_obj/func.o : func.f
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G func.f 
+g2g_obj/int2.o    : int2.f param
+	ifort -o $@ $(COMPFLG) $(G2G_CFLAGS) -DG2G int2.f
+g2g_obj/int2G.o    : int2G.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G int2G.f 
+g2g_obj/int3G.o    : int3G.f param
+	ifort -o $@ $(COMPFLG) $(COMPFLG) $(G2G_CFLAGS) -DG2G int3G.f 
+g2g_obj/int3.o    : int3.f param
+	ifort -o $@ $(COMPFLG) $(G2G_CFLAGS) -DG2G int3.f
+g2g_obj/int3N.o    : int3N.f param
+	ifort -o $@ $(COMPFLG) $(G2G_CFLAGS) -DG2G int3N.f
+g2g_obj/int3lu.o    : int3lu.f param
+	ifort -o $@ $(COMPFLG) $(G2G_CFLAGS) -DG2G int3lu.f
+g2g_obj/int3mem.o    : int3mem.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G int3mem.f
+g2g_obj/exch.o    : exch.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G exch.f
+g2g_obj/exch2.o    : exch2.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G exch2.f
+g2g_obj/pot.o    : pot.f 
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G pot.f 
+g2g_obj/SCF.o    : SCF.f param 
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G SCF.f
+g2g_obj/intSG.o     : intSG.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G intSG.f 
+g2g_obj/write.o     : write.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G write.f
+g2g_obj/nwrite.o     : nwrite.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G nwrite.f
+g2g_obj/dns.o     : dns.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G dns.f 
+g2g_obj/dns2.o     : dns2.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G dns2.f 
+g2g_obj/dnsg.o     : dnsg.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G dnsg.f 
+g2g_obj/densg.o     : densg.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G densg.f 
+g2g_obj/potg.o     : potg.f 
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G potg.f 
+g2g_obj/dip.o     : dip.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G dip.f 
+g2g_obj/dipG.o     : dipG.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G dipG.f 
+g2g_obj/dip2.o     : dip2.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G dip2.f 
+g2g_obj/exchnum.o     : exchnum.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G exchnum.f 
+g2g_obj/grid.o     : grid.f
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G grid.f 
+g2g_obj/exchnum2.o     : exchnum2.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G exchnum2.f 
+g2g_obj/exchfock.o     : exchfock.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G exchfock.f 
+g2g_obj/SCFop.o    : SCFop.f param COMM
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G SCFop.f
+g2g_obj/densgop.o     : densgop.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G densgop.f
+g2g_obj/dns2op.o     : dns2op.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G dns2op.f
+g2g_obj/dnsop.o     : dnsop.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G dnsop.f
+g2g_obj/exchnum2op.o     : exchnum2op.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G exchnum2op.f
+g2g_obj/exchnumop.o     : exchnumop.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G exchnumop.f
+g2g_obj/potop.o     : potop.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G potop.f
+g2g_obj/potgop.o     : potgop.f 
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G potgop.f
+g2g_obj/dnsgop.o     : dnsgop.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G dnsgop.f
+g2g_obj/alg.o     : alg.f 
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G alg.f
+g2g_obj/eig.o     : eig.f
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G eig.f
+g2g_obj/svd.o     : svd.f
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G svd.f
+g2g_obj/intsol.o    : intsol.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G intsol.f 
+g2g_obj/intsolG.o    : intsolG.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G intsolG.f 
+g2g_obj/lalg.o    : lalg.f param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G lalg.f 
+g2g_obj/ungles.o    : ungles.f COMM param
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G ungles.f 
+g2g_obj/dipcor.o    : dipcor.f COMM 
+	ifort -o $@  $(COMPFLG) $(G2G_CFLAGS) -DG2G dipcor.f	

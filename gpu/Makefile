@@ -1,6 +1,6 @@
 # -*- mode: make -*-
 
-OBJ=init.o timer.o matrix.o partition.o functions.o weight.o
+OBJ=init.o timer.o matrix.o partition.o clasify_functions.o weight.o
 
 CUDA_SOURCES=$(wildcard cuda/*.cu)
 CUDA_HEADERS=$(wildcard cuda/*.h)

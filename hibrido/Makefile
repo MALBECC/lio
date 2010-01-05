@@ -1,37 +1,16 @@
 #-*- mode: make -*-
 
-OBJ =     config.o cvemot.o  cvemotn.o  cvemotnn.o cvemotnnn.o\
-	   gamma.o lath.o   main.o  doda.o dado.o \
-	   gauss.o  tepchr.o  newxyz.o corect.o corect2.o\
-           fspher.o fspher2.o  printer.o  dipolos.o \
-           qemot.o qtmotb.o  tepq.o tepchr2.o \
-           inicio.o  fint.o fint2.o optim.o optimq.o\
-           int.o drive.o SCF.o  func.o     \
-           int2.o  int3.o int3G.o exch.o    \
-           exch2.o pot.o int2G.o int1G.o \
-           intSG.o write.o finte.o corecte.o\
-           dns.o dns2.o dnsg.o potg.o dip.o dipG.o  \
-           int3N.o exchnum.o exchnum2.o grid.o\
-           densg.o  exchfock.o cvemotn1.o\
-           nwrite.o  SCFop.o\
-           densgop.o dns2op.o dnsop.o exchnum2op.o\
-           exchnumop.o potop.o alg.o eig.o svd.o \
-           dnsgop.o potgop.o  dip2.o \
-           intsolG.o intsol.o grilla.o\
-           lalg.o int3mem.o int3lu.o ungles.o \
-           cvemot1.o  proton.o dipcor.o  furim.o
-
+SRCS=$(wildcard *.f)
+OBJ =$(SRCS:%.f=%.o)
 DEFINE   = -Dpack
 COMPFLG  = -mp1 -ip -O3 -c $(CFLAGS) -cpp $(DEFINE)
 COMPFLG2 = -O3     -c $(CFLAGS) -cpp $(DEFINE)
 #more or less general
-LINKFLG = -lm
 CPPFLAGS =  -P -traditional-cpp
-
+LIBS=-L/usr/lib -lblas -lstdc++ -L/opt/intel/mkl/9.0/lib/em64t -lmkl_em64t -lguide -lpthread  -L../gpu -lg2g -lm
 
 CUDA_COMMONDIR := $(CUDA_INSTALL_PATH)/../sdk/common
 CUDA_LIBS=-L$(CUDA_INSTALL_PATH)/lib64 -L$(CUDA_COMMONDIR)/lib64 -lcuda -lcudart
-LIBS= -L/usr/lib -lblas -lstdc++ -L/opt/intel/mkl/9.0/lib/em64t -lmkl_em64t -lguide -lpthread  -L../gpu -lg2g
 CPU_LIBS=$(LIBS)
 G2G_LIBS=$(LIBS) $(CUDA_LIBS) 
 G2G_CFLAGS=-DG2G
@@ -39,7 +18,7 @@ G2G_CFLAGS=-DG2G
 ifeq ($(profile),1)
 	COMPFLG += -pg
 	COMPFLG2 += -pg	
-	LINKFLG += -pg
+	LIBS += -pg
 endif
 
 ifeq ($(ultima_cpu),1)
@@ -66,10 +45,10 @@ clean-g2g:
 clean: clean-original clean-g2g
 
 hibrido-g2g: $(OBJ:%.o=g2g_obj/%.o)
-	ifort -o $@ $(OBJ:%.o=g2g_obj/%.o) $(LINKFLG) $(G2G_LIBS) $(EXTRA_FLAGS)
+	ifort -o $@ $(OBJ:%.o=g2g_obj/%.o) $(G2G_LIBS) $(EXTRA_FLAGS)
 	
 hibrido: $(OBJ:%.o=obj/%.o)
-	ifort -o $@ $(OBJ:%.o=obj/%.o) $(LINKFLG) $(CPU_LIBS) $(EXTRA_FLAGS)
+	ifort -o $@ $(OBJ:%.o=obj/%.o) $(CPU_LIBS) $(EXTRA_FLAGS)
 
 # CPU OBJs
 obj/config.o    : config.f COMM

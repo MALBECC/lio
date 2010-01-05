@@ -1,18 +1,6 @@
 #-*- mode: make -*-
-
-OBJ =      int.o init.o drive.o SCF.o  func.o     \
-           int2.o  int3.o int3G.o exch.o    \
-           exch2.o pot.o int2G.o int1G.o \
-           geom.o intSG.o MD2.o write.o \
-           dns.o dns2.o dnsg.o potg.o dip.o dipG.o  \
-           int3N.o exchnum.o exchnum2.o grid.o\
-           densg.o  exchfock.o\
-           nwrite.o dfp2.o lsearch.o SCFop.o\
-           densgop.o dns2op.o dnsop.o exchnum2op.o\
-           exchnumop.o potop.o \
-           dnsgop.o potgop.o elec.o charge.o dip2.o vol.o\
-            mmsol.o mmsolG.o intsolG.o intsol.o resp.o\
-            efield.o lalg.o popu.o int3mem.o int3lu.o alg.o
+SRCS = $(wildcard *.f)
+OBJ=$(SRCS:%.f=%.o)
 DEFINE   = -Dpack
 COMPFLG  = -mp1 -ip -O3 -c $(CFLAGS) -cpp $(DEFINE)
 COMPFLG2 = -O3 -c $(CFLAGS) -cpp $(DEFINE)
@@ -294,10 +282,3 @@ g2g_obj/lalg.o    : lalg.f param
 	ifort -o $@ $(COMPFLG) $(G2G_CFLAGS) lalg.f 
 g2g_obj/popu.o    : popu.f param
 	ifort -o $@ $(COMPFLG) $(G2G_CFLAGS) popu.f 
-
-
-
-
-
-
-

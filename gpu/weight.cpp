@@ -12,75 +12,6 @@
 using namespace std;
 using namespace G2G;
  
-double compute_point_weight(const double3& point_position, double wrad, uint atom, uint point)
-{
-	double P_total = 0.0;
-	double P_atom = 1.0;
-	double atom_weight;
-
-#if !BECKE
-	double a = 0.64; // sacado de paper de DFT lineal
-	if ((point_position - fortran_vars.atom_positions.get(atom)).length() < (0.5 * (1 - a) * fortran_vars.nearest_neighbor_dists.get(atom))) {
-		atom_weight = 1.0;
-	}
-	{
-#endif
-					
-	for (uint atom_j = 0; atom_j < fortran_vars.atoms; atom_j++) {
-		double P_curr = 1.0;
-		const double3& pos_atom_j(fortran_vars.atom_positions.get(atom_j));
-		double rm_atom_j = fortran_vars.rm.get(atom_j);
-
-		for (uint atom_k = 0; atom_k < fortran_vars.atoms; atom_k++) {
-			if (atom_k == atom_j) continue;
-			const double3& pos_atom_k(fortran_vars.atom_positions.get(atom_k));
-			double u = ((point_position - pos_atom_j).length() - (point_position - pos_atom_k).length()) / fortran_vars.atom_atom_dists.get(atom_j, atom_k);
-
-			double x;
-			x = rm_atom_j / fortran_vars.rm.get(atom_k);
-			x = (x - 1.0) / (x + 1.0);
-			u += (x / (x * x - 1.0)) * (1.0 - u * u);
-
-#if BECKE
-			u = 1.5 * u - 0.5 * (u * u * u);
-			u = 1.5 * u - 0.5 * (u * u * u);
-			u = 1.5 * u - 0.5 * (u * u * u);
-			u = 0.5 * (1.0 - u);
-#else
-			if (u <= -a) u = 1;
-			else if (u >= a) u = 0;
-			else {
-				double ua = u / a;
-				u = 2.1875 * (ua * (1 - ua) * (1 + ua)) + 1.3125 * pow(ua, 5) - 0.3125 * pow(ua, 7);
-				u = 0.5 * (1.0 - u);
-			}
-#endif
-
-			P_curr *= u;
-			if (P_curr == 0.0) break;
-		}
-
-		if (atom_j == atom) {
-			P_atom = P_curr;
-			if (P_atom == 0.0) break;
-		}
-		P_total += P_curr;
-	}
-
-	atom_weight = (P_total == 0.0 ? 0.0 : (P_atom / P_total));
-#if !BECKE
-	}
-#endif
-
-	double integration_weight = wrad * fortran_vars.wang.get(point);
-	double point_weight = atom_weight * integration_weight;
-	
-	return point_weight;
-}
-
-#define EXCLUDE_BAD_ONES 0
-
-#if !WEIGHT_GPU
 void cpu_compute_group_weights(PointGroup& group)
 {
 	list<Point>::iterator it = group.points.begin();
@@ -88,25 +19,7 @@ void cpu_compute_group_weights(PointGroup& group)
 		uint atom = it->atom;
 		double atom_weight;
 
-		#if EXCLUDE_BAD_ONES
-		if (group.nucleii.find(atom) == group.nucleii.end()) {
-			it = group.points.erase(it);
-			group.number_of_points--; // TODO: probar poner peso cero nada mas
-			continue;
-		}
-		#endif
-
 		const double3& point_position = it->position;
-
-#if !BECKE
-		double a = 0.64; // sacado de paper de DFT lineal
-		
-		if ((point_position - fortran_vars.atom_positions.get(atom)).length() < (0.5 * (1 - a) * fortran_vars.nearest_neighbor_dists.get(atom))) {
-			atom_weight = 1.0;
-			//cout << "precondicion" << endl;
-		}
-		{
-#endif
 
 		double P_total = 0.0;
 		double P_atom = 0.0;
@@ -128,43 +41,25 @@ void cpu_compute_group_weights(PointGroup& group)
 				x = (x - 1.0) / (x + 1.0);
 				u += (x / (x * x - 1.0)) * (1.0 - u * u);
 
-#if BECKE
 				u = 1.5 * u - 0.5 * (u * u * u);
 				u = 1.5 * u - 0.5 * (u * u * u);
 				u = 1.5 * u - 0.5 * (u * u * u);
 				u = 0.5 * (1.0 - u);
-#else
-				if (u <= -a) u = 1;
-				else if (u >= a) u = 0;
-				else {
-					double ua = u / a;
-					u = 2.1875 * (ua * (1 - ua) * (1 + ua)) + 1.3125 * pow(ua, 5) - 0.3125 * pow(ua, 7);
-					u = 0.5 * (1.0 - u);
-				}
-#endif	
 				//cout << u << endl;
 
 				P_curr *= u;
-#if BECKE && BECKE_CUTOFF
-				if (P_curr < becke_cutoff) { /*cout << "product" << endl;*/ P_curr = 0.0; break; }
-#else
 				if (P_curr == 0.0) { /*cout << "product" << endl;*/ break; }
-#endif
 			}
 
 			if (atom_j == atom) {
 				P_atom = P_curr;
-#if BECKE && BECKE_CUTOFF
-				if (P_atom < becke_cutoff) { /*cout << "curr" << endl;*/ P_atom = 0.0; break; }
-#else
 				if (P_atom == 0.0) { /*cout << "curr" << endl;*/ break; }
-#endif
 			}
 
 			P_total += P_curr;
 		}
 
-		#if !EXCLUDE_BAD_ONES
+    // punto que no tiene a su propio atomo entre los vecinos
 		if (group.nucleii.find(atom) == group.nucleii.end()) {
 			P_atom = 1.0;
 			uint atom_j = atom;
@@ -191,13 +86,8 @@ void cpu_compute_group_weights(PointGroup& group)
 			}
 			//cout << P_atom << " " << P_total << " " << P_atom / P_total << endl;
 		}
-		#endif
 		
 		atom_weight = (P_total == 0.0 ? 0.0 : (P_atom / P_total));
-#if !BECKE
-		}
-#endif
-
 		it->weight *= atom_weight;
 		//cout << "peso " << P_atom << " " << P_total << " " << it->weight << endl;
 
@@ -208,6 +98,4 @@ void cpu_compute_group_weights(PointGroup& group)
 		else ++it;
 	}
 }
-
-#endif
 

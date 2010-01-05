@@ -39,7 +39,7 @@
 # Basic directory setup for SDK
 # (override directories only if they are not already defined)
 ROOTDIR    ?= $(CUDA_INSTALL_PATH)/cuda
-LIBDIR := $(CUDA_INSTALL_PATH)/sdk/lib
+LIBDIR := $(CUDA_INSTALL_PATH)/sdk/lib64
 COMMONDIR  := $(CUDA_INSTALL_PATH)/sdk/common
 
 # Compilers
@@ -74,7 +74,7 @@ ifeq ($(USEGLLIB),1)
 endif
 
 # Libs
-LIB       := -L$(CUDA_INSTALL_PATH)/lib -L$(COMMONDIR)/lib -L$(LIBDIR) -lcuda -lcudart ${OPENGLLIB} ${LIB}
+LIB       := -L$(CUDA_INSTALL_PATH)/lib64 -L$(COMMONDIR)/lib -L$(LIBDIR) -lcuda -lcudart ${OPENGLLIB} ${LIB}
 
 # Warning flags
 CXXWARN_FLAGS := \

@@ -68,8 +68,8 @@ gaussian
       1.5000000    1.000000
 endbasis
 &SCFINP
- OPEN = F, 
- NMAX=1
+ OPEN = F,
+ NMAX=200
  NCO = 10,
  NUNP = 0, 
  ATRHO = F, 

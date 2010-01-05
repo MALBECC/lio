@@ -193,13 +193,7 @@ void regenerate_partition(void)
 														(x0.z <= point_position.z && point_position.z <= x1.z));
 
 				if (inside_prism) {
-#if WEIGHT_GPU || WEIGHT_CUTOFFS
 					double point_weight = wrad * fortran_vars.wang.get(point); // integration weight
-#else
-					double point_weight = compute_point_weight(point_position, wrad, atom, point);
-					//if (point_weight == 0.0) continue;
-#endif
-
           Point point_object(atom, shell, point, point_position, point_weight);
 
           /* assign to sphere? */
@@ -245,10 +239,7 @@ void regenerate_partition(void)
 
         PointGroup& group = final_partition.back();
 
-#if WEIGHT_GPU || WEIGHT_CUTOFFS
         group.compute_weights();
-#endif
-
         if (group.number_of_points < min_points_per_cube) { final_partition.pop_back(); continue; }
 
         // para hacer histogramas

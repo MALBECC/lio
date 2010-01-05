@@ -61,7 +61,6 @@ class Cube : public PointGroup {
 };
 
 extern std::list<PointGroup> final_partition;
-
 void regenerate_partition(void);
 
 #endif

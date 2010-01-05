@@ -41,6 +41,18 @@ struct double3 {
     z = other.z;
     return *this;
   }
+	
+	inline double3 operator*(double b) {
+		return double3(x * b, y * b, z * b);
+	}
+	
+	inline double3 operator/(int b) {
+		return double3(x / b, y / b, z / b);
+	}
+
+	inline double3 operator/(double b) {
+		return double3(x / b, y / b, z / b);
+	}	
 
   friend std::ostream& operator<<(std::ostream& o, const double3& v);
 };
@@ -61,19 +73,6 @@ inline double3 operator+(const double3& a, const double3& b) {
 inline double3 operator*(const double3& a, const double3& b) {
 	return double3(a.x * b.x, a.y * b.y, a.z * b.z);
 }
-
-inline double3 operator*(const double3& a, const double& b) {
-	return double3(a.x * b, a.y * b, a.z * b);
-}
-
-inline double3 operator/(const double3& a, const uint b) {
-	return double3(a.x / b, a.y / b, a.z / b);
-}
-
-inline double3 operator/(const double3& a, const double b) {
-	return double3(a.x / b, a.y / b, a.z / b);
-}
-
 
 inline uint3 ceil_uint3(const double3& a) {
 	return make_uint3(static_cast<uint>(ceil(a.x)),

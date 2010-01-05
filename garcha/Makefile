@@ -5,7 +5,7 @@ DEFINE   = -Dpack
 COMPFLG  = -mp1 -ip -O3 -c $(CFLAGS) -cpp $(DEFINE)
 COMPFLG2 = -O3 -c $(CFLAGS) -cpp $(DEFINE)
 CPPFLAGS = -P -traditional-cpp
-LIBS= -L/usr/lib -lblas -L../gpu -lg2g -lstdc++ $(CUDA_LIBS) -L$(MKL_LIBRARY_PATH) -lmkl_lapack64 -lmkl_em64t -lguide \
+LIBS= -L/usr/lib -lblas -L../g2g -lg2g -lstdc++ $(CUDA_LIBS) -L$(MKL_LIBRARY_PATH) -lmkl_lapack64 -lmkl_em64t -lguide \
  	-lpthread -lm
 
 CUDA_COMMONDIR := $(CUDA_INSTALL_PATH)/../sdk/common

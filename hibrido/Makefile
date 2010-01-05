@@ -7,7 +7,7 @@ COMPFLG  = -mp1 -ip -O3 -c $(CFLAGS) -cpp $(DEFINE)
 COMPFLG2 = -O3     -c $(CFLAGS) -cpp $(DEFINE)
 #more or less general
 CPPFLAGS =  -P -traditional-cpp
-LIBS=-L/usr/lib -lblas -lstdc++ -L/opt/intel/mkl/9.0/lib/em64t -lmkl_em64t -lguide -lpthread  -L../gpu -lg2g -lm
+LIBS=-L/usr/lib -lblas -lstdc++ -L/opt/intel/mkl/9.0/lib/em64t -lmkl_em64t -lguide -lpthread  -L../g2g -lg2g -lm
 
 CUDA_COMMONDIR := $(CUDA_INSTALL_PATH)/../sdk/common
 CUDA_LIBS=-L$(CUDA_INSTALL_PATH)/lib64 -L$(CUDA_COMMONDIR)/lib64 -lcuda -lcudart

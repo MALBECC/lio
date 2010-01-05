@@ -13,27 +13,21 @@ OBJ =      int.o init.o drive.o SCF.o  func.o     \
            dnsgop.o potgop.o elec.o charge.o dip2.o vol.o\
             mmsol.o mmsolG.o intsolG.o intsol.o resp.o\
             efield.o lalg.o popu.o int3mem.o int3lu.o alg.o
-#OTHER_OBJ = alg.o eig.o svd.o
-
-#COMPFLG =  -march=athlon-xp -O3 -pipe -fomit-frame-pointer -c\
-#           -falign-loops=2 -fno-strength-reduce \
-#           -ffast-math  -falign-functions=2
 DEFINE   = -Dpack
 COMPFLG  = -mp1 -ip -O3 -c $(CFLAGS) -cpp $(DEFINE)
-COMPFLG2 = -O3     -c $(CFLAGS) -cpp $(DEFINE)
-#more or less general
-LINKFLG = -lm 
-CPPFLAGS =  -P -traditional-cpp
+COMPFLG2 = -O3 -c $(CFLAGS) -cpp $(DEFINE)
+CPPFLAGS = -P -traditional-cpp
+LIBS= -L/usr/lib -lblas -L../gpu -lg2g -lstdc++ $(CUDA_LIBS) -L$(MKL_LIBRARY_PATH) -lmkl_lapack64 -lmkl_em64t -lguide \
+ 	-lpthread -lm
+
 CUDA_COMMONDIR := $(CUDA_INSTALL_PATH)/../sdk/common
 CUDA_LIBS=-L$(CUDA_INSTALL_PATH)/lib64 -L$(CUDA_COMMONDIR)/lib64 -lcuda -lcudart
-LIBS= -L/usr/lib -lblas -L../gpu -lg2g -lstdc++ $(CUDA_LIBS) -L$(MKL_LIBRARY_PATH) -lmkl_lapack64 -lmkl_em64t -lguide \
- 	-lpthread
 G2G_CFLAGS=-DG2G
 
 ifeq ($(profile),1)
 	COMPFLG += -pg
-	COMPFLG2 += -pg	
-	LINKFLG += -pg
+	COMPFLG2 += -pg
+	LIBS += -pg
 endif
 
 ifeq ($(ultima_garcha),1)
@@ -60,10 +54,10 @@ clean-g2g:
 clean: clean-original clean-g2g
 
 garcha-g2g: $(OBJ:%.o=g2g_obj/%.o)
-	ifort -o $@ $(OBJ:%.o=g2g_obj/%.o) $(LINKFLG) $(LIBS) $(EXTRA_FLAGS)
+	ifort -o $@ $(OBJ:%.o=g2g_obj/%.o) $(LIBS) $(EXTRA_FLAGS)
 	
 garcha: $(OBJ:%.o=obj/%.o)
-	ifort -o $@ $(OBJ:%.o=obj/%.o) $(LINKFLG) $(LIBS) $(EXTRA_FLAGS)
+	ifort -o $@ $(OBJ:%.o=obj/%.o) $(LIBS) $(EXTRA_FLAGS)
 
 # Original code object files
 obj/init.o    : init.f

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <stdexcept>
-#include <cassert>
 #include <cuda_runtime.h>
+#include "common.h"
 #include "matrix.h"
 using namespace G2G;
 using namespace std;
@@ -48,7 +48,8 @@ template<class T> void HostMatrix<T>::dealloc_data(void) {
 
 template<class T> void HostMatrix<T>::deallocate(void) {
 	dealloc_data();
-	this->data = NULL;	
+	this->data = NULL;
+  this->width = this->height = 0;
 }
 
 template<class T> HostMatrix<T>::HostMatrix(PinnedFlag _pinned) : Matrix<T>() {
@@ -152,7 +153,9 @@ template<class T> void HostMatrix<T>::copy_submatrix(const CudaMatrix<T>& c, uns
 }
 
 template<class T> void HostMatrix<T>::to_constant(const char* symbol) {
-	cudaMemcpyToSymbol(symbol, this->data, this->bytes(), 0, cudaMemcpyHostToDevice);	
+  #if !CPU_KERNELS
+	cudaMemcpyToSymbol(symbol, this->data, this->bytes(), 0, cudaMemcpyHostToDevice);
+  #endif
 }
 
 template<class T> void HostMatrix<T>::copy_transpose(const CudaMatrix<T>& cuda_matrix) {
@@ -181,19 +184,23 @@ template<class T> CudaMatrix<T>::CudaMatrix(unsigned int _width, unsigned int _h
 
 template<class T> CudaMatrix<T>& CudaMatrix<T>::resize(unsigned int _width, unsigned int _height) {
   assert(_width * _height != 0);
-  
+
+  #if !CPU_KERNELS
   if (_width != this->width || _height != this->height) {
     if (this->data) cudaFree(this->data);
     this->width = _width; this->height = _height;
     cudaError_t error_status = cudaMalloc((void**)&this->data, this->bytes());
     assert(error_status != cudaErrorMemoryAllocation);
   }
+  #endif
 	return *this;		
 }
 
 template<class T> CudaMatrix<T>& CudaMatrix<T>::fill(int value) {
+  #if !CPU_KERNELS
 	assert(this->data);
-	cudaMemset(this->data, value, this->bytes());	
+	cudaMemset(this->data, value, this->bytes());
+  #endif
 	return *this;
 }
 
@@ -210,8 +217,10 @@ template<class T> CudaMatrix<T>::~CudaMatrix(void) {
 }
 
 template<class T> void CudaMatrix<T>::deallocate(void) {
+  #if !CPU_KERNELS
 	if (this->data) cudaFree(this->data);	
 	this->data = NULL;
+  #endif
 }
 
 template<class T> void CudaMatrix<T>::copy_submatrix(const HostMatrix<T>& c, unsigned int _elements) {
@@ -219,16 +228,22 @@ template<class T> void CudaMatrix<T>::copy_submatrix(const HostMatrix<T>& c, uns
 	//cout << "bytes: " << _bytes << ", c.bytes: " << c.bytes() << endl;
 	if (_bytes > c.bytes()) throw runtime_error("CudaMatrix: Can't copy more elements than what operand has");
 
+  #if !CPU_KERNELS
 	cudaMemcpy(this->data, c.data, _bytes, cudaMemcpyHostToDevice);
+  #endif
 }
 
 template<class T> void CudaMatrix<T>::copy_submatrix(const CudaMatrix<T>& c, unsigned int _elements) {
 	unsigned int _bytes = (_elements == 0 ? this->bytes() : _elements * sizeof(T));
 	if (_bytes > c.bytes()) throw runtime_error("CudaMatrix: Can't copy more elements than what operand has");
+
+  #if !CPU_KERNELS
 	cudaMemcpy(c.data, this->data, _bytes, cudaMemcpyDeviceToDevice);
+  #endif
 }
 
 template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const HostMatrix<T>& c) {
+  #if !CPU_KERNELS
 	if (!c.data) {
 		if (this->data) { cudaFree(this->data); this->width = this->height = 0; this->data = NULL; }
 	}
@@ -249,11 +264,12 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const HostMatrix<T>& c
 		
 		copy_submatrix(c);
 	}
-
+  #endif
 	return *this;
 }
 
 template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const CudaMatrix<T>& c) {
+  #if !CPU_KERNELS
 	// copies data from c, only if necessary (always frees this's data, if any)
 	if (!c.data) {
 		if (this->data) { cudaFree(this->data); this->width = this->height = 0; this->data = NULL; }
@@ -275,7 +291,7 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const CudaMatrix<T>& c
 		
 		cudaMemcpy(this->data, c.data, this->bytes(), cudaMemcpyDeviceToDevice);		
 	}
-	
+	#endif
 	return *this;
 }
 

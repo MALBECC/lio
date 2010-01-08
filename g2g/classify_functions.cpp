@@ -5,7 +5,7 @@
 #include <cmath>
 #include "common.h"
 #include "init.h"
-#include "cuda/double.h"
+#include "cuda/double3.h"
 #include "matrix.h"
 #include "partition.h"
 using namespace std;
@@ -38,12 +38,14 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
 		double len = dist_vec.length();
 		atom_cube_dists.get(i) = len * len;
 	}
+
+  set<uint> functions_set;
 	
 	/** S **/
 	while (func < fortran_vars.s_funcs) {
     uint atom_nuc = fortran_vars.nucleii.get(func) - 1;
 		if (assign_all_functions || (min_exps[func] * atom_cube_dists.get(atom_nuc)) < max_function_exponent) {
-			functions.insert(func); s_functions++;
+			functions_set.insert(func); s_functions++;
 			nucleii.insert(atom_nuc);
 		}
 		func++;
@@ -53,7 +55,7 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
 	while (func < fortran_vars.s_funcs + fortran_vars.p_funcs * 3) {
     uint atom_nuc = fortran_vars.nucleii.get(func) - 1;
 		if (assign_all_functions || (min_exps[func] * atom_cube_dists.get(atom_nuc)) < max_function_exponent) {
-			functions.insert(func); p_functions++;
+			functions_set.insert(func); p_functions++;
 			nucleii.insert(atom_nuc);
 		}
 
@@ -64,12 +66,15 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
 	while (func < fortran_vars.s_funcs + fortran_vars.p_funcs * 3 + fortran_vars.d_funcs * 6) {
     uint atom_nuc = fortran_vars.nucleii.get(func) - 1;
 		if (assign_all_functions || (min_exps[func] * atom_cube_dists.get(atom_nuc)) < max_function_exponent) {
-			functions.insert(func); d_functions++; 
+			functions_set.insert(func); d_functions++;
 			nucleii.insert(atom_nuc);
 		}
 		func += 6;
 	}
 
+  functions.resize(functions_set.size());
+  copy(functions_set.begin(), functions_set.end(), functions.begin());
+  //functions.insert(functions.begin(), functions_set.begin(), functions_set.end());
   //cout << "vecinos: " << nucleii.size() << endl;
 }
 
@@ -95,11 +100,13 @@ void Sphere::assign_significative_functions(const std::vector<double>& min_exps)
     }
 	}
 
+  set<uint> functions_set;
+
 	/** S **/
 	while (func < fortran_vars.s_funcs) {
     uint atom_nuc = fortran_vars.nucleii.get(func) - 1;
 		if (assign_all_functions || (min_exps[func] * atom_sphere_dists.get(atom_nuc)) < max_function_exponent) {
-			functions.insert(func); s_functions++;
+			functions_set.insert(func); s_functions++;
 			nucleii.insert(atom_nuc);
       //cout << "s func" << func << endl;
 		}
@@ -110,7 +117,7 @@ void Sphere::assign_significative_functions(const std::vector<double>& min_exps)
 	while (func < fortran_vars.s_funcs + fortran_vars.p_funcs * 3) {
     uint atom_nuc = fortran_vars.nucleii.get(func) - 1;
 		if (assign_all_functions || (min_exps[func] * atom_sphere_dists.get(atom_nuc)) < max_function_exponent) {
-			functions.insert(func); p_functions++;
+			functions_set.insert(func); p_functions++;
 			nucleii.insert(atom_nuc);
       //cout << "p func" << func << endl;
 		}
@@ -122,11 +129,14 @@ void Sphere::assign_significative_functions(const std::vector<double>& min_exps)
 	while (func < fortran_vars.s_funcs + fortran_vars.p_funcs * 3 + fortran_vars.d_funcs * 6) {
     uint atom_nuc = fortran_vars.nucleii.get(func) - 1;
 		if (assign_all_functions || (min_exps[func] * atom_sphere_dists.get(atom_nuc)) < max_function_exponent) {
-			functions.insert(func); d_functions++;
+			functions_set.insert(func); d_functions++;
 			nucleii.insert(atom_nuc);
       //c/out << "d func" << func << endl;
 		}
 		func += 6;
 	}
+
+  functions.resize(functions_set.size());
+  copy(functions_set.begin(), functions_set.end(), functions.begin());
   //cout << "sphere: vecinos: " << nucleii.size() << endl;
 }

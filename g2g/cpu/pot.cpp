@@ -1,74 +1,12 @@
+/* -*- mode: c -*- */
 #include <iostream>
-#include "common.h"
-#include "init.h"
-#include "timer.h"
-#include "cuda/cuda_extra.h"
-using namespace G2G;
-using namespace std;
-
-
-template<bool compute_exc, bool compute_y2a> void cpu_pot(float dens, float& ex, float& ec, float& y2a);
-
-template<bool compute_energy, bool do_forces>
-void cpu_compute_density_forces(float* energy, float* point_weights, uint points, float* rdm, float* rmm_output,
-  float* function_values, float4* gradient_values, float4* forces, uint* nuc, uint nucleii_count, uint m, Timer& t, Timer& trmm)
-{
-  if (!compute_energy) {
-    trmm.start();
-     for (uint i = 0; i < m; i++) {
-       for (uint j = i; j < m; j++) {
-         rmm_output[COALESCED_DIMENSION(m) * j + i] = 0.0f;
-       }
-     }
-    trmm.pause();
-  }
-
-  for (uint point = 0; point < points; point++) {
-    t.start();
-    //cout << "punto" << endl;
-    float partial_density = 0.0f;
-
-    HostMatrixFloat w(fortran_vars.nco, 1);
-    for (uint i = 0; i < fortran_vars.nco; i++) w.get(i) = 0.0f;
-
-    for (uint j = 0; j < m; j++) {
-      float f = function_values[m * point + j];
-      for (uint i = 0; i < fortran_vars.nco; i++) {
-        float r = rdm[COALESCED_DIMENSION(fortran_vars.nco) * j + i];
-        w.get(i) += f * r;
-      }	// TODO: usar rmmt
-    }
-
-    for (uint i = 0; i < fortran_vars.nco; i++) { partial_density += w.get(i) * w.get(i); }
-    partial_density *= 2;
-
-    /* compute energy / functional */
-    float exc, corr, y2a;
-    float point_weight = point_weights[point];
-    float factor = 0;
-
-    if (compute_energy) {
-      cpu_pot<true, false>(partial_density, exc, corr, y2a);
-      energy[point] = (partial_density * point_weight) * (exc + corr);
-      t.pause();
-    }
-    else {
-      cpu_pot<false, true>(partial_density, exc, corr, y2a);
-      factor = point_weight * y2a;
-      t.pause();
-
-      trmm.start();
-      for (uint i = 0; i < m; i++) {
-        for (uint j = i; j < m; j++) {
-          float Fi = function_values[m * point + i];
-          float Fj = (i == j ? Fi : function_values[m * point + j]);
-          rmm_output[COALESCED_DIMENSION(m) * j + i] += Fi * Fj * factor;
-        }
-      }
-      trmm.pause();
-    }
-  }
-}
+#include <fstream>
+#include <map>
+#include <string>
+#include "../common.h"
+#include "../init.h"
+#include "../cuda/cuda_extra.h"
+#include "../matrix.h"
 
 #define POT_ALPHA 		-0.738558766382022447 // -(3/PI)^(1/3)
 #define POT_GL 				0.620350490899400087
@@ -98,13 +36,15 @@ void cpu_compute_density_forces(float* energy, float* point_weights, uint points
 #define POT_VOSKO_QSQ 37.8469891110325 // POT_VOSKO_Q * POT_VOSKO_Q
 #define POT_VOSKO_B1X0 1.0329232240928 // (1.0f - t6 * (POT_VOSKO_B1 - 2.0f * POT_VOSKO_X0))
 
+using namespace G2G;
+
 template<bool compute_exc, bool compute_y2a> void cpu_pot(float dens, float& ex, float& ec, float& y2a)
 {
 	// data X alpha
 
 	if (dens == 0) {
-		if (compute_exc) { ex = 0.0f; ec = 0.0f; }
-		if (compute_y2a) y2a = 0.0f;
+		if (compute_exc) { ex = 0; ec = 0; }
+		if (compute_y2a) y2a = 0;
 		return;
 	}
 
@@ -145,12 +85,12 @@ template<bool compute_exc, bool compute_y2a> void cpu_pot(float dens, float& ex,
 			float rs = POT_GL / y;
 			float x1 = sqrtf(rs);
 			float Xx = rs + POT_VOSKO_B1 * x1 + POT_VOSKO_C1;
-			float t1 = 2 * x1 + POT_VOSKO_B1;
+			float t1 = 2.0f * x1 + POT_VOSKO_B1;
 			float t2 = logf(Xx);
 			float t3 = atanf(POT_VOSKO_Q/t1);
       float t5 = (POT_VOSKO_B1 * x1 + POT_VOSKO_2C1) / x1;
 
-      ec = POT_VOSKO_A1 * (2 * logf(x1) - t2 + POT_VOSKO_2B1Q * t3 - POT_T4 * (2 * logf(x1 - POT_VOSKO_X0) - t2 + POT_VOSKO_B2X0Q * t3));
+      ec = POT_VOSKO_A1 * (2.0f * logf(x1) - t2 + POT_VOSKO_2B1Q * t3 - POT_T4 * (2.0f * logf(x1 - POT_VOSKO_X0) - t2 + POT_VOSKO_B2X0Q * t3));
 
 			float vc;
       if (compute_y2a) {
@@ -161,4 +101,7 @@ template<bool compute_exc, bool compute_y2a> void cpu_pot(float dens, float& ex,
 		break;
 	}
 }
+
+template void cpu_pot<true, false>(float dens, float& ex, float& ec, float& y2a);
+template void cpu_pot<false, true> (float dens, float& ex, float& ec, float& y2a);
 

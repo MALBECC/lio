@@ -4,6 +4,7 @@
 #include <cuda_runtime.h>
 #include <cmath>
 #include <stdexcept>
+#include "cuda_extra.h"
 
 struct double3 {
   union {
@@ -52,7 +53,11 @@ struct double3 {
 
 	inline double3 operator/(double b) {
 		return double3(x / b, y / b, z / b);
-	}	
+	}
+
+  inline float3 to_float3() {
+    return make_float3(x, y, z);
+  }
 
   friend std::ostream& operator<<(std::ostream& o, const double3& v);
 };

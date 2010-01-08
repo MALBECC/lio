@@ -1,10 +1,14 @@
 #ifndef __G2G_COMMON_H__
 #define __G2G_COMMON_H__
 
+#include <stdexcept>
+
 #ifdef _DEBUG
 #define _DBG(x) x
+#define assert(x) if (!(x)) throw std::runtime_error("assertion failed: " #x);
 #else
 #define _DBG(x)
+#define assert(x)
 #endif
 
 #define MAX_CONTRACTIONS 7
@@ -25,5 +29,10 @@
 #define MAX_ATOMS 100
 
 #define REMOVE_ZEROS 1
+
+#define COMPUTE_RMM 					0
+#define COMPUTE_ENERGY_ONLY		1
+#define COMPUTE_ENERGY_FORCE	2
+#define COMPUTE_FORCE_ONLY		3
 
 #endif

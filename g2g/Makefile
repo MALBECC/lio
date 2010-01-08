@@ -1,6 +1,6 @@
 # -*- mode: make -*-
-
-OBJ=init.o timer.o matrix.o partition.o clasify_functions.o weight.o
+SRCS=$(wildcard *.cpp) $(wildcard cpu/*.cpp)
+OBJ=$(SRCS:%.cpp=%.o)
 
 CUDA_SOURCES=$(wildcard cuda/*.cu)
 CUDA_HEADERS=$(wildcard cuda/*.h)
@@ -9,6 +9,8 @@ include cuda/Makefile.cuda
 include Makefile.common
 
 ifeq ($(cpu),1)
+  CUDA_OBJ=
+  CUDA_LIBS=
 	CXXFLAGS += -DCPU_KERNELS=1
 endif
 
@@ -34,7 +36,7 @@ endif
 all: $(LIBRARY)
 
 libg2g.a: $(CUDA_OBJ) $(OBJ)
-	$(MAKE) -C cuda
+	#$(MAKE) -C cuda
 	ar cru libg2g.a $(CUDA_OBJ) $(OBJ)
 	ranlib libg2g.a
 	
@@ -44,5 +46,4 @@ libg2g.so: $(CUDA_OBJ) $(OBJ)
 
 clean:
 	make -C cuda clean
-	rm -f *_test *.o *.o *.so *.a *.cu_o
-
+	rm -f *_test *.o *.so *.a *.cu_o cpu/*.o

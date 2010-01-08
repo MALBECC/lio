@@ -2,9 +2,9 @@
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
-#include <cassert>
 #include "common.h"
 #include "init.h"
+#include "timer.h"
 #include "partition.h"
 #include "cuda/cuda_extra.h"
 #include "matrix.h"
@@ -12,7 +12,7 @@ using namespace std;
 using namespace G2G;
 
 /* external function prototypes */
-void gpu_compute_group_functions(void);
+void g2g_compute_functions(void);
 
 /* internal function prototypes */
 void read_options(void);
@@ -25,20 +25,18 @@ namespace G2G {
 /* methods */
 extern "C" void g2g_init_(void)
 {
-  cout << "<====== Initializing GPU... ";
-  cuInit(0);
-  cout << "done ======>" << endl;
+  cout << "<====== Initializing G2G ======>";
 
+  #if !CPU_KERNELS
+  cuInit(0);
   int devnum = -1;
   cudaDeviceProp devprop;
   if (cudaGetDevice(&devnum) != cudaSuccess) throw runtime_error("Could not get device number!");
   if (cudaGetDeviceProperties(&devprop, devnum) != cudaSuccess) throw runtime_error("Could not get device propierties!");
-
   cout << "GPU Device used: " << devprop.name << endl;
-  #if CPU_KERNELS
-    cout << "Kernels: cpu" << endl;
+  cout << "Kernels: gpu" << endl;
   #else
-    cout << "Kernels: gpu" << endl;
+  cout << "Kernels: cpu" << endl;
   #endif
 }
 
@@ -57,11 +55,15 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	cout << "do_forces: " << boolalpha << fortran_vars.do_forces << endl;
 	//fortran_vars.do_forces = false;
 
+  #if !CPU_KERNELS
 	cudaMemcpyToSymbol("gpu_atoms", &fortran_vars.atoms, sizeof(fortran_vars.atoms), 0, cudaMemcpyHostToDevice);
+  #endif
 
 	fortran_vars.normalize = norm;
-	float normalization_factor = (fortran_vars.normalize ? (1.0/sqrt(3)) : 1.0);
-	cudaMemcpyToSymbol("gpu_normalization_factor", &normalization_factor, sizeof(float), 0, cudaMemcpyHostToDevice);
+	fortran_vars.normalization_factor = (fortran_vars.normalize ? (1.0/sqrt(3)) : 1.0);
+  #if !CPU_KERNELS
+	cudaMemcpyToSymbol("gpu_normalization_factor", &fortran_vars.normalization_factor, sizeof(float), 0, cudaMemcpyHostToDevice);
+  #endif
 	
 	fortran_vars.s_funcs = nshell[0];
 	fortran_vars.p_funcs = nshell[1] / 3;
@@ -69,14 +71,16 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	fortran_vars.spd_funcs = fortran_vars.s_funcs + fortran_vars.p_funcs + fortran_vars.d_funcs;
 	fortran_vars.m = M;	
 	fortran_vars.nco = nco;
-	cudaMemcpyToSymbol("gpu_nco", &fortran_vars.nco, sizeof(uint), 0, cudaMemcpyHostToDevice);	
+  #if !CPU_KERNELS
+	cudaMemcpyToSymbol("gpu_nco", &fortran_vars.nco, sizeof(uint), 0, cudaMemcpyHostToDevice);
+  #endif
 		
-	fortran_vars.iexch = Iexch;	
-	cudaMemcpyToSymbol("gpu_Iexch", &Iexch, sizeof(Iexch), 0, cudaMemcpyHostToDevice);	
-	//HostMatrix<uint>::to_constant<uint>("gpu_iexch", Iexch);
+	fortran_vars.iexch = Iexch;
+  #if !CPU_KERNELS
+	cudaMemcpyToSymbol("gpu_Iexch", &Iexch, sizeof(Iexch), 0, cudaMemcpyHostToDevice);
+  #endif
 	
 	fortran_vars.atom_positions_pointer = FortranMatrix<double>(r, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS);
-	
 	fortran_vars.atom_types.resize(fortran_vars.atoms);
 	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.atom_types.get(i) = Iz[i] - 1; }	
 	
@@ -84,7 +88,9 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	fortran_vars.shells2.resize(fortran_vars.atoms);
 	fortran_vars.rm.resize(fortran_vars.atoms);
   HostMatrixFloat rm_float(fortran_vars.atoms);
+  #if !CPU_KERNELS
   rm_float.to_constant("gpu_rm");
+  #endif
 	/* ignore the 0th element on these */
 	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells1.get(i) = Nr[Iz[i]]; }
 	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells2.get(i) = Nr2[Iz[i]]; }		
@@ -135,12 +141,19 @@ void compute_new_grid(const unsigned int grid_type) {
 	}	
 	
 	regenerate_partition();
-	gpu_compute_group_functions();
+
+  /** compute functions **/
+  cout << "<===== computing functions ========>" << endl;
+	Timer t;
+  t.start();
+  g2g_compute_functions();
+  t.stop();
+  cout << "time: " << t << endl;
 }
 
 extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
 	cout  << "<======= GPU Reload Atom Positions ========>" << endl;
-	HostMatrix<float3> atom_positions(fortran_vars.atoms);	// gpu version (float3)
+	HostMatrixFloat3 atom_positions(fortran_vars.atoms);	// gpu version (float3)
 	fortran_vars.atom_positions.resize(fortran_vars.atoms);	// cpu version (double3)
 	for (uint i = 0; i < fortran_vars.atoms; i++) {
 		double3 pos(fortran_vars.atom_positions_pointer.get(i, 0), fortran_vars.atom_positions_pointer.get(i, 1), fortran_vars.atom_positions_pointer.get(i, 2));

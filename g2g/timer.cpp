@@ -3,7 +3,6 @@
 #include <sys/time.h>
 #include <map>
 #include <string>
-#include <cassert>
 #include "timer.h"
 using namespace G2G;
 using namespace std;

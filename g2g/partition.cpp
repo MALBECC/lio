@@ -7,15 +7,14 @@
 #include <cmath>
 #include "common.h"
 #include "init.h"
-#include "cuda/double.h"
+#include "cuda/double3.h"
 #include "matrix.h"
 #include "partition.h"
-#include "weight.h"
 #include "timer.h"
 using namespace std;
 using namespace G2G;
 
-void gpu_compute_group_weights(PointGroup& group);
+void g2g_compute_group_weights(PointGroup& group);
 
 /********************
  * PointGroup
@@ -30,11 +29,7 @@ uint PointGroup::total_functions(void) {
 }
 
 void PointGroup::compute_weights(void) {
-#if WEIGHT_GPU
-  gpu_compute_group_weights(*this);
-#else
-	cpu_compute_group_weights(*this);
-#endif
+  g2g_compute_group_weights(*this);
 }
 
 /**********************

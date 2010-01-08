@@ -11,5 +11,4 @@ __device__ __constant__ uint gpu_Iexch = 0;
 __device__ __constant__ uint gpu_nco = 0;
 __device__ __constant__ float gpu_normalization_factor = 1.0f;
 
-
 #endif

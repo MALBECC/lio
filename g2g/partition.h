@@ -4,7 +4,7 @@
 #include <list>
 #include <set>
 #include <vector>
-#include "cuda/double.h"
+#include "cuda/double3.h"
 
 /********************
  * Point information
@@ -25,9 +25,10 @@ class PointGroup {
     uint number_of_points;
 
   	uint s_functions, p_functions, d_functions;
-  	std::set<uint> functions;
+  	//std::set<uint> functions;
+    std::vector<uint> functions;
   	std::set<uint> nucleii;
-  	#ifdef COMPUTE_FUNCTIONS_CPU
+  	#if CPU_KERNELS
     G2G::HostMatrixFloat function_values;
     G2G::HostMatrixFloat4 gradient_values;
     #else

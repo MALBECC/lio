@@ -1,8 +1,7 @@
 #ifndef __G2G_MATRIX_H__
 #define __G2G_MATRIX_H__
 
-#include "cuda/double.h"
-#include <cassert>
+#include "cuda/double3.h"
 
 #define COALESCED_DIMENSION(d) (d + 16 - (d % 16))
 
@@ -30,7 +29,7 @@ namespace G2G {
       enum PinnedFlag { Pinned, NonPinned };
 
       HostMatrix(PinnedFlag pinned = NonPinned);
-			HostMatrix(unsigned int width, unsigned int height, PinnedFlag pinned = NonPinned);
+			HostMatrix(unsigned int width, unsigned int height = 1, PinnedFlag pinned = NonPinned);
 			HostMatrix(const CudaMatrix<T>& c);
 			HostMatrix(const HostMatrix<T>& c);
 			~HostMatrix(void);

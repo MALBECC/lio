@@ -2,7 +2,7 @@
 
 /* TODO: coalescear contractions y demas */
 template<bool do_forces>
-__device__ __host__ void compute_function(uint m, uint idx, float3 point_position, uint contractions,
+static __device__ __host__ void compute_function(uint m, uint idx, float3 point_position, uint contractions,
   float* factor_a_sh, float* factor_c_sh, uint nuc, float& t, float& tg, float3& v)
 {
 	float3 atom_nuc_position = gpu_atom_positions[nuc]; // TODO: ver si al usar memoria compartida para esto, pago menos precio por todos los misses

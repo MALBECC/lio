@@ -15,7 +15,7 @@
 
 #include <stdexcept>
 #include <iostream>
-#include "double.h"
+#include "double3.h"
 
 /** operators **/
 inline __device__ __host__ float2 operator -(const float2 a)
@@ -169,8 +169,12 @@ inline void cudaAssertNoError(const char* msg = NULL) {
 #endif
 
 inline void cudaGetMemoryInfo(uint& free, uint& total) {
+  #ifdef __DEVICE_EMULATION__
+  free = 0; total = 1;
+  #else
 	if (cuMemGetInfo(&free, &total) != CUDA_SUCCESS)
-    throw std::runtime_error("cuMemGetInfo");
+    throw std::runtime_error("cuMemGetInfo failed");
+  #endif
 }
 
 inline void cudaPrintMemoryInfo(void) {

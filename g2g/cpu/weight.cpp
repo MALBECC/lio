@@ -3,16 +3,16 @@
 #include <vector>
 #include <cuda_runtime.h>
 #include <cmath>
-#include "common.h"
-#include "init.h"
-#include "cuda/double.h"
-#include "matrix.h"
-#include "partition.h"
-#include "weight.h"
+#include "../common.h"
+#include "../init.h"
+#include "../cuda/double3.h"
+#include "../matrix.h"
+#include "../partition.h"
 using namespace std;
 using namespace G2G;
- 
-void cpu_compute_group_weights(PointGroup& group)
+
+#if CPU_KERNELS
+void g2g_compute_group_weights(PointGroup& group)
 {
 	list<Point>::iterator it = group.points.begin();
 	while (it != group.points.end()) {
@@ -91,11 +91,15 @@ void cpu_compute_group_weights(PointGroup& group)
 		it->weight *= atom_weight;
 		//cout << "peso " << P_atom << " " << P_total << " " << it->weight << endl;
 
+    #if REMOVE_ZEROS
 		if (it->weight == 0.0) {
 			it = group.points.erase(it);
 			group.number_of_points--;
 		}
 		else ++it;
+    #else
+    ++it;
+    #endif
 	}
 }
-
+#endif

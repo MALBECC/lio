@@ -1,6 +1,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <cuda_runtime.h>
+#include <cstring>
 #include "common.h"
 #include "matrix.h"
 using namespace G2G;

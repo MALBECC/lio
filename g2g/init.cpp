@@ -12,7 +12,7 @@ using namespace std;
 using namespace G2G;
 
 /* external function prototypes */
-void g2g_compute_functions(void);
+template<bool> void g2g_compute_functions(void);
 
 /* internal function prototypes */
 void read_options(void);
@@ -146,7 +146,8 @@ void compute_new_grid(const unsigned int grid_type) {
   cout << "<===== computing functions ========>" << endl;
 	Timer t;
   t.start();
-  g2g_compute_functions();
+  if (fortran_vars.do_forces) g2g_compute_functions<true>();
+  else g2g_compute_functions<false>();
   t.stop();
   cout << "time: " << t << endl;
 }

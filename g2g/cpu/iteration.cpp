@@ -70,6 +70,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 
           for (uint k = 0; k < fortran_vars.nco; k++) {
             float r = fortran_vars.rmm_input.get(group.functions[i] + j, k); // TODO: hacer una copia para mejor acceso
+            w.get(k) += f * r;
           }
         }
       }
@@ -124,7 +125,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
   }
 
   /***** send results to fortran ****/
-  if (compute_energy) { *fort_energy_ptr = total_energy; }
+  if (compute_energy) *fort_energy_ptr = total_energy;
 
   timer_total.stop();
   cout << "TIME: " << timer_total << endl;

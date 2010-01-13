@@ -4,12 +4,13 @@ OBJ=$(SRCS:%.f=%.o)
 DEFINE   = -Dpack
 COMPFLG  = -mp1 -ip -O3 -c $(CFLAGS) -cpp $(DEFINE)
 COMPFLG2 = -O3 -c $(CFLAGS) -cpp $(DEFINE)
+COMPFLG3 = -O1 -c $(CFLAGS) -cpp $(DEFINE)
 CPPFLAGS = -P -traditional-cpp
-LIBS= -L/usr/lib -lblas -L../g2g -lg2g -lstdc++ $(CUDA_LIBS) -L$(MKL_LIBRARY_PATH) -lmkl_lapack64 -lmkl_em64t -lguide \
+LIBS= -L/usr/lib -lblas -L../g2g  $(CUDA_LIBS) -lg2g -lstdc++  -L$(MKL_LIBRARY_PATH) -lmkl_lapack64 -lmkl_em64t -lguide \
  	-lpthread -lm
 
 CUDA_COMMONDIR := $(CUDA_INSTALL_PATH)/../sdk/common
-CUDA_LIBS=-L$(CUDA_INSTALL_PATH)/lib64 -L$(CUDA_COMMONDIR)/lib64 -lcuda -lcudart
+CUDA_LIBS=-L$(CUDA_INSTALL_PATH)/lib64 -L$(CUDA_COMMONDIR)/lib64 -lcudart
 G2G_CFLAGS=-DG2G
 
 ifeq ($(profile),1)
@@ -53,7 +54,7 @@ obj/init.o    : init.f
 obj/int.o    : int.f param
 	ifort -o $@ $(COMPFLG) int.f 
 obj/int1G.o    : int1G.f param
-	ifort -o $@ $(COMPFLG2) int1G.f 
+	ifort -o $@ $(COMPFLG3) int1G.f 
 obj/drive.o : drive.f param 
 	ifort -o $@ $(COMPFLG2) drive.f 
 obj/func.o : func.f
@@ -107,7 +108,7 @@ obj/potg.o     : potg.f
 obj/dip.o     : dip.f param
 	ifort -o $@ $(COMPFLG) dip.f 
 obj/dipG.o     : dipG.f param
-	ifort -o $@ $(COMPFLG) dipG.f 
+	ifort -o $@ $(COMPFLG3) dipG.f 
 obj/dip2.o     : dip2.f param
 	ifort -o $@ $(COMPFLG) dip2.f 
 obj/vol.o     : vol.f param
@@ -149,13 +150,13 @@ obj/elec.o     : elec.f param
 obj/charge.o   : charge.f param
 	ifort -o $@ $(COMPFLG) charge.f
 obj/intsol.o    : intsol.f param
-	ifort -o $@ $(COMPFLG) intsol.f 
+	ifort -o $@ $(COMPFLG) intsol.f
 obj/mmsol.o    : mmsol.f param
 	ifort -o $@ $(COMPFLG) mmsol.f 
 obj/intsolG.o    : intsolG.f param
 	ifort -o $@ $(COMPFLG2) intsolG.f 
 obj/mmsolG.o    : mmsolG.f param
-	ifort -o $@ $(COMPFLG) mmsolG.f 
+	ifort -o $@ $(COMPFLG3) mmsolG.f 
 obj/resp.o    : resp.f param
 	ifort -o $@ $(COMPFLG) resp.f 
 obj/efield.o    : efield.f param
@@ -171,7 +172,7 @@ g2g_obj/init.o    : init.f
 g2g_obj/int.o    : int.f param
 	ifort -o $@ $(COMPFLG) $(G2G_CFLAGS) int.f 
 g2g_obj/int1G.o    : int1G.f param
-	ifort -o $@ $(COMPFLG2) $(G2G_CFLAGS) int1G.f 
+	ifort -o $@ $(COMPFLG3) $(G2G_CFLAGS) int1G.f 
 g2g_obj/drive.o : drive.f param 
 	ifort -o $@ $(COMPFLG2) $(G2G_CFLAGS) drive.f 
 g2g_obj/func.o : func.f
@@ -225,7 +226,7 @@ g2g_obj/potg.o     : potg.f
 g2g_obj/dip.o     : dip.f param
 	ifort -o $@ $(COMPFLG) $(G2G_CFLAGS) dip.f 
 g2g_obj/dipG.o     : dipG.f param
-	ifort -o $@ $(COMPFLG) $(G2G_CFLAGS) dipG.f 
+	ifort -o $@ $(COMPFLG3) $(G2G_CFLAGS) dipG.f 
 g2g_obj/dip2.o     : dip2.f param
 	ifort -o $@ $(COMPFLG) $(G2G_CFLAGS) dip2.f 
 g2g_obj/vol.o     : vol.f param
@@ -271,7 +272,7 @@ g2g_obj/intsol.o    : intsol.f param
 g2g_obj/mmsol.o    : mmsol.f param
 	ifort -o $@ $(COMPFLG) $(G2G_CFLAGS) mmsol.f 
 g2g_obj/intsolG.o    : intsolG.f param
-	ifort -o $@ $(COMPFLG2) $(G2G_CFLAGS) intsolG.f 
+	ifort -o $@ $(COMPFLG3) $(G2G_CFLAGS) intsolG.f 
 g2g_obj/mmsolG.o    : mmsolG.f param
 	ifort -o $@ $(COMPFLG) $(G2G_CFLAGS) mmsolG.f 
 g2g_obj/resp.o    : resp.f param

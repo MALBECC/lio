@@ -104,4 +104,5 @@ template<bool compute_exc, bool compute_y2a> void cpu_pot(float dens, float& ex,
 
 template void cpu_pot<true, false>(float dens, float& ex, float& ec, float& y2a);
 template void cpu_pot<false, true> (float dens, float& ex, float& ec, float& y2a);
+template void cpu_pot<true, true>(float dens, float& ex, float& ec, float& y2a);
 

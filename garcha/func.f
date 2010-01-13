@@ -17,7 +17,6 @@ C
       if (T.lt.0.0D0) then
        write(*,*) 'Problems',T
        T=abs(T)
-c      pause
       endif
 C                                                                       
       IF (T.LE.43.975D0)   THEN                          

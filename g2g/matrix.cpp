@@ -159,6 +159,15 @@ template<class T> void HostMatrix<T>::to_constant(const char* symbol) {
   #endif
 }
 
+template<class T> void HostMatrix<T>::transpose(HostMatrix<T>& out) {
+  out.resize(this->height, this->width);
+  for (uint i = 0; i < this->width; i++) {
+    for (uint j = 0; j < this->height; j++) {
+      out.get(j, i) = this->get(i, j);
+    }
+  }
+}
+
 template<class T> void HostMatrix<T>::copy_transpose(const CudaMatrix<T>& cuda_matrix) {
   if (cuda_matrix.width != this->height || cuda_matrix.height != this->width) throw runtime_error("Matrix dimensions for copy_transpose don't agree");
   HostMatrix<T> cuda_matrix_copy(cuda_matrix);

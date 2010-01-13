@@ -61,7 +61,7 @@ def run_gpu
       :funcs_tot => output[/Grilla original: \d+ puntos, (\d+)/,1],          
       :pts => output[/Grilla final: (\d+)/,1],
       :funcs => output[/Grilla final: \d+ puntos, (\d+)/,1],
-      :first_solve => output[/gpu_solve_cubes ((\d+s\. )?\d+us\.)/,1],
+      :iteration => output[/iteration: ((\d+s\. )?\d+us\.)/,1],
       :density => output[/TIMER: density\/energy ((\d+s\. )?\d+us\.)/,1],
       :rmm => output[/TIMER: rmm: ((\d+s\. )?\d+us\.)/,1],
       :NCOxM => output[/NCOxM: (\d+)/,1],
@@ -80,10 +80,10 @@ end
 
 begin
   ranges = {
-    :little_cube_size => StepRange.new((19.5..19.5),0.5),
-    :max_function_exponent => StepRange.new((12..12),1),
+    :little_cube_size => StepRange.new((2.0..3.5),0.5),
+    :max_function_exponent => StepRange.new((8..8),1),
     :min_points_per_cube => StepRange.new((1..1),1),
-    :sphere_radius => StepRange.new((0.6..0.6),0.6)
+    :sphere_radius => StepRange.new((0.4..0.6),0.1)
 #    :assign_all_functions => 1
   }
 
@@ -109,7 +109,7 @@ begin
         
         if (results[:swaps].to_i > 0) then raise 'Swaps detected!' end
         
-        current_time = results[:first_solve]
+        current_time = results[:iteration]
         current_time = current_time[/(\d+)s./,1].to_i + (current_time[/(\d+)us./,1].to_f / 1000000)
         if (current_time < lowest_time)
           lowest_time = current_time

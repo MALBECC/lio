@@ -36,12 +36,10 @@ endif
 all: $(LIBRARY)
 
 libg2g.a: $(CUDA_OBJ) $(OBJ)
-	#$(MAKE) -C cuda
 	ar cru libg2g.a $(CUDA_OBJ) $(OBJ)
 	ranlib libg2g.a
 	
 libg2g.so: $(CUDA_OBJ) $(OBJ)
-	$(MAKE) -C cuda
 	$(LINK) -shared $(LDFLAGS) $(EXTRA_FLAGS) -o libg2g.so $(OBJ) $(CUDA_OBJ) $(LIB)
 
 clean:

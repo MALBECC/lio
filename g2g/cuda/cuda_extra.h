@@ -159,12 +159,14 @@ inline __device__ __host__ float3 to_float3(const float4& f)
 #define cudaAssertNoError(s)
 #else
 inline void cudaAssertNoError(const char* msg = NULL) {
+  #if !CPU_KERNELS
 	cudaThreadSynchronize();
 	cudaError_t error = cudaGetLastError();
 	if (error != cudaSuccess) {
 		std::cerr << "CUDA ERROR: " << cudaGetErrorString(error) << " " << (msg ? msg : "??") << std::endl;
 		abort();
 	}
+  #endif
 }
 #endif
 

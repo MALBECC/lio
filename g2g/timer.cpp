@@ -75,7 +75,9 @@ bool Timer::operator<(const Timer& other) const {
 
 void Timer::sync(void) {
 #ifdef TIMINGS
+  #if !CPU_KERNELS
 	cudaThreadSynchronize();
+  #endif
 #endif
 }
 

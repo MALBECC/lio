@@ -34,8 +34,12 @@ template<class T> void HostMatrix<T>::alloc_data(void) {
   assert(this->bytes() != 0);
   
 	if (pinned) {
+    #if !CPU_KERNELS
 		cudaError_t error_status = cudaMallocHost((void**)&this->data, this->bytes());
 		assert(error_status != cudaErrorMemoryAllocation);
+    #else
+    assert(false);
+    #endif
 	}	
 	else this->data = new T[this->elements()];
 	
@@ -43,7 +47,13 @@ template<class T> void HostMatrix<T>::alloc_data(void) {
 }
 
 template<class T> void HostMatrix<T>::dealloc_data(void) {
-	if (pinned) cudaFreeHost(this->data);
+	if (pinned) {
+    #if !CPU_KERNELS
+    cudaFreeHost(this->data);
+    #else
+    assert(false);
+    #endif
+  }
 	else delete[] this->data;
 }
 
@@ -148,9 +158,13 @@ template<class T> void HostMatrix<T>::copy_submatrix(const CudaMatrix<T>& c, uns
 	unsigned int _bytes = (_elements == 0 ? this->bytes() : _elements * sizeof(T));
 	//cout << "bytes: " << _bytes << ", c.bytes: " << c.bytes() << endl;
 	if (_bytes > c.bytes()) throw runtime_error("Can't copy more elements than what operator has");
-	
+
+  #if !CPU_KERNELS
 	cudaError_t ret = cudaMemcpy(this->data, c.data, _bytes, cudaMemcpyDeviceToHost);
 	assert(ret == cudaSuccess);
+  #else
+  assert(false);
+  #endif
 }
 
 template<class T> void HostMatrix<T>::to_constant(const char* symbol) {

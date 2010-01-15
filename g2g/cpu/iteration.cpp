@@ -98,6 +98,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
         float factor = point_it->weight * y2a;
         density_derivs.fill(make_float3(0,0,0));
 
+        ii = 0;
         for (uint i = 0; i < group.functions.size(); i++)
         {
           uint inc;
@@ -105,7 +106,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
           else if (i < group.s_functions + group.p_functions) inc = 3;
           else inc = 6;
 
-          for (uint j = 0; j < inc; j++) {
+          for (uint j = 0; j < inc; j++, ii++) {
             float wrdm = 0;
             for (uint k = 0; k < fortran_vars.nco; k++) {
               float r = fortran_vars.rmm_input.get(group.functions[i] + j, k);

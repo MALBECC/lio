@@ -143,7 +143,9 @@ void compute_new_grid(const unsigned int grid_type) {
 	regenerate_partition();
 
   /** compute functions **/
-  cout << "<===== computing functions ========>" << endl;
+  if (fortran_vars.do_forces) cout << "<===== computing functions [forces] =======>" << endl;
+  else cout << "<===== computing functions =======>" << endl;
+  
 	Timer t;
   t.start();
   if (fortran_vars.do_forces) g2g_compute_functions<true>();

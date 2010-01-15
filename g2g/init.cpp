@@ -88,9 +88,7 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	fortran_vars.shells2.resize(fortran_vars.atoms);
 	fortran_vars.rm.resize(fortran_vars.atoms);
   HostMatrixFloat rm_float(fortran_vars.atoms);
-  #if !CPU_KERNELS
   rm_float.to_constant("gpu_rm");
-  #endif
 	/* ignore the 0th element on these */
 	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells1.get(i) = Nr[Iz[i]]; }
 	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells2.get(i) = Nr2[Iz[i]]; }		

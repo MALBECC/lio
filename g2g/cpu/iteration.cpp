@@ -37,11 +37,12 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 
   double total_energy = 0;
 
-  HostMatrixFloat rmm_output;
   HostMatrixFloat w(fortran_vars.nco);
 
   HostMatrixFloat3 density_derivs, forces;
   if (compute_forces) { density_derivs.resize(fortran_vars.atoms, 1); forces.resize(fortran_vars.atoms, 1); }
+
+  Timer t_rmm, t_resto;
 
   /********** iterate all groups ***********/
 	for (list<PointGroup>::const_iterator group_it = final_partition.begin(); group_it != final_partition.end(); ++group_it)
@@ -49,16 +50,11 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 		const PointGroup& group = *group_it;
     uint group_m = group.s_functions + group.p_functions * 3 + group.d_functions * 6;
 
-    if (computation_type == COMPUTE_RMM) {
-      rmm_output.resize(group_m, group_m); rmm_output.fill(0);
-    }
-
     /******** each point *******/
     uint point = 0;
     for (list<Point>::const_iterator point_it = group.points.begin(); point_it != group.points.end(); ++point_it, ++point)
     {
-      t_ciclos.start();
-
+      t_resto.start();
       /** density **/
       float partial_density = 0;
       w.fill(0);
@@ -71,11 +67,13 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
         else if (i < group.s_functions + group.p_functions) inc = 3;
         else inc = 6;
 
+        uint big_i = group.functions[i];
+
         for (uint j = 0; j < inc; j++, ii++) {
           float f = group.function_values.get(point, ii);
 
           for (uint k = 0; k < fortran_vars.nco; k++) {
-            float r = fortran_vars.rmm_input.get(group.functions[i] + j, k);
+            float r = fortran_vars.rmm_input.get(big_i + j, k);
             w.get(k) += f * r;
           }
         }
@@ -106,12 +104,14 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
           else if (i < group.s_functions + group.p_functions) inc = 3;
           else inc = 6;
 
+          uint big_i = group.functions[i];
+
           for (uint j = 0; j < inc; j++, ii++) {
             float wrdm = 0;
             for (uint k = 0; k < fortran_vars.nco; k++) {
-              float r = fortran_vars.rmm_input.get(group.functions[i] + j, k);
+              float r = fortran_vars.rmm_input.get(big_i + j, k);
               wrdm += r * w.get(k);
-              uint nuc = fortran_vars.nucleii.get(group.functions[i] + j) - 1;
+              uint nuc = fortran_vars.nucleii.get(big_i + j) - 1;
               density_derivs.get(nuc) += group.gradient_values.get(point, ii) * wrdm;
             }
           }
@@ -120,41 +120,44 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
         for (set<uint>::const_iterator it = group.nucleii.begin(); it != group.nucleii.end(); ++it)
           forces.get(*it) += density_derivs.get(*it) * factor;
       }
+      t_resto.pause();
+      t_rmm.start();
 
       /******** RMM *******/
       if (computation_type == COMPUTE_RMM) {
         float factor = point_it->weight * y2a;
 
-        uint small_fi = 0;
-        for (vector<uint>::const_iterator it_fi = group.functions.begin(); it_fi != group.functions.end(); ++it_fi) {
-          uint fi_advance;
-          if (*it_fi < fortran_vars.s_funcs) fi_advance = 1;
-          else if (*it_fi < fortran_vars.s_funcs + fortran_vars.p_funcs * 3) fi_advance = 3;
-          else fi_advance = 6;
+        ii = 0;
+        for (uint i = 0; i < group.functions.size(); i++) {
+          uint inc_i;
+          if (i < group.s_functions) inc_i = 1;
+          else if (i < group.s_functions + group.p_functions) inc_i = 3;
+          else inc_i = 6;
 
-          for (uint i = 0; i < fi_advance; i++) {
-            uint small_fj = 0;
-            for (vector<uint>::const_iterator it_fj = group.functions.begin(); it_fj != group.functions.end(); ++it_fj) {
-              uint fj_advance;
-              if (*it_fj < fortran_vars.s_funcs) fj_advance = 1;
-              else if (*it_fj < fortran_vars.s_funcs + fortran_vars.p_funcs * 3) fj_advance = 3;
-              else fj_advance = 6;
+          for (uint k = 0; k < inc_i; k++, ii++) {
+            float Fi = group.function_values.get(point, ii);
+            uint big_i = group.functions[i] + k;
 
-              for (uint j = 0; j < fj_advance; j++) {
-                uint fi = *it_fi + i; uint fj = *it_fj + j;
-                if (fi > fj) continue;
-                uint big_index = (fi * fortran_vars.m - (fi * (fi - 1)) / 2) + (fj - fi);
-                //cout << small_fi << " " << small_fj << " " << small_fj + small_fi << endl;
-                float Fi = group.function_values.get(point, small_fi);
-                float Fj = group.function_values.get(point, small_fj + small_fi);
+            uint jj = 0;
+            for (uint j = 0; j < group.functions.size(); j++) {
+              uint inc_j;
+              if (j < group.s_functions) inc_j = 1;
+              else if (j < group.s_functions + group.p_functions) inc_j = 3;
+              else inc_j = 6;
+
+              for (uint l = 0; l < inc_j; l++, jj++) {
+                uint big_j = group.functions[j] + l;
+                if (big_i > big_j) continue;
+
+                float Fj = group.function_values.get(point, jj);
+                uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
                 fortran_vars.rmm_output.get(big_index) += Fi * Fj * factor;
-                small_fj++;
               }
             }
-            small_fi++;
           }
         }
       }
+      t_rmm.pause();
     }
   }
 
@@ -173,6 +176,6 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 
   timer_total.stop();
   cout << "iteration: " << timer_total << endl;
-  cout << "ciclos: " << t_ciclos << endl;
+  cout << "rmm: " << t_rmm << " t_resto: " << t_resto << endl;
 }
 #endif

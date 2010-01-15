@@ -8,9 +8,9 @@
   }
 
   puts 'G2G...'
-  g2g_output = `../../garcha/garcha-g2g < t`[/SCF ENERGY\s+=\s+(-?\d+\.\d+)/,1].to_f
+  g2g_output = `../../fortran/garcha-g2g < t`[/SCF ENERGY\s+=\s+(-?\d+\.\d+)/,1].to_f
   puts 'Garcha...'
-  garcha_output = `../../garcha/garcha < t`[/SCF ENERGY\s+=\s+(-?\d+\.\d+)/,1].to_f
+  garcha_output = `../../fortran/garcha < t`[/SCF ENERGY\s+=\s+(-?\d+\.\d+)/,1].to_f
   delta = ((g2g_output - garcha_output) * 627.5).abs
   delta_ref = 0.006
 

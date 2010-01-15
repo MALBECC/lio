@@ -172,6 +172,7 @@ c
 c
       F(ii)=F(ii)+term
       term=term*a(i,ni)
+      
       Fg(ii,1)=Fg(ii,1)+tx*term
       Fg(ii,2)=Fg(ii,2)+ty*term
       Fg(ii,3)=Fg(ii,3)+tz*term
@@ -299,19 +300,20 @@ c
           W(j)=W(j)+tmp*F(i)
           Wx(Nuc(i),j)=Wx(Nuc(i),j)+tmp*Fg(i,1)
           Wy(Nuc(i),j)=Wy(Nuc(i),j)+tmp*Fg(i,2)
-          Wz(Nuc(i),j)=Wz(Nuc(i),j)+tmp*Fg(i,3) 
+          Wz(Nuc(i),j)=Wz(Nuc(i),j)+tmp*Fg(i,3)
  52     continue
 c
        do 61 k=1,natom
          do 60 j=1,NCO
            Dx(k)=Dx(k) + W(j)*Wx(k,j)
            Dy(k)=Dy(k) + W(j)*Wy(k,j)
-           Dz(k)=Dz(k) + W(j)*Wz(k,j)  
+           Dz(k)=Dz(k) + W(j)*Wz(k,j)
  60      continue
         Dx(k)=4.D0*Dx(k)
         Dy(k)=4.D0*Dy(k)
-        Dz(k)=4.D0*Dz(k) 
- 61    continue
-c
+        Dz(k)=4.D0*Dz(k)
+ 61   continue
       return
       end
+
+

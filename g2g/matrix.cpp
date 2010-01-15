@@ -94,8 +94,8 @@ template<class T> HostMatrix<T>& HostMatrix<T>::resize(unsigned int _width, unsi
 	return *this;
 }
 
-template<class T> HostMatrix<T>& HostMatrix<T>::fill(const T& value) {
-	for (uint i = 0; i < this->elements(); i++) this->data[i] = value;
+template<class T> HostMatrix<T>& HostMatrix<T>::zero(void) {
+  memset(this->data, 0, this->bytes());
 	return *this;
 }
 
@@ -220,10 +220,10 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::resize(unsigned int _width, unsi
 	return *this;		
 }
 
-template<class T> CudaMatrix<T>& CudaMatrix<T>::fill(int value) {
+template<class T> CudaMatrix<T>& CudaMatrix<T>::zero(void) {
   #if !CPU_KERNELS
 	assert(this->data);
-	cudaMemset(this->data, value, this->bytes());
+	cudaMemset(this->data, 0, this->bytes());
   #endif
 	return *this;
 }

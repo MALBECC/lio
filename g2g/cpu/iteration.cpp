@@ -42,7 +42,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
   HostMatrixFloat3 density_derivs, forces;
   if (compute_forces) { density_derivs.resize(fortran_vars.atoms, 1); forces.resize(fortran_vars.atoms, 1); }
 
-  Timer t_rmm, t_resto;
+  Timer t_rmm, t_density, t_resto;
 
   /********** iterate all groups ***********/
 	for (list<PointGroup>::const_iterator group_it = final_partition.begin(); group_it != final_partition.end(); ++group_it)
@@ -54,10 +54,10 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
     uint point = 0;
     for (list<Point>::const_iterator point_it = group.points.begin(); point_it != group.points.end(); ++point_it, ++point)
     {
-      t_resto.start();
+      t_density.start();
       /** density **/
       float partial_density = 0;
-      w.fill(0);
+      w.zero();
 
       uint ii = 0;
       for (uint i = 0; i < group.functions.size(); i++)
@@ -91,10 +91,13 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
       }
       else cpu_pot<false, true>(partial_density, exc, corr, y2a);
 
+      t_density.pause();
+      t_resto.start();
+
       /** density derivatives / forces **/
       if (compute_forces) {
         float factor = point_it->weight * y2a;
-        density_derivs.fill(make_float3(0,0,0));
+        density_derivs.zero();
 
         ii = 0;
         for (uint i = 0; i < group.functions.size(); i++)
@@ -176,6 +179,6 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 
   timer_total.stop();
   cout << "iteration: " << timer_total << endl;
-  cout << "rmm: " << t_rmm << " t_resto: " << t_resto << endl;
+  cout << "rmm: " << t_rmm << " density: " << t_density << " resto: " << t_resto << endl;
 }
 #endif

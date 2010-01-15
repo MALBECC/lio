@@ -55,7 +55,7 @@ namespace G2G {
       void transpose(HostMatrix<T>& out);
 		
 			HostMatrix<T>& resize(unsigned int width, unsigned int height = 1);
-			HostMatrix<T>& fill(const T& value);
+			HostMatrix<T>& zero(void);
 
 			void deallocate(void);
 
@@ -77,7 +77,7 @@ namespace G2G {
 			~CudaMatrix(void);
 		
 			CudaMatrix<T>& resize(unsigned int width, unsigned int height = 1);
-			CudaMatrix<T>& fill(int);
+			CudaMatrix<T>& zero(void);
 
 			CudaMatrix& operator=(const HostMatrix<T>& c);
 			CudaMatrix& operator=(const CudaMatrix<T>& c);

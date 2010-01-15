@@ -17,8 +17,8 @@ Timer::Timer(const timeval& t) : started(false) {
 
 void Timer::start(void) {
 #ifdef TIMINGS
+  started = true;
 	gettimeofday(&t0, NULL);
-	started = true;
 #endif
 }
 

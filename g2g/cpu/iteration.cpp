@@ -50,6 +50,26 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 		const PointGroup& group = *group_it;
     uint group_m = group.s_functions + group.p_functions * 3 + group.d_functions * 6;
 
+    // prepare rmm_input for this group
+    t_density.start();
+    HostMatrixFloat rmm_input(group_m, fortran_vars.nco);
+    uint ii = 0;
+    for (uint i = 0; i < group.functions.size(); i++)
+    {
+      uint inc;
+      if (i < group.s_functions) inc = 1;
+      else if (i < group.s_functions + group.p_functions) inc = 3;
+      else inc = 6;
+      uint big_i = group.functions[i];
+      for (uint j = 0; j < inc; j++, ii++) {
+        for (uint k = 0; k < fortran_vars.nco; k++) {
+          rmm_input.get(ii) = fortran_vars.rmm_input.get(big_i + j, k);
+        }
+      }
+    }
+    t_density.pause();
+
+
     /******** each point *******/
     uint point = 0;
     for (list<Point>::const_iterator point_it = group.points.begin(); point_it != group.points.end(); ++point_it, ++point)
@@ -59,7 +79,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
       float partial_density = 0;
       w.zero();
 
-      uint ii = 0;
+      ii = 0;
       for (uint i = 0; i < group.functions.size(); i++)
       {
         uint inc;
@@ -67,13 +87,11 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
         else if (i < group.s_functions + group.p_functions) inc = 3;
         else inc = 6;
 
-        uint big_i = group.functions[i];
-
         for (uint j = 0; j < inc; j++, ii++) {
           float f = group.function_values.get(point, ii);
 
           for (uint k = 0; k < fortran_vars.nco; k++) {
-            float r = fortran_vars.rmm_input.get(big_i + j, k);
+            float r = rmm_input.get(ii, k);
             w.get(k) += f * r;
           }
         }
@@ -112,7 +130,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
           for (uint j = 0; j < inc; j++, ii++) {
             float wrdm = 0;
             for (uint k = 0; k < fortran_vars.nco; k++) {
-              float r = fortran_vars.rmm_input.get(big_i + j, k);
+              float r = rmm_input.get(ii, k);
               wrdm += r * w.get(k);
               uint nuc = fortran_vars.nucleii.get(big_i + j) - 1;
               density_derivs.get(nuc) += group.gradient_values.get(point, ii) * wrdm;

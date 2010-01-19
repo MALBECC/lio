@@ -46,10 +46,10 @@ end
 
 def run_gpu
   if (VERBOSE)
-    system('/usr/bin/time -a -o /dev/stdout -f "real %e\nuser %U\nsys %S\nswaps %F" ../../garcha/garcha-g2g < t')
+    system('/usr/bin/time -a -o /dev/stdout -f "real %e\nuser %U\nsys %S\nswaps %F" ../../fortran/garcha-g2g < t')
   else
     # run
-    output = `/usr/bin/time -a -o /dev/stdout -f "real %e\nuser %U\nsys %S\nswaps %F" ../../garcha/garcha-g2g < t`
+    output = `/usr/bin/time -a -o /dev/stdout -f "real %e\nuser %U\nsys %S\nswaps %F" ../../fortran/garcha-g2g < t`
     if ($? != 0) then raise 'Execution failed!' end
     
     # analyze

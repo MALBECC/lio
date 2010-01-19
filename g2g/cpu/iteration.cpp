@@ -37,8 +37,6 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 
   double total_energy = 0;
 
-  HostMatrixFloat w(fortran_vars.nco);
-
   HostMatrixFloat3 density_derivs, forces;
   if (compute_forces) { density_derivs.resize(fortran_vars.atoms, 1); forces.resize(fortran_vars.atoms, 1); }
 
@@ -52,7 +50,8 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 
     // prepare rmm_input for this group
     t_density.start();
-    HostMatrixFloat rmm_input(fortran_vars.nco, group_m);
+    HostMatrixFloat w(group.nucleii.size());
+    HostMatrixFloat rmm_input(group.nucleii.size(), group_m);
     uint ii = 0;
     for (uint i = 0; i < group.functions.size(); i++)
     {
@@ -62,9 +61,12 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
       else inc = 6;
       uint big_i = group.functions[i];
       for (uint j = 0; j < inc; j++, ii++) {
-        for (uint k = 0; k < fortran_vars.nco; k++) {
+        uint k = 0;
+        for (set<uint>::const_iterator nuc_it = group.nucleii.begin(); nuc_it != group.nucleii.end(); ++nuc_it, ++k)
+          rmm_input.get(k, ii) = fortran_vars.rmm_input.get(big_i + j, *nuc_it);
+        /*for (uint k = 0; k < fortran_vars.nco; k++) {
           rmm_input.get(k, ii) = fortran_vars.rmm_input.get(big_i + j, k);
-        }
+        }*/
       }
     }
     t_density.pause();
@@ -90,7 +92,11 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
         for (uint j = 0; j < inc; j++, ii++) {
           float f = group.function_values.get(ii, point);
 
-          for (uint k = 0; k < fortran_vars.nco; k++) {
+          /*for (uint k = 0; k < fortran_vars.nco; k++) {
+            float r = rmm_input.get(k, ii);
+            w.get(k) += f * r;
+          }*/
+          for (uint k = 0; k < group.nucleii.size(); ++k) {
             float r = rmm_input.get(k, ii);
             w.get(k) += f * r;
           }
@@ -129,11 +135,17 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 
           for (uint j = 0; j < inc; j++, ii++) {
             float wrdm = 0;
-            for (uint k = 0; k < fortran_vars.nco; k++) {
+            /*for (uint k = 0; k < fortran_vars.nco; k++) {
               float r = rmm_input.get(k, ii);
               wrdm += r * w.get(k);
               uint nuc = fortran_vars.nucleii.get(big_i + j) - 1;
               density_derivs.get(nuc) += group.gradient_values.get(ii, point) * wrdm;
+            }*/
+            uint k = 0;
+            for (set<uint>::const_iterator nuc_it = group.nucleii.begin(); nuc_it != group.nucleii.end(); ++nuc_it, ++k) {
+              float r = rmm_input.get(k, ii);
+              wrdm += r * w.get(k);
+              density_derivs.get(*nuc_it) += group.gradient_values.get(ii, point) * wrdm;
             }
           }
         }

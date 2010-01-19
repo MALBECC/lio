@@ -52,7 +52,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 
     // prepare rmm_input for this group
     t_density.start();
-    HostMatrixFloat rmm_input(group_m, fortran_vars.nco);
+    HostMatrixFloat rmm_input(fortran_vars.nco, group_m);
     uint ii = 0;
     for (uint i = 0; i < group.functions.size(); i++)
     {
@@ -63,7 +63,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
       uint big_i = group.functions[i];
       for (uint j = 0; j < inc; j++, ii++) {
         for (uint k = 0; k < fortran_vars.nco; k++) {
-          rmm_input.get(ii) = fortran_vars.rmm_input.get(big_i + j, k);
+          rmm_input.get(k, ii) = fortran_vars.rmm_input.get(big_i + j, k);
         }
       }
     }
@@ -88,10 +88,10 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
         else inc = 6;
 
         for (uint j = 0; j < inc; j++, ii++) {
-          float f = group.function_values.get(point, ii);
+          float f = group.function_values.get(ii, point);
 
           for (uint k = 0; k < fortran_vars.nco; k++) {
-            float r = rmm_input.get(ii, k);
+            float r = rmm_input.get(k, ii);
             w.get(k) += f * r;
           }
         }
@@ -130,10 +130,10 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
           for (uint j = 0; j < inc; j++, ii++) {
             float wrdm = 0;
             for (uint k = 0; k < fortran_vars.nco; k++) {
-              float r = rmm_input.get(ii, k);
+              float r = rmm_input.get(k, ii);
               wrdm += r * w.get(k);
               uint nuc = fortran_vars.nucleii.get(big_i + j) - 1;
-              density_derivs.get(nuc) += group.gradient_values.get(point, ii) * wrdm;
+              density_derivs.get(nuc) += group.gradient_values.get(ii, point) * wrdm;
             }
           }
         }
@@ -156,7 +156,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
           else inc_i = 6;
 
           for (uint k = 0; k < inc_i; k++, ii++) {
-            float Fi = group.function_values.get(point, ii);
+            float Fi = group.function_values.get(ii, point);
             uint big_i = group.functions[i] + k;
 
             uint jj = 0;
@@ -170,7 +170,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
                 uint big_j = group.functions[j] + l;
                 if (big_i > big_j) continue;
 
-                float Fj = group.function_values.get(point, jj);
+                float Fj = group.function_values.get(jj, point);
                 uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
                 fortran_vars.rmm_output.get(big_index) += Fi * Fj * factor;
               }

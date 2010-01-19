@@ -20,8 +20,8 @@ template <bool forces> void g2g_compute_functions(void)
 		uint group_m = group.s_functions + group.p_functions * 3 + group.d_functions * 6;
     uint group_spd = group.s_functions + group.p_functions + group.d_functions;
 
-    group.function_values.resize(group.number_of_points, group_m);
-    if (forces) group.gradient_values.resize(group.number_of_points, group_m);
+    group.function_values.resize(group_m, group.number_of_points);
+    if (forces) group.gradient_values.resize(group_m, group.number_of_points);
 
     uint point = 0;
     for (list<Point>::const_iterator point_it = group.points.begin(); point_it != group.points.end(); ++point_it, ++point) {
@@ -45,38 +45,38 @@ template <bool forces> void g2g_compute_functions(void)
 
         // compute s, p, d
         if (i < group.s_functions) {
-          group.function_values.get(point, ii) = t;
-          if (forces) group.gradient_values.get(point, ii) = v * tg;
+          group.function_values.get(ii, point) = t;
+          if (forces) group.gradient_values.get(ii, point) = v * tg;
           ii++;
         }
         else if (i < group.s_functions + group.p_functions) {
-          group.function_values.get(point, ii + 0) = v.x * t;
-          group.function_values.get(point, ii + 1) = v.y * t;
-          group.function_values.get(point, ii + 2) = v.z * t;
+          group.function_values.get(ii + 0, point) = v.x * t;
+          group.function_values.get(ii + 1, point) = v.y * t;
+          group.function_values.get(ii + 2, point) = v.z * t;
 
           if (forces) {
             float3 c = v * (2.0f * tg);
-            group.gradient_values.get(point, ii + 0) = v * c.x - make_float3(t, 0, 0);
-            group.gradient_values.get(point, ii + 1) = v * c.y - make_float3(0, t, 0);
-            group.gradient_values.get(point, ii + 2) = v * c.z - make_float3(0, 0, t);
+            group.gradient_values.get(ii + 0, point) = v * c.x - make_float3(t, 0, 0);
+            group.gradient_values.get(ii + 1, point) = v * c.y - make_float3(0, t, 0);
+            group.gradient_values.get(ii + 2, point) = v * c.z - make_float3(0, 0, t);
           }
           ii += 3;
         }
         else {
-          group.function_values.get(point, ii + 0) = t * v.x * v.x * fortran_vars.normalization_factor;
-          group.function_values.get(point, ii + 1) = t * v.y * v.x;
-          group.function_values.get(point, ii + 2) = t * v.y * v.y * fortran_vars.normalization_factor;
-          group.function_values.get(point, ii + 3) = t * v.z * v.x;
-          group.function_values.get(point, ii + 4) = t * v.z * v.y;
-          group.function_values.get(point, ii + 5) = t * v.z * v.z * fortran_vars.normalization_factor;
+          group.function_values.get(ii + 0, point) = t * v.x * v.x * fortran_vars.normalization_factor;
+          group.function_values.get(ii + 1, point) = t * v.y * v.x;
+          group.function_values.get(ii + 2, point) = t * v.y * v.y * fortran_vars.normalization_factor;
+          group.function_values.get(ii + 3, point) = t * v.z * v.x;
+          group.function_values.get(ii + 4, point) = t * v.z * v.y;
+          group.function_values.get(ii + 5, point) = t * v.z * v.z * fortran_vars.normalization_factor;
 
           if (forces) {
-            group.gradient_values.get(point, ii + 0) = v * 2.0f * tg * v.x * v.x * fortran_vars.normalization_factor  - make_float3(2 * t * v.x * fortran_vars.normalization_factor, 0, 0);
-            group.gradient_values.get(point, ii + 1) = v * 2.0f * tg * v.y * v.x                                      - make_float3(t * v.y, t * v.x, 0);
-            group.gradient_values.get(point, ii + 2) = v * 2.0f * tg * v.y * v.y * fortran_vars.normalization_factor  - make_float3(0, 2 * t * v.y * fortran_vars.normalization_factor , 0);
-            group.gradient_values.get(point, ii + 3) = v * 2.0f * tg * v.z * v.x                                      - make_float3(t * v.z, 0, t * v.x);
-            group.gradient_values.get(point, ii + 4) = v * 2.0f * tg * v.z * v.y                                      - make_float3(0, t * v.z, t * v.y);
-            group.gradient_values.get(point, ii + 5) = v * 2.0f * tg * v.z * v.z * fortran_vars.normalization_factor  - make_float3(0, 0, 2 * t * v.z * fortran_vars.normalization_factor);
+            group.gradient_values.get(ii + 0, point) = v * 2.0f * tg * v.x * v.x * fortran_vars.normalization_factor  - make_float3(2 * t * v.x * fortran_vars.normalization_factor, 0, 0);
+            group.gradient_values.get(ii + 1, point) = v * 2.0f * tg * v.y * v.x                                      - make_float3(t * v.y, t * v.x, 0);
+            group.gradient_values.get(ii + 2, point) = v * 2.0f * tg * v.y * v.y * fortran_vars.normalization_factor  - make_float3(0, 2 * t * v.y * fortran_vars.normalization_factor , 0);
+            group.gradient_values.get(ii + 3, point) = v * 2.0f * tg * v.z * v.x                                      - make_float3(t * v.z, 0, t * v.x);
+            group.gradient_values.get(ii + 4, point) = v * 2.0f * tg * v.z * v.y                                      - make_float3(0, t * v.z, t * v.y);
+            group.gradient_values.get(ii + 5, point) = v * 2.0f * tg * v.z * v.z * fortran_vars.normalization_factor  - make_float3(0, 0, 2 * t * v.z * fortran_vars.normalization_factor);
           }
           ii += 6;
         }

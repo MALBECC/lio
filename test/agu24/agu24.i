@@ -153,7 +153,7 @@ endbasis
  IEXCH = 3,
  INTEG = T, 
  DENS = T, 
- IGRID = 2,
+ IGRID = 1,
  IGRID2 = 1/
 
 

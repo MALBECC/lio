@@ -68,6 +68,19 @@ clean:
 	rm -rf obj
 	rm -rf garcha garcha-g2g hibrido hibrido-g2g
 
+
+# Different flags for some .o
+%/dipG.o: dipG.f
+	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
+%/dip.o: garcha_src/dip.f
+	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
+%/int1G.o: garcha_src/int1G.f
+	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
+%/intsolG.o: garcha_src/intsolG.f
+	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
+
+
+
 ### Objects
 obj/garcha_obj/%.o: %.f
 	ifort -o $@ $(CFLAGS) $<
@@ -81,7 +94,6 @@ obj/garcha_g2g_obj/%.o: %.f
 obj/hibrido_g2g_obj/%.o: %.f
 	ifort -o $@ $(CFLAGS) $(G2G_CFLAGS) $<
 
-	
 #obj/init.o    : init.f
 #	ifort -o $@ -cpp $(COMPFLG) init.f
 #obj/int.o    : int.f param

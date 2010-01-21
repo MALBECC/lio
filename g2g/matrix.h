@@ -20,6 +20,8 @@ namespace G2G {
 			unsigned int elements(void) const;
 		
 			bool is_allocated(void) const;
+
+      virtual void deallocate(void) = 0;
 	};
 	
 	template<class T> class CudaMatrix;
@@ -40,7 +42,7 @@ namespace G2G {
 			inline const T& get(unsigned int i = 0, unsigned int j = 0) const {
 				assert(i < this->width);
 				assert(j < this->height);
-				return this->data[j * this->width + i];
+        return this->data[j * this->width + i];
 			}
 			inline T& get(unsigned int i = 0, unsigned int j = 0) {
 				assert(i < this->width);
@@ -103,6 +105,8 @@ namespace G2G {
 				assert(y < this->height);
 				return this->data[y * fortran_width + x];
 			}
+
+      void deallocate(void) {};
 		
 		private:
 			unsigned int fortran_width;

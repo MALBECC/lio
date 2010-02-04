@@ -70,7 +70,8 @@ c
        x1(i)=xold(i)+alam*p(i)
  15   continue
 c
-       k=0
+      k=0
+		  write(*,*) 'movimiento de posiciones por lsearch (con igrid2)'      
       do i=1,ntom
        k=k+1
        r(i,1)=x1(k)
@@ -81,7 +82,6 @@ c
       enddo
 
 #ifdef G2G
-		  write(*,*) 'movimiento de posiciones por lsearch (con igrid2)'
 	  	call g2g_reload_atom_positions(igrid2)
 #endif
 c

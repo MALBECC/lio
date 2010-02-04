@@ -17,6 +17,8 @@ struct double3 {
   double3(void) : x(0),y(0),z(0) {  }
 
 	double3(double _x, double _y, double _z) : x(_x),y(_y),z(_z) { }
+
+  double3(const float3& f) : x(f.x), y(f.y), z(f.z) {}
 	
 	inline double length(void) const {
 		return sqrt(x * x + y * y + z * z);
@@ -55,8 +57,13 @@ struct double3 {
 		return double3(x / b, y / b, z / b);
 	}
 
-  inline float3 to_float3() {
+  inline float3 to_float3() const {
     return make_float3(x, y, z);
+  }
+
+  inline const double3& operator+=(const double3& other) {
+    x += other.x; y += other.y; z += other.z;
+    return *this;
   }
 
   friend std::ostream& operator<<(std::ostream& o, const double3& v);

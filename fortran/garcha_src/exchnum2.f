@@ -43,7 +43,7 @@ c
       ss0=0.0D0
 c
 *
-c      do na=1,natom 
+c      do na=1,natom
 c       forza(na,1)=0.D0
 c       forza(na,2)=0.D0
 c       forza(na,3)=0.D0
@@ -81,7 +81,6 @@ c
 *
       DO 12 na=1,natom
 c
-c     write(*,*) na,Iz(na),Nr(Iz(na)),Rm(Iz(na))
        do 16 n=1,Nr(Iz(na))
 c
        t0=pi/(Nr(Iz(na))+1)
@@ -100,6 +99,7 @@ c Grid 50 points, given by V.I.Lebedev's paper
 c later 110, etc
 c
       do 15 i=1,npoint
+c      write(*,*) na-1,n-1,i-1
 c
       if(igrid.eq.1) then
          xi(1)=r(na,1)+r1*e(i,1)
@@ -197,7 +197,9 @@ c		  	 DEBUG
          forza(ina,1)=forza(ina,1) + PF*DDx(ina)*y2i*tmp0
          forza(ina,2)=forza(ina,2) + PF*DDy(ina)*y2i*tmp0
          forza(ina,3)=forza(ina,3) + PF*DDz(ina)*y2i*tmp0
-       enddo 
+c         write(*,*) 'factor',PF*tmp0*y2i*DDx(ina)
+       enddo
+       
 *
 c
 c---------------------------------------------------------

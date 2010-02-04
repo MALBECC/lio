@@ -91,15 +91,14 @@ void g2g_compute_group_weights(PointGroup& group)
 		it->weight *= atom_weight;
 		//cout << "peso " << P_atom << " " << P_total << " " << it->weight << endl;
 
-    #if REMOVE_ZEROS
-		if (it->weight == 0.0) {
-			it = group.points.erase(it);
-			group.number_of_points--;
-		}
-		else ++it;
-    #else
-    ++it;
-    #endif
+    if (remove_zero_weights) {
+      if (it->weight == 0.0) {
+  			it = group.points.erase(it);
+  			group.number_of_points--;
+  		}
+  		else ++it;
+    }
+    else ++it;
 	}
 }
 #endif

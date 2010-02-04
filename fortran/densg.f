@@ -302,6 +302,7 @@ c
           Wy(Nuc(i),j)=Wy(Nuc(i),j)+tmp*Fg(i,2)
           Wz(Nuc(i),j)=Wz(Nuc(i),j)+tmp*Fg(i,3)
  52     continue
+
 c
        do 61 k=1,natom
          do 60 j=1,NCO
@@ -312,6 +313,7 @@ c
         Dx(k)=4.D0*Dx(k)
         Dy(k)=4.D0*Dy(k)
         Dz(k)=4.D0*Dz(k)
+c        write(*,*) 'dd',k,Dx(k),Dy(k),Dz(k)
  61   continue
       return
       end

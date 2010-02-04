@@ -58,6 +58,7 @@ namespace G2G {
 		
 			HostMatrix<T>& resize(unsigned int width, unsigned int height = 1);
 			HostMatrix<T>& zero(void);
+      HostMatrix<T>& fill(T value);
 
 			void deallocate(void);
 

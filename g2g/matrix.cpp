@@ -99,6 +99,11 @@ template<class T> HostMatrix<T>& HostMatrix<T>::zero(void) {
 	return *this;
 }
 
+template<class T> HostMatrix<T>& HostMatrix<T>::fill(T value) {
+  for (uint i = 0; i < this->elements(); i++) { this->data[i] = value; }
+  return *this;
+}
+
 template<class T> HostMatrix<T>& HostMatrix<T>::operator=(const HostMatrix<T>& c) {
 	assert(!this->pinned);
 	

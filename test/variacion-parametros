@@ -80,10 +80,10 @@ end
 
 begin
   ranges = {
-    :little_cube_size => StepRange.new((2.0..3.5),0.5),
+    :little_cube_size => StepRange.new((3.5..3.5),0.5),
     :max_function_exponent => StepRange.new((8..8),1),
     :min_points_per_cube => StepRange.new((1..1),1),
-    :sphere_radius => StepRange.new((0.4..0.6),0.1)
+    :sphere_radius => StepRange.new((0.6..1.0),0.1)
 #    :assign_all_functions => 1
   }
 

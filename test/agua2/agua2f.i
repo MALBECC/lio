@@ -70,7 +70,7 @@ gaussian
 endbasis
 &SCFINP
  OPEN = F, 
- NMAX=1
+ NMAX=100
  NCO = 10,
  NUNP = 0, 
  ATRHO = F, 

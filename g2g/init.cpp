@@ -161,6 +161,7 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
 		double3 pos(fortran_vars.atom_positions_pointer.get(i, 0), fortran_vars.atom_positions_pointer.get(i, 1), fortran_vars.atom_positions_pointer.get(i, 2));
 		fortran_vars.atom_positions.get(i) = pos;
 		atom_positions.get(i) = make_float3(pos.x, pos.y, pos.z);
+    //cout << "atomo " << i << ": " << pos.x << " " << pos.y << " " << pos.z << endl;
 	}
 	atom_positions.to_constant("gpu_atom_positions");
 
@@ -183,6 +184,7 @@ namespace G2G {
 	double becke_cutoff = 1e-7;
   bool assign_all_functions = false;
   double sphere_radius = 0.0;
+  bool remove_zero_weights = true;
 }
 
 void read_options(void) {
@@ -206,6 +208,8 @@ void read_options(void) {
       { f >> assign_all_functions; cout << assign_all_functions; }
     else if (option == "sphere_radius")
       { f >> sphere_radius; cout << sphere_radius; }
+    else if (option == "remove_zero_weights")
+      { f >> remove_zero_weights; cout << remove_zero_weights; }
 		else throw runtime_error(string("Invalid option: ") + option);
 
 		cout << endl;

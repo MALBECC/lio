@@ -7,7 +7,7 @@ namespace G2G {
 	class Timer {
 		public:
 			Timer(void);
-      Timer(const timeval& t);
+      Timer(const timespec& t);
 		
 			void start(void);
 			void stop(void);
@@ -32,7 +32,7 @@ namespace G2G {
 			static void sync(void);
 		
 		private:
-			timeval t0, t1, res;
+			timespec t0, t1, res;
 			bool started;
 	};
 	

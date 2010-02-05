@@ -1,5 +1,6 @@
 #include <cuda_runtime.h>
 #include <cstdio>
+#include <time.h>
 #include <sys/time.h>
 #include <map>
 #include <string>
@@ -7,36 +8,59 @@
 using namespace G2G;
 using namespace std;
 
+/* adapt macros to timespec */
+# define timerspecclear(tvp)  ((tvp)->tv_sec = (tvp)->tv_nsec = 0)
+# define timerspecadd(a, b, result)                 \
+  do {                        \
+    (result)->tv_sec = (a)->tv_sec + (b)->tv_sec;           \
+    (result)->tv_nsec = (a)->tv_nsec + (b)->tv_nsec;            \
+    if ((result)->tv_nsec >= 1000000000)               \
+      {                       \
+  ++(result)->tv_sec;                 \
+  (result)->tv_nsec -= 1000000000;               \
+      }                       \
+  } while (0)
+# define timerspecsub(a, b, result)                 \
+  do {                        \
+    (result)->tv_sec = (a)->tv_sec - (b)->tv_sec;           \
+    (result)->tv_nsec = (a)->tv_nsec - (b)->tv_nsec;            \
+    if ((result)->tv_nsec < 0) {                \
+      --(result)->tv_sec;                 \
+      (result)->tv_nsec += 1000000000;               \
+    }                       \
+  } while (0)
+
+
 Timer::Timer(void) : started(false) {
-  timerclear(&res);
+  timerspecclear(&res);
 }
 
-Timer::Timer(const timeval& t) : started(false) {
+Timer::Timer(const timespec& t) : started(false) {
   res = t;
 }
 
 void Timer::start(void) {
 #ifdef TIMINGS
   started = true;
-	gettimeofday(&t0, NULL);
+  clock_gettime(CLOCK_MONOTONIC, &t0);
 #endif
 }
 
 void Timer::pause(void) {
 #ifdef TIMINGS
-  gettimeofday(&t1, NULL);
-  timeval partial_res;
-	timersub(&t1, &t0, &partial_res);
-  timeradd(&res, &partial_res, &res);
-  timerclear(&t0);
+  clock_gettime(CLOCK_MONOTONIC, &t1);
+  timespec partial_res;
+  timerspecsub(&t1, &t0, &partial_res);
+  timerspecadd(&res, &partial_res, &res);
+  timerspecclear(&t0);
 #endif
 }
 
 void Timer::stop(void) {
 #ifdef TIMINGS
-	gettimeofday(&t1, NULL);
-	timersub(&t1, &t0, &res);
-  timerclear(&t0);
+  clock_gettime(CLOCK_MONOTONIC, &t1);
+	timerspecsub(&t1, &t0, &res);
+  timerspecclear(&t0);
 	started = false;
 #endif
 }
@@ -61,7 +85,7 @@ bool Timer::isStarted(void) const {
 }
 
 unsigned long Timer::getMicrosec(void) const {
-	return res.tv_usec;
+  return res.tv_nsec / 1000;
 }
 
 unsigned long Timer::getSec(void) const {
@@ -69,8 +93,8 @@ unsigned long Timer::getSec(void) const {
 }
 
 bool Timer::operator<(const Timer& other) const {
-	return (res.tv_sec < other.res.tv_sec ||
-					(res.tv_sec == other.res.tv_sec && res.tv_usec < other.res.tv_usec));
+  return (res.tv_sec < other.res.tv_sec ||
+					(res.tv_sec == other.res.tv_sec && res.tv_nsec < other.res.tv_nsec));
 }
 
 void Timer::sync(void) {

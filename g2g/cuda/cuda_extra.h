@@ -15,6 +15,7 @@
 
 #include <stdexcept>
 #include <iostream>
+#include <string>
 #include "double3.h"
 
 /** operators **/
@@ -183,6 +184,12 @@ inline void cudaPrintMemoryInfo(void) {
   uint free = 0, total = 0;
   cudaGetMemoryInfo(free, total);
 	std::cout << "mem_used: " << (total - free) / (1024.0 * 1024.0) << "MB | mem_perc: " << ((double)(total - free) / (double)total) * 100.0 << "%" << std::endl;
+}
+
+template<typename T> void to_constant(const std::string& name, const T* ptr) {
+  #if !CPU_KERNELS
+  cudaMemcpyToSymbol(name.c_str(), ptr, sizeof(T), 0, cudaMemcpyHostToDevice);
+  #endif
 }
 
 #endif /* __CUTOOLS_H__ */

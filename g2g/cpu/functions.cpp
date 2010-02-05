@@ -17,9 +17,7 @@ template <bool forces> void g2g_compute_functions(void)
 		PointGroup& group = *it;
 
 		/* Load group functions */
-		uint group_m = group.s_functions + group.p_functions * 3 + group.d_functions * 6;
-    uint group_spd = group.s_functions + group.p_functions + group.d_functions;
-
+		uint group_m = group.total_functions();
     group.function_values.resize(group_m, group.number_of_points);
     if (forces) group.gradient_values.resize(group_m, group.number_of_points);
 
@@ -27,8 +25,7 @@ template <bool forces> void g2g_compute_functions(void)
     for (list<Point>::const_iterator point_it = group.points.begin(); point_it != group.points.end(); ++point_it, ++point) {
       float3 point_position = make_float3(point_it->position.x, point_it->position.y, point_it->position.z);
 
-      uint ii = 0, i = 0;
-      for (uint i = 0; i < group.functions.size(); i++) {
+      for (uint i = 0, ii = 0; i < group.functions.size(); i++) {
         // compute exponential
         uint nuc = fortran_vars.nucleii.get(group.functions[i]) - 1;
         float3 v = point_position - fortran_vars.atom_positions.get(nuc).to_float3();
@@ -39,7 +36,7 @@ template <bool forces> void g2g_compute_functions(void)
         for (uint contraction = 0; contraction < contractions; contraction++) {
           float a = fortran_vars.a_values.get(group.functions[i], contraction);
           float c = fortran_vars.c_values.get(group.functions[i], contraction);
-          float t0 = exp(-(a * dist)) * c;
+          float t0 = expf(-(a * dist)) * c;
           t += t0;
           if (forces) tg += t0 * a;
         }

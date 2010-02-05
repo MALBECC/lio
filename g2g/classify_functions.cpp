@@ -74,8 +74,6 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
 
   functions.resize(functions_set.size());
   copy(functions_set.begin(), functions_set.end(), functions.begin());
-  //functions.insert(functions.begin(), functions_set.begin(), functions_set.end());
-  //cout << "vecinos: " << nucleii.size() << endl;
 }
 
 /*****************************
@@ -138,5 +136,4 @@ void Sphere::assign_significative_functions(const std::vector<double>& min_exps)
 
   functions.resize(functions_set.size());
   copy(functions_set.begin(), functions_set.end(), functions.begin());
-  //cout << "sphere: vecinos: " << nucleii.size() << endl;
 }

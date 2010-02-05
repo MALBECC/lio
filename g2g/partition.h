@@ -25,7 +25,6 @@ class PointGroup {
     uint number_of_points;
 
   	uint s_functions, p_functions, d_functions;
-  	//std::set<uint> functions;
     std::vector<uint> functions;
   	std::set<uint> nucleii;
   	#if CPU_KERNELS
@@ -37,11 +36,16 @@ class PointGroup {
     #endif
 
     void add_point(const Point& p);
-    uint total_functions(void);
     void compute_weights(void);
 
-    bool is_sphere; // for debugging
-    bool is_cube;
+    enum FunctionType { FUNCTION_S = 1, FUNCTION_P = 3, FUNCTION_D = 6 };
+    inline FunctionType small_function_type(uint f) const {
+      if (f < s_functions) return FUNCTION_S;
+      else if (f < s_functions + p_functions) return FUNCTION_P;
+      else return FUNCTION_D;
+    }
+
+    inline uint total_functions(void) const { return s_functions + p_functions * 3 + d_functions * 6; }
 };
 
 class Sphere : public PointGroup {

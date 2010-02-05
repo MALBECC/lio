@@ -24,10 +24,6 @@ void PointGroup::add_point(const Point& p) {
   number_of_points++;
 }
 
-uint PointGroup::total_functions(void) {
-  return s_functions + p_functions * 3 + d_functions * 6;
-}
-
 void PointGroup::compute_weights(void) {
   g2g_compute_group_weights(*this);
 }
@@ -35,13 +31,13 @@ void PointGroup::compute_weights(void) {
 /**********************
  * Sphere
  **********************/
-Sphere::Sphere(void) : PointGroup(), atom(0), radius(0) { is_sphere = true; is_cube = false; }
-Sphere::Sphere(uint _atom, double _radius) : PointGroup(), atom(_atom), radius(_radius) { is_sphere = true; is_cube = false; }
+Sphere::Sphere(void) : PointGroup(), atom(0), radius(0) { }
+Sphere::Sphere(uint _atom, double _radius) : PointGroup(), atom(_atom), radius(_radius) { }
 
 /**********************
  * Cube
  **********************/
-Cube::Cube(void) : PointGroup() { is_sphere = false; is_cube = true; }
+Cube::Cube(void) : PointGroup() { }
 
 /************************************************************
  * Construct partition
@@ -53,7 +49,7 @@ list<PointGroup> final_partition;
 /* methods */
 void regenerate_partition(void)
 {
-	cout << "<============ GPU Partition ============>" << endl;
+	cout << "<============ G2G Partition ============>" << endl;
 
 	/* determina el exponente minimo para cada tipo de atomo */
 	cout << "determining minimum exponents" << endl;	
@@ -98,12 +94,12 @@ void regenerate_partition(void)
 	}
 
 	/* el prisma tiene vertices (x,y) */
-	cout << "x0 " << x0.x << " " << x0.y << " " << x0.z << endl;  // vertice inferior, izquierdo y mas lejano
-	cout << "x1 " << x1.x << " " << x1.y << " " << x1.z << endl;  // vertice superior, derecho y mas cercano
+	cout << "x0 " << x0 << endl;  // vertice inferior, izquierdo y mas lejano
+	cout << "x1 " << x1 << endl;  // vertice superior, derecho y mas cercano
 
   /* la particion en cubos */
 	uint3 prism_size = ceil_uint3((x1 - x0) / little_cube_size);
-	cout << "prism size (" << prism_size.x << "," << prism_size.y << "," << prism_size.z << ")..." << endl;
+	cout << "prism size: " << prism_size.x << " " << prism_size.y << " " << prism_size.z << endl;
 
 	vector< vector < vector< Cube > > > prism(prism_size.x,
 					vector< vector < Cube > >(prism_size.y,
@@ -143,7 +139,7 @@ void regenerate_partition(void)
 				nearest_neighbor_dist = min(nearest_neighbor_dist, dist);
         if (dist <= sphere_i_radius || dist <= sphere_array[j].radius) { throw runtime_error("other atom contained in sphere"); }
 				if ((sphere_i_radius + sphere_array[j].radius) >= dist) { throw runtime_error("Overlapping sphere radius!"); }
-			}
+      }
 		}
 		fortran_vars.nearest_neighbor_dists.get(i) = nearest_neighbor_dist;
 	}
@@ -193,11 +189,9 @@ void regenerate_partition(void)
 
           /* assign to sphere? */
           uint included_shells = (uint)ceil(sphere_radius * atom_shells);
-          //cout << "shell/radius " << shell << "/" << last_included_shell << endl;
           if (shell >= (atom_shells - included_shells)) {
             Sphere& sphere = sphere_array[atom];
             sphere.add_point(point_object);
-            //cout << "sphere: " << sphere.number_of_points << " puntos " << sphere.total_functions() << " funciones" << endl;
           }
           /* or insert into corresponding cube */
           else {

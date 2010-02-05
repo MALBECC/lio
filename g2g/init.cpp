@@ -53,7 +53,6 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	
 	fortran_vars.do_forces = (nopt == 2);
 	cout << "do_forces: " << boolalpha << fortran_vars.do_forces << endl;
-	//fortran_vars.do_forces = false;
 
   #if !CPU_KERNELS
 	cudaMemcpyToSymbol("gpu_atoms", &fortran_vars.atoms, sizeof(fortran_vars.atoms), 0, cudaMemcpyHostToDevice);
@@ -71,14 +70,10 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	fortran_vars.spd_funcs = fortran_vars.s_funcs + fortran_vars.p_funcs + fortran_vars.d_funcs;
 	fortran_vars.m = M;	
 	fortran_vars.nco = nco;
-  #if !CPU_KERNELS
-	cudaMemcpyToSymbol("gpu_nco", &fortran_vars.nco, sizeof(uint), 0, cudaMemcpyHostToDevice);
-  #endif
+  to_constant("gpu_nco", &fortran_vars.nco);  
 		
 	fortran_vars.iexch = Iexch;
-  #if !CPU_KERNELS
-	cudaMemcpyToSymbol("gpu_Iexch", &Iexch, sizeof(Iexch), 0, cudaMemcpyHostToDevice);
-  #endif
+  to_constant("gpu_Iexch", &Iexch);
 	
 	fortran_vars.atom_positions_pointer = FortranMatrix<double>(r, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS);
 	fortran_vars.atom_types.resize(fortran_vars.atoms);
@@ -89,6 +84,7 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	fortran_vars.rm.resize(fortran_vars.atoms);
   HostMatrixFloat rm_float(fortran_vars.atoms);
   rm_float.to_constant("gpu_rm");
+
 	/* ignore the 0th element on these */
 	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells1.get(i) = Nr[Iz[i]]; }
 	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells2.get(i) = Nr2[Iz[i]]; }		
@@ -108,7 +104,6 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	fortran_vars.e1 = FortranMatrix<double>(e, SMALL_GRID_SIZE, 3, SMALL_GRID_SIZE);
 	fortran_vars.e2 = FortranMatrix<double>(e2, MEDIUM_GRID_SIZE, 3, MEDIUM_GRID_SIZE);
 	fortran_vars.e3 = FortranMatrix<double>(e3, BIG_GRID_SIZE, 3, BIG_GRID_SIZE);
-	//for (uint i = 0; i < BIG_GRID_SIZE; i++) cout << "[" << fortran_vars.e3.get(i,0) << ", " << fortran_vars.e3.get(i,1) << ", " << fortran_vars.e3.get(i,2) << "]," << endl;
 	fortran_vars.wang1 = FortranMatrix<double>(wang, SMALL_GRID_SIZE, 1, SMALL_GRID_SIZE);
 	fortran_vars.wang2 = FortranMatrix<double>(wang2, MEDIUM_GRID_SIZE, 1, MEDIUM_GRID_SIZE);
 	fortran_vars.wang3 = FortranMatrix<double>(wang3, BIG_GRID_SIZE, 1, BIG_GRID_SIZE);
@@ -161,7 +156,6 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
 		double3 pos(fortran_vars.atom_positions_pointer.get(i, 0), fortran_vars.atom_positions_pointer.get(i, 1), fortran_vars.atom_positions_pointer.get(i, 2));
 		fortran_vars.atom_positions.get(i) = pos;
 		atom_positions.get(i) = make_float3(pos.x, pos.y, pos.z);
-    //cout << "atomo " << i << ": " << pos.x << " " << pos.y << " " << pos.z << endl;
 	}
 	atom_positions.to_constant("gpu_atom_positions");
 

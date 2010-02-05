@@ -39,7 +39,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 
   bool compute_energy = (computation_type == COMPUTE_ENERGY_ONLY || computation_type == COMPUTE_ENERGY_FORCE);
   bool compute_forces = (computation_type == COMPUTE_FORCE_ONLY || computation_type == COMPUTE_ENERGY_FORCE);
-  bool compute_rmm = (computation_type != COMPUTE_ENERGY_ONLY);
+  bool compute_rmm = (computation_type == COMPUTE_RMM);
 
   double total_energy = 0;
 
@@ -54,29 +54,20 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 	for (list<PointGroup>::const_iterator group_it = final_partition.begin(); group_it != final_partition.end(); ++group_it)
   {
 		const PointGroup& group = *group_it;
-    uint group_m = group.s_functions + group.p_functions * 3 + group.d_functions * 6;
+    uint group_m = group.total_functions();
     if (compute_rmm) { rmm_output.resize(group_m, group_m); rmm_output.zero(); }
 
     // prepare rmm_input for this group
     t_density.start();
     HostMatrixFloat rmm_input(group_m, group_m);
     rmm_input.zero();
-    uint ii = 0;
-    for (uint i = 0; i < group.functions.size(); i++) {
-      uint inc_i;
-      if (i < group.s_functions) inc_i = 1;
-      else if (i < group.s_functions + group.p_functions) inc_i = 3;
-      else inc_i = 6;
+    for (uint i = 0, ii = 0; i < group.functions.size(); i++) {
+      uint inc_i = group.small_function_type(i);
 
       for (uint k = 0; k < inc_i; k++, ii++) {
         uint big_i = group.functions[i] + k;
-
-        uint jj = 0;
-        for (uint j = 0; j < group.functions.size(); j++) {
-          uint inc_j;
-          if (j < group.s_functions) inc_j = 1;
-          else if (j < group.s_functions + group.p_functions) inc_j = 3;
-          else inc_j = 6;
+        for (uint j = 0, jj = 0; j < group.functions.size(); j++) {
+          uint inc_j = group.small_function_type(j);
 
           for (uint l = 0; l < inc_j; l++, jj++) {
             uint big_j = group.functions[j] + l;
@@ -128,13 +119,8 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
         for (uint k = 0; k < fortran_vars.nco; k++)
         {
           float w_local = 0;
-          ii = 0;
-          for (uint i = 0; i < group.functions.size(); i++)
-          {
-            uint inc;
-            if (i < group.s_functions) inc = 1;
-            else if (i < group.s_functions + group.p_functions) inc = 3;
-            else inc = 6;
+          for (uint i = 0, ii = 0; i < group.functions.size(); i++) {
+            uint inc = group.small_function_type(i);
             uint big_i = group.functions[i];
             for (uint j = 0; j < inc; j++, ii++) w_local += group.function_values.data[point * group_m + ii] * fortran_vars.rmm_input.get(big_i + j, k);
           }
@@ -144,13 +130,9 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
         // compute density derivative
         HostMatrixFloat3 density_derivs(fortran_vars.atoms);
         density_derivs.zero();
-        ii = 0;
-        for (uint i = 0; i < group.functions.size(); i++)
+        for (uint i = 0, ii = 0; i < group.functions.size(); i++)
         {
-          uint inc;
-          if (i < group.s_functions) inc = 1;
-          else if (i < group.s_functions + group.p_functions) inc = 3;
-          else inc = 6;
+          uint inc = group.small_function_type(i);
           uint big_i = group.functions[i];
 
           for (uint j = 0; j < inc; j++, ii++) {
@@ -160,11 +142,11 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
               wrdm += r * w.data[k];
             }
             uint nuc = fortran_vars.nucleii.get(big_i + j) - 1;
-            density_derivs.get(nuc) += group.gradient_values.get(ii, point) * wrdm;
+            density_derivs.get(nuc) += group.gradient_values.data[point * group_m + ii] * wrdm;
           }
         }
         for (set<uint>::const_iterator it = group.nucleii.begin(); it != group.nucleii.end(); ++it)
-          forces.get(*it) += density_derivs.get(*it) * factor * 4.0f;
+          forces.get(*it) += density_derivs.data[*it] * factor * 4.0f;
       }
 
       t_resto.pause();
@@ -188,23 +170,13 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
     t_rmm.start();
     /* accumulate RMM results for this group */
     if (compute_rmm) {
-      uint ii = 0;
-      for (uint i = 0; i < group.functions.size(); i++) {
-        uint inc_i;
-        if (i < group.s_functions) inc_i = 1;
-        else if (i < group.s_functions + group.p_functions) inc_i = 3;
-        else inc_i = 6;
-
+      for (uint i = 0, ii = 0; i < group.functions.size(); i++) {
+        uint inc_i = group.small_function_type(i);
         for (uint k = 0; k < inc_i; k++, ii++) {
           uint big_i = group.functions[i] + k;
 
-          uint jj = 0;
-          for (uint j = 0; j < group.functions.size(); j++) {
-            uint inc_j;
-            if (j < group.s_functions) inc_j = 1;
-            else if (j < group.s_functions + group.p_functions) inc_j = 3;
-            else inc_j = 6;
-
+          for (uint j = 0, jj = 0; j < group.functions.size(); j++) {
+            uint inc_j = group.small_function_type(j);
             for (uint l = 0; l < inc_j; l++, jj++) {
               uint big_j = group.functions[j] + l;
               if (big_i > big_j) continue;
@@ -217,17 +189,15 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
       }
     }
     t_rmm.pause();
+  }
 
-    if (compute_forces) {
-      FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS); // TODO: mover esto a init.cpp
-      for (uint i = 0; i < fortran_vars.atoms; i++) {
-        float3 this_force = forces.get(i);
-        //cout << "F: " << forces.get(i).x << " " << forces.get(i).y << " " << forces.get(i).z << endl;
-        fort_forces.get(i,0) += this_force.x;
-        fort_forces.get(i,1) += this_force.y;
-        fort_forces.get(i,2) += this_force.z;        
-      }
-      forces.zero();
+  if (compute_forces) {
+    FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS); // TODO: mover esto a init.cpp
+    for (uint i = 0; i < fortran_vars.atoms; i++) {
+      float3 this_force = forces.get(i);
+      fort_forces.get(i,0) += this_force.x;
+      fort_forces.get(i,1) += this_force.y;
+      fort_forces.get(i,2) += this_force.z;
     }
   }
 

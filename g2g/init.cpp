@@ -110,6 +110,13 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 
 	fortran_vars.atom_atom_dists = HostMatrix<double>(fortran_vars.atoms, fortran_vars.atoms);
 	fortran_vars.nearest_neighbor_dists = HostMatrix<double>(fortran_vars.atoms);
+
+  /*fortran_vars.rdm.resize(fortran_vars.m, fortran_vars.m);
+  for (uint i = 0; i < fortran_vars.m; i++) {
+    for (uint j = i; j < fortran_vars.m; j++) {
+      
+    }
+  }*/
 	
 	read_options();
 }

@@ -169,7 +169,7 @@ c        call g2g_solve_groups(2, Exc, f)
 c DEBUG DEBUG
       do k=1,natom
         write(*,'("fuerza",I,D,D,D)') k,f(k,1),f(k,2),f(k,3)
-      enddo      
+      enddo
 c
        else
 c

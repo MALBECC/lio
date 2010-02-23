@@ -43,8 +43,8 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 
   double total_energy = 0;
 
-  HostMatrixFloat3 density_derivs, forces;
-  if (compute_forces) { density_derivs.resize(fortran_vars.atoms, 1); forces.resize(fortran_vars.atoms, 1); forces.zero(); }
+  HostMatrixFloat3 dd, forces;
+  if (compute_forces) { dd.resize(fortran_vars.atoms, 1); forces.resize(fortran_vars.atoms, 1); forces.zero(); }
 
   HostMatrixFloat rmm_output;
 
@@ -74,6 +74,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
             if (big_i > big_j) continue;
             uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
             rmm_input.get(ii, jj) = fortran_vars.rmm_input_ndens1.data[big_index];
+            rmm_input.get(jj, ii) = rmm_input.get(ii, jj);
           }
         }
       }
@@ -93,9 +94,28 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
         float Fi = group.function_values.data[point * group_m + i];
         for (uint j = i; j < group_m; j++) {
           float Fj = group.function_values.data[point * group_m + j];
-          w += rmm_input.data[j * group_m + i] * Fj;
+          w += rmm_input.data[i * group_m + j] * Fj;
         }
         partial_density += Fi * w;
+      }
+
+      /** density derivatives **/
+      if (compute_forces) {
+        dd.zero();
+        for (uint i = 0, ii = 0; i < group.functions.size(); i++) {
+          uint nuc = group.nuc_map[i];
+          uint inc_i = group.small_function_type(i);
+          float3 this_dd = make_float3(0,0,0);
+          for (uint k = 0; k < inc_i; k++, ii++) {
+            float w = 0.0f;
+            for (uint j = 0; j < group_m; j++) {
+              float Fj = group.function_values.data[point * group_m + j];
+              w += rmm_input.data[ii * group_m + j] * Fj * (ii == j ? 2 : 1);
+            }
+            this_dd += group.gradient_values.data[point * group_m + ii] * w;
+          }
+          dd.get(nuc) += this_dd;
+        }
       }
 
       /** energy / potential **/
@@ -110,44 +130,11 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
       t_density.pause();
       t_resto.start();
 
-      /** compute forces **/
       if (compute_forces) {
         float factor = point_it->weight * y2a;
-        
-        // compute w
-        HostMatrixFloat w(fortran_vars.nco);
-        for (uint k = 0; k < fortran_vars.nco; k++)
-        {
-          float w_local = 0;
-          for (uint i = 0, ii = 0; i < group.functions.size(); i++) {
-            uint inc = group.small_function_type(i);
-            uint big_i = group.functions[i];
-            for (uint j = 0; j < inc; j++, ii++) w_local += group.function_values.data[point * group_m + ii] * fortran_vars.rmm_input.get(big_i + j, k);
-          }
-          w.data[k] = w_local;
-        }
-        
-        // compute density derivative
-        HostMatrixFloat3 density_derivs(fortran_vars.atoms);
-        density_derivs.zero();
-        for (uint i = 0, ii = 0; i < group.functions.size(); i++)
-        {
-          uint inc = group.small_function_type(i);
-          uint big_i = group.functions[i];
-
-          for (uint j = 0; j < inc; j++, ii++) {
-            float wrdm = 0;
-            for (uint k = 0; k < fortran_vars.nco; k++) {
-              float r = fortran_vars.rmm_input.get(big_i + j, k);
-              wrdm += r * w.data[k];
-            }
-            uint nuc = fortran_vars.nucleii.get(big_i + j) - 1;
-            density_derivs.get(nuc) += group.gradient_values.data[point * group_m + ii] * wrdm;
-          }
-        }
         for (set<uint>::const_iterator it = group.nucleii.begin(); it != group.nucleii.end(); ++it)
-          forces.get(*it) += density_derivs.data[*it] * factor * 4.0f;
-      }
+          forces.get(*it) += dd.data[*it] * factor;
+      }        
 
       t_resto.pause();
 
@@ -156,10 +143,10 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
       if (compute_rmm) {
         float factor = point_it->weight * y2a;
         for (uint i = 0; i < group_m; i++) {
-          float Fi = group.function_values.get(i, point);
+          float Fi = group.function_values.data[point * group_m + i];
           for (uint j = i; j < group_m; j++) {
-            float Fj = group.function_values.get(j, point);
-            rmm_output.get(i, j) += Fi * Fj * factor;
+            float Fj = group.function_values.data[point * group_m + j];
+            rmm_output.data[j * group_m + i] += Fi * Fj * factor;
           }
         }
       }

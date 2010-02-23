@@ -47,6 +47,7 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
 		if (assign_all_functions || (min_exps[func] * atom_cube_dists.get(atom_nuc)) < max_function_exponent) {
 			functions_set.insert(func); s_functions++;
 			nucleii.insert(atom_nuc);
+      nuc_map.push_back(atom_nuc);
 		}
 		func++;
 	}
@@ -57,8 +58,8 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
 		if (assign_all_functions || (min_exps[func] * atom_cube_dists.get(atom_nuc)) < max_function_exponent) {
 			functions_set.insert(func); p_functions++;
 			nucleii.insert(atom_nuc);
+      nuc_map.push_back(atom_nuc);
 		}
-
 		func += 3;
 	}
 	
@@ -68,6 +69,7 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
 		if (assign_all_functions || (min_exps[func] * atom_cube_dists.get(atom_nuc)) < max_function_exponent) {
 			functions_set.insert(func); d_functions++;
 			nucleii.insert(atom_nuc);
+      nuc_map.push_back(atom_nuc);
 		}
 		func += 6;
 	}
@@ -106,7 +108,7 @@ void Sphere::assign_significative_functions(const std::vector<double>& min_exps)
 		if (assign_all_functions || (min_exps[func] * atom_sphere_dists.get(atom_nuc)) < max_function_exponent) {
 			functions_set.insert(func); s_functions++;
 			nucleii.insert(atom_nuc);
-      //cout << "s func" << func << endl;
+      nuc_map.push_back(atom_nuc);
 		}
 		func++;
 	}
@@ -117,7 +119,7 @@ void Sphere::assign_significative_functions(const std::vector<double>& min_exps)
 		if (assign_all_functions || (min_exps[func] * atom_sphere_dists.get(atom_nuc)) < max_function_exponent) {
 			functions_set.insert(func); p_functions++;
 			nucleii.insert(atom_nuc);
-      //cout << "p func" << func << endl;
+      nuc_map.push_back(atom_nuc);
 		}
 
 		func += 3;
@@ -129,7 +131,7 @@ void Sphere::assign_significative_functions(const std::vector<double>& min_exps)
 		if (assign_all_functions || (min_exps[func] * atom_sphere_dists.get(atom_nuc)) < max_function_exponent) {
 			functions_set.insert(func); d_functions++;
 			nucleii.insert(atom_nuc);
-      //c/out << "d func" << func << endl;
+      nuc_map.push_back(atom_nuc);
 		}
 		func += 6;
 	}

@@ -23,16 +23,16 @@ class PointGroup {
     PointGroup(void) : number_of_points(0), s_functions(0), p_functions(0), d_functions(0) {}
     std::list<Point> points;
     uint number_of_points;
-
-  	uint s_functions, p_functions, d_functions;
+    uint s_functions, p_functions, d_functions;
     std::vector<uint> functions;
-  	std::set<uint> nucleii;
-  	#if CPU_KERNELS
+    std::set<uint> nucleii;
+    std::vector<uint> nuc_map;
+    #if CPU_KERNELS
     G2G::HostMatrixFloat function_values;
     G2G::HostMatrixFloat3 gradient_values;
     #else
     G2G::CudaMatrixFloat function_values;
-  	G2G::CudaMatrixFloat4 gradient_values;
+    G2G::CudaMatrixFloat4 gradient_values;
     #endif
 
     void add_point(const Point& p);

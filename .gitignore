@@ -1,0 +1,11 @@
+fortran/garcha-g2g
+fortran/garcha
+fortran/hibrido-g2g
+fortran/hibrido
+fortran/obj
+g2g/*.o
+g2g/*.so
+g2g/*/*.o
+test/*/*.orb
+test/*/*.out
+test/*/gpu_options

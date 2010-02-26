@@ -9,3 +9,5 @@ g2g/*/*.o
 test/*/*.orb
 test/*/*.out
 test/*/gpu_options
+test/*/opt.xyz
+*.swp

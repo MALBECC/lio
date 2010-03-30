@@ -30,6 +30,7 @@ class PointGroup {
     #if CPU_KERNELS
     G2G::HostMatrixFloat function_values;
     G2G::HostMatrixFloat3 gradient_values;
+    G2G::HostMatrixFloat3 hessian_values;
     #else
     G2G::CudaMatrixFloat function_values;
     G2G::CudaMatrixFloat4 gradient_values;

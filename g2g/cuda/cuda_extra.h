@@ -37,6 +37,10 @@ inline __device__ __host__ float3 operator +(const float3& a, const float& b)
 inline __device__ __host__ float3 operator -(const float3 a, const float3 b)
 { return make_float3(a.x-b.x, a.y-b.y, a.z-b.z); }
 
+inline __device__ __host__ float3 operator -(const float3 a, const float b)
+{ return make_float3(a.x-b, a.y-b, a.z-b); }
+
+
 inline __device__ __host__ float3 operator +(const uint3 a, const float3 b)
 { return make_float3(a.x+b.x, a.y+b.y, a.z+b.z); }
 
@@ -54,6 +58,10 @@ inline __device__ __host__ bool operator < (const uint3 i, const uint3 r)
 
 inline __device__ __host__ float3 operator*(const float3& a, float b)
 { return make_float3(a.x * b, a.y * b, a.z * b); }
+
+inline __device__ __host__ float3 operator*(float b, const float3& a)
+{ return make_float3(a.x * b, a.y * b, a.z * b); }
+
 
 inline __device__ __host__ float4 operator*(const float4& a, float b)
 { return make_float4(a.x * b, a.y * b, a.z * b, a.w * b); }

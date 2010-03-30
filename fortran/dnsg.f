@@ -435,7 +435,9 @@ c
  50   continue
 c
       do 60 i=1,M
+c      write(*,*) W(i)
        DENS=DENS+F(i)*W(i)
+c       write(*,*) W(i)
        Dx=Dx+Fg(i,1)*W(i)+F(i)*Wx(i)
        Dy=Dy+Fg(i,2)*W(i)+F(i)*Wy(i)
        Dz=Dz+Fg(i,3)*W(i)+F(i)*Wz(i)

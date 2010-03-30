@@ -12,7 +12,7 @@ using namespace std;
 using namespace G2G;
 
 /* external function prototypes */
-template<bool> void g2g_compute_functions(void);
+template<bool, bool> void g2g_compute_functions(void);
 
 /* internal function prototypes */
 void read_options(void);
@@ -74,6 +74,10 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 		
 	fortran_vars.iexch = Iexch;
   to_constant("gpu_Iexch", &Iexch);
+  fortran_vars.lda = (Iexch <= 3);
+  fortran_vars.gga = !fortran_vars.lda;
+  assert(0 < Iexch && Iexch <= 9);
+  if (fortran_vars.do_forces && fortran_vars.gga) throw std::runtime_error("GGA + forces not supported!");
 	
 	fortran_vars.atom_positions_pointer = FortranMatrix<double>(r, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS);
 	fortran_vars.atom_types.resize(fortran_vars.atoms);
@@ -100,7 +104,7 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	fortran_vars.rmm_input = FortranMatrix<double>(RMM + (M18 - 1), fortran_vars.m, fortran_vars.nco, fortran_vars.m);
   fortran_vars.rmm_input_ndens1 = FortranMatrix<double>(RMM, fortran_vars.m, fortran_vars.m, fortran_vars.m);
 	fortran_vars.rmm_output = FortranMatrix<double>(RMM + (M5 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
-	
+
 	fortran_vars.e1 = FortranMatrix<double>(e, SMALL_GRID_SIZE, 3, SMALL_GRID_SIZE);
 	fortran_vars.e2 = FortranMatrix<double>(e2, MEDIUM_GRID_SIZE, 3, MEDIUM_GRID_SIZE);
 	fortran_vars.e3 = FortranMatrix<double>(e3, BIG_GRID_SIZE, 3, BIG_GRID_SIZE);
@@ -142,8 +146,14 @@ void compute_new_grid(const unsigned int grid_type) {
   
 	Timer t;
   t.start();
-  if (fortran_vars.do_forces) g2g_compute_functions<true>();
-  else g2g_compute_functions<false>();
+  if (fortran_vars.gga) {
+    if (fortran_vars.do_forces) g2g_compute_functions<true, true>();
+    else g2g_compute_functions<false, true>();
+  }
+  else {
+    if (fortran_vars.do_forces) g2g_compute_functions<true, false>();
+    else g2g_compute_functions<false, false>();
+  }
   t.stop();
   cout << "time: " << t << endl;
 }

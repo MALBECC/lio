@@ -33,7 +33,7 @@ gaussian
 endbasis
 &SCFINP
  OPEN = F, 
- NMAX = 150,
+ NMAX = 100,
  NCO = 1,
  NUNP = 0, 
  ATRHO = F, 
@@ -47,8 +47,8 @@ endbasis
  TOLD =  1.E-06, 
  WRITE = F, 
  MEMO = T/
-&EXCH 
- IEXCH = 3,
+&EXCH
+ IEXCH = 9,
  INTEG = T, 
  DENS = T, 
  IGRID = 2, 

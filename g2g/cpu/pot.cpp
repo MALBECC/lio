@@ -121,11 +121,30 @@ void cpu_pot(float dens, float& ex, float& ec, float& y2a)
 static void closedpbe(float rho, float agrad, float delgrad, float rlap, float& expbe, float& vxpbe, float& ecpbe, float& vcpbe);
 static void gcorc(float rtrs, float& gg, float& grrs);
 
+/*
+ subroutine for evaluating exchange correlation density and
+ potential, for non local density functionals
+ 4 : Exchange given by Perdew : Phys. Rev B 33 8800 (1986)
+     Correlation :     Perdew : Phys. Rev B 33 8822 (1986)
+
+ 5 : Exchange given by Becke  : Phys. Rev A 38 3098 (1988)
+     Correlation :     Perdew : Phys. Rev B 33 8822 (1986)
+ 6 : only  exchange given by Becke
+ 7 : BLYP, Exchange: given by Becke
+           Correlation: given by LYP: PRB 37 785 (1988)
+ 8: Exchange given by Perdew : Phys. Rev B 33 8800 (1986)
+       Correlation: given by LYP: PRB 37 785 (1988)
+ to be used in concert with dnsg subroutine, the one that gives
+ gradient and second derivatives of the electronic density
+ 19-1-93, last version: 25/11/97.
+ 9: PBE
+*/
+
 void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3& hess2, float& ex, float& ec, float& y2a)
 {
   // hess1: xx, yy, zz
   // hess2: xy, xz, yz
-  if (dens == 0) { ex = ec = 0; return; }
+  if (dens < 1e-12) { ex = ec = 0; return; }
 
   float y = powf(dens, 0.333333333333333333f);  // rho^(1/3)
 
@@ -248,8 +267,8 @@ void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3&
     y2a = 0.0;
     float e0 = POT_ALPHA * y;
     float y2 = dens / 2.0f;
-    float r13 = powf(y2, 0.333333333333333333f);
-    float r43 = y2 * r13;
+    float r13 = powf(y2, (1.0 / 3.0));
+    float r43 = powf(y2, (4.0 / 3.0));
     float Xs = dgrad / (2.0f * r43);
     float siper = asinhf(Xs);
     float DN = 1.0f + 6.0f * POT_BETA * Xs * siper;
@@ -303,12 +322,11 @@ void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3&
       float tm3 = 1.6666666666f - POT_CLYP3 * 1.3333333333f * rom13;
       float hp2 = hp1 * tm2/dens + h1 * tm3/(dens * dens);
       float gp2 = fp2 * h1 + 2.0f * fp1 * hp1 + hp2 * f1;
-      
+
+      // potential:
       float term3 = -POT_ALYP * (fp1 * dens + f1) - POT_ALYP * POT_BLYP * POT_CF * (gp1 * dens + 8.0f / 3.0f * g1) * rom53;
       float term4 = (gp2 * dens * grad2 + gp1 * (3.0f * grad2 + 2.0 * dens * d0)+ 4.0f * g1 * d0) * POT_ALYP * POT_BLYP/4.0f;
-      float term5 = (3.0f * gp2 * dens * grad2 + gp1 * (5.0f * grad2 + 6.0f * dens * d0) + 4.0f * g1 * d0) * POT_ALYP * POT_BLYP/72.0f;
-      
-      // potential:
+      float term5 = (3.0f * gp2 * dens * grad2 + gp1 * (5.0f * grad2 + 6.0f * dens * d0) + 4.0f * g1 * d0) * POT_ALYP * POT_BLYP/72.0f;      
       float vc = term3 - term4 - term5;
       y2a = y2a + vc;
       return;
@@ -345,10 +363,11 @@ void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3&
   float Cx4 = POT_GAM + 2.0f * POT_DEL * rs + 3.0e4f * POT_BET * rs2;
   float dC = Cx3/Cx2 - Cx1/(Cx2 * Cx2) * Cx4;
   dC = -0.333333333333333f * dC * POT_GL / (y * dens);
-  float phi = 0.0008129082f/C * dgrad/powf(dens,1.1666666666666666f);
+  float phi = 0.0008129082f/C * dgrad/powf(dens, 7.0 / 6.0);
   float expo = expf(-phi);
   float ex0 = expo * C;
   ec = ec + ex0 * grad2 / (y * dens2);
+	
   float D1 = (2.0f - phi) * d0/dens;
   float phi2 = (phi * phi);
   float D2 = 1.33333333333333333f - 3.666666666666666666f * phi + 1.166666666666666f * phi2;
@@ -374,7 +393,7 @@ static void closedpbe(float rho, float agrad, float delgrad, float rlap, float& 
     expbe = vxpbe = ecpbe = vcpbe = 0;
     return;
   }
-
+	
   float rho2 = rho * rho;
   float rho13 = powf(rho, 1.0 / 3.0);
   float fk1 = powf(CLOSEDPBE_PI32, 1.0 / 3.0);
@@ -410,7 +429,7 @@ static void closedpbe(float rho, float agrad, float delgrad, float rlap, float& 
 
   // Now the potential:
   float v = rlap / (twofk2 * rho);
-  float u = delgrad / (twofk3 * rho2);
+  float u = (delgrad == 0 ? 0 : delgrad / (twofk3 * rho2));
 
   // Calculation of first and second derivatives
   float P2 = p0 * p0;
@@ -445,12 +464,13 @@ static void closedpbe(float rho, float agrad, float delgrad, float rlap, float& 
   float twoks2 = twoks * twoks;
   float twoks3 = twoks2 * twoks;
 
-  float UU = delgrad / (rho2 * twoks3);
+  float UU = (delgrad == 0 ? 0 : delgrad / (rho2 * twoks3));
   float VV = rlap / (rho * twoks2);
 
   float ec, eurs;
   gcorc(rtrs, ec, eurs);
-
+	if (ec == 0) ec = FLT_EPSILON;
+	
   float eclda = ec;
   float ecrs = eurs;
   float vclda = eclda - rs * (1.0 / 3.0) * ecrs;
@@ -469,13 +489,13 @@ static void closedpbe(float rho, float agrad, float delgrad, float rlap, float& 
 
   // So the correlation energy for pbe is:
   ecpbe = eclda + H;
-
+	
   // Now we have to calculate the potential contribution of GGA
   float T6 = T4 * t2;
   float RSTHRD = rs / 3.0f;
   float FAC = CLOSEDPBE_DELTA / B + 1.0;
   float BEC = B2 * FAC / CLOSEDPBE_BETA;
-  float Q8 = Q5 * Q5 + CLOSEDPBE_DELTA * Q4 * Q5 * t2;
+	float Q8 = Q5 * Q5 + CLOSEDPBE_DELTA * Q4 * Q5 * t2;
   float Q9 = 1.0f + 2.0f * B * t2;
   float hB = -CLOSEDPBE_BETA * B * T6 * (2.0f + B * t2)/Q8;
   float hRS = -RSTHRD * hB * BEC * ecrs;
@@ -493,6 +513,8 @@ static void closedpbe(float rho, float agrad, float delgrad, float rlap, float& 
 
   // Then, the potential for PBE is:
   vcpbe = vclda + COMM;
+	
+	//cout << rho << " " << delgrad << " " << rlap << " ret: " << expbe << " " << vxpbe << " " << ecpbe << " " << vcpbe << endl;
 }
 
 #define GCORC_A 0.0310907

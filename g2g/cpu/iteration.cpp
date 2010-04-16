@@ -177,7 +177,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
       else {
         //cout << "antes: " << partial_density << " " << dxyz << " " << dd1 << " " << dd2 << endl;
         cpu_potg(partial_density, dxyz, dd1, dd2, exc, corr, y2a);
-        //cout << exc << " " << corr << " " << y2a << endl;
+        cout << exc << " " << corr << " " << y2a << endl;
       }
 
       if (compute_energy)

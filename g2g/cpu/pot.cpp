@@ -152,33 +152,14 @@ void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3&
   if (grad2 == 0) grad2 = FLT_EPSILON;
   float dgrad = sqrtf(grad2);
 
-  if (fortran_vars.iexch == 9) {
-    float dgrad1 = grad.x * grad.x * hess1.x / dgrad;
-    float dgrad2 = grad.y * grad.y * hess1.y / dgrad;
-    float dgrad3 = grad.z * grad.z * hess1.z / dgrad;
-    float dgrad4 = 2.0f * grad.x * grad.y * hess2.x / dgrad;
-    float dgrad5 = 2.0f * grad.x * grad.z * hess2.y / dgrad;
-    float dgrad6 = 2.0f * grad.y * grad.z * hess2.z / dgrad;
-    float delgrad = dgrad1 + dgrad2 + dgrad3 + dgrad4 + dgrad5 + dgrad6;
-    float rlap = hess1.x + hess1.y + hess1.z;
-
-    float expbe, vxpbe, ecpbe, vcpbe;
-    closedpbe(dens, dgrad, delgrad, rlap, expbe, vxpbe, ecpbe, vcpbe);
-    ex = expbe;
-    ec = ecpbe;
-    y2a = vxpbe + vcpbe;
-    return;
-  }
-
-  if (fortran_vars.iexch == 8) {
-    /* Perdew (Phys. Rev B, 33 8800) */
-    float ckf = 3.0936677f * y;
-    float u0 = ((grad.x * grad.x) * hess1.x + 2.0f * grad.x * grad.y * hess2.x + 2.0f * grad.y * grad.z * hess2.z + 2.0f * grad.x * grad.z * hess2.y +
+  float d0 = hess1.x * hess1.y * hess1.z;
+  float u0 = ((grad.x * grad.x) * hess1.x + 2.0f * grad.x * grad.y * hess2.x + 2.0f * grad.y * grad.z * hess2.z + 2.0f * grad.x * grad.z * hess2.y +
       (grad.y * grad.y) * hess1.y + (grad.z * grad.z) * hess1.z) / dgrad;
-    float d0 = hess1.x * hess1.y * hess1.z;
 
-    /* VWN's exchange */
-    float dens2 = dens * dens;
+  /** Exchange **/
+  if (fortran_vars.iexch == 4 || fortran_vars.iexch == 8) {   // Perdew : Phys. Rev B 33 8800 (1986)
+    float dens2 = (dens * dens);
+    float ckf = 3.0936677f * y;
     float s = dgrad / (2.0f * ckf * dens);
 
     float fx = 1.0f / 15.0f;
@@ -189,82 +170,18 @@ void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3&
     float F = powf(g0, fx);
     float e = POT_ALPHA * F * y;
     ex = e;
-
+    
     float t = d0 / (dens * 4.0f * (ckf * ckf));
     float u = u0 / (powf(2.0f * ckf, 3) * dens2);
-    
+
     float g2 = 2.592f * s + 56.0f * s3 + 1.2f * (s4 * s);
     float g3 = 2.592f + 56.0f * s2 + 1.2f * s4;
     float g4 = 112.0f * s + 4.8f * s3;
     float dF = fx * F/g0 * g2;
     float dsF = fx * F/g0 * (-14.0f * fx * g3 * g2/g0 + g4);
     y2a = POT_ALPHA * (1.33333333333f * F - t/s * dF - (u-1.3333333333f * s3) * dsF) * y;
-
-    /* Correlation BLYP */
-    float rom13 = y;
-    float rom53 = powf(dens, 1.666666666666f);
-    float ecro = expf(-POT_CLYP * rom13);
-    float f1 = 1.0f / (1.0f + POT_DLYP * rom13);
-    float tw = 1.0f / 8.0f * (grad2/dens - d0);
-    float term = (tw / 9.0f + d0 / 18.0f) - 2.0f * tw + POT_CF * rom53;
-    term = dens + POT_BLYP * (rom13 * rom13) * ecro * term;
-
-    // energy:
-    ec = -POT_ALYP * f1 * term/dens;
-    
-    float h1 = ecro/rom53;
-    float g1 = f1 * h1;
-    float tm1 = POT_DLYP3 * (rom13/dens);
-    float fp1 = tm1 * (f1 * f1);
-    float tm2 = -1.666666666f + POT_CLYP3 * rom13;
-    float hp1 = h1 * tm2/dens;
-    float gp1 = fp1 * h1 + hp1 * f1;
-    float fp2 = tm1 * 2.0f * f1 * (fp1 - 0.6666666666f * f1/dens);
-    float tm3 = 1.6666666666f - POT_CLYP3 * 1.3333333333f * rom13;
-    float hp2 = hp1 * tm2/dens + h1 * tm3/(dens * dens);
-    float gp2 = fp2 * h1 + 2.0f * fp1 * hp1 + hp2 * f1;
-    float term3 = -POT_ALYP * (fp1 * dens + f1) - POT_ALYP * POT_BLYP * POT_CF * (gp1 * dens + 8.0f/3.0f * g1) * rom53;
-    float term4 = (gp2 * dens * grad2 + gp1 * (3.0f * grad2 + 2.0f * dens * d0) + 4.0f * g1 * d0) * POT_ALYP * POT_BLYP/4.0f;
-    float term5 = (3.0f * gp2 * dens * grad2 + gp1 * (5.0f * grad2 + 6.0f * dens * d0) + 4.0f * g1 * d0) * POT_ALYP * POT_BLYP/72.0f;
-
-     // potential:
-     float vc = term3 - term4 - term5;
-     y2a = y2a + vc;
-     return;
   }
-
-  // no 8, ni 9
-  float ckf = 3.0936677f * y;
-  float u0 = ((grad.x * grad.x) * hess1.x + 2.0f * grad.x * grad.y * hess2.x + 2.0f * grad.y * grad.z * hess2.z + 2.0f * grad.x * grad.z * hess2.y +
-     (grad.y * grad.y) * hess1.y + (grad.z * grad.z) * hess1.z) / dgrad;
-  float d0 = hess1.x + hess1.y + hess1.z;
-
-  if (fortran_vars.iexch == 4) {
-    // VWN's exchange
-    float dens2 = (dens * dens);
-    float s = dgrad / (2.0f * ckf * dens);
-    
-    float fx = 1.0f/15.0f;
-    float s2 = (s * s);
-    float s3 = (s * s * s);
-    float s4 = (s * s * s * s);
-    float g0 = 1.0f + 1.2960f * s2 + 14.0f * s4 + 0.2f * (s4 * s2);
-    float F = powf(g0, fx);
-    float e = POT_ALPHA * F * y;
-    ex = e;
-
-    float t = d0 / (dens * 4.0f * (ckf* ckf));
-    float u = u0 / (powf(2.0f * ckf,3) * dens2);
-
-    float g2 = 2.592f * s + 56.0f * s3 + 1.2f * (s4 * s);
-    float g3 = 2.592f + 56.0f * s2 + 1.2f * s4;
-    float g4 = 112.0f * s + 4.8f * s3;
-    float dF = fx * F / g0 * g2;
-    float dsF = fx * F / g0 * (-14.0f * fx * g3 * g2 / g0 + g4);
-    y2a = POT_ALPHA * (1.33333333333f * F - t/s * dF - (u - 1.3333333333f * s3) * dsF) * y;
-  }
-  else { /* >= 5 */
-    y2a = 0.0;
+  else if (fortran_vars.iexch >= 5 && fortran_vars.iexch <= 7) { // Becke  : Phys. Rev A 38 3098 (1988)
     float e0 = POT_ALPHA * y;
     float y2 = dens / 2.0f;
     float r13 = powf(y2, (1.0 / 3.0));
@@ -299,83 +216,102 @@ void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3&
     float TOT2 = DN5 - D02 * DN1 + DN4 * DN3;
     float vxc = -POT_BETA * Fb/r43 * TOT2;
     y2a = v0 + vxc;
-
-    if (fortran_vars.iexch == 7) {
-      float rom13 = powf(dens, -0.3333333333f);
-      float rom53 = powf(dens, 1.666666666666f);
-      float ecro = expf(-POT_CLYP * rom13);
-      float f1 = 1.0f / (1.0f + POT_DLYP * rom13);
-      float tw = 1.0f / 8.0f * (grad2 / dens - d0);
-      float term = (tw / 9.0f + d0/18.0f) - 2.0f * tw + POT_CF * rom53;
-      term = dens + POT_BLYP * (rom13 * rom13) * ecro * term;
-
-      // energy:
-      ec = -POT_ALYP * f1 * term/dens;
-      float h1 = ecro / rom53;
-      float g1 = f1 * h1;
-      float tm1 = POT_DLYP3 * (rom13 / dens);
-      float fp1 = tm1 * (f1 * f1);
-      float tm2 = -1.666666666f + POT_CLYP3 * rom13;
-      float hp1 = h1 * tm2/dens;
-      float gp1 = fp1 * h1 + hp1* f1;
-      float fp2 = tm1 * 2.0f * f1 * (fp1-0.6666666666f * f1 / dens);
-      float tm3 = 1.6666666666f - POT_CLYP3 * 1.3333333333f * rom13;
-      float hp2 = hp1 * tm2/dens + h1 * tm3/(dens * dens);
-      float gp2 = fp2 * h1 + 2.0f * fp1 * hp1 + hp2 * f1;
-
-      // potential:
-      float term3 = -POT_ALYP * (fp1 * dens + f1) - POT_ALYP * POT_BLYP * POT_CF * (gp1 * dens + 8.0f / 3.0f * g1) * rom53;
-      float term4 = (gp2 * dens * grad2 + gp1 * (3.0f * grad2 + 2.0 * dens * d0)+ 4.0f * g1 * d0) * POT_ALYP * POT_BLYP/4.0f;
-      float term5 = (3.0f * gp2 * dens * grad2 + gp1 * (5.0f * grad2 + 6.0f * dens * d0) + 4.0f * g1 * d0) * POT_ALYP * POT_BLYP/72.0f;      
-      float vc = term3 - term4 - term5;
-      y2a = y2a + vc;
-      return;
-    }
   }
+  else { // PBE (Iexch 9 complete)
+    float dgrad1 = grad.x * grad.x * hess1.x / dgrad;
+    float dgrad2 = grad.y * grad.y * hess1.y / dgrad;
+    float dgrad3 = grad.z * grad.z * hess1.z / dgrad;
+    float dgrad4 = 2.0f * grad.x * grad.y * hess2.x / dgrad;
+    float dgrad5 = 2.0f * grad.x * grad.z * hess2.y / dgrad;
+    float dgrad6 = 2.0f * grad.y * grad.z * hess2.z / dgrad;
+    float delgrad = dgrad1 + dgrad2 + dgrad3 + dgrad4 + dgrad5 + dgrad6;
+    float rlap = hess1.x + hess1.y + hess1.z;
 
-  // Iexch 6, and continuation of 4 and 5
-  float dens2 = (dens * dens);
-  float rs = POT_GL / y;
-  float x1 = sqrtf(rs);
-  float Xx = rs + POT_VOSKO_B1 * x1 + POT_VOSKO_C1;
-  float Xxo = (POT_VOSKO_X0 * POT_VOSKO_X0) + POT_VOSKO_B1 * POT_VOSKO_X0 + POT_VOSKO_C1;
-  float t1 = 2.0f * x1 + POT_VOSKO_B1;
-  float t2 = logf(Xx);
-  float t3 = atanf(POT_VOSKO_Q/t1);
-  float t4 = POT_VOSKO_B1 * POT_VOSKO_X0/Xxo;
-  
-  ec = POT_VOSKO_A1 * (2.0f * logf(x1) - t2 + 2.0f * POT_VOSKO_B1/POT_VOSKO_Q * t3 - t4 *(2.0f * logf(x1 - POT_VOSKO_X0) - t2 + 2.0f * (POT_VOSKO_B1 + 2.0f * POT_VOSKO_X0)/POT_VOSKO_Q * t3));
-  float t5 = (POT_VOSKO_B1 * x1 + 2.0f * POT_VOSKO_C1)/x1;
-  float t6 = POT_VOSKO_X0/Xxo;
-  float vc = ec - POT_VOSKO_A16 * x1 * (t5/Xx - 4.0f * POT_VOSKO_B1 / ((t1 * t1)+(POT_VOSKO_Q * POT_VOSKO_Q2)) * (1.0f - t6 * (POT_VOSKO_B1 - 2.0f * POT_VOSKO_X0)) - t4 * (2.0f / (x1 - POT_VOSKO_X0) - t1/Xx));
-
-  if (fortran_vars.iexch == 6) {
-    y2a = y2a + vc;
+    float expbe, vxpbe, ecpbe, vcpbe;
+    closedpbe(dens, dgrad, delgrad, rlap, expbe, vxpbe, ecpbe, vcpbe);
+    ex = expbe;
+    ec = ecpbe;
+    y2a = vxpbe + vcpbe;
     return;
   }
 
-  // continuation of 4 and 5
-  float rs2 = (rs * rs);
-  float Cx1 = 0.002568f + POT_ALF * rs + POT_BET * rs2;
-  float Cx2 = 1.0f + POT_GAM * rs + POT_DEL * rs2 + 1.0e4f * POT_BET * (rs * rs * rs);
-  float C = 0.001667f + Cx1/Cx2;
-  float Cx3 = POT_ALF + 2.0f * POT_BET * rs;
-  float Cx4 = POT_GAM + 2.0f * POT_DEL * rs + 3.0e4f * POT_BET * rs2;
-  float dC = Cx3/Cx2 - Cx1/(Cx2 * Cx2) * Cx4;
-  dC = -0.333333333333333f * dC * POT_GL / (y * dens);
-  float phi = 0.0008129082f/C * dgrad/powf(dens, 7.0 / 6.0);
-  float expo = expf(-phi);
-  float ex0 = expo * C;
-  ec = ec + ex0 * grad2 / (y * dens2);
-	
-  float D1 = (2.0f - phi) * d0/dens;
-  float phi2 = (phi * phi);
-  float D2 = 1.33333333333333333f - 3.666666666666666666f * phi + 1.166666666666666f * phi2;
-  D2 = D2 * grad2/dens2;
-  float D3 = phi * (phi - 3.0f) * u0/(dens * dgrad);
-  float D4 = expo * grad2 / (y * dens) * (phi2 - phi - 1.0f) * dC;
-  vc = vc - 1.0f * (ex0 / y * (D1 - D2 + D3) - D4);
-  y2a = y2a + vc;
+  /** Correlation **/
+  if (fortran_vars.iexch >= 4 && fortran_vars.iexch <= 6) { // Perdew : Phys. Rev B 33 8822 (1986)
+
+    float dens2 = (dens * dens);
+    float rs = POT_GL / y;
+    float x1 = sqrtf(rs);
+    float Xx = rs + POT_VOSKO_B1 * x1 + POT_VOSKO_C1;
+    float Xxo = (POT_VOSKO_X0 * POT_VOSKO_X0) + POT_VOSKO_B1 * POT_VOSKO_X0 + POT_VOSKO_C1;
+    float t1 = 2.0f * x1 + POT_VOSKO_B1;
+    float t2 = logf(Xx);
+    float t3 = atanf(POT_VOSKO_Q/t1);
+    float t4 = POT_VOSKO_B1 * POT_VOSKO_X0/Xxo;
+
+    ec = POT_VOSKO_A1 * (2.0f * logf(x1) - t2 + 2.0f * POT_VOSKO_B1/POT_VOSKO_Q * t3 - t4 *(2.0f * logf(x1 - POT_VOSKO_X0) - t2 + 2.0f * (POT_VOSKO_B1 + 2.0f * POT_VOSKO_X0)/POT_VOSKO_Q * t3));
+
+    float t5 = (POT_VOSKO_B1 * x1 + 2.0f * POT_VOSKO_C1)/x1;
+    float t6 = POT_VOSKO_X0/Xxo;
+    float vc = ec - POT_VOSKO_A16 * x1 * (t5/Xx - 4.0f * POT_VOSKO_B1 / ((t1 * t1)+(POT_VOSKO_Q * POT_VOSKO_Q2)) * (1.0f - t6 * (POT_VOSKO_B1 - 2.0f * POT_VOSKO_X0)) - t4 * (2.0f / (x1 - POT_VOSKO_X0) - t1/Xx));
+
+    if (fortran_vars.iexch == 6) {
+      y2a = y2a + vc;
+    }
+    else { // ?? citation??
+      float rs2 = (rs * rs);
+      float Cx1 = 0.002568f + POT_ALF * rs + POT_BET * rs2;
+      float Cx2 = 1.0f + POT_GAM * rs + POT_DEL * rs2 + 1.0e4f * POT_BET * (rs * rs * rs);
+      float C = 0.001667f + Cx1/Cx2;
+      float Cx3 = POT_ALF + 2.0f * POT_BET * rs;
+      float Cx4 = POT_GAM + 2.0f * POT_DEL * rs + 3.0e4f * POT_BET * rs2;
+      float dC = Cx3/Cx2 - Cx1/(Cx2 * Cx2) * Cx4;
+      dC = -0.333333333333333f * dC * POT_GL / (y * dens);
+      float phi = 0.0008129082f/C * dgrad/powf(dens, 7.0 / 6.0);
+      float expo = expf(-phi);
+      float ex0 = expo * C;
+      ec = ec + ex0 * grad2 / (y * dens2);
+
+      float D1 = (2.0f - phi) * d0/dens;
+      float phi2 = (phi * phi);
+      float D2 = 1.33333333333333333f - 3.666666666666666666f * phi + 1.166666666666666f * phi2;
+      D2 = D2 * grad2/dens2;
+      float D3 = phi * (phi - 3.0f) * u0/(dens * dgrad);
+      float D4 = expo * grad2 / (y * dens) * (phi2 - phi - 1.0f) * dC;
+      vc = vc - 1.0f * (ex0 / y * (D1 - D2 + D3) - D4);
+      y2a = y2a + vc;
+    }
+  }
+  else if (fortran_vars.iexch == 7 || fortran_vars.iexch == 8) { // Correlation: given by LYP: PRB 37 785 (1988)
+    float rom13 = powf(dens, -0.3333333333f);
+    float rom53 = powf(dens, 1.666666666666f);
+    float ecro = expf(-POT_CLYP * rom13);
+    float f1 = 1.0f / (1.0f + POT_DLYP * rom13);
+    float tw = 1.0f / 8.0f * (grad2/dens - d0);
+    float term = (tw / 9.0f + d0 / 18.0f) - 2.0f * tw + POT_CF * rom53;
+    term = dens + POT_BLYP * (rom13 * rom13) * ecro * term;
+    ec = -POT_ALYP * f1 * term/dens;
+
+    // y2a
+    float h1 = ecro/rom53;
+    float g1 = f1 * h1;
+    float tm1 = POT_DLYP3 * (rom13/dens);
+    float fp1 = tm1 * (f1 * f1);
+    float tm2 = -1.666666666f + POT_CLYP3 * rom13;
+    float hp1 = h1 * tm2/dens;
+    float gp1 = fp1 * h1 + hp1 * f1;
+    float fp2 = tm1 * 2.0f * f1 * (fp1 - 0.6666666666f * f1/dens);
+    float tm3 = 1.6666666666f - POT_CLYP3 * 1.3333333333f * rom13;
+    float hp2 = hp1 * tm2/dens + h1 * tm3/(dens * dens);
+    float gp2 = fp2 * h1 + 2.0f * fp1 * hp1 + hp2 * f1;
+
+    float term3 = -POT_ALYP * (fp1 * dens + f1) - POT_ALYP * POT_BLYP * POT_CF * (gp1 * dens + 8.0f/3.0f * g1) * rom53;
+    float term4 = (gp2 * dens * grad2 + gp1 * (3.0f * grad2 + 2.0f * dens * d0) + 4.0f * g1 * d0) * POT_ALYP * POT_BLYP/4.0f;
+    float term5 = (3.0f * gp2 * dens * grad2 + gp1 * (5.0f * grad2 + 6.0f * dens * d0) + 4.0f * g1 * d0) * POT_ALYP * POT_BLYP/72.0f;
+    cout <<  term3 << " " << term4 << " " << term5 << endl;
+
+    float vc = term3 - term4 - term5;
+    y2a = y2a + vc;
+  }
 }
 
 #define CLOSEDPBE_PI32 29.608813203268075856503472999628

@@ -144,7 +144,8 @@ void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3&
 {
   // hess1: xx, yy, zz
   // hess2: xy, xz, yz
-  if (dens < 1e-12) { ex = ec = 0; return; }
+  //if (dens < 1e-12) { ex = ec = 0; return; }
+  if (dens < 2e-13) { ex = ec = 0; return; }
 
   float y = powf(dens, 0.333333333333333333f);  // rho^(1/3)
 
@@ -218,13 +219,13 @@ void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3&
     y2a = v0 + vxc;
   }
   else { // PBE (Iexch 9 complete)
-    float dgrad1 = grad.x * grad.x * hess1.x / dgrad;
-    float dgrad2 = grad.y * grad.y * hess1.y / dgrad;
-    float dgrad3 = grad.z * grad.z * hess1.z / dgrad;
-    float dgrad4 = 2.0f * grad.x * grad.y * hess2.x / dgrad;
-    float dgrad5 = 2.0f * grad.x * grad.z * hess2.y / dgrad;
-    float dgrad6 = 2.0f * grad.y * grad.z * hess2.z / dgrad;
-    float delgrad = dgrad1 + dgrad2 + dgrad3 + dgrad4 + dgrad5 + dgrad6;
+    float dgrad1 = grad.x * grad.x * hess1.x;
+    float dgrad2 = grad.y * grad.y * hess1.y;
+    float dgrad3 = grad.z * grad.z * hess1.z;
+    float dgrad4 = grad.x * grad.y * hess2.x;
+    float dgrad5 = grad.x * grad.z * hess2.y;
+    float dgrad6 = grad.y * grad.z * hess2.z;
+    float delgrad = (dgrad1 + dgrad2 + dgrad3 + 2 * (dgrad4 + dgrad5 + dgrad6)) / dgrad;
     float rlap = hess1.x + hess1.y + hess1.z;
 
     float expbe, vxpbe, ecpbe, vcpbe;
@@ -237,7 +238,6 @@ void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3&
 
   /** Correlation **/
   if (fortran_vars.iexch >= 4 && fortran_vars.iexch <= 6) { // Perdew : Phys. Rev B 33 8822 (1986)
-
     float dens2 = (dens * dens);
     float rs = POT_GL / y;
     float x1 = sqrtf(rs);
@@ -282,7 +282,7 @@ void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3&
     }
   }
   else if (fortran_vars.iexch == 7 || fortran_vars.iexch == 8) { // Correlation: given by LYP: PRB 37 785 (1988)
-    float rom13 = powf(dens, -0.3333333333f);
+    float rom13 = powf(dens, -0.3333333333333f);
     float rom53 = powf(dens, 1.666666666666f);
     float ecro = expf(-POT_CLYP * rom13);
     float f1 = 1.0f / (1.0f + POT_DLYP * rom13);
@@ -307,7 +307,7 @@ void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3&
     float term3 = -POT_ALYP * (fp1 * dens + f1) - POT_ALYP * POT_BLYP * POT_CF * (gp1 * dens + 8.0f/3.0f * g1) * rom53;
     float term4 = (gp2 * dens * grad2 + gp1 * (3.0f * grad2 + 2.0f * dens * d0) + 4.0f * g1 * d0) * POT_ALYP * POT_BLYP/4.0f;
     float term5 = (3.0f * gp2 * dens * grad2 + gp1 * (5.0f * grad2 + 6.0f * dens * d0) + 4.0f * g1 * d0) * POT_ALYP * POT_BLYP/72.0f;
-    cout <<  term3 << " " << term4 << " " << term5 << endl;
+    //cout <<  term3 << " " << term4 << " " << term5 << endl;
 
     float vc = term3 - term4 - term5;
     y2a = y2a + vc;
@@ -325,7 +325,7 @@ void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3&
 
 static void closedpbe(float rho, float agrad, float delgrad, float rlap, float& expbe, float& vxpbe, float& ecpbe, float& vcpbe)
 {
-  if (rho < 2e-18) {
+  if (rho < 2e-15) {
     expbe = vxpbe = ecpbe = vcpbe = 0;
     return;
   }

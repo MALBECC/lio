@@ -139,7 +139,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 
           dxyz += Fgi * w + w3 * Fi;
           dd1 += Fgi * w3 * 2 + Fhi1 * w + ww1 * Fi;
-          dd2.x += Fgi.x * w3.y + Fgi.x * w3.x + Fhi2.x * w + ww2.x * Fi;
+          dd2.x += Fgi.x * w3.y + Fgi.y * w3.x + Fhi2.x * w + ww2.x * Fi;
           dd2.y += Fgi.x * w3.z + Fgi.z * w3.x + Fhi2.y * w + ww2.y * Fi;
           dd2.z += Fgi.y * w3.z + Fgi.z * w3.y + Fhi2.z * w + ww2.z * Fi;
 
@@ -177,7 +177,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
       else {
         //cout << "antes: " << partial_density << " " << dxyz << " " << dd1 << " " << dd2 << endl;
         cpu_potg(partial_density, dxyz, dd1, dd2, exc, corr, y2a);
-        //cout << exc << " " << corr << " " << y2a << " " << dxyz << endl;
+        cout << exc << " " << corr << " " << y2a << endl;
       }
 
       if (compute_energy)

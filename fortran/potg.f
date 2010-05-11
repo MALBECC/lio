@@ -55,7 +55,8 @@ c
       STOP
       ENDIF
 
-        if (dens.eq.0) then
+c        if (dens.eq.0) then
+      if (dens.lt.1D-13) then
          v=0.0D0
          ex=0.0D0
          ec = 0.D0
@@ -63,6 +64,7 @@ c
         endif
 c
         y=dens**0.333333333333333333D0
+        v=0
 c
 c
 c-- Non local --------------------------- 
@@ -177,6 +179,7 @@ c
 c
        t=D0/(dens*4.D0*ckF**2)
        u=u0/((2.D0*ckF)**3*dens2)
+c       write(*,*) t,u
 c
        g2=2.592D0*s+56.D0*s3+1.2D0*s**5
        g3=2.592D0+56.D0*s2+1.2D0*s4
@@ -236,7 +239,8 @@ c -----
        TOT2 = DN5 - D02*DN1 + DN4*DN3
 *       vxc = -2.0D0*beta*Fb/r43*TOT2
        vxc = -beta*Fb/r43*TOT2
-       v = v0 + vxc 
+       v = v0 + vxc
+c       write(*,*) Dxx,Dyy,Dzz
 *   check
 *       return
 *
@@ -295,6 +299,7 @@ c
 c
         ec=A1*(2.D0*log(x1)- t2+ 2.D0*b1/Q*t3 -t4*(2.D0*log(x1-x0)-
      >     t2+ 2.D0*(b1+2.D0*x0)/Q*t3))
+c        write(*,*) 2.D0*log(x1),t2,t3,t4
 c
         t5=(b1*x1+2.D0*c1)/x1
         t6=x0/Xxo
@@ -332,6 +337,7 @@ c
        D4=expo*DGRAD2/(y*dens)*(phi2-phi-1.D0)*dC
        vc=vc-1.0D0*(ex0/y*(D1-D2+D3)-D4)
        v=v+vc
+c       write(*,*) ec,v,D1,D2,D3
 c
        return
 
@@ -360,6 +366,7 @@ C  Density magnitudes
            
             call closedpbe(dens,agrad,delgrad,rlap,
      1           expbe,vxpbe,ecpbe,vcpbe)
+           
 
   
 
@@ -537,6 +544,7 @@ C the GGA contribution to the correlation energy
             Q5 = 1.0D0+B*T2+B2*T4
 
              H = (BET/DELT)*DLOG(1.0D0+DELT*Q4*T2/Q5)
+c             write(*,*) DEXP(PON),T2
 
 C So the correlation energy for pbe is:
 
@@ -587,6 +595,7 @@ C===========DEBUG=================================
 c         write(*,*)'rho,agrad,delgrad,lap',rho,agrad,delgrad,lap
 c        write(*,*)'ex,vx',expbe,vxpbe
 c        write(*,*)'ec,vc',ecpbe,vcpbe
+c         write(*,*) expbe,Q4,H,eclda,ecpbe,vxpbe
 c=====================================================
 
       END

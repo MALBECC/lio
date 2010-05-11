@@ -74,7 +74,7 @@ template <bool forces, bool gga> void g2g_compute_functions(void)
             group.hessian_values.get(2 * (ii + 0) + 1, point) = 4 * th * v.x * (vxxy * vyzz) - 2 * tg * make_float3(v.y, v.z, 0);
             group.hessian_values.get(2 * (ii + 1) + 0, point) = 4 * th * v.y * (v * v) - tg * v.y * make_float3(2, 6, 2);
             group.hessian_values.get(2 * (ii + 1) + 1, point) = 4 * th * v.y * (vxxy * vyzz) - 2 * tg * make_float3(v.x, 0, v.z);
-            group.hessian_values.get(2 * (ii + 2) + 0, point) = 4 * th * v.z * (v * v) - tg * v.y * make_float3(2, 2, 6);
+            group.hessian_values.get(2 * (ii + 2) + 0, point) = 4 * th * v.z * (v * v) - tg * v.z * make_float3(2, 2, 6);
             group.hessian_values.get(2 * (ii + 2) + 1, point) = 4 * th * v.z * (vxxy * vyzz) - 2 * tg * make_float3(0, v.x, v.y);
           }
 

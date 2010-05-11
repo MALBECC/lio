@@ -38,6 +38,8 @@ extern "C" void g2g_init_(void)
   #else
   cout << "Kernels: cpu" << endl;
   #endif
+
+  cout.precision(10);
 }
 
 extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int& natom, double* r, double* Rm, const unsigned int* Iz, const unsigned int* Nr,

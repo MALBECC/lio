@@ -448,7 +448,7 @@ c
        Dxy=Dxy+ Fg(i,1)*Wy(i) +Fg(i,2)*Wx(i) +Fxy(i)*W(i) + F(i)*Wxy(i)
        Dxz=Dxz+ Fg(i,1)*Wz(i) +Fg(i,3)*Wx(i) +Fxz(i)*W(i) + F(i)*Wxz(i)
        Dyz=Dyz+ Fg(i,2)*Wz(i) +Fg(i,3)*Wy(i) +Fyz(i)*W(i) + F(i)*Wyz(i)
-c
+c       write(*,*) Dxx,Dzz,Wx(i),Wy(i),Wz(i),Wxx(i),Wyy(i),Wzz(i)
   60  continue
 c
       return

@@ -115,9 +115,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
           double3 Fgi = group.gradient_values.data[point * group_m + i];
           double3 Fhi1 = group.hessian_values.get(2 * (i + 0) + 0, point);
           double3 Fhi2 = group.hessian_values.get(2 * (i + 0) + 1, point);
-          if (isnan(Fhi1.x) || isnan(Fhi1.y) || isnan(Fhi1.z)) throw runtime_error("kaspuf");
-          if (isnan(Fhi2.x) || isnan(Fhi2.y) || isnan(Fhi2.z)) throw runtime_error("kaspuf");
-
+ 
           for (uint j = i; j < group_m; j++) {
             double rmm = rmm_input.data[i * group_m + j];
             double Fj = group.function_values.data[point * group_m + j];
@@ -178,6 +176,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
       else {
         //cout << "antes: " << partial_density << " " << dxyz << " " << dd1 << " " << dd2 << endl;
         cpu_potg(partial_density, dxyz, dd1, dd2, exc, corr, y2a);
+				if (isnan(exc) || isinf(exc) || isnan(corr) || isinf(corr) || isnan(y2a) || isinf(y2a)) throw std::runtime_error("NaN/Inf detected after potg()!");
         //cout << exc << " " << corr << " " << y2a << endl;
       }
 

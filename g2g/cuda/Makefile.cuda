@@ -102,9 +102,9 @@ ifeq ($(dbg),1)
 #	CXXFLAGS  	+= 
 #	CFLAGS  		+= 
 else 
-	COMMONFLAGS += -O3 -DNDEBUG
-	NVCCFLAGS   += --compiler-options -fno-strict-aliasing
-	CXXFLAGS  	+= -fno-strict-aliasing
+	COMMONFLAGS += -DNDEBUG
+	NVCCFLAGS   += -O3 --compiler-options -fno-strict-aliasing
+	CXXFLAGS  	+= -O4 -fno-strict-aliasing
 	CFLAGS  		+= -fno-strict-aliasing
 endif
 

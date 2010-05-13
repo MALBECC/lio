@@ -87,6 +87,9 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
     for (list<Point>::const_iterator point_it = group.points.begin(); point_it != group.points.end(); ++point_it, ++point)
     {
       t_density.start();
+			
+  		uint functions_base = point * group_m;
+			
       /** density **/
       float partial_density = 0;
       double3 dxyz(0,0,0);
@@ -96,59 +99,50 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
       if (fortran_vars.lda) {
         for (uint i = 0; i < group_m; i++) {
           float w = 0.0f;
-          float Fi = group.function_values.data[point * group_m + i];
+          float Fi = group.function_values.data[functions_base + i];
           for (uint j = i; j < group_m; j++) {
-            float Fj = group.function_values.data[point * group_m + j];
+            float Fj = group.function_values.data[functions_base + j];
             w += rmm_input.data[i * group_m + j] * Fj;
           }
           partial_density += Fi * w;
         }
       }
       else {
+				uint hess_base = point * group_m * 2;
+				
         for (uint i = 0; i < group_m; i++) {
           float w = 0.0f;
           double3 w3(0,0,0);
           double3 ww1(0,0,0);
           double3 ww2(0,0,0);
 
-          double Fi = group.function_values.data[point * group_m + i];
-          double3 Fgi = group.gradient_values.data[point * group_m + i];
-          double3 Fhi1 = group.hessian_values.get(2 * (i + 0) + 0, point);
-          double3 Fhi2 = group.hessian_values.get(2 * (i + 0) + 1, point);
+          double Fi = group.function_values.data[functions_base + i];
+          double3 Fgi = group.gradient_values.data[functions_base + i];
+          double3 Fhi1 = group.hessian_values.data[hess_base + 2 * (i + 0) + 0];
+          double3 Fhi2 = group.hessian_values.data[hess_base + 2 * (i + 0) + 1];
  
           for (uint j = i; j < group_m; j++) {
             double rmm = rmm_input.data[i * group_m + j];
-            double Fj = group.function_values.data[point * group_m + j];
+            double Fj = group.function_values.data[functions_base + j];
             w += Fj * rmm;
 
-            double3 Fgj = group.gradient_values.data[point * group_m + j];
+            double3 Fgj = group.gradient_values.data[functions_base + j];
             w3 += Fgj * rmm;
 
-            double3 Fhj1 = group.hessian_values.get(2 * (j + 0) + 0, point);
-            double3 Fhj2 = group.hessian_values.get(2 * (j + 0) + 1, point);
+            double3 Fhj1 = group.hessian_values.data[hess_base + 2 * (j + 0) + 0];
+            double3 Fhj2 = group.hessian_values.data[hess_base + 2 * (j + 0) + 1];
             ww1 += Fhj1 * rmm;
             ww2 += Fhj2 * rmm;
           }
           partial_density += Fi * w;
-          //cout << w << endl;
-          if (isnan(Fgi.x) || isnan(Fgi.y) || isnan(Fgi.z)) throw runtime_error("kaspuf");
-          if (isnan(w3.x) || isnan(w3.y) || isnan(w3.z)) throw runtime_error("kaspuf");
-          if (isnan(w) || isnan(Fi)) throw runtime_error("kaspuf");
 
           dxyz += Fgi * w + w3 * Fi;
           dd1 += Fgi * w3 * 2 + Fhi1 * w + ww1 * Fi;
           dd2.x += Fgi.x * w3.y + Fgi.y * w3.x + Fhi2.x * w + ww2.x * Fi;
           dd2.y += Fgi.x * w3.z + Fgi.z * w3.x + Fhi2.y * w + ww2.y * Fi;
           dd2.z += Fgi.y * w3.z + Fgi.z * w3.y + Fhi2.z * w + ww2.z * Fi;
-          //cout << dd1.x << " " << dd1.z << " " << w3 << " " << ww1 << endl;
-
-          if (isnan(dd1.x) || isnan(dd1.y) || isnan(dd1.z)) throw runtime_error("kaspuf");
-          if (isnan(dd2.x) || isnan(dd2.y) || isnan(dd2.z)) throw runtime_error("kaspuf");
-          if (isnan(dxyz.x) || isnan(dxyz.y) || isnan(dxyz.z)) throw runtime_error("kaspuf");
         }
       }
-
-      //cout << partial_density << endl;//" " << exc << " " << corr << " " << y2a << endl;
 
       /** density derivatives **/
       if (compute_forces) {
@@ -160,10 +154,10 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
           for (uint k = 0; k < inc_i; k++, ii++) {
             float w = 0.0f;
             for (uint j = 0; j < group_m; j++) {
-              float Fj = group.function_values.data[point * group_m + j];
+              float Fj = group.function_values.data[functions_base + j];
               w += rmm_input.data[ii * group_m + j] * Fj * (ii == j ? 2 : 1);
             }
-            this_dd -= group.gradient_values.data[point * group_m + ii] * w;
+            this_dd -= group.gradient_values.data[functions_base + ii] * w;
           }
           dd.get(nuc) += this_dd;
         }
@@ -199,9 +193,9 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
       if (compute_rmm) {
         float factor = point_it->weight * y2a;
         for (uint i = 0; i < group_m; i++) {
-          float Fi = group.function_values.data[point * group_m + i];
+          float Fi = group.function_values.data[functions_base + i];
           for (uint j = i; j < group_m; j++) {
-            float Fj = group.function_values.data[point * group_m + j];
+            float Fj = group.function_values.data[functions_base + j];
             rmm_output.data[j * group_m + i] += Fi * Fj * factor;
           }
         }

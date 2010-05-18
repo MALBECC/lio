@@ -70,6 +70,8 @@ clean:
 
 
 # Different flags for some .o
+%/dip2.o: dip2.f
+	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
 %/dipG.o: dipG.f
 	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
 %/dip.o: garcha_src/dip.f

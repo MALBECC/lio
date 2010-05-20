@@ -241,6 +241,7 @@ void cpu_potg(float dens, const double3& grad, const double3& hess1, const doubl
 
   /** Correlation **/
   if (fortran_vars.iexch >= 4 && fortran_vars.iexch <= 6) { // Perdew : Phys. Rev B 33 8822 (1986)
+    // TODO: hay algun problema con 4 y 5, probablemente este aca
     double dens2 = (dens * dens);
     double rs = POT_GL / y;
     double x1 = sqrt(rs);

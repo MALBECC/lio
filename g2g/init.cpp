@@ -2,6 +2,8 @@
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
+#include <fenv.h>
+#include <signal.h>
 #include "common.h"
 #include "init.h"
 #include "timer.h"
@@ -65,6 +67,12 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
   #if !CPU_KERNELS
 	cudaMemcpyToSymbol("gpu_normalization_factor", &fortran_vars.normalization_factor, sizeof(float), 0, cudaMemcpyHostToDevice);
   #endif
+
+  #ifdef _DEBUG
+  // trap floating point exceptions on debug
+  signal(SIGFPE, SIG_DFL);
+  feenableexcept(FE_INVALID);
+  #endif
 	
 	fortran_vars.s_funcs = nshell[0];
 	fortran_vars.p_funcs = nshell[1] / 3;
@@ -79,7 +87,6 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
   fortran_vars.lda = (Iexch <= 3);
   fortran_vars.gga = !fortran_vars.lda;
   assert(0 < Iexch && Iexch <= 9);
-  if (fortran_vars.do_forces && fortran_vars.gga) throw std::runtime_error("GGA + forces not supported!");
 	
 	fortran_vars.atom_positions_pointer = FortranMatrix<double>(r, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS);
 	fortran_vars.atom_types.resize(fortran_vars.atoms);

@@ -99,8 +99,8 @@ endif
 ifeq ($(dbg),1)
 	COMMONFLAGS += -g -D_DEBUG
 	NVCCFLAGS   += 
-#	CXXFLAGS  	+= 
-#	CFLAGS  		+= 
+	CXXFLAGS  	+= -fsignaling-nans -ftrapping-math 
+	CFLAGS  		+= 
 else 
 	COMMONFLAGS += -DNDEBUG
 	NVCCFLAGS   += -O3 --compiler-options -fno-strict-aliasing

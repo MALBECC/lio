@@ -73,7 +73,6 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
             uint big_j = group.functions[j] + l;
             if (big_i > big_j) continue;
             uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-            if (isnan(fortran_vars.rmm_input_ndens1.data[big_index])) { cout << big_i << " " << big_j << endl; throw runtime_error("bleh"); }
             rmm_input.get(ii, jj) = fortran_vars.rmm_input_ndens1.data[big_index];
             rmm_input.get(jj, ii) = rmm_input.get(ii, jj);
           }
@@ -170,7 +169,6 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
       else {
         //cout << "antes: " << partial_density << " " << dxyz << " " << dd1 << " " << dd2 << endl;
         cpu_potg(partial_density, dxyz, dd1, dd2, exc, corr, y2a);
-				if (isnan(exc) || isinf(exc) || isnan(corr) || isinf(corr) || isnan(y2a) || isinf(y2a)) throw std::runtime_error("NaN/Inf detected after potg()!");
         //cout << exc << " " << corr << " " << y2a << endl;
       }
 

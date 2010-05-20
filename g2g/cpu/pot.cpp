@@ -140,7 +140,7 @@ static void gcorc(double rtrs, double& gg, double& grrs);
  9: PBE
 */
 
-void cpu_potg(float dens, const double3& grad, const double3& hess1, const double3& hess2, float& ex, float& ec, float& y2a)
+void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3& hess2, float& ex, float& ec, float& y2a)
 {
   // hess1: xx, yy, zz
   // hess2: xy, xz, yz

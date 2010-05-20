@@ -48,7 +48,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 
   HostMatrixFloat rmm_output;
 
-  Timer t_rmm, t_density, t_resto;
+  Timer t_rmm, t_density, t_resto, t_pot;
 
   /********** iterate all groups ***********/
 	for (list<PointGroup>::const_iterator group_it = final_partition.begin(); group_it != final_partition.end(); ++group_it)
@@ -91,9 +91,9 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 			
       /** density **/
       float partial_density = 0;
-      double3 dxyz(0,0,0);
-      double3 dd1(0,0,0);
-      double3 dd2(0,0,0);
+      float3 dxyz = make_float3(0,0,0);
+      float3 dd1 = make_float3(0,0,0);
+      float3 dd2 = make_float3(0,0,0);
 
       if (fortran_vars.lda) {
         for (uint i = 0; i < group_m; i++) {
@@ -111,25 +111,25 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 				
         for (uint i = 0; i < group_m; i++) {
           float w = 0.0f;
-          double3 w3(0,0,0);
-          double3 ww1(0,0,0);
-          double3 ww2(0,0,0);
+          float3 w3 = make_float3(0,0,0);
+          float3 ww1 = make_float3(0,0,0);
+          float3 ww2 = make_float3(0,0,0);
 
-          double Fi = group.function_values.data[functions_base + i];
-          double3 Fgi = group.gradient_values.data[functions_base + i];
-          double3 Fhi1 = group.hessian_values.data[hess_base + 2 * (i + 0) + 0];
-          double3 Fhi2 = group.hessian_values.data[hess_base + 2 * (i + 0) + 1];
+          float Fi = group.function_values.data[functions_base + i];
+          float3 Fgi = group.gradient_values.data[functions_base + i];
+          float3 Fhi1 = group.hessian_values.data[hess_base + 2 * (i + 0) + 0];
+          float3 Fhi2 = group.hessian_values.data[hess_base + 2 * (i + 0) + 1];
  
           for (uint j = i; j < group_m; j++) {
-            double rmm = rmm_input.data[i * group_m + j];
-            double Fj = group.function_values.data[functions_base + j];
+            float rmm = rmm_input.data[i * group_m + j];
+            float Fj = group.function_values.data[functions_base + j];
             w += Fj * rmm;
 
-            double3 Fgj = group.gradient_values.data[functions_base + j];
+            float3 Fgj = group.gradient_values.data[functions_base + j];
             w3 += Fgj * rmm;
 
-            double3 Fhj1 = group.hessian_values.data[hess_base + 2 * (j + 0) + 0];
-            double3 Fhj2 = group.hessian_values.data[hess_base + 2 * (j + 0) + 1];
+            float3 Fhj1 = group.hessian_values.data[hess_base + 2 * (j + 0) + 0];
+            float3 Fhj2 = group.hessian_values.data[hess_base + 2 * (j + 0) + 1];
             ww1 += Fhj1 * rmm;
             ww2 += Fhj2 * rmm;
           }
@@ -162,6 +162,9 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
         }
       }
 
+      t_density.pause();
+      t_pot.start();
+
       /** energy / potential **/
       float exc = 0, corr = 0, y2a = 0;
       if (fortran_vars.lda)
@@ -171,12 +174,13 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
         cpu_potg(partial_density, dxyz, dd1, dd2, exc, corr, y2a);
         //cout << exc << " " << corr << " " << y2a << endl;
       }
+      
+      t_pot.pause();
+      t_resto.start();
 
       if (compute_energy)
         total_energy += (partial_density * point_it->weight) * (exc + corr);
-
-      t_density.pause();
-      t_resto.start();
+      
 
       if (compute_forces) {
         float factor = point_it->weight * y2a;
@@ -241,6 +245,6 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 
   timer_total.stop();
   cout << "iteration: " << timer_total << endl;
-  cout << "rmm: " << t_rmm << " density: " << t_density << " resto: " << t_resto << endl;
+  cout << "rmm: " << t_rmm << " density: " << t_density << " pot: " << t_pot << " resto: " << t_resto << endl;
 }
 #endif

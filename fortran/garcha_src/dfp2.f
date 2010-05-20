@@ -262,7 +262,7 @@ c
 c
       call int3G(NORM,natom,Iz,r,Nuc,M,ncont,nshell,c,a,
      >     Nucd,Md,ncontd,nshelld,cd,ad,RMM,Exc,f,
-     > nopt,OPEN,NMX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write,.false.)
+     > nopt,OPEN,NMX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write,.true.)
 c
       call intSG(NORM,natom,r,Nuc,M,Md,ncont,nshell,c,a,RMM,f)
 c reaction field case ------

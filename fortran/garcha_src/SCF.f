@@ -729,16 +729,12 @@ c--------------------------------------------------------------
        call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,NCO,Exc,nopt)
 #else
-			 if (igrid.ne.igrid2) then
        call g2g_new_grid(igrid)
-			 endif
        call g2g_solve_groups(1, Exc, 0)
 #endif
 #else
 #ifdef ULTIMA_G2G
-			 if (igrid.ne.igrid2) then
        call g2g_new_grid(igrid)
-			 endif
        call g2g_solve_groups(1, Exc, 0)
 #else      
       call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,

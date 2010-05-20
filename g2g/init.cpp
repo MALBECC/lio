@@ -128,7 +128,6 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 }
 
 void compute_new_grid(const unsigned int grid_type) {
-	cout << "loading new grid " << grid_type << endl;
 	switch(grid_type) {
 		case 0:
 			fortran_vars.grid_type = SMALL_GRID; fortran_vars.grid_size = SMALL_GRID_SIZE;
@@ -146,7 +145,7 @@ void compute_new_grid(const unsigned int grid_type) {
 			fortran_vars.shells = fortran_vars.shells2;
 		break;
 	}	
-	
+
 	regenerate_partition();
 
   /** compute functions **/
@@ -168,13 +167,15 @@ void compute_new_grid(const unsigned int grid_type) {
 }
 
 extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
-	cout  << "<======= GPU Reload Atom Positions ========>" << endl;
+	cout  << "<======= GPU Reload Atom Positions (" << grid_type << ")========>" << endl;
+
 	HostMatrixFloat3 atom_positions(fortran_vars.atoms);	// gpu version (float3)
 	fortran_vars.atom_positions.resize(fortran_vars.atoms);	// cpu version (double3)
 	for (uint i = 0; i < fortran_vars.atoms; i++) {
 		double3 pos(fortran_vars.atom_positions_pointer.get(i, 0), fortran_vars.atom_positions_pointer.get(i, 1), fortran_vars.atom_positions_pointer.get(i, 2));
 		fortran_vars.atom_positions.get(i) = pos;
 		atom_positions.get(i) = make_float3(pos.x, pos.y, pos.z);
+    cout << atom_positions.get(i) << endl;
 	}
 	atom_positions.to_constant("gpu_atom_positions");
 

@@ -49,7 +49,7 @@ list<PointGroup> final_partition;
 /* methods */
 void regenerate_partition(void)
 {
-	cout << "<============ G2G Partition ============>" << endl;
+	cout << "<============ G2G Partition (" << fortran_vars.grid_type << ")============>" << endl;
 
 	/* determina el exponente minimo para cada tipo de atomo */
 	cout << "determining minimum exponents" << endl;	

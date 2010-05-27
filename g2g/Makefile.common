@@ -1,5 +1,9 @@
 # -*- mode: make -*-
-CXXFLAGS:=$(CXXFLAGS) $(EXTRA_FLAGS) -Wall -Wno-long-long -ansi -Wno-unused
+ifeq ($(icc),1)
+  CXXFLAGS:=$(CXXFLAGS) $(EXTRA_FLAGS)
+else
+  CXXFLAGS:=$(CXXFLAGS) $(EXTRA_FLAGS) -Wall -Wno-long-long -ansi -Wno-unused
+endif
 
 %.o:%.cpp %.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@

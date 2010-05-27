@@ -19,6 +19,9 @@ using namespace G2G;
  * Nota: tener presente que el get() puede llegar a ser muy costoso
  */
 
+extern "C" void potg_(const int& iexch, const double& dens, const double& dx, const double& dy, const double& dz, const double& dxx,
+           const double& dyy, const double& dzz, const double& dxy, const double& dyz, const double& dxz, double& ex, double& ec, double& v);
+
 
 #if CPU_KERNELS
 extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_energy_ptr, double* fort_forces_ptr)
@@ -91,9 +94,9 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 			
       /** density **/
       float partial_density = 0;
-      float3 dxyz = make_float3(0,0,0);
-      float3 dd1 = make_float3(0,0,0);
-      float3 dd2 = make_float3(0,0,0);
+      double3 dxyz(0,0,0);
+      double3 dd1(0,0,0);
+      double3 dd2(0,0,0);
 
       if (fortran_vars.lda) {
         for (uint i = 0; i < group_m; i++) {
@@ -110,26 +113,26 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 				uint hess_base = point * group_m * 2;
 				
         for (uint i = 0; i < group_m; i++) {
-          float w = 0.0f;
-          float3 w3 = make_float3(0,0,0);
-          float3 ww1 = make_float3(0,0,0);
-          float3 ww2 = make_float3(0,0,0);
+          double w = 0.0f;
+          double3 w3(0,0,0);
+          double3 ww1(0,0,0);
+          double3 ww2(0,0,0);
 
-          float Fi = group.function_values.data[functions_base + i];
-          float3 Fgi = group.gradient_values.data[functions_base + i];
-          float3 Fhi1 = group.hessian_values.data[hess_base + 2 * (i + 0) + 0];
-          float3 Fhi2 = group.hessian_values.data[hess_base + 2 * (i + 0) + 1];
+          double Fi = group.function_values.data[functions_base + i];
+          double3 Fgi = group.gradient_values.data[functions_base + i];
+          double3 Fhi1 = group.hessian_values.data[hess_base + 2 * (i + 0) + 0];
+          double3 Fhi2 = group.hessian_values.data[hess_base + 2 * (i + 0) + 1];
  
           for (uint j = i; j < group_m; j++) {
-            float rmm = rmm_input.data[i * group_m + j];
-            float Fj = group.function_values.data[functions_base + j];
+            double rmm = rmm_input.data[i * group_m + j];
+            double Fj = group.function_values.data[functions_base + j];
             w += Fj * rmm;
 
-            float3 Fgj = group.gradient_values.data[functions_base + j];
+            double3 Fgj = group.gradient_values.data[functions_base + j];
             w3 += Fgj * rmm;
 
-            float3 Fhj1 = group.hessian_values.data[hess_base + 2 * (j + 0) + 0];
-            float3 Fhj2 = group.hessian_values.data[hess_base + 2 * (j + 0) + 1];
+            double3 Fhj1 = group.hessian_values.data[hess_base + 2 * (j + 0) + 0];
+            double3 Fhj2 = group.hessian_values.data[hess_base + 2 * (j + 0) + 1];
             ww1 += Fhj1 * rmm;
             ww2 += Fhj2 * rmm;
           }
@@ -166,7 +169,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
       t_pot.start();
 
       /** energy / potential **/
-      float exc = 0, corr = 0, y2a = 0;
+      double exc = 0, corr = 0, y2a = 0;
       if (fortran_vars.lda)
         cpu_pot(partial_density, exc, corr, y2a);
       else {

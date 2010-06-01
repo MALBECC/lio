@@ -66,6 +66,11 @@ struct double3 {
     return *this;
   }
 
+  inline const double3& operator-=(const double3& other) {
+    x -= other.x; y -= other.y; z -= other.z;
+    return *this;
+  }
+
   friend std::ostream& operator<<(std::ostream& o, const double3& v);
 };
 

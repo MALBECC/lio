@@ -1,4 +1,4 @@
-#LyX 1.6.4 created this file. For more info see http://www.lyx.org/
+#LyX 1.6.5 created this file. For more info see http://www.lyx.org/
 \lyxformat 345
 \begin_document
 \begin_header
@@ -42,6 +42,7 @@
 \paperpagestyle default
 \tracking_changes false
 \output_changes false
+\author "" 
 \author "" 
 \end_header
 
@@ -2091,7 +2092,7 @@ left[n x^2, x y, n y^2, x z, y z, n z^2
 \backslash
 right] - tg 
 \backslash
-left[10n x^2, 6 x y, n y^2, xz, yz, n z^2
+left[10n x^2, 6 x y, 2 n y^2, 6 xz, 2 yz, 2 n z^2
 \backslash
 right] + 
 \backslash

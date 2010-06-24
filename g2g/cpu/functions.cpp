@@ -89,17 +89,18 @@ template <bool forces, bool gga> void g2g_compute_functions(void)
           group.function_values.get(ii + 5, point) = t * v.z * v.z * fortran_vars.normalization_factor;
 
           if (gga) {
+            // Probablemente haya un error en el .x de una linea impar
 						group.hessian_values.get(2 * (ii + 0) + 0, point) = (4 * th * (v.x * v.x) * (v * v)       - tg * (v.x * v.x)   * make_float3(10, 2, 2) + make_float3(2 * t, 0    , 0)) * fortran_vars.normalization_factor;
             group.hessian_values.get(2 * (ii + 0) + 1, point) = (4 * th * (v.x * v.x) * (vxxy * vyzz) - tg * (vxxy * vyzz) * make_float3(4,  4, 0)                               ) * fortran_vars.normalization_factor;
             group.hessian_values.get(2 * (ii + 1) + 0, point) = (4 * th * (v.x * v.y) * (v * v)       - tg * (v.x * v.y)   * make_float3(6,  6, 2)                               );
-            group.hessian_values.get(2 * (ii + 1) + 1, point) = (4 * th * (v.x * v.y) * (vxxy * vyzz) - tg * make_float3(2 * (v.x * v.x + v.y * v.y), 2 * v.y * v.z, 2 * v.y * v.z) + make_float3(t     , 0    , 0));
-            group.hessian_values.get(2 * (ii + 2) + 0, point) = (4 * th * (v.y * v.y) * (v * v)       - tg * (v.y * v.y)   * make_float3(1, 10, 2) + make_float3(0    , 2 * t, 0)) * fortran_vars.normalization_factor;
+            group.hessian_values.get(2 * (ii + 1) + 1, point) = (4 * th * (v.x * v.y) * (vxxy * vyzz) - tg * make_float3(2 * (v.x * v.x + v.y * v.y), 2 * v.y * v.z, 2 * v.x * v.z) + make_float3(t     , 0    , 0));
+            group.hessian_values.get(2 * (ii + 2) + 0, point) = (4 * th * (v.y * v.y) * (v * v)       - tg * (v.y * v.y)   * make_float3(2, 10, 2) + make_float3(0    , 2 * t, 0)) * fortran_vars.normalization_factor;
             group.hessian_values.get(2 * (ii + 2) + 1, point) = (4 * th * (v.y * v.y) * (vxxy * vyzz) - tg * (vxxy * vyzz) * make_float3(4,  0, 4)                                ) * fortran_vars.normalization_factor;
-						group.hessian_values.get(2 * (ii + 3) + 0, point) = (4 * th * (v.x * v.z) * (v * v)       - tg * (v.x * v.z)   * make_float3(1,  2, 6)                                );
+						group.hessian_values.get(2 * (ii + 3) + 0, point) = (4 * th * (v.x * v.z) * (v * v)       - tg * (v.x * v.z)   * make_float3(6,  2, 6)                                );
             group.hessian_values.get(2 * (ii + 3) + 1, point) = (4 * th * (v.x * v.z) * (vxxy * vyzz) - tg * make_float3(2 * v.y * v.z, 2 * (v.x * v.x + v.z * v.z), 2 * v.x * v.y) + make_float3(0,      t,     0));
-            group.hessian_values.get(2 * (ii + 4) + 0, point) = (4 * th * (v.y * v.z) * (v * v)       - tg * (v.y * v.z)   * make_float3(1,  6, 6)                                );
+            group.hessian_values.get(2 * (ii + 4) + 0, point) = (4 * th * (v.y * v.z) * (v * v)       - tg * (v.y * v.z)   * make_float3(2,  6, 6)                                );
             group.hessian_values.get(2 * (ii + 4) + 1, point) = (4 * th * (v.y * v.z) * (vxxy * vyzz) - tg * make_float3(2 * v.x * v.z, 2 * v.x * v.y, 2 * (v.y * v.y + v.z * v.z)) + make_float3(0,      0,     t));
-            group.hessian_values.get(2 * (ii + 5) + 0, point) = (4 * th * (v.z * v.z) * (v * v)       - tg * (v.z * v.z)   * make_float3(1,  2, 10) + make_float3(0,      0, 2 * t)) * fortran_vars.normalization_factor;
+            group.hessian_values.get(2 * (ii + 5) + 0, point) = (4 * th * (v.z * v.z) * (v * v)       - tg * (v.z * v.z)   * make_float3(2,  2, 10) + make_float3(0,      0, 2 * t)) * fortran_vars.normalization_factor;
             group.hessian_values.get(2 * (ii + 5) + 1, point) = (4 * th * (v.z * v.z) * (vxxy * vyzz) - tg * (vxxy * vyzz) * make_float3(0,  4, 4)                                 ) * fortran_vars.normalization_factor;
           }
           if (forces || gga) {

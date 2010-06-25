@@ -11,3 +11,4 @@ test/*/*.out
 test/*/gpu_options
 test/*/*.xyz
 *.swp
+ecuaciones.pdf

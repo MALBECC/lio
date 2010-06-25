@@ -15,10 +15,6 @@
 using namespace std;
 using namespace G2G;
 
-/**
- * Nota: tener presente que el get() puede llegar a ser muy costoso
- */
-
 extern "C" void potg_(const int& iexch, const double& dens, const double& dx, const double& dy, const double& dz, const double& dxx,
            const double& dyy, const double& dzz, const double& dxy, const double& dyz, const double& dxz, double& ex, double& ec, double& v);
 
@@ -76,8 +72,8 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
             uint big_j = group.functions[j] + l;
             if (big_i > big_j) continue;
             uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-            rmm_input.get(ii, jj) = fortran_vars.rmm_input_ndens1.data[big_index];
-            rmm_input.get(jj, ii) = rmm_input.get(ii, jj);
+            rmm_input(ii, jj) = fortran_vars.rmm_input_ndens1.data[big_index];
+            rmm_input(jj, ii) = rmm_input(ii, jj);
           }
         }
       }
@@ -90,49 +86,45 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
     {
       t_density.start();
 			
-  		uint functions_base = point * group_m;
-			
       /** density **/
       float partial_density = 0;
-      double3 dxyz(0,0,0);
-      double3 dd1(0,0,0);
-      double3 dd2(0,0,0);
+      float3 dxyz = make_float3(0,0,0);
+      float3 dd1 = make_float3(0,0,0);
+      float3 dd2 = make_float3(0,0,0);
 
       if (fortran_vars.lda) {
         for (uint i = 0; i < group_m; i++) {
           float w = 0.0f;
-          float Fi = group.function_values.data[functions_base + i];
+          float Fi = group.function_values(i, point);
           for (uint j = i; j < group_m; j++) {
-            float Fj = group.function_values.data[functions_base + j];
-            w += rmm_input.data[i * group_m + j] * Fj;
+            float Fj = group.function_values(j, point);
+            w += rmm_input(j, i) * Fj;
           }
           partial_density += Fi * w;
         }
       }
       else {
-				uint hess_base = point * group_m * 2;
-				
         for (uint i = 0; i < group_m; i++) {
           double w = 0.0f;
-          double3 w3(0,0,0);
-          double3 ww1(0,0,0);
-          double3 ww2(0,0,0);
+          float3 w3 = make_float3(0,0,0);
+          float3 ww1 = make_float3(0,0,0);
+          float3 ww2 = make_float3(0,0,0);
 
-          double Fi = group.function_values.data[functions_base + i];
-          double3 Fgi = group.gradient_values.data[functions_base + i];
-          double3 Fhi1 = group.hessian_values.data[hess_base + 2 * (i + 0) + 0];
-          double3 Fhi2 = group.hessian_values.data[hess_base + 2 * (i + 0) + 1];
+          float Fi = group.function_values(i, point);
+          float3 Fgi = group.gradient_values(i, point);
+          float3 Fhi1 = group.hessian_values(2 * (i + 0) + 0, point);
+          float3 Fhi2 = group.hessian_values(2 * (i + 0) + 1, point);
  
           for (uint j = i; j < group_m; j++) {
-            double rmm = rmm_input.data[i * group_m + j];
-            double Fj = group.function_values.data[functions_base + j];
+            float rmm = rmm_input(j,i);
+            float Fj = group.function_values(j, point);
             w += Fj * rmm;
 
-            double3 Fgj = group.gradient_values.data[functions_base + j];
+            float3 Fgj = group.gradient_values(j, point);
             w3 += Fgj * rmm;
 
-            double3 Fhj1 = group.hessian_values.data[hess_base + 2 * (j + 0) + 0];
-            double3 Fhj2 = group.hessian_values.data[hess_base + 2 * (j + 0) + 1];
+            float3 Fhj1 = group.hessian_values(2 * (j + 0) + 0, point);
+            float3 Fhj2 = group.hessian_values(2 * (j + 0) + 1, point);
             ww1 += Fhj1 * rmm;
             ww2 += Fhj2 * rmm;
           }
@@ -156,12 +148,12 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
           for (uint k = 0; k < inc_i; k++, ii++) {
             float w = 0.0f;
             for (uint j = 0; j < group_m; j++) {
-              float Fj = group.function_values.data[functions_base + j];
-              w += rmm_input.data[ii * group_m + j] * Fj * (ii == j ? 2 : 1);
+              float Fj = group.function_values(j, point);
+              w += rmm_input(j, ii) * Fj * (ii == j ? 2 : 1);
             }
-            this_dd -= group.gradient_values.data[functions_base + ii] * w;
+            this_dd -= group.gradient_values(ii, point) * w;
           }
-          dd.get(nuc) += this_dd;
+          dd(nuc) += this_dd;
         }
       }
 
@@ -169,13 +161,11 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
       t_pot.start();
 
       /** energy / potential **/
-      double exc = 0, corr = 0, y2a = 0;
+      float exc = 0, corr = 0, y2a = 0;
       if (fortran_vars.lda)
         cpu_pot(partial_density, exc, corr, y2a);
       else {
-        //cout << "antes: " << partial_density << " " << dxyz << " " << dd1 << " " << dd2 << endl;
         cpu_potg(partial_density, dxyz, dd1, dd2, exc, corr, y2a);
-        //cout << exc << " " << corr << " " << y2a << endl;
       }
       
       t_pot.pause();
@@ -188,7 +178,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
       if (compute_forces) {
         float factor = point_it->weight * y2a;
         for (set<uint>::const_iterator it = group.nucleii.begin(); it != group.nucleii.end(); ++it)
-          forces.get(*it) += dd.data[*it] * factor;
+          forces(*it) += dd(*it) * factor;
       }        
 
       t_resto.pause();
@@ -198,10 +188,10 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
       if (compute_rmm) {
         float factor = point_it->weight * y2a;
         for (uint i = 0; i < group_m; i++) {
-          float Fi = group.function_values.data[functions_base + i];
+          float Fi = group.function_values(i, point);
           for (uint j = i; j < group_m; j++) {
-            float Fj = group.function_values.data[functions_base + j];
-            rmm_output.data[j * group_m + i] += Fi * Fj * factor;
+            float Fj = group.function_values(j, point);
+            rmm_output(i, j) += Fi * Fj * factor;
           }
         }
       }
@@ -224,7 +214,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
               if (big_i > big_j) continue;
 
               uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-              fortran_vars.rmm_output.get(big_index) += rmm_output.get(ii, jj);
+              fortran_vars.rmm_output(big_index) += rmm_output(ii, jj);
             }
           }
         }
@@ -236,10 +226,10 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
   if (compute_forces) {
     FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS); // TODO: mover esto a init.cpp
     for (uint i = 0; i < fortran_vars.atoms; i++) {
-      float3 this_force = forces.get(i);
-      fort_forces.get(i,0) += this_force.x;
-      fort_forces.get(i,1) += this_force.y;
-      fort_forces.get(i,2) += this_force.z;
+      float3 this_force = forces(i);
+      fort_forces(i,0) += this_force.x;
+      fort_forces(i,1) += this_force.y;
+      fort_forces(i,2) += this_force.z;
     }
   }
 

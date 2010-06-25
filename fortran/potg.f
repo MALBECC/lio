@@ -55,6 +55,10 @@ c
       STOP
       ENDIF
 
+
+!      write(*,*) 'En potg',Iexch,dens,dx,dy,dz
+!      write(*,*) dxx,dyy,dzz,dxy,dyz,dxz
+
 c        if (dens.eq.0) then
       if (dens.lt.1D-13) then
          v=0.0D0

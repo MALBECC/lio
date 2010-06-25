@@ -135,6 +135,7 @@ c non local density functionals, gradients and 2nd derivatives needed
          dxi=DENS
          call potg(Iexch,dxi,dx,dy,dz,dxx,dyy,dzz,dxy,dyz,dxz,yiex,yiec,
      >             y2i)
+c         write(*,*) yiex,yiec,y2i
          call DENSG(Ddx,Ddy,Ddz,Xi,ds,NORM,Nuc,ncont,nshell,
      >              a,c,r,M,M18,NCO,RMM,natom)
         endif

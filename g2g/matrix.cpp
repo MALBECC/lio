@@ -182,7 +182,7 @@ template<class T> void HostMatrix<T>::transpose(HostMatrix<T>& out) {
   out.resize(this->height, this->width);
   for (uint i = 0; i < this->width; i++) {
     for (uint j = 0; j < this->height; j++) {
-      out.get(j, i) = this->get(i, j);
+      out(j, i) = (*this)(i, j);
     }
   }
 }
@@ -192,7 +192,7 @@ template<class T> void HostMatrix<T>::copy_transpose(const CudaMatrix<T>& cuda_m
   HostMatrix<T> cuda_matrix_copy(cuda_matrix);
   for (uint i = 0; i < cuda_matrix.width; i++) {
     for (uint j = 0; j < cuda_matrix.height; j++) {
-      this->get(j, i) = cuda_matrix_copy.get(i, j);
+      (*this)(j, i) = cuda_matrix_copy(i, j);
     }
   }
 }

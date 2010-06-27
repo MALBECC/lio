@@ -38,13 +38,14 @@ namespace G2G {
 		
 			HostMatrix<T>& operator=(const CudaMatrix<T>& c);
 			HostMatrix<T>& operator=(const HostMatrix<T>& c);
-			
-			inline const T& get(unsigned int i = 0, unsigned int j = 0) const {
+
+		  // TODO: mejorar esto
+			inline const T& operator()(unsigned int i = 0, unsigned int j = 0) const {
 				assert(i < this->width);
 				assert(j < this->height);
         return this->data[j * this->width + i];
 			}
-			inline T& get(unsigned int i = 0, unsigned int j = 0) {
+			inline T& operator()(unsigned int i = 0, unsigned int j = 0) {
 				assert(i < this->width);
 				assert(j < this->height);
 				return this->data[j * this->width + i];
@@ -96,12 +97,12 @@ namespace G2G {
 			FortranMatrix(void);					
 			FortranMatrix(T* ptr, unsigned int width, unsigned int height = 1, unsigned int fortran_width = 1);
 		
-			inline T& get(unsigned int x = 0, unsigned int y = 0) {
+			inline T& operator()(unsigned int x = 0, unsigned int y = 0) {
 				assert(x < this->width);
 				assert(y < this->height);
 				return this->data[y * fortran_width + x];
 			}
-			inline const T& get(unsigned int x = 0, unsigned int y = 0) const {
+			inline const T& operator()(unsigned int x = 0, unsigned int y = 0) const {
 				assert(x < this->width);
 				assert(y < this->height);
 				return this->data[y * fortran_width + x];

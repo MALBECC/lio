@@ -2602,7 +2602,7 @@ c
      >               M,M18,NCOa,NCOb,RMM,Ex)
        write(*,*) 'energia fortran (double)',Ex
 #endif
-       call timer_pause('exchfock')
+       call timer_stop('exchfock')
        endif
 c
 c

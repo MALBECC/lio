@@ -448,8 +448,9 @@ c
        Dxy=Dxy+ Fg(i,1)*Wy(i) +Fg(i,2)*Wx(i) +Fxy(i)*W(i) + F(i)*Wxy(i)
        Dxz=Dxz+ Fg(i,1)*Wz(i) +Fg(i,3)*Wx(i) +Fxz(i)*W(i) + F(i)*Wxz(i)
        Dyz=Dyz+ Fg(i,2)*Wz(i) +Fg(i,3)*Wy(i) +Fyz(i)*W(i) + F(i)*Wyz(i)
-c       write(*,*) Dxx,Dzz,Wx(i),Wy(i),Wz(i),Wxx(i),Wyy(i),Wzz(i)
   60  continue
+c      write(*,*) DENS,Dxx,Dyy,Dzz,Fg(1,1),Fg(1,2),Fg(1,3)
+c      ,Wx(i),Wy(i),Wz(i),Wxx(i),Wyy(i),Wzz(i)
 c
       return
 c

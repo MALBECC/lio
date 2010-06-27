@@ -4851,7 +4851,7 @@ c
      >  M,M18,NCOa,NCOb,RMM,Ex)
       write(*,*) 'energia final',Ex
 #endif
-      call timer_pause('exchfock')
+      call timer_stop('exchfock')
 c      Ndens=Ndens+1
       endif
 c

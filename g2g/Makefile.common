@@ -1,8 +1,8 @@
 # -*- mode: make -*-
-ifeq ($(icc),1)
-  CXXFLAGS:=$(CXXFLAGS) $(EXTRA_FLAGS)
-else
+ifeq ($(gcc),1)
   CXXFLAGS:=$(CXXFLAGS) $(EXTRA_FLAGS) -Wall -Wno-long-long -ansi -Wno-unused
+else
+  CXXFLAGS:=$(CXXFLAGS) $(EXTRA_FLAGS)
 endif
 
 %.o:%.cpp %.h

@@ -44,14 +44,14 @@ COMMONDIR  := $(CUDA_INSTALL_PATH)/sdk/common
 
 # Compilers
 NVCC       := nvcc 
-ifeq ($(icc),1) 
-  CXX        := icc
-  CC         := icc
-  LINK       := icc -fPIC
-else
+ifeq ($(gcc),1)
   XX         := g++
   CC         := gcc
   LINK       := g++ -fPIC
+else
+  CXX        := icc
+  CC         := icc
+  LINK       := icc -fPIC
 endif
 
 ARCHFLAGS	 := 
@@ -87,7 +87,7 @@ CWARN_FLAGS := $(CXXWARN_FLAGS) \
 	
 # Compiler-specific flags
 NVCCFLAGS   := $(ARCHFLAGS) -shared --compiler-options -fPIC --compiler-options -Wall
-ifneq ($(icc),1)
+ifeq ($(gcc),1)
   CXXFLAGS    := $(CXXWARN_FLAGS) 
   CFLAGS      := $(CWARN_FLAGS)
 endif
@@ -114,7 +114,7 @@ ifeq ($(dbg),1)
 else 
 	COMMONFLAGS += -DNDEBUG
 	NVCCFLAGS   += -O3 --compiler-options -fno-strict-aliasing
-	ifneq ($(icc),1)
+	ifeq ($(gcc),1)
           CXXFLAGS  	+= -O4 -fno-strict-aliasing
 	else
           CXXFLAGS  	+= -O3 -fno-strict-aliasing

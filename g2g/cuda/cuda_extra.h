@@ -16,14 +16,41 @@
 #include <stdexcept>
 #include <iostream>
 #include <string>
-#include "double3.h"
+
+#if CPU_KERNELS
+#include <cmath>
+#endif
 
 /** operators **/
 inline __device__ __host__ float2 operator -(const float2 a)
 { return make_float2(-a.x, -a.y); }
 
+inline __device__ __host__ double3 operator-(const double3& a, const double3& b)
+{ return make_double3(a.x - b.x, a.y - b.y, a.z - b.z); }
+
+inline __device__ __host__ double3 operator+(const double3& a, const double3& b)
+{ return make_double3(a.x + b.x, a.y + b.y, a.z + b.z); }
+
+inline __device__ __host__ double3 operator/(const double3& a, const uint& b)
+{ return make_double3(a.x / b, a.y / b, a.z / b); }
+
+inline __device__ __host__ uint3 ceil_uint3(const double3& a) {
+	return make_uint3(static_cast<uint>(ceil(a.x)),
+										static_cast<uint>(ceil(a.y)),
+										static_cast<uint>(ceil(a.z)));
+}
+
+inline __device__ __host__ uint3 floor_uint3(const double3& a) {
+	return make_uint3(static_cast<uint>(floor(a.x)),
+										static_cast<uint>(floor(a.y)),
+										static_cast<uint>(floor(a.z)));
+}
+
 inline __device__ __host__ float3 operator *(const float3& a, const float3& b)
 { return make_float3(a.x*b.x, a.y*b.y, a.z*b.z); }
+
+inline __device__ __host__ double3 operator *(const double3& a, double b)
+{ return make_double3(a.x*b, a.y*b, a.z*b); }
 
 inline __device__ __host__ float3 operator /(const float3& a, const float3& b)
 { return make_float3(a.x/b.x, a.y/b.y, a.z/b.z); }
@@ -39,7 +66,6 @@ inline __device__ __host__ float3 operator -(const float3 a, const float3 b)
 
 inline __device__ __host__ float3 operator -(const float3 a, const float b)
 { return make_float3(a.x-b, a.y-b, a.z-b); }
-
 
 inline __device__ __host__ float3 operator +(const uint3 a, const float3 b)
 { return make_float3(a.x+b.x, a.y+b.y, a.z+b.z); }
@@ -59,13 +85,15 @@ inline __device__ __host__ bool operator < (const uint3 i, const uint3 r)
 inline __device__ __host__ float3 operator*(const float3& a, float b)
 { return make_float3(a.x * b, a.y * b, a.z * b); }
 
+inline __device__ __host__ double3 operator*(const double3& a, const double3& b)
+{ return make_double3(a.x * b.x, a.y * b.y, a.z * b.z); }
+
 inline __device__ __host__ float3 operator*(float b, const float3& a)
 { return make_float3(a.x * b, a.y * b, a.z * b); }
 
 
 inline __device__ __host__ float4 operator*(const float4& a, float b)
 { return make_float4(a.x * b, a.y * b, a.z * b, a.w * b); }
-
 
 inline __device__ __host__ float1 operator*(const float1 &a, float b)
 { return make_float1(a.x * b); }
@@ -96,6 +124,28 @@ inline __device__ __host__ const float4& max(const float4 &a, const float4 &b)
 
 inline __device__ __host__ float length2(const float3& a) {
 	return (a.x * a.x + a.y * a.y + a.z * a.z);
+}
+
+inline __device__ __host__ double& elem(double3& a, uint i) {
+	switch(i) {
+		case 0: return a.x; break;
+		case 1: return a.y; break;
+		case 2: return a.z; break;
+		default: return a.x; break;
+	}
+}
+
+inline __device__ __host__ const double& elem(const double3& a, uint i) {
+	switch(i) {
+		case 0: return a.x; break;
+		case 1: return a.y; break;
+		case 2: return a.z; break;
+		default: return a.x; break;
+	}
+}
+
+inline __device__ __host__ double length(const double3& a) {
+	return sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
 }
 
 inline __device__ __host__ float distance2(const float3& a, const float3& b)
@@ -134,6 +184,9 @@ inline __device__ __host__ float3& operator-=(float3& a, const float3& b)
 inline __device__ __host__ float3& operator+=(float3& a, const float3& b)
 { a.x += b.x; a.y += b.y; a.z += b.z; return a; }
 
+inline __device__ __host__ double3& operator+=(double3& a, const double3& b)
+{ a.x += b.x; a.y += b.y; a.z += b.z; return a; }
+
 inline __device__ __host__ float3& operator+=(float3& a, const float& b)
 { a.x += b; a.y += b; a.z += b; return a; }
 
@@ -158,11 +211,24 @@ inline __device__ __host__ dim3 divUp(const dim3& a, const dim3& b)
 inline __device__ __host__ uint4 operator +(const dim3& a, const uint4& b)
 { return make_uint4(a.x + b.x, a.y + b.y, a.z + b.z, b.w); }
 
+inline __device__ __host__ double3 operator*(const uint3& a, double b) {
+	return make_double3(a.x * b, a.y * b, a.z * b);
+}
+
 inline __device__ __host__ float4 to_float4(const float3& f)
 { return make_float4(f.x, f.y, f.z, 0.0f); }
 
 inline __device__ __host__ float3 to_float3(const float4& f)
 { return make_float3(f.x, f.y, f.z); }
+
+inline __device__ __host__ double3 to_double3(const float3& f)
+{ return make_double3(f.x, f.y, f.z); }
+
+inline __device__ __host__ float3 to_float3(const double3& f)
+{ return make_float3(f.x, f.y, f.z); }
+
+inline __device__ __host__ float3 to_float3(const float3& f)
+{ return f; }
 
 #ifdef _DEBUG
 #define cudaAssertNoError(s)
@@ -198,6 +264,18 @@ template<typename T> void to_constant(const std::string& name, const T* ptr) {
   #if !CPU_KERNELS
   cudaMemcpyToSymbol(name.c_str(), ptr, sizeof(T), 0, cudaMemcpyHostToDevice);
   #endif
+}
+
+inline std::ostream& operator<<(std::ostream& o, const double3& a)
+{
+	o << "(" << a.x << "," << a.y << "," << a.z << ")";
+	return o;
+}
+
+inline std::ostream& operator<<(std::ostream& o, const float3& a)
+{
+	o << "(" << a.x << "," << a.y << "," << a.z << ")";
+	return o;
 }
 
 #endif /* __CUTOOLS_H__ */

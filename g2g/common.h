@@ -2,6 +2,7 @@
 #define __G2G_COMMON_H__
 
 #include <stdexcept>
+#include <sys/types.h>
 
 #ifdef _DEBUG
 #define _DBG(x) x

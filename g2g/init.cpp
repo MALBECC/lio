@@ -5,10 +5,10 @@
 #include <fenv.h>
 #include <signal.h>
 #include "common.h"
+#include "cuda/cuda_extra.h"
 #include "init.h"
 #include "timer.h"
 #include "partition.h"
-#include "cuda/cuda_extra.h"
 #include "matrix.h"
 using namespace std;
 using namespace G2G;
@@ -172,7 +172,7 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
 	HostMatrixFloat3 atom_positions(fortran_vars.atoms);	// gpu version (float3)
 	fortran_vars.atom_positions.resize(fortran_vars.atoms);	// cpu version (double3)
 	for (uint i = 0; i < fortran_vars.atoms; i++) {
-		double3 pos(fortran_vars.atom_positions_pointer.get(i, 0), fortran_vars.atom_positions_pointer.get(i, 1), fortran_vars.atom_positions_pointer.get(i, 2));
+		double3 pos = make_double3(fortran_vars.atom_positions_pointer.get(i, 0), fortran_vars.atom_positions_pointer.get(i, 1), fortran_vars.atom_positions_pointer.get(i, 2));
 		fortran_vars.atom_positions.get(i) = pos;
 		atom_positions.get(i) = make_float3(pos.x, pos.y, pos.z);
     cout << atom_positions.get(i) << endl;

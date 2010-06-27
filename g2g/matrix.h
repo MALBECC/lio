@@ -1,9 +1,9 @@
 #ifndef __G2G_MATRIX_H__
 #define __G2G_MATRIX_H__
 
-#include "cuda/double3.h"
-
 #define COALESCED_DIMENSION(d) (d + 16 - (d % 16))
+
+#include "cuda/cuda_extra.h"
 
 namespace G2G {
 	template<class T> class Matrix {

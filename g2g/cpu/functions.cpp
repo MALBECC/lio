@@ -4,6 +4,7 @@
 #include <cuda_runtime.h>
 #include <cmath>
 #include "../common.h"
+#include "../cuda/cuda_extra.h"
 #include "../init.h"
 #include "../matrix.h"
 #include "../partition.h"
@@ -29,7 +30,7 @@ template <bool forces, bool gga> void g2g_compute_functions(void)
       for (uint i = 0, ii = 0; i < group.functions.size(); i++) {
         // compute exponential
         uint nuc = fortran_vars.nucleii.get(group.functions[i]) - 1;
-        float3 v = point_position - fortran_vars.atom_positions.get(nuc).to_float3();
+        float3 v = point_position - to_float3(fortran_vars.atom_positions.get(nuc));
         float dist = length2(v);
 
         float t = 0, tg = 0, th = 0;

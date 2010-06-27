@@ -10,7 +10,6 @@
 #include "../matrix.h"
 #include "gpu_variables.h"
 #include "../timer.h"
-#include "double3.h"
 #include "../partition.h"
 
 /** KERNELS **/

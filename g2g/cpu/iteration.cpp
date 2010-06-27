@@ -94,9 +94,9 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 			
       /** density **/
       float partial_density = 0;
-      double3 dxyz(0,0,0);
-      double3 dd1(0,0,0);
-      double3 dd2(0,0,0);
+      double3 dxyz = make_double3(0,0,0);
+      double3 dd1 = make_double3(0,0,0);
+      double3 dd2 = make_double3(0,0,0);
 
       if (fortran_vars.lda) {
         for (uint i = 0; i < group_m; i++) {
@@ -114,25 +114,25 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 				
         for (uint i = 0; i < group_m; i++) {
           double w = 0.0f;
-          double3 w3(0,0,0);
-          double3 ww1(0,0,0);
-          double3 ww2(0,0,0);
+          double3 w3 = make_double3(0,0,0);
+          double3 ww1 = make_double3(0,0,0);
+          double3 ww2 = make_double3(0,0,0);
 
           double Fi = group.function_values.data[functions_base + i];
-          double3 Fgi = group.gradient_values.data[functions_base + i];
-          double3 Fhi1 = group.hessian_values.data[hess_base + 2 * (i + 0) + 0];
-          double3 Fhi2 = group.hessian_values.data[hess_base + 2 * (i + 0) + 1];
+          double3 Fgi = to_double3(group.gradient_values.data[functions_base + i]);
+          double3 Fhi1 = to_double3(group.hessian_values.data[hess_base + 2 * (i + 0) + 0]);
+          double3 Fhi2 = to_double3(group.hessian_values.data[hess_base + 2 * (i + 0) + 1]);
  
           for (uint j = i; j < group_m; j++) {
             double rmm = rmm_input.data[i * group_m + j];
             double Fj = group.function_values.data[functions_base + j];
             w += Fj * rmm;
 
-            double3 Fgj = group.gradient_values.data[functions_base + j];
+            double3 Fgj = to_double3(group.gradient_values.data[functions_base + j]);
             w3 += Fgj * rmm;
 
-            double3 Fhj1 = group.hessian_values.data[hess_base + 2 * (j + 0) + 0];
-            double3 Fhj2 = group.hessian_values.data[hess_base + 2 * (j + 0) + 1];
+            double3 Fhj1 = to_double3(group.hessian_values.data[hess_base + 2 * (j + 0) + 0]);
+            double3 Fhj2 = to_double3(group.hessian_values.data[hess_base + 2 * (j + 0) + 1]);
             ww1 += Fhj1 * rmm;
             ww2 += Fhj2 * rmm;
           }

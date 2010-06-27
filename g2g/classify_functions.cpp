@@ -5,7 +5,7 @@
 #include <cmath>
 #include "common.h"
 #include "init.h"
-#include "cuda/double3.h"
+#include "cuda/cuda_extra.h"
 #include "matrix.h"
 #include "partition.h"
 using namespace std;
@@ -27,15 +27,15 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
 		double3 dist_vec;
 
     for (uint j = 0; j < 3; j++) {
-      if (atom_pos[j] < cube_coord[j])
-        dist_vec[j] = cube_coord[j] - atom_pos[j];
-      else if (atom_pos[j] > (cube_coord[j] + little_cube_size))
-        dist_vec[j] = atom_pos[j] - (cube_coord[j] + little_cube_size);
+      if (elem(atom_pos,j) < elem(cube_coord,j))
+        elem(dist_vec,j) = elem(cube_coord,j) - elem(atom_pos,j);
+      else if (elem(atom_pos,j) > (elem(cube_coord,j) + little_cube_size))
+        elem(dist_vec,j) = elem(atom_pos,j) - (elem(cube_coord,j) + little_cube_size);
       else
-        dist_vec[j] = 0;
+        elem(dist_vec,j) = 0;
     }
 		
-		double len = dist_vec.length();
+		double len = length(dist_vec);
 		atom_cube_dists.get(i) = len * len;
 	}
 
@@ -93,7 +93,7 @@ void Sphere::assign_significative_functions(const std::vector<double>& min_exps)
     else {
       const double3& atom_pos = fortran_vars.atom_positions.get(i);
       double3 dist_vec = (atom_pos - own_atom_pos);
-			double dist_to_atom = dist_vec.length();
+			double dist_to_atom = length(dist_vec);
 			assert(radius <= dist_to_atom);
 			double dist = dist_to_atom - radius;
       atom_sphere_dists.get(i) = dist * dist;

@@ -5,7 +5,6 @@
 #include <cmath>
 #include "../common.h"
 #include "../init.h"
-#include "../cuda/double3.h"
 #include "../matrix.h"
 #include "../partition.h"
 using namespace std;
@@ -34,7 +33,7 @@ void g2g_compute_group_weights(PointGroup& group)
 				uint atom_k = *atom_k_it;
 				if (atom_k == atom_j) continue;
 				const double3& pos_atom_k(fortran_vars.atom_positions.get(atom_k));
-				double u = ((point_position - pos_atom_j).length() - (point_position - pos_atom_k).length()) / fortran_vars.atom_atom_dists.get(atom_j, atom_k);
+				double u = (length(point_position - pos_atom_j) - length(point_position - pos_atom_k)) / fortran_vars.atom_atom_dists.get(atom_j, atom_k);
 
 				double x;
 				x = rm_atom_j / fortran_vars.rm.get(atom_k);
@@ -69,7 +68,7 @@ void g2g_compute_group_weights(PointGroup& group)
 			for (set<uint>::iterator atom_k_it = group.nucleii.begin(); atom_k_it != group.nucleii.end(); ++atom_k_it) {
 				uint atom_k = *atom_k_it;
 				const double3& pos_atom_k(fortran_vars.atom_positions.get(atom_k));
-				double u = ((point_position - pos_atom_j).length() - (point_position - pos_atom_k).length()) / fortran_vars.atom_atom_dists.get(atom_j, atom_k);
+				double u = (length(point_position - pos_atom_j) - length(point_position - pos_atom_k)) / fortran_vars.atom_atom_dists.get(atom_j, atom_k);
 
 				double x;
 				x = rm_atom_j / fortran_vars.rm.get(atom_k);

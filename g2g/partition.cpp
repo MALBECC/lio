@@ -7,7 +7,6 @@
 #include <cmath>
 #include "common.h"
 #include "init.h"
-#include "cuda/double3.h"
 #include "matrix.h"
 #include "partition.h"
 #include "timer.h"
@@ -74,7 +73,8 @@ void regenerate_partition(void)
 	
 	/* permite encontrar el prisma conteniendo el sistema */
 	cout << "determining x0 and x1" << endl;
-	double3 x0, x1;	
+	double3 x0 = make_double3(0,0,0);
+	double3 x1 = make_double3(0,0,0);
 	for (uint atom = 0; atom < fortran_vars.atoms; atom++) {
 		double3 atom_position(fortran_vars.atom_positions.get(atom));
 
@@ -132,7 +132,7 @@ void regenerate_partition(void)
 		
 		for (uint j = 0; j < fortran_vars.atoms; j++) {
 			const double3& atom_j_position(fortran_vars.atom_positions.get(j));
-			double dist = (atom_i_position - atom_j_position).length();
+			double dist = length(atom_i_position - atom_j_position);
 			fortran_vars.atom_atom_dists.get(i, j) = dist;
       //_DBG(cout << "distancia atomo " << i << " -> " << j << " : " << dist << endl);
 			if (i != j) {
@@ -176,7 +176,7 @@ void regenerate_partition(void)
 			for (uint point = 0; point < (uint)fortran_vars.grid_size; point++) {
 				puntos_totales++;
 				
-				double3 rel_point_position(fortran_vars.e.get(point,0), fortran_vars.e.get(point,1), fortran_vars.e.get(point,2));
+				double3 rel_point_position = make_double3(fortran_vars.e.get(point,0), fortran_vars.e.get(point,1), fortran_vars.e.get(point,2));
 				double3 point_position = atom_position + rel_point_position * r1;
 
 				bool inside_prism = ((x0.x <= point_position.x && point_position.x <= x1.x) &&

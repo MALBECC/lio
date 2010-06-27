@@ -4,7 +4,6 @@
 #include <list>
 #include <set>
 #include <vector>
-#include "cuda/double3.h"
 
 /********************
  * Point information

@@ -11,7 +11,7 @@
 namespace G2G {
 	class cfloat4 : public F32vec4 {
 	  public:
-      cfloat4(void) : F32vec4(0.0f) { }
+      cfloat4(void) : F32vec4() { }
       cfloat4(float x) : F32vec4(x) { }
     	cfloat4(F32vec4 a) : F32vec4(a) {  }
       explicit cfloat4(float4 a) : F32vec4(a.w, a.z, a.y, a.x) { }

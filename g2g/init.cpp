@@ -90,7 +90,7 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	
 	fortran_vars.atom_positions_pointer = FortranMatrix<double>(r, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS);
 	fortran_vars.atom_types.resize(fortran_vars.atoms);
-	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.atom_types.get(i) = Iz[i] - 1; }	
+	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.atom_types(i) = Iz[i] - 1; }	
 	
 	fortran_vars.shells1.resize(fortran_vars.atoms);
 	fortran_vars.shells2.resize(fortran_vars.atoms);
@@ -99,14 +99,14 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
   rm_float.to_constant("gpu_rm");
 
 	/* ignore the 0th element on these */
-	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells1.get(i) = Nr[Iz[i]]; }
-	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells2.get(i) = Nr2[Iz[i]]; }		
-	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.rm.get(i) = Rm[Iz[i]]; }
+	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells1(i) = Nr[Iz[i]]; }
+	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells2(i) = Nr2[Iz[i]]; }		
+	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.rm(i) = Rm[Iz[i]]; }
 	
 	fortran_vars.nucleii = FortranMatrix<uint>(Nuc, fortran_vars.m, 1, 1);	
 	fortran_vars.contractions = FortranMatrix<uint>(ncont, fortran_vars.m, 1, 1);
   for (uint i = 0; i < fortran_vars.m; i++) {
-    if ((fortran_vars.contractions.get(i) - 1) > MAX_CONTRACTIONS) throw runtime_error("Maximum functions per contraction reached!");
+    if ((fortran_vars.contractions(i) - 1) > MAX_CONTRACTIONS) throw runtime_error("Maximum functions per contraction reached!");
   }
 	fortran_vars.a_values = FortranMatrix<double>(a, fortran_vars.m, MAX_CONTRACTIONS, FORTRAN_NG);
 	fortran_vars.c_values = FortranMatrix<double>(c, fortran_vars.m, MAX_CONTRACTIONS, FORTRAN_NG);
@@ -172,10 +172,10 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
 	HostMatrixFloat3 atom_positions(fortran_vars.atoms);	// gpu version (float3)
 	fortran_vars.atom_positions.resize(fortran_vars.atoms);	// cpu version (double3)
 	for (uint i = 0; i < fortran_vars.atoms; i++) {
-		double3 pos = make_double3(fortran_vars.atom_positions_pointer.get(i, 0), fortran_vars.atom_positions_pointer.get(i, 1), fortran_vars.atom_positions_pointer.get(i, 2));
-		fortran_vars.atom_positions.get(i) = pos;
-		atom_positions.get(i) = make_float3(pos.x, pos.y, pos.z);
-    cout << atom_positions.get(i) << endl;
+		double3 pos = make_double3(fortran_vars.atom_positions_pointer(i, 0), fortran_vars.atom_positions_pointer(i, 1), fortran_vars.atom_positions_pointer(i, 2));
+		fortran_vars.atom_positions(i) = pos;
+		atom_positions(i) = make_float3(pos.x, pos.y, pos.z);
+    cout << atom_positions(i) << endl;
 	}
 	atom_positions.to_constant("gpu_atom_positions");
 

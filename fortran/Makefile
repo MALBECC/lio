@@ -20,7 +20,7 @@ CFLAGS   = -mp1 -ip -O3 -c -cpp $(DEFINE) $(PROFILE)
 CFLAGS2  = -O3 -c -cpp $(DEFINE) $(PROFILE)
 CFLAGS3  = -O1 -c -cpp $(DEFINE) $(PROFILE)
 CPPFLAGS = -P -traditional-cpp
-LIBS=-L/usr/lib $(CUDA_LIBS) -L../g2g -lg2g -lstdc++ -L$(MKL_LIBRARY_PATH) $(PROFILE) -lmkl_lapack64 -lmkl_em64t -lguide -lpthread -lm
+LIBS=-L/usr/lib $(CUDA_LIBS) -L../g2g -lg2g -lstdc++ -L$(MKL_LIBRARY_PATH) $(PROFILE) -lmkl_solver_ilp64_sequential -lblas -lmkl_core -lmkl_sequential -lguide -lpthread -lm -llapack
 
 # directories
 CUDA_COMMONDIR := $(CUDA_INSTALL_PATH)/../sdk/common
@@ -77,6 +77,8 @@ clean:
 %/dip.o: garcha_src/dip.f
 	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
 %/int1G.o: garcha_src/int1G.f
+	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
+%/int3G.o: garcha_src/int3G.f
 	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
 %/intsolG.o: garcha_src/intsolG.f
 	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<

@@ -1,6 +1,7 @@
 #ifndef __G2G_MATRIX_H__
 #define __G2G_MATRIX_H__
 
+#include "cpu/cpu_vector_types.h"
 #define COALESCED_DIMENSION(d) (d + 16 - (d % 16))
 
 #include "cuda/cuda_extra.h"
@@ -120,7 +121,9 @@ namespace G2G {
 	typedef HostMatrix<float1> HostMatrixFloat1;
 	typedef HostMatrix<float2> HostMatrixFloat2;
 	typedef HostMatrix<float3> HostMatrixFloat3;
+  typedef HostMatrix<cfloat3> HostMatrixCFloat3;
 	typedef HostMatrix<float4> HostMatrixFloat4;
+  typedef HostMatrix<cfloat4> HostMatrixCFloat4;
 	typedef HostMatrix<uint> HostMatrixUInt;
 	typedef HostMatrix<uint1> HostMatrixUInt1;
   typedef HostMatrix<uint2> HostMatrixUInt2;

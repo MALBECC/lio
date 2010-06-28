@@ -88,9 +88,9 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 			
       /** density **/
       float partial_density = 0;
-      float3 dxyz = make_float3(0,0,0);
-      float3 dd1 = make_float3(0,0,0);
-      float3 dd2 = make_float3(0,0,0);
+      cfloat3 dxyz(0,0,0);
+      cfloat3 dd1(0,0,0);
+      cfloat3 dd2(0,0,0);
 
       if (fortran_vars.lda) {
         for (uint i = 0; i < group_m; i++) {
@@ -105,26 +105,26 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
       }
       else {
         for (uint i = 0; i < group_m; i++) {
-          double w = 0.0f;
-          float3 w3 = make_float3(0,0,0);
-          float3 ww1 = make_float3(0,0,0);
-          float3 ww2 = make_float3(0,0,0);
+          float w = 0.0f;
+          cfloat3 w3(0,0,0);
+          cfloat3 ww1(0,0,0);
+          cfloat3 ww2(0,0,0);
 
           float Fi = group.function_values(i, point);
-          float3 Fgi = group.gradient_values(i, point);
-          float3 Fhi1 = group.hessian_values(2 * (i + 0) + 0, point);
-          float3 Fhi2 = group.hessian_values(2 * (i + 0) + 1, point);
+          cfloat3 Fgi(group.gradient_values(i, point));
+          cfloat3 Fhi1(group.hessian_values(2 * (i + 0) + 0, point));
+          cfloat3 Fhi2(group.hessian_values(2 * (i + 0) + 1, point));
  
           for (uint j = i; j < group_m; j++) {
             float rmm = rmm_input(j,i);
             float Fj = group.function_values(j, point);
             w += Fj * rmm;
 
-            float3 Fgj = group.gradient_values(j, point);
+            cfloat3 Fgj(group.gradient_values(j, point));
             w3 += Fgj * rmm;
 
-            float3 Fhj1 = group.hessian_values(2 * (j + 0) + 0, point);
-            float3 Fhj2 = group.hessian_values(2 * (j + 0) + 1, point);
+            cfloat3 Fhj1(group.hessian_values(2 * (j + 0) + 0, point));
+            cfloat3 Fhj2(group.hessian_values(2 * (j + 0) + 1, point));
             ww1 += Fhj1 * rmm;
             ww2 += Fhj2 * rmm;
           }
@@ -132,9 +132,13 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 
           dxyz += Fgi * w + w3 * Fi;
           dd1 += Fgi * w3 * 2 + Fhi1 * w + ww1 * Fi;
-          dd2.x += Fgi.x * w3.y + Fgi.y * w3.x + Fhi2.x * w + ww2.x * Fi;
-          dd2.y += Fgi.x * w3.z + Fgi.z * w3.x + Fhi2.y * w + ww2.y * Fi;
-          dd2.z += Fgi.y * w3.z + Fgi.z * w3.y + Fhi2.z * w + ww2.z * Fi;
+
+          cfloat3 FgXXY(Fgi.x(), Fgi.x(), Fgi.y());
+          cfloat3 w3YZZ(w3.y(), w3.z(), w3.z());
+          cfloat3 FgiYZZ(Fgi.y(), Fgi.z(), Fgi.z());
+          cfloat3 w3XXY(w3.x(), w3.x(), w3.y());
+          
+          dd2 = FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi;
         }
       }
 

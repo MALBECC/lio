@@ -2,7 +2,7 @@
 ifeq ($(gcc),1)
   CXXFLAGS:=$(CXXFLAGS) $(EXTRA_FLAGS) -Wall -Wno-long-long -ansi -Wno-unused
 else
-  CXXFLAGS:=$(CXXFLAGS) $(EXTRA_FLAGS) -vec-report1
+  CXXFLAGS:=$(CXXFLAGS) $(EXTRA_FLAGS) -vec-report1 -g 
 endif
 
 %.o:%.cpp %.h

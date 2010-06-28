@@ -56,19 +56,19 @@ void regenerate_partition(void)
 	vector<double> min_exps(120, numeric_limits<double>::max());	// uno por elemento de la tabla periodica
 
 	for (uint i = 0; i < fortran_vars.m; i++) {
-		uint contractions = fortran_vars.contractions.get(i);
-		uint nuc = fortran_vars.nucleii.get(i) - 1;
-		uint nuc_type = fortran_vars.atom_types.get(nuc);
+		uint contractions = fortran_vars.contractions(i);
+		uint nuc = fortran_vars.nucleii(i) - 1;
+		uint nuc_type = fortran_vars.atom_types(nuc);
 		for (uint j = 0; j < contractions; j++) {
-			min_exps[nuc_type] = min(min_exps[nuc_type], fortran_vars.a_values.get(i, j));
+			min_exps[nuc_type] = min(min_exps[nuc_type], fortran_vars.a_values(i, j));
 		}
 	}
 
 	vector<double> min_exps_func(fortran_vars.m, numeric_limits<double>::max());	// uno por funcion
 	for (uint i = 0; i < fortran_vars.m; i++) {
-		uint contractions = fortran_vars.contractions.get(i);
+		uint contractions = fortran_vars.contractions(i);
 		for (uint j = 0; j < contractions; j++) {
-			min_exps_func[i] = min(min_exps_func[i], fortran_vars.a_values.get(i, j));
+			min_exps_func[i] = min(min_exps_func[i], fortran_vars.a_values(i, j));
 		}
 	}
 	
@@ -76,9 +76,9 @@ void regenerate_partition(void)
 	cout << "determining x0 and x1" << endl;
 	double3 x0, x1;	
 	for (uint atom = 0; atom < fortran_vars.atoms; atom++) {
-		double3 atom_position(fortran_vars.atom_positions.get(atom));
+		double3 atom_position(fortran_vars.atom_positions(atom));
 
-		uint atom_type = fortran_vars.atom_types.get(atom);
+		uint atom_type = fortran_vars.atom_types(atom);
 		double max_radius = sqrt(max_function_exponent / min_exps[atom_type]);
 		_DBG(cout << "tipo: " << atom_type << " " << min_exps[atom_type] << " radio: " << max_radius << endl);
 		if (atom == 0) { x0 = x1 = atom_position; }
@@ -108,14 +108,14 @@ void regenerate_partition(void)
   /* initialize spheres */
   vector<Sphere> sphere_array(fortran_vars.atoms);
   for (uint atom = 0; atom < fortran_vars.atoms; atom++) {
-    uint atom_shells = fortran_vars.shells.get(atom);
+    uint atom_shells = fortran_vars.shells(atom);
     uint included_shells = (uint)ceil(sphere_radius * atom_shells);
 		
 		double radius;
 		if (included_shells == 0) radius = 0;
 		else {
 			double x = cos((M_PI / (atom_shells + 1)) * (atom_shells - included_shells + 1));
-	    double rm = fortran_vars.rm.get(atom);
+	    double rm = fortran_vars.rm(atom);
 	  	radius = rm * (1.0 + x) / (1.0 - x);
 		}
 		
@@ -125,15 +125,15 @@ void regenerate_partition(void)
 
 	cout << "precomputing distances..." << endl;
 	for (uint i = 0; i < fortran_vars.atoms; i++) {
-		const double3& atom_i_position(fortran_vars.atom_positions.get(i));
+		const double3& atom_i_position(fortran_vars.atom_positions(i));
 		double nearest_neighbor_dist = numeric_limits<double>::max();
 		
 		double sphere_i_radius = sphere_array[i].radius;
 		
 		for (uint j = 0; j < fortran_vars.atoms; j++) {
-			const double3& atom_j_position(fortran_vars.atom_positions.get(j));
+			const double3& atom_j_position(fortran_vars.atom_positions(j));
 			double dist = (atom_i_position - atom_j_position).length();
-			fortran_vars.atom_atom_dists.get(i, j) = dist;
+			fortran_vars.atom_atom_dists(i, j) = dist;
       //_DBG(cout << "distancia atomo " << i << " -> " << j << " : " << dist << endl);
 			if (i != j) {
 				nearest_neighbor_dist = min(nearest_neighbor_dist, dist);
@@ -141,7 +141,7 @@ void regenerate_partition(void)
 				if ((sphere_i_radius + sphere_array[j].radius) >= dist) { throw runtime_error("Overlapping sphere radius!"); }
       }
 		}
-		fortran_vars.nearest_neighbor_dists.get(i) = nearest_neighbor_dist;
+		fortran_vars.nearest_neighbor_dists(i) = nearest_neighbor_dist;
 	}
 	
 	cout << "computing points and assigning to cubes/spheres..." << endl;
@@ -159,12 +159,12 @@ void regenerate_partition(void)
 	t_total.start();
 	/* computa las posiciones de los puntos (y los guarda) */
 	for (uint atom = 0; atom < fortran_vars.atoms; atom++) {		
-		uint atom_shells = fortran_vars.shells.get(atom);
+		uint atom_shells = fortran_vars.shells(atom);
 		
-		const double3& atom_position(fortran_vars.atom_positions.get(atom));
+		const double3& atom_position(fortran_vars.atom_positions(atom));
 
 		double t0 = M_PI / (atom_shells + 1);
-		double rm = fortran_vars.rm.get(atom);
+		double rm = fortran_vars.rm(atom);
 
 		for (uint shell = 0; shell < atom_shells; shell++) {			
 			double t1 = t0 * (shell + 1);
@@ -176,7 +176,7 @@ void regenerate_partition(void)
 			for (uint point = 0; point < (uint)fortran_vars.grid_size; point++) {
 				puntos_totales++;
 				
-				double3 rel_point_position(fortran_vars.e.get(point,0), fortran_vars.e.get(point,1), fortran_vars.e.get(point,2));
+				double3 rel_point_position(fortran_vars.e(point,0), fortran_vars.e(point,1), fortran_vars.e(point,2));
 				double3 point_position = atom_position + rel_point_position * r1;
 
 				bool inside_prism = ((x0.x <= point_position.x && point_position.x <= x1.x) &&
@@ -184,7 +184,7 @@ void regenerate_partition(void)
 														(x0.z <= point_position.z && point_position.z <= x1.z));
 
 				if (inside_prism) {
-					double point_weight = wrad * fortran_vars.wang.get(point); // integration weight
+					double point_weight = wrad * fortran_vars.wang(point); // integration weight
           Point point_object(atom, shell, point, point_position, point_weight);
 
           /* assign to sphere? */

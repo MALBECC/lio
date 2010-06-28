@@ -27,17 +27,17 @@ void g2g_compute_group_weights(PointGroup& group)
 		for (set<uint>::iterator atom_j_it = group.nucleii.begin(); atom_j_it != group.nucleii.end(); ++atom_j_it) {
 			double P_curr = 1.0;
 			uint atom_j = *atom_j_it;
-			const double3& pos_atom_j(fortran_vars.atom_positions.get(atom_j));
-			double rm_atom_j = fortran_vars.rm.get(atom_j);
+			const double3& pos_atom_j(fortran_vars.atom_positions(atom_j));
+			double rm_atom_j = fortran_vars.rm(atom_j);
 
 			for (set<uint>::iterator atom_k_it = group.nucleii.begin(); atom_k_it != group.nucleii.end(); ++atom_k_it) {
 				uint atom_k = *atom_k_it;
 				if (atom_k == atom_j) continue;
-				const double3& pos_atom_k(fortran_vars.atom_positions.get(atom_k));
-				double u = ((point_position - pos_atom_j).length() - (point_position - pos_atom_k).length()) / fortran_vars.atom_atom_dists.get(atom_j, atom_k);
+				const double3& pos_atom_k(fortran_vars.atom_positions(atom_k));
+				double u = ((point_position - pos_atom_j).length() - (point_position - pos_atom_k).length()) / fortran_vars.atom_atom_dists(atom_j, atom_k);
 
 				double x;
-				x = rm_atom_j / fortran_vars.rm.get(atom_k);
+				x = rm_atom_j / fortran_vars.rm(atom_k);
 				x = (x - 1.0) / (x + 1.0);
 				u += (x / (x * x - 1.0)) * (1.0 - u * u);
 
@@ -63,16 +63,16 @@ void g2g_compute_group_weights(PointGroup& group)
 		if (group.nucleii.find(atom) == group.nucleii.end()) {
 			P_atom = 1.0;
 			uint atom_j = atom;
-			const double3& pos_atom_j(fortran_vars.atom_positions.get(atom_j));
-			double rm_atom_j = fortran_vars.rm.get(atom_j);
+			const double3& pos_atom_j(fortran_vars.atom_positions(atom_j));
+			double rm_atom_j = fortran_vars.rm(atom_j);
 			
 			for (set<uint>::iterator atom_k_it = group.nucleii.begin(); atom_k_it != group.nucleii.end(); ++atom_k_it) {
 				uint atom_k = *atom_k_it;
-				const double3& pos_atom_k(fortran_vars.atom_positions.get(atom_k));
-				double u = ((point_position - pos_atom_j).length() - (point_position - pos_atom_k).length()) / fortran_vars.atom_atom_dists.get(atom_j, atom_k);
+				const double3& pos_atom_k(fortran_vars.atom_positions(atom_k));
+				double u = ((point_position - pos_atom_j).length() - (point_position - pos_atom_k).length()) / fortran_vars.atom_atom_dists(atom_j, atom_k);
 
 				double x;
-				x = rm_atom_j / fortran_vars.rm.get(atom_k);
+				x = rm_atom_j / fortran_vars.rm(atom_k);
 				x = (x - 1.0) / (x + 1.0);
 				u += (x / (x * x - 1.0)) * (1.0 - u * u);
 

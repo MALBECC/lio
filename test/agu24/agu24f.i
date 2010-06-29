@@ -1,7 +1,7 @@
 &INT0 
  TITLE = 'NO3', 
  NATOM = 72
- NOPT = 2,
+ NOPT=2,
  NORM = T, 
  ANG = T, 
  EX = T, 
@@ -146,12 +146,12 @@ endbasis
  SHFT = F, 
  SHI =  1., 
  IDAMP = 0, 
- GOLD =  5., 
+ GOLD =  5.,
  TOLD =  1.E-06,
  WRITE = F, 
  MEMO = T/
 &EXCH 
- IEXCH = 3,
+ IEXCH=9
  INTEG = T, 
  DENS = T, 
  IGRID = 2,

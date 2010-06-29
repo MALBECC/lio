@@ -33,6 +33,8 @@ else
 	LIBRARY=libg2g.so
 endif
 
+LIBS := $(shell pkg-config gsl --libs)
+
 all: $(LIBRARY)
 
 libg2g.a: $(CUDA_OBJ) $(OBJ)
@@ -40,7 +42,7 @@ libg2g.a: $(CUDA_OBJ) $(OBJ)
 	ranlib libg2g.a
 	
 libg2g.so: $(CUDA_OBJ) $(OBJ)
-	$(LINK) -shared $(LDFLAGS) $(EXTRA_FLAGS) -o libg2g.so $(OBJ) $(CUDA_OBJ) #potg.o
+	$(LINK) -shared $(LDFLAGS) $(EXTRA_FLAGS) -o libg2g.so $(OBJ) $(CUDA_OBJ) $(LIBS) #potg.o
 
 clean:
 	make -C cuda clean

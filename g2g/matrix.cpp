@@ -1,5 +1,8 @@
 #include <iostream>
 #include <stdexcept>
+#include <gsl/gsl_vector.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_blas.h>
 #include <cuda_runtime.h>
 #include <cstring>
 #include "common.h"
@@ -200,6 +203,19 @@ template<class T> void HostMatrix<T>::copy_transpose(const CudaMatrix<T>& cuda_m
 /*template<class T, class S> void HostMatrix<T>::to_constant<S>(const char* constant, const S& value) {
 	cudaMemcpyToSymbol(constant, &value, sizeof(S), 0, cudaMemcpyHostToDevice);	
 }*/
+
+template<class T>
+void HostMatrix<T>::blas_ssyr(UpperLowerTriangle triangle, float alpha, const HostMatrix<T>& x, const HostMatrix<T>& A, unsigned int x_row) {
+  CBLAS_UPLO_t blas_triangle = (triangle == UpperTriangle ? CblasUpper : CblasLower);
+
+  if (x_row >= x.height || x.width != A.width || A.width != A.height) throw runtime_error("Wrong dimensions for ssyr");
+
+  unsigned int n = x.width * (sizeof(T) / sizeof(float));
+
+  gsl_vector_float_const_view vector_view = gsl_vector_float_const_view_array((float*)(&x.data[x_row * x.width]), n);
+  gsl_matrix_float_view matrix_view = gsl_matrix_float_view_array((float*)A.data, n, n);
+  gsl_blas_ssyr(blas_triangle, alpha, &vector_view.vector, &matrix_view.matrix);
+}
 
 /******************************
  * CudaMatrix

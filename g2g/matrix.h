@@ -63,6 +63,10 @@ namespace G2G {
 
 			void deallocate(void);
 
+      /* BLAS methods */
+      enum UpperLowerTriangle { UpperTriangle, LowerTriangle };
+      static void blas_ssyr(UpperLowerTriangle triangle, float alpha, const HostMatrix<T>& x, const HostMatrix<T>& A, unsigned int x_row);
+
 			void to_constant(const char* constant);
 			//template<class S> static void to_constant(const char* constant, const S& value);
 		

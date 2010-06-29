@@ -1,7 +1,7 @@
 &INT0 
  TITLE = 'NO3', 
  NATOM = 90
- NOPT=2
+ NOPT=2,
  NORM = T, 
  ANG = T, 
  EX = T, 
@@ -134,7 +134,6 @@ gaussian
       4.7140760    1.000000
       0.4059979    1.000000
       1.0000000    1.000000
-&geo/
 gaussian
  1   6   3
  4 1 1

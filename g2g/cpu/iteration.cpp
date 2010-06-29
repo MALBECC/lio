@@ -138,7 +138,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
           cfloat3 FgiYZZ(Fgi.y(), Fgi.z(), Fgi.z());
           cfloat3 w3XXY(w3.x(), w3.x(), w3.y());
           
-          dd2 = FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi;
+          dd2 += FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi;
         }
       }
 

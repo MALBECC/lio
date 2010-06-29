@@ -42,7 +42,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 
   double total_energy = 0;
 
-  HostMatrixFloat3 dd, forces;
+  HostMatrixCFloat3 dd, forces;
   if (compute_forces) { dd.resize(fortran_vars.atoms, 1); forces.resize(fortran_vars.atoms, 1); forces.zero(); }
 
   HostMatrixFloat rmm_output;
@@ -148,7 +148,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
         for (uint i = 0, ii = 0; i < group.functions.size(); i++) {
           uint nuc = group.nuc_map[i];
           uint inc_i = group.small_function_type(i);
-          float3 this_dd = make_float3(0,0,0);
+          cfloat3 this_dd(0,0,0);
           for (uint k = 0; k < inc_i; k++, ii++) {
             float w = 0.0f;
             for (uint j = 0; j < group_m; j++) {
@@ -230,10 +230,10 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
   if (compute_forces) {
     FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS); // TODO: mover esto a init.cpp
     for (uint i = 0; i < fortran_vars.atoms; i++) {
-      float3 this_force = forces(i);
-      fort_forces(i,0) += this_force.x;
-      fort_forces(i,1) += this_force.y;
-      fort_forces(i,2) += this_force.z;
+      cfloat3 this_force(forces(i));
+      fort_forces(i,0) += this_force.x();
+      fort_forces(i,1) += this_force.y();
+      fort_forces(i,2) += this_force.z();
     }
   }
 

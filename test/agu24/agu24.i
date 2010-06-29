@@ -150,7 +150,7 @@ endbasis
  WRITE = F, 
  MEMO = T/
 &EXCH 
- IEXCH = 9,
+ IEXCH=9
  INTEG = T, 
  DENS = T, 
  IGRID = 2,

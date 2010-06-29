@@ -185,7 +185,10 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 
       /******** RMM *******/
       t_rmm.start();      
-      if (compute_rmm) HostMatrixFloat::blas_ssyr(HostMatrixFloat::LowerTriangle, factor, group.function_values, rmm_output, point);
+      if (compute_rmm) {
+        float factor = point_it->weight * y2a;
+        HostMatrixFloat::blas_ssyr(HostMatrixFloat::LowerTriangle, factor, group.function_values, rmm_output, point);
+      }
       t_rmm.pause();
     }
 

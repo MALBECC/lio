@@ -15,39 +15,18 @@
 using namespace std;
 using namespace G2G;
 
-extern "C" void potg_(const int& iexch, const double& dens, const double& dx, const double& dy, const double& dz, const double& dxx,
-           const double& dyy, const double& dzz, const double& dxy, const double& dyz, const double& dxz, double& ex, double& ec, double& v);
 
-
-#if CPU_KERNELS
-extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_energy_ptr, double* fort_forces_ptr)
+void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr)
 {
-  Timer timer_total;
-  timer_total.start();
-
-  Timer t_ciclos;
-
- 	cout << "<================ iteracion [";
-	switch(computation_type) {
-    case COMPUTE_RMM: cout << "rmm"; break;
-		case COMPUTE_ENERGY_ONLY: cout << "energia"; break;
-		case COMPUTE_ENERGY_FORCE: cout << "energia+fuerzas"; break;
-		case COMPUTE_FORCE_ONLY: cout << "fuerzas"; break;		
-	}
-	cout << "] ==========>" << endl;
-
-  bool compute_energy = (computation_type == COMPUTE_ENERGY_ONLY || computation_type == COMPUTE_ENERGY_FORCE);
-  bool compute_forces = (computation_type == COMPUTE_FORCE_ONLY || computation_type == COMPUTE_ENERGY_FORCE);
-  bool compute_rmm = (computation_type == COMPUTE_RMM);
-
   double total_energy = 0;
+
+  Timer t_total, t_ciclos, t_rmm, t_density, t_forces, t_resto, t_pot;
+  t_total.start();
 
   HostMatrixCFloat3 dd, forces;
   if (compute_forces) { dd.resize(fortran_vars.atoms, 1); forces.resize(fortran_vars.atoms, 1); forces.zero(); }
 
   HostMatrixFloat rmm_output;
-
-  Timer t_rmm, t_density, t_resto, t_pot;
 
   /********** iterate all groups ***********/
 	for (list<PointGroup>::const_iterator group_it = final_partition.begin(); group_it != final_partition.end(); ++group_it)
@@ -233,8 +212,8 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
   /***** send results to fortran ****/
   if (compute_energy) *fort_energy_ptr = total_energy;
 
-  timer_total.stop();
-  cout << "iteration: " << timer_total << endl;
+  t_total.stop();
+  cout << "iteration: " << t_total << endl;
   cout << "rmm: " << t_rmm << " density: " << t_density << " pot: " << t_pot << " resto: " << t_resto << endl;
 }
-#endif
+

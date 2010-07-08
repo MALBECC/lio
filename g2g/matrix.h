@@ -69,13 +69,14 @@ namespace G2G {
       static void blas_ssyr(UpperLowerTriangle triangle, float alpha, const HostMatrix<T>& x, const HostMatrix<T>& A, unsigned int x_row);
 
 			void to_constant(const char* constant);
-			//template<class S> static void to_constant(const char* constant, const S& value);
 		
 		private:
 			bool pinned;
 			void alloc_data(void);
 			void dealloc_data(void);
 	};
+
+  template<class T> void to_constant(const char* constant, const T& value);
 	
 	template <class T> class CudaMatrix : public Matrix<T> {
 		public:
@@ -125,12 +126,15 @@ namespace G2G {
 	typedef HostMatrix<float1> HostMatrixFloat1;
 	typedef HostMatrix<float2> HostMatrixFloat2;
 	typedef HostMatrix<float3> HostMatrixFloat3;
-  typedef HostMatrix<cfloat3> HostMatrixCFloat3;
-	typedef HostMatrix<float4> HostMatrixFloat4;
-  typedef HostMatrix<cfloat4> HostMatrixCFloat4;
+  typedef HostMatrix<float4> HostMatrixFloat4;
 	typedef HostMatrix<uint> HostMatrixUInt;
 	typedef HostMatrix<uint1> HostMatrixUInt1;
   typedef HostMatrix<uint2> HostMatrixUInt2;
+
+  #ifndef __CUDACC__
+  typedef HostMatrix<cfloat3> HostMatrixCFloat3;
+	typedef HostMatrix<cfloat4> HostMatrixCFloat4;
+  #endif
 	
 	typedef CudaMatrix<float> CudaMatrixFloat;
 	typedef CudaMatrix<float1> CudaMatrixFloat1;

@@ -1,3 +1,4 @@
+
 // -*- mode: c -*-
 
 /* TODO: coalescear contractions y demas */
@@ -28,7 +29,7 @@ __global__ void gpu_compute_functions(float4* point_positions, uint points, uint
 {
 	dim3 pos = index(blockDim, blockIdx, threadIdx);
 	uint point = pos.x;
-	
+
 	/**** Load Point Information ****/
   bool valid_thread = (point < points);
   float3 point_position;
@@ -100,9 +101,9 @@ __global__ void gpu_compute_functions(float4* point_positions, uint points, uint
 
     uint idx = COALESCED_DIMENSION(points) * base_idx + point;
 		function_values[idx] = t;
-		
+
 	}
-	
+
 	// p functions
 	for (uint i = 0; i < functions.y; i++, base_idx+=3) {
 		compute_function<do_forces>(functions.x + i, point_position, contractions, factor_ac, nuc, spd, t, tg, v);
@@ -123,11 +124,11 @@ __global__ void gpu_compute_functions(float4* point_positions, uint points, uint
 			gradient_values[idx.z] = to_float4(v * c.z - make_float3(0, 0, t));
 		}
 	}
-	
+
 	// d functions
 	for (uint i = 0; i < functions.z; i++, base_idx+=6) {
 		compute_function<do_forces>(functions.x + functions.y + i, point_position, contractions, factor_ac, nuc, spd, t, tg, v);
-		
+
     uint3 idx1, idx2;
     idx1.x = COALESCED_DIMENSION(points) * (base_idx + 0) + point;
     idx1.y = COALESCED_DIMENSION(points) * (base_idx + 1) + point;

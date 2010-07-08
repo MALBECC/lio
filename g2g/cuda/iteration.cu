@@ -1,5 +1,4 @@
 /* -*- mode: c -*- */
-#if !CPU_KERNELS
 #include <iostream>
 #include <fstream>
 #include <map>
@@ -8,44 +7,25 @@
 #include "../init.h"
 #include "cuda_extra.h"
 #include "../matrix.h"
-#include "gpu_variables.h"
 #include "../timer.h"
 #include "../partition.h"
 
 /** KERNELS **/
-#include "functions.h"
-#include "weight.h"
-#include "pot.h"
-#include "energy.h"
-#include "rmm.h"
-#include "energy_derivs.h"
-#include "force.h"
+#include "gpu_variables.h"
+#include "kernels/pot.h"
+#include "kernels/energy.h"
+#include "kernels/rmm.h"
+#include "kernels/weight.h"
+#include "kernels/functions.h"
 
 using namespace G2G;
 using namespace std;
 
-#define COMPUTE_RMM 					0
-#define COMPUTE_ENERGY_ONLY		1
-#define COMPUTE_ENERGY_FORCE	2
-#define COMPUTE_FORCE_ONLY		3
-
-/********************************
- * Solve Cubes
- ********************************/
-extern "C" void g2g_solve_groups_(uint& computation_type, double* fort_energy_ptr, double* fort_forces_ptr)
+void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr)
 {
-	cout << "<================ iteracion [";
-	switch(computation_type) {
-		case COMPUTE_ENERGY_ONLY: cout << "energia"; break;
-		case COMPUTE_RMM: cout << "rmm"; break;
-		case COMPUTE_FORCE_ONLY: cout << "fuerzas"; break;
-		case COMPUTE_ENERGY_FORCE: cout << "energia+fuerzas"; break;
-	}
-	cout << "] ==========>" << endl;
+  double total_energy = 0.0;
 
-  Timer t_density, t_rmm, t_forces;
-  Timer t_cpu;
-	Timer t_total;
+  Timer t_total, t_ciclos, t_rmm, t_density, t_forces, t_resto, t_pot;
 	t_total.sync();
 	t_total.start();
 
@@ -59,8 +39,6 @@ extern "C" void g2g_solve_groups_(uint& computation_type, double* fort_energy_pt
 	CudaMatrixUInt2 nuc_contractions_gpu;
 	FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS);
   
-	double total_energy = 0.0;
-		
 	for (list<PointGroup>::const_iterator it = final_partition.begin(); it != final_partition.end(); ++it) {
 		const PointGroup& group = *it;
 				
@@ -69,7 +47,7 @@ extern "C" void g2g_solve_groups_(uint& computation_type, double* fort_energy_pt
 
 		uint i = 0;		
 		for (list<Point>::const_iterator p = group.points.begin(); p != group.points.end(); ++p, ++i) {
-			point_weights_cpu.get(i) = p->weight;
+			point_weights_cpu(i) = p->weight;
 		}
 		point_weights_gpu = point_weights_cpu;
 		
@@ -84,23 +62,18 @@ extern "C" void g2g_solve_groups_(uint& computation_type, double* fort_energy_pt
       uint ii = 0;
 			for (uint i = 0; i < group.functions.size(); ++i) {
         uint func = group.functions[i];
+        uint this_nuc = fortran_vars.nucleii(func) - 1;
+        uint this_cont = fortran_vars.contractions(func);
 
-        uint inc;
-        if (i < group.s_functions) inc = 1;
-        else if (i < group.s_functions + group.p_functions) inc = 3;
-        else inc = 6;
-
-        uint this_nuc = fortran_vars.nucleii.get(func) - 1;
-        uint this_cont = fortran_vars.contractions.get(func);
-
+        uint inc = group.small_function_type(i);
         for (uint j = 0; j < inc; j++) {
-          nuc_cpu.get(ii) = this_nuc;
+          nuc_cpu(ii) = this_nuc;
 
-          nuc_contractions_cpu.get(ii) = make_uint2(this_nuc, this_cont);
+          nuc_contractions_cpu(ii) = make_uint2(this_nuc, this_cont);
   				for (unsigned int k = 0; k < this_cont; k++)
-            factor_ac_cpu.get(ii, k) = make_float2(fortran_vars.a_values.get(func, k), fortran_vars.c_values.get(func, k));
+            factor_ac_cpu(ii, k) = make_float2(fortran_vars.a_values(func, k), fortran_vars.c_values(func, k));
   				for (unsigned int k = this_cont; k < MAX_CONTRACTIONS; k++)
-            factor_ac_cpu.get(ii, k) = make_float2(0.0f,0.0f);
+            factor_ac_cpu(ii, k) = make_float2(0.0f,0.0f);
 
           ii++;
         }
@@ -119,22 +92,10 @@ extern "C" void g2g_solve_groups_(uint& computation_type, double* fort_energy_pt
       uint jj = 0;
       for (uint j = 0; j < group.functions.size(); j++) {
         uint func = group.functions[j];
-        if (j < group.s_functions) {
-          rdm_cpu.get(jj, i) = fortran_vars.rmm_input.get(func, i);
-          rdmt_cpu.get(i, jj) = rdm_cpu.get(jj, i);
-          jj++;
-        }
-        else if (j < (group.s_functions + group.p_functions)) {
-          for (uint k = 0; k < 3; k++, jj++) {
-            rdm_cpu.get(jj, i) = fortran_vars.rmm_input.get(func + k, i);
-            rdmt_cpu.get(i, jj) = rdm_cpu.get(jj, i);
-          }
-        }
-        else {
-          for (uint k = 0; k < 6; k++, jj++) {
-            rdm_cpu.get(jj, i) = fortran_vars.rmm_input.get(func + k, i);
-            rdmt_cpu.get(i, jj) = rdm_cpu.get(jj, i);
-          }
+        uint inc = group.small_function_type(j);
+        for (uint k = 0; k < inc; k++, jj++) {
+          rdm_cpu(jj, i) = fortran_vars.rmm_input(func + k, i);
+          rdmt_cpu(i, jj) = rdm_cpu(jj, i);
         }
       }
     }
@@ -147,17 +108,7 @@ extern "C" void g2g_solve_groups_(uint& computation_type, double* fort_energy_pt
 		threadGrid = divUp(threads, threadBlock);
 
 		/* compute energy */
-		if (computation_type == COMPUTE_ENERGY_ONLY) {
-      #if CPU_KERNELS
-      HostMatrixFloat energy_cpu(group.number_of_points);
-      HostMatrixFloat function_values_cpu(group.function_values.height, group.function_values.width);
-      function_values_cpu.copy_transpose(group.function_values);
-
-      t_cpu.start_and_sync();
-      cpu_compute_density_forces<true, false>(energy_cpu.data, point_weights_cpu.data, group.number_of_points, rdmt_cpu.data,
-        NULL, function_values_cpu.data, NULL, NULL, NULL, 0, group_m, t_density, t_rmm);
-      t_cpu.pause_and_sync();
-      #else
+		if (compute_energy) {
       t_density.start_and_sync();
 			CudaMatrixFloat energy_gpu(group.number_of_points);
 			gpu_compute_density<true, false><<<threadGrid, threadBlock>>>(energy_gpu.data, NULL, point_weights_gpu.data, group.number_of_points,
@@ -165,23 +116,15 @@ extern "C" void g2g_solve_groups_(uint& computation_type, double* fort_energy_pt
 			cudaAssertNoError("compute_density");
       t_density.pause_and_sync();
       HostMatrixFloat energy_cpu(energy_gpu);
-      #endif
 			
-			for (uint i = 0; i < group.number_of_points; i++) { total_energy += energy_cpu.get(i); }
+			for (uint i = 0; i < group.number_of_points; i++) { total_energy += energy_cpu(i); }
 
       uint free_memory, total_memory;
       cudaGetMemoryInfo(free_memory, total_memory);
       max_used_memory = max(max_used_memory, total_memory - free_memory);
 		}
 		/* compute necessary factor **/
-		else if (computation_type == COMPUTE_RMM) {
-      #if CPU_KERNELS
-      HostMatrixFloat rmm_output_cpu(COALESCED_DIMENSION(group_m), group_m);
-      t_cpu.start_and_sync();
-      cpu_compute_group_density<false>(NULL, group, rdmt_cpu, rmm_output_cpu, group, group_m, t_density, t_rmm);
-      t_cpu.pause_and_sync();
-      #else
-
+    else if (compute_rmm) {
 			CudaMatrixFloat rmm_factor_gpu(group.number_of_points);
       t_density.start_and_sync();
 			gpu_compute_density<false, false><<<threadGrid, threadBlock>>>(NULL, rmm_factor_gpu.data, point_weights_gpu.data, group.number_of_points,
@@ -201,7 +144,6 @@ extern "C" void g2g_solve_groups_(uint& computation_type, double* fort_energy_pt
       t_rmm.pause_and_sync();
 
 			HostMatrixFloat rmm_output_cpu(rmm_output_gpu);
-      #endif
 
       /*** Contribute this RMM to the total RMM ***/
       uint small_fi = 0;
@@ -224,7 +166,7 @@ extern "C" void g2g_solve_groups_(uint& computation_type, double* fort_energy_pt
 							uint fi = *it_fi + i; uint fj = *it_fj + j;
 							if (fi > fj) continue;
 							uint big_index = (fi * fortran_vars.m - (fi * (fi - 1)) / 2) + (fj - fi);
-              fortran_vars.rmm_output.get(big_index) += rmm_output_cpu.get(small_fi, small_fj + small_fi);
+              fortran_vars.rmm_output(big_index) += rmm_output_cpu(small_fi, small_fj + small_fi);
               small_fj++;
 						}					
 					}
@@ -251,38 +193,35 @@ extern "C" void g2g_solve_groups_(uint& computation_type, double* fort_energy_pt
         else f_advance = 6;
 
         for (uint j = 0; j < f_advance; j++, i++) {
-          uint big_atom_idx = fortran_vars.nucleii.get(*func) - 1;
+          uint big_atom_idx = fortran_vars.nucleii(*func) - 1;
           if (nuc_mapping.find(big_atom_idx) == nuc_mapping.end()) {
             nuc_mapping[big_atom_idx] = small_atom_idx;
             small_atom_idx++;
           }
-          nuc_cpu.get(i) = nuc_mapping[big_atom_idx];
+          nuc_cpu(i) = nuc_mapping[big_atom_idx];
         }
       }
 			nuc_gpu = nuc_cpu;
 
 			for (map<uint, uint>::iterator nuc_it = nuc_mapping.begin(); nuc_it != nuc_mapping.end(); ++nuc_it) {
-				float4 atom_force = forces_cpu.get(nuc_it->second);
+				float4 atom_force = forces_cpu(nuc_it->second);
         //cout << "atom force: " << atom_force.x << " " << atom_force.y << " " << atom_force.z << endl;
-				fort_forces.get(nuc_it->first, 0) += atom_force.x;
-				fort_forces.get(nuc_it->first, 1) += atom_force.y;
-				fort_forces.get(nuc_it->first, 2) += atom_force.z;
+				fort_forces(nuc_it->first, 0) += atom_force.x;
+				fort_forces(nuc_it->first, 1) += atom_force.y;
+				fort_forces(nuc_it->first, 2) += atom_force.z;
       }
 		}
     #endif
 	}
 		
 	/** pass results to fortran */
-	if (computation_type == COMPUTE_ENERGY_ONLY || computation_type == COMPUTE_ENERGY_FORCE) {
+	if (compute_energy) {
 		cout << "total energy: " << total_energy << endl;
 		*fort_energy_ptr = total_energy;
 	}
 	t_total.stop_and_sync();
-
-	cout << "TIMER: gpu_solve_cubes " << t_total << endl;
-  cout << "TIMER: density/energy " << t_density << endl;
-  cout << "TIMER: forces " << t_forces << endl;
-  cout << "TIMER: rmm: " << t_rmm << endl;
+  cout << "iteration: " << t_total << endl;
+  cout << "rmm: " << t_rmm << " density: " << t_density << " pot: " << t_pot << " resto: " << t_resto << endl;
 
   uint free_memory, total_memory;
   cudaGetMemoryInfo(free_memory, total_memory);
@@ -290,10 +229,11 @@ extern "C" void g2g_solve_groups_(uint& computation_type, double* fort_energy_pt
 
 }
 
+
 /*******************************
  * Cube Functions
  *******************************/
-void g2g_compute_functions(void)
+template <bool forces, bool gga> void g2g_compute_functions(void)
 {
 	CudaMatrixFloat4 points_position_gpu;
 	CudaMatrixFloat2 factor_ac_gpu;
@@ -310,7 +250,7 @@ void g2g_compute_functions(void)
 		HostMatrixFloat4 points_position_cpu(group.number_of_points, 1);
 		uint i = 0;
 		for (list<Point>::const_iterator p = group.points.begin(); p != group.points.end(); ++p, ++i) {
-			points_position_cpu.get(i) = make_float4(p->position.x, p->position.y, p->position.z, 0);
+			points_position_cpu(i) = make_float4(p->position.x, p->position.y, p->position.z, 0);
 		}
 		points_position_gpu = points_position_cpu;
 
@@ -328,14 +268,14 @@ void g2g_compute_functions(void)
       else inc = 6;
 
       uint func = group.functions[i];
-      uint this_nuc = fortran_vars.nucleii.get(func) - 1;
-      uint this_cont = fortran_vars.contractions.get(func);
+      uint this_nuc = fortran_vars.nucleii(func) - 1;
+      uint this_cont = fortran_vars.contractions(func);
 
       for (uint j = 0; j < inc; j++) {
-        nuc_cpu.get(ii) = this_nuc;
-        contractions_cpu.get(ii) = this_cont;
+        nuc_cpu(ii) = this_nuc;
+        contractions_cpu(ii) = this_cont;
         for (unsigned int k = 0; k < this_cont; k++)
-          factor_ac_cpu.get(ii, k) = make_float2(fortran_vars.a_values.get(func, k), fortran_vars.c_values.get(func, k));
+          factor_ac_cpu(ii, k) = make_float2(fortran_vars.a_values(func, k), fortran_vars.c_values(func, k));
         ii++;
       }
     }
@@ -354,11 +294,7 @@ void g2g_compute_functions(void)
 
 		//cout << "points: " << threads.x << " " << threadGrid.x << " " << threadBlock.x << endl;
 
-		if (fortran_vars.do_forces)
-			gpu_compute_functions<true><<<threadGrid, threadBlock>>>(points_position_gpu.data, group.number_of_points, contractions_gpu.data, factor_ac_gpu.data, nuc_gpu.data, group.function_values.data, group.gradient_values.data, group_functions);
-		else
-			gpu_compute_functions<false><<<threadGrid, threadBlock>>>(points_position_gpu.data, group.number_of_points, contractions_gpu.data, factor_ac_gpu.data, nuc_gpu.data, group.function_values.data, group.gradient_values.data, group_functions);
-
+    gpu_compute_functions<forces><<<threadGrid, threadBlock>>>(points_position_gpu.data, group.number_of_points, contractions_gpu.data, factor_ac_gpu.data, nuc_gpu.data, group.function_values.data, group.gradient_values.data, group_functions);
 		cudaAssertNoError("compute_functions");
 	}
 
@@ -368,6 +304,11 @@ void g2g_compute_functions(void)
 
   //cudaPrintMemoryInfo();
 }
+
+template void g2g_compute_functions<true, false>(void);
+template void g2g_compute_functions<true, true>(void);
+template void g2g_compute_functions<false, false>(void);
+template void g2g_compute_functions<false, true>(void);
 
 /*******************************
  * Cube Weights
@@ -382,21 +323,21 @@ void g2g_compute_group_weights(PointGroup& group)
     HostMatrixFloat4 points_positions_cpu(group.number_of_points, 1);
 		uint i = 0;
 		for (list<Point>::const_iterator p = group.points.begin(); p != group.points.end(); ++p, ++i) {
-			points_positions_cpu.get(i) = make_float4(p->position.x, p->position.y, p->position.z, p->atom);
+			points_positions_cpu(i) = make_float4(p->position.x, p->position.y, p->position.z, p->atom);
 		}
     point_positions_gpu = points_positions_cpu;
 
     HostMatrixFloat4 atom_position_rm_cpu(fortran_vars.atoms, 1);
     for (uint i = 0; i < fortran_vars.atoms; i++) {
-      double3 atom_pos = fortran_vars.atom_positions.get(i);
-      atom_position_rm_cpu.get(i) = make_float4(atom_pos.x, atom_pos.y, atom_pos.z, fortran_vars.rm.get(i));
+      double3 atom_pos = fortran_vars.atom_positions(i);
+      atom_position_rm_cpu(i) = make_float4(atom_pos.x, atom_pos.y, atom_pos.z, fortran_vars.rm(i));
     }
     atom_position_rm_gpu = atom_position_rm_cpu;
 
     HostMatrixUInt nucleii_cpu(group.nucleii.size(), 1);
     i = 0;
     for (set<uint>::iterator it = group.nucleii.begin(); it != group.nucleii.end(); ++it, i++) {
-      nucleii_cpu.get(i) = *it;
+      nucleii_cpu(i) = *it;
     }
     nucleii_gpu = nucleii_cpu;
 	}
@@ -419,7 +360,7 @@ void g2g_compute_group_weights(PointGroup& group)
   HostMatrixFloat weights_cpu(weights_gpu);
   uint i = 0;
   for (list<Point>::iterator p = group.points.begin(); p != group.points.end(); ++p, ++i) {
-    p->weight *= weights_cpu.get(i);
+    p->weight *= weights_cpu(i);
 
     if (p->weight == 0.0) {
       ceros++;
@@ -439,4 +380,3 @@ void g2g_compute_group_weights(PointGroup& group)
   group.number_of_points = nonzero_number_of_points;
   #endif
 }
-#endif

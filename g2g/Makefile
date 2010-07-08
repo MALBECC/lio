@@ -1,19 +1,23 @@
 # -*- mode: make -*-
-SRCS=$(wildcard *.cpp) $(wildcard cpu/*.cpp)
-OBJ=$(SRCS:%.cpp=%.o)
-
-CUDA_SOURCES=$(wildcard cuda/*.cu)
-CUDA_HEADERS=$(wildcard cuda/*.h)
-
-include cuda/Makefile.cuda
 include Makefile.common
+include cuda/Makefile.cuda
+
+## Define sources and objects
+SRCS:=$(wildcard *.cpp)
+OBJ:=$(SRCS:%.cpp=%.o)
 
 ifeq ($(cpu),1)
-  CUDA_OBJ=
-  CUDA_LIBS=
-	CXXFLAGS += -DCPU_KERNELS=1
+  CPU_SOURCES  := $(wildcard cpu/*.cpp) 
+  SRCS         += $(CPU_SOURCES)
+  OBJ          += $(CPU_SOURCES:%.cpp=%.o)
+  CXXFLAGS     += -DCPU_KERNELS=1
+else
+  CUDA_SOURCES := $(wildcard cuda/*.cu)
+  SRCS         += $(CUDA_SOURCES)
+  OBJ          += $(CUDA_SOURCES:%.cu=%.cu_o)
 endif
 
+## Other options
 ifeq ($(time), 1)
 	CXXFLAGS += -DTIMINGS
 endif
@@ -33,17 +37,27 @@ else
 	LIBRARY=libg2g.so
 endif
 
-LIBS := $(shell pkg-config gsl --libs)
+## Define libraries
+LIBS := $(shell pkg-config gsl --libs) $(CUDA_LIBS)
 
-all: $(LIBRARY)
+## Targets
+all: depend $(LIBRARY)
 
-libg2g.a: $(CUDA_OBJ) $(OBJ)
-	ar cru libg2g.a $(CUDA_OBJ) $(OBJ)
+depend:
+	@touch Makefile.depends
+	@makedepend -Y -fMakefile.depends $(SRCS) > /dev/null 2>&1
+	@sed -ri 's|(cuda/.*)\.o|\1.cu_o|g' Makefile.depends
+	@rm -f Makefile.depends.bak
+
+include Makefile.depends
+
+libg2g.a: $(OBJ)
+	ar cru libg2g.a $(OBJ)
 	ranlib libg2g.a
 	
-libg2g.so: $(CUDA_OBJ) $(OBJ)
-	$(LINK) -shared $(LDFLAGS) $(EXTRA_FLAGS) -o libg2g.so $(OBJ) $(CUDA_OBJ) $(LIBS) #potg.o
+libg2g.so: $(OBJ)
+	$(CXX) -shared $(LDFLAGS) -o libg2g.so $(OBJ) $(LIBS)
 
 clean:
 	make -C cuda clean
-	rm -f *_test *.o *.so *.a *.cu_o cpu/*.o
+	rm -f *.o *.so *.a cpu/*.o cuda/*.o

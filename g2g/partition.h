@@ -33,6 +33,7 @@ class PointGroup {
     #else
     G2G::CudaMatrixFloat function_values;
     G2G::CudaMatrixFloat4 gradient_values;
+    G2G::CudaMatrixFloat4 hessian_values;
     #endif
 
     void add_point(const Point& p);

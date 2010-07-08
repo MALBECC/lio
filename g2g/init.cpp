@@ -15,6 +15,7 @@ using namespace G2G;
 
 /* external function prototypes */
 template<bool, bool> void g2g_compute_functions(void);
+void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
 
 /* internal function prototypes */
 void read_options(void);
@@ -57,16 +58,11 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	
 	fortran_vars.do_forces = (nopt == 2);
 	cout << "do_forces: " << boolalpha << fortran_vars.do_forces << endl;
-
-  #if !CPU_KERNELS
-	cudaMemcpyToSymbol("gpu_atoms", &fortran_vars.atoms, sizeof(fortran_vars.atoms), 0, cudaMemcpyHostToDevice);
-  #endif
+  to_constant("gpu_atoms", fortran_vars.atoms);
 
 	fortran_vars.normalize = norm;
 	fortran_vars.normalization_factor = (fortran_vars.normalize ? (1.0/sqrt(3)) : 1.0);
-  #if !CPU_KERNELS
-	cudaMemcpyToSymbol("gpu_normalization_factor", &fortran_vars.normalization_factor, sizeof(float), 0, cudaMemcpyHostToDevice);
-  #endif
+  to_constant("gpu_normalization_factor", fortran_vars.normalization_factor);
 
   #ifdef _DEBUG
   // trap floating point exceptions on debug
@@ -80,13 +76,16 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	fortran_vars.spd_funcs = fortran_vars.s_funcs + fortran_vars.p_funcs + fortran_vars.d_funcs;
 	fortran_vars.m = M;	
 	fortran_vars.nco = nco;
-  to_constant("gpu_nco", &fortran_vars.nco);  
+  to_constant("gpu_nco", fortran_vars.nco);  
 		
 	fortran_vars.iexch = Iexch;
-  to_constant("gpu_Iexch", &Iexch);
+  to_constant("gpu_Iexch", Iexch);
   fortran_vars.lda = (Iexch <= 3);
   fortran_vars.gga = !fortran_vars.lda;
   assert(0 < Iexch && Iexch <= 9);
+  #if !CPU_KERNELS
+  if (fortran_vars.gga) throw std::runtime_error("GGA not supported in GPU for now");
+  #endif
 	
 	fortran_vars.atom_positions_pointer = FortranMatrix<double>(r, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS);
 	fortran_vars.atom_types.resize(fortran_vars.atoms);
@@ -188,6 +187,24 @@ extern "C" void g2g_new_grid_(const unsigned int& grid_type) {
 		cout << "not loading, same grid as loaded" << endl;
 	else
 		compute_new_grid(grid_type);
+}
+
+extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_energy_ptr, double* fort_forces_ptr)
+{
+ 	cout << "<================ iteracion [";
+	switch(computation_type) {
+    case COMPUTE_RMM: cout << "rmm"; break;
+		case COMPUTE_ENERGY_ONLY: cout << "energia"; break;
+		case COMPUTE_ENERGY_FORCE: cout << "energia+fuerzas"; break;
+		case COMPUTE_FORCE_ONLY: cout << "fuerzas"; break;
+	}
+	cout << "] ==========>" << endl;
+
+  bool compute_energy = (computation_type == COMPUTE_ENERGY_ONLY || computation_type == COMPUTE_ENERGY_FORCE);
+  bool compute_forces = (computation_type == COMPUTE_FORCE_ONLY || computation_type == COMPUTE_ENERGY_FORCE);
+  bool compute_rmm = (computation_type == COMPUTE_RMM);
+
+  g2g_iteration(compute_energy, compute_forces, compute_rmm, fort_energy_ptr, fort_forces_ptr);
 }
 
 /* general options */

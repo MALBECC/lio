@@ -200,9 +200,14 @@ template<class T> void HostMatrix<T>::copy_transpose(const CudaMatrix<T>& cuda_m
   }
 }
 
-/*template<class T, class S> void HostMatrix<T>::to_constant<S>(const char* constant, const S& value) {
-	cudaMemcpyToSymbol(constant, &value, sizeof(S), 0, cudaMemcpyHostToDevice);	
-}*/
+template<class T> void G2G::to_constant(const char* constant, const T& value) {
+  #if !CPU_KERNELS
+	cudaMemcpyToSymbol(constant, &value, sizeof(T), 0, cudaMemcpyHostToDevice);
+  #endif
+}
+
+template void G2G::to_constant<uint>(const char* constant, const uint& value);
+template void G2G::to_constant<float>(const char* constant, const float& value);
 
 template<class T>
 void HostMatrix<T>::blas_ssyr(UpperLowerTriangle triangle, float alpha, const HostMatrix<T>& x, const HostMatrix<T>& A, unsigned int x_row) {
@@ -364,7 +369,6 @@ template class Matrix<float>;
 template class Matrix<float1>;
 template class Matrix<float2>;
 template class Matrix<float3>;
-template class Matrix<cfloat3>;
 template class Matrix<float4>;
 template class Matrix<uint1>;
 template class Matrix<uint2>;
@@ -376,7 +380,6 @@ template class HostMatrix<float>;
 template class HostMatrix<float1>;
 template class HostMatrix<float2>;
 template class HostMatrix<float3>;
-template class HostMatrix<cfloat3>;
 template class HostMatrix<float4>;
 template class HostMatrix<uint1>;
 template class HostMatrix<uint2>;
@@ -393,3 +396,8 @@ template class CudaMatrix<double>;
 
 template class FortranMatrix<double>;
 template class FortranMatrix<uint>;
+
+#ifndef __CUDACC__
+template class Matrix<cfloat3>;
+template class HostMatrix<cfloat3>;
+#endif

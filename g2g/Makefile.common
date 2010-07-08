@@ -1,8 +1,24 @@
 # -*- mode: make -*-
 ifeq ($(gcc),1)
-  CXXFLAGS:=$(CXXFLAGS) $(EXTRA_FLAGS) -Wall -Wno-long-long -ansi -Wno-unused
+  CXX      := g++
+  CXXFLAGS := $(CXXFLAGS) -fPIC -Wall -Wno-long-long -ansi -Wno-unused
 else
-  CXXFLAGS:=$(CXXFLAGS) $(EXTRA_FLAGS) -vec-report1 -g 
+  CXX      := icc
+  CXXFLAGS := $(CXXFLAGS) -fPIC -vec-report1 -g 
+endif
+
+# Debug/release configuration
+ifeq ($(dbg),1)
+	COMMONFLAGS := -g -D_DEBUG
+	CXXFLAGS  	+= $(COMMONFLAGS) -fsignaling-nans -ftrapping-math 
+else 
+	COMMONFLAGS := -DNDEBUG
+	ifeq ($(gcc),1)
+    CXXFLAGS  += -O4 -fno-strict-aliasing
+	else
+    CXXFLAGS  += -O3 -fno-strict-aliasing
+	endif
+	CXXFLAGS    += $(COMMONFLAGS) 
 endif
 
 %.o:%.cpp %.h

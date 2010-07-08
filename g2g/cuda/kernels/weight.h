@@ -8,7 +8,7 @@ __global__ void gpu_compute_weights(uint points, float4* point_positions, float4
   __shared__ float3 atom_position_sh[MAX_ATOMS];
   __shared__ uint nucleii_sh[MAX_ATOMS];
   __shared__ float rm_sh[MAX_ATOMS];
-   
+
   for (uint i = 0; i < gpu_atoms; i += WEIGHT_BLOCK_SIZE) {
     if (i + threadIdx.x < gpu_atoms) {
       float4 atom_position_rm_local = atom_position_rm[i + threadIdx.x];
@@ -54,7 +54,7 @@ __global__ void gpu_compute_weights(uint points, float4* point_positions, float4
       #pragma unroll 3
       for (uint i = 0; i < 3; i++)
         u = 1.5f * u - 0.5f * (u * u * u);
-      
+
 			u = 0.5f * (1.0f - u);
 
       P_curr *= u;

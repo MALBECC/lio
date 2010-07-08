@@ -11,7 +11,6 @@
 using namespace std;
 using namespace G2G;
 
-#if CPU_KERNELS
 template <bool forces, bool gga> void g2g_compute_functions(void)
 {
 	for (list<PointGroup>::iterator it = final_partition.begin(); it != final_partition.end(); ++it) {
@@ -90,7 +89,6 @@ template <bool forces, bool gga> void g2g_compute_functions(void)
           group.function_values(ii + 5, point) = t * v.z * v.z * fortran_vars.normalization_factor;
 
           if (gga) {
-            // Probablemente haya un error en el .x de una linea impar
 						group.hessian_values(2 * (ii + 0) + 0, point) = cfloat3((4 * th * (v.x * v.x) * (v * v)       - tg * (v.x * v.x)   * make_float3(10, 2, 2) + make_float3(2 * t, 0    , 0)) * fortran_vars.normalization_factor);
             group.hessian_values(2 * (ii + 0) + 1, point) = cfloat3((4 * th * (v.x * v.x) * (vxxy * vyzz) - tg * (vxxy * vyzz) * make_float3(4,  4, 0)                               ) * fortran_vars.normalization_factor);
             group.hessian_values(2 * (ii + 1) + 0, point) = cfloat3((4 * th * (v.x * v.y) * (v * v)       - tg * (v.x * v.y)   * make_float3(6,  6, 2)                               ));
@@ -123,5 +121,3 @@ template void g2g_compute_functions<true, false>(void);
 template void g2g_compute_functions<true, true>(void);
 template void g2g_compute_functions<false, false>(void);
 template void g2g_compute_functions<false, true>(void);
-
-#endif

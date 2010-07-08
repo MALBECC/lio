@@ -1,6 +1,8 @@
 #ifndef __G2G_CPU_VECTOR_TYPES_H__
 #define __G2G_CPU_VECTOR_TYPES_H__
 
+#ifndef __CUDACC__
+
 #include <math.h>
 #include <sys/types.h>
 #include <fvec.h>
@@ -53,5 +55,7 @@ namespace G2G {
 		  cfloat3(float x, float y, float z, float w);
 	};
 }
+
+#endif
 
 #endif

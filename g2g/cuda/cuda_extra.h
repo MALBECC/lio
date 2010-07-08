@@ -4,12 +4,6 @@
 #include <cuda_runtime.h>
 #include <cuda.h>
 
-#ifdef __DEVICE_EMULATION__
-#define _EMU(code) code
-#else
-#define _EMU(code)
-#endif
-
 #define WARP_SIZE 32
 #define BANKS 16
 
@@ -17,10 +11,11 @@
 #include <iostream>
 #include <string>
 
-#if CPU_KERNELS
+#if !__CUDACC__
 #include <cmath>
 #endif
 
+// TODO: usar cutil sdk para todos estos operadores, o usar classes de C++ templatizadas
 /** operators **/
 inline __device__ __host__ float2 operator -(const float2 a)
 { return make_float2(-a.x, -a.y); }
@@ -35,15 +30,15 @@ inline __device__ __host__ double3 operator/(const double3& a, const uint& b)
 { return make_double3(a.x / b, a.y / b, a.z / b); }
 
 inline __device__ __host__ uint3 ceil_uint3(const double3& a) {
-	return make_uint3(static_cast<uint>(ceil(a.x)),
-										static_cast<uint>(ceil(a.y)),
-										static_cast<uint>(ceil(a.z)));
+	return make_uint3(static_cast<uint>(ceilf(a.x)),
+										static_cast<uint>(ceilf(a.y)),
+										static_cast<uint>(ceilf(a.z)));
 }
 
 inline __device__ __host__ uint3 floor_uint3(const double3& a) {
-	return make_uint3(static_cast<uint>(floor(a.x)),
-										static_cast<uint>(floor(a.y)),
-										static_cast<uint>(floor(a.z)));
+	return make_uint3(static_cast<uint>(floorf(a.x)),
+										static_cast<uint>(floorf(a.y)),
+										static_cast<uint>(floorf(a.z)));
 }
 
 inline __device__ __host__ float3 operator *(const float3& a, const float3& b)
@@ -131,8 +126,8 @@ inline __device__ __host__ double& elem(double3& a, uint i) {
 		case 0: return a.x; break;
 		case 1: return a.y; break;
 		case 2: return a.z; break;
-		default: return a.x; break;
 	}
+  return a.x;
 }
 
 inline __device__ __host__ const double& elem(const double3& a, uint i) {
@@ -140,8 +135,8 @@ inline __device__ __host__ const double& elem(const double3& a, uint i) {
 		case 0: return a.x; break;
 		case 1: return a.y; break;
 		case 2: return a.z; break;
-		default: return a.x; break;
 	}
+  return a.x;
 }
 
 inline __device__ __host__ double length(const double3& a) {
@@ -238,7 +233,7 @@ inline void cudaAssertNoError(const char* msg = NULL) {
 	cudaThreadSynchronize();
 	cudaError_t error = cudaGetLastError();
 	if (error != cudaSuccess) {
-		std::cerr << "CUDA ERROR: " << cudaGetErrorString(error) << " " << (msg ? msg : "??") << std::endl;
+		std::cerr << "CUDA ERROR: " << cudaGetErrorString(error) << " [" << (msg ? msg : "??") << "]" << std::endl;
 		abort();
 	}
   #endif
@@ -246,12 +241,8 @@ inline void cudaAssertNoError(const char* msg = NULL) {
 #endif
 
 inline void cudaGetMemoryInfo(uint& free, uint& total) {
-  #ifdef __DEVICE_EMULATION__
-  free = 0; total = 1;
-  #else
 	if (cuMemGetInfo(&free, &total) != CUDA_SUCCESS)
     throw std::runtime_error("cuMemGetInfo failed");
-  #endif
 }
 
 inline void cudaPrintMemoryInfo(void) {
@@ -266,17 +257,8 @@ template<typename T> void to_constant(const std::string& name, const T* ptr) {
   #endif
 }
 
-inline std::ostream& operator<<(std::ostream& o, const double3& a)
-{
-	o << "(" << a.x << "," << a.y << "," << a.z << ")";
-	return o;
-}
-
-inline std::ostream& operator<<(std::ostream& o, const float3& a)
-{
-	o << "(" << a.x << "," << a.y << "," << a.z << ")";
-	return o;
-}
+inline std::ostream& operator<<(std::ostream& o, const double3& a) { o << "(" << a.x << "," << a.y << "," << a.z << ")"; return o; }
+inline std::ostream& operator<<(std::ostream& o, const float3& a) { o << "(" << a.x << "," << a.y << "," << a.z << ")"; return o; }
 
 #endif /* __CUTOOLS_H__ */
 

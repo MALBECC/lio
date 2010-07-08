@@ -10,7 +10,6 @@
 using namespace std;
 using namespace G2G;
 
-#if CPU_KERNELS
 void g2g_compute_group_weights(PointGroup& group)
 {
 	list<Point>::iterator it = group.points.begin();
@@ -100,4 +99,3 @@ void g2g_compute_group_weights(PointGroup& group)
     else ++it;
 	}
 }
-#endif

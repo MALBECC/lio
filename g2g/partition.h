@@ -47,6 +47,8 @@ class PointGroup {
     }
 
     inline uint total_functions(void) const { return s_functions + p_functions * 3 + d_functions * 6; }
+
+    void get_rmm_input(G2G::HostMatrixFloat& rmm_input) const;
 };
 
 class Sphere : public PointGroup {

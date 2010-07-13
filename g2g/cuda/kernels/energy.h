@@ -10,32 +10,31 @@ __global__ void gpu_compute_density(float* const energy, float* const factor, co
   float point_weight;
   if (valid_thread) point_weight = point_weights[point];
 
-  __shared__ float rdm_sh[NCO_BATCH_SIZE];
-  __shared__ float w_sh[NCO_BATCH_SIZE + 1][DENSITY_BLOCK_SIZE];
+  __shared__ float rdm_sh[ENERGY_BATCH_SIZE];
 
   /***** compute density ******/
-  for (uint i = 0; i < gpu_nco; i += NCO_BATCH_SIZE) {
-    for (uint ii = 0; ii < NCO_BATCH_SIZE; ii++) w_sh[ii][threadIdx.x] = 0.0f;
+  for (uint i = 0; i < m; i++) {
+    float fi = function_values[COALESCED_DIMENSION(points) * i + point];
+    float w = 0.0f;
 
-    for (uint j = 0; j < m; j++) {
+    for (uint bj = i; bj < m; bj += ENERGY_BATCH_SIZE) {
       __syncthreads();
-      if (threadIdx.x < NCO_BATCH_SIZE) {
-        if (i + threadIdx.x < gpu_nco) rdm_sh[threadIdx.x] = rdm[COALESCED_DIMENSION(gpu_nco) * j + (i + threadIdx.x)];
+      if (threadIdx.x < ENERGY_BATCH_SIZE) {
+        if (bj + threadIdx.x < m) rdm_sh[threadIdx.x] = rdm[COALESCED_DIMENSION(m) * i + (bj + threadIdx.x)];
         else rdm_sh[threadIdx.x] = 0.0f;
       }
       __syncthreads();
 
       if (valid_thread) {
-        float f = function_values[COALESCED_DIMENSION(points) * j + point];
-        for (uint ii = 0; ii < NCO_BATCH_SIZE; ii++) {
-          w_sh[ii][threadIdx.x] += f * rdm_sh[ii];
+        for (uint j = 0; j < ENERGY_BATCH_SIZE && (bj + j) < m; j++) {
+          float fj = function_values[COALESCED_DIMENSION(points) * (bj + j) + point];
+          w += rdm_sh[j] * fj;
         }
       }
     }
 
-    for (uint ii = 0; ii < NCO_BATCH_SIZE; ii++) { partial_density += w_sh[ii][threadIdx.x] * w_sh[ii][threadIdx.x]; }
+    partial_density += fi * w;
   }
-  partial_density *= 2.0f;
 
   /***** compute energy / factor *****/
   float y2a, exc_corr;

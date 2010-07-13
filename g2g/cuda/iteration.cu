@@ -33,7 +33,7 @@ void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, d
 		
 	/*** Computo sobre cada cubo ****/
 	CudaMatrixFloat point_weights_gpu;
-	CudaMatrixFloat rdm_gpu, rdmt_gpu;
+	CudaMatrixFloat rmm_input_gpu;
   CudaMatrixUInt nuc_gpu;
   CudaMatrixFloat2 factor_ac_gpu;
 	CudaMatrixUInt2 nuc_contractions_gpu;
@@ -85,23 +85,11 @@ void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, d
 		}
 
 		/* load RDM */
-    HostMatrixFloat rdm_cpu(COALESCED_DIMENSION(group_m), fortran_vars.nco);
-    HostMatrixFloat rdmt_cpu(COALESCED_DIMENSION(fortran_vars.nco), group_m);
+    HostMatrixFloat rmm_input_cpu(COALESCED_DIMENSION(group_m), group_m);
+    group.get_rmm_input(rmm_input_cpu);
+    rmm_input_gpu = rmm_input_cpu;
 
-    for (unsigned int i = 0; i < fortran_vars.nco; i++) {
-      uint jj = 0;
-      for (uint j = 0; j < group.functions.size(); j++) {
-        uint func = group.functions[j];
-        uint inc = group.small_function_type(j);
-        for (uint k = 0; k < inc; k++, jj++) {
-          rdm_cpu(jj, i) = fortran_vars.rmm_input(func + k, i);
-          rdmt_cpu(i, jj) = rdm_cpu(jj, i);
-        }
-      }
-    }
-    rdm_gpu = rdm_cpu;
-    rdmt_gpu = rdmt_cpu;
-
+    /* configure kernel */
 		dim3 threads(group.number_of_points);
 		dim3 threadBlock, threadGrid;
 		threadBlock = dim3(DENSITY_BLOCK_SIZE);
@@ -112,7 +100,7 @@ void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, d
       t_density.start_and_sync();
 			CudaMatrixFloat energy_gpu(group.number_of_points);
 			gpu_compute_density<true, false><<<threadGrid, threadBlock>>>(energy_gpu.data, NULL, point_weights_gpu.data, group.number_of_points,
-                                                                    rdmt_gpu.data, group.function_values.data, group_m, NULL);
+                                                                    rmm_input_gpu.data, group.function_values.data, group_m, NULL);
 			cudaAssertNoError("compute_density");
       t_density.pause_and_sync();
       HostMatrixFloat energy_cpu(energy_gpu);
@@ -128,7 +116,7 @@ void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, d
 			CudaMatrixFloat rmm_factor_gpu(group.number_of_points);
       t_density.start_and_sync();
 			gpu_compute_density<false, false><<<threadGrid, threadBlock>>>(NULL, rmm_factor_gpu.data, point_weights_gpu.data, group.number_of_points,
-                                                                     rdmt_gpu.data, group.function_values.data, group_m, NULL);
+                                                                     rmm_input_gpu.data, group.function_values.data, group_m, NULL);
 			cudaAssertNoError("compute_density");
       t_density.pause_and_sync();
 

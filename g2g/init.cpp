@@ -76,7 +76,6 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	fortran_vars.spd_funcs = fortran_vars.s_funcs + fortran_vars.p_funcs + fortran_vars.d_funcs;
 	fortran_vars.m = M;	
 	fortran_vars.nco = nco;
-  to_constant("gpu_nco", fortran_vars.nco);  
 		
 	fortran_vars.iexch = Iexch;
   to_constant("gpu_Iexch", Iexch);

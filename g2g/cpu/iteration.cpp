@@ -38,25 +38,7 @@ void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, d
     // prepare rmm_input for this group
     t_density.start();
     HostMatrixFloat rmm_input(group_m, group_m);
-    rmm_input.zero();
-    for (uint i = 0, ii = 0; i < group.functions.size(); i++) {
-      uint inc_i = group.small_function_type(i);
-
-      for (uint k = 0; k < inc_i; k++, ii++) {
-        uint big_i = group.functions[i] + k;
-        for (uint j = 0, jj = 0; j < group.functions.size(); j++) {
-          uint inc_j = group.small_function_type(j);
-
-          for (uint l = 0; l < inc_j; l++, jj++) {
-            uint big_j = group.functions[j] + l;
-            if (big_i > big_j) continue;
-            uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-            rmm_input(ii, jj) = fortran_vars.rmm_input_ndens1.data[big_index];
-            rmm_input(jj, ii) = rmm_input(ii, jj);
-          }
-        }
-      }
-    }
+    group.get_rmm_input(rmm_input);
     t_density.pause();
 
     /******** each point *******/

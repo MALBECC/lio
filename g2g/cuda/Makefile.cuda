@@ -96,7 +96,7 @@ ifneq ($(dbg),1)
 endif
 
 ifeq ($(keep), 1)
-	NVCCFLAGS   += -keep
+	NVCCFLAGS   += --keep
 endif
 
 ifeq ($(cpu),1)

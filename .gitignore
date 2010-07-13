@@ -12,4 +12,4 @@ test/*/gpu_options
 test/*/*.xyz
 *.swp
 ecuaciones.pdf
-g2g/Makefile.depends
+

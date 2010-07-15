@@ -47,7 +47,7 @@ ARCHFLAGS	 :=
 INCLUDES  += -I. -I$(CUDA_INSTALL_PATH)/include 
 
 # Libs
-CUDA_LIBS       := -L$(CUDA_INSTALL_PATH)/lib64 -L$(COMMONDIR)/lib -L$(LIBDIR) -lcuda -lcudart ${OPENGLLIB} ${LIB}
+CUDA_LIBS       := -L$(CUDA_INSTALL_PATH)/lib64 -L$(CUDA_INSTALL_PATH)/lib -L$(COMMONDIR)/lib -L$(LIBDIR) -lcuda -lcudart 
 
 # Warning flags
 CXXWARN_FLAGS := \

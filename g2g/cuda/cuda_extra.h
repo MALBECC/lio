@@ -176,6 +176,9 @@ inline __device__ __host__ float3& operator-=(float3& a, const float& b)
 inline __device__ __host__ float3& operator-=(float3& a, const float3& b)
 { a.x -= b.x; a.y -= b.y; a.z -= b.z; return a; }
 
+inline __device__ __host__ float4& operator-=(float4& a, const float4& b)
+{ a.x -= b.x; a.y -= b.y; a.z -= b.z; a.w -= b.w; return a; }
+
 inline __device__ __host__ float3& operator+=(float3& a, const float3& b)
 { a.x += b.x; a.y += b.y; a.z += b.z; return a; }
 
@@ -226,10 +229,9 @@ inline __device__ __host__ float3 to_float3(const float3& f)
 { return f; }
 
 #ifdef _DEBUG
-#define cudaAssertNoError(s)
-#else
 inline void cudaAssertNoError(const char* msg = NULL) {
   #if !CPU_KERNELS
+
 	cudaThreadSynchronize();
 	cudaError_t error = cudaGetLastError();
 	if (error != cudaSuccess) {
@@ -238,6 +240,8 @@ inline void cudaAssertNoError(const char* msg = NULL) {
 	}
   #endif
 }
+#else
+#define cudaAssertNoError(s)
 #endif
 
 inline void cudaGetMemoryInfo(uint& free, uint& total) {

@@ -8,7 +8,6 @@ __global__ void gpu_compute_density_derivs(float* function_values, float4* gradi
   __shared__ float rdm_sh[DENSITY_DERIV_BATCH_SIZE];
   __shared__ uint nuc_sh[DENSITY_DERIV_BATCH_SIZE2];
 
-  // DENSITY DERIV DEBE ESTAR EN 0!
   for (uint bi = 0; bi < m; bi += DENSITY_DERIV_BATCH_SIZE2) {
     __syncthreads();
     if (threadIdx.x < DENSITY_DERIV_BATCH_SIZE2) {
@@ -39,7 +38,7 @@ __global__ void gpu_compute_density_derivs(float* function_values, float4* gradi
 
       if (valid_thread) {
         uint nuci = nuc_sh[i];
-        density_deriv[COALESCED_DIMENSION(points) * nuci + point] -= Fgi * w;
+        density_deriv[COALESCED_DIMENSION(points) * nuci + point] -= Fgi * w; // TODO: esto accede demasiado a memoria, quizas se pueda acumular en sh_mem
       }
     }
   }

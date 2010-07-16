@@ -20,7 +20,7 @@ __global__ void gpu_compute_density(float* const energy, float* const factor, co
     for (uint bj = i; bj < m; bj += DENSITY_BATCH_SIZE) {
       __syncthreads();
       if (threadIdx.x < DENSITY_BATCH_SIZE) {
-        if (bj + threadIdx.x < m) rdm_sh[threadIdx.x] = rdm[COALESCED_DIMENSION(m) * i + (bj + threadIdx.x)];
+        if (bj + threadIdx.x < m) rdm_sh[threadIdx.x] = rdm[COALESCED_DIMENSION(m) * i + (bj + threadIdx.x)]; // TODO: uncoalesced. invertir triangulo? 
         else rdm_sh[threadIdx.x] = 0.0f;
       }
       __syncthreads();

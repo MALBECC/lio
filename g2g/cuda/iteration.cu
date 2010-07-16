@@ -27,7 +27,7 @@ void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, d
 {
   double total_energy = 0.0;
 
-  Timer t_total, t_ciclos, t_rmm, t_density, t_forces, t_resto, t_pot;
+  Timer t_total, t_ciclos, t_rmm, t_density, t_density_derivs, t_forces, t_resto;
 	t_total.sync();
 	t_total.start();
 
@@ -89,7 +89,7 @@ void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, d
 
     /* compute forces */
     if (compute_forces) {
-      t_density.start_and_sync();
+      t_density_derivs.start_and_sync();
       threads = dim3(group.number_of_points);
 			threadBlock = dim3(DENSITY_DERIV_BLOCK_SIZE);
 			threadGrid = divUp(threads, threadBlock);
@@ -99,7 +99,7 @@ void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, d
       
       gpu_compute_density_derivs<<<threadGrid, threadBlock>>>(group.function_values.data, group.gradient_values.data, rmm_input_gpu.data, nuc_gpu.data, dd_gpu.data, group.number_of_points, group_m, group.total_nucleii());
       cudaAssertNoError("density_derivs");
-      t_density.pause_and_sync();
+      t_density_derivs.pause_and_sync();
 
       t_forces.start_and_sync();
       CudaMatrixFloat4 forces_gpu(group.total_nucleii());
@@ -147,7 +147,7 @@ void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, d
 	}
 	t_total.stop_and_sync();
   cout << "iteration: " << t_total << endl;
-  cout << "rmm: " << t_rmm << " density: " << t_density << " pot: " << t_pot << " force: " << t_forces << " resto: " << t_resto << endl;
+  cout << "rmm: " << t_rmm << " density: " << t_density << " density_derivs: " << t_density_derivs << " force: " << t_forces << " resto: " << t_resto << endl;
 
   uint free_memory, total_memory;
   cudaGetMemoryInfo(free_memory, total_memory);
@@ -167,8 +167,7 @@ template <bool forces, bool gga> void g2g_compute_functions(void)
 	CudaMatrixUInt contractions_gpu;
 
 	Timer t1;
-	t1.sync();
-	t1.start();
+	t1.start_and_sync();
 
 	for (list<PointGroup>::iterator it = final_partition.begin(); it != final_partition.end(); ++it) {
 		PointGroup& group = *it;
@@ -224,8 +223,7 @@ template <bool forces, bool gga> void g2g_compute_functions(void)
 		cudaAssertNoError("compute_functions");
 	}
 
-	t1.sync();
-	t1.stop();
+	t1.stop_and_sync();
 	cout << "TIMER: funcs: " << t1 << endl;
 
   //cudaPrintMemoryInfo();

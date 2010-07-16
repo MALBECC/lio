@@ -13,5 +13,6 @@ timer.o: timer.h
 cuda/iteration.cu_o: common.h init.h matrix.h cpu/cpu_vector_types.h
 cuda/iteration.cu_o: cuda/cuda_extra.h cuda/cuda_extra.h matrix.h timer.h
 cuda/iteration.cu_o: partition.h cuda/gpu_variables.h cuda/kernels/pot.h
-cuda/iteration.cu_o: cuda/kernels/energy.h cuda/kernels/rmm.h
-cuda/iteration.cu_o: cuda/kernels/weight.h cuda/kernels/functions.h
+cuda/iteration.cu_o: cuda/kernels/energy.h cuda/kernels/energy_derivs.h
+cuda/iteration.cu_o: cuda/kernels/rmm.h cuda/kernels/weight.h
+cuda/iteration.cu_o: cuda/kernels/functions.h cuda/kernels/force.h

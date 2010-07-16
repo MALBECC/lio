@@ -210,7 +210,8 @@ template <bool forces, bool gga> void g2g_compute_functions(void)
 		/** Compute Functions **/
 
     group.function_values.resize(COALESCED_DIMENSION(group.number_of_points), group_functions.w);
-    if (fortran_vars.do_forces) group.gradient_values.resize(COALESCED_DIMENSION(group.number_of_points), group_functions.w);
+    if (fortran_vars.do_forces || fortran_vars.gga) group.gradient_values.resize(COALESCED_DIMENSION(group.number_of_points), group_functions.w);
+    if (fortran_vars.gga) group.hessian_values.resize(COALESCED_DIMENSION(group.number_of_points), group_functions.w * 2);
 
 		dim3 threads(group.number_of_points);
 		dim3 threadBlock(FUNCTIONS_BLOCK_SIZE);
@@ -218,8 +219,8 @@ template <bool forces, bool gga> void g2g_compute_functions(void)
 
 		//cout << "points: " << threads.x << " " << threadGrid.x << " " << threadBlock.x << endl;
 
-    gpu_compute_functions<forces><<<threadGrid, threadBlock>>>(points_position_gpu.data, group.number_of_points, contractions_gpu.data, factor_ac_gpu.data,
-      nuc_gpu.data, group.function_values.data, group.gradient_values.data, group_functions);
+    gpu_compute_functions<forces, gga><<<threadGrid, threadBlock>>>(points_position_gpu.data, group.number_of_points, contractions_gpu.data, factor_ac_gpu.data,
+      nuc_gpu.data, group.function_values.data, group.gradient_values.data, group.hessian_values.data, group_functions);
 		cudaAssertNoError("compute_functions");
 	}
 

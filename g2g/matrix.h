@@ -1,6 +1,7 @@
 #ifndef __G2G_MATRIX_H__
 #define __G2G_MATRIX_H__
 
+#include <vector>
 #include "cpu/cpu_vector_types.h"
 #define COALESCED_DIMENSION(d) (d + 16 - (d % 16))
 
@@ -82,7 +83,9 @@ namespace G2G {
 		public:
 			CudaMatrix(void);
 			CudaMatrix(const CudaMatrix<T>& c);
-			CudaMatrix(const HostMatrix<T>& c);		
+			CudaMatrix(const HostMatrix<T>& c);
+      CudaMatrix(const std::vector<T>& v);
+
 			CudaMatrix(unsigned int width, unsigned int height = 1);
 			~CudaMatrix(void);
 		
@@ -91,9 +94,11 @@ namespace G2G {
 
 			CudaMatrix& operator=(const HostMatrix<T>& c);
 			CudaMatrix& operator=(const CudaMatrix<T>& c);
+      CudaMatrix& operator=(const std::vector<T>& v);
 		
 			void copy_submatrix(const HostMatrix<T>& c, unsigned int elements = 0);
 			void copy_submatrix(const CudaMatrix<T>& c, unsigned int elements = 0);
+      void copy_submatrix(const std::vector<T>& v, unsigned int elements = 0);
 		
 			void deallocate(void);		
 	};

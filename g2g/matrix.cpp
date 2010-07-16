@@ -168,8 +168,8 @@ template<class T> void HostMatrix<T>::copy_submatrix(const CudaMatrix<T>& c, uns
 	if (_bytes > c.bytes()) throw runtime_error("Can't copy more elements than what operator has");
 
   #if !CPU_KERNELS
-	cudaError_t ret = cudaMemcpy(this->data, c.data, _bytes, cudaMemcpyDeviceToHost);
-	assert(ret == cudaSuccess);
+	cudaMemcpy(this->data, c.data, _bytes, cudaMemcpyDeviceToHost);
+  cudaAssertNoError("HostMatrix::copy_submatrix");
   #else
   assert(false);
   #endif
@@ -239,8 +239,8 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::resize(unsigned int _width, unsi
   if (_width != this->width || _height != this->height) {
     if (this->data) cudaFree(this->data);
     this->width = _width; this->height = _height;
-    cudaError_t error_status = cudaMalloc((void**)&this->data, this->bytes());
-    assert(error_status != cudaErrorMemoryAllocation);
+    cudaMalloc((void**)&this->data, this->bytes());
+    cudaAssertNoError("CudaMatrix::resize");
   }
   #endif
 	return *this;		
@@ -250,6 +250,7 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::zero(void) {
   #if !CPU_KERNELS
 	assert(this->data);
 	cudaMemset(this->data, 0, this->bytes());
+  cudaAssertNoError("CudaMatrix::zero");
   #endif
 	return *this;
 }
@@ -260,6 +261,10 @@ template<class T> CudaMatrix<T>::CudaMatrix(const CudaMatrix<T>& c) : Matrix<T>(
 
 template<class T> CudaMatrix<T>::CudaMatrix(const HostMatrix<T>& c) : Matrix<T>() {
 	*this = c;
+}
+
+template<class T> CudaMatrix<T>::CudaMatrix(const std::vector<T>& v) : Matrix<T>() {
+	*this = v;
 }
 
 template<class T> CudaMatrix<T>::~CudaMatrix(void) {
@@ -280,6 +285,7 @@ template<class T> void CudaMatrix<T>::copy_submatrix(const HostMatrix<T>& c, uns
 
   #if !CPU_KERNELS
 	cudaMemcpy(this->data, c.data, _bytes, cudaMemcpyHostToDevice);
+  cudaAssertNoError("CudaMatrix::copy_submatrix");
   #endif
 }
 
@@ -289,6 +295,17 @@ template<class T> void CudaMatrix<T>::copy_submatrix(const CudaMatrix<T>& c, uns
 
   #if !CPU_KERNELS
 	cudaMemcpy(c.data, this->data, _bytes, cudaMemcpyDeviceToDevice);
+  cudaAssertNoError("CudaMatrix::copy_submatrix");
+  #endif
+}
+
+template<class T> void CudaMatrix<T>::copy_submatrix(const std::vector<T>& v, unsigned int _elements) {
+	unsigned int _bytes = (_elements == 0 ? this->bytes() : _elements * sizeof(T));
+	if (_bytes > v.size() * sizeof(T)) throw runtime_error("CudaMatrix: Can't copy more elements than what operand has");
+
+  #if !CPU_KERNELS
+	cudaMemcpy(this->data, (T*)&v[0], _bytes, cudaMemcpyHostToDevice);
+  cudaAssertNoError("CudaMatrix::copy_submatrix");
   #endif
 }
 
@@ -302,17 +319,39 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const HostMatrix<T>& c
 			if (this->bytes() != c.bytes()) {
 				cudaFree(this->data);
 				this->width = c.width; this->height = c.height;
-				cudaError_t error_status = cudaMalloc((void**)&this->data, this->bytes());
-				assert(error_status != cudaErrorMemoryAllocation);
+				cudaMalloc((void**)&this->data, this->bytes());
 			}			
 		}
 		else {
 			this->width = c.width; this->height = c.height;
-			cudaError_t error_status = cudaMalloc((void**)&this->data, this->bytes());
-			assert(error_status != cudaErrorMemoryAllocation);			
+			cudaMalloc((void**)&this->data, this->bytes());
 		}
-		
+		cudaAssertNoError("CudaMatrix::operator=");
 		copy_submatrix(c);
+	}
+  #endif
+	return *this;
+}
+
+template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const std::vector<T>& v) {
+  #if !CPU_KERNELS
+	if (v.empty()) {
+		if (this->data) { cudaFree(this->data); this->width = this->height = 0; this->data = NULL; }
+	}
+	else {
+		if (this->data) {
+			if (this->elements() != v.size()) {
+				cudaFree(this->data);
+				this->width = v.size(); this->height = 1;
+				cudaMalloc((void**)&this->data, this->bytes());
+			}
+		}
+		else {
+			this->width = v.size(); this->height = 1;
+			cudaMalloc((void**)&this->data, this->bytes());
+		}
+    cudaAssertNoError("CudaMatrix::operator=");
+		copy_submatrix(v);
 	}
   #endif
 	return *this;
@@ -329,18 +368,16 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const CudaMatrix<T>& c
 			if (this->bytes() != c.bytes()) {
 				cudaFree(this->data);
 				this->width = c.width; this->height = c.height;
-				cudaError_t error_status = cudaMalloc((void**)&this->data, this->bytes());
-				assert(error_status != cudaErrorMemoryAllocation);				
+				cudaMalloc((void**)&this->data, this->bytes());
 			}
 		}
 		else {
 			this->width = c.width; this->height = c.height;
-			cudaError_t error_status = cudaMalloc((void**)&this->data, this->bytes());
-			if (error_status == cudaErrorMemoryAllocation) throw runtime_error("Copy failed! CudaMatrix::operator=");
-		}
-		
-		cudaMemcpy(this->data, c.data, this->bytes(), cudaMemcpyDeviceToDevice);		
+			cudaMalloc((void**)&this->data, this->bytes());
+    }
+		cudaMemcpy(this->data, c.data, this->bytes(), cudaMemcpyDeviceToDevice);
 	}
+  cudaAssertNoError("CudaMatrix::operator=");
 	#endif
 	return *this;
 }

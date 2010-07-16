@@ -22,14 +22,14 @@ void g2g_compute_group_weights(PointGroup& group)
 		double P_total = 0.0;
 		double P_atom = 0.0;
 
-		for (set<uint>::iterator atom_j_it = group.nucleii.begin(); atom_j_it != group.nucleii.end(); ++atom_j_it) {
+		for (uint j = 0; j < group.total_nucleii(); ++j) {
 			double P_curr = 1.0;
-			uint atom_j = *atom_j_it;
+			uint atom_j = group.local2global_nuc[j];
 			const double3& pos_atom_j(fortran_vars.atom_positions(atom_j));
 			double rm_atom_j = fortran_vars.rm(atom_j);
 
-			for (set<uint>::iterator atom_k_it = group.nucleii.begin(); atom_k_it != group.nucleii.end(); ++atom_k_it) {
-				uint atom_k = *atom_k_it;
+			for (uint k = 0; k < group.total_nucleii(); ++k) {
+				uint atom_k = group.local2global_nuc[k];
 				if (atom_k == atom_j) continue;
 				const double3& pos_atom_k(fortran_vars.atom_positions(atom_k));
 				double u = (length(point_position - pos_atom_j) - length(point_position - pos_atom_k)) / fortran_vars.atom_atom_dists(atom_j, atom_k);
@@ -58,14 +58,14 @@ void g2g_compute_group_weights(PointGroup& group)
 		}
 
     // punto que no tiene a su propio atomo entre los vecinos
-		if (group.nucleii.find(atom) == group.nucleii.end()) {
+    if (!group.has_nucleii(atom)) {
 			P_atom = 1.0;
 			uint atom_j = atom;
 			const double3& pos_atom_j(fortran_vars.atom_positions(atom_j));
 			double rm_atom_j = fortran_vars.rm(atom_j);
 			
-			for (set<uint>::iterator atom_k_it = group.nucleii.begin(); atom_k_it != group.nucleii.end(); ++atom_k_it) {
-				uint atom_k = *atom_k_it;
+      for (uint k = 0; k < group.total_nucleii(); ++k) {
+				uint atom_k = group.local2global_nuc[k];
 				const double3& pos_atom_k(fortran_vars.atom_positions(atom_k));
 				double u = (length(point_position - pos_atom_j) - length(point_position - pos_atom_k)) / fortran_vars.atom_atom_dists(atom_j, atom_k);
 

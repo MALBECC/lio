@@ -199,7 +199,7 @@ void regenerate_partition(void)
 				double3 cube_coord_abs = x0 + make_uint3(i,j,k) * little_cube_size;
 
         cube.assign_significative_functions(cube_coord_abs, min_exps_func);
-				if (cube.functions.empty()) { /*cout << "cube with " << cube.number_of_points << " points has no functions" << endl;*/ continue;  }
+				if (cube.total_functions_simple() == 0) { /*cout << "cube with " << cube.number_of_points << " points has no functions" << endl;*/ continue;  }
         if (cube.number_of_points < min_points_per_cube) { /*cout << "not enough points" << endl;*/ continue; }
 
         final_partition.push_back(cube);
@@ -234,7 +234,7 @@ void regenerate_partition(void)
 			assert(sphere.number_of_points > 0);
 			
 			sphere.assign_significative_functions(min_exps_func);	
-			assert(sphere.total_functions() > 0);
+			assert(sphere.total_functions_simple() > 0);
 
       if (sphere.number_of_points < min_points_per_cube) { cout << "not enough points" << endl; continue; }
       final_partition.push_front(sphere);

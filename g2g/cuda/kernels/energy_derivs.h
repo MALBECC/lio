@@ -1,39 +1,47 @@
-__global__ void gpu_compute_density_derivs(uint points, float* rdmt, float4* gradient_values, float4* density_deriv, uint* nuc,
-                                           uint nucleii_count, uint m, float* w)
+// TODO: si se juntara con energy.h (teniendo un if templatizado tipo do_forces, que hace que solo se desde donde se debe (j >= i)) se leeria RMM una sola vez
+
+__global__ void gpu_compute_density_derivs(float* function_values, float4* gradient_values, float* rdm, uint* nuc, float4* density_deriv, uint points, uint m, uint nuc_count)
 {
   uint point = index_x(blockDim, blockIdx, threadIdx);
   bool valid_thread = (point < points);
 
-  __shared__ uint nuc_sh[DENSITY_DERIV_BLOCK_SIZE];
-  __shared__ float rdm_sh[DENSITY_DERIV_BLOCK_SIZE];
+  __shared__ float rdm_sh[DENSITY_DERIV_BATCH_SIZE];
+  __shared__ uint nuc_sh[DENSITY_DERIV_BATCH_SIZE2];
 
-  if (valid_thread) { for (uint i = 0; i < nucleii_count; i++) density_deriv[COALESCED_DIMENSION(points) * i + point] = make_float4(0.0f,0.0f,0.0f,0.0f); }
+  // DENSITY DERIV DEBE ESTAR EN 0!
+  for (uint bi = 0; bi < m; bi += DENSITY_DERIV_BATCH_SIZE2) {
+    __syncthreads();
+    if (threadIdx.x < DENSITY_DERIV_BATCH_SIZE2) {
+      if (bi + threadIdx.x < m) nuc_sh[threadIdx.x] = nuc[bi + threadIdx.x];
+    }
+    __syncthreads();
 
-  for (uint j = 0; j < m; j += DENSITY_DERIV_BLOCK_SIZE) {
-    if (j + threadIdx.x < m) nuc_sh[threadIdx.x] = nuc[j + threadIdx.x];
+    for (uint i = 0; i < DENSITY_DERIV_BATCH_SIZE2 && (i + bi) < m; i++) {
+      float4 Fgi;
+      if (valid_thread) Fgi = gradient_values[COALESCED_DIMENSION(points) * (bi + i) + point];
+      float w = 0.0f;
 
-    for (uint jj = 0; jj < DENSITY_DERIV_BLOCK_SIZE && (j + jj < m); jj++) {
-      float wrdm = 0.0f;
-
-      for (uint i = 0; i < gpu_nco; i += DENSITY_DERIV_BLOCK_SIZE) {
-        if (i + threadIdx.x < gpu_nco) rdm_sh[threadIdx.x] = rdmt[COALESCED_DIMENSION(gpu_nco) * (j + jj) + i + threadIdx.x];
-
+      for (uint bj = 0; bj < m; bj += DENSITY_DERIV_BATCH_SIZE) {
         __syncthreads();
-        if (valid_thread) {
-          for (uint ii = 0; ii < DENSITY_DERIV_BLOCK_SIZE  && (i + ii < gpu_nco); ii++) {
-            wrdm += rdm_sh[ii] * w[COALESCED_DIMENSION(points) * (i + ii) + point];
-          }
+        if (threadIdx.x < DENSITY_DERIV_BATCH_SIZE) {
+          if (bj + threadIdx.x < m) rdm_sh[threadIdx.x] = rdm[COALESCED_DIMENSION(m) * (bi + i) + (bj + threadIdx.x)];
+          else rdm_sh[threadIdx.x] = 0.0f;
         }
         __syncthreads();
+
+        if (valid_thread) {
+          for (uint j = 0; j < DENSITY_DERIV_BATCH_SIZE && (bj + j) < m; j++) {
+            float fj = function_values[COALESCED_DIMENSION(points) * (bj + j) + point];
+            w += rdm_sh[j] * fj * ((bi + i) == (bj + j) ? 2 : 1);
+          }
+        }
       }
 
       if (valid_thread) {
-        uint this_nuc = nuc_sh[jj]; // Parece ser necesario para que el compilador coalescee la escritura de abajo
-        density_deriv[COALESCED_DIMENSION(points) * this_nuc + point] += gradient_values[COALESCED_DIMENSION(points) * (j + jj) + point] * wrdm;
+        uint nuci = nuc_sh[i];
+        density_deriv[COALESCED_DIMENSION(points) * nuci + point] -= Fgi * w;
       }
     }
-
-    __syncthreads();
   }
 }
 

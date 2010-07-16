@@ -26,17 +26,18 @@ template <bool forces, bool gga> void g2g_compute_functions(void)
     for (list<Point>::const_iterator point_it = group.points.begin(); point_it != group.points.end(); ++point_it, ++point) {
       float3 point_position = make_float3(point_it->position.x, point_it->position.y, point_it->position.z);
 
-      for (uint i = 0, ii = 0; i < group.functions.size(); i++) {
+      for (uint i = 0, ii = 0; i < group.total_functions_simple(); i++) {
         // compute exponential
-        uint nuc = fortran_vars.nucleii(group.functions[i]) - 1;
+        uint nuc = group.func2global_nuc(i);
         float3 v = point_position - to_float3(fortran_vars.atom_positions(nuc));
         float dist = length2(v);
 
         float t = 0, tg = 0, th = 0;
-        uint contractions = fortran_vars.contractions(group.functions[i]);
+        uint global_func = group.local2global_func[i];
+        uint contractions = fortran_vars.contractions(global_func);
         for (uint contraction = 0; contraction < contractions; contraction++) {
-          float a = fortran_vars.a_values(group.functions[i], contraction);
-          float c = fortran_vars.c_values(group.functions[i], contraction);
+          float a = fortran_vars.a_values(global_func, contraction);
+          float c = fortran_vars.c_values(global_func, contraction);
           float t0 = expf(-(a * dist)) * c;
           t += t0;
           if (forces || gga) tg += t0 * a;

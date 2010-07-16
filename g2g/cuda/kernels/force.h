@@ -1,12 +1,6 @@
-
-/**
- * Called for each atom
- */
-
 __global__ void gpu_compute_forces(uint points, float* force_factors, float4* density_deriv, float4* forces, uint nucleii_count)
 {
 	uint atom = index_x(blockDim, blockIdx, threadIdx);
-	
 	bool valid_thread = (atom < nucleii_count);
 
 	float4 atom_force = make_float4(0.0f,0.0f,0.0f,0.0f);
@@ -16,7 +10,7 @@ __global__ void gpu_compute_forces(uint points, float* force_factors, float4* de
   for (uint point_base = 0; point_base < points; point_base += FORCE_BLOCK_SIZE) {
 		__syncthreads();
 		if (point_base + threadIdx.x < points) factor_sh[threadIdx.x] = force_factors[point_base + threadIdx.x];
-		factor_sh[threadIdx.x] *= 4.0f;
+		//factor_sh[threadIdx.x] *= 4.0f;
 		__syncthreads();
 
 		if (valid_thread) {

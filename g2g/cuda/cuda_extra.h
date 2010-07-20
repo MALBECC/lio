@@ -26,6 +26,12 @@ inline __device__ __host__ double3 operator-(const double3& a, const double3& b)
 inline __device__ __host__ double3 operator+(const double3& a, const double3& b)
 { return make_double3(a.x + b.x, a.y + b.y, a.z + b.z); }
 
+inline __device__ __host__ float4 operator+(const float4& a, const float4& b)
+{ return make_float4(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w); }
+
+inline __device__ __host__ float4 operator*(const float4& a, const float4& b)
+{ return make_float4(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w); }
+
 inline __device__ __host__ double3 operator/(const double3& a, const uint& b)
 { return make_double3(a.x / b, a.y / b, a.z / b); }
 

@@ -15,7 +15,7 @@ using namespace G2G;
 
 /* external function prototypes */
 template<bool, bool> void g2g_compute_functions(void);
-void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
+template<bool, bool> void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
 
 /* internal function prototypes */
 void read_options(void);
@@ -82,9 +82,6 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
   fortran_vars.lda = (Iexch <= 3);
   fortran_vars.gga = !fortran_vars.lda;
   assert(0 < Iexch && Iexch <= 9);
-  #if !CPU_KERNELS
-  if (fortran_vars.gga) throw std::runtime_error("GGA not supported in GPU for now");
-  #endif
 	
 	fortran_vars.atom_positions_pointer = FortranMatrix<double>(r, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS);
 	fortran_vars.atom_types.resize(fortran_vars.atoms);
@@ -203,7 +200,14 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
   bool compute_forces = (computation_type == COMPUTE_FORCE_ONLY || computation_type == COMPUTE_ENERGY_FORCE);
   bool compute_rmm = (computation_type == COMPUTE_RMM);
 
-  g2g_iteration(compute_energy, compute_forces, compute_rmm, fort_energy_ptr, fort_forces_ptr);
+  if (fortran_vars.lda) {
+    if (compute_forces) g2g_iteration<true, true>(compute_energy, compute_rmm, fort_energy_ptr, fort_forces_ptr);
+    else g2g_iteration<true, false>(compute_energy, compute_rmm, fort_energy_ptr, fort_forces_ptr);
+  }
+  else {
+    if (compute_forces) g2g_iteration<false, true>(compute_energy, compute_rmm, fort_energy_ptr, fort_forces_ptr);
+    else g2g_iteration<false, false>(compute_energy, compute_rmm, fort_energy_ptr, fort_forces_ptr);
+  }
 }
 
 /* general options */

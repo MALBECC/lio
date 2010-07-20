@@ -23,11 +23,12 @@
 using namespace G2G;
 using namespace std;
 
-void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr)
+template<bool lda, bool compute_forces>
+void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr)
 {
   double total_energy = 0.0;
 
-  Timer t_total, t_ciclos, t_rmm, t_density, t_density_derivs, t_forces, t_resto;
+  Timer t_total, t_rmm, t_density, t_density_derivs, t_forces, t_resto;
 	t_total.sync();
 	t_total.start();
 
@@ -67,21 +68,16 @@ void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, d
 
 		if (compute_energy) {
       CudaMatrixFloat energy_gpu(group.number_of_points);
-
-      if (compute_forces)
-        gpu_compute_density<true, true><<<threadGrid, threadBlock>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, group.number_of_points, rmm_input_gpu.data, group.function_values.data, group_m);
-      else
-        gpu_compute_density<true, false><<<threadGrid, threadBlock>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, group.number_of_points, rmm_input_gpu.data, group.function_values.data, group_m);
+      gpu_compute_density<true, compute_forces, lda><<<threadGrid, threadBlock>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, group.number_of_points,
+        rmm_input_gpu.data, group.function_values.data, group.gradient_values.data, group.hessian_values.data, group_m);
       cudaAssertNoError("compute_density");
 
       HostMatrixFloat energy_cpu(energy_gpu);
 			for (uint i = 0; i < group.number_of_points; i++) { total_energy += energy_cpu(i); } // TODO: hacer con un kernel?
     }
     else {
-      if (compute_forces)
-        gpu_compute_density<false, true><<<threadGrid, threadBlock>>>(NULL, factors_gpu.data, point_weights_gpu.data, group.number_of_points, rmm_input_gpu.data, group.function_values.data, group_m);
-      else
-        gpu_compute_density<false, false><<<threadGrid, threadBlock>>>(NULL, factors_gpu.data, point_weights_gpu.data, group.number_of_points, rmm_input_gpu.data, group.function_values.data, group_m);
+      gpu_compute_density<false, compute_forces, lda><<<threadGrid, threadBlock>>>(NULL, factors_gpu.data, point_weights_gpu.data, group.number_of_points,
+        rmm_input_gpu.data, group.function_values.data, group.gradient_values.data, group.hessian_values.data, group_m);
       cudaAssertNoError("compute_density");
     }
     
@@ -152,9 +148,12 @@ void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, d
   uint free_memory, total_memory;
   cudaGetMemoryInfo(free_memory, total_memory);
   cout << "Maximum used memory: " << (double)max_used_memory / (1024 * 1024) << "MB (" << ((double)max_used_memory / total_memory) * 100.0 << "%)" << endl;
-
 }
 
+template void g2g_iteration<true, true>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<true, false>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<false, true>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<false, false>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
 
 /*******************************
  * Cube Functions

@@ -15,8 +15,8 @@
 using namespace std;
 using namespace G2G;
 
-
-void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr)
+template <bool lda, bool compute_forces>
+void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr)
 {
   double total_energy = 0;
 
@@ -53,7 +53,7 @@ void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, d
       cfloat3 dd1(0,0,0);
       cfloat3 dd2(0,0,0);
 
-      if (fortran_vars.lda) {
+      if (lda) {
         for (uint i = 0; i < group_m; i++) {
           float w = 0.0f;
           float Fi = group.function_values(i, point);
@@ -130,7 +130,7 @@ void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, d
       t_density.start();
       /** energy / potential **/
       float exc = 0, corr = 0, y2a = 0;
-      if (fortran_vars.lda)
+      if (lda)
         cpu_pot(partial_density, exc, corr, y2a);
       else {
         cpu_potg(partial_density, dxyz, dd1, dd2, exc, corr, y2a);
@@ -206,3 +206,7 @@ void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, d
   cout << "rmm: " << t_rmm << " density: " << t_density << " pot: " << t_pot << " resto: " << t_resto << endl;
 }
 
+template void g2g_iteration<true, true>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<true, false>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<false, true>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<false, false>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);

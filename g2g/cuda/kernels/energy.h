@@ -16,17 +16,20 @@ __global__ void gpu_compute_density(float* const energy, float* const factor, co
 
   /***** compute density ******/
   for (uint i = 0; i < m; i++) {
-    float Fi = function_values[COALESCED_DIMENSION(points) * i + point];
     float w = 0.0f;
-
     float4 w3, ww1, ww2;
     if (!lda) { w3 = ww1 = ww2 = make_float4(0.0f,0.0f,0.0f,0.0f); }
 
+    float Fi;
     float4 Fgi, Fhi1, Fhi2;
-    if (!lda) {
-      Fgi = gradient_values[COALESCED_DIMENSION(points) * i + point];
-      Fhi1 = hessian_values[COALESCED_DIMENSION(points) * (2 * i + 0) + point];
-      Fhi2 = hessian_values[COALESCED_DIMENSION(points) * (2 * i + 1) + point];
+
+    if (valid_thread) {
+      Fi = function_values[COALESCED_DIMENSION(points) * i + point];
+      if (!lda) {
+        Fgi = gradient_values[COALESCED_DIMENSION(points) * i + point];
+        Fhi1 = hessian_values[COALESCED_DIMENSION(points) * (2 * i + 0) + point];
+        Fhi2 = hessian_values[COALESCED_DIMENSION(points) * (2 * i + 1) + point];
+      }
     }
 
     for (uint bj = i; bj < m; bj += DENSITY_BATCH_SIZE) {
@@ -43,11 +46,11 @@ __global__ void gpu_compute_density(float* const energy, float* const factor, co
           w += rdm_sh[j] * Fj;
 
           if (!lda) {
-            float4 Fgj = gradient_values[COALESCED_DIMENSION(points) * j + point];
+            float4 Fgj = gradient_values[COALESCED_DIMENSION(points) * (bj + j) + point];
             w3 += Fgj * rdm_sh[j];
 
-            float4 Fhj1 = hessian_values[COALESCED_DIMENSION(points) * (2 * j + 0) + point];
-            float4 Fhj2 = hessian_values[COALESCED_DIMENSION(points) * (2 * j + 0) + point];
+            float4 Fhj1 = hessian_values[COALESCED_DIMENSION(points) * (2 * (bj + j) + 0) + point];
+            float4 Fhj2 = hessian_values[COALESCED_DIMENSION(points) * (2 * (bj + j) + 0) + point];
             ww1 += Fhj1 * rdm_sh[j];
             ww2 += Fhj2 * rdm_sh[j];
           }

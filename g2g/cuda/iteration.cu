@@ -3,6 +3,7 @@
 #include <fstream>
 #include <map>
 #include <string>
+#include <math_constants.h>
 #include "../common.h"
 #include "../init.h"
 #include "cuda_extra.h"

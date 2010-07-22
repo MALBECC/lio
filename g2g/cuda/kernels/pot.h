@@ -377,11 +377,11 @@ __device__ void closedpbe(float rho, float agrad, float delgrad, float rlap, flo
   // first we calculate the lsd contribution to the correlation energy
   // we will use the subroutine GCOR.
   // We need only the  rs (seitz radius) rs = (3/4pi*rho)^1/3
-  float pirho = 4.0f * M_PI * rho;
+  float pirho = 4.0f * CUDART_PI_F * rho;
   float rs = powf(3.0f / pirho, 1.0f / 3.0f);
   float rtrs = sqrtf(rs);
 
-  float sk = sqrtf(4.0f * fk / M_PI);
+  float sk = sqrtf(4.0f * fk / CUDART_PI_F);
   float twoks = 2.0f * sk;
 
   float t = agrad / (twoks * rho);

@@ -118,8 +118,12 @@ void cpu_pot(float dens, float& ex, float& ec, float& y2a)
 
 #include <float.h>
 
-static void closedpbe(float rho, double agrad, double delgrad, double rlap, double& expbe, double& vxpbe, double& ecpbe, double& vcpbe);
-static void gcorc(double rtrs, double& gg, double& grrs);
+/* anda bien asi para las energias, pero no probe con las fuerzas */
+#define real float
+#define REAL_MIN FLT_MIN
+
+static void closedpbe(float rho, real agrad, real delgrad, real rlap, real& expbe, real& vxpbe, real& ecpbe, real& vcpbe);
+static void gcorc(real rtrs, real& gg, real& grrs);
 
 /*
  subroutine for evaluating exchange correlation density and
@@ -147,91 +151,91 @@ void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3&
   //if (dens < 1e-12) { ex = ec = 0; return; }
   if (dens < 1e-13) { ex = ec = 0; return; }
 
-  double y = pow((double)dens, 0.333333333333333333);  // rho^(1/3)
+  real y = pow((real)dens, 0.333333333333333333);  // rho^(1/3)
 
-  double grad2 = grad.x * grad.x + grad.y * grad.y + grad.z * grad.z;
-  if (grad2 == 0) grad2 = DBL_MIN;
-  double dgrad = sqrt(grad2);
+  real grad2 = grad.x * grad.x + grad.y * grad.y + grad.z * grad.z;
+  if (grad2 == 0) grad2 = REAL_MIN;
+  real dgrad = sqrt(grad2);
 
-  double d0 = hess1.x + hess1.y + hess1.z;
-  double u0 = ((grad.x * grad.x) * hess1.x + 2.0 * grad.x * grad.y * hess2.x + 2.0 * grad.y * grad.z * hess2.z + 2.0 * grad.x * grad.z * hess2.y +
+  real d0 = hess1.x + hess1.y + hess1.z;
+  real u0 = ((grad.x * grad.x) * hess1.x + 2.0 * grad.x * grad.y * hess2.x + 2.0 * grad.y * grad.z * hess2.z + 2.0 * grad.x * grad.z * hess2.y +
       (grad.y * grad.y) * hess1.y + (grad.z * grad.z) * hess1.z) / dgrad; // esto ya difiere
   
   y2a = 0;
 
   /** Exchange **/
   if (fortran_vars.iexch == 4 || fortran_vars.iexch == 8) {   // Perdew : Phys. Rev B 33 8800 (1986)
-    double dens2 = (dens * dens);
-    double ckf = 3.0936677 * y;
-    double s = dgrad / (2.0 * ckf * dens);
+    real dens2 = (dens * dens);
+    real ckf = 3.0936677 * y;
+    real s = dgrad / (2.0 * ckf * dens);
 
-    double fx = 1.0 / 15.0;
-    double s2 = (s * s);
-    double s3 = (s * s * s);
-    double g0 = 1.0 + 1.296 * s2 + 14.0 * pow(s, 4) + 0.2 * pow(s, 6);
-    double F = pow(g0, fx);
-    double e = POT_ALPHA * F * y;
+    real fx = 1.0 / 15.0;
+    real s2 = (s * s);
+    real s3 = (s * s * s);
+    real g0 = 1.0 + 1.296 * s2 + 14.0 * pow(s, 4) + 0.2 * pow(s, 6);
+    real F = pow(g0, fx);
+    real e = POT_ALPHA * F * y;
     ex = e;
 
-    double t = d0 / (dens * 4.0 * (ckf * ckf));
-    double u = u0 / (pow(2.0 * ckf, 3) * dens2);
+    real t = d0 / (dens * 4.0 * (ckf * ckf));
+    real u = u0 / (pow(2.0 * ckf, 3) * dens2);
     //cout << t << " " << u << endl;
 
-    double g2 = 2.592 * s + 56.0 * s3 + 1.2 * pow(s, 5);
-    double g3 = 2.592 + 56.0 * s2 + 1.2 * pow(s, 4);
-    double g4 = 112.0 * s + 4.8 * s3;
-    double dF = fx * F/g0 * g2;
-    double dsF = fx * F/g0 * (-14.0 * fx * g3 * g2/g0 + g4);
+    real g2 = 2.592 * s + 56.0 * s3 + 1.2 * pow(s, 5);
+    real g3 = 2.592 + 56.0 * s2 + 1.2 * pow(s, 4);
+    real g4 = 112.0 * s + 4.8 * s3;
+    real dF = fx * F/g0 * g2;
+    real dsF = fx * F/g0 * (-14.0 * fx * g3 * g2/g0 + g4);
     y2a = POT_ALPHA * (1.33333333333 * F - t/s * dF - (u-1.3333333333 * s3) * dsF) * y;
   }
   else if (fortran_vars.iexch >= 5 && fortran_vars.iexch <= 7) { // Becke  : Phys. Rev A 38 3098 (1988)
-    double e0 = POT_ALPHA * y;
-    double y2 = dens / 2.0;
-    double r13 = pow(y2, (1.0 / 3.0));
-    double r43 = pow(y2, (4.0 / 3.0));
-    double Xs = dgrad / (2.0 * r43);
-    double siper = asinh(Xs);
-    double DN = 1.0 + 6.0 * POT_BETA * Xs * siper;
-    double ect = -2.0 * POT_BETA * r43 * Xs * Xs/(DN * dens);
-    double e = e0 + ect;
+    real e0 = POT_ALPHA * y;
+    real y2 = dens / 2.0;
+    real r13 = pow(y2, (1.0 / 3.0));
+    real r43 = pow(y2, (4.0 / 3.0));
+    real Xs = dgrad / (2.0 * r43);
+    real siper = asinh(Xs);
+    real DN = 1.0 + 6.0 * POT_BETA * Xs * siper;
+    real ect = -2.0 * POT_BETA * r43 * Xs * Xs/(DN * dens);
+    real e = e0 + ect;
     ex = e;
 
     // potential
-    double v0 = 1.33333333333333 * e0;
-    double Fb = 1.0 / DN;
-    double XA1 = Xs / sqrt(1.0 + Xs * Xs);
-    double DN1 = 1.0 + Fb * (1.0 - 6.0 * POT_BETA * Xs * XA1);
-    double DN2 = 1.0 / (1.0 + Xs * Xs) + 2.0 * Fb * (2.0 - 6.0 * POT_BETA * Xs * XA1);
-    double DN3 = siper * (1.0 + 2.0 * Fb) + XA1 * DN2;
-    double D02 = d0 / 2.0;
-    double de1 = 1.33333333333333 / (pow((double)dens,2.33333333333333));
-    double DGRADx = (grad.x * hess1.x + grad.y * hess2.x + grad.z * hess2.y) / dgrad;
-    double GRADXx = pow(2.0, 0.33333333333333) * (1.0 / (dens * y) * DGRADx - de1 * grad.x * dgrad);
-    double DGRADy = (grad.x * hess2.x + grad.y * hess1.y + grad.z * hess2.z) / dgrad;
-    double GRADXy = pow(2.0, 0.33333333333333) * (1.0 / (dens * y) * DGRADy - de1 * grad.y * dgrad);
-    double DGRADz = (grad.x * hess2.y + grad.y * hess2.z + grad.z * hess1.z) / dgrad;
-    double GRADXz = pow(2.0, 0.33333333333333) * (1.0 / (dens * y) * DGRADz - de1 * grad.z * dgrad);
-    double T1 = grad.x / 2.0 * GRADXx;
-    double T2 = grad.y / 2.0 * GRADXy;
-    double T3 = grad.z / 2.0 * GRADXz;
-    double DN4 = 6.0 * POT_BETA * Fb * (T1 + T2 + T3);
-    double DN5 = 1.33333333333333 * r43 * r13 * Xs * Xs;
-    double TOT2 = DN5 - D02 * DN1 + DN4 * DN3;
-    double vxc = -POT_BETA * Fb/r43 * TOT2;
+    real v0 = 1.33333333333333 * e0;
+    real Fb = 1.0 / DN;
+    real XA1 = Xs / sqrt(1.0 + Xs * Xs);
+    real DN1 = 1.0 + Fb * (1.0 - 6.0 * POT_BETA * Xs * XA1);
+    real DN2 = 1.0 / (1.0 + Xs * Xs) + 2.0 * Fb * (2.0 - 6.0 * POT_BETA * Xs * XA1);
+    real DN3 = siper * (1.0 + 2.0 * Fb) + XA1 * DN2;
+    real D02 = d0 / 2.0;
+    real de1 = 1.33333333333333 / (pow((real)dens,2.33333333333333));
+    real DGRADx = (grad.x * hess1.x + grad.y * hess2.x + grad.z * hess2.y) / dgrad;
+    real GRADXx = pow(2.0, 0.33333333333333) * (1.0 / (dens * y) * DGRADx - de1 * grad.x * dgrad);
+    real DGRADy = (grad.x * hess2.x + grad.y * hess1.y + grad.z * hess2.z) / dgrad;
+    real GRADXy = pow(2.0, 0.33333333333333) * (1.0 / (dens * y) * DGRADy - de1 * grad.y * dgrad);
+    real DGRADz = (grad.x * hess2.y + grad.y * hess2.z + grad.z * hess1.z) / dgrad;
+    real GRADXz = pow(2.0, 0.33333333333333) * (1.0 / (dens * y) * DGRADz - de1 * grad.z * dgrad);
+    real T1 = grad.x / 2.0 * GRADXx;
+    real T2 = grad.y / 2.0 * GRADXy;
+    real T3 = grad.z / 2.0 * GRADXz;
+    real DN4 = 6.0 * POT_BETA * Fb * (T1 + T2 + T3);
+    real DN5 = 1.33333333333333 * r43 * r13 * Xs * Xs;
+    real TOT2 = DN5 - D02 * DN1 + DN4 * DN3;
+    real vxc = -POT_BETA * Fb/r43 * TOT2;
     //cout << "vars: " << hess1 << endl;
     y2a = v0 + vxc;
   }
   else { // PBE (Iexch 9 complete)
-    double dgrad1 = grad.x * grad.x * hess1.x;
-    double dgrad2 = grad.y * grad.y * hess1.y;
-    double dgrad3 = grad.z * grad.z * hess1.z;
-    double dgrad4 = grad.x * grad.y * hess2.x;
-    double dgrad5 = grad.x * grad.z * hess2.y;
-    double dgrad6 = grad.y * grad.z * hess2.z;
-    double delgrad = (dgrad1 + dgrad2 + dgrad3 + 2 * (dgrad4 + dgrad5 + dgrad6)) / dgrad;
-    double rlap = hess1.x + hess1.y + hess1.z;
+    real dgrad1 = grad.x * grad.x * hess1.x;
+    real dgrad2 = grad.y * grad.y * hess1.y;
+    real dgrad3 = grad.z * grad.z * hess1.z;
+    real dgrad4 = grad.x * grad.y * hess2.x;
+    real dgrad5 = grad.x * grad.z * hess2.y;
+    real dgrad6 = grad.y * grad.z * hess2.z;
+    real delgrad = (dgrad1 + dgrad2 + dgrad3 + 2 * (dgrad4 + dgrad5 + dgrad6)) / dgrad;
+    real rlap = hess1.x + hess1.y + hess1.z;
 
-    double expbe, vxpbe, ecpbe, vcpbe;
+    real expbe, vxpbe, ecpbe, vcpbe;
     closedpbe(dens, dgrad, delgrad, rlap, expbe, vxpbe, ecpbe, vcpbe);
     ex = expbe;
     ec = ecpbe;
@@ -242,77 +246,77 @@ void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3&
   /** Correlation **/
   if (fortran_vars.iexch >= 4 && fortran_vars.iexch <= 6) { // Perdew : Phys. Rev B 33 8822 (1986)
     // TODO: hay algun problema con 4 y 5, probablemente este aca
-    double dens2 = (dens * dens);
-    double rs = POT_GL / y;
-    double x1 = sqrt(rs);
-    double Xx = rs + POT_VOSKO_B1 * x1 + POT_VOSKO_C1;
-    double Xxo = (POT_VOSKO_X0 * POT_VOSKO_X0) + POT_VOSKO_B1 * POT_VOSKO_X0 + POT_VOSKO_C1;
-    double t1 = 2.0 * x1 + POT_VOSKO_B1;
-    double t2 = log(Xx);
-    double t3 = atan(POT_VOSKO_Q/t1);
-    double t4 = POT_VOSKO_B1 * POT_VOSKO_X0/Xxo;
+    real dens2 = (dens * dens);
+    real rs = POT_GL / y;
+    real x1 = sqrt(rs);
+    real Xx = rs + POT_VOSKO_B1 * x1 + POT_VOSKO_C1;
+    real Xxo = (POT_VOSKO_X0 * POT_VOSKO_X0) + POT_VOSKO_B1 * POT_VOSKO_X0 + POT_VOSKO_C1;
+    real t1 = 2.0 * x1 + POT_VOSKO_B1;
+    real t2 = log(Xx);
+    real t3 = atan(POT_VOSKO_Q/t1);
+    real t4 = POT_VOSKO_B1 * POT_VOSKO_X0/Xxo;
 
     ec = POT_VOSKO_A1 * (2.0 * log(x1) - t2 + 2.0 * POT_VOSKO_B1/POT_VOSKO_Q * t3 - t4 *(2.0 * log(x1 - POT_VOSKO_X0) - t2 + 2.0 * (POT_VOSKO_B1 + 2.0 * POT_VOSKO_X0)/POT_VOSKO_Q * t3));
     //cout << "vars: " << 2.0 * log(x1) << " " << t2 << " " << t3 << " " << t4 << endl;
 
-    double t5 = (POT_VOSKO_B1 * x1 + 2.0 * POT_VOSKO_C1)/x1;
-    double t6 = POT_VOSKO_X0/Xxo;
-    double vc = ec - POT_VOSKO_A16 * x1 * (t5/Xx - 4.0 * POT_VOSKO_B1 / ((t1 * t1)+(POT_VOSKO_Q * POT_VOSKO_Q2)) * (1.0 - t6 * (POT_VOSKO_B1 - 2.0 * POT_VOSKO_X0)) - t4 * (2.0 / (x1 - POT_VOSKO_X0) - t1/Xx));
+    real t5 = (POT_VOSKO_B1 * x1 + 2.0 * POT_VOSKO_C1)/x1;
+    real t6 = POT_VOSKO_X0/Xxo;
+    real vc = ec - POT_VOSKO_A16 * x1 * (t5/Xx - 4.0 * POT_VOSKO_B1 / ((t1 * t1)+(POT_VOSKO_Q * POT_VOSKO_Q2)) * (1.0 - t6 * (POT_VOSKO_B1 - 2.0 * POT_VOSKO_X0)) - t4 * (2.0 / (x1 - POT_VOSKO_X0) - t1/Xx));
 
     if (fortran_vars.iexch == 6) {
       y2a = y2a + vc;
     }
     else { // ?? citation??
-      double rs2 = (rs * rs);
-      double Cx1 = 0.002568 + POT_ALF * rs + POT_BET * rs2;
-      double Cx2 = 1.0 + POT_GAM * rs + POT_DEL * rs2 + 1.0e4 * POT_BET * (rs * rs * rs);
-      double C = 0.001667 + Cx1/Cx2;
-      double Cx3 = POT_ALF + 2.0 * POT_BET * rs;
-      double Cx4 = POT_GAM + 2.0 * POT_DEL * rs + 3.0e4 * POT_BET * rs2;
-      double dC = Cx3/Cx2 - Cx1/(Cx2 * Cx2) * Cx4;
+      real rs2 = (rs * rs);
+      real Cx1 = 0.002568 + POT_ALF * rs + POT_BET * rs2;
+      real Cx2 = 1.0 + POT_GAM * rs + POT_DEL * rs2 + 1.0e4 * POT_BET * (rs * rs * rs);
+      real C = 0.001667 + Cx1/Cx2;
+      real Cx3 = POT_ALF + 2.0 * POT_BET * rs;
+      real Cx4 = POT_GAM + 2.0 * POT_DEL * rs + 3.0e4 * POT_BET * rs2;
+      real dC = Cx3/Cx2 - Cx1/(Cx2 * Cx2) * Cx4;
       dC = -0.333333333333333 * dC * POT_GL / (y * dens);
-      double phi = 0.0008129082/C * dgrad/pow((double)dens, 7.0 / 6.0);
-      double expo = exp(-phi);
-      double ex0 = expo * C;
+      real phi = 0.0008129082/C * dgrad/pow((real)dens, 7.0 / 6.0);
+      real expo = exp(-phi);
+      real ex0 = expo * C;
       ec = ec + ex0 * grad2 / (y * dens2);
 
-      double D1 = (2.0f - phi) * d0/dens;
-      double phi2 = (phi * phi);
-      double D2 = 1.33333333333333333 - 3.666666666666666666 * phi + 1.166666666666666 * phi2;
+      real D1 = (2.0f - phi) * d0/dens;
+      real phi2 = (phi * phi);
+      real D2 = 1.33333333333333333 - 3.666666666666666666 * phi + 1.166666666666666 * phi2;
       D2 = D2 * grad2/dens2;
-      double D3 = phi * (phi - 3.0) * u0/(dens * dgrad);
-      double D4 = expo * grad2 / (y * dens) * (phi2 - phi - 1.0) * dC;
+      real D3 = phi * (phi - 3.0) * u0/(dens * dgrad);
+      real D4 = expo * grad2 / (y * dens) * (phi2 - phi - 1.0) * dC;
       vc = vc - 1.0 * (ex0 / y * (D1 - D2 + D3) - D4);
       y2a = y2a + vc;
       //cout << ec << " " << y2a << " " << D1 << " " << D2 << " " << D3 << endl;
     }
   }
   else if (fortran_vars.iexch == 7 || fortran_vars.iexch == 8) { // Correlation: given by LYP: PRB 37 785 (1988)
-    double rom13 = pow(dens, -0.3333333333333f);
-    double rom53 = pow(dens, 1.666666666666f);
-    double ecro = expf(-POT_CLYP * rom13);
-    double f1 = 1.0f / (1.0f + POT_DLYP * rom13);
-    double tw = 1.0f / 8.0f * (grad2/dens - d0);
-    double term = (tw / 9.0f + d0 / 18.0f) - 2.0f * tw + POT_CF * rom53;
+    real rom13 = pow(dens, -0.3333333333333f);
+    real rom53 = pow(dens, 1.666666666666f);
+    real ecro = expf(-POT_CLYP * rom13);
+    real f1 = 1.0f / (1.0f + POT_DLYP * rom13);
+    real tw = 1.0f / 8.0f * (grad2/dens - d0);
+    real term = (tw / 9.0f + d0 / 18.0f) - 2.0f * tw + POT_CF * rom53;
     term = dens + POT_BLYP * (rom13 * rom13) * ecro * term;
     ec = -POT_ALYP * f1 * term/dens;
 
     // y2a
-    double h1 = ecro/rom53;
-    double g1 = f1 * h1;
-    double tm1 = POT_DLYP3 * (rom13/dens);
-    double fp1 = tm1 * (f1 * f1);
-    double tm2 = -1.666666666f + POT_CLYP3 * rom13;
-    double hp1 = h1 * tm2/dens;
-    double gp1 = fp1 * h1 + hp1 * f1;
-    double fp2 = tm1 * 2.0f * f1 * (fp1 - 0.6666666666f * f1/dens);
-    double tm3 = 1.6666666666f - POT_CLYP3 * 1.3333333333f * rom13;
-    double hp2 = hp1 * tm2/dens + h1 * tm3/(dens * dens);
-    double gp2 = fp2 * h1 + 2.0f * fp1 * hp1 + hp2 * f1;
+    real h1 = ecro/rom53;
+    real g1 = f1 * h1;
+    real tm1 = POT_DLYP3 * (rom13/dens);
+    real fp1 = tm1 * (f1 * f1);
+    real tm2 = -1.666666666f + POT_CLYP3 * rom13;
+    real hp1 = h1 * tm2/dens;
+    real gp1 = fp1 * h1 + hp1 * f1;
+    real fp2 = tm1 * 2.0f * f1 * (fp1 - 0.6666666666f * f1/dens);
+    real tm3 = 1.6666666666f - POT_CLYP3 * 1.3333333333f * rom13;
+    real hp2 = hp1 * tm2/dens + h1 * tm3/(dens * dens);
+    real gp2 = fp2 * h1 + 2.0f * fp1 * hp1 + hp2 * f1;
 
-    double term3 = -POT_ALYP * (fp1 * dens + f1) - POT_ALYP * POT_BLYP * POT_CF * (gp1 * dens + 8.0f/3.0f * g1) * rom53;
-    double term4 = (gp2 * dens * grad2 + gp1 * (3.0f * grad2 + 2.0f * dens * d0) + 4.0f * g1 * d0) * POT_ALYP * POT_BLYP/4.0f;
-    double term5 = (3.0f * gp2 * dens * grad2 + gp1 * (5.0f * grad2 + 6.0f * dens * d0) + 4.0f * g1 * d0) * POT_ALYP * POT_BLYP/72.0f;
+    real term3 = -POT_ALYP * (fp1 * dens + f1) - POT_ALYP * POT_BLYP * POT_CF * (gp1 * dens + 8.0f/3.0f * g1) * rom53;
+    real term4 = (gp2 * dens * grad2 + gp1 * (3.0f * grad2 + 2.0f * dens * d0) + 4.0f * g1 * d0) * POT_ALYP * POT_BLYP/4.0f;
+    real term5 = (3.0f * gp2 * dens * grad2 + gp1 * (5.0f * grad2 + 6.0f * dens * d0) + 4.0f * g1 * d0) * POT_ALYP * POT_BLYP/72.0f;
     //cout <<  term3 << " " << term4 << " " << term5 << endl;
 
     y2a = y2a + (term3 - term4 - term5);
@@ -329,33 +333,34 @@ void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3&
 #define CLOSEDPBE_BETA 0.06672455060314922
 #define CLOSEDPBE_DELTA 2.14612633996736 // beta/gamma
 
-static void closedpbe(float rho, double agrad, double delgrad, double rlap, double& expbe, double& vxpbe, double& ecpbe, double& vcpbe)
+
+static void closedpbe(float rho, real agrad, real delgrad, real rlap, real& expbe, real& vxpbe, real& ecpbe, real& vcpbe)
 {
   if (rho < 2e-18) {
     expbe = vxpbe = ecpbe = vcpbe = 0;
     return;
   }
 	
-  float rho2 = rho * rho;
-  double rho13 = pow((double)rho, 1.0 / 3.0);
-  double fk1 = pow(CLOSEDPBE_PI32, 1.0 / 3.0);
-  double fk = fk1 * rho13;
+  real rho2 = rho * rho;
+  real rho13 = pow((real)rho, 1.0 / 3.0);
+  real fk1 = pow(CLOSEDPBE_PI32, 1.0 / 3.0);
+  real fk = fk1 * rho13;
 
-  double twofk = 2.0 * fk;
-  double twofk2 = pow(twofk, 2);
-  double twofk3 = pow(twofk, 3);
+  real twofk = 2.0 * fk;
+  real twofk2 = pow(twofk, 2);
+  real twofk3 = pow(twofk, 3);
 
   // S = |grad(rho)|/(2*fk*rho)
-  double s = agrad / (twofk * rho);
-  double s2 = pow(s, 2);
-  double s3 = pow(s, 3);
+  real s = agrad / (twofk * rho);
+  real s2 = pow(s, 2);
+  real s3 = pow(s, 3);
 
   // LDA exchange contribution:
   // ex*rho ==> energy, we will calculate ex ==> energy density
   // ex*rho = -(3/4Pi)*(e^2)*(3pi)^2/3*rho^1/3*rho
   // ex*rho = -0.75*(3/Pi)^1/3*rho^4/3
   // ex*rho = ax*rho^4/3
-  double exlda = CLOSEDPBE_AX * rho13;
+  real exlda = CLOSEDPBE_AX * rho13;
 
   // In order to calculate the PBE contribution
   // to exchange energy, we have to calculate the
@@ -363,27 +368,27 @@ static void closedpbe(float rho, double agrad, double delgrad, double rlap, doub
   // Fx = 1+uk -(uk/(1+(um*s^2)/uk)
   // um/uk = ul
   // P0 = 1 + (um*s^2)/uk
-  double p0 = 1.0 + CLOSEDPBE_UL * s2;
-  double fxpbe = 1.0 + CLOSEDPBE_UK - CLOSEDPBE_UK/p0;
+  real p0 = 1.0 + CLOSEDPBE_UL * s2;
+  real fxpbe = 1.0 + CLOSEDPBE_UK - CLOSEDPBE_UK/p0;
 
   // exchange pbe energy
   expbe = exlda * fxpbe;
 
   // Now the potential:
-  double v = rlap / (twofk2 * rho);
-  double u = (delgrad == 0 ? 0 : delgrad / (twofk3 * rho2));
+  real v = rlap / (twofk2 * rho);
+  real u = (delgrad == 0 ? 0 : delgrad / (twofk3 * rho2));
 
   // Calculation of first and second derivatives
-  double P2 = p0 * p0;
-  double Fs = 2.0 * CLOSEDPBE_UM / P2;
+  real P2 = p0 * p0;
+  real Fs = 2.0 * CLOSEDPBE_UM / P2;
 
-  double F1 = -4.0 * CLOSEDPBE_UL * s * Fs;
-  double Fss = F1/p0;
+  real F1 = -4.0 * CLOSEDPBE_UL * s * Fs;
+  real Fss = F1/p0;
 
   // Now we calculate the potential Vx
-  double vx2 = (4.0 / 3.0) * fxpbe;
-  double vx3 = v * Fs;
-  double vx4 = (u - (4.0 / 3.0) * s3) * Fss;
+  real vx2 = (4.0 / 3.0) * fxpbe;
+  real vx3 = v * Fs;
+  real vx4 = (u - (4.0 / 3.0) * s3) * Fss;
 
   vxpbe = exlda * (vx2 - vx4 - vx3);
 
@@ -393,64 +398,64 @@ static void closedpbe(float rho, double agrad, double delgrad, double rlap, doub
   // first we calculate the lsd contribution to the correlation energy
   // we will use the subroutine GCOR.
   // We need only the  rs (seitz radius) rs = (3/4pi*rho)^1/3
-  double pirho = 4.0 * M_PI * rho;
-  double rs = pow(3.0 / pirho, 1.0 / 3.0);
-  double rtrs = sqrt(rs);
+  real pirho = 4.0 * M_PI * rho;
+  real rs = pow(3.0 / pirho, 1.0 / 3.0);
+  real rtrs = sqrt(rs);
 
-  double sk = sqrt(4.0 * fk / M_PI);
-  double twoks = 2.0 * sk;
+  real sk = sqrt(4.0 * fk / M_PI);
+  real twoks = 2.0 * sk;
 
-  double t = agrad / (twoks * rho);
-  double t2 = t * t;
+  real t = agrad / (twoks * rho);
+  real t2 = t * t;
 
-  double twoks2 = twoks * twoks;
-  double twoks3 = twoks2 * twoks;
+  real twoks2 = twoks * twoks;
+  real twoks3 = twoks2 * twoks;
 
-  double UU = (delgrad == 0 ? 0 : delgrad / (rho2 * twoks3));
-  double VV = rlap / (rho * twoks2);
+  real UU = (delgrad == 0 ? 0 : delgrad / (rho2 * twoks3));
+  real VV = rlap / (rho * twoks2);
 
-  double ec, eurs;
+  real ec, eurs;
   gcorc(rtrs, ec, eurs);
-	if (ec == 0) ec = DBL_MIN;
+	if (ec == 0) ec = REAL_MIN;
 	
-  double eclda = ec;
-  double ecrs = eurs;
-  double vclda = eclda - rs * (1.0 / 3.0) * ecrs;
+  real eclda = ec;
+  real ecrs = eurs;
+  real vclda = eclda - rs * (1.0 / 3.0) * ecrs;
 
   // Now we have to calculate the H function in order to evaluate
   // the GGA contribution to the correlation energy
-  double PON = -ec * CLOSEDPBE_GAMMAINV;
-  double B = CLOSEDPBE_DELTA / (exp(PON) - 1.0);
-  double B2 = B * B;
-  double T4 = t2 * t2;
+  real PON = -ec * CLOSEDPBE_GAMMAINV;
+  real B = CLOSEDPBE_DELTA / (exp(PON) - 1.0);
+  real B2 = B * B;
+  real T4 = t2 * t2;
 
-  double Q4 = 1.0 + B * t2;
-  double Q5 = 1.0 + B * t2 + B2 * T4;
+  real Q4 = 1.0 + B * t2;
+  real Q5 = 1.0 + B * t2 + B2 * T4;
 
-  double H = (CLOSEDPBE_BETA/CLOSEDPBE_DELTA) * log(1.0 + CLOSEDPBE_DELTA * Q4 * t2/Q5);
+  real H = (CLOSEDPBE_BETA/CLOSEDPBE_DELTA) * log(1.0 + CLOSEDPBE_DELTA * Q4 * t2/Q5);
 
   // So the correlation energy for pbe is:
   ecpbe = eclda + H;
   //cout << expl(PON) << " " << t2 << endl;
 	
   // Now we have to calculate the potential contribution of GGA
-  double T6 = T4 * t2;
-  double RSTHRD = rs / 3.0;
-  double FAC = CLOSEDPBE_DELTA / B + 1.0;
-  double BEC = B2 * FAC / CLOSEDPBE_BETA;
-	double Q8 = Q5 * Q5 + CLOSEDPBE_DELTA * Q4 * Q5 * t2;
-  double Q9 = 1.0 + 2.0 * B * t2;
-  double hB = -CLOSEDPBE_BETA * B * T6 * (2.0 + B * t2)/Q8;
-  double hRS = -RSTHRD * hB * BEC * ecrs;
-  double FACT0 = 2.0 * CLOSEDPBE_DELTA - 6.0 * B;
-  double FACT1 = Q5 * Q9 + Q4 * Q9 * Q9;
-  double hBT = 2.0 * CLOSEDPBE_BETA * T4 * ((Q4 * Q5 * FACT0 - CLOSEDPBE_DELTA * FACT1)/Q8)/Q8;
-  double hRST = RSTHRD * t2 * hBT * BEC * ecrs;
-  double hT = 2.0 * CLOSEDPBE_BETA * Q9/Q8;
-  double FACT2 = Q4 * Q5 + B * t2 * (Q4 * Q9 + Q5);
-  double FACT3 = 2.0 * B * Q5 * Q9 + CLOSEDPBE_DELTA * FACT2;
-  double hTT = 4.0 * CLOSEDPBE_BETA * t * (2.0 * B/Q8 -(Q9 * FACT3 / Q8)/Q8);
-  double COMM = H + hRS + hRST + t2 * hT/6.0 + 7.0 * t2 * t * hTT/6.0;
+  real T6 = T4 * t2;
+  real RSTHRD = rs / 3.0;
+  real FAC = CLOSEDPBE_DELTA / B + 1.0;
+  real BEC = B2 * FAC / CLOSEDPBE_BETA;
+	real Q8 = Q5 * Q5 + CLOSEDPBE_DELTA * Q4 * Q5 * t2;
+  real Q9 = 1.0 + 2.0 * B * t2;
+  real hB = -CLOSEDPBE_BETA * B * T6 * (2.0 + B * t2)/Q8;
+  real hRS = -RSTHRD * hB * BEC * ecrs;
+  real FACT0 = 2.0 * CLOSEDPBE_DELTA - 6.0 * B;
+  real FACT1 = Q5 * Q9 + Q4 * Q9 * Q9;
+  real hBT = 2.0 * CLOSEDPBE_BETA * T4 * ((Q4 * Q5 * FACT0 - CLOSEDPBE_DELTA * FACT1)/Q8)/Q8;
+  real hRST = RSTHRD * t2 * hBT * BEC * ecrs;
+  real hT = 2.0 * CLOSEDPBE_BETA * Q9/Q8;
+  real FACT2 = Q4 * Q5 + B * t2 * (Q4 * Q9 + Q5);
+  real FACT3 = 2.0 * B * Q5 * Q9 + CLOSEDPBE_DELTA * FACT2;
+  real hTT = 4.0 * CLOSEDPBE_BETA * t * (2.0 * B/Q8 -(Q9 * FACT3 / Q8)/Q8);
+  real COMM = H + hRS + hRST + t2 * hT/6.0 + 7.0 * t2 * t * hTT/6.0;
 
   COMM = COMM - UU * hTT - VV * hT;
 
@@ -469,13 +474,13 @@ static void closedpbe(float rho, double agrad, double delgrad, double rlap, doub
 #define GCORC_B3 1.6382
 #define GCORC_B4 0.49294
 
-static void gcorc(double rtrs, double& gg, double& grrs)
+static void gcorc(real rtrs, real& gg, real& grrs)
 {
-  double Q0 = -2.0 * GCORC_A * (1.0 + GCORC_A1 * rtrs * rtrs);
-  double Q1 = 2.0 * GCORC_A * rtrs * (GCORC_B1 + rtrs * (GCORC_B2 + rtrs * (GCORC_B3 + GCORC_B4 * rtrs)));
-  double Q2 = logf(1.0 + 1.0 / Q1);
+  real Q0 = -2.0 * GCORC_A * (1.0 + GCORC_A1 * rtrs * rtrs);
+  real Q1 = 2.0 * GCORC_A * rtrs * (GCORC_B1 + rtrs * (GCORC_B2 + rtrs * (GCORC_B3 + GCORC_B4 * rtrs)));
+  real Q2 = logf(1.0 + 1.0 / Q1);
   gg = Q0 * Q2;
-  double Q3 = GCORC_A * (GCORC_B1/rtrs + 2.0 * GCORC_B2 + rtrs * (3.0 * GCORC_B3 + 4.0 * GCORC_B4 * rtrs));
+  real Q3 = GCORC_A * (GCORC_B1/rtrs + 2.0 * GCORC_B2 + rtrs * (3.0 * GCORC_B3 + 4.0 * GCORC_B4 * rtrs));
   grrs = -2.0 * GCORC_A * GCORC_A1 * Q2 - Q0 * Q3/(Q1 * (1.0 + Q1));
 }
 

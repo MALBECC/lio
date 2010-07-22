@@ -78,6 +78,7 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	fortran_vars.nco = nco;
 		
 	fortran_vars.iexch = Iexch;
+  if (Iexch == 4 || Iexch == 5) cout << "***** WARNING ***** : Iexch 4 y 5 no andan bien todavia" << endl;
   to_constant("gpu_Iexch", Iexch);
   fortran_vars.lda = (Iexch <= 3);
   fortran_vars.gga = !fortran_vars.lda;

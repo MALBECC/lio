@@ -216,8 +216,8 @@ template<bool compute_exc, bool compute_y2a, bool lda> __device__ void gpu_pot(f
 
       float expbe, vxpbe, ecpbe, vcpbe;
       closedpbe(dens, dgrad, delgrad, rlap, expbe, vxpbe, ecpbe, vcpbe);
-      exc_corr = expbe;
       ec = ecpbe;
+      exc_corr = expbe + ec;
       y2a = vxpbe + vcpbe;
       return;
     }
@@ -300,6 +300,8 @@ template<bool compute_exc, bool compute_y2a, bool lda> __device__ void gpu_pot(f
 
       y2a = y2a + (term3 - term4 - term5);
     }
+    
+    exc_corr += ec;
   }
 }
 

@@ -127,7 +127,7 @@ inline __device__ __host__ float length2(const float3& a) {
 	return (a.x * a.x + a.y * a.y + a.z * a.z);
 }
 
-inline __device__ __host__ double& elem(double3& a, uint i) {
+inline __host__ double& elem(double3& a, uint i) {
 	switch(i) {
 		case 0: return a.x; break;
 		case 1: return a.y; break;
@@ -136,7 +136,7 @@ inline __device__ __host__ double& elem(double3& a, uint i) {
   return a.x;
 }
 
-inline __device__ __host__ const double& elem(const double3& a, uint i) {
+inline __host__ const double& elem(const double3& a, uint i) {
 	switch(i) {
 		case 0: return a.x; break;
 		case 1: return a.y; break;
@@ -190,6 +190,9 @@ inline __device__ __host__ float3& operator+=(float3& a, const float3& b)
 
 inline __device__ __host__ double3& operator+=(double3& a, const double3& b)
 { a.x += b.x; a.y += b.y; a.z += b.z; return a; }
+
+inline __device__ __host__ double3& operator-=(double3& a, const double3& b)
+{ a.x -= b.x; a.y -= b.y; a.z -= b.z; return a; }
 
 inline __device__ __host__ float3& operator+=(float3& a, const float& b)
 { a.x += b; a.y += b; a.z += b; return a; }

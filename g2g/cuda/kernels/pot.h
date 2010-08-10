@@ -54,6 +54,23 @@
 
 #include <float.h>
 
+#define GCORC_A 0.0310907f
+#define GCORC_A1 0.21370f
+#define GCORC_B1 7.5957f
+#define GCORC_B2 3.5876f
+#define GCORC_B3 1.6382f
+#define GCORC_B4 0.49294f
+
+__device__ void gcorc(float rtrs, float& gg, float& grrs)
+{
+  float Q0 = -2.0f * GCORC_A * (1.0f + GCORC_A1 * rtrs * rtrs);
+  float Q1 = 2.0f * GCORC_A * rtrs * (GCORC_B1 + rtrs * (GCORC_B2 + rtrs * (GCORC_B3 + GCORC_B4 * rtrs)));
+  float Q2 = logf(1.0f + 1.0f / Q1);
+  gg = Q0 * Q2;
+  float Q3 = GCORC_A * (GCORC_B1/rtrs + 2.0f * GCORC_B2 + rtrs * (3.0f * GCORC_B3 + 4.0f * GCORC_B4 * rtrs));
+  grrs = -2.0f * GCORC_A * GCORC_A1 * Q2 - Q0 * Q3/(Q1 * (1.0f + Q1));
+}
+
 #define CLOSEDPBE_PI32 29.608813203268075856503472999628f
 #define CLOSEDPBE_AX -0.738558766382022405884230032680836f
 #define CLOSEDPBE_UM 0.2195149727645171f
@@ -196,24 +213,6 @@ __device__ void closedpbe(float rho, float agrad, float delgrad, float rlap, flo
 
 	//cout << rho << " " << delgrad << " " << rlap << " ret: " << expbe << " " << vxpbe << " " << ecpbe << " " << vcpbe << endl;
 }
-
-#define GCORC_A 0.0310907f
-#define GCORC_A1 0.21370f
-#define GCORC_B1 7.5957f
-#define GCORC_B2 3.5876f
-#define GCORC_B3 1.6382f
-#define GCORC_B4 0.49294f
-
-__device__ void gcorc(float rtrs, float& gg, float& grrs)
-{
-  float Q0 = -2.0f * GCORC_A * (1.0f + GCORC_A1 * rtrs * rtrs);
-  float Q1 = 2.0f * GCORC_A * rtrs * (GCORC_B1 + rtrs * (GCORC_B2 + rtrs * (GCORC_B3 + GCORC_B4 * rtrs)));
-  float Q2 = logf(1.0f + 1.0f / Q1);
-  gg = Q0 * Q2;
-  float Q3 = GCORC_A * (GCORC_B1/rtrs + 2.0f * GCORC_B2 + rtrs * (3.0f * GCORC_B3 + 4.0f * GCORC_B4 * rtrs));
-  grrs = -2.0f * GCORC_A * GCORC_A1 * Q2 - Q0 * Q3/(Q1 * (1.0f + Q1));
-}
-
 	
 template<bool compute_exc, bool compute_y2a, bool lda> __device__ void gpu_pot(float dens, const float4& grad, const float4& hess1, const float4& hess2, float& exc_corr, float& y2a)
 {

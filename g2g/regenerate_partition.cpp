@@ -171,6 +171,7 @@ void regenerate_partition(void)
           /* or insert into corresponding cube */
           else {
             uint3 cube_coord = floor_uint3((point_position - x0) / little_cube_size);
+            if (cube_coord.x >= prism_size.x || cube_coord.y >= prism_size.y || cube_coord.z >= prism_size.z) throw "Se accedio a un cubo invalido";
             prism[cube_coord.x][cube_coord.y][cube_coord.z].add_point(point_object);
           }
 				}

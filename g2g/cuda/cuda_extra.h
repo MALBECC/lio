@@ -32,19 +32,22 @@ inline __device__ __host__ float4 operator+(const float4& a, const float4& b)
 inline __device__ __host__ float4 operator*(const float4& a, const float4& b)
 { return make_float4(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w); }
 
+inline __device__ __host__ double3 operator/(const double3& a, double b)
+{ return make_double3(a.x / b, a.y / b, a.z / b); }
+
 inline __device__ __host__ double3 operator/(const double3& a, const uint& b)
 { return make_double3(a.x / b, a.y / b, a.z / b); }
 
 inline __device__ __host__ uint3 ceil_uint3(const double3& a) {
-	return make_uint3(static_cast<uint>(ceilf(a.x)),
-										static_cast<uint>(ceilf(a.y)),
-										static_cast<uint>(ceilf(a.z)));
+	return make_uint3(static_cast<uint>(ceil(a.x)),
+										static_cast<uint>(ceil(a.y)),
+										static_cast<uint>(ceil(a.z)));
 }
 
 inline __device__ __host__ uint3 floor_uint3(const double3& a) {
-	return make_uint3(static_cast<uint>(floorf(a.x)),
-										static_cast<uint>(floorf(a.y)),
-										static_cast<uint>(floorf(a.z)));
+	return make_uint3(static_cast<uint>(floor(a.x)),
+										static_cast<uint>(floor(a.y)),
+										static_cast<uint>(floor(a.z)));
 }
 
 inline __device__ __host__ float3 operator *(const float3& a, const float3& b)
@@ -127,7 +130,7 @@ inline __device__ __host__ float length2(const float3& a) {
 	return (a.x * a.x + a.y * a.y + a.z * a.z);
 }
 
-inline __host__ double& elem(double3& a, uint i) {
+inline double& elem(double3& a, uint i) {
 	switch(i) {
 		case 0: return a.x; break;
 		case 1: return a.y; break;
@@ -136,7 +139,7 @@ inline __host__ double& elem(double3& a, uint i) {
   return a.x;
 }
 
-inline __host__ const double& elem(const double3& a, uint i) {
+inline const double& elem(const double3& a, uint i) {
 	switch(i) {
 		case 0: return a.x; break;
 		case 1: return a.y; break;

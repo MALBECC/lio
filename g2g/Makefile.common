@@ -4,7 +4,7 @@ ifeq ($(gcc),1)
   CXXFLAGS := $(CXXFLAGS) -fPIC -Wall -Wno-long-long -ansi -Wno-unused
 else
   CXX      := icc
-  CXXFLAGS := $(CXXFLAGS) -fPIC  -vec-report1 -g -Wcheck
+  CXXFLAGS := $(CXXFLAGS) -fPIC  -vec-report1 -g 
 endif
 
 # Debug/release configuration

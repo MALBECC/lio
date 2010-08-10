@@ -11,7 +11,7 @@
 #include <iostream>
 #include <string>
 
-#if !__CUDACC__
+#ifndef __CUDACC__
 #include <cmath>
 #endif
 

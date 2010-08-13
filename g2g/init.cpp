@@ -73,9 +73,11 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	fortran_vars.s_funcs = nshell[0];
 	fortran_vars.p_funcs = nshell[1] / 3;
 	fortran_vars.d_funcs = nshell[2] / 6;
+  cout << "s: " << fortran_vars.s_funcs  << " p: " << fortran_vars.p_funcs << " d: " << fortran_vars.d_funcs << endl;
 	fortran_vars.spd_funcs = fortran_vars.s_funcs + fortran_vars.p_funcs + fortran_vars.d_funcs;
 	fortran_vars.m = M;	
 	fortran_vars.nco = nco;
+  cout << "m: " << fortran_vars.m  << " nco: " << fortran_vars.nco << endl;
 		
 	fortran_vars.iexch = Iexch;
   if (Iexch == 4 || Iexch == 5) cout << "***** WARNING ***** : Iexch 4 y 5 no andan bien todavia" << endl;

@@ -203,7 +203,7 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
 
   t_total.stop();
   cout << "iteration: " << t_total << endl;
-  cout << "rmm: " << t_rmm << " density: " << t_density << " pot: " << t_pot << " resto: " << t_resto << endl;
+  cout << "rmm: " << t_rmm << " density: " << t_density << " pot: " << t_pot << " forces: " << t_forces << " resto: " << t_resto << endl;
 }
 
 template void g2g_iteration<true, true>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);

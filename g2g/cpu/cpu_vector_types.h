@@ -50,6 +50,13 @@ namespace G2G {
       inline operator float3() { return make_float3(x(), y(), z()); }
 
       friend cfloat3 operator*(const cfloat3& a, float b) { return a * cfloat3(b, b, b); }
+
+      friend std::ostream& operator<<(std::ostream & os, const cfloat3& a)
+  	  {
+  		  float *fp = (float*)&a;
+  		  os << "(" << *fp << "," << *(fp+1) << "," << *(fp+2) << ")";
+        return os;
+    	}
 		
 		private:
 		  cfloat3(float x, float y, float z, float w);

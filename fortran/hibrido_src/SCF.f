@@ -694,7 +694,7 @@ c
 c
 c--tito
        if (nopt.ne.3) then
-c       write(*,300) niter,DAMP,E
+       write(*,300) niter,DAMP,E
        endif
 c
 c      write(*,*) 'Coulomb E',E2-Ex,Ex
@@ -750,7 +750,7 @@ c--------------------------------------------------------------
          endif
        endif
        write(*,*) 'ultimo paso SCF'
-       call timer_start
+       call timer_start('SCF')
 #ifdef G2G
 #ifdef ULTIMA_CPU       
        call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
@@ -773,7 +773,7 @@ c--------------------------------------------------------------
 			write(*,*) 'total final:',Exc
 #endif       
 #endif       
-       call timer_stop('ultimo paso SCF')
+       call timer_stop('SCF')
        E=E+Exc-Ex
 c
 c--------------------------------------------------------------

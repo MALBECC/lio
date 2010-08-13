@@ -392,8 +392,8 @@ c
       Nd=0
       Ne=0
       NBAS=0
-	M=0
-	Mdd=0
+    	M=0
+	    Mdd=0
 c
 c  BASIS SETS -------------------------------------------------
       do 25 while (whatis.ne.'endbasis')

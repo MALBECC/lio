@@ -149,6 +149,7 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
   uint free_memory, total_memory;
   cudaGetMemoryInfo(free_memory, total_memory);
   cout << "Maximum used memory: " << (double)max_used_memory / (1024 * 1024) << "MB (" << ((double)max_used_memory / total_memory) * 100.0 << "%)" << endl;
+  cudaPrintMemoryInfo();
 }
 
 template void g2g_iteration<true, true>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);

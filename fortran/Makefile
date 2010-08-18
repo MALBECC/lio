@@ -69,28 +69,59 @@ clean:
 
 
 # Different flags for some .o
-%/dip2.o: dip2.f
+obj/garcha_g2g_obj/dip2.o: dip2.f
 	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
-%/dipG.o: dipG.f
+obj/garcha_obj/dip2.o: dip2.f
+	ifort -o $@ $(CFLAGS3) $<
+obj/hibrido_g2g_obj/dip2.o: dip2.f
 	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
-obj/garcha_%/dip.o: garcha_src/dip.f
-	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
-obj/hibrido_%/dip.o: hibrido_src/dip.f
-	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
-obj/garcha_%/int1G.o: garcha_src/int1G.f
-	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
-obj/hibrido_%/int1G.o: hibrido_src/int1G.f
-	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
-obj/garcha_%/int3G.o: garcha_src/int3G.f
-	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
-obj/hibrido_%/int3G.o: hibrido_src/int3G.f
-	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
-obj/garcha_%/intsolG.o: garcha_src/intsolG.f
-	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
-obj/hibrido_%/intsolG.o: hibrido_src/intsolG.f
-	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
+obj/hibrido_obj/dip2.o: dip2.f
+	ifort -o $@ $(CFLAGS3) $<
 
+obj/garcha_g2g_obj/dipG.o: dipG.f
+	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
+obj/garcha_obj/dipG.o: dipG.f
+	ifort -o $@ $(CFLAGS3) $<
+obj/hibrido_g2g_obj/dipG.o: dipG.f
+	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
+obj/hibrido_obj/dipG.o: dipG.f
+	ifort -o $@ $(CFLAGS3) $<
 
+obj/garcha_g2g_obj/garcha_src/dip.o: garcha_src/dip.f
+	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
+obj/garcha_obj/garcha_src/dip.o: garcha_src/dip.f
+	ifort -o $@ $(CFLAGS3) $<
+obj/hibrido_g2g_obj/hibrido_src/dip.o: hibrido_src/dip.f
+	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
+obj/hibrido_obj/hibrido_src/dip.o: hibrido_src/dip.f
+	ifort -o $@ $(CFLAGS3) $<
+
+obj/garcha_g2g_obj/garcha_src/int1G.o: garcha_src/int1G.f
+	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
+obj/garcha_obj/garcha_src/int1G.o: garcha_src/int1G.f
+	ifort -o $@ $(CFLAGS3) $<
+obj/hibrido_g2g_obj/hibrido_src/int1G.o: hibrido_src/int1G.f
+	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
+obj/hibrido_obj/hibrido_src/int1G.o: hibrido_src/int1G.f
+	ifort -o $@ $(CFLAGS3) $<
+
+obj/garcha_g2g_obj/garcha_src/int3G.o: garcha_src/int3G.f
+	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
+obj/garcha_obj/garcha_src/int3G.o: garcha_src/int3G.f
+	ifort -o $@ $(CFLAGS3) $<
+obj/hibrido_g2g_obj/hibrido_src/int3G.o: hibrido_src/int3G.f
+	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
+obj/hibrido_obj/hibrido_src/int3G.o: hibrido_src/int3G.f
+	ifort -o $@ $(CFLAGS3) $<
+
+obj/garcha_g2g_obj/garcha_src/intsolG.o: garcha_src/intsolG.f
+	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
+obj/garcha_obj/garcha_src/intsolG.o: garcha_src/intsolG.f
+	ifort -o $@ $(CFLAGS3) $<
+obj/hibrido_g2g_obj/hibrido_src/intsolG.o: hibrido_src/intsolG.f
+	ifort -o $@ $(CFLAGS3) $(G2G_CFLAGS) $<
+obj/hibrido_obj/hibrido_src/intsolG.o: hibrido_src/intsolG.f
+	ifort -o $@ $(CFLAGS3) $<
 
 ### Objects
 obj/garcha_obj/%.o: %.f

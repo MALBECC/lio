@@ -20,7 +20,6 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
 {
 	uint func = 0;
 
-  // TODO: esto solo es necesario para los atomos en nucleii, pero no se nucleii todavia, se podria ver si esto cuesta mas que calcularla on-the-fly
 	HostMatrix<double> atom_cube_dists(fortran_vars.atoms);
 	for (uint i = 0; i < fortran_vars.atoms; i++) {
 		const double3& atom_pos = fortran_vars.atom_positions(i);

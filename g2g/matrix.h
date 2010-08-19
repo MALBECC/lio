@@ -41,7 +41,6 @@ namespace G2G {
 			HostMatrix<T>& operator=(const CudaMatrix<T>& c);
 			HostMatrix<T>& operator=(const HostMatrix<T>& c);
 
-		  // TODO: mejorar esto
 			inline const T& operator()(unsigned int i = 0, unsigned int j = 0) const {
 				assert(i < this->width);
 				assert(j < this->height);

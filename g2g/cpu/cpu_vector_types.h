@@ -14,7 +14,7 @@ namespace G2G {
 	class cfloat4 : public F32vec4 {
 	  public:
       cfloat4(void) : F32vec4() { }
-      cfloat4(float x) : F32vec4(x) { }
+      explicit cfloat4(float x) : F32vec4(x) { }
     	cfloat4(F32vec4 a) : F32vec4(a) {  }
       explicit cfloat4(float4 a) : F32vec4(a.w, a.z, a.y, a.x) { }
   		explicit cfloat4(float x, float y, float z, float w) : F32vec4(w, z, y, x) { }
@@ -38,11 +38,14 @@ namespace G2G {
 
       inline operator float4() { return make_float4(x(), y(), z(), w()); }
   };
+
+  inline bool isinf(cfloat4 v) { return isinff(v.x()) || isinff(v.y()) || isinff(v.z()) || isinff(v.w()); }
+  inline bool isnan(cfloat4 v) { return isnanf(v.x()) || isnanf(v.y()) || isnanf(v.z()) || isnanf(v.w()); }
 	
 	class cfloat3 : public cfloat4 {
 		public:
       cfloat3(void) : cfloat4() { }
-      cfloat3(float x) : cfloat4(x) { }
+      explicit cfloat3(float x) : cfloat4(x) { }
     	cfloat3(F32vec4 a) : cfloat4(a) {  }
       explicit cfloat3(float3 a) : cfloat4(a.x, a.y, a.z, 0.0f) { }
 		  explicit cfloat3(float x, float y, float z) : cfloat4(x, y, z, 0.0f) { }
@@ -61,6 +64,9 @@ namespace G2G {
 		private:
 		  cfloat3(float x, float y, float z, float w);
 	};
+
+  inline bool isinf(cfloat3 v) { return isinff(v.x()) || isinff(v.y()) || isinff(v.z()); }
+  inline bool isnan(cfloat3 v) { return isnanf(v.x()) || isnanf(v.y()) || isnanf(v.z()); }
 }
 
 #endif

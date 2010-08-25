@@ -222,6 +222,15 @@ void HostMatrix<T>::blas_ssyr(UpperLowerTriangle triangle, float alpha, const Ho
   gsl_blas_ssyr(blas_triangle, alpha, &vector_view.vector, &matrix_view.matrix);
 }
 
+template<class T> void HostMatrix<T>::check_values(void) {
+  for (uint i = 0; i < this->width; i++) {
+    for (uint j = 0; j < this->height; j++) {
+      T value = (*this)(i, j);
+      if (isinf(value) || isnan(value)) cout << "NaN/Inf: (" << i << "," << j << ")" << endl;
+    }
+  }
+}
+
 /******************************
  * CudaMatrix
  ******************************/
@@ -380,6 +389,10 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const CudaMatrix<T>& c
   cudaAssertNoError("CudaMatrix::operator=");
 	#endif
 	return *this;
+}
+
+template<class T> void CudaMatrix<T>::check_values(void) {
+  HostMatrix<T>(*this).check_values();
 }
 
 /*************************************

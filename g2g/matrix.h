@@ -62,6 +62,8 @@ namespace G2G {
 			HostMatrix<T>& zero(void);
       HostMatrix<T>& fill(T value);
 
+      void check_values(void);
+
 			void deallocate(void);
 
       /* BLAS methods */
@@ -90,6 +92,8 @@ namespace G2G {
 		
 			CudaMatrix<T>& resize(unsigned int width, unsigned int height = 1);
 			CudaMatrix<T>& zero(void);
+
+      void check_values(void);
 
 			CudaMatrix& operator=(const HostMatrix<T>& c);
 			CudaMatrix& operator=(const CudaMatrix<T>& c);

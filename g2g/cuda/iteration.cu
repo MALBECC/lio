@@ -80,6 +80,7 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
       gpu_compute_density<false, compute_forces, lda><<<threadGrid, threadBlock>>>(NULL, factors_gpu.data, point_weights_gpu.data, group.number_of_points,
         rmm_input_gpu.data, group.function_values.data, group.gradient_values.data, group.hessian_values.data, group_m);
       cudaAssertNoError("compute_density");
+      //factors_gpu.check_values();
     }
     
     t_density.pause_and_sync();

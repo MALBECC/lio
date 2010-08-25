@@ -15,6 +15,42 @@
 #include <cmath>
 #endif
 
+namespace G2G {
+  #ifndef __CUDACC__
+  inline __device__ __host__ bool isinf(uint v) { return false; }
+  inline __device__ __host__ bool isinf(float v) { return ::isinff(v); }
+  inline __device__ __host__ bool isinf(double v) { return ::isinf(v); }
+  inline __device__ __host__ bool isinf(float1 v) { return isinf(v.x); }
+  inline __device__ __host__ bool isinf(double1 v) { return isinf(v.x); }
+  inline __device__ __host__ bool isinf(uint1 v) { return false; }
+  inline __device__ __host__ bool isinf(float2 v) { return isinf(v.x) || isinf(v.y); }
+  inline __device__ __host__ bool isinf(double2 v) { return isinf(v.x) || isinf(v.y); }
+  inline __device__ __host__ bool isinf(uint2 v) { return false; }
+  inline __device__ __host__ bool isinf(float3 v) { return isinf(v.x) || isinf(v.y) || isinf(v.z); }
+  inline __device__ __host__ bool isinf(double3 v) { return isinf(v.x) || isinf(v.y) || isinf(v.z); }
+  inline __device__ __host__ bool isinf(uint3 v) { return false; }
+  inline __device__ __host__ bool isinf(float4 v) { return isinf(v.x) || isinf(v.y) || isinf(v.z) || isinf(v.w); }
+  inline __device__ __host__ bool isinf(double4 v) { return isinf(v.x) || isinf(v.y) || isinf(v.z) || isinf(v.w); }
+  inline __device__ __host__ bool isinf(uint4 v) { return false; }
+
+  inline __device__ __host__ bool isnan(uint v) { return false; }
+  inline __device__ __host__ bool isnan(float v) { return ::isnanf(v); }
+  inline __device__ __host__ bool isnan(double v) { return ::isnan(v); }
+  inline __device__ __host__ bool isnan(float1 v) { return isnan(v.x); }
+  inline __device__ __host__ bool isnan(double1 v) { return isnan(v.x); }
+  inline __device__ __host__ bool isnan(uint1 v) { return false; }
+  inline __device__ __host__ bool isnan(float2 v) { return isnan(v.x) || isnan(v.y); }
+  inline __device__ __host__ bool isnan(double2 v) { return isnan(v.x) || isnan(v.y); }
+  inline __device__ __host__ bool isnan(uint2 v) { return false; }
+  inline __device__ __host__ bool isnan(float3 v) { return isnan(v.x) || isnan(v.y) || isnan(v.z); }
+  inline __device__ __host__ bool isnan(double3 v) { return isnan(v.x) || isnan(v.y) || isnan(v.z); }
+  inline __device__ __host__ bool isnan(uint3 v) { return false; }
+  inline __device__ __host__ bool isnan(float4 v) { return isnan(v.x) || isnan(v.y) || isnan(v.z) || isnan(v.w); }
+  inline __device__ __host__ bool isnan(double4 v) { return isnan(v.x) || isnan(v.y) || isnan(v.z) || isnan(v.w); }
+  inline __device__ __host__ bool isnan(uint4 v) { return false; }
+  #endif
+}
+
 // TODO: usar cutil sdk para todos estos operadores, o usar classes de C++ templatizadas
 /** operators **/
 inline __device__ __host__ float2 operator -(const float2 a)

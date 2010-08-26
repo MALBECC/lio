@@ -226,7 +226,7 @@ template<class T> void HostMatrix<T>::check_values(void) {
   for (uint i = 0; i < this->width; i++) {
     for (uint j = 0; j < this->height; j++) {
       T value = (*this)(i, j);
-      if (isinf(value) || isnan(value)) cout << "NaN/Inf: (" << i << "," << j << ")" << endl;
+      if (isinf(value) || isnan(value)) cout << "NaN/Inf: (" << i << "," << j << ") " << value << endl;
     }
   }
 }

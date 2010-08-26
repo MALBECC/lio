@@ -43,6 +43,7 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
 	for (list<PointGroup>::const_iterator it = final_partition.begin(); it != final_partition.end(); ++it) {
 		const PointGroup& group = *it;
     uint group_m = group.total_functions();
+    cout << "group: " << group.number_of_points << endl;
 				
 		/** Load points from group **/
     HostMatrixFloat point_weights_cpu(group.number_of_points, 1);
@@ -80,7 +81,11 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
       gpu_compute_density<false, compute_forces, lda><<<threadGrid, threadBlock>>>(NULL, factors_gpu.data, point_weights_gpu.data, group.number_of_points,
         rmm_input_gpu.data, group.function_values.data, group.gradient_values.data, group.hessian_values.data, group_m);
       cudaAssertNoError("compute_density");
-      //factors_gpu.check_values();
+      {
+        HostMatrixFloat factors_cpu(factors_gpu);
+        //for (uint i = 0; i < group.number_of_points; i++) { cout << factors_cpu(i) << endl;; }
+        factors_cpu.check_values();
+      }
     }
     
     t_density.pause_and_sync();

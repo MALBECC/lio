@@ -81,33 +81,36 @@ __device__ void gcorc(float rtrs, float& gg, float& grrs)
 #define CLOSEDPBE_BETA 0.06672455060314922f
 #define CLOSEDPBE_DELTA 2.14612633996736f // beta/gamma
 
-__device__ void closedpbe(float rho, float agrad, float delgrad, float rlap, float& expbe, float& vxpbe, float& ecpbe, float& vcpbe)
+#define real double
+
+
+__device__ void closedpbe(float rho, real agrad, real delgrad, real rlap, real& expbe, real& vxpbe, real& ecpbe, real& vcpbe)
 {
   if (rho < 2e-18f) {
     expbe = vxpbe = ecpbe = vcpbe = 0.0f;
     return;
   }
 
-  float rho2 = rho * rho;
-  float rho13 = powf(rho, 1.0f / 3.0f);
-  float fk1 = powf(CLOSEDPBE_PI32, 1.0f / 3.0f);
-  float fk = fk1 * rho13;
+  real rho2 = rho * rho;
+  real rho13 = pow(rho, 1.0f / 3.0f);
+  real fk1 = pow(CLOSEDPBE_PI32, 1.0f / 3.0f);
+  real fk = fk1 * rho13;
 
-  float twofk = 2.0f * fk;
-  float twofk2 = powf(twofk, 2.0f);
-  float twofk3 = powf(twofk, 3.0f);
+  real twofk = 2.0f * fk;
+  real twofk2 = pow(twofk, 2.0f);
+  real twofk3 = pow(twofk, 3.0f);
 
   // S = |grad(rho)|/(2*fk*rho)
-  float s = agrad / (twofk * rho);
-  float s2 = powf(s, 2.0f);
-  float s3 = powf(s, 3.0f);
+  real s = agrad / (twofk * rho);
+  real s2 = pow(s, 2.0f);
+  real s3 = pow(s, 3.0f);
 
   // LDA exchange contribution:
   // ex*rho ==> energy, we will calculate ex ==> energy density
   // ex*rho = -(3/4Pi)*(e^2)*(3pi)^2/3*rho^1/3*rho
   // ex*rho = -0.75*(3/Pi)^1/3*rho^4/3
   // ex*rho = ax*rho^4/3
-  float exlda = CLOSEDPBE_AX * rho13;
+  real exlda = CLOSEDPBE_AX * rho13;
 
   // In order to calculate the PBE contribution
   // to exchange energy, we have to calculate the
@@ -115,27 +118,27 @@ __device__ void closedpbe(float rho, float agrad, float delgrad, float rlap, flo
   // Fx = 1+uk -(uk/(1+(um*s^2)/uk)
   // um/uk = ul
   // P0 = 1 + (um*s^2)/uk
-  float p0 = 1.0f + CLOSEDPBE_UL * s2;
-  float fxpbe = 1.0f + CLOSEDPBE_UK - CLOSEDPBE_UK/p0;
+  real p0 = 1.0f + CLOSEDPBE_UL * s2;
+  real fxpbe = 1.0f + CLOSEDPBE_UK - CLOSEDPBE_UK/p0;
 
   // exchange pbe energy
   expbe = exlda * fxpbe;
 
   // Now the potential:
-  float v = rlap / (twofk2 * rho);
-  float u = (delgrad == 0.0f ? 0.0f : delgrad / (twofk3 * rho2));
+  real v = rlap / (twofk2 * rho);
+  real u = (delgrad == 0.0f ? 0.0f : delgrad / (twofk3 * rho2));
 
   // Calculation of first and second derivatives
-  float P2 = p0 * p0;
-  float Fs = 2.0f * CLOSEDPBE_UM / P2;
+  real P2 = p0 * p0;
+  real Fs = 2.0f * CLOSEDPBE_UM / P2;
 
-  float F1 = -4.0f * CLOSEDPBE_UL * s * Fs;
-  float Fss = F1/p0;
+  real F1 = -4.0f * CLOSEDPBE_UL * s * Fs;
+  real Fss = F1/p0;
 
   // Now we calculate the potential Vx
-  float vx2 = (4.0f / 3.0f) * fxpbe;
-  float vx3 = v * Fs;
-  float vx4 = (u - (4.0f / 3.0f) * s3) * Fss;
+  real vx2 = (4.0f / 3.0f) * fxpbe;
+  real vx3 = v * Fs;
+  real vx4 = (u - (4.0f / 3.0f) * s3) * Fss;
 
   vxpbe = exlda * (vx2 - vx4 - vx3);
 
@@ -145,64 +148,64 @@ __device__ void closedpbe(float rho, float agrad, float delgrad, float rlap, flo
   // first we calculate the lsd contribution to the correlation energy
   // we will use the subroutine GCOR.
   // We need only the  rs (seitz radius) rs = (3/4pi*rho)^1/3
-  float pirho = 4.0f * CUDART_PI_F * rho;
-  float rs = powf(3.0f / pirho, 1.0f / 3.0f);
-  float rtrs = sqrtf(rs);
+  real pirho = 4.0f * CUDART_PI_F * rho;
+  real rs = pow(3.0f / pirho, 1.0f / 3.0f);
+  real rtrs = sqrt(rs);
 
-  float sk = sqrtf(4.0f * fk / CUDART_PI_F);
-  float twoks = 2.0f * sk;
+  real sk = sqrt(4.0f * fk / CUDART_PI_F);
+  real twoks = 2.0f * sk;
 
-  float t = agrad / (twoks * rho);
-  float t2 = t * t;
+  real t = agrad / (twoks * rho);
+  real t2 = t * t;
 
-  float twoks2 = twoks * twoks;
-  float twoks3 = twoks2 * twoks;
+  real twoks2 = twoks * twoks;
+  real twoks3 = twoks2 * twoks;
 
-  float UU = (delgrad == 0.0f ? 0.0f : delgrad / (rho2 * twoks3));
-  float VV = rlap / (rho * twoks2);
+  real UU = (delgrad == 0.0f ? 0.0f : delgrad / (rho2 * twoks3));
+  real VV = rlap / (rho * twoks2);
 
-  float ec, eurs;
+  real ec, eurs;
   gcorc(rtrs, ec, eurs);
 	if (ec == 0.0f) ec = FLT_MIN;
 
-  float eclda = ec;
-  float ecrs = eurs;
-  float vclda = eclda - rs * (1.0f / 3.0f) * ecrs;
+  real eclda = ec;
+  real ecrs = eurs;
+  real vclda = eclda - rs * (1.0f / 3.0f) * ecrs;
 
   // Now we have to calculate the H function in order to evaluate
   // the GGA contribution to the correlation energy
-  float PON = -ec * CLOSEDPBE_GAMMAINV;
-  float B = CLOSEDPBE_DELTA / (expf(PON) - 1.0f);
-  float B2 = B * B;
-  float T4 = t2 * t2;
+  real PON = -ec * CLOSEDPBE_GAMMAINV;
+  real B = CLOSEDPBE_DELTA / (expf(PON) - 1.0f);
+  real B2 = B * B;
+  real T4 = t2 * t2;
 
-  float Q4 = 1.0f + B * t2;
-  float Q5 = 1.0f + B * t2 + B2 * T4;
+  real Q4 = 1.0f + B * t2;
+  real Q5 = 1.0f + B * t2 + B2 * T4;
 
-  float H = (CLOSEDPBE_BETA/CLOSEDPBE_DELTA) * logf(1.0f + CLOSEDPBE_DELTA * Q4 * t2/Q5);
+  real H = (CLOSEDPBE_BETA/CLOSEDPBE_DELTA) * log(1.0f + CLOSEDPBE_DELTA * Q4 * t2/Q5);
 
   // So the correlation energy for pbe is:
   ecpbe = eclda + H;
   //cout << expl(PON) << " " << t2 << endl;
 
   // Now we have to calculate the potential contribution of GGA
-  float T6 = T4 * t2;
-  float RSTHRD = rs / 3.0f;
-  float FAC = CLOSEDPBE_DELTA / B + 1.0f;
-  float BEC = B2 * FAC / CLOSEDPBE_BETA;
-	float Q8 = Q5 * Q5 + CLOSEDPBE_DELTA * Q4 * Q5 * t2;
-  float Q9 = 1.0f + 2.0f * B * t2;
-  float hB = -CLOSEDPBE_BETA * B * T6 * (2.0f + B * t2)/Q8;
-  float hRS = -RSTHRD * hB * BEC * ecrs;
-  float FACT0 = 2.0f * CLOSEDPBE_DELTA - 6.0f * B;
-  float FACT1 = Q5 * Q9 + Q4 * Q9 * Q9;
-  float hBT = 2.0f * CLOSEDPBE_BETA * T4 * ((Q4 * Q5 * FACT0 - CLOSEDPBE_DELTA * FACT1)/Q8)/Q8;
-  float hRST = RSTHRD * t2 * hBT * BEC * ecrs;
-  float hT = 2.0f * CLOSEDPBE_BETA * Q9/Q8;
-  float FACT2 = Q4 * Q5 + B * t2 * (Q4 * Q9 + Q5);
-  float FACT3 = 2.0f * B * Q5 * Q9 + CLOSEDPBE_DELTA * FACT2;
-  float hTT = 4.0f * CLOSEDPBE_BETA * t * (2.0f * B/Q8 -(Q9 * FACT3 / Q8)/Q8);
-  float COMM = H + hRS + hRST + t2 * hT/6.0f + 7.0f * t2 * t * hTT/6.0f;
+  real T6 = T4 * t2;
+  real RSTHRD = rs / 3.0f;
+  real FAC = CLOSEDPBE_DELTA / B + 1.0f;
+  real BEC = B2 * FAC / CLOSEDPBE_BETA;
+	real Q8 = Q5 * Q5 + CLOSEDPBE_DELTA * Q4 * Q5 * t2;
+  real Q9 = 1.0f + 2.0f * B * t2;
+  real hB = -CLOSEDPBE_BETA * B * T6 * (2.0f + B * t2)/Q8;
+  real hRS = -RSTHRD * hB * BEC * ecrs;
+  real FACT0 = 2.0f * CLOSEDPBE_DELTA - 6.0f * B;
+  real FACT1 = Q5 * Q9 + Q4 * Q9 * Q9;
+  real hBT = 2.0f * CLOSEDPBE_BETA * T4 * ((Q4 * Q5 * FACT0 - CLOSEDPBE_DELTA * FACT1)/Q8)/Q8;
+  real hRST = RSTHRD * t2 * hBT * BEC * ecrs;
+  real hT = 2.0f * CLOSEDPBE_BETA * Q9/Q8;
+  real FACT2 = Q4 * Q5 + B * t2 * (Q4 * Q9 + Q5);
+  real FACT3 = 2.0f * B * Q5 * Q9 + CLOSEDPBE_DELTA * FACT2;
+  real hTT = 4.0f * CLOSEDPBE_BETA * t * (2.0f * B/Q8 -(Q9 * FACT3 / Q8)/Q8);
+  real COMM = H + hRS + hRST + t2 * hT/6.0f + 7.0f * t2 * t * hTT/6.0f;
 
   COMM = COMM - UU * hTT - VV * hT;
 
@@ -290,7 +293,7 @@ template<bool compute_exc, bool compute_y2a, bool lda> __device__ void gpu_pot(f
 
     float grad2 = grad.x * grad.x + grad.y * grad.y + grad.z * grad.z;
     if (grad2 == 0.0f) grad2 = FLT_MIN;
-    float dgrad = sqrtf(grad2);
+    real dgrad = sqrt(grad2);
 
     float d0 = hess1.x + hess1.y + hess1.z;
     float u0 = ((grad.x * grad.x) * hess1.x + 2.0f * grad.x * grad.y * hess2.x + 2.0f * grad.y * grad.z * hess2.z + 2.0f * grad.x * grad.z * hess2.y +
@@ -361,16 +364,16 @@ template<bool compute_exc, bool compute_y2a, bool lda> __device__ void gpu_pot(f
       y2a = v0 + vxc;
     }
     else { // PBE (Iexch 9 complete)
-      float dgrad1 = grad.x * grad.x * hess1.x;
-      float dgrad2 = grad.y * grad.y * hess1.y;
-      float dgrad3 = grad.z * grad.z * hess1.z;
-      float dgrad4 = grad.x * grad.y * hess2.x;
-      float dgrad5 = grad.x * grad.z * hess2.y;
-      float dgrad6 = grad.y * grad.z * hess2.z;
-      float delgrad = (dgrad1 + dgrad2 + dgrad3 + 2.0f * (dgrad4 + dgrad5 + dgrad6)) / dgrad;
-      float rlap = hess1.x + hess1.y + hess1.z;
+      real dgrad1 = grad.x * grad.x * hess1.x;
+      real dgrad2 = grad.y * grad.y * hess1.y;
+      real dgrad3 = grad.z * grad.z * hess1.z;
+      real dgrad4 = grad.x * grad.y * hess2.x;
+      real dgrad5 = grad.x * grad.z * hess2.y;
+      real dgrad6 = grad.y * grad.z * hess2.z;
+      real delgrad = (dgrad1 + dgrad2 + dgrad3 + 2.0f * (dgrad4 + dgrad5 + dgrad6)) / dgrad;
+      real rlap = hess1.x + hess1.y + hess1.z;
 
-      float expbe, vxpbe, ecpbe, vcpbe;
+      real expbe, vxpbe, ecpbe, vcpbe;
       closedpbe(dens, dgrad, delgrad, rlap, expbe, vxpbe, ecpbe, vcpbe);
       ec = ecpbe;
       exc_corr = expbe + ec;

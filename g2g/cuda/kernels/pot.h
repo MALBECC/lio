@@ -61,13 +61,27 @@
 #define GCORC_B3 1.6382f
 #define GCORC_B4 0.49294f
 
-__device__ void gcorc(float rtrs, float& gg, float& grrs)
+#ifdef NVIDIA_HAS_DOUBLE
+#define real double
+#define CUDA_PI CUDART_PI
+#define REAL_MIN DBL_MIN
+#else
+#define real float
+#define CUDA_PI CUDART_PI_F
+#define REAL_MIN FLT_MIN
+#define pow powf
+#define log logf
+#define sqrt sqrtf
+#define exp expf
+#endif
+
+__device__ void gcorc(real rtrs, real& gg, real& grrs)
 {
-  float Q0 = -2.0f * GCORC_A * (1.0f + GCORC_A1 * rtrs * rtrs);
-  float Q1 = 2.0f * GCORC_A * rtrs * (GCORC_B1 + rtrs * (GCORC_B2 + rtrs * (GCORC_B3 + GCORC_B4 * rtrs)));
-  float Q2 = logf(1.0f + 1.0f / Q1);
+  real Q0 = -2.0f * GCORC_A * (1.0f + GCORC_A1 * rtrs * rtrs);
+  real Q1 = 2.0f * GCORC_A * rtrs * (GCORC_B1 + rtrs * (GCORC_B2 + rtrs * (GCORC_B3 + GCORC_B4 * rtrs)));
+  real Q2 = log((real)(1.0f + 1.0f / Q1));
   gg = Q0 * Q2;
-  float Q3 = GCORC_A * (GCORC_B1/rtrs + 2.0f * GCORC_B2 + rtrs * (3.0f * GCORC_B3 + 4.0f * GCORC_B4 * rtrs));
+  real Q3 = GCORC_A * (GCORC_B1/rtrs + 2.0f * GCORC_B2 + rtrs * (3.0f * GCORC_B3 + 4.0f * GCORC_B4 * rtrs));
   grrs = -2.0f * GCORC_A * GCORC_A1 * Q2 - Q0 * Q3/(Q1 * (1.0f + Q1));
 }
 
@@ -81,9 +95,6 @@ __device__ void gcorc(float rtrs, float& gg, float& grrs)
 #define CLOSEDPBE_BETA 0.06672455060314922f
 #define CLOSEDPBE_DELTA 2.14612633996736f // beta/gamma
 
-#define real double
-
-
 __device__ void closedpbe(float rho, real agrad, real delgrad, real rlap, real& expbe, real& vxpbe, real& ecpbe, real& vcpbe)
 {
   if (rho < 2e-18f) {
@@ -93,17 +104,17 @@ __device__ void closedpbe(float rho, real agrad, real delgrad, real rlap, real& 
 
   real rho2 = rho * rho;
   real rho13 = pow(rho, 1.0f / 3.0f);
-  real fk1 = pow(CLOSEDPBE_PI32, 1.0f / 3.0f);
+  real fk1 = pow((real)CLOSEDPBE_PI32, (real)(1.0f / 3.0f));
   real fk = fk1 * rho13;
 
   real twofk = 2.0f * fk;
-  real twofk2 = pow(twofk, 2.0f);
-  real twofk3 = pow(twofk, 3.0f);
+  real twofk2 = pow(twofk, (real)2.0f);
+  real twofk3 = pow(twofk, (real)3.0f);
 
   // S = |grad(rho)|/(2*fk*rho)
   real s = agrad / (twofk * rho);
-  real s2 = pow(s, 2.0f);
-  real s3 = pow(s, 3.0f);
+  real s2 = pow(s, (real)2.0f);
+  real s3 = pow(s, (real)3.0f);
 
   // LDA exchange contribution:
   // ex*rho ==> energy, we will calculate ex ==> energy density
@@ -148,11 +159,11 @@ __device__ void closedpbe(float rho, real agrad, real delgrad, real rlap, real& 
   // first we calculate the lsd contribution to the correlation energy
   // we will use the subroutine GCOR.
   // We need only the  rs (seitz radius) rs = (3/4pi*rho)^1/3
-  real pirho = 4.0f * CUDART_PI_F * rho;
-  real rs = pow(3.0f / pirho, 1.0f / 3.0f);
+  real pirho = 4.0f * CUDA_PI * rho;
+  real rs = pow(3.0f / pirho, (real)(1.0 / 3.0));
   real rtrs = sqrt(rs);
 
-  real sk = sqrt(4.0f * fk / CUDART_PI_F);
+  real sk = sqrt(4.0f * fk / CUDA_PI);
   real twoks = 2.0f * sk;
 
   real t = agrad / (twoks * rho);
@@ -166,7 +177,7 @@ __device__ void closedpbe(float rho, real agrad, real delgrad, real rlap, real& 
 
   real ec, eurs;
   gcorc(rtrs, ec, eurs);
-	if (ec == 0.0f) ec = FLT_MIN;
+	if (ec == (real)0.0f) ec = REAL_MIN;
 
   real eclda = ec;
   real ecrs = eurs;
@@ -175,7 +186,7 @@ __device__ void closedpbe(float rho, real agrad, real delgrad, real rlap, real& 
   // Now we have to calculate the H function in order to evaluate
   // the GGA contribution to the correlation energy
   real PON = -ec * CLOSEDPBE_GAMMAINV;
-  real B = CLOSEDPBE_DELTA / (expf(PON) - 1.0f);
+  real B = CLOSEDPBE_DELTA / (exp(PON) - 1.0f);
   real B2 = B * B;
   real T4 = t2 * t2;
 
@@ -216,7 +227,7 @@ __device__ void closedpbe(float rho, real agrad, real delgrad, real rlap, real& 
 
 	//cout << rho << " " << delgrad << " " << rlap << " ret: " << expbe << " " << vxpbe << " " << ecpbe << " " << vcpbe << endl;
 }
-	
+
 template<bool compute_exc, bool compute_y2a, bool lda> __device__ void gpu_pot(float dens, const float4& grad, const float4& hess1, const float4& hess2, float& exc_corr, float& y2a)
 {
 	// data X alpha
@@ -289,7 +300,7 @@ template<bool compute_exc, bool compute_y2a, bool lda> __device__ void gpu_pot(f
     // hess2: xy, xz, yz
     if (dens < 1e-13f) { exc_corr = ec = 0.0f; return; }
 
-    float y = powf(dens, 0.333333333333333333f);  // rho^(1/3)
+    float y = pow((real)dens, (real)0.333333333333333333);  // rho^(1/3)
 
     float grad2 = grad.x * grad.x + grad.y * grad.y + grad.z * grad.z;
     if (grad2 == 0.0f) grad2 = FLT_MIN;
@@ -459,7 +470,7 @@ template<bool compute_exc, bool compute_y2a, bool lda> __device__ void gpu_pot(f
 
       y2a = y2a + (term3 - term4 - term5);
     }
-    
+
     exc_corr += ec;
   }
 }

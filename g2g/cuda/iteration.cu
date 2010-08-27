@@ -34,26 +34,26 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
 	t_total.start();
 
   uint max_used_memory = 0;
-		
+
 	/*** Computo sobre cada cubo ****/
 	CudaMatrixFloat point_weights_gpu;
 	CudaMatrixFloat rmm_input_gpu;
 	FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS);
-  
+
 	for (list<PointGroup>::const_iterator it = final_partition.begin(); it != final_partition.end(); ++it) {
 		const PointGroup& group = *it;
     uint group_m = group.total_functions();
-    cout << "group: " << group.number_of_points << endl;
-				
+    //cout << "group: " << group.number_of_points << endl;
+
 		/** Load points from group **/
     HostMatrixFloat point_weights_cpu(group.number_of_points, 1);
 
-		uint i = 0;		
+		uint i = 0;
 		for (list<Point>::const_iterator p = group.points.begin(); p != group.points.end(); ++p, ++i) {
 			point_weights_cpu(i) = p->weight;
 		}
 		point_weights_gpu = point_weights_cpu;
-		
+
     /* compute density/factors */
 		dim3 threads(group.number_of_points);
 		dim3 threadBlock, threadGrid;
@@ -82,12 +82,12 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
         rmm_input_gpu.data, group.function_values.data, group.gradient_values.data, group.hessian_values.data, group_m);
       cudaAssertNoError("compute_density");
       {
-        HostMatrixFloat factors_cpu(factors_gpu);
+        //HostMatrixFloat factors_cpu(factors_gpu);
         //for (uint i = 0; i < group.number_of_points; i++) { cout << factors_cpu(i) << endl;; }
-        factors_cpu.check_values();
+        //factors_cpu.check_values();
       }
     }
-    
+
     t_density.pause_and_sync();
 
     /* compute forces */
@@ -99,7 +99,7 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
 
       CudaMatrixFloat4 dd_gpu(COALESCED_DIMENSION(group.number_of_points), group.total_nucleii()); dd_gpu.zero();
       CudaMatrixUInt nuc_gpu(group.func2local_nuc);  // TODO: esto en realidad se podria guardar una sola vez durante su construccion
-      
+
       gpu_compute_density_derivs<<<threadGrid, threadBlock>>>(group.function_values.data, group.gradient_values.data, rmm_input_gpu.data, nuc_gpu.data, dd_gpu.data, group.number_of_points, group_m, group.total_nucleii());
       cudaAssertNoError("density_derivs");
       t_density_derivs.pause_and_sync();
@@ -124,7 +124,7 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
       }
       t_forces.pause_and_sync();
     }
-    
+
     /* compute RMM */
     t_rmm.start_and_sync();
     if (compute_rmm) {
@@ -142,7 +142,7 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
 		}
     t_rmm.pause_and_sync();
 	}
-		
+
 	/** pass results to fortran */
 	if (compute_energy) {
 		cout << "total energy: " << total_energy << endl;

@@ -6,8 +6,10 @@ include cuda/Makefile.cuda
 SRCS:=$(wildcard *.cpp)
 OBJ:=$(SRCS:%.cpp=%.o)
 
+CUDA_LIBS:=-lcudart
+
 ifeq ($(cpu),1)
-  CPU_SOURCES  := $(wildcard cpu/*.cpp) 
+  CPU_SOURCES  := $(wildcard cpu/*.cpp)
   SRCS         += $(CPU_SOURCES)
   OBJ          += $(CPU_SOURCES:%.cpp=%.o)
   CXXFLAGS     += -DCPU_KERNELS=1
@@ -15,6 +17,7 @@ else
   CUDA_SOURCES := $(wildcard cuda/*.cu)
   SRCS         += $(CUDA_SOURCES)
   OBJ          += $(CUDA_SOURCES:%.cu=%.cu_o)
+  CUDA_LIBS         += -lcuda
 endif
 
 ## Other options
@@ -38,7 +41,7 @@ else
 endif
 
 ## Define libraries
-LIBS := $(shell pkg-config gsl --libs) $(CUDA_LIBS)
+LIBS := $(shell pkg-config gsl --libs) $(CUDA_LDFLAGS) $(CUDA_LIBS)
 
 ## Targets
 all: $(LIBRARY)
@@ -54,7 +57,7 @@ depend:
 libg2g.a: $(OBJ)
 	ar cru libg2g.a $(OBJ)
 	ranlib libg2g.a
-	
+
 libg2g.so: $(OBJ)
 	$(CXX) -shared $(LDFLAGS) -o libg2g.so $(OBJ) $(LIBS)
 

@@ -20,7 +20,7 @@ CFLAGS   = -mp1 -ip -O3 -c -cpp $(DEFINE) $(PROFILE)
 CFLAGS2  = -O3 -c -cpp $(DEFINE) $(PROFILE)
 CFLAGS3  = -O1 -c -cpp $(DEFINE) $(PROFILE)
 CPPFLAGS = -P -traditional-cpp
-LIBS=-L/usr/lib $(CUDA_LIBS) -L../g2g -lg2g -lstdc++ -L$(MKL_LIBRARY_PATH) $(PROFILE) -lmkl_solver_ilp64_sequential -lblas -lmkl_core -lmkl_sequential -lguide -lpthread -lm -llapack
+LIBS=-L/usr/lib -L../g2g -lg2g -lstdc++ -L$(MKL_LIBRARY_PATH) $(PROFILE) -lmkl_solver_ilp64_sequential -lblas -lmkl_core -lmkl_sequential -lguide -lpthread -lm -llapack
 
 # directories
 CUDA_COMMONDIR := $(CUDA_INSTALL_PATH)/../sdk/common
@@ -49,19 +49,19 @@ dirs:
 	mkdir -p obj/hibrido_g2g_obj/hibrido_src
 	mkdir -p obj/garcha_obj/garcha_src
 	mkdir -p obj/hibrido_obj/hibrido_src
-	
-garcha-g2g: $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o)
-	ifort -o $@ $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o) $(LIBS) $(CUDA_LIBS)
 
-hibrido-g2g: $(HIBRIDO_OBJ:%.o=obj/hibrido_g2g_obj/%.o)	
-	ifort -o $@ $(HIBRIDO_OBJ:%.o=obj/hibrido_g2g_obj/%.o) $(LIBS) $(CUDA_LIBS)
-	
+garcha-g2g: $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o)
+	ifort -o $@ $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o) $(LIBS) #$(CUDA_LIBS)
+
+hibrido-g2g: $(HIBRIDO_OBJ:%.o=obj/hibrido_g2g_obj/%.o)
+	ifort -o $@ $(HIBRIDO_OBJ:%.o=obj/hibrido_g2g_obj/%.o) $(LIBS) #$(CUDA_LIBS)
+
 garcha: $(GARCHA_OBJ:%.o=obj/garcha_obj/%.o)
 	ifort -o $@ $(GARCHA_OBJ:%.o=obj/garcha_obj/%.o) $(LIBS)
-	
+
 hibrido: $(HIBRIDO_OBJ:%.o=obj/hibrido_obj/%.o)
 	ifort -o $@ $(HIBRIDO_OBJ:%.o=obj/hibrido_obj/%.o) $(LIBS)
-	
+
 ## Targets: clean ##
 clean:
 	rm -rf obj
@@ -129,7 +129,7 @@ obj/garcha_obj/%.o: %.f
 
 obj/hibrido_obj/%.o: %.f
 	ifort -o $@ $(CFLAGS) $<
-	
+
 obj/garcha_g2g_obj/%.o: %.f
 	ifort -o $@ $(CFLAGS) $(G2G_CFLAGS) $<
 

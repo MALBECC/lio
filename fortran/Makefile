@@ -23,8 +23,6 @@ CPPFLAGS = -P -traditional-cpp
 LIBS=-L/usr/lib -L../g2g -lg2g -lstdc++ -L$(MKL_LIBRARY_PATH) $(PROFILE) -lmkl_solver_ilp64_sequential -lblas -lmkl_core -lmkl_sequential -lguide -lpthread -lm -llapack
 
 # directories
-CUDA_COMMONDIR := $(CUDA_INSTALL_PATH)/../sdk/common
-CUDA_LIBS=-L$(CUDA_INSTALL_PATH)/lib64 -L$(CUDA_COMMONDIR)/lib64 -lcudart
 G2G_CFLAGS=-DG2G
 
 ifeq ($(ultima_garcha),1)
@@ -51,10 +49,10 @@ dirs:
 	mkdir -p obj/hibrido_obj/hibrido_src
 
 garcha-g2g: $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o)
-	ifort -o $@ $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o) $(LIBS) #$(CUDA_LIBS)
+	ifort -o $@ $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o) $(LIBS)
 
 hibrido-g2g: $(HIBRIDO_OBJ:%.o=obj/hibrido_g2g_obj/%.o)
-	ifort -o $@ $(HIBRIDO_OBJ:%.o=obj/hibrido_g2g_obj/%.o) $(LIBS) #$(CUDA_LIBS)
+	ifort -o $@ $(HIBRIDO_OBJ:%.o=obj/hibrido_g2g_obj/%.o) $(LIBS)
 
 garcha: $(GARCHA_OBJ:%.o=obj/garcha_obj/%.o)
 	ifort -o $@ $(GARCHA_OBJ:%.o=obj/garcha_obj/%.o) $(LIBS)

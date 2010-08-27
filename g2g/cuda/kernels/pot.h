@@ -298,6 +298,7 @@ template<bool compute_exc, bool compute_y2a, bool lda> __device__ void gpu_pot(f
   else {
     // hess1: xx, yy, zz
     // hess2: xy, xz, yz
+    y2a = 0.0f;
     if (dens < 1e-13f) { exc_corr = ec = 0.0f; return; }
 
     float y = pow((real)dens, (real)0.333333333333333333);  // rho^(1/3)
@@ -309,8 +310,6 @@ template<bool compute_exc, bool compute_y2a, bool lda> __device__ void gpu_pot(f
     float d0 = hess1.x + hess1.y + hess1.z;
     float u0 = ((grad.x * grad.x) * hess1.x + 2.0f * grad.x * grad.y * hess2.x + 2.0f * grad.y * grad.z * hess2.z + 2.0f * grad.x * grad.z * hess2.y +
         (grad.y * grad.y) * hess1.y + (grad.z * grad.z) * hess1.z) / dgrad;
-
-    y2a = 0.0f;
 
     /** Exchange **/
     if (gpu_Iexch == 4 || gpu_Iexch == 8) {   // Perdew : Phys. Rev B 33 8800 (1986)

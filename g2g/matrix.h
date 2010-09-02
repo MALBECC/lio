@@ -1,6 +1,7 @@
 #ifndef __G2G_MATRIX_H__
 #define __G2G_MATRIX_H__
 
+#include <vector>
 #include "cpu/cpu_vector_types.h"
 #define COALESCED_DIMENSION(d) (d + 16 - (d % 16))
 
@@ -40,7 +41,6 @@ namespace G2G {
 			HostMatrix<T>& operator=(const CudaMatrix<T>& c);
 			HostMatrix<T>& operator=(const HostMatrix<T>& c);
 
-		  // TODO: mejorar esto
 			inline const T& operator()(unsigned int i = 0, unsigned int j = 0) const {
 				assert(i < this->width);
 				assert(j < this->height);
@@ -62,6 +62,8 @@ namespace G2G {
 			HostMatrix<T>& zero(void);
       HostMatrix<T>& fill(T value);
 
+      void check_values(void);
+
 			void deallocate(void);
 
       /* BLAS methods */
@@ -82,18 +84,24 @@ namespace G2G {
 		public:
 			CudaMatrix(void);
 			CudaMatrix(const CudaMatrix<T>& c);
-			CudaMatrix(const HostMatrix<T>& c);		
+			CudaMatrix(const HostMatrix<T>& c);
+      CudaMatrix(const std::vector<T>& v);
+
 			CudaMatrix(unsigned int width, unsigned int height = 1);
 			~CudaMatrix(void);
 		
 			CudaMatrix<T>& resize(unsigned int width, unsigned int height = 1);
 			CudaMatrix<T>& zero(void);
 
+      void check_values(void);
+
 			CudaMatrix& operator=(const HostMatrix<T>& c);
 			CudaMatrix& operator=(const CudaMatrix<T>& c);
+      CudaMatrix& operator=(const std::vector<T>& v);
 		
 			void copy_submatrix(const HostMatrix<T>& c, unsigned int elements = 0);
 			void copy_submatrix(const CudaMatrix<T>& c, unsigned int elements = 0);
+      void copy_submatrix(const std::vector<T>& v, unsigned int elements = 0);
 		
 			void deallocate(void);		
 	};

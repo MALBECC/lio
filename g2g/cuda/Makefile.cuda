@@ -3,29 +3,29 @@
 #
 # Copyright 1993-2006 NVIDIA Corporation.  All rights reserved.
 #
-# NOTICE TO USER:   
+# NOTICE TO USER:
 #
 # This source code is subject to NVIDIA ownership rights under U.S. and
-# international Copyright laws.  
+# international Copyright laws.
 #
-# NVIDIA MAKES NO REPRESENTATION ABOUT THE SUITABILITY OF THIS SOURCE 
-# CODE FOR ANY PURPOSE.  IT IS PROVIDED "AS IS" WITHOUT EXPRESS OR 
-# IMPLIED WARRANTY OF ANY KIND.  NVIDIA DISCLAIMS ALL WARRANTIES WITH 
-# REGARD TO THIS SOURCE CODE, INCLUDING ALL IMPLIED WARRANTIES OF 
-# MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE.   
-# IN NO EVENT SHALL NVIDIA BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL, 
-# OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS 
-# OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE 
-# OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE 
-# OR PERFORMANCE OF THIS SOURCE CODE.  
+# NVIDIA MAKES NO REPRESENTATION ABOUT THE SUITABILITY OF THIS SOURCE
+# CODE FOR ANY PURPOSE.  IT IS PROVIDED "AS IS" WITHOUT EXPRESS OR
+# IMPLIED WARRANTY OF ANY KIND.  NVIDIA DISCLAIMS ALL WARRANTIES WITH
+# REGARD TO THIS SOURCE CODE, INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE.
+# IN NO EVENT SHALL NVIDIA BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL,
+# OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+# OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+# OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
+# OR PERFORMANCE OF THIS SOURCE CODE.
 #
-# U.S. Government End Users.  This source code is a "commercial item" as 
-# that term is defined at 48 C.F.R. 2.101 (OCT 1995), consisting  of 
-# "commercial computer software" and "commercial computer software 
-# documentation" as such terms are used in 48 C.F.R. 12.212 (SEPT 1995) 
-# and is provided to the U.S. Government only as a commercial end item.  
-# Consistent with 48 C.F.R.12.212 and 48 C.F.R. 227.7202-1 through 
-# 227.7202-4 (JUNE 1995), all U.S. Government End Users acquire the 
+# U.S. Government End Users.  This source code is a "commercial item" as
+# that term is defined at 48 C.F.R. 2.101 (OCT 1995), consisting  of
+# "commercial computer software" and "commercial computer software
+# documentation" as such terms are used in 48 C.F.R. 12.212 (SEPT 1995)
+# and is provided to the U.S. Government only as a commercial end item.
+# Consistent with 48 C.F.R.12.212 and 48 C.F.R. 227.7202-1 through
+# 227.7202-4 (JUNE 1995), all U.S. Government End Users acquire the
 # source code with only those rights set forth herein.
 #
 ################################################################################
@@ -41,13 +41,13 @@
 ROOTDIR    ?= $(CUDA_INSTALL_PATH)/cuda
 
 # Compilers
-ARCHFLAGS	 := 
+ARCHFLAGS	 :=
 
 # Includes
-INCLUDES  += -I. -I$(CUDA_INSTALL_PATH)/include 
+INCLUDES  += -I. -I$(CUDA_INSTALL_PATH)/include
 
 # Libs
-CUDA_LIBS       := -L$(CUDA_INSTALL_PATH)/lib64 -L$(CUDA_INSTALL_PATH)/lib -L$(COMMONDIR)/lib -L$(LIBDIR) -lcuda -lcudart 
+CUDA_LDFLAGS    := -L$(CUDA_INSTALL_PATH)/lib64 -L$(CUDA_INSTALL_PATH)/lib -L$(COMMONDIR)/lib ${OPENGLLIB} ${LIB}
 
 # Warning flags
 CXXWARN_FLAGS := \
@@ -71,11 +71,11 @@ CWARN_FLAGS := $(CXXWARN_FLAGS) \
 	-Wmissing-declarations \
 	-Wnested-externs \
 	-Wmain \
-	
+
 # Compiler-specific flags
 NVCCFLAGS   := $(ARCHFLAGS) -shared --compiler-options -fPIC --compiler-options -Wall
 ifeq ($(gcc),1)
-  CXXFLAGS    += $(CXXWARN_FLAGS) 
+  CXXFLAGS    += $(CXXWARN_FLAGS)
 endif
 
 # Common flags
@@ -96,7 +96,7 @@ ifneq ($(dbg),1)
 endif
 
 ifeq ($(keep), 1)
-	NVCCFLAGS   += -keep
+	NVCCFLAGS   += --keep
 endif
 
 ifeq ($(cpu),1)
@@ -119,7 +119,12 @@ NVCCFLAGS += --linker-options -fPIC #--verbose
 ifeq ($(verbose),1)
 	NVCCFLAGS += --verbose
 endif
-	
+
+ifeq ($(sm20),1)
+  NVCCFLAGS += -arch=sm_20
+  NVCCFLAGS += -DNVIDIA_HAS_DOUBLE
+endif
+
 ifeq ($(nvcc_warn_verbose),1)
 	NVCCFLAGS += $(addprefix --compiler-options ,$(CXXWARN_FLAGS))
 	NVCCFLAGS += --compiler-options -fno-strict-aliasing
@@ -138,4 +143,4 @@ CXX=icc
 	#icc $(CXXFLAGS) -o $@ -c $<.cpp
 
 
-	
+

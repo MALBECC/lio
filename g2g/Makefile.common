@@ -4,13 +4,12 @@ ifeq ($(gcc),1)
   CXXFLAGS := $(CXXFLAGS) -fPIC -Wall -Wno-long-long -ansi -Wno-unused
 else
   CXX      := icc
-  CXXFLAGS := $(CXXFLAGS) -fPIC -vec-report1 -g 
+  CXXFLAGS := $(CXXFLAGS) -fPIC  -vec-report1 -g 
 endif
 
 # Debug/release configuration
 ifeq ($(dbg),1)
 	COMMONFLAGS := -g -D_DEBUG
-	CXXFLAGS  	+= $(COMMONFLAGS) -fsignaling-nans -ftrapping-math 
 else 
 	COMMONFLAGS := -DNDEBUG
 	ifeq ($(gcc),1)
@@ -18,8 +17,9 @@ else
 	else
     CXXFLAGS  += -O3 -fno-strict-aliasing
 	endif
-	CXXFLAGS    += $(COMMONFLAGS) 
 endif
+
+CXXFLAGS  	+= $(COMMONFLAGS)
 
 %.o:%.cpp %.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@

@@ -15,8 +15,8 @@
 using namespace std;
 using namespace G2G;
 
-
-void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr)
+template <bool lda, bool compute_forces>
+void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr)
 {
   double total_energy = 0;
 
@@ -38,25 +38,7 @@ void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, d
     // prepare rmm_input for this group
     t_density.start();
     HostMatrixFloat rmm_input(group_m, group_m);
-    rmm_input.zero();
-    for (uint i = 0, ii = 0; i < group.functions.size(); i++) {
-      uint inc_i = group.small_function_type(i);
-
-      for (uint k = 0; k < inc_i; k++, ii++) {
-        uint big_i = group.functions[i] + k;
-        for (uint j = 0, jj = 0; j < group.functions.size(); j++) {
-          uint inc_j = group.small_function_type(j);
-
-          for (uint l = 0; l < inc_j; l++, jj++) {
-            uint big_j = group.functions[j] + l;
-            if (big_i > big_j) continue;
-            uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-            rmm_input(ii, jj) = fortran_vars.rmm_input_ndens1.data[big_index];
-            rmm_input(jj, ii) = rmm_input(ii, jj);
-          }
-        }
-      }
-    }
+    group.get_rmm_input(rmm_input);
     t_density.pause();
 
     /******** each point *******/
@@ -71,7 +53,7 @@ void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, d
       cfloat3 dd1(0,0,0);
       cfloat3 dd2(0,0,0);
 
-      if (fortran_vars.lda) {
+      if (lda) {
         for (uint i = 0; i < group_m; i++) {
           float w = 0.0f;
           float Fi = group.function_values(i, point);
@@ -120,12 +102,14 @@ void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, d
           dd2 += FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi;
         }
       }
+      t_density.pause();
 
+      t_forces.start();
       /** density derivatives **/
       if (compute_forces) {
         dd.zero();
-        for (uint i = 0, ii = 0; i < group.functions.size(); i++) {
-          uint nuc = group.nuc_map[i];
+        for (uint i = 0, ii = 0; i < group.total_functions_simple(); i++) {
+          uint nuc = group.func2global_nuc(i);
           uint inc_i = group.small_function_type(i);
           cfloat3 this_dd(0,0,0);
           for (uint k = 0; k < inc_i; k++, ii++) {
@@ -139,33 +123,36 @@ void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, d
           dd(nuc) += this_dd;
         }
       }
-
-      t_density.pause();
+      t_forces.pause();
+      
       t_pot.start();
 
+      t_density.start();
       /** energy / potential **/
       float exc = 0, corr = 0, y2a = 0;
-      if (fortran_vars.lda)
+      if (lda)
         cpu_pot(partial_density, exc, corr, y2a);
       else {
         cpu_potg(partial_density, dxyz, dd1, dd2, exc, corr, y2a);
       }
       
       t_pot.pause();
-      t_resto.start();
-
+      
       if (compute_energy)
         total_energy += (partial_density * point_it->weight) * (exc + corr);
+      t_density.pause();
       
 
+      t_forces.start();
       if (compute_forces) {
         float factor = point_it->weight * y2a;
-        for (set<uint>::const_iterator it = group.nucleii.begin(); it != group.nucleii.end(); ++it)
-          forces(*it) += dd(*it) * factor;
+        for (uint i = 0; i < group.total_nucleii(); i++) {
+          uint global_atom = group.local2global_nuc[i];
+          forces(global_atom) += dd(global_atom) * factor;
+        }
       }        
-
-      t_resto.pause();
-
+      t_forces.pause();
+      
       /******** RMM *******/
       t_rmm.start();      
       if (compute_rmm) {
@@ -178,15 +165,15 @@ void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, d
     t_rmm.start();
     /* accumulate RMM results for this group */
     if (compute_rmm) {
-      for (uint i = 0, ii = 0; i < group.functions.size(); i++) {
+      for (uint i = 0, ii = 0; i < group.total_functions_simple(); i++) {
         uint inc_i = group.small_function_type(i);
         for (uint k = 0; k < inc_i; k++, ii++) {
-          uint big_i = group.functions[i] + k;
+          uint big_i = group.local2global_func[i] + k;
 
-          for (uint j = 0, jj = 0; j < group.functions.size(); j++) {
+          for (uint j = 0, jj = 0; j < group.total_functions_simple(); j++) {
             uint inc_j = group.small_function_type(j);
             for (uint l = 0; l < inc_j; l++, jj++) {
-              uint big_j = group.functions[j] + l;
+              uint big_j = group.local2global_func[j] + l;
               if (big_i > big_j) continue;
 
               uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
@@ -199,6 +186,7 @@ void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, d
     t_rmm.pause();
   }
 
+  t_forces.start();
   if (compute_forces) {
     FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS); // TODO: mover esto a init.cpp
     for (uint i = 0; i < fortran_vars.atoms; i++) {
@@ -208,12 +196,17 @@ void g2g_iteration(bool compute_energy, bool compute_forces, bool compute_rmm, d
       fort_forces(i,2) += this_force.z();
     }
   }
+  t_forces.pause();
 
   /***** send results to fortran ****/
   if (compute_energy) *fort_energy_ptr = total_energy;
 
   t_total.stop();
   cout << "iteration: " << t_total << endl;
-  cout << "rmm: " << t_rmm << " density: " << t_density << " pot: " << t_pot << " resto: " << t_resto << endl;
+  cout << "rmm: " << t_rmm << " density: " << t_density << " pot: " << t_pot << " forces: " << t_forces << " resto: " << t_resto << endl;
 }
 
+template void g2g_iteration<true, true>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<true, false>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<false, true>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<false, false>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);

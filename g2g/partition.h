@@ -4,6 +4,7 @@
 #include <list>
 #include <set>
 #include <vector>
+#include <algorithm>
 
 /********************
  * Point information
@@ -23,9 +24,12 @@ class PointGroup {
     std::list<Point> points;
     uint number_of_points;
     uint s_functions, p_functions, d_functions;
-    std::vector<uint> functions;
-    std::set<uint> nucleii;
-    std::vector<uint> nuc_map;
+
+    G2G::HostMatrixUInt func2global_nuc; // size == total_functions_simple()
+    G2G::HostMatrixUInt func2local_nuc; // size == total_functions()
+
+    std::vector<uint> local2global_func; // size == total_functions_simple()
+    std::vector<uint> local2global_nuc;  // size == total_nucleii()
     #if CPU_KERNELS
     G2G::HostMatrixFloat function_values;
     G2G::HostMatrixCFloat3 gradient_values;
@@ -47,6 +51,14 @@ class PointGroup {
     }
 
     inline uint total_functions(void) const { return s_functions + p_functions * 3 + d_functions * 6; }
+    inline uint total_functions_simple(void) const { return local2global_func.size(); } // == s_functions + p_functions + d_functions
+    inline uint total_nucleii(void) const { return local2global_nuc.size(); }
+    inline bool has_nucleii(uint atom) const { return (std::find(local2global_nuc.begin(), local2global_nuc.end(), atom) != local2global_nuc.end()); }
+
+    void get_rmm_input(G2G::HostMatrixFloat& rmm_input) const;
+    void add_rmm_output(const G2G::HostMatrixFloat& rmm_output) const;
+
+    void compute_nucleii_maps(void);
 };
 
 class Sphere : public PointGroup {

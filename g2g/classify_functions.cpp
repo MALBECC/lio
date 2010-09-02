@@ -20,7 +20,6 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
 {
 	uint func = 0;
 
-  // TODO: esto solo es necesario para los atomos en nucleii, pero no se nucleii todavia, se podria ver si esto cuesta mas que calcularla on-the-fly
 	HostMatrix<double> atom_cube_dists(fortran_vars.atoms);
 	for (uint i = 0; i < fortran_vars.atoms; i++) {
 		const double3& atom_pos = fortran_vars.atom_positions(i);
@@ -40,14 +39,14 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
 	}
 
   set<uint> functions_set;
+  set<uint> nucleii_set;
 	
 	/** S **/
 	while (func < fortran_vars.s_funcs) {
     uint atom_nuc = fortran_vars.nucleii(func) - 1;
 		if (assign_all_functions || (min_exps[func] * atom_cube_dists(atom_nuc)) < max_function_exponent) {
 			functions_set.insert(func); s_functions++;
-			nucleii.insert(atom_nuc);
-      nuc_map.push_back(atom_nuc);
+			nucleii_set.insert(atom_nuc);
 		}
 		func++;
 	}
@@ -57,8 +56,7 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
     uint atom_nuc = fortran_vars.nucleii(func) - 1;
 		if (assign_all_functions || (min_exps[func] * atom_cube_dists(atom_nuc)) < max_function_exponent) {
 			functions_set.insert(func); p_functions++;
-			nucleii.insert(atom_nuc);
-      nuc_map.push_back(atom_nuc);
+			nucleii_set.insert(atom_nuc);
 		}
 		func += 3;
 	}
@@ -68,14 +66,18 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
     uint atom_nuc = fortran_vars.nucleii(func) - 1;
 		if (assign_all_functions || (min_exps[func] * atom_cube_dists(atom_nuc)) < max_function_exponent) {
 			functions_set.insert(func); d_functions++;
-			nucleii.insert(atom_nuc);
-      nuc_map.push_back(atom_nuc);
+			nucleii_set.insert(atom_nuc);
 		}
 		func += 6;
 	}
 
-  functions.resize(functions_set.size());
-  copy(functions_set.begin(), functions_set.end(), functions.begin());
+  local2global_func.resize(functions_set.size());
+  copy(functions_set.begin(), functions_set.end(), local2global_func.begin());
+
+  local2global_nuc.resize(nucleii_set.size());
+  copy(nucleii_set.begin(), nucleii_set.end(), local2global_nuc.begin());
+
+  PointGroup::compute_nucleii_maps();
 }
 
 /*****************************
@@ -101,14 +103,14 @@ void Sphere::assign_significative_functions(const std::vector<double>& min_exps)
 	}
 
   set<uint> functions_set;
+  set<uint> nucleii_set;
 
 	/** S **/
 	while (func < fortran_vars.s_funcs) {
     uint atom_nuc = fortran_vars.nucleii(func) - 1;
 		if (assign_all_functions || (min_exps[func] * atom_sphere_dists(atom_nuc)) < max_function_exponent) {
 			functions_set.insert(func); s_functions++;
-			nucleii.insert(atom_nuc);
-      nuc_map.push_back(atom_nuc);
+			nucleii_set.insert(atom_nuc);
 		}
 		func++;
 	}
@@ -118,8 +120,7 @@ void Sphere::assign_significative_functions(const std::vector<double>& min_exps)
     uint atom_nuc = fortran_vars.nucleii(func) - 1;
 		if (assign_all_functions || (min_exps[func] * atom_sphere_dists(atom_nuc)) < max_function_exponent) {
 			functions_set.insert(func); p_functions++;
-			nucleii.insert(atom_nuc);
-      nuc_map.push_back(atom_nuc);
+			nucleii_set.insert(atom_nuc);
 		}
 
 		func += 3;
@@ -130,12 +131,16 @@ void Sphere::assign_significative_functions(const std::vector<double>& min_exps)
     uint atom_nuc = fortran_vars.nucleii(func) - 1;
 		if (assign_all_functions || (min_exps[func] * atom_sphere_dists(atom_nuc)) < max_function_exponent) {
 			functions_set.insert(func); d_functions++;
-			nucleii.insert(atom_nuc);
-      nuc_map.push_back(atom_nuc);
+			nucleii_set.insert(atom_nuc);
 		}
 		func += 6;
 	}
 
-  functions.resize(functions_set.size());
-  copy(functions_set.begin(), functions_set.end(), functions.begin());
+  local2global_func.resize(functions_set.size());
+  copy(functions_set.begin(), functions_set.end(), local2global_func.begin());
+
+  local2global_nuc.resize(nucleii_set.size());
+  copy(nucleii_set.begin(), nucleii_set.end(), local2global_nuc.begin());
+
+  PointGroup::compute_nucleii_maps();
 }

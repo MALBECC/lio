@@ -11,9 +11,45 @@
 #include <iostream>
 #include <string>
 
-#if !__CUDACC__
+#ifndef __CUDACC__
 #include <cmath>
 #endif
+
+namespace G2G {
+  #ifndef __CUDACC__
+  inline __device__ __host__ bool isinf(uint v) { return false; }
+  inline __device__ __host__ bool isinf(float v) { return ::isinff(v); }
+  inline __device__ __host__ bool isinf(double v) { return ::isinf(v); }
+  inline __device__ __host__ bool isinf(float1 v) { return isinf(v.x); }
+  inline __device__ __host__ bool isinf(double1 v) { return isinf(v.x); }
+  inline __device__ __host__ bool isinf(uint1 v) { return false; }
+  inline __device__ __host__ bool isinf(float2 v) { return isinf(v.x) || isinf(v.y); }
+  inline __device__ __host__ bool isinf(double2 v) { return isinf(v.x) || isinf(v.y); }
+  inline __device__ __host__ bool isinf(uint2 v) { return false; }
+  inline __device__ __host__ bool isinf(float3 v) { return isinf(v.x) || isinf(v.y) || isinf(v.z); }
+  inline __device__ __host__ bool isinf(double3 v) { return isinf(v.x) || isinf(v.y) || isinf(v.z); }
+  inline __device__ __host__ bool isinf(uint3 v) { return false; }
+  inline __device__ __host__ bool isinf(float4 v) { return isinf(v.x) || isinf(v.y) || isinf(v.z) || isinf(v.w); }
+  inline __device__ __host__ bool isinf(double4 v) { return isinf(v.x) || isinf(v.y) || isinf(v.z) || isinf(v.w); }
+  inline __device__ __host__ bool isinf(uint4 v) { return false; }
+
+  inline __device__ __host__ bool isnan(uint v) { return false; }
+  inline __device__ __host__ bool isnan(float v) { return ::isnanf(v); }
+  inline __device__ __host__ bool isnan(double v) { return ::isnan(v); }
+  inline __device__ __host__ bool isnan(float1 v) { return isnan(v.x); }
+  inline __device__ __host__ bool isnan(double1 v) { return isnan(v.x); }
+  inline __device__ __host__ bool isnan(uint1 v) { return false; }
+  inline __device__ __host__ bool isnan(float2 v) { return isnan(v.x) || isnan(v.y); }
+  inline __device__ __host__ bool isnan(double2 v) { return isnan(v.x) || isnan(v.y); }
+  inline __device__ __host__ bool isnan(uint2 v) { return false; }
+  inline __device__ __host__ bool isnan(float3 v) { return isnan(v.x) || isnan(v.y) || isnan(v.z); }
+  inline __device__ __host__ bool isnan(double3 v) { return isnan(v.x) || isnan(v.y) || isnan(v.z); }
+  inline __device__ __host__ bool isnan(uint3 v) { return false; }
+  inline __device__ __host__ bool isnan(float4 v) { return isnan(v.x) || isnan(v.y) || isnan(v.z) || isnan(v.w); }
+  inline __device__ __host__ bool isnan(double4 v) { return isnan(v.x) || isnan(v.y) || isnan(v.z) || isnan(v.w); }
+  inline __device__ __host__ bool isnan(uint4 v) { return false; }
+  #endif
+}
 
 // TODO: usar cutil sdk para todos estos operadores, o usar classes de C++ templatizadas
 /** operators **/
@@ -26,19 +62,28 @@ inline __device__ __host__ double3 operator-(const double3& a, const double3& b)
 inline __device__ __host__ double3 operator+(const double3& a, const double3& b)
 { return make_double3(a.x + b.x, a.y + b.y, a.z + b.z); }
 
+inline __device__ __host__ float4 operator+(const float4& a, const float4& b)
+{ return make_float4(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w); }
+
+inline __device__ __host__ float4 operator*(const float4& a, const float4& b)
+{ return make_float4(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w); }
+
+inline __device__ __host__ double3 operator/(const double3& a, double b)
+{ return make_double3(a.x / b, a.y / b, a.z / b); }
+
 inline __device__ __host__ double3 operator/(const double3& a, const uint& b)
 { return make_double3(a.x / b, a.y / b, a.z / b); }
 
 inline __device__ __host__ uint3 ceil_uint3(const double3& a) {
-	return make_uint3(static_cast<uint>(ceilf(a.x)),
-										static_cast<uint>(ceilf(a.y)),
-										static_cast<uint>(ceilf(a.z)));
+	return make_uint3(static_cast<uint>(ceil(a.x)),
+										static_cast<uint>(ceil(a.y)),
+										static_cast<uint>(ceil(a.z)));
 }
 
 inline __device__ __host__ uint3 floor_uint3(const double3& a) {
-	return make_uint3(static_cast<uint>(floorf(a.x)),
-										static_cast<uint>(floorf(a.y)),
-										static_cast<uint>(floorf(a.z)));
+	return make_uint3(static_cast<uint>(floor(a.x)),
+										static_cast<uint>(floor(a.y)),
+										static_cast<uint>(floor(a.z)));
 }
 
 inline __device__ __host__ float3 operator *(const float3& a, const float3& b)
@@ -121,7 +166,7 @@ inline __device__ __host__ float length2(const float3& a) {
 	return (a.x * a.x + a.y * a.y + a.z * a.z);
 }
 
-inline __device__ __host__ double& elem(double3& a, uint i) {
+inline double& elem(double3& a, uint i) {
 	switch(i) {
 		case 0: return a.x; break;
 		case 1: return a.y; break;
@@ -130,7 +175,7 @@ inline __device__ __host__ double& elem(double3& a, uint i) {
   return a.x;
 }
 
-inline __device__ __host__ const double& elem(const double3& a, uint i) {
+inline const double& elem(const double3& a, uint i) {
 	switch(i) {
 		case 0: return a.x; break;
 		case 1: return a.y; break;
@@ -176,11 +221,17 @@ inline __device__ __host__ float3& operator-=(float3& a, const float& b)
 inline __device__ __host__ float3& operator-=(float3& a, const float3& b)
 { a.x -= b.x; a.y -= b.y; a.z -= b.z; return a; }
 
+inline __device__ __host__ float4& operator-=(float4& a, const float4& b)
+{ a.x -= b.x; a.y -= b.y; a.z -= b.z; a.w -= b.w; return a; }
+
 inline __device__ __host__ float3& operator+=(float3& a, const float3& b)
 { a.x += b.x; a.y += b.y; a.z += b.z; return a; }
 
 inline __device__ __host__ double3& operator+=(double3& a, const double3& b)
 { a.x += b.x; a.y += b.y; a.z += b.z; return a; }
+
+inline __device__ __host__ double3& operator-=(double3& a, const double3& b)
+{ a.x -= b.x; a.y -= b.y; a.z -= b.z; return a; }
 
 inline __device__ __host__ float3& operator+=(float3& a, const float& b)
 { a.x += b; a.y += b; a.z += b; return a; }
@@ -226,10 +277,9 @@ inline __device__ __host__ float3 to_float3(const float3& f)
 { return f; }
 
 #ifdef _DEBUG
-#define cudaAssertNoError(s)
-#else
 inline void cudaAssertNoError(const char* msg = NULL) {
   #if !CPU_KERNELS
+
 	cudaThreadSynchronize();
 	cudaError_t error = cudaGetLastError();
 	if (error != cudaSuccess) {
@@ -238,6 +288,8 @@ inline void cudaAssertNoError(const char* msg = NULL) {
 	}
   #endif
 }
+#else
+#define cudaAssertNoError(s)
 #endif
 
 inline void cudaGetMemoryInfo(uint& free, uint& total) {
@@ -258,7 +310,13 @@ template<typename T> void to_constant(const std::string& name, const T* ptr) {
 }
 
 inline std::ostream& operator<<(std::ostream& o, const double3& a) { o << "(" << a.x << "," << a.y << "," << a.z << ")"; return o; }
+inline std::ostream& operator<<(std::ostream& o, const uint1& a) { o << "(" << a.x << ")"; return o; }
+inline std::ostream& operator<<(std::ostream& o, const uint2& a) { o << "(" << a.x << "," << a.y << ")"; return o; }
+
+inline std::ostream& operator<<(std::ostream& o, const float1& a) { o << "(" << a.x << ")"; return o; }
+inline std::ostream& operator<<(std::ostream& o, const float2& a) { o << "(" << a.x << "," << a.y << ")"; return o; }
 inline std::ostream& operator<<(std::ostream& o, const float3& a) { o << "(" << a.x << "," << a.y << "," << a.z << ")"; return o; }
+inline std::ostream& operator<<(std::ostream& o, const float4& a) { o << "(" << a.x << "," << a.y << "," << a.z << "," << a.w << ")"; return o; }
 
 #endif /* __CUTOOLS_H__ */
 

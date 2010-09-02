@@ -10,7 +10,7 @@ C-----(NUCLEOS)
       DIMENSION DX1(NAT),DY1(NAT),DZ1(NAT),RIJSQ1(NAT)
       DIMENSION QIJ(NAT),IZ(NT),RIJ(NAT)
       
-c     INTEGER US1,US2
+c     INTEGER US1,US2,US3,US4
 
       IF(NSPECQ.EQ.0) RETURN
       IF(NDFT.EQ.1)THEN   
@@ -481,6 +481,128 @@ c        write(66,*) natdh,dtot,(dscalar*xm*xn-dmn*sca),(xn*xm)**2
 
           VCUM = VCUM + (ckum*(dhi-rum)**2)/2
 
+          ELSEIF(UMBRE.EQ.4) THEN
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C      Muestreo paraguas con dos distancias (suma)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+
+      DXU12=X(US1)-X(US2)
+      DYU12=Y(US1)-Y(US2)
+      DZU12=Z(US1)-Z(US2)
+
+      DXU34=X(US3)-X(US4)
+      DYU34=Y(US3)-Y(US4)
+      DZU34=Z(US3)-Z(US4)
+
+c      write(*,*) J, DX(J), DY(J), DZ(J)
+
+       RIJUMQ1=DXU12*DXU12 + DYU12*DYU12 +DZU12*DZU12
+
+       RIJUMQ2=DXU34*DXU34 + DYU34*DYU34 +DZU34*DZU34
+
+       RR1=DSQRT(RIJUMQ1)
+       RR2=DSQRT(RIJUMQ2)
+C       RRIJK=DSQRT(RRSQK)
+c       write(*,*) 'RIJUMQ',RIJUMQ,RR,RUM
+
+       
+
+
+       write(69,467) ITEL,RR1,RR2,RR1+RR2
+       EGUM = (CKUM/2)*(RR1+RR2-RUM)**2
+       FGUM1 = -CKUM*(rr1+rr2-rum)/rr1
+       FGUM2 = -CKUM*(rr1+rr2-rum)/rr2
+       VCUM = VCUM + EGUM
+c       write(*,*) 'EGUM y FGUM',EGUM,FGUM
+
+      AAX1=DXU12*FGUM1
+      AAY1=DYU12*FGUM1
+      AAZ1=DZU12*FGUM1
+
+
+      AAX2=DXU34*FGUM2
+      AAY2=DYU34*FGUM2
+      AAZ2=DZU34*FGUM2
+
+      FX(US1)=FX(US1)+AAX1
+      FY(US1)=FY(US1)+AAY1
+      FZ(US1)=FZ(US1)+AAZ1
+
+      FX(US2)=FX(US2)-AAX1
+      FY(US2)=FY(US2)-AAY1
+      FZ(US2)=FZ(US2)-AAZ1
+
+      FX(US3)=FX(US3)+AAX2
+      FY(US3)=FY(US3)+AAY2
+      FZ(US3)=FZ(US3)+AAZ2
+
+      FX(US4)=FX(US4)-AAX2
+      FY(US4)=FY(US4)-AAY2
+      FZ(US4)=FZ(US4)-AAZ2
+
+          ELSEIF(UMBRE.EQ.5) THEN
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C      Muestreo paraguas con dos distancias (resta)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+
+      DXU12=X(US1)-X(US2)
+      DYU12=Y(US1)-Y(US2)
+      DZU12=Z(US1)-Z(US2)
+
+      DXU34=X(US3)-X(US4)
+      DYU34=Y(US3)-Y(US4)
+      DZU34=Z(US3)-Z(US4)
+
+c      write(*,*) J, DX(J), DY(J), DZ(J)
+
+       RIJUMQ1=DXU12*DXU12 + DYU12*DYU12 +DZU12*DZU12
+
+       RIJUMQ2=DXU34*DXU34 + DYU34*DYU34 +DZU34*DZU34
+
+       RR1=DSQRT(RIJUMQ1)
+       RR2=DSQRT(RIJUMQ2)
+C       RRIJK=DSQRT(RRSQK)
+c       write(*,*) 'RIJUMQ',RIJUMQ,RR,RUM
+
+       
+
+
+       write(69,467) ITEL,RR1,RR2,RR1-RR2
+       EGUM = (CKUM/2)*(RR1-RR2-RUM)**2
+       FGUM1 = -CKUM*(rr1-rr2-rum)/rr1
+       FGUM2 = CKUM*(rr1-rr2-rum)/rr2
+       VCUM = VCUM + EGUM
+c       write(*,*) 'EGUM y FGUM',EGUM,FGUM
+
+      AAX1=DXU12*FGUM1
+      AAY1=DYU12*FGUM1
+      AAZ1=DZU12*FGUM1
+
+
+      AAX2=DXU34*FGUM2
+      AAY2=DYU34*FGUM2
+      AAZ2=DZU34*FGUM2
+
+      FX(US1)=FX(US1)+AAX1
+      FY(US1)=FY(US1)+AAY1
+      FZ(US1)=FZ(US1)+AAZ1
+
+      FX(US2)=FX(US2)-AAX1
+      FY(US2)=FY(US2)-AAY1
+      FZ(US2)=FZ(US2)-AAZ1
+
+
+      FX(US3)=FX(US3)+AAX2
+      FY(US3)=FY(US3)+AAY2
+      FZ(US3)=FZ(US3)+AAZ2
+
+      FX(US4)=FX(US4)-AAX2
+      FY(US4)=FY(US4)-AAY2
+      FZ(US4)=FZ(US4)-AAZ2
+
+
+
+
       ENDIF
 
 
@@ -540,6 +662,7 @@ c      write(*,*)'hx hy hz ',dsqrt(hxx**2+hyy**2+hzz**2)
       write(*,78)itel,fxx,fyy,fzz
       endif
 78    format(i9,3g15.7)
+467    format(I6,2x,F5.3,2x,F5.3,2x,f7.5) 
 
       RETURN
       END

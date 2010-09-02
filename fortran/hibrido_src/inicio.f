@@ -41,7 +41,9 @@ C-----------------------------------------------------------------------
      &  IPR,IP15,UMBRE,BER1,BERSTEP,BER2  
       READ (51,*)
       READ (51,*) IDUM,NEWQ,IQMOT,IZZ,IFLUC,IPR1,IS0,IS0Q,
-     & CKUM,RUM,JVEL,US1,US2 
+     & CKUM,RUM,JVEL,US1,US2,US3,US4
+       write(*,*) 'umbrella', CKUM, RUM, jvel,US1,US2,US3,US4
+
 c     READ (51,*) 
 c     READ (51,*) ITERM,IPINPUT
       WRITE (6,55)ICON,NTIME,NSCAL,NSAVE
@@ -103,10 +105,10 @@ c      WRITE (6,56) (WWM(I),I=1,NSPECQ+NATSOL+1)
       WRITE (6,578)(ZZZ(I),I=1,NATSOL)
       READ (51,*)
       READ (51,*) (DA(I),I=1,3)
-      WRITE (6,113) DA(1),DA(2),DA(3)
+c      WRITE (6,113) DA(1),DA(2),DA(3)
       READ (51,*)
       READ (51,*) SPC
-      write(*,*) 'SPC=',SPC
+c     write(*,*) 'SPC=',SPC
 
       IF(SPC.EQ.1)THEN
 
@@ -135,23 +137,19 @@ c      WRITE (6,56) (WWM(I),I=1,NSPECQ+NATSOL+1)
       READ (51,*)
       READ (51,*) 
       READ (51,*) RHO
-      write(*,*) 'rho',RHO
       ENDIF
       READ (51,*)
       READ (51,*) XFAX,RBUF
       READ (51,*)
       READ (51,*) IEWLD
-      write(*,*) 'iewld',IEWLD
       WRITE (6,115) IEWLD
       READ (51,*)
       READ (51,*) KMAX
-      write(*,*) 'kmax',KMAX
       READ (51,*)
       READ (51,*) IUNID
       READ (51,*)
       READ (51,*) ELFIELD,D,NQ
-      READ (51,*)
-      write(*,*) 'aca'
+C      READ (51,*)
 c      READ (51,*)IDIPCOR,PMAX,PZMAX 
 
 

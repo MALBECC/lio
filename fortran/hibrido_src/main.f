@@ -87,11 +87,11 @@ C-----LLAMA A 'DRIVE' :LEE TODO SOBRE EL SISTEMA QUANTICO
 C-----(AUNQUE ICON=1 O -1 LEE DE DRIVE, SI ICON.NE.0 LEE LAS 
 C-----POSICIONES PERO MAS ADELANTE LLAMA A CONFIG Y REESCRIBE 
 C-----LAS POSICIONES NUCLEARES.
-      IF(NSPECQ.NE.0)THEN
+c      IF(NSPECQ.NE.0)THEN
       CALL DRIVE(ng2,ngDyn,ngdDyn,RMM,XW,XXW,MEMO,NORM,natom,Iz,r,Nuc,
      & M,ncont,nshell,c,a,Nucd,Md,ncontd,nshelld,cd,ad,E,
      & nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write1)
-      ENDIF
+c      ENDIF
 
        date='date'
        CALL SYSTEM(date)
@@ -192,7 +192,7 @@ C-----(EMPEZAR DEL ORDEN QUIERE DECIR DE DRIVE)
       ENDIF
 
 C-----CONTROL: COHERENCIA ENTRE ENTRADA DARIO Y MIA
-      IF(NSPECQ.EQ.0)NSOL=NWAT
+c      IF(NSPECQ.EQ.0)NSOL=NWAT
       IF(NWAT.NE.NSOL)THEN
       WRITE(*,*)'NSOL DEBE SER = A NWAT',NSOL,NWAT
       PAUSE
@@ -333,7 +333,6 @@ C-- Para reacomodar el solvente a TIP4P o SPC:
        enddo
 C-- Fin reacomodo 
 
-      RCTSQ2=RCTSQ/(a0**2)
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 CC
@@ -343,8 +342,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       DO 390 IT = NIN , NOUT
       ITEL = IT -1
-
-      write(*,*) ITEL
 
 
 C-----LLAMA A 'NEWXYZ':PONE EN X1 Y1 Z1 SITIOS REALES
@@ -463,18 +460,6 @@ C-----LLAMA A 'SCF': CALCULA ENERGIA SUBS. QUANTICO
       write(*,*) 'carga de posiciones, igrid2'
 			call g2g_reload_atom_positions(igrid2)
 #endif
-c-------Cálculo de vecinos para el sistema cuántico
-           nwatq=0
-      do 333 iw=natom+1,natsol*Nsol+natom,3
-         DDW= R(iw,1)**2+ R(iw,2)**2+ R(iw,3)**2
-           if(DDW.LT.RCTSQ2) then
-              nwatq=nwatq + 1
-              jwatc(nwatq)= iw
-           endif
-
-333    continue
- 
-c-------fin calculo de vecinos
          IF(OPEN)THEN
 
       CALL SCFop(MEMO,NORM,NATOM,IZ,R,NUC,M,NCONT,NSHELL,C,A
@@ -526,6 +511,9 @@ C---  INT3G:GRADIENTES DE INTEGRALES DE 2E (Q)
 C---  INTSG:GRADIENTES DE INTEGRAL DE OVERLAP (Q)
       CALL INTSG(NORM,natom,nsol,natsol,r,Nuc,M,Md,ncont,
      > nshell,c,a,RMM,f1,FXH2,FYH2,FZH2)
+       FXH2 =  f1(1,1)
+       FYH2 =  f1(2,1)
+       FZH2 =  f1(3,1)
 
 543   CONTINUE     
 
@@ -855,7 +843,7 @@ C              CALL CVEMOTN1(NATSOL)
  
        ELSEIF(ICMOT.EQ.5)THEN
 c              write(*,*) 'ANTES',X(6),Y(6),Z(6)
-               CALL CVEMOTNNN(NATSOL)
+C               CALL CVEMOTNNN(NATSOL)
 c              write(*,*) 'DESPUES',X(6),Y(6),Z(6)
            CONTINUE
        ENDIF

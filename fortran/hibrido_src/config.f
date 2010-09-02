@@ -5,7 +5,7 @@
       
 
       IF(ICON.EQ.0) THEN
-         IF(NSPECQ.EQ.0) CALL LATHWD(ANG,NATSOL)
+c         IF(NSPECQ.EQ.0) CALL LATHWD(ANG,NATSOL)
           ITEL = -1
          if(ndft.ne.1)then    
 c         write(*,*)'config'

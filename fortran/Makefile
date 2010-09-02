@@ -48,16 +48,16 @@ dirs:
 	mkdir -p obj/garcha_obj/garcha_src
 	mkdir -p obj/hibrido_obj/hibrido_src
 
-garcha-g2g: $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o)
+garcha-g2g: dirs $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o)
 	ifort -o $@ $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o) $(LIBS)
 
-hibrido-g2g: $(HIBRIDO_OBJ:%.o=obj/hibrido_g2g_obj/%.o)
+hibrido-g2g: dirs $(HIBRIDO_OBJ:%.o=obj/hibrido_g2g_obj/%.o)
 	ifort -o $@ $(HIBRIDO_OBJ:%.o=obj/hibrido_g2g_obj/%.o) $(LIBS)
 
-garcha: $(GARCHA_OBJ:%.o=obj/garcha_obj/%.o)
+garcha: dirs $(GARCHA_OBJ:%.o=obj/garcha_obj/%.o)
 	ifort -o $@ $(GARCHA_OBJ:%.o=obj/garcha_obj/%.o) $(LIBS)
 
-hibrido: $(HIBRIDO_OBJ:%.o=obj/hibrido_obj/%.o)
+hibrido: dirs $(HIBRIDO_OBJ:%.o=obj/hibrido_obj/%.o)
 	ifort -o $@ $(HIBRIDO_OBJ:%.o=obj/hibrido_obj/%.o) $(LIBS)
 
 ## Targets: clean ##

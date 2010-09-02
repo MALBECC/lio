@@ -24,7 +24,7 @@ LIBS=-L/usr/lib $(CUDA_LIBS) -L../g2g -lg2g -lstdc++ -L$(MKL_LIBRARY_PATH) $(PRO
 
 # directories
 CUDA_COMMONDIR := $(CUDA_INSTALL_PATH)/../sdk/common
-CUDA_LIBS=-L$(CUDA_INSTALL_PATH)/lib64 -L$(CUDA_COMMONDIR)/lib64 -lcuda -lcudart
+CUDA_LIBS=-L$(CUDA_INSTALL_PATH)/lib64 -L$(CUDA_INSTALL_PATH)/lib -L$(CUDA_COMMONDIR)/lib64 -lcudart
 G2G_CFLAGS=-DG2G
 
 ifeq ($(ultima_garcha),1)

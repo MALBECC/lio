@@ -20,7 +20,7 @@ CFLAGS   = -mp1 -ip -O3 -c -cpp $(DEFINE) $(PROFILE)
 CFLAGS2  = -O3 -c -cpp $(DEFINE) $(PROFILE)
 CFLAGS3  = -O1 -c -cpp $(DEFINE) $(PROFILE)
 CPPFLAGS = -P -traditional-cpp
-LIBS=-L/usr/lib -L../g2g -lg2g -lstdc++ -L$(MKL_LIBRARY_PATH) $(PROFILE) -lmkl_solver_ilp64_sequential -lblas -lmkl_core -lmkl_sequential -lguide -lpthread -lm -llapack
+LIBS=-L/usr/lib -L/usr/lib64 -L../g2g -lg2g -lstdc++ -L$(MKLROOT)/lib/em64t $(PROFILE) -lmkl_solver_ilp64_sequential -lblas -lmkl_core -lmkl_sequential -lguide -lpthread -lm -llapack
 
 # directories
 G2G_CFLAGS=-DG2G

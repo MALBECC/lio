@@ -166,8 +166,8 @@ void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3&
   /** Exchange **/
   if (fortran_vars.iexch == 4 || fortran_vars.iexch == 8) {   // Perdew : Phys. Rev B 33 8800 (1986)
     real dens2 = (dens * dens);
-    real ckf = 3.0936677 * y;
-    real s = dgrad / (2.0 * ckf * dens);
+    real ckf = 3.0936677f * y;
+    real s = dgrad / (2.0f * ckf * dens);
 
     real fx = 1.0 / 15.0;
     real s2 = (s * s);

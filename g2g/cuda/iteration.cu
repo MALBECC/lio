@@ -83,7 +83,7 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
       cudaAssertNoError("compute_density");
       {
         //HostMatrixFloat factors_cpu(factors_gpu);
-        //for (uint i = 0; i < group.number_of_points; i++) { cout << factors_cpu(i) << endl;; }
+        //for (uint i = 0; i < group.number_of_points; i++) { cout << "factor " << factors_cpu(i) << endl;; }
         //factors_cpu.check_values();
       }
     }

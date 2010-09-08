@@ -1,21 +1,21 @@
- &INT0 
- TITLE = '1.4', 
- NATOM = 12, 
- NOPT = 0, 
- NORM = T, 
- ANG = T, 
- EX = T, 
- COUL = F, 
- SCF1 = T, 
- PROP = F, 
- FIELD = F, 
- SOL = T, 
+ &INT0
+ TITLE = '1.4',
+ NATOM = 12,
+ NOPT = 0,
+ NORM = T,
+ ANG = T,
+ EX = T,
+ COUL = F,
+ SCF1 = T,
+ PROP = F,
+ FIELD = F,
+ SOL = T,
  RESP1 = F,
 &end
  &SOLX
  NSOL = 492,
  NATSOL = 3,
- SOLV = 'dol',
+ SOLV = 'dolores',
  FREE = T,
 &end
     6          0.825779    1.759114    0.000000
@@ -1506,7 +1506,7 @@
  8 -12.1142  8.9101  5.4789
  1 -12.6983  8.295  5.9222
  1 -11.2648  8.4689  5.4676
-gaussian 
+gaussian
 1   5   2
  4 1
  0 0
@@ -1636,28 +1636,28 @@ gaussian
       0.2200000    1.000000
 endbasis
 &SCFINP
- OPEN = F, 
- NMAX = 150, 
- NCO = 29, 
- NUNP = 0, 
+ OPEN = F,
+ NMAX = 150,
+ NCO = 29,
+ NUNP = 0,
  ATRHO = F,
- VCINP = F, 
- DIRECT = T, 
- EXTR = F, 
- SHFT = F, 
- SHI =  1., 
- IDAMP = 0, 
- GOLD =  16., 
- TOLD =  1.E-06, 
- WRITE = F, 
- MEMO = T, 
+ VCINP = F,
+ DIRECT = T,
+ EXTR = F,
+ SHFT = F,
+ SHI =  1.,
+ IDAMP = 0,
+ GOLD =  16.,
+ TOLD =  1.E-06,
+ WRITE = F,
+ MEMO = T,
 &end
- &EXCH 
- IEXCH = 3, 
- INTEG = T, 
- DENS = T, 
- IGRID = 2, 
- IGRID2 = 1, 
+ &EXCH
+ IEXCH = 3,
+ INTEG = T,
+ DENS = T,
+ IGRID = 2,
+ IGRID2 = 1,
 &end
 
 

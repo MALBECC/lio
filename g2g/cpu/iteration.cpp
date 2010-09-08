@@ -46,7 +46,7 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
     for (list<Point>::const_iterator point_it = group.points.begin(); point_it != group.points.end(); ++point_it, ++point)
     {
       t_density.start();
-			
+
       /** density **/
       float partial_density = 0;
       cfloat3 dxyz(0,0,0);
@@ -75,7 +75,7 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
           cfloat3 Fgi(group.gradient_values(i, point));
           cfloat3 Fhi1(group.hessian_values(2 * (i + 0) + 0, point));
           cfloat3 Fhi2(group.hessian_values(2 * (i + 0) + 1, point));
- 
+
           for (uint j = i; j < group_m; j++) {
             float rmm = rmm_input(j,i);
             float Fj = group.function_values(j, point);
@@ -98,7 +98,7 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
           cfloat3 w3YZZ(w3.y(), w3.z(), w3.z());
           cfloat3 FgiYZZ(Fgi.y(), Fgi.z(), Fgi.z());
           cfloat3 w3XXY(w3.x(), w3.x(), w3.y());
-          
+
           dd2 += FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi;
         }
       }
@@ -124,7 +124,7 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
         }
       }
       t_forces.pause();
-      
+
       t_pot.start();
 
       t_density.start();
@@ -135,13 +135,13 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
       else {
         cpu_potg(partial_density, dxyz, dd1, dd2, exc, corr, y2a);
       }
-      
+
       t_pot.pause();
-      
+
       if (compute_energy)
         total_energy += (partial_density * point_it->weight) * (exc + corr);
       t_density.pause();
-      
+
 
       t_forces.start();
       if (compute_forces) {
@@ -150,13 +150,14 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
           uint global_atom = group.local2global_nuc[i];
           forces(global_atom) += dd(global_atom) * factor;
         }
-      }        
+      }
       t_forces.pause();
-      
+
       /******** RMM *******/
-      t_rmm.start();      
+      t_rmm.start();
       if (compute_rmm) {
         float factor = point_it->weight * y2a;
+        //cout << "factor " << factor << endl;
         HostMatrixFloat::blas_ssyr(HostMatrixFloat::LowerTriangle, factor, group.function_values, rmm_output, point);
       }
       t_rmm.pause();

@@ -173,7 +173,7 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
 		double3 pos = make_double3(fortran_vars.atom_positions_pointer(i, 0), fortran_vars.atom_positions_pointer(i, 1), fortran_vars.atom_positions_pointer(i, 2));
 		fortran_vars.atom_positions(i) = pos;
 		atom_positions(i) = make_float3(pos.x, pos.y, pos.z);
-    cout << atom_positions(i) << endl;
+    //cout << atom_positions(i) << endl;
 	}
 	atom_positions.to_constant("gpu_atom_positions");
 

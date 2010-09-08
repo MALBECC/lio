@@ -35,7 +35,7 @@ __global__ void gpu_compute_density(float* const energy, float* const factor, co
     for (uint bj = i; bj < m; bj += DENSITY_BATCH_SIZE) {
       __syncthreads();
       if (threadIdx.x < DENSITY_BATCH_SIZE) {
-        if (bj + threadIdx.x < m) rdm_sh[threadIdx.x] = rdm[COALESCED_DIMENSION(m) * i + (bj + threadIdx.x)]; // TODO: uncoalesced. invertir triangulo? 
+        if (bj + threadIdx.x < m) rdm_sh[threadIdx.x] = rdm[COALESCED_DIMENSION(m) * i + (bj + threadIdx.x)]; // TODO: uncoalesced. invertir triangulo?
         else rdm_sh[threadIdx.x] = 0.0f;
       }
       __syncthreads();
@@ -50,7 +50,7 @@ __global__ void gpu_compute_density(float* const energy, float* const factor, co
             w3 += Fgj * rdm_sh[j];
 
             float4 Fhj1 = hessian_values[COALESCED_DIMENSION(points) * (2 * (bj + j) + 0) + point];
-            float4 Fhj2 = hessian_values[COALESCED_DIMENSION(points) * (2 * (bj + j) + 0) + point];
+            float4 Fhj2 = hessian_values[COALESCED_DIMENSION(points) * (2 * (bj + j) + 1) + point];
             ww1 += Fhj1 * rdm_sh[j];
             ww2 += Fhj2 * rdm_sh[j];
           }
@@ -88,4 +88,4 @@ __global__ void gpu_compute_density(float* const energy, float* const factor, co
 		gpu_pot<false, true, lda>(partial_density, dxyz, dd1, dd2, exc_corr, y2a);
     if (valid_thread) factor[point] = point_weight * y2a;
   }
-} 
+}

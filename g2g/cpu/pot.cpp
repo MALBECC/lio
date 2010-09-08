@@ -151,7 +151,7 @@ void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3&
   //if (dens < 1e-12) { ex = ec = 0; return; }
   if (dens < 1e-13) { ex = ec = 0; return; }
 
-  real y = pow((real)dens, 0.333333333333333333);  // rho^(1/3)
+  real y = pow((real)dens, (real)0.333333333333333333);  // rho^(1/3)
 
   real grad2 = grad.x * grad.x + grad.y * grad.y + grad.z * grad.z;
   if (grad2 == 0) grad2 = REAL_MIN;
@@ -191,8 +191,8 @@ void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3&
   else if (fortran_vars.iexch >= 5 && fortran_vars.iexch <= 7) { // Becke  : Phys. Rev A 38 3098 (1988)
     real e0 = POT_ALPHA * y;
     real y2 = dens / 2.0;
-    real r13 = pow(y2, (1.0 / 3.0));
-    real r43 = pow(y2, (4.0 / 3.0));
+    real r13 = pow(y2, (real)(1.0 / 3.0));
+    real r43 = pow(y2, (real)(4.0 / 3.0));
     real Xs = dgrad / (2.0 * r43);
     real siper = asinh(Xs);
     real DN = 1.0 + 6.0 * POT_BETA * Xs * siper;
@@ -208,7 +208,7 @@ void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3&
     real DN2 = 1.0 / (1.0 + Xs * Xs) + 2.0 * Fb * (2.0 - 6.0 * POT_BETA * Xs * XA1);
     real DN3 = siper * (1.0 + 2.0 * Fb) + XA1 * DN2;
     real D02 = d0 / 2.0;
-    real de1 = 1.33333333333333 / (pow((real)dens,2.33333333333333));
+    real de1 = 1.33333333333333 / (pow((real)dens,(real)2.33333333333333));
     real DGRADx = (grad.x * hess1.x + grad.y * hess2.x + grad.z * hess2.y) / dgrad;
     real GRADXx = pow(2.0, 0.33333333333333) * (1.0 / (dens * y) * DGRADx - de1 * grad.x * dgrad);
     real DGRADy = (grad.x * hess2.x + grad.y * hess1.y + grad.z * hess2.z) / dgrad;
@@ -275,7 +275,7 @@ void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3&
       real Cx4 = POT_GAM + 2.0 * POT_DEL * rs + 3.0e4 * POT_BET * rs2;
       real dC = Cx3/Cx2 - Cx1/(Cx2 * Cx2) * Cx4;
       dC = -0.333333333333333 * dC * POT_GL / (y * dens);
-      real phi = 0.0008129082/C * dgrad/pow((real)dens, 7.0 / 6.0);
+      real phi = 0.0008129082/C * dgrad/pow((real)dens, (real)(7.0 / 6.0));
       real expo = exp(-phi);
       real ex0 = expo * C;
       ec = ec + ex0 * grad2 / (y * dens2);
@@ -342,7 +342,7 @@ static void closedpbe(float rho, real agrad, real delgrad, real rlap, real& expb
   }
 	
   real rho2 = rho * rho;
-  real rho13 = pow((real)rho, 1.0 / 3.0);
+  real rho13 = pow((real)rho, (real)(1.0 / 3.0));
   real fk1 = pow(CLOSEDPBE_PI32, 1.0 / 3.0);
   real fk = fk1 * rho13;
 

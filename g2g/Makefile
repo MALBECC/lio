@@ -41,7 +41,7 @@ else
 endif
 
 ## Define libraries
-LIBS := $(shell pkg-config gsl --libs) $(CUDA_LDFLAGS) $(CUDA_LIBS)
+LIBS := $(shell pkg-config gsl --libs) $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
 
 ## Targets
 all: $(LIBRARY)

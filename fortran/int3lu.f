@@ -149,6 +149,8 @@ c end ------------------------------------------------
       else
       sq3=1.D0
       endif
+
+      call timer_start('principio int3lu')
 c
       do 1 l=1,3
  1     Ll(l)=l*(l-1)/2
@@ -424,6 +426,7 @@ c
 
        NCOa=NCO
        NCOb=NCO+Nunp
+       call timer_stop('principio int3lu')
        write(*,*) 'exchnum int3lu'
 c       write(957,*) 'int3lu'
        call timer_start('exchfock')

@@ -50,7 +50,7 @@ c
       parameter (ndim = nga*(nga+1)/2)
 *      dimension t(ndim,ngda)
 *      common /intmemo/ t
-***** 
+*****
 c scratch space
 c
 c auxiliars
@@ -71,7 +71,7 @@ c     common /index/ iii(ng),iid(ng)
       common /intg2/ e_2(116,3),wang2(116),Nr(0:54),e3(194,3),wang3(194)
 c
 c------------------------------------------------------------------
-c now 16 loops for all combinations, first 2 correspond to 
+c now 16 loops for all combinations, first 2 correspond to
 c wavefunction basis, the third correspond to the density fit
 c Rc(k) is constructed adding t(i,j,k)*P(i,j)
 c cf(k) , variationally obtained fitting coefficient, is
@@ -133,7 +133,7 @@ c eigenvalues (beta spin in open shell case_
       M22=M21+MM
 c
 * RAM storage of two-electron integrals (if MEMO=T)
-      M23 = M22 +  M  
+      M23 = M22 +  M
 c
 *  Mmem is the pointer to the RAM memory fo two-e integrals
 *  Mmem = M20 in CLOSED SHELL case,  Mmem = M23 in OPEN SHELL case
@@ -157,7 +157,7 @@ c
 c
       do 6 k=1,Md
  6     Rc(k)=0.D0
-c     
+c
 *******
       do  k = 1,Md
          do  kk = 1,MM
@@ -200,6 +200,8 @@ c
       M10=M9+Md
       M12=M10+Md
       Md3=3*Md
+
+      call timer_start('dgelss')
 c ESSL OPTION ------------------------
 #ifdef essl
       CALL DGESVF(2,X,Md,RMM(M9),Md,1,RMM(M10),
@@ -207,7 +209,7 @@ c ESSL OPTION ------------------------
       imax=idamax(Md,RMM(M10),1)
       ss=RMM(M10+imax-1)
       tau=0.1192D-14*Md*ss
- 
+
       CALL DGESVS(X,Md,RMM(M9),Md,1,RMM(M10),af,Md,Md,Md,tau)
 #endif
 c---------------------------------------
@@ -222,8 +224,9 @@ c
       call dgelss(Md,Md,1,X,Md,af,Md,RMM(M9),rcond,irank,RMM(M10),
      >            Md5,info)
 c
-c      
+c
 #endif
+      call timer_stop('dgelss')
 c
 c END SVD PART --
 c
@@ -234,7 +237,7 @@ c
 c---------------------------------------
 c NORMAL EQUATION PART
       if (iconst.eq.1) then
-c P : integrals of fitting functions -------------- 
+c P : integrals of fitting functions --------------
 c
       do 294 k=1,Md
  294   P(k)=0.0D0
@@ -243,7 +246,7 @@ c
        do 295 nk=1,ncontd(k)
 c
  295   P(k)=P(k)+cd(k,nk)/dsqrt(ad(k,nk)**3)
-c   
+c
 c p functions
 c all integrals 0.0
 c
@@ -259,7 +262,7 @@ c
         if (l1.eq.l2) then
         P(kk)=P(kk)+t0/sq3
         endif
-c 
+c
  297    continue
 c
         do 298 k=1,Md
@@ -349,7 +352,7 @@ c
 c
        else
 c
-c ---- Least squares options, true recalculating functions at every 
+c ---- Least squares options, true recalculating functions at every
 c      iteration, and false, saving on disk
 c
       if (dens) then
@@ -366,9 +369,10 @@ c
 c
       Ex=0.D0
 c end of Least squares option ----------
-c 
 c
-     
+c
+
+      call timer_start('cosa1')
       Ea=0.D0
       Eb=0.D0
 c
@@ -380,13 +384,14 @@ c
       do 612 k=m1+1,Md
  612   Eb=Eb+af(k)*af(m1)*RMM(M7+k+(2*Md-m1)*(m1-1)/2-1)
  610  continue
+      call timer_stop('cosa1')
 c
 c
 c------------------------------------------------------------------
 c Calculation of all integrals again, for constructing the
 c Fock matrix
 c Previously energy was computed, and coefficients for
-c the fit were generated 
+c the fit were generated
 c------------------------------------------------------------------
 c
       if (OPEN) then
@@ -398,6 +403,8 @@ c
         aux(k)=0.0D0
        enddo
        endif
+
+      call timer_start('cosa2')
 c
         do 217 k=1,Md
   217    af(k)=af(k)+B(k,2)
@@ -413,6 +420,7 @@ c
             RMM(M3+kk-1)=RMM(M3+kk-1)+aux(k)*term
          enddo
        enddo
+      call timer_stop('cosa2')
 ****
 ****
 c
@@ -435,16 +443,16 @@ c       write(957,*) 'int3lu'
 #else
        call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
      >        M,M18,NCOa,NCOb,RMM,Ex)
-       write(*,*) 'energia cpu',Ex       
+       write(*,*) 'energia cpu',Ex
 c      do kk=1,m
 c        do jj=kk,m
 c          write(*,*) 'rmm output',RMM(i)
 c        enddo
 c      enddo
-       
+
 #endif
        call timer_stop('exchfock')
-      
+
        Ndens=Ndens+1
        endif
 c

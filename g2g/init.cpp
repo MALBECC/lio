@@ -14,7 +14,7 @@ using namespace std;
 using namespace G2G;
 
 /* external function prototypes */
-template<bool, bool> void g2g_compute_functions(void);
+template<bool, bool> void compute_functions(void);
 template<bool, bool> void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
 
 /* internal function prototypes */
@@ -149,19 +149,21 @@ void compute_new_grid(const unsigned int grid_type) {
   /** compute functions **/
   if (fortran_vars.do_forces) cout << "<===== computing functions [forces] =======>" << endl;
   else cout << "<===== computing functions =======>" << endl;
-  
+
+#if CPU_KERNELS
 	Timer t;
   t.start();
   if (fortran_vars.gga) {
-    if (fortran_vars.do_forces) g2g_compute_functions<true, true>();
-    else g2g_compute_functions<false, true>();
+    if (fortran_vars.do_forces) compute_functions<true, true>();
+    else compute_functions<false, true>();
   }
   else {
-    if (fortran_vars.do_forces) g2g_compute_functions<true, false>();
-    else g2g_compute_functions<false, false>();
+    if (fortran_vars.do_forces) compute_functions<true, false>();
+    else compute_functions<false, false>();
   }
   t.stop();
   cout << "time: " << t << endl;
+#endif
 }
 
 extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
@@ -212,6 +214,17 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
     else g2g_iteration<false, false>(compute_energy, compute_rmm, fort_energy_ptr, fort_forces_ptr);
   }
 }
+
+template <bool forces, bool gga> void compute_functions(void)
+{
+	Timer t1;
+	t1.start_and_sync();
+	for (list<PointGroup>::iterator it = final_partition.begin(); it != final_partition.end(); ++it)
+    it->compute_functions<forces,gga>();
+	t1.stop_and_sync();
+	cout << "TIMER: funcs: " << t1 << endl;
+}
+
 
 /* general options */
 namespace G2G {

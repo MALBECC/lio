@@ -42,6 +42,8 @@ class PointGroup {
 
     void add_point(const Point& p);
     void compute_weights(void);
+    
+    template<bool forces, bool gga> void compute_functions(void);
 
     enum FunctionType { FUNCTION_S = 1, FUNCTION_P = 3, FUNCTION_D = 6 };
     inline FunctionType small_function_type(uint f) const {

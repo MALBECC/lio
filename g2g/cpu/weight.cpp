@@ -10,10 +10,10 @@
 using namespace std;
 using namespace G2G;
 
-void g2g_compute_group_weights(PointGroup& group)
+void PointGroup::compute_weights(void)
 {
-	list<Point>::iterator it = group.points.begin();
-	while (it != group.points.end()) {
+	list<Point>::iterator it = points.begin();
+	while (it != points.end()) {
 		uint atom = it->atom;
 		double atom_weight;
 
@@ -22,14 +22,14 @@ void g2g_compute_group_weights(PointGroup& group)
 		double P_total = 0.0;
 		double P_atom = 0.0;
 
-		for (uint j = 0; j < group.total_nucleii(); ++j) {
+		for (uint j = 0; j < total_nucleii(); ++j) {
 			double P_curr = 1.0;
-			uint atom_j = group.local2global_nuc[j];
+			uint atom_j = local2global_nuc[j];
 			const double3& pos_atom_j(fortran_vars.atom_positions(atom_j));
 			double rm_atom_j = fortran_vars.rm(atom_j);
 
-			for (uint k = 0; k < group.total_nucleii(); ++k) {
-				uint atom_k = group.local2global_nuc[k];
+			for (uint k = 0; k < total_nucleii(); ++k) {
+				uint atom_k = local2global_nuc[k];
 				if (atom_k == atom_j) continue;
 				const double3& pos_atom_k(fortran_vars.atom_positions(atom_k));
 				double u = (length(point_position - pos_atom_j) - length(point_position - pos_atom_k)) / fortran_vars.atom_atom_dists(atom_j, atom_k);
@@ -58,14 +58,14 @@ void g2g_compute_group_weights(PointGroup& group)
 		}
 
     // punto que no tiene a su propio atomo entre los vecinos
-    if (!group.has_nucleii(atom)) {
+    if (!has_nucleii(atom)) {
 			P_atom = 1.0;
 			uint atom_j = atom;
 			const double3& pos_atom_j(fortran_vars.atom_positions(atom_j));
 			double rm_atom_j = fortran_vars.rm(atom_j);
 			
-      for (uint k = 0; k < group.total_nucleii(); ++k) {
-				uint atom_k = group.local2global_nuc[k];
+      for (uint k = 0; k < total_nucleii(); ++k) {
+				uint atom_k = local2global_nuc[k];
 				const double3& pos_atom_k(fortran_vars.atom_positions(atom_k));
 				double u = (length(point_position - pos_atom_j) - length(point_position - pos_atom_k)) / fortran_vars.atom_atom_dists(atom_j, atom_k);
 
@@ -91,8 +91,8 @@ void g2g_compute_group_weights(PointGroup& group)
 
     if (remove_zero_weights) {
       if (it->weight == 0.0) {
-  			it = group.points.erase(it);
-  			group.number_of_points--;
+  			it = points.erase(it);
+  			number_of_points--;
   		}
   		else ++it;
     }

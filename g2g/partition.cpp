@@ -13,18 +13,12 @@
 using namespace std;
 using namespace G2G;
 
-void g2g_compute_group_weights(PointGroup& group);
-
 /********************
  * PointGroup
  ********************/
 void PointGroup::add_point(const Point& p) {
   points.push_back(p);
   number_of_points++;
-}
-
-void PointGroup::compute_weights(void) {
-  g2g_compute_group_weights(*this);
 }
 
 void PointGroup::get_rmm_input(HostMatrixFloat& rmm_input) const {

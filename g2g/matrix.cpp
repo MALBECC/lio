@@ -284,6 +284,7 @@ template<class T> void CudaMatrix<T>::deallocate(void) {
   #if !CPU_KERNELS
 	if (this->data) cudaFree(this->data);	
 	this->data = NULL;
+  this->width = this->height = 0;
   #endif
 }
 

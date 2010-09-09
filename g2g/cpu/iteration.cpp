@@ -76,7 +76,7 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
           cfloat3 Fhi1(group.hessian_values(2 * (i + 0) + 0, point));
           cfloat3 Fhi2(group.hessian_values(2 * (i + 0) + 1, point));
 
-          for (uint j = i; j < group_m; j++) {
+          for (uint j = 0; j <= i; j++) {
             float rmm = rmm_input(j,i);
             float Fj = group.function_values(j, point);
             w += Fj * rmm;

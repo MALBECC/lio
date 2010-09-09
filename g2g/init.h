@@ -4,7 +4,7 @@
 #include "matrix.h"
 
 /* definitions */
-#define FORTRAN_MAX_ATOMS 1875
+#define FORTRAN_MAX_ATOMS 2775
 #define FORTRAN_NG 1500
 #define FORTRAN_NL 10
 

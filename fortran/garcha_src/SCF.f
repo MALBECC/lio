@@ -587,7 +587,7 @@ c LAPACK OPTION -----------------------------------------
 #ifdef pack
        call dspev('V','L',M,RMM(M5),RMM(M13),X(1,M+1),M,RMM(M15),info)
 #endif
-       call timer_start('dspev')
+       call timer_stop('dspev')
 c-----------------------------------------------------------
 c
 c diagonalization now

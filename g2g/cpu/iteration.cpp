@@ -40,7 +40,7 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
     group.get_rmm_input(rmm_input);
     t_density.pause();
 
-    HostMatrixCFloat3 forces(group.number_of_points, 1); forces.zero();
+    HostMatrixCFloat3 forces(group.total_nucleii(), 1); forces.zero();
     HostMatrixCFloat3 dd;
 
     /******** each point *******/

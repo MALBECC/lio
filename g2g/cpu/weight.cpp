@@ -36,6 +36,7 @@ void PointGroup::compute_weights(void)
 
 				double x;
 				x = rm_atom_j / fortran_vars.rm(atom_k);
+        //cout << rm_atom_j << " " << fortran_vars.rm(atom_k) << endl;
 				x = (x - 1.0) / (x + 1.0);
 				u += (x / (x * x - 1.0)) * (1.0 - u * u);
 

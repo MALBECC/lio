@@ -1,5 +1,6 @@
       SUBROUTINE TEPCHR(NATSOL)
-      INCLUDE 'COMM'
+      INCLUDE 'param'
+        INCLUDE 'COMM'
       DIMENSION TI(3,3),OMG(3),INDX(3)
      
 *-----------Velocid. al azar de 1 distr. gausseana--------------*

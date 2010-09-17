@@ -1,5 +1,6 @@
-      SUBROUTINE GRILLA(ntq,Q)
-      INCLUDE 'COMM'
+      SUBROUTINE GRILLA(Q)
+      INCLUDE 'param'
+        INCLUDE 'COMM'
       DIMENSION AR1(NPART),Q(NTQ)
 
 C-----I2 ES EL Cl

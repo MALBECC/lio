@@ -3,7 +3,8 @@
 C Esta subrutina mueve los atomos del soluto, dejando fijos 
 C los atomos de solvente.
 
-      INCLUDE 'COMM'
+      INCLUDE 'param'
+        INCLUDE 'COMM'
       DIMENSION AXX(NAT),AYY(NAT),AZZ(NAT)
 
       NOFSET = 0

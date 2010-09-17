@@ -20,7 +20,7 @@ c
       implicit real*8 (a-h,o-z)
       logical NORM
       INCLUDE 'param'
-c     INCLUDE 'COMM'
+c       INCLUDE 'COMM'
       parameter(pi32=5.56832799683170698D0,pi=3.14159265358979312D0,
      >          rpi=1.77245385090551588D0,a0=0.52918 D0)
       PARAMETER (NAT=6000)

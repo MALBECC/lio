@@ -1,5 +1,6 @@
       SUBROUTINE TEPQ
-      INCLUDE 'COMM'
+      INCLUDE 'param'
+        INCLUDE 'COMM'
       
 *-----Velocid. al azar de 1 distr. gausseana
       TEMPOL = ZERO

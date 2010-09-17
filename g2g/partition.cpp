@@ -13,6 +13,27 @@
 using namespace std;
 using namespace G2G;
 
+Partition G2G::partition;
+
+/********************
+ * Partition
+ ********************/
+
+template <bool forces, bool gga> void Partition::compute_functions(void)
+{
+	Timer t1;
+	t1.start_and_sync();
+	for (list<PointGroup*>::iterator it = group_list.begin(); it != group_list.end(); ++it)
+    (*it)->compute_functions<forces,gga>();
+	t1.stop_and_sync();
+	cout << "TIMER: funcs: " << t1 << endl;
+}
+
+template void Partition::compute_functions<true, true>(void);
+template void Partition::compute_functions<true, false>(void);
+template void Partition::compute_functions<false, true>(void);
+template void Partition::compute_functions<false, false>(void);
+
 /********************
  * PointGroup
  ********************/
@@ -91,6 +112,6 @@ Sphere::Sphere(uint _atom, double _radius) : PointGroup(), atom(_atom), radius(_
 /**********************
  * Cube
  **********************/
-Cube::Cube(void) : PointGroup() { }
+Cube::Cube(void) : PointGroup() {  }
 
 

@@ -10,7 +10,12 @@
 #include "timer.h"
 #include "partition.h"
 #include "matrix.h"
-using namespace std;
+using std::cout;
+using std::endl;
+using std::boolalpha;
+using std::runtime_error;
+using std::ifstream;
+using std::string;
 using namespace G2G;
 
 /* external function prototypes */
@@ -125,6 +130,11 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	read_options();
 }
 
+extern "C" void g2g_deinit_(void) {
+  cout << "<====== Deinitializing G2G ======>" << endl;
+  partition.clear();
+}
+
 void compute_new_grid(const unsigned int grid_type) {
 	switch(grid_type) {
 		case 0:
@@ -144,7 +154,7 @@ void compute_new_grid(const unsigned int grid_type) {
 		break;
 	}	
 
-	regenerate_partition();
+	partition.regenerate();
 
   /** compute functions **/
   if (fortran_vars.do_forces) cout << "<===== computing functions [forces] =======>" << endl;
@@ -154,12 +164,12 @@ void compute_new_grid(const unsigned int grid_type) {
 	Timer t;
   t.start();
   if (fortran_vars.gga) {
-    if (fortran_vars.do_forces) compute_functions<true, true>();
-    else compute_functions<false, true>();
+    if (fortran_vars.do_forces) partition.compute_functions<true, true>();
+    else partition.compute_functions<false, true>();
   }
   else {
-    if (fortran_vars.do_forces) compute_functions<true, false>();
-    else compute_functions<false, false>();
+    if (fortran_vars.do_forces) partition.compute_functions<true, false>();
+    else partition.compute_functions<false, false>();
   }
   t.stop();
   cout << "time: " << t << endl;
@@ -214,17 +224,6 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
     else g2g_iteration<false, false>(compute_energy, compute_rmm, fort_energy_ptr, fort_forces_ptr);
   }
 }
-
-template <bool forces, bool gga> void compute_functions(void)
-{
-	Timer t1;
-	t1.start_and_sync();
-	for (list<PointGroup>::iterator it = final_partition.begin(); it != final_partition.end(); ++it)
-    it->compute_functions<forces,gga>();
-	t1.stop_and_sync();
-	cout << "TIMER: funcs: " << t1 << endl;
-}
-
 
 /* general options */
 namespace G2G {

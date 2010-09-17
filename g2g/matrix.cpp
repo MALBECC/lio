@@ -88,6 +88,7 @@ template<class T> HostMatrix<T>::~HostMatrix(void) {
 }
 
 template<class T> HostMatrix<T>& HostMatrix<T>::resize(unsigned int _width, unsigned _height) {
+  if (_width == 0 || _height == 0) throw std::runtime_error("La dimension no puede ser 0");
   if (_width != this->width || _height != this->height) {
     if (this->data) dealloc_data();
     this->width = _width; this->height = _height;

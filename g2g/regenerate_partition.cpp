@@ -17,11 +17,8 @@ using namespace G2G;
  * Construct partition
  ************************************************************/
 
-/* global variables */
-list<PointGroup> final_partition;
-
 /* methods */
-void regenerate_partition(void)
+void Partition::regenerate(void)
 {
 	cout << "<============ G2G Partition (" << fortran_vars.grid_type << ")============>" << endl;
 
@@ -81,21 +78,25 @@ void regenerate_partition(void)
 									vector < Cube >(prism_size.z)));
 
   /* initialize spheres */
-  vector<Sphere> sphere_array(fortran_vars.atoms);
-  for (uint atom = 0; atom < fortran_vars.atoms; atom++) {
-    uint atom_shells = fortran_vars.shells(atom);
-    uint included_shells = (uint)ceil(sphere_radius * atom_shells);
-		
-		double radius;
-		if (included_shells == 0) radius = 0;
-		else {
-			double x = cos((M_PI / (atom_shells + 1)) * (atom_shells - included_shells + 1));
-	    double rm = fortran_vars.rm(atom);
-	  	radius = rm * (1.0 + x) / (1.0 - x);
-		}
-		
-		_DBG(cout << "esfera incluye " << included_shells << " capas de " << atom_shells << " (radio: " << radius << ")" << endl);
-    sphere_array[atom] = Sphere(atom, radius);
+  vector<Sphere> sphere_array;
+  if (sphere_radius > 0) {
+    sphere_array.resize(fortran_vars.atoms);
+    for (uint atom = 0; atom < fortran_vars.atoms; atom++) {
+      uint atom_shells = fortran_vars.shells(atom);
+      uint included_shells = (uint)ceil(sphere_radius * atom_shells);
+
+      double radius;
+      if (included_shells == 0) radius = 0;
+      else {
+        double x = cos((M_PI / (atom_shells + 1)) * (atom_shells - included_shells + 1));
+        double rm = fortran_vars.rm(atom);
+        radius = rm * (1.0 + x) / (1.0 - x);
+        cout << radius << endl;
+      }
+
+      _DBG(cout << "esfera incluye " << included_shells << " capas de " << atom_shells << " (radio: " << radius << ")" << endl);
+      sphere_array[atom] = Sphere(atom, radius);
+    }
   }
 
 	cout << "precomputing distances..." << endl;
@@ -103,7 +104,7 @@ void regenerate_partition(void)
 		const double3& atom_i_position(fortran_vars.atom_positions(i));
 		double nearest_neighbor_dist = numeric_limits<double>::max();
 		
-		double sphere_i_radius = sphere_array[i].radius;
+		double sphere_i_radius = (sphere_radius > 0 ? sphere_array[i].radius : 0);
 		
 		for (uint j = 0; j < fortran_vars.atoms; j++) {
 			const double3& atom_j_position(fortran_vars.atom_positions(j));
@@ -112,8 +113,10 @@ void regenerate_partition(void)
       //_DBG(cout << "distancia atomo " << i << " -> " << j << " : " << dist << endl);
 			if (i != j) {
 				nearest_neighbor_dist = min(nearest_neighbor_dist, dist);
-        if (dist <= sphere_i_radius || dist <= sphere_array[j].radius) { throw runtime_error("other atom contained in sphere"); }
-				if ((sphere_i_radius + sphere_array[j].radius) >= dist) { throw runtime_error("Overlapping sphere radius!"); }
+        if (sphere_radius > 0) {
+          double sphere_j_radius = (sphere_radius > 0 ? sphere_array[i].radius : 0);
+          cout << dist << " " << sphere_i_radius << " " << sphere_j_radius << endl;
+        }
       }
 		}
 		fortran_vars.nearest_neighbor_dists(i) = nearest_neighbor_dist;
@@ -128,7 +131,7 @@ void regenerate_partition(void)
 
   uint costo = 0;
 	
-	final_partition.clear();
+	this->clear();
 	
 	Timer t_total;
 	t_total.start();
@@ -162,16 +165,16 @@ void regenerate_partition(void)
 					double point_weight = wrad * fortran_vars.wang(point); // integration weight
           Point point_object(atom, shell, point, point_position, point_weight);
 
-          /* assign to sphere? */
           uint included_shells = (uint)ceil(sphere_radius * atom_shells);
           if (shell >= (atom_shells - included_shells)) {
+            // assign to sphere
             Sphere& sphere = sphere_array[atom];
             sphere.add_point(point_object);
           }
-          /* or insert into corresponding cube */
           else {
+            // or insert into corresponding cube
             uint3 cube_coord = floor_uint3((point_position - x0) / little_cube_size);
-            if (cube_coord.x >= prism_size.x || cube_coord.y >= prism_size.y || cube_coord.z >= prism_size.z) throw "Se accedio a un cubo invalido";
+            if (cube_coord.x >= prism_size.x || cube_coord.y >= prism_size.y || cube_coord.z >= prism_size.z) throw std::runtime_error("Se accedio a un cubo invalido");
             prism[cube_coord.x][cube_coord.y][cube_coord.z].add_point(point_object);
           }
 				}
@@ -203,19 +206,21 @@ void regenerate_partition(void)
 				if (cube.total_functions_simple() == 0) { /*cout << "cube with " << cube.number_of_points << " points has no functions" << endl;*/ continue;  }
         if (cube.number_of_points < min_points_per_cube) { /*cout << "not enough points" << endl;*/ continue; }
 
-        final_partition.push_back(cube);
+        group_list.push_back(new Cube(cube));
 
-        PointGroup& group = final_partition.back();
+        PointGroup& group = *group_list.back();
+        assert(group.number_of_points != 0);
 
         group.compute_weights();
-        if (group.number_of_points < min_points_per_cube) { /*final_partition.pop_back(); cout << "not enough points" << endl;*/ continue; }
+        if (group.number_of_points < min_points_per_cube) { delete group_list.back(); group_list.pop_back(); cout << "not enough points" << endl; continue; }
 
         // para hacer histogramas
 #ifdef HISTOGRAM
         cout << "[" << fortran_vars.grid_type << "] cubo: (" << i << "," << j << "," << k << "): " << group.number_of_points << " puntos; " <<
-          group.total_functions() << " funciones, vecinos: " << group.nucleii.size() << endl;
+          group.total_functions() << " funciones, vecinos: " << group.total_nucleii() << endl;
 #endif
 
+        assert(group.number_of_points != 0);
         puntos_finales += group.number_of_points;
 				funciones_finales += group.number_of_points * group.total_functions();
         costo += group.number_of_points * (group.total_functions() + group.total_functions());
@@ -223,6 +228,8 @@ void regenerate_partition(void)
 
         nco_m += group.total_functions() * fortran_vars.nco;
         m_m += group.total_functions() * group.total_functions();
+
+        if (group_list.back()->number_of_points == 0) cout << "DAMMIT ANTES" << endl;
 			}
 		}
 	}
@@ -238,19 +245,20 @@ void regenerate_partition(void)
 			assert(sphere.total_functions_simple() > 0);
 
       if (sphere.number_of_points < min_points_per_cube) { cout << "not enough points" << endl; continue; }
-      final_partition.push_front(sphere);
 
-      PointGroup& group = final_partition.front();
+      group_list.push_front(new Sphere(sphere));
+
+      PointGroup& group = *group_list.front();
       assert(group.number_of_points != 0);
 	    group.compute_weights();
       t_total.sync();
 
-      if (group.number_of_points < min_points_per_cube) { final_partition.pop_front(); cout << "not enough points" << endl; continue; }
+      if (group.number_of_points < min_points_per_cube) { delete group_list.front(); group_list.pop_front(); cout << "not enough points" << endl; continue; }
 
 #ifdef HISTOGRAM
 			cout << "sphere: " << group.number_of_points << " puntos, " << group.total_functions() <<
         " funciones | funcion x punto: " << group.total_functions() / (double)group.number_of_points <<
-        " vecinos: " << group.nucleii.size() << endl;
+        " vecinos: " << group.total_nucleii() << endl;
 #endif
 
       assert(group.number_of_points > 0);
@@ -270,5 +278,5 @@ void regenerate_partition(void)
 	cout << "Grilla final: " << puntos_finales << " puntos (recordar que los de peso 0 se tiran), " << funciones_finales << " funciones" << endl ;
   cout << "Costo: " << costo << endl;
   cout << "NCOxM: " << nco_m << " MxM: " << m_m << endl;
-  cout << "Particion final: " << final_partition.size() << " grupos" << endl;
+  cout << "Particion final: " << group_list.size() << " grupos" << endl;
 }

@@ -1,5 +1,6 @@
       SUBROUTINE LATHWD(ANG,NATSOL) 
-      INCLUDE 'COMM'
+      INCLUDE 'param'
+        INCLUDE 'COMM'
       DIMENSION RX(40),RY(40),RZ(40)
 
     

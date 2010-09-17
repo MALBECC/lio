@@ -1,5 +1,6 @@
       SUBROUTINE INICIO(NATSOL,NDIP,IDIPCOR,PMAX,PZMAX)
-      INCLUDE 'COMM'
+      INCLUDE 'param'
+        INCLUDE 'COMM'
       
       INTEGER SPC  
       COMMON /tipsol/SPC
@@ -52,6 +53,7 @@ c     READ (51,*) ITERM,IPINPUT
       READ (51,*) NSPECQ,NDFT,NPAS
       READ (51,*) 
       READ (51,*) (NNAT(I),I=1,NSPECQ)
+      write(*,*) 'nspecq',NSPECQ
 
 c--ojo, soluto totalmente congelado:
       IF(NDFT.NE.1)THEN
@@ -79,6 +81,7 @@ c---
       IF(ABS(WWM(I)-126.9D0).LT.TOLE)AT(I)='I    '
       IF(ABS(WWM(I)-6.941D0).LT.TOLE)AT(I)='Li   '
       IF(ABS(WWM(I)-26.98D0).LT.TOLE)AT(I)='Al   '
+      WRITE(*,*) WWM(I),AT(I)
       ENDDO
       WRITE(*,1000)(AT(I),I=1,NSPECQ)
       READ (51,*)

@@ -1,5 +1,6 @@
-      SUBROUTINE NEWXYZ(NATSOL,F1,NT)
-      INCLUDE 'COMM'
+      SUBROUTINE NEWXYZ(NATSOL,F1)
+      INCLUDE 'param'
+        INCLUDE 'COMM'
       DIMENSION F1(NT,3)
 *------------------------------------------*
 *         X Y Z : posiciones reales        *

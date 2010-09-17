@@ -21,6 +21,7 @@ c
       parameter (nt=ntq+nss*ntc)
       parameter (ng0=20,ng=ntq*ng0,nl=10)
       parameter (ngd0=20,ngd=ntq*ngd0)
+      parameter (ntqss=ntq+nss)
 
 c !!!!!!! Actualizar en gpu/cuda/excnum.cu !!!!!
 c FORTRAN_MAX_ATOMS = nt

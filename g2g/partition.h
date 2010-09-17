@@ -6,6 +6,7 @@
 #include <vector>
 #include <algorithm>
 
+namespace G2G {
 /********************
  * Point information
  ********************/
@@ -20,7 +21,8 @@ struct Point {
 
 class PointGroup {
   public:
-    PointGroup(void) : number_of_points(0), s_functions(0), p_functions(0), d_functions(0) {}
+    PointGroup(void) : number_of_points(0), s_functions(0), p_functions(0), d_functions(0) { std::cout << "aca tambien" << std::endl; }
+    virtual ~PointGroup(void) { }
     std::list<Point> points;
     uint number_of_points;
     uint s_functions, p_functions, d_functions;
@@ -61,6 +63,8 @@ class PointGroup {
     void add_rmm_output(const G2G::HostMatrixFloat& rmm_output) const;
 
     void compute_nucleii_maps(void);
+    virtual bool is_sphere(void) = 0;
+    virtual bool is_cube(void) = 0;
 };
 
 class Sphere : public PointGroup {
@@ -69,6 +73,8 @@ class Sphere : public PointGroup {
     Sphere(uint _atom, double _radius);
 
     void assign_significative_functions(const std::vector<double>& min_exps);
+    bool is_sphere(void) { return true; }
+    bool is_cube(void) { return false; }
 
     uint atom;
     double radius;
@@ -78,9 +84,24 @@ class Cube : public PointGroup {
   public:
 		Cube(void);
     void assign_significative_functions(const double3& cube_coord, const std::vector<double>& min_exps);
+    bool is_sphere(void) { return false; }
+    bool is_cube(void) { return true; }
+
 };
 
-extern std::list<PointGroup> final_partition;
-void regenerate_partition(void);
+class Partition {
+  public:
+    void clear(void) {
+      for (std::list<PointGroup*>::iterator it = group_list.begin(); it != group_list.end(); ++it) { delete *it; }
+      group_list.clear();
+    }
+
+    void regenerate(void);
+    template <bool forces, bool gga> void compute_functions(void);
+    std::list<PointGroup*> group_list;
+};
+
+extern Partition partition;
+}
 
 #endif

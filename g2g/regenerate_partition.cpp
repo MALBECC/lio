@@ -91,7 +91,6 @@ void Partition::regenerate(void)
         double x = cos((M_PI / (atom_shells + 1)) * (atom_shells - included_shells + 1));
         double rm = fortran_vars.rm(atom);
         radius = rm * (1.0 + x) / (1.0 - x);
-        cout << radius << endl;
       }
 
       _DBG(cout << "esfera incluye " << included_shells << " capas de " << atom_shells << " (radio: " << radius << ")" << endl);
@@ -115,7 +114,7 @@ void Partition::regenerate(void)
 				nearest_neighbor_dist = min(nearest_neighbor_dist, dist);
         if (sphere_radius > 0) {
           double sphere_j_radius = (sphere_radius > 0 ? sphere_array[i].radius : 0);
-          cout << dist << " " << sphere_i_radius << " " << sphere_j_radius << endl;
+          //cout << dist << " " << sphere_i_radius << " " << sphere_j_radius << endl;
         }
       }
 		}
@@ -228,8 +227,6 @@ void Partition::regenerate(void)
 
         nco_m += group.total_functions() * fortran_vars.nco;
         m_m += group.total_functions() * group.total_functions();
-
-        if (group_list.back()->number_of_points == 0) cout << "DAMMIT ANTES" << endl;
 			}
 		}
 	}

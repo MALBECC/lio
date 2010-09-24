@@ -22,7 +22,9 @@
 #include "kernels/force.h"
 
 using namespace G2G;
-using namespace std;
+using std::cout;
+using std::endl;
+using std::list;
 
 template<bool lda, bool compute_forces>
 void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr)
@@ -40,8 +42,8 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
 	CudaMatrixFloat rmm_input_gpu;
 	FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS);
 
-	for (list<PointGroup>::iterator it = final_partition.begin(); it != final_partition.end(); ++it) {
-		PointGroup& group = *it;
+	for (list<PointGroup*>::iterator it = partition.group_list.begin(); it != partition.group_list.end(); ++it) {
+		PointGroup& group = *(*it);
 
     t_functions.start_and_sync();
     /** Compute this group's functions **/

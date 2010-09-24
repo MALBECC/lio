@@ -21,7 +21,7 @@ struct Point {
 
 class PointGroup {
   public:
-    PointGroup(void) : number_of_points(0), s_functions(0), p_functions(0), d_functions(0) { std::cout << "aca tambien" << std::endl; }
+    PointGroup(void) : number_of_points(0), s_functions(0), p_functions(0), d_functions(0) {  }
     virtual ~PointGroup(void) { }
     std::list<Point> points;
     uint number_of_points;

@@ -31,7 +31,7 @@ c Ngrid may be set to 0 , in the case of using Num. Integ.
 c      parameter (ngDyn=450)
 c      parameter (ngdDyn=450)
 c      parameter (norbit=250,Ngrid=8000)
-      parameter (norbit=80,Ngrid=6000)
+      parameter (norbit=200,Ngrid=6000)
 
       parameter (ng3=4*ngDyn)
 c     parameter (ng2=7*ngDyn*(ngDyn+1)/2+3*ngdDyn*(ngdDyn+1)/2+

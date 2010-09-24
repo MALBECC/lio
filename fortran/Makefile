@@ -19,9 +19,9 @@ DEFINE   = -Dpack
 CFLAGS   = -g -mp1 -ip -O3 -c -cpp $(DEFINE) $(PROFILE)
 CFLAGS2  = -g -O3 -c -cpp $(DEFINE) $(PROFILE)
 CFLAGS3  = -g -O1 -c -cpp $(DEFINE) $(PROFILE)
-CPPFLAGS = -P -traditional-cpp
+pPPFLAGS = -P -traditional-cpp
 LIBS=-L/usr/lib -L/usr/lib64 -L../g2g -lg2g -lstdc++ -L$(MKLROOT)/lib/em64t $(PROFILE) -lmkl_solver_lp64 -lmkl_core \
-     -lmkl_intel_thread -liomp5 -lpthread -lm -lmkl_intel_lp64 -Wl,-rpath=. -Wl,-rpath=../g2g
+     -lmkl_intel_thread -liomp5 -lpthread -lm -lmkl_intel_lp64 -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g'
 # directories
 G2G_CFLAGS=-DG2G
 

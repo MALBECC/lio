@@ -59,7 +59,7 @@ libg2g.a: $(OBJ)
 	ranlib libg2g.a
 
 libg2g.so: $(OBJ)
-	$(CXX) -shared $(LDFLAGS) -o libg2g.so $(OBJ) $(LIBS)
+	$(CXX) -shared $(LDFLAGS) -o libg2g.so $(OBJ)
 
 clean:
 	make -C cuda clean

@@ -515,13 +515,8 @@ c        enddo
 c      enddo
 
 #endif
-<<<<<<< HEAD
 c       call timer_stop('exchfock')
       
-=======
-       call timer_stop('exchfock')
-
->>>>>>> upstream/master
        Ndens=Ndens+1
        endif
 c

@@ -41,7 +41,7 @@ else
 endif
 
 ## Define libraries
-LIBS := $(shell pkg-config gsl --libs) $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
+LIBRARIES := $(shell pkg-config gsl --libs) $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
 
 ## Targets
 all: $(LIBRARY)
@@ -59,7 +59,7 @@ libg2g.a: $(OBJ)
 	ranlib libg2g.a
 
 libg2g.so: $(OBJ)
-	$(CXX) -shared $(LDFLAGS) -o libg2g.so $(OBJ)
+	$(CXX) -shared $(LDFLAGS) -o libg2g.so $(OBJ) $(LIBRARIES)
 
 clean:
 	make -C cuda clean

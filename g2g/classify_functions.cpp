@@ -96,8 +96,7 @@ void Sphere::assign_significative_functions(const std::vector<double>& min_exps)
       const double3& atom_pos = fortran_vars.atom_positions(i);
       double3 dist_vec = (atom_pos - own_atom_pos);
 			double dist_to_atom = length(dist_vec);
-			assert(radius <= dist_to_atom);
-			double dist = dist_to_atom - radius;
+			double dist = (radius > dist_to_atom ? 0 : dist_to_atom - radius);
       atom_sphere_dists(i) = dist * dist;
     }
 	}

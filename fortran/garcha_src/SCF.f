@@ -547,6 +547,8 @@ c
         E1=-1.00D0*g*(Fx*ux+Fy*uy+Fz*uz)/fac -
      >    0.50D0*(1.0D0-1.0D0/epsilon)*Qc2/a0
         endif
+
+        call timer_start('actualiza rmm')
 c----------------------------------------------------------------
 c E1 includes solvent 1 electron contributions
         do 303 k=1,MM
@@ -630,6 +632,9 @@ c constant to diagonal (virtual) elements
         RMM(M5+ii-1)=RMM(M5+ii-1)+shi
        enddo
        endif
+
+       call timer_stop('actualiza rmm')
+       call timer_start('dspev')
 c
 c ESSL OPTION ---------------------------------------------------
 #ifdef essl
@@ -640,7 +645,7 @@ c LAPACK OPTION -----------------------------------------
 #ifdef pack
        call dspev('V','L',M,RMM(M5),RMM(M13),X(1,M+1),M,RMM(M15),info)
 #endif
-       write(*,*) 'DONE dspev'
+       call timer_stop('dspev')
 c-----------------------------------------------------------
 c
 c diagonalization now

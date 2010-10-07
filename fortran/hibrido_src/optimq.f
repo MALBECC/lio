@@ -1,5 +1,6 @@
       SUBROUTINE OPTIMQ(NATSOL)
-      INCLUDE 'COMM'
+      INCLUDE 'param'
+        INCLUDE 'COMM'
 
       AA=ZERO
 c      AA=0.001     

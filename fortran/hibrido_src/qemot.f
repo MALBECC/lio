@@ -1,5 +1,6 @@
       SUBROUTINE QEMOT
-      INCLUDE 'COMM'
+      INCLUDE 'param'
+        INCLUDE 'COMM'
       
       
       DO 80 I=NATOM+1,NATOM+NWAT

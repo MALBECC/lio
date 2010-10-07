@@ -38,5 +38,7 @@ c      call dim(ng2,ngDyn,ngdDyn,norbit,Ngrid,ntq,ntc,nss,ng0,ngd0)
 
 c--------------------------------------------------------
       call drive(ng2,ngDyn,ngdDyn,P,X,XX)
+
+      call g2g_deinit()
       end
 c---------------------------------------------------------------------

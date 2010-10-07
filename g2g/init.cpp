@@ -10,11 +10,16 @@
 #include "timer.h"
 #include "partition.h"
 #include "matrix.h"
-using namespace std;
+using std::cout;
+using std::endl;
+using std::boolalpha;
+using std::runtime_error;
+using std::ifstream;
+using std::string;
 using namespace G2G;
 
 /* external function prototypes */
-template<bool, bool> void g2g_compute_functions(void);
+template<bool, bool> void compute_functions(void);
 template<bool, bool> void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
 
 /* internal function prototypes */
@@ -125,6 +130,11 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	read_options();
 }
 
+extern "C" void g2g_deinit_(void) {
+  cout << "<====== Deinitializing G2G ======>" << endl;
+  partition.clear();
+}
+
 void compute_new_grid(const unsigned int grid_type) {
 	switch(grid_type) {
 		case 0:
@@ -144,24 +154,26 @@ void compute_new_grid(const unsigned int grid_type) {
 		break;
 	}	
 
-	regenerate_partition();
+	partition.regenerate();
 
   /** compute functions **/
   if (fortran_vars.do_forces) cout << "<===== computing functions [forces] =======>" << endl;
   else cout << "<===== computing functions =======>" << endl;
-  
+
+#if CPU_KERNELS
 	Timer t;
   t.start();
   if (fortran_vars.gga) {
-    if (fortran_vars.do_forces) g2g_compute_functions<true, true>();
-    else g2g_compute_functions<false, true>();
+    if (fortran_vars.do_forces) partition.compute_functions<true, true>();
+    else partition.compute_functions<false, true>();
   }
   else {
-    if (fortran_vars.do_forces) g2g_compute_functions<true, false>();
-    else g2g_compute_functions<false, false>();
+    if (fortran_vars.do_forces) partition.compute_functions<true, false>();
+    else partition.compute_functions<false, false>();
   }
   t.stop();
   cout << "time: " << t << endl;
+#endif
 }
 
 extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
@@ -173,7 +185,7 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
 		double3 pos = make_double3(fortran_vars.atom_positions_pointer(i, 0), fortran_vars.atom_positions_pointer(i, 1), fortran_vars.atom_positions_pointer(i, 2));
 		fortran_vars.atom_positions(i) = pos;
 		atom_positions(i) = make_float3(pos.x, pos.y, pos.z);
-    cout << atom_positions(i) << endl;
+    //cout << atom_positions(i) << endl;
 	}
 	atom_positions.to_constant("gpu_atom_positions");
 

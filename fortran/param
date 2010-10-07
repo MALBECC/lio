@@ -10,7 +10,7 @@ c
 c ntc : Number of 'solvent' classically treated molecules
 c ns : number of atoms in each solvent molecule
 c
-c nt : Number total atoms,   
+c nt : Number total atoms,
 c ng0 : number of functions, ngd0 : number aux. funct.
 c nl : number of primitives in a given contraction
 c
@@ -21,11 +21,12 @@ c
       parameter (nt=ntq+nss*ntc)
       parameter (ng0=20,ng=ntq*ng0,nl=10)
       parameter (ngd0=20,ngd=ntq*ngd0)
- 
+      parameter (ntqss=ntq+nss)
+
 c !!!!!!! Actualizar en gpu/cuda/excnum.cu !!!!!
 c FORTRAN_MAX_ATOMS = nt
 c FORTRAN_NG = ng
 c FORTRAN_NL = nl
 c !!!!!!!!
 
-      
+

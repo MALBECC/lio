@@ -12,7 +12,9 @@
 
 #include "cpu/pot.h"
 
-using namespace std;
+using std::cout;
+using std::endl;
+using std::list;
 using namespace G2G;
 
 template <bool lda, bool compute_forces>
@@ -23,15 +25,12 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
   Timer t_total, t_ciclos, t_rmm, t_density, t_forces, t_resto, t_pot;
   t_total.start();
 
-  HostMatrixCFloat3 dd, forces;
-  if (compute_forces) { dd.resize(fortran_vars.atoms, 1); forces.resize(fortran_vars.atoms, 1); forces.zero(); }
-
   HostMatrixFloat rmm_output;
 
   /********** iterate all groups ***********/
-	for (list<PointGroup>::const_iterator group_it = final_partition.begin(); group_it != final_partition.end(); ++group_it)
+	for (list<PointGroup*>::const_iterator group_it = partition.group_list.begin(); group_it != partition.group_list.end(); ++group_it)
   {
-		const PointGroup& group = *group_it;
+		const PointGroup& group = *(*group_it);
     uint group_m = group.total_functions();
     if (compute_rmm) { rmm_output.resize(group_m, group_m); rmm_output.zero(); }
 
@@ -41,12 +40,15 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
     group.get_rmm_input(rmm_input);
     t_density.pause();
 
+    HostMatrixCFloat3 forces(group.total_nucleii(), 1); forces.zero();
+    HostMatrixCFloat3 dd;
+
     /******** each point *******/
     uint point = 0;
     for (list<Point>::const_iterator point_it = group.points.begin(); point_it != group.points.end(); ++point_it, ++point)
     {
       t_density.start();
-			
+
       /** density **/
       float partial_density = 0;
       cfloat3 dxyz(0,0,0);
@@ -75,8 +77,8 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
           cfloat3 Fgi(group.gradient_values(i, point));
           cfloat3 Fhi1(group.hessian_values(2 * (i + 0) + 0, point));
           cfloat3 Fhi2(group.hessian_values(2 * (i + 0) + 1, point));
- 
-          for (uint j = i; j < group_m; j++) {
+
+          for (uint j = 0; j <= i; j++) {
             float rmm = rmm_input(j,i);
             float Fj = group.function_values(j, point);
             w += Fj * rmm;
@@ -98,7 +100,7 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
           cfloat3 w3YZZ(w3.y(), w3.z(), w3.z());
           cfloat3 FgiYZZ(Fgi.y(), Fgi.z(), Fgi.z());
           cfloat3 w3XXY(w3.x(), w3.x(), w3.y());
-          
+
           dd2 += FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi;
         }
       }
@@ -107,9 +109,9 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
       t_forces.start();
       /** density derivatives **/
       if (compute_forces) {
-        dd.zero();
+        dd.resize(group.total_nucleii(), 1); dd.zero();
         for (uint i = 0, ii = 0; i < group.total_functions_simple(); i++) {
-          uint nuc = group.func2global_nuc(i);
+          uint nuc = group.func2local_nuc(i);
           uint inc_i = group.small_function_type(i);
           cfloat3 this_dd(0,0,0);
           for (uint k = 0; k < inc_i; k++, ii++) {
@@ -124,7 +126,7 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
         }
       }
       t_forces.pause();
-      
+
       t_pot.start();
 
       t_density.start();
@@ -135,32 +137,45 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
       else {
         cpu_potg(partial_density, dxyz, dd1, dd2, exc, corr, y2a);
       }
-      
+
       t_pot.pause();
-      
+
       if (compute_energy)
         total_energy += (partial_density * point_it->weight) * (exc + corr);
       t_density.pause();
-      
 
+
+      /** forces **/
       t_forces.start();
       if (compute_forces) {
         float factor = point_it->weight * y2a;
-        for (uint i = 0; i < group.total_nucleii(); i++) {
-          uint global_atom = group.local2global_nuc[i];
-          forces(global_atom) += dd(global_atom) * factor;
-        }
-      }        
+        for (uint i = 0; i < group.total_nucleii(); i++)
+          forces(i) += dd(i) * factor;
+      }
       t_forces.pause();
-      
-      /******** RMM *******/
-      t_rmm.start();      
+
+      /** RMM **/
+      t_rmm.start();
       if (compute_rmm) {
         float factor = point_it->weight * y2a;
         HostMatrixFloat::blas_ssyr(HostMatrixFloat::LowerTriangle, factor, group.function_values, rmm_output, point);
       }
       t_rmm.pause();
     }
+
+    t_forces.start();
+    /* accumulate force results for this group */
+    if (compute_forces) {
+      FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS); // TODO: mover esto a init.cpp
+      for (uint i = 0; i < group.total_nucleii(); i++) {
+        uint global_atom = group.local2global_nuc[i];
+        cfloat3 this_force(forces(i));
+        fort_forces(global_atom,0) += this_force.x();
+        fort_forces(global_atom,1) += this_force.y();
+        fort_forces(global_atom,2) += this_force.z();
+      }
+    }
+    t_forces.pause();
 
     t_rmm.start();
     /* accumulate RMM results for this group */
@@ -185,18 +200,6 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
     }
     t_rmm.pause();
   }
-
-  t_forces.start();
-  if (compute_forces) {
-    FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS); // TODO: mover esto a init.cpp
-    for (uint i = 0; i < fortran_vars.atoms; i++) {
-      cfloat3 this_force(forces(i));
-      fort_forces(i,0) += this_force.x();
-      fort_forces(i,1) += this_force.y();
-      fort_forces(i,2) += this_force.z();
-    }
-  }
-  t_forces.pause();
 
   /***** send results to fortran ****/
   if (compute_energy) *fort_energy_ptr = total_energy;

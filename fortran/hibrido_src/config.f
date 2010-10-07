@@ -1,11 +1,12 @@
-      SUBROUTINE CONFIG(ANG,NATSOL,ntq,q,HISTO,HISTO2)
+      SUBROUTINE CONFIG(ANG,NATSOL,q,HISTO,HISTO2)
+      INCLUDE 'param'
       INCLUDE 'COMM'
       dimension q(ntq),HISTO(100,100),HISTO2(100)
 
       
 
       IF(ICON.EQ.0) THEN
-         IF(NSPECQ.EQ.0) CALL LATHWD(ANG,NATSOL)
+c         IF(NSPECQ.EQ.0) CALL LATHWD(ANG,NATSOL)
           ITEL = -1
          if(ndft.ne.1)then    
 c         write(*,*)'config'

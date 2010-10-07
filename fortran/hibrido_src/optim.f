@@ -1,5 +1,6 @@
       SUBROUTINE OPTIM(NATSOL)
-      INCLUDE 'COMM'
+      INCLUDE 'param'
+        INCLUDE 'COMM'
       DIMENSION AXX(NAT),AYY(NAT),AZZ(NAT)
  
 

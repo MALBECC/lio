@@ -1,6 +1,7 @@
       SUBROUTINE PROTON(FXH1,FYH1,FZH1,FXH11,FYH11,FZH11,
      > FXH2,FYH2,FZH2,ff,FZ5,FZ1,FZ2)
-      INCLUDE 'COMM'
+      INCLUDE 'param'
+        INCLUDE 'COMM'
 
       DIMENSION ff(NAT,3)
 c------------

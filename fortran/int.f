@@ -1,26 +1,25 @@
 c-------------------------------------------------------------------
-c Integrals subroutine 
-c 1 e integrals
-c using the Obara-Saika recursive method.
+c      Integrals subroutine 
+c      1 e integrals
+c      using the Obara-Saika recursive method.
 c
 c 
-c loop over all basis functions
-c now the basis is supposed to be ordered according to the type,
-c all s, then all p, then all d, .....
-c inside each type, are ordered in shells
-c px,py,pz , dx2,dxy,dyy,dzx,dzy,dzz, .....
+c      loop over all basis functions
+c      now the basis is supposed to be ordered according to the type,
+c      all s, then all p, then all d, .....
+c      inside each type, are ordered in shells
+c      px,py,pz , dx2,dxy,dyy,dzx,dzy,dzz, .....
 c
-c ns ... marker for end of s
-c np ... marker for end of p
-c nd ... marker for end of d
+c      ns ... marker for end of s
+c      np ... marker for end of p
+c      nd ... marker for end of d
 c
-c r(Nuc(i),j) j component of position of nucleus i , j=1,3
-c Input : basis function information
-c Output: F matrix, and S matrix
+c      r(Nuc(i),j) j component of position of nucleus i , j=1,3
+c      Input : basis function information
+c      Output: F matrix, and S matrix
 c-------------------------------------------------------------------
-      subroutine int1(NORM,natom,r,Nuc,Iz,M,Md,ncont,nshell,
-     >            c,a,RMM,En)
-c
+      subroutine int1(NORM,natom,r,Nuc,Iz,M,Md,ncont,nshell,c,a,RMM,En)
+
       implicit real*8 (a-h,o-z)
       logical NORM,BSSE
       integer nopt
@@ -30,18 +29,20 @@ c
       dimension c(ng,nl),a(ng,nl),Nuc(M),ncont(M),Iz(natom)
       dimension r(nt,3),nshell(0:3),Iaux(ntq)
       dimension RMM(*)
-c
+
       COMMON /TABLE/ STR(880,0:21)
       common /bsse/ BSSE,ighost(ntq)
-c auxiliar quantities
-c
+
+c-----auxiliar quantities
+
       dimension Q(3),d(ntq,ntq),s0s(ntq),s1s(ntq),s2s(ntq),s3s(ntq),
      >   s4s(ntq)
-c distance between pairs of centers
+c-----distance between pairs of centers
 c
 c --- BSSE------------------------------------
-c sets to 0 atomic charges, but since they are used to
-c construct the grids, they are stored in an auxiliar array
+c      sets to 0 atomic charges, but since they are used to
+c      construct the grids, they are stored in an auxiliar array
+
       if (BSSE) then
       do i=1,natom
        Iaux(i)=Iz(i)
@@ -49,13 +50,13 @@ c construct the grids, they are stored in an auxiliar array
       enddo
       endif
 c----------------------------------------------
-c
+
       if (NORM) then
       sq3=sqrt(3.D0)
       else
       sq3=1.D0
       endif
-c
+
       ns=nshell(0)
       np=nshell(1)
       nd=nshell(2)
@@ -778,7 +779,7 @@ c
 c--- Debugging and tests -----------------------------------------------
 c
 c     do 1 k=1,M*(M+1)/2
-c1     write(*,*) k,RMM(M5+k-1),RMM(M11+k-1)
+c      write(*,*) k,RMM(M5+k-1),RMM(M11+k-1)
 c gradient debuggings
 c
          E1=0.D0
@@ -799,6 +800,15 @@ c-- prueba ----------------
       En=En+0.0D0*(d(1,2)-2.89D0)**2
 c--------------------------
 c
+c     write(*,*) 'matriz overlap'
+c     do i=1,MM
+c      write(*,*) i,RMM(M5+i-1)
+c     enddo
+c     do i=1,natom
+c      write(*,*) i,r(i,1),r(i,2),r(i,3)
+c     enddo
+c     pause
+
       return
       end
 c-------------------------------------------------------------------

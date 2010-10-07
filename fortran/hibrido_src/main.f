@@ -21,8 +21,8 @@ c Ngrid : number of grid points (LS-SCF part)
 c norbit : number of MO
 c
 c Ngrid may be set to 0 , in the case of using Num. Integ.
-      INCLUDE 'COMM'
       INCLUDE 'param'
+      INCLUDE 'COMM'
       INTEGER SPC
       COMMON /tipsol/SPC
       parameter (ngDyn=700)
@@ -30,7 +30,7 @@ c Ngrid may be set to 0 , in the case of using Num. Integ.
 c      parameter (ngDyn=450)
 c      parameter (ngdDyn=450)
 c      parameter (norbit=250,Ngrid=8000)
-      parameter (norbit=80,Ngrid=6000)
+      parameter (norbit=200,Ngrid=6000)
 
       parameter (ng3=4*ngDyn)
 c     parameter (ng2=7*ngDyn*(ngDyn+1)/2+3*ngdDyn*(ngdDyn+1)/2+
@@ -86,35 +86,35 @@ C-----LLAMA A 'DRIVE' :LEE TODO SOBRE EL SISTEMA QUANTICO
 C-----(AUNQUE ICON=1 O -1 LEE DE DRIVE, SI ICON.NE.0 LEE LAS 
 C-----POSICIONES PERO MAS ADELANTE LLAMA A CONFIG Y REESCRIBE 
 C-----LAS POSICIONES NUCLEARES.
-      IF(NSPECQ.NE.0)THEN
+c      IF(NSPECQ.NE.0)THEN
       CALL DRIVE(ng2,ngDyn,ngdDyn,RMM,XW,XXW,MEMO,NORM,natom,Iz,r,Nuc,
      & M,ncont,nshell,c,a,Nucd,Md,ncontd,nshelld,cd,ad,E,
      & nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write1)
-      ENDIF
+c      ENDIF
 
        date='date'
        CALL SYSTEM(date)
        write(*,*)
-     
+
 C-----LLAMA A 'CORECT': CALCULA TODO LO QUE NECESITA DESPUES
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       IF(ELFIELD.EQ.1) THEN
-       CALL CORECTE(NATSOL,RM,EM,NTQ,NSS,PM,NT,AVNPU,
+       CALL CORECTE(NATSOL,RM,EM,PM,AVNPU,
      &  PMAX,PZMAX,HISTO,HISTO2,DELP,DELPZ)
        GOTO 6778
        ENDIF
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-   
+
       IF(SPC.EQ.1)THEN 
-      CALL CORECT2(NATSOL,RM,EM,NTQ,NSS,PM,NT,AVNPU,
+      CALL CORECT2(NATSOL,RM,EM,PM,AVNPU,
      &  PMAX,PZMAX,HISTO,HISTO2,DELP,DELPZ)
       ELSE
-      CALL CORECT(NATSOL,RM,EM,NTQ,NSS,PM,NT,AVNPU,
+      CALL CORECT(NATSOL,RM,EM,PM,AVNPU,
      &  PMAX,PZMAX,HISTO,HISTO2,DELP,DELPZ)
       ENDIF 
  6778 CONTINUE
-     
+
 C-----TRANSFORMA NUMERACION Y UNIDADES DARIO A 
 C-----LAS MIAS (COORDS)
       IF(ABS(ICON).EQ.0)THEN
@@ -142,7 +142,7 @@ C===========================================
       GOTO 6779
       ENDIF
       
-C===========================================      
+C===========================================
 
       II=NATOM
       DO I=NATOM+1,NATOM+NWAT*NATSOL,3
@@ -191,7 +191,7 @@ C-----(EMPEZAR DEL ORDEN QUIERE DECIR DE DRIVE)
       ENDIF
 
 C-----CONTROL: COHERENCIA ENTRE ENTRADA DARIO Y MIA
-      IF(NSPECQ.EQ.0)NSOL=NWAT
+c      IF(NSPECQ.EQ.0)NSOL=NWAT
       IF(NWAT.NE.NSOL)THEN
       WRITE(*,*)'NSOL DEBE SER = A NWAT',NSOL,NWAT
       PAUSE
@@ -215,7 +215,7 @@ C-----PONE A CERO LAS CANTIDADES CANONICAS
       SD0Q= ZERO
 
 C-----LLAMA A 'CONFIG': COMO EMPEZAR (NUCLEOS)
-      CALL CONFIG (ANG,NATSOL,ntq,q,HISTO,HISTO2)
+      CALL CONFIG (ANG,NATSOL,q,HISTO,HISTO2)
 
 
 C-----ARREGLA LA NUMERACION PARA EL IZ(I)
@@ -332,7 +332,6 @@ C-- Para reacomodar el solvente a TIP4P o SPC:
        enddo
 C-- Fin reacomodo 
 
-      RCTSQ2=RCTSQ/(a0**2)
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 CC
@@ -343,13 +342,11 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DO 390 IT = NIN , NOUT
       ITEL = IT -1
 
-      write(*,*) ITEL
-
 
 C-----LLAMA A 'NEWXYZ':PONE EN X1 Y1 Z1 SITIOS REALES
 C-----Y EN XYZ LOS SITIOS CON CARGA (TIP4P)  
 c     write(*,*) 'ANTES DE NEW', X(6),Y(6),Z(6)   
-      CALL NEWXYZ(NATSOL,F1,NT)
+      CALL NEWXYZ(NATSOL,F1)
 c     write(*,*) 'DESPUES DE NEW',X(6),Y(6),Z(6)
    
       Vcerca = ZERO
@@ -409,7 +406,7 @@ C      write(*,*)'a fint',FX(1),FY(1),Fz(1)
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       IF(ELFIELD.EQ.1) THEN
-      CALL FINTE(NT,IZ,NATSOL,FXH1,FYH1,FZH1)
+      CALL FINTE(IZ,NATSOL,FXH1,FYH1,FZH1)
       
 c     WRITE(*,*) VLJQC,VCQC
       GOTO 6881
@@ -417,9 +414,9 @@ c     WRITE(*,*) VLJQC,VCQC
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       IF(SPC.EQ.1) THEN
-      CALL FINT2(NT,IZ,NATSOL,FXH1,FYH1,FZH1)
+      CALL FINT2(IZ,NATSOL,FXH1,FYH1,FZH1)
       ELSE
-      CALL FINT(NT,IZ,NATSOL,FXH1,FYH1,FZH1)
+      CALL FINT(IZ,NATSOL,FXH1,FYH1,FZH1)
       ENDIF 
 C      write(*,*)' fint',FX(1),Fy(1),Fz(1)
 
@@ -445,10 +442,9 @@ C-----Y EN X1 Y1 Z1 LOS SITIOS CON CARGA (TIP4P)
 
         IF(NDFT.NE.1)GOTO 9000
       IF (NPAS.GT.0.AND.MOD(ITEL,NPAS).EQ.0) THEN
-
 C-----LLAMA A 'DODA':PASA DE MI NUMERACION A LA DE DARIO (COORDS)
 
-      CALL DODA(NATSOL,R,NT,IZ)
+      CALL DODA(NATSOL,R,IZ)
 
 C-----LLAMA A 'SCF': CALCULA ENERGIA SUBS. QUANTICO
       IF(NPAS.NE.1)THEN
@@ -462,18 +458,6 @@ C-----LLAMA A 'SCF': CALCULA ENERGIA SUBS. QUANTICO
       write(*,*) 'carga de posiciones, igrid2'
 			call g2g_reload_atom_positions(igrid2)
 #endif
-c-------Cálculo de vecinos para el sistema cuántico
-           nwatq=0
-      do 333 iw=natom+1,natsol*Nsol+natom,3
-         DDW= R(iw,1)**2+ R(iw,2)**2+ R(iw,3)**2
-           if(DDW.LT.RCTSQ2) then
-              nwatq=nwatq + 1
-              jwatc(nwatq)= iw
-           endif
-
-333    continue
- 
-c-------fin calculo de vecinos
          IF(OPEN)THEN
 
       CALL SCFop(MEMO,NORM,NATOM,IZ,R,NUC,M,NCONT,NSHELL,C,A
@@ -525,6 +509,9 @@ C---  INT3G:GRADIENTES DE INTEGRALES DE 2E (Q)
 C---  INTSG:GRADIENTES DE INTEGRAL DE OVERLAP (Q)
       CALL INTSG(NORM,natom,nsol,natsol,r,Nuc,M,Md,ncont,
      > nshell,c,a,RMM,f1,FXH2,FYH2,FZH2)
+       FXH2 =  f1(1,1)
+       FYH2 =  f1(2,1)
+       FZH2 =  f1(3,1)
 
 543   CONTINUE     
 
@@ -624,7 +611,7 @@ C====================================================
  6883 CONTINUE
 
 C-----DE NUMERACION DARIO A LA MIA (COORDS)
-      CALL DADO(R,NT,NATSOL,IZ)
+      CALL DADO(R,NATSOL,IZ)
 C-----Pone las cargas en el solvente(en doda se cambiaron)
 C-----DEBE SER IZZ=1
 
@@ -656,7 +643,7 @@ C-- Si no hace en CADA paso un calculo de estructura electronica:
 C-- pero SI calcula en CADA paso integral de RHO*V, Zj*Pc(i)/|Rj-Ri| 
 C-- y potencial LJ entre Ri y Rj:
 
-      CALL DODA(NATSOL,R,NT,IZ)
+      CALL DODA(NATSOL,R,IZ)
       
       CALL INTSOL(NORM,natom,Nsol,natsol,r,Nuc,Iz,M,Md,ncont,nshell,
      > c,a,pc,RMM,E1s,FQQ,IT,ITEL,NIN,IPR1,EAC,NPAS)
@@ -762,7 +749,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
  6886 CONTINUE
 
-      CALL DADO(R,NT,NATSOL,IZ)
+      CALL DADO(R,NATSOL,IZ)
 
       ENDIF
 9000  CONTINUE
@@ -854,7 +841,7 @@ C              CALL CVEMOTN1(NATSOL)
  
        ELSEIF(ICMOT.EQ.5)THEN
 c              write(*,*) 'ANTES',X(6),Y(6),Z(6)
-               CALL CVEMOTNNN(NATSOL)
+C               CALL CVEMOTNNN(NATSOL)
 c              write(*,*) 'DESPUES',X(6),Y(6),Z(6)
            CONTINUE
        ENDIF
@@ -1343,7 +1330,7 @@ c      ENDDO
       date='date'
       CALL SYSTEM(date)
 
-
+      call g2g_deinit()
 
 86    FORMAT(I10,4X,10G20.9)
 87    FORMAT(2X,10G15.7)
@@ -1365,7 +1352,7 @@ c      ENDDO
 78    FORMAT(2X,'D (H Br) ',2I4,2G18.9)
 77    FORMAT(2X,'D H)(O   ',2I4,2G18.9)
 79    FORMAT(2X,'D (H O)  ',2I4,2G18.9)
-50    FORMAT(2X,I5,1X,'ATOMS')
+50    FORMAT(2X,I6,1X,'ATOMS')
 100   FORMAT(2X,I3,1X,A5,4F9.4)
 101   FORMAT(5X,A5,4F9.4)
 102   FORMAT(2X,A5,4F15.6)

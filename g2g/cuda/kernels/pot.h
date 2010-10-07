@@ -303,38 +303,38 @@ template<bool compute_exc, bool compute_y2a, bool lda> __device__ void gpu_pot(f
 
     float y = pow((real)dens, (real)0.333333333333333333);  // rho^(1/3)
 
-    float grad2 = grad.x * grad.x + grad.y * grad.y + grad.z * grad.z;
-    if (grad2 == 0.0f) grad2 = FLT_MIN;
+    real grad2 = grad.x * grad.x + grad.y * grad.y + grad.z * grad.z;
+    if (grad2 == (real)0.0f) grad2 = REAL_MIN;
     real dgrad = sqrt(grad2);
 
-    float d0 = hess1.x + hess1.y + hess1.z;
-    float u0 = ((grad.x * grad.x) * hess1.x + 2.0f * grad.x * grad.y * hess2.x + 2.0f * grad.y * grad.z * hess2.z + 2.0f * grad.x * grad.z * hess2.y +
+    real d0 = hess1.x + hess1.y + hess1.z;
+    real u0 = ((grad.x * grad.x) * hess1.x + 2.0f * grad.x * grad.y * hess2.x + 2.0f * grad.y * grad.z * hess2.z + 2.0f * grad.x * grad.z * hess2.y +
         (grad.y * grad.y) * hess1.y + (grad.z * grad.z) * hess1.z) / dgrad;
 
     /** Exchange **/
     if (gpu_Iexch == 4 || gpu_Iexch == 8) {   // Perdew : Phys. Rev B 33 8800 (1986)
-      float dens2 = (dens * dens);
-      float ckf = 3.0936677f * y;
-      float s = dgrad / (2.0f * ckf * dens);
+      real dens2 = (dens * dens);
+      real ckf = (real)3.0936677f * y;
+      real s = dgrad / ((real)2.0f * ckf * dens);
 
-      float fx = 1.0f / 15.0f;
-      float s2 = (s * s);
-      float s3 = (s * s * s);
-      float g0 = 1.0f + 1.296f * s2 + 14.0f * powf(s, 4.0f) + 0.2f * powf(s, 6.0f);
-      float F = powf(g0, fx);
-      float e = POT_ALPHA * F * y;
-      exc_corr = e;
+      real fx = (real)1.0f / (real)15.0f;
+      real s2 = (s * s);
+      real s3 = (s * s * s);
+      real g0 = (real)1.0f + (real)1.296f * s2 + (real)14.0f * pow(s, (real)4.0f) + (real)0.2f * pow(s, (real)6.0f);
+      real F = pow(g0, fx);
+      real e = POT_ALPHA * F * y;
+      exc_corr = (float)e;
 
-      float t = d0 / (dens * 4.0f * (ckf * ckf));
-      float u = u0 / (powf(2.0f * ckf, 3.0f) * dens2);
+      real t = d0 / (dens * (real)4.0f * (ckf * ckf));
+      real u = u0 / (pow((real)2.0f * ckf, (real)3.0f) * dens2);
       //cout << t << " " << u << endl;
 
-      float g2 = 2.592f * s + 56.0f * s3 + 1.2f * powf(s, 5.0f);
-      float g3 = 2.592f + 56.0f * s2 + 1.2f * powf(s, 4.0f);
-      float g4 = 112.0f * s + 4.8f * s3;
-      float dF = fx * F/g0 * g2;
-      float dsF = fx * F/g0 * (-14.0f * fx * g3 * g2/g0 + g4);
-      y2a = POT_ALPHA * (1.33333333333f * F - t/s * dF - (u-1.3333333333f * s3) * dsF) * y;
+      real g2 = (real)2.592f * s + (real)56.0f * s3 + (real)1.2f * pow(s, (real)5.0f);
+      real g3 = (real)2.592f + (real)56.0f * s2 + (real)1.2f * pow(s, (real)4.0f);
+      real g4 = (real)112.0f * s + (real)4.8f * s3;
+      real dF = fx * F/g0 * g2;
+      real dsF = fx * F/g0 * ((real)-14.0f * fx * g3 * g2/g0 + g4);
+      y2a = (float)(POT_ALPHA * ((real)1.33333333333f * F - t/s * dF - (u - (real)1.3333333333f * s3) * dsF) * y);
     }
     else if (gpu_Iexch >= 5 && gpu_Iexch <= 7) { // Becke  : Phys. Rev A 38 3098 (1988)
       float e0 = POT_ALPHA * y;
@@ -440,34 +440,34 @@ template<bool compute_exc, bool compute_y2a, bool lda> __device__ void gpu_pot(f
       }
     }
     else if (gpu_Iexch == 7 || gpu_Iexch == 8) { // Correlation: given by LYP: PRB 37 785 (1988)
-      float rom13 = powf(dens, -0.3333333333333f);
-      float rom53 = powf(dens, 1.666666666666f);
-      float ecro = expf(-POT_CLYP * rom13);
-      float f1 = 1.0f / (1.0f + POT_DLYP * rom13);
-      float tw = 1.0f / 8.0f * (grad2/dens - d0);
-      float term = (tw / 9.0f + d0 / 18.0f) - 2.0f * tw + POT_CF * rom53;
+      real rom13 = pow((real)dens, (real)-0.3333333333333f);
+      real rom53 = pow((real)dens, (real)1.666666666666f);
+      real ecro = exp(-POT_CLYP * rom13);
+      real f1 = 1.0f / ((real)1.0f + POT_DLYP * rom13);
+      real tw = 1.0f / (real)8.0f * (grad2/dens - d0);
+      real term = (tw / (real)9.0f + d0 / (real)18.0f) - (real)2.0f * tw + POT_CF * rom53;
       term = dens + POT_BLYP * (rom13 * rom13) * ecro * term;
       ec = -POT_ALYP * f1 * term/dens;
 
       // y2a
-      float h1 = ecro/rom53;
-      float g1 = f1 * h1;
-      float tm1 = POT_DLYP3 * (rom13/dens);
-      float fp1 = tm1 * (f1 * f1);
-      float tm2 = -1.666666666f + POT_CLYP3 * rom13;
-      float hp1 = h1 * tm2/dens;
-      float gp1 = fp1 * h1 + hp1 * f1;
-      float fp2 = tm1 * 2.0f * f1 * (fp1 - 0.6666666666f * f1/dens);
-      float tm3 = 1.6666666666f - POT_CLYP3 * 1.3333333333f * rom13;
-      float hp2 = hp1 * tm2/dens + h1 * tm3/(dens * dens);
-      float gp2 = fp2 * h1 + 2.0f * fp1 * hp1 + hp2 * f1;
+      real h1 = ecro/rom53;
+      real g1 = f1 * h1;
+      real tm1 = POT_DLYP3 * (rom13/dens);
+      real fp1 = tm1 * (f1 * f1);
+      real tm2 = (real)-1.666666666f + POT_CLYP3 * rom13;
+      real hp1 = h1 * tm2/dens;
+      real gp1 = fp1 * h1 + hp1 * f1;
+      real fp2 = tm1 * 2.0f * f1 * (fp1 - (real)0.6666666666f * f1/dens);
+      real tm3 = (real)1.6666666666f - POT_CLYP3 * (real)1.3333333333f * rom13;
+      real hp2 = hp1 * tm2/dens + h1 * tm3/(dens * dens);
+      real gp2 = fp2 * h1 + (real)2.0f * fp1 * hp1 + hp2 * f1;
 
-      float term3 = -POT_ALYP * (fp1 * dens + f1) - POT_ALYP * POT_BLYP * POT_CF * (gp1 * dens + 8.0f/3.0f * g1) * rom53;
-      float term4 = (gp2 * dens * grad2 + gp1 * (3.0f * grad2 + 2.0f * dens * d0) + 4.0f * g1 * d0) * POT_ALYP * POT_BLYP/4.0f;
-      float term5 = (3.0f * gp2 * dens * grad2 + gp1 * (5.0f * grad2 + 6.0f * dens * d0) + 4.0f * g1 * d0) * POT_ALYP * POT_BLYP/72.0f;
+      real term3 = -POT_ALYP * (fp1 * dens + f1) - POT_ALYP * POT_BLYP * POT_CF * (gp1 * dens + 8.0f/3.0f * g1) * rom53;
+      real term4 = (gp2 * dens * grad2 + gp1 * (3.0f * grad2 + 2.0f * dens * d0) + 4.0f * g1 * d0) * POT_ALYP * POT_BLYP/4.0f;
+      real term5 = (3.0f * gp2 * dens * grad2 + gp1 * (5.0f * grad2 + 6.0f * dens * d0) + 4.0f * g1 * d0) * POT_ALYP * POT_BLYP/72.0f;
       //cout <<  term3 << " " << term4 << " " << term5 << endl;
 
-      y2a = y2a + (term3 - term4 - term5);
+      y2a = y2a + (float)(term3 - term4 - term5);
     }
 
     exc_corr += ec;

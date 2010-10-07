@@ -122,7 +122,8 @@ endif
 
 ifeq ($(sm20),1)
   NVCCFLAGS += -arch=sm_20
-  NVCCFLAGS += -DNVIDIA_HAS_DOUBLE
+  NVCCFLAGS += -DNVIDIA_HAS_DOUBLE -DUSING_FERMI
+  CXXFLAGS += -DUSING_FERMI
 endif
 
 ifeq ($(nvcc_warn_verbose),1)

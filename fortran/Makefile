@@ -16,12 +16,12 @@ else
 endif
 
 DEFINE   = -Dpack
-CFLAGS   = -mp1 -ip -O3 -c -cpp $(DEFINE) $(PROFILE)
-CFLAGS2  = -O3 -c -cpp $(DEFINE) $(PROFILE)
-CFLAGS3  = -O1 -c -cpp $(DEFINE) $(PROFILE)
-CPPFLAGS = -P -traditional-cpp
-LIBS=-L/usr/lib -L../g2g -lg2g -lstdc++ -L$(MKL_LIBRARY_PATH) $(PROFILE) -lmkl_solver_ilp64_sequential -lblas -lmkl_core -lmkl_sequential -lguide -lpthread -lm -llapack
-
+CFLAGS   = -g -mp1 -ip -O3 -c -cpp $(DEFINE) $(PROFILE)
+CFLAGS2  = -g -O3 -c -cpp $(DEFINE) $(PROFILE)
+CFLAGS3  = -g -O1 -c -cpp $(DEFINE) $(PROFILE)
+pPPFLAGS = -P -traditional-cpp
+LIBS=-L/usr/lib -L/usr/lib64 -L../g2g -lg2g -lstdc++ -L$(MKLROOT)/lib/em64t $(PROFILE) -lmkl_solver_lp64 -lmkl_core \
+     -lmkl_intel_thread -liomp5 -lpthread -lm -lmkl_intel_lp64 -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g'
 # directories
 G2G_CFLAGS=-DG2G
 
@@ -48,16 +48,16 @@ dirs:
 	mkdir -p obj/garcha_obj/garcha_src
 	mkdir -p obj/hibrido_obj/hibrido_src
 
-garcha-g2g: $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o)
+garcha-g2g: dirs $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o)
 	ifort -o $@ $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o) $(LIBS)
 
-hibrido-g2g: $(HIBRIDO_OBJ:%.o=obj/hibrido_g2g_obj/%.o)
+hibrido-g2g: dirs $(HIBRIDO_OBJ:%.o=obj/hibrido_g2g_obj/%.o)
 	ifort -o $@ $(HIBRIDO_OBJ:%.o=obj/hibrido_g2g_obj/%.o) $(LIBS)
 
-garcha: $(GARCHA_OBJ:%.o=obj/garcha_obj/%.o)
+garcha: dirs $(GARCHA_OBJ:%.o=obj/garcha_obj/%.o)
 	ifort -o $@ $(GARCHA_OBJ:%.o=obj/garcha_obj/%.o) $(LIBS)
 
-hibrido: $(HIBRIDO_OBJ:%.o=obj/hibrido_obj/%.o)
+hibrido: dirs $(HIBRIDO_OBJ:%.o=obj/hibrido_obj/%.o)
 	ifort -o $@ $(HIBRIDO_OBJ:%.o=obj/hibrido_obj/%.o) $(LIBS)
 
 ## Targets: clean ##

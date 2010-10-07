@@ -411,7 +411,7 @@ c
 
         allocate(natomc(natom),nnps(natom),nnpp(natom),nnp(natom))
         allocate(nnpd(natom),nns(natom),nnd(natom),atmin(natom))
-        allocate(jatc(natom,150))
+        allocate(jatc(natom,natom))
        
          do i=1,natom
          natomc(i)=0 

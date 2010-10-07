@@ -27,6 +27,7 @@ c-----------------------------------------------------------------
       subroutine int3lu(NORM,natom,Iz,r,Nuc,M,Mmem,ncont,nshell,c,a,
      >     Nucd,Md,ncontd,nshelld,cd,ad,RMM,X,E2,Ex,
      > nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write)
+       use latom
 c
 c
       implicit real*8 (a-h,o-z)
@@ -35,7 +36,7 @@ c
       integer nopt,iconst,igrid,igrid2,ndens_local
       INCLUDE 'param'
       parameter(pi52=34.9868366552497108D0,pi=3.14159265358979312D0)
-      parameter (rmax=25.D0)
+c      parameter (rmax=25.D0)
       dimension r(nt,3),nshelld(0:3),nshell(0:3)
       dimension cd(ngd,nl),ad(ngd,nl),Nucd(Md),ncontd(Md)
 *      dimension c(ng,nl),a(ng,nl),Nuc(M),ncont(M),Iz(natom)
@@ -69,6 +70,16 @@ c     common /index/ iii(ng),iid(ng)
       common /Nc/ Ndens
       common /intg1/ e_(50,3),wang(50)
       common /intg2/ e_2(116,3),wang2(116),Nr(0:54),e3(194,3),wang3(194)
+c      common /cutoff/ natomc(ntq),nnps(ntq),nnpp(ntq)
+c      common /cutoff/  nnpd(ntq),nns(ntq)
+c      common /cutoff/ nnd(ntq),jatc(ntq,150),atmin(ntq),nnp(ntq)
+c      common /cutoff/ ninteg
+c      common /cutoff/ kkint(ng*ng*ngd/100),kint(ng*ng*ngd/100)
+
+c      common /cutoff/ kknum,kkind(ng*(ng+1)/2)
+c      integer kknum
+c      integer, dimension (:), ALLOCATABLE :: kkind(:)
+
 c
 c------------------------------------------------------------------
 c now 16 loops for all combinations, first 2 correspond to 
@@ -160,7 +171,7 @@ c
       do  k = 1,Md
          do  kk = 1,MM
 *            Rc(k) = Rc(k) + RMM(kk)*t(kk,k)
-            Rc(k) = Rc(k) + RMM(kk)*RMM(Mmem+kk+(k-1)*MM)
+            Rc(k) = Rc(k) + RMM(kk)*cool((kk-1)*Md+k)
          enddo
       enddo
 *
@@ -402,15 +413,68 @@ c
 c
 ****
 ****
-      do kk = 1,MM
-         do k = 1,Md
+c      do kk = 1,MM
+c         do k = 1,Md
 *            RMM(M5+kk-1)=RMM(M5+kk-1)+af(k)*t(kk,k)
 *            RMM(M3+kk-1)=RMM(M3+kk-1)+aux(k)*t(kk,k)
-            term = RMM(Mmem+kk+(k-1)*MM)
-            RMM(M5+kk-1)=RMM(M5+kk-1)+af(k)*term
-            RMM(M3+kk-1)=RMM(M3+kk-1)+aux(k)*term
+c            term = RMM(Mmem+kk+(k-1)*MM)
+c            if (term.gt.0.) then
+c             write(80,*)  Mmem+kk+(k-1)*MM,kk,k,term
+c             endif
+c            RMM(M5+kk-1)=RMM(M5+kk-1)+af(k)*term
+c            RMM(M3+kk-1)=RMM(M3+kk-1)+aux(k)*term
+c         enddo
+c       enddo
+
+c        write(*,*) 'ninteg',ninteg
+c        do iii=1,ninteg
+c         iikk=Mmem+kkint(iii)+(kint(iii)-1)*MM
+         
+c        write(*,*)'co',kkint(iii),kint(iii),af(kint(iii)),aux(kint(iii))
+c        RMM(M5+kkint(iii)-1)=RMM(M5+kkint(iii)-1)+af(kint(iii))
+c     & *RMM(iikk)
+c        RMM(M3+kkint(iii)-1)=RMM(M3+kkint(iii)-1)+
+c     & aux(kint(iii))*RMM(iikk)
+
+c c       enddo
+
+         call timer_start('int3lu')
+         do kk=1,kknums
+c            do k=1,nsd
+             do k=1,Md
+          iikk=(kkind(kk)-1)*Md+k
+c         write(*,*) RMM(M5+kkind(kk)-1),RMM(M3+kkind(kk)-1)
+c        write(78,*) iikk,kkind(kk),k
+        RMM(M5+kkind(kk)-1)=RMM(M5+kkind(kk)-1)+af(k)*cool(iikk)
+        RMM(M3+kkind(kk)-1)=RMM(M3+kkind(kk)-1)+aux(k)*cool(iikk)
          enddo
-       enddo
+         enddo
+         call timer_stop('int3lu')
+
+c         do kk=kknums+1,kknump
+c            do k=nsd+1,nsd+npd
+c           write(*,*) 'k en int3lu',k
+c          iikk=Mmem+kkind(kk)+(k-1)*MM
+cc            write(*,*) 'kkind',kkind(kk),iikk
+c        RMM(M5+kkind(kk)-1)=RMM(M5+kkind(kk)-1)+af(k)*RMM(iikk)
+c        RMM(M3+kkind(kk)-1)=RMM(M3+kkind(kk)-1)+aux(k)*RMM(iikk)
+c         enddo
+c         enddo
+c
+c         do kk=kknump+1,kknumd
+c            do k=nsd+npd+1,Md
+c          iikk=Mmem+kkind(kk)+(k-1)*MM
+cc         write(*,*) RMM(M5+kkind(kk)-1),RMM(M3+kkind(kk)-1)
+cc        write(78,*) iikk,kkind(kk),k
+c        RMM(M5+kkind(kk)-1)=RMM(M5+kkind(kk)-1)+af(k)*RMM(iikk)
+c        RMM(M3+kkind(kk)-1)=RMM(M3+kkind(kk)-1)+aux(k)*RMM(iikk)
+c         enddo
+c         enddo
+
+
+
+
+
 ****
 ****
 c
@@ -426,7 +490,8 @@ c
        NCOb=NCO+Nunp
        write(*,*) 'exchnum int3lu'
 c       write(957,*) 'int3lu'
-       call timer_start('exchfock')
+c       call timer_start('exchfock')
+c        write(*,*) 'que pasa 2?'
 #ifdef G2G
        call g2g_solve_groups(0,0,0)
 #else
@@ -440,7 +505,7 @@ c        enddo
 c      enddo
        
 #endif
-       call timer_stop('exchfock')
+c       call timer_stop('exchfock')
       
        Ndens=Ndens+1
        endif

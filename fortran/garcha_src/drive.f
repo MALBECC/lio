@@ -13,6 +13,7 @@ c input file is simple
 c----------------------------------------------------------------
 c
       subroutine drive(ng2,ngDyn,ngdDyn,P,scratch,vec)
+       use latom 
 c
       implicit real*8 (a-h,o-z)
       INCLUDE 'param'
@@ -95,6 +96,19 @@ c ------------------
       dimension c(ng,nl),a(ng,nl),Nuc(ng),ncont(ng)
       dimension cx(ngd,nl),ax(ngd,nl),Nucx(ngd),ncontx(ngd)
       dimension cd(ngd,nl),ad(ngd,nl),Nucd(ngd),ncontd(ngd)
+
+c     Variables de las listas de atomos cerca, natomc(j) son los atomos cerca de j
+c      nps,nnpp y nnpd son las posicones en la lista general de las primeras funciones s, p y d respectivamente.
+C      nns, nnp y nnd es el numero de funciones s, p y d para es atomo. Jatc(i,k) devuelve la posicion en la lista general del k esimo atomo en la lista de i.
+
+c      common /cutoff/ natomc(ntq),nnps(ntq),nnpp(ntq)
+c      common /cutoff/  nnpd(ntq),nns(ntq)
+c      common /cutoff/ nnd(ntq),jatc(ntq,150),atmin(ntq),nnp(ntq)
+c
+c      integer, dimension(:), ALLOCATABLE :: natomc,nnps,nnpp,nnpd,nns
+c      integer, dimension(:), ALLOCATABLE :: nnd,atmin,nnp 
+c      integer, dimension(:,:), ALLOCATABLE :: jatc
+
       integer ii(ng),iid(ngd)
 c
 c Dimensions for Overlap and Fock matrices
@@ -380,7 +394,7 @@ c if coefficients correspond to normalized gaussians
 c normalization factor will  multiply coefficients, so in  the program
 c expressions for non-normalized gaussians are used.
 c an option is included for using non-normalized gaussians
-c The contractions don't need to be normalized, it will be done
+c !The contractions don't need to be normalized, it will be done
 c automatically
 c
 c
@@ -394,6 +408,14 @@ c
       NBAS=0
     	M=0
 	    Mdd=0
+
+        allocate(natomc(natom),nnps(natom),nnpp(natom),nnp(natom))
+        allocate(nnpd(natom),nns(natom),nnd(natom),atmin(natom))
+        allocate(jatc(natom,150))
+       
+         do i=1,natom
+         natomc(i)=0 
+          enddo
 c
 c  BASIS SETS -------------------------------------------------
       do 25 while (whatis.ne.'endbasis')
@@ -401,6 +423,7 @@ c
       NBAS=NBAS+1
 c signals if a basis set was not used
       used=.false.
+      atmint=100000.
       read(1,*) iatom,nraw,ncon
       write(2,600) iatom,nraw,ncon
 c
@@ -409,6 +432,7 @@ c 3 ,6 , 10 .....   times
 c reads also angular momentum for each of the contractions
 c 0 for s 1 for p, etc
 c
+       
       read(1,*) (ncf(i),i=1,ncon)
       write(2,*) (ncf(i),i=1,ncon)
       read(1,*) (lt(i),i=1,ncon)
@@ -418,13 +442,36 @@ c loop over all primitives, no repeating p, d
       do 30 i=1,nraw
        read(1,*) at(i),ct(i)
        write(2,700) at(i),ct(i)
+c       write(*,*) atmint,at(i)
+        if(at(i).lt.atmint) atmint=at(i)
+
  30   continue
+
+
+
 c
       do 35 j=1,natom
        if ((Iz(j).eq.iatom).and.(.not.done(j))) then
        nnat(NBAS)=nnat(NBAS)+1
        done(j)=.true.
        used=.true.
+       atmin(j)=atmint
+
+c  cosas que puso nano para "atomos cerca"
+
+        nns(j)=0
+        nnp(j)=0
+        nnd(j)=0        
+
+       do kkk=1,ncon
+        if (lt(kkk).eq.0) nns(j)=nns(j)+Num(lt(kkk))
+        if (lt(kkk).eq.1) nnp(j)=nnp(j)+Num(lt(kkk))
+        if (lt(kkk).eq.2) nnd(j)=nnd(j)+Num(lt(kkk))
+       enddo
+
+c      write(*,*) 'nns y etc',nns(j),nnp(j),nnd(j),nnps(j)
+c     > ,nnpp(j),nnpd(j)
+
 c  M stores # of contractions
        index=0
        do 36 k=1,ncon
@@ -594,6 +641,11 @@ c
  25   end do
 c----- DIMENSION CONTROLS ------------------------------------
 c
+c       do i=1,natom
+c      write(*,*) 'atmin',i,atmin(i)
+c      enddo
+
+
       iprob=0
       if (M.gt.ngDyn.or.M.gt.ng) then
        write(*,*) 'DIMENSION PROBLEMS WITH BASIS SET SIZE PARAMETER NG'
@@ -1164,6 +1216,9 @@ c nopt 0 static SCF calculation --------------------------------------
 			write(*,*) 'primera carga de posiciones'
 			call g2g_reload_atom_positions(igrid2)
 #endif
+     
+
+
 
       if (OPEN) then
 c Nunp : number of unpaired electrons
@@ -1176,6 +1231,8 @@ c
       call SCF(MEMO,NORM,natom,Iz,r,Nuc,M,ncont,nshell,c,a,
      >         Nucd,Mdd,ncontd,nshelld,cd,ad,P,scratch,vec,E,
      >   nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write)
+
+
 c
 c
       endif
@@ -1205,7 +1262,9 @@ c
       BSSE=.true.
       NCO2=nco1
       Nunp2=Nunp1
+
 c
+
       if (OPEN1) then
        OPEN=.true.
       call SCFop(MEMO,NORM,natom,Iz,r,Nuc,M,ncont,nshell,c,a,

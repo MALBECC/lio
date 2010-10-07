@@ -9,6 +9,9 @@ c---------------------------------------------------
        subroutine SCF(MEMO,NORM,natom,Iz,r,Nuc,M,ncont,nshell,c,a,
      >     Nucd,Md,ncontd,nshelld,cd,ad,RMM,X,XX,E,
      >     nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write1)
+
+       use latom
+
 c
       implicit real*8 (a-h,o-z)
       logical NORM,ATRHO,VCINP,DIRECT,EXTR,dens,write1,just_int3n
@@ -54,6 +57,9 @@ c
 c
       common /sol1/ Nsol,natsol,alpha,Em,pc,sol,free
 
+      dimension d(ntq,ntq)
+c      parameter (rmax=25.D0)
+
       call timer_start('SCF')
 
       just_int3n = false
@@ -80,6 +86,9 @@ c---------------------
       MMd=Md*(Md+1)/2
       Md2=2*Md
       M2=2*M
+
+      allocate(kkind(3*MM))
+
 c first P
       M1=1
 c now Pnew
@@ -110,6 +119,7 @@ c
 c Initializations/Defaults
 c
       write(*,*) ' SCF CALCULATION  '
+
 c
       good=1.00D0
       niter=0
@@ -125,6 +135,52 @@ c
  99   continue
        Qc=Qc-Nel
       Qc2=Qc**2
+
+C----------------------------------------
+c Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
+c        write(*,*) 'que pasa?'
+  
+
+        do i=1,natom
+          natomc(i)=0
+c         write(*,*) natomc(i)
+         do j=1,natom
+
+         d(i,j)=(r(i,1)-r(j,1))**2+(r(i,2)-r(j,2))**2+
+     >        (r(i,3)-r(j,3))**2
+c        write(*,*) d(i,j),atmin(i),atmin(j)
+       zij=atmin(i)+atmin(j)
+       ti=atmin(i)/zij
+       tj=atmin(j)/zij
+       alf=atmin(i)*tj
+       rexp=alf*d(i,j)
+c       write(*,*) 'vecinos',rexp,rmax
+       if (rexp.lt.rmax) then
+         natomc(i)=natomc(i)+1
+         jatc(natomc(i),i)=j
+       endif 
+        
+
+
+
+        enddo
+          write(*,*) i,'natomc=',natomc(i)
+        enddo
+       do ii=nshell(0),1,-1
+       nnps(nuc(ii))=ii
+       enddo
+       do ii=nshell(0)+nshell(1),nshell(0)+1,-1
+
+       nnpp(nuc(ii))=ii
+       enddo
+
+       do ii=M,nshell(0)+nshell(1)+1,-1
+       nnpd(nuc(ii))=ii
+       enddo
+c       do ii=1,natom
+c        write(*,*) 'nnps,nnpp,nnpd',nnps(ii),nnpp(ii),nnpd(ii)
+c       enddo
+c--------------------------------------------------------------
 
 c
 c -------------------------------------------------------------
@@ -237,7 +293,7 @@ c
          RMM(M15+i-1)=0.D0
  249      RMM(M13+i-1)=0.D0
 
-          write(*,*) 'cosas'
+c          write(*,*) 'cosas'
 c
 c ESSL OPTION
 #ifdef essl
@@ -294,6 +350,7 @@ c
       write(*,*) 'int22'
 **
       if (MEMO) then
+      allocate(cool(MM*Md))
          call int3mem(NORM,natom,r,Nuc,M,M20,ncont,nshell,c,a,Nucd,Md,
      >                 ncontd,nshelld,RMM,cd,ad,
      >     nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write1)
@@ -423,6 +480,7 @@ c
 c-------------------------------------------------------------------
 c-------------------------------------------------------------------
 c
+      write(*,*) 'empiezo el loop'
       do 999 while (good.ge.told)
 c
       if (niter.ge.NMAX) then
@@ -702,6 +760,15 @@ c
 c
  999   continue
  995   continue
+
+
+         DEALLOCATE (natomc,nnps,nnpp,nnpd,nns)
+         deallocate (nnd,nnp,atmin,jatc)
+         if (memo) then
+         deallocate (kkind)
+         deallocate(cool)
+
+         endif
 c
 c -- SOLVENT CASE --------------------------------------
       if (sol) then
@@ -723,7 +790,7 @@ c--------------------------------------------------------------
          endif
        endif
 			 write(*,*) 'ultimo paso SCF'
-       call timer_start('exchnum')
+c       call timer_start('exchnum')
 #ifdef G2G
 #ifdef ULTIMA_CPU
        call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
@@ -742,7 +809,7 @@ c--------------------------------------------------------------
 			write(*,*) 'total final:',Exc
 #endif       
 #endif
-       call timer_stop('exchnum')      
+c       call timer_stop('exchnum')      
        E=E+Exc-Ex
 c
 c--------------------------------------------------------------

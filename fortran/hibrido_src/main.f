@@ -21,7 +21,6 @@ c Ngrid : number of grid points (LS-SCF part)
 c norbit : number of MO
 c
 c Ngrid may be set to 0 , in the case of using Num. Integ.
-
       INCLUDE 'COMM'
       INCLUDE 'param'
       INTEGER SPC
@@ -1366,7 +1365,7 @@ c      ENDDO
 78    FORMAT(2X,'D (H Br) ',2I4,2G18.9)
 77    FORMAT(2X,'D H)(O   ',2I4,2G18.9)
 79    FORMAT(2X,'D (H O)  ',2I4,2G18.9)
-50    FORMAT(2X,I3,1X,'ATOMS')
+50    FORMAT(2X,I5,1X,'ATOMS')
 100   FORMAT(2X,I3,1X,A5,4F9.4)
 101   FORMAT(5X,A5,4F9.4)
 102   FORMAT(2X,A5,4F15.6)

@@ -1,4 +1,4 @@
-c-------------------------------------------------------------------
+ci------------------------------------------------------------------
 c Integrals subroutine -Third part
 c 2 e integrals, 3 index : wavefunction and density fitting functions
 c All of them are calculated
@@ -27,6 +27,7 @@ c-----------------------------------------------------------------
       subroutine int3mem(NORM,natom,r,Nuc,M,Mmem,ncont,nshell,c,a,
      >     Nucd,Md,ncontd,nshelld,RMM,cd,ad,
      > nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write)
+        use latom
 c
 c
       implicit real*8 (a-h,o-z)
@@ -35,7 +36,7 @@ c
       integer nopt,iconst,igrid,igrid2
       INCLUDE 'param'
       parameter(pi52=34.9868366552497108D0,pi=3.14159265358979312D0)
-      parameter (rmax=25.D0)
+c      parameter (rmax=150.D0)
       dimension r(nt,3),nshelld(0:3),nshell(0:3)
       dimension cd(ngd,nl),ad(ngd,nl),Nucd(Md),ncontd(Md)
       dimension c(ng,nl),a(ng,nl),Nuc(M),ncont(M)
@@ -66,6 +67,21 @@ c    >            EXTR,SHFT,write,NMAX,NCO,IDAMP,Nunp,nopt
       common /coef2/ B
 c     common /index/ iii(ng),iid(ng)
       common /Nc/ Ndens
+       logical fato
+c      common /cutoff/ natomc(ntq),nnps(ntq),nnpp(ntq)
+c      common /cutoff/  nnpd(ntq),nns(ntq)
+c      common /cutoff/ nnd(ntq),jatc(ntq,150),atmin(ntq),nnp(ntq)
+c      common /cutoff/ ninteg,indint(ng*ng*ngd/100)
+c      common /cutoff/ ninteg
+c      common /cutoff/ kkint(ng*ng*ngd/100),kint(ng*ng*ngd/100)
+c      common /cutoff/ kknum,kkind(ng*(ng+1)/2)
+c      integer, dimension(:), ALLOCATABLE :: natomc,nnps,nnpp,nnpd,nns
+c      integer, dimension(:), ALLOCATABLE :: nnd,atmin,nnp
+c      integer, dimension(:,:), ALLOCATABLE :: jatc
+
+c      integer kknum
+c      integer, dimension (:), ALLOCATABLE :: kkind(:)
+
 c
 c------------------------------------------------------------------
 c now 16 loops for all combinations, first 2 correspond to 
@@ -93,6 +109,7 @@ c
       npd=nshelld(1)
       ndd=nshelld(2)
       Md2=2*Md
+
 c  pointers
 c
       MM=M*(M+1)/2
@@ -133,6 +150,8 @@ c end ------------------------------------------------
 c
       do 1 l=1,3
  1     Ll(l)=l*(l-1)/2
+
+
 c
       do 2 i=1,M
  2     Jx(i)=(M2-i)*(i-1)/2
@@ -150,22 +169,42 @@ c
       do i = 1,MM
          do j = 1,Md
 *       t(i,j) = 0.d0
-             id = Mmem+i+(j-1)*MM
-             RMM(id) = 0.d0
+             id = (i-1)*md+j
+             cool(id) = 0.d0
          enddo
       enddo
 *
 
       ix=0
+c      ninteg=0
+      kknums=0
+      kknump=0
+      kknumd=0
+c      write(*,*) 'estoy en int3mem'
 c------------------------------------------------------------------
 c (ss|s)
 c
-      do 10 i=1,ns
-      do 10 j=1,i
+      do 114 i=1,ns
+
+cx       write(97,*) 'que pasa??',i
+
+          do 114 knan=1,natomc(nuc(i))
+         j=nnps(jatc(knan,nuc(i)))-1
+      do 114 kknan=1,nns(jatc(knan,nuc(i)))
+        j=j+1
+       if(j.le.i) then
+
 c
+c      do iki=1,nsd
+c          fato(iki)=.true.
+c      enddo
+           
       kk=i+Jx(j)
       dd=d(Nuc(i),Nuc(j))
+c       write(77,*) 'i y j',i,j,Jx(j),kk
 c
+      fato=.true.
+
       do 10 ni=1,ncont(i)
       do 10 nj=1,ncont(j)
 c
@@ -174,13 +213,24 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 12
+       if (rexp.lt.rmax) then
+       if (fato) then
+       kknums = kknums+1
+       kkind(kknums)=kk
+        fato=.false.
+c       write(77,*) 'kk',kk
+       endif
+
+
+       
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
        Q(3)=ti*r(Nuc(i),3)+tj*r(Nuc(j),3)
 c
        sks=pi52*dexp(-rexp)/zij
+
+
 c
       do 11 k=1,nsd
 c
@@ -198,22 +248,37 @@ c
 c
 *      Rc(k)=Rc(k)+RMM(kk)*term
 *      t(kk,k)=t(kk,k)+term
-      id = Mmem+kk+(k-1)*MM 
-      RMM(id) = RMM(id) + term
+      
+      id = (kk-1)*md+k
+
+      cool(id) = cool(id) + term
+
       ix=ix+1
  11   continue
- 12   continue
+       endif
  10   continue
+      endif
+114   continue
+   
 c
 c-------------------------------------------------------------
 c (ps|s)
 c
       do 20 i=ns+1,ns+np,3
-      do 20 j=1,ns
+       do 20 knan=1,natomc(nuc(i))
+
+         j=nnps(jatc(knan,nuc(i)))-1
+
+      do 20 kknan=1,nns(jatc(knan,nuc(i)))
+        j=j+1
+
+
 c
       dd=d(Nuc(i),Nuc(j))
       k1=Jx(j)
-c
+
+      fato=.true.
+c1
       do 20 ni=1,ncont(i)
       do 20 nj=1,ncont(j)
 c
@@ -222,13 +287,23 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 22
+       if (rexp.lt.rmax) then   
+       if (fato) then
+        do iki=1,3
+        kknums=kknums+1
+         kkind(kknums)=i+k1+iki-1
+         enddo
+        fato=.false.
+c       write(77,*) 'kk',kk
+       endif
+
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
        Q(3)=ti*r(Nuc(i),3)+tj*r(Nuc(j),3)
 c
        sks=pi52*dexp(-rexp)/zij
+
 c
       do 21 k=1,nsd
 c
@@ -262,33 +337,84 @@ c
       ii=i+l1-1
 c
 c
-      kk=ii+k1
+       kk=ii+k1
 *      Rc(k)=Rc(k)+RMM(kk)*term
 *      t(kk,k)=t(kk,k)+term
-      id = Mmem+kk+(k-1)*MM
-      RMM(id) = RMM(id) + term
+
+      id = (kk-1)*md+k
+
+c      write(77,*) 'id2',id
+c      if (fato(k)) then 
+c      ninteg=ninteg+1
+c      indint(ninteg)=id
+c      kkint(ninteg)=kk
+c      kint(ninteg)=k 
+c      if(l1.eq.3) fato(k)=.false.
+c      endif
+
+      cool(id) = cool(id) + term
+c      write(*,*) 'ninteg pss',ninteg
       ix=ix+1
  21   continue
  22   continue
+      endif
  20   continue
 c
 c-------------------------------------------------------------
 c (pp|s)
-      do 30 i=ns+1,ns+np,3
-      do 30 j=ns+1,i,3
+      do 333 i=ns+1,ns+np,3
+         do 333 knan=1,natomc(nuc(i))
+
+         j=nnpp(jatc(knan,nuc(i)))-3
+
+      do 333 kknan=1,nnp(jatc(knan,nuc(i))),3
+        j=j+3
+
+c      do iki=1,nsd
+c          fato(iki)=.true.
+c      enddo
+
+       if(j.le.i) then
+        fato=.true.
 c
       dd=d(Nuc(i),Nuc(j))
 c
       do 30 ni=1,ncont(i)
       do 30 nj=1,ncont(j)
 c
+
        zij=a(i,ni)+a(j,nj)
        z2=2.D0*zij
        ti=a(i,ni)/zij
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 32
+       if (rexp.lt.rmax) then   
+
+       if (fato) then
+       if(i.eq.j) then
+          do iki=1,3
+           do jki=1,iki
+            kknums=kknums+1
+            kkind(kknums)=i+iki-1+Jx(j+jki-1)
+         enddo
+         enddo       
+       else 
+       do iki=1,3
+          do  jki=1,3
+             kknums=kknums+1
+             kkind(kknums)=i+iki-1+Jx(j+jki-1)
+            enddo
+         enddo
+        endif
+
+        fato=.false.
+c       write(77,*) 'kk',kk
+       endif
+
+
+
+
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -298,6 +424,7 @@ c
 c
       do 31 k=1,nsd
 c
+         
       dpc=(Q(1)-r(Nucd(k),1))**2+(Q(2)-r(Nucd(k),2))**2+
      >    (Q(3)-r(Nucd(k),3))**2
 c
@@ -350,21 +477,46 @@ c
       term=term*ccoef
 c
       kk=ii+Jx(jj)
+       
+
 *      Rc(k)=Rc(k)+RMM(kk)*term
 *      t(kk,k)=t(kk,k)+term
-      id = Mmem+kk+(k-1)*MM
-      RMM(id) = RMM(id) + term
+      id = (kk-1)*Md+k
+c      write(77,*) 'id3',id
+      
+c      if (fato(k)) then 
+c      ninteg=ninteg+1
+C      indint(ninteg)=id
+c      kkint(ninteg)=kk
+c      kint(ninteg)=k 
+c      if(l1.eq.3.and.l2.eq.3) fato(k)=.false.
+c      endif
+
+      cool(id) = cool(id) + term
       ix=ix+1
+c      write(*,*) 'ninteg pps',ninteg
  35   continue
  31   continue
- 32   continue
+      endif
  30   continue
+      endif
+333   continue
 c
 c-------------------------------------------------------------
 c
 c (ds|s)
       do 40 i=ns+np+1,M,6
-      do 40 j=1,ns
+         do 40 knan=1,natomc(nuc(i))
+
+         j=nnps(jatc(knan,nuc(i)))-1
+
+      do 40 kknan=1,nns(jatc(knan,nuc(i)))
+        j=j+1
+
+c      do iki=1,nsd
+c          fato(iki)=.true.
+c      enddo
+       fato=.true.
 c
       k1=Jx(j)
       dd=d(Nuc(i),Nuc(j))
@@ -372,13 +524,23 @@ c
       do 40 ni=1,ncont(i)
       do 40 nj=1,ncont(j)
 c
+
        zij=a(i,ni)+a(j,nj)
        z2=2.D0*zij
        ti=a(i,ni)/zij
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 42
+       if (rexp.lt.rmax) then   
+       if (fato) then
+        do iki=1,6
+             kknums=kknums+1
+             kkind(kknums)=i+iki-1+k1
+         enddo
+        fato=.false.
+c       write(77,*) 'kk',kk
+       endif
+
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -439,18 +601,40 @@ c
       kk=ii+k1
 *      Rc(k)=Rc(k)+RMM(kk)*term
 *      t(kk,k)=t(kk,k)+term
-      id = Mmem+kk+(k-1)*MM
-      RMM(id) = RMM(id) + term
+      id = (kk-1)*Md+k
+c      if (fato(k)) then 
+c      ninteg=ninteg+1
+C      indint(ninteg)=id
+c      kkint(ninteg)=kk
+c      kint(ninteg)=k 
+c      if (l2.eq.3) fato(k)=.false.
+c      endif
+
+      cool(id) = cool(id) + term
       ix=ix+1
+c      write(*,*) 'ninteg dss',ninteg
+
  45   continue
  41   continue
  42   continue
+      endif
  40   continue
 c
 c-------------------------------------------------------------
 c (dp|s)
       do 50 i=ns+np+1,M,6
-      do 50 j=ns+1,ns+np,3
+         do 50 knan=1,natomc(nuc(i))
+
+         j=nnpp(jatc(knan,nuc(i)))-3
+
+      do 50 kknan=1,nnp(jatc(knan,nuc(i))),3
+        j=j+3
+
+C      do iki=1,nsd
+C          fato(iki)=.true.
+c      enddo
+
+       fato=.true.
 c
       dd=d(Nuc(i),Nuc(j))
 c
@@ -463,7 +647,17 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 52
+       if (rexp.lt.rmax) then   
+       if (fato) then
+        do iki=1,6
+          do  jki=1,3
+             kknums=kknums+1
+             kkind(kknums)=i+iki-1+Jx(j+jki-1)
+            enddo
+         enddo
+        fato=.false.
+c       write(77,*) 'kk',kk
+       endif
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -549,19 +743,41 @@ c
       kk=ii+Jx(jj)
 *      Rc(k)=Rc(k)+RMM(kk)*term 
 *      t(kk,k)=t(kk,k)+term
-      id = Mmem+kk+(k-1)*MM
-      RMM(id) = RMM(id) + term
+      id =(kk-1)*Md+k
+
+c      if (fato(k)) then 
+c      ninteg=ninteg+1
+C      indint(ninteg)=id
+c      kkint(ninteg)=kk
+c      kint(ninteg)=k 
+c      if(l2.eq.3.and.l3.eq.3) fato(k)=.false.
+c      endif
+
+      cool(id) = cool(id) + term
       ix=ix+1
+c      write(*,*) 'ninteg dps',ninteg
  55   continue
  51   continue
- 52   continue
+      endif
  50   continue
 c
 c-------------------------------------------------------------
 c
 c (dd|s)
-      do 60 i=ns+np+1,M,6
-      do 60 j=ns+np+1,i,6
+      do 666 i=ns+np+1,M,6
+         do 666 knan=1,natomc(nuc(i))
+
+         j=nnpd(jatc(knan,nuc(i)))-6
+
+      do 666 kknan=1,nnd(jatc(knan,nuc(i))),6
+        j=j+6
+
+       if(j.le.i) then
+
+c      do iki=1,nsd
+c          fato(iki)=.true.
+c      enddo
+      fato=.true.
 c
       dd=d(Nuc(i),Nuc(j))
 c
@@ -574,7 +790,33 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 62
+       if (rexp.lt.rmax) then   
+
+       if (fato) then
+        if(i.eq.j) then
+         do iki=1,6
+          do jki=1,iki
+              kknums=kknums+1
+c
+           ii=i+iki-1
+           jj=j+jki-1
+
+              kkind(kknums)=ii+Jx(jj)
+c            write(*,*) 'kkind',kkind(kknums)
+          enddo
+         enddo
+        else
+        do iki=1,6
+           do jki=1,6
+             kknums=kknums+1
+             kkind(kknums)=i+iki-1+Jx(j+jki-1)
+            enddo
+         enddo
+         endif
+        fato=.false.
+c       write(77,*) 'kk',kk
+       endif
+
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -713,24 +955,53 @@ c
       term=term*cc
 c
       kk=ii+Jx(jj)
+
 *      Rc(k)=Rc(k)+RMM(kk)*term
 *      t(kk,k)=t(kk,k)+term
-      id = Mmem+kk+(k-1)*MM
-      RMM(id) = RMM(id) + term
+      id = (kk-1)*Md+k
+
+c      if (fato(k)) then 
+c      ninteg=ninteg+1
+C      indint(ninteg)=id
+c      kkint(ninteg)=kk
+c      kint(ninteg)=k 
+c       if(l2.eq.3.and.l4.eq.3) fato(k)=.false.
+c      endif
+
+      cool(id) = cool(id) + term
       ix=ix+1
+cn      write(*,*) 'ninteg dds',ninteg,l1,l2,l3,l4
  65   continue
  61   continue
- 62   continue
+      endif
  60   continue
+      endif
+666   continue
 c
 c-------------------------------------------------------------
 c
 c (ss|p)
-      do 70 i=1,ns
-      do 70 j=1,i
+      if (npd.ne.0) then 
+      kknump=kknums
+      do 177 i=1,ns
+         do 177 knan=1,natomc(nuc(i))
+         j=nnps(jatc(knan,nuc(i)))-1
+
+
+      do 177 kknan=1,nns(jatc(knan,nuc(i)))
+        j=j+1
+
+       if(j.le.i) then
+
+c      do iki= nsd+1,nsd+npd
+c          fato(iki)=.true.
+c      enddo
+       fato=.true.
+
 c
       kn=i+Jx(j)
       dd=d(Nuc(i),Nuc(j))
+      
 c
       do 70 ni=1,ncont(i)
       do 70 nj=1,ncont(j)
@@ -740,8 +1011,14 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 72
-c
+       if (rexp.lt.rmax) then   
+ci
+       if (fato) then
+       kknump = kknump+1
+       kkind(kknump)=kn
+        fato=.false.
+       endif
+
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
        Q(3)=ti*r(Nuc(i),3)+tj*r(Nuc(j),3)
@@ -780,19 +1057,40 @@ c
 c
 *      Rc(kk)=Rc(kk)+RMM(kn)*term
 *      t(kn,kk)=t(kn,kk)+term
-      id = Mmem+kn+(kk-1)*MM
-      RMM(id) = RMM(id) + term
+      id = (kn-1)*Md+kk
+c      if (fato(kk)) then 
+c      ninteg=ninteg+1
+C      indint(ninteg)=id
+c      kkint(ninteg)=kn
+c      kint(ninteg)=kk 
+c      fato(kk)=.false.
+c      endif
+
+      cool(id) = cool(id) + term
       ix=ix+1
  75   continue
  71   continue
- 72   continue
+      endif
  70   continue
+      endif
+177   continue
 c
 c-------------------------------------------------------------
 c
 c (ps|p)
       do 80 i=ns+1,ns+np,3
-      do 80 j=1,ns
+         do 80 knan=1,natomc(nuc(i))
+
+         j=nnps(jatc(knan,nuc(i)))-1
+
+      do 80 kknan=1,nns(jatc(knan,nuc(i)))
+        j=j+1
+c      do iki= nsd+1,nsd+npd
+c          fato(iki)=.true.
+c      enddo
+      fato=.true.
+
+
 c
       k1=Jx(j)
       dd=d(Nuc(i),Nuc(j))
@@ -805,7 +1103,15 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 82
+       if (rexp.lt.rmax) then   
+       if (fato) then
+        do iki=1,3
+        kknump=kknump+1
+       kkind(kknump)=i+k1+iki-1
+         enddo
+        fato=.false.
+c       write(77,*) 'kk',kk
+       endif
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -860,23 +1166,48 @@ c
       kn=ii+k1
 *      Rc(kk)=Rc(kk)+RMM(kn)*term
 *      t(kn,kk)=t(kn,kk)+term
-      id = Mmem+kn+(kk-1)*MM
-      RMM(id) = RMM(id) + term
+      id = (kn-1)*Md+kk
+
+
+c      if (fato(kk)) then 
+c      ninteg=ninteg+1
+C      indint(ninteg)=id
+c      kkint(ninteg)=kn
+c      kint(ninteg)=kk 
+c      if(l1.eq.3) fato(kk)=.false.
+c      endif
+
+
+      cool(id) = cool(id) + term
       ix=ix+1
+c      write(*,*) 'ninteg',ninteg
  85   continue
  81   continue
- 82   continue
+      endif
  80   continue
 c
 c
 c-------------------------------------------------------------
 c
 c (pp|p)
-      do 90 i=ns+1,ns+np,3
-      do 90 j=ns+1,i,3
+      do 999 i=ns+1,ns+np,3
+         do 999 knan=1,natomc(nuc(i))
+
+         j=nnpp(jatc(knan,nuc(i)))-3
+
+      do 999 kknan=1,nnp(jatc(knan,nuc(i))),3
+        j=j+3
+
+       if(j.le.i) then
+
+c      do iki= nsd+1,nsd+npd
+c          fato(iki)=.true.
+c      enddo
+      fato=.true.
 c
       dd=d(Nuc(i),Nuc(j))
 c
+   
       do 90 ni=1,ncont(i)
       do 90 nj=1,ncont(j)
 c
@@ -886,7 +1217,30 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 92
+       if (rexp.lt.rmax) then   
+
+       if (fato) then
+       if(i.eq.j) then
+          do iki=1,3
+           do jki=1,iki
+            kknump=kknump+1
+            kkind(kknump)=i+iki-1+Jx(j+jki-1)
+         enddo
+         enddo
+       else
+       do iki=1,3
+          do  jki=1,3
+             kknump=kknump+1
+             kkind(kknump)=i+iki-1+Jx(j+jki-1)
+            enddo
+         enddo
+        endif
+
+        fato=.false.
+c       write(77,*) 'kk',kk
+       endif
+
+
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -968,19 +1322,44 @@ c
       kn=ii+Jx(jj)
 *      Rc(kk)=Rc(kk)+RMM(kn)*term
 *      t(kn,kk)=t(kn,kk)+term
-      id = Mmem+kn+(kk-1)*MM
-      RMM(id) = RMM(id) + term
+      id = (kn-1)*Md+kk
+
+c      if (fato(kk)) then 
+c      ninteg=ninteg+1
+C      indint(ninteg)=id
+c      kkint(ninteg)=kn
+c      kint(ninteg)=kk 
+c      if(l1.eq.3.and.l2.eq.3) fato(kk)=.false.
+c      endif
+
+      cool(id) = cool(id) + term
       ix=ix+1
+c      write(*,*) 'ninteg',ninteg
  95   continue
  91   continue
- 92   continue
+      endif
  90   continue
+       endif
+999   continue
 c
 c-------------------------------------------------------------
 c
 c (ds|p)
+
       do 100 i=ns+np+1,M,6
-      do 100 j=1,ns
+         do 100 knan=1,natomc(nuc(i))
+
+         j=nnps(jatc(knan,nuc(i)))-1
+
+      do 100 kknan=1,nns(jatc(knan,nuc(i)))
+        j=j+1
+
+c      do iki= nsd+1,nsd+npd
+c          fato(iki)=.true.
+c      enddo
+      fato=.true.
+
+
 c
       k1=Jx(j)
       dd=d(Nuc(i),Nuc(j))
@@ -994,7 +1373,16 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 102
+       if (rexp.lt.rmax) then    
+       if (fato) then
+        do iki=1,6
+             kknump=kknump+1
+             kkind(kknump)=i+iki-1+k1
+         enddo
+        fato=.false.
+c       write(77,*) 'kk',kk
+       endif
+
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -1067,26 +1455,52 @@ c
       l12=Ll(l1)+l2
       ii=i+l12-1
       kk=k+l3-1
-c    
+c 
+c      write(*,*) 'L1,L2 y L12',l1,l2,kk,fato(kk)   
       cc=ccoef/f1
       term=term*cc
 c
       kn=ii+k1
 *      Rc(kk)=Rc(kk)+RMM(kn)*term
 *      t(kn,kk)=t(kn,kk)+term
-      id = Mmem+kn+(kk-1)*MM
-      RMM(id) = RMM(id) + term
+      id = (kn-1)*Md+kk
+
+
+c      if (fato(kk)) then 
+c      ninteg=ninteg+1
+C      indint(ninteg)=id
+c      kkint(ninteg)=kn
+c      kint(ninteg)=kk 
+c      if(l2.eq.3) fato(kk)=.false.
+c      endif
+
+c      write(*,*) 'dsp',ninteg,i,j,k,kk
+
+      cool(id) = cool(id) + term
       ix=ix+1
  105   continue
  101   continue
- 102   continue
+       endif
  100   continue
 c
 c-------------------------------------------------------------
 c
 c (dp|p)
+
+
       do 110 i=ns+np+1,M,6
-      do 110 j=ns+1,ns+np,3
+         do 110 knan=1,natomc(nuc(i))
+
+         j=nnpp(jatc(knan,nuc(i)))-3
+
+      do 110 kknan=1,nnp(jatc(knan,nuc(i))),3
+        j=j+3
+
+c      do iki= nsd+1,nsd+npd
+c          fato(iki)=.true.
+c      enddo
+      fato=.true.
+  
 c
       dd=d(Nuc(i),Nuc(j))
 c
@@ -1099,7 +1513,18 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 112
+       if (rexp.lt.rmax) then    
+       if (fato) then
+        do iki=1,6
+          do  jki=1,3
+             kknump=kknump+1
+             kkind(kknump)=i+iki-1+Jx(j+jki-1)
+            enddo
+         enddo
+        fato=.false.
+c       write(77,*) 'kk',kk
+       endif
+
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -1213,19 +1638,43 @@ c
       kn=ii+Jx(jj)
 *      Rc(kk)=Rc(kk)+RMM(kn)*term
 *      t(kn,kk)=t(kn,kk)+term
-      id = Mmem+kn+(kk-1)*MM
-      RMM(id) = RMM(id) + term
+      id = (kn-1)*Md+kk
+
+c      if (fato(kk)) then 
+c      ninteg=ninteg+1
+C      indint(ninteg)=id
+c      kkint(ninteg)=kn
+c      kint(ninteg)=kk 
+c      if(l2.eq.3.and.l3.eq.3)fato(kk)=.false.
+c      endif
+
+      cool(id) = cool(id) + term
       ix=ix+1
+c      write(*,*) 'dpp',ninteg
  115   continue
  111   continue
- 112   continue
+       endif
  110   continue
 c
 c-------------------------------------------------------------
 c
 c (dd|p)
-      do 120 i=ns+np+1,M,6
-      do 120 j=ns+np+1,i,6
+     
+
+      do 222 i=ns+np+1,M,6
+         do 222 knan=1,natomc(nuc(i))
+
+         j=nnpd(jatc(knan,nuc(i)))-6
+
+      do 222 kknan=1,nnd(jatc(knan,nuc(i))),6
+        j=j+6
+
+       if(j.le.i) then
+
+c      do iki= nsd+1,nsd+npd
+c          fato(iki)=.true.
+c      enddo
+      fato=.true.
 c
       dd=d(Nuc(i),Nuc(j))
 c
@@ -1238,7 +1687,31 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 122
+       if (rexp.lt.rmax) then    
+       if (fato) then
+        if(i.eq.j) then
+         do iki=1,6
+          do jki=1,iki
+              kknump=kknump+1
+c
+           ii=i+iki-1
+           jj=j+jki-1
+
+              kkind(kknump)=ii+Jx(jj)
+          enddo
+         enddo
+        else
+        do iki=1,6
+           do jki=1,6
+             kknump=kknump+1
+             kkind(kknump)=i+iki-1+Jx(j+jki-1)
+            enddo
+         enddo
+         endif
+        fato=.false.
+c       write(77,*) 'kk',kk
+       endif
+
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -1358,6 +1831,7 @@ c
       if (i.eq.j) then
        lk=min(l3,Ll(l1)-Ll(l3)+l2)
       endif
+c      write(*,*) lk,l3,Ll(l1),ll(l3),l1,l2 
 c
       t16=(pj1pk-roz*pj2pk)/z2
       t17=(pi1pk-roz*pi2pk)/z2
@@ -1429,22 +1903,51 @@ c
       kn=ii+Jx(jj)
 *      Rc(kk)=Rc(kk)+RMM(kn)*term
 *      t(kn,kk)=t(kn,kk)+term
-      id = Mmem+kn+(kk-1)*MM
-      RMM(id) = RMM(id) + term
+      id = (kn-1)*Md+kk
+
+c      if (fato(kk)) then 
+c      ninteg=ninteg+1
+C      indint(ninteg)=id
+c      kkint(ninteg)=kn
+c      kint(ninteg)=kk 
+c       if(l2.eq.3.and.l4.eq.3) fato(kk)=.false.
+c      endif
+
+      cool(id) = cool(id) + term
       ix=ix+1
+c      write(*,*) ninteg,l1,l2,l3,l4,l5,fato(kk)
  125   continue
  121   continue
- 122   continue
+       endif
  120   continue
+       endif
+222    continue
+
+       endif
 c
 c-------------------------------------------------------------
 c
-c (ss|d)
-      do 130 i=1,ns
-      do 130 j=1,i
+c (ss|d) 
+       if (ndd.ne.0) then
+       kknumd=kknump
+      do 134 i=1,ns
+          do 134 knan=1,natomc(nuc(i))
+         j=nnps(jatc(knan,nuc(i)))-1
+
+      do 134 kknan=1,nns(jatc(knan,nuc(i)))
+        j=j+1
+c       write(*,*) 'i y j',i,j
+       if(j.le.i) then
+      fato=.true.
+
 c
       dd=d(Nuc(i),Nuc(j))
       kn=i+Jx(j)
+
+
+c      do iki=nsd+npd+1,Md
+c          fato(iki)=.true.
+c      enddo
 c
       do 130 ni=1,ncont(i)
       do 130 nj=1,ncont(j)
@@ -1454,7 +1957,13 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 132
+       if (rexp.lt.rmax) then    
+       if (fato) then
+       kknumd = kknumd+1
+       kkind(kknumd)=kk
+        fato=.false.
+c       write(77,*) 'kk',kk
+       endif
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -1514,23 +2023,46 @@ c
 c
 *      Rc(kk)=Rc(kk)+RMM(kn)*term
 *      t(kn,kk)=t(kn,kk)+term
-      id = Mmem+kn+(kk-1)*MM
-      RMM(id) = RMM(id) + term
+      id = (kn-1)*Md+kk
+
+c      if (fato(kk)) then 
+c      ninteg=ninteg+1
+C      indint(ninteg)=id
+c      kkint(ninteg)=kn
+c      kint(ninteg)=kk 
+c      fato(kk)=.false.
+c      endif
+
+      cool(id) = cool(id) + term
       ix=ix+1
+c      write(*,*) 'ninteg',ninteg
  135   continue
  131   continue
- 132   continue
+       endif
  130   continue
+       endif
+ 134   continue
 c
 c
 c-------------------------------------------------------------
 c
 c (ps|d)
       do 140 i=ns+1,ns+np,3
-      do 140 j=1,ns
+      do 140 knan=1,natomc(nuc(i))
+
+         j=nnps(jatc(knan,nuc(i)))-1
+
+      do 140 kknan=1,nns(jatc(knan,nuc(i)))
+        j=j+1
+
 c
       dd=d(Nuc(i),Nuc(j))
       k1=Jx(j)
+
+c      do iki=nsd+npd+1,Md
+c          fato(iki)=.true.
+c      enddo
+      fato=.true.
 c
       do 140 ni=1,ncont(i)
       do 140 nj=1,ncont(j)
@@ -1540,7 +2072,17 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 142
+       if (rexp.lt.rmax) then    
+       if (fato) then
+        do iki=1,3
+        kknumd=kknumd+1
+       kkind(kknumd)=i+k1+iki-1
+         enddo
+        fato=.false.
+c       write(77,*) 'kk',kk
+       endif
+
+
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -1622,21 +2164,43 @@ c
       kn=ii+k1
 *      Rc(kk)=Rc(kk)+RMM(kn)*term
 *      t(kn,kk)=t(kn,kk)+term
-      id = Mmem+kn+(kk-1)*MM
-      RMM(id) = RMM(id) + term
+      id = (kn-1)*Md+kk
+
+c      if (fato(kk)) then
+c      ninteg=ninteg+1
+C      indint(ninteg)=id
+c      kkint(ninteg)=kn
+c      kint(ninteg)=kk
+c      if(l1.eq.3) fato(kk)=.false.
+c      endif
+
+
+      cool(id) = cool(id) + term
       ix=ix+1
+c      write(*,*) 'ninteg',ninteg
  145  continue
  141  continue
- 142  continue
+      endif
  140  continue
 c
 c-------------------------------------------------------------
 c
 c (pp|d)
-      do 150 i=ns+1,ns+np,3
-      do 150 j=ns+1,i,3
+      do 153 i=ns+1,ns+np,3
+         do 153 knan=1,natomc(nuc(i))
+
+         j=nnpp(jatc(knan,nuc(i)))-3
+
+      do 153 kknan=1,nnp(jatc(knan,nuc(i))),3
+        j=j+3
+       if(j.le.i) then
+
 c
       dd=d(Nuc(i),Nuc(j))
+c      do iki=nsd+npd+1,Md
+c          fato(iki)=.true.
+      fato=.true.
+c      enddo
 c
       do 150 ni=1,ncont(i)
       do 150 nj=1,ncont(j)
@@ -1647,7 +2211,28 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 152
+       if (rexp.lt.rmax) then 
+       if (fato) then
+       if(i.eq.j) then
+          do iki=1,3
+           do jki=1,iki
+            kknumd=kknumd+1
+            kkind(kknumd)=i+iki-1+Jx(j+jki-1)
+         enddo
+         enddo
+       else
+       do iki=1,3
+          do  jki=1,3
+             kknumd=kknumd+1
+             kkind(kknumd)=i+iki-1+Jx(j+jki-1)
+            enddo
+         enddo
+        endif
+
+        fato=.false.
+c       write(77,*) 'kk',kk
+       endif
+
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -1771,22 +2356,45 @@ c
       kn=ii+Jx(jj)
 *      Rc(kk)=Rc(kk)+RMM(kn)*term
 *      t(kn,kk)=t(kn,kk)+term
-      id = Mmem+kn+(kk-1)*MM
-      RMM(id) = RMM(id) + term
+      id =(kn-1)*Md+kk
+
+c      if (fato(kk)) then 
+c      ninteg=ninteg+1
+C      indint(ninteg)=id
+c      kkint(ninteg)=kn
+c      kint(ninteg)=kk 
+c      if(l1.eq.3.and.l2.eq.3) fato(kk)=.false.
+c      endif
+
+      cool(id) = cool(id) + term
       ix=ix+1
+c      write(*,*) 'ninteg',ninteg
  155   continue
  151   continue
- 152   continue
+       endif
  150   continue
+       endif
+ 153   continue      
 c
 c-------------------------------------------------------------
 c
 c (ds|d)
       do 160 i=ns+np+1,M,6
-      do 160 j=1,ns
+         do 160 knan=1,natomc(nuc(i))
+
+         j=nnps(jatc(knan,nuc(i)))-1
+
+      do 160 kknan=1,nns(jatc(knan,nuc(i)))
+        j=j+1
+
 c
       dd=d(Nuc(i),Nuc(j))
       k1=Jx(j)
+
+c      do iki=nsd+npd+1,Md
+c          fato(iki)=.true.
+c      enddo
+      fato=.true.
 c
       do 160 ni=1,ncont(i)
       do 160 nj=1,ncont(j)
@@ -1797,8 +2405,17 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 162
+       if (rexp.lt.rmax) then    
 c
+       if (fato) then
+        do iki=1,6
+             kknumd=kknumd+1
+             kkind(kknumd)=i+iki-1+k1
+         enddo
+        fato=.false.
+c       write(77,*) 'kk',kk
+       endif
+
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
        Q(3)=ti*r(Nuc(i),3)+tj*r(Nuc(j),3)
@@ -1918,21 +2535,42 @@ c
       kn=ii+k1
 *      Rc(kk)=Rc(kk)+RMM(kn)*term
 *      t(kn,kk)=t(kn,kk)+term
-      id = Mmem+kn+(kk-1)*MM
-      RMM(id) = RMM(id) + term
+      id = (kn-1)*Md+kk
+
+c      if (fato(kk)) then
+c      ninteg=ninteg+1
+C      indint(ninteg)=id
+c      kkint(ninteg)=kn
+c      kint(ninteg)=kk
+c      if(l2.eq.3) fato(kk)=.false.
+c      endif
+
+      cool(id) = cool(id) + term
       ix=ix+1
+c      write(*,*) 'ninteg',ninteg
  165   continue
  161   continue
- 162   continue
+       endif
  160   continue
 c
 c-------------------------------------------------------------
 c
 c (dp|d)
       do 170 i=ns+np+1,M,6
-      do 170 j=ns+1,ns+np,3
+         do 170 knan=1,natomc(nuc(i))
+
+         j=nnpp(jatc(knan,nuc(i)))-3
+
+      do 170 kknan=1,nnp(jatc(knan,nuc(i))),3
+        j=j+3
+
+
 c
       dd=d(Nuc(i),Nuc(j))
+c      do iki=nsd+npd+1,Md
+c          fato(iki)=.true.
+c      enddo
+      fato=.true.
 c
       do 170 ni=1,ncont(i)
       do 170 nj=1,ncont(j)
@@ -1943,8 +2581,19 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if ( rexp.gt.rmax) goto 172
+       if (rexp.lt.rmax) then    
 c
+
+       if (fato) then
+        do iki=1,6
+          do  jki=1,3
+             kknumd=kknumd+1
+             kkind(kknumd)=i+iki-1+Jx(j+jki-1)
+            enddo
+         enddo
+        fato=.false.
+c       write(77,*) 'kk',kk
+       endif
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
        Q(3)=ti*r(Nuc(i),3)+tj*r(Nuc(j),3)
@@ -2101,21 +2750,41 @@ c
       kn=ii+Jx(jj)
 *      Rc(kk)=Rc(kk)+RMM(kn)*term
 *      t(kn,kk)=t(kn,kk)+term
-      id = Mmem+kn+(kk-1)*MM
-      RMM(id) = RMM(id) + term
+      id = (kn-1)*Md+kk
+c      if (fato(kk)) then
+c      ninteg=ninteg+1
+cC      indint(ninteg)=id
+c      kkint(ninteg)=kn
+c      kint(ninteg)=kk
+c      if(l2.eq.3.and.l3.eq.3)fato(kk)=.false.
+c      endif
+      cool(id) = cool(id) + term
       ix=ix+1
+c      write(*,*) 'ninteg',ninteg
  175   continue
  171   continue
- 172   continue
+       endif
  170   continue
 c
 c-------------------------------------------------------------
 c
 c (dd|d)
-      do 180 i=ns+np+1,M,6
-      do 180 j=ns+np+1,i,6
+      do 186 i=ns+np+1,M,6
+         do 186 knan=1,natomc(nuc(i))
+
+         j=nnpd(jatc(knan,nuc(i)))-6
+
+      do 186 kknan=1,nnd(jatc(knan,nuc(i))),6
+        j=j+6
+
+       if(j.le.i) then
+
 c
       ddi=d(Nuc(i),Nuc(j))
+c      do iki=nsd+npd+1,Md
+c          fato(iki)=.true.
+c      enddo
+      fato=.true.
 c
       do 180 ni=1,ncont(i)
       do 180 nj=1,ncont(j)
@@ -2126,8 +2795,33 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*ddi
-       if (rexp.gt.rmax) goto 182
+       if (rexp.lt.rmax) then    
 c
+       if (fato) then
+        if(i.eq.j) then
+         do iki=1,6
+          do jki=1,iki
+              kknumd=kknumd+1
+c
+           ii=i+iki-1
+           jj=j+jki-1
+
+              kkind(kknumd)=ii+Jx(jj)
+c            write(*,*) 'kkind',kkind(kknumd)
+          enddo
+         enddo
+        else
+        do iki=1,6
+           do jki=1,6
+             kknumd=kknumd+1
+             kkind(kknumd)=i+iki-1+Jx(j+jki-1)
+            enddo
+         enddo
+         endif
+        fato=.false.
+c       write(77,*) 'kk',kk
+       endif
+
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
        Q(3)=ti*r(Nuc(i),3)+tj*r(Nuc(j),3)
@@ -2421,13 +3115,25 @@ c
       kn=ii+Jx(jj)
 *      Rc(kk)=Rc(kk)+RMM(kn)*term
 *      t(kn,kk)=t(kn,kk)+term
-      id = Mmem+kn+(kk-1)*MM
-      RMM(id) = RMM(id) + term
+      id = (kn-1)*Md+kk
+c      if (fato(kk)) then
+c      ninteg=ninteg+1
+c      indint(ninteg)=id
+c      kkint(ninteg)=kn
+c      kint(ninteg)=kk
+c       if(l2.eq.3.and.l4.eq.3) fato(kk)=.false.
+c      endif
+      cool(id) = cool(id) + term
       ix=ix+1
+c      write(*,*) 'ninteg',ninteg
  185  continue
  181  continue
- 182  continue
+      endif
  180  continue
+      endif
+ 186  continue
+       endif
+       write(*,*) 'kknum',kknums,MM
 *
       return
       end

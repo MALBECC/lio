@@ -17,7 +17,7 @@ c
      & Nucd,Mdd,ncontd,nshelld,cd,ad,E,
      & nopt1,OPEN3,NMAX2,NCO2,ATRHO1,VCINP1,SHFT1,Nunp2,
      & GOLD1,told1,write1)
- 
+      use latom 
 
 c------------------------commons y dimensiones copiadas de SCF
       implicit real*8 (a-h,o-z)
@@ -428,8 +428,14 @@ c
       Nd=0
       Ne=0
       NBAS=0
-    	M=0
-	    Mdd=0
+      M=0
+      Mdd=0
+        allocate(natomc(natom),nnps(natom),nnpp(natom),nnp(natom))
+        allocate(nnpd(natom),nns(natom),nnd(natom),atmin(natom))
+        allocate(jatc(natom,150))
+
+
+
 c
 c  BASIS SETS -------------------------------------------------
       do 25 while (whatis.ne.'endbasis')
@@ -437,6 +443,7 @@ c
       NBAS=NBAS+1
 c signals if a basis set was not used
       used=.false.
+      atmint=1000.
       read(1,*) iatom,nraw,ncon
       write(2,600) iatom,nraw,ncon
 c
@@ -454,6 +461,8 @@ c loop over all primitives, no repeating p, d
       do 30 i=1,nraw
        read(1,*) at(i),ct(i)
        write(2,700) at(i),ct(i)
+        if(at(i).lt.atmint) atmint=at(i)
+
    30   continue
 c
       do 35 j=1,natom
@@ -462,7 +471,23 @@ c
        done(j)=.true.
        used=.true.
 c  M stores # of contractions
+
        indi=0
+       atmin(j)=atmint
+
+c  cosas que puso nano para "atomos cerca"
+
+        nns(j)=0
+        nnp(j)=0
+        nnd(j)=0
+
+       do kkk=1,ncon
+        if (lt(kkk).eq.0) nns(j)=nns(j)+Num(lt(kkk))
+        if (lt(kkk).eq.1) nnp(j)=nnp(j)+Num(lt(kkk))
+        if (lt(kkk).eq.2) nnd(j)=nnd(j)+Num(lt(kkk))
+       enddo
+
+
        do 36 k=1,ncon
 c
         M=M+Num(lt(k))

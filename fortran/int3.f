@@ -27,6 +27,7 @@ c-----------------------------------------------------------------
       subroutine int3(NORM,natom,Iz,r,Nuc,M,ncont,nshell,c,a,
      >     Nucd,Md,ncontd,nshelld,cd,ad,RMM,X,E2,Ex,
      > nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write)
+       use latom
 c
 c
       implicit real*8 (a-h,o-z)
@@ -35,7 +36,7 @@ c
       integer nopt,iconst,igrid,igrid2
       INCLUDE 'param'
       parameter(pi52=34.9868366552497108D0,pi=3.14159265358979312D0)
-      parameter (rmax=25.D0)
+c      parameter (rmax=25.D0)
       dimension r(nt,3),nshelld(0:3),nshell(0:3)
       dimension cd(ngd,nl),ad(ngd,nl),Nucd(Md),ncontd(Md)
       dimension c(ng,nl),a(ng,nl),Nuc(M),ncont(M),Iz(natom)
@@ -59,6 +60,7 @@ c     common /index/ iii(ng),iid(ng)
       common /Nc/ Ndens
       common /intg1/ e_(50,3),wang(50)
       common /intg2/ e_2(116,3),wang2(116),Nr(0:54),e3(194,3),wang3(194)
+
 c
 c------------------------------------------------------------------
 c now 16 loops for all combinations, first 2 correspond to 
@@ -140,8 +142,18 @@ c
 c------------------------------------------------------------------
 c (ss|s)
 c
-      do 10 i=1,ns
-      do 10 j=1,i
+c       write(*,*) 'entro a int3'
+      do 114 i=1,ns
+c       write(*,*) nuc(i),natomc(nuc(i))
+
+          do 114 knan=1,natomc(nuc(i))
+         j=nnps(jatc(knan,nuc(i)))-1
+
+      do 114 kknan=1,nns(jatc(knan,nuc(i)))
+        j=j+1
+
+       if(j.le.i) then     
+c       write(*,*) i,j
 c
       kk=i+Jx(j)
       dd=d(Nuc(i),Nuc(j))
@@ -182,12 +194,20 @@ c     t(i,j,k)=t(i,j,k)+term
  11   continue
  12   continue
  10   continue
+      endif
+114   continue
 c
 c-------------------------------------------------------------
 c (ps|s)
 c
       do 20 i=ns+1,ns+np,3
-      do 20 j=1,ns
+
+         do 20 knan=1,natomc(nuc(i))
+
+         j=nnps(jatc(knan,nuc(i)))-1
+
+      do 20 kknan=1,nns(jatc(knan,nuc(i)))
+        j=j+1
 c
       dd=d(Nuc(i),Nuc(j))
       k1=Jx(j)
@@ -250,8 +270,16 @@ c     t(ii,j,k)=t(ii,j,k)+term
 c
 c-------------------------------------------------------------
 c (pp|s)
-      do 30 i=ns+1,ns+np,3
-      do 30 j=ns+1,i,3
+      do 333 i=ns+1,ns+np,3
+         do 333 knan=1,natomc(nuc(i))
+         
+         j=nnpp(jatc(knan,nuc(i)))-3
+
+      do 333 kknan=1,nnp(jatc(knan,nuc(i))),3
+        j=j+3
+
+       if(j.le.i) then
+c       write(*,*) 'cosas',j,i,kknan
 c
       dd=d(Nuc(i),Nuc(j))
 c
@@ -333,12 +361,23 @@ c     t(ii,jj,k)=t(ii,jj,k)+term
  31   continue
  32   continue
  30   continue
+
+       endif
+
+333   continue
 c
 c-------------------------------------------------------------
 c
 c (ds|s)
       do 40 i=ns+np+1,M,6
-      do 40 j=1,ns
+         do 40 knan=1,natomc(nuc(i))
+
+         j=nnps(jatc(knan,nuc(i)))-1
+
+      do 40 kknan=1,nns(jatc(knan,nuc(i)))
+        j=j+1
+
+
 c
       k1=Jx(j)
       dd=d(Nuc(i),Nuc(j))
@@ -422,7 +461,12 @@ c
 c-------------------------------------------------------------
 c (dp|s)
       do 50 i=ns+np+1,M,6
-      do 50 j=ns+1,ns+np,3
+         do 50 knan=1,natomc(nuc(i))
+
+         j=nnpp(jatc(knan,nuc(i)))-3
+
+      do 50 kknan=1,nnp(jatc(knan,nuc(i))),3
+        j=j+3
 c
       dd=d(Nuc(i),Nuc(j))
 c
@@ -530,8 +574,19 @@ c
 c-------------------------------------------------------------
 c
 c (dd|s)
-      do 60 i=ns+np+1,M,6
-      do 60 j=ns+np+1,i,6
+      do 666 i=ns+np+1,M,6
+         do 666 knan=1,natomc(nuc(i))
+
+         j=nnpd(jatc(knan,nuc(i)))-6
+
+      do 666 kknan=1,nnd(jatc(knan,nuc(i))),6
+        j=j+6
+
+       if(j.le.i) then
+
+
+
+c      do 60 j=ns+np+1,i,6
 c
       dd=d(Nuc(i),Nuc(j))
 c
@@ -690,6 +745,8 @@ c     t(ii,jj,k)=t(ii,jj,k)+term
  61   continue
  62   continue
  60   continue
+      endif
+666   continue
 c
 c-------------------------------------------------------------
 c
@@ -1316,6 +1373,8 @@ c
       if (i.eq.j) then
        lk=min(l3,Ll(l1)-Ll(l3)+l2)
       endif
+c      write(*,*) lk,l3,Ll(l1),ll(l3),l1,l2
+
 c
       t16=(pj1pk-roz*pj2pk)/z2
       t17=(pi1pk-roz*pi2pk)/z2
@@ -1387,6 +1446,7 @@ c
       kn=ii+Jx(jj)
       Rc(kk)=Rc(kk)+RMM(kn)*term
 c     t(ii,jj,kk)=t(ii,jj,kk)+term
+c      write(*,*) ix,l1,l2,l3,l4,l5
       ix=ix+1
  125   continue
  121   continue

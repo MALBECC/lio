@@ -588,6 +588,7 @@ c LAPACK OPTION -----------------------------------------
        call dspev('V','L',M,RMM(M5),RMM(M13),X(1,M+1),M,RMM(M15),info)
 #endif
        call timer_stop('dspev')
+       call timer_start('coeff')
 c-----------------------------------------------------------
 c
 c diagonalization now
@@ -602,8 +603,8 @@ c
        do 52 k=1,M
   52    X(i,M2+j)=X(i,M2+j)+X(i,k)*X(k,M+j)
   50    continue
-
-        write(*,*) 'coeff'
+        call timer_stop('coeff')
+        call timer_start('otras cosas')
 c
 c --- For the first iteration, damping on density matrix 
 c Important for the case of strating guess of AO
@@ -684,6 +685,8 @@ c
        endif
 c
 c
+       call timer_stop('otras cosas')
+
        if (nopt.ne.3) then
        write(*,300) niter,DAMP,E
        endif

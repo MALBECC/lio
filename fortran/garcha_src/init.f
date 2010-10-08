@@ -32,7 +32,12 @@ c para version en memoria
       parameter (ng2=5*ngDyn*(ngDyn+1)/2+3*ngdDyn*(ngdDyn+1)/2+
      >           ngDyn+ngDyn*norbit+Ngrid+ngDyn*(NgDyn+1)/2*NgdDyn)
 
-      dimension X(ngDyn,ng3),XX(ngdDyn,ngdDyn),P(ng2)
+c      dimension X(ngDyn,ng3),XX(ngdDyn,ngdDyn),P(ng2)
+      real*8, dimension(:,:), allocatable :: X, XX
+      real*8, dimension(:), allocatable :: P
+      allocate(X(ngDyn,ng3),XX(ngdDyn,ngdDyn))
+      allocate(P(ng2))
+
       write(*,*) (ngDyn*ng3+ngdDyn**2+ng2)*8*1.0D-06, '  Memoria en MB'
 #ifdef G2G
       call g2g_init()
@@ -41,6 +46,9 @@ c version en memoria
 c
 c--------------------------------------------------------
       call drive(ng2,ngDyn,ngdDyn,P,X,XX)
+
+      deallocate(X,XX)
+      deallocate(P)
 
       call g2g_deinit()
       end

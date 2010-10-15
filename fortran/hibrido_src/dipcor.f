@@ -1,6 +1,6 @@
        SUBROUTINE DIPCOR(HISTO,PMAX,PZMAX,DELP,DELPZ)
-       INCLUDE 'param'
-        INCLUDE 'COMM'
+       use hibrido_common
+        IMPLICIT DOUBLE PRECISION (A-H,O-Z)
        DIMENSION HISTO(100,100),PX(130),PY(130),PZ(130)
 
 

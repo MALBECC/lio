@@ -1,6 +1,6 @@
       SUBROUTINE QEMOT
-      INCLUDE 'param'
-        INCLUDE 'COMM'
+      use hibrido_common
+        IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       
       
       DO 80 I=NATOM+1,NATOM+NWAT

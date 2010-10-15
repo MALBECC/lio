@@ -6,9 +6,9 @@ class Combination < Hash
   def save(file)
     File.open(file,'w') do |f|
       self.map {|k,v| f.puts "#{k} #{v}"}
-    end    
+    end
   end
-  
+
   def to_s
     self.map {|k,v| "#{k} = #{v}"}.join('; ') + "\n"
   end
@@ -31,8 +31,8 @@ def variation(ranges, combination = Combination.new, block = Proc.new)
   else
     ranges = ranges.dup
     var,values = ranges.shift
-    
-    if (values.is_a?(StepRange)) 
+
+    if (values.is_a?(StepRange))
       values.range.step(values.step) do |v|
         combination[var] = v
         variation(ranges, combination, block)
@@ -51,14 +51,14 @@ def run_gpu
     # run
     output = `/usr/bin/time -a -o /dev/stdout -f "real %e\nuser %U\nsys %S\nswaps %F" ../../fortran/garcha-g2g < t`
     if ($? != 0) then raise 'Execution failed!' end
-    
+
     # analyze
     results = {
       :e => output[/SCF ENERGY\s+=\s+(-?\d+\.\d+)/,1],
       :time => output[/real (\d+\.\d+)/,1],
       :dim => output[/prism size (\(\d+,\d+,\d+\))/,1],
       :pts_tot => output[/Grilla original: (\d+)/,1],
-      :funcs_tot => output[/Grilla original: \d+ puntos, (\d+)/,1],          
+      :funcs_tot => output[/Grilla original: \d+ puntos, (\d+)/,1],
       :pts => output[/Grilla final: (\d+)/,1],
       :funcs => output[/Grilla final: \d+ puntos, (\d+)/,1],
       :iteration => output[/iteration: ((\d+s\. )?\d+us\.)/,1],
@@ -73,17 +73,17 @@ def run_gpu
       :mem_perc => output[/Maximum used memory: \S+ \((\d+(\.\d+)?%)\)/,1],
     }
     results.map {|k,v| print "#{k}: #{v.nil? ? '-' : v} "}; puts
-    
+
     return results
   end
 end
 
 begin
   ranges = {
-    :little_cube_size => StepRange.new((3.5..3.5),0.5),
-    :max_function_exponent => StepRange.new((8..8),1),
+    :little_cube_size => StepRange.new((4.5..13),0.5),
+    :max_function_exponent => StepRange.new((12..12),1),
     :min_points_per_cube => StepRange.new((1..1),1),
-    :sphere_radius => StepRange.new((0.6..1.0),0.1)
+    :sphere_radius => StepRange.new((0.6..0.8),0.1)
 #    :assign_all_functions => 1
   }
 
@@ -91,7 +91,7 @@ begin
   dirs.each do |dir|
     Dir.chdir(dir)
     puts "=> #{dir}"
-  
+
     if (USE_EXISTING_OPTIONS)
       if (USE_BEST_RECALC) then FileUtils.cp('gpu_options.recalc.best', 'gpu_options'); puts 'Using best recalc' end
       if (USE_BEST_STORE) then FileUtils.cp('gpu_options.store.best', 'gpu_options'); puts 'Using best store' end
@@ -101,14 +101,14 @@ begin
       best_combination = nil
       best_results = nil
       lowest_time = Float::MAX
-      
+
       variation(ranges) do |combination|
         combination.save('gpu_options')
         puts combination
         results = run_gpu()
-        
+
         if (results[:swaps].to_i > 0) then raise 'Swaps detected!' end
-        
+
         current_time = results[:iteration]
         current_time = current_time[/(\d+)s./,1].to_i + (current_time[/(\d+)us./,1].to_f / 1000000)
         if (current_time < lowest_time)
@@ -117,15 +117,15 @@ begin
           best_results = results
         end
       end
-    
+
       FileUtils.rm('gpu_options', :force => true)
-      
+
       if (SAVE_BEST && !best_combination.nil?) then
         best_combination.save("gpu_options.#{best_results[:impl]}.best")
         puts 'BEST COMBINATION:',best_combination,"BEST TIME: #{lowest_time}s"
       end
     end
-    
-    Dir.chdir('..')      
+
+    Dir.chdir('..')
   end
 end

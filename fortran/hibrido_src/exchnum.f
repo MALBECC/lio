@@ -14,7 +14,7 @@ c-----------------------------------------------------------------
       implicit real*8 (a-h,o-z)
       logical NORM,integ,dens1
       integer igrid,igrid2
-      INCLUDE 'param'
+      include 'param'
       parameter (pi=3.14159265358979312D0,pi2=6.28318530717958623D0)
 c
 c input

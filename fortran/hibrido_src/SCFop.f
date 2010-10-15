@@ -11,13 +11,13 @@ c---------------------------------------------------
      > nopt,pc,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write1,
      > FQQ,Q,IT,ITEL,NIN,IPR1,E1s,EAC,
      > ux,uy,uz,NPAS)
+      include 'param'
 c
       implicit real*8 (a-h,o-z)
       logical NORM,ATRHO,VCINP,DIRECT,EXTR,dens,write1
       logical OPEN,SVD,SHFT,GRAD,BSSE,integ,field,sol,free
       logical exter,MEMO
       integer nopt,iconst,igrid,igrid2
-      INCLUDE 'param'
       dimension r(nt,3),nshelld(0:3),nshell(0:3),q(ntq)
       dimension cd(ngd,nl),ad(ngd,nl),Nucd(ngd),ncontd(ngd)
       dimension c(ng,nl),a(ng,nl),Nuc(ng),ncont(ng),Iz(nt)

@@ -3,8 +3,8 @@
 C Esta subrutina mueve los atomos del soluto, dejando fijos 
 C los atomos de solvente.
 
-      INCLUDE 'param'
-        INCLUDE 'COMM'
+      use hibrido_common
+        IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DIMENSION AXX(NAT),AYY(NAT),AZZ(NAT)
 
       NOFSET = 0

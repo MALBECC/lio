@@ -1,6 +1,6 @@
       SUBROUTINE GRILLA(Q)
-      INCLUDE 'param'
-        INCLUDE 'COMM'
+      use hibrido_common
+        IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DIMENSION AR1(NPART),Q(NTQ)
 
 C-----I2 ES EL Cl

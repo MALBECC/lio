@@ -23,10 +23,10 @@ c-----------------------------------------------------------------
       subroutine dip(NORM,Iz,natom,r,Nuc,M,ncont,nshell,c,a,RMM,
      >               Nel,ux,uy,uz)
 c
+      include 'param'
       implicit real*8 (a-h,o-z)
       logical NORM,sol
-      INCLUDE 'param'
-      parameter(pi32=5.56832799683170698D0,pi=3.14159265358979312D0,
+      parameter(pi32=5.56832799683170698D0,
      >          rpi=1.77245385090551588D0,pi5=34.9868366552497108D0)
       dimension r(nt,3),nshell(0:3),Iz(natom)
       dimension c(ng,nl),a(ng,nl),Nuc(M),ncont(M)

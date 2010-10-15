@@ -1,6 +1,6 @@
           SUBROUTINE PRINTER (RT,HISTO,HISTO2,DELP,DELPZ)
-	  INCLUDE 'param'
-        INCLUDE 'COMM'
+	  use hibrido_common
+        IMPLICIT DOUBLE PRECISION (A-H,O-Z)
           DIMENSION HISTO(100,100),HISTO2(100)
 
           SUMA1 = ZERO

@@ -1,7 +1,7 @@
       SUBROUTINE PROTON(FXH1,FYH1,FZH1,FXH11,FYH11,FZH11,
      > FXH2,FYH2,FZH2,ff,FZ5,FZ1,FZ2)
-      INCLUDE 'param'
-        INCLUDE 'COMM'
+      use hibrido_common
+        IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 
       DIMENSION ff(NAT,3)
 c------------

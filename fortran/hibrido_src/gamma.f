@@ -1,6 +1,6 @@
       SUBROUTINE GAMMA(NATSOL)
-      INCLUDE 'param'
-        INCLUDE 'COMM'
+      use hibrido_common
+        IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       LOGICAL FLAG
       DIMENSION DXT(NAT),DYT(NAT),DZT(NAT)
       DIMENSION DXP(NAT),DYP(NAT),DZP(NAT)

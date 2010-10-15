@@ -27,7 +27,7 @@ c
       implicit real*8 (a-h,o-z)
       logical NORM,SVD
       integer iconst
-      INCLUDE 'param'
+      include 'param'
       parameter(pi32=5.56832799683170698D0,pi=3.14159265358979312D0,
      >          rpi=1.77245385090551588D0,pi5=34.9868366552497108)
       dimension r(nt,3),nshelld(0:3)

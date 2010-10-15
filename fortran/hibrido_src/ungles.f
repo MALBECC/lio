@@ -1,6 +1,6 @@
       SUBROUTINE UNGLES(NATSOL,IT,NIN,NDIP)
-      INCLUDE 'param'
-        INCLUDE 'COMM'
+      use hibrido_common
+        IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DIMENSION DTOT (100,100)
       DIMENSION MSGF (100,100)
       REAL*8 BUG

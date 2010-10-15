@@ -1,6 +1,6 @@
       SUBROUTINE INICIO(NATSOL,NDIP,IDIPCOR,PMAX,PZMAX)
-      INCLUDE 'param'
-        INCLUDE 'COMM'
+      use hibrido_common
+        IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       
       INTEGER SPC  
       COMMON /tipsol/SPC
@@ -70,6 +70,7 @@ c---
       READ (51,*) (WWM(I),I=1,NSPECQ)
       TOLE=0.2D0
       DO I=1,NSPECQ
+      write(*,*) I
       IF(ABS(WWM(I)-16.D0).LT.TOLE)AT(I)='O    '
       IF(ABS(WWM(I)-35.D0).LT.TOLE)AT(I)='Cl   '
       IF(ABS(WWM(I)-1.D00).LT.TOLE)AT(I)='H    '

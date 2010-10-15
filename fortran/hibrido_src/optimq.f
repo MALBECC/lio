@@ -1,6 +1,6 @@
       SUBROUTINE OPTIMQ(NATSOL)
-      INCLUDE 'param'
-        INCLUDE 'COMM'
+      use hibrido_common
+        IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 
       AA=ZERO
 c      AA=0.001     

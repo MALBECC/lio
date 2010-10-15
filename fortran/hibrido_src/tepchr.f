@@ -1,6 +1,6 @@
       SUBROUTINE TEPCHR(NATSOL)
-      INCLUDE 'param'
-        INCLUDE 'COMM'
+      use hibrido_common
+        IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DIMENSION TI(3,3),OMG(3),INDX(3)
      
 *-----------Velocid. al azar de 1 distr. gausseana--------------*

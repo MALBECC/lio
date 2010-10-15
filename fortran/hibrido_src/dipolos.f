@@ -1,7 +1,7 @@
       SUBROUTINE DIPOLOS(IT,NIN,NDIP,DV1,DV2,DV3,
      >   ux,uy,uz)
-      INCLUDE 'param'
-        INCLUDE 'COMM'
+      use hibrido_common
+        IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DIMENSION DIP(150),DIPX(NAT),DIPY(NAT),DIPZ(NAT)
       DIMENSION XDIP(150),ZDIP(150)
 

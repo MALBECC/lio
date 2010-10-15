@@ -17,11 +17,11 @@ c
      & Nucd,Mdd,ncontd,nshelld,cd,ad,E,
      & nopt1,OPEN3,NMAX2,NCO2,ATRHO1,VCINP1,SHFT1,Nunp2,
      & GOLD1,told1,write1)
-      use latom 
+      use latom
+      include 'param'
 
 c------------------------commons y dimensiones copiadas de SCF
       implicit real*8 (a-h,o-z)
-      INCLUDE 'param'
 c
       integer map(ntq)
       logical NORM,ATRHO,VCINP,DIRECT,EXTR,dens,write1

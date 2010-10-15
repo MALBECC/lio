@@ -17,7 +17,7 @@ c
 
 
 
-      parameter (ntq=75,ntc=600,nss=3)
+      parameter (ntq=75,ntc=1000,nss=3)
       parameter (nt=ntq+nss*ntc)
       parameter (ng0=20,ng=ntq*ng0,nl=10)
       parameter (ngd0=20,ngd=ntq*ngd0)

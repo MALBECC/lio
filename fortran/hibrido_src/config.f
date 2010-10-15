@@ -1,6 +1,6 @@
       SUBROUTINE CONFIG(ANG,NATSOL,q,HISTO,HISTO2)
-      INCLUDE 'param'
-      INCLUDE 'COMM'
+      use hibrido_common
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       dimension q(ntq),HISTO(100,100),HISTO2(100)
 
       

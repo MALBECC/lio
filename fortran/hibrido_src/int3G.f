@@ -35,7 +35,7 @@ c
       logical NORM,dens,OPEN,SVD,integ
       logical ATRHO,VCINP,DIRECT,EXTR,SHFT,write
       integer nopt,iconst,igrid,iforce,igrid2
-      INCLUDE 'param'
+      include 'param'
       parameter(pi52=34.9868366552497108D0,
      >          pi=3.14159265358979312D0)
       parameter (rmax=25.D0)

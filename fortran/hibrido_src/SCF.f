@@ -13,12 +13,12 @@ c---------------------------------------------------
      > IT,ITEL,NIN,IPR1,E1s,EAC,
      > ux,uy,uz,NPAS)
       use latom
+      include 'param'
 c
       implicit real*8 (a-h,o-z)
       logical NORM,ATRHO,VCINP,DIRECT,EXTR,dens,write1,just_int3n      
       logical OPEN,SVD,SHFT,GRAD,BSSE,integ,field,sol,free
       logical exter,MEMO
-      INCLUDE 'param'
       dimension r(nt,3),nshelld(0:3),nshell(0:3),q(ntq)
       dimension cd(ngd,nl),ad(ngd,nl),Nucd(ngd),ncontd(ngd)
       dimension c(ng,nl),a(ng,nl),Nuc(ng),ncont(ng),Iz(nt)
@@ -90,7 +90,7 @@ c---------------------
       MMd=Md*(Md+1)/2
       Md2=2*Md
       M2=2*M
-      allocate(kkind(MM))
+      allocate(kkind(3*MM))
 c first P
       M1=1
 c now Pnew
@@ -302,7 +302,7 @@ c
         do 249 i=1,M
          RMM(M15+i-1)=0.D0
   249      RMM(M13+i-1)=0.D0
-c
+
 c ESSL OPTION
 #ifdef essl
         call DSPEV(1,RMM(M5),RMM(M13),X(1,M+1),M,M,RMM(M15),M2)
@@ -356,6 +356,7 @@ c
 c     
 **
       if (MEMO) then
+        allocate(cool(MM*Md))
          call int3mem(NORM,natom,r,Nuc,M,M20,ncont,nshell,c,a,Nucd,Md,
      >                 ncontd,nshelld,RMM,cd,ad,
      >     nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write1)
@@ -759,6 +760,12 @@ c
 c
   999   continue
   995   continue
+
+
+       if (memo) then
+         deallocate (kkind)
+         deallocate(cool)
+       endif
 c
 c -- SOLVENT CASE --------------------------------------
       if (sol) then

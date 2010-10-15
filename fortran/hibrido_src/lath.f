@@ -1,6 +1,6 @@
       SUBROUTINE LATHWD(ANG,NATSOL) 
-      INCLUDE 'param'
-        INCLUDE 'COMM'
+      use hibrido_common
+        IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DIMENSION RX(40),RY(40),RZ(40)
 
     

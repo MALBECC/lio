@@ -1,6 +1,6 @@
       SUBROUTINE TEPQ
-      INCLUDE 'param'
-        INCLUDE 'COMM'
+      use hibrido_common
+        IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       
 *-----Velocid. al azar de 1 distr. gausseana
       TEMPOL = ZERO

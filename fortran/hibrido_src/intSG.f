@@ -28,7 +28,7 @@ c-------------------------------------------------------------------
 c
       implicit real*8 (a-h,o-z)
       logical NORM
-      INCLUDE 'param'
+      include 'param'
       parameter(pi32=5.56832799683170698D0,pi=3.14159265358979312D0,
      >          rpi=1.77245385090551588D0)
       dimension c(ng,nl),a(ng,nl),Nuc(M),ncont(M)

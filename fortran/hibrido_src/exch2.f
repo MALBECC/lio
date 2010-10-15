@@ -11,7 +11,7 @@ c-----------------------------------------------------------------
       implicit real*8 (a-h,o-z)
       logical dens1,SVD,integ,OPEN
       integer iconst,igrid,igrid2
-      INCLUDE 'param'
+      include 'param'
       dimension AFUNC(ngd),RMM(*),Nr(0:54),nshelld(0:3)
 c
 c Number of shells for Least-Squares Fit

@@ -2,8 +2,8 @@
 C-----CAMBIA DE LA NUMERACION Y UNIDADES DE DARIO
 C     A LAS MIAS
 
-      INCLUDE 'param'
-        INCLUDE 'COMM'
+      use hibrido_common
+        IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       DIMENSION PCTE(NAT),XTE(NAT),YTE(NAT),ZTE(NAT)
       DIMENSION R(nt,3),IZ(NT),IZTE(NT)
       

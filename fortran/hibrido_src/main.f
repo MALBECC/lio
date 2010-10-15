@@ -21,8 +21,9 @@ c Ngrid : number of grid points (LS-SCF part)
 c norbit : number of MO
 c
 c Ngrid may be set to 0 , in the case of using Num. Integ.
-      INCLUDE 'param'
-      INCLUDE 'COMM'
+      use hibrido_common
+      use latom
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
       INTEGER SPC
       COMMON /tipsol/SPC
       parameter (ngDyn=700)
@@ -37,7 +38,7 @@ c     parameter (ng2=7*ngDyn*(ngDyn+1)/2+3*ngdDyn*(ngdDyn+1)/2+
 c    >           ngDyn+ngDyn*norbit+Ngrid)
 c---- para version en memoria
       parameter (ng2=5*ngDyn*(ngDyn+1)/2+3*ngdDyn*(ngdDyn+1)/2+
-     >           ngDyn+ngDyn*norbit+Ngrid+ngDyn*(NgDyn+1)/2*NgdDyn)
+     >           ngDyn+ngDyn*norbit+Ngrid)
 
       dimension XW(ngDyn,ng3),XXW(ngdDyn,ngdDyn),RMM(ng2)
 
@@ -65,6 +66,22 @@ C-----DIMENSIONES DE TODO
 #ifdef G2G
       call g2g_init()
 #endif
+
+      allocate(AT(NAT),X(NAT),Y(NAT),Z(NAT),X0(NAT),Y0(NAT),Z0(NAT),
+     > VX(NAT),VY(NAT),VZ(NAT),VX0(NAT),VY0(NAT),VZ0(NAT),
+     > XX(NAT),YY(NAT),ZZ(NAT),EPOL(NAT),EC(NAT),FX(NAT),
+     > FY(NAT),FZ(NAT),GX(NAT),GY(NAT),GZ(NAT),GQ(NAT),X1(NAT),
+     > Y1(NAT),Z1(NAT),XX1(NAT),YY1(NAT),ZZ1(NAT),PC0(NAT),
+     > PC(NAT),PCC(NAT),FQ(NAT),VQ0(NAT),VQ(NAT),FQC(NAT),
+     > FQP(NAT),FQV(NAT),EAC(NAT),rrcu(NAT),rrcuq(NAT),
+     > FQQ(NAT),PC1(NAT))
+
+      allocate(DELVF(NTQSS),FFF(NTQSS),EPS(NTQSS),SIGMA(NTQSS),
+     > WWM(NTQSS),E12(NTQSS),F12(NTQSS),E6(NTQSS),F6(NTQSS),
+     > AZ(NTQSS),NNAT(NTQSS),ZZZ(NTQSS),DA(NTQSS),TEMPA(NTQSS),
+     > VF(NTQSS))
+
+      allocate(JNFC(NAT))
 
       TEMPAV=ZERO
       TEMPOL=ZERO
@@ -1329,6 +1346,17 @@ c      ENDDO
       WRITE(*,*)'----- FIN -----'
       date='date'
       CALL SYSTEM(date)
+
+c     Libero memoria
+      deallocate(X,Y,Z,X0,Y0,Z0,VX,VY,VZ,VX0,VY0,VZ0,XX,YY,ZZ,
+     > EPOL,EC,FX,FY,FZ,GX,GY,GZ,GQ,X1,Y1,Z1,XX1,YY1,ZZ1,PC0,
+     > PC,PCC,FQ,VQ0,VQ,FQC,FQP,FQV,EAC,rrcu,rrcuq,FQQ,PC1)
+      deallocate(DELVF,FFF,EPS,SIGMA,WWM,E12,F12,E6,F6,AZ,
+     > NNAT,ZZZ,DA,TEMPA,VF)
+      deallocate(JNFC)
+      deallocate(natomc,nnps,nnpp,nnpd,nns)
+      deallocate(nnd,nnp,atmin,jatc)
+
 
       call g2g_deinit()
 

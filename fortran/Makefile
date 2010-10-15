@@ -1,12 +1,14 @@
 #-*- mode: make -*-
 
 # sources and objects
+MOD_SRCS=$(wildcard mods/*.f)
 COMMON_SRCS=$(wildcard *.f)
 GARCHA_SRCS=$(wildcard garcha_src/*.f)
 HIBRIDO_SRCS=$(wildcard hibrido_src/*.f)
 
-GARCHA_OBJ=$(COMMON_SRCS:%.f=%.o) $(GARCHA_SRCS:%.f=%.o)
-HIBRIDO_OBJ=$(COMMON_SRCS:%.f=%.o) $(HIBRIDO_SRCS:%.f=%.o)
+MOD_OBJ=$(MOD_SRCS:%.f=%.o)
+GARCHA_OBJ=$(MOD_OBJ) $(COMMON_SRCS:%.f=%.o) $(GARCHA_SRCS:%.f=%.o)
+HIBRIDO_OBJ=$(MOD_OBJ) $(COMMON_SRCS:%.f=%.o) $(HIBRIDO_SRCS:%.f=%.o)
 
 # flags
 ifeq ($(profile),1)
@@ -43,10 +45,10 @@ endif
 all: dirs garcha-g2g hibrido-g2g garcha hibrido
 
 dirs:
-	mkdir -p obj/garcha_g2g_obj/garcha_src
-	mkdir -p obj/hibrido_g2g_obj/hibrido_src
-	mkdir -p obj/garcha_obj/garcha_src
-	mkdir -p obj/hibrido_obj/hibrido_src
+	mkdir -p obj/garcha_g2g_obj/mods obj/garcha_g2g_obj/garcha_src
+	mkdir -p obj/hibrido_g2g_obj/mods obj/hibrido_g2g_obj/hibrido_src
+	mkdir -p obj/garcha_obj/mods obj/garcha_obj/garcha_src
+	mkdir -p obj/hibrido_obj/mods obj/hibrido_obj/hibrido_src
 
 garcha-g2g: dirs $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o)
 	ifort -o $@ $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o) $(LIBS)

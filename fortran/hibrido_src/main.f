@@ -21,7 +21,6 @@ c Ngrid : number of grid points (LS-SCF part)
 c norbit : number of MO
 c
 c Ngrid may be set to 0 , in the case of using Num. Integ.
-
       INCLUDE 'param'
       INCLUDE 'COMM'
       INTEGER SPC

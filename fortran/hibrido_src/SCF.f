@@ -12,7 +12,7 @@ c---------------------------------------------------
      > OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write1,FQQ,Q,
      > IT,ITEL,NIN,IPR1,E1s,EAC,
      > ux,uy,uz,NPAS)
-
+      use latom
 c
       implicit real*8 (a-h,o-z)
       logical NORM,ATRHO,VCINP,DIRECT,EXTR,dens,write1,just_int3n      
@@ -38,6 +38,7 @@ c
 c test
       dimension aux(ng),ds(nt)
       DIMENSION FQQ(natom+nsol*natsol),EAC(natom+nsol*natsol)
+      dimension d(ntq,ntq)
 c
       COMMON /TABLE/ STR(880,0:21)
       common /fit/ Nang,dens,integ,Iexch,igrid,igrid2
@@ -56,6 +57,7 @@ c
       common /propt/ idip,ipop,ispin,icharge,map(ntq)
       common /sol1/ Nsol,natsol,alpha,Em,Rm,sol,free
       just_int3n = false      
+
 
 
 c------------------------------------------------------------------
@@ -88,6 +90,7 @@ c---------------------
       MMd=Md*(Md+1)/2
       Md2=2*Md
       M2=2*M
+      allocate(kkind(MM))
 c first P
       M1=1
 c now Pnew
@@ -136,6 +139,46 @@ c
        enddo
        Qc=Qc-Nel
        Qc2=Qc**2
+
+
+        do i=1,natom
+          natomc(i)=0
+c         write(*,*) natomc(i)
+         do j=1,natom
+
+         d(i,j)=(r(i,1)-r(j,1))**2+(r(i,2)-r(j,2))**2+
+     >        (r(i,3)-r(j,3))**2
+c        write(*,*) d(i,j),atmin(i),atmin(j)
+       zij=atmin(i)+atmin(j)
+       ti=atmin(i)/zij
+       tj=atmin(j)/zij
+       alf=atmin(i)*tj
+       rexp=alf*d(i,j)
+c       write(*,*) rexp,rmax
+       if (rexp.lt.rmax) then
+         natomc(i)=natomc(i)+1
+         jatc(natomc(i),i)=j
+       endif
+
+
+
+
+        enddo
+          write(*,*) i,'natomc=',natomc(i)
+        enddo
+       do ii=nshell(0),1,-1
+       nnps(nuc(ii))=ii
+       enddo
+       do ii=nshell(0)+nshell(1),nshell(0)+1,-1
+
+       nnpp(nuc(ii))=ii
+       enddo
+
+       do ii=M,nshell(0)+nshell(1)+1,-1
+       nnpd(nuc(ii))=ii
+       enddo
+
+
 
 c      
 c------------------------------------------------------

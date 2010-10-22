@@ -1313,6 +1313,10 @@ c
       date='date'
       write(*,*) 'JOB FINISHED'
       call system(date)
+
+      DEALLOCATE (natomc,nnps,nnpp,nnpd,nns)
+      deallocate (nnd,nnp,atmin,jatc)
+
 c
 c---------------------------------------------------
 c---------------------------------------------------

@@ -773,8 +773,6 @@ c
  995   continue
 
 
-         DEALLOCATE (natomc,nnps,nnpp,nnpd,nns)
-         deallocate (nnd,nnp,atmin,jatc)
          if (memo) then
          deallocate (kkind)
          deallocate(cool)

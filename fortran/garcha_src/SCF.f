@@ -482,6 +482,7 @@ c-------------------------------------------------------------------
 c
       write(*,*) 'empiezo el loop'
       do 999 while (good.ge.told)
+      call time_start('iteracion')
 c
       if (niter.ge.NMAX) then
        write(*,*) 'NO CONVERGENCE AT ',NMAX,' ITERATIONS'
@@ -766,6 +767,7 @@ c
       close(3)
       endif
 c
+       call time_stop('iteracion')
  999   continue
  995   continue
 

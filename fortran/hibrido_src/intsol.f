@@ -13,32 +13,32 @@ c It's the same as int.f, but using the solvent atoms partial charges
 c
 c 
 c-------------------------------------------------------------------
-      subroutine intsol(NORM,natom,Nsol,natsol,r,Nuc,Iz,M,Md,
-     >            ncont,nshell,c,a,pc,RMM,E1s,FQQ,IT,ITEL,NIN,
-     >            IPR1,EAC,NPAS)
+      subroutine intsol(NORM,Nsol,natsol,r,Nuc,Iz,M,Md,
+     >            ncont,nshell,c,a,RMM,E1s,IT,NIN)
+      use hibrido_common
 c
       implicit real*8 (a-h,o-z)
       logical NORM
-      include 'param'
+c      include 'param'
 c       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-      parameter(pi32=5.56832799683170698D0,pi=3.14159265358979312D0,
-     >          rpi=1.77245385090551588D0,a0=0.52918 D0)
-      PARAMETER (NAT=6000)
+      parameter(pi32=5.56832799683170698D0,
+     >          rpi=1.77245385090551588D0)
+c      PARAMETER (NAT=6000)
       dimension c(ng,nl),a(ng,nl),Nuc(M),ncont(M),Iz(nt)
-      dimension r(nt,3),nshell(0:3),pc(nt),Ncaj(3)
+      dimension r(nt,3),nshell(0:3),Ncaj(3)
       dimension xi(3)
       dimension RMM(*),ttna(natom+nsol*natsol),tterm(natom+nsol*natsol)
 
       COMMON /TABLE/ STR(880,0:21)
-      COMMON/BLOC08/FX(NAT),FY(NAT),FZ(NAT),RCT,RCTSQ,RKAPPA,RKAPPA2
-      COMMON/BLOC11/BXLGTH
+c      COMMON/BLOC08/FX(NAT),FY(NAT),FZ(NAT),RCT,RCTSQ,RKAPPA,RKAPPA2
+c      COMMON/BLOC11/BXLGTH
       INTEGER SPC
       COMMON/tipsol/SPC
 c auxiliar quantities
 
-      dimension Q(3),d(ntq,ntq),s0s(nt),s1s(nt),s2s(nt),s3s(nt),
+      dimension Q(3),dist(ntq,ntq),s0s(nt),s1s(nt),s2s(nt),s3s(nt),
      >   s4s(nt),Ll(3),dw(nt,3),jwatc(nt)
-      DIMENSION FQQ(natom+nsol*natsol),EAC(natom+nsol*natsol)
+c      DIMENSION FQQ(natom+nsol*natsol),EAC(natom+nsol*natsol)
 
 c--------------------------------------------------------------------
 c Modificacion para correr SPC o TIP4P desde afuera
@@ -60,7 +60,7 @@ c----------------------------------------------------------------------
 
 c distance between pairs of centers
 c
-c datos TIP4P ----------------
+c disttos TIP4P ----------------
 c corresponde a desplazar carga negativa 0.15A en direccion de los H
 c       alpha=0.7439762D0
 c       alpha2=0.1280119D0
@@ -123,7 +123,7 @@ c      pause
 
       do 50 i=1,natom
       do 50 j=1,natom
-       d(i,j)=(r(i,1)-r(j,1))**2+(r(i,2)-r(j,2))**2+
+       dist(i,j)=(r(i,1)-r(j,1))**2+(r(i,2)-r(j,2))**2+
      >        (r(i,3)-r(j,3))**2
  50   continue
 c
@@ -135,7 +135,7 @@ c
       do 200 i=1,ns
       do 200 j=1,i
 c
-      dd=d(Nuc(i),Nuc(j))
+      dd=dist(Nuc(i),Nuc(j))
 c
       do 200 ni=1,ncont(i)
       do 200 nj=1,ncont(j)
@@ -229,7 +229,7 @@ c
       do 300 i=ns+1,ns+np,3
       do 300 j=1,ns
 c
-      dd=d(Nuc(i),Nuc(j))
+      dd=dist(Nuc(i),Nuc(j))
 c
       do 300 ni=1,ncont(i)
       do 300 nj=1,ncont(j)
@@ -344,7 +344,7 @@ c
       do 400 i=ns+1,ns+np,3
       do 400 j=ns+1,i,3
 c
-      dd=d(Nuc(i),Nuc(j))
+      dd=dist(Nuc(i),Nuc(j))
 c
       do 400 ni=1,ncont(i)
       do 400 nj=1,ncont(j)
@@ -487,7 +487,7 @@ c
       do 500 i=ns+np+1,M,6   
       do 500 j=1,ns
 c
-      dd=d(Nuc(i),Nuc(j))
+      dd=dist(Nuc(i),Nuc(j))
 c
       do 500 ni=1,ncont(i)
       do 500 nj=1,ncont(j)
@@ -615,7 +615,7 @@ c
       do 600 i=ns+np+1,M,6
       do 600 j=ns+1,ns+np,3
 c
-      dd=d(Nuc(i),Nuc(j))
+      dd=dist(Nuc(i),Nuc(j))
 c
       do 600 ni=1,ncont(i)
       do 600 nj=1,ncont(j)
@@ -757,7 +757,7 @@ c
       do 700 i=ns+np+1,M,6
       do 700 j=ns+np+1,i,6
 c
-      dd=d(Nuc(i),Nuc(j))
+      dd=dist(Nuc(i),Nuc(j))
 c
       do 700 ni=1,ncont(i)
       do 700 nj=1,ncont(j)

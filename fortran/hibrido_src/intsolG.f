@@ -23,30 +23,30 @@ c all gradients, up to d functions
 c debugged ( or supposed to) 28-7-92
 c Dario Estrin
 c-------------------------------------------------------------------
-      subroutine intsolG(NORM,natom,Nsol,natsol,r,Nuc,Iz,M,Md,
-     > ncont,nshell,c,a,pc,RMM,ff,FXH11,FYH11,FZH11)
-
+      subroutine intsolG(NORM,Nsol,natsol,r,Nuc,Iz,M,Md,
+     > ncont,nshell,c,a,RMM,ff,FXH11,FYH11,FZH11)
+      use hibrido_common
 c
       implicit real*8 (a-h,o-z)
       logical NORM
-      include 'param'
-      parameter(pi32=5.56832799683170698D0,pi=3.14159265358979312D0,
+c      include 'param'
+      parameter(pi32=5.56832799683170698D0,
      >          rpi=1.77245385090551588D0)
-      PARAMETER (A0=0.52918 D0)      
-      PARAMETER (NAT=6000)  
+c      PARAMETER (A0=0.52918 D0)      
+c      PARAMETER (NAT=6000)  
       dimension c(ng,nl),a(ng,nl),Nuc(M),ncont(M),Iz(nt)
       dimension r(nt,3),nshell(0:3),dw(nt,3),jwatc(nt) 
-      dimension ff(nt,3),pc(natom+nsol*natsol)
+      dimension ff(nt,3)
       dimension RMM(*)
 c
       COMMON /TABLE/ STR(880,0:21)
-      COMMON/BLOC08/FX(NAT),FY(NAT),FZ(NAT),RCT,RCTSQ,RKAPPA,RKAPPA2  
-      COMMON/BLOC11/BXLGTH 
+c      COMMON/BLOC08/FX(NAT),FY(NAT),FZ(NAT),RCT,RCTSQ,RKAPPA,RKAPPA2  
+c      COMMON/BLOC11/BXLGTH 
       INTEGER SPC
       COMMON/tipsol/SPC
 c auxiliar quantities
 c
-      dimension Q(3),d(ntq,ntq),s0s(nt),s1s(nt),
+      dimension Q(3),dist(ntq,ntq),s0s(nt),s1s(nt),
      >            s2s(nt),s3s(nt),s4s(nt)
       dimension s5s(nt),s6s(nt)
       dimension x0x(nt,3),x1x(nt,3),x2x(nt,3),dn(3),dn1(3),dn2(3)
@@ -84,6 +84,33 @@ c       alpha2=0.00D0
 c -----------------------------
 c
 c
+      fxx=zero
+      fyy=zero
+      fzz=zero
+
+c      write(*,*)'unid. "Estrin" (H)/au'
+c      write(*,*)'---------intsolG'
+      do i=1,natom+natsol*nsol
+      fxx=fxx+ff(i,1)
+      fyy=fyy+ff(i,2)
+      fzz=fzz+ff(i,3)
+c      write(*,*)i,ff(i,1),ff(i,2),ff(i,3)
+c      write(*,*)'INTSOLG fx fy fz',i,ff(i,1)*hh/a0,
+c     & ff(i,2)*hh/a0,ff(i,3)*hh/a0
+      enddo
+
+c      write(*,*)'INTSOLG FTOT',dsqrt(fxx**2+fyy**2+fzz**2)*hh/a0
+
+      if(dsqrt(fxx**2+fyy**2+fzz**2)*hh/a0.gt.1.D-05)then
+      write(*,*)'FZA TOTAL NE ZERO EN INTSOLG de entrada'
+      write(*,78)itel,fxx,fyy,fzz
+      stop
+      endif
+
+
+
+
+
        box=BXLGTH/A0
 C      write(*,*) 'box',box,RCTSQ
 c      RCTSQ2=(box/2.)**2
@@ -135,7 +162,7 @@ c
 
       do 50 i=1,natom
       do 50 j=1,natom
-       d(i,j)=(r(i,1)-r(j,1))**2+(r(i,2)-r(j,2))**2+
+      dist(i,j)=(r(i,1)-r(j,1))**2+(r(i,2)-r(j,2))**2+
      >        (r(i,3)-r(j,3))**2
  50   continue
 c
@@ -144,7 +171,7 @@ c
       do 200 i=1,ns
       do 200 j=1,i
 c
-      dd=d(Nuc(i),Nuc(j))
+      dd=dist(Nuc(i),Nuc(j))
 c
       do 200 ni=1,ncont(i)
       do 200 nj=1,ncont(j)
@@ -277,7 +304,7 @@ c
       do 300 i=ns+1,ns+np,3
       do 300 j=1,ns
 c
-      dd=d(Nuc(i),Nuc(j))
+      dd=dist(Nuc(i),Nuc(j))
 c
       do 300 ni=1,ncont(i)
       do 300 nj=1,ncont(j)
@@ -430,7 +457,7 @@ c (p|p) case and gradients
       do 400 i=ns+1,ns+np,3
       do 400 j=ns+1,i,3
 c
-      dd=d(Nuc(i),Nuc(j))
+      dd=dist(Nuc(i),Nuc(j))
 c
       do 400 ni=1,ncont(i)
       do 400 nj=1,ncont(j)
@@ -628,7 +655,7 @@ c
       do 500 i=ns+np+1,M,6   
       do 500 j=1,ns
 c
-      dd=d(Nuc(i),Nuc(j))
+      dd=dist(Nuc(i),Nuc(j))
 c
       do 500 ni=1,ncont(i)
       do 500 nj=1,ncont(j)
@@ -830,7 +857,7 @@ c
       do 600 i=ns+np+1,M,6
       do 600 j=ns+1,ns+np,3
 c
-      dd=d(Nuc(i),Nuc(j))
+      dd=dist(Nuc(i),Nuc(j))
 c
       do 600 ni=1,ncont(i)
       do 600 nj=1,ncont(j)
@@ -1116,7 +1143,7 @@ c
       do 700 i=ns+np+1,M,6
       do 700 j=ns+np+1,i,6
 c
-      dd=d(Nuc(i),Nuc(j))
+      dd=dist(Nuc(i),Nuc(j))
 c
       do 700 ni=1,ncont(i)
       do 700 nj=1,ncont(j)
@@ -1606,9 +1633,9 @@ c----------------------------------------------------------------
 
 c-----Control de fzas en intsolG
 c      IF(1.NE.2)GOTO 990
-      ee=4.80324D02
-      hh=ee*ee/A0
-      zero=0.D0
+c      ee=4.80324D02
+c      hh=ee*ee/A0
+c      zero=0.D0
       fxx=zero
       fyy=zero
       fzz=zero

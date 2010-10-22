@@ -90,7 +90,7 @@ c---------------------
       MMd=Md*(Md+1)/2
       Md2=2*Md
       M2=2*M
-      allocate(kkind(3*MM))
+      if(memo)   allocate(kkind(3*MM))
 c first P
       M1=1
 c now Pnew
@@ -188,9 +188,9 @@ c
       
 c----- SOLVENT CASE -----------------------------------
       if (sol) then
-      call intsol(NORM,natom,Nsol,natsol,r,Nuc,Iz,M,Md
-     >    ,ncont,nshell,
-     >   c,a,pc,RMM,E1s,FQQ,IT,ITEL,NIN,IPR1,EAC,NPAS)
+      call intsol(NORM,Nsol,natsol,r,Nuc,Iz,M,Md,
+     >            ncont,nshell,c,a,RMM,E1s,IT,NIN)
+
 c      call intsoln(NORM,natom,Nsol,natsol,pc,r,Nucd,M,Md,
 c     > ncontd,nshelld,cd,ad,Esoln,E1s)
 
@@ -769,9 +769,8 @@ c
 c
 c -- SOLVENT CASE --------------------------------------
       if (sol) then
-      call intsol(NORM,natom,Nsol,natsol,r,Nuc,Iz,
-     > M,Md,ncont,nshell,
-     > c,a,pc,RMM,E1s,FQQ,IT,ITEL,NIN,IPR1,EAC,NPAS)
+      call intsol(NORM,Nsol,natsol,r,Nuc,Iz,M,Md,
+     >            ncont,nshell,c,a,RMM,E1s,IT,NIN)
 
 c      call mmsol(natom,Nsol,natsol,Iz,pc,r,Em,Rm,Es)
       

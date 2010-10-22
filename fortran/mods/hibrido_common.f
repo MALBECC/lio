@@ -34,9 +34,10 @@ c     NT
       
 c     NTQSS
       real*8, dimension(:), allocatable :: DELVF,FFF,EPS,SIGMA,WWM,E12,
-     > F12,E6,F6,AZ,NNAT,ZZZ,DA,TEMPA,VF
+     > F12,E6,F6,AZ,ZZZ,DA,TEMPA,VF
 
       real*8 ST,S0,SD,SD0,QS,GDF,GDFSLV,GDFSLT,GDQ,KMAX,NDGREE
+      integer, dimension(:), allocatable :: NNAT
 
 c     NT
       integer, dimension(:), allocatable :: JNFC

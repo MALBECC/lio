@@ -470,7 +470,7 @@ C-----LLAMA A 'SCF': CALCULA ENERGIA SUBS. QUANTICO
        WRITE(*,*)
       ENDIF
 
-
+c      write(*,*)'E1s',E1s
 #ifdef G2G
       write(*,*) 'carga de posiciones, igrid2'
 			call g2g_reload_atom_positions(igrid2)
@@ -510,7 +510,7 @@ C-----LLAMA A 'SCF': CALCULA ENERGIA SUBS. QUANTICO
 
 C-----LLAMA A RUTINAS QUE CALCULAN GRADIENTES DE EKS:
 
-       
+cn      write(*,*) 'aca toy' 
 C---  INT1G:GRADIENTES DE INTEGRALES DE 1E (Q)
       CALL INT1G(NORM,natom,r,Nuc,Iz,M,Md,ncont,nshell,
      > c,a,RMM,En,f1,FXH2,FYH2,FZH2)
@@ -533,8 +533,9 @@ C---  INTSG:GRADIENTES DE INTEGRAL DE OVERLAP (Q)
 543   CONTINUE     
 
 C-----INTSOLG:GRADIENTES DE INTEGRAL RHO*V (Q-C)
-      CALL INTSOLG(NORM,natom,Nsol,natsol,r,Nuc,Iz,M,Md,
-     > ncont,nshell,c,a,pc,RMM,f1,FXH11,FYH11,FZH11)
+
+      CALL INTSOLG(NORM,Nsol,natsol,r,Nuc,Iz,M,Md,
+     > ncont,nshell,c,a,RMM,f1,FXH11,FYH11,FZH11)
        
 C-----UNIDADES DE DARIO POR LAS MIAS PARA LAS FZAS SOBRE SLT
       DO I=1,NATOM
@@ -661,9 +662,9 @@ C-- pero SI calcula en CADA paso integral de RHO*V, Zj*Pc(i)/|Rj-Ri|
 C-- y potencial LJ entre Ri y Rj:
 
       CALL DODA(NATSOL,R,IZ)
+      call intsol(NORM,Nsol,natsol,r,Nuc,Iz,M,Md,
+     >            ncont,nshell,c,a,RMM,E1s,IT,NIN)
       
-      CALL INTSOL(NORM,natom,Nsol,natsol,r,Nuc,Iz,M,Md,ncont,nshell,
-     > c,a,pc,RMM,E1s,FQQ,IT,ITEL,NIN,IPR1,EAC,NPAS)
       
 
       DO I=1,NPART
@@ -672,8 +673,8 @@ C-- y potencial LJ entre Ri y Rj:
       ENDDO
       ENDDO
 
-      CALL INTSOLG(NORM,natom,Nsol,natsol,r,Nuc,Iz,M,Md,
-     > ncont,nshell,c,a,pc,RMM,f1,FXH11,FYH11,FZH11)
+      CALL INTSOLG(NORM,Nsol,natsol,r,Nuc,Iz,M,Md,
+     > ncont,nshell,c,a,RMM,f1,FXH11,FYH11,FZH11)
       FXH11 =  f1(1,1) - FXH2
       FYH11 =  f1(1,2) - FYH2
       FZH11 =  f1(1,3) - FZH2

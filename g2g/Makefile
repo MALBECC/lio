@@ -25,6 +25,10 @@ ifeq ($(time), 1)
 	CXXFLAGS += -DTIMINGS
 endif
 
+ifeq ($(nosync), 1)
+  CXXFLAGS += -DNOSYNC
+endif
+
 ifeq ($(histo), 1)
   CXXFLAGS += -DHISTOGRAM
 endif

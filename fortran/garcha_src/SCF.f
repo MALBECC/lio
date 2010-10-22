@@ -768,6 +768,7 @@ c
       endif
 c
        call timer_stop('iteracion')
+       write(*,*)
  999   continue
  995   continue
 

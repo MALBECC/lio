@@ -170,8 +170,8 @@ c
  6     Rc(k)=0.D0
 c
 *******
-      do  k = 1,Md
          do  kk = 1,MM
+           do  k = 1,Md
 *            Rc(k) = Rc(k) + RMM(kk)*t(kk,k)
             Rc(k) = Rc(k) + RMM(kk)*cool((kk-1)*Md+k)
          enddo
@@ -448,16 +448,29 @@ c     & aux(kint(iii))*RMM(iikk)
 c c       enddo
 
          call timer_start('int3lu')
+          if (open) then       
          do kk=1,kknums
-c            do k=1,nsd
              do k=1,Md
           iikk=(kkind(kk)-1)*Md+k
-c         write(*,*) RMM(M5+kkind(kk)-1),RMM(M3+kkind(kk)-1)
-c        write(78,*) iikk,kkind(kk),k
         RMM(M5+kkind(kk)-1)=RMM(M5+kkind(kk)-1)+af(k)*cool(iikk)
         RMM(M3+kkind(kk)-1)=RMM(M3+kkind(kk)-1)+aux(k)*cool(iikk)
          enddo
          enddo
+         else
+         do kk=1,kknums
+             do k=1,Md
+          iikk=(kkind(kk)-1)*Md+k
+        RMM(M5+kkind(kk)-1)=RMM(M5+kkind(kk)-1)+af(k)*cool(iikk)
+c        RMM(M3+kkind(kk)-1)=RMM(M3+kkind(kk)-1)+aux(k)*cool(iikk)
+         enddo
+         enddo
+
+         endif
+
+
+
+
+
          call timer_stop('int3lu')
 
 c         do kk=kknums+1,kknump

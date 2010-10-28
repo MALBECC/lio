@@ -27,6 +27,7 @@ c
 c
 c
        dimension RMM(*),xi(3),Ef(3)
+       real*8, dimension (:,:), ALLOCATABLE ::xnano
 c
 c auxiliars
 c X scratch space in matrices
@@ -64,7 +65,6 @@ c      parameter (rmax=25.D0)
 
       just_int3n = false
 
-
 c------------------------------------------------------------------
 c
 c Pointers
@@ -88,7 +88,7 @@ c---------------------
       M2=2*M
 
       allocate(kkind(3*MM))
-
+      allocate (xnano(M,M))
 c first P
       M1=1
 c now Pnew
@@ -592,25 +592,39 @@ c
  137   RMM(kk2)=RMM(kk)
 c
 c
-        do 20 i=1,M
+        do i=1,M
+        do j=1,M
+         X(i,M+j)=0.D0
+        xnano(i,j)=X(j,i)
+        enddo
+        enddo     
+
+
         do 20 j=1,M
          X(i,M+j)=0.D0
          do 22 k=1,j
-         X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M5+j+(M2-k)*(k-1)/2-1)
+         do 22 i=1,M
+         X(i,M+j)=X(i,M+j)+Xnano(i,k)*RMM(M5+j+(M2-k)*(k-1)/2-1)
   22     continue
 c
          do 23 k=j+1,M
-  23     X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M5+k+(M2-j)*(j-1)/2-1)
+         do 23 i=1,M
+  23     X(i,M+j)=X(i,M+j)+Xnano(i,k)*RMM( M5+k+(M2-j)*(j-1)/2-1)
 c
   20     continue
 c
          kk=0
+        do i=1,M
+        do k=1,M
+        xnano(k,i)=X(i,M+k)
+        enddo
+        enddo
         do 30 j=1,M
         do 30 i=j,M
          kk=kk+1
          RMM(M5+kk-1)=0.D0
         do 32 k=1,M
- 32      RMM(M5+kk-1)=RMM(M5+kk-1)+X(i,M+k)*X(k,j)
+ 32      RMM(M5+kk-1)=RMM(M5+kk-1)+Xnano(k,i)*X(k,j)
  30     continue
 c
 c now F contains transformed F
@@ -653,15 +667,21 @@ c diagonalization now
 c
 c
 c new coefficients
+       do i=1,M
+       do k=1,M
+           xnano(i,k)=X(k,i)
+       enddo
+       enddo
 c
        do 50 i=1,M
        do 50 j=1,M
 c
         X(i,M2+j)=0.D0
        do 52 k=1,M
-  52    X(i,M2+j)=X(i,M2+j)+X(i,k)*X(k,M+j)
+  52    X(i,M2+j)=X(i,M2+j)+xnano(k,i)*X(k,M+j)
   50    continue
-        call timer_stop('coeff')
+ 
+       call timer_stop('coeff') 
         call timer_start('otras cosas')
 c
 c --- For the first iteration, damping on density matrix 
@@ -771,7 +791,7 @@ c
 
 
          DEALLOCATE (natomc,nnps,nnpp,nnpd,nns)
-         deallocate (nnd,nnp,atmin,jatc)
+         deallocate (nnd,nnp,atmin,jatc,xnano)
          if (memo) then
          deallocate (kkind)
          deallocate(cool)

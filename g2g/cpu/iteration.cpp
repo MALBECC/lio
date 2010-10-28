@@ -111,7 +111,7 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
       if (compute_forces) {
         dd.resize(group.total_nucleii(), 1); dd.zero();
         for (uint i = 0, ii = 0; i < group.total_functions_simple(); i++) {
-          uint nuc = group.func2local_nuc(i);
+          uint nuc = group.func2local_nuc(ii);
           uint inc_i = group.small_function_type(i);
           cfloat3 this_dd(0,0,0);
           for (uint k = 0; k < inc_i; k++, ii++) {

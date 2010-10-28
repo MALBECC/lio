@@ -119,8 +119,8 @@ void cpu_pot(float dens, float& ex, float& ec, float& y2a)
 #include <float.h>
 
 /* anda bien asi para las energias, pero no probe con las fuerzas */
-#define real float
-#define REAL_MIN FLT_MIN
+#define real double
+#define REAL_MIN DBL_MIN
 
 static void closedpbe(float rho, real agrad, real delgrad, real rlap, real& expbe, real& vxpbe, real& ecpbe, real& vcpbe);
 static void gcorc(real rtrs, real& gg, real& grrs);

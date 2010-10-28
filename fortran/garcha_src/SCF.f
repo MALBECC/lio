@@ -482,6 +482,7 @@ c-------------------------------------------------------------------
 c
       write(*,*) 'empiezo el loop'
       do 999 while (good.ge.told)
+      call timer_start('iteracion')
 c
       if (niter.ge.NMAX) then
        write(*,*) 'NO CONVERGENCE AT ',NMAX,' ITERATIONS'
@@ -786,12 +787,12 @@ c
       close(3)
       endif
 c
+       call timer_stop('iteracion')
+       write(*,*)
  999   continue
  995   continue
 
 
-         DEALLOCATE (natomc,nnps,nnpp,nnpd,nns)
-         deallocate (nnd,nnp,atmin,jatc,xnano)
          if (memo) then
          deallocate (kkind)
          deallocate(cool)

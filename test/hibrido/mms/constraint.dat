@@ -1,5 +1,5 @@
 ICON NTIME NSCAL  NSAVE   NDIP  IRDF ICMOT  NEWV  IPR IP15 UMBRE BER1 BERSTEP BER2
-0    80000   1   100    1000    -1   4   -1000000   10   1  0   0.001   2000   0.01
+-1    80000   1   100    1000    -1   4   100000   10   100  0   0.001   2000   0.01
 IDUM     NEWQ   IQMOT   IZZ  IFLUC  IPR1  IS0   IS0Q   CKUM  RUM JVEL   US1  US2
 12567    -20      0      1    -1     10    0     0   180000  1.4  0.0001  2    5 1 1
 No ESPECIES CUANTICAS (NSPECQ)   NDFT      NPAS
@@ -17,7 +17,7 @@ NUMERO DE ATOMOS POR ESPECIE CLASICA   O   H   H
 MASAS DE ESPECIES CLASICAS                             MQ(FICTICIA)
                                      16.  1.  1.   0.0000001809
 TEMPRQ    TEMPRQQ        DELTAT      QS      QSQ
-300.00   300.   2.            0.0002       25.      25.
+300.00   300.   2.            0.0001       25.      25.
 SIGMAS (ANGSTROMS)        O          H         H
                        3.154        0.        0.0
 EPSILONS(KELVIN)

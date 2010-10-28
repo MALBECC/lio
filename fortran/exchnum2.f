@@ -125,7 +125,7 @@ c local density functionals, no gradients needed
          dxi=DENS
          call pot(Iexch,dxi,yiex,yiec,y2i)
 
-c         write (*,*) na-1,n-1,i-1
+c         write (*,*) 'cmp',yiex,yiec,y2i
          call DENSG(Ddx,Ddy,Ddz,Xi,ds,NORM,Nuc,ncont,nshell,
      >              a,c,r,M,M18,NCO,RMM,natom)
         else
@@ -135,7 +135,7 @@ c non local density functionals, gradients and 2nd derivatives needed
          dxi=DENS
          call potg(Iexch,dxi,dx,dy,dz,dxx,dyy,dzz,dxy,dyz,dxz,yiex,yiec,
      >             y2i)
-c         write(*,*) yiex,yiec,y2i
+c         write (*,*) 'cmp',yiex,yiec,y2i
          call DENSG(Ddx,Ddy,Ddz,Xi,ds,NORM,Nuc,ncont,nshell,
      >              a,c,r,M,M18,NCO,RMM,natom)
         endif
@@ -198,7 +198,8 @@ c		  	 DEBUG
          forza(ina,1)=forza(ina,1) + PF*DDx(ina)*y2i*tmp0
          forza(ina,2)=forza(ina,2) + PF*DDy(ina)*y2i*tmp0
          forza(ina,3)=forza(ina,3) + PF*DDz(ina)*y2i*tmp0
-c         write(*,*) 'factor',PF*tmp0*y2i*DDx(ina)
+c         write(*,*) 'factor',PF*tmp0*y2i
+c         write(*,*) 'DD',DDx(ina),DDy(ina),DDz(ina)
        enddo
        
 *

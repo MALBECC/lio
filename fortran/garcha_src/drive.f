@@ -21,7 +21,7 @@ c
       parameter (nng=50)
 c
       character*65 title
-      character*12 name1,whatis,stdbas
+      character*32 name1,whatis,stdbas
       character*4 date
       character*15 name2,name3,name4,name5,name6,solv,solv2
       character*4 ctype

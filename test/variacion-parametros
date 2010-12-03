@@ -83,7 +83,7 @@ begin
     :little_cube_size => StepRange.new((4.5..13),0.5),
     :max_function_exponent => StepRange.new((12..12),1),
     :min_points_per_cube => StepRange.new((1..1),1),
-    :sphere_radius => StepRange.new((0.6..0.8),0.1)
+    :sphere_radius => StepRange.new((0.3..0.8),0.1)
 #    :assign_all_functions => 1
   }
 

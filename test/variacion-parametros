@@ -1,4 +1,4 @@
-#!/bin/env ruby
+#!/usr/bin/env ruby
 require 'fileutils'
 StepRange = Struct.new(:range,:step)
 
@@ -22,8 +22,6 @@ end
 VERBOSE=ARGV.include?('-v')
 USE_EXISTING_OPTIONS=ARGV.include?('-existing')
 SAVE_BEST=ARGV.include?('-save')
-USE_BEST_RECALC=ARGV.include?('-best-recalc')
-USE_BEST_STORE=ARGV.include?('-best-store')
 USE_BEST_CPU=ARGV.include?('-best-cpu')
 
 def variation(ranges, combination = Combination.new, block = Proc.new)
@@ -80,7 +78,7 @@ end
 
 begin
   ranges = {
-    :little_cube_size => StepRange.new((4.5..13),0.5),
+    :little_cube_size => StepRange.new((2.0..12),0.5),
     :max_function_exponent => StepRange.new((12..12),1),
     :min_points_per_cube => StepRange.new((1..1),1),
     :sphere_radius => StepRange.new((0.3..0.8),0.1)
@@ -93,8 +91,6 @@ begin
     puts "=> #{dir}"
 
     if (USE_EXISTING_OPTIONS)
-      if (USE_BEST_RECALC) then FileUtils.cp('gpu_options.recalc.best', 'gpu_options'); puts 'Using best recalc' end
-      if (USE_BEST_STORE) then FileUtils.cp('gpu_options.store.best', 'gpu_options'); puts 'Using best store' end
       if (USE_BEST_CPU) then FileUtils.cp('gpu_options.cpu.best', 'gpu_options'); puts 'Using best cpu' end
       run_gpu()
     else

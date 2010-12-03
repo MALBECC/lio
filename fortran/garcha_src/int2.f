@@ -464,6 +464,7 @@ c
 c
 c
 c
+
        do 216 i=1,Md
        do 216 j=1,Md
 c
@@ -494,6 +495,7 @@ c     M10=M9+Md
       M12=M10+Md
       Md3=3*Md
 c ESSL OPTION ------------------------------
+         call timer_start('DGESVF')
 #ifdef essl
       CALL DGESVF(10,XX,Md,RMM(M9),Md,1,RMM(M10),
      >             Md,Md,RMM(M12),Md3)
@@ -517,6 +519,7 @@ c
       ss=RMM(M9)/RMM(M9+Md-1)
 c
 #endif
+         call timer_stop('DGESVF')
        if (ss.gt.1.D14) then
         SVD=.true.
        endif

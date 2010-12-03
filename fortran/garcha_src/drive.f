@@ -18,7 +18,7 @@ c
       implicit real*8 (a-h,o-z)
       INCLUDE 'param'
       integer map(ntq)
-      parameter (nng=50)
+      parameter (nng=500)
 c
       character*65 title
       character*32 name1,whatis,stdbas

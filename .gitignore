@@ -10,7 +10,8 @@ g2g/*/*.cu_o
 test/*/*.orb
 test/*/*.out
 test/*/gpu_options*
-test/*/*.xyz
+dtest/*/*.xyz
 *.swp
 ecuaciones.pdf
-
+*.mod
+fort.*

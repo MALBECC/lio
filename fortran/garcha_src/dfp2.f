@@ -190,10 +190,12 @@ c
         do 121 i=1,N,3
        ii=(i/3)+1
       if(Iz(ii).eq.1) atname='H'
+      if(Iz(ii).eq.3) atname='Li'
       if(Iz(ii).eq.6) atname='C'
       if(Iz(ii).eq.7) atname='N'
       if(Iz(ii).eq.8) atname='O'
-      if(Iz(ii).eq.3) atname='Li'
+      if(Iz(ii).eq.26) atname='Fe'
+      if(Iz(ii).eq.32) atname='S'
        write(69,*)  atname,PNEW(i)*A0,PNEW(i+1)*A0,PNEW(i+2)*A0
  121     write(*,501) PNEW(i),PNEW(i+1),PNEW(i+2)
 c

@@ -28,6 +28,7 @@ c-----------------------------------------------------------------
      >     Nucd,Md,ncontd,nshelld,cd,ad,RMM,Exc,f,
      > nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write,
      > calc_energy)
+      use latom
 c
 c
       implicit real*8 (a-h,o-z)
@@ -36,7 +37,7 @@ c
       integer nopt,iconst,igrid,iforce,igrid2
       INCLUDE 'param'
       parameter(pi52=34.9868366552497108D0,pi=3.14159265358979312D0)
-      parameter (rmax=25.D0)
+c      parameter (rmax=25.D0)
       dimension r(nt,3),nshelld(0:3),nshell(0:3)
       dimension cd(ngd,nl),ad(ngd,nl),Nucd(Md),ncontd(Md)
       dimension c(ng,nl),a(ng,nl),Nuc(M),ncont(M),Iz(natom)
@@ -167,9 +168,9 @@ c        call g2g_solve_groups(2, Exc, f)
 #endif
 
 c DEBUG DEBUG
-      do k=1,natom
-        write(*,'("fuerza",I,D,D,D)') k,f(k,1),f(k,2),f(k,3)
-      enddo
+c      do k=1,natom
+c        write(*,'("fuerza",I,D,D,D)') k,f(k,1),f(k,2),f(k,3)
+c      enddo
 c
        else
 c
@@ -186,25 +187,32 @@ c commented now for debuggings
       do 217 k=1,Md
  217   af2(k)=af(k)+B(k,2)
 c
+       call timer_start('coulombG')
 c
 c-------------------------------------------------------------
 c (ss|s) and gradients
 c
       do 310 i=1,ns
-      do 310 j=1,i
 c
-      dd=d(Nuc(i),Nuc(j))
-      kk=i+Jx(j)
+          do 310 knan=1,natomc(nuc(i))
+           j=nnps(jatc(knan,nuc(i)))-1
+          do 310 kknan=1,nns(jatc(knan,nuc(i)))
+            j=j+1
+
+            if(j.le.i) then
+
+         dd=d(Nuc(i),Nuc(j))
+         kk=i+Jx(j)
 c
-      do 310 ni=1,ncont(i)
-      do 310 nj=1,ncont(j)
+      do 317 ni=1,ncont(i)
+      do 317 nj=1,ncont(j)
 c
        zij=a(i,ni)+a(j,nj)
        ti=a(i,ni)/zij
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 312
+       if (rexp.lt.rmax) then 
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -241,9 +249,9 @@ c
       term=sss*ccoef
       RMM(M5+kk-1)=RMM(M5+kk-1)+af2(k)*term
 c
-      t1=ccoef*RMM(kk)
-      te=t1*af(k)
-      ty=2.D0*te
+c      t1=ccoef*RMM(kk)
+c      te=t1*af(k)
+      ty=2.D0*ccoef*RMM(kk)*af(k)
       tw=2.D0*t1*B(k,2)
 c
       do 315 l1=1,3
@@ -264,20 +272,27 @@ c forces
 c
  315   continue
  311   continue
- 312   continue
+        endif
+ 317   continue
+       endif
  310   continue
 c
 c-------------------------------------------------------------
 c
 c (ps|s) and all gradients
       do 320 i=ns+1,ns+np,3
-      do 320 j=1,ns
+       do 320 knan=1,natomc(nuc(i))
+         j=nnps(jatc(knan,nuc(i)))-1
+      do 320 kknan=1,nns(jatc(knan,nuc(i)))
+        j=j+1
+
+
 c
       dd=d(Nuc(i),Nuc(j))
       k1=Jx(j)
 c
-      do 320 ni=1,ncont(i)
-      do 320 nj=1,ncont(j)
+      do 323 ni=1,ncont(i)
+      do 323 nj=1,ncont(j)
 c
        zij=a(i,ni)+a(j,nj)
        z2=2.D0*zij
@@ -285,7 +300,7 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 322
+       if (rexp.lt.rmax) then 
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -363,18 +378,28 @@ c forces
 c
  325   continue
  321   continue
- 322   continue
+       endif
+ 323   continue
  320   continue
 c
 c-------------------------------------------------------------
 c (pp|s) and gradients
       do 330 i=ns+1,ns+np,3
-      do 330 j=ns+1,i,3
+         do 330 knan=1,natomc(nuc(i))
+
+         j=nnpp(jatc(knan,nuc(i)))-3
+
+      do 330 kknan=1,nnp(jatc(knan,nuc(i))),3
+        j=j+3
+
+
+       if(j.le.i) then
+
 c
       dd=d(Nuc(i),Nuc(j))
 c
-      do 330 ni=1,ncont(i)
-      do 330 nj=1,ncont(j)
+      do 333 ni=1,ncont(i)
+      do 333 nj=1,ncont(j)
 c
        zij=a(i,ni)+a(j,nj)
        z2=2.D0*zij
@@ -382,7 +407,7 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 332
+       if (rexp.lt.rmax) then
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -497,20 +522,29 @@ c forces
 c
  335   continue
  331   continue
- 332   continue
+        endif
+ 333   continue
+         endif
  330   continue
 c
 c-------------------------------------------------------------
 c
 c (ds|s) and gradients
       do 340 i=ns+np+1,M,6
-      do 340 j=1,ns
 c
+         do 340 knan=1,natomc(nuc(i))
+
+         j=nnps(jatc(knan,nuc(i)))-1
+
+         do 340 kknan=1,nns(jatc(knan,nuc(i)))
+        j=j+1
+
+
       dd=d(Nuc(i),Nuc(j))
       k1=Jx(j)
 c
-      do 340 ni=1,ncont(i)
-      do 340 nj=1,ncont(j)
+      do 343 ni=1,ncont(i)
+      do 343 nj=1,ncont(j)
 c
        zij=a(i,ni)+a(j,nj)
        z2=2.D0*zij
@@ -518,7 +552,7 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 342
+       if (rexp.lt.rmax) then
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -627,14 +661,23 @@ c
 
  345   continue
  341   continue
- 342   continue
+        endif
+ 343   continue
  340   continue
 c
 c-------------------------------------------------------------
 c (dp|s)
       do 350 i=ns+np+1,M,6
-      do 350 j=ns+1,ns+np,3
 c
+         do 350 knan=1,natomc(nuc(i))
+
+         j=nnpp(jatc(knan,nuc(i)))-3
+
+      do 350 kknan=1,nnp(jatc(knan,nuc(i))),3
+        j=j+3
+
+
+
       dd=d(Nuc(i),Nuc(j))
 c
       do 350 ni=1,ncont(i)
@@ -646,7 +689,7 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 352
+       if (rexp.lt.rmax) then
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -803,19 +846,29 @@ c
 c      
  355   continue
  351   continue
- 352   continue
+         endif
  350   continue
 c
 c-------------------------------------------------------------
 c
 c (dd|s)
       do 360 i=ns+np+1,M,6
-      do 360 j=ns+np+1,i,6
+
+         do 360 knan=1,natomc(nuc(i))
+
+         j=nnpd(jatc(knan,nuc(i)))-6
+
+      do 360 kknan=1,nnd(jatc(knan,nuc(i))),6
+        j=j+6
+
+       if(j.le.i) then
+
+
 c
       dd=d(Nuc(i),Nuc(j))
 c
-      do 360 ni=1,ncont(i)
-      do 360 nj=1,ncont(j)
+      do 363 ni=1,ncont(i)
+      do 363 nj=1,ncont(j)
 c
        zij=a(i,ni)+a(j,nj)
        z2=2.D0*zij
@@ -823,7 +876,7 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 362
+       if (rexp.lt.rmax) then
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -1070,20 +1123,31 @@ c
 c
  365   continue
  361   continue
- 362   continue
+        endif
+ 363   continue
+          endif
  360   continue
 c
 c-------------------------------------------------------------
 c
 c (ss|p)  and gradients
       do 370 i=1,ns
-      do 370 j=1,i
 c
+
+          do 370 knan=1,natomc(nuc(i))
+           j=nnps(jatc(knan,nuc(i)))-1
+          do 370 kknan=1,nns(jatc(knan,nuc(i)))
+            j=j+1
+            if(j.le.i) then
+
+c
+
+
       dd=d(Nuc(i),Nuc(j))
       kn=i+Jx(j)
 c
-      do 370 ni=1,ncont(i)
-      do 370 nj=1,ncont(j)
+      do 372 ni=1,ncont(i)
+      do 372 nj=1,ncont(j)
 c
        zij=a(i,ni)+a(j,nj)
        z2=2.D0*zij
@@ -1091,7 +1155,7 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 372
+       if (rexp.lt.rmax) then
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -1168,12 +1232,21 @@ c
  377   continue
  375   continue
  371   continue
+        endif
  372   continue
+        endif
  370   continue
 c-------------------------------------------------------------
 c (ps|p) and gradients
       do 380 i=ns+1,ns+np,3
-      do 380 j=1,ns
+       do 380 knan=1,natomc(nuc(i))
+
+         j=nnps(jatc(knan,nuc(i)))-1
+
+      do 380 kknan=1,nns(jatc(knan,nuc(i)))
+        j=j+1
+
+
 c
       dd=d(Nuc(i),Nuc(j))
       k1=Jx(j)
@@ -1187,7 +1260,7 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 382
+       if (rexp.lt.rmax) then
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -1291,17 +1364,26 @@ c
       f(Nucd(k),l3)=f(Nucd(k),l3)+ad(k,nk)*ty*psd
  385  continue
  381  continue
- 382  continue
+       endif
  380  continue
 c-------------------------------------------------------------
 c (pp|p) and gradients
       do 390 i=ns+1,ns+np,3
-      do 390 j=ns+1,i,3
+         do 390 knan=1,natomc(nuc(i))
+
+         j=nnpp(jatc(knan,nuc(i)))-3
+
+      do 390 kknan=1,nnp(jatc(knan,nuc(i))),3
+        j=j+3
+
+
+       if(j.le.i) then
+
 c
       dd=d(Nuc(i),Nuc(j))
 c
-      do 390 ni=1,ncont(i)
-      do 390 nj=1,ncont(j)
+      do 392 ni=1,ncont(i)
+      do 392 nj=1,ncont(j)
 c
        zij=a(i,ni)+a(j,nj)
        z2=2.D0*zij
@@ -1309,7 +1391,7 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 392
+       if (rexp.lt.rmax) then
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -1467,14 +1549,22 @@ c
 c
  395   continue
  391   continue
+         endif
  392   continue
+         endif
  390   continue
 c
 c-------------------------------------------------------------
 c
 c (ds|p)
       do 400 i=ns+np+1,M,6
-      do 400 j=1,ns
+         do 400 knan=1,natomc(nuc(i))
+
+         j=nnps(jatc(knan,nuc(i)))-1
+
+      do 400 kknan=1,nns(jatc(knan,nuc(i)))
+        j=j+1
+
 c
       dd=d(Nuc(i),Nuc(j))
       k1=Jx(j)
@@ -1488,7 +1578,7 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 402
+       if (rexp.lt.rmax) then
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -1643,14 +1733,21 @@ c
         f(Nucd(k),l4)=f(Nucd(k),l4)+ty*ad(k,nk)*dsd
  405   continue
  401   continue
- 402   continue
+        endif
  400   continue
 c
 c-------------------------------------------------------------
 c
 c (dp|p) and gradients
       do 410 i=ns+np+1,M,6
-      do 410 j=ns+1,ns+np,3
+         do 410 knan=1,natomc(nuc(i))
+
+         j=nnpp(jatc(knan,nuc(i)))-3
+
+      do 410 kknan=1,nnp(jatc(knan,nuc(i))),3
+        j=j+3
+
+
 c
       dd=d(Nuc(i),Nuc(j))
 c
@@ -1663,7 +1760,7 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 412
+       if (rexp.lt.rmax) then
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -1895,19 +1992,27 @@ c
        
  415   continue
  411   continue
- 412   continue
+         endif
  410   continue
 c
 c-------------------------------------------------------------
 c
 c (dd|p) and gradients
       do 420 i=ns+np+1,M,6
-      do 420 j=ns+np+1,i,6
+         do 420 knan=1,natomc(nuc(i))
+
+         j=nnpd(jatc(knan,nuc(i)))-6
+
+      do 420 kknan=1,nnd(jatc(knan,nuc(i))),6
+        j=j+6
+
+       if(j.le.i) then
+
 c
       dd=d(Nuc(i),Nuc(j))
 c
-      do 420 ni=1,ncont(i)
-      do 420 nj=1,ncont(j)
+      do 422 ni=1,ncont(i)
+      do 422 nj=1,ncont(j)
 c
        zij=a(i,ni)+a(j,nj)
        z2=2.D0*zij
@@ -1915,7 +2020,7 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 422
+       if (rexp.lt.rmax) then
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -2286,27 +2391,37 @@ c
 c
  425   continue
  421   continue
+         endif
  422   continue
+         endif
  420   continue
 c
 c-------------------------------------------------------------
 c
 c (ss|d) and gradients
       do 430 i=1,ns
-      do 430 j=1,i
+
+          do 430 knan=1,natomc(nuc(i))
+           j=nnps(jatc(knan,nuc(i)))-1
+          do 430 kknan=1,nns(jatc(knan,nuc(i)))
+            j=j+1
+            if(j.le.i) then
+
+c
+
 c
       dd=d(Nuc(i),Nuc(j))
       kn=i+Jx(j)
 c
-      do 430 ni=1,ncont(i)
-      do 430 nj=1,ncont(j)
+      do 432 ni=1,ncont(i)
+      do 432 nj=1,ncont(j)
 c
        zij=a(i,ni)+a(j,nj)
        ti=a(i,ni)/zij
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 432
+       if (rexp.lt.rmax) then
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -2415,14 +2530,22 @@ c
 
  435   continue
  431   continue
+        endif
  432   continue
+        endif
  430   continue
 c
 c-------------------------------------------------------------
 c
 c (ps|d) and gradients
       do 440 i=ns+1,ns+np,3
-      do 440 j=1,ns
+       do 440 knan=1,natomc(nuc(i))
+
+         j=nnps(jatc(knan,nuc(i)))-1
+
+      do 440 kknan=1,nns(jatc(knan,nuc(i)))
+        j=j+1
+
 c
       dd=d(Nuc(i),Nuc(j))
       k1=Jx(j)
@@ -2436,7 +2559,7 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 442
+       if (rexp.lt.rmax) then
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -2589,19 +2712,28 @@ c
        f(Nucd(k),l4)=f(Nucd(k),l4)+ad(k,nk)*ty*psf
  445  continue
  441  continue
- 442  continue
+       endif
  440  continue
 c
 c-------------------------------------------------------------
 c
 c (pp|d) and gradients
       do 450 i=ns+1,ns+np,3
-      do 450 j=ns+1,i,3
+         do 450 knan=1,natomc(nuc(i))
+
+         j=nnpp(jatc(knan,nuc(i)))-3
+
+      do 450 kknan=1,nnp(jatc(knan,nuc(i))),3
+        j=j+3
+
+
+       if(j.le.i) then
+
 c
       dd=d(Nuc(i),Nuc(j))
 c
-      do 450 ni=1,ncont(i)
-      do 450 nj=1,ncont(j)
+      do 452 ni=1,ncont(i)
+      do 452 nj=1,ncont(j)
 c
        zij=a(i,ni)+a(j,nj)
        z2=2.D0*zij
@@ -2609,7 +2741,7 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 452
+       if (rexp.lt.rmax) then    
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -2843,14 +2975,24 @@ c
        f(Nucd(k),l5)=f(Nucd(k),l5)+ad(k,nk)*ty*ppf
  455   continue
  451   continue
+         endif
  452   continue
+         endif
  450   continue
 c
 c-------------------------------------------------------------
 c
 c (ds|d) and gradients
       do 460 i=ns+np+1,M,6
-      do 460 j=1,ns
+         do 460 knan=1,natomc(nuc(i))
+
+         j=nnps(jatc(knan,nuc(i)))-1
+
+      do 460 kknan=1,nns(jatc(knan,nuc(i)))
+        j=j+1
+
+
+
 c
       dd=d(Nuc(i),Nuc(j))
       k1=Jx(j)
@@ -2864,7 +3006,7 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 462
+       if (rexp.lt.rmax) then
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -3098,15 +3240,22 @@ c
 c
  465   continue
  461   continue
- 462   continue
+         endif
  460   continue
 c
 c-------------------------------------------------------------
 c
 c (dp|d) and gradients
       do 470 i=ns+np+1,M,6
-      do 470 j=ns+1,ns+np,3
 c
+         do 470 knan=1,natomc(nuc(i))
+
+         j=nnpp(jatc(knan,nuc(i)))-3
+
+      do 470 kknan=1,nnp(jatc(knan,nuc(i))),3
+        j=j+3
+
+
       dd=d(Nuc(i),Nuc(j))
 c
       do 470 ni=1,ncont(i)
@@ -3118,7 +3267,7 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.gt.rmax) goto 472
+       if (rexp.lt.rmax) then
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -3484,19 +3633,27 @@ c
 c
  475   continue
  471   continue
- 472   continue
+         endif
  470   continue
 c
 c-------------------------------------------------------------
 c
 c (dd|d) and gradients
       do 480 i=ns+np+1,M,6
-      do 480 j=ns+np+1,i,6
 c
+         do 480 knan=1,natomc(nuc(i))
+
+         j=nnpd(jatc(knan,nuc(i)))-6
+
+      do 480 kknan=1,nnd(jatc(knan,nuc(i))),6
+        j=j+6
+
+       if(j.le.i) then
+
       ddi=d(Nuc(i),Nuc(j))
 c
-      do 480 ni=1,ncont(i)
-      do 480 nj=1,ncont(j)
+      do 482 ni=1,ncont(i)
+      do 482 nj=1,ncont(j)
 c
        zij=a(i,ni)+a(j,nj)
        z2=2.D0*zij
@@ -3504,7 +3661,7 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*ddi
-       if (rexp.gt.rmax) goto 482
+       if (rexp.lt.rmax) then
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -4112,8 +4269,11 @@ c
        f(Nucd(k),l7)=f(Nucd(k),l7)+ad(k,nk)*ty*ddf
  485  continue
  481  continue
+       endif
  482  continue
+       endif
  480  continue
+       call timer_stop('coulombG')
 c
 c
 c-------------------------------------------------------------
@@ -4124,9 +4284,9 @@ c
 c     write(*,*) 'Forces for 2 electron terms'
 c     write(*,*) Ex,Ea-Eb/2.D0
       
-c     do i=1,natom
-c      write(*,*) i,f(i,1),f(i,2),f(i,3)
-c     enddo
+c       do i=1,natom
+c       write(77,*) i,f(i,1),f(i,2),f(i,3)
+c       enddo
 c
 c
       return

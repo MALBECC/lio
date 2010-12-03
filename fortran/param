@@ -17,10 +17,10 @@ c
 
 
 
-      parameter (ntq=75,ntc=1000,nss=3)
+      parameter (ntq=170,ntc=0,nss=3)
       parameter (nt=ntq+nss*ntc)
-      parameter (ng0=20,ng=ntq*ng0,nl=10)
-      parameter (ngd0=20,ngd=ntq*ngd0)
+      parameter (ng0=20,ng=ntq*ng0,nl=20)
+      parameter (ngd0=30,ngd=ntq*ngd0)
       parameter (ntqss=ntq+nss)
 
 c !!!!!!! Actualizar en gpu/cuda/excnum.cu !!!!!

@@ -27,7 +27,7 @@ c
 c
 c
        dimension RMM(*),xi(3),Ef(3)
-       real*8, dimension (:,:), ALLOCATABLE ::xnano
+       real*8, dimension (:,:), ALLOCATABLE ::xnano,xnano2
 c
 c auxiliars
 c X scratch space in matrices
@@ -87,8 +87,8 @@ c---------------------
       Md2=2*Md
       M2=2*M
 
-      allocate(kkind(3*MM))
-      allocate (xnano(M,M))
+c      allocate(kkind(MM))
+      allocate (xnano(M,M),xnano2(M,M))
 c first P
       M1=1
 c now Pnew
@@ -138,7 +138,6 @@ c
 
 C----------------------------------------
 c Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
-c        write(*,*) 'que pasa?'
   
 
         do i=1,natom
@@ -164,7 +163,7 @@ c       write(*,*) 'vecinos',rexp,rmax
 
 
         enddo
-          write(*,*) i,'natomc=',natomc(i)
+c          write(*,*) i,'natomc=',natomc(i)
         enddo
        do ii=nshell(0),1,-1
        nnps(nuc(ii))=ii
@@ -177,9 +176,6 @@ c       write(*,*) 'vecinos',rexp,rmax
        do ii=M,nshell(0)+nshell(1)+1,-1
        nnpd(nuc(ii))=ii
        enddo
-c       do ii=1,natom
-c        write(*,*) 'nnps,nnpp,nnpd',nnps(ii),nnpp(ii),nnpd(ii)
-c       enddo
 c--------------------------------------------------------------
 
 c
@@ -252,6 +248,7 @@ c-----------------------------------------------------------
 c 
 c LINEAR DEPENDENCY ELIMINATION
 c
+       call timer_start('inicio1')
         do 10 j=1,M
           if (RMM(M13+j-1).lt.1.0D-06) then
           write(*,*) 'LINEAR DEPENDENCY DETECTED'
@@ -293,7 +290,10 @@ c
          RMM(M15+i-1)=0.D0
  249      RMM(M13+i-1)=0.D0
 
-c          write(*,*) 'cosas'
+
+
+       call timer_stop('inicio1')
+
 c
 c ESSL OPTION
 #ifdef essl
@@ -306,11 +306,17 @@ c
 #endif
        write(*,*) 'dspev'
 c-----------------------------------------------------------
-       do 250 i=1,M
+        call timer_start('cosas1')
+       do i=1,M
+       do j=1,M
+        X(i,M2+j)=0.D0
+       enddo
+       enddo
+
+       do 250 k=1,M
        do 250 j=1,M
 c
-        X(i,M2+j)=0.D0
-       do 252 k=1,M
+       do 252 i=1,M
   252    X(i,M2+j)=X(i,M2+j)+X(i,k)*X(k,M+j)
   250    continue
 c
@@ -341,20 +347,26 @@ c
 c
 c
       endif
+        call timer_stop('cosas1')
 c End of Starting guess (No MO , AO known)-------------------------------
-c
-
+ctt
+          call timer_start('int22')
       call int22(NORM,natom,r,Nucd,M,Md,ncontd,
      >          nshelld,cd,ad,RMM,XX)
+          call timer_stop('int22')
 c
       write(*,*) 'int22'
 **
       if (MEMO) then
-      allocate(cool(MM*Md))
+c      allocate(cool(MM*Md))
+
+      call timer_start('int3mmem')
          call int3mem(NORM,natom,r,Nuc,M,M20,ncont,nshell,c,a,Nucd,Md,
      >                 ncontd,nshelld,RMM,cd,ad,
      >     nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write1)
       endif
+      call timer_stop('int3mmem')
+
       write(*,*) 'int3mem'
 ****        
 c---------------------------------------------------------------------
@@ -593,26 +605,42 @@ c
  137   RMM(kk2)=RMM(kk)
 c
 c
-        do i=1,M
+
         do j=1,M
-         X(i,M+j)=0.D0
-        xnano(i,j)=X(j,i)
+        do k=1,j
+
+        xnano(k,j)=RMM(M5+j+(M2-k)*(k-1)/2-1)
+
+        enddo
+        do k=j+1,M
+
+        xnano(k,j)=RMM( M5+k+(M2-j)*(j-1)/2-1)
+
         enddo
         enddo     
 
 
+!         kknano=0
+        
+          do i=1,M
+          do j=1,M
+           X(i,M+j)=0.D0 
+c           xnano2(i,j)=X(j,i)
+         enddo
+         enddo
+
+        call timer_start('actualiza rmm1')
+        
         do 20 j=1,M
-         X(i,M+j)=0.D0
-         do 22 k=1,j
-         do 22 i=1,M
-         X(i,M+j)=X(i,M+j)+Xnano(i,k)*RMM(M5+j+(M2-k)*(k-1)/2-1)
-  22     continue
+         do 20 k=1,M
+        do 22 i=1,M
+         X(i,M+j)=X(i,M+j)+X(k,i)*xnano(k,j)
+ 22      continue
 c
-         do 23 k=j+1,M
-         do 23 i=1,M
-  23     X(i,M+j)=X(i,M+j)+Xnano(i,k)*RMM( M5+k+(M2-j)*(j-1)/2-1)
 c
-  20     continue
+  20     continue 
+
+       call timer_stop('actualiza rmm1')
 c
          kk=0
         do i=1,M
@@ -620,6 +648,7 @@ c
         xnano(k,i)=X(i,M+k)
         enddo
         enddo
+
         do 30 j=1,M
         do 30 i=j,M
          kk=kk+1
@@ -675,7 +704,7 @@ c new coefficients
        enddo
 c
        do 50 i=1,M
-       do 50 j=1,M
+       do 50 j=1,NCO
 c
         X(i,M2+j)=0.D0
        do 52 k=1,M
@@ -699,6 +728,13 @@ c
 c Construction of new density matrix and comparison with old one
       kk=0
       good=0.0D0
+
+      do i=1,M
+      do j=1,NCO
+      xnano(j,i)=X(i,M2+j)
+      enddo
+      enddo
+
       do 130 j=1,M
       do 130 i=j,M
       kk=kk+1
@@ -712,7 +748,10 @@ c
       endif
 c
       do 139 k=1,NCO
-       RMM(kk)=RMM(kk)+ff*X(i,M2+k)*X(j,M2+k)
+
+        RMM(kk)=RMM(kk)+ff*Xnano(k,i)*Xnano(k,j)
+      
+c       RMM(kk)=RMM(kk)+ff*X(i,M2+k)*X(j,M2+k)
  139  continue
         del=RMM(kk)-tmp
         if (i.ne.j) then

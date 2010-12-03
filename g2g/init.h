@@ -4,9 +4,9 @@
 #include "matrix.h"
 
 /* definitions */
-#define FORTRAN_MAX_ATOMS 3075
-#define FORTRAN_NG 1500
-#define FORTRAN_NL 10
+#define FORTRAN_MAX_ATOMS 170 
+#define FORTRAN_NG 3400
+#define FORTRAN_NL 20
 
 namespace G2G {
 

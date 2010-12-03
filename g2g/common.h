@@ -34,7 +34,7 @@
 #define FORCE_BLOCK_SIZE 256
 
 // used for "types" constant memory
-#define MAX_ATOMS 100
+#define MAX_ATOMS 200
 
 #define COMPUTE_RMM 					0
 #define COMPUTE_ENERGY_ONLY		1

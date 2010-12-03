@@ -36,21 +36,14 @@ c
       integer nopt,iconst,igrid,igrid2,ndens_local
       INCLUDE 'param'
       parameter(pi52=34.9868366552497108D0,pi=3.14159265358979312D0)
-c      parameter (rmax=25.D0)
       dimension r(nt,3),nshelld(0:3),nshell(0:3)
       dimension cd(ngd,nl),ad(ngd,nl),Nucd(Md),ncontd(Md)
-*      dimension c(ng,nl),a(ng,nl),Nuc(M),ncont(M),Iz(natom)
       dimension c(ng,nl),a(ng,nl),Nuc(M),ncont(M),Iz(nt)
 c
       dimension Q(3),W(3),Rc(ngd),af(ngd),FF(ngd),P(ngd)
       dimension d(ntq,ntq),Jx(ng),Ll(3)
       dimension RMM(*),X(Md,Md)
 *****
-      parameter (nga = 5*19+0*5)
-      parameter (ngda = 5*19+0*5)
-      parameter (ndim = nga*(nga+1)/2)
-*      dimension t(ndim,ngda)
-*      common /intmemo/ t
 *****
 c scratch space
 c
@@ -58,10 +51,6 @@ c auxiliars
       dimension B(ngd,3),aux(ngd)
 c
 *check      COMMON /TABLE/ STR(880,0:21)
-c     common /HF/ SHI,GOLD,TOLD,thrs,OPEN,ATRHO,VCINP,DIRECT,
-c    >            EXTR,SHFT,write,NMAX,NCO,IDAMP,Nunp,nopt
-*      common /HF/ nopt,OPEN,NMAX,NCO,ATRHO,VCINP,DIRECT,
-*     >             IDAMP,EXTR,SHFT,SHI,GOLD,told,write,Nunp,thrs
       common /Sys/ SVD,iconst
       common /fit/ Nang,dens,integ,Iexch,igrid,igrid2
       common /coef/ af
@@ -70,15 +59,6 @@ c     common /index/ iii(ng),iid(ng)
       common /Nc/ Ndens
       common /intg1/ e_(50,3),wang(50)
       common /intg2/ e_2(116,3),wang2(116),Nr(0:54),e3(194,3),wang3(194)
-c      common /cutoff/ natomc(ntq),nnps(ntq),nnpp(ntq)
-c      common /cutoff/  nnpd(ntq),nns(ntq)
-c      common /cutoff/ nnd(ntq),jatc(ntq,150),atmin(ntq),nnp(ntq)
-c      common /cutoff/ ninteg
-c      common /cutoff/ kkint(ng*ng*ngd/100),kint(ng*ng*ngd/100)
-
-c      common /cutoff/ kknum,kkind(ng*(ng+1)/2)
-c      integer kknum
-c      integer, dimension (:), ALLOCATABLE :: kkind(:)
 
 c
 c------------------------------------------------------------------
@@ -169,13 +149,25 @@ c
       do 6 k=1,Md
  6     Rc(k)=0.D0
 c
-*******
-         do  kk = 1,MM
-           do  k = 1,Md
-*            Rc(k) = Rc(k) + RMM(kk)*t(kk,k)
-            Rc(k) = Rc(k) + RMM(kk)*cool((kk-1)*Md+k)
+******
+c        write(*,*) 'cosas',M,Md,kknums,MM
+        do kk=1,kknums
+          iikk=(kk-1)*Md
+             do k=1,Md
+          Rc(k)=Rc(k)+RMM(kkind(kk))*cool(iikk+k)
+                 
+c               write(88,*) cool(iikk+k), iikk+k
          enddo
-      enddo
+         enddo
+
+
+c         do  kk = 1,MM
+c           do  k = 1,Md
+c            Rc(k) = Rc(k) + RMM(kk)*cool((kk-1)*Md+k)
+c         enddo
+c      enddo
+
+       call timer_stop('principio int3lu')
 *
 *
 c
@@ -383,7 +375,6 @@ c end of Least squares option ----------
 c
 c
 
-      call timer_start('cosa1')
       Ea=0.D0
       Eb=0.D0
 c
@@ -395,7 +386,6 @@ c
       do 612 k=m1+1,Md
  612   Eb=Eb+af(k)*af(m1)*RMM(M7+k+(2*Md-m1)*(m1-1)/2-1)
  610  continue
-      call timer_stop('cosa1')
 c
 c
 c------------------------------------------------------------------
@@ -415,85 +405,39 @@ c
        enddo
        endif
 
-      call timer_start('cosa2')
 c
         do 217 k=1,Md
   217    af(k)=af(k)+B(k,2)
 c
 ****
 ****
-c      do kk = 1,MM
-c         do k = 1,Md
-*            RMM(M5+kk-1)=RMM(M5+kk-1)+af(k)*t(kk,k)
-*            RMM(M3+kk-1)=RMM(M3+kk-1)+aux(k)*t(kk,k)
-c            term = RMM(Mmem+kk+(k-1)*MM)
-c            if (term.gt.0.) then
-c             write(80,*)  Mmem+kk+(k-1)*MM,kk,k,term
-c             endif
-c            RMM(M5+kk-1)=RMM(M5+kk-1)+af(k)*term
-c            RMM(M3+kk-1)=RMM(M3+kk-1)+aux(k)*term
-c         enddo
-c       enddo
-
-c        write(*,*) 'ninteg',ninteg
-c        do iii=1,ninteg
-c         iikk=Mmem+kkint(iii)+(kint(iii)-1)*MM
-         
-c        write(*,*)'co',kkint(iii),kint(iii),af(kint(iii)),aux(kint(iii))
-c        RMM(M5+kkint(iii)-1)=RMM(M5+kkint(iii)-1)+af(kint(iii))
-c     & *RMM(iikk)
-c        RMM(M3+kkint(iii)-1)=RMM(M3+kkint(iii)-1)+
-c     & aux(kint(iii))*RMM(iikk)
-
-c c       enddo
 
          call timer_start('int3lu')
           if (open) then       
          do kk=1,kknums
+c             iikk=(kkind(kk)-1)*Md
+              iikk=(kk-1)*Md
              do k=1,Md
-          iikk=(kkind(kk)-1)*Md+k
-        RMM(M5+kkind(kk)-1)=RMM(M5+kkind(kk)-1)+af(k)*cool(iikk)
-        RMM(M3+kkind(kk)-1)=RMM(M3+kkind(kk)-1)+aux(k)*cool(iikk)
+        RMM(M5+kkind(kk)-1)=RMM(M5+kkind(kk)-1)+af(k)*cool(iikk+k)
+        RMM(M3+kkind(kk)-1)=RMM(M3+kkind(kk)-1)+aux(k)*cool(iikk+k)
          enddo
          enddo
          else
-         do kk=1,kknums
-             do k=1,Md
-          iikk=(kkind(kk)-1)*Md+k
-        RMM(M5+kkind(kk)-1)=RMM(M5+kkind(kk)-1)+af(k)*cool(iikk)
-c        RMM(M3+kkind(kk)-1)=RMM(M3+kkind(kk)-1)+aux(k)*cool(iikk)
-         enddo
-         enddo
+
+
+          do kk=1,kknums
+c            iikk=(kkind(kk)-1)*Md
+               iikk=(kk-1)*Md
+              do k=1,Md
+              RMM(M5+kkind(kk)-1)=RMM(M5+kkind(kk)-1)+af(k)*cool(iikk+k)
+c              write(88,*) cool(iikk+k),kk,k
+              enddo
+          enddo
 
          endif
 
 
-
-
-
          call timer_stop('int3lu')
-
-c         do kk=kknums+1,kknump
-c            do k=nsd+1,nsd+npd
-c           write(*,*) 'k en int3lu',k
-c          iikk=Mmem+kkind(kk)+(k-1)*MM
-cc            write(*,*) 'kkind',kkind(kk),iikk
-c        RMM(M5+kkind(kk)-1)=RMM(M5+kkind(kk)-1)+af(k)*RMM(iikk)
-c        RMM(M3+kkind(kk)-1)=RMM(M3+kkind(kk)-1)+aux(k)*RMM(iikk)
-c         enddo
-c         enddo
-c
-c         do kk=kknump+1,kknumd
-c            do k=nsd+npd+1,Md
-c          iikk=Mmem+kkind(kk)+(k-1)*MM
-cc         write(*,*) RMM(M5+kkind(kk)-1),RMM(M3+kkind(kk)-1)
-cc        write(78,*) iikk,kkind(kk),k
-c        RMM(M5+kkind(kk)-1)=RMM(M5+kkind(kk)-1)+af(k)*RMM(iikk)
-c        RMM(M3+kkind(kk)-1)=RMM(M3+kkind(kk)-1)+aux(k)*RMM(iikk)
-c         enddo
-c         enddo
-
-
 
 
 
@@ -510,7 +454,6 @@ c
 
        NCOa=NCO
        NCOb=NCO+Nunp
-       call timer_stop('principio int3lu')
        write(*,*) 'exchnum int3lu'
 c       write(957,*) 'int3lu'
 c       call timer_start('exchfock')

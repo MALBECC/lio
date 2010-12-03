@@ -30,7 +30,7 @@ c
 c
       character*17 name5
       character*17 name6
-      character*12 name1
+      character*32 name1
 c
 c nuclear MD
       dimension v(nt,3),f(nt,3),v1(nt,3),f1(nt,3),r1(nt,3)

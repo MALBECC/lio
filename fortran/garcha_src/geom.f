@@ -30,7 +30,7 @@ c
       implicit real*8 (a-h,o-z)
       character*20 strng
       character*17 name5
-      character*12 name1
+      character*32 name1
       logical NORM,ATRHO,VCINP,DIRECT,EXTR,dens,write,MEMO
       logical OPEN,SVD,SHFT,GRAD,BSSE,integ,thereis
       logical field,sol,free

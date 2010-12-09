@@ -15,3 +15,5 @@ dtest/*/*.xyz
 ecuaciones.pdf
 *.mod
 fort.*
+*.log
+*.bak

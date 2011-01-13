@@ -62,6 +62,7 @@ c
 c      parameter (rmax=25.D0)
 
       call timer_start('SCF')
+      call timer_start('inicio')
 
       just_int3n = false
 
@@ -487,6 +488,7 @@ c
  840   RMM(k)=RMM(M3+k-1)
 c
       endif
+      call timer_stop('inicio')
 
 c
 c-------------------------------------------------------------------

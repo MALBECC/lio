@@ -264,6 +264,6 @@ endbasis
  IEXCH  =           9,
  INTEG   = T,
  DENS    = T,
- IGRID   =           1,
- IGRID2  =           0
+ IGRID   =           2,
+ IGRID2=2/
  /

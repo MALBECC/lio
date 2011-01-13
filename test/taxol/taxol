@@ -351,5 +351,5 @@ endbasis
  INTEG   = T,
  DENS    = T,
  IGRID   =           2,
- IGRID2  =           2
+ IGRID2=2/
  /

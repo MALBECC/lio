@@ -111,7 +111,7 @@ gaussian
 endbasis
 &SCFINP
  OPEN = F,
- NMAX=300
+ NMAX=1
  NCO = 75
  NUNP = 0, 
  ATRHO = F, 
@@ -130,6 +130,6 @@ endbasis
  INTEG = T, 
  DENS = T, 
  IGRID = 2,
- IGRID2 = 1/
+ IGRID2=0/
 
 

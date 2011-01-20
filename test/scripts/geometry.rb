@@ -11,9 +11,9 @@ module Geometry
   def self.xyz_extract(xyz)
     # Obtains geometry from .xyz file
     geometry = nil
-    atoms = nil
     File.open(xyz) do |f|
       lines = f.readlines
+      puts lines.join("\n")
   
       atoms_line = lines.find {|l| l =~ /^ *([0-9]+) *$/}
       if (!atoms_line.nil?) then atoms = $1.to_i
@@ -26,8 +26,8 @@ module Geometry
       else
         positions.map! do |p|
           atom = p[/[A-Z]/]
-          if (!atom_types.include?(atom)) then raise "unknown atom type #{atom}" end
-          p[/([A-Z])/,1] = atom_types[atom].to_s
+          if (!ATOM_TYPES.include?(atom)) then raise "unknown atom type #{atom}" end
+          p[/([A-Z])/,1] = ATOM_TYPES[atom].to_s
           p
         end
         geometry = positions

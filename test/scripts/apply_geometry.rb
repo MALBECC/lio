@@ -19,7 +19,6 @@ files.each do |f|
   File.open(f) do |io|
     lines = io.readlines
     input_xyz = lines.grep(Geometry::REGEX_NUMBER)
-    if (input_xyz.size != atoms) then puts input_xyz.join; raise 'couldnt match lines on input' end
     lines[lines.index(input_xyz.first),input_xyz.size] = geometry
     out = lines.join
   end

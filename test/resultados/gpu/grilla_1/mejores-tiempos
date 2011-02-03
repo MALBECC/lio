@@ -1,0 +1,48 @@
+=> agua1
+e: -65.791702335311 mem_perc: - NCOxM: 1025 funcs: - time: 0.30 MxM: 3823 iteration: 7541us. dim: - NCOvsM: 0.268114046560293 iteracion: 8013us. impl: gpu pts_tot: 11020 density: - swaps: 0 funcs_tot: 209380 rmm: - mem_used: - pts: 9828 
+=> agua2
+e: -131.736969999048 mem_perc: - NCOxM: 4410 funcs: - time: 0.29 MxM: 12707 iteration: 17497us. dim: - NCOvsM: 0.347052805540253 iteracion: 18624us. impl: gpu pts_tot: 22040 density: - swaps: 0 funcs_tot: 837520 rmm: - mem_used: - pts: 19753 
+=> agua3
+e: -197.508232923012 mem_perc: - NCOxM: 11715 funcs: - time: 0.30 MxM: 28401 iteration: 33974us. dim: - NCOvsM: 0.412485475863526 iteracion: 39163us. impl: gpu pts_tot: 33060 density: - swaps: 0 funcs_tot: 1884420 rmm: - mem_used: - pts: 29870 
+=> agua4
+e: -263.258040110949 mem_perc: - NCOxM: 22240 funcs: - time: 0.51 MxM: 48304 iteration: 51116us. dim: - NCOvsM: 0.460417356740643 iteracion: 55741us. impl: gpu pts_tot: 44080 density: - swaps: 0 funcs_tot: 3350080 rmm: - mem_used: - pts: 39949 
+=> agua5
+e: -329.090738467788 mem_perc: - NCOxM: 35700 funcs: - time: 0.53 MxM: 68256 iteration: 74937us. dim: - NCOvsM: 0.52303094233474 iteracion: 83434us. impl: gpu pts_tot: 55100 density: - swaps: 0 funcs_tot: 5234500 rmm: - mem_used: - pts: 50056 
+=> agua6
+e: -394.863545715665 mem_perc: - NCOxM: 57630 funcs: - time: 0.74 MxM: 103871 iteration: 99325us. dim: - NCOvsM: 0.554822809061239 iteracion: 110989us. impl: gpu pts_tot: 66120 density: - swaps: 0 funcs_tot: 7537680 rmm: - mem_used: - pts: 60246 
+=> agua7
+e: -460.674451436548 mem_perc: - NCOxM: 77665 funcs: - time: 0.97 MxM: 125047 iteration: 131095us. dim: - NCOvsM: 0.621086471486721 iteracion: 149772us. impl: gpu pts_tot: 77140 density: - swaps: 0 funcs_tot: 10259620 rmm: - mem_used: - pts: 70308 
+=> agua8
+e: -526.545961794028 mem_perc: - NCOxM: 113600 funcs: - time: 1.20 MxM: 184750 iteration: 163779us. dim: - NCOvsM: 0.6148849797023 iteracion: 187056us. impl: gpu pts_tot: 88160 density: - swaps: 0 funcs_tot: 13400320 rmm: - mem_used: - pts: 80482 
+=> agua9
+e: -592.249794147471 mem_perc: - NCOxM: 176175 funcs: - time: 1.64 MxM: 259823 iteration: 200897us. dim: - NCOvsM: 0.67805775470224 iteracion: 235611us. impl: gpu pts_tot: 99180 density: - swaps: 0 funcs_tot: 16959780 rmm: - mem_used: - pts: 90537 
+=> agu10
+e: -658.271096115325 mem_perc: - NCOxM: 219550 funcs: - time: 2.08 MxM: 333789 iteration: 248104us. dim: - NCOvsM: 0.657750854581787 iteracion: 289136us. impl: gpu pts_tot: 110200 density: - swaps: 0 funcs_tot: 20938000 rmm: - mem_used: - pts: 100647 
+=> agu11
+e: -722.339369797984 mem_perc: - NCOxM: 251900 funcs: - time: 2.30 MxM: 344756 iteration: 280725us. dim: - NCOvsM: 0.730661685365882 iteracion: 339592us. impl: gpu pts_tot: 121220 density: - swaps: 0 funcs_tot: 25334980 rmm: - mem_used: - pts: 110781 
+=> agu12
+e: -784.676337961663 mem_perc: - NCOxM: 318600 funcs: - time: 2.75 MxM: 431692 iteration: 322975us. dim: - NCOvsM: 0.738026185335841 iteracion: 384517us. impl: gpu pts_tot: 132240 density: - swaps: 0 funcs_tot: 30150720 rmm: - mem_used: - pts: 120950 
+=> agu13
+e: -846.987544668480 mem_perc: - NCOxM: 381095 funcs: - time: 3.20 MxM: 496805 iteration: 371623us. dim: - NCOvsM: 0.76709171606566 iteracion: 449817us. impl: gpu pts_tot: 143260 density: - swaps: 0 funcs_tot: 35385220 rmm: - mem_used: - pts: 131060 
+=> agu14
+e: -911.865641995414 mem_perc: - NCOxM: 449890 funcs: - time: 3.85 MxM: 575107 iteration: 423992us. dim: - NCOvsM: 0.782271820722057 iteracion: 516404us. impl: gpu pts_tot: 154280 density: - swaps: 0 funcs_tot: 41038480 rmm: - mem_used: - pts: 141251 
+=> agu15
+e: -947.940584642589 mem_perc: - NCOxM: 521475 funcs: - time: 4.71 MxM: 640815 iteration: 478905us. dim: - NCOvsM: 0.813768404297652 iteracion: 594325us. impl: gpu pts_tot: 165300 density: - swaps: 0 funcs_tot: 47110500 rmm: - mem_used: - pts: 151479 
+=> agu16
+e: -972.937265252532 mem_perc: - NCOxM: 623920 funcs: - time: 5.38 MxM: 735937 iteration: 530576us. dim: - NCOvsM: 0.847789960281926 iteracion: 661847us. impl: gpu pts_tot: 176320 density: - swaps: 0 funcs_tot: 53601280 rmm: - mem_used: - pts: 161556 
+=> agu17
+e: -995.026996187048 mem_perc: - NCOxM: 763215 funcs: - time: 6.07 MxM: 845669 iteration: 579130us. dim: - NCOvsM: 0.902498495274156 iteracion: 732595us. impl: gpu pts_tot: 187340 density: - swaps: 0 funcs_tot: 60510820 rmm: - mem_used: - pts: 171807 
+=> agu18
+e: -1035.368981244959 mem_perc: - NCOxM: 856710 funcs: - time: 7.14 MxM: 914763 iteration: 622352us. dim: - NCOvsM: 0.936537660574378 iteracion: 798780us. impl: gpu pts_tot: 198360 density: - swaps: 0 funcs_tot: 67839120 rmm: - mem_used: - pts: 181931 
+=> agu19
+e: -1082.314003366931 mem_perc: - NCOxM: 957885 funcs: - time: 8.02 MxM: 991681 iteration: 670621us. dim: - NCOvsM: 0.965920492577754 iteracion: 880152us. impl: gpu pts_tot: 209380 density: - swaps: 0 funcs_tot: 75586180 rmm: - mem_used: - pts: 192013 
+=> agu20
+e: -1138.860713573646 mem_perc: - NCOxM: 1073000 funcs: - time: 9.11 MxM: 1083910 iteration: 730073us. dim: - NCOvsM: 0.989934588665111 iteracion: 960153us. impl: gpu pts_tot: 220400 density: - swaps: 0 funcs_tot: 83752000 rmm: - mem_used: - pts: 202119 
+=> agu21
+e: -1153.103794213117 mem_perc: - NCOxM: 1190700 funcs: - time: 10.41 MxM: 1173558 iteration: 788188us. dim: - NCOvsM: 1.01460686220877 iteracion: 1s. 61992us. impl: gpu pts_tot: 231420 density: - swaps: 0 funcs_tot: 92336580 rmm: - mem_used: - pts: 212292 
+=> agu22
+e: -1139.323677047796 mem_perc: - NCOxM: 1309220 funcs: - time: 11.50 MxM: 1256622 iteration: 843096us. dim: - NCOvsM: 1.04185666015715 iteracion: 1s. 144018us. impl: gpu pts_tot: 242440 density: - swaps: 0 funcs_tot: 101339920 rmm: - mem_used: - pts: 222439 
+=> agu23
+e: -1175.854088989386 mem_perc: - NCOxM: 1644155 funcs: - time: 13.07 MxM: 1431087 iteration: 904517us. dim: - NCOvsM: 1.14888542765045 iteracion: 1s. 240710us. impl: gpu pts_tot: 253460 density: - swaps: 0 funcs_tot: 110762020 rmm: - mem_used: - pts: 232507 
+=> agu24
+e: -1200.433444672574 mem_perc: - NCOxM: 1794120 funcs: - time: 14.59 MxM: 1519289 iteration: 960753us. dim: - NCOvsM: 1.18089448419623 iteracion: 1s. 347447us. impl: gpu pts_tot: 264480 density: - swaps: 0 funcs_tot: 120602880 rmm: - mem_used: - pts: 242702 

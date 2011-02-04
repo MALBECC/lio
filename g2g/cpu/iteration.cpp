@@ -22,7 +22,7 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
 {
   double total_energy = 0;
 
-  Timer t_total, t_ciclos, t_rmm, t_density, t_forces, t_resto, t_pot;
+  Timer t_total, t_ciclos, t_rmm, t_density, t_forces, t_resto, t_pot, t_functions;
   t_total.start();
 
   HostMatrixFloat rmm_output;
@@ -33,6 +33,13 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
 		const PointGroup& group = *(*group_it);
     uint group_m = group.total_functions();
     if (compute_rmm) { rmm_output.resize(group_m, group_m); rmm_output.zero(); }
+
+    #if CPU_RECOMPUTE
+    /** Compute this group's functions **/
+    t_functions.start();
+    group_it->compute_functions<compute_forces, !lda>();
+    t_functions.pause();
+    #endif
 
     // prepare rmm_input for this group
     t_density.start();
@@ -199,6 +206,13 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
       }
     }
     t_rmm.pause();
+
+    #if CPU_RECOMPUTE
+    /* clear functions */
+    group.function_values.deallocate();
+    group.gradient_values.deallocate();
+    group.hessian_values.deallocate();
+    #endif
   }
 
   /***** send results to fortran ****/
@@ -206,7 +220,7 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
 
   t_total.stop();
   cout << "iteration: " << t_total << endl;
-  cout << "rmm: " << t_rmm << " density: " << t_density << " pot: " << t_pot << " forces: " << t_forces << " resto: " << t_resto << endl;
+  cout << "rmm: " << t_rmm << " density: " << t_density << " pot: " << t_pot << " forces: " << t_forces << " resto: " << t_resto << " functions: " << t_functions << endl;
 }
 
 template void g2g_iteration<true, true>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);

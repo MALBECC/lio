@@ -30,14 +30,14 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
   /********** iterate all groups ***********/
 	for (list<PointGroup*>::const_iterator group_it = partition.group_list.begin(); group_it != partition.group_list.end(); ++group_it)
   {
-		const PointGroup& group = *(*group_it);
+    PointGroup& group = *(*group_it);
     uint group_m = group.total_functions();
     if (compute_rmm) { rmm_output.resize(group_m, group_m); rmm_output.zero(); }
 
     #if CPU_RECOMPUTE
     /** Compute this group's functions **/
     t_functions.start();
-    group_it->compute_functions<compute_forces, !lda>();
+    group.compute_functions<compute_forces, !lda>();
     t_functions.pause();
     #endif
 

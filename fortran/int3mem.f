@@ -1786,7 +1786,7 @@ c (dd|s)
         j=j+6
        if(j.le.i) then
       fato=.true.
-      dd=d(Nuc(i),Nuc(j))
+      ddij=d(Nuc(i),Nuc(j))
       do 60 ni=1,ncont(i)
       do 60 nj=1,ncont(j)
        zij=a(i,ni)+a(j,nj)
@@ -1794,7 +1794,7 @@ c (dd|s)
        ti=a(i,ni)/zij
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
-       rexp=alf*dd
+       rexp=alf*ddij
        if (rexp.lt.rmax) then   
        if (fato) then
          fato=.false.

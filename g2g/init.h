@@ -5,7 +5,7 @@
 
 /* definitions */
 #define FORTRAN_MAX_ATOMS 170 
-#define FORTRAN_NG 3400
+#define FORTRAN_NG 5100
 #define FORTRAN_NL 20
 
 namespace G2G {

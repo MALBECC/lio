@@ -495,7 +495,7 @@ c     M10=M9+Md
       M12=M10+Md
       Md3=3*Md
 c ESSL OPTION ------------------------------
-         call timer_start('DGESVF')
+         call timer_start('dgelss')
 #ifdef essl
       CALL DGESVF(10,XX,Md,RMM(M9),Md,1,RMM(M10),
      >             Md,Md,RMM(M12),Md3)
@@ -513,13 +513,17 @@ c
        enddo
        Md5=5*Md
       rcond=1.0D-07
+c     Hago una primera llamada para averiguar el tamanio recomendado para el work array (RMM(10))
+      call dgelss(Md,Md,1,XX,Md,aux,Md,RMM(M9),rcond,irank,RMM(M10),
+     >            -1,info)
+      Md5=RMM(M10)
       call dgelss(Md,Md,1,XX,Md,aux,Md,RMM(M9),rcond,irank,RMM(M10),
      >            Md5,info)
 c
       ss=RMM(M9)/RMM(M9+Md-1)
 c
 #endif
-         call timer_stop('DGESVF')
+         call timer_stop('dgelss')
        if (ss.gt.1.D14) then
         SVD=.true.
        endif
@@ -543,8 +547,10 @@ c
       call DPPICD(RMM(M9),Md,0,rcond,det,aux,Md)
 #endif
 c
+       call timer_start('dppco+dppdi+loop')
 c LINPACK OPTION
 #ifdef pack
+      call timer_start('parte')
 c
       kk=0
       do 313 j=1,Md
@@ -553,10 +559,16 @@ c
        kx=M7+j+(2*Md-i)*(i-1)/2-1
        RMM(M9+kk-1)=RMM(kx)
  313  continue
+      call timer_stop('parte')
 c
+      call timer_start('dppco')
       call dppco(RMM(M9),Md,rcond,aux,info)
+      call timer_stop('dppco')
+      call timer_start('dppdi')
       call dppdi(RMM(M9),Md,det,1)
+      call timer_stop('dppdi')
 c
+      call timer_start('resto')
       kk=0
       do 314 j=1,Md
       do 314 i=1,j
@@ -568,8 +580,10 @@ c
       do 315 kk=1,MMp
  315   RMM(M9+kk-1)=RMM(M15+kk-1)
 c
+      call timer_stop('resto')
 #endif
 c
+      call timer_stop('dppco+dppdi+loop')
       endif
  900  format('SWITCHING TO SVD rcond=',D8.2)
 c

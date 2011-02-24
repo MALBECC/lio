@@ -146,7 +146,7 @@ extern "C" void timer_start_(const char* timer_name) {
 extern "C" void timer_stop_(const char* timer_name) {
 #ifdef TIMINGS
 	Timer::sync();
-  if (fortran_timers.find(timer_name) == fortran_timers.end()) cout << "no existe timer!" << endl;
+  if (fortran_timers.find(timer_name) == fortran_timers.end()) cout << "no existe timer! (" << timer_name << ")" << endl;
 	fortran_timers[timer_name].stop();
   cout << "TIMER [" << timer_name << "]: " << fortran_timers[timer_name] << endl;
 #endif
@@ -155,7 +155,7 @@ extern "C" void timer_stop_(const char* timer_name) {
 extern "C" void timer_pause_(const char* timer_name) {
 #ifdef TIMINGS
 	Timer::sync();
-	if (fortran_timers.find(timer_name) == fortran_timers.end()) cout << "no existe timer!" << endl;
+	if (fortran_timers.find(timer_name) == fortran_timers.end()) cout << "no existe timer! (" << timer_name << ")" << endl;
   fortran_timers[timer_name].pause();
   cout << "TIMER [" << timer_name << "]: " << fortran_timers[timer_name] << "(so far)" << endl;
 #endif

@@ -347,8 +347,9 @@ c
  330  continue
 c
 c
-      endif
         call timer_stop('cosas1')
+      endif
+
 c End of Starting guess (No MO , AO known)-------------------------------
 ctt
           call timer_start('int22')

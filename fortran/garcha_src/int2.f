@@ -32,6 +32,7 @@ c
      >          rpi=1.77245385090551588D0,pi5=34.9868366552497108)
       dimension r(nt,3),nshelld(0:3)
       dimension cd(ngd,nl),ad(ngd,nl),Nucd(Md),ncontd(Md)
+      real*8, dimension(:), allocatable :: dgelss_temp
 c
 c aux . things
       dimension Q(3),d(ntq,ntq),aux(ngd),Det(2)
@@ -517,8 +518,10 @@ c     Hago una primera llamada para averiguar el tamanio recomendado para el wor
       call dgelss(Md,Md,1,XX,Md,aux,Md,RMM(M9),rcond,irank,RMM(M10),
      >            -1,info)
       Md5=RMM(M10)
-      call dgelss(Md,Md,1,XX,Md,aux,Md,RMM(M9),rcond,irank,RMM(M10),
+      allocate(dgelss_temp(Md5))
+      call dgelss(Md,Md,1,XX,Md,aux,Md,RMM(M9),rcond,irank,dgelss_temp,
      >            Md5,info)
+      deallocate(dgelss_temp)
 c
       ss=RMM(M9)/RMM(M9+Md-1)
 c

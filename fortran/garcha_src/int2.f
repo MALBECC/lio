@@ -541,15 +541,6 @@ c
 c
 c
 c
-c  ESSL option     
-#ifdef essl
-      do 312 kk=1,MMp
-       RMM(M9+kk-1)=RMM(M7+kk-1)
- 312  continue
-c
-      call DPPICD(RMM(M9),Md,0,rcond,det,aux,Md)
-#endif
-c
        call timer_start('dppco+dppdi+loop')
 c LINPACK OPTION
 #ifdef pack
@@ -568,7 +559,8 @@ c
       call dppco(RMM(M9),Md,rcond,aux,info)
       call timer_stop('dppco')
       call timer_start('dppdi')
-      call dppdi(RMM(M9),Md,det,1)
+      call dpptri('U', Md, RMM(M9), info)
+c      call dppdi(RMM(M9),Md,det,1)
       call timer_stop('dppdi')
 c
       call timer_start('resto')

@@ -60,6 +60,7 @@ def run_gpu
       :pts => output[/Grilla final: (\d+)/,1],
       :funcs => output[/Grilla final: \d+ puntos, (\d+)/,1],
       :iteration => output[/iteration: ((\d+s\. )?\d+us\.)/,1],
+      :iteracion => output[/TIMER \[iteracion\]: ((\d+s\. )?\d+us\.)/,1],
       :density => output[/TIMER: density\/energy ((\d+s\. )?\d+us\.)/,1],
       :rmm => output[/TIMER: rmm: ((\d+s\. )?\d+us\.)/,1],
       :NCOxM => output[/NCOxM: (\d+)/,1],
@@ -78,10 +79,10 @@ end
 
 begin
   ranges = {
-    :little_cube_size => StepRange.new((3.0..10.0),0.5),
-    :max_function_exponent => StepRange.new((12..12),1),
+    :little_cube_size => StepRange.new((4.5..4.5),0.5),
+    :max_function_exponent => StepRange.new((5..20),1),
     :min_points_per_cube => StepRange.new((1..1),1),
-    :sphere_radius => StepRange.new((0.4..0.8),0.05)
+    :sphere_radius => StepRange.new((0.5..0.5),0.05)
 #    :assign_all_functions => 1
   }
 
@@ -91,7 +92,8 @@ begin
     puts "=> #{dir}"
 
     if (USE_EXISTING_OPTIONS)
-      if (USE_BEST_CPU) then FileUtils.cp('gpu_options.cpu.best', 'gpu_options'); puts 'Using best cpu' end
+      #if (USE_BEST_CPU) then FileUtils.cp('gpu_options.cpu.best', 'gpu_options'); puts 'Using best cpu'
+      #else FileUtils.cp('gpu_options.gpu.best', 'gpu_options'); puts 'Using best gpu' end
       run_gpu()
     else
       best_combination = nil

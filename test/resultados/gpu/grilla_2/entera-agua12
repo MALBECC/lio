@@ -1,0 +1,800 @@
+   964.664400000000        Memoria en MB
+<====== Initializing G2G ======>GPU Device used: GeForce GTX 480
+Kernels: gpu
+  Name of the input file ?
+ JOB STARTED 
+jue feb  3 15:34:29 ART 2011
+<======= GPU Code Initialization ========>
+do_forces: false
+s: 84 p: 24 d: 12
+m: 228 nco: 60
+<====== read_options ========>
+little_cube_size 6
+max_function_exponent 12
+min_points_per_cube 1
+sphere_radius 0.6
+ primera carga de posiciones
+<======= GPU Reload Atom Positions (2)========>
+<============ G2G Partition (2)============>
+determining minimum exponents
+determining x0 and x1
+x0 (56.74413429,119.8273106,76.51677608)
+x1 (90.20601075,147.9066935,106.2210751)
+prism size: 6 5 5
+precomputing distances...
+computing points and assigning to cubes/spheres...
+Time: 27466us.
+Grilla original: 221160 puntos, 50424480 funciones
+filling cube parameters and adding to partition...
+filling sphere parameters and adding to partition...
+total: 189563us.
+Grilla final: 201857 puntos (recordar que los de peso 0 se tiran), 15739088 funciones
+Costo: 31478176
+NCOxM: 379500 MxM: 485619
+Particion final: 157 grupos
+<===== computing functions =======>
+  SCF CALCULATION  
+ int1
+ dspev
+TIMER [inicio1]: 35324us.
+ dspev
+TIMER [cosas1]: 22137us.
+TIMER [DGESVF]: 291531us.
+TIMER [int22]: 362604us.
+ int22
+ kknum       15143       26106
+TIMER [int3mmem]: 613914us.
+ int3mem
+TIMER [inicio]: 1s. 179787us.
+ empiezo el loop
+TIMER [principio int3lu]: 11072us.
+TIMER [int3lu]: 12271us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 461412us.
+rmm: 77766us. density: 349974us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24872us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4908us.
+TIMER [actualiza rmm]: 10355us.
+TIMER [dspev]: 19190us.
+TIMER [coeff]: 4516us.
+TIMER [otras cosas]: 1664us.
+  1  0.500000E+01    -675.4799409
+TIMER [iteracion]: 522765us.
+ 
+TIMER [principio int3lu]: 10935us.
+TIMER [int3lu]: 12336us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460600us.
+rmm: 77038us. density: 350049us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24667us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4864us.
+TIMER [actualiza rmm]: 10263us.
+TIMER [dspev]: 18923us.
+TIMER [coeff]: 4532us.
+TIMER [otras cosas]: 1669us.
+  2  0.500000E+01    -310.9508445
+TIMER [iteracion]: 521459us.
+ 
+TIMER [principio int3lu]: 11048us.
+TIMER [int3lu]: 12487us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 461160us.
+rmm: 77583us. density: 350032us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24735us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4865us.
+TIMER [actualiza rmm]: 10279us.
+TIMER [dspev]: 19198us.
+TIMER [coeff]: 4491us.
+TIMER [otras cosas]: 1660us.
+  3  0.500000E+01    -712.8245643
+TIMER [iteracion]: 522561us.
+ 
+TIMER [principio int3lu]: 10849us.
+TIMER [int3lu]: 12181us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 461202us.
+rmm: 77481us. density: 350333us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24635us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4892us.
+TIMER [actualiza rmm]: 10272us.
+TIMER [dspev]: 18699us.
+TIMER [coeff]: 4490us.
+TIMER [otras cosas]: 1680us.
+  4  0.500000E+01    -789.2906442
+TIMER [iteracion]: 521606us.
+ 
+TIMER [principio int3lu]: 11732us.
+TIMER [int3lu]: 12224us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 459972us.
+rmm: 76963us. density: 349660us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24585us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4892us.
+TIMER [actualiza rmm]: 10266us.
+TIMER [dspev]: 18958us.
+TIMER [coeff]: 4516us.
+TIMER [otras cosas]: 1662us.
+  5  0.500000E+01    -806.4278060
+TIMER [iteracion]: 521525us.
+ 
+TIMER [principio int3lu]: 10939us.
+TIMER [int3lu]: 12307us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460391us.
+rmm: 77070us. density: 349889us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24623us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4926us.
+TIMER [actualiza rmm]: 10365us.
+TIMER [dspev]: 18502us.
+TIMER [coeff]: 4530us.
+TIMER [otras cosas]: 1664us.
+  6  0.500000E+01    -807.6714202
+TIMER [iteracion]: 520917us.
+ 
+TIMER [principio int3lu]: 10914us.
+TIMER [int3lu]: 12259us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460765us.
+rmm: 77450us. density: 349907us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24623us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4895us.
+TIMER [actualiza rmm]: 10329us.
+TIMER [dspev]: 23677us.
+TIMER [coeff]: 4544us.
+TIMER [otras cosas]: 1662us.
+  7  0.500000E+01    -807.2834200
+TIMER [iteracion]: 526470us.
+ 
+TIMER [principio int3lu]: 10960us.
+TIMER [int3lu]: 12367us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460848us.
+rmm: 76918us. density: 350174us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24972us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4895us.
+TIMER [actualiza rmm]: 10273us.
+TIMER [dspev]: 18547us.
+TIMER [coeff]: 4500us.
+TIMER [otras cosas]: 1681us.
+  8  0.500000E+01    -806.7615758
+TIMER [iteracion]: 521372us.
+ 
+TIMER [principio int3lu]: 10817us.
+TIMER [int3lu]: 12183us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 461062us.
+rmm: 77619us. density: 349957us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24665us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4894us.
+TIMER [actualiza rmm]: 10285us.
+TIMER [dspev]: 18493us.
+TIMER [coeff]: 4513us.
+TIMER [otras cosas]: 1662us.
+  9  0.500000E+01    -806.3864110
+TIMER [iteracion]: 521207us.
+ 
+TIMER [principio int3lu]: 11092us.
+TIMER [int3lu]: 12294us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 461504us.
+rmm: 77507us. density: 350408us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24765us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4905us.
+TIMER [actualiza rmm]: 10294us.
+TIMER [dspev]: 18496us.
+TIMER [coeff]: 4510us.
+TIMER [otras cosas]: 1660us.
+ 10  0.500000E+01    -806.1530357
+TIMER [iteracion]: 522057us.
+ 
+TIMER [principio int3lu]: 10897us.
+TIMER [int3lu]: 12358us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460407us.
+rmm: 77217us. density: 349822us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24577us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4868us.
+TIMER [actualiza rmm]: 10290us.
+TIMER [dspev]: 18941us.
+TIMER [coeff]: 4512us.
+TIMER [otras cosas]: 1659us.
+ 11  0.500000E+01    -806.0148471
+TIMER [iteracion]: 521257us.
+ 
+TIMER [principio int3lu]: 10884us.
+TIMER [int3lu]: 12269us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 461301us.
+rmm: 77585us. density: 349712us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 25223us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4866us.
+TIMER [actualiza rmm]: 10388us.
+TIMER [dspev]: 18486us.
+TIMER [coeff]: 4488us.
+TIMER [otras cosas]: 1660us.
+ 12  0.500000E+01    -805.9340136
+TIMER [iteracion]: 521751us.
+ 
+TIMER [principio int3lu]: 10894us.
+TIMER [int3lu]: 12266us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 461356us.
+rmm: 77956us. density: 349936us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24658us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4866us.
+TIMER [actualiza rmm]: 10273us.
+TIMER [dspev]: 18781us.
+TIMER [coeff]: 4491us.
+TIMER [otras cosas]: 1660us.
+ 13  0.500000E+01    -805.8863152
+TIMER [iteracion]: 521951us.
+ 
+TIMER [principio int3lu]: 10937us.
+TIMER [int3lu]: 12380us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 461129us.
+rmm: 77615us. density: 349993us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24690us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4901us.
+TIMER [actualiza rmm]: 10302us.
+TIMER [dspev]: 18637us.
+TIMER [coeff]: 4492us.
+TIMER [otras cosas]: 1679us.
+ 14  0.500000E+01    -805.8574944
+TIMER [iteracion]: 521814us.
+ 
+TIMER [principio int3lu]: 10860us.
+TIMER [int3lu]: 12294us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 461768us.
+rmm: 78239us. density: 350047us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24670us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4896us.
+TIMER [actualiza rmm]: 10272us.
+TIMER [dspev]: 18702us.
+TIMER [coeff]: 4510us.
+TIMER [otras cosas]: 1662us.
+ 15  0.500000E+01    -805.8394510
+TIMER [iteracion]: 522252us.
+ 
+TIMER [principio int3lu]: 10855us.
+TIMER [int3lu]: 12391us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460593us.
+rmm: 77318us. density: 349908us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24611us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4903us.
+TIMER [actualiza rmm]: 10300us.
+TIMER [dspev]: 18782us.
+TIMER [coeff]: 4513us.
+TIMER [otras cosas]: 1660us.
+ 16  0.500000E+01    -805.8276576
+TIMER [iteracion]: 521286us.
+ 
+TIMER [principio int3lu]: 10841us.
+TIMER [int3lu]: 12185us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460534us.
+rmm: 77364us. density: 349794us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24616us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4864us.
+TIMER [actualiza rmm]: 10255us.
+TIMER [dspev]: 19323us.
+TIMER [coeff]: 4521us.
+TIMER [otras cosas]: 1661us.
+ 17  0.500000E+01    -805.8195889
+TIMER [iteracion]: 521525us.
+ 
+TIMER [principio int3lu]: 10964us.
+TIMER [int3lu]: 12334us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 462900us.
+rmm: 78594us. density: 349982us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 25355us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4873us.
+TIMER [actualiza rmm]: 10281us.
+TIMER [dspev]: 18611us.
+TIMER [coeff]: 4493us.
+TIMER [otras cosas]: 1661us.
+ 18  0.500000E+01    -805.8138230
+TIMER [iteracion]: 523440us.
+ 
+TIMER [principio int3lu]: 10998us.
+TIMER [int3lu]: 12286us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460865us.
+rmm: 77659us. density: 349877us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24588us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4895us.
+TIMER [actualiza rmm]: 10280us.
+TIMER [dspev]: 18811us.
+TIMER [coeff]: 4498us.
+TIMER [otras cosas]: 1680us.
+ 19  0.500000E+01    -805.8095486
+TIMER [iteracion]: 521609us.
+ 
+TIMER [principio int3lu]: 10990us.
+TIMER [int3lu]: 12356us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 461365us.
+rmm: 78116us. density: 349881us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24622us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4897us.
+TIMER [actualiza rmm]: 10285us.
+TIMER [dspev]: 18846us.
+TIMER [coeff]: 4511us.
+TIMER [otras cosas]: 1658us.
+ 20  0.500000E+01    -805.8062867
+TIMER [iteracion]: 522210us.
+ 
+TIMER [principio int3lu]: 10884us.
+TIMER [int3lu]: 12270us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460178us.
+rmm: 77195us. density: 349576us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24625us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4902us.
+TIMER [actualiza rmm]: 10287us.
+TIMER [dspev]: 18948us.
+TIMER [coeff]: 4510us.
+TIMER [otras cosas]: 1662us.
+ 21  0.500000E+01    -805.8037433
+TIMER [iteracion]: 520931us.
+ 
+TIMER [principio int3lu]: 10914us.
+TIMER [int3lu]: 12317us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 461347us.
+rmm: 77526us. density: 350324us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24693us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4863us.
+TIMER [actualiza rmm]: 10263us.
+TIMER [dspev]: 19044us.
+TIMER [coeff]: 4493us.
+TIMER [otras cosas]: 1659us.
+ 22  0.500000E+01    -805.8017323
+TIMER [iteracion]: 522226us.
+ 
+TIMER [principio int3lu]: 11027us.
+TIMER [int3lu]: 12300us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460642us.
+rmm: 77632us. density: 349570us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24624us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4865us.
+TIMER [actualiza rmm]: 10286us.
+TIMER [dspev]: 18875us.
+TIMER [coeff]: 4491us.
+TIMER [otras cosas]: 1661us.
+ 23  0.500000E+01    -805.8001260
+TIMER [iteracion]: 521504us.
+ 
+TIMER [principio int3lu]: 10960us.
+TIMER [int3lu]: 12285us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 459560us.
+rmm: 76777us. density: 349414us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24615us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4873us.
+TIMER [actualiza rmm]: 10298us.
+TIMER [dspev]: 18829us.
+TIMER [coeff]: 4491us.
+TIMER [otras cosas]: 1659us.
+ 24  0.500000E+01    -805.7988345
+TIMER [iteracion]: 520309us.
+ 
+TIMER [principio int3lu]: 10971us.
+TIMER [int3lu]: 12367us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460012us.
+rmm: 77059us. density: 349577us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24607us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4870us.
+TIMER [actualiza rmm]: 10288us.
+TIMER [dspev]: 21555us.
+TIMER [coeff]: 4535us.
+TIMER [otras cosas]: 1664us.
+ 25  0.500000E+01    -805.7977926
+TIMER [iteracion]: 523620us.
+ 
+TIMER [principio int3lu]: 11190us.
+TIMER [int3lu]: 12432us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460813us.
+rmm: 77514us. density: 349815us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24670us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4900us.
+TIMER [actualiza rmm]: 10294us.
+TIMER [dspev]: 18915us.
+TIMER [coeff]: 4509us.
+TIMER [otras cosas]: 1660us.
+ 26  0.500000E+01    -805.7969500
+TIMER [iteracion]: 522048us.
+ 
+TIMER [principio int3lu]: 10868us.
+TIMER [int3lu]: 12291us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 459975us.
+rmm: 77004us. density: 349554us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24669us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4867us.
+TIMER [actualiza rmm]: 10291us.
+TIMER [dspev]: 23511us.
+TIMER [coeff]: 4494us.
+TIMER [otras cosas]: 1663us.
+ 27  0.500000E+01    -805.7962676
+TIMER [iteracion]: 525931us.
+ 
+TIMER [principio int3lu]: 10841us.
+TIMER [int3lu]: 12234us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 461256us.
+rmm: 77436us. density: 350097us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24848us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4896us.
+TIMER [actualiza rmm]: 10281us.
+TIMER [dspev]: 18578us.
+TIMER [coeff]: 4556us.
+TIMER [otras cosas]: 1681us.
+ 28  0.500000E+01    -805.7957148
+TIMER [iteracion]: 521616us.
+ 
+TIMER [principio int3lu]: 10970us.
+TIMER [int3lu]: 12322us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460903us.
+rmm: 77518us. density: 350019us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24602us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4895us.
+TIMER [actualiza rmm]: 10275us.
+TIMER [dspev]: 18901us.
+TIMER [coeff]: 4510us.
+TIMER [otras cosas]: 1660us.
+ 29  0.500000E+01    -805.7952667
+TIMER [iteracion]: 521749us.
+ 
+TIMER [principio int3lu]: 10832us.
+TIMER [int3lu]: 12182us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460184us.
+rmm: 77025us. density: 349909us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24513us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4902us.
+TIMER [actualiza rmm]: 10278us.
+TIMER [dspev]: 18922us.
+TIMER [coeff]: 4512us.
+TIMER [otras cosas]: 1662us.
+ 30  0.500000E+01    -805.7949032
+TIMER [iteracion]: 520755us.
+ 
+TIMER [principio int3lu]: 10901us.
+TIMER [int3lu]: 12184us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460536us.
+rmm: 77083us. density: 350103us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24604us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4865us.
+TIMER [actualiza rmm]: 10274us.
+TIMER [dspev]: 18855us.
+TIMER [coeff]: 4516us.
+TIMER [otras cosas]: 1660us.
+ 31  0.500000E+01    -805.7946085
+TIMER [iteracion]: 521138us.
+ 
+TIMER [principio int3lu]: 10926us.
+TIMER [int3lu]: 12220us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460709us.
+rmm: 77467us. density: 349888us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24595us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4878us.
+TIMER [actualiza rmm]: 10274us.
+TIMER [dspev]: 18853us.
+TIMER [coeff]: 4492us.
+TIMER [otras cosas]: 1658us.
+ 32  0.500000E+01    -805.7943693
+TIMER [iteracion]: 521323us.
+ 
+TIMER [principio int3lu]: 10967us.
+TIMER [int3lu]: 12225us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460476us.
+rmm: 77291us. density: 349676us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24695us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4867us.
+TIMER [actualiza rmm]: 10269us.
+TIMER [dspev]: 18988us.
+TIMER [coeff]: 4491us.
+TIMER [otras cosas]: 1662us.
+ 33  0.500000E+01    -805.7941754
+TIMER [iteracion]: 521308us.
+ 
+TIMER [principio int3lu]: 10854us.
+TIMER [int3lu]: 12327us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460974us.
+rmm: 77354us. density: 349878us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24800us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4904us.
+TIMER [actualiza rmm]: 10278us.
+TIMER [dspev]: 22593us.
+TIMER [coeff]: 4541us.
+TIMER [otras cosas]: 1659us.
+ 34  0.500000E+01    -805.7940179
+TIMER [iteracion]: 525453us.
+ 
+TIMER [principio int3lu]: 10871us.
+TIMER [int3lu]: 12379us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460803us.
+rmm: 77394us. density: 349937us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24673us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4946us.
+TIMER [actualiza rmm]: 10497us.
+TIMER [dspev]: 20722us.
+TIMER [coeff]: 4493us.
+TIMER [otras cosas]: 1660us.
+ 35  0.500000E+01    -805.7938902
+TIMER [iteracion]: 523632us.
+ 
+TIMER [principio int3lu]: 10912us.
+TIMER [int3lu]: 12373us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 461341us.
+rmm: 77909us. density: 349904us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24703us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4910us.
+TIMER [actualiza rmm]: 10289us.
+TIMER [dspev]: 18936us.
+TIMER [coeff]: 4555us.
+TIMER [otras cosas]: 1692us.
+ 36  0.500000E+01    -805.7937862
+TIMER [iteracion]: 522337us.
+ 
+TIMER [principio int3lu]: 10889us.
+TIMER [int3lu]: 12354us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 461291us.
+rmm: 77646us. density: 350018us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24821us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4898us.
+TIMER [actualiza rmm]: 10286us.
+TIMER [dspev]: 26945us.
+TIMER [coeff]: 4573us.
+TIMER [otras cosas]: 1675us.
+ 37  0.500000E+01    -805.7937019
+TIMER [iteracion]: 531031us.
+ 
+TIMER [principio int3lu]: 10894us.
+TIMER [int3lu]: 12602us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460671us.
+rmm: 77335us. density: 349837us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24740us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4895us.
+TIMER [actualiza rmm]: 10279us.
+TIMER [dspev]: 19058us.
+TIMER [coeff]: 4522us.
+TIMER [otras cosas]: 1665us.
+ 38  0.500000E+01    -805.7936338
+TIMER [iteracion]: 521883us.
+ 
+TIMER [principio int3lu]: 10912us.
+TIMER [int3lu]: 12703us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460688us.
+rmm: 77481us. density: 349833us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24615us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4898us.
+TIMER [actualiza rmm]: 10273us.
+TIMER [dspev]: 19338us.
+TIMER [coeff]: 4508us.
+TIMER [otras cosas]: 1661us.
+ 39  0.500000E+01    -805.7935785
+TIMER [iteracion]: 522305us.
+ 
+TIMER [principio int3lu]: 10878us.
+TIMER [int3lu]: 12242us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460878us.
+rmm: 77599us. density: 349872us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24626us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4889us.
+TIMER [actualiza rmm]: 10291us.
+TIMER [dspev]: 18939us.
+TIMER [coeff]: 4515us.
+TIMER [otras cosas]: 1662us.
+ 40  0.500000E+01    -805.7935335
+TIMER [iteracion]: 521595us.
+ 
+TIMER [principio int3lu]: 10966us.
+TIMER [int3lu]: 12257us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 461305us.
+rmm: 78065us. density: 349730us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24694us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4864us.
+TIMER [actualiza rmm]: 10271us.
+TIMER [dspev]: 18987us.
+TIMER [coeff]: 4491us.
+TIMER [otras cosas]: 1659us.
+ 41  0.500000E+01    -805.7934969
+TIMER [iteracion]: 522124us.
+ 
+TIMER [principio int3lu]: 10949us.
+TIMER [int3lu]: 12250us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460827us.
+rmm: 77580us. density: 349905us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24592us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4866us.
+TIMER [actualiza rmm]: 10271us.
+TIMER [dspev]: 18948us.
+TIMER [coeff]: 4503us.
+TIMER [otras cosas]: 1663us.
+ 42  0.500000E+01    -805.7934669
+TIMER [iteracion]: 521640us.
+ 
+TIMER [principio int3lu]: 10912us.
+TIMER [int3lu]: 12245us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460121us.
+rmm: 77171us. density: 349599us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24583us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4892us.
+TIMER [actualiza rmm]: 10304us.
+TIMER [dspev]: 19052us.
+TIMER [coeff]: 4494us.
+TIMER [otras cosas]: 1680us.
+ 43  0.500000E+01    -805.7934426
+TIMER [iteracion]: 521002us.
+ 
+TIMER [principio int3lu]: 10864us.
+TIMER [int3lu]: 12253us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460598us.
+rmm: 77226us. density: 349995us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24621us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4893us.
+TIMER [actualiza rmm]: 10265us.
+TIMER [dspev]: 18980us.
+TIMER [coeff]: 4531us.
+TIMER [otras cosas]: 1660us.
+ 44  0.500000E+01    -805.7934229
+TIMER [iteracion]: 521337us.
+ 
+TIMER [principio int3lu]: 10843us.
+TIMER [int3lu]: 12251us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 461541us.
+rmm: 77681us. density: 350309us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24677us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4899us.
+TIMER [actualiza rmm]: 10392us.
+TIMER [dspev]: 18734us.
+TIMER [coeff]: 4515us.
+TIMER [otras cosas]: 1664us.
+ 45  0.500000E+01    -805.7934070
+TIMER [iteracion]: 522137us.
+ 
+TIMER [principio int3lu]: 10901us.
+TIMER [int3lu]: 12309us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 460358us.
+rmm: 77310us. density: 349556us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24702us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+TIMER [actualiza rmm1]: 4867us.
+TIMER [actualiza rmm]: 10274us.
+TIMER [dspev]: 19068us.
+TIMER [coeff]: 4517us.
+TIMER [otras cosas]: 1659us.
+ 46  0.500000E+01    -805.7933941
+TIMER [iteracion]: 521288us.
+ 
+ 
+  ENERGY CONTRIBUTIONS IN A.U.
+  ONE ELECTRON         COULOMB           NUCLEAR
+ -3175.1829116      1409.4998980       959.8896194
+ ultimo paso SCF
+<======= GPU New Grid (2)========>
+not loading, same grid as loaded
+<================ iteracion [energia] ==========>
+total energy: -110.6108259
+iteration: 389856us.
+rmm: 92us. density: 354886us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 24868us.
+mem_used: 306.5820312MB | mem_perc: 19.97033139%
+ 
+SCF ENERGY =   -916.404220013571
+ 
+ DIPOLE MOMENT, X Y Z COMPONENTS AND NORM (DEBYES)
+   -0.9898     -2.2330     -5.8487        6.3382
+ 
+ MULLIKEN POPULATION ANALYSIS
+ATOM #    ATOM TYPE    POPULATION
+  1           8         -0.8631
+  2           1          0.4554
+  3           1          0.4162
+  4           8         -0.8308
+  5           1          0.4022
+  6           1          0.4615
+  7           8         -0.8802
+  8           1          0.4245
+  9           1          0.4612
+ 10           8         -0.8883
+ 11           1          0.4481
+ 12           1          0.4296
+ 13           8         -0.8486
+ 14           1          0.3976
+ 15           1          0.4001
+ 16           8         -0.8796
+ 17           1          0.4656
+ 18           1          0.4531
+ 19           8         -0.8778
+ 20           1          0.4558
+ 21           1          0.4188
+ 22           8         -0.9145
+ 23           1          0.4296
+ 24           1          0.4617
+ 25           8         -0.8838
+ 26           1          0.4453
+ 27           1          0.4256
+ 28           8         -0.7962
+ 29           1          0.4229
+ 30           1          0.4249
+ 31           8         -0.8539
+ 32           1          0.4415
+ 33           1          0.4029
+ 34           8         -0.8223
+ 35           1          0.4251
+ 36           1          0.3702
+ 
+TIMER [SCF]: 25s. 772114us.
+ JOB FINISHED
+jue feb  3 15:34:55 ART 2011
+<====== Deinitializing G2G ======>

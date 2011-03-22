@@ -1,0 +1,57 @@
+=> taxol
+little_cube_size = 5.0; max_function_exponent = 5; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.209012778698 mem_perc: - NCOxM: 3074278 funcs: - time: 333.92 MxM: 1012890 iteration: 1s. 155534us. dim: - NCOvsM: 3.03515485393281 iteracion: 2s. 427348us. impl: gpu pts_tot: 699370 density: - swaps: 0 funcs_tot: 452492390 rmm: - mem_used: - pts: 626766 
+little_cube_size = 5.0; max_function_exponent = 6; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.206928695070 mem_perc: - NCOxM: 3581157 funcs: - time: 355.74 MxM: 1275519 iteration: 1s. 361664us. dim: - NCOvsM: 2.80760772673712 iteracion: 2s. 629800us. impl: gpu pts_tot: 699370 density: - swaps: 0 funcs_tot: 452492390 rmm: - mem_used: - pts: 628814 
+little_cube_size = 5.0; max_function_exponent = 7; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.206464002843 mem_perc: - NCOxM: 4069973 funcs: - time: 377.87 MxM: 1562009 iteration: 1s. 570064us. dim: - NCOvsM: 2.60560150421668 iteracion: 2s. 841447us. impl: gpu pts_tot: 699370 density: - swaps: 0 funcs_tot: 452492390 rmm: - mem_used: - pts: 630823 
+little_cube_size = 5.0; max_function_exponent = 8; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.205323526474 mem_perc: - NCOxM: 4665829 funcs: - time: 406.95 MxM: 1950973 iteration: 1s. 841794us. dim: - NCOvsM: 2.39153950362204 iteracion: 3s. 118185us. impl: gpu pts_tot: 699370 density: - swaps: 0 funcs_tot: 452492390 rmm: - mem_used: - pts: 632493 
+little_cube_size = 5.0; max_function_exponent = 9; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.204943357522 mem_perc: - NCOxM: 5247636 funcs: - time: 432.47 MxM: 2340536 iteration: 2s. 94215us. dim: - NCOvsM: 2.24206591994312 iteracion: 3s. 363234us. impl: gpu pts_tot: 699370 density: - swaps: 0 funcs_tot: 452492390 rmm: - mem_used: - pts: 634056 
+little_cube_size = 5.0; max_function_exponent = 10; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.204591219768 mem_perc: - NCOxM: 5832342 funcs: - time: 467.38 MxM: 2809742 iteration: 2s. 426564us. dim: - NCOvsM: 2.07575713357312 iteracion: 3s. 697524us. impl: gpu pts_tot: 699370 density: - swaps: 0 funcs_tot: 452492390 rmm: - mem_used: - pts: 634965 
+little_cube_size = 5.0; max_function_exponent = 11; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.204694688073 mem_perc: - NCOxM: 6378023 funcs: - time: 514.52 MxM: 3253281 iteration: 2s. 728174us. dim: - NCOvsM: 1.96048942590572 iteracion: 3s. 998136us. impl: gpu pts_tot: 699370 density: - swaps: 1 funcs_tot: 452492390 rmm: - mem_used: - pts: 635644 
+WARNING: swaps detected!
+little_cube_size = 5.0; max_function_exponent = 12; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.204643730493 mem_perc: - NCOxM: 6935969 funcs: - time: 535.91 MxM: 3720757 iteration: 3s. 57368us. dim: - NCOvsM: 1.86412845558041 iteracion: 4s. 345895us. impl: gpu pts_tot: 699370 density: - swaps: 12 funcs_tot: 452492390 rmm: - mem_used: - pts: 636173 
+WARNING: swaps detected!
+little_cube_size = 5.0; max_function_exponent = 13; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.204766210087 mem_perc: - NCOxM: 7532940 funcs: - time: 572.34 MxM: 4252508 iteration: 3s. 399059us. dim: - NCOvsM: 1.77141112962045 iteracion: 4s. 692046us. impl: gpu pts_tot: 699370 density: - swaps: 0 funcs_tot: 452492390 rmm: - mem_used: - pts: 637190 
+little_cube_size = 5.0; max_function_exponent = 14; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.204693626407 mem_perc: - NCOxM: 8119207 funcs: - time: 616.48 MxM: 4822257 iteration: 3s. 828500us. dim: - NCOvsM: 1.68369437796451 iteracion: 5s. 122257us. impl: gpu pts_tot: 699370 density: - swaps: 0 funcs_tot: 452492390 rmm: - mem_used: - pts: 638039 
+little_cube_size = 5.0; max_function_exponent = 15; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.204707583388 mem_perc: - NCOxM: 8656414 funcs: - time: 656.21 MxM: 5345786 iteration: 4s. 202842us. dim: - NCOvsM: 1.61929676945542 iteracion: 5s. 487440us. impl: gpu pts_tot: 699370 density: - swaps: 0 funcs_tot: 452492390 rmm: - mem_used: - pts: 638979 
+little_cube_size = 5.0; max_function_exponent = 16; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.204782531036 mem_perc: - NCOxM: 9180687 funcs: - time: 696.77 MxM: 5880519 iteration: 4s. 579066us. dim: - NCOvsM: 1.56120352642343 iteracion: 5s. 873171us. impl: gpu pts_tot: 699370 density: - swaps: 0 funcs_tot: 452492390 rmm: - mem_used: - pts: 639743 
+little_cube_size = 5.0; max_function_exponent = 17; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.204734500244 mem_perc: - NCOxM: 9747553 funcs: - time: 737.93 MxM: 6459225 iteration: 4s. 975222us. dim: - NCOvsM: 1.50909017722714 iteracion: 6s. 265600us. impl: gpu pts_tot: 699370 density: - swaps: 0 funcs_tot: 452492390 rmm: - mem_used: - pts: 640075 
+little_cube_size = 5.0; max_function_exponent = 18; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.204740604278 mem_perc: - NCOxM: 10303715 funcs: - time: 773.07 MxM: 7000737 iteration: 5s. 329875us. dim: - NCOvsM: 1.47180432574456 iteracion: 6s. 606687us. impl: gpu pts_tot: 699370 density: - swaps: 0 funcs_tot: 452492390 rmm: - mem_used: - pts: 640544 
+little_cube_size = 5.0; max_function_exponent = 19; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.204757952756 mem_perc: - NCOxM: 10862553 funcs: - time: 807.41 MxM: 7535857 iteration: 5s. 641013us. dim: - NCOvsM: 1.44144892876815 iteracion: 6s. 929394us. impl: gpu pts_tot: 699370 density: - swaps: 0 funcs_tot: 452492390 rmm: - mem_used: - pts: 641085 
+little_cube_size = 5.0; max_function_exponent = 20; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.204704638216 mem_perc: - NCOxM: 11445921 funcs: - time: 849.96 MxM: 8171587 iteration: 6s. 45891us. dim: - NCOvsM: 1.40069744102339 iteracion: 7s. 324237us. impl: gpu pts_tot: 699370 density: - swaps: 0 funcs_tot: 452492390 rmm: - mem_used: - pts: 641650 
+little_cube_size = 5.0; max_function_exponent = 21; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.204723240790 mem_perc: - NCOxM: 12006989 funcs: - time: 891.51 MxM: 8791043 iteration: 6s. 440871us. dim: - NCOvsM: 1.36582075642219 iteracion: 7s. 733489us. impl: gpu pts_tot: 699370 density: - swaps: 0 funcs_tot: 452492390 rmm: - mem_used: - pts: 642207 
+little_cube_size = 5.0; max_function_exponent = 22; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.204725651660 mem_perc: - NCOxM: 12619347 funcs: - time: 935.08 MxM: 9472367 iteration: 6s. 847059us. dim: - NCOvsM: 1.33222741475283 iteracion: 8s. 133718us. impl: gpu pts_tot: 699370 density: - swaps: 0 funcs_tot: 452492390 rmm: - mem_used: - pts: 642691 
+little_cube_size = 5.0; max_function_exponent = 23; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.204730409311 mem_perc: - NCOxM: 13222562 funcs: - time: 977.23 MxM: 10171088 iteration: 7s. 244847us. dim: - NCOvsM: 1.30001451172185 iteracion: 8s. 536448us. impl: gpu pts_tot: 699370 density: - swaps: 0 funcs_tot: 452492390 rmm: - mem_used: - pts: 643229 
+little_cube_size = 5.0; max_function_exponent = 24; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.204717866320 mem_perc: - NCOxM: 13849415 funcs: - time: 1017.22 MxM: 10911043 iteration: 7s. 628160us. dim: - NCOvsM: 1.26930257721466 iteracion: 8s. 916091us. impl: gpu pts_tot: 699370 density: - swaps: 0 funcs_tot: 452492390 rmm: - mem_used: - pts: 643613 
+little_cube_size = 5.0; max_function_exponent = 25; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.204728387780 mem_perc: - NCOxM: 14459097 funcs: - time: 1060.59 MxM: 11640663 iteration: 8s. 33014us. dim: - NCOvsM: 1.24211971431524 iteracion: 9s. 328519us. impl: gpu pts_tot: 699370 density: - swaps: 0 funcs_tot: 452492390 rmm: - mem_used: - pts: 644031 
+little_cube_size = 5.0; max_function_exponent = 26; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.204734484424 mem_perc: - NCOxM: 15072347 funcs: - time: 1110.17 MxM: 12418677 iteration: 8s. 513224us. dim: - NCOvsM: 1.21368379256502 iteracion: 9s. 803026us. impl: gpu pts_tot: 699370 density: - swaps: 0 funcs_tot: 452492390 rmm: - mem_used: - pts: 644420 
+little_cube_size = 5.0; max_function_exponent = 27; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.204747335386 mem_perc: - NCOxM: 15664635 funcs: - time: 1157.37 MxM: 13168257 iteration: 8s. 944937us. dim: - NCOvsM: 1.18957543128145 iteracion: 10s. 232627us. impl: gpu pts_tot: 699370 density: - swaps: 0 funcs_tot: 452492390 rmm: - mem_used: - pts: 644748 
+little_cube_size = 5.0; max_function_exponent = 28; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.204732462690 mem_perc: - NCOxM: 16217006 funcs: - time: 1203.36 MxM: 13877940 iteration: 9s. 377724us. dim: - NCOvsM: 1.16854561988307 iteracion: 10s. 671203us. impl: gpu pts_tot: 699370 density: - swaps: 0 funcs_tot: 452492390 rmm: - mem_used: - pts: 644995 
+little_cube_size = 5.0; max_function_exponent = 29; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.204723742214 mem_perc: - NCOxM: 16795245 funcs: - time: 1242.13 MxM: 14552689 iteration: 9s. 744629us. dim: - NCOvsM: 1.15409908093274 iteracion: 11s. 50621us. impl: gpu pts_tot: 699370 density: - swaps: 4 funcs_tot: 452492390 rmm: - mem_used: - pts: 645189 
+WARNING: swaps detected!
+little_cube_size = 5.0; max_function_exponent = 30; min_points_per_cube = 1; sphere_radius = 0.5
+e: -2639.204717732356 mem_perc: - NCOxM: 17412509 funcs: - time: 1286.95 MxM: 15292517 iteration: 10s. 188072us. dim: - NCOvsM: 1.13862937016843 iteracion: 11s. 477199us. impl: gpu pts_tot: 699370 density: - swaps: 20 funcs_tot: 452492390 rmm: - mem_used: - pts: 645368 
+WARNING: swaps detected!

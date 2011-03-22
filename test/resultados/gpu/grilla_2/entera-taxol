@@ -1,0 +1,217 @@
+   546.705200000000        Memoria en MB
+<====== Initializing G2G ======>GPU Device used: GeForce GTX 480
+Kernels: gpu
+  Name of the input file ?
+ JOB STARTED 
+vie mar 18 15:15:17 ART 2011
+basis set corresponding to Z  26 was not used
+<======= GPU Code Initialization ========>
+do_forces: false
+s: 281 p: 122 d: 0
+m: 647 nco: 223
+<====== read_options ========>
+little_cube_size 4.5
+max_function_exponent 10
+min_points_per_cube 1
+sphere_radius 0.5
+ primera carga de posiciones
+<======= GPU Reload Atom Positions (2)========>
+<============ G2G Partition (2)============>
+determining minimum exponents
+determining x0 and x1
+x0 (-25.20590583,-21.43527521,-16.44157177)
+x1 (26.74464239,19.38873312,14.37688264)
+prism size: 12 10 7
+precomputing distances...
+computing points and assigning to cubes/spheres...
+Time: 87838us.
+Grilla original: 699370 puntos, 452492390 funciones
+filling cube parameters and adding to partition...
+filling sphere parameters and adding to partition...
+total: 845171us.
+Grilla final: 633895 puntos (recordar que los de peso 0 se tiran), 65067299 funciones
+Costo: 130134598
+NCOxM: 6735938 MxM: 3130228
+Particion final: 583 grupos
+<===== computing functions =======>
+  SCF CALCULATION  
+ int1
+ dspev
+TIMER [dgelss]: 14s. 706034us.
+TIMER [parte]: 25955us.
+TIMER [dppco]: 2s. 767948us.
+TIMER [dppdi]: 7s. 609251us.
+TIMER [resto]: 41624us.
+TIMER [dppco+dppdi+loop]: 10s. 444956us.
+TIMER [int22]: 25s. 320492us.
+ int22
+ kknum       67665      209628
+TIMER [int3mmem]: 13s. 91602us.
+ int3mem
+TIMER [inicio]: 41s. 267793us.
+ empiezo el loop
+TIMER [principio int3lu]: 225164us.
+TIMER [int3lu]: 243643us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 2s. 405701us.
+rmm: 321515us. density: 1s. 963584us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 93526us.
+mem_used: 174.9375MB | mem_perc: 11.39518788%
+TIMER [actualiza rmm1]: 132856us.
+TIMER [actualiza rmm]: 295013us.
+TIMER [dspev]: 250127us.
+TIMER [coeff]: 131968us.
+TIMER [otras cosas]: 47986us.
+  1  0.100000E+02   -2527.5131548
+TIMER [iteracion]: 3s. 662019us.
+ 
+TIMER [principio int3lu]: 224187us.
+TIMER [int3lu]: 242771us.
+ exchnum int3lu
+<================ iteracion [rmm] ==========>
+iteration: 2s. 402647us.
+rmm: 321192us. density: 1s. 962135us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 92244us.
+mem_used: 174.9375MB | mem_perc: 11.39518788%
+TIMER [actualiza rmm1]: 132804us.
+TIMER [actualiza rmm]: 293759us.
+TIMER [dspev]: 249488us.
+TIMER [coeff]: 131858us.
+TIMER [otras cosas]: 47939us.
+  2  0.100000E+02   -2527.5104090
+TIMER [iteracion]: 3s. 652830us.
+ 
+ 
+  ENERGY CONTRIBUTIONS IN A.U.
+  ONE ELECTRON         COULOMB           NUCLEAR
+-23252.0197208     11057.4432657      9667.0660461
+ ultimo paso SCF
+<======= GPU New Grid (2)========>
+not loading, same grid as loaded
+<================ iteracion [energia] ==========>
+total energy: -395.5035853
+iteration: 2s. 103019us.
+rmm: 347us. density: 1s. 986968us. density_derivs: 0us. force: 0us. resto: 0us. funcs: 90969us.
+mem_used: 174.9375MB | mem_perc: 11.39518788%
+ 
+SCF ENERGY =  -2923.013994339046
+ 
+ DIPOLE MOMENT, X Y Z COMPONENTS AND NORM (DEBYES)
+   -1.6409     -8.7381      0.4722        8.9033
+ 
+ MULLIKEN POPULATION ANALYSIS
+ATOM #    ATOM TYPE    POPULATION
+  1           6         -0.2809
+  2           6          0.0262
+  3           6         -0.1542
+  4           6         -0.1050
+  5           6          0.0567
+  6           6          0.1041
+  7           6          0.0313
+  8           6          0.4229
+  9           6          0.1165
+ 10           8         -0.4711
+ 11           8         -0.5722
+ 12           6         -0.0288
+ 13           6          0.2476
+ 14           6          0.0837
+ 15           8         -0.2759
+ 16           8         -0.5608
+ 17           6         -0.2880
+ 18           6         -0.0605
+ 19           8         -0.4900
+ 20           6          0.4256
+ 21           8         -0.3187
+ 22           6         -0.5319
+ 23           6         -0.0686
+ 24           8         -0.4639
+ 25           8         -0.5706
+ 26           8         -0.5543
+ 27           6          0.4104
+ 28           8         -0.3509
+ 29           6         -0.5404
+ 30           6         -0.5576
+ 31           8         -0.4676
+ 32           6          0.4960
+ 33           8         -0.3503
+ 34           6         -0.0078
+ 35           6         -0.0761
+ 36           6          0.1061
+ 37           6         -0.1439
+ 38           6         -0.1536
+ 39           6         -0.1231
+ 40           6         -0.1460
+ 41           6         -0.1544
+ 42           8         -0.5638
+ 43           7         -0.5889
+ 44           6          0.3681
+ 45           8         -0.4060
+ 46           6          0.0968
+ 47           6         -0.1704
+ 48           6         -0.1545
+ 49           6         -0.1209
+ 50           6         -0.1412
+ 51           6         -0.1452
+ 52           6          0.3891
+ 53           8         -0.3794
+ 54           6          0.0418
+ 55           6         -0.1233
+ 56           6         -0.1576
+ 57           6         -0.1162
+ 58           6         -0.1504
+ 59           6         -0.1314
+ 60           6         -0.4510
+ 61           6         -0.5122
+ 62           1          0.2610
+ 63           1          0.2138
+ 64           1          0.1833
+ 65           1          0.1846
+ 66           1          0.1624
+ 67           1          0.1832
+ 68           1          0.2034
+ 69           1          0.3891
+ 70           1          0.4243
+ 71           1          0.2020
+ 72           1          0.1818
+ 73           1          0.2269
+ 74           1          0.2207
+ 75           1          0.1926
+ 76           1          0.1843
+ 77           1          0.1771
+ 78           1          0.2054
+ 79           1          0.3668
+ 80           1          0.1795
+ 81           1          0.1972
+ 82           1          0.1939
+ 83           1          0.1821
+ 84           1          0.2037
+ 85           1          0.2128
+ 86           1          0.1788
+ 87           1          0.1983
+ 88           1          0.1373
+ 89           1          0.1368
+ 90           1          0.1385
+ 91           1          0.1438
+ 92           1          0.1560
+ 93           1          0.3759
+ 94           1          0.3300
+ 95           1          0.1538
+ 96           1          0.1354
+ 97           1          0.1383
+ 98           1          0.1484
+ 99           1          0.1732
+100           1          0.1774
+101           1          0.1530
+102           1          0.1528
+103           1          0.1548
+104           1          0.1792
+105           1          0.1818
+106           1          0.1655
+107           1          0.1560
+108           1          0.1916
+109           1          0.1857
+110           1          0.1824
+ 
+TIMER [SCF]: 54s. 198201us.
+ JOB FINISHED
+vie mar 18 15:16:12 ART 2011
+<====== Deinitializing G2G ======>

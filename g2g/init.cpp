@@ -156,12 +156,12 @@ void compute_new_grid(const unsigned int grid_type) {
 
 	partition.regenerate();
 
-  /** compute functions **/
-  if (fortran_vars.do_forces) cout << "<===== computing functions [forces] =======>" << endl;
-  else cout << "<===== computing functions =======>" << endl;
-
 #if CPU_KERNELS && !CPU_RECOMPUTE
-	Timer t;
+  /** compute functions **/
+  if (fortran_vars.do_forces) cout << "<===== computing all functions [forces] =======>" << endl;
+  else cout << "<===== computing all functions =======>" << endl;
+
+  Timer t;
   t.start();
   if (fortran_vars.gga) {
     if (fortran_vars.do_forces) partition.compute_functions<true, true>();
@@ -172,7 +172,7 @@ void compute_new_grid(const unsigned int grid_type) {
     else partition.compute_functions<false, false>();
   }
   t.stop();
-  cout << "time: " << t << endl;
+  cout << "all functions computing time: " << t << endl;
 #endif
 }
 

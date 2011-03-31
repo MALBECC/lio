@@ -132,8 +132,6 @@ void Partition::regenerate(void)
 	
 	this->clear();
 	
-	Timer t_total;
-	t_total.start();
 	/* computa las posiciones de los puntos (y los guarda) */
 	for (uint atom = 0; atom < fortran_vars.atoms; atom++) {		
 		uint atom_shells = fortran_vars.shells(atom);
@@ -183,9 +181,7 @@ void Partition::regenerate(void)
 			}
 		}		
 	}
-	t_total.stop();
   
-	cout << "Time: " << t_total << endl;
 	cout << "Grilla original: " << puntos_totales << " puntos, " << puntos_totales * fortran_vars.m << " funciones" << endl;
 
   uint nco_m = 0;
@@ -193,7 +189,6 @@ void Partition::regenerate(void)
 
   puntos_finales = 0;
 	cout << "filling cube parameters and adding to partition..." << endl;
-	t_total.start();
 	for (uint i = 0; i < prism_size.x; i++) {
 		for (uint j = 0; j < prism_size.y; j++) {
 			for (uint k = 0; k < prism_size.z; k++) {
@@ -248,7 +243,6 @@ void Partition::regenerate(void)
       PointGroup& group = *group_list.front();
       assert(group.number_of_points != 0);
 	    group.compute_weights();
-      t_total.sync();
 
       if (group.number_of_points < min_points_per_cube) { delete group_list.front(); group_list.pop_front(); cout << "not enough points" << endl; continue; }
 
@@ -268,10 +262,7 @@ void Partition::regenerate(void)
       m_m += group.total_functions() * group.total_functions();
 	  }
 	}
-  t_total.sync();
-	t_total.stop();
 
-	cout << "total: " << t_total << endl;
 	cout << "Grilla final: " << puntos_finales << " puntos (recordar que los de peso 0 se tiran), " << funciones_finales << " funciones" << endl ;
   cout << "Costo: " << costo << endl;
   cout << "NCOxM: " << nco_m << " MxM: " << m_m << endl;

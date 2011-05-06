@@ -331,11 +331,11 @@ gaussian
 endbasis
  &SCFINP
  OPEN    = F,
- NMAX    =         300,
+ NMAX    =         100,
  NCO     =         223,
  NUNP    =           0,
  ATRHO   = F,
- VCINP   = T,
+ VCINP   = F,
  DIRECT  = T,
  EXTR    = F,
  SHFT    = F,

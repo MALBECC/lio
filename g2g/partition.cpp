@@ -103,6 +103,33 @@ void PointGroup::compute_nucleii_maps(void)
   }
 }
 
+#define EXP_PREFACTOR 1.01057089636005 // (2 * pow(4, 1/3.0)) / M_PI
+
+bool PointGroup::is_significative(FunctionType type, double exponent, double coeff, double d2) {
+  switch(type) {
+    case FUNCTION_S:
+      return (exponent * d2 < max_function_exponent-log(pow((2.*exponent/M_PI),3))/4);
+    break;
+    default:
+    {
+      double x = 1;
+      double delta;
+      double e = 0.1;
+      double factor = pow((2.0*exponent/M_PI),3);
+      factor = sqrt(factor*4.0*exponent) ;
+      double norm = (FUNCTION_P ? sqrt(factor) : abs(factor)) ;
+      do {
+	double div = (FUNCTION_P ? log(x) : 2 * log(x));
+	double x1 = sqrt((max_function_exponent - log(norm) + div) / exponent);
+	delta = abs(x-x1);
+	x = x1;
+      } while (delta > e);
+      return (sqrt(d2) < x);
+    }
+    break;
+  }
+}
+
 /**********************
  * Sphere
  **********************/

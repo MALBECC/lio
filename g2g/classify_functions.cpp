@@ -16,7 +16,7 @@ using namespace G2G;
  * Cube
  *******************************/
 
-void Cube::assign_significative_functions(const double3& cube_coord, const vector<double>& min_exps)
+void Cube::assign_significative_functions(const double3& cube_coord, const vector<double>& min_exps, const vector<double>& min_coeff)
 {
   uint func = 0;
 
@@ -34,8 +34,7 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
         elem(dist_vec,j) = 0;
     }
     
-    double len = length(dist_vec);
-    atom_cube_dists(i) = len * len;
+    atom_cube_dists(i) = length2(dist_vec);
   }
 
   set<uint> functions_set;
@@ -44,7 +43,7 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
   /** S **/
   while (func < fortran_vars.s_funcs) {
     uint atom_nuc = fortran_vars.nucleii(func) - 1;
-    if (assign_all_functions || (min_exps[func] * atom_cube_dists(atom_nuc)) < max_function_exponent) {
+    if (assign_all_functions || is_significative(FUNCTION_S, min_exps[func], min_coeff[func], atom_cube_dists(atom_nuc))) {
       functions_set.insert(func); s_functions++;
       nucleii_set.insert(atom_nuc);
     }
@@ -54,7 +53,7 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
   /** P **/
   while (func < fortran_vars.s_funcs + fortran_vars.p_funcs * 3) {
     uint atom_nuc = fortran_vars.nucleii(func) - 1;
-    if (assign_all_functions || (min_exps[func] * atom_cube_dists(atom_nuc)) < max_function_exponent) {
+    if (assign_all_functions || is_significative(FUNCTION_P, min_exps[func], min_coeff[func], atom_cube_dists(atom_nuc))) {
       functions_set.insert(func); p_functions++;
       nucleii_set.insert(atom_nuc);
     }
@@ -64,7 +63,7 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
   /** D **/
   while (func < fortran_vars.s_funcs + fortran_vars.p_funcs * 3 + fortran_vars.d_funcs * 6) {
     uint atom_nuc = fortran_vars.nucleii(func) - 1;
-    if (assign_all_functions || (min_exps[func] * atom_cube_dists(atom_nuc)) < max_function_exponent) {
+    if (assign_all_functions || is_significative(FUNCTION_D, min_exps[func], min_coeff[func], atom_cube_dists(atom_nuc))) {
       functions_set.insert(func); d_functions++;
       nucleii_set.insert(atom_nuc);
     }
@@ -83,7 +82,7 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
 /*****************************
  * Sphere
  *****************************/
-void Sphere::assign_significative_functions(const std::vector<double>& min_exps) {
+void Sphere::assign_significative_functions(const std::vector<double>& min_exps, const std::vector<double>& min_coeff) {
    uint func = 0;
 
   // TODO: esto solo es necesario para los atomos en nucleii, idem arriba
@@ -107,7 +106,7 @@ void Sphere::assign_significative_functions(const std::vector<double>& min_exps)
   /** S **/
   while (func < fortran_vars.s_funcs) {
     uint atom_nuc = fortran_vars.nucleii(func) - 1;
-    if (assign_all_functions || (min_exps[func] * atom_sphere_dists(atom_nuc)) < max_function_exponent) {
+    if (assign_all_functions || is_significative(FUNCTION_S, min_exps[func], min_coeff[func], atom_sphere_dists(atom_nuc))) {
       functions_set.insert(func); s_functions++;
       nucleii_set.insert(atom_nuc);
     }
@@ -117,7 +116,7 @@ void Sphere::assign_significative_functions(const std::vector<double>& min_exps)
   /** P **/
   while (func < fortran_vars.s_funcs + fortran_vars.p_funcs * 3) {
     uint atom_nuc = fortran_vars.nucleii(func) - 1;
-    if (assign_all_functions || (min_exps[func] * atom_sphere_dists(atom_nuc)) < max_function_exponent) {
+    if (assign_all_functions || is_significative(FUNCTION_P, min_exps[func], min_coeff[func], atom_sphere_dists(atom_nuc))) {
       functions_set.insert(func); p_functions++;
       nucleii_set.insert(atom_nuc);
     }
@@ -128,7 +127,7 @@ void Sphere::assign_significative_functions(const std::vector<double>& min_exps)
   /** D **/
   while (func < fortran_vars.s_funcs + fortran_vars.p_funcs * 3 + fortran_vars.d_funcs * 6) {
     uint atom_nuc = fortran_vars.nucleii(func) - 1;
-    if (assign_all_functions || (min_exps[func] * atom_sphere_dists(atom_nuc)) < max_function_exponent) {
+    if (assign_all_functions || is_significative(FUNCTION_D, min_exps[func], min_coeff[func], atom_sphere_dists(atom_nuc))) {
       functions_set.insert(func); d_functions++;
       nucleii_set.insert(atom_nuc);
     }

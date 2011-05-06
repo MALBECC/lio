@@ -188,6 +188,10 @@ inline __device__ __host__ double length(const double3& a) {
 	return sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
 }
 
+inline __device__ __host__ double length2(const double3& a) {
+	return (a.x * a.x + a.y * a.y + a.z * a.z);
+}
+
 inline __device__ __host__ float distance2(const float3& a, const float3& b)
 {
 	float x = a.x - b.x;

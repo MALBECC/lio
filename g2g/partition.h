@@ -65,6 +65,8 @@ class PointGroup {
     void compute_nucleii_maps(void);
     virtual bool is_sphere(void) = 0;
     virtual bool is_cube(void) = 0;
+
+    bool is_significative(FunctionType, double exponent, double coeff, double d2);
 };
 
 class Sphere : public PointGroup {
@@ -72,7 +74,7 @@ class Sphere : public PointGroup {
     Sphere(void);
     Sphere(uint _atom, double _radius);
 
-    void assign_significative_functions(const std::vector<double>& min_exps);
+    void assign_significative_functions(const std::vector<double>& min_exps, const std::vector<double>& min_coeff);
     bool is_sphere(void) { return true; }
     bool is_cube(void) { return false; }
 
@@ -82,8 +84,8 @@ class Sphere : public PointGroup {
 
 class Cube : public PointGroup {
   public:
-		Cube(void);
-    void assign_significative_functions(const double3& cube_coord, const std::vector<double>& min_exps);
+    Cube(void);
+    void assign_significative_functions(const double3& cube_coord, const std::vector<double>& min_exps, const std::vector<double>& min_coeff);
     bool is_sphere(void) { return false; }
     bool is_cube(void) { return true; }
 

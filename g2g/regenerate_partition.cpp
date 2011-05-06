@@ -35,13 +35,17 @@ void Partition::regenerate(void)
 		}
 	}
 
-	vector<double> min_exps_func(fortran_vars.m, numeric_limits<double>::max());	// uno por funcion
-	for (uint i = 0; i < fortran_vars.m; i++) {
-		uint contractions = fortran_vars.contractions(i);
-		for (uint j = 0; j < contractions; j++) {
-			min_exps_func[i] = min(min_exps_func[i], fortran_vars.a_values(i, j));
-		}
-	}
+        vector<double> min_exps_func(fortran_vars.m, numeric_limits<double>::max());    // uno por funcion
+        vector<double> min_coeff_func(fortran_vars.m);
+        for (uint i = 0; i < fortran_vars.m; i++) {
+                uint contractions = fortran_vars.contractions(i);
+                for (uint j = 0; j < contractions; j++) {
+                        if (fortran_vars.a_values(i,j) < min_exps_func[i]) {
+                                min_exps_func[i] = fortran_vars.a_values(i, j);
+                                min_coeff_func[i] = fortran_vars.c_values(i, j);
+                        }
+                }
+        }	
 	
 	/* permite encontrar el prisma conteniendo el sistema */
 	cout << "determining x0 and x1" << endl;
@@ -196,7 +200,7 @@ void Partition::regenerate(void)
 
 				double3 cube_coord_abs = x0 + make_uint3(i,j,k) * little_cube_size;
 
-        cube.assign_significative_functions(cube_coord_abs, min_exps_func);
+        cube.assign_significative_functions(cube_coord_abs, min_exps_func, min_coeff_func);
 				if (cube.total_functions_simple() == 0) { /*cout << "cube with " << cube.number_of_points << " points has no functions" << endl;*/ continue;  }
         if (cube.number_of_points < min_points_per_cube) { /*cout << "not enough points" << endl;*/ continue; }
 
@@ -233,7 +237,7 @@ void Partition::regenerate(void)
 	
 			assert(sphere.number_of_points > 0);
 			
-			sphere.assign_significative_functions(min_exps_func);	
+			sphere.assign_significative_functions(min_exps_func, min_coeff_func);	
 			assert(sphere.total_functions_simple() > 0);
 
       if (sphere.number_of_points < min_points_per_cube) { cout << "not enough points" << endl; continue; }

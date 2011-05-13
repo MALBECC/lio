@@ -117,9 +117,9 @@ bool PointGroup::is_significative(FunctionType type, double exponent, double coe
       double e = 0.1;
       double factor = pow((2.0*exponent/M_PI),3);
       factor = sqrt(factor*4.0*exponent) ;
-      double norm = (FUNCTION_P ? sqrt(factor) : abs(factor)) ;
+      double norm = (type == FUNCTION_P ? sqrt(factor) : abs(factor)) ;
       do {
-	double div = (FUNCTION_P ? log(x) : 2 * log(x));
+	double div = (type == FUNCTION_P ? log(x) : 2 * log(x));
 	double x1 = sqrt((max_function_exponent - log(norm) + div) / exponent);
 	delta = abs(x-x1);
 	x = x1;

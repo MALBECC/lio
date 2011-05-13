@@ -55,7 +55,7 @@ void Partition::regenerate(void)
 		double3 atom_position(fortran_vars.atom_positions(atom));
 
 		uint atom_type = fortran_vars.atom_types(atom);
-		double max_radius = sqrt(max_function_exponent / min_exps[atom_type]);
+		double max_radius = 2 * sqrt(max_function_exponent / min_exps[atom_type]); // TODO: esto esta al doble de lo que deberia porque el criterio no esta bien aplicado
 		_DBG(cout << "tipo: " << atom_type << " " << min_exps[atom_type] << " radio: " << max_radius << endl);
 		if (atom == 0) { x0 = x1 = atom_position; }
 		else {

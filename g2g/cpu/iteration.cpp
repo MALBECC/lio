@@ -17,8 +17,8 @@ using std::endl;
 using std::list;
 using namespace G2G;
 
-template <bool lda, bool compute_forces>
-void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr)
+template <bool compute_rmm, bool lda, bool compute_forces>
+void g2g_iteration(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr)
 {
   double total_energy = 0;
 
@@ -223,7 +223,11 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
   cout << "rmm: " << t_rmm << " density: " << t_density << " pot: " << t_pot << " forces: " << t_forces << " resto: " << t_resto << " functions: " << t_functions << endl;
 }
 
-template void g2g_iteration<true, true>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
-template void g2g_iteration<true, false>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
-template void g2g_iteration<false, true>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
-template void g2g_iteration<false, false>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<true, true, true>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<true, true, false>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<true, false, true>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<true, false, false>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<false, true, true>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<false, true, false>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<false, false, true>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<false, false, false>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);

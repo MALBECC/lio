@@ -2595,7 +2595,7 @@ c
      >               M,M18,NCOa,NCOb,RMM,Ex)
       write(*,*) 'energia fortran (double)',Ex
 #else
-      call g2g_solve_groups(0, 0, 0)
+      call g2g_solve_groups(0, Ex, 0)
 #endif      
 #else
        call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,

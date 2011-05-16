@@ -26,8 +26,8 @@ using std::cout;
 using std::endl;
 using std::list;
 
-template<bool lda, bool compute_forces>
-void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr)
+template<bool compute_rmm, bool lda, bool compute_forces>
+void g2g_iteration(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr)
 {
   double total_energy = 0.0;
 
@@ -78,7 +78,7 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
 
 		if (compute_energy) {
       CudaMatrixFloat energy_gpu(group.number_of_points);
-      gpu_compute_density<true, compute_forces, lda><<<threadGrid, threadBlock>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, group.number_of_points,
+      gpu_compute_density<true, (compute_forces || compute_rmm), lda><<<threadGrid, threadBlock>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, group.number_of_points,
         rmm_input_gpu.data, group.function_values.data, group.gradient_values.data, group.hessian_values.data, group_m);
       cudaAssertNoError("compute_density");
 
@@ -86,7 +86,7 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
 			for (uint i = 0; i < group.number_of_points; i++) { total_energy += energy_cpu(i); } // TODO: hacer con un kernel?
     }
     else {
-      gpu_compute_density<false, compute_forces, lda><<<threadGrid, threadBlock>>>(NULL, factors_gpu.data, point_weights_gpu.data, group.number_of_points,
+      gpu_compute_density<false, true, lda><<<threadGrid, threadBlock>>>(NULL, factors_gpu.data, point_weights_gpu.data, group.number_of_points,
         rmm_input_gpu.data, group.function_values.data, group.gradient_values.data, group.hessian_values.data, group_m);
       cudaAssertNoError("compute_density");
       {
@@ -157,10 +157,7 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
 	}
 
 	/** pass results to fortran */
-	if (compute_energy) {
-		cout << "total energy: " << total_energy << endl;
-		*fort_energy_ptr = total_energy;
-	}
+	if (compute_energy) *fort_energy_ptr = total_energy;
 	t_total.stop_and_sync();
   cout << "iteration: " << t_total << endl;
   cout << "rmm: " << t_rmm << " density: " << t_density << " density_derivs: " << t_density_derivs << " force: " << t_forces << " resto: " << t_resto;
@@ -172,10 +169,14 @@ void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_pt
   cudaPrintMemoryInfo();
 }
 
-template void g2g_iteration<true, true>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
-template void g2g_iteration<true, false>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
-template void g2g_iteration<false, true>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
-template void g2g_iteration<false, false>(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<true, true, true>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<true, true, false>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<true, false, true>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<true, false, false>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<false, true, true>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<false, true, false>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<false, false, true>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
+template void g2g_iteration<false, false, false>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
 
 /*******************************
  * Cube Functions

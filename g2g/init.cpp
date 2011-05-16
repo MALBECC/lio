@@ -20,7 +20,7 @@ using namespace G2G;
 
 /* external function prototypes */
 template<bool, bool> void compute_functions(void);
-template<bool, bool> void g2g_iteration(bool compute_energy, bool compute_rmm, double* fort_energy_ptr, double* fort_forces_ptr);
+template<bool, bool, bool> void g2g_iteration(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
 
 /* internal function prototypes */
 void read_options(void);
@@ -219,14 +219,29 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
   bool compute_forces = (computation_type == COMPUTE_FORCE_ONLY || computation_type == COMPUTE_ENERGY_FORCE);
   bool compute_rmm = (computation_type == COMPUTE_RMM);
 
-  if (fortran_vars.lda) {
-    if (compute_forces) g2g_iteration<true, true>(compute_energy, compute_rmm, fort_energy_ptr, fort_forces_ptr);
-    else g2g_iteration<true, false>(compute_energy, compute_rmm, fort_energy_ptr, fort_forces_ptr);
+  if (energy_all_iterations) compute_energy = true;
+
+  if (compute_rmm) {
+    if (fortran_vars.lda) {
+      if (compute_forces) g2g_iteration<true, true, true>(compute_energy, fort_energy_ptr, fort_forces_ptr);
+      else g2g_iteration<true, true, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
+    }
+    else {
+      if (compute_forces) g2g_iteration<true, false, true>(compute_energy, fort_energy_ptr, fort_forces_ptr);
+      else g2g_iteration<true, false, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
+    }
   }
   else {
-    if (compute_forces) g2g_iteration<false, true>(compute_energy, compute_rmm, fort_energy_ptr, fort_forces_ptr);
-    else g2g_iteration<false, false>(compute_energy, compute_rmm, fort_energy_ptr, fort_forces_ptr);
+    if (fortran_vars.lda) {
+      if (compute_forces) g2g_iteration<false, true, true>(compute_energy, fort_energy_ptr, fort_forces_ptr);
+      else g2g_iteration<false, true, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
+    }
+    else {
+      if (compute_forces) g2g_iteration<false, false, true>(compute_energy, fort_energy_ptr, fort_forces_ptr);
+      else g2g_iteration<false, false, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
+    }
   }
+  if (compute_energy) cout << "XC energy: " << *fort_energy_ptr << endl;
 }
 
 /* general options */
@@ -238,6 +253,7 @@ namespace G2G {
   bool assign_all_functions = false;
   double sphere_radius = 0.0;
   bool remove_zero_weights = true;
+  bool energy_all_iterations;
 }
 
 void read_options(void) {
@@ -263,6 +279,8 @@ void read_options(void) {
       { f >> sphere_radius; cout << sphere_radius; }
     else if (option == "remove_zero_weights")
       { f >> remove_zero_weights; cout << remove_zero_weights; }
+    else if (option == "energy_all_iterations")
+      { f >> energy_all_iterations; cout << energy_all_iterations; }
 		else throw runtime_error(string("Invalid option: ") + option);
 
 		cout << endl;

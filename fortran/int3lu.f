@@ -459,7 +459,7 @@ c       write(957,*) 'int3lu'
 c       call timer_start('exchfock')
 c        write(*,*) 'que pasa 2?'
 #ifdef G2G
-       call g2g_solve_groups(0,0,0)
+       call g2g_solve_groups(0,Ex,0)
 #else
        call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
      >        M,M18,NCOa,NCOb,RMM,Ex)

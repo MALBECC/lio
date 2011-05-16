@@ -1,4 +1,4 @@
-template<bool compute_energy, bool compute_derivs, bool lda>
+template<bool compute_energy, bool compute_factor, bool lda>
 __global__ void gpu_compute_density(float* const energy, float* const factor, const float* const point_weights,
   uint points, const float* rdm, const float* function_values, const float4* gradient_values, const float4* hessian_values, uint m)
 {
@@ -75,17 +75,11 @@ __global__ void gpu_compute_density(float* const energy, float* const factor, co
 
   /***** compute energy / factor *****/
   float y2a, exc_corr;
-  if (compute_energy) {
-    if (compute_derivs) {
-			gpu_pot<true, true, lda>(partial_density, dxyz, dd1, dd2, exc_corr, y2a);
-      if (valid_thread) factor[point] = point_weight * y2a;
-		}
-		else gpu_pot<true, false, lda>(partial_density, dxyz, dd1, dd2, exc_corr, y2a);
-
-    if (valid_thread) energy[point] = (partial_density * point_weight) * exc_corr;
-	}
-	else {
-		gpu_pot<false, true, lda>(partial_density, dxyz, dd1, dd2, exc_corr, y2a);
-    if (valid_thread) factor[point] = point_weight * y2a;
-  }
+  gpu_pot<compute_energy, true, lda>(partial_density, dxyz, dd1, dd2, exc_corr, y2a); // TODO: segundo parametro, que tenga en cuenta RMM+energy
+  
+  if (compute_energy && valid_thread)
+    energy[point] = (partial_density * point_weight) * exc_corr;
+  
+  if (compute_factor && valid_thread)
+    factor[point] = point_weight * y2a;
 }

@@ -50,6 +50,7 @@ namespace G2G {
   extern bool assign_all_functions;
   extern double sphere_radius; // between 0 and 1!
   extern bool remove_zero_weights;
+  extern bool energy_all_iterations;
 }
 
 #endif

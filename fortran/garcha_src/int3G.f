@@ -159,8 +159,7 @@ c
 			if (calc_energy) then
 				call g2g_solve_groups(2, Exc, f)
 			else
-				call g2g_solve_groups(3, 0, f)
-c        call g2g_solve_groups(2, Exc, f)
+				call g2g_solve_groups(3, Exc, f)
 			endif
 #else
         call exchnum2(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,

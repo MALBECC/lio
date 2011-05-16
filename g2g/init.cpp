@@ -253,7 +253,7 @@ namespace G2G {
   bool assign_all_functions = false;
   double sphere_radius = 0.0;
   bool remove_zero_weights = true;
-  bool energy_all_iterations;
+  bool energy_all_iterations = false;
 }
 
 void read_options(void) {

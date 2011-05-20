@@ -33,9 +33,9 @@ class PointGroup {
     std::vector<uint> local2global_func; // size == total_functions_simple()
     std::vector<uint> local2global_nuc;  // size == total_nucleii()
     #if CPU_KERNELS
-    G2G::HostMatrixFloat function_values;
-    G2G::HostMatrixCFloat3 gradient_values;
-    G2G::HostMatrixCFloat3 hessian_values;
+    G2G::HostMatrix<real> function_values;
+    G2G::HostMatrix<creal3> gradient_values;
+    G2G::HostMatrix<creal3> hessian_values;
     #else
     G2G::CudaMatrixFloat function_values;
     G2G::CudaMatrixFloat4 gradient_values;
@@ -59,8 +59,8 @@ class PointGroup {
     inline uint total_nucleii(void) const { return local2global_nuc.size(); }
     inline bool has_nucleii(uint atom) const { return (std::find(local2global_nuc.begin(), local2global_nuc.end(), atom) != local2global_nuc.end()); }
 
-    void get_rmm_input(G2G::HostMatrixFloat& rmm_input) const;
-    void add_rmm_output(const G2G::HostMatrixFloat& rmm_output) const;
+    void get_rmm_input(G2G::HostMatrix<real>& rmm_input) const;
+    void add_rmm_output(const G2G::HostMatrix<real>& rmm_output) const;
 
     void compute_nucleii_maps(void);
     virtual bool is_sphere(void) = 0;

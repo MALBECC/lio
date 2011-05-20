@@ -39,7 +39,7 @@ using namespace std;
 
 using namespace G2G;
 
-void cpu_pot(float dens, float& ex, float& ec, float& y2a)
+void cpu_pot(real dens, real& ex, real& ec, real& y2a)
 {
 	// data X alpha
 
@@ -49,8 +49,8 @@ void cpu_pot(float dens, float& ex, float& ec, float& y2a)
 		return;
 	}
 
-	float y = powf(dens, 0.333333333333333333f);  // rho^(1/3)
-	float v0 = -0.984745021842697f * y; // -4/3 * (3/PI)^(1/3) * rho^(1/3)
+	real y = pow(dens, (real)0.333333333333333333);  // rho^(1/3)
+	real v0 = (real)-0.984745021842697 * y; // -4/3 * (3/PI)^(1/3) * rho^(1/3)
 
 	ex = POT_ALPHA * y; // -(3/PI)^(1/3) * rho^(1/3)
 
@@ -63,66 +63,62 @@ void cpu_pot(float dens, float& ex, float& ec, float& y2a)
 		break;
 		case 2:
 		{
-			float rs = POT_GL / y;
-			float x1 = rs / 11.4f;
-			float vc;
+			real rs = POT_GL / y;
+			real x1 = rs / (real)11.4;
+			real vc;
 
-			if (x1 > 1.0f) {
-				ec = -0.0333f * (0.5f * x1 - 0.33333333333333f);
-				vc = 0.0111f * x1 * 0.5f;
+			if (x1 > 1.0) {
+				ec = (real)-0.0333 * ((real)0.5 * x1 - (real)0.33333333333333);
+				vc = (real)0.0111 * x1 * (real)0.5;
 			}
 			else {
-				float t1 = (1.0f + x1 * x1 * x1);
-				float t2 = logf(1.0f + 1.0f / x1);
-				float t3 = x1 * x1;
-        ec = -0.0333f * (t1 * t2 - t3 + 0.5f * x1 - 0.33333333333333f);
-        vc = 0.0111f * x1 * (3.0f * t3 * t2 - t1 / (x1 * (x1 + 1.0f)) - 2.0f * x1 + 0.5f);
+				real t1 = ((real)1.0 + x1 * x1 * x1);
+				real t2 = logf((real)1.0 + (real)1.0 / x1);
+				real t3 = x1 * x1;
+                                ec = (real)-0.0333 * (t1 * t2 - t3 + (real)0.5 * x1 - (real)0.33333333333333);
+                                vc = (real)0.0111 * x1 * ((real)3.0 * t3 * t2 - t1 / (x1 * (x1 + (real)1.0)) - (real)2.0 * x1 + (real)0.5);
 			}
 			y2a = v0 + ec + vc;
 		}
 		break;
 		case 3:
 		{
-			float rs = POT_GL / y;
-			float x1 = sqrtf(rs);
-			float Xx = rs + POT_VOSKO_B1 * x1 + POT_VOSKO_C1;
-			float t1 = 2.0f * x1 + POT_VOSKO_B1;
-			float t2 = logf(Xx);
-			float t3 = atanf(POT_VOSKO_Q/t1);
-      float t5 = (POT_VOSKO_B1 * x1 + POT_VOSKO_2C1) / x1;
+			real rs = POT_GL / y;
+			real x1 = sqrtf(rs);
+			real Xx = rs + POT_VOSKO_B1 * x1 + POT_VOSKO_C1;
+			real t1 = (real)2.0 * x1 + POT_VOSKO_B1;
+			real t2 = logf(Xx);
+			real t3 = atanf(POT_VOSKO_Q/t1);
+                        real t5 = (POT_VOSKO_B1 * x1 + POT_VOSKO_2C1) / x1;
 
-      ec = POT_VOSKO_A1 * (2.0f * logf(x1) - t2 + POT_VOSKO_2B1Q * t3 - POT_T4 * (2.0f * logf(x1 - POT_VOSKO_X0) - t2 + POT_VOSKO_B2X0Q * t3));
+                        ec = POT_VOSKO_A1 * ((real)2.0 * logf(x1) - t2 + POT_VOSKO_2B1Q * t3 - POT_T4 * ((real)2.0 * log(x1 - POT_VOSKO_X0) - t2 + POT_VOSKO_B2X0Q * t3));
 
-			float vc;
-      vc = ec - POT_VOSKO_A16 * x1 * (t5 / Xx - POT_VOSKO_4B1 / (t1 * t1 + POT_VOSKO_QSQ) * POT_VOSKO_B1X0 - POT_T4 * (2.0f / (x1 - POT_VOSKO_X0) - t1 / Xx));
+			real vc;
+                        vc = ec - POT_VOSKO_A16 * x1 * (t5 / Xx - POT_VOSKO_4B1 / (t1 * t1 + POT_VOSKO_QSQ) * POT_VOSKO_B1X0 - POT_T4 * ((real)2.0 / (x1 - POT_VOSKO_X0) - t1 / Xx));
 			y2a = v0 + vc;
 		}
 		break;
 	}
 }
 
-#define POT_ALYP 0.04918f
-#define POT_BLYP 0.132f
-#define POT_CLYP 0.2533f
-#define POT_CLYP3 0.0844333333f
-#define POT_DLYP 0.349f
-#define POT_DLYP3 0.116333333f
-#define POT_CF 2.87123400018819f
-#define POT_BETA 0.0042f
+#define POT_ALYP ((real)0.04918)
+#define POT_BLYP ((real)0.132)
+#define POT_CLYP ((real)0.2533)
+#define POT_CLYP3 ((real)0.0844333333)
+#define POT_DLYP ((real)0.349)
+#define POT_DLYP3 ((real)0.116333333)
+#define POT_CF ((real)2.87123400018819)
+#define POT_BETA ((real)0.0042)
 
 
-#define POT_ALF 0.023266f
-#define POT_BET 7.389f
-#define POT_GAM 8.723f
-#define POT_DEL 0.472f
+#define POT_ALF ((real)0.023266)
+#define POT_BET ((real)7.389)
+#define POT_GAM ((real)8.723)
+#define POT_DEL ((real)0.472)
 
 #include <float.h>
 
-/* anda bien asi para las energias, pero no probe con las fuerzas */
-#define real double
-#define REAL_MIN DBL_MIN
-
-static void closedpbe(float rho, real agrad, real delgrad, real rlap, real& expbe, real& vxpbe, real& ecpbe, real& vcpbe);
+static void closedpbe(real rho, real agrad, real delgrad, real rlap, real& expbe, real& vxpbe, real& ecpbe, real& vcpbe);
 static void gcorc(real rtrs, real& gg, real& grrs);
 
 /*
@@ -144,7 +140,7 @@ static void gcorc(real rtrs, real& gg, real& grrs);
  9: PBE
 */
 
-void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3& hess2, float& ex, float& ec, float& y2a)
+void cpu_potg(real dens, const real3& grad, const real3& hess1, const real3& hess2, real& ex, real& ec, real& y2a)
 {
   // hess1: xx, yy, zz
   // hess2: xy, xz, yz
@@ -166,10 +162,10 @@ void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3&
   /** Exchange **/
   if (fortran_vars.iexch == 4 || fortran_vars.iexch == 8) {   // Perdew : Phys. Rev B 33 8800 (1986)
     real dens2 = (dens * dens);
-    real ckf = 3.0936677f * y;
-    real s = dgrad / (2.0f * ckf * dens);
+    real ckf = (real)3.0936677 * y;
+    real s = dgrad / ((real)2.0 * ckf * dens);
 
-    real fx = 1.0 / 15.0;
+    real fx = (1.0 / 15.0);
     real s2 = (s * s);
     real s3 = (s * s * s);
     real g0 = 1.0 + 1.296 * s2 + 14.0 * pow(s, 4) + 0.2 * pow(s, 6);
@@ -334,7 +330,7 @@ void cpu_potg(float dens, const float3& grad, const float3& hess1, const float3&
 #define CLOSEDPBE_DELTA 2.14612633996736 // beta/gamma
 
 
-static void closedpbe(float rho, real agrad, real delgrad, real rlap, real& expbe, real& vxpbe, real& ecpbe, real& vcpbe)
+static void closedpbe(real rho, real agrad, real delgrad, real rlap, real& expbe, real& vxpbe, real& ecpbe, real& vcpbe)
 {
   if (rho < 2e-18) {
     expbe = vxpbe = ecpbe = vcpbe = 0;

@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 #include <sys/types.h>
+#include "real.h"
 
 #ifdef _DEBUG
 #define _DBG(x) x

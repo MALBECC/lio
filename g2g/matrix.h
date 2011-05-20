@@ -14,6 +14,8 @@
 #include "cuda/cuda_extra.h"
 
 namespace G2G {
+        enum UpperLowerTriangle { UpperTriangle, LowerTriangle };
+
 	template<class T> class Matrix {
 		public:
 			Matrix(void);
@@ -73,8 +75,7 @@ namespace G2G {
 			void deallocate(void);
 
       /* BLAS methods */
-      enum UpperLowerTriangle { UpperTriangle, LowerTriangle };
-      static void blas_ssyr(UpperLowerTriangle triangle, float alpha, const HostMatrix<T>& x, const HostMatrix<T>& A, unsigned int x_row);
+      static void blas_ssyr(UpperLowerTriangle triangle, real alpha, const HostMatrix<real>& x, const HostMatrix<real>& A, unsigned int x_row);
 
 			void to_constant(const char* constant);
 		

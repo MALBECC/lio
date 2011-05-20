@@ -50,6 +50,12 @@ else
 	LIBRARY=libg2g.so
 endif
 
+ifeq ($(full_double),0)
+  CXXFLAGS += -DFULL_DOUBLE=0
+else
+  CXXFLAGS += -DFULL_DOUBLE=1
+endif
+
 ## Define libraries
 LIBRARIES := $(shell pkg-config gsl --libs) $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
 

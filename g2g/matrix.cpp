@@ -209,18 +209,23 @@ template<class T> void G2G::to_constant(const char* constant, const T& value) {
 
 template void G2G::to_constant<uint>(const char* constant, const uint& value);
 template void G2G::to_constant<float>(const char* constant, const float& value);
+template void G2G::to_constant<double>(const char* constant, const double& value);
 
 template<class T>
-void HostMatrix<T>::blas_ssyr(UpperLowerTriangle triangle, float alpha, const HostMatrix<T>& x, const HostMatrix<T>& A, unsigned int x_row) {
+void HostMatrix<T>::blas_ssyr(UpperLowerTriangle triangle, real alpha, const HostMatrix<real>& x, const HostMatrix<real>& A, unsigned int x_row) {
   CBLAS_UPLO_t blas_triangle = (triangle == UpperTriangle ? CblasUpper : CblasLower);
 
   if (x_row >= x.height || x.width != A.width || A.width != A.height) throw runtime_error("Wrong dimensions for ssyr");
 
-  unsigned int n = x.width * (sizeof(T) / sizeof(float));
+  unsigned int n = x.width;
 
-  gsl_vector_float_const_view vector_view = gsl_vector_float_const_view_array((float*)(&x.data[x_row * x.width]), n);
-  gsl_matrix_float_view matrix_view = gsl_matrix_float_view_array((float*)A.data, n, n);
+  gsl_vector_real_const_view vector_view = gsl_vector_real_const_view_array((real*)(&x.data[x_row * x.width]), n);
+  gsl_matrix_real_view matrix_view = gsl_matrix_real_view_array((real*)A.data, n, n);
+  #if FULL_DOUBLE
+  gsl_blas_dsyr(blas_triangle, alpha, &vector_view.vector, &matrix_view.matrix);
+  #else
   gsl_blas_ssyr(blas_triangle, alpha, &vector_view.vector, &matrix_view.matrix);
+  #endif
 }
 
 template<class T> void HostMatrix<T>::check_values(void) {

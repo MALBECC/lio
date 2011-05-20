@@ -42,7 +42,7 @@ void PointGroup::add_point(const Point& p) {
   number_of_points++;
 }
 
-void PointGroup::get_rmm_input(HostMatrixFloat& rmm_input) const {
+void PointGroup::get_rmm_input(HostMatrix<real>& rmm_input) const {
   rmm_input.zero();
   for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
     uint inc_i = small_function_type(i);
@@ -64,7 +64,7 @@ void PointGroup::get_rmm_input(HostMatrixFloat& rmm_input) const {
   }
 }
 
-void PointGroup::add_rmm_output(const HostMatrixFloat& rmm_output) const {
+void PointGroup::add_rmm_output(const HostMatrix<real>& rmm_output) const {
   for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
     uint inc_i = small_function_type(i);
 

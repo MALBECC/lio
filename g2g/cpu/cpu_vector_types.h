@@ -47,10 +47,12 @@ namespace G2G {
       cfloat3(void) : cfloat4() { }
       explicit cfloat3(float x) : cfloat4(x) { }
     	cfloat3(F32vec4 a) : cfloat4(a) {  }
+      explicit cfloat3(double3 a) : cfloat4(a.x, a.y, a.z, 0.0f) { }
       explicit cfloat3(float3 a) : cfloat4(a.x, a.y, a.z, 0.0f) { }
 		  explicit cfloat3(float x, float y, float z) : cfloat4(x, y, z, 0.0f) { }
 
       inline operator float3() { return make_float3(x(), y(), z()); }
+      inline operator real3() { return make_real3(x(), y(), z()); }
 
       friend cfloat3 operator*(const cfloat3& a, float b) { return a * cfloat3(b, b, b); }
 

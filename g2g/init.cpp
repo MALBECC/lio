@@ -254,6 +254,7 @@ namespace G2G {
   double sphere_radius = 0.0;
   bool remove_zero_weights = true;
   bool energy_all_iterations = false;
+  double big_function_cutoff = 1;
 }
 
 void read_options(void) {
@@ -281,6 +282,8 @@ void read_options(void) {
       { f >> remove_zero_weights; cout << remove_zero_weights; }
     else if (option == "energy_all_iterations")
       { f >> energy_all_iterations; cout << energy_all_iterations; }
+    else if (option == "big_function_cutoff")
+      { f >> big_function_cutoff; cout << big_function_cutoff; }
 		else throw runtime_error(string("Invalid option: ") + option);
 
 		cout << endl;

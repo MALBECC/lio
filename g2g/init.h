@@ -51,6 +51,7 @@ namespace G2G {
   extern double sphere_radius; // between 0 and 1!
   extern bool remove_zero_weights;
   extern bool energy_all_iterations;
+  extern double big_function_cutoff;
 }
 
 #endif

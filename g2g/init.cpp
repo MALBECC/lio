@@ -165,18 +165,7 @@ void compute_new_grid(const unsigned int grid_type) {
   if (fortran_vars.do_forces) cout << "<===== computing all functions [forces] =======>" << endl;
   else cout << "<===== computing all functions =======>" << endl;
 
-  Timer t;
-  t.start_and_sync();
-  if (fortran_vars.gga) {
-    if (fortran_vars.do_forces) partition.compute_functions<true, true>();
-    else partition.compute_functions<false, true>();
-  }
-  else {
-    if (fortran_vars.do_forces) partition.compute_functions<true, false>();
-    else partition.compute_functions<false, false>();
-  }
-  t.stop_and_sync();
-  cout << "all functions computing time: " << t << endl;
+  partition.compute_functions(fortran_vars.do_forces, fortran_vars.gga);
 #endif
 }
 

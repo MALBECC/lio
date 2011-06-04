@@ -28,6 +28,8 @@ namespace G2G {
   		inline float& y(void) { return (*this)[1]; }
   		inline float& z(void) { return (*this)[2]; }
   		inline float& w(void) { return (*this)[3]; }
+      
+      cfloat4 operator-(float f) { return *this - cfloat4(f); }
 	
     	friend std::ostream& operator<<(std::ostream & os, const cfloat4& a)
   	  {                                                                                                                                           
@@ -35,6 +37,8 @@ namespace G2G {
   		  os << "(" << *fp << "," << *(fp+1) << "," << *(fp+2) << "," << *(fp+3) << ")";
         return os;
     	}
+      
+      inline float length2(void) const { return x() * x() + y() * y() + z() * z(); };
 
       inline operator float4() { return make_float4(x(), y(), z(), w()); }
   };
@@ -51,8 +55,7 @@ namespace G2G {
       explicit cfloat3(float3 a) : cfloat4(a.x, a.y, a.z, 0.0f) { }
 		  explicit cfloat3(float x, float y, float z) : cfloat4(x, y, z, 0.0f) { }
 
-      inline operator float3() { return make_float3(x(), y(), z()); }
-      inline operator real3() { return make_real3(x(), y(), z()); }
+      //inline operator float3() { return make_float3(x(), y(), z()); }
 
       friend cfloat3 operator*(const cfloat3& a, float b) { return a * cfloat3(b, b, b); }
 

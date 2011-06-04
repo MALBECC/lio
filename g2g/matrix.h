@@ -12,6 +12,7 @@
 #endif
 
 #include "cuda/cuda_extra.h"
+#include "scalar_vector_types.h"
 
 namespace G2G {
         enum UpperLowerTriangle { UpperTriangle, LowerTriangle };
@@ -59,14 +60,24 @@ namespace G2G {
 				assert(j < this->height);
 				return this->data[j * this->width + i];
 			}
+
+      inline T* ptr(unsigned int i = 0, unsigned int j = 0) {
+        assert(i < this->width);
+				assert(j < this->height);
+				return &this->data[j * this->width + i];
+      }
 			
 			void copy_submatrix(const CudaMatrix<T>& c, unsigned int elements = 0);
 			void copy_submatrix(const HostMatrix<T>& c, unsigned int elements = 0);
 
+      //void copy_into(T* external_data, unsigned int _i, unsigned int _j, unsigned int _elements = 0);
+
       void copy_transpose(const CudaMatrix<T>& cuda_matrix);
       void transpose(HostMatrix<T>& out);
-		
+
+
 			HostMatrix<T>& resize(unsigned int width, unsigned int height = 1);
+      HostMatrix<T>& shrink(unsigned int width, unsigned int height = 1);
 			HostMatrix<T>& zero(void);
       HostMatrix<T>& fill(T value);
 
@@ -75,7 +86,8 @@ namespace G2G {
 			void deallocate(void);
 
       /* BLAS methods */
-      static void blas_ssyr(UpperLowerTriangle triangle, real alpha, const HostMatrix<real>& x, const HostMatrix<real>& A, unsigned int x_row);
+      static void blas_ssyr(UpperLowerTriangle triangle, float alpha, const HostMatrix<float>& x, const HostMatrix<float>& A, unsigned int x_row);
+      static void blas_ssyr(UpperLowerTriangle triangle, double alpha, const HostMatrix<double>& x, const HostMatrix<double>& A, unsigned int x_row);
 
 			void to_constant(const char* constant);
 		

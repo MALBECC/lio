@@ -11,38 +11,22 @@
 #include "partition.h"
 #include "timer.h"
 using namespace std;
-using namespace G2G;
 
-Partition G2G::partition;
+namespace G2G {
+Partition partition;
 
-/********************
- * Partition
- ********************/
-
-template <bool forces, bool gga> void Partition::compute_functions(void)
-{
-	Timer t1;
-	t1.start_and_sync();
-	for (list<PointGroup*>::iterator it = group_list.begin(); it != group_list.end(); ++it)
-    (*it)->compute_functions<forces,gga>();
-	t1.stop_and_sync();
-	cout << "TIMER: funcs: " << t1 << endl;
+ostream& operator<<(ostream& io, const Timers& t) {
+  cout << "iteration: " << t.total << endl;
+  cout << "rmm: " << t.rmm << " density: " << t.density << " pot: " << t.pot << " forces: " << t.forces << " resto: " << t.resto << " functions: " << t.functions << endl;
+  return io;
 }
-
-template void Partition::compute_functions<true, true>(void);
-template void Partition::compute_functions<true, false>(void);
-template void Partition::compute_functions<false, true>(void);
-template void Partition::compute_functions<false, false>(void);
 
 /********************
  * PointGroup
  ********************/
-void PointGroup::add_point(const Point& p) {
-  points.push_back(p);
-  number_of_points++;
-}
 
-void PointGroup::get_rmm_input(HostMatrix<real>& rmm_input) const {
+template<class scalar_type>
+void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input) const {
   rmm_input.zero();
   for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
     uint inc_i = small_function_type(i);
@@ -56,7 +40,7 @@ void PointGroup::get_rmm_input(HostMatrix<real>& rmm_input) const {
           uint big_j = local2global_func[j] + l;
           if (big_i > big_j) continue;
           uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-          rmm_input(ii, jj) = fortran_vars.rmm_input_ndens1.data[big_index];
+          rmm_input(ii, jj) = (scalar_type)fortran_vars.rmm_input_ndens1.data[big_index];
           rmm_input(jj, ii) = rmm_input(ii, jj);
         }
       }
@@ -64,7 +48,8 @@ void PointGroup::get_rmm_input(HostMatrix<real>& rmm_input) const {
   }
 }
 
-void PointGroup::add_rmm_output(const HostMatrix<real>& rmm_output) const {
+template<class scalar_type>
+void PointGroup<scalar_type>::add_rmm_output(const HostMatrix<scalar_type>& rmm_output) const {
   for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
     uint inc_i = small_function_type(i);
 
@@ -77,14 +62,15 @@ void PointGroup::add_rmm_output(const HostMatrix<real>& rmm_output) const {
           uint big_j = local2global_func[j] + l;
           if (big_i > big_j) continue;
           uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-          fortran_vars.rmm_output(big_index) += rmm_output(ii, jj);
+          fortran_vars.rmm_output(big_index) += (double)rmm_output(ii, jj);
         }
       }
     }
   }
 }
 
-void PointGroup::compute_nucleii_maps(void)
+template<class scalar_type>
+void PointGroup<scalar_type>::compute_nucleii_maps(void)
 {
   if (total_functions_simple() != 0) {
     func2global_nuc.resize(total_functions_simple());
@@ -103,9 +89,16 @@ void PointGroup::compute_nucleii_maps(void)
   }
 }
 
+template<class scalar_type>
+void PointGroup<scalar_type>::add_point(const Point& p) {
+  points.push_back(p);
+  number_of_points++;
+}
+
 #define EXP_PREFACTOR 1.01057089636005 // (2 * pow(4, 1/3.0)) / M_PI
 
-bool PointGroup::is_significative(FunctionType type, double exponent, double coeff, double d2) {
+template<class scalar_type>
+bool PointGroup<scalar_type>::is_significative(FunctionType type, double exponent, double coeff, double d2) {
   switch(type) {
     case FUNCTION_S:
       return (exponent * d2 < max_function_exponent-log(pow((2.*exponent/M_PI),3))/4);
@@ -133,12 +126,13 @@ bool PointGroup::is_significative(FunctionType type, double exponent, double coe
 /**********************
  * Sphere
  **********************/
-Sphere::Sphere(void) : PointGroup(), atom(0), radius(0) { }
-Sphere::Sphere(uint _atom, double _radius) : PointGroup(), atom(_atom), radius(_radius) { }
+Sphere::Sphere(void) : atom(0), radius(0) { }
+Sphere::Sphere(uint _atom, double _radius) : atom(_atom), radius(_radius) { }
 
 /**********************
  * Cube
  **********************/
-Cube::Cube(void) : PointGroup() {  }
 
-
+template class PointGroup<double>;
+template class PointGroup<float>;
+}

@@ -76,7 +76,7 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
   local2global_nuc.resize(nucleii_set.size());
   copy(nucleii_set.begin(), nucleii_set.end(), local2global_nuc.begin());
 
-  PointGroup::compute_nucleii_maps();
+  compute_nucleii_maps();
 }
 
 /*****************************
@@ -140,5 +140,5 @@ void Sphere::assign_significative_functions(const std::vector<double>& min_exps,
   local2global_nuc.resize(nucleii_set.size());
   copy(nucleii_set.begin(), nucleii_set.end(), local2global_nuc.begin());
 
-  PointGroup::compute_nucleii_maps();
+  compute_nucleii_maps();
 }

@@ -7,8 +7,9 @@
 #include <cstring>
 #include "common.h"
 #include "matrix.h"
-using namespace G2G;
 using namespace std;
+
+namespace G2G {
 
 /***************************
  * Matrix
@@ -98,6 +99,18 @@ template<class T> HostMatrix<T>& HostMatrix<T>::resize(unsigned int _width, unsi
 	return *this;
 }
 
+template<class T> HostMatrix<T>& HostMatrix<T>::shrink(unsigned int _width, unsigned int _height) {
+  if (_width == 0 || _height == 0) throw std::runtime_error("La dimension no puede ser 0");
+  if (_width != this->width || _height != this->height) {
+    HostMatrix<T> temp_matrix(_width, _height);
+    temp_matrix.copy_submatrix(temp_matrix, _width * _height);
+    resize(_width, _height);
+    *this = temp_matrix;
+  }
+  
+	return *this;
+}
+
 template<class T> HostMatrix<T>& HostMatrix<T>::zero(void) {
   memset(this->data, 0, this->bytes());
 	return *this;
@@ -156,6 +169,15 @@ template <class T> HostMatrix<T>& HostMatrix<T>::operator=(const CudaMatrix<T>& 
 	return *this;		
 }
 
+/*template<class T> void HostMatrix<T>::copy_into(T* external_data, unsigned int _i, unsigned int _j, unsigned int _elements) {
+  assert(_j < c.height && _j < this->height);
+  assert((_i + _elements <= c.width) && (_i + _elements <= this->width));
+  assert(c.data);
+  assert(this->data);
+  if (_elements == 0) _elements = min(width, this->width) - _i;
+  memcpy(ptr(_i, _j), external_data, _elements * sizeof(T));
+}*/
+
 template<class T> void HostMatrix<T>::copy_submatrix(const HostMatrix<T>& c, unsigned int _elements) {
 	unsigned int _bytes = (_elements == 0 ? this->bytes() : _elements * sizeof(T));
 	//cout << "bytes: " << _bytes << ", c.bytes: " << c.bytes() << endl;
@@ -201,31 +223,36 @@ template<class T> void HostMatrix<T>::copy_transpose(const CudaMatrix<T>& cuda_m
   }
 }
 
-template<class T> void G2G::to_constant(const char* constant, const T& value) {
+template<class T> void to_constant(const char* constant, const T& value) {
   #if !CPU_KERNELS
 	cudaMemcpyToSymbol(constant, &value, sizeof(T), 0, cudaMemcpyHostToDevice);
   #endif
 }
 
-template void G2G::to_constant<uint>(const char* constant, const uint& value);
-template void G2G::to_constant<float>(const char* constant, const float& value);
-template void G2G::to_constant<double>(const char* constant, const double& value);
+template void to_constant<uint>(const char* constant, const uint& value);
+template void to_constant<float>(const char* constant, const float& value);
+template void to_constant<double>(const char* constant, const double& value);
 
 template<class T>
-void HostMatrix<T>::blas_ssyr(UpperLowerTriangle triangle, real alpha, const HostMatrix<real>& x, const HostMatrix<real>& A, unsigned int x_row) {
+void HostMatrix<T>::blas_ssyr(UpperLowerTriangle triangle, float alpha, const HostMatrix<float>& x, const HostMatrix<float>& A, unsigned int x_row) {
   CBLAS_UPLO_t blas_triangle = (triangle == UpperTriangle ? CblasUpper : CblasLower);
-
   if (x_row >= x.height || x.width != A.width || A.width != A.height) throw runtime_error("Wrong dimensions for ssyr");
-
   unsigned int n = x.width;
 
-  gsl_vector_real_const_view vector_view = gsl_vector_real_const_view_array((real*)(&x.data[x_row * x.width]), n);
-  gsl_matrix_real_view matrix_view = gsl_matrix_real_view_array((real*)A.data, n, n);
-  #if FULL_DOUBLE
-  gsl_blas_dsyr(blas_triangle, alpha, &vector_view.vector, &matrix_view.matrix);
-  #else
+  gsl_vector_float_const_view vector_view = gsl_vector_float_const_view_array((float*)(&x.data[x_row * x.width]), n);
+  gsl_matrix_float_view matrix_view = gsl_matrix_float_view_array((float*)A.data, n, n);
   gsl_blas_ssyr(blas_triangle, alpha, &vector_view.vector, &matrix_view.matrix);
-  #endif
+}
+
+template<class T>
+void HostMatrix<T>::blas_ssyr(UpperLowerTriangle triangle, double alpha, const HostMatrix<double>& x, const HostMatrix<double>& A, unsigned int x_row) {
+  CBLAS_UPLO_t blas_triangle = (triangle == UpperTriangle ? CblasUpper : CblasLower);
+  if (x_row >= x.height || x.width != A.width || A.width != A.height) throw runtime_error("Wrong dimensions for ssyr");
+  unsigned int n = x.width;
+
+  gsl_vector_const_view vector_view = gsl_vector_const_view_array((double*)(&x.data[x_row * x.width]), n);
+  gsl_matrix_view matrix_view = gsl_matrix_view_array((double*)A.data, n, n);
+  gsl_blas_dsyr(blas_triangle, alpha, &vector_view.vector, &matrix_view.matrix);
 }
 
 template<class T> void HostMatrix<T>::check_values(void) {
@@ -420,6 +447,14 @@ template<class T> FortranMatrix<T>::FortranMatrix(T* _data, unsigned int _width,
 /**
  * Instantiations
  */
+template class Matrix< vec_type<float, 2> >;
+template class Matrix< vec_type<float, 3> >;
+template class Matrix< vec_type<float, 4> >;
+
+template class Matrix< vec_type<double, 2> >;
+template class Matrix< vec_type<double, 3> >;
+template class Matrix< vec_type<double, 4> >;
+
 template class Matrix<double3>;
 template class Matrix<double>;
 template class Matrix<float>;
@@ -430,6 +465,14 @@ template class Matrix<float4>;
 template class Matrix<uint1>;
 template class Matrix<uint2>;
 template class Matrix<uint>;
+
+template class HostMatrix< vec_type<float, 2> >;
+template class HostMatrix< vec_type<float, 3> >;
+template class HostMatrix< vec_type<float, 4> >;
+
+template class HostMatrix< vec_type<double, 2> >;
+template class HostMatrix< vec_type<double, 3> >;
+template class HostMatrix< vec_type<double, 4> >;
 
 template class HostMatrix<double3>;
 template class HostMatrix<double>;
@@ -458,3 +501,5 @@ template class FortranMatrix<uint>;
 template class Matrix<cfloat3>;
 template class HostMatrix<cfloat3>;
 #endif
+
+}

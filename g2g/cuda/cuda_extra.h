@@ -316,7 +316,9 @@ template<typename T> void to_constant(const std::string& name, const T* ptr) {
   #endif
 }
 
+inline std::ostream& operator<<(std::ostream& o, const double2& a) { o << "(" << a.x << "," << a.y << ")"; return o; }
 inline std::ostream& operator<<(std::ostream& o, const double3& a) { o << "(" << a.x << "," << a.y << "," << a.z << ")"; return o; }
+inline std::ostream& operator<<(std::ostream& o, const double4& a) { o << "(" << a.x << "," << a.y << "," << a.z << ")"; return o; }
 inline std::ostream& operator<<(std::ostream& o, const uint1& a) { o << "(" << a.x << ")"; return o; }
 inline std::ostream& operator<<(std::ostream& o, const uint2& a) { o << "(" << a.x << "," << a.y << ")"; return o; }
 

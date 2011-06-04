@@ -8,9 +8,10 @@
 #include "../matrix.h"
 #include "../partition.h"
 using namespace std;
-using namespace G2G;
 
-void PointGroup::compute_weights(void)
+namespace G2G {
+template<class scalar_type>
+void PointGroup<scalar_type>::compute_weights(void)
 {
 	list<Point>::iterator it = points.begin();
 	while (it != points.end()) {
@@ -99,4 +100,8 @@ void PointGroup::compute_weights(void)
     }
     else ++it;
 	}
+}
+
+template class PointGroup<double>;
+template class PointGroup<float>;
 }

@@ -78,7 +78,7 @@ class PointGroup {
     void add_point(const Point& p);
     void compute_weights(void);
 
-    void compute_functions(bool gga, bool forces);
+    void compute_functions(bool forces, bool gga);
     void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
 
     bool is_significative(FunctionType, double exponent, double coeff, double d2);
@@ -130,9 +130,9 @@ class Partition {
       Timer t1;
       t1.start_and_sync();
       for (std::list<Cube*>::const_iterator it = cubes.begin(); it != cubes.end(); ++it)
-        (*it)->compute_functions(gga, forces);
+        (*it)->compute_functions(forces, gga);
       for (std::list<Sphere*>::const_iterator it = spheres.begin(); it != spheres.end(); ++it)
-        (*it)->compute_functions(gga, forces);
+        (*it)->compute_functions(forces, gga);
       t1.stop_and_sync();
       std::cout << "TIMER: funcs: " << t1 << std::endl;
     }

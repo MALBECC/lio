@@ -12,7 +12,7 @@ using namespace std;
 
 namespace G2G {
 template<class scalar_type>
-void PointGroup<scalar_type>::compute_functions(bool gga, bool forces)
+void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
 {
   /* Load group functions */
   uint group_m = total_functions();

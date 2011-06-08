@@ -41,7 +41,7 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   #if CPU_RECOMPUTE
   /** Compute functions **/
   timers.functions.start();
-  compute_functions<compute_forces, !lda>();
+  compute_functions(compute_forces, !lda);
   timers.functions.pause();
   #endif
 

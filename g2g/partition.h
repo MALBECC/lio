@@ -99,7 +99,11 @@ class Sphere : public PointGroup<double> {
     double radius;
 };
 
+#if FULL_DOUBLE
+class Cube : public PointGroup<double> {
+#else
 class Cube : public PointGroup<float> {
+#endif
   public:
     void assign_significative_functions(const double3& cube_coord, const std::vector<double>& min_exps, const std::vector<double>& min_coeff);
     bool is_sphere(void) { return false; }

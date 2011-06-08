@@ -50,10 +50,10 @@ else
 	LIBRARY=libg2g.so
 endif
 
-ifeq ($(full_double),0)
-  CXXFLAGS += -DFULL_DOUBLE=0
-else
+ifeq ($(full_double),1)
   CXXFLAGS += -DFULL_DOUBLE=1
+else
+  CXXFLAGS += -DFULL_DOUBLE=0
 endif
 
 ## Define libraries

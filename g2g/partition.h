@@ -11,7 +11,7 @@
 
 namespace G2G {
   struct Timers {
-    Timer total, ciclos, rmm, density, forces, resto, pot, functions;
+    Timer total, ciclos, rmm, density, forces, resto, pot, functions, density_derivs;
   };
   
   std::ostream& operator<<(std::ostream& io, const Timers& t);
@@ -55,8 +55,8 @@ class PointGroup {
     G2G::HostMatrix<vec_type3> hessian_values;
     #else
     G2G::CudaMatrix<scalar_type> function_values;
-    G2G::CudaMatrix<vec_type3> gradient_values;
-    G2G::CudaMatrix<vec_type3> hessian_values;
+    G2G::CudaMatrix<vec_type4> gradient_values;
+    G2G::CudaMatrix<vec_type4> hessian_values;
     #endif
 
     inline FunctionType small_function_type(uint f) const {
@@ -79,14 +79,18 @@ class PointGroup {
     void compute_weights(void);
 
     void compute_functions(bool forces, bool gga);
-    void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
+    void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, double& energy, double* fort_forces_ptr);
 
     bool is_significative(FunctionType, double exponent, double coeff, double d2);
     virtual bool is_sphere(void) = 0;
     virtual bool is_cube(void) = 0;    
 };
 
+#if FULL_DOUBLE
 class Sphere : public PointGroup<double> {
+#else
+class Sphere : public PointGroup<float> {
+#endif
   public:
     Sphere(void);
     Sphere(uint _atom, double _radius);
@@ -121,10 +125,16 @@ class Partition {
 
     void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr)
     {
+      double cubes_energy = 0, spheres_energy = 0;
+      
       for (std::list<Cube*>::const_iterator it = cubes.begin(); it != cubes.end(); ++it)
-        (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, fort_energy_ptr, fort_forces_ptr);
+        (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy, fort_forces_ptr);
       for (std::list<Sphere*>::const_iterator it = spheres.begin(); it != spheres.end(); ++it)
-        (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, fort_energy_ptr, fort_forces_ptr);
+        (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, spheres_energy, fort_forces_ptr);
+        
+      std::cout << "cubes XC energy: " << cubes_energy << std::endl;
+      std::cout << "spheres XC energy: " << spheres_energy << std::endl;
+      *fort_energy_ptr = cubes_energy + spheres_energy;
     }
 
     void regenerate(void);

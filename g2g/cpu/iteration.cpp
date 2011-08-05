@@ -16,23 +16,11 @@
 using std::cout;
 using std::endl;
 using std::list;
-using namespace G2G;
 
-
-template <bool compute_rmm, bool lda, bool compute_forces>
-void g2g_iteration(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr) {  
-  Timers timers;
-  timers.total.start();
-
-  partition.solve(timers, compute_rmm, lda, compute_forces, compute_energy, fort_energy_ptr, fort_forces_ptr);
-
-  timers.total.stop();
-  cout << timers << endl;  
-}
-
+namespace G2G {
 template<class scalar_type>
 void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,
-                                    double* fort_energy_ptr, double* fort_forces_ptr)
+                                    double& energy, double* fort_forces_ptr)
 {
   HostMatrix<scalar_type> rmm_output;
   uint group_m = total_functions();
@@ -152,7 +140,7 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     timers.pot.pause();
 
     if (compute_energy)
-      *fort_energy_ptr += (partial_density * point_it->weight) * (exc + corr);
+      energy += (partial_density * point_it->weight) * (exc + corr);
     timers.density.pause();
 
 
@@ -219,11 +207,7 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   #endif
 }
 
-template void g2g_iteration<true, true, true>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
-template void g2g_iteration<true, true, false>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
-template void g2g_iteration<true, false, true>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
-template void g2g_iteration<true, false, false>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
-template void g2g_iteration<false, true, true>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
-template void g2g_iteration<false, true, false>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
-template void g2g_iteration<false, false, true>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
-template void g2g_iteration<false, false, false>(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
+template class PointGroup<double>;
+template class PointGroup<float>;
+
+}

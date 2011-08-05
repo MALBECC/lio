@@ -201,6 +201,7 @@ template<class T> void HostMatrix<T>::copy_submatrix(const CudaMatrix<T>& c, uns
 template<class T> void HostMatrix<T>::to_constant(const char* symbol) {
   #if !CPU_KERNELS
 	cudaMemcpyToSymbol(symbol, this->data, this->bytes(), 0, cudaMemcpyHostToDevice);
+  cudaAssertNoError("to_constant");
   #endif
 }
 
@@ -226,6 +227,7 @@ template<class T> void HostMatrix<T>::copy_transpose(const CudaMatrix<T>& cuda_m
 template<class T> void to_constant(const char* constant, const T& value) {
   #if !CPU_KERNELS
 	cudaMemcpyToSymbol(constant, &value, sizeof(T), 0, cudaMemcpyHostToDevice);
+  cudaAssertNoError("to_constant(value)");
   #endif
 }
 
@@ -474,6 +476,14 @@ template class HostMatrix< vec_type<double, 2> >;
 template class HostMatrix< vec_type<double, 3> >;
 template class HostMatrix< vec_type<double, 4> >;
 
+template class CudaMatrix< vec_type<float, 2> >;
+template class CudaMatrix< vec_type<float, 3> >;
+template class CudaMatrix< vec_type<float, 4> >;
+
+template class CudaMatrix< vec_type<double, 2> >;
+template class CudaMatrix< vec_type<double, 3> >;
+template class CudaMatrix< vec_type<double, 4> >;
+
 template class HostMatrix<double3>;
 template class HostMatrix<double>;
 template class HostMatrix<float>;
@@ -493,6 +503,8 @@ template class CudaMatrix<float4>;
 template class CudaMatrix<uint>;
 template class CudaMatrix<uint2>;
 template class CudaMatrix<double>;
+template class CudaMatrix<double3>;
+template class CudaMatrix<double4>;
 
 template class FortranMatrix<double>;
 template class FortranMatrix<uint>;

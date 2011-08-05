@@ -65,6 +65,12 @@ inline __device__ __host__ double3 operator-(const double3& a, double b)
 inline __device__ __host__ double3 operator+(const double3& a, const double3& b)
 { return make_double3(a.x + b.x, a.y + b.y, a.z + b.z); }
 
+inline __device__ __host__ double4 operator+(const double4& a, const double4& b)
+{ return make_double4(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w); }
+
+inline __device__ __host__ double4 operator*(const double4& a, const double4& b)
+{ return make_double4(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w); }
+
 inline __device__ __host__ float4 operator+(const float4& a, const float4& b)
 { return make_float4(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w); }
 
@@ -203,8 +209,19 @@ inline __device__ __host__ float distance2(const float3& a, const float3& b)
 	return x * x + y * y + z * z;
 }
 
+inline __device__ __host__ double distance2(const double3& a, const double3& b)
+{
+	double x = a.x - b.x;
+	double y = a.y - b.y;
+	double z = a.z - b.z;
+	return x * x + y * y + z * z;
+}
+
 inline __device__ __host__ float distance(const float3& a, const float3& b)
 { return sqrtf(distance2(a, b)); }
+
+inline __device__ __host__ double distance(const double3& a, const double3& b)
+{ return sqrt(distance2(a, b)); }
 
 inline __device__ __host__ uint index_from3d(const dim3& size, const dim3& pos)
 {
@@ -233,6 +250,12 @@ inline __device__ __host__ float4& operator-=(float4& a, const float4& b)
 
 inline __device__ __host__ float3& operator+=(float3& a, const float3& b)
 { a.x += b.x; a.y += b.y; a.z += b.z; return a; }
+
+inline __device__ __host__ double4& operator+=(double4& a, const double4& b)
+{ a.x += b.x; a.y += b.y; a.z += b.z; a.w += b.w; return a; }
+
+inline __device__ __host__ double4& operator-=(double4& a, const double4& b)
+{ a.x -= b.x; a.y -= b.y; a.z -= b.z; a.w -= b.w; return a; }
 
 inline __device__ __host__ double3& operator+=(double3& a, const double3& b)
 { a.x += b.x; a.y += b.y; a.z += b.z; return a; }
@@ -266,6 +289,10 @@ inline __device__ __host__ uint4 operator +(const dim3& a, const uint4& b)
 
 inline __device__ __host__ double3 operator*(const uint3& a, double b) {
 	return make_double3(a.x * b, a.y * b, a.z * b);
+}
+
+inline __device__ __host__ double4 operator*(const double4& a, double b) {
+	return make_double4(a.x * b, a.y * b, a.z * b, a.w * b);
 }
 
 inline __device__ __host__ float4 to_float4(const float3& f)

@@ -1,27 +1,28 @@
-template<bool compute_energy, bool compute_factor, bool lda>
-__global__ void gpu_compute_density(float* const energy, float* const factor, const float* const point_weights,
-  uint points, const float* rdm, const float* function_values, const float4* gradient_values, const float4* hessian_values, uint m)
+template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
+__global__ void gpu_compute_density(scalar_type* const energy, scalar_type* const factor, const scalar_type* const point_weights,
+                                    uint points, const scalar_type* rdm, const scalar_type* function_values, const vec_type<scalar_type,4>* gradient_values,
+                                    const vec_type<scalar_type,4>* hessian_values, uint m)
 {
   uint point = index_x(blockDim, blockIdx, threadIdx);
 
-  float partial_density = 0.0f;
-  float4 dxyz, dd1, dd2;
-  if (!lda) { dxyz = dd1 = dd2 = make_float4(0.0f,0.0f,0.0f,0.0f); }
+  scalar_type partial_density = 0.0f;
+  vec_type<scalar_type,4> dxyz, dd1, dd2;
+  if (!lda) { dxyz = dd1 = dd2 = vec_type<scalar_type,4>(0.0f,0.0f,0.0f,0.0f); }
 
   bool valid_thread = (point < points);
-  float point_weight;
+  scalar_type point_weight;
   if (valid_thread) point_weight = point_weights[point];
 
-  __shared__ float rdm_sh[DENSITY_BATCH_SIZE];
+  __shared__ scalar_type rdm_sh[DENSITY_BATCH_SIZE];
 
   /***** compute density ******/
   for (uint i = 0; i < m; i++) {
-    float w = 0.0f;
-    float4 w3, ww1, ww2;
-    if (!lda) { w3 = ww1 = ww2 = make_float4(0.0f,0.0f,0.0f,0.0f); }
+    scalar_type w = 0.0f;
+    vec_type<scalar_type,4> w3, ww1, ww2;
+    if (!lda) { w3 = ww1 = ww2 = vec_type<scalar_type,4>(0.0f,0.0f,0.0f,0.0f); }
 
-    float Fi;
-    float4 Fgi, Fhi1, Fhi2;
+    scalar_type Fi;
+    vec_type<scalar_type,4> Fgi, Fhi1, Fhi2;
 
     if (valid_thread) {
       Fi = function_values[COALESCED_DIMENSION(points) * i + point];
@@ -46,11 +47,11 @@ __global__ void gpu_compute_density(float* const energy, float* const factor, co
           w += rdm_sh[j] * Fj;
 
           if (!lda) {
-            float4 Fgj = gradient_values[COALESCED_DIMENSION(points) * (bj + j) + point];
+            vec_type<scalar_type,4> Fgj = gradient_values[COALESCED_DIMENSION(points) * (bj + j) + point];
             w3 += Fgj * rdm_sh[j];
 
-            float4 Fhj1 = hessian_values[COALESCED_DIMENSION(points) * (2 * (bj + j) + 0) + point];
-            float4 Fhj2 = hessian_values[COALESCED_DIMENSION(points) * (2 * (bj + j) + 1) + point];
+            vec_type<scalar_type,4> Fhj1 = hessian_values[COALESCED_DIMENSION(points) * (2 * (bj + j) + 0) + point];
+            vec_type<scalar_type,4> Fhj2 = hessian_values[COALESCED_DIMENSION(points) * (2 * (bj + j) + 1) + point];
             ww1 += Fhj1 * rdm_sh[j];
             ww2 += Fhj2 * rdm_sh[j];
           }
@@ -64,18 +65,18 @@ __global__ void gpu_compute_density(float* const energy, float* const factor, co
       dxyz += Fgi * w + w3 * Fi;
       dd1 += Fgi * w3 * 2.0f + Fhi1 * w + ww1 * Fi;
 
-      float4 FgXXY = make_float4(Fgi.x, Fgi.x, Fgi.y, 0.0f);
-      float4 w3YZZ = make_float4(w3.y, w3.z, w3.z, 0.0f);
-      float4 FgiYZZ = make_float4(Fgi.y, Fgi.z, Fgi.z, 0.0f);
-      float4 w3XXY = make_float4(w3.x, w3.x, w3.y, 0.0f);
+      vec_type<scalar_type,4> FgXXY(Fgi.x, Fgi.x, Fgi.y, 0.0f);
+      vec_type<scalar_type,4> w3YZZ(w3.y, w3.z, w3.z, 0.0f);
+      vec_type<scalar_type,4> FgiYZZ(Fgi.y, Fgi.z, Fgi.z, 0.0f);
+      vec_type<scalar_type,4> w3XXY(w3.x, w3.x, w3.y, 0.0f);
 
       dd2 += FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi;
     }
   }
 
   /***** compute energy / factor *****/
-  float y2a, exc_corr;
-  gpu_pot<compute_energy, true, lda>(partial_density, dxyz, dd1, dd2, exc_corr, y2a); // TODO: segundo parametro, que tenga en cuenta RMM+energy
+  scalar_type y2a, exc_corr;
+  gpu_pot<scalar_type, compute_energy, true, lda>(partial_density, dxyz, dd1, dd2, exc_corr, y2a); // TODO: segundo parametro, que tenga en cuenta RMM+energy
   
   if (compute_energy && valid_thread)
     energy[point] = (partial_density * point_weight) * exc_corr;

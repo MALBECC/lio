@@ -5,7 +5,8 @@
 
 // TODO: esto desperdicia la mitad de los threads -> quizas se puede armar una grilla sin los bloques que no hagan nada
 
-__global__ void gpu_update_rmm(float* factors, uint points, float* rmm, float* function_values, uint m)
+template<class scalar_type>
+__global__ void gpu_update_rmm(scalar_type* factors, uint points, scalar_type* rmm, scalar_type* function_values, uint m)
 {
   // skip computation on blocks outside of the valid triangle
   if (blockIdx.x * blockDim.x > blockIdx.y * blockDim.y) return;
@@ -18,11 +19,11 @@ __global__ void gpu_update_rmm(float* factors, uint points, float* rmm, float* f
 	bool valid_thread = (i < m && j < m && i <= j); // quiero triangulo inferior solamente TODO: sacar esto
 
   // calculate this rmm
-	float rmm_local = 0.0f;
+	scalar_type rmm_local = 0.0f;
 
-  __shared__ float functions_i_local[RMM_BLOCK_SIZE_XY+1][RMM_BLOCK_SIZE_XY+1];	// Fi[point][i]
-	__shared__ float functions_j_local[RMM_BLOCK_SIZE_XY+1][RMM_BLOCK_SIZE_XY+1]; // Fj[point][j]
-	__shared__ float factor_local[RMM_BLOCK_SIZE_XY * RMM_BLOCK_SIZE_XY];			// factor[point]    // TODO: esto seguramente tiene bank conflicts
+  __shared__ scalar_type functions_i_local[RMM_BLOCK_SIZE_XY+1][RMM_BLOCK_SIZE_XY+1];	// Fi[point][i]
+	__shared__ scalar_type functions_j_local[RMM_BLOCK_SIZE_XY+1][RMM_BLOCK_SIZE_XY+1]; // Fj[point][j]
+	__shared__ scalar_type factor_local[RMM_BLOCK_SIZE_XY * RMM_BLOCK_SIZE_XY];			// factor[point]    // TODO: esto seguramente tiene bank conflicts
 
 	for (uint point_base = 0; point_base < points; point_base += (RMM_BLOCK_SIZE_XY * RMM_BLOCK_SIZE_XY)) {
 		uint abs_threadIdx = threadIdx.y * blockDim.x + threadIdx.x;  // absolute threadId inside block

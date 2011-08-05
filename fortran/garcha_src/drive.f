@@ -29,7 +29,7 @@ c
       logical done(ntq),used,NORM,OPEN,ATRHO,DIRECT,VCINP,SHFT
       logical TMP,TMP2,dens,EXTR,write,SVD,ANG,field,field1
       logical Ex,Coul,Scf1,Prop,GRAD,BSSE,integ,SVD1,sol,tipe
-      logical exter,exter1,resp1,popf
+      logical exter,exter1,resp1,popf,parsearch
 c
       logical OPEN1
       logical dens1,integ1,sol1,free,free1
@@ -41,7 +41,7 @@ c
      >                field,sol,resp1
       namelist /intMD/ h,nsteps,istart
       namelist /scfinp/ OPEN,NMAX,NCO,Nunp,ATRHO,VCINP,DIRECT,
-     >                  EXTR,SHFT,SHI,IDAMP,GOLD,told,write,MEMO
+     >                  EXTR,SHFT,SHI,IDAMP,GOLD,told,write,MEMO,parsearch
       namelist /RHOINP/ NAO,NGF,OCC,ATCOEF
       namelist /EXCH/ Iexch,integ,dens,igrid,igrid2
       namelist /COULx/ SVD,iconst
@@ -199,6 +199,8 @@ c
       sol=.false.
       free=.false.
 c
+      parsearch=.false.
+
       do n=1,ntq
        map(n)=n
       enddo
@@ -1216,6 +1218,11 @@ c nopt 0 static SCF calculation --------------------------------------
 			write(*,*) 'primera carga de posiciones'
 			call g2g_reload_atom_positions(igrid2)
 #endif
+
+     if (parsearch) then
+       call g2g_solve_groups(1, E, 0)
+       goto 101
+     endif
      
 
 
@@ -1314,7 +1321,7 @@ c
       write(*,*) 'JOB FINISHED'
       call system(date)
 
-      DEALLOCATE (natomc,nnps,nnpp,nnpd,nns)
+101   DEALLOCATE (natomc,nnps,nnpp,nnpd,nns)
       deallocate (nnd,nnp,atmin,jatc)
 
 c

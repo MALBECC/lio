@@ -20,7 +20,6 @@ using namespace G2G;
 
 /* external function prototypes */
 template<bool, bool> void compute_functions(void);
-template<bool, bool, bool> void g2g_iteration(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
 
 /* internal function prototypes */
 void read_options(void);
@@ -50,6 +49,11 @@ extern "C" void g2g_init_(void)
   cout.precision(10);
 }
 
+namespace G2G {
+void gpu_set_variables(void);
+template<class T> void gpu_set_atom_positions(const HostMatrix<T>& m);
+}
+
 extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int& natom, double* r, double* Rm, const unsigned int* Iz, const unsigned int* Nr,
 										 const unsigned int* Nr2, unsigned int* Nuc, const unsigned int& M, unsigned int* ncont, const unsigned int* nshell, double* c,
 					           double* a, double* RMM, const unsigned int& M18, const unsigned int& M5, const unsigned int& nco, const unsigned int& nopt,
@@ -63,11 +67,9 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	
 	fortran_vars.do_forces = (nopt == 2);
 	cout << "do_forces: " << boolalpha << fortran_vars.do_forces << endl;
-  to_constant("gpu_atoms", fortran_vars.atoms);
 
 	fortran_vars.normalize = norm;
 	fortran_vars.normalization_factor = (fortran_vars.normalize ? (1.0/sqrt(3)) : 1.0);
-  to_constant("gpu_normalization_factor", fortran_vars.normalization_factor);
 
   #ifdef _DEBUG
   // trap floating point exceptions on debug
@@ -86,7 +88,6 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 		
 	fortran_vars.iexch = Iexch;
   if (Iexch == 4 || Iexch == 5) cout << "***** WARNING ***** : Iexch 4 y 5 no andan bien todavia" << endl;
-  to_constant("gpu_Iexch", Iexch);
   fortran_vars.lda = (Iexch <= 3);
   fortran_vars.gga = !fortran_vars.lda;
   assert(0 < Iexch && Iexch <= 9);
@@ -98,14 +99,12 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	fortran_vars.shells1.resize(fortran_vars.atoms);
 	fortran_vars.shells2.resize(fortran_vars.atoms);
 	fortran_vars.rm.resize(fortran_vars.atoms);
-  HostMatrixFloat rm_float(fortran_vars.atoms);
-  rm_float.to_constant("gpu_rm");
 
 	/* ignore the 0th element on these */
 	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells1(i) = Nr[Iz[i]]; }
 	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells2(i) = Nr2[Iz[i]]; }		
 	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.rm(i) = Rm[Iz[i]]; }
-	
+  
 	fortran_vars.nucleii = FortranMatrix<uint>(Nuc, fortran_vars.m, 1, 1);	
 	fortran_vars.contractions = FortranMatrix<uint>(ncont, fortran_vars.m, 1, 1);
   for (uint i = 0; i < fortran_vars.m; i++) {
@@ -126,6 +125,10 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 
 	fortran_vars.atom_atom_dists = HostMatrix<double>(fortran_vars.atoms, fortran_vars.atoms);
 	fortran_vars.nearest_neighbor_dists = HostMatrix<double>(fortran_vars.atoms);
+  
+#if !CPU_KERNELS
+  G2G::gpu_set_variables();
+#endif
 
 	read_options();
 }
@@ -180,7 +183,14 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
 		atom_positions(i) = make_float3(pos.x, pos.y, pos.z);
     //cout << atom_positions(i) << endl;
 	}
-	atom_positions.to_constant("gpu_atom_positions");
+  
+#if !CPU_KERNELS
+#if FULL_DOUBLE
+  G2G::gpu_set_atom_positions(fortran_vars.atom_positions);
+#else
+  G2G::gpu_set_atom_positions(atom_positions);
+#endif
+#endif
 
 	compute_new_grid(grid_type);
 }
@@ -191,6 +201,17 @@ extern "C" void g2g_new_grid_(const unsigned int& grid_type) {
 		cout << "not loading, same grid as loaded" << endl;
 	else
 		compute_new_grid(grid_type);
+}
+
+template<bool compute_rmm, bool lda, bool compute_forces> void g2g_iteration(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr) 
+{
+  Timers timers;
+  timers.total.start();
+
+  partition.solve(timers, compute_rmm, lda, compute_forces, compute_energy, fort_energy_ptr, fort_forces_ptr);
+
+  timers.total.stop();
+  cout << timers << endl;  
 }
 
 extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_energy_ptr, double* fort_forces_ptr)

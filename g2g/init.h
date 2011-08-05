@@ -21,7 +21,11 @@ namespace G2G {
   struct FortranVars {
     uint atoms;
     bool normalize;
+#if FULL_DOUBLE
     double normalization_factor;
+#else
+    float normalization_factor;
+#endif
     uint s_funcs, p_funcs, d_funcs, spd_funcs, m;
     uint nco;
     uint iexch;

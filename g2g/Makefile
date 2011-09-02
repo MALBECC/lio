@@ -81,4 +81,4 @@ libg2g.so: $(OBJ)
 
 clean:
 	make -C cuda clean
-	rm -f *.o *.so *.a cpu/*.o cuda/*.o
+	rm -f *.o libg2g.so *.a cpu/*.o cuda/*.o

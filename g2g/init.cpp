@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <fenv.h>
 #include <signal.h>
+#include <unistd.h>
 #include "common.h"
 #include "cuda/cuda_extra.h"
 #include "init.h"
@@ -15,6 +16,7 @@ using std::endl;
 using std::boolalpha;
 using std::runtime_error;
 using std::ifstream;
+using std::ofstream;
 using std::string;
 using namespace G2G;
 
@@ -46,7 +48,15 @@ extern "C" void g2g_init_(void)
   cout << "Kernels: cpu" << endl;
   #endif
 
+  #if FULL_DOUBLE
+  cout << "Precision: full" << endl;
+  #else
+  cout << "Precision: single" << endl;
+ #endif
+
   cout.precision(10);
+
+  unlink("forces.out");
 }
 
 namespace G2G {
@@ -251,7 +261,17 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
       else g2g_iteration<false, false, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
     }
   }
+  
   if (compute_energy) cout << "XC energy: " << *fort_energy_ptr << endl;
+  if (compute_forces) {
+    ofstream forces_file("forces.out", std::ios_base::out | std::ios_base::app);
+    forces_file.precision(20);
+    FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, FORTRAN_MAX_ATOMS);
+    for (uint i = 0; i < fortran_vars.atoms; i++) {
+      forces_file << fort_forces(i, 0) << " " << fort_forces(i, 1) << " " << fort_forces(i, 2) << endl;
+    }
+    forces_file << endl;
+  }
 }
 
 /* general options */

@@ -212,6 +212,7 @@ c-----------------------------------------------------------------------
 c reads input file
       write(*,*) ' Name of the input file ?'
       read(*,100) name1
+      write(*,*) name1
 c
 c
       inquire(file=name1,exist=exists)
@@ -1219,10 +1220,10 @@ c nopt 0 static SCF calculation --------------------------------------
 			call g2g_reload_atom_positions(igrid2)
 #endif
 
-     if (parsearch) then
+      if (parsearch) then
        call g2g_solve_groups(1, E, 0)
        goto 101
-     endif
+      endif
      
 
 
@@ -1327,7 +1328,7 @@ c
 c
 c---------------------------------------------------
 c---------------------------------------------------
- 100  format (A8)
+ 100  format (A32)
  200  format ('basis set corresponding to Z ',I3,' was not used')
  400  format ('not implemented for open shell yet')
  500  format (i3,3x,F11.6,2x,F11.6,2x,F11.6)

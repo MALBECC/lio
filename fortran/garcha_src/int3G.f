@@ -44,7 +44,7 @@ c      parameter (rmax=25.D0)
 c
       dimension Q(3),W(3),af2(ngd)
       dimension d(ntq,ntq),Jx(ng),Ll(3)
-      dimension RMM(*),f(nt,3)
+      dimension RMM(*),f(nt,3),fexc(nt,3)
       dimension FF(ngd),P(ngd)
 c scratch space
 c
@@ -123,6 +123,7 @@ c
       do 2 i=1,M
  2     Jx(i)=(M2-i)*(i-1)/2
 c
+      fexc=0
       do 5 i=1,natom
 c       f(i,1)=0.
 c       f(i,2)=0.
@@ -157,10 +158,11 @@ c
 
 #ifdef G2G
 			if (calc_energy) then
-				call g2g_solve_groups(2, Exc, f)
+				call g2g_solve_groups(2, Exc, fexc)
 			else
-				call g2g_solve_groups(3, Exc, f)
+				call g2g_solve_groups(3, Exc, fexc)
 			endif
+      f = f + fexc
 #else
         call exchnum2(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,NCO,Exc,f)

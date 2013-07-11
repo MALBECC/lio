@@ -1,0 +1,1575 @@
+   546.705200000000        Memoria en MB
+GPU Device used: GeForce GTX 580
+Kernels: gpu
+  Name of the input file ?
+ JOB STARTED 
+vie ene 18 16:58:09 ART 2013
+basis set corresponding to Z  16 was not used
+<======= GPU Code Initialization ========>
+atoms: 48
+max atoms: 248
+number of gaussians: 7440
+do_forces: false
+s: 146 p: 65 d: 33
+m: 539 nco: 118
+<====== read_options ========>
+little_cube_size 5
+max_function_exponent 10
+min_points_per_cube 1
+sphere_radius 0.5
+energy_all_iterations true
+ primera carga de posiciones
+timer grilla: 615842
+  SCF CALCULATION  
+ int1
+ dspev
+TIMER [inicio1]: 924471
+ dspev
+TIMER [cosas1]: 436448
+TIMER [dgelss]: 1831778
+TIMER [parte]: 6386
+TIMER [dppco]: 381170
+TIMER [dppdi]: 931236
+TIMER [resto]: 10198
+TIMER [dppco+dppdi+loop]: 1329166
+TIMER [int22]: 3205039
+ int22
+ kknumd       27646    32428758
+ kknum       27646      145530
+ int3mem 2
+       64779    75985767   16.0000000000000        4.00000000000000     
+ kknum       64779      145530
+ int3mem 2
+TIMER [int3mmem]: 7137100
+TIMER [inicio]: 12596036
+ empiezo el loop
+TIMER [principio int3lu]: 124684
+TIMER [int3lu]: 124911
+TIMER [exchfock]: 3654490
+TIMER [actualiza rmm1]: 77369
+TIMER [actualiza rmm]: 167273
+TIMER [dspev]: 190671
+TIMER [coeff]: 48025
+TIMER [otras cosas]: 17458
+  1  0.250000E+02   -1718.9492274
+TIMER [iteracion]: 4341578
+ 
+TIMER [principio int3lu]: 125252
+TIMER [int3lu]: 124507
+TIMER [exchfock]: 3716523
+TIMER [actualiza rmm1]: 77310
+TIMER [actualiza rmm]: 159306
+TIMER [dspev]: 164271
+TIMER [coeff]: 48050
+TIMER [otras cosas]: 17448
+  2  0.250000E+02   -1628.3246243
+TIMER [iteracion]: 4369336
+ 
+TIMER [principio int3lu]: 125285
+TIMER [int3lu]: 124850
+TIMER [exchfock]: 3732725
+TIMER [actualiza rmm1]: 77522
+TIMER [actualiza rmm]: 159945
+TIMER [dspev]: 165007
+TIMER [coeff]: 48022
+TIMER [otras cosas]: 17449
+  3  0.250000E+02   -1674.4681255
+TIMER [iteracion]: 4387255
+ 
+TIMER [principio int3lu]: 125171
+TIMER [int3lu]: 124281
+TIMER [exchfock]: 3788002
+TIMER [actualiza rmm1]: 77294
+TIMER [actualiza rmm]: 159377
+TIMER [dspev]: 159615
+TIMER [coeff]: 48001
+TIMER [otras cosas]: 17452
+  4  0.250000E+02   -1714.8056648
+TIMER [iteracion]: 4435857
+ 
+TIMER [principio int3lu]: 124885
+TIMER [int3lu]: 123768
+TIMER [exchfock]: 3736470
+TIMER [actualiza rmm1]: 77520
+TIMER [actualiza rmm]: 159971
+TIMER [dspev]: 171303
+TIMER [coeff]: 48032
+TIMER [otras cosas]: 17453
+  5  0.250000E+02   -1922.4072314
+TIMER [iteracion]: 4395824
+ 
+TIMER [principio int3lu]: 125851
+TIMER [int3lu]: 124086
+TIMER [exchfock]: 3817976
+TIMER [actualiza rmm1]: 77591
+TIMER [actualiza rmm]: 162198
+TIMER [dspev]: 187926
+TIMER [coeff]: 51262
+TIMER [otras cosas]: 17659
+  6  0.250000E+02   -2077.3842787
+TIMER [iteracion]: 4500924
+ 
+TIMER [principio int3lu]: 125119
+TIMER [int3lu]: 124738
+TIMER [exchfock]: 3807269
+TIMER [actualiza rmm1]: 77328
+TIMER [actualiza rmm]: 159236
+TIMER [dspev]: 162287
+TIMER [coeff]: 48018
+TIMER [otras cosas]: 17463
+  7  0.250000E+02   -2099.5201702
+TIMER [iteracion]: 4458099
+ 
+TIMER [principio int3lu]: 125426
+TIMER [int3lu]: 124329
+TIMER [exchfock]: 4033569
+TIMER [actualiza rmm1]: 77535
+TIMER [actualiza rmm]: 159759
+TIMER [dspev]: 161373
+TIMER [coeff]: 47997
+TIMER [otras cosas]: 17450
+  8  0.250000E+02   -2119.4232561
+TIMER [iteracion]: 4683883
+ 
+TIMER [principio int3lu]: 124967
+TIMER [int3lu]: 124446
+TIMER [exchfock]: 3702994
+TIMER [actualiza rmm1]: 77411
+TIMER [actualiza rmm]: 159420
+TIMER [dspev]: 160698
+TIMER [coeff]: 48002
+TIMER [otras cosas]: 17441
+  9  0.250000E+02   -2137.6813115
+TIMER [iteracion]: 4351946
+ 
+TIMER [principio int3lu]: 125133
+TIMER [int3lu]: 123956
+TIMER [exchfock]: 3777615
+TIMER [actualiza rmm1]: 77238
+TIMER [actualiza rmm]: 159229
+TIMER [dspev]: 161556
+TIMER [coeff]: 48103
+TIMER [otras cosas]: 17440
+ 10  0.250000E+02   -2157.3565429
+TIMER [iteracion]: 4426949
+ 
+TIMER [principio int3lu]: 124650
+TIMER [int3lu]: 124286
+TIMER [exchfock]: 3707525
+TIMER [actualiza rmm1]: 77366
+TIMER [actualiza rmm]: 159541
+TIMER [dspev]: 158966
+TIMER [coeff]: 48018
+TIMER [otras cosas]: 17440
+ 11  0.250000E+02   -2186.7300926
+TIMER [iteracion]: 4354399
+ 
+TIMER [principio int3lu]: 125185
+TIMER [int3lu]: 124210
+TIMER [exchfock]: 3946850
+TIMER [actualiza rmm1]: 77496
+TIMER [actualiza rmm]: 159684
+TIMER [dspev]: 159279
+TIMER [coeff]: 48061
+TIMER [otras cosas]: 17459
+ 12  0.250000E+02   -2207.1626400
+TIMER [iteracion]: 4594685
+ 
+TIMER [principio int3lu]: 125633
+TIMER [int3lu]: 125069
+TIMER [exchfock]: 3883085
+TIMER [actualiza rmm1]: 78021
+TIMER [actualiza rmm]: 161302
+TIMER [dspev]: 159323
+TIMER [coeff]: 48031
+TIMER [otras cosas]: 17554
+ 13  0.250000E+02   -2223.0860245
+TIMER [iteracion]: 4534051
+ 
+TIMER [principio int3lu]: 125028
+TIMER [int3lu]: 124523
+TIMER [exchfock]: 3859349
+TIMER [actualiza rmm1]: 77737
+TIMER [actualiza rmm]: 159911
+TIMER [dspev]: 160410
+TIMER [coeff]: 48012
+TIMER [otras cosas]: 17482
+ 14  0.250000E+02   -2240.1275143
+TIMER [iteracion]: 4508650
+ 
+TIMER [principio int3lu]: 126108
+TIMER [int3lu]: 125128
+TIMER [exchfock]: 3862608
+TIMER [actualiza rmm1]: 77433
+TIMER [actualiza rmm]: 159651
+TIMER [dspev]: 170299
+TIMER [coeff]: 48287
+TIMER [otras cosas]: 17532
+ 15  0.250000E+02   -2259.2619775
+TIMER [iteracion]: 4523578
+ 
+TIMER [principio int3lu]: 126522
+TIMER [int3lu]: 125235
+TIMER [exchfock]: 3741132
+TIMER [actualiza rmm1]: 78180
+TIMER [actualiza rmm]: 161027
+TIMER [dspev]: 173703
+TIMER [coeff]: 48332
+TIMER [otras cosas]: 18316
+ 16  0.250000E+02   -2321.5166432
+TIMER [iteracion]: 4409205
+ 
+TIMER [principio int3lu]: 125403
+TIMER [int3lu]: 125332
+TIMER [exchfock]: 3719868
+TIMER [actualiza rmm1]: 77640
+TIMER [actualiza rmm]: 159794
+TIMER [dspev]: 155263
+TIMER [coeff]: 48112
+TIMER [otras cosas]: 17631
+ 17  0.250000E+02   -2336.9709544
+TIMER [iteracion]: 4365407
+ 
+TIMER [principio int3lu]: 124696
+TIMER [int3lu]: 125515
+TIMER [exchfock]: 3887800
+TIMER [actualiza rmm1]: 77704
+TIMER [actualiza rmm]: 159986
+TIMER [dspev]: 155791
+TIMER [coeff]: 48035
+TIMER [otras cosas]: 17506
+ 18  0.250000E+02   -2434.2147960
+TIMER [iteracion]: 4533252
+ 
+TIMER [principio int3lu]: 125716
+TIMER [int3lu]: 124587
+TIMER [exchfock]: 3818478
+TIMER [actualiza rmm1]: 77698
+TIMER [actualiza rmm]: 160297
+TIMER [dspev]: 152110
+TIMER [coeff]: 48005
+TIMER [otras cosas]: 17501
+ 19  0.250000E+02   -2445.1946293
+TIMER [iteracion]: 4460716
+ 
+TIMER [principio int3lu]: 125047
+TIMER [int3lu]: 124911
+TIMER [exchfock]: 3661524
+TIMER [actualiza rmm1]: 79420
+TIMER [actualiza rmm]: 170955
+TIMER [dspev]: 155420
+TIMER [coeff]: 47999
+TIMER [otras cosas]: 17467
+ 20  0.250000E+02   -2457.0157763
+TIMER [iteracion]: 4317270
+ 
+TIMER [principio int3lu]: 126856
+TIMER [int3lu]: 124481
+TIMER [exchfock]: 3759991
+TIMER [actualiza rmm1]: 77395
+TIMER [actualiza rmm]: 159668
+TIMER [dspev]: 155380
+TIMER [coeff]: 48067
+TIMER [otras cosas]: 17637
+ 21  0.250000E+02   -2469.0762534
+TIMER [iteracion]: 4406023
+ 
+TIMER [principio int3lu]: 126120
+TIMER [int3lu]: 125735
+TIMER [exchfock]: 3769048
+TIMER [actualiza rmm1]: 77611
+TIMER [actualiza rmm]: 160002
+TIMER [dspev]: 153285
+TIMER [coeff]: 48059
+TIMER [otras cosas]: 17482
+ 22  0.250000E+02   -2479.4358721
+TIMER [iteracion]: 4413671
+ 
+TIMER [principio int3lu]: 126720
+TIMER [int3lu]: 124617
+TIMER [exchfock]: 3799329
+TIMER [actualiza rmm1]: 78124
+TIMER [actualiza rmm]: 160580
+TIMER [dspev]: 152654
+TIMER [coeff]: 48133
+TIMER [otras cosas]: 17439
+ 23  0.250000E+02   -2527.1020765
+TIMER [iteracion]: 4443439
+ 
+TIMER [principio int3lu]: 127283
+TIMER [int3lu]: 124678
+TIMER [exchfock]: 3827359
+TIMER [actualiza rmm1]: 77455
+TIMER [actualiza rmm]: 160024
+TIMER [dspev]: 155226
+TIMER [coeff]: 48071
+TIMER [otras cosas]: 17446
+ 24  0.250000E+02   -2533.4455826
+TIMER [iteracion]: 4474076
+ 
+TIMER [principio int3lu]: 133478
+TIMER [int3lu]: 124511
+TIMER [exchfock]: 3811933
+TIMER [actualiza rmm1]: 77590
+TIMER [actualiza rmm]: 160355
+TIMER [dspev]: 152778
+TIMER [coeff]: 48056
+TIMER [otras cosas]: 17432
+ 25  0.250000E+02   -2538.1261014
+TIMER [iteracion]: 4462629
+ 
+TIMER [principio int3lu]: 124690
+TIMER [int3lu]: 124381
+TIMER [exchfock]: 3620806
+TIMER [actualiza rmm1]: 77893
+TIMER [actualiza rmm]: 160523
+TIMER [dspev]: 163103
+TIMER [coeff]: 48118
+TIMER [otras cosas]: 17664
+ 26  0.250000E+02   -2543.8081649
+TIMER [iteracion]: 4273240
+ 
+TIMER [principio int3lu]: 125935
+TIMER [int3lu]: 125343
+TIMER [exchfock]: 3669481
+TIMER [actualiza rmm1]: 77714
+TIMER [actualiza rmm]: 159783
+TIMER [dspev]: 154766
+TIMER [coeff]: 48014
+TIMER [otras cosas]: 17480
+ 27  0.250000E+02   -2548.7591658
+TIMER [iteracion]: 4314802
+ 
+TIMER [principio int3lu]: 125185
+TIMER [int3lu]: 125268
+TIMER [exchfock]: 3742605
+TIMER [actualiza rmm1]: 77513
+TIMER [actualiza rmm]: 162596
+TIMER [dspev]: 152804
+TIMER [coeff]: 48009
+TIMER [otras cosas]: 17449
+ 28  0.250000E+02   -2552.3376796
+TIMER [iteracion]: 4388018
+ 
+TIMER [principio int3lu]: 124527
+TIMER [int3lu]: 124646
+TIMER [exchfock]: 3847704
+TIMER [actualiza rmm1]: 77362
+TIMER [actualiza rmm]: 160373
+TIMER [dspev]: 151948
+TIMER [coeff]: 48045
+TIMER [otras cosas]: 17488
+ 29  0.250000E+02   -2555.1288861
+TIMER [iteracion]: 4488737
+ 
+TIMER [principio int3lu]: 124972
+TIMER [int3lu]: 124779
+TIMER [exchfock]: 3772437
+TIMER [actualiza rmm1]: 77447
+TIMER [actualiza rmm]: 160561
+TIMER [dspev]: 151885
+TIMER [coeff]: 48070
+TIMER [otras cosas]: 17464
+ 30  0.250000E+02   -2558.8262329
+TIMER [iteracion]: 4415967
+ 
+TIMER [principio int3lu]: 125829
+TIMER [int3lu]: 125761
+TIMER [exchfock]: 3652779
+TIMER [actualiza rmm1]: 77641
+TIMER [actualiza rmm]: 159918
+TIMER [dspev]: 151712
+TIMER [coeff]: 48030
+TIMER [otras cosas]: 17455
+ 31  0.250000E+02   -2561.9257385
+TIMER [iteracion]: 4295479
+ 
+TIMER [principio int3lu]: 125576
+TIMER [int3lu]: 124955
+TIMER [exchfock]: 3729654
+TIMER [actualiza rmm1]: 77457
+TIMER [actualiza rmm]: 159693
+TIMER [dspev]: 151930
+TIMER [coeff]: 48088
+TIMER [otras cosas]: 17477
+ 32  0.250000E+02   -2564.6390113
+TIMER [iteracion]: 4371340
+ 
+TIMER [principio int3lu]: 124373
+TIMER [int3lu]: 124749
+TIMER [exchfock]: 3739517
+TIMER [actualiza rmm1]: 77537
+TIMER [actualiza rmm]: 160020
+TIMER [dspev]: 154597
+TIMER [coeff]: 48118
+TIMER [otras cosas]: 17546
+ 33  0.250000E+02   -2567.4180628
+TIMER [iteracion]: 4382997
+ 
+TIMER [principio int3lu]: 124915
+TIMER [int3lu]: 124703
+TIMER [exchfock]: 3746272
+TIMER [actualiza rmm1]: 77548
+TIMER [actualiza rmm]: 160836
+TIMER [dspev]: 157198
+TIMER [coeff]: 48094
+TIMER [otras cosas]: 17550
+ 34  0.250000E+02   -2571.0036987
+TIMER [iteracion]: 4393513
+ 
+TIMER [principio int3lu]: 125334
+TIMER [int3lu]: 125716
+TIMER [exchfock]: 3763538
+TIMER [actualiza rmm1]: 77805
+TIMER [actualiza rmm]: 159954
+TIMER [dspev]: 153224
+TIMER [coeff]: 48082
+TIMER [otras cosas]: 17543
+ 35  0.250000E+02   -2576.2553640
+TIMER [iteracion]: 4407379
+ 
+TIMER [principio int3lu]: 125345
+TIMER [int3lu]: 125082
+TIMER [exchfock]: 3847257
+TIMER [actualiza rmm1]: 78209
+TIMER [actualiza rmm]: 161131
+TIMER [dspev]: 156170
+TIMER [coeff]: 48125
+TIMER [otras cosas]: 17489
+ 36  0.250000E+02   -2580.0947232
+TIMER [iteracion]: 4494559
+ 
+TIMER [principio int3lu]: 127710
+TIMER [int3lu]: 126498
+TIMER [exchfock]: 3826709
+TIMER [actualiza rmm1]: 78143
+TIMER [actualiza rmm]: 161009
+TIMER [dspev]: 157116
+TIMER [coeff]: 48475
+TIMER [otras cosas]: 17503
+ 37  0.250000E+02   -2582.8973787
+TIMER [iteracion]: 4479082
+ 
+TIMER [principio int3lu]: 126104
+TIMER [int3lu]: 124506
+TIMER [exchfock]: 3772986
+TIMER [actualiza rmm1]: 77676
+TIMER [actualiza rmm]: 159759
+TIMER [dspev]: 152941
+TIMER [coeff]: 48112
+TIMER [otras cosas]: 17487
+ 38  0.250000E+02   -2586.6387641
+TIMER [iteracion]: 4415913
+ 
+TIMER [principio int3lu]: 124972
+TIMER [int3lu]: 124547
+TIMER [exchfock]: 3734272
+TIMER [actualiza rmm1]: 77698
+TIMER [actualiza rmm]: 160329
+TIMER [dspev]: 153496
+TIMER [coeff]: 48070
+TIMER [otras cosas]: 17599
+ 39  0.250000E+02   -2587.5141254
+TIMER [iteracion]: 4377354
+ 
+TIMER [principio int3lu]: 129540
+TIMER [int3lu]: 124900
+TIMER [exchfock]: 3733558
+TIMER [actualiza rmm1]: 77263
+TIMER [actualiza rmm]: 159389
+TIMER [dspev]: 156156
+TIMER [coeff]: 48021
+TIMER [otras cosas]: 17448
+ 40  0.250000E+02   -2588.1257100
+TIMER [iteracion]: 4383119
+ 
+TIMER [principio int3lu]: 124760
+TIMER [int3lu]: 124112
+TIMER [exchfock]: 3633590
+TIMER [actualiza rmm1]: 78248
+TIMER [actualiza rmm]: 160491
+TIMER [dspev]: 152236
+TIMER [coeff]: 48184
+TIMER [otras cosas]: 17523
+ 41  0.250000E+02   -2588.5712325
+TIMER [iteracion]: 4274892
+ 
+TIMER [principio int3lu]: 125383
+TIMER [int3lu]: 130567
+TIMER [exchfock]: 3803825
+TIMER [actualiza rmm1]: 77538
+TIMER [actualiza rmm]: 159724
+TIMER [dspev]: 152695
+TIMER [coeff]: 48042
+TIMER [otras cosas]: 17424
+ 42  0.250000E+02   -2588.8960500
+TIMER [iteracion]: 4452959
+ 
+TIMER [principio int3lu]: 124544
+TIMER [int3lu]: 124606
+TIMER [exchfock]: 3707718
+TIMER [actualiza rmm1]: 77502
+TIMER [actualiza rmm]: 160184
+TIMER [dspev]: 154063
+TIMER [coeff]: 48079
+TIMER [otras cosas]: 17440
+ 43  0.250000E+02   -2589.1334478
+TIMER [iteracion]: 4350665
+ 
+TIMER [principio int3lu]: 125598
+TIMER [int3lu]: 124747
+TIMER [exchfock]: 3669994
+TIMER [actualiza rmm1]: 77931
+TIMER [actualiza rmm]: 161683
+TIMER [dspev]: 164232
+TIMER [coeff]: 48051
+TIMER [otras cosas]: 17463
+ 44  0.250000E+02   -2589.3080668
+TIMER [iteracion]: 4325725
+ 
+TIMER [principio int3lu]: 126124
+TIMER [int3lu]: 125917
+TIMER [exchfock]: 3829492
+TIMER [actualiza rmm1]: 77726
+TIMER [actualiza rmm]: 160232
+TIMER [dspev]: 151445
+TIMER [coeff]: 48366
+TIMER [otras cosas]: 17475
+ 45  0.250000E+02   -2589.4377774
+TIMER [iteracion]: 4473601
+ 
+TIMER [principio int3lu]: 125686
+TIMER [int3lu]: 124917
+TIMER [exchfock]: 3771067
+TIMER [actualiza rmm1]: 77442
+TIMER [actualiza rmm]: 160679
+TIMER [dspev]: 152534
+TIMER [coeff]: 48048
+TIMER [otras cosas]: 17478
+ 46  0.250000E+02   -2589.5352832
+TIMER [iteracion]: 4414352
+ 
+TIMER [principio int3lu]: 125433
+TIMER [int3lu]: 124858
+TIMER [exchfock]: 3713621
+TIMER [actualiza rmm1]: 77417
+TIMER [actualiza rmm]: 160237
+TIMER [dspev]: 152012
+TIMER [coeff]: 48073
+TIMER [otras cosas]: 17681
+ 47  0.250000E+02   -2589.6095147
+TIMER [iteracion]: 4355907
+ 
+TIMER [principio int3lu]: 126474
+TIMER [int3lu]: 126079
+TIMER [exchfock]: 3743439
+TIMER [actualiza rmm1]: 77393
+TIMER [actualiza rmm]: 159614
+TIMER [dspev]: 153671
+TIMER [coeff]: 48039
+TIMER [otras cosas]: 17802
+ 48  0.250000E+02   -2589.6667429
+TIMER [iteracion]: 4389063
+ 
+TIMER [principio int3lu]: 127328
+TIMER [int3lu]: 124389
+TIMER [exchfock]: 3694687
+TIMER [actualiza rmm1]: 77436
+TIMER [actualiza rmm]: 159481
+TIMER [dspev]: 152877
+TIMER [coeff]: 47989
+TIMER [otras cosas]: 17475
+ 49  0.250000E+02   -2589.7113908
+TIMER [iteracion]: 4338173
+ 
+TIMER [principio int3lu]: 125299
+TIMER [int3lu]: 124555
+TIMER [exchfock]: 3846453
+TIMER [actualiza rmm1]: 77447
+TIMER [actualiza rmm]: 159734
+TIMER [dspev]: 161776
+TIMER [coeff]: 48165
+TIMER [otras cosas]: 17526
+ 50  0.250000E+02   -2589.7466188
+TIMER [iteracion]: 4497523
+ 
+TIMER [principio int3lu]: 125540
+TIMER [int3lu]: 124327
+TIMER [exchfock]: 3756036
+TIMER [actualiza rmm1]: 78372
+TIMER [actualiza rmm]: 161023
+TIMER [dspev]: 156331
+TIMER [coeff]: 48109
+TIMER [otras cosas]: 17546
+ 51  0.250000E+02   -2589.7747035
+TIMER [iteracion]: 4402960
+ 
+TIMER [principio int3lu]: 126454
+TIMER [int3lu]: 125059
+TIMER [exchfock]: 3670181
+TIMER [actualiza rmm1]: 77727
+TIMER [actualiza rmm]: 161755
+TIMER [dspev]: 156917
+TIMER [coeff]: 48111
+TIMER [otras cosas]: 17442
+ 52  0.250000E+02   -2589.7973043
+TIMER [iteracion]: 4319893
+ 
+TIMER [principio int3lu]: 126684
+TIMER [int3lu]: 128293
+TIMER [exchfock]: 3816170
+TIMER [actualiza rmm1]: 78292
+TIMER [actualiza rmm]: 160977
+TIMER [dspev]: 155218
+TIMER [coeff]: 48117
+TIMER [otras cosas]: 17495
+ 53  0.250000E+02   -2589.8156498
+TIMER [iteracion]: 4467025
+ 
+TIMER [principio int3lu]: 125314
+TIMER [int3lu]: 125228
+TIMER [exchfock]: 3809065
+TIMER [actualiza rmm1]: 77382
+TIMER [actualiza rmm]: 159873
+TIMER [dspev]: 157408
+TIMER [coeff]: 48131
+TIMER [otras cosas]: 17449
+ 54  0.250000E+02   -2589.8306585
+TIMER [iteracion]: 4456466
+ 
+TIMER [principio int3lu]: 125155
+TIMER [int3lu]: 125012
+TIMER [exchfock]: 3903656
+TIMER [actualiza rmm1]: 79771
+TIMER [actualiza rmm]: 162994
+TIMER [dspev]: 155535
+TIMER [coeff]: 48051
+TIMER [otras cosas]: 17515
+ 55  0.250000E+02   -2589.8430335
+TIMER [iteracion]: 4551858
+ 
+TIMER [principio int3lu]: 125740
+TIMER [int3lu]: 130282
+TIMER [exchfock]: 3807003
+TIMER [actualiza rmm1]: 77284
+TIMER [actualiza rmm]: 159614
+TIMER [dspev]: 154311
+TIMER [coeff]: 48043
+TIMER [otras cosas]: 17443
+ 56  0.250000E+02   -2589.8533089
+TIMER [iteracion]: 4456833
+ 
+TIMER [principio int3lu]: 124548
+TIMER [int3lu]: 124288
+TIMER [exchfock]: 3661969
+TIMER [actualiza rmm1]: 77514
+TIMER [actualiza rmm]: 160002
+TIMER [dspev]: 153355
+TIMER [coeff]: 48189
+TIMER [otras cosas]: 17455
+ 57  0.250000E+02   -2589.8618913
+TIMER [iteracion]: 4303757
+ 
+TIMER [principio int3lu]: 125050
+TIMER [int3lu]: 124293
+TIMER [exchfock]: 3701538
+TIMER [actualiza rmm1]: 77721
+TIMER [actualiza rmm]: 160425
+TIMER [dspev]: 153142
+TIMER [coeff]: 48041
+TIMER [otras cosas]: 17487
+ 58  0.250000E+02   -2589.8691060
+TIMER [iteracion]: 4343984
+ 
+TIMER [principio int3lu]: 125071
+TIMER [int3lu]: 124418
+TIMER [exchfock]: 3806769
+TIMER [actualiza rmm1]: 77610
+TIMER [actualiza rmm]: 159855
+TIMER [dspev]: 153393
+TIMER [coeff]: 48098
+TIMER [otras cosas]: 17516
+ 59  0.250000E+02   -2589.8752058
+TIMER [iteracion]: 4449195
+ 
+TIMER [principio int3lu]: 125039
+TIMER [int3lu]: 125230
+TIMER [exchfock]: 3700462
+TIMER [actualiza rmm1]: 77410
+TIMER [actualiza rmm]: 159835
+TIMER [dspev]: 154705
+TIMER [coeff]: 48076
+TIMER [otras cosas]: 17481
+ 60  0.250000E+02   -2589.8803893
+TIMER [iteracion]: 4344814
+ 
+TIMER [principio int3lu]: 125082
+TIMER [int3lu]: 124513
+TIMER [exchfock]: 3777128
+TIMER [actualiza rmm1]: 77425
+TIMER [actualiza rmm]: 159801
+TIMER [dspev]: 152861
+TIMER [coeff]: 48110
+TIMER [otras cosas]: 17442
+ 61  0.250000E+02   -2589.8848178
+TIMER [iteracion]: 4418908
+ 
+TIMER [principio int3lu]: 124868
+TIMER [int3lu]: 124849
+TIMER [exchfock]: 3725001
+TIMER [actualiza rmm1]: 77407
+TIMER [actualiza rmm]: 159548
+TIMER [dspev]: 154059
+TIMER [coeff]: 47989
+TIMER [otras cosas]: 17451
+ 62  0.250000E+02   -2589.8886150
+TIMER [iteracion]: 4367707
+ 
+TIMER [principio int3lu]: 124954
+TIMER [int3lu]: 124539
+TIMER [exchfock]: 3907274
+TIMER [actualiza rmm1]: 77417
+TIMER [actualiza rmm]: 159852
+TIMER [dspev]: 153093
+TIMER [coeff]: 48053
+TIMER [otras cosas]: 17460
+ 63  0.250000E+02   -2589.8918895
+TIMER [iteracion]: 4549215
+ 
+TIMER [principio int3lu]: 126619
+TIMER [int3lu]: 125315
+TIMER [exchfock]: 3644116
+TIMER [actualiza rmm1]: 77426
+TIMER [actualiza rmm]: 160105
+TIMER [dspev]: 154074
+TIMER [coeff]: 48058
+TIMER [otras cosas]: 17438
+ 64  0.250000E+02   -2589.8947223
+TIMER [iteracion]: 4289712
+ 
+TIMER [principio int3lu]: 125912
+TIMER [int3lu]: 124544
+TIMER [exchfock]: 3786807
+TIMER [actualiza rmm1]: 77326
+TIMER [actualiza rmm]: 160020
+TIMER [dspev]: 156997
+TIMER [coeff]: 48061
+TIMER [otras cosas]: 17447
+ 65  0.250000E+02   -2589.8971890
+TIMER [iteracion]: 4433765
+ 
+TIMER [principio int3lu]: 125170
+TIMER [int3lu]: 124209
+TIMER [exchfock]: 3625579
+TIMER [actualiza rmm1]: 77633
+TIMER [actualiza rmm]: 160405
+TIMER [dspev]: 153084
+TIMER [coeff]: 48089
+TIMER [otras cosas]: 17530
+ 66  0.250000E+02   -2589.8993386
+TIMER [iteracion]: 4267984
+ 
+TIMER [principio int3lu]: 125523
+TIMER [int3lu]: 124823
+TIMER [exchfock]: 3673740
+TIMER [actualiza rmm1]: 77466
+TIMER [actualiza rmm]: 159868
+TIMER [dspev]: 154558
+TIMER [coeff]: 48026
+TIMER [otras cosas]: 17478
+ 67  0.250000E+02   -2589.9012177
+TIMER [iteracion]: 4317970
+ 
+TIMER [principio int3lu]: 125077
+TIMER [int3lu]: 124894
+TIMER [exchfock]: 3848736
+TIMER [actualiza rmm1]: 77289
+TIMER [actualiza rmm]: 159630
+TIMER [dspev]: 154812
+TIMER [coeff]: 48124
+TIMER [otras cosas]: 17515
+ 68  0.250000E+02   -2589.9028673
+TIMER [iteracion]: 4492849
+ 
+TIMER [principio int3lu]: 124702
+TIMER [int3lu]: 124495
+TIMER [exchfock]: 3745888
+TIMER [actualiza rmm1]: 77580
+TIMER [actualiza rmm]: 159703
+TIMER [dspev]: 154564
+TIMER [coeff]: 48123
+TIMER [otras cosas]: 17518
+ 69  0.250000E+02   -2589.9043188
+TIMER [iteracion]: 4388911
+ 
+TIMER [principio int3lu]: 125338
+TIMER [int3lu]: 124637
+TIMER [exchfock]: 3775997
+TIMER [actualiza rmm1]: 77393
+TIMER [actualiza rmm]: 159880
+TIMER [dspev]: 161970
+TIMER [coeff]: 48449
+TIMER [otras cosas]: 17450
+ 70  0.250000E+02   -2589.9056003
+TIMER [iteracion]: 4427665
+ 
+TIMER [principio int3lu]: 126157
+TIMER [int3lu]: 125454
+TIMER [exchfock]: 3765713
+TIMER [actualiza rmm1]: 77627
+TIMER [actualiza rmm]: 159898
+TIMER [dspev]: 196237
+TIMER [coeff]: 48031
+TIMER [otras cosas]: 17550
+ 71  0.250000E+02   -2589.9067355
+TIMER [iteracion]: 4453094
+ 
+TIMER [principio int3lu]: 126753
+TIMER [int3lu]: 124876
+TIMER [exchfock]: 3785939
+TIMER [actualiza rmm1]: 78357
+TIMER [actualiza rmm]: 161115
+TIMER [dspev]: 158290
+TIMER [coeff]: 48041
+TIMER [otras cosas]: 17495
+ 72  0.250000E+02   -2589.9077439
+TIMER [iteracion]: 4436539
+ 
+TIMER [principio int3lu]: 125461
+TIMER [int3lu]: 124957
+TIMER [exchfock]: 3795240
+TIMER [actualiza rmm1]: 77562
+TIMER [actualiza rmm]: 160115
+TIMER [dspev]: 153531
+TIMER [coeff]: 48068
+TIMER [otras cosas]: 17457
+ 73  0.250000E+02   -2589.9086384
+TIMER [iteracion]: 4438918
+ 
+TIMER [principio int3lu]: 125714
+TIMER [int3lu]: 124660
+TIMER [exchfock]: 3752221
+TIMER [actualiza rmm1]: 77313
+TIMER [actualiza rmm]: 159389
+TIMER [dspev]: 154144
+TIMER [coeff]: 48057
+TIMER [otras cosas]: 17431
+ 74  0.250000E+02   -2589.9094326
+TIMER [iteracion]: 4395652
+ 
+TIMER [principio int3lu]: 125162
+TIMER [int3lu]: 124822
+TIMER [exchfock]: 3744332
+TIMER [actualiza rmm1]: 77434
+TIMER [actualiza rmm]: 160200
+TIMER [dspev]: 160694
+TIMER [coeff]: 48188
+TIMER [otras cosas]: 17501
+ 75  0.250000E+02   -2589.9101439
+TIMER [iteracion]: 4394825
+ 
+TIMER [principio int3lu]: 124869
+TIMER [int3lu]: 124676
+TIMER [exchfock]: 3739215
+TIMER [actualiza rmm1]: 77357
+TIMER [actualiza rmm]: 159744
+TIMER [dspev]: 153581
+TIMER [coeff]: 48022
+TIMER [otras cosas]: 17465
+ 76  0.250000E+02   -2589.9107784
+TIMER [iteracion]: 4381572
+ 
+TIMER [principio int3lu]: 125999
+TIMER [int3lu]: 125051
+TIMER [exchfock]: 3718075
+TIMER [actualiza rmm1]: 77652
+TIMER [actualiza rmm]: 160476
+TIMER [dspev]: 153844
+TIMER [coeff]: 48094
+TIMER [otras cosas]: 17438
+ 77  0.250000E+02   -2589.9113489
+TIMER [iteracion]: 4362920
+ 
+TIMER [principio int3lu]: 125803
+TIMER [int3lu]: 124971
+TIMER [exchfock]: 3688067
+TIMER [actualiza rmm1]: 77394
+TIMER [actualiza rmm]: 159541
+TIMER [dspev]: 153996
+TIMER [coeff]: 48140
+TIMER [otras cosas]: 17567
+ 78  0.250000E+02   -2589.9118569
+TIMER [iteracion]: 4332100
+ 
+TIMER [principio int3lu]: 125515
+TIMER [int3lu]: 124458
+TIMER [exchfock]: 3701535
+TIMER [actualiza rmm1]: 77418
+TIMER [actualiza rmm]: 159602
+TIMER [dspev]: 155533
+TIMER [coeff]: 48034
+TIMER [otras cosas]: 17511
+ 79  0.250000E+02   -2589.9123163
+TIMER [iteracion]: 4346172
+ 
+TIMER [principio int3lu]: 124999
+TIMER [int3lu]: 123727
+TIMER [exchfock]: 3690967
+TIMER [actualiza rmm1]: 78880
+TIMER [actualiza rmm]: 164115
+TIMER [dspev]: 153860
+TIMER [coeff]: 48359
+TIMER [otras cosas]: 17509
+ 80  0.250000E+02   -2589.9127279
+TIMER [iteracion]: 4337529
+ 
+TIMER [principio int3lu]: 126592
+TIMER [int3lu]: 124125
+TIMER [exchfock]: 3744961
+TIMER [actualiza rmm1]: 77456
+TIMER [actualiza rmm]: 160109
+TIMER [dspev]: 154209
+TIMER [coeff]: 48113
+TIMER [otras cosas]: 17513
+ 81  0.250000E+02   -2589.9130964
+TIMER [iteracion]: 4389733
+ 
+TIMER [principio int3lu]: 124888
+TIMER [int3lu]: 125509
+TIMER [exchfock]: 3757758
+TIMER [actualiza rmm1]: 77273
+TIMER [actualiza rmm]: 159375
+TIMER [dspev]: 154655
+TIMER [coeff]: 48053
+TIMER [otras cosas]: 17648
+ 82  0.250000E+02   -2589.9134307
+TIMER [iteracion]: 4401910
+ 
+TIMER [principio int3lu]: 125912
+TIMER [int3lu]: 125222
+TIMER [exchfock]: 3755321
+TIMER [actualiza rmm1]: 77474
+TIMER [actualiza rmm]: 160623
+TIMER [dspev]: 156437
+TIMER [coeff]: 48069
+TIMER [otras cosas]: 17433
+ 83  0.250000E+02   -2589.9137311
+TIMER [iteracion]: 4403014
+ 
+TIMER [principio int3lu]: 125216
+TIMER [int3lu]: 124712
+TIMER [exchfock]: 3841082
+TIMER [actualiza rmm1]: 77361
+TIMER [actualiza rmm]: 159762
+TIMER [dspev]: 153564
+TIMER [coeff]: 48199
+TIMER [otras cosas]: 17519
+ 84  0.250000E+02   -2589.9140004
+TIMER [iteracion]: 4484040
+ 
+TIMER [principio int3lu]: 125590
+TIMER [int3lu]: 124555
+TIMER [exchfock]: 3750855
+TIMER [actualiza rmm1]: 77362
+TIMER [actualiza rmm]: 160211
+TIMER [dspev]: 155189
+TIMER [coeff]: 48053
+TIMER [otras cosas]: 17510
+ 85  0.250000E+02   -2589.9142495
+TIMER [iteracion]: 4395936
+ 
+TIMER [principio int3lu]: 125269
+TIMER [int3lu]: 124409
+TIMER [exchfock]: 3718168
+TIMER [actualiza rmm1]: 79382
+TIMER [actualiza rmm]: 183788
+TIMER [dspev]: 222038
+TIMER [coeff]: 48658
+TIMER [otras cosas]: 17896
+ 86  0.250000E+02   -2589.9144702
+TIMER [iteracion]: 4454208
+ 
+TIMER [principio int3lu]: 128535
+TIMER [int3lu]: 137427
+TIMER [exchfock]: 3702954
+TIMER [actualiza rmm1]: 77407
+TIMER [actualiza rmm]: 159733
+TIMER [dspev]: 153637
+TIMER [coeff]: 48232
+TIMER [otras cosas]: 17562
+ 87  0.250000E+02   -2589.9146690
+TIMER [iteracion]: 4362297
+ 
+TIMER [principio int3lu]: 124645
+TIMER [int3lu]: 124686
+TIMER [exchfock]: 3910269
+TIMER [actualiza rmm1]: 77582
+TIMER [actualiza rmm]: 160148
+TIMER [dspev]: 154247
+TIMER [coeff]: 48053
+TIMER [otras cosas]: 17486
+ 88  0.250000E+02   -2589.9148532
+TIMER [iteracion]: 4553506
+ 
+TIMER [principio int3lu]: 125168
+TIMER [int3lu]: 124896
+TIMER [exchfock]: 3754773
+TIMER [actualiza rmm1]: 77374
+TIMER [actualiza rmm]: 159662
+TIMER [dspev]: 154881
+TIMER [coeff]: 48038
+TIMER [otras cosas]: 17611
+ 89  0.250000E+02   -2589.9150164
+TIMER [iteracion]: 4398960
+ 
+TIMER [principio int3lu]: 125191
+TIMER [int3lu]: 124411
+TIMER [exchfock]: 3723419
+TIMER [actualiza rmm1]: 77684
+TIMER [actualiza rmm]: 159842
+TIMER [dspev]: 155103
+TIMER [coeff]: 47974
+TIMER [otras cosas]: 17461
+ 90  0.250000E+02   -2589.9151635
+TIMER [iteracion]: 4367419
+ 
+TIMER [principio int3lu]: 124708
+TIMER [int3lu]: 124259
+TIMER [exchfock]: 3638092
+TIMER [actualiza rmm1]: 77509
+TIMER [actualiza rmm]: 159600
+TIMER [dspev]: 153641
+TIMER [coeff]: 48042
+TIMER [otras cosas]: 17501
+ 91  0.250000E+02   -2589.9152961
+TIMER [iteracion]: 4279821
+ 
+TIMER [principio int3lu]: 124331
+TIMER [int3lu]: 124830
+TIMER [exchfock]: 3744293
+TIMER [actualiza rmm1]: 77500
+TIMER [actualiza rmm]: 159960
+TIMER [dspev]: 153256
+TIMER [coeff]: 48026
+TIMER [otras cosas]: 17547
+ 92  0.250000E+02   -2589.9154189
+TIMER [iteracion]: 4386193
+ 
+TIMER [principio int3lu]: 124869
+TIMER [int3lu]: 124681
+TIMER [exchfock]: 3670294
+TIMER [actualiza rmm1]: 77638
+TIMER [actualiza rmm]: 160292
+TIMER [dspev]: 153520
+TIMER [coeff]: 48037
+TIMER [otras cosas]: 17481
+ 93  0.250000E+02   -2589.9155326
+TIMER [iteracion]: 4313111
+ 
+TIMER [principio int3lu]: 124432
+TIMER [int3lu]: 123955
+TIMER [exchfock]: 3823075
+TIMER [actualiza rmm1]: 77381
+TIMER [actualiza rmm]: 159572
+TIMER [dspev]: 156761
+TIMER [coeff]: 48182
+TIMER [otras cosas]: 17454
+ 94  0.250000E+02   -2589.9156324
+TIMER [iteracion]: 4467421
+ 
+TIMER [principio int3lu]: 125474
+TIMER [int3lu]: 124590
+TIMER [exchfock]: 3710476
+TIMER [actualiza rmm1]: 77533
+TIMER [actualiza rmm]: 159986
+TIMER [dspev]: 153787
+TIMER [coeff]: 48020
+TIMER [otras cosas]: 17489
+ 95  0.250000E+02   -2589.9157262
+TIMER [iteracion]: 4353780
+ 
+TIMER [principio int3lu]: 125128
+TIMER [int3lu]: 124059
+TIMER [exchfock]: 3785220
+TIMER [actualiza rmm1]: 77517
+TIMER [actualiza rmm]: 160425
+TIMER [dspev]: 153628
+TIMER [coeff]: 48040
+TIMER [otras cosas]: 17448
+ 96  0.250000E+02   -2589.9158079
+TIMER [iteracion]: 4428035
+ 
+TIMER [principio int3lu]: 125162
+TIMER [int3lu]: 124235
+TIMER [exchfock]: 3807528
+TIMER [actualiza rmm1]: 77413
+TIMER [actualiza rmm]: 159476
+TIMER [dspev]: 153323
+TIMER [coeff]: 48042
+TIMER [otras cosas]: 17508
+ 97  0.250000E+02   -2589.9158865
+TIMER [iteracion]: 4449227
+ 
+TIMER [principio int3lu]: 125954
+TIMER [int3lu]: 124965
+TIMER [exchfock]: 3858878
+TIMER [actualiza rmm1]: 77650
+TIMER [actualiza rmm]: 160676
+TIMER [dspev]: 166913
+TIMER [coeff]: 48184
+TIMER [otras cosas]: 17486
+ 98  0.250000E+02   -2589.9159547
+TIMER [iteracion]: 4517073
+ 
+TIMER [principio int3lu]: 125907
+TIMER [int3lu]: 125359
+TIMER [exchfock]: 3734173
+TIMER [actualiza rmm1]: 77479
+TIMER [actualiza rmm]: 160045
+TIMER [dspev]: 152764
+TIMER [coeff]: 48060
+TIMER [otras cosas]: 17523
+ 99  0.250000E+02   -2589.9160168
+TIMER [iteracion]: 4377860
+ 
+TIMER [principio int3lu]: 126374
+TIMER [int3lu]: 124611
+TIMER [exchfock]: 3674994
+TIMER [actualiza rmm1]: 77462
+TIMER [actualiza rmm]: 159620
+TIMER [dspev]: 153345
+TIMER [coeff]: 48043
+TIMER [otras cosas]: 17509
+100  0.250000E+02   -2589.9160748
+TIMER [iteracion]: 4318444
+ 
+TIMER [principio int3lu]: 125911
+TIMER [int3lu]: 124823
+TIMER [exchfock]: 3723058
+TIMER [actualiza rmm1]: 77572
+TIMER [actualiza rmm]: 159929
+TIMER [dspev]: 167997
+TIMER [coeff]: 48027
+TIMER [otras cosas]: 17438
+101  0.250000E+02   -2589.9161251
+TIMER [iteracion]: 4381180
+ 
+TIMER [principio int3lu]: 126014
+TIMER [int3lu]: 124781
+TIMER [exchfock]: 3676461
+TIMER [actualiza rmm1]: 77316
+TIMER [actualiza rmm]: 159812
+TIMER [dspev]: 152912
+TIMER [coeff]: 48070
+TIMER [otras cosas]: 17440
+102  0.250000E+02   -2589.9161722
+TIMER [iteracion]: 4319530
+ 
+TIMER [principio int3lu]: 124707
+TIMER [int3lu]: 124910
+TIMER [exchfock]: 3808862
+TIMER [actualiza rmm1]: 77469
+TIMER [actualiza rmm]: 160015
+TIMER [dspev]: 156212
+TIMER [coeff]: 48119
+TIMER [otras cosas]: 17442
+103  0.250000E+02   -2589.9162179
+TIMER [iteracion]: 4454195
+ 
+TIMER [principio int3lu]: 124887
+TIMER [int3lu]: 123840
+TIMER [exchfock]: 3788101
+TIMER [actualiza rmm1]: 77475
+TIMER [actualiza rmm]: 159872
+TIMER [dspev]: 153585
+TIMER [coeff]: 48132
+TIMER [otras cosas]: 17484
+104  0.250000E+02   -2589.9162557
+TIMER [iteracion]: 4429871
+ 
+TIMER [principio int3lu]: 124989
+TIMER [int3lu]: 124732
+TIMER [exchfock]: 3658695
+TIMER [actualiza rmm1]: 77635
+TIMER [actualiza rmm]: 160061
+TIMER [dspev]: 153521
+TIMER [coeff]: 48063
+TIMER [otras cosas]: 17511
+105  0.250000E+02   -2589.9162931
+TIMER [iteracion]: 4301527
+ 
+TIMER [principio int3lu]: 125685
+TIMER [int3lu]: 124633
+TIMER [exchfock]: 3719650
+TIMER [actualiza rmm1]: 77524
+TIMER [actualiza rmm]: 160095
+TIMER [dspev]: 153519
+TIMER [coeff]: 48147
+TIMER [otras cosas]: 17519
+106  0.250000E+02   -2589.9163235
+TIMER [iteracion]: 4363373
+ 
+TIMER [principio int3lu]: 125339
+TIMER [int3lu]: 125032
+TIMER [exchfock]: 3636517
+TIMER [actualiza rmm1]: 77417
+TIMER [actualiza rmm]: 159787
+TIMER [dspev]: 153401
+TIMER [coeff]: 48221
+TIMER [otras cosas]: 17590
+107  0.250000E+02   -2589.9163564
+TIMER [iteracion]: 4279951
+ 
+TIMER [principio int3lu]: 125910
+TIMER [int3lu]: 124896
+TIMER [exchfock]: 3779049
+TIMER [actualiza rmm1]: 77646
+TIMER [actualiza rmm]: 160015
+TIMER [dspev]: 153810
+TIMER [coeff]: 48032
+TIMER [otras cosas]: 17437
+108  0.250000E+02   -2589.9163821
+TIMER [iteracion]: 4423082
+ 
+TIMER [principio int3lu]: 125194
+TIMER [int3lu]: 124517
+TIMER [exchfock]: 3902523
+TIMER [actualiza rmm1]: 77398
+TIMER [actualiza rmm]: 159592
+TIMER [dspev]: 152643
+TIMER [coeff]: 48070
+TIMER [otras cosas]: 17457
+109  0.250000E+02   -2589.9164043
+TIMER [iteracion]: 4544054
+ 
+TIMER [principio int3lu]: 125150
+TIMER [int3lu]: 124256
+TIMER [exchfock]: 3683052
+TIMER [actualiza rmm1]: 77582
+TIMER [actualiza rmm]: 160173
+TIMER [dspev]: 153107
+TIMER [coeff]: 48157
+TIMER [otras cosas]: 17498
+110  0.250000E+02   -2589.9164297
+TIMER [iteracion]: 4325377
+ 
+TIMER [principio int3lu]: 125536
+TIMER [int3lu]: 125104
+TIMER [exchfock]: 3597045
+TIMER [actualiza rmm1]: 77340
+TIMER [actualiza rmm]: 159386
+TIMER [dspev]: 156995
+TIMER [coeff]: 48205
+TIMER [otras cosas]: 17444
+111  0.250000E+02   -2589.9164496
+TIMER [iteracion]: 4243718
+ 
+TIMER [principio int3lu]: 124947
+TIMER [int3lu]: 124871
+TIMER [exchfock]: 3629490
+TIMER [actualiza rmm1]: 77441
+TIMER [actualiza rmm]: 160414
+TIMER [dspev]: 152736
+TIMER [coeff]: 48005
+TIMER [otras cosas]: 17501
+112  0.250000E+02   -2589.9164701
+TIMER [iteracion]: 4271944
+ 
+TIMER [principio int3lu]: 125444
+TIMER [int3lu]: 125002
+TIMER [exchfock]: 3739610
+TIMER [actualiza rmm1]: 77320
+TIMER [actualiza rmm]: 159606
+TIMER [dspev]: 153971
+TIMER [coeff]: 48009
+TIMER [otras cosas]: 17436
+113  0.250000E+02   -2589.9164864
+TIMER [iteracion]: 4383084
+ 
+TIMER [principio int3lu]: 124894
+TIMER [int3lu]: 124970
+TIMER [exchfock]: 3644422
+TIMER [actualiza rmm1]: 77519
+TIMER [actualiza rmm]: 160938
+TIMER [dspev]: 152527
+TIMER [coeff]: 48044
+TIMER [otras cosas]: 17529
+114  0.250000E+02   -2589.9165037
+TIMER [iteracion]: 4287271
+ 
+TIMER [principio int3lu]: 125497
+TIMER [int3lu]: 124367
+TIMER [exchfock]: 3714163
+TIMER [actualiza rmm1]: 77558
+TIMER [actualiza rmm]: 160456
+TIMER [dspev]: 152881
+TIMER [coeff]: 48000
+TIMER [otras cosas]: 17440
+115  0.250000E+02   -2589.9165185
+TIMER [iteracion]: 4356782
+ 
+TIMER [principio int3lu]: 124447
+TIMER [int3lu]: 124552
+TIMER [exchfock]: 3633260
+TIMER [actualiza rmm1]: 77330
+TIMER [actualiza rmm]: 159535
+TIMER [dspev]: 153680
+TIMER [coeff]: 48241
+TIMER [otras cosas]: 17537
+116  0.250000E+02   -2589.9165295
+TIMER [iteracion]: 4275173
+ 
+TIMER [principio int3lu]: 125354
+TIMER [int3lu]: 124822
+TIMER [exchfock]: 3723887
+TIMER [actualiza rmm1]: 77580
+TIMER [actualiza rmm]: 160055
+TIMER [dspev]: 153718
+TIMER [coeff]: 48083
+TIMER [otras cosas]: 17478
+117  0.250000E+02   -2589.9165454
+TIMER [iteracion]: 4367364
+ 
+TIMER [principio int3lu]: 126119
+TIMER [int3lu]: 124672
+TIMER [exchfock]: 3625590
+TIMER [actualiza rmm1]: 77558
+TIMER [actualiza rmm]: 159950
+TIMER [dspev]: 153459
+TIMER [coeff]: 48087
+TIMER [otras cosas]: 17515
+118  0.250000E+02   -2589.9165555
+TIMER [iteracion]: 4269364
+ 
+TIMER [principio int3lu]: 124855
+TIMER [int3lu]: 124557
+TIMER [exchfock]: 3702390
+TIMER [actualiza rmm1]: 77269
+TIMER [actualiza rmm]: 159383
+TIMER [dspev]: 153231
+TIMER [coeff]: 48007
+TIMER [otras cosas]: 17558
+119  0.250000E+02   -2589.9165642
+TIMER [iteracion]: 4344013
+ 
+TIMER [principio int3lu]: 125380
+TIMER [int3lu]: 124584
+TIMER [exchfock]: 3779471
+TIMER [actualiza rmm1]: 77410
+TIMER [actualiza rmm]: 159586
+TIMER [dspev]: 153395
+TIMER [coeff]: 48071
+TIMER [otras cosas]: 17546
+120  0.250000E+02   -2589.9165753
+TIMER [iteracion]: 4421954
+ 
+TIMER [principio int3lu]: 125895
+TIMER [int3lu]: 124978
+TIMER [exchfock]: 3679538
+TIMER [actualiza rmm1]: 77485
+TIMER [actualiza rmm]: 160117
+TIMER [dspev]: 153790
+TIMER [coeff]: 48037
+TIMER [otras cosas]: 17458
+121  0.250000E+02   -2589.9165819
+TIMER [iteracion]: 4323759
+ 
+TIMER [principio int3lu]: 124832
+TIMER [int3lu]: 124526
+TIMER [exchfock]: 3737201
+TIMER [actualiza rmm1]: 77457
+TIMER [actualiza rmm]: 159635
+TIMER [dspev]: 153810
+TIMER [coeff]: 48146
+TIMER [otras cosas]: 17483
+122  0.250000E+02   -2589.9165926
+TIMER [iteracion]: 4379600
+ 
+TIMER [principio int3lu]: 125374
+TIMER [int3lu]: 124935
+TIMER [exchfock]: 3656372
+TIMER [actualiza rmm1]: 77773
+TIMER [actualiza rmm]: 159860
+TIMER [dspev]: 152889
+TIMER [coeff]: 48099
+TIMER [otras cosas]: 17526
+123  0.250000E+02   -2589.9165962
+TIMER [iteracion]: 4299030
+ 
+TIMER [principio int3lu]: 125158
+TIMER [int3lu]: 124085
+TIMER [exchfock]: 3675647
+TIMER [actualiza rmm1]: 77556
+TIMER [actualiza rmm]: 160215
+TIMER [dspev]: 153060
+TIMER [coeff]: 48008
+TIMER [otras cosas]: 17467
+124  0.250000E+02   -2589.9166062
+TIMER [iteracion]: 4317671
+ 
+TIMER [principio int3lu]: 125259
+TIMER [int3lu]: 124276
+TIMER [exchfock]: 3805987
+TIMER [actualiza rmm1]: 77380
+TIMER [actualiza rmm]: 159714
+TIMER [dspev]: 153379
+TIMER [coeff]: 48059
+TIMER [otras cosas]: 17435
+125  0.250000E+02   -2589.9166093
+TIMER [iteracion]: 4448060
+ 
+TIMER [principio int3lu]: 125225
+TIMER [int3lu]: 125094
+TIMER [exchfock]: 3726781
+TIMER [actualiza rmm1]: 77305
+TIMER [actualiza rmm]: 159484
+TIMER [dspev]: 155861
+TIMER [coeff]: 48063
+TIMER [otras cosas]: 17441
+126  0.250000E+02   -2589.9166138
+TIMER [iteracion]: 4371923
+ 
+TIMER [principio int3lu]: 125247
+TIMER [int3lu]: 124168
+TIMER [exchfock]: 3735117
+TIMER [actualiza rmm1]: 77738
+TIMER [actualiza rmm]: 159897
+TIMER [dspev]: 153123
+TIMER [coeff]: 47992
+TIMER [otras cosas]: 17457
+127  0.250000E+02   -2589.9166228
+TIMER [iteracion]: 4376958
+ 
+TIMER [principio int3lu]: 125355
+TIMER [int3lu]: 125147
+TIMER [exchfock]: 3780368
+TIMER [actualiza rmm1]: 77559
+TIMER [actualiza rmm]: 160078
+TIMER [dspev]: 153311
+TIMER [coeff]: 48035
+TIMER [otras cosas]: 17488
+128  0.250000E+02   -2589.9166230
+TIMER [iteracion]: 4423750
+ 
+TIMER [principio int3lu]: 125424
+TIMER [int3lu]: 123884
+TIMER [exchfock]: 3732546
+TIMER [actualiza rmm1]: 77576
+TIMER [actualiza rmm]: 160560
+TIMER [dspev]: 153801
+TIMER [coeff]: 48032
+TIMER [otras cosas]: 17484
+129  0.250000E+02   -2589.9166312
+TIMER [iteracion]: 4375795
+ 
+TIMER [principio int3lu]: 125069
+TIMER [int3lu]: 124893
+TIMER [exchfock]: 3706717
+TIMER [actualiza rmm1]: 77376
+TIMER [actualiza rmm]: 159440
+TIMER [dspev]: 153385
+TIMER [coeff]: 48011
+TIMER [otras cosas]: 17445
+130  0.250000E+02   -2589.9166352
+TIMER [iteracion]: 4348893
+ 
+TIMER [principio int3lu]: 125055
+TIMER [int3lu]: 123972
+TIMER [exchfock]: 3640471
+TIMER [actualiza rmm1]: 77491
+TIMER [actualiza rmm]: 159568
+TIMER [dspev]: 153617
+TIMER [coeff]: 48243
+TIMER [otras cosas]: 17422
+131  0.250000E+02   -2589.9166360
+TIMER [iteracion]: 4282286
+ 
+TIMER [principio int3lu]: 125653
+TIMER [int3lu]: 125946
+TIMER [exchfock]: 3691182
+TIMER [actualiza rmm1]: 77419
+TIMER [actualiza rmm]: 159856
+TIMER [dspev]: 154219
+TIMER [coeff]: 48221
+TIMER [otras cosas]: 17454
+132  0.250000E+02   -2589.9166408
+TIMER [iteracion]: 4336475
+ 
+TIMER [principio int3lu]: 126140
+TIMER [int3lu]: 124131
+TIMER [exchfock]: 3768418
+TIMER [actualiza rmm1]: 77288
+TIMER [actualiza rmm]: 159382
+TIMER [dspev]: 154277
+TIMER [coeff]: 47985
+TIMER [otras cosas]: 17464
+133  0.250000E+02   -2589.9166446
+TIMER [iteracion]: 4411773
+ 
+ 
+  ENERGY CONTRIBUTIONS IN A.U.
+  ONE ELECTRON         COULOMB           NUCLEAR
+-11290.9461865      5053.3915466      3887.0441817
+ ultimo paso SCF
+timer grilla: 646587
+ 
+SCF ENERGY =  -2589.916781252836
+ 
+ DIPOLE MOMENT, X Y Z COMPONENTS AND NORM (DEBYES)
+   -0.6995      6.6003      0.5603        6.6609
+ 
+ MULLIKEN POPULATION ANALYSIS
+ATOM #    ATOM TYPE    POPULATION
+  1           6         -0.3435
+  2           6          0.3315
+  3           7         -0.3211
+  4           6          0.3043
+  5           6         -0.3469
+  6           6         -0.5013
+  7           6          0.3346
+  8           7         -0.3203
+  9           6          0.2987
+ 10           6         -0.3484
+ 11           6         -0.3444
+ 12           6         -0.5077
+ 13           6          0.3083
+ 14           7         -0.3237
+ 15           6          0.3383
+ 16           6         -0.3435
+ 17           6         -0.3487
+ 18          26          0.3386
+ 19           7         -0.3274
+ 20           6          0.3382
+ 21           6         -0.3436
+ 22           6         -0.3464
+ 23           6          0.3030
+ 24           6         -0.5001
+ 25           6         -0.5048
+ 26           7         -0.0951
+ 27           6         -0.0899
+ 28           7         -0.3095
+ 29           6         -0.2714
+ 30           6         -0.1014
+ 31           6          0.1703
+ 32           1          0.2342
+ 33           1          0.2385
+ 34           1          0.2344
+ 35           1          0.2383
+ 36           1          0.2356
+ 37           1          0.2361
+ 38           1          0.2370
+ 39           1          0.2368
+ 40           1          0.2358
+ 41           1          0.2366
+ 42           1          0.2369
+ 43           1          0.2363
+ 44           1          0.2756
+ 45           1          0.2784
+ 46           1          0.2536
+ 47           1          0.3778
+ 48           8         -0.1486
+ 
+TIMER [SCF]: 602399899
+ JOB FINISHED
+vie ene 18 17:08:12 ART 2013
+<====== Deinitializing G2G ======>

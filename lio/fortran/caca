@@ -1,0 +1,197 @@
+c para dimecionar cool
+      do 3114 i=1,ns
+
+
+          do 3114 knan=1,natomc(nuc(i))
+           j=nnps(jatc(knan,nuc(i)))-1
+          do 3114 kknan=1,nns(jatc(knan,nuc(i)))
+            j=j+1
+            if(j.le.i) then
+
+          kk=i+Jx(j)
+          dd=d(Nuc(i),Nuc(j))
+c
+      fato=.true.
+
+      do 310 ni=1,ncont(i)
+      do 310 nj=1,ncont(j)
+c
+       zij=a(i,ni)+a(j,nj)
+       ti=a(i,ni)/zij
+       tj=a(j,nj)/zij
+       alf=a(i,ni)*tj
+       rexp=alf*dd
+       if (rexp.lt.rmax) then
+       if (fato) then
+       kknums = kknums+1
+        fato=.false.
+       endif
+       endif
+310    continue
+       endif
+3114   continue
+      do 320 i=ns+1,ns+np,3
+       do 320 knan=1,natomc(nuc(i))
+
+         j=nnps(jatc(knan,nuc(i)))-1
+
+      do 320 kknan=1,nns(jatc(knan,nuc(i)))
+        j=j+1
+
+
+c
+      dd=d(Nuc(i),Nuc(j))
+      k1=Jx(j)
+
+      fato=.true.
+c1
+      do 320 ni=1,ncont(i)
+      do 320 nj=1,ncont(j)
+c
+       zij=a(i,ni)+a(j,nj)
+       ti=a(i,ni)/zij
+       tj=a(j,nj)/zij
+       alf=a(i,ni)*tj
+       rexp=alf*dd
+       if (rexp.lt.rmax) then
+       if (fato) then
+        do iki=1,3
+        kknums=kknums+1
+         enddo
+        fato=.false.
+        endif
+        endif
+320    continue
+
+      do 3333 i=ns+1,ns+np,3
+         do 3333 knan=1,natomc(nuc(i))
+         j=nnpp(jatc(knan,nuc(i)))-3
+      do 3333 kknan=1,nnp(jatc(knan,nuc(i))),3
+        j=j+3
+       if(j.le.i) then
+        fato=.true.
+      dd=d(Nuc(i),Nuc(j))
+      do 330 ni=1,ncont(i)
+      do 330 nj=1,ncont(j)
+       zij=a(i,ni)+a(j,nj)
+       z2=2.D0*zij
+       ti=a(i,ni)/zij
+       tj=a(j,nj)/zij
+       alf=a(i,ni)*tj
+       rexp=alf*dd
+       if (rexp.lt.rmax) then
+       if (fato) then
+       if(i.eq.j) then
+          do iki=1,3
+           do jki=1,iki
+            kknums=kknums+1
+         enddo
+         enddo
+       else
+       do iki=1,3
+          do  jki=1,3
+             kknums=kknums+1
+            enddo
+         enddo
+        endif
+        fato=.false.
+       endif
+       endif     
+330    continue
+        endif
+3333   continue
+      do 340 i=ns+np+1,M,6
+         do 340 knan=1,natomc(nuc(i))
+         j=nnps(jatc(knan,nuc(i)))-1
+      do 340 kknan=1,nns(jatc(knan,nuc(i)))
+        j=j+1
+       fato=.true.
+      k1=Jx(j)
+      dd=d(Nuc(i),Nuc(j))
+      do 340 ni=1,ncont(i)
+      do 340 nj=1,ncont(j)
+       zij=a(i,ni)+a(j,nj)
+       z2=2.D0*zij
+       ti=a(i,ni)/zij
+       tj=a(j,nj)/zij
+       alf=a(i,ni)*tj
+       rexp=alf*dd
+       if (rexp.lt.rmax) then
+       if (fato) then
+        do iki=1,6
+             kknums=kknums+1
+         enddo
+        fato=.false.
+       endif
+       endif
+340    continue
+
+      do 350 i=ns+np+1,M,6
+         do 350 knan=1,natomc(nuc(i))
+         j=nnpp(jatc(knan,nuc(i)))-3
+      do 350 kknan=1,nnp(jatc(knan,nuc(i))),3
+        j=j+3
+       fato=.true.
+      dd=d(Nuc(i),Nuc(j))
+      do 350 ni=1,ncont(i)
+      do 350 nj=1,ncont(j)
+       zij=a(i,ni)+a(j,nj)
+       z2=2.D0*zij
+       ti=a(i,ni)/zij
+       tj=a(j,nj)/zij
+       alf=a(i,ni)*tj
+       rexp=alf*dd
+       if (rexp.lt.rmax) then
+       if (fato) then
+        do iki=1,6
+          do  jki=1,3
+             kknums=kknums+1
+            enddo
+         enddo
+        fato=.false.
+       endif
+       endif
+350    continue
+      do 3666 i=ns+np+1,M,6
+         do 3666 knan=1,natomc(nuc(i))
+         j=nnpd(jatc(knan,nuc(i)))-6
+      do 3666 kknan=1,nnd(jatc(knan,nuc(i))),6
+        j=j+6
+       if(j.le.i) then
+      fato=.true.
+      dd=d(Nuc(i),Nuc(j))
+      do 360 ni=1,ncont(i)
+      do 360 nj=1,ncont(j)
+       zij=a(i,ni)+a(j,nj)
+       z2=2.D0*zij
+       ti=a(i,ni)/zij
+       tj=a(j,nj)/zij
+       alf=a(i,ni)*tj
+       rexp=alf*dd
+       if (rexp.lt.rmax) then
+       if (fato) then
+         fato=.false.
+          if(i.eq.j) then
+             do iki=1,6
+               do jki=1,iki
+                 kknums=kknums+1
+               enddo
+             enddo
+          else
+            do iki=1,6
+              do jki=1,6
+                kknums=kknums+1
+              enddo
+             enddo
+         endif
+       endif
+       endif
+360     continue
+         endif
+3666    continue
+      
+        allocate(cool(kknums*Md),kkind(kknums))
+c          write(*,*) kknums,kknums*Md
+
+        cool=0
+        kknums=0

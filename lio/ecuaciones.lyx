@@ -1,0 +1,3349 @@
+#LyX 1.6.5 created this file. For more info see http://www.lyx.org/
+\lyxformat 345
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\language spanish
+\inputencoding auto
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize custom
+\use_geometry true
+\use_amsmath 1
+\use_esint 1
+\cite_engine basic
+\use_bibtopic false
+\paperorientation landscape
+\paperwidth 35cm
+\paperheight 70cm
+\leftmargin 0.5cm
+\topmargin 0.5cm
+\rightmargin 0.5cm
+\bottommargin 0.5cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\author "" 
+\author "" 
+\end_header
+
+\begin_body
+
+\begin_layout Section
+Funciones 
+\begin_inset Formula $S$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+$$s(x,y,z)=c
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }=t$$
+\end_layout
+
+\begin_layout Plain Layout
+
+$$s_x(x,y,z)=-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } = -2tg
+\backslash
+,x$$
+\end_layout
+
+\begin_layout Plain Layout
+
+$$s_y(x,y,z)=-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,y
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } = -2tg
+\backslash
+,y$$
+\end_layout
+
+\begin_layout Plain Layout
+
+$$s_z(x,y,z)=-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } = -2tg
+\backslash
+,z$$ 
+\end_layout
+
+\begin_layout Plain Layout
+
+$$s_{xx}(x,y,z)=4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,e^ {-  a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } = 4x^2
+\backslash
+,th-2tg$$ 
+\end_layout
+
+\begin_layout Plain Layout
+
+$$s_{yy}(x,y,z)=4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,y^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,e^ {-  a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } = 4y^2
+\backslash
+,th-2tg$$
+\end_layout
+
+\begin_layout Plain Layout
+
+$$s_{zz}(x,y,z)=4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,z^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,e^ {-  a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } = 4z^2
+\backslash
+,th-2tg$$
+\end_layout
+
+\begin_layout Plain Layout
+
+$$s_{xy}(x,y,z)=4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x
+\backslash
+,y
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } = 4th
+\backslash
+,x
+\backslash
+,y$$
+\end_layout
+
+\begin_layout Plain Layout
+
+$$s_{xz}(x,y,z)=4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } = 4th
+\backslash
+,x
+\backslash
+,z$$
+\end_layout
+
+\begin_layout Plain Layout
+
+$$s_{yz}(x,y,z)=4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,y
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } = 4th
+\backslash
+,y
+\backslash
+,z$$
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Funciones 
+\begin_inset Formula $P$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+$$
+\backslash
+vec{p}(x,y,z)=
+\backslash
+left[ c
+\backslash
+,x
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , c
+\backslash
+,y
+\backslash
+,e^ {- a
+\backslash
+,  
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , c
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right)   } 
+\backslash
+right] = t
+\backslash
+left[x, y, z
+\backslash
+right] $$
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+$$
+\backslash
+vec{p_x}(x,y,z)=
+\backslash
+left[ c
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x^2
+\backslash
+,e^ {- a  
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , -2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x
+\backslash
+,y
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^  2+x^2
+\backslash
+right) } , -2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }   
+\backslash
+right] = 
+\backslash
+left[t,0,0
+\backslash
+right] - 2tg
+\backslash
+,
+\backslash
+left[x^2,x y,x z
+\backslash
+right]$$
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+$$
+\backslash
+vec{p_y}(x,y,z)=
+\backslash
+left[ -2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x
+\backslash
+,y
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , c
+\backslash
+,e  ^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,y^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+  y^2+x^2
+\backslash
+right) } , -2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,y
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right)   } 
+\backslash
+right] = 
+\backslash
+left[0,t,0
+\backslash
+right] - 2tg
+\backslash
+,
+\backslash
+left[x y,y^2,y z
+\backslash
+right] $$
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+$$
+\backslash
+vec{p_z}(x,y,z)=
+\backslash
+left[ -2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , -2
+\backslash
+,a  
+\backslash
+,c
+\backslash
+,y
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , c
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z  ^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,z^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right)   } 
+\backslash
+right] = 
+\backslash
+left[0,0,t
+\backslash
+right] - 2tg
+\backslash
+,
+\backslash
+left[x z,y z, z^2
+\backslash
+right]$$
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+$$
+\backslash
+vec{p_{xx}}(x,y,z)=
+\backslash
+left[ 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x^3
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-6
+\backslash
+,a
+\backslash
+,c  
+\backslash
+,x
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x^2
+\backslash
+,y
+\backslash
+,e^ {-  a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,y
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x^2
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2  
+\backslash
+,a
+\backslash
+,c
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } 
+\backslash
+right] = 4th
+\backslash
+left[x^3, x^2y, x^2z
+\backslash
+right] - tg
+\backslash
+left[6x, 2y, 2z
+\backslash
+right]$$
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+$$
+\backslash
+vec{p_{yy}}(x,y,z)=
+\backslash
+left[ 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x
+\backslash
+,y^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a  
+\backslash
+,c
+\backslash
+,x
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,y^3
+\backslash
+,e^ {-  a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-6
+\backslash
+,a
+\backslash
+,c
+\backslash
+,y
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,y^2
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2  
+\backslash
+,a
+\backslash
+,c
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } 
+\backslash
+right] = 4th
+\backslash
+left[xy^2, y^3, y^2z
+\backslash
+right] - tg
+\backslash
+left[2x,6y,2z
+\backslash
+right]$$ 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+$$
+\backslash
+vec{p_{zz}}(x,y,z)=
+\backslash
+left[ 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x
+\backslash
+,z^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a  
+\backslash
+,c
+\backslash
+,x
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,y
+\backslash
+,z^2
+\backslash
+,e  ^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,y
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^  2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,z^3
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }  -6
+\backslash
+,a
+\backslash
+,c
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } 
+\backslash
+right] = 4th
+\backslash
+left[xz^2,yz^2,z^3
+\backslash
+right] - tg
+\backslash
+left[2x,2y,6z
+\backslash
+right]$$
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+$$
+\backslash
+vec{p_{xy}}(x,y,z)=
+\backslash
+left[ 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x^2
+\backslash
+,y
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a  
+\backslash
+,c
+\backslash
+,y
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x
+\backslash
+,y^2
+\backslash
+,e  ^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^  2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x
+\backslash
+,y
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) } 
+\backslash
+right] = 4th
+\backslash
+left[x^2y, xy^2, xyz
+\backslash
+right] - 2tg
+\backslash
+left[y,x,0
+\backslash
+right]$$
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+$$
+\backslash
+vec{p_{xz}}(x,y,z)=
+\backslash
+left[ 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x^2
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a  
+\backslash
+,c
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x
+\backslash
+,y
+\backslash
+,z
+\backslash
+,e  ^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x
+\backslash
+,z^2
+\backslash
+,e^ {- a
+\backslash
+,  
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) } 
+\backslash
+right] = 4th
+\backslash
+left[x^2z, xyz, xz^2
+\backslash
+right] - 2tg
+\backslash
+left[z,0,x
+\backslash
+right]$$
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+$$
+\backslash
+vec{p_{yz}}(x,y,z)=
+\backslash
+left[ 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x
+\backslash
+,y
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4  
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,y^2
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,z
+\backslash
+,e  ^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,y
+\backslash
+,z^2
+\backslash
+,e^ {- a
+\backslash
+,  
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,y
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) } 
+\backslash
+right] = 4th
+\backslash
+left[xyz, y^2z, yz^2
+\backslash
+right] - 2tg
+\backslash
+left[0,z,y
+\backslash
+right]$$
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Funciones 
+\begin_inset Formula $D$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+$$d(x,y,z)=
+\backslash
+left[ c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , c  
+\backslash
+,x
+\backslash
+,y
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,y^2
+\backslash
+,e  ^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , c
+\backslash
+,x
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2  +x^2
+\backslash
+right) } , c
+\backslash
+,y
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , c
+\backslash
+,  {
+\backslash
+it n}
+\backslash
+,z^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } 
+\backslash
+right] = t 
+\backslash
+left[x^2,xy,y^2,xz,yz,z^2
+\backslash
+right] 
+\backslash
+left[n, 1, n, 1, 1, n
+\backslash
+right]$$
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+$$d_x(x,y,z)=
+\backslash
+left[ 2
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,  a
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x^3
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , c
+\backslash
+,y
+\backslash
+,e  ^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x^2
+\backslash
+,y
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z  ^2+y^2+x^2
+\backslash
+right) } , -2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x
+\backslash
+,y^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z  ^2+y^2+x^2
+\backslash
+right) } , c
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a  
+\backslash
+,c
+\backslash
+,x^2
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , -2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x
+\backslash
+,y
+\backslash
+,z  
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , -2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x
+\backslash
+,z^2  
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } 
+\backslash
+right] = t
+\backslash
+left[2 n x,  y, 0, z, 0, 0
+\backslash
+right] - 2tg x 
+\backslash
+left[n x^2, x y, y^2 n, x z, y z, z^2 n
+\backslash
+right]$$
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+$$d_y(x,y,z)=
+\backslash
+left[ -2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x^2
+\backslash
+,y
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) } , c
+\backslash
+,x
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x
+\backslash
+,y^  2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 2
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,y
+\backslash
+,e^ {-  a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,y^3
+\backslash
+,e^ {- a
+\backslash
+,  
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , -2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x
+\backslash
+,y
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y  ^2+x^2
+\backslash
+right) } , c
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c  
+\backslash
+,y^2
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , -2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}  
+\backslash
+,y
+\backslash
+,z^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } 
+\backslash
+right] = t
+\backslash
+left[0,x,2 n y, 0, z, 0
+\backslash
+right] - 2tg y 
+\backslash
+left[n x^2,x y,n y^2, x z, y z, n z^2
+\backslash
+right]$$ 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+$$d_z(x,y,z)=
+\backslash
+left[ -2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x^2
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) } , -2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x
+\backslash
+,y
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }   , -2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,y^2
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }   , c
+\backslash
+,x
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x
+\backslash
+,z^2
+\backslash
+,e^ {-  a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , c
+\backslash
+,y
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,y
+\backslash
+,z^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 2
+\backslash
+,  c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,  {
+\backslash
+it n}
+\backslash
+,z^3
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } 
+\backslash
+right] = t
+\backslash
+left[0,0,0,x,y,2n z
+\backslash
+right] - 2 tg z 
+\backslash
+left[n x^2, x y,n y^2,x z, y z, n z^2 
+\backslash
+right]$$
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+$$d_{xx}(x,y,z)=
+\backslash
+left[ 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x^4
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) }-10
+\backslash
+,a
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) }+2
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4  
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x^3
+\backslash
+,y
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-6
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x
+\backslash
+,y  
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x^2
+\backslash
+,  y^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,y^2
+\backslash
+,e  ^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x^3
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,  
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-6
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x^2
+\backslash
+,y
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right)   }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,y
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,  {
+\backslash
+it n}
+\backslash
+,x^2
+\backslash
+,z^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,  {
+\backslash
+it n}
+\backslash
+,z^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } 
+\backslash
+right] = x^2 4 th 
+\backslash
+left[n x^2, x y, n y^2, x z, y z, n z^2
+\backslash
+right] - tg 
+\backslash
+left[10n x^2, 6 x y, 2 n y^2, 6 xz, 2 yz, 2 n z^2
+\backslash
+right] + 
+\backslash
+left[2 t n, 0,0,0,0,0
+\backslash
+right] $$
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+$$d_{yy}(x,y,z)=
+\backslash
+left[ 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x^2
+\backslash
+,y^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x
+\backslash
+,y^3
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-6  
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x
+\backslash
+,y
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,  {
+\backslash
+it n}
+\backslash
+,y^4
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-10
+\backslash
+,a
+\backslash
+,c
+\backslash
+,  {
+\backslash
+it n}
+\backslash
+,y^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }+2
+\backslash
+,c
+\backslash
+,  {
+\backslash
+it n}
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x
+\backslash
+,y^2  
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,  
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,y^3
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y  ^2+x^2
+\backslash
+right) }-6
+\backslash
+,a
+\backslash
+,c
+\backslash
+,y
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }   , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,y^2
+\backslash
+,z^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,z^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) } 
+\backslash
+right] = y^2 4 th 
+\backslash
+left[n x^2, x y, n y^2, x z, y z, n z^2
+\backslash
+right] - tg 
+\backslash
+left[2n x^2, 6 x y, 10 n y^2, 2 xz, 6 yz, 2 n z^2
+\backslash
+right] + 
+\backslash
+left[0,0,2 t n,0,0,0
+\backslash
+right]$$
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+$$d_{zz}(x,y,z)=
+\backslash
+left[ 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x^2
+\backslash
+,z^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x
+\backslash
+,y
+\backslash
+,z^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right)   }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x
+\backslash
+,y
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,  {
+\backslash
+it n}
+\backslash
+,y^2
+\backslash
+,z^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,  {
+\backslash
+it n}
+\backslash
+,y^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x  
+\backslash
+,z^3
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-6
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,  
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,y
+\backslash
+,z^3
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y  ^2+x^2
+\backslash
+right) }-6
+\backslash
+,a
+\backslash
+,c
+\backslash
+,y
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }   , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,z^4
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-  10
+\backslash
+,a
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,z^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }+2
+\backslash
+,c  
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } 
+\backslash
+right] = z^2 4 th 
+\backslash
+left[n x^2, x y, n y^2, x z, y z, n z^2
+\backslash
+right] - tg 
+\backslash
+left[2n x^2, 2 x y, 2 n y^2, 6 xz, 6 yz, 10 n z^2
+\backslash
+right] + 
+\backslash
+left[0,0,0,0,0,2 t n
+\backslash
+right]$$
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+$$d_{xy}(x,y,z)=
+\backslash
+left[ 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x^3
+\backslash
+,y
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) }-4
+\backslash
+,a
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x
+\backslash
+,y
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x^2
+\backslash
+,y^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }  -2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,y^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x^2
+\backslash
+,e  ^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }+c
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x
+\backslash
+,y^3
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^  2
+\backslash
+right) }-4
+\backslash
+,a
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x
+\backslash
+,y
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x^2
+\backslash
+,y
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right)   }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,y
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x  
+\backslash
+,y^2
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x
+\backslash
+,z
+\backslash
+,e^ {- a  
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x
+\backslash
+,y
+\backslash
+,z^2
+\backslash
+,e  ^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } 
+\backslash
+right] = x y 4 th 
+\backslash
+left[n x^2, x y, n y^2, x z, y z, n z^2
+\backslash
+right] - tg 
+\backslash
+left[4 n x y, 2 (x^2 + y^2), 4 n x y, 2 y z, 2 x z, 0
+\backslash
+right] + 
+\backslash
+left[0, t,0,0,0,0
+\backslash
+right]$$
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+$$d_{xz}(x,y,z)=
+\backslash
+left[ 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x^3
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) }-4
+\backslash
+,a
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x^2
+\backslash
+,y
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right)   }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,y
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,  {
+\backslash
+it n}
+\backslash
+,x
+\backslash
+,y^2
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2  
+\backslash
+,c
+\backslash
+,x^2
+\backslash
+,z^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,z^2
+\backslash
+,e  ^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+  y^2+x^2
+\backslash
+right) }+c
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c  
+\backslash
+,x
+\backslash
+,y
+\backslash
+,z^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x
+\backslash
+,y
+\backslash
+,e  ^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x
+\backslash
+,z^3
+\backslash
+,  e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-4
+\backslash
+,a
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x
+\backslash
+,z
+\backslash
+,e  ^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } 
+\backslash
+right] = x z 4 th 
+\backslash
+left[n x^2, x y, n y^2, x z, y z, n z^2
+\backslash
+right] - tg 
+\backslash
+left[4 n x z, 2 y z, 0, 2(x^2 + z^2), 2 x y, 4 n x z
+\backslash
+right] + 
+\backslash
+left[0,0,0,t,0,0
+\backslash
+right]$$
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+$$d_{yz}(x,y,z)=
+\backslash
+left[ 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,x^2
+\backslash
+,y
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2  
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x
+\backslash
+,y^2
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right)   }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,  {
+\backslash
+it n}
+\backslash
+,y^3
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-4
+\backslash
+,a
+\backslash
+,c
+\backslash
+,  {
+\backslash
+it n}
+\backslash
+,y
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,x  
+\backslash
+,y
+\backslash
+,z^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,x
+\backslash
+,y
+\backslash
+,e^ {- a  
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,y^2
+\backslash
+,z^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z  ^2+y^2+x^2
+\backslash
+right) }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,z^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right)   }-2
+\backslash
+,a
+\backslash
+,c
+\backslash
+,y^2
+\backslash
+,e^ {- a
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }+c
+\backslash
+,e^ {- a
+\backslash
+,  
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } , 4
+\backslash
+,a^2
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,y
+\backslash
+,z^3
+\backslash
+,e^ {- a  
+\backslash
+,
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) }-4
+\backslash
+,a
+\backslash
+,c
+\backslash
+,{
+\backslash
+it n}
+\backslash
+,y
+\backslash
+,z
+\backslash
+,e^ {- a
+\backslash
+,  
+\backslash
+left(z^2+y^2+x^2
+\backslash
+right) } 
+\backslash
+right] = y z 4 th 
+\backslash
+left[n x^2, x y, n y^2, x z, y z, n z^2
+\backslash
+right] - tg 
+\backslash
+left[0, 2 x z, 4 n y z, 2x y, 2(y^2 + z^2), 4 n y z
+\backslash
+right] + 
+\backslash
+left[0,0,0,0,t,0
+\backslash
+right]$$
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

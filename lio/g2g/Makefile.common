@@ -1,0 +1,31 @@
+# -*- mode: make -*-
+ifeq ($(gcc),1)
+  CXX      := g++
+  CXXFLAGS := $(CXXFLAGS) -fPIC -Wall -Wno-long-long -ansi -Wno-unused
+else
+  CXX      := icc
+  CXXFLAGS := $(CXXFLAGS) -fPIC  -vec-report1 -g -I. -I/usr/local/cuda/include
+endif
+
+# Debug/release configuration
+ifeq ($(dbg),1)
+	COMMONFLAGS := -g -D_DEBUG
+else 
+	COMMONFLAGS := -DNDEBUG
+	ifeq ($(gcc),1)
+    CXXFLAGS  += -O4 -fno-strict-aliasing
+	else
+    CXXFLAGS  += -O3 -fno-strict-aliasing
+	endif
+endif
+
+CXXFLAGS  	+= $(COMMONFLAGS)
+
+%.o:%.cpp %.h
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+  
+%.o:%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+  
+%.o:%.c %.h
+	$(CC) $(CFLAGS) -c $< -o $@

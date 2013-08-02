@@ -144,145 +144,10 @@ c-------------------------------------------------------
       date='date'
       write(*,*) 'JOB STARTED NOW'
       call system(date)
-c
-c --- Reads input file
-c
-c nopt 0 for SCF , 1 for MD-SA , 2 for Standard Geometry Optimization
-c nopt 3 for SCF-nuclear MD
-c natom , all in namelist int0
-c
-c      read(1,nml=int0)
-c      write(2,nml=int0)
-c
-c      nopt1=nopt
-c
-c      if (nopt.eq.0) then
-c      name3=name1(1:ikk)//'.orb'
-c      open (unit=29,file=name3)
-c      endif
-c
-c      sol1=sol
-c      if (sol) then
-c       read(1,nml=solx)
-c       write(2,nml=solx)
-c       free1=free
-c      endif
-c
-c-------------------------------------------------------
-c opens file with solvent parameters and reads them
-c      if (sol) then
-c       ik2=1
-c      do  while (solv(ik2:ik2).ne.' ')
-c       ik2=ik2+1
-c      enddo
-c
-c c     ik2=ik2-1
-c c     solv2=solv(1:ik2)//'.param'
-c
-c      open(unit=4,file=solv2)
-c
-c      do n=1,natsol
-c       read(4,*) Em(natom+n),Rm(natom+n),pc(n),alpha(n)
-c      enddo
-c ----
-c now it should read also solute Lennard Jones parameters
-c it could be done automatically in the future
-c
-c      name6=name1(1:ikk)//'.param'
-c      open(unit=7,file=name6)
-c
-c      do n=1,natom
-c       read(7,*) Em(n),Rm(n)
-c      enddo
-c
-c      endif
-c-------------------------------------------------------
-c      Nsol1=Nsol
-c      natsol1=natsol
-c
-c      if (Prop) then
-c      read(1,nml=propx)
-c      write(2,nml=propx)
-c      endif
-c
-c      if (nopt.eq.4) then
-c       read(1,nml=BSSE1)
-c       do n=1,natom
-c       ighost(n)=ighost1(n)
-c       enddo
-c      endif
-c
-c geometry, in the MD case also initial velocities
-c  and nuclear masses needed
-c
-c initial coordinates
          do i=1,natom
             done(i)=.false.
            enddo
 
-c      if (sol) then
-c       ntatom=natom+nsol*natsol
-c
-c       do 19 i=natom+1,ntatom
-c       read(1,*) Iz(i),x(i),y(i),z(i)
-c
-c       indmass = (Iz(i)-1)*4 + isotop(Iz(i))
-c       Pm(i) = xmass(indmass)
-c       write(2,501) Iz(i),x(i),y(i),z(i)
-c 19    continue
-c
-c      else
-c       ntatom=natom
-c      endif
-c
-c
-c       if (ANG) then
-c         do 17 i=1,ntatom
-c          x(i)=x(i)/0.529177D0
-c          y(i)=y(i)/0.529177D0
-c          z(i)=z(i)/0.529177D0
-c  17     continue
-c       endif
-c----------------
-c REACTION FIELD CASE
-c        if (field) then
-c        read(1,nml=fieldx)
-c        write(2,nml=fieldx)
-c        endif
-c ELECTRICAL RESPONSE CASE
-c        if (resp1) then
-c         read(1,nml=rfield)
-c         write(2,nml=rfield)
-c        endif
-c----------
-c
-
-!i!       if (nopt.eq.1.or.nopt.eq.3) then
-!c time step , number of steps and masses
-!       read(1,nml=intMD)
-!       if (nopt.eq.3) then
-!        istart0=istart
-!        istart=1
-!       endif
-!       write(2,nml=intMD)
-!       endif
-c
-!       h1=h
-!       nsteps1=nsteps
-c
-!       if (nopt.eq.2) then
-!        read(1,nml=GEO)
-!        write(2,nml=GEO)
-!        if(inmod.ne.0) then
-!          name3=name1(1:ikk)//'.nmod'
-!          name4=name1(1:ikk)//'.freq'
-!          name5=name1(1:ikk)//'.vib'
-!          open(unit=45,file=name3)
-!          open(unit=46,file=name4)
-!          open(unit=44,file=name5)
-!        endif
-!       endif
-c
 c -------------------------------------------------------------
 c for each kind of atom, given by Z
 c
@@ -545,15 +410,6 @@ c
  25   end do
 c----- DIMENSION CONTROLS ------------------------------------
 c
-!       do i=1,natom
-!      write(*,*) 'atmin',i,atmin(i)
-!      enddo
-
-!         do i=1,M
-!             do j=1, ncont(i)  
-!         write(98,*) a(i,j),i,j,nuc(i),nlb(i)
-!        enddo
-!        enddo
       iprob=0
       if (M.gt.ngDyn.or.M.gt.ng) then
        write(*,*) 'DIMENSION PROBLEMS WITH BASIS SET SIZE PARAMETER NG'
@@ -800,24 +656,6 @@ c       a01=a0
 c       endif
        
        
-c       epsilon1=epsilon
-c       field1=field
-c       exter1=exter
-c       Fx1=Fx
-c       Fy1=Fy
-c       Fz1=Fz
-c
-c      if (Exx) then
-c      read(1,nml=EXCH)
-c      endif
-c
-c      dens1=dens
-c      integ1=integ
-c      Iexch1=Iexch
-c      igridc=igrid
-c      igrid2c=igrid2
-c
-c      if(idip.eq.1) open(unit=69,file='dipqm')
 
       if ((Iexch.ge.4).and.(.not.(integ)).and.(.not.(dens))) then
        write(*,*) 'OPTION SELECTED NOT AVAILABLE'
@@ -829,16 +667,11 @@ c
 c      pause
       endif
 c
-c      if (Coul) then
-c      read(1,nml=COULx)
-c      endif
 c
-c      SVD1=SVD
-c      iconst1=iconst
 c DIMENSION TESTS -----------------------------------------------
 c
       Ndim=5*M*(M+1)/2+3*Md*(Md+1)/2+M+M*NCO!+M*Ngrid
-      write(*,*) 'en drive', M,Md,NCO
+      if(verbose) write(*,*) 'en drive', M,Md,NCO
       if (Ndim.gt.ng2) then
        write(*,*) 'DIMENSION PROBLEMS WITH DYNAMICAL VECTOR NG2',Ndim,ng2
        iprob=1
@@ -1061,10 +894,6 @@ c       write(*,*) 'estoooo',ngpru, ngDyn, ng0, natom
      > M18, M5, NCO, nopt, Iexch,
      > e_, e_2, e3, wang, wang2, wang3)
 
-c       write(99,*) NORM,natom,natom,ng,rqm,
-c     > Rm2,Iz,Nr,Nr2,Nuc, M, ncont, nshell, c, a, RMM, 
-c     > M18, M5, NCO, nopt, Iexch,
-c     > e_, e_2, e3, wang, wang2, wang3
 
 c      if (parsearch) then
 c        call g2g_reload_atom_positions(igrid2)

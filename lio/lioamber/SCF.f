@@ -31,19 +31,7 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
        alloqueo = .true.
        ematalloc=.false.
        hagodiis=.false.
-c       nsol=nsolin
-c       ntatom=nsol+natom
-       write(*,*) 'ntatom y demas',ntatom,nsol,natom
-c      deallocate (r,v,Em,Rm,pc,nnat)
-
-c      allocate (r(ntatom,3),v(ntatom,3),Em(ntatom)
-c     >,Rm(ntatom),pc(ntatom),nnat(ntatom))
-c       ngDyn=natom*ng0
-
-c      call g2g_parameter_init(NORM,natom,natom,ngDyn,rqm,
-c     > Rm2,Iz,Nr,Nr2,Nuc, M, ncont, nshell, c, a, RMM,
-c     > M18, M5, NCO, nopt, Iexch,
-c     > e_, e_2, e3, wang, wang2, wang3)
+      if(verbose)  write(*,*) 'ntatom y demas',ntatom,nsol,natom
 
 c------------------------------------------------------------------
 c
@@ -99,41 +87,10 @@ c
       M20 = M19 + natom*50*Nang   
 c
       Nel=2*NCO+Nunp
-c Initializations/Defaults
 c
 
-c        nsol=qmmm_struct%qm_mm_pairs
-
-c       write(*,*) 'numeros de atomos',natom,ntatom
-
-c      write(*,*) ' SCF CALCULATION  '
       allocate(rmm5(MM),rmm13(m),rmm15(mm))
 cc
-c           if(writexyz) write(18,*) natom 
-c           if(writexyz) write(18,*)  
-c
-c        do i=1,nsol
-c                n=natom+i       
-c            pc(n)=clcoords(4,i)
-c
-c            do j=1,3
-c             r(n,j)=clcoords(j,i)/0.529177D0
-c            enddo
-cc           write(18,345) 8,r(n,1),r(n,2),r(n,3)
-c         enddo
-c           
-c          
-c           do i=1,natom
-c           do j=1,3
-c
-cc            write(89,*) i, j, qmcoords(i,j)
-c
-c            r(i,j)= qmcoords(j,i)/0.529177D0
-c            rqm(i,j)= qmcoords(j,i)/0.529177D0
-cc            write(87,*) i, j , r(i,j)
-c           enddo
-c            write(18,345) Iz(i),qmcoords(:,i)
-c           enddo
            
       good=1.00D0
       niter=0
@@ -190,7 +147,7 @@ c        write(*,*) 'que pasa?'
       if (predcoef.and.npas.gt.3) then
       if (.not.OPEN) then
 c         rewind 84
-        write(*,*) 'prediciendo densidad'
+        if(verbose) write(*,*) 'prediciendo densidad'
          do i=1,MM
         RMM(i)=(3*old1(i))-(3*old2(i))+(old3(i))
 
@@ -251,10 +208,6 @@ c        write(56,*) RMM(M15+1)
  12      Y(i,j)=X(i,j)*(RMM(M13+j-1))
          endif
  10      continue
-c         open(unit=34,file='equis')
-c         write(34,*) X
-c         open(unit=35,file='Y')
-c         write(35,*) Y
          do i=1,M
             do j=1,M
             Ytrans(i,j)=Y(j,i)
@@ -265,17 +218,13 @@ c         write(35,*) Y
 c
 c CASE OF NO STARTING GUESS PROVIDED, 1 E FOCK MATRIX USED
 c
-c        write(*,*) 'primera =',primera,VCINP, ATRHO
-c       if((.not.ATRHO).and.(.not.VCINP).and.ngeo.eq.1.and.primera) then
        if((.not.ATRHO).and.(.not.VCINP).and.primera) then
         primera=.false.
-c        write(*,*) 'acaaaaa'
         do 220 i=1,M
         do 220 j=1,M
          X(i,M+j)=0.D0
          do 222 k=1,j
          X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+j+(M2-k)*(k-1)/2-1)
-c          write(65,*) RMM(M11+j+(M2-k)*(k-1)/2-1)
   222     continue
 c
          do 223 k=j+1,M
@@ -360,63 +309,8 @@ c
 c
       endif
 
-c       if (predcoef.and.npas.gt.4) then
-c       write(*,*) 'prediciendo coeficientes'
-c       if (.not.OPEN) then
-c       do 550 i=1,M
-c       do 550 j=1,M
-c
-c        X(i,M2+j)=0.D0
-c       do 452 k=1,M
-c  452    X(i,M2+j)=X(i,M2+j)+X(i,k)*X(k,M+j)
-c  550    continue
-c       kk=0
-c
-c       do 461 k=1,NCO
-c       do 461 i=1,M
-c       kk=kk+1
-c 461     RMM(M18+kk-1)=X(i,M2+k)
-
-c      kk=0
-c      do 430 j=1,M
-c      do 430 i=j,M
-c      kk=kk+1
-c      RMM(kk)=0.D0
-c
-c      if(i.eq.j) then
-c       ff=2.D0
-c      else
-c       ff=4.D0
-c      endif
-cc
-c      do 430 k=1,NCO
-c       RMM(kk)=RMM(kk)+ff*X(i,M2+k)*X(j,M2+k)
-c 430  continue
-c         kk=0
-c        do i=1,M
-c        do k=1,M
-c        xnano(k,i)=X(i,M+k)
-c        enddo
-c        enddo
-c        do 233 j=1,M
-c        do 233 i=j,M
-c         kk=kk+1
-c         RMM(M5+kk-1)=0.D0
-c        do 132 k=1,M
-c 132      RMM(M5+kk-1)=RMM(M5+kk-1)+Xnano(k,i)*X(k,j)
-c 233     continue
-c        endif
-c        endif
 
 c End of Starting guess (No MO , AO known)-------------------------------
-c          if(primera) then
-c          primera=.false.
-c           write(*,*) 'leyendo densidad'
-c          do i=1,MM
-c          read(84,346) old1(i),old2(i),old3(i),RMM(i)
-c          enddo
-c          endif
-c closed shell
 c
 
 c
@@ -440,114 +334,12 @@ c using the vectors . Since the vectors are not damped,
 c only at the end of the SCF, the density matrix and the
 c vectors are 'coherent'
 c---------------------------------------------------------------
-c CASE  SAVING BASIS FUNCTIONS ON DISK
-c ONLY IN LEAST SQUARES
-!      if (.not.integ) then
-!      if (dens) then
-!      write(*,*) 'in nwrite'
-!      call nwrite(OPEN,NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,NCO,
-!     >           NCO,Nucd,Md,ncontd,nshelld,cd,ad,M17,RMM)
-c
-!      else
-!      write(*,*) 'in write'
-!      call write(OPEN,NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,
-!     >           NCO,NCO,Nucd,Md,ncontd,nshelld,cd,ad,M17,RMM)
-
-! !     endif
-!      endif
 c LEVEL SHIFT CASE, contruction of initial vectors ------------------
 c
       if (SHFT) then
 c
-         if (MEMO) then
-            call int3lu(E2)
-         else  
-c
-c      call int3(NORM,natom,Iz,r,Nuc,M,ncont,nshell,c,a,
-c     >     Nucd,Md,ncontd,nshelld,cd,ad,RMM,XX,E2,Ex,
-c     >     nopt,OPEN,NMAX,NCO,ATRHO,VCINP,SHFT,Nunp,GOLD,told,write1)
-c
-          stop
-      endif
-
-        do 720 i=1,M
-        do 720 j=1,M
-         X(i,M+j)=0.D0
-         do 722 k=1,j
-         X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M5+j+(M2-k)*(k-1)/2-1)
-  722     continue
-c
-         do 723 k=j+1,M
-  723     X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M5+k+(M2-j)*(j-1)/2-1)
-c
-  720     continue
-c
-         kk=0
-        do 730 j=1,M
-        do 730 i=j,M
-         kk=kk+1
-         RMM(M5+kk-1)=0.D0
-        do 732 k=1,M
- 732      RMM(M5+kk-1)=RMM(M5+kk-1)+X(i,M+k)*X(k,j)
- 730     continue
-c
-c diagonalization now
-c
-        do 749 i=1,M
-         RMM(M15+i-1)=0.
- 749      RMM(M13+i-1)=0.
-
-
-c
-c ESSL OPTION --------------------------------------------------
-#ifdef essl
-        call DSPEV(1,RMM(M5),RMM(M13),X(1,M+1),M,M,RMM(M15),M2)
-#endif
-c
-c
-c LAPACK OPTION -----------------------------------------
-#ifdef pack
-c
-       call dspev('V','L',M,RMM(M5),RMM(M13),X(1,M+1),M,RMM(M15),info)
-#endif
-
-c-----------------------------------------------------------
-c
-c new coefficients
-c
-       do 750 i=1,M
-       do 750 j=1,M
-c
-        X(i,M2+j)=0.D0
-       do 752 k=1,M
-  752    X(i,M2+j)=X(i,M2+j)+X(i,k)*X(k,M+j)
-  750    continue
-c
-      do 741 i=1,M
-      do 741 j=1,M
-       X(i,j)=X(i,M2+j)
- 741  continue
-c
-c Density Matrix, Old one ?
-      kk=0
-      do 830 j=1,M
-      do 830 i=j,M
-      kk=kk+1
-      RMM(M3+kk-1)=0.D0
-c
-      if(i.eq.j) then
-       ff=2.D0
-      else
-       ff=4.D0
-      endif
-c
-      do 830 k=1,NCO
-       RMM(M3+kk-1)=RMM(M3+kk-1)+ff*X(i,M2+k)*X(j,M2+k)
- 830  continue
-c
-      do 840 k=1,MM
- 840   RMM(k)=RMM(M3+k-1)
-c
+       write(*,*) 'Level SHIFT is not suported'
+       stop
       endif
 c      
         if (DIIS.and.alloqueo) then
@@ -562,7 +354,6 @@ c-------------------------------------------------------------------
 c
 c      write(*,*) 'empiezo el loop',NMAX
       do 999 while (good.ge.told.and.niter.le.NMAX)
-c      do 999 while (niter.le.NMAX)
        call g2g_timer_start('Total iter')
       niter=niter+1
        if(niter.le.ndiis) then
@@ -571,69 +362,23 @@ c      do 999 while (niter.le.NMAX)
          ndiist=ndiis
        endif
 c
-c     if (niter.ge.NMAX) then
-c       write(6,*) 'NO CONVERGENCE AT ',NMAX,' ITERATIONS'
-c       goto 995
-c      endif
 
-
-c int3N is called close to convergence, it uses previous values
-c for the fitting coefficient vector af
 c
 c      if (MEMO) then
             call int3lu(E2)
-        write(*,*) 'E2',E2
-
-c      write(58,*) 'separo'
-c      write(58,*) C
-c      write(57,*) RMM(k-M5 +1)
-      call g2g_solve_groups(0,Ex,0)
-c      rewind 56
-c      do k=M5,M5+MM
-c      write(56,*) RMM(k)
-c      write(57,*) RMM(k-M5 +1)
-c      enddo
-c          write(*,*) 'energias',E2,Ex
+            call g2g_solve_groups(0,Ex,0)
 c-------------------------------------------------------
       E1=0.0D0
 c
 c REACTION FIELD CASE --------------------------------------------
 c
-!        if (field) then
-!         call dip(NORM,Iz,natom,r,Nuc,M,ncont,nshell,c,a,RMM,Nel,
-!     >       ux,uy,uz)
-c
-!        if (exter) then
-!         g=1.0D0
-!         fac=2.54D0
-!        else
-!         g=2.0D0*(epsilon-1.0D0)/((2.0D0*epsilon+1.0D0)*a0**3)
-!         Fx=ux/2.54D0
-!         Fy=uy/2.54D0
-!         Fz=uz/2.54D0
-!         fac=(2.54D0*2.00D0)
-!        endif
-c
-!        call dip2(NORM,Iz,natom,r,Nuc,M,ncont,nshell,c,a,RMM,g,Fx,Fy,Fz,
-!     >     nopt,OPEN)
-c
-!        E1=-1.00D0*g*(Fx*ux+Fy*uy+Fz*uz)/fac -
-!     >    0.50D0*(1.0D0-1.0D0/epsilon)*Qc2/a0
-!        endif
-
         call g2g_timer_start('actualiza rmm')
 c----------------------------------------------------------------
 c E1 includes solvent 1 electron contributions
         do 303 k=1,MM
-c        write(67,*) RMM(k)
  303     E1=E1+RMM(k)*RMM(M11+k-1)
-c          write(*,*) 'E1',E1
 
 c
-c ---  debugging ------
-c      write(*,*) E1+E2
-c      return
-c ---------------------
 c
 c now, we know S matrix, and F matrix, and E for a given P
 c 1) diagonalize S, get X=U s^(-1/2)
@@ -672,13 +417,9 @@ c
              enddo
         enddo
 
-c       call g2g_timer_start('blas')
-
-c        write(68,*) rho
 
          call matmulnano(rho,Y,rho1,M)
           rho=rho1
-c/       call g2g_timer_stop('blas')
 
 c 
 c------------Ahora tenemos rho transformado en la base ON y en forma cuadrada-----------------------------
@@ -697,17 +438,13 @@ c
 c
         enddo
         enddo
-c       call g2g_timer_start('no blas')
 
 
          call matmulnano(fock,X,rho1,M)
           fock=rho1                     ! RHO1 lo uso como scratch
 
 
-c       call g2g_timer_stop('no blas')
 
-c        open(unit=40,file='fock')
-c        write(40,*) fock
 c--------------En este punto ya tenemos F transformada en base de ON y en su forma cuadrada-----
 c--------------Acumulamos las matrices de fock (ver si está bien)-------------------------------
 c--------fockm es la matriz que va a acumular en sus col. sucesivas matrices de fockes----------
@@ -719,12 +456,9 @@ c--------fockm es la matriz que va a acumular en sus col. sucesivas matrices de 
 
       enddo
 
-c      do i=1,MM
-c       if (niter .le. ndiis) then
        do j=1,M
         do k=1,j
 c
-c        fock(j,k)=RMM(M5+j+(M2-k)*(k-1)/2-1)
          i=j+(M2-k)*(k-1)/2
        fockm(i,ndiis)=fock(j,k)
 c
@@ -737,14 +471,8 @@ c--rho(j,k) y fock(j,k) son las matrices densidad y de fock respect (forma cuadr
 
 c---------Calculo de conmutadores [F,P]-------------------------------------------
  
-c         call g2g_timer_start('conmut')
 
          call conmut(fock,rho,FP_PF,M)
-
-
-c         call g2g_timer_stop('conmut')
-c         open(unit=42,file='FPPF')
-c         write(42,*) FP_PF
 
 c---------Pasar Conmutador a vector (guardamos la media matriz de abajo)------------------------------------------------
 c#######OJO, SAQUE EL -1########
@@ -779,13 +507,7 @@ c-------------Decidiendo cual critero de convergencia usar-----------
  135   RMM(kk)=(RMM(kk)+DAMP*RMM(kk2))/(1.D0+DAMP)
 
        endif
-c        open(unit=59,file='RMM')
         
-c      rewind 59
-c      do k=M5,M5+MM
-c      write(59,*) RMM(k)
-c      enddo
-c
 c the newly constructed damped matrix is stored, for next iteration
 c in RMM(M3)
 c
@@ -862,7 +584,6 @@ c--------Pasar columnas de FP_PFm a matrices y multiplicarlas y escribir EMAT---
 
            if(DIIS) then
              deallocate(EMAT)
-c          write(*,*) 'ndiist y ndiis',ndiist, ndiis
              allocate(EMAT(ndiist+1,ndiist+1))
          if(niter.gt.1.and.niter.le.ndiis) then     
 
@@ -960,13 +681,6 @@ c-----Resuelve la ecuación A*X = B. (EMAT*ci=bcoef). La solución la escribe en
       CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT, ndiist+1,
      > bcoef, ndiist+1, WORK, LWORK, INFO )
 
-c      open(unit=44,file='bcoef')
-c      open(unit=91,file='bcoef')
-c     if (niter.eq.3) then
-c      do i=1,ndiist+1 
-c      write(91,*) niter, bcoef(i)
-c      enddo
-c      endif
 c--------Construccion de la "nueva" matriz de fock como cl de las anteriores--------------
 c--------Eventualmente se puede probar con la matriz densidad-----------------------------
          suma=0
@@ -984,13 +698,7 @@ c
       endif
       endif
 
-c      if (niter.eq.3) then
   
-c      open(unit=69,file='suma')
-c      do i=1,MM
-c      write(69,*) suma(i)
-c      enddo
-c      endif
        call g2g_timer_start('dspev')
 c ESSL OPTION ---------------------------------------------------
 #ifdef essl
@@ -1004,7 +712,6 @@ c LAPACK OPTION -----------------------------------------
        call g2g_timer_stop('dspev')
        call g2g_timer_start('coeff')
 
-c       write(*,*) 'diag.info', info
 c-----------------------------------------------------------
 c
 c diagonalization now
@@ -1042,8 +749,6 @@ c
 c Construction of new density matrix and comparison with old one
       kk=0
       good=0.
-c      write(51,*) 'niter=',niter
-c      write(51,*) X
 c
       do 130 j=1,M
       do 130 i=j,M
@@ -1066,11 +771,7 @@ c
       good=good+del**2
  130  continue
 c
-c      write(*,*) 'cosas',good,M
       good=sqrt(good)/float(M)
-
-c      open(unit=3,file='good')
-c      write(6,*) 'good=', good
 
       if (SHFT) then
 c Level Shifting
@@ -1098,9 +799,7 @@ c--- Damping factor update -
         endif
 c
        E=E1+E2+En
-c       if (sol) then
         E=E+Es
-c       endif
 c
         D2=D1
         D1=(E-E0)
@@ -1110,34 +809,13 @@ c
         endif
 c
        E=E1+E2+En
-c       if (sol) then
         E=E+Es
-c       endif
 c
 c
        call g2g_timer_stop('otras cosas')
 
-c       if (nopt.ne.3) then
-       write(*,300) niter,DAMP,E+Ex
-c       endif
+       if(verbose) write(*,300) niter,DAMP,E+Ex
 c
-c       if (write1) then
-c
-c      open(unit=3,file='restart')
-c outputs final  MO ---------------------
-c      do 320 l=1,M
-c      do 320 n=1,NCO
-c 320   X(indexii(l),M+n)=X(l,M2+n)
-c
-c       write(3,*) niter,E
-c     
-c      do 325 l=1,M
-c 325   write(3,400) (X(l,M+n),n=1,NCO)
-c
-c      close(3)
-c      endif
-c
-c       write(*,*) 'good',good
        call g2g_timer_stop('Total iter')
  999   continue
 c 995   continue
@@ -1201,14 +879,9 @@ c       write(*,*) 'g2g-Exc',Exc
        call g2g_new_grid(igrid)
        call g2g_solve_groups(1, Exc, 0)
 #else      
-c      call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
-c     >              M18,NCO,Exc,nopt)
-			write(*,*) 'total final:, no anda esto!!',Exc
 #endif       
 #endif
-c       call g2g_timer_stop('exchnum')      
          E=E1+E2+En+Es+Ens+Exc
-c         E=E+Exc-Ex + Ens
          if (npas.eq.1) npasw = 0
          if (npas.gt.npasw) then
          write(6,*)
@@ -1216,20 +889,14 @@ c         E=E+Exc-Ex + Ens
          write(6,610)
          write(6,620) E1,E2-Ex,En
 c         if (sol) then
-          write(6,615)
-          write(6,625) Es
-          write(6,*) 'E SCF = ', E , Exc, Ens
-c          write(6,*) 'E SCF = ', E1, E2,En, Es  
-c          write(6,*) npas,npasw          
+c          write(6,615)
+c          write(6,625) Es
+c          write(6,*) 'E SCF = ', E , Exc, Ens
           npasw=npas+10
           endif
 
 
-c        write(*,556) E,Exc,Ex,Ens,En,E2,E1
-c
 c--------------------------------------------------------------
-c       write(*,*)
-c       write(*,450) E
        else
        E=E-Ex
        endif
@@ -1309,7 +976,6 @@ c
          write(85,760) n,Iz(n),q(n)
         enddo
 c
-        write(*,*)
 c        endif
 c ELECTRICAL POTENTIAL AND POINT CHARGES EVALUATION
 c
@@ -1392,12 +1058,8 @@ c
   88  format(5(2x,f8.5))
   45  format(E14.6E4)
   91  format(F14.7,4x,F14.7)
-c---- DEBUGGINGS
-c      write(*,*) 'Exc, integrated and calculated',Exc,Ex
-c      write(*,*) 'Coulomb energy',E2-Ex
 c
       call g2g_timer_stop('SCF')
-c         (densi,ddens,bcoef)
        return
        end
 C  -------------------------                                            

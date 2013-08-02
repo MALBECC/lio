@@ -3,6 +3,7 @@
        implicit real*8 (a-h,o-z)
 
       INCLUDE 'param'
+      logical lioamber,liosolo
       integer M,Md,natom,ntatom,NMAX,NCO,NUNP,igrid,igrid2
      >  ,Iexch,nsol,npas,npasw,idip,watermod,noconverge,
      > converge,ndiis,NGEO,nang,timedep,ntdstep,propagator,NBCH 

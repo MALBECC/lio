@@ -6,13 +6,13 @@ c and P matrix in lower storage mode ( symmetric matrices)
 c
 c Dario Estrin, 1992
 c---------------------------------------------------
-       subroutine SCF(E,qmcoords,clcoords,nsolin,dipxyz)
+       subroutine SCF(E,dipxyz)
        use garcha_mod
 c      use qmmm_module, only : qmmm_struct, qmmm_nml
 c
       implicit real*8 (a-h,o-z)
       integer:: l
-       dimension q(natom), work(1000)
+       dimension q(natom),work(1000)
        REAL*8 , intent(inout)  :: dipxyz(3) 
        real*8, dimension (:,:), ALLOCATABLE ::xnano,znano
        real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15,rmm13,
@@ -23,22 +23,22 @@ c
        integer ndiist
 c       dimension d(natom,natom)
        logical  hagodiis,alloqueo, ematalloc
-       REAL*8 , intent(in)  :: qmcoords(3,natom)
-       REAL*8 , intent(in)  :: clcoords(4,nsolin)
+c       REAL*8 , intent(in)  :: qmcoords(3,natom)
+c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
 
       call g2g_timer_start('SCF')
       just_int3n = .false.
        alloqueo = .true.
        ematalloc=.false.
        hagodiis=.false.
-       nsol=nsolin
-       ntatom=nsol+natom
+c       nsol=nsolin
+c       ntatom=nsol+natom
        write(*,*) 'ntatom y demas',ntatom,nsol,natom
-      deallocate (r,v,Em,Rm,pc,nnat)
+c      deallocate (r,v,Em,Rm,pc,nnat)
 
-      allocate (r(ntatom,3),v(ntatom,3),Em(ntatom)
-     >,Rm(ntatom),pc(ntatom),nnat(ntatom))
-       ngDyn=natom*ng0
+c      allocate (r(ntatom,3),v(ntatom,3),Em(ntatom)
+c     >,Rm(ntatom),pc(ntatom),nnat(ntatom))
+c       ngDyn=natom*ng0
 
 c      call g2g_parameter_init(NORM,natom,natom,ngDyn,rqm,
 c     > Rm2,Iz,Nr,Nr2,Nuc, M, ncont, nshell, c, a, RMM,
@@ -108,43 +108,33 @@ c       write(*,*) 'numeros de atomos',natom,ntatom
 
 c      write(*,*) ' SCF CALCULATION  '
       allocate(rmm5(MM),rmm13(m),rmm15(mm))
+cc
+c           if(writexyz) write(18,*) natom 
+c           if(writexyz) write(18,*)  
 c
-           if(writexyz) write(18,*) natom 
-           if(writexyz) write(18,*)  
-
-        do i=1,nsol
-                n=natom+i       
-            pc(n)=clcoords(4,i)
-
-            do j=1,3
-             r(n,j)=clcoords(j,i)/0.529177D0
-            enddo
-c           write(18,345) 8,r(n,1),r(n,2),r(n,3)
-         enddo
-           
-          
-           do i=1,natom
-           do j=1,3
-
-c            write(89,*) i, j, qmcoords(i,j)
-
-            r(i,j)= qmcoords(j,i)/0.529177D0
-            rqm(i,j)= qmcoords(j,i)/0.529177D0
-c            write(87,*) i, j , r(i,j)
-           enddo
-            write(18,345) Iz(i),qmcoords(:,i)
-           enddo
-           
-c           do i=1,natom
-c            write(18,345) Iz(i),R(i,:)
-c           enddo
-
-c           if(writexyz) then 
-c            jj=(qmmm_nml%iqmatoms(i)-1)*3
-c       write(18,345) qmmm_struct%iqm_atomic_numbers(i),coords(jj+1),
-c     >      coords(jj+2),coords(jj+3)
-c           endif
+c        do i=1,nsol
+c                n=natom+i       
+c            pc(n)=clcoords(4,i)
+c
+c            do j=1,3
+c             r(n,j)=clcoords(j,i)/0.529177D0
+c            enddo
+cc           write(18,345) 8,r(n,1),r(n,2),r(n,3)
 c         enddo
+c           
+c          
+c           do i=1,natom
+c           do j=1,3
+c
+cc            write(89,*) i, j, qmcoords(i,j)
+c
+c            r(i,j)= qmcoords(j,i)/0.529177D0
+c            rqm(i,j)= qmcoords(j,i)/0.529177D0
+cc            write(87,*) i, j , r(i,j)
+c           enddo
+c            write(18,345) Iz(i),qmcoords(:,i)
+c           enddo
+           
       good=1.00D0
       niter=0
       D1=1.D0

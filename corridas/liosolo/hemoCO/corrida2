@@ -1,0 +1,230 @@
+   546.705200000000        Memoria en MB
+GPU Device used: GeForce GTX 580
+Kernels: gpu
+  Name of the input file ?
+ JOB STARTED 
+lun ene 21 15:30:30 ART 2013
+basis set corresponding to Z  16 was not used
+<======= GPU Code Initialization ========>
+atoms: 48
+max atoms: 248
+number of gaussians: 7440
+do_forces: false
+s: 146 p: 65 d: 33
+m: 539 nco: 118
+<====== read_options ========>
+little_cube_size 5
+max_function_exponent 10
+min_points_per_cube 1
+sphere_radius 0.5
+energy_all_iterations true
+ primera carga de posiciones
+timer grilla: 618325
+  SCF CALCULATION  
+ int1
+ dspev
+TIMER [dgelss]: 2168058
+TIMER [parte]: 6399
+TIMER [dppco]: 391280
+TIMER [dppdi]: 1008088
+TIMER [resto]: 10292
+TIMER [dppco+dppdi+loop]: 1416244
+TIMER [int22]: 3628171
+ int22
+ kknumd       27646    32428758
+ kknum       27646      145530
+ int3mem 2
+       64779    75985767   16.0000000000000        4.00000000000000     
+ kknum       64779      145530
+ int3mem 2
+TIMER [int3mmem]: 7204315
+TIMER [inicio]: 11588286
+ empiezo el loop
+TIMER [principio int3lu]: 128740
+TIMER [int3lu]: 125566
+TIMER [exchfock]: 3822706
+TIMER [actualiza rmm1]: 77571
+TIMER [actualiza rmm]: 178439
+TIMER [dspev]: 174978
+TIMER [coeff]: 48888
+TIMER [otras cosas]: 18316
+  1  0.250000E+02   -2589.9166859
+TIMER [iteracion]: 4512759
+ 
+TIMER [principio int3lu]: 131067
+TIMER [int3lu]: 125584
+TIMER [exchfock]: 3895269
+TIMER [actualiza rmm1]: 77346
+TIMER [actualiza rmm]: 177352
+TIMER [dspev]: 167696
+TIMER [coeff]: 48008
+TIMER [otras cosas]: 17879
+  2  0.250000E+02   -2589.9166755
+TIMER [iteracion]: 4577726
+ 
+TIMER [principio int3lu]: 125219
+TIMER [int3lu]: 124640
+TIMER [exchfock]: 3902333
+TIMER [actualiza rmm1]: 77715
+TIMER [actualiza rmm]: 178104
+TIMER [dspev]: 168564
+TIMER [coeff]: 48104
+TIMER [otras cosas]: 17904
+  3  0.250000E+02   -2589.9166750
+TIMER [iteracion]: 4579740
+ 
+TIMER [principio int3lu]: 124364
+TIMER [int3lu]: 124334
+TIMER [exchfock]: 3862525
+TIMER [actualiza rmm1]: 77286
+TIMER [actualiza rmm]: 177170
+TIMER [dspev]: 169594
+TIMER [coeff]: 48003
+TIMER [otras cosas]: 17963
+  4  0.250000E+02   -2589.9166773
+TIMER [iteracion]: 4538840
+ 
+TIMER [principio int3lu]: 125482
+TIMER [int3lu]: 125140
+TIMER [exchfock]: 3939258
+TIMER [actualiza rmm1]: 77342
+TIMER [actualiza rmm]: 178027
+TIMER [dspev]: 170006
+TIMER [coeff]: 48006
+TIMER [otras cosas]: 17988
+  5  0.250000E+02   -2589.9166758
+TIMER [iteracion]: 4618813
+ 
+TIMER [principio int3lu]: 125851
+TIMER [int3lu]: 124720
+TIMER [exchfock]: 3767767
+TIMER [actualiza rmm1]: 77265
+TIMER [actualiza rmm]: 177500
+TIMER [dspev]: 168218
+TIMER [coeff]: 48158
+TIMER [otras cosas]: 17943
+  6  0.250000E+02   -2589.9166773
+TIMER [iteracion]: 4445031
+ 
+TIMER [principio int3lu]: 125255
+TIMER [int3lu]: 124687
+TIMER [exchfock]: 4006337
+TIMER [actualiza rmm1]: 79777
+TIMER [actualiza rmm]: 182977
+TIMER [dspev]: 170768
+TIMER [coeff]: 48102
+TIMER [otras cosas]: 18077
+  7  0.250000E+02   -2589.9166775
+TIMER [iteracion]: 4691077
+ 
+TIMER [principio int3lu]: 138225
+TIMER [int3lu]: 129570
+TIMER [exchfock]: 4044679
+TIMER [actualiza rmm1]: 77254
+TIMER [actualiza rmm]: 177631
+TIMER [dspev]: 178581
+TIMER [coeff]: 48026
+TIMER [otras cosas]: 17895
+  8  0.250000E+02   -2589.9166775
+TIMER [iteracion]: 4749570
+ 
+TIMER [principio int3lu]: 124839
+TIMER [int3lu]: 125165
+TIMER [exchfock]: 3718964
+TIMER [actualiza rmm1]: 77311
+TIMER [actualiza rmm]: 177234
+TIMER [dspev]: 169562
+TIMER [coeff]: 48005
+TIMER [otras cosas]: 17886
+  9  0.250000E+02   -2589.9166791
+TIMER [iteracion]: 4396516
+ 
+TIMER [principio int3lu]: 125195
+TIMER [int3lu]: 124788
+TIMER [exchfock]: 3909954
+TIMER [actualiza rmm1]: 78237
+TIMER [actualiza rmm]: 178953
+TIMER [dspev]: 171768
+TIMER [coeff]: 48268
+TIMER [otras cosas]: 18008
+ 10  0.250000E+02   -2589.9166760
+TIMER [iteracion]: 4591825
+ 
+TIMER [principio int3lu]: 126425
+TIMER [int3lu]: 124344
+TIMER [exchfock]: 4045409
+TIMER [actualiza rmm1]: 79560
+TIMER [actualiza rmm]: 183704
+TIMER [dspev]: 175752
+TIMER [coeff]: 48433
+TIMER [otras cosas]: 17982
+ 11  0.250000E+02   -2589.9166784
+TIMER [iteracion]: 4736900
+ 
+ 
+  ENERGY CONTRIBUTIONS IN A.U.
+  ONE ELECTRON         COULOMB           NUCLEAR
+-11290.9468814      5053.3957439      3887.0441817
+ ultimo paso SCF
+timer grilla: 666689
+ 
+SCF ENERGY =  -2589.916675168871
+ 
+ DIPOLE MOMENT, X Y Z COMPONENTS AND NORM (DEBYES)
+   -0.6994      6.5959      0.5592        6.6564
+ 
+ MULLIKEN POPULATION ANALYSIS
+ATOM #    ATOM TYPE    POPULATION
+  1           6         -0.3430
+  2           6          0.3339
+  3           7         -0.3281
+  4           6          0.3068
+  5           6         -0.3466
+  6           6         -0.5005
+  7           6          0.3369
+  8           7         -0.3273
+  9           6          0.3019
+ 10           6         -0.3481
+ 11           6         -0.3439
+ 12           6         -0.5074
+ 13           6          0.3115
+ 14           7         -0.3315
+ 15           6          0.3413
+ 16           6         -0.3432
+ 17           6         -0.3484
+ 18          26          0.3542
+ 19           7         -0.3343
+ 20           6          0.3405
+ 21           6         -0.3431
+ 22           6         -0.3460
+ 23           6          0.3056
+ 24           6         -0.4996
+ 25           6         -0.5041
+ 26           7         -0.1000
+ 27           6         -0.0880
+ 28           7         -0.3072
+ 29           6         -0.2707
+ 30           6         -0.0985
+ 31           6          0.1708
+ 32           1          0.2329
+ 33           1          0.2372
+ 34           1          0.2333
+ 35           1          0.2371
+ 36           1          0.2343
+ 37           1          0.2348
+ 38           1          0.2357
+ 39           1          0.2355
+ 40           1          0.2346
+ 41           1          0.2354
+ 42           1          0.2357
+ 43           1          0.2351
+ 44           1          0.2753
+ 45           1          0.2779
+ 46           1          0.2523
+ 47           1          0.3763
+ 48           8         -0.1476
+ 
+TIMER [SCF]: 68007890
+ JOB FINISHED
+lun ene 21 15:31:39 ART 2013
+<====== Deinitializing G2G ======>

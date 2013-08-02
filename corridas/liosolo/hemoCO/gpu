@@ -1,0 +1,145 @@
+   546.705200000000        Memoria en MB
+GPU Device used: GeForce GTX 580
+Kernels: gpu
+  Name of the input file ?
+ JOB STARTED 
+mar ene 22 13:53:01 ART 2013
+basis set corresponding to Z  16 was not used
+<======= GPU Code Initialization ========>
+atoms: 48
+max atoms: 248
+number of gaussians: 7440
+do_forces: false
+s: 146 p: 65 d: 33
+m: 539 nco: 118
+<====== read_options ========>
+little_cube_size 6
+max_function_exponent 10
+min_points_per_cube 1
+sphere_radius 0.5
+ primera carga de posiciones
+timer grilla: 500807
+  SCF CALCULATION  
+ int1
+ dspev
+TIMER [inicio1]: 855777
+ dspev
+TIMER [cosas1]: 445336
+TIMER [dgelss]: 1689545
+TIMER [parte]: 6356
+TIMER [dppco]: 361645
+TIMER [dppdi]: 944880
+TIMER [resto]: 10362
+TIMER [dppco+dppdi+loop]: 1323418
+TIMER [int22]: 3057598
+ int22
+ kknumd       27801    32610573
+ kknum       27801      145530
+ int3mem 2
+       64939    76173447   16.0000000000000        4.00000000000000     
+ kknum       64939      145530
+ int3mem 2
+TIMER [int3mmem]: 7149868
+TIMER [inicio]: 12391753
+ empiezo el loop
+TIMER [principio int3lu]: 125704
+TIMER [int3lu]: 125366
+TIMER [exchfock]: 3412281
+TIMER [actualiza rmm1]: 78449
+TIMER [actualiza rmm]: 160779
+TIMER [dspev]: 156399
+TIMER [coeff]: 48140
+TIMER [otras cosas]: 17395
+  1  0.250000E+02   -1431.9185778
+TIMER [iteracion]: 4060151
+ 
+TIMER [principio int3lu]: 125628
+TIMER [int3lu]: 125151
+TIMER [exchfock]: 3384211
+TIMER [actualiza rmm1]: 78338
+TIMER [actualiza rmm]: 160178
+TIMER [dspev]: 154478
+TIMER [coeff]: 48122
+TIMER [otras cosas]: 17348
+  2  0.250000E+02   -1330.2150803
+TIMER [iteracion]: 4029177
+ 
+TIMER [principio int3lu]: 126244
+TIMER [int3lu]: 125515
+TIMER [exchfock]: 3397423
+TIMER [actualiza rmm1]: 78426
+TIMER [actualiza rmm]: 160493
+TIMER [dspev]: 154072
+TIMER [coeff]: 48047
+TIMER [otras cosas]: 17325
+  3  0.250000E+02   -1386.5515363
+TIMER [iteracion]: 4043113
+ 
+ NO CONVERGENCE AT            3  ITERATIONS
+ 
+  ENERGY CONTRIBUTIONS IN A.U.
+  ONE ELECTRON         COULOMB           NUCLEAR
+ -9379.5354989      4095.5901573      3897.3938053
+ ultimo paso SCF
+timer grilla: 547846
+ 
+SCF ENERGY =  -1611.715159486557
+ 
+ DIPOLE MOMENT, X Y Z COMPONENTS AND NORM (DEBYES)
+   -3.5424   -202.6766    -26.2426      204.3991
+ 
+ MULLIKEN POPULATION ANALYSIS
+ATOM #    ATOM TYPE    POPULATION
+  1           6        -10.3537
+  2           6          6.7602
+  3           7          6.8345
+  4           6          7.0540
+  5           6        -11.0751
+  6           6         -1.4852
+  7           6          6.7714
+  8           7          6.8397
+  9           6          7.0295
+ 10           6        -11.2109
+ 11           6        -10.3218
+ 12           6         -2.9290
+ 13           6          7.0906
+ 14           7          6.8417
+ 15           6          6.8986
+ 16           6        -10.8284
+ 17           6        -11.1689
+ 18          26         15.9879
+ 19           7          6.8373
+ 20           6          6.8936
+ 21           6        -10.7835
+ 22           6        -11.1677
+ 23           6          7.0925
+ 24           6         -1.8340
+ 25           6         -2.6931
+ 26           7          6.8723
+ 27           6          3.8688
+ 28           7         -4.0106
+ 29           6         -5.0376
+ 30           6          4.2548
+ 31           6          4.0445
+ 32           1         -1.7192
+ 33           1         -1.6123
+ 34           1         -1.7223
+ 35           1         -1.6693
+ 36           1         -1.0407
+ 37           1         -0.9965
+ 38           1         -0.9707
+ 39           1         -1.0713
+ 40           1         -1.0650
+ 41           1         -1.0320
+ 42           1         -1.0179
+ 43           1         -1.0922
+ 44           1          1.0344
+ 45           1          1.0045
+ 46           1         -1.0783
+ 47           1         -3.0023
+ 48           8          3.9789
+ 
+TIMER [SCF]: 29379129
+ JOB FINISHED
+mar ene 22 13:53:31 ART 2013
+<====== Deinitializing G2G ======>

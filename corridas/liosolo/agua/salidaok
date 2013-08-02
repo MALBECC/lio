@@ -1,0 +1,829 @@
+   546.705200000000        Memoria en MB
+<====== Initializing G2G ======>GPU Device used: GeForce GTX 580
+Kernels: gpu
+  Name of the input file ?
+ JOB STARTED 
+lun jul  8 13:59:47 ART 2013
+<======= GPU Code Initialization ========>
+atoms: 3
+max atoms: 48
+number of gaussians: 1440
+do_forces: false
+s: 7 p: 2 d: 1
+m: 19 nco: 5
+<====== read_options ========>
+little_cube_size 15.5
+max_function_exponent 10
+min_points_per_cube 1
+sphere_radius 0.5
+ primera carga de posiciones
+<======= GPU Reload Atom Positions (2)========>
+[2] cubo: (0,0,0): 156 puntos; 18 funciones, vecinos: 3
+[2] cubo: (0,0,1): 281 puntos; 18 funciones, vecinos: 3
+[2] cubo: (0,1,0): 267 puntos; 18 funciones, vecinos: 3
+[2] cubo: (0,1,1): 555 puntos; 18 funciones, vecinos: 3
+[2] cubo: (1,0,0): 322 puntos; 18 funciones, vecinos: 3
+[2] cubo: (1,0,1): 1354 puntos; 19 funciones, vecinos: 3
+[2] cubo: (1,1,0): 634 puntos; 18 funciones, vecinos: 3
+[2] cubo: (1,1,1): 4087 puntos; 19 funciones, vecinos: 3
+sphere: 3492 puntos, 19 funciones | funcion x punto: 0.005441008018 vecinos: 3
+sphere: 2910 puntos, 18 funciones | funcion x punto: 0.00618556701 vecinos: 3
+sphere: 2910 puntos, 18 funciones | funcion x punto: 0.00618556701 vecinos: 3
+Grilla final: 16968 puntos (recordar que los de peso 0 se tiran), 314357 funciones
+Costo: 5828153
+NCOxM: 1005 MxM: 3675
+Particion final: 3 esferas y 8 cubos
+timer grilla: 9509us.
+  SCF CALCULATION  
+ int1
+ dspev
+TIMER [inicio1]: 57us.
+ dspev
+TIMER [cosas1]: 24us.
+TIMER [dgelss]: 2449us.
+TIMER [parte]: 6us.
+TIMER [dppco]: 133us.
+TIMER [dppdi]: 76us.
+TIMER [resto]: 10us.
+TIMER [dppco+dppdi+loop]: 268us.
+TIMER [int22]: 2839us.
+ int22
+ kknumd         190        7980
+ kknum         190         190
+ int3mem 2
+           0           0   16.0000000000000        16.0000000000000     
+ kknum           0         190
+ int3mem 2
+TIMER [int3mmem]: 1850us.
+TIMER [inicio]: 8880us.
+ empiezo el loop
+TIMER [principio int3lu]: 16us.
+TIMER [int3lu]: 13us.
+<================ iteracion [rmm] ==========>
+iteration: 17417us.
+rmm: 4065us. density: 2966us. pot: 0us. forces: 0us. resto: 0us. functions: 6803us.
+
+TIMER [actualiza rmm1]: 11us.
+TIMER [actualiza rmm]: 38us.
+TIMER [dspev]: 135us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 8us.
+  1  0.500000E+01     -58.5792975
+TIMER [iteracion]: 17790us.
+ 
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16883us.
+rmm: 4056us. density: 2898us. pot: 0us. forces: 0us. resto: 0us. functions: 6423us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 133us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+  2  0.500000E+01     -61.8499934
+TIMER [iteracion]: 17201us.
+ 
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16779us.
+rmm: 4057us. density: 2898us. pot: 0us. forces: 0us. resto: 0us. functions: 6338us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 136us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+  3  0.500000E+01     -65.1159146
+TIMER [iteracion]: 17099us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16828us.
+rmm: 4056us. density: 2897us. pot: 0us. forces: 0us. resto: 0us. functions: 6388us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 133us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+  4  0.500000E+01     -66.6073090
+TIMER [iteracion]: 17144us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16800us.
+rmm: 4054us. density: 2898us. pot: 0us. forces: 0us. resto: 0us. functions: 6350us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 129us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+  5  0.500000E+01     -67.2745086
+TIMER [iteracion]: 17112us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16839us.
+rmm: 4057us. density: 2899us. pot: 0us. forces: 0us. resto: 0us. functions: 6386us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 52us.
+TIMER [dspev]: 131us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+  6  0.500000E+01     -67.3737519
+TIMER [iteracion]: 17178us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16770us.
+rmm: 4056us. density: 2891us. pot: 0us. forces: 0us. resto: 0us. functions: 6338us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 128us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+  7  0.500000E+01     -67.3134163
+TIMER [iteracion]: 17079us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16845us.
+rmm: 4055us. density: 2898us. pot: 0us. forces: 0us. resto: 0us. functions: 6370us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 28us.
+TIMER [dspev]: 128us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+  8  0.500000E+01     -67.2474856
+TIMER [iteracion]: 17158us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16820us.
+rmm: 4053us. density: 2891us. pot: 0us. forces: 0us. resto: 0us. functions: 6386us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 129us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+  9  0.500000E+01     -67.2026963
+TIMER [iteracion]: 17130us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16757us.
+rmm: 4055us. density: 2891us. pot: 0us. forces: 0us. resto: 0us. functions: 6331us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 129us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 10  0.500000E+01     -67.1758368
+TIMER [iteracion]: 17070us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16802us.
+rmm: 4057us. density: 2894us. pot: 0us. forces: 0us. resto: 0us. functions: 6364us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 129us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 11  0.500000E+01     -67.1604289
+TIMER [iteracion]: 17115us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16865us.
+rmm: 4054us. density: 2893us. pot: 0us. forces: 0us. resto: 0us. functions: 6411us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 28us.
+TIMER [dspev]: 131us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 12  0.500000E+01     -67.1516985
+TIMER [iteracion]: 17181us.
+ 
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16860us.
+rmm: 4065us. density: 2893us. pot: 0us. forces: 0us. resto: 0us. functions: 6387us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 28us.
+TIMER [dspev]: 131us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 13  0.500000E+01     -67.1467218
+TIMER [iteracion]: 17177us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16833us.
+rmm: 4056us. density: 2895us. pot: 0us. forces: 0us. resto: 0us. functions: 6374us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 28us.
+TIMER [dspev]: 130us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 14  0.500000E+01     -67.1438287
+TIMER [iteracion]: 17148us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16844us.
+rmm: 4057us. density: 2893us. pot: 0us. forces: 0us. resto: 0us. functions: 6357us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 129us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 15  0.500000E+01     -67.1420933
+TIMER [iteracion]: 17155us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16878us.
+rmm: 4055us. density: 2900us. pot: 0us. forces: 0us. resto: 0us. functions: 6429us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 130us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 16  0.500000E+01     -67.1410103
+TIMER [iteracion]: 17191us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16813us.
+rmm: 4056us. density: 2896us. pot: 0us. forces: 0us. resto: 0us. functions: 6364us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 129us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 17  0.500000E+01     -67.1403029
+TIMER [iteracion]: 17125us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16915us.
+rmm: 4056us. density: 2904us. pot: 0us. forces: 0us. resto: 0us. functions: 6392us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 28us.
+TIMER [dspev]: 129us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 18  0.500000E+01     -67.1398193
+TIMER [iteracion]: 17229us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16867us.
+rmm: 4055us. density: 2896us. pot: 0us. forces: 0us. resto: 0us. functions: 6422us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 28us.
+TIMER [dspev]: 130us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 19  0.500000E+01     -67.1394750
+TIMER [iteracion]: 17182us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16860us.
+rmm: 4055us. density: 2896us. pot: 0us. forces: 0us. resto: 0us. functions: 6410us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 128us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 20  0.500000E+01     -67.1392213
+TIMER [iteracion]: 17177us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16846us.
+rmm: 4055us. density: 2895us. pot: 0us. forces: 0us. resto: 0us. functions: 6400us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 28us.
+TIMER [dspev]: 128us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 21  0.500000E+01     -67.1390297
+TIMER [iteracion]: 17157us.
+ 
+TIMER [principio int3lu]: 12us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16847us.
+rmm: 4057us. density: 2916us. pot: 0us. forces: 0us. resto: 0us. functions: 6375us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 129us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 22  0.500000E+01     -67.1388820
+TIMER [iteracion]: 17163us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16840us.
+rmm: 4056us. density: 2890us. pot: 0us. forces: 0us. resto: 0us. functions: 6397us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 128us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 23  0.500000E+01     -67.1387667
+TIMER [iteracion]: 17151us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16817us.
+rmm: 4055us. density: 2895us. pot: 0us. forces: 0us. resto: 0us. functions: 6369us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 130us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 24  0.500000E+01     -67.1386760
+TIMER [iteracion]: 17131us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16887us.
+rmm: 4057us. density: 2902us. pot: 0us. forces: 0us. resto: 0us. functions: 6418us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 130us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 25  0.500000E+01     -67.1386044
+TIMER [iteracion]: 17202us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16828us.
+rmm: 4069us. density: 2897us. pot: 0us. forces: 0us. resto: 0us. functions: 6368us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 130us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 26  0.500000E+01     -67.1385475
+TIMER [iteracion]: 17141us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16891us.
+rmm: 4057us. density: 2902us. pot: 0us. forces: 0us. resto: 0us. functions: 6422us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 28us.
+TIMER [dspev]: 134us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 27  0.500000E+01     -67.1385021
+TIMER [iteracion]: 17234us.
+ 
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16839us.
+rmm: 4056us. density: 2901us. pot: 0us. forces: 0us. resto: 0us. functions: 6386us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 28us.
+TIMER [dspev]: 130us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 28  0.500000E+01     -67.1384660
+TIMER [iteracion]: 17153us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16857us.
+rmm: 4057us. density: 2929us. pot: 0us. forces: 0us. resto: 0us. functions: 6367us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 130us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 29  0.500000E+01     -67.1384371
+TIMER [iteracion]: 17171us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16843us.
+rmm: 4056us. density: 2895us. pot: 0us. forces: 0us. resto: 0us. functions: 6371us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 130us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 30  0.500000E+01     -67.1384140
+TIMER [iteracion]: 17155us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16897us.
+rmm: 4104us. density: 2898us. pot: 0us. forces: 0us. resto: 0us. functions: 6377us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 129us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 31  0.500000E+01     -67.1383956
+TIMER [iteracion]: 17239us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16831us.
+rmm: 4056us. density: 2892us. pot: 0us. forces: 0us. resto: 0us. functions: 6377us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 130us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 32  0.500000E+01     -67.1383809
+TIMER [iteracion]: 17143us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16827us.
+rmm: 4054us. density: 2892us. pot: 0us. forces: 0us. resto: 0us. functions: 6338us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 129us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 33  0.500000E+01     -67.1383691
+TIMER [iteracion]: 17137us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16886us.
+rmm: 4056us. density: 2892us. pot: 0us. forces: 0us. resto: 0us. functions: 6413us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 130us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 34  0.500000E+01     -67.1383598
+TIMER [iteracion]: 17198us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16816us.
+rmm: 4055us. density: 2895us. pot: 0us. forces: 0us. resto: 0us. functions: 6369us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 28us.
+TIMER [dspev]: 130us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 35  0.500000E+01     -67.1383523
+TIMER [iteracion]: 17132us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16866us.
+rmm: 4055us. density: 2904us. pot: 0us. forces: 0us. resto: 0us. functions: 6407us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 129us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 36  0.500000E+01     -67.1383464
+TIMER [iteracion]: 17180us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16801us.
+rmm: 4059us. density: 2898us. pot: 0us. forces: 0us. resto: 0us. functions: 6350us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 129us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 37  0.500000E+01     -67.1383416
+TIMER [iteracion]: 17135us.
+ 
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16835us.
+rmm: 4055us. density: 2894us. pot: 0us. forces: 0us. resto: 0us. functions: 6362us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 130us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 38  0.500000E+01     -67.1383378
+TIMER [iteracion]: 17173us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16819us.
+rmm: 4057us. density: 2894us. pot: 0us. forces: 0us. resto: 0us. functions: 6367us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 129us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 39  0.500000E+01     -67.1383347
+TIMER [iteracion]: 17131us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16812us.
+rmm: 4057us. density: 2896us. pot: 0us. forces: 0us. resto: 0us. functions: 6364us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 129us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 40  0.500000E+01     -67.1383323
+TIMER [iteracion]: 17126us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16889us.
+rmm: 4055us. density: 2895us. pot: 0us. forces: 0us. resto: 0us. functions: 6412us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 129us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 41  0.500000E+01     -67.1383304
+TIMER [iteracion]: 17201us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16805us.
+rmm: 4054us. density: 2889us. pot: 0us. forces: 0us. resto: 0us. functions: 6346us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 28us.
+TIMER [dspev]: 129us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 42  0.500000E+01     -67.1383289
+TIMER [iteracion]: 17118us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16857us.
+rmm: 4056us. density: 2893us. pot: 0us. forces: 0us. resto: 0us. functions: 6383us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 128us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 43  0.500000E+01     -67.1383277
+TIMER [iteracion]: 17170us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16899us.
+rmm: 4057us. density: 2897us. pot: 0us. forces: 0us. resto: 0us. functions: 6402us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 28us.
+TIMER [dspev]: 132us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 44  0.500000E+01     -67.1383268
+TIMER [iteracion]: 17216us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16829us.
+rmm: 4057us. density: 2891us. pot: 0us. forces: 0us. resto: 0us. functions: 6356us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 129us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 45  0.500000E+01     -67.1383260
+TIMER [iteracion]: 17140us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16839us.
+rmm: 4056us. density: 2899us. pot: 0us. forces: 0us. resto: 0us. functions: 6382us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 28us.
+TIMER [dspev]: 130us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 46  0.500000E+01     -67.1383253
+TIMER [iteracion]: 17155us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16810us.
+rmm: 4059us. density: 2894us. pot: 0us. forces: 0us. resto: 0us. functions: 6367us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 129us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 47  0.500000E+01     -67.1383247
+TIMER [iteracion]: 17121us.
+ 
+TIMER [principio int3lu]: 16us.
+TIMER [int3lu]: 12us.
+<================ iteracion [rmm] ==========>
+iteration: 16904us.
+rmm: 4058us. density: 2898us. pot: 0us. forces: 0us. resto: 0us. functions: 6436us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 132us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 48  0.500000E+01     -67.1383243
+TIMER [iteracion]: 17253us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16805us.
+rmm: 4055us. density: 2907us. pot: 0us. forces: 0us. resto: 0us. functions: 6346us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 28us.
+TIMER [dspev]: 129us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 49  0.500000E+01     -67.1383240
+TIMER [iteracion]: 17117us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16836us.
+rmm: 4056us. density: 2905us. pot: 0us. forces: 0us. resto: 0us. functions: 6377us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 28us.
+TIMER [dspev]: 130us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 50  0.500000E+01     -67.1383237
+TIMER [iteracion]: 17151us.
+ 
+TIMER [principio int3lu]: 12us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16837us.
+rmm: 4056us. density: 2919us. pot: 0us. forces: 0us. resto: 0us. functions: 6355us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 131us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 51  0.500000E+01     -67.1383236
+TIMER [iteracion]: 17152us.
+ 
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16801us.
+rmm: 4058us. density: 2900us. pot: 0us. forces: 0us. resto: 0us. functions: 6347us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 130us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 52  0.500000E+01     -67.1383234
+TIMER [iteracion]: 17114us.
+ 
+TIMER [principio int3lu]: 12us.
+TIMER [int3lu]: 11us.
+<================ iteracion [rmm] ==========>
+iteration: 16832us.
+rmm: 4058us. density: 2893us. pot: 0us. forces: 0us. resto: 0us. functions: 6382us.
+
+TIMER [actualiza rmm1]: 8us.
+TIMER [actualiza rmm]: 27us.
+TIMER [dspev]: 130us.
+TIMER [coeff]: 4us.
+TIMER [otras cosas]: 6us.
+ 53  0.500000E+01     -67.1383233
+TIMER [iteracion]: 17144us.
+ 
+ 
+  ENERGY CONTRIBUTIONS IN A.U.
+  ONE ELECTRON         COULOMB           NUCLEAR
+  -122.7118960        46.5539685         9.0196042
+ ultimo paso SCF
+<======= GPU New Grid (2)========>
+not loading, same grid as loaded
+<================ iteracion [energia] ==========>
+iteration: 13065us.
+rmm: 5us. density: 3215us. pot: 0us. forces: 0us. resto: 0us. functions: 6386us.
+
+XC energy: -9.214829193
+ 
+SCF ENERGY =    -76.353152445169
+ 
+ DIPOLE MOMENT, X Y Z COMPONENTS AND NORM (DEBYES)
+    0.8768      1.6388     -1.1465        2.1838
+ 
+ MULLIKEN POPULATION ANALYSIS
+ATOM #    ATOM TYPE    POPULATION
+  1           8         -0.7872
+  2           1          0.3936
+  3           1          0.3936
+ 
+TIMER [SCF]: 933693us.
+ JOB FINISHED
+lun jul  8 13:59:48 ART 2013
+<====== Deinitializing G2G ======>

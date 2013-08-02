@@ -1,0 +1,7 @@
+&lio
+nsol=0
+natom=48
+charge=0
+timedep=0
+ntdstep=1000
+&end

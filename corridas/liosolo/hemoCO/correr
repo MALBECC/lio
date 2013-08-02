@@ -1,0 +1,5 @@
+  rm mdout 6.rst 
+ LD_LIBRARY_PATH=/usr/local/cuda/lib64:/home/nano/gitlio/lio/lio/g2g:/home/nano/gitlio/lio/lio/lioamber:/opt/intel/icc/11.1/072/mkl/lib/em64t:/opt/intel/icc/11.1/072/lib/intel64:/opt/intel/icc/11.1/072/mkl/lib/em64t:/opt/intel/ifort/11.1/072/lib/intel64:/opt/intel/icc/11.1/072/mkl/lib/em64t:/opt/intel/icc/11.1/072/lib/intel64:/opt/intel/icc/11.1/072/mkl/lib/em64t:/opt/intel/ifort/11.1/072/lib/intel64
+ /home/nano/gitlio/lio/lio/liosolo/liosolo -i cosa -b input -c hemo.xyz -v
+
+

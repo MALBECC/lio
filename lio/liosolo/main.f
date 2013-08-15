@@ -8,7 +8,7 @@ c---------------------------------------------------------------------
       character(len=20)::argument,inpfile,inpbasis,inpcoords
       integer::charge
       logical::filexist
-      namelist /lio/ natom,nsol,charge,OPEN,NMAX,Nunp,VCINP, 
+      namelist /lio/ natom,nsol,charge,OPEN,NMAX,Nunp,VCINP,frestartin, 
      > GOLD,told,rmax,rmaxs,predcoef,  
      > idip,writexyz,intsoldouble,DIIS,ndiis,dgtrig, 
      > Iexch,integ,dens,igrid,igrid2,timedep, tdstep, ntdstep, 
@@ -18,6 +18,12 @@ c---------------------------------------------------------------------
       integer :: ifind, ierr
 
      !defaults
+      basis='input'  ! name of the base file
+      output='output'
+      fcoord='qm.xyz'
+      fmulliquen='mulliquen'
+      frestart='restart.out'
+      frestartin='restart.in'
       verbose=.false.
       OPEN=.false.
       NMAX= 100
@@ -58,7 +64,7 @@ c---------------------------------------------------------------------
            case("-i")
             call get_command_argument(i+1,inpfile)
            case("-b")
-            call get_command_argument(i+1,inpbasis)
+            call get_command_argument(i+1,basis)
            case("-c")
             call get_command_argument(i+1,inpcoords)
             case("-v")
@@ -134,5 +140,6 @@ c--------------------------------------------------------
       call drive(ng2,ngDyn,ngdDyn)
 
        call SCF(escf,dipxyz)
+       write(*,*) 'SCF ENRGY=',escf 
 
        end

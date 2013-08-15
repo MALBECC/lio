@@ -626,6 +626,8 @@ c
          if(propagator.eq.1.or.(propagator.eq.2.and.istep.lt.200)) then 
 
          write(*,*) 'Leap frog'
+       call g2g_timer_start('propagando')
+        
 c-------En el primer paso hacemos un Euler para atras para generar rhold---->SOLO EN EL PRIMER PASO!!!-----
 c         if(istep.eq.1) then
 c          rhold=rho+(tdstep*Im*(matmul(fock,rho)))
@@ -642,8 +644,13 @@ c
 c         rhonew=rhold-(tdstep*Im*(matmul(fock,rho)))
 c         rhonew=rhonew+(tdstep*Im*(matmul(rho,fock)))
 c-----------------------------------------------------------------------------------------------------------
+           
+          call g2g_timer_start('conmutc 1')
+
           call conmutc(fock,rho,rhonew,M)
           rhonew=rhold-tdstep*(Im*rhonew)
+
+          call g2g_timer_stop('conmutc 1')
 c------------------Actualizamos las rho (rhold-->rho, rho-->rhonew)------------------------------------------
         do i=1,M
          do j=1,M
@@ -680,9 +687,12 @@ c------ Aca en xnano va a guardar la matriz dencidad en la base de orbitales ato
 c       rho1=matmul(xmm,rho)
 c       rho1=matmul(rho1,xtrans)
 c       rho1=REAL(rho1)
-c-------Aca en rho1 va a guardar la matriz dencidad en la base de orbitales atomicos con matmulnano---------
+ct-------Aca en rho1 va a guardar la matriz dencidad en la base de orbitales atomicos con matmulnano---------
+       call g2g_timer_start('matmulnanoc')
          call matmulnanoc(rho,xtrans,rho1,M)
          rho1 = REAL(rho1)
+       call g2g_timer_stop('matmulnanoc')
+       call g2g_timer_stop('propagando')
 
 
 c------------------------------------------------------------------------------------------------------------
@@ -753,6 +763,7 @@ c---------------------------FIN TEST--------------------------------------------
 c --------------------CALCULO DE MOMENTO DIPOLAR(NUEVO)-----------------------------------
 c calculates dipole moment
 c OJO QUE CON SISTEMAS CARGADOS HAY QUE CAMBIAR COSAS!!!! (nano)
+       call g2g_timer_start('calculandomu')
        if(istep.eq.1) then
 c       open(unit=133,file='mdip')
         open(unit=134,file='x.dip')
@@ -807,6 +818,7 @@ c----Para que escriba los componentes del momento dipolar en archivos distintos-
        write(134,901) t,ux
        write(135,901) t,uy
        write(136,901) t,uz
+       call g2g_timer_stop('calculandomu')
 c-------------------------------------------------------------------------------------
 c u in Debyes
 c------------------------------------------------------------------------------------

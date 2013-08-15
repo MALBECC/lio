@@ -10,11 +10,12 @@
       real*8 GOLD, TOLD, qmmmcut, dgtrig
       parameter (nng=100)
       character*65 title
-      character*12 name1,whatis,stdbas
+      character*20 basis,whatis,stdbas
       character*4 date
-      character*15 name2,name3,name4,name5,name6,solv,solv2
+      character*20 output,fcoord,fmulliquen,frestart,frestartin,solv,
+     > solv2
       character*4 ctype
-      logical*4 exists,MEMO,predcoef
+      logical exists,MEMO,predcoef
       logical done(ntq),used,NORM,OPEN,ATRHO,DIRECT,VCINP,SHFT,DIIS
       logical TMP1,TMP2,dens,EXTR,write1,SVD,ANG,field1
       logical Coul,Scf1,Prop,GRAD,BSSE,integ,SVD1,sol,tipe

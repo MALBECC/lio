@@ -9,7 +9,6 @@
        INTEGER :: M
 
        allocate (scratch(M,M),scratch1(M,M),scratch2(M,M))
-
         do i=1,M
         do j=1,M
          scratch(i,j)=A(j,i)
@@ -41,7 +40,7 @@
         C(i,j)= scratch1(i,j)-scratch2(i,j)
         enddo
         enddo
-
+         
 
 
 

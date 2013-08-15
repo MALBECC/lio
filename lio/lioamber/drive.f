@@ -122,24 +122,28 @@ c
        npas=0
 c-----------------------------------------------------------------------
 c reads input file
-        name1='input'
-      inquire(file=name1,exist=exists)
+      
+      inquire(file=basis,exist=exists)
       if (.not.exists) then
       write(*,*) 'ERROR CANNOT FIND INPUT FILE ON UNIT 1'
       stop
       else
 c  name of output file
       ikk=1
-      do 1 while (name1(ikk:ikk).ne.' ')
+      do 1 while (basis(ikk:ikk).ne.' ')
        ikk=ikk+1
  1    continue
 c
       ikk=ikk-1
-      name2=name1(1:ikk)//'.out'
+c      name2=basis(1:ikk)//'.out'
 c
-      open(unit=1,file=name1,iostat=ios)
-      open(unit=2,file=name2)
+      open(unit=1,file=basis,iostat=ios)
+c      open(unit=2,file=output)
       endif
+
+      open(unit=18,file=fcoord)
+      open(unit=85,file=fmulliquen)
+      open(unit=88,file=frestart)
 c-------------------------------------------------------
       date='date'
       write(*,*) 'JOB STARTED NOW'
@@ -167,7 +171,7 @@ c automatically
 c
 c
       read(1,100) whatis
-      write(2,100) whatis
+c      write(2,100) whatis
 c
 c
       No=0
@@ -193,7 +197,7 @@ c signals if a basis set was not used
       used=.false.
       atmint=100000.
       read(1,*) iatom,nraw,ncon
-      write(2,600) iatom,nraw,ncon
+c      write(2,600) iatom,nraw,ncon
 c
 c reads contraction scheme. The value for p,d ,f should not be repeated
 c 3 ,6 , 10 .....   times
@@ -202,14 +206,14 @@ c 0 for s 1 for p, etc
 c
        
       read(1,*) (ncf(i),i=1,ncon)
-      write(2,*) (ncf(i),i=1,ncon)
+c      write(2,*) (ncf(i),i=1,ncon)
       read(1,*) (lt(i),i=1,ncon)
-      write(2,*) (lt(i),i=1,ncon)
+c      write(2,*) (lt(i),i=1,ncon)
 c
 c loop over all primitives, no repeating p, d
       do 30 i=1,nraw
        read(1,*) at(i),ct(i)
-       write(2,700) at(i),ct(i)
+c       write(2,700) at(i),ct(i)
 c       write(*,*) atmint,at(i)
         if(at(i).lt.atmint) atmint=at(i)
 
@@ -315,21 +319,21 @@ c
 c CHARGE DENSITY --------------------------------------------------
 c
       read(1,*) iatom,nraw,ncon
-      write(2,*) iatom,nraw,ncon
+c      write(2,*) iatom,nraw,ncon
 c
 c reads contraction scheme. The value for p,d ,f should not be repeated
 c 3 ,6 , 10 .....   times. Reads also angular type , 
 c 0 for s , 1 for p etc
       read(1,*) (ncf(i),i=1,ncon)
-      write(2,*) (ncf(i),i=1,ncon)
+c      write(2,*) (ncf(i),i=1,ncon)
       read(1,*) (lt(i),i=1,ncon)
-      write(2,*) (lt(i),i=1,ncon)
+c      write(2,*) (lt(i),i=1,ncon)
 c     
 c
 c loop over all primitives, repeating p, d
       do 40 i=1,nraw
        read(1,*) at(i),ct(i)
-       write(2,700) at(i),ct(i)
+c       write(2,700) at(i),ct(i)
  40   continue
 c
       do 45 j=1,natom
@@ -406,7 +410,7 @@ c
  45   continue
 c
       read(1,100) whatis
-      write(2,100) whatis
+c      write(2,100) whatis
  25   end do
 c----- DIMENSION CONTROLS ------------------------------------
 c
@@ -688,11 +692,12 @@ c case for initial guess given in input -------------------------
       if (VCINP) then
 c closed shell
 c     
+      open(unit=89,file=frestartin)
       if (.not.OPEN) then
 c reads vectors of MO coefficients, basis is in the same order as 
 c the given in input
       do 120 l=1,M
- 120   read(1,*) (XX(l,n),n=1,NCO)
+ 120   read(89,*) (XX(l,n),n=1,NCO)
 c
 c puts vectors in dynamical allocation (to be used later)
 c
@@ -717,7 +722,7 @@ c
       M18b=M18+M*NCOa
 c alpha
       do 220 l=1,M
- 220    read(1,*) (XX(l,n),n=1,NCOa)
+ 220    read(89,*) (XX(l,n),n=1,NCOa)
 c
 
        kk=M18-1
@@ -739,7 +744,7 @@ c
 c
 c beta
       do 229 l=1,M
- 229    read(1,*) (XX(l,n),n=1,NCOb)
+ 229    read(89,*) (XX(l,n),n=1,NCOb)
 c
        kk=M18b-1
       do 223 k=1,NCOb

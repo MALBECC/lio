@@ -32,8 +32,10 @@ CFLAGS   = -g -mp1 -ip -O3 -c -cpp  $(DEFINE) $(PROFILE)
 CFLAGS2  = -g -O1 -c -cpp  $(DEFINE) $(PROFILE)
 CFLAGS3  = -g -O3 -c -cpp -parallel   $(DEFINE) $(PROFILE)
 CPPFLAGS = -P -traditional-cpp 
-LIBS=-L/usr/lib -L/usr/lib64 -L../g2g -lg2g -lstdc++ -L/opt/intel/composer_xe_2011_sp1.7.256/mkl/lib/intel64 $(PROFILE) -lmkl_solver_lp64 -lmkl_core \
-     -lmkl_intel_thread -liomp5 -lmkl_lapack95_lp64 -lpthread -lm -lmkl_intel_lp64 -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g'
+LIBS=-L/usr/lib -L/usr/lib64 -L../g2g -lg2g -lstdc++ -L$(MKLROOT)/lib/intel64 -I$(MKLROOT)/include $(PROFILE)  -lmkl_lapack95_lp64 -Wl,--start-group -lmkl_intel_lp64\
+     -lmkl_intel_thread -lmkl_core -Wl,--end-group -liomp5 -lpthread -lm -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g' 
+#eliminada   -lmkl_solver_lp64 
+
 # directories
 G2G_CFLAGS=-DG2G
 

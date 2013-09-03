@@ -126,6 +126,12 @@ ifeq ($(sm20),1)
   CXXFLAGS += -DUSING_FERMI
 endif
 
+ifeq ($(sm35),1)
+  NVCCFLAGS += -arch=sm_35
+  NVCCFLAGS += -DNVIDIA_HAS_DOUBLE -DUSING_FERMI
+  CXXFLAGS += -DUSING_FERMI
+endif
+
 ifeq ($(nvcc_warn_verbose),1)
 	NVCCFLAGS += $(addprefix --compiler-options ,$(CXXWARN_FLAGS))
 	NVCCFLAGS += --compiler-options -fno-strict-aliasing

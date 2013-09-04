@@ -17,6 +17,7 @@ namespace G2G {
 /** KERNELS **/
 #include "gpu_variables.h"
 #include "kernels/pot.h"
+#include "kernels/accumulate_point.h"
 #include "kernels/energy.h"
 #include "kernels/energy_derivs.h"
 #include "kernels/rmm.h"

@@ -60,7 +60,7 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
     }
 
     partial_density += Fi * w;
-
+    //TODO: Insertar aca funcion que convierte <,4> a <,3>
     if (!lda) {
       dxyz += Fgi * w + w3 * Fi;
       dd1 += Fgi * w3 * 2.0f + Fhi1 * w + ww1 * Fi;
@@ -74,13 +74,7 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
     }
   }
 
-  /***** compute energy / factor *****/
-  scalar_type y2a, exc_corr;
-  gpu_pot<scalar_type, compute_energy, true, lda>(partial_density, dxyz, dd1, dd2, exc_corr, y2a); // TODO: segundo parametro, que tenga en cuenta RMM+energy
-  
-  if (compute_energy && valid_thread)
-    energy[point] = (partial_density * point_weight) * exc_corr;
-  
-  if (compute_factor && valid_thread)
-    factor[point] = point_weight * y2a;
+  gpu_accumulate_point<scalar_type, compute_energy, compute_factor, lda>(energy, factor, point_weights,points, 
+                                            partial_density, dxyz, dd1, dd2);
+
 }

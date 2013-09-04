@@ -1,12 +1,11 @@
 template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
-__global__ void gpu_compute_density(scalar_type* const energy, scalar_type* const factor, const scalar_type* const point_weights,
+__device__ void gpu_compute_density(scalar_type* const energy, scalar_type* const factor, const scalar_type* const point_weights,
                                     uint points, const scalar_type* rdm, const scalar_type* function_values, const vec_type<scalar_type,4>* gradient_values,
-                                    const vec_type<scalar_type,4>* hessian_values, uint m)
+                                    const vec_type<scalar_type,4>* hessian_values, uint m, scalar_type& partial_density, vec_type<scalar_type,4>& dxyz, vec_type<scalar_type,4>& dd1, vec_type<scalar_type,4>& dd2)
 {
   uint point = index_x(blockDim, blockIdx, threadIdx);
 
-  scalar_type partial_density = 0.0f;
-  vec_type<scalar_type,4> dxyz, dd1, dd2;
+  partial_density = 0.0f;
   if (!lda) { dxyz = dd1 = dd2 = vec_type<scalar_type,4>(0.0f,0.0f,0.0f,0.0f); }
 
   bool valid_thread = (point < points);
@@ -74,7 +73,9 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
     }
   }
 
-  gpu_accumulate_point<scalar_type, compute_energy, compute_factor, lda>(energy, factor, point_weights,points, 
-                                            partial_density, dxyz, dd1, dd2);
+  /* Old code, esto aca adentro */ 
+ /* gpu_accumulate_point<scalar_type, compute_energy, compute_factor, lda>(energy, factor, point_weights,points, 
+                                            partial_density, dxyz, dd1, dd2); */
+  /* New, no hay nada */ 
 
 }

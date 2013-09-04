@@ -64,7 +64,7 @@ class PointGroup {
       else if (f < s_functions + p_functions) return FUNCTION_P;
       else return FUNCTION_D;
     }
-
+    //Las funciones totales, son totales del grupo, no las totales para todos los grupos.
     inline uint total_functions(void) const { return s_functions + p_functions * 3 + d_functions * 6; }
     inline uint total_functions_simple(void) const { return local2global_func.size(); } // == s_functions + p_functions + d_functions
     inline uint total_nucleii(void) const { return local2global_nuc.size(); }

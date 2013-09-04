@@ -19,6 +19,7 @@ namespace G2G {
 #include "kernels/pot.h"
 #include "kernels/accumulate_point.h"
 #include "kernels/energy.h"
+#include "kernels/gpu_all_density.h"
 #include "kernels/energy_derivs.h"
 #include "kernels/rmm.h"
 #include "kernels/weight.h"
@@ -85,15 +86,30 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   get_rmm_input(rmm_input_cpu);
   rmm_input_gpu = rmm_input_cpu;
 
+
   if (compute_energy) {
     CudaMatrix<scalar_type> energy_gpu(number_of_points);
     if (compute_forces || compute_rmm) {
-      if (lda) gpu_compute_density<scalar_type, true, true, true><<<threadGrid, threadBlock>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
-      else gpu_compute_density<scalar_type, true, true, false><<<threadGrid, threadBlock>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
+      if (lda) 
+      {
+          gpu_all_density<scalar_type, true, true, true><<<threadGrid, threadBlock>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
+      }
+      else 
+      {
+          gpu_all_density<scalar_type, true, true, false><<<threadGrid, threadBlock>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
+      }
     }      
     else {
-      if (lda) gpu_compute_density<scalar_type, true, false, true><<<threadGrid, threadBlock>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
-      else gpu_compute_density<scalar_type, true, false, false><<<threadGrid, threadBlock>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
+      if (lda) 
+      {
+          gpu_all_density<scalar_type, true, false, true><<<threadGrid, threadBlock>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
+      }
+      else 
+      {
+          gpu_all_density<scalar_type, true, false, false><<<threadGrid, threadBlock>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
+
+
+      }
     }
     cudaAssertNoError("compute_density");
 
@@ -101,8 +117,14 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     for (uint i = 0; i < number_of_points; i++) { energy += energy_cpu(i); } // TODO: hacer con un kernel?
   }
   else {
-    if (lda) gpu_compute_density<scalar_type, false, true, true><<<threadGrid, threadBlock>>>(NULL, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
-    else gpu_compute_density<scalar_type, false, true, false><<<threadGrid, threadBlock>>>(NULL, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
+    if (lda) 
+    {
+        gpu_all_density<scalar_type, false, true, true><<<threadGrid, threadBlock>>>(NULL, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
+    }
+    else 
+    {
+        gpu_all_density<scalar_type, false, true, false><<<threadGrid, threadBlock>>>(NULL, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
+    }
     cudaAssertNoError("compute_density");
   }
 

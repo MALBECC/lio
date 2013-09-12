@@ -80,7 +80,8 @@ namespace G2G {
   template<> class vec_type<double, 4> : public double4 {
     public:
       __device__ __host__ vec_type(void) {}      
-      __device__ __host__ explicit vec_type(const double3& other) { double4::x = other.x; double4::y = other.y; double4::z = other.z; }
+      __device__ __host__ explicit vec_type(const double3& other) { this->x = other.x; this->y = other.y; this->z = other.z; }
+      __device__ __host__ explicit vec_type(const double4& other) { this->x = other.x; this->y = other.y; this->z = other.z; }
       __device__ __host__ vec_type(double _x, double _y, double _z, double _w) { this->x = _x; this->y = _y; this->z = _z; this->w = _w; }
       //operator double4 () { return (double4)(*this); }
   };

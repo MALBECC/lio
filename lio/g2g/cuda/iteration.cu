@@ -72,11 +72,18 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   }
   point_weights_gpu = point_weights_cpu;
 
-  /* compute density/factors */
-  dim3 threads(number_of_points);
   dim3 threadBlock, threadGrid;
+  /* compute density/factors */
+  /** Old Code (por puntos)**/
+  /*
+  dim3 threads(number_of_points);  
   threadBlock = dim3(DENSITY_BLOCK_SIZE);
   threadGrid = divUp(threads, threadBlock);
+  */
+  /** New code (por funciones) **/
+
+  threadBlock = dim3(group_m,1,1); // Hay que asegurarse que la cantidad de funciones este en rango
+  threadGrid = dim3(number_of_points,1,1);
 
   CudaMatrix<scalar_type> factors_gpu;
   if (compute_rmm || compute_forces) factors_gpu.resize(number_of_points);
@@ -92,21 +99,21 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     if (compute_forces || compute_rmm) {
       if (lda) 
       {
-          gpu_all_density<scalar_type, true, true, true><<<threadGrid, threadBlock>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
+          gpu_all_density<scalar_type, true, true, true><<<threadGrid, threadBlock, sizeof(vec_type<scalar_type,4>)*4*(threadBlock.x+32)>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
       }
       else 
       {
-          gpu_all_density<scalar_type, true, true, false><<<threadGrid, threadBlock>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
+          gpu_all_density<scalar_type, true, true, false><<<threadGrid, threadBlock, sizeof(vec_type<scalar_type,4>)*4*(threadBlock.x+32)>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
       }
     }      
     else {
       if (lda) 
       {
-          gpu_all_density<scalar_type, true, false, true><<<threadGrid, threadBlock>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
+          gpu_all_density<scalar_type, true, false, true><<<threadGrid, threadBlock, sizeof(vec_type<scalar_type,4>)*4*(threadBlock.x+32)>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
       }
       else 
       {
-          gpu_all_density<scalar_type, true, false, false><<<threadGrid, threadBlock>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
+          gpu_all_density<scalar_type, true, false, false><<<threadGrid, threadBlock, sizeof(vec_type<scalar_type,4>)*4*(threadBlock.x+32)>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
 
 
       }
@@ -119,17 +126,18 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   else {
     if (lda) 
     {
-        gpu_all_density<scalar_type, false, true, true><<<threadGrid, threadBlock>>>(NULL, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
+        gpu_all_density<scalar_type, false, true, true><<<threadGrid, threadBlock, sizeof(vec_type<scalar_type,4>)*4*threadBlock.x>>>(NULL, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
     }
     else 
     {
-        gpu_all_density<scalar_type, false, true, false><<<threadGrid, threadBlock>>>(NULL, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
+        gpu_all_density<scalar_type, false, true, false><<<threadGrid, threadBlock, sizeof(vec_type<scalar_type,4>)*4*threadBlock.x>>>(NULL, factors_gpu.data, point_weights_gpu.data, number_of_points, rmm_input_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_m);
     }
     cudaAssertNoError("compute_density");
   }
 
   timers.density.pause_and_sync();
 
+   dim3 threads;
   /* compute forces */
   if (compute_forces) {
     timers.density_derivs.start_and_sync();

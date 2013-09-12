@@ -8,7 +8,8 @@ __device__ void gpu_accumulate_point(scalar_type* const energy, scalar_type* con
   //gpu_accumulate_point<scalar_type, compute_energy, true, lda>(energy, factor, point_weights,points, 
   //                                        partial_density, dxyz, dd1, dd2);
 
-  uint point = index_x(blockDim, blockIdx, threadIdx);
+  //uint point = index_x(blockDim, blockIdx, threadIdx);
+  uint point = blockIdx.x;
   scalar_type point_weight = 0.0f;
   scalar_type y2a, exc_corr;
 

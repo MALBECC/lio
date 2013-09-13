@@ -1,0 +1,24 @@
+#!/bin/env ruby
+['agua1', 'agua2'].each do |d|
+  Dir.chdir(d)
+  puts "==> #{d}"
+
+  File.open('gpu_options','w') {|io| io.puts \
+    "max_function_exponent 8\nlittle_cube_size 11.0\nmin_points_per_cube 1"
+  }
+
+  puts 'G2G...'
+  g2g_output = `../../fortran/garcha-g2g < t`[/SCF ENERGY\s+=\s+(-?\d+\.\d+)/,1].to_f
+  puts 'Garcha...'
+  garcha_output = `../../fortran/garcha < t`[/SCF ENERGY\s+=\s+(-?\d+\.\d+)/,1].to_f
+  delta = ((g2g_output - garcha_output) * 627.5).abs
+  delta_ref = 0.006
+
+  puts "Energia G2G: #{g2g_output}"
+  puts "Energia Garcha: #{garcha_output}"
+  puts "Delta: #{delta} : #{delta <= delta_ref ? 'OK' : 'PROBLEMA!'}"
+  puts "Referencia: #{delta_ref}"
+  
+  Dir.chdir('..')
+end
+

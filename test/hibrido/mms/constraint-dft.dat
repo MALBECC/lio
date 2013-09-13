@@ -1,0 +1,47 @@
+ICON NTIME NSCAL  NSAVE   NDIP  IRDF ICMOT  NEWV  IPR IP15 UMBRE BER1 BERSTEP BER2
+0    80000   1   100    1000    -1   4   -1000000   10   1  0   0.001   2000   0.01
+IDUM     NEWQ   IQMOT   IZZ  IFLUC  IPR1  IS0   IS0Q   CKUM  RUM JVEL   US1  US2
+12567    -20      0      1    -1     10    0     0   180000  1.4  0.0001  2    5
+No ESPECIES CUANTICAS (NSPECQ)   NDFT      NPAS
+12                               1        1           
+ESPECIES CUANTICAS: N00OCOO 
+                   1 1 1 1 1 1 1 1 1 1 1 1
+CARGAS SOBRE ATOMOS SOLUTO(*)                 
+    -1.0038 0.3783 0.3215 0.3904 0.8742 -0.4763 -0.3995 -0.3174 -0.5805 0.3339 0.2799 0.1992
+MASAS DE ATOMOS CUANTICOS
+                 12. 1. 1. 1. 32. 16. 16. 16. 12. 1. 1. 1.
+NATSOL (NUMERO DE ATOMOS POR MOLECULA CLASICA) 
+3
+NUMERO DE ATOMOS POR ESPECIE CLASICA   O   H   H
+                                       492 492 492
+MASAS DE ESPECIES CLASICAS                             MQ(FICTICIA)
+                                     16.  1.  1.   0.0000001809
+TEMPRQ    TEMPRQQ        DELTAT      QS      QSQ   
+300.00   300.   2.            0.0002       25.      25.    
+SIGMAS (ANGSTROMS)        O          H         H
+                       3.154        0.        0.0
+EPSILONS(KELVIN)
+                      78.0309      0.0       0.0
+CHARGES ZZZ(AU)    O          H         H
+                 -1.04       0.52       0.52
+DISTANCIAS:  OH DA(1)   OH DA(2)    HH DA(3)
+             0.9572      0.9572     1.5139
+SPC o TIP4P (SPC=>1)
+-1
+ICLSTR(=1 CLUSTER, SINO BULK)
+-1
+TAMANIO DE LA CAJA (SI ES CLUSTER)
+5.
+DENSIDAD (NWAT/VOLUMEN)
+.033
+XFAX (RCT=(BXLGTH/2)*XFAX)         RBUF
+1.D0                               1.D0
+IEWLD (IEWLD=1 LLAMA FURIM)
+0
+KMAX (EWALD SUM IN K-SPACE)
+6
+UNIDADES (IUNID=1 ADIM,  =2 KELVIN, = 3 Kcal/mol,  =4 H)
+4
+
+333 333 33 333 
+

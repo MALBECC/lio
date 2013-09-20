@@ -1,29 +1,48 @@
-template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
-__device__ void gpu_compute_density(scalar_type* const energy, scalar_type* const factor, const scalar_type* const point_weights,
-                                    uint points, const scalar_type* rdm, const scalar_type* function_values, const vec_type<scalar_type,4>* gradient_values,
-                                    const vec_type<scalar_type,4>* hessian_values, uint m, scalar_type& partial_density, vec_type<scalar_type,4>& dxyz, vec_type<scalar_type,4>& dd1, vec_type<scalar_type,4>& dd2)
+/*
+__device__ doubleatomicAdd(vec_type<scalar_type,WIDTH>* address, doubleval)
 {
-/** New Code **/
+    unsigned long long int* address_as_ull =(unsigned long long int*)address;
+    unsigned long long intold = *address_as_ull, assumed;
+    do{
+        assumed = old;
+        old = atomicCAS(address_as_ull, assumed,__double_as_longlong(val +__longlong_as_double(assumed)));
+    }while(assumed != old);
+    return __longlong_as_double(old);
+}
+__device__ doubleatomicAdd(scalar_type* address, scalar_type doubleval)
+{
+    unsigned long long int* address_as_ull =(unsigned long long int*)address;
+    unsigned long long intold = *address_as_ull, assumed;
+    do{
+        assumed = old;
+        old = atomicCAS(address_as_ull, assumed,__double_as_longlong(val +__longlong_as_double(assumed)));
+    }while(assumed != old);
+    return __longlong_as_double(old);
+}
+*/
+
+
+template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
+__global__ void gpu_compute_density(scalar_type* const energy, scalar_type* const factor, const scalar_type* const point_weights,
+                                    uint points, const scalar_type* rdm, const scalar_type* function_values, const vec_type<scalar_type,4>* gradient_values,
+                                    const vec_type<scalar_type,4>* hessian_values, uint m, scalar_type* out_partial_density, vec_type<scalar_type,4>* out_dxyz, vec_type<scalar_type,4>* out_dd1, vec_type<scalar_type,4>*  out_dd2)
+{
 
   uint point = blockIdx.x;
-  uint i     = threadIdx.x;
-  
+  /* Old */
+  //uint i     = threadIdx.x;
+  /* New */
+  uint i     = threadIdx.x + blockIdx.y * DENSITY_BLOCK_SIZE;
 
-  partial_density = 0.0f;
+  scalar_type partial_density (0.0f);
+  vec_type<scalar_type,WIDTH> dxyz, dd1, dd2;
+  dxyz=dd1=dd2 =vec_type<scalar_type,4>(0.0f,0.0f,0.0f,0.0f); 
+
   if (!lda) { dxyz = dd1 = dd2 = vec_type<scalar_type,4>(0.0f,0.0f,0.0f,0.0f); }
-/** New Code **/  
 
     bool valid_thread = (point < points) && ( i < m );
  
 
-  //scalar_type point_weight;
-  //if (valid_thread) point_weight = point_weights[point];
-
-  //__shared__ scalar_type rdm_sh[DENSITY_BATCH_SIZE];
-
-  /***** compute density ******/
-  //for (uint i = 0; i < m; i++) { //Este for desaparece
-    {
     scalar_type w = 0.0f;
     vec_type<scalar_type,4> w3, ww1, ww2;
     if (!lda) { w3 = ww1 = ww2 = vec_type<scalar_type,4>(0.0f,0.0f,0.0f,0.0f); }
@@ -40,87 +59,98 @@ __device__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
         Fhi2 = hessian_values[COALESCED_DIMENSION(points) * (2 * i + 1) + point];
       }
     }
-    #define WARP_SIZE 32 //TODO: Cambiar por la constante de warpsize correcta (o sea, la constante general)
-    int position_in_warp = threadIdx.x % WARP_SIZE;
-    __shared__ scalar_type fj_sh[WARP_SIZE];
-    __shared__ vec_type<scalar_type, WIDTH> fgj_sh [WARP_SIZE];
-    __shared__ vec_type<scalar_type, WIDTH> fh1j_sh [WARP_SIZE];
-    __shared__ vec_type<scalar_type, WIDTH> fh2j_sh [WARP_SIZE];
-    for (int bj = 0; bj <= i; bj += WARP_SIZE) { //Density deberia ser GET_WARP_SIZE
-        /*
-        fj_sh[warp_size]
+    int position = threadIdx.x;
 
-        fj_sh[]=fj[j,punto]
-        for jj=  0 .. warp_size 
-        {
-            j = jj + bj
-            leer rdm(i,j)
-            w+=fj*ci(j)
-        }
-         */
-        scalar_type valid_position_in_warp = (1.0f * (bj+position_in_warp<=i)) ;
-        fj_sh[position_in_warp] = function_values[COALESCED_DIMENSION(points) * (bj + position_in_warp) + point] * valid_position_in_warp;
-        if(!lda)
-        {
-            fgj_sh[position_in_warp] = vec_type<scalar_type, WIDTH> (gradient_values[COALESCED_DIMENSION(points) * (bj + position_in_warp) + point] *valid_position_in_warp);
-
-            fh1j_sh[position_in_warp] = vec_type<scalar_type,WIDTH>(hessian_values[COALESCED_DIMENSION(points) * (2 * (bj + position_in_warp) + 0) + point]*valid_position_in_warp);
-            fh2j_sh[position_in_warp] = vec_type<scalar_type,WIDTH>(hessian_values[COALESCED_DIMENSION(points) * (2 * (bj + position_in_warp) + 1) + point]*valid_position_in_warp);
-        }
-        __syncthreads();
-
-        for(int j=0; j<WARP_SIZE && bj+j <= i; j++){            
-            scalar_type rdm_this_thread = rdm[COALESCED_DIMENSION(m) * i + (bj+j)];
-            w += rdm_this_thread * fj_sh[j];
-
+    __shared__ scalar_type fj_sh[DENSITY_BLOCK_SIZE];
+    __shared__ vec_type<scalar_type, WIDTH> fgj_sh [DENSITY_BLOCK_SIZE];
+    __shared__ vec_type<scalar_type, WIDTH> fh1j_sh [DENSITY_BLOCK_SIZE];
+    __shared__ vec_type<scalar_type, WIDTH> fh2j_sh [DENSITY_BLOCK_SIZE];
+    
+    if(valid_thread)
+    {
+        for (int bj = 0; bj <= i; bj += DENSITY_BLOCK_SIZE) 
+        { //Density deberia ser GET_DENSITY_BLOCK_SIZE
+     
+            scalar_type valid_position = (1.0f * (bj+position<=i)) ;
+            fj_sh[position] = function_values[COALESCED_DIMENSION(points) * (bj + position) + point] * valid_position;
             if(!lda)
             {
-                w3 += fgj_sh[j]* rdm_this_thread ;
-                ww1 += fh1j_sh[j] * rdm_this_thread;
-                ww2 += fh2j_sh[j] * rdm_this_thread;
+                fgj_sh[position] = vec_type<scalar_type, WIDTH> (gradient_values[COALESCED_DIMENSION(points) * (bj + position) + point] *valid_position);
+
+                fh1j_sh[position] = vec_type<scalar_type,WIDTH>(hessian_values[COALESCED_DIMENSION(points) * (2 * (bj + position) + 0) + point]*valid_position);
+                fh2j_sh[position] = vec_type<scalar_type,WIDTH>(hessian_values[COALESCED_DIMENSION(points) * (2 * (bj + position) + 1) + point]*valid_position);
             }
+            __syncthreads();
+
+            for(int j=0; j<DENSITY_BLOCK_SIZE && bj+j <= i; j++){            
+                scalar_type rdm_this_thread = rdm[COALESCED_DIMENSION(m) * i + (bj+j)];
+                w += rdm_this_thread * fj_sh[j];
+
+                if(!lda)
+                {
+                    w3 += fgj_sh[j]* rdm_this_thread ;
+                    ww1 += fh1j_sh[j] * rdm_this_thread;
+                    ww2 += fh2j_sh[j] * rdm_this_thread;
+                }
+            }
+
         }
+
+        partial_density = Fi * w;
+        //TODO: Insertar aca funcion que convierte <,4> a <,3>
+        if (!lda) {
+          dxyz += Fgi * w + w3 * Fi;
+          dd1 += Fgi * w3 * 2.0f + Fhi1 * w + ww1 * Fi;
+
+          vec_type<scalar_type,4> FgXXY(Fgi.x, Fgi.x, Fgi.y, 0.0f);
+          vec_type<scalar_type,4> w3YZZ(w3.y, w3.z, w3.z, 0.0f);
+          vec_type<scalar_type,4> FgiYZZ(Fgi.y, Fgi.z, Fgi.z, 0.0f);
+          vec_type<scalar_type,4> w3XXY(w3.x, w3.x, w3.y, 0.0f);
+
+          dd2 += FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi;
+        }
+    }
 
 /*
-        __syncthreads();
-      if (threadIdx.x < DENSITY_BATCH_SIZE) {
-        if (bj + threadIdx.x <= i) rdm_sh[threadIdx.x] = rdm[COALESCED_DIMENSION(m) * i + (bj + threadIdx.x)]; // TODO: uncoalesced. invertir triangulo?
-        else rdm_sh[threadIdx.x] = 0.0f;
-      }
-      __syncthreads();
+    __shared__ vec_type<scalar_type,WIDTH> _dxyz, _dd1, _dd2;
+    __shared__ scalar_type _pd (0.0f);
+    dxyz=dd1=dd2=vec_type<scalar_type,WIDTH>(0.0f,0.0f,0.0f,0.0f);
+    
+    doubleatomicAdd(_pd, partial_density);
+    vec_typeatomicAdd(_dxyz, dxyz);
+    vec_typeatomicAdd(_dd1, dd1);
+    vec_typeatomicAdd(_dd2, dd2);
+*/
+    __syncthreads();
+    //Estamos reutilizando la memoria shared por block para hacer el acumulado por block.
+    fj_sh[position]=partial_density;
+    fgj_sh[position]=dxyz;
+    fh1j_sh[position]=dd1;
+    fh2j_sh[position]=dd2;
 
-      if (valid_thread) {
-        for (uint j = 0; j < DENSITY_BATCH_SIZE && (bj + j) <= i; j++) {
-          float Fj = function_values[COALESCED_DIMENSION(points) * (bj + j) + point];
-          w += rdm_sh[j] * Fj;
+    __syncthreads();
 
-          if (!lda) {
-            vec_type<scalar_type,4> Fgj = gradient_values[COALESCED_DIMENSION(points) * (bj + j) + point];
-            w3 += Fgj * rdm_sh[j];
+    if(threadIdx.x==0)
+    {
+        dxyz=dd1=dd2=vec_type<scalar_type,WIDTH>(0.0f,0.0f,0.0f,0.0f);
+        partial_density=scalar_type(0.0f);
 
-            vec_type<scalar_type,4> Fhj1 = hessian_values[COALESCED_DIMENSION(points) * (2 * (bj + j) + 0) + point];
-            vec_type<scalar_type,4> Fhj2 = hessian_values[COALESCED_DIMENSION(points) * (2 * (bj + j) + 1) + point];
-            ww1 += Fhj1 * rdm_sh[j];
-            ww2 += Fhj2 * rdm_sh[j];
-          }
-        }
-      }
-      */
+        for(int j=0; (blockIdx.y < m/DENSITY_BLOCK_SIZE && j<DENSITY_BLOCK_SIZE) 
+                         || 
+                    (blockIdx.y == m/DENSITY_BLOCK_SIZE && j<(m % DENSITY_BLOCK_SIZE)); j++)
+        {
+            
+            partial_density     += fj_sh[j];
+            dxyz                += fgj_sh[j];
+            dd1                 += fh1j_sh[j];
+            dd2                 += fh2j_sh[j];
+        }        
+        const int myPoint = blockIdx.y*points + blockIdx.x;
+        //printf("BLKX: %d  BLKY: %d   --- PD: %e\n", blockIdx.x, blockIdx.y, partial_density);
+        out_partial_density[myPoint] = partial_density;
+        out_dxyz[myPoint] = dxyz;
+        out_dd1[myPoint] = dd1;
+        out_dd2[myPoint] = dd2;
     }
-
-    partial_density = Fi * w;
-    //TODO: Insertar aca funcion que convierte <,4> a <,3>
-    if (!lda) {
-      dxyz += Fgi * w + w3 * Fi;
-      dd1 += Fgi * w3 * 2.0f + Fhi1 * w + ww1 * Fi;
-
-      vec_type<scalar_type,4> FgXXY(Fgi.x, Fgi.x, Fgi.y, 0.0f);
-      vec_type<scalar_type,4> w3YZZ(w3.y, w3.z, w3.z, 0.0f);
-      vec_type<scalar_type,4> FgiYZZ(Fgi.y, Fgi.z, Fgi.z, 0.0f);
-      vec_type<scalar_type,4> w3XXY(w3.x, w3.x, w3.y, 0.0f);
-
-      dd2 += FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi;
-    }
-  }
 }
 

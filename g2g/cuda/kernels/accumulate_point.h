@@ -1,26 +1,44 @@
 #define WIDTH 4
 
 template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
-__device__ void gpu_accumulate_point(scalar_type* const energy, scalar_type* const factor, const scalar_type* const point_weights,
-                                    uint points, scalar_type partial_density, vec_type<scalar_type,WIDTH>  dxyz, 
-                                    vec_type<scalar_type,WIDTH> dd1, vec_type<scalar_type,WIDTH> dd2){
+__global__ void gpu_accumulate_point(scalar_type* const energy, scalar_type* const factor, const scalar_type* const point_weights,
+                                    uint points, int block_height, scalar_type* partial_density, vec_type<scalar_type,WIDTH>*  dxyz, 
+                                    vec_type<scalar_type,WIDTH>* dd1, vec_type<scalar_type,WIDTH>* dd2){
 
-  //gpu_accumulate_point<scalar_type, compute_energy, true, lda>(energy, factor, point_weights,points, 
-  //                                        partial_density, dxyz, dd1, dd2);
 
-  //uint point = index_x(blockDim, blockIdx, threadIdx);
-  uint point = blockIdx.x;
+  uint point = blockIdx.x * DENSITY_BLOCK_SIZE + threadIdx.x;
+
+  
   scalar_type point_weight = 0.0f;
   scalar_type y2a, exc_corr;
+
+  scalar_type _partial_density(0.0f);
+  vec_type<scalar_type,WIDTH> _dxyz, _dd1, _dd2;
+  _dxyz=_dd1=_dd2=vec_type<scalar_type,WIDTH>(0.0f,0.0f,0.0f,0.0f);
 
   bool valid_thread = (point < points);
   if (valid_thread) point_weight = point_weights[point];
 
-  gpu_pot<scalar_type, compute_energy, true, lda>(partial_density, dxyz, dd1, dd2, exc_corr, y2a); // TODO: segundo parametro, que tenga en cuenta RMM+energy
-  
+  if (valid_thread)
+  {
+     for(int j =0 ; j<block_height; j++)
+     {
+         const int this_row=j*points+threadIdx.x;
+         _partial_density += partial_density[this_row];
+         _dxyz += dxyz[this_row];
+         _dd1 += dd1[this_row];
+         _dd2 += dd2[this_row];
+     }
+     printf("BLKX: %d  POINT: %d   --- PD: %e\n", blockIdx.x, point, _partial_density);
+  }
+
+  gpu_pot<scalar_type, compute_energy, true, lda>(_partial_density, _dxyz, _dd1, _dd2, exc_corr, y2a); // TODO: segundo parametro, que tenga en cuenta RMM+energy
+
+  //printf("POINT:  %d ---- EXC_CORR %e ---- PW:  %e\n",point, exc_corr, point_weight);
   if (compute_energy && valid_thread)
-    energy[point] = (partial_density * point_weight) * exc_corr;
-  
+    energy[point] = (_partial_density * point_weight) * exc_corr;
+  if(compute_energy && valid_thread)
+    printf("INNER-ENERGY[%d] = %e\n",point,energy[point]);
   if (compute_factor && valid_thread)
     factor[point] = point_weight * y2a;
 

@@ -92,7 +92,7 @@ endif
 
 # Debug/release configuration
 ifneq ($(dbg),1)
-	NVCCFLAGS   += -O3 --compiler-options -fno-strict-aliasing
+	NVCCFLAGS   += -O3 --compiler-options -fno-strict-aliasing -lineinfo
 endif
 
 ifeq ($(keep), 1)

@@ -93,14 +93,13 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   CudaMatrix<vec_type<scalar_type,4> > dd1_gpu;
   CudaMatrix<vec_type<scalar_type,4> > dd2_gpu;
 
-
-  partial_densities_gpu.resize(number_of_points, block_height);
-  dxyz_gpu.resize(number_of_points,block_height);
-  dd1_gpu.resize(number_of_points,block_height );
-  dd2_gpu.resize(number_of_points,block_height );
+  partial_densities_gpu.resize(COALESCED_DIMENSION(number_of_points), block_height);
+  dxyz_gpu.resize(COALESCED_DIMENSION(number_of_points),block_height);
+  dd1_gpu.resize(COALESCED_DIMENSION(number_of_points),block_height );
+  dd2_gpu.resize(COALESCED_DIMENSION(number_of_points),block_height );
   
-  const dim3 threadGrid_accumulate(divUp(number_of_points,DENSITY_BLOCK_SIZE),1,1);
-  const dim3 threadBlock_accumulate(DENSITY_BLOCK_SIZE,1,1);
+  const dim3 threadGrid_accumulate(divUp(number_of_points,DENSITY_ACCUM_BLOCK_SIZE),1,1);
+  const dim3 threadBlock_accumulate(DENSITY_ACCUM_BLOCK_SIZE,1,1);
 
   if (compute_rmm || compute_forces) factors_gpu.resize(number_of_points);
 
@@ -142,7 +141,6 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
 
     HostMatrix<scalar_type> energy_cpu(energy_gpu);
     for (uint i = 0; i < number_of_points; i++) { 
-        printf("OUTER-ENERGY[%d] = %e\n",i,energy_cpu(i));
         energy += energy_cpu(i); 
     } // TODO: hacer con un kernel?
   }

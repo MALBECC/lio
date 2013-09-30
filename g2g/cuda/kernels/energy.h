@@ -47,6 +47,7 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
      
             if( (bj+position<m) && (point<points) )
             {
+            __syncthreads();
 
                 fj_sh[position] = function_values[COALESCED_DIMENSION(points) * (bj + position) + point];
                 
@@ -64,7 +65,7 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
             {
                 for(int j=0; j<DENSITY_BLOCK_SIZE && bj+j <= i; j++)
                 {            
-                    scalar_type rdm_this_thread = rdm[COALESCED_DIMENSION(m) * i + (bj+j)];
+                    scalar_type rdm_this_thread = rdm[COALESCED_DIMENSION(m) *(bj +j) + i]; // + (bj+j)];
                     w += rdm_this_thread * fj_sh[j];
 
                     if(!lda)

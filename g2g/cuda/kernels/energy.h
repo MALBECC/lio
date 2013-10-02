@@ -28,11 +28,14 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
 
     //TODO: Cada thread del güarp trae su Fi.
     if (valid_thread) {
-      Fi = function_values[COALESCED_DIMENSION(points) * i + point]; //Con la paralelizacion a nivel de thread, esta coalescencia desaparece. Hay que darlo vuelta / transpose.
+      Fi = function_values[(m+DENSITY_BLOCK_SIZE) * point + i]; //Con la paralelizacion a nivel de thread, esta coalescencia desaparece. Hay que darlo vuelta / transpose.
       if (!lda) {
-        Fgi = gradient_values[COALESCED_DIMENSION(points) * i + point];  //Deberia ser: Coalesced_dimension(i) * point + i 
-        Fhi1 = hessian_values[COALESCED_DIMENSION(points) * (2 * i + 0) + point];   //Hay que cambiarlo de functions.h
+        Fgi = gradient_values[(m+DENSITY_BLOCK_SIZE) * point + i];  //Deberia ser: Coalesced_dimension(i) * point + i 
+        Fhi1 = hessian_values[(m+DENSITY_BLOCK_SIZE)*2 * point + (2* i + 0)];   //Hay que cambiarlo de functions.h
+        Fhi2 = hessian_values[(m+DENSITY_BLOCK_SIZE)*2 * point + (2* i + 1)];
+ /*       Fhi1 = hessian_values[COALESCED_DIMENSION(points) * (2 * i + 0) + point];   //Hay que cambiarlo de functions.h
         Fhi2 = hessian_values[COALESCED_DIMENSION(points) * (2 * i + 1) + point];
+        */
       }
     }
     int position = threadIdx.x;
@@ -49,14 +52,13 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
             {
             __syncthreads();
 
-                fj_sh[position] = function_values[COALESCED_DIMENSION(points) * (bj + position) + point];
-                
+                fj_sh[position] = function_values[(m+DENSITY_BLOCK_SIZE) * point + (bj+position)];               
                 if(!lda)
                 {
-                    fgj_sh[position] = gradient_values[COALESCED_DIMENSION(points) * (bj + position) + point];
+                    fgj_sh[position] = gradient_values[(m+DENSITY_BLOCK_SIZE) * point + (bj+position)];               
 
-                    fh1j_sh[position] = hessian_values[COALESCED_DIMENSION(points) * (2 * (bj + position) + 0) + point];
-                    fh2j_sh[position] = hessian_values[COALESCED_DIMENSION(points) * (2 * (bj + position) + 1) + point];
+                    fh1j_sh[position] = hessian_values[(m+DENSITY_BLOCK_SIZE)*2 * point +(2 * (bj + position) + 0)];
+                    fh2j_sh[position] = hessian_values[(m+DENSITY_BLOCK_SIZE)*2 * point +(2 * (bj + position) + 1)];
                 }
             }
             __syncthreads();

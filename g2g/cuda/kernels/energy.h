@@ -1,6 +1,6 @@
 template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
 __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* const factor, const scalar_type* const point_weights,
-                                    uint points, const scalar_type* rdm, const scalar_type* function_values, const vec_type<scalar_type,4>* gradient_values,
+                                    uint points, const scalar_type* function_values, const vec_type<scalar_type,4>* gradient_values,
                                     const vec_type<scalar_type,4>* hessian_values, uint m, scalar_type* out_partial_density, vec_type<scalar_type,4>* out_dxyz, vec_type<scalar_type,4>* out_dd1, vec_type<scalar_type,4>*  out_dd2)
 {
 
@@ -28,11 +28,11 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
 
     //TODO: Cada thread del güarp trae su Fi.
     if (valid_thread) {
-      Fi = function_values[(m+DENSITY_BLOCK_SIZE) * point + i]; //Con la paralelizacion a nivel de thread, esta coalescencia desaparece. Hay que darlo vuelta / transpose.
+      Fi = function_values[(m) * point + i]; //Con la paralelizacion a nivel de thread, esta coalescencia desaparece. Hay que darlo vuelta / transpose.
       if (!lda) {
-        Fgi = gradient_values[(m+DENSITY_BLOCK_SIZE) * point + i];  //Deberia ser: Coalesced_dimension(i) * point + i 
-        Fhi1 = hessian_values[(m+DENSITY_BLOCK_SIZE)*2 * point + (2* i + 0)];   //Hay que cambiarlo de functions.h
-        Fhi2 = hessian_values[(m+DENSITY_BLOCK_SIZE)*2 * point + (2* i + 1)];
+        Fgi = gradient_values[(m) * point + i];  //Deberia ser: Coalesced_dimension(i) * point + i 
+        Fhi1 = hessian_values[(m)*2 * point + (2* i + 0)];   //Hay que cambiarlo de functions.h
+        Fhi2 = hessian_values[(m)*2 * point + (2* i + 1)];
  /*       Fhi1 = hessian_values[COALESCED_DIMENSION(points) * (2 * i + 0) + point];   //Hay que cambiarlo de functions.h
         Fhi2 = hessian_values[COALESCED_DIMENSION(points) * (2 * i + 1) + point];
         */
@@ -52,13 +52,13 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
             {
             __syncthreads();
 
-                fj_sh[position] = function_values[(m+DENSITY_BLOCK_SIZE) * point + (bj+position)];               
+                fj_sh[position] = function_values[(m) * point + (bj+position)];               
                 if(!lda)
                 {
-                    fgj_sh[position] = gradient_values[(m+DENSITY_BLOCK_SIZE) * point + (bj+position)];               
+                    fgj_sh[position] = gradient_values[(m) * point + (bj+position)];               
 
-                    fh1j_sh[position] = hessian_values[(m+DENSITY_BLOCK_SIZE)*2 * point +(2 * (bj + position) + 0)];
-                    fh2j_sh[position] = hessian_values[(m+DENSITY_BLOCK_SIZE)*2 * point +(2 * (bj + position) + 1)];
+                    fh1j_sh[position] = hessian_values[(m)*2 * point +(2 * (bj + position) + 0)];
+                    fh2j_sh[position] = hessian_values[(m)*2 * point +(2 * (bj + position) + 1)];
                 }
             }
             __syncthreads();

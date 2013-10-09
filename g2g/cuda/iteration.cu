@@ -14,6 +14,7 @@
 
 namespace G2G {
 
+texture<float, 2, cudaReadModeElementType> rmm_input_gpu_tex;
 /** KERNELS **/
 #include "gpu_variables.h"
 #include "kernels/pot.h"
@@ -29,6 +30,10 @@ namespace G2G {
 using std::cout;
 using std::endl;
 using std::list;
+
+//Definicion global para poder tener acceso
+
+
 
 // Host function to set the constant
 void gpu_set_variables(void) {
@@ -74,13 +79,7 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
 
   dim3 threadBlock, threadGrid;
   /* compute density/factors */
-  /** Old Code (por puntos)**/
-  /*
-  dim3 threads(number_of_points);  
-  threadBlock = dim3(DENSITY_BLOCK_SIZE);
-  threadGrid = divUp(threads, threadBlock);
-  */
-  /** New code (por funciones) **/
+ /** New code (por funciones) **/
 
   const int block_height= divUp(group_m,DENSITY_BLOCK_SIZE);
 
@@ -137,8 +136,19 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
 
   timers.density.start_and_sync();
   HostMatrix<scalar_type> rmm_input_cpu(COALESCED_DIMENSION(group_m), group_m+DENSITY_BLOCK_SIZE);
-  get_rmm_input(rmm_input_cpu);
-  rmm_input_gpu = rmm_input_cpu;
+  get_rmm_input(rmm_input_cpu); //Achica la matriz densidad a la version reducida del grupo
+
+  //Comentado porque ahora vamos a hacer esto a mano por la textura
+  // TODO: pasarlo a un metodo dentro de matrix.cpp
+  //rmm_input_gpu = rmm_input_cpu; //Aca copia de CPU a GPU
+
+  cudaArray* cuArray;
+
+  cudaMallocArray(&cuArray, &rmm_input_gpu_tex.channelDesc, rmm_input_cpu.width,rmm_input_cpu.height);
+  cudaMemcpyToArray(cuArray, 0, 0,rmm_input_cpu.data,sizeof(float)*rmm_input_cpu.width*rmm_input_cpu.height, cudaMemcpyHostToDevice);
+
+  cudaBindTextureToArray(rmm_input_gpu_tex, cuArray);
+  rmm_input_gpu_tex.normalized = false;
 
 
   if (compute_energy) {
@@ -189,6 +199,9 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     }
     cudaAssertNoError("compute_density");
   }
+    //Deshago el bind de textura de rmm
+    cudaFreeArray(cuArray);
+    cudaUnbindTexture(rmm_input_gpu_tex);
 
   timers.density.pause_and_sync();
 

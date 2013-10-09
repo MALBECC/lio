@@ -67,7 +67,8 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
             {
                 for(int j=0; j<DENSITY_BLOCK_SIZE && bj+j <= i; j++)
                 {            
-                    scalar_type rdm_this_thread = rdm[COALESCED_DIMENSION(m) *(bj +j) + i]; // + (bj+j)];
+//                    scalar_type rdm_this_thread = rdm[COALESCED_DIMENSION(m) *(bj +j) + i]; // + (bj+j)];
+                    scalar_type rdm_this_thread = tex2D(rmm_input_gpu_tex, (float)(bj+j), (float)i);
                     w += rdm_this_thread * fj_sh[j];
 
                     if(!lda)
@@ -107,15 +108,12 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
         fh2j_sh[position]=dd2;
     }
     __syncthreads();
-
     if(threadIdx.x==0)
     {
         dxyz=dd1=dd2=vec_type<scalar_type,WIDTH>(0.0f,0.0f,0.0f,0.0f);
         partial_density=scalar_type(0.0f);
 
-        for(int j=0; (blockIdx.y < m/DENSITY_BLOCK_SIZE && j<DENSITY_BLOCK_SIZE) 
-                         || 
-                    (blockIdx.y == m/DENSITY_BLOCK_SIZE && j<(m % DENSITY_BLOCK_SIZE)); j++)
+        for(int j=0;  blockIdx.y*DENSITY_BLOCK_SIZE + j < m && j < DENSITY_BLOCK_SIZE ; j++)
         {
             
             partial_density     += fj_sh[j];

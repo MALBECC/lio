@@ -94,7 +94,6 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
 
   ////////////////////////////////////////////////
 
-  timers.density.start_and_sync();
 
   CudaMatrix<scalar_type>   function_values_transposed_gpu;  
   CudaMatrix<vec_type<scalar_type,4> > gradient_values_transposed_gpu;
@@ -125,6 +124,7 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
 
   ///////////////////////////////////////////////
 
+  timers.density.start_and_sync();
   partial_densities_gpu.resize(COALESCED_DIMENSION(number_of_points), block_height);
   dxyz_gpu.resize(COALESCED_DIMENSION(number_of_points),block_height);
   dd1_gpu.resize(COALESCED_DIMENSION(number_of_points),block_height );
@@ -143,12 +143,23 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   //rmm_input_gpu = rmm_input_cpu; //Aca copia de CPU a GPU
 
   cudaArray* cuArray;
-
-  cudaMallocArray(&cuArray, &rmm_input_gpu_tex.channelDesc, rmm_input_cpu.width,rmm_input_cpu.height);
+  cudaMallocArray(&cuArray, &rmm_input_gpu_tex.channelDesc, rmm_input_cpu.width,rmm_input_cpu.height);  
   cudaMemcpyToArray(cuArray, 0, 0,rmm_input_cpu.data,sizeof(float)*rmm_input_cpu.width*rmm_input_cpu.height, cudaMemcpyHostToDevice);
-
   cudaBindTextureToArray(rmm_input_gpu_tex, cuArray);
+
+/*
+  void* devPtr;
+  size_t pPitch;
+  size_t row_width = rmm_input_cpu.width*sizeof(float);
+  size_t row_height = rmm_input_cpu.height;
+  size_t offset;
+  cudaMallocPitch(&devPtr, &pPitch, row_width ,row_height);
+  cudaMemcpy2D(devPtr, pPitch, rmm_input_cpu.data, row_width, row_width, row_height,cudaMemcpyHostToDevice);
+  cudaBindTexture2D(&offset, rmm_input_gpu_tex, devPtr, rmm_input_gpu_tex.channelDesc, rmm_input_cpu.width, row_height, pPitch);
+*/
   rmm_input_gpu_tex.normalized = false;
+
+
 
 
   if (compute_energy) {
@@ -201,6 +212,9 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   }
     //Deshago el bind de textura de rmm
     cudaFreeArray(cuArray);
+    /*
+    cudaFree(devPtr);
+    */
     cudaUnbindTexture(rmm_input_gpu_tex);
 
   timers.density.pause_and_sync();

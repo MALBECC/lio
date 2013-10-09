@@ -1,7 +1,7 @@
 // TODO: si se juntara con energy.h (teniendo un if templatizado tipo do_forces, que hace que solo se desde donde se debe (j >= i)) se leeria RMM una sola vez
 
 template<class scalar_type>
-__global__ void gpu_compute_density_derivs(scalar_type* function_values, vec_type<scalar_type,4>* gradient_values, scalar_type* rdm,
+__global__ void gpu_compute_density_derivs(scalar_type* function_values, vec_type<scalar_type,4>* gradient_values, 
                                            uint* nuc, vec_type<scalar_type,4>* density_deriv, uint points, uint m, uint nuc_count)
 {
   uint point = index_x(blockDim, blockIdx, threadIdx);
@@ -24,8 +24,10 @@ __global__ void gpu_compute_density_derivs(scalar_type* function_values, vec_typ
 
       for (uint bj = 0; bj < m; bj += DENSITY_DERIV_BATCH_SIZE) {
         __syncthreads();
-        if (threadIdx.x < DENSITY_DERIV_BATCH_SIZE) {
-          if (bj + threadIdx.x < m) rdm_sh[threadIdx.x] = rdm[COALESCED_DIMENSION(m) * (bi + i) + (bj + threadIdx.x)];
+        if (threadIdx.x < DENSITY_DERIV_BATCH_SIZE) {     
+          scalar_type rmd_local = tex2D(rmm_input_gpu_tex, (float)(bi+i), (float)(bj+threadIdx.x));
+          if (bj + threadIdx.x < m) rdm_sh[threadIdx.x] = tex2D(rmm_input_gpu_tex, (float)(bi+i), (float)(bj+threadIdx.x));
+              //rdm[COALESCED_DIMENSION(m) * (bi + i) + (bj + threadIdx.x)];
           else rdm_sh[threadIdx.x] = 0.0f;
         }
         __syncthreads();

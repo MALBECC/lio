@@ -13,8 +13,11 @@
 #include "../scalar_vector_types.h"
 
 namespace G2G {
-
+#if FULL_DOUBLE
+texture<int2, 2, cudaReadModeElementType> rmm_input_gpu_tex;
+#else
 texture<float, 2, cudaReadModeElementType> rmm_input_gpu_tex;
+#endif
 /** KERNELS **/
 #include "gpu_variables.h"
 #include "kernels/pot.h"
@@ -92,8 +95,14 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   CudaMatrix<vec_type<scalar_type,4> > dd1_gpu;
   CudaMatrix<vec_type<scalar_type,4> > dd2_gpu;
 
-  ////////////////////////////////////////////////
+   
+  /*
+   ********************************************************************** 
+   * Transposiciones de matrices para la coalescencia mejorada en density
+   ********************************************************************** 
+   */
 
+  timers.density.start_and_sync();
 
   CudaMatrix<scalar_type>   function_values_transposed_gpu;  
   CudaMatrix<vec_type<scalar_type,4> > gradient_values_transposed_gpu;
@@ -122,9 +131,7 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   if (fortran_vars.gga) 
     transpose_vec<<<transpose_grid, transpose_threads>>> (hessian_values_transposed_gpu.data, hessian_values.data, COALESCED_DIMENSION(number_of_points), (group_m)*2);
 
-  ///////////////////////////////////////////////
 
-  timers.density.start_and_sync();
   partial_densities_gpu.resize(COALESCED_DIMENSION(number_of_points), block_height);
   dxyz_gpu.resize(COALESCED_DIMENSION(number_of_points),block_height);
   dd1_gpu.resize(COALESCED_DIMENSION(number_of_points),block_height );
@@ -138,13 +145,23 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   HostMatrix<scalar_type> rmm_input_cpu(COALESCED_DIMENSION(group_m), group_m);
   get_rmm_input(rmm_input_cpu); //Achica la matriz densidad a la version reducida del grupo
 
+  /*
+   ********************************************************************** 
+   * Pasando RDM a texturas
+   ********************************************************************** 
+   */
+
   //Comentado porque ahora vamos a hacer esto a mano por la textura
   // TODO: pasarlo a un metodo dentro de matrix.cpp
   //rmm_input_gpu = rmm_input_cpu; //Aca copia de CPU a GPU
 
   cudaArray* cuArray;
   cudaMallocArray(&cuArray, &rmm_input_gpu_tex.channelDesc, rmm_input_cpu.width,rmm_input_cpu.height);  
+#if FULL_DOUBLE
+  cudaMemcpyToArray(cuArray, 0, 0,rmm_input_cpu.data,sizeof(int2)*rmm_input_cpu.width*rmm_input_cpu.height, cudaMemcpyHostToDevice);
+#else
   cudaMemcpyToArray(cuArray, 0, 0,rmm_input_cpu.data,sizeof(float)*rmm_input_cpu.width*rmm_input_cpu.height, cudaMemcpyHostToDevice);
+#endif
   cudaBindTextureToArray(rmm_input_gpu_tex, cuArray);
 
 /*

@@ -25,8 +25,9 @@ __global__ void gpu_compute_density_derivs(scalar_type* function_values, vec_typ
       for (uint bj = 0; bj < m; bj += DENSITY_DERIV_BATCH_SIZE) {
         __syncthreads();
         if (threadIdx.x < DENSITY_DERIV_BATCH_SIZE) {     
-          scalar_type rmd_local = tex2D(rmm_input_gpu_tex, (float)(bi+i), (float)(bj+threadIdx.x));
-          if (bj + threadIdx.x < m) rdm_sh[threadIdx.x] = tex2D(rmm_input_gpu_tex, (float)(bi+i), (float)(bj+threadIdx.x));
+            //fetch es una macro para tex2D definida en energy.h
+          scalar_type rmd_local = fetch(rmm_input_gpu_tex, (float)(bi+i), (float)(bj+threadIdx.x));
+          if (bj + threadIdx.x < m) rdm_sh[threadIdx.x] = fetch(rmm_input_gpu_tex, (float)(bi+i), (float)(bj+threadIdx.x));
               //rdm[COALESCED_DIMENSION(m) * (bi + i) + (bj + threadIdx.x)];
           else rdm_sh[threadIdx.x] = 0.0f;
         }

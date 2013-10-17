@@ -142,12 +142,24 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
 
   if (compute_rmm || compute_forces) factors_gpu.resize(number_of_points);
 
-  HostMatrix<scalar_type> rmm_input_cpu(COALESCED_DIMENSION(group_m), group_m);
+  HostMatrix<scalar_type> rmm_input_cpu(COALESCED_DIMENSION(group_m), group_m+DENSITY_BLOCK_SIZE);
   get_rmm_input(rmm_input_cpu); //Achica la matriz densidad a la version reducida del grupo
+
+  for (uint i=0; i<(group_m+DENSITY_BLOCK_SIZE) ;i++)
+{
+    for(uint j=0; j<COALESCED_DIMENSION(group_m) ; j++)
+    {
+      if(i>=group_m || j>=group_m || j > i) {
+     int indes=COALESCED_DIMENSION(group_m)*j+i; 
+       rmm_input_cpu.data[COALESCED_DIMENSION(group_m)*i+j]=0.0f;
+        }
+    }
+}
+
 
   /*
    ********************************************************************** 
-   * Pasando RDM a texturas
+   * Pasando RDM (rmm) a texturas
    ********************************************************************** 
    */
 

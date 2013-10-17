@@ -28,7 +28,7 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
         dxyz = dd1 = dd2 = vec_type<scalar_type,4>(0.0f,0.0f,0.0f,0.0f);
     }
 
-    bool valid_thread = (point < points) && ( i < m );
+    bool valid_thread = ( i < m );
 
 
     scalar_type w = 0.0f;
@@ -52,7 +52,7 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
     {
         //Density deberia ser GET_DENSITY_BLOCK_SIZE
 
-        if( (bj+position<m) && (point<points) )
+        if( bj+position<m )
         {
             __syncthreads();
 
@@ -65,25 +65,40 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
                 fh2j_sh[position] = hessian_values[(m)*2 * point +(2 * (bj + position) + 1)];
             }
         }
+
+
         __syncthreads();
+
+              if((i-bj)< DENSITY_BLOCK_SIZE ) { 
+                     Fi=fj_sh[i-bj];
+                if(!lda)
+                {
+ 
+                    Fgi = fgj_sh[i-bj];
+                    Fhi1 = fh1j_sh[i-bj] ;
+                    Fhi2 = fh2j_sh[i-bj] ;
+                    }
+                }
 
         if(valid_thread)
         {
-            for(int j=0; j<DENSITY_BLOCK_SIZE && bj+j <= i; j++)
+            for(int j=0; j<DENSITY_BLOCK_SIZE /*&& bj+j <= i*/; j++)
             {
+              
                 //fetch es una macro para tex2D
                 scalar_type rdm_this_thread = fetch(rmm_input_gpu_tex, (float)(bj+j), (float)i);
+              /*    if((bj+j) > i) {
+                       rdm_this_thread = 0.0f;
+                                }*/
+//                   else
                 w += rdm_this_thread * fj_sh[j];
-                Fi=fj_sh[j];
                 if(!lda)
                 {
                     w3 += fgj_sh[j]* rdm_this_thread ;
                     ww1 += fh1j_sh[j] * rdm_this_thread;
                     ww2 += fh2j_sh[j] * rdm_this_thread;
-                    Fgi = fgj_sh[j];
-                    Fhi1 = fh1j_sh[j] ;
-                    Fhi2 = fh2j_sh[j] ;
                 }
+
             }
         }
     }

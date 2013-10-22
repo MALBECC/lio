@@ -103,6 +103,9 @@ ifeq ($(cpu),1)
 	NVCCFLAGS += -DCPU_KERNELS=1
 endif
 
+ifeq ($(ptx),1)
+	NVCCFLAGS += --ptx
+endif
 ################################################################################
 # Check for input flags and set compiler flags appropriately
 ################################################################################

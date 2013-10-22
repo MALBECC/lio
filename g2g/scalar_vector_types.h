@@ -85,6 +85,13 @@ namespace G2G {
       __device__ __host__ vec_type(double _x, double _y, double _z, double _w) { this->x = _x; this->y = _y; this->z = _z; this->w = _w; }
       //operator double4 () { return (double4)(*this); }
   };
+
+  template<> class vec_type<int2, 4>{
+    public:
+      __device__ __host__ vec_type(void) {}      
+      __device__ __host__ vec_type(int2 _x, int2 _y, int2 _z, int2 _w) { this->x = _x; this->y = _y; this->z = _z; this->w = _w; }
+      int2 x, y, z, w;
+  };
 }
 
 #endif	/* _SCALAR_VECTOR_TYPES_H */

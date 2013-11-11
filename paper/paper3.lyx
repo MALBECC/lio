@@ -1,0 +1,3860 @@
+#LyX 1.6.7 created this file. For more info see http://www.lyx.org/
+\lyxformat 345
+\begin_document
+\begin_header
+\textclass achemso
+\begin_preamble
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% This is a (brief) model paper using the achemso class
+%% The document class accepts keyval options, which should include
+%% the target journal and optionally the macuscript tye
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Place any additional packages needed here.  Only include packages
+%% which are essential, to avoid problems later.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[version=3]{mhchem}% Formula subscripts using \ce{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% If issues arise when submitting your manuscript, you may want to
+%% un-comment the next line.  This provides information on the
+%% version of every file you have used.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%\listfiles
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Place any additional macros here.  Please use \newcommand* where
+%% possible, and avoid layout changing macros (which are not used
+%% when typesetting).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand*{\mycommand}[1]{\texttt{\emph{#1}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Meta-data block
+%% ---------------
+%% Each author should be given as a separate \author command.
+%%
+%% Corresponding authors should have an e-mail given after the author
+%% name as an \email command.
+%%
+%% The affiliation of authors is given after the authors; each
+%% \affiliation command applies to all preceding authors not already
+%% assigned an affiliation.
+%%
+%% The affiliation takes an option argument for the short name.  This
+%% will typically be something like "University of Somewhere".
+%%
+%% The \altaffiliation macro should be used for new address, etc.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\author{Mat\'ias A. Nitsche}\affiliation{Departamento de Computación FCEN-UBA}
+\author{Manuel Ferreria}\affiliation{no se bien}
+\author{Esteban Mocskos}\affiliation{idem}
+\author{Mariano C. Gonz\'alez Lebrero}\email{mcgl@qb.ffyb.uba.ar}\affiliation{Instituto de Química y Fisicoquímica Biológicas, IQUIFIB, CONICET, ARGENTINA}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% The document title should be given as usual
+%% A short title can be given as a *suggestion* for running headers.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title[short title?]{A GPU accelerated implementation of DFT for hybrid QM/MM simulations.}
+\end_preamble
+\options journal=jctcce,manuscript=article,layout=twocolumn
+\use_default_options false
+\begin_modules
+theorems-ams
+\end_modules
+\language english
+\inputencoding auto
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family rmdefault
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\cite_engine basic
+\use_bibtopic false
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\author "" 
+\author "" 
+\end_header
+
+\begin_body
+
+\begin_layout Abstract
+This paper presents an implementation of electronic structure calculations
+ based on density functional theory (DFT).
+ This development is optimized for performing hybrid molecular dynamics
+ simulations (QM / MM) by making use of graphic processors (GPU) for the
+ most computationally demanding parts.
+ The proposed implementation is able to make use of modern GPUs and to achieve
+ accelerated calculation in relevant portions between 30 to 50 times faster
+ than the CPU version, even in small quantum systems.
+ Besides, we introduce other minor optimizations that significantly reduce
+ the initialization time, which is especially important in molecular dynamics
+ (in which thousands or millions of calculations on small systems are performed).
+ The presented code was extensively tested, both in terms of numerical quality
+ and performance over systems of different size and composition.
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+The simulation of chemical properties in complex systems (solution, proteins,
+ etc.) with electronic detail generally requires treatment by means of computatio
+nally expensive methods.
+ One approach is to treat these systems using hybrid (QM/MM) methods.
+ In this approach the system is divided into a subsystem treated with a
+ Hamiltonian based on quantum mechanics while the rest is modeled with a
+ classical Hamiltonian.
+ This methodology allows for the treataments of complex systems with many
+ degrees of freedom.
+ However, the computational cost associated with the resolution the self-consist
+ent electronic problem remains a major constraint when applying this type
+ of model.
+\end_layout
+
+\begin_layout Standard
+On the other hand, given the immense computing capabilities of the current
+ graphics processing units (GPU), these appear as attractive alternatives
+ in the area of high-performance computing.
+ In particular, the use of GPUs in quantum-chemistry has allowed to obtain
+ interesting results.
+ There are several works that employ GPUs in diverse electronic-structure
+ calculations
+\begin_inset CommandInset citation
+LatexCommand cite
+key "yasuda_anterior,vogt,ufimtsev,genovese2009density,hamada,gpumd,anderson"
+
+\end_inset
+
+, and there's even a commercial software developed exclusively for this
+ kind of hardware
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Petachem"
+
+\end_inset
+
+.
+ A particularly relevant work is Yasuda's
+\begin_inset CommandInset citation
+LatexCommand cite
+key "yasuda2008accelerating"
+
+\end_inset
+
+, in which an algorithm for the exchange-correlation calculations related
+ to self-consistent field iterations (SCF) is presented.
+ It is important to take into consideration that the possibility of obtaining
+ efficient algorithms depends strongly, aside from the hardware to be used,
+ on the type of systems that have to be solved (size, type of atoms, basis-funct
+ions, etc.).
+\end_layout
+
+\begin_layout Standard
+In our case, it is of great interest the use of hybrid simulation techniques
+ (QM/MM) to study bio-molecules active sites: the presented implementation
+ is oriented towards these systems, which usually are not bigger than 50
+ or 100 atoms and which may include relatively heavy elements such as Iron,
+ Sulfur, Copper, etc.
+\begin_inset CommandInset citation
+LatexCommand cite
+key "capece2006heme,crespo2003dft,crespo2005multiple,crespo2005theoretical,friesner2005ab,marti2004qm,ridder2003ab,sproviero2006qm"
+
+\end_inset
+
+.
+ Molecular dynamics simulations involve performing complete DFT calculations
+ a large number of times, each with only a few iterations.
+ This implies that the initialization time has a greater relative weight
+ in this kind of calculation than in a single-point SCF computation.
+\end_layout
+
+\begin_layout Standard
+In summary, we propose a GPU implementation oriented towards QM/MM molecular
+ dynamics calculations of the most computationally demanding steps of a
+ DFT, with Gaussian basis, calculation.
+ This work is based on the code Molecole
+\begin_inset CommandInset citation
+LatexCommand cite
+key "molecole"
+
+\end_inset
+
+ and include novel approaches having a positive impact on parallelization
+ and performance without affecting numerical quality.
+ One of these differences consists in including a new partitioning strategy
+ for the set of quadrature points, which results in a more efficient grouping
+ of computational batches in terms of performance and significative functions.
+ Another aspect involves using a low-cost classification criteria for determinin
+g these significative functions, which does not require computing the actual
+ function values.
+ While other implementations 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "yasuda"
+
+\end_inset
+
+ proposed the recalculation of function values several times at each iteration,
+ in our implementation we precompute these, obtaining notable performance
+ improvements.
+ 
+\end_layout
+
+\begin_layout Standard
+A CPU implementation was also developed and compared to the GPU version.
+ The CPU version is not simply a translation of the GPU implementation since
+ specific CPU features (like SSE2 instructions) were used to obtain the
+ best performance possible.
+ Finally, we present and test a hybrid code made by the coupling of our
+ DFT implementation with AMBER 12
+\begin_inset CommandInset citation
+LatexCommand cite
+key "amber11"
+
+\end_inset
+
+.CAMBIAR LA CITA AMBER 12!!
+\end_layout
+
+\begin_layout Section
+Method
+\end_layout
+
+\begin_layout Standard
+In the DFT approach, the energy is written as a functional of the density:
+\end_layout
+
+\begin_layout Standard
+
+\size footnotesize
+\begin_inset Formula \begin{equation}
+E[\rho]=T_{s}[\rho]+V_{ne}[\rho]+\frac{1}{2}\int\int\frac{\rho(\vec{r}_{1})\rho(\vec{r}_{2})}{r_{12}}d\vec{r_{1}}d\vec{r}_{2}+E_{xc}[\rho]\label{eq:DFT}\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where the first term is the kinetic energy associated with the density,
+ the second is the interaction between the density and the nuclei, the third
+ one is the Coulombs repulsion of the density with itself and the last is
+ the exchange and correlation energy
+\begin_inset CommandInset citation
+LatexCommand cite
+key "kohnsham"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The global exchange-correlation portion is the most expensive in terms of
+ computational cost.
+ The energy corresponding is calculated by the integral of the local exchange-co
+rrelation energy as: 
+\begin_inset Formula \begin{equation}
+E_{XC}=\int\rho(r)\epsilon_{xc}(\rho(r))dr\label{xc}\end{equation}
+
+\end_inset
+
+ Equation [
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "xc"
+
+\end_inset
+
+] can be computed as a discrete sum over a grid
+\begin_inset CommandInset citation
+LatexCommand cite
+key "becke"
+
+\end_inset
+
+: 
+\begin_inset Formula \begin{equation}
+E_{XC}\cong\sum_{j}\rho(r_{j})\epsilon_{xc}(\rho(r_{j}))\label{sum}\end{equation}
+
+\end_inset
+
+ where the density 
+\begin_inset Formula $\rho$
+\end_inset
+
+ (and its gradient and hessian, for GGA functionals) over each grid point
+ 
+\begin_inset Formula $j$
+\end_inset
+
+ is defined from the molecular orbitals 
+\begin_inset Formula $\psi_{i}$
+\end_inset
+
+ as: 
+\begin_inset Formula \begin{equation}
+\rho(r_{j})=\sum_{i}|\psi_{i}(r_{j})|^{2}\label{rho}\end{equation}
+
+\end_inset
+
+ with 
+\begin_inset Formula \begin{equation}
+\psi_{i}(x,y,z)=\sum_{k=1}^{n}c_{i}^{k}\chi_{k}\end{equation}
+
+\end_inset
+
+ where 
+\begin_inset Formula $c_{i}$
+\end_inset
+
+ are the variational coefficients, and the orbitals 
+\begin_inset Formula $\psi_{i}$
+\end_inset
+
+ are constructed by expanding them in a basis of contracted Cartesian Gaussian
+ functions as: 
+\begin_inset Formula \begin{equation}
+\chi_{k}=(x-x_{0})^{n_{x}^{k}}(y-y_{0})^{n_{y}^{k}}(z-z_{0})^{n_{z}^{k}}\sum_{j}k_{j}^{k}e^{-\alpha_{j}(\vec{r}-\vec{r_{0}})^{2}}\end{equation}
+
+\end_inset
+
+ where 
+\begin_inset Formula \begin{equation}
+(\vec{r}-\vec{r_{0}})^{2}=(x-x_{0})^{2}+(y-y_{0})^{2}+(z-z_{0})^{2}\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Other form to compute denity is trougth the density matrix as:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \begin{equation}
+\rho(\vec{r})=\sum_{i=1}^{m}\sum_{j\geqq i}^{m}p_{ij}\chi_{i}(\vec{r})\chi_{j}(\vec{r})\label{eq:density matrix}\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Were m is the number of basis functions (or basis functions with a non negliable
+ value) and:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \begin{equation}
+p_{ij}=\sum_{k=1}^{n}C_{i}^{k}\times C_{j}^{k}\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Were n is the numer of ocupated orbitals.
+\end_layout
+
+\begin_layout Standard
+The computation of the exchange and correlation energy (and the corresponding
+ Khon-Sham matrix elements) involves several distinct steps, for all of
+ which a linear-scaling algorithm exists.
+ Still, all steps exhibit a degree of parallelism inherent to their mathematical
+ formulation.
+ Exploiting this aspect gives a great advantage over serial calculations.
+ Nevertheless, there is not a definitive parallel implementation known a
+ priory since the computation can be approached in different ways.
+ One possible solution consists in parallelizing these steps independently
+ and determining the most adequate parallelization strategy for each case.
+ The main computational steps are: (a) quadrature-point positions and weights,
+ (b) function values, (c) density at each point and (d) Kohn-Sham matrix
+ elements.
+ 
+\end_layout
+
+\begin_layout Standard
+To achieve a linear-scaling implementation, Stratman et al propose several
+ strategies
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Stratmann1996213"
+
+\end_inset
+
+.
+ As a whole, the main idea consists in grouping quadrature-points instead
+ of solving the computation for each one.
+ This grouping permits determining which basis-functions have a signification
+ contribution to the final computation, which are referred to as 
+\emph on
+significative functions
+\emph default
+.
+ Given the rapid-decay of Gaussian functions, the size of the set of significati
+ve functions associated with each group of quadrature points does not depend
+ on the number of atoms.
+ In other words, this size is of constant order in terms of computational
+ complexity.
+ As a consequence, it is possible to sub-divide the complete DFT calculation
+ by computing each of these groups independently.
+ 
+\end_layout
+
+\begin_layout Subsection
+The grid
+\end_layout
+
+\begin_layout Standard
+An important aspect of the calculation is the shape of the grid on which
+ Equation 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sum"
+
+\end_inset
+
+ is applied.
+ The usual practice is to generate a grid for the molecule via atomic overlappin
+g grids.
+ These atomic grids come from the superposition of layers derived by scaling
+ a reference layer (see 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "Flo:grilla"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figuras/grilla.pdf
+	scale 50
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Schematic atomic grid
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "Flo:grilla"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+These layers are not equidistant but are most concentrated close to the
+ nuclei (see 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "Flo:capas"
+
+\end_inset
+
+), where the electron density changes more abruptly, and are more spaced
+ away from them.
+ In a molecule the overlap of atomic grids causes that the relative weight
+ of a given point depends on the position of the grid points from other
+ atoms, making the calculation scale, in principle, quadratically
+\begin_inset CommandInset citation
+LatexCommand cite
+key "becke"
+
+\end_inset
+
+.
+ However algorithms that scale linearly have been developed.
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Stratmann1996213"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Partitioning and function selection criteria
+\end_layout
+
+\begin_layout Standard
+The simplest partitioning scheme consists of dividing the whole system volume
+ into fixed-size cubes, therefore grouping neighboring points.
+ However, the distribution of points in space is not homogeneous as a result
+ of the shape of the grid, which concentrates a large number of points near
+ the nuclei where the electronic density changes faster (see 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "Flo:capas"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figuras/capas.pdf
+	scale 30
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Radii in Angstroms of the grid layers for the oxygen atom.
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "Flo:capas"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+Therefore, a regular partitioning scheme results in an uneven distribution
+ of points inside groups.
+ Furthermore, points near nuclei share a great number of significative functions
+, in contrast to points located elsewhere.
+\end_layout
+
+\begin_layout Standard
+Taking into account the previous facts, a hybrid partitioning scheme is
+ proposed in this work.
+ First, a spherical group type is introduced.
+ These spheres are centered around each atom in order to group a given percentag
+e of its concentric grid shells.
+ Then, after excluding these already grouped points from the complete point
+ cloud, the traditional cube-based partitioning is applied.
+ With this hybrid partitioning, the cube sizes can be incremented, therefore
+ producing fewer groups.
+ The result of this partitioning scheme is a more homogeneous distribution
+ of points and a more appropriate grouping of points in terms of common
+ significative functions (see 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "Flo:cubosesferas"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figuras/flowchart.pdf
+	scale 50
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Schematic grid partition
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "Flo:cubosesferas"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Another aspect that was implemented in this work consists of a simpler selection
+ criteria for significative functions.
+ Independently of the shape of a group, the selection criteria determines
+ which functions are to be computed over the contained points.
+ A simple criterion can consist of determining, for each basis function,
+ if the value over that point is greater than a specific threshold 
+\begin_inset Formula $\delta$
+\end_inset
+
+.
+ However, this gives the partitioning and selection criterion a considerable
+ computational cost, since it has to be applied to all points of all groups.
+ Even further, the cost of computing a basis-function value is not negligible
+ since it involves calculating various Gaussian functions.
+\end_layout
+
+\begin_layout Standard
+The proposed selection criterion is based on finding a distance of influence
+ for each Gaussian function.
+ Outside this radius of influence the function has a negligible value (lower
+ than a parameter:
+\begin_inset Formula $e^{-\delta}$
+\end_inset
+
+ ).
+ The distance between the Gaussian function center and the group (not the
+ points in the group) is calculated and if the function has a radius of
+ influence larger than this distance the function is not used for this group.
+\end_layout
+
+\begin_layout Standard
+As defined, this condition simplifies the computation by not requiring the
+ actual function value on every point in the group.
+ It should be noted that the inclusion condition is only sufficient and
+ not necessary.
+ This means that basis functions not meeting the exclusion criteria could
+ still contribute a negligible value to the calculation, but the amount
+ of these cases will not dominate the resulting computational cost.
+\end_layout
+
+\begin_layout Standard
+As a consequence, with this selection method the computation time for an
+ iteration can be slightly higher than with a more rigorous method but the
+ grid generation time is considerable lower.
+\end_layout
+
+\begin_layout Subsection
+Computation kernels 
+\end_layout
+
+\begin_layout Standard
+To parallelize the exchange-correlation calculation, each of the previously
+ mentioned sub-steps is computed by a separate computational kernel, solving
+ each group of points in turn.
+\end_layout
+
+\begin_layout Standard
+During group partition, the point positions have to be computed in order
+ to determine in which group they will be contained.
+ After the partition is obtained, the list of signficative functions of
+ each group is computed.
+ These steps are computed in the CPU, since the corresponding execution
+ time is negligible in both cases.
+ Finally, the weights of the grid points are computed by a GPU kernel, since
+ this is the heaviest computational portion of the partitioning step.
+ This kernel maps one thread to one grid point.
+ Shared memory is used as a cache, to store the atom positions and other
+ relevant parameters.
+\end_layout
+
+\begin_layout Standard
+The second step involves computing the function values.
+ Again, one thread is mapped to a single grid point.
+ The necessary Gaussian parameters are first loaded into shared memory since
+ these do not depend on the grid point position.
+ The function values and their first and second derivatives are all stored
+ in GPU memory in order to be used during the remaining steps of the calculation
+ over this group.
+ Due to the size of the memory present in the actual GPUs permit the store
+ of a great part of this funcions values (or even all of them) in GPU memory
+ dimishing drasticaly the cost of this calulation.
+\end_layout
+
+\begin_layout Standard
+When the next group of points is computed the value of the function (and
+ its gradients and hessian) are recalulated only for the groups that dont
+ have this values alocated in memory.
+\end_layout
+
+\begin_layout Standard
+This approach falls between a fully caching algorithm, where all functions
+ are precalculated and stored for all groups, and a fully recalculating
+ algorithm, where none of the function values are stored but are computed
+ on demand during every iteration.
+ This latter approach corresponds to Yasuda's work
+\begin_inset CommandInset citation
+LatexCommand cite
+key "yasuda2008accelerating"
+
+\end_inset
+
+, where it was shown that the raw processing power of GPUs could be applied
+ in such way to gain significant performance improvements.
+ In our case, we took advantage of newer GPU architectures which feature
+ faster memory access by including a hierarchical cache, and increased memory
+ capacity.
+\end_layout
+
+\begin_layout Standard
+The next step of the algorithm consists in computing the density value,
+ the gradient and the hessian of the density.
+ This step are the most demandant.
+ For this reason a more detailed explanation of the algoritm are presented.
+\end_layout
+
+\begin_layout Standard
+The calulation performed for this kernel are for all points in the grid
+ (usin the equation 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:density matrix"
+
+\end_inset
+
+ and avoiding the similar expresion for the gradient and Hessian) 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \begin{equation}
+\rho(point)=\sum_{i=1}^{m}\chi_{i}(point)\sum_{j\geqq i}^{m}p_{ij}\chi_{j}(point)\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Were m is the number of significative functions, Pij is the reduced density
+ matrix, and Xi (Xj) are the value of the i (j) function on the point.
+\end_layout
+
+\begin_layout Standard
+At this point difernt parallelism strategies can be adopted.
+ First a parallelization based on points was tested, which means that each
+ thread computes the whole account for one point.
+ In this way the different threads share the density matrix but not the
+ values of the functions (and gradients etc.).
+ The performance of this approach was not sufficiently acceptable and was
+ discarded.
+\end_layout
+
+\begin_layout Standard
+Then another approach was implemented obtained beter results.
+ Each thread compute the second therm for a given i base function, this
+ treads are grouped in a optimal number named DENSITY_BLOCK_SIZE (DBS, for
+ the currents GPU are 64).
+ A bidimentional block grid was used, were the x dimention give the point
+ in the grid and in the y dimention the numbers of groups of size DBS needed
+ to compute all significative funtions.
+ A diferent kernel perform the sumation over the groups for a same point
+ and compute the cotribution for energy and gardients for that point.
+\end_layout
+
+\begin_layout Standard
+This approach have severals adventages, each value of function, who is shared
+ for all i en the same point, is readed only one time in coalesced form
+ and used DBS times through shared memory without bank conflicts.
+ The denstity matrix element who depends on both i and j are readed efficiently
+ from texture memory, the texture memory has a cache...
+ (ESTEBAN PONÉALGO ACÁ).
+ Then the same shared memory is used for the acumulation for al the values
+ in the DBS group.
+\end_layout
+
+\begin_layout Standard
+Then, another kernel compute the Kohn-Sham matrix, which is necessary during
+ convergence of the main SCF algorithm.
+ The parallelization strategy used for this kernel differs from the rest
+ in that a bi-dimensional grid of threads is used, where each thread with
+ id 
+\begin_inset Formula $t_{i,j}$
+\end_inset
+
+ is mapped to the 
+\begin_inset Formula $(i,j)$
+\end_inset
+
+ element of the matrix.
+ Since the matrix is symmetric, half of these threads would remain idle
+ in principle.
+ However, since the computation is actually subdivided in blocks of threads,
+ blocks completely contained in the lower-left triangle of the matrix are
+ discarded without computational cost.
+ For the blocks laying over the matrix diagonal, dummy computation is performed
+ for the unnecessary thread in order to minimize branch-divergence by using
+ conditional computation.
+ Since each thread will then be responsible of computing the product of
+ functions 
+\begin_inset Formula $i,j$
+\end_inset
+
+, it can be seen that each block of threads actually accesses the same range
+ of functions 
+\begin_inset Formula $i_{a..b}$
+\end_inset
+
+ and 
+\begin_inset Formula $j_{c..d}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Therefore, for each block of threads, shared memory is used to first load
+ these two ranges of function values, to be later accessed by all threads
+ in the block.
+ In fact, when caching these functions, values associated with several points
+ are loaded instead of just one.
+ In this way, the computation is performed for batches of points.
+\end_layout
+
+\begin_layout Standard
+Finally, to compute this matrix, the exchange-correlation potential is also
+ needed, therefore another kernel is used for this step.
+ Once convergence is reached, this second kernel computes the final exchange-cor
+relation energy since the calculations are mostly the same.
+ Once again, this kernel maps one thread to one grid point.
+ In this case, the necessary elements of the Kohn-Sham matrix are efficiently
+ loaded into shared memory in order to reduce memory accesses.
+ Since the whole matrix can't possibly fit into shared memory, the computation
+ is performed in batches of fixed size, loading sub-portions of the matrix
+ in turns.
+ This kernel computes the exchange and correlation potentials.
+ Since precision in this steps is of great importance (mainly for the GGA
+ based calculations), double-precision variables are used internally for
+ the two cases.
+ The rest of the GPU kernels can use single-precision variables without
+ significative impact on the final result.
+\end_layout
+
+\begin_layout Subsection
+The Coulomb Integrals.
+\end_layout
+
+\begin_layout Standard
+Another highly demanding part of the electronic-structure calculations correspon
+ds to the Coulomb integrals, which account for the repulsive interaction
+ between electrons (ERIs, third term in equation 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:DFT"
+
+\end_inset
+
+).
+ Previous works have proposed the use of GPU for computing these integrals
+\begin_inset CommandInset citation
+LatexCommand cite
+key "ufimtsev,yasuda_anterior"
+
+\end_inset
+
+.
+ However, in medium size systems, ERIs can be stored in RAM memory, making
+ the calculation time of this term well below of the exchange and correlation.
+ Therefore in our code this contribution is calculated by the CPU and stored
+ in main memory.
+\end_layout
+
+\begin_layout Standard
+Although this integral depends in principle on four centers, which would
+ imply a complexity of 
+\begin_inset Formula $O(n^{4}$
+\end_inset
+
+), it can be easily transformed into an 
+\begin_inset Formula $O(n^{2})$
+\end_inset
+
+ implementation.
+ In particular, we use two approaches in order to accelerate this calculation.
+ The first consists in re-writing the density as a linear combination of
+ Gaussian functions (instead of a product of Gaussians) by employing auxiliary
+ basis-functions to such effect.
+ This reduces an order of magnitude the complexity, while also reducing
+ the pre-exponential factor, given that the number of necessary functions
+ is much lower, in general, than the number of products associated with
+ the original basis.
+ Another approach to reduce the complexity without compromising the numerical
+ quality consists in employing the 
+\emph on
+Gaussian Product Theorem
+\emph default
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Stratmann1996213"
+
+\end_inset
+
+ for discarding negligible terms.
+ By employing both techniques a great reduction in the number of terms to
+ compute is obtained, thus allowing to precompute and store these in RAM
+ memory (for example, the Valinomycin (
+\begin_inset Formula $C_{54}N_{6}H_{90}O_{18}$
+\end_inset
+
+) with the 6-31G basis uses only 2 Gb of memory for this).
+ With these approximations the time consumed by this portion of the calculation
+ is drastically reduced resulting considerable less than the time involved
+ in the exchange-correlation integral computation, at least for systems
+ of interest in this work.
+\end_layout
+
+\begin_layout Subsection
+QM/MM implementation
+\end_layout
+
+\begin_layout Standard
+The DFT GPU based code developed in our group was coupled with the AMBER
+ 12 (and AMBER 11) molecular dynamics package.
+ The periodic boundary conditions were treated with a simple cut-off scheme.
+ Minor changes on the AMBER code were performed, in particular the possibility
+ of uncoupling the temperature control for the QM and MM subsystems.
+ 
+\color red
+The coupling was made as external program adpting the routines writen by
+ Andrea Goetz and Ross Walker.
+\end_layout
+
+\begin_layout Section
+Results
+\end_layout
+
+\begin_layout Standard
+Two main aspects are analyzed in the present implementation: performance
+ and numerical quality.
+ In terms of performance, the scalability of the exchange-correlation computatio
+n, the overall DFT iteration and grid generation times are analyzed.
+ Comparisons were performed between GPU and CPU implementations and also
+ with other relevant software.
+\end_layout
+
+\begin_layout Standard
+The CPU and GPU implementations were compared over three different systems
+ of moderate size : Taxol (
+\begin_inset Flex Chemistry
+status open
+
+\begin_layout Plain Layout
+C47H51NO14
+\end_layout
+
+\end_inset
+
+), Valinomycin (
+\begin_inset Flex Chemistry
+status open
+
+\begin_layout Plain Layout
+C54H90N6O18
+\end_layout
+
+\end_inset
+
+) and a heme group without any lateral chains, and bound to carbon monoxide
+ (
+\begin_inset Flex Chemistry
+status open
+
+\begin_layout Plain Layout
+FeC23N6H16CO
+\end_layout
+
+\end_inset
+
+), see 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "Flo:molecules"
+
+\end_inset
+
+.
+ The former two molecules are commonly used in performance measurements
+\begin_inset CommandInset citation
+LatexCommand cite
+key "yasuda2008accelerating,PetachemResults"
+
+\end_inset
+
+, and the latter is a typical example of a system that is studied with hybrid
+ techniques
+\begin_inset CommandInset citation
+LatexCommand cite
+key "capece2006heme,crespo2005theoretical"
+
+\end_inset
+
+.
+ For the Heme group we employs the DZVP basis set, while for the other two
+ systems we use a 6-31G basis set.
+ The auxiliary basis set is a DGA1 in all cases.
+ Computations were performed using the high-density grid (194 angular points
+ and 30 to 35 shells).
+ Optimal parameters were determined as in the previous tests.
+ The PBE
+\begin_inset CommandInset citation
+LatexCommand cite
+key "PBE"
+
+\end_inset
+
+ functional was adopted for all the calculations.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide true
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figuras/moleculas.pdf
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+a) Heme, b) Taxol, c) Valinomycin
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "Flo:molecules"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Technical details
+\end_layout
+
+\begin_layout Standard
+The graphical processor used for the tests is a NVIDIA GeForce 780GTX, implement
+ing the Kepler architecture and 3Gb of DDR5 graphical memory.
+ This GPU was installed on a desktop PC with an Intel Core i5-3330 processor
+ of 3.0Ghz and 8GB of RAM memory.
+\end_layout
+
+\begin_layout Standard
+The GPU code uses NVIDIA's computing interface named CUDA (Compute Unified
+ Device Architecture).
+ Version XX of both the toolkit (which includes the necessary run time libraries
+ and compiler) and GPU driver was used.
+\end_layout
+
+\begin_layout Standard
+
+\color red
+In order to obtain a fair analysis, the GPU implementation running on this
+ hardware was compared to a CPU-based implementation running on a HPC Dell
+ Cluster compute node, which features a dual-processor motherboard, with
+ two quad-core Intel Xeon E5410 CPUs running at 2.33Ghz, and 8Gb of RAM.
+ The CPU implementation was compiled using Intel's C/C++ compiler version
+ 11.
+\end_layout
+
+\begin_layout Standard
+Both implementations were specifically optimized for the corresponding hardware.
+ In the case of the CPU version, even while it consisted of a serial version,
+ Intel's 
+\family typewriter
+fvec
+\family default
+ library was used in order to produce SSE2 instructions for of the mathematical
+ computations.
+\end_layout
+
+\begin_layout Standard
+Also, on both implementations the parallelized version of Intel's MKL libraries
+ was used for certain steps that are always solved with the CPU (like matrix
+ diagonalization).
+ The usage of these libraries and the presence of eight CPU cores allowed
+ to reduce CPU computation time.
+ This implies that with the GPU version, the GPU accelerated steps conform
+ most of the total iteration time (between 60% and 80% approximately).
+\end_layout
+
+\begin_layout Subsection
+Numerical Quality
+\end_layout
+
+\begin_layout Standard
+Given that the performance of the computation depends on a number of parameters,
+ we first determined the exponent threshold 
+\begin_inset Formula $\delta$
+\end_inset
+
+ by fixing the other two (the size of the cubes and radius of spheres used
+ to partition the system) since they don't affect the overall numerical
+ quality in significative amounts.
+ To maximize both performance and numerical quality, the lowest 
+\begin_inset Formula $\delta$
+\end_inset
+
+ minimizing the error of the final energy is sougth.
+ For this purpose, we calculated the error in the energy of formation of
+ a cluster of 24 water molecules:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\Delta E=E((H_{2}O)_{24})-24\times E(H_{2}O)$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The value obtained without discarding any function and using only double
+ precision is taken as the reference.
+ In 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "energias"
+
+\end_inset
+
+ we show the error vs.
+ 
+\begin_inset Formula $\delta$
+\end_inset
+
+ for the CPU and GPU codes, and double and single precision.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figuras/energias.pdf
+	scale 30
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+% energias.pdf: 792x612 pixel, 72dpi, 27.94x21.59 cm, bb=0 0 792 612
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Error in the calculation of the energy of formation of 
+\begin_inset Formula $(H_{2}O)_{24}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "energias"
+
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "energias"
+
+\end_inset
+
+ it can be seen that both implementations with double precision are equivalent.
+ Applications that use single precision in certain parts of the calculation
+ achieve similar results, the differences with respect to the full double
+ precision results being less than 0,2 Kcal/mol
+\end_layout
+
+\begin_layout Standard
+With these tests a value of 
+\begin_inset Formula $\delta=8$
+\end_inset
+
+ was chosen, given that with higher values the difference in the final energy
+ is lower than 
+\begin_inset Formula $0.02$
+\end_inset
+
+ Kcal/mol in the systems analyzed.
+\end_layout
+
+\begin_layout Standard
+Once 
+\begin_inset Formula $\delta$
+\end_inset
+
+ was determined, for the performance analysis presented in later sections
+ of this work, we performed an exhaustive search of values for the remaining
+ two parameters (between a reasonably wide range), by measuring exchange-correla
+tion calculation time and storing the combination that resulting in the
+ lowest time.
+\end_layout
+
+\begin_layout Standard
+In the following the effect of the use of single precision over the total
+ energy is analyzed.
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "Flo:energy"
+
+\end_inset
+
+ shows the energy for some benchmark molecules with the GGA-PBE functional
+ calculated with the full double precision and the single-precision GPU
+ code.
+ The differences are in all cases under one kcal/mol, i.e., the 
+\begin_inset Quotes eld
+\end_inset
+
+chemical accuracy
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Tabular
+<lyxtabular version="3" rows="4" columns="4">
+<features>
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<row>
+<cell multicolumn="1" alignment="none" valignment="top" rightline="true" usebox="none" special="c">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+Heme DZVP
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+Taxol 6-31G
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+Valinomycin 6-31G
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+CPU (H)
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+-2874.690057
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+-2923.013871
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+-3788.328471
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+GPU (H)
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+-2874.690164
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+-2923.014294
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+-3788.328135
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+\begin_inset Formula $\Delta$
+\end_inset
+
+E(kcal/mol)
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size scriptsize
+0.07
+\series default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size scriptsize
+0.26
+\series default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size scriptsize
+0.21
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Energy comparison between full double an single precision implementations.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "Flo:energy"
+
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Scalability Analysis
+\end_layout
+
+\begin_layout Standard
+One important aspect to verify in the obtained implementation is the linear
+ scalability (with the number of atoms) of the algorithm in practice.
+ To this end, execution times for the exchange-correlation calculation were
+ measured as explained previously for both the GPU and CPU implementations.
+ This was done on systems consisting of a series of water clusters of growing
+ size (
+\begin_inset Formula $1-24$
+\end_inset
+
+ molecules) with a DZVP basis-set and an auxiliary DGA1 basis-set.
+ Three quadrature grids of different density were tested
+\begin_inset CommandInset citation
+LatexCommand cite
+key "lebedev1,lebedev2,becke"
+
+\end_inset
+
+: 50, 116 and 194 angular points, and 30 to 35 shells (depending on the
+ element).
+ The DFT-GGA functional PBE was used.
+\end_layout
+
+\begin_layout Standard
+In Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "Flo:scalability"
+
+\end_inset
+
+ we show, for the three grids available, the best times obtained for the
+ GPU version.
+ It can be seen that linearity is reached for systems of five to six water
+ molecules.
+ For these tests we also show (Fig.
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "Flo:acceleration"
+
+\end_inset
+
+) the acceleration factor between the GPU and CPU implementations while
+ performing these calculations.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figuras/escalabilidad.pdf
+	scale 60
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Scalability analysis: best times obtained for high density grids for the
+ water clusters systems
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "Flo:scalability"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename figuras/aceleracion.pdf
+	scale 60
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Acceleration
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "Flo:acceleration"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Scalability and acceleration analysis on the water cluster systems
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Performance
+\end_layout
+
+\begin_layout Subsubsection
+Group partitioning
+\end_layout
+
+\begin_layout Standard
+The use of a hybrid group partitioning scheme based on spheres surrounding
+ the atoms and cubes for the rest of the points have a positive impact on
+ performance.
+ In 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "esferas"
+
+\end_inset
+
+ we show the relative execution time vs.
+ the percentage of the points grouped in the spheres, for the heme, taxol
+ and Valinomycin.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename figuras/esferas.pdf
+	scale 30
+
+\end_inset
+
+ 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+% esferas.pdf: 792x612 pixel, 72dpi, 27.94x21.59 cm, bb=0 0 792 612
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Relative time for the exchange and correlation terms, vs percentage of the
+ points in the spherical groups.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "esferas"
+
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In all cases the impact is similar, and the execution time is decreased
+ by 40% without loss of accuracy, both in GPU and CPU implementation.
+ The best results are obtained using a value between 50 and 70 % of the
+ grid points for the spheres.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+GPU vs CPU
+\end_layout
+
+\begin_layout Standard
+In 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "Flo:GPUvsCPU-2-1"
+
+\end_inset
+
+ we show a comparison of execution times for an iteration of the SCF calculation
+ for the chosen molecules.
+ It can immediately be seen that exchange-correlation calculations (and
+ the corresponding Fock matrix elements) consumes the greatest part of the
+ total time.
+ It can also be observed that, although the CPU implementation isn't paralellize
+d (which implies a potentially greater performance), there is a great reduction
+ of the computation time by using GPUs, of more than then times in the computati
+on of the exchange-correlation term, and close to twenty times in the Grid
+ generation algorithm.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+wide true
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="5" columns="10">
+<features>
+<column alignment="left" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<row>
+<cell multicolumn="1" alignment="none" valignment="top" usebox="none" special="l">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell multicolumn="1" alignment="none" valignment="top" usebox="none" special="c">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size scriptsize
+Taxol
+\end_layout
+
+\end_inset
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell multicolumn="1" alignment="none" valignment="top" usebox="none" special="c">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size scriptsize
+Valinomycin
+\end_layout
+
+\end_inset
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell multicolumn="1" alignment="none" valignment="top" usebox="none" special="c">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size scriptsize
+Heme
+\end_layout
+
+\end_inset
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell multicolumn="2" alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+GPU [s]
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+CPU [s]
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+CPU/GPU
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+GPU [s]
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+CPU [s]
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+CPU/GPU
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+GPU [s]
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+CPU [s]
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+CPU/GPU
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+Grid generation
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+0.99
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+19.33
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size scriptsize
+19.53
+\series default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+1.63
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+30.78
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size scriptsize
+18.88
+\series default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+0.501
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+11.95
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size scriptsize
+23.85
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+SCF Iteration
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+3.70
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+30.3
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size scriptsize
+8.19
+\series default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+6.40
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+38.6
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size scriptsize
+6.03
+\series default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+4.29
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+34.28
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size scriptsize
+7.991
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+\begin_inset space \quad{}
+\end_inset
+
+Exchange-Correlation
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+2.41
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+28.83
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size scriptsize
+11.96
+\series default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+3.5
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+35.33
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size scriptsize
+10.09
+\series default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+3.38
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+33.55
+\size default
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\size scriptsize
+9.93
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+GPU/CPU performance comparison for selected systems
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\size scriptsize
+\begin_inset CommandInset label
+LatexCommand label
+name "Flo:GPUvsCPU-2-1"
+
+\end_inset
+
+
+\size default
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Comparison with existing implementations
+\end_layout
+
+\begin_layout Standard
+Comparing a new implementation to other existing ones can be tricky.
+ Although there are many electronic-structure implementations based on DFT,
+ there is a great diversity of methods and approximations by which the desired
+ result can be obtained.
+ Thus, in this section we compare the performance of our implementation
+ with others of similar characteristics in order to ascertain if it measures
+ up to the state of the art of the discipline.
+\end_layout
+
+\begin_layout Standard
+In the first place, we perform calculations with the widely used ORCA software
+\begin_inset CommandInset citation
+LatexCommand cite
+key "neese2007orca"
+
+\end_inset
+
+, which implements highly efficient DFT algorithms, including the use of
+ auxiliar basis for the ERIs calculation (but not memory allocation).
+ Another valid comparison can be made against the TeraChem software, a quantum-m
+echanics implementation fully targeted for GPUs.
+\end_layout
+
+\begin_layout Standard
+In 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "Flo:iteration"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "Flo:GPUvsOtros-grid"
+
+\end_inset
+
+ the times for grid generation and a single SCF iteration, respectively,
+ are compared using the same three systems as in the previous sections
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Given that TeraChem doesn't inform clearly the grid generation times, this
+ comparison is made against the ORCA software only.
+\end_layout
+
+\end_inset
+
+.
+ In all cases the same basis set and similar quadrature grids were used
+ across implementations.
+ However the calculation details may difer, for example Terachem recomputes
+ the ERIs every iteration and does not use any auxiliar density.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\size scriptsize
+\begin_inset Tabular
+<lyxtabular version="3" rows="5" columns="6">
+<features>
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+GPU
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+TeraChem
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+CPU
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+ORCA
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+ORCA
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(1x Fermi)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(8xC2050)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(serial)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(serial)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+(4 cores)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+Heme DZVP
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+4.29
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+-
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+34.28
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+42.56
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+13.4
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+Taxol 631G
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+3.70
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+2.00
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+30.3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+58.7
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+20.7
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+Valinomycin 631G
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+6.40
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" bottomline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+3.24
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" bottomline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+38.6
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" bottomline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+107.0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" bottomline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+35.14
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\size default
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Comparison of iteration times (seconds) with other implementations.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "Flo:iteration"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Float table
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="4" columns="3">
+<features>
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<row>
+<cell alignment="center" valignment="top" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size footnotesize
+GPU (1 
+\begin_inset Formula $\times$
+\end_inset
+
+ Fermi)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size footnotesize
+ORCA (4 cores)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size footnotesize
+Heme
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size footnotesize
+0.42
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size footnotesize
+19.3
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size footnotesize
+Taxol 6-31G
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size footnotesize
+0.99
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size footnotesize
+105.9
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size footnotesize
+Valinomycin 6-31G
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size footnotesize
+1.63
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size footnotesize
+240.2
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Comparison of grid initialization times (seconds) with other implementations.
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "Flo:GPUvsOtros-grid"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+QM/MM simulations
+\end_layout
+
+\begin_layout Standard
+The impact in the execution time on a QM/MM simulation was evaluated.
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "Flo:NMA2"
+
+\end_inset
+
+ shows the execution time for a system composed of a quantum N-methylacetamide
+ (NMA) in a periodic box of 550 TIP3P water molecules ( tutorial included
+ in a QM/MM of AMBER).
+ The basis used in this case is DZVP and the entries show the overall time
+ for 400 MD steps.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\size scriptsize
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="4">
+<features>
+<column alignment="left" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<row>
+<cell alignment="left" valignment="top" bottomline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+GPU 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+CPU 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+acceleration times
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+SCF Energy 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+1.53 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+19.40 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+12.8 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+QM Force 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+0.57 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+3.56 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+6.2 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+QM/MM Force 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+0.64 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+0.67 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+1 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+Total simulation time per step
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+2.78 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+23.9 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+8.63 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="none" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="none" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="none" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\size default
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Times per step in seconds in a QM/MM simulation of NMA in a box of 550 TIP3P
+ water molecules
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "Flo:NMA2"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+It can be seen that a significant acceleration is achieved due to the use
+ of GPU.
+ The Coulomb contribution (calculated in CPU) moderates the impact of the
+ acceleration in the 
+\begin_inset Quotes eld
+\end_inset
+
+QM force
+\begin_inset Quotes erd
+\end_inset
+
+.
+ The QM/MM force is calculated in CPU in all cases.
+\end_layout
+
+\begin_layout Standard
+Finally in table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "Flo:hemo"
+
+\end_inset
+
+ we show the times of a run of a heme protein, flavohemoglobin of E.
+ Coli.
+ In this case the QM system is composed of the heme moiety plus the distal
+ histidine and the CO molecule (48 quantum atoms and 9 link atoms) with
+ DZVP basis and approximately 40000 MM atoms (protein plus water).
+ These times are averaged over 500 steps.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\size scriptsize
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="2">
+<features>
+<column alignment="left" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<row>
+<cell alignment="left" valignment="top" bottomline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+GPU 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+SCF Energy 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+141.3
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+QM Force 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+39.9
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+QM/MM Force 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+51.7
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+Total simulation time per step
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\size scriptsize
+235.9
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="none" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\size default
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Times per step in seconds in a QM/MM simulation of flavohemoglobin of E.
+ Coli
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "Flo:hemo"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Discussion
+\end_layout
+
+\begin_layout Standard
+The aim of our work is to devise an electronic-structure calculation software
+ based on DFT as efficient as possible, in order to be applied to hybrid
+ molecular dynamic simulations.
+ In this sense, the particularities of these type of calculations were considere
+d.
+ Of these, two are of great importance: the size of the systems (which usually
+ consist of a moderate number of atoms, in the order of 100) and the nearness
+ to convergence of the wave function at the first SCF iteration (which minimizes
+ the number of iterations required).
+ This second issue also means that the initialization time (grid generation,
+ auxiliary density, etc.) has a greater relative weight with respect to single
+ points calculations.
+ The grid generation is almost 150 times faster than ORCA (see 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "Flo:GPUvsOtros-grid"
+
+\end_inset
+
+).
+ In the SCF iteration part we can conclude that the use of an hybrid partitionin
+g scheme reduces the computational cost by 40% and the use of GPU contributes
+ in a 10X factor in the same sense.
+ The comparison of the GPU code with TeraChem software also reveals the
+ good performance of our implementation, since while the iteration time
+ is less than twice slower, we employ only one GPU against the 8 GPUs server
+ used in TeraChem performance measurements.
+ An important clarification is that the iteration time involves others computati
+on terms (such as Coulomb repulsion integrals) so the comparison is only
+ partial.
+ Another pertinent comparison can be made with Yasuda's implementation.
+ In his work, the author obtains a total time for the density computation,
+ gradient and corresponding Fock matrix elements of the Taxol, of 61.4 seconds.
+ These same steps are performed in our implementation in 2.41 seconds, which
+ would give a 
+\begin_inset Formula $25X$
+\end_inset
+
+ speedup.
+ Even when taking into account the less powerful graphical hardware used
+ in Yasuda's analysis (GeForce 8800 GTX), it can still be concluded that
+ our implementation seems more efficient.
+ On the other hand, the QM/MM molecular dynamics present a very good performance
+ even in the CPU code.
+\end_layout
+
+\begin_layout Standard
+Taking these considerations into account and the results obtained we can
+ conclude that we successfully developed an implementation of the exchange-corre
+lation part of the DFT calculation that can measure up to the state of the
+ art of the field, and also presents optimal characteristics to be included
+ as part of a molecular dynamics simulation software.
+\end_layout
+
+\begin_layout Standard
+On the other hand, the computational cost associated with the calculation
+ of the interaction QM / MM and Coulomb forces are not negligible in the
+ accelerated code.
+ This raises the need to migrate these calculations to GPU.
+\end_layout
+
+\begin_layout Section*
+Acknowledgment.
+ 
+\end_layout
+
+\begin_layout Standard
+This work was partially supported by the University of Buenos Aires, and
+ the CONICET.
+ We thanks to A.
+ Roitberg for a generous allocation of computer time and Darío A.
+ Estrin for useful discussions.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+bibfiles "paper,tesis-biblio"
+options "achemso"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

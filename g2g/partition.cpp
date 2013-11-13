@@ -124,7 +124,22 @@ bool PointGroup<scalar_type>::is_significative(FunctionType type, double exponen
 }
 template<class scalar_type>
 bool PointGroup<scalar_type>::operator<(const PointGroup<scalar_type>& T) const{
-    return number_of_points < T.number_of_points;
+    int my_cost = number_of_points * total_functions();
+    int T_cost = T.number_of_points * T.total_functions();
+    return my_cost < T_cost;
+}
+template<class scalar_type>
+size_t PointGroup<scalar_type>::size_in_gpu() const
+{
+    uint total_cost=0;
+    uint single_matrix_cost = COALESCED_DIMENSION(number_of_points) * total_functions();
+
+    total_cost += single_matrix_cost;       //1 scalar_type functions
+    if (fortran_vars.do_forces || fortran_vars.gga) 
+      total_cost += (single_matrix_cost*4); //4 vec_type gradient 
+    if (fortran_vars.gga) 
+      total_cost+= (single_matrix_cost*8);  //2*4 vec_type hessian
+    return total_cost*sizeof(scalar_type);  // size in bytes according to precision
 }
 /**********************
  * Sphere

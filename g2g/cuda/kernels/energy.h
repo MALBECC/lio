@@ -22,33 +22,27 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
     uint min_i = blockIdx.y*DENSITY_BLOCK_SIZE; //Para invertir el loop de bj
 
     scalar_type partial_density (0.0f);
-    vec_type<scalar_type,WIDTH> dxyz, dd1, dd2;
-    dxyz=dd1=dd2 =vec_type<scalar_type,4>(0.0f,0.0f,0.0f,0.0f);
-
-    if (!lda)
-    {
-        dxyz = dd1 = dd2 = vec_type<scalar_type,4>(0.0f,0.0f,0.0f,0.0f);
-    }
-
+    vec_type<scalar_type,3> dxyz, dd1, dd2;
+    dxyz=dd1=dd2 =vec_type<scalar_type,3>(0.0f,0.0f,0.0f);
     bool valid_thread = ( i < m );
 
 
     scalar_type w = 0.0f;
-    vec_type<scalar_type,4> w3, ww1, ww2;
+    vec_type<scalar_type,3> w3, ww1, ww2;
     if (!lda)
     {
-        w3 = ww1 = ww2 = vec_type<scalar_type,4>(0.0f,0.0f,0.0f,0.0f);
+        w3 = ww1 = ww2 = vec_type<scalar_type,3>(0.0f,0.0f,0.0f);
     }
 
     scalar_type Fi;
-    vec_type<scalar_type,4> Fgi, Fhi1, Fhi2;
+    vec_type<scalar_type,3> Fgi, Fhi1, Fhi2;
 
     int position = threadIdx.x;
 
     __shared__ scalar_type fj_sh[DENSITY_BLOCK_SIZE];
-    __shared__ vec_type<scalar_type, WIDTH> fgj_sh [DENSITY_BLOCK_SIZE];
-    __shared__ vec_type<scalar_type, WIDTH> fh1j_sh [DENSITY_BLOCK_SIZE];
-    __shared__ vec_type<scalar_type, WIDTH> fh2j_sh [DENSITY_BLOCK_SIZE];
+    __shared__ vec_type<scalar_type, 3> fgj_sh [DENSITY_BLOCK_SIZE];
+    __shared__ vec_type<scalar_type, 3> fh1j_sh [DENSITY_BLOCK_SIZE];
+    __shared__ vec_type<scalar_type, 3> fh2j_sh [DENSITY_BLOCK_SIZE];
 
     for (int bj = min_i; bj >= 0; bj -= DENSITY_BLOCK_SIZE)
     {
@@ -61,10 +55,10 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
             fj_sh[position] = function_values[(m) * point + (bj+position)];
             if(!lda)
             {
-                fgj_sh[position] = gradient_values[(m) * point + (bj+position)];
+                fgj_sh[position] = vec_type<scalar_type,3>(gradient_values[(m) * point + (bj+position)]);
 
-                fh1j_sh[position] = hessian_values[(m)*2 * point +(2 * (bj + position) + 0)];
-                fh2j_sh[position] = hessian_values[(m)*2 * point +(2 * (bj + position) + 1)];
+                fh1j_sh[position] = vec_type<scalar_type,3>(hessian_values[(m)*2 * point +(2 * (bj + position) + 0)]);
+                fh2j_sh[position] = vec_type<scalar_type,3>(hessian_values[(m)*2 * point +(2 * (bj + position) + 1)]);
             }
         }
 
@@ -109,10 +103,10 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
             dxyz += Fgi * w + w3 * Fi;
             dd1 += Fgi * w3 * 2.0f + Fhi1 * w + ww1 * Fi;
 
-            vec_type<scalar_type,4> FgXXY(Fgi.x, Fgi.x, Fgi.y, 0.0f);
-            vec_type<scalar_type,4> w3YZZ(w3.y, w3.z, w3.z, 0.0f);
-            vec_type<scalar_type,4> FgiYZZ(Fgi.y, Fgi.z, Fgi.z, 0.0f);
-            vec_type<scalar_type,4> w3XXY(w3.x, w3.x, w3.y, 0.0f);
+            vec_type<scalar_type,3> FgXXY(Fgi.x, Fgi.x, Fgi.y);
+            vec_type<scalar_type,3> w3YZZ(w3.y, w3.z, w3.z);
+            vec_type<scalar_type,3> FgiYZZ(Fgi.y, Fgi.z, Fgi.z);
+            vec_type<scalar_type,3> w3XXY(w3.x, w3.x, w3.y);
 
             dd2 += FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi;
         }
@@ -131,9 +125,9 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
     else
     {
         fj_sh[position]=scalar_type(0.0f);
-        fgj_sh[position]=vec_type<scalar_type,4>(0.0f,0.0f,0.0f,0.0f);
-        fh1j_sh[position]=vec_type<scalar_type,4>(0.0f,0.0f,0.0f,0.0f);
-        fh2j_sh[position]=vec_type<scalar_type,4>(0.0f,0.0f,0.0f,0.0f);
+        fgj_sh[position]=vec_type<scalar_type,3>(0.0f,0.0f,0.0f);
+        fh1j_sh[position]=vec_type<scalar_type,3>(0.0f,0.0f,0.0f);
+        fh2j_sh[position]=vec_type<scalar_type,3>(0.0f,0.0f,0.0f);
     }
     __syncthreads();
 
@@ -152,9 +146,9 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
     {
         const int myPoint = blockIdx.y*points + blockIdx.x;
         out_partial_density[myPoint] = fj_sh[position];
-        out_dxyz[myPoint]            = fgj_sh[position];
-        out_dd1[myPoint]             = fh1j_sh[position];
-        out_dd2[myPoint]             = fh2j_sh[position];
+        out_dxyz[myPoint]            = vec_type<scalar_type,4>(fgj_sh[position]);
+        out_dd1[myPoint]             = vec_type<scalar_type,4>(fh1j_sh[position]);
+        out_dd2[myPoint]             = vec_type<scalar_type,4>(fh2j_sh[position]);
     }
 }
 

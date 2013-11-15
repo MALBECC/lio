@@ -65,6 +65,7 @@ namespace G2G {
       // operator double2 () { return (double2)(*this); }
   };
   
+#if CPU_KERNELS
   template<> class vec_type<double, 3> : public double3 {
     public:
       __device__ __host__ vec_type(void) {}
@@ -74,7 +75,24 @@ namespace G2G {
       __device__ __host__ vec_type(double _x, double _y, double _z) { double3::x = _x; double3::y = _y; double3::z = _z; }
       typedef double3 base_type;      
       
-      __device__ __host__ double length2(void) { return double3::x * double3::x + double3::y * double3::y + double3::z * double3::z; }
+      __device__ __host__ double length2(void) { return double3::x * double3::x + double3::y * double3::y + double3::z * double3::z; }    
+      __device__ __host__ inline double x(void) const { return double3::x; }
+      __device__ __host__ inline double y(void) const { return double3::y; }
+      __device__ __host__ inline double z(void) const { return double3::z; }
+      //operator double3 () { return (double3)(*this); }
+  };
+#else
+
+  template<> class vec_type<double, 3> : public double3 {
+    public:
+      __device__ __host__ vec_type(void) {}
+      __device__ __host__ vec_type(const double3& other) : double3(other) { }
+      __device__ __host__ explicit vec_type(const float3& other) { double3::x = other.x; double3::y = other.y; double3::z = other.z; }
+      __device__ __host__ explicit vec_type(const double4& other) { double3::x = other.x; double3::y = other.y; double3::z = other.z; }
+      __device__ __host__ vec_type(double _x, double _y, double _z) { double3::x = _x; double3::y = _y; double3::z = _z; }
+      typedef double3 base_type;      
+      
+      __device__ __host__ double length2(void) { return double3::x * double3::x + double3::y * double3::y + double3::z * double3::z; }    
       /*
       __device__ __host__ inline double x(void) const { return double3::x; }
       __device__ __host__ inline double y(void) const { return double3::y; }
@@ -82,7 +100,7 @@ namespace G2G {
       */
       //operator double3 () { return (double3)(*this); }
   };
-  
+#endif  
   template<> class vec_type<double, 4> : public double4 {
     public:
       __device__ __host__ vec_type(void) {}      

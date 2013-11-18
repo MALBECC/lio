@@ -83,6 +83,7 @@ class PointGroup {
 
     bool is_significative(FunctionType, double exponent, double coeff, double d2);
     bool operator<(const PointGroup<scalar_type>& T) const;
+    size_t size_in_gpu() const;
 
     virtual bool is_sphere(void) = 0;
     virtual bool is_cube(void) = 0;    
@@ -128,9 +129,15 @@ class Partition {
     void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr)
     {
       double cubes_energy = 0, spheres_energy = 0;
-      cubes.sort();
+
+      long long int accumulated_size=0;
       for (std::list<Cube*>::const_iterator it = cubes.begin(); it != cubes.end(); ++it)
+      {
         (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy, fort_forces_ptr);
+        accumulated_size+=(*it)->size_in_gpu();
+//        printf("\t\t\t\t So far %luKb\n",accumulated_size/1024);
+      }
+
       for (std::list<Sphere*>::const_iterator it = spheres.begin(); it != spheres.end(); ++it)
         (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, spheres_energy, fort_forces_ptr);
         

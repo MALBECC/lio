@@ -70,6 +70,7 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
 
   uint group_m = total_functions();
   
+  timers.density.start_and_sync();
   /** Load points from group **/
   HostMatrix<scalar_type> point_weights_cpu(number_of_points, 1);
 
@@ -83,7 +84,7 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   /* compute density/factors */
  /** New code (por funciones) **/
 
-  const int block_height= divUp(group_m,DENSITY_BLOCK_SIZE);
+  const int block_height= divUp(group_m,2*DENSITY_BLOCK_SIZE);
 
   threadBlock = dim3(DENSITY_BLOCK_SIZE,1,1); // Hay que asegurarse que la cantidad de funciones este en rango
   threadGrid = dim3(number_of_points,block_height,1);
@@ -102,7 +103,6 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
    ********************************************************************** 
    */
 
-  timers.density.start_and_sync();
 
   CudaMatrix<scalar_type>   function_values_transposed_gpu;  
   CudaMatrix<vec_type<scalar_type,4> > gradient_values_transposed_gpu;
@@ -116,9 +116,8 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   if (fortran_vars.gga) 
       hessian_values_transposed_gpu.resize((group_m) * 2, COALESCED_DIMENSION(number_of_points));
 
-  #define BLOCK_DIM 16
+  #define BLOCK_DIM 16 
   dim3 transpose_grid(transposed_width / BLOCK_DIM, divUp((group_m),BLOCK_DIM));
-                                                    //COALESCED_DIMENSION(number_of_points) / BLOCK_DIM, 1);
   dim3 transpose_threads(BLOCK_DIM, BLOCK_DIM, 1);
 
   transpose<<<transpose_grid, transpose_threads>>> (function_values_transposed_gpu.data, function_values.data,  COALESCED_DIMENSION(number_of_points),group_m   );
@@ -246,12 +245,12 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     */
     cudaUnbindTexture(rmm_input_gpu_tex);
 
-  timers.density.pause_and_sync();
 
     function_values_transposed_gpu.deallocate();
     gradient_values_transposed_gpu.deallocate();
     hessian_values_transposed_gpu.deallocate();
 
+  timers.density.pause_and_sync();
 
    dim3 threads;
   /* compute forces */

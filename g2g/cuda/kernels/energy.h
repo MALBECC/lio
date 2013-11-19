@@ -17,25 +17,33 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
 {
 
     uint point = blockIdx.x;
-    uint i     = threadIdx.x + blockIdx.y * DENSITY_BLOCK_SIZE;
-    
-    uint min_i = blockIdx.y*DENSITY_BLOCK_SIZE; //Para invertir el loop de bj
+
+    uint i     = threadIdx.x + blockIdx.y * 2 * DENSITY_BLOCK_SIZE;
+
+    uint i2    = i + DENSITY_BLOCK_SIZE;
+
+    uint min_i = blockIdx.y * 2 * DENSITY_BLOCK_SIZE + DENSITY_BLOCK_SIZE; //Para invertir el loop de bj
 
     scalar_type partial_density (0.0f);
+
     vec_type<scalar_type,3> dxyz, dd1, dd2;
     dxyz=dd1=dd2 =vec_type<scalar_type,3>(0.0f,0.0f,0.0f);
-    bool valid_thread = ( i < m );
 
+    bool valid_thread = ( i < m );
+    bool valid_thread2 = (i2 < m);
 
     scalar_type w = 0.0f;
+    scalar_type w2 = 0.0f;
     vec_type<scalar_type,3> w3, ww1, ww2;
+    vec_type<scalar_type,3> w32, ww12, ww22;
     if (!lda)
     {
         w3 = ww1 = ww2 = vec_type<scalar_type,3>(0.0f,0.0f,0.0f);
+        w32 = ww12 = ww22 = vec_type<scalar_type,3>(0.0f,0.0f,0.0f);
     }
 
-    scalar_type Fi;
-    vec_type<scalar_type,3> Fgi, Fhi1, Fhi2;
+    scalar_type Fi, Fi2;
+    vec_type<scalar_type,3> Fgi, Fhi1, Fhi2, Fgi2, Fhi12, Fhi22;
 
     int position = threadIdx.x;
 
@@ -44,7 +52,38 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
     __shared__ vec_type<scalar_type, 3> fh1j_sh [DENSITY_BLOCK_SIZE];
     __shared__ vec_type<scalar_type, 3> fh2j_sh [DENSITY_BLOCK_SIZE];
 
-    for (int bj = min_i; bj >= 0; bj -= DENSITY_BLOCK_SIZE)
+     uint min_i2=min_i;
+
+      if(min_i>=m) 
+     {
+          min_i2=min_i-DENSITY_BLOCK_SIZE ;
+     }
+
+   if(valid_thread2)
+{
+     Fi2 = function_values[(m) * point + i2];
+            if(!lda)
+            {
+                Fgi2 = vec_type<scalar_type,3>(gradient_values[(m) * point + i2]);
+
+                Fhi12 = vec_type<scalar_type,3>(hessian_values[(m)*2 * point +(2 * i2 + 0)]);
+                Fhi22 = vec_type<scalar_type,3>(hessian_values[(m)*2 * point +(2 * i2 + 1)]);
+            }
+}
+   if(valid_thread)
+{
+     Fi = function_values[(m) * point + i];
+            if(!lda)
+            {
+                Fgi = vec_type<scalar_type,3>(gradient_values[(m) * point + i]);
+
+                Fhi1 = vec_type<scalar_type,3>(hessian_values[(m)*2 * point +(2 * i + 0)]);
+                Fhi2 = vec_type<scalar_type,3>(hessian_values[(m)*2 * point +(2 * i + 1)]);
+            }
+}
+
+
+    for (int bj = min_i2; bj >= 0; bj -= DENSITY_BLOCK_SIZE)
     {
         //Density deberia ser GET_DENSITY_BLOCK_SIZE
 
@@ -64,7 +103,7 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
 
 
         __syncthreads();
-        if(bj==min_i)
+/*        if(bj==min_i-DENSITY_BLOCK_SIZE)
         {
             Fi=fj_sh[position];
             if(!lda)
@@ -75,20 +114,53 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
             }
         }
 
+      if(valid_thread2)
+        {
+        if(bj==min_i)
+        {
+            Fi2=fj_sh[position];
+            if(!lda)
+            {
+                Fgi2 = fgj_sh[position];
+                Fhi12 = fh1j_sh[position] ;
+                Fhi22 = fh2j_sh[position] ;
+            }
+        }
+       }
+*/
+
         if(valid_thread)
         {
-            for(int j=0; j<DENSITY_BLOCK_SIZE /*&& bj+j <= i*/; j++)
+            for(int j=0; j<DENSITY_BLOCK_SIZE; j++)
             {
-              
+                 scalar_type fjreg=fj_sh[j];
+
+           //     if(!lda)
+             //     {
+
+                vec_type<scalar_type, 3> fgjreg = fgj_sh[j];
+                vec_type<scalar_type, 3> fh1jreg = fh1j_sh[j];
+                vec_type<scalar_type, 3> fh2jreg = fh2j_sh[j];
+            // } 
                 //fetch es una macro para tex2D
                 scalar_type rdm_this_thread = fetch(rmm_input_gpu_tex, (float)(bj+j), (float)i);
-
-                w += rdm_this_thread * fj_sh[j];
+          if(valid_thread2)
+               {
+                scalar_type rdm_this_thread2 = fetch(rmm_input_gpu_tex, (float)(bj+j), (float)i2);
+                w2 += rdm_this_thread2 * fjreg;
+                if(!lda)
+                  {
+                    w32 += fgjreg* rdm_this_thread2 ;
+                    ww12 += fh1jreg * rdm_this_thread2;
+                    ww22 += fh2jreg * rdm_this_thread2;
+                }
+               }
+                w += rdm_this_thread * fjreg;
                 if(!lda)
                 {
-                    w3 += fgj_sh[j]* rdm_this_thread ;
-                    ww1 += fh1j_sh[j] * rdm_this_thread;
-                    ww2 += fh2j_sh[j] * rdm_this_thread;
+                    w3 += fgjreg* rdm_this_thread ;
+                    ww1 += fh1jreg * rdm_this_thread;
+                    ww2 += fh2jreg * rdm_this_thread;
                 }
 
             }
@@ -100,15 +172,32 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
         //TODO: Insertar aca funcion que convierte <,4> a <,3>
         if (!lda)
         {
-            dxyz += Fgi * w + w3 * Fi;
-            dd1 += Fgi * w3 * 2.0f + Fhi1 * w + ww1 * Fi;
+            dxyz = Fgi * w + w3 * Fi;
+            dd1 = Fgi * w3 * 2.0f + Fhi1 * w + ww1 * Fi;
 
             vec_type<scalar_type,3> FgXXY(Fgi.x, Fgi.x, Fgi.y);
             vec_type<scalar_type,3> w3YZZ(w3.y, w3.z, w3.z);
             vec_type<scalar_type,3> FgiYZZ(Fgi.y, Fgi.z, Fgi.z);
             vec_type<scalar_type,3> w3XXY(w3.x, w3.x, w3.y);
 
-            dd2 += FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi;
+            dd2 = FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi;
+        }
+    }
+    if(valid_thread2)
+    {
+        partial_density += Fi2 * w2;
+        //TODO: Insertar aca funcion que convierte <,4> a <,3>
+        if (!lda)
+        {
+            dxyz += Fgi2 * w2 + w32 * Fi2;
+            dd1 += Fgi2 * w32 * 2.0f + Fhi12 * w2 + ww12 * Fi2;
+
+            vec_type<scalar_type,3> FgXXY(Fgi2.x, Fgi2.x, Fgi2.y);
+            vec_type<scalar_type,3> w3YZZ(w32.y, w32.z, w32.z);
+            vec_type<scalar_type,3> FgiYZZ(Fgi2.y, Fgi2.z, Fgi2.z);
+            vec_type<scalar_type,3> w3XXY(w32.x, w32.x, w32.y);
+
+            dd2 += FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi22 * w2 + ww22 * Fi2;
         }
     }
 

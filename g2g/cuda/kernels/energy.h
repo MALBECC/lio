@@ -4,7 +4,7 @@ static __inline__ __device__ double fetch_double(texture<int2, 2> t, float x, fl
 {
     int2 v = tex2D(t,x,y);
     return __hiloint2double(v.y, v.x);
-}   
+}
 #define fetch(t,x,y) fetch_double(t,x,y)
 #else
 #define fetch(t,x,y) tex2D(t,x,y)
@@ -52,35 +52,36 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
     __shared__ vec_type<scalar_type, 3> fh1j_sh [DENSITY_BLOCK_SIZE];
     __shared__ vec_type<scalar_type, 3> fh2j_sh [DENSITY_BLOCK_SIZE];
 
-     uint min_i2=min_i;
+    uint min_i2=min_i;
 
-      if(min_i>=m) 
-     {
-          min_i2=min_i-DENSITY_BLOCK_SIZE ;
-     }
+    //Si nos vamos a pasar del bloque con el segundo puntero, hacemos que haga la misma cuenta
+    if(min_i>m)
+    {
+        min_i2=min_i-DENSITY_BLOCK_SIZE ;
+    }
 
-   if(valid_thread2)
-{
-     Fi2 = function_values[(m) * point + i2];
-            if(!lda)
-            {
-                Fgi2 = vec_type<scalar_type,3>(gradient_values[(m) * point + i2]);
+    if(valid_thread2)
+    {
+        Fi2 = function_values[(m) * point + i2];
+        if(!lda)
+        {
+            Fgi2 = vec_type<scalar_type,3>(gradient_values[(m) * point + i2]);
 
-                Fhi12 = vec_type<scalar_type,3>(hessian_values[(m)*2 * point +(2 * i2 + 0)]);
-                Fhi22 = vec_type<scalar_type,3>(hessian_values[(m)*2 * point +(2 * i2 + 1)]);
-            }
-}
-   if(valid_thread)
-{
-     Fi = function_values[(m) * point + i];
-            if(!lda)
-            {
-                Fgi = vec_type<scalar_type,3>(gradient_values[(m) * point + i]);
+            Fhi12 = vec_type<scalar_type,3>(hessian_values[(m)*2 * point +(2 * i2 + 0)]);
+            Fhi22 = vec_type<scalar_type,3>(hessian_values[(m)*2 * point +(2 * i2 + 1)]);
+        }
+    }
+    if(valid_thread)
+    {
+        Fi = function_values[(m) * point + i];
+        if(!lda)
+        {
+            Fgi = vec_type<scalar_type,3>(gradient_values[(m) * point + i]);
 
-                Fhi1 = vec_type<scalar_type,3>(hessian_values[(m)*2 * point +(2 * i + 0)]);
-                Fhi2 = vec_type<scalar_type,3>(hessian_values[(m)*2 * point +(2 * i + 1)]);
-            }
-}
+            Fhi1 = vec_type<scalar_type,3>(hessian_values[(m)*2 * point +(2 * i + 0)]);
+            Fhi2 = vec_type<scalar_type,3>(hessian_values[(m)*2 * point +(2 * i + 1)]);
+        }
+    }
 
 
     for (int bj = min_i2; bj >= 0; bj -= DENSITY_BLOCK_SIZE)
@@ -103,58 +104,58 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
 
 
         __syncthreads();
-/*        if(bj==min_i-DENSITY_BLOCK_SIZE)
-        {
-            Fi=fj_sh[position];
-            if(!lda)
-            {
-                Fgi = fgj_sh[position];
-                Fhi1 = fh1j_sh[position] ;
-                Fhi2 = fh2j_sh[position] ;
-            }
-        }
+        /*        if(bj==min_i-DENSITY_BLOCK_SIZE)
+                {
+                    Fi=fj_sh[position];
+                    if(!lda)
+                    {
+                        Fgi = fgj_sh[position];
+                        Fhi1 = fh1j_sh[position] ;
+                        Fhi2 = fh2j_sh[position] ;
+                    }
+                }
 
-      if(valid_thread2)
-        {
-        if(bj==min_i)
-        {
-            Fi2=fj_sh[position];
-            if(!lda)
-            {
-                Fgi2 = fgj_sh[position];
-                Fhi12 = fh1j_sh[position] ;
-                Fhi22 = fh2j_sh[position] ;
-            }
-        }
-       }
-*/
+              if(valid_thread2)
+                {
+                if(bj==min_i)
+                {
+                    Fi2=fj_sh[position];
+                    if(!lda)
+                    {
+                        Fgi2 = fgj_sh[position];
+                        Fhi12 = fh1j_sh[position] ;
+                        Fhi22 = fh2j_sh[position] ;
+                    }
+                }
+               }
+        */
 
         if(valid_thread)
         {
             for(int j=0; j<DENSITY_BLOCK_SIZE; j++)
             {
-                 scalar_type fjreg=fj_sh[j];
+                scalar_type fjreg=fj_sh[j];
 
-           //     if(!lda)
-             //     {
+                //     if(!lda)
+                //     {
 
                 vec_type<scalar_type, 3> fgjreg = fgj_sh[j];
                 vec_type<scalar_type, 3> fh1jreg = fh1j_sh[j];
                 vec_type<scalar_type, 3> fh2jreg = fh2j_sh[j];
-            // } 
+                // }
                 //fetch es una macro para tex2D
                 scalar_type rdm_this_thread = fetch(rmm_input_gpu_tex, (float)(bj+j), (float)i);
-          if(valid_thread2)
-               {
-                scalar_type rdm_this_thread2 = fetch(rmm_input_gpu_tex, (float)(bj+j), (float)i2);
-                w2 += rdm_this_thread2 * fjreg;
-                if(!lda)
-                  {
-                    w32 += fgjreg* rdm_this_thread2 ;
-                    ww12 += fh1jreg * rdm_this_thread2;
-                    ww22 += fh2jreg * rdm_this_thread2;
+                if(valid_thread2)
+                {
+                    scalar_type rdm_this_thread2 = fetch(rmm_input_gpu_tex, (float)(bj+j), (float)i2);
+                    w2 += rdm_this_thread2 * fjreg;
+                    if(!lda)
+                    {
+                        w32 += fgjreg* rdm_this_thread2 ;
+                        ww12 += fh1jreg * rdm_this_thread2;
+                        ww22 += fh2jreg * rdm_this_thread2;
+                    }
                 }
-               }
                 w += rdm_this_thread * fjreg;
                 if(!lda)
                 {
@@ -169,7 +170,6 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
     if(valid_thread)
     {
         partial_density = Fi * w;
-        //TODO: Insertar aca funcion que convierte <,4> a <,3>
         if (!lda)
         {
             dxyz = Fgi * w + w3 * Fi;
@@ -186,7 +186,6 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
     if(valid_thread2)
     {
         partial_density += Fi2 * w2;
-        //TODO: Insertar aca funcion que convierte <,4> a <,3>
         if (!lda)
         {
             dxyz += Fgi2 * w2 + w32 * Fi2;
@@ -220,7 +219,7 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
     }
     __syncthreads();
 
-    for(int j=2;  j <= DENSITY_BLOCK_SIZE ; j=j*2) // 
+    for(int j=2;  j <= DENSITY_BLOCK_SIZE ; j=j*2) //
     {
         int index=position + DENSITY_BLOCK_SIZE/j;
         if( position < DENSITY_BLOCK_SIZE/j)

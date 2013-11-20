@@ -11,6 +11,7 @@
 #include "../timer.h"
 #include "../partition.h"
 #include "../scalar_vector_types.h"
+#include "../global_memory_pool.h"
 
 namespace G2G {
 #if FULL_DOUBLE
@@ -95,8 +96,7 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   CudaMatrix<vec_type<scalar_type,4> > dxyz_gpu;
   CudaMatrix<vec_type<scalar_type,4> > dd1_gpu;
   CudaMatrix<vec_type<scalar_type,4> > dd2_gpu;
-
-   
+  
   /*
    ********************************************************************** 
    * Transposiciones de matrices para la coalescencia mejorada en density
@@ -186,9 +186,6 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   cudaBindTexture2D(&offset, rmm_input_gpu_tex, devPtr, rmm_input_gpu_tex.channelDesc, rmm_input_cpu.width, row_height, pPitch);
 */
   rmm_input_gpu_tex.normalized = false;
-
-
-
 
   if (compute_energy) {
     CudaMatrix<scalar_type> energy_gpu(number_of_points);
@@ -306,10 +303,12 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   timers.rmm.pause_and_sync();
 
   /* clear functions */
-  function_values.deallocate();
-  gradient_values.deallocate();
-  hessian_values.deallocate();
-
+  if(!(this->inGlobal))
+  {
+        function_values.deallocate();
+        gradient_values.deallocate();
+        hessian_values.deallocate();
+  }
   //uint free_memory, total_memory;
   //cudaGetMemoryInfo(free_memory, total_memory);
   //cout << "Maximum used memory: " << (double)max_used_memory / (1024 * 1024) << "MB (" << ((double)max_used_memory / total_memory) * 100.0 << "%)" << endl;
@@ -323,6 +322,14 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
 template<class scalar_type>
 void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
 {
+  if(this->inGlobal) //Ya las tengo en memoria? entonces salgo porque ya estan las 3 calculadas
+  {
+    return;
+  }
+  if(0==globalMemoryPool::tryAlloc(this->size_in_gpu())) //1 si hubo error, 0 si pude alocar
+  {
+    this->inGlobal=true;
+  }
   CudaMatrix<vec_type4> points_position_gpu;
   CudaMatrix<vec_type2> factor_ac_gpu;
   CudaMatrixUInt nuc_gpu;

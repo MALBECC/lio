@@ -347,6 +347,7 @@ void Partition::regenerate(void)
 
     spheres=sorted_spheres;
 
+    globalMemoryPool::init();
     cout << "Grilla final: " << puntos_finales << " puntos (recordar que los de peso 0 se tiran), " << funciones_finales << " funciones" << endl ;
     cout << "Costo: " << costo << endl;
     cout << "NCOxM: " << nco_m << " MxM: " << m_m << endl;

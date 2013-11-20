@@ -9,6 +9,8 @@
 #include "scalar_vector_types.h"
 #include "timer.h"
 
+#include "global_memory_pool.h"
+
 namespace G2G {
   struct Timers {
     Timer total, ciclos, rmm, density, forces, resto, pot, functions, density_derivs;
@@ -33,8 +35,8 @@ enum FunctionType { FUNCTION_S = 1, FUNCTION_P = 3, FUNCTION_D = 6 };
 template<class scalar_type>
 class PointGroup {
   public:
-    PointGroup(void) : number_of_points(0), s_functions(0), p_functions(0), d_functions(0) {  }
-    virtual ~PointGroup(void) { }
+    PointGroup(void) : number_of_points(0), s_functions(0), p_functions(0), d_functions(0), inGlobal(false) {  }
+    virtual ~PointGroup(void);
     std::list<Point> points;
     uint number_of_points;
     uint s_functions, p_functions, d_functions;
@@ -87,6 +89,9 @@ class PointGroup {
 
     virtual bool is_sphere(void) = 0;
     virtual bool is_cube(void) = 0;    
+
+    bool inGlobal;
+
 };
 
 #if FULL_DOUBLE

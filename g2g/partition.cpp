@@ -10,6 +10,7 @@
 #include "matrix.h"
 #include "partition.h"
 #include "timer.h"
+#include "global_memory_pool.h"
 using namespace std;
 
 namespace G2G {
@@ -140,6 +141,21 @@ size_t PointGroup<scalar_type>::size_in_gpu() const
     if (fortran_vars.gga) 
       total_cost+= (single_matrix_cost*8);  //2*4 vec_type hessian
     return total_cost*sizeof(scalar_type);  // size in bytes according to precision
+}
+template<class scalar_type>
+PointGroup<scalar_type>::~PointGroup<scalar_type>()
+{
+
+#if !CPU_KERNELS
+    if(inGlobal)
+    {
+      globalMemoryPool::dealloc(size_in_gpu());
+      function_values.deallocate();
+      gradient_values.deallocate();
+      hessian_values.deallocate();
+    }
+
+#endif
 }
 /**********************
  * Sphere

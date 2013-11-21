@@ -138,13 +138,15 @@ class Partition {
       long long int accumulated_size=0;
       for (std::list<Cube*>::const_iterator it = cubes.begin(); it != cubes.end(); ++it)
       {
-        (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy, fort_forces_ptr);
-        accumulated_size+=(*it)->size_in_gpu();
+        (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy, fort_forces_ptr);        
 //        printf("\t\t\t\t So far %luKb\n",accumulated_size/1024);
       }
-
+      
       for (std::list<Sphere*>::const_iterator it = spheres.begin(); it != spheres.end(); ++it)
+      {
         (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, spheres_energy, fort_forces_ptr);
+      }
+      std::cout << "--FreeGlobalMemory: " << globalMemoryPool::getFreeMemory()/(1024*1024)<< "Mb. " << std::endl;
         
 //      std::cout << "cubes XC energy: " << cubes_energy << std::endl;
 //      std::cout << "spheres XC energy: " << spheres_energy << std::endl;

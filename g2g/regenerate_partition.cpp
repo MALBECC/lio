@@ -341,13 +341,17 @@ void Partition::regenerate(void)
       sorting_spheres[j++]=std::make_pair((*it)->size_in_gpu(),*it);
 
     sort(sorting_spheres.begin(),sorting_spheres.end());
+
     std::list<Sphere*> sorted_spheres;
     for(j=0; j<sorting_spheres.size(); j++)
         sorted_spheres.push_back(sorting_spheres[j].second);
 
     spheres=sorted_spheres;
 
+    //Initialize the global memory pool for CUDA, with the default safety factor
+    //If it is CPU, then this doesn't matter
     globalMemoryPool::init();
+
     cout << "Grilla final: " << puntos_finales << " puntos (recordar que los de peso 0 se tiran), " << funciones_finales << " funciones" << endl ;
     cout << "Costo: " << costo << endl;
     cout << "NCOxM: " << nco_m << " MxM: " << m_m << endl;

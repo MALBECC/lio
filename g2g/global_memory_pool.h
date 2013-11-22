@@ -7,9 +7,10 @@
 class globalMemoryPool
 {
     public:
-        static void init(float free_factor=0.8)
+        static void init(float free_factor=0.7)
         {
             //Aca tenemos que leer el GPU_global y restar un factor de tolerancia (1/4?)
+#if !CPU_KERNELS
             size_t free_memory, total_memory;
 
 	        cudaGetMemoryInfo(free_memory, total_memory);
@@ -19,7 +20,12 @@ class globalMemoryPool
             if(free_factor<0.0f) free_factor=0.0f;
             _freeFactor=free_factor;
 
-            _freeGlobalMemory=(size_t)((float)free_memory*_freeFactor);
+            _freeGlobalMemory=static_cast<size_t>(static_cast<float>(free_memory)*_freeFactor);
+#else
+            _totalGlobalMemory=0;
+            _freeGlobalMemory=0;
+            _freeFactor=0.0f;
+#endif
         }
         static bool tryAlloc(size_t size);
         static void dealloc(size_t size);

@@ -146,7 +146,9 @@ class Partition {
       {
         (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, spheres_energy, fort_forces_ptr);
       }
+#if !CPU_KERNELS
       std::cout << "--FreeGlobalMemory: " << globalMemoryPool::getFreeMemory()/(1024*1024)<< "Mb. " << std::endl;
+#endif
         
 //      std::cout << "cubes XC energy: " << cubes_energy << std::endl;
 //      std::cout << "spheres XC energy: " << spheres_energy << std::endl;

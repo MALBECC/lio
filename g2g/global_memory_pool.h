@@ -7,7 +7,7 @@
 class globalMemoryPool
 {
     public:
-        static void init(float free_factor=0.7)
+        static void init(float free_factor=0.3)
         {
             //Aca tenemos que leer el GPU_global y restar un factor de tolerancia (1/4?)
 #if !CPU_KERNELS

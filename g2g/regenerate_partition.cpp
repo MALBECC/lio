@@ -350,7 +350,7 @@ void Partition::regenerate(void)
 
     //Initialize the global memory pool for CUDA, with the default safety factor
     //If it is CPU, then this doesn't matter
-    globalMemoryPool::init();
+    globalMemoryPool::init(G2G::free_global_memory);
 
     cout << "Grilla final: " << puntos_finales << " puntos (recordar que los de peso 0 se tiran), " << funciones_finales << " funciones" << endl ;
     cout << "Costo: " << costo << endl;

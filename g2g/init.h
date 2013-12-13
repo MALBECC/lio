@@ -51,6 +51,7 @@ namespace G2G {
   extern bool remove_zero_weights;
   extern bool energy_all_iterations;
   extern double big_function_cutoff;
+  extern double free_global_memory;
 }
 
 #endif

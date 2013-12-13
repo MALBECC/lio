@@ -268,6 +268,7 @@ namespace G2G {
   bool remove_zero_weights = true;
   bool energy_all_iterations = false;
   double big_function_cutoff = 1;
+  double free_global_memory = 0.0;
 }
 
 void read_options(void) {
@@ -297,6 +298,8 @@ void read_options(void) {
       { f >> energy_all_iterations; cout << energy_all_iterations; }
     else if (option == "big_function_cutoff")
       { f >> big_function_cutoff; cout << big_function_cutoff; }
+    else if (option == "free_global_memory")
+      { f >> free_global_memory; cout << free_global_memory; }
 		else throw runtime_error(string("Invalid option: ") + option);
 
 		cout << endl;

@@ -235,12 +235,6 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     }
     cudaAssertNoError("compute_density");
   }
-    //Deshago el bind de textura de rmm
-    cudaFreeArray(cuArray);
-    /*
-    cudaFree(devPtr);
-    */
-    cudaUnbindTexture(rmm_input_gpu_tex);
 
 
     function_values_transposed_gpu.deallocate();
@@ -248,6 +242,25 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     hessian_values_transposed_gpu.deallocate();
 
   timers.density.pause_and_sync();
+
+//************ Repongo los valores que puse a cero antes, para las fuerzas son necesarios (o por lo mens utiles)
+  for (uint i=0; i<(group_m); i++)
+  {
+    for(uint j=0; j<(group_m); j++)
+    {
+      if((i>=group_m) || (j>=group_m) || (j > i))
+      {
+        rmm_input_cpu.data[COALESCED_DIMENSION(group_m)*i+j]=rmm_input_cpu.data[COALESCED_DIMENSION(group_m)*j+i] ;
+      }
+    }
+  }
+#if FULL_DOUBLE
+  cudaMemcpyToArray(cuArray, 0, 0,rmm_input_cpu.data,sizeof(int2)*rmm_input_cpu.width*rmm_input_cpu.height, cudaMemcpyHostToDevice);
+#else
+  cudaMemcpyToArray(cuArray, 0, 0,rmm_input_cpu.data,sizeof(float)*rmm_input_cpu.width*rmm_input_cpu.height, cudaMemcpyHostToDevice);
+#endif
+
+//**********************************************
 
    dim3 threads;
   /* compute forces */
@@ -309,6 +322,12 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
         gradient_values.deallocate();
         hessian_values.deallocate();
   }
+    //Deshago el bind de textura de rmm
+    cudaFreeArray(cuArray);
+    /*
+    cudaFree(devPtr);
+    */
+    cudaUnbindTexture(rmm_input_gpu_tex);
   //uint free_memory, total_memory;
   //cudaGetMemoryInfo(free_memory, total_memory);
   //cout << "Maximum used memory: " << (double)max_used_memory / (1024 * 1024) << "MB (" << ((double)max_used_memory / total_memory) * 100.0 << "%)" << endl;

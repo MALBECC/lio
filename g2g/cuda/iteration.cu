@@ -323,11 +323,10 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
         hessian_values.deallocate();
   }
     //Deshago el bind de textura de rmm
+    cudaUnbindTexture(rmm_input_gpu_tex); //Enroque el Unbind con el Free, asi parece mas logico. Nano
     cudaFreeArray(cuArray);
-    /*
-    cudaFree(devPtr);
-    */
-    cudaUnbindTexture(rmm_input_gpu_tex);
+    cudaFree(cuArray);
+    
   //uint free_memory, total_memory;
   //cudaGetMemoryInfo(free_memory, total_memory);
   //cout << "Maximum used memory: " << (double)max_used_memory / (1024 * 1024) << "MB (" << ((double)max_used_memory / total_memory) * 100.0 << "%)" << endl;

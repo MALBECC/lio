@@ -61,7 +61,7 @@ c
       ispin=1
       ipop=1
 C
-	icharge=0
+      icharge=0
 C
       write1=.false.
       NORM=.true.
@@ -181,261 +181,249 @@ c
       M=0
       Md=0
 
-        allocate(natomc(natom),nnps(natom),nnpp(natom),nnp(natom))
-        allocate(nnpd(natom),nns(natom),nnd(natom),atmin(natom))
-        allocate(jatc(natom,natom))
+      allocate(natomc(natom),nnps(natom),nnpp(natom),nnp(natom))
+      allocate(nnpd(natom),nns(natom),nnd(natom),atmin(natom))
+      allocate(jatc(natom,natom))
        
-         do i=1,natom
-         natomc(i)=0 
-          enddo
-c
-c  BASIS SETS -------------------------------------------------
+      do i=1,natom
+        natomc(i)=0 
+      enddo
+c-------------------------------------------------------------------------
+c  BASIS SETS ------------------------------------------------------------
+c-------------------------------------------------------------------------
       do 25 while (whatis.ne.'endbasis')
 c
-      NBAS=NBAS+1
+        NBAS=NBAS+1
 c signals if a basis set was not used
-      used=.false.
-      atmint=100000.
-      read(1,*) iatom,nraw,ncon
-c      write(2,600) iatom,nraw,ncon
+        used=.false.
+        atmint=100000.
+        read(1,*) iatom,nraw,ncon
+c        write(2,600) iatom,nraw,ncon
 c
 c reads contraction scheme. The value for p,d ,f should not be repeated
 c 3 ,6 , 10 .....   times
 c reads also angular momentum for each of the contractions
 c 0 for s 1 for p, etc
 c
-       
-      read(1,*) (ncf(i),i=1,ncon)
-c      write(2,*) (ncf(i),i=1,ncon)
-      read(1,*) (lt(i),i=1,ncon)
-c      write(2,*) (lt(i),i=1,ncon)
+        read(1,*) (ncf(i),i=1,ncon)
+c        write(2,*) (ncf(i),i=1,ncon)
+        read(1,*) (lt(i),i=1,ncon)
+c        write(2,*) (lt(i),i=1,ncon)
 c
 c loop over all primitives, no repeating p, d
-      do 30 i=1,nraw
-       read(1,*) at(i),ct(i)
+        do i=1,nraw
+          read(1,*) at(i),ct(i)
 c       write(2,700) at(i),ct(i)
 c       write(*,*) atmint,at(i)
-        if(at(i).lt.atmint) atmint=at(i)
-
- 30   continue
-
-
-
+          if(at(i).lt.atmint) atmint=at(i)
+        enddo
 c
-      do 35 j=1,natom
-      if(Iz(j).eq.iatom.and.(.not.done(j)))then
-       nnat(NBAS)=nnat(NBAS)+1
-       done(j)=.true.
-       used=.true.
-       atmin(j)=atmint
+        do j=1,natom
+          if(Iz(j).eq.iatom.and.(.not.done(j))) then
+            nnat(NBAS)=nnat(NBAS)+1
+            done(j)=.true.
+            used=.true.
+            atmin(j)=atmint
 
 c  cosas que puso nano para "atomos cerca"
 
-        nns(j)=0
-        nnp(j)=0
-        nnd(j)=0        
+            nns(j)=0
+            nnp(j)=0
+            nnd(j)=0        
 
-       do kkk=1,ncon
-        if (lt(kkk).eq.0) nns(j)=nns(j)+Num(lt(kkk))
-        if (lt(kkk).eq.1) nnp(j)=nnp(j)+Num(lt(kkk))
-        if (lt(kkk).eq.2) nnd(j)=nnd(j)+Num(lt(kkk))
-       enddo
+            do kkk=1,ncon
+              if (lt(kkk).eq.0) nns(j)=nns(j)+Num(lt(kkk))
+              if (lt(kkk).eq.1) nnp(j)=nnp(j)+Num(lt(kkk))
+              if (lt(kkk).eq.2) nnd(j)=nnd(j)+Num(lt(kkk))
+            enddo
 
 c      write(*,*) 'nns y etc',nns(j),nnp(j),nnd(j),nnps(j)
 c     > ,nnpp(j),nnpd(j)
 
-c  M stores # of contractions
-       index=0
-       do 36 k=1,ncon
+c =====>>>>>>  M stores # of contractions  <<<<<<===========
+            index=0
+            do k=1,ncon
 c
-        M=M+Num(lt(k))
+              M=M+Num(lt(k))
+
 c nshell gives the # of functions s, p, d  etc
-        nshell(lt(k))=nshell(lt(k))+Num(lt(k))
+              nshell(lt(k))=nshell(lt(k))+Num(lt(k))
 c
-       do 36 l2=1,Num(lt(k))
-c
-       No=No+1
+              do l2=1,Num(lt(k))
+                No=No+1
 c
 c normalization
 c
-        if (NORM) then
-        do 37 l=1,ncf(k)
+                if (NORM) then
+                  do l=1,ncf(k)
 c 
-        index=index+1
+                    index=index+1
 
-        if(lt(k).eq.0) then
+                    if(lt(k).eq.0) then
 c
-        xnorm=sqrt((2.D0*at(index)/pi)**3)
-        xnorm=sqrt(xnorm)   
-        c(No,l)=ct(index)*xnorm
-        a(No,l)=at(index)
-        elseif(lt(k).eq.1) then
+                      xnorm=sqrt((2.D0*at(index)/pi)**3)
+                      xnorm=sqrt(xnorm)   
+                      c(No,l)=ct(index)*xnorm
+                      a(No,l)=at(index)
+                    elseif(lt(k).eq.1) then
 c
-        xnorm=sqrt((2.D0*at(index)/pi)**3)*4.D0*at(index)
-        xnorm=sqrt(xnorm)
-        c(No,l)=ct(index)*xnorm
-        a(No,l)=at(index)
-        elseif (lt(k).eq.2) then
+                      xnorm=sqrt((2.D0*at(index)/pi)**3)*4.D0*at(index)
+                      xnorm=sqrt(xnorm)
+                      c(No,l)=ct(index)*xnorm
+                      a(No,l)=at(index)
+                    elseif (lt(k).eq.2) then
 c
-        xnorm=sqrt((2.D0*at(index)/pi)**3)*(4.D0*at(index))**2
-        xnorm=sqrt(xnorm)
-        c(No,l)=ct(index)*xnorm
-        a(No,l)=at(index)
-          endif
-c
- 37   continue
-c
-       else
+                  xnorm=sqrt((2.D0*at(index)/pi)**3)*(4.D0*at(index))**2
+                      xnorm=sqrt(xnorm)
+                      c(No,l)=ct(index)*xnorm
+                      a(No,l)=at(index)
+                    endif
+                  enddo
+                else
 c no normalization case
-c
-       do 38 l=1,ncf(k)
-        index=index+1
-c
-        c(No,l)=ct(index)
-        a(No,l)=at(index)
- 38   continue
-c
-      endif
+                  do l=1,ncf(k)
+                    index=index+1
+                    c(No,l)=ct(index)
+                    a(No,l)=at(index)
+                  enddo
+                endif
 c repeat the index only for p,d and f
-       if (l2.ne.Num(lt(k))) then
-        index=index-ncf(k)
-       endif
+                if (l2.ne.Num(lt(k))) then
+                  index=index-ncf(k)
+                endif
 c
-      Nuc(No)=j
-      ncont(No)=ncf(k)
-      nlb(No)=lt(k)
- 36   continue
-      endif
- 35   continue
+                Nuc(No)=j
+                ncont(No)=ncf(k)
+                nlb(No)=lt(k)
+              enddo
+            enddo
+          endif
+        enddo
 c     
-c
-      if (.not.used) then
-       write(*,200) iatom
-      endif
+        if (.not.used) then
+          write(*,200) iatom
+        endif
 c
 c Exactly the same should be repeated for charge density
 c and exchange correlation potential basis sets
 c
 c CHARGE DENSITY --------------------------------------------------
 c
-      read(1,*) iatom,nraw,ncon
-c      write(2,*) iatom,nraw,ncon
+        read(1,*) iatom,nraw,ncon
+c        write(2,*) iatom,nraw,ncon
 c
 c reads contraction scheme. The value for p,d ,f should not be repeated
 c 3 ,6 , 10 .....   times. Reads also angular type , 
 c 0 for s , 1 for p etc
-      read(1,*) (ncf(i),i=1,ncon)
-c      write(2,*) (ncf(i),i=1,ncon)
-      read(1,*) (lt(i),i=1,ncon)
-c      write(2,*) (lt(i),i=1,ncon)
+        read(1,*) (ncf(i),i=1,ncon)
+c        write(2,*) (ncf(i),i=1,ncon)
+        read(1,*) (lt(i),i=1,ncon)
+c        write(2,*) (lt(i),i=1,ncon)
 c     
 c
 c loop over all primitives, repeating p, d
-      do 40 i=1,nraw
-       read(1,*) at(i),ct(i)
-c       write(2,700) at(i),ct(i)
- 40   continue
+        do i=1,nraw
+          read(1,*) at(i),ct(i)
+c          write(2,700) at(i),ct(i)
+        enddo
 c
-      do 45 j=1,natom
-       if (Iz(j).eq.iatom) then
+        do 45 j=1,natom
+          if (Iz(j).eq.iatom) then
 c
 c Mdd stores # of contractions in final basis, counting all possibilities
 c for p , d etc
 c
-       index=0
-       do 46 k=1,ncon
+          index=0
+          do 46 k=1,ncon
 c
-       Md=Md+Num(lt(k))
-c       write(*,*) md 
-       nshelld(lt(k))=nshelld(lt(k))+Num(lt(k))
+            Md=Md+Num(lt(k))
+c         write(*,*) md 
+            nshelld(lt(k))=nshelld(lt(k))+Num(lt(k))
 c
-       do 46 l2=1,Num(lt(k))
+            do 46 l2=1,Num(lt(k))
 c
-       Nd=Nd+1
+              Nd=Nd+1
 c
-        if (NORM) then
-       do 47 l=1,ncf(k)
-        index=index+1
+              if (NORM) then
+                do 47 l=1,ncf(k)
+                  index=index+1
 c
-        goto (71,81,91) lt(k)+1
+                  goto (71,81,91) lt(k)+1
 c
- 71     xnorm=sqrt((2.D0*at(index)/pi)**3)
-        xnorm=sqrt(xnorm)
-        cd(Nd,l)=ct(index)*xnorm
-        ad(Nd,l)=at(index)
-c       ad(Nd,l)=2.D0*at(index)
-      goto 47
+ 71               xnorm=sqrt((2.D0*at(index)/pi)**3)
+                  xnorm=sqrt(xnorm)
+                  cd(Nd,l)=ct(index)*xnorm
+                  ad(Nd,l)=at(index)
+c                  ad(Nd,l)=2.D0*at(index)
+                  goto 47
 c
- 81     xnorm=sqrt((2.D0*at(index)/pi)**3)*4.D0*at(index)
-        xnorm=sqrt(xnorm)
-        cd(Nd,l)=ct(index)*xnorm
-c       ad(Nd,l)=2.D0*at(index)
-        ad(Nd,l)=at(index)
-      goto 47
+ 81               xnorm=sqrt((2.D0*at(index)/pi)**3)*4.D0*at(index)
+                  xnorm=sqrt(xnorm)
+                  cd(Nd,l)=ct(index)*xnorm
+c                  ad(Nd,l)=2.D0*at(index)
+                  ad(Nd,l)=at(index)
+                  goto 47
 c
- 91     xnorm=sqrt((2.D0*at(index)/pi)**3)*(4.D0*at(index))**2
-        xnorm=sqrt(xnorm)
-        cd(Nd,l)=ct(index)*xnorm
-c       ad(Nd,l)=2.D0*at(index)
-        ad(Nd,l)=at(index)
-      goto 47
+ 91               xnorm=sqrt((2.D0*at(index)/pi)**3)*(4.D0*at(index))**2
+                  xnorm=sqrt(xnorm)
+                  cd(Nd,l)=ct(index)*xnorm
+c                  ad(Nd,l)=2.D0*at(index)
+                  ad(Nd,l)=at(index)
+                  goto 47
 c
- 47   continue
-c
-      else
+ 47             continue
+              else
 c
 c no normalization case
 c
-       do 48 l=1,ncf(k)
-        index=index+1
+                do l=1,ncf(k)
+                  index=index+1
 c
-        cd(Nd,l)=ct(index)
-c       ad(Nd,l)=2.D0*at(index)
-        ad(Nd,l)=at(index)
- 48   continue
-c
-      endif
+                  cd(Nd,l)=ct(index)
+c                  ad(Nd,l)=2.D0*at(index)
+                  ad(Nd,l)=at(index)
+                enddo
+              endif
 c
 c repeat the index only for p,d and f, criterium l2<max(l2)
-       if (l2.ne.Num(lt(k))) then
-        index=index-ncf(k)
-       endif
+              if (l2.ne.Num(lt(k))) then
+                index=index-ncf(k)
+              endif
 c
-      Nucd(Nd)=j
-      ncontd(Nd)=ncf(k)
-      nld(Nd)=lt(k)
+              Nucd(Nd)=j
+              ncontd(Nd)=ncf(k)
+              nld(Nd)=lt(k)
 c
- 46   continue
-      endif
- 45   continue
+ 46         continue
+          endif
+ 45     continue
 c
-      read(1,100) whatis
-c      write(2,100) whatis
- 25   end do
+        read(1,100) whatis
+c        write(2,100) whatis
+ 25   enddo
 c----- DIMENSION CONTROLS ------------------------------------
 c
       iprob=0
       if (M.gt.ngDyn.or.M.gt.ng) then
-       write(*,*) 'DIMENSION PROBLEMS WITH BASIS SET SIZE PARAMETER NG'
-       write(*,*) 'NUMBER BASIS FUNCTIONS =',M,'<',ngDyn
-       iprob=1
+        write(*,*) 'DIMENSION PROBLEMS WITH BASIS SET SIZE PARAMETER NG'
+        write(*,*) 'NUMBER BASIS FUNCTIONS =',M,'<',ngDyn
+        iprob=1
       endif
 c
       if (Md.gt.ngdDyn.or.Md.gt.ngd) then
        write(*,*) 'DIMENSION PROBLEMS WITH AUXILIAR BASIS PARAMETER NGD'
-       write(*,*) 'NUMBER AUXILIAR BASIS FUNCTIONS =',Md,'<',ngdDyn
-       iprob=1
+        write(*,*) 'NUMBER AUXILIAR BASIS FUNCTIONS =',Md,'<',ngdDyn
+        iprob=1
       endif
 c
       if (natom.gt.nt) then
        write(*,*) 'DIMENSION PROBLEMS WITH NUMBER OF ATOMS PARAMETER NT'
-       write(*,*) 'NUMBER OF ATOMS =',natom,'<',nt
-       iprob=1
+        write(*,*) 'NUMBER OF ATOMS =',natom,'<',nt
+        iprob=1
       endif
 c
 c -------------------------------------------------------------
 c -- Initial guess -------------------------------------------
-c
 c
 c--- changes basis order to one in which the order is given by
 c the angular type :all s first, then all p, then all d ,......
@@ -453,58 +441,57 @@ c standard basis set  ---------------------------------------------
 c
 c loop over the total # of basis
       do 210 i=1,M
-c
-      l=nlb(i)+1
-      goto (11,22,33) l
+        l=nlb(i)+1
+        goto (11,22,33) l
 c
 c s case
-  11  continue
+  11    continue
 c   
-      Nucx(is)=Nuc(i)
-      indexii(is)=i
-      ncontx(is)=ncont(i)
+        Nucx(is)=Nuc(i)
+        indexii(is)=i
+        ncontx(is)=ncont(i)
 c  
-      do 12 j=1,ncontx(is)
+        do j=1,ncontx(is)
+          cx(is,j)=c(i,j)
+          ax(is,j)=a(i,j)
+        enddo
 c
-       cx(is,j)=c(i,j)
-  12   ax(is,j)=a(i,j)
-c
-      is=is+1
-      goto 44   
+        is=is+1
+        goto 44   
 c
 c p case
-  22  continue
+  22    continue
 c   
-      Nucx(ip)=Nuc(i)
-      indexii(ip)=i
-      ncontx(ip)=ncont(i)
+        Nucx(ip)=Nuc(i)
+        indexii(ip)=i
+        ncontx(ip)=ncont(i)
 c  
-      do 13 j=1,ncontx(ip)
+        do j=1,ncontx(ip)
+          cx(ip,j)=c(i,j)
+          ax(ip,j)=a(i,j)
+        enddo
 c
-       cx(ip,j)=c(i,j)
-  13   ax(ip,j)=a(i,j)
-c
-      ip=ip+1
-      goto 44
+        ip=ip+1
+        goto 44
 c
 c d case
-  33  continue
+  33    continue
 c   
-      Nucx(id)=Nuc(i)
-      indexii(id)=i
+        Nucx(id)=Nuc(i)
+        indexii(id)=i
 
-
-      ncontx(id)=ncont(i)
+        ncontx(id)=ncont(i)
 c  
-      do 14 j=1,ncontx(id)
+        do j=1,ncontx(id)
 c
-       cx(id,j)=c(i,j)
-  14   ax(id,j)=a(i,j)
+          cx(id,j)=c(i,j)
+          ax(id,j)=a(i,j)
+        enddo
 c
-      id=id+1
-      goto 44
+        id=id+1
+        goto 44
 c
-  44  continue
+  44    continue
  210  continue
 c
 c final normalization for d
@@ -514,14 +501,15 @@ c
 c
 c Now, it has to put temporary things into the real one
 c
-      do 300 i=1,M
-       Nuc(i)=Nucx(i)
-       ncont(i)=ncontx(i)
+      do i=1,M
+        Nuc(i)=Nucx(i)
+        ncont(i)=ncontx(i)
 c
-       do 300 j=1,ncont(i)
-        c(i,j)=cx(i,j)
-        a(i,j)=ax(i,j)
- 300   continue
+        do j=1,ncont(i)
+          c(i,j)=cx(i,j)
+          a(i,j)=ax(i,j)
+        enddo
+      enddo
 c
         
 c same process, but for electronic density basis set ------------
@@ -533,58 +521,55 @@ c
 c loop over the total # of basis
       do 310 i=1,Md
 c
-      l=nld(i)+1
-      goto (111,222,333) l
+        l=nld(i)+1
+        goto (111,222,333) l
 c
 c s case
- 111  continue
+ 111    continue
 c   
-      Nucx(is)=Nucd(i)
-      indexiid(is)=i
-      ncontx(is)=ncontd(i)
+        Nucx(is)=Nucd(i)
+        indexiid(is)=i
+        ncontx(is)=ncontd(i)
 c  
-      do 128 j=1,ncontx(is)
+        do j=1,ncontx(is)
+          cx(is,j)=cd(i,j)
+          ax(is,j)=ad(i,j)
+        enddo
 c
-c
-       cx(is,j)=cd(i,j)
-  128  ax(is,j)=ad(i,j)
-c
-      is=is+1
-      goto 444   
+        is=is+1
+        goto 444   
 c
 c p case
- 222  continue
+ 222    continue
 c   
-      Nucx(ip)=Nucd(i)
-      indexiid(ip)=i
-      ncontx(ip)=ncontd(i)
+        Nucx(ip)=Nucd(i)
+        indexiid(ip)=i
+        ncontx(ip)=ncontd(i)
 c  
+        do j=1,ncontx(ip)
+          cx(ip,j)=cd(i,j)
+          ax(ip,j)=ad(i,j)
+        enddo
 c
-      do 213 j=1,ncontx(ip)
-c
-       cx(ip,j)=cd(i,j)
- 213   ax(ip,j)=ad(i,j)
-c
-      ip=ip+1
-      goto 444
+        ip=ip+1
+        goto 444
 c
 c d case
- 333  continue
+ 333    continue
 c   
-      Nucx(id)=Nucd(i)
-      indexiid(id)=i
-      ncontx(id)=ncontd(i)
+        Nucx(id)=Nucd(i)
+        indexiid(id)=i
+        ncontx(id)=ncontd(i)
 c  
-      do 145 j=1,ncontx(id)
+        do j=1,ncontx(id)
+          cx(id,j)=cd(i,j)
+          ax(id,j)=ad(i,j)
+        enddo
 c
+        id=id+1
+        goto 444
 c
-       cx(id,j)=cd(i,j)
-  145  ax(id,j)=ad(i,j)
-c
-      id=id+1
-      goto 444
-c
- 444  continue
+ 444    continue
  310  continue
 c
 c final normalization for d
@@ -594,47 +579,46 @@ c
 c
 c Now, it has to put temporary things into the real one
 c
-      do 301 i=1,Md
-       Nucd(i)=Nucx(i)
-       ncontd(i)=ncontx(i)
+      do i=1,Md
+        Nucd(i)=Nucx(i)
+        ncontd(i)=ncontx(i)
 c
-       do 301 j=1,ncontd(i)
-        cd(i,j)=cx(i,j)
-        ad(i,j)=ax(i,j)
- 301   continue
-
+        do j=1,ncontd(i)
+          cd(i,j)=cx(i,j)
+          ad(i,j)=ax(i,j)
+        enddo
+      enddo
 c
-c------------------------------------------------------------------
-c POINTERS --------------------------------------------
+c---------------------------------------------------------
+c POINTERS -----------------------------------------------
 c
+c first P
       MM=M*(M+1)/2
       MMd=Md*(Md+1)/2
-c first P
-      M1=1
+
 c now F alpha
-      M3=M1+MM
+      M3=MM+1
 c now S, F beta also uses the same position after S was used
-      M5=M3+MM
+      M5=MM+M3
 c now G
-      M7=M5+MM
+      M7=MM+M5
 c now Gm
       M9=M7+MMd
 c now H
       M11=M9+MMd
 c W ( eigenvalues ), also this space is used in least squares
-      M13=M11+MM
+      M13=MM+M11
 c aux ( vector for ESSl)
-      M15=M13+M
+      M15=M+M13
 c Least squares
-      M17=M15+MM
+      M17=MM+M15
 c vectors of MO alpha
-      M18=M17+MMd
+      M18=MMd+M17
 c vectors of MO beta
+c     M18b=M18+M*NCOa
 c------------------------------------------------------------
 c
-c
-c Density matrix  construction - For closed shell only
-c
+c Density matrix  construction - For closed shell only <<<<=========
 c
 c      if (Scf1) then
 c      read(1,nml=scfinp)
@@ -645,24 +629,22 @@ c variables defined in namelist cannot be in common ?
 c      NCO2=NCO
       Nunp2=Nunp
 c
-       idip1=idip
-       ipop1=ipop
-       icharge1=icharge
-       ispin1=ispin
-c       do n=1,ntq
+      idip1=idip
+      ipop1=ipop
+      icharge1=icharge
+      ispin1=ispin
+c      do n=1,ntq
 c        map1(n)=map(n)
-c       enddo
+c      enddo
 c
-c       if (ANG) then
-c       a01=a0/.529177D0
-c       else
-c       a01=a0
-c       endif
+c      if (ANG) then
+c        a01=a0/.529177D0
+c      else
+c        a01=a0
+c      endif
        
-       
-
       if ((Iexch.ge.4).and.(.not.(integ)).and.(.not.(dens))) then
-       write(*,*) 'OPTION SELECTED NOT AVAILABLE'
+        write(*,*) 'OPTION SELECTED NOT AVAILABLE'
 c      pause
       endif
 c
@@ -677,200 +659,205 @@ c
       Ndim=5*M*(M+1)/2+3*Md*(Md+1)/2+M+M*NCO!+M*Ngrid
       if(verbose) write(*,*) 'en drive', M,Md,NCO
       if (Ndim.gt.ng2) then
-       write(*,*) 'DIMENSION PROBLEMS WITH DYNAMICAL VECTOR NG2',Ndim,ng2
-       iprob=1
+        write(*,*) 'DIMENSION PROBLEMS WITH DYNAMICAL VECTOR NG2',Ndim,ng2
+        iprob=1
       endif
 c
       if (iprob.eq.1) then
-       pause
+        pause
       endif
-
- 
 c
 c -------------------------------------------------------------
 c case for initial guess given in input -------------------------
       if (VCINP) then
 c closed shell
-c     
-      open(unit=89,file=frestartin)
-      if (.not.OPEN) then
+        open(unit=89,file=frestartin)
+c
+        if (.not.OPEN) then
 c reads vectors of MO coefficients, basis is in the same order as 
 c the given in input
-      do 120 l=1,M
- 120   read(89,*) (XX(l,n),n=1,NCO)
+          do l=1,M
+            read(89,*) (XX(l,n),n=1,NCO)
+          enddo
 c
 c puts vectors in dynamical allocation (to be used later)
 c
-       kk=0
-      do 121 k=1,NCO
-      do 121 i=1,M
-       kk=kk+1
- 121   RMM(M18+kk-1)=XX(indexii(i),k)
+            kk=0
+          do k=1,NCO
+            do i=1,M
+             kk=kk+1
+             RMM(M18+kk-1)=XX(indexii(i),k)
+            enddo
+          enddo
 
-      do 130 i=1,M
-      do 130 j=1,M
-c
-      do 130 k=1,NCO
-       X(i,j)=X(i,j)+2.0D0*XX(i,k)*XX(j,k)
- 130  continue
+          do i=1,M
+            do j=1,M
+              do k=1,NCO
+                X(i,j)=X(i,j)+2.0D0*XX(i,k)*XX(j,k)
+              enddo
+            enddo
+          enddo
 c
 c open shell case
-      else
+        else
 c
-      NCOa=NCO
-      NCOb=NCO+Nunp
-      M18b=M18+M*NCOa
+          NCOa=NCO
+          NCOb=NCO+Nunp
+          M18b=M18+M*NCOa
 c alpha
-      do 220 l=1,M
- 220    read(89,*) (XX(l,n),n=1,NCOa)
+          do l=1,M
+            read(89,*) (XX(l,n),n=1,NCOa)
+          enddo
 c
-
-       kk=M18-1
-      do 221 k=1,NCOa
-      do 221 i=1,M
-       kk=kk+1
- 221   RMM(kk)=XX(indexii(i),k)
+          kk=M18-1
+          do k=1,NCOa
+            do i=1,M
+              kk=kk+1
+              RMM(kk)=XX(indexii(i),k)
+            enddo
+          enddo
 c
 c Density Matrix
 c
-      do 331 i=1,M
-      do 331 j=1,M
-      X(i,j)=0.0D0
+          do 331 i=1,M
+            do 331 j=1,M
+              X(i,j)=0.0D0
 c
-      do 139 k=1,NCOa
-       X(i,j)=X(i,j)+XX(i,k)*XX(j,k)
- 139  continue
- 331  continue
+              do 139 k=1,NCOa
+                X(i,j)=X(i,j)+XX(i,k)*XX(j,k)
+ 139          continue
+ 331      continue
 c
 c beta
-      do 229 l=1,M
- 229    read(89,*) (XX(l,n),n=1,NCOb)
+          do l=1,M
+            read(89,*) (XX(l,n),n=1,NCOb)
+          enddo
 c
-       kk=M18b-1
-      do 223 k=1,NCOb
-      do 223 i=1,M
-       kk=kk+1
- 223   RMM(kk)=XX(indexii(i),k)
+          kk=M18b-1
+          do k=1,NCOb
+            do i=1,M
+              kk=kk+1
+              RMM(kk)=XX(indexii(i),k)
+            enddo
+          enddo
 c 
 c Density Matrix
 c
-      do 335 i=1,M
-      do 335 j=1,M
+          do i=1,M
+            do j=1,M
+              do k=1,NCOb
+                X(i,j)=X(i,j)+XX(i,k)*XX(j,k)
+              enddo
+            enddo
+          enddo
 c
-      do 239 k=1,NCOb
-       X(i,j)=X(i,j)+XX(i,k)*XX(j,k)
- 239  continue
- 335  continue
-c
-      endif
+        endif
       endif
 c
 c density matrix kept temporarily in S
-c end of case in which density matrix is explicitly given in
-c input
-c-----------------------------------------------------------------
+c END of case in which density matrix is explicitly given in input
+c--------------------------------------------------------------------
 c
 c case for initial guess constructed from atomic densities -------
       if (ATRHO) then
 c
-      k1=0
-      l1=0
-      NN=0
-      do 152 i=1,NBAS
+        k1=0
+        l1=0
+        NN=0
+        do i=1,NBAS
 c
-c        read(1,nml=RHOINP)
+c         read(1,nml=RHOINP)
 c
-      do 152 j=1,nnat(i)
+          do j=1,nnat(i)
 c
+            do k=1,NAO
+              k1=k1+1
 c
-      do 150 k=1,NAO
-       k1=k1+1
+              do l=1,NGF
+                l1=NN+l
+                kl=(k-1)*NGF+l
+                XX(l1,k1)=atcoef(kl)
+                oc2(k1)=OCC(k)
+              enddo
+            enddo
 c
-      do 151 l=1,NGF
-       l1=NN+l
-c
-       kl=(k-1)*NGF+l
-c
-       XX(l1,k1)=atcoef(kl)
-       oc2(k1)=OCC(k)
- 151  continue
-c
-c
- 150  continue
-c
-      NN=NN+NGF
-
- 152  continue
-c
-c 
+            NN=NN+NGF
+          enddo
+        enddo
 c------------------------------------------------------------
-c
-c
 c S used as scratch array here
-      do 118 i=1,M
-      do 118 j=1,M
-c
-      X(i,j)=0.
-      do 109 l=1,k1
-  109 X(i,j)=X(i,j)+oc2(l)*XX(i,l)*XX(j,l)
-  118 continue
+        do i=1,M
+          do j=1,M
+            X(i,j)=0.
+            do l=1,k1
+              X(i,j)=X(i,j)+oc2(l)*XX(i,l)*XX(j,l)
+            enddo 
+          enddo
+        enddo
 c
 c approximate vectors construction
 c
-      if (.not.OPEN) then
-       kk=M18-1
-      do 430 k=1,NCO
-      do 430 i=1,M
-       kk=kk+1
- 430  RMM(kk)=XX(i,k) 
+        if (.not.OPEN) then
+          kk=M18-1
+          do k=1,NCO
+            do i=1,M
+              kk=kk+1
+              RMM(kk)=XX(i,k) 
+            enddo
+          enddo
 c
-      else
+        else
 c
-      NCOa=NCO
-      NCOb=NCO+Nunp
-      M18b=M18+M*NCOa
+          NCOa=NCO
+          NCOb=NCO+Nunp
+          M18b=M18+M*NCOa
 c
-      kk=M18-1
-      do 431 k=1,NCOa
-      do 431 i=1,M
-       kk=kk+1
- 431  RMM(kk)=XX(indexii(i),k)
+          kk=M18-1
+          do k=1,NCOa
+            do i=1,M
+              kk=kk+1
+              RMM(kk)=XX(indexii(i),k)
+            enddo
+          enddo
 c
-      kk=M18b-1
-      do 432 k=1,NCOb
-      do 432 i=1,M
-       kk=kk+1
- 432  RMM(kk)=XX(indexii(i),k)
+          kk=M18b-1
+          do k=1,NCOb
+            do i=1,M
+              kk=kk+1
+              RMM(kk)=XX(indexii(i),k)
+            enddo
+          enddo 
+        endif
       endif
 c
-
-      endif
 c density matrix stored temporarily in S, then it should be changed
 c according to the shell ordering of the basis set and kept in P
-c------ end of option atomic densities -----------------
-c
+c------ end of option atomic densities -------------------------------------
 c
 c changes to the shell order ( s , p, d....)
       k=0
-      do 119 j=1,M
-      do 119 i=j,M
-       k=k+1
-       RMM(k)=X(indexii(i),indexii(j))
- 119  continue
+      do j=1,M
+        do i=j,M
+          k=k+1
+          RMM(k)=X(indexii(i),indexii(j))
+        enddo
+      enddo
 c
       k=0
-      do 127 j=1,M
-      do 127 i=j,M
-       k=k+1
-       if (i.ne.j) then
-       RMM(k)=RMM(k)*2.D0
-       endif
- 127   continue
+      do j=1,M
+        do i=j,M
+          k=k+1
+          if (i.ne.j) then
+            RMM(k)=RMM(k)*2.D0
+          endif
+        enddo
+      enddo
 c
 c---- reads exchange fit data -------------
 c
       TMP1=ATRHO
       TMP2=VCINP
+c
 c      ATRHO=.FALSE.
 C      VCINP=.TRUE.
 c----------------------------
@@ -889,16 +876,27 @@ c
 c      ATRHO=TMP1
 c      VCINP=TMP2
 c--------------------------
-
+c
 c------- G2G Initialization ---------------------
-        ntqpru=natom
-       ngpru=ng0*natom
-c       write(*,*) 'estoooo',ngpru, ngDyn, ng0, natom
-      call g2g_parameter_init(NORM,natom,natom,ngDyn,rqm,
-     > Rm2,Iz,Nr,Nr2,Nuc, M, ncont, nshell, c, a, RMM,
-     > M18, M5, NCO, nopt, Iexch,
-     > e_, e_2, e3, wang, wang2, wang3)
+c
+      ntqpru=natom
+      ngpru=ng0*natom
+c      write(*,*) 'estoooo',ngpru, ngDyn, ng0, natom
 
+      if(OPEN) then
+        allocate(rhoalpha(M*(M+1)/2),rhobeta(M*(M+1)/2))
+      else
+        allocate(rhoalpha(1),rhobeta(1))
+      endif
+
+      call g2g_parameter_init(NORM,natom,natom,ngDyn,
+     >                        rqm,Rm2,Iz,Nr,Nr2,Nuc,
+     >                        M,ncont,nshell,c,a, 
+     >                        RMM,M18,M5,M3,rhoalpha,rhobeta,
+     >                        NCO,OPEN,Nunp,nopt,Iexch,
+     >                        e_, e_2, e3, wang, wang2, wang3)
+
+      write(*,*) '======>>>> SALIENDO DE DRIVE <<<<=========='
 
 c      if (parsearch) then
 c        call g2g_reload_atom_positions(igrid2)
@@ -921,8 +919,6 @@ c      else
 c       write(*,*) 'llamo a SCF',natom,ntatom
 c      call SCF()
 c       write(*,*) 'llamé a SCF',natom,ntatom
-
-
 c
 c
 c      endif
@@ -1025,4 +1021,3 @@ c---------------------------------------------------
 c
       return
       end
-

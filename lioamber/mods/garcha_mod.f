@@ -53,6 +53,7 @@ c ncf, lt,at,ct parameters for atomic basis sets
 c
        
        real*8, dimension (:), ALLOCATABLE :: RMM,RMM1,RMM2,RMM3
+       real*8, dimension (:), ALLOCATABLE :: rhoalpha,rhobeta
        real*8, dimension (:,:), ALLOCATABLE :: X, XX
        real*8, dimension (:), ALLOCATABLE :: old1,old2,old3 
 

@@ -20,3 +20,5 @@ fort.*
 /g2g/nbproject/private/
 *.so
 *~
+lioamber/*.mod
+liosolo/liosolo

@@ -81,7 +81,7 @@ class PointGroup {
     void compute_weights(void);
 
     void compute_functions(bool forces, bool gga);
-    void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, double& energy, double* fort_forces_ptr);
+    void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, double& energy, double* fort_forces_ptr, bool open);
 
     bool is_significative(FunctionType, double exponent, double coeff, double d2);
     bool operator<(const PointGroup<scalar_type>& T) const;
@@ -131,20 +131,20 @@ class Partition {
       cubes.clear(); spheres.clear();
     }
 
-    void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr)
+    void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr, bool open)
     {
       double cubes_energy = 0, spheres_energy = 0;
 
-      long long int accumulated_size=0;
+//      long long int accumulated_size=0;
       for (std::list<Cube*>::const_iterator it = cubes.begin(); it != cubes.end(); ++it)
       {
-        (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy, fort_forces_ptr);        
+        (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy, fort_forces_ptr, open);        
 //        printf("\t\t\t\t So far %luKb\n",accumulated_size/1024);
       }
       
       for (std::list<Sphere*>::const_iterator it = spheres.begin(); it != spheres.end(); ++it)
       {
-        (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, spheres_energy, fort_forces_ptr);
+        (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, spheres_energy, fort_forces_ptr, open);
       }
         
 //      std::cout << "cubes XC energy: " << cubes_energy << std::endl;

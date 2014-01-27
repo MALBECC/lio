@@ -41,7 +41,7 @@ Kernels: gpu
  NCO=           5
            3           3          90          90          30          30
  JOB STARTED NOW
-Mon Jan 27 17:51:58 ART 2014
+Mon Jan 27 19:58:21 ART 2014
  en drive          19          42           5
 <======= GPU Code Initialization ========>
 atoms: 3
@@ -49,7 +49,8 @@ max atoms: 3
 number of gaussians: 90
 do_forces: false
 s: 7 p: 2 d: 1
-m: 19 nco: 191
+m: 19
+ nco: 5
 <====== read_options ========>
 little_cube_size 15.5
 max_function_exponent 10
@@ -59,42 +60,229 @@ energy_all_iterations true
  ======>>>> SALIENDO DE DRIVE <<<<==========
  ntatom y demas           3           0           3
 <======= GPU Reload Atom Positions (2)========>
-[2] cubo: (1,0,1): 3189 puntos; 19 funciones, vecinos: 3
-[2] cubo: (1,1,1): 5654 puntos; 19 funciones, vecinos: 3
-sphere: 3406 puntos, 19 funciones | funcion x punto: 0.005578391075 vecinos: 3
-sphere: 2839 puntos, 17 funciones | funcion x punto: 0.005988023952 vecinos: 3
-sphere: 2839 puntos, 17 funciones | funcion x punto: 0.005988023952 vecinos: 3
-Grilla final: 17927 puntos (recordar que los de peso 0 se tiran), 329257 funciones
-Costo: 6062831
-NCOxM: 17381 MxM: 1661
-Particion final: 3 esferas y 2 cubos
-timer grilla: 7443us.
+[2] cubo: (0,0,0): 114 puntos; 16 funciones, vecinos: 3
+[2] cubo: (0,0,1): 227 puntos; 17 funciones, vecinos: 3
+[2] cubo: (0,1,0): 221 puntos; 16 funciones, vecinos: 3
+[2] cubo: (0,1,1): 477 puntos; 17 funciones, vecinos: 3
+[2] cubo: (1,0,0): 256 puntos; 18 funciones, vecinos: 3
+[2] cubo: (1,0,1): 1796 puntos; 19 funciones, vecinos: 3
+[2] cubo: (1,1,0): 537 puntos; 18 funciones, vecinos: 3
+[2] cubo: (1,1,1): 4007 puntos; 19 funciones, vecinos: 3
+sphere: 3492 puntos, 19 funciones | funcion x punto: 0.005441008018 vecinos: 3
+sphere: 2910 puntos, 17 funciones | funcion x punto: 0.005841924399 vecinos: 3
+sphere: 2910 puntos, 17 funciones | funcion x punto: 0.005841924399 vecinos: 3
+Grilla final: 16947 puntos (recordar que los de peso 0 se tiran), 307147 funciones
+Costo: 5583623
+NCOxM: 965 MxM: 3399
+Particion final: 3 esferas y 8 cubos
+timer grilla: 13483us.
  kknum         187         190
-TIMER [int3mem]: 548us.
+TIMER [int3mem]: 560us.
 TIMER [principio int3lu]: 7us.
 TIMER [int3lu]: 5us.
 <================ iteracion [rmm] ==========>
-iteration: 16538us.
-rmm: 4395us. density: 4341us. pot: 0us. forces: 0us. resto: 0us. functions: 5544us.
+iteration: 47367us.
+rmm: 5705us. density: 13845us. pot: 0us. forces: 0us. resto: 0us. functions: 19597us.
 
-XC energy: nan
-TIMER [actualiza rmm]: 97us.
-TIMER [dspev]: 559us.
+XC energy: -11.78323045
+TIMER [actualiza rmm]: 171us.
+TIMER [dspev]: 88us.
 TIMER [coeff]: 7us.
-TIMER [otras cosas]: 4us.
-  1  0.100000E+02             NaN
-TIMER [Total iter]: 17342us.
- CONVERGED AT           1 ITERATIONS
+TIMER [otras cosas]: 5us.
+  1  0.100000E+02     -69.7804527
+TIMER [Total iter]: 47791us.
+TIMER [principio int3lu]: 9us.
+TIMER [int3lu]: 4us.
+<================ iteracion [rmm] ==========>
+iteration: 47469us.
+rmm: 6111us. density: 13646us. pot: 0us. forces: 0us. resto: 0us. functions: 19974us.
+
+XC energy: -7.268562412
+TIMER [actualiza rmm]: 125us.
+TIMER [dspev]: 84us.
+TIMER [coeff]: 7us.
+TIMER [otras cosas]: 3us.
+  2  0.100000E+02     -68.5241292
+TIMER [Total iter]: 47811us.
+TIMER [principio int3lu]: 8us.
+TIMER [int3lu]: 5us.
+<================ iteracion [rmm] ==========>
+iteration: 46914us.
+rmm: 5458us. density: 13494us. pot: 0us. forces: 0us. resto: 0us. functions: 20226us.
+
+XC energy: -7.253118105
+TIMER [actualiza rmm]: 145us.
+TIMER [diis]: 119us.
+TIMER [dspev]: 71us.
+TIMER [coeff]: 7us.
+TIMER [otras cosas]: 3us.
+  3  0.100000E+02     -70.6569328
+TIMER [Total iter]: 47378us.
+TIMER [principio int3lu]: 9us.
+TIMER [int3lu]: 4us.
+<================ iteracion [rmm] ==========>
+iteration: 46459us.
+rmm: 5658us. density: 13858us. pot: 0us. forces: 0us. resto: 0us. functions: 19365us.
+
+XC energy: -9.811834546
+TIMER [actualiza rmm]: 115us.
+TIMER [diis]: 39us.
+TIMER [dspev]: 71us.
+TIMER [coeff]: 7us.
+TIMER [otras cosas]: 3us.
+  4  0.100000E+02     -75.0612318
+TIMER [Total iter]: 46842us.
+TIMER [principio int3lu]: 9us.
+TIMER [int3lu]: 4us.
+<================ iteracion [rmm] ==========>
+iteration: 47105us.
+rmm: 5687us. density: 13433us. pot: 0us. forces: 0us. resto: 0us. functions: 20410us.
+
+XC energy: -8.661329898
+TIMER [actualiza rmm]: 152us.
+TIMER [diis]: 45us.
+TIMER [dspev]: 74us.
+TIMER [coeff]: 7us.
+TIMER [otras cosas]: 3us.
+  5  0.100000E+02     -76.0333972
+TIMER [Total iter]: 47509us.
+TIMER [principio int3lu]: 9us.
+TIMER [int3lu]: 4us.
+<================ iteracion [rmm] ==========>
+iteration: 46382us.
+rmm: 5700us. density: 13362us. pot: 0us. forces: 0us. resto: 0us. functions: 19666us.
+
+XC energy: -8.669483155
+TIMER [actualiza rmm]: 115us.
+TIMER [diis]: 45us.
+TIMER [dspev]: 68us.
+TIMER [coeff]: 7us.
+TIMER [otras cosas]: 3us.
+  6  0.100000E+02     -76.0239081
+TIMER [Total iter]: 46738us.
+TIMER [principio int3lu]: 9us.
+TIMER [int3lu]: 5us.
+<================ iteracion [rmm] ==========>
+iteration: 46356us.
+rmm: 5392us. density: 13491us. pot: 0us. forces: 0us. resto: 0us. functions: 19838us.
+
+XC energy: -8.568713038
+TIMER [actualiza rmm]: 115us.
+TIMER [diis]: 43us.
+TIMER [dspev]: 71us.
+TIMER [coeff]: 7us.
+TIMER [otras cosas]: 3us.
+  7  0.100000E+02     -75.9336871
+TIMER [Total iter]: 46711us.
+TIMER [principio int3lu]: 9us.
+TIMER [int3lu]: 4us.
+<================ iteracion [rmm] ==========>
+iteration: 46963us.
+rmm: 5711us. density: 14011us. pot: 0us. forces: 0us. resto: 0us. functions: 19594us.
+
+XC energy: -8.775820213
+TIMER [actualiza rmm]: 112us.
+TIMER [diis]: 44us.
+TIMER [dspev]: 69us.
+TIMER [coeff]: 7us.
+TIMER [otras cosas]: 3us.
+  8  0.100000E+02     -76.0610163
+TIMER [Total iter]: 47310us.
+TIMER [principio int3lu]: 9us.
+TIMER [int3lu]: 5us.
+<================ iteracion [rmm] ==========>
+iteration: 48095us.
+rmm: 5774us. density: 14362us. pot: 0us. forces: 0us. resto: 0us. functions: 20230us.
+
+XC energy: -8.802773466
+TIMER [actualiza rmm]: 171us.
+TIMER [diis]: 52us.
+TIMER [dspev]: 74us.
+TIMER [coeff]: 7us.
+TIMER [otras cosas]: 3us.
+  9  0.100000E+02     -76.0652784
+TIMER [Total iter]: 48519us.
+TIMER [principio int3lu]: 9us.
+TIMER [int3lu]: 5us.
+<================ iteracion [rmm] ==========>
+iteration: 46980us.
+rmm: 5676us. density: 13856us. pot: 0us. forces: 0us. resto: 0us. functions: 19772us.
+
+XC energy: -8.824971813
+TIMER [actualiza rmm]: 113us.
+TIMER [diis]: 51us.
+TIMER [dspev]: 68us.
+TIMER [coeff]: 7us.
+TIMER [otras cosas]: 3us.
+ 10  0.100000E+02     -76.0667933
+TIMER [Total iter]: 47334us.
+TIMER [principio int3lu]: 9us.
+TIMER [int3lu]: 5us.
+<================ iteracion [rmm] ==========>
+iteration: 42218us.
+rmm: 4700us. density: 13052us. pot: 0us. forces: 0us. resto: 0us. functions: 17612us.
+
+XC energy: -8.827477849
+TIMER [actualiza rmm]: 111us.
+TIMER [diis]: 52us.
+TIMER [dspev]: 64us.
+TIMER [coeff]: 7us.
+TIMER [otras cosas]: 3us.
+ 11  0.100000E+02     -76.0668295
+TIMER [Total iter]: 42565us.
+TIMER [principio int3lu]: 8us.
+TIMER [int3lu]: 5us.
+<================ iteracion [rmm] ==========>
+iteration: 36371us.
+rmm: 4441us. density: 11990us. pot: 0us. forces: 0us. resto: 0us. functions: 13309us.
+
+XC energy: -8.829929408
+TIMER [actualiza rmm]: 127us.
+TIMER [diis]: 52us.
+TIMER [dspev]: 68us.
+TIMER [coeff]: 7us.
+TIMER [otras cosas]: 3us.
+ 12  0.100000E+02     -76.0668419
+TIMER [Total iter]: 36737us.
+TIMER [principio int3lu]: 8us.
+TIMER [int3lu]: 5us.
+<================ iteracion [rmm] ==========>
+iteration: 36624us.
+rmm: 4411us. density: 12034us. pot: 0us. forces: 0us. resto: 0us. functions: 13310us.
+
+XC energy: -8.830261024
+TIMER [actualiza rmm]: 111us.
+TIMER [diis]: 55us.
+TIMER [dspev]: 69us.
+TIMER [coeff]: 7us.
+TIMER [otras cosas]: 3us.
+ 13  0.100000E+02     -76.0668422
+TIMER [Total iter]: 36980us.
+TIMER [principio int3lu]: 8us.
+TIMER [int3lu]: 5us.
+<================ iteracion [rmm] ==========>
+iteration: 37415us.
+rmm: 4630us. density: 12364us. pot: 0us. forces: 0us. resto: 0us. functions: 13584us.
+
+XC energy: -8.830254163
+TIMER [actualiza rmm]: 6187us.
+TIMER [diis]: 60us.
+TIMER [dspev]: 69us.
+TIMER [coeff]: 7us.
+TIMER [otras cosas]: 3us.
+ 14  0.100000E+02     -76.0668422
+TIMER [Total iter]: 43919us.
+ CONVERGED AT          14 ITERATIONS
 <======= GPU New Grid (2)========>
 not loading, same grid as loaded
 <================ iteracion [energia] ==========>
-iteration: 11669us.
-rmm: 2us. density: 4186us. pot: 0us. forces: 0us. resto: 0us. functions: 5304us.
+iteration: 66168us.
+rmm: 5us. density: 14946us. pot: 0us. forces: 0us. resto: 0us. functions: 26383us.
 
-XC energy: nan
+XC energy: -8.830252432
  
   ENERGY CONTRIBUTIONS IN A.U.
   ONE ELECTRON         COULOMB           NUCLEAR
-  -129.0202622               NaN         4.7729671
-TIMER [SCF]: 41474us.
- SCF ENRGY=                     NaN
+  -114.4061383        51.2268373         4.7729671
+TIMER [SCF]: 928644us.
+ SCF ENRGY=  -47732.6567496444     

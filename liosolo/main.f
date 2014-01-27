@@ -129,17 +129,22 @@ c       write(*,*) pc(i),r(i,1:3)
 
         nqnuc=0
        do i=1,natom
-        nqnuc=nqnuc+Iz(i)
-        enddo
+         nqnuc=nqnuc+Iz(i)
+       enddo
 
-        nco=(nqnuc - charge)/2
+       nco=(nqnuc - charge)/2
 
-        write(*,*) 'NCO=',NCO
+       write(*,*) 'NCO=',NCO
        write(*,*) natom,ntatom,ngDyn,ngdDyn,ng0,ngd0
 c--------------------------------------------------------
       call drive(ng2,ngDyn,ngdDyn)
-
-       call SCF(escf,dipxyz)
-       write(*,*) 'SCF ENRGY=',escf 
-
-       end
+c--------------------------------------------------------
+      if(OPEN) then
+        call SCFOP(escf)
+      else
+        call SCF(escf,dipxyz)
+      endif
+c-------------------------------------------------------- 
+      write(*,*) 'SCF ENRGY=',escf 
+     
+      end

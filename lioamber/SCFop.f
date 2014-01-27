@@ -321,10 +321,11 @@ c
 c
           enddo
         enddo
-        do l=1,kk
-           write(*,*) rhoalpha(l)
-c          write(*,*) RMM(l),rhoalpha(l),rhobeta(l)
-        enddo
+c------ IMPRIMIENDO DENSIDADES ---------------------------------
+c        do l=1,kk
+c           write(*,*) rhoalpha(l)
+c           write(*,*) RMM(l),rhoalpha(l),rhobeta(l)
+c        enddo
       endif
 c------------------------------------------------------------------------
 c End of Starting guess (No MO , AO known)-------------------------------

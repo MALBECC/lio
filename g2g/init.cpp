@@ -243,11 +243,10 @@ template<bool compute_rmm, bool lda, bool compute_forces> void g2g_iteration(boo
   timers.total.start();
 
   if(fortran_vars.OPEN){
-  	cout << "LLAMANDO A partition.solve.....closed..."<<compute_rmm<<" "<<lda<<" "<<compute_forces<<" "<<compute_energy<<" "<<fortran_vars.OPEN<<endl;
+  	cout << "LLAMANDO A partition.solve.....opened..."<<compute_rmm<<" "<<lda<<" "<<compute_forces<<" "<<compute_energy<<" "<<fortran_vars.OPEN<<endl;
   }
 
-  //partition.solve(timers, compute_rmm, lda, compute_forces, compute_energy, fort_energy_ptr, fort_forces_ptr, fortran_vars.OPEN);
-  partition.solve(timers, compute_rmm, lda, compute_forces, compute_energy, fort_energy_ptr, fort_forces_ptr);
+  partition.solve(timers, compute_rmm, lda, compute_forces, compute_energy, fort_energy_ptr, fort_forces_ptr, fortran_vars.OPEN);
 
   timers.total.stop();
   cout << timers << endl;
@@ -267,14 +266,15 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 	cout << "] ==========>" << endl;
 
 // IMPRIMIR DENSIDADES
-	if(fortran_vars.OPEN){
+	/*if(fortran_vars.OPEN){
 		for (uint i = 0; i < fortran_vars.m; i++) {
 			for (uint j = 0; j < i; j++) {	
         			cout <<fortran_vars.rmm_dens_a(i,j)<<endl;
 			}
 	//		cout <<endl;
 		}
-	}
+	}*/
+
 	/*else{
 		for (uint i = 0; i < fortran_vars.m; i++) {
                         for (uint j = 0; j < i; j++) {

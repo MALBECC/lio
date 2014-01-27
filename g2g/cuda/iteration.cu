@@ -56,14 +56,11 @@ template void gpu_set_atom_positions<float3>(const HostMatrix<float3>& m);
 template void gpu_set_atom_positions<double3>(const HostMatrix<double3>& m);
 
 template<class scalar_type>
-void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,
-                                    double& energy, double* fort_forces_ptr)
-{
-//void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, double& energy, double* fort_forces_ptr, bool open)
-//{
-//	if(open){
-//        	printf("ENTRANDO A SOLVE !!!!!!");/
-//	}
+//void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, double& energy, double* fort_forces_ptr){
+void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, double& energy, double* fort_forces_ptr, bool open){
+	if(open){
+        	printf("ENTRANDO A SOLVE !!!!!!");
+	}
   //uint max_used_memory = 0;
 
 	/*** Computo sobre cada cubo ****/

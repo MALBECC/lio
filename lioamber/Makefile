@@ -66,7 +66,7 @@ liblio-g2g.so: dirs $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o)
 ## Targets: clean ##
 clean:
 	rm -rf obj
-	rm -rf libgarcha-g2g.so
+	rm -rf libgarcha-g2g.so liblio-g2g.so
 
 
 # Different flags for some .o

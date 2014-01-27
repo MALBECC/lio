@@ -18,5 +18,6 @@ fort.*
 *.log
 *.bak
 /g2g/nbproject/private/
+*.mod
 *.so
 *~

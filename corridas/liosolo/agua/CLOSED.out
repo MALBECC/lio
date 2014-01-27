@@ -41,7 +41,7 @@ Kernels: gpu
  NCO=           5
            3           3          90          90          30          30
  JOB STARTED NOW
-Fri Dec 27 15:56:13 ART 2013
+Mon Jan 27 17:51:58 ART 2014
  en drive          19          42           5
 <======= GPU Code Initialization ========>
 atoms: 3
@@ -49,61 +49,52 @@ max atoms: 3
 number of gaussians: 90
 do_forces: false
 s: 7 p: 2 d: 1
-m: 19
- nco: 0
+m: 19 nco: 191
 <====== read_options ========>
 little_cube_size 15.5
 max_function_exponent 10
 min_points_per_cube 1
 sphere_radius 0.5
+energy_all_iterations true
  ======>>>> SALIENDO DE DRIVE <<<<==========
  ntatom y demas           3           0           3
 <======= GPU Reload Atom Positions (2)========>
-[2] cubo: (1,0,1): 2067 puntos; 19 funciones, vecinos: 3
-[2] cubo: (1,1,1): 6612 puntos; 19 funciones, vecinos: 3
-sphere: 3492 puntos, 19 funciones | funcion x punto: 0.005441008018 vecinos: 3
-sphere: 2910 puntos, 17 funciones | funcion x punto: 0.005841924399 vecinos: 3
-sphere: 2910 puntos, 17 funciones | funcion x punto: 0.005841924399 vecinos: 3
-Grilla final: 17991 puntos (recordar que los de peso 0 se tiran), 330189 funciones
-Costo: 6075711
-NCOxM: 0 MxM: 1661
+[2] cubo: (1,0,1): 3189 puntos; 19 funciones, vecinos: 3
+[2] cubo: (1,1,1): 5654 puntos; 19 funciones, vecinos: 3
+sphere: 3406 puntos, 19 funciones | funcion x punto: 0.005578391075 vecinos: 3
+sphere: 2839 puntos, 17 funciones | funcion x punto: 0.005988023952 vecinos: 3
+sphere: 2839 puntos, 17 funciones | funcion x punto: 0.005988023952 vecinos: 3
+Grilla final: 17927 puntos (recordar que los de peso 0 se tiran), 329257 funciones
+Costo: 6062831
+NCOxM: 17381 MxM: 1661
 Particion final: 3 esferas y 2 cubos
-timer grilla: 5096us.
+timer grilla: 7443us.
  kknum         187         190
-TIMER [int3mem]: 566us.
+TIMER [int3mem]: 548us.
 TIMER [principio int3lu]: 7us.
 TIMER [int3lu]: 5us.
 <================ iteracion [rmm] ==========>
-GPU_COMPUTE_..........
-GPU_COMPUTE_..........
-GPU_COMPUTE_..........
-GPU_COMPUTE_..........
-GPU_COMPUTE_..........
-iteration: 47706us.
-rmm: 3539us. density: 28102us. pot: 0us. forces: 0us. resto: 0us. functions: 14741us.
+iteration: 16538us.
+rmm: 4395us. density: 4341us. pot: 0us. forces: 0us. resto: 0us. functions: 5544us.
 
-TIMER [actualiza rmm]: 62657us.
-TIMER [dspev]: 567us.
-TIMER [coeff]: 8us.
-TIMER [otras cosas]: 5us.
-  1  0.100000E+02     -57.9972223
-TIMER [Total iter]: 111103us.
+XC energy: nan
+TIMER [actualiza rmm]: 97us.
+TIMER [dspev]: 559us.
+TIMER [coeff]: 7us.
+TIMER [otras cosas]: 4us.
+  1  0.100000E+02             NaN
+TIMER [Total iter]: 17342us.
  CONVERGED AT           1 ITERATIONS
 <======= GPU New Grid (2)========>
 not loading, same grid as loaded
 <================ iteracion [energia] ==========>
-GPU_COMPUTE_..........
-GPU_COMPUTE_..........
-GPU_COMPUTE_..........
-GPU_COMPUTE_..........
-GPU_COMPUTE_..........
-iteration: 35451us.
-rmm: 2us. density: 11443us. pot: 0us. forces: 0us. resto: 0us. functions: 2677us.
+iteration: 11669us.
+rmm: 2us. density: 4186us. pot: 0us. forces: 0us. resto: 0us. functions: 5304us.
 
 XC energy: nan
  
   ENERGY CONTRIBUTIONS IN A.U.
   ONE ELECTRON         COULOMB           NUCLEAR
-  -129.0202622        66.2500729         4.7729671
-TIMER [SCF]: 191909us.
+  -129.0202622               NaN         4.7729671
+TIMER [SCF]: 41474us.
  SCF ENRGY=                     NaN

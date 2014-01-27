@@ -1,4 +1,5 @@
-export LIO_DIR=/home/william/software/garcha2-gpu
-export LD_LIBRARY_PATH=${LIO_DIR}/g2g:${LIO_DIR}/lioamber
+#!/bin/bash
 
-${LIO_DIR}/liosolo/liosolo -i input -b dzvp -c agua.xyz -v
+./correr_closed > CLOSED.out 
+./correr_opened > OPENED.out
+diffuse CLOSED.out OPENED.out

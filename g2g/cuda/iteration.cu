@@ -22,6 +22,7 @@ texture<float, 2, cudaReadModeElementType> rmm_input_gpu_tex;
 /** KERNELS **/
 #include "gpu_variables.h"
 #include "kernels/pot.h"
+#include "kernels/potop.h"
 #include "kernels/accumulate_point.h"
 #include "kernels/energy.h"
 #include "kernels/energy_derivs.h"
@@ -58,6 +59,11 @@ template<class scalar_type>
 void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,
                                     double& energy, double* fort_forces_ptr)
 {
+//void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, double& energy, double* fort_forces_ptr, bool open)
+//{
+//	if(open){
+//        	printf("ENTRANDO A SOLVE !!!!!!");/
+//	}
   //uint max_used_memory = 0;
 
 	/*** Computo sobre cada cubo ****/
@@ -97,6 +103,18 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   CudaMatrix<vec_type<scalar_type,4> > dd1_gpu;
   CudaMatrix<vec_type<scalar_type,4> > dd2_gpu;
   
+/* ???????
+        CudaMatrix<scalar_type> partial_densities_a_gpu;
+        CudaMatrix<vec_type<scalar_type,4> > dxyz_a_gpu;
+        CudaMatrix<vec_type<scalar_type,4> > dd1_a_gpu;
+        CudaMatrix<vec_type<scalar_type,4> > dd2_a_gpu;
+
+        CudaMatrix<scalar_type> partial_densities_b_gpu;
+        CudaMatrix<vec_type<scalar_type,4> > dxyz_b_gpu;
+        CudaMatrix<vec_type<scalar_type,4> > dd1_b_gpu;
+        CudaMatrix<vec_type<scalar_type,4> > dd2_b_gpu;
+
+*/
   /*
    ********************************************************************** 
    * Transposiciones de matrices para la coalescencia mejorada en density

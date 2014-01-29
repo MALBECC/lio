@@ -245,9 +245,9 @@ template<bool compute_rmm, bool lda, bool compute_forces> void g2g_iteration(boo
   if(fortran_vars.OPEN){
   	cout << "LLAMANDO A partition.solve.....opened..."<<compute_rmm<<" "<<lda<<" "<<compute_forces<<" "<<compute_energy<<" "<<fortran_vars.OPEN<<endl;
   }
-
+  
   partition.solve(timers, compute_rmm, lda, compute_forces, compute_energy, fort_energy_ptr, fort_forces_ptr, fortran_vars.OPEN);
-
+  
   timers.total.stop();
   cout << timers << endl;
 //(  cout << "...............................SALIENDO DE g2g_iteration"<<endl; 

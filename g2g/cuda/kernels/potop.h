@@ -1,3 +1,25 @@
+#define GCORC_A_1 ((scalar_type)0.0310907f)
+#define GCORC_A1_1 ((scalar_type)0.21370f)
+#define GCORC_B1_1 ((scalar_type)7.5957f)
+#define GCORC_B2_1 ((scalar_type)3.5876f)
+#define GCORC_B3_1 ((scalar_type)1.6382f)
+#define GCORC_B4_1 ((scalar_type)0.49294f)
+
+#define GCORC_A_2 ((scalar_type)0.0310907f)
+#define GCORC_A1_2 ((scalar_type)0.21370f)
+#define GCORC_B1_2 ((scalar_type)7.5957f)
+#define GCORC_B2_2 ((scalar_type)3.5876f)
+#define GCORC_B3_2 ((scalar_type)1.6382f)
+#define GCORC_B4_2 ((scalar_type)0.49294f)
+
+#define GCORC_A_3 ((scalar_type)0.0310907f)
+#define GCORC_A1_3 ((scalar_type)0.21370f)
+#define GCORC_B1_3 ((scalar_type)7.5957f)
+#define GCORC_B2_3 ((scalar_type)3.5876f)
+#define GCORC_B3_3 ((scalar_type)1.6382f)
+#define GCORC_B4_3 ((scalar_type)0.49294f)
+
+
 template<class scalar_type>
 __device__ void gcor2(scalar_type A, scalar_type A1, scalar_type B1, scalar_type B2, scalar_type B3, scalar_type B4,scalar_type rtrs,scalar_type& gg, scalar_type& ggrs){
 // CALL gcor2(0.0310907D0,0.21370D0,7.5957D0,3.5876D0,1.6382D0,0.49294D0,rtrs,EU,EURS)
@@ -8,19 +30,13 @@ __device__ void gcor2(scalar_type A, scalar_type A1, scalar_type B1, scalar_type
 // J. P. Perdew and Y. Wang, Phys. Rev. B {\bf 45}, 13244 (1992).
 // K. Burke, May 11, 1996.
     
-//                  Q0 = -2.D0*A*(1.D0+A1*rtrs*rtrs)
 	scalar_type Q0 = -2.0f*A*(1.0f+A1+rtrs*rtrs);
-//                  Q1 = 2.D0*A*rtrs*(B1+rtrs*(B2+rtrs*(B3+B4*rtrs)))
 	scalar_type Q1 = 2.0f*A*rtrs*(B1+rtrs*(B2+rtrs*(B3+B4*rtrs)));
-//                  Q2 = DLOG(1.D0+1.D0/Q1)
 	scalar_type Q2 = log(1.0f+1.0f/Q1);
-//      GG = Q0*Q2
 	gg = Q0*Q2;
 
-//                  Q3 = A*(B1/rtrs+2.D0*B2+rtrs*(3.D0*B3+4.D0*B4*rtrs))
 	scalar_type Q3 = A*(B1/rtrs+2.0f*B2+rtrs*(3.0f*B3+4.0f*B4*rtrs));
  
-//      GGRS = -2.D0*A*A1*Q2 - Q0*Q3/(Q1*(1.d0+Q1))
 	ggrs = -2.0f*A*A1*Q2 -Q0*Q3/(Q1*(1.0f+Q1));
 
 	return;
@@ -179,16 +195,20 @@ __device__ void corpbe(scalar_type rho,scalar_type rs,scalar_type zet,scalar_typ
 	
 	scalar_type EU, EURS, EP, EPRS, ALFM, ALFRSM;
 	
-	gcor2(0.0310907f ,0.21370f, 7.5957f,3.5876f,1.6382f ,0.49294f,rtrs,EU,EURS);
-	gcor2(0.01554535f,0.20548f,14.1189f,6.1977f,3.3662f ,0.62517f,rtrs,EP,EPRS);
-	gcor2(0.0168869f ,0.11125f,10.357f ,3.6231f,0.88026f,0.49671f,rtrs,ALFM,ALFRSM);
+	//gcor2(0.0310907f ,0.21370f, 7.5957f,3.5876f,1.6382f ,0.49294f,rtrs,EU,EURS);
+	//gcor2(0.01554535f,0.20548f,14.1189f,6.1977f,3.3662f ,0.62517f,rtrs,EP,EPRS);
+	//gcor2(0.0168869f ,0.11125f,10.357f ,3.6231f,0.88026f,0.49671f,rtrs,ALFM,ALFRSM);
 
-	scalar_type ALFC = -ALFM;
+	gcor2(GCORC_A_1, GCORC_A1_1, GCORC_B1_1, GCORC_B2_1, GCORC_B3_1, GCORC_B4_1, rtrs, EU, EURS);
+        gcor2(GCORC_A_2, GCORC_A1_2, GCORC_B1_2, GCORC_B2_2, GCORC_B3_2, GCORC_B4_2, rtrs, EP, EPRS);
+        gcor2(GCORC_A_3, GCORC_A1_3, GCORC_B1_3, GCORC_B2_3, GCORC_B3_3, GCORC_B4_3, rtrs, ALFM, ALFRSM);
+
+//	scalar_type ALFC = -ALFM;
 	scalar_type Z4 = pow(zet, (scalar_type)4.0);
 
-	scalar_type ZET1 = pow((1.0f+zet), (4.0f/3.0f));
-	scalar_type ZET2 = pow((1.0f-zet), (4.0f/3.0f));
-	scalar_type GAM = pow (2.0f, ((4.0f/3.0f)-2.0f));
+	scalar_type ZET1 = pow((scalar_type)(1.0f+zet), (scalar_type)(4.0f/3.0f));
+	scalar_type ZET2 = pow((scalar_type)(1.0f-zet), (scalar_type)(4.0f/3.0f));
+	scalar_type GAM = pow ((scalar_type)(2.0f), (scalar_type)((4.0f/3.0f)-2.0f));
 
 	scalar_type F =( ZET1 + ZET2 - 2.0f )/GAM;
 //	F=((1.D0+ZET)**THRD4+(1.D0-ZET)**THRD4-2.D0)/GAM
@@ -206,8 +226,8 @@ __device__ void corpbe(scalar_type rho,scalar_type rs,scalar_type zet,scalar_typ
 	scalar_type ECRS = EURS*(1.0f-F*Z4) + EPRS*F*Z4 - ALFRSM*F*(1.0f-Z4)/FZZ;
 //      ECRS = EURS*(1.D0-F*Z4)+EPRS*F*Z4-ALFRSM*F*(1.D0-Z4)/FZZ
 
-	scalar_type ZET3 = pow((1.0f+zet), (1.0f/3.0f));
-        scalar_type ZET4 = pow((1.0f-zet), (1.0f/3.0f));
+	scalar_type ZET3 = pow((scalar_type)(1.0f+zet), (scalar_type)(1.0f/3.0f));
+        scalar_type ZET4 = pow((scalar_type)(1.0f-zet), (scalar_type)(1.0f/3.0f));
 	scalar_type FZ = (4.0f/3.0f) * ( ZET3 - ZET4 )/GAM;
 //      FZ = THRD4*((1.D0+ZET)**THRD-(1.D0-ZET)**THRD)/GAM
 
@@ -229,26 +249,26 @@ __device__ void corpbe(scalar_type rho,scalar_type rs,scalar_type zet,scalar_typ
 // B=A of [a](8)
 //
 //      G=((1.d0+ZET)**thrd2+(1.d0-ZET)**thrd2)/2.d0
-	scalar_type ZET5 = pow((1.0f+zet), (2.0f/3.0f));
-	scalar_type ZET6 = pow((1.0f-zet), (2.0f/3.0f));
+	scalar_type ZET5 = pow((scalar_type)(1.0f+zet), (scalar_type)(2.0f/3.0f));
+	scalar_type ZET6 = pow((scalar_type)(1.0f-zet), (scalar_type)(2.0f/3.0f));
 	scalar_type G = (ZET5 + ZET6)/2.0f;
 //      G3 = G**3
-	scalar_type G3 = pow(G, 3.0f);
+	scalar_type G3 = pow(G, (scalar_type)3.0f);
 //      PON=-EC/(G3*gama)
 	scalar_type PON = -ec/(G3*EASYPBE_GAMMA);
 //      B = DELT/(DEXP(PON)-1.D0)
 	scalar_type B1 = exp(PON);
 	scalar_type B = EASYPBE_DELTA/(B1 - 1.0f);
 //      B2 = B*B
-	scalar_type B2 = pow(B, 2.0f);
+	scalar_type B2 = pow(B, (scalar_type)2.0f);
 //      T2 = T*T
-	scalar_type T2 = pow(t, 2.0f);
+	scalar_type T2 = pow(t, (scalar_type)2.0f);
 //      T4 = T2*T2
-	scalar_type T4 = pow(T2, 2.0f);
+	scalar_type T4 = pow(T2, (scalar_type)2.0f);
 //      RS2 = RS*RS
-	scalar_type RS2 = pow(rs, 2.0f);
+	scalar_type RS2 = pow(rs, (scalar_type)2.0f);
 //      RS3 = RS2*RS
-	scalar_type RS3 = RS2*rs;
+//	scalar_type RS3 = RS2*rs;
 //      Q4 = 1.D0+B*T2
 	scalar_type Q4 = 1.0f + B * T2;
 //      Q5 = 1.D0+B*T2+B2*T4
@@ -269,10 +289,10 @@ __device__ void corpbe(scalar_type rho,scalar_type rs,scalar_type zet,scalar_typ
 //	RSTHRD = RS/3.D0
 	scalar_type rsthrd = rs/3.0f;
 //	GZ=(((1.d0+zet)**2+eta)**sixthm-((1.d0-zet)**2+eta)**sixthm)/3.d0
-	scalar_type ZET7 = pow((1.0f+zet), 2.0f);
-	scalar_type ZET8 = pow((1.0f-zet), 2.0f);
-	scalar_type GZ1 = pow((ZET7+EASYPBE_ETA), -(1.0f/6.0f));
-	scalar_type GZ2 = pow((ZET8+EASYPBE_ETA), -(1.0f/6.0f));
+	scalar_type ZET7 = pow((scalar_type)(1.0f+zet), (scalar_type)2.0f);
+	scalar_type ZET8 = pow((scalar_type)(1.0f-zet), (scalar_type)2.0f);
+	scalar_type GZ1 = pow((ZET7+EASYPBE_ETA), (scalar_type)(-1.0f/6.0f));
+	scalar_type GZ2 = pow((ZET8+EASYPBE_ETA), (scalar_type)(-1.0f/6.0f));
 	scalar_type GZ = (GZ1-GZ2)/3.0f;
 
 //	FAC = DELT/B+1.D0
@@ -488,8 +508,8 @@ __device__ void easypbe(scalar_type dens_a, scalar_type dgrad_a, scalar_type del
 	scalar_type g=(g1_23+g2_23) / 2.0f;
 	
 //	fk=(pi32*rho)**thrd
-	scalar_type rho13 = pow(rho, (1.0f / 3.0f));
-        scalar_type fk1 = pow(EASYPBE_PI32, (1.0f / 3.0f));
+	scalar_type rho13 = pow(rho, (scalar_type)(1.0f / 3.0f));
+        scalar_type fk1 = pow(EASYPBE_PI32, (scalar_type)(1.0f / 3.0f));
         scalar_type fk = fk1 * rho13;
 //        twofk = 2.0f * fk;
 //        twofk2 = pow(twofk, (scalar_type)2.0f);
@@ -533,7 +553,8 @@ __device__ void gpu_potop(scalar_type dens_a, scalar_type dens_b, const vec_type
 {
 // Default values
 // v_a, v_b son y2a, y2b
-	ex = ec = v_a = v_b = 0.0f;
+//	ex = ec = v_a = v_b = 0.0f;
+	exc_corr = v_a = v_b = 0.0f;
 	scalar_type dgrad_a,delgrad_a,rlap_a,dgrad_b,delgrad_b,rlap_b;
 
 // PBE (gpu_Iexch == 9)
@@ -544,7 +565,7 @@ __device__ void gpu_potop(scalar_type dens_a, scalar_type dens_b, const vec_type
 // VALOR UMBRAL DEL DENSIDAD  para continuar ...
 		if (dens < ((scalar_type)1e-18f)) return;
 //===============================================================
-		scalar_type dens2 = dens*dens;
+//		scalar_type dens2 = dens*dens;
 	
 		vec_type<scalar_type,4> grad;
 		grad.x = grad_a.x + grad_b.x;
@@ -602,7 +623,7 @@ __device__ void gpu_potop(scalar_type dens_a, scalar_type dens_b, const vec_type
 		if (grad2 == (scalar_type)0.0f) grad2 = FLT_MIN;
 		scalar_type dgrad = sqrt(grad2);
 //
-		scalar_type rlap = hess1.x + hess1.y + hess1.z;
+//		scalar_type rlap = hess1.x + hess1.y + hess1.z;
 		scalar_type delgrad = ((grad.x * grad.x) * hess1.x + 2.0f * grad.x * grad.y * hess2.x + 2.0f * grad.y * grad.z * hess2.z + 2.0f * grad.x * grad.z * hess2.y + (grad.y * grad.y) * hess1.y + (grad.z * grad.z) * hess1.z) / dgrad;
 
 // 

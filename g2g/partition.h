@@ -75,6 +75,7 @@ class PointGroup {
     void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input) const;
     void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input_a, G2G::HostMatrix<scalar_type>& rmm_input_b) const;
     void add_rmm_output(const G2G::HostMatrix<scalar_type>& rmm_output) const;
+    void add_rmm_open_output(const G2G::HostMatrix<scalar_type>& rmm_a_output, const G2G::HostMatrix<scalar_type>& rmm_b_output) const;
 
     void compute_nucleii_maps(void);
 

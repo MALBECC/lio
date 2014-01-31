@@ -1,11 +1,11 @@
 #define WIDTH 4
 
 // OPEN SHELL CASE
-template<class scalar_type, bool compute_energy, bool compute_factor, bool lda, bool open>
-__global__ void gpu_accumulate_point(scalar_type* const energy, scalar_type* const factor_a, scalar_type* const factor_b, 
+template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
+__global__ void gpu_accumulate_point_open(scalar_type* const energy, scalar_type* const factor_a, scalar_type* const factor_b, 
                                     const scalar_type* const point_weights, uint points, int block_height, 
                                     scalar_type* partial_density_a, vec_type<scalar_type,WIDTH>*  dxyz_a, 
-                                    vec_type<scalar_type,WIDTH>* dd1_a, vec_type<scalar_type,WIDTH>* dd2_a
+                                    vec_type<scalar_type,WIDTH>* dd1_a, vec_type<scalar_type,WIDTH>* dd2_a,
                                     scalar_type* partial_density_b, vec_type<scalar_type,WIDTH>*  dxyz_b, 
                                     vec_type<scalar_type,WIDTH>* dd1_b, vec_type<scalar_type,WIDTH>* dd2_b)
 {
@@ -13,7 +13,9 @@ __global__ void gpu_accumulate_point(scalar_type* const energy, scalar_type* con
   
   scalar_type point_weight = 0.0f;
 //    scalar_type y2a, exc_corr;
-  scalar_type ex,ec,v_a_v_b;
+  //scalar_type ex,ec,v_a_v_b;
+
+  scalar_type exc_corr,v_a, v_b;
 
   scalar_type _partial_density_a(0.0f),_partial_density_b(0.0f);
   vec_type<scalar_type,WIDTH> _dxyz_a, _dd1_a, _dd2_a,_dxyz_b, _dd1_b, _dd2_b;
@@ -40,7 +42,7 @@ __global__ void gpu_accumulate_point(scalar_type* const energy, scalar_type* con
      }
   }
 
-  gpu_potop<scalar_type>(_partial_density_a, _partial_density_b, _dxyz_a, _dxyz_b, _dd1_a, _dd1_b, _dd2_a, _dd2_b, exc_corr, v_a, v_b)
+  gpu_potop<scalar_type>(_partial_density_a, _partial_density_b, _dxyz_a, _dxyz_b, _dd1_a, _dd1_b, _dd2_a, _dd2_b, exc_corr, v_a, v_b);
 
   if (compute_energy && valid_thread)
 // ????? Energia ???  ea+eb ??

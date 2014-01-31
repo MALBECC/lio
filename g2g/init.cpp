@@ -288,36 +288,27 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
   	bool compute_forces = (computation_type == COMPUTE_FORCE_ONLY  || computation_type == COMPUTE_ENERGY_FORCE);
   	bool compute_rmm    = (computation_type == COMPUTE_RMM);
 
+// ???????  energy_all_iterations
   	if (energy_all_iterations) compute_energy = true;
 
   	if (compute_rmm) {
     		if (fortran_vars.lda) {
       			if (compute_forces) g2g_iteration<true, true, true>(compute_energy, fort_energy_ptr, fort_forces_ptr);
-      			else g2g_iteration<true, true, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
+      			else                g2g_iteration<true, true, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
     		}
     		else{
       			if (compute_forces) g2g_iteration<true, false, true>(compute_energy, fort_energy_ptr, fort_forces_ptr);
-      			else{
-                            	if(!fortran_vars.OPEN){
-					//cout << "LLAMANDO A g2g_iteration......................OPEN: "<<fortran_vars.OPEN<<endl;
-					g2g_iteration<true, false, false>(compute_energy, fort_energy_ptr, fort_forces_ptr); //<<===============
-				}
-				else{
-					cout << "LLAMANDO A g2g_iteration......................OPEN: "<<fortran_vars.OPEN<<endl;
-					g2g_iteration<true, false, false>(compute_energy, fort_energy_ptr, fort_forces_ptr); //<<=========
-			     	}
-				//cout << "........................ LISTO VOLVIO de g2g_iteration"<<endl;
-    		        }
+      			else                g2g_iteration<true, false, false>(compute_energy, fort_energy_ptr, fort_forces_ptr); //<<========
                 }
   	}
   	else{
     		if (fortran_vars.lda) {
       			if (compute_forces) g2g_iteration<false, true, true>(compute_energy, fort_energy_ptr, fort_forces_ptr);
-      			else g2g_iteration<false, true, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
+      			else                g2g_iteration<false, true, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
     		}
     		else{
       			if (compute_forces) g2g_iteration<false, false, true>(compute_energy, fort_energy_ptr, fort_forces_ptr);
-      			else g2g_iteration<false, false, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
+      			else                g2g_iteration<false, false, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
     		}
   	}
   	if (compute_energy) cout << "XC energy: " << *fort_energy_ptr << endl;

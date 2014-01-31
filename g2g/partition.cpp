@@ -53,7 +53,8 @@ void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input) 
 
 template<class scalar_type>
 void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input_a, HostMatrix<scalar_type>& rmm_input_b) const {
-  rmm_input.zero();
+  rmm_input_a.zero();
+  rmm_input_b.zero();
   for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
     uint inc_i = small_function_type(i);
 
@@ -68,10 +69,10 @@ void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input_a
           uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
 
           rmm_input_a(ii, jj) = (scalar_type)fortran_vars.rmm_dens_a.data[big_index];
-          rmm_input_a(jj, ii) = rmm_input(ii, jj);
+          rmm_input_a(jj, ii) = rmm_input_a(ii, jj);
 		
 	  rmm_input_b(ii, jj) = (scalar_type)fortran_vars.rmm_dens_b.data[big_index];
-          rmm_input_b(jj, ii) = rmm_input(ii, jj);
+          rmm_input_b(jj, ii) = rmm_input_b(ii, jj);
 
         }
       }
@@ -100,6 +101,27 @@ void PointGroup<scalar_type>::add_rmm_output(const HostMatrix<scalar_type>& rmm_
   }
 }
 
+template<class scalar_type>
+void PointGroup<scalar_type>::add_rmm_open_output(const HostMatrix<scalar_type>& rmm_a_output, const HostMatrix<scalar_type>& rmm_b_output) const {
+  for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
+    uint inc_i = small_function_type(i);
+
+    for (uint k = 0; k < inc_i; k++, ii++) {
+      uint big_i = local2global_func[i] + k;
+      for (uint j = 0, jj = 0; j < total_functions_simple(); j++) {
+        uint inc_j = small_function_type(j);
+
+        for (uint l = 0; l < inc_j; l++, jj++) {
+          uint big_j = local2global_func[j] + l;
+          if (big_i > big_j) continue;
+          uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
+          fortran_vars.rmm_output_a(big_index) += (double)rmm_a_output(ii, jj);
+	  fortran_vars.rmm_output_b(big_index) += (double)rmm_b_output(ii, jj);
+        }
+      }
+    }
+  }
+}
 template<class scalar_type>
 void PointGroup<scalar_type>::compute_nucleii_maps(void)
 {

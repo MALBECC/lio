@@ -529,93 +529,95 @@ __device__ void easypbe(scalar_type dens_a, scalar_type dgrad_a, scalar_type del
 
 
 template<class scalar_type>
-__device__ void gpu_potgop(scalar_type dens_a, scalar_type dens_b, const vec_type<scalar_type,4>& grad_a, const vec_type<scalar_type,4>& grad_b, const vec_type<scalar_type,4>& hess1_a,const vec_type<scalar_type,4>& hess1_b, const vec_type<scalar_type,4>& hess2_a,const vec_type<scalar_type,4>& hess2_b, scalar_type& ex, scalar_type& ec, scalar_type& v_a, scalar_type& v_b)
+__device__ void gpu_potop(scalar_type dens_a, scalar_type dens_b, const vec_type<scalar_type,4>& grad_a, const vec_type<scalar_type,4>& grad_b, const vec_type<scalar_type,4>& hess1_a,const vec_type<scalar_type,4>& hess1_b, const vec_type<scalar_type,4>& hess2_a,const vec_type<scalar_type,4>& hess2_b, scalar_type& exc_corr, scalar_type& v_a, scalar_type& v_b)
 {
 // Default values
+// v_a, v_b son y2a, y2b
 	ex = ec = v_a = v_b = 0.0f;
 	scalar_type dgrad_a,delgrad_a,rlap_a,dgrad_b,delgrad_b,rlap_b;
 
 // PBE (gpu_Iexch == 9)
 	if (gpu_Iexch == 9){
 
-	scalar_type dens = dens_a + dens_b;
+		scalar_type dens = dens_a + dens_b;
 //===============================================================
 // VALOR UMBRAL DEL DENSIDAD  para continuar ...
-	if (dens < ((scalar_type)1e-18f)) return;
+		if (dens < ((scalar_type)1e-18f)) return;
 //===============================================================
-	scalar_type dens2 = dens*dens;
+		scalar_type dens2 = dens*dens;
 	
-	vec_type<scalar_type,4> grad;
-	grad.x = grad_a.x + grad_b.x;
-	grad.y = grad_a.y + grad_b.y;
-	grad.z = grad_a.z + grad_b.z;
+		vec_type<scalar_type,4> grad;
+		grad.x = grad_a.x + grad_b.x;
+		grad.y = grad_a.y + grad_b.y;
+		grad.z = grad_a.z + grad_b.z;
 
 // // hess1: xx, yy, zz
 // // hess2: xy, xz, yz
-	vec_type<scalar_type,4> hess1;
-	hess1.x = hess1_a.x + hess1_b.x;
-	hess1.y = hess1_a.y + hess1_b.y;
-	hess1.z = hess1_a.z + hess1_b.z;
-	vec_type<scalar_type,4> hess2;
-        hess2.x = hess2_a.x + hess2_b.x;
-        hess2.y = hess2_a.y + hess2_b.y;
-        hess2.z = hess2_a.z + hess2_b.z;
+		vec_type<scalar_type,4> hess1;
+		hess1.x = hess1_a.x + hess1_b.x;
+		hess1.y = hess1_a.y + hess1_b.y;
+		hess1.z = hess1_a.z + hess1_b.z;
+		vec_type<scalar_type,4> hess2;
+        	hess2.x = hess2_a.x + hess2_b.x;
+       		hess2.y = hess2_a.y + hess2_b.y;
+        	hess2.z = hess2_a.z + hess2_b.z;
 
 //	scalar_type y = pow(dens, (1.0f/3.0f));  // rho^(1/3)
 
 // Up density
-	if (dens_a == ((scalar_type)0.0f)){ 
-		dgrad_a = 0.0f;
-		rlap_a = 0.0f;
-		delgrad_a = 0.0f;
-	}
-	else{
-		scalar_type grad2_a = grad_a.x * grad_a.x + grad_a.y * grad_a.y + grad_a.z * grad_a.z;
-		if (grad2_a == (scalar_type)0.0f) grad2_a = FLT_MIN;
-		dgrad_a = sqrt(grad2_a);
+		if (dens_a == ((scalar_type)0.0f)){ 
+			dgrad_a = 0.0f;
+			rlap_a = 0.0f;
+			delgrad_a = 0.0f;
+		}
+		else{
+			scalar_type grad2_a = grad_a.x * grad_a.x + grad_a.y * grad_a.y + grad_a.z * grad_a.z;
+			if (grad2_a == (scalar_type)0.0f) grad2_a = FLT_MIN;
+			dgrad_a = sqrt(grad2_a);
 // Laplacian Up
-		rlap_a = hess1_a.x + hess1_a.y + hess1_a.z;
+			rlap_a = hess1_a.x + hess1_a.y + hess1_a.z;
 // misterious thing !!! Up
-		delgrad_a = ((grad_a.x * grad_a.x) * hess1_a.x + 2.0f * grad_a.x * grad_a.y * hess2_a.x + 2.0f * grad_a.y * grad_a.z * hess2_a.z + 2.0f * grad_a.x * grad_a.z * hess2_a.y + (grad_a.y * grad_a.y) * hess1_a.y + (grad_a.z * grad_a.z) * hess1_a.z) / dgrad_a;
-	}
+			delgrad_a = ((grad_a.x * grad_a.x) * hess1_a.x + 2.0f * grad_a.x * grad_a.y * hess2_a.x + 2.0f * grad_a.y * grad_a.z * hess2_a.z + 2.0f * grad_a.x * grad_a.z * hess2_a.y + (grad_a.y * grad_a.y) * hess1_a.y + (grad_a.z * grad_a.z) * hess1_a.z) / dgrad_a;
+		}
 
 // Down density
-        if (dens_b == ((scalar_type)0.0f)){
-        	dgrad_b = 0.0f;
-        	rlap_b = 0.0f;
-        	delgrad_b = 0.0f;
-        }
-        else{
-        	scalar_type grad2_b = grad_b.x * grad_b.x + grad_b.y * grad_b.y + grad_b.z * grad_b.z;
-        	if (grad2_b == (scalar_type)0.0f) grad2_b = FLT_MIN;
-        	dgrad_b = sqrt(grad2_b);
+        	if (dens_b == ((scalar_type)0.0f)){
+        		dgrad_b = 0.0f;
+        		rlap_b = 0.0f;
+        		delgrad_b = 0.0f;
+        	}
+        	else{
+        		scalar_type grad2_b = grad_b.x * grad_b.x + grad_b.y * grad_b.y + grad_b.z * grad_b.z;
+        		if (grad2_b == (scalar_type)0.0f) grad2_b = FLT_MIN;
+        		dgrad_b = sqrt(grad2_b);
 // Laplacian Down
-        	rlap_b = hess1_b.x + hess1_b.y + hess1_b.z;
+        		rlap_b = hess1_b.x + hess1_b.y + hess1_b.z;
 // misterious thing !!! Down
-        	delgrad_b = ((grad_b.x * grad_b.x) * hess1_b.x + 2.0f * grad_b.x * grad_b.y * hess2_b.x + 2.0f * grad_b.y * grad_b.z * hess2_b.z + 2.0f * grad_b.x * grad_b.z * hess2_b.y + (grad_b.y * grad_b.y) * hess1_b.y + (grad_b.z * grad_b.z) * hess1_b.z) / dgrad_b;
-        }
+        		delgrad_b = ((grad_b.x * grad_b.x) * hess1_b.x + 2.0f * grad_b.x * grad_b.y * hess2_b.x + 2.0f * grad_b.y * grad_b.z * hess2_b.z + 2.0f * grad_b.x * grad_b.z * hess2_b.y + (grad_b.y * grad_b.y) * hess1_b.y + (grad_b.z * grad_b.z) * hess1_b.z) / dgrad_b;
+        	}
 
 // Up + Down densities
 //
-	scalar_type grad2 = grad.x * grad.x + grad.y * grad.y + grad.z * grad.z;
-	if (grad2 == (scalar_type)0.0f) grad2 = FLT_MIN;
-	scalar_type dgrad = sqrt(grad2);
+		scalar_type grad2 = grad.x * grad.x + grad.y * grad.y + grad.z * grad.z;
+		if (grad2 == (scalar_type)0.0f) grad2 = FLT_MIN;
+		scalar_type dgrad = sqrt(grad2);
 //
-	scalar_type rlap = hess1.x + hess1.y + hess1.z;
-	scalar_type delgrad = ((grad.x * grad.x) * hess1.x + 2.0f * grad.x * grad.y * hess2.x + 2.0f * grad.y * grad.z * hess2.z + 2.0f * grad.x * grad.z * hess2.y + (grad.y * grad.y) * hess1.y + (grad.z * grad.z) * hess1.z) / dgrad;
+		scalar_type rlap = hess1.x + hess1.y + hess1.z;
+		scalar_type delgrad = ((grad.x * grad.x) * hess1.x + 2.0f * grad.x * grad.y * hess2.x + 2.0f * grad.y * grad.z * hess2.z + 2.0f * grad.x * grad.z * hess2.y + (grad.y * grad.y) * hess1.y + (grad.z * grad.z) * hess1.z) / dgrad;
 
 // 
 
-	scalar_type expbe,vxpbe_a,vxpbe_b,ecpbe,vcpbe_a,vcpbe_b;
+		scalar_type expbe,vxpbe_a,vxpbe_b,ecpbe,vcpbe_a,vcpbe_b;
    
-	easypbe(dens_a,dgrad_a,delgrad_a,rlap_a,dens_b,dgrad_b,delgrad_b,rlap_b,dgrad,delgrad,expbe,vxpbe_a,vxpbe_b,ecpbe,vcpbe_a,vcpbe_b);
+		easypbe(dens_a,dgrad_a,delgrad_a,rlap_a,dens_b,dgrad_b,delgrad_b,rlap_b,dgrad,delgrad,expbe,vxpbe_a,vxpbe_b,ecpbe,vcpbe_a,vcpbe_b);
 
-      	ex = expbe;
-	ec = ecpbe;
-     	v_a = vxpbe_a + vcpbe_a;
-	v_b = vxpbe_b + vcpbe_b;
+      		//ex = expbe;
+		//ec = ecpbe;
+        	exc_corr = expbe + ecpbe;
+     		v_a = vxpbe_a + vcpbe_a;
+		v_b = vxpbe_b + vcpbe_b;
 
-	return;
+		return;
 	}
 	else{
 // NO HAY IMPLEMENTADO OTRO FUNCIONAL DE XC	

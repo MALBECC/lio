@@ -4,5 +4,5 @@ natom=3
 charge=0
 timedep=0
 ntdstep=1000
-OPEN=T
+OPEN=F
 &end

@@ -118,7 +118,7 @@ c calls generator of table for incomplete gamma functions
 c
        call GENERF
        call GENERFS
-       call GRID
+       call GRIDLIO
        npas=0
 c-----------------------------------------------------------------------
 c reads input file

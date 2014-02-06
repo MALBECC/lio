@@ -259,12 +259,12 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 
 /* general options */
 namespace G2G {
-	uint max_function_exponent = 8;
-	double little_cube_size = 6.0;
+	uint max_function_exponent = 10;
+	double little_cube_size = 8.0;
 	uint min_points_per_cube = 1;
 	double becke_cutoff = 1e-7;
   bool assign_all_functions = false;
-  double sphere_radius = 0.0;
+  double sphere_radius = 0.6;
   bool remove_zero_weights = true;
   bool energy_all_iterations = false;
   double big_function_cutoff = 1;

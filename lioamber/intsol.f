@@ -174,7 +174,8 @@ c
       E1s=E1s+RMM(k)*term
        if(E1s.ne.E1s) then
        write(*,*) 'E1s NaN 1'
-       write(*,*) term, RMM(M11+k-1)
+        stop
+c       write(*,*) term, RMM(M11+k-1)
        endif        
 c        write(44,*) tna,term,ccoef,RMM(M11+k-1),RMM(k),E1s
         endif
@@ -248,10 +249,10 @@ c
         RMM(M11+k-1)=RMM(M11+k-1)+term
         E1s=E1s+RMM(k)*term
 
-       if(E1s.ne.E1s) then
-       write(*,*) 'E1s NaN 2'
-       write(*,*) term, RMM(M11+k-1)
-       endif        
+c       if(E1s.ne.E1s) then
+c       write(*,*) 'E1s NaN 2'
+c       write(*,*) term, RMM(M11+k-1)
+c       endif        
  305    continue
 c
       endif
@@ -336,14 +337,14 @@ c
        term=-tna1*ccoef
        RMM(M11+k-1)=RMM(M11+k-1)+term
        E1s=E1s+RMM(k)*term
-       if(E1s.ne.E1s) then
-       write(*,*) 'E1s NaN 3',j1,k
-       write(*,*) term, RMM(M11+k-1)
-       write(*,*) tna1,ccoef
-       write(*,*) pc(j1)
-       stop
+c       if(E1s.ne.E1s) then
+c       write(*,*) 'E1s NaN 3',j1,k
+c       write(*,*) term, RMM(M11+k-1)
+c       write(*,*) tna1,ccoef
+c       write(*,*) pc(j1)
+c       stop
 
-       endif        
+c       endif        
  406  continue
 c
 
@@ -425,10 +426,10 @@ c
        term=-cc*tna*pc(j1)
        RMM(M11+k-1)=RMM(M11+k-1)+term
        E1s=E1s+RMM(k)*term
-       if(E1s.ne.E1s) then
-       write(*,*) 'E1s NaN 4'
-       write(*,*) term, RMM(M11+k-1)
-       endif        
+c       if(E1s.ne.E1s) then
+c       write(*,*) 'E1s NaN 4'
+c       write(*,*) term, RMM(M11+k-1)
+c       endif        
  506  continue
 c
  503  continue
@@ -529,10 +530,10 @@ c
        term=-cc*tna*pc(j1)
        RMM(M11+k-1)=RMM(M11+k-1)+term
        E1s=E1s+RMM(k)*term
-       if(E1s.ne.E1s) then
-       write(*,*) 'E1s NaN 5'
-       write(*,*) term, RMM(M11+k-1)
-       endif        
+c       if(E1s.ne.E1s) then
+c       write(*,*) 'E1s NaN 5'
+c       write(*,*) term, RMM(M11+k-1)
+c       endif        
  606  continue
 c
  603  continue
@@ -686,10 +687,10 @@ c
        k=ii+((M2-jj)*(jj-1))/2
        RMM(M11+k-1)=RMM(M11+k-1)+term
        E1s=E1s+RMM(k)*term
-       if(E1s.ne.E1s) then
-       write(*,*) 'E1s NaN 6'
-       write(*,*) term, RMM(M11+k-1)
-       endif        
+c       if(E1s.ne.E1s) then
+c       write(*,*) 'E1s NaN 6'
+c       write(*,*) term, RMM(M11+k-1)
+c       endif        
 c
  706  continue
  703  continue
@@ -702,11 +703,11 @@ c
 
 c
  333  format(2(I4,2x),2(F10.4,2x),2(I4,2x))
-       write(*,*) 'E1s=',E1s,Ens
-       if(E1s.ne.E1s) then
-       write(33,*) RMM(1:MM)
-       stop
-       endif       
+c       write(*,*) 'E1s=',E1s,Ens
+c       if(E1s.ne.E1s) then
+c       write(33,*) RMM(1:MM)
+c       stop
+c       endif       
       return
       end
 c-------------------------------------------------------------------

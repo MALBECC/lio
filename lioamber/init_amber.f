@@ -190,12 +190,12 @@ c      write(*,*)   ng2
 
         nco=(nqnuc - charge)/2
 
-        write(*,*) 'NCO=',NCO
-        write(*,*) 'charge',charge
-       write(*,*) natom,ntatom,ngDyn,ngdDyn,ng2,ngd0
+c        write(*,*) 'NCO=',NCO
+c        write(*,*) 'charge',charge
+c       write(*,*) natom,ntatom,ngDyn,ngdDyn,ng2,ngd0
 c--------------------------------------------------------
       call drive(ng2,ngDyn,ngdDyn)
-        write(*,*) 'Lio init amber'
+c        write(*,*) 'Lio init amber'
 
       end
 c---------------------------------------------------------------------

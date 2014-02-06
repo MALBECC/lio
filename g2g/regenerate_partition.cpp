@@ -257,8 +257,8 @@ void Partition::regenerate(void)
 
                 // para hacer histogramas
 //#ifdef HISTOGRAM
-                cout << "[" << fortran_vars.grid_type << "] cubo: (" << i << "," << j << "," << k << "): " << cube.number_of_points << " puntos; " <<
-                     cube.total_functions() << " funciones, vecinos: " << cube.total_nucleii() << endl;
+                //cout << "[" << fortran_vars.grid_type << "] cubo: (" << i << "," << j << "," << k << "): " << cube.number_of_points << " puntos; " <<
+                     //cube.total_functions() << " funciones, vecinos: " << cube.total_nucleii() << endl;
 //#endif
 
                 assert(cube.number_of_points != 0);
@@ -318,9 +318,9 @@ void Partition::regenerate(void)
             }
 
 //#ifdef HISTOGRAM
-            cout << "sphere: " << sphere.number_of_points << " puntos, " << sphere.total_functions() <<
-                 " funciones | funcion x punto: " << sphere.total_functions() / (double)sphere.number_of_points <<
-                 " vecinos: " << sphere.total_nucleii() << endl;
+            //cout << "sphere: " << sphere.number_of_points << " puntos, " << sphere.total_functions() <<
+                // " funciones | funcion x punto: " << sphere.total_functions() / (double)sphere.number_of_points <<
+                // " vecinos: " << sphere.total_nucleii() << endl;
 //#endif
 
             assert(sphere.number_of_points > 0);
@@ -352,8 +352,8 @@ void Partition::regenerate(void)
     //If it is CPU, then this doesn't matter
     globalMemoryPool::init(G2G::free_global_memory);
 
-    cout << "Grilla final: " << puntos_finales << " puntos (recordar que los de peso 0 se tiran), " << funciones_finales << " funciones" << endl ;
-    cout << "Costo: " << costo << endl;
-    cout << "NCOxM: " << nco_m << " MxM: " << m_m << endl;
-    cout << "Particion final: " << spheres.size() << " esferas y " << cubes.size() << " cubos" << endl;
+   // cout << "Grilla final: " << puntos_finales << " puntos (recordar que los de peso 0 se tiran), " << funciones_finales << " funciones" << endl ;
+    //cout << "Costo: " << costo << endl;
+    //cout << "NCOxM: " << nco_m << " MxM: " << m_m << endl;
+    //cout << "Particion final: " << spheres.size() << " esferas y " << cubes.size() << " cubos" << endl;
 }

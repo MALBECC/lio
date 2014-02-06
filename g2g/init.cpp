@@ -164,19 +164,19 @@ void compute_new_grid(const unsigned int grid_type) {
   t_grilla.start_and_sync();
   partition.regenerate();
   t_grilla.stop_and_sync();
-  cout << "timer grilla: " << t_grilla << endl;
+  //cout << "timer grilla: " << t_grilla << endl;
 
 #if CPU_KERNELS && !CPU_RECOMPUTE
   /** compute functions **/
-  if (fortran_vars.do_forces) cout << "<===== computing all functions [forces] =======>" << endl;
-  else cout << "<===== computing all functions =======>" << endl;
+  //if (fortran_vars.do_forces) cout << "<===== computing all functions [forces] =======>" << endl;
+  //else cout << "<===== computing all functions =======>" << endl;
 
   partition.compute_functions(fortran_vars.do_forces, fortran_vars.gga);
 #endif
 }
 
 extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
-	cout  << "<======= GPU Reload Atom Positions (" << grid_type << ")========>" << endl;
+//	cout  << "<======= GPU Reload Atom Positions (" << grid_type << ")========>" << endl;
 
 	HostMatrixFloat3 atom_positions(fortran_vars.atoms);	// gpu version (float3)
 	fortran_vars.atom_positions.resize(fortran_vars.atoms);	// cpu version (double3)
@@ -199,9 +199,10 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
 }
 
 extern "C" void g2g_new_grid_(const unsigned int& grid_type) {
-	cout << "<======= GPU New Grid (" << grid_type << ")========>" << endl;
+//	cout << "<======= GPU New Grid (" << grid_type << ")========>" << endl;
 	if (grid_type == (uint)fortran_vars.grid_type)
-		cout << "not loading, same grid as loaded" << endl;
+                                                             ;
+//		cout << "not loading, same grid as loaded" << endl;
 	else
 		compute_new_grid(grid_type);
 }
@@ -219,7 +220,7 @@ template<bool compute_rmm, bool lda, bool compute_forces> void g2g_iteration(boo
 
 extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_energy_ptr, double* fort_forces_ptr)
 {
- 	cout << "<================ iteracion [";
+ /*	cout << "<================ iteracion [";
 	switch(computation_type) {
     case COMPUTE_RMM: cout << "rmm"; break;
 		case COMPUTE_ENERGY_ONLY: cout << "energia"; break;
@@ -227,7 +228,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 		case COMPUTE_FORCE_ONLY: cout << "fuerzas"; break;
 	}
 	cout << "] ==========>" << endl;
-
+*/
   bool compute_energy = (computation_type == COMPUTE_ENERGY_ONLY || computation_type == COMPUTE_ENERGY_FORCE);
   bool compute_forces = (computation_type == COMPUTE_FORCE_ONLY || computation_type == COMPUTE_ENERGY_FORCE);
   bool compute_rmm = (computation_type == COMPUTE_RMM);
@@ -254,7 +255,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
       else g2g_iteration<false, false, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
     }
   }
-  if (compute_energy) cout << "XC energy: " << *fort_energy_ptr << endl;
+  //if (compute_energy) cout << "XC energy: " << *fort_energy_ptr << endl;
 }
 
 /* general options */

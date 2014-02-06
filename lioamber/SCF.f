@@ -31,7 +31,7 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
        alloqueo = .true.
        ematalloc=.false.
        hagodiis=.false.
-      if(verbose)  write(*,*) 'ntatom y demas',ntatom,nsol,natom
+c      if(verbose)  write(6,*) 'ntatom',ntatom,nsol,natom
 
 c------------------------------------------------------------------
 c
@@ -814,7 +814,7 @@ c
 c
        call g2g_timer_stop('otras cosas')
 
-       if(verbose) write(*,300) niter,DAMP,E+Ex
+       if(verbose) write(6,300) niter,'QM Energy=',E+Ex
 c
        call g2g_timer_stop('Total iter')
  999   continue

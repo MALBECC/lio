@@ -1,5 +1,5 @@
       subroutine init_lio_amber(natomin,Izin,nclatom,charge
-     > , basis_i, output_i, fcoord_i, fmulliquen_i, frestart_i
+     > , basis_i, output_i, fcoord_i, fmulliken_i, frestart_i
      > , frestartin_i, verbose_i, OPEN_i, NMAX_i, NUNP_i, VCINP_i
      > , GOLD_i, told_i, rmax_i, rmaxs_i, predcoef_i, idip_i
      > , writexyz_i, intsoldouble_i, DIIS_i, ndiis_i, dgtrig_i, Iexch_i
@@ -31,7 +31,7 @@ c      include 'param'
        character(len=20) :: basis_i
        character(len=20) :: output_i
        character(len=20) :: fcoord_i
-         character(len=20) :: fmulliquen_i
+         character(len=20) :: fmulliken_i
        character(len=20) :: frestart_i
        character(len=20) :: frestartin_i
        logical :: verbose_i
@@ -71,7 +71,7 @@ c      include 'param'
        basis= basis_i
        Output= output_i
        fcoord=fcoord_i
-       fmulliquen=fmulliquen_i
+       fmulliken=fmulliken_i
        frestart= frestart_i
        frestartin=frestartin_i
         verbose = verbose_i

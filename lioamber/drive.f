@@ -142,7 +142,7 @@ c      open(unit=2,file=output)
       endif
 
       open(unit=18,file=fcoord)
-      open(unit=85,file=fmulliquen)
+      open(unit=85,file=fmulliken)
       open(unit=88,file=frestart)
 c-------------------------------------------------------
       date='date'

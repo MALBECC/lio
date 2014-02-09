@@ -814,7 +814,7 @@ c
 c
        call g2g_timer_stop('otras cosas')
 
-       if(verbose) write(6,300) niter,'QM Energy=',E+Ex
+       if(verbose) write(6,*) 'iter',niter,'QM Energy=',E+Ex
 c
        call g2g_timer_stop('Total iter')
  999   continue

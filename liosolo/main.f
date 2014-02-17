@@ -13,7 +13,7 @@ c---------------------------------------------------------------------
      > idip,writexyz,intsoldouble,DIIS,ndiis,dgtrig, 
      > Iexch,integ,dens,igrid,igrid2,timedep, tdstep, ntdstep, 
      > propagator,NBCH, 
-     > field,a0,epsilon,exter,Fx,Fy,Fz
+     > field,a0,epsilon,exter,Fx,Fy,Fz, tdrestart, writedens
  
       integer :: ifind, ierr
 
@@ -21,7 +21,7 @@ c---------------------------------------------------------------------
       basis='input'  ! name of the base file
       output='output'
       fcoord='qm.xyz'
-      fmulliquen='mulliquen'
+      fmulliken='mulliken'
       frestart='restart.out'
       frestartin='restart.in'
       verbose=.false.
@@ -55,6 +55,8 @@ c---------------------------------------------------------------------
       Fz=0.05
       NBCH=10
       propagator=1
+      tdrestart=.false.
+      writedens=.true.
 
        narg=command_argument_count()
 

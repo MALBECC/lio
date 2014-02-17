@@ -312,8 +312,11 @@ c
 
 c End of Starting guess (No MO , AO known)-------------------------------
 c
+        if ((timedep.eq.1).and.(tdrestart)) then
+        call TD()
+        return
+        endif
 
-c
 
       call int22()
 c

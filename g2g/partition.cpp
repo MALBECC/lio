@@ -17,8 +17,8 @@ namespace G2G {
 Partition partition;
 
 ostream& operator<<(ostream& io, const Timers& t) {
-//  cout << "iteration: " << t.total << endl;
-//  cout << "rmm: " << t.rmm << " density: " << t.density << " pot: " << t.pot << " forces: " << t.forces << " resto: " << t.resto << " functions: " << t.functions << endl;
+  cout << "iteration: " << t.total << endl;
+  cout << "rmm: " << t.rmm << " density: " << t.density << " pot: " << t.pot << " forces: " << t.forces << " resto: " << t.resto << " functions: " << t.functions << endl;
   return io;
 }
 

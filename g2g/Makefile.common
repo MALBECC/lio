@@ -15,7 +15,7 @@ else
 	ifeq ($(gcc),1)
     CXXFLAGS  += -O4 -fno-strict-aliasing
 	else
-    CXXFLAGS  += -O3 -fno-strict-aliasing -march=corei7-avx 
+    CXXFLAGS  += -O3 -fno-strict-aliasing  
 	endif
 endif
 

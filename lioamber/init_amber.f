@@ -4,8 +4,8 @@
      > , GOLD_i, told_i, rmax_i, rmaxs_i, predcoef_i, idip_i
      > , writexyz_i, intsoldouble_i, DIIS_i, ndiis_i, dgtrig_i, Iexch_i
      > , integ_i, DENS_i , IGRID_i, IGRID2_i , timedep_i , tdstep_i 
-     > , ntdstep_i, field_i, a0_i, epsilon_i, Fx_i
-     > , Fy_i, Fz_i, NBCH_i, propagator_i)
+     > , ntdstep_i, field_i, exter_i, a0_i, epsilon_i, Fx_i
+     > , Fy_i, Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i)
 
       use garcha_mod
 c      use qmmm_module, only : qmmm_struct,qmmm_nml
@@ -57,15 +57,18 @@ c      include 'param'
        integer :: IGRID2_i
        integer :: timedep_i
        logical :: field_i
+       logical :: exter_i
        real*8  :: tdstep_i
-       real*8  :: ntdstep_i
+       integer  :: ntdstep_i
        real*8  :: a0_i
        real*8  :: epsilon_i
        real*8  :: Fx_i
        real*8  :: Fy_i
        real*8  :: Fz_i
-       real*8  :: NBCH_i
+       integer  :: NBCH_i
        integer :: propagator_i
+       logical :: writedens_i
+       logical :: tdrestart_i
 
 
        basis= basis_i
@@ -97,6 +100,7 @@ c      include 'param'
        IGRID2=IGRID2_i
        timedep=timedep_i
        field=field_i
+       exter=exter_i
        tdstep=tdstep_i
        ntdstep= ntdstep_i
        a0=a0_i
@@ -106,7 +110,8 @@ c      include 'param'
        Fz=Fz_i
        NBCH=NBCH_i
        propagator=propagator_i
-
+       writedens=writedens_i
+       tdrestart=tdrestart_i
 
 
 c      parameter (norbit=800,Ngrid=0)
@@ -142,6 +147,7 @@ c      write(*,*) 'ng2 en init',ng2,ngdyn,ngddyn
      >  B(natom*ngd0,3))
       allocate(d(natom,natom))
          Iz=Izin
+      if(verbose) then
       write(6,*) '---------Lio options-------'
       write(6,*)      '  OPEN ', OPEN
        write(6,*)     '  NMAX ', NMAX
@@ -165,6 +171,7 @@ c      write(*,*) 'ng2 en init',ng2,ngdyn,ngddyn
        write(6,*)     '  tdstep ', tdstep
        write(6,*)     '  ntdstep ', ntdstep
        write(6,*)     '  field ', field
+       write(6,*)     '  exter ', exter
        write(6,*)     '  a0 ', a0
        write(6,*)     '  epsilon ', epsilon
        write(6,*)     '  Fx ', Fx
@@ -172,8 +179,10 @@ c      write(*,*) 'ng2 en init',ng2,ngdyn,ngddyn
        write(6,*)     '  Fz ', Fz
        write(6,*)     '  NBCH ', NBCH
        write(6,*)     '  propagator ', propagator
+       write(6,*)     '  writedens ', writedens
+       write(6,*)     '  tdrestart ', tdrestart
         write(6,*) '-----end Lio options-------'
-
+       endif
 
 
 c        write(92,*) izin

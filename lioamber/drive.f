@@ -125,7 +125,7 @@ c reads input file
       
       inquire(file=basis,exist=exists)
       if (.not.exists) then
-      write(*,*) 'ERROR CANNOT FIND INPUT FILE ON UNIT 1'
+      write(*,*) 'ERROR CANNOT FIND INPUT FILE ON UNIT 1',basis
       stop
       else
 c  name of output file

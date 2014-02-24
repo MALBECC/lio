@@ -1,6 +1,6 @@
 # -*- mode: make -*-
 include Makefile.common
-include cuda/Makefile.cuda
+include Makefile.cuda
 
 ## Define sources and objects
 SRCS:=$(wildcard *.cpp)

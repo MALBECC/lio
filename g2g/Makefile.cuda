@@ -144,8 +144,9 @@ endif
 # Rules
 ################################################################################
 
-CC=icc
-CXX=icc
+# Commented should be in config file
+# CC=icc
+# CXX=icc
 
 %.cu_o : %.cu
 	nvcc $(NVCCFLAGS) -o $@ -c $<

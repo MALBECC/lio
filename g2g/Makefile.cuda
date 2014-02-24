@@ -52,7 +52,6 @@ CUDA_LDFLAGS    := -L$(CUDA_INSTALL_PATH)/lib64 -L$(CUDA_INSTALL_PATH)/lib -L$(C
 # Warning flags
 CXXWARN_FLAGS := \
 	-W -Wall \
-	-Wimplicit \
 	-Wswitch \
 	-Wformat \
 	-Wchar-subscripts \
@@ -110,7 +109,7 @@ endif
 # Check for input flags and set compiler flags appropriately
 ################################################################################
 ifeq ($(fastmath), 1)
-	NVCCFLAGS += -use_fast_math
+  NVCCFLAGS += -use_fast_math
 endif
 
 # Add common flags
@@ -120,24 +119,29 @@ NVCCFLAGS += $(COMMONFLAGS)
 NVCCFLAGS += --linker-options -fPIC #--verbose
 
 ifeq ($(verbose),1)
-	NVCCFLAGS += --verbose
+  NVCCFLAGS += --verbose
+endif
+
+ifeq ($(sm_1x),1)
+  NVCCFLAGS += -arch=sm_1x
+else
+  NVCCFLAGS += -DNVIDIA_HAS_DOUBLE -DUSING_FERMI
+  CXXFLAGS  += -DUSING_FERMI
+  ifeq ($(sm35),1)
+    NVCCFLAGS += -arch=sm_35
+  else
+    #DEFAULT IS SM20
+    NVCCFLAGS += -arch=sm_20
+  endif  
 endif
 
 ifeq ($(sm20),1)
-  NVCCFLAGS += -arch=sm_20
-  NVCCFLAGS += -DNVIDIA_HAS_DOUBLE -DUSING_FERMI
-  CXXFLAGS += -DUSING_FERMI
 endif
 
-ifeq ($(sm35),1)
-  NVCCFLAGS += -arch=sm_35
-  NVCCFLAGS += -DNVIDIA_HAS_DOUBLE -DUSING_FERMI
-  CXXFLAGS += -DUSING_FERMI
-endif
 
 ifeq ($(nvcc_warn_verbose),1)
-	NVCCFLAGS += $(addprefix --compiler-options ,$(CXXWARN_FLAGS))
-	NVCCFLAGS += --compiler-options -fno-strict-aliasing
+  NVCCFLAGS += $(addprefix --compiler-options ,$(CXXWARN_FLAGS))
+  NVCCFLAGS += --compiler-options -fno-strict-aliasing
 endif
 
 ################################################################################
@@ -152,6 +156,3 @@ endif
 	nvcc $(NVCCFLAGS) -o $@ -c $<
 	#nvcc $(NVCCFLAGS) -cuda -o $<.cpp $<
 	#icc $(CXXFLAGS) -o $@ -c $<.cpp
-
-
-

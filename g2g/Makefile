@@ -26,7 +26,7 @@ endif
 
 ## Other options
 ifeq ($(time), 1)
-	CXXFLAGS += -DTIMINGS
+  CXXFLAGS += -DTIMINGS
 endif
 
 ifeq ($(nosync), 1)
@@ -54,13 +54,13 @@ else
   LIBRARY=libg2g.so
 endif
 
-  ifeq ($(full_double),1)
-    CXXFLAGS += -DFULL_DOUBLE=1
-    NVCCFLAGS += -DFULL_DOUBLE=1
-  else
-    CXXFLAGS += -DFULL_DOUBLE=0
-    NVCCFLAGS += -DFULL_DOUBLE=0
-  endif
+ifeq ($(full_double),1)
+  CXXFLAGS += -DFULL_DOUBLE=1
+  NVCCFLAGS += -DFULL_DOUBLE=1
+else
+  CXXFLAGS += -DFULL_DOUBLE=0
+  NVCCFLAGS += -DFULL_DOUBLE=0
+endif
 
 ## Define libraries
 LIBRARIES := $(shell pkg-config gsl --libs) $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt

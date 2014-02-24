@@ -2,7 +2,7 @@
 
 CUDA_SOURCES=$(wildcard *.cu)
 CUDA_HEADERS=$(wildcard *.h)
-include Makefile.cuda
+include ../Makefile.cuda
 
 all: $(CUDA_OBJ)
 

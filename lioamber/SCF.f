@@ -1029,7 +1029,7 @@ c      endif
          deallocate (kkind,kkinds)
          deallocate(cool,cools)
       
-       E=E*627.509391D0 
+c       E=E*627.509391D0 
 
        if(timedep.eq.1) then
        call TD()

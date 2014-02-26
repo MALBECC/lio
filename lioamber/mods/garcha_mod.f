@@ -92,6 +92,6 @@ c
       real*8     rmax, rmaxs
       real*8, dimension (:), ALLOCATABLE :: cool
       real*4, dimension (:), ALLOCATABLE :: cools
-      parameter rmintsol=16.0D0
+c      parameter rmintsol=16.0D0
 
       end module garcha_mod

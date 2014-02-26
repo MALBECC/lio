@@ -25,6 +25,9 @@ c       dimension d(natom,natom)
        logical  hagodiis,alloqueo, ematalloc
 c       REAL*8 , intent(in)  :: qmcoords(3,natom)
 c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
+        INTEGER :: ErrID,iii,jjj
+        LOGICAL :: docholesky
+        REAL*8,ALLOCATABLE :: MatrixVec(:),TestMatrix(:)
 
       call g2g_timer_start('SCF')
       just_int3n = .false.
@@ -172,6 +175,42 @@ c test ---------------------------------------------------------
 c
 c Diagonalization of S matrix, after this is not needed anymore
 c
+       docholesky=.true.
+       call g2g_timer_start('cholesky')
+       IF (docholesky) THEN
+         PRINT*,'DOING CHOLESKY'
+         ALLOCATE(MatrixVec(MM))
+         DO iii=1,MM
+           MatrixVec(iii)=RMM(M5+iii-1)
+         ENDDO
+
+         CALL DPPTRF('L',M,MatrixVec,ErrID)
+         PRINT*,ErrID
+         ALLOCATE(Y(M,M),Ytrans(M,M))
+         DO iii=1,M;DO jjj=1,M
+           Y(iii,jjj)=0
+           IF (jjj.LE.iii) THEN
+             Y(iii,jjj)=MatrixVec(iii+(2*M-jjj)*(jjj-1)/2)
+           ENDIF
+           Ytrans(jjj,iii)=Y(iii,jjj)
+         ENDDO;ENDDO
+
+         CALL DTPTRI('L','N',M,MatrixVec,ErrID)
+         PRINT*,ErrID
+         ALLOCATE(Xtrans(M,M))
+         DO iii=1,M;DO jjj=1,M
+           Xtrans(iii,jjj)=0
+           IF (jjj.LE.iii) THEN
+             Xtrans(iii,jjj)=MatrixVec(iii+(2*M-jjj)*(jjj-1)/2)
+           ENDIF
+           X(jjj,iii)=Xtrans(iii,jjj)
+         ENDDO;ENDDO
+
+         DEALLOCATE(MatrixVec)
+         PRINT*,'CHOLESKY DONE'
+       ELSE
+
+
 c ESSL OPTION ------------------------------------------
         do i=1,MM
          rmm5(i)=RMM(M5+i-1)
@@ -214,7 +253,11 @@ c        write(56,*) RMM(M15+1)
             Xtrans(i,j)=X(j,i)   
             enddo
          enddo
-                   
+
+        ENDIF                   
+
+       call g2g_timer_stop('cholesky')
+
 c
 c CASE OF NO STARTING GUESS PROVIDED, 1 E FOCK MATRIX USED
 c
@@ -884,7 +927,7 @@ c       write(*,*) 'g2g-Exc',Exc
 #else      
 #endif       
 #endif
-         E=E1+E2+En+Es+Ens+Exc
+         E=E1+E2+En+Ens+Exc
          if (npas.eq.1) npasw = 0
          if (npas.gt.npasw) then
          write(6,*)

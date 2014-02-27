@@ -12,6 +12,7 @@ ifeq ($(cuda),1)
   SRCS         += $(CUDA_SOURCES)
   OBJ          += $(CUDA_SOURCES:%.cu=%.cu_o)
   CUDA_LIBS    +=-L/usr/lib/nvidia-current/ -lcuda
+  include ./findcudalib.mk
 else
   CPU_SOURCES  := $(wildcard cpu/*.cpp)
   SRCS         += $(CPU_SOURCES)
@@ -65,6 +66,8 @@ endif
 ## Define libraries
 LIBRARIES := $(shell pkg-config gsl --libs) $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
 
+CUDAPATH="hsjhgsad"
+
 ## Targets
 all: $(LIBRARY)
 
@@ -81,9 +84,13 @@ libg2g.a: $(OBJ)
 	ranlib libg2g.a
 
 libg2g.so: $(OBJ)
+	@echo "CUDAPATH:" $(CUDAPATH)
+	@echo "CUDALINK:" $(CUDALINK)
 	$(CXX) -shared $(LDFLAGS) -o libg2g.so $(OBJ) $(LIBRARIES)
 
 clean:
+	@echo "CUDAPATH:" $(CUDAPATH)
+	@echo "CUDALINK:" $(CUDALINK)
 # 	make -C cuda clean
 	rm -f *.o libg2g.so *.a cpu/*.o cuda/*.o
 	rm -f cuda/*.cu_o cuda/*.cudafe* cuda/*.ptx cuda/*.hash cuda/*.cubin cuda/*.i cuda/*.ii cuda/*.fatbin.* cuda/*.cu.c

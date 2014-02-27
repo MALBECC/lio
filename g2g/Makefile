@@ -5,24 +5,19 @@ include Makefile.common
 SRCS:=$(wildcard *.cpp)
 OBJ:=$(SRCS:%.cpp=%.o)
 
-ifeq ($(cuda),1)
-  include Makefile.cuda
-  CUDA_LIBS    :=-L/usr/local/cuda/cuda/lib64 -lcudart
-  CUDA_SOURCES := $(wildcard cuda/*.cu)
-  SRCS         += $(CUDA_SOURCES)
-  OBJ          += $(CUDA_SOURCES:%.cu=%.cu_o)
-else
+ifeq ($(cpu),1)
   include Makefile.cuda
   CPU_SOURCES  := $(wildcard cpu/*.cpp)
   SRCS         += $(CPU_SOURCES)
   OBJ          += $(CPU_SOURCES:%.cpp=%.o)
   CXXFLAGS     += -DCPU_KERNELS=1 -L/usr/local/cuda/cuda/lib64
+else
+  include Makefile.cuda
+  CUDA_LIBS    :=-L/usr/local/cuda/cuda/lib64 -lcudart
+  CUDA_SOURCES := $(wildcard cuda/*.cu)
+  SRCS         += $(CUDA_SOURCES)
+  OBJ          += $(CUDA_SOURCES:%.cu=%.cu_o)
 endif
-
-
-#   ifeq ($(cpu),1)
-#   endif
-
 
 ## Other options
 ifeq ($(time), 1)

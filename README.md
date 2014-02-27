@@ -18,7 +18,7 @@ G2G Compilation options, call following to make command, for example: make cuda=
 
 -dbg: enable debugging information
 
--cuda: enable the compilation for NVidia GPU cards
+-cpu: enable the compilation to test the optimized routines for GPU cards in CPU (not recommended, only to compare running the same code in CPU and GPU).
 
 -time: enables the timers to obtain detailed timing information from different parts of the program.
 

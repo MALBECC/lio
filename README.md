@@ -22,7 +22,7 @@ G2G Compilation options, call following to make command, for example: make cuda=
 
 -time: enables the timers to obtain detailed timing information from different parts of the program.
 
--nosync: VERIFY IN CODE
+-nosync: Internal use, for debugging and timing.
 
 -profile: enabling gprof profiling information.
 

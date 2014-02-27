@@ -38,16 +38,16 @@
 
 # Basic directory setup for SDK
 # (override directories only if they are not already defined)
-ROOTDIR    ?= $(CUDA_INSTALL_PATH)/cuda
+ROOTDIR    ?= $(CUDA_HOME)/cuda
 
 # Compilers
 ARCHFLAGS	 :=
 
 # Includes
-INCLUDES  += -I. -I$(CUDA_INSTALL_PATH)/include
+INCLUDES  += -I. -I$(CUDA_HOME)/include
 
 # Libs
-CUDA_LDFLAGS    := -L$(CUDA_INSTALL_PATH)/lib64 -L$(CUDA_INSTALL_PATH)/lib -L$(COMMONDIR)/lib 
+CUDA_LDFLAGS    := -L$(CUDA_HOME)/lib64 -L$(CUDA_HOME)/lib
 
 # Warning flags
 CXXWARN_FLAGS := \

@@ -72,20 +72,16 @@ depend:
 	@rm -f Makefile.depends.bak
 
 libg2g.a: $(OBJ)
+	@if [ -z "$(CUDA_HOME)" ] ; then echo "CUDA_HOME is not set. Please, check it."; exit 1; fi;
+	@if ! test -f $(CUDA_HOME)/lib/libcudart.so; then echo "libcudart.so can not be found in CUDA_HOME/lib/, current value is '"$(CUDA_HOME)/lib"'. Please check if CUDA_HOME variable is correctly set."; exit 1; fi;
 	ar cru libg2g.a $(OBJ)
 	ranlib libg2g.a
 
 libg2g.so: $(OBJ)
-# 	@echo "CUDAPATH:" $(CUDAPATH)
-# 	@echo "CUDALINK:" $(CUDALINK)
+	@if [ -z "$(CUDA_HOME)" ] ; then echo "CUDA_HOME is not set. Please, check it."; exit 1; fi;
+	@if ! test -f $(CUDA_HOME)/lib/libcudart.so; then echo "libcudart.so can not be found in CUDA_HOME/lib/, current value is '"$(CUDA_HOME)/lib"'. Please check if CUDA_HOME variable is correctly set."; exit 1; fi;
 	$(CXX) -shared $(LDFLAGS) -o libg2g.so $(OBJ) $(LIBRARIES)
 
 clean:
-# 	@if [ -f /opt/cuda/lib/libcudart.so ]; then \
-# 	  echo "encontro"; else \
-# 	  echo "no esta"; fi;
-# 	@echo "CUDAPATH:" $(CUDAPATH)
-# 	@echo "CUDALINK:" $(CUDALINK)
-# 	make -C cuda clean
-	rm -f *.o libg2g.so *.a cpu/*.o cuda/*.o
-	rm -f cuda/*.cu_o cuda/*.cudafe* cuda/*.ptx cuda/*.hash cuda/*.cubin cuda/*.i cuda/*.ii cuda/*.fatbin.* cuda/*.cu.c
+	@echo "Removing objects"; rm -f *.o libg2g.so *.a cpu/*.o cuda/*.o
+	@rm -f cuda/*.cu_o cuda/*.cudafe* cuda/*.ptx cuda/*.hash cuda/*.cubin cuda/*.i cuda/*.ii cuda/*.fatbin.* cuda/*.cu.c

@@ -13,7 +13,7 @@ ifeq ($(cpu),1)
   CXXFLAGS     += -DCPU_KERNELS=1
 else
   include Makefile.cuda
-  CUDA_LIBS    := -lcudart
+  CUDA_LIBS    := -lcudart -lcuda
   CUDA_SOURCES := $(wildcard cuda/*.cu)
   SRCS         += $(CUDA_SOURCES)
   OBJ          += $(CUDA_SOURCES:%.cu=%.cu_o)

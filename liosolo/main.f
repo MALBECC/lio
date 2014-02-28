@@ -8,6 +8,7 @@ c---------------------------------------------------------------------
       character(len=20)::argument,inpfile,inpbasis,inpcoords
       integer::charge
       logical::filexist
+      REAL*8, dimension (:,:), ALLOCATABLE   :: dxyzqm
       namelist /lio/ natom,nsol,charge,OPEN,NMAX,Nunp,VCINP,frestartin, 
      > GOLD,told,rmax,rmaxs,predcoef,  
      > idip,writexyz,intsoldouble,DIIS,ndiis,dgtrig, 
@@ -139,9 +140,14 @@ c       write(*,*) pc(i),r(i,1:3)
         write(*,*) 'NCO=',NCO
        write(*,*) natom,ntatom,ngDyn,ngdDyn,ng0,ngd0
 c--------------------------------------------------------
-      call drive(ng2,ngDyn,ngdDyn)
+       call drive(ng2,ngDyn,ngdDyn)
 
        call SCF(escf,dipxyz)
        write(*,*) 'SCF ENRGY=',escf 
-
+        
+       allocate (dxyzqm(3,natom))
+       call dft_get_qm_forces(dxyzqm)
+       write(77,*) dxyzqm
+ 
+       call lio_finalize()     
        end

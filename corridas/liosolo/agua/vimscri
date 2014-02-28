@@ -1,4 +1,0 @@
-
-:%s/\[exchfock\]:/
-:%s/TIMER/ 
-:wq

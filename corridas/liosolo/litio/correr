@@ -1,0 +1,5 @@
+#!/bin/bash
+
+./correr_closed > CLOSED.out 
+./correr_opened > OPENED.out
+diffuse CLOSED.out OPENED.out

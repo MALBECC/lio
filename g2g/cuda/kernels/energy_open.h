@@ -1,12 +1,10 @@
 template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
-__global__ void gpu_compute_density_opened(scalar_type* const energy, 
-                                         const scalar_type* const point_weights,uint points, const scalar_type* function_values, 
-                                         const vec_type<scalar_type,4>* gradient_values,
-                                         const vec_type<scalar_type,4>* hessian_values, uint m, 
-                                         scalar_type* out_partial_density_a, 
-                                         vec_type<scalar_type,4>* out_dxyz_a, vec_type<scalar_type,4>* out_dd1_a, vec_type<scalar_type,4>*  out_dd2_a,
-                                         scalar_type* out_partial_density_b,
-                                         vec_type<scalar_type,4>* out_dxyz_b, vec_type<scalar_type,4>* out_dd1_b, vec_type<scalar_type,4>*  out_dd2_b)
+__global__ void gpu_compute_density_opened(const scalar_type* const point_weights,uint points, const scalar_type* function_values, 
+                                           const vec_type<scalar_type,4>* gradient_values,const vec_type<scalar_type,4>* hessian_values, uint m, 
+                                           scalar_type* out_partial_density_a, 
+                                           vec_type<scalar_type,4>* out_dxyz_a, vec_type<scalar_type,4>* out_dd1_a, vec_type<scalar_type,4>*  out_dd2_a,
+                                           scalar_type* out_partial_density_b,
+                                           vec_type<scalar_type,4>* out_dxyz_b, vec_type<scalar_type,4>* out_dd1_b, vec_type<scalar_type,4>*  out_dd2_b)
 {
 
     uint point = blockIdx.x;
@@ -302,7 +300,7 @@ __global__ void gpu_compute_density_opened(scalar_type* const energy,
     {
         const int myPoint = blockIdx.y*points + blockIdx.x;
         out_partial_density_b[myPoint] = fj_sh[position];
-        out_dxyz_b[myPoint]            = vec_type<scalar_type,4>(fgj_sh[position]);
+	out_dxyz_b[myPoint]            = vec_type<scalar_type,4>(fgj_sh[position]);
         out_dd1_b[myPoint]             = vec_type<scalar_type,4>(fh1j_sh[position]);
         out_dd2_b[myPoint]             = vec_type<scalar_type,4>(fh2j_sh[position]);
     }

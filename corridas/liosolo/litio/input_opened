@@ -1,0 +1,16 @@
+&lio
+nsol=0
+natom=1
+nmax=200
+rmax=16
+rmaxs=16
+timedep=0
+ntdstep=1000
+OPEN=T
+charge=0
+Nunp=1
+DIIS=F
+GOLD=5.
+IGRID=0
+IGRID2=0
+&end

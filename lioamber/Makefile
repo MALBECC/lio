@@ -7,6 +7,10 @@ MOD_OBJ=$(MOD_SRCS:%.f=%.o)
 GARCHA_OBJ=$(MOD_OBJ) $(COMMON_SRCS:%.f=%.o) $(GARCHA_SRCS:%.f=%.o)
 
 # flags
+ifeq ($(print), 1)
+        DEFINE += -DPRINT_MATRICES
+endif
+
 ifeq ($(profile),1)
   PROFILE  = -pg
 else
@@ -27,7 +31,7 @@ else
   NVCCFLAGS += -DFULL_DOUBLE=0
 endif
 
-DEFINE   = -Dpack -fPIC   
+DEFINE   += -Dpack -fPIC   
 CFLAGS   = -g -mp1 -ip -O3 -c -cpp  $(DEFINE) $(PROFILE)
 CFLAGS2  = -g -O1 -c -cpp  $(DEFINE) $(PROFILE)
 CFLAGS3  = -g -O3 -c -cpp -parallel   $(DEFINE) $(PROFILE)

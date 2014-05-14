@@ -236,15 +236,43 @@ extern "C" void g2g_new_grid_(const unsigned int& grid_type) {
 		compute_new_grid(grid_type);
 }
 //==============================================================================================================
+/*void g2g_print(){
+if(fortran_vars.OPEN){
+                uint k=1;
+                uint ANCHO=0;
+                for (uint i = 0; i < fortran_vars.m; i++) {
+                        for (uint j = 0; j <(fortran_vars.m-i); j++) {
+                                cout <<k++<<" "<<fortran_vars.rmm_dens_a(j,1,ANCHO)<<" "<<fortran_vars.rmm_dens_b(j,1,ANCHO)<<endl;
+                        }
+                        ANCHO=ANCHO+fortran_vars.m-i;
+        //              cout <<endl;
+                }
+        }
+
+        else{
+		uint k=1;
+                uint ANCHO=0;
+                for (uint i = 0; i < fortran_vars.m; i++) {
+                        for (uint j = 0; j < (fortran_vars.m-i); j++) {
+                                cout <<k++;
+				printf(" %7.5f\n",fortran_vars.rmm_input_ndens1(j,1,ANCHO));
+                        }
+                        ANCHO=ANCHO+fortran_vars.m-i;
+      //                  cout <<endl;
+                }
+        }
+}*/
+//==============================================================================================================
+
 template<bool compute_rmm, bool lda, bool compute_forces> void g2g_iteration(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr)
 {
 
   Timers timers;
   timers.total.start();
 
-  if(fortran_vars.OPEN){
-  	cout << "LLAMANDO A partition.solve.....opened..."<<compute_rmm<<" "<<lda<<" "<<compute_forces<<" "<<compute_energy<<" "<<fortran_vars.OPEN<<endl;
-  }
+  //if(fortran_vars.OPEN){
+  //	cout << "LLAMANDO A partition.solve.....opened..."<<"rmm:"<<compute_rmm<<" "<<"lda:"<<lda<<" "<<"forces:"<<compute_forces<<" "<<"energy:"<<compute_energy<<" "<<"OPEN:"<<fortran_vars.OPEN<<endl;
+  //}
   
   partition.solve(timers, compute_rmm, lda, compute_forces, compute_energy, fort_energy_ptr, fort_forces_ptr, fortran_vars.OPEN);
   
@@ -264,25 +292,9 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 		case COMPUTE_FORCE_ONLY: cout << "fuerzas"; break;
 	}
 	cout << "] ==========>" << endl;
-
-// IMPRIMIR DENSIDADES
-	/*if(fortran_vars.OPEN){
-		for (uint i = 0; i < fortran_vars.m; i++) {
-			for (uint j = 0; j < i; j++) {	
-        			cout <<fortran_vars.rmm_dens_a(i,j)<<endl;
-			}
-	//		cout <<endl;
-		}
-	}*/
-
-	/*else{
-		for (uint i = 0; i < fortran_vars.m; i++) {
-                        for (uint j = 0; j < i; j++) {
-                                cout <<fortran_vars.rmm_input_ndens1(i,j)<<endl;
-                        }
-        //              cout <<endl;
-                }
-	}*/
+#ifdef PRINT_MATRICES
+//	g2g_print();
+#endif
 
   	bool compute_energy = (computation_type == COMPUTE_ENERGY_ONLY || computation_type == COMPUTE_ENERGY_FORCE);
   	bool compute_forces = (computation_type == COMPUTE_FORCE_ONLY  || computation_type == COMPUTE_ENERGY_FORCE);
@@ -307,8 +319,11 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
       			else                g2g_iteration<false, true, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
     		}
     		else{
-      			if (compute_forces) g2g_iteration<false, false, true>(compute_energy, fort_energy_ptr, fort_forces_ptr);
-      			else                g2g_iteration<false, false, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
+      			if (compute_forces){ 
+				g2g_iteration<false, false, true>(compute_energy, fort_energy_ptr, fort_forces_ptr);
+      					
+			}
+			else  g2g_iteration<false, false, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
     		}
   	}
   	if (compute_energy) cout << "XC energy: " << *fort_energy_ptr << endl;

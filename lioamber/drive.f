@@ -191,6 +191,9 @@ c
 c-------------------------------------------------------------------------
 c  BASIS SETS ------------------------------------------------------------
 c-------------------------------------------------------------------------
+
+      write(*,*) 'LEYENDO LA BASE'
+
       do 25 while (whatis.ne.'endbasis')
 c
         NBAS=NBAS+1
@@ -337,7 +340,7 @@ c
           do 46 k=1,ncon
 c
             Md=Md+Num(lt(k))
-c         write(*,*) md 
+c          write(*,*) md 
             nshelld(lt(k))=nshelld(lt(k))+Num(lt(k))
 c
             do 46 l2=1,Num(lt(k))
@@ -412,7 +415,7 @@ c
 c
       if (Md.gt.ngdDyn.or.Md.gt.ngd) then
        write(*,*) 'DIMENSION PROBLEMS WITH AUXILIAR BASIS PARAMETER NGD'
-        write(*,*) 'NUMBER AUXILIAR BASIS FUNCTIONS =',Md,'<',ngdDyn
+        write(*,*) 'NUMBER AUXILIAR BASIS FUNCTIONS =',Md,'<',ngdDyn,ngd
         iprob=1
       endif
 c
@@ -889,6 +892,7 @@ c      write(*,*) 'estoooo',ngpru, ngDyn, ng0, natom
         allocate(rhoalpha(1),rhobeta(1))
       endif
 
+      write(6,*)'LLAMANDO A g2g_parameter_init()'
       call g2g_parameter_init(NORM,natom,natom,ngDyn,
      >                        rqm,Rm2,Iz,Nr,Nr2,Nuc,
      >                        M,ncont,nshell,c,a, 
@@ -896,7 +900,7 @@ c      write(*,*) 'estoooo',ngpru, ngDyn, ng0, natom
      >                        NCO,OPEN,Nunp,nopt,Iexch,
      >                        e_, e_2, e3, wang, wang2, wang3)
 
-      write(*,*) '======>>>> SALIENDO DE DRIVE <<<<=========='
+c      write(*,*) '======>>>> SALIENDO DE DRIVE <<<<=========='
 
 c      if (parsearch) then
 c        call g2g_reload_atom_positions(igrid2)
@@ -1003,7 +1007,7 @@ c
 c---------------------------------------------------
 c---------------------------------------------------
        deallocate(X,XX)
-       allocate(X(M,3*M),XX(Md,Md))
+       allocate(X(M,4*M),XX(Md,Md))
        allocate(old1(MM))
 
        allocate(old2(MM))

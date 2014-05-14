@@ -75,6 +75,8 @@ class PointGroup {
     void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input) const;
     void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input_a, G2G::HostMatrix<scalar_type>& rmm_input_b) const;
     void add_rmm_output(const G2G::HostMatrix<scalar_type>& rmm_output) const;
+    void add_rmm_output_a(const G2G::HostMatrix<scalar_type>& rmm_output) const;
+    void add_rmm_output_b(const G2G::HostMatrix<scalar_type>& rmm_output) const;
     void add_rmm_open_output(const G2G::HostMatrix<scalar_type>& rmm_a_output, const G2G::HostMatrix<scalar_type>& rmm_b_output) const;
 
     void compute_nucleii_maps(void);
@@ -83,8 +85,8 @@ class PointGroup {
     void compute_weights(void);
 
     void compute_functions(bool forces, bool gga);
-    void solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, double& energy, double* fort_forces_ptr);
-    void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, double& energy, double* fort_forces_ptr, bool open);
+    void solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,double&,double&,double&,double&,double&,double* fort_forces_ptr);
+    void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,double&,double&,double&,double&,double&,double* fort_forces_ptr, bool open);
 
     bool is_significative(FunctionType, double exponent, double coeff, double d2);
     bool operator<(const PointGroup<scalar_type>& T) const;
@@ -138,37 +140,42 @@ class Partition {
       cubes.clear(); spheres.clear();
     }
 
-    void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr, bool open)
+    void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr, bool OPEN)
     {
       double cubes_energy = 0, spheres_energy = 0;
+      double cubes_energy_i = 0, spheres_energy_i = 0;
+      double cubes_energy_c = 0, spheres_energy_c = 0;
+      double cubes_energy_c1 = 0, spheres_energy_c1 = 0;
+      double cubes_energy_c2 = 0, spheres_energy_c2 = 0;
     
-	if(!open){
+	if(!OPEN){
 //        long long int accumulated_size=0;
 		for (std::list<Cube*>::const_iterator it = cubes.begin(); it != cubes.end(); ++it)
 		{
-			(*it)->solve_closed(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy, fort_forces_ptr);        
+			(*it)->solve_closed(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy,cubes_energy_i,cubes_energy_c,cubes_energy_c1,cubes_energy_c2, fort_forces_ptr);        
 //           printf("\t\t\t\t So far %luKb\n",accumulated_size/1024);
           	}
       
           	for (std::list<Sphere*>::const_iterator it = spheres.begin(); it != spheres.end(); ++it)
           	{
-              		(*it)->solve_closed(timers, compute_rmm,lda,compute_forces, compute_energy, spheres_energy, fort_forces_ptr);
+              		(*it)->solve_closed(timers, compute_rmm,lda,compute_forces, compute_energy, spheres_energy,spheres_energy_i,spheres_energy_c,spheres_energy_c1,spheres_energy_c2, fort_forces_ptr);
           	}
       	}
       	else{
 		 for (std::list<Cube*>::const_iterator it = cubes.begin(); it != cubes.end(); ++it)
                 {
-                        (*it)->solve_opened(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy, fort_forces_ptr, open);
+                        (*it)->solve_opened(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy,cubes_energy_i,cubes_energy_c,cubes_energy_c1,cubes_energy_c2, fort_forces_ptr, OPEN);
 //           printf("\t\t\t\t So far %luKb\n",accumulated_size/1024);
                 }
 
                 for (std::list<Sphere*>::const_iterator it = spheres.begin(); it != spheres.end(); ++it)
                 {
-                        (*it)->solve_opened(timers, compute_rmm,lda,compute_forces, compute_energy, spheres_energy, fort_forces_ptr, open);
+                        (*it)->solve_opened(timers, compute_rmm,lda,compute_forces, compute_energy, spheres_energy,spheres_energy_i,spheres_energy_c,spheres_energy_c1,spheres_energy_c2, fort_forces_ptr, OPEN);
                 }
 	}
 //      std::cout << "cubes XC energy: " << cubes_energy << std::endl;
 //      std::cout << "spheres XC energy: " << spheres_energy << std::endl;
+      std::cout << "Ei: " << cubes_energy_i+spheres_energy_i << " Ec: " << cubes_energy_c+spheres_energy_c<< " Ec1: " << cubes_energy_c1+spheres_energy_c1<< " Ec2: " << cubes_energy_c2+spheres_energy_c2<< std::endl;
       *fort_energy_ptr = cubes_energy + spheres_energy;
     }
 

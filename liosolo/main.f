@@ -132,7 +132,7 @@ c       write(*,*) pc(i),r(i,1:3)
          nqnuc=nqnuc+Iz(i)
        enddo
 
-       nco=(nqnuc - charge)/2
+       nco=((nqnuc - charge)-Nunp)/2
 
        write(*,*) 'NCO=',NCO
        write(*,*) natom,ntatom,ngDyn,ngdDyn,ng0,ngd0

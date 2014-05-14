@@ -53,14 +53,17 @@ c       write(*,*) 'M=',M
       
       ngeo=ngeo+1
 
+      Nel=2*NCO+Nunp
+
       sq2=sqrt(2.D0)
+c first P
       MM=M*(M+1)/2 
       MM2=M**2
       MMd=Md*(Md+1)/2
       Md2=2*Md
       M2=2*M
 
-c first P
+c------------------------------------------------
       M1=1
 c now Pnew
       M3=M1+MM
@@ -82,64 +85,56 @@ c vectors of MO
       M18=M17+MMd
 c weights (in case of using option )
       M19=M18+M*NCO
-c
-* RAM storage of two-electron integrals (if MEMO=T)
+c RAM storage of two-electron integrals (if MEMO=T)
       M20 = M19 + natom*50*Nang   
+c------------------------------------------------
+c Initializations/Defaults
 c
-      Nel=2*NCO+Nunp
-c
-
       allocate(rmm5(MM),rmm13(m),rmm15(mm))
 cc
-           
       good=1.00D0
       niter=0
       D1=1.D0
       D2=1.D0
       DAMP0=GOLD
       DAMP=DAMP0
-
 c
        Qc=0.0D0
        do 99 i=1,natom
-       Qc=Qc+Iz(i)
+         Qc=Qc+Iz(i)
  99    continue
        Qc=Qc-Nel
-      Qc2=Qc**2
-
+       Qc2=Qc**2
 C----------------------------------------
 c Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
 c        write(*,*) 'que pasa?'
   
-
-        do i=1,natom
-          natomc(i)=0
-         do j=1,natom
-
-         d(i,j)=(r(i,1)-r(j,1))**2+(r(i,2)-r(j,2))**2+
+      do i=1,natom
+        natomc(i)=0
+        do j=1,natom
+          d(i,j)=(r(i,1)-r(j,1))**2+(r(i,2)-r(j,2))**2+
      >        (r(i,3)-r(j,3))**2
-       zij=atmin(i)+atmin(j)
-       ti=atmin(i)/zij
-       tj=atmin(j)/zij
-       alf=atmin(i)*tj
-       rexp=alf*d(i,j)
-       if (rexp.lt.rmax) then
-         natomc(i)=natomc(i)+1
-         jatc(natomc(i),i)=j
-       endif 
+          zij=atmin(i)+atmin(j)
+          ti=atmin(i)/zij
+          tj=atmin(j)/zij
+          alf=atmin(i)*tj
+          rexp=alf*d(i,j)
+          if (rexp.lt.rmax) then
+            natomc(i)=natomc(i)+1
+            jatc(natomc(i),i)=j
+          endif 
         enddo
-        enddo
+      enddo
 
        do iij=nshell(0),1,-1
-       nnps(nuc(iij))=iij
+         nnps(nuc(iij))=iij
        enddo
        do iik=nshell(0)+nshell(1),nshell(0)+1,-1
-
-       nnpp(nuc(iik))=iik
+         nnpp(nuc(iik))=iik
        enddo
 
        do iikk=M,nshell(0)+nshell(1)+1,-1
-       nnpd(nuc(iikk))=iikk
+         nnpd(nuc(iikk))=iikk
        enddo
 
       call g2g_reload_atom_positions(igrid2)
@@ -155,19 +150,23 @@ c        write(84,346) old1(i),old2(i),old3(i),RMM(i)
         enddo
        endif
        endif
-        
-      call int1(En)
-       if(nsol.gt.0) then
-        call g2g_timer_start('intsol')
-      call intsol(E1s,Ens,.true.)
-        call g2g_timer_stop('intsol')
-         endif
 c
-c test ---------------------------------------------------------
-         E1=0.D0
-        do 302 k=1,MM
- 302     E1=E1+RMM(k)*RMM(M11+k-1)
-
+c H H core, 1 electron matrix elements
+c
+      call int1(En)
+c
+c -- SOLVENT CASE --------------------------------------
+      if(nsol.gt.0) then
+        call g2g_timer_start('intsol')
+        call intsol(E1s,Ens,.true.)
+        call g2g_timer_stop('intsol')
+      endif
+c-------------------------------------------------------
+c E1 Energia monoelectronica
+c
+      E1=0.D0
+      do 302 k=1,MM
+ 302    E1=E1+RMM(k)*RMM(M11+k-1)
 
 c
 c Diagonalization of S matrix, after this is not needed anymore
@@ -175,7 +174,6 @@ c
 c ESSL OPTION ------------------------------------------
         do i=1,MM
          rmm5(i)=RMM(M5+i-1)
-c        write(56,*) RMM(M15+1)
         enddo
 #ifdef essl
         call DSPEV(1,RMM(M5),RMM(M13),X,M,M,RMM(M15),M2)
@@ -191,9 +189,9 @@ c LINEAR DEPENDENCY ELIMINATION
          allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
 c
          do i=1,MM
-         RMM(M5+i-1)=rmm5(i)
-c        write(56,*) RMM(M15+1)
+           RMM(M5+i-1)=rmm5(i)
          enddo
+
 
         do 10 j=1,M
          RMM(M13+j-1)=rmm13(j)
@@ -211,110 +209,120 @@ c        write(56,*) RMM(M15+1)
          do i=1,M
             do j=1,M
             Ytrans(i,j)=Y(j,i)
-            Xtrans(i,j)=X(j,i)   
+            Xtrans(i,j)=X(j,i)  
             enddo
-         enddo
-                   
+         enddo 
 c
-c CASE OF NO STARTING GUESS PROVIDED, 1 E FOCK MATRIX USED
+c ======>>>>>> CASE OF NO STARTING GUESS PROVIDED,  <<<<<=========
+c   1 E FOCK MATRIX USED
 c
-       if((.not.ATRHO).and.(.not.VCINP).and.primera) then
+      if((.not.ATRHO).and.(.not.VCINP).and.primera) then
         primera=.false.
         do 220 i=1,M
-        do 220 j=1,M
-         X(i,M+j)=0.D0
-         do 222 k=1,j
-         X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+j+(M2-k)*(k-1)/2-1)
-  222     continue
+          do 220 j=1,M
+            X(i,M+j)=0.D0
+            do 222 k=1,j
+            X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+j+(M2-k)*(k-1)/2-1)
+  222       continue
 c
-         do 223 k=j+1,M
-  223     X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+k+(M2-j)*(j-1)/2-1)
+            do 223 k=j+1,M
+  223       X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+k+(M2-j)*(j-1)/2-1)
 c
-  220     continue
+  220   continue
 c
-         kk=0
+        kk=0
         do 230 j=1,M
-        do 230 i=j,M
-         kk=kk+1
-         RMM(M5+kk-1)=0.D0
-        do 232 k=1,M
- 232      RMM(M5+kk-1)=RMM(M5+kk-1)+X(i,M+k)*X(k,j)
- 230     continue
+          do 230 i=j,M
+            kk=kk+1
+            RMM(M5+kk-1)=0.D0
+            do 232 k=1,M
+ 232          RMM(M5+kk-1)=RMM(M5+kk-1)+X(i,M+k)*X(k,j)
+ 230    continue
 c
 c diagonalization now
 c
         do 249 i=1,M
-         RMM(M15+i-1)=0.D0
+          RMM(M15+i-1)=0.D0
  249      RMM(M13+i-1)=0.D0
-
 c
 c ESSL OPTION
+c
         do i=1,MM
-         rmm5(i)=RMM(M5+i-1)
-        enddo
-           rmm15=0
-           rmm13=0       
-           xnano=0
+            rmm5(i)=RMM(M5+i-1)
+	enddo
+
+        rmm15=0
+        rmm13=0       
+        xnano=0
 #ifdef essl
         call DSPEV(1,RMM(M5),RMM(M13),X(1,M+1),M,M,RMM(M15),M2)
 #endif
 c LAPACK OPTION -----------------------------------------
 #ifdef pack
 c
-       call dspev('V','L',M,RMM5,RMM13,Xnano,M,RMM15,info)
+        call dspev('V','L',M,RMM5,RMM13,Xnano,M,RMM15,info)
 #endif
-       do i =1,M
-         do j=1,M
-        X(i,M+j)=xnano(i,j)
-         enddo
-          enddo
 c-----------------------------------------------------------
-         do i=1,MM
-         RMM(M5+i-1)=rmm5(i)
+        do i =1,M
+          do j=1,M
+            X(i,M+j)=xnano(i,j)
+          enddo
         enddo
 
-       do 250 i=1,M
-       do 250 j=1,M
+        do i=1,MM
+          RMM(M5+i-1)=rmm5(i)
+        enddo
+
+        do 250 i=1,M
+          do 250 j=1,M
 c
-        X(i,M2+j)=0.D0
-       do 252 k=1,M
-  252    X(i,M2+j)=X(i,M2+j)+X(i,k)*X(k,M+j)
-  250    continue
+            X(i,M2+j)=0.D0
+            do 252 k=1,M
+  252       X(i,M2+j)=X(i,M2+j) + X(i,k)*X(k,M+j)
+  250   continue
 c
 c Density Matrix
 c
-       kk=0
+        kk=0
 c
-       do 261 k=1,NCO
-       do 261 i=1,M
-       kk=kk+1
- 261     RMM(M18+kk-1)=X(i,M2+k)
+        do 261 k=1,NCO
+          do 261 i=1,M
+            kk=kk+1
+ 261        RMM(M18+kk-1)=X(i,M2+k)
 c
-      kk=0
-      do 330 j=1,M
-      do 330 i=j,M
-      kk=kk+1
-      RMM(kk)=0.D0
+        kk=0
+        do 330 j=1,M
+          do 330 i=j,M
+            kk=kk+1
+            RMM(kk)=0.D0
 c
-      if(i.eq.j) then
-       ff=2.D0
-      else
-       ff=4.D0
+            if(i.eq.j) then
+              ff=2.D0
+            else
+              ff=4.D0
+            endif
+c
+            do 330 k=1,NCO
+              RMM(kk)=RMM(kk)+ff*X(i,M2+k)*X(j,M2+k)
+ 330    continue
+c
+c
+c------ IMPRIMIENDO DENSIDAD ---------------------------------
+#ifdef PRINT_MATRICES
+        kk=0
+        do i=1,M
+          do j=i,M
+            kk=kk+1
+            write(*,*) kk,i,j,RMM(kk)
+          enddo
+        enddo
+#endif
+c
       endif
 c
-      do 330 k=1,NCO
-       RMM(kk)=RMM(kk)+ff*X(i,M2+k)*X(j,M2+k)
- 330  continue
-c
-c
-      endif
-
-
 c End of Starting guess (No MO , AO known)-------------------------------
+c------------------------------------------------------------------------
 c
-
-c
-
       call int22()
 c
 **
@@ -324,7 +332,7 @@ c
          call int3mems()
          call g2g_timer_stop('int3mem')
       endif
-****        
+****
 c---------------------------------------------------------------------
 c Now, damping is performed on the density matrix
 c The first 4 iterations ( it may be changed, if necessary)
@@ -338,11 +346,11 @@ c LEVEL SHIFT CASE, contruction of initial vectors ------------------
 c
       if (SHFT) then
 c
-       write(*,*) 'Level SHIFT is not suported'
-       stop
+        write(*,*) 'Level SHIFT is not suported'
+        stop
       endif
 c      
-        if (DIIS.and.alloqueo) then
+      if (DIIS.and.alloqueo) then
         alloqueo=.false.
 c       write(*,*) 'eme=', M
        allocate(rho1(M,M),rho(M,M),fock(M,M),fockm(MM,ndiis),FP_PF(M,M),
@@ -354,21 +362,18 @@ c-------------------------------------------------------------------
 c
 c      write(*,*) 'empiezo el loop',NMAX
       do 999 while (good.ge.told.and.niter.le.NMAX)
-       call g2g_timer_start('Total iter')
-      niter=niter+1
-       if(niter.le.ndiis) then
-         ndiist=niter
+        call g2g_timer_start('Total iter')
+        niter=niter+1
+        if(niter.le.ndiis) then
+          ndiist=niter
         else
-         ndiist=ndiis
-       endif
-c
-
-c
-c      if (MEMO) then
-            call int3lu(E2)
-            call g2g_solve_groups(0,Ex,0)
+          ndiist=ndiis
+        endif
+c        if (MEMO) then
+        call int3lu(E2)
+        call g2g_solve_groups(0,Ex,0)
 c-------------------------------------------------------
-      E1=0.0D0
+        E1=0.0D0
 c
 c REACTION FIELD CASE --------------------------------------------
 c
@@ -383,9 +388,10 @@ c
 c now, we know S matrix, and F matrix, and E for a given P
 c 1) diagonalize S, get X=U s^(-1/2)
 c 2) get U F Ut
-!c 3) diagonalize F
+c 3) diagonalize F
 c 4) get vec ( coeff) ---->  P new
 c 5) iterate
+c
 c call diagonalization routine for S , get after U s^(-1/2)
 c where U matrix with eigenvectors of S , and s is vector with
 c eigenvalues
@@ -517,12 +523,12 @@ c
  137   RMM(kk2)=RMM(kk)
 c
 c
-        do i=1,M
-        do j=1,M
-        X(i,M+j)=0.D0
-        xnano(i,j)=X(j,i)
+         do i=1,M
+           do j=1,M
+             X(i,M+j)=0.D0
+             xnano(i,j)=X(j,i)
+          enddo
         enddo
-        enddo     
 
 
         do 20 j=1,M
@@ -747,8 +753,9 @@ c
  61     RMM(M18+kk-1)=X(i,M2+k)
 c
 c Construction of new density matrix and comparison with old one
+c
       kk=0
-      good=0.
+      good=0.0D0
 c
       do 130 j=1,M
       do 130 i=j,M
@@ -817,11 +824,11 @@ c
        if(verbose) write(*,300) niter,DAMP,E+Ex
 c
        call g2g_timer_stop('Total iter')
- 999   continue
+ 999  continue
 c 995   continue
 
       if (niter.ge.NMAX) then
-       write(6,*) 'NO CONVERGENCE AT ',NMAX,' ITERATIONS'
+        write(6,*) 'NO CONVERGENCE AT ',NMAX,' ITERATIONS'
         noconverge=noconverge + 1
         converge=0
 c       goto 995
@@ -831,94 +838,90 @@ c       goto 995
         converge=converge+1
       endif
 
-        old3=old2
+      old3=old2
 
-        old2=old1
-c        write(*,*) 'good final',good
+      old2=old1
+c      write(*,*) 'good final',good
 
-       do i=1,MM
+      do i=1,MM
+        old1(i)=RMM(i)
+      enddo
 
-         old1(i)=RMM(i)
-       enddo
-
-
-        if(noconverge.gt.4) then 
+      if(noconverge.gt.4) then 
         write(6,*)  'stop fon not convergion 4 times'
-       stop
-       endif
+        stop
+      endif
 
 
 c
 c -- SOLVENT CASE --------------------------------------
 c      if (sol) then
-        call g2g_timer_start('intsol 2')
-       if(nsol.gt.0) then
-      call intsol(E1s,Ens,.false.)
+      call g2g_timer_start('intsol 2')
+      if(nsol.gt.0) then
+	call intsol(E1s,Ens,.false.)
 c        write(*,*) 'cosillas',E1s,Ens
         call g2g_timer_stop('intsol 2')
-         endif
+      endif
 c      call mmsol(natom,Nsol,natsol,Iz,pc,r,Em,Rm,Es)
       Es=Es+E1s+Ens
 c      endif
 c--------------------------------------------------------------
-       if (GRAD) then
+      if (GRAD) then
 c         if (sol) then
 c         endif
-c       call g2g_timer_start('exchnum')
+c         call g2g_timer_start('exchnum')
 #ifdef G2G
 #ifdef ULTIMA_CPU
-       call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
+        call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,NCO,Exc,nopt)
 #else
-       call g2g_new_grid(igrid)
-       call g2g_solve_groups(1, Exc, 0)
-c       write(*,*) 'g2g-Exc',Exc
+        call g2g_new_grid(igrid)
+        call g2g_solve_groups(1, Exc, 0)
+c        write(*,*) 'g2g-Exc',Exc
 #endif
 #else
 #ifdef ULTIMA_G2G
-       call g2g_new_grid(igrid)
-       call g2g_solve_groups(1, Exc, 0)
-#else      
+        call g2g_new_grid(igrid)
+        call g2g_solve_groups(1, Exc, 0)
+#else
 #endif       
 #endif
-         E=E1+E2+En+Es+Ens+Exc
-         if (npas.eq.1) npasw = 0
-         if (npas.gt.npasw) then
-         write(6,*)
-         write(6,600)
-         write(6,610)
-         write(6,620) E1,E2-Ex,En
-c         if (sol) then
-c          write(6,615)
-c          write(6,625) Es
-c          write(6,*) 'E SCF = ', E , Exc, Ens
-          npasw=npas+10
-          endif
-
-
+        E=E1+E2+En+Es+Ens+Exc
+        if (npas.eq.1) npasw = 0
+        if (npas.gt.npasw) then
+	  write(6,*)
+	  write(6,600)
+	  write(6,610)
+	  write(6,620) E1,E2-Ex,En
+c          if (sol) then
+c            write(6,615)
+c            write(6,625) Es
+c            write(6,*) 'E SCF = ', E , Exc, Ens
+	  npasw=npas+10
+        endif
 c--------------------------------------------------------------
-       else
-       E=E-Ex
-       endif
+      else
+	E=E-Ex
+      endif
 c calculation of energy weighted density matrix
 c
       kk=0
       do 307 j=1,M
-      do 307 i=j,M
-      kk=kk+1
-      RMM(M15+kk-1)=0.D0
+        do 307 i=j,M
+          kk=kk+1
+          RMM(M15+kk-1)=0.D0
 c
-      if(i.eq.j) then
-       ff=2.D0
-      else
-       ff=4.D0
-      endif
+          if(i.eq.j) then
+            ff=2.D0
+          else
+            ff=4.D0
+          endif
 c
-      do 309 k=1,NCO
+          do 309 k=1,NCO
        RMM(M15+kk-1)=RMM(M15+kk-1)-RMM(M13+k-1)*ff*X(i,M2+k)*X(j,M2+k)
- 309  continue
+ 309      continue
 c
- 307   continue
+ 307  continue
 c
 c
 c

@@ -1,0 +1,461 @@
+ &LIO
+ NATOM   =           2,
+ NSOL    =           0,
+ CHARGE  =           0,
+ OPEN    = T,
+ NMAX    =         200,
+ NUNP    =           2,
+ VCINP   = F,
+ FRESTARTIN      = restart.in          ,
+ GOLD    =   5.00000000000000     ,
+ TOLD    =  1.000000000000000E-006,
+ RMAX    =   16.0000000000000     ,
+ RMAXS   =   16.0000000000000     ,
+ PREDCOEF        = F,
+ IDIP    =           1,
+ WRITEXYZ        = T,
+ INTSOLDOUBLE    = T,
+ DIIS    = F,
+ NDIIS   =          30,
+ DGTRIG  =   100.000000000000     ,
+ IEXCH   =           9,
+ INTEG   = T,
+ DENS    = T,
+ IGRID   =           0,
+ IGRID2  =           0,
+ TIMEDEP =           0,
+ TDSTEP  =  2.000000000000000E-003,
+ NTDSTEP =        1000,
+ PROPAGATOR      =           1,
+ NBCH    =          10,
+ FIELD   = F,
+ A0      =   1000.00000000000     ,
+ EPSILON =   1.00000000000000     ,
+ EXTER   = F,
+ FX      =  5.000000074505806E-002,
+ FY      =  5.000000074505806E-002,
+ FZ      =  5.000000074505806E-002
+ /
+<====== Initializing G2G ======>GPU Device used: Tesla K20c
+Kernels: gpu
+ NCO=           7
+           2           2         100         100          50          50
+ JOB STARTED NOW
+Mon May 12 11:14:55 ART 2014
+ en drive          30          68           7
+<======= GPU Code Initialization ========>
+atoms: 2
+max atoms: 2
+number of gaussians: 100
+do_forces: false
+s: 6 p: 4 d: 2
+m: 30
+LIOAMBER OPEN SHELL DFT :) 
+Number of MO(UP): 7
+Number of MO(DOWN): 9
+<====== read_options ========>
+little_cube_size 105.5
+max_function_exponent 20
+min_points_per_cube 1
+sphere_radius 0
+energy_all_iterations true
+ ======>>>> INGRESO A SCFop <<<<==========
+<======= GPU Reload Atom Positions (0)========>
+[0] cubo: (0,0,0): 2300 puntos; 30 funciones, vecinos: 2
+Grilla final: 2300 puntos (recordar que los de peso 0 se tiran), 69000 funciones
+Costo: 2070000
+NCOxM: 210 MxM: 900
+Particion final: 0 esferas y 1 cubos
+timer grilla: 1636us.
+ kknum         464 MM         465
+TIMER [int3mem]: 1333us.
+TIMER [principio int3lu]: 16us.
+TIMER [int3lu]: 80us.
+<================ iteracion [rmm] ==========>
+Ei: -18.89840814 Ec: -0.5626663976 Ec1: -1.193519455 Ec2: 0.630853059
+iteration: 7030us.
+rmm: 2103us. density: 1989us. pot: 0us. forces: 0us. resto: 0us. functions: 2043us.
+
+XC energy: -19.46107456
+ 
+TIMER [dspev]: 121us.
+TIMER [coeff]: 217us.
+  1  0.500000E+01    -144.7779636
+En,E1,E2,Ex,Etotal     18.368070   -254.554626    110.869668    -19.461075   -144.777964
+TIMER [Total iter]: 11148us.
+TIMER [principio int3lu]: 15us.
+TIMER [int3lu]: 80us.
+<================ iteracion [rmm] ==========>
+Ei: -13.5350971 Ec: -0.495488557 Ec1: -0.9766629567 Ec2: 0.4811744006
+iteration: 7002us.
+rmm: 2192us. density: 1979us. pot: 0us. forces: 0us. resto: 0us. functions: 1782us.
+
+XC energy: -14.03058566
+ 
+TIMER [dspev]: 117us.
+TIMER [coeff]: 224us.
+  2  0.500000E+01    -145.3212217
+En,E1,E2,Ex,Etotal     18.368070   -219.824860     70.166154    -14.030586   -145.321222
+TIMER [Total iter]: 10642us.
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 80us.
+<================ iteracion [rmm] ==========>
+Ei: -14.2767635 Ec: -0.484737391 Ec1: -1.010437613 Ec2: 0.5257002213
+iteration: 6576us.
+rmm: 2103us. density: 1823us. pot: 0us. forces: 0us. resto: 0us. functions: 1817us.
+
+XC energy: -14.76150091
+ 
+TIMER [dspev]: 117us.
+TIMER [coeff]: 220us.
+  3  0.500000E+01    -147.9541883
+En,E1,E2,Ex,Etotal     18.368070   -228.155121     76.594364    -14.761501   -147.954188
+TIMER [Total iter]: 10216us.
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 80us.
+<================ iteracion [rmm] ==========>
+Ei: -14.9199033 Ec: -0.4831006015 Ec1: -1.039010307 Ec2: 0.5559097046
+iteration: 6398us.
+rmm: 2106us. density: 2060us. pot: 0us. forces: 0us. resto: 0us. functions: 1405us.
+
+XC energy: -15.40300385
+ 
+TIMER [dspev]: 129us.
+TIMER [coeff]: 218us.
+  4  0.500000E+01    -149.2437995
+En,E1,E2,Ex,Etotal     18.368070   -234.070007     81.861142    -15.403004   -149.243800
+TIMER [Total iter]: 10036us.
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 80us.
+<================ iteracion [rmm] ==========>
+Ei: -15.35000211 Ec: -0.4857852803 Ec1: -1.057863696 Ec2: 0.5720784161
+iteration: 6369us.
+rmm: 1863us. density: 1854us. pot: 0us. forces: 0us. resto: 0us. functions: 1763us.
+
+XC energy: -15.8357874
+ 
+TIMER [dspev]: 115us.
+TIMER [coeff]: 220us.
+  5  0.500000E+01    -149.7469585
+En,E1,E2,Ex,Etotal     18.368070   -237.570312     85.291072    -15.835787   -149.746958
+TIMER [Total iter]: 10002us.
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 80us.
+<================ iteracion [rmm] ==========>
+Ei: -15.61452063 Ec: -0.488839575 Ec1: -1.069371964 Ec2: 0.5805323891
+iteration: 6555us.
+rmm: 2112us. density: 1817us. pot: 0us. forces: 0us. resto: 0us. functions: 1802us.
+
+XC energy: -16.10336023
+ 
+TIMER [dspev]: 116us.
+TIMER [coeff]: 216us.
+  6  0.500000E+01    -149.9363172
+En,E1,E2,Ex,Etotal     18.368070   -239.577835     87.376809    -16.103360   -149.936317
+TIMER [Total iter]: 10190us.
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 80us.
+<================ iteracion [rmm] ==========>
+Ei: -15.77705669 Ec: -0.491207144 Ec1: -1.076405421 Ec2: 0.5851982777
+iteration: 6865us.
+rmm: 2110us. density: 1955us. pot: 0us. forces: 0us. resto: 0us. functions: 1978us.
+
+XC energy: -16.26826385
+ 
+TIMER [dspev]: 112us.
+TIMER [coeff]: 218us.
+  7  0.500000E+01    -150.0103932
+En,E1,E2,Ex,Etotal     18.368070   -240.762787     88.652588    -16.268264   -150.010393
+TIMER [Total iter]: 10476us.
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 80us.
+<================ iteracion [rmm] ==========>
+Ei: -15.87870316 Ec: -0.4928601042 Ec1: -1.080783991 Ec2: 0.5879238865
+iteration: 6465us.
+rmm: 1867us. density: 1926us. pot: 0us. forces: 0us. resto: 0us. functions: 1777us.
+
+XC energy: -16.37156327
+ 
+TIMER [dspev]: 114us.
+TIMER [coeff]: 217us.
+  8  0.500000E+01    -150.0407179
+En,E1,E2,Ex,Etotal     18.368070   -241.486374     89.449150    -16.371563   -150.040718
+TIMER [Total iter]: 10096us.
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 80us.
+<================ iteracion [rmm] ==========>
+Ei: -15.94335754 Ec: -0.4939710128 Ec1: -1.083557027 Ec2: 0.5895860154
+iteration: 6546us.
+rmm: 2106us. density: 1816us. pot: 0us. forces: 0us. resto: 0us. functions: 1803us.
+
+XC energy: -16.43732855
+ 
+TIMER [dspev]: 115us.
+TIMER [coeff]: 215us.
+  9  0.500000E+01    -150.0535460
+En,E1,E2,Ex,Etotal     18.368070   -241.939911     89.955624    -16.437329   -150.053546
+TIMER [Total iter]: 10163us.
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 80us.
+<================ iteracion [rmm] ==========>
+Ei: -15.98501157 Ec: -0.494704962 Ec1: -1.08533551 Ec2: 0.5906305488
+iteration: 5941us.
+rmm: 2101us. density: 1620us. pot: 0us. forces: 0us. resto: 0us. functions: 1397us.
+
+XC energy: -16.47971655
+ 
+TIMER [dspev]: 114us.
+TIMER [coeff]: 214us.
+ 10  0.500000E+01    -150.0588622
+En,E1,E2,Ex,Etotal     18.368070   -242.229141     90.281926    -16.479717   -150.058862
+TIMER [Total iter]: 9576us.
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 80us.
+<================ iteracion [rmm] ==========>
+Ei: -16.01208908 Ec: -0.4951850304 Ec1: -1.086485762 Ec2: 0.5913007303
+iteration: 6682us.
+rmm: 2176us. density: 1854us. pot: 0us. forces: 0us. resto: 0us. functions: 1768us.
+
+XC energy: -16.50727409
+ 
+TIMER [dspev]: 119us.
+TIMER [coeff]: 214us.
+ 11  0.500000E+01    -150.0611276
+En,E1,E2,Ex,Etotal     18.368070   -242.415955     90.494031    -16.507274   -150.061128
+TIMER [Total iter]: 10295us.
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 80us.
+<================ iteracion [rmm] ==========>
+Ei: -16.02979901 Ec: -0.4954965051 Ec1: -1.087233554 Ec2: 0.5917370489
+iteration: 6547us.
+rmm: 2106us. density: 1820us. pot: 0us. forces: 0us. resto: 0us. functions: 1802us.
+
+XC energy: -16.52529553
+ 
+TIMER [dspev]: 114us.
+TIMER [coeff]: 215us.
+ 12  0.500000E+01    -150.0624840
+En,E1,E2,Ex,Etotal     18.368070   -242.537964     90.632706    -16.525296   -150.062484
+TIMER [Total iter]: 10182us.
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 80us.
+<================ iteracion [rmm] ==========>
+Ei: -16.04143226 Ec: -0.4956969382 Ec1: -1.087721141 Ec2: 0.5920242039
+iteration: 6363us.
+rmm: 2106us. density: 2026us. pot: 0us. forces: 0us. resto: 0us. functions: 1412us.
+
+XC energy: -16.53712922
+ 
+TIMER [dspev]: 114us.
+TIMER [coeff]: 215us.
+ 13  0.500000E+01    -150.0629708
+En,E1,E2,Ex,Etotal     18.368070   -242.617615     90.723704    -16.537129   -150.062971
+TIMER [Total iter]: 9988us.
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 80us.
+<================ iteracion [rmm] ==========>
+Ei: -16.04909747 Ec: -0.4958246323 Ec1: -1.088039458 Ec2: 0.5922148257
+iteration: 6369us.
+rmm: 1863us. density: 1850us. pot: 0us. forces: 0us. resto: 0us. functions: 1765us.
+
+XC energy: -16.54492212
+ 
+TIMER [dspev]: 115us.
+TIMER [coeff]: 214us.
+ 14  0.500000E+01    -150.0633658
+En,E1,E2,Ex,Etotal     18.368070   -242.670059     90.783546    -16.544922   -150.063366
+TIMER [Total iter]: 9993us.
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 80us.
+<================ iteracion [rmm] ==========>
+Ei: -16.05416016 Ec: -0.4959049195 Ec1: -1.088247239 Ec2: 0.5923423182
+iteration: 6553us.
+rmm: 2108us. density: 1814us. pot: 0us. forces: 0us. resto: 0us. functions: 1809us.
+
+XC energy: -16.55006507
+ 
+TIMER [dspev]: 114us.
+TIMER [coeff]: 213us.
+ 15  0.500000E+01    -150.0634388
+En,E1,E2,Ex,Etotal     18.368070   -242.704391     90.822948    -16.550065   -150.063439
+TIMER [Total iter]: 10172us.
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 80us.
+<================ iteracion [rmm] ==========>
+Ei: -16.05751147 Ec: -0.4959545263 Ec1: -1.088382749 Ec2: 0.5924282211
+iteration: 6325us.
+rmm: 2150us. density: 1960us. pot: 0us. forces: 0us. resto: 0us. functions: 1391us.
+
+XC energy: -16.553466
+ 
+TIMER [dspev]: 118us.
+TIMER [coeff]: 213us.
+ 16  0.500000E+01    -150.0634031
+En,E1,E2,Ex,Etotal     18.368070   -242.726913     90.848907    -16.553466   -150.063403
+TIMER [Total iter]: 9966us.
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 80us.
+<================ iteracion [rmm] ==========>
+Ei: -16.05973435 Ec: -0.4959843666 Ec1: -1.088470891 Ec2: 0.5924865242
+iteration: 6370us.
+rmm: 1866us. density: 1854us. pot: 0us. forces: 0us. resto: 0us. functions: 1760us.
+
+XC energy: -16.55571871
+ 
+TIMER [dspev]: 120us.
+TIMER [coeff]: 218us.
+ 17  0.500000E+01    -150.0632776
+En,E1,E2,Ex,Etotal     18.368070   -242.741638     90.866010    -16.555719   -150.063278
+TIMER [Total iter]: 9991us.
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 80us.
+<================ iteracion [rmm] ==========>
+Ei: -16.06121287 Ec: -0.496001626 Ec1: -1.088528053 Ec2: 0.5925264277
+iteration: 6549us.
+rmm: 2105us. density: 1818us. pot: 0us. forces: 0us. resto: 0us. functions: 1801us.
+
+XC energy: -16.55721453
+ 
+TIMER [dspev]: 115us.
+TIMER [coeff]: 214us.
+ 18  0.500000E+01    -150.0633799
+En,E1,E2,Ex,Etotal     18.368070   -242.751511     90.877276    -16.557215   -150.063380
+TIMER [Total iter]: 10177us.
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 80us.
+<================ iteracion [rmm] ==========>
+Ei: -16.06219997 Ec: -0.4960109482 Ec1: -1.088564866 Ec2: 0.5925539182
+iteration: 6360us.
+rmm: 2110us. density: 2012us. pot: 0us. forces: 0us. resto: 0us. functions: 1414us.
+
+XC energy: -16.55821094
+ 
+TIMER [dspev]: 112us.
+TIMER [coeff]: 212us.
+ 19  0.500000E+01    -150.0633846
+En,E1,E2,Ex,Etotal     18.368070   -242.757950     90.884707    -16.558211   -150.063385
+TIMER [Total iter]: 9977us.
+TIMER [principio int3lu]: 14us.
+TIMER [int3lu]: 80us.
+<================ iteracion [rmm] ==========>
+Ei: -16.06287166 Ec: -0.4960152611 Ec1: -1.088588101 Ec2: 0.5925728399
+iteration: 6643us.
+rmm: 2161us. density: 1837us. pot: 0us. forces: 0us. resto: 0us. functions: 1763us.
+
+XC energy: -16.55888689
+ 
+TIMER [dspev]: 108us.
+TIMER [coeff]: 201us.
+ 20  0.500000E+01    -150.0632515
+En,E1,E2,Ex,Etotal     18.368070   -242.762115     90.889681    -16.558887   -150.063252
+TIMER [Total iter]: 10153us.
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 75us.
+<================ iteracion [rmm] ==========>
+Ei: -16.06338334 Ec: -0.4960160873 Ec1: -1.088600762 Ec2: 0.5925846736
+iteration: 6473us.
+rmm: 2110us. density: 1783us. pot: 0us. forces: 0us. resto: 0us. functions: 1778us.
+
+XC energy: -16.5593994
+ 
+TIMER [dspev]: 114us.
+TIMER [coeff]: 203us.
+ 21  0.500000E+01    -150.0630216
+En,E1,E2,Ex,Etotal     18.368070   -242.765137     90.893445    -16.559399   -150.063022
+TIMER [Total iter]: 9900us.
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 75us.
+<================ iteracion [rmm] ==========>
+Ei: -16.06406382 Ec: -0.4960121201 Ec1: -1.088596979 Ec2: 0.5925848601
+iteration: 6547us.
+rmm: 2100us. density: 2003us. pot: 0us. forces: 0us. resto: 0us. functions: 1630us.
+
+XC energy: -16.56007597
+ 
+TIMER [dspev]: 114us.
+TIMER [coeff]: 203us.
+ 22  0.500000E+01    -150.0608544
+En,E1,E2,Ex,Etotal     18.368070   -242.767487     90.898638    -16.560076   -150.060854
+TIMER [Total iter]: 9978us.
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 75us.
+<================ iteracion [rmm] ==========>
+Ei: -16.06634229 Ec: -0.4959911312 Ec1: -1.088531403 Ec2: 0.5925402726
+iteration: 6305us.
+rmm: 1859us. density: 1831us. pot: 0us. forces: 0us. resto: 0us. functions: 1738us.
+
+XC energy: -16.56233344
+ 
+TIMER [dspev]: 115us.
+TIMER [coeff]: 202us.
+ 23  0.500000E+01    -150.0494071
+En,E1,E2,Ex,Etotal     18.368070   -242.772003     90.916860    -16.562333   -150.049407
+TIMER [Total iter]: 9711us.
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 75us.
+<================ iteracion [rmm] ==========>
+Ei: -16.07700501 Ec: -0.4958966124 Ec1: -1.088183723 Ec2: 0.5922871113
+iteration: 6479us.
+rmm: 2102us. density: 1783us. pot: 0us. forces: 0us. resto: 0us. functions: 1784us.
+
+XC energy: -16.57290165
+ 
+TIMER [dspev]: 113us.
+TIMER [coeff]: 203us.
+ 24  0.500000E+01    -149.9908638
+En,E1,E2,Ex,Etotal     18.368070   -242.789810     91.003778    -16.572902   -149.990864
+TIMER [Total iter]: 9913us.
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 75us.
+<================ iteracion [rmm] ==========>
+Ei: -16.1167559 Ec: -0.4956778127 Ec1: -1.087063595 Ec2: 0.5913857844
+iteration: 6402us.
+rmm: 2106us. density: 1840us. pot: 0us. forces: 0us. resto: 0us. functions: 1637us.
+
+XC energy: -16.61243371
+ 
+TIMER [dspev]: 113us.
+TIMER [coeff]: 202us.
+ 25  0.500000E+01    -149.7657213
+En,E1,E2,Ex,Etotal     18.368070   -242.859329     91.337972    -16.612434   -149.765721
+TIMER [Total iter]: 9815us.
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 75us.
+<================ iteracion [rmm] ==========>
+Ei: -16.18724967 Ec: -0.4958590335 Ec1: -1.086041641 Ec2: 0.590182607
+iteration: 6534us.
+rmm: 2155us. density: 1803us. pot: 0us. forces: 0us. resto: 0us. functions: 1727us.
+
+XC energy: -16.68310872
+ 
+TIMER [dspev]: 112us.
+TIMER [coeff]: 203us.
+ 26  0.500000E+01    -149.3412712
+En,E1,E2,Ex,Etotal     18.368070   -243.001328     91.975095    -16.683109   -149.341271
+TIMER [Total iter]: 9966us.
+TIMER [principio int3lu]: 13us.
+TIMER [int3lu]: 75us.
+<================ iteracion [rmm] ==========>
+Ei: -16.22853004 Ec: -0.4962683965 Ec1: -1.085974922 Ec2: 0.5897065252
+iteration: 6470us.
+rmm: 2105us. density: 1778us. pot: 0us. forces: 0us. resto: 0us. functions: 1783us.
+
+XC energy: -16.72479843
+ 
+TIMER [dspev]: 1270us.
+TIMER [coeff]: 216us.
+ 27  0.500000E+01    -149.0543229
+En,E1,E2,Ex,Etotal     18.368070   -243.081055     92.383461    -16.724798   -149.054323
+TIMER [Total iter]: 10925us.
+<======= GPU New Grid (0)========>
+not loading, same grid as loaded
+<================ iteracion [energia+fuerzas] ==========>
+force.x=nanforce.y=nanforce.z=nan
+force.x=nanforce.y=nanforce.z=nan
+Ei: nan Ec: nan Ec1: nan Ec2: nan
+iteration: 7348us.
+rmm: 0us. density: 1723us. pot: 0us. forces: 2173us. resto: 0us. functions: 1374us.
+
+XC energy: nan
+TIMER [SCF]: 289184us.
+ SCF ENRGY=                     NaN

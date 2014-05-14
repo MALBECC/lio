@@ -39,9 +39,9 @@ namespace G2G {
 	
 	template<class T> class HostMatrix : public Matrix<T> {
 		public:
-      enum PinnedFlag { Pinned, NonPinned };
+                        enum PinnedFlag { Pinned, NonPinned };
 
-      HostMatrix(PinnedFlag pinned = NonPinned);
+                        HostMatrix(PinnedFlag pinned = NonPinned);
 			HostMatrix(unsigned int width, unsigned int height = 1, PinnedFlag pinned = NonPinned);
 			HostMatrix(const CudaMatrix<T>& c);
 			HostMatrix(const HostMatrix<T>& c);
@@ -53,7 +53,7 @@ namespace G2G {
 			inline const T& operator()(unsigned int i = 0, unsigned int j = 0) const {
 				assert(i < this->width);
 				assert(j < this->height);
-        return this->data[j * this->width + i];
+                                return this->data[j * this->width + i];
 			}
 			inline T& operator()(unsigned int i = 0, unsigned int j = 0) {
 				assert(i < this->width);
@@ -61,27 +61,27 @@ namespace G2G {
 				return this->data[j * this->width + i];
 			}
 
-      inline T* ptr(unsigned int i = 0, unsigned int j = 0) {
-        assert(i < this->width);
+                        inline T* ptr(unsigned int i = 0, unsigned int j = 0) {
+                                assert(i < this->width);
 				assert(j < this->height);
 				return &this->data[j * this->width + i];
-      }
+                        }
 			
 			void copy_submatrix(const CudaMatrix<T>& c, unsigned int elements = 0);
 			void copy_submatrix(const HostMatrix<T>& c, unsigned int elements = 0);
 
       //void copy_into(T* external_data, unsigned int _i, unsigned int _j, unsigned int _elements = 0);
 
-      void copy_transpose(const CudaMatrix<T>& cuda_matrix);
-      void transpose(HostMatrix<T>& out);
+                        void copy_transpose(const CudaMatrix<T>& cuda_matrix);
+                        void transpose(HostMatrix<T>& out);
 
 
 			HostMatrix<T>& resize(unsigned int width, unsigned int height = 1);
-      HostMatrix<T>& shrink(unsigned int width, unsigned int height = 1);
+                        HostMatrix<T>& shrink(unsigned int width, unsigned int height = 1);
 			HostMatrix<T>& zero(void);
-      HostMatrix<T>& fill(T value);
+                        HostMatrix<T>& fill(T value);
 
-      void check_values(void);
+                        void check_values(void);
 
 			void deallocate(void);
 
@@ -104,7 +104,7 @@ namespace G2G {
 			CudaMatrix(void);
 			CudaMatrix(const CudaMatrix<T>& c);
 			CudaMatrix(const HostMatrix<T>& c);
-      CudaMatrix(const std::vector<T>& v);
+                        CudaMatrix(const std::vector<T>& v);
 
 			CudaMatrix(unsigned int width, unsigned int height = 1);
 			~CudaMatrix(void);
@@ -112,15 +112,21 @@ namespace G2G {
 			CudaMatrix<T>& resize(unsigned int width, unsigned int height = 1);
 			CudaMatrix<T>& zero(void);
 
-      void check_values(void);
+                        void check_values(void);
 
 			CudaMatrix& operator=(const HostMatrix<T>& c);
 			CudaMatrix& operator=(const CudaMatrix<T>& c);
-      CudaMatrix& operator=(const std::vector<T>& v);
-		
+                        CudaMatrix& operator=(const std::vector<T>& v);
+		 	
+			inline const T& operator()(unsigned int x = 0, unsigned int y = 0) const {
+                                assert(x < this->width);
+                                assert(y < this->height);
+                                return this->data[y * this->width + x];
+                        }
+			
 			void copy_submatrix(const HostMatrix<T>& c, unsigned int elements = 0);
 			void copy_submatrix(const CudaMatrix<T>& c, unsigned int elements = 0);
-      void copy_submatrix(const std::vector<T>& v, unsigned int elements = 0);
+                        void copy_submatrix(const std::vector<T>& v, unsigned int elements = 0);
 		
 			void deallocate(void);		
 	};
@@ -140,6 +146,11 @@ namespace G2G {
 				assert(y < this->height);
 				return this->data[y * fortran_width + x];
 			}
+			//inline const T& operator()(unsigned int x = 0, unsigned int y = 0, unsigned int ANCHO = 0) const {
+                        //        assert(x < this->width);
+                        //        assert(y < this->height);
+                        //        return this->data[y * ANCHO + x];
+                        //}
 
       void deallocate(void) {};
 		

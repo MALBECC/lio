@@ -1,0 +1,158 @@
+#-*- mode: make -*-
+################################################################################
+#
+# Copyright 1993-2006 NVIDIA Corporation.  All rights reserved.
+#
+# NOTICE TO USER:
+#
+# This source code is subject to NVIDIA ownership rights under U.S. and
+# international Copyright laws.
+#
+# NVIDIA MAKES NO REPRESENTATION ABOUT THE SUITABILITY OF THIS SOURCE
+# CODE FOR ANY PURPOSE.  IT IS PROVIDED "AS IS" WITHOUT EXPRESS OR
+# IMPLIED WARRANTY OF ANY KIND.  NVIDIA DISCLAIMS ALL WARRANTIES WITH
+# REGARD TO THIS SOURCE CODE, INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE.
+# IN NO EVENT SHALL NVIDIA BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL,
+# OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+# OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+# OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
+# OR PERFORMANCE OF THIS SOURCE CODE.
+#
+# U.S. Government End Users.  This source code is a "commercial item" as
+# that term is defined at 48 C.F.R. 2.101 (OCT 1995), consisting  of
+# "commercial computer software" and "commercial computer software
+# documentation" as such terms are used in 48 C.F.R. 12.212 (SEPT 1995)
+# and is provided to the U.S. Government only as a commercial end item.
+# Consistent with 48 C.F.R.12.212 and 48 C.F.R. 227.7202-1 through
+# 227.7202-4 (JUNE 1995), all U.S. Government End Users acquire the
+# source code with only those rights set forth herein.
+#
+################################################################################
+#
+# Common build script
+#
+################################################################################
+
+#.SUFFIXES : .cu .cu_dbg_o .c_dbg_o .cpp_dbg_o .cu_rel_o .c_rel_o .cpp_rel_o .cubin
+
+# Basic directory setup for SDK
+# (override directories only if they are not already defined)
+ROOTDIR    ?= $(CUDA_HOME)/cuda
+
+# Compilers
+ARCHFLAGS	 :=
+
+# Includes
+INCLUDES  += -I. -I$(CUDA_HOME)/include
+
+# Libs
+CUDA_LDFLAGS    := -L$(CUDA_HOME)/lib64 -L$(CUDA_HOME)/lib
+
+# Warning flags
+CXXWARN_FLAGS := \
+	-W -Wall \
+	-Wswitch \
+	-Wformat \
+	-Wchar-subscripts \
+	-Wparentheses \
+	-Wmultichar \
+	-Wtrigraphs \
+	-Wpointer-arith \
+	-Wcast-align \
+	-Wreturn-type \
+	-Wno-unused-function \
+	$(SPACE)
+
+CWARN_FLAGS := $(CXXWARN_FLAGS) \
+	-Wstrict-prototypes \
+	-Wmissing-prototypes \
+	-Wmissing-declarations \
+	-Wnested-externs \
+	-Wmain \
+
+# Compiler-specific flags
+NVCCFLAGS   := $(ARCHFLAGS) -shared --compiler-options -fPIC --compiler-options -Wall
+ifeq ($(gcc),1)
+  CXXFLAGS    += $(CXXWARN_FLAGS)
+endif
+
+# Common flags
+NVCCFLAGS += $(INCLUDES) -DUNIX
+CXXFLAGS  += $(INCLUDES) -DUNIX
+
+ifeq ($(profile),1)
+	NVCCFLAGS += --compiler-options -pg
+endif
+
+ifeq ($(regcount),1)
+  NVCCFLAGS += --ptxas-options=-v
+endif
+
+# Debug/release configuration
+ifneq ($(dbg),1)
+	NVCCFLAGS   += -O3 --compiler-options -fno-strict-aliasing -lineinfo
+endif
+
+ifeq ($(keep), 1)
+	NVCCFLAGS   += --keep
+endif
+
+ifeq ($(cpu),1)
+	NVCCFLAGS += -DCPU_KERNELS=1
+endif
+
+ifeq ($(ptx),1)
+	NVCCFLAGS += --ptx
+endif
+################################################################################
+# Check for input flags and set compiler flags appropriately
+################################################################################
+ifeq ($(fastmath), 1)
+  NVCCFLAGS += -use_fast_math
+endif
+
+# Add common flags
+NVCCFLAGS += $(COMMONFLAGS)
+
+# Add NVCC Compiler Flags
+NVCCFLAGS += --linker-options -fPIC #--verbose
+
+ifeq ($(verbose),1)
+  NVCCFLAGS += --verbose
+endif
+
+ifeq ($(sm_1x),1)
+  NVCCFLAGS += -arch=sm_1x
+else
+  NVCCFLAGS += -DNVIDIA_HAS_DOUBLE -DUSING_FERMI
+  CXXFLAGS  += -DUSING_FERMI
+  ifeq ($(sm35),1)
+    NVCCFLAGS += -arch=sm_35
+  else
+    #DEFAULT IS SM20
+    NVCCFLAGS += -arch=sm_20
+  endif  
+endif
+
+ifeq ($(sm20),1)
+endif
+
+
+ifeq ($(nvcc_warn_verbose),1)
+  NVCCFLAGS += $(addprefix --compiler-options ,$(CXXWARN_FLAGS))
+  NVCCFLAGS += --compiler-options -fno-strict-aliasing
+endif
+
+################################################################################
+# Rules
+################################################################################
+
+# Commented should be in config file
+# CC=icc
+# CXX=icc
+
+%.cu_o : %.cu
+	nvcc $(NVCCFLAGS) -o $@ -c $<
+	#nvcc $(NVCCFLAGS) -cuda -o $<.cpp $<
+	#icc $(CXXFLAGS) -o $@ -c $<.cpp

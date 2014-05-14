@@ -279,6 +279,7 @@ if(fortran_vars.OPEN){
 //==============================================================================================================
 
 template<bool compute_rmm, bool lda, bool compute_forces> void g2g_iteration(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr)
+{
 
   Timers timers;
   timers.total.start();
@@ -290,7 +291,8 @@ template<bool compute_rmm, bool lda, bool compute_forces> void g2g_iteration(boo
   partition.solve(timers, compute_rmm, lda, compute_forces, compute_energy, fort_energy_ptr, fort_forces_ptr, fortran_vars.OPEN);
   
   timers.total.stop();
-  cout << timers << endl;  
+  cout << timers << endl;
+//(  cout << "...............................SALIENDO DE g2g_iteration"<<endl; 
 }
 
 //===============================================================================================================
@@ -422,8 +424,18 @@ void read_options(void) {
       			{ f >> energy_all_iterations; cout << energy_all_iterations; }
     		else if (option == "big_function_cutoff")
       			{ f >> big_function_cutoff; cout << big_function_cutoff; }
-               else if (option == "free_global_memory")
-                   	{ f >> free_global_memory; cout << free_global_memory; }
+    else if (option == "assign_all_functions")
+      { f >> assign_all_functions; cout << assign_all_functions; }
+    else if (option == "sphere_radius")
+      { f >> sphere_radius; cout << sphere_radius; }
+    else if (option == "remove_zero_weights")
+      { f >> remove_zero_weights; cout << remove_zero_weights; }
+    else if (option == "energy_all_iterations")
+      { f >> energy_all_iterations; cout << energy_all_iterations; }
+    else if (option == "big_function_cutoff")
+      { f >> big_function_cutoff; cout << big_function_cutoff; }
+    else if (option == "free_global_memory")
+      { f >> free_global_memory; cout << free_global_memory; }
 		
 		else throw runtime_error(string("Invalid option: ") + option);
 

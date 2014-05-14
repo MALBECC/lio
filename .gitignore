@@ -21,5 +21,4 @@ fort.*
 *.so
 *~
 lioamber/*.mod
-lioamber/obj/
 liosolo/liosolo

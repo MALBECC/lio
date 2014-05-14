@@ -4,7 +4,7 @@ c Lebedev ( Becke's method)
 c for 50 and 116 angular points
 c 12-02-93 , D.E
 c-------------------------------------------------------
-      SUBROUTINE GRID
+      SUBROUTINE GRIDLIO
        use garcha_mod
       implicit real*8 (a-h,o-z)
 *      real*16 e,e2,e3,wang,wang2,wang3,pi,pi4

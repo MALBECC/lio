@@ -84,7 +84,7 @@ __global__ void gpu_compute_density(scalar_type* const factor, const scalar_type
     }
 
 
-    for (int bj = min_i2; bj >= 0; bj -= DENSITY_BLOCK_SIZE)
+    for (int bj = 0; bj <= min_i2; bj += DENSITY_BLOCK_SIZE)
     {
         //Density deberia ser GET_DENSITY_BLOCK_SIZE
 
@@ -104,31 +104,6 @@ __global__ void gpu_compute_density(scalar_type* const factor, const scalar_type
 
 
         __syncthreads();
-        /*        if(bj==min_i-DENSITY_BLOCK_SIZE)
-                {
-                    Fi=fj_sh[position];
-                    if(!lda)
-                    {
-                        Fgi = fgj_sh[position];
-                        Fhi1 = fh1j_sh[position] ;
-                        Fhi2 = fh2j_sh[position] ;
-                    }
-                }
-
-              if(valid_thread2)
-                {
-                if(bj==min_i)
-                {
-                    Fi2=fj_sh[position];
-                    if(!lda)
-                    {
-                        Fgi2 = fgj_sh[position];
-                        Fhi12 = fh1j_sh[position] ;
-                        Fhi22 = fh2j_sh[position] ;
-                    }
-                }
-               }
-        */
 
         if(valid_thread)
         {

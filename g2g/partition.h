@@ -177,6 +177,12 @@ class Partition {
 //      std::cout << "spheres XC energy: " << spheres_energy << std::endl;
       std::cout << "Ei: " << cubes_energy_i+spheres_energy_i << " Ec: " << cubes_energy_c+spheres_energy_c<< " Ec1: " << cubes_energy_c1+spheres_energy_c1<< " Ec2: " << cubes_energy_c2+spheres_energy_c2<< std::endl;
       *fort_energy_ptr = cubes_energy + spheres_energy;
+           if(*fort_energy_ptr != *fort_energy_ptr) {
+             std::cout << "I see dead peaple " << std::endl;
+             cudaDeviceReset();
+          exit(0);
+       }
+
     }
 
     void regenerate(void);

@@ -125,7 +125,7 @@ c      endif
 c
       if (.not.OPEN) then
 
-        write(*,*) 'exchnum int3G'
+c        write(*,*) 'exchnum int3G'
       call g2g_timer_start('ExcG')
           if (calc_energy) then
               call g2g_solve_groups(2, Exc, f)

@@ -355,6 +355,16 @@ c
  330    continue
 c
 c
+c------ IMPRIMIENDO DENSIDAD ---------------------------------
+#ifdef PRINT_MATRICES
+        kk=0
+        do i=1,M
+          do j=i,M
+            kk=kk+1
+            write(*,*) kk,i,j,RMM(kk)
+          enddo
+        enddo
+#endif
 c
       endif
 c
@@ -933,6 +943,21 @@ c        write(*,*) 'g2g-Exc',Exc
 #else
 #endif       
 #endif
+<<<<<<< HEAD
+        E=E1+E2+En+Es+Ens+Exc
+        if (npas.eq.1) npasw = 0
+        if (npas.gt.npasw) then
+	  write(6,*)
+	  write(6,600)
+	  write(6,610)
+	  write(6,620) E1,E2-Ex,En
+c          if (sol) then
+c            write(6,615)
+c            write(6,625) Es
+c            write(6,*) 'E SCF = ', E , Exc, Ens
+	  npasw=npas+10
+        endif
+=======
          E=E1+E2+En+Ens+Exc
          if (npas.eq.1) npasw = 0
          if (npas.gt.npasw) then
@@ -948,6 +973,7 @@ c          write(6,*) 'E SCF = ', E , Exc, Ens
           endif
 
 
+>>>>>>> master
 c--------------------------------------------------------------
       else
 	E=E-Ex

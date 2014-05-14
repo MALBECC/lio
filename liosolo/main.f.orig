@@ -140,6 +140,19 @@ c       write(*,*) pc(i),r(i,1:3)
        write(*,*) 'NCO=',NCO
        write(*,*) natom,ntatom,ngDyn,ngdDyn,ng0,ngd0
 c--------------------------------------------------------
+<<<<<<< HEAD
+      call drive(ng2,ngDyn,ngdDyn)
+c--------------------------------------------------------
+      if(OPEN) then
+        call SCFOP(escf)
+      else
+        call SCF(escf,dipxyz)
+      endif
+c-------------------------------------------------------- 
+      write(*,*) 'SCF ENRGY=',escf 
+     
+      end
+=======
        call drive(ng2,ngDyn,ngdDyn)
 
        call SCF(escf,dipxyz)

@@ -12,7 +12,7 @@
       character*65 title
       character*20 basis,whatis,stdbas
       character*4 date
-      character*20 output,fcoord,fmulliquen,frestart,frestartin,solv,
+      character*20 output,fcoord,fmulliken,frestart,frestartin,solv,
      > solv2
       character*4 ctype
       logical exists,MEMO,predcoef
@@ -22,6 +22,10 @@
       logical exter,exter1,resp1,popf,primera,writexyz,intsoldouble
       logical OPEN1
       logical dens1,integ1,sol1,free,free1, field, extern
+
+      logical tdrestart, writedens
+
+
       dimension OCC(40),oc2(400),ATCOEF(100*ng0),ighost(ntq),
      > ighost1(ntq)
       dimension ncf(nng),lt(nng)
@@ -88,6 +92,6 @@ c
       real*8     rmax, rmaxs
       real*8, dimension (:), ALLOCATABLE :: cool
       real*4, dimension (:), ALLOCATABLE :: cools
-      parameter rmintsol=16.0D0
+c      parameter rmintsol=16.0D0
 
       end module garcha_mod

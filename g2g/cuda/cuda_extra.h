@@ -5,7 +5,7 @@
 #include <cuda.h>
 
 #define WARP_SIZE 32
-#define BANKS 16
+#define BANKS 32
 
 #include <stdexcept>
 #include <iostream>

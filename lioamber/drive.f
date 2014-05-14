@@ -118,14 +118,14 @@ c calls generator of table for incomplete gamma functions
 c
        call GENERF
        call GENERFS
-       call GRID
+       call GRIDLIO
        npas=0
 c-----------------------------------------------------------------------
 c reads input file
       
       inquire(file=basis,exist=exists)
       if (.not.exists) then
-      write(*,*) 'ERROR CANNOT FIND INPUT FILE ON UNIT 1'
+      write(*,*) 'ERROR CANNOT FIND INPUT FILE ON UNIT 1',basis
       stop
       else
 c  name of output file
@@ -142,7 +142,7 @@ c      open(unit=2,file=output)
       endif
 
       open(unit=18,file=fcoord)
-      open(unit=85,file=fmulliquen)
+      open(unit=85,file=fmulliken)
       open(unit=88,file=frestart)
 c-------------------------------------------------------
       date='date'

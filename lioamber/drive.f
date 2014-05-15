@@ -191,9 +191,6 @@ c
 c-------------------------------------------------------------------------
 c  BASIS SETS ------------------------------------------------------------
 c-------------------------------------------------------------------------
-
-      write(*,*) 'LEYENDO LA BASE'
-
       do 25 while (whatis.ne.'endbasis')
 c
         NBAS=NBAS+1
@@ -892,7 +889,6 @@ c      write(*,*) 'estoooo',ngpru, ngDyn, ng0, natom
         allocate(rhoalpha(1),rhobeta(1))
       endif
 
-      write(6,*)'LLAMANDO A g2g_parameter_init()'
       call g2g_parameter_init(NORM,natom,natom,ngDyn,
      >                        rqm,Rm2,Iz,Nr,Nr2,Nuc,
      >                        M,ncont,nshell,c,a, 

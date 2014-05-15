@@ -250,16 +250,12 @@ c
             Ytrans(i,j)=Y(j,i)
             Xtrans(i,j)=X(j,i)  
             enddo
-<<<<<<< HEAD
-         enddo 
-=======
          enddo
 
         ENDIF                   
 
        call g2g_timer_stop('cholesky')
 
->>>>>>> master
 c
 c ======>>>>>> CASE OF NO STARTING GUESS PROVIDED,  <<<<<=========
 c   1 E FOCK MATRIX USED
@@ -358,18 +354,14 @@ c
 c
       endif
 c
-<<<<<<< HEAD
 c End of Starting guess (No MO , AO known)-------------------------------
 c------------------------------------------------------------------------
 c
-=======
         if ((timedep.eq.1).and.(tdrestart)) then
         call TD()
         return
         endif
 
-
->>>>>>> master
       call int22()
 c
 **

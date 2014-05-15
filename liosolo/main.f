@@ -141,8 +141,14 @@ c       write(*,*) pc(i),r(i,1:3)
        write(*,*) natom,ntatom,ngDyn,ngdDyn,ng0,ngd0
 c--------------------------------------------------------
        call drive(ng2,ngDyn,ngdDyn)
+c--------------------------------------------------------
+       if(OPEN) then
+         call SCFOP(escf)
+       else
+        call SCF(escf,dipxyz)
+      endif
+c-------------------------------------------------------- 
 
-       call SCF(escf,dipxyz)
        write(*,*) 'SCF ENRGY=',escf 
         
        allocate (dxyzqm(3,natom))
@@ -151,4 +157,3 @@ c--------------------------------------------------------
  
        call lio_finalize()     
        end
->>>>>>> master

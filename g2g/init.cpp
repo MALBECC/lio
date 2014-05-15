@@ -190,29 +190,16 @@ void compute_new_grid(const unsigned int grid_type) {
 		break;
 	}	
 
-<<<<<<< HEAD
   	Timer t_grilla;
   	t_grilla.start_and_sync();
   	partition.regenerate();
   	t_grilla.stop_and_sync();
-  	cout << "timer grilla: " << t_grilla << endl;
+  	//cout << "timer grilla: " << t_grilla << endl;
 
 #if CPU_KERNELS && !CPU_RECOMPUTE
   	/** compute functions **/
-  	if (fortran_vars.do_forces) cout << "<===== computing all functions [forces] =======>" << endl;
-  	else cout << "<===== computing all functions =======>" << endl;
-=======
-  Timer t_grilla;
-  t_grilla.start_and_sync();
-  partition.regenerate();
-  t_grilla.stop_and_sync();
-  //cout << "timer grilla: " << t_grilla << endl;
-
-#if CPU_KERNELS && !CPU_RECOMPUTE
-  /** compute functions **/
-  //if (fortran_vars.do_forces) cout << "<===== computing all functions [forces] =======>" << endl;
-  //else cout << "<===== computing all functions =======>" << endl;
->>>>>>> master
+  	//if (fortran_vars.do_forces) cout << "<===== computing all functions [forces] =======>" << endl;
+  	//else cout << "<===== computing all functions =======>" << endl;
 
   	partition.compute_functions(fortran_vars.do_forces, fortran_vars.gga);
 #endif
@@ -279,7 +266,7 @@ if(fortran_vars.OPEN){
 //==============================================================================================================
 
 template<bool compute_rmm, bool lda, bool compute_forces> void g2g_iteration(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr)
-
+{
   Timers timers;
   timers.total.start();
 
@@ -304,10 +291,6 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 		case COMPUTE_FORCE_ONLY: cout << "fuerzas"; break;
 	}
 	cout << "] ==========>" << endl;
-<<<<<<< HEAD
-#ifdef PRINT_MATRICES
-//	g2g_print();
-#endif
 
   	bool compute_energy = (computation_type == COMPUTE_ENERGY_ONLY || computation_type == COMPUTE_ENERGY_FORCE);
   	bool compute_forces = (computation_type == COMPUTE_FORCE_ONLY  || computation_type == COMPUTE_ENERGY_FORCE);
@@ -369,7 +352,6 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
     }
   }
   //if (compute_energy) cout << "XC energy: " << *fort_energy_ptr << endl;
->>>>>>> master
 }
 //================================================================================================================
 /* general options */
@@ -378,21 +360,12 @@ namespace G2G {
 	double little_cube_size = 8.0;
 	uint min_points_per_cube = 1;
 	double becke_cutoff = 1e-7;
-<<<<<<< HEAD
-	bool assign_all_functions = false;
- 	double sphere_radius = 0.0;
+  	bool assign_all_functions = false;
+  	double sphere_radius = 0.6;
   	bool remove_zero_weights = true;
   	bool energy_all_iterations = false;
   	double big_function_cutoff = 1;
-        double free_global_memory = 0.0;
-=======
-  bool assign_all_functions = false;
-  double sphere_radius = 0.6;
-  bool remove_zero_weights = true;
-  bool energy_all_iterations = false;
-  double big_function_cutoff = 1;
-  double free_global_memory = 0.0;
->>>>>>> master
+  	double free_global_memory = 0.0;
 }
 //=================================================================================================================
 void read_options(void) {

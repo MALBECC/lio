@@ -35,8 +35,11 @@ c            write(87,*) i, j , r(i,j)
            enddo
             write(18,345) Iz(i),qmcoords(:,i)
            enddo
+      if(.not.(OPEN)) then 
         call SCF(E,dipxyz)
-
+      else
+        call SCFOP(E)
+      endif
 
  345  format(2x,I2,2x,3(f10.6,2x))
         return

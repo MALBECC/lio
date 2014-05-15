@@ -197,8 +197,11 @@ c      write(*,*)   ng2
         nqnuc=nqnuc+Iz(i)
         enddo
 
-        nco=(nqnuc - charge)/2
+c !!! REVISAR QUE nco se un numero ENTERO ¡¡¡¡¡¡
 
+        nco=((nqnuc - charge)-Nunp)/2
+
+c
 c        write(*,*) 'NCO=',NCO
 c        write(*,*) 'charge',charge
 c       write(*,*) natom,ntatom,ngDyn,ngdDyn,ng2,ngd0

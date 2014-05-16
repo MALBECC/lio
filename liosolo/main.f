@@ -93,20 +93,20 @@ c---------------------------------------------------------------------
       stop
       endif
 c        write(*,*) natom,nsol
-        write(*,nml=lio)
-       ntatom=natom+nsol
+      write(*,nml=lio)
 
-         ngnu=natom*ng0
-         ngdnu=natom*ngd0
-         ngDyn=ngnu
-         ngdDyn=ngdnu
-        ng3=4*ngDyn
+      ntatom=natom+nsol
+      ngnu=natom*ng0
+      ngdnu=natom*ngd0
+      ngDyn=ngnu
+      ngdDyn=ngdnu
+      ng3=4*ngDyn
       ng2=5*ngDyn*(ngDyn+1)/2+3*ngdDyn*(ngdDyn+1)/2+
      >           ngDyn+ngDyn*norbit+Ngrid
       allocate(X(ngDyn,ng3),XX(ngdDyn,ngdDyn))
       allocate(RMM(ng2),RMM1(ng2),RMM2(ng2), RMM3(ng2))
 
-       allocate (c(ngnu,nl),a(ngnu,nl),Nuc(ngnu),ncont(ngnu)
+      allocate (c(ngnu,nl),a(ngnu,nl),Nuc(ngnu),ncont(ngnu)
      >  ,cx(ngdnu,nl),ax(ngdnu,nl),Nucx(ngdnu),ncontx(ngdnu)
      > ,cd(ngdnu,nl),ad(ngdnu,nl),Nucd(ngdnu),ncontd(ngdnu)
      > ,indexii(ngnu),indexiid(ngdnu))
@@ -116,38 +116,38 @@ c        write(*,*) natom,nsol
      >  B(natom*ngd0,3))
       allocate(d(natom,natom))
 
-       do i=1,natom
-       read(101,*) iz(i),r(i,1:3)
-                  rqm(i,1:3)=r(i,1:3)
+      do i=1,natom
+        read(101,*) iz(i),r(i,1:3)     
+        rqm(i,1:3)=r(i,1:3)
 c       write(*,*) iz(i),r(i,1:3)
-       enddo
-       do i=natom+1,ntatom
-       read(101,*) pc(i),r(i,1:3)   ! o es pc(i-natom)???
+      enddo
+      do i=natom+1,ntatom
+        read(101,*) pc(i),r(i,1:3)   ! o es pc(i-natom)???
 c       write(*,*) pc(i),r(i,1:3)
-       enddo
-       r=r/0.529177D0
-       rqm=rqm/0.529177D0
+      enddo
+      r=r/0.529177D0
+      rqm=rqm/0.529177D0
      
-       call g2g_init()   !initialize g2g
+      call g2g_init()   !initialize g2g
 
-        nqnuc=0
-       do i=1,natom
+      nqnuc=0
+      do i=1,natom
         nqnuc=nqnuc+Iz(i)
-        enddo
+      enddo
 
-        nco=(nqnuc - charge)/2
+      nco=(nqnuc - charge)/2
 
-        write(*,*) 'NCO=',NCO
-       write(*,*) natom,ntatom,ngDyn,ngdDyn,ng0,ngd0
+      write(*,*) 'NCO=',NCO
+      write(*,*) natom,ntatom,ngDyn,ngdDyn,ng0,ngd0
 c--------------------------------------------------------
-       call drive(ng2,ngDyn,ngdDyn)
+      call drive(ng2,ngDyn,ngdDyn)
 
-       call SCF(escf,dipxyz)
-       write(*,*) 'SCF ENRGY=',escf 
+      call SCF(escf,dipxyz)
+      write(*,*) 'SCF ENRGY=',escf 
         
-       allocate (dxyzqm(3,natom))
-       call dft_get_qm_forces(dxyzqm)
-       write(77,*) dxyzqm
+      allocate (dxyzqm(3,natom))
+      call dft_get_qm_forces(dxyzqm)
+      write(77,*) dxyzqm
  
-       call lio_finalize()     
-       end
+      call lio_finalize()     
+      end

@@ -35,10 +35,6 @@ using std::cout;
 using std::endl;
 using std::list;
 
-//Definicion global para poder tener acceso
-
-
-
 // Host function to set the constant
 void gpu_set_variables(void) {
   cudaMemcpyToSymbol(gpu_normalization_factor, &fortran_vars.normalization_factor, sizeof(fortran_vars.normalization_factor), 0, cudaMemcpyHostToDevice);
@@ -76,7 +72,8 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   HostMatrix<scalar_type> point_weights_cpu(number_of_points, 1);
 
   uint i = 0;
-  for (list<Point>::const_iterator p = points.begin(); p != points.end(); ++p, ++i) {
+  for (list<Point>::const_iterator p = points.begin(); p != points.end(); ++p, ++i)
+  {
     point_weights_cpu(i) = p->weight;
   }
   point_weights_gpu = point_weights_cpu;
@@ -98,11 +95,10 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   CudaMatrix<vec_type<scalar_type,4> > dd2_gpu;
   
   /*
-   ********************************************************************** 
-   * Transposiciones de matrices para la coalescencia mejorada en density
-   ********************************************************************** 
-   */
-
+  ********************************************************************** 
+  * Transposiciones de matrices para la coalescencia mejorada en density
+  ********************************************************************** 
+  */
 
   CudaMatrix<scalar_type>   function_values_transposed_gpu;  
   CudaMatrix<vec_type<scalar_type,4> > gradient_values_transposed_gpu;
@@ -187,9 +183,11 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
 */
   rmm_input_gpu_tex.normalized = false;
 
-  if (compute_energy) {
+  if (compute_energy) 
+  {
     CudaMatrix<scalar_type> energy_gpu(number_of_points);
-    if (compute_forces || compute_rmm) {
+    if (compute_forces || compute_rmm) 
+    {
       if (lda) 
       {
           gpu_compute_density<scalar_type, true, true, true><<<threadGrid, threadBlock>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, number_of_points,  function_values_transposed_gpu.data, gradient_values_transposed_gpu.data, hessian_values_transposed_gpu.data, group_m, partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data);
@@ -201,7 +199,8 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
           gpu_accumulate_point<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (energy_gpu.data, factors_gpu.data, point_weights_gpu.data,number_of_points,block_height, partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data);
       }
     }      
-    else {
+    else 
+    {
       if (lda) 
       {
           gpu_compute_density<scalar_type, true, false, true><<<threadGrid, threadBlock>>>(energy_gpu.data, factors_gpu.data, point_weights_gpu.data, number_of_points, function_values_transposed_gpu.data, gradient_values_transposed_gpu.data, hessian_values_transposed_gpu.data, group_m, partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data);
@@ -222,7 +221,8 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
         energy += energy_cpu(i); 
     } // TODO: hacer con un kernel?
   }
-  else {
+  else 
+  {
     if (lda) 
     {
         gpu_compute_density<scalar_type, false, true, true><<<threadGrid, threadBlock>>>(NULL, factors_gpu.data, point_weights_gpu.data, number_of_points, function_values_transposed_gpu.data, gradient_values_transposed_gpu.data, hessian_values_transposed_gpu.data, group_m, partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data);
@@ -235,11 +235,10 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     }
     cudaAssertNoError("compute_density");
   }
-
-
-    function_values_transposed_gpu.deallocate();
-    gradient_values_transposed_gpu.deallocate();
-    hessian_values_transposed_gpu.deallocate();
+  
+  function_values_transposed_gpu.deallocate();
+  gradient_values_transposed_gpu.deallocate();
+  hessian_values_transposed_gpu.deallocate();
 
   timers.density.pause_and_sync();
 
@@ -264,7 +263,8 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
 
    dim3 threads;
   /* compute forces */
-  if (compute_forces) {
+  if (compute_forces) 
+  {
     timers.density_derivs.start_and_sync();
     threads = dim3(number_of_points);
     threadBlock = dim3(DENSITY_DERIV_BLOCK_SIZE);
@@ -288,7 +288,8 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
 
     HostMatrix<vec_type4> forces_cpu(forces_gpu);
 
-    for (uint i = 0; i < total_nucleii(); ++i) {
+    for (uint i = 0; i < total_nucleii(); ++i) 
+    {
       vec_type4 atom_force = forces_cpu(i);
       uint global_nuc = local2global_nuc[i];
       fort_forces(global_nuc, 0) += atom_force.x;
@@ -300,7 +301,8 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
 
   /* compute RMM */
   timers.rmm.start_and_sync();
-  if (compute_rmm) {
+  if (compute_rmm) 
+  {
     threads = dim3(group_m, group_m);
     threadBlock = dim3(RMM_BLOCK_SIZE_XY, RMM_BLOCK_SIZE_XY);
     threadGrid = divUp(threads, threadBlock);
@@ -318,19 +320,13 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   /* clear functions */
   if(!(this->inGlobal))
   {
-        function_values.deallocate();
-        gradient_values.deallocate();
-        hessian_values.deallocate();
+    function_values.deallocate();
+    gradient_values.deallocate();
+    hessian_values.deallocate();
   }
     //Deshago el bind de textura de rmm
     cudaUnbindTexture(rmm_input_gpu_tex); //Enroque el Unbind con el Free, asi parece mas logico. Nano
     cudaFreeArray(cuArray);
-//    cudaFree(cuArray);
-    
-  //uint free_memory, total_memory;
-  //cudaGetMemoryInfo(free_memory, total_memory);
-  //cout << "Maximum used memory: " << (double)max_used_memory / (1024 * 1024) << "MB (" << ((double)max_used_memory / total_memory) * 100.0 << "%)" << endl;
-  //cudaPrintMemoryInfo();
 }
 
 /*******************************
@@ -356,7 +352,8 @@ void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
   /** Load points from group **/
   HostMatrix<vec_type4> points_position_cpu(number_of_points, 1);
   uint i = 0;
-  for (list<Point>::const_iterator p = points.begin(); p != points.end(); ++p, ++i) {
+  for (list<Point>::const_iterator p = points.begin(); p != points.end(); ++p, ++i) 
+  {
     points_position_cpu(i) = vec_type4(p->position.x, p->position.y, p->position.z, 0);
   }
   points_position_gpu = points_position_cpu;
@@ -370,9 +367,9 @@ void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
   // TODO: hacer que functions.h itere por total_small_functions()... asi puedo hacer que func2global_nuc sea de tamaño total_functions() y directamente copio esa matriz aca y en otros lados
 
   uint ii = 0;
-  for (i = 0; i < total_functions_simple(); ++i) {
+  for (i = 0; i < total_functions_simple(); ++i) 
+  {
     uint inc = small_function_type(i);
-
     uint func = local2global_func[i];
     uint this_nuc = func2global_nuc(i);
     uint this_cont = fortran_vars.contractions(func);
@@ -403,22 +400,28 @@ void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
 
  // cout << "points: " << threads.x << " " << threadGrid.x << " " << threadBlock.x << endl;
 
-  if (forces) {
-    if (gga) {
+  if (forces) 
+  {
+    if (gga) 
+    {
       gpu_compute_functions<scalar_type, true, true><<<threadGrid, threadBlock>>>(points_position_gpu.data, number_of_points, contractions_gpu.data, factor_ac_gpu.data,
       nuc_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_functions);
     }
-    else {
+    else 
+    {
       gpu_compute_functions<scalar_type, true, false><<<threadGrid, threadBlock>>>(points_position_gpu.data, number_of_points, contractions_gpu.data, factor_ac_gpu.data,
       nuc_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_functions);
     }    
   }
-  else {
-    if (gga) {
+  else 
+  {
+    if (gga) 
+    {
       gpu_compute_functions<scalar_type, false, true><<<threadGrid, threadBlock>>>(points_position_gpu.data, number_of_points, contractions_gpu.data, factor_ac_gpu.data,
       nuc_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_functions);
     }
-    else {
+    else 
+    {
       gpu_compute_functions<scalar_type, false, false><<<threadGrid, threadBlock>>>(points_position_gpu.data, number_of_points, contractions_gpu.data, factor_ac_gpu.data,
       nuc_gpu.data, function_values.data, gradient_values.data, hessian_values.data, group_functions);
     }    
@@ -438,13 +441,15 @@ void PointGroup<scalar_type>::compute_weights(void)
   {
     HostMatrix<vec_type4> points_positions_cpu(number_of_points, 1);
 		uint i = 0;
-		for (list<Point>::const_iterator p = points.begin(); p != points.end(); ++p, ++i) {
+		for (list<Point>::const_iterator p = points.begin(); p != points.end(); ++p, ++i) 
+    {
 			points_positions_cpu(i) = vec_type4(p->position.x, p->position.y, p->position.z, p->atom);
 		}
     point_positions_gpu = points_positions_cpu;
 
     HostMatrix<vec_type4> atom_position_rm_cpu(fortran_vars.atoms, 1);
-    for (uint i = 0; i < fortran_vars.atoms; i++) {
+    for (uint i = 0; i < fortran_vars.atoms; i++) 
+    {
       double3 atom_pos = fortran_vars.atom_positions(i);
       atom_position_rm_cpu(i) = vec_type4(atom_pos.x, atom_pos.y, atom_pos.z, fortran_vars.rm(i));
     }
@@ -470,14 +475,17 @@ void PointGroup<scalar_type>::compute_weights(void)
 
   HostMatrix<scalar_type> weights_cpu(weights_gpu);
   uint i = 0;
-  for (list<Point>::iterator p = points.begin(); p != points.end(); ++p, ++i) {
+  for (list<Point>::iterator p = points.begin(); p != points.end(); ++p, ++i)
+  {
     p->weight *= weights_cpu(i);
 
-    if (p->weight == 0.0) {
+    if (p->weight == 0.0)
+    {
       ceros++;
     }
     #if REMOVE_ZEROS
-    else {
+    else 
+    {
       nonzero_points.push_back(*p);
       nonzero_number_of_points++;
     }

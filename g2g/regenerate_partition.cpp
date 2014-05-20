@@ -17,6 +17,21 @@ using namespace G2G;
  * Construct partition
  ************************************************************/
 
+//Sorting the cubes in increasing order of size in bytes in GPU.
+template <typename T>
+std::list<T> sortBySize(std::list<T> input) {
+    std::vector<std::pair<int,T> > sorting(input.size());
+    uint j=0;
+    for (typename std::list<T>::const_iterator it = input.begin(); it != input.end(); ++it)
+      sorting[j++]=std::make_pair((*it)->size_in_gpu(),*it);
+
+    sort(sorting.begin(),sorting.end());
+    std::list<T> sorted;
+    for(j=0; j<sorting.size(); j++)
+        sorted.push_back(sorting[j].second);
+    return sorted;
+}
+
 /* methods */
 void Partition::regenerate(void)
 {
@@ -202,7 +217,8 @@ void Partition::regenerate(void)
                     {
                         // or insert into corresponding cube
                         uint3 cube_coord = floor_uint3((point_position - x0) / little_cube_size);
-                        if (cube_coord.x >= prism_size.x || cube_coord.y >= prism_size.y || cube_coord.z >= prism_size.z) throw std::runtime_error("Se accedio a un cubo invalido");
+                        if (cube_coord.x >= prism_size.x || cube_coord.y >= prism_size.y || cube_coord.z >= prism_size.z) 
+                            throw std::runtime_error("Se accedio a un cubo invalido");
                         prism[cube_coord.x][cube_coord.y][cube_coord.z].add_point(point_object);
                     }
                 }
@@ -273,17 +289,7 @@ void Partition::regenerate(void)
         }
     }
     //Sorting the cubes in increasing order
-    std::vector<std::pair<int,Cube*> > sorting_cubes(cubes.size());
-    uint j=0;
-    for (std::list<Cube*>::const_iterator it = cubes.begin(); it != cubes.end(); ++it)
-      sorting_cubes[j++]=std::make_pair((*it)->size_in_gpu(),*it);
-
-    sort(sorting_cubes.begin(),sorting_cubes.end());
-    std::list<Cube*> sorted_cubes;
-    for(j=0; j<sorting_cubes.size(); j++)
-        sorted_cubes.push_back(sorting_cubes[j].second);
-
-    cubes=sorted_cubes;
+    cubes = sortBySize<Cube*>(cubes);
 
     if (sphere_radius > 0)
     {
@@ -335,18 +341,7 @@ void Partition::regenerate(void)
         }
     }
     //Sorting the spheres in increasing order
-    std::vector<std::pair<int,Sphere*> > sorting_spheres(spheres.size());
-    j=0;
-    for (std::list<Sphere*>::const_iterator it = spheres.begin(); it != spheres.end(); ++it)
-      sorting_spheres[j++]=std::make_pair((*it)->size_in_gpu(),*it);
-
-    sort(sorting_spheres.begin(),sorting_spheres.end());
-
-    std::list<Sphere*> sorted_spheres;
-    for(j=0; j<sorting_spheres.size(); j++)
-        sorted_spheres.push_back(sorting_spheres[j].second);
-
-    spheres=sorted_spheres;
+    spheres = sortBySize<Sphere*>(spheres);
 
     //Initialize the global memory pool for CUDA, with the default safety factor
     //If it is CPU, then this doesn't matter

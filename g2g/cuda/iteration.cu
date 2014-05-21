@@ -39,20 +39,6 @@ using std::cout;
 using std::endl;
 using std::list;
 
-//Definicion global para poder tener acceso
-
-//void gpu_print(uint height, uint width, CudaMatrix<scalar_type> const dens_a, CudaMatrix<scalar_type> const dens_b){
-//        uint k=1;
-//        uint ANCHO=0;
-//        for (uint i = 0; i < height; i++) {
-//                for (uint j = 0; j < width; j++) {
-//                        cout <<k++<<" "<<dens_a(j,i,ANCHO)<<" "<<dens_a(j,i,ANCHO)<<endl;
-//                }
-//                ANCHO=ANCHO+width;
-        //      cout <<endl;
-//        }
-//}
-
 // Host function to set the constant
 void gpu_set_variables(void) {
   cudaMemcpyToSymbol(gpu_normalization_factor, &fortran_vars.normalization_factor, sizeof(fortran_vars.normalization_factor), 0, cudaMemcpyHostToDevice);
@@ -365,7 +351,9 @@ void PointGroup<scalar_type>::solve_closed(Timers& timers, bool compute_rmm, boo
 template<class scalar_type>
 void PointGroup<scalar_type>::solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, double& energy, double& energy_i, double& energy_c, double& energy_c1, double& energy_c2, double* fort_forces_ptr, bool open){
 //  if(open){
+//    cout<<"!!!!!!"<<endl;
 //    cout<<"ENTRANDO A SOLVE !!!!!!"<<endl;
+//    cout<<"!!!!!!"<<endl;
 //  }
   //uint max_used_memory = 0;
 
@@ -533,7 +521,7 @@ void PointGroup<scalar_type>::solve_opened(Timers& timers, bool compute_rmm, boo
 */
   rmm_input_gpu_tex.normalized = false;
   rmm_input_gpu_tex2.normalized = false;
-  
+ 
   if (compute_energy) {
     
       CudaMatrix<scalar_type> energy_gpu(number_of_points);
@@ -692,7 +680,7 @@ void PointGroup<scalar_type>::solve_opened(Timers& timers, bool compute_rmm, boo
 		fort_forces(global_nuc, 1) += atom_force_a.y+atom_force_b.y;
 		fort_forces(global_nuc, 2) += atom_force_a.z+atom_force_b.z;
 		
-                cout<<"force.x="<<atom_force_a.x+atom_force_b.x<<"force.y="<<atom_force_a.y+atom_force_b.y<<"force.z="<<atom_force_a.z+atom_force_b.z<<endl;
+            //    cout<<"force.x="<<atom_force_a.x+atom_force_b.x<<"force.y="<<atom_force_a.y+atom_force_b.y<<"force.z="<<atom_force_a.z+atom_force_b.z<<endl;
             }
 
     	timers.forces.pause_and_sync();

@@ -6,12 +6,9 @@ c and P matrix in lower storage mode ( symmetric matrices)
 c
 c Dario Estrin, 1992
 c---------------------------------------------------
-      subroutine SCFOP(E)
+      subroutine SCFOP(E,dipxyz)
       use garcha_mod
       REAL*8:: En,E2,E,Es,Ex,Exc
-
-      real*8, dimension (:,:), ALLOCATABLE :: ff
-      allocate(ff(natom,3))
 
       call g2g_timer_start('SCF')
       write(*,*) '======>>>> INGRESO A SCFop <<<<=========='
@@ -125,12 +122,13 @@ c        write(*,*) 'que pasa?'
        do iikk=M,nshell(0)+nshell(1)+1,-1
          nnpd(nuc(iikk))=iikk
        enddo
-
+      
       call g2g_reload_atom_positions(igrid2)
 c
 c H H core, 1 electron matrix elements
 c
       call int1(En)
+      
 c
 c -- SOLVENT CASE --------------------------------------
 c      if (sol) then
@@ -336,7 +334,8 @@ c      endif
 c-------------------------------------------------------------------
 c-------------------------------------------------------------------
 c
-c      write(*,*) 'empiezo el loop',NMAX
+c      write(*,*) 'empiezo el loop=========>>>>>>',NMAX
+
       do 999 while (good.ge.told.and.niter.le.NMAX)
         call g2g_timer_start('Total iter')
         niter=niter+1
@@ -354,16 +353,16 @@ c        enddo
 c ====>>>>> CALL INT3LU <<<<<=======
         call int3lu(E2)
 
-        do i=1,mm
-          write(84,*) 'rmm input',RMM(m5+i-1),RMM(m3+i-1)
-        enddo
+c        do i=1,mm
+c          write(84,*) 'rmm input',RMM(m5+i-1),RMM(m3+i-1)
+c        enddo
 
 
         call g2g_solve_groups(0,Ex,0)
 
-        do i=1,mm
-          write(83,*) 'rmm output',RMM(m5+i-1),RMM(m3+i-1)
-       enddo
+c        do i=1,mm
+c          write(83,*) 'rmm output',RMM(m5+i-1),RMM(m3+i-1)
+c       enddo
 
 c        write(*,*) 'Ex=',Ex
 c-------------------------------------------------------
@@ -834,14 +833,7 @@ c
 #else
        call g2g_new_grid(igrid)
 
-c       real*8, dimension (:,:), ALLOCATABLE :: ff 
-c       allocate(ff(natom,3))
-       ff=0
-
-       call g2g_solve_groups(2, Exc, ff)
-c       call g2g_solve_groups(1, Exc, 0)
-
-c       deallocate (ff)
+       call g2g_solve_groups(1, Exc, 0)
 
 c       write(*,*) 'g2g-Exc',Exc
 #endif
@@ -1062,7 +1054,8 @@ c      enddo
 c-------------------------------------------------
 c
 
-      deallocate (ff)
+         deallocate (kkind,kkinds)
+         deallocate(cool,cools)
 
  500  format('SCF TIME ',I6,' sec')
  450  format ('SCF ENERGY = ',F14.7)

@@ -132,7 +132,7 @@ c para version en memoria
       ng2=5*ngDyn*(ngDyn+1)/2+3*ngdDyn*(ngdDyn+1)/2+
      >           ngDyn+ngDyn*norbit+Ngrid
 
-c      write(*,*) 'ng2 en init',ng2,ngdyn,ngddyn
+c      write(*,*) 'ng2 en init',ng2,ngDyn,ngdDyn,norbit,Ngrid
 
       allocate(X(ngDyn,ng3),XX(ngdDyn,ngdDyn))
       allocate(RMM(ng2),RMM1(ng2),RMM2(ng2), RMM3(ng2))
@@ -203,8 +203,8 @@ c !!! REVISAR QUE nco se un numero ENTERO ¡¡¡¡¡¡
 
 c
 c        write(*,*) 'NCO=',NCO
-c        write(*,*) 'charge',charge
-c       write(*,*) natom,ntatom,ngDyn,ngdDyn,ng2,ngd0
+c       write(*,*) natom,ntatom,ngDyn,ngdDyn,ng0,ngd0
+c       write(*,*) ng2,ngDyn,ngdDyn
 c--------------------------------------------------------
       call drive(ng2,ngDyn,ngdDyn)
 c        write(*,*) 'Lio init amber'

@@ -33,7 +33,7 @@ namespace G2G {
 //===========================================================================================
 extern "C" void g2g_init_(void)
 {
-  cout << "<====== Initializing G2G ======>";
+  cout << "<====== Initializing G2G ======>"<<endl;
 
   #if !CPU_KERNELS
   cuInit(0);
@@ -270,10 +270,6 @@ template<bool compute_rmm, bool lda, bool compute_forces> void g2g_iteration(boo
   Timers timers;
   timers.total.start();
 
-  //if(fortran_vars.OPEN){
-  //	cout << "LLAMANDO A partition.solve.....opened..."<<"rmm:"<<compute_rmm<<" "<<"lda:"<<lda<<" "<<"forces:"<<compute_forces<<" "<<"energy:"<<compute_energy<<" "<<"OPEN:"<<fortran_vars.OPEN<<endl;
-  //}
-  
   partition.solve(timers, compute_rmm, lda, compute_forces, compute_energy, fort_energy_ptr, fort_forces_ptr, fortran_vars.OPEN);
   
   timers.total.stop();
@@ -283,6 +279,11 @@ template<bool compute_rmm, bool lda, bool compute_forces> void g2g_iteration(boo
 //===============================================================================================================
 extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_energy_ptr, double* fort_forces_ptr)
 {
+// COMPUTE_RMM             0
+// COMPUTE_ENERGY_ONLY     1
+// COMPUTE_ENERGY_FORCE    2
+// COMPUTE_FORCE_ONLY      3
+
  /*	cout << "<================ iteracion [";
 	switch(computation_type) {
     		case COMPUTE_RMM: cout << "rmm"; break;
@@ -291,39 +292,6 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 		case COMPUTE_FORCE_ONLY: cout << "fuerzas"; break;
 	}
 	cout << "] ==========>" << endl;
-
-  	bool compute_energy = (computation_type == COMPUTE_ENERGY_ONLY || computation_type == COMPUTE_ENERGY_FORCE);
-  	bool compute_forces = (computation_type == COMPUTE_FORCE_ONLY  || computation_type == COMPUTE_ENERGY_FORCE);
-  	bool compute_rmm    = (computation_type == COMPUTE_RMM);
-
-// ???????  energy_all_iterations
-  	if (energy_all_iterations) compute_energy = true;
-
-  	if (compute_rmm) {
-    		if (fortran_vars.lda) {
-      			if (compute_forces) g2g_iteration<true, true, true>(compute_energy, fort_energy_ptr, fort_forces_ptr);
-      			else                g2g_iteration<true, true, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
-    		}
-    		else{
-      			if (compute_forces) g2g_iteration<true, false, true>(compute_energy, fort_energy_ptr, fort_forces_ptr);
-      			else                g2g_iteration<true, false, false>(compute_energy, fort_energy_ptr, fort_forces_ptr); //<<========
-                }
-  	}
-  	else{
-    		if (fortran_vars.lda) {
-      			if (compute_forces) g2g_iteration<false, true, true>(compute_energy, fort_energy_ptr, fort_forces_ptr);
-      			else                g2g_iteration<false, true, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
-    		}
-    		else{
-      			if (compute_forces){ 
-				g2g_iteration<false, false, true>(compute_energy, fort_energy_ptr, fort_forces_ptr);
-      					
-			}
-			else  g2g_iteration<false, false, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
-    		}
-  	}
-  	if (compute_energy) cout << "XC energy: " << *fort_energy_ptr << endl;
-=======
 */
   bool compute_energy = (computation_type == COMPUTE_ENERGY_ONLY || computation_type == COMPUTE_ENERGY_FORCE);
   bool compute_forces = (computation_type == COMPUTE_FORCE_ONLY || computation_type == COMPUTE_ENERGY_FORCE);
@@ -338,7 +306,10 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
     }
     else {
       if (compute_forces) g2g_iteration<true, false, true>(compute_energy, fort_energy_ptr, fort_forces_ptr);
-      else g2g_iteration<true, false, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
+      else {
+		g2g_iteration<true, false, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
+    		cout << "XC energy: " << *fort_energy_ptr << endl;
+	}
     }
   }
   else {

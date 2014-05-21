@@ -140,7 +140,13 @@ c        write(*,'("fuerza",I,D,D,D)') k,f(k,1),f(k,2),f(k,3)
 c      enddo
 c
        else
-       stop
+         call g2g_timer_start('ExcG')
+          if (calc_energy) then
+              call g2g_solve_groups(2, Exc, f)
+          else
+              call g2g_solve_groups(3, Exc, f)
+         endif
+      call g2g_timer_stop('ExcG')
 c
 c        NCOa=NCO
 c        NCOb=NCO+Nunp

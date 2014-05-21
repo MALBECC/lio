@@ -36,7 +36,7 @@ c            write(87,*) i, j , r(i,j)
             write(18,345) Iz(i),qmcoords(:,i)
            enddo
       if(OPEN) then 
-        call SCFOP(E)
+        call SCFOP(E,dipxyz)
       else
         call SCF(E,dipxyz)
       endif

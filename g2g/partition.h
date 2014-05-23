@@ -139,7 +139,7 @@ class Partition {
       for (std::list<Cube*>::const_iterator it = cubes.begin(); it != cubes.end(); ++it)
       {
         (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy, fort_forces_ptr);        
-//        printf("\t\t\t\t So far %luKb\n",accumulated_size/1024);
+        //_DBG(printf("\t\t\t\t So far %luKb\n",accumulated_size/1024));
       }
       
       for (std::list<Sphere*>::const_iterator it = spheres.begin(); it != spheres.end(); ++it)
@@ -149,13 +149,15 @@ class Partition {
         
 //      std::cout << "cubes XC energy: " << cubes_energy << std::endl;
 //      std::cout << "spheres XC energy: " << spheres_energy << std::endl;
-      *fort_energy_ptr = cubes_energy + spheres_energy;
-           if(*fort_energy_ptr != *fort_energy_ptr) {
-             std::cout << "I see dead peaple " << std::endl;
-             cudaDeviceReset();
-          exit(0);
-       }
 
+      // Comprobacion para ver si la cuenta dio NaN, si paso es que hubo un bug
+      // en la placa y salimos LIO reiniciando la placa.
+      *fort_energy_ptr = cubes_energy + spheres_energy;
+      if(*fort_energy_ptr != *fort_energy_ptr) {
+          std::cout << "I see dead peaple " << std::endl;
+          cudaDeviceReset();
+          exit(1);
+      }
     }
 
     void regenerate(void);

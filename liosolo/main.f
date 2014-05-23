@@ -130,7 +130,6 @@ c       write(*,*) pc(i),r(i,1:3)
       enddo
       r=r/0.529177D0
       rqm=rqm/0.529177D0
-
       call g2g_init()   !initialize g2g
 
       nqnuc=0

@@ -155,7 +155,9 @@ class Partition {
       *fort_energy_ptr = cubes_energy + spheres_energy;
       if(*fort_energy_ptr != *fort_energy_ptr) {
           std::cout << "I see dead peaple " << std::endl;
+#ifndef CPU_KERNELS
           cudaDeviceReset();
+#endif
           exit(1);
       }
     }

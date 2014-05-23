@@ -3,6 +3,7 @@
 #include <fstream>
 #include <map>
 #include <string>
+#include <vector>
 #include "../common.h"
 #include "../init.h"
 #include "../cuda/cuda_extra.h"
@@ -16,6 +17,7 @@
 using std::cout;
 using std::endl;
 using std::list;
+using std::vector;
 
 namespace G2G {
 template<class scalar_type>
@@ -46,7 +48,6 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   uint point = 0;
   for (list<Point>::const_iterator point_it = points.begin(); point_it != points.end(); ++point_it, ++point)
   {
-    timers.density.start();
 
     /** density **/
     scalar_type partial_density = 0;
@@ -54,7 +55,14 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     vec_type3 dd1(0,0,0);
     vec_type3 dd2(0,0,0);
 
+    vector<scalar_type> _partial_density(group_m,0.0);
+    vector<vec_type3> _dd1(group_m,vec_type3(0,0,0));
+    vector<vec_type3> _dd2(group_m,vec_type3(0,0,0));
+    vector<vec_type3> _dxyz(group_m,vec_type3(0,0,0));
+    
+    timers.density.start();
     if (lda) {
+#pragma omp parallel for shared(partial_density)
       for (uint i = 0; i < group_m; i++) {
         float w = 0.0;
         float Fi = function_values(i, point);
@@ -66,8 +74,9 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
       }
     }
     else {
-      for (uint i = 0; i < group_m; i++) {
-        float w = 0.0;
+#pragma omp parallel for
+      for (int i = 0; i < group_m; i++) {
+        scalar_type w = 0.0;
         vec_type3 w3(0,0,0);
         vec_type3 ww1(0,0,0);
         vec_type3 ww2(0,0,0);
@@ -90,17 +99,27 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
           ww1 += Fhj1 * rmm;
           ww2 += Fhj2 * rmm;
         }
-        partial_density += Fi * w;
+        //partial_density += Fi * w;
 
-        dxyz += Fgi * w + w3 * Fi;
-        dd1 += Fgi * w3 * 2 + Fhi1 * w + ww1 * Fi;
-
+        //dxyz += Fgi * w + w3 * Fi;
+        //dd1 += Fgi * w3 * 2 + Fhi1 * w + ww1 * Fi;
+        _partial_density[i]=(Fi*w);
+        _dxyz[i] = vec_type3(Fgi * w + w3 * Fi);
+        _dd1[i] = vec_type3(Fgi * w3 * 2 + Fhi1 * w + ww1 * Fi);
+        
         vec_type3 FgXXY(Fgi.x(), Fgi.x(), Fgi.y());
         vec_type3 w3YZZ(w3.y(), w3.z(), w3.z());
         vec_type3 FgiYZZ(Fgi.y(), Fgi.z(), Fgi.z());
         vec_type3 w3XXY(w3.x(), w3.x(), w3.y());
-
-        dd2 += FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi;
+        //dd2 += FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi;
+        _dd2[i] = vec_type3(FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi);
+      }
+      
+      for(uint i = 0; i<group_m;i++) {
+        partial_density += _partial_density[i];
+        dxyz += _dxyz[i];
+        dd1 += _dd1[i];
+        dd2 += _dd2[i];
       }
     }
     timers.density.pause();

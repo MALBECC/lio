@@ -42,15 +42,15 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   timers.density.pause();
 
   HostMatrix<vec_type3> forces(total_nucleii(), 1); forces.zero();
-  HostMatrix<vec_type3> dd;
 
   /******** each point *******/
   uint point = 0;
   std::vector<Point> _points(points.begin(),points.end());
-#pragma omp parallel for shared(dd,forces)
+#pragma omp parallel for shared(forces)
   for(int i = 0; i<_points.size(); i++,point++)
   //for (list<Point>::const_iterator point_it = points.begin(); point_it != points.end(); ++point_it, ++point)
   {
+    HostMatrix<vec_type3> dd;
     
     /** density **/
     scalar_type partial_density = 0;

@@ -46,9 +46,12 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
 
   /******** each point *******/
   uint point = 0;
-  for (list<Point>::const_iterator point_it = points.begin(); point_it != points.end(); ++point_it, ++point)
+  std::vector<Point> _points(points.begin(),points.end());
+#pragma omp parallel for shared(dd,forces)
+  for(int i = 0; i<_points.size(); i++,point++)
+  //for (list<Point>::const_iterator point_it = points.begin(); point_it != points.end(); ++point_it, ++point)
   {
-
+    
     /** density **/
     scalar_type partial_density = 0;
     vec_type3 dxyz(0,0,0);
@@ -62,7 +65,6 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     
     timers.density.start();
     if (lda) {
-#pragma omp parallel for shared(partial_density)
       for (uint i = 0; i < group_m; i++) {
         float w = 0.0;
         float Fi = function_values(i, point);
@@ -74,7 +76,6 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
       }
     }
     else {
-#pragma omp parallel for
       for (int i = 0; i < group_m; i++) {
         scalar_type w = 0.0;
         vec_type3 w3(0,0,0);
@@ -159,14 +160,14 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     timers.pot.pause();
 
     if (compute_energy)
-      energy += (partial_density * point_it->weight) * (exc + corr);
+      energy += (partial_density * _points[i].weight) * (exc + corr);
     timers.density.pause();
 
 
     /** forces **/
     timers.forces.start();
     if (compute_forces) {
-      scalar_type factor = point_it->weight * y2a;
+      scalar_type factor = _points[i].weight * y2a;
       for (uint i = 0; i < total_nucleii(); i++)
         forces(i) += dd(i) * factor;
     }
@@ -175,7 +176,7 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     /** RMM **/
     timers.rmm.start();
     if (compute_rmm) {
-      scalar_type factor = point_it->weight * y2a;
+      scalar_type factor = _points[i].weight * y2a;
       HostMatrix<scalar_type>::blas_ssyr(LowerTriangle, factor, function_values, rmm_output, point);
     }
     timers.rmm.pause();

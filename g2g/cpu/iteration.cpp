@@ -42,15 +42,15 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   timers.density.pause();
 
   HostMatrix<vec_type3> forces(total_nucleii(), 1); forces.zero();
+  HostMatrix<vec_type3> dd;
 
   /******** each point *******/
   uint point = 0;
   std::vector<Point> _points(points.begin(),points.end());
-#pragma omp parallel for shared(forces)
-  for(int i = 0; i<_points.size(); i++,point++)
+#pragma omp parallel for shared(forces) private(dd)
+  for(int to_process = 0; to_process<_points.size(); to_process++,point++)
   //for (list<Point>::const_iterator point_it = points.begin(); point_it != points.end(); ++point_it, ++point)
   {
-    HostMatrix<vec_type3> dd;
     
     /** density **/
     scalar_type partial_density = 0;
@@ -160,14 +160,14 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     timers.pot.pause();
 
     if (compute_energy)
-      energy += (partial_density * _points[i].weight) * (exc + corr);
+      energy += (partial_density * _points[to_process].weight) * (exc + corr);
     timers.density.pause();
 
 
     /** forces **/
     timers.forces.start();
     if (compute_forces) {
-      scalar_type factor = _points[i].weight * y2a;
+      scalar_type factor = _points[to_process].weight * y2a;
       for (uint i = 0; i < total_nucleii(); i++)
         forces(i) += dd(i) * factor;
     }
@@ -176,7 +176,7 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     /** RMM **/
     timers.rmm.start();
     if (compute_rmm) {
-      scalar_type factor = _points[i].weight * y2a;
+      scalar_type factor = _points[to_process].weight * y2a;
       HostMatrix<scalar_type>::blas_ssyr(LowerTriangle, factor, function_values, rmm_output, point);
     }
     timers.rmm.pause();

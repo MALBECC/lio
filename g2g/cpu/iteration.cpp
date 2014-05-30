@@ -45,7 +45,7 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
 
   /******** each point *******/
   std::vector<Point> _points(points.begin(),points.end());
-#pragma omp parallel for shared(forces)
+#pragma omp parallel for shared(forces, energy)
   for(int point = 0; point<_points.size(); point++)
   {
     HostMatrix<vec_type3> dd;
@@ -54,11 +54,6 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     vec_type3 dxyz(0,0,0);
     vec_type3 dd1(0,0,0);
     vec_type3 dd2(0,0,0);
-
-    vector<scalar_type> _partial_density(group_m,0.0);
-    vector<vec_type3> _dd1(group_m,vec_type3(0,0,0));
-    vector<vec_type3> _dd2(group_m,vec_type3(0,0,0));
-    vector<vec_type3> _dxyz(group_m,vec_type3(0,0,0));
     
     timers.density.start();
     if (lda) {
@@ -97,28 +92,18 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
           ww1 += Fhj1 * rmm;
           ww2 += Fhj2 * rmm;
         }
-        //partial_density += Fi * w;
+        partial_density += Fi * w;
 
-        //dxyz += Fgi * w + w3 * Fi;
-        //dd1 += Fgi * w3 * 2 + Fhi1 * w + ww1 * Fi;
-        _partial_density[i]=(Fi*w);
-        _dxyz[i] = vec_type3(Fgi * w + w3 * Fi);
-        _dd1[i] = vec_type3(Fgi * w3 * 2 + Fhi1 * w + ww1 * Fi);
+        dxyz += Fgi * w + w3 * Fi;
+        dd1 += Fgi * w3 * 2 + Fhi1 * w + ww1 * Fi;
         
         vec_type3 FgXXY(Fgi.x(), Fgi.x(), Fgi.y());
         vec_type3 w3YZZ(w3.y(), w3.z(), w3.z());
         vec_type3 FgiYZZ(Fgi.y(), Fgi.z(), Fgi.z());
         vec_type3 w3XXY(w3.x(), w3.x(), w3.y());
-        //dd2 += FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi;
-        _dd2[i] = vec_type3(FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi);
+        dd2 += FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi;
       }
       
-      for(uint i = 0; i<group_m;i++) {
-        partial_density += _partial_density[i];
-        dxyz += _dxyz[i];
-        dd1 += _dd1[i];
-        dd2 += _dd2[i];
-      }
     }
     timers.density.pause();
 
@@ -198,11 +183,13 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   if (compute_rmm) {
     for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
       uint inc_i = small_function_type(i);
+      
       for (uint k = 0; k < inc_i; k++, ii++) {
         uint big_i = local2global_func[i] + k;
 
         for (uint j = 0, jj = 0; j < total_functions_simple(); j++) {
           uint inc_j = small_function_type(j);
+          
           for (uint l = 0; l < inc_j; l++, jj++) {
             uint big_j = local2global_func[j] + l;
             if (big_i > big_j) continue;

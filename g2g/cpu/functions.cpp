@@ -21,12 +21,11 @@ void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
   if (forces || gga) gradient_values.resize(group_m, number_of_points);
   if (gga) hessian_values.resize(group_m * 2, number_of_points);
 
-  uint point = 0;
   std::vector<Point> _points(points.begin(),points.end());
 
 #pragma omp parallel for
-  for(int to_process = 0; to_process<_points.size(); to_process++,point++) {
-    vec_type3 point_position = vec_type3(_points[to_process].position.x, _points[to_process].position.y, _points[to_process].position.z);
+  for(int point = 0; point<_points.size(); point++) {
+    vec_type3 point_position = vec_type3(_points[point].position.x, _points[point].position.y, _points[point].position.z);
 
     for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
       // compute exponential

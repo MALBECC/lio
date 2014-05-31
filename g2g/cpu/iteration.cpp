@@ -34,7 +34,7 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   compute_functions(compute_forces, !lda);
   timers.functions.pause();
   #endif
-
+  double localenergy = 0.0;
   // prepare rmm_input for this group
   timers.density.start();
   HostMatrix<scalar_type> rmm_input(group_m, group_m);
@@ -45,7 +45,7 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
 
   /******** each point *******/
   std::vector<Point> _points(points.begin(),points.end());
-#pragma omp parallel for shared(forces, energy)
+#pragma omp parallel for shared(forces, localenergy, rmm_output)
   for(int point = 0; point<_points.size(); point++)
   {
     HostMatrix<vec_type3> dd;
@@ -106,7 +106,6 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
       
     }
     timers.density.pause();
-
     timers.forces.start();
     /** density derivatives **/
     if (compute_forces) {
@@ -142,9 +141,9 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     timers.pot.pause();
 
     if (compute_energy)
-      energy += (partial_density * _points[point].weight) * (exc + corr);
-    timers.density.pause();
+      localenergy += (partial_density * _points[point].weight) * (exc + corr);
 
+    timers.density.pause();
 
     /** forces **/
     timers.forces.start();
@@ -156,12 +155,15 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     timers.forces.pause();
 
     /** RMM **/
+#pragma omp critical (rmm)
+    {
     timers.rmm.start();
-    if (compute_rmm) {
-      scalar_type factor = _points[point].weight * y2a;
-      HostMatrix<scalar_type>::blas_ssyr(LowerTriangle, factor, function_values, rmm_output, point);
-    }
+      if (compute_rmm) {
+        scalar_type factor = _points[point].weight * y2a;
+        HostMatrix<scalar_type>::blas_ssyr(LowerTriangle, factor, function_values, rmm_output, point);
+      }
     timers.rmm.pause();
+    }
   }
 
   timers.forces.start();
@@ -202,13 +204,14 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     }
   }
   timers.rmm.pause();
+  energy+=localenergy;
 
-  #if CPU_RECOMPUTE
+#if CPU_RECOMPUTE
   /* clear functions */
   function_values.deallocate();
   gradient_values.deallocate();
   hessian_values.deallocate();
-  #endif
+#endif
 }
 
 template class PointGroup<double>;

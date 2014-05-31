@@ -28,9 +28,9 @@ else
 endif
 
 DEFINE   = -Dpack -fPIC   
-CFLAGS   = -g -mp1 -ip -O3 -march=native -c -cpp  $(DEFINE) $(PROFILE)
-CFLAGS2  = -g -O1 -c -cpp -march=native - $(DEFINE) $(PROFILE)
-CFLAGS3  = -g -O3 -c -cpp -march=native -parallel   $(DEFINE) $(PROFILE)
+CFLAGS   = -g -mp1 -ip -O3 -c -cpp  $(DEFINE) $(PROFILE)
+CFLAGS2  = -g -O1 -c -cpp  $(DEFINE) $(PROFILE)
+CFLAGS3  = -g -O3 -c -cpp -parallel   $(DEFINE) $(PROFILE)
 CPPFLAGS = -P -traditional-cpp 
 LIBS=-L/usr/lib -L/usr/lib64 -L../g2g -lg2g -lstdc++ -L$(MKLROOT)/lib/intel64 -I$(MKLROOT)/include $(PROFILE)  -lmkl_lapack95_lp64 -Wl,--start-group -lmkl_intel_lp64\
      -lmkl_intel_thread -lmkl_core -Wl,--end-group -liomp5 -lpthread -lm -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g' 

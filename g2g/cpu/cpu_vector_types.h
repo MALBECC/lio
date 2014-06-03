@@ -5,12 +5,15 @@
 
 #include <math.h>
 #include <sys/types.h>
+#ifdef __INTEL_COMPILER
 #include <fvec.h>
 #include <xmmintrin.h>
+#endif
 
 #include "cuda/cuda_extra.h"
 
 namespace G2G {
+#ifdef __INTEL_COMPILER
 	class cfloat4 : public F32vec4 {
 	  public:
       cfloat4(void) : F32vec4() { }
@@ -72,6 +75,10 @@ namespace G2G {
 
   inline bool isinf(cfloat3 v) { return isinff(v.x()) || isinff(v.y()) || isinff(v.z()); }
   inline bool isnan(cfloat3 v) { return isnanf(v.x()) || isnanf(v.y()) || isnanf(v.z()); }
+#else
+  typedef float3 cfloat3;
+  typedef float4 cfloat4;
+#endif
 }
 
 #endif

@@ -126,13 +126,13 @@ c
       if (.not.OPEN) then
 
 c        write(*,*) 'exchnum int3G'
-      call g2g_timer_start('ExcG')
+      call g2g_timer_start('ExcG'//CHAR(0))
           if (calc_energy) then
               call g2g_solve_groups(2, Exc, f)
           else
               call g2g_solve_groups(3, Exc, f)
          endif
-      call g2g_timer_stop('ExcG')
+      call g2g_timer_stop('ExcG'//CHAR(0))
 
 c DEBUG DEBUG
 c      do k=1,natom
@@ -154,7 +154,7 @@ c
 c commented now for debuggings
       do 217 k=1,Md
  217   af2(k)=af(k)+B(k,2)
-      call g2g_timer_start('CoulG')
+      call g2g_timer_start('CoulG'//CHAR(0))
 ct
 c
 c-------------------------------------------------------------
@@ -4084,7 +4084,7 @@ c
  481  continue
  482  continue
  480  continue
-      call g2g_timer_stop('CoulG')
+      call g2g_timer_stop('CoulG'//CHAR(0))
 c
 c
 c-------------------------------------------------------------

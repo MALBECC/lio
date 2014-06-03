@@ -13,9 +13,9 @@ c       real*8 ftot(3)
          ffcl=0
          ff=0
 
-        call g2g_timer_start('intsolG')
+        call g2g_timer_start('intsolG'//CHAR(0))
         call intsolG(ff,ffcl)
-        call g2g_timer_stop('intsolG')
+        call g2g_timer_stop('intsolG'//CHAR(0))
          factor=1.D0
        do i=1,natom 
         do j=1,3

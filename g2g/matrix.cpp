@@ -510,7 +510,7 @@ template class CudaMatrix<double4>;
 template class FortranMatrix<double>;
 template class FortranMatrix<uint>;
 
-#ifndef __CUDACC__
+#if !defined(__CUDACC__) && defined(__INTEL_COMPILER)
 template class Matrix<cfloat3>;
 template class HostMatrix<cfloat3>;
 #endif

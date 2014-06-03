@@ -10,16 +10,16 @@ c      use qmmm_module, only : qmmm_struct
 
        allocate(ff(natom,3))
          ff=0
-        call g2g_timer_start('int1G')
+        call g2g_timer_start('int1G'//CHAR(0))
         call int1G(ff)
-        call g2g_timer_stop('int1G')
-        call g2g_timer_start('intSG')
+        call g2g_timer_stop('int1G'//CHAR(0))
+        call g2g_timer_start('intSG'//CHAR(0))
         call intSG(ff)
-        call g2g_timer_stop('intSG')
+        call g2g_timer_stop('intSG'//CHAR(0))
 c         write(77,*) ff
-        call g2g_timer_start('int3G')
+        call g2g_timer_start('int3G'//CHAR(0))
        call int3G(ff,.true.)
-        call g2g_timer_stop('int3G')
+        call g2g_timer_stop('int3G'//CHAR(0))
 
 c        factor=627.509391D0/0.5291772108D0
         factor=1.D0

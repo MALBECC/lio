@@ -39,7 +39,7 @@ endif
 
 ifeq ($(gcc),1)
   CXX = gfortran
-  PACK_LIBS = -llapack -lblas
+  PACK_LIBS = -L$(PACK_LIB_DIR) -llapack -lblas
 else
   CXX = ifort
   ifneq ($(dbg),1)
@@ -47,7 +47,7 @@ else
     DEBUG3 += -parallel
   endif
   PACK_LIBS = -L$(MKLROOT)/lib/intel64 -I$(MKLROOT)/include -lmkl_lapack95_lp64 -Wl,--start-group -lmkl_intel_lp64\
-     -lmkl_intel_thread -lmkl_core -Wl,--end-group -lopenmp
+     -lmkl_intel_thread -lmkl_core -Wl,--end-group -fopenmp
 endif
 
 DEFINE   = -Dpack -fPIC   

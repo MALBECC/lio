@@ -7,5 +7,5 @@ endif
  liosolo:
 	$(CXX) main.f -L ../lioamber/ -llio-g2g -L ../g2g/ -lg2g -I../lioamber/ -o liosolo
  clean:
-	rm liosolo
+	rm -f liosolo
 

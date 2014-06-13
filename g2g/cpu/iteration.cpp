@@ -42,9 +42,11 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   timers.density.pause();
 
   HostMatrix<vec_type3> forces(total_nucleii(), 1); forces.zero();
-  std::vector<scalar_type> factors_rmm(points.size(),0);
+  vector<std::vector<vec_type3> > forces_mat(
+      points.size(), vector<vec_type3>(total_nucleii(), vec_type3(0.f,0.f,0.f)));
+  vector<scalar_type> factors_rmm(points.size(),0);
   /******** each point *******/
-  std::vector<Point> _points(points.begin(),points.end());
+  vector<Point> _points(points.begin(),points.end());
 #pragma omp parallel for shared(forces) reduction(+:localenergy)
   for(int point = 0; point<_points.size(); point++)
   {
@@ -149,11 +151,8 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     timers.forces.start();
     if (compute_forces) {
       scalar_type factor = _points[point].weight * y2a;
-      #pragma omp critical(forces)
-      {
-        for (uint i = 0; i < total_nucleii(); i++) {
-          forces(i) += dd(i) * factor;
-        }
+      for (uint i = 0; i < total_nucleii(); i++) {
+        forces_mat[point][i] = dd(i) * factor;
       }
     }
     timers.forces.pause();
@@ -174,6 +173,20 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     }
   }
   timers.forces.start();
+  /* accumulate forces for each point */
+  if (compute_forces) {
+    if(forces_mat.size() > 0) {
+#pragma omp parallel for
+      for (int j = 0; j < forces_mat[0].size(); j++) {
+        vec_type3 acum(0.f,0.f,0.f);
+        for (int i = 0; i < forces_mat.size(); i++) {
+          acum += forces_mat[i][j];
+        }
+        forces(j) = acum;
+      }
+    }
+  }
+
   /* accumulate force results for this group */
   if (compute_forces) {
     FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, fortran_vars.max_atoms); // TODO: mover esto a init.cpp

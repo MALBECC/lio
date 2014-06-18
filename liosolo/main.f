@@ -145,9 +145,9 @@ c--------------------------------------------------------
        call SCF(escf,dipxyz)
        write(*,*) 'SCF ENRGY=',escf 
         
-       allocate (dxyzqm(3,natom))
-       call dft_get_qm_forces(dxyzqm)
-       write(77,*) dxyzqm
+c       allocate (dxyzqm(3,natom))
+c       call dft_get_qm_forces(dxyzqm)
+c       write(77,*) dxyzqm
  
        call lio_finalize()     
        end

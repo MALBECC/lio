@@ -47,7 +47,7 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   vector<scalar_type> factors_rmm(points.size(),0);
   /******** each point *******/
   vector<Point> _points(points.begin(),points.end());
-#pragma omp parallel for shared(forces) reduction(+:localenergy)
+#pragma omp parallel for reduction(+:localenergy)
   for(int point = 0; point<_points.size(); point++)
   {
     HostMatrix<vec_type3> dd;
@@ -60,8 +60,8 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     timers.density.start();
     if (lda) {
       for (uint i = 0; i < group_m; i++) {
-        float w = 0.0;
-        float Fi = function_values(i, point);
+        scalar_type w = 0.0;
+        scalar_type Fi = function_values(i, point);
         for (uint j = i; j < group_m; j++) {
           scalar_type Fj = function_values(j, point);
           w += rmm_input(j, i) * Fj;
@@ -162,16 +162,17 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     if (compute_rmm) {
       scalar_type factor = _points[point].weight * y2a;
       factors_rmm[point] = factor;
-      //HostMatrix<scalar_type>::blas_ssyr(LowerTriangle, factor, function_values, rmm_output, point);
     }
     timers.rmm.pause();
-  }
+  } // end for
+
   if (compute_rmm) {
     for(int i=0; i<_points.size(); i++) {
       scalar_type factor = factors_rmm[i];
       HostMatrix<scalar_type>::blas_ssyr(LowerTriangle, factor, function_values, rmm_output, i);
     }
   }
+
   timers.forces.start();
   /* accumulate forces for each point */
   if (compute_forces) {

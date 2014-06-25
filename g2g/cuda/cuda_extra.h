@@ -1,7 +1,7 @@
 #ifndef __CUTOOLS_H__
 #define __CUTOOLS_H__
 
-#ifdef __CUDACC__
+#if !CPU_KERNELS
 #include <cuda_runtime.h>
 #include <cuda.h>
 #endif

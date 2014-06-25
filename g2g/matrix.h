@@ -151,7 +151,7 @@ namespace G2G {
 	typedef HostMatrix<double3> HostMatrixDouble3;
 	typedef HostMatrix<float> HostMatrixFloat;
 	typedef HostMatrix<float1> HostMatrixFloat1;
-	typedef HostMatrix<float2> HostMatrixFloat2;
+//	typedef HostMatrix<float2> HostMatrixFloat2;
 	typedef HostMatrix<float3> HostMatrixFloat3;
   typedef HostMatrix<float4> HostMatrixFloat4;
 	typedef HostMatrix<uint> HostMatrixUInt;

@@ -6,6 +6,7 @@
 #include "init.h"
 #include "matrix.h"
 #include "partition.h"
+#include  "cuda/cuda_extra.h"
 using namespace std;
 using namespace G2G;
 

@@ -17,6 +17,12 @@
 #include <cmath>
 #endif
 
+#if CPU_KERNELS
+#define __device__
+#define __host__
+#include "datatypes/cpu_primitives.h"
+#endif
+
 namespace G2G {
   #ifndef __CUDACC__
   inline __device__ __host__ bool isinf(uint v) { return false; }

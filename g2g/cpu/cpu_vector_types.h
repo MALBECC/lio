@@ -8,8 +8,8 @@
 #include <fvec.h>
 #include <xmmintrin.h>
 
-#include "cuda_includes.h"
-
+#include "datatypes/cpu_primitives.h"
+//#include "cuda_includes.h"
 namespace G2G {
 	class cfloat4 : public F32vec4 {
 	  public:

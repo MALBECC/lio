@@ -487,7 +487,6 @@ template class CudaMatrix< vec_type<double, 4> >;
 template class HostMatrix<double>;
 template class HostMatrix<float>;
 
-#if !CPU_KERNELS
 template class HostMatrix<double3>;
 template class HostMatrix<float1>;
 template class HostMatrix<float2>;
@@ -497,6 +496,7 @@ template class HostMatrix<uint1>;
 template class HostMatrix<uint2>;
 template class HostMatrix<uint>;
 
+#if !CPU_KERNELS
 template class CudaMatrix<float>;
 template class CudaMatrix<float1>;
 template class CudaMatrix<float2>;

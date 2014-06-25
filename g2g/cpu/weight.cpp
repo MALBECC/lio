@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <cuda_runtime.h>
 #include <cmath>
 #include "../common.h"
 #include "../init.h"
@@ -65,7 +64,7 @@ void PointGroup<scalar_type>::compute_weights(void)
 			uint atom_j = atom;
 			const double3& pos_atom_j(fortran_vars.atom_positions(atom_j));
 			double rm_atom_j = fortran_vars.rm(atom_j);
-			
+
       for (uint k = 0; k < total_nucleii(); ++k) {
 				uint atom_k = local2global_nuc[k];
 				const double3& pos_atom_k(fortran_vars.atom_positions(atom_k));
@@ -86,7 +85,7 @@ void PointGroup<scalar_type>::compute_weights(void)
 			}
 			//cout << P_atom << " " << P_total << " " << P_atom / P_total << endl;
 		}
-		
+
 		atom_weight = (P_total == 0.0 ? 0.0 : (P_atom / P_total));
 		it->weight *= atom_weight;
 		//cout << "peso " << P_atom << " " << P_total << " " << it->weight << endl;

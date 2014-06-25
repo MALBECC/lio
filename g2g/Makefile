@@ -6,11 +6,11 @@ SRCS:=$(wildcard *.cpp)
 OBJ:=$(SRCS:%.cpp=%.o)
 
 ifeq ($(cpu),1)
-  include Makefile.cuda
   CPU_SOURCES  := $(wildcard cpu/*.cpp)
   SRCS         += $(CPU_SOURCES)
   OBJ          += $(CPU_SOURCES:%.cpp=%.o)
   CXXFLAGS     += -DCPU_KERNELS=1
+  CPU          := 1
 ifeq ($(openmp),1)
 	CXXFLAGS += -openmp
 endif
@@ -78,14 +78,16 @@ depend:
 	@rm -f Makefile.depends.bak
 
 libg2g.a: $(OBJ)
+	@if [ "$(CPU)" == "1" ] ; then
 	@if [ -z "$(CUDA_HOME)" ] ; then echo "CUDA_HOME is not set. Please, check it."; exit 1; fi;
 	@if ! test -f $(CUDA_HOME)/lib/libcudart.so; then echo "libcudart.so can not be found in CUDA_HOME/lib/, current value is '"$(CUDA_HOME)/lib"'. Please check if CUDA_HOME variable is correctly set."; exit 1; fi;
+	fi
 	ar cru libg2g.a $(OBJ)
 	ranlib libg2g.a
 
 libg2g.so: $(OBJ)
-	@if [ -z "$(CUDA_HOME)" ] ; then echo "CUDA_HOME is not set. Please, check it."; exit 1; fi;
-	@if ! test -f $(CUDA_HOME)/lib/libcudart.so; then echo "libcudart.so can not be found in CUDA_HOME/lib/, current value is '"$(CUDA_HOME)/lib"'. Please check if CUDA_HOME variable is correctly set."; exit 1; fi;
+	#@if [ -z "$(CUDA_HOME)" ] ; then echo "CUDA_HOME is not set. Please, check it."; exit 1; fi;
+	#@if ! test -f $(CUDA_HOME)/lib/libcudart.so; then echo "libcudart.so can not be found in CUDA_HOME/lib/, current value is '"$(CUDA_HOME)/lib"'. Please check if CUDA_HOME variable is correctly set."; exit 1; fi;
 	$(CXX) -shared $(LDFLAGS) -o libg2g.so $(OBJ) $(LIBRARIES)
 
 clean:

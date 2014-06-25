@@ -3,7 +3,6 @@
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_blas.h>
-#include <cuda_runtime.h>
 #include <cstring>
 #include "common.h"
 #include "matrix.h"
@@ -18,7 +17,7 @@ namespace G2G {
 
 template<class T> Matrix<T>::Matrix(void) : data(NULL), width(0), height(0) /*, components(0)*/ {}
 
-template<class T> Matrix<T>::~Matrix(void) { } 
+template<class T> Matrix<T>::~Matrix(void) { }
 
 template<class T> unsigned int Matrix<T>::bytes(void) const {
 	return elements() * sizeof(T);
@@ -37,7 +36,7 @@ template<class T> bool Matrix<T>::is_allocated(void) const {
  ***************************/
 template<class T> void HostMatrix<T>::alloc_data(void) {
   assert(this->bytes() != 0);
-  
+
 	if (pinned) {
     #if !CPU_KERNELS
 		cudaError_t error_status = cudaMallocHost((void**)&this->data, this->bytes());
@@ -45,9 +44,9 @@ template<class T> void HostMatrix<T>::alloc_data(void) {
     #else
     assert(false);
     #endif
-	}	
+	}
 	else this->data = new T[this->elements()];
-	
+
 	assert(this->data);
 }
 
@@ -96,7 +95,7 @@ template<class T> HostMatrix<T>& HostMatrix<T>::resize(unsigned int _width, unsi
     this->width = _width; this->height = _height;
     alloc_data();
   }
-	
+
 	return *this;
 }
 
@@ -108,7 +107,7 @@ template<class T> HostMatrix<T>& HostMatrix<T>::shrink(unsigned int _width, unsi
     resize(_width, _height);
     *this = temp_matrix;
   }
-  
+
 	return *this;
 }
 
@@ -124,7 +123,7 @@ template<class T> HostMatrix<T>& HostMatrix<T>::fill(T value) {
 
 template<class T> HostMatrix<T>& HostMatrix<T>::operator=(const HostMatrix<T>& c) {
 	assert(!this->pinned);
-	
+
 	if (!c.data) {
 		if (this->data) { dealloc_data(); this->width = this->height = 0; this->data = NULL; }
 	}
@@ -132,7 +131,7 @@ template<class T> HostMatrix<T>& HostMatrix<T>::operator=(const HostMatrix<T>& c
 		if (this->data) {
 			if (this->bytes() != c.bytes()) {
 				dealloc_data();
-				this->width = c.width; this->height = c.height; 
+				this->width = c.width; this->height = c.height;
 				alloc_data();
 			}
 		}
@@ -140,10 +139,10 @@ template<class T> HostMatrix<T>& HostMatrix<T>::operator=(const HostMatrix<T>& c
 			this->width = c.width; this->height = c.height;
 			alloc_data();
 		}
-		
+
 		copy_submatrix(c);
 	}
-	
+
 	return *this;
 }
 
@@ -157,7 +156,7 @@ template <class T> HostMatrix<T>& HostMatrix<T>::operator=(const CudaMatrix<T>& 
 				dealloc_data();
 				this->width = c.width; this->height = c.height;
 				alloc_data();
-			}			
+			}
 		}
 		else {
 			this->width = c.width; this->height = c.height;
@@ -167,7 +166,7 @@ template <class T> HostMatrix<T>& HostMatrix<T>::operator=(const CudaMatrix<T>& 
 		copy_submatrix(c);
 	}
 
-	return *this;		
+	return *this;
 }
 
 /*template<class T> void HostMatrix<T>::copy_into(T* external_data, unsigned int _i, unsigned int _j, unsigned int _elements) {
@@ -288,7 +287,7 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::resize(unsigned int _width, unsi
     cudaAssertNoError("CudaMatrix::resize");
   }
   #endif
-	return *this;		
+	return *this;
 }
 
 template<class T> CudaMatrix<T>& CudaMatrix<T>::zero(void) {
@@ -318,7 +317,7 @@ template<class T> CudaMatrix<T>::~CudaMatrix(void) {
 
 template<class T> void CudaMatrix<T>::deallocate(void) {
   #if !CPU_KERNELS
-	if (this->data) cudaFree(this->data);	
+	if (this->data) cudaFree(this->data);
 	this->data = NULL;
   this->width = this->height = 0;
   #endif
@@ -366,7 +365,7 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const HostMatrix<T>& c
 				cudaFree(this->data);
 				this->width = c.width; this->height = c.height;
 				cudaMalloc((void**)&this->data, this->bytes());
-			}			
+			}
 		}
 		else {
 			this->width = c.width; this->height = c.height;
@@ -485,9 +484,11 @@ template class CudaMatrix< vec_type<double, 2> >;
 template class CudaMatrix< vec_type<double, 3> >;
 template class CudaMatrix< vec_type<double, 4> >;
 
-template class HostMatrix<double3>;
 template class HostMatrix<double>;
 template class HostMatrix<float>;
+
+#if !CPU_KERNELS
+template class HostMatrix<double3>;
 template class HostMatrix<float1>;
 template class HostMatrix<float2>;
 template class HostMatrix<float3>;
@@ -506,6 +507,7 @@ template class CudaMatrix<uint2>;
 template class CudaMatrix<double>;
 template class CudaMatrix<double3>;
 template class CudaMatrix<double4>;
+#endif
 
 template class FortranMatrix<double>;
 template class FortranMatrix<uint>;

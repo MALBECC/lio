@@ -1,10 +1,13 @@
-#include <cuda_runtime.h>
 #include <cstdio>
 #include <time.h>
 #include <sys/time.h>
 #include <map>
 #include <string>
 #include "timer.h"
+
+// Only include it to sync timings in cuda threads.
+#include "cuda_includes.h"
+
 using namespace G2G;
 using namespace std;
 
@@ -81,7 +84,7 @@ void Timer::pause_and_sync(void) {
 }
 
 bool Timer::isStarted(void) const {
-	return started;	
+	return started;
 }
 
 unsigned long Timer::getMicrosec(void) const {
@@ -113,7 +116,7 @@ std::ostream& G2G::operator<<(std::ostream& o, const Timer& t) {
 		o << t.getSec() << "s. " << t.getMicrosec() << "us.";
 	else
 		o << t.getMicrosec() << "us.";
-	
+
 #else
 	o << "[TIMINGS NOT ENABLED]";
 #endif

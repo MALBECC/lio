@@ -1,9 +1,7 @@
 #ifndef __GLOBAL_MEMORY_POOL
 #define __GLOBAL_MEMORY_POOL
 
-#include <cassert>
 #include <cstdlib>
-#include "cuda/cuda_extra.h"
 
 class globalMemoryPool
 {

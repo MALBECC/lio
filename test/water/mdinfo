@@ -1,0 +1,8 @@
+
+ NSTEP =        0   TIME(PS) =       0.000  TEMP(K) =   452.34  PRESS =     0.0
+ Etot   =    -59080.1107  EKtot   =      5222.0500  EPtot      =    -64302.1607
+ BOND   =         0.0000  ANGLE   =         0.0000  DIHED      =         0.0000
+ 1-4 NB =         0.0000  1-4 EEL =         0.0000  VDWAALS    =      1968.5956
+ EELEC  =    -18336.5225  EHBOND  =         0.0000  RESTRAINT  =         0.0000
+ EXTERNESCF=    -47934.2338
+ Ewald error estimate:   0.1236E-03

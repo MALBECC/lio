@@ -1,0 +1,17 @@
+&lio
+ nsol=0
+ natom=92
+ charge=0
+ timedep=1
+ propagator=2
+ ntdstep=1510
+ tdstep=1.0D-3
+ tdrestart=f
+ vcinp=t
+ NBCH=20
+ diis=t
+ nmax=300
+ A0=1000.0,
+ EPSILON=1.0,
+
+&end

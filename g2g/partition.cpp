@@ -10,7 +10,6 @@
 #include "matrix.h"
 #include "partition.h"
 #include "timer.h"
-#include "global_memory_pool.h"
 using namespace std;
 
 namespace G2G {
@@ -113,10 +112,10 @@ bool PointGroup<scalar_type>::is_significative(FunctionType type, double exponen
       factor = sqrt(factor*4.0*exponent) ;
       double norm = (type == FUNCTION_P ? sqrt(factor) : abs(factor)) ;
       do {
-	double div = (type == FUNCTION_P ? log(x) : 2 * log(x));
-	double x1 = sqrt((max_function_exponent - log(norm) + div) / exponent);
-	delta = abs(x-x1);
-	x = x1;
+        double div = (type == FUNCTION_P ? log(x) : 2 * log(x));
+        double x1 = sqrt((max_function_exponent - log(norm) + div) / exponent);
+        delta = abs(x-x1);
+        x = x1;
       } while (delta > e);
       return (sqrt(d2) < x);
     }

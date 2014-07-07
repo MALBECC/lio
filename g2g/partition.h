@@ -15,7 +15,7 @@ namespace G2G {
   struct Timers {
     Timer total, ciclos, rmm, density, forces, resto, pot, functions, density_derivs;
   };
-  
+
   std::ostream& operator<<(std::ostream& io, const Timers& t);
 
 /********************
@@ -24,7 +24,7 @@ namespace G2G {
 struct Point {
 	Point(uint _atom, uint _shell, uint _point, double3 _position, double _weight) :
 		atom(_atom), shell(_shell), point(_point), position(_position), weight(_weight) {}
-	
+
 	uint atom, shell, point;
 	double3 position;
 	double weight;
@@ -88,7 +88,7 @@ class PointGroup {
     size_t size_in_gpu() const;
 
     virtual bool is_sphere(void) = 0;
-    virtual bool is_cube(void) = 0;    
+    virtual bool is_cube(void) = 0;
 
     bool inGlobal;
 
@@ -138,24 +138,25 @@ class Partition {
       long long int accumulated_size=0;
       for (std::list<Cube*>::const_iterator it = cubes.begin(); it != cubes.end(); ++it)
       {
-        (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy, fort_forces_ptr);        
+        (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy, fort_forces_ptr);
 //        printf("\t\t\t\t So far %luKb\n",accumulated_size/1024);
       }
-      
+
       for (std::list<Sphere*>::const_iterator it = spheres.begin(); it != spheres.end(); ++it)
       {
         (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, spheres_energy, fort_forces_ptr);
       }
-        
+
 //      std::cout << "cubes XC energy: " << cubes_energy << std::endl;
 //      std::cout << "spheres XC energy: " << spheres_energy << std::endl;
       *fort_energy_ptr = cubes_energy + spheres_energy;
-           if(*fort_energy_ptr != *fort_energy_ptr) {
-             std::cout << "I see dead peaple " << std::endl;
-             cudaDeviceReset();
-          exit(0);
-       }
-
+      if(*fort_energy_ptr != *fort_energy_ptr) {
+          std::cout << "I see dead peaple " << std::endl;
+#ifndef CPU_KERNELS
+          cudaDeviceReset();
+#endif
+          exit(1);
+      }
     }
 
     void regenerate(void);

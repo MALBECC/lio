@@ -10,7 +10,7 @@ ifeq ($(cpu),1)
   CPU_SOURCES  := $(wildcard cpu/*.cpp)
   SRCS         += $(CPU_SOURCES)
   OBJ          += $(CPU_SOURCES:%.cpp=%.o)
-  CXXFLAGS     += -DCPU_KERNELS=1
+  CXXFLAGS     += -DCPU_KERNELS=1 -openmp
 else
   include Makefile.cuda
   CUDA_LIBS    := -lcudart -lcuda

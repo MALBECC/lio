@@ -20,6 +20,8 @@ G2G Compilation options, call following to make command, for example: make cuda=
 
 -cpu: enable the compilation to test the optimized routines for GPU cards in CPU (not recommended, only to compare running the same code in CPU and GPU).
 
+-openmp: enable the compilation of the cpu code with openmp paralellism to use multiple cpu cores.
+
 -time: enables the timers to obtain detailed timing information from different parts of the program.
 
 -nosync: Internal use, for debugging and timing.

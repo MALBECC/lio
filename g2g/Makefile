@@ -63,6 +63,8 @@ endif
 
 ## Define libraries
 LIBRARIES := $(shell pkg-config gsl --libs) $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
+CXXFLAGS += $(shell pkg-config gsl --cflags)
+NVCCFLAGS += $(shell pkg-config gsl --cflags)
 
 ## Targets
 all: $(LIBRARY)

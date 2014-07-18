@@ -109,7 +109,6 @@ c
 
 C----------------------------------------
 c Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
-c        write(*,*) 'que pasa?'
   
       do i=1,natom
         natomc(i)=0
@@ -144,11 +143,9 @@ c        write(*,*) 'que pasa?'
 
       if (predcoef.and.npas.gt.3) then
         if (.not.OPEN) then
-c         rewind 84
           if(verbose) write(*,*) 'prediciendo densidad'
           do i=1,MM
             RMM(i)=(3*old1(i))-(3*old2(i))+(old3(i))
-c        write(84,346) old1(i),old2(i),old3(i),RMM(i)
           enddo
          endif
        endif

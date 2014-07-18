@@ -13,8 +13,7 @@ NVIDIA CUDA (even for compiling CPU version).
 COMPILATION
 ===========
 
-Enter g2g folder, and makefile there.
-G2G Compilation options, call following to make command, for example: make cuda=1
+G2G Compilation options, call following to make command, for example: make sm20=1 
 
 -dbg: enable debugging information
 

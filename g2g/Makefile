@@ -11,6 +11,10 @@ ifeq ($(cpu),1)
   SRCS         += $(CPU_SOURCES)
   OBJ          += $(CPU_SOURCES:%.cpp=%.o)
   CXXFLAGS     += -DCPU_KERNELS=1
+ifeq ($(openmp),1)
+	CXXFLAGS += -openmp
+endif
+
 else
   include Makefile.cuda
   CUDA_LIBS    := -lcudart -lcuda
@@ -63,6 +67,8 @@ endif
 
 ## Define libraries
 LIBRARIES := $(shell pkg-config gsl --libs) $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
+CXXFLAGS += $(shell pkg-config gsl --cflags)
+NVCCFLAGS += $(shell pkg-config gsl --cflags)
 
 ## Targets
 all: $(LIBRARY)

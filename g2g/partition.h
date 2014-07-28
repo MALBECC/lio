@@ -15,7 +15,7 @@ namespace G2G {
   struct Timers {
     Timer total, ciclos, rmm, density, forces, resto, pot, functions, density_derivs;
   };
-  
+
   std::ostream& operator<<(std::ostream& io, const Timers& t);
 
 /********************
@@ -24,7 +24,7 @@ namespace G2G {
 struct Point {
 	Point(uint _atom, uint _shell, uint _point, double3 _position, double _weight) :
 		atom(_atom), shell(_shell), point(_point), position(_position), weight(_weight) {}
-	
+
 	uint atom, shell, point;
 	double3 position;
 	double weight;
@@ -93,7 +93,7 @@ class PointGroup {
     size_t size_in_gpu() const;
 
     virtual bool is_sphere(void) = 0;
-    virtual bool is_cube(void) = 0;    
+    virtual bool is_cube(void) = 0;
 
     bool inGlobal;
 
@@ -180,8 +180,10 @@ class Partition {
        
        if(*fort_energy_ptr != *fort_energy_ptr) {
              std::cout << "I see dead peaple " << std::endl;
+#ifndef CPU_KERNELS           
              cudaDeviceReset();
-          exit(0);
+#endif
+          exit(1);
        }
 
     }

@@ -130,9 +130,9 @@ c reads input file
       else
 c  name of output file
       ikk=1
-      do 1 while (basis(ikk:ikk).ne.' ')
+      do while (basis(ikk:ikk).ne.' ')
        ikk=ikk+1
- 1    continue
+      enddo
 c
       ikk=ikk-1
 c      name2=basis(1:ikk)//'.out'
@@ -148,9 +148,9 @@ c-------------------------------------------------------
       date='date'
       write(*,*) 'JOB STARTED NOW'
       call system(date)
-         do i=1,natom
-            done(i)=.false.
-           enddo
+      do i=1,natom
+        done(i)=.false.
+      enddo
 
 c -------------------------------------------------------------
 c for each kind of atom, given by Z
@@ -184,7 +184,7 @@ c
       allocate(natomc(natom),nnps(natom),nnpp(natom),nnp(natom))
       allocate(nnpd(natom),nns(natom),nnd(natom),atmin(natom))
       allocate(jatc(natom,natom))
-       
+      
       do i=1,natom
         natomc(i)=0 
       enddo
@@ -287,6 +287,7 @@ c no normalization case
                     a(No,l)=at(index)
                   enddo
                 endif
+
 c repeat the index only for p,d and f
                 if (l2.ne.Num(lt(k))) then
                   index=index-ncf(k)
@@ -379,7 +380,7 @@ c
                 do l=1,ncf(k)
                   index=index+1
 c
-                  cd(Nd,l)=ct(index)
+                   cd(Nd,l)=ct(index)
 c                  ad(Nd,l)=2.D0*at(index)
                   ad(Nd,l)=at(index)
                 enddo
@@ -510,8 +511,7 @@ c
           a(i,j)=ax(i,j)
         enddo
       enddo
-c
-        
+
 c same process, but for electronic density basis set ------------
 c
       is=1
@@ -760,7 +760,6 @@ c--------------------------------------------------------------------
 c
 c case for initial guess constructed from atomic densities -------
       if (ATRHO) then
-c
         k1=0
         l1=0
         NN=0

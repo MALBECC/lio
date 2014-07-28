@@ -9,13 +9,13 @@ c---------------------------------------------------------------------
       integer::charge
       logical::filexist
       REAL*8, dimension (:,:), ALLOCATABLE   :: dxyzqm
-      namelist /lio/ natom,nsol,charge,OPEN,NMAX,Nunp,VCINP,frestartin, 
-     > GOLD,told,rmax,rmaxs,predcoef,  
-     > idip,writexyz,intsoldouble,DIIS,ndiis,dgtrig, 
-     > Iexch,integ,dens,igrid,igrid2,timedep, tdstep, ntdstep, 
-     > propagator,NBCH, 
+      namelist /lio/ natom,nsol,charge,OPEN,NMAX,Nunp,VCINP,frestartin,
+     > GOLD,told,rmax,rmaxs,predcoef,
+     > idip,writexyz,intsoldouble,DIIS,ndiis,dgtrig,
+     > Iexch,integ,dens,igrid,igrid2,timedep, tdstep, ntdstep,
+     > propagator,NBCH,
      > field,a0,epsilon,exter,Fx,Fy,Fz, tdrestart, writedens
- 
+
       integer :: ifind, ierr
 
      !defaults
@@ -59,48 +59,51 @@ c---------------------------------------------------------------------
       tdrestart=.false.
       writedens=.true.
 
-       narg=command_argument_count()
+      narg=command_argument_count()
 
-       do i=1, narg
-         call get_command_argument(i,argument)
-          select case(adjustl(argument))
-           case("-i")
+      do i=1, narg
+        call get_command_argument(i,argument)
+        select case(adjustl(argument))
+          case("-i")
             call get_command_argument(i+1,inpfile)
-           case("-b")
+          case("-b")
             call get_command_argument(i+1,basis)
-           case("-c")
+          case("-c")
             call get_command_argument(i+1,inpcoords)
-            case("-v")
+          case("-v")
             verbose=.true.
-           case default
-          end select
-       enddo
+          case default
+        end select
+      enddo
 
-       inquire(file=inpfile,exist=filexist)
+      inquire(file=inpfile,exist=filexist)
+
       if(filexist) then
-      open(unit=100,file=inpfile,iostat=ios)
+        open(unit=100,file=inpfile,iostat=ios)
       else
-      write(*,*) 'input file ',adjustl(inpfile),' not found'
-      stop
+        write(*,*) 'input file ',adjustl(inpfile),' not found'
+        stop
       endif
       read(100,nml=lio,iostat=ierr)
+
       if(ierr.gt.0) stop 'input error in lio namelist'
+
       inquire(file=inpcoords,exist=filexist)
       if(filexist) then
-      open(unit=101,file=inpcoords,iostat=ios)
+        open(unit=101,file=inpcoords,iostat=ios)
       else
-      write(*,*) 'input file ',adjustl(inpcoords),' not found'
-      stop
+        write(*,*) 'input file ',adjustl(inpcoords),' not found'
+        stop
       endif
 c        write(*,*) natom,nsol
-        write(*,nml=lio)
-       ntatom=natom+nsol
+      write(*,nml=lio)
 
-         ngnu=natom*ng0
-         ngdnu=natom*ngd0
-         ngDyn=ngnu
-         ngdDyn=ngdnu
-        ng3=4*ngDyn
+      ntatom=natom+nsol
+      ngnu=natom*ng0
+      ngdnu=natom*ngd0
+      ngDyn=ngnu
+      ngdDyn=ngdnu
+      ng3=4*ngDyn
       ng2=5*ngDyn*(ngDyn+1)/2+3*ngdDyn*(ngdDyn+1)/2+
      >           ngDyn+ngDyn*norbit+Ngrid
 c      write(*,*)ng2,ngDyn,ngdDyn,norbit,Ngrid
@@ -108,7 +111,7 @@ c      write(*,*)ng2,ngDyn,ngdDyn,norbit,Ngrid
       allocate(X(ngDyn,ng3),XX(ngdDyn,ngdDyn))
       allocate(RMM(ng2),RMM1(ng2),RMM2(ng2), RMM3(ng2))
 
-       allocate (c(ngnu,nl),a(ngnu,nl),Nuc(ngnu),ncont(ngnu)
+      allocate (c(ngnu,nl),a(ngnu,nl),Nuc(ngnu),ncont(ngnu)
      >  ,cx(ngdnu,nl),ax(ngdnu,nl),Nucx(ngdnu),ncontx(ngdnu)
      > ,cd(ngdnu,nl),ad(ngdnu,nl),Nucd(ngdnu),ncontd(ngdnu)
      > ,indexii(ngnu),indexiid(ngdnu))
@@ -118,13 +121,13 @@ c      write(*,*)ng2,ngDyn,ngdDyn,norbit,Ngrid
      >  B(natom*ngd0,3))
       allocate(d(natom,natom))
 
-       do i=1,natom
-       read(101,*) iz(i),r(i,1:3)
-                  rqm(i,1:3)=r(i,1:3)
+      do i=1,natom
+        read(101,*) iz(i),r(i,1:3)
+        rqm(i,1:3)=r(i,1:3)
 c       write(*,*) iz(i),r(i,1:3)
-       enddo
-       do i=natom+1,ntatom
-       read(101,*) pc(i),r(i,1:3)   ! o es pc(i-natom)???
+      enddo
+      do i=natom+1,ntatom
+        read(101,*) pc(i),r(i,1:3)   ! o es pc(i-natom)???
 c       write(*,*) pc(i),r(i,1:3)
        enddo
        r=r/0.529177D0
@@ -167,3 +170,4 @@ c       enddo
        
        call lio_finalize()     
        end
+

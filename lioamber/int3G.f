@@ -123,7 +123,7 @@ c      if (iforce.eq.0) then
        enddo
 c      endif
 c
-      if (.not.OPEN) then
+c      if (.not.OPEN) then
 
 c        write(*,*) 'exchnum int3G'
       call g2g_timer_start('ExcG')
@@ -139,20 +139,20 @@ c      do k=1,natom
 c        write(*,'("fuerza",I,D,D,D)') k,f(k,1),f(k,2),f(k,3)
 c      enddo
 c
-       else
-         call g2g_timer_start('ExcG')
-          if (calc_energy) then
-              call g2g_solve_groups(2, Exc, f)
-          else
-              call g2g_solve_groups(3, Exc, f)
-         endif
-      call g2g_timer_stop('ExcG')
+c       else
+c         call g2g_timer_start('ExcG')
+c          if (calc_energy) then
+c              call g2g_solve_groups(2, Exc, f)
+c          else
+c              call g2g_solve_groups(3, Exc, f)
+c         endif
+c      call g2g_timer_stop('ExcG')
 c
 c        NCOa=NCO
 c        NCOb=NCO+Nunp
 c        call exchnum2op(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
 c     >              M18,NCOa,NCOb,Exc,f)
-       endif
+c       endif
 c
       do 215 k=1,MM
  215   RMM(M5+k-1)=RMM(M11+k-1)

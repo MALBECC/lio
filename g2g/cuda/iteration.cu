@@ -676,11 +676,11 @@ void PointGroup<scalar_type>::solve_opened(Timers& timers, bool compute_rmm, boo
       	    	vec_type4 atom_force_b = forces_cpu_b(i);
             	uint global_nuc = local2global_nuc[i];
       	  	
-                fort_forces(global_nuc, 0) += atom_force_a.x+atom_force_b.x;
-		fort_forces(global_nuc, 1) += atom_force_a.y+atom_force_b.y;
-		fort_forces(global_nuc, 2) += atom_force_a.z+atom_force_b.z;
-		
-            //    cout<<"force.x="<<atom_force_a.x+atom_force_b.x<<"force.y="<<atom_force_a.y+atom_force_b.y<<"force.z="<<atom_force_a.z+atom_force_b.z<<endl;
+                fort_forces(global_nuc, 0)=fort_forces(global_nuc, 0) + atom_force_a.x + atom_force_b.x;
+		fort_forces(global_nuc, 1)=fort_forces(global_nuc, 1) + atom_force_a.y + atom_force_b.y;
+		fort_forces(global_nuc, 2)=fort_forces(global_nuc, 2) + atom_force_a.z + atom_force_b.z;
+
+//                cout<<"force.x="<<atom_force_a.x+atom_force_b.x<<"force.y="<<atom_force_a.y+atom_force_b.y<<"force.z="<<atom_force_a.z+atom_force_b.z<<endl;
             }
 
     	timers.forces.pause_and_sync();

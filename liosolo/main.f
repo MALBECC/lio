@@ -148,15 +148,22 @@ c--------------------------------------------------------
        if(OPEN) then
          call SCFOP(escf)
        else
-        call SCF(escf,dipxyz)
-      endif
+         call SCF(escf,dipxyz)
+       endif
 c-------------------------------------------------------- 
 
        write(*,*) 'SCF ENRGY=',escf 
         
        allocate (dxyzqm(3,natom))
-       call dft_get_qm_forces(dxyzqm)
-       write(77,*) dxyzqm
- 
+       dxyzqm=0.0
+c       call dft_get_qm_forces(dxyzqm)
+       call g2g_solve_groups(3, Exc, dxyzqm)
+c       write(*,*) dxyzqm
+
+c       do k=1,natom
+c         write(*,'("fuerza",I,D,D,D)') 
+c     >     k,dxyzqm(k,1),dxyzqm(k,2),dxyzqm(k,3)
+c       enddo
+       
        call lio_finalize()     
        end

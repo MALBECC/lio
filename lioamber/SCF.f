@@ -519,9 +519,9 @@ c----------Acumulamos en las columnas de FP_PFm los sucesivos conmutadores------
         endif
 c
 c-------------Decidiendo cual critero de convergencia usar-----------
-        if (niter.gt.2.and.(DIIS)) then
-          hagodiis=.true.
-        endif
+      if (niter.gt.2.and.(DIIS)) then
+        hagodiis=.true.
+      endif
 
       if(.not.hagodiis) then
         if(niter.ge.2) then
@@ -560,11 +560,11 @@ c
             enddo
           enddo
 c
-        do k=j+1,M
-          do i=1,M
-            X(i,M+j)=X(i,M+j)+Xnano(i,k)*RMM( M5+k+(M2-j)*(j-1)/2-1)
+          do k=j+1,M
+            do i=1,M
+              X(i,M+j)=X(i,M+j)+Xnano(i,k)*RMM( M5+k+(M2-j)*(j-1)/2-1)
+            enddo
           enddo
-        enddo
 c
         enddo
 c
@@ -605,34 +605,34 @@ c        write(*,*) 'good < dgtrig DIIS!!! PARA LA SIGUIENTE ITERACION'
 
 c--------Pasar columnas de FP_PFm a matrices y multiplicarlas y escribir EMAT-------
 
-        if(DIIS) then
-          call g2g_timer_start('diis') 
-          deallocate(EMAT)
-          allocate(EMAT(ndiist+1,ndiist+1))
+       if(DIIS) then
+         call g2g_timer_start('diis') 
+         deallocate(EMAT)
+         allocate(EMAT(ndiist+1,ndiist+1))
         
-          if(niter.gt.1.and.niter.le.ndiis) then     
-          
-            EMAT=0
-            do k=1,ndiist-1
-              do kk=1,ndiist-1
-                EMAT(K,KK)=EMAT2(K,KK)
-              enddo
-            enddo
-            deallocate (EMAT2)
-          elseif(niter.gt.ndiis) then
-            do k=1,ndiist-1
-              do kk=1,ndiist-1
-                EMAT(K,KK)=EMAT2(K+1,KK+1)
-              enddo
-            enddo
-            deallocate (EMAT2)
-          endif
+         if(niter.gt.1.and.niter.le.ndiis) then     
+       
+           EMAT=0
+           do k=1,ndiist-1
+             do kk=1,ndiist-1
+               EMAT(K,KK)=EMAT2(K,KK)
+             enddo
+           enddo
+           deallocate (EMAT2)
+         elseif(niter.gt.ndiis) then
+           do k=1,ndiist-1
+             do kk=1,ndiist-1
+               EMAT(K,KK)=EMAT2(K+1,KK+1)
+             enddo
+           enddo
+           deallocate (EMAT2)
+         endif
 
-        k=ndiist
-        do kk=1,ndiist
-          kknueva=kk+(ndiis-ndiist)
+         k=ndiist
+         do kk=1,ndiist
+           kknueva=kk+(ndiis-ndiist)
 c-------Escribimos en xnano y znano dos conmutadores de distintas iteraciones------
-          do i=1,M
+           do i=1,M
              do j=1,i
                xnano(i,j)=FP_PFm(i+(M2-j)*(j-1)/2,ndiis)
                znano(i,j)=FP_PFm(i+(M2-j)*(j-1)/2,kknueva)
@@ -641,30 +641,30 @@ c-------Escribimos en xnano y znano dos conmutadores de distintas iteraciones---
                xnano(i,j)=FP_PFm(j+(M2-i)*(i-1)/2,ndiis)
                znano(i,j)=FP_PFm(j+(M2-i)*(i-1)/2,kknueva)
              enddo
-          enddo
+           enddo
 
-          call matmuldiag(xnano,znano,rho1,M)
+           call matmuldiag(xnano,znano,rho1,M)
 c              xnano=matmul(xnano,znano)
 
-          EMAT(ndiist,kk)=0.
-          if(kk.ne.ndiist) EMAT(kk,ndiist)=0.
-          do l=1,M
-            EMAT(ndiist,kk)=EMAT(ndiist,kk)+rho1(l,l)
-            if (kk.ne.ndiist) then
-              EMAT(kk,ndiist)=EMAT(ndiist,kk)
+           EMAT(ndiist,kk)=0.
+           if(kk.ne.ndiist) EMAT(kk,ndiist)=0.
+           do l=1,M
+             EMAT(ndiist,kk)=EMAT(ndiist,kk)+rho1(l,l)
+             if (kk.ne.ndiist) then
+               EMAT(kk,ndiist)=EMAT(ndiist,kk)
              endif
-          enddo
-        enddo
+           enddo
+         enddo
 
-        do i=1,ndiist
-          EMAT(i,ndiist+1)= -1.0
-          EMAT(ndiist+1,i)= -1.0
-        enddo
-        EMAT(ndiist+1, ndiist+1)= 0.0
+         do i=1,ndiist
+           EMAT(i,ndiist+1)= -1.0
+           EMAT(ndiist+1,i)= -1.0
+         enddo
+         EMAT(ndiist+1, ndiist+1)= 0.0
 
-        allocate(EMAT2(ndiist+1,ndiist+1))
-        EMAT2=EMAT
-        ematalloct=.true.
+         allocate(EMAT2(ndiist+1,ndiist+1))
+         EMAT2=EMAT
+         ematalloct=.true.
 c********************************************************************
 c   THE MATRIX EMAT SHOULD HAVE FORM
 c
@@ -680,179 +680,182 @@ c   TIMES [F*P] FOR ITERATION J.
 c
 c********************************************************************
 c-----Pasamos a resolver con DGELS el problema EMAT*ci=bcoef-------
-      if (hagodiis) then
-        do i=1,ndiist
-          bcoef(i)=0
-        enddo
-        bcoef(ndiist+1)=-1
+         if (hagodiis) then
+           do i=1,ndiist
+             bcoef(i)=0
+           enddo
+           bcoef(ndiist+1)=-1
 
 c----------Cálculo de parámetro optimo para DGELS-------------------
 *
 *
-        LWORK = -1
-      CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT, ndiist+1,
-     > bcoef, ndiist+1, WORK, LWORK, INFO )
-        LWORK = MIN( 1000, INT( WORK( 1 ) ) )
+           LWORK = -1
+       CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT, ndiist+1,
+     >             bcoef, ndiist+1, WORK, LWORK, INFO )
+           LWORK = MIN( 1000, INT( WORK( 1 ) ) )
 
 
 c-----Resuelve la ecuación A*X = B. (EMAT*ci=bcoef). La solución la escribe en bcoef------
 
-            CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT,
-     >                 ndiist+1, bcoef, ndiist+1, WORK, LWORK, INFO )
+           CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT,
+     >                ndiist+1, bcoef, ndiist+1, WORK, LWORK, INFO )
 
 c--------Construccion de la "nueva" matriz de fock como cl de las anteriores--------------
 c--------Eventualmente se puede probar con la matriz densidad-----------------------------
 c       
-         suma=0
-          do j=1,ndiist
-            jnuevo=j+(ndiis-ndiist)
-            do i=1,MM
-              suma(i)=suma(i)+bcoef(j)*fockm(i,jnuevo)
-            enddo
-          enddo
-          do i=1,MM
-            RMM(M5+i-1)=suma(i)
-          enddo
-          call g2g_timer_stop('diis')
-        endif
-      endif
+           suma=0
+           do j=1,ndiist
+             jnuevo=j+(ndiis-ndiist)
+             do i=1,MM
+               suma(i)=suma(i)+bcoef(j)*fockm(i,jnuevo)
+             enddo
+           enddo
+        
+           do i=1,MM
+             RMM(M5+i-1)=suma(i)
+           enddo
+           call g2g_timer_stop('diis')
+         endif
+       endif
 
 c ESSL OPTION ---------------------------------------------------
-        call g2g_timer_start('dspev')
+       call g2g_timer_start('dspev')
 #ifdef essl
-        call DSPEV(1,RMM(M5),RMM(M13),X(1,M+1),M,M,RMM(M15),M2)
+       call DSPEV(1,RMM(M5),RMM(M13),X(1,M+1),M,M,RMM(M15),M2)
 #endif
 c
 c LAPACK OPTION -----------------------------------------
 #ifdef pack
-        call dspev('V','L',M,RMM(M5),RMM(M13),X(1,M+1),M,RMM(M15),info)
+       call dspev('V','L',M,RMM(M5),RMM(M13),X(1,M+1),M,RMM(M15),info)
 #endif
-        call g2g_timer_stop('dspev')
+       call g2g_timer_stop('dspev')
 
 c-----------------------------------------------------------
 c diagonalization now
 c
 c new coefficients
 
-        call g2g_timer_start('coeff')
+       call g2g_timer_start('coeff')
 
-        do i=1,M
-          do k=1,M
-            xnano(i,k)=X(k,i)
-          enddo
-        enddo
-c
-        do 50 i=1,M
-          do 50 j=1,M
-c
-            X(i,M2+j)=0.D0
-            do 52 k=1,M
-  52          X(i,M2+j)=X(i,M2+j)+xnano(k,i)*X(k,M+j)
-  50    continue
- 
-
-        call g2g_timer_stop('coeff') 
-    
-      do i=1,M
-        do k=1,M
-          xnano(i,k)=X(k,i)
+       do i=1,M
+         do k=1,M
+           xnano(i,k)=X(k,i)
          enddo
-      enddo
+       enddo
 c
-      do i=1,M
-        do j=1,M
-          X(i,M2+j)=0.D0
-          do k=1,M
-            X(i,M2+j)=X(i,M2+j)+xnano(k,i)*X(k,M+j)
-          enddo
-        enddo
-      enddo
+       do i=1,M
+         do j=1,M
+c
+           X(i,M2+j)=0.D0
+           do k=1,M
+             X(i,M2+j)=X(i,M2+j)+xnano(k,i)*X(k,M+j)
+           enddo
+         enddo
+       enddo
  
-      call g2g_timer_stop('coeff') 
-      call g2g_timer_start('otras cosas')
-      kk=0
 
-      do k=1,NCO
-        do i=1,M
-          kk=kk+1
-          RMM(M18+kk-1)=X(i,M2+k)
-        enddo
-      enddo
+       call g2g_timer_stop('coeff') 
+    
+       do i=1,M
+         do k=1,M
+           xnano(i,k)=X(k,i)
+         enddo
+       enddo
+c
+       do i=1,M
+         do j=1,M
+           X(i,M2+j)=0.D0
+           do k=1,M
+             X(i,M2+j)=X(i,M2+j)+xnano(k,i)*X(k,M+j)
+           enddo
+         enddo
+       enddo
+ 
+       call g2g_timer_stop('coeff') 
+       call g2g_timer_start('otras cosas')
+       
+       kk=0
+       do k=1,NCO
+         do i=1,M
+           kk=kk+1
+           RMM(M18+kk-1)=X(i,M2+k)
+         enddo
+       enddo
 c
 c Construction of new density matrix and comparison with old one
 c
-      kk=0
+       kk=0
 c
-      do j=1,M
-        do i=j,M
-          kk=kk+1
-          tmp=RMM(kk)
-          RMM(kk)=0.
-          if(i.eq.j) then
-           ff=2.D0
-          else
-           ff=4.D0
-          endif
+       do j=1,M
+         do i=j,M
+           kk=kk+1
+           tmp=RMM(kk)
+           RMM(kk)=0.
+           if(i.eq.j) then
+             ff=2.D0
+           else
+             ff=4.D0
+           endif
 
-          do k=1,NCO
-            RMM(kk)=RMM(kk)+ff*X(i,M2+k)*X(j,M2+k)
-          enddo
-          del=RMM(kk)-tmp
-          if (i.ne.j) then
-            del=del*sq2
-          endif
-          good=good+del**2
-        enddo
-      enddo
+           do k=1,NCO
+             RMM(kk)=RMM(kk)+ff*X(i,M2+k)*X(j,M2+k)
+           enddo
+           del=RMM(kk)-tmp
+           if (i.ne.j) then
+             del=del*sq2
+           endif
+           good=good+del**2
+         enddo
+       enddo
 c
-      good=sqrt(good)/float(M)
+       good=sqrt(good)/float(M)
 
 c        if (SHFT) then
 c Level Shifting
         
-        do i=1,M
-          do j=1,M
-            X(i,j)=X(i,M2+j)
-          enddo
-        enddo
-      endif
+       do i=1,M
+         do j=1,M
+           X(i,j)=X(i,M2+j)
+         enddo
+       enddo
+c       endif
 c
-      if (SHFT) then
-        DAMP=0.0D0
-      endif
+       if (SHFT) then
+         DAMP=0.0D0
+       endif
 *
 c--- Damping factor update - 
-      DAMP=DAMP0
-      IDAMP=0
-      if (IDAMP.EQ.1) then
-        DAMP=DAMP0
-        if (abs(D1).lt.1.D-5) then
-          fac=dmax1(0.90D0,abs(D1/D2))
-          fac=dmin1(fac,1.1D0)
-          DAMP=DAMP0*fac
-        endif
+       DAMP=DAMP0
+       IDAMP=0
+       if (IDAMP.EQ.1) then
+         DAMP=DAMP0
+         if (abs(D1).lt.1.D-5) then
+           fac=dmax1(0.90D0,abs(D1/D2))
+           fac=dmin1(fac,1.1D0)
+           DAMP=DAMP0*fac
+         endif
 c
-        E=E1+E2+En
-        E=E+Es
+         E=E1+E2+En
+         E=E+Es
 c
-          D2=D1
-          D1=(E-E0)
+         D2=D1
+         D1=(E-E0)
 c
-          E0=E
-          DAMP0=DAMP
-        endif
+         E0=E
+         DAMP0=DAMP
+       endif
 c
-        E=E1+E2+En
-        E=E+Es
+       E=E1+E2+En
+       E=E+Es
 c
-        call g2g_timer_stop('otras cosas')
+       call g2g_timer_stop('otras cosas')
 
 c       if(verbose) 
           write(6,*) 'iter',niter,'QM Energy=',E+Ex
           write(*,300) niter,DAMP,E
           write(*,"(A,X,F23.16,X,F23.16,X,F23.16,X,F23.16,X,F23.16)")
      >           'En,E1,E2,Ex,Etotal',En,E1,E2,Ex,E1+E2+En+Ex
-        endif
+c        endif
 c
         call g2g_timer_stop('Total iter')
  999  continue
@@ -977,28 +980,28 @@ c       if (ipop.eq.1) then
       call int1(En)
 c
 c--------------------------------------------------------------
-        do n=1,natom
-          q(n)=Iz(n)
+      do n=1,natom
+        q(n)=Iz(n)
+      enddo
+c
+      do i=1,M
+        do j=1,i-1
+          kk=i+(M2-j)*(j-1)/2
+          t0=RMM(kk)*RMM(M5+kk-1)/2.D0
+          q(Nuc(i))=q(Nuc(i))-t0
         enddo
 c
-        do i=1,M
-          do j=1,i-1
-            kk=i+(M2-j)*(j-1)/2
-            t0=RMM(kk)*RMM(M5+kk-1)/2.D0
-            q(Nuc(i))=q(Nuc(i))-t0
-          enddo
+        kk=i+(M2-i)*(i-1)/2
+        t0=RMM(kk)*RMM(M5+kk-1)
+        q(Nuc(i))=q(Nuc(i))-t0
 c
-          kk=i+(M2-i)*(i-1)/2
-          t0=RMM(kk)*RMM(M5+kk-1)
+        do j=i+1,M
+          kk=j+(M2-i)*(i-1)/2
+          t0=RMM(kk)*RMM(M5+kk-1)/2.D0
           q(Nuc(i))=q(Nuc(i))-t0
-c
-          do j=i+1,M
-            kk=j+(M2-i)*(i-1)/2
-            t0=RMM(kk)*RMM(M5+kk-1)/2.D0
-            q(Nuc(i))=q(Nuc(i))-t0
-          enddo
         enddo
       enddo
+c      enddo
 c
         write(85,*) 'MULLIKEN POPULATION ANALYSIS'
         write(85,770)

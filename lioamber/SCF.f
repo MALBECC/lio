@@ -12,7 +12,7 @@ c      use qmmm_module, only : qmmm_struct, qmmm_nml
 c
       implicit real*8 (a-h,o-z)
       integer:: l
-       dimension q(natom),work(1000)
+       dimension q(natom),work(1000),IWORK(1000)
        REAL*8 , intent(inout)  :: dipxyz(3) 
        real*8, dimension (:,:), ALLOCATABLE ::xnano,znano
        real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15,rmm13,
@@ -28,6 +28,12 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
         INTEGER :: ErrID,iii,jjj
         LOGICAL :: docholesky
         REAL*8,ALLOCATABLE :: MatrixVec(:),TestMatrix(:)
+        REAL*8,ALLOCATABLE :: WORK2(:)
+        INTEGER, ALLOCATABLE :: IWORK2(:),IPIV(:)
+
+#ifdef magma
+       call magmaf_init()
+#endif
 
       call g2g_timer_start('SCF')
       just_int3n = .false.
@@ -167,7 +173,34 @@ c Diagonalization of S matrix, after this is not needed anymore
 c
       docholesky=.true.
       call g2g_timer_start('cholesky')
+
       IF (docholesky) THEN
+#ifdef magma
+        PRINT*,'DOING CHOLESKY'
+
+        ALLOCATE(Y(M,M),Ytrans(M,M))
+        DO iii=1,M;DO jjj=1,M
+          Y(iii,jjj)=0
+          IF (jjj.LE.iii) THEN
+            iiindex=iii+(2*M-jjj)*(jjj-1)/2
+            Y(iii,jjj)=RMM(M5+iiindex-1)
+          ENDIF
+        ENDDO;ENDDO
+
+        CALL MAGMAF_DPOTRF('L',M,Y,M,ErrID)
+
+          Ytrans= transpose(Y)
+        ALLOCATE(Xtrans(M,M))
+          Xtrans=Y
+        CALL MAGMAF_DTRTRI('L','N',M,Xtrans,M,ErrID)
+        if(ErrID.ne.0) STOP ('Error in cholesky decomp.')
+        xnano= transpose(Xtrans)
+        do i=1,M;doj=1,M
+        X(i,j)=Xnano(i,j)
+        enddo;enddo
+        PRINT*,'CHOLESKY MAGMA'
+
+#else
         PRINT*,'DOING CHOLESKY'
         ALLOCATE(MatrixVec(MM))
         DO iii=1,MM
@@ -197,7 +230,9 @@ c
         ENDDO;ENDDO
 
         DEALLOCATE(MatrixVec)
-        PRINT*,'CHOLESKY DONE'
+
+ 
+#endif
       ELSE
 
 
@@ -212,7 +247,9 @@ c        write(56,*) RMM(M15+1)
 c
 c LAPACK OPTION -----------------------------------------
 #ifdef pack
-        call dspev('V','L',M,RMM5,RMM13,X,M,RMM15,info)
+c       call magmaf_dsyev('V','L',M,xxx,M,
+
+       call dspev('V','L',M,RMM5,RMM13,X,M,RMM15,info)
 #endif
 c-----------------------------------------------------------
 c 
@@ -698,15 +735,15 @@ c----------Cálculo de parámetro optimo para DGELS-------------------
 *
 *
         LWORK = -1
-      CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT, ndiist+1,
-     > bcoef, ndiist+1, WORK, LWORK, INFO )
+      CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT, 
+     >ndiist+1, bcoef, ndiist+1, WORK, LWORK, INFO )
         LWORK = MIN( 1000, INT( WORK( 1 ) ) )
 
 
 c-----Resuelve la ecuación A*X = B. (EMAT*ci=bcoef). La solución la escribe en bcoef------
 
-      CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT, ndiist+1,
-     > bcoef, ndiist+1, WORK, LWORK, INFO )
+      CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT, 
+     > ndiist+1, bcoef, ndiist+1, WORK, LWORK, INFO )
 
 c--------Construccion de la "nueva" matriz de fock como cl de las anteriores--------------
 c--------Eventualmente se puede probar con la matriz densidad-----------------------------
@@ -723,7 +760,15 @@ c--------Eventualmente se puede probar con la matriz densidad-------------------
           call g2g_timer_stop('diis')
         endif
       endif
-
+c-------nano tratando de usar magma
+      fock=0
+      do j=1,M
+        do k=1,j
+         i=j+(M2-k)*(k-1)/2
+         fock(j,k)=RMM(M5+i-1)
+        enddo
+      enddo
+c---------------------
   
        call g2g_timer_start('dspev')
 c ESSL OPTION ---------------------------------------------------
@@ -733,9 +778,35 @@ c ESSL OPTION ---------------------------------------------------
 c
 c LAPACK OPTION -----------------------------------------
 #ifdef pack
-       call dspev('V','L',M,RMM(M5),RMM(M13),X(1,M+1),M,RMM(M15),info)
+#ifdef magma
+       LWORK=-1
+      call magmaf_dsyevd('V','L',M,fock,M,RMM(M13),WORK,LWORK
+     > ,IWORK,LWORK,info)
+
+       LWORK=work(1)
+      LIWORK=IWORK(1)
+
+      if(allocated(WORK2)) deallocate (WORK2,IWORK2)  
+
+       allocate (WORK2(LWORK),IWORK2(LIWORK))
+
+
+      call magmaf_dsyevd('V','L',M,fock,M,RMM(M13),WORK2,LWORK
+     > ,IWORK2,LIWORK,info)
+#else
+       call dspev('V','L',M,RMM(M5),RMM(M13),X(1,M+1),
+     > M,RMM(M15),info)
+#endif
 #endif
        call g2g_timer_stop('dspev')
+c       do ik=1,M
+c         do jk=1,M
+c         write(45,*) X(ik,M+jk),fock(ik,jk)
+c
+c
+c         enddo
+c
+c       enddo
        call g2g_timer_start('coeff')
 
 c-----------------------------------------------------------
@@ -750,6 +821,20 @@ c new coefficients
          enddo
       enddo
 c
+#ifdef magma
+
+        do i=1,M
+        do j=1,M
+          X(i,M2+j)=0.D0
+          do k=1,M
+            X(i,M2+j)=X(i,M2+j)+xnano(k,i)*fock(k,j)
+          enddo
+        enddo
+      enddo
+
+
+
+#else
       do i=1,M
         do j=1,M
           X(i,M2+j)=0.D0
@@ -758,7 +843,7 @@ c
           enddo
         enddo
       enddo
- 
+#endif
       call g2g_timer_stop('coeff') 
       call g2g_timer_start('otras cosas')
 c
@@ -770,6 +855,7 @@ c
         do i=1,M
           kk=kk+1
           RMM(M18+kk-1)=X(i,M2+k)
+          xnano(k,i)  = X(i,M2+k)
         enddo
       enddo
 c
@@ -789,7 +875,8 @@ c
           endif
 
           do k=1,NCO
-            RMM(kk)=RMM(kk)+ff*X(i,M2+k)*X(j,M2+k)
+c            RMM(kk)=RMM(kk)+ff*X(i,M2+k)*X(j,M2+k)
+            RMM(kk)=RMM(kk)+ff*Xnano(k,i)*Xnano(k,j)
           enddo
           del=RMM(kk)-tmp
           if (i.ne.j) then
@@ -1046,6 +1133,7 @@ c      endif
 
       deallocate (kkind,kkinds)
       deallocate(cool,cools)
+      if(allocated(WORK2)) deallocate (WORK2)  
       
 c       E=E*627.509391D0 
 

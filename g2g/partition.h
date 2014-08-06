@@ -135,11 +135,9 @@ class Partition {
     {
       double cubes_energy = 0, spheres_energy = 0;
 
-      long long int accumulated_size=0;
       for (std::list<Cube*>::const_iterator it = cubes.begin(); it != cubes.end(); ++it)
       {
         (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy, fort_forces_ptr);
-//        printf("\t\t\t\t So far %luKb\n",accumulated_size/1024);
       }
 
       for (std::list<Sphere*>::const_iterator it = spheres.begin(); it != spheres.end(); ++it)
@@ -147,8 +145,6 @@ class Partition {
         (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, spheres_energy, fort_forces_ptr);
       }
 
-//      std::cout << "cubes XC energy: " << cubes_energy << std::endl;
-//      std::cout << "spheres XC energy: " << spheres_energy << std::endl;
       *fort_energy_ptr = cubes_energy + spheres_energy;
       if(*fort_energy_ptr != *fort_energy_ptr) {
           std::cout << "I see dead peaple " << std::endl;

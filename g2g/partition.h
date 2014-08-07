@@ -150,6 +150,12 @@ class Partition {
 //      std::cout << "cubes XC energy: " << cubes_energy << std::endl;
 //      std::cout << "spheres XC energy: " << spheres_energy << std::endl;
       *fort_energy_ptr = cubes_energy + spheres_energy;
+           if(*fort_energy_ptr != *fort_energy_ptr) {
+             std::cout << "I see dead peaple " << std::endl;
+             cudaDeviceReset();
+          exit(0);
+       }
+
     }
 
     void regenerate(void);

@@ -3,7 +3,7 @@ c DIRECT VERSION
 c Calls all integrals generator subroutines : 1 el integrals,
 c 2 el integrals, exchange fitting , so it gets S matrix, F matrix
 c and P matrix in lower storage mode ( symmetric matrices)
-c
+c 
 c Dario Estrin, 1992
 c---------------------------------------------------
        subroutine SCF(E,dipxyz)
@@ -18,7 +18,7 @@ c
        real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15,rmm13,
      >   bcoef, suma, FP_PFv
        real*8, dimension (:,:), allocatable :: fock,fockm,rho,FP_PF,
-     >   FP_PFm,EMAT,Y,Ytrans,Xtrans,rho1,EMAT2
+     >   FP_PFm,EMAT,Y,Ytrans,Xtrans,rho1,EMAT2,xmm
 c
        integer ndiist
 c       dimension d(natom,natom)
@@ -28,7 +28,17 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
         INTEGER :: ErrID,iii,jjj
         LOGICAL :: docholesky
         REAL*8,ALLOCATABLE :: MatrixVec(:),TestMatrix(:)
-
+!! CUBLAS
+#ifdef cublas
+        integer sizeof_real
+        parameter(sizeof_real=8)
+        integer stat
+        integer*8 devPtrX, devPtrY
+        external CUBLAS_INIT, CUBLAS_SET_MATRIX
+        external CUBLAS_SHUTDOWN, CUBLAS_ALLOC
+        integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX
+#endif
+!!
       call g2g_timer_start('SCF')
       just_int3n = .false.
        alloqueo = .true.
@@ -227,7 +237,7 @@ c LAPACK OPTION -----------------------------------------
 c-----------------------------------------------------------
 c 
 c LINEAR DEPENDENCY ELIMINATION
-         allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
+         allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M),xmm(M,M))
 c
          do i=1,MM
          RMM(M5+i-1)=rmm5(i)
@@ -257,6 +267,24 @@ c        write(56,*) RMM(M15+1)
         ENDIF                   
 
        call g2g_timer_stop('cholesky')
+!! CUBLAS ---------------------------------------------------------------------!
+#ifdef cublas
+            stat = CUBLAS_ALLOC(M*M, sizeof_real, devPtrX)
+            stat = CUBLAS_ALLOC(M*M, sizeof_real, devPtrY)
+            if (stat.NE.0) then
+            write(*,*) "X and/or Y memory allocation failed"
+            call CUBLAS_SHUTDOWN
+            stop
+            endif
+            stat = CUBLAS_SET_MATRIX(M,M,sizeof_real,X,M,devPtrX,M)
+            stat = CUBLAS_SET_MATRIX(M,M,sizeof_real,Y,M,devPtrY,M)
+            if (stat.NE.0) then
+            write(*,*) "X and/or Y setting failed"
+            call CUBLAS_SHUTDOWN
+            stop
+            endif
+#endif
+!------------------------------------------------------------------------------!
 
 c
 c CASE OF NO STARTING GUESS PROVIDED, 1 E FOCK MATRIX USED
@@ -462,11 +490,20 @@ c
 c
              enddo
         enddo
-
-
-         call matmulnano(rho,Y,rho1,M)
-          rho=rho1
-
+#ifdef cublas
+           call g2g_timer_start('cumatmul')
+           call cumxtf(rho,devPtrY,rho,M)
+           call cumfx(rho,devPtrY,rho,M)
+           call g2g_timer_stop('cumatmul')
+#else
+! with matmul:
+       rho=matmul(ytrans,rho)
+       rho=matmul(rho,y)
+! with matmulnanoc
+!            call matmulnanoc(rho,Y,rho,M)
+!            rho=rho1
+!--------------------------------------!
+#endif
 c 
 c------------Ahora tenemos rho transformado en la base ON y en forma cuadrada-----------------------------
 c-------------------------Escritura de fock cuadrada--------------------------------------
@@ -485,10 +522,13 @@ c
         enddo
         enddo
 
-
+#ifdef cublas
+            call cumxtf(fock,devPtrX,fock,M)
+            call cumfx(fock,DevPtrX,fock,M)
+#else
          call matmulnano(fock,X,rho1,M)
           fock=rho1                     ! RHO1 lo uso como scratch
-
+#endif
 
 
 c--------------En este punto ya tenemos F transformada en base de ON y en su forma cuadrada-----
@@ -517,8 +557,11 @@ c--rho(j,k) y fock(j,k) son las matrices densidad y de fock respect (forma cuadr
 
 c---------Calculo de conmutadores [F,P]-------------------------------------------
  
-
+#ifdef cublas
+         call cuconmut_r(fock,rho,FP_PF,M)
+#else
          call conmut(fock,rho,FP_PF,M)
+#endif
 
 c---------Pasar Conmutador a vector (guardamos la media matriz de abajo)------------------------------------------------
 c#######OJO, SAQUE EL -1########
@@ -563,42 +606,76 @@ c
  137   RMM(kk2)=RMM(kk)
 c
 c
-        do i=1,M
-        do j=1,M
-        X(i,M+j)=0.D0
-        xnano(i,j)=X(j,i)
-        enddo
-        enddo     
-
-
-        do 20 j=1,M
-           do i=1,M
-             X(i,M+j)=0.D0
-           enddo
-         do 22 k=1,j
-         do 22 i=1,M
-        X(i,M+j)=X(i,M+j)+Xnano(i,k)*RMM(M5+j+(M2-k)*(k-1)/2-1)
-  22     continue
+!----Fijarse si esto esta bien hecho!!
+!        do i=1,M
+!        do j=1,M
+!        X(i,M+j)=0.D0
+!        xnano(i,j)=X(j,i)
+!        enddo
+!        enddo     
+!
+!
+!        do 20 j=1,M
+!           do i=1,M
+!             X(i,M+j)=0.D0
+!           enddo
+!         do 22 k=1,j
+!         do 22 i=1,M
+!        X(i,M+j)=X(i,M+j)+Xnano(i,k)*RMM(M5+j+(M2-k)*(k-1)/2-1)
+!  22     continue
+!c
+!         do 23 k=j+1,M
+!         do 23 i=1,M
+!  23     X(i,M+j)=X(i,M+j)+Xnano(i,k)*RMM( M5+k+(M2-j)*(j-1)/2-1)
 c
-         do 23 k=j+1,M
-         do 23 i=1,M
-  23     X(i,M+j)=X(i,M+j)+Xnano(i,k)*RMM( M5+k+(M2-j)*(j-1)/2-1)
-c
-  20     continue
-c
-         kk=0
-        do i=1,M
-        do k=1,M
-        xnano(k,i)=X(i,M+k)
-        enddo
-        enddo
-        do 30 j=1,M
-        do 30 i=j,M
-         kk=kk+1
-         RMM(M5+kk-1)=0.D0
-        do 32 k=1,M
- 32      RMM(M5+kk-1)=RMM(M5+kk-1)+Xnano(k,i)*X(k,j)
- 30     continue
+!  20     continue
+!c
+!         kk=0
+!        do i=1,M
+!        do k=1,M
+!        xnano(k,i)=X(i,M+k)
+!        enddo
+!        enddo
+!        do 30 j=1,M
+!        do 30 i=j,M
+!         kk=kk+1
+!         RMM(M5+kk-1)=0.D0
+!        do 32 k=1,M
+! 32      RMM(M5+kk-1)=RMM(M5+kk-1)+Xnano(k,i)*X(k,j)
+! 30     continue
+!------------------------------------------------------------------------------!
+! Here we obtain the fock matrix in the molecular orbital (MO) basis.
+! where U matrix with eigenvectors of S , and s is vector with
+! eigenvalues
+            call g2g_timer_start('fock')
+            do j=1,M
+              do k=1,j
+                 fock(k,j)=RMM(M5+j+(M2-k)*(k-1)/2-1)
+              enddo
+              do k=j+1,M
+                 fock(k,j)=RMM(M5+k+(M2-j)*(j-1)/2-1)
+              enddo
+            enddo
+#ifdef cublas
+            call cumxtf(fock,devPtrX,fock,M)
+            call cumfx(fock,DevPtrX,fock,M)
+#else
+            fock=matmul(xtrans,fock)
+            fock=matmul(fock,xmm)
+#endif
+            call g2g_timer_stop('fock')
+!
+c Fock triangular matrix contained in RMM(M5,M5+1,M5+2,...,M5+MM) is copied to square matrix fock.
+            do j=1,M
+               do k=1,j
+                  RMM(M5+j+(M2-k)*(k-1)/2-1)=fock(j,k)
+               enddo
+               do k=j+1,M
+                  RMM(M5+k+(M2-j)*(j-1)/2-1)=fock(j,k)
+               enddo
+            enddo
+c Now fock is stored in molecular orbital basis.
+!-----------------------------------------------!
        endif
 c
 c now F contains transformed F
@@ -627,7 +704,6 @@ c----------Si hagodiis(ver mas arriba) es true entonces sigo--------------------
 c        write(*,*) 'good < dgtrig DIIS!!! PARA LA SIGUIENTE ITERACION'
        call g2g_timer_start('diis')
 c--------Pasar columnas de FP_PFm a matrices y multiplicarlas y escribir EMAT-------
-
            if(DIIS) then
              deallocate(EMAT)
              allocate(EMAT(ndiist+1,ndiist+1))
@@ -668,10 +744,11 @@ c-------Escribimos en xnano y znano dos conmutadores de distintas iteraciones---
                      znano(i,j)=FP_PFm(j+(M2-i)*(i-1)/2,kknueva)
                    enddo
                 enddo
-
-              call matmuldiag(xnano,znano,rho1,M)
-c              xnano=matmul(xnano,znano)
-
+#ifdef cublas
+                   call cumatmul_r(xnano,znano,rho1,M)
+#else
+                   call matmuldiag(xnano,znano,rho1,M)
+#endif
                    EMAT(ndiist,kk)=0.
                    if(kk.ne.ndiist) EMAT(kk,ndiist)=0.
                    do l=1,M
@@ -876,7 +953,10 @@ c       goto 995
         noconverge = 0
         converge=converge+1
       endif
-
+#ifdef cublas
+         call CUBLAS_FREE ( devPtrX )
+         call CUBLAS_FREE ( devPtrY )
+#endif
         old3=old2
 
         old2=old1
@@ -1065,7 +1145,7 @@ c-------------------------------------------------
 c      endif
        if(DIIS) then
        deallocate (Y,Ytrans,Xtrans,fock,fockm,rho,FP_PF,FP_PFv,FP_PFm,
-     > znano,EMAT, bcoef, suma,rho1)
+     > znano,EMAT, bcoef, suma,rho1,xmm)
        endif
        deallocate (xnano,rmm5,rmm13,rmm15)
 

@@ -61,7 +61,11 @@ dirs:
 
 liblio-g2g.so: dirs $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o)
 	ifort -shared -fPIC -o $@ $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o) $(LIBS)
-
+liocublas: dirs
+	cd cublas
+	make
+	cd ../ 
+	ifort -shared -fPIC -Dcublas -o $@ $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o) $(LIBS)
 
 ## Targets: clean ##
 clean:

@@ -36,7 +36,7 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
 #endif
 
       call g2g_timer_start('SCF'//CHAR(0))
-      just_int3n = .false.
+c      just_int3n = .false.
       alloqueo = .true.
       ematalloc=.false.
       hagodiis=.false.
@@ -709,7 +709,7 @@ c              xnano=matmul(xnano,znano)
 
         allocate(EMAT2(ndiist+1,ndiist+1))
         EMAT2=EMAT
-        ematalloct=.true.
+c        ematalloct=.true.
 c********************************************************************
 c   THE MATRIX EMAT SHOULD HAVE FORM
 c

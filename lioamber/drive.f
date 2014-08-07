@@ -61,7 +61,7 @@ c
       ispin=1
       ipop=1
 C
-	icharge=0
+      icharge=0
 C
       write1=.false.
       NORM=.true.
@@ -130,9 +130,9 @@ c reads input file
       else
 c  name of output file
       ikk=1
-      do 1 while (basis(ikk:ikk).ne.' ')
+      do while (basis(ikk:ikk).ne.' ')
        ikk=ikk+1
- 1    continue
+      enddo
 c
       ikk=ikk-1
 c      name2=basis(1:ikk)//'.out'
@@ -148,9 +148,9 @@ c-------------------------------------------------------
       date='date'
       write(*,*) 'JOB STARTED NOW'
       call system(date)
-         do i=1,natom
-            done(i)=.false.
-           enddo
+      do i=1,natom
+        done(i)=.false.
+      enddo
 
 c -------------------------------------------------------------
 c for each kind of atom, given by Z
@@ -181,13 +181,13 @@ c
       M=0
       Md=0
 
-        allocate(natomc(natom),nnps(natom),nnpp(natom),nnp(natom))
-        allocate(nnpd(natom),nns(natom),nnd(natom),atmin(natom))
-        allocate(jatc(natom,natom))
-       
-         do i=1,natom
-         natomc(i)=0 
-          enddo
+      allocate(natomc(natom),nnps(natom),nnpp(natom),nnp(natom))
+      allocate(nnpd(natom),nns(natom),nnd(natom),atmin(natom))
+      allocate(jatc(natom,natom))
+     
+      do i=1,natom
+        natomc(i)=0 
+      enddo
 c
 c  BASIS SETS -------------------------------------------------
       do 25 while (whatis.ne.'endbasis')
@@ -211,16 +211,12 @@ c      write(2,*) (ncf(i),i=1,ncon)
 c      write(2,*) (lt(i),i=1,ncon)
 c
 c loop over all primitives, no repeating p, d
-      do 30 i=1,nraw
+      do i=1,nraw
        read(1,*) at(i),ct(i)
 c       write(2,700) at(i),ct(i)
 c       write(*,*) atmint,at(i)
         if(at(i).lt.atmint) atmint=at(i)
-
- 30   continue
-
-
-
+      enddo
 c
       do 35 j=1,natom
       if(Iz(j).eq.iatom.and.(.not.done(j)))then
@@ -259,41 +255,39 @@ c
 c normalization
 c
         if (NORM) then
-        do 37 l=1,ncf(k)
+          do l=1,ncf(k)
 c 
-        index=index+1
+            index=index+1
 
-        if(lt(k).eq.0) then
+            if(lt(k).eq.0) then
+              xnorm=sqrt((2.D0*at(index)/pi)**3)
+              xnorm=sqrt(xnorm)   
+              c(No,l)=ct(index)*xnorm
+              a(No,l)=at(index)
+            elseif(lt(k).eq.1) then
+
+              xnorm=sqrt((2.D0*at(index)/pi)**3)*4.D0*at(index)
+              xnorm=sqrt(xnorm)
+              c(No,l)=ct(index)*xnorm
+              a(No,l)=at(index)
+            elseif (lt(k).eq.2) then
 c
-        xnorm=sqrt((2.D0*at(index)/pi)**3)
-        xnorm=sqrt(xnorm)   
-        c(No,l)=ct(index)*xnorm
-        a(No,l)=at(index)
-        elseif(lt(k).eq.1) then
-c
-        xnorm=sqrt((2.D0*at(index)/pi)**3)*4.D0*at(index)
-        xnorm=sqrt(xnorm)
-        c(No,l)=ct(index)*xnorm
-        a(No,l)=at(index)
-        elseif (lt(k).eq.2) then
-c
-        xnorm=sqrt((2.D0*at(index)/pi)**3)*(4.D0*at(index))**2
-        xnorm=sqrt(xnorm)
-        c(No,l)=ct(index)*xnorm
-        a(No,l)=at(index)
-          endif
-c
- 37   continue
+              xnorm=sqrt((2.D0*at(index)/pi)**3)*(4.D0*at(index))**2
+              xnorm=sqrt(xnorm)
+              c(No,l)=ct(index)*xnorm
+              a(No,l)=at(index)
+            endif
+c 
+         enddo
 c
        else
 c no normalization case
 c
-       do 38 l=1,ncf(k)
-        index=index+1
-c
-        c(No,l)=ct(index)
-        a(No,l)=at(index)
- 38   continue
+         do l=1,ncf(k)
+           index=index+1
+           c(No,l)=ct(index)
+           a(No,l)=at(index)
+         enddo
 c
       endif
 c repeat the index only for p,d and f
@@ -331,10 +325,10 @@ c      write(2,*) (lt(i),i=1,ncon)
 c     
 c
 c loop over all primitives, repeating p, d
-      do 40 i=1,nraw
+      do i=1,nraw
        read(1,*) at(i),ct(i)
 c       write(2,700) at(i),ct(i)
- 40   continue
+      enddo
 c
       do 45 j=1,natom
        if (Iz(j).eq.iatom) then
@@ -386,13 +380,13 @@ c
 c
 c no normalization case
 c
-       do 48 l=1,ncf(k)
+       do l=1,ncf(k)
         index=index+1
 c
         cd(Nd,l)=ct(index)
 c       ad(Nd,l)=2.D0*at(index)
         ad(Nd,l)=at(index)
- 48   continue
+      enddo
 c
       endif
 c
@@ -464,10 +458,10 @@ c
       indexii(is)=i
       ncontx(is)=ncont(i)
 c  
-      do 12 j=1,ncontx(is)
-c
+      do j=1,ncontx(is)
        cx(is,j)=c(i,j)
-  12   ax(is,j)=a(i,j)
+       ax(is,j)=a(i,j)
+      enddo
 c
       is=is+1
       goto 44   
@@ -514,16 +508,16 @@ c
 c
 c Now, it has to put temporary things into the real one
 c
-      do 300 i=1,M
-       Nuc(i)=Nucx(i)
-       ncont(i)=ncontx(i)
+      do i=1,M
+        Nuc(i)=Nucx(i)
+        ncont(i)=ncontx(i)
 c
-       do 300 j=1,ncont(i)
-        c(i,j)=cx(i,j)
-        a(i,j)=ax(i,j)
- 300   continue
-c
-        
+        do j=1,ncont(i)
+          c(i,j)=cx(i,j)
+          a(i,j)=ax(i,j)
+        enddo
+      enddo
+
 c same process, but for electronic density basis set ------------
 c
       is=1
@@ -543,11 +537,10 @@ c
       indexiid(is)=i
       ncontx(is)=ncontd(i)
 c  
-      do 128 j=1,ncontx(is)
-c
-c
-       cx(is,j)=cd(i,j)
-  128  ax(is,j)=ad(i,j)
+      do j=1,ncontx(is)
+        cx(is,j)=cd(i,j)
+        ax(is,j)=ad(i,j)
+      enddo
 c
       is=is+1
       goto 444   
@@ -559,11 +552,10 @@ c
       indexiid(ip)=i
       ncontx(ip)=ncontd(i)
 c  
-c
-      do 213 j=1,ncontx(ip)
-c
-       cx(ip,j)=cd(i,j)
- 213   ax(ip,j)=ad(i,j)
+      do j=1,ncontx(ip)
+        cx(ip,j)=cd(i,j)
+        ax(ip,j)=ad(i,j)
+      enddo
 c
       ip=ip+1
       goto 444
@@ -575,11 +567,10 @@ c
       indexiid(id)=i
       ncontx(id)=ncontd(i)
 c  
-      do 145 j=1,ncontx(id)
-c
-c
+      do j=1,ncontx(id)
        cx(id,j)=cd(i,j)
-  145  ax(id,j)=ad(i,j)
+       ax(id,j)=ad(i,j)
+      enddo
 c
       id=id+1
       goto 444
@@ -594,15 +585,15 @@ c
 c
 c Now, it has to put temporary things into the real one
 c
-      do 301 i=1,Md
-       Nucd(i)=Nucx(i)
-       ncontd(i)=ncontx(i)
+      do i=1,Md
+        Nucd(i)=Nucx(i)
+        ncontd(i)=ncontx(i)
 c
-       do 301 j=1,ncontd(i)
-        cd(i,j)=cx(i,j)
-        ad(i,j)=ax(i,j)
- 301   continue
-
+        do j=1,ncontd(i)
+          cd(i,j)=cx(i,j)
+          ad(i,j)=ax(i,j)
+        enddo
+      enddo
 c
 c------------------------------------------------------------------
 c POINTERS --------------------------------------------
@@ -658,8 +649,6 @@ c       a01=a0/.529177D0
 c       else
 c       a01=a0
 c       endif
-       
-       
 
       if ((Iexch.ge.4).and.(.not.(integ)).and.(.not.(dens))) then
        write(*,*) 'OPTION SELECTED NOT AVAILABLE'
@@ -696,23 +685,27 @@ c
       if (.not.OPEN) then
 c reads vectors of MO coefficients, basis is in the same order as 
 c the given in input
-      do 120 l=1,M
- 120   read(89,*) (XX(l,n),n=1,NCO)
+      do l=1,M
+        read(89,*) (XX(l,n),n=1,NCO)
+      enddo
 c
 c puts vectors in dynamical allocation (to be used later)
 c
-       kk=0
-      do 121 k=1,NCO
-      do 121 i=1,M
-       kk=kk+1
- 121   RMM(M18+kk-1)=XX(indexii(i),k)
+      kk=0
+      do k=1,NCO
+        do i=1,M
+          kk=kk+1
+          RMM(M18+kk-1)=XX(indexii(i),k)
+        enddo
+      enddo
 
-      do 130 i=1,M
-      do 130 j=1,M
-c
-      do 130 k=1,NCO
-       X(i,j)=X(i,j)+2.0D0*XX(i,k)*XX(j,k)
- 130  continue
+      do i=1,M
+        do j=1,M
+          do k=1,NCO
+            X(i,j)=X(i,j)+2.0D0*XX(i,k)*XX(j,k)
+          enddo
+        enddo
+      enddo
 c
 c open shell case
       else
@@ -721,46 +714,50 @@ c
       NCOb=NCO+Nunp
       M18b=M18+M*NCOa
 c alpha
-      do 220 l=1,M
- 220    read(89,*) (XX(l,n),n=1,NCOa)
+      do l=1,M
+        read(89,*) (XX(l,n),n=1,NCOa)
+      enddo
 c
-
-       kk=M18-1
-      do 221 k=1,NCOa
-      do 221 i=1,M
-       kk=kk+1
- 221   RMM(kk)=XX(indexii(i),k)
+      kk=M18-1
+      do k=1,NCOa
+        do i=1,M
+          kk=kk+1
+          RMM(kk)=XX(indexii(i),k)
+        enddo
+      enddo
 c
 c Density Matrix
 c
-      do 331 i=1,M
-      do 331 j=1,M
-      X(i,j)=0.0D0
-c
-      do 139 k=1,NCOa
-       X(i,j)=X(i,j)+XX(i,k)*XX(j,k)
- 139  continue
- 331  continue
+      do i=1,M
+        do j=1,M
+          X(i,j)=0.0D0
+          do  k=1,NCOa
+            X(i,j)=X(i,j)+XX(i,k)*XX(j,k)
+          enddo
+        enddo
+      enddo
 c
 c beta
-      do 229 l=1,M
- 229    read(89,*) (XX(l,n),n=1,NCOb)
-c
-       kk=M18b-1
-      do 223 k=1,NCOb
-      do 223 i=1,M
-       kk=kk+1
- 223   RMM(kk)=XX(indexii(i),k)
+      do l=1,M
+        read(89,*) (XX(l,n),n=1,NCOb)
+      enddo
+      kk=M18b-1
+      do k=1,NCOb
+        do i=1,M
+          kk=kk+1
+          RMM(kk)=XX(indexii(i),k)
+        enddo
+      enddo
 c 
 c Density Matrix
 c
-      do 335 i=1,M
-      do 335 j=1,M
-c
-      do 239 k=1,NCOb
-       X(i,j)=X(i,j)+XX(i,k)*XX(j,k)
- 239  continue
- 335  continue
+      do i=1,M
+        do j=1,M
+          do k=1,NCOb
+           X(i,j)=X(i,j)+XX(i,k)*XX(j,k)
+          enddo
+        enddo
+      enddo
 c
       endif
       endif
@@ -772,75 +769,70 @@ c-----------------------------------------------------------------
 c
 c case for initial guess constructed from atomic densities -------
       if (ATRHO) then
-c
-      k1=0
-      l1=0
-      NN=0
-      do 152 i=1,NBAS
+        k1=0
+        l1=0
+        NN=0
+        do i=1,NBAS
 c
 c        read(1,nml=RHOINP)
 c
-      do 152 j=1,nnat(i)
-c
-c
-      do 150 k=1,NAO
-       k1=k1+1
-c
-      do 151 l=1,NGF
-       l1=NN+l
-c
-       kl=(k-1)*NGF+l
-c
-       XX(l1,k1)=atcoef(kl)
-       oc2(k1)=OCC(k)
- 151  continue
-c
-c
- 150  continue
-c
-      NN=NN+NGF
-
- 152  continue
-c
+          do j=1,nnat(i)
+            do k=1,NAO
+              k1=k1+1
+              do l=1,NGF
+                l1=NN+l
+                kl=(k-1)*NGF+l
+                XX(l1,k1)=atcoef(kl)
+                oc2(k1)=OCC(k)
+              enddo
+            enddo
+          NN=NN+NGF
+          enddo
+        enddo
 c 
 c------------------------------------------------------------
 c
 c
 c S used as scratch array here
-      do 118 i=1,M
-      do 118 j=1,M
-c
-      X(i,j)=0.
-      do 109 l=1,k1
-  109 X(i,j)=X(i,j)+oc2(l)*XX(i,l)*XX(j,l)
-  118 continue
+      do  i=1,M
+        do  j=1,M
+          X(i,j)=0.
+          do l=1,k1
+            X(i,j)=X(i,j)+oc2(l)*XX(i,l)*XX(j,l)
+          enddo
+        enddo
+      enddo
 c
 c approximate vectors construction
 c
       if (.not.OPEN) then
-       kk=M18-1
-      do 430 k=1,NCO
-      do 430 i=1,M
-       kk=kk+1
- 430  RMM(kk)=XX(i,k) 
-c
+        kk=M18-1
+        do k=1,NCO
+          do i=1,M
+            kk=kk+1
+            RMM(kk)=XX(i,k) 
+          enddo
+        enddo
       else
 c
-      NCOa=NCO
-      NCOb=NCO+Nunp
-      M18b=M18+M*NCOa
+        NCOa=NCO
+        NCOb=NCO+Nunp
+        M18b=M18+M*NCOa
+        kk=M18-1
+        do k=1,NCOa
+          do i=1,M
+            kk=kk+1
+            RMM(kk)=XX(indexii(i),k)
+          enddo
+        enddo
 c
-      kk=M18-1
-      do 431 k=1,NCOa
-      do 431 i=1,M
-       kk=kk+1
- 431  RMM(kk)=XX(indexii(i),k)
-c
-      kk=M18b-1
-      do 432 k=1,NCOb
-      do 432 i=1,M
-       kk=kk+1
- 432  RMM(kk)=XX(indexii(i),k)
+        kk=M18b-1
+        do k=1,NCOb
+          do i=1,M
+            kk=kk+1
+            RMM(kk)=XX(indexii(i),k)
+          enddo
+        enddo
       endif
 c
 
@@ -852,20 +844,22 @@ c
 c
 c changes to the shell order ( s , p, d....)
       k=0
-      do 119 j=1,M
-      do 119 i=j,M
-       k=k+1
-       RMM(k)=X(indexii(i),indexii(j))
- 119  continue
+      do j=1,M
+        do i=j,M
+          k=k+1
+          RMM(k)=X(indexii(i),indexii(j))
+        enddo
+      enddo
 c
       k=0
-      do 127 j=1,M
-      do 127 i=j,M
-       k=k+1
-       if (i.ne.j) then
-       RMM(k)=RMM(k)*2.D0
-       endif
- 127   continue
+      do j=1,M
+        do i=j,M
+          k=k+1
+          if (i.ne.j) then
+            RMM(k)=RMM(k)*2.D0
+          endif
+        enddo
+      enddo
 c
 c---- reads exchange fit data -------------
 c
@@ -891,7 +885,7 @@ c      VCINP=TMP2
 c--------------------------
 
 c------- G2G Initialization ---------------------
-        ntqpru=natom
+       ntqpru=natom
        ngpru=ng0*natom
 c       write(*,*) 'estoooo',ngpru, ngDyn, ng0, natom
       call g2g_parameter_init(NORM,natom,natom,ngDyn,rqm,

@@ -87,11 +87,9 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
     for (int bj = 0; bj <= min_i2; bj += DENSITY_BLOCK_SIZE)
     {
         //Density deberia ser GET_DENSITY_BLOCK_SIZE
-
         __syncthreads();
         if( bj+position<m )
         {
-
             fj_sh[position] = function_values[(m) * point + (bj+position)];
             if(!lda)
             {
@@ -102,41 +100,50 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
             }
         }
 
-
         __syncthreads();
+        scalar_type fjreg;
+        vec_type<scalar_type, 3> fgjreg;
+        vec_type<scalar_type, 3> fh1jreg;
+        vec_type<scalar_type, 3> fh2jreg;
 
         if(valid_thread)
         {
             for(int j=0; j<DENSITY_BLOCK_SIZE; j++)
             {
-                scalar_type fjreg=fj_sh[j];
+                fjreg=fj_sh[j];
 
-                //     if(!lda)
-                //     {
-
-                vec_type<scalar_type, 3> fgjreg = fgj_sh[j];
-                vec_type<scalar_type, 3> fh1jreg = fh1j_sh[j];
-                vec_type<scalar_type, 3> fh2jreg = fh2j_sh[j];
-                // }
+                if(!lda)
+                {
+                    fgjreg = fgj_sh[j];
+                    fh1jreg = fh1j_sh[j];
+                    fh2jreg = fh2j_sh[j];
+                 }
                 //fetch es una macro para tex2D
-                scalar_type rdm_this_thread = fetch(rmm_input_gpu_tex, (float)(bj+j), (float)i);
-                if(valid_thread2)
+
+                if ((bj+j) <= i)
+                {
+                    scalar_type rdm_this_thread = fetch(rmm_input_gpu_tex, (float)(bj+j), (float)i);
+                    w += rdm_this_thread * fjreg;
+
+                    if(!lda)
+                    {
+                        w3 += fgjreg* rdm_this_thread ;
+                        ww1 += fh1jreg * rdm_this_thread;
+                        ww2 += fh2jreg * rdm_this_thread;
+                    }
+                }
+
+                if(valid_thread2 && ((bj+j) <= i2))
                 {
                     scalar_type rdm_this_thread2 = fetch(rmm_input_gpu_tex, (float)(bj+j), (float)i2);
                     w2 += rdm_this_thread2 * fjreg;
+
                     if(!lda)
                     {
                         w32 += fgjreg* rdm_this_thread2 ;
                         ww12 += fh1jreg * rdm_this_thread2;
                         ww22 += fh2jreg * rdm_this_thread2;
                     }
-                }
-                w += rdm_this_thread * fjreg;
-                if(!lda)
-                {
-                    w3 += fgjreg* rdm_this_thread ;
-                    ww1 += fh1jreg * rdm_this_thread;
-                    ww2 += fh2jreg * rdm_this_thread;
                 }
 
             }

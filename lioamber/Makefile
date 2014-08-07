@@ -56,6 +56,12 @@ CFLAGS2  = $(DEBUG2) -c -cpp $(DEFINE) $(PROFILE)
 CFLAGS3  = $(DEBUG3) -c -cpp $(DEFINE) $(PROFILE)
 CPPFLAGS = -P -traditional-cpp 
 LIBS=-L/usr/lib -L/usr/lib64 -L../g2g -lg2g -lstdc++ $(PACK_LIBS) -lm -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g' 
+
+ifeq ($(magma),1)
+	DEFINE   += -Dmagma
+	LIBS     += -L$(MAGMAROOT)/lib -lmagma
+endif
+
 #eliminada   -lmkl_solver_lp64 
 
 # directories

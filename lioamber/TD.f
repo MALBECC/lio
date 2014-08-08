@@ -47,8 +47,8 @@ c       USE latom
      >   dt_magnus,dt_lpfrg
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       call g2g_timer_start('TD'//CHAR(0))
-       call g2g_timer_start('inicio'//CHAR(0))
+       call g2g_timer_start('TD')
+       call g2g_timer_start('inicio')
        just_int3n = false
        ALLOCATE(factorial(NBCH))
 !!------------------------------------!!
@@ -261,7 +261,7 @@ c s is in RMM(M13,M13+1,M13+2,...,M13+MM)
 ! matrix X's dimension is M*3M. In the first M*M terms it contains
 ! the transformation matrices and in the other M*2M terms it contains
 ! auxiliar matrices.
-            call g2g_timer_start('inicio1'//CHAR(0))
+            call g2g_timer_start('inicio1')
             do j=1,M
               if (RMM(M13+j-1).lt.1.0D-06) then
                 write(*,*) 'LINEAR DEPENDENCY DETECTED'
@@ -306,22 +306,22 @@ c s is in RMM(M13,M13+1,M13+2,...,M13+MM)
 !            call matmulnanoc(rho,Y,rho,M)
 !            rho=rho1
 !--------------------------------------!
-            call g2g_timer_start('int22'//CHAR(0))
+            call g2g_timer_start('int22')
             call int22()
-            call g2g_timer_stop('int22'//CHAR(0))
-            call g2g_timer_start('int3mmem'//CHAR(0))
+            call g2g_timer_stop('int22')
+            call g2g_timer_start('int3mmem')
             call int3mem()
             call int3mems()
-            call g2g_timer_stop('int3mmem'//CHAR(0))
+            call g2g_timer_stop('int3mmem')
 !------------------------------------------------------------------------------!
-            call g2g_timer_stop('inicio'//CHAR(0))
+            call g2g_timer_stop('inicio')
 !##############################################################################!
 ! HERE STARTS THE TIME EVOLUTION
 !##############################################################################!
             write(*,*) 'PROPAGATION'
             do 999 istep=1, ntdstep
 !--------------------------------------!
-              call g2g_timer_start('iteration'//CHAR(0))
+              call g2g_timer_start('iteration')
               t=(istep-1)*dt_lpfrg
               t=t*0.02419
               write(*,*) 'evolution time (fs)  =', t
@@ -379,7 +379,7 @@ c ELECTRIC FIELD CASE - Type=gaussian (ON)
                  xnano2(i,j)=X(j,i)
               enddo
            enddo
-           call g2g_timer_start('actualiza rmm1'//CHAR(0))
+           call g2g_timer_start('actualiza rmm1')
            do j=1,M
               do k=1,M
                  do i=1,M
@@ -387,7 +387,7 @@ c ELECTRIC FIELD CASE - Type=gaussian (ON)
                  enddo
               enddo
            enddo
-           call g2g_timer_stop('actualiza rmm1'//CHAR(0))
+           call g2g_timer_stop('actualiza rmm1')
            kk=0
            do i=1,M
               do k=1,M
@@ -551,9 +551,9 @@ c The real part of the density matrix in the atomic orbital basis is copied in R
         write(135,*) '#Time (fs) vs DIPOLE MOMENT, Y COMPONENT (DEBYES)'
         write(136,*) '#Time (fs) vs DIPOLE MOMENT, Z COMPONENT (DEBYES)'
               endif
-              call g2g_timer_start('DIPOLE'//CHAR(0)) 
+              call g2g_timer_start('DIPOLE') 
               call dip(ux,uy,uz)
-              call g2g_timer_stop('DIPOLE'//CHAR(0))
+              call g2g_timer_stop('DIPOLE')
               write(134,901) t,ux
               write(135,901) t,uy
               write(136,901) t,uz
@@ -565,7 +565,7 @@ c-------------------------------------------------------------------------------
 !       endif
 c
 c      write(*,*) 'Coulomb E',E2-Ex,Ex
-               call g2g_timer_stop('iteration'//CHAR(0))
+               call g2g_timer_stop('iteration')
                write(*,*)
  999           continue
 !
@@ -688,7 +688,7 @@ c---- DEBUGGINGS
 c      write(*,*) 'Exc, integrated and calculated',Exc,Ex
 c      write(*,*) 'Coulomb energy',E2-Ex
 c
-       call g2g_timer_stop('TD'//CHAR(0))
+       call g2g_timer_stop('TD')
        deallocate(xnano,fock,rho)
        DEALLOCATE(factorial)
 !------------------------------------------------------------------------------!

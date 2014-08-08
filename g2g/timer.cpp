@@ -135,28 +135,34 @@ void Timer::print(void) {
 Timer global_timer;
 map<string, Timer> fortran_timers;
 
-extern "C" void g2g_timer_start_(const char* timer_name) {
+extern "C" void g2g_timer_start_(const char* timer_name, unsigned int length_arg) {
 #ifdef TIMINGS
-  if (fortran_timers.find(timer_name) == fortran_timers.end()) fortran_timers[timer_name] = Timer();
+  string tname(timer_name,length_arg);
+  tname.append("\0");
+  if (fortran_timers.find(tname) == fortran_timers.end()) fortran_timers[tname] = Timer();
   Timer::sync();
-	fortran_timers[timer_name].start();
+  fortran_timers[tname].start();
 #endif
 }
 
-extern "C" void g2g_timer_stop_(const char* timer_name) {
+extern "C" void g2g_timer_stop_(const char* timer_name, unsigned int length_arg) {
 #ifdef TIMINGS
-	Timer::sync();
-  if (fortran_timers.find(timer_name) == fortran_timers.end()) cout << "no existe timer! (" << timer_name << ")" << endl;
-	fortran_timers[timer_name].stop();
-  cout << "TIMER [" << timer_name << "]: " << fortran_timers[timer_name] << endl;
+  string tname(timer_name, length_arg);
+  tname.append("\0");
+  Timer::sync();
+  if (fortran_timers.find(tname) == fortran_timers.end()) cout << "no existe timer! (" << tname << ")" << endl;
+  fortran_timers[tname].stop();
+  cout << "TIMER [" << tname << "]: " << fortran_timers[tname] << endl;
 #endif
 }
 
-extern "C" void g2g_timer_pause_(const char* timer_name) {
+extern "C" void g2g_timer_pause_(const char* timer_name, unsigned int length_arg) {
 #ifdef TIMINGS
-	Timer::sync();
-	if (fortran_timers.find(timer_name) == fortran_timers.end()) cout << "no existe timer! (" << timer_name << ")" << endl;
-  fortran_timers[timer_name].pause();
-  cout << "TIMER [" << timer_name << "]: " << fortran_timers[timer_name] << "(so far)" << endl;
+  string tname(timer_name, length_arg);
+  tname.append("\0");
+  Timer::sync();
+  if (fortran_timers.find(tname) == fortran_timers.end()) cout << "no existe timer! (" << tname << ")" << endl;
+  fortran_timers[tname].pause();
+  cout << "TIMER [" << tname << "]: " << fortran_timers[tname] << "(so far)" << endl;
 #endif
 }

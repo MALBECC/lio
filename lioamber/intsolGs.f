@@ -138,7 +138,7 @@ c 50   continue
 c
 c first loop (s|s) case -------------------------------------------
 c
-       call g2g_timer_start('ss'//CHAR(0))
+       call g2g_timer_start('ss')
 
       do 200 i=1,ns
       do 200 j=1,i
@@ -218,8 +218,8 @@ c
         endif
 c --------------------------------------------------------
  200  continue
-       call g2g_timer_stop('ss'//CHAR(0))
-       call g2g_timer_start('ps'//CHAR(0))
+       call g2g_timer_stop('ss')
+       call g2g_timer_start('ps')
 c
 c------------------------------------------------------------------
 c (p|s) case  and gradients
@@ -332,8 +332,8 @@ c
 c end nuclear attr. part ----------
        endif
  300  continue
-       call g2g_timer_stop('ps'//CHAR(0))
-       call g2g_timer_start('pp'//CHAR(0))
+       call g2g_timer_stop('ps')
+       call g2g_timer_start('pp')
 c-----------------------------------------------------------------
 c (p|p) case and gradients
       do 400 i=ns+1,ns+np,3
@@ -486,8 +486,8 @@ c
       endif
 c
  400  continue
-       call g2g_timer_stop('pp'//CHAR(0))
-       call g2g_timer_start('ds'//CHAR(0))
+       call g2g_timer_stop('pp')
+       call g2g_timer_start('ds')
 c
 c-------------------------------------------------------------------
 c (d|s) case and gradients
@@ -645,8 +645,8 @@ c
 c end nuclear attr. part ----------
        endif
  500  continue
-       call g2g_timer_stop('ds'//CHAR(0))
-       call g2g_timer_start('dp'//CHAR(0))
+       call g2g_timer_stop('ds')
+       call g2g_timer_start('dp')
 c-----------------------------------------------------------------
 c
 c (d|p) case 
@@ -891,8 +891,8 @@ c
       endif
 c
  600  continue
-       call g2g_timer_stop('dp'//CHAR(0))
-       call g2g_timer_start('dd'//CHAR(0))
+       call g2g_timer_stop('dp')
+       call g2g_timer_start('dd')
 c
 c-------------------------------------------------------------------
 c (d|d) case
@@ -1341,7 +1341,7 @@ c end nuclear attraction part --------
        endif
 c
  700  continue
-       call g2g_timer_stop('dd'//CHAR(0))
+       call g2g_timer_stop('dd')
 c       do 128 j1=1,natom
 c128     write(79,*) f(j1,1),f(j1,2),f(j1,3)
 c       do j1=natom+1,nsol+natom

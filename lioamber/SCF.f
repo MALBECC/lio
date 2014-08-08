@@ -35,7 +35,7 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
        call magmaf_init()
 #endif
 
-      call g2g_timer_start('SCF'//CHAR(0))
+      call g2g_timer_start('SCF')
 c      just_int3n = .false.
       alloqueo = .true.
       ematalloc=.false.
@@ -145,6 +145,9 @@ c Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
         nnpd(nuc(iikk))=iikk
       enddo
 
+c
+c Create integration grid for XC here; calculate point weights
+c
       call g2g_reload_atom_positions(igrid2)
 
       if (predcoef.and.npas.gt.3) then
@@ -156,11 +159,15 @@ c Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
          endif
        endif
         
+c
+c Calculate 1e part of F here (kinetic/nuc in int1, MM point charges
+c in intsol)
+c
       call int1(En)
       if(nsol.gt.0) then
-        call g2g_timer_start('intsol'//CHAR(0))
+        call g2g_timer_start('intsol')
         call intsol(E1s,Ens,.true.)
-        call g2g_timer_stop('intsol'//CHAR(0))
+        call g2g_timer_stop('intsol')
       endif
 c
 c test ---------------------------------------------------------
@@ -170,9 +177,11 @@ c test ---------------------------------------------------------
       enddo
 c
 c Diagonalization of S matrix, after this is not needed anymore
+c S = YY^T ; X = (Y^-1)^T
+c => (X^T)SX = 1
 c
       docholesky=.true.
-      call g2g_timer_start('cholesky'//CHAR(0))
+      call g2g_timer_start('cholesky')
 
       IF (docholesky) THEN
 #ifdef magma
@@ -286,11 +295,16 @@ c          write(56,*) RMM(M15+1)
 
        ENDIF                   
 
-       call g2g_timer_stop('cholesky'//CHAR(0))
+       call g2g_timer_stop('cholesky')
 
 c
 c CASE OF NO STARTING GUESS PROVIDED, 1 E FOCK MATRIX USED
+c FCe = SCe; (X^T)SX = 1
+c F' = (X^T)FX
+c => (X^-1*C)^-1 * F' * (X^-1*C) = e
 c
+
+c Calculate F' in RMM(M5)
       if((.not.ATRHO).and.(.not.VCINP).and.primera) then
         primera=.false.
         do i=1,M
@@ -318,7 +332,8 @@ c
           enddo
         enddo
 c
-c diagonalization now
+c F' diagonalization now
+c xnano will contain (X^-1)*C
 c
         do i=1,M
           RMM(M15+i-1)=0.D0
@@ -346,6 +361,7 @@ c
           enddo
         enddo
 c-----------------------------------------------------------
+c Recover C from (X^-1)*C
         do i=1,MM
           RMM(M5+i-1)=rmm5(i)
         enddo
@@ -397,14 +413,28 @@ c
         call TD()
         return
       endif
+c 
+c Precalculate two-index (density basis) "G" matrix used in density fitting
+c here (S_ij in Dunlap, et al JCP 71(8) 1979) into RMM(M7)
+c Also, pre-calculate G^-1 if G is not ill-conditioned into RMM(M9)
+c
       call int22()
 c
 **
+c
+c Precalculate three-index (two in MO basis, one in density basis) matrix
+c used in density fitting / Coulomb F element calculation here
+c (t_i in Dunlap)
+c
       if (MEMO) then
-         call g2g_timer_start('int3mem'//CHAR(0))
+         call g2g_timer_start('int3mem')
+c Large elements of t_i put into double-precision cool here
+c Size criteria based on size of pre-factor in Gaussian Product Theorem
+c (applied to MO basis indices)
          call int3mem() 
+c Small elements of t_i put into single-precision cools here
          call int3mems()
-         call g2g_timer_stop('int3mem'//CHAR(0))
+         call g2g_timer_stop('int3mem')
       endif
 ****        
 c---------------------------------------------------------------------
@@ -436,7 +466,7 @@ c-------------------------------------------------------------------
 c
 c      write(*,*) 'empiezo el loop',NMAX
       do 999 while (good.ge.told.and.niter.le.NMAX)
-       call g2g_timer_start('Total iter'//CHAR(0))
+       call g2g_timer_start('Total iter')
       niter=niter+1
        if(niter.le.ndiis) then
          ndiist=niter
@@ -447,14 +477,20 @@ c
 
 c
 c      if (MEMO) then
+c
+c Fit density basis to current MO coeff and calculate Coulomb F elements
+c
             call int3lu(E2)
+c
+c XC integration / Fock elements
+c
             call g2g_solve_groups(0,Ex,0)
 c-------------------------------------------------------
       E1=0.0D0
 c
 c REACTION FIELD CASE --------------------------------------------
 c
-        call g2g_timer_start('actualiza rmm'//CHAR(0))
+        call g2g_timer_start('actualiza rmm')
 c----------------------------------------------------------------
 c E1 includes solvent 1 electron contributions
         do k=1,MM
@@ -646,11 +682,11 @@ c constant to diagonal (virtual) elements
          enddo
        endif
 
-       call g2g_timer_stop('actualiza rmm'//CHAR(0))
+       call g2g_timer_stop('actualiza rmm')
      
 c----------Si hagodiis(ver mas arriba) es true entonces sigo-----------------------
 c        write(*,*) 'good < dgtrig DIIS!!! PARA LA SIGUIENTE ITERACION'
-       call g2g_timer_start('diis'//CHAR(0))
+       call g2g_timer_start('diis')
 c--------Pasar columnas de FP_PFm a matrices y multiplicarlas y escribir EMAT-------
 
         if(DIIS) then
@@ -757,7 +793,7 @@ c--------Eventualmente se puede probar con la matriz densidad-------------------
           do i=1,MM
             RMM(M5+i-1)=suma(i)
           enddo
-          call g2g_timer_stop('diis'//CHAR(0))
+          call g2g_timer_stop('diis')
         endif
       endif
 c-------nano tratando de usar magma
@@ -770,7 +806,7 @@ c-------nano tratando de usar magma
       enddo
 c---------------------
   
-       call g2g_timer_start('dspev'//CHAR(0))
+       call g2g_timer_start('dspev')
 c ESSL OPTION ---------------------------------------------------
 #ifdef essl
         call DSPEV(1,RMM(M5),RMM(M13),X(1,M+1),M,M,RMM(M15),M2)
@@ -798,7 +834,7 @@ c LAPACK OPTION -----------------------------------------
      > M,RMM(M15),info)
 #endif
 #endif
-       call g2g_timer_stop('dspev'//CHAR(0))
+       call g2g_timer_stop('dspev')
 c       do ik=1,M
 c         do jk=1,M
 c         write(45,*) X(ik,M+jk),fock(ik,jk)
@@ -807,7 +843,7 @@ c
 c         enddo
 c
 c       enddo
-       call g2g_timer_start('coeff'//CHAR(0))
+       call g2g_timer_start('coeff')
 
 c-----------------------------------------------------------
 c
@@ -844,8 +880,8 @@ c
         enddo
       enddo
 #endif
-      call g2g_timer_stop('coeff'//CHAR(0)) 
-      call g2g_timer_start('otras cosas'//CHAR(0))
+      call g2g_timer_stop('coeff') 
+      call g2g_timer_start('otras cosas')
 c
 c --- For the first iteration, damping on density matrix 
 c Important for the case of strating guess of AO
@@ -926,12 +962,12 @@ c
       E=E+Es
 c
 c
-      call g2g_timer_stop('otras cosas'//CHAR(0))
+      call g2g_timer_stop('otras cosas')
 
       if(verbose) write(6,*) 'iter',niter,'QM Energy=',E+Ex
 c
-      call g2g_timer_stop('Total iter'//CHAR(0))
- 999   continue
+      call g2g_timer_stop('Total iter')
+999   continue
 
       if (niter.ge.NMAX) then
         write(6,*) 'NO CONVERGENCE AT ',NMAX,' ITERATIONS'
@@ -960,7 +996,7 @@ c        write(*,*) 'good final',good
 c
 c -- SOLVENT CASE --------------------------------------
 c      if (sol) then
-        call g2g_timer_start('intsol 2'//CHAR(0))
+        call g2g_timer_start('intsol 2')
       if(nsol.gt.0) then
         call intsol(E1s,Ens,.false.)
 c        write(*,*) 'cosillas',E1s,Ens
@@ -973,7 +1009,7 @@ c--------------------------------------------------------------
        if (GRAD) then
 c         if (sol) then
 c         endif
-c       call g2g_timer_start('exchnum'//CHAR(0))
+c       call g2g_timer_start('exchnum')
 #ifdef G2G
 #ifdef ULTIMA_CPU
        call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
@@ -1168,7 +1204,7 @@ c
   45  format(E14.6E4)
   91  format(F14.7,4x,F14.7)
 c
-      call g2g_timer_stop('SCF'//CHAR(0))
+      call g2g_timer_stop('SCF');
       return
       end
 C  -------------------------                                            

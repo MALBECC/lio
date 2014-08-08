@@ -503,6 +503,10 @@ c
        Md5=5*Md
       rcond=1.0D-07
 
+c
+c CH - why call dgelss here? We only want the singular values - couldn't just
+c something like dgesvd be called without calculating singular vectors?
+c
       call dgelss(Md,Md,1,XX,Md,aux,Md,RMM(M9),rcond,irank,RMM(M10),
      >            -1,info)
       Md5=RMM(M10)

@@ -15,12 +15,21 @@ c nd ... marker for end of d
 c
 c r(Nuc(i),j) j component of position of nucleus i , j=1,3
 c Input : G ,F,  standard basis and density basis
-c F comes, computed the 1 electron part, and here the
+c F comes, computed the 1 electron part
+c
+c !!!!!!!!!!!!!!!!!!!!!! NO LONGER TRUE !!!!!!!!!!!!!!!!!!!!!!!!!!
+c  and here the
 c Coulomb part is added, without storing the integrals
 c Output: F updated with Coulomb part, also Coulomb energy
 c F also updated with exchange correlation part, also energy
 c is updated
 c this subroutine calls the fitting for exchange-correlation
+c !!!!!!!!!!!!!!!!!!!!!! NO LONGER TRUE !!!!!!!!!!!!!!!!!!!!!!!!!!
+c
+c Calculate the three-index matrix used in density fitting and 
+c Coulomb F element calculation (t_i in Dunlap, et al JCP 71(8) 1979, kind of)
+c Here the small elements (based on Gaussian Product Theorem) are stored in single-precision cools
+c
 c-----------------------------------------------------------------
       subroutine int3mems()
         use garcha_mod

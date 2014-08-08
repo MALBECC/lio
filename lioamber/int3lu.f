@@ -124,7 +124,7 @@ c end ------------------------------------------------
       sq3=1.D0
       endif
 
-      call g2g_timer_start('principio int3lu'//CHAR(0))
+      call g2g_timer_start('principio int3lu')
 c
       do 1 l=1,3
  1     Ll(l)=l*(l-1)/2
@@ -160,7 +160,7 @@ c            Rc(k) = Rc(k) + RMM(kk)*cool((kk-1)*Md+k)
 c         enddo
 c      enddo
 
-       call g2g_timer_stop('principio int3lu'//CHAR(0))
+       call g2g_timer_stop('principio int3lu')
 *
 *
 c
@@ -197,7 +197,7 @@ c
       M12=M10+Md
       Md3=3*Md
 
-      call g2g_timer_start('dgelss'//CHAR(0))
+      call g2g_timer_start('dgelss')
 c ESSL OPTION ------------------------
 #ifdef essl
       CALL DGESVF(2,X,Md,RMM(M9),Md,1,RMM(M10),
@@ -222,7 +222,7 @@ c
 c
 c
 #endif
-      call g2g_timer_stop('dgelss'//CHAR(0))
+      call g2g_timer_stop('dgelss')
 c
 c END SVD PART --
 c
@@ -405,7 +405,7 @@ c
 ****
 ****
 
-         call g2g_timer_start('int3lu'//CHAR(0))
+         call g2g_timer_start('int3lu')
           if (open) then       
          do kk=1,kknumd
               iikk=(kk-1)*Md
@@ -441,7 +441,7 @@ c
 
          endif
 
-         call g2g_timer_stop('int3lu'//CHAR(0))
+         call g2g_timer_stop('int3lu')
 
 
 
@@ -459,7 +459,7 @@ c
        NCOa=NCO
        NCOb=NCO+Nunp
 c       write(957,*) 'int3lu'
-c       call g2g_timer_start('exchfock'//CHAR(0))
+c       call g2g_timer_start('exchfock')
 c        write(*,*) 'que pasa 2?'
 #ifdef G2G
 c       call g2g_solve_groups(0,0,0)
@@ -474,7 +474,7 @@ c        enddo
 c      enddo
 
 #endif
-c       call g2g_timer_stop('exchfock'//CHAR(0))
+c       call g2g_timer_stop('exchfock')
       
        Ndens=Ndens+1
        endif

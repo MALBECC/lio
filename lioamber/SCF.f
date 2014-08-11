@@ -760,15 +760,6 @@ c--------Eventualmente se puede probar con la matriz densidad-------------------
           call g2g_timer_stop('diis')
         endif
       endif
-c-------nano tratando de usar magma
-      fock=0
-      do j=1,M
-        do k=1,j
-         i=j+(M2-k)*(k-1)/2
-         fock(j,k)=RMM(M5+i-1)
-        enddo
-      enddo
-c---------------------
   
        call g2g_timer_start('dspev')
 c ESSL OPTION ---------------------------------------------------
@@ -779,6 +770,16 @@ c
 c LAPACK OPTION -----------------------------------------
 #ifdef pack
 #ifdef magma
+c-------nano tratando de usar magma
+      if(.not.allocated) allocate (fock(M,M))
+      fock=0
+      do j=1,M
+        do k=1,j
+         i=j+(M2-k)*(k-1)/2
+         fock(j,k)=RMM(M5+i-1)
+        enddo
+      enddo
+c---------------------
        LWORK=-1
       call magmaf_dsyevd('V','L',M,fock,M,RMM(M13),WORK,LWORK
      > ,IWORK,LWORK,info)

@@ -152,8 +152,9 @@ c        write(*,*) 'que pasa?'
        do iikk=M,nshell(0)+nshell(1)+1,-1
          nnpd(nuc(iikk))=iikk
        enddo
-      
-      call g2g_reload_atom_positions(igrid2)
+ 
+       call g2g_reload_atom_positions(igrid2)
+
 c
 c H H core, 1 electron matrix elements
 c
@@ -317,6 +318,7 @@ c
 c Density Matrix
 c alpha and beta coefficients set equal
 c
+
         kk=0
         do k=1,NCOa
           do i=1,M

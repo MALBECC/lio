@@ -190,6 +190,7 @@ void compute_new_grid(const unsigned int grid_type) {
 		break;
 	}	
 
+
   	Timer t_grilla;
   	t_grilla.start_and_sync();
   	partition.regenerate();
@@ -201,7 +202,9 @@ void compute_new_grid(const unsigned int grid_type) {
   	//if (fortran_vars.do_forces) cout << "<===== computing all functions [forces] =======>" << endl;
   	//else cout << "<===== computing all functions =======>" << endl;
 
+
   	partition.compute_functions(fortran_vars.do_forces, fortran_vars.gga);
+ 
 #endif
 }
 //==============================================================================================================
@@ -214,7 +217,7 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
 		double3 pos = make_double3(fortran_vars.atom_positions_pointer(i, 0), fortran_vars.atom_positions_pointer(i, 1), fortran_vars.atom_positions_pointer(i, 2));
 		fortran_vars.atom_positions(i) = pos;
 		atom_positions(i) = make_float3(pos.x, pos.y, pos.z);
-    //cout << atom_positions(i) << endl;
+//    cout << atom_positions(i) << endl;
 	}
   
 #if !CPU_KERNELS
@@ -224,7 +227,6 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
   	G2G::gpu_set_atom_positions(atom_positions);
 #endif
 #endif
-
 	compute_new_grid(grid_type);
 }
 //==============================================================================================================

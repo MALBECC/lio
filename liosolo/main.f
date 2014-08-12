@@ -149,7 +149,7 @@ c--------------------------------------------------------
        call drive(ng2,ngDyn,ngdDyn)
 c--------------------------------------------------------
        if(OPEN) then
-         call SCFOP(escf)
+         call SCFOP(escf,dipxyz)
        else
          call SCF(escf,dipxyz)
        endif

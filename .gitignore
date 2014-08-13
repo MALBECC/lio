@@ -9,7 +9,6 @@ g2g/*/*.o
 g2g/*/*.cu_o
 test/*/*.orb
 test/*/*.out
-test/*/gpu_options*
 dtest/*/*.xyz
 *.swp
 ecuaciones.pdf
@@ -20,5 +19,8 @@ fort.*
 /g2g/nbproject/private/
 *.so
 *~
+mulliken
+qm.xyz
+salida
 lioamber/*.mod
 liosolo/liosolo

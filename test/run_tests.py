@@ -133,8 +133,8 @@ def run_tests(dirs_with_tests):
         print_test_summary(out_summary, ok_summary)
         if not acceptable(out_summary, ok_summary):
             print "\tFailed because not acceptable result"
-
-        print "\tPassed\n"
+        else:
+            print "\tPassed\n"
 
 if __name__ == '__main__':
     filterrx = ".*"

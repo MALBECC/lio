@@ -8,15 +8,18 @@
 template<class scalar_type>
 __global__ void gpu_update_rmm(scalar_type* factors, uint points, scalar_type* rmm, scalar_type* function_values, uint m)
 {
-    // skip computation on blocks outside of the valid triangle
-    if (blockIdx.x * blockDim.x > blockIdx.y * blockDim.y) return;
+    // Figure out where our block is in the lower triangle
+    // We get 1D index k = blockIdx.x; column 1 value of k in row j is always k_1 = j*(j+1); solving for j gives determinant 1+8*k_1
+    // Thus, 1+8*k_1 must be square of (odd) integer; take sqrt(1+8*k) and get first odd integer below it - get row and column from there
+    uint n = int(sqrtf(1.0f+8.0f*blockIdx.x));
+    n -= (1 - n % 2);
+    uint block_j = (n - 1) / 2;
+    uint block_i = blockIdx.x - (block_j + 1) * block_j / 2;
 
-    uint3 pos = index(blockDim, blockIdx, threadIdx);
-
-    uint i = pos.x; // columna
-    uint j = pos.y; // fila
-    uint first_fi = blockIdx.x * blockDim.x;
-    uint first_fj = blockIdx.y * blockDim.y;
+    uint first_fi = block_i*blockDim.x;
+    uint first_fj = block_j*blockDim.y;
+    uint i = first_fi + threadIdx.x;
+    uint j = first_fj + threadIdx.y;
 
     bool valid_thread = (i < m && j < m && i <= j); // quiero triangulo inferior solamente TODO: sacar esto
 

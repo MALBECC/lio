@@ -142,6 +142,6 @@ if __name__ == '__main__':
         filterrx = sys.argv[1]
 
     subdirs = list(os.walk('.'))[0][1]
-    dirs_with_tests = sorted([d for d in subdirs if re.match(filterrx,d)])
+    dirs_with_tests = sorted([d for d in subdirs if re.search(filterrx,d)])
 
     run_tests(dirs_with_tests)

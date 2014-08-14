@@ -2,7 +2,6 @@
 #include <limits>
 #include <fstream>
 #include <vector>
-#include <cuda_runtime.h>
 #include <cmath>
 #include <algorithm>
 #include "common.h"
@@ -137,9 +136,9 @@ size_t PointGroup<scalar_type>::size_in_gpu() const
     uint single_matrix_cost = COALESCED_DIMENSION(number_of_points) * total_functions();
 
     total_cost += single_matrix_cost;       //1 scalar_type functions
-    if (fortran_vars.do_forces || fortran_vars.gga) 
-      total_cost += (single_matrix_cost*4); //4 vec_type gradient 
-    if (fortran_vars.gga) 
+    if (fortran_vars.do_forces || fortran_vars.gga)
+      total_cost += (single_matrix_cost*4); //4 vec_type gradient
+    if (fortran_vars.gga)
       total_cost+= (single_matrix_cost*8);  //2*4 vec_type hessian
     return total_cost*sizeof(scalar_type);  // size in bytes according to precision
 }

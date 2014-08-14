@@ -1,10 +1,9 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <cuda_runtime.h>
 #include <cmath>
 #include "../common.h"
-#include "../cuda/cuda_extra.h"
+//#include "../cuda_includes.h"
 #include "../init.h"
 #include "../matrix.h"
 #include "../partition.h"

@@ -1,13 +1,12 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <cuda_runtime.h>
 #include <cmath>
 #include "common.h"
 #include "init.h"
-#include "cuda/cuda_extra.h"
 #include "matrix.h"
 #include "partition.h"
+#include  "cuda/cuda_extra.h"
 using namespace std;
 using namespace G2G;
 
@@ -33,13 +32,13 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
       else
         elem(dist_vec,j) = 0;
     }
-    
+
     atom_cube_dists(i) = length2(dist_vec);
   }
 
   set<uint> functions_set;
   set<uint> nucleii_set;
-  
+
   /** S **/
   while (func < fortran_vars.s_funcs) {
     uint atom_nuc = fortran_vars.nucleii(func) - 1;
@@ -49,7 +48,7 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
     }
     func++;
   }
-  
+
   /** P **/
   while (func < fortran_vars.s_funcs + fortran_vars.p_funcs * 3) {
     uint atom_nuc = fortran_vars.nucleii(func) - 1;
@@ -59,7 +58,7 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
     }
     func += 3;
   }
-  
+
   /** D **/
   while (func < fortran_vars.s_funcs + fortran_vars.p_funcs * 3 + fortran_vars.d_funcs * 6) {
     uint atom_nuc = fortran_vars.nucleii(func) - 1;

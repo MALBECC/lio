@@ -10,7 +10,7 @@ ifeq ($(cpu),1)
   CPU_SOURCES  := $(wildcard cpu/*.cpp)
   SRCS         += $(CPU_SOURCES)
   OBJ          += $(CPU_SOURCES:%.cpp=%.o)
-  CXXFLAGS     += -DCPU_KERNELS=1
+  CXXFLAGS     += -DCPU_KERNELS=1 -I/opt/intel/mkl/include/
 ifeq ($(openmp),1)
 	CXXFLAGS += -openmp
 endif
@@ -62,9 +62,7 @@ else
 endif
 
 ## Define libraries
-LIBRARIES := $(shell pkg-config gsl --libs) $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
-CXXFLAGS += $(shell pkg-config gsl --cflags)
-NVCCFLAGS += $(shell pkg-config gsl --cflags)
+LIBRARIES := $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
 
 ## Targets
 all: $(LIBRARY)

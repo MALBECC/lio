@@ -1,11 +1,9 @@
 #include <iostream>
 #include <stdexcept>
-#include <gsl/gsl_vector.h>
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_blas.h>
 #include <cstring>
 #include "common.h"
 #include "matrix.h"
+#include "mkl.h"
 #include "scalar_vector_types.h"
 using namespace std;
 
@@ -237,24 +235,20 @@ template void to_constant<double>(const char* constant, const double& value);
 
 template<class T>
 void HostMatrix<T>::blas_ssyr(UpperLowerTriangle triangle, float alpha, const HostMatrix<float>& x, const HostMatrix<float>& A, unsigned int x_row) {
-  CBLAS_UPLO_t blas_triangle = (triangle == UpperTriangle ? CblasUpper : CblasLower);
+  CBLAS_UPLO blas_triangle = (triangle == UpperTriangle ? CblasUpper : CblasLower);
   if (x_row >= x.height || x.width != A.width || A.width != A.height) throw runtime_error("Wrong dimensions for ssyr");
-  unsigned int n = x.width;
+  int n = x.width;
 
-  gsl_vector_float_const_view vector_view = gsl_vector_float_const_view_array((float*)(&x.data[x_row * x.width]), n);
-  gsl_matrix_float_view matrix_view = gsl_matrix_float_view_array((float*)A.data, n, n);
-  gsl_blas_ssyr(blas_triangle, alpha, &vector_view.vector, &matrix_view.matrix);
+  cblas_ssyr(CblasRowMajor, blas_triangle, n, alpha, (float*)&x.data[x_row * x.width], 1, (float *)A.data, n);
 }
 
 template<class T>
 void HostMatrix<T>::blas_ssyr(UpperLowerTriangle triangle, double alpha, const HostMatrix<double>& x, const HostMatrix<double>& A, unsigned int x_row) {
-  CBLAS_UPLO_t blas_triangle = (triangle == UpperTriangle ? CblasUpper : CblasLower);
-  if (x_row >= x.height || x.width != A.width || A.width != A.height) throw runtime_error("Wrong dimensions for ssyr");
-  unsigned int n = x.width;
+  CBLAS_UPLO blas_triangle = (triangle == UpperTriangle ? CblasUpper : CblasLower);
+  if (x_row >= x.height || x.width != A.width || A.width != A.height) throw runtime_error("Wrong dimensions for dsyr");
+  int n = x.width;
 
-  gsl_vector_const_view vector_view = gsl_vector_const_view_array((double*)(&x.data[x_row * x.width]), n);
-  gsl_matrix_view matrix_view = gsl_matrix_view_array((double*)A.data, n, n);
-  gsl_blas_dsyr(blas_triangle, alpha, &vector_view.vector, &matrix_view.matrix);
+  cblas_dsyr(CblasRowMajor, blas_triangle, n, alpha, (double*)&x.data[x_row * x.width], 1, (double *)A.data, n);
 }
 
 template<class T> void HostMatrix<T>::check_values(void) {

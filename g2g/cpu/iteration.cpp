@@ -10,7 +10,6 @@
 #include "../matrix.h"
 #include "../timer.h"
 #include "../partition.h"
-#include "cpu_vector_types.h"
 
 #include "cpu/pot.h"
 

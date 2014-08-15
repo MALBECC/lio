@@ -1,19 +1,19 @@
 # DO NOT DELETE
 
-classify_functions.o: common.h init.h matrix.h cpu/cpu_vector_types.h
+classify_functions.o: common.h init.h matrix.h 
 classify_functions.o: cuda/cuda_extra.h partition.h
-init.o: common.h cuda/cuda_extra.h init.h matrix.h cpu/cpu_vector_types.h
+init.o: common.h cuda/cuda_extra.h init.h matrix.h
 init.o: timer.h partition.h
-matrix.o: common.h matrix.h cpu/cpu_vector_types.h cuda/cuda_extra.h
+matrix.o: common.h matrix.h cuda/cuda_extra.h
 partition.o: global_memory_pool.h
-partition.o: common.h init.h matrix.h cpu/cpu_vector_types.h
+partition.o: common.h init.h matrix.h 
 partition.o: cuda/cuda_extra.h partition.h timer.h global_memory_pool.h
 regenerate_partition.o: global_memory_pool.h
-regenerate_partition.o: common.h init.h matrix.h cpu/cpu_vector_types.h
+regenerate_partition.o: common.h init.h matrix.h 
 regenerate_partition.o: cuda/cuda_extra.h partition.h timer.h
 timer.o: timer.h
 cuda/iteration.cu_o: global_memory_pool.h
-cuda/iteration.cu_o: common.h init.h matrix.h cpu/cpu_vector_types.h
+cuda/iteration.cu_o: common.h init.h matrix.h 
 cuda/iteration.cu_o: cuda/cuda_extra.h cuda/cuda_extra.h matrix.h timer.h
 cuda/iteration.cu_o: partition.h cuda/gpu_variables.h cuda/kernels/pot.h
 cuda/iteration.cu_o: cuda/kernels/energy.h cuda/kernels/energy_derivs.h

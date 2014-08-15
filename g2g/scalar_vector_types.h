@@ -16,22 +16,60 @@ namespace G2G {
       //operator float2 () { return (float2)(*this); }
   };
 
-  template<> class vec_type<float, 3> : public cfloat3 {
+  template<> class vec_type<float, 3> {
+  	private:
+  	  float _x, _y, _z;
+
     public:
       vec_type(void) {}
-      vec_type(const cfloat3& other) : cfloat3(other) { }
-      vec_type(const double3& other) : cfloat3(other.x, other.y, other.z) { }
-      vec_type(float _x, float _y, float _z) : cfloat3(_x, _y, _z) { }
-      typedef cfloat3 base_type;
-      //operator cfloat3 () { return (cfloat3)(*this); }
+      vec_type(const float3& other) : _x(other.x),_y(other.y),_z(other.z) { }
+      vec_type(const double3& other) : _x(other.x),_y(other.y),_z(other.z) { }
+      vec_type(float x, float y, float z) : _x(x), _y(y), _z(z) { }
+      
+      inline float x() const { return _x; }
+      inline float y() const { return _y; }
+      inline float z() const { return _z; }
+      inline float length2(){ return _x * _x + _y * _y + _z * _z; }
+
+      friend vec_type operator*(const vec_type & lo, const vec_type & ro) {
+      	return vec_type(lo.x() * ro.x(), lo.y() * ro.y(), lo.z() * ro.z());
+      }
+
+      friend vec_type operator-(const vec_type & lo, const vec_type & ro) {
+      	return vec_type(lo.x() - ro.x(), lo.y() - ro.y(), lo.z() - ro.z());
+      }
+
+      friend vec_type operator+(const vec_type & lo, const vec_type & ro) {
+      	return vec_type(lo.x() + ro.x(), lo.y() + ro.y(), lo.z() + ro.z());
+      }
+
+      void operator+=(const vec_type & lo){
+      	_x += lo.x(), _y += lo.y(), _z += lo.z();
+      }
+    
+      void operator-=(const vec_type & lo){
+      	_x -= lo.x(), _y -= lo.y(), _z -= lo.z();
+      }
+
+      friend vec_type operator*(const vec_type & lo, float f) {
+      	return vec_type(lo.x()*f,lo.y()*f,lo.z()*f);
+      }
+
+      friend vec_type operator-(const vec_type & lo, float f) {
+      	return vec_type(lo.x()-f,lo.y()-f,lo.z()-f);
+      }
+
+      typedef float3 base_type;
   };
 
-  template<> class vec_type<float, 4> : public cfloat4 {
+  template<> class vec_type<float, 4> {
+    private:
+      float _x, _y, _z, _w;
+
     public:
       vec_type(void) {}
-      vec_type(float _x, float _y, float _z, float _w) : cfloat4(_w, _y, _z, _w) { }
-      typedef cfloat4 base_type;
-      //operator cfloat4 () { return (cfloat4)(*this); }
+      vec_type(float x, float y, float z, float w) : _x(_x), _y(y), _z(z), _w(w) { }
+      typedef float4 base_type;
   };
 #else
 

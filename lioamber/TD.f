@@ -46,7 +46,7 @@ c       USE latom
        REAL*8 ::
      >   dt_magnus,dt_lpfrg
 !! CUBLAS
-#ifdef cublas
+!#ifdef cublas
       integer sizeof_real
       parameter(sizeof_real=8)
       integer stat
@@ -54,7 +54,7 @@ c       USE latom
       external CUBLAS_INIT, CUBLAS_SET_MATRIX
       external CUBLAS_SHUTDOWN, CUBLAS_ALLOC
       integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX
-#endif
+!#endif
 !!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -67,15 +67,15 @@ c       USE latom
           dt_magnus=tdstep
           dt_lpfrg=tdstep*0.10D0
           factorial(1)=1.0D0
-#ifdef cublas
+!#ifdef cublas
           DO ii=1,NBCH
              factorial(ii)=1.0D0/ii
           ENDDO
-#else     
-       DO ii=2,NBCH
-         factorial(ii)=factorial(ii-1)/ii
-       ENDDO
-#endif
+!#else     
+!       DO ii=2,NBCH
+!         factorial(ii)=factorial(ii-1)/ii
+!       ENDDO
+!#endif
        endif
        if(propagator.eq.1) then
           dt_lpfrg=tdstep
@@ -309,7 +309,7 @@ c s is in RMM(M13,M13+1,M13+2,...,M13+MM)
                enddo
             enddo
 !! CUBLAS ---------------------------------------------------------------------!
-#ifdef cublas
+!#ifdef cublas
             stat = CUBLAS_ALLOC(M*M, sizeof_real, devPtrX)
             stat = CUBLAS_ALLOC(M*M, sizeof_real, devPtrY)
             if (stat.NE.0) then
@@ -324,7 +324,7 @@ c s is in RMM(M13,M13+1,M13+2,...,M13+MM)
             call CUBLAS_SHUTDOWN
             stop
             endif
-#endif
+!#endif
 !------------------------------------------------------------------------------!
 ! External Electric Field components
 !
@@ -333,20 +333,20 @@ c s is in RMM(M13,M13+1,M13+2,...,M13+MM)
 !       write(*,*) 'fz =', fz
 !------------------------------------------------------------------------------!
 ! Rho is transformed to the orthonormal basis
-#ifdef cublas
+!#ifdef cublas
            call g2g_timer_start('cumatmul')
            call cumxtp(rho,devPtrY,rho,M)
            call cumpx(rho,devPtrY,rho,M)
            call g2g_timer_stop('cumatmul')
-#else
+!#else
 ! with matmul:
-       rho=matmul(ytrans,rho)
-       rho=matmul(rho,y)
+!       rho=matmul(ytrans,rho)
+!       rho=matmul(rho,y)
 ! with matmulnanoc
 !            call matmulnanoc(rho,Y,rho,M)
 !            rho=rho1
 !--------------------------------------!
-#endif
+!#endif
             call g2g_timer_start('int22')
             call int22()
             call g2g_timer_stop('int22')
@@ -390,7 +390,7 @@ c ELECTRIC FIELD CASE - Type=gaussian (ON)
                    fxx=fx*exp(-0.2*(real(istep-50))**2)
                    fyy=fy*exp(-0.2*(real(istep-50))**2)
                    fzz=fz*exp(-0.2*(real(istep-50))**2)
-                   write(*,*) fxx,fyy,fzz
+!                   write(*,*) fxx,fyy,fzz
 !
                  else
                    g=2.0D0*(epsilon-1.0D0)/((2.0D0*epsilon+1.0D0)*a0**3)
@@ -424,21 +424,21 @@ c ELECTRIC FIELD CASE - Type=gaussian (ON)
                  fock(k,j)=RMM(M5+k+(M2-j)*(j-1)/2-1)
               enddo
             enddo
-#ifdef cublas
+!#ifdef cublas
             call cumxtf(fock,devPtrX,fock,M)
             call cumfx(fock,DevPtrX,fock,M)
-#else
-            fock=matmul(xtrans,fock)
-            fock=matmul(fock,xmm)
-#endif
+!#else
+!            fock=matmul(xtrans,fock)
+!            fock=matmul(fock,xmm)
+!#endif
             call g2g_timer_stop('fock')
 c Fock triangular matrix contained in RMM(M5,M5+1,M5+2,...,M5+MM) is copied to square matrix fock.
             do j=1,M
                do k=1,j
-                  fock(j,k)=RMM(M5+j+(M2-k)*(k-1)/2-1)
+                  RMM(M5+j+(M2-k)*(k-1)/2-1)=fock(j,k)
                enddo
                do k=j+1,M
-                  fock(j,k)=RMM(M5+k+(M2-j)*(j-1)/2-1)
+                  RMM(M5+k+(M2-j)*(j-1)/2-1)=fock(j,k)
                enddo
             enddo
 c Now fock is stored in molecular orbital basis.
@@ -493,13 +493,13 @@ c             rhold=rhold-(tdstep*Im*(matmul(rho,fock)))
 c           endif
 c using conmutc
               if(istep.eq.1) then
-#ifdef cublas
-                call cuconmut(fock,rho,rhold,M)
+!#ifdef cublas
+               call cuconmut(fock,rho,rhold,M)
                 rhold=rho+dt_lpfrg*(Im*rhold)
-#else
-                 call conmutc(fock,rho,rhold,M)
-                 rhold=rho+dt_lpfrg*(Im*rhold)
-#endif
+!#else
+!                call conmutc(fock,rho,rhold,M)
+!                 rhold=rho+dt_lpfrg*(Im*rhold)
+!#endif
               endif
 !####################################################################!
 ! DENSITY MATRIX PROPAGATION USING VERLET ALGORITHM
@@ -509,28 +509,30 @@ c           rhonew=rhonew+(tdstep*Im*(matmul(rho,fock)))
 c--------------------------------------c
 ! using conmutc:
                call g2g_timer_start('Verlet')
-#ifdef cublas
+!#ifdef cublas
                call cuconmut(fock,rho,rhonew,M)
                rhonew=rhold-dt_lpfrg*(Im*rhonew)
-#else
-              call conmutc(fock,rho,rhonew,M)
-              rhonew=rhold-dt_lpfrg*(Im*rhonew)
-#endif
+!#else
+!              call conmutc(fock,rho,rhonew,M)
+!              rhonew=rhold-dt_lpfrg*(Im*rhonew)
+!#endif
               call g2g_timer_stop('Verlet')
 c Density update (rhold-->rho, rho-->rhonew)
-              do i=1,M
-                 do j=1,M
-                    rhold(i,j)=rho(i,j)
-                    rho(i,j)=rhonew(i,j)
-                 enddo
-              enddo
+!              do i=1,M
+!                 do j=1,M
+!                    rhold(i,j)=rho(i,j)
+!                    rho(i,j)=rhonew(i,j)
+!                 enddo
+!              enddo
+               rhold=rho
+               rho=rhonew
 ! END OF VERLET PROPAGATOR
 !####################################################################!
               else
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! DENSITY MATRIX PROPAGATION USING MAGNUS ALGORITHM
                  write(*,*) 'Magnus'
-#ifdef cublas
+!#ifdef cublas
                 call g2g_timer_start('cupredictor')
                 call cupredictor(F1a,F1b,fock,rho,devPtrX,factorial,
      > fxx,fyy,fzz,g)
@@ -539,14 +541,14 @@ c Density update (rhold-->rho, rho-->rhonew)
                 call cumagnusfac(fock,rho,rhonew,M,NBCH,dt_magnus,
      >factorial)
                 call g2g_timer_stop('cumagnus')
-#else
-                call g2g_timer_start('predictor')
-                call predictor(F1a,F1b,fock,rho,Xtrans,factorial)
-                call g2g_timer_stop('predictor')
-                call g2g_timer_start('magnus')
-                 call magnus(fock,rho,rhonew,M,NBCH,dt_magnus,factorial)
-                call g2g_timer_stop('magnus')
-#endif
+!#else
+!                call g2g_timer_start('predictor')
+!                call predictor(F1a,F1b,fock,rho,Xtrans,factorial)
+!                call g2g_timer_stop('predictor')
+!                call g2g_timer_start('magnus')
+!                 call magnus(fock,rho,rhonew,M,NBCH,dt_magnus,factorial)
+!                call g2g_timer_stop('magnus')
+!#endif
                  F1a=F1b
                  F1b=fock
                  rho=rhonew
@@ -558,17 +560,17 @@ c Here we transform the density to the atomic orbital basis and take the real pa
 c can be descarted since for a basis set of purely real functions the fock matrix is real and symetric and depends only on 
 c the real part of the complex density matrix. (This won't be true in the case of hybrid functionals)
 c with matmul:
-#ifdef cublas
+!#ifdef cublas
              call g2g_timer_start('cumatmul')
              call cumxp(rho,devPtrX,rho1,M)
              call cumpxt(rho1,devPtrX,rho1,M)
              call g2g_timer_stop('cumatmul')
-#else
-             call g2g_timer_start('matmul')
-             rho1=matmul(xmm,rho)
-             rho1=matmul(rho1,xtrans)
-             call g2g_timer_stop('matmul')
-#endif
+!#else
+!             call g2g_timer_start('matmul')
+!             rho1=matmul(xmm,rho)
+!             rho1=matmul(rho1,xtrans)
+!             call g2g_timer_stop('matmul')
+!#endif
 !       rho1=REAL(rho1)
 c with matmulnanoc:
 c          call matmulnanoc(rho,xtrans,rho1,M)
@@ -651,10 +653,10 @@ c      write(*,*) 'Coulomb E',E2-Ex,Ex
  995   continue
 c
 c
-#ifdef cublas
+!#ifdef cublas
          call CUBLAS_FREE ( devPtrX )
          call CUBLAS_FREE ( devPtrY )
-#endif
+!#endif
          if (memo) then
             deallocate (kkind,kkinds)
             deallocate(cool,cools)

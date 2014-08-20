@@ -37,7 +37,7 @@ c
 c
 c pointers
 c
-      write(*,*) 'dip2',g,ux,uy,uz
+!      write(*,*) 'dip2',g,ux,uy,uz
       MM=M*(M+1)/2
       MM2=M**2
       MMd=Md*(Md+1)/2

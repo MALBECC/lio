@@ -6,7 +6,7 @@
 #include <vector>
 #include "../common.h"
 #include "../init.h"
-#include "../cuda/cuda_extra.h"
+#include "../cuda_includes.h"
 #include "../matrix.h"
 #include "../timer.h"
 #include "../partition.h"

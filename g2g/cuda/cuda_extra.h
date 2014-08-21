@@ -1,8 +1,10 @@
 #ifndef __CUTOOLS_H__
 #define __CUTOOLS_H__
 
+#if !CPU_KERNELS
 #include <cuda_runtime.h>
 #include <cuda.h>
+#endif
 
 #define WARP_SIZE 32
 #define BANKS 32
@@ -13,6 +15,12 @@
 
 #ifndef __CUDACC__
 #include <cmath>
+#endif
+
+#if CPU_KERNELS
+#define __device__
+#define __host__
+#include "datatypes/cpu_primitives.h"
 #endif
 
 namespace G2G {
@@ -165,10 +173,10 @@ inline __device__ __host__ void swap(float4 &a, float4 &b)
 inline __device__ __host__ void negate(float2 &a)
 { a.x = -a.x; a.y = -a.y; }
 
-inline __device__ __host__ const float4& min(const float4 &a, const float4 &b) 
+inline __device__ __host__ const float4& min(const float4 &a, const float4 &b)
 { return (a.x < b.x)? a: b; }
 
-inline __device__ __host__ const float4& max(const float4 &a, const float4 &b) 
+inline __device__ __host__ const float4& max(const float4 &a, const float4 &b)
 { return (a.x > b.x)? a: b; }
 
 inline __device__ __host__ float length2(const float3& a) {
@@ -327,14 +335,18 @@ inline void cudaAssertNoError(const char* msg = NULL) {
 #endif
 
 inline void cudaGetMemoryInfo(size_t& free, size_t& total) {
+  #if !CPU_KERNELS
 	if (cuMemGetInfo(&free, &total) != CUDA_SUCCESS)
     throw std::runtime_error("cuMemGetInfo failed");
+  #endif
 }
 
 inline void cudaPrintMemoryInfo(void) {
+  #if !CPU_KERNELS
   size_t free = 0, total = 0;
   cudaGetMemoryInfo(free, total);
 	std::cout << "mem_used: " << (total - free) / (1024.0 * 1024.0) << "MB | mem_perc: " << ((double)(total - free) / (double)total) * 100.0 << "%" << std::endl;
+  #endif
 }
 
 template<typename T> void to_constant(const std::string& name, const T* ptr) {

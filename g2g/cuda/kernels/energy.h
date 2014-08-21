@@ -11,7 +11,7 @@ static __inline__ __device__ double fetch_double(texture<int2, 2> t, float x, fl
 #endif
 
 template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
-__global__ void gpu_compute_density(scalar_type* const factor, const scalar_type* const point_weights,
+__global__ void gpu_compute_density(scalar_type* const energy, scalar_type* const factor, const scalar_type* const point_weights,
                                     uint points, const scalar_type* function_values, const vec_type<scalar_type,4>* gradient_values,
                                     const vec_type<scalar_type,4>* hessian_values, uint m, scalar_type* out_partial_density, vec_type<scalar_type,4>* out_dxyz, vec_type<scalar_type,4>* out_dd1, vec_type<scalar_type,4>*  out_dd2)
 {

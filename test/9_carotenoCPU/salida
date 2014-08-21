@@ -1,0 +1,59 @@
+ &LIO
+ NATOM   =          92,
+ NSOL    =           0,
+ CHARGE  =           0,
+ OPEN    = F,
+ NMAX    =         300,
+ NUNP    =           0,
+ VCINP   = F,
+ FRESTARTIN      = restart.in          ,
+ GOLD    =   10.0000000000000     ,
+ TOLD    =  1.000000000000000E-006,
+ RMAX    =   16.0000000000000     ,
+ RMAXS   =   5.00000000000000     ,
+ PREDCOEF        = F,
+ IDIP    =           1,
+ WRITEXYZ        = T,
+ INTSOLDOUBLE    = T,
+ DIIS    = T,
+ NDIIS   =          30,
+ DGTRIG  =   100.000000000000     ,
+ IEXCH   =           9,
+ INTEG   = T,
+ DENS    = T,
+ IGRID   =           2,
+ IGRID2  =           2,
+ TIMEDEP =           0,
+ TDSTEP  =  2.000000000000000E-003,
+ NTDSTEP =           0,
+ PROPAGATOR      =           1,
+ NBCH    =          10,
+ FIELD   = F,
+ A0      =   1000.00000000000     ,
+ EPSILON =   1.00000000000000     ,
+ EXTER   = F,
+ FX      =  5.000000074505806E-002,
+ FY      =  5.000000074505806E-002,
+ FZ      =  5.000000074505806E-002,
+ TDRESTART       = F,
+ WRITEDENS       = T
+ /
+<====== Initializing G2G ======>Kernels: cpu
+ NCO=         146
+          92          92        3680        3680          40          40
+ JOB STARTED NOW
+Wed Aug 13 15:23:51 ART 2014
+basis set corresponding to Z  26 was not used
+basis set corresponding to Z   7 was not used
+basis set corresponding to Z  16 was not used
+basis set corresponding to Z   8 was not used
+ en drive         756        1568         146
+<======= GPU Code Initialization ========>
+atoms: 92
+max atoms: 92
+number of gaussians: 3680
+do_forces: false
+s: 276 p: 80 d: 40
+m: 756 nco: 146
+<====== read_options ========>
+No "gpu_options" file: using defaults

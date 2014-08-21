@@ -10,21 +10,21 @@
  */
 
 /* pot_kernel constants */
-#define POT_ALPHA 		((scalar_type)-0.738558766382022447f) // -(3/PI)^(1/3)
-#define POT_GL 				((scalar_type)0.620350490899400087f)
+#define POT_ALPHA     ((scalar_type)-0.738558766382022447f) // -(3/PI)^(1/3)
+#define POT_GL        ((scalar_type)0.620350490899400087f)
 
-#define POT_VOSKO_A1 	((scalar_type)0.03109205f)
-#define POT_VOSKO_B1 	((scalar_type)3.72744f)
-#define POT_VOSKO_C1 	((scalar_type)12.9352f)
-#define POT_VOSKO_X0 	((scalar_type)-0.10498f)
+#define POT_VOSKO_A1  ((scalar_type)0.03109205f)
+#define POT_VOSKO_B1  ((scalar_type)3.72744f)
+#define POT_VOSKO_C1  ((scalar_type)12.9352f)
+#define POT_VOSKO_X0  ((scalar_type)-0.10498f)
 
-#define POT_VOSKO_Q 	((scalar_type)6.15199066246304849f)
+#define POT_VOSKO_Q   ((scalar_type)6.15199066246304849f)
 #define POT_VOSKO_A16 ((scalar_type)0.005182008333f)
-#define POT_VOSKO_A2 	((scalar_type)0.015546025f)
-#define POT_VOSKO_B2 	((scalar_type)7.06042f)
-#define POT_VOSKO_C2 	((scalar_type)18.0578f)
+#define POT_VOSKO_A2  ((scalar_type)0.015546025f)
+#define POT_VOSKO_B2  ((scalar_type)7.06042f)
+#define POT_VOSKO_C2  ((scalar_type)18.0578f)
 #define POT_VOSKO_X02 ((scalar_type)-0.32500f)
-#define POT_VOSKO_Q2 	((scalar_type)4.7309269f)
+#define POT_VOSKO_Q2  ((scalar_type)4.7309269f)
 #define POT_VOSKO_A26 ((scalar_type)0.0025910042f)
 
 #define POT_XX0 ((scalar_type)12.5549141492f) // POT_VOSKO_X0 * POT_VOSKO_X0 + POT_VOSKO_B1 * POT_VOSKO_X0 + POT_VOSKO_C1
@@ -83,10 +83,10 @@ __device__ void gcorc(scalar_type rtrs, scalar_type& gg, scalar_type& grrs)
 #define CLOSEDPBE_DELTA ((scalar_type)2.14612633996736f) // beta/gamma
 
 template<class scalar_type>
-__device__ void closedpbe(scalar_type rho, scalar_type agrad, scalar_type delgrad, scalar_type rlap, scalar_type& expbe, scalar_type& vxpbe, scalar_type& ecpbe,scalar_type& corr1,scalar_type& corr2, scalar_type& vcpbe)
+__device__ void closedpbe(scalar_type rho, scalar_type agrad, scalar_type delgrad, scalar_type rlap, scalar_type& expbe, scalar_type& vxpbe, scalar_type& ecpbe, scalar_type& vcpbe)
 {
   if (rho < ((scalar_type)2e-18f)) {
-    expbe = vxpbe = ecpbe = vcpbe = corr1=corr2=0.0f;
+    expbe = vxpbe = ecpbe = vcpbe = 0.0f;
     return;
   }
 
@@ -165,7 +165,7 @@ __device__ void closedpbe(scalar_type rho, scalar_type agrad, scalar_type delgra
 
   scalar_type ec, eurs;
   gcorc(rtrs, ec, eurs);
-	if (ec == (scalar_type)0.0f) ec = (scalar_type)FLT_MIN;
+  if (ec == (scalar_type)0.0f) ec = (scalar_type)FLT_MIN;
 
   scalar_type eclda = ec;
   scalar_type ecrs = eurs;
@@ -185,9 +185,6 @@ __device__ void closedpbe(scalar_type rho, scalar_type agrad, scalar_type delgra
 
   // So the correlation energy for pbe is:
   ecpbe = eclda + H;
-  corr1= ec;
-  corr2=H;
-  //if(ec!=H) printf("rho= %.4e ec= %.8e h= %.8e\n",rho,ec,H);
   //cout << expl(PON) << " " << t2 << endl;
 
   // Now we have to calculate the potential contribution of GGA
@@ -215,19 +212,19 @@ __device__ void closedpbe(scalar_type rho, scalar_type agrad, scalar_type delgra
   vcpbe = vclda + COMM;
 
   //cout << expbe << " " << Q4 << " " << H << " " << eclda << " " << (float)eclda + H << " " << endl;
+
   //cout << rho << " " << delgrad << " " << rlap << " ret: " << expbe << " " << vxpbe << " " << ecpbe << " " << vcpbe << endl;
 }
 
 template<class scalar_type, bool compute_exc, bool compute_y2a, bool lda>
-__device__ void gpu_pot(scalar_type dens, const vec_type<scalar_type,4>& grad, const vec_type<scalar_type,4>& hess1, const vec_type<scalar_type,4>& hess2, scalar_type& exc_corr,scalar_type& exc,scalar_type& corr,scalar_type& corr1,scalar_type& corr2, scalar_type& y2a)
+__device__ void gpu_pot(scalar_type dens, const vec_type<scalar_type,4>& grad, const vec_type<scalar_type,4>& hess1, const vec_type<scalar_type,4>& hess2, scalar_type& exc_corr, scalar_type& y2a)
 {
-	// data X alpha
+  // data X alpha
   scalar_type ec;
-  exc_corr =exc=corr=corr1=corr2= 0.0f;
 
   if (lda) {
     if (dens == 0.0f) {
-      if (compute_exc) { exc_corr =exc=corr=corr1=corr2= 0.0f; }
+      if (compute_exc) { exc_corr = 0.0f; }
       if (compute_y2a) y2a = 0.0f;
       return;
     }
@@ -286,12 +283,12 @@ __device__ void gpu_pot(scalar_type dens, const vec_type<scalar_type,4>& grad, c
       break;
     }
   }
-  /*** GGA ***/ //<<=======================================
+  /*** GGA ***/
   else {
     // hess1: xx, yy, zz
     // hess2: xy, xz, yz
     y2a = 0.0f;
-    if (dens < ((scalar_type)1e-13f)) { exc_corr = ec =exc=corr=corr1=corr2= 0.0f; return; }
+    if (dens < ((scalar_type)1e-13f)) { exc_corr = ec = 0.0f; return; }
 
     scalar_type y = pow((scalar_type)dens, (scalar_type)0.333333333333333333);  // rho^(1/3)
 
@@ -375,19 +372,8 @@ __device__ void gpu_pot(scalar_type dens, const vec_type<scalar_type,4>& grad, c
       scalar_type delgrad = (dgrad1 + dgrad2 + dgrad3 + 2.0f * (dgrad4 + dgrad5 + dgrad6)) / dgrad;
       scalar_type rlap = hess1.x + hess1.y + hess1.z;
 
-      scalar_type expbe, vxpbe, ecpbe, vcpbe,corre1,corre2;
-//	if (dens < ((scalar_type)2e-18f)) {
-//	    expbe = vxpbe = ecpbe = vcpbe = 0.0f;
-//  	  return;
-// 	 }
-//	else
-      closedpbe(dens, dgrad, delgrad, rlap, expbe, vxpbe, ecpbe,corre1,corre2, vcpbe);
-       
-      corr=ecpbe;
-      corr1=corre1;      
-      corr2=corre2;   
-      exc=expbe;
-
+      scalar_type expbe, vxpbe, ecpbe, vcpbe;
+      closedpbe(dens, dgrad, delgrad, rlap, expbe, vxpbe, ecpbe, vcpbe);
       ec = ecpbe;
       exc_corr = expbe + ec;
       y2a = vxpbe + vcpbe;

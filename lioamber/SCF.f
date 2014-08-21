@@ -12,22 +12,28 @@ c      use qmmm_module, only : qmmm_struct, qmmm_nml
 c
       implicit real*8 (a-h,o-z)
       integer:: l
-      dimension q(natom),work(1000)
-      REAL*8 , intent(inout)  :: dipxyz(3) 
-      real*8, dimension (:,:), ALLOCATABLE ::xnano,znano
-      real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15,rmm13,
+       dimension q(natom),work(1000),IWORK(1000)
+       REAL*8 , intent(inout)  :: dipxyz(3)
+       real*8, dimension (:,:), ALLOCATABLE ::xnano,znano
+       real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15,rmm13,
      >   bcoef, suma, FP_PFv
       real*8, dimension (:,:), allocatable :: fock,fockm,rho,FP_PF,
      >   FP_PFm,EMAT,Y,Ytrans,Xtrans,rho1,EMAT2
 c
-      integer ndiist
-c      dimension d(natom,natom)
-      logical  hagodiis,alloqueo, ematalloc
-c      REAL*8 , intent(in)  :: qmcoords(3,natom)
-c      REAL*8 , intent(in)  :: clcoords(4,nsolin)
-      INTEGER :: ErrID,iii,jjj
-      LOGICAL :: docholesky
-      REAL*8,ALLOCATABLE :: MatrixVec(:),TestMatrix(:)
+       integer ndiist
+c       dimension d(natom,natom)
+       logical  hagodiis,alloqueo, ematalloc
+c       REAL*8 , intent(in)  :: qmcoords(3,natom)
+c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
+        INTEGER :: ErrID,iii,jjj
+        LOGICAL :: docholesky
+        REAL*8,ALLOCATABLE :: MatrixVec(:),TestMatrix(:)
+        REAL*8,ALLOCATABLE :: WORK2(:)
+        INTEGER, ALLOCATABLE :: IWORK2(:),IPIV(:)
+
+#ifdef magma
+       call magmaf_init()
+#endif
 
       call g2g_timer_start('SCF')
       just_int3n = .false.
@@ -46,18 +52,18 @@ c
 c---------------------
 c       write(*,*) 'M=',M
       allocate (znano(M,M),xnano(M,M))
-       
-      npas=npas+1       
+
+      npas=npas+1
       E=0.0D0
       E1=0.0D0
       En=0.0D0
       E2=0.0D0
       Es=0.0D0
-      
+
       ngeo=ngeo+1
 
       sq2=sqrt(2.D0)
-      MM=M*(M+1)/2 
+      MM=M*(M+1)/2
       MM2=M**2
       MMd=Md*(Md+1)/2
       Md2=2*Md
@@ -87,7 +93,7 @@ c weights (in case of using option )
       M19=M18+M*NCO
 c
 * RAM storage of two-electron integrals (if MEMO=T)
-      M20 = M19 + natom*50*Nang   
+      M20 = M19 + natom*50*Nang
 c
       Nel=2*NCO+Nunp
 c
@@ -109,7 +115,7 @@ c
 
 C----------------------------------------
 c Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
-  
+
       do i=1,natom
         natomc(i)=0
         do j=1,natom
@@ -123,14 +129,14 @@ c Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
           if (rexp.lt.rmax) then
             natomc(i)=natomc(i)+1
             jatc(natomc(i),i)=j
-          endif 
+          endif
         enddo
       enddo
 
       do iij=nshell(0),1,-1
         nnps(nuc(iij))=iij
       enddo
-      
+
       do iik=nshell(0)+nshell(1),nshell(0)+1,-1
         nnpp(nuc(iik))=iik
       enddo
@@ -149,7 +155,7 @@ c Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
           enddo
          endif
        endif
-        
+
       call int1(En)
       if(nsol.gt.0) then
         call g2g_timer_start('intsol')
@@ -167,7 +173,34 @@ c Diagonalization of S matrix, after this is not needed anymore
 c
       docholesky=.true.
       call g2g_timer_start('cholesky')
+
       IF (docholesky) THEN
+#ifdef magma
+        PRINT*,'DOING CHOLESKY'
+
+        ALLOCATE(Y(M,M),Ytrans(M,M))
+        DO iii=1,M;DO jjj=1,M
+          Y(iii,jjj)=0
+          IF (jjj.LE.iii) THEN
+            iiindex=iii+(2*M-jjj)*(jjj-1)/2
+            Y(iii,jjj)=RMM(M5+iiindex-1)
+          ENDIF
+        ENDDO;ENDDO
+
+        CALL MAGMAF_DPOTRF('L',M,Y,M,ErrID)
+
+          Ytrans= transpose(Y)
+        ALLOCATE(Xtrans(M,M))
+          Xtrans=Y
+        CALL MAGMAF_DTRTRI('L','N',M,Xtrans,M,ErrID)
+        if(ErrID.ne.0) STOP ('Error in cholesky decomp.')
+        xnano= transpose(Xtrans)
+        do i=1,M;doj=1,M
+        X(i,j)=Xnano(i,j)
+        enddo;enddo
+        PRINT*,'CHOLESKY MAGMA'
+
+#else
         PRINT*,'DOING CHOLESKY'
         ALLOCATE(MatrixVec(MM))
         DO iii=1,MM
@@ -197,7 +230,9 @@ c
         ENDDO;ENDDO
 
         DEALLOCATE(MatrixVec)
-        PRINT*,'CHOLESKY DONE'
+
+
+#endif
       ELSE
 
 
@@ -212,10 +247,12 @@ c        write(56,*) RMM(M15+1)
 c
 c LAPACK OPTION -----------------------------------------
 #ifdef pack
-        call dspev('V','L',M,RMM5,RMM13,X,M,RMM15,info)
+c       call magmaf_dsyev('V','L',M,xxx,M,
+
+       call dspev('V','L',M,RMM5,RMM13,X,M,RMM15,info)
 #endif
 c-----------------------------------------------------------
-c 
+c
 c LINEAR DEPENDENCY ELIMINATION
         allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
 c
@@ -231,23 +268,23 @@ c          write(56,*) RMM(M15+1)
             do i=1,M
               X(i,j)=0.0D0
               Y(i,j)=0.0D0
-            enddo  
+            enddo
           else
             do i=1,M
               X(i,j)=X(i,j)/sqrt(RMM(M13+j-1))
               Y(i,j)=X(i,j)*(RMM(M13+j-1))
-            enddo  
+            enddo
           endif
          enddo
-         
+
          do i=1,M
             do j=1,M
               Ytrans(i,j)=Y(j,i)
-              Xtrans(i,j)=X(j,i)   
+              Xtrans(i,j)=X(j,i)
             enddo
          enddo
 
-      ENDIF                   
+      ENDIF
 
       call g2g_timer_stop('cholesky')
 
@@ -293,7 +330,7 @@ c ESSL OPTION
           rmm5(i)=RMM(M5+i-1)
         enddo
         rmm15=0
-        rmm13=0       
+        rmm13=0
         xnano=0
 #ifdef essl
         call DSPEV(1,RMM(M5),RMM(M13),X(1,M+1),M,M,RMM(M15),M2)
@@ -364,11 +401,11 @@ c
 **
       if (MEMO) then
          call g2g_timer_start('int3mem')
-         call int3mem() 
+         call int3mem()
          call int3mems()
          call g2g_timer_stop('int3mem')
       endif
-****        
+****
 c---------------------------------------------------------------------
 c Now, damping is performed on the density matrix
 c The first 4 iterations ( it may be changed, if necessary)
@@ -385,7 +422,7 @@ c
         write(*,*) 'Level SHIFT is not suported'
         stop
       endif
-c      
+c
       if (DIIS.and.alloqueo) then
         alloqueo=.false.
 c       write(*,*) 'eme=', M
@@ -462,7 +499,7 @@ c
 
           call matmulnano(rho,Y,rho1,M)
           rho=rho1
-c 
+c
 c------------Ahora tenemos rho transformado en la base ON y en forma cuadrada-----------------------------
 c-------------------------Escritura de fock cuadrada--------------------------------------
 c-----------Parte de abajo a la izquierda(incluyendo terminos diagonales)-----------------
@@ -499,7 +536,7 @@ c--------fockm es la matriz que va a acumular en sus col. sucesivas matrices de 
 c---------------------------------------------------------------------------------
 c--rho(j,k) y fock(j,k) son las matrices densidad y de fock respect (forma cuadrada)--
 c---------Calculo de conmutadores [F,P]-------------------------------------------
- 
+
           call conmut(fock,rho,FP_PF,M)
 
 c---------Pasar Conmutador a vector (guardamos la media matriz de abajo)------------------------------------------------
@@ -533,7 +570,7 @@ c-------------Decidiendo cual critero de convergencia usar-----------
               RMM(kk)=(RMM(kk)+DAMP*RMM(kk2))/(1.D0+DAMP)
             enddo
           endif
-        
+
 c the newly constructed damped matrix is stored, for next iteration
 c in RMM(M3)
 c
@@ -548,7 +585,7 @@ c
               X(i,M+j)=0.D0
               xnano(i,j)=X(j,i)
             enddo
-          enddo     
+          enddo
 
           do j=1,M
             do i=1,M
@@ -594,7 +631,7 @@ c
           RMM(M13+i-1)=0.D0
         enddo
 
-c---- LEVEL SHIFT 
+c---- LEVEL SHIFT
 c
         if (SHFT) then
 c       shi=shi*0.99
@@ -607,7 +644,7 @@ c constant to diagonal (virtual) elements
         endif
 
         call g2g_timer_stop('actualiza rmm')
-     
+
 c----------Si hagodiis(ver mas arriba) es true entonces sigo-----------------------
 c        write(*,*) 'good < dgtrig DIIS!!! PARA LA SIGUIENTE ITERACION'
         call g2g_timer_start('diis')
@@ -616,7 +653,7 @@ c--------Pasar columnas de FP_PFm a matrices y multiplicarlas y escribir EMAT---
         if(DIIS) then
           deallocate(EMAT)
           allocate(EMAT(ndiist+1,ndiist+1))
-          if(niter.gt.1.and.niter.le.ndiis) then     
+          if(niter.gt.1.and.niter.le.ndiis) then
             EMAT=0
             do k=1,ndiist-1
               do kk=1,ndiist-1
@@ -694,15 +731,16 @@ c-----Pasamos a resolver con DGELS el problema EMAT*ci=bcoef-------
 c----------Cálculo de parámetro optimo para DGELS-------------------
 *
 *
-            LWORK = -1
-       CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT, ndiist+1,
-     >             bcoef, ndiist+1, WORK, LWORK, INFO )
-            LWORK = MIN( 1000, INT( WORK( 1 ) ) )
+        LWORK = -1
+      CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT,
+     >ndiist+1, bcoef, ndiist+1, WORK, LWORK, INFO )
+        LWORK = MIN( 1000, INT( WORK( 1 ) ) )
+
 
 c-----Resuelve la ecuación A*X = B. (EMAT*ci=bcoef). La solución la escribe en bcoef------
 
-       CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT, ndiist+1,
-     >            bcoef, ndiist+1, WORK, LWORK, INFO )
+      CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT,
+     > ndiist+1, bcoef, ndiist+1, WORK, LWORK, INFO )
 
 c--------Construccion de la "nueva" matriz de fock como cl de las anteriores--------------
 c--------Eventualmente se puede probar con la matriz densidad-----------------------------
@@ -717,9 +755,8 @@ c--------Eventualmente se puede probar con la matriz densidad-------------------
               RMM(M5+i-1)=suma(i)
             enddo
             call g2g_timer_stop('diis')
-         endif
-       endif
-
+        endif
+      endif
        call g2g_timer_start('dspev')
 c ESSL OPTION ---------------------------------------------------
 #ifdef essl
@@ -728,9 +765,45 @@ c ESSL OPTION ---------------------------------------------------
 c
 c LAPACK OPTION -----------------------------------------
 #ifdef pack
-       call dspev('V','L',M,RMM(M5),RMM(M13),X(1,M+1),M,RMM(M15),info)
+#ifdef magma
+c-------nano tratando de usar magma
+      if(.not.allocated) allocate (fock(M,M))
+      fock=0
+      do j=1,M
+        do k=1,j
+         i=j+(M2-k)*(k-1)/2
+         fock(j,k)=RMM(M5+i-1)
+        enddo
+      enddo
+c---------------------
+       LWORK=-1
+      call magmaf_dsyevd('V','L',M,fock,M,RMM(M13),WORK,LWORK
+     > ,IWORK,LWORK,info)
+
+       LWORK=work(1)
+      LIWORK=IWORK(1)
+
+      if(allocated(WORK2)) deallocate (WORK2,IWORK2)
+
+       allocate (WORK2(LWORK),IWORK2(LIWORK))
+
+
+      call magmaf_dsyevd('V','L',M,fock,M,RMM(M13),WORK2,LWORK
+     > ,IWORK2,LIWORK,info)
+#else
+       call dspev('V','L',M,RMM(M5),RMM(M13),X(1,M+1),
+     > M,RMM(M15),info)
+#endif
 #endif
        call g2g_timer_stop('dspev')
+c       do ik=1,M
+c         do jk=1,M
+c         write(45,*) X(ik,M+jk),fock(ik,jk)
+c
+c
+c         enddo
+c
+c       enddo
        call g2g_timer_start('coeff')
 
 c-----------------------------------------------------------
@@ -744,28 +817,44 @@ c new coefficients
          enddo
        enddo
 c
-       do i=1,M
-         do j=1,M
-           X(i,M2+j)=0.D0
-           do k=1,M
-             X(i,M2+j)=X(i,M2+j)+xnano(k,i)*X(k,M+j)
-           enddo
-         enddo
-       enddo
- 
-       call g2g_timer_stop('coeff') 
-       call g2g_timer_start('otras cosas')
+#ifdef magma
+
+      do i=1,M
+        do j=1,M
+            X(i,M2+j)=0.D0
+            do k=1,M
+              X(i,M2+j)=X(i,M2+j)+xnano(k,i)*fock(k,j)
+            enddo
+          enddo
+      enddo
+
+
+
+#else
+      do i=1,M
+        do j=1,M
+          X(i,M2+j)=0.D0
+          do k=1,M
+            X(i,M2+j)=X(i,M2+j)+xnano(k,i)*X(k,M+j)
+          enddo
+        enddo
+      enddo
+#endif
+      call g2g_timer_stop('coeff')
+      call g2g_timer_start('otras cosas')
 c
-c --- For the first iteration, damping on density matrix 
+c --- For the first iteration, damping on density matrix
 c Important for the case of strating guess of AO
 c
-       kk=0
-       do k=1,NCO
-         do i=1,M
-           kk=kk+1
-           RMM(M18+kk-1)=X(i,M2+k)
-         enddo
-       enddo
+
+      kk=0
+      do k=1,NCO
+        do i=1,M
+          kk=kk+1
+          RMM(M18+kk-1)=X(i,M2+k)
+          xnano(k,i)  = X(i,M2+k)
+        enddo
+      enddo
 c
 c Construction of new density matrix and comparison with old one
        kk=0
@@ -782,11 +871,12 @@ c
              ff=4.D0
            endif
 
-           do k=1,NCO
-             RMM(kk)=RMM(kk)+ff*X(i,M2+k)*X(j,M2+k)
-           enddo
-           del=RMM(kk)-tmp
-           if (i.ne.j) then
+          do k=1,NCO
+c            RMM(kk)=RMM(kk)+ff*X(i,M2+k)*X(j,M2+k)
+            RMM(kk)=RMM(kk)+ff*Xnano(k,i)*Xnano(k,j)
+          enddo
+          del=RMM(kk)-tmp
+          if (i.ne.j) then
             del=del*sq2
            endif
            good=good+del**2
@@ -808,7 +898,7 @@ c
          DAMP=0.0D0
        endif
 *
-c--- Damping factor update - 
+c--- Damping factor update -
        DAMP=DAMP0
        IDAMP=0
        if (IDAMP.EQ.1) then
@@ -862,7 +952,7 @@ c        write(*,*) 'good final',good
         old1(i)=RMM(i)
       enddo
 
-      if(noconverge.gt.4) then 
+      if(noconverge.gt.4) then
         write(6,*)  'stop fon not convergion 4 times'
         stop
       endif
@@ -898,8 +988,8 @@ c       write(*,*) 'g2g-Exc',Exc
 #ifdef ULTIMA_G2G
         call g2g_new_grid(igrid)
         call g2g_solve_groups(1, Exc, 0)
-#else      
-#endif       
+#else
+#endif
 #endif
         E=E1+E2+En+Ens+Exc
         if (npas.eq.1) npasw = 0
@@ -1042,8 +1132,9 @@ c      endif
 
       deallocate (kkind,kkinds)
       deallocate(cool,cools)
-      
-c       E=E*627.509391D0 
+      if(allocated(WORK2)) deallocate (WORK2)
+
+c       E=E*627.509391D0
 
       if(timedep.eq.1) then
         call TD()
@@ -1079,4 +1170,4 @@ c
       call g2g_timer_stop('SCF')
       return
       end
-C  -------------------------                                            
+C  -------------------------

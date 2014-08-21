@@ -5,7 +5,7 @@
 #include <fenv.h>
 #include <signal.h>
 #include "common.h"
-#include "cuda/cuda_extra.h"
+#include "cuda_includes.h"
 #include "init.h"
 #include "timer.h"
 #include "partition.h"
@@ -55,11 +55,11 @@ void gpu_set_variables(void);
 template<class T> void gpu_set_atom_positions(const HostMatrix<T>& m);
 }
 //==========================================================================================
-extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int& natom, const unsigned int& max_atoms, const unsigned int& ngaussians, 
-                                    double* r, double* Rm, const unsigned int* Iz, const unsigned int* Nr, const unsigned int* Nr2, unsigned int* Nuc, 
-                                    const unsigned int& M, unsigned int* ncont, const unsigned int* nshell, double* c, double* a, 
-                                    double* RMM, const unsigned int& M18, const unsigned int& M5, const unsigned int& M3, double* rhoalpha, double* rhobeta, 
-                                    const unsigned int& nco, bool& OPEN, const unsigned int& nunp, const unsigned int& nopt, const unsigned int& Iexch, 
+extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int& natom, const unsigned int& max_atoms, const unsigned int& ngaussians,
+                                    double* r, double* Rm, const unsigned int* Iz, const unsigned int* Nr, const unsigned int* Nr2, unsigned int* Nuc,
+                                    const unsigned int& M, unsigned int* ncont, const unsigned int* nshell, double* c, double* a,
+                                    double* RMM, const unsigned int& M18, const unsigned int& M5, const unsigned int& M3, double* rhoalpha, double* rhobeta,
+                                    const unsigned int& nco, bool& OPEN, const unsigned int& nunp, const unsigned int& nopt, const unsigned int& Iexch,
                                     double* e, double* e2, double* e3, double* wang, double* wang2, double* wang3)
 {
 	printf("<======= GPU Code Initialization ========>\n");
@@ -70,7 +70,7 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	cout << "atoms: " << fortran_vars.atoms << endl;
         cout << "max atoms: " << fortran_vars.max_atoms << endl;
         cout << "number of gaussians: " << fortran_vars.gaussians << endl;
-	
+
 	fortran_vars.do_forces = (nopt == 2);
 	cout << "do_forces: " << boolalpha << fortran_vars.do_forces << endl;
 
@@ -82,37 +82,37 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
   signal(SIGFPE, SIG_DFL);
   feenableexcept(FE_INVALID);
   #endif
-	
+
 	fortran_vars.s_funcs = nshell[0];
 	fortran_vars.p_funcs = nshell[1] / 3;
 	fortran_vars.d_funcs = nshell[2] / 6;
         cout << "s: " << fortran_vars.s_funcs  << " p: " << fortran_vars.p_funcs << " d: " << fortran_vars.d_funcs << endl;
 	fortran_vars.spd_funcs = fortran_vars.s_funcs + fortran_vars.p_funcs + fortran_vars.d_funcs;
-
-// M =	# of contractions 
+// M =	# of contractions
 	fortran_vars.m = M;
-	cout << "m: " << fortran_vars.m  << endl;
-		
+	fortran_vars.nco = nco;
+  cout << "m: " << fortran_vars.m  << " nco: " << fortran_vars.nco << endl;
+
 	fortran_vars.iexch = Iexch;
-  	if (Iexch == 4 || Iexch == 5) cout << "***** WARNING ***** : Iexch 4 y 5 no andan bien todavia" << endl;
-  	fortran_vars.lda = (Iexch <= 3);
-  	fortran_vars.gga = !fortran_vars.lda;
-  	assert(0 < Iexch && Iexch <= 9);
-	
+  if (Iexch == 4 || Iexch == 5) cout << "***** WARNING ***** : Iexch 4 y 5 no andan bien todavia" << endl;
+  fortran_vars.lda = (Iexch <= 3);
+  fortran_vars.gga = !fortran_vars.lda;
+  assert(0 < Iexch && Iexch <= 9);
+
 	fortran_vars.atom_positions_pointer = FortranMatrix<double>(r, fortran_vars.atoms, 3, max_atoms);
 	fortran_vars.atom_types.resize(fortran_vars.atoms);
 	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.atom_types(i) = Iz[i] - 1; }
-	
+
 	fortran_vars.shells1.resize(fortran_vars.atoms);
 	fortran_vars.shells2.resize(fortran_vars.atoms);
 	fortran_vars.rm.resize(fortran_vars.atoms);
 
 	/* ignore the 0th element on these */
 	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells1(i) = Nr[Iz[i]];  }
-	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells2(i) = Nr2[Iz[i]]; }		
+	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells2(i) = Nr2[Iz[i]]; }
 	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.rm(i) = Rm[Iz[i]]; }
-  
-	fortran_vars.nucleii = FortranMatrix<uint>(Nuc, fortran_vars.m, 1, 1);	
+
+	fortran_vars.nucleii = FortranMatrix<uint>(Nuc, fortran_vars.m, 1, 1);
 	fortran_vars.contractions = FortranMatrix<uint>(ncont, fortran_vars.m, 1, 1);
         for (uint i = 0; i < fortran_vars.m; i++) {
         	if ((fortran_vars.contractions(i) - 1) > MAX_CONTRACTIONS)  throw runtime_error("Maximum functions per contraction reached!");
@@ -122,21 +122,21 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 
 // nco = number of Molecular orbitals ocupped
 	fortran_vars.nco = nco;
-	
+
 	fortran_vars.OPEN = OPEN;
-        
+
 	if(fortran_vars.OPEN){
 		fortran_vars.nunp = nunp;
                 cout << "LIOAMBER OPEN SHELL DFT :) " << endl;
                 cout << "Number of MO(UP): "<<fortran_vars.nco<<endl;
                 cout << "Number of MO(DOWN): "<<fortran_vars.nco+fortran_vars.nunp<<endl;
-              
+
                 //fortran_vars.ncoa = nco;
-                //fortran_vars.ncob = 
+                //fortran_vars.ncob =
 
                 fortran_vars.rmm_dens_a = FortranMatrix<double>(rhoalpha, fortran_vars.m, fortran_vars.m, fortran_vars.m);
         	fortran_vars.rmm_dens_b = FortranMatrix<double>(rhobeta,  fortran_vars.m, fortran_vars.m, fortran_vars.m);
-		
+
 		//  Matriz de fock
         	fortran_vars.rmm_output_a = FortranMatrix<double>(RMM + (M5 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
 		fortran_vars.rmm_output_b = FortranMatrix<double>(RMM + (M3 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
@@ -148,7 +148,7 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 		// matriz de Fock
 		fortran_vars.rmm_output = FortranMatrix<double>(RMM + (M5 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
 	}
-	
+
 	fortran_vars.e1 = FortranMatrix<double>(e, SMALL_GRID_SIZE, 3, SMALL_GRID_SIZE);
 	fortran_vars.e2 = FortranMatrix<double>(e2, MEDIUM_GRID_SIZE, 3, MEDIUM_GRID_SIZE);
 	fortran_vars.e3 = FortranMatrix<double>(e3, BIG_GRID_SIZE, 3, BIG_GRID_SIZE);
@@ -158,7 +158,7 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 
 	fortran_vars.atom_atom_dists = HostMatrix<double>(fortran_vars.atoms, fortran_vars.atoms);
 	fortran_vars.nearest_neighbor_dists = HostMatrix<double>(fortran_vars.atoms);
-  
+
 #if !CPU_KERNELS
   G2G::gpu_set_variables();
 #endif
@@ -188,7 +188,7 @@ void compute_new_grid(const unsigned int grid_type) {
 			fortran_vars.e = fortran_vars.e3; fortran_vars.wang = fortran_vars.wang3;
 			fortran_vars.shells = fortran_vars.shells2;
 		break;
-	}	
+	}
 
 
   	Timer t_grilla;
@@ -204,7 +204,7 @@ void compute_new_grid(const unsigned int grid_type) {
 
 
   	partition.compute_functions(fortran_vars.do_forces, fortran_vars.gga);
- 
+
 #endif
 }
 //==============================================================================================================
@@ -219,7 +219,7 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
 		atom_positions(i) = make_float3(pos.x, pos.y, pos.z);
 //    cout << atom_positions(i) << endl;
 	}
-  
+
 #if !CPU_KERNELS
 #if FULL_DOUBLE
   	G2G::gpu_set_atom_positions(fortran_vars.atom_positions);
@@ -238,34 +238,6 @@ extern "C" void g2g_new_grid_(const unsigned int& grid_type) {
 	else
 		compute_new_grid(grid_type);
 }
-//==============================================================================================================
-/*void g2g_print(){
-if(fortran_vars.OPEN){
-                uint k=1;
-                uint ANCHO=0;
-                for (uint i = 0; i < fortran_vars.m; i++) {
-                        for (uint j = 0; j <(fortran_vars.m-i); j++) {
-                                cout <<k++<<" "<<fortran_vars.rmm_dens_a(j,1,ANCHO)<<" "<<fortran_vars.rmm_dens_b(j,1,ANCHO)<<endl;
-                        }
-                        ANCHO=ANCHO+fortran_vars.m-i;
-        //              cout <<endl;
-                }
-        }
-
-        else{
-		uint k=1;
-                uint ANCHO=0;
-                for (uint i = 0; i < fortran_vars.m; i++) {
-                        for (uint j = 0; j < (fortran_vars.m-i); j++) {
-                                cout <<k++;
-				printf(" %7.5f\n",fortran_vars.rmm_input_ndens1(j,1,ANCHO));
-                        }
-                        ANCHO=ANCHO+fortran_vars.m-i;
-      //                  cout <<endl;
-                }
-        }
-}*/
-//==============================================================================================================
 
 template<bool compute_rmm, bool lda, bool compute_forces> void g2g_iteration(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr)
 {
@@ -273,9 +245,9 @@ template<bool compute_rmm, bool lda, bool compute_forces> void g2g_iteration(boo
   timers.total.start();
 
   partition.solve(timers, compute_rmm, lda, compute_forces, compute_energy, fort_energy_ptr, fort_forces_ptr, fortran_vars.OPEN);
-  
+
   timers.total.stop();
-  cout << timers << endl;  
+  cout << timers << endl;
 }
 
 //===============================================================================================================
@@ -345,7 +317,7 @@ void read_options(void) {
 	cout << "<====== read_options ========>" << endl;
 	ifstream f("gpu_options");
 	if (!f) { cout << "No \"gpu_options\" file: using defaults" << endl; return; }
-	
+
 	string option;
 	while (f >> option) {
 		cout << option << " ";
@@ -370,7 +342,7 @@ void read_options(void) {
       			{ f >> big_function_cutoff; cout << big_function_cutoff; }
                else if (option == "free_global_memory")
                    	{ f >> free_global_memory; cout << free_global_memory; }
-		
+
 		else throw runtime_error(string("Invalid option: ") + option);
 
 		cout << endl;

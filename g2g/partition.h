@@ -151,15 +151,15 @@ class Partition {
 
       for (std::list<Cube*>::const_iterator it = cubes.begin(); it != cubes.end(); ++it)
       {
-        (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy,cubes_energy_i,cubes_energy_c,cubes_energy_c1,cubes_energy_c2, fort_forces_ptr, OPEN);
+        (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, cubes_energy_c2, fort_forces_ptr, OPEN);
       }
 
       for (std::list<Sphere*>::const_iterator it = spheres.begin(); it != spheres.end(); ++it)
       {
-        (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy,cubes_energy_i,cubes_energy_c,cubes_energy_c1,cubes_energy_c2, fort_forces_ptr, OPEN);
+        (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, spheres_energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1, spheres_energy_c2, fort_forces_ptr, OPEN);
       }
 
-      if(compute_energy) {
+      if(OPEN && compute_energy) {
           std::cout << "Ei: " << cubes_energy_i+spheres_energy_i;
           std::cout << " Ec: " << cubes_energy_c+spheres_energy_c;
           std::cout << " Ec1: " << cubes_energy_c1+spheres_energy_c1;

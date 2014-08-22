@@ -86,7 +86,7 @@ class PointGroup {
 
     void compute_functions(bool forces, bool gga);
     void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,double&,double&,double&,double&,double&,double* fort_forces_ptr, bool open);
-    void solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,double&,double&,double&,double&,double&,double* fort_forces_ptr);
+    void solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,double&,double* fort_forces_ptr);
     void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,double&,double&,double&,double&,double&,double* fort_forces_ptr);
 
     bool is_significative(FunctionType, double exponent, double coeff, double d2);

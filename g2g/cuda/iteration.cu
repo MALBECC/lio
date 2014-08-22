@@ -63,14 +63,13 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
         energy_c2, fort_forces_ptr);
   }
   else {
-    solve_closed(timers, compute_rmm, lda, compute_forces, compute_energy, energy, energy_i, energy_c, energy_c1,
-        energy_c2, fort_forces_ptr);
+    solve_closed(timers, compute_rmm, lda, compute_forces, compute_energy, energy, fort_forces_ptr);
   }
 
 }
 
 template<class scalar_type>
-void PointGroup<scalar_type>::solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, double& energy,double& energy_i, double& energy_c, double& energy_c1, double& energy_c2, double* fort_forces_ptr){
+void PointGroup<scalar_type>::solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, double& energy, double* fort_forces_ptr){
   //uint max_used_memory = 0;
 
   /*** Computo sobre cada cubo ****/

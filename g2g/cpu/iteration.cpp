@@ -22,6 +22,13 @@ using std::vector;
 namespace G2G {
 template<class scalar_type>
 void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,
+                                    double& energy, double& energy_i, double& energy_c, double& energy_c1, double& energy_c2,
+                                    double* fort_forces_ptr, bool open) {
+  solve_closed(timers, compute_rmm, lda, compute_forces, compute_energy, energy, fort_forces_ptr);
+}
+
+template<class scalar_type>
+void PointGroup<scalar_type>::solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,
                                     double& energy, double* fort_forces_ptr)
 {
   HostMatrix<scalar_type> rmm_output;

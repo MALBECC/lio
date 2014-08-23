@@ -4,7 +4,7 @@ CUDAHOME=/opt/cuda
 
 ifeq ($(gcc),1)
   CXX      := g++
-  CXXFLAGS := $(CXXFLAGS) -fPIC -Wall -Wno-long-long -ansi -Wno-unused -I$(CUDAHOME)/include
+  CXXFLAGS := $(CXXFLAGS) -fPIC -Wall -Wno-long-long -ansi -Wno-unused -I$(CUDAHOME)/include 
 else
   CXX      := icc
   CXXFLAGS := $(CXXFLAGS) -fPIC  -vec-report1 -g -I. -I$(CUDAHOME)/include
@@ -13,22 +13,26 @@ endif
 # Debug/release configuration
 ifeq ($(dbg),1)
 	COMMONFLAGS := -g -D_DEBUG
-else 
+else
 	COMMONFLAGS := -DNDEBUG
 	ifeq ($(gcc),1)
     CXXFLAGS  += -O4 -fno-strict-aliasing
 	else
-    CXXFLAGS  += -O3 -fno-strict-aliasing  
+    CXXFLAGS  += -O3 -fno-strict-aliasing
 	endif
 endif
 
-CXXFLAGS  	+= $(COMMONFLAGS)
+ifeq ($(gcc),1)
+  CXXFLAGS      += $(COMMONFLAGS) -I$(PACK_INC_DIR)
+else
+  CXXFLAGS  	+= $(COMMONFLAGS) -I$(MKLROOT)/include
+endif
 
 %.o:%.cpp %.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-  
+
 %.o:%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-  
+
 %.o:%.c %.h
 	$(CC) $(CFLAGS) -c $< -o $@

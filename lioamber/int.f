@@ -93,7 +93,7 @@ c     >        (r(i,3)-r(j,3))**2
 c 50   continue
 c
 c Nuclear Repulsion part ------------------------------------------
-        En=0.D0
+      En=0.D0
 
       do 51 i=1,natom
       do 51 j=1,i-1
@@ -784,7 +784,6 @@ c
          E1=0.D0
 
         do 802 k=1,MM
-c      write(9,*) RMM(M5+k-1)
  802     E1=E1+RMM(k)*RMM(M11+k-1)
 c
 c      write(*,*) 'E1+En =',E1+En
@@ -809,10 +808,6 @@ c      write(*,*) i,r(i,1),r(i,2),r(i,3)
 c     enddo
 c     pause
       deallocate(s0s,s2s,s3s,s4s,Iaux)
-
       return
       end
-c-------------------------------------------------------------------
-
-
- 
+c------------------------------------------------------------------- 

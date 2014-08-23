@@ -31,7 +31,7 @@ c
 c
       dimension Q(3),W(3),Rc(Md),FF(Md),P(Md)
       dimension Jx(M)
-
+      real*8 E2
 *****
 *****
 c scratch space
@@ -464,9 +464,9 @@ c        write(*,*) 'que pasa 2?'
 #ifdef G2G
 c       call g2g_solve_groups(0,0,0)
 #else
-       call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
-     >        M,M18,NCOa,NCOb,RMM,Ex)
-       write(*,*) 'energia cpu',Ex
+c       call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
+c     >        M,M18,NCOa,NCOb,RMM,Ex)
+c       write(*,*) 'energia cpu',Ex
 c      do kk=1,m
 c        do jj=kk,m
 c          write(*,*) 'rmm output',RMM(i)

@@ -74,5 +74,8 @@ __global__ void gpu_update_rmm(scalar_type* factors, uint points, scalar_type* r
         }
     }
 
-    if (valid_thread) rmm[COALESCED_DIMENSION(m) * j + i] = rmm_local;
+    if (valid_thread){ 
+	rmm[COALESCED_DIMENSION(m) * j + i] = rmm_local;
+	//printf("%.4e\n", rmm_local);
+  }
 }

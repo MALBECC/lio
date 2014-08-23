@@ -1,6 +1,5 @@
 /* includes */
 #include <algorithm>
-#include <cuda_runtime.h>
 #include <iostream>
 #include <limits>
 #include <vector>

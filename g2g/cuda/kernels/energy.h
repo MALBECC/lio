@@ -216,7 +216,8 @@ __global__ void gpu_compute_density(scalar_type* const energy, scalar_type* cons
     {
         const int myPoint = blockIdx.y*points + blockIdx.x;
         out_partial_density[myPoint] = fj_sh[position];
-        out_dxyz[myPoint]            = vec_type<scalar_type,4>(fgj_sh[position]);
+	//printf("%.4e ",out_partial_density);
+	out_dxyz[myPoint]            = vec_type<scalar_type,4>(fgj_sh[position]);
         out_dd1[myPoint]             = vec_type<scalar_type,4>(fh1j_sh[position]);
         out_dd2[myPoint]             = vec_type<scalar_type,4>(fh2j_sh[position]);
     }

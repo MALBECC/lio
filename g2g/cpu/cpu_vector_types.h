@@ -1,7 +1,7 @@
 #ifndef __G2G_CPU_VECTOR_TYPES_H__
 #define __G2G_CPU_VECTOR_TYPES_H__
 
-#ifndef __CUDACC__
+#ifdef CPU_KERNELS
 
 #include <math.h>
 #include <sys/types.h>
@@ -10,8 +10,10 @@
 #include <xmmintrin.h>
 #endif
 
-#include "cuda/cuda_extra.h"
+#undef isinf
+#undef isnan
 
+#include "datatypes/cpu_primitives.h"
 namespace G2G {
 #ifdef __INTEL_COMPILER
 	class cfloat4 : public F32vec4 {
@@ -31,16 +33,16 @@ namespace G2G {
   		inline float& y(void) { return (*this)[1]; }
   		inline float& z(void) { return (*this)[2]; }
   		inline float& w(void) { return (*this)[3]; }
-      
+
       cfloat4 operator-(float f) { return *this - cfloat4(f); }
-	
+
     	friend std::ostream& operator<<(std::ostream & os, const cfloat4& a)
-  	  {                                                                                                                                           
+  	  {
   		  float *fp = (float*)&a;
   		  os << "(" << *fp << "," << *(fp+1) << "," << *(fp+2) << "," << *(fp+3) << ")";
         return os;
     	}
-      
+
       inline float length2(void) const { return x() * x() + y() * y() + z() * z(); };
 
       inline operator float4() { return make_float4(x(), y(), z(), w()); }
@@ -48,7 +50,7 @@ namespace G2G {
 
   inline bool isinf(cfloat4 v) { return isinff(v.x()) || isinff(v.y()) || isinff(v.z()) || isinff(v.w()); }
   inline bool isnan(cfloat4 v) { return isnanf(v.x()) || isnanf(v.y()) || isnanf(v.z()) || isnanf(v.w()); }
-	
+
 	class cfloat3 : public cfloat4 {
 		public:
       cfloat3(void) : cfloat4() { }
@@ -68,7 +70,7 @@ namespace G2G {
   		  os << "(" << *fp << "," << *(fp+1) << "," << *(fp+2) << ")";
         return os;
     	}
-		
+
 		private:
 		  cfloat3(float x, float y, float z, float w);
 	};

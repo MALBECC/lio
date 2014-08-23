@@ -3,14 +3,18 @@ MOD_SRCS=$(wildcard mods/*.f)
 # COMMON_SRCS=$(wildcard *.f)
 GARCHA_SRCS=$(wildcard *.f)
 
-MOD_OBJ=$(MOD_SRCS:%.f=%.o) 
+MOD_OBJ=$(MOD_SRCS:%.f=%.o)
 GARCHA_OBJ=$(MOD_OBJ) $(COMMON_SRCS:%.f=%.o) $(GARCHA_SRCS:%.f=%.o)
 
 # flags
+ifeq ($(print), 1)
+        DEFINE += -DPRINT_MATRICES
+endif
+
 ifeq ($(profile),1)
   PROFILE  = -pg
 else
-  PROFILE  =  
+  PROFILE  =
 endif
 
 ifeq ($(cpu_recompute),0)
@@ -39,7 +43,7 @@ endif
 
 ifeq ($(gcc),1)
   CXX = gfortran
-  PACK_LIBS = -L$(PACK_LIB_DIR) -llapack -lblas
+  PACK_LIBS = -L$(PACK_LIB_DIR) -llapack
 else
   CXX = ifort
   ifneq ($(dbg),1)
@@ -62,7 +66,7 @@ ifeq ($(magma),1)
 	LIBS     += -L$(MAGMAROOT)/lib -lmagma
 endif
 
-#eliminada   -lmkl_solver_lp64 
+#eliminada   -lmkl_solver_lp64
 
 # directories
 G2G_CFLAGS=-DG2G
@@ -82,7 +86,7 @@ endif
 
 ## Targets: make ##
 
-all: dirs liblio-g2g.so 
+all: dirs liblio-g2g.so
 
 dirs:
 	mkdir -p obj/garcha_g2g_obj/mods obj/garcha_g2g_obj/

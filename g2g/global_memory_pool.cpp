@@ -1,5 +1,9 @@
 #include "global_memory_pool.h"
 #include <cassert>
+
+// Only include it to cudaGetMemoryInfo to accurately measure the device memory.
+#include "cuda_includes.h"
+
 //TryAlloc return 1 if error, 0 if success
 bool globalMemoryPool::tryAlloc(size_t size)
 {

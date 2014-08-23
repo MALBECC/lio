@@ -39,7 +39,7 @@ c
 c para version en memoria
       ng2=5*ngDyn*(ngDyn+1)/2+3*ngdDyn*(ngdDyn+1)/2+
      >           ngDyn+ngDyn*norbit+Ngrid
-
+      write(*,*) 'ng2 en init',ng2,ngDyn,ngdDyn,norbit,Ngrid
 c      write(*,*) 'ng2 en init',ng2,ngdyn,ngddyn
 
       allocate(X(ngDyn,ng3),XX(ngdDyn,ngdDyn))

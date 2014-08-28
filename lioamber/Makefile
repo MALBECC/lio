@@ -27,24 +27,22 @@ else
   NVCCFLAGS += -DFULL_DOUBLE=0
 endif
 
-DEFINE   = -Dpack -fPIC # -Dmagma 
+DEFINE   = -Dpack -fPIC   
 CFLAGS   = -g -mp1 -ip -O3 -c -cpp  $(DEFINE) $(PROFILE)
 CFLAGS2  = -g -O1 -c -cpp  $(DEFINE) $(PROFILE)
 CFLAGS3  = -g -O3 -c -cpp -parallel   $(DEFINE) $(PROFILE)
 CPPFLAGS = -P -traditional-cpp 
+ARCH=intel64
 ifeq ($(xeon_phi),1)
+  CPPFLAGS += -mmic
+  CFLAGS3 += -mmic
+  CFLAGS2 += -mmic
+  CFLAGS += -mmic
+  LDFLAGS = -mmic
   ARCH=mic
-else
-  ARCH=intel64
 endif
-LIBS=-L/usr/lib -L/usr/lib64 -L../g2g -lg2g -lstdc++ -L$(MKLROOT)/lib/$(ARCH) -I$(MKLROOT)/include $(PROFILE)  -lmkl_lapack95_lp64 -Wl,--start-group -lmkl_intel_lp64 \
-     -lmkl_intel_thread -lmkl_core -Wl,--end-group -liomp5 -lpthread -lm -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g'
-
-ifeq ($(magma),1)
-	DEFINE   += -Dmagma
-	LIBS     += -L$(MAGMAROOT)/lib -lmagma
-endif
-
+LIBS=-L/usr/lib -L/usr/lib64 -L../g2g -lg2g -lstdc++ -L$(MKLROOT)/lib/$(ARCH) -I$(MKLROOT)/include $(PROFILE)  -lmkl_lapack95_lp64 -Wl,--start-group -lmkl_intel_lp64\
+     -lmkl_intel_thread -lmkl_core -Wl,--end-group -liomp5 -lpthread -lm -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g' 
 #eliminada   -lmkl_solver_lp64 
 
 # directories
@@ -71,7 +69,7 @@ dirs:
 	mkdir -p obj/garcha_g2g_obj/mods obj/garcha_g2g_obj/
 
 liblio-g2g.so: dirs $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o)
-	ifort -shared -fPIC -o $@ $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o) $(LIBS)
+	ifort -shared $(LDFLAGS) -fPIC -o $@ $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o) $(LIBS)
 
 
 ## Targets: clean ##

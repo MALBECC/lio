@@ -40,6 +40,8 @@ ifeq ($(xeon_phi),1)
   CFLAGS += -mmic
   LDFLAGS = -mmic
   ARCH=mic
+else
+  ARCH=intel64
 endif
 LIBS=-L/usr/lib -L/usr/lib64 -L../g2g -lg2g -lstdc++ -L$(MKLROOT)/lib/$(ARCH) -I$(MKLROOT)/include $(PROFILE)  -lmkl_lapack95_lp64 -Wl,--start-group -lmkl_intel_lp64\
      -lmkl_intel_thread -lmkl_core -Wl,--end-group -liomp5 -lpthread -lm -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g' 

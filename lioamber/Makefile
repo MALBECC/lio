@@ -31,33 +31,23 @@ else
   NVCCFLAGS += -DFULL_DOUBLE=0
 endif
 
-ifeq ($(dbg),1)
-  DEBUG  = -g
-  DEBUG2 = -g
-  DEBUG3 = -g
-else
-  DEBUG  = -O3
-  DEBUG2 = -O1
-  DEBUG3 = -O3
-endif
+DEFINE   = -Dpack -fPIC   
 
 ifeq ($(gcc),1)
   CXX = gfortran
-  PACK_LIBS = -L$(PACK_LIB_DIR) -llapack
+  PACK_LIBS = -L$(PACK_LIB_DIR) $(PROFILE) -llapack
+  CFLAGS   = -g -O3 -c -cpp $(DEFINE) $(PROFILE)
+  CFLAGS2  = -g -O1 -c -cpp $(DEFINE) $(PROFILE)
+  CFLAGS3  = -g -O3 -c -cpp $(DEFINE) $(PROFILE)
 else
   CXX = ifort
-  ifneq ($(dbg),1)
-    DEBUG  += -mp1 -ip
-    DEBUG3 += -parallel
-  endif
-  PACK_LIBS = -L$(MKLROOT)/lib/intel64 -I$(MKLROOT)/include -lmkl_lapack95_lp64 -Wl,--start-group -lmkl_intel_lp64\
-     -lmkl_intel_thread -lmkl_core -Wl,--end-group -fopenmp
+  PACK_LIBS = -L$(MKLROOT)/lib/intel64 -I$(MKLROOT)/include $(PROFILE) -lmkl_lapack95_lp64 -Wl,--start-group -lmkl_intel_lp64\
+     -lmkl_intel_thread -lmkl_core -Wl,--end-group -liomp5 -lpthread
+  CFLAGS   = -g -mp1 -ip -O3 -c -cpp $(DEFINE) $(PROFILE)
+  CFLAGS2  = -g -O1 -c -cpp $(DEFINE) $(PROFILE)
+  CFLAGS3  = -g -O3 -c -cpp -parallel $(DEFINE) $(PROFILE)
 endif
 
-DEFINE   = -Dpack -fPIC   
-CFLAGS   = $(DEBUG)  -c -cpp $(DEFINE) $(PROFILE)
-CFLAGS2  = $(DEBUG2) -c -cpp $(DEFINE) $(PROFILE)
-CFLAGS3  = $(DEBUG3) -c -cpp $(DEFINE) $(PROFILE)
 CPPFLAGS = -P -traditional-cpp 
 LIBS=-L/usr/lib -L/usr/lib64 -L../g2g -lg2g -lstdc++ $(PACK_LIBS) -lm -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g' 
 
@@ -130,6 +120,8 @@ obj/garcha_g2g_obj/intsolGs.o: intsolGs.f
 	$(CXX) -o $@ $(CFLAGS2) $(G2G_CFLAGS) $<
 
 obj/garcha_g2g_obj/matmulnano.o: matmulnano.f
+	$(CXX) -o $@ $(CFLAGS3)  $(G2G_CFLAGS) $<
+obj/garcha_g2g_obj/fock_commuts.o: fock_commuts.f
 	$(CXX) -o $@ $(CFLAGS3)  $(G2G_CFLAGS) $<
 
 obj/garcha_g2g_obj/conmut.o: conmut.f

@@ -14,10 +14,11 @@ c
       integer:: l
        dimension q(natom),work(1000),IWORK(1000)
        REAL*8 , intent(inout)  :: dipxyz(3)
-       real*8, dimension (:,:), ALLOCATABLE ::xnano,znano
+       real*8, dimension (:,:), ALLOCATABLE::xnano,znano,scratch
+       real*8, dimension (:,:), ALLOCATABLE::scratch1,scratch2
        real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15,rmm13,
-     >   bcoef, suma, FP_PFv
-      real*8, dimension (:,:), allocatable :: fock,fockm,rho,FP_PF,
+     >   bcoef, suma
+      real*8, dimension (:,:), allocatable :: fock,fockm,rho,!,FP_PF,
      >   FP_PFm,EMAT,Y,Ytrans,Xtrans,rho1,EMAT2
 c
        integer ndiist
@@ -51,7 +52,8 @@ c
       Ndens=1
 c---------------------
 c       write(*,*) 'M=',M
-      allocate (znano(M,M),xnano(M,M))
+      allocate (znano(M,M),xnano(M,M),scratch(M,M),scratch1(M,M),
+     >           scratch2(M,M))
 
       npas=npas+1
       E=0.0D0
@@ -297,6 +299,7 @@ c          write(56,*) RMM(M15+1)
 
       call g2g_timer_stop('cholesky')
 
+      call g2g_timer_start('initial guess')
 c
 c CASE OF NO STARTING GUESS PROVIDED, 1 E FOCK MATRIX USED
 c FCe = SCe; (X^T)SX = 1
@@ -308,25 +311,30 @@ c Calculate F' in RMM(M5)
       if((.not.ATRHO).and.(.not.VCINP).and.primera) then
         primera=.false.
         do i=1,M
-          do j=1,M
+! X is upper triangular
+          do j=1,i-1
             X(i,M+j)=0.D0
             do k=1,j
               X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+j+(M2-k)*(k-1)/2-1)
             enddo
-c
-            do k=j+1,M
+            do k=j+1,i
               X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+k+(M2-j)*(j-1)/2-1)
             enddo
-c
+          enddo
+          do j=i,M
+            X(i,M+j)=0.D0
+            do k=1,i
+              X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+j+(M2-k)*(k-1)/2-1)
+            enddo
           enddo
         enddo
-c
+
         kk=0
         do j=1,M
           do i=j,M
             kk=kk+1
             RMM(M5+kk-1)=0.D0
-            do k=1,M
+            do k=1,j
               RMM(M5+kk-1)=RMM(M5+kk-1)+X(i,M+k)*X(k,j)
             enddo
           enddo
@@ -369,11 +377,13 @@ c Recover C from (X^-1)*C
         do i=1,M
           do j=1,M
             X(i,M2+j)=0.D0
-            do k=1,M
+! X is upper triangular
+            do k=i,M
               X(i,M2+j)=X(i,M2+j)+X(i,k)*X(k,M+j)
             enddo
           enddo
         enddo
+      call g2g_timer_stop('initial guess')
 c
 c Density Matrix
 c
@@ -456,8 +466,8 @@ c
       if (DIIS.and.alloqueo) then
         alloqueo=.false.
 c       write(*,*) 'eme=', M
-       allocate(rho1(M,M),rho(M,M),fock(M,M),fockm(MM,ndiis),FP_PF(M,M),
-     >  FP_PFv(MM),FP_PFm(MM,ndiis),EMAT(ndiis+1,ndiis+1),bcoef(ndiis+1)
+       allocate(rho1(M,M),rho(M,M),fock(M,M),fockm(MM,ndiis),
+     >  FP_PFm(MM,ndiis),EMAT(ndiis+1,ndiis+1),bcoef(ndiis+1)
      >  ,suma(MM))
       endif
 c-------------------------------------------------------------------
@@ -515,90 +525,87 @@ c      DAMP=gold
           DAMP=0.0D0
         endif
 
+c-----------------------------------------------------------------------------------------
+c If DIIS is turned on, update fockm with the current transformed F' (into ON
+c basis) and update FP_PFm with the current transformed [F',P']
+c-----------------------------------------------------------------------------------------
         if (DIIS) then
-c--------------Pasamos matriz de densidad a base ON, antes copio la matriz densidad en la matriz rho------
-c aca vamos a tener que dividir por dos los terminos no diagonales
-c ACA TAMOS write(*,*) 'TAMOS ACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+c-----------------------------------------------------------------------------------------
+c Expand F into square form
+c (for better memory access patterns in coming multiplications)
+c-----------------------------------------------------------------------------------------
           do j=1,M
             do k=1,j
-              if (j.eq.k) then
-                rho(j,k)=RMM(j+(M2-k)*(k-1)/2)
-              else
-                rho(j,k)=(RMM(j+(M2-k)*(k-1)/2))/2
-              endif
+              fock(j,k)=RMM(M5+j+(M2-k)*(k-1)/2-1)
             enddo
-c
+            do k=j+1,M
+              fock(j,k)=RMM(M5+k+(M2-j)*(j-1)/2-1)
+            enddo
+          enddo
+c-----------------------------------------------------------------------------------------
+c Expand density matrix into full square form (before, density matrix was set up for triangular sums
+c (sum j>=i) so off-diagonal elements need to be divided by 2 to get square-form numbers)
+c (for better memory access patterns in coming multiplications)
+c-----------------------------------------------------------------------------------------
+          do j=1,M
+            do k=1,j-1
+              rho(j,k)=(RMM(j+(M2-k)*(k-1)/2))/2
+            enddo
+            rho(j,j)=RMM(j+(M2-j)*(j-1)/2)
             do k=j+1,M
               rho(j,k)=RMM(k+(M2-j)*(j-1)/2)/2
             enddo
           enddo
 
-          call matmulnano(rho,Y,rho1,M)
-          rho=rho1
-c
-c------------Ahora tenemos rho transformado en la base ON y en forma cuadrada-----------------------------
-c-------------------------Escritura de fock cuadrada--------------------------------------
-c-----------Parte de abajo a la izquierda(incluyendo terminos diagonales)-----------------
-          do j=1,M
-            do k=1,j
-              fock(j,k)=RMM(M5+j+(M2-k)*(k-1)/2-1)
-            enddo
-c-----------Parte de arriba a la derecha de la matriz (sin incluir terminos diagonales)---
-            do k=j+1,M
-              fock(j,k)=RMM(M5+k+(M2-j)*(j-1)/2-1)
-            enddo
-          enddo
+          ! Calculate F' and [F',P']
+          call calc_fock_commuts(fock,rho,X,Y,scratch,scratch1,
+     >                           scratch2,M)
 
-          call matmulnano(fock,X,rho1,M)
-          fock=rho1                     ! RHO1 lo uso como scratch
 
-c--------------En este punto ya tenemos F transformada en base de ON y en su forma cuadrada-----
-c--------------Acumulamos las matrices de fock (ver si está bien)-------------------------------
-c--------fockm es la matriz que va a acumular en sus col. sucesivas matrices de fockes----------
-
-          do j=1,ndiis-1
+          ! update fockm with F'
+          do j=ndiis-(ndiist-1),ndiis-1
             do i=1,MM
               fockm(i,j)=fockm(i,j+1)
             enddo
           enddo
-
-          do j=1,M
-            do k=1,j
+          do k=1,M
+            do j=k,M
               i=j+(M2-k)*(k-1)/2
               fockm(i,ndiis)=fock(j,k)
             enddo
           enddo
-
-c---------------------------------------------------------------------------------
-c--rho(j,k) y fock(j,k) son las matrices densidad y de fock respect (forma cuadrada)--
-c---------Calculo de conmutadores [F,P]-------------------------------------------
-
-          call conmut(fock,rho,FP_PF,M)
-
-c---------Pasar Conmutador a vector (guardamos la media matriz de abajo)------------------------------------------------
-c#######OJO, SAQUE EL -1########
-          do j=1,M
-            do k=1,j
-              FP_PFv(j+(M2-k)*(k-1)/2)=FP_PF(j,k)
-            enddo
-          enddo
-c----------Acumulamos en las columnas de FP_PFm los sucesivos conmutadores----------
-          do j=1,ndiis-1
+c-----------------------------------------------------------------------------------------
+c now, scratch2 = A = F' * P'; scratch1 = A^T
+c [F',P'] = A - A^T
+c-----------------------------------------------------------------------------------------
+          ! update FP_PFm with [F',P']
+          do j=ndiis-(ndiist-1),ndiis-1
             do i=1,MM
               FP_PFm(i,j)=FP_PFm(i,j+1)
             enddo
           enddo
-          do i=1,MM
-            FP_PFm(i,ndiis)=FP_PFv(i)
+          do k=1,M
+            do j=k,M
+              i=j+(M2-k)*(k-1)/2
+              FP_PFm(i,ndiis)=scratch2(j,k)-scratch1(j,k)
+            enddo
           enddo
         endif
 c
 c-------------Decidiendo cual critero de convergencia usar-----------
+c-----------------------------------------------------------------------------------------
+c Are we doing diis this iteration? (we are if DIIS is turned on and we
+c are not in the first 2 iterations)
+c-----------------------------------------------------------------------------------------
         if (niter.gt.2.and.(DIIS)) then
           hagodiis=.true.
         endif
 
-        if(.not.hagodiis) then
+c-----------------------------------------------------------------------------------------
+c If we are not doing diis this iteration, apply damping to F, save this
+c F in RMM(M3) and put F' = X^T * F * X in RMM(M5)
+c-----------------------------------------------------------------------------------------
+        if(.not.hagodiis) then 
           if(niter.ge.2) then
             do k=1,MM
               kk=M5+k-1
@@ -616,25 +623,29 @@ c
             RMM(kk2)=RMM(kk)
           enddo
 c
+! xnano=X^T
           do i=1,M
-            do j=1,M
-              X(i,M+j)=0.D0
+            ! X is upper triangular
+            do j=1,i
               xnano(i,j)=X(j,i)
             enddo
           enddo
 
+! RMM(M5) gets F' = X^T * F * X
           do j=1,M
             do i=1,M
               X(i,M+j)=0.D0
             enddo
             do k=1,j
-              do i=1,M
+              ! xnano is lower triangular
+              do i=k,M
                 X(i,M+j)=X(i,M+j)+Xnano(i,k)*RMM(M5+j+(M2-k)*(k-1)/2-1)
               enddo
             enddo
 c
             do k=j+1,M
-              do i=1,M
+              ! xnano is lower triangular
+              do i=k,M
                 X(i,M+j)=X(i,M+j)+Xnano(i,k)*RMM(M5+k+(M2-j)*(j-1)/2-1)
               enddo
             enddo
@@ -652,7 +663,8 @@ c
             do i=j,M
               kk=kk+1
               RMM(M5+kk-1)=0.D0
-              do k=1,M
+              ! X is upper triangular
+              do k=1,j
                 RMM(M5+kk-1)=RMM(M5+kk-1)+Xnano(k,i)*X(k,j)
               enddo
             enddo
@@ -1161,8 +1173,8 @@ c
 c-------------------------------------------------
 c      endif
       if(DIIS) then
-        deallocate (Y,Ytrans,Xtrans,fock,fockm,rho,FP_PF,FP_PFv,FP_PFm,
-     >  znano,EMAT, bcoef, suma,rho1)
+        deallocate (Y,Ytrans,Xtrans,fock,fockm,rho,FP_PFm,
+     >  znano,EMAT, bcoef, suma,rho1, scratch, scratch1, scratch2)
       endif
       deallocate (xnano,rmm5,rmm13,rmm15)
 

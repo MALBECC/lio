@@ -10,16 +10,14 @@
 ! =>         = A - A^T
 ! where A = X^T * F * P * Y
 !
-! Output: A (scratch2), A^T (scratch1), F' (fock)
+! Output: A (scratch), A^T (scratch1), F' (fock)
 !-----------------------------------------------------------------------------------------
-      subroutine calc_fock_commuts(fock,rho,X,Y,scratch,
-     >                             scratch1,scratch2,M)
+      subroutine calc_fock_commuts(fock,rho,X,Y,scratch,scratch1,M)
 
           integer, intent(in)    :: M
           REAL*8,  intent(in)    :: rho(M,M),X(M,M),Y(M,M)
           REAL*8,  intent(inout) :: fock(M,M)
           REAL*8,  intent(out)   :: scratch(M,M),scratch1(M,M)
-          REAL*8,  intent(out)   :: scratch2(M,M)
 
           integer i,j,k
 
@@ -59,16 +57,16 @@
             enddo
           enddo
 !---------------------------------------------------------------------
-! * Y = scratch2 = scratch1^1
+! * Y = scratch = scratch^1
 !---------------------------------------------------------------------
-          scratch2=0
+          scratch=0
           do i=1,M
             do j=1,M
               ! Y is lower triangular
               do k=j,M
-                scratch2(i,j)=scratch2(i,j)+scratch1(k,i)*Y(k,j)
+                scratch(i,j)=scratch(i,j)+scratch1(k,i)*Y(k,j)
               enddo
-              scratch1(j,i)=scratch2(i,j)
+              scratch1(j,i)=scratch(i,j)
             enddo
          enddo
       end

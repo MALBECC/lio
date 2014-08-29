@@ -15,7 +15,7 @@ c
        dimension q(natom),work(1000),IWORK(1000)
        REAL*8 , intent(inout)  :: dipxyz(3)
        real*8, dimension (:,:), ALLOCATABLE::xnano,znano,scratch
-       real*8, dimension (:,:), ALLOCATABLE::scratch1,scratch2
+       real*8, dimension (:,:), ALLOCATABLE::scratch1
        real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15,rmm13,
      >   bcoef, suma
       real*8, dimension (:,:), allocatable :: fock,fockm,rho,!,FP_PF,
@@ -52,8 +52,7 @@ c
       Ndens=1
 c---------------------
 c       write(*,*) 'M=',M
-      allocate (znano(M,M),xnano(M,M),scratch(M,M),scratch1(M,M),
-     >           scratch2(M,M))
+      allocate (znano(M,M),xnano(M,M),scratch(M,M),scratch1(M,M))
 
       npas=npas+1
       E=0.0D0
@@ -558,9 +557,7 @@ c-------------------------------------------------------------------------------
           enddo
 
           ! Calculate F' and [F',P']
-          call calc_fock_commuts(fock,rho,X,Y,scratch,scratch1,
-     >                           scratch2,M)
-
+          call calc_fock_commuts(fock,rho,X,Y,scratch,scratch1,M)
 
           ! update fockm with F'
           do j=ndiis-(ndiist-1),ndiis-1
@@ -575,7 +572,7 @@ c-------------------------------------------------------------------------------
             enddo
           enddo
 c-----------------------------------------------------------------------------------------
-c now, scratch2 = A = F' * P'; scratch1 = A^T
+c now, scratch = A = F' * P'; scratch1 = A^T
 c [F',P'] = A - A^T
 c-----------------------------------------------------------------------------------------
           ! update FP_PFm with [F',P']
@@ -587,7 +584,7 @@ c-------------------------------------------------------------------------------
           do k=1,M
             do j=k,M
               i=j+(M2-k)*(k-1)/2
-              FP_PFm(i,ndiis)=scratch2(j,k)-scratch1(j,k)
+              FP_PFm(i,ndiis)=scratch(j,k)-scratch1(j,k)
             enddo
           enddo
         endif
@@ -1174,7 +1171,7 @@ c-------------------------------------------------
 c      endif
       if(DIIS) then
         deallocate (Y,Ytrans,Xtrans,fock,fockm,rho,FP_PFm,
-     >  znano,EMAT, bcoef, suma,rho1, scratch, scratch1, scratch2)
+     >  znano,EMAT, bcoef, suma,rho1, scratch, scratch1)
       endif
       deallocate (xnano,rmm5,rmm13,rmm15)
 

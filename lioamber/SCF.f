@@ -591,8 +591,11 @@ c-------------------------------------------------------------------------------
 c
 c-------------Decidiendo cual critero de convergencia usar-----------
 c-----------------------------------------------------------------------------------------
-c Are we doing diis this iteration? (we are if DIIS is turned on and we
-c are not in the first 2 iterations)
+c iF DIIS=T
+c Do simple damping 2nd iteration; DIIS afterwards
+c-----------------------------------------------------------------------------------------
+c IF DIIS=F
+c Always do damping (after first iteration)
 c-----------------------------------------------------------------------------------------
         if (niter.gt.2.and.(DIIS)) then
           hagodiis=.true.
@@ -600,7 +603,7 @@ c-------------------------------------------------------------------------------
 
 c-----------------------------------------------------------------------------------------
 c If we are not doing diis this iteration, apply damping to F, save this
-c F in RMM(M3) and put F' = X^T * F * X in RMM(M5)
+c F in RMM(M3) for next iteration's damping and put F' = X^T * F * X in RMM(M5)
 c-----------------------------------------------------------------------------------------
         if(.not.hagodiis) then 
           if(niter.ge.2) then
@@ -698,6 +701,7 @@ c--------Pasar columnas de FP_PFm a matrices y multiplicarlas y escribir EMAT---
         if(DIIS) then
           deallocate(EMAT)
           allocate(EMAT(ndiist+1,ndiist+1))
+! Before ndiis iterations, we just start from the old EMAT
           if(niter.gt.1.and.niter.le.ndiis) then
             EMAT=0
             do k=1,ndiist-1
@@ -706,6 +710,7 @@ c--------Pasar columnas de FP_PFm a matrices y multiplicarlas y escribir EMAT---
               enddo
             enddo
             deallocate (EMAT2)
+! After ndiis iterations, we start shifting out the oldest iteration stored
           elseif(niter.gt.ndiis) then
             do k=1,ndiist-1
               do kk=1,ndiist-1
@@ -879,7 +884,8 @@ c
       do i=1,M
         do j=1,M
           X(i,M2+j)=0.D0
-          do k=1,M
+          ! xnano is lower triangular
+          do k=i,M
             X(i,M2+j)=X(i,M2+j)+xnano(k,i)*X(k,M+j)
           enddo
         enddo

@@ -57,7 +57,7 @@
             enddo
           enddo
 !---------------------------------------------------------------------
-! * Y = scratch = scratch^1
+! * Y = scratch = scratch1^1
 !---------------------------------------------------------------------
           scratch=0
           do i=1,M
@@ -66,6 +66,9 @@
               do k=j,M
                 scratch(i,j)=scratch(i,j)+scratch1(k,i)*Y(k,j)
               enddo
+              ! the next k loop will only use values of scratch1(first
+              ! index) > j, so at this point we can overwrite anything
+              ! behind that and just reuse scratch1 as the transpose
               scratch1(j,i)=scratch(i,j)
             enddo
          enddo

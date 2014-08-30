@@ -53,6 +53,8 @@ template<class T> void gpu_set_atom_positions(const HostMatrix<T>& m) {
 
 template void gpu_set_atom_positions<float3>(const HostMatrix<float3>& m);
 template void gpu_set_atom_positions<double3>(const HostMatrix<double3>& m);
+//template<class scalar_type,true> __global__ void gpu_update_rmm(scalar_type* factors, uint points, scalar_type* rmm, scalar_type* function_values, uint m);
+//template<class scalar_type,false> __global__ void gpu_update_rmm(scalar_type* factors, uint points, scalar_type* rmm, scalar_type* function_values, uint m);
 
 template<class scalar_type>
 void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
@@ -310,8 +312,8 @@ void PointGroup<scalar_type>::solve_closed(Timers& timers, bool compute_rmm, boo
     timers.forces.pause_and_sync();
   }
 
-  /* compute RMM */
   timers.rmm.start_and_sync();
+  /* compute RMM */
   if (compute_rmm) {
     threadBlock = dim3(RMM_BLOCK_SIZE_XY, RMM_BLOCK_SIZE_XY);
     uint blocksPerRow = divUp(group_m, RMM_BLOCK_SIZE_XY);
@@ -319,7 +321,12 @@ void PointGroup<scalar_type>::solve_closed(Timers& timers, bool compute_rmm, boo
     threadGrid = dim3(blocksPerRow*(blocksPerRow+1)/2);
 
     CudaMatrix<scalar_type> rmm_output_gpu(COALESCED_DIMENSION(group_m), group_m);
-    gpu_update_rmm<<<threadGrid, threadBlock>>>(factors_gpu.data, number_of_points, rmm_output_gpu.data, function_values.data, group_m);
+    // For calls with a single block (pretty common with cubes) don't bother doing the arithmetic to get block position in the matrix
+    if (blocksPerRow > 1) {
+        gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_gpu.data, number_of_points, rmm_output_gpu.data, function_values.data, group_m);
+    } else {
+        gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(factors_gpu.data, number_of_points, rmm_output_gpu.data, function_values.data, group_m);
+    }
     cudaAssertNoError("update_rmm");
 
     /*** Contribute this RMM to the total RMM ***/
@@ -692,10 +699,10 @@ void PointGroup<scalar_type>::solve_opened(Timers& timers, bool compute_rmm, boo
     	CudaMatrix<scalar_type> rmm_output_b_gpu(COALESCED_DIMENSION(group_m), group_m);
     	// Kernel
 //	cout<<"alpha"<<endl;
-	gpu_update_rmm<<<threadGrid, threadBlock>>>(factors_a_gpu.data, number_of_points, rmm_output_a_gpu.data, function_values.data, group_m);
+	gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_a_gpu.data, number_of_points, rmm_output_a_gpu.data, function_values.data, group_m);
 //	cout<<endl;
 //        cout<<"beta"<<endl;
-        gpu_update_rmm<<<threadGrid, threadBlock>>>(factors_b_gpu.data, number_of_points, rmm_output_b_gpu.data, function_values.data, group_m);
+        gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_b_gpu.data, number_of_points, rmm_output_b_gpu.data, function_values.data, group_m);
     	//cout<<endl;
         cudaAssertNoError("update_rmm");
 

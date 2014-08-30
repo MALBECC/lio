@@ -1,0 +1,7 @@
+&lio
+ nsol=0
+ natom=48
+ charge=0
+ nmax=10
+ vcinp=f
+&end

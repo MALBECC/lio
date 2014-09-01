@@ -9,10 +9,10 @@ ifeq ($(cpu),1)
   CPU_SOURCES  := $(wildcard cpu/*.cpp)
   SRCS         += $(CPU_SOURCES)
   OBJ          += $(CPU_SOURCES:%.cpp=%.o)
-  CXXFLAGS     += -DCPU_KERNELS=1
+  CXXFLAGS     += -DCPU_KERNELS=1 -I$(MKLROOT)/include
   CPU          := 1
 ifeq ($(openmp),1)
-	CXXFLAGS += -openmp
+  CXXFLAGS += -openmp
 endif
 
 else
@@ -59,16 +59,6 @@ ifeq ($(full_double),1)
 else
   CXXFLAGS += -DFULL_DOUBLE=0
   NVCCFLAGS += -DFULL_DOUBLE=0
-endif
-
-## Define libraries
-ifeq ($(xeon_phi),1)
-  LIBRARIES := ../gsl/lib/libgsl.a ../gsl/lib/libgslcblas.a $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt   
-  LDFLAGS += -mmic
-else
-  LIBRARIES := $(shell pkg-config gsl --libs) $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
-  CXXFLAGS += $(shell pkg-config gsl --cflags)
-  NVCCFLAGS += $(shell pkg-config gsl --cflags)
 endif
 
 ## Targets

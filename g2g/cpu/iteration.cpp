@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "mkl.h"
 #include "../common.h"
 #include "../init.h"
 #include "../cuda_includes.h"
@@ -18,10 +19,57 @@ using std::endl;
 using std::list;
 using std::vector;
 
-namespace G2G {
-template<class scalar_type>
-void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,
-                                    double& energy, double* fort_forces_ptr)
+namespace G2G { 
+    static inline float dotp(int size, const float * a, int da, const float * b, int db){
+        return cblas_sdot(size, a, da, b, db);
+    }
+
+    static inline double dotp(int size, const double * a, int da, const double * b, int db){
+        return cblas_ddot(size, a, da, b, db);
+    }
+
+    template<class scalar_type>
+    static HostMatrix<scalar_type> getcomp(const HostMatrix< vec_type<scalar_type, 3> > & m, int comp) {
+        HostMatrix<scalar_type> res; res.resize(m.width, m.height); res.zero();
+        for(int i = 0; i < m.width; i++){
+            for(int j = 0; j < m.height; j++) {
+                switch(comp){
+                case 0: res(i,j) = m(i,j).x(); break;
+                case 1: res(i,j) = m(i,j).y(); break;
+                case 2: res(i,j) = m(i,j).z(); break;
+                }
+            }
+        }
+        return res;
+    }
+
+    template<class scalar_type>
+    static HostMatrix<scalar_type> proyect_hessian(const HostMatrix< vec_type<scalar_type, 3> > & m, int hessianp, int comp) {
+        HostMatrix<scalar_type> res; res.resize((m.width + 1) / 2, m.height); res.zero();
+        for(int i = hessianp, k = 0; i < m.width; i += 2, k++){
+            for(int j = 0; j < m.height; j++) {
+                switch(comp){
+                case 0: res(k,j) = m(i,j).x(); break;
+                case 1: res(k,j) = m(i,j).y(); break;
+                case 2: res(k,j) = m(i,j).z(); break;
+                }
+            }
+        }
+        return res;
+    }
+
+    template<class scalar_type>
+    static inline vec_type<scalar_type, 3> dotp_compwise(int size, const HostMatrix<scalar_type> & xcomp, const HostMatrix<scalar_type> & 
+        ycomp, const HostMatrix<scalar_type> & zcomp, int row, const scalar_type * R)
+    {
+        scalar_type x = 0.0,y = 0.0,z = 0.0;
+        x = dotp(size, xcomp.row(row), 1, R, 1);
+        y = dotp(size, ycomp.row(row), 1, R, 1);
+        z = dotp(size, zcomp.row(row), 1, R, 1);
+        return vec_type<scalar_type, 3>(x,y,z);
+    }
+    
+    template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, double& energy, double* fort_forces_ptr)
 {
   HostMatrix<scalar_type> rmm_output;
   uint group_m = total_functions();
@@ -46,6 +94,23 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   vector<scalar_type> factors_rmm(points.size(),0);
   /******** each point *******/
   vector<Point> _points(points.begin(),points.end());
+
+  HostMatrix<scalar_type> hPX,hPY,hPZ,hIX,hIY,hIZ,gX,gY,gZ; 
+ 
+  if(!lda){
+      hPX = proyect_hessian(hessian_values,0,0);
+      hPY = proyect_hessian(hessian_values,0,1);
+      hPZ = proyect_hessian(hessian_values,0,2);
+
+      hIX = proyect_hessian(hessian_values,1,0);
+      hIY = proyect_hessian(hessian_values,1,1);
+      hIZ = proyect_hessian(hessian_values,1,2);
+
+      gX = getcomp(gradient_values,0);
+      gY = getcomp(gradient_values,1);
+      gZ = getcomp(gradient_values,2);
+  }
+
 #pragma omp parallel for reduction(+:localenergy)
   for(int point = 0; point<_points.size(); point++)
   {
@@ -70,7 +135,6 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
     }
     else {
       for (int i = 0; i < group_m; i++) {
-        scalar_type w = 0.0;
         vec_type3 w3(0,0,0);
         vec_type3 ww1(0,0,0);
         vec_type3 ww2(0,0,0);
@@ -80,19 +144,12 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
         vec_type3 Fhi1(hessian_values(2 * (i + 0) + 0, point));
         vec_type3 Fhi2(hessian_values(2 * (i + 0) + 1, point));
 
-        for (uint j = 0; j <= i; j++) {
-          scalar_type rmm = rmm_input(j,i);
-          scalar_type Fj = function_values(j, point);
-          w += Fj * rmm;
+        const scalar_type * r = rmm_input.row(i);
+        scalar_type w = dotp(i+1, function_values.row(point), 1, r, 1);
+        w3 = dotp_compwise(i+1, gX, gY, gZ, point, r);
+        ww1 = dotp_compwise(i+1, hPX, hPY, hPZ, point, r);
+        ww2 = dotp_compwise(i+1, hIX, hIY, hIZ, point, r);
 
-          vec_type3 Fgj(gradient_values(j, point));
-          w3 += Fgj * rmm;
-
-          vec_type3 Fhj1(hessian_values(2 * (j + 0) + 0, point));
-          vec_type3 Fhj2(hessian_values(2 * (j + 0) + 1, point));
-          ww1 += Fhj1 * rmm;
-          ww2 += Fhj2 * rmm;
-        }
         partial_density += Fi * w;
 
         dxyz += Fgi * w + w3 * Fi;

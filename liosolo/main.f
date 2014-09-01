@@ -7,14 +7,14 @@ c---------------------------------------------------------------------
 
       character(len=20)::argument,inpfile,inpbasis,inpcoords
       integer::charge
-      logical::filexist
+      logical::filexist,writeforces
       REAL*8, dimension (:,:), ALLOCATABLE   :: dxyzqm
       namelist /lio/ natom,nsol,charge,OPEN,NMAX,Nunp,VCINP,frestartin,
      > GOLD,told,rmax,rmaxs,predcoef,
      > idip,writexyz,intsoldouble,DIIS,ndiis,dgtrig,
      > Iexch,integ,dens,igrid,igrid2,timedep, tdstep, ntdstep,
      > propagator,NBCH,
-     > field,a0,epsilon,exter,Fx,Fy,Fz, tdrestart, writedens
+     > field,a0,epsilon,exter,Fx,Fy,Fz, tdrestart, writedens,writeforces
 
       integer :: ifind, ierr
 
@@ -58,7 +58,7 @@ c---------------------------------------------------------------------
       propagator=1
       tdrestart=.false.
       writedens=.true.
-
+      writeforces=.false.
       narg=command_argument_count()
 
       do i=1, narg
@@ -156,18 +156,21 @@ c--------------------------------------------------------
 c-------------------------------------------------------- 
 
        write(*,*) 'SCF ENRGY=',escf 
-        
+
+      if(writeforces) then        
+       open(unit=123,file='fuerzas')
        allocate (dxyzqm(3,natom))
        dxyzqm=0.0
-c       call dft_get_qm_forces(dxyzqm)
-       call g2g_solve_groups(3, Exc, dxyzqm)
+       call dft_get_qm_forces(dxyzqm)
+c       call g2g_solve_groups(3, Exc, dxyzqm)
 c       write(*,*) dxyzqm
 
-c       do k=1,natom
-c         write(*,'("fuerza",I,D,D,D)') 
-c     >     k,dxyzqm(k,1),dxyzqm(k,2),dxyzqm(k,3)
-c       enddo
-       
+       do k=1,natom
+         write(123,'("fuerza",I,D,D,D)') 
+     >     k,dxyzqm(k,1),dxyzqm(k,2),dxyzqm(k,3)
+       enddo
+       deallocate (dxyzqm)
+       endif 
        call lio_finalize()     
        end
 

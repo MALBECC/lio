@@ -4,6 +4,7 @@ dir=$(readlink -f ../performance-measures/hemo-$runid)
 pushd ../../g2g
 make clean && make -j cpu=1 time=1
 cd ..
+rm liosolo/liosolo
 make cpu=1 time=1
 popd
 mkdir -p $dir

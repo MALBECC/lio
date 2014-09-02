@@ -86,6 +86,8 @@ namespace G2G {
   timers.density.start();
   HostMatrix<scalar_type> rmm_input(group_m, group_m);
   get_rmm_input(rmm_input);
+  rmm_input.build_aligned();
+  function_values.build_aligned();
   timers.density.pause();
 
   HostMatrix<vec_type3> forces(total_nucleii(), 1); forces.zero();
@@ -109,6 +111,18 @@ namespace G2G {
       gX = getcomp(gradient_values,0);
       gY = getcomp(gradient_values,1);
       gZ = getcomp(gradient_values,2);
+
+      hPX.build_aligned();
+      hPY.build_aligned();
+      hPZ.build_aligned();
+
+      hIX.build_aligned();
+      hIY.build_aligned();
+      hIZ.build_aligned();
+
+      gX.build_aligned();
+      gY.build_aligned();
+      gZ.build_aligned();
   }
 
 #pragma omp parallel for reduction(+:localenergy)

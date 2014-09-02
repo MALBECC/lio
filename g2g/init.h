@@ -14,7 +14,7 @@ namespace G2G {
   };
 
   struct FortranVars {
-    uint atoms, max_atoms, gaussians;
+    uint atoms, clatoms, max_atoms, gaussians;
     bool normalize;
 #if FULL_DOUBLE
     double normalization_factor;
@@ -31,8 +31,12 @@ namespace G2G {
     GridType grid_type;
     GridSize grid_size;
     FortranMatrix<double> atom_positions_pointer;
+    FortranMatrix<double> clatom_positions_pointer;
+    FortranMatrix<double> clatom_charges_pointer;
     HostMatrix<double3> atom_positions;
+    HostMatrix<double3> clatom_positions;
     HostMatrix<uint> atom_types;
+    HostMatrix<double> clatom_charges;
     HostMatrix<uint> shells, shells1, shells2;
     HostMatrix<double> rm;
     HostMatrix<double> atom_atom_dists, nearest_neighbor_dists;

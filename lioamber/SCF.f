@@ -1025,6 +1025,9 @@ c        write(*,*) 'good final',good
       endif
 
 c
+!    CH - Why call intsol again here? with the .false. parameter,
+!    E1s is not recalculated, which would be the only reason to do
+!    this again; Ens isn't changed from before...
 c -- SOLVENT CASE --------------------------------------
 c      if (sol) then
       call g2g_timer_start('intsol 2')
@@ -1047,6 +1050,7 @@ c       call g2g_timer_start('exchnum')
         call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,NCO,Exc,nopt)
 #else
+      ! Resolve with last density to get XC energy
         call g2g_new_grid(igrid)
         call g2g_solve_groups(1, Exc, 0)
 c       write(*,*) 'g2g-Exc',Exc
@@ -1058,6 +1062,14 @@ c       write(*,*) 'g2g-Exc',Exc
 #else
 #endif
 #endif
+        ! -------------------------------------------------
+        ! Total SCF energy = 
+        ! E1 - kinetic+nuclear attraction+QM/MM interaction
+        ! E2 - Coulomb
+        ! En - nuclear-nuclear repulsion
+        ! Ens - MM point charge-nuclear interaction
+        ! Exc - exchange-correlation
+        ! -------------------------------------------------
         E=E1+E2+En+Ens+Exc
         if (npas.eq.1) npasw = 0
         if (npas.gt.npasw) then
@@ -1116,6 +1128,8 @@ c u in Debyes
 c
 c calculates Mulliken poputations
 c       if (ipop.eq.1) then
+      
+      ! call int1 again to recalculate overlap (for Mulliken charges)
       call int1(En)
 c
 c--------------------------------------------------------------

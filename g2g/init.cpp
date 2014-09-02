@@ -53,6 +53,7 @@ extern "C" void g2g_init_(void)
 namespace G2G {
 void gpu_set_variables(void);
 template<class T> void gpu_set_atom_positions(const HostMatrix<T>& m);
+template<class T,class U> void gpu_set_clatoms(const HostMatrix<T>& m_pos, const HostMatrix<U>& m_charge);
 }
 //==========================================================================================
 extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int& natom, const unsigned int& max_atoms, const unsigned int& ngaussians,
@@ -171,6 +172,16 @@ extern "C" void g2g_deinit_(void) {
   partition.clear();
 }
 //============================================================================================================
+// Gets the Fortran pointers for MM locations/charges
+extern "C" void g2g_mm_init_(const unsigned int& nclatom, double* r_all, double* pc) {
+	fortran_vars.clatoms = nclatom;
+	cout << "MM point charges: " << fortran_vars.clatoms << endl;
+        if (fortran_vars.clatoms > 0) {
+	    fortran_vars.clatom_positions_pointer = FortranMatrix<double>(r_all + fortran_vars.atoms, fortran_vars.clatoms, 3, fortran_vars.atoms+nclatom);
+	    fortran_vars.clatom_charges_pointer = FortranMatrix<double>(pc + fortran_vars.atoms, fortran_vars.clatoms, 1, fortran_vars.atoms+nclatom);
+        }
+}
+//============================================================================================================
 void compute_new_grid(const unsigned int grid_type) {
 	switch(grid_type) {
 		case 0:
@@ -226,6 +237,34 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
 #else
   	G2G::gpu_set_atom_positions(atom_positions);
 #endif
+#endif
+
+// CH - 9/2/2014
+// sends MM atom positions/charges to device
+// code in prepartion for QM/MM forces (it works, but no QM/MM code yet, no point in sending the stuff)
+#if 0
+        if (fortran_vars.clatoms > 0) {
+	    HostMatrixFloat3 clatom_positions(fortran_vars.clatoms);	// gpu version (float3)
+	    fortran_vars.clatom_positions.resize(fortran_vars.clatoms);	// cpu version (double3)
+	    HostMatrixFloat clatom_charges(fortran_vars.clatoms);	// gpu version (float)
+  	    fortran_vars.clatom_charges.resize(fortran_vars.clatoms);
+	    for (uint i = 0; i < fortran_vars.clatoms; i++) {
+		double3 pos = make_double3(fortran_vars.clatom_positions_pointer(i, 0), fortran_vars.clatom_positions_pointer(i, 1), fortran_vars.clatom_positions_pointer(i, 2));
+                double charge = fortran_vars.clatom_charges_pointer(i);
+		fortran_vars.clatom_positions(i) = pos;
+		clatom_positions(i) = make_float3(pos.x, pos.y, pos.z);
+                fortran_vars.clatom_charges(i) = charge;
+                clatom_charges(i) = float(charge);
+	    }
+#if !CPU_KERNELS
+#if FULL_DOUBLE
+  	    G2G::gpu_set_clatoms(fortran_vars.clatom_positions,fortran_vars.clatom_charges);
+#else
+  	    G2G::gpu_set_clatoms(clatom_positions,clatom_charges);
+#endif
+#endif
+
+        }
 #endif
 	compute_new_grid(grid_type);
 }

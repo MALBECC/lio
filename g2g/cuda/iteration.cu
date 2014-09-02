@@ -50,9 +50,16 @@ void gpu_set_variables(void) {
 template<class T> void gpu_set_atom_positions(const HostMatrix<T>& m) {
   cudaMemcpyToSymbol(gpu_atom_positions, m.data, m.bytes(), 0, cudaMemcpyHostToDevice);
 }
+template<class T, class U> void gpu_set_clatoms(const HostMatrix<T>& m_pos, const HostMatrix<U>& m_charge) {
+  cudaMemcpyToSymbol(gpu_clatoms, &fortran_vars.clatoms, sizeof(fortran_vars.clatoms), 0, cudaMemcpyHostToDevice);
+  cudaMemcpyToSymbol(gpu_clatom_positions, m_pos.data, m_pos.bytes(), 0, cudaMemcpyHostToDevice);
+  cudaMemcpyToSymbol(gpu_clatom_charges, m_charge.data, m_charge.bytes(), 0, cudaMemcpyHostToDevice);
+}
 
 template void gpu_set_atom_positions<float3>(const HostMatrix<float3>& m);
 template void gpu_set_atom_positions<double3>(const HostMatrix<double3>& m);
+template void gpu_set_clatoms<float3,float>(const HostMatrix<float3>& m_pos, const HostMatrix<float>& m_charge);
+template void gpu_set_clatoms<double3,double>(const HostMatrix<double3>& m_pos, const HostMatrix<double>& m_charge);
 //template<class scalar_type,true> __global__ void gpu_update_rmm(scalar_type* factors, uint points, scalar_type* rmm, scalar_type* function_values, uint m);
 //template<class scalar_type,false> __global__ void gpu_update_rmm(scalar_type* factors, uint points, scalar_type* rmm, scalar_type* function_values, uint m);
 

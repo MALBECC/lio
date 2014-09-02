@@ -698,18 +698,27 @@ void PointGroup<scalar_type>::solve_opened(Timers& timers, bool compute_rmm, boo
   timers.rmm.start_and_sync();
   if (compute_rmm) {
 	//cout<<"EMPEZANDO GPU_UPDATE_RMM"<<endl;
-	threads = dim3(group_m, group_m);
+	//threads = dim3(group_m, group_m);
     	threadBlock = dim3(RMM_BLOCK_SIZE_XY, RMM_BLOCK_SIZE_XY);
-    	threadGrid = divUp(threads, threadBlock);
+    	//threadGrid = divUp(threads, threadBlock);
+        uint blocksPerRow = divUp(group_m, RMM_BLOCK_SIZE_XY);
+        // Only use enough blocks for lower triangle
+        threadGrid = dim3(blocksPerRow*(blocksPerRow+1)/2);
 
     	CudaMatrix<scalar_type> rmm_output_a_gpu(COALESCED_DIMENSION(group_m), group_m);
     	CudaMatrix<scalar_type> rmm_output_b_gpu(COALESCED_DIMENSION(group_m), group_m);
     	// Kernel
 //	cout<<"alpha"<<endl;
-	gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_a_gpu.data, number_of_points, rmm_output_a_gpu.data, function_values.data, group_m);
+        // For calls with a single block (pretty common with cubes) don't bother doing the arithmetic to get block position in the matrix
+        if (blocksPerRow > 1) {
+	    gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_a_gpu.data, number_of_points, rmm_output_a_gpu.data, function_values.data, group_m);
 //	cout<<endl;
 //        cout<<"beta"<<endl;
-        gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_b_gpu.data, number_of_points, rmm_output_b_gpu.data, function_values.data, group_m);
+            gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_b_gpu.data, number_of_points, rmm_output_b_gpu.data, function_values.data, group_m);
+        } else {
+	    gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(factors_a_gpu.data, number_of_points, rmm_output_a_gpu.data, function_values.data, group_m);
+            gpu_update_rmm<scalar_type,false><<<threadGrid, threadBlock>>>(factors_b_gpu.data, number_of_points, rmm_output_b_gpu.data, function_values.data, group_m);
+        }
     	//cout<<endl;
         cudaAssertNoError("update_rmm");
 

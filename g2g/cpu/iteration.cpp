@@ -34,7 +34,8 @@ static inline double * do_trmm(const HostMatrix<double> & triagmat, const HostMa
     return NULL;
 }
 
-static inline float * do_trmm_proyect(const HostMatrix<float> & triagmat, const HostMatrix< vec_type< float, 3> > & genmat, int compo, int skip, int start) {
+template< int compo, int skip, int start >
+static inline float * do_trmm_proyect(const HostMatrix<float> & triagmat, const HostMatrix< vec_type< float, 3> > & genmat) {
     int width = genmat.width / skip;
     float * res = (float *) mkl_malloc(width * genmat.height * sizeof(float),64);
     for(int row = 0, pos = 0; row < genmat.height; row++){
@@ -48,7 +49,8 @@ static inline float * do_trmm_proyect(const HostMatrix<float> & triagmat, const 
     return res;
 }
 
-static inline double * do_trmm_proyect(const HostMatrix<double> & triagmat, const HostMatrix< vec_type< double, 3> > & genmat, int compo, int skip, int start) {
+template< int compo, int skip, int start >
+static inline double * do_trmm_proyect(const HostMatrix<double> & triagmat, const HostMatrix< vec_type< double, 3> > & genmat) {
     return NULL;
 }
 
@@ -84,15 +86,15 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
  
   if(!lda){
     wv   = do_trmm(rmm_input, function_values);
-    w3x  = do_trmm_proyect(rmm_input, gradient_values, 0, 1, 0);
-    w3y  = do_trmm_proyect(rmm_input, gradient_values, 1, 1, 0);
-    w3z  = do_trmm_proyect(rmm_input, gradient_values, 2, 1, 0);
-    ww1x = do_trmm_proyect(rmm_input, hessian_values, 0, 2, 0);
-    ww1y = do_trmm_proyect(rmm_input, hessian_values, 1, 2, 0);
-    ww1z = do_trmm_proyect(rmm_input, hessian_values, 2, 2, 0);
-    ww2x = do_trmm_proyect(rmm_input, hessian_values, 0, 2, 1);
-    ww2y = do_trmm_proyect(rmm_input, hessian_values, 1, 2, 1);
-    ww2z = do_trmm_proyect(rmm_input, hessian_values, 2, 2, 1);
+    w3x  = do_trmm_proyect<0,1,0>(rmm_input, gradient_values);
+    w3y  = do_trmm_proyect<1,1,0>(rmm_input, gradient_values);
+    w3z  = do_trmm_proyect<2,1,0>(rmm_input, gradient_values);
+    ww1x = do_trmm_proyect<0,2,0>(rmm_input, hessian_values);
+    ww1y = do_trmm_proyect<1,2,0>(rmm_input, hessian_values);
+    ww1z = do_trmm_proyect<2,2,0>(rmm_input, hessian_values);
+    ww2x = do_trmm_proyect<0,2,1>(rmm_input, hessian_values);
+    ww2y = do_trmm_proyect<1,2,1>(rmm_input, hessian_values);
+    ww2z = do_trmm_proyect<2,2,1>(rmm_input, hessian_values);
   }
 
 #pragma omp parallel for reduction(+:localenergy)

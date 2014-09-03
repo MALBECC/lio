@@ -43,7 +43,7 @@ template<class T> void HostMatrix<T>::alloc_data(void) {
     assert(false);
     #endif
 	}
-	else this->data = new T[this->elements()];
+	else this->data = (T * ) mkl_malloc(this->bytes(), 64);
 
 	assert(this->data);
 }
@@ -74,7 +74,7 @@ template<class T> void HostMatrix<T>::dealloc_data(void) {
     assert(false);
     #endif
   }
-	else delete[] this->data;
+	else mkl_free(this->data);
 
   if(this->alignedData) mkl_free(this->alignedData);
 }

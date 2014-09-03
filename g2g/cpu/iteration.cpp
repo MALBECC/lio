@@ -20,12 +20,14 @@ using std::list;
 using std::vector;
 
 namespace G2G { 
-    static inline float dotp(int size, const float * a, int da, const float * b, int db){
-        return cblas_sdot(size, a, da, b, db);
+    static inline void matmul(const HostMatrix<float> & mat, const float * vec, float * res) {
+        cblas_sgemv(CblasRowMajor,CblasNoTrans,mat.width,mat.height,1.0,mat.asArray(),mat.width,
+            vec, 1, 0.0, res, 1);
     }
 
-    static inline double dotp(int size, const double * a, int da, const double * b, int db){
-        return cblas_ddot(size, a, da, b, db);
+    static inline void matmul(const HostMatrix<double> & mat, const double * vec, double * res) {
+        cblas_dgemv(CblasRowMajor,CblasNoTrans,mat.width,mat.height,1.0,mat.asArray(),mat.width,
+            vec, 1, 0.0, res, 1);
     }
 
     template<class scalar_type>
@@ -58,18 +60,8 @@ namespace G2G {
         return res;
     }
 
-    template<class scalar_type>
-    static inline vec_type<scalar_type, 3> dotp_compwise(int size, const HostMatrix<scalar_type> & xcomp, const HostMatrix<scalar_type> & 
-        ycomp, const HostMatrix<scalar_type> & zcomp, int row, const scalar_type * R)
-    {
-        scalar_type x = 0.0,y = 0.0,z = 0.0;
-        x = dotp(size, xcomp.row(row), 1, R, 1);
-        y = dotp(size, ycomp.row(row), 1, R, 1);
-        z = dotp(size, zcomp.row(row), 1, R, 1);
-        return vec_type<scalar_type, 3>(x,y,z);
-    }
-    
-    template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, double& energy, double* fort_forces_ptr)
+template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
+    bool compute_energy, double& energy, double* fort_forces_ptr)
 {
   HostMatrix<scalar_type> rmm_output;
   uint group_m = total_functions();
@@ -86,8 +78,6 @@ namespace G2G {
   timers.density.start();
   HostMatrix<scalar_type> rmm_input(group_m, group_m);
   get_rmm_input(rmm_input);
-  rmm_input.build_aligned();
-  function_values.build_aligned();
   timers.density.pause();
 
   HostMatrix<vec_type3> forces(total_nucleii(), 1); forces.zero();
@@ -100,29 +90,36 @@ namespace G2G {
   HostMatrix<scalar_type> hPX,hPY,hPZ,hIX,hIY,hIZ,gX,gY,gZ; 
  
   if(!lda){
-      hPX = proyect_hessian(hessian_values,0,0);
-      hPY = proyect_hessian(hessian_values,0,1);
-      hPZ = proyect_hessian(hessian_values,0,2);
+    // TODO(jpdarago): Esto no es deseable hacerlo en cada iteracion. 
+    // Prealocar rmm_input alineada puede ser una buena idea.
+    function_values.build_aligned();
 
-      hIX = proyect_hessian(hessian_values,1,0);
-      hIY = proyect_hessian(hessian_values,1,1);
-      hIZ = proyect_hessian(hessian_values,1,2);
+    hPX = proyect_hessian(hessian_values,0,0);
+    hPX.build_aligned();
 
-      gX = getcomp(gradient_values,0);
-      gY = getcomp(gradient_values,1);
-      gZ = getcomp(gradient_values,2);
+    hPY = proyect_hessian(hessian_values,0,1);
+    hPY.build_aligned();
 
-      hPX.build_aligned();
-      hPY.build_aligned();
-      hPZ.build_aligned();
+    hPZ = proyect_hessian(hessian_values,0,2);
+    hPZ.build_aligned();
 
-      hIX.build_aligned();
-      hIY.build_aligned();
-      hIZ.build_aligned();
+    hIX = proyect_hessian(hessian_values,1,0);
+    hIX.build_aligned();
 
-      gX.build_aligned();
-      gY.build_aligned();
-      gZ.build_aligned();
+    hIY = proyect_hessian(hessian_values,1,1);
+    hIY.build_aligned();
+
+    hIZ = proyect_hessian(hessian_values,1,2);
+    hIZ.build_aligned();
+
+    gX = getcomp(gradient_values,0);
+    gX.build_aligned();
+
+    gY = getcomp(gradient_values,1);
+    gY.build_aligned();
+
+    gZ = getcomp(gradient_values,2);
+    gZ.build_aligned();
   }
 
 #pragma omp parallel for reduction(+:localenergy)
@@ -148,21 +145,43 @@ namespace G2G {
       }
     }
     else {
+      scalar_type * wv;
+      scalar_type * w3x, * w3y, * w3z;
+      scalar_type * ww1x, * ww1y, * ww1z;
+      scalar_type * ww2x, * ww2y, * ww2z;
+
+      wv   = (scalar_type *) mkl_malloc(group_m, 64);
+      w3x  = (scalar_type *) mkl_malloc(group_m, 64);
+      w3y  = (scalar_type *) mkl_malloc(group_m, 64);
+      w3z  = (scalar_type *) mkl_malloc(group_m, 64);
+      ww1x = (scalar_type *) mkl_malloc(group_m, 64);
+      ww1y = (scalar_type *) mkl_malloc(group_m, 64);
+      ww1z = (scalar_type *) mkl_malloc(group_m, 64);
+      ww2x = (scalar_type *) mkl_malloc(group_m, 64);
+      ww2y = (scalar_type *) mkl_malloc(group_m, 64);
+      ww2z = (scalar_type *) mkl_malloc(group_m, 64);
+
+      matmul(rmm_input, function_values.row(point), wv);
+      matmul(rmm_input, gX.row(point), w3x);
+      matmul(rmm_input, gY.row(point), w3y);
+      matmul(rmm_input, gZ.row(point), w3z);
+      matmul(rmm_input, hPX.row(point), ww1x);
+      matmul(rmm_input, hPY.row(point), ww1y);
+      matmul(rmm_input, hPZ.row(point), ww1z);
+      matmul(rmm_input, hIX.row(point), ww2x);
+      matmul(rmm_input, hIY.row(point), ww2y);
+      matmul(rmm_input, hIZ.row(point), ww2z);
+
       for (int i = 0; i < group_m; i++) {
-        vec_type3 w3(0,0,0);
-        vec_type3 ww1(0,0,0);
-        vec_type3 ww2(0,0,0);
+        scalar_type w = wv[i];
+        vec_type3 w3(w3x[i],w3y[i],w3z[i]);
+        vec_type3 ww1(ww1x[i],ww1y[i],ww1z[i]);
+        vec_type3 ww2(ww2x[i],ww2y[i],ww2z[i]);
 
         scalar_type Fi = function_values(i, point);
         vec_type3 Fgi(gradient_values(i, point));
         vec_type3 Fhi1(hessian_values(2 * (i + 0) + 0, point));
         vec_type3 Fhi2(hessian_values(2 * (i + 0) + 1, point));
-
-        const scalar_type * r = rmm_input.row(i);
-        scalar_type w = dotp(i+1, function_values.row(point), 1, r, 1);
-        w3 = dotp_compwise(i+1, gX, gY, gZ, point, r);
-        ww1 = dotp_compwise(i+1, hPX, hPY, hPZ, point, r);
-        ww2 = dotp_compwise(i+1, hIX, hIY, hIZ, point, r);
 
         partial_density += Fi * w;
 
@@ -176,6 +195,16 @@ namespace G2G {
         dd2 += FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi;
       }
 
+      mkl_free(wv);
+      mkl_free(w3x);
+      mkl_free(w3y);
+      mkl_free(w3z);
+      mkl_free(ww1x);
+      mkl_free(ww1y);
+      mkl_free(ww1z);
+      mkl_free(ww2x);
+      mkl_free(ww2y);
+      mkl_free(ww2z);
     }
     timers.density.pause();
     timers.forces.start();

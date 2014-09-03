@@ -58,17 +58,18 @@ namespace G2G {
 			}
 
 			inline const T* row(unsigned int i) const {
-			    assert(i < this->height);
-			    if(this->alignedData){
-			        return &this->alignedData[i * this->alignedWidth];
-                }
-			    return &this->data[i * this->width];
+			    // TODO(jpdarago): Agregar checks
+			    return &this->alignedData[i * this->alignedWidth];
             }
 
             inline T& operator()(unsigned int i = 0, unsigned int j = 0) {
                 assert(i < this->width);
                 assert(j < this->height);
                 return this->data[j * this->width + i];
+            }
+
+            inline const T * asArray() const {
+                return this->data;
             }
 
             inline T* ptr(unsigned int i = 0, unsigned int j = 0) {

@@ -22,30 +22,34 @@ using std::vector;
 
 namespace G2G { 
 
-static inline void matmul(const HostMatrix<float> & mat, const float * vec, float * res) {
-    memcpy(res, vec, mat.height * sizeof(float));
-    cblas_strmv(CblasRowMajor,CblasLower,CblasNoTrans,CblasNonUnit,
-        mat.width,mat.asArray(),mat.width,res, 1);
+static inline float * do_trmm(const HostMatrix<float> & triagmat, const HostMatrix<float> & genmat) {
+    float * res = (float *) mkl_malloc(genmat.width * genmat.height * sizeof(float),64);
+    memcpy(res, genmat.asArray(), genmat.width * genmat.height * sizeof(float));
+    cblas_strmm(CblasRowMajor, CblasRight, CblasLower, CblasNoTrans, CblasNonUnit, 
+        genmat.height, genmat.width, 1.0, triagmat.asArray(), triagmat.height, res, triagmat.height);
+    return res;
 }
 
-static inline void matmul(const HostMatrix<double> & mat, const double * vec, double * res) {
-    memcpy(res, vec, mat.height * sizeof(double));
-    cblas_dtrmv(CblasRowMajor,CblasLower,CblasNoTrans,CblasNonUnit,
-        mat.width,mat.asArray(),mat.width,res, 1);
+static inline double * do_trmm(const HostMatrix<double> & triagmat, const HostMatrix<double> & genmat) {
+    return NULL;
 }
 
-static inline void matmul_proyect(const HostMatrix<float> & mat, const vec_type< float, 3> * vec, float * res, int compo, int skip, int start) {
-    for(int i = start, k = 0; k < mat.width; i += skip, k++)
-        res[k] = (compo == 0) ? vec[i].x() : (compo == 1) ? vec[i].y() : vec[i].z();
-    cblas_strmv(CblasRowMajor,CblasLower,CblasNoTrans,CblasNonUnit,
-        mat.width,mat.asArray(),mat.width,res, 1);
+static inline float * do_trmm_proyect(const HostMatrix<float> & triagmat, const HostMatrix< vec_type< float, 3> > & genmat, int compo, int skip, int start) {
+    int width = genmat.width / skip;
+    float * res = (float *) mkl_malloc(width * genmat.height * sizeof(float),64);
+    for(int row = 0, pos = 0; row < genmat.height; row++){
+        for(int col = start; col < genmat.width; col += skip){
+            vec_type<float, 3> e = genmat(col, row);
+            res[pos++] = (compo == 0) ? e.x() : (compo == 1) ? e.y() : e.z();
+        }
+    }
+    cblas_strmm(CblasRowMajor, CblasRight, CblasLower, CblasNoTrans, CblasNonUnit, 
+        genmat.height, width, 1.0, triagmat.asArray(), triagmat.height, res, triagmat.height);
+    return res;
 }
 
-static inline void matmul_proyect(const HostMatrix<double> & mat, const vec_type< double, 3> * vec, double * res, int compo, int skip, int start) {
-    for(int i = start, k = 0; k < mat.width; i += skip, k++)
-        res[k] = (compo == 0) ? vec[i].x() : (compo == 1) ? vec[i].y() : vec[i].z();
-    cblas_dtrmv(CblasRowMajor,CblasLower,CblasNoTrans,CblasNonUnit,
-        mat.width,mat.asArray(),mat.width,res, 1);
+static inline double * do_trmm_proyect(const HostMatrix<double> & triagmat, const HostMatrix< vec_type< double, 3> > & genmat, int compo, int skip, int start) {
+    return NULL;
 }
 
 template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
@@ -75,28 +79,24 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
   /******** each point *******/
   vector<Point> _points(points.begin(),points.end());
 
-  HostMatrix<scalar_type> hPX,hPY,hPZ,hIX,hIY,hIZ,gX,gY,gZ; 
-
-  scalar_type * wv = NULL;
-  scalar_type * w3x = NULL, * w3y = NULL, * w3z = NULL;
-  scalar_type * ww1x = NULL, * ww1y = NULL, * ww1z = NULL;
-  scalar_type * ww2x = NULL, * ww2y = NULL, * ww2z = NULL;
+  scalar_type * wv,* w3x,* w3y,* w3z,* ww1x,*ww1y,*ww1z,*ww2x,*ww2y,*ww2z;
+  wv = w3x = w3y = w3z = ww1x = ww1y = ww1z = ww2x = ww2y = ww2z = NULL;
  
   if(!lda){
-    wv   = (scalar_type *) mkl_malloc(group_m * sizeof(scalar_type), 64);
-    w3x  = (scalar_type *) mkl_malloc(group_m * sizeof(scalar_type), 64);
-    w3y  = (scalar_type *) mkl_malloc(group_m * sizeof(scalar_type), 64);
-    w3z  = (scalar_type *) mkl_malloc(group_m * sizeof(scalar_type), 64);
-    ww1x = (scalar_type *) mkl_malloc(group_m * sizeof(scalar_type), 64);
-    ww1y = (scalar_type *) mkl_malloc(group_m * sizeof(scalar_type), 64);
-    ww1z = (scalar_type *) mkl_malloc(group_m * sizeof(scalar_type), 64);
-    ww2x = (scalar_type *) mkl_malloc(group_m * sizeof(scalar_type), 64);
-    ww2y = (scalar_type *) mkl_malloc(group_m * sizeof(scalar_type), 64);
-    ww2z = (scalar_type *) mkl_malloc(group_m * sizeof(scalar_type), 64);
+    wv   = do_trmm(rmm_input, function_values);
+    w3x  = do_trmm_proyect(rmm_input, gradient_values, 0, 1, 0);
+    w3y  = do_trmm_proyect(rmm_input, gradient_values, 1, 1, 0);
+    w3z  = do_trmm_proyect(rmm_input, gradient_values, 2, 1, 0);
+    ww1x = do_trmm_proyect(rmm_input, hessian_values, 0, 2, 0);
+    ww1y = do_trmm_proyect(rmm_input, hessian_values, 1, 2, 0);
+    ww1z = do_trmm_proyect(rmm_input, hessian_values, 2, 2, 0);
+    ww2x = do_trmm_proyect(rmm_input, hessian_values, 0, 2, 1);
+    ww2y = do_trmm_proyect(rmm_input, hessian_values, 1, 2, 1);
+    ww2z = do_trmm_proyect(rmm_input, hessian_values, 2, 2, 1);
   }
 
 #pragma omp parallel for reduction(+:localenergy)
-  for(int point = 0; point<_points.size(); point++)
+  for(int point = 0, ai = 0; point<_points.size(); point++)
   {
     HostMatrix<vec_type3> dd;
     /** density **/
@@ -118,22 +118,11 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
       }
     }
     else {
-      matmul(rmm_input, function_values.row(point), wv);
-      matmul_proyect(rmm_input, gradient_values.row(point), w3x, 0, 1, 0);
-      matmul_proyect(rmm_input, gradient_values.row(point), w3y, 1, 1, 0);
-      matmul_proyect(rmm_input, gradient_values.row(point), w3z, 2, 1, 0);
-      matmul_proyect(rmm_input, hessian_values.row(point), ww1x, 0, 2, 0);
-      matmul_proyect(rmm_input, hessian_values.row(point), ww1y, 1, 2, 0);
-      matmul_proyect(rmm_input, hessian_values.row(point), ww1z, 2, 2, 0);
-      matmul_proyect(rmm_input, hessian_values.row(point), ww2x, 0, 2, 1);
-      matmul_proyect(rmm_input, hessian_values.row(point), ww2y, 1, 2, 1);
-      matmul_proyect(rmm_input, hessian_values.row(point), ww2z, 2, 2, 1);
-
-      for (int i = 0; i < group_m; i++) {
-        scalar_type w = wv[i];
-        vec_type3 w3(w3x[i],w3y[i],w3z[i]);
-        vec_type3 ww1(ww1x[i],ww1y[i],ww1z[i]);
-        vec_type3 ww2(ww2x[i],ww2y[i],ww2z[i]);
+      for (int i = 0; i < group_m; i++, ai++) {
+        scalar_type w = wv[ai];
+        vec_type3 w3(w3x[ai],w3y[ai],w3z[ai]);
+        vec_type3 ww1(ww1x[ai],ww1y[ai],ww1z[ai]);
+        vec_type3 ww2(ww2x[ai],ww2y[ai],ww2z[ai]);
 
         scalar_type Fi = function_values(i, point);
         vec_type3 Fgi(gradient_values(i, point));

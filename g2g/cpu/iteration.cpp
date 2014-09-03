@@ -21,51 +21,32 @@ using std::list;
 using std::vector;
 
 namespace G2G { 
-    static inline float * matmul(const HostMatrix<float> & mat, const float * vec) {
-        float * res = (float *) mkl_malloc(mat.height * sizeof(float), 64);
-        memcpy(res, vec, mat.height * sizeof(float));
-        cblas_strmv(CblasRowMajor,CblasLower,CblasNoTrans,CblasNonUnit,
-            mat.width,mat.asArray(),mat.width,res, 1);
-        return res;
-    }
 
-    static inline double * matmul(const HostMatrix<double> & mat, const double * vec) {
-        double * res = (double *) mkl_malloc(mat.height * sizeof(double), 64);
-        memcpy(res, vec, mat.height * sizeof(double));
-        cblas_dtrmv(CblasRowMajor,CblasLower,CblasNoTrans,CblasNonUnit,
-            mat.width,mat.asArray(),mat.width,res, 1);
-        return res;
-    }
+static inline void matmul(const HostMatrix<float> & mat, const float * vec, float * res) {
+    memcpy(res, vec, mat.height * sizeof(float));
+    cblas_strmv(CblasRowMajor,CblasLower,CblasNoTrans,CblasNonUnit,
+        mat.width,mat.asArray(),mat.width,res, 1);
+}
 
-    template<class scalar_type>
-    static HostMatrix<scalar_type> getcomp(const HostMatrix< vec_type<scalar_type, 3> > & m, int comp) {
-        HostMatrix<scalar_type> res; res.resize(m.width, m.height); res.zero();
-        for(int i = 0; i < m.width; i++){
-            for(int j = 0; j < m.height; j++) {
-                switch(comp){
-                case 0: res(i,j) = m(i,j).x(); break;
-                case 1: res(i,j) = m(i,j).y(); break;
-                case 2: res(i,j) = m(i,j).z(); break;
-                }
-            }
-        }
-        return res;
-    }
+static inline void matmul(const HostMatrix<double> & mat, const double * vec, double * res) {
+    memcpy(res, vec, mat.height * sizeof(double));
+    cblas_dtrmv(CblasRowMajor,CblasLower,CblasNoTrans,CblasNonUnit,
+        mat.width,mat.asArray(),mat.width,res, 1);
+}
 
-    template<class scalar_type>
-    static HostMatrix<scalar_type> proyect_hessian(const HostMatrix< vec_type<scalar_type, 3> > & m, int hessianp, int comp) {
-        HostMatrix<scalar_type> res; res.resize(m.width / 2, m.height); res.zero();
-        for(int i = hessianp, k = 0; i < m.width; i += 2, k++){
-            for(int j = 0; j < m.height; j++) {
-                switch(comp){
-                case 0: res(k,j) = m(i,j).x(); break;
-                case 1: res(k,j) = m(i,j).y(); break;
-                case 2: res(k,j) = m(i,j).z(); break;
-                }
-            }
-        }
-        return res;
-    }
+static inline void matmul_proyect(const HostMatrix<float> & mat, const vec_type< float, 3> * vec, float * res, int compo, int skip, int start) {
+    for(int i = start, k = 0; k < mat.width; i += skip, k++)
+        res[k] = (compo == 0) ? vec[i].x() : (compo == 1) ? vec[i].y() : vec[i].z();
+    cblas_strmv(CblasRowMajor,CblasLower,CblasNoTrans,CblasNonUnit,
+        mat.width,mat.asArray(),mat.width,res, 1);
+}
+
+static inline void matmul_proyect(const HostMatrix<double> & mat, const vec_type< double, 3> * vec, double * res, int compo, int skip, int start) {
+    for(int i = start, k = 0; k < mat.width; i += skip, k++)
+        res[k] = (compo == 0) ? vec[i].x() : (compo == 1) ? vec[i].y() : vec[i].z();
+    cblas_dtrmv(CblasRowMajor,CblasLower,CblasNoTrans,CblasNonUnit,
+        mat.width,mat.asArray(),mat.width,res, 1);
+}
 
 template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
     bool compute_energy, double& energy, double* fort_forces_ptr)
@@ -95,19 +76,23 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
   vector<Point> _points(points.begin(),points.end());
 
   HostMatrix<scalar_type> hPX,hPY,hPZ,hIX,hIY,hIZ,gX,gY,gZ; 
+
+  scalar_type * wv = NULL;
+  scalar_type * w3x = NULL, * w3y = NULL, * w3z = NULL;
+  scalar_type * ww1x = NULL, * ww1y = NULL, * ww1z = NULL;
+  scalar_type * ww2x = NULL, * ww2y = NULL, * ww2z = NULL;
  
   if(!lda){
-    // TODO(jpdarago): Esto no es deseable hacerlo en cada iteracion. 
-    // Prealocar rmm_input alineada puede ser una buena idea.
-    hPX = proyect_hessian(hessian_values,0,0);
-    hPY = proyect_hessian(hessian_values,0,1);
-    hPZ = proyect_hessian(hessian_values,0,2);
-    hIX = proyect_hessian(hessian_values,1,0);
-    hIY = proyect_hessian(hessian_values,1,1);
-    hIZ = proyect_hessian(hessian_values,1,2);
-    gX = getcomp(gradient_values,0);
-    gY = getcomp(gradient_values,1);
-    gZ = getcomp(gradient_values,2);
+    wv   = (scalar_type *) mkl_malloc(group_m * sizeof(scalar_type), 64);
+    w3x  = (scalar_type *) mkl_malloc(group_m * sizeof(scalar_type), 64);
+    w3y  = (scalar_type *) mkl_malloc(group_m * sizeof(scalar_type), 64);
+    w3z  = (scalar_type *) mkl_malloc(group_m * sizeof(scalar_type), 64);
+    ww1x = (scalar_type *) mkl_malloc(group_m * sizeof(scalar_type), 64);
+    ww1y = (scalar_type *) mkl_malloc(group_m * sizeof(scalar_type), 64);
+    ww1z = (scalar_type *) mkl_malloc(group_m * sizeof(scalar_type), 64);
+    ww2x = (scalar_type *) mkl_malloc(group_m * sizeof(scalar_type), 64);
+    ww2y = (scalar_type *) mkl_malloc(group_m * sizeof(scalar_type), 64);
+    ww2z = (scalar_type *) mkl_malloc(group_m * sizeof(scalar_type), 64);
   }
 
 #pragma omp parallel for reduction(+:localenergy)
@@ -133,21 +118,16 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
       }
     }
     else {
-      scalar_type * wv;
-      scalar_type * w3x, * w3y, * w3z;
-      scalar_type * ww1x, * ww1y, * ww1z;
-      scalar_type * ww2x, * ww2y, * ww2z;
-
-      wv = matmul(rmm_input, function_values.row(point));
-      w3x = matmul(rmm_input, gX.row(point));
-      w3y = matmul(rmm_input, gY.row(point));
-      w3z = matmul(rmm_input, gZ.row(point));
-      ww1x = matmul(rmm_input, hPX.row(point));
-      ww1y = matmul(rmm_input, hPY.row(point));
-      ww1z = matmul(rmm_input, hPZ.row(point));
-      ww2x = matmul(rmm_input, hIX.row(point));
-      ww2y = matmul(rmm_input, hIY.row(point));
-      ww2z = matmul(rmm_input, hIZ.row(point));
+      matmul(rmm_input, function_values.row(point), wv);
+      matmul_proyect(rmm_input, gradient_values.row(point), w3x, 0, 1, 0);
+      matmul_proyect(rmm_input, gradient_values.row(point), w3y, 1, 1, 0);
+      matmul_proyect(rmm_input, gradient_values.row(point), w3z, 2, 1, 0);
+      matmul_proyect(rmm_input, hessian_values.row(point), ww1x, 0, 2, 0);
+      matmul_proyect(rmm_input, hessian_values.row(point), ww1y, 1, 2, 0);
+      matmul_proyect(rmm_input, hessian_values.row(point), ww1z, 2, 2, 0);
+      matmul_proyect(rmm_input, hessian_values.row(point), ww2x, 0, 2, 1);
+      matmul_proyect(rmm_input, hessian_values.row(point), ww2y, 1, 2, 1);
+      matmul_proyect(rmm_input, hessian_values.row(point), ww2z, 2, 2, 1);
 
       for (int i = 0; i < group_m; i++) {
         scalar_type w = wv[i];
@@ -171,17 +151,6 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
         vec_type3 w3XXY(w3.x(), w3.x(), w3.y());
         dd2 += FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi;
       }
-
-      mkl_free(wv);
-      mkl_free(w3x);
-      mkl_free(w3y);
-      mkl_free(w3z);
-      mkl_free(ww1x);
-      mkl_free(ww1y);
-      mkl_free(ww1z);
-      mkl_free(ww2x);
-      mkl_free(ww2y);
-      mkl_free(ww2z);
     }
     timers.density.pause();
     timers.forces.start();
@@ -302,6 +271,17 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
   }
   timers.rmm.pause();
   energy+=localenergy;
+
+  mkl_free(wv);
+  mkl_free(w3x);
+  mkl_free(w3y);
+  mkl_free(w3z);
+  mkl_free(ww1x);
+  mkl_free(ww1y);
+  mkl_free(ww1z);
+  mkl_free(ww2x);
+  mkl_free(ww2y);
+  mkl_free(ww2z);
 
 #if CPU_RECOMPUTE
   /* clear functions */

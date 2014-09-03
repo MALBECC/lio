@@ -13,7 +13,7 @@ namespace G2G {
  * Matrix
  ***************************/
 
-template<class T> Matrix<T>::Matrix(void) : data(NULL), alignedData(NULL), alignedWidth(-1), width(0), height(0) /*, components(0)*/ {}
+template<class T> Matrix<T>::Matrix(void) : data(NULL), width(0), height(0) /*, components(0)*/ {}
 
 template<class T> Matrix<T>::~Matrix(void) { }
 
@@ -43,28 +43,10 @@ template<class T> void HostMatrix<T>::alloc_data(void) {
     assert(false);
     #endif
 	}
-	else this->data = (T * ) mkl_malloc(this->bytes(), 64);
+	else this->data = (T *) mkl_malloc(this->bytes(), 64);
 
 	assert(this->data);
 }
-
-
-static const int ALIGNMENT = 64;
-
-template<class T> void HostMatrix<T>::build_aligned() {
-    if(this->alignedData != NULL) return;
-    this->alignedWidth = this->width;
-    while(this->alignedWidth % ALIGNMENT) this->alignedWidth++;
-    int bytes = this->alignedWidth * this->height * sizeof(T);
-    this->alignedData = (T *) mkl_malloc(bytes, ALIGNMENT);
-    memset(this->alignedData,0,bytes);
-    for(int i = 0; i < this->height; i++){
-        for(int j = 0; j < this->width; j++){
-            this->alignedData[i * this->alignedWidth + j] = this->data[i * this->width + j];
-        }
-    }
-}
-
 
 template<class T> void HostMatrix<T>::dealloc_data(void) {
 	if (pinned) {
@@ -75,14 +57,12 @@ template<class T> void HostMatrix<T>::dealloc_data(void) {
     #endif
   }
 	else mkl_free(this->data);
-
-  if(this->alignedData) mkl_free(this->alignedData);
 }
 
 template<class T> void HostMatrix<T>::deallocate(void) {
 	dealloc_data();
-	this->data = NULL; this->alignedData = NULL;
-  this->width = this->height = this->alignedWidth = 0;
+	this->data = NULL;
+  this->width = this->height = 0;
 }
 
 template<class T> HostMatrix<T>::HostMatrix(PinnedFlag _pinned) : Matrix<T>() {

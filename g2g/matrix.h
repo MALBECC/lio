@@ -21,8 +21,8 @@ namespace G2G {
             Matrix(void);
             virtual ~Matrix(void);
 
-            T* data, * alignedData;
-            unsigned int width, alignedWidth;
+            T* data;
+            unsigned int width;
             unsigned int height;
                 // unsigned int components;
 
@@ -49,8 +49,6 @@ namespace G2G {
 			HostMatrix<T>& operator=(const CudaMatrix<T>& c);
 			HostMatrix<T>& operator=(const HostMatrix<T>& c);
 
-			void build_aligned();
-
 			inline const T& operator()(unsigned int i = 0, unsigned int j = 0) const {
 				assert(i < this->width);
 				assert(j < this->height);
@@ -59,7 +57,7 @@ namespace G2G {
 
 			inline const T* row(unsigned int i) const {
 			    // TODO(jpdarago): Agregar checks
-			    return &this->alignedData[i * this->alignedWidth];
+			    return &this->data[i * this->width];
             }
 
             inline T& operator()(unsigned int i = 0, unsigned int j = 0) {

@@ -57,7 +57,6 @@ static inline double * do_trmm_proyect(const HostMatrix<double> & triagmat, cons
 template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
     bool compute_energy, double& energy, double* fort_forces_ptr)
 {
-  mkl_set_num_threads(1);
   HostMatrix<scalar_type> rmm_output;
   uint group_m = total_functions();
   if (compute_rmm) { rmm_output.resize(group_m, group_m); rmm_output.zero(); }
@@ -99,7 +98,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
   }
 
 #pragma omp parallel for reduction(+:localenergy)
-  for(int point = 0, ai = 0; point<_points.size(); point++)
+  for(int point = 0; point<_points.size(); point++)
   {
     HostMatrix<vec_type3> dd;
     /** density **/
@@ -121,7 +120,8 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
       }
     }
     else {
-      for (int i = 0; i < group_m; i++, ai++) {
+      for (int i = 0; i < group_m; i++) {
+        int ai = point * group_m + i;
         scalar_type w = wv[ai];
         vec_type3 w3(w3x[ai],w3y[ai],w3z[ai]);
         vec_type3 ww1(ww1x[ai],ww1y[ai],ww1z[ai]);

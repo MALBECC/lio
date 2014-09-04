@@ -22,7 +22,7 @@ using std::vector;
 
 namespace G2G { 
 
-static inline float * do_trmm(const HostMatrix<float> & triagmat, const HostMatrix<float> & genmat) {
+float * do_trmm(const HostMatrix<float> & triagmat, const HostMatrix<float> & genmat) {
     float * res = (float *) mkl_malloc(genmat.width * genmat.height * sizeof(float),64);
     memcpy(res, genmat.asArray(), genmat.width * genmat.height * sizeof(float));
     cblas_strmm(CblasRowMajor, CblasRight, CblasLower, CblasNoTrans, CblasNonUnit, 
@@ -30,12 +30,12 @@ static inline float * do_trmm(const HostMatrix<float> & triagmat, const HostMatr
     return res;
 }
 
-static inline double * do_trmm(const HostMatrix<double> & triagmat, const HostMatrix<double> & genmat) {
+double * do_trmm(const HostMatrix<double> & triagmat, const HostMatrix<double> & genmat) {
     return NULL;
 }
 
 template< int compo, int skip, int start >
-static inline float * do_trmm_proyect(const HostMatrix<float> & triagmat, const HostMatrix< vec_type< float, 3> > & genmat) {
+float * do_trmm_proyect(const HostMatrix<float> & triagmat, const HostMatrix< vec_type< float, 3> > & genmat) {
     int width = genmat.width / skip;
     float * res = (float *) mkl_malloc(width * genmat.height * sizeof(float),64);
     for(int row = 0, pos = 0; row < genmat.height; row++){
@@ -50,7 +50,7 @@ static inline float * do_trmm_proyect(const HostMatrix<float> & triagmat, const 
 }
 
 template< int compo, int skip, int start >
-static inline double * do_trmm_proyect(const HostMatrix<double> & triagmat, const HostMatrix< vec_type< double, 3> > & genmat) {
+double * do_trmm_proyect(const HostMatrix<double> & triagmat, const HostMatrix< vec_type< double, 3> > & genmat) {
     return NULL;
 }
 

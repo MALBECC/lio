@@ -29,6 +29,8 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
       INTEGER :: ErrID,iii,jjj
       LOGICAL :: docholesky
       REAL*8,ALLOCATABLE :: MatrixVec(:),TestMatrix(:)
+      INTEGER            :: LWORK2
+      REAL*8,ALLOCATABLE :: WORK2(:)
 
       call g2g_timer_start('SCF')
       write(*,*) '======>>>> INGRESO A SCFop <<<<=========='
@@ -220,7 +222,13 @@ c ESSL OPTION ------------------------------------------
 c
 c LAPACK OPTION -----------------------------------------
 #ifdef pack
-        call dspev('V','L',M,RMM(M5),RMM(M13),X,M,RMM(M15),info)
+        do ii=1,M; do jj=1,M
+          X(ii,jj)=Smat(ii,jj)
+        enddo; enddo
+        if (allocated(WORK2)) deallocate(WORK2); allocate(WORK2(1))
+        call dsyev('V','L',M,X,M,RMM(M13),WORK2,-1,info)
+        LWORK2=int(WORK2(1)); deallocate(WORK2); allocate(WORK2(LWORK2))
+        call dsyev('V','L',M,X,M,RMM(M13),WORK2,LWORK2,info)
 #endif
 c-----------------------------------------------------------
 c 

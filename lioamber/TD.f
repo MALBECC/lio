@@ -39,6 +39,8 @@ c       USE latom
      >   rho,rhonew,rhold,xnano,rho1
        DIMENSION q(natom)
        REAL*8,dimension(:),ALLOCATABLE :: factorial
+       INTEGER            :: LWORK,ii,jj
+       REAL*8,ALLOCATABLE :: WORK(:)
 !!------------------------------------!!
 !! FFR ADD
        INTEGER ::
@@ -248,7 +250,13 @@ c s is in RMM(M13,M13+1,M13+2,...,M13+MM)
 !--------------------------------------!
 ! LAPACK OPTION
 #ifdef pack
-       call dspev('V','L',M,RMM(M5),RMM(M13),X,M,RMM(M15),info)
+       do ii=1,M; do jj=1,M
+         X(ii,jj)=Smat(ii,jj)
+       enddo; enddo
+       if (allocated(WORK)) deallocate(WORK); allocate(WORK(1))
+       call dsyev('V','L',M,X,M,RMM(M13),WORK,-1,info)
+       LWORK=int(WORK(1));  deallocate(WORK); allocate(WORK(LWORK))
+       call dsyev('V','L',M,X,M,RMM(M13),WORK,LWORK,info)
 #endif
 !--------------------------------------!
 ! Here, we obtain the transformation matrices X and Y for converting 

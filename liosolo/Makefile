@@ -9,5 +9,5 @@ liosolo: main.f
 	ifort $(FLAGS) -llio-g2g -lg2g main.f -o liosolo $(LIBRARIES)
 
 clean:
-	rm liosolo
+	rm -rf liosolo
 

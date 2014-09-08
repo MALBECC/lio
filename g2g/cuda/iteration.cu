@@ -1,9 +1,11 @@
 /* -*- mode: c -*- */
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <map>
-#include <string>
 #include <math_constants.h>
+#include <string>
+#include <vector>
+
 #include "../common.h"
 #include "../init.h"
 #include "cuda_extra.h"
@@ -32,8 +34,8 @@ texture<float, 2, cudaReadModeElementType> rmm_input_gpu_tex;
 #include "kernels/transpose.h"
 
 using std::cout;
+using std::vector;
 using std::endl;
-using std::list;
 
 //Definicion global para poder tener acceso
 
@@ -76,7 +78,7 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   HostMatrix<scalar_type> point_weights_cpu(number_of_points, 1);
 
   uint i = 0;
-  for (list<Point>::const_iterator p = points.begin(); p != points.end(); ++p, ++i) {
+  for (vector<Point>::const_iterator p = points.begin(); p != points.end(); ++p, ++i) {
     point_weights_cpu(i) = p->weight;
   }
   point_weights_gpu = point_weights_cpu;
@@ -325,158 +327,3 @@ void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, 
   cudaFreeArray(cuArray);
 }
 
-/*******************************
- * Cube Functions
- *******************************/
-
-template<class scalar_type>
-void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
-{
-  if(this->inGlobal) //Ya las tengo en memoria? entonces salgo porque ya estan las 3 calculadas
-    return;
-
-  if(0 == globalMemoryPool::tryAlloc(this->size_in_gpu())) //1 si hubo error, 0 si pude reservar la memoria
-    this->inGlobal=true;
-  CudaMatrix<vec_type4> points_position_gpu;
-  CudaMatrix<vec_type2> factor_ac_gpu;
-  CudaMatrixUInt nuc_gpu;
-  CudaMatrixUInt contractions_gpu;
-
-  /** Load points from group **/
-  {
-    HostMatrix<vec_type4> points_position_cpu(number_of_points, 1);
-    uint i = 0;
-    for (list<Point>::const_iterator p = points.begin(); p != points.end(); ++p, ++i) {
-      points_position_cpu(i) = vec_type4(p->position.x, p->position.y, p->position.z, 0);
-    }
-    points_position_gpu = points_position_cpu;
-  }
-  /* Load group functions */
-  uint group_m = s_functions + p_functions * 3 + d_functions * 6;
-  uint4 group_functions = make_uint4(s_functions, p_functions, d_functions, group_m);
-  HostMatrix<vec_type2> factor_ac_cpu(COALESCED_DIMENSION(group_m), MAX_CONTRACTIONS);
-  HostMatrixUInt nuc_cpu(group_m, 1), contractions_cpu(group_m, 1);
-
-  // TODO: hacer que functions.h itere por total_small_functions()... asi puedo hacer que
-  // func2global_nuc sea de tamaño total_functions() y directamente copio esa matriz aca y en otros lados
-
-  uint ii = 0;
-  for (uint i = 0; i < total_functions_simple(); ++i) {
-    uint inc = small_function_type(i);
-
-    uint func = local2global_func[i];
-    uint this_nuc = func2global_nuc(i);
-    uint this_cont = fortran_vars.contractions(func);
-
-    for (uint j = 0; j < inc; j++) {
-      nuc_cpu(ii) = this_nuc;
-      contractions_cpu(ii) = this_cont;
-      for (unsigned int k = 0; k < this_cont; k++)
-        factor_ac_cpu(ii, k) = vec_type2(fortran_vars.a_values(func, k), fortran_vars.c_values(func, k));
-      ii++;
-    }
-  }
-  factor_ac_gpu = factor_ac_cpu;
-  nuc_gpu = nuc_cpu;
-  contractions_gpu = contractions_cpu;
-
-  /** Compute Functions **/
-
-  function_values.resize(COALESCED_DIMENSION(number_of_points), group_functions.w);
-  if (fortran_vars.do_forces || fortran_vars.gga)
-      gradient_values.resize(COALESCED_DIMENSION(number_of_points), group_functions.w);
-  if (fortran_vars.gga)
-      hessian_values.resize(COALESCED_DIMENSION(number_of_points), (group_functions.w) * 2);
-
-  dim3 threads(number_of_points);
-  dim3 threadBlock(FUNCTIONS_BLOCK_SIZE);
-  dim3 threadGrid = divUp(threads, threadBlock);
-
- // cout << "points: " << threads.x << " " << threadGrid.x << " " << threadBlock.x << endl;
-#define compute_functions_parameters \
-  points_position_gpu.data,number_of_points,contractions_gpu.data,factor_ac_gpu.data,nuc_gpu.data,function_values.data,gradient_values.data,hessian_values.data,group_functions
-  if (forces) {
-    if (gga)
-      gpu_compute_functions<scalar_type, true, true><<<threadGrid, threadBlock>>>(compute_functions_parameters);
-    else
-      gpu_compute_functions<scalar_type, true, false><<<threadGrid, threadBlock>>>(compute_functions_parameters);
-  }
-  else {
-    if (gga)
-      gpu_compute_functions<scalar_type, false, true><<<threadGrid, threadBlock>>>(compute_functions_parameters);
-    else
-      gpu_compute_functions<scalar_type, false, false><<<threadGrid, threadBlock>>>(compute_functions_parameters);
-  }
-
-  cudaAssertNoError("compute_functions");
-}
-
-/*******************************
- * Cube Weights
- *******************************/
-template<class scalar_type>
-void PointGroup<scalar_type>::compute_weights(void)
-{
-  CudaMatrix<vec_type4> point_positions_gpu;
-  CudaMatrix<vec_type4> atom_position_rm_gpu;
-  {
-    HostMatrix<vec_type4> points_positions_cpu(number_of_points, 1);
-		uint i = 0;
-		for (list<Point>::const_iterator p = points.begin(); p != points.end(); ++p, ++i) {
-			points_positions_cpu(i) = vec_type4(p->position.x, p->position.y, p->position.z, p->atom);
-		}
-    point_positions_gpu = points_positions_cpu;
-
-    HostMatrix<vec_type4> atom_position_rm_cpu(fortran_vars.atoms, 1);
-    for (uint i = 0; i < fortran_vars.atoms; i++) {
-      double3 atom_pos = fortran_vars.atom_positions(i);
-      atom_position_rm_cpu(i) = vec_type4(atom_pos.x, atom_pos.y, atom_pos.z, fortran_vars.rm(i));
-    }
-    atom_position_rm_gpu = atom_position_rm_cpu;
-	}
-
-  CudaMatrixUInt nucleii_gpu(local2global_nuc);
-
-  CudaMatrix<scalar_type> weights_gpu(number_of_points);
-  dim3 threads(number_of_points);
-  dim3 blockSize(WEIGHT_BLOCK_SIZE);
-  dim3 gridSize = divUp(threads, blockSize);
-  gpu_compute_weights<scalar_type><<<gridSize,blockSize>>>(
-      number_of_points, point_positions_gpu.data, atom_position_rm_gpu.data, weights_gpu.data, nucleii_gpu.data, total_nucleii());
-  cudaAssertNoError("compute_weights");
-
-  #if REMOVE_ZEROS
-  std::list<Point> nonzero_points;
-  uint nonzero_number_of_points = 0;
-  #endif
-
-  uint ceros = 0;
-
-  HostMatrix<scalar_type> weights_cpu(weights_gpu);
-  uint i = 0;
-  for (list<Point>::iterator p = points.begin(); p != points.end(); ++p, ++i) {
-    p->weight *= weights_cpu(i);
-
-    if (p->weight == 0.0) {
-      ceros++;
-    }
-    #if REMOVE_ZEROS
-    else {
-      nonzero_points.push_back(*p);
-      nonzero_number_of_points++;
-    }
-    #endif
-  }
-
-  //cout << "ceros: " << ceros << "/" << group.number_of_points << " (" << (ceros / (double)group.number_of_points) * 100 << "%)" << endl;
-
-  #if REMOVE_ZEROS
-  points = nonzero_points;
-  number_of_points = nonzero_number_of_points;
-  #endif
-}
-
-template class PointGroup<double>;
-template class PointGroup<float>;
-
-}

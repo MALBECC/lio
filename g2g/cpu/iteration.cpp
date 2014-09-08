@@ -17,7 +17,6 @@
 
 using std::cout;
 using std::endl;
-using std::list;
 using std::vector;
 
 namespace G2G { 

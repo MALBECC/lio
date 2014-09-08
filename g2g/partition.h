@@ -134,11 +134,11 @@ class Partition {
       double cubes_energy = 0, spheres_energy = 0;
 
       for (std::vector<Cube>::iterator it = cubes.begin(); it != cubes.end(); ++it) {
-        it->solve(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, cubes_energy_c2, fort_forces_ptr, OPEN);
+        it->solve(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy, fort_forces_ptr);
       }
 
       for (std::vector<Sphere>::iterator it = spheres.begin(); it != spheres.end(); ++it) {
-        it->solve(timers, compute_rmm,lda,compute_forces, compute_energy, spheres_energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1, spheres_energy_c2, fort_forces_ptr, OPEN);
+        it->solve(timers, compute_rmm,lda,compute_forces, compute_energy, spheres_energy, fort_forces_ptr);
       }
 
       *fort_energy_ptr = cubes_energy + spheres_energy;

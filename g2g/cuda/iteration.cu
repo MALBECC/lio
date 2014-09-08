@@ -1,9 +1,11 @@
 /* -*- mode: c -*- */
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <map>
-#include <string>
 #include <math_constants.h>
+#include <string>
+#include <vector>
+
 #include "../common.h"
 #include "../init.h"
 #include "cuda_extra.h"
@@ -36,8 +38,8 @@ texture<float, 2, cudaReadModeElementType> rmm_input_gpu_tex2;
 #include "kernels/transpose.h"
 
 using std::cout;
+using std::vector;
 using std::endl;
-using std::list;
 
 // Host function to set the constant
 void gpu_set_variables(void) {
@@ -88,7 +90,7 @@ void PointGroup<scalar_type>::solve_closed(Timers& timers, bool compute_rmm, boo
   HostMatrix<scalar_type> point_weights_cpu(number_of_points, 1);
 
   uint i = 0;
-  for (list<Point>::const_iterator p = points.begin(); p != points.end(); ++p, ++i) {
+  for (vector<Point>::const_iterator p = points.begin(); p != points.end(); ++p, ++i) {
     point_weights_cpu(i) = p->weight;
   }
   point_weights_gpu = point_weights_cpu;
@@ -366,7 +368,7 @@ void PointGroup<scalar_type>::solve_opened(Timers& timers, bool compute_rmm, boo
   HostMatrix<scalar_type> point_weights_cpu(number_of_points, 1);
 
   uint i = 0;
-  for (list<Point>::const_iterator p = points.begin(); p != points.end(); ++p, ++i) {
+  for (vector<Point>::const_iterator p = points.begin(); p != points.end(); ++p, ++i) {
     point_weights_cpu(i) = p->weight;
   }
   point_weights_gpu = point_weights_cpu;
@@ -751,7 +753,7 @@ void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
   {
     HostMatrix<vec_type4> points_position_cpu(number_of_points, 1);
     uint i = 0;
-    for (list<Point>::const_iterator p = points.begin(); p != points.end(); ++p, ++i) {
+    for (vector<Point>::const_iterator p = points.begin(); p != points.end(); ++p, ++i) {
       points_position_cpu(i) = vec_type4(p->position.x, p->position.y, p->position.z, 0);
     }
     points_position_gpu = points_position_cpu;
@@ -827,7 +829,7 @@ void PointGroup<scalar_type>::compute_weights(void)
   {
     HostMatrix<vec_type4> points_positions_cpu(number_of_points, 1);
 		uint i = 0;
-		for (list<Point>::const_iterator p = points.begin(); p != points.end(); ++p, ++i) {
+		for (vector<Point>::const_iterator p = points.begin(); p != points.end(); ++p, ++i) {
 			points_positions_cpu(i) = vec_type4(p->position.x, p->position.y, p->position.z, p->atom);
 		}
     point_positions_gpu = points_positions_cpu;
@@ -851,7 +853,7 @@ void PointGroup<scalar_type>::compute_weights(void)
   cudaAssertNoError("compute_weights");
 
   #if REMOVE_ZEROS
-  std::list<Point> nonzero_points;
+  std::vector<Point> nonzero_points;
   uint nonzero_number_of_points = 0;
   #endif
 
@@ -859,7 +861,7 @@ void PointGroup<scalar_type>::compute_weights(void)
 
   HostMatrix<scalar_type> weights_cpu(weights_gpu);
   uint i = 0;
-  for (list<Point>::iterator p = points.begin(); p != points.end(); ++p, ++i) {
+  for (vector<Point>::iterator p = points.begin(); p != points.end(); ++p, ++i) {
     p->weight *= weights_cpu(i);
 
     if (p->weight == 0.0) {

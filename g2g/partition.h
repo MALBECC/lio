@@ -1,7 +1,7 @@
 #ifndef __CUBES_H__
 #define __CUBES_H__
 
-#include <list>
+#include <vector>
 #include <set>
 #include <vector>
 #include <algorithm>
@@ -37,7 +37,7 @@ class PointGroup {
   public:
     PointGroup(void) : number_of_points(0), s_functions(0), p_functions(0), d_functions(0), inGlobal(false) {  }
     virtual ~PointGroup(void);
-    std::list<Point> points;
+    std::vector<Point> points;
     uint number_of_points;
     uint s_functions, p_functions, d_functions;
 
@@ -136,8 +136,6 @@ class Cube : public PointGroup<float> {
 class Partition {
   public:
     void clear(void) {
-      for (std::list<Cube*>::const_iterator it = cubes.begin(); it != cubes.end(); ++it) delete *it;
-      for (std::list<Sphere*>::const_iterator it = spheres.begin(); it != spheres.end(); ++it) delete *it;
       cubes.clear(); spheres.clear();
     }
 
@@ -149,14 +147,12 @@ class Partition {
       double cubes_energy_c1 = 0, spheres_energy_c1 = 0;
       double cubes_energy_c2 = 0, spheres_energy_c2 = 0;
 
-      for (std::list<Cube*>::const_iterator it = cubes.begin(); it != cubes.end(); ++it)
-      {
-        (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, cubes_energy_c2, fort_forces_ptr, OPEN);
+      for (std::vector<Cube>::iterator it = cubes.begin(); it != cubes.end(); ++it) {
+        it->solve(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, cubes_energy_c2, fort_forces_ptr, OPEN);
       }
 
-      for (std::list<Sphere*>::const_iterator it = spheres.begin(); it != spheres.end(); ++it)
-      {
-        (*it)->solve(timers, compute_rmm,lda,compute_forces, compute_energy, spheres_energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1, spheres_energy_c2, fort_forces_ptr, OPEN);
+      for (std::vector<Sphere>::iterator it = spheres.begin(); it != spheres.end(); ++it) {
+        it->solve(timers, compute_rmm,lda,compute_forces, compute_energy, spheres_energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1, spheres_energy_c2, fort_forces_ptr, OPEN);
       }
 
       if(OPEN && compute_energy) {
@@ -183,16 +179,16 @@ class Partition {
     {
       Timer t1;
       t1.start_and_sync();
-      for (std::list<Cube*>::const_iterator it = cubes.begin(); it != cubes.end(); ++it)
-        (*it)->compute_functions(forces, gga);
-      for (std::list<Sphere*>::const_iterator it = spheres.begin(); it != spheres.end(); ++it)
-        (*it)->compute_functions(forces, gga);
+      for (std::vector<Cube>::iterator it = cubes.begin(); it != cubes.end(); ++it)
+        it->compute_functions(forces, gga);
+      for (std::vector<Sphere>::iterator it = spheres.begin(); it != spheres.end(); ++it)
+        it->compute_functions(forces, gga);
       t1.stop_and_sync();
 //      std::cout << "TIMER: funcs: " << t1 << std::endl;
     }
 
-    std::list<Cube*> cubes;
-    std::list<Sphere*> spheres;
+    std::vector<Cube> cubes;
+    std::vector<Sphere> spheres;
 };
 
 extern Partition partition;

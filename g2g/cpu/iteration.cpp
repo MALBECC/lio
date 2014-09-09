@@ -21,39 +21,47 @@ using std::vector;
 
 namespace G2G { 
 
-float * do_trmm(const HostMatrix<float> & triagmat, const HostMatrix<float> & genmat) {
-    float * res = (float *) mkl_malloc(genmat.width * genmat.height * sizeof(float),64);
-    memcpy(res, genmat.asArray(), genmat.width * genmat.height * sizeof(float));
-    cblas_strmm(CblasRowMajor, CblasRight, CblasLower, CblasNoTrans, CblasNonUnit, 
+void trmm(const CBLAS_ORDER Order, const CBLAS_SIDE Side, const CBLAS_UPLO Uplo, 
+        const CBLAS_TRANSPOSE TransA, const CBLAS_DIAG Diag, const MKL_INT M, 
+        const MKL_INT N, const float alpha, const float *A, const MKL_INT lda, 
+        float *B, const MKL_INT ldb) {
+    return cblas_strmm(Order,Side,Uplo,TransA, Diag, M, N, alpha, A, lda, B, ldb);
+}
+
+void trmm(const CBLAS_ORDER Order, const CBLAS_SIDE Side, const CBLAS_UPLO Uplo, 
+        const CBLAS_TRANSPOSE TransA, const CBLAS_DIAG Diag, const MKL_INT M, 
+        const MKL_INT N, const double alpha, const double *A, const MKL_INT lda, 
+        double *B, const MKL_INT ldb) {
+    return cblas_dtrmm(Order,Side,Uplo,TransA, Diag, M, N, alpha, A, lda, B, ldb);
+}
+
+template<class scalar_type>
+scalar_type * do_trmm(const HostMatrix<scalar_type> & triagmat, const HostMatrix<scalar_type> & genmat) {
+    scalar_type * res = (scalar_type *) mkl_malloc(genmat.width * genmat.height * sizeof(scalar_type),64);
+    memcpy(res, genmat.asArray(), genmat.width * genmat.height * sizeof(scalar_type));
+    trmm(CblasRowMajor, CblasRight, CblasLower, CblasNoTrans, CblasNonUnit, 
         genmat.height, genmat.width, 1.0, triagmat.asArray(), triagmat.height, res, triagmat.height);
     return res;
 }
 
-double * do_trmm(const HostMatrix<double> & triagmat, const HostMatrix<double> & genmat) {
-    return NULL;
-}
-
-template< int compo, int skip, int start >
-float * do_trmm_proyect(const HostMatrix<float> & triagmat, const HostMatrix< vec_type< float, 3> > & genmat) {
+template< int compo, int skip, int start, class scalar_type >
+scalar_type * do_trmm_proyect(const HostMatrix<scalar_type> & triagmat, const HostMatrix< vec_type< scalar_type, 3> > & genmat) {
     int width = genmat.width / skip;
-    float * res = (float *) mkl_malloc(width * genmat.height * sizeof(float),64);
+    scalar_type * res = (scalar_type *) mkl_malloc(width * genmat.height * sizeof(scalar_type),64);
     for(int row = 0, pos = 0; row < genmat.height; row++){
         for(int col = start; col < genmat.width; col += skip){
-            vec_type<float, 3> e = genmat(col, row);
+            vec_type<scalar_type, 3> e = genmat(col, row);
             res[pos++] = (compo == 0) ? e.x() : (compo == 1) ? e.y() : e.z();
         }
     }
-    cblas_strmm(CblasRowMajor, CblasRight, CblasLower, CblasNoTrans, CblasNonUnit, 
+    trmm(CblasRowMajor, CblasRight, CblasLower, CblasNoTrans, CblasNonUnit, 
         genmat.height, width, 1.0, triagmat.asArray(), triagmat.height, res, triagmat.height);
     return res;
 }
 
-template< int compo, int skip, int start >
-double * do_trmm_proyect(const HostMatrix<double> & triagmat, const HostMatrix< vec_type< double, 3> > & genmat) {
-    return NULL;
-}
-
-template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, double& energy, double* fort_forces_ptr)
+template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
+    bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, 
+    double& energy, double* fort_forces_ptr)
 {
   HostMatrix<scalar_type> rmm_output;
   uint group_m = total_functions();
@@ -87,15 +95,15 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
  
   if(!lda){
     wv   = do_trmm(rmm_input, function_values);
-    w3x  = do_trmm_proyect<0,1,0>(rmm_input, gradient_values);
-    w3y  = do_trmm_proyect<1,1,0>(rmm_input, gradient_values);
-    w3z  = do_trmm_proyect<2,1,0>(rmm_input, gradient_values);
-    ww1x = do_trmm_proyect<0,2,0>(rmm_input, hessian_values);
-    ww1y = do_trmm_proyect<1,2,0>(rmm_input, hessian_values);
-    ww1z = do_trmm_proyect<2,2,0>(rmm_input, hessian_values);
-    ww2x = do_trmm_proyect<0,2,1>(rmm_input, hessian_values);
-    ww2y = do_trmm_proyect<1,2,1>(rmm_input, hessian_values);
-    ww2z = do_trmm_proyect<2,2,1>(rmm_input, hessian_values);
+    w3x  = do_trmm_proyect<0,1,0, scalar_type>(rmm_input, gradient_values);
+    w3y  = do_trmm_proyect<1,1,0, scalar_type>(rmm_input, gradient_values);
+    w3z  = do_trmm_proyect<2,1,0, scalar_type>(rmm_input, gradient_values);
+    ww1x = do_trmm_proyect<0,2,0, scalar_type>(rmm_input, hessian_values);
+    ww1y = do_trmm_proyect<1,2,0, scalar_type>(rmm_input, hessian_values);
+    ww1z = do_trmm_proyect<2,2,0, scalar_type>(rmm_input, hessian_values);
+    ww2x = do_trmm_proyect<0,2,1, scalar_type>(rmm_input, hessian_values);
+    ww2y = do_trmm_proyect<1,2,1, scalar_type>(rmm_input, hessian_values);
+    ww2z = do_trmm_proyect<2,2,1, scalar_type>(rmm_input, hessian_values);
   }
 
   for(int point = 0; point< points.size(); point++) {

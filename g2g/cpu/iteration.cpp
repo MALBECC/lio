@@ -66,7 +66,9 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
   compute_functions(compute_forces, !lda);
   timers.functions.pause();
   #endif
+
   double localenergy = 0.0;
+
   // prepare rmm_input for this group
   timers.density.start();
   HostMatrix<scalar_type> rmm_input(group_m, group_m);
@@ -96,7 +98,6 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
     ww2z = do_trmm_proyect<2,2,1>(rmm_input, hessian_values);
   }
 
-#pragma omp parallel for reduction(+:localenergy)
   for(int point = 0; point<_points.size(); point++)
   {
     HostMatrix<vec_type3> dd;
@@ -143,6 +144,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
         dd2 += FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi;
       }
     }
+
     timers.density.pause();
     timers.forces.start();
     /** density derivatives **/
@@ -213,7 +215,6 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
   /* accumulate forces for each point */
   if (compute_forces) {
     if(forces_mat.size() > 0) {
-#pragma omp parallel for
       for (int j = 0; j < forces_mat[0].size(); j++) {
         vec_type3 acum(0.f,0.f,0.f);
         for (int i = 0; i < forces_mat.size(); i++) {
@@ -261,6 +262,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
     }
   }
   timers.rmm.pause();
+
   energy+=localenergy;
 
   mkl_free(wv);

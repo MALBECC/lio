@@ -22,7 +22,6 @@ void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
 
   std::vector<Point> _points(points.begin(),points.end());
 
-#pragma omp parallel for
   for(int point = 0; point<_points.size(); point++) {
     vec_type3 point_position = vec_type3(_points[point].position.x, _points[point].position.y, _points[point].position.z);
 

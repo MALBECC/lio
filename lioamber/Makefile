@@ -13,10 +13,10 @@ else
   PROFILE  =  
 endif
 
-ifeq ($(cpu_recompute),0)
-  CXXFLAGS += -DCPU_RECOMPUTE=0
-else
+ifeq ($(cpu_recompute),1)
   CXXFLAGS += -DCPU_RECOMPUTE=1
+else
+  CXXFLAGS += -DCPU_RECOMPUTE=0
 endif
 
 ifeq ($(full_double),1)

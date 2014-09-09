@@ -3,13 +3,17 @@
 
 #include <vector>
 #include <set>
-#include <vector>
 #include <algorithm>
 #include <iostream>
+#include <omp.h>
+
 #include "scalar_vector_types.h"
 #include "timer.h"
 
 #include "global_memory_pool.h"
+
+using std::cout;
+using std::endl;
 
 namespace G2G {
   struct Timers {
@@ -129,16 +133,43 @@ class Partition {
       cubes.clear(); spheres.clear();
     }
 
+    int sphereChunks(void) {
+        int chunks = spheres.size() / omp_get_max_threads();
+        if(chunks == 0) chunks = 1;
+        return chunks;
+    }
+
+    int cubeChunks(void) {
+        int chunks = cubes.size() / omp_get_max_threads();
+        if(chunks == 0) chunks = 1;
+        return chunks;
+    }
+
     void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr)
     {
       double cubes_energy = 0, spheres_energy = 0;
+      const int threads = omp_get_max_threads();
 
-      for (std::vector<Cube>::iterator it = cubes.begin(); it != cubes.end(); ++it) {
-        it->solve(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy, fort_forces_ptr);
+      int cube_chunks = cubeChunks();
+
+      #pragma omp parallel for reduction(+:cubes_energy)
+      for(int i = 0; i < cubes.size(); i += cube_chunks){
+        double cubes_energy_local = 0; 
+        for (int j = i; j < i + cube_chunks; j++){ 
+            cubes[j].solve(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy_local, fort_forces_ptr);
+        }
+        cubes_energy += cubes_energy_local;
       }
 
-      for (std::vector<Sphere>::iterator it = spheres.begin(); it != spheres.end(); ++it) {
-        it->solve(timers, compute_rmm,lda,compute_forces, compute_energy, spheres_energy, fort_forces_ptr);
+      int sphere_chunks = sphereChunks();
+
+      #pragma omp parallel for reduction(+:spheres_energy)
+      for(int i = 0; i < spheres.size(); i += sphere_chunks){
+          double spheres_energy_local = 0;
+          for (int j = i; j < i + sphere_chunks; j++) {
+              spheres[j].solve(timers, compute_rmm,lda,compute_forces, compute_energy, spheres_energy_local, fort_forces_ptr);
+          }
+          spheres_energy += spheres_energy_local;
       }
 
       *fort_energy_ptr = cubes_energy + spheres_energy;
@@ -157,10 +188,24 @@ class Partition {
     {
       Timer t1;
       t1.start_and_sync();
-      for (std::vector<Cube>::iterator it = cubes.begin(); it != cubes.end(); ++it)
-        it->compute_functions(forces, gga);
-      for (std::vector<Sphere>::iterator it = spheres.begin(); it != spheres.end(); ++it)
-        it->compute_functions(forces, gga);
+
+      int cube_chunks = cubeChunks();
+      int sphere_chunks = sphereChunks();
+
+      #pragma omp parallel for
+      for(int i = 0; i < cubes.size(); i += cube_chunks){
+          for (int j = i; j < i + cube_chunks; j++){
+            cubes[j].compute_functions(forces, gga);
+          }
+      }
+
+      #pragma omp parallel for
+      for(int i = 0; i < spheres.size(); i += sphere_chunks){
+          for (int j = i; j < i + sphere_chunks; j++){
+            spheres[j].compute_functions(forces, gga);
+          }
+      }
+
       t1.stop_and_sync();
 //      std::cout << "TIMER: funcs: " << t1 << std::endl;
     }

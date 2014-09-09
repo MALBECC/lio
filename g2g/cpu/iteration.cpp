@@ -53,12 +53,14 @@ double * do_trmm_proyect(const HostMatrix<double> & triagmat, const HostMatrix< 
     return NULL;
 }
 
-template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
-    bool compute_energy, double& energy, double* fort_forces_ptr)
+template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, double& energy, double* fort_forces_ptr)
 {
   HostMatrix<scalar_type> rmm_output;
   uint group_m = total_functions();
-  if (compute_rmm) { rmm_output.resize(group_m, group_m); rmm_output.zero(); }
+  if (compute_rmm) { 
+      rmm_output.resize(group_m, group_m);
+      rmm_output.zero(); 
+  }
 
   #if CPU_RECOMPUTE
   /** Compute functions **/
@@ -79,8 +81,6 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
   vector<std::vector<vec_type3> > forces_mat(
       points.size(), vector<vec_type3>(total_nucleii(), vec_type3(0.f,0.f,0.f)));
   vector<scalar_type> factors_rmm(points.size(),0);
-  /******** each point *******/
-  vector<Point> _points(points.begin(),points.end());
 
   scalar_type * wv,* w3x,* w3y,* w3z,* ww1x,*ww1y,*ww1z,*ww2x,*ww2y,*ww2z;
   wv = w3x = w3y = w3z = ww1x = ww1y = ww1z = ww2x = ww2y = ww2z = NULL;
@@ -98,8 +98,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
     ww2z = do_trmm_proyect<2,2,1>(rmm_input, hessian_values);
   }
 
-  for(int point = 0; point<_points.size(); point++)
-  {
+  for(int point = 0; point< points.size(); point++) {
     HostMatrix<vec_type3> dd;
     /** density **/
     scalar_type partial_density = 0;
@@ -181,14 +180,14 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
     timers.pot.pause();
 
     if (compute_energy)
-      localenergy += (partial_density * _points[point].weight) * (exc + corr);
+      localenergy += (partial_density * points[point].weight) * (exc + corr);
 
     timers.density.pause();
 
     /** forces **/
     timers.forces.start();
     if (compute_forces) {
-      scalar_type factor = _points[point].weight * y2a;
+      scalar_type factor = points[point].weight * y2a;
       for (uint i = 0; i < total_nucleii(); i++) {
         forces_mat[point][i] = dd(i) * factor;
       }
@@ -198,14 +197,25 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
     /** RMM **/
     timers.rmm.start();
     if (compute_rmm) {
-      scalar_type factor = _points[point].weight * y2a;
+      scalar_type factor = points[point].weight * y2a;
       factors_rmm[point] = factor;
     }
     timers.rmm.pause();
   } // end for
 
+  mkl_free(wv);
+  mkl_free(w3x);
+  mkl_free(w3y);
+  mkl_free(w3z);
+  mkl_free(ww1x);
+  mkl_free(ww1y);
+  mkl_free(ww1z);
+  mkl_free(ww2x);
+  mkl_free(ww2y);
+  mkl_free(ww2z);
+
   if (compute_rmm) {
-    for(int i=0; i<_points.size(); i++) {
+    for(int i=0; i< points.size(); i++) {
       scalar_type factor = factors_rmm[i];
       HostMatrix<scalar_type>::blas_ssyr(LowerTriangle, factor, function_values, rmm_output, i);
     }
@@ -240,6 +250,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
 
   timers.rmm.start();
   /* accumulate RMM results for this group */
+  #pragma omp critical
   if (compute_rmm) {
     for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
       uint inc_i = small_function_type(i);
@@ -264,17 +275,6 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
   timers.rmm.pause();
 
   energy+=localenergy;
-
-  mkl_free(wv);
-  mkl_free(w3x);
-  mkl_free(w3y);
-  mkl_free(w3z);
-  mkl_free(ww1x);
-  mkl_free(ww1y);
-  mkl_free(ww1z);
-  mkl_free(ww2x);
-  mkl_free(ww2y);
-  mkl_free(ww2z);
 
 #if CPU_RECOMPUTE
   /* clear functions */

@@ -119,6 +119,8 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
       }
     }
     else {
+      #pragma ivdep
+      #pragma vector always nontemporal
       for (int i = 0; i < group_m; i++) {
         int ai = point * group_m + i;
         scalar_type w = wv[ai];

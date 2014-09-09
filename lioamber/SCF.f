@@ -15,7 +15,7 @@ c
        dimension q(natom),work(1000),IWORK(1000)
        REAL*8 , intent(inout)  :: dipxyz(3)
        real*8, dimension (:,:), ALLOCATABLE ::xnano,znano
-       real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15,rmm13,
+       real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15,
      >   bcoef, suma, FP_PFv
       real*8, dimension (:,:), allocatable :: fock,fockm,rho,FP_PF,
      >   FP_PFm,EMAT,Y,Ytrans,Xtrans,rho1,EMAT2
@@ -97,7 +97,7 @@ c
 c
       Nel=2*NCO+Nunp
 c
-      allocate(rmm5(MM),rmm13(m),rmm15(mm))
+      allocate(rmm5(MM),rmm15(mm))
 c
       good=1.00D0
       niter=0
@@ -259,7 +259,6 @@ c          write(56,*) RMM(M15+1)
         enddo
 
         do j=1,M
-          RMM(M13+j-1)=rmm13(j)
           if (RMM(M13+j-1).lt.1.0D-06) then
             write(*,*) 'LINEAR DEPENDENCY DETECTED'
             do i=1,M
@@ -327,7 +326,6 @@ c ESSL OPTION
           rmm5(i)=RMM(M5+i-1)
         enddo
         rmm15=0
-        rmm13=0
         xnano=0
 #ifdef essl
         call DSPEV(1,RMM(M5),RMM(M13),X(1,M+1),M,M,RMM(M15),M2)
@@ -335,7 +333,7 @@ c ESSL OPTION
 c LAPACK OPTION -----------------------------------------
 #ifdef pack
 c
-        call dspev('V','L',M,RMM5,RMM13,Xnano,M,RMM15,info)
+        call dspev('V','L',M,RMM5,RMM(M13),Xnano,M,RMM15,info)
 #endif
         do i =1,M
           do j=1,M
@@ -1125,7 +1123,7 @@ c      endif
         deallocate (Y,Ytrans,Xtrans,fock,fockm,rho,FP_PF,FP_PFv,FP_PFm,
      >  znano,EMAT, bcoef, suma,rho1)
       endif
-      deallocate (xnano,rmm5,rmm13,rmm15)
+      deallocate (xnano,rmm5,rmm15)
 
       deallocate (kkind,kkinds)
       deallocate(cool,cools)

@@ -95,6 +95,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
  
   if(!lda){
     wv   = do_trmm(rmm_input, function_values);
+    #if CPU_RECOMPUTE
     w3x  = do_trmm_proyect<0,1,0, scalar_type>(rmm_input, gradient_values);
     w3y  = do_trmm_proyect<1,1,0, scalar_type>(rmm_input, gradient_values);
     w3z  = do_trmm_proyect<2,1,0, scalar_type>(rmm_input, gradient_values);
@@ -104,6 +105,17 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
     ww2x = do_trmm_proyect<0,2,1, scalar_type>(rmm_input, hessian_values);
     ww2y = do_trmm_proyect<1,2,1, scalar_type>(rmm_input, hessian_values);
     ww2z = do_trmm_proyect<2,2,1, scalar_type>(rmm_input, hessian_values);
+    #else
+    w3x = do_trmm(rmm_input, gX);
+    w3y = do_trmm(rmm_input, gY);
+    w3z = do_trmm(rmm_input, gZ);
+    ww1x = do_trmm(rmm_input, hPX);
+    ww1y = do_trmm(rmm_input, hPY);
+    ww1z = do_trmm(rmm_input, hPZ);
+    ww2x = do_trmm(rmm_input, hIX);
+    ww2y = do_trmm(rmm_input, hIY);
+    ww2z = do_trmm(rmm_input, hIZ);
+    #endif
   }
 
   for(int point = 0; point< points.size(); point++) {
@@ -128,7 +140,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
     }
     else {
       #pragma ivdep
-      #pragma vector always nontemporal
+      #pragma vector always
       for (int i = 0; i < group_m; i++) {
         int ai = point * group_m + i;
         scalar_type w = wv[ai];
@@ -261,26 +273,28 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
   timers.rmm.start();
   /* accumulate RMM results for this group */
   #pragma omp critical
-  if (compute_rmm) {
-    for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
-      uint inc_i = small_function_type(i);
+  {
+      if (compute_rmm) {
+        for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
+          uint inc_i = small_function_type(i);
 
-      for (uint k = 0; k < inc_i; k++, ii++) {
-        uint big_i = local2global_func[i] + k;
+          for (uint k = 0; k < inc_i; k++, ii++) {
+            uint big_i = local2global_func[i] + k;
 
-        for (uint j = 0, jj = 0; j < total_functions_simple(); j++) {
-          uint inc_j = small_function_type(j);
+            for (uint j = 0, jj = 0; j < total_functions_simple(); j++) {
+              uint inc_j = small_function_type(j);
 
-          for (uint l = 0; l < inc_j; l++, jj++) {
-            uint big_j = local2global_func[j] + l;
-            if (big_i > big_j) continue;
+              for (uint l = 0; l < inc_j; l++, jj++) {
+                uint big_j = local2global_func[j] + l;
+                if (big_i > big_j) continue;
 
-            uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-            fortran_vars.rmm_output(big_index) += rmm_output(ii, jj);
+                uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
+                fortran_vars.rmm_output(big_index) += rmm_output(ii, jj);
+              }
+            }
           }
         }
       }
-    }
   }
   timers.rmm.pause();
 

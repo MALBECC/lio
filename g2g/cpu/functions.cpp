@@ -10,9 +10,28 @@
 using namespace std;
 
 namespace G2G {
+
+template< int compo, int skip, int start, class scalar_type >
+HostMatrix<scalar_type> proyect(const HostMatrix< vec_type< scalar_type, 3> > & genmat) {
+    int width = genmat.width / skip;
+    HostMatrix<scalar_type> res;
+    res.resize(width, genmat.height);
+    for(int row = 0; row < genmat.height; row++){
+        for(int col = start, p = 0; col < genmat.width; col += skip, p++){
+            vec_type<scalar_type, 3> e = genmat(col, row);
+            res(p,row) = (compo == 0) ? e.x() : (compo == 1) ? e.y() : e.z();
+        }
+    }
+    return res;
+}
+
 template<class scalar_type>
 void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
 {
+  #if !CPU_RECOMPUTE
+  if (this->inGlobal) return;
+  this->inGlobal = true;
+  #endif
   /* Load group functions */
   uint group_m = total_functions();
 
@@ -113,6 +132,19 @@ void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
       }
     }
   }
+
+  #if !CPU_RECOMPUTE
+  gX = proyect<0,1,0, scalar_type>(gradient_values);
+  gY = proyect<1,1,0, scalar_type>(gradient_values);
+  gZ = proyect<2,1,0, scalar_type>(gradient_values);
+  
+  hPX = proyect<0,2,0, scalar_type>(hessian_values);
+  hPY = proyect<1,2,0, scalar_type>(hessian_values);
+  hPZ = proyect<2,2,0, scalar_type>(hessian_values);
+  hIX = proyect<0,2,1, scalar_type>(hessian_values);
+  hIY = proyect<1,2,1, scalar_type>(hessian_values);
+  hIZ = proyect<2,2,1, scalar_type>(hessian_values);
+  #endif
 }
 
 template class PointGroup<double>;

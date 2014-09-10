@@ -65,6 +65,12 @@ class PointGroup {
     G2G::CudaMatrix<vec_type4> hessian_values;
     #endif
 
+    #if CPU_KERNELS && !CPU_RECOMPUTE
+    G2G::HostMatrix<scalar_type> gX, gY, gZ;
+    G2G::HostMatrix<scalar_type> hIX, hIY, hIZ;
+    G2G::HostMatrix<scalar_type> hPX, hPY, hPZ;
+    #endif
+
     inline FunctionType small_function_type(uint f) const {
       if (f < s_functions) return FUNCTION_S;
       else if (f < s_functions + p_functions) return FUNCTION_P;

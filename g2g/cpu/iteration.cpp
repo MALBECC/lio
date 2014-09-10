@@ -94,6 +94,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
   wv = w3x = w3y = w3z = ww1x = ww1y = ww1z = ww2x = ww2y = ww2z = NULL;
  
   if(!lda){
+    timers.density.start();
     wv   = do_trmm(rmm_input, function_values);
     #if CPU_RECOMPUTE
     w3x  = do_trmm_proyect<0,1,0, scalar_type>(rmm_input, gradient_values);
@@ -116,6 +117,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
     ww2y = do_trmm(rmm_input, hIY);
     ww2z = do_trmm(rmm_input, hIZ);
     #endif
+    timers.density.pause();
   }
 
   for(int point = 0; point< points.size(); point++) {
@@ -298,7 +300,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
   }
   timers.rmm.pause();
 
-  energy+=localenergy;
+energy+=localenergy;
 
 #if CPU_RECOMPUTE
   /* clear functions */

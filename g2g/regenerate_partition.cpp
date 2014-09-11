@@ -22,7 +22,7 @@ bool comparison_by_size(const T & a, const T & b) {
 }
 template <typename T>
 void sortBySize(std::vector<T> input) {
-    sort(input.begin(), input.end(), comparison_by_size<T>);
+    sort(input.begin(), input.end());
 }
 
 /* methods */

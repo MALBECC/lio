@@ -123,6 +123,11 @@ bool PointGroup<scalar_type>::is_significative(FunctionType type, double exponen
     break;
   }
 }
+
+template<class scalar_type>
+int PointGroup<scalar_type>::cost() const {
+    return number_of_points * total_functions();
+}
 template<class scalar_type>
 bool PointGroup<scalar_type>::operator<(const PointGroup<scalar_type>& T) const{
     int my_cost = number_of_points * total_functions();

@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <iostream>
 #include <omp.h>
+#include <cstdio>
 
 #include "scalar_vector_types.h"
 #include "timer.h"
@@ -71,6 +72,7 @@ class PointGroup {
     G2G::HostMatrix<scalar_type> hPX, hPY, hPZ;
     #endif
 
+    int cost() const;
     inline FunctionType small_function_type(uint f) const {
       if (f < s_functions) return FUNCTION_S;
       else if (f < s_functions + p_functions) return FUNCTION_P;
@@ -148,13 +150,15 @@ class Partition {
         double cubes_energy_local = 0; 
         cubes[i].solve(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy_local, fort_forces_ptr);
         cubes_energy += cubes_energy_local;
+        printf("-->>%d %d\n", omp_get_thread_num(), cubes[i].cost());
       }
 
-      #pragma omp parallel for reduction(+:spheres_energy) 
+      #pragma omp parallel for reduction(+:spheres_energy)
       for(int i = 0; i < spheres.size(); i++){
         double spheres_energy_local = 0;
         spheres[i].solve(timers, compute_rmm,lda,compute_forces, compute_energy, spheres_energy_local, fort_forces_ptr);
         spheres_energy += spheres_energy_local;
+        printf("-->>%d %d\n", omp_get_thread_num(), spheres[i].cost());
       }
 
       *fort_energy_ptr = cubes_energy + spheres_energy;

@@ -145,20 +145,18 @@ class Partition {
     {
       double cubes_energy = 0, spheres_energy = 0;
 
-      #pragma omp parallel for reduction(+:cubes_energy) 
+      #pragma omp parallel for reduction(+:cubes_energy) schedule(dynamic, 1)
       for(int i = 0; i < cubes.size(); i++){
         double cubes_energy_local = 0; 
         cubes[i].solve(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy_local, fort_forces_ptr);
         cubes_energy += cubes_energy_local;
-        printf("-->>%d %d\n", omp_get_thread_num(), cubes[i].cost());
       }
 
-      #pragma omp parallel for reduction(+:spheres_energy)
+      #pragma omp parallel for reduction(+:spheres_energy) schedule(dynamic, 1)
       for(int i = 0; i < spheres.size(); i++){
         double spheres_energy_local = 0;
         spheres[i].solve(timers, compute_rmm,lda,compute_forces, compute_energy, spheres_energy_local, fort_forces_ptr);
         spheres_energy += spheres_energy_local;
-        printf("-->>%d %d\n", omp_get_thread_num(), spheres[i].cost());
       }
 
       *fort_energy_ptr = cubes_energy + spheres_energy;

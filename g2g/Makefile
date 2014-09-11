@@ -61,6 +61,7 @@ else
   NVCCFLAGS += -DFULL_DOUBLE=0
 endif
 
+LIBRARIES=-lrt
 ## Targets
 all: $(LIBRARY)
 

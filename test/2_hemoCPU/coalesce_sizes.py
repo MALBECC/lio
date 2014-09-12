@@ -4,7 +4,8 @@ import fileinput
 import collections
 
 sizes = collections.defaultdict(int)
-for line in fileinput.input():
+lines = [line for line in fileinput.input()]
+for line in lines[1:]:
     u,_,v = map(int, line.split(" "))
     sizes[u] += v
 

@@ -3,6 +3,7 @@
 import fileinput
 import random
 import sys
+import multiprocessing
 
 def topartition(array):
     return dict(map(lambda i: (i, array[i]), xrange(0, len(array))))
@@ -51,8 +52,11 @@ def getbestpartition(array, threads):
 
 if __name__ == '__main__':
     array = [int(line) for line in fileinput.input()]
-    threads = 4
+    threads = multiprocessing.cpu_count()
+    if len(sys.argv) > 1:
+        threads = sys.argv(1)
 
+    print threads
     partition = getbestpartition(array, threads)
     for (thread, indexes) in partition.items():
         for index in indexes:

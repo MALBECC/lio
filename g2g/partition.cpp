@@ -125,14 +125,12 @@ bool PointGroup<scalar_type>::is_significative(FunctionType type, double exponen
 }
 
 template<class scalar_type>
-int PointGroup<scalar_type>::cost() const {
-    return number_of_points * total_functions();
+long long PointGroup<scalar_type>::cost() const {
+    return (1LL * number_of_points) * total_functions() * total_functions();
 }
 template<class scalar_type>
 bool PointGroup<scalar_type>::operator<(const PointGroup<scalar_type>& T) const{
-    int my_cost = number_of_points * total_functions();
-    int T_cost = T.number_of_points * T.total_functions();
-    return my_cost < T_cost;
+    return cost() < T.cost();
 }
 template<class scalar_type>
 size_t PointGroup<scalar_type>::size_in_gpu() const

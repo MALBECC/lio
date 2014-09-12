@@ -130,9 +130,7 @@ int PointGroup<scalar_type>::cost() const {
 }
 template<class scalar_type>
 bool PointGroup<scalar_type>::operator<(const PointGroup<scalar_type>& T) const{
-    int my_cost = number_of_points * total_functions();
-    int T_cost = T.number_of_points * T.total_functions();
-    return my_cost < T_cost;
+    return cost() < T.cost();
 }
 template<class scalar_type>
 size_t PointGroup<scalar_type>::size_in_gpu() const

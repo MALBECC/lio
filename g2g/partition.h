@@ -72,12 +72,15 @@ class PointGroup {
     inline uint total_nucleii(void) const { return local2global_nuc.size(); }
     inline bool has_nucleii(uint atom) const { return (std::find(local2global_nuc.begin(), local2global_nuc.end(), atom) != local2global_nuc.end()); }
 
+    void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const;
     void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input) const;
     void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input_a, G2G::HostMatrix<scalar_type>& rmm_input_b) const;
+
+    void add_rmm_output(const G2G::HostMatrix<scalar_type>& rmm_output, FortranMatrix<double>& target) const;
     void add_rmm_output(const G2G::HostMatrix<scalar_type>& rmm_output) const;
     void add_rmm_output_a(const G2G::HostMatrix<scalar_type>& rmm_output) const;
     void add_rmm_output_b(const G2G::HostMatrix<scalar_type>& rmm_output) const;
-    void add_rmm_open_output(const G2G::HostMatrix<scalar_type>& rmm_a_output, const G2G::HostMatrix<scalar_type>& rmm_b_output) const;
+    void add_rmm_open_output(const G2G::HostMatrix<scalar_type>& rmm_output_a, const G2G::HostMatrix<scalar_type>& rmm_output_b) const;
 
     void compute_nucleii_maps(void);
 

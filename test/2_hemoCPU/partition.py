@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-import fileinput
 import random
 import sys
 import multiprocessing
@@ -51,10 +50,10 @@ def getbestpartition(array, threads):
     return topartition(map(lambda p: p.indexes(), getbinsplit(array, right)))
 
 if __name__ == '__main__':
-    array = [int(line) for line in fileinput.input()]
+    array = [int(line) for line in sys.stdin.readlines()]
     threads = multiprocessing.cpu_count()
     if len(sys.argv) > 1:
-        threads = sys.argv(1)
+        threads = int(sys.argv[1])
 
     print threads
     partition = getbestpartition(array, threads)

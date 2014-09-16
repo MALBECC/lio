@@ -313,7 +313,18 @@ void Partition::regenerate(void)
     globalMemoryPool::init(G2G::free_global_memory);
 
     int threads = load_work("cubes_and_spheres_partition.txt", work, cubes.size());
-
+    pools.clear();
+    for(int i = 0; i < work.size(); i++) {
+        int largest_pool = 0;
+        for(int j = 0; j < work[i].size(); j++) {
+            if(work[i][j].first == 0){
+                largest_pool = max(largest_pool, cubes[work[i][j].second].pool_elements());
+            } else {
+                largest_pool = max(largest_pool, spheres[work[i][j].second].pool_elements());
+            }
+        }
+        pools.push_back(ThreadBufferPool<float>(10, largest_pool));
+    }
     //cout << "Grilla final: " << puntos_finales << " puntos (recordar que los de peso 0 se tiran), " << funciones_finales << " funciones" << endl ;
     //cout << "Costo: " << costo << endl;
     //cout << "NCOxM: " << nco_m << " MxM: " << m_m << endl;

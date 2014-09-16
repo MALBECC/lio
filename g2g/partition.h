@@ -12,6 +12,7 @@
 #include "timer.h"
 
 #include "global_memory_pool.h"
+#include "buffer_pool.h"
 
 using std::cout;
 using std::endl;
@@ -95,11 +96,12 @@ class PointGroup {
 
     void compute_functions(bool forces, bool gga);
     void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
-        bool compute_energy, double& energy, double* fort_forces_ptr);
+        bool compute_energy, double& energy, double* fort_forces_ptr, ThreadBufferPool<scalar_type> &);
 
     bool is_significative(FunctionType, double exponent, double coeff, double d2);
     bool operator<(const PointGroup<scalar_type>& T) const;
     size_t size_in_gpu() const;
+    int pool_elements() const;
 
     virtual bool is_sphere(void) = 0;
     virtual bool is_cube(void) = 0;
@@ -149,22 +151,25 @@ class Partition {
 
       #pragma omp parallel for reduction(+:energy) schedule(static)
       for(int i = 0; i < work.size(); i++) {
-          double local_energy = 0;
-          Timer t;
-          t.start();
+          double local_energy = 0; ;
+          Timer t; t.start();
+
+          long long cost = 0;
           for(int j = 0; j < work[i].size(); j++) {
               pair<int,int> unit = work[i][j];
               int ind = unit.second;
+              pools[i].reset();
+
               if(unit.first == 0) {
-                 cubes[ind].solve(timers, compute_rmm,lda,compute_forces, compute_energy, local_energy, fort_forces_ptr);
+                 cubes[ind].solve(timers, compute_rmm,lda,compute_forces, compute_energy, local_energy, fort_forces_ptr, pools[i]);
+                 cost += cubes[ind].cost();
               } else {
-                 spheres[ind].solve(timers, compute_rmm,lda,compute_forces, compute_energy, local_energy, fort_forces_ptr);
+                 spheres[ind].solve(timers, compute_rmm,lda,compute_forces, compute_energy, local_energy, fort_forces_ptr, pools[i]);
+                 cost += spheres[ind].cost();
               }
           }
+          t.stop(); printf("Workload %d took ", i); t.print(); printf(" and it has %d elements (%lld nanounits)\n", work[i].size(), cost);
           energy += local_energy;
-          t.stop();
-          printf("Workload %d took: ", i);
-          t.print(); printf(" and it had %d items\n", work[i].size());
       }
 
       *fort_energy_ptr = energy;
@@ -184,10 +189,12 @@ class Partition {
       Timer t1;
       t1.start_and_sync();
 
+      #pragma omp parallel for
       for(int i = 0; i < cubes.size(); i++){
         cubes[i].compute_functions(forces, gga);
       }
 
+      #pragma omp parallel for
       for(int i = 0; i < spheres.size(); i++){
         spheres[i].compute_functions(forces, gga);
       }
@@ -199,6 +206,7 @@ class Partition {
     std::vector<Cube> cubes;
     std::vector<Sphere> spheres;
     std::vector< std::vector< std::pair<int, int> > > work;
+    std::vector< ThreadBufferPool<float> > pools;
 };
 
 extern Partition partition;

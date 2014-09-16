@@ -136,13 +136,13 @@ void PointGroup<scalar_type>::solve_closed(Timers& timers, bool compute_rmm, boo
       function_values.data, COALESCED_DIMENSION(number_of_points), group_m);
 
   if (fortran_vars.do_forces || fortran_vars.gga)
-    transpose_vec<<<transpose_grid, transpose_threads>>> (gradient_values_transposed_gpu.data,
+    transpose<<<transpose_grid, transpose_threads>>> (gradient_values_transposed_gpu.data,
         gradient_values.data, COALESCED_DIMENSION(number_of_points), group_m );
 
   transpose_grid=dim3(transposed_width / BLOCK_DIM, divUp((group_m)*2, BLOCK_DIM), 1);
 
   if (fortran_vars.gga)
-    transpose_vec<<<transpose_grid, transpose_threads>>> (hessian_values_transposed_gpu.data,
+    transpose<<<transpose_grid, transpose_threads>>> (hessian_values_transposed_gpu.data,
         hessian_values.data, COALESCED_DIMENSION(number_of_points), (group_m)*2);
 
 
@@ -414,10 +414,10 @@ void PointGroup<scalar_type>::solve_opened(Timers& timers, bool compute_rmm, boo
 
   transpose<<<transpose_grid, transpose_threads>>> (function_values_transposed_gpu.data, function_values.data,  COALESCED_DIMENSION(number_of_points),group_m   );
   if (fortran_vars.do_forces || fortran_vars.gga)
-      transpose_vec<<<transpose_grid, transpose_threads>>> (gradient_values_transposed_gpu.data, gradient_values.data, COALESCED_DIMENSION(number_of_points), group_m );
+      transpose<<<transpose_grid, transpose_threads>>> (gradient_values_transposed_gpu.data, gradient_values.data, COALESCED_DIMENSION(number_of_points), group_m );
   transpose_grid=dim3(transposed_width / BLOCK_DIM, divUp((group_m)*2, BLOCK_DIM), 1);
   if (fortran_vars.gga)
-      transpose_vec<<<transpose_grid, transpose_threads>>> (hessian_values_transposed_gpu.data, hessian_values.data, COALESCED_DIMENSION(number_of_points), (group_m)*2);
+      transpose<<<transpose_grid, transpose_threads>>> (hessian_values_transposed_gpu.data, hessian_values.data, COALESCED_DIMENSION(number_of_points), (group_m)*2);
 
 //=====
 

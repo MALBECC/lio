@@ -31,7 +31,7 @@ DEFINE   = -Dpack -fPIC
 CFLAGS   = -g -mp1 -ip -O3 -c -cpp  $(DEFINE) $(PROFILE)
 CFLAGS2  = -g -O1 -c -cpp  $(DEFINE) $(PROFILE)
 CFLAGS3  = -g -O3 -c -cpp -parallel   $(DEFINE) $(PROFILE)
-CPPFLAGS = -P -traditional-cpp 
+CPPFLAGS = -g -P -traditional-cpp 
 ARCH=intel64
 ifeq ($(xeon_phi),1)
   CPPFLAGS += -mmic

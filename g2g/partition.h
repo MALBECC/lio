@@ -15,6 +15,7 @@
 
 using std::cout;
 using std::endl;
+using std::pair;
 
 namespace G2G {
   struct Timers {
@@ -93,7 +94,8 @@ class PointGroup {
     void compute_weights(void);
 
     void compute_functions(bool forces, bool gga);
-    void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, double& energy, double* fort_forces_ptr);
+    void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
+        bool compute_energy, double& energy, double* fort_forces_ptr);
 
     bool is_significative(FunctionType, double exponent, double coeff, double d2);
     bool operator<(const PointGroup<scalar_type>& T) const;
@@ -143,29 +145,29 @@ class Partition {
 
     void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr)
     {
-      double cubes_energy = 0, spheres_energy = 0;
+      double energy = 0;
 
-      #pragma omp parallel for reduction(+:cubes_energy) schedule(static)
-      for(int i = 0; i < cubes_work.size(); i++){
-        double cubes_energy_local = 0; 
-        for(int j = 0; j < cubes_work[i].size(); j++){ 
-            int ind = cubes_work[i][j];
-            cubes[ind].solve(timers, compute_rmm,lda,compute_forces, compute_energy, cubes_energy_local, fort_forces_ptr);
-        }
-        cubes_energy += cubes_energy_local;
+      #pragma omp parallel for reduction(+:energy) schedule(static)
+      for(int i = 0; i < work.size(); i++) {
+          double local_energy = 0;
+          Timer t;
+          t.start();
+          for(int j = 0; j < work[i].size(); j++) {
+              pair<int,int> unit = work[i][j];
+              int ind = unit.second;
+              if(unit.first == 0) {
+                 cubes[ind].solve(timers, compute_rmm,lda,compute_forces, compute_energy, local_energy, fort_forces_ptr);
+              } else {
+                 spheres[ind].solve(timers, compute_rmm,lda,compute_forces, compute_energy, local_energy, fort_forces_ptr);
+              }
+          }
+          energy += local_energy;
+          t.stop();
+          printf("Workload %d took: ", i);
+          t.print(); printf(" and it had %d items\n", work[i].size());
       }
 
-      #pragma omp parallel for reduction(+:spheres_energy) schedule(static)
-      for(int i = 0; i < spheres_work.size(); i++){
-        double spheres_energy_local = 0;
-        for(int j = 0; j < spheres_work[i].size(); j++) {
-            int ind = spheres_work[i][j];
-            spheres[ind].solve(timers, compute_rmm,lda,compute_forces, compute_energy, spheres_energy_local, fort_forces_ptr);
-        }
-        spheres_energy += spheres_energy_local;
-      }
-
-      *fort_energy_ptr = cubes_energy + spheres_energy;
+      *fort_energy_ptr = energy;
       if(*fort_energy_ptr != *fort_energy_ptr) {
           std::cout << "I see dead peaple " << std::endl;
 #ifndef CPU_KERNELS
@@ -182,12 +184,10 @@ class Partition {
       Timer t1;
       t1.start_and_sync();
 
-      #pragma omp parallel for 
       for(int i = 0; i < cubes.size(); i++){
         cubes[i].compute_functions(forces, gga);
       }
 
-      #pragma omp parallel for 
       for(int i = 0; i < spheres.size(); i++){
         spheres[i].compute_functions(forces, gga);
       }
@@ -198,8 +198,7 @@ class Partition {
 
     std::vector<Cube> cubes;
     std::vector<Sphere> spheres;
-    std::vector< std::vector<int> > cubes_work;
-    std::vector< std::vector<int> > spheres_work;
+    std::vector< std::vector< std::pair<int, int> > > work;
 };
 
 extern Partition partition;

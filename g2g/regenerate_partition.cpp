@@ -27,14 +27,18 @@ void sortBySize(std::vector<T> & input) {
 }
 
 template <typename T>
-void load_work(const char * file, vector<T> & work) {
+int load_work(const char * file, vector<T> & work, int cubessize) {
     ifstream is(file, ifstream::in);
     int threads, thread, size, index; is >> threads;
     work.clear(); work.resize(threads);
     while(is >> thread >> index >> size) {
-        cout << "READ: " << thread << " " << index << " " << size << endl;
-        work[thread].push_back(index);
+        if(index >= cubessize) {
+            work[thread].push_back(make_pair(1, index - cubessize));
+        } else {
+            work[thread].push_back(make_pair(0, index));
+        }
     }
+    return threads;
 }
 
 /* methods */
@@ -308,8 +312,7 @@ void Partition::regenerate(void)
     //If it is CPU, then this doesn't matter
     globalMemoryPool::init(G2G::free_global_memory);
 
-    load_work("spheres_partition.txt", spheres_work);
-    load_work("cubes_partition.txt", cubes_work);
+    int threads = load_work("cubes_and_spheres_partition.txt", work, cubes.size());
 
     //cout << "Grilla final: " << puntos_finales << " puntos (recordar que los de peso 0 se tiran), " << funciones_finales << " funciones" << endl ;
     //cout << "Costo: " << costo << endl;

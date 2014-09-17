@@ -169,7 +169,10 @@ class Partition {
                  cost += spheres[ind].cost();
               }
           }
-          t.stop(); printf("Workload %d took ", i); t.print(); printf(" and it has %d elements (%lld nanounits)\n", work[i].size(), cost);
+          t.stop(); 
+             
+          printf("Workload %d took %ds %dms and it has %d elements (%lld nanounits)\n", i, 
+                  t.getSec(), t.getMicrosec(), work[i].size(), cost);
           energy += local_energy;
       }
 

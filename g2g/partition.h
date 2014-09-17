@@ -189,12 +189,10 @@ class Partition {
       Timer t1;
       t1.start_and_sync();
 
-      #pragma omp parallel for
       for(int i = 0; i < cubes.size(); i++){
         cubes[i].compute_functions(forces, gga);
       }
 
-      #pragma omp parallel for
       for(int i = 0; i < spheres.size(); i++){
         spheres[i].compute_functions(forces, gga);
       }

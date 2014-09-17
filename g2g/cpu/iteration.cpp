@@ -153,9 +153,9 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
         vec_type3 ww2(ww2x[ai],ww2y[ai],ww2z[ai]);
 
         scalar_type Fi = function_values(i, point);
-        vec_type3 Fgi(gradient_values(i, point));
-        vec_type3 Fhi1(hessian_values(2 * (i + 0) + 0, point));
-        vec_type3 Fhi2(hessian_values(2 * (i + 0) + 1, point));
+        vec_type3 Fgi(gX(i,point), gY(i, point), gZ(i, point));
+        vec_type3 Fhi1(hPX(i,point), hPY(i, point), hPZ(i, point));
+        vec_type3 Fhi2(hIX(i,point), hIY(i, point), hIZ(i, point));
 
         partial_density += Fi * w;
 

@@ -9,6 +9,7 @@
 #include "matrix.h"
 #include "partition.h"
 #include "timer.h"
+#include "mkl.h"
 using namespace std;
 
 namespace G2G {
@@ -124,9 +125,22 @@ bool PointGroup<scalar_type>::is_significative(FunctionType type, double exponen
   }
 }
 
+static const long long MIN_COST_FOR_THREADING = 1000000;
+
+template<class scalar_type>
+void PointGroup<scalar_type>::set_internal_threads() const {
+    long long c = cost();
+    if(c >= MIN_COST_FOR_THREADING) {
+        mkl_set_num_threads(12);
+    } else {
+        mkl_set_num_threads(1);
+    }
+}
+
+static const long long MIN_COST = 100000;
 template<class scalar_type>
 long long PointGroup<scalar_type>::cost() const {
-    return (1LL * number_of_points) * total_functions() * total_functions();
+    return max(MIN_COST,(1LL * number_of_points) * total_functions() * total_functions());
 }
 template<class scalar_type>
 bool PointGroup<scalar_type>::operator<(const PointGroup<scalar_type>& T) const{

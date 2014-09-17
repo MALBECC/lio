@@ -65,6 +65,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
     bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, 
     double& energy, double* fort_forces_ptr, ThreadBufferPool<scalar_type> & pool)
 {
+  set_internal_threads();
   HostMatrix<scalar_type> rmm_output;
   uint group_m = total_functions();
   if (compute_rmm) { 

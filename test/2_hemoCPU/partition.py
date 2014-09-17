@@ -55,7 +55,7 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         threads = int(sys.argv[1])
 
-    print threads
+    print "%d %d" % (multiprocessing.cpu_count() / 2 / threads, threads)
     partition = getbestpartition(array, threads)
     for (thread, indexes) in partition.items():
         for index in indexes:

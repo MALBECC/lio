@@ -88,7 +88,6 @@ class PointGroup {
 
     void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input) const;
     void add_rmm_output(const G2G::HostMatrix<scalar_type>& rmm_output) const;
-    void set_internal_threads() const;
 
     void compute_nucleii_maps(void);
 
@@ -150,10 +149,15 @@ class Partition {
     {
       double energy = 0;
 
+      printf("%d inner threads, %d outer threads\n", inner_threads, outer_threads);
+      omp_set_num_threads(outer_threads);
+
       #pragma omp parallel for reduction(+:energy) schedule(static)
       for(int i = 0; i < work.size(); i++) {
           double local_energy = 0; ;
           Timer t; t.start();
+
+          omp_set_num_threads(inner_threads);
 
           long long cost = 0;
           for(int j = 0; j < work[i].size(); j++) {
@@ -209,6 +213,7 @@ class Partition {
     std::vector<Sphere> spheres;
     std::vector< std::vector< std::pair<int, int> > > work;
     std::vector< ThreadBufferPool<float> > pools;
+    int inner_threads, outer_threads;
 };
 
 extern Partition partition;

@@ -27,10 +27,12 @@ void sortBySize(std::vector<T> & input) {
 }
 
 template <typename T>
-int load_work(const char * file, vector<T> & work, int cubessize) {
+pair<int,int> load_work(const char * file, vector<T> & work, int cubessize) {
     ifstream is(file, ifstream::in);
-    int threads, thread, size, index; is >> threads;
-    work.clear(); work.resize(threads);
+    int inner_threads, outer_threads, thread, size, index; 
+    
+    is >> inner_threads >> outer_threads;
+    work.clear(); work.resize(outer_threads);
     while(is >> thread >> index >> size) {
         if(index >= cubessize) {
             work[thread].push_back(make_pair(1, index - cubessize));
@@ -38,7 +40,7 @@ int load_work(const char * file, vector<T> & work, int cubessize) {
             work[thread].push_back(make_pair(0, index));
         }
     }
-    return threads;
+    return make_pair(inner_threads, outer_threads);
 }
 
 /* methods */
@@ -312,7 +314,9 @@ void Partition::regenerate(void)
     //If it is CPU, then this doesn't matter
     globalMemoryPool::init(G2G::free_global_memory);
 
-    int threads = load_work("cubes_and_spheres_partition.txt", work, cubes.size());
+    pair<int,int> threads = load_work("cubes_and_spheres_partition.txt", work, cubes.size());
+    inner_threads = threads.first; outer_threads = threads.second;
+
     pools.clear();
     for(int i = 0; i < work.size(); i++) {
         int largest_pool = 0;
@@ -325,6 +329,7 @@ void Partition::regenerate(void)
         }
         pools.push_back(ThreadBufferPool<float>(10, largest_pool));
     }
+
     //cout << "Grilla final: " << puntos_finales << " puntos (recordar que los de peso 0 se tiran), " << funciones_finales << " funciones" << endl ;
     //cout << "Costo: " << costo << endl;
     //cout << "NCOxM: " << nco_m << " MxM: " << m_m << endl;

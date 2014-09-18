@@ -96,7 +96,7 @@ class PointGroup {
 
     void compute_functions(bool forces, bool gga);
     void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
-        bool compute_energy, double& energy, double* fort_forces_ptr, ThreadBufferPool<scalar_type> &);
+        bool compute_energy, double& energy, double* fort_forces_ptr, ThreadBufferPool<scalar_type> &, int);
 
     bool is_significative(FunctionType, double exponent, double coeff, double d2);
     bool operator<(const PointGroup<scalar_type>& T) const;
@@ -166,10 +166,12 @@ class Partition {
               pools[i].reset();
 
               if(unit.first == 0) {
-                 cubes[ind].solve(timers, compute_rmm,lda,compute_forces, compute_energy, local_energy, fort_forces_ptr, pools[i]);
+                 cubes[ind].solve(timers, compute_rmm,lda,compute_forces, compute_energy, 
+                    local_energy, fort_forces_ptr, pools[i], inner_threads);
                  cost += cubes[ind].cost();
               } else {
-                 spheres[ind].solve(timers, compute_rmm,lda,compute_forces, compute_energy, local_energy, fort_forces_ptr, pools[i]);
+                 spheres[ind].solve(timers, compute_rmm,lda,compute_forces, compute_energy,
+                    local_energy, fort_forces_ptr, pools[i], inner_threads);
                  cost += spheres[ind].cost();
               }
           }

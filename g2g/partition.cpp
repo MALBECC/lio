@@ -129,7 +129,7 @@ static const long long MIN_COST = 100000;
 
 template<class scalar_type>
 long long PointGroup<scalar_type>::cost() const {
-    return max(MIN_COST,(1LL * number_of_points) * total_functions() * total_functions());
+    return MIN_COST + (1LL * number_of_points) * total_functions() * total_functions();
 }
 template<class scalar_type>
 bool PointGroup<scalar_type>::operator<(const PointGroup<scalar_type>& T) const{

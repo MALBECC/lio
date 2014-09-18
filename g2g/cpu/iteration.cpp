@@ -59,14 +59,10 @@ void do_trmm_proyect(const HostMatrix<scalar_type> & triagmat, const HostMatrix<
 
 template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
     bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, 
-    double& energy, double* fort_forces_ptr, ThreadBufferPool<scalar_type> & pool)
+    double& energy, double* fort_forces_ptr, ThreadBufferPool<scalar_type> & pool, int pieces)
 {
   HostMatrix<scalar_type> rmm_output;
   uint group_m = total_functions();
-  if (compute_rmm) { 
-      rmm_output.resize(group_m, group_m);
-      rmm_output.zero(); 
-  }
 
   #if CPU_RECOMPUTE
   /** Compute functions **/
@@ -236,7 +232,6 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
   } // end for
 
   if (compute_rmm) {
-    const int pieces = 12;
     HostMatrix<scalar_type> rmm_output_piece[pieces];
     for(int i = 0; i < pieces; i++) {
         rmm_output_piece[i].resize(group_m, group_m);
@@ -251,15 +246,16 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
         }
     }
 
-    for(int p = 0; p < pieces; p++){
+    for(int p = 1; p < pieces; p++){
         #pragma ivdep
         #pragma vector aligned always
         for(int i = 0; i < rmm_output.width; i++) {
             for(int j = 0; j < rmm_output.height; j++) {
-                rmm_output(i,j) += rmm_output_piece[p](i,j);
+                rmm_output_piece[0](i,j) += rmm_output_piece[p](i,j);
             }
         }
     }
+    rmm_output = rmm_output_piece[0];
   }
 
   timers.forces.start();

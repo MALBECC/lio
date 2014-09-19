@@ -149,16 +149,12 @@ class Partition {
     {
       double energy = 0;
 
-      printf("%d inner threads, %d outer threads\n", inner_threads, outer_threads);
-      omp_set_num_threads(outer_threads);
-
-      #pragma omp parallel for reduction(+:energy) schedule(static)
+      #pragma omp parallel for reduction(+:energy) 
       for(int i = 0; i < work.size(); i++) {
-          double local_energy = 0; ;
+          double local_energy;
           Timer t; t.start();
-
-          omp_set_num_threads(inner_threads);
-
+          int id = omp_get_thread_num();
+        
           long long cost = 0;
           for(int j = 0; j < work[i].size(); j++) {
               pair<int,int> unit = work[i][j];
@@ -177,8 +173,9 @@ class Partition {
           }
           t.stop(); 
              
-          printf("Workload %d took %ds %dms and it has %d elements (%lld nanounits)\n", i, 
-                  t.getSec(), t.getMicrosec(), work[i].size(), cost);
+          printf("Workload %d took %ds %dms and it has %d elements (%lld nanounits) (%d)\n", i, 
+                  t.getSec(), t.getMicrosec(), work[i].size(), cost, id);
+
           energy += local_energy;
       }
 

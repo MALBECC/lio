@@ -32,7 +32,7 @@ namespace G2G {
 /* methods */
 extern "C" void g2g_init_(void)
 {
-  cout << "<====== Initializing G2G ======>";
+  cout << "<====== Initializing G2G ======>" << endl;
 
   #if !CPU_KERNELS
   cuInit(0);

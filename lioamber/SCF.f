@@ -201,12 +201,14 @@ c
         PRINT*,'CHOLESKY MAGMA'
 
 #else
+        CALL MKL_SET_NUM_THREADS(1)
         PRINT*,'DOING CHOLESKY'
         ALLOCATE(MatrixVec(MM))
         DO iii=1,MM
           MatrixVec(iii)=RMM(M5+iii-1)
         ENDDO
 
+        CALL MKL_SET_NUM_THREADS(1)
         CALL DPPTRF('L',M,MatrixVec,ErrID)
         PRINT*,ErrID
         ALLOCATE(Y(M,M),Ytrans(M,M))
@@ -230,7 +232,7 @@ c
         ENDDO;ENDDO
 
         DEALLOCATE(MatrixVec)
-
+        PRINT*,'DONE CHOLESKY'
  
 #endif
       ELSE

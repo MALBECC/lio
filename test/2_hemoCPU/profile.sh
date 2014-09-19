@@ -9,6 +9,6 @@ rm liosolo/liosolo
 make cpu=1 time=1 cpu_recompute=0
 popd
 mkdir -p $dir
-export OMP_NUM_THREADS=4
+export OMP_NUM_THREADS=11
 export MKL_NUM_THREADS=1
 amplxe-cl -collect $analysis -result-dir $dir -- ../../liosolo/liosolo -i hemo.profile.in -b DZVP -c hem.xyz | tee $dir/output.txt

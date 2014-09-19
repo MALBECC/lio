@@ -3,6 +3,7 @@ fortran/garcha
 fortran/hibrido-g2g
 fortran/hibrido
 fortran/obj
+*.o
 g2g/*.o
 g2g/*.so
 g2g/*/*.o

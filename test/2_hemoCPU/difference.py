@@ -17,12 +17,13 @@ for line in fileinput.input():
     times[int(part)].append(time)
 
 avgs = dict([(k,avg(v)) for (k,v) in times.items()])
-for (k,v) in avgs.items():
-    print "Average for %d: %f" % (k, v)
+for (_,v) in avgs.items():
+    print "%f" % v
 
 vals = avgs.values()
 mt = max(vals)
 diff = max(vals) - min(vals)
+
 print "Max difference: %d" % diff
 print "Time for worst thread: %ds %dms" % (mt / SEC, mt % SEC)
 print "Percent: %f %%" % ((100.0 * diff) / (2.5 * SEC))

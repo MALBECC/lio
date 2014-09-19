@@ -61,7 +61,6 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
     bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, 
     double& energy, double* fort_forces_ptr, ThreadBufferPool<scalar_type> & pool, int pieces)
 {
-  HostMatrix<scalar_type> rmm_output;
   uint group_m = total_functions();
 
   #if CPU_RECOMPUTE
@@ -105,26 +104,20 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
         do_trmm_proyect<1,2,1, scalar_type>(rmm_input,  hessian_values, ww2y);
         do_trmm_proyect<2,2,1, scalar_type>(rmm_input,  hessian_values, ww2z);
     #else
-
-    #pragma omp parallel for 
-    for(int i = 0; i < 10; i++){
-        if (i == 0) do_trmm(rmm_input,  gX, w3x);
-        if (i == 1) do_trmm(rmm_input,  gY, w3y);
-        if (i == 2) do_trmm(rmm_input,  gZ, w3z);
-        if (i == 3) do_trmm(rmm_input, hPX, ww1x);
-        if (i == 4) do_trmm(rmm_input, hPY, ww1y);
-        if (i == 5) do_trmm(rmm_input, hPZ, ww1z);
-        if (i == 6) do_trmm(rmm_input, hIX, ww2x);
-        if (i == 7) do_trmm(rmm_input, hIY, ww2y);
-        if (i == 8) do_trmm(rmm_input, hIZ, ww2z);
-        if (i == 9) do_trmm(rmm_input, function_values, wv);
-    }
-
+        do_trmm(rmm_input,  gX, w3x);
+        do_trmm(rmm_input,  gY, w3y);
+        do_trmm(rmm_input,  gZ, w3z);
+        do_trmm(rmm_input, hPX, ww1x);
+        do_trmm(rmm_input, hPY, ww1y);
+        do_trmm(rmm_input, hPZ, ww1z);
+        do_trmm(rmm_input, hIX, ww2x);
+        do_trmm(rmm_input, hIY, ww2y);
+        do_trmm(rmm_input, hIZ, ww2z);
+        do_trmm(rmm_input, function_values, wv);
     #endif
     timers.density.pause();
   }
 
-  #pragma omp parallel for reduction(+:localenergy)
   for(int point = 0; point< points.size(); point++) {
     HostMatrix<vec_type3> dd;
     /** density **/
@@ -231,38 +224,10 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
     timers.rmm.pause();
   } // end for
 
-  if (compute_rmm) {
-    HostMatrix<scalar_type> rmm_output_piece[pieces];
-    for(int i = 0; i < pieces; i++) {
-        rmm_output_piece[i].resize(group_m, group_m);
-        rmm_output_piece[i].zero();
-    }
-    #pragma omp parallel for
-    for(int piece = 0; piece < pieces; piece++){
-        for(int i = 0;i < points.size();i++) {
-          if(i % pieces != piece) continue;
-          scalar_type factor = factors_rmm[i];
-          HostMatrix<scalar_type>::blas_ssyr(LowerTriangle, factor, function_values, rmm_output_piece[piece], i);
-        }
-    }
-
-    for(int p = 1; p < pieces; p++){
-        #pragma ivdep
-        #pragma vector aligned always
-        for(int i = 0; i < rmm_output.width; i++) {
-            for(int j = 0; j < rmm_output.height; j++) {
-                rmm_output_piece[0](i,j) += rmm_output_piece[p](i,j);
-            }
-        }
-    }
-    rmm_output = rmm_output_piece[0];
-  }
-
   timers.forces.start();
   /* accumulate forces for each point */
   if (compute_forces) {
     if(forces_mat.size() > 0) {
-      #pragma omp parallel for
       for (int j = 0; j < forces_mat[0].size(); j++) {
         vec_type3 acum(0.f,0.f,0.f);
         for (int i = 0; i < forces_mat.size(); i++) {
@@ -288,33 +253,54 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
 
   timers.rmm.start();
   /* accumulate RMM results for this group */
-  {
-      if (compute_rmm) {
-        for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
-          uint inc_i = small_function_type(i);
+  if(compute_rmm) {
+    HostMatrix<scalar_type> rmm_output_piece[pieces];
+    for(int i = 0; i < pieces; i++) {
+        rmm_output_piece[i].resize(group_m, group_m);
+        rmm_output_piece[i].zero();
+    }
+    for(int piece = 0; piece < pieces; piece++){
+        for(int i = 0;i < points.size();i++) {
+          if(i % pieces != piece) continue;
+          scalar_type factor = factors_rmm[i];
+          HostMatrix<scalar_type>::blas_ssyr(LowerTriangle, factor, function_values, rmm_output_piece[piece], i);
+        }
+    }
+    for(int p = 1; p < pieces; p++){
+        #pragma ivdep
+        #pragma vector aligned always
+        for(int i = 0; i < rmm_output_piece[0].width; i++) {
+            for(int j = 0; j < rmm_output_piece[0].height; j++) {
+                rmm_output_piece[0](i,j) += rmm_output_piece[p](i,j);
+            }
+        }
+    }
+    #pragma omp critical 
+    {
+      for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
+        uint inc_i = small_function_type(i);
 
-          for (uint k = 0; k < inc_i; k++, ii++) {
-            uint big_i = local2global_func[i] + k;
+        for (uint k = 0; k < inc_i; k++, ii++) {
+          uint big_i = local2global_func[i] + k;
 
-            for (uint j = 0, jj = 0; j < total_functions_simple(); j++) {
-              uint inc_j = small_function_type(j);
+          for (uint j = 0, jj = 0; j < total_functions_simple(); j++) {
+            uint inc_j = small_function_type(j);
 
-              for (uint l = 0; l < inc_j; l++, jj++) {
-                uint big_j = local2global_func[j] + l;
-                if (big_i > big_j) continue;
+            for (uint l = 0; l < inc_j; l++, jj++) {
+              uint big_j = local2global_func[j] + l;
+              if (big_i > big_j) continue;
 
-                uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-                #pragma omp atomic
-                fortran_vars.rmm_output(big_index) += rmm_output(ii, jj);
-              }
+              uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
+              fortran_vars.rmm_output(big_index) += rmm_output_piece[0](ii, jj);
             }
           }
         }
       }
+    }
   }
-  timers.rmm.pause();
 
-energy+=localenergy;
+  timers.rmm.pause();
+  energy+=localenergy;
 
 #if CPU_RECOMPUTE
   /* clear functions */

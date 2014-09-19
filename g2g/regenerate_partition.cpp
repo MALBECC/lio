@@ -309,6 +309,12 @@ void Partition::regenerate(void)
         }
     }
     //Sorting the spheres in increasing order
+    
+    #ifdef OUTPUT_COSTS
+    for(int i = 0; i < cubes.size(); i++) cout << "CUBE: " << cubes[i].cost() << endl;
+    for(int i = 0; i < spheres.size(); i++) cout << "SPHERE: " << spheres[i].cost() << endl;
+    exit(0);
+    #endif
 
     //Initialize the global memory pool for CUDA, with the default safety factor
     //If it is CPU, then this doesn't matter

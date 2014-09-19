@@ -61,6 +61,10 @@ else
   NVCCFLAGS += -DFULL_DOUBLE=0
 endif
 
+ifeq ($(output_costs), 1)
+  CXXFLAGS += -DOUTPUT_COSTS=1
+endif
+
 LIBRARIES=-lrt 
 ## Targets
 all: $(LIBRARY)

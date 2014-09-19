@@ -31,6 +31,9 @@ namespace G2G {
       inline float z() const { return _z; }
       inline float length2(){ return _x * _x + _y * _y + _z * _z; }
 
+      friend bool isinf(const vec_type & e){ return isinf(e._x) || isinf(e._y) || isinf(e._z); }
+      friend bool isnan(const vec_type & e){ return isnan(e._x) || isnan(e._y) || isnan(e._z); }
+
       friend vec_type operator*(const vec_type & lo, const vec_type & ro) {
       	return vec_type(lo.x() * ro.x(), lo.y() * ro.y(), lo.z() * ro.z());
       }
@@ -41,6 +44,10 @@ namespace G2G {
 
       friend vec_type operator+(const vec_type & lo, const vec_type & ro) {
       	return vec_type(lo.x() + ro.x(), lo.y() + ro.y(), lo.z() + ro.z());
+      }
+
+      friend std::ostream& operator<<(std::ostream& o, const vec_type & v) {
+          o << v.x() << " " << v.y() << " " << v.z();
       }
 
       void operator+=(const vec_type & lo){
@@ -70,6 +77,14 @@ namespace G2G {
       vec_type(void) {}
       vec_type(float x, float y, float z, float w) : _x(_x), _y(y), _z(z), _w(w) { }
       typedef float4 base_type;
+
+      friend bool isinf(const vec_type & e){ return false; }
+      friend bool isnan(const vec_type & e){ return false; }
+
+      friend std::ostream& operator<<(std::ostream& o, const vec_type & v) {
+          o << v._x << " " << v._y << " " << v._z << " " << v._w;
+      }
+
   };
 #else
 

@@ -257,7 +257,7 @@ template<class T> void HostMatrix<T>::check_values(void) {
     for (uint j = 0; j < this->height; j++) {
       T value = (*this)(i, j);
       //TODO(jpdarago): Reemplazar esto con un isinf polimorfico
-      //if (isinf(value) || isnan(value)) cout << "NaN/Inf: (" << i << "," << j << ") " << value << endl;
+      if (isinf(value) || isnan(value)) cout << "NaN/Inf: (" << i << "," << j << ") " << value << endl;
     }
   }
 }

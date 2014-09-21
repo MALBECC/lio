@@ -12,26 +12,17 @@ template<class T>
 class ThreadBufferPool {
 public:
     ThreadBufferPool(int buffers, int buffer_elements) : pieces(buffers) {
-        aligned_buffer_elements = ((buffer_elements + ALIGNMENT - 1) / ALIGNMENT) * ALIGNMENT;
-        aligned_buffer_size = aligned_buffer_elements * sizeof(T);
+        aligned_buffer_size = buffer_elements * sizeof(T);
+        aligned_buffer_size = (aligned_buffer_size + ALIGNMENT - (aligned_buffer_size % ALIGNMENT));
         pool = (T *) mkl_malloc(buffers * aligned_buffer_size, ALIGNMENT);
         total_size = pieces * aligned_buffer_size;
         requested = 0;
     }
-    ThreadBufferPool(const ThreadBufferPool & other) {
-        copy(other);
-    }
-    ThreadBufferPool & operator=(const ThreadBufferPool & other){
-        if(this != &other) {
-            mkl_free(pool); 
-            pool = NULL;
-            copy(other);
-        }
-        return *this;
+    int buffer_size() const{
+        return aligned_buffer_size;
     }
     ~ThreadBufferPool() {
         mkl_free(pool);
-        pool = NULL;
     }
     void reset() {
         requested = 0;
@@ -40,24 +31,13 @@ public:
         if(requested >= pieces){
             throw new std::runtime_error("Thread pool has received more requests than can be satisfied");
         }
-        T * ret = pool + requested * aligned_buffer_elements;
+        T * ret = (T *)((intptr_t)pool + requested * aligned_buffer_size);
         requested++;
         return ret;
     }
 private:
-    void copy(const ThreadBufferPool & other) {
-        total_size = other.total_size; pieces = other.pieces;
-        aligned_buffer_elements = other.aligned_buffer_elements;
-        aligned_buffer_size = other.aligned_buffer_size;
-        requested = other.requested;
-
-        pool = (T *) mkl_malloc(total_size, ALIGNMENT);
-        memcpy(pool, other.pool, total_size);
-
-    }
-
     T * pool;
-    int pieces, aligned_buffer_elements, aligned_buffer_size, total_size, requested;
+    int pieces, aligned_buffer_size, total_size, requested;
 };
 
 #endif

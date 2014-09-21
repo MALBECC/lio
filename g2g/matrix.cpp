@@ -167,26 +167,19 @@ template <class T> HostMatrix<T>& HostMatrix<T>::operator=(const CudaMatrix<T>& 
 	return *this;
 }
 
-/*template<class T> void HostMatrix<T>::copy_into(T* external_data, unsigned int _i, unsigned int _j, unsigned int _elements) {
-  assert(_j < c.height && _j < this->height);
-  assert((_i + _elements <= c.width) && (_i + _elements <= this->width));
-  assert(c.data);
-  assert(this->data);
-  if (_elements == 0) _elements = min(width, this->width) - _i;
-  memcpy(ptr(_i, _j), external_data, _elements * sizeof(T));
-}*/
-
 template<class T> void HostMatrix<T>::copy_submatrix(const HostMatrix<T>& c, unsigned int _elements) {
 	unsigned int _bytes = (_elements == 0 ? this->bytes() : _elements * sizeof(T));
 	//cout << "bytes: " << _bytes << ", c.bytes: " << c.bytes() << endl;
-	if (_bytes > c.bytes()) throw runtime_error("Can't copy more elements than what operator has");
+	if (_bytes > c.bytes())
+    throw runtime_error("Can't copy more elements than what operator has");
 	memcpy(this->data, c.data, _bytes);
 }
 
 template<class T> void HostMatrix<T>::copy_submatrix(const CudaMatrix<T>& c, unsigned int _elements) {
 	unsigned int _bytes = (_elements == 0 ? this->bytes() : _elements * sizeof(T));
 	//cout << "bytes: " << _bytes << ", c.bytes: " << c.bytes() << endl;
-	if (_bytes > c.bytes()) throw runtime_error("Can't copy more elements than what operator has");
+	if (_bytes > c.bytes())
+    throw runtime_error("Can't copy more elements than what operator has");
 
   #if !CPU_KERNELS
 	cudaMemcpy(this->data, c.data, _bytes, cudaMemcpyDeviceToHost);

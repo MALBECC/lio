@@ -17,8 +17,10 @@ Partition partition;
 
 ostream& operator<<(ostream& io, const Timers& t) {
 #ifdef TIMINGS
-  cout << "iteration: " << t.total << endl;
-  cout << "rmm: " << t.rmm << " density: " << t.density << " pot: " << t.pot << " forces: " << t.forces << " resto: " << t.resto << " functions: " << t.functions << endl;
+    #pragma omp critical
+    {
+      cout << "memcpys: " << t.memcpy << "trmms: " << t.trmms << "density_calcs: " << t.density_calcs << "rmm: " << t.rmm << " density: " << t.density << " pot: " << t.pot << " forces: " << t.forces << " resto: " << t.resto << " functions: " << t.functions << endl;
+    }
 #endif
   return io;
 }
@@ -125,11 +127,9 @@ bool PointGroup<scalar_type>::is_significative(FunctionType type, double exponen
   }
 }
 
-static const long long MIN_COST = 100000;
-
 template<class scalar_type>
 long long PointGroup<scalar_type>::cost() const {
-    return MIN_COST + (1LL * number_of_points) * total_functions() * total_functions();
+    return size_in_cpu() + (1LL * number_of_points) * total_functions() * (total_functions() + 1);
 }
 template<class scalar_type>
 bool PointGroup<scalar_type>::operator<(const PointGroup<scalar_type>& T) const{
@@ -138,6 +138,16 @@ bool PointGroup<scalar_type>::operator<(const PointGroup<scalar_type>& T) const{
 template<class scalar_type>
 int PointGroup<scalar_type>::pool_elements() const {
     return total_functions() * number_of_points;
+}
+template<class scalar_type>
+size_t PointGroup<scalar_type>::size_in_cpu() const {
+    size_t single = (1LL * number_of_points) * total_functions() * sizeof(scalar_type);
+    size_t cost = single;
+    if(fortran_vars.do_forces || fortran_vars.gga)
+        cost += single * 3;
+    if(fortran_vars.gga)
+        cost += single * 6;
+    return cost;
 }
 template<class scalar_type>
 size_t PointGroup<scalar_type>::size_in_gpu() const

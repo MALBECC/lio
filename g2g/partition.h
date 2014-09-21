@@ -20,7 +20,7 @@ using std::pair;
 
 namespace G2G {
   struct Timers {
-    Timer total, ciclos, rmm, density, forces, resto, pot, functions, density_derivs;
+    Timer memcpy, trmms, density_calcs, total, ciclos, rmm, density, forces, resto, pot, functions, density_derivs;
   };
 
   std::ostream& operator<<(std::ostream& io, const Timers& t);
@@ -96,11 +96,12 @@ class PointGroup {
 
     void compute_functions(bool forces, bool gga);
     void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
-        bool compute_energy, double& energy, double* fort_forces_ptr, ThreadBufferPool<scalar_type> &, int);
+        bool compute_energy, double& energy, double* fort_forces_ptr, ThreadBufferPool<scalar_type> &, int) const;
 
     bool is_significative(FunctionType, double exponent, double coeff, double d2);
     bool operator<(const PointGroup<scalar_type>& T) const;
     size_t size_in_gpu() const;
+    size_t size_in_cpu() const;
     int pool_elements() const;
 
     virtual bool is_sphere(void) = 0;
@@ -149,32 +150,36 @@ class Partition {
     {
       double energy = 0;
 
-      #pragma omp parallel for reduction(+:energy) 
+      #pragma omp parallel for simd reduction(+:energy) 
       for(int i = 0; i < work.size(); i++) {
-          double local_energy;
-          Timer t; t.start();
+          double local_energy = 0;
+          Timers ts; Timer t;
           int id = omp_get_thread_num();
         
-          long long cost = 0;
+          t.start();
+          long long cost = 0, memsize = 0;
           for(int j = 0; j < work[i].size(); j++) {
               pair<int,int> unit = work[i][j];
               int ind = unit.second;
               pools[i].reset();
 
               if(unit.first == 0) {
-                 cubes[ind].solve(timers, compute_rmm,lda,compute_forces, compute_energy, 
+                 cubes[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
                     local_energy, fort_forces_ptr, pools[i], inner_threads);
+
+                 memsize += cubes[ind].size_in_cpu();
                  cost += cubes[ind].cost();
               } else {
-                 spheres[ind].solve(timers, compute_rmm,lda,compute_forces, compute_energy,
+                 spheres[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy,
                     local_energy, fort_forces_ptr, pools[i], inner_threads);
+
+                 memsize += spheres[ind].size_in_cpu();
                  cost += spheres[ind].cost();
               }
           }
-          t.stop(); 
-             
-          printf("Workload %d took %ds %dms and it has %d elements (%lld nanounits) (%d)\n", i, 
-                  t.getSec(), t.getMicrosec(), work[i].size(), cost, id);
+          cout << ts;
+          t.stop();
+          printf("Workload %d took %ds %dms and it has %d elements (%lld nanounits) (%d)\n", i, t.getSec(), t.getMicrosec(), work[i].size(), cost, id);
 
           energy += local_energy;
       }

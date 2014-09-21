@@ -1,6 +1,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <cstring>
+#include <cstdio>
 #include "common.h"
 #include "matrix.h"
 #include "mkl.h"
@@ -34,7 +35,8 @@ template<class T> bool Matrix<T>::is_allocated(void) const {
  ***************************/
 template<class T> void HostMatrix<T>::alloc_data(void) {
   assert(this->bytes() != 0);
-
+    int bytes = this->bytes();
+    bytes = bytes + 64 - (bytes % 64);
 	if (pinned) {
     #if !CPU_KERNELS
 		cudaError_t error_status = cudaMallocHost((void**)&this->data, this->bytes());
@@ -43,7 +45,7 @@ template<class T> void HostMatrix<T>::alloc_data(void) {
     assert(false);
     #endif
 	}
-	else this->data = (T *) mkl_malloc(this->bytes(), 64);
+	else this->data = (T *) mkl_malloc(bytes, 64);
 
 	assert(this->data);
 }
@@ -57,6 +59,10 @@ template<class T> void HostMatrix<T>::dealloc_data(void) {
     #endif
   }
 	else mkl_free(this->data);
+}
+
+template<class T> void HostMatrix<T>::copy_to_tmp(T * dst) const {
+    memcpy(dst, this->data, this->bytes());
 }
 
 template<class T> void HostMatrix<T>::deallocate(void) {

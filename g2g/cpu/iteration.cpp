@@ -41,7 +41,7 @@ void trmm(const CBLAS_ORDER Order, const CBLAS_SIDE Side, const CBLAS_UPLO Uplo,
 template<class scalar_type>
 void do_trmm(Timers & ts, const HostMatrix<scalar_type> & triagmat, const HostMatrix<scalar_type> & genmat, scalar_type * res) {
     ts.memcpy.start();
-    memcpy(res, genmat.asArray(), genmat.bytes());
+    genmat.copy_to_tmp(res);
     ts.memcpy.pause();
     ts.trmms.start();
     trmm(CblasRowMajor, CblasRight, CblasLower, CblasNoTrans, CblasNonUnit, 
@@ -98,7 +98,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
     w3x = pool.get_pool(); w3y = pool.get_pool(); w3z = pool.get_pool();
     ww1x = pool.get_pool(); ww1y = pool.get_pool(); ww1z = pool.get_pool();
     ww2x = pool.get_pool(); ww2y = pool.get_pool(); ww2z = pool.get_pool();
-
+    
     #if CPU_RECOMPUTE
         do_trmm(timers, rmm_input, function_values, wv);
         do_trmm_proyect<0,1,0, scalar_type>(timers, rmm_input, gradient_values, w3x);
@@ -256,9 +256,9 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
   }
 
   /* accumulate force results for this group */
-  #pragma omp critical
-  {
-      if (compute_forces) {
+  if (compute_forces) {
+    #pragma omp critical
+    {
         FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, fortran_vars.max_atoms); // TODO: mover esto a init.cpp
         for (uint i = 0; i < total_nucleii(); i++) {
           uint global_atom = local2global_nuc[i];
@@ -267,8 +267,9 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
           fort_forces(global_atom,1) += this_force.y();
           fort_forces(global_atom,2) += this_force.z();
         }
-      }
+    }
   }
+
   timers.forces.pause();
 
   timers.rmm.start();
@@ -297,7 +298,6 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
             }
         }
     }
-    #pragma omp critical
     {
       for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
         uint inc_i = small_function_type(i);
@@ -313,6 +313,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
               if (big_i > big_j) continue;
 
               uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
+              #pragma omp atomic
               fortran_vars.rmm_output(big_index) += rmm_output_piece[0](ii, jj);
             }
           }

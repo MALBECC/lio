@@ -76,6 +76,7 @@ namespace G2G {
               return &this->data[j * this->width + i];
             }
 
+            void copy_to_tmp(T *) const;
 			void copy_submatrix(const CudaMatrix<T>& c, unsigned int elements = 0);
 			void copy_submatrix(const HostMatrix<T>& c, unsigned int elements = 0);
 

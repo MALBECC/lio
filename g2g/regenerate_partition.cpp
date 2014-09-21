@@ -323,7 +323,7 @@ void Partition::regenerate(void)
     pair<int,int> threads = load_work("cubes_and_spheres_partition.txt", work, cubes.size());
     inner_threads = threads.first; outer_threads = threads.second;
 
-    pools.clear();
+    pool_sizes.clear();
     for(int i = 0; i < work.size(); i++) {
         int largest_pool = 0;
         for(int j = 0; j < work[i].size(); j++) {
@@ -333,7 +333,7 @@ void Partition::regenerate(void)
                 largest_pool = max(largest_pool, spheres[work[i][j].second].pool_elements());
             }
         }
-        pools.push_back(ThreadBufferPool<float>(10, largest_pool));
+        pool_sizes.push_back(largest_pool);
     }
 
     //cout << "Grilla final: " << puntos_finales << " puntos (recordar que los de peso 0 se tiran), " << funciones_finales << " funciones" << endl ;

@@ -27,20 +27,28 @@ void sortBySize(std::vector<T> & input) {
 }
 
 template <typename T>
-pair<int,int> load_work(const char * file, vector<T> & work, int cubessize) {
+pair<int,int> load_work(const char * file, vector<T> & work) {
     ifstream is(file, ifstream::in);
     int inner_threads, outer_threads, thread, size, index; 
     
     is >> inner_threads >> outer_threads;
     work.clear(); work.resize(outer_threads);
     while(is >> thread >> index >> size) {
-        if(index >= cubessize) {
-            work[thread].push_back(make_pair(1, index - cubessize));
-        } else {
-            work[thread].push_back(make_pair(0, index));
-        }
+        work[thread].push_back(index);
     }
     return make_pair(inner_threads, outer_threads);
+}
+
+template <typename T>
+void load_pools(const vector<T> & elements, const vector< vector<int> > & work, vector< int > & pool_sizes) {
+    pool_sizes.clear();
+    for(int i = 0; i < work.size(); i++) {
+        int largest_pool = 0;
+        for(int j = 0; j < work[i].size(); j++) {
+            largest_pool = max(largest_pool, elements[work[i][j]].pool_elements());
+        }
+        pool_sizes.push_back(largest_pool);
+    }
 }
 
 /* methods */
@@ -320,21 +328,15 @@ void Partition::regenerate(void)
     //If it is CPU, then this doesn't matter
     globalMemoryPool::init(G2G::free_global_memory);
 
-    pair<int,int> threads = load_work("cubes_and_spheres_partition.txt", work, cubes.size());
-    inner_threads = threads.first; outer_threads = threads.second;
+    pair<int, int> threads;
 
-    pool_sizes.clear();
-    for(int i = 0; i < work.size(); i++) {
-        int largest_pool = 0;
-        for(int j = 0; j < work[i].size(); j++) {
-            if(work[i][j].first == 0){
-                largest_pool = max(largest_pool, cubes[work[i][j].second].pool_elements());
-            } else {
-                largest_pool = max(largest_pool, spheres[work[i][j].second].pool_elements());
-            }
-        }
-        pool_sizes.push_back(largest_pool);
-    }
+    threads = load_work("cubes_partition.txt", cube_work);
+    cube_inner_threads = threads.first; cube_outer_threads = threads.second;
+    threads = load_work("spheres_partition.txt", sphere_work);
+    sphere_inner_threads = threads.first; sphere_outer_threads = threads.second;
+
+    load_pools(cubes, cube_work, cube_pool_sizes);
+    load_pools(spheres, sphere_work, sphere_pool_sizes);
 
     //cout << "Grilla final: " << puntos_finales << " puntos (recordar que los de peso 0 se tiran), " << funciones_finales << " funciones" << endl ;
     //cout << "Costo: " << costo << endl;

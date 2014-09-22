@@ -156,39 +156,62 @@ class Partition {
       double energy = 0;
       Timer total; total.start();
 
+      omp_set_num_threads(cube_outer_threads);
+      printf("Cubes: inner threads: %d, outer threads: %d\n", cube_inner_threads, cube_outer_threads);
 
-      #pragma omp parallel for reduction(+:energy) 
-      for(int i = 0; i < work.size(); i++) {
-          ThreadBufPool pool(10, pool_sizes[i]);
-          double local_energy = 0;
-          Timers ts; Timer t;
+      #pragma omp parallel for reduction(+:energy)
+      for(int i = 0; i< cube_work.size(); i++) {
+          ThreadBufPool pool(10, cube_pool_sizes[i]);
+          double local_energy = 0; Timers ts; Timer t;
           int id = omp_get_thread_num();
-        
+
+          omp_set_num_threads(cube_inner_threads);
           t.start();
           long long cost = 0;
-          for(int j = 0; j < work[i].size(); j++) {
-              pair<int,int> unit = work[i][j];
-              int ind = unit.second;
+          for(int j = 0; j < cube_work[i].size(); j++) {
               pool.reset();
+              int ind = cube_work[i][j];
 
-              if(unit.first == 0) {
-                 cubes[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
-                    local_energy, fort_forces_ptr, pool, inner_threads);
-
-                 cost += cubes[ind].cost();
-              } else {
-                 spheres[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy,
-                    local_energy, fort_forces_ptr, pool, inner_threads);
-
-                 cost += spheres[ind].cost();
-              }
+              cubes[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
+                  local_energy, fort_forces_ptr, pool, cube_inner_threads);
+              cost += cubes[ind].cost();
           }
+
           t.stop();
-          printf("Workload %d took %ds %dms and it has %d elements (%lld nanounits) (%d)\n", i, t.getSec(), t.getMicrosec(), work[i].size(), cost, id);
+          printf("Cube workload %d took %ds %dms and it has %d elements (%lld nanounits) (%d)\n", i, t.getSec(), t.getMicrosec(), cube_work[i].size(), cost, id);
           cout << ts;
 
           energy += local_energy;
       }
+
+      omp_set_num_threads(sphere_outer_threads);
+      printf("Spheres: inner threads: %d, outer threads: %d\n", sphere_inner_threads, sphere_outer_threads);
+
+      #pragma omp parallel for reduction(+:energy)
+      for(int i = 0; i< sphere_work.size(); i++) {
+          ThreadBufPool pool(10, sphere_pool_sizes[i]);
+          double local_energy = 0; Timers ts; Timer t;
+          int id = omp_get_thread_num();
+
+          omp_set_num_threads(sphere_inner_threads);
+
+          t.start();
+          long long cost = 0;
+          for(int j = 0; j < sphere_work[i].size(); j++) {
+              pool.reset();
+
+              int ind = sphere_work[i][j];
+              spheres[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
+                  local_energy, fort_forces_ptr, pool, sphere_inner_threads);
+              cost += spheres[ind].cost();
+          }
+
+          t.stop();
+          printf("Sphere workload %d took %ds %dms and it has %d elements (%lld nanounits) (%d)\n", i, t.getSec(), t.getMicrosec(), sphere_work[i].size(), cost, id);
+          cout << ts;
+
+          energy += local_energy;
+      }     
 
       total.stop();
       cout << "iteracion total: " << total << endl;
@@ -223,9 +246,14 @@ class Partition {
 
     std::vector<Cube> cubes;
     std::vector<Sphere> spheres;
-    std::vector< std::vector< std::pair<int, int> > > work;
-    std::vector< int > pool_sizes;
-    int inner_threads, outer_threads;
+
+    std::vector< std::vector< int > > cube_work;
+    std::vector< int > cube_pool_sizes;
+    int cube_inner_threads, cube_outer_threads;
+
+    std::vector< std::vector< int > > sphere_work;
+    std::vector< int > sphere_pool_sizes;
+    int sphere_inner_threads, sphere_outer_threads;
 };
 
 extern Partition partition;

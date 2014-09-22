@@ -51,6 +51,7 @@ void do_trmm(Timers & ts, const HostMatrix<scalar_type> & triagmat, const HostMa
 
 template< int compo, int skip, int start, class scalar_type >
 void do_trmm_proyect(Timers & ts, const HostMatrix<scalar_type> & triagmat, const HostMatrix< vec_type< scalar_type, 3> > & genmat, scalar_type * res) {
+    ts.memcpy.start();
     int width = genmat.width / skip;
     for(int row = 0, pos = 0; row < genmat.height; row++){
         for(int col = start; col < genmat.width; col += skip){
@@ -58,8 +59,11 @@ void do_trmm_proyect(Timers & ts, const HostMatrix<scalar_type> & triagmat, cons
             res[pos++] = (compo == 0) ? e.x() : (compo == 1) ? e.y() : e.z();
         }
     }
+    ts.memcpy.pause();
+    ts.trmms.start();
     trmm(CblasRowMajor, CblasRight, CblasLower, CblasNoTrans, CblasNonUnit, 
         genmat.height, width, 1.0, triagmat.asArray(), triagmat.height, res, triagmat.height);
+    ts.trmms.pause();
 }
 
 template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
@@ -298,6 +302,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
             }
         }
     }
+    #pragma omp critical
     {
       for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
         uint inc_i = small_function_type(i);
@@ -313,7 +318,6 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
               if (big_i > big_j) continue;
 
               uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-              #pragma omp atomic
               fortran_vars.rmm_output(big_index) += rmm_output_piece[0](ii, jj);
             }
           }

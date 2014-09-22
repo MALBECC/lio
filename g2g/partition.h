@@ -145,14 +145,21 @@ class Partition {
       cubes.clear(); spheres.clear();
     }
 
+    #if FULL_DOUBLE
+    typedef ThreadBufferPool<double> ThreadBufPool;
+    #else
+    typedef ThreadBufferPool<float> ThreadBufPool;
+    #endif
+
     void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr)
     {
       double energy = 0;
       Timer total; total.start();
 
+
       #pragma omp parallel for reduction(+:energy) 
       for(int i = 0; i < work.size(); i++) {
-          ThreadBufferPool<float> pool(10, pool_sizes[i]);
+          ThreadBufPool pool(10, pool_sizes[i]);
           double local_energy = 0;
           Timers ts; Timer t;
           int id = omp_get_thread_num();

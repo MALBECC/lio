@@ -144,6 +144,9 @@ void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
   hIX = proyect<0,2,1, scalar_type>(hessian_values);
   hIY = proyect<1,2,1, scalar_type>(hessian_values);
   hIZ = proyect<2,2,1, scalar_type>(hessian_values);
+
+  hessian_values.deallocate();
+  gradient_values.deallocate();
   #endif
 }
 

@@ -270,16 +270,16 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
 
   /* accumulate force results for this group */
   if (compute_forces) {
-    #pragma omp critical
+    #pragma omp critical (forces)
     {
-        FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, fortran_vars.max_atoms); // TODO: mover esto a init.cpp
-        for (uint i = 0; i < total_nucleii(); i++) {
-          uint global_atom = local2global_nuc[i];
-          vec_type3 this_force = forces(i);
-          fort_forces(global_atom,0) += this_force.x();
-          fort_forces(global_atom,1) += this_force.y();
-          fort_forces(global_atom,2) += this_force.z();
-        }
+      FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, fortran_vars.max_atoms); // TODO: mover esto a init.cpp
+      for (uint i = 0; i < total_nucleii(); i++) {
+        uint global_atom = local2global_nuc[i];
+        vec_type3 this_force = forces(i);
+        fort_forces(global_atom,0) += this_force.x();
+        fort_forces(global_atom,1) += this_force.y();
+        fort_forces(global_atom,2) += this_force.z();
+       }
     }
   }
 
@@ -310,7 +310,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
             }
         }
     }
-    #pragma omp critical
+    #pragma omp critical (rmmoutput)
     {
       for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
         uint inc_i = small_function_type(i);

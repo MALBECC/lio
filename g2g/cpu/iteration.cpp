@@ -116,6 +116,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
         do_trmm_proyect<2,2,1, scalar_type>(timers, rmm_input,  hessian_values, ww2z);
     #else
         int assign[10];
+        memset(assign, 0, sizeof(assign));
         for(int i = 0, as = 0; i < 10; i++) {
             assign[i] = as;
             as = (as + 1) % pieces;
@@ -161,7 +162,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
     else {
       timers.density_calcs.start();
       #pragma ivdep
-      #pragma vector aligned always
+      #pragma vector always
       for (int i = 0; i < group_m; i++) {
         int ai = point * group_m + i;
         scalar_type w = wv[ai];

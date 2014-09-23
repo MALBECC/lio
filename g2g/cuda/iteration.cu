@@ -265,6 +265,16 @@ void PointGroup<scalar_type>::solve_closed(Timers& timers, bool compute_rmm, boo
 
   timers.density.pause_and_sync();
 
+//************ Repongo los valores que puse a cero antes, para las fuerzas son necesarios (o por lo mens utiles)
+  for (uint i=0; i<(group_m); i++) {
+    for(uint j=0; j<(group_m); j++) {
+      if((i>=group_m) || (j>=group_m) || (j > i))
+      {
+        rmm_input_cpu.data[COALESCED_DIMENSION(group_m)*i+j]=rmm_input_cpu.data[COALESCED_DIMENSION(group_m)*j+i] ;
+      }
+    }
+  }
+
    dim3 threads;
   /* compute forces */
   if (compute_forces) {

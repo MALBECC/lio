@@ -21,6 +21,7 @@ template <typename T>
 bool comparison_by_size(const T & a, const T & b) {
     return a.size_in_gpu() < b.size_in_gpu();
 }
+
 template <typename T>
 void sortBySize(std::vector<T> & input) {
     sort(input.begin(), input.end());
@@ -29,7 +30,8 @@ void sortBySize(std::vector<T> & input) {
 template <typename T>
 pair<int,int> load_work(const char * file, vector<T> & work) {
     ifstream is(file, ifstream::in);
-    int inner_threads, outer_threads, thread, size, index; 
+    int inner_threads, outer_threads, thread, index; 
+    long long size;
     
     is >> inner_threads >> outer_threads;
     work.clear(); work.resize(outer_threads);
@@ -319,8 +321,20 @@ void Partition::regenerate(void)
     //Sorting the spheres in increasing order
     
     #ifdef OUTPUT_COSTS
-    for(int i = 0; i < cubes.size(); i++) cout << "CUBE: " << cubes[i].cost() << endl;
-    for(int i = 0; i < spheres.size(); i++) cout << "SPHERE: " << spheres[i].cost() << endl;
+    for(int i = 0; i < cubes.size(); i++){ 
+        cout << "CUBE: " << cubes[i].cost() << " " 
+             << cubes[i].total_nucleii() << " " 
+             << cubes[i].number_of_points << " "
+             << cubes[i].total_functions() << " "
+             << cubes[i].total_functions_simple() << endl;
+    }
+    for(int i = 0; i < spheres.size(); i++) {
+        cout << "SPHERE: " << spheres[i].cost() << " " 
+             << spheres[i].total_nucleii() << " " 
+             << spheres[i].number_of_points << " "
+             << spheres[i].total_functions() << " "
+             << spheres[i].total_functions_simple() << endl;
+    }
     exit(0);
     #endif
 
@@ -329,6 +343,9 @@ void Partition::regenerate(void)
     globalMemoryPool::init(G2G::free_global_memory);
 
     pair<int, int> threads;
+
+    cube_work.clear(); sphere_work.clear();
+    cube_pool_sizes.clear(); sphere_pool_sizes.clear();
 
     threads = load_work("cubes_partition.txt", cube_work);
     cube_inner_threads = threads.first; cube_outer_threads = threads.second;

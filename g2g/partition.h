@@ -96,7 +96,7 @@ class PointGroup {
 
     void compute_functions(bool forces, bool gga);
     void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
-        bool compute_energy, double& energy, double* fort_forces_ptr, ThreadBufferPool<scalar_type> &, int) const;
+        bool compute_energy, double& energy, HostMatrix<double> &, ThreadBufferPool<scalar_type> &, int) const;
 
     bool is_significative(FunctionType, double exponent, double coeff, double d2);
     bool operator<(const PointGroup<scalar_type>& T) const;
@@ -145,85 +145,7 @@ class Partition {
       cubes.clear(); spheres.clear();
     }
 
-    #if FULL_DOUBLE
-    typedef ThreadBufferPool<double> ThreadBufPool;
-    #else
-    typedef ThreadBufferPool<float> ThreadBufPool;
-    #endif
-
-    void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr)
-    {
-      double energy = 0;
-      Timer total; total.start();
-
-      omp_set_num_threads(cube_outer_threads);
-      printf("Cubes: inner threads: %d, outer threads: %d\n", cube_inner_threads, cube_outer_threads);
-
-      #pragma omp parallel for reduction(+:energy)
-      for(int i = 0; i< cube_work.size(); i++) {
-          ThreadBufPool pool(10, cube_pool_sizes[i]);
-          double local_energy = 0; Timers ts; Timer t;
-          int id = omp_get_thread_num();
-
-          omp_set_num_threads(cube_inner_threads);
-          t.start();
-          long long cost = 0;
-          for(int j = 0; j < cube_work[i].size(); j++) {
-              pool.reset();
-              int ind = cube_work[i][j];
-
-              cubes[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
-                  local_energy, fort_forces_ptr, pool, cube_inner_threads);
-              cost += cubes[ind].cost();
-          }
-
-          t.stop();
-          printf("Cube workload %d took %ds %dms and it has %d elements (%lld nanounits) (%d)\n", i, t.getSec(), t.getMicrosec(), cube_work[i].size(), cost, id);
-          cout << ts;
-
-          energy += local_energy;
-      }
-
-      omp_set_num_threads(sphere_outer_threads);
-      printf("Spheres: inner threads: %d, outer threads: %d\n", sphere_inner_threads, sphere_outer_threads);
-
-      #pragma omp parallel for reduction(+:energy)
-      for(int i = 0; i< sphere_work.size(); i++) {
-          ThreadBufPool pool(10, sphere_pool_sizes[i]);
-          double local_energy = 0; Timers ts; Timer t;
-          int id = omp_get_thread_num();
-
-          omp_set_num_threads(sphere_inner_threads);
-
-          t.start();
-          long long cost = 0;
-          for(int j = 0; j < sphere_work[i].size(); j++) {
-              pool.reset();
-
-              int ind = sphere_work[i][j];
-              spheres[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
-                  local_energy, fort_forces_ptr, pool, sphere_inner_threads);
-              cost += spheres[ind].cost();
-          }
-
-          t.stop();
-          printf("Sphere workload %d took %ds %dms and it has %d elements (%lld nanounits) (%d)\n", i, t.getSec(), t.getMicrosec(), sphere_work[i].size(), cost, id);
-          cout << ts;
-
-          energy += local_energy;
-      }     
-
-      total.stop();
-      cout << "iteracion total: " << total << endl;
-      *fort_energy_ptr = energy;
-      if(*fort_energy_ptr != *fort_energy_ptr) {
-          std::cout << "I see dead peaple " << std::endl;
-#ifndef CPU_KERNELS
-          cudaDeviceReset();
-#endif
-          exit(1);
-      }
-    }
+    void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
 
     void regenerate(void);
 
@@ -241,7 +163,6 @@ class Partition {
       }
 
       t1.stop_and_sync();
-//      std::cout << "TIMER: funcs: " << t1 << std::endl;
     }
 
     std::vector<Cube> cubes;

@@ -129,7 +129,12 @@ bool PointGroup<scalar_type>::is_significative(FunctionType type, double exponen
 
 template<class scalar_type>
 long long PointGroup<scalar_type>::cost() const {
-    return ((6LL * number_of_points) * total_functions() * total_functions());
+    long long np = number_of_points, gm = total_functions();
+    static const long long MIN_COST = 300000;
+    // Primer termino: multiplicaciones de matrices.
+    // Segundo termino: Calcular rmm
+    // Tercer termino: overhead 
+    return (10 * np * gm * gm) / 2 + np * 2 * gm * gm + MIN_COST;
 }
 template<class scalar_type>
 bool PointGroup<scalar_type>::operator<(const PointGroup<scalar_type>& T) const{
@@ -137,7 +142,8 @@ bool PointGroup<scalar_type>::operator<(const PointGroup<scalar_type>& T) const{
 }
 template<class scalar_type>
 int PointGroup<scalar_type>::pool_elements() const {
-    return total_functions() * number_of_points;
+    int t = total_functions(), n = number_of_points;
+    return t * n;
 }
 template<class scalar_type>
 size_t PointGroup<scalar_type>::size_in_gpu() const
@@ -167,6 +173,114 @@ PointGroup<scalar_type>::~PointGroup<scalar_type>()
 
 #endif
 }
+
+
+#if FULL_DOUBLE
+typedef ThreadBufferPool<double> ThreadBufPool;
+#else
+typedef ThreadBufferPool<float> ThreadBufPool;
+#endif
+
+
+void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, 
+                      bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr){
+  double energy = 0.0;
+  Timer total; total.start();
+
+  omp_set_num_threads(cube_outer_threads);
+
+  int fort_matrices = cube_outer_threads; 
+  if(sphere_outer_threads > fort_matrices) 
+    fort_matrices = sphere_outer_threads;
+
+  HostMatrix<double> fort_forces_ms[fort_matrices];
+  if (compute_forces) {
+      for(int i = 0; i < fort_matrices; i++) {
+          fort_forces_ms[i].resize(fortran_vars.max_atoms, 3);
+          fort_forces_ms[i].zero();
+      }
+  }
+
+  #pragma omp parallel for reduction(+:energy) 
+  for(int i = 0; i< cube_work.size(); i++) {
+      ThreadBufPool pool(10, cube_pool_sizes[i]);
+      double local_energy = 0; Timers ts; Timer t;
+      int id = omp_get_thread_num();
+
+      omp_set_num_threads(cube_inner_threads);
+      t.start();
+      long long cost = 0;
+      for(int j = 0; j < cube_work[i].size(); j++) {
+         pool.reset();
+         int ind = cube_work[i][j];
+
+         cubes[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
+             local_energy, fort_forces_ms[i], pool, cube_inner_threads);
+         cost += cubes[ind].cost();
+      }
+
+      t.stop();
+      printf("Cube workload %d took %ds %dms and it has %d elements (%lld nanounits) (%d)\n", i, 
+        t.getSec(), t.getMicrosec(), cube_work[i].size(), cost, id);
+      cout << ts;
+
+      energy += local_energy;
+  }
+
+  printf(" post cubes %p\n", fort_forces_ms);
+  omp_set_num_threads(sphere_outer_threads);
+
+  #pragma omp parallel for reduction(+:energy) 
+  for(int i = 0; i< sphere_work.size(); i++) {
+      ThreadBufPool pool(10, sphere_pool_sizes[i]);
+      double local_energy = 0; Timers ts; Timer t;
+      int id = omp_get_thread_num();
+
+      omp_set_num_threads(sphere_inner_threads);
+
+      t.start();
+      long long cost = 0;
+      for(int j = 0; j < sphere_work[i].size(); j++) {
+          pool.reset();
+
+          int ind = sphere_work[i][j];
+          spheres[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
+              local_energy, fort_forces_ms[i], pool, sphere_inner_threads);
+          cost += spheres[ind].cost();
+      }
+
+      t.stop();
+      printf("Sphere workload %d took %ds %dms and it has %d elements (%lld nanounits) (%d)\n", i, 
+        t.getSec(), t.getMicrosec(), sphere_work[i].size(), cost, id);
+      cout << ts;
+
+      energy += local_energy;
+  }
+
+  if (compute_forces) {
+      FortranMatrix<double> fort_forces_out(fort_forces_ptr, fortran_vars.atoms, 3, fortran_vars.max_atoms);
+      for(int k = 0; k < fort_matrices; k++) {
+          for(int i = 0; i < fortran_vars.atoms; i++) {
+              for(int j = 0; j < 3; j++) {
+                  printf("%p %p\n", fort_forces_out, fort_forces_ms);
+                  fort_forces_out(i,j) += fort_forces_ms[k](i,j);
+              }
+          }
+      }
+  }
+    
+  total.stop();
+  cout << "iteracion total: " << total << endl;
+  *fort_energy_ptr = energy;
+  if(*fort_energy_ptr != *fort_energy_ptr) {
+      std::cout << "I see dead peaple " << std::endl;
+#ifndef CPU_KERNELS
+    cudaDeviceReset();
+#endif
+     exit(1);
+   }
+}
+
 /**********************
  * Sphere
  **********************/

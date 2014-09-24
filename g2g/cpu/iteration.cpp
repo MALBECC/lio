@@ -68,7 +68,7 @@ void do_trmm_proyect(Timers & ts, const HostMatrix<scalar_type> & triagmat, cons
 
 template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
     bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, 
-    double& energy, double* fort_forces_ptr, ThreadBufferPool<scalar_type> & pool, int pieces) const
+    double& energy, HostMatrix<double> & fort_forces, ThreadBufferPool<scalar_type> & pool, int pieces) const
 {
   uint group_m = total_functions();
 
@@ -87,7 +87,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
   get_rmm_input(rmm_input);
   timers.density.pause();
 
-  HostMatrix<vec_type3> forces(total_nucleii(), 1); forces.zero();
+  vector<vec_type3> forces(total_nucleii(), vec_type3(0.f,0.f,0.f)); 
   vector<std::vector<vec_type3> > forces_mat(
       points.size(), vector<vec_type3>(total_nucleii(), vec_type3(0.f,0.f,0.f)));
   vector<scalar_type> factors_rmm(points.size(),0);
@@ -158,11 +158,9 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
         }
         partial_density += Fi * w;
       }
-    }
-    else {
+    } else {
       timers.density_calcs.start();
       #pragma ivdep
-      #pragma vector always
       for (int i = 0; i < group_m; i++) {
         int ai = point * group_m + i;
         scalar_type w = wv[ai];
@@ -264,24 +262,21 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
         for (int i = 0; i < forces_mat.size(); i++) {
           acum += forces_mat[i][j];
         }
-        forces(j) = acum;
+        forces[j] = acum;
       }
     }
   }
 
   /* accumulate force results for this group */
   if (compute_forces) {
-    #pragma omp critical (forces)
-    {
-      FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, fortran_vars.max_atoms); // TODO: mover esto a init.cpp
-      for (uint i = 0; i < total_nucleii(); i++) {
-        uint global_atom = local2global_nuc[i];
-        vec_type3 this_force = forces(i);
-        fort_forces(global_atom,0) += this_force.x();
-        fort_forces(global_atom,1) += this_force.y();
-        fort_forces(global_atom,2) += this_force.z();
-       }
-    }
+    for (uint i = 0; i < total_nucleii(); i++) {
+       uint global_atom = local2global_nuc[i];
+       vec_type3 this_force = forces[i];
+       printf("%d %d\n", global_atom, fortran_vars.atoms, fortran_vars.max_atoms);
+       fort_forces(global_atom,0) += this_force.x();
+       fort_forces(global_atom,1) += this_force.y();
+       fort_forces(global_atom,2) += this_force.z();
+     }
   }
 
   timers.forces.pause();

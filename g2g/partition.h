@@ -96,47 +96,37 @@ class PointGroup {
 
     void compute_functions(bool forces, bool gga);
     void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
-        bool compute_energy, double& energy, HostMatrix<double> &, ThreadBufferPool<scalar_type> &, int) const;
+        bool compute_energy, double& energy, HostMatrix<double> &, ThreadBufferPool<scalar_type> &, int, HostMatrix<scalar_type> &) const;
 
     bool is_significative(FunctionType, double exponent, double coeff, double d2);
     bool operator<(const PointGroup<scalar_type>& T) const;
     size_t size_in_gpu() const;
     int pool_elements() const;
 
-    virtual bool is_sphere(void) = 0;
-    virtual bool is_cube(void) = 0;
-
     bool inGlobal;
 
 };
 
 #if FULL_DOUBLE
-class Sphere : public PointGroup<double> {
+typedef double base_scalar_type;
 #else
-class Sphere : public PointGroup<float> {
+typedef float base_scalar_type;
 #endif
+
+class Sphere : public PointGroup<base_scalar_type> {
   public:
     Sphere(void);
     Sphere(uint _atom, double _radius);
 
     void assign_significative_functions(const std::vector<double>& min_exps, const std::vector<double>& min_coeff);
-    bool is_sphere(void) { return true; }
-    bool is_cube(void) { return false; }
 
     uint atom;
     double radius;
 };
 
-#if FULL_DOUBLE
-class Cube : public PointGroup<double> {
-#else
-class Cube : public PointGroup<float> {
-#endif
+class Cube : public PointGroup<base_scalar_type> {
   public:
     void assign_significative_functions(const double3& cube_coord, const std::vector<double>& min_exps, const std::vector<double>& min_coeff);
-    bool is_sphere(void) { return false; }
-    bool is_cube(void) { return true; }
-
 };
 
 class Partition {
@@ -177,7 +167,6 @@ class Partition {
     int sphere_inner_threads, sphere_outer_threads;
 };
 
-extern Partition partition;
 }
 
 #endif

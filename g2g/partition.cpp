@@ -174,14 +174,6 @@ PointGroup<scalar_type>::~PointGroup<scalar_type>()
 #endif
 }
 
-
-#if FULL_DOUBLE
-typedef ThreadBufferPool<double> ThreadBufPool;
-#else
-typedef ThreadBufferPool<float> ThreadBufPool;
-#endif
-
-
 void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, 
                       bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr){
   double energy = 0.0;
@@ -189,21 +181,29 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
 
   omp_set_num_threads(cube_outer_threads);
 
-  int fort_matrices = cube_outer_threads; 
-  if(sphere_outer_threads > fort_matrices) 
-    fort_matrices = sphere_outer_threads;
+  int matrices = cube_outer_threads; 
+  if(sphere_outer_threads > matrices) 
+    matrices = sphere_outer_threads;
 
-  HostMatrix<double> fort_forces_ms[fort_matrices];
+  HostMatrix<double> fort_forces_ms[matrices];
   if (compute_forces) {
-      for(int i = 0; i < fort_matrices; i++) {
+      for(int i = 0; i < matrices; i++) {
           fort_forces_ms[i].resize(fortran_vars.max_atoms, 3);
           fort_forces_ms[i].zero();
       }
   }
 
+  HostMatrix<base_scalar_type> rmm_outputs[matrices];
+  if (compute_rmm) {
+      for(int i = 0; i < matrices; i++) {
+          rmm_outputs[i].resize(fortran_vars.rmm_output.width, fortran_vars.rmm_output.height);
+          rmm_outputs[i].zero();
+      }
+  }
+
   #pragma omp parallel for reduction(+:energy) 
   for(int i = 0; i< cube_work.size(); i++) {
-      ThreadBufPool pool(10, cube_pool_sizes[i]);
+      ThreadBufferPool<base_scalar_type> pool(10, cube_pool_sizes[i]);
       double local_energy = 0; Timers ts; Timer t;
       int id = omp_get_thread_num();
 
@@ -215,7 +215,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
          int ind = cube_work[i][j];
 
          cubes[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
-             local_energy, fort_forces_ms[i], pool, cube_inner_threads);
+             local_energy, fort_forces_ms[i], pool, cube_inner_threads, rmm_outputs[i]);
          cost += cubes[ind].cost();
       }
 
@@ -232,7 +232,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
 
   #pragma omp parallel for reduction(+:energy) 
   for(int i = 0; i< sphere_work.size(); i++) {
-      ThreadBufPool pool(10, sphere_pool_sizes[i]);
+      ThreadBufferPool<base_scalar_type> pool(10, sphere_pool_sizes[i]);
       double local_energy = 0; Timers ts; Timer t;
       int id = omp_get_thread_num();
 
@@ -245,7 +245,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
 
           int ind = sphere_work[i][j];
           spheres[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
-              local_energy, fort_forces_ms[i], pool, sphere_inner_threads);
+              local_energy, fort_forces_ms[i], pool, sphere_inner_threads, rmm_outputs[i]);
           cost += spheres[ind].cost();
       }
 
@@ -259,11 +259,20 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
 
   if (compute_forces) {
       FortranMatrix<double> fort_forces_out(fort_forces_ptr, fortran_vars.atoms, 3, fortran_vars.max_atoms);
-      for(int k = 0; k < fort_matrices; k++) {
+      for(int k = 0; k < matrices; k++) {
           for(int i = 0; i < fortran_vars.atoms; i++) {
               for(int j = 0; j < 3; j++) {
-                  printf("%p %p\n", fort_forces_out, fort_forces_ms);
                   fort_forces_out(i,j) += fort_forces_ms[k](i,j);
+              }
+          }
+      }
+  }
+
+  if (compute_rmm) {
+      for(int k = 0; k < matrices; k++) {
+          for(int i = 0; i < rmm_outputs[k].width; i++) {
+              for(int j = 0; j < rmm_outputs[k].height; j++) {
+                  fortran_vars.rmm_output(i,j) += rmm_outputs[k](i,j);
               }
           }
       }

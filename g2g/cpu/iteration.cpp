@@ -68,7 +68,7 @@ void do_trmm_proyect(Timers & ts, const HostMatrix<scalar_type> & triagmat, cons
 
 template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
     bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, 
-    double& energy, HostMatrix<double> & fort_forces, ThreadBufferPool<scalar_type> & pool, int pieces) const
+    double& energy, HostMatrix<double> & fort_forces, ThreadBufferPool<scalar_type> & pool, int pieces, HostMatrix<scalar_type> & rmm_global_output) const
 {
   uint group_m = total_functions();
 
@@ -322,7 +322,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
               if (big_i > big_j) continue;
 
               uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-              fortran_vars.rmm_output(big_index) += rmm_output_piece[0](ii, jj);
+              rmm_global_output(big_index) += rmm_output_piece[0](ii, jj);
             }
           }
         }

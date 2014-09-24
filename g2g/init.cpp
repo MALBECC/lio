@@ -18,8 +18,7 @@ using std::ifstream;
 using std::string;
 using namespace G2G;
 
-/* external function prototypes */
-template<bool, bool> void compute_functions(void);
+Partition partition;
 
 /* internal function prototypes */
 void read_options(void);

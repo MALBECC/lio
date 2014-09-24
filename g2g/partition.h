@@ -130,6 +130,7 @@ class Partition {
   public:
     void clear(void) {
       cubes.clear(); spheres.clear();
+      cube_work.clear(); sphere_work.clear();
     }
 
     void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
@@ -141,10 +142,12 @@ class Partition {
       Timer t1;
       t1.start_and_sync();
 
+      #pragma omp parallel for
       for(int i = 0; i < cubes.size(); i++){
         cubes[i].compute_functions(forces, gga);
       }
 
+      #pragma omp parallel for
       for(int i = 0; i < spheres.size(); i++){
         spheres[i].compute_functions(forces, gga);
       }

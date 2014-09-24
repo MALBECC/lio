@@ -55,11 +55,6 @@ namespace G2G {
                 return this->data[j * this->width + i];
 			}
 
-			inline const T* row(unsigned int i) const {
-			    // TODO(jpdarago): Agregar checks
-			    return &this->data[i * this->width];
-            }
-
             inline T& operator()(unsigned int i = 0, unsigned int j = 0) {
                 assert(i < this->width);
                 assert(j < this->height);

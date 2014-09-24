@@ -31,7 +31,7 @@ public:
         if(requested >= pieces){
             throw new std::runtime_error("Thread pool has received more requests than can be satisfied");
         }
-        T * ret = (T *)((intptr_t)pool + requested * aligned_buffer_size);
+        T * ret = (T *)((unsigned long)pool + requested * aligned_buffer_size);
         requested++;
         return ret;
     }

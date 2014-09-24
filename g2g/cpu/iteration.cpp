@@ -83,7 +83,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
 
   // prepare rmm_input for this group
   timers.density.start();
-  HostMatrix<scalar_type> rmm_input(group_m, group_m);
+  HostMatrix<scalar_type> rmm_input(ALIGN(group_m), ALIGN(group_m));
   get_rmm_input(rmm_input);
   timers.density.pause();
 
@@ -136,11 +136,12 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
     vec_type3 dd2(0,0,0);
 
     timers.density.start();
+    int skip = ALIGN(group_m);
     if (lda) {
-      for (uint i = 0; i < group_m; i++) {
+      for (uint i = 0; i < skip; i++) {
         scalar_type w = 0.0;
         scalar_type Fi = function_values(i, point);
-        for (uint j = i; j < group_m; j++) {
+        for (uint j = i; j < skip; j++) {
           scalar_type Fj = function_values(j, point);
           w += rmm_input(j, i) * Fj;
         }
@@ -149,8 +150,9 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
     } else {
       timers.density_calcs.start();
       #pragma ivdep
-      for (int i = 0; i < group_m; i++) {
-        int ai = point * group_m + i;
+      #pragma vector aligned always
+      for (int i = 0; i < skip; i++) {
+        int ai = point * skip + i;
         scalar_type w = wv[ai];
         vec_type3 w3(w3x[ai],w3y[ai],w3z[ai]);
         vec_type3 ww1(ww1x[ai],ww1y[ai],ww1z[ai]);
@@ -266,7 +268,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
   if(compute_rmm) {
     HostMatrix<scalar_type> rmm_output_piece[pieces];
     for(int i = 0; i < pieces; i++) {
-        rmm_output_piece[i].resize(group_m, group_m);
+        rmm_output_piece[i].resize(ALIGN(group_m), ALIGN(group_m));
         rmm_output_piece[i].zero();
     }
     #pragma omp parallel for

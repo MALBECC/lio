@@ -144,7 +144,7 @@ bool PointGroup<scalar_type>::operator<(const PointGroup<scalar_type>& T) const{
 template<class scalar_type>
 int PointGroup<scalar_type>::pool_elements() const {
     int t = total_functions(), n = number_of_points;
-    return t * n;
+    return ALIGN(t) * n;
 }
 template<class scalar_type>
 size_t PointGroup<scalar_type>::size_in_gpu() const
@@ -180,78 +180,51 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   double energy = 0.0;
   Timer total; total.start();
 
-  omp_set_num_threads(cube_outer_threads);
+  omp_set_num_threads(outer_threads);
+  HostMatrix<double> fort_forces_ms[outer_threads];
 
-  int matrices = cube_outer_threads; 
-  if(sphere_outer_threads > matrices) 
-    matrices = sphere_outer_threads;
-
-  HostMatrix<double> fort_forces_ms[matrices];
   if (compute_forces) {
-      for(int i = 0; i < matrices; i++) {
+      for(int i = 0; i < outer_threads; i++) {
           fort_forces_ms[i].resize(fortran_vars.max_atoms, 3);
           fort_forces_ms[i].zero();
       }
   }
 
-  HostMatrix<base_scalar_type> rmm_outputs[matrices];
+  HostMatrix<base_scalar_type> rmm_outputs[outer_threads];
   if (compute_rmm) {
-      for(int i = 0; i < matrices; i++) {
+      for(int i = 0; i < outer_threads; i++) {
           rmm_outputs[i].resize(fortran_vars.rmm_output.width, fortran_vars.rmm_output.height);
           rmm_outputs[i].zero();
       }
   }
 
   #pragma omp parallel for reduction(+:energy) 
-  for(int i = 0; i< cube_work.size(); i++) {
-      ThreadBufferPool<base_scalar_type> pool(10, cube_pool_sizes[i]);
+  for(int i = 0; i< work.size(); i++) {
+      ThreadBufferPool<base_scalar_type> pool(10, pool_sizes[i]);
       double local_energy = 0; Timers ts; Timer t;
       int id = omp_get_thread_num();
 
-      omp_set_num_threads(cube_inner_threads);
+      omp_set_num_threads(inner_threads);
       t.start();
       long long cost = 0;
-      for(int j = 0; j < cube_work[i].size(); j++) {
+      for(int j = 0; j < work[i].size(); j++) {
          pool.reset();
-         int ind = cube_work[i][j];
+         int ind = work[i][j];
 
-         cubes[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
-             local_energy, fort_forces_ms[i], pool, cube_inner_threads, rmm_outputs[i]);
-         cost += cubes[ind].cost();
+         if (ind >= cubes.size()) {
+             spheres[ind-cubes.size()].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
+                 local_energy, fort_forces_ms[i], pool, inner_threads, rmm_outputs[i]);
+             cost += cubes[ind].cost();
+         } else {
+             cubes[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
+                 local_energy, fort_forces_ms[i], pool, inner_threads, rmm_outputs[i]);
+             cost += cubes[ind].cost();
+         }
       }
 
       t.stop();
-      printf("Cube workload %d took %ds %dms and it has %d elements (%lld nanounits) (%d)\n", i, 
-        t.getSec(), t.getMicrosec(), cube_work[i].size(), cost, id);
-      cout << ts;
-
-      energy += local_energy;
-  }
-
-  omp_set_num_threads(sphere_outer_threads);
-
-  #pragma omp parallel for reduction(+:energy) 
-  for(int i = 0; i< sphere_work.size(); i++) {
-      ThreadBufferPool<base_scalar_type> pool(10, sphere_pool_sizes[i]);
-      double local_energy = 0; Timers ts; Timer t;
-      int id = omp_get_thread_num();
-
-      omp_set_num_threads(sphere_inner_threads);
-
-      t.start();
-      long long cost = 0;
-      for(int j = 0; j < sphere_work[i].size(); j++) {
-          pool.reset();
-
-          int ind = sphere_work[i][j];
-          spheres[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
-              local_energy, fort_forces_ms[i], pool, sphere_inner_threads, rmm_outputs[i]);
-          cost += spheres[ind].cost();
-      }
-
-      t.stop();
-      printf("Sphere workload %d took %ds %dms and it has %d elements (%lld nanounits) (%d)\n", i, 
-        t.getSec(), t.getMicrosec(), sphere_work[i].size(), cost, id);
+      printf("Workload %d took %ds %dms and it has %d elements (%lld nanounits) (%d)\n", i, 
+        t.getSec(), t.getMicrosec(), work[i].size(), cost, id);
       cout << ts;
 
       energy += local_energy;
@@ -259,7 +232,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
 
   if (compute_forces) {
       FortranMatrix<double> fort_forces_out(fort_forces_ptr, fortran_vars.atoms, 3, fortran_vars.max_atoms);
-      for(int k = 0; k < matrices; k++) {
+      for(int k = 0; k < outer_threads; k++) {
           for(int i = 0; i < fortran_vars.atoms; i++) {
               for(int j = 0; j < 3; j++) {
                   fort_forces_out(i,j) += fort_forces_ms[k](i,j);
@@ -269,7 +242,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   }
 
   if (compute_rmm) {
-      for(int k = 0; k < matrices; k++) {
+      for(int k = 0; k < outer_threads; k++) {
           for(int i = 0; i < rmm_outputs[k].width; i++) {
               for(int j = 0; j < rmm_outputs[k].height; j++) {
                   fortran_vars.rmm_output(i,j) += rmm_outputs[k](i,j);

@@ -4,6 +4,7 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <sstream>
 #include "common.h"
 #include "init.h"
 #include "matrix.h"
@@ -17,10 +18,10 @@ Partition partition;
 
 ostream& operator<<(ostream& io, const Timers& t) {
 #ifdef TIMINGS
-    #pragma omp critical
-    {
-      cout << "memcpys: " << t.memcpy << "trmms: " << t.trmms << "density_calcs: " << t.density_calcs << "rmm: " << t.rmm << " density: " << t.density << " pot: " << t.pot << " forces: " << t.forces << " resto: " << t.resto << " functions: " << t.functions << endl;
-    }
+    ostringstream ss;
+    ss << "memcpys: " << t.memcpy << "trmms: " << t.trmms << "density_calcs: " << t.density_calcs << "rmm: " << t.rmm << " density: " 
+       << t.density << " pot: " << t.pot << " forces: " << t.forces << " resto: " << t.resto << " functions: " << t.functions;
+    io << ss.str() << endl;
 #endif
   return io;
 }
@@ -130,7 +131,7 @@ bool PointGroup<scalar_type>::is_significative(FunctionType type, double exponen
 template<class scalar_type>
 long long PointGroup<scalar_type>::cost() const {
     long long np = number_of_points, gm = total_functions();
-    static const long long MIN_COST = 300000;
+    static const long long MIN_COST = 0;
     // Primer termino: multiplicaciones de matrices.
     // Segundo termino: Calcular rmm
     // Tercer termino: overhead 
@@ -227,7 +228,6 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
       energy += local_energy;
   }
 
-  printf(" post cubes %p\n", fort_forces_ms);
   omp_set_num_threads(sphere_outer_threads);
 
   #pragma omp parallel for reduction(+:energy) 

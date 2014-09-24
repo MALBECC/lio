@@ -272,7 +272,6 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
     for (uint i = 0; i < total_nucleii(); i++) {
        uint global_atom = local2global_nuc[i];
        vec_type3 this_force = forces[i];
-       printf("%d %d\n", global_atom, fortran_vars.atoms, fortran_vars.max_atoms);
        fort_forces(global_atom,0) += this_force.x();
        fort_forces(global_atom,1) += this_force.y();
        fort_forces(global_atom,2) += this_force.z();
@@ -306,24 +305,21 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
             }
         }
     }
-    #pragma omp critical (rmmoutput)
-    {
-      for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
-        uint inc_i = small_function_type(i);
+    for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
+      uint inc_i = small_function_type(i);
 
-        for (uint k = 0; k < inc_i; k++, ii++) {
-          uint big_i = local2global_func[i] + k;
+      for (uint k = 0; k < inc_i; k++, ii++) {
+        uint big_i = local2global_func[i] + k;
 
-          for (uint j = 0, jj = 0; j < total_functions_simple(); j++) {
-            uint inc_j = small_function_type(j);
+        for (uint j = 0, jj = 0; j < total_functions_simple(); j++) {
+          uint inc_j = small_function_type(j);
 
-            for (uint l = 0; l < inc_j; l++, jj++) {
-              uint big_j = local2global_func[j] + l;
-              if (big_i > big_j) continue;
+          for (uint l = 0; l < inc_j; l++, jj++) {
+            uint big_j = local2global_func[j] + l;
+            if (big_i > big_j) continue;
 
-              uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-              rmm_global_output(big_index) += rmm_output_piece[0](ii, jj);
-            }
+            uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
+            rmm_global_output(big_index) += rmm_output_piece[0](ii, jj);
           }
         }
       }

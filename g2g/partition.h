@@ -62,16 +62,13 @@ class PointGroup {
     G2G::HostMatrix<scalar_type> function_values;
     G2G::HostMatrix<vec_type3> gradient_values;
     G2G::HostMatrix<vec_type3> hessian_values;
+    G2G::HostMatrix<scalar_type> gX, gY, gZ;
+    G2G::HostMatrix<scalar_type> hIX, hIY, hIZ;
+    G2G::HostMatrix<scalar_type> hPX, hPY, hPZ;
     #else
     G2G::CudaMatrix<scalar_type> function_values;
     G2G::CudaMatrix<vec_type4> gradient_values;
     G2G::CudaMatrix<vec_type4> hessian_values;
-    #endif
-
-    #if CPU_KERNELS && !CPU_RECOMPUTE
-    G2G::HostMatrix<scalar_type> gX, gY, gZ;
-    G2G::HostMatrix<scalar_type> hIX, hIY, hIZ;
-    G2G::HostMatrix<scalar_type> hPX, hPY, hPZ;
     #endif
 
     long long cost() const;
@@ -96,7 +93,7 @@ class PointGroup {
 
     void compute_functions(bool forces, bool gga);
     void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
-        bool compute_energy, double& energy, HostMatrix<double> &, ThreadBufferPool<scalar_type> &, int, HostMatrix<scalar_type> &) const;
+        bool compute_energy, double& energy, HostMatrix<double> &, ThreadBufferPool<scalar_type> &, int, HostMatrix<scalar_type> &);
 
     bool is_significative(FunctionType, double exponent, double coeff, double d2);
     bool operator<(const PointGroup<scalar_type>& T) const;
@@ -158,11 +155,11 @@ class Partition {
     std::vector<Cube> cubes;
     std::vector<Sphere> spheres;
 
-    std::vector< std::vector< int > > cube_work;
+    std::vector< std::vector<int> > cube_work;
     std::vector< int > cube_pool_sizes;
     int cube_inner_threads, cube_outer_threads;
 
-    std::vector< std::vector< int > > sphere_work;
+    std::vector< std::vector<int> > sphere_work;
     std::vector< int > sphere_pool_sizes;
     int sphere_inner_threads, sphere_outer_threads;
 };

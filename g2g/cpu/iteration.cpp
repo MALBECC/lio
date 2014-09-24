@@ -68,7 +68,7 @@ void do_trmm_proyect(Timers & ts, const HostMatrix<scalar_type> & triagmat, cons
 
 template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
     bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, 
-    double& energy, HostMatrix<double> & fort_forces, ThreadBufferPool<scalar_type> & pool, int pieces, HostMatrix<scalar_type> & rmm_global_output) const
+    double& energy, HostMatrix<double> & fort_forces, ThreadBufferPool<scalar_type> & pool, int pieces, HostMatrix<scalar_type> & rmm_global_output)
 {
   uint group_m = total_functions();
 
@@ -103,38 +103,26 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
     ww1x = pool.get_pool(); ww1y = pool.get_pool(); ww1z = pool.get_pool();
     ww2x = pool.get_pool(); ww2y = pool.get_pool(); ww2z = pool.get_pool();
     
-    #if CPU_RECOMPUTE
-        do_trmm(timers, rmm_input, function_values, wv);
-        do_trmm_proyect<0,1,0, scalar_type>(timers, rmm_input, gradient_values, w3x);
-        do_trmm_proyect<1,1,0, scalar_type>(timers, rmm_input, gradient_values, w3y);
-        do_trmm_proyect<2,1,0, scalar_type>(timers, rmm_input, gradient_values, w3z);
-        do_trmm_proyect<0,2,0, scalar_type>(timers, rmm_input,  hessian_values, ww1x);
-        do_trmm_proyect<1,2,0, scalar_type>(timers, rmm_input,  hessian_values, ww1y);
-        do_trmm_proyect<2,2,0, scalar_type>(timers, rmm_input,  hessian_values, ww1z);
-        do_trmm_proyect<0,2,1, scalar_type>(timers, rmm_input,  hessian_values, ww2x);
-        do_trmm_proyect<1,2,1, scalar_type>(timers, rmm_input,  hessian_values, ww2y);
-        do_trmm_proyect<2,2,1, scalar_type>(timers, rmm_input,  hessian_values, ww2z);
-    #else
-        int assign[10];
-        memset(assign, 0, sizeof(assign));
-        for(int i = 0, as = 0; i < 10; i++) {
-            assign[i] = as;
-            as = (as + 1) % pieces;
-        }
-        #pragma omp parallel for
-        for(int i = 0; i < pieces; i++) {
-            if (assign[0] == i) do_trmm(timers, rmm_input, function_values, wv);
-            if (assign[1] == i) do_trmm(timers, rmm_input,  gX, w3x);
-            if (assign[2] == i) do_trmm(timers, rmm_input,  gY, w3y);
-            if (assign[3] == i) do_trmm(timers, rmm_input,  gZ, w3z);
-            if (assign[4] == i) do_trmm(timers, rmm_input, hPX, ww1x);
-            if (assign[5] == i) do_trmm(timers, rmm_input, hPY, ww1y);
-            if (assign[6] == i) do_trmm(timers, rmm_input, hPZ, ww1z);
-            if (assign[7] == i) do_trmm(timers, rmm_input, hIX, ww2x);
-            if (assign[8] == i) do_trmm(timers, rmm_input, hIY, ww2y);
-            if (assign[9] == i) do_trmm(timers, rmm_input, hIZ, ww2z);
-        }
-    #endif
+    int assign[10];
+    memset(assign, 0, sizeof(assign));
+    for(int i = 0, as = 0; i < 10; i++) {
+        assign[i] = as;
+        as = (as + 1) % pieces;
+    }
+    #pragma omp parallel for
+    for(int i = 0; i < pieces; i++) {
+        if (assign[0] == i) do_trmm(timers, rmm_input, function_values, wv);
+        if (assign[1] == i) do_trmm(timers, rmm_input,  gX, w3x);
+        if (assign[2] == i) do_trmm(timers, rmm_input,  gY, w3y);
+        if (assign[3] == i) do_trmm(timers, rmm_input,  gZ, w3z);
+        if (assign[4] == i) do_trmm(timers, rmm_input, hPX, ww1x);
+        if (assign[5] == i) do_trmm(timers, rmm_input, hPY, ww1y);
+        if (assign[6] == i) do_trmm(timers, rmm_input, hPZ, ww1z);
+        if (assign[7] == i) do_trmm(timers, rmm_input, hIX, ww2x);
+        if (assign[8] == i) do_trmm(timers, rmm_input, hIY, ww2y);
+        if (assign[9] == i) do_trmm(timers, rmm_input, hIZ, ww2z);
+    }
+
     timers.density.pause();
   }
 
@@ -168,17 +156,10 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
         vec_type3 ww1(ww1x[ai],ww1y[ai],ww1z[ai]);
         vec_type3 ww2(ww2x[ai],ww2y[ai],ww2z[ai]);
 
-        #if CPU_RECOMPUTE
-          scalar_type Fi = function_values(i, point);
-          vec_type3 Fgi(gradient_values(i, point));
-          vec_type3 Fhi1(hessian_values(2 * (i + 0) + 0, point));
-          vec_type3 Fhi2(hessian_values(2 * (i + 0) + 1, point));
-        #else
-          scalar_type Fi = function_values(i, point);
-          vec_type3 Fgi(gX(i,point), gY(i, point), gZ(i, point));
-          vec_type3 Fhi1(hPX(i,point), hPY(i, point), hPZ(i, point));
-          vec_type3 Fhi2(hIX(i,point), hIY(i, point), hIZ(i, point));
-        #endif
+        scalar_type Fi = function_values(i, point);
+        vec_type3 Fgi(gX(i,point), gY(i, point), gZ(i, point));
+        vec_type3 Fhi1(hPX(i,point), hPY(i, point), hPZ(i, point));
+        vec_type3 Fhi2(hIX(i,point), hIY(i, point), hIZ(i, point));
 
         partial_density += Fi * w;
 

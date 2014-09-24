@@ -133,11 +133,12 @@ void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
     }
   }
 
-  #if !CPU_RECOMPUTE
   gX = proyect<0,1,0, scalar_type>(gradient_values);
   gY = proyect<1,1,0, scalar_type>(gradient_values);
   gZ = proyect<2,1,0, scalar_type>(gradient_values);
   
+  gradient_values.deallocate();
+
   hPX = proyect<0,2,0, scalar_type>(hessian_values);
   hPY = proyect<1,2,0, scalar_type>(hessian_values);
   hPZ = proyect<2,2,0, scalar_type>(hessian_values);
@@ -146,8 +147,6 @@ void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
   hIZ = proyect<2,2,1, scalar_type>(hessian_values);
 
   hessian_values.deallocate();
-  gradient_values.deallocate();
-  #endif
 }
 
 template class PointGroup<double>;

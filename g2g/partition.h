@@ -130,7 +130,7 @@ class Partition {
   public:
     void clear(void) {
       cubes.clear(); spheres.clear();
-      cube_work.clear(); sphere_work.clear();
+      work.clear(); pool_sizes.clear();
     }
 
     void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
@@ -158,15 +158,13 @@ class Partition {
     std::vector<Cube> cubes;
     std::vector<Sphere> spheres;
 
-    std::vector< std::vector<int> > cube_work;
-    std::vector< int > cube_pool_sizes;
-    int cube_inner_threads, cube_outer_threads;
-
-    std::vector< std::vector<int> > sphere_work;
-    std::vector< int > sphere_pool_sizes;
-    int sphere_inner_threads, sphere_outer_threads;
+    std::vector< std::vector< int > > work;
+    std::vector< int > pool_sizes;
+    int outer_threads, inner_threads;
 };
 
 }
+
+#define ALIGN(x) (((x) % 16) ? ((x) + 16 - ((x) % 16)) : (x))
 
 #endif

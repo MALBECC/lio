@@ -131,11 +131,11 @@ bool PointGroup<scalar_type>::is_significative(FunctionType type, double exponen
 template<class scalar_type>
 long long PointGroup<scalar_type>::cost() const {
     long long np = number_of_points, gm = total_functions();
-    static const long long MIN_COST = 0;
+    static const long long MIN_COST = 2000000;
     // Primer termino: multiplicaciones de matrices.
     // Segundo termino: Calcular rmm
     // Tercer termino: overhead 
-    return (10 * np * gm * gm) / 2 + np * 2 * gm * gm + MIN_COST;
+    return (10 * np * gm * (1+gm)) / 2 + np * 2 * gm * gm + MIN_COST;
 }
 template<class scalar_type>
 bool PointGroup<scalar_type>::operator<(const PointGroup<scalar_type>& T) const{
@@ -159,6 +159,7 @@ size_t PointGroup<scalar_type>::size_in_gpu() const
       total_cost+= (single_matrix_cost*8);  //2*4 vec_type hessian
     return total_cost*sizeof(scalar_type);  // size in bytes according to precision
 }
+
 template<class scalar_type>
 PointGroup<scalar_type>::~PointGroup<scalar_type>()
 {

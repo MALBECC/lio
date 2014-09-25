@@ -49,23 +49,6 @@ void do_trmm(Timers & ts, const HostMatrix<scalar_type> & triagmat, const HostMa
     ts.trmms.pause();
 }
 
-template< int compo, int skip, int start, class scalar_type >
-void do_trmm_proyect(Timers & ts, const HostMatrix<scalar_type> & triagmat, const HostMatrix< vec_type< scalar_type, 3> > & genmat, scalar_type * res) {
-    ts.memcpy.start();
-    int width = genmat.width / skip;
-    for(int row = 0, pos = 0; row < genmat.height; row++){
-        for(int col = start; col < genmat.width; col += skip){
-            vec_type<scalar_type, 3> e = genmat(col, row);
-            res[pos++] = (compo == 0) ? e.x() : (compo == 1) ? e.y() : e.z();
-        }
-    }
-    ts.memcpy.pause();
-    ts.trmms.start();
-    trmm(CblasRowMajor, CblasRight, CblasLower, CblasNoTrans, CblasNonUnit, 
-        genmat.height, width, 1.0, triagmat.asArray(), triagmat.height, res, triagmat.height);
-    ts.trmms.pause();
-}
-
 template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
     bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, 
     double& energy, HostMatrix<double> & fort_forces, ThreadBufferPool<scalar_type> & pool, int pieces, HostMatrix<scalar_type> & rmm_global_output)
@@ -105,9 +88,8 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
     
     int assign[10];
     memset(assign, 0, sizeof(assign));
-    for(int i = 0, as = 0; i < 10; i++) {
-        assign[i] = as;
-        as = (as + 1) % pieces;
+    for(int i = 0; i < 10; i++) {
+        assign[i] = i % pieces;
     }
     #pragma omp parallel for
     for(int i = 0; i < pieces; i++) {
@@ -279,10 +261,11 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
           HostMatrix<scalar_type>::blas_ssyr(LowerTriangle, factor, function_values, rmm_output_piece[piece], i);
         }
     }
+
     for(int p = 1; p < pieces; p++){
-        #pragma ivdep
-        #pragma vector aligned always
         for(int i = 0; i < group_m; i++) {
+            #pragma ivdep
+            #pragma vector aligned always
             for(int j = 0; j < group_m; j++) {
                 rmm_output_piece[0](i,j) += rmm_output_piece[p](i,j);
             }

@@ -128,6 +128,7 @@ class Cube : public PointGroup<base_scalar_type> {
 
 class Partition {
   public:
+    void compute_work_partition();
     void clear(void) {
       cubes.clear(); spheres.clear();
       work.clear(); pool_sizes.clear();

@@ -4,6 +4,8 @@
 #include <limits>
 #include <vector>
 #include <fstream>
+#include <cstdlib>
+#include <cstdio>
 
 #include "common.h"
 #include "init.h"
@@ -27,20 +29,6 @@ void sortBySize(std::vector<T> & input) {
     sort(input.begin(), input.end());
 }
 
-template <typename T>
-pair<int,int> load_work(const char * file, vector<T> & work) {
-    ifstream is(file, ifstream::in);
-    int inner_threads, outer_threads, thread, index; 
-    long long size;
-    
-    is >> inner_threads >> outer_threads;
-    work.clear(); work.resize(outer_threads);
-    while(is >> thread >> index >> size) {
-        work[thread].push_back(index);
-    }
-    return make_pair(inner_threads, outer_threads);
-}
-
 void load_pools(const vector<int> & elements, const vector< vector<int> > & work, vector< int > & pool_sizes) {
     pool_sizes.clear();
     for(int i = 0; i < work.size(); i++) {
@@ -52,11 +40,82 @@ void load_pools(const vector<int> & elements, const vector< vector<int> > & work
     }
 }
 
+template <typename T>
+long long total_costs(const vector<T> & elements) 
+{
+    long long res = 0;
+    for(int i = 0; i < elements.size(); i++)
+        res += elements[i].cost();
+    return res;
+}
+
+void split_bins(const vector< pair<long long, int> > & costs, vector< vector<int> > & workloads, long long capacity)
+{
+    // Bin Packing heuristic
+    workloads.clear();
+    for(int i = 0; i < costs.size(); i++) {
+        int next_bin = -1; long long minslack = capacity+1;
+        for(int j = 0; j < workloads.size(); j++) {
+            long long slack = capacity; 
+            for(int k = 0; k < workloads[j].size(); k++){
+                slack -= costs[workloads[j][k]].first;
+            }
+            if (slack >= costs[i].first && slack < minslack) {
+                minslack = slack;
+                next_bin = j;
+            }
+        }
+        if(next_bin == -1) {
+            next_bin = workloads.size();
+            workloads.push_back(vector<int>());
+        }
+        workloads[next_bin].push_back(i);
+    }
+}
+
+void Partition::compute_work_partition()
+{
+    vector< pair<long long, int> > costs;
+    for(int i = 0; i < cubes.size(); i++) 
+        costs.push_back(make_pair(cubes[i].cost(), i));
+    for(int i = 0; i < spheres.size(); i++) 
+        costs.push_back(make_pair(spheres[i].cost(), i+cubes.size()));
+
+    sort(costs.begin(), costs.end());
+    reverse(costs.begin(), costs.end());
+
+    long long min_cost = 0, 
+              max_cost = total_costs(cubes) + total_costs(spheres) + 1;
+
+    while(max_cost - min_cost > 1) {
+        long long candidate = min_cost + (max_cost - min_cost)/2;
+        
+        vector< vector<int> > workloads;
+        split_bins(costs, workloads, candidate);
+        if(workloads.size() <= outer_threads) {
+            max_cost = candidate;
+        } else {
+            min_cost = candidate;
+        }
+    }    
+
+    split_bins(costs, work, max_cost);
+    for(int i = 0; i < work.size(); i++)
+        for(int j = 0; j < work[i].size(); j++)
+            work[i][j] = costs[work[i][j]].second;
+}
+
+int getintenv(const char * str) {
+    char * v = getenv(str);
+    if (v == NULL) return 1;
+    int ret = strtol(v, NULL, 10);
+    if (ret == 0) return 1;
+    return ret;
+}
+
 /* methods */
 void Partition::regenerate(void)
 {
-//	cout << "<============ G2G Partition (" << fortran_vars.grid_type << ")============>" << endl;
-
     // Determina el exponente minimo para cada tipo de atomo.
     // uno por elemento de la tabla periodica.
     vector<double> min_exps(120, numeric_limits<double>::max());
@@ -261,12 +320,6 @@ void Partition::regenerate(void)
                 }
                 cubes.push_back(cube);
 
-                // para hacer histogramas
-//#ifdef HISTOGRAM
-                //cout << "[" << fortran_vars.grid_type << "] cubo: (" << i << "," << j << "," << k << "): " << cube.number_of_points << " puntos; " <<
-                     //cube.total_functions() << " funciones, vecinos: " << cube.total_nucleii() << endl;
-//#endif
-
                 puntos_finales += cube.number_of_points;
                 funciones_finales += cube.number_of_points * cube.total_functions();
                 costo += cube.number_of_points * (cube.total_functions() * cube.total_functions());
@@ -304,57 +357,25 @@ void Partition::regenerate(void)
             assert(sphere.number_of_points != 0);
             spheres.push_back(sphere);
 
-//#ifdef HISTOGRAM
-            //cout << "sphere: " << sphere.number_of_points << " puntos, " << sphere.total_functions() <<
-                // " funciones | funcion x punto: " << sphere.total_functions() / (double)sphere.number_of_points <<
-                // " vecinos: " << sphere.total_nucleii() << endl;
-//#endif
-
             puntos_finales += sphere.number_of_points;
             funciones_finales += sphere.number_of_points * sphere.total_functions();
             costo += sphere.number_of_points * (sphere.total_functions() * sphere.total_functions());
             nco_m += sphere.total_functions() * fortran_vars.nco;
             m_m += sphere.total_functions() * sphere.total_functions();
         }
-    }
-    //Sorting the spheres in increasing order
-    
-    #ifdef OUTPUT_COSTS
-    for(int i = 0; i < cubes.size(); i++){ 
-        cout << "CUBE: " << cubes[i].cost() << " " 
-             << cubes[i].total_nucleii() << " " 
-             << cubes[i].number_of_points << " "
-             << cubes[i].total_functions() << " "
-             << cubes[i].total_functions_simple() << endl;
-    }
-    for(int i = 0; i < spheres.size(); i++) {
-        cout << "SPHERE: " << spheres[i].cost() << " " 
-             << spheres[i].total_nucleii() << " " 
-             << spheres[i].number_of_points << " "
-             << spheres[i].total_functions() << " "
-             << spheres[i].total_functions_simple() << endl;
-    }
-    exit(0);
-    #endif
+    }    
 
     //Initialize the global memory pool for CUDA, with the default safety factor
     //If it is CPU, then this doesn't matter
     globalMemoryPool::init(G2G::free_global_memory);
 
-    pair<int, int> threads;
+    inner_threads = getintenv("LIO_INNER_THREADS");
+    outer_threads = getintenv("LIO_OUTER_THREADS");
 
-    work.clear(); pool_sizes.clear();
-
-    threads = load_work("partition.txt", work);
-    inner_threads = threads.first; outer_threads = threads.second;
+    compute_work_partition();
 
     vector<int> elements;
     for(int i = 0; i < cubes.size(); i++) elements.push_back(cubes[i].pool_elements());
     for(int i = 0; i < spheres.size(); i++) elements.push_back(spheres[i].pool_elements());
     load_pools(elements, work, pool_sizes);
-
-    //cout << "Grilla final: " << puntos_finales << " puntos (recordar que los de peso 0 se tiran), " << funciones_finales << " funciones" << endl ;
-    //cout << "Costo: " << costo << endl;
-    //cout << "NCOxM: " << nco_m << " MxM: " << m_m << endl;
-    //cout << "Particion final: " << spheres.size() << " esferas y " << cubes.size() << " cubos" << endl;
 }

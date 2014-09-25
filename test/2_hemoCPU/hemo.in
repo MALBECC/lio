@@ -4,4 +4,5 @@
  charge=0
  nmax=100
  vcinp=f
+ writeforces=t
 &end

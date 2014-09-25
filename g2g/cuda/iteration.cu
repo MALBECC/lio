@@ -255,7 +255,6 @@ void PointGroup<scalar_type>::solve_closed(Timers& timers, bool compute_rmm, boo
 
 
   if(!(this->inGlobal)) {
-    gradient_values.deallocate();
     hessian_values.deallocate();
   }
   timers.density.pause_and_sync();
@@ -333,6 +332,7 @@ void PointGroup<scalar_type>::solve_closed(Timers& timers, bool compute_rmm, boo
   /* clear functions */
   if(!(this->inGlobal)) {
     function_values.deallocate();
+    gradient_values.deallocate();
   }
 }
 

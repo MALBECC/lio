@@ -131,11 +131,8 @@ bool PointGroup<scalar_type>::is_significative(FunctionType type, double exponen
 template<class scalar_type>
 long long PointGroup<scalar_type>::cost() const {
     long long np = number_of_points, gm = total_functions();
-    static const long long MIN_COST = 2000000;
-    // Primer termino: multiplicaciones de matrices.
-    // Segundo termino: Calcular rmm
-    // Tercer termino: overhead 
-    return (10 * np * gm * (1+gm)) / 2 + np * 2 * gm * gm + MIN_COST;
+    static const long long MIN_COST = 1900000;
+    return 5*((np * gm * (1+gm)) / 2) + (np * 2 * gm * gm) + MIN_COST;
 }
 template<class scalar_type>
 bool PointGroup<scalar_type>::operator<(const PointGroup<scalar_type>& T) const{
@@ -215,7 +212,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
          if (ind >= cubes.size()) {
              spheres[ind-cubes.size()].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
                  local_energy, fort_forces_ms[i], pool, inner_threads, rmm_outputs[i]);
-             cost += cubes[ind].cost();
+             cost += spheres[ind-cubes.size()].cost();
          } else {
              cubes[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
                  local_energy, fort_forces_ms[i], pool, inner_threads, rmm_outputs[i]);

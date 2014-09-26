@@ -133,7 +133,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
       timers.density_calcs.start();
       #pragma ivdep
       #pragma vector aligned always
-      for (int i = 0; i < skip; i++) {
+      for (int i = 0; i < group_m; i++) {
         int ai = point * skip + i;
         scalar_type w = wv[ai];
         vec_type3 w3(w3x[ai],w3y[ai],w3z[ai]);
@@ -262,10 +262,10 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
         }
     }
 
+    #pragma ivdep
+    #pragma vector aligned always
     for(int p = 1; p < pieces; p++){
         for(int i = 0; i < group_m; i++) {
-            #pragma ivdep
-            #pragma vector aligned always
             for(int j = 0; j < group_m; j++) {
                 rmm_output_piece[0](i,j) += rmm_output_piece[p](i,j);
             }

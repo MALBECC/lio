@@ -6,6 +6,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <cstdio>
+#include <climits>
 
 #include "common.h"
 #include "init.h"
@@ -49,28 +50,32 @@ long long total_costs(const vector<T> & elements)
     return res;
 }
 
-void split_bins(const vector< pair<long long, int> > & costs, vector< vector<int> > & workloads, long long capacity)
+int split_bins(const vector< pair<long long, int> > & costs, vector< vector<int> > & workloads, long long capacity)
 {
     // Bin Packing heuristic
     workloads.clear();
     for(int i = 0; i < costs.size(); i++) {
-        int next_bin = -1; long long minslack = capacity+1;
+        int next_bin = -1; 
         for(int j = 0; j < workloads.size(); j++) {
             long long slack = capacity; 
             for(int k = 0; k < workloads[j].size(); k++){
                 slack -= costs[workloads[j][k]].first;
             }
-            if (slack >= costs[i].first && slack < minslack) {
-                minslack = slack;
+            if (slack >= costs[i].first && next_bin == -1) {
                 next_bin = j;
+                break;
             }
         }
         if(next_bin == -1) {
+            if (capacity < costs[i].second) {
+                return INT_MAX;
+            }
             next_bin = workloads.size();
             workloads.push_back(vector<int>());
         }
         workloads[next_bin].push_back(i);
     }
+    return workloads.size();
 }
 
 void Partition::compute_work_partition()
@@ -84,15 +89,16 @@ void Partition::compute_work_partition()
     sort(costs.begin(), costs.end());
     reverse(costs.begin(), costs.end());
 
-    long long min_cost = 0, 
+    long long min_cost = costs.front().second - 1,
               max_cost = total_costs(cubes) + total_costs(spheres) + 1;
 
+    static const int MAX_TRIES = 1000;
     while(max_cost - min_cost > 1) {
         long long candidate = min_cost + (max_cost - min_cost)/2;
         
         vector< vector<int> > workloads;
-        split_bins(costs, workloads, candidate);
-        if(workloads.size() <= outer_threads) {
+        int bins = split_bins(costs, workloads, candidate);
+        if(bins <= outer_threads) {
             max_cost = candidate;
         } else {
             min_cost = candidate;
@@ -100,9 +106,15 @@ void Partition::compute_work_partition()
     }    
 
     split_bins(costs, work, max_cost);
-    for(int i = 0; i < work.size(); i++)
-        for(int j = 0; j < work[i].size(); j++)
+    for(int i = 0; i < work.size(); i++) {
+        long long total = 0;
+        for(int j = 0; j < work[i].size(); j++) {
+            long long c = costs[work[i][j]].first;
             work[i][j] = costs[work[i][j]].second;
+            total += c;
+        }
+        printf("Particion %d: %lld\n", i, total);
+    }
 }
 
 int getintenv(const char * str) {

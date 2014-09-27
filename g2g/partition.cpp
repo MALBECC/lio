@@ -180,12 +180,10 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   double energy = 0.0;
   Timer total; total.start();
 
-  omp_set_num_threads(outer_threads);
-
   HostMatrix<double> fort_forces_ms[outer_threads];
   HostMatrix<base_scalar_type> rmm_outputs[outer_threads];
 
-  #pragma omp parallel for reduction(+:energy) shared(fort_forces_ms, rmm_outputs)
+  #pragma omp parallel for reduction(+:energy) shared(fort_forces_ms, rmm_outputs) num_threads(outer_threads)
   for(int i = 0; i< work.size(); i++) {
       ThreadBufferPool<base_scalar_type> pool(10, pool_sizes[i]);
       double local_energy = 0; Timers ts; Timer t;

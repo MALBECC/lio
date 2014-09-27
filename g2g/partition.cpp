@@ -32,7 +32,6 @@ ostream& operator<<(ostream& io, const Timers& t) {
 
 template<class scalar_type>
 void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input) const {
-  rmm_input.zero();
   for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
     uint inc_i = small_function_type(i);
 
@@ -131,18 +130,21 @@ bool PointGroup<scalar_type>::is_significative(FunctionType type, double exponen
 template<class scalar_type>
 long long PointGroup<scalar_type>::cost() const {
     long long np = number_of_points, gm = total_functions();
-    static const long long MIN_COST = 1900000;
-    return 5*((np * gm * (1+gm)) / 2) + (np * 2 * gm * gm) + MIN_COST;
+    static const long long MIN_COST = 1700000;
+    return 10*((np * gm * (1+gm)) / 2) + (np * 2 * gm * gm) + MIN_COST;
 }
+
 template<class scalar_type>
 bool PointGroup<scalar_type>::operator<(const PointGroup<scalar_type>& T) const{
     return cost() < T.cost();
 }
+
 template<class scalar_type>
 int PointGroup<scalar_type>::pool_elements() const {
     int t = total_functions(), n = number_of_points;
     return ALIGN(t) * n;
 }
+
 template<class scalar_type>
 size_t PointGroup<scalar_type>::size_in_gpu() const
 {
@@ -179,36 +181,29 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   Timer total; total.start();
 
   omp_set_num_threads(outer_threads);
+
   HostMatrix<double> fort_forces_ms[outer_threads];
-
-  if (compute_forces) {
-      for(int i = 0; i < outer_threads; i++) {
-          fort_forces_ms[i].resize(fortran_vars.max_atoms, 3);
-          fort_forces_ms[i].zero();
-      }
-  }
-
   HostMatrix<base_scalar_type> rmm_outputs[outer_threads];
-  if (compute_rmm) {
-      for(int i = 0; i < outer_threads; i++) {
-          rmm_outputs[i].resize(fortran_vars.rmm_output.width, fortran_vars.rmm_output.height);
-          rmm_outputs[i].zero();
-      }
-  }
 
-  #pragma omp parallel for reduction(+:energy) 
+  #pragma omp parallel for reduction(+:energy) shared(fort_forces_ms, rmm_outputs)
   for(int i = 0; i< work.size(); i++) {
       ThreadBufferPool<base_scalar_type> pool(10, pool_sizes[i]);
       double local_energy = 0; Timers ts; Timer t;
       int id = omp_get_thread_num();
 
-      omp_set_num_threads(inner_threads);
       t.start();
       long long cost = 0;
+
+      if(compute_rmm) {
+          rmm_outputs[i].resize(fortran_vars.rmm_output.width, fortran_vars.rmm_output.height);
+      }
+      if(compute_forces) {
+          fort_forces_ms[i].resize(fortran_vars.max_atoms, 3);
+      }
+
       for(int j = 0; j < work[i].size(); j++) {
          pool.reset();
          int ind = work[i][j];
-
          if (ind >= cubes.size()) {
              spheres[ind-cubes.size()].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
                  local_energy, fort_forces_ms[i], pool, inner_threads, rmm_outputs[i]);

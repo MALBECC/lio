@@ -36,15 +36,12 @@ void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
   uint group_m = total_functions();
 
   function_values.resize(ALIGN(group_m), number_of_points);
-  function_values.zero();
 
   if (forces || gga) {
       gradient_values.resize(ALIGN(group_m), number_of_points);
-      gradient_values.zero();
   }
   if (gga) {
       hessian_values.resize(ALIGN(group_m) * 2, number_of_points);
-      hessian_values.zero();
   }
 
   for(int point = 0; point< points.size(); point++) {

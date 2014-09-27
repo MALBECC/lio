@@ -1,4 +1,3 @@
-/* -*- mode: c -*- */
 #include <iostream>
 #include <fstream>
 #include <map>
@@ -51,7 +50,7 @@ void do_trmm(Timers & ts, const HostMatrix<scalar_type> & triagmat, const HostMa
 
 template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers, 
     bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, 
-    double& energy, HostMatrix<double> & fort_forces, ThreadBufferPool<scalar_type> & pool, int pieces, HostMatrix<scalar_type> & rmm_global_output)
+    double& energy, HostMatrix<double> & fort_forces, ThreadBufferPool<scalar_type> & pool, int max_threads, HostMatrix<scalar_type> & rmm_global_output)
 {
   uint group_m = total_functions();
 
@@ -70,10 +69,13 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
   get_rmm_input(rmm_input);
   timers.density.pause();
 
-  vector<vec_type3> forces(total_nucleii(), vec_type3(0.f,0.f,0.f)); 
-  vector<std::vector<vec_type3> > forces_mat(
-      points.size(), vector<vec_type3>(total_nucleii(), vec_type3(0.f,0.f,0.f)));
-  vector<scalar_type> factors_rmm(points.size(),0);
+  vector<vec_type3> forces;
+  vector< std::vector<vec_type3> > forces_mat;
+
+  if(compute_forces) {
+     forces.resize(total_nucleii(), vec_type3(0.f,0.f,0.f)); 
+     forces_mat.resize(points.size(), vector<vec_type3>(total_nucleii(), vec_type3(0.f,0.f,0.f)));
+  }
 
   scalar_type * wv,* w3x,* w3y,* w3z,* ww1x,*ww1y,*ww1z,*ww2x,*ww2y,*ww2z;
   wv = w3x = w3y = w3z = ww1x = ww1y = ww1z = ww2x = ww2y = ww2z = NULL;
@@ -86,29 +88,23 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
     ww1x = pool.get_pool(); ww1y = pool.get_pool(); ww1z = pool.get_pool();
     ww2x = pool.get_pool(); ww2y = pool.get_pool(); ww2z = pool.get_pool();
     
-    int assign[10];
-    memset(assign, 0, sizeof(assign));
-    for(int i = 0; i < 10; i++) {
-        assign[i] = i % pieces;
-    }
-    #pragma omp parallel for
-    for(int i = 0; i < pieces; i++) {
-        if (assign[0] == i) do_trmm(timers, rmm_input, function_values, wv);
-        if (assign[1] == i) do_trmm(timers, rmm_input,  gX, w3x);
-        if (assign[2] == i) do_trmm(timers, rmm_input,  gY, w3y);
-        if (assign[3] == i) do_trmm(timers, rmm_input,  gZ, w3z);
-        if (assign[4] == i) do_trmm(timers, rmm_input, hPX, ww1x);
-        if (assign[5] == i) do_trmm(timers, rmm_input, hPY, ww1y);
-        if (assign[6] == i) do_trmm(timers, rmm_input, hPZ, ww1z);
-        if (assign[7] == i) do_trmm(timers, rmm_input, hIX, ww2x);
-        if (assign[8] == i) do_trmm(timers, rmm_input, hIY, ww2y);
-        if (assign[9] == i) do_trmm(timers, rmm_input, hIZ, ww2z);
-    }
+    do_trmm(timers, rmm_input, function_values, wv);
+    do_trmm(timers, rmm_input,  gX, w3x);
+    do_trmm(timers, rmm_input,  gY, w3y);
+    do_trmm(timers, rmm_input,  gZ, w3z);
+    do_trmm(timers, rmm_input, hPX, ww1x);
+    do_trmm(timers, rmm_input, hPY, ww1y);
+    do_trmm(timers, rmm_input, hPZ, ww1z);
+    do_trmm(timers, rmm_input, hIX, ww2x);
+    do_trmm(timers, rmm_input, hIY, ww2y);
+    do_trmm(timers, rmm_input, hIZ, ww2z);
 
     timers.density.pause();
   }
 
-  #pragma omp parallel for reduction(+:localenergy)
+  HostMatrix<scalar_type> rmm_output;
+  rmm_output.resize(ALIGN(group_m), ALIGN(group_m));
+
   for(int point = 0; point< points.size(); point++) {
     HostMatrix<vec_type3> dd;
     /** density **/
@@ -162,7 +158,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
     timers.forces.start();
     /** density derivatives **/
     if (compute_forces) {
-      dd.resize(total_nucleii(), 1); dd.zero();
+      dd.resize(total_nucleii(), 1); 
       for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
         uint nuc = func2local_nuc(ii);
         uint inc_i = small_function_type(i);
@@ -185,9 +181,9 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
     timers.density.start();
     /** energy / potential **/
     scalar_type exc = 0, corr = 0, y2a = 0;
-    if (lda)
+    if (lda) {
       cpu_pot(partial_density, exc, corr, y2a);
-    else {
+    } else {
       cpu_potg(partial_density, dxyz, dd1, dd2, exc, corr, y2a);
     }
 
@@ -210,18 +206,19 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
 
     /** RMM **/
     timers.rmm.start();
+
     if (compute_rmm) {
       scalar_type factor = points[point].weight * y2a;
-      factors_rmm[point] = factor;
+      HostMatrix<scalar_type>::blas_ssyr(LowerTriangle, factor, 
+        function_values, rmm_output, point);
     }
     timers.rmm.pause();
   } // end for
 
   timers.forces.start();
-  /* accumulate forces for each point */
   if (compute_forces) {
+    /* accumulate forces for each point */
     if(forces_mat.size() > 0) {
-      #pragma omp parallel for
       for (int j = 0; j < forces_mat[0].size(); j++) {
         vec_type3 acum(0.f,0.f,0.f);
         for (int i = 0; i < forces_mat.size(); i++) {
@@ -230,10 +227,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
         forces[j] = acum;
       }
     }
-  }
-
-  /* accumulate force results for this group */
-  if (compute_forces) {
+    /* accumulate force results for this group */
     for (uint i = 0; i < total_nucleii(); i++) {
        uint global_atom = local2global_nuc[i];
        vec_type3 this_force = forces[i];
@@ -248,29 +242,6 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
   timers.rmm.start();
   /* accumulate RMM results for this group */
   if(compute_rmm) {
-    HostMatrix<scalar_type> rmm_output_piece[pieces];
-    for(int i = 0; i < pieces; i++) {
-        rmm_output_piece[i].resize(ALIGN(group_m), ALIGN(group_m));
-        rmm_output_piece[i].zero();
-    }
-    #pragma omp parallel for
-    for(int piece = 0; piece < pieces; piece++){
-        for(int i = 0;i < points.size();i++) {
-          if(i % pieces != piece) continue;
-          scalar_type factor = factors_rmm[i];
-          HostMatrix<scalar_type>::blas_ssyr(LowerTriangle, factor, function_values, rmm_output_piece[piece], i);
-        }
-    }
-
-    #pragma ivdep
-    #pragma vector aligned always
-    for(int p = 1; p < pieces; p++){
-        for(int i = 0; i < group_m; i++) {
-            for(int j = 0; j < group_m; j++) {
-                rmm_output_piece[0](i,j) += rmm_output_piece[p](i,j);
-            }
-        }
-    }
     for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
       uint inc_i = small_function_type(i);
 
@@ -285,7 +256,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
             if (big_i > big_j) continue;
 
             uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-            rmm_global_output(big_index) += rmm_output_piece[0](ii, jj);
+            rmm_global_output(big_index) += rmm_output(ii, jj);
           }
         }
       }

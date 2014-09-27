@@ -45,7 +45,7 @@ template<class T> void HostMatrix<T>::alloc_data(void) {
     assert(false);
     #endif
 	}
-	else this->data = (T *) mkl_malloc(bytes, 64);
+	else this->data = (T *) mkl_calloc(this->elements(), sizeof(T), 64);
 
 	assert(this->data);
 }

@@ -45,13 +45,13 @@ Timer::Timer(const timespec& t) : started(false) {
 void Timer::start(void) {
 #ifdef TIMINGS
   started = true;
-  clock_gettime(CLOCK_REALTIME, &t0);
+  clock_gettime(CLOCK_MONOTONIC, &t0);
 #endif
 }
 
 void Timer::pause(void) {
 #ifdef TIMINGS
-  clock_gettime(CLOCK_REALTIME, &t1);
+  clock_gettime(CLOCK_MONOTONIC, &t1);
   timespec partial_res;
   timerspecsub(&t1, &t0, &partial_res);
   timerspecadd(&res, &partial_res, &res);
@@ -61,7 +61,7 @@ void Timer::pause(void) {
 
 void Timer::stop(void) {
 #ifdef TIMINGS
-  clock_gettime(CLOCK_REALTIME, &t1);
+  clock_gettime(CLOCK_MONOTONIC, &t1);
 	timerspecsub(&t1, &t0, &res);
   timerspecclear(&t0);
 	started = false;

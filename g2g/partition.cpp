@@ -32,6 +32,7 @@ ostream& operator<<(ostream& io, const Timers& t) {
 
 template<class scalar_type>
 void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input) const {
+  rmm_input.zero();
   for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
     uint inc_i = small_function_type(i);
 
@@ -130,8 +131,8 @@ bool PointGroup<scalar_type>::is_significative(FunctionType type, double exponen
 template<class scalar_type>
 long long PointGroup<scalar_type>::cost() const {
     long long np = number_of_points, gm = total_functions();
-    static const long long MIN_COST = 1700000;
-    return 10*((np * gm * (1+gm)) / 2) + (np * 2 * gm * gm) + MIN_COST;
+    static const long long MIN_COST = 2100000;
+    return 10*((np * gm * (1+gm)) / 2) + MIN_COST;
 }
 
 template<class scalar_type>
@@ -171,7 +172,14 @@ PointGroup<scalar_type>::~PointGroup<scalar_type>()
       gradient_values.deallocate();
       hessian_values.deallocate();
     }
-
+#else
+    function_values.deallocate();
+    gradient_values.deallocate();
+    gX.deallocate(); gY.deallocate(); gZ.deallocate();
+    hessian_values.deallocate();
+    hPX.deallocate(); hPY.deallocate(); hPZ.deallocate(); 
+    hIX.deallocate(); hIY.deallocate(); hIZ.deallocate(); 
+    func2global_nuc.deallocate(); func2local_nuc.deallocate();
 #endif
 }
 
@@ -183,9 +191,11 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   HostMatrix<double> fort_forces_ms[outer_threads];
   HostMatrix<base_scalar_type> rmm_outputs[outer_threads];
 
-  #pragma omp parallel for reduction(+:energy) shared(fort_forces_ms, rmm_outputs) num_threads(outer_threads)
+  int order[outer_threads]; int next = 0;
+
+  #pragma omp parallel for reduction(+:energy) num_threads(outer_threads)
   for(int i = 0; i< work.size(); i++) {
-      ThreadBufferPool<base_scalar_type> pool(10, pool_sizes[i]);
+      ThreadBufferPool<base_scalar_type> pool(10, pool_size(i));
       double local_energy = 0; Timers ts; Timer t;
       int id = omp_get_thread_num();
 
@@ -219,6 +229,23 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
       cout << ts;
 
       energy += local_energy;
+
+      order[i] = next;
+      #pragma omp atomic
+      next++;
+  }
+
+  // Work steal
+  int first = 0, last = 0;
+  for(int i = 0; i < outer_threads; i++) {
+      if (order[i] == 0) first = i;
+      if (order[i] == outer_threads-1) last = i;
+  }
+
+  if(first != last && work[last].size() >= 1) {
+      int o = work[last].back();
+      work[first].push_back(o);
+      work[last].pop_back();
   }
 
   if (compute_forces) {

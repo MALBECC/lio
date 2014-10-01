@@ -102,6 +102,9 @@ class PointGroup {
 
     bool inGlobal;
 
+    #if CPU_KERNELS
+    void do_trmms(Timers &, ThreadBufferPool<scalar_type> &, const HostMatrix<scalar_type> &) const;
+    #endif
 };
 
 #if FULL_DOUBLE
@@ -130,13 +133,26 @@ class Partition {
   public:
     void compute_work_partition();
     void clear(void) {
-      cubes.clear(); spheres.clear();
-      work.clear(); pool_sizes.clear();
+      cubes.clear(); spheres.clear(); work.clear(); 
     }
 
     void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
 
     void regenerate(void);
+
+    int pool_size(int p) {
+        int largest_pool = 0;
+        for(int i = 0; i < work[p].size(); i++) {
+            int ind = work[p][i], elems = 0;
+            if(ind >= cubes.size()) {
+                elems = spheres[ind-cubes.size()].pool_elements();
+            } else {
+                elems = cubes[ind].pool_elements();
+            }
+            largest_pool = std::max(largest_pool, elems);
+        }
+        return largest_pool;
+    }
 
     void compute_functions(bool forces, bool gga)
     {
@@ -160,12 +176,11 @@ class Partition {
     std::vector<Sphere> spheres;
 
     std::vector< std::vector< int > > work;
-    std::vector< int > pool_sizes;
     int outer_threads, inner_threads;
 };
 
 }
 
-#define ALIGN(x) (((x) % 16) ? ((x) + 16 - ((x) % 16)) : (x))
+#define ALIGN(x) (((x) % 8) ? (((((x)+7)/8) * 8)) : (x))
 
 #endif

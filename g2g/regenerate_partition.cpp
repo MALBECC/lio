@@ -92,7 +92,6 @@ void Partition::compute_work_partition()
     long long min_cost = costs.front().second - 1,
               max_cost = total_costs(cubes) + total_costs(spheres) + 1;
 
-    static const int MAX_TRIES = 1000;
     while(max_cost - min_cost > 1) {
         long long candidate = min_cost + (max_cost - min_cost)/2;
         
@@ -375,7 +374,7 @@ void Partition::regenerate(void)
             nco_m += sphere.total_functions() * fortran_vars.nco;
             m_m += sphere.total_functions() * sphere.total_functions();
         }
-    }    
+    }
 
     //Initialize the global memory pool for CUDA, with the default safety factor
     //If it is CPU, then this doesn't matter
@@ -384,10 +383,19 @@ void Partition::regenerate(void)
     inner_threads = getintenv("LIO_INNER_THREADS");
     outer_threads = getintenv("LIO_OUTER_THREADS");
 
-    compute_work_partition();
+    #ifdef OUTPUT_COSTS
+    for(int i = 0; i < cubes.size(); i++) {
+        printf("CUBE: %d %d %ld\n", cubes[i].total_functions(), cubes[i].number_of_points, cubes[i].cost());
+    }
+    for(int i = 0; i < spheres.size(); i++) {
+        printf("SPHERE: %d %d %ld\n", spheres[i].total_functions(), spheres[i].number_of_points, spheres[i].cost());
+    }
+    exit(0);
+    #endif
+    
 
-    vector<int> elements;
-    for(int i = 0; i < cubes.size(); i++) elements.push_back(cubes[i].pool_elements());
-    for(int i = 0; i < spheres.size(); i++) elements.push_back(spheres[i].pool_elements());
-    load_pools(elements, work, pool_sizes);
+    sort(cubes.begin(), cubes.end());
+    sort(spheres.begin(), spheres.end());
+
+    compute_work_partition();
 }

@@ -202,12 +202,8 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
       t.start();
       long long cost = 0;
 
-      if(compute_rmm) {
-          rmm_outputs[i].resize(fortran_vars.rmm_output.width, fortran_vars.rmm_output.height);
-      }
-      if(compute_forces) {
-          fort_forces_ms[i].resize(fortran_vars.max_atoms, 3);
-      }
+      if(compute_rmm) rmm_outputs[i].resize(fortran_vars.rmm_output.width, fortran_vars.rmm_output.height);
+      if(compute_forces) fort_forces_ms[i].resize(fortran_vars.max_atoms, 3);
 
       for(int j = 0; j < work[i].size(); j++) {
          pool.reset();
@@ -243,8 +239,8 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   }
 
   if(first != last && work[last].size() >= 1) {
-      int o = work[last].back();
-      work[first].push_back(o);
+      int group = work[last].back();
+      work[first].push_back(group);
       work[last].pop_back();
   }
 

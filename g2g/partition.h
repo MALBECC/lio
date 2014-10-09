@@ -181,6 +181,4 @@ class Partition {
 
 }
 
-#define ALIGN(x) (((x) % 8) ? (((((x)+7)/8) * 8)) : (x))
-
 #endif

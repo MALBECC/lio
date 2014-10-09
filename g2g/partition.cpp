@@ -143,7 +143,7 @@ bool PointGroup<scalar_type>::operator<(const PointGroup<scalar_type>& T) const{
 template<class scalar_type>
 int PointGroup<scalar_type>::pool_elements() const {
     int t = total_functions(), n = number_of_points;
-    return ALIGN(t) * n;
+    return t * n;
 }
 
 template<class scalar_type>

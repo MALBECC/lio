@@ -78,7 +78,11 @@ class PointGroup {
       else return FUNCTION_D;
     }
     //Las funciones totales, son totales del grupo, no las totales para todos los grupos.
-    inline uint total_functions(void) const { return s_functions + p_functions * 3 + d_functions * 6; }
+    inline uint total_functions(void) const { 
+        static const int ALIGN = 64 / sizeof(scalar_type);
+        int v = s_functions + p_functions * 3 + d_functions * 6; 
+        return ((v + ALIGN - 1) / ALIGN) * ALIGN;
+    }
     inline uint total_functions_simple(void) const { return local2global_func.size(); } // == s_functions + p_functions + d_functions
     inline uint total_nucleii(void) const { return local2global_nuc.size(); }
     inline bool has_nucleii(uint atom) const { return (std::find(local2global_nuc.begin(), local2global_nuc.end(), atom) != local2global_nuc.end()); }

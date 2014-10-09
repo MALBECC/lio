@@ -116,22 +116,15 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
     timers.density.pause();
   }
 
-  HostMatrix<scalar_type> rmm_output[inner_threads];
-  if (compute_rmm) {
-      for(int i = 0; i < inner_threads; i++) {
-          rmm_output[i].resize(group_m, group_m); 
-          rmm_output[i].zero();
-      }
-  }
+  HostMatrix<scalar_type> rmm_output(group_m, group_m);
+  rmm_output.zero();
 
-  #pragma omp parallel for num_threads(inner_threads) reduction(+:localenergy)
   for(int point = 0; point< points.size(); point++) {
     HostMatrix<vec_type3> dd;
     /** density **/
     scalar_type partial_density = 0;
-    vec_type3 dxyz(0,0,0);
-    vec_type3 dd1(0,0,0);
-    vec_type3 dd2(0,0,0);
+    scalar_type dx, dy, dz, dd1x, dd1y, dd1z, dd2x, dd2y, dd2z;
+    dx = dy = dz = dd1x = dd1y = dd1z = dd2x = dd2y = dd2z = 0.0;
 
     timers.density.start();
     if (lda) {
@@ -147,30 +140,34 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
     } else {
       timers.density_calcs.start();
       #pragma ivdep
+      #pragma vector aligned always
       for (int i = 0; i < group_m; i++) {
         int ai = point * group_m + i;
         scalar_type w = wv[ai];
-        vec_type3 w3(w3x[ai],w3y[ai],w3z[ai]);
-        vec_type3 ww1(ww1x[ai],ww1y[ai],ww1z[ai]);
-        vec_type3 ww2(ww2x[ai],ww2y[ai],ww2z[ai]);
-
         scalar_type Fi = function_values(i, point);
-        vec_type3 Fgi(gX(i,point), gY(i, point), gZ(i, point));
-        vec_type3 Fhi1(hPX(i,point), hPY(i, point), hPZ(i, point));
-        vec_type3 Fhi2(hIX(i,point), hIY(i, point), hIZ(i, point));
 
         partial_density += Fi * w;
+        //dxyz += Fgi * w + w3 * Fi;
+        dx += gX(i,point) * w + w3x[ai] * Fi;
+        dy += gY(i,point) * w + w3y[ai] * Fi;
+        dz += gZ(i,point) * w + w3z[ai] * Fi;
 
-        dxyz += Fgi * w + w3 * Fi;
-        dd1 += Fgi * w3 * 2 + Fhi1 * w + ww1 * Fi;
+        //dd1 += Fgi * w3 * 2 + Fhi1 * w + ww1 * Fi;
+        dd1x += gX(i, point) * w3x[ai] * 2 + hPX(i,point) * w + ww1x[ai] * Fi;
+        dd1y += gY(i, point) * w3y[ai] * 2 + hPY(i,point) * w + ww1y[ai] * Fi;
+        dd1z += gZ(i, point) * w3z[ai] * 2 + hPZ(i,point) * w + ww1z[ai] * Fi;
 
-        vec_type3 FgXXY(Fgi.x(), Fgi.x(), Fgi.y());
-        vec_type3 w3YZZ(w3.y(), w3.z(), w3.z());
-        vec_type3 FgiYZZ(Fgi.y(), Fgi.z(), Fgi.z());
-        vec_type3 w3XXY(w3.x(), w3.x(), w3.y());
-        dd2 += FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi;
+        //dd2 += FgXXY * w3YZZ + FgiYZZ * w3XXY + Fhi2 * w + ww2 * Fi;
+        dd2x += gX(i, point) * w3y[ai] + gY(i, point) * w3x[ai] + hIX(i, point) * w + ww2x[ai] * Fi;
+        dd2y += gX(i, point) * w3z[ai] + gZ(i, point) * w3x[ai] + hIY(i, point) * w + ww2y[ai] * Fi;
+        dd2z += gY(i, point) * w3z[ai] + gZ(i, point) * w3y[ai] + hIZ(i, point) * w + ww2z[ai] * Fi;
       }
     }
+
+    vec_type3 dxyz(dx,dy,dz);
+    vec_type3 dd1(dd1x,dd1y,dd1z);
+    vec_type3 dd2(dd2x,dd2y,dd2z);
+
     timers.density_calcs.pause();
     timers.density.pause();
     timers.forces.start();
@@ -192,6 +189,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
         dd(nuc) += this_dd;
       }
     }
+
     timers.forces.pause();
 
     timers.pot.start();
@@ -227,10 +225,9 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
     timers.rmm.start();
 
     if (compute_rmm) {
-      int id = omp_get_thread_num();
       scalar_type factor = points[point].weight * y2a;
       HostMatrix<scalar_type>::blas_ssyr(LowerTriangle, factor, 
-        function_values, rmm_output[id], point);
+        function_values, rmm_output, point);
     }
     timers.rmm.pause();
   } // end for
@@ -262,15 +259,6 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
   timers.rmm.start();
   /* accumulate RMM results for this group */
   if(compute_rmm) {
-    for(int k = 1; k < inner_threads; k++) {
-        for(int i = 0; i < rmm_output[k].width; i++) {
-            #pragma ivdep
-            #pragma vector aligned always
-            for(int j = 0; j< rmm_output[k].height; j++) {
-                rmm_output[0](i,j) += rmm_output[k](i,j);
-            }
-        }
-    }
     for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
       uint inc_i = small_function_type(i);
 
@@ -285,7 +273,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
             if (big_i > big_j) continue;
 
             uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-            rmm_global_output(big_index) += rmm_output[0](ii, jj);
+            rmm_global_output(big_index) += rmm_output(ii, jj);
           }
         }
       }

@@ -314,9 +314,9 @@ c s is in RMM(M13,M13+1,M13+2,...,M13+MM)
 !            call matmulnanoc(rho,Y,rho,M)
 !            rho=rho1
 !--------------------------------------!
-            call g2g_timer_start('int22')
-            call int22()
-            call g2g_timer_stop('int22')
+            call g2g_timer_start('int2')
+            call int2()
+            call g2g_timer_stop('int2')
             call g2g_timer_start('int3mmem')
             call int3mem()
             call int3mems()
@@ -358,7 +358,7 @@ c ELECTRIC FIELD CASE - Type=gaussian (ON)
                    fac=(2.54D0*2.00D0)
 !
                  endif
-                 call dip2(g,Fxx,Fyy,Fzz)
+                 call intfld(g,Fxx,Fyy,Fzz)
                  E1=-1.00D0*g*(Fx*ux+Fy*uy+Fz*uz)/fac -
      >        0.50D0*(1.0D0-1.0D0/epsilon)*Qc2/a0
               endif

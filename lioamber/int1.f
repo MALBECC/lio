@@ -143,7 +143,7 @@ c
       enddo
 c
       term=ccoef*(tn+tna)
-      RMM(M11+k-1)=RMM(M11+k-1)+ term 
+      RMM(M11+k-1)=RMM(M11+k-1)+ term
  200  continue
 c
 c------------------------------------------------------------------
@@ -264,11 +264,11 @@ c
        term=tn*ccoef
 c
        if (iin.ge.jj) then
-       k=iin+((M2-jj)*(jj-1))/2
-       RMM(M5+k-1)=RMM(M5+k-1)+ovlap*ccoef
-       Smat(iin,jj)=Smat(iin,jj)+ovlap*ccoef
-       Smat(jj,iin)=Smat(jj,iin)+ovlap*ccoef
-       RMM(M11+k-1)=RMM(M11+k-1)+term
+         k=iin+((M2-jj)*(jj-1))/2
+         RMM(M5+k-1)=RMM(M5+k-1)+ovlap*ccoef
+         Smat(iin,jj)=Smat(iin,jj)+ovlap*ccoef
+         Smat(jj,iin)=Smat(jj,iin)+ovlap*ccoef
+         RMM(M11+k-1)=RMM(M11+k-1)+term
        endif
  405  continue
 c
@@ -295,9 +295,9 @@ c
        iin=i+l1-1
        jj=j+l2-1
        if (iin.ge.jj) then
-       k=iin+((M2-jj)*(jj-1))/2
-       term=-tna*ccoef*Iz(n)
-       RMM(M11+k-1)=RMM(M11+k-1)+term
+         k=iin+((M2-jj)*(jj-1))/2
+         term=-tna*ccoef*Iz(n)
+         RMM(M11+k-1)=RMM(M11+k-1)+term
        endif
  406  continue
  403   continue
@@ -829,4 +829,3 @@ c     pause
       deallocate(s0s,s1s,s2s,s3s,s4s,Iaux)
       return;end subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-

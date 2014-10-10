@@ -96,7 +96,13 @@ c
 c      parameter rmintsol=16.0D0
 !
 !------------------------------------------------------------------------------!
-       real*8,allocatable,dimension(:,:) :: Smat
+       real*8,allocatable,dimension(:,:)     :: Smat
+       real*8,allocatable,dimension(:,:)     :: RealRho
+!       real*8,allocatable,dimension(:,:)     :: Gmat !DK
+!       real*8,allocatable,dimension(:,:)     :: Hmat !DK
+!       real*8,allocatable,dimension(:,:)     :: FockMat
+!       complex*16,allocatable,dimension(:,:) :: RhoOld,RhoNew
+
 !       real*8,allocatable,dimension(:,:) :: Lmat,Linv,Umat,Uinv
 !------------------------------------------------------------------------------!
        end module

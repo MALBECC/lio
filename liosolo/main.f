@@ -132,7 +132,7 @@ c       write(*,*) pc(i),r(i,1:3)
        enddo
        r=r/0.529177D0
        rqm=rqm/0.529177D0
-     
+
        call g2g_init()   !initialize g2g
 
         nqnuc=0
@@ -147,6 +147,7 @@ c       write(*,*) natom,ntatom,ngDyn,ngdDyn,ng0,ngd0
 c       write(*,*) ng2,ngDyn,ngdDyn
 c--------------------------------------------------------
        call drive(ng2,ngDyn,ngdDyn)
+       call lio_init()   !initialize lio
 c--------------------------------------------------------
        if(OPEN) then
          call SCFOP(escf,dipxyz)

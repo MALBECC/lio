@@ -80,7 +80,7 @@ clean:
 
 
 # Different flags for some .o
-obj/garcha_g2g_obj/dip2.o: dip2.f
+obj/garcha_g2g_obj/intfld.o: intfld.f
 	ifort -o $@ $(CFLAGS2) $(G2G_CFLAGS) $<
 
 obj/garcha_g2g_obj/dipG.o: dipG.f

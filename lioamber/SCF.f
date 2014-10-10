@@ -1,11 +1,12 @@
-c SCF subroutine ----------------------------------
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+c SCF subroutine
 c DIRECT VERSION
 c Calls all integrals generator subroutines : 1 el integrals,
 c 2 el integrals, exchange fitting , so it gets S matrix, F matrix
 c and P matrix in lower storage mode ( symmetric matrices)
 c
 c Dario Estrin, 1992
-c---------------------------------------------------
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       subroutine SCF(E,dipxyz)
       use garcha_mod
 c      use qmmm_module, only : qmmm_struct, qmmm_nml
@@ -30,6 +31,8 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
         INTEGER            :: LWORK2
         REAL*8,ALLOCATABLE :: WORK2(:)
         INTEGER, ALLOCATABLE :: IWORK2(:),IPIV(:)
+!--------------------------------------------------------------------!
+
 
 #ifdef magma
        call magmaf_init()
@@ -391,7 +394,7 @@ c
         call TD()
         return
       endif
-      call int22()
+      call int2()
 c
 **
       if (MEMO) then
@@ -1042,39 +1045,22 @@ c      write(*,*)
 c u in Debyes
       endif
 c
-c calculates Mulliken poputations
-c       if (ipop.eq.1) then
-      call int1(En)
-c
-c--------------------------------------------------------------
-      do n=1,natom
-        q(n)=Iz(n)
-      enddo
-c
-      do i=1,M
-        do j=1,i-1
-          kk=i+(M2-j)*(j-1)/2
-          t0=RMM(kk)*RMM(M5+kk-1)/2.D0
-          q(Nuc(i))=q(Nuc(i))-t0
-        enddo
-c
-        kk=i+(M2-i)*(i-1)/2
-        t0=RMM(kk)*RMM(M5+kk-1)
-        q(Nuc(i))=q(Nuc(i))-t0
-c
-        do j=i+1,M
-          kk=j+(M2-i)*(i-1)/2
-          t0=RMM(kk)*RMM(M5+kk-1)/2.D0
-          q(Nuc(i))=q(Nuc(i))-t0
-        enddo
-      enddo
-c
-      write(85,*) 'MULLIKEN POPULATION ANALYSIS'
-      write(85,770)
 
-      do n=1,natom
-        write(85,760) n,Iz(n),q(n)
-      enddo
+
+
+! MULLIKEN POPULATION ANALYSIS (FFR - Simplified)
+!--------------------------------------------------------------------!
+       call int1(En)
+       call spunpack('L',M,RMM(M5),Smat)
+       call spunpack('L',M,RMM(M1),RealRho)
+       call fixrho(M,RealRho)
+       call mulliken_calc(natom,M,RealRho,Smat,Nuc,Iz,q)
+       call mulliken_write(85,natom,Iz,q)
+
+! NOTE: If 'mulliken_calc' is renamed as 'mulliken', the code will
+! malfunction. I DON'T KNOW WHY.
+!--------------------------------------------------------------------!
+
 c
 c        endif
 c ELECTRICAL POTENTIAL AND POINT CHARGES EVALUATION
@@ -1134,7 +1120,9 @@ c       E=E*627.509391D0
       if(timedep.eq.1) then
         call TD()
       endif
-c
+!
+!--------------------------------------------------------------------!
+      call g2g_timer_stop('SCF')
  500  format('SCF TIME ',I6,' sec')
  450  format ('SCF ENERGY = ',F19.12)
  400  format(4(E14.7E2,2x))
@@ -1159,10 +1147,7 @@ c
  346  format(2x,4(f10.6,2x))
  682  format(2x,f15.10)
   88  format(5(2x,f8.5))
-  45  format(E14.6E4)
+  45  format(E15.6E4)
   91  format(F14.7,4x,F14.7)
-c
-      call g2g_timer_stop('SCF')
-      return
-      end
-C  -------------------------
+      return;end subroutine
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

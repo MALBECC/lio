@@ -1,4 +1,4 @@
-FLAGS= -g -I../lioamber -L../g2g -L../lioamber
+FLAGS= -I../lioamber -L../g2g -L../lioamber
 LIBRARIES=
 ifeq ($(xeon_phi),1)
 	FLAGS += -mmic

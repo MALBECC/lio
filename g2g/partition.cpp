@@ -20,7 +20,8 @@ ostream& operator<<(ostream& io, const Timers& t) {
 #ifdef TIMINGS
     ostringstream ss;
     ss << "memcpys: " << t.memcpy << "trmms: " << t.trmms << "density_calcs: " << t.density_calcs << "rmm: " << t.rmm << " density: " 
-       << t.density << " pot: " << t.pot << " forces: " << t.forces << " resto: " << t.resto << " functions: " << t.functions;
+       << t.density << " pot: " << t.pot << " forces: " << t.forces << " resto: " << t.resto << " functions: " << t.functions
+       << " rmm_input = " << t.rmm_input << " rmm_ssyr = " << t.rmm_calcs << " rmm_update = " << t.rmm_update;
     io << ss.str() << endl;
 #endif
   return io;
@@ -195,7 +196,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
 
   #pragma omp parallel for reduction(+:energy) num_threads(outer_threads)
   for(int i = 0; i< work.size(); i++) {
-      ThreadBufferPool<base_scalar_type> pool(10, pool_size(i));
+      ThreadBufferPool<base_scalar_type> pool(10 * pool_size(i) + 10 * max_points(i));
       double local_energy = 0; Timers ts; Timer t;
       int id = omp_get_thread_num();
 

@@ -20,7 +20,8 @@ using std::pair;
 
 namespace G2G {
   struct Timers {
-    Timer memcpy, trmms, density_calcs, total, ciclos, rmm, density, forces, resto, pot, functions, density_derivs;
+    Timer memcpy, trmms, density_calcs, total, ciclos, rmm, density, forces, resto, pot, functions, density_derivs,
+          rmm_input, rmm_calcs, rmm_update;
   };
 
   std::ostream& operator<<(std::ostream& io, const Timers& t);
@@ -97,7 +98,8 @@ class PointGroup {
 
     void compute_functions(bool forces, bool gga);
     void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
-        bool compute_energy, double& energy, HostMatrix<double> &, ThreadBufferPool<scalar_type> &, int, HostMatrix<scalar_type> &);
+        bool compute_energy, double& energy, HostMatrix<double> &, ThreadBufferPool<scalar_type> &, int, HostMatrix<scalar_type> &)
+        const;
 
     bool is_significative(FunctionType, double exponent, double coeff, double d2);
     bool operator<(const PointGroup<scalar_type>& T) const;
@@ -156,6 +158,20 @@ class Partition {
             largest_pool = std::max(largest_pool, elems);
         }
         return largest_pool;
+    }
+
+    int max_points(int p) {
+        int largest_points = 0;
+        for(int i = 0; i < work[p].size(); i++) {
+            int ind = work[p][i], elems = 0;
+            if(ind >= cubes.size()) {
+                elems = spheres[ind-cubes.size()].number_of_points;
+            } else {
+                elems = cubes[ind].number_of_points;
+            }
+            largest_points = std::max(largest_points, elems);
+        }
+        return largest_points;
     }
 
     void compute_functions(bool forces, bool gga)

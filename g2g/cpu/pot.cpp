@@ -41,7 +41,7 @@ namespace G2G {
 #define POT_VOSKO_B1X0 ((scalar_type)1.0329232240928) // (1.0f - t6 * (POT_VOSKO_B1 - 2.0f * POT_VOSKO_X0))
 
 template<class scalar_type>
-void cpu_pot(scalar_type dens, scalar_type& ex, scalar_type& ec, scalar_type& y2a)
+inline void cpu_pot(scalar_type dens, scalar_type& ex, scalar_type& ec, scalar_type& y2a, const int iexch)
 {
 	// data X alpha
 
@@ -56,7 +56,7 @@ void cpu_pot(scalar_type dens, scalar_type& ex, scalar_type& ec, scalar_type& y2
 
 	ex = POT_ALPHA * y; // -(3/PI)^(1/3) * rho^(1/3)
 
-	switch(fortran_vars.iexch) {
+	switch(iexch) {
 		case 1:
 		{
 			ec = 0;
@@ -145,8 +145,7 @@ static void gcorc(scalar_type rtrs, scalar_type& gg, scalar_type& grrs);
 */
 
 template<class scalar_type>
-void cpu_potg(scalar_type dens, const vec_type<scalar_type,3>& grad, const vec_type<scalar_type,3>& hess1, const vec_type<scalar_type,3>& hess2,
-              scalar_type& ex, scalar_type& ec, scalar_type& y2a)
+inline void cpu_potg(scalar_type dens, const vec_type<scalar_type,3>& grad, const vec_type<scalar_type,3>& hess1, const vec_type<scalar_type,3>& hess2, scalar_type& ex, scalar_type& ec, scalar_type& y2a, int iexch)
 {
   // hess1: xx, yy, zz
   // hess2: xy, xz, yz
@@ -166,7 +165,7 @@ void cpu_potg(scalar_type dens, const vec_type<scalar_type,3>& grad, const vec_t
   y2a = 0;
 
   /** Exchange **/
-  if (fortran_vars.iexch == 4 || fortran_vars.iexch == 8) {   // Perdew : Phys. Rev B 33 8800 (1986)
+  if (iexch == 4 || iexch == 8) {   // Perdew : Phys. Rev B 33 8800 (1986)
     scalar_type dens2 = (dens * dens);
     scalar_type ckf = (scalar_type)3.0936677 * y;
     scalar_type s = dgrad / ((scalar_type)2.0 * ckf * dens);
@@ -190,7 +189,7 @@ void cpu_potg(scalar_type dens, const vec_type<scalar_type,3>& grad, const vec_t
     scalar_type dsF = fx * F/g0 * (-14.0 * fx * g3 * g2/g0 + g4);
     y2a = POT_ALPHA * (1.33333333333 * F - t/s * dF - (u-1.3333333333 * s3) * dsF) * y;
   }
-  else if (fortran_vars.iexch >= 5 && fortran_vars.iexch <= 7) { // Becke  : Phys. Rev A 38 3098 (1988)
+  else if (iexch >= 5 && iexch <= 7) { // Becke  : Phys. Rev A 38 3098 (1988)
     scalar_type e0 = POT_ALPHA * y;
     scalar_type y2 = dens / 2.0;
     scalar_type r13 = pow(y2, (scalar_type)(1.0 / 3.0));
@@ -246,7 +245,7 @@ void cpu_potg(scalar_type dens, const vec_type<scalar_type,3>& grad, const vec_t
   }
 
   /** Correlation **/
-  if (fortran_vars.iexch >= 4 && fortran_vars.iexch <= 6) { // Perdew : Phys. Rev B 33 8822 (1986)
+  if (iexch >= 4 && iexch <= 6) { // Perdew : Phys. Rev B 33 8822 (1986)
     // TODO: hay algun problema con 4 y 5, probablemente este aca
     scalar_type dens2 = (dens * dens);
     scalar_type rs = POT_GL / y;
@@ -265,7 +264,7 @@ void cpu_potg(scalar_type dens, const vec_type<scalar_type,3>& grad, const vec_t
     scalar_type t6 = POT_VOSKO_X0/Xxo;
     scalar_type vc = ec - POT_VOSKO_A16 * x1 * (t5/Xx - 4.0 * POT_VOSKO_B1 / ((t1 * t1)+(POT_VOSKO_Q * POT_VOSKO_Q2)) * (1.0 - t6 * (POT_VOSKO_B1 - 2.0 * POT_VOSKO_X0)) - t4 * (2.0 / (x1 - POT_VOSKO_X0) - t1/Xx));
 
-    if (fortran_vars.iexch == 6) {
+    if (iexch == 6) {
       y2a = y2a + vc;
     }
     else { // ?? citation??
@@ -293,7 +292,7 @@ void cpu_potg(scalar_type dens, const vec_type<scalar_type,3>& grad, const vec_t
       //cout << ec << " " << y2a << " " << D1 << " " << D2 << " " << D3 << endl;
     }
   }
-  else if (fortran_vars.iexch == 7 || fortran_vars.iexch == 8) { // Correlation: given by LYP: PRB 37 785 (1988)
+  else if (iexch == 7 || iexch == 8) { // Correlation: given by LYP: PRB 37 785 (1988)
     scalar_type rom13 = pow(dens, -0.3333333333333f);
     scalar_type rom53 = pow(dens, 1.666666666666f);
     scalar_type ecro = expf(-POT_CLYP * rom13);
@@ -487,10 +486,10 @@ static void gcorc(scalar_type rtrs, scalar_type& gg, scalar_type& grrs)
   grrs = -2.0 * GCORC_A * GCORC_A1 * Q2 - Q0 * Q3/(Q1 * (1.0 + Q1));
 }
 
-template void cpu_pot(float dens, float& ex, float& ec, float& y2a);
+template void cpu_pot(float dens, float& ex, float& ec, float& y2a, const int);
 template void cpu_potg(float dens, const vec_type<float,3>& grad, const vec_type<float,3>& hess1,
-                                          const vec_type<float,3>& hess2, float& ex, float& ec, float& y2a);
-template void cpu_pot(double dens, double& ex, double& ec, double& y2a);
+                                          const vec_type<float,3>& hess2, float& ex, float& ec, float& y2a, const int);
+template void cpu_pot(double dens, double& ex, double& ec, double& y2a, const int);
 template void cpu_potg(double dens, const vec_type<double,3>& grad, const vec_type<double,3>& hess1,
-                                          const vec_type<double,3>& hess2, double& ex, double& ec, double& y2a);
+                                          const vec_type<double,3>& hess2, double& ex, double& ec, double& y2a, const int);
 }

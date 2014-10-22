@@ -61,6 +61,10 @@ namespace G2G {
                 return this->data[j * this->width + i];
             }
 
+            inline const T * row(unsigned int i = 0) const {
+                return &this->data[i * this->width];
+            }
+
             inline const T * asArray() const {
                 return this->data;
             }

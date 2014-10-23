@@ -12,11 +12,12 @@ namespace G2G {
 template<class scalar_type>
 void PointGroup<scalar_type>::compute_weights(void)
 {
-	for (vector<Point>::iterator it = points.begin(); it != points.end(); ++it){
-		uint atom = it->atom;
+    #pragma omp parallel for
+    for(int point = 0; point < points.size(); point++) {
+		uint atom = points[point].atom;
 		double atom_weight;
 
-		const double3& point_position = it->position;
+		const double3& point_position = points[point].position;
 
 		double P_total = 0.0;
 		double P_atom = 0.0;
@@ -86,14 +87,15 @@ void PointGroup<scalar_type>::compute_weights(void)
 		}
 
 		atom_weight = (P_total == 0.0 ? 0.0 : (P_atom / P_total));
-		it->weight *= atom_weight;
+		points[point].weight *= atom_weight;
 		//cout << "peso " << P_atom << " " << P_total << " " << it->weight << endl;
 	}
 
     if (remove_zero_weights) {
         vector<Point> filteredPoints;
-        for(vector<Point>::const_iterator it = points.begin(); it != points.end(); ++it){
-            if(it->weight != 0.0) filteredPoints.push_back(*it);
+        for(int point = 0; point < points.size(); point++) {
+            if(points[point].weight != 0.0) 
+                filteredPoints.push_back(points[point]);
         }
         points.swap(filteredPoints);
         number_of_points = points.size();

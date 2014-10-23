@@ -22,23 +22,23 @@ using namespace G2G;
 //Sorting the cubes in increasing order of size in bytes in GPU.
 template <typename T>
 bool comparison_by_size(const T & a, const T & b) {
-    return a.size_in_gpu() < b.size_in_gpu();
+  return a.size_in_gpu() < b.size_in_gpu();
 }
 
 template <typename T>
 void sortBySize(std::vector<T> & input) {
-    sort(input.begin(), input.end(), comparison_by_size<T>);
+  sort(input.begin(), input.end(), comparison_by_size<T>);
 }
 
 void load_pools(const vector<int> & elements, const vector< vector<int> > & work, vector< int > & pool_sizes) {
-    pool_sizes.clear();
-    for(int i = 0; i < work.size(); i++) {
-        int largest_pool = 0;
-        for(int j = 0; j < work[i].size(); j++) {
-            largest_pool = max(largest_pool, elements[work[i][j]]);
-        }
-        pool_sizes.push_back(largest_pool);
+  pool_sizes.clear();
+  for(int i = 0; i < work.size(); i++) {
+    int largest_pool = 0;
+    for(int j = 0; j < work[i].size(); j++) {
+      largest_pool = max(largest_pool, elements[work[i][j]]);
     }
+    pool_sizes.push_back(largest_pool);
+  }
 }
 
 template <typename T>
@@ -52,76 +52,80 @@ long long total_costs(const vector<T> & elements)
 
 int split_bins(const vector< pair<long long, int> > & costs, vector< vector<int> > & workloads, long long capacity)
 {
-    // Bin Packing heuristic
-    workloads.clear();
-    for(int i = 0; i < costs.size(); i++) {
-        int next_bin = -1; 
-        for(int j = 0; j < workloads.size(); j++) {
-            long long slack = capacity; 
-            for(int k = 0; k < workloads[j].size(); k++){
-                slack -= costs[workloads[j][k]].first;
-            }
-            if (slack >= costs[i].first && next_bin == -1) {
-                next_bin = j;
-                break;
-            }
-        }
-        if(next_bin == -1) {
-            if (capacity < costs[i].second) {
-                return INT_MAX;
-            }
-            next_bin = workloads.size();
-            workloads.push_back(vector<int>());
-        }
-        workloads[next_bin].push_back(i);
+  // Bin Packing heuristic
+  workloads.clear();
+  for(int i = 0; i < costs.size(); i++) {
+    int next_bin = -1; 
+    for(int j = 0; j < workloads.size(); j++) {
+      long long slack = capacity; 
+      for(int k = 0; k < workloads[j].size(); k++){
+        slack -= costs[workloads[j][k]].first;
+      }
+      if (slack >= costs[i].first && next_bin == -1) {
+        next_bin = j;
+        break;
+      }
     }
-    return workloads.size();
+    if(next_bin == -1) {
+      if (capacity < costs[i].second) {
+        return INT_MAX;
+      }
+      next_bin = workloads.size();
+      workloads.push_back(vector<int>());
+    }
+    workloads[next_bin].push_back(i);
+  }
+  return workloads.size();
 }
 
 void Partition::compute_work_partition()
 {
-    vector< pair<long long, int> > costs;
-    for(int i = 0; i < cubes.size(); i++) 
-        costs.push_back(make_pair(cubes[i].cost(), i));
-    for(int i = 0; i < spheres.size(); i++) 
-        costs.push_back(make_pair(spheres[i].cost(), i+cubes.size()));
+  vector< pair<long long, int> > costs;
+  for(int i = 0; i < cubes.size(); i++) 
+    costs.push_back(make_pair(cubes[i].cost(), i));
+  for(int i = 0; i < spheres.size(); i++) 
+    costs.push_back(make_pair(spheres[i].cost(), i+cubes.size()));
 
-    sort(costs.begin(), costs.end());
-    reverse(costs.begin(), costs.end());
+  sort(costs.begin(), costs.end());
+  reverse(costs.begin(), costs.end());
 
-    long long min_cost = costs.front().second - 1,
-              max_cost = total_costs(cubes) + total_costs(spheres) + 1;
+  long long min_cost = costs.front().second - 1,
+            max_cost = total_costs(cubes) + total_costs(spheres) + 1;
 
-    while(max_cost - min_cost > 1) {
-        long long candidate = min_cost + (max_cost - min_cost)/2;
-        
-        vector< vector<int> > workloads;
-        int bins = split_bins(costs, workloads, candidate);
-        if(bins <= outer_threads) {
-            max_cost = candidate;
-        } else {
-            min_cost = candidate;
-        }
-    }    
-
-    split_bins(costs, work, max_cost);
-    for(int i = 0; i < work.size(); i++) {
-        long long total = 0;
-        for(int j = 0; j < work[i].size(); j++) {
-            long long c = costs[work[i][j]].first;
-            work[i][j] = costs[work[i][j]].second;
-            total += c;
-        }
-        printf("Particion %d: %lld\n", i, total);
+  while(max_cost - min_cost > 1) {
+    long long candidate = min_cost + (max_cost - min_cost)/2;
+    
+    vector< vector<int> > workloads;
+    int bins = split_bins(costs, workloads, candidate);
+    if(bins <= outer_threads) {
+      max_cost = candidate;
+    } else {
+      min_cost = candidate;
     }
+  }    
+
+  split_bins(costs, work, max_cost);
+  double maxp = 0, minp = total_costs(cubes)+total_costs(spheres)+1;
+  for(int i = 0; i < work.size(); i++) {
+    long long total = 0;
+    for(int j = 0; j < work[i].size(); j++) {
+      long long c = costs[work[i][j]].first;
+      work[i][j] = costs[work[i][j]].second;
+      total += c;
+    }
+    if(minp > total) minp = total; 
+    if(maxp < total) maxp = total; 
+    printf("Particion %d: %lld\n", i, total);
+  }
+  printf("Relacion max / min = %lf\n", maxp / minp);
 }
 
 int getintenv(const char * str) {
-    char * v = getenv(str);
-    if (v == NULL) return 1;
-    int ret = strtol(v, NULL, 10);
-    if (ret == 0) return 1;
-    return ret;
+  char * v = getenv(str);
+  if (v == NULL) return 1;
+  int ret = strtol(v, NULL, 10);
+  if (ret == 0) return 1;
+  return ret;
 }
 
 /* methods */
@@ -340,8 +344,6 @@ void Partition::regenerate(void)
         }
     }
 
-    sortBySize<Cube>(cubes);
-
     // Si esta habilitada la particion en esferas, entonces clasificamos y las agregamos a la particion tambien.
     if (sphere_radius > 0)
     {
@@ -378,8 +380,8 @@ void Partition::regenerate(void)
         }
     }
 
-    //Sorting the spheres in increasing order
     sortBySize<Sphere>(spheres);
+    sortBySize<Cube>(cubes);
 
     //Initialize the global memory pool for CUDA, with the default safety factor
     //If it is CPU, then this doesn't matter

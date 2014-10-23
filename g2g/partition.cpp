@@ -208,6 +208,13 @@ PointGroup<scalar_type>::~PointGroup<scalar_type>()
       gradient_values.deallocate();
       hessian_values.deallocate();
     }
+#else
+      function_values.deallocate();
+      gradient_values.deallocate();
+      hessian_values.deallocate();
+      gX.deallocate(); gY.deallocate(); gZ.deallocate();
+      hPX.deallocate(); hPY.deallocate(); hPZ.deallocate();
+      hIX.deallocate(); hIY.deallocate(); hIZ.deallocate();
 #endif
 }
 

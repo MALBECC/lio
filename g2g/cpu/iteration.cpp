@@ -67,9 +67,20 @@ void PointGroup<scalar_type>::do_trmms(Timers & ts, ThreadBufferPool<scalar_type
 }
 
 template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
-    bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, 
-    double& energy, HostMatrix<double> & fort_forces, ThreadBufferPool<scalar_type> & pool, 
-    int inner_threads, HostMatrix<scalar_type> & rmm_global_output) const
+  bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, 
+  double& energy, double& energy_i, double& energy_c, double& energy_c1, double& energy_c2,
+  HostMatrix<double> & fort_forces, ThreadBufferPool<scalar_type> & pool, 
+  int inner_threads, HostMatrix<scalar_type> & rmm_global_output, bool OPEN)
+{
+
+  solve_closed(timers, compute_rmm, lda, compute_forces, compute_energy, 
+    energy, fort_forces, pool, inner_threads, rmm_global_output);
+}
+
+template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& timers,
+  bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, 
+  double& energy, HostMatrix<double> & fort_forces, ThreadBufferPool<scalar_type> & pool, 
+  int inner_threads, HostMatrix<scalar_type> & rmm_global_output)
 {
   if(points.size() < 32) inner_threads = 1;
   const uint group_m = total_functions();
@@ -132,18 +143,10 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
   timers.density.start();
 
   scalar_type * dx,* dy, *dz, *dd1x, *dd1y, * dd1z, * dd2x, * dd2y, * dd2z, * partial_density;
+  dx = dy = dz = dd1x = dd1y = dd1z = dd2x = dd2y = dd2z = partial_density = NULL;
 
   int bytes = points.size() * sizeof(scalar_type);
   partial_density = pool.get_pool(points.size());
-  dx = pool.get_pool(points.size()); 
-  dy = pool.get_pool(points.size()); 
-  dz = pool.get_pool(points.size()); 
-  dd1x = pool.get_pool(points.size()); 
-  dd1y = pool.get_pool(points.size()); 
-  dd1z = pool.get_pool(points.size()); 
-  dd2x = pool.get_pool(points.size()); 
-  dd2y = pool.get_pool(points.size()); 
-  dd2z = pool.get_pool(points.size()); 
 
   const int iexch = fortran_vars.iexch;
   timers.density_calcs.start();
@@ -151,6 +154,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
   /** density **/
   if (lda) {
     for(int point = 0; point < points.size(); point++) {
+      partial_density[point] = 0;
       for (uint i = 0; i < group_m; i++) {
         scalar_type w = 0.0;
         scalar_type Fi = function_values(i, point);
@@ -162,6 +166,16 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
       }
     }
   } else {
+    dx = pool.get_pool(points.size()); 
+    dy = pool.get_pool(points.size()); 
+    dz = pool.get_pool(points.size()); 
+    dd1x = pool.get_pool(points.size()); 
+    dd1y = pool.get_pool(points.size()); 
+    dd1z = pool.get_pool(points.size()); 
+    dd2x = pool.get_pool(points.size()); 
+    dd2y = pool.get_pool(points.size()); 
+    dd2z = pool.get_pool(points.size()); 
+
     #pragma omp parallel for num_threads(inner_threads)
     for(int point = 0; point < points.size(); point++) {
       scalar_type pd, tdx, tdy, tdz, tdd1x, tdd1y, tdd1z,tdd2x, tdd2y, tdd2z;
@@ -216,9 +230,6 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
 
   #pragma omp parallel for num_threads(inner_threads) reduction(+:localenergy)
   for(int point = 0 ; point < points.size(); point++) {
-    vec_type3 dxyz(dx[point],dy[point],dz[point]);
-    vec_type3 dd1(dd1x[point],dd1y[point],dd1z[point]);
-    vec_type3 dd2(dd2x[point],dd2y[point],dd2z[point]);
     scalar_type pdens = partial_density[point];
 
     /** energy / potential **/
@@ -226,6 +237,10 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
     if (lda) {
       cpu_pot(pdens, exc, corr, y2a, iexch);
     } else {
+      vec_type3 dxyz(dx[point],dy[point],dz[point]);
+      vec_type3 dd1(dd1x[point],dd1y[point],dd1z[point]);
+      vec_type3 dd2(dd2x[point],dd2y[point],dd2z[point]);
+
       cpu_potg(pdens, dxyz, dd1, dd2, exc, corr, y2a, iexch);
     }
 
@@ -249,8 +264,9 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
   timers.forces.start();
   if (compute_forces) {
     HostMatrix<vec_type3> dd; 
-    dd.resize(total_nucleii(), 1); dd.zero();
+    dd.resize(total_nucleii(), 1); 
     for(int point = 0; point < points.size(); point++) {
+      dd.zero();
       for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
         uint nuc = func2local_nuc(ii);
         uint inc_i = small_function_type(i);
@@ -261,7 +277,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
             scalar_type Fj = function_values(j, point);
             w += rmm_input(j, ii) * Fj * (ii == j ? 2 : 1);
           }
-          this_dd -= gradient_values(ii, point) * w;
+          this_dd -= vec_type3(w*gX(ii, point),w*gY(ii,point),w*gZ(ii,point));
         }
         dd(nuc) += this_dd;
       }

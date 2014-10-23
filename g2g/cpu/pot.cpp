@@ -145,7 +145,7 @@ static void gcorc(scalar_type rtrs, scalar_type& gg, scalar_type& grrs);
 */
 
 template<class scalar_type>
-inline void cpu_potg(scalar_type dens, const vec_type<scalar_type,3>& grad, const vec_type<scalar_type,3>& hess1, const vec_type<scalar_type,3>& hess2, scalar_type& ex, scalar_type& ec, scalar_type& y2a, int iexch)
+inline void cpu_potg(scalar_type dens, const vec_type<scalar_type,3>& grad, const vec_type<scalar_type,3>& hess1, const vec_type<scalar_type,3>& hess2, scalar_type& ex, scalar_type& ec, scalar_type& y2a, const int iexch)
 {
   // hess1: xx, yy, zz
   // hess2: xy, xz, yz

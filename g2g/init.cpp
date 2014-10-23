@@ -29,9 +29,10 @@ namespace G2G {
 }
 
 /* methods */
+//===========================================================================================
 extern "C" void g2g_init_(void)
 {
-  cout << "<====== Initializing G2G ======>" << endl;
+  cout << "<====== Initializing G2G ======>"<<endl;
 
   #if !CPU_KERNELS
   cuInit(0);
@@ -47,16 +48,18 @@ extern "C" void g2g_init_(void)
 
   cout.precision(10);
 }
-
+//==========================================================================================
 namespace G2G {
 void gpu_set_variables(void);
 template<class T> void gpu_set_atom_positions(const HostMatrix<T>& m);
 }
-
-extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int& natom, const unsigned int& max_atoms, const unsigned int& ngaussians, double* r, double* Rm, const unsigned int* Iz, const unsigned int* Nr,
-										 const unsigned int* Nr2, unsigned int* Nuc, const unsigned int& M, unsigned int* ncont, const unsigned int* nshell, double* c,
-					           double* a, double* RMM, const unsigned int& M18, const unsigned int& M5, const unsigned int& nco, const unsigned int& nopt,
-                     const unsigned int& Iexch, double* e, double* e2, double* e3, double* wang, double* wang2, double* wang3)
+//==========================================================================================
+extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int& natom, const unsigned int& max_atoms, const unsigned int& ngaussians,
+                                    double* r, double* Rm, const unsigned int* Iz, const unsigned int* Nr, const unsigned int* Nr2, unsigned int* Nuc,
+                                    const unsigned int& M, unsigned int* ncont, const unsigned int* nshell, double* c, double* a,
+                                    double* RMM, const unsigned int& M18, const unsigned int& M5, const unsigned int& M3, double* rhoalpha, double* rhobeta,
+                                    const unsigned int& nco, bool& OPEN, const unsigned int& nunp, const unsigned int& nopt, const unsigned int& Iexch,
+                                    double* e, double* e2, double* e3, double* wang, double* wang2, double* wang3)
 {
 	printf("<======= GPU Code Initialization ========>\n");
 	fortran_vars.atoms = natom;
@@ -82,8 +85,9 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	fortran_vars.s_funcs = nshell[0];
 	fortran_vars.p_funcs = nshell[1] / 3;
 	fortran_vars.d_funcs = nshell[2] / 6;
-  cout << "s: " << fortran_vars.s_funcs  << " p: " << fortran_vars.p_funcs << " d: " << fortran_vars.d_funcs << endl;
+        cout << "s: " << fortran_vars.s_funcs  << " p: " << fortran_vars.p_funcs << " d: " << fortran_vars.d_funcs << endl;
 	fortran_vars.spd_funcs = fortran_vars.s_funcs + fortran_vars.p_funcs + fortran_vars.d_funcs;
+// M =	# of contractions
 	fortran_vars.m = M;
 	fortran_vars.nco = nco;
   cout << "m: " << fortran_vars.m  << " nco: " << fortran_vars.nco << endl;
@@ -109,14 +113,40 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 
 	fortran_vars.nucleii = FortranMatrix<uint>(Nuc, fortran_vars.m, 1, 1);
 	fortran_vars.contractions = FortranMatrix<uint>(ncont, fortran_vars.m, 1, 1);
-  for (uint i = 0; i < fortran_vars.m; i++) {
-    if ((fortran_vars.contractions(i) - 1) > MAX_CONTRACTIONS)  throw runtime_error("Maximum functions per contraction reached!");
-}
+        for (uint i = 0; i < fortran_vars.m; i++) {
+        	if ((fortran_vars.contractions(i) - 1) > MAX_CONTRACTIONS)  throw runtime_error("Maximum functions per contraction reached!");
+ 	}
 	fortran_vars.a_values = FortranMatrix<double>(a, fortran_vars.m, MAX_CONTRACTIONS, ngaussians);
 	fortran_vars.c_values = FortranMatrix<double>(c, fortran_vars.m, MAX_CONTRACTIONS, ngaussians);
-	fortran_vars.rmm_input = FortranMatrix<double>(RMM + (M18 - 1), fortran_vars.m, fortran_vars.nco, fortran_vars.m);
-  fortran_vars.rmm_input_ndens1 = FortranMatrix<double>(RMM, fortran_vars.m, fortran_vars.m, fortran_vars.m);
-	fortran_vars.rmm_output = FortranMatrix<double>(RMM + (M5 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
+
+// nco = number of Molecular orbitals ocupped
+	fortran_vars.nco = nco;
+
+	fortran_vars.OPEN = OPEN;
+
+	if(fortran_vars.OPEN){
+		fortran_vars.nunp = nunp;
+                cout << "LIOAMBER OPEN SHELL DFT :) " << endl;
+                cout << "Number of MO(UP): "<<fortran_vars.nco<<endl;
+                cout << "Number of MO(DOWN): "<<fortran_vars.nco+fortran_vars.nunp<<endl;
+
+                //fortran_vars.ncoa = nco;
+                //fortran_vars.ncob =
+
+                fortran_vars.rmm_dens_a = FortranMatrix<double>(rhoalpha, fortran_vars.m, fortran_vars.m, fortran_vars.m);
+        	fortran_vars.rmm_dens_b = FortranMatrix<double>(rhobeta,  fortran_vars.m, fortran_vars.m, fortran_vars.m);
+
+		//  Matriz de fock
+        	fortran_vars.rmm_output_a = FortranMatrix<double>(RMM + (M5 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
+		fortran_vars.rmm_output_b = FortranMatrix<double>(RMM + (M3 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
+	}
+	else{
+		cout << " nco: " << fortran_vars.nco << endl;
+		// matriz densidad
+        	fortran_vars.rmm_input_ndens1 = FortranMatrix<double>(RMM, fortran_vars.m, fortran_vars.m, fortran_vars.m);
+		// matriz de Fock
+		fortran_vars.rmm_output = FortranMatrix<double>(RMM + (M5 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
+	}
 
 	fortran_vars.e1 = FortranMatrix<double>(e, SMALL_GRID_SIZE, 3, SMALL_GRID_SIZE);
 	fortran_vars.e2 = FortranMatrix<double>(e2, MEDIUM_GRID_SIZE, 3, MEDIUM_GRID_SIZE);
@@ -134,12 +164,12 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 
 	read_options();
 }
-
+//============================================================================================================
 extern "C" void g2g_deinit_(void) {
   cout << "<====== Deinitializing G2G ======>" << endl;
   partition.clear();
 }
-
+//============================================================================================================
 void compute_new_grid(const unsigned int grid_type) {
 	switch(grid_type) {
 		case 0:
@@ -159,21 +189,24 @@ void compute_new_grid(const unsigned int grid_type) {
 		break;
 	}
 
-  Timer t_grilla;
-  t_grilla.start_and_sync();
-  partition.regenerate();
-  t_grilla.stop_and_sync();
-  //cout << "timer grilla: " << t_grilla << endl;
+
+  	Timer t_grilla;
+  	t_grilla.start_and_sync();
+  	partition.regenerate();
+  	t_grilla.stop_and_sync();
+  	//cout << "timer grilla: " << t_grilla << endl;
 
 #if CPU_KERNELS && !CPU_RECOMPUTE
-  /** compute functions **/
-  //if (fortran_vars.do_forces) cout << "<===== computing all functions [forces] =======>" << endl;
-  //else cout << "<===== computing all functions =======>" << endl;
+  	/** compute functions **/
+  	//if (fortran_vars.do_forces) cout << "<===== computing all functions [forces] =======>" << endl;
+  	//else cout << "<===== computing all functions =======>" << endl;
 
-  partition.compute_functions(fortran_vars.do_forces, fortran_vars.gga);
+
+  	partition.compute_functions(fortran_vars.do_forces, fortran_vars.gga);
+
 #endif
 }
-
+//==============================================================================================================
 extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
 //	cout  << "<======= GPU Reload Atom Positions (" << grid_type << ")========>" << endl;
 
@@ -183,20 +216,19 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
 		double3 pos = make_double3(fortran_vars.atom_positions_pointer(i, 0), fortran_vars.atom_positions_pointer(i, 1), fortran_vars.atom_positions_pointer(i, 2));
 		fortran_vars.atom_positions(i) = pos;
 		atom_positions(i) = make_float3(pos.x, pos.y, pos.z);
-    //cout << atom_positions(i) << endl;
+//    cout << atom_positions(i) << endl;
 	}
 
 #if !CPU_KERNELS
 #if FULL_DOUBLE
-  G2G::gpu_set_atom_positions(fortran_vars.atom_positions);
+  	G2G::gpu_set_atom_positions(fortran_vars.atom_positions);
 #else
-  G2G::gpu_set_atom_positions(atom_positions);
+  	G2G::gpu_set_atom_positions(atom_positions);
 #endif
 #endif
-
 	compute_new_grid(grid_type);
 }
-
+//==============================================================================================================
 extern "C" void g2g_new_grid_(const unsigned int& grid_type) {
 //	cout << "<======= GPU New Grid (" << grid_type << ")========>" << endl;
 	if (grid_type == (uint)fortran_vars.grid_type)
@@ -211,17 +243,23 @@ template<bool compute_rmm, bool lda, bool compute_forces> void g2g_iteration(boo
   Timers timers;
   timers.total.start();
 
-  partition.solve(timers, compute_rmm, lda, compute_forces, compute_energy, fort_energy_ptr, fort_forces_ptr);
+  partition.solve(timers, compute_rmm, lda, compute_forces, compute_energy, fort_energy_ptr, fort_forces_ptr, fortran_vars.OPEN);
 
   timers.total.stop();
   cout << timers << endl;
 }
 
+//===============================================================================================================
 extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_energy_ptr, double* fort_forces_ptr)
 {
+// COMPUTE_RMM             0
+// COMPUTE_ENERGY_ONLY     1
+// COMPUTE_ENERGY_FORCE    2
+// COMPUTE_FORCE_ONLY      3
+
  /*	cout << "<================ iteracion [";
 	switch(computation_type) {
-    case COMPUTE_RMM: cout << "rmm"; break;
+    		case COMPUTE_RMM: cout << "rmm"; break;
 		case COMPUTE_ENERGY_ONLY: cout << "energia"; break;
 		case COMPUTE_ENERGY_FORCE: cout << "energia+fuerzas"; break;
 		case COMPUTE_FORCE_ONLY: cout << "fuerzas"; break;
@@ -241,7 +279,10 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
     }
     else {
       if (compute_forces) g2g_iteration<true, false, true>(compute_energy, fort_energy_ptr, fort_forces_ptr);
-      else g2g_iteration<true, false, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
+      else {
+		g2g_iteration<true, false, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
+    		cout << "XC energy: " << *fort_energy_ptr << endl;
+	}
     }
   }
   else {
@@ -256,21 +297,21 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
   }
   if (compute_energy) cout << "XC energy: " << *fort_energy_ptr << endl;
 }
-
+//================================================================================================================
 /* general options */
 namespace G2G {
 	uint max_function_exponent = 10;
 	double little_cube_size = 8.0;
 	uint min_points_per_cube = 1;
 	double becke_cutoff = 1e-7;
-  bool assign_all_functions = false;
-  double sphere_radius = 0.6;
-  bool remove_zero_weights = true;
-  bool energy_all_iterations = false;
-  double big_function_cutoff = 1;
-  double free_global_memory = 0.0;
+  	bool assign_all_functions = false;
+  	double sphere_radius = 0.6;
+  	bool remove_zero_weights = true;
+  	bool energy_all_iterations = false;
+  	double big_function_cutoff = 1;
+  	double free_global_memory = 0.0;
 }
-
+//=================================================================================================================
 void read_options(void) {
 	cout << "<====== read_options ========>" << endl;
 	ifstream f("gpu_options");
@@ -288,21 +329,23 @@ void read_options(void) {
 			{ f >> min_points_per_cube; cout << min_points_per_cube; }
 		else if (option == "becke_cutoff")
 			{ f >> becke_cutoff; cout << becke_cutoff; }
-    else if (option == "assign_all_functions")
-      { f >> assign_all_functions; cout << assign_all_functions; }
-    else if (option == "sphere_radius")
-      { f >> sphere_radius; cout << sphere_radius; }
-    else if (option == "remove_zero_weights")
-      { f >> remove_zero_weights; cout << remove_zero_weights; }
-    else if (option == "energy_all_iterations")
-      { f >> energy_all_iterations; cout << energy_all_iterations; }
-    else if (option == "big_function_cutoff")
-      { f >> big_function_cutoff; cout << big_function_cutoff; }
-    else if (option == "free_global_memory")
-      { f >> free_global_memory; cout << free_global_memory; }
+    		else if (option == "assign_all_functions")
+      			{ f >> assign_all_functions; cout << assign_all_functions; }
+    		else if (option == "sphere_radius")
+      			{ f >> sphere_radius; cout << sphere_radius; }
+    		else if (option == "remove_zero_weights")
+      			{ f >> remove_zero_weights; cout << remove_zero_weights; }
+    		else if (option == "energy_all_iterations")
+      			{ f >> energy_all_iterations; cout << energy_all_iterations; }
+    		else if (option == "big_function_cutoff")
+      			{ f >> big_function_cutoff; cout << big_function_cutoff; }
+               else if (option == "free_global_memory")
+                   	{ f >> free_global_memory; cout << free_global_memory; }
+
 		else throw runtime_error(string("Invalid option: ") + option);
 
 		cout << endl;
 		if (!f) throw runtime_error(string("Error reading gpu options file (last option: ") + option + string(")"));
 	}
 }
+//=====================================================================================================================

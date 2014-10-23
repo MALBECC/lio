@@ -22,7 +22,7 @@ c r(Nuc(i),j) j component of position of nucleus i , j=1,3
 c Input :  density basis 
 c Output:  dipole moment components 
 c-----------------------------------------------------------------
-      subroutine dip2(g,ux,uy,uz)
+      subroutine intfld(g,ux,uy,uz)
       use garcha_mod
       implicit real*8 (a-h,o-z)
 
@@ -37,7 +37,7 @@ c
 c
 c pointers
 c
-      write(*,*) 'dip2',g,ux,uy,uz
+      write(*,*) 'intfld dip ',g,ux,uy,uz
       MM=M*(M+1)/2
       MM2=M**2
       MMd=Md*(Md+1)/2

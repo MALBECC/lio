@@ -10,21 +10,21 @@
  */
 
 /* pot_kernel constants */
-#define POT_ALPHA 		((scalar_type)-0.738558766382022447f) // -(3/PI)^(1/3)
-#define POT_GL 				((scalar_type)0.620350490899400087f)
+#define POT_ALPHA     ((scalar_type)-0.738558766382022447f) // -(3/PI)^(1/3)
+#define POT_GL        ((scalar_type)0.620350490899400087f)
 
-#define POT_VOSKO_A1 	((scalar_type)0.03109205f)
-#define POT_VOSKO_B1 	((scalar_type)3.72744f)
-#define POT_VOSKO_C1 	((scalar_type)12.9352f)
-#define POT_VOSKO_X0 	((scalar_type)-0.10498f)
+#define POT_VOSKO_A1  ((scalar_type)0.03109205f)
+#define POT_VOSKO_B1  ((scalar_type)3.72744f)
+#define POT_VOSKO_C1  ((scalar_type)12.9352f)
+#define POT_VOSKO_X0  ((scalar_type)-0.10498f)
 
-#define POT_VOSKO_Q 	((scalar_type)6.15199066246304849f)
+#define POT_VOSKO_Q   ((scalar_type)6.15199066246304849f)
 #define POT_VOSKO_A16 ((scalar_type)0.005182008333f)
-#define POT_VOSKO_A2 	((scalar_type)0.015546025f)
-#define POT_VOSKO_B2 	((scalar_type)7.06042f)
-#define POT_VOSKO_C2 	((scalar_type)18.0578f)
+#define POT_VOSKO_A2  ((scalar_type)0.015546025f)
+#define POT_VOSKO_B2  ((scalar_type)7.06042f)
+#define POT_VOSKO_C2  ((scalar_type)18.0578f)
 #define POT_VOSKO_X02 ((scalar_type)-0.32500f)
-#define POT_VOSKO_Q2 	((scalar_type)4.7309269f)
+#define POT_VOSKO_Q2  ((scalar_type)4.7309269f)
 #define POT_VOSKO_A26 ((scalar_type)0.0025910042f)
 
 #define POT_XX0 ((scalar_type)12.5549141492f) // POT_VOSKO_X0 * POT_VOSKO_X0 + POT_VOSKO_B1 * POT_VOSKO_X0 + POT_VOSKO_C1
@@ -165,7 +165,7 @@ __device__ void closedpbe(scalar_type rho, scalar_type agrad, scalar_type delgra
 
   scalar_type ec, eurs;
   gcorc(rtrs, ec, eurs);
-	if (ec == (scalar_type)0.0f) ec = (scalar_type)FLT_MIN;
+  if (ec == (scalar_type)0.0f) ec = (scalar_type)FLT_MIN;
 
   scalar_type eclda = ec;
   scalar_type ecrs = eurs;
@@ -192,7 +192,7 @@ __device__ void closedpbe(scalar_type rho, scalar_type agrad, scalar_type delgra
   scalar_type RSTHRD = rs / 3.0f;
   scalar_type FAC = CLOSEDPBE_DELTA / B + 1.0f;
   scalar_type BEC = B2 * FAC / CLOSEDPBE_BETA;
-	scalar_type Q8 = Q5 * Q5 + CLOSEDPBE_DELTA * Q4 * Q5 * t2;
+  scalar_type Q8 = Q5 * Q5 + CLOSEDPBE_DELTA * Q4 * Q5 * t2;
   scalar_type Q9 = 1.0f + 2.0f * B * t2;
   scalar_type hB = -CLOSEDPBE_BETA * B * T6 * (2.0f + B * t2)/Q8;
   scalar_type hRS = -RSTHRD * hB * BEC * ecrs;
@@ -213,13 +213,13 @@ __device__ void closedpbe(scalar_type rho, scalar_type agrad, scalar_type delgra
 
   //cout << expbe << " " << Q4 << " " << H << " " << eclda << " " << (float)eclda + H << " " << endl;
 
-	//cout << rho << " " << delgrad << " " << rlap << " ret: " << expbe << " " << vxpbe << " " << ecpbe << " " << vcpbe << endl;
+  //cout << rho << " " << delgrad << " " << rlap << " ret: " << expbe << " " << vxpbe << " " << ecpbe << " " << vcpbe << endl;
 }
 
 template<class scalar_type, bool compute_exc, bool compute_y2a, bool lda>
 __device__ void gpu_pot(scalar_type dens, const vec_type<scalar_type,4>& grad, const vec_type<scalar_type,4>& hess1, const vec_type<scalar_type,4>& hess2, scalar_type& exc_corr, scalar_type& y2a)
 {
-	// data X alpha
+  // data X alpha
   scalar_type ec;
 
   if (lda) {

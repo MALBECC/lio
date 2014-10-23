@@ -48,6 +48,7 @@ namespace G2G {
 
       friend std::ostream& operator<<(std::ostream& o, const vec_type & v) {
           o << v.x() << " " << v.y() << " " << v.z();
+          return o;
       }
 
       void operator+=(const vec_type & lo){
@@ -83,6 +84,7 @@ namespace G2G {
 
       friend std::ostream& operator<<(std::ostream& o, const vec_type & v) {
           o << v._x << " " << v._y << " " << v._z << " " << v._w;
+          return o;
       }
 
   };

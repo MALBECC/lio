@@ -7,14 +7,14 @@ c---------------------------------------------------------------------
 
       character(len=20)::argument,inpfile,inpbasis,inpcoords
       integer::charge
-      logical::filexist
+      logical::filexist,writeforces
       REAL*8, dimension (:,:), ALLOCATABLE   :: dxyzqm
       namelist /lio/ natom,nsol,charge,OPEN,NMAX,Nunp,VCINP,frestartin,
      > GOLD,told,rmax,rmaxs,predcoef,
      > idip,writexyz,intsoldouble,DIIS,ndiis,dgtrig,
      > Iexch,integ,dens,igrid,igrid2,timedep, tdstep, ntdstep,
      > propagator,NBCH,
-     > field,a0,epsilon,exter,Fx,Fy,Fz, tdrestart, writedens
+     > field,a0,epsilon,exter,Fx,Fy,Fz, tdrestart, writedens,writeforces
 
       integer :: ifind, ierr
 
@@ -58,7 +58,7 @@ c---------------------------------------------------------------------
       propagator=1
       tdrestart=.false.
       writedens=.true.
-
+      writeforces=.false.
       narg=command_argument_count()
 
       do i=1, narg
@@ -106,6 +106,8 @@ c        write(*,*) natom,nsol
       ng3=4*ngDyn
       ng2=5*ngDyn*(ngDyn+1)/2+3*ngdDyn*(ngdDyn+1)/2+
      >           ngDyn+ngDyn*norbit+Ngrid
+c      write(*,*)ng2,ngDyn,ngdDyn,norbit,Ngrid
+
       allocate(X(ngDyn,ng3),XX(ngdDyn,ngdDyn))
       allocate(RMM(ng2),RMM1(ng2),RMM2(ng2), RMM3(ng2))
 
@@ -127,27 +129,49 @@ c       write(*,*) iz(i),r(i,1:3)
       do i=natom+1,ntatom
         read(101,*) pc(i),r(i,1:3)   ! o es pc(i-natom)???
 c       write(*,*) pc(i),r(i,1:3)
-      enddo
-      r=r/0.529177D0
-      rqm=rqm/0.529177D0
+       enddo
+       r=r/0.529177D0
+       rqm=rqm/0.529177D0
 
-      call g2g_init()   !initialize g2g
+       call g2g_init()   !initialize g2g
 
-      nqnuc=0
-      do i=1,natom
-        nqnuc=nqnuc+Iz(i)
-      enddo
+        nqnuc=0
+       do i=1,natom
+         nqnuc=nqnuc+Iz(i)
+       enddo
 
-      nco=(nqnuc - charge)/2
+       nco=((nqnuc - charge)-Nunp)/2
 
-      write(*,*) 'NCO=',NCO
-      write(*,*) natom,ntatom,ngDyn,ngdDyn,ng0,ngd0
+c       write(*,*) 'NCO=',NCO
+c       write(*,*) natom,ntatom,ngDyn,ngdDyn,ng0,ngd0
+c       write(*,*) ng2,ngDyn,ngdDyn
 c--------------------------------------------------------
        call drive(ng2,ngDyn,ngdDyn)
+       call lio_init()   !initialize lio
+c--------------------------------------------------------
+       if(OPEN) then
+         call SCFOP(escf,dipxyz)
+       else
+         call SCF(escf,dipxyz)
+       endif
+c-------------------------------------------------------- 
 
-       call SCF(escf,dipxyz)
-       write(*,*) 'SCF ENRGY=',escf
+       write(*,*) 'SCF ENRGY=',escf 
 
-       call lio_finalize()
+      if(writeforces) then        
+       open(unit=123,file='fuerzas')
+       allocate (dxyzqm(3,natom))
+       dxyzqm=0.0
+       call dft_get_qm_forces(dxyzqm)
+c       call g2g_solve_groups(3, Exc, dxyzqm)
+c       write(*,*) dxyzqm
+
+       do k=1,natom
+         write(123,'("fuerza",I,D,D,D)') 
+     >     k,dxyzqm(k,1),dxyzqm(k,2),dxyzqm(k,3)
+       enddo
+       deallocate (dxyzqm)
+       endif 
+       call lio_finalize()     
        end
 

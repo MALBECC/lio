@@ -88,8 +88,15 @@ class PointGroup {
     inline uint total_nucleii(void) const { return local2global_nuc.size(); }
     inline bool has_nucleii(uint atom) const { return (std::find(local2global_nuc.begin(), local2global_nuc.end(), atom) != local2global_nuc.end()); }
 
+    void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const;
     void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input) const;
+    void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input_a, G2G::HostMatrix<scalar_type>& rmm_input_b) const;
+
+    void add_rmm_output(const G2G::HostMatrix<scalar_type>& rmm_output, FortranMatrix<double>& target) const;
     void add_rmm_output(const G2G::HostMatrix<scalar_type>& rmm_output) const;
+    void add_rmm_output_a(const G2G::HostMatrix<scalar_type>& rmm_output) const;
+    void add_rmm_output_b(const G2G::HostMatrix<scalar_type>& rmm_output) const;
+    void add_rmm_open_output(const G2G::HostMatrix<scalar_type>& rmm_output_a, const G2G::HostMatrix<scalar_type>& rmm_output_b) const;
 
     void compute_nucleii_maps(void);
 
@@ -97,9 +104,18 @@ class PointGroup {
     void compute_weights(void);
 
     void compute_functions(bool forces, bool gga);
+
+    void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
+        bool compute_energy, double& energy, double &, double &, double &, double &,
+        HostMatrix<double> &, ThreadBufferPool<scalar_type> &, int, HostMatrix<scalar_type> &, bool);
+
+    void solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
+        bool compute_energy, double& energy, HostMatrix<double> &, ThreadBufferPool<scalar_type> &, int, 
+        HostMatrix<scalar_type> &);
+
     void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
-        bool compute_energy, double& energy, HostMatrix<double> &, ThreadBufferPool<scalar_type> &, int, HostMatrix<scalar_type> &)
-        const;
+        bool compute_energy, double& energy, double &, double &, double &, double &,
+        HostMatrix<double> &, ThreadBufferPool<scalar_type> &, int, HostMatrix<scalar_type> &, bool);
 
     bool is_significative(FunctionType, double exponent, double coeff, double d2);
     bool operator<(const PointGroup<scalar_type>& T) const;
@@ -113,6 +129,7 @@ class PointGroup {
     #endif
 };
 
+// ===== Sphere Class =======//
 #if FULL_DOUBLE
 typedef double base_scalar_type;
 #else
@@ -135,62 +152,19 @@ class Cube : public PointGroup<base_scalar_type> {
     void assign_significative_functions(const double3& cube_coord, const std::vector<double>& min_exps, const std::vector<double>& min_coeff);
 };
 
+// =======Partition Class ========//
+
 class Partition {
   public:
     void compute_work_partition();
-    void clear(void) {
-      cubes.clear(); spheres.clear(); work.clear(); 
-    }
-
-    void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr);
-
+    void clear(void);
     void regenerate(void);
 
-    int pool_size(int p) {
-        int largest_pool = 0;
-        for(int i = 0; i < work[p].size(); i++) {
-            int ind = work[p][i], elems = 0;
-            if(ind >= cubes.size()) {
-                elems = spheres[ind-cubes.size()].pool_elements();
-            } else {
-                elems = cubes[ind].pool_elements();
-            }
-            largest_pool = std::max(largest_pool, elems);
-        }
-        return largest_pool;
-    }
+    int pool_size(int p) const; 
 
-    int max_points(int p) {
-        int largest_points = 0;
-        for(int i = 0; i < work[p].size(); i++) {
-            int ind = work[p][i], elems = 0;
-            if(ind >= cubes.size()) {
-                elems = spheres[ind-cubes.size()].number_of_points;
-            } else {
-                elems = cubes[ind].number_of_points;
-            }
-            largest_points = std::max(largest_points, elems);
-        }
-        return largest_points;
-    }
-
-    void compute_functions(bool forces, bool gga)
-    {
-      Timer t1;
-      t1.start_and_sync();
-
-      #pragma omp parallel for
-      for(int i = 0; i < cubes.size(); i++){
-        cubes[i].compute_functions(forces, gga);
-      }
-
-      #pragma omp parallel for
-      for(int i = 0; i < spheres.size(); i++){
-        spheres[i].compute_functions(forces, gga);
-      }
-
-      t1.stop_and_sync();
-    }
+    void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr, bool OPEN);
+    void compute_functions(bool forces, bool gga);
+    int max_points(int p) const; 
 
     std::vector<Cube> cubes;
     std::vector<Sphere> spheres;

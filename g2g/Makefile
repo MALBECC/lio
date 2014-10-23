@@ -24,6 +24,10 @@ else
 endif
 
 ## Other options
+ifeq ($(print), 1)
+        CXXFLAGS += -DPRINT_MATRICES
+endif
+
 ifeq ($(time), 1)
   CXXFLAGS += -DTIMINGS
 endif

@@ -3,14 +3,18 @@ MOD_SRCS=$(wildcard mods/*.f)
 # COMMON_SRCS=$(wildcard *.f)
 GARCHA_SRCS=$(wildcard *.f)
 
-MOD_OBJ=$(MOD_SRCS:%.f=%.o) 
+MOD_OBJ=$(MOD_SRCS:%.f=%.o)
 GARCHA_OBJ=$(MOD_OBJ) $(COMMON_SRCS:%.f=%.o) $(GARCHA_SRCS:%.f=%.o)
 
 # flags
+ifeq ($(print), 1)
+        DEFINE += -DPRINT_MATRICES
+endif
+
 ifeq ($(profile),1)
   PROFILE  = -pg
 else
-  PROFILE  =  
+  PROFILE  =
 endif
 
 ifeq ($(cpu_recompute),1)
@@ -45,7 +49,13 @@ else
 endif
 LIBS=-L/usr/lib -L/usr/lib64 -L../g2g -lg2g -lstdc++ -L$(MKLROOT)/lib/$(ARCH) -I$(MKLROOT)/include $(PROFILE)  -lmkl_lapack95_lp64 -Wl,--start-group -lmkl_intel_lp64\
      -lmkl_intel_thread -lmkl_core -Wl,--end-group -liomp5 -lpthread -lm -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g' 
+
 #eliminada   -lmkl_solver_lp64 
+
+ifeq ($(magma),1)
+	DEFINE   += -Dmagma
+	LIBS     += -L$(MAGMAROOT)/lib -lmagma
+endif
 
 # directories
 G2G_CFLAGS=-DG2G
@@ -65,7 +75,7 @@ endif
 
 ## Targets: make ##
 
-all: dirs liblio-g2g.so 
+all: dirs liblio-g2g.so
 
 dirs:
 	mkdir -p obj/garcha_g2g_obj/mods obj/garcha_g2g_obj/
@@ -81,7 +91,7 @@ clean:
 
 
 # Different flags for some .o
-obj/garcha_g2g_obj/dip2.o: dip2.f
+obj/garcha_g2g_obj/intfld.o: intfld.f
 	ifort -o $@ $(CFLAGS2) $(G2G_CFLAGS) $<
 
 obj/garcha_g2g_obj/dipG.o: dipG.f

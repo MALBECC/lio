@@ -1,5 +1,6 @@
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        module garcha_mod
-
+!------------------------------------------------------------------------------!
        implicit real*8 (a-h,o-z)
 
       INCLUDE 'param'
@@ -30,7 +31,7 @@
      > ighost1(ntq)
       dimension ncf(nng),lt(nng)
       real*8 e_(50,3),wang(50),e_2(116,3),wang2(116),e3(194,3), ! intg1 e intg2
-     > wang3(194),Ex                                               !
+     > wang3(194)                                               !
       integer Nr(0:54),Nr2(0:54)
       real*8 Fx, Fy, Fz, epsilon, a0,tdstep
 
@@ -93,5 +94,16 @@ c
       real*8, dimension (:), ALLOCATABLE :: cool
       real*4, dimension (:), ALLOCATABLE :: cools
 c      parameter rmintsol=16.0D0
+!
+!------------------------------------------------------------------------------!
+       real*8,allocatable,dimension(:,:)     :: Smat
+       real*8,allocatable,dimension(:,:)     :: RealRho
+!       real*8,allocatable,dimension(:,:)     :: Gmat !DK
+!       real*8,allocatable,dimension(:,:)     :: Hmat !DK
+!       real*8,allocatable,dimension(:,:)     :: FockMat
+!       complex*16,allocatable,dimension(:,:) :: RhoOld,RhoNew
 
-      end module garcha_mod
+!       real*8,allocatable,dimension(:,:) :: Lmat,Linv,Umat,Uinv
+!------------------------------------------------------------------------------!
+       end module
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

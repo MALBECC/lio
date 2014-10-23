@@ -27,7 +27,7 @@ bool comparison_by_size(const T & a, const T & b) {
 
 template <typename T>
 void sortBySize(std::vector<T> & input) {
-    sort(input.begin(), input.end());
+    sort(input.begin(), input.end(), comparison_by_size<T>);
 }
 
 void load_pools(const vector<int> & elements, const vector< vector<int> > & work, vector< int > & pool_sizes) {
@@ -340,6 +340,8 @@ void Partition::regenerate(void)
         }
     }
 
+    sortBySize<Cube>(cubes);
+
     // Si esta habilitada la particion en esferas, entonces clasificamos y las agregamos a la particion tambien.
     if (sphere_radius > 0)
     {
@@ -376,6 +378,9 @@ void Partition::regenerate(void)
         }
     }
 
+    //Sorting the spheres in increasing order
+    sortBySize<Sphere>(spheres);
+
     //Initialize the global memory pool for CUDA, with the default safety factor
     //If it is CPU, then this doesn't matter
     globalMemoryPool::init(G2G::free_global_memory);
@@ -392,10 +397,6 @@ void Partition::regenerate(void)
     }
     exit(0);
     #endif
-    
-
-    sort(cubes.begin(), cubes.end());
-    sort(spheres.begin(), spheres.end());
 
     compute_work_partition();
 }

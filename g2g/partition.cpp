@@ -32,7 +32,8 @@ ostream& operator<<(ostream& io, const Timers& t) {
  ********************/
 
 template<class scalar_type>
-void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input) const {
+void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input,
+    FortranMatrix<double>& source) const {
   rmm_input.zero();
   for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
     uint inc_i = small_function_type(i);
@@ -46,7 +47,9 @@ void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input) 
           uint big_j = local2global_func[j] + l;
           if (big_i > big_j) continue;
           uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-          rmm_input(ii, jj) = (scalar_type)fortran_vars.rmm_input_ndens1.data[big_index];
+
+          rmm_input(ii, jj) = (scalar_type)source.data[big_index];
+
           rmm_input(jj, ii) = rmm_input(ii, jj);
         }
       }
@@ -55,7 +58,19 @@ void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input) 
 }
 
 template<class scalar_type>
-void PointGroup<scalar_type>::add_rmm_output(const HostMatrix<scalar_type>& rmm_output) const {
+void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input) const {
+  get_rmm_input(rmm_input, fortran_vars.rmm_input_ndens1);
+}
+
+template<class scalar_type>
+void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input_a, HostMatrix<scalar_type>& rmm_input_b) const {
+  get_rmm_input(rmm_input_a, fortran_vars.rmm_dens_a);
+  get_rmm_input(rmm_input_b, fortran_vars.rmm_dens_b);
+}
+
+template<class scalar_type>
+void PointGroup<scalar_type>::add_rmm_output(const HostMatrix<scalar_type>& rmm_output,
+    FortranMatrix<double>& target ) const {
   for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
     uint inc_i = small_function_type(i);
 
@@ -68,11 +83,33 @@ void PointGroup<scalar_type>::add_rmm_output(const HostMatrix<scalar_type>& rmm_
           uint big_j = local2global_func[j] + l;
           if (big_i > big_j) continue;
           uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-          fortran_vars.rmm_output(big_index) += (double)rmm_output(ii, jj);
+          target(big_index) += (double)rmm_output(ii, jj);
         }
       }
     }
   }
+}
+
+template<class scalar_type>
+void PointGroup<scalar_type>::add_rmm_output(const HostMatrix<scalar_type>& rmm_output) const {
+  add_rmm_output(rmm_output, fortran_vars.rmm_output);
+}
+
+template<class scalar_type>
+void PointGroup<scalar_type>::add_rmm_output_a(const HostMatrix<scalar_type>& rmm_output) const {
+  add_rmm_output(rmm_output, fortran_vars.rmm_output_a);
+}
+
+template<class scalar_type>
+void PointGroup<scalar_type>::add_rmm_output_b(const HostMatrix<scalar_type>& rmm_output) const {
+  add_rmm_output(rmm_output, fortran_vars.rmm_output_b);
+}
+
+template<class scalar_type>
+void PointGroup<scalar_type>::add_rmm_open_output(const HostMatrix<scalar_type>& rmm_output_a,
+    const HostMatrix<scalar_type>& rmm_output_b) const {
+  add_rmm_output(rmm_output_a, fortran_vars.rmm_output_a);
+  add_rmm_output(rmm_output_b, fortran_vars.rmm_output_b);
 }
 
 template<class scalar_type>
@@ -88,7 +125,8 @@ void PointGroup<scalar_type>::compute_nucleii_maps(void)
     uint ii = 0;
     for (uint i = 0; i < total_functions_simple(); i++) {
       uint global_atom = func2global_nuc(i);
-      uint local_atom = std::distance(local2global_nuc.begin(), std::find(local2global_nuc.begin(), local2global_nuc.end(), global_atom));
+      uint local_atom = std::distance(local2global_nuc.begin(),
+          std::find(local2global_nuc.begin(), local2global_nuc.end(), global_atom));
       uint inc = small_function_type(i);
       for (uint k = 0; k < inc; k++, ii++) func2local_nuc(ii) = local_atom;
     }
@@ -131,9 +169,9 @@ bool PointGroup<scalar_type>::is_significative(FunctionType type, double exponen
 
 template<class scalar_type>
 long long PointGroup<scalar_type>::cost() const {
-    long long np = number_of_points, gm = total_functions();
-    static const long long MIN_COST = 2100000;
-    return 10*((np * gm * (1+gm)) / 2) + MIN_COST;
+  long long np = number_of_points, gm = total_functions();
+  static const long long MIN_COST = 80000;
+  return 10*((np * gm * (1+gm)) / 2) + MIN_COST;
 }
 
 template<class scalar_type>
@@ -164,30 +202,77 @@ size_t PointGroup<scalar_type>::size_in_gpu() const
 template<class scalar_type>
 PointGroup<scalar_type>::~PointGroup<scalar_type>()
 {
-
 #if !CPU_KERNELS
-    if(inGlobal)
-    {
+    if(inGlobal) {
       globalMemoryPool::dealloc(size_in_gpu());
       function_values.deallocate();
       gradient_values.deallocate();
       hessian_values.deallocate();
     }
-#else
-    function_values.deallocate();
-    gradient_values.deallocate();
-    gX.deallocate(); gY.deallocate(); gZ.deallocate();
-    hessian_values.deallocate();
-    hPX.deallocate(); hPY.deallocate(); hPZ.deallocate(); 
-    hIX.deallocate(); hIY.deallocate(); hIZ.deallocate(); 
-    func2global_nuc.deallocate(); func2local_nuc.deallocate();
 #endif
 }
 
+void Partition::compute_functions(bool forces, bool gga) { 
+  Timer t1;
+  t1.start_and_sync();
+
+  #pragma omp parallel for
+  for(int i = 0; i < cubes.size(); i++){
+    cubes[i].compute_functions(forces, gga);
+  }
+
+  #pragma omp parallel for
+  for(int i = 0; i < spheres.size(); i++){
+    spheres[i].compute_functions(forces, gga);
+  }
+
+  t1.stop_and_sync();
+}
+
+int Partition::max_points(int p) const
+{
+  int largest_points = 0;
+  for(int i = 0; i < work[p].size(); i++) {
+    int ind = work[p][i], elems = 0;
+    if(ind >= cubes.size()) {
+      elems = spheres[ind-cubes.size()].number_of_points;
+    } else {
+      elems = cubes[ind].number_of_points;
+    }
+    largest_points = std::max(largest_points, elems);
+  }
+  return largest_points;
+}
+
+void Partition::clear() {
+  cubes.clear(); spheres.clear(); work.clear(); 
+}
+
+int Partition::pool_size(int p) const
+{
+  int largest_pool = 0;
+  for(int i = 0; i < work[p].size(); i++) {
+    int ind = work[p][i], elems = 0;
+    if(ind >= cubes.size()) {
+      elems = spheres[ind-cubes.size()].pool_elements();
+    } else {
+      elems = cubes[ind].pool_elements();
+    }
+    largest_pool = std::max(largest_pool, elems);
+  }
+  return largest_pool;
+}
+
 void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, 
-                      bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr){
+                      bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr, bool OPEN){
   double energy = 0.0;
   Timer total; total.start();
+
+  double cubes_energy = 0, spheres_energy = 0;
+  double cubes_energy_i = 0, spheres_energy_i = 0;
+  double cubes_energy_c = 0, spheres_energy_c = 0;
+  double cubes_energy_c1 = 0, spheres_energy_c1 = 0;
+  double cubes_energy_c2 = 0, spheres_energy_c2 = 0;
 
   HostMatrix<double> fort_forces_ms[outer_threads];
   HostMatrix<base_scalar_type> rmm_outputs[outer_threads];
@@ -196,78 +281,89 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
 
   #pragma omp parallel for reduction(+:energy) num_threads(outer_threads)
   for(int i = 0; i< work.size(); i++) {
-      ThreadBufferPool<base_scalar_type> pool(10 * pool_size(i) + 10 * max_points(i));
-      double local_energy = 0; Timers ts; Timer t;
-      int id = omp_get_thread_num();
+    ThreadBufferPool<base_scalar_type> pool(10 * pool_size(i) + 10 * max_points(i));
+    double local_energy = 0; Timers ts; Timer t;
+    int id = omp_get_thread_num();
 
-      t.start();
-      long long cost = 0;
+    t.start();
+    long long cost = 0;
 
-      if(compute_rmm) rmm_outputs[i].resize(fortran_vars.rmm_output.width, fortran_vars.rmm_output.height);
-      if(compute_forces) fort_forces_ms[i].resize(fortran_vars.max_atoms, 3);
+    if(compute_rmm) rmm_outputs[i].resize(fortran_vars.rmm_output.width, fortran_vars.rmm_output.height);
+    if(compute_forces) fort_forces_ms[i].resize(fortran_vars.max_atoms, 3);
 
-      for(int j = 0; j < work[i].size(); j++) {
-         pool.reset();
-         int ind = work[i][j];
-         if (ind >= cubes.size()) {
-             spheres[ind-cubes.size()].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
-                 local_energy, fort_forces_ms[i], pool, inner_threads, rmm_outputs[i]);
-             cost += spheres[ind-cubes.size()].cost();
-         } else {
-             cubes[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
-                 local_energy, fort_forces_ms[i], pool, inner_threads, rmm_outputs[i]);
-             cost += cubes[ind].cost();
-         }
+    for(int j = 0; j < work[i].size(); j++) {
+      pool.reset();
+
+      int ind = work[i][j];
+      if (ind >= cubes.size()) {
+        spheres[ind-cubes.size()].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
+          local_energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1, spheres_energy_c2,
+          fort_forces_ms[i], pool, inner_threads, rmm_outputs[i], OPEN);
+        cost += spheres[ind-cubes.size()].cost();
+      } else {
+        cubes[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
+          local_energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, cubes_energy_c2,
+          fort_forces_ms[i], pool, inner_threads, rmm_outputs[i], OPEN);
+        cost += cubes[ind].cost();
       }
+    }
 
-      t.stop();
-      printf("Workload %d took %ds %dms and it has %d elements (%lld nanounits) (%d)\n", i, 
-        t.getSec(), t.getMicrosec(), work[i].size(), cost, id);
-      cout << ts;
+    t.stop();
+    printf("Workload %d took %lus %lums and it has %lu elements (%lld nanounits) (%d)\n", i, 
+      t.getSec(), t.getMicrosec(), work[i].size(), cost, id);
+    cout << ts;
 
-      energy += local_energy;
+    energy += local_energy;
 
-      order[i] = next;
-      #pragma omp atomic
-      next++;
+    order[i] = next;
+    #pragma omp atomic
+    next++;
   }
 
   // Work steal
   int first = 0, last = 0;
   for(int i = 0; i < outer_threads; i++) {
-      if (order[i] == 0) first = i;
-      if (order[i] == outer_threads-1) last = i;
+    if (order[i] == 0) first = i;
+    if (order[i] == outer_threads-1) last = i;
   }
 
   if(first != last && work[last].size() >= 1) {
-      int group = work[last].back();
-      work[first].push_back(group);
-      work[last].pop_back();
+    int group = work[last].back();
+    work[first].push_back(group);
+    work[last].pop_back();
   }
 
   if (compute_forces) {
-      FortranMatrix<double> fort_forces_out(fort_forces_ptr, fortran_vars.atoms, 3, fortran_vars.max_atoms);
-      for(int k = 0; k < outer_threads; k++) {
-          for(int i = 0; i < fortran_vars.atoms; i++) {
-              for(int j = 0; j < 3; j++) {
-                  fort_forces_out(i,j) += fort_forces_ms[k](i,j);
-              }
-          }
+    FortranMatrix<double> fort_forces_out(fort_forces_ptr, fortran_vars.atoms, 3, fortran_vars.max_atoms);
+    for(int k = 0; k < outer_threads; k++) {
+      for(int i = 0; i < fortran_vars.atoms; i++) {
+        for(int j = 0; j < 3; j++) {
+          fort_forces_out(i,j) += fort_forces_ms[k](i,j);
+        }
       }
+    }
   }
 
   if (compute_rmm) {
-      for(int k = 0; k < outer_threads; k++) {
-          for(int i = 0; i < rmm_outputs[k].width; i++) {
-              for(int j = 0; j < rmm_outputs[k].height; j++) {
-                  fortran_vars.rmm_output(i,j) += rmm_outputs[k](i,j);
-              }
-          }
+    for(int k = 0; k < outer_threads; k++) {
+      for(int i = 0; i < rmm_outputs[k].width; i++) {
+        for(int j = 0; j < rmm_outputs[k].height; j++) {
+          fortran_vars.rmm_output(i,j) += rmm_outputs[k](i,j);
+        }
       }
+    }
   }
     
   total.stop();
   cout << "iteracion total: " << total << endl;
+
+  if(OPEN && compute_energy) {
+    std::cout << "Ei: " << cubes_energy_i+spheres_energy_i;
+    std::cout << " Ec: " << cubes_energy_c+spheres_energy_c;
+    std::cout << " Ec1: " << cubes_energy_c1+spheres_energy_c1;
+    std::cout << " Ec2: " << cubes_energy_c2+spheres_energy_c2 << std::endl;
+  }
+
   *fort_energy_ptr = energy;
   if(*fort_energy_ptr != *fort_energy_ptr) {
       std::cout << "I see dead peaple " << std::endl;

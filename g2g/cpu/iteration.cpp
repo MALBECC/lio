@@ -153,27 +153,27 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
       }
     }
   } else {
-    timers.density.start();
+    //timers.density.start();
 
-    do_trmms(timers, pool, rmm_input, inner_threads);
+    //do_trmms(timers, pool, rmm_input, inner_threads);
 
-    int elements = pool_elements();
-    scalar_type * wv = pool.get_pool(elements);
-    scalar_type * w3x = pool.get_pool(elements); 
-    scalar_type * w3y = pool.get_pool(elements); 
-    scalar_type * w3z = pool.get_pool(elements);
-    scalar_type * ww1x = pool.get_pool(elements); 
-    scalar_type * ww1y = pool.get_pool(elements); 
-    scalar_type * ww1z = pool.get_pool(elements);
-    scalar_type * ww2x = pool.get_pool(elements); 
-    scalar_type * ww2y = pool.get_pool(elements); 
-    scalar_type * ww2z = pool.get_pool(elements);
+    //int elements = pool_elements();
+    //scalar_type * wv = pool.get_pool(elements);
+    //scalar_type * w3x = pool.get_pool(elements); 
+    //scalar_type * w3y = pool.get_pool(elements); 
+    //scalar_type * w3z = pool.get_pool(elements);
+    //scalar_type * ww1x = pool.get_pool(elements); 
+    //scalar_type * ww1y = pool.get_pool(elements); 
+    //scalar_type * ww1z = pool.get_pool(elements);
+    //scalar_type * ww2x = pool.get_pool(elements); 
+    //scalar_type * ww2y = pool.get_pool(elements); 
+    //scalar_type * ww2z = pool.get_pool(elements);
 
-    timers.density.pause();
+    //timers.density.pause();
 
     timers.density_calcs.start();
 
-    #pragma omp parallel for num_threads(inner_threads)
+    #pragma omp parallel for num_threads(inner_threads) reduction(+:localenergy)
     for(int point = 0; point < points.size(); point++) {
       scalar_type pd, tdx, tdy, tdz, tdd1x, tdd1y, tdd1z,tdd2x, tdd2y, tdd2z;
       pd = tdx = tdy = tdz = tdd1x = tdd1y = tdd1z = tdd2x = tdd2y = tdd2z = 0;
@@ -189,17 +189,31 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
       const scalar_type * hiyv = hIY.row(point);
       const scalar_type * hizv = hIZ.row(point);
 
-      #pragma vector aligned always nontemporal
       for (int i = 0; i < group_m; i++) {
-        const int ai = point * group_m + i;
-        const scalar_type w = wv[ai];
+        scalar_type w = 0;
+        scalar_type w3xc = 0, w3yc = 0, w3zc = 0;
+        scalar_type ww1xc = 0, ww1yc = 0, ww1zc = 0;
+        scalar_type ww2xc = 0, ww2yc = 0, ww2zc = 0;
+
+        const scalar_type * rm = rmm_input.row(i);
+
         const scalar_type Fi = fv[i];
         const scalar_type gx = gxv[i], gy = gyv[i], gz = gzv[i];
         const scalar_type hpx = hpxv[i], hpy = hpyv[i], hpz = hpzv[i];
         const scalar_type hix = hixv[i], hiy = hiyv[i], hiz = hizv[i];
-        const scalar_type w3xc = w3x[ai], w3yc = w3y[ai], w3zc = w3z[ai];
-        const scalar_type ww1xc = ww1x[ai], ww1yc = ww1y[ai], ww1zc = ww1z[ai];
-        const scalar_type ww2xc = ww2x[ai], ww2yc = ww2y[ai], ww2zc = ww2z[ai];
+
+        for(int j = 0; j <= i; j++) {
+          w += fv[j] * rm[j];
+          w3xc += gxv[j] * rm[j];
+          w3yc += gyv[j] * rm[j];
+          w3zc += gzv[j] * rm[j];
+          ww1xc += hpxv[j] * rm[j];
+          ww1yc += hpyv[j] * rm[j];
+          ww1zc += hpzv[j] * rm[j];
+          ww2xc += hixv[j] * rm[j];
+          ww2yc += hiyv[j] * rm[j];
+          ww2zc += hizv[j] * rm[j];
+        }
 
         pd += Fi * w;
 

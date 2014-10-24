@@ -59,6 +59,8 @@ class PointGroup {
     typedef vec_type<scalar_type,3> vec_type3;
     typedef vec_type<scalar_type,4> vec_type4;
 
+    std::vector<uint> rmm_bigs,rmm_rows,rmm_cols;
+
     #if CPU_KERNELS
     G2G::HostMatrix<scalar_type> function_values;
     G2G::HostMatrix<vec_type3> gradient_values;
@@ -72,6 +74,7 @@ class PointGroup {
     G2G::CudaMatrix<vec_type4> hessian_values;
     #endif
 
+    void compute_indexes();
     long long cost() const;
     inline FunctionType small_function_type(uint f) const {
       if (f < s_functions) return FUNCTION_S;

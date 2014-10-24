@@ -1,8 +1,7 @@
 &lio
  nsol=0
- natom=48
+ natom=60
  charge=0
  nmax=1
- vcinp=f
  writeforces=f
 &end

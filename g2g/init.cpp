@@ -314,7 +314,10 @@ namespace G2G {
 //=================================================================================================================
 void read_options(void) {
 	cout << "<====== read_options ========>" << endl;
-	ifstream f("gpu_options");
+	char * optsfile = getenv("LIO_OPTIONS_FILE");
+    if(!optsfile) optsfile = "gpu_options";
+    cout << "Using " << optsfile << " for options" << endl;
+	ifstream f(optsfile);
 	if (!f) { cout << "No \"gpu_options\" file: using defaults" << endl; return; }
 
 	string option;

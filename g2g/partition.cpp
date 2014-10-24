@@ -287,7 +287,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
 
   #pragma omp parallel for reduction(+:energy) num_threads(outer_threads)
   for(int i = 0; i< work.size(); i++) {
-    ThreadBufferPool<base_scalar_type> pool(10 * pool_size(i) + 10 * max_points(i));
+    ThreadBufferPool<base_scalar_type> pool(10 * pool_size(i));
     double local_energy = 0; Timers ts; Timer t;
     int id = omp_get_thread_num();
 

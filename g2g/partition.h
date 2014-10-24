@@ -125,7 +125,7 @@ class PointGroup {
     bool inGlobal;
 
     #if CPU_KERNELS
-    void do_trmms(Timers &, ThreadBufferPool<scalar_type> &, const HostMatrix<scalar_type> &) const;
+    void do_trmms(Timers &, ThreadBufferPool<scalar_type> &, const HostMatrix<scalar_type> &, int) const;
     #endif
 };
 

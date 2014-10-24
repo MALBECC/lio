@@ -40,8 +40,8 @@ namespace G2G {
 #define POT_VOSKO_QSQ ((scalar_type)37.8469891110325) // POT_VOSKO_Q * POT_VOSKO_Q
 #define POT_VOSKO_B1X0 ((scalar_type)1.0329232240928) // (1.0f - t6 * (POT_VOSKO_B1 - 2.0f * POT_VOSKO_X0))
 
-template<class scalar_type>
-inline void cpu_pot(scalar_type dens, scalar_type& ex, scalar_type& ec, scalar_type& y2a, const int iexch)
+template<class scalar_type, int iexch>
+void cpu_pot_tmpl(scalar_type dens, scalar_type& ex, scalar_type& ec, scalar_type& y2a)
 {
 	// data X alpha
 
@@ -103,6 +103,24 @@ inline void cpu_pot(scalar_type dens, scalar_type& ex, scalar_type& ec, scalar_t
 	}
 }
 
+template<class scalar_type>
+void cpu_pot(scalar_type dens, scalar_type& ex, scalar_type& ec, scalar_type& y2a, const int iexch)
+{
+    switch(iexch) {
+    case 0: return cpu_pot_tmpl<scalar_type,0>(dens, ex, ec, y2a);
+    case 1: return cpu_pot_tmpl<scalar_type,1>(dens, ex, ec, y2a);
+    case 2: return cpu_pot_tmpl<scalar_type,2>(dens, ex, ec, y2a);
+    case 3: return cpu_pot_tmpl<scalar_type,3>(dens, ex, ec, y2a);
+    case 4: return cpu_pot_tmpl<scalar_type,4>(dens, ex, ec, y2a);
+    case 5: return cpu_pot_tmpl<scalar_type,5>(dens, ex, ec, y2a);
+    case 6: return cpu_pot_tmpl<scalar_type,6>(dens, ex, ec, y2a);
+    case 7: return cpu_pot_tmpl<scalar_type,7>(dens, ex, ec, y2a);
+    case 8: return cpu_pot_tmpl<scalar_type,8>(dens, ex, ec, y2a);
+    case 9: return cpu_pot_tmpl<scalar_type,9>(dens, ex, ec, y2a);
+    default: assert(false);
+    }
+}
+
 #define POT_ALYP ((scalar_type)0.04918)
 #define POT_BLYP ((scalar_type)0.132)
 #define POT_CLYP ((scalar_type)0.2533)
@@ -144,8 +162,8 @@ static void gcorc(scalar_type rtrs, scalar_type& gg, scalar_type& grrs);
  9: PBE
 */
 
-template<class scalar_type>
-inline void cpu_potg(scalar_type dens, const vec_type<scalar_type,3>& grad, const vec_type<scalar_type,3>& hess1, const vec_type<scalar_type,3>& hess2, scalar_type& ex, scalar_type& ec, scalar_type& y2a, const int iexch)
+template<class scalar_type, int iexch>
+void cpu_potg_tmpl(scalar_type dens, const vec_type<scalar_type,3>& grad, const vec_type<scalar_type,3>& hess1, const vec_type<scalar_type,3>& hess2, scalar_type& ex, scalar_type& ec, scalar_type& y2a)
 {
   // hess1: xx, yy, zz
   // hess2: xy, xz, yz
@@ -322,6 +340,24 @@ inline void cpu_potg(scalar_type dens, const vec_type<scalar_type,3>& grad, cons
 
     y2a = y2a + (term3 - term4 - term5);
   }
+}
+
+template<class scalar_type>
+void cpu_potg(scalar_type dens, const vec_type<scalar_type,3>& grad, const vec_type<scalar_type,3>& hess1, const vec_type<scalar_type,3>& hess2, scalar_type& ex, scalar_type& ec, scalar_type& y2a, const int iexch)
+{
+    switch(iexch) {
+    case 0: return cpu_potg_tmpl<scalar_type, 0>(dens, grad, hess1, hess2, ex, ec, y2a);
+    case 1: return cpu_potg_tmpl<scalar_type, 1>(dens, grad, hess1, hess2, ex, ec, y2a);
+    case 2: return cpu_potg_tmpl<scalar_type, 2>(dens, grad, hess1, hess2, ex, ec, y2a);
+    case 3: return cpu_potg_tmpl<scalar_type, 3>(dens, grad, hess1, hess2, ex, ec, y2a);
+    case 4: return cpu_potg_tmpl<scalar_type, 4>(dens, grad, hess1, hess2, ex, ec, y2a);
+    case 5: return cpu_potg_tmpl<scalar_type, 5>(dens, grad, hess1, hess2, ex, ec, y2a);
+    case 6: return cpu_potg_tmpl<scalar_type, 6>(dens, grad, hess1, hess2, ex, ec, y2a);
+    case 7: return cpu_potg_tmpl<scalar_type, 7>(dens, grad, hess1, hess2, ex, ec, y2a);
+    case 8: return cpu_potg_tmpl<scalar_type, 8>(dens, grad, hess1, hess2, ex, ec, y2a);
+    case 9: return cpu_potg_tmpl<scalar_type, 9>(dens, grad, hess1, hess2, ex, ec, y2a);
+    default: assert(false);
+    }
 }
 
 #define CLOSEDPBE_PI32 ((scalar_type)29.608813203268075856503472999628)

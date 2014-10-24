@@ -121,7 +121,6 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
   timers.density.start();
 
   const int iexch = fortran_vars.iexch;
-  timers.density_calcs.start();
 
   /** density **/
   if (lda) {
@@ -171,6 +170,8 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
     scalar_type * ww2z = pool.get_pool(elements);
 
     timers.density.pause();
+
+    timers.density_calcs.start();
 
     #pragma omp parallel for num_threads(inner_threads)
     for(int point = 0; point < points.size(); point++) {
@@ -237,33 +238,35 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
         factors_rmm[point] = points[point].weight * y2a;
       }
     }
+    timers.density_calcs.pause();
   }
-  timers.density_calcs.pause();
 
   timers.forces.start();
   if (compute_forces) {
-    HostMatrix<vec_type3> dd; 
-    dd.resize(total_nucleii(), 1); 
+    HostMatrix<scalar_type> ddx,ddy,ddz;
+    ddx.resize(total_nucleii(), 1); 
+    ddy.resize(total_nucleii(), 1); 
+    ddz.resize(total_nucleii(), 1); 
     #pragma omp parallel for num_threads(inner_threads)
     for(int point = 0; point < points.size(); point++) {
-      dd.zero();
+      ddx.zero(); ddy.zero(); ddz.zero();
       for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
         uint nuc = func2local_nuc(ii);
         uint inc_i = small_function_type(i);
-        vec_type3 this_dd = vec_type3(0,0,0);
+        scalar_type tddx = 0, tddy = 0, tddz = 0;
         for (uint k = 0; k < inc_i; k++, ii++) {
           scalar_type w = 0.0;
           for (uint j = 0; j < group_m; j++) {
             scalar_type Fj = function_values(j, point);
             w += rmm_input(j, ii) * Fj * (ii == j ? 2 : 1);
           }
-          this_dd -= vec_type3(w*gX(ii, point),w*gY(ii,point),w*gZ(ii,point));
+          tddx -= w*gX(ii, point); tddy -= w*gY(ii, point); tddz -= w*gZ(ii, point);
         }
-        dd(nuc) += this_dd;
+        ddx(nuc) += tddx; ddy(nuc) += tddy; ddz(nuc) += tddz;
       }
       scalar_type factor = points[point].weight * factors_y2a[point];
       for (uint i = 0; i < total_nucleii(); i++) {
-        forces_mat[point][i] = dd(i) * factor;
+        forces_mat[point][i] = vec_type3(ddx(i),ddy(i),ddz(i)) * factor;
       }
     }
     /* accumulate forces for each point */

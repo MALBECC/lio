@@ -4,6 +4,13 @@ import os
 import subprocess
 import re
 
+MSECS_IN_SEC = 1000000.0
+def time2nanos(spec):
+    groups = re.search("(?:(\d+)s\. )?(\d+)us\.", spec)
+    secs = groups.group(1) or 1
+    msecs = groups.group(2)
+    return MSECS_IN_SEC * float(secs) + float(msecs)
+
 progname = "correr-profile.sh"
 testdirs = [subdir for subdir, dirs, files in os.walk(".") if progname in set(files)]
 
@@ -21,6 +28,7 @@ for directory in testdirs:
     prog = os.path.join(directory, progname)
     path = os.path.join(os.path.abspath("."), os.path.dirname(prog))
 
+    times = []
     print "Corriendo %s" % prog
     for enviro in enviros:
         env = os.environ.copy()
@@ -38,5 +46,8 @@ for directory in testdirs:
             if groups:
                 print line
 
-        print measures
         print "{0} ({1}) => {2}".format(directory, ','.join(["{0} = {1}".format(k,v) for k,v in enviro]), measures[-2])
+        times.append(time2nanos(measures[-2]))
+
+    base = times[0]
+    print "speedups: %s" % " - ".join([str(base / t) for t in times])

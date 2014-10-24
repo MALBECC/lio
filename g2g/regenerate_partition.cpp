@@ -128,6 +128,14 @@ int getintenv(const char * str) {
   return ret;
 }
 
+void diagnostic(int inner, int outer)
+{
+    printf("-> Thread OMP: %d\n", omp_get_max_threads());
+    printf("-> Thread MKL: %d\n", mkl_get_max_threads());
+    printf("-> Thread internos: %d\n", inner);
+    printf("-> Thread externos: %d\n", outer);
+}
+
 /* methods */
 void Partition::regenerate(void)
 {
@@ -401,4 +409,5 @@ void Partition::regenerate(void)
     #endif
 
     compute_work_partition();
+    diagnostic(inner_threads, outer_threads);
 }

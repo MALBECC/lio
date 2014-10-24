@@ -42,8 +42,7 @@ for directory in testdirs:
             groups = re.search("^iteracion total: (.*)$", line)
             if groups: 
                 measures.append(groups.group(0))
-            groups = re.search("^-->", line)
-            if groups:
+            if re.search("^-->", line):
                 print line
 
         print "{0} ({1}) => {2}".format(directory, ','.join(["{0} = {1}".format(k,v) for k,v in enviro]), measures[-2])

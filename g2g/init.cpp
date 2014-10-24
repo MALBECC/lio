@@ -316,7 +316,7 @@ void read_options(void) {
 	cout << "<====== read_options ========>" << endl;
 	char * optsfile = getenv("LIO_OPTIONS_FILE");
     if(!optsfile) optsfile = "gpu_options";
-    cout << "Using " << optsfile << " for options" << endl;
+    cout << "--> using " << optsfile << " for options" << endl;
 	ifstream f(optsfile);
 	if (!f) { cout << "No \"gpu_options\" file: using defaults" << endl; return; }
 

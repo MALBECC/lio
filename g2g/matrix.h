@@ -80,7 +80,7 @@ namespace G2G {
 			void copy_submatrix(const HostMatrix<T>& c, unsigned int elements = 0);
 
             void copy_transpose(const CudaMatrix<T>& cuda_matrix);
-            void transpose(HostMatrix<T>& out);
+            void transpose(HostMatrix<T>& out) const;
 
 			HostMatrix<T>& resize(unsigned int width, unsigned int height = 1);
             HostMatrix<T>& shrink(unsigned int width, unsigned int height = 1);

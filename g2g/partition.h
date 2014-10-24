@@ -68,6 +68,7 @@ class PointGroup {
     G2G::HostMatrix<scalar_type> gX, gY, gZ;
     G2G::HostMatrix<scalar_type> hIX, hIY, hIZ;
     G2G::HostMatrix<scalar_type> hPX, hPY, hPZ;
+    G2G::HostMatrix<scalar_type> function_values_transposed;
     #else
     G2G::CudaMatrix<scalar_type> function_values;
     G2G::CudaMatrix<vec_type4> gradient_values;
@@ -110,15 +111,14 @@ class PointGroup {
 
     void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
         bool compute_energy, double& energy, double &, double &, double &, double &,
-        HostMatrix<double> &, ThreadBufferPool<scalar_type> &, int, HostMatrix<scalar_type> &, bool);
+        HostMatrix<double> &, int, HostMatrix<scalar_type> &, bool);
 
     void solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
-        bool compute_energy, double& energy, HostMatrix<double> &, ThreadBufferPool<scalar_type> &, int, 
-        HostMatrix<scalar_type> &);
+        bool compute_energy, double& energy, HostMatrix<double> &, int, HostMatrix<scalar_type> &);
 
     void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
         bool compute_energy, double& energy, double &, double &, double &, double &,
-        HostMatrix<double> &, ThreadBufferPool<scalar_type> &, int, HostMatrix<scalar_type> &, bool);
+        HostMatrix<double> &, int, HostMatrix<scalar_type> &, bool);
 
     bool is_significative(FunctionType, double exponent, double coeff, double d2);
     bool operator<(const PointGroup<scalar_type>& T) const;
@@ -126,10 +126,6 @@ class PointGroup {
     int pool_elements() const;
 
     bool inGlobal;
-
-    #if CPU_KERNELS
-    void do_trmms(Timers &, ThreadBufferPool<scalar_type> &, const HostMatrix<scalar_type> &, int) const;
-    #endif
 };
 
 // ===== Sphere Class =======//
@@ -163,11 +159,8 @@ class Partition {
     void clear(void);
     void regenerate(void);
 
-    int pool_size(int p) const; 
-
     void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr, bool OPEN);
     void compute_functions(bool forces, bool gga);
-    int max_points(int p) const; 
 
     std::vector<Cube> cubes;
     std::vector<Sphere> spheres;

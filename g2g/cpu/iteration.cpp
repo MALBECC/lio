@@ -6,7 +6,6 @@
 #include <cstring>
 #include <omp.h>
 #include <cstdio>
-#include "mkl.h"
 #include "../buffer_pool.h"
 #include "../common.h"
 #include "../init.h"
@@ -23,68 +22,20 @@ using std::vector;
 
 namespace G2G { 
 
-void trmm(const MKL_INT M, const MKL_INT N, const float *A, float *B) {
-  return cblas_strmm(CblasRowMajor,CblasRight,CblasLower,CblasNoTrans, CblasNonUnit, 
-      M, N, 1.0, A, N, B, N);
-}
-
-void trmm(const MKL_INT M, const MKL_INT N, const double *A, double *B) {
-  return cblas_dtrmm(CblasRowMajor,CblasRight,CblasLower,CblasNoTrans, CblasNonUnit, 
-      M, N, 1.0, A, N, B, N);
-}
-
-template<class scalar_type>
-void do_trmm(Timers & ts, const HostMatrix<scalar_type> & triagmat, const HostMatrix<scalar_type> & genmat, scalar_type * res) {
-  ts.memcpy.start();
-  genmat.copy_to_tmp(res);
-  ts.memcpy.pause();
-  ts.trmms.start();
-  trmm(genmat.height, genmat.width, triagmat.asArray(), res);
-  ts.trmms.pause();
-}
-
-template<class scalar_type>
-void PointGroup<scalar_type>::do_trmms(Timers & ts, ThreadBufferPool<scalar_type> & pool, const HostMatrix<scalar_type> & rmm_input, int threads) const {
-  pool.reset();
-  ts.memcpy.start();
-  scalar_type * pointers[10];
-  for(int i = 0; i < 10; i++) {
-    pointers[i] = pool.get_pool(pool_elements());
-  }
-  const HostMatrix<scalar_type> * matrices[] = { 
-    &function_values, &gX, &gY, &gZ, &hPX, &hPY, &hPZ, &hIX, &hIY, &hIZ 
-  };
-
-  int movethreads = std::min(threads, 10);
-  #pragma omp parallel for num_threads(movethreads)
-  for(int i = 0; i < 10; i++) {
-    matrices[i]->copy_to_tmp(pointers[i]);
-  }
-  ts.memcpy.pause();
-  ts.trmms.start();
-  mkl_set_num_threads_local(threads);
-  trmm(10 * number_of_points, total_functions(), rmm_input.asArray(), pool.pool_start());
-  ts.trmms.pause();
-  pool.reset();
-}
-
 template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
   bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, 
   double& energy, double& energy_i, double& energy_c, double& energy_c1, double& energy_c2,
-  HostMatrix<double> & fort_forces, ThreadBufferPool<scalar_type> & pool, 
-  int inner_threads, HostMatrix<scalar_type> & rmm_global_output, bool OPEN)
+  HostMatrix<double> & fort_forces, int inner_threads, HostMatrix<scalar_type> & rmm_global_output, bool OPEN)
 {
 
   solve_closed(timers, compute_rmm, lda, compute_forces, compute_energy, 
-    energy, fort_forces, pool, inner_threads, rmm_global_output);
+    energy, fort_forces, inner_threads, rmm_global_output);
 }
 
 template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& timers,
   bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, 
-  double& energy, HostMatrix<double> & fort_forces, ThreadBufferPool<scalar_type> & pool, 
-  int inner_threads, HostMatrix<scalar_type> & rmm_global_output)
+  double& energy, HostMatrix<double> & fort_forces, int inner_threads, HostMatrix<scalar_type> & rmm_global_output)
 {
-  if(points.size() < 32) inner_threads = 1;
   const uint group_m = total_functions();
 
   #if CPU_RECOMPUTE
@@ -108,9 +59,10 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
 
   vector<vec_type3> forces;
   vector< std::vector<vec_type3> > forces_mat;
-  vector<scalar_type> factors_rmm, factors_y2a;
+  HostMatrix<scalar_type> factors_rmm; 
+  vector<scalar_type>factors_y2a;
       
-  if(compute_rmm) factors_rmm.resize(points.size(), 0.0);
+  if(compute_rmm) factors_rmm.resize(points.size(), 1);
 
   if(compute_forces) {
     factors_y2a.resize(points.size());
@@ -138,9 +90,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
       scalar_type exc = 0, corr = 0, y2a = 0;
       cpu_pot(partial_density, exc, corr, y2a, iexch);
 
-      if (compute_energy) {
-          localenergy +=  (partial_density * points[point].weight) * (exc + corr);
-      }
+      localenergy +=  (partial_density * points[point].weight) * (exc + corr);
 
       /** forces **/
       if (compute_forces) {
@@ -149,28 +99,10 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
 
       /** RMM **/
       if (compute_rmm) {
-        factors_rmm[point] = points[point].weight * y2a;
+        factors_rmm(point) = points[point].weight * y2a;
       }
     }
   } else {
-    //timers.density.start();
-
-    //do_trmms(timers, pool, rmm_input, inner_threads);
-
-    //int elements = pool_elements();
-    //scalar_type * wv = pool.get_pool(elements);
-    //scalar_type * w3x = pool.get_pool(elements); 
-    //scalar_type * w3y = pool.get_pool(elements); 
-    //scalar_type * w3z = pool.get_pool(elements);
-    //scalar_type * ww1x = pool.get_pool(elements); 
-    //scalar_type * ww1y = pool.get_pool(elements); 
-    //scalar_type * ww1z = pool.get_pool(elements);
-    //scalar_type * ww2x = pool.get_pool(elements); 
-    //scalar_type * ww2y = pool.get_pool(elements); 
-    //scalar_type * ww2z = pool.get_pool(elements);
-
-    //timers.density.pause();
-
     timers.density_calcs.start();
 
     #pragma omp parallel for num_threads(inner_threads) reduction(+:localenergy)
@@ -196,12 +128,12 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
         scalar_type ww2xc = 0, ww2yc = 0, ww2zc = 0;
 
         const scalar_type * rm = rmm_input.row(i);
-
         const scalar_type Fi = fv[i];
         const scalar_type gx = gxv[i], gy = gyv[i], gz = gzv[i];
         const scalar_type hpx = hpxv[i], hpy = hpyv[i], hpz = hpzv[i];
         const scalar_type hix = hixv[i], hiy = hiyv[i], hiz = hizv[i];
 
+        #pragma vector aligned always nontemporal
         for(int j = 0; j <= i; j++) {
           w += fv[j] * rm[j];
           w3xc += gxv[j] * rm[j];
@@ -249,7 +181,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
 
       /** RMM **/
       if (compute_rmm) {
-        factors_rmm[point] = points[point].weight * y2a;
+        factors_rmm(point) = points[point].weight * y2a;
       }
     }
     timers.density_calcs.pause();
@@ -307,58 +239,21 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
   timers.rmm.start();
   /* accumulate RMM results for this group */
   if(compute_rmm) {
-    HostMatrix<scalar_type> rmm_output[inner_threads];
-
-    const int ps = points.size();
-    const int chunk = (ps + inner_threads - 1) / inner_threads;
-
-    timers.rmm_calcs.start();
+    const int indexes = rmm_bigs.size();
+    const int npoints = points.size();
     #pragma omp parallel for num_threads(inner_threads)
-    for(int i = 0; i < inner_threads; i++) {
-      rmm_output[i].resize(group_m, group_m);
-      rmm_output[i].zero();
-      mkl_set_num_threads_local(1);
-      for(int p = chunk*i;p < chunk*(i+1) && p < ps; p++) {
-        HostMatrix<scalar_type>::blas_ssyr(LowerTriangle, factors_rmm[p],function_values, rmm_output[i], p);
+    for(int i = 0; i < indexes; i++) {
+      int bi = rmm_bigs[i], row = rmm_rows[i], col = rmm_cols[i];
+      scalar_type res = 0;
+      const scalar_type * fvr = function_values_transposed.row(row);
+      const scalar_type * fvc = function_values_transposed.row(col);
+    
+      #pragma vector aligned always nontemporal
+      for(int point = 0; point < npoints; point++) {
+        res += fvr[point] * fvc[point] * factors_rmm(point);
       }
+      rmm_global_output(bi) += res;
     }
-    timers.rmm_calcs.pause();
-
-    for(int step = 1; step < inner_threads; step *= 2) {
-      const int incr = step * 2, stop = inner_threads - step;
-      const int elems = group_m * group_m;
-      #pragma omp parallel for num_threads(inner_threads / step)
-      for(int k = 0; k < stop; k += incr) {
-        scalar_type * out = rmm_output[k].data;
-        const scalar_type * in = rmm_output[k+step].data;
-        #pragma vector aligned always nontemporal
-        for(int i = 0; i < elems; i++) {
-            out[i] += in[i];
-        }
-      }
-    }
-  
-    timers.rmm_update.start();
-    for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
-      uint inc_i = small_function_type(i);
-
-      for (uint k = 0; k < inc_i; k++, ii++) {
-        uint big_i = local2global_func[i] + k;
-
-        for (uint j = 0, jj = 0; j < total_functions_simple(); j++) {
-          uint inc_j = small_function_type(j);
-
-          for (uint l = 0; l < inc_j; l++, jj++) {
-            uint big_j = local2global_func[j] + l;
-            if (big_i > big_j) continue;
-
-            uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-            rmm_global_output(big_index) += rmm_output[0](ii,jj);
-          }
-        }
-      }
-    }
-    timers.rmm_update.pause();
   }
 
   timers.rmm.pause();

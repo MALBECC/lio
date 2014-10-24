@@ -130,10 +130,10 @@ int getintenv(const char * str) {
 
 void diagnostic(int inner, int outer)
 {
-    printf("-> Thread OMP: %d\n", omp_get_max_threads());
-    printf("-> Thread MKL: %d\n", mkl_get_max_threads());
-    printf("-> Thread internos: %d\n", inner);
-    printf("-> Thread externos: %d\n", outer);
+    printf("--> Thread OMP: %d\n", omp_get_max_threads());
+    printf("--> Thread MKL: %d\n", mkl_get_max_threads());
+    printf("--> Thread internos: %d\n", inner);
+    printf("--> Thread externos: %d\n", outer);
 }
 
 /* methods */
@@ -400,14 +400,19 @@ void Partition::regenerate(void)
 
     #ifdef OUTPUT_COSTS
     for(int i = 0; i < cubes.size(); i++) {
-        printf("CUBE: %d %d %ld\n", cubes[i].total_functions(), cubes[i].number_of_points, cubes[i].cost());
+      printf("CUBE: %d %d %ld\n", cubes[i].total_functions(), cubes[i].number_of_points, cubes[i].cost());
     }
     for(int i = 0; i < spheres.size(); i++) {
-        printf("SPHERE: %d %d %ld\n", spheres[i].total_functions(), spheres[i].number_of_points, spheres[i].cost());
+      printf("SPHERE: %d %d %ld\n", spheres[i].total_functions(), spheres[i].number_of_points, spheres[i].cost());
     }
     exit(0);
     #endif
 
     compute_work_partition();
+    for(int i = 0; i < cubes.size(); i++)
+      cubes[i].compute_indexes();
+    for(int i = 0; i < spheres.size(); i++)
+      spheres[i].compute_indexes();
+
     diagnostic(inner_threads, outer_threads);
 }

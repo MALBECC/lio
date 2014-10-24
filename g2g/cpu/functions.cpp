@@ -154,6 +154,8 @@ void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
 
       hessian_values.deallocate();
   }
+
+  function_values.transpose(function_values_transposed);
 }
 
 template class PointGroup<double>;

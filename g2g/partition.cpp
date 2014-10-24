@@ -192,8 +192,9 @@ bool PointGroup<scalar_type>::is_significative(FunctionType type, double exponen
 
 template<class scalar_type>
 long long PointGroup<scalar_type>::cost() const {
+  long long MINCOST = 60000;
   long long np = number_of_points, gm = total_functions();
-  return 10*((np * gm * (1+gm)) / 2);
+  return 10*((np * gm * (1+gm)) / 2) + 2 * (gm * gm * np);
 }
 
 template<class scalar_type>
@@ -210,34 +211,35 @@ int PointGroup<scalar_type>::pool_elements() const {
 template<class scalar_type>
 size_t PointGroup<scalar_type>::size_in_gpu() const
 {
-    uint total_cost=0;
-    uint single_matrix_cost = COALESCED_DIMENSION(number_of_points) * total_functions();
+  uint total_cost=0;
+  uint single_matrix_cost = COALESCED_DIMENSION(number_of_points) * total_functions();
 
-    total_cost += single_matrix_cost;       //1 scalar_type functions
-    if (fortran_vars.do_forces || fortran_vars.gga)
-      total_cost += (single_matrix_cost*4); //4 vec_type gradient
-    if (fortran_vars.gga)
-      total_cost+= (single_matrix_cost*8);  //2*4 vec_type hessian
-    return total_cost*sizeof(scalar_type);  // size in bytes according to precision
+  total_cost += single_matrix_cost;       //1 scalar_type functions
+  if (fortran_vars.do_forces || fortran_vars.gga)
+    total_cost += (single_matrix_cost*4); //4 vec_type gradient
+  if (fortran_vars.gga)
+    total_cost+= (single_matrix_cost*8);  //2*4 vec_type hessian
+  return total_cost*sizeof(scalar_type);  // size in bytes according to precision
 }
 
 template<class scalar_type>
 PointGroup<scalar_type>::~PointGroup<scalar_type>()
 {
 #if !CPU_KERNELS
-    if(inGlobal) {
-      globalMemoryPool::dealloc(size_in_gpu());
-      function_values.deallocate();
-      gradient_values.deallocate();
-      hessian_values.deallocate();
-    }
+  if(inGlobal) {
+    globalMemoryPool::dealloc(size_in_gpu());
+    function_values.deallocate();
+    gradient_values.deallocate();
+    hessian_values.deallocate();
+  }
 #else
-      function_values.deallocate();
-      gradient_values.deallocate();
-      hessian_values.deallocate();
-      gX.deallocate(); gY.deallocate(); gZ.deallocate();
-      hPX.deallocate(); hPY.deallocate(); hPZ.deallocate();
-      hIX.deallocate(); hIY.deallocate(); hIZ.deallocate();
+  function_values.deallocate();
+  gradient_values.deallocate();
+  hessian_values.deallocate();
+  gX.deallocate(); gY.deallocate(); gZ.deallocate();
+  hPX.deallocate(); hPY.deallocate(); hPZ.deallocate();
+  hIX.deallocate(); hIY.deallocate(); hIZ.deallocate();
+  function_values_transposed.deallocate();
 #endif
 }
 
@@ -258,38 +260,8 @@ void Partition::compute_functions(bool forces, bool gga) {
   t1.stop_and_sync();
 }
 
-int Partition::max_points(int p) const
-{
-  int largest_points = 0;
-  for(int i = 0; i < work[p].size(); i++) {
-    int ind = work[p][i], elems = 0;
-    if(ind >= cubes.size()) {
-      elems = spheres[ind-cubes.size()].number_of_points;
-    } else {
-      elems = cubes[ind].number_of_points;
-    }
-    largest_points = std::max(largest_points, elems);
-  }
-  return largest_points;
-}
-
 void Partition::clear() {
   cubes.clear(); spheres.clear(); work.clear(); 
-}
-
-int Partition::pool_size(int p) const
-{
-  int largest_pool = 0;
-  for(int i = 0; i < work[p].size(); i++) {
-    int ind = work[p][i], elems = 0;
-    if(ind >= cubes.size()) {
-      elems = spheres[ind-cubes.size()].pool_elements();
-    } else {
-      elems = cubes[ind].pool_elements();
-    }
-    largest_pool = std::max(largest_pool, elems);
-  }
-  return largest_pool;
 }
 
 void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, 
@@ -310,7 +282,6 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
 
   #pragma omp parallel for reduction(+:energy) num_threads(outer_threads)
   for(int i = 0; i< work.size(); i++) {
-    ThreadBufferPool<base_scalar_type> pool(10 * pool_size(i));
     double local_energy = 0; Timers ts; Timer t;
     int id = omp_get_thread_num();
 
@@ -321,18 +292,16 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
     if(compute_forces) fort_forces_ms[i].resize(fortran_vars.max_atoms, 3);
 
     for(int j = 0; j < work[i].size(); j++) {
-      pool.reset();
-
       int ind = work[i][j];
       if (ind >= cubes.size()) {
         spheres[ind-cubes.size()].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
           local_energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1, spheres_energy_c2,
-          fort_forces_ms[i], pool, inner_threads, rmm_outputs[i], OPEN);
+          fort_forces_ms[i], inner_threads, rmm_outputs[i], OPEN);
         cost += spheres[ind-cubes.size()].cost();
       } else {
         cubes[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
           local_energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, cubes_energy_c2,
-          fort_forces_ms[i], pool, inner_threads, rmm_outputs[i], OPEN);
+          fort_forces_ms[i], inner_threads, rmm_outputs[i], OPEN);
         cost += cubes[ind].cost();
       }
     }

@@ -7,7 +7,7 @@ import re
 MSECS_IN_SEC = 1000000.0
 def time2nanos(spec):
     groups = re.search("(?:(\d+)s\. )?(\d+)us\.", spec)
-    secs = groups.group(1) or 1
+    secs = groups.group(1) or 0
     msecs = groups.group(2)
     return MSECS_IN_SEC * float(secs) + float(msecs)
 

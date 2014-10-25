@@ -267,7 +267,6 @@ void Partition::clear() {
 void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, 
                       bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr, bool OPEN){
   double energy = 0.0;
-  Timer total; total.start();
 
   double cubes_energy = 0, spheres_energy = 0;
   double cubes_energy_i = 0, spheres_energy_i = 0;
@@ -309,7 +308,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
     t.stop();
     printf("Workload %d took %lus %lums and it has %lu elements (%lld nanounits) (%d)\n", i, 
       t.getSec(), t.getMicrosec(), work[i].size(), cost, id);
-    cout << ts;
+    cout << "breakdown: " << ts << endl;
 
     energy += local_energy;
 
@@ -352,9 +351,6 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
     }
   }
     
-  total.stop();
-  cout << "iteracion total: " << total << endl;
-
   if(OPEN && compute_energy) {
     std::cout << "Ei: " << cubes_energy_i+spheres_energy_i;
     std::cout << " Ec: " << cubes_energy_c+spheres_energy_c;

@@ -34,25 +34,11 @@ ostream& operator<<(ostream& io, const Timers& t) {
 template<class scalar_type>
 void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input,
     FortranMatrix<double>& source) const {
-  rmm_input.zero();
-  for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
-    uint inc_i = small_function_type(i);
-
-    for (uint k = 0; k < inc_i; k++, ii++) {
-      uint big_i = local2global_func[i] + k;
-      for (uint j = 0, jj = 0; j < total_functions_simple(); j++) {
-        uint inc_j = small_function_type(j);
-
-        for (uint l = 0; l < inc_j; l++, jj++) {
-          uint big_j = local2global_func[j] + l;
-          if (big_i > big_j) continue;
-          uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-
-          rmm_input(ii, jj) = (scalar_type)source.data[big_index];
-          rmm_input(jj, ii) = rmm_input(ii, jj);
-        }
-      }
-    }
+  const int indexes = rmm_bigs.size();
+  for(int i = 0; i < indexes; i++) {
+      int ii = rmm_rows[i], jj = rmm_cols[i], bi = rmm_bigs[i];
+      if(ii > jj) swap(ii,jj);
+      rmm_input(ii, jj) = (scalar_type) source.data[bi];
   }
 }
 
@@ -287,7 +273,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
     t.start();
     long long cost = 0;
 
-    if(compute_rmm) rmm_outputs[i].resize(fortran_vars.rmm_output.width, fortran_vars.rmm_output.height);
+    if(compute_rmm) rmm_outputs[i].resize(fortran_vars.rmm_output.width, 16);
     if(compute_forces) fort_forces_ms[i].resize(fortran_vars.max_atoms, 3);
 
     for(int j = 0; j < work[i].size(); j++) {
@@ -343,8 +329,8 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
 
   if (compute_rmm) {
     for(int k = 0; k < outer_threads; k++) {
-      for(int i = 0; i < rmm_outputs[k].width; i++) {
-        for(int j = 0; j < rmm_outputs[k].height; j++) {
+      for(int i = 0; i < fortran_vars.rmm_output.width; i++) {
+        for(int j = 0; j < fortran_vars.rmm_output.height; j++) {
           fortran_vars.rmm_output(i,j) += rmm_outputs[k](i,j);
         }
       }

@@ -58,7 +58,7 @@ class PointGroup {
     typedef vec_type<scalar_type,3> vec_type3;
     typedef vec_type<scalar_type,4> vec_type4;
 
-    std::vector<uint> rmm_bigs,rmm_rows,rmm_cols;
+    std::vector<std::pair<uint,std::pair<uint,uint> > > rmm_indexes;
 
     #if CPU_KERNELS
     G2G::HostMatrix<scalar_type> function_values;

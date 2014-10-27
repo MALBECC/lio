@@ -34,9 +34,10 @@ ostream& operator<<(ostream& io, const Timers& t) {
 template<class scalar_type>
 void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input,
     FortranMatrix<double>& source) const {
-  const int indexes = rmm_bigs.size();
+  const int indexes = rmm_indexes.size();
   for(int i = 0; i < indexes; i++) {
-      int ii = rmm_rows[i], jj = rmm_cols[i], bi = rmm_bigs[i];
+      pair<uint,pair<uint,uint> > c = rmm_indexes[i];
+      int bi = c.first, ii = c.second.first, jj = c.second.second;
       if(ii > jj) swap(ii,jj);
       rmm_input(ii, jj) = (scalar_type) source.data[bi];
   }
@@ -56,7 +57,7 @@ void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input_a
 template<class scalar_type>
 void PointGroup<scalar_type>::compute_indexes()
 {
-  rmm_bigs.clear(); rmm_rows.clear(); rmm_cols.clear(); 
+  rmm_indexes.clear();
   for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
     uint inc_i = small_function_type(i);
 
@@ -69,12 +70,12 @@ void PointGroup<scalar_type>::compute_indexes()
           uint big_j = local2global_func[j] + l;
           if (big_i > big_j) continue;
           uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-          rmm_bigs.push_back(big_index);
-          rmm_rows.push_back(ii); rmm_cols.push_back(jj);
+          rmm_indexes.push_back(make_pair(big_index, make_pair(ii,jj)));
         }
       }
     }
   }
+  sort(rmm_indexes.begin(), rmm_indexes.end());
 }
 
 template<class scalar_type>

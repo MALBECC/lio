@@ -7,7 +7,7 @@ ifeq ($(gcc),1)
   CXXFLAGS := $(CXXFLAGS) -fPIC -Wall -Wno-long-long -ansi -Wno-unused -I$(CUDAHOME)/include
 else
   CXX      := icc
-  CXXFLAGS := $(CXXFLAGS) -fPIC -Wall -Wextra -qopt-report -g -I. -I$(CUDAHOME)/include
+  CXXFLAGS := $(CXXFLAGS) -fPIC -Wall -Wextra -qopt-report=5 -g -I. -I$(CUDAHOME)/include
 endif
 
 # Debug/release configuration

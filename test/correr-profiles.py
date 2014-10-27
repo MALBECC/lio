@@ -5,6 +5,8 @@ import subprocess
 import re
 import click
 
+import itertools as it
+
 MSECS_IN_SEC = 1000000.0
 def time2nanos(spec):
     groups = re.search("(?:(\d+)s\. )?(\d+)us\.", spec)
@@ -14,11 +16,10 @@ def time2nanos(spec):
 
 progname = "correr-profile.sh"
 flags_and_options = {
-    "OMP_NUM_THREADS":      [1,12,12],
-    "LIO_INNER_THREADS":    [1,1,12],
-    "LIO_OUTER_THREADS":    [1,12,1],
+    "OMP_NUM_THREADS":      [1,12],
+    "LIO_INNER_THREADS":    [1,12],
+    "LIO_OUTER_THREADS":    [1,12],
 }
-always_set = [("OMP_NESTED", "true")]
 
 def subdirs_with_benchmark(basedir):
     return [subdir for subdir,dirs,files in os.walk(basedir) if progname in set(files)]
@@ -30,6 +31,9 @@ def print_file(filename):
     with open(filename) as f:
         for line in f.readlines():
             print "--> " + line,
+
+def get_enviroments():
+    return zip(*map(lambda (k,v): zip(it.repeat(k,len(v)),v), flags_and_options.items()))
 
 @click.command()
 @click.option("--regex", default=".*", help="Filtro para los tests")
@@ -45,18 +49,16 @@ def benchmark(regex, gpu_opts):
 
     print "Corriendo %d tests" % len(testdirs)
 
-    enviros = [[(k, str(v[i])) for k,v in flags_and_options.items()] for i in xrange(0,3)] 
-
     for directory in testdirs:
         prog = os.path.join(directory, progname)
         path = os.path.join(os.path.abspath("."), os.path.dirname(prog))
 
         times = []
         print "Corriendo %s..." % prog
-        for enviro in enviros:
+        for enviro in get_enviroments():
             env = os.environ.copy()
-            for key,val in enviro + always_set:
-                env[key] = val
+            for key,val in enviro:
+                env[key] = str(val)
             env["LIO_OPTIONS_FILE"] = gpu_opts            
 
             print_file(os.path.join(directory,gpu_opts))

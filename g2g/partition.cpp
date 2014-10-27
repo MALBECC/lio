@@ -178,9 +178,9 @@ bool PointGroup<scalar_type>::is_significative(FunctionType type, double exponen
 
 template<class scalar_type>
 long long PointGroup<scalar_type>::cost() const {
-  long long MINCOST = 600000;
+  long long MINCOST = 750000;
   long long np = number_of_points, gm = total_functions();
-  return 10*((np * gm * (1+gm)) / 2) + 2 * (gm * gm * np) + MINCOST;
+  return 10*((np * gm * (1+gm)) / 2) + MINCOST;
 }
 
 template<class scalar_type>

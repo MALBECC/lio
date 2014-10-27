@@ -20,8 +20,7 @@ using std::pair;
 
 namespace G2G {
   struct Timers {
-    Timer memcpy, trmms, density_calcs, total, ciclos, rmm, density, forces, resto, pot, functions, density_derivs,
-          rmm_input, rmm_calcs, rmm_update;
+    Timer density_calcs, total, ciclos, rmm, density, forces, resto, pot, functions, density_derivs, rmm_input;
   };
 
   std::ostream& operator<<(std::ostream& io, const Timers& t);
@@ -164,6 +163,9 @@ class Partition {
 
     std::vector<Cube> cubes;
     std::vector<Sphere> spheres;
+
+    std::vector< HostMatrix<double> > fort_forces_ms;
+    std::vector< HostMatrix<base_scalar_type> > rmm_outputs;
 
     std::vector< std::vector< int > > work;
     int outer_threads, inner_threads;

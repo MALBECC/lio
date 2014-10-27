@@ -19,9 +19,9 @@ Partition partition;
 ostream& operator<<(ostream& io, const Timers& t) {
 #ifdef TIMINGS
     ostringstream ss;
-    ss << "memcpys: " << t.memcpy << "trmms: " << t.trmms << "density_calcs: " << t.density_calcs << "rmm: " << t.rmm << " density: " 
+    ss << "density_calcs: " << t.density_calcs << "rmm: " << t.rmm << " density: " 
        << t.density << " pot: " << t.pot << " forces: " << t.forces << " resto: " << t.resto << " functions: " << t.functions
-       << " rmm_input = " << t.rmm_input << " rmm_ssyr = " << t.rmm_calcs << " rmm_update = " << t.rmm_update;
+       << " rmm_input = " << t.rmm_input;
     io << ss.str() << endl;
 #endif
   return io;
@@ -178,9 +178,9 @@ bool PointGroup<scalar_type>::is_significative(FunctionType type, double exponen
 
 template<class scalar_type>
 long long PointGroup<scalar_type>::cost() const {
-  long long MINCOST = 60000;
+  long long MINCOST = 600000;
   long long np = number_of_points, gm = total_functions();
-  return 10*((np * gm * (1+gm)) / 2) + 2 * (gm * gm * np);
+  return 10*((np * gm * (1+gm)) / 2) + 2 * (gm * gm * np) + MINCOST;
 }
 
 template<class scalar_type>
@@ -260,41 +260,27 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   double cubes_energy_c1 = 0, spheres_energy_c1 = 0;
   double cubes_energy_c2 = 0, spheres_energy_c2 = 0;
 
-  HostMatrix<double> fort_forces_ms[outer_threads];
-  HostMatrix<base_scalar_type> rmm_outputs[outer_threads];
-
   int order[outer_threads]; int next = 0;
+  Timer tcubes, tspheres;
 
+  tcubes.start();
   #pragma omp parallel for reduction(+:energy) num_threads(outer_threads)
   for(int i = 0; i< work.size(); i++) {
     double local_energy = 0; Timers ts; Timer t;
     int id = omp_get_thread_num();
 
     t.start();
-    long long cost = 0;
-
-    if(compute_rmm) rmm_outputs[i].resize(fortran_vars.rmm_output.width, 16);
-    if(compute_forces) fort_forces_ms[i].resize(fortran_vars.max_atoms, 3);
-
+    fort_forces_ms[i].zero();  rmm_outputs[i].zero();
     for(int j = 0; j < work[i].size(); j++) {
       int ind = work[i][j];
-      if (ind >= cubes.size()) {
-        spheres[ind-cubes.size()].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
-          local_energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1, spheres_energy_c2,
-          fort_forces_ms[i], inner_threads, rmm_outputs[i], OPEN);
-        cost += spheres[ind-cubes.size()].cost();
-      } else {
-        cubes[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
-          local_energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, cubes_energy_c2,
-          fort_forces_ms[i], inner_threads, rmm_outputs[i], OPEN);
-        cost += cubes[ind].cost();
-      }
+      cubes[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
+        local_energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, cubes_energy_c2,
+        fort_forces_ms[i], 1, rmm_outputs[i], OPEN);
     }
-
     t.stop();
-    printf("Workload %d took %lus %lums and it has %lu elements (%lld nanounits) (%d)\n", i, 
-      t.getSec(), t.getMicrosec(), work[i].size(), cost, id);
-    cout << "breakdown: " << ts << endl;
+
+    cout << "Workload " << i << "(" << work[i].size() << ") = " << t << endl;
+    cout << "BREAK: " << ts;
 
     energy += local_energy;
 
@@ -302,7 +288,19 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
     #pragma omp atomic
     next++;
   }
+  tcubes.stop();
 
+  tspheres.start();
+  for(int i = 0; i < spheres.size(); i++) {
+    spheres[i].solve(timers,compute_rmm,lda,compute_forces, compute_energy, 
+      energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1, 
+      spheres_energy_c2, fort_forces_ms[0], inner_threads, rmm_outputs[0], OPEN);
+  }
+  tspheres.stop();
+
+  cout << "cubes = " << tcubes << ", spheres = " << tspheres << endl;
+
+  Timer enditer; enditer.start();
   // Work steal
   int first = 0, last = 0;
   for(int i = 0; i < outer_threads; i++) {
@@ -317,7 +315,8 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   }
 
   if (compute_forces) {
-    FortranMatrix<double> fort_forces_out(fort_forces_ptr, fortran_vars.atoms, 3, fortran_vars.max_atoms);
+    FortranMatrix<double> fort_forces_out(fort_forces_ptr, 
+      fortran_vars.atoms, 3, fortran_vars.max_atoms);
     for(int k = 0; k < outer_threads; k++) {
       for(int i = 0; i < fortran_vars.atoms; i++) {
         for(int j = 0; j < 3; j++) {
@@ -336,7 +335,6 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
       }
     }
   }
-    
   if(OPEN && compute_energy) {
     std::cout << "Ei: " << cubes_energy_i+spheres_energy_i;
     std::cout << " Ec: " << cubes_energy_c+spheres_energy_c;
@@ -352,6 +350,8 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
 #endif
      exit(1);
    }
+
+  enditer.stop(); cout << "enditer = " << enditer << endl; 
 }
 
 /**********************

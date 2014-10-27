@@ -70,8 +70,6 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
     forces_mat.resize(points.size(), vector<vec_type3>(total_nucleii(), vec_type3(0.f,0.f,0.f)));
   }
 
-  timers.density.start();
-
   const int iexch = fortran_vars.iexch;
 
   /** density **/

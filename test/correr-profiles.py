@@ -4,6 +4,7 @@ import os
 import subprocess
 import re
 import click
+import multiprocessing
 
 import itertools as it
 
@@ -15,11 +16,11 @@ def time2nanos(spec):
     return MSECS_IN_SEC * float(secs) + float(msecs)
 
 progname = "correr-profile.sh"
-flags_and_options = {
-    "OMP_NUM_THREADS":      [1,12],
-    "LIO_INNER_THREADS":    [1,12],
-    "LIO_OUTER_THREADS":    [1,12],
-}
+options = [
+    "OMP_NUM_THREADS",
+    "LIO_INNER_THREADS",
+    "LIO_OUTER_THREADS",
+]
 
 def subdirs_with_benchmark(basedir):
     return [subdir for subdir,dirs,files in os.walk(basedir) if progname in set(files)]
@@ -32,22 +33,35 @@ def print_file(filename):
         for line in f.readlines():
             print "--> " + line,
 
-def get_enviroments():
-    return zip(*map(lambda (k,v): zip(it.repeat(k,len(v)),v), flags_and_options.items()))
+def get_enviroments(threadlist):
+    return [[(key,thread) for key in options] for thread in threadlist] 
+
+def process_lio_output(output):
+    measures, info = [],[]
+    for line in output.splitlines():
+        groups = re.search("^iteracion total: (.*)$", line)
+
+        if groups: 
+            measures.append(groups.group(0))
+
+        if re.search("^-->", line):
+            info.append(line)
+    return measures, '\n'.join(info)
 
 @click.command()
 @click.option("--regex", default=".*", help="Filtro para los tests")
 @click.option("--gpu_opts", default="gpu_options", help="Archivo gpu_options a usar (local a la carpeta)")
-def benchmark(regex, gpu_opts):
+@click.option("--threads",default=multiprocessing.cpu_count(), help="Maxima cantidad de threads a usar")
+@click.option("--threadscale", is_flag=True, help="Usar todos los threads intermedios")
+def benchmark(regex, gpu_opts, threads, threadscale):
     """ 
     Correr los correr-profile.sh de todas las carpetas que lo posean, 
     y generar un reporte de cada uno.
     """
-
+    
     testrx = re.compile(regex)
     testdirs = filter(testrx.search, subdirs_with_benchmark("."))
-
-    print "Corriendo %d tests" % len(testdirs)
+    threadlist = xrange(1,threads+1) if threadscale else [1,threads]
 
     for directory in testdirs:
         prog = os.path.join(directory, progname)
@@ -55,7 +69,7 @@ def benchmark(regex, gpu_opts):
 
         times = []
         print "Corriendo %s..." % prog
-        for enviro in get_enviroments():
+        for enviro in get_enviroments(threadlist):
             env = os.environ.copy()
             for key,val in enviro:
                 env[key] = str(val)
@@ -63,17 +77,11 @@ def benchmark(regex, gpu_opts):
 
             print_file(os.path.join(directory,gpu_opts))
 
-            data = subprocess.Popen([os.path.join(".",progname)], env=env, cwd=path, stdout=subprocess.PIPE).communicate()[0]
-            measures = []
+            data = subprocess.Popen([os.path.join(".",progname)],
+                    env=env, cwd=path, stdout=subprocess.PIPE).communicate()[0]
+            measures,info = process_lio_output(data)
 
-            for line in data.splitlines():
-                groups = re.search("^iteracion total: (.*)$", line)
-
-                if groups: 
-                    measures.append(groups.group(0))
-
-                if re.search("^-->", line):
-                    print line
+            print info
 
             if len(measures) < 2:
                 print "No hay resultados para %s, revise el test" % prog

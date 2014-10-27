@@ -55,8 +55,6 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
   get_rmm_input(rmm_input);
   timers.rmm_input.pause();
 
-  timers.density.pause();
-
   vector<vec_type3> forces;
   vector< std::vector<vec_type3> > forces_mat;
   HostMatrix<scalar_type> factors_rmm; 
@@ -69,6 +67,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
     forces.resize(total_nucleii(), vec_type3(0.f,0.f,0.f)); 
     forces_mat.resize(points.size(), vector<vec_type3>(total_nucleii(), vec_type3(0.f,0.f,0.f)));
   }
+  timers.density.pause();
 
   const int iexch = fortran_vars.iexch;
 
@@ -168,9 +167,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
 
       cpu_potg(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch);
 
-      if (compute_energy) {
-        localenergy +=  (pd * points[point].weight) * (exc + corr);
-      }
+      localenergy +=  (pd * points[point].weight) * (exc + corr);
 
       /** forces **/
       if (compute_forces) {
@@ -237,11 +234,13 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
   timers.rmm.start();
   /* accumulate RMM results for this group */
   if(compute_rmm) {
-    const int indexes = rmm_bigs.size();
+    const int indexes = rmm_indexes.size();
     const int npoints = points.size();
     #pragma omp parallel for num_threads(inner_threads)
     for(int i = 0; i < indexes; i++) {
-      int bi = rmm_bigs[i], row = rmm_rows[i], col = rmm_cols[i];
+      pair< uint,pair<uint,uint> > e = rmm_indexes[i];
+      int bi = e.first, row = e.second.first, col = e.second.second;
+
       scalar_type res = 0;
       const scalar_type * fvr = function_values_transposed.row(row);
       const scalar_type * fvc = function_values_transposed.row(col);
@@ -255,7 +254,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
   }
 
   timers.rmm.pause();
-  energy+=localenergy;
+  if(compute_energy) energy+=localenergy;
 
 #if CPU_RECOMPUTE
   /* clear functions */

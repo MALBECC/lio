@@ -102,6 +102,7 @@ class PointGroup {
     void add_rmm_open_output(const G2G::HostMatrix<scalar_type>& rmm_output_a, const G2G::HostMatrix<scalar_type>& rmm_output_b) const;
 
     void compute_nucleii_maps(void);
+    bool is_big_group(int) const;
 
     void add_point(const Point& p);
     void compute_weights(void);
@@ -168,6 +169,7 @@ class Partition {
     std::vector< HostMatrix<base_scalar_type> > rmm_outputs;
 
     std::vector< std::vector< int > > work;
+
     int outer_threads, inner_threads;
 };
 

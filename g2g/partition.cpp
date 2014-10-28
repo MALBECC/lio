@@ -32,6 +32,13 @@ ostream& operator<<(ostream& io, const Timers& t) {
  ********************/
 
 template<class scalar_type>
+bool PointGroup<scalar_type>::is_big_group(int threads_to_use) const 
+{
+  return rmm_indexes.size() >= 200 * threads_to_use && 
+    number_of_points >= 200 * threads_to_use;
+}
+
+template<class scalar_type>
 void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input,
     FortranMatrix<double>& source) const {
   const int indexes = rmm_indexes.size();
@@ -179,7 +186,7 @@ bool PointGroup<scalar_type>::is_significative(FunctionType type, double exponen
 
 template<class scalar_type>
 long long PointGroup<scalar_type>::cost() const {
-  long long MINCOST = 750000;
+  long long MINCOST = 680000;
   long long np = number_of_points, gm = total_functions();
   return 10*((np * gm * (1+gm)) / 2) + MINCOST;
 }
@@ -262,9 +269,9 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   double cubes_energy_c2 = 0, spheres_energy_c2 = 0;
 
   int order[outer_threads]; int next = 0;
-  Timer tcubes, tspheres;
+  Timer smallgroups, biggroups;
 
-  tcubes.start();
+  smallgroups.start();
   #pragma omp parallel for reduction(+:energy) num_threads(outer_threads)
   for(int i = 0; i< work.size(); i++) {
     double local_energy = 0; Timers ts; Timer t;
@@ -274,14 +281,20 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
     fort_forces_ms[i].zero();  rmm_outputs[i].zero();
     for(int j = 0; j < work[i].size(); j++) {
       int ind = work[i][j];
-      cubes[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
-        local_energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, cubes_energy_c2,
-        fort_forces_ms[i], 1, rmm_outputs[i], OPEN);
+      if(ind >= cubes.size()){
+        spheres[ind-cubes.size()].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
+          local_energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1, spheres_energy_c2,
+          fort_forces_ms[i], 1, rmm_outputs[i], OPEN);
+      } else {
+        cubes[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
+          local_energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, cubes_energy_c2,
+          fort_forces_ms[i], 1, rmm_outputs[i], OPEN);
+      }
     }
     t.stop();
 
     cout << "Workload " << i << "(" << work[i].size() << ") = " << t << endl;
-    cout << "BREAK: " << ts;
+    cout << "BREAKDOWN: " << ts;
 
     energy += local_energy;
 
@@ -289,17 +302,26 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
     #pragma omp atomic
     next++;
   }
-  tcubes.stop();
+  smallgroups.stop();
 
-  tspheres.start();
+  Timers bigroupsts;
+  biggroups.start(); 
+  for(int i = 0; i < cubes.size(); i++) {
+    if(!cubes[i].is_big_group(inner_threads)) continue;
+    cubes[i].solve(bigroupsts,compute_rmm,lda,compute_forces, compute_energy, 
+      energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, 
+      cubes_energy_c2, fort_forces_ms[0], inner_threads, rmm_outputs[0], OPEN);
+  }
   for(int i = 0; i < spheres.size(); i++) {
-    spheres[i].solve(timers,compute_rmm,lda,compute_forces, compute_energy, 
+    if(!spheres[i].is_big_group(inner_threads)) continue;
+    spheres[i].solve(bigroupsts,compute_rmm,lda,compute_forces, compute_energy, 
       energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1, 
       spheres_energy_c2, fort_forces_ms[0], inner_threads, rmm_outputs[0], OPEN);
   }
-  tspheres.stop();
+  biggroups.stop();
 
-  cout << "cubes = " << tcubes << ", spheres = " << tspheres << endl;
+  cout << "BIGS BREAK: " << bigroupsts;
+  cout << "smallgroups = " << smallgroups << " biggroups = " << biggroups << endl;
 
   Timer enditer; enditer.start();
   // Work steal
@@ -336,6 +358,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
       }
     }
   }
+
   if(OPEN && compute_energy) {
     std::cout << "Ei: " << cubes_energy_i+spheres_energy_i;
     std::cout << " Ec: " << cubes_energy_c+spheres_energy_c;

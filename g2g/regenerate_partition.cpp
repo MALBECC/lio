@@ -82,7 +82,13 @@ void Partition::compute_work_partition()
 {
   vector< pair<long long, int> > costs;
   for(int i = 0; i < cubes.size(); i++) 
-    costs.push_back(make_pair(cubes[i].cost(), i));
+    if(!cubes[i].is_big_group(inner_threads))
+      costs.push_back(make_pair(cubes[i].cost(), i));
+
+  const int ncubes = cubes.size();
+  for(int i = 0; i < spheres.size(); i++) 
+    if(!spheres[i].is_big_group(inner_threads))
+      costs.push_back(make_pair(spheres[i].cost(), ncubes+i));
 
   sort(costs.begin(), costs.end());
   reverse(costs.begin(), costs.end());
@@ -406,18 +412,19 @@ void Partition::regenerate(void)
     exit(0);
     #endif
 
-    compute_work_partition();
     for(int i = 0; i < cubes.size(); i++)
       cubes[i].compute_indexes();
     for(int i = 0; i < spheres.size(); i++)
       spheres[i].compute_indexes();
 
+    compute_work_partition();
+
     fort_forces_ms.resize(outer_threads);
     rmm_outputs.resize(outer_threads);
 
     for(int i = 0; i < outer_threads; i++) {
-        fort_forces_ms[i].resize(fortran_vars.max_atoms, 3);
-        rmm_outputs[i].resize(fortran_vars.rmm_output.width, fortran_vars.rmm_output.height);
+      fort_forces_ms[i].resize(fortran_vars.max_atoms, 3);
+      rmm_outputs[i].resize(fortran_vars.rmm_output.width, fortran_vars.rmm_output.height);
     }
 
     diagnostic(inner_threads, outer_threads);

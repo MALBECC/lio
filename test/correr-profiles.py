@@ -6,6 +6,9 @@ import re
 import click
 import multiprocessing
 
+import numpy as np
+import matplotlib.pyplot as plt
+
 import itertools as it
 
 MSECS_IN_SEC = 1000000.0
@@ -33,8 +36,14 @@ def print_file(filename):
         for line in f.readlines():
             print "--> " + line,
 
+def kmp_affinity_value():
+    return ("KMP_AFFINITY", "granularity=fine,scatter")
+
 def get_enviroments(threadlist):
-    return [[(key,thread) for key in options] for thread in threadlist] 
+    res = []
+    for thread in threadlist:
+        res.append([(key,thread) for key in options] + [kmp_affinity_value()])
+    return res
 
 def process_lio_output(output):
     measures, info = [],[]
@@ -47,6 +56,15 @@ def process_lio_output(output):
         if re.search("^-->", line):
             info.append(line)
     return measures, '\n'.join(info)
+
+def plot_scalability(speedups):
+    plt.xlabel("Cantidad de threads")
+    plt.ylabel("Speedup")
+    threads = xrange(1,len(speedups)+1)
+    plt.plot(threads, speedups, label="Experimental")
+    plt.plot(threads, threads, label="Teorico")
+    plt.legend()
+    plt.show()
 
 @click.command()
 @click.option("--regex", default=".*", help="Filtro para los tests")
@@ -73,7 +91,8 @@ def benchmark(regex, gpu_opts, threads, threadscale):
             env = os.environ.copy()
             for key,val in enviro:
                 env[key] = str(val)
-            env["LIO_OPTIONS_FILE"] = gpu_opts            
+
+            env["LIO_OPTIONS_FILE"] = gpu_opts 
 
             print_file(os.path.join(directory,gpu_opts))
 
@@ -83,19 +102,22 @@ def benchmark(regex, gpu_opts, threads, threadscale):
 
             print info
 
-            if len(measures) < 2:
+            if len(measures) < 3:
                 print "No hay resultados para %s, revise el test" % prog
                 break
 
-            print "{0} ({1}) => {2}".format(directory, tuples2str(enviro), measures[-2])
-            times.append(time2nanos(measures[-2]))
+            measure = measures[-3]
+            print "{0} ({1}) => {2}".format(directory, tuples2str(enviro), measure)
+            times.append(time2nanos(measure))
         
         if len(times) == 0:
             print "Ha habido un error en los resultados"
             break
 
-        base = times[0]
-        print "speedups: %s" % " - ".join([str(base / t) for t in times])
+        speedups = [max(times) / t for t in times]
+        print "speedups: %s" % " - ".join(map(str, speedups))
+        if threadscale:
+            plot_scalability(speedups)
 
 if __name__ == "__main__":
     benchmark()

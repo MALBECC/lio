@@ -51,19 +51,18 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
   timers.density.start();
 
   timers.rmm_input.start();
-  HostMatrix<scalar_type> rmm_input(group_m, group_m);
+  HostMatrix<scalar_type> rmm_input(group_m,group_m);
   get_rmm_input(rmm_input);
   timers.rmm_input.pause();
 
   vector<vec_type3> forces;
   vector< std::vector<vec_type3> > forces_mat;
   HostMatrix<scalar_type> factors_rmm; 
-  vector<scalar_type>factors_y2a;
       
-  if(compute_rmm) factors_rmm.resize(points.size(), 1);
+  if(compute_rmm || compute_forces) 
+    factors_rmm.resize(points.size(), 1);
 
   if(compute_forces) {
-    factors_y2a.resize(points.size());
     forces.resize(total_nucleii(), vec_type3(0.f,0.f,0.f)); 
     forces_mat.resize(points.size(), vector<vec_type3>(total_nucleii(), vec_type3(0.f,0.f,0.f)));
   }
@@ -87,22 +86,19 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
       scalar_type exc = 0, corr = 0, y2a = 0;
       cpu_pot(partial_density, exc, corr, y2a, iexch);
 
-      localenergy +=  (partial_density * points[point].weight) * (exc + corr);
-
-      /** forces **/
-      if (compute_forces) {
-        factors_y2a[point] = y2a;
+      if(compute_energy) {
+        localenergy +=  (partial_density * points[point].weight) * (exc + corr);
       }
 
       /** RMM **/
-      if (compute_rmm) {
+      if (compute_rmm || compute_forces) {
         factors_rmm(point) = points[point].weight * y2a;
       }
     }
   } else {
     timers.density_calcs.start();
 
-    #pragma omp parallel for num_threads(inner_threads) reduction(+:localenergy)
+    #pragma omp parallel for num_threads(inner_threads) reduction(+:localenergy) schedule(static)
     for(int point = 0; point < points.size(); point++) {
       scalar_type pd, tdx, tdy, tdz, tdd1x, tdd1y, tdd1z,tdd2x, tdd2y, tdd2z;
       pd = tdx = tdy = tdz = tdd1x = tdd1y = tdd1z = tdd2x = tdd2y = tdd2z = 0;
@@ -130,7 +126,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
         const scalar_type hpx = hpxv[i], hpy = hpyv[i], hpz = hpzv[i];
         const scalar_type hix = hixv[i], hiy = hiyv[i], hiz = hizv[i];
 
-        #pragma vector aligned always nontemporal
+        #pragma vector aligned always 
         for(int j = 0; j <= i; j++) {
           w += fv[j] * rm[j];
           w3xc += gxv[j] * rm[j];
@@ -167,15 +163,12 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
 
       cpu_potg(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch);
 
-      localenergy +=  (pd * points[point].weight) * (exc + corr);
-
-      /** forces **/
-      if (compute_forces) {
-        factors_y2a[point] = y2a;
+      if (compute_energy) {
+        localenergy +=  (pd * points[point].weight) * (exc + corr);
       }
 
       /** RMM **/
-      if (compute_rmm) {
+      if (compute_rmm || compute_forces) {
         factors_rmm(point) = points[point].weight * y2a;
       }
     }
@@ -205,7 +198,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
         }
         ddx(nuc) += tddx; ddy(nuc) += tddy; ddz(nuc) += tddz;
       }
-      scalar_type factor = points[point].weight * factors_y2a[point];
+      scalar_type factor = factors_rmm(point);
       for (uint i = 0; i < total_nucleii(); i++) {
         forces_mat[point][i] = vec_type3(ddx(i),ddy(i),ddz(i)) * factor;
       }
@@ -234,27 +227,26 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
   timers.rmm.start();
   /* accumulate RMM results for this group */
   if(compute_rmm) {
-    const int indexes = rmm_indexes.size();
+    const int indexes = rmm_bigs.size();
     const int npoints = points.size();
-    #pragma omp parallel for num_threads(inner_threads)
+    #pragma omp parallel for num_threads(inner_threads) schedule(static)
     for(int i = 0; i < indexes; i++) {
-      pair< uint,pair<uint,uint> > e = rmm_indexes[i];
-      int bi = e.first, row = e.second.first, col = e.second.second;
+      int bi = rmm_bigs[i], row = rmm_rows[i], col = rmm_cols[i];
 
       scalar_type res = 0;
       const scalar_type * fvr = function_values_transposed.row(row);
       const scalar_type * fvc = function_values_transposed.row(col);
     
-      #pragma vector aligned always nontemporal
+      #pragma vector aligned always 
       for(int point = 0; point < npoints; point++) {
         res += fvr[point] * fvc[point] * factors_rmm(point);
       }
       rmm_global_output(bi) += res;
     }
   }
-
   timers.rmm.pause();
-  if(compute_energy) energy+=localenergy;
+
+  energy+=localenergy;
 
 #if CPU_RECOMPUTE
   /* clear functions */

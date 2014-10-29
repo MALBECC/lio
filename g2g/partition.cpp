@@ -34,17 +34,17 @@ ostream& operator<<(ostream& io, const Timers& t) {
 template<class scalar_type>
 bool PointGroup<scalar_type>::is_big_group(int threads_to_use) const 
 {
-  return rmm_indexes.size() >= 200 * threads_to_use && 
-    number_of_points >= 200 * threads_to_use;
+  return rmm_bigs.size() >= 100 * threads_to_use && 
+    number_of_points >= 100 * threads_to_use;
 }
 
 template<class scalar_type>
 void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input,
     FortranMatrix<double>& source) const {
-  const int indexes = rmm_indexes.size();
+  rmm_input.zero();
+  const int indexes = rmm_bigs.size();
   for(int i = 0; i < indexes; i++) {
-      pair<uint,pair<uint,uint> > c = rmm_indexes[i];
-      int bi = c.first, ii = c.second.first, jj = c.second.second;
+      int ii = rmm_rows[i], jj = rmm_cols[i], bi = rmm_bigs[i];
       if(ii > jj) swap(ii,jj);
       rmm_input(ii, jj) = (scalar_type) source.data[bi];
   }
@@ -64,7 +64,7 @@ void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input_a
 template<class scalar_type>
 void PointGroup<scalar_type>::compute_indexes()
 {
-  rmm_indexes.clear();
+  rmm_bigs.clear(); rmm_cols.clear(); rmm_rows.clear();
   for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
     uint inc_i = small_function_type(i);
 
@@ -77,12 +77,11 @@ void PointGroup<scalar_type>::compute_indexes()
           uint big_j = local2global_func[j] + l;
           if (big_i > big_j) continue;
           uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-          rmm_indexes.push_back(make_pair(big_index, make_pair(ii,jj)));
+          rmm_rows.push_back(ii); rmm_cols.push_back(jj); rmm_bigs.push_back(big_index);
         }
       }
     }
   }
-  sort(rmm_indexes.begin(), rmm_indexes.end());
 }
 
 template<class scalar_type>
@@ -186,7 +185,7 @@ bool PointGroup<scalar_type>::is_significative(FunctionType type, double exponen
 
 template<class scalar_type>
 long long PointGroup<scalar_type>::cost() const {
-  long long MINCOST = 680000;
+  long long MINCOST = 600000;
   long long np = number_of_points, gm = total_functions();
   return 10*((np * gm * (1+gm)) / 2) + MINCOST;
 }
@@ -268,7 +267,6 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   double cubes_energy_c1 = 0, spheres_energy_c1 = 0;
   double cubes_energy_c2 = 0, spheres_energy_c2 = 0;
 
-  int order[outer_threads]; int next = 0;
   Timer smallgroups, biggroups;
 
   smallgroups.start();
@@ -278,7 +276,8 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
     int id = omp_get_thread_num();
 
     t.start();
-    fort_forces_ms[i].zero();  rmm_outputs[i].zero();
+    fort_forces_ms[i].zero();  
+    rmm_outputs[i].zero();
     for(int j = 0; j < work[i].size(); j++) {
       int ind = work[i][j];
       if(ind >= cubes.size()){
@@ -293,14 +292,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
     }
     t.stop();
 
-    cout << "Workload " << i << "(" << work[i].size() << ") = " << t << endl;
-    cout << "BREAKDOWN: " << ts;
-
     energy += local_energy;
-
-    order[i] = next;
-    #pragma omp atomic
-    next++;
   }
   smallgroups.stop();
 
@@ -320,23 +312,9 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   }
   biggroups.stop();
 
-  cout << "BIGS BREAK: " << bigroupsts;
-  cout << "smallgroups = " << smallgroups << " biggroups = " << biggroups << endl;
+  cout << "BIG GROUPS = " << bigroupsts;
 
   Timer enditer; enditer.start();
-  // Work steal
-  int first = 0, last = 0;
-  for(int i = 0; i < outer_threads; i++) {
-    if (order[i] == 0) first = i;
-    if (order[i] == outer_threads-1) last = i;
-  }
-
-  if(first != last && work[last].size() >= 1) {
-    int group = work[last].back();
-    work[first].push_back(group);
-    work[last].pop_back();
-  }
-
   if (compute_forces) {
     FortranMatrix<double> fort_forces_out(fort_forces_ptr, 
       fortran_vars.atoms, 3, fortran_vars.max_atoms);

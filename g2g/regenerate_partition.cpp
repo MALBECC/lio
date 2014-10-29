@@ -90,6 +90,8 @@ void Partition::compute_work_partition()
     if(!spheres[i].is_big_group(inner_threads))
       costs.push_back(make_pair(spheres[i].cost(), ncubes+i));
 
+  if(costs.size() == 0) return;
+
   sort(costs.begin(), costs.end());
   reverse(costs.begin(), costs.end());
 
@@ -412,10 +414,12 @@ void Partition::regenerate(void)
     exit(0);
     #endif
 
-    for(int i = 0; i < cubes.size(); i++)
+    for(int i = 0; i < cubes.size(); i++) {
       cubes[i].compute_indexes();
-    for(int i = 0; i < spheres.size(); i++)
+    }
+    for(int i = 0; i < spheres.size(); i++) {
       spheres[i].compute_indexes();
+    }
 
     compute_work_partition();
 
@@ -426,6 +430,6 @@ void Partition::regenerate(void)
       fort_forces_ms[i].resize(fortran_vars.max_atoms, 3);
       rmm_outputs[i].resize(fortran_vars.rmm_output.width, fortran_vars.rmm_output.height);
     }
-
+    
     diagnostic(inner_threads, outer_threads);
 }

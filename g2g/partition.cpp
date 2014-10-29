@@ -44,9 +44,9 @@ void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input,
   rmm_input.zero();
   const int indexes = rmm_bigs.size();
   for(int i = 0; i < indexes; i++) {
-      int ii = rmm_rows[i], jj = rmm_cols[i], bi = rmm_bigs[i];
-      if(ii > jj) swap(ii,jj);
-      rmm_input(ii, jj) = (scalar_type) source.data[bi];
+    int ii = rmm_rows[i], jj = rmm_cols[i], bi = rmm_bigs[i];
+    if(ii > jj) swap(ii,jj);
+    rmm_input(ii, jj) = (scalar_type) source.data[bi];
   }
 }
 
@@ -296,6 +296,8 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   }
   smallgroups.stop();
 
+  cout << "SMALL GROUPS = " << smallgroups;
+
   Timers bigroupsts;
   biggroups.start(); 
   for(int i = 0; i < cubes.size(); i++) {
@@ -312,7 +314,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   }
   biggroups.stop();
 
-  cout << "BIG GROUPS = " << bigroupsts;
+  cout << "BIG GROUPS = " << biggroups;
 
   Timer enditer; enditer.start();
   if (compute_forces) {

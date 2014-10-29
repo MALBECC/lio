@@ -173,11 +173,11 @@ size_t PointGroup<scalar_type>::size_in_gpu() const
     uint total_cost=0;
     uint single_matrix_cost = COALESCED_DIMENSION(number_of_points) * total_functions();
 
-    total_cost += 2*single_matrix_cost;       //1 scalar_type functions * 2 (matrix and its transposed)
+    total_cost += single_matrix_cost;       //1 scalar_type functions
     if (fortran_vars.do_forces || fortran_vars.gga)
       total_cost += (single_matrix_cost*4); //4 vec_type gradient
     if (fortran_vars.gga)
-      total_cost+= (single_matrix_cost*8) * 2;  //2*4 vec_type hessian and its transposed
+      total_cost+= (single_matrix_cost*8);  //4 vec_type hessian
     return total_cost*sizeof(scalar_type);  // size in bytes according to precision
 }
 template<class scalar_type>
@@ -188,7 +188,6 @@ PointGroup<scalar_type>::~PointGroup<scalar_type>()
       globalMemoryPool::dealloc(size_in_gpu());
       function_values.deallocate();
       gradient_values.deallocate();
-      hessian_values.deallocate();
       hessian_values_transposed.deallocate();
     }
 #endif

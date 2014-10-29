@@ -58,7 +58,6 @@ class PointGroup {
     #else
     G2G::CudaMatrix<scalar_type> function_values;
     G2G::CudaMatrix<vec_type4> gradient_values;
-    G2G::CudaMatrix<vec_type4> hessian_values;
     G2G::CudaMatrix<vec_type4> hessian_values_transposed;
     #endif
 

@@ -316,7 +316,6 @@ void PointGroup<scalar_type>::solve_closed(Timers& timers, bool compute_rmm, boo
   if(!(this->inGlobal)) {
     function_values.deallocate();
     gradient_values.deallocate();
-    hessian_values.deallocate();
     hessian_values_transposed.deallocate();
   }
   //Deshago el bind de textura de rmm
@@ -606,7 +605,6 @@ void PointGroup<scalar_type>::solve_opened(Timers& timers, bool compute_rmm, boo
   if(!(this->inGlobal)) {
     function_values.deallocate();
     gradient_values.deallocate();
-    hessian_values.deallocate();
     hessian_values_transposed.deallocate();
   }
 
@@ -672,6 +670,7 @@ void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
   nuc_gpu = nuc_cpu;
   contractions_gpu = contractions_cpu;
 
+  CudaMatrix<vec_type<scalar_type,4> > hessian_values;
   /** Compute Functions **/
   function_values.resize(COALESCED_DIMENSION(number_of_points), group_functions.w);
   if (fortran_vars.do_forces || fortran_vars.gga)

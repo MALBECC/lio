@@ -57,8 +57,11 @@ class PointGroup {
     G2G::HostMatrix<vec_type3> hessian_values;
     #else
     G2G::CudaMatrix<scalar_type> function_values;
+    G2G::CudaMatrix<scalar_type> function_values_transposed;
     G2G::CudaMatrix<vec_type4> gradient_values;
     G2G::CudaMatrix<vec_type4> hessian_values;
+    G2G::CudaMatrix<vec_type4> gradient_values_transposed;
+    G2G::CudaMatrix<vec_type4> hessian_values_transposed;
     #endif
 
     inline FunctionType small_function_type(uint f) const {

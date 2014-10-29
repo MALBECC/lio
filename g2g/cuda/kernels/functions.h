@@ -48,8 +48,8 @@ __global__ void gpu_compute_functions(vec_type<scalar_type,4>* point_positions, 
 
   __shared__ uint nuc_sh[FUNCTIONS_BLOCK_SIZE];
   __shared__ uint contractions_sh[FUNCTIONS_BLOCK_SIZE];
-  __shared__ scalar_type factor_a_sh[FUNCTIONS_BLOCK_SIZE+1][MAX_CONTRACTIONS];
-  __shared__ scalar_type factor_c_sh[FUNCTIONS_BLOCK_SIZE+1][MAX_CONTRACTIONS];
+  __shared__ scalar_type factor_a_sh[FUNCTIONS_BLOCK_SIZE][MAX_CONTRACTIONS];
+  __shared__ scalar_type factor_c_sh[FUNCTIONS_BLOCK_SIZE][MAX_CONTRACTIONS];
 
   for (uint i = 0; i < functions.w; i += FUNCTIONS_BLOCK_SIZE) {
     if (i + threadIdx.x < functions.w) {

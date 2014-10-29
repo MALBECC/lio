@@ -177,7 +177,7 @@ size_t PointGroup<scalar_type>::size_in_gpu() const
     if (fortran_vars.do_forces || fortran_vars.gga)
       total_cost += (single_matrix_cost*4); //4 vec_type gradient
     if (fortran_vars.gga)
-      total_cost+= (single_matrix_cost*8);  //2*4 vec_type hessian
+      total_cost+= (single_matrix_cost*8) * 2;  //2*4 vec_type hessian and its transposed
     return total_cost*sizeof(scalar_type);  // size in bytes according to precision
 }
 template<class scalar_type>
@@ -189,6 +189,7 @@ PointGroup<scalar_type>::~PointGroup<scalar_type>()
       function_values.deallocate();
       gradient_values.deallocate();
       hessian_values.deallocate();
+      hessian_values_transposed.deallocate();
     }
 #endif
 }

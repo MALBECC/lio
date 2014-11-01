@@ -3,8 +3,8 @@
 import os
 import subprocess
 import re
-import click
 import multiprocessing
+import optparse
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,7 +19,7 @@ def time2nanos(spec):
     return MSECS_IN_SEC * float(secs) + float(msecs)
 
 progname = "correr-profile.sh"
-options = [
+env_flags = [
     "OMP_NUM_THREADS",
     "LIO_INNER_THREADS",
     "LIO_OUTER_THREADS",
@@ -42,7 +42,7 @@ def kmp_affinity_value():
 def get_enviroments(threadlist):
     res = []
     for thread in threadlist:
-        res.append([(key,thread) for key in options] + [kmp_affinity_value()])
+        res.append([(key,thread) for key in env_flags] + [kmp_affinity_value()])
     return res
 
 def process_lio_output(output):
@@ -66,11 +66,6 @@ def plot_scalability(speedups):
     plt.legend()
     plt.show()
 
-@click.command()
-@click.option("--regex", default=".*", help="Filtro para los tests")
-@click.option("--gpu_opts", default="gpu_options", help="Archivo gpu_options a usar (local a la carpeta)")
-@click.option("--threads",default=multiprocessing.cpu_count(), help="Maxima cantidad de threads a usar")
-@click.option("--threadscale", is_flag=True, help="Usar todos los threads intermedios")
 def benchmark(regex, gpu_opts, threads, threadscale):
     """ 
     Correr los correr-profile.sh de todas las carpetas que lo posean, 
@@ -120,4 +115,10 @@ def benchmark(regex, gpu_opts, threads, threadscale):
             plot_scalability(speedups)
 
 if __name__ == "__main__":
-    benchmark()
+    parser = optparse.OptionParser()
+    parser.add_option("-r", "--regex", dest="regex", help="Filtrar los test con expresion regular")
+    parser.add_option("-g", "--gpu_opts", dest="gpu_opts", help="Archivo gpu_options a usar (local a la carpeta)")
+    parser.add_option("-t", "--threads", dest="threads",default=multiprocessing.cpu_count(), help="Maxima cantidad de threads a usar")
+    parser.add_option("-a", "--threadscale", action="store_true", default=False, help="Graficar escalabilidad intermedia")
+    (options, args) = parser.parse_args()
+    benchmark(options.regex,options.gpu_opts,int(options.threads), options.threadscale)

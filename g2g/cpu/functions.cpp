@@ -27,7 +27,7 @@ template<class scalar_type>
 void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
 {
   #if !CPU_RECOMPUTE
-  forces = gga = true; // Vamos a cachear asi que guardemos todo y listo
+  forces = true; gga = true; // Vamos a cachear asi que guardemos todo y listo
   if (this->inGlobal) return;
   this->inGlobal = true;
   #endif
@@ -137,22 +137,22 @@ void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
   }
 
   if(forces || gga) {
-      proyect<0,1,0, scalar_type>(gradient_values, gX);
-      proyect<1,1,0, scalar_type>(gradient_values, gY);
-      proyect<2,1,0, scalar_type>(gradient_values, gZ);
-      
-      gradient_values.deallocate();
+    proyect<0,1,0, scalar_type>(gradient_values, gX);
+    proyect<1,1,0, scalar_type>(gradient_values, gY);
+    proyect<2,1,0, scalar_type>(gradient_values, gZ);
+    
+    gradient_values.deallocate();
   }
 
   if(gga) {
-      proyect<0,2,0, scalar_type>(hessian_values, hPX);
-      proyect<1,2,0, scalar_type>(hessian_values, hPY);
-      proyect<2,2,0, scalar_type>(hessian_values, hPZ);
-      proyect<0,2,1, scalar_type>(hessian_values, hIX);
-      proyect<1,2,1, scalar_type>(hessian_values, hIY);
-      proyect<2,2,1, scalar_type>(hessian_values, hIZ);
+    proyect<0,2,0, scalar_type>(hessian_values, hPX);
+    proyect<1,2,0, scalar_type>(hessian_values, hPY);
+    proyect<2,2,0, scalar_type>(hessian_values, hPZ);
+    proyect<0,2,1, scalar_type>(hessian_values, hIX);
+    proyect<1,2,1, scalar_type>(hessian_values, hIY);
+    proyect<2,2,1, scalar_type>(hessian_values, hIZ);
 
-      hessian_values.deallocate();
+    hessian_values.deallocate();
   }
 
   function_values.transpose(function_values_transposed);

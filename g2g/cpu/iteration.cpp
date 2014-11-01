@@ -70,14 +70,15 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
 
   const int iexch = fortran_vars.iexch;
 
+  timers.density_calcs.start();
   /** density **/
   if (lda) {
     for(int point = 0; point < points.size(); point++) {
       scalar_type partial_density = 0;
-      for (uint i = 0; i < group_m; i++) {
+      for (int i = 0; i < group_m; i++) {
         scalar_type w = 0.0;
         scalar_type Fi = function_values(i, point);
-        for (uint j = i; j < group_m; j++) {
+        for (int j = i; j < group_m; j++) {
           scalar_type Fj = function_values(j, point);
           w += rmm_input(j, i) * Fj;
         }
@@ -96,8 +97,6 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
       }
     }
   } else {
-    timers.density_calcs.start();
-
     #pragma omp parallel for num_threads(inner_threads) reduction(+:localenergy) schedule(static)
     for(int point = 0; point < points.size(); point++) {
       scalar_type pd, tdx, tdy, tdz, tdd1x, tdd1y, tdd1z,tdd2x, tdd2y, tdd2z;
@@ -172,8 +171,8 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
         factors_rmm(point) = points[point].weight * y2a;
       }
     }
-    timers.density_calcs.pause();
   }
+  timers.density_calcs.pause();
 
   timers.forces.start();
   if (compute_forces) {
@@ -184,7 +183,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
     #pragma omp parallel for num_threads(inner_threads)
     for(int point = 0; point < points.size(); point++) {
       ddx.zero(); ddy.zero(); ddz.zero();
-      for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
+      for (int i = 0, ii = 0; i < total_functions_simple(); i++) {
         uint nuc = func2local_nuc(ii);
         uint inc_i = small_function_type(i);
         scalar_type tddx = 0, tddy = 0, tddz = 0;
@@ -194,17 +193,20 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
             scalar_type Fj = function_values(j, point);
             w += rmm_input(j, ii) * Fj * (ii == j ? 2 : 1);
           }
-          tddx -= w*gX(ii, point); tddy -= w*gY(ii, point); tddz -= w*gZ(ii, point);
+          tddx -= w*gX(ii, point); 
+          tddy -= w*gY(ii, point); 
+          tddz -= w*gZ(ii, point);
         }
         ddx(nuc) += tddx; ddy(nuc) += tddy; ddz(nuc) += tddz;
       }
       scalar_type factor = factors_rmm(point);
-      for (uint i = 0; i < total_nucleii(); i++) {
+      for (int i = 0; i < total_nucleii(); i++) {
         forces_mat[point][i] = vec_type3(ddx(i),ddy(i),ddz(i)) * factor;
       }
     }
     /* accumulate forces for each point */
     if(forces_mat.size() > 0) {
+      #pragma omp parallel for num_threads(inner_threads) schedule(static)
       for (int j = 0; j < forces_mat[0].size(); j++) {
         vec_type3 acum(0.f,0.f,0.f);
         for (int i = 0; i < forces_mat.size(); i++) {
@@ -214,7 +216,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
       }
     }
     /* accumulate force results for this group */
-    for (uint i = 0; i < total_nucleii(); i++) {
+    for (int i = 0; i < total_nucleii(); i++) {
       uint global_atom = local2global_nuc[i];
       vec_type3 this_force = forces[i];
       fort_forces(global_atom,0) += this_force.x();
@@ -253,6 +255,10 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
   function_values.deallocate();
   gradient_values.deallocate();
   hessian_values.deallocate();
+  gX.deallocate(); gY.deallocate(); gZ.deallocate();
+  hIX.deallocate(); hIY.deallocate(); hIZ.deallocate();
+  hPX.deallocate(); hPY.deallocate(); hPZ.deallocate();
+  function_values_transposed.deallocate();
 #endif
 }
 

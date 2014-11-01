@@ -45,8 +45,8 @@ void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input,
   const int indexes = rmm_bigs.size();
   for(int i = 0; i < indexes; i++) {
     int ii = rmm_rows[i], jj = rmm_cols[i], bi = rmm_bigs[i];
-    if(ii > jj) swap(ii,jj);
     rmm_input(ii, jj) = (scalar_type) source.data[bi];
+    rmm_input(jj, ii) = rmm_input(ii,jj);
   }
 }
 
@@ -240,12 +240,12 @@ void Partition::compute_functions(bool forces, bool gga) {
   Timer t1;
   t1.start_and_sync();
 
-  #pragma omp parallel for
+  #pragma omp parallel for num_threads(inner_threads)
   for(int i = 0; i < cubes.size(); i++){
     cubes[i].compute_functions(forces, gga);
   }
 
-  #pragma omp parallel for
+  #pragma omp parallel for num_threads(inner_threads)
   for(int i = 0; i < spheres.size(); i++){
     spheres[i].compute_functions(forces, gga);
   }
@@ -276,8 +276,9 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
     int id = omp_get_thread_num();
 
     t.start();
-    fort_forces_ms[i].zero();  
-    rmm_outputs[i].zero();
+    if(compute_forces) fort_forces_ms[i].zero();  
+    if(compute_rmm) rmm_outputs[i].zero();
+
     for(int j = 0; j < work[i].size(); j++) {
       int ind = work[i][j];
       if(ind >= cubes.size()){
@@ -296,7 +297,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   }
   smallgroups.stop();
 
-  cout << "SMALL GROUPS = " << smallgroups;
+  cout << "SMALL GROUPS = " << smallgroups << " ";
 
   Timers bigroupsts;
   biggroups.start(); 

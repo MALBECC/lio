@@ -161,7 +161,8 @@ class Partition {
     void clear(void);
     void regenerate(void);
 
-    void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr, bool OPEN);
+    void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy, 
+               double* fort_energy_ptr, double* fort_forces_ptr, bool OPEN);
     void compute_functions(bool forces, bool gga);
 
     std::vector<Cube> cubes;
@@ -172,8 +173,10 @@ class Partition {
 
     std::vector< std::vector< int > > work;
 
-    int outer_threads, inner_threads;
+    int outer_threads, inner_threads, threshold;
 };
+
+extern int MINCOST, THRESHOLD;
 
 }
 

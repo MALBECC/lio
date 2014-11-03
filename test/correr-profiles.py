@@ -22,11 +22,6 @@ def time2nanos(spec):
     return MSECS_IN_SEC * float(secs) + float(msecs)
 
 progname = "correr-profile.sh"
-env_flags = [
-    "OMP_NUM_THREADS",
-    "LIO_INNER_THREADS",
-    "LIO_OUTER_THREADS",
-]
 
 def subdirs_with_benchmark(basedir):
     return [subdir for subdir,dirs,files in os.walk(basedir) if progname in set(files)]
@@ -38,15 +33,6 @@ def print_file(filename):
     with open(filename) as f:
         for line in f.readlines():
             print "--> " + line,
-
-def kmp_affinity_value():
-    return ("KMP_AFFINITY", "granularity=fine,scatter")
-
-def get_enviroments(threadlist):
-    res = []
-    for thread in threadlist:
-        res.append([(key,thread) for key in env_flags] + [kmp_affinity_value()])
-    return res
 
 def process_lio_output(output):
     measures, info = [],[]
@@ -76,7 +62,21 @@ def plot_scalability(speedups, expname):
     name = "escalabilidad-%s-%s.png" % (expname,timestamp())
     plt.savefig(os.path.join("escalabilidad",name))
 
-def benchmark(regex, gpu_opts, threads, threadscale):
+def get_enviroments(dic, keylist=None):
+    if keylist is None:
+        keylist = dic.keys()
+    
+    if keylist == []: 
+        return [[]]
+
+    key, rest, ret = keylist[0], keylist[1:], []
+    sublists = get_enviroments(dic, rest)
+    for value in dic[key]:
+        for sublist in sublists:
+            ret.append([(key,value)] + sublist)
+    return ret 
+
+def benchmark(regex, gpu_opts, threadlist, thresholdlist, offsetlist, plot_scalability):
     """ 
     Correr los correr-profile.sh de todas las carpetas que lo posean, 
     y generar un reporte de cada uno.
@@ -84,7 +84,16 @@ def benchmark(regex, gpu_opts, threads, threadscale):
     
     testrx = re.compile(regex)
     testdirs = filter(testrx.search, subdirs_with_benchmark("."))
-    threadlist = xrange(1,threads+1) if threadscale else [1,threads]
+
+    env_flags = {
+        "LIO_INNER_THREADS": threadlist,
+        "OMP_NUM_THREADS": threadlist,
+        "KMP_AFFINITY": ["granularity=fine,scatter"],
+        "LIO_OUTER_THREADS": threadlist,
+        "LIO_OPTIONS_FILE": [gpu_opts],
+        "LIO_SPLIT_THRESHOLD": thresholdlist,
+        "LIO_MINCOST_OFFSET": offsetlist,
+    }
 
     for directory in testdirs:
         prog = os.path.join(directory, progname)
@@ -92,12 +101,10 @@ def benchmark(regex, gpu_opts, threads, threadscale):
 
         times = []
         print "Corriendo %s..." % prog
-        for enviro in get_enviroments(threadlist):
+        for enviro in get_enviroments(env_flags):
             env = os.environ.copy()
             for key,val in enviro:
                 env[key] = str(val)
-
-            env["LIO_OPTIONS_FILE"] = gpu_opts 
 
             print_file(os.path.join(directory,gpu_opts))
 
@@ -121,14 +128,42 @@ def benchmark(regex, gpu_opts, threads, threadscale):
 
         speedups = [max(times) / t for t in times]
         print "speedups: %s" % " - ".join(map(str, speedups))
-        if threadscale:
+        if plot_scalability:
             plot_scalability(speedups, directory[2:])
+
+def parse_range(rangestr):
+    parts = rangestr.split(":")
+    if len(parts) < 3:
+        parts.append("1")
+    start,end,skip = map(int,parts)
+    return range(start,end+1,skip)
+
+def parse_range_string(rangestr):
+    res = []
+    if rangestr[0] == "[":
+        parts = rangestr[1:-1].split(",")
+        for part in parts:
+            if part.isdigit():
+                res.append(int(part))
+            else:
+                res += parse_range(part)
+    else:
+        res += parse_range(rangestr)
+
+    return sorted(res)
 
 if __name__ == "__main__":
     parser = optparse.OptionParser()
     parser.add_option("-r", "--regex", dest="regex", default=".*", help="Filtrar los test con expresion regular")
     parser.add_option("-g", "--gpu_opts", dest="gpu_opts", help="Archivo gpu_options a usar (local a la carpeta)")
-    parser.add_option("-t", "--threads", dest="threads",default=multiprocessing.cpu_count(), help="Maxima cantidad de threads a usar")
-    parser.add_option("-a", "--threadscale", action="store_true", default=False, help="Graficar escalabilidad intermedia")
+    parser.add_option("-t", "--threads", dest="threads",default="[1,%s]" % multiprocessing.cpu_count(), help="Lista de threads a usar, como rango (N:M:J)")
+    parser.add_option("-a", "--plot_threadscale", action="store_true", default=False, help="Graficar escalabilidad intermedia")
+    parser.add_option("-s", "--thresholds", dest="thresholds", default="100:100", help="Threshold para considerar un grupo como chico, como rango (N:M:J)")
+    parser.add_option("-o", "--offsets", dest="offsets", default="50000:50000", help="Compensacion de costo para cubos chicos, como rango (N:M:J)")
     (options, args) = parser.parse_args()
-    benchmark(options.regex,options.gpu_opts,int(options.threads), options.threadscale)
+
+    threadlist = parse_range_string(options.threads)
+    thresholdlist = parse_range_string(options.thresholds)
+    offsetlist = parse_range_string(options.offsets)
+
+    benchmark(options.regex,options.gpu_opts, threadlist, thresholdlist, offsetlist, options.plot_threadscale)

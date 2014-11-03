@@ -126,11 +126,11 @@ void Partition::compute_work_partition()
   printf("Relacion max / min = %lf\n", maxp / minp);
 }
 
-int getintenv(const char * str) {
+int getintenv(const char * str, int default_value) {
   char * v = getenv(str);
-  if (v == NULL) return 1;
+  if (v == NULL) return default_value;
   int ret = strtol(v, NULL, 10);
-  if (ret == 0) return 1;
+  if (ret == 0) return default_value;
   return ret;
 }
 
@@ -140,6 +140,8 @@ void diagnostic(int inner, int outer)
     printf("--> Thread MKL: %d\n", mkl_get_max_threads());
     printf("--> Thread internos: %d\n", inner);
     printf("--> Thread externos: %d\n", outer);
+    printf("--> Correccion de cubos chicos: %d\n", MINCOST);
+    printf("--> Threshold en threads para considerar grande: %d\n", THRESHOLD);
 }
 
 /* methods */
@@ -401,17 +403,19 @@ void Partition::regenerate(void)
     //If it is CPU, then this doesn't matter
     globalMemoryPool::init(G2G::free_global_memory);
 
-    inner_threads = getintenv("LIO_INNER_THREADS");
-    outer_threads = getintenv("LIO_OUTER_THREADS");
+    inner_threads = getintenv("LIO_INNER_THREADS", 1);
+    outer_threads = getintenv("LIO_OUTER_THREADS", 1);
+
+    G2G::MINCOST = getintenv("LIO_MINCOST_OFFSET", 50000);
+    G2G::THRESHOLD = getintenv("LIO_SPLIT_THRESHOLD", 100);
 
     #ifdef OUTPUT_COSTS
     for(int i = 0; i < cubes.size(); i++) {
-      printf("CUBE: %d %d %ld\n", cubes[i].total_functions(), cubes[i].number_of_points, cubes[i].cost());
+      printf("CUBE: %d %d %ld %ld\n", cubes[i].total_functions(), cubes[i].number_of_points, cubes[i].cost(), cubes[i].size_in_gpu());
     }
     for(int i = 0; i < spheres.size(); i++) {
-      printf("SPHERE: %d %d %ld\n", spheres[i].total_functions(), spheres[i].number_of_points, spheres[i].cost());
+      printf("SPHERE: %d %d %ld %ld\n", spheres[i].total_functions(), spheres[i].number_of_points, spheres[i].cost(), spheres[i].size_in_gpu());
     }
-    exit(0);
     #endif
 
     for(int i = 0; i < cubes.size(); i++) {

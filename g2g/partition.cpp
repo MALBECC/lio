@@ -14,6 +14,8 @@
 using namespace std;
 
 namespace G2G {
+
+int MINCOST, THRESHOLD;
 Partition partition;
 
 ostream& operator<<(ostream& io, const Timers& t) {
@@ -34,8 +36,8 @@ ostream& operator<<(ostream& io, const Timers& t) {
 template<class scalar_type>
 bool PointGroup<scalar_type>::is_big_group(int threads_to_use) const 
 {
-  return rmm_bigs.size() >= 100 * threads_to_use && 
-    number_of_points >= 100 * threads_to_use;
+  return rmm_bigs.size() >= THRESHOLD * threads_to_use && 
+    number_of_points >= THRESHOLD * threads_to_use;
 }
 
 template<class scalar_type>
@@ -185,7 +187,6 @@ bool PointGroup<scalar_type>::is_significative(FunctionType type, double exponen
 
 template<class scalar_type>
 long long PointGroup<scalar_type>::cost() const {
-  long long MINCOST = 600000;
   long long np = number_of_points, gm = total_functions();
   return 10*((np * gm * (1+gm)) / 2) + MINCOST;
 }
@@ -240,12 +241,12 @@ void Partition::compute_functions(bool forces, bool gga) {
   Timer t1;
   t1.start_and_sync();
 
-  #pragma omp parallel for num_threads(inner_threads)
+  #pragma omp parallel for num_threads(inner_threads) schedule(guided,8)
   for(int i = 0; i < cubes.size(); i++){
     cubes[i].compute_functions(forces, gga);
   }
 
-  #pragma omp parallel for num_threads(inner_threads)
+  #pragma omp parallel for num_threads(inner_threads) schedule(guided,8)
   for(int i = 0; i < spheres.size(); i++){
     spheres[i].compute_functions(forces, gga);
   }
@@ -272,10 +273,12 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   smallgroups.start();
   #pragma omp parallel for reduction(+:energy) num_threads(outer_threads)
   for(int i = 0; i< work.size(); i++) {
-    double local_energy = 0; Timers ts; Timer t;
+    double local_energy = 0; 
     int id = omp_get_thread_num();
-
+    
+    Timers ts; Timer t;
     t.start();
+    
     if(compute_forces) fort_forces_ms[i].zero();  
     if(compute_rmm) rmm_outputs[i].zero();
 
@@ -292,12 +295,15 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
       }
     }
     t.stop();
+    printf("Workload %d: ", i);
+    cout << t;
+    cout << ts;
 
     energy += local_energy;
   }
   smallgroups.stop();
 
-  cout << "SMALL GROUPS = " << smallgroups << " ";
+  cout << "SMALL GROUPS = " << smallgroups << endl;
 
   Timers bigroupsts;
   biggroups.start(); 
@@ -315,7 +321,8 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   }
   biggroups.stop();
 
-  cout << "BIG GROUPS = " << biggroups;
+  cout << "BIG GROUPS = " << biggroups << endl;
+  cout << bigroupsts;
 
   Timer enditer; enditer.start();
   if (compute_forces) {

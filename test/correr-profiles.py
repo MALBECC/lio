@@ -7,9 +7,12 @@ import multiprocessing
 import optparse
 
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 
 import itertools as it
+
+from datetime import datetime
 
 MSECS_IN_SEC = 1000000.0
 def time2nanos(spec):
@@ -57,14 +60,21 @@ def process_lio_output(output):
             info.append(line)
     return measures, '\n'.join(info)
 
-def plot_scalability(speedups):
+def timestamp():
+    return '-'.join(str(datetime.today()).split(" "))
+
+def plot_scalability(speedups, expname):
+    plt.clf()
     plt.xlabel("Cantidad de threads")
     plt.ylabel("Speedup")
+    plt.title("Prueba de escalabilidad en cores para %s" % expname)
     threads = xrange(1,len(speedups)+1)
-    plt.plot(threads, speedups, label="Experimental")
-    plt.plot(threads, threads, label="Teorico")
-    plt.legend()
-    plt.show()
+    plt.plot(threads, speedups, "ro-", label="Experimental")
+    plt.plot(threads, threads, "bo-", label="Teorico")
+    plt.legend(loc=2)
+
+    name = "escalabilidad-%s-%s.png" % (expname,timestamp())
+    plt.savefig(os.path.join("escalabilidad",name))
 
 def benchmark(regex, gpu_opts, threads, threadscale):
     """ 
@@ -97,11 +107,11 @@ def benchmark(regex, gpu_opts, threads, threadscale):
 
             print info
 
-            if len(measures) < 3:
+            if len(measures) < 2:
                 print "No hay resultados para %s, revise el test" % prog
                 break
 
-            measure = measures[-3]
+            measure = measures[-2]
             print "{0} ({1}) => {2}".format(directory, tuples2str(enviro), measure)
             times.append(time2nanos(measure))
         
@@ -112,11 +122,11 @@ def benchmark(regex, gpu_opts, threads, threadscale):
         speedups = [max(times) / t for t in times]
         print "speedups: %s" % " - ".join(map(str, speedups))
         if threadscale:
-            plot_scalability(speedups)
+            plot_scalability(speedups, directory[2:])
 
 if __name__ == "__main__":
     parser = optparse.OptionParser()
-    parser.add_option("-r", "--regex", dest="regex", help="Filtrar los test con expresion regular")
+    parser.add_option("-r", "--regex", dest="regex", default=".*", help="Filtrar los test con expresion regular")
     parser.add_option("-g", "--gpu_opts", dest="gpu_opts", help="Archivo gpu_options a usar (local a la carpeta)")
     parser.add_option("-t", "--threads", dest="threads",default=multiprocessing.cpu_count(), help="Maxima cantidad de threads a usar")
     parser.add_option("-a", "--threadscale", action="store_true", default=False, help="Graficar escalabilidad intermedia")

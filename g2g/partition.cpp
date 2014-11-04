@@ -5,6 +5,7 @@
 #include <cmath>
 #include <algorithm>
 #include <sstream>
+#include <climits>
 #include "common.h"
 #include "init.h"
 #include "matrix.h"
@@ -197,7 +198,7 @@ bool PointGroup<scalar_type>::operator<(const PointGroup<scalar_type>& T) const{
 }
 
 template<class scalar_type>
-int PointGroup<scalar_type>::pool_elements() const {
+int PointGroup<scalar_type>::elements() const {
     int t = total_functions(), n = number_of_points;
     return t * n;
 }
@@ -258,6 +259,45 @@ void Partition::clear() {
   cubes.clear(); spheres.clear(); work.clear(); 
 }
 
+void Partition::rebalance(const vector<int> & finishes)
+{
+  int largest = std::max_element(finishes.begin(),finishes.end()) - finishes.begin();
+  int smallest = std::min_element(finishes.begin(),finishes.end()) - finishes.begin();
+
+  if(largest != smallest && work[largest].size() > 1) {
+    int maxi = 0, mini = 0, currentmax = INT_MAX, currentmin = 0;
+
+    for(int i = 0; i < work[largest].size(); i++) {
+      int ind = work[largest][i];
+      int cost = (ind >= cubes.size()) ?
+                    spheres[ind-cubes.size()].elements() :
+                    cubes[ind].elements();
+      if(currentmax < cost) {
+        currentmax = cost;
+        maxi = i;
+      }
+
+      if(currentmin > cost) {
+        currentmin = cost;
+        mini = i;
+      }
+    }
+
+    int topass = mini;
+    for(int i = 0; i < work[largest].size(); i++) {
+      if (i != mini && i != maxi) {
+        topass = i;
+        break;
+      }
+    }
+
+    printf("Swapping %d from %d to %d\n", work[largest][topass], largest, smallest);
+    work[smallest].push_back(work[largest][topass]);
+    swap(work[largest].back(), work[largest][topass]);
+    work[largest].pop_back();
+  }
+}
+
 void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, 
                       bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr, bool OPEN){
   double energy = 0.0;
@@ -269,6 +309,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   double cubes_energy_c2 = 0, spheres_energy_c2 = 0;
 
   Timer smallgroups, biggroups;
+  vector<int> next(outer_threads); int bump = 0;
 
   smallgroups.start();
   #pragma omp parallel for reduction(+:energy) num_threads(outer_threads)
@@ -299,10 +340,16 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
     cout << t;
     cout << ts;
 
+    next[i] = bump;
+
+    #pragma omp atomic
+    bump++;
+
     energy += local_energy;
   }
   smallgroups.stop();
 
+  if(work.size() > 0) rebalance(next);
   cout << "SMALL GROUPS = " << smallgroups << endl;
 
   Timers bigroupsts;

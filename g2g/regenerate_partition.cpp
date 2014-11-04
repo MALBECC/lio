@@ -130,7 +130,6 @@ int getintenv(const char * str, int default_value) {
   char * v = getenv(str);
   if (v == NULL) return default_value;
   int ret = strtol(v, NULL, 10);
-  if (ret == 0) return default_value;
   return ret;
 }
 
@@ -403,8 +402,7 @@ void Partition::regenerate(void)
     //If it is CPU, then this doesn't matter
     globalMemoryPool::init(G2G::free_global_memory);
 
-    inner_threads = getintenv("LIO_INNER_THREADS", 1);
-    outer_threads = getintenv("LIO_OUTER_THREADS", 1);
+    inner_threads = outer_threads = omp_get_max_threads();
 
     G2G::MINCOST = getintenv("LIO_MINCOST_OFFSET", 50000);
     G2G::THRESHOLD = getintenv("LIO_SPLIT_THRESHOLD", 100);

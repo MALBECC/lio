@@ -122,9 +122,9 @@ def benchmark(regex, gpu_opts, threadlist, thresholdlist, offsetlist, plot_scale
                 print "No hay resultados para %s, revise el test" % prog
                 break
 
-            measure = average(measures[1:-2])
-            print "{0} ({1}) => {2}".format(directory, tuples2str(enviro), measure)
-            times.append(time2nanos(measure))
+            measure = average(map(time2nanos,measures[1:-2]))
+            print "{0} ({1}) => {2} ms.".format(directory, tuples2str(enviro), measure)
+            times.append(measure)
         
         if len(times) == 0:
             print "Ha habido un error en los resultados"

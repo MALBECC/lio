@@ -19,6 +19,7 @@ namespace G2G {
 
 			unsigned long getMicrosec(void) const;
 			unsigned long getSec(void) const;
+			double getTotal(void) const;
 
 			bool isStarted(void) const;
 

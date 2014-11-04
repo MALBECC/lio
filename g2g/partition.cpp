@@ -48,7 +48,6 @@ void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input,
   for(int i = 0; i < indexes; i++) {
     int ii = rmm_rows[i], jj = rmm_cols[i], bi = rmm_bigs[i];
     rmm_input(ii, jj) = (scalar_type) source.data[bi];
-    rmm_input(jj, ii) = rmm_input(ii,jj);
   }
 }
 
@@ -79,6 +78,7 @@ void PointGroup<scalar_type>::compute_indexes()
           uint big_j = local2global_func[j] + l;
           if (big_i > big_j) continue;
           uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
+          if(ii > jj) swap(ii,jj);
           rmm_rows.push_back(ii); rmm_cols.push_back(jj); rmm_bigs.push_back(big_index);
         }
       }

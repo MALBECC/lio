@@ -49,6 +49,9 @@ def process_lio_output(output):
 def timestamp():
     return '-'.join(str(datetime.today()).split(" "))
 
+def replace_special(s):
+    return re.sub("[.:-]","-", s)
+
 def plot_scalability(speedups, expname):
     plt.clf()
     plt.xlabel("Cantidad de threads")
@@ -59,7 +62,7 @@ def plot_scalability(speedups, expname):
     plt.plot(threads, threads, "bo-", label="Teorico")
     plt.legend(loc=2)
 
-    name = "escalabilidad-%s-%s.png" % (expname,timestamp())
+    name = replace_special("escalabilidad-%s-%s.png" % (expname,timestamp()))
     plt.savefig(os.path.join("escalabilidad",name))
 
 def get_enviroments(dic, keylist=None):
@@ -76,7 +79,10 @@ def get_enviroments(dic, keylist=None):
             ret.append([(key,value)] + sublist)
     return ret 
 
-def benchmark(regex, gpu_opts, threadlist, thresholdlist, offsetlist, plot_scalability):
+def average(l):
+    return sum(l) / len(l)
+
+def benchmark(regex, gpu_opts, threadlist, thresholdlist, offsetlist, plot_scale):
     """ 
     Correr los correr-profile.sh de todas las carpetas que lo posean, 
     y generar un reporte de cada uno.
@@ -86,10 +92,8 @@ def benchmark(regex, gpu_opts, threadlist, thresholdlist, offsetlist, plot_scala
     testdirs = filter(testrx.search, subdirs_with_benchmark("."))
 
     env_flags = {
-        "LIO_INNER_THREADS": threadlist,
         "OMP_NUM_THREADS": threadlist,
         "KMP_AFFINITY": ["granularity=fine,scatter"],
-        "LIO_OUTER_THREADS": threadlist,
         "LIO_OPTIONS_FILE": [gpu_opts],
         "LIO_SPLIT_THRESHOLD": thresholdlist,
         "LIO_MINCOST_OFFSET": offsetlist,
@@ -108,8 +112,8 @@ def benchmark(regex, gpu_opts, threadlist, thresholdlist, offsetlist, plot_scala
 
             print_file(os.path.join(directory,gpu_opts))
 
-            data = subprocess.Popen([os.path.join(".",progname)],
-                    env=env, cwd=path, stdout=subprocess.PIPE).communicate()[0]
+            data, _ = subprocess.Popen([os.path.join(".",progname)],
+                    env=env, cwd=path, stdout=subprocess.PIPE).communicate()
             measures,info = process_lio_output(data)
 
             print info
@@ -118,7 +122,7 @@ def benchmark(regex, gpu_opts, threadlist, thresholdlist, offsetlist, plot_scala
                 print "No hay resultados para %s, revise el test" % prog
                 break
 
-            measure = measures[-2]
+            measure = average(measures[1:-2])
             print "{0} ({1}) => {2}".format(directory, tuples2str(enviro), measure)
             times.append(time2nanos(measure))
         
@@ -128,7 +132,7 @@ def benchmark(regex, gpu_opts, threadlist, thresholdlist, offsetlist, plot_scala
 
         speedups = [max(times) / t for t in times]
         print "speedups: %s" % " - ".join(map(str, speedups))
-        if plot_scalability:
+        if plot_scale:
             plot_scalability(speedups, directory[2:])
 
 def parse_range(rangestr):
@@ -147,6 +151,8 @@ def parse_range_string(rangestr):
                 res.append(int(part))
             else:
                 res += parse_range(part)
+    elif rangestr.isdigit():
+        res = [int(rangestr)]
     else:
         res += parse_range(rangestr)
 

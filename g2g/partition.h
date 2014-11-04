@@ -164,7 +164,7 @@ class Partition {
     void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy, 
                double* fort_energy_ptr, double* fort_forces_ptr, bool OPEN);
     void compute_functions(bool forces, bool gga);
-    void rebalance(const std::vector<int> &);
+    void rebalance(const std::vector<double> &);
 
     std::vector<Cube> cubes;
     std::vector<Sphere> spheres;

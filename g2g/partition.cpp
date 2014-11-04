@@ -259,12 +259,14 @@ void Partition::clear() {
   cubes.clear(); spheres.clear(); work.clear(); 
 }
 
-void Partition::rebalance(const vector<int> & finishes)
+void Partition::rebalance(const vector<double> & finishes)
 {
   int largest = std::max_element(finishes.begin(),finishes.end()) - finishes.begin();
   int smallest = std::min_element(finishes.begin(),finishes.end()) - finishes.begin();
 
-  if(largest != smallest && work[largest].size() > 1) {
+  double percentage = (finishes[largest] - finishes[smallest]) / finishes[largest];
+
+  if(largest != smallest && work[largest].size() > 1 && percentage > 0.1) {
     int maxi = 0, mini = 0, currentmax = INT_MAX, currentmin = 0;
 
     for(int i = 0; i < work[largest].size(); i++) {
@@ -309,7 +311,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   double cubes_energy_c2 = 0, spheres_energy_c2 = 0;
 
   Timer smallgroups, biggroups;
-  vector<int> next(outer_threads); int bump = 0;
+  vector<double> next(outer_threads); 
 
   smallgroups.start();
   #pragma omp parallel for reduction(+:energy) num_threads(outer_threads)
@@ -340,16 +342,12 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
     cout << t;
     cout << ts;
 
-    next[i] = bump;
-
-    #pragma omp atomic
-    bump++;
+    next[i] = t.getTotal();
 
     energy += local_energy;
   }
   smallgroups.stop();
 
-  if(work.size() > 0) rebalance(next);
   cout << "SMALL GROUPS = " << smallgroups << endl;
 
   Timers bigroupsts;
@@ -372,6 +370,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   cout << bigroupsts;
 
   Timer enditer; enditer.start();
+  if(work.size() > 0) rebalance(next);
   if (compute_forces) {
     FortranMatrix<double> fort_forces_out(fort_forces_ptr, 
       fortran_vars.atoms, 3, fortran_vars.max_atoms);

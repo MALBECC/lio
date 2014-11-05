@@ -27,7 +27,7 @@ def subdirs_with_benchmark(basedir):
     return [subdir for subdir,dirs,files in os.walk(basedir) if progname in set(files)]
 
 def tuples2str(tuples):
-    return ','.join(["{0} = {1}".format(k,v) for k,v in tuples])
+    return "\n" + '\n'.join(["\t{0} = {1}".format(k,v) for k,v in tuples]) + "\n"
 
 def print_file(filename):
     with open(filename) as f:
@@ -62,8 +62,8 @@ def plot_scalability(speedups, expname):
     plt.plot(threads, threads, "bo-", label="Teorico")
     plt.legend(loc=2)
 
-    name = replace_special("escalabilidad-%s-%s.png" % (expname,timestamp()))
-    plt.savefig(os.path.join("escalabilidad",name))
+    name = replace_special("escalabilidad-%s-%s" % (expname,timestamp()))
+    plt.savefig(os.path.join("escalabilidad","%s.png" % name))
 
 def get_enviroments(dic, keylist=None):
     if keylist is None:
@@ -79,10 +79,10 @@ def get_enviroments(dic, keylist=None):
             ret.append([(key,value)] + sublist)
     return ret 
 
-def average(l):
+def computeresult(l):
     return sum(l) / len(l)
 
-def benchmark(regex, gpu_opts, threadlist, thresholdlist, offsetlist, plot_scale):
+def benchmark(regex, gpu_opts, threadlist, thresholdlist, offsetlist, plot_scale, g2gpath):
     """ 
     Correr los correr-profile.sh de todas las carpetas que lo posean, 
     y generar un reporte de cada uno.
@@ -91,12 +91,15 @@ def benchmark(regex, gpu_opts, threadlist, thresholdlist, offsetlist, plot_scale
     testrx = re.compile(regex)
     testdirs = filter(testrx.search, subdirs_with_benchmark("."))
 
+    ldpath = ":".join([g2gpath,os.environ.get("LD_LIBRARY_PATH")])
+
     env_flags = {
         "OMP_NUM_THREADS": threadlist,
         "KMP_AFFINITY": ["granularity=fine,scatter"],
         "LIO_OPTIONS_FILE": [gpu_opts],
         "LIO_SPLIT_THRESHOLD": thresholdlist,
         "LIO_MINCOST_OFFSET": offsetlist,
+        "LD_LIBRARY_PATH": [ldpath],
     }
 
     for directory in testdirs:
@@ -122,8 +125,8 @@ def benchmark(regex, gpu_opts, threadlist, thresholdlist, offsetlist, plot_scale
                 print "No hay resultados para %s, revise el test" % prog
                 break
 
-            measure = average(map(time2nanos,measures[1:-2]))
-            print "{0} ({1}) => {2} ms.".format(directory, tuples2str(enviro), measure)
+            measure = computeresult(map(time2nanos,measures[1:-2]))
+            print "{0} ({1}) => {2} mus.".format(directory, tuples2str(enviro), measure)
             times.append(measure)
         
         if len(times) == 0:
@@ -166,10 +169,11 @@ if __name__ == "__main__":
     parser.add_option("-a", "--plot_threadscale", action="store_true", default=False, help="Graficar escalabilidad intermedia")
     parser.add_option("-s", "--thresholds", dest="thresholds", default="100:100", help="Threshold para considerar un grupo como chico, como rango (N:M:J)")
     parser.add_option("-o", "--offsets", dest="offsets", default="50000:50000", help="Compensacion de costo para cubos chicos, como rango (N:M:J)")
+    parser.add_option("-d", "--directory", dest="g2g_path", default=os.path.abspath("./lio-g2gs/latest"), help="Direccion donde encontrar los .so de G2G y lioamber")
     (options, args) = parser.parse_args()
 
     threadlist = parse_range_string(options.threads)
     thresholdlist = parse_range_string(options.thresholds)
     offsetlist = parse_range_string(options.offsets)
 
-    benchmark(options.regex,options.gpu_opts, threadlist, thresholdlist, offsetlist, options.plot_threadscale)
+    benchmark(options.regex,options.gpu_opts, threadlist, thresholdlist, offsetlist, options.plot_threadscale, options.g2g_path)

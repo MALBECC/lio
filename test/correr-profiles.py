@@ -46,11 +46,11 @@ def process_lio_output(output):
             info.append(line)
     return measures, '\n'.join(info)
 
-def timestamp():
-    return '-'.join(str(datetime.today()).split(" "))
-
 def replace_special(s):
     return re.sub("[.:-]","-", s)
+
+def timestamp():
+    return replace_special('-'.join(str(datetime.today()).split(" ")))
 
 def plot_scalability(speedups, expname):
     plt.clf()
@@ -82,7 +82,12 @@ def get_enviroments(dic, keylist=None):
 def computeresult(l):
     return sum(l) / len(l)
 
-def benchmark(regex, gpu_opts, threadlist, thresholdlist, offsetlist, plot_scale, g2gpath):
+def save_lio_output(name, output):
+    filename = os.path.join("outputs","experiment-%s-%s.txt" % (name, timestamp()))
+    with open(filename, "w") as f:
+        print >> f, output
+
+def benchmark(regex, gpu_opts, threadlist, thresholdlist, offsetlist, plot_scale, g2gpath, save_outputs):
     """ 
     Correr los correr-profile.sh de todas las carpetas que lo posean, 
     y generar un reporte de cada uno.
@@ -119,13 +124,16 @@ def benchmark(regex, gpu_opts, threadlist, thresholdlist, offsetlist, plot_scale
                     env=env, cwd=path, stdout=subprocess.PIPE).communicate()
             measures,info = process_lio_output(data)
 
+            if save_outputs:
+                save_lio_output(directory[2:], data)
+
             print info
 
             if len(measures) < 2:
                 print "No hay resultados para %s, revise el test" % prog
                 break
 
-            measure = computeresult(map(time2nanos,measures[1:-2]))
+            measure = computeresult(map(time2nanos,[measures[-2]]))
             print "{0} ({1}) => {2} mus.".format(directory, tuples2str(enviro), measure)
             times.append(measure)
         
@@ -169,11 +177,14 @@ if __name__ == "__main__":
     parser.add_option("-a", "--plot_threadscale", action="store_true", default=False, help="Graficar escalabilidad intermedia")
     parser.add_option("-s", "--thresholds", dest="thresholds", default="100:100", help="Threshold para considerar un grupo como chico, como rango (N:M:J)")
     parser.add_option("-o", "--offsets", dest="offsets", default="50000:50000", help="Compensacion de costo para cubos chicos, como rango (N:M:J)")
-    parser.add_option("-d", "--directory", dest="g2g_path", default=os.path.abspath("./lio-g2gs/latest"), help="Direccion donde encontrar los .so de G2G y lioamber")
+    parser.add_option("-d", "--directory", dest="g2g_path", default=("./lio-g2gs/latest"), help="Direccion donde encontrar los .so de G2G y lioamber")
+    parser.add_option("-q", "--save_outputs", action="store_true", default=False, help="Guardar los outputs de corridas")
     (options, args) = parser.parse_args()
 
     threadlist = parse_range_string(options.threads)
     thresholdlist = parse_range_string(options.thresholds)
     offsetlist = parse_range_string(options.offsets)
 
-    benchmark(options.regex,options.gpu_opts, threadlist, thresholdlist, offsetlist, options.plot_threadscale, options.g2g_path)
+    g2g_path = os.path.abspath(options.g2g_path)
+    benchmark(options.regex,options.gpu_opts, threadlist, thresholdlist,\
+        offsetlist, options.plot_threadscale, g2g_path, options.save_outputs)

@@ -266,7 +266,7 @@ void Partition::rebalance(const vector<double> & finishes)
 
   double percentage = (finishes[largest] - finishes[smallest]) / finishes[largest];
 
-  if(largest != smallest && work[largest].size() > 1 && percentage > 0.1) {
+  if(largest != smallest && work[largest].size() > 1 && percentage > 0.05) {
     int maxi = 0, mini = 0, currentmax = INT_MAX, currentmin = 0;
 
     for(int i = 0; i < work[largest].size(); i++) {
@@ -338,7 +338,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
       }
     }
     t.stop();
-    printf("Workload %d: ", i);
+    printf("Workload %d: (%d)", i, work[i].size());
     cout << t;
     cout << ts;
 

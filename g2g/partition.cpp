@@ -267,32 +267,20 @@ void Partition::rebalance(const vector<double> & finishes)
   double percentage = (finishes[largest] - finishes[smallest]) / finishes[largest];
 
   if(largest != smallest && work[largest].size() > 1 && percentage > 0.05) {
-    int maxi = 0, mini = 0, currentmax = INT_MAX, currentmin = 0;
+    int mini = 0, currentmini = INT_MAX;
 
     for(int i = 0; i < work[largest].size(); i++) {
       int ind = work[largest][i];
       int cost = (ind >= cubes.size()) ?
                     spheres[ind-cubes.size()].elements() :
                     cubes[ind].elements();
-      if(currentmax < cost) {
-        currentmax = cost;
-        maxi = i;
-      }
-
-      if(currentmin > cost) {
-        currentmin = cost;
+      if(currentmini > cost) {
+        currentmini = cost;
         mini = i;
       }
     }
 
     int topass = mini;
-    for(int i = 0; i < work[largest].size(); i++) {
-      if (i != mini && i != maxi) {
-        topass = i;
-        break;
-      }
-    }
-
     printf("Swapping %d from %d to %d\n", work[largest][topass], largest, smallest);
     work[smallest].push_back(work[largest][topass]);
     swap(work[largest].back(), work[largest][topass]);

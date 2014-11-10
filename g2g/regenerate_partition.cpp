@@ -404,8 +404,8 @@ void Partition::regenerate(void)
 
     inner_threads = outer_threads = omp_get_max_threads();
 
-    G2G::MINCOST = getintenv("LIO_MINCOST_OFFSET", 50000);
-    G2G::THRESHOLD = getintenv("LIO_SPLIT_THRESHOLD", 100);
+    G2G::MINCOST = getintenv("LIO_MINCOST_OFFSET", 250000);
+    G2G::THRESHOLD = getintenv("LIO_SPLIT_THRESHOLD", 150);
 
     #ifdef OUTPUT_COSTS
     for(int i = 0; i < cubes.size(); i++) {

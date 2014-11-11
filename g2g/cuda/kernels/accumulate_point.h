@@ -36,7 +36,7 @@ __global__ void gpu_accumulate_point_open(scalar_type* const energy, scalar_type
          _dd2_b += dd2_b[this_row];
      }
   }
-  gpu_potop<scalar_type>(_partial_density_a, _partial_density_b, _dxyz_a, _dxyz_b, _dd1_a, _dd1_b, _dd2_a, _dd2_b,
+  gpu_pot_open<scalar_type>(_partial_density_a, _partial_density_b, _dxyz_a, _dxyz_b, _dd1_a, _dd1_b, _dd2_a, _dd2_b,
       exc_corr, exc, corr, corr1, corr2, v_a, v_b);
 
   if (compute_energy && valid_thread){

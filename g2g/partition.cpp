@@ -259,32 +259,47 @@ void Partition::clear() {
   cubes.clear(); spheres.clear(); work.clear(); 
 }
 
-void Partition::rebalance(const vector<double> & finishes)
+void Partition::rebalance(vector<double> & times, vector<double> & finishes)
 {
-  int largest = std::max_element(finishes.begin(),finishes.end()) - finishes.begin();
-  int smallest = std::min_element(finishes.begin(),finishes.end()) - finishes.begin();
+  for(int rondas = 0; rondas < 5; rondas++){
+    int largest = std::max_element(finishes.begin(),finishes.end()) - finishes.begin();
+    int smallest = std::min_element(finishes.begin(),finishes.end()) - finishes.begin();
 
-  double percentage = (finishes[largest] - finishes[smallest]) / finishes[largest];
+    double diff = finishes[largest] - finishes[smallest];
 
-  if(largest != smallest && work[largest].size() > 1 && percentage > 0.05) {
-    int mini = 0, currentmini = INT_MAX;
+    if(largest != smallest && work[largest].size() > 1) {
+      double lt = finishes[largest]; double moved = 0;
+      while(diff / lt >= 0.02) {
+        int mini = -1; double currentmini = diff;
+        for(int i = 0; i < work[largest].size(); i++) {
+          int ind = work[largest][i];
+          if(times[ind] > diff / 2) continue;
+          double cost = times[ind];
+          if(currentmini > diff - 2*cost) {
+            currentmini = diff - 2*cost;
+            mini = i;
+          }
+        }
+          
+        if(mini == -1){
+          printf("Nothing more to swap!\n");
+          break;
+        }
 
-    for(int i = 0; i < work[largest].size(); i++) {
-      int ind = work[largest][i];
-      int cost = (ind >= cubes.size()) ?
-                    spheres[ind-cubes.size()].elements() :
-                    cubes[ind].elements();
-      if(currentmini > cost) {
-        currentmini = cost;
-        mini = i;
+        int topass = mini; 
+        int workindex = work[largest][topass];
+
+        printf("Swapping %d from %d to %d\n", work[largest][topass], largest, smallest);
+
+        work[smallest].push_back(work[largest][topass]);
+        work[largest].erase(work[largest].begin() + topass);
+            
+        diff -= 2*times[workindex];
+        moved += times[workindex];
       }
+      finishes[largest] -= moved;
+      finishes[smallest] += moved;
     }
-
-    int topass = mini;
-    printf("Swapping %d from %d to %d\n", work[largest][topass], largest, smallest);
-    work[smallest].push_back(work[largest][topass]);
-    swap(work[largest].back(), work[largest][topass]);
-    work[largest].pop_back();
   }
 }
 
@@ -315,6 +330,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
 
     for(int j = 0; j < work[i].size(); j++) {
       int ind = work[i][j];
+      Timer element; element.start();
       if(ind >= cubes.size()){
         spheres[ind-cubes.size()].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
           local_energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1, spheres_energy_c2,
@@ -324,11 +340,12 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
           local_energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, cubes_energy_c2,
           fort_forces_ms[i], 1, rmm_outputs[i], OPEN);
       }
+      element.stop();
+      timeforgroup[ind] = element.getTotal();
     }
     t.stop();
-    printf("Workload %d: (%d)", i, work[i].size());
-    cout << t;
-    cout << ts;
+    printf("Workload %d: (%d) ", i, work[i].size());
+    cout << t; cout << ts;
 
     next[i] = t.getTotal();
 
@@ -358,7 +375,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   cout << bigroupsts;
 
   Timer enditer; enditer.start();
-  if(work.size() > 0) rebalance(next);
+  if(work.size() > 0) rebalance(timeforgroup, next);
   if (compute_forces) {
     FortranMatrix<double> fort_forces_out(fort_forces_ptr, 
       fortran_vars.atoms, 3, fortran_vars.max_atoms);

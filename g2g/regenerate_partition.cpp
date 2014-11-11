@@ -424,6 +424,7 @@ void Partition::regenerate(void)
     }
 
     compute_work_partition();
+    timeforgroup.resize(cubes.size() + spheres.size());
 
     fort_forces_ms.resize(outer_threads);
     rmm_outputs.resize(outer_threads);

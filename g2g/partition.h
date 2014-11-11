@@ -164,7 +164,7 @@ class Partition {
     void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy, 
                double* fort_energy_ptr, double* fort_forces_ptr, bool OPEN);
     void compute_functions(bool forces, bool gga);
-    void rebalance(const std::vector<double> &);
+    void rebalance(std::vector<double> &, std::vector<double> &);
 
     std::vector<Cube> cubes;
     std::vector<Sphere> spheres;
@@ -173,6 +173,7 @@ class Partition {
     std::vector< HostMatrix<base_scalar_type> > rmm_outputs;
 
     std::vector< std::vector< int > > work;
+    std::vector< double > timeforgroup;
 
     int outer_threads, inner_threads, threshold;
 };

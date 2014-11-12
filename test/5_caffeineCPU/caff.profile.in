@@ -1,6 +1,6 @@
 &lio
 nsol=0
-nmax=1
+nmax=3
 natom=24
 charge=0
 writeforces=f

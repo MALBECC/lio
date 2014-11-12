@@ -2,6 +2,6 @@
  nsol=0
  natom=92
  charge=0
- nmax=1
+ nmax=3
  writeforces=f
 &end

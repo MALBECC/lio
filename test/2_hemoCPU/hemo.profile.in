@@ -2,7 +2,7 @@
  nsol=0
  natom=48
  charge=0
- nmax=1
+ nmax=3
  vcinp=f
  writeforces=f
 &end

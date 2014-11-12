@@ -269,7 +269,7 @@ void Partition::rebalance(vector<double> & times, vector<double> & finishes)
 
     if(largest != smallest && work[largest].size() > 1) {
       double lt = finishes[largest]; double moved = 0;
-      while(diff / lt >= 0.02) {
+      while(diff / lt >= 0.05) {
         int mini = -1; double currentmini = diff;
         for(int i = 0; i < work[largest].size(); i++) {
           int ind = work[largest][i];
@@ -375,7 +375,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   cout << bigroupsts;
 
   Timer enditer; enditer.start();
-  if(work.size() > 0) rebalance(timeforgroup, next);
+  if(work.size() > 1) rebalance(timeforgroup, next);
   if (compute_forces) {
     FortranMatrix<double> fort_forces_out(fort_forces_ptr, 
       fortran_vars.atoms, 3, fortran_vars.max_atoms);

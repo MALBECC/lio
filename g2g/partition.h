@@ -85,9 +85,8 @@ class PointGroup {
     }
     //Las funciones totales, son totales del grupo, no las totales para todos los grupos.
     inline uint total_functions(void) const { 
-        static const int ALIGN = 64 / sizeof(scalar_type);
         int v = s_functions + p_functions * 3 + d_functions * 6; 
-        return ((v + ALIGN - 1) / ALIGN) * ALIGN;
+        return v;
     }
     inline uint total_functions_simple(void) const { return local2global_func.size(); } // == s_functions + p_functions + d_functions
     inline uint total_nucleii(void) const { return local2global_nuc.size(); }
@@ -173,6 +172,7 @@ class Partition {
     std::vector< HostMatrix<base_scalar_type> > rmm_outputs;
 
     std::vector< std::vector< int > > work;
+    std::vector< double > next;
     std::vector< double > timeforgroup;
 
     int outer_threads, inner_threads, threshold;

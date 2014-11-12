@@ -45,7 +45,7 @@ template<class T> void HostMatrix<T>::alloc_data(void) {
     assert(false);
     #endif
 	}
-	else this->data = (T *) mkl_calloc(this->elements(), sizeof(T), 64);
+	else this->data = (T *) mkl_malloc(this->bytes(), 64);
 
 	assert(this->data);
 }
@@ -97,6 +97,9 @@ template<class T> HostMatrix<T>& HostMatrix<T>::resize(unsigned int _width, unsi
   if (_height == 0 ) throw std::runtime_error("La altura no puede ser 0");
   if (_width != this->width || _height != this->height) {
     if (this->data) dealloc_data();
+    static const int ALIGN = 64 / sizeof(T);
+    _width = ((_width + ALIGN - 1) / ALIGN) * ALIGN;
+    _height = ((_height + ALIGN - 1) / ALIGN) * ALIGN;
     this->width = _width; this->height = _height;
     alloc_data();
   }

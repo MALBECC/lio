@@ -314,7 +314,6 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   double cubes_energy_c2 = 0, spheres_energy_c2 = 0;
 
   Timer smallgroups, biggroups;
-  vector<double> next(outer_threads); 
 
   smallgroups.start();
   #pragma omp parallel for reduction(+:energy) num_threads(outer_threads)

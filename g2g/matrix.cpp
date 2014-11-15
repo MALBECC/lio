@@ -99,7 +99,6 @@ template<class T> HostMatrix<T>& HostMatrix<T>::resize(unsigned int _width, unsi
     if (this->data) dealloc_data();
     static const int ALIGN = 64 / sizeof(T);
     _width = ((_width + ALIGN - 1) / ALIGN) * ALIGN;
-    _height = ((_height + ALIGN - 1) / ALIGN) * ALIGN;
     this->width = _width; this->height = _height;
     alloc_data();
   }

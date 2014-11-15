@@ -105,6 +105,7 @@ def benchmark(regex, gpu_opts, threadlist, thresholdlist, offsetlist, plot_scale
         "LIO_SPLIT_THRESHOLD": thresholdlist,
         "LIO_MINCOST_OFFSET": offsetlist,
         "LD_LIBRARY_PATH": [ldpath],
+        "OMP_NESTED": ["false"],
     }
 
     for directory in testdirs:

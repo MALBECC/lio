@@ -92,6 +92,7 @@ class PointGroup {
     inline uint total_nucleii(void) const { return local2global_nuc.size(); }
     inline bool has_nucleii(uint atom) const { return (std::find(local2global_nuc.begin(), local2global_nuc.end(), atom) != local2global_nuc.end()); }
 
+    void output_cost() const;
     void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const;
     void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input) const;
     void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input_a, G2G::HostMatrix<scalar_type>& rmm_input_b) const;

@@ -216,6 +216,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
       }
     }
     /* accumulate force results for this group */
+    #pragma omp parallel for
     for (int i = 0; i < total_nucleii(); i++) {
       uint global_atom = local2global_nuc[i];
       vec_type3 this_force = forces[i];

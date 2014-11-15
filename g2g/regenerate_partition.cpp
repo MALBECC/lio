@@ -146,6 +146,7 @@ void diagnostic(int inner, int outer)
 /* methods */
 void Partition::regenerate(void)
 {
+    Timer tweights;
     // Determina el exponente minimo para cada tipo de atomo.
     // uno por elemento de la tabla periodica.
     vector<double> min_exps(120, numeric_limits<double>::max());
@@ -341,7 +342,10 @@ void Partition::regenerate(void)
 
                 Cube cube(cube_ijk);
                 assert(cube.number_of_points != 0);
+
+                tweights.start();
                 cube.compute_weights();
+                tweights.pause();
 
                 if (cube.number_of_points < min_points_per_cube)
                 {
@@ -378,7 +382,9 @@ void Partition::regenerate(void)
 
             Sphere sphere(sphere_i);
             assert(sphere.number_of_points != 0);
+            tweights.start();
             sphere.compute_weights();
+            tweights.pause();
             if (sphere.number_of_points < min_points_per_cube)
             {
                 cout << "not enough points" << endl;
@@ -407,12 +413,14 @@ void Partition::regenerate(void)
     G2G::MINCOST = getintenv("LIO_MINCOST_OFFSET", 250000);
     G2G::THRESHOLD = getintenv("LIO_SPLIT_THRESHOLD", 150);
 
+    cout << "Weights: " << tweights << endl;
+
     #ifdef OUTPUT_COSTS
     for(int i = 0; i < cubes.size(); i++) {
-      printf("CUBE: %d %d %ld %ld\n", cubes[i].total_functions(), cubes[i].number_of_points, cubes[i].cost(), cubes[i].size_in_gpu());
+      printf("CUBE: "); cubes[i].output_cost(); printf("\n");
     }
     for(int i = 0; i < spheres.size(); i++) {
-      printf("SPHERE: %d %d %ld %ld\n", spheres[i].total_functions(), spheres[i].number_of_points, spheres[i].cost(), spheres[i].size_in_gpu());
+      printf("SPHERE: "); spheres[i].output_cost(); printf("\n");
     }
     #endif
 

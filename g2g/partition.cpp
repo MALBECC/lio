@@ -35,6 +35,12 @@ ostream& operator<<(ostream& io, const Timers& t) {
  ********************/
 
 template<class scalar_type>
+void PointGroup<scalar_type>::output_cost() const
+{
+    printf("%d %d %d %lld %lld\n", number_of_points, total_functions(), rmm_bigs.size(), cost(), size_in_gpu());
+}
+
+template<class scalar_type>
 bool PointGroup<scalar_type>::is_big_group(int threads_to_use) const 
 {
   return rmm_bigs.size() >= THRESHOLD * threads_to_use && 
@@ -242,17 +248,18 @@ void Partition::compute_functions(bool forces, bool gga) {
   Timer t1;
   t1.start_and_sync();
 
-  #pragma omp parallel for num_threads(inner_threads) schedule(guided,8)
+  #pragma omp parallel for schedule(guided,8)
   for(int i = 0; i < cubes.size(); i++){
     cubes[i].compute_functions(forces, gga);
   }
 
-  #pragma omp parallel for num_threads(inner_threads) schedule(guided,8)
+  #pragma omp parallel for schedule(guided,8)
   for(int i = 0; i < spheres.size(); i++){
     spheres[i].compute_functions(forces, gga);
   }
 
   t1.stop_and_sync();
+  cout << "Timer functions: " << t1 << endl;
 }
 
 void Partition::clear() {
@@ -282,14 +289,14 @@ void Partition::rebalance(vector<double> & times, vector<double> & finishes)
         }
           
         if(mini == -1){
-          printf("Nothing more to swap!\n");
+          //printf("Nothing more to swap!\n");
           break;
         }
 
         int topass = mini; 
         int workindex = work[largest][topass];
 
-        printf("Swapping %d from %d to %d\n", work[largest][topass], largest, smallest);
+        //printf("Swapping %d from %d to %d\n", work[largest][topass], largest, smallest);
 
         work[smallest].push_back(work[largest][topass]);
         work[largest].erase(work[largest].begin() + topass);
@@ -343,19 +350,19 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
       timeforgroup[ind] = element.getTotal();
     }
     t.stop();
-    printf("Workload %d: (%d) ", i, work[i].size());
-    cout << t; cout << ts;
+    //printf("Workload %d: (%d) ", i, work[i].size());
+    //cout << t; cout << ts;
 
     next[i] = t.getTotal();
 
     energy += local_energy;
   }
-  smallgroups.stop();
+  //smallgroups.stop();
 
-  cout << "SMALL GROUPS = " << smallgroups << endl;
+  //cout << "SMALL GROUPS = " << smallgroups << endl;
 
   Timers bigroupsts;
-  biggroups.start(); 
+  //biggroups.start(); 
   for(int i = 0; i < cubes.size(); i++) {
     if(!cubes[i].is_big_group(inner_threads)) continue;
     cubes[i].solve(bigroupsts,compute_rmm,lda,compute_forces, compute_energy, 
@@ -368,10 +375,10 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
       energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1, 
       spheres_energy_c2, fort_forces_ms[0], inner_threads, rmm_outputs[0], OPEN);
   }
-  biggroups.stop();
+  //biggroups.stop();
 
-  cout << "BIG GROUPS = " << biggroups << endl;
-  cout << bigroupsts;
+  //cout << "BIG GROUPS = " << biggroups << endl;
+  //cout << bigroupsts;
 
   Timer enditer; enditer.start();
   if(work.size() > 1) rebalance(timeforgroup, next);

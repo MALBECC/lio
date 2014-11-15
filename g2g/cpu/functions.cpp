@@ -42,6 +42,7 @@ void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
       hessian_values.resize(group_m * 2, number_of_points);
   }
 
+  #pragma omp parallel for
   for(int point = 0; point< points.size(); point++) {
     vec_type3 point_position = vec_type3(points[point].position.x, points[point].position.y, points[point].position.z);
 

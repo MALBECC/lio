@@ -29,7 +29,7 @@ namespace G2G {
       inline float x() const { return _x; }
       inline float y() const { return _y; }
       inline float z() const { return _z; }
-      inline float length2(){ return _x * _x + _y * _y + _z * _z; }
+      inline float length2() const { return _x * _x + _y * _y + _z * _z; }
 
       friend bool isinf(const vec_type & e){ return isinf(e._x) || isinf(e._y) || isinf(e._z); }
       friend bool isnan(const vec_type & e){ return isnan(e._x) || isnan(e._y) || isnan(e._z); }
@@ -143,7 +143,7 @@ namespace G2G {
       vec_type(double _x, double _y, double _z) { double3::x = _x; double3::y = _y; double3::z = _z; }
       typedef double3 base_type;
 
-      double length2(void) { return double3::x * double3::x + double3::y * double3::y + double3::z * double3::z; }
+      double length2(void) const { return double3::x * double3::x + double3::y * double3::y + double3::z * double3::z; }
       inline double x(void) const { return double3::x; }
       inline double y(void) const { return double3::y; }
       inline double z(void) const { return double3::z; }

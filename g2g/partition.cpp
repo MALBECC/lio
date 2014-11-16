@@ -235,8 +235,6 @@ PointGroup<scalar_type>::~PointGroup<scalar_type>()
   }
 #else
   function_values.deallocate();
-  gradient_values.deallocate();
-  hessian_values.deallocate();
   gX.deallocate(); gY.deallocate(); gZ.deallocate();
   hPX.deallocate(); hPY.deallocate(); hPZ.deallocate();
   hIX.deallocate(); hIY.deallocate(); hIZ.deallocate();

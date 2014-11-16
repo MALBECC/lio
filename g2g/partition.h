@@ -64,8 +64,6 @@ class PointGroup {
 
     #if CPU_KERNELS
     G2G::HostMatrix<scalar_type> function_values;
-    G2G::HostMatrix<vec_type3> gradient_values;
-    G2G::HostMatrix<vec_type3> hessian_values;
     G2G::HostMatrix<scalar_type> gX, gY, gZ;
     G2G::HostMatrix<scalar_type> hIX, hIY, hIZ;
     G2G::HostMatrix<scalar_type> hPX, hPY, hPZ;

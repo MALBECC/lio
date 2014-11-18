@@ -411,7 +411,7 @@ void Partition::regenerate(void)
     inner_threads = outer_threads = omp_get_max_threads();
 
     G2G::MINCOST = getintenv("LIO_MINCOST_OFFSET", 250000);
-    G2G::THRESHOLD = getintenv("LIO_SPLIT_THRESHOLD", 150);
+    G2G::THRESHOLD = getintenv("LIO_SPLIT_THRESHOLD", 80);
 
     cout << "Weights: " << tweights << endl;
 

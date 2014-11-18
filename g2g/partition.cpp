@@ -246,12 +246,12 @@ void Partition::compute_functions(bool forces, bool gga) {
   Timer t1;
   t1.start_and_sync();
 
-  #pragma omp parallel for schedule(guided,8)
+  // #pragma omp parallel for schedule(guided,8)
   for(int i = 0; i < cubes.size(); i++){
     cubes[i].compute_functions(forces, gga);
   }
 
-  #pragma omp parallel for schedule(guided,8)
+  // #pragma omp parallel for schedule(guided,8)
   for(int i = 0; i < spheres.size(); i++){
     spheres[i].compute_functions(forces, gga);
   }
@@ -324,7 +324,6 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   #pragma omp parallel for reduction(+:energy) num_threads(outer_threads)
   for(int i = 0; i< work.size(); i++) {
     double local_energy = 0; 
-    int id = omp_get_thread_num();
     
     Timers ts; Timer t;
     t.start();

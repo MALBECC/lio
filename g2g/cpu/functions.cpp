@@ -11,32 +11,18 @@ using namespace std;
 
 namespace G2G {
 
-template< int compo, int skip, int start, class scalar_type >
-void proyect(const HostMatrix< vec_type< scalar_type, 3> > & genmat, HostMatrix<scalar_type> & res) {
-  int width = genmat.width / skip;
-  res.resize(width, genmat.height);
-  for(int row = 0; row < genmat.height; row++){
-    for(int col = start, p = 0; col < genmat.width; col += skip, p++){
-      vec_type<scalar_type, 3> e = genmat(col, row);
-      res(p,row) = (compo == 0) ? e.x() : (compo == 1) ? e.y() : e.z();
-    }
-  }
-}
-
 template<class scalar_type>
 void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
 {
   #if !CPU_RECOMPUTE
-  forces = gga = true; // Vamos a cachear asi que guardemos todo y listo
   if (this->inGlobal) return;
   this->inGlobal = true;
+  forces = gga = true; // Vamos a cachear asi que guardemos todo y listo
   #endif
   /* Load group functions */
   uint group_m = total_functions();
 
   function_values.resize(group_m, number_of_points);
-  HostMatrix<vec_type3> gradient_values;
-  HostMatrix<vec_type3> hessian_values;
   if (forces || gga) {
       gX.resize(group_m, number_of_points); gX.zero();
       gY.resize(group_m, number_of_points); gY.zero();

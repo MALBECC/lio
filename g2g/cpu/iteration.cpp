@@ -253,9 +253,6 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
 
 #if CPU_RECOMPUTE
   /* clear functions */
-  function_values.deallocate();
-  gradient_values.deallocate();
-  hessian_values.deallocate();
   gX.deallocate(); gY.deallocate(); gZ.deallocate();
   hIX.deallocate(); hIY.deallocate(); hIZ.deallocate();
   hPX.deallocate(); hPY.deallocate(); hPZ.deallocate();

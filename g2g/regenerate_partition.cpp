@@ -111,6 +111,9 @@ void Partition::compute_work_partition()
   }    
 
   split_bins(costs, work, max_cost);
+  for(int i = 0; i < work.size(); i++)
+      sort(work[i].begin(), work[i].end());
+
   double maxp = 0, minp = total_costs(cubes)+total_costs(spheres)+1;
   for(int i = 0; i < work.size(); i++) {
     long long total = 0;
@@ -401,8 +404,8 @@ void Partition::regenerate(void)
         }
     }
 
-    sortBySize<Sphere>(spheres);
-    sortBySize<Cube>(cubes);
+    sort(spheres.begin(), spheres.end());
+    sort(cubes.begin(), cubes.end());
 
     //Initialize the global memory pool for CUDA, with the default safety factor
     //If it is CPU, then this doesn't matter

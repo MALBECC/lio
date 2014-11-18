@@ -22,9 +22,8 @@ Partition partition;
 ostream& operator<<(ostream& io, const Timers& t) {
 #ifdef TIMINGS
     ostringstream ss;
-    ss << "density_calcs: " << t.density_calcs << "rmm: " << t.rmm << " density: " 
-       << t.density << " pot: " << t.pot << " forces: " << t.forces << " resto: " << t.resto << " functions: " << t.functions
-       << " rmm_input = " << t.rmm_input;
+    ss << "density = " << t.density << " rmm = " << t.rmm << " forces = " << t.forces
+      << " functions = " << t.functions;
     io << ss.str() << endl;
 #endif
   return io;
@@ -246,12 +245,12 @@ void Partition::compute_functions(bool forces, bool gga) {
   Timer t1;
   t1.start_and_sync();
 
-  // #pragma omp parallel for schedule(guided,8)
+  #pragma omp parallel for schedule(guided,8)
   for(int i = 0; i < cubes.size(); i++){
     cubes[i].compute_functions(forces, gga);
   }
 
-  // #pragma omp parallel for schedule(guided,8)
+  #pragma omp parallel for schedule(guided,8)
   for(int i = 0; i < spheres.size(); i++){
     spheres[i].compute_functions(forces, gga);
   }
@@ -274,7 +273,7 @@ void Partition::rebalance(vector<double> & times, vector<double> & finishes)
 
     if(largest != smallest && work[largest].size() > 1) {
       double lt = finishes[largest]; double moved = 0;
-      while(diff / lt >= 0.05) {
+      while(diff / lt >= 0.02) {
         int mini = -1; double currentmini = diff;
         for(int i = 0; i < work[largest].size(); i++) {
           int ind = work[largest][i];
@@ -288,13 +287,13 @@ void Partition::rebalance(vector<double> & times, vector<double> & finishes)
           
         if(mini == -1){
           //printf("Nothing more to swap!\n");
-          break;
+          return;
         }
 
         int topass = mini; 
         int workindex = work[largest][topass];
 
-        //printf("Swapping %d from %d to %d\n", work[largest][topass], largest, smallest);
+        printf("Swapping %d from %d to %d\n", work[largest][topass], largest, smallest);
 
         work[smallest].push_back(work[largest][topass]);
         work[largest].erase(work[largest].begin() + topass);
@@ -319,10 +318,11 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   double cubes_energy_c2 = 0, spheres_energy_c2 = 0;
 
   Timer smallgroups, biggroups;
+  int i;
 
   smallgroups.start();
-  #pragma omp parallel for reduction(+:energy) num_threads(outer_threads)
-  for(int i = 0; i< work.size(); i++) {
+  #pragma omp parallel for reduction(+:energy) num_threads(outer_threads) private(i)
+  for(i = 0; i< work.size(); i++) {
     double local_energy = 0; 
     
     Timers ts; Timer t;
@@ -347,35 +347,37 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
       timeforgroup[ind] = element.getTotal();
     }
     t.stop();
-    //printf("Workload %d: (%d) ", i, work[i].size());
-    //cout << t; cout << ts;
+    printf("Workload %d: (%d) ", i, work[i].size());
+    cout << t; cout << ts;
 
     next[i] = t.getTotal();
 
     energy += local_energy;
   }
-  //smallgroups.stop();
+  smallgroups.stop();
 
-  //cout << "SMALL GROUPS = " << smallgroups << endl;
+  cout << "SMALL GROUPS = " << smallgroups << endl;
 
   Timers bigroupsts;
-  //biggroups.start(); 
   for(int i = 0; i < cubes.size(); i++) {
     if(!cubes[i].is_big_group(inner_threads)) continue;
+    biggroups.start(); 
     cubes[i].solve(bigroupsts,compute_rmm,lda,compute_forces, compute_energy, 
       energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, 
       cubes_energy_c2, fort_forces_ms[0], inner_threads, rmm_outputs[0], OPEN);
+    biggroups.pause();
   }
   for(int i = 0; i < spheres.size(); i++) {
     if(!spheres[i].is_big_group(inner_threads)) continue;
+    biggroups.start();
     spheres[i].solve(bigroupsts,compute_rmm,lda,compute_forces, compute_energy, 
       energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1, 
       spheres_energy_c2, fort_forces_ms[0], inner_threads, rmm_outputs[0], OPEN);
+    biggroups.pause();
   }
-  //biggroups.stop();
 
-  //cout << "BIG GROUPS = " << biggroups << endl;
-  //cout << bigroupsts;
+  cout << "BIG GROUPS = " << biggroups << endl;
+  cout << bigroupsts;
 
   Timer enditer; enditer.start();
   if(work.size() > 1) rebalance(timeforgroup, next);

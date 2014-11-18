@@ -20,7 +20,7 @@ using std::pair;
 
 namespace G2G {
   struct Timers {
-    Timer density_calcs, total, ciclos, rmm, density, forces, resto, pot, functions, density_derivs, rmm_input;
+    Timer rmm, density, forces, functions;
   };
 
   std::ostream& operator<<(std::ostream& io, const Timers& t);
@@ -174,7 +174,7 @@ class Partition {
     std::vector< double > next;
     std::vector< double > timeforgroup;
 
-    int outer_threads, inner_threads, threshold;
+    int outer_threads, inner_threads;
 };
 
 extern int MINCOST, THRESHOLD;

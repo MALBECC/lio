@@ -8,6 +8,7 @@
        implicit none
        include 'commutate_h.f'
        include 'gaussbell_h.f'
+       include 'triprod_h.f'
        contains
 !
 !
@@ -15,6 +16,7 @@
 !--------------------------------------------------------------------!
        include 'commutate.f'
        include 'gaussbell.f'
+       include 'triprod.f'
        end module
 !
 !

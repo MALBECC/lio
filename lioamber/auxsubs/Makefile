@@ -46,11 +46,10 @@
 #
 # DEPENDENCIES
 #--------------------------------------------------------------------#
-INCLUDES = \
-gaussbell.f \
-gaussbell_h.f \
-commutate.f \
-commutate_h.f
+INCLUDES  =
+INCLUDES += gaussbell.f gaussbell_h.f
+INCLUDES += commutate.f commutate_h.f
+#INCLUDES += triprod.f triprod_h.f
 #
 #
 # COMPILER AND FLAGS
@@ -73,5 +72,6 @@ testprog.x : testprog.o auxsubs.o
 .PHONY: clean
 clean :
 	rm -f auxsubs.o auxsubs.mod testprog.o testprog.x
+	echo $(INCLUDES)
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#

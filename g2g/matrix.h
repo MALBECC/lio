@@ -91,10 +91,6 @@ namespace G2G {
 
 			void deallocate(void);
 
-            /* BLAS methods */
-            static void blas_ssyr(UpperLowerTriangle triangle, float alpha, const HostMatrix<float>& x, const HostMatrix<float>& A, unsigned int x_row);
-            static void blas_ssyr(UpperLowerTriangle triangle, double alpha, const HostMatrix<double>& x, const HostMatrix<double>& A, unsigned int x_row);
-
 			void to_constant(const char* constant);
 
 		private:

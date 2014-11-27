@@ -237,24 +237,6 @@ template void to_constant<uint>(const char* constant, const uint& value);
 template void to_constant<float>(const char* constant, const float& value);
 template void to_constant<double>(const char* constant, const double& value);
 
-template<class T>
-void HostMatrix<T>::blas_ssyr(UpperLowerTriangle triangle, float alpha, const HostMatrix<float>& x, const HostMatrix<float>& A, unsigned int x_row) {
-  CBLAS_UPLO blas_triangle = (triangle == UpperTriangle ? CblasUpper : CblasLower);
-  if (x_row >= x.height || x.width != A.width || A.width != A.height) throw runtime_error("Wrong dimensions for ssyr");
-  int n = x.width;
-
-  cblas_ssyr(CblasRowMajor, blas_triangle, n, alpha, (float*)&x.data[x_row * x.width], 1, (float *)A.data, n);
-}
-
-template<class T>
-void HostMatrix<T>::blas_ssyr(UpperLowerTriangle triangle, double alpha, const HostMatrix<double>& x, const HostMatrix<double>& A, unsigned int x_row) {
-  CBLAS_UPLO blas_triangle = (triangle == UpperTriangle ? CblasUpper : CblasLower);
-  if (x_row >= x.height || x.width != A.width || A.width != A.height) throw runtime_error("Wrong dimensions for dsyr");
-  int n = x.width;
-
-  cblas_dsyr(CblasRowMajor, blas_triangle, n, alpha, (double*)&x.data[x_row * x.width], 1, (double *)A.data, n);
-}
-
 template<class T> void HostMatrix<T>::check_values(void) {
   for (uint i = 0; i < this->width; i++) {
     for (uint j = 0; j < this->height; j++) {

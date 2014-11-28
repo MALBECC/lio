@@ -38,7 +38,7 @@ template<class T> void HostMatrix<T>::alloc_data(void) {
     int bytes = this->bytes();
     bytes = bytes + 64 - (bytes % 64);
 	if (pinned) {
-    #if !CPU_KERNELS
+    #if GPU_KERNELS
 		cudaError_t error_status = cudaMallocHost((void**)&this->data, this->bytes());
 		assert(error_status != cudaErrorMemoryAllocation);
     #else
@@ -52,7 +52,7 @@ template<class T> void HostMatrix<T>::alloc_data(void) {
 
 template<class T> void HostMatrix<T>::dealloc_data(void) {
 	if (pinned) {
-    #if !CPU_KERNELS
+    #if GPU_KERNELS
     cudaFreeHost(this->data);
     #else
     assert(false);
@@ -190,7 +190,7 @@ template<class T> void HostMatrix<T>::copy_submatrix(const CudaMatrix<T>& c, uns
 	if (_bytes > c.bytes())
     throw runtime_error("Can't copy more elements than what operator has");
 
-  #if !CPU_KERNELS
+  #if GPU_KERNELS
 	cudaMemcpy(this->data, c.data, _bytes, cudaMemcpyDeviceToHost);
   cudaAssertNoError("HostMatrix::copy_submatrix");
   #else
@@ -199,7 +199,7 @@ template<class T> void HostMatrix<T>::copy_submatrix(const CudaMatrix<T>& c, uns
 }
 
 template<class T> void HostMatrix<T>::to_constant(const char* symbol) {
-  #if !CPU_KERNELS
+  #if GPU_KERNELS
 	cudaMemcpyToSymbol(symbol, this->data, this->bytes(), 0, cudaMemcpyHostToDevice);
   cudaAssertNoError("to_constant");
   #endif
@@ -227,7 +227,7 @@ template<class T> void HostMatrix<T>::copy_transpose(const CudaMatrix<T>& cuda_m
 }
 
 template<class T> void to_constant(const char* constant, const T& value) {
-  #if !CPU_KERNELS
+  #if GPU_KERNELS
 	cudaMemcpyToSymbol(constant, &value, sizeof(T), 0, cudaMemcpyHostToDevice);
   cudaAssertNoError("to_constant(value)");
   #endif
@@ -250,7 +250,7 @@ template<class T> CudaMatrix<T>::CudaMatrix(unsigned int _width, unsigned int _h
 template<class T> CudaMatrix<T>& CudaMatrix<T>::resize(unsigned int _width, unsigned int _height) {
   assert(_width * _height != 0);
 
-  #if !CPU_KERNELS
+  #if GPU_KERNELS
   if (_width != this->width || _height != this->height) {
     if (this->data) cudaFree(this->data);
     this->width = _width; this->height = _height;
@@ -262,7 +262,7 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::resize(unsigned int _width, unsi
 }
 
 template<class T> CudaMatrix<T>& CudaMatrix<T>::zero(void) {
-  #if !CPU_KERNELS
+  #if GPU_KERNELS
 	assert(this->data);
 	cudaMemset(this->data, 0, this->bytes());
   cudaAssertNoError("CudaMatrix::zero");
@@ -287,7 +287,7 @@ template<class T> CudaMatrix<T>::~CudaMatrix(void) {
 }
 
 template<class T> void CudaMatrix<T>::deallocate(void) {
-  #if !CPU_KERNELS
+  #if GPU_KERNELS
 	if (this->data) cudaFree(this->data);
 	this->data = NULL;
   this->width = this->height = 0;
@@ -299,7 +299,7 @@ template<class T> void CudaMatrix<T>::copy_submatrix(const HostMatrix<T>& c, uns
 	//cout << "bytes: " << _bytes << ", c.bytes: " << c.bytes() << endl;
 	if (_bytes > c.bytes()) throw runtime_error("CudaMatrix: Can't copy more elements than what operand has");
 
-  #if !CPU_KERNELS
+  #if GPU_KERNELS
 	cudaMemcpy(this->data, c.data, _bytes, cudaMemcpyHostToDevice);
   cudaAssertNoError("CudaMatrix::copy_submatrix");
   #endif
@@ -309,7 +309,7 @@ template<class T> void CudaMatrix<T>::copy_submatrix(const CudaMatrix<T>& c, uns
 	unsigned int _bytes = (_elements == 0 ? this->bytes() : _elements * sizeof(T));
 	if (_bytes > c.bytes()) throw runtime_error("CudaMatrix: Can't copy more elements than what operand has");
 
-  #if !CPU_KERNELS
+  #if GPU_KERNELS
 	cudaMemcpy(c.data, this->data, _bytes, cudaMemcpyDeviceToDevice);
   cudaAssertNoError("CudaMatrix::copy_submatrix");
   #endif
@@ -319,14 +319,14 @@ template<class T> void CudaMatrix<T>::copy_submatrix(const std::vector<T>& v, un
 	unsigned int _bytes = (_elements == 0 ? this->bytes() : _elements * sizeof(T));
 	if (_bytes > v.size() * sizeof(T)) throw runtime_error("CudaMatrix: Can't copy more elements than what operand has");
 
-  #if !CPU_KERNELS
+  #if GPU_KERNELS
 	cudaMemcpy(this->data, (T*)&v[0], _bytes, cudaMemcpyHostToDevice);
   cudaAssertNoError("CudaMatrix::copy_submatrix");
   #endif
 }
 
 template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const HostMatrix<T>& c) {
-  #if !CPU_KERNELS
+  #if GPU_KERNELS
 	if (!c.data) {
 		if (this->data) { cudaFree(this->data); this->width = this->height = 0; this->data = NULL; }
 	}
@@ -350,7 +350,7 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const HostMatrix<T>& c
 }
 
 template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const std::vector<T>& v) {
-  #if !CPU_KERNELS
+  #if GPU_KERNELS
 	if (v.empty()) {
 		if (this->data) { cudaFree(this->data); this->width = this->height = 0; this->data = NULL; }
 	}
@@ -374,7 +374,7 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const std::vector<T>& 
 }
 
 template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const CudaMatrix<T>& c) {
-  #if !CPU_KERNELS
+  #if GPU_KERNELS
 	// copies data from c, only if necessary (always frees this's data, if any)
 	if (!c.data) {
 		if (this->data) { cudaFree(this->data); this->width = this->height = 0; this->data = NULL; }
@@ -424,12 +424,12 @@ template class Matrix< vec_type<double, 2> >;
 template class Matrix< vec_type<double, 3> >;
 template class Matrix< vec_type<double, 4> >;
 
-// template class Matrix<double3>;
+template class Matrix<double3>;
 template class Matrix<double>;
 template class Matrix<float>;
 // template class Matrix<float1>;
 // template class Matrix<float2>;
-// template class Matrix<float3>;
+template class Matrix<float3>;
 // template class Matrix<float4>;
 // template class Matrix<uint1>;
 // template class Matrix<uint2>;
@@ -463,7 +463,7 @@ template class HostMatrix<uint1>;
 template class HostMatrix<uint2>;
 template class HostMatrix<uint>;
 
-#if !CPU_KERNELS
+#if GPU_KERNELS
 template class CudaMatrix<float>;
 template class CudaMatrix<float1>;
 template class CudaMatrix<float2>;

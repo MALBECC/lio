@@ -13,9 +13,7 @@
 #include <iostream>
 #include <string>
 
-#if CPU_KERNELS
 #include <cmath>
-#endif
 
 #if CPU_KERNELS && !GPU_KERNELS
 #define __device__
@@ -284,7 +282,7 @@ inline __device__ __host__ float3 to_float3(const float3& f)
 
 #ifdef _DEBUG
 inline void cudaAssertNoError(const char* msg = NULL) {
-  #if !CPU_KERNELS
+  #if GPU_KERNELS
 
 	cudaThreadSynchronize();
 	cudaError_t error = cudaGetLastError();
@@ -299,14 +297,14 @@ inline void cudaAssertNoError(const char* msg = NULL) {
 #endif
 
 inline void cudaGetMemoryInfo(size_t& free, size_t& total) {
-  #if !CPU_KERNELS
+  #if GPU_KERNELS
 	if (cuMemGetInfo(&free, &total) != CUDA_SUCCESS)
     throw std::runtime_error("cuMemGetInfo failed");
   #endif
 }
 
 inline void cudaPrintMemoryInfo(void) {
-  #if !CPU_KERNELS
+  #if GPU_KERNELS
   size_t free = 0, total = 0;
   cudaGetMemoryInfo(free, total);
 	std::cout << "mem_used: " << (total - free) / (1024.0 * 1024.0) << "MB | mem_perc: " << ((double)(total - free) / (double)total) * 100.0 << "%" << std::endl;
@@ -314,7 +312,7 @@ inline void cudaPrintMemoryInfo(void) {
 }
 
 template<typename T> void to_constant(const std::string& name, const T* ptr) {
-  #if !CPU_KERNELS
+  #if GPU_KERNELS
   cudaMemcpyToSymbol(name.c_str(), ptr, sizeof(T), 0, cudaMemcpyHostToDevice);
   #endif
 }

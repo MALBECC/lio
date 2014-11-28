@@ -24,7 +24,10 @@ void globalMemoryPool::dealloc(size_t size)
 void globalMemoryPool::init(double free_global_memory)
 {
     //Aca tenemos que leer el GPU_global y restar un factor de tolerancia (1/4?)
-#if !CPU_KERNELS
+    _totalGlobalMemory = 0;
+    _freeGlobalMemory = 0;
+    _freeFactor = 0.0f;
+#if GPU_KERNELS
     double free_factor = free_global_memory;
     size_t free_memory, total_memory;
 
@@ -36,10 +39,6 @@ void globalMemoryPool::init(double free_global_memory)
     _freeFactor=free_factor;
 
     _freeGlobalMemory=static_cast<size_t>(static_cast<double>(free_memory)*_freeFactor);
-#else
-    _totalGlobalMemory = 0;
-    _freeGlobalMemory = 0;
-    _freeFactor = 0.0f;
 #endif
     _init = true;
 }

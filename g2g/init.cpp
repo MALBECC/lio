@@ -34,7 +34,7 @@ extern "C" void g2g_init_(void)
 {
   cout << "<====== Initializing G2G ======>"<<endl;
 
-  #if !CPU_KERNELS
+  #if GPU_KERNELS
   cuInit(0);
   int devnum = -1;
   cudaDeviceProp devprop;
@@ -158,7 +158,7 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	fortran_vars.atom_atom_dists = HostMatrix<double>(fortran_vars.atoms, fortran_vars.atoms);
 	fortran_vars.nearest_neighbor_dists = HostMatrix<double>(fortran_vars.atoms);
 
-#if !CPU_KERNELS
+#if GPU_KERNELS
   G2G::gpu_set_variables();
 #endif
 
@@ -219,7 +219,7 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
 //    cout << atom_positions(i) << endl;
 	}
 
-#if !CPU_KERNELS
+#if GPU_KERNELS
 #if FULL_DOUBLE
   	G2G::gpu_set_atom_positions(fortran_vars.atom_positions);
 #else

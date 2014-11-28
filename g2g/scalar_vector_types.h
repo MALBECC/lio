@@ -25,9 +25,6 @@ namespace G2G {
       vec_type(const double3& other) : _x(other.x),_y(other.y),_z(other.z) { }
       vec_type(float x, float y, float z) : _x(x), _y(y), _z(z) { }
 
-      inline float x() const { return _x; }
-      inline float y() const { return _y; }
-      inline float z() const { return _z; }
       inline float length2() const { return _x * _x + _y * _y + _z * _z; }
 
       friend vec_type operator*(const vec_type & lo, const vec_type & ro) {
@@ -94,10 +91,6 @@ namespace G2G {
       __device__ __host__ explicit vec_type(const double3& other) { float3::x = other.x; float3::y = other.y; float3::z = other.z; }
       __device__ __host__ vec_type(float _x, float _y, float _z) { float3::x = _x; float3::y = _y; float3::z = _z; }
       __device__ __host__ float length2() const { return float3::x * float3::x + float3::y * float3::y + float3::z * float3::z; }
-      __device__ __host__ float x() const { return float3::x; }
-      __device__ __host__ float y() const { return float3::y; }
-      __device__ __host__ float z() const { return float3::z; }
-
       typedef float3 base_type;
 
   };
@@ -132,9 +125,6 @@ namespace G2G {
       typedef double3 base_type;
 
       double length2(void) const { return double3::x * double3::x + double3::y * double3::y + double3::z * double3::z; }
-      inline double x(void) const { return double3::x; }
-      inline double y(void) const { return double3::y; }
-      inline double z(void) const { return double3::z; }
   };
 
   template<> class vec_type<double, 4> : public double4 {
@@ -164,9 +154,6 @@ namespace G2G {
       __device__ __host__ explicit vec_type(const double4& other) { double3::x = other.x; double3::y = other.y; double3::z = other.z; }
       __device__ __host__ vec_type(double _x, double _y, double _z) { double3::x = _x; double3::y = _y; double3::z = _z; }
       typedef double3 base_type;
-      __device__ __host__ double x() const { return double3::x; }
-      __device__ __host__ double y() const { return double3::y; }
-      __device__ __host__ double z() const { return double3::z; }
       __device__ __host__ double length2(void) const { return double3::x * double3::x + double3::y * double3::y + double3::z * double3::z; }
   };
 

@@ -107,7 +107,7 @@ bool Timer::operator<(const Timer& other) const {
 void Timer::sync(void) {
 #ifdef TIMINGS
 #ifndef NOSYNC
-  #if !CPU_KERNELS
+  #if GPU_KERNELS
 	cudaThreadSynchronize();
   #endif
 #endif

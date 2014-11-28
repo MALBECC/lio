@@ -71,8 +71,8 @@ class PointGroup {
     inline uint total_nucleii(void) const { return local2global_nuc.size(); }
     inline bool has_nucleii(uint atom) const { return (std::find(local2global_nuc.begin(), local2global_nuc.end(), atom) != local2global_nuc.end()); }
 
-    virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const;
-    virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input) const;
+    virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const = 0;
+    virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input) const = 0;
     virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input_a, G2G::HostMatrix<scalar_type>& rmm_input_b) const;
 
     void add_rmm_output(const G2G::HostMatrix<scalar_type>& rmm_output, FortranMatrix<double>& target) const;
@@ -122,7 +122,6 @@ class PointGroupCPU: public PointGroup<scalar_type> {
     bool is_big_group(int) const;
     virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const;
     virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input) const;
- //   virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input_a, G2G::HostMatrix<scalar_type>& rmm_input_b) const;
     virtual void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
         bool compute_energy, double& energy, double &, double &, double &, double &,
         HostMatrix<double> &);
@@ -153,8 +152,8 @@ class PointGroupGPU: public PointGroup<scalar_type> {
     virtual ~PointGroupGPU(void);
     virtual void compute_functions(bool, bool);
     virtual void compute_weights(void);
-    virtual void  get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const;
-
+    virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const;
+    virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input) const;
     virtual void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
         bool compute_energy, double& energy, double &, double &, double &, double &,
         HostMatrix<double> &);

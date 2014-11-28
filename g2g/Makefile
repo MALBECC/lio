@@ -5,16 +5,16 @@ include Makefile.common
 SRCS:=$(wildcard *.cpp)
 OBJ:=$(SRCS:%.cpp=%.o)
 
+ifeq ($(openmp),1)
+  CXXFLAGS += -openmp
+endif
+
 ifeq ($(cpu),1)
   CPU_SOURCES  := $(wildcard cpu/*.cpp)
   SRCS         += $(CPU_SOURCES)
   OBJ          += $(CPU_SOURCES:%.cpp=%.o)
   CXXFLAGS     += -DCPU_KERNELS=1 -I$(MKLROOT)/include
   CPU          := 1
-ifeq ($(openmp),1)
-  CXXFLAGS += -openmp
-endif
-
 else
   include Makefile.cuda
   CUDA_LIBS    := -lcudart -lcuda
@@ -69,7 +69,7 @@ ifeq ($(output_costs), 1)
   CXXFLAGS += -DOUTPUT_COSTS=1
 endif
 
-LIBRARIES=-lrt 
+LIBRARIES=-lrt
 ## Targets
 all: $(LIBRARY)
 

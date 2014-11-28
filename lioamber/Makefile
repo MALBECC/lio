@@ -1,8 +1,12 @@
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+# LIBLIO MAKEFILE
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 MODS_PATH =
 LIBS_PATH =
 
 
+# LIBS BASIC
+#--------------------------------------------------------------------#
 MODS_PATH += -I/auxsubs
 LIBS_PATH += -L../g2g -L/usr/lib -L/usr/lib64
 LIBS_LIBS += -lg2g -lstdc++
@@ -13,13 +17,28 @@ LIBS_LIBS += -lg2g -lstdc++
 MODS_PATH += -I$(MKLROOT)/include
 LIBS_PATH += -L$(MKLROOT)/lib/intel64
 LIBS_LIBS += -lmkl_lapack95_lp64
-LIBS_LIBS += -Wl,--start-group
-LIBS_LIBS += -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core
-LIBS_LIBS += -Wl,--end-group
+LIBS_LIBS += -lmkl_intel_lp64
+LIBS_LIBS += -lmkl_intel_thread
+LIBS_LIBS += -lmkl_core
 
+# LIBS EXTRAS & JOIN ALL
+#--------------------------------------------------------------------#
 LIBS_MOAR = -liomp5 -lpthread -lm -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g'
 
 LIBS = $(MODS_PATH) $(LIBS_PATH) $(PROFILE) $(LIBS_LIBS) $(LIBS_MOAR)
+#
+#
+#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+# OLD PARTS
+#--------------------------------------------------------------------#
+# sources and objects
+MOD_SRCS=$(wildcard mods/*.f)
+# COMMON_SRCS=$(wildcard *.f)
+GARCHA_SRCS=$(wildcard *.f)
+
+MOD_OBJ=$(MOD_SRCS:%.f=%.o)
+GARCHA_OBJ=$(MOD_OBJ) $(COMMON_SRCS:%.f=%.o) $(GARCHA_SRCS:%.f=%.o)
 
 #--------------------------------------------------------------------#
 # THE OLD WAY TO LIBS
@@ -30,17 +49,6 @@ LIBS = $(MODS_PATH) $(LIBS_PATH) $(PROFILE) $(LIBS_LIBS) $(LIBS_MOAR)
       -lm -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g'
 #--------------------------------------------------------------------#
 
-
-
-# OLD PARTS
-#--------------------------------------------------------------------#
-# sources and objects
-MOD_SRCS=$(wildcard mods/*.f)
-# COMMON_SRCS=$(wildcard *.f)
-GARCHA_SRCS=$(wildcard *.f)
-
-MOD_OBJ=$(MOD_SRCS:%.f=%.o)
-GARCHA_OBJ=$(MOD_OBJ) $(COMMON_SRCS:%.f=%.o) $(GARCHA_SRCS:%.f=%.o)
 
 # flags
 ifeq ($(print), 1)

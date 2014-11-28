@@ -21,22 +21,22 @@ using std::vector;
 
 namespace G2G {
 
-template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
+template<class scalar_type> void PointGroupCPU<scalar_type>::solve(Timers& timers,
   bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,
   double& energy, double& energy_i, double& energy_c, double& energy_c1, double& energy_c2,
   HostMatrix<double> & fort_forces, int inner_threads, HostMatrix<double> & rmm_global_output, bool OPEN)
 {
 
-  solve_closed(timers, compute_rmm, lda, compute_forces, compute_energy,
+  this->solve_closed(timers, compute_rmm, lda, compute_forces, compute_energy,
     energy, fort_forces, inner_threads, rmm_global_output);
 }
 
-template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& timers,
+template<class scalar_type> void PointGroupCPU<scalar_type>::solve_closed(Timers& timers,
   bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,
   double& energy, HostMatrix<double> & fort_forces, int inner_threads, HostMatrix<double> & rmm_global_output)
 {
-  const uint group_m = total_functions();
-  const int npoints = points.size();
+  const uint group_m = this->total_functions();
+  const int npoints = this->points.size();
 
   #if CPU_RECOMPUTE
   /** Compute functions **/
@@ -58,18 +58,18 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
   HostMatrix<scalar_type> factors_rmm;
 
   if(compute_rmm || compute_forces)
-    factors_rmm.resize(points.size(), 1);
+    factors_rmm.resize(this->points.size(), 1);
 
   if(compute_forces) {
-    forces.resize(total_nucleii(), vec_type3(0.f,0.f,0.f));
-    forces_mat.resize(points.size(), vector<vec_type3>(total_nucleii(), vec_type3(0.f,0.f,0.f)));
+    forces.resize(this->total_nucleii(), vec_type3(0.f,0.f,0.f));
+    forces_mat.resize(this->points.size(), vector<vec_type3>(this->total_nucleii(), vec_type3(0.f,0.f,0.f)));
   }
 
   const int iexch = fortran_vars.iexch;
 
   /** density **/
   if (lda) {
-    for(int point = 0; point < points.size(); point++) {
+    for(int point = 0; point < this->points.size(); point++) {
       scalar_type partial_density = 0;
       for (int i = 0; i < group_m; i++) {
         scalar_type w = 0.0;
@@ -84,12 +84,12 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
       cpu_pot(partial_density, exc, corr, y2a, iexch);
 
       if(compute_energy) {
-        localenergy +=  (partial_density * points[point].weight) * (exc + corr);
+        localenergy +=  (partial_density * this->points[point].weight) * (exc + corr);
       }
 
       /** RMM **/
       if (compute_rmm || compute_forces) {
-        factors_rmm(point) = points[point].weight * y2a;
+        factors_rmm(point) = this->points[point].weight * y2a;
       }
     }
   } else {
@@ -158,7 +158,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
       const vec_type3 dd2(tdd2x,tdd2y,tdd2z);
 
       cpu_potg(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch);
-      const scalar_type wp = points[point].weight;
+      const scalar_type wp = this->points[point].weight;
 
       if (compute_energy) {
         localenergy +=  (pd * wp) * (exc + corr);
@@ -175,15 +175,15 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
   timers.forces.start();
   if (compute_forces) {
     HostMatrix<scalar_type> ddx,ddy,ddz;
-    ddx.resize(total_nucleii(), 1);
-    ddy.resize(total_nucleii(), 1);
-    ddz.resize(total_nucleii(), 1);
+    ddx.resize(this->total_nucleii(), 1);
+    ddy.resize(this->total_nucleii(), 1);
+    ddz.resize(this->total_nucleii(), 1);
     #pragma omp parallel for num_threads(inner_threads)
-    for(int point = 0; point < points.size(); point++) {
+    for(int point = 0; point < this->points.size(); point++) {
       ddx.zero(); ddy.zero(); ddz.zero();
-      for (int i = 0, ii = 0; i < total_functions_simple(); i++) {
-        uint nuc = func2local_nuc(ii);
-        uint inc_i = small_function_type(i);
+      for (int i = 0, ii = 0; i < this->total_functions_simple(); i++) {
+        uint nuc = this->func2local_nuc(ii);
+        uint inc_i = this->small_function_type(i);
         scalar_type tddx = 0, tddy = 0, tddz = 0;
         for (uint k = 0; k < inc_i; k++, ii++) {
           scalar_type w = 0.0;
@@ -198,7 +198,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
         ddx(nuc) += tddx; ddy(nuc) += tddy; ddz(nuc) += tddz;
       }
       scalar_type factor = factors_rmm(point);
-      for (int i = 0; i < total_nucleii(); i++) {
+      for (int i = 0; i < this->total_nucleii(); i++) {
         forces_mat[point][i] = vec_type3(ddx(i),ddy(i),ddz(i)) * factor;
       }
     }
@@ -215,8 +215,8 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
     }
     /* accumulate force results for this group */
     #pragma omp parallel for num_threads(inner_threads)
-    for (int i = 0; i < total_nucleii(); i++) {
-      uint global_atom = local2global_nuc[i];
+    for (int i = 0; i < this->total_nucleii(); i++) {
+      uint global_atom = this->local2global_nuc[i];
       vec_type3 this_force = forces[i];
       fort_forces(global_atom,0) += this_force.x();
       fort_forces(global_atom,1) += this_force.y();
@@ -257,7 +257,15 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
 #endif
 }
 
+template<class scalar_type>
+void PointGroupCPU<scalar_type>::solve_opened(Timers& timers, bool compute_rmm,
+    bool lda, bool compute_forces, bool compute_energy, double& energy,
+    double& energy_i, double& energy_c, double& energy_c1, double& energy_c2,
+    HostMatrix<double>& fort_forces_ms) { }
+
 template class PointGroup<double>;
 template class PointGroup<float>;
+template class PointGroupCPU<double>;
+template class PointGroupCPU<float>;
 
 }

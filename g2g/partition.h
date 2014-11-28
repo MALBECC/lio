@@ -56,24 +56,6 @@ class PointGroup {
     typedef vec_type<scalar_type,2> vec_type2;
     typedef vec_type<scalar_type,3> vec_type3;
     typedef vec_type<scalar_type,4> vec_type4;
-
-    std::vector<uint> rmm_rows;
-    std::vector<uint> rmm_cols;
-    std::vector<uint> rmm_bigs;
-
-    #if CPU_KERNELS
-    G2G::HostMatrix<scalar_type> function_values;
-    G2G::HostMatrix<scalar_type> gX, gY, gZ;
-    G2G::HostMatrix<scalar_type> hIX, hIY, hIZ;
-    G2G::HostMatrix<scalar_type> hPX, hPY, hPZ;
-    G2G::HostMatrix<scalar_type> function_values_transposed;
-    #else
-    G2G::CudaMatrix<scalar_type> function_values;
-    G2G::CudaMatrix<vec_type4> gradient_values;
-    G2G::CudaMatrix<vec_type4> hessian_values_transposed;
-    #endif
-
-    void compute_indexes();
     long long cost() const;
     inline FunctionType small_function_type(uint f) const {
       if (f < s_functions) return FUNCTION_S;
@@ -89,10 +71,9 @@ class PointGroup {
     inline uint total_nucleii(void) const { return local2global_nuc.size(); }
     inline bool has_nucleii(uint atom) const { return (std::find(local2global_nuc.begin(), local2global_nuc.end(), atom) != local2global_nuc.end()); }
 
-    void output_cost() const;
-    void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const;
-    void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input) const;
-    void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input_a, G2G::HostMatrix<scalar_type>& rmm_input_b) const;
+    virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const;
+    virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input) const;
+    virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input_a, G2G::HostMatrix<scalar_type>& rmm_input_b) const;
 
     void add_rmm_output(const G2G::HostMatrix<scalar_type>& rmm_output, FortranMatrix<double>& target) const;
     void add_rmm_output(const G2G::HostMatrix<scalar_type>& rmm_output) const;
@@ -103,23 +84,22 @@ class PointGroup {
     void add_rmm_open_output(const G2G::HostMatrix<scalar_type>& rmm_output_a, const G2G::HostMatrix<scalar_type>& rmm_output_b) const;
 
     void compute_nucleii_maps(void);
-    bool is_big_group(int) const;
 
     void add_point(const Point& p);
-    void compute_weights(void);
+    virtual void compute_weights(void) = 0;
 
-    void compute_functions(bool forces, bool gga);
+    virtual void compute_functions(bool forces, bool gga) = 0;
 
-    void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
+    virtual void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
         bool compute_energy, double& energy, double &, double &, double &, double &,
-        HostMatrix<double> &);
+        HostMatrix<double> &) = 0;
 
-    void solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
-        bool compute_energy, double& energy, HostMatrix<double> &, int, HostMatrix<double> &);
+    virtual void solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
+        bool compute_energy, double& energy, HostMatrix<double> &, int, HostMatrix<double> &) = 0;
 
-    void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
+    virtual void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
         bool compute_energy, double& energy, double &, double &, double &, double &,
-        HostMatrix<double> &, int, HostMatrix<double> &, bool);
+        HostMatrix<double> &, int, HostMatrix<double> &, bool) = 0;
 
     bool is_significative(FunctionType, double exponent, double coeff, double d2);
     bool operator<(const PointGroup<scalar_type>& T) const;
@@ -129,6 +109,74 @@ class PointGroup {
     bool inGlobal;
 };
 
+
+
+template<class scalar_type>
+class PointGroupCPU: public PointGroup<scalar_type> {
+  public:
+    virtual ~PointGroupCPU(void);
+    virtual void compute_functions(bool, bool);
+    virtual void compute_weights(void);
+    void compute_indexes();
+    void output_cost() const;
+    bool is_big_group(int) const;
+    virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const;
+    virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input) const;
+ //   virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input_a, G2G::HostMatrix<scalar_type>& rmm_input_b) const;
+    virtual void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
+        bool compute_energy, double& energy, double &, double &, double &, double &,
+        HostMatrix<double> &);
+
+    virtual void solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
+        bool compute_energy, double& energy, HostMatrix<double> &, int, HostMatrix<double> &);
+
+    virtual void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
+        bool compute_energy, double& energy, double &, double &, double &, double &,
+        HostMatrix<double> &, int, HostMatrix<double> &, bool);
+
+    typedef vec_type<scalar_type,2> vec_type2;
+    typedef vec_type<scalar_type,3> vec_type3;
+    typedef vec_type<scalar_type,4> vec_type4;
+    G2G::HostMatrix<scalar_type> function_values;
+    G2G::HostMatrix<scalar_type> gX, gY, gZ;
+    G2G::HostMatrix<scalar_type> hIX, hIY, hIZ;
+    G2G::HostMatrix<scalar_type> hPX, hPY, hPZ;
+    G2G::HostMatrix<scalar_type> function_values_transposed;
+    std::vector<uint> rmm_rows;
+    std::vector<uint> rmm_cols;
+    std::vector<uint> rmm_bigs;
+};
+
+template<class scalar_type>
+class PointGroupGPU: public PointGroup<scalar_type> {
+  public:
+    virtual ~PointGroupGPU(void);
+    virtual void compute_functions(bool, bool);
+    virtual void compute_weights(void);
+    virtual void  get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const;
+
+    virtual void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
+        bool compute_energy, double& energy, double &, double &, double &, double &,
+        HostMatrix<double> &);
+
+    virtual void solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
+        bool compute_energy, double& energy, HostMatrix<double> &, int, HostMatrix<double> &);
+
+    virtual void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
+        bool compute_energy, double& energy, double &, double &, double &, double &,
+        HostMatrix<double> &, int, HostMatrix<double> &, bool);
+
+    typedef vec_type<scalar_type,2> vec_type2;
+    typedef vec_type<scalar_type,3> vec_type3;
+    typedef vec_type<scalar_type,4> vec_type4;
+    G2G::CudaMatrix<scalar_type> function_values;
+    G2G::CudaMatrix<vec_type4> gradient_values;
+    G2G::CudaMatrix<vec_type4> hessian_values_transposed;
+
+};
+
+
+
 // ===== Sphere Class =======//
 #if FULL_DOUBLE
 typedef double base_scalar_type;
@@ -136,7 +184,7 @@ typedef double base_scalar_type;
 typedef float base_scalar_type;
 #endif
 
-class Sphere : public PointGroup<base_scalar_type> {
+class Sphere : public PointGroupCPU<base_scalar_type> {
   public:
     Sphere(void);
     Sphere(uint _atom, double _radius);
@@ -147,7 +195,7 @@ class Sphere : public PointGroup<base_scalar_type> {
     double radius;
 };
 
-class Cube : public PointGroup<base_scalar_type> {
+class Cube : public PointGroupCPU<base_scalar_type> {
   public:
     void assign_significative_functions(const double3& cube_coord, const std::vector<double>& min_exps, const std::vector<double>& min_coeff);
 };

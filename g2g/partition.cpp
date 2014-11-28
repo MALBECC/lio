@@ -34,27 +34,36 @@ ostream& operator<<(ostream& io, const Timers& t) {
  ********************/
 
 template<class scalar_type>
-void PointGroup<scalar_type>::output_cost() const
+void PointGroupCPU<scalar_type>::output_cost() const
 {
-    printf("%d %d %d %lld %lld\n", number_of_points, total_functions(), rmm_bigs.size(), cost(), size_in_gpu());
+    //printf("%d %d %d %lld %lld\n", number_of_points, total_functions(), rmm_bigs.size(), cost(), size_in_gpu());
 }
 
 template<class scalar_type>
-bool PointGroup<scalar_type>::is_big_group(int threads_to_use) const
+bool PointGroupCPU<scalar_type>::is_big_group(int threads_to_use) const
 {
   return rmm_bigs.size() >= THRESHOLD * threads_to_use &&
-    number_of_points >= THRESHOLD * threads_to_use;
+    this->number_of_points >= THRESHOLD * threads_to_use;
 }
 
 template<class scalar_type>
-void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input,
-    FortranMatrix<double>& source) const {
+void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const {
+  // TODO: version GPU?
+}
+
+template<class scalar_type>
+void PointGroupCPU<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const {
   rmm_input.zero();
   const int indexes = rmm_bigs.size();
   for(int i = 0; i < indexes; i++) {
     int ii = rmm_rows[i], jj = rmm_cols[i], bi = rmm_bigs[i];
     rmm_input(ii, jj) = (scalar_type) source.data[bi];
   }
+}
+
+template<class scalar_type>
+void PointGroupCPU<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input) const {
+  get_rmm_input(rmm_input, fortran_vars.rmm_input_ndens1);
 }
 
 template<class scalar_type>
@@ -69,19 +78,19 @@ void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input_a
 }
 
 template<class scalar_type>
-void PointGroup<scalar_type>::compute_indexes()
+void PointGroupCPU<scalar_type>::compute_indexes()
 {
   rmm_bigs.clear(); rmm_cols.clear(); rmm_rows.clear();
-  for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
-    uint inc_i = small_function_type(i);
+  for (uint i = 0, ii = 0; i < this->total_functions_simple(); i++) {
+    uint inc_i = this->small_function_type(i);
 
     for (uint k = 0; k < inc_i; k++, ii++) {
-      uint big_i = local2global_func[i] + k;
-      for (uint j = 0, jj = 0; j < total_functions_simple(); j++) {
-        uint inc_j = small_function_type(j);
+      uint big_i = this->local2global_func[i] + k;
+      for (uint j = 0, jj = 0; j < this->total_functions_simple(); j++) {
+        uint inc_j = this->small_function_type(j);
 
         for (uint l = 0; l < inc_j; l++, jj++) {
-          uint big_j = local2global_func[j] + l;
+          uint big_j = this->local2global_func[j] + l;
           if (big_i > big_j) continue;
           uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
           if(ii > jj) swap(ii,jj);
@@ -246,22 +255,26 @@ size_t PointGroup<scalar_type>::size_in_gpu() const
 }
 
 template<class scalar_type>
-PointGroup<scalar_type>::~PointGroup<scalar_type>()
-{
-#if !CPU_KERNELS
-  if(inGlobal) {
-    globalMemoryPool::dealloc(size_in_gpu());
-    function_values.deallocate();
-    gradient_values.deallocate();
-    hessian_values_transposed.deallocate();
-  }
-#else
+PointGroup<scalar_type>::~PointGroup<scalar_type>() { }
+
+template<class scalar_type>
+PointGroupCPU<scalar_type>::~PointGroupCPU<scalar_type>() {
   function_values.deallocate();
   gX.deallocate(); gY.deallocate(); gZ.deallocate();
   hPX.deallocate(); hPY.deallocate(); hPZ.deallocate();
   hIX.deallocate(); hIY.deallocate(); hIZ.deallocate();
   function_values_transposed.deallocate();
-#endif
+}
+
+template<class scalar_type>
+PointGroupGPU<scalar_type>::~PointGroupGPU<scalar_type>()
+{
+  if(this->inGlobal) {
+    globalMemoryPool::dealloc(this->size_in_gpu());
+    function_values.deallocate();
+    gradient_values.deallocate();
+    hessian_values_transposed.deallocate();
+  }
 }
 
 void Partition::compute_functions(bool forces, bool gga) {
@@ -457,4 +470,6 @@ Sphere::Sphere(uint _atom, double _radius) : atom(_atom), radius(_radius) { }
 
 template class PointGroup<double>;
 template class PointGroup<float>;
+template class PointGroupCPU<double>;
+template class PointGroupCPU<float>;
 }

@@ -10,26 +10,26 @@ using namespace std;
 
 namespace G2G {
 template<class scalar_type>
-void PointGroup<scalar_type>::compute_weights(void)
+void PointGroupCPU<scalar_type>::compute_weights(void)
 {
     #pragma omp parallel for
-    for(int point = 0; point < points.size(); point++) {
-		uint atom = points[point].atom;
+    for(int point = 0; point < this->points.size(); point++) {
+		uint atom = this->points[point].atom;
 		double atom_weight;
 
-		const double3& point_position = points[point].position;
+		const double3& point_position = this->points[point].position;
 
 		double P_total = 0.0;
 		double P_atom = 0.0;
 
-		for (uint j = 0; j < total_nucleii(); ++j) {
+		for (uint j = 0; j < this->total_nucleii(); ++j) {
 			double P_curr = 1.0;
-			uint atom_j = local2global_nuc[j];
+			uint atom_j = this->local2global_nuc[j];
 			const double3& pos_atom_j(fortran_vars.atom_positions(atom_j));
 			double rm_atom_j = fortran_vars.rm(atom_j);
 
-			for (uint k = 0; k < total_nucleii(); ++k) {
-				uint atom_k = local2global_nuc[k];
+			for (uint k = 0; k < this->total_nucleii(); ++k) {
+				uint atom_k = this->local2global_nuc[k];
 				if (atom_k == atom_j) continue;
 				const double3& pos_atom_k(fortran_vars.atom_positions(atom_k));
 				double u = (length(point_position - pos_atom_j) - length(point_position - pos_atom_k)) / fortran_vars.atom_atom_dists(atom_j, atom_k);
@@ -59,14 +59,14 @@ void PointGroup<scalar_type>::compute_weights(void)
 		}
 
     // punto que no tiene a su propio atomo entre los vecinos
-    if (!has_nucleii(atom)) {
+    if (!this->has_nucleii(atom)) {
 			P_atom = 1.0;
 			uint atom_j = atom;
 			const double3& pos_atom_j(fortran_vars.atom_positions(atom_j));
 			double rm_atom_j = fortran_vars.rm(atom_j);
 
-      for (uint k = 0; k < total_nucleii(); ++k) {
-				uint atom_k = local2global_nuc[k];
+      for (uint k = 0; k < this->total_nucleii(); ++k) {
+				uint atom_k = this->local2global_nuc[k];
 				const double3& pos_atom_k(fortran_vars.atom_positions(atom_k));
 				double u = (length(point_position - pos_atom_j) - length(point_position - pos_atom_k)) / fortran_vars.atom_atom_dists(atom_j, atom_k);
 
@@ -87,21 +87,23 @@ void PointGroup<scalar_type>::compute_weights(void)
 		}
 
 		atom_weight = (P_total == 0.0 ? 0.0 : (P_atom / P_total));
-		points[point].weight *= atom_weight;
+		this->points[point].weight *= atom_weight;
 		//cout << "peso " << P_atom << " " << P_total << " " << it->weight << endl;
 	}
 
     if (remove_zero_weights) {
         vector<Point> filteredPoints;
-        for(int point = 0; point < points.size(); point++) {
-            if(points[point].weight != 0.0)
-                filteredPoints.push_back(points[point]);
+        for(int point = 0; point < this->points.size(); point++) {
+            if(this->points[point].weight != 0.0)
+                filteredPoints.push_back(this->points[point]);
         }
-        points.swap(filteredPoints);
-        number_of_points = points.size();
+        this->points.swap(filteredPoints);
+        this->number_of_points = this->points.size();
     }
 }
 
-template class PointGroup<double>;
 template class PointGroup<float>;
+template class PointGroup<double>;
+template class PointGroupCPU<double>;
+template class PointGroupCPU<float>;
 }

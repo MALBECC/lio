@@ -6,7 +6,7 @@
 namespace G2G {
   template<class T, unsigned int n> class vec_type { };
 
-#if CPU_KERNELS
+#if !GPU_KERNELS
 
   template<> class vec_type<float, 2> : public float2 {
     public:
@@ -85,7 +85,6 @@ namespace G2G {
       __device__ __host__ vec_type(void) {}
       __device__ __host__ vec_type(float _x, float _y) { this->x = _x; this->y = _y; }
       typedef float2 base_type;
-      //operator float2 () { return (float2)(*this); }
   };
   template<> class vec_type<float, 3> : public float3 {
     public:
@@ -94,12 +93,12 @@ namespace G2G {
       __device__ __host__ vec_type(const float3& other) { float3::x = other.x; float3::y = other.y; float3::z = other.z; }
       __device__ __host__ explicit vec_type(const double3& other) { float3::x = other.x; float3::y = other.y; float3::z = other.z; }
       __device__ __host__ vec_type(float _x, float _y, float _z) { float3::x = _x; float3::y = _y; float3::z = _z; }
+      __device__ __host__ float length2() const { return float3::x * float3::x + float3::y * float3::y + float3::z * float3::z; }
+      __device__ __host__ float x() const { return float3::x; }
+      __device__ __host__ float y() const { return float3::y; }
+      __device__ __host__ float z() const { return float3::z; }
+
       typedef float3 base_type;
-     /*
-      __device__ __host__ inline double x(void) const { return float3::x; }
-      __device__ __host__ inline double y(void) const { return float3::y; }
-      __device__ __host__ inline double z(void) const { return float3::z; }
-      */
 
   };
 
@@ -114,14 +113,13 @@ namespace G2G {
 
   #endif
 
-  #if CPU_KERNELS
+#if !GPU_KERNELS
 
   template<> class vec_type<double, 2> : public double2 {
     public:
       vec_type(void) {}
       vec_type(double _x, double _y) { this->x = _x; this->y = _y; }
       typedef double2 base_type;
-      // operator double2 () { return (double2)(*this); }
   };
 
   template<> class vec_type<double, 3> : public double3 {
@@ -137,7 +135,6 @@ namespace G2G {
       inline double x(void) const { return double3::x; }
       inline double y(void) const { return double3::y; }
       inline double z(void) const { return double3::z; }
-      //operator double3 () { return (double3)(*this); }
   };
 
   template<> class vec_type<double, 4> : public double4 {
@@ -146,7 +143,6 @@ namespace G2G {
       explicit vec_type(const double3& other) { this->x = other.x; this->y = other.y; this->z = other.z; }
       explicit vec_type(const double4& other) { this->x = other.x; this->y = other.y; this->z = other.z; }
       vec_type(double _x, double _y, double _z, double _w) { this->x = _x; this->y = _y; this->z = _z; this->w = _w; }
-      //operator double4 () { return (double4)(*this); }
   };
 
 
@@ -157,7 +153,6 @@ namespace G2G {
       __device__ __host__ vec_type(void) {}
       __device__ __host__ vec_type(double _x, double _y) { this->x = _x; this->y = _y; }
       typedef double2 base_type;
-      // operator double2 () { return (double2)(*this); }
   };
 
 
@@ -169,14 +164,10 @@ namespace G2G {
       __device__ __host__ explicit vec_type(const double4& other) { double3::x = other.x; double3::y = other.y; double3::z = other.z; }
       __device__ __host__ vec_type(double _x, double _y, double _z) { double3::x = _x; double3::y = _y; double3::z = _z; }
       typedef double3 base_type;
-
-      __device__ __host__ double length2(void) { return double3::x * double3::x + double3::y * double3::y + double3::z * double3::z; }
-      /*
-      __device__ __host__ inline double x(void) const { return double3::x; }
-      __device__ __host__ inline double y(void) const { return double3::y; }
-      __device__ __host__ inline double z(void) const { return double3::z; }
-      */
-      //operator double3 () { return (double3)(*this); }
+      __device__ __host__ double x() const { return double3::x; }
+      __device__ __host__ double y() const { return double3::y; }
+      __device__ __host__ double z() const { return double3::z; }
+      __device__ __host__ double length2(void) const { return double3::x * double3::x + double3::y * double3::y + double3::z * double3::z; }
   };
 
   template<> class vec_type<double, 4> : public double4 {
@@ -185,7 +176,6 @@ namespace G2G {
       __device__ __host__ explicit vec_type(const double3& other) { this->x = other.x; this->y = other.y; this->z = other.z; }
       __device__ __host__ explicit vec_type(const double4& other) { this->x = other.x; this->y = other.y; this->z = other.z; }
       __device__ __host__ vec_type(double _x, double _y, double _z, double _w) { this->x = _x; this->y = _y; this->z = _z; this->w = _w; }
-      //operator double4 () { return (double4)(*this); }
   };
 
   template<> class vec_type<int2, 4>{

@@ -3,7 +3,7 @@
 #include <vector>
 #include <cmath>
 #include "../common.h"
-//#include "../cuda_includes.h"
+#include "../cuda_includes.h"
 #include "../init.h"
 #include "../matrix.h"
 #include "../partition.h"
@@ -12,7 +12,7 @@ using namespace std;
 namespace G2G {
 
 template<class scalar_type>
-void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
+void PointGroupCPU<scalar_type>::compute_functions(bool forces, bool gga)
 {
   #if !CPU_RECOMPUTE
   if (this->inGlobal) return;
@@ -20,35 +20,36 @@ void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
   forces = gga = true; // Vamos a cachear asi que guardemos todo y listo
   #endif
   /* Load group functions */
-  uint group_m = total_functions();
+  uint group_m = this->total_functions();
+  int numpoints = this->number_of_points;
 
-  function_values.resize(group_m, number_of_points);
+  function_values.resize(group_m, numpoints);
   if (forces || gga) {
-      gX.resize(group_m, number_of_points); gX.zero();
-      gY.resize(group_m, number_of_points); gY.zero();
-      gZ.resize(group_m, number_of_points); gZ.zero();
+      gX.resize(group_m, numpoints); gX.zero();
+      gY.resize(group_m, numpoints); gY.zero();
+      gZ.resize(group_m, numpoints); gZ.zero();
   }
   if (gga) {
-      hPX.resize(group_m, number_of_points); hPX.zero();
-      hPY.resize(group_m, number_of_points); hPY.zero();
-      hPZ.resize(group_m, number_of_points); hPZ.zero();
-      hIX.resize(group_m, number_of_points); hIX.zero();
-      hIY.resize(group_m, number_of_points); hIY.zero();
-      hIZ.resize(group_m, number_of_points); hIZ.zero();
+      hPX.resize(group_m, numpoints); hPX.zero();
+      hPY.resize(group_m, numpoints); hPY.zero();
+      hPZ.resize(group_m, numpoints); hPZ.zero();
+      hIX.resize(group_m, numpoints); hIX.zero();
+      hIY.resize(group_m, numpoints); hIY.zero();
+      hIZ.resize(group_m, numpoints); hIZ.zero();
   }
 
   #pragma omp parallel for schedule(static)
-  for(int point = 0; point< points.size(); point++) {
-    vec_type3 point_position = vec_type3(points[point].position.x, points[point].position.y, points[point].position.z);
+  for(int point = 0; point< this->points.size(); point++) {
+    vec_type3 point_position = vec_type3(this->points[point].position.x, this->points[point].position.y, this->points[point].position.z);
 
-    for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
+    for (uint i = 0, ii = 0; i < this->total_functions_simple(); i++) {
       // compute exponential
-      uint nuc = func2global_nuc(i);
+      uint nuc = this->func2global_nuc(i);
       const vec_type3 v(point_position - vec_type3(fortran_vars.atom_positions(nuc)));
       scalar_type dist = v.length2();
 
       scalar_type t = 0, tg = 0, th = 0;
-      uint global_func = local2global_func[i];
+      uint global_func = this->local2global_func[i];
       uint contractions = fortran_vars.contractions(global_func);
       for (uint contraction = 0; contraction < contractions; contraction++) {
         scalar_type a = fortran_vars.a_values(global_func, contraction);
@@ -63,7 +64,7 @@ void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
       const vec_type3 vyzz(v.y(), v.z(), v.z());
 
       // compute s, p, d
-      if (i < s_functions) {
+      if (i < this->s_functions) {
         function_values(ii, point) = t;
         if (forces || gga) {
           // gradient_values(ii, point) = vec_type3(v * (-2 * tg));
@@ -84,7 +85,7 @@ void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
 
         ii++;
       }
-      else if (i < s_functions + p_functions) {
+      else if (i < this->s_functions + this->p_functions) {
         function_values(ii + 0, point) = v.x() * t;
         function_values(ii + 1, point) = v.y() * t;
         function_values(ii + 2, point) = v.z() * t;
@@ -225,6 +226,6 @@ void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
   function_values.transpose(function_values_transposed);
 }
 
-template class PointGroup<double>;
-template class PointGroup<float>;
+template class PointGroupCPU<double>;
+template class PointGroupCPU<float>;
 }

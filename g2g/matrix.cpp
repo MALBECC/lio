@@ -433,7 +433,7 @@ template class Matrix<float>;
 // template class Matrix<float4>;
 // template class Matrix<uint1>;
 // template class Matrix<uint2>;
-// template class Matrix<uint>;
+template class Matrix<uint>;
 
 template class HostMatrix< vec_type<float, 2> >;
 template class HostMatrix< vec_type<float, 3> >;
@@ -454,14 +454,14 @@ template class CudaMatrix< vec_type<double, 4> >;
 template class HostMatrix<double>;
 template class HostMatrix<float>;
 
-// template class HostMatrix<double3>;
-// template class HostMatrix<float1>;
-// template class HostMatrix<float2>;
-// template class HostMatrix<float3>;
-// template class HostMatrix<float4>;
-// template class HostMatrix<uint1>;
-// template class HostMatrix<uint2>;
-// template class HostMatrix<uint>;
+template class HostMatrix<double3>;
+template class HostMatrix<float1>;
+template class HostMatrix<float2>;
+template class HostMatrix<float3>;
+template class HostMatrix<float4>;
+template class HostMatrix<uint1>;
+template class HostMatrix<uint2>;
+template class HostMatrix<uint>;
 
 #if !CPU_KERNELS
 template class CudaMatrix<float>;

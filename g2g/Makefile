@@ -15,12 +15,16 @@ ifeq ($(cpu),1)
   OBJ          += $(CPU_SOURCES:%.cpp=%.o)
   CXXFLAGS     += -DCPU_KERNELS=1 -I$(MKLROOT)/include
   CPU          := 1
-else
+endif
+
+ifeq ($(cuda),1)
   include Makefile.cuda
   CUDA_LIBS    := -lcudart -lcuda
   CUDA_SOURCES := $(wildcard cuda/*.cu)
   SRCS         += $(CUDA_SOURCES)
   OBJ          += $(CUDA_SOURCES:%.cu=%.cu_o)
+  CXXFLAGS     += -DGPU_KERNELS=1
+  NVCCFLAGS    += -DGPU_KERNELS=1
 endif
 
 ## Other options

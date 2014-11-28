@@ -94,7 +94,7 @@ void PointGroup<scalar_type>::compute_weights(void)
     if (remove_zero_weights) {
         vector<Point> filteredPoints;
         for(int point = 0; point < points.size(); point++) {
-            if(points[point].weight != 0.0) 
+            if(points[point].weight != 0.0)
                 filteredPoints.push_back(points[point]);
         }
         points.swap(filteredPoints);

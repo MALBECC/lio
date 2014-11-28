@@ -1,22 +1,20 @@
 # DO NOT DELETE
 
-classify_functions.o: common.h init.h matrix.h 
-classify_functions.o: cuda/cuda_extra.h partition.h
-init.o: common.h cuda/cuda_extra.h init.h matrix.h
-init.o: timer.h partition.h
-matrix.o: common.h matrix.h cuda/cuda_extra.h
-partition.o: global_memory_pool.h
-partition.o: common.h init.h matrix.h 
-partition.o: cuda/cuda_extra.h partition.h timer.h global_memory_pool.h
+classify_functions.o: common.h init.h matrix.h cuda_includes.h
+classify_functions.o: cuda/cuda_extra.h scalar_vector_types.h
+classify_functions.o: datatypes/cpu_primitives.h partition.h timer.h
+classify_functions.o: global_memory_pool.h
+global_memory_pool.o: global_memory_pool.h cuda/cuda_extra.h cuda_includes.h
+init.o: common.h cuda_includes.h cuda/cuda_extra.h init.h matrix.h
+init.o: scalar_vector_types.h datatypes/cpu_primitives.h timer.h partition.h
+init.o: global_memory_pool.h
+matrix.o: common.h matrix.h cuda_includes.h cuda/cuda_extra.h
+matrix.o: scalar_vector_types.h datatypes/cpu_primitives.h
+partition.o: common.h init.h matrix.h cuda_includes.h cuda/cuda_extra.h
+partition.o: scalar_vector_types.h datatypes/cpu_primitives.h partition.h
+partition.o: timer.h global_memory_pool.h
+regenerate_partition.o: common.h init.h matrix.h cuda_includes.h
+regenerate_partition.o: cuda/cuda_extra.h scalar_vector_types.h
+regenerate_partition.o: datatypes/cpu_primitives.h partition.h timer.h
 regenerate_partition.o: global_memory_pool.h
-regenerate_partition.o: common.h init.h matrix.h 
-regenerate_partition.o: cuda/cuda_extra.h partition.h timer.h
-timer.o: timer.h
-cuda/iteration.cu_o: global_memory_pool.h
-cuda/iteration.cu_o: common.h init.h matrix.h 
-cuda/iteration.cu_o: cuda/cuda_extra.h cuda/cuda_extra.h matrix.h timer.h
-cuda/iteration.cu_o: partition.h cuda/gpu_variables.h cuda/kernels/pot.h
-cuda/iteration.cu_o: cuda/kernels/energy.h cuda/kernels/energy_derivs.h
-cuda/iteration.cu_o: cuda/kernels/rmm.h cuda/kernels/weight.h
-cuda/iteration.cu_o: cuda/kernels/functions.h cuda/kernels/force.h
-global_memory_pool.o: global_memory_pool.h
+timer.o: timer.h cuda_includes.h cuda/cuda_extra.h

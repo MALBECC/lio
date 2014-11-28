@@ -237,16 +237,6 @@ template void to_constant<uint>(const char* constant, const uint& value);
 template void to_constant<float>(const char* constant, const float& value);
 template void to_constant<double>(const char* constant, const double& value);
 
-template<class T> void HostMatrix<T>::check_values(void) {
-  for (uint i = 0; i < this->width; i++) {
-    for (uint j = 0; j < this->height; j++) {
-      T value = (*this)(i, j);
-      //TODO(jpdarago): Reemplazar esto con un isinf polimorfico
-      if (isinf(value) || isnan(value)) cout << "NaN/Inf: (" << i << "," << j << ") " << value << endl;
-    }
-  }
-}
-
 /******************************
  * CudaMatrix
  ******************************/
@@ -408,10 +398,6 @@ template<class T> CudaMatrix<T>& CudaMatrix<T>::operator=(const CudaMatrix<T>& c
 	return *this;
 }
 
-template<class T> void CudaMatrix<T>::check_values(void) {
-  HostMatrix<T>(*this).check_values();
-}
-
 /*************************************
  * FortranMatrix
  *************************************/
@@ -438,16 +424,16 @@ template class Matrix< vec_type<double, 2> >;
 template class Matrix< vec_type<double, 3> >;
 template class Matrix< vec_type<double, 4> >;
 
-template class Matrix<double3>;
+// template class Matrix<double3>;
 template class Matrix<double>;
 template class Matrix<float>;
-template class Matrix<float1>;
-template class Matrix<float2>;
-template class Matrix<float3>;
-template class Matrix<float4>;
-template class Matrix<uint1>;
-template class Matrix<uint2>;
-template class Matrix<uint>;
+// template class Matrix<float1>;
+// template class Matrix<float2>;
+// template class Matrix<float3>;
+// template class Matrix<float4>;
+// template class Matrix<uint1>;
+// template class Matrix<uint2>;
+// template class Matrix<uint>;
 
 template class HostMatrix< vec_type<float, 2> >;
 template class HostMatrix< vec_type<float, 3> >;
@@ -468,14 +454,14 @@ template class CudaMatrix< vec_type<double, 4> >;
 template class HostMatrix<double>;
 template class HostMatrix<float>;
 
-template class HostMatrix<double3>;
-template class HostMatrix<float1>;
-template class HostMatrix<float2>;
-template class HostMatrix<float3>;
-template class HostMatrix<float4>;
-template class HostMatrix<uint1>;
-template class HostMatrix<uint2>;
-template class HostMatrix<uint>;
+// template class HostMatrix<double3>;
+// template class HostMatrix<float1>;
+// template class HostMatrix<float2>;
+// template class HostMatrix<float3>;
+// template class HostMatrix<float4>;
+// template class HostMatrix<uint1>;
+// template class HostMatrix<uint2>;
+// template class HostMatrix<uint>;
 
 #if !CPU_KERNELS
 template class CudaMatrix<float>;
@@ -491,6 +477,6 @@ template class CudaMatrix<double4>;
 #endif
 
 template class FortranMatrix<double>;
-template class FortranMatrix<uint>;
+template class FortranMatrix<unsigned int>;
 
 }

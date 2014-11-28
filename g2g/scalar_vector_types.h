@@ -12,7 +12,6 @@ namespace G2G {
     public:
       vec_type(void) {}
       vec_type(float _x, float _y) { this->x = _x; this->y = _y; }
-      typedef float2 base_type;
       //operator float2 () { return (float2)(*this); }
   };
 
@@ -25,14 +24,11 @@ namespace G2G {
       vec_type(const float3& other) : _x(other.x),_y(other.y),_z(other.z) { }
       vec_type(const double3& other) : _x(other.x),_y(other.y),_z(other.z) { }
       vec_type(float x, float y, float z) : _x(x), _y(y), _z(z) { }
-      
+
       inline float x() const { return _x; }
       inline float y() const { return _y; }
       inline float z() const { return _z; }
       inline float length2() const { return _x * _x + _y * _y + _z * _z; }
-
-      friend bool isinf(const vec_type & e){ return isinf(e._x) || isinf(e._y) || isinf(e._z); }
-      friend bool isnan(const vec_type & e){ return isnan(e._x) || isnan(e._y) || isnan(e._z); }
 
       friend vec_type operator*(const vec_type & lo, const vec_type & ro) {
       	return vec_type(lo.x() * ro.x(), lo.y() * ro.y(), lo.z() * ro.z());
@@ -54,7 +50,7 @@ namespace G2G {
       void operator+=(const vec_type & lo){
       	_x += lo.x(), _y += lo.y(), _z += lo.z();
       }
-    
+
       void operator-=(const vec_type & lo){
       	_x -= lo.x(), _y -= lo.y(), _z -= lo.z();
       }
@@ -66,8 +62,6 @@ namespace G2G {
       friend vec_type operator-(const vec_type & lo, float f) {
       	return vec_type(lo.x()-f,lo.y()-f,lo.z()-f);
       }
-
-      typedef float3 base_type;
   };
 
   template<> class vec_type<float, 4> {
@@ -77,10 +71,6 @@ namespace G2G {
     public:
       vec_type(void) {}
       vec_type(float x, float y, float z, float w) : _x(_x), _y(y), _z(z), _w(w) { }
-      typedef float4 base_type;
-
-      friend bool isinf(const vec_type & e){ return false; }
-      friend bool isnan(const vec_type & e){ return false; }
 
       friend std::ostream& operator<<(std::ostream& o, const vec_type & v) {
           o << v._x << " " << v._y << " " << v._z << " " << v._w;

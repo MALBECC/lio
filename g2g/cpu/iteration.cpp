@@ -233,7 +233,7 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve_closed(Timers
     for(int i = 0; i < indexes; i++) {
       int bi = rmm_bigs[i], row = rmm_rows[i], col = rmm_cols[i];
 
-      double res = 0;
+      scalar_type res = 0;
       const scalar_type * fvr = function_values_transposed.row(row);
       const scalar_type * fvc = function_values_transposed.row(col);
 

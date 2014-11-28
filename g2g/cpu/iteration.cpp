@@ -228,10 +228,10 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve_closed(Timers
   timers.rmm.start();
   /* accumulate RMM results for this group */
   if(compute_rmm) {
-    const int indexes = rmm_bigs.size();
+    const int indexes = this->rmm_bigs.size();
     #pragma omp parallel for num_threads(inner_threads) schedule(static)
     for(int i = 0; i < indexes; i++) {
-      int bi = rmm_bigs[i], row = rmm_rows[i], col = rmm_cols[i];
+      int bi = this->rmm_bigs[i], row = this->rmm_rows[i], col = this->rmm_cols[i];
 
       scalar_type res = 0;
       const scalar_type * fvr = function_values_transposed.row(row);

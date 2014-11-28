@@ -88,6 +88,11 @@ class PointGroup {
     void add_point(const Point& p);
     virtual void compute_weights(void) = 0;
 
+    virtual bool is_big_group(int) const = 0;
+    void compute_indexes();
+    std::vector<uint> rmm_rows;
+    std::vector<uint> rmm_cols;
+    std::vector<uint> rmm_bigs;
     virtual void compute_functions(bool forces, bool gga) = 0;
 
     virtual void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
@@ -117,7 +122,6 @@ class PointGroupCPU: public PointGroup<scalar_type> {
     virtual ~PointGroupCPU(void);
     virtual void compute_functions(bool, bool);
     virtual void compute_weights(void);
-    void compute_indexes();
     void output_cost() const;
     bool is_big_group(int) const;
     virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const;
@@ -141,9 +145,6 @@ class PointGroupCPU: public PointGroup<scalar_type> {
     G2G::HostMatrix<scalar_type> hIX, hIY, hIZ;
     G2G::HostMatrix<scalar_type> hPX, hPY, hPZ;
     G2G::HostMatrix<scalar_type> function_values_transposed;
-    std::vector<uint> rmm_rows;
-    std::vector<uint> rmm_cols;
-    std::vector<uint> rmm_bigs;
 };
 
 template<class scalar_type>
@@ -152,6 +153,7 @@ class PointGroupGPU: public PointGroup<scalar_type> {
     virtual ~PointGroupGPU(void);
     virtual void compute_functions(bool, bool);
     virtual void compute_weights(void);
+    bool is_big_group(int) const;
     virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const;
     virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input) const;
     virtual void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
@@ -183,7 +185,7 @@ typedef double base_scalar_type;
 typedef float base_scalar_type;
 #endif
 
-class Sphere : public PointGroupCPU<base_scalar_type> {
+class Sphere : public PointGroupGPU<base_scalar_type> {
   public:
     Sphere(void);
     Sphere(uint _atom, double _radius);

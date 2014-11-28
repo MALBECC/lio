@@ -436,15 +436,43 @@ void Partition::regenerate(void)
     compute_work_partition();
 
     timeforgroup.resize(cubes.size() + spheres.size());
-    next.resize(outer_threads);
+    next.resize(outer_threads+1);
 
-    fort_forces_ms.resize(outer_threads);
-    rmm_outputs.resize(outer_threads);
+    fort_forces_ms.resize(outer_threads+1);
+    rmm_outputs.resize(outer_threads+1);
 
-    for(int i = 0; i < outer_threads; i++) {
+    for(int i = 0; i < outer_threads+1; i++) {
       fort_forces_ms[i].resize(fortran_vars.max_atoms, 3);
       rmm_outputs[i].resize(fortran_vars.rmm_output.width, fortran_vars.rmm_output.height);
     }
 
+    work.push_back(vector<int>());
+    for(int i = 0; i < cubes.size(); i++)
+      if(cubes[i].is_big_group(inner_threads))
+        work.back().push_back(i);
+
+    for(int i = 0; i < spheres.size(); i++)
+      if(spheres[i].is_big_group(inner_threads))
+        work.back().push_back(i+cubes.size());
+
+    bool cubes_are_small = true;
+    bool spheres_are_big = true;
+
+    for(int i = 0; i < cubes.size(); ++i)
+      if(cubes[i].is_big_group(inner_threads))
+          cubes_are_small = false;
+
+    for(int i = 0; i < spheres.size(); ++i)
+      if(!spheres[i].is_big_group(inner_threads))
+          spheres_are_big = false;
+
+    if(!cubes_are_small) {
+      cout << "CUBOS NO CHICOS" << endl;
+      exit(0);
+    }
+    if(!cubes_are_small){
+      cout << "ESFERAS NO SON GRANDES" << endl;
+      exit(0);
+    }
     diagnostic(inner_threads, outer_threads);
 }

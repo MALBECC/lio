@@ -42,8 +42,13 @@ void PointGroupCPU<scalar_type>::output_cost() const
 template<class scalar_type>
 bool PointGroupCPU<scalar_type>::is_big_group(int threads_to_use) const
 {
-  return rmm_bigs.size() >= THRESHOLD * threads_to_use &&
-    this->number_of_points >= THRESHOLD * threads_to_use;
+  return false;
+}
+
+template<class scalar_type>
+bool PointGroupGPU<scalar_type>::is_big_group(int threads_to_use) const
+{
+  return true;
 }
 
 template<class scalar_type>
@@ -75,9 +80,9 @@ void PointGroupGPU<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_inpu
 template<class scalar_type>
 void PointGroupCPU<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const {
   rmm_input.zero();
-  const int indexes = rmm_bigs.size();
+  const int indexes = this->rmm_bigs.size();
   for(int i = 0; i < indexes; i++) {
-    int ii = rmm_rows[i], jj = rmm_cols[i], bi = rmm_bigs[i];
+    int ii = this->rmm_rows[i], jj = this->rmm_cols[i], bi = this->rmm_bigs[i];
     rmm_input(ii, jj) = (scalar_type) source.data[bi];
   }
 }
@@ -99,7 +104,7 @@ void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input_a
 }
 
 template<class scalar_type>
-void PointGroupCPU<scalar_type>::compute_indexes()
+void PointGroup<scalar_type>::compute_indexes()
 {
   rmm_bigs.clear(); rmm_cols.clear(); rmm_rows.clear();
   for (uint i = 0, ii = 0; i < this->total_functions_simple(); i++) {
@@ -304,12 +309,14 @@ void Partition::compute_functions(bool forces, bool gga) {
 
   #pragma omp parallel for schedule(guided,8)
   for(int i = 0; i < cubes.size(); i++){
-    cubes[i].compute_functions(forces, gga);
+    if(!cubes[i].is_big_group(0xDEADBEEF))
+      cubes[i].compute_functions(forces, gga);
   }
 
   #pragma omp parallel for schedule(guided,8)
   for(int i = 0; i < spheres.size(); i++){
-    spheres[i].compute_functions(forces, gga);
+    if(!spheres[i].is_big_group(0xDEADBEEF))
+      spheres[i].compute_functions(forces, gga);
   }
 
   t1.stop_and_sync();
@@ -323,8 +330,8 @@ void Partition::clear() {
 void Partition::rebalance(vector<double> & times, vector<double> & finishes)
 {
   for(int rondas = 0; rondas < 5; rondas++){
-    int largest = std::max_element(finishes.begin(),finishes.end()) - finishes.begin();
-    int smallest = std::min_element(finishes.begin(),finishes.end()) - finishes.begin();
+    int largest = std::max_element(finishes.begin(),finishes.end()-1) - finishes.begin();
+    int smallest = std::min_element(finishes.begin(),finishes.end()-1) - finishes.begin();
 
     double diff = finishes[largest] - finishes[smallest];
 
@@ -375,11 +382,9 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   double cubes_energy_c2 = 0, spheres_energy_c2 = 0;
 
   Timer smallgroups, biggroups;
-  int i;
 
-  smallgroups.start();
-  #pragma omp parallel for reduction(+:energy) num_threads(outer_threads) private(i)
-  for(i = 0; i< work.size(); i++) {
+  #pragma omp parallel for num_threads(outer_threads+1) schedule(static)
+  for(int i = 0; i< work.size(); i++) {
     double local_energy = 0;
 
     Timers ts; Timer t;
@@ -393,12 +398,12 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
       Timer element; element.start();
       if(ind >= cubes.size()){
         spheres[ind-cubes.size()].solve(ts, compute_rmm,lda,compute_forces, compute_energy,
-          local_energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1, spheres_energy_c2,
-          fort_forces_ms[i], 1, rmm_outputs[i], OPEN);
+            local_energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1, spheres_energy_c2,
+            fort_forces_ms[i], 1, rmm_outputs[i], OPEN);
       } else {
         cubes[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy,
-          local_energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, cubes_energy_c2,
-          fort_forces_ms[i], 1, rmm_outputs[i], OPEN);
+            local_energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, cubes_energy_c2,
+            fort_forces_ms[i], 1, rmm_outputs[i], OPEN);
       }
       element.stop();
       timeforgroup[ind] = element.getTotal();
@@ -411,37 +416,13 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
 
     energy += local_energy;
   }
-  smallgroups.stop();
-
-  cout << "SMALL GROUPS = " << smallgroups << endl;
-
-  Timers bigroupsts;
-  for(int i = 0; i < cubes.size(); i++) {
-    if(!cubes[i].is_big_group(inner_threads)) continue;
-    biggroups.start();
-    cubes[i].solve(bigroupsts,compute_rmm,lda,compute_forces, compute_energy,
-      energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1,
-      cubes_energy_c2, fort_forces_ms[0], inner_threads, rmm_outputs[0], OPEN);
-    biggroups.pause();
-  }
-  for(int i = 0; i < spheres.size(); i++) {
-    if(!spheres[i].is_big_group(inner_threads)) continue;
-    biggroups.start();
-    spheres[i].solve(bigroupsts,compute_rmm,lda,compute_forces, compute_energy,
-      energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1,
-      spheres_energy_c2, fort_forces_ms[0], inner_threads, rmm_outputs[0], OPEN);
-    biggroups.pause();
-  }
-
-  cout << "BIG GROUPS = " << biggroups << endl;
-  cout << bigroupsts;
 
   Timer enditer; enditer.start();
   if(work.size() > 1) rebalance(timeforgroup, next);
   if (compute_forces) {
     FortranMatrix<double> fort_forces_out(fort_forces_ptr,
       fortran_vars.atoms, 3, fortran_vars.max_atoms);
-    for(int k = 0; k < outer_threads; k++) {
+    for(int k = 0; k < fort_forces_ms.size(); k++) {
       for(int i = 0; i < fortran_vars.atoms; i++) {
         for(int j = 0; j < 3; j++) {
           fort_forces_out(i,j) += fort_forces_ms[k](i,j);
@@ -451,7 +432,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   }
 
   if (compute_rmm) {
-    for(int k = 0; k < outer_threads; k++) {
+    for(int k = 0; k < rmm_outputs.size(); k++) {
       for(int i = 0; i < fortran_vars.rmm_output.width; i++) {
         for(int j = 0; j < fortran_vars.rmm_output.height; j++) {
           fortran_vars.rmm_output(i,j) += rmm_outputs[k](i,j);

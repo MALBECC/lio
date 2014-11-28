@@ -314,7 +314,7 @@ void PointGroupGPU<scalar_type>::solve_closed(Timers& timers, bool compute_rmm,
 
     /*** Contribute this RMM to the total RMM ***/
     HostMatrix<scalar_type> rmm_output_cpu(rmm_output_gpu);
-    add_rmm_output(rmm_output_cpu, rmm_output_local);
+    this->add_rmm_output(rmm_output_cpu, rmm_output_local);
 
   }
   timers.rmm.pause_and_sync();

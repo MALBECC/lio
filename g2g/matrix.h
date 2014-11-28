@@ -150,10 +150,10 @@ namespace G2G {
 	typedef HostMatrix<float> HostMatrixFloat;
 	typedef HostMatrix<float1> HostMatrixFloat1;
 	typedef HostMatrix<float3> HostMatrixFloat3;
-    typedef HostMatrix<float4> HostMatrixFloat4;
+  typedef HostMatrix<float4> HostMatrixFloat4;
 	typedef HostMatrix<uint> HostMatrixUInt;
 	typedef HostMatrix<uint1> HostMatrixUInt1;
-    typedef HostMatrix<uint2> HostMatrixUInt2;
+  typedef HostMatrix<uint2> HostMatrixUInt2;
 
 	typedef CudaMatrix<float> CudaMatrixFloat;
 	typedef CudaMatrix<float1> CudaMatrixFloat1;
@@ -162,7 +162,7 @@ namespace G2G {
 	typedef CudaMatrix<float4> CudaMatrixFloat4;
 	typedef CudaMatrix<uint> CudaMatrixUInt;
 	typedef CudaMatrix<uint1> CudaMatrixUInt1;
-    typedef CudaMatrix<uint2> CudaMatrixUInt2;
+  typedef CudaMatrix<uint2> CudaMatrixUInt2;
 }
 
 #endif

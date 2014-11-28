@@ -463,7 +463,6 @@ template class HostMatrix<uint1>;
 template class HostMatrix<uint2>;
 template class HostMatrix<uint>;
 
-#if GPU_KERNELS
 template class CudaMatrix<float>;
 template class CudaMatrix<float1>;
 template class CudaMatrix<float2>;
@@ -474,7 +473,6 @@ template class CudaMatrix<uint2>;
 template class CudaMatrix<double>;
 template class CudaMatrix<double3>;
 template class CudaMatrix<double4>;
-#endif
 
 template class FortranMatrix<double>;
 template class FortranMatrix<unsigned int>;

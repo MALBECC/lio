@@ -172,14 +172,14 @@ void cpu_potg_tmpl(scalar_type dens, const vec_type<scalar_type,3>& grad, const 
 
   scalar_type y = pow((scalar_type)dens, (scalar_type)0.333333333333333333);  // rho^(1/3)
 
-  scalar_type grad2 = grad.x() * grad.x() + grad.y() * grad.y() + grad.z() * grad.z();
+  scalar_type grad2 = grad.x * grad.x + grad.y * grad.y + grad.z * grad.z;
   if (grad2 == 0) grad2 = numeric_limits<scalar_type>::min();
   scalar_type dgrad = sqrt(grad2);
 
-  scalar_type d0 = hess1.x() + hess1.y() + hess1.z();
-  scalar_type u0 = ((grad.x() * grad.x()) * hess1.x() + 2.0 * grad.x() * grad.y() * hess2.x() + 2.0 * grad.y() * grad.z() * hess2.z() + 2.0 * grad.x() * grad.z() * hess2.y() +
-      (grad.y() * grad.y()) * hess1.y() + (grad.z() * grad.z()) * hess1.z()) / dgrad; // esto ya difiere
-  
+  scalar_type d0 = hess1.x + hess1.y + hess1.z;
+  scalar_type u0 = ((grad.x * grad.x) * hess1.x + 2.0 * grad.x * grad.y * hess2.x + 2.0 * grad.y * grad.z * hess2.z + 2.0 * grad.x * grad.z * hess2.y +
+      (grad.y * grad.y) * hess1.y + (grad.z * grad.z) * hess1.z) / dgrad; // esto ya difiere
+
   y2a = 0;
 
   /** Exchange **/
@@ -228,15 +228,15 @@ void cpu_potg_tmpl(scalar_type dens, const vec_type<scalar_type,3>& grad, const 
     scalar_type DN3 = siper * (1.0 + 2.0 * Fb) + XA1 * DN2;
     scalar_type D02 = d0 / 2.0;
     scalar_type de1 = 1.33333333333333 / (pow((scalar_type)dens,(scalar_type)2.33333333333333));
-    scalar_type DGRADx = (grad.x() * hess1.x() + grad.y() * hess2.x() + grad.z() * hess2.y()) / dgrad;
-    scalar_type GRADXx = pow(2.0, 0.33333333333333) * (1.0 / (dens * y) * DGRADx - de1 * grad.x() * dgrad);
-    scalar_type DGRADy = (grad.x() * hess2.x() + grad.y() * hess1.y() + grad.z() * hess2.z()) / dgrad;
-    scalar_type GRADXy = pow(2.0, 0.33333333333333) * (1.0 / (dens * y) * DGRADy - de1 * grad.y() * dgrad);
-    scalar_type DGRADz = (grad.x() * hess2.y() + grad.y() * hess2.z() + grad.z() * hess1.z()) / dgrad;
-    scalar_type GRADXz = pow(2.0, 0.33333333333333) * (1.0 / (dens * y) * DGRADz - de1 * grad.z() * dgrad);
-    scalar_type T1 = grad.x() / 2.0 * GRADXx;
-    scalar_type T2 = grad.y() / 2.0 * GRADXy;
-    scalar_type T3 = grad.z() / 2.0 * GRADXz;
+    scalar_type DGRADx = (grad.x * hess1.x + grad.y * hess2.x + grad.z * hess2.y) / dgrad;
+    scalar_type GRADXx = pow(2.0, 0.33333333333333) * (1.0 / (dens * y) * DGRADx - de1 * grad.x * dgrad);
+    scalar_type DGRADy = (grad.x * hess2.x + grad.y * hess1.y + grad.z * hess2.z) / dgrad;
+    scalar_type GRADXy = pow(2.0, 0.33333333333333) * (1.0 / (dens * y) * DGRADy - de1 * grad.y * dgrad);
+    scalar_type DGRADz = (grad.x * hess2.y + grad.y * hess2.z + grad.z * hess1.z) / dgrad;
+    scalar_type GRADXz = pow(2.0, 0.33333333333333) * (1.0 / (dens * y) * DGRADz - de1 * grad.z * dgrad);
+    scalar_type T1 = grad.x / 2.0 * GRADXx;
+    scalar_type T2 = grad.y / 2.0 * GRADXy;
+    scalar_type T3 = grad.z / 2.0 * GRADXz;
     scalar_type DN4 = 6.0 * POT_BETA * Fb * (T1 + T2 + T3);
     scalar_type DN5 = 1.33333333333333 * r43 * r13 * Xs * Xs;
     scalar_type TOT2 = DN5 - D02 * DN1 + DN4 * DN3;
@@ -245,14 +245,14 @@ void cpu_potg_tmpl(scalar_type dens, const vec_type<scalar_type,3>& grad, const 
     y2a = v0 + vxc;
   }
   else { // PBE (Iexch 9 complete)
-    scalar_type dgrad1 = grad.x() * grad.x() * hess1.x();
-    scalar_type dgrad2 = grad.y() * grad.y() * hess1.y();
-    scalar_type dgrad3 = grad.z() * grad.z() * hess1.z();
-    scalar_type dgrad4 = grad.x() * grad.y() * hess2.x();
-    scalar_type dgrad5 = grad.x() * grad.z() * hess2.y();
-    scalar_type dgrad6 = grad.y() * grad.z() * hess2.z();
+    scalar_type dgrad1 = grad.x * grad.x * hess1.x;
+    scalar_type dgrad2 = grad.y * grad.y * hess1.y;
+    scalar_type dgrad3 = grad.z * grad.z * hess1.z;
+    scalar_type dgrad4 = grad.x * grad.y * hess2.x;
+    scalar_type dgrad5 = grad.x * grad.z * hess2.y;
+    scalar_type dgrad6 = grad.y * grad.z * hess2.z;
     scalar_type delgrad = (dgrad1 + dgrad2 + dgrad3 + 2 * (dgrad4 + dgrad5 + dgrad6)) / dgrad;
-    scalar_type rlap = hess1.x() + hess1.y() + hess1.z();
+    scalar_type rlap = hess1.x + hess1.y + hess1.z;
 
     scalar_type expbe, vxpbe, ecpbe, vcpbe;
     closedpbe(dens, dgrad, delgrad, rlap, expbe, vxpbe, ecpbe, vcpbe);
@@ -377,7 +377,7 @@ static void closedpbe(scalar_type rho, scalar_type agrad, scalar_type delgrad, s
     expbe = vxpbe = ecpbe = vcpbe = 0;
     return;
   }
-	
+
   scalar_type rho2 = rho * rho;
   scalar_type rho13 = pow((scalar_type)rho, (scalar_type)(1.0 / 3.0));
   scalar_type fk1 = pow(CLOSEDPBE_PI32, 1.0 / 3.0);
@@ -454,7 +454,7 @@ static void closedpbe(scalar_type rho, scalar_type agrad, scalar_type delgrad, s
   scalar_type ec, eurs;
   gcorc(rtrs, ec, eurs);
 	if (ec == 0) ec = numeric_limits<scalar_type>::min();
-	
+
   scalar_type eclda = ec;
   scalar_type ecrs = eurs;
   scalar_type vclda = eclda - rs * (1.0 / 3.0) * ecrs;
@@ -474,7 +474,7 @@ static void closedpbe(scalar_type rho, scalar_type agrad, scalar_type delgrad, s
   // So the correlation energy for pbe is:
   ecpbe = eclda + H;
   //cout << expl(PON) << " " << t2 << endl;
-	
+
   // Now we have to calculate the potential contribution of GGA
   scalar_type T6 = T4 * t2;
   scalar_type RSTHRD = rs / 3.0;
@@ -500,7 +500,7 @@ static void closedpbe(scalar_type rho, scalar_type agrad, scalar_type delgrad, s
   vcpbe = vclda + COMM;
 
   //cout << expbe << " " << Q4 << " " << H << " " << eclda << " " << (double)eclda + H << " " << endl;
-	
+
 	//cout << rho << " " << delgrad << " " << rlap << " ret: " << expbe << " " << vxpbe << " " << ecpbe << " " << vcpbe << endl;
 }
 

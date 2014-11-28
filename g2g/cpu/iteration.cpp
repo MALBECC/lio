@@ -218,9 +218,9 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve_closed(Timers
     for (int i = 0; i < this->total_nucleii(); i++) {
       uint global_atom = this->local2global_nuc[i];
       vec_type3 this_force = forces[i];
-      fort_forces(global_atom,0) += this_force.x();
-      fort_forces(global_atom,1) += this_force.y();
-      fort_forces(global_atom,2) += this_force.z();
+      fort_forces(global_atom,0) += this_force.x;
+      fort_forces(global_atom,1) += this_force.y;
+      fort_forces(global_atom,2) += this_force.z;
     }
   }
   timers.forces.pause();

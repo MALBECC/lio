@@ -34,15 +34,16 @@ extern "C" void g2g_init_(void)
 {
   cout << "<====== Initializing G2G ======>"<<endl;
 
-  #if GPU_KERNELS
   cuInit(0);
   int devnum = -1;
   cudaDeviceProp devprop;
+  #if GPU_KERNELS
   if (cudaGetDevice(&devnum) != cudaSuccess) throw runtime_error("Could not get device number!");
   if (cudaGetDeviceProperties(&devprop, devnum) != cudaSuccess) throw runtime_error("Could not get device propierties!");
   cout << "GPU Device used: " << devprop.name << endl;
   cout << "Kernels: gpu" << endl;
-  #else
+  #endif
+  #if CPU_KERNELS
   cout << "Kernels: cpu" << endl;
   #endif
 

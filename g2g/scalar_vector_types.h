@@ -16,61 +16,60 @@ namespace G2G {
   };
 
   template<> class vec_type<float, 3> {
-  	private:
-  	  float _x, _y, _z;
-
     public:
-      vec_type(void) {}
-      vec_type(const float3& other) : _x(other.x),_y(other.y),_z(other.z) { }
-      vec_type(const double3& other) : _x(other.x),_y(other.y),_z(other.z) { }
-      vec_type(float x, float y, float z) : _x(x), _y(y), _z(z) { }
+  	  float x, y, z;
 
-      inline float length2() const { return _x * _x + _y * _y + _z * _z; }
+      vec_type(void) {}
+      vec_type(const float3& other) : x(other.x),y(other.y),z(other.z) { }
+      vec_type(const double3& other) : x(other.x),y(other.y),z(other.z) { }
+      vec_type(float _x, float _y, float _z) : x(_x), y(_y), z(_z) { }
+
+      inline float length2() const { return x * x + y * y + z * z; }
 
       friend vec_type operator*(const vec_type & lo, const vec_type & ro) {
-      	return vec_type(lo.x() * ro.x(), lo.y() * ro.y(), lo.z() * ro.z());
+      	return vec_type(lo.x * ro.x, lo.y * ro.y, lo.z * ro.z);
       }
 
       friend vec_type operator-(const vec_type & lo, const vec_type & ro) {
-      	return vec_type(lo.x() - ro.x(), lo.y() - ro.y(), lo.z() - ro.z());
+      	return vec_type(lo.x - ro.x, lo.y - ro.y, lo.z - ro.z);
       }
 
       friend vec_type operator+(const vec_type & lo, const vec_type & ro) {
-      	return vec_type(lo.x() + ro.x(), lo.y() + ro.y(), lo.z() + ro.z());
+      	return vec_type(lo.x + ro.x, lo.y + ro.y, lo.z + ro.z);
       }
 
       friend std::ostream& operator<<(std::ostream& o, const vec_type & v) {
-          o << v.x() << " " << v.y() << " " << v.z();
+          o << v.x << " " << v.y << " " << v.z;
           return o;
       }
 
       void operator+=(const vec_type & lo){
-      	_x += lo.x(), _y += lo.y(), _z += lo.z();
+      	x += lo.x, y += lo.y, z += lo.z;
       }
 
       void operator-=(const vec_type & lo){
-      	_x -= lo.x(), _y -= lo.y(), _z -= lo.z();
+      	x -= lo.x, y -= lo.y, z -= lo.z;
       }
 
       friend vec_type operator*(const vec_type & lo, float f) {
-      	return vec_type(lo.x()*f,lo.y()*f,lo.z()*f);
+      	return vec_type(lo.x*f,lo.y*f,lo.z*f);
       }
 
       friend vec_type operator-(const vec_type & lo, float f) {
-      	return vec_type(lo.x()-f,lo.y()-f,lo.z()-f);
+      	return vec_type(lo.x-f,lo.y-f,lo.z-f);
       }
   };
 
   template<> class vec_type<float, 4> {
     private:
-      float _x, _y, _z, _w;
+      float x, y, z, _w;
 
     public:
       vec_type(void) {}
-      vec_type(float x, float y, float z, float w) : _x(_x), _y(y), _z(z), _w(w) { }
+      vec_type(float x, float y, float z, float w) : x(x), y(y), z(z), _w(w) { }
 
       friend std::ostream& operator<<(std::ostream& o, const vec_type & v) {
-          o << v._x << " " << v._y << " " << v._z << " " << v._w;
+          o << v.x << " " << v.y << " " << v.z << " " << v._w;
           return o;
       }
 

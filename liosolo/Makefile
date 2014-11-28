@@ -10,4 +10,3 @@ liosolo: main.f
 
 clean:
 	rm -rf liosolo
-

@@ -1,3 +1,39 @@
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+MODS_PATH =
+LIBS_PATH =
+
+
+MODS_PATH += -I/auxsubs
+LIBS_PATH += -L../g2g -L/usr/lib -L/usr/lib64
+LIBS_LIBS += -lg2g -lstdc++
+
+
+# MKL LIBS AND MODS
+#--------------------------------------------------------------------#
+MODS_PATH += -I$(MKLROOT)/include
+LIBS_PATH += -L$(MKLROOT)/lib/intel64
+LIBS_LIBS += -lmkl_lapack95_lp64
+LIBS_LIBS += -Wl,--start-group
+LIBS_LIBS += -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core
+LIBS_LIBS += -Wl,--end-group
+
+LIBS_MOAR = -liomp5 -lpthread -lm -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g'
+
+LIBS = $(MODS_PATH) $(LIBS_PATH) $(PROFILE) $(LIBS_LIBS) $(LIBS_MOAR)
+
+#--------------------------------------------------------------------#
+# THE OLD WAY TO LIBS
+#LIBS=-L/usr/lib -L/usr/lib64 -L../g2g -lg2g -lstdc++ \
+      -L$(MKLROOT)/lib/intel64 -I$(MKLROOT)/include $(PROFILE) \
+      -lmkl_lapack95_lp64 -Wl,--start-group -lmkl_intel_lp64 \
+      -lmkl_intel_thread -lmkl_core -Wl,--end-group -liomp5 -lpthread \
+      -lm -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g'
+#--------------------------------------------------------------------#
+
+
+
+# OLD PARTS
+#--------------------------------------------------------------------#
 # sources and objects
 MOD_SRCS=$(wildcard mods/*.f)
 # COMMON_SRCS=$(wildcard *.f)
@@ -31,11 +67,11 @@ else
   NVCCFLAGS += -DFULL_DOUBLE=0
 endif
 
-DEFINE   = -Dpack -fPIC   
+DEFINE   = -Dpack -fPIC
 CFLAGS   = -g -mp1 -ip -O3 -c -cpp  $(DEFINE) $(PROFILE)
 CFLAGS2  = -g -O1 -c -cpp  $(DEFINE) $(PROFILE)
 CFLAGS3  = -g -O3 -c -cpp -parallel   $(DEFINE) $(PROFILE)
-CPPFLAGS = -g -P -traditional-cpp 
+CPPFLAGS = -g -P -traditional-cpp
 ARCH=intel64
 ifeq ($(xeon_phi),1)
   CPPFLAGS += -mmic
@@ -48,9 +84,9 @@ else
   ARCH=intel64
 endif
 LIBS=-L/usr/lib -L/usr/lib64 -L../g2g -lg2g -lstdc++ -L$(MKLROOT)/lib/$(ARCH) -I$(MKLROOT)/include $(PROFILE)  -lmkl_lapack95_lp64 -Wl,--start-group -lmkl_intel_lp64\
-     -lmkl_intel_thread -lmkl_core -Wl,--end-group -liomp5 -lpthread -lm -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g' 
+     -lmkl_intel_thread -lmkl_core -Wl,--end-group -liomp5 -lpthread -lm -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g'
 
-#eliminada   -lmkl_solver_lp64 
+#eliminada   -lmkl_solver_lp64
 
 ifeq ($(magma),1)
 	DEFINE   += -Dmagma
@@ -76,6 +112,10 @@ endif
 ## Targets: make ##
 
 all: dirs liblio-g2g.so
+#	@echo '---------------------------'
+#	@echo $(LIBS)
+#	@echo '---------------------------'
+
 
 dirs:
 	mkdir -p obj/garcha_g2g_obj/mods obj/garcha_g2g_obj/
@@ -130,10 +170,8 @@ obj/garcha_g2g_obj/int3lu.o: int3lu.f
 obj/garcha_g2g_obj/intsol.o: intsol.f
 	ifort -o $@ $(CFLAGS2) $(G2G_CFLAGS)  $<
 
-
 ### Objects
-
-
 obj/garcha_g2g_obj/%.o: %.f
 	ifort -o $@ $(CFLAGS) $(G2G_CFLAGS) $<
 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#

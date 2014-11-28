@@ -60,25 +60,27 @@ template void gpu_set_atom_positions<double3>(const HostMatrix<double3>& m);
 
 template<class scalar_type>
 void PointGroup<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
-    bool compute_energy, double& energy,double& energy_i, double& energy_c, double& energy_c1,
-    double& energy_c2, double* fort_forces_ptr, bool open){
+        bool compute_energy, double& energy,double& energy_i, double& energy_c, double& energy_c1,
+            double& energy_c2, HostMatrix<double>& fort_forces_ms, int inner_threads, HostMatrix<double>& rmm_output_local, bool open){
   if(open) {
-    solve_opened(timers, compute_rmm, lda, compute_forces, compute_energy, energy, energy_i, energy_c, energy_c1,
-        energy_c2, fort_forces_ptr);
-  }
+      solve_opened(timers, compute_rmm, lda, compute_forces, compute_energy, energy, energy_i, energy_c, energy_c1,
+                  energy_c2,  fort_forces_ms);
+    }
   else {
-    solve_closed(timers, compute_rmm, lda, compute_forces, compute_energy, energy, fort_forces_ptr);
-  }
+      solve_closed(timers, compute_rmm, lda, compute_forces, compute_energy, energy, fort_forces_ms, inner_threads, rmm_output_local);
+    }
 
 }
 
 template<class scalar_type>
-void PointGroup<scalar_type>::solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, double& energy, double* fort_forces_ptr){
+void PointGroup<scalar_type>::solve_closed(Timers& timers, bool compute_rmm,
+        bool lda, bool compute_forces, bool compute_energy, double& energy,
+         HostMatrix<double>& fort_forces_ms, int inner_threads, HostMatrix<double>& rmm_output_local){
+
   //uint max_used_memory = 0;
 
   /*** Computo sobre cada cubo ****/
   CudaMatrix<scalar_type> point_weights_gpu;
-  FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, fortran_vars.max_atoms);
 
   /** Compute this group's functions **/
   timers.functions.start_and_sync();
@@ -238,22 +240,25 @@ void PointGroup<scalar_type>::solve_closed(Timers& timers, bool compute_rmm, boo
 
   timers.density.pause_and_sync();
 
-//************ Repongo los valores que puse a cero antes, para las fuerzas son necesarios (o por lo mens utiles)
-  for (uint i=0; i<(group_m); i++) {
-    for(uint j=0; j<(group_m); j++) {
-      if((i>=group_m) || (j>=group_m) || (j > i))
-      {
-        rmm_input_cpu.data[COALESCED_DIMENSION(group_m)*i+j]=rmm_input_cpu.data[COALESCED_DIMENSION(group_m)*j+i] ;
-      }
-    }
-  }
-
-  cudaMemcpyToArray(cuArray, 0, 0,rmm_input_cpu.data,
-      sizeof(scalar_type)*rmm_input_cpu.width*rmm_input_cpu.height, cudaMemcpyHostToDevice);
 
    dim3 threads;
+
   /* compute forces */
   if (compute_forces) {
+    timers.density_derivs.start_and_sync();
+    //************ Repongo los valores que puse a cero antes, para las fuerzas son necesarios (o por lo mens utiles)
+    for (uint i=0; i<(group_m); i++) {
+      for(uint j=0; j<(group_m); j++) {
+        if((i>=group_m) || (j>=group_m) || (j > i))
+        {
+          rmm_input_cpu.data[COALESCED_DIMENSION(group_m)*i+j]=rmm_input_cpu.data[COALESCED_DIMENSION(group_m)*j+i] ;
+        }
+      }
+    }
+
+    cudaMemcpyToArray(cuArray, 0, 0,rmm_input_cpu.data,
+      sizeof(scalar_type)*rmm_input_cpu.width*rmm_input_cpu.height, cudaMemcpyHostToDevice);
+
     timers.density_derivs.start_and_sync();
     threads = dim3(number_of_points);
     threadBlock = dim3(DENSITY_DERIV_BLOCK_SIZE);
@@ -282,9 +287,10 @@ void PointGroup<scalar_type>::solve_closed(Timers& timers, bool compute_rmm, boo
     for (uint i = 0; i < total_nucleii(); ++i) {
       vec_type4 atom_force = forces_cpu(i);
       uint global_nuc = local2global_nuc[i];
-      fort_forces(global_nuc, 0) += atom_force.x;
-      fort_forces(global_nuc, 1) += atom_force.y;
-      fort_forces(global_nuc, 2) += atom_force.z;
+      fort_forces_ms(global_nuc, 0) += atom_force.x;
+      fort_forces_ms(global_nuc, 1) += atom_force.y;
+      fort_forces_ms(global_nuc, 2) += atom_force.z;
+
     }
     timers.forces.pause_and_sync();
   }
@@ -308,7 +314,8 @@ void PointGroup<scalar_type>::solve_closed(Timers& timers, bool compute_rmm, boo
 
     /*** Contribute this RMM to the total RMM ***/
     HostMatrix<scalar_type> rmm_output_cpu(rmm_output_gpu);
-    add_rmm_output(rmm_output_cpu);
+    add_rmm_output(rmm_output_cpu, rmm_output_local);
+
   }
   timers.rmm.pause_and_sync();
 
@@ -327,8 +334,11 @@ void PointGroup<scalar_type>::solve_closed(Timers& timers, bool compute_rmm, boo
 // OPENSHELL
 //======================
 template<class scalar_type>
-void PointGroup<scalar_type>::solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, double& energy, double& energy_i, double& energy_c, double& energy_c1, double& energy_c2, double* fort_forces_ptr){
-
+void PointGroup<scalar_type>::solve_opened(Timers& timers, bool compute_rmm,
+    bool lda, bool compute_forces, bool compute_energy, double& energy,
+    double& energy_i, double& energy_c, double& energy_c1, double& energy_c2,
+    HostMatrix<double>& fort_forces_ms){
+#if 0
   /*** Computo sobre cada cubo ****/
   CudaMatrix<scalar_type> point_weights_gpu;
   FortranMatrix<double> fort_forces(fort_forces_ptr, fortran_vars.atoms, 3, fortran_vars.max_atoms);
@@ -709,6 +719,7 @@ void PointGroup<scalar_type>::compute_functions(bool forces, bool gga)
         hessian_values.data, COALESCED_DIMENSION(number_of_points), (group_m)*2);
   }
   cudaAssertNoError("compute_functions");
+#endif
 }
 
 /*******************************

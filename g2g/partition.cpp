@@ -40,9 +40,9 @@ void PointGroup<scalar_type>::output_cost() const
 }
 
 template<class scalar_type>
-bool PointGroup<scalar_type>::is_big_group(int threads_to_use) const 
+bool PointGroup<scalar_type>::is_big_group(int threads_to_use) const
 {
-  return rmm_bigs.size() >= THRESHOLD * threads_to_use && 
+  return rmm_bigs.size() >= THRESHOLD * threads_to_use &&
     number_of_points >= THRESHOLD * threads_to_use;
 }
 
@@ -112,6 +112,29 @@ void PointGroup<scalar_type>::add_rmm_output(const HostMatrix<scalar_type>& rmm_
       }
     }
   }
+}
+
+template<class scalar_type>
+void PointGroup<scalar_type>::add_rmm_output(
+    const HostMatrix<scalar_type>& rmm_output, HostMatrix<double>& target) const {
+  for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
+    uint inc_i = small_function_type(i);
+
+    for (uint k = 0; k < inc_i; k++, ii++) {
+      uint big_i = local2global_func[i] + k;
+      for (uint j = 0, jj = 0; j < total_functions_simple(); j++) {
+        uint inc_j = small_function_type(j);
+
+        for (uint l = 0; l < inc_j; l++, jj++) {
+          uint big_j = local2global_func[j] + l;
+          if (big_i > big_j) continue;
+          uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
+          target(big_index) += (double)rmm_output(ii, jj);
+        }
+      }
+    }
+  }
+
 }
 
 template<class scalar_type>
@@ -230,7 +253,7 @@ PointGroup<scalar_type>::~PointGroup<scalar_type>()
     globalMemoryPool::dealloc(size_in_gpu());
     function_values.deallocate();
     gradient_values.deallocate();
-    hessian_values.deallocate();
+    hessian_values_transposed.deallocate();
   }
 #else
   function_values.deallocate();
@@ -241,7 +264,7 @@ PointGroup<scalar_type>::~PointGroup<scalar_type>()
 #endif
 }
 
-void Partition::compute_functions(bool forces, bool gga) { 
+void Partition::compute_functions(bool forces, bool gga) {
   Timer t1;
   t1.start_and_sync();
 
@@ -260,7 +283,7 @@ void Partition::compute_functions(bool forces, bool gga) {
 }
 
 void Partition::clear() {
-  cubes.clear(); spheres.clear(); work.clear(); 
+  cubes.clear(); spheres.clear(); work.clear();
 }
 
 void Partition::rebalance(vector<double> & times, vector<double> & finishes)
@@ -284,20 +307,20 @@ void Partition::rebalance(vector<double> & times, vector<double> & finishes)
             mini = i;
           }
         }
-          
+
         if(mini == -1){
           //printf("Nothing more to swap!\n");
           return;
         }
 
-        int topass = mini; 
+        int topass = mini;
         int workindex = work[largest][topass];
 
         printf("Swapping %d from %d to %d\n", work[largest][topass], largest, smallest);
 
         work[smallest].push_back(work[largest][topass]);
         work[largest].erase(work[largest].begin() + topass);
-            
+
         diff -= 2*times[workindex];
         moved += times[workindex];
       }
@@ -307,7 +330,7 @@ void Partition::rebalance(vector<double> & times, vector<double> & finishes)
   }
 }
 
-void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, 
+void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces,
                       bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr, bool OPEN){
   double energy = 0.0;
 
@@ -323,23 +346,23 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   smallgroups.start();
   #pragma omp parallel for reduction(+:energy) num_threads(outer_threads) private(i)
   for(i = 0; i< work.size(); i++) {
-    double local_energy = 0; 
-    
+    double local_energy = 0;
+
     Timers ts; Timer t;
     t.start();
-    
-    if(compute_forces) fort_forces_ms[i].zero();  
+
+    if(compute_forces) fort_forces_ms[i].zero();
     if(compute_rmm) rmm_outputs[i].zero();
 
     for(int j = 0; j < work[i].size(); j++) {
       int ind = work[i][j];
       Timer element; element.start();
       if(ind >= cubes.size()){
-        spheres[ind-cubes.size()].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
+        spheres[ind-cubes.size()].solve(ts, compute_rmm,lda,compute_forces, compute_energy,
           local_energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1, spheres_energy_c2,
           fort_forces_ms[i], 1, rmm_outputs[i], OPEN);
       } else {
-        cubes[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy, 
+        cubes[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy,
           local_energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, cubes_energy_c2,
           fort_forces_ms[i], 1, rmm_outputs[i], OPEN);
       }
@@ -361,17 +384,17 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   Timers bigroupsts;
   for(int i = 0; i < cubes.size(); i++) {
     if(!cubes[i].is_big_group(inner_threads)) continue;
-    biggroups.start(); 
-    cubes[i].solve(bigroupsts,compute_rmm,lda,compute_forces, compute_energy, 
-      energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, 
+    biggroups.start();
+    cubes[i].solve(bigroupsts,compute_rmm,lda,compute_forces, compute_energy,
+      energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1,
       cubes_energy_c2, fort_forces_ms[0], inner_threads, rmm_outputs[0], OPEN);
     biggroups.pause();
   }
   for(int i = 0; i < spheres.size(); i++) {
     if(!spheres[i].is_big_group(inner_threads)) continue;
     biggroups.start();
-    spheres[i].solve(bigroupsts,compute_rmm,lda,compute_forces, compute_energy, 
-      energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1, 
+    spheres[i].solve(bigroupsts,compute_rmm,lda,compute_forces, compute_energy,
+      energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1,
       spheres_energy_c2, fort_forces_ms[0], inner_threads, rmm_outputs[0], OPEN);
     biggroups.pause();
   }
@@ -382,7 +405,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   Timer enditer; enditer.start();
   if(work.size() > 1) rebalance(timeforgroup, next);
   if (compute_forces) {
-    FortranMatrix<double> fort_forces_out(fort_forces_ptr, 
+    FortranMatrix<double> fort_forces_out(fort_forces_ptr,
       fortran_vars.atoms, 3, fortran_vars.max_atoms);
     for(int k = 0; k < outer_threads; k++) {
       for(int i = 0; i < fortran_vars.atoms; i++) {
@@ -419,7 +442,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
      exit(1);
    }
 
-  enditer.stop(); cout << "enditer = " << enditer << endl; 
+  enditer.stop(); cout << "enditer = " << enditer << endl;
 }
 
 /**********************

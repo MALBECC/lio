@@ -42,7 +42,7 @@ void load_pools(const vector<int> & elements, const vector< vector<int> > & work
 }
 
 template <typename T>
-long long total_costs(const vector<T> & elements) 
+long long total_costs(const vector<T> & elements)
 {
     long long res = 0;
     for(int i = 0; i < elements.size(); i++)
@@ -55,9 +55,9 @@ int split_bins(const vector< pair<long long, int> > & costs, vector< vector<int>
   // Bin Packing heuristic
   workloads.clear();
   for(int i = 0; i < costs.size(); i++) {
-    int next_bin = -1; 
+    int next_bin = -1;
     for(int j = 0; j < workloads.size(); j++) {
-      long long slack = capacity; 
+      long long slack = capacity;
       for(int k = 0; k < workloads[j].size(); k++){
         slack -= costs[workloads[j][k]].first;
       }
@@ -81,12 +81,12 @@ int split_bins(const vector< pair<long long, int> > & costs, vector< vector<int>
 void Partition::compute_work_partition()
 {
   vector< pair<long long, int> > costs;
-  for(int i = 0; i < cubes.size(); i++) 
+  for(int i = 0; i < cubes.size(); i++)
     if(!cubes[i].is_big_group(inner_threads))
       costs.push_back(make_pair(cubes[i].cost(), i));
 
   const int ncubes = cubes.size();
-  for(int i = 0; i < spheres.size(); i++) 
+  for(int i = 0; i < spheres.size(); i++)
     if(!spheres[i].is_big_group(inner_threads))
       costs.push_back(make_pair(spheres[i].cost(), ncubes+i));
 
@@ -100,7 +100,7 @@ void Partition::compute_work_partition()
 
   while(max_cost - min_cost > 1) {
     long long candidate = min_cost + (max_cost - min_cost)/2;
-    
+
     vector< vector<int> > workloads;
     int bins = split_bins(costs, workloads, candidate);
     if(bins <= outer_threads) {
@@ -108,7 +108,7 @@ void Partition::compute_work_partition()
     } else {
       min_cost = candidate;
     }
-  }    
+  }
 
   split_bins(costs, work, max_cost);
   for(int i = 0; i < work.size(); i++)
@@ -122,8 +122,8 @@ void Partition::compute_work_partition()
       work[i][j] = costs[work[i][j]].second;
       total += c;
     }
-    if(minp > total) minp = total; 
-    if(maxp < total) maxp = total; 
+    if(minp > total) minp = total;
+    if(maxp < total) maxp = total;
     printf("Particion %d: %lld\n", i, total);
   }
   printf("Relacion max / min = %lf\n", maxp / minp);
@@ -139,7 +139,6 @@ int getintenv(const char * str, int default_value) {
 void diagnostic(int inner, int outer)
 {
     printf("--> Thread OMP: %d\n", omp_get_max_threads());
-    printf("--> Thread MKL: %d\n", mkl_get_max_threads());
     printf("--> Thread internos: %d\n", inner);
     printf("--> Thread externos: %d\n", outer);
     printf("--> Correccion de cubos chicos: %d\n", MINCOST);
@@ -446,6 +445,6 @@ void Partition::regenerate(void)
       fort_forces_ms[i].resize(fortran_vars.max_atoms, 3);
       rmm_outputs[i].resize(fortran_vars.rmm_output.width, fortran_vars.rmm_output.height);
     }
-    
+
     diagnostic(inner_threads, outer_threads);
 }

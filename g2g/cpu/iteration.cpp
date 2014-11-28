@@ -6,7 +6,6 @@
 #include <cstring>
 #include <omp.h>
 #include <cstdio>
-#include "../buffer_pool.h"
 #include "../common.h"
 #include "../init.h"
 #include "../cuda_includes.h"
@@ -20,21 +19,21 @@ using std::cout;
 using std::endl;
 using std::vector;
 
-namespace G2G { 
+namespace G2G {
 
 template<class scalar_type> void PointGroup<scalar_type>::solve(Timers& timers,
-  bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, 
+  bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,
   double& energy, double& energy_i, double& energy_c, double& energy_c1, double& energy_c2,
-  HostMatrix<double> & fort_forces, int inner_threads, HostMatrix<scalar_type> & rmm_global_output, bool OPEN)
+  HostMatrix<double> & fort_forces, int inner_threads, HostMatrix<double> & rmm_global_output, bool OPEN)
 {
 
-  solve_closed(timers, compute_rmm, lda, compute_forces, compute_energy, 
+  solve_closed(timers, compute_rmm, lda, compute_forces, compute_energy,
     energy, fort_forces, inner_threads, rmm_global_output);
 }
 
 template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& timers,
-  bool compute_rmm, bool lda, bool compute_forces, bool compute_energy, 
-  double& energy, HostMatrix<double> & fort_forces, int inner_threads, HostMatrix<scalar_type> & rmm_global_output)
+  bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,
+  double& energy, HostMatrix<double> & fort_forces, int inner_threads, HostMatrix<double> & rmm_global_output)
 {
   const uint group_m = total_functions();
   const int npoints = points.size();
@@ -56,13 +55,13 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
 
   vector<vec_type3> forces;
   vector< std::vector<vec_type3> > forces_mat;
-  HostMatrix<scalar_type> factors_rmm; 
-      
-  if(compute_rmm || compute_forces) 
+  HostMatrix<scalar_type> factors_rmm;
+
+  if(compute_rmm || compute_forces)
     factors_rmm.resize(points.size(), 1);
 
   if(compute_forces) {
-    forces.resize(total_nucleii(), vec_type3(0.f,0.f,0.f)); 
+    forces.resize(total_nucleii(), vec_type3(0.f,0.f,0.f));
     forces_mat.resize(points.size(), vector<vec_type3>(total_nucleii(), vec_type3(0.f,0.f,0.f)));
   }
 
@@ -117,7 +116,7 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
         scalar_type ww2xc = 0, ww2yc = 0, ww2zc = 0;
 
         const scalar_type * rm = rmm_input.row(i);
-        #pragma vector aligned always 
+        #pragma vector aligned always
         for(int j = 0; j <= i; j++) {
           const scalar_type rmj = rm[j];
           w += fv[j] * rmj;
@@ -176,9 +175,9 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
   timers.forces.start();
   if (compute_forces) {
     HostMatrix<scalar_type> ddx,ddy,ddz;
-    ddx.resize(total_nucleii(), 1); 
-    ddy.resize(total_nucleii(), 1); 
-    ddz.resize(total_nucleii(), 1); 
+    ddx.resize(total_nucleii(), 1);
+    ddy.resize(total_nucleii(), 1);
+    ddz.resize(total_nucleii(), 1);
     #pragma omp parallel for num_threads(inner_threads)
     for(int point = 0; point < points.size(); point++) {
       ddx.zero(); ddy.zero(); ddz.zero();
@@ -192,8 +191,8 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
             scalar_type Fj = function_values(j, point);
             w += rmm_input(j, ii) * Fj * (ii == j ? 2 : 1);
           }
-          tddx -= w*gX(ii, point); 
-          tddy -= w*gY(ii, point); 
+          tddx -= w*gX(ii, point);
+          tddy -= w*gY(ii, point);
           tddz -= w*gZ(ii, point);
         }
         ddx(nuc) += tddx; ddy(nuc) += tddy; ddz(nuc) += tddz;
@@ -234,11 +233,11 @@ template<class scalar_type> void PointGroup<scalar_type>::solve_closed(Timers& t
     for(int i = 0; i < indexes; i++) {
       int bi = rmm_bigs[i], row = rmm_rows[i], col = rmm_cols[i];
 
-      scalar_type res = 0;
+      double res = 0;
       const scalar_type * fvr = function_values_transposed.row(row);
       const scalar_type * fvc = function_values_transposed.row(col);
-    
-      #pragma vector aligned always 
+
+      #pragma vector aligned always
       for(int point = 0; point < npoints; point++) {
         res += fvr[point] * fvc[point] * factors_rmm(point);
       }

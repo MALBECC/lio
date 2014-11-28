@@ -12,7 +12,6 @@
 #include "timer.h"
 
 #include "global_memory_pool.h"
-#include "buffer_pool.h"
 
 using std::cout;
 using std::endl;
@@ -20,7 +19,7 @@ using std::pair;
 
 namespace G2G {
   struct Timers {
-    Timer rmm, density, forces, functions;
+    Timer rmm, density, forces, functions, density_derivs;
   };
 
   std::ostream& operator<<(std::ostream& io, const Timers& t);
@@ -82,8 +81,8 @@ class PointGroup {
       else return FUNCTION_D;
     }
     //Las funciones totales, son totales del grupo, no las totales para todos los grupos.
-    inline uint total_functions(void) const { 
-        int v = s_functions + p_functions * 3 + d_functions * 6; 
+    inline uint total_functions(void) const {
+        int v = s_functions + p_functions * 3 + d_functions * 6;
         return v;
     }
     inline uint total_functions_simple(void) const { return local2global_func.size(); } // == s_functions + p_functions + d_functions
@@ -97,6 +96,8 @@ class PointGroup {
 
     void add_rmm_output(const G2G::HostMatrix<scalar_type>& rmm_output, FortranMatrix<double>& target) const;
     void add_rmm_output(const G2G::HostMatrix<scalar_type>& rmm_output) const;
+    void add_rmm_output(const G2G::HostMatrix<scalar_type>& rmm_output, G2G::HostMatrix<double>& rmm_destination) const;
+
     void add_rmm_output_a(const G2G::HostMatrix<scalar_type>& rmm_output) const;
     void add_rmm_output_b(const G2G::HostMatrix<scalar_type>& rmm_output) const;
     void add_rmm_open_output(const G2G::HostMatrix<scalar_type>& rmm_output_a, const G2G::HostMatrix<scalar_type>& rmm_output_b) const;
@@ -109,16 +110,16 @@ class PointGroup {
 
     void compute_functions(bool forces, bool gga);
 
-    void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
+    void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
         bool compute_energy, double& energy, double &, double &, double &, double &,
-        HostMatrix<double> &, int, HostMatrix<scalar_type> &, bool);
+        HostMatrix<double> &);
 
-    void solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
-        bool compute_energy, double& energy, HostMatrix<double> &, int, HostMatrix<scalar_type> &);
+    void solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
+        bool compute_energy, double& energy, HostMatrix<double> &, int, HostMatrix<double> &);
 
-    void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
+    void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
         bool compute_energy, double& energy, double &, double &, double &, double &,
-        HostMatrix<double> &, int, HostMatrix<scalar_type> &, bool);
+        HostMatrix<double> &, int, HostMatrix<double> &, bool);
 
     bool is_significative(FunctionType, double exponent, double coeff, double d2);
     bool operator<(const PointGroup<scalar_type>& T) const;
@@ -159,7 +160,7 @@ class Partition {
     void clear(void);
     void regenerate(void);
 
-    void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy, 
+    void solve(Timers& timers, bool compute_rmm,bool lda,bool compute_forces, bool compute_energy,
                double* fort_energy_ptr, double* fort_forces_ptr, bool OPEN);
     void compute_functions(bool forces, bool gga);
     void rebalance(std::vector<double> &, std::vector<double> &);
@@ -168,7 +169,7 @@ class Partition {
     std::vector<Sphere> spheres;
 
     std::vector< HostMatrix<double> > fort_forces_ms;
-    std::vector< HostMatrix<base_scalar_type> > rmm_outputs;
+    std::vector< HostMatrix<double> > rmm_outputs;
 
     std::vector< std::vector< int > > work;
     std::vector< double > next;

@@ -25,6 +25,7 @@ ifeq ($(cuda),1)
   OBJ          += $(CUDA_SOURCES:%.cu=%.cu_o)
   CXXFLAGS     += -DGPU_KERNELS=1
   NVCCFLAGS    += -DGPU_KERNELS=1
+  LIBRARIES    := $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
 endif
 
 ## Other options
@@ -73,7 +74,7 @@ ifeq ($(output_costs), 1)
   CXXFLAGS += -DOUTPUT_COSTS=1
 endif
 
-LIBRARIES=-lrt
+LIBRARIES += -lrt
 ## Targets
 all: $(LIBRARY)
 

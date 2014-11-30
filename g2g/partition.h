@@ -184,8 +184,11 @@ typedef double base_scalar_type;
 #else
 typedef float base_scalar_type;
 #endif
-
+#if GPU_KERNELS
 class Sphere : public PointGroupGPU<base_scalar_type> {
+#else
+class Sphere : public PointGroupCPU<base_scalar_type> {
+#endif
   public:
     Sphere(void);
     Sphere(uint _atom, double _radius);

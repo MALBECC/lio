@@ -474,6 +474,8 @@ template class PointGroup<double>;
 template class PointGroup<float>;
 template class PointGroupCPU<double>;
 template class PointGroupCPU<float>;
+#if GPU_KERNELS
 template class PointGroupGPU<double>;
 template class PointGroupGPU<float>;
+#endif
 }

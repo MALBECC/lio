@@ -2,7 +2,7 @@
 !
 ! Hace C=Bt*(A*B) para matrices cuadradas
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       subroutine matmulnanox_r(Mati,Cmat,Mato,M)
+       subroutine matmulnanox_d(Mati,Cmat,Mato,M)
        integer,intent(in)     :: M
        real*8,intent(in)      :: Cmat(M,M)
        real*8,intent(in)      :: Mati(M,M)

@@ -44,7 +44,7 @@
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       function transbase_c(M,Utrp,Mati,Umat) result(Mato)
+       function transbase_z(M,Utrp,Mati,Umat) result(Mato)
        implicit none
        integer,intent(in)     :: M
        real*8,intent(in)      :: Utrp(M,M),Umat(M,M)

@@ -1,7 +1,6 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       interface commutate
-         module procedure triprod_ddd
-         module procedure triprod_dcd
-         module procedure triprod_ccc
+       interface transbase
+         module procedure transbase_d
+         module procedure transbase_c
        end interface
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -7,7 +7,7 @@ LIBS_PATH =
 
 # LIBS BASIC
 #--------------------------------------------------------------------#
-MODS_PATH += -I/auxsubs
+#MODS_PATH += -I/auxsubs
 LIBS_PATH += -L../g2g -L/usr/lib -L/usr/lib64
 LIBS_LIBS += -lg2g -lstdc++
 
@@ -38,7 +38,8 @@ MOD_SRCS=$(wildcard mods/*.f)
 GARCHA_SRCS=$(wildcard *.f)
 
 MOD_OBJ=$(MOD_SRCS:%.f=%.o)
-GARCHA_OBJ=$(MOD_OBJ) $(COMMON_SRCS:%.f=%.o) $(GARCHA_SRCS:%.f=%.o)
+GARCHA_OBJ = auxsubs.o
+GARCHA_OBJ += $(MOD_OBJ) $(COMMON_SRCS:%.f=%.o) $(GARCHA_SRCS:%.f=%.o)
 
 #--------------------------------------------------------------------#
 # THE OLD WAY TO LIBS
@@ -108,7 +109,7 @@ endif
 
 all: dirs liblio-g2g.so
 #	@echo '---------------------------'
-#	@echo $(LIBS)
+#	@echo $(MKLROOT)
 #	@echo '---------------------------'
 
 
@@ -164,6 +165,11 @@ obj/garcha_g2g_obj/int3lu.o: int3lu.f
 
 obj/garcha_g2g_obj/intsol.o: intsol.f
 	ifort -o $@ $(CFLAGS2) $(G2G_CFLAGS)  $<
+
+.PHONY: obj/garcha_g2g_obj/auxsubs
+obj/garcha_g2g_obj/auxsubs:
+	echo 'aver'
+
 
 ### Objects
 obj/garcha_g2g_obj/%.o: %.f

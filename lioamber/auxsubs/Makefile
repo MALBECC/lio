@@ -2,7 +2,7 @@
 # COMPILER AND FLAGS
 #--------------------------------------------------------------------#
 FC     = ifort
-FFLAGS = -O
+FFLAGS = -g -O3 -c -cpp -Dpack -fPIC
 #
 #
 # DEPENDENCIES
@@ -10,12 +10,15 @@ FFLAGS = -O
 INCLUDES  =
 INCLUDES += gaussbell.f gaussbell_h.f
 INCLUDES += commutate.f commutate_h.f
-INCLUDES += triprod.f triprod_h.f
+INCLUDES += matmulnanox.f matmulnanox_h.f
+INCLUDES += transbase.f transbase_h.f
 #
 #
 # COMMANDS
 #--------------------------------------------------------------------#
 all : auxsubs.o
+	cp auxsubs.mod ../.
+	cp auxsubs.o ../obj/garcha_g2g_obj/.
 
 auxsubs.o : $(INCLUDES)
 
@@ -30,6 +33,5 @@ testprog.x : testprog.o auxsubs.o
 .PHONY: clean
 clean :
 	rm -f auxsubs.o auxsubs.mod testprog.o testprog.x
-	echo $(INCLUDES)
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#

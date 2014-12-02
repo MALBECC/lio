@@ -10,7 +10,6 @@ FFLAGS = -g -O3 -c -cpp -Dpack -fPIC
 INCLUDES  =
 INCLUDES += gaussbell.f gaussbell_h.f
 INCLUDES += commutate.f commutate_h.f
-INCLUDES += matmulnanox.f matmulnanox_h.f
 INCLUDES += transbase.f transbase_h.f
 #
 #

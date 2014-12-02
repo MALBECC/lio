@@ -1,5 +1,10 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! BASETRANSFORM PROCEDURES
+!
+! (1) Initialization of Matm(nnd,ndd) and Mato(nii,ndd)
+! (2) First Product Mati(nni,nnd)*Umat(nnd,ndd)
+! (3) Second Product Utrp(nii,nni)*Matm(nni,ndd)
+!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        function transbase_d(M,Utrp,Mati,Umat) result(Mato)
        implicit none
@@ -10,14 +15,10 @@
        real*8,allocatable     :: Mato(:,:)
        integer                :: kii,kki,kkd,kdd
 !
-!
-! Initialization of Matm(nnd,ndd) and Mato(nii,ndd)
        allocate(Matm(M,M),Mato(M,M))
        Matm=DBLE(0)
        Mato=DBLE(0)
 !
-!
-! First Product Mati(nni,nnd)*Umat(nnd,ndd)
        do kdd=1,M
        do kkd=1,M
        do kki=1,M
@@ -27,7 +28,6 @@
        enddo
        enddo
 !
-! Second Product Utrp(nii,nni)*Matm(nni,ndd)
        do kdd=1,M
        do kki=1,M
        do kii=1,M
@@ -50,14 +50,10 @@
        complex*8,allocatable  :: Mato(:,:)
        integer                :: kii,kki,kkd,kdd
 !
-!
-! Initialization of Matm(nnd,ndd) and Mato(nii,ndd)
        allocate(Matm(M,M),Mato(M,M))
        Matm=DCMPLX(0,0)
        Mato=DCMPLX(0,0)
 !
-!
-! First Product Mati(nni,nnd)*Umat(nnd,ndd)
        do kdd=1,M
        do kkd=1,M
        do kki=1,M
@@ -67,7 +63,6 @@
        enddo
        enddo
 !
-! Second Product Utrp(nii,nni)*Matm(nni,ndd)
        do kdd=1,M
        do kki=1,M
        do kii=1,M
@@ -90,14 +85,10 @@
        complex*16,allocatable :: Mato(:,:)
        integer                :: kii,kki,kkd,kdd
 !
-!
-! Initialization of Matm(nnd,ndd) and Mato(nii,ndd)
        allocate(Matm(M,M),Mato(M,M))
        Matm=DCMPLX(0,0)
        Mato=DCMPLX(0,0)
 !
-!
-! First Product Mati(nni,nnd)*Umat(nnd,ndd)
        do kdd=1,M
        do kkd=1,M
        do kki=1,M
@@ -107,7 +98,6 @@
        enddo
        enddo
 !
-! Second Product Utrp(nii,nni)*Matm(nni,ndd)
        do kdd=1,M
        do kki=1,M
        do kii=1,M

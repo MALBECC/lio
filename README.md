@@ -1,9 +1,9 @@
 LIO Project
 ============
 
-Lio is a Quantum Mechanical software based on _Density Functional Theory_ (DFT) and real time _Time Dependent Density Functional Theory_ (TD-DFT).
+LIO is a Quantum Mechanical software based on _Density Functional Theory_ (DFT) and real time _Time Dependent Density Functional Theory_ (TD-DFT).
 
-The most computationally intensive calculations are ported to use graphical processors which suport CUDA
+The most computationally intensive calculations are ported to use graphical processors which support CUDA
 (e.g. Nvidia Maxwell, Fermi, Kepler and Tesla families).
 
 REQUIREMENTS
@@ -28,15 +28,15 @@ Available options:
 
 * _-dbg_: enable debugging information. It also enables several asserts which degrade performance.
 
-* _-cpu_: utilized non-optimized kernels in CPU instead of GPU (not recommended, only to compare running the same code in CPU and GPU).
+* _cpu_: utilized non-optimized kernels in CPU instead of GPU (not recommended, only to compare running the same code in CPU and GPU).
 
-* _-time_: enables the timers to obtain detailed timing information from different parts of the program.
+* _time_: enables the timers to obtain detailed timing information from different parts of the program.
 
-* _-profile_: enabling gprof profiling information.
+* _profile_: enabling gprof profiling information.
 
-* _-cpu\_recompute_: recomputes=0 mantains in memory the value of the functions for each point (more memory is used but execution time goes down by around 10%). Only used for the CPU kernels.
+* _cpu\_recompute_: recomputes=0 mantains in memory the value of the functions for each point (more memory is used but execution time goes down by around 10%). Only used for the CPU kernels.
 
-* _-full\_double_: generate the application using full double precision instead of mixed precision (which is the default).
+* _full\_double_: generate the application using full double precision instead of mixed precision (which is the default).
 
 TESTS
 -----
@@ -70,6 +70,7 @@ Sample compilation for CPU
 ```
 
 After setting LD\_LIBRARY\_PATH to point to both MKL, ICC and CUDA libraries.
+
 Sample compilation for GPU
 
 ```

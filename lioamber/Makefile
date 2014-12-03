@@ -1,9 +1,13 @@
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+# LIBLIO MAKEFILE
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 MODS_PATH =
 LIBS_PATH =
 
 
-MODS_PATH += -I/auxsubs
+# LIBS BASIC
+#--------------------------------------------------------------------#
+#MODS_PATH += -I/auxsubs
 LIBS_PATH += -L../g2g -L/usr/lib -L/usr/lib64
 LIBS_LIBS += -lg2g -lstdc++
 
@@ -13,13 +17,29 @@ LIBS_LIBS += -lg2g -lstdc++
 MODS_PATH += -I$(MKLROOT)/include
 LIBS_PATH += -L$(MKLROOT)/lib/intel64
 LIBS_LIBS += -lmkl_lapack95_lp64
-LIBS_LIBS += -Wl,--start-group
-LIBS_LIBS += -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core
-LIBS_LIBS += -Wl,--end-group
+LIBS_LIBS += -lmkl_intel_lp64
+LIBS_LIBS += -lmkl_intel_thread
+LIBS_LIBS += -lmkl_core
 
+# LIBS EXTRAS & JOIN ALL
+#--------------------------------------------------------------------#
 LIBS_MOAR = -liomp5 -lpthread -lm -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g'
 
 LIBS = $(MODS_PATH) $(LIBS_PATH) $(PROFILE) $(LIBS_LIBS) $(LIBS_MOAR)
+#
+#
+#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+# OLD PARTS
+#--------------------------------------------------------------------#
+# sources and objects
+MOD_SRCS=$(wildcard mods/*.f)
+# COMMON_SRCS=$(wildcard *.f)
+GARCHA_SRCS=$(wildcard *.f)
+
+MOD_OBJ=$(MOD_SRCS:%.f=%.o)
+GARCHA_OBJ = #auxsubs.o
+GARCHA_OBJ += $(MOD_OBJ) $(COMMON_SRCS:%.f=%.o) $(GARCHA_SRCS:%.f=%.o)
 
 #--------------------------------------------------------------------#
 # THE OLD WAY TO LIBS
@@ -30,17 +50,6 @@ LIBS = $(MODS_PATH) $(LIBS_PATH) $(PROFILE) $(LIBS_LIBS) $(LIBS_MOAR)
       -lm -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g'
 #--------------------------------------------------------------------#
 
-
-
-# OLD PARTS
-#--------------------------------------------------------------------#
-# sources and objects
-MOD_SRCS=$(wildcard mods/*.f)
-# COMMON_SRCS=$(wildcard *.f)
-GARCHA_SRCS=$(wildcard *.f)
-
-MOD_OBJ=$(MOD_SRCS:%.f=%.o)
-GARCHA_OBJ=$(MOD_OBJ) $(COMMON_SRCS:%.f=%.o) $(GARCHA_SRCS:%.f=%.o)
 
 # flags
 ifeq ($(print), 1)
@@ -113,7 +122,7 @@ endif
 
 all: dirs liblio-g2g.so
 #	@echo '---------------------------'
-#	@echo $(LIBS)
+#	@echo $(MKLROOT)
 #	@echo '---------------------------'
 
 
@@ -169,6 +178,11 @@ obj/garcha_g2g_obj/int3lu.o: int3lu.f
 
 obj/garcha_g2g_obj/intsol.o: intsol.f
 	ifort -o $@ $(CFLAGS2) $(G2G_CFLAGS)  $<
+
+.PHONY: obj/garcha_g2g_obj/auxsubs
+obj/garcha_g2g_obj/auxsubs:
+	echo 'aver'
+
 
 ### Objects
 obj/garcha_g2g_obj/%.o: %.f

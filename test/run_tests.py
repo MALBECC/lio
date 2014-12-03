@@ -1,5 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 
+import argparse
 import fileinput
 import os
 import re
@@ -48,6 +49,9 @@ def get_statistics(out_file):
         if m:
             convergence_at.append(float(m.group(1)))
 
+    if len(xc_energy) < 1:
+        return None
+
     return Summary(
             iterations=max(iterations),\
             converged=len(convergence_at) > 0,\
@@ -56,7 +60,6 @@ def get_statistics(out_file):
             xc_energy=xc_energy[-1])
 
 # Tolerance parameters
-EPS = 1e-5
 OVERTIME = 1000*1000
 
 def print_test_summary(run_summary, ok_summary):
@@ -64,18 +67,22 @@ def print_test_summary(run_summary, ok_summary):
     print "\tExpected = %r\n" % (ok_summary,)
     print "\tXC Diff: %f" % abs(run_summary.xc_energy - ok_summary.xc_energy)
 
-    per = abs(run_summary.total_time - ok_summary.total_time) / ok_summary.total_time
+    per = (run_summary.total_time - ok_summary.total_time) / ok_summary.total_time
     print "\tTime increase: %f %%" % (100.0 * per)
 
 def acceptable(run_summary, ok_summary):
     "Returns whether the result is within the test bounds"
-    if run_summary.avg_time > ok_summary.avg_time + OVERTIME:
-        return False
 
-    if abs(run_summary.xc_energy - ok_summary.xc_energy) > EPS:
-        return False
+    if abs(run_summary.xc_energy - ok_summary.xc_energy)*627 > 0.8:
+        return "invalid numerical result"
 
-    return True
+    if not run_summary.converged:
+        return "no convergence"
+
+    if run_summary.iterations > 2 * ok_summary.iterations:
+        return "took too long to converge"
+
+    return None
 
 def lio_env():
     lioenv = os.environ.copy()
@@ -83,12 +90,14 @@ def lio_env():
     return lioenv
 
 def lio_run(dir, lioenv):
+    "Run Lio script"
     execpath = ["./correr.sh"]
     process = subprocess.Popen(execpath, env=lioenv, cwd=os.path.abspath(dir))
     process.wait()
     return process.returncode
 
 def recompile_lio(dir, lioenv):
+    "Rebuild lio with the enviroment variables given"
     g2gpath = os.path.abspath("../g2g")
     try:
         devnull = open(os.devnull, "w")
@@ -122,24 +131,36 @@ def run_tests(dirs_with_tests):
             print "\tFailed to run with errcode %d" % errcode
             break
 
+        if not os.path.isfile(os.path.join(dir, "salida.ok")):
+            print "\tFailed because no ideal output in directory"
+            return
+
         ok_summary = None
         with open(os.path.join(dir, "salida.ok"),"r") as f:
             ok_summary = get_statistics(f)
+            if not ok_summary:
+                print "\tFailed because ideal output doesn't have XC energy info ('XC energy: ' lines)"
+                return
 
         out_summary = None
         with open(os.path.join(dir, "salida"),"r") as f:
             out_summary = get_statistics(f)
+            if not out_summary:
+                print "\tFailed because output of run doesn't have XC energy info ('XC energy: ' lines)"
+                return
 
         print_test_summary(out_summary, ok_summary)
-        if not acceptable(out_summary, ok_summary):
-            print "\tFailed because not acceptable result"
+        veredict = acceptable(out_summary, ok_summary)
+        if veredict:
+            print "\tFailed because not acceptable result: %s" % veredict
         else:
             print "\tPassed\n"
 
 if __name__ == '__main__':
-    filterrx = ".*"
-    if len(sys.argv) > 1:
-        filterrx = sys.argv[1]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--filter_rx", help="Expresion regular para filtrar que tests se corren", default=".*")
+    args = parser.parse_args()
+    filterrx = args.filter_rx
 
     subdirs = list(os.walk('.'))[0][1]
     dirs_with_tests = sorted([d for d in subdirs if re.search(filterrx,d)])

@@ -46,7 +46,7 @@ To run the test suite, you need to install python 2. It is already present in mo
 The test suite can be ran from the tests directory and running
 
 ```
-  ./run\_tests.py
+  ./run_tests.py
 ```
 
 The first argument to the run\_tests.py program is a regular expression ([Python Documentation](https://docs.python.org/2/howto/regex.html)) which matches the folder names in the test

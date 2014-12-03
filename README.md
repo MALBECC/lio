@@ -21,12 +21,12 @@ The program can be compiled using the make command. The following options can be
 compilation. For example, the following compiles the GPU kernels.
 
 ```
-make cuda=1 
+make cuda=1
 ```
 
 Available options:
 
-* _-dbg_: enable debugging information. It also enables several asserts which degrade performance.
+* _dbg_: enable debugging information. It also enables several asserts which degrade performance.
 
 * _cpu_: utilized non-optimized kernels in CPU instead of GPU (not recommended, only to compare running the same code in CPU and GPU).
 
@@ -34,9 +34,9 @@ Available options:
 
 * _profile_: enabling gprof profiling information.
 
-* _cpu\_recompute_: recomputes=0 mantains in memory the value of the functions for each point (more memory is used but execution time goes down by around 10%). Only used for the CPU kernels.
+* *cpu_recompute*: recomputes=0 mantains in memory the value of the functions for each point (more memory is used but execution time goes down by around 10%). Only used for the CPU kernels.
 
-* _full\_double_: generate the application using full double precision instead of mixed precision (which is the default).
+* *full_double*: generate the application using full double precision instead of mixed precision (which is the default).
 
 TESTS
 -----
@@ -46,17 +46,21 @@ To run the test suite, you need to install python 2. It is already present in mo
 The test suite can be ran from the tests directory and running
 
 ```
-  ./run_tests.py
+  ./run\_tests.py
 ```
 
-The first argument to the run_tests.py program is a regular expression ([Python Documentation](https://docs.python.org/2/howto/regex.html)) which matches the folder names in the test
+The first argument to the run\_tests.py program is a regular expression ([Python Documentation](https://docs.python.org/2/howto/regex.html)) which matches the folder names in the test
 directory. For example, running from the tests directory:
 
 ```
-  ./run_tests.py GPU
+  ./run_tests.py --filter_rx GPU
 ```
 
-runs only the tests for GPU.
+runs only the tests for GPU. For more options run
+
+```
+  ./run_tests.py --help
+```
 
 INSTALLATION
 ------------

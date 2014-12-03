@@ -62,6 +62,16 @@ runs only the tests for GPU. For more options run
   ./run_tests.py --help
 ```
 
+CONTRIBUTING
+------------
+
+Before contributing, make sure you have set up the git hooks for the project. That
+can be done either by running a clean compile with make, or by executing
+
+```
+  make hooks
+```
+
 INSTALLATION
 ------------
 

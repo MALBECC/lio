@@ -38,7 +38,7 @@ MOD_SRCS=$(wildcard mods/*.f)
 GARCHA_SRCS=$(wildcard *.f)
 
 MOD_OBJ=$(MOD_SRCS:%.f=%.o)
-GARCHA_OBJ = auxsubs.o
+GARCHA_OBJ = #auxsubs.o
 GARCHA_OBJ += $(MOD_OBJ) $(COMMON_SRCS:%.f=%.o) $(GARCHA_SRCS:%.f=%.o)
 
 #--------------------------------------------------------------------#

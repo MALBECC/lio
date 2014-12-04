@@ -70,9 +70,10 @@ for line in sys.stdin.readlines():
         if pid != 0:
             print "\033[1;31mError! Fallo la compilacion de LIO ergo no se debe pushear a master\033[0m"
             sys.exit(1)
-        _, _, pid = call("./test/run_tests.py --filter_rx aguaCPU", cwd=tmpdir, save_output=False)
+
+        _, _, pid = call(". {}/test/run_tests.py --filter_rx aguaCPU".format(tmpdir), cwd=tmpdir, save_output=False)
         if pid != 0:
-            print "\033[1;31mError! Los tests de CPU no pasan! \033[0m"
+            print "\033[1;31mError! Los tests de CPU no pasan!\033[0m"
             sys.exit(1)
 
-sys.exit(1)
+sys.exit(0)

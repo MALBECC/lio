@@ -75,4 +75,4 @@ for line in sys.stdin.readlines():
             print "\033[1;31mError! Los tests de CPU no pasan! \033[0m"
             sys.exit(1)
 
-sys.exit(0)
+sys.exit(1)

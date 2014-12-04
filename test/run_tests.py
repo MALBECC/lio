@@ -123,6 +123,8 @@ def run_tests(dirs_with_tests):
 
     res = []
     lioenv = lio_env()
+    failed = 0
+
     for dir in dirs_with_tests:
         print("Running %s..." % dir)
 
@@ -160,8 +162,11 @@ def run_tests(dirs_with_tests):
         veredict = acceptable(out_summary, ok_summary)
         if veredict:
             print "\tFailed because not acceptable result: %s" % veredict
+            failed += 1
         else:
             print "\tPassed\n"
+
+    return failed
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -174,4 +179,7 @@ if __name__ == '__main__':
     subdirs = list(os.walk('.'))[0][1]
     dirs_with_tests = sorted([d for d in subdirs if re.search(filterrx,d)])
 
-    run_tests(dirs_with_tests)
+    failed = run_tests(dirs_with_tests)
+    if failed > 0:
+        print "%d tests fallaron..." % failed
+        sys.exit(1)

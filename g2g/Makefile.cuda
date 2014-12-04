@@ -89,9 +89,15 @@ ifeq ($(regcount),1)
   NVCCFLAGS += --ptxas-options=-v
 endif
 
+ifeq ($(non_optimize), 1)
+  OPTIMIZE := -O3
+else
+  OPTIMIZE := -O0
+endif
+
 # Debug/release configuration
 ifneq ($(dbg),1)
-	NVCCFLAGS   += -O3 --compiler-options -fno-strict-aliasing -lineinfo
+	NVCCFLAGS   += $(OPTIMIZE) --compiler-options -fno-strict-aliasing -lineinfo
 endif
 
 ifeq ($(keep), 1)

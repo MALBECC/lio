@@ -53,7 +53,7 @@ GARCHA_OBJ += $(MOD_OBJ) $(COMMON_SRCS:%.f=%.o) $(GARCHA_SRCS:%.f=%.o)
 
 # flags
 ifeq ($(print), 1)
-        DEFINE += -DPRINT_MATRICES
+  DEFINE += -DPRINT_MATRICES
 endif
 
 ifeq ($(profile),1)
@@ -77,10 +77,20 @@ else
 endif
 
 DEFINE   += -Dpack -fPIC
-CFLAGS   = -g -mp1 -ip -O3 -c -cpp  $(DEFINE) $(PROFILE)
-CFLAGS2  = -g -O1 -c -cpp  $(DEFINE) $(PROFILE)
-CFLAGS3  = -g -O3 -c -cpp -parallel   $(DEFINE) $(PROFILE)
-CPPFLAGS = -P -traditional-cpp
+CFLAGS   := -g -mp1 -ip -c -cpp  $(DEFINE) $(PROFILE)
+CFLAGS2  := -g $(OPTIMIZE) -c -cpp  $(DEFINE) $(PROFILE)
+CFLAGS3  := -g $(OPTIMIZE) -c -cpp -parallel   $(DEFINE) $(PROFILE)
+CPPFLAGS := -P $(OPTIMIZE) -traditional-cpp
+
+ifeq ($(non_optimize),1)
+  CFLAGS += -O0
+  CFLAGS2 += -O0
+  CFLAGS3 += -O0
+else
+  CFLAGS += -O3
+  CFLAGS2 += -O1
+  CFLAGS3 += -O3
+endif
 
 ifeq ($(magma),1)
 	DEFINE   += -Dmagma

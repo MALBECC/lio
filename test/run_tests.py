@@ -169,6 +169,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     filterrx = args.filter_rx
 
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
     subdirs = list(os.walk('.'))[0][1]
     dirs_with_tests = sorted([d for d in subdirs if re.search(filterrx,d)])
 

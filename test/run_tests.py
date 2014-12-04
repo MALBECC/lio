@@ -22,7 +22,7 @@ def get_statistics(out_file):
     "Get statistics for the LIO run out file"
 
     iterations = []
-    xc_energy = []
+    scf_energy = []
     iteration_time = []
     convergence_at = []
 
@@ -33,7 +33,7 @@ def get_statistics(out_file):
             iterations.append(float(m.group(1)))
 
         # Correlation Energy output line
-        m = re.match(" SCF ENRGY= ([0-9.-]+)", line)
+        m = re.match(r"\s+SCF ENRGY=\s+([0-9.-]+)", line)
         if m:
             scf_energy.append(float(m.group(1)))
 
@@ -49,7 +49,7 @@ def get_statistics(out_file):
         if m:
             convergence_at.append(float(m.group(1)))
 
-    if len(xc_energy) < 1:
+    if len(scf_energy) < 1:
         return None
 
     return Summary(
@@ -85,9 +85,15 @@ def acceptable(run_summary, ok_summary):
     return None
 
 def lio_env():
-    " Set lio enviroment variables "
+    """"
+    Set lio enviroment variables, including adding g2g and
+    lioamber to LD_LIBRARY_PATH.
+    """
     lioenv = os.environ.copy()
     lioenv["LIOBIN"] = os.path.abspath("../liosolo/liosolo")
+    prev = lioenv["LD_LIBRARY_PATH"]
+    dirs = ["../g2g", "../lioamber"]
+    lioenv["LD_LIBRARY_PATH"] = ":".join([prev] + [os.path.abspath(p) for p in dirs])
     return lioenv
 
 def lio_run(dir, lioenv):

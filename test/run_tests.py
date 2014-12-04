@@ -10,7 +10,7 @@ import sys
 from collections import namedtuple
 
 Summary = namedtuple('Summary', [
-    'iterations','converged','total_time','avg_time','xc_energy'
+    'iterations','converged','total_time','avg_time','scf_energy'
 ])
 
 SEC_TO_USEC = 1000*1000
@@ -33,9 +33,9 @@ def get_statistics(out_file):
             iterations.append(float(m.group(1)))
 
         # Correlation Energy output line
-        m = re.match("XC energy: ([0-9.-]+)", line)
+        m = re.match(" SCF ENRGY= ([0-9.-]+)", line)
         if m:
-            xc_energy.append(float(m.group(1)))
+            scf_energy.append(float(m.group(1)))
 
         # Iteration time output line
         m = re.match("TIMER \[Total iter\]: (?:(\d+)s. )?(\d+)us.",line)
@@ -57,7 +57,7 @@ def get_statistics(out_file):
             converged=len(convergence_at) > 0,\
             total_time=sum(iteration_time),\
             avg_time=avg(iteration_time),\
-            xc_energy=xc_energy[-1])
+            scf_energy=scf_energy[-1])
 
 # Tolerance parameters
 OVERTIME = 1000*1000
@@ -65,7 +65,7 @@ OVERTIME = 1000*1000
 def print_test_summary(run_summary, ok_summary):
     print "\n\tResult = %r" % (run_summary,)
     print "\tExpected = %r\n" % (ok_summary,)
-    print "\tXC Diff: %f" % abs(run_summary.xc_energy - ok_summary.xc_energy)
+    print "\tSCF Diff: %f" % abs(run_summary.scf_energy - ok_summary.scf_energy)
 
     per = (run_summary.total_time - ok_summary.total_time) / ok_summary.total_time
     print "\tTime increase: %f %%" % (100.0 * per)
@@ -73,7 +73,7 @@ def print_test_summary(run_summary, ok_summary):
 def acceptable(run_summary, ok_summary):
     "Returns whether the result is within the test bounds"
 
-    if abs(run_summary.xc_energy - ok_summary.xc_energy)*627 > 0.8:
+    if abs(run_summary.scf_energy - ok_summary.scf_energy)*627 > 0.2:
         return "invalid numerical result"
 
     if not run_summary.converged:
@@ -85,6 +85,7 @@ def acceptable(run_summary, ok_summary):
     return None
 
 def lio_env():
+    " Set lio enviroment variables "
     lioenv = os.environ.copy()
     lioenv["LIOBIN"] = os.path.abspath("../liosolo/liosolo")
     return lioenv

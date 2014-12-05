@@ -13,6 +13,7 @@ REQUIREMENTS
 * Intel C++ and Fortran Compiler (can be obtained a non-commercial license).
 * NVIDIA CUDA (for compiling GPU version).
 * GNU Make.
+* Python 2.7 (for test scripts)
 
 COMPILATION
 ------------

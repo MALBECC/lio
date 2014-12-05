@@ -1,5 +1,5 @@
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
-# README - auxsubs
+# README - mathsubs
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 
 This module contains different kind of miscelaneous auxilliary
@@ -30,13 +30,13 @@ incorporated in the module, one needs to do two modifications
 in the existing files:
 
 
-(1) Add the following line in the file "auxsubs.f", in the section
+(1) Add the following line in the file "mathsubs.f", in the section
     reserved for procedure-containing files. The syntax to be used
     is the same as the other code in that section.
 
 >       include 'newfile.f'
 
-(2) Add the new file as a dependency of auxsubs in the Makefile
+(2) Add the new file as a dependency of mathsubs in the Makefile
     file by concatenating it in the INCLUDES variable that is
     defined in the DEPENDENCIES section of the code.
 

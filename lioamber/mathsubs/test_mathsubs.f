@@ -1,6 +1,6 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       program testprog
-       use auxsubs
+       program test
+       use mathsubs
        implicit none
        real*8,allocatable     :: realvec(:)
        complex*16,allocatable :: compvec(:)

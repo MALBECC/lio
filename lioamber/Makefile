@@ -7,7 +7,7 @@ LIBS_PATH =
 
 # LIBS BASIC
 #--------------------------------------------------------------------#
-#MODS_PATH += -I/auxsubs
+#MODS_PATH += -I/mathsubs
 LIBS_PATH += -L../g2g -L/usr/lib -L/usr/lib64
 LIBS_LIBS += -lg2g -lstdc++
 
@@ -38,7 +38,7 @@ MOD_SRCS=$(wildcard mods/*.f)
 GARCHA_SRCS=$(wildcard *.f)
 
 MOD_OBJ=$(MOD_SRCS:%.f=%.o)
-GARCHA_OBJ = #auxsubs.o
+GARCHA_OBJ = mathsubs.o
 GARCHA_OBJ += $(MOD_OBJ) $(COMMON_SRCS:%.f=%.o) $(GARCHA_SRCS:%.f=%.o)
 
 #--------------------------------------------------------------------#
@@ -124,10 +124,10 @@ all: dirs liblio-g2g.so
 
 
 dirs:
-	mkdir -p obj/garcha_g2g_obj/mods obj/garcha_g2g_obj/
+	mkdir -p obj/mods obj
 
-liblio-g2g.so: dirs $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o)
-	ifort -shared -fPIC -o $@ $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o) $(LIBS)
+liblio-g2g.so: dirs $(GARCHA_OBJ:%.o=obj/%.o)
+	ifort -shared -fPIC -o $@ $(GARCHA_OBJ:%.o=obj/%.o) $(LIBS)
 
 
 ## Targets: clean ##
@@ -137,52 +137,54 @@ clean:
 
 
 # Different flags for some .o
-obj/garcha_g2g_obj/intfld.o: intfld.f
+obj/intfld.o: intfld.f
 	ifort -o $@ $(CFLAGS2) $(G2G_CFLAGS) $<
 
-obj/garcha_g2g_obj/dipG.o: dipG.f
-	ifort -o $@ $(CFLAGS2) $(G2G_CFLAGS) $<
-obj/garcha_g2g_obj/dip.o: dip.f
+obj/dipG.o: dipG.f
 	ifort -o $@ $(CFLAGS2) $(G2G_CFLAGS) $<
 
-obj/garcha_g2g_obj/int1G.o: int1G.f
+obj/dip.o: dip.f
 	ifort -o $@ $(CFLAGS2) $(G2G_CFLAGS) $<
 
-obj/garcha_g2g_obj/int3G.o: int3G.f
+obj/int1G.o: int1G.f
 	ifort -o $@ $(CFLAGS2) $(G2G_CFLAGS) $<
 
-obj/garcha_g2g_obj/intsolG.o: intsolG.f
+obj/int3G.o: int3G.f
+	ifort -o $@ $(CFLAGS2) $(G2G_CFLAGS) $<
+
+obj/intsolG.o: intsolG.f
 	ifort -o $@ $(CFLAGS2) $(G2G_CFLAGS)  $<
 
-obj/garcha_g2g_obj/init.o: init.f
+obj/init.o: init.f
 	ifort -o $@ $(CFLAGS) $(G2G_CFLAGS)  $<
 
-obj/garcha_g2g_obj/SCFop.o: SCFop.f
+obj/SCFop.o: SCFop.f
 	ifort -o $@ $(CFLAGS2) $(G2G_CFLAGS) $<
 
-obj/garcha_g2g_obj/intsolGs.o: intsolGs.f
+obj/intsolGs.o: intsolGs.f
 	ifort -o $@ $(CFLAGS2) $(G2G_CFLAGS) $<
 
-obj/garcha_g2g_obj/matmulnano.o: matmulnano.f
+obj/matmulnano.o: matmulnano.f
 	ifort -o $@ $(CFLAGS3)  $(G2G_CFLAGS) $<
 
-obj/garcha_g2g_obj/conmut.o: conmut.f
-	ifort -o $@ $(CFLAGS3)  $(G2G_CFLAGS) $<
-obj/garcha_g2g_obj/matmuldiag.o: matmuldiag.f
-	ifort -o $@ $(CFLAGS3)  $(G2G_CFLAGS) $<
-obj/garcha_g2g_obj/int3lu.o: int3lu.f
+obj/conmut.o: conmut.f
 	ifort -o $@ $(CFLAGS3)  $(G2G_CFLAGS) $<
 
-obj/garcha_g2g_obj/intsol.o: intsol.f
+obj/matmuldiag.o: matmuldiag.f
+	ifort -o $@ $(CFLAGS3)  $(G2G_CFLAGS) $<
+
+obj/int3lu.o: int3lu.f
+	ifort -o $@ $(CFLAGS3)  $(G2G_CFLAGS) $<
+
+obj/intsol.o: intsol.f
 	ifort -o $@ $(CFLAGS2) $(G2G_CFLAGS)  $<
 
-.PHONY: obj/garcha_g2g_obj/auxsubs
-obj/garcha_g2g_obj/auxsubs:
-	echo 'aver'
-
+.PHONY: obj/mathsubs.o
+obj/mathsubs.o:
+	cd mathsubs; $(MAKE) --no-print-directory
 
 ### Objects
-obj/garcha_g2g_obj/%.o: %.f
+obj/%.o: %.f
 	ifort -o $@ $(CFLAGS) $(G2G_CFLAGS) $<
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#

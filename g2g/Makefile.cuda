@@ -126,22 +126,21 @@ ifneq ($(maxregs),undefined)
 	NVCCFLAGS += -maxrregcount=$(maxregs)
 endif
 
+GENCODE_SM20    := -gencode arch=compute_20,code=sm_20
+GENCODE_SM35    := -gencode arch=compute_35,code=sm_35
+# Eventually for Maxwell, requires at leaste CUDA 6.5
+#GENCODE_SM50    := -gencode arch=compute_50,code=sm_50
+#GENCODE_SM52    := -gencode arch=compute_52,code=sm_52
+GENCODE_FLAGS   ?= $(GENCODE_SM20) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM52)
+
+
 ifeq ($(sm_1x),1)
   NVCCFLAGS += -arch=sm_1x
 else
   NVCCFLAGS += -DNVIDIA_HAS_DOUBLE -DUSING_FERMI
   CXXFLAGS  += -DUSING_FERMI
-  ifeq ($(sm35),1)
-    NVCCFLAGS += -arch=sm_35
-  else
-    #DEFAULT IS SM20
-    NVCCFLAGS += -arch=sm_20
-  endif
+  NVCCFLAGS += $(GENCODE_FLAGS)
 endif
-
-ifeq ($(sm20),1)
-endif
-
 
 ifeq ($(nvcc_warn_verbose),1)
   NVCCFLAGS += $(addprefix --compiler-options ,$(CXXWARN_FLAGS))

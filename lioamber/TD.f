@@ -336,7 +336,7 @@ c ELECTRIC FIELD CASE - Type=gaussian (ON)
                  call dip(ux,uy,uz)
                  if (exter) then
                    g=1.0D0
-                   fac=2.54D0
+                   factor=2.54D0
                    fxx=fx*exp(-0.2*(real(istep-50))**2)
                    fyy=fy*exp(-0.2*(real(istep-50))**2)
                    fzz=fz*exp(-0.2*(real(istep-50))**2)
@@ -347,11 +347,11 @@ c ELECTRIC FIELD CASE - Type=gaussian (ON)
                    Fx=ux/2.54D0
                    Fy=uy/2.54D0
                    Fz=uz/2.54D0
-                   fac=(2.54D0*2.00D0)
+                   factor=(2.54D0*2.00D0)
 !
                  endif
                  call dip2(g,Fxx,Fyy,Fzz)
-                 E1=-1.00D0*g*(Fx*ux+Fy*uy+Fz*uz)/fac -
+                 E1=-1.00D0*g*(Fx*ux+Fy*uy+Fz*uz)/factor -
      >        0.50D0*(1.0D0-1.0D0/epsilon)*Qc2/a0
               endif
             endif

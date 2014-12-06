@@ -10,6 +10,7 @@
 #include "timer.h"
 #include "partition.h"
 #include "matrix.h"
+//#include "qmmm_forces.h"
 using std::cout;
 using std::endl;
 using std::boolalpha;
@@ -47,11 +48,13 @@ extern "C" void g2g_init_(void)
   cout << "Kernels: cpu" << endl;
   #endif
 
-  cout.precision(10);
+//  cout.precision(10);
 }
 //==========================================================================================
 namespace G2G {
 void gpu_set_variables(void);
+template<class scalar_type> void clean_gamma(void);
+template<class scalar_type> void gpu_set_gamma_arrays(void);
 template<class T> void gpu_set_atom_positions(const HostMatrix<T>& m);
 template<class T,class U> void gpu_set_clatoms(const HostMatrix<T>& m_pos, const HostMatrix<U>& m_charge);
 }
@@ -61,7 +64,7 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
                                     const unsigned int& M, unsigned int* ncont, const unsigned int* nshell, double* c, double* a,
                                     double* RMM, const unsigned int& M18, const unsigned int& M5, const unsigned int& M3, double* rhoalpha, double* rhobeta,
                                     const unsigned int& nco, bool& OPEN, const unsigned int& nunp, const unsigned int& nopt, const unsigned int& Iexch,
-                                    double* e, double* e2, double* e3, double* wang, double* wang2, double* wang3)
+                                    double* e, double* e2, double* e3, double* wang, double* wang2, double* wang3, double* str, double* fac, double& rmax)
 {
 	printf("<======= GPU Code Initialization ========>\n");
 	fortran_vars.atoms = natom;
@@ -157,11 +160,20 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	fortran_vars.wang2 = FortranMatrix<double>(wang2, MEDIUM_GRID_SIZE, 1, MEDIUM_GRID_SIZE);
 	fortran_vars.wang3 = FortranMatrix<double>(wang3, BIG_GRID_SIZE, 1, BIG_GRID_SIZE);
 
+        fortran_vars.str = FortranMatrix<double>(str, 880, 22, 880);
+        fortran_vars.fac = FortranMatrix<double>(fac, 17, 1, 17);
+        fortran_vars.rmax = rmax;
+
 	fortran_vars.atom_atom_dists = HostMatrix<double>(fortran_vars.atoms, fortran_vars.atoms);
 	fortran_vars.nearest_neighbor_dists = HostMatrix<double>(fortran_vars.atoms);
 
 #if !CPU_KERNELS
   G2G::gpu_set_variables();
+#if FULL_DOUBLE
+  G2G::gpu_set_gamma_arrays<double>();
+#else
+  G2G::gpu_set_gamma_arrays<float>();
+#endif
 #endif
 
 	read_options();
@@ -170,6 +182,12 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 extern "C" void g2g_deinit_(void) {
   cout << "<====== Deinitializing G2G ======>" << endl;
   partition.clear();
+
+#if FULL_DOUBLE
+  G2G::clean_gamma<double>();
+#else
+  G2G::clean_gamma<float>();
+#endif
 }
 //============================================================================================================
 // Gets the Fortran pointers for MM locations/charges
@@ -242,7 +260,6 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
 // CH - 9/2/2014
 // sends MM atom positions/charges to device
 // code in prepartion for QM/MM forces (it works, but no QM/MM code yet, no point in sending the stuff)
-#if 0
         if (fortran_vars.clatoms > 0) {
 	    HostMatrixFloat3 clatom_positions(fortran_vars.clatoms);	// gpu version (float3)
 	    fortran_vars.clatom_positions.resize(fortran_vars.clatoms);	// cpu version (double3)
@@ -265,7 +282,6 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
 #endif
 
         }
-#endif
 	compute_new_grid(grid_type);
 }
 //==============================================================================================================
@@ -276,6 +292,18 @@ extern "C" void g2g_new_grid_(const unsigned int& grid_type) {
 //		cout << "not loading, same grid as loaded" << endl;
 	else
 		compute_new_grid(grid_type);
+}
+//===============================================================================================================
+namespace G2G {
+  template<class T> void get_qmmm_forces(double* qm_forces, double* mm_forces);
+}
+extern "C" void g2g_qmmm_forces_(double* qm_forces, double* mm_forces)
+{
+#if FULL_DOUBLE
+  G2G::get_qmmm_forces<double>(qm_forces,mm_forces);
+#else
+  G2G::get_qmmm_forces<float>(qm_forces,mm_forces);
+#endif
 }
 
 template<bool compute_rmm, bool lda, bool compute_forces> void g2g_iteration(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr)

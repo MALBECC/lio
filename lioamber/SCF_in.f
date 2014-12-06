@@ -24,12 +24,6 @@
 c       write(18,345) 8,r(n,1),r(n,2),r(n,3)
       enddo
 
-      ! get MM pointers in g2g - works OK, but no forces code yet
-#if 0
-      call g2g_mm_init(nsol,r,pc)
-#endif
-
-
       do i=1,natom
         do j=1,3
 

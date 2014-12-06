@@ -154,6 +154,9 @@ c -Calculate point weights
 c
       call g2g_reload_atom_positions(igrid2)
 
+      ! get MM pointers in g2g
+      call g2g_mm_init(nsol,r,pc)
+
       if (predcoef.and.npas.gt.3) then
         if (.not.OPEN) then
           if(verbose) write(*,*) 'prediciendo densidad'
@@ -971,9 +974,9 @@ c--- Damping factor update -
        if (IDAMP.EQ.1) then
          DAMP=DAMP0
          if (abs(D1).lt.1.D-5) then
-           fac=dmax1(0.90D0,abs(D1/D2))
-           fac=dmin1(fac,1.1D0)
-           DAMP=DAMP0*fac
+           factor=dmax1(0.90D0,abs(D1/D2))
+           factor=dmin1(factor,1.1D0)
+           DAMP=DAMP0*factor
          endif
 c
          E=E1+E2+En

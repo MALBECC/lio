@@ -1104,9 +1104,9 @@ c      IDAMP=0
 c      if (IDAMP.EQ.1) then
 c        DAMP=DAMP0
 c        if (abs(D1).lt.1.D-5) then
-c          fac=dmax1(0.90D0,abs(D1/D2))
-c          fac=dmin1(fac,1.1D0)
-c          DAMP=DAMP0*fac
+c          factor=dmax1(0.90D0,abs(D1/D2))
+c          factor=dmin1(factor,1.1D0)
+c          DAMP=DAMP0*factor
 c        endif
 c
 c        E=E1+E2+En

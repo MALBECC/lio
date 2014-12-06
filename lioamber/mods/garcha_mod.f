@@ -39,7 +39,7 @@
        integer, dimension (:), ALLOCATABLE :: Iz, nnat
 
       dimension isotop(54)!,Pm(nt)
-      dimension Rm2(0:54), STR(880,0:21)
+      dimension Rm2(0:54), STR(880,0:21), FAC(0:16)
       dimension alpha(nss)
 c Everything is dimensioned for 2 basis, normal and density
 c ncf, lt,at,ct parameters for atomic basis sets

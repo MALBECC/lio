@@ -671,9 +671,9 @@ c
        ii=i+l12-1
        jj=j+l34-1
 c
-        fac=1.D0
+        factor=1.D0
        if (ii.ne.jj) then
-        fac=2.D0
+        factor=2.D0
        endif
 c
        t30=(pj0d-roz*pjd)/zc
@@ -682,7 +682,7 @@ c
        t40=pjd/z2
        t41=pid/z2
        t42=(d0pl-roz2*dpl)/zc2
-       cc=-0.5D0*fac*af(ii)*af(jj)*ccoef/(f1*f2)
+       cc=-0.5D0*factor*af(ii)*af(jj)*ccoef/(f1*f2)
        cc1=cc*2.D0
        cci=cc1*ad(i,ni)
        ccj=cc1*ad(j,nj)

@@ -3,24 +3,25 @@
 
 #include <cassert>
 #include <cstdlib>
+#include <vector>
 #include "cuda/cuda_extra.h"
 
-class globalMemoryPool
-{
-    public:
-        static void init (double free_global_memory = 0.0);
-        static bool tryAlloc (size_t size);
-        static void dealloc (size_t size);
-        static size_t getFreeMemory()
-        {
-            if(!_init) init();
-            return _freeGlobalMemory;
-        }
+class GlobalMemoryPool {
+  public:
+    static void init (double free_global_memory = 0.0);
+    static int tryAlloc (size_t size);
+    static void dealloc (size_t size);
+    static size_t getFreeMemory() {
+      if(!_init) init();
+      int current_device;
+      cudaGetDevice(&current_device);
+      return _freeGlobalMemory[current_device];
+    }
 
-    private:
-        static size_t _totalGlobalMemory;
-        static size_t _freeGlobalMemory;
-        static float _freeFactor;
-        static bool  _init;
+  private:
+    static std::vector<size_t> _totalGlobalMemory;
+    static std::vector<size_t> _freeGlobalMemory;
+    static float _freeFactor;
+    static bool  _init;
 };
 #endif

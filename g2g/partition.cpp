@@ -302,7 +302,7 @@ template<class scalar_type>
 PointGroupGPU<scalar_type>::~PointGroupGPU<scalar_type>()
 {
   if(this->inGlobal) {
-    globalMemoryPool::dealloc(this->size_in_gpu());
+    GlobalMemoryPool::dealloc(this->size_in_gpu());
     function_values.deallocate();
     gradient_values.deallocate();
     hessian_values_transposed.deallocate();
@@ -335,7 +335,14 @@ void Partition::clear() {
 
 void Partition::rebalance(vector<double> & times, vector<double> & finishes)
 {
-  const int gpu_threads = 1;
+    int gpu_threads = 0;
+#if GPU_KERNELS
+    cudaGetDeviceCount(&gpu_threads);
+#ifndef _OPENMP
+    gpu_threads = 1;
+#endif
+#endif
+
   for(int rondas = 0; rondas < 5; rondas++){
     int largest = std::max_element(finishes.begin(),finishes.end()-gpu_threads) - finishes.begin();
     int smallest = std::min_element(finishes.begin(),finishes.end()-gpu_threads) - finishes.begin();
@@ -390,8 +397,22 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
 
   Timer smallgroups, biggroups;
 
-  #pragma omp parallel for num_threads(outer_threads+1) schedule(static)
+
+  int gpu_threads = 0;
+#if GPU_KERNELS
+  cudaGetDeviceCount(&gpu_threads);
+#endif
+
+  #pragma omp parallel for num_threads(outer_threads+gpu_threads) schedule(static)
   for(int i = 0; i< work.size(); i++) {
+#if GPU_KERNELS
+    bool gpu_thread = false;
+    if(i>=outer_threads) {
+      gpu_thread = true;
+      cudaSetDevice(i-outer_threads);
+      printf("PLACA %d \n", i-outer_threads);
+    }
+#endif
     double local_energy = 0;
 
     Timers ts; Timer t;
@@ -413,6 +434,11 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
             fort_forces_ms[i], 1, rmm_outputs[i], OPEN);
       }
       element.stop();
+#if GPU_KERNEL
+      if(gpu_thread) {
+        cudaDeviceSynchronize();
+      }
+#endif
       timeforgroup[ind] = element.getTotal();
     }
     t.stop();
@@ -459,7 +485,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   if(*fort_energy_ptr != *fort_energy_ptr) {
       std::cout << "I see dead peaple " << std::endl;
 #if GPU_KERNELS
-    cudaDeviceReset();
+      cudaDeviceReset();
 #endif
      exit(1);
    }

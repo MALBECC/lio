@@ -73,7 +73,7 @@ class PointGroup {
 
     virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const = 0;
     virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input) const = 0;
-    virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input_a, G2G::HostMatrix<scalar_type>& rmm_input_b) const;
+    virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input_a, G2G::HostMatrix<scalar_type>& rmm_input_b) const = 0;
 
     void add_rmm_output(const G2G::HostMatrix<scalar_type>& rmm_output, FortranMatrix<double>& target) const;
     void add_rmm_output(const G2G::HostMatrix<scalar_type>& rmm_output) const;

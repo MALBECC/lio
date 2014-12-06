@@ -409,7 +409,7 @@ void Partition::regenerate(void)
 
     //Initialize the global memory pool for CUDA, with the default safety factor
     //If it is CPU, then this doesn't matter
-    globalMemoryPool::init(G2G::free_global_memory);
+    GlobalMemoryPool::init(G2G::free_global_memory);
 
     inner_threads = outer_threads = omp_get_max_threads();
 
@@ -435,7 +435,13 @@ void Partition::regenerate(void)
     }
 
     compute_work_partition();
-    const int gpu_threads = 1;
+    int gpu_threads = 0;
+#if GPU_KERNELS
+    cudaGetDeviceCount(&gpu_threads);
+#ifndef _OPENMP
+    gpu_threads = 1;
+#endif
+#endif
 
     timeforgroup.resize(cubes.size() + spheres.size());
     next.resize(outer_threads+gpu_threads);

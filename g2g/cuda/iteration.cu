@@ -41,16 +41,29 @@ using std::cout;
 using std::vector;
 using std::endl;
 
-// Host function to set the constant
 void gpu_set_variables(void) {
-  cudaMemcpyToSymbol(gpu_normalization_factor, &fortran_vars.normalization_factor, sizeof(fortran_vars.normalization_factor), 0, cudaMemcpyHostToDevice);
-  cudaMemcpyToSymbol(gpu_atoms, &fortran_vars.atoms, sizeof(fortran_vars.atoms), 0, cudaMemcpyHostToDevice);
-  cudaMemcpyToSymbol(gpu_Iexch, &fortran_vars.iexch, sizeof(fortran_vars.iexch), 0, cudaMemcpyHostToDevice);
+  int previous_device; cudaGetDevice(&previous_device);
+  int gpu_devices; cudaGetDeviceCount(&gpu_devices);
+  for(int i = 0; i < gpu_devices; i++) {
+    if(cudaSetDevice(i) != cudaSuccess)
+      std::cout << "Error: can't set the device " << i << std::endl;
+    cudaMemcpyToSymbol(gpu_normalization_factor, &fortran_vars.normalization_factor, sizeof(fortran_vars.normalization_factor), 0, cudaMemcpyHostToDevice);
+    cudaMemcpyToSymbol(gpu_atoms, &fortran_vars.atoms, sizeof(fortran_vars.atoms), 0, cudaMemcpyHostToDevice);
+    cudaMemcpyToSymbol(gpu_Iexch, &fortran_vars.iexch, sizeof(fortran_vars.iexch), 0, cudaMemcpyHostToDevice);
+  }
+  cudaSetDevice(previous_device);
   cudaAssertNoError("set_gpu_variables");
 }
 
 template<class T> void gpu_set_atom_positions(const HostMatrix<T>& m) {
-  cudaMemcpyToSymbol(gpu_atom_positions, m.data, m.bytes(), 0, cudaMemcpyHostToDevice);
+  int previous_device; cudaGetDevice(&previous_device);
+  int gpu_devices; cudaGetDeviceCount(&gpu_devices);
+  for(int i = 0; i < gpu_devices; i++) {
+    if(cudaSetDevice(i) != cudaSuccess)
+      std::cout << "Error: can't set the device " << i << std::endl;
+    cudaMemcpyToSymbol(gpu_atom_positions, m.data, m.bytes(), 0, cudaMemcpyHostToDevice);
+  }
+  cudaSetDevice(previous_device);
 }
 
 template void gpu_set_atom_positions<float3>(const HostMatrix<float3>& m);
@@ -636,7 +649,7 @@ void PointGroupGPU<scalar_type>::compute_functions(bool forces, bool gga)
   if(this->inGlobal) //Ya las tengo en memoria? entonces salgo porque ya estan las 3 calculadas
     return;
 
-  if(0 == globalMemoryPool::tryAlloc(this->size_in_gpu())) //1 si hubo error, 0 si pude reservar la memoria
+  if(0 == GlobalMemoryPool::tryAlloc(this->size_in_gpu())) //1 si hubo error, 0 si pude reservar la memoria
     this->inGlobal=true;
   CudaMatrix<vec_type4> points_position_gpu;
   CudaMatrix<vec_type2> factor_ac_gpu;

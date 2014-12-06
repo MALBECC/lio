@@ -146,6 +146,9 @@ c Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
         nnpd(nuc(iikk))=iikk
       enddo
 
+      ! get MM pointers in g2g
+      call g2g_mm_init(nsol,r,pc)
+
 c
 c -Create integration grid for XC here
 c -Assign points to groups (spheres/cubes)
@@ -153,9 +156,6 @@ c -Assign significant functions to groups
 c -Calculate point weights
 c
       call g2g_reload_atom_positions(igrid2)
-
-      ! get MM pointers in g2g
-      call g2g_mm_init(nsol,r,pc)
 
       if (predcoef.and.npas.gt.3) then
         if (.not.OPEN) then

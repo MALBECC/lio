@@ -458,7 +458,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   *fort_energy_ptr = energy;
   if(*fort_energy_ptr != *fort_energy_ptr) {
       std::cout << "I see dead peaple " << std::endl;
-#ifndef CPU_KERNELS
+#if GPU_KERNELS
     cudaDeviceReset();
 #endif
      exit(1);

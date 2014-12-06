@@ -2,6 +2,7 @@
 #define __G2G_MATRIX_H__
 
 #include <vector>
+#include <cassert>
 
 // TODO: para cuando es multiplo, le suma igual y no deberia
 #if USING_FERMI

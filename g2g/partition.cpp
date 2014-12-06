@@ -98,7 +98,13 @@ void PointGroupGPU<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_inpu
 }
 
 template<class scalar_type>
-void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input_a, HostMatrix<scalar_type>& rmm_input_b) const {
+void PointGroupCPU<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input_a, HostMatrix<scalar_type>& rmm_input_b) const {
+  get_rmm_input(rmm_input_a, fortran_vars.rmm_dens_a);
+  get_rmm_input(rmm_input_b, fortran_vars.rmm_dens_b);
+}
+
+template<class scalar_type>
+void PointGroupGPU<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input_a, HostMatrix<scalar_type>& rmm_input_b) const {
   get_rmm_input(rmm_input_a, fortran_vars.rmm_dens_a);
   get_rmm_input(rmm_input_b, fortran_vars.rmm_dens_b);
 }
@@ -329,9 +335,10 @@ void Partition::clear() {
 
 void Partition::rebalance(vector<double> & times, vector<double> & finishes)
 {
+  const int gpu_threads = 1;
   for(int rondas = 0; rondas < 5; rondas++){
-    int largest = std::max_element(finishes.begin(),finishes.end()-1) - finishes.begin();
-    int smallest = std::min_element(finishes.begin(),finishes.end()-1) - finishes.begin();
+    int largest = std::max_element(finishes.begin(),finishes.end()-gpu_threads) - finishes.begin();
+    int smallest = std::min_element(finishes.begin(),finishes.end()-gpu_threads) - finishes.begin();
 
     double diff = finishes[largest] - finishes[smallest];
 
@@ -409,7 +416,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
       timeforgroup[ind] = element.getTotal();
     }
     t.stop();
-    printf("Workload %d: (%d) ", i, work[i].size());
+    printf("Workload %d: (%d) ", i, (int) work[i].size());
     cout << t; cout << ts;
 
     next[i] = t.getTotal();

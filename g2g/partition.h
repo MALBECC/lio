@@ -126,6 +126,7 @@ class PointGroupCPU: public PointGroup<scalar_type> {
     bool is_big_group(int) const;
     virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const;
     virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input) const;
+    virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input_a, G2G::HostMatrix<scalar_type>& rmm_input_b) const;
     virtual void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
         bool compute_energy, double& energy, double &, double &, double &, double &,
         HostMatrix<double> &);
@@ -156,6 +157,7 @@ class PointGroupGPU: public PointGroup<scalar_type> {
     bool is_big_group(int) const;
     virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const;
     virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input) const;
+    virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input_a, G2G::HostMatrix<scalar_type>& rmm_input_b) const;
     virtual void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
         bool compute_energy, double& energy, double &, double &, double &, double &,
         HostMatrix<double> &);

@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <fenv.h>
 #include <signal.h>
+#include <cassert>
 #include "common.h"
 #include "cuda_includes.h"
 #include "init.h"

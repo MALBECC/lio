@@ -6,10 +6,8 @@
 
 #ifdef _DEBUG
 #define _DBG(x) x
-#define assert(x) if (!(x)) throw std::runtime_error("assertion failed: " #x);
 #else
 #define _DBG(x)
-#define assert(x)
 #endif
 
 #define MAX_CONTRACTIONS 7

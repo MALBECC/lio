@@ -79,9 +79,9 @@ __device__ void warpReduce(volatile scalar_type *sdata, unsigned int tid)
 
 // TODO: currently, one thread maps to one primitive-primitive overlap force term; is there a better mapping? (thread to function, thread to sub-shell, etc)
 // Also, should the loop over MM atoms be broken up to be done by multiple blocks rather than a block looping over every MM atom?
-template<class scalar_type>
-__global__ void gpu_qmmm_forces( uint num_terms, scalar_type* a_values1, scalar_type* a_values2, scalar_type* cc_values, scalar_type* dens_values,// uint* func1, uint* func2,
-                                 uint* nuclei1, uint* nuclei2, vec_type<scalar_type,3>* mm_forces, vec_type<scalar_type,3>* qm_forces )//, uint s_func_end, uint p_func_end )
+template<class scalar_type, uint term_type>
+__global__ void gpu_qmmm_forces( uint num_terms, scalar_type* a_values1, scalar_type* a_values2, scalar_type* cc_values, scalar_type* dens_values, uint* orbital1, uint* orbital2, //uint* func1, uint* func2,
+                                 uint* nuclei1, uint* nuclei2, vec_type<scalar_type,3>* mm_forces, vec_type<scalar_type,3>* qm_forces, uint global_stride )//, uint s_func_end, uint p_func_end )
 {
 
   uint ffnum = index_x(blockDim, blockIdx, threadIdx);
@@ -100,8 +100,9 @@ __global__ void gpu_qmmm_forces( uint num_terms, scalar_type* a_values1, scalar_
     __shared__ scalar_type C_force[3][QMMM_FORCES_BLOCK_SIZE];
 
     scalar_type zeta;
-    scalar_type ai, aj, prefactor_mm;
+    scalar_type ai, aj, prefactor_mm, inv_two_zeta;
     scalar_type P[3], PmA[3], PmB[3];
+    uint orb1, orb2;
     //int max_m = 1;
     // TODO: each thread calculates its own zeta, overlap, etc here; should these be precalculated and saved (for use here and in Coulomb calculation)?
     {
@@ -116,9 +117,14 @@ __global__ void gpu_qmmm_forces( uint num_terms, scalar_type* a_values1, scalar_
       B = gpu_atom_positions[nuc2];
   
       zeta = ai + aj;
-      P[0] = (A.x*ai + B.x*aj) / zeta;
-      P[1] = (A.y*ai + B.y*aj) / zeta;
-      P[2] = (A.z*ai + B.z*aj) / zeta;
+      //scalar_type inv_zeta = 1.0f / zeta;
+      inv_two_zeta = 1.0f / (2.0f * zeta);
+      // Noticed that precomputing the inverse and multiplying rather than dividing here led to a 3x worse round-off error in the QM forces (compared to intsolG)
+      // However, using inv_two_zeta for prefactor_qm further down doesn't have an effect...maybe because P goes into PmA/PmB/PmC/U which are then used in more
+      // operations than prefactor_qm, which is just multiplied once at the end?
+      P[0] = (A.x*ai + B.x*aj) / zeta;//* inv_zeta;
+      P[1] = (A.y*ai + B.y*aj) / zeta;//* inv_zeta;
+      P[2] = (A.z*ai + B.z*aj) / zeta;//* inv_zeta;
       PmA[0] = P[0] - A.x;
       PmA[1] = P[1] - A.y;
       PmA[2] = P[2] - A.z;
@@ -132,9 +138,17 @@ __global__ void gpu_qmmm_forces( uint num_terms, scalar_type* a_values1, scalar_
       ovlap = exp(-ds2*ksi);
 
       prefactor_mm = -dens * cc * 4.0f * PI * ovlap;
-      prefactor_qm = prefactor_mm / (2.0f * zeta);
-    
+      prefactor_qm = prefactor_mm * inv_two_zeta;
+
+      orb1 = orbital1[ffnum]; orb2 = orbital2[ffnum];    
       //uint f1 = func1[ffnum], f2 = func2[ffnum];
+      //if (f1 < s_func_end)      { offset1 = 0; }
+      //else if (f1 < p_func_end) { offset1 = (f1 - s_func_end) % 3; }
+      //else                      { offset1 = (f1 - p_func_end) % 6; }
+
+      //if (f2 < s_func_end)      { offset2 = 0; }
+      //else if (f2 < p_func_end) { offset2 = (f2 - s_func_end) % 3; }
+      //else                      { offset2 = (f2 - p_func_end) % 6; }
       //max_m += (f1 >= s_func_end) + (f1 >= p_func_end);
       //max_m += (f2 >= s_func_end) + (f2 >= p_func_end);
     }
@@ -150,43 +164,31 @@ __global__ void gpu_qmmm_forces( uint num_terms, scalar_type* a_values1, scalar_
       // Inner loop: process block of MM atoms; each thread calculates a single primitive/primitive overlap force term
       for (int j = 0; j < QMMM_FORCES_BLOCK_SIZE && i+j < gpu_clatoms; j++)
       {
-        scalar_type PmC[3], F_mU[2]; // ONLY FOR S-S
         {
-          vec_type<scalar_type, 3> clatom_pos = clatom_position_sh[j];
-          PmC[0] = P[0] - clatom_pos.x;
-          PmC[1] = P[1] - clatom_pos.y;
-          PmC[2] = P[2] - clatom_pos.z;
-        }
-        {
-          scalar_type U = (PmC[0] * PmC[0] + PmC[1] * PmC[1] + PmC[2] * PmC[2]) * zeta;
-          //F_mU[0] = (SQRT_PI / (2*sqrtU)) * erff(sqrtU);
-          for (int m = 0; m <= 1; m++) // ONLY FOR S-S
+          scalar_type PmC[3];
           {
-            // TODO (maybe): test out storing F(m,U) values in texture and doing a texture fetch here rather than the function calculation
-            F_mU[m] = lio_gamma<scalar_type>(m,U);
-            //F_mU[m] = fetch(qmmm_F_values_tex,(float)(U/gamma_inc-0.5f),(float)(m+0.5f));
+            vec_type<scalar_type, 3> clatom_pos = clatom_position_sh[j];
+            PmC[0] = P[0] - clatom_pos.x;
+            PmC[1] = P[1] - clatom_pos.y;
+            PmC[2] = P[2] - clatom_pos.z;
           }
+          // BEGIN TERM-TYPE DEPENDENT PART
+          switch (term_type)
+          {
+            case 0:
+            {
+              #include "qmmm_terms/ss.h"
+              break;
+            }
+            case 1:
+            {
+              #include "qmmm_terms/ps.h"
+              break;
+            }
+          }
+          // END TERM-TYPE DEPENDENT PART
         }
 
-        // BEGIN calculation of individual (single primitive-primitive overlap) force terms
-        // TODO: This block can probably be put into separate headers for s-s, p-s, etc then included in a single main kernel file
-        {
-          scalar_type A_force_term, B_force_term, C_force_term;
-          scalar_type mm_charge = clatom_charge_sh[j];
-  
-          for (int grad_l = 0; grad_l < 3; grad_l++)
-          {
-            C_force_term = PmC[grad_l] * F_mU[1];
-            A_force_term = PmA[grad_l] * F_mU[0] - C_force_term;
-            B_force_term = PmB[grad_l] * F_mU[0] - C_force_term;
-  
-            A_force[grad_l] += 2.0f * ai * mm_charge * A_force_term;
-            B_force[grad_l] += 2.0f * aj * mm_charge * B_force_term;
-            // Out-of-range threads contribute 0 to the force
-            C_force[grad_l][tid] = valid_thread * prefactor_mm * mm_charge * C_force_term;
-          }
-        }
-        // END individual force terms
         __syncthreads();
 
         // TODO: should we do the per-block reduction here in this loop? or should each thread save its value to global memory for later accumulation?
@@ -213,7 +215,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, scalar_type* a_values1, scalar_
         else if (tid < 96) { warpReduce<scalar_type>(C_force[2], tid-64); }
 
         {
-          uint global_stride = COALESCED_DIMENSION(gridDim.x);
+          //uint global_stride = COALESCED_DIMENSION(gridDim.x);
           // TODO: tried turning this into one global read to get the force vector object, but didn't seem to improve performance, maybe there's a better way?
           if (tid == 0)       { mm_forces[global_stride*(i+j)+blockIdx.x].x = C_force[0][0]; }
           else if (tid == 32) { mm_forces[global_stride*(i+j)+blockIdx.x].y = C_force[1][0]; }
@@ -271,8 +273,9 @@ __global__ void gpu_qmmm_forces( uint num_terms, scalar_type* a_values1, scalar_
         else if (tid < 64) { warpReduce<scalar_type>(QM_force[1], tid-32); }
         // third warp does z
         else if (tid < 96) { warpReduce<scalar_type>(QM_force[2], tid-64); }
+
         {
-          uint global_stride = COALESCED_DIMENSION(gridDim.x);
+          //uint global_stride = COALESCED_DIMENSION(gridDim.x);
           if (tid == 0)       { qm_forces[global_stride*i+blockIdx.x].x = QM_force[0][0]; }
           else if (tid == 32) { qm_forces[global_stride*i+blockIdx.x].y = QM_force[1][0]; }
           else if (tid == 64) { qm_forces[global_stride*i+blockIdx.x].z = QM_force[2][0]; }
@@ -283,7 +286,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, scalar_type* a_values1, scalar_
       // TODO: Zeroing out the partial qm array before this kernel might be better
       else
       {
-        uint global_stride = COALESCED_DIMENSION(gridDim.x);
+        //uint global_stride = COALESCED_DIMENSION(gridDim.x);
         if (tid == 0)       { qm_forces[global_stride*i+blockIdx.x].x = 0.0f; }
         else if (tid == 32) { qm_forces[global_stride*i+blockIdx.x].y = 0.0f; }
         else if (tid == 64) { qm_forces[global_stride*i+blockIdx.x].z = 0.0f; }
@@ -291,4 +294,5 @@ __global__ void gpu_qmmm_forces( uint num_terms, scalar_type* a_values1, scalar_
     }
   }
 }
+
 

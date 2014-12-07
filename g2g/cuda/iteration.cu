@@ -959,6 +959,8 @@ void PointGroup<scalar_type>::compute_weights(void)
 template class PointGroup<double>;
 template class PointGroup<float>;
 
+#define NUM_TERM_TYPES 2
+
 template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_forces)
 {
   uint i,j,ni,nj;
@@ -968,27 +970,44 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
   double ai,aj;
   double dsq,ksi,zeta;
   uint num_terms=0, total_num_terms = 0;
-  //std::vector<uint> local2func1,local2func2;
+  std::vector<uint> orbital1, orbital2;//local2func1,local2func2,local2cont1,local2cont2;
   std::vector<scalar_type> a_values1,a_values2;
   std::vector<scalar_type> cc_values;
   std::vector<scalar_type> dens_values;
   std::vector<uint> nuclei1, nuclei2;
 
+  uint term_type_counts[NUM_TERM_TYPES];
+  for (i = 0; i < NUM_TERM_TYPES; i++) term_type_counts[i] = 0;
+  uint current_term_type = 0;
+
   // function i, center A
   i = 0;
-  while (i < fortran_vars.s_funcs) {//m) {
+  while (i < fortran_vars.s_funcs+fortran_vars.p_funcs*3) {//m) {
     nuc_i = fortran_vars.nucleii(i) - 1;
     A = fortran_vars.atom_positions(nuc_i);
     if (i < fortran_vars.s_funcs) {
       i_orbitals = 1;
+      current_term_type = 0;
     } else if (i < fortran_vars.s_funcs + fortran_vars.p_funcs*3) {
       i_orbitals = 3;
+      current_term_type = 1;
     } else {
       i_orbitals = 6;
+      current_term_type = 3;
+    }
+    // Pad the input arrays with dummy values so the offset for the next term type is aligned
+    if (i == fortran_vars.s_funcs) {
+      for (j = num_terms; j < COALESCED_DIMENSION(num_terms); j++) {
+        a_values1.push_back(a_values1[0]); a_values2.push_back(a_values2[0]);
+        cc_values.push_back(cc_values[0]);
+        nuclei1.push_back(nuclei1[0]); nuclei2.push_back(nuclei2[0]);
+        orbital1.push_back(orbital1[0]); orbital2.push_back(orbital2[0]);
+        dens_values.push_back(dens_values[0]);
+      }
     }
     // function j, center B
     j = 0;
-    while (j <= i) {
+    while (j <= ((i>=fortran_vars.s_funcs)? fortran_vars.s_funcs-1 : i)) {//= i) {
       nuc_j = fortran_vars.nucleii(j) - 1;
       B = fortran_vars.atom_positions(nuc_j);
       if (j < fortran_vars.s_funcs) {
@@ -998,9 +1017,9 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
       } else {
         j_orbitals = 6;
       }
+      if (j == fortran_vars.s_funcs || j == fortran_vars.s_funcs + fortran_vars.p_funcs*3) { current_term_type++; }
       AmB = A - B;
       dsq = length2(AmB);
-      uint dens_ind = i + (2*fortran_vars.m-(j+1))*j/2;
 
       for (ni = 0; ni < fortran_vars.contractions(i); ni++) {
         for (nj = 0; nj < fortran_vars.contractions(j); nj++) {
@@ -1008,19 +1027,31 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
           aj = fortran_vars.a_values(j,nj);
           zeta = ai + aj;
           ksi = ai * aj / zeta;
-          total_num_terms++;
+          total_num_terms += (i==j)? i_orbitals*(i_orbitals+1)/2 : i_orbitals * j_orbitals;
           // TODO: right now, we're saving function values / nuclei # / density element for each thread; is there a better way to provide these values
           // to the kernel? Might be able to just send all function values/density matrix to the device and give each thread an index into the global arrays
           // Memory access patterns whon't be great, but they only get read in once
           if (dsq*ksi < fortran_vars.rmax) {
+            for (uint i_orbital = 0; i_orbital < i_orbitals; i_orbital++) {
+              uint j_orbital_finish = (i==j)? i_orbital+1 : j_orbitals;
+              for (uint j_orbital = 0; j_orbital < j_orbital_finish; j_orbital++) {
+                num_terms++;
+                term_type_counts[current_term_type]++;
+
+                a_values1.push_back(ai); a_values2.push_back(aj);
+                cc_values.push_back(fortran_vars.c_values(i,ni)*fortran_vars.c_values(j,nj));
+                nuclei1.push_back(nuc_i); nuclei2.push_back(nuc_j);
+
+                orbital1.push_back(i_orbital); orbital2.push_back(j_orbital);
+
+                uint dens_ind = (i+i_orbital) + (2*fortran_vars.m-((j+j_orbital)+1))*(j+j_orbital)/2;
+                dens_values.push_back(fortran_vars.rmm_input_ndens1.data[dens_ind]);
+              }
+            }
             //local2func1.push_back(i);
-            a_values1.push_back(ai);
             //local2func2.push_back(j);
-            a_values2.push_back(aj);
-            num_terms++;
-            cc_values.push_back(fortran_vars.c_values(i,ni)*fortran_vars.c_values(j,nj));
-            nuclei1.push_back(nuc_i); nuclei2.push_back(nuc_j);
-            dens_values.push_back(fortran_vars.rmm_input_ndens1.data[dens_ind]);
+            //local2cont1.push_back(ni);
+            //local2cont2.push_back(nj);
           }
         }
       }
@@ -1037,14 +1068,49 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
     a_values2.push_back(a_values2[0]);
     cc_values.push_back(cc_values[0]);
     dens_values.push_back(dens_values[0]);
-    //local2func1.push_back(local2func1[0]);
-    //local2func2.push_back(local2func2[0]);
     nuclei1.push_back(nuclei1[0]);
     nuclei2.push_back(nuclei2[0]);
+    orbital1.push_back(orbital1[0]);
+    orbital2.push_back(orbital2[0]);
+    //local2func1.push_back(local2func1[0]);
+    //local2func2.push_back(local2func2[0]);
+    //local2cont1.push_back(local2cont1[0]);
+    //local2cont2.push_back(local2cont2[0]);
   }
+  uint tmp_ind = 0;
+  uint term_type_offsets[NUM_TERM_TYPES];
+  term_type_offsets[0] = 0;
+  for (i = 1; i < NUM_TERM_TYPES; i++) {
+    tmp_ind += COALESCED_DIMENSION(term_type_counts[i-1]);
+    term_type_offsets[i] = tmp_ind;
+  }
+
+  //----------------------------------------------------------------------------------------------------------------------------
+  /*HostMatrix<vec_type2> factor_ac_cpu(COALESCED_DIMENSION(fortran_vars.m), MAX_CONTRACTIONS);
+  HostMatrixUInt nuc_cpu(fortran_vars.m, 1);
+
+  uint ii = 0;
+  for (uint func = 0; func < fortran_vars.m; func++) {
+    uint inc = small_function_type(i);
+
+    uint this_nuc = func2global_nuc(i);
+    uint this_cont = fortran_vars.contractions(func);
+
+    for (uint j = 0; j < inc; j++) {
+      nuc_cpu(ii) = this_nuc;
+      contractions_cpu(ii) = this_cont;
+      for (unsigned int k = 0; k < this_cont; k++)
+        factor_ac_cpu(ii, k) = vec_type2(fortran_vars.a_values(func, k), fortran_vars.c_values(func, k));
+      ii++;
+    }
+  }
+  factor_ac_gpu = factor_ac_cpu;
+  nuc_gpu = nuc_cpu;*/
+  //----------------------------------------------------------------------------------------------------------------------------
+
   // Send forces input to device (a values, thread function #s, thread nuclei #s)
   CudaMatrix<scalar_type> dev_a_values1(a_values1), dev_a_values2(a_values2), dev_cc_values(cc_values), dev_dens_values(dens_values);
-  CudaMatrixUInt /*dev_func1(local2func1), dev_func2(local2func2),*/ dev_nuclei1(nuclei1), dev_nuclei2(nuclei2);
+  CudaMatrixUInt dev_orb1(orbital1), dev_orb2(orbital2), /*dev_func1(local2func1), dev_func2(local2func2),*/ dev_nuclei1(nuclei1), dev_nuclei2(nuclei2);
 
   //cudaBindTextureToArray(qmmm_F_values_tex,gammaArray);
 
@@ -1056,14 +1122,23 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
   // Allocate output arrays on device (forces)
   CudaMatrix<vec_type<scalar_type,3> > gpu_partial_mm_forces, gpu_partial_qm_forces;//, gpu_mm_forces, gpu_qm_forces;
 
-  gpu_partial_mm_forces.resize(COALESCED_DIMENSION(divUp(num_terms,QMMM_FORCES_BLOCK_SIZE)), fortran_vars.clatoms);
-  gpu_partial_qm_forces.resize(COALESCED_DIMENSION(divUp(num_terms,QMMM_FORCES_BLOCK_SIZE)), fortran_vars.atoms);
+  uint partial_forces_size = 0;
+  uint force_offsets[NUM_TERM_TYPES];
+  force_offsets[0] = 0;
+  for (i = 0; i < NUM_TERM_TYPES; i++) {
+    partial_forces_size += divUp(term_type_counts[i],QMMM_FORCES_BLOCK_SIZE);
+    if (i+1<NUM_TERM_TYPES) { force_offsets[i+1] = partial_forces_size; }
+  }
+  gpu_partial_mm_forces.resize(COALESCED_DIMENSION(partial_forces_size), fortran_vars.clatoms);
+  gpu_partial_qm_forces.resize(COALESCED_DIMENSION(partial_forces_size), fortran_vars.atoms);
   //gpu_mm_forces.resize(fortran_vars.clatoms,1);
   //gpu_qm_forces.resize(fortran_vars.atoms,1);
 
-  dim3 threads(num_terms);
-  dim3 blockSize(QMMM_FORCES_BLOCK_SIZE);
-  dim3 gridSize = divUp(threads, blockSize);
+#define qmmm_parameters \
+  term_type_counts[i], dev_a_values1.data+offset, dev_a_values2.data+offset, dev_cc_values.data+offset, \
+  dev_dens_values.data+offset, dev_orb1.data+offset, dev_orb2.data+offset, dev_nuclei1.data+offset, dev_nuclei2.data+offset, \
+  gpu_partial_mm_forces.data+force_offset, gpu_partial_qm_forces.data+force_offset, COALESCED_DIMENSION(partial_forces_size)
+
   // Currently: density and c coefficents have 1-to-1 mapping to thread, and they only show up in the calculation multiplied together
   // So, if we were to keep this mapping, would just send the product
   // However, I'm leaving things as they are, sending the two individually, as this mapping probably isn't optimal:
@@ -1071,9 +1146,33 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
   // -ci x cj coefficients map 1-to-1 to a primitive x primitive term (e.g., each term (primitive i x primitive j) in a p_y x p_x set have differenct c values, but the p_z x p_x term
   //                                                                       in the same sub-shell / sub-shell block has the same set of c values)
   // -ai x aj coefficients have the same mapping as ci x cj
-  gpu_qmmm_forces<scalar_type><<<gridSize,blockSize>>>( num_terms, dev_a_values1.data, dev_a_values2.data, dev_cc_values.data,
-                                                          dev_dens_values.data, /*dev_func1.data, dev_func2.data,*/ dev_nuclei1.data, dev_nuclei2.data,
-                                                          gpu_partial_mm_forces.data, gpu_partial_qm_forces.data );//, fortran_vars.s_funcs, fortran_vars.s_funcs+fortran_vars.p_funcs*3 );
+  cudaStream_t stream[NUM_TERM_TYPES];
+  for (i = 0; i < NUM_TERM_TYPES; i++) {
+    cudaStreamCreate(&stream[i]);
+  }
+  for (i = 0; i < NUM_TERM_TYPES; i++)
+  {
+    uint offset = term_type_offsets[i];
+    uint force_offset = force_offsets[i];
+    dim3 threads = term_type_counts[i];
+    dim3 blockSize(QMMM_FORCES_BLOCK_SIZE);
+    dim3 gridSize = divUp(threads, blockSize);
+    switch (i) {
+      case 0: gpu_qmmm_forces<scalar_type,0><<<gridSize,blockSize,0,stream[i]>>>( qmmm_parameters ); break;
+      case 1: gpu_qmmm_forces<scalar_type,1><<<gridSize,blockSize,0,stream[i]>>>( qmmm_parameters ); break;
+      case 2: gpu_qmmm_forces<scalar_type,2><<<gridSize,blockSize,0,stream[i]>>>( qmmm_parameters ); break;
+      case 3: gpu_qmmm_forces<scalar_type,3><<<gridSize,blockSize,0,stream[i]>>>( qmmm_parameters ); break;
+      case 4: gpu_qmmm_forces<scalar_type,4><<<gridSize,blockSize,0,stream[i]>>>( qmmm_parameters ); break;
+      case 5: gpu_qmmm_forces<scalar_type,5><<<gridSize,blockSize,0,stream[i]>>>( qmmm_parameters ); break;
+      case 6: gpu_qmmm_forces<scalar_type,6><<<gridSize,blockSize,0,stream[i]>>>( qmmm_parameters ); break;
+      case 7: gpu_qmmm_forces<scalar_type,7><<<gridSize,blockSize,0,stream[i]>>>( qmmm_parameters ); break;
+      case 8: gpu_qmmm_forces<scalar_type,8><<<gridSize,blockSize,0,stream[i]>>>( qmmm_parameters ); break;
+    }
+  }
+  cudaDeviceSynchronize();
+  for (i = 0; i < NUM_TERM_TYPES; i++) {
+    cudaStreamDestroy(stream[i]);
+  }
 
   HostMatrix<vec_type<scalar_type,3> > cpu_partial_mm_forces(gpu_partial_mm_forces), cpu_partial_qm_forces(gpu_partial_qm_forces);//cpu_mm_forces(gpu_mm_forces), cpu_qm_forces(gpu_qm_forces);
 
@@ -1084,20 +1183,14 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
   // However, not sure that the memory requirements of each thread saving its term will be OK
   // Alternative: keep the kernel reduction, and reduce the block results in another kernel (rather than here on the host)
   for (i = 0; i < fortran_vars.atoms; i++) {
-    qm_forces[i + 0 * fortran_vars.atoms] = 0;//cpu_qm_forces(i,0).x;
-    qm_forces[i + 1 * fortran_vars.atoms] = 0;//cpu_qm_forces(i,0).y;
-    qm_forces[i + 2 * fortran_vars.atoms] = 0;//cpu_qm_forces(i,0).z;
-    for (j = 0; j < gridSize.x; j++) {
+    for (j = 0; j < partial_forces_size; j++) {
       qm_forces[i + 0 * fortran_vars.atoms] += cpu_partial_qm_forces(j,i).x;
       qm_forces[i + 1 * fortran_vars.atoms] += cpu_partial_qm_forces(j,i).y;
       qm_forces[i + 2 * fortran_vars.atoms] += cpu_partial_qm_forces(j,i).z;
     }
   }
   for (i = 0; i < fortran_vars.clatoms; i++) {
-    mm_forces[i + 0 * (fortran_vars.atoms+fortran_vars.clatoms)] = 0;//cpu_mm_forces(i,0).x;
-    mm_forces[i + 1 * (fortran_vars.atoms+fortran_vars.clatoms)] = 0;//cpu_mm_forces(i,0).y;
-    mm_forces[i + 2 * (fortran_vars.atoms+fortran_vars.clatoms)] = 0;//cpu_mm_forces(i,0).z;
-    for (j = 0; j < gridSize.x; j++) {
+    for (j = 0; j < partial_forces_size; j++) {
       mm_forces[i + 0 * (fortran_vars.atoms+fortran_vars.clatoms)] += cpu_partial_mm_forces(j,i).x;
       mm_forces[i + 1 * (fortran_vars.atoms+fortran_vars.clatoms)] += cpu_partial_mm_forces(j,i).y;
       mm_forces[i + 2 * (fortran_vars.atoms+fortran_vars.clatoms)] += cpu_partial_mm_forces(j,i).z;

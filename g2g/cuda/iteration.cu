@@ -89,8 +89,9 @@ template<class scalar_type>
 void PointGroupGPU<scalar_type>::solve_closed(Timers& timers, bool compute_rmm,
         bool lda, bool compute_forces, bool compute_energy, double& energy,
          HostMatrix<double>& fort_forces_ms, int inner_threads, HostMatrix<double>& rmm_output_local){
-
-  //uint max_used_memory = 0;
+  int device;
+  cudaGetDevice(&device);
+  current_device = device;
 
   /*** Computo sobre cada cubo ****/
   CudaMatrix<scalar_type> point_weights_gpu;

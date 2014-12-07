@@ -43,6 +43,7 @@ class PointGroup {
   public:
     PointGroup(void) : number_of_points(0), s_functions(0), p_functions(0), d_functions(0), inGlobal(false) {  }
     virtual ~PointGroup(void);
+    virtual void deallocate() = 0;
     std::vector<Point> points;
     uint number_of_points;
     uint s_functions, p_functions, d_functions;
@@ -121,6 +122,7 @@ template<class scalar_type>
 class PointGroupCPU: public PointGroup<scalar_type> {
   public:
     virtual ~PointGroupCPU(void);
+    virtual void deallocate();
     virtual void compute_functions(bool, bool);
     virtual void compute_weights(void);
     void output_cost() const;
@@ -153,6 +155,7 @@ template<class scalar_type>
 class PointGroupGPU: public PointGroup<scalar_type> {
   public:
     virtual ~PointGroupGPU(void);
+    virtual void deallocate();
     virtual void compute_functions(bool, bool);
     virtual void compute_weights(void);
     bool is_big_group(int) const;
@@ -176,7 +179,7 @@ class PointGroupGPU: public PointGroup<scalar_type> {
     G2G::CudaMatrix<scalar_type> function_values;
     G2G::CudaMatrix<vec_type4> gradient_values;
     G2G::CudaMatrix<vec_type4> hessian_values_transposed;
-
+    int current_device;
 };
 
 

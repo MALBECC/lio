@@ -19,6 +19,12 @@ int GlobalMemoryPool::tryAlloc(size_t size)
     return 0;
 }
 
+void GlobalMemoryPool::dealloc(size_t size, int device) {
+   if(!_init) init();
+    assert (_freeGlobalMemory[device] > size);
+    _freeGlobalMemory[device] += size;
+}
+
 void GlobalMemoryPool::dealloc(size_t size)
 {
     if(!_init) init();

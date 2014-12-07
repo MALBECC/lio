@@ -438,9 +438,6 @@ void Partition::regenerate(void)
     int gpu_threads = 0;
 #if GPU_KERNELS
     cudaGetDeviceCount(&gpu_threads);
-#ifndef _OPENMP
-    gpu_threads = 1;
-#endif
 #endif
 
     timeforgroup.resize(cubes.size() + spheres.size());
@@ -467,7 +464,7 @@ void Partition::regenerate(void)
     for(int i = 0; i < spheres.size(); i++)
       if(spheres[i].is_big_group(inner_threads)) {
         work[outer_threads+current_gpu].push_back(i+cubes.size());
-        current_gpu = (current_gpu + 1) % gpu_threads;
+        //current_gpu = (current_gpu + 1) % gpu_threads;
       }
 
     diagnostic(inner_threads, outer_threads);

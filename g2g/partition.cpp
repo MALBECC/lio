@@ -270,6 +270,11 @@ PointGroup<scalar_type>::~PointGroup<scalar_type>() { }
 
 template<class scalar_type>
 PointGroupCPU<scalar_type>::~PointGroupCPU<scalar_type>() {
+  deallocate();
+}
+
+template<class scalar_type>
+void PointGroupCPU<scalar_type>::deallocate() {
   function_values.deallocate();
   gX.deallocate(); gY.deallocate(); gZ.deallocate();
   hPX.deallocate(); hPY.deallocate(); hPZ.deallocate();
@@ -278,14 +283,19 @@ PointGroupCPU<scalar_type>::~PointGroupCPU<scalar_type>() {
 }
 
 template<class scalar_type>
-PointGroupGPU<scalar_type>::~PointGroupGPU<scalar_type>()
-{
+void PointGroupGPU<scalar_type>::deallocate() {
   if(this->inGlobal) {
-    GlobalMemoryPool::dealloc(this->size_in_gpu());
+    GlobalMemoryPool::dealloc(this->size_in_gpu(), current_device);
     function_values.deallocate();
     gradient_values.deallocate();
     hessian_values_transposed.deallocate();
+    this->inGlobal = false;
   }
+}
+
+template<class scalar_type>
+PointGroupGPU<scalar_type>::~PointGroupGPU<scalar_type>() {
+  deallocate();
 }
 
 void Partition::compute_functions(bool forces, bool gga) {
@@ -314,52 +324,79 @@ void Partition::clear() {
 
 void Partition::rebalance(vector<double> & times, vector<double> & finishes)
 {
-    int gpu_threads = 0;
+  std::cout << "flen: " << finishes.size() << std::endl;
+  int gpu_threads = 0;
 #if GPU_KERNELS
-    cudaGetDeviceCount(&gpu_threads);
-#ifndef _OPENMP
-    gpu_threads = 1;
+  assert(cudaGetDeviceCount(&gpu_threads) == cudaSuccess);
 #endif
-#endif
-
-  for(int rondas = 0; rondas < 5; rondas++){
-    int largest = std::max_element(finishes.begin(),finishes.end()-gpu_threads) - finishes.begin();
-    int smallest = std::min_element(finishes.begin(),finishes.end()-gpu_threads) - finishes.begin();
-
-    double diff = finishes[largest] - finishes[smallest];
-
-    if(largest != smallest && work[largest].size() > 1) {
-      double lt = finishes[largest]; double moved = 0;
-      while(diff / lt >= 0.02) {
-        int mini = -1; double currentmini = diff;
-        for(int i = 0; i < work[largest].size(); i++) {
-          int ind = work[largest][i];
-          if(times[ind] > diff / 2) continue;
-          double cost = times[ind];
-          if(currentmini > diff - 2*cost) {
-            currentmini = diff - 2*cost;
-            mini = i;
+  int outer = finishes.size()-gpu_threads;
+  for(int group = 0; group < 1; group++) {
+    for(int rondas = 0; rondas < 5; rondas++){
+      int largest, smallest;
+      int max_time=-1; int min_time=1<<30;
+      if(group == 0)  {
+        for(int i = 0; i < outer; i++){
+          if (finishes[i] > max_time) {
+            largest = i; max_time = finishes[i];
+          }
+          if (finishes[i] < min_time) {
+            smallest = i; min_time = finishes[i];
+          }
+        }
+      } else {
+        if(gpu_threads<1) return;
+        for(int i = 0; i < gpu_threads; i++){
+          if (finishes[outer+i] > max_time) {
+            largest = outer+i; max_time = finishes[outer+i];
+          }
+          if (finishes[outer+i] < min_time) {
+            smallest = outer+i; min_time = finishes[outer+i];
           }
         }
 
-        if(mini == -1){
-          //printf("Nothing more to swap!\n");
-          return;
-        }
-
-        int topass = mini;
-        int workindex = work[largest][topass];
-
-        printf("Swapping %d from %d to %d\n", work[largest][topass], largest, smallest);
-
-        work[smallest].push_back(work[largest][topass]);
-        work[largest].erase(work[largest].begin() + topass);
-
-        diff -= 2*times[workindex];
-        moved += times[workindex];
       }
-      finishes[largest] -= moved;
-      finishes[smallest] += moved;
+
+      double diff = finishes[largest] - finishes[smallest];
+
+      if(largest != smallest && work[largest].size() > 1) {
+        double lt = finishes[largest]; double moved = 0;
+        while(diff / lt >= 0.02) {
+          int mini = -1; double currentmini = diff;
+          for(int i = 0; i < work[largest].size(); i++) {
+            int ind = work[largest][i];
+            if(times[ind] > diff / 2) continue;
+            double cost = times[ind];
+            if(currentmini > diff - 2*cost) {
+              currentmini = diff - 2*cost;
+              mini = i;
+            }
+          }
+
+          if(mini == -1){
+            //printf("Nothing more to swap!\n");
+            break;
+          }
+
+          int topass = mini;
+          int workindex = work[largest][topass];
+          if(group==1) {
+            if(workindex < cubes.size())
+              cubes[workindex].deallocate();
+            else
+              spheres[workindex-cubes.size()].deallocate();
+          }
+
+          printf("Swapping %d from %d to %d\n", work[largest][topass], largest, smallest);
+
+          work[smallest].push_back(work[largest][topass]);
+          work[largest].erase(work[largest].begin() + topass);
+
+          diff -= 2*times[workindex];
+          moved += times[workindex];
+        }
+        finishes[largest] -= moved;
+        finishes[smallest] += moved;
+      }
     }
   }
 }
@@ -384,25 +421,32 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
 
   #pragma omp parallel for num_threads(outer_threads+gpu_threads) schedule(static)
   for(int i = 0; i< work.size(); i++) {
-#if GPU_KERNELS
     bool gpu_thread = false;
+#if GPU_KERNELS
     if(i>=outer_threads) {
       gpu_thread = true;
       cudaSetDevice(i-outer_threads);
-      printf("PLACA %d \n", i-outer_threads);
     }
 #endif
     double local_energy = 0;
 
     Timers ts; Timer t;
-    t.start();
+    if(gpu_thread)
+      t.start_and_sync();
+    else
+      t.start();
 
     if(compute_forces) fort_forces_ms[i].zero();
     if(compute_rmm) rmm_outputs[i].zero();
 
     for(int j = 0; j < work[i].size(); j++) {
       int ind = work[i][j];
-      Timer element; element.start();
+      Timer element;
+      if(gpu_thread)
+        element.start_and_sync();
+      else
+        element.start();
+
       if(ind >= cubes.size()){
         spheres[ind-cubes.size()].solve(ts, compute_rmm,lda,compute_forces, compute_energy,
             local_energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1, spheres_energy_c2,
@@ -412,15 +456,22 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
             local_energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, cubes_energy_c2,
             fort_forces_ms[i], 1, rmm_outputs[i], OPEN);
       }
-      element.stop();
 #if GPU_KERNEL
       if(gpu_thread) {
         cudaDeviceSynchronize();
       }
 #endif
+
+      if(gpu_thread)
+        element.stop_and_sync();
+      else
+        element.stop();
       timeforgroup[ind] = element.getTotal();
     }
-    t.stop();
+    if(gpu_thread)
+      t.stop_and_sync();
+    else
+      t.stop();
     printf("Workload %d: (%d) ", i, (int) work[i].size());
     cout << t; cout << ts;
 

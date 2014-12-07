@@ -211,8 +211,10 @@ __global__ void gpu_qmmm_forces( uint num_terms, scalar_type* a_values1, scalar_
         else if (tid < 64) { warpReduce<scalar_type>(C_force[1], tid-32); }
         // third warp does z
         else if (tid < 96) { warpReduce<scalar_type>(C_force[2], tid-64); }
+
         {
           uint global_stride = COALESCED_DIMENSION(gridDim.x);
+          // TODO: tried turning this into one global read to get the force vector object, but didn't seem to improve performance, maybe there's a better way?
           if (tid == 0)       { mm_forces[global_stride*(i+j)+blockIdx.x].x = C_force[0][0]; }
           else if (tid == 32) { mm_forces[global_stride*(i+j)+blockIdx.x].y = C_force[1][0]; }
           else if (tid == 64) { mm_forces[global_stride*(i+j)+blockIdx.x].z = C_force[2][0]; }
@@ -231,11 +233,12 @@ __global__ void gpu_qmmm_forces( uint num_terms, scalar_type* a_values1, scalar_
     __shared__ scalar_type QM_force[3][QMMM_FORCES_BLOCK_SIZE];
 
     // First figure out which nuclei are present in this block
-    for (int i = 0; i < gpu_atoms; i++) nuc_flags[i] = false;
-    __syncthreads();
-    for (int i = 0; i < gpu_atoms; i++) {
-      if (nuc1 == i || nuc2 == i) nuc_flags[i] = true;
+    for (int i = 0; i < gpu_atoms; i += QMMM_FORCES_BLOCK_SIZE) {
+      if (i+tid<gpu_atoms) nuc_flags[i+tid] = false;
     }
+    __syncthreads();
+    nuc_flags[nuc1] = true;
+    nuc_flags[nuc2] = true;
     __syncthreads();
     for (int i = 0; i < gpu_atoms; i++)
     {

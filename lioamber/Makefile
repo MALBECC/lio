@@ -33,7 +33,7 @@ LIBS = $(MODS_PATH) $(LIBS_PATH) $(PROFILE) $(LIBS_LIBS) $(LIBS_MOAR)
 # OLD PARTS
 #--------------------------------------------------------------------#
 # sources and objects
-MOD_SRCS=$(wildcard mods/*.f)
+MOD_SRCS=$(wildcard liomods/*.f)
 # COMMON_SRCS=$(wildcard *.f)
 GARCHA_SRCS=$(wildcard *.f)
 
@@ -124,7 +124,7 @@ all: dirs liblio-g2g.so
 
 
 dirs:
-	mkdir -p obj/mods obj
+	mkdir -p obj/liomods obj
 
 liblio-g2g.so: dirs $(GARCHA_OBJ:%.o=obj/%.o)
 	ifort -shared -fPIC -o $@ $(GARCHA_OBJ:%.o=obj/%.o) $(LIBS)

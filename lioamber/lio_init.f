@@ -9,7 +9,6 @@
        use garcha_mod
        implicit none
        call g2g_timer_start('lio_init')
-       write(6,'(A)') ''
 !
 !
 ! VARIABLE INITIALIZATION

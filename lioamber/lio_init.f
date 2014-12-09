@@ -2,20 +2,10 @@
        subroutine lio_init()
 !--------------------------------------------------------------------!
 !
-! (*) Allocation of globar variables.
-! (*) Open files to write.
-!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       use garcha_mod
        implicit none
        call g2g_timer_start('lio_init')
 !
-!
-! VARIABLE INITIALIZATION
-!----------------------------------------------------------!
-       write(6,'(A)') ' (*) Initializing lio variables...'
-       if (.not.allocated(Smat))    allocate(Smat(M,M))
-       if (.not.allocated(RealRho)) allocate(RealRho(M,M))
 !
 !
 !

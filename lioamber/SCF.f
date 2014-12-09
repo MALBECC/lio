@@ -767,7 +767,7 @@ c LAPACK OPTION -----------------------------------------
 #ifdef pack
 #ifdef magma
 c-------nano tratando de usar magma
-      if(.not.allocated) allocate (fock(M,M))
+      if(.not.allocated(fock)) allocate (fock(M,M))
       fock=0
       do j=1,M
         do k=1,j

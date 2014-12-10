@@ -10,7 +10,7 @@ REQUIREMENTS
 ------------
 
 * Intel MKL (Math Kernel Library).
-* Intel C++ and Fortran Compiler (can be obtained a non-commercial license).
+* Intel C++ and Fortran Compiler (can be obtained with a non-commercial license).
 * NVIDIA CUDA (for compiling GPU version).
 * GNU Make.
 * Python 2.7 (for test scripts)

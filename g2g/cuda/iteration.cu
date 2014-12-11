@@ -960,7 +960,7 @@ void PointGroup<scalar_type>::compute_weights(void)
 template class PointGroup<double>;
 template class PointGroup<float>;
 
-#define NUM_TERM_TYPES 3
+#define NUM_TERM_TYPES 4
 #define MAX_TERM_TYPE 6
 
 template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_forces)
@@ -1098,7 +1098,7 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
     }
   }
 
-  std::cout << "Number of significant Gaussian pairs: " << num_terms << std::endl;
+  std::cout << "Number of threads: " << num_terms << std::endl;
   std::cout << "Total Gaussian pairs: " << total_num_terms << std::endl;
   std::cout << "Number of significant density elements: " << num_dens_terms << std::endl;
   std::cout << "Total density elements: " << total_dens_terms << std::endl;

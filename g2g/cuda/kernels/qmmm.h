@@ -94,7 +94,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
 
   uint ffnum = index_x(blockDim, blockIdx, threadIdx);
   int tid = threadIdx.x;
-  bool valid_thread = (ffnum < num_terms);// && term_type == 2;
+  bool valid_thread = (ffnum < num_terms);
 
   // Each thread maps to a single pair of QM nuclei, so these forces are computed locally and accumulated at the end
   scalar_type A_force[3] = { 0.0f,0.0f,0.0f }, B_force[3] = { 0.0f,0.0f,0.0f };
@@ -252,6 +252,21 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
             case 2:
             {
               #include "qmmm_terms/pp.h"
+              break;
+            }
+            case 3:
+            {
+              #include "qmmm_terms/ds.h"
+              break;
+            }
+            case 4:
+            {
+              #include "qmmm_terms/dp.h"
+              break;
+            }
+            case 5:
+            {
+              #include "qmmm_terms/dd.h"
               break;
             }
           }

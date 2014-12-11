@@ -4,41 +4,47 @@
 template<class scalar_type>
 __device__ scalar_type lio_gamma(uint m, scalar_type U)
 {
-  scalar_type funct1,funct2;
+  scalar_type funct;//,funct2;
   int it;
   scalar_type ti,delt,delt2,delt3,delt4,delt5;
 
-  int s = (U<=43.975);
+  //int s = (U<=43.975);
   // Calculate small-U branch value of F(m,U)
-  //if (U <= 43.975) {
-  it = 20.0 * (U + 0.025);
-  it = s * it;
-  ti = it;
-  delt = U - 0.05 * ti;
-  delt3 = delt * 0.333333333333333;
-  delt4 = 0.25 * delt;
-  delt2 = delt4 + delt4;
-  delt5 = 0.20 * delt;
+  // TODO: need to rethink how this branch (Taylor series expansion) is calculated
+  // There's 6 reads to gpu_str, and currently U is not ordered wrt thread order, so the access pattern is terrible
+  // Ideas: -reorder threads wrt U
+  //        -place gpu_str in texture memory
+  if (U <= 43.975)
+  {
+    it = 20.0 * (U + 0.025);
+    //it = s * it;
+    ti = it;
+    delt = U - 0.05 * ti;
+    delt3 = delt * 0.333333333333333;
+    delt4 = 0.25 * delt;
+    delt2 = delt4 + delt4;
+    delt5 = 0.20 * delt;
 
-  scalar_type tf0,tf1,tf2,tf3,tf4,tf5;
-  tf0 = gpu_str[it+m*880];
-  tf1 = gpu_str[it+(m+1)*880];
-  tf2 = gpu_str[it+(m+2)*880];
-  tf3 = gpu_str[it+(m+3)*880];
-  tf4 = gpu_str[it+(m+4)*880];
-  tf5 = gpu_str[it+(m+5)*880];
+    scalar_type tf0,tf1,tf2,tf3,tf4,tf5;
+    tf0 = gpu_str[it+m*880];
+    tf1 = gpu_str[it+(m+1)*880];
+    tf2 = gpu_str[it+(m+2)*880];
+    tf3 = gpu_str[it+(m+3)*880];
+    tf4 = gpu_str[it+(m+4)*880];
+    tf5 = gpu_str[it+(m+5)*880];
 
-  funct1 = tf0-delt * (tf1-delt2 * (tf2-delt3 * (tf3-delt4 * (tf4-delt5 * tf5))));
-  //} else {
-
+    funct = tf0-delt * (tf1-delt2 * (tf2-delt3 * (tf3-delt4 * (tf4-delt5 * tf5))));
+  }
   // Calculate large-U branch value of F(m,U)
-  funct2 = gpu_fac[m]/(powf(U,m)*sqrtf(U));
-  //}
+  else
+  {
+    funct = gpu_fac[m]/(powf(U,m)*sqrtf(U));
+  }
 
   // Return the appropriate branch while avoiding warp divergence
   // TODO: need to verify calculating both branches is better for performance; it works better on small systems but need to test on big test cases
-  return s*funct1+(1-s)*funct2;
-  //return funct1;
+  //return s*funct1+(1-s)*funct2;
+  return funct;
 }
 
 /*template<class scalar_type>
@@ -77,20 +83,23 @@ __device__ void warpReduce(volatile scalar_type *sdata, unsigned int tid)
   sdata[tid] += sdata[tid + 1];
 }
 
+__device__ __constant__ uint TERM_TYPE_GAUSSIANS[6] = { 1, 3, 9, 6, 18, 36 };
+
 // TODO: currently, one thread maps to one primitive-primitive overlap force term; is there a better mapping? (thread to function, thread to sub-shell, etc)
 // Also, should the loop over MM atoms be broken up to be done by multiple blocks rather than a block looping over every MM atom?
 template<class scalar_type, uint term_type>
-__global__ void gpu_qmmm_forces( uint num_terms, scalar_type* a_values1, scalar_type* a_values2, scalar_type* cc_values, scalar_type* dens_values, uint* orbital1, uint* orbital2, //uint* func1, uint* func2,
-                                 uint* nuclei1, uint* nuclei2, vec_type<scalar_type,3>* mm_forces, vec_type<scalar_type,3>* qm_forces, uint global_stride )//, uint s_func_end, uint p_func_end )
+__global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_values, uint* func2nuc,/*scalar_type* a_values1, scalar_type* a_values2, scalar_type* cc_values,*/ scalar_type* dens_values, uint* func_code, uint* local_dens,//uint* orbital1, uint* orbital2, //uint* func1, uint* func2,
+                                 /*uint* nuclei1, uint* nuclei2,*/ vec_type<scalar_type,3>* mm_forces, vec_type<scalar_type,3>* qm_forces, uint global_stride )//, uint s_func_end, uint p_func_end )
 {
 
   uint ffnum = index_x(blockDim, blockIdx, threadIdx);
   int tid = threadIdx.x;
-  bool valid_thread = (ffnum < num_terms);
+  bool valid_thread = (ffnum < num_terms);// && term_type == 2;
 
   // Each thread maps to a single pair of QM nuclei, so these forces are computed locally and accumulated at the end
-  scalar_type A_force[3], B_force[3];
+  scalar_type A_force[3] = { 0.0f,0.0f,0.0f }, B_force[3] = { 0.0f,0.0f,0.0f };
   uint nuc1, nuc2;
+  //const uint num_gauss = TERM_TYPE_GAUSSIANS[term_type];
   scalar_type prefactor_qm;
 
   {
@@ -99,20 +108,83 @@ __global__ void gpu_qmmm_forces( uint num_terms, scalar_type* a_values1, scalar_
     // Shared memory space for reduction of MM atom force terms
     __shared__ scalar_type C_force[3][QMMM_FORCES_BLOCK_SIZE];
 
-    scalar_type zeta;
-    scalar_type ai, aj, prefactor_mm, inv_two_zeta;
+    scalar_type ai, aj, zeta, prefactor_mm, inv_two_zeta;
+    scalar_type dens[term_type==0? 1 : (term_type==1? 3 : (term_type==2? 9 : (term_type==3? 6 : (term_type==4? 18 : 36))))];
     scalar_type P[3], PmA[3], PmB[3];
-    uint orb1, orb2;
+    bool same_func = false;
+    //uint orb1 = 0, orb2 = 0;
     //int max_m = 1;
     // TODO: each thread calculates its own zeta, overlap, etc here; should these be precalculated and saved (for use here and in Coulomb calculation)?
     {
-      scalar_type ovlap, cc, dens;
-      ai = a_values1[ffnum]; aj = a_values2[ffnum];
-      cc = cc_values[ffnum];
-      dens = dens_values[ffnum];
+      scalar_type cc;
+      {
+        uint my_func_code = func_code[ffnum];
+
+        uint div = MAX_CONTRACTIONS;
+        uint cont2 = my_func_code % div;
+        my_func_code /= div;
+        uint cont1 = my_func_code % div;
+        my_func_code /= div;
+
+        div = gpu_m;
+        uint f2 = my_func_code % div;
+        my_func_code /= div;
+        uint f1 = my_func_code;// % div;
+        //my_func_code /= div;
+        same_func = f1 == f2;
+
+        uint dens_ind = local_dens[ffnum];
+        if (term_type == 2 && same_func) {
+          dens[0] = dens_values[dens_ind+0]; dens[1] = dens_values[dens_ind+1]; dens[2] = dens_values[dens_ind+3];
+          dens[3] = dens_values[dens_ind+1]; dens[4] = dens_values[dens_ind+2]; dens[5] = dens_values[dens_ind+4];
+          dens[6] = dens_values[dens_ind+3]; dens[7] = dens_values[dens_ind+4]; dens[8] = dens_values[dens_ind+5];
+        } else if (term_type == 5 && same_func) {
+          for (uint i = 0; i < (same_func? 21 : TERM_TYPE_GAUSSIANS[term_type]); i++) {
+            dens[i] = dens_values[dens_ind+i];
+          }
+        } else {
+          for (uint i = 0; i < TERM_TYPE_GAUSSIANS[term_type]; i++) {
+            dens[i] = dens_values[dens_ind+i];
+          }
+        }
+
+        // find1, find2 needed if nuc / function value arrays contracted to total # of functions rather than m (p/d expanded out)
+        // The extra math here seems to slow down the kernel more than the memory savings, but behavior could be different in bigger systems
+        //uint find1 = f1, find2 = f2;
+        /*if (term_type == 1 || term_type == 2) {
+          orb1  = (f1 - gpu_s_funcs) % 3;
+          //find1 = (f1 - gpu_s_funcs) / 3 + gpu_s_funcs;
+        } else if (term_type >= 3) {
+          orb1  = (f1 - (gpu_s_funcs+gpu_p_funcs*3)) % 6;
+          //find1 = (f1 - (gpu_s_funcs+gpu_p_funcs*3)) / 6 + gpu_s_funcs+gpu_p_funcs*3;
+        }
+        if (term_type == 2 || term_type == 4) {
+          orb2  = (f2 - gpu_s_funcs) % 3;
+          //find2 = (f2 - gpu_s_funcs) / 3 + gpu_s_funcs;
+        } else if (term_type == 5) {
+          orb2  = (f2 - (gpu_s_funcs+gpu_p_funcs*3)) % 6;
+          //find2 = (f2 - (gpu_s_funcs+gpu_p_funcs*3)) / 6 + gpu_s_funcs+gpu_p_funcs*3;
+        }*/
+
+        //printf("%d %d %d\n",f1,find1,term_type);
+        vec_type<scalar_type,2> ac1 = ac_values[f1 + cont1 * COALESCED_DIMENSION(gpu_m)];//total_funcs)];
+        vec_type<scalar_type,2> ac2 = ac_values[f2 + cont2 * COALESCED_DIMENSION(gpu_m)];//total_funcs)];
+        ai = ac1.x;
+        aj = ac2.x;
+        //printf("%d: %d %d %d %d %.4f %.4f (%d)\n",term_type,f1,cont1,f2,cont2,ai,aj,valid_thread);
+        cc = ac1.y * ac2.y;
+
+        nuc1 = func2nuc[f1];
+        nuc2 = func2nuc[f2];
+      }
+
+      scalar_type ovlap;
+      //ai = a_values1[ffnum]; aj = a_values2[ffnum];
+      //cc = cc_values[ffnum];
+      //dens = dens_values[ffnum];
   
       vec_type<scalar_type,3> A, B;
-      nuc1 = nuclei1[ffnum]; nuc2 = nuclei2[ffnum];
+      //nuc1 = nuclei1[ffnum]; nuc2 = nuclei2[ffnum];
       A = gpu_atom_positions[nuc1];
       B = gpu_atom_positions[nuc2];
   
@@ -137,20 +209,12 @@ __global__ void gpu_qmmm_forces( uint num_terms, scalar_type* a_values1, scalar_
       scalar_type ksi = ai*aj/zeta;
       ovlap = exp(-ds2*ksi);
 
-      prefactor_mm = -dens * cc * 4.0f * PI * ovlap;
+      if (term_type == 0) {
+        prefactor_mm = -dens[0] * cc * 4.0f * PI * ovlap;
+      } else {
+        prefactor_mm = -cc * 4.0f * PI * ovlap;
+      }
       prefactor_qm = prefactor_mm * inv_two_zeta;
-
-      orb1 = orbital1[ffnum]; orb2 = orbital2[ffnum];    
-      //uint f1 = func1[ffnum], f2 = func2[ffnum];
-      //if (f1 < s_func_end)      { offset1 = 0; }
-      //else if (f1 < p_func_end) { offset1 = (f1 - s_func_end) % 3; }
-      //else                      { offset1 = (f1 - p_func_end) % 6; }
-
-      //if (f2 < s_func_end)      { offset2 = 0; }
-      //else if (f2 < p_func_end) { offset2 = (f2 - s_func_end) % 3; }
-      //else                      { offset2 = (f2 - p_func_end) % 6; }
-      //max_m += (f1 >= s_func_end) + (f1 >= p_func_end);
-      //max_m += (f2 >= s_func_end) + (f2 >= p_func_end);
     }
 
     // Outer loop: read in block of MM atom information into shared memory
@@ -185,6 +249,11 @@ __global__ void gpu_qmmm_forces( uint num_terms, scalar_type* a_values1, scalar_
               #include "qmmm_terms/ps.h"
               break;
             }
+            case 2:
+            {
+              #include "qmmm_terms/pp.h"
+              break;
+            }
           }
           // END TERM-TYPE DEPENDENT PART
         }
@@ -214,13 +283,11 @@ __global__ void gpu_qmmm_forces( uint num_terms, scalar_type* a_values1, scalar_
         // third warp does z
         else if (tid < 96) { warpReduce<scalar_type>(C_force[2], tid-64); }
 
-        {
-          //uint global_stride = COALESCED_DIMENSION(gridDim.x);
-          // TODO: tried turning this into one global read to get the force vector object, but didn't seem to improve performance, maybe there's a better way?
-          if (tid == 0)       { mm_forces[global_stride*(i+j)+blockIdx.x].x = C_force[0][0]; }
-          else if (tid == 32) { mm_forces[global_stride*(i+j)+blockIdx.x].y = C_force[1][0]; }
-          else if (tid == 64) { mm_forces[global_stride*(i+j)+blockIdx.x].z = C_force[2][0]; }
-        }
+        //uint global_stride = COALESCED_DIMENSION(gridDim.x);
+        // TODO: tried turning this into one global read to get the force vector object, but didn't seem to improve performance, maybe there's a better way?
+        if (tid == 0)       { mm_forces[global_stride*(i+j)+blockIdx.x].x = C_force[0][0]; }
+        else if (tid == 32) { mm_forces[global_stride*(i+j)+blockIdx.x].y = C_force[1][0]; }
+        else if (tid == 64) { mm_forces[global_stride*(i+j)+blockIdx.x].z = C_force[2][0]; }
         // END reduction
 
         __syncthreads();
@@ -248,7 +315,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, scalar_type* a_values1, scalar_
       if (nuc_flags[i] == true)
       {
         // Load the individual thread's force terms into the appropriate shared location
-        bool useA = nuc1 == i, useB = nuc2 == i;
+        bool useA = nuc1 == i, useB = nuc2 == i; 
         QM_force[0][tid] = valid_thread * prefactor_qm * (useA * A_force[0] + useB * B_force[0]);
         QM_force[1][tid] = valid_thread * prefactor_qm * (useA * A_force[1] + useB * B_force[1]);
         QM_force[2][tid] = valid_thread * prefactor_qm * (useA * A_force[2] + useB * B_force[2]);
@@ -274,12 +341,10 @@ __global__ void gpu_qmmm_forces( uint num_terms, scalar_type* a_values1, scalar_
         // third warp does z
         else if (tid < 96) { warpReduce<scalar_type>(QM_force[2], tid-64); }
 
-        {
-          //uint global_stride = COALESCED_DIMENSION(gridDim.x);
-          if (tid == 0)       { qm_forces[global_stride*i+blockIdx.x].x = QM_force[0][0]; }
-          else if (tid == 32) { qm_forces[global_stride*i+blockIdx.x].y = QM_force[1][0]; }
-          else if (tid == 64) { qm_forces[global_stride*i+blockIdx.x].z = QM_force[2][0]; }
-        }
+        //uint global_stride = COALESCED_DIMENSION(gridDim.x);
+        if (tid == 0)       { qm_forces[global_stride*i+blockIdx.x].x = QM_force[0][0]; }
+        else if (tid == 32) { qm_forces[global_stride*i+blockIdx.x].y = QM_force[1][0]; }
+        else if (tid == 64) { qm_forces[global_stride*i+blockIdx.x].z = QM_force[2][0]; }
         __syncthreads();
       }
       // At this point, the global QM array is uninitialized; since we'll accumulate all entries, it needs to be zeroed

@@ -14,7 +14,7 @@
         // BEGIN calculation of individual (single primitive-primitive overlap) force terms
         {
           scalar_type A_force_term, B_force_term, C_force_term;
-          scalar_type mm_charge = clatom_charge_sh[j];
+          scalar_type mm_charge = clatom_charge_sh[j];// * dens[0];
   
           for (int grad_l = 0; grad_l < 3; grad_l++)
           {

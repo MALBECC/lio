@@ -47,6 +47,7 @@ void gpu_set_variables(void) {
   cudaMemcpyToSymbol(gpu_normalization_factor, &fortran_vars.normalization_factor, sizeof(fortran_vars.normalization_factor), 0, cudaMemcpyHostToDevice);
   cudaMemcpyToSymbol(gpu_atoms, &fortran_vars.atoms, sizeof(fortran_vars.atoms), 0, cudaMemcpyHostToDevice);
   cudaMemcpyToSymbol(gpu_Iexch, &fortran_vars.iexch, sizeof(fortran_vars.iexch), 0, cudaMemcpyHostToDevice);
+  cudaMemcpyToSymbol(gpu_m, &fortran_vars.m, sizeof(fortran_vars.m), 0, cudaMemcpyHostToDevice);
   cudaAssertNoError("set_gpu_variables");
 }
 
@@ -959,7 +960,8 @@ void PointGroup<scalar_type>::compute_weights(void)
 template class PointGroup<double>;
 template class PointGroup<float>;
 
-#define NUM_TERM_TYPES 2
+#define NUM_TERM_TYPES 3
+#define MAX_TERM_TYPE 6
 
 template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_forces)
 {
@@ -970,147 +972,180 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
   double ai,aj;
   double dsq,ksi,zeta;
   uint num_terms=0, total_num_terms = 0;
-  std::vector<uint> orbital1, orbital2;//local2func1,local2func2,local2cont1,local2cont2;
-  std::vector<scalar_type> a_values1,a_values2;
-  std::vector<scalar_type> cc_values;
+  std::vector<uint> func_code, local_dens;
+  //std::vector<scalar_type> a_values1,a_values2;
+  //std::vector<scalar_type> cc_values;
   std::vector<scalar_type> dens_values;
-  std::vector<uint> nuclei1, nuclei2;
+  //std::vector<uint> nuclei1, nuclei2;
 
   uint term_type_counts[NUM_TERM_TYPES];
-  for (i = 0; i < NUM_TERM_TYPES; i++) term_type_counts[i] = 0;
-  uint current_term_type = 0;
+  uint term_type_offsets[NUM_TERM_TYPES];
+  term_type_offsets[0] = 0;
+  uint i_begin, i_end, j_begin, j_end;
+  uint tmp_ind = 0;
+  uint s_start = 0, p_start = fortran_vars.s_funcs, d_start = fortran_vars.s_funcs + fortran_vars.p_funcs*3, m = fortran_vars.m;
 
-  // function i, center A
-  i = 0;
-  while (i < fortran_vars.s_funcs+fortran_vars.p_funcs*3) {//m) {
-    nuc_i = fortran_vars.nucleii(i) - 1;
-    A = fortran_vars.atom_positions(nuc_i);
-    if (i < fortran_vars.s_funcs) {
-      i_orbitals = 1;
-      current_term_type = 0;
-    } else if (i < fortran_vars.s_funcs + fortran_vars.p_funcs*3) {
-      i_orbitals = 3;
-      current_term_type = 1;
-    } else {
-      i_orbitals = 6;
-      current_term_type = 3;
-    }
-    // Pad the input arrays with dummy values so the offset for the next term type is aligned
-    if (i == fortran_vars.s_funcs) {
-      for (j = num_terms; j < COALESCED_DIMENSION(num_terms); j++) {
-        a_values1.push_back(a_values1[0]); a_values2.push_back(a_values2[0]);
-        cc_values.push_back(cc_values[0]);
-        nuclei1.push_back(nuclei1[0]); nuclei2.push_back(nuclei2[0]);
-        orbital1.push_back(orbital1[0]); orbital2.push_back(orbital2[0]);
-        dens_values.push_back(dens_values[0]);
-      }
-    }
-    // function j, center B
-    j = 0;
-    while (j <= ((i>=fortran_vars.s_funcs)? fortran_vars.s_funcs-1 : i)) {//= i) {
-      nuc_j = fortran_vars.nucleii(j) - 1;
-      B = fortran_vars.atom_positions(nuc_j);
-      if (j < fortran_vars.s_funcs) {
-        j_orbitals = 1;
-      } else if (j < fortran_vars.s_funcs + fortran_vars.p_funcs*3) {
-        j_orbitals = 3;
-      } else {
-        j_orbitals = 6;
-      }
-      if (j == fortran_vars.s_funcs || j == fortran_vars.s_funcs + fortran_vars.p_funcs*3) { current_term_type++; }
-      AmB = A - B;
-      dsq = length2(AmB);
+  //                                       s-s        p-s        p-p        d-s        d-p        d-d
+  uint i_begin_vals[MAX_TERM_TYPE]   = { s_start,   p_start,   p_start,   d_start,   d_start,   d_start};
+  uint i_end_vals[MAX_TERM_TYPE]     = { p_start,   d_start,   d_start,   m,         m,         m      };
+  uint j_begin_vals[MAX_TERM_TYPE]   = { s_start,   s_start,   p_start,   s_start,   p_start,   d_start};
+  uint j_end_vals[MAX_TERM_TYPE]     = { p_start-1, p_start-1, d_start-1, p_start-1, d_start-1, m-1    };
+  uint i_orbital_vals[MAX_TERM_TYPE] = { 1,         3,         3,         6,         6,         6      };
+  uint j_orbital_vals[MAX_TERM_TYPE] = { 1,         1,         3,         1,         3,         6      };
 
-      for (ni = 0; ni < fortran_vars.contractions(i); ni++) {
-        for (nj = 0; nj < fortran_vars.contractions(j); nj++) {
-          ai = fortran_vars.a_values(i,ni);
-          aj = fortran_vars.a_values(j,nj);
-          zeta = ai + aj;
-          ksi = ai * aj / zeta;
-          total_num_terms += (i==j)? i_orbitals*(i_orbitals+1)/2 : i_orbitals * j_orbitals;
-          // TODO: right now, we're saving function values / nuclei # / density element for each thread; is there a better way to provide these values
-          // to the kernel? Might be able to just send all function values/density matrix to the device and give each thread an index into the global arrays
-          // Memory access patterns whon't be great, but they only get read in once
-          if (dsq*ksi < fortran_vars.rmax) {
-            for (uint i_orbital = 0; i_orbital < i_orbitals; i_orbital++) {
-              uint j_orbital_finish = (i==j)? i_orbital+1 : j_orbitals;
-              for (uint j_orbital = 0; j_orbital < j_orbital_finish; j_orbital++) {
-                num_terms++;
-                term_type_counts[current_term_type]++;
+  uint local_dens_ind, num_dens_terms = 0, total_dens_terms = 0;
+  uint dens_counts[NUM_TERM_TYPES], dens_offsets[NUM_TERM_TYPES];
+  dens_offsets[0] = 0;
+  uint tmp_dens_ind = 0;
+  //uint local_orbitals;
 
-                a_values1.push_back(ai); a_values2.push_back(aj);
-                cc_values.push_back(fortran_vars.c_values(i,ni)*fortran_vars.c_values(j,nj));
-                nuclei1.push_back(nuc_i); nuclei2.push_back(nuc_j);
+  for (uint current_term_type = 0; current_term_type < NUM_TERM_TYPES; current_term_type++) {
 
-                orbital1.push_back(i_orbital); orbital2.push_back(j_orbital);
+    term_type_counts[current_term_type] = 0;
+    i_begin = i_begin_vals[current_term_type]; i_end = i_end_vals[current_term_type];
+    j_begin = j_begin_vals[current_term_type]; j_end = j_end_vals[current_term_type];
+    i_orbitals = i_orbital_vals[current_term_type];
+    j_orbitals = j_orbital_vals[current_term_type];
 
-                uint dens_ind = (i+i_orbital) + (2*fortran_vars.m-((j+j_orbital)+1))*(j+j_orbital)/2;
-                dens_values.push_back(fortran_vars.rmm_input_ndens1.data[dens_ind]);
-              }
+    dens_counts[current_term_type] = 0;
+    local_dens_ind = 0;
+
+    // function i, center A
+    for (i = i_begin; i < i_end; i += i_orbitals) {
+      nuc_i = fortran_vars.nucleii(i) - 1;
+      A = fortran_vars.atom_positions(nuc_i);
+      // function j, center B
+      for (j = j_begin; j <= ((i > j_end)? j_end : i); j += j_orbitals) {
+        nuc_j = fortran_vars.nucleii(j) - 1;
+        B = fortran_vars.atom_positions(nuc_j);
+        AmB = A - B;
+        dsq = length2(AmB);
+        bool use_funcs = false;
+        for (ni = 0; ni < fortran_vars.contractions(i); ni++) {
+          for (nj = 0; nj < fortran_vars.contractions(j); nj++) {
+            ai = fortran_vars.a_values(i,ni);
+            aj = fortran_vars.a_values(j,nj);
+            zeta = ai + aj;
+            ksi = ai * aj / zeta;
+            total_num_terms += (i==j)? i_orbitals*(i_orbitals+1)/2 : i_orbitals * j_orbitals;
+            // TODO: right now, we're saving function values / nuclei # / density element for each thread; is there a better way to provide these values
+            // to the kernel? Might be able to just send all function values/density matrix to the device and give each thread an index into the global arrays
+            // Memory access patterns whon't be great, but they only get read in once
+            if (dsq*ksi < fortran_vars.rmax) {
+              use_funcs = true;
+              //local_orbitals = 0;
+              //for (uint i_orbital = 0; i_orbital < i_orbitals; i_orbital++) {
+              //  uint j_orbital_finish = (i==j)? i_orbital+1 : j_orbitals;
+              //  for (uint j_orbital = 0; j_orbital < j_orbital_finish; j_orbital++) {
+                  num_terms++;
+                  term_type_counts[current_term_type]++;
+
+                  // Encoding which two primitives this thread will calculate a force term for in one number
+                  // TODO: Might need to rethink this, depending on how big func_code can get
+                  uint this_func_code = nj;                                                                    // First, primitive # nj in the lowest part
+                  this_func_code     += ni            * MAX_CONTRACTIONS;                                      // Primitive # ni after the space for nj
+                  this_func_code     += (j/*+j_orbital*/) * MAX_CONTRACTIONS * MAX_CONTRACTIONS;                   // Function # j after space for primitives
+                  this_func_code     += (i/*+i_orbital*/) * MAX_CONTRACTIONS * MAX_CONTRACTIONS * fortran_vars.m;  // Finally, function # i in the highest part
+                  //this_func_code     += local_dens_ind* MAX_CONTRACTIONS * MAX_CONTRACTIONS * fortran_vars.m * fortran_vars.m;
+                  func_code.push_back(this_func_code);
+                  //std::cout << this_func_code << std::endl;
+                  //std::cout << i << " " << ni << " " << j << " " << nj << std::endl;
+                  local_dens.push_back(local_dens_ind);
+
+              //    local_orbitals++;
+              //    local_dens_ind++;
+
+                  //uint dens_ind = (i+i_orbital) + (2*fortran_vars.m-((j+j_orbital)+1))*(j+j_orbital)/2;
+                  //dens_values.push_back(fortran_vars.rmm_input_ndens1.data[dens_ind]);
+              //  }
+              //}
+              //local_dens_ind -= local_orbitals;
             }
-            //local2func1.push_back(i);
-            //local2func2.push_back(j);
-            //local2cont1.push_back(ni);
-            //local2cont2.push_back(nj);
+          }
+        }
+        for (uint i_orbital = 0; i_orbital < i_orbitals; i_orbital++) {
+          uint j_orbital_finish = (i==j)? i_orbital+1 : j_orbitals;
+          for (uint j_orbital = 0; j_orbital < j_orbital_finish; j_orbital++) { total_dens_terms++; }
+        }
+        if (use_funcs) {
+          for (uint i_orbital = 0; i_orbital < i_orbitals; i_orbital++) {
+            uint j_orbital_finish = (i==j)? i_orbital+1 : j_orbitals;
+            for (uint j_orbital = 0; j_orbital < j_orbital_finish; j_orbital++) {
+              num_dens_terms++;
+              dens_counts[current_term_type]++;
+
+              uint dens_ind = (i+i_orbital) + (2*fortran_vars.m-((j+j_orbital)+1))*(j+j_orbital)/2;
+              dens_values.push_back(fortran_vars.rmm_input_ndens1.data[dens_ind]);
+              local_dens_ind++;
+            }
           }
         }
       }
-      j += j_orbitals;
     }
-    i += i_orbitals;
+    if (current_term_type > 0) {
+      tmp_ind += COALESCED_DIMENSION(term_type_counts[current_term_type-1]);
+      term_type_offsets[current_term_type] = tmp_ind;
+      tmp_dens_ind += COALESCED_DIMENSION(dens_counts[current_term_type-1]);
+      dens_offsets[current_term_type] = tmp_dens_ind;
+    }
+    for (j = term_type_counts[current_term_type]; j < COALESCED_DIMENSION(term_type_counts[current_term_type]); j++) {
+      func_code.push_back(func_code[term_type_offsets[current_term_type]]);
+      local_dens.push_back(local_dens[term_type_offsets[current_term_type]]);
+      //dens_values.push_back(dens_values[term_type_offsets[current_term_type]]);
+    }
+    for (j = dens_counts[current_term_type]; j < COALESCED_DIMENSION(dens_counts[current_term_type]); j++) {
+      dens_values.push_back(dens_values[dens_offsets[current_term_type]]);
+    }
   }
+
   std::cout << "Number of significant Gaussian pairs: " << num_terms << std::endl;
   std::cout << "Total Gaussian pairs: " << total_num_terms << std::endl;
+  std::cout << "Number of significant density elements: " << num_dens_terms << std::endl;
+  std::cout << "Total density elements: " << total_dens_terms << std::endl;
 
   // Pad the input so that out-of-range threads do a dummy calculation (same as the first thread), rather than branching and idling
-  for (i = 0; i < QMMM_FORCES_BLOCK_SIZE - num_terms % QMMM_FORCES_BLOCK_SIZE; i++) {
-    a_values1.push_back(a_values1[0]);
-    a_values2.push_back(a_values2[0]);
-    cc_values.push_back(cc_values[0]);
-    dens_values.push_back(dens_values[0]);
-    nuclei1.push_back(nuclei1[0]);
-    nuclei2.push_back(nuclei2[0]);
-    orbital1.push_back(orbital1[0]);
-    orbital2.push_back(orbital2[0]);
-    //local2func1.push_back(local2func1[0]);
-    //local2func2.push_back(local2func2[0]);
-    //local2cont1.push_back(local2cont1[0]);
-    //local2cont2.push_back(local2cont2[0]);
+  for (i = 0; i < QMMM_FORCES_BLOCK_SIZE - (term_type_counts[NUM_TERM_TYPES-1] % QMMM_FORCES_BLOCK_SIZE); i++) {
+    //a_values1.push_back(a_values1[0]);
+    //a_values2.push_back(a_values2[0]);
+    //cc_values.push_back(cc_values[0]);
+    //dens_values.push_back(dens_values[0]);
+    //nuclei1.push_back(nuclei1[0]);
+    //nuclei2.push_back(nuclei2[0]);
+    func_code.push_back(func_code[term_type_offsets[NUM_TERM_TYPES-1]]);
+    local_dens.push_back(local_dens[term_type_offsets[NUM_TERM_TYPES-1]]);
+    //orbital1.push_back(orbital1[0]);
+    //orbital2.push_back(orbital2[0]);
   }
-  uint tmp_ind = 0;
-  uint term_type_offsets[NUM_TERM_TYPES];
-  term_type_offsets[0] = 0;
-  for (i = 1; i < NUM_TERM_TYPES; i++) {
-    tmp_ind += COALESCED_DIMENSION(term_type_counts[i-1]);
-    term_type_offsets[i] = tmp_ind;
+  for (i = 0; i < QMMM_FORCES_BLOCK_SIZE - (dens_offsets[NUM_TERM_TYPES-1]+dens_counts[NUM_TERM_TYPES-1]) % QMMM_FORCES_BLOCK_SIZE; i++) {
+    dens_values.push_back(dens_values[dens_offsets[NUM_TERM_TYPES-1]]);
   }
 
-  //----------------------------------------------------------------------------------------------------------------------------
-  /*HostMatrix<vec_type2> factor_ac_cpu(COALESCED_DIMENSION(fortran_vars.m), MAX_CONTRACTIONS);
-  HostMatrixUInt nuc_cpu(fortran_vars.m, 1);
+  //uint total_funcs = fortran_vars.s_funcs + fortran_vars.p_funcs + fortran_vars.d_funcs;
+  HostMatrix<vec_type<scalar_type, 2> > factor_ac_cpu(COALESCED_DIMENSION(/*total_funcs*/fortran_vars.m), MAX_CONTRACTIONS);
+  HostMatrixUInt nuc_cpu(/*total_funcs*/fortran_vars.m, 1);
+  CudaMatrix<vec_type<scalar_type, 2> > factor_ac_gpu;
+  CudaMatrixUInt nuc_gpu;
 
-  uint ii = 0;
-  for (uint func = 0; func < fortran_vars.m; func++) {
-    uint inc = small_function_type(i);
-
-    uint this_nuc = func2global_nuc(i);
-    uint this_cont = fortran_vars.contractions(func);
-
-    for (uint j = 0; j < inc; j++) {
-      nuc_cpu(ii) = this_nuc;
-      contractions_cpu(ii) = this_cont;
-      for (unsigned int k = 0; k < this_cont; k++)
-        factor_ac_cpu(ii, k) = vec_type2(fortran_vars.a_values(func, k), fortran_vars.c_values(func, k));
-      ii++;
+  // TODO: tried contracting the nuc / function value arrays to a size of total_funcs rather than m, seems to slow down the kernel
+  // Doing this requires some more indexing math in the kernel, but need to test on bigger test case
+  uint localfunc = 0, func = 0;
+  while (func < fortran_vars.m) {
+    nuc_cpu(localfunc) = fortran_vars.nucleii(func) - 1;
+    for (uint k = 0; k < fortran_vars.contractions(func); k++) {
+      factor_ac_cpu(localfunc, k) = vec_type<scalar_type, 2>(fortran_vars.a_values(func, k), fortran_vars.c_values(func, k));
     }
+    //if (func < fortran_vars.s_funcs)                               { func += 1; }
+    //else if (func < fortran_vars.s_funcs + fortran_vars.p_funcs*3) { func += 3; }
+    //else                                                           { func += 6; }
+    func++;
+    localfunc++;
   }
   factor_ac_gpu = factor_ac_cpu;
-  nuc_gpu = nuc_cpu;*/
-  //----------------------------------------------------------------------------------------------------------------------------
+  nuc_gpu = nuc_cpu;
 
   // Send forces input to device (a values, thread function #s, thread nuclei #s)
-  CudaMatrix<scalar_type> dev_a_values1(a_values1), dev_a_values2(a_values2), dev_cc_values(cc_values), dev_dens_values(dens_values);
-  CudaMatrixUInt dev_orb1(orbital1), dev_orb2(orbital2), /*dev_func1(local2func1), dev_func2(local2func2),*/ dev_nuclei1(nuclei1), dev_nuclei2(nuclei2);
+  CudaMatrix<scalar_type> /*dev_a_values1(a_values1), dev_a_values2(a_values2), dev_cc_values(cc_values),*/ dev_dens_values(dens_values);
+  CudaMatrixUInt dev_func_code(func_code), dev_local_dens(local_dens)/*dev_orb1(orbital1), dev_orb2(orbital2),*/; // dev_nuclei1(nuclei1), dev_nuclei2(nuclei2);
 
   //cudaBindTextureToArray(qmmm_F_values_tex,gammaArray);
 
@@ -1125,6 +1160,7 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
   uint partial_forces_size = 0;
   uint force_offsets[NUM_TERM_TYPES];
   force_offsets[0] = 0;
+  // Force arrays (probably) don't need to be padded for alignment as only one (well, three) threads per block write to them
   for (i = 0; i < NUM_TERM_TYPES; i++) {
     partial_forces_size += divUp(term_type_counts[i],QMMM_FORCES_BLOCK_SIZE);
     if (i+1<NUM_TERM_TYPES) { force_offsets[i+1] = partial_forces_size; }
@@ -1135,8 +1171,8 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
   //gpu_qm_forces.resize(fortran_vars.atoms,1);
 
 #define qmmm_parameters \
-  term_type_counts[i], dev_a_values1.data+offset, dev_a_values2.data+offset, dev_cc_values.data+offset, \
-  dev_dens_values.data+offset, dev_orb1.data+offset, dev_orb2.data+offset, dev_nuclei1.data+offset, dev_nuclei2.data+offset, \
+  term_type_counts[i], factor_ac_gpu.data, nuc_gpu.data, /*dev_a_values1.data+offset, dev_a_values2.data+offset, dev_cc_values.data+offset,*/\
+  dev_dens_values.data+dens_offset, /*dev_orb1.data+offset, dev_orb2.data+offset,*/dev_func_code.data+offset,dev_local_dens.data+offset, /*dev_nuclei1.data+offset, dev_nuclei2.data+offset,*/ \
   gpu_partial_mm_forces.data+force_offset, gpu_partial_qm_forces.data+force_offset, COALESCED_DIMENSION(partial_forces_size)
 
   // Currently: density and c coefficents have 1-to-1 mapping to thread, and they only show up in the calculation multiplied together
@@ -1153,6 +1189,7 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
   for (i = 0; i < NUM_TERM_TYPES; i++)
   {
     uint offset = term_type_offsets[i];
+    uint dens_offset = dens_offsets[i];
     uint force_offset = force_offsets[i];
     dim3 threads = term_type_counts[i];
     dim3 blockSize(QMMM_FORCES_BLOCK_SIZE);
@@ -1164,9 +1201,6 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
       case 3: gpu_qmmm_forces<scalar_type,3><<<gridSize,blockSize,0,stream[i]>>>( qmmm_parameters ); break;
       case 4: gpu_qmmm_forces<scalar_type,4><<<gridSize,blockSize,0,stream[i]>>>( qmmm_parameters ); break;
       case 5: gpu_qmmm_forces<scalar_type,5><<<gridSize,blockSize,0,stream[i]>>>( qmmm_parameters ); break;
-      case 6: gpu_qmmm_forces<scalar_type,6><<<gridSize,blockSize,0,stream[i]>>>( qmmm_parameters ); break;
-      case 7: gpu_qmmm_forces<scalar_type,7><<<gridSize,blockSize,0,stream[i]>>>( qmmm_parameters ); break;
-      case 8: gpu_qmmm_forces<scalar_type,8><<<gridSize,blockSize,0,stream[i]>>>( qmmm_parameters ); break;
     }
   }
   cudaDeviceSynchronize();

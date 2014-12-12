@@ -32,6 +32,6 @@ cuda/iteration.cu_o: cuda/kernels/energy_derivs.h cuda/kernels/rmm.h
 cuda/iteration.cu_o: cuda/kernels/weight.h cuda/kernels/functions.h
 cuda/iteration.cu_o: cuda/kernels/force.h cuda/kernels/transpose.h
 cuda/iteration.cu_o: cuda/kernels/qmmm.h cuda/kernels/qmmm_terms/ss.h
-cuda/iteration.cu_o: cuda/kernels/qmmm_terms/ps.h cuda/kernels/qmmm_terms/pp.h
-cuda/iteration.cu_o: cuda/kernels/qmmm_terms/ds.h cuda/kernels/qmmm_terms/dp.h
+cuda/iteration.cu_o: cuda/kernels/qmmm_terms/ps_unrolled.h cuda/kernels/qmmm_terms/pp_unrolled.h
+cuda/iteration.cu_o: cuda/kernels/qmmm_terms/ds_unrolled.h cuda/kernels/qmmm_terms/dp_unrolled.h
 cuda/iteration.cu_o: cuda/kernels/qmmm_terms/dd.h

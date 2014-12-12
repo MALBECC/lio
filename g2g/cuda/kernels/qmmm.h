@@ -135,9 +135,9 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
 
         uint dens_ind = local_dens[ffnum];
         if (term_type == 2 && same_func) {
-          dens[0] = dens_values[dens_ind+0]; dens[1] = dens_values[dens_ind+1]; dens[2] = dens_values[dens_ind+3];
-          dens[3] = dens_values[dens_ind+1]; dens[4] = dens_values[dens_ind+2]; dens[5] = dens_values[dens_ind+4];
-          dens[6] = dens_values[dens_ind+3]; dens[7] = dens_values[dens_ind+4]; dens[8] = dens_values[dens_ind+5];
+          for (uint i = 0; i < 6; i++) {
+            dens[i] = dens_values[dens_ind+i];
+          }
         } else if (term_type == 5 && same_func) {
           for (uint i = 0; i < (same_func? 21 : TERM_TYPE_GAUSSIANS[term_type]); i++) {
             dens[i] = dens_values[dens_ind+i];

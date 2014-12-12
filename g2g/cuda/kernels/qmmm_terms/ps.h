@@ -15,17 +15,19 @@
         {
           C_force[0][tid] = 0.0f; C_force[1][tid] = 0.0f; C_force[2][tid] = 0.0f;
           scalar_type A_force_term, B_force_term, C_force_term;
-          scalar_type p_s0;
-          scalar_type mm_charge = clatom_charge_sh[j];
+          //scalar_type mm_charge = clatom_charge_sh[j];
 
-          for (int orb1 = 0; orb1 < 3; orb1++)
+          for (int p_l = 0; p_l < 3; p_l++)
           {
-            scalar_type pre_term = mm_charge * dens[orb1];
+            scalar_type pre_term = /*mm_charge*/clatom_charge_sh[j] * dens[p_l];
+            scalar_type p_s0 = PmA[p_l] * F_mU[0] - PmC[p_l] * F_mU[1];
+            scalar_type p_s1 = PmA[p_l] * F_mU[1] - PmC[p_l] * F_mU[2];
             for (int grad_l = 0; grad_l < 3; grad_l++)
             {
-              bool del = orb1 == grad_l;
-              C_force_term  = PmC[grad_l] * (PmA[orb1] * F_mU[1] - PmC[orb1] * F_mU[2]) + del * inv_two_zeta * F_mU[1];
-              p_s0          = PmA[orb1] * F_mU[0] - PmC[orb1] * F_mU[1];
+              bool del = p_l == grad_l;
+              C_force_term  = PmC[grad_l] * p_s1;//(PmA[p_l] * F_mU[1] - PmC[p_l] * F_mU[2]) + del * inv_two_zeta * F_mU[1];
+              C_force_term += del * inv_two_zeta * F_mU[1];
+
               A_force_term  = del * inv_two_zeta * F_mU[0] - C_force_term;
               B_force_term  = PmB[grad_l] * p_s0 + A_force_term;
               A_force_term += PmA[grad_l] * p_s0;

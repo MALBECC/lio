@@ -139,7 +139,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
             dens[i] = dens_values[dens_ind+i];
           }
         } else if (term_type == 5 && same_func) {
-          for (uint i = 0; i < (same_func? 21 : TERM_TYPE_GAUSSIANS[term_type]); i++) {
+          for (uint i = 0; i < 21; i++) {
             dens[i] = dens_values[dens_ind+i];
           }
         } else {
@@ -266,7 +266,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
             }
             case 5:
             {
-              #include "qmmm_terms/dd.h"
+              #include "qmmm_terms/dd_unrolled.h"
               break;
             }
           }

@@ -960,7 +960,7 @@ void PointGroup<scalar_type>::compute_weights(void)
 template class PointGroup<double>;
 template class PointGroup<float>;
 
-#define NUM_TERM_TYPES 5
+#define NUM_TERM_TYPES 6
 #define MAX_TERM_TYPE 6
 
 template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_forces)

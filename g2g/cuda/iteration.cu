@@ -999,6 +999,24 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
   uint tmp_dens_ind = 0;
   //uint local_orbitals;
 
+  for (i = 0; i < fortran_vars.atoms; i++) {
+    double3 qm_pos = fortran_vars.atom_positions(i);
+    for (j = 0; j < fortran_vars.clatoms; j++) {
+      double3 mm_pos = fortran_vars.clatom_positions(j);
+      double3 diff = qm_pos - mm_pos;
+      double dist = diff.x*diff.x + diff.y*diff.y + diff.z*diff.z;
+      dist = sqrt(dist);
+
+      double prefactor = -fortran_vars.clatom_charges(j) * (fortran_vars.atom_types(i)+1) / pow(dist,3.0);
+      qm_forces[i + 0 * fortran_vars.atoms] += prefactor * (qm_pos.x - mm_pos.x);
+      qm_forces[i + 1 * fortran_vars.atoms] += prefactor * (qm_pos.y - mm_pos.y);
+      qm_forces[i + 2 * fortran_vars.atoms] += prefactor * (qm_pos.z - mm_pos.z);
+      mm_forces[j + 0 * (fortran_vars.atoms+fortran_vars.clatoms)] -= prefactor * (qm_pos.x - mm_pos.x);
+      mm_forces[j + 1 * (fortran_vars.atoms+fortran_vars.clatoms)] -= prefactor * (qm_pos.y - mm_pos.y);
+      mm_forces[j + 2 * (fortran_vars.atoms+fortran_vars.clatoms)] -= prefactor * (qm_pos.z - mm_pos.z);
+    }
+  }
+
   for (uint current_term_type = 0; current_term_type < NUM_TERM_TYPES; current_term_type++) {
 
     term_type_counts[current_term_type] = 0;
@@ -1028,9 +1046,7 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
             zeta = ai + aj;
             ksi = ai * aj / zeta;
             total_num_terms += (i==j)? i_orbitals*(i_orbitals+1)/2 : i_orbitals * j_orbitals;
-            // TODO: right now, we're saving function values / nuclei # / density element for each thread; is there a better way to provide these values
-            // to the kernel? Might be able to just send all function values/density matrix to the device and give each thread an index into the global arrays
-            // Memory access patterns whon't be great, but they only get read in once
+
             if (dsq*ksi < fortran_vars.rmax) {
               use_funcs = true;
               //local_orbitals = 0;

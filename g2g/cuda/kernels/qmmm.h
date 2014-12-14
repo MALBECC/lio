@@ -1,14 +1,11 @@
-//#define SQRT_PI 1.772453851
 #define PI 3.141592653589793238462643383f
 
-template<class scalar_type>
-__device__ scalar_type lio_gamma(uint m, scalar_type U)
+template<class scalar_type,int m_max>
+__device__ void lio_gamma(scalar_type* __restrict__ F_mU, scalar_type U)
 {
-  scalar_type funct;//,funct2;
   int it;
   scalar_type ti,delt,delt2,delt3,delt4,delt5;
 
-  //int s = (U<=43.975);
   // Calculate small-U branch value of F(m,U)
   // TODO: need to rethink how this branch (Taylor series expansion) is calculated
   // There's 6 reads to gpu_str, and currently U is not ordered wrt thread order, so the access pattern is terrible
@@ -26,25 +23,32 @@ __device__ scalar_type lio_gamma(uint m, scalar_type U)
     delt5 = 0.20 * delt;
 
     scalar_type tf0,tf1,tf2,tf3,tf4,tf5;
-    tf0 = gpu_str[it+m*880];
-    tf1 = gpu_str[it+(m+1)*880];
-    tf2 = gpu_str[it+(m+2)*880];
-    tf3 = gpu_str[it+(m+3)*880];
-    tf4 = gpu_str[it+(m+4)*880];
-    tf5 = gpu_str[it+(m+5)*880];
+    tf0 = gpu_str[it];
+    tf1 = gpu_str[it+880];
+    tf2 = gpu_str[it+1760];
+    tf3 = gpu_str[it+2640];
+    tf4 = gpu_str[it+3520];
+    tf5 = gpu_str[it+4400];
+    F_mU[0] = tf0-delt * (tf1-delt2 * (tf2-delt3 * (tf3-delt4 * (tf4-delt5 * tf5))));
+    for (uint m = 1; m <= m_max; m++) {
+      tf0 = tf1;
+      tf1 = tf2;
+      tf2 = tf3;
+      tf3 = tf4;
+      tf4 = tf5;
+      tf5 = gpu_str[it+(m+5)*880];
 
-    funct = tf0-delt * (tf1-delt2 * (tf2-delt3 * (tf3-delt4 * (tf4-delt5 * tf5))));
+      F_mU[m] = tf0-delt * (tf1-delt2 * (tf2-delt3 * (tf3-delt4 * (tf4-delt5 * tf5))));
+    }
   }
   // Calculate large-U branch value of F(m,U)
   else
   {
-    funct = gpu_fac[m]/(powf(U,m)*sqrtf(U));
+    scalar_type sqrtU = sqrtf(U);
+    for (uint m = 0; m <= m_max; m++) {
+      F_mU[m] = gpu_fac[m]/(powf(U,m)*sqrtU);//sqrtf(U));
+    }
   }
-
-  // Return the appropriate branch while avoiding warp divergence
-  // TODO: need to verify calculating both branches is better for performance; it works better on small systems but need to test on big test cases
-  //return s*funct1+(1-s)*funct2;
-  return funct;
 }
 
 /*template<class scalar_type>
@@ -374,5 +378,4 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
     }
   }
 }
-
 

@@ -7,12 +7,13 @@
         {
           scalar_type U = (PmC[0] * PmC[0] + PmC[1] * PmC[1] + PmC[2] * PmC[2]) * zeta;
           //F_mU[0] = (SQRT_PI / (2*sqrtU)) * erff(sqrtU);
-          for (int m = 0; m <= 5; m++) 
-          {
+          //for (int m = 0; m <= 5; m++) 
+          //{
             // TODO (maybe): test out storing F(m,U) values in texture and doing a texture fetch here rather than the function calculation
-            F_mU[m] = lio_gamma<scalar_type>(m,U);
+          //  F_mU[m] = lio_gamma<scalar_type>(m,U);
+          lio_gamma<scalar_type,5>(F_mU,U);
             //F_mU[m] = fetch(qmmm_F_values_tex,(float)(U/gamma_inc-0.5f),(float)(m+0.5f));
-          }
+          //}
         }
 
         // BEGIN calculation of individual (single primitive-primitive overlap) force terms
@@ -79,25 +80,6 @@
                     pre_term *= clatom_charge_sh[j] * dens[dens_ind];
                     dens_ind++;
                   }
-
-                  scalar_type p_p0_d1l1_d2l2  = PmB[0] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[0] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l1)
-                  p_p0_d1l1_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l1_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l1_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
-                  scalar_type p_p0_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l2)
-                  p_p0_d1l2_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l2_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l2_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
 
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2   = (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]) - (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]);  // p_s0 (d1_l2) - p_s1 (d1_l2)
@@ -219,25 +201,6 @@
                     dens_ind += !same_func;
                   }
 
-                  scalar_type p_p0_d1l1_d2l2  = PmB[0] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[0] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l1)
-                  p_p0_d1l1_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l1_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l1_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
-                  scalar_type p_p0_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l2)
-                  p_p0_d1l2_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l2_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l2_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
-
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2   = (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]) - (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]);  // p_s0 (d1_l2) - p_s1 (d1_l2)
                   d1_p1_d2l2   = (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]) - (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]);  // p_s0 (d1_l2) - p_s1 (d1_l2)
@@ -331,19 +294,6 @@
                     pre_term *= !same_func * clatom_charge_sh[j] * dens[dens_ind];
                     dens_ind += !same_func;
                   }
-
-                  scalar_type p_p0_d1l1_d2l2  = PmB[1] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[1] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[1] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[1] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[1] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[1] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[1] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[1] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[1] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[1] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[1] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[1] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l2)
 
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += PmB[1] * d1_s0 - PmC[1] * d1_s1;
@@ -451,25 +401,6 @@
                     dens_ind += !same_func;
                   }
 
-                  scalar_type p_p0_d1l1_d2l2  = PmB[0] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[0] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l1)
-                  p_p0_d1l1_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l1_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l1_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
-                  scalar_type p_p0_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l2)
-                  p_p0_d1l2_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l2_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l2_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
-
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2   = (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]) - (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]);  // p_s0 (d1_l2) - p_s1 (d1_l2)
                   d1_p1_d2l2   = (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]) - (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]);  // p_s0 (d1_l2) - p_s1 (d1_l2)
@@ -564,19 +495,6 @@
                     dens_ind += !same_func;
                   }
 
-                  scalar_type p_p0_d1l1_d2l2  = PmB[1] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[1] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[1] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[1] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[1] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[1] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[1] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[1] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[1] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[1] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[1] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[1] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l2)
-
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += PmB[1] * d1_s0 - PmC[1] * d1_s1;
                   d1_p1_d2l2  += PmB[1] * d1_s1 - PmC[1] * d1_s2;
@@ -650,19 +568,6 @@
                     pre_term *= !same_func * clatom_charge_sh[j] * dens[dens_ind];
                     dens_ind += !same_func;
                   }
-
-                  scalar_type p_p0_d1l1_d2l2  = PmB[2] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[2] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[2] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[2] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[2] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[2] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[2] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[2] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[2] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[2] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[2] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[2] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l2)
 
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += PmB[2] * d1_s0 - PmC[2] * d1_s1;
@@ -792,22 +697,6 @@
                     dens_ind++;
                   }
 
-                  scalar_type p_p0_d1l1_d2l2  = PmB[0] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[0] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l2)
-                  p_p0_d1l2_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l2_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l2_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
-
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]) - (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
                   d1_p1_d2l2  += (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]) - (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
@@ -931,22 +820,6 @@
                     dens_ind++;
                   }
 
-                  scalar_type p_p0_d1l1_d2l2  = PmB[0] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[0] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l2)
-                  p_p0_d1l2_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l2_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l2_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
-
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]) - (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
                   d1_p1_d2l2  += (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]) - (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
@@ -1032,22 +905,6 @@
                     pre_term *= !same_func * clatom_charge_sh[j] * dens[dens_ind];
                     dens_ind += !same_func;
                   }
-
-                  scalar_type p_p0_d1l1_d2l2  = PmB[1] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[1] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[1] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[1] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[1] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[1] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l1)
-                  p_p0_d1l1_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l1_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l1_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
-                  scalar_type p_p0_d1l2_d2l2  = PmB[1] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[1] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[1] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[1] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[1] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[1] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l2)
 
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2   = (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]) - (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]);  // p_s0 (d1_l2) - p_s1 (d1_l2)
@@ -1163,22 +1020,6 @@
                     dens_ind += !same_func;
                   }
 
-                  scalar_type p_p0_d1l1_d2l2  = PmB[0] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[0] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l2)
-                  p_p0_d1l2_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l2_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l2_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
-
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]) - (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
                   d1_p1_d2l2  += (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]) - (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
@@ -1265,22 +1106,6 @@
                     dens_ind += !same_func;
                   }
 
-                  scalar_type p_p0_d1l1_d2l2  = PmB[1] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[1] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[1] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[1] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[1] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[1] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l1)
-                  p_p0_d1l1_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l1_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l1_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
-                  scalar_type p_p0_d1l2_d2l2  = PmB[1] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[1] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[1] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[1] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[1] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[1] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l2)
-
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2   = (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]) - (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]);  // p_s0 (d1_l2) - p_s1 (d1_l2)
                   d1_p1_d2l2   = (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]) - (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]);  // p_s0 (d1_l2) - p_s1 (d1_l2)
@@ -1366,19 +1191,6 @@
                     pre_term *= !same_func * clatom_charge_sh[j] * dens[dens_ind];
                     dens_ind += !same_func;
                   }
-
-                  scalar_type p_p0_d1l1_d2l2  = PmB[2] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[2] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[2] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[2] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[2] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[2] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[2] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[2] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[2] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[2] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[2] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[2] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l2)
 
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += PmB[2] * d1_s0 - PmC[2] * d1_s1;
@@ -1501,19 +1313,6 @@
                     dens_ind++;
                   }
 
-                  scalar_type p_p0_d1l1_d2l2  = PmB[0] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[0] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[0] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[0] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l2)
-
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += PmB[0] * d1_s0 - PmC[0] * d1_s1;
                   d1_p1_d2l2  += PmB[0] * d1_s1 - PmC[0] * d1_s2;
@@ -1635,19 +1434,6 @@
                     dens_ind++;
                   }
 
-                  scalar_type p_p0_d1l1_d2l2  = PmB[0] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[0] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[0] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[0] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l2)
-
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += PmB[0] * d1_s0 - PmC[0] * d1_s1;
                   d1_p1_d2l2  += PmB[0] * d1_s1 - PmC[0] * d1_s2;
@@ -1721,25 +1507,6 @@
                     pre_term *= clatom_charge_sh[j] * dens[dens_ind];
                     dens_ind++;
                   }
-
-                  scalar_type p_p0_d1l1_d2l2  = PmB[1] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[1] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[1] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[1] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[1] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[1] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l1)
-                  p_p0_d1l1_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l1_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l1_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
-                  scalar_type p_p0_d1l2_d2l2  = PmB[1] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[1] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[1] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[1] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[1] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[1] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l2)
-                  p_p0_d1l2_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l2_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l2_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
 
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2   = (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]) - (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]);  // p_s0 (d1_l2) - p_s1 (d1_l2)
@@ -1861,19 +1628,6 @@
                     dens_ind += !same_func;
                   }
 
-                  scalar_type p_p0_d1l1_d2l2  = PmB[0] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[0] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[0] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[0] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l2)
-
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += PmB[0] * d1_s0 - PmC[0] * d1_s1;
                   d1_p1_d2l2  += PmB[0] * d1_s1 - PmC[0] * d1_s2;
@@ -1947,25 +1701,6 @@
                     pre_term *= !same_func * clatom_charge_sh[j] * dens[dens_ind];
                     dens_ind += !same_func;
                   }
-
-                  scalar_type p_p0_d1l1_d2l2  = PmB[1] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[1] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[1] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[1] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[1] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[1] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l1)
-                  p_p0_d1l1_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l1_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l1_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
-                  scalar_type p_p0_d1l2_d2l2  = PmB[1] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[1] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[1] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[1] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[1] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[1] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l2)
-                  p_p0_d1l2_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l2_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l2_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
 
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2   = (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]) - (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]);  // p_s0 (d1_l2) - p_s1 (d1_l2)
@@ -2060,19 +1795,6 @@
                     pre_term *= !same_func * clatom_charge_sh[j] * dens[dens_ind];
                     dens_ind += !same_func;
                   }
-
-                  scalar_type p_p0_d1l1_d2l2  = PmB[2] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[2] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[2] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[2] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[2] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[2] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[2] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[2] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[2] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[2] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[2] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[2] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l2)
 
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += PmB[2] * d1_s0 - PmC[2] * d1_s1;
@@ -2202,22 +1924,6 @@
                     dens_ind++;
                   }
 
-                  scalar_type p_p0_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l2)
-                  p_p0_d1l2_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l2_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l2_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
-
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]) - (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
                   d1_p1_d2l2  += (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]) - (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
@@ -2332,22 +2038,6 @@
                     dens_ind++;
                   }
 
-                  scalar_type p_p0_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l2)
-                  p_p0_d1l2_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l2_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l2_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
-
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]) - (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
                   d1_p1_d2l2  += (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]) - (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
@@ -2433,19 +2123,6 @@
                     pre_term *= clatom_charge_sh[j] * dens[dens_ind];
                     dens_ind++;
                   }
-
-                  scalar_type p_p0_d1l1_d2l2  = PmB[1] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[1] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[1] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[1] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[1] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[1] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[1] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[1] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[1] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[1] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[1] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[1] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l2)
 
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += PmB[1] * d1_s0 - PmC[1] * d1_s1;
@@ -2562,22 +2239,6 @@
                     dens_ind++;
                   }
 
-                  scalar_type p_p0_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[0] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[0] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l2)
-                  p_p0_d1l2_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l2_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l2_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
-
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]) - (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
                   d1_p1_d2l2  += (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]) - (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
@@ -2664,19 +2325,6 @@
                     dens_ind += !same_func;
                   }
 
-                  scalar_type p_p0_d1l1_d2l2  = PmB[1] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[1] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[1] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[1] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[1] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[1] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[1] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[1] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[1] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[1] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[1] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[1] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l2)
-
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += PmB[1] * d1_s0 - PmC[1] * d1_s1;
                   d1_p1_d2l2  += PmB[1] * d1_s1 - PmC[1] * d1_s2;
@@ -2750,22 +2398,6 @@
                     pre_term *= !same_func * clatom_charge_sh[j] * dens[dens_ind];
                     dens_ind += !same_func;
                   }
-
-                  scalar_type p_p0_d1l1_d2l2  = PmB[2] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[2] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[2] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[2] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[2] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[2] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l1)
-                  p_p0_d1l1_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l1_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l1_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
-                  scalar_type p_p0_d1l2_d2l2  = PmB[2] * (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[2] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[2] * (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[2] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[2] * (PmA[0] * F_mU[2] - PmC[0] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[2] * (PmA[0] * F_mU[3] - PmC[0] * F_mU[4]); // p_s1 (d1_l2)
 
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2   = (PmA[0] * F_mU[0] - PmC[0] * F_mU[1]) - (PmA[0] * F_mU[1] - PmC[0] * F_mU[2]);  // p_s0 (d1_l2) - p_s1 (d1_l2)
@@ -2892,19 +2524,6 @@
                     dens_ind++;
                   }
 
-                  scalar_type p_p0_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[0] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[0] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l2)
-
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += PmB[0] * d1_s0 - PmC[0] * d1_s1;
                   d1_p1_d2l2  += PmB[0] * d1_s1 - PmC[0] * d1_s2;
@@ -3020,19 +2639,6 @@
                     dens_ind++;
                   }
 
-                  scalar_type p_p0_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[0] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[0] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l2)
-
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += PmB[0] * d1_s0 - PmC[0] * d1_s1;
                   d1_p1_d2l2  += PmB[0] * d1_s1 - PmC[0] * d1_s2;
@@ -3106,22 +2712,6 @@
                     pre_term *= clatom_charge_sh[j] * dens[dens_ind];
                     dens_ind++;
                   }
-
-                  scalar_type p_p0_d1l1_d2l2  = PmB[1] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[1] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[1] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[1] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[1] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[1] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[1] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[1] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[1] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[1] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[1] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[1] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l2)
-                  p_p0_d1l2_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l2_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l2_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
 
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]) - (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
@@ -3246,19 +2836,6 @@
                     dens_ind++;
                   }
 
-                  scalar_type p_p0_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[0] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[0] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[0] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[0] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l2)
-
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += PmB[0] * d1_s0 - PmC[0] * d1_s1;
                   d1_p1_d2l2  += PmB[0] * d1_s1 - PmC[0] * d1_s2;
@@ -3332,22 +2909,6 @@
                     pre_term *= clatom_charge_sh[j] * dens[dens_ind];
                     dens_ind++;
                   }
-
-                  scalar_type p_p0_d1l1_d2l2  = PmB[1] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[1] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[1] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[1] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[1] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[1] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[1] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[1] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[1] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[1] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[1] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[1] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l2)
-                  p_p0_d1l2_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l2_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l2_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
 
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]) - (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
@@ -3434,22 +2995,6 @@
                     pre_term *= !same_func * clatom_charge_sh[j] * dens[dens_ind];
                     dens_ind += !same_func;
                   }
-
-                  scalar_type p_p0_d1l1_d2l2  = PmB[2] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[2] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[2] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[2] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[2] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[2] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l1)
-                  p_p0_d1l1_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l1_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l1_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
-                  scalar_type p_p0_d1l2_d2l2  = PmB[2] * (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[2] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[2] * (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[2] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[2] * (PmA[1] * F_mU[2] - PmC[1] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[2] * (PmA[1] * F_mU[3] - PmC[1] * F_mU[4]); // p_s1 (d1_l2)
 
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2   = (PmA[1] * F_mU[0] - PmC[1] * F_mU[1]) - (PmA[1] * F_mU[1] - PmC[1] * F_mU[2]);  // p_s0 (d1_l2) - p_s1 (d1_l2)
@@ -3580,19 +3125,6 @@
                     dens_ind++;
                   }
 
-                  scalar_type p_p0_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[0] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[0] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l2)
-
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += PmB[0] * d1_s0 - PmC[0] * d1_s1;
                   d1_p1_d2l2  += PmB[0] * d1_s1 - PmC[0] * d1_s2;
@@ -3699,19 +3231,6 @@
                     dens_ind++;
                   }
 
-                  scalar_type p_p0_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[0] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[0] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l2)
-
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += PmB[0] * d1_s0 - PmC[0] * d1_s1;
                   d1_p1_d2l2  += PmB[0] * d1_s1 - PmC[0] * d1_s2;
@@ -3785,19 +3304,6 @@
                     pre_term *= clatom_charge_sh[j] * dens[dens_ind];
                     dens_ind++;
                   }
-
-                  scalar_type p_p0_d1l1_d2l2  = PmB[1] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[1] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[1] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[1] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[1] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[1] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[1] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[1] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[1] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[1] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[1] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[1] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l2)
 
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += PmB[1] * d1_s0 - PmC[1] * d1_s1;
@@ -3920,19 +3426,6 @@
                     dens_ind++;
                   }
 
-                  scalar_type p_p0_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[0] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[0] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[0] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[0] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[0] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l2)
-
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += PmB[0] * d1_s0 - PmC[0] * d1_s1;
                   d1_p1_d2l2  += PmB[0] * d1_s1 - PmC[0] * d1_s2;
@@ -4007,19 +3500,6 @@
                     dens_ind++;
                   }
 
-                  scalar_type p_p0_d1l1_d2l2  = PmB[1] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[1] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[1] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[1] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[1] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[1] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l1)
-                  scalar_type p_p0_d1l2_d2l2  = PmB[1] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[1] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[1] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[1] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[1] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[1] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l2)
-
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2  += PmB[1] * d1_s0 - PmC[1] * d1_s1;
                   d1_p1_d2l2  += PmB[1] * d1_s1 - PmC[1] * d1_s2;
@@ -4093,25 +3573,6 @@
                     pre_term *= clatom_charge_sh[j] * dens[dens_ind];
                     dens_ind++;
                   }
-
-                  scalar_type p_p0_d1l1_d2l2  = PmB[2] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[2] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[2] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[2] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[2] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[2] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l1)
-                  p_p0_d1l1_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l1_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l1_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
-                  scalar_type p_p0_d1l2_d2l2  = PmB[2] * (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[2] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[2] * (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[2] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[2] * (PmA[2] * F_mU[2] - PmC[2] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[2] * (PmA[2] * F_mU[3] - PmC[2] * F_mU[4]); // p_s1 (d1_l2)
-                  p_p0_d1l2_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l2_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l2_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
 
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
                   d1_p0_d2l2   = (PmA[2] * F_mU[0] - PmC[2] * F_mU[1]) - (PmA[2] * F_mU[1] - PmC[2] * F_mU[2]);  // p_s0 (d1_l2) - p_s1 (d1_l2)

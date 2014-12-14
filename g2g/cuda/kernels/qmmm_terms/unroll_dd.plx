@@ -10,12 +10,13 @@ print <<"END";
         {
           scalar_type U = (PmC[0] * PmC[0] + PmC[1] * PmC[1] + PmC[2] * PmC[2]) * zeta;
           //F_mU[0] = (SQRT_PI / (2*sqrtU)) * erff(sqrtU);
-          for (int m = 0; m <= 5; m++) 
-          {
+          //for (int m = 0; m <= 5; m++) 
+          //{
             // TODO (maybe): test out storing F(m,U) values in texture and doing a texture fetch here rather than the function calculation
-            F_mU[m] = lio_gamma<scalar_type>(m,U);
+          //  F_mU[m] = lio_gamma<scalar_type>(m,U);
+          lio_gamma<scalar_type,5>(F_mU,U);
             //F_mU[m] = fetch(qmmm_F_values_tex,(float)(U/gamma_inc-0.5f),(float)(m+0.5f));
-          }
+          //}
         }
 
         // BEGIN calculation of individual (single primitive-primitive overlap) force terms
@@ -152,37 +153,6 @@ END
 }
 print <<"END";
                   }
-
-                  scalar_type p_p0_d1l1_d2l2  = PmB[$d2_l2] * (PmA[$d1_l1] * F_mU[0] - PmC[$d1_l1] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[$d2_l2] * (PmA[$d1_l1] * F_mU[1] - PmC[$d1_l1] * F_mU[2]); // p_s1 (d1_l1)
-                  scalar_type p_p1_d1l1_d2l2  = PmB[$d2_l2] * (PmA[$d1_l1] * F_mU[1] - PmC[$d1_l1] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[$d2_l2] * (PmA[$d1_l1] * F_mU[2] - PmC[$d1_l1] * F_mU[3]); // p_s1 (d1_l1)
-                  scalar_type p_p2_d1l1_d2l2  = PmB[$d2_l2] * (PmA[$d1_l1] * F_mU[2] - PmC[$d1_l1] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[$d2_l2] * (PmA[$d1_l1] * F_mU[3] - PmC[$d1_l1] * F_mU[4]); // p_s1 (d1_l1)
-END
-if ($d1_l1 == $d2_l2) {
-print <<"END";
-                  p_p0_d1l1_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l1_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l1_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
-END
-}
-print <<"END";
-                  scalar_type p_p0_d1l2_d2l2  = PmB[$d2_l2] * (PmA[$d1_l2] * F_mU[0] - PmC[$d1_l2] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[$d2_l2] * (PmA[$d1_l2] * F_mU[1] - PmC[$d1_l2] * F_mU[2]); // p_s1 (d1_l2)
-                  scalar_type p_p1_d1l2_d2l2  = PmB[$d2_l2] * (PmA[$d1_l2] * F_mU[1] - PmC[$d1_l2] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[$d2_l2] * (PmA[$d1_l2] * F_mU[2] - PmC[$d1_l2] * F_mU[3]); // p_s1 (d1_l2)
-                  scalar_type p_p2_d1l2_d2l2  = PmB[$d2_l2] * (PmA[$d1_l2] * F_mU[2] - PmC[$d1_l2] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[$d2_l2] * (PmA[$d1_l2] * F_mU[3] - PmC[$d1_l2] * F_mU[4]); // p_s1 (d1_l2)
-END
-if ($d1_l2 == $d2_l2) {
-print <<"END";
-                  p_p0_d1l2_d2l2             += inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  p_p1_d1l2_d2l2             += inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  p_p2_d1l2_d2l2             += inv_two_zeta * (F_mU[2] - F_mU[3]);
-END
-}
-print <<"END";
 
                   scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
 END

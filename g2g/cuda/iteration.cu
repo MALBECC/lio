@@ -972,6 +972,7 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
   double ai,aj;
   double dsq,ksi,zeta;
   uint num_terms=0, total_num_terms = 0;
+  //std::list<uint> func_code, local_dens;
   std::vector<uint> func_code, local_dens;
   //std::vector<scalar_type> a_values1,a_values2;
   //std::vector<scalar_type> cc_values;
@@ -999,6 +1000,8 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
   uint tmp_dens_ind = 0;
   //uint local_orbitals;
 
+  Timer nuc,check,prep,kernel,down,reduce;
+  nuc.start_and_sync();
   for (i = 0; i < fortran_vars.atoms; i++) {
     double3 qm_pos = fortran_vars.atom_positions(i);
     for (j = 0; j < fortran_vars.clatoms; j++) {
@@ -1016,7 +1019,12 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
       mm_forces[j + 2 * (fortran_vars.atoms+fortran_vars.clatoms)] -= prefactor * (qm_pos.z - mm_pos.z);
     }
   }
+  nuc.pause();
+  check.start();
 
+  //uint last_code = 0;
+  //uint last_dens = 0;
+  //typename std::list<uint>::iterator func_begin_iter = func_code.begin(), dens_begin_iter = local_dens.begin();
   for (uint current_term_type = 0; current_term_type < NUM_TERM_TYPES; current_term_type++) {
 
     term_type_counts[current_term_type] = 0;
@@ -1027,6 +1035,9 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
 
     dens_counts[current_term_type] = 0;
     local_dens_ind = 0;
+
+    //std::list<scalar_type> zetas;
+    //typename std::list<scalar_type>::iterator zeta_begin_iter = zetas.begin();
 
     // function i, center A
     for (i = i_begin; i < i_end; i += i_orbitals) {
@@ -1062,10 +1073,23 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
                   this_func_code     += ni            * MAX_CONTRACTIONS;                                      // Primitive # ni after the space for nj
                   this_func_code     += (j/*+j_orbital*/) * MAX_CONTRACTIONS * MAX_CONTRACTIONS;                   // Function # j after space for primitives
                   this_func_code     += (i/*+i_orbital*/) * MAX_CONTRACTIONS * MAX_CONTRACTIONS * fortran_vars.m;  // Finally, function # i in the highest part
-                  //this_func_code     += local_dens_ind* MAX_CONTRACTIONS * MAX_CONTRACTIONS * fortran_vars.m * fortran_vars.m;
+
+                  //last_code = this_func_code;
+                  //last_dens = local_dens_ind;
+
+                  //typename std::list<scalar_type>::iterator zeta_iter = zeta_begin_iter;//s.begin();
+                  //typename std::list<uint>::iterator func_iter = func_begin_iter, dens_iter = dens_begin_iter;
+                  //while (zeta_iter != zetas.end()) {
+                  //  if (zeta <= (*zeta_iter)) break;
+                  //  zeta_iter++;
+                  //  func_iter++;
+                  //  dens_iter++;
+                  //}
+                  //zetas.insert(zeta_iter,zeta);
+                  //func_code.insert(func_iter,this_func_code);
+                  //local_dens.insert(dens_iter,local_dens_ind);
+
                   func_code.push_back(this_func_code);
-                  //std::cout << this_func_code << std::endl;
-                  //std::cout << i << " " << ni << " " << j << " " << nj << std::endl;
                   local_dens.push_back(local_dens_ind);
 
               //    local_orbitals++;
@@ -1109,15 +1133,19 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
       local_dens.push_back(local_dens[term_type_offsets[current_term_type]]);
       //dens_values.push_back(dens_values[term_type_offsets[current_term_type]]);
     }
+    //func_begin_iter = func_code.end();
+    //dens_begin_iter = local_dens.end();
     for (j = dens_counts[current_term_type]; j < COALESCED_DIMENSION(dens_counts[current_term_type]); j++) {
       dens_values.push_back(dens_values[dens_offsets[current_term_type]]);
     }
   }
+  check.pause();
+  prep.start();
 
-  std::cout << "Number of threads: " << num_terms << std::endl;
-  std::cout << "Total Gaussian pairs: " << total_num_terms << std::endl;
-  std::cout << "Number of significant density elements: " << num_dens_terms << std::endl;
-  std::cout << "Total density elements: " << total_dens_terms << std::endl;
+  std::cout << "[G2G_QMMM] Number of threads: " << num_terms << std::endl;
+  std::cout << "[G2G_QMMM] Total Gaussian pairs: " << total_num_terms << std::endl;
+  std::cout << "[G2G_QMMM] Number of significant density elements: " << num_dens_terms << std::endl;
+  std::cout << "[G2G_QMMM] Total density elements: " << total_dens_terms << std::endl;
 
   // Pad the input so that out-of-range threads do a dummy calculation (same as the first thread), rather than branching and idling
   for (i = 0; i < QMMM_FORCES_BLOCK_SIZE - (term_type_counts[NUM_TERM_TYPES-1] % QMMM_FORCES_BLOCK_SIZE); i++) {
@@ -1161,6 +1189,14 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
 
   // Send forces input to device (a values, thread function #s, thread nuclei #s)
   CudaMatrix<scalar_type> /*dev_a_values1(a_values1), dev_a_values2(a_values2), dev_cc_values(cc_values),*/ dev_dens_values(dens_values);
+  //std::vector<uint> func_codev, local_densv;
+  //typename std::list<uint>::iterator iter;
+  //for (iter = func_code.begin(); iter != func_code.end(); iter++) {
+  //  func_codev.push_back(*iter);
+  //}
+  //for (iter = local_dens.begin(); iter != local_dens.end(); iter++) {
+  //  local_densv.push_back(*iter);
+  //}
   CudaMatrixUInt dev_func_code(func_code), dev_local_dens(local_dens)/*dev_orb1(orbital1), dev_orb2(orbital2),*/; // dev_nuclei1(nuclei1), dev_nuclei2(nuclei2);
 
   //cudaBindTextureToArray(qmmm_F_values_tex,gammaArray);
@@ -1191,13 +1227,8 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
   dev_dens_values.data+dens_offset, /*dev_orb1.data+offset, dev_orb2.data+offset,*/dev_func_code.data+offset,dev_local_dens.data+offset, /*dev_nuclei1.data+offset, dev_nuclei2.data+offset,*/ \
   gpu_partial_mm_forces.data+force_offset, gpu_partial_qm_forces.data+force_offset, COALESCED_DIMENSION(partial_forces_size)
 
-  // Currently: density and c coefficents have 1-to-1 mapping to thread, and they only show up in the calculation multiplied together
-  // So, if we were to keep this mapping, would just send the product
-  // However, I'm leaving things as they are, sending the two individually, as this mapping probably isn't optimal:
-  // -Density matrix maps 1-to-1 to a function x function set of terms (e.g., all terms (primitive i x primitive j) in a p_y x p_x set have the same density value)
-  // -ci x cj coefficients map 1-to-1 to a primitive x primitive term (e.g., each term (primitive i x primitive j) in a p_y x p_x set have differenct c values, but the p_z x p_x term
-  //                                                                       in the same sub-shell / sub-shell block has the same set of c values)
-  // -ai x aj coefficients have the same mapping as ci x cj
+  prep.pause_and_sync();
+  kernel.start();
   cudaStream_t stream[NUM_TERM_TYPES];
   for (i = 0; i < NUM_TERM_TYPES; i++) {
     cudaStreamCreate(&stream[i]);
@@ -1223,8 +1254,12 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
   for (i = 0; i < NUM_TERM_TYPES; i++) {
     cudaStreamDestroy(stream[i]);
   }
+  kernel.pause();
+  down.start();
 
   HostMatrix<vec_type<scalar_type,3> > cpu_partial_mm_forces(gpu_partial_mm_forces), cpu_partial_qm_forces(gpu_partial_qm_forces);//cpu_mm_forces(gpu_mm_forces), cpu_qm_forces(gpu_qm_forces);
+  down.pause_and_sync();
+  reduce.start();
 
   // TODO: need to think about how to accumulate individual force terms
   // Currently, we reduce on a per-block basis in the kernel, then accumulate the block results here on the host
@@ -1246,6 +1281,10 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
       mm_forces[i + 2 * (fortran_vars.atoms+fortran_vars.clatoms)] += cpu_partial_mm_forces(j,i).z;
     }
   }
+  reduce.pause();
+
+  cout << "[G2G_QMMM] nuc-nuc: " << nuc << " overlap check: " << check << " kernel prep: " << prep << endl;
+  cout << "[G2G_QMMM] kernel: " << kernel << " download: " << down << " reduction: " << reduce << endl;
 
   //cudaUnbindTexture(qmmm_F_values_tex);
 

@@ -74,6 +74,7 @@ print <<"END";
                 p_p2_d1l1_d2l1             += inv_two_zeta * (F_mU[2] - F_mU[3]);
 END
 }
+if ($d1_l1 != $d1_l2) {
 print <<"END";
                 scalar_type p_p0_d1l2_d2l1  = PmB[$d2_l1] * (PmA[$d1_l2] * F_mU[0] - PmC[$d1_l2] * F_mU[1]); // p_s0 (d1_l2)
                 p_p0_d1l2_d2l1             -= PmC[$d2_l1] * (PmA[$d1_l2] * F_mU[1] - PmC[$d1_l2] * F_mU[2]); // p_s1 (d1_l2)
@@ -88,6 +89,7 @@ print <<"END";
                 p_p1_d1l2_d2l1             += inv_two_zeta * (F_mU[1] - F_mU[2]);
                 p_p2_d1l2_d2l1             += inv_two_zeta * (F_mU[2] - F_mU[3]);
 END
+}
 }
 print <<"END";
 
@@ -154,41 +156,71 @@ END
 print <<"END";
                   }
 
-                  scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f, p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f, p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
+END
+if ($d1_l1 != $d1_l2) {
+print <<"END";
+                  scalar_type p_d2_0_d1l2 = 0.0f, p_d2_1_d1l2 = 0.0f;
+END
+}
+if ($d2_l1 != $d2_l2) {
+print <<"END";
+                  scalar_type d1_p0_d2l2 = 0.0f, d1_p1_d2l2 = 0.0f;
+END
+}
+print <<"END";
+                  scalar_type p_d2_0_d1l1 = 0.0f, p_d2_1_d1l1 = 0.0f;
 END
 if ($d1_l1 == $d2_l2) {
+if ($d2_l1 != $d2_l2) {
 print <<"END";
                   d1_p0_d2l2   = (PmA[$d1_l2] * F_mU[0] - PmC[$d1_l2] * F_mU[1]) - (PmA[$d1_l2] * F_mU[1] - PmC[$d1_l2] * F_mU[2]);  // p_s0 (d1_l2) - p_s1 (d1_l2)
                   d1_p1_d2l2   = (PmA[$d1_l2] * F_mU[1] - PmC[$d1_l2] * F_mU[2]) - (PmA[$d1_l2] * F_mU[2] - PmC[$d1_l2] * F_mU[3]);  // p_s0 (d1_l2) - p_s1 (d1_l2)
+END
+}
+print <<"END";
                   p_d2_0_d1l1  = (PmB[$d2_l1] * F_mU[0] - PmC[$d2_l1] * F_mU[1]) - (PmB[$d2_l1] * F_mU[1] - PmC[$d2_l1] * F_mU[2]);  // p_s0 (d1_l2) - p_s1 (d1_l2)
                   p_d2_1_d1l1  = (PmB[$d2_l1] * F_mU[1] - PmC[$d2_l1] * F_mU[2]) - (PmB[$d2_l1] * F_mU[2] - PmC[$d2_l1] * F_mU[3]);  // p_s0 (d1_l2) - p_s1 (d1_l2)
 END
 }
 if ($d1_l2 == $d2_l2) {
+if ($d2_l1 != $d2_l2) {
 print <<"END";
                   d1_p0_d2l2  += (PmA[$d1_l1] * F_mU[0] - PmC[$d1_l1] * F_mU[1]) - (PmA[$d1_l1] * F_mU[1] - PmC[$d1_l1] * F_mU[2]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
                   d1_p1_d2l2  += (PmA[$d1_l1] * F_mU[1] - PmC[$d1_l1] * F_mU[2]) - (PmA[$d1_l1] * F_mU[2] - PmC[$d1_l1] * F_mU[3]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
+END
+}
+if ($d1_l1 != $d2_l2) {
+print <<"END";
                   p_d2_0_d1l2  = (PmB[$d2_l1] * F_mU[0] - PmC[$d2_l1] * F_mU[1]) - (PmB[$d2_l1] * F_mU[1] - PmC[$d2_l1] * F_mU[2]);  // p_s0 (d1_l2) - p_s1 (d1_l2)
                   p_d2_1_d1l2  = (PmB[$d2_l1] * F_mU[1] - PmC[$d2_l1] * F_mU[2]) - (PmB[$d2_l1] * F_mU[2] - PmC[$d2_l1] * F_mU[3]);  // p_s0 (d1_l2) - p_s1 (d1_l2)
 END
 }
+}
 if ($d1_l1 == $d2_l2 or $d1_l2 == $d2_l2) {
+if ($d2_l1 != $d2_l2) {
 print <<"END";
                   d1_p0_d2l2  *= inv_two_zeta;
                   d1_p1_d2l2  *= inv_two_zeta;
 END
 }
+}
+if ($d2_l1 != $d2_l2) {
 print <<"END";
                   d1_p0_d2l2  += PmB[$d2_l2] * d1_s0 - PmC[$d2_l2] * d1_s1;
                   d1_p1_d2l2  += PmB[$d2_l2] * d1_s1 - PmC[$d2_l2] * d1_s2;
 END
+}
 if ($d2_l1 == $d2_l2) {
 print <<"END";
                   p_d2_0_d1l1 += (PmA[$d1_l1] * F_mU[0] - PmC[$d1_l1] * F_mU[1]) - (PmA[$d1_l1] * F_mU[1] - PmC[$d1_l1] * F_mU[2]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
                   p_d2_1_d1l1 += (PmA[$d1_l1] * F_mU[1] - PmC[$d1_l1] * F_mU[2]) - (PmA[$d1_l1] * F_mU[2] - PmC[$d1_l1] * F_mU[3]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
+END
+if ($d1_l1 != $d1_l2) {
+print <<"END";
                   p_d2_0_d1l2 += (PmA[$d1_l2] * F_mU[0] - PmC[$d1_l2] * F_mU[1]) - (PmA[$d1_l2] * F_mU[1] - PmC[$d1_l2] * F_mU[2]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
                   p_d2_1_d1l2 += (PmA[$d1_l2] * F_mU[1] - PmC[$d1_l2] * F_mU[2]) - (PmA[$d1_l2] * F_mU[2] - PmC[$d1_l2] * F_mU[3]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
 END
+}
 }
 if ($d1_l1 == $d2_l2 or $d2_l1 == $d2_l2) {
 print <<"END";
@@ -197,26 +229,39 @@ print <<"END";
 END
 }
 if ($d1_l2 == $d2_l2 or $d2_l1 == $d2_l2) {
+if ($d1_l1 != $d1_l2) {
 print <<"END";
                   p_d2_0_d1l2 *= inv_two_zeta;
                   p_d2_1_d1l2 *= inv_two_zeta;
 END
 }
+}
 print <<"END";
                   p_d2_0_d1l1 += PmB[$d2_l2] * p_p0_d1l1_d2l1 - PmC[$d2_l2] * p_p1_d1l1_d2l1;
                   p_d2_1_d1l1 += PmB[$d2_l2] * p_p1_d1l1_d2l1 - PmC[$d2_l2] * p_p2_d1l1_d2l1;
+END
+if ($d1_l1 != $d1_l2) {
+print <<"END";
                   p_d2_0_d1l2 += PmB[$d2_l2] * p_p0_d1l2_d2l1 - PmC[$d2_l2] * p_p1_d1l2_d2l1;
                   p_d2_1_d1l2 += PmB[$d2_l2] * p_p1_d1l2_d2l1 - PmC[$d2_l2] * p_p2_d1l2_d2l1;
 END
+}
 print <<"END";
 
                   scalar_type d_d0 = 0.0f, d_d1 = 0.0f;
 END
 if ($d1_l1 == $d2_l2) {
+if ($d1_l1 == $d1_l2) {
+print <<"END";
+                  d_d0  = p_p0_d1l1_d2l1 - p_p1_d1l1_d2l1;
+                  d_d1  = p_p1_d1l1_d2l1 - p_p2_d1l1_d2l1;
+END
+} else {
 print <<"END";
                   d_d0  = p_p0_d1l2_d2l1 - p_p1_d1l2_d2l1;
                   d_d1  = p_p1_d1l2_d2l1 - p_p2_d1l2_d2l1;
 END
+}
 }
 if ($d1_l2 == $d2_l2) {
 print <<"END";
@@ -248,10 +293,17 @@ print <<"END";
                     AB_common     = 0.0f;
 END
 if ($d1_l1 == $grad_l) {
+if ($d1_l1 == $d1_l2) {
+print <<"END";
+                    C_force_term  = p_d2_1_d1l1;
+                    AB_common     = p_d2_0_d1l1;
+END
+} else {
 print <<"END";
                     C_force_term  = p_d2_1_d1l2;
                     AB_common     = p_d2_0_d1l2;
 END
+}
 }
 if ($d1_l2 == $grad_l) {
 print <<"END";
@@ -260,10 +312,17 @@ print <<"END";
 END
 }
 if ($d2_l1 == $grad_l) {
+if ($d2_l1 == $d2_l2) {
+print <<"END";
+                    C_force_term += d1_p1_d2l1;
+                    AB_common    += d1_p0_d2l1;
+END
+} else {
 print <<"END";
                     C_force_term += d1_p1_d2l2;
                     AB_common    += d1_p0_d2l2;
 END
+}
 }
 if ($d2_l2 == $grad_l) {
 print <<"END";
@@ -290,9 +349,15 @@ print <<"END";
                     A_force_term *= 2.0f * ai;
 END
 if ($d1_l1 == $grad_l) {
+if ($d1_l1 == $d1_l2) {
+print <<"END";
+                    A_force_term -= p_d2_0_d1l1;
+END
+} else {
 print <<"END";
                     A_force_term -= p_d2_0_d1l2;
 END
+}
 }
 if ($d1_l2 == $grad_l) {
 print <<"END";
@@ -303,9 +368,15 @@ print <<"END";
                     B_force_term *= 2.0f * aj;
 END
 if ($d2_l1 == $grad_l) {
+if ($d2_l1 == $d2_l2) {
+print <<"END";
+                    B_force_term -= d1_p0_d2l1;
+END
+} else {
 print <<"END";
                     B_force_term -= d1_p0_d2l2;
 END
+}
 }
 if ($d2_l2 == $grad_l) {
 print <<"END";

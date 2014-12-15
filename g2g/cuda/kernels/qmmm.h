@@ -1,3 +1,8 @@
+#define WARP_SIZE 32
+#define WARP_SIZE2 2*WARP_SIZE
+#define WARP_SIZE3 3*WARP_SIZE
+#define QMMM_FORCES_HALF_BLOCK QMMM_FORCES_BLOCK_SIZE/2
+
 #define PI 3.141592653589793238462643383f
 
 template<class scalar_type,int m_max>
@@ -23,12 +28,12 @@ __device__ void lio_gamma(scalar_type* __restrict__ F_mU, scalar_type U)
     delt5 = 0.20 * delt;
 
     scalar_type tf0,tf1,tf2,tf3,tf4,tf5;
-    tf0 = gpu_str[it];
-    tf1 = gpu_str[it+880];
-    tf2 = gpu_str[it+1760];
-    tf3 = gpu_str[it+2640];
-    tf4 = gpu_str[it+3520];
-    tf5 = gpu_str[it+4400];
+    tf0 = fetch(qmmm_str_tex,(float)it,0.0f);//qmmm_str[it];
+    tf1 = fetch(qmmm_str_tex,(float)it,1.0f);//qmmm_str[it+880];
+    tf2 = fetch(qmmm_str_tex,(float)it,2.0f);//qmmm_str[it+1760];
+    tf3 = fetch(qmmm_str_tex,(float)it,3.0f);//qmmm_str[it+2640];
+    tf4 = fetch(qmmm_str_tex,(float)it,4.0f);//qmmm_str[it+3520];
+    tf5 = fetch(qmmm_str_tex,(float)it,5.0f);//qmmm_str[it+4400];
     F_mU[0] = tf0-delt * (tf1-delt2 * (tf2-delt3 * (tf3-delt4 * (tf4-delt5 * tf5))));
     for (uint m = 1; m <= m_max; m++) {
       tf0 = tf1;
@@ -36,7 +41,7 @@ __device__ void lio_gamma(scalar_type* __restrict__ F_mU, scalar_type U)
       tf2 = tf3;
       tf3 = tf4;
       tf4 = tf5;
-      tf5 = gpu_str[it+(m+5)*880];
+      tf5 = fetch(qmmm_str_tex,(float)it,(float)(m+5.0f));//qmmm_str[it+(m+5)*880];
 
       F_mU[m] = tf0-delt * (tf1-delt2 * (tf2-delt3 * (tf3-delt4 * (tf4-delt5 * tf5))));
     }
@@ -96,6 +101,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
                                  /*uint* nuclei1, uint* nuclei2,*/ vec_type<scalar_type,3>* mm_forces, vec_type<scalar_type,3>* qm_forces, uint global_stride )//, uint s_func_end, uint p_func_end )
 {
 
+  assert(QMMM_FORCES_BLOCK_SIZE == 128);
   uint ffnum = index_x(blockDim, blockIdx, threadIdx);
   int tid = threadIdx.x;
   bool valid_thread = (ffnum < num_terms);
@@ -193,6 +199,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
       B = gpu_atom_positions[nuc2];
   
       zeta = ai + aj;
+      //if (valid_thread && term_type==0) printf("THREADNUM: %d %f\n",ffnum,zeta);
       //scalar_type inv_zeta = 1.0f / zeta;
       inv_two_zeta = 1.0f / (2.0f * zeta);
       // Noticed that precomputing the inverse and multiplying rather than dividing here led to a 3x worse round-off error in the QM forces (compared to intsolG)
@@ -282,31 +289,32 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
         // TODO: should we do the per-block reduction here in this loop? or should each thread save its value to global memory for later accumulation?
         // BEGIN reduction of MM atom force terms
         // IMPORTANT: ASSUMING WARP SIZE OF 32 (or maybe assuming memory access granularity = warp size?...assuming something here anyway)
+        // ALSO ASSUMING BLOCK SIZE OF 128
         // First half of block does x,y
-        if (tid < 64)
+        if (tid < QMMM_FORCES_HALF_BLOCK)
         {
-          C_force[0][tid] += C_force[0][tid+64];
-          C_force[1][tid] += C_force[1][tid+64];
+          C_force[0][tid] += C_force[0][tid+QMMM_FORCES_HALF_BLOCK];
+          C_force[1][tid] += C_force[1][tid+QMMM_FORCES_HALF_BLOCK];
           //C_force[2][tid] += C_force[2][tid+64];
         }
         // Second half does z (probably doesn't make much of a difference)
         else
         {
-          C_force[2][tid-64] += C_force[2][tid];
+          C_force[2][tid-QMMM_FORCES_HALF_BLOCK] += C_force[2][tid];
         }
         __syncthreads();
         // first warp does x
-        if (tid < 32)      { warpReduce<scalar_type>(C_force[0], tid); }
+        if (tid < WARP_SIZE)       { warpReduce<scalar_type>(C_force[0], tid); }
         // second warp does y
-        else if (tid < 64) { warpReduce<scalar_type>(C_force[1], tid-32); }
+        else if (tid < WARP_SIZE2) { warpReduce<scalar_type>(C_force[1], tid-WARP_SIZE); }
         // third warp does z
-        else if (tid < 96) { warpReduce<scalar_type>(C_force[2], tid-64); }
+        else if (tid < WARP_SIZE3) { warpReduce<scalar_type>(C_force[2], tid-WARP_SIZE2); }
 
         //uint global_stride = COALESCED_DIMENSION(gridDim.x);
         // TODO: tried turning this into one global read to get the force vector object, but didn't seem to improve performance, maybe there's a better way?
-        if (tid == 0)       { mm_forces[global_stride*(i+j)+blockIdx.x].x = C_force[0][0]; }
-        else if (tid == 32) { mm_forces[global_stride*(i+j)+blockIdx.x].y = C_force[1][0]; }
-        else if (tid == 64) { mm_forces[global_stride*(i+j)+blockIdx.x].z = C_force[2][0]; }
+        if (tid == 0)               { mm_forces[global_stride*(i+j)+blockIdx.x].x = C_force[0][0]; }
+        else if (tid == WARP_SIZE)  { mm_forces[global_stride*(i+j)+blockIdx.x].y = C_force[1][0]; }
+        else if (tid == WARP_SIZE2) { mm_forces[global_stride*(i+j)+blockIdx.x].z = C_force[2][0]; }
         // END reduction
 
         __syncthreads();
@@ -342,28 +350,28 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
 
         // Reduce the force terms
         // First half of block does x,y
-        if (tid < 64)
+        if (tid < QMMM_FORCES_HALF_BLOCK)
         {
-          QM_force[0][tid] += QM_force[0][tid+64];
-          QM_force[1][tid] += QM_force[1][tid+64];
+          QM_force[0][tid] += QM_force[0][tid+QMMM_FORCES_HALF_BLOCK];
+          QM_force[1][tid] += QM_force[1][tid+QMMM_FORCES_HALF_BLOCK];
         }
         // Second half does z
         else
         {
-          QM_force[2][tid-64] += QM_force[2][tid];
+          QM_force[2][tid-QMMM_FORCES_HALF_BLOCK] += QM_force[2][tid];
         }
         __syncthreads();
         // first warp does x
-        if (tid < 32)      { warpReduce<scalar_type>(QM_force[0], tid); }
+        if (tid < WARP_SIZE)       { warpReduce<scalar_type>(QM_force[0], tid); }
         // second warp does y
-        else if (tid < 64) { warpReduce<scalar_type>(QM_force[1], tid-32); }
+        else if (tid < WARP_SIZE2) { warpReduce<scalar_type>(QM_force[1], tid-WARP_SIZE); }
         // third warp does z
-        else if (tid < 96) { warpReduce<scalar_type>(QM_force[2], tid-64); }
+        else if (tid < WARP_SIZE3) { warpReduce<scalar_type>(QM_force[2], tid-WARP_SIZE2); }
 
         //uint global_stride = COALESCED_DIMENSION(gridDim.x);
-        if (tid == 0)       { qm_forces[global_stride*i+blockIdx.x].x = QM_force[0][0]; }
-        else if (tid == 32) { qm_forces[global_stride*i+blockIdx.x].y = QM_force[1][0]; }
-        else if (tid == 64) { qm_forces[global_stride*i+blockIdx.x].z = QM_force[2][0]; }
+        if (tid == 0)               { qm_forces[global_stride*i+blockIdx.x].x = QM_force[0][0]; }
+        else if (tid == WARP_SIZE)  { qm_forces[global_stride*i+blockIdx.x].y = QM_force[1][0]; }
+        else if (tid == WARP_SIZE2) { qm_forces[global_stride*i+blockIdx.x].z = QM_force[2][0]; }
         __syncthreads();
       }
       // At this point, the global QM array is uninitialized; since we'll accumulate all entries, it needs to be zeroed

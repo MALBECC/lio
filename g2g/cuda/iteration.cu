@@ -19,11 +19,11 @@ namespace G2G {
 #if FULL_DOUBLE
 texture<int2, 2, cudaReadModeElementType> rmm_input_gpu_tex;
 texture<int2, 2, cudaReadModeElementType> rmm_input_gpu_tex2;
-//texture<int2, cudaTextureType2D, cudaReadModeElementType> qmmm_F_values_tex;
+texture<int2, cudaTextureType2D, cudaReadModeElementType> qmmm_str_tex;
 #else
 texture<float, 2, cudaReadModeElementType> rmm_input_gpu_tex;
 texture<float, 2, cudaReadModeElementType> rmm_input_gpu_tex2;
-//texture<float, cudaTextureType2D, cudaReadModeElementType> qmmm_F_values_tex;
+texture<float, cudaTextureType2D, cudaReadModeElementType> qmmm_str_tex;
 #endif
 /** KERNELS **/
 #include "gpu_variables.h"
@@ -67,12 +67,16 @@ void gpu_set_gamma_arrays() {
     h_fac(i) = fortran_vars.fac(i);
   }
 
-  scalar_type* d_str_ptr;
-  cudaMalloc((void**)&d_str_ptr,880*22*sizeof(scalar_type));
+  qmmm_str_tex.normalized = false;
+  qmmm_str_tex.filterMode = cudaFilterModePoint;
+  cudaMallocArray(&gammaArray,&qmmm_str_tex.channelDesc,880,22);//GAMMA_LENGTH,6);
+  cudaMemcpyToArray(gammaArray,0,0,h_str.data,sizeof(scalar_type)*880*22,cudaMemcpyHostToDevice);
+  //scalar_type* d_str_ptr;
+  //cudaMalloc((void**)&d_str_ptr,880*22*sizeof(scalar_type));
   // STR data host->device
-  cudaMemcpy(d_str_ptr,h_str.data,h_str.bytes(),cudaMemcpyHostToDevice);
+  //cudaMemcpy(d_str_ptr,h_str.data,h_str.bytes(),cudaMemcpyHostToDevice);
   // STR device pointer h->d
-  cudaMemcpyToSymbol(gpu_str,&d_str_ptr,sizeof(gpu_str),0,cudaMemcpyHostToDevice);
+  //cudaMemcpyToSymbol(gpu_str,&d_str_ptr,sizeof(gpu_str),0,cudaMemcpyHostToDevice);
 
   // FAC data h->d
   cudaMemcpyToSymbol(gpu_fac,h_fac.data,h_fac.bytes(),0,cudaMemcpyHostToDevice);
@@ -930,7 +934,6 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
 
   //uint last_code = 0;
   //uint last_dens = 0;
-  //typename std::list<uint>::iterator func_begin_iter = func_code.begin(), dens_begin_iter = local_dens.begin();
   for (uint current_term_type = 0; current_term_type < NUM_TERM_TYPES; current_term_type++) {
 
     term_type_counts[current_term_type] = 0;
@@ -943,7 +946,12 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
     local_dens_ind = 0;
 
     //std::list<scalar_type> zetas;
-    //typename std::list<scalar_type>::iterator zeta_begin_iter = zetas.begin();
+    if (current_term_type > 0) {
+      tmp_ind += COALESCED_DIMENSION(term_type_counts[current_term_type-1]);
+      term_type_offsets[current_term_type] = tmp_ind;
+      tmp_dens_ind += COALESCED_DIMENSION(dens_counts[current_term_type-1]);
+      dens_offsets[current_term_type] = tmp_dens_ind;
+    }
 
     // function i, center A
     for (i = i_begin; i < i_end; i += i_orbitals) {
@@ -983,13 +991,12 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
                   //last_code = this_func_code;
                   //last_dens = local_dens_ind;
 
-                  //typename std::list<scalar_type>::iterator zeta_iter = zeta_begin_iter;//s.begin();
-                  //typename std::list<uint>::iterator func_iter = func_begin_iter, dens_iter = dens_begin_iter;
-                  //while (zeta_iter != zetas.end()) {
+                  //typename std::list<scalar_type>::iterator zeta_iter;
+                  //typename std::list<uint>::iterator func_iter = func_code.begin(), dens_iter = local_dens.begin();
+                  //std::advance(func_iter,term_type_offsets[current_term_type]);
+                  //std::advance(dens_iter,term_type_offsets[current_term_type]);
+                  //for (zeta_iter = zetas.begin(); zeta_iter != zetas.end(); ++zeta_iter,++func_iter,++dens_iter) {
                   //  if (zeta <= (*zeta_iter)) break;
-                  //  zeta_iter++;
-                  //  func_iter++;
-                  //  dens_iter++;
                   //}
                   //zetas.insert(zeta_iter,zeta);
                   //func_code.insert(func_iter,this_func_code);
@@ -1028,19 +1035,25 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
         }
       }
     }
-    if (current_term_type > 0) {
-      tmp_ind += COALESCED_DIMENSION(term_type_counts[current_term_type-1]);
-      term_type_offsets[current_term_type] = tmp_ind;
-      tmp_dens_ind += COALESCED_DIMENSION(dens_counts[current_term_type-1]);
-      dens_offsets[current_term_type] = tmp_dens_ind;
-    }
+    /*typename std::list<scalar_type>::iterator zeta_iter;
+    typename std::list<uint>::iterator func_iter = func_code.begin();
+    std::advance(func_iter,term_type_offsets[current_term_type]);
+    for (zeta_iter = zetas.begin(); zeta_iter != zetas.end(); ++zeta_iter,++func_iter) {
+      uint code = (*func_iter);
+      uint nj = code % MAX_CONTRACTIONS;
+      code /= MAX_CONTRACTIONS;
+      uint ni = code % MAX_CONTRACTIONS;
+      code /= MAX_CONTRACTIONS;
+      uint fj = code % fortran_vars.m;
+      code /= fortran_vars.m;
+      uint fi = code;
+      cout << fi << " " << ni << " " << fj << " " << nj << " " << fortran_vars.a_values(fi,ni) << " " << fortran_vars.a_values(fj,nj) << " " << *zeta_iter << endl;
+    }*/
     for (j = term_type_counts[current_term_type]; j < COALESCED_DIMENSION(term_type_counts[current_term_type]); j++) {
       func_code.push_back(func_code[term_type_offsets[current_term_type]]);
       local_dens.push_back(local_dens[term_type_offsets[current_term_type]]);
       //dens_values.push_back(dens_values[term_type_offsets[current_term_type]]);
     }
-    //func_begin_iter = func_code.end();
-    //dens_begin_iter = local_dens.end();
     for (j = dens_counts[current_term_type]; j < COALESCED_DIMENSION(dens_counts[current_term_type]); j++) {
       dens_values.push_back(dens_values[dens_offsets[current_term_type]]);
     }
@@ -1105,8 +1118,6 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
   //}
   CudaMatrixUInt dev_func_code(func_code), dev_local_dens(local_dens)/*dev_orb1(orbital1), dev_orb2(orbital2),*/; // dev_nuclei1(nuclei1), dev_nuclei2(nuclei2);
 
-  //cudaBindTextureToArray(qmmm_F_values_tex,gammaArray);
-
   /*dim3 testThreads(100,6);
   dim3 testBlock(32,6);
   dim3 testGrid(divUp(testThreads,testBlock));
@@ -1127,6 +1138,8 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
   gpu_partial_qm_forces.resize(COALESCED_DIMENSION(partial_forces_size), fortran_vars.atoms);
   //gpu_mm_forces.resize(fortran_vars.clatoms,1);
   //gpu_qm_forces.resize(fortran_vars.atoms,1);
+
+  cudaBindTextureToArray(qmmm_str_tex,gammaArray);
 
 #define qmmm_parameters \
   term_type_counts[i], factor_ac_gpu.data, nuc_gpu.data, /*dev_a_values1.data+offset, dev_a_values2.data+offset, dev_cc_values.data+offset,*/\
@@ -1192,17 +1205,17 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
   cout << "[G2G_QMMM] nuc-nuc: " << nuc << " overlap check: " << check << " kernel prep: " << prep << endl;
   cout << "[G2G_QMMM] kernel: " << kernel << " download: " << down << " reduction: " << reduce << endl;
 
-  //cudaUnbindTexture(qmmm_F_values_tex);
+  cudaUnbindTexture(qmmm_str_tex);
 
   cudaAssertNoError("qmmm");
 }
 
 template<class scalar_type>
 void clean_gamma( void ) {
-  scalar_type* d_str_ptr;
-  cudaMemcpyFromSymbol(&d_str_ptr,gpu_str,sizeof(d_str_ptr));
-  cudaFree(d_str_ptr);
-  //cudaFreeArray(gammaArray);
+  //scalar_type* d_str_ptr;
+  //cudaMemcpyFromSymbol(&d_str_ptr,gpu_str,sizeof(d_str_ptr));
+  //cudaFree(d_str_ptr);
+  cudaFreeArray(gammaArray);
 
   cudaAssertNoError("clean_gamma");
 }

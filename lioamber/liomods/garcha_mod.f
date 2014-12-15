@@ -1,5 +1,6 @@
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        module garcha_mod
-
+!------------------------------------------------------------------------------!
        implicit real*8 (a-h,o-z)
 
       INCLUDE 'param'
@@ -93,5 +94,16 @@ c
       real*8, dimension (:), ALLOCATABLE :: cool
       real*4, dimension (:), ALLOCATABLE :: cools
 c      parameter rmintsol=16.0D0
+!
+!------------------------------------------------------------------------------!
+       real*8,allocatable,dimension(:,:)     :: Smat
+       real*8,allocatable,dimension(:,:)     :: RealRho
+!       real*8,allocatable,dimension(:,:)     :: Gmat !DK
+!       real*8,allocatable,dimension(:,:)     :: Hmat !DK
+!       real*8,allocatable,dimension(:,:)     :: FockMat
+!       complex*16,allocatable,dimension(:,:) :: RhoOld,RhoNew
 
-      end module garcha_mod
+!       real*8,allocatable,dimension(:,:) :: Lmat,Linv,Umat,Uinv
+!------------------------------------------------------------------------------!
+       end module
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

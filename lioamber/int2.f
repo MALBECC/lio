@@ -21,7 +21,7 @@ c Output: G matrix
 c G matrix should be inverted, 
 c later on, for evaluating  Coulomb terms
 c-----------------------------------------------------------------
-      subroutine int22()
+      subroutine int2()
        use garcha_mod
 c
       implicit real*8 (a-h,o-z)
@@ -565,7 +565,7 @@ c
 #endif
 c
       endif
- 900  format('SWITCHING TO SVD rcond=',D8.2)
+ 900  format('SWITCHING TO SVD rcond=',D10.3)
 c
 c-------------------------------------------------------------------
       return

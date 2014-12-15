@@ -12,7 +12,7 @@
 #define assert(x)
 #endif
 
-#define MAX_CONTRACTIONS 7 
+#define MAX_CONTRACTIONS 7
 
 /* Los block sizes deben ser multiplos de 16 */
 
@@ -23,7 +23,7 @@
 
 #define DENSITY_BATCH_SIZE 128
 #define DENSITY_ACCUM_BLOCK_SIZE 128
-#define DENSITY_BLOCK_SIZE 32
+#define DENSITY_BLOCK_SIZE 64
 
 /*#define DENSITY_DERIV_BLOCK_SIZE 128
 #define DENSITY_DERIV_BATCH_SIZE 32

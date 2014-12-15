@@ -39,6 +39,8 @@ c       USE latom
      >   rho,rhonew,rhold,xnano,rho1
        DIMENSION q(natom)
        REAL*8,dimension(:),ALLOCATABLE :: factorial
+       INTEGER            :: LWORK,ii,jj
+       REAL*8,ALLOCATABLE :: WORK(:)
 !!------------------------------------!!
 !! FFR ADD
        INTEGER ::
@@ -248,7 +250,13 @@ c s is in RMM(M13,M13+1,M13+2,...,M13+MM)
 !--------------------------------------!
 ! LAPACK OPTION
 #ifdef pack
-       call dspev('V','L',M,RMM(M5),RMM(M13),X,M,RMM(M15),info)
+       do ii=1,M; do jj=1,M
+         X(ii,jj)=Smat(ii,jj)
+       enddo; enddo
+       if (allocated(WORK)) deallocate(WORK); allocate(WORK(1))
+       call dsyev('V','L',M,X,M,RMM(M13),WORK,-1,info)
+       LWORK=int(WORK(1));  deallocate(WORK); allocate(WORK(LWORK))
+       call dsyev('V','L',M,X,M,RMM(M13),WORK,LWORK,info)
 #endif
 !--------------------------------------!
 ! Here, we obtain the transformation matrices X and Y for converting 
@@ -306,9 +314,9 @@ c s is in RMM(M13,M13+1,M13+2,...,M13+MM)
 !            call matmulnanoc(rho,Y,rho,M)
 !            rho=rho1
 !--------------------------------------!
-            call g2g_timer_start('int22')
-            call int22()
-            call g2g_timer_stop('int22')
+            call g2g_timer_start('int2')
+            call int2()
+            call g2g_timer_stop('int2')
             call g2g_timer_start('int3mmem')
             call int3mem()
             call int3mems()
@@ -350,7 +358,7 @@ c ELECTRIC FIELD CASE - Type=gaussian (ON)
                    factor=(2.54D0*2.00D0)
 !
                  endif
-                 call dip2(g,Fxx,Fyy,Fzz)
+                 call intfld(g,Fxx,Fyy,Fzz)
                  E1=-1.00D0*g*(Fx*ux+Fy*uy+Fz*uz)/factor -
      >        0.50D0*(1.0D0-1.0D0/epsilon)*Qc2/a0
               endif

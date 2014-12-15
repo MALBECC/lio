@@ -1,4 +1,7 @@
-c-------------------------------------------------------------------
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+       subroutine int1(En)
+!------------------------------------------------------------------------------!
+c
 c      Integrals subroutine 
 c      1 e integrals
 c      using the Obara-Saika recursive method.
@@ -17,25 +20,21 @@ c
 c      r(Nuc(i),j) j component of position of nucleus i , j=1,3
 c      Input : basis function information
 c      Output: F matrix, and S matrix
-c-------------------------------------------------------------------
-      subroutine int1(En)
-       use garcha_mod  
-!     > ighost
+c
+!------------------------------------------------------------------------------!
+       use garcha_mod
+       implicit real*8 (a-h,o-z)
+       integer,allocatable,dimension(:) :: Iaux
 
-      implicit real*8 (a-h,o-z)
-c      dimension Iaux(natom)
-       integer, dimension (:), ALLOCATABLE :: Iaux
 c-----auxiliar quantities
-
-      dimension Q(3)
-c      real*8, dimension (:,:), ALLOCATABLE :: d
-      real*8, dimension (:), ALLOCATABLE :: s0s,s1s,s2s,s3s,s4s
-
-
-c      allocate(d(natom,natom))
-      allocate(s0s(natom),s1s(natom),s2s(natom),s3s(natom)
-     > ,s4s(natom))
-      allocate(Iaux(natom))
+       dimension :: Q(3)
+       real*8,allocatable,dimension(:)  :: s0s,s1s,s2s,s3s,s4s
+!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!
+       allocate(s0s(natom),s1s(natom),s2s(natom))
+       allocate(s3s(natom),s4s(natom),Iaux(natom))
+       if (.not.allocated(Smat)) allocate(Smat(M,M))
 
 c-----distance between pairs of centers
 c
@@ -82,9 +81,11 @@ c matrix elements no,
 c they're stored in Fock matrix and in the Energy directly
 c in order to reduce the memory requirements
 c
-      do 40 i=1,MM
-       RMM(M5+i-1)=0.D0
- 40    RMM(M11+i-1)=0.D0
+       Smat=0.0d0
+       do i=1,MM
+         RMM(M5+i-1)=0.D0
+         RMM(M11+i-1)=0.D0
+       enddo
 c
 c      do 50 i=1,natom
 c      do 50 j=1,natom
@@ -95,9 +96,11 @@ c
 c Nuclear Repulsion part ------------------------------------------
       En=0.D0
 
-      do 51 i=1,natom
-      do 51 j=1,i-1
- 51    En=En+Iz(i)*Iz(j)/sqrt(d(i,j))
+       do i=1,natom
+       do j=1,i-1
+         En=En+Iz(i)*Iz(j)/sqrt(d(i,j))
+       enddo
+       enddo
 c
 c first loop (s|s) case -------------------------------------------
 c
@@ -124,20 +127,23 @@ c
 c
       k=i+((M2-j)*(j-1))/2
       RMM(M5+k-1)=RMM(M5+k-1)+ccoef*ovlap
+      Smat(i,j)=Smat(i,j)+ccoef*ovlap
+      Smat(j,i)=Smat(j,i)+ccoef*ovlap
 c 
 c loop over nuclei, nuclear attraction matrix elements
 c tna: accumulates nuc. attraction over all nuclei
 c
        tna=0.D0
-      do 202 n=1,natom
+      do n=1,natom
        u=(Q(1)-r(n,1))**2+(Q(2)-r(n,2))**2+(Q(3)-r(n,3))**2
        u=u*zij
 
        s0s(n)=Iz(n)*2.*sqrt(zij/pi)*ss*FUNCT(0,u)
- 202   tna=tna-s0s(n)
+       tna=tna-s0s(n)
+      enddo
 c
       term=ccoef*(tn+tna)
-      RMM(M11+k-1)=RMM(M11+k-1)+ term 
+      RMM(M11+k-1)=RMM(M11+k-1)+ term
  200  continue
 c
 c------------------------------------------------------------------
@@ -185,6 +191,8 @@ c ii index , taking into account different components of the shell
 c
         k=iin+((M2-j)*(j-1))/2
         RMM(M5+k-1)=RMM(M5+k-1)+ovlap*ccoef
+        Smat(iin,j)=Smat(iin,j)+ovlap*ccoef
+        Smat(j,iin)=Smat(j,iin)+ovlap*ccoef
 c
 c loop over nuclei, specific part
        tna=0.D0
@@ -256,9 +264,11 @@ c
        term=tn*ccoef
 c
        if (iin.ge.jj) then
-       k=iin+((M2-jj)*(jj-1))/2
-       RMM(M5+k-1)=RMM(M5+k-1)+ovlap*ccoef
-       RMM(M11+k-1)=RMM(M11+k-1)+term
+         k=iin+((M2-jj)*(jj-1))/2
+         RMM(M5+k-1)=RMM(M5+k-1)+ovlap*ccoef
+         Smat(iin,jj)=Smat(iin,jj)+ovlap*ccoef
+         Smat(jj,iin)=Smat(jj,iin)+ovlap*ccoef
+         RMM(M11+k-1)=RMM(M11+k-1)+term
        endif
  405  continue
 c
@@ -285,9 +295,9 @@ c
        iin=i+l1-1
        jj=j+l2-1
        if (iin.ge.jj) then
-       k=iin+((M2-jj)*(jj-1))/2
-       term=-tna*ccoef*Iz(n)
-       RMM(M11+k-1)=RMM(M11+k-1)+term
+         k=iin+((M2-jj)*(jj-1))/2
+         term=-tna*ccoef*Iz(n)
+         RMM(M11+k-1)=RMM(M11+k-1)+term
        endif
  406  continue
  403   continue
@@ -357,6 +367,8 @@ c
        term=cc*tn
        k=iin+((M2-j)*(j-1))/2
        RMM(M5+k-1)=RMM(M5+k-1)+ovlap*cc
+       Smat(iin,j)=Smat(iin,j)+ovlap*cc
+       Smat(j,iin)=Smat(j,iin)+ovlap*cc
        RMM(M11+k-1)=RMM(M11+k-1)+term
  505  continue
 cc nuclear attraction part 
@@ -480,6 +492,8 @@ c
        term=cc*tn
        k=iin+((M2-jj)*(jj-1))/2
        RMM(M5+k-1)=RMM(M5+k-1)+cc*ovlap
+       Smat(iin,jj)=Smat(iin,jj)+cc*ovlap
+       Smat(jj,iin)=Smat(jj,iin)+cc*ovlap
        RMM(M11+k-1)=RMM(M11+k-1)+term
  605  continue
 c
@@ -669,6 +683,8 @@ c
        cc=ccoef/(f1*f2)
        term=cc*tn
        RMM(M5+k-1)=RMM(M5+k-1)+ovlap*cc
+       Smat(iin,jj)=Smat(iin,jj)+ovlap*cc
+       Smat(jj,iin)=Smat(jj,iin)+ovlap*cc
        RMM(M11+k-1)=RMM(M11+k-1)+term
        endif
 c
@@ -807,7 +823,9 @@ c     do i=1,natom
 c      write(*,*) i,r(i,1),r(i,2),r(i,3)
 c     enddo
 c     pause
-      deallocate(s0s,s2s,s3s,s4s,Iaux)
-      return
-      end
-c------------------------------------------------------------------- 
+      do i=1,M
+        Smat(i,i)=Smat(i,i)/2
+      enddo
+      deallocate(s0s,s1s,s2s,s3s,s4s,Iaux)
+      return;end subroutine
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

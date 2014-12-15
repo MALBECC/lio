@@ -1,14 +1,59 @@
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+# LIBLIO MAKEFILE
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+MODS_PATH =
+LIBS_PATH =
+
+
+# LIBS BASIC
+#--------------------------------------------------------------------#
+#MODS_PATH += -I/mathsubs
+LIBS_PATH += -L../g2g -L/usr/lib -L/usr/lib64
+LIBS_LIBS += -lg2g -lstdc++
+
+
+# MKL LIBS AND MODS
+#--------------------------------------------------------------------#
+MODS_PATH += -I$(MKLROOT)/include
+LIBS_PATH += -L$(MKLROOT)/lib/intel64
+LIBS_LIBS += -lmkl_lapack95_lp64
+LIBS_LIBS += -lmkl_intel_lp64
+LIBS_LIBS += -lmkl_intel_thread
+LIBS_LIBS += -lmkl_core
+
+# LIBS EXTRAS & JOIN ALL
+#--------------------------------------------------------------------#
+LIBS_MOAR = -liomp5 -lpthread -lm -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g'
+
+LIBS = $(MODS_PATH) $(LIBS_PATH) $(PROFILE) $(LIBS_LIBS) $(LIBS_MOAR)
+#
+#
+#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+# OLD PARTS
+#--------------------------------------------------------------------#
 # sources and objects
-MOD_SRCS=$(wildcard mods/*.f)
+MOD_SRCS=$(wildcard liomods/*.f)
 # COMMON_SRCS=$(wildcard *.f)
 GARCHA_SRCS=$(wildcard *.f)
 
 MOD_OBJ=$(MOD_SRCS:%.f=%.o)
-GARCHA_OBJ=$(MOD_OBJ) $(COMMON_SRCS:%.f=%.o) $(GARCHA_SRCS:%.f=%.o)
+GARCHA_OBJ = mathsubs.o
+GARCHA_OBJ += $(MOD_OBJ) $(COMMON_SRCS:%.f=%.o) $(GARCHA_SRCS:%.f=%.o)
+
+#--------------------------------------------------------------------#
+# THE OLD WAY TO LIBS
+#LIBS=-L/usr/lib -L/usr/lib64 -L../g2g -lg2g -lstdc++ \
+      -L$(MKLROOT)/lib/intel64 -I$(MKLROOT)/include $(PROFILE) \
+      -lmkl_lapack95_lp64 -Wl,--start-group -lmkl_intel_lp64 \
+      -lmkl_intel_thread -lmkl_core -Wl,--end-group -liomp5 -lpthread \
+      -lm -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g'
+#--------------------------------------------------------------------#
+
 
 # flags
 ifeq ($(print), 1)
-        DEFINE += -DPRINT_MATRICES
+  DEFINE += -DPRINT_MATRICES
 endif
 
 ifeq ($(profile),1)
@@ -36,20 +81,30 @@ DEFINE   = -Dpack -fPIC
 ifeq ($(gcc),1)
   CXX = gfortran
   PACK_LIBS = -L$(PACK_LIB_DIR) $(PROFILE) -llapack
-  CFLAGS   = -g -O3 -c -cpp $(DEFINE) $(PROFILE)
-  CFLAGS2  = -g -O1 -c -cpp $(DEFINE) $(PROFILE)
-  CFLAGS3  = -g -O3 -c -cpp $(DEFINE) $(PROFILE)
+  CFLAGS   = -g -c -cpp $(DEFINE) $(PROFILE)
+  CFLAGS2  = -g $(OPTIMIZE) -c -cpp $(DEFINE) $(PROFILE)
+  CFLAGS3  = -g $(OPTIMIZE) -c -cpp $(DEFINE) $(PROFILE)
 else
   CXX = ifort
   PACK_LIBS = -L$(MKLROOT)/lib/intel64 -I$(MKLROOT)/include $(PROFILE) -lmkl_lapack95_lp64 -Wl,--start-group -lmkl_intel_lp64\
      -lmkl_intel_thread -lmkl_core -Wl,--end-group -liomp5 -lpthread
-  CFLAGS   = -g -mp1 -ip -O3 -c -cpp $(DEFINE) $(PROFILE)
-  CFLAGS2  = -g -O1 -c -cpp $(DEFINE) $(PROFILE)
-  CFLAGS3  = -g -O3 -c -cpp -parallel $(DEFINE) $(PROFILE)
+  CFLAGS   = -g -mp1 -ip -c -cpp $(DEFINE) $(PROFILE)
+  CFLAGS2  = -g $(OPTIMIZE) -c -cpp $(DEFINE) $(PROFILE)
+  CFLAGS3  = -g $(OPTIMIZe) -c -cpp -parallel $(DEFINE) $(PROFILE)
 endif
 
 CPPFLAGS = -P -traditional-cpp 
 LIBS=-L/usr/lib -L/usr/lib64 -L../g2g -lg2g -lstdc++ $(PACK_LIBS) -lm -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g' 
+
+ifeq ($(non_optimize),1)
+  CFLAGS += -O0
+  CFLAGS2 += -O0
+  CFLAGS3 += -O0
+else
+  CFLAGS += -O3
+  CFLAGS2 += -O1
+  CFLAGS3 += -O3
+endif
 
 ifeq ($(magma),1)
 	DEFINE   += -Dmagma
@@ -77,12 +132,16 @@ endif
 ## Targets: make ##
 
 all: dirs liblio-g2g.so
+#	@echo '---------------------------'
+#	@echo $(MKLROOT)
+#	@echo '---------------------------'
+
 
 dirs:
-	mkdir -p obj/garcha_g2g_obj/mods obj/garcha_g2g_obj/
+	mkdir -p obj/liomods obj
 
-liblio-g2g.so: dirs $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o)
-	$(CXX) -shared -fPIC -o $@ $(GARCHA_OBJ:%.o=obj/garcha_g2g_obj/%.o) $(LIBS)
+liblio-g2g.so: dirs $(GARCHA_OBJ:%.o=obj/%.o)
+	$(CXX) -shared -fPIC -o $@ $(GARCHA_OBJ:%.o=obj/%.o) $(LIBS)
 
 
 ## Targets: clean ##
@@ -93,51 +152,58 @@ clean:
 
 
 # Different flags for some .o
-obj/garcha_g2g_obj/dip2.o: dip2.f
+obj/intfld.o: intfld.f
 	$(CXX) -o $@ $(CFLAGS2) $(G2G_CFLAGS) $<
 
-obj/garcha_g2g_obj/dipG.o: dipG.f
-	$(CXX) -o $@ $(CFLAGS2) $(G2G_CFLAGS) $<
-obj/garcha_g2g_obj/dip.o: dip.f
+obj/dipG.o: dipG.f
 	$(CXX) -o $@ $(CFLAGS2) $(G2G_CFLAGS) $<
 
-obj/garcha_g2g_obj/int1G.o: int1G.f
+obj/dip.o: dip.f
 	$(CXX) -o $@ $(CFLAGS2) $(G2G_CFLAGS) $<
 
-obj/garcha_g2g_obj/int3G.o: int3G.f
+obj/int1G.o: int1G.f
 	$(CXX) -o $@ $(CFLAGS2) $(G2G_CFLAGS) $<
 
-obj/garcha_g2g_obj/intsolG.o: intsolG.f
+obj/int3G.o: int3G.f
+	$(CXX) -o $@ $(CFLAGS2) $(G2G_CFLAGS) $<
+
+obj/intsolG.o: intsolG.f
 	$(CXX) -o $@ $(CFLAGS2) $(G2G_CFLAGS)  $<
 
-obj/garcha_g2g_obj/init.o: init.f
+obj/init.o: init.f
 	$(CXX) -o $@ $(CFLAGS) $(G2G_CFLAGS)  $<
 
-obj/garcha_g2g_obj/SCFop.o: SCFop.f
+obj/SCFop.o: SCFop.f
 	$(CXX) -o $@ $(CFLAGS2) $(G2G_CFLAGS) $<
 
-obj/garcha_g2g_obj/intsolGs.o: intsolGs.f
+obj/intsolGs.o: intsolGs.f
 	$(CXX) -o $@ $(CFLAGS2) $(G2G_CFLAGS) $<
 
-obj/garcha_g2g_obj/matmulnano.o: matmulnano.f
-	$(CXX) -o $@ $(CFLAGS3)  $(G2G_CFLAGS) $<
-obj/garcha_g2g_obj/fock_commuts.o: fock_commuts.f
+obj/fock_commuts.o: fock_commuts.f
 	$(CXX) -o $@ $(CFLAGS3)  $(G2G_CFLAGS) $<
 
-obj/garcha_g2g_obj/conmut.o: conmut.f
-	$(CXX) -o $@ $(CFLAGS3)  $(G2G_CFLAGS) $<
-obj/garcha_g2g_obj/matmuldiag.o: matmuldiag.f
-	$(CXX) -o $@ $(CFLAGS3)  $(G2G_CFLAGS) $<
-obj/garcha_g2g_obj/int3lu.o: int3lu.f
+obj/matmulnano.o: matmulnano.f
 	$(CXX) -o $@ $(CFLAGS3)  $(G2G_CFLAGS) $<
 
-obj/garcha_g2g_obj/intsol.o: intsol.f
+obj/conmut.o: conmut.f
+	$(CXX) -o $@ $(CFLAGS3)  $(G2G_CFLAGS) $<
+
+obj/matmuldiag.o: matmuldiag.f
+	$(CXX) -o $@ $(CFLAGS3)  $(G2G_CFLAGS) $<
+
+obj/int3lu.o: int3lu.f
+	$(CXX) -o $@ $(CFLAGS3)  $(G2G_CFLAGS) $<
+
+obj/intsol.o: intsol.f
 	$(CXX) -o $@ $(CFLAGS2) $(G2G_CFLAGS)  $<
 
+.PHONY: obj/mathsubs.o
+obj/mathsubs.o:
+	cd mathsubs; $(MAKE) --no-print-directory
 
 ### Objects
 
-
-obj/garcha_g2g_obj/%.o: %.f
+obj/%.o: %.f
 	$(CXX) -o $@ $(CFLAGS) $(G2G_CFLAGS) $<
 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#

@@ -12,8 +12,7 @@ namespace G2G {
 template<class scalar_type>
 void PointGroup<scalar_type>::compute_weights(void)
 {
-	list<Point>::iterator it = points.begin();
-	while (it != points.end()) {
+	for (vector<Point>::iterator it = points.begin(); it != points.end(); ++it){
 		uint atom = it->atom;
 		double atom_weight;
 
@@ -89,16 +88,16 @@ void PointGroup<scalar_type>::compute_weights(void)
 		atom_weight = (P_total == 0.0 ? 0.0 : (P_atom / P_total));
 		it->weight *= atom_weight;
 		//cout << "peso " << P_atom << " " << P_total << " " << it->weight << endl;
+	}
 
     if (remove_zero_weights) {
-      if (it->weight == 0.0) {
-  			it = points.erase(it);
-  			number_of_points--;
-  		}
-  		else ++it;
+        vector<Point> filteredPoints;
+        for(vector<Point>::const_iterator it = points.begin(); it != points.end(); ++it){
+            if(it->weight != 0.0) filteredPoints.push_back(*it);
+        }
+        points.swap(filteredPoints);
+        number_of_points = points.size();
     }
-    else ++it;
-	}
 }
 
 template class PointGroup<double>;

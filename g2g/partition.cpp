@@ -27,7 +27,8 @@ ostream& operator<<(ostream& io, const Timers& t) {
  ********************/
 
 template<class scalar_type>
-void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input) const {
+void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input,
+    FortranMatrix<double>& source) const {
   rmm_input.zero();
   for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
     uint inc_i = small_function_type(i);
@@ -42,7 +43,7 @@ void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input) 
           if (big_i > big_j) continue;
           uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
 
-          rmm_input(ii, jj) = (scalar_type)fortran_vars.rmm_input_ndens1.data[big_index];
+          rmm_input(ii, jj) = (scalar_type)source.data[big_index];
 
           rmm_input(jj, ii) = rmm_input(ii, jj);
         }
@@ -52,9 +53,19 @@ void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input) 
 }
 
 template<class scalar_type>
+void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input) const {
+  get_rmm_input(rmm_input, fortran_vars.rmm_input_ndens1);
+}
+
+template<class scalar_type>
 void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input_a, HostMatrix<scalar_type>& rmm_input_b) const {
-  rmm_input_a.zero();
-  rmm_input_b.zero();
+  get_rmm_input(rmm_input_a, fortran_vars.rmm_dens_a);
+  get_rmm_input(rmm_input_b, fortran_vars.rmm_dens_b);
+}
+
+template<class scalar_type>
+void PointGroup<scalar_type>::add_rmm_output(const HostMatrix<scalar_type>& rmm_output,
+    FortranMatrix<double>& target ) const {
   for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
     uint inc_i = small_function_type(i);
 
@@ -67,12 +78,7 @@ void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input_a
           uint big_j = local2global_func[j] + l;
           if (big_i > big_j) continue;
           uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-          rmm_input_a(ii, jj) = (scalar_type)fortran_vars.rmm_dens_a.data[big_index];
-          rmm_input_a(jj, ii) = rmm_input_a(ii, jj);
-		
-	  rmm_input_b(ii, jj) = (scalar_type)fortran_vars.rmm_dens_b.data[big_index];
-          rmm_input_b(jj, ii) = rmm_input_b(ii, jj);
-
+          target(big_index) += (double)rmm_output(ii, jj);
         }
       }
     }
@@ -81,97 +87,24 @@ void PointGroup<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_input_a
 
 template<class scalar_type>
 void PointGroup<scalar_type>::add_rmm_output(const HostMatrix<scalar_type>& rmm_output) const {
-  for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
-    uint inc_i = small_function_type(i);
-
-    for (uint k = 0; k < inc_i; k++, ii++) {
-      uint big_i = local2global_func[i] + k;
-      for (uint j = 0, jj = 0; j < total_functions_simple(); j++) {
-        uint inc_j = small_function_type(j);
-
-        for (uint l = 0; l < inc_j; l++, jj++) {
-          uint big_j = local2global_func[j] + l;
-          if (big_i > big_j) continue;
-          uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-          fortran_vars.rmm_output(big_index) += (double)rmm_output(ii, jj);
-        }
-      }
-    }
-  }
+  add_rmm_output(rmm_output, fortran_vars.rmm_output);
 }
 
 template<class scalar_type>
 void PointGroup<scalar_type>::add_rmm_output_a(const HostMatrix<scalar_type>& rmm_output) const {
-  for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
-    uint inc_i = small_function_type(i);
-
-    for (uint k = 0; k < inc_i; k++, ii++) {
-      uint big_i = local2global_func[i] + k;
-      for (uint j = 0, jj = 0; j < total_functions_simple(); j++) {
-        uint inc_j = small_function_type(j);
-
-        for (uint l = 0; l < inc_j; l++, jj++) {
-          uint big_j = local2global_func[j] + l;
-          if (big_i > big_j) continue;
-          uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-          fortran_vars.rmm_output_a(big_index) += (double)rmm_output(ii, jj);
-        }
-      }
-    }
-  }
+  add_rmm_output(rmm_output, fortran_vars.rmm_output_a);
 }
 
 template<class scalar_type>
 void PointGroup<scalar_type>::add_rmm_output_b(const HostMatrix<scalar_type>& rmm_output) const {
-  for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
-    uint inc_i = small_function_type(i);
-
-    for (uint k = 0; k < inc_i; k++, ii++) {
-      uint big_i = local2global_func[i] + k;
-      for (uint j = 0, jj = 0; j < total_functions_simple(); j++) {
-        uint inc_j = small_function_type(j);
-
-        for (uint l = 0; l < inc_j; l++, jj++) {
-          uint big_j = local2global_func[j] + l;
-          if (big_i > big_j) continue;
-          uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-          fortran_vars.rmm_output_b(big_index) += (double)rmm_output(ii, jj);
-        }
-      }
-    }
-  }
+  add_rmm_output(rmm_output, fortran_vars.rmm_output_b);
 }
 
 template<class scalar_type>
-void PointGroup<scalar_type>::add_rmm_open_output(const HostMatrix<scalar_type>& rmm_a_output, const HostMatrix<scalar_type>& rmm_b_output) const {
-        //cout<<"rmm input..."<<endl;	
-	//for(uint i=0; i<fortran_vars.m*(fortran_vars.m+1)/2; i++){
-	//cout<<fortran_vars.rmm_output_a(i)<<" "<<fortran_vars.rmm_output_b(i)<<endl;
-	//}  
-
-    for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
-    uint inc_i = small_function_type(i);
-
-    for (uint k = 0; k < inc_i; k++, ii++) {
-      uint big_i = local2global_func[i] + k;
-      for (uint j = 0, jj = 0; j < total_functions_simple(); j++) {
-        uint inc_j = small_function_type(j);
-
-        for (uint l = 0; l < inc_j; l++, jj++) {
-          uint big_j = local2global_func[j] + l;
-          if (big_i > big_j) continue;
-	  uint big_index = (big_i * fortran_vars.m - (big_i * (big_i - 1)) / 2) + (big_j - big_i);
-
-	  fortran_vars.rmm_output_a(big_index) += (double)rmm_a_output(ii, jj);
-	  cout <<fortran_vars.rmm_output_a(big_index)<<" ";
-	  //cout <<(double)rmm_a_output(ii, jj)<<" ";
-	  fortran_vars.rmm_output_b(big_index) += (double)rmm_b_output(ii, jj);
-          cout <<fortran_vars.rmm_output_b(big_index)<<endl;
-          //cout <<(double)rmm_b_output(ii, jj)<<endl;
-        }
-      }
-    }
-  }
+void PointGroup<scalar_type>::add_rmm_open_output(const HostMatrix<scalar_type>& rmm_output_a,
+    const HostMatrix<scalar_type>& rmm_output_b) const {
+  add_rmm_output(rmm_output_a, fortran_vars.rmm_output_a);
+  add_rmm_output(rmm_output_b, fortran_vars.rmm_output_b);
 }
 
 template<class scalar_type>
@@ -187,7 +120,8 @@ void PointGroup<scalar_type>::compute_nucleii_maps(void)
     uint ii = 0;
     for (uint i = 0; i < total_functions_simple(); i++) {
       uint global_atom = func2global_nuc(i);
-      uint local_atom = std::distance(local2global_nuc.begin(), std::find(local2global_nuc.begin(), local2global_nuc.end(), global_atom));
+      uint local_atom = std::distance(local2global_nuc.begin(),
+          std::find(local2global_nuc.begin(), local2global_nuc.end(), global_atom));
       uint inc = small_function_type(i);
       for (uint k = 0; k < inc; k++, ii++) func2local_nuc(ii) = local_atom;
     }
@@ -243,22 +177,19 @@ size_t PointGroup<scalar_type>::size_in_gpu() const
     if (fortran_vars.do_forces || fortran_vars.gga)
       total_cost += (single_matrix_cost*4); //4 vec_type gradient
     if (fortran_vars.gga)
-      total_cost+= (single_matrix_cost*8);  //2*4 vec_type hessian
+      total_cost+= (single_matrix_cost*8);  //4 vec_type hessian
     return total_cost*sizeof(scalar_type);  // size in bytes according to precision
 }
 template<class scalar_type>
 PointGroup<scalar_type>::~PointGroup<scalar_type>()
 {
-
 #if !CPU_KERNELS
-    if(inGlobal)
-    {
+    if(inGlobal) {
       globalMemoryPool::dealloc(size_in_gpu());
       function_values.deallocate();
       gradient_values.deallocate();
-      hessian_values.deallocate();
+      hessian_values_transposed.deallocate();
     }
-
 #endif
 }
 /**********************

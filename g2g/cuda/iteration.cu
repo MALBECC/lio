@@ -924,9 +924,9 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
       qm_forces[i + 0 * fortran_vars.atoms] += prefactor * (qm_pos.x - mm_pos.x);
       qm_forces[i + 1 * fortran_vars.atoms] += prefactor * (qm_pos.y - mm_pos.y);
       qm_forces[i + 2 * fortran_vars.atoms] += prefactor * (qm_pos.z - mm_pos.z);
-      mm_forces[j + 0 * (fortran_vars.atoms+fortran_vars.clatoms)] -= prefactor * (qm_pos.x - mm_pos.x);
-      mm_forces[j + 1 * (fortran_vars.atoms+fortran_vars.clatoms)] -= prefactor * (qm_pos.y - mm_pos.y);
-      mm_forces[j + 2 * (fortran_vars.atoms+fortran_vars.clatoms)] -= prefactor * (qm_pos.z - mm_pos.z);
+      mm_forces[j + 0 * fortran_vars.clatoms] -= prefactor * (qm_pos.x - mm_pos.x);
+      mm_forces[j + 1 * fortran_vars.clatoms] -= prefactor * (qm_pos.y - mm_pos.y);
+      mm_forces[j + 2 * fortran_vars.clatoms] -= prefactor * (qm_pos.z - mm_pos.z);
     }
   }
   nuc.pause();
@@ -1195,9 +1195,9 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
   }
   for (i = 0; i < fortran_vars.clatoms; i++) {
     for (j = 0; j < partial_forces_size; j++) {
-      mm_forces[i + 0 * (fortran_vars.atoms+fortran_vars.clatoms)] += cpu_partial_mm_forces(j,i).x;
-      mm_forces[i + 1 * (fortran_vars.atoms+fortran_vars.clatoms)] += cpu_partial_mm_forces(j,i).y;
-      mm_forces[i + 2 * (fortran_vars.atoms+fortran_vars.clatoms)] += cpu_partial_mm_forces(j,i).z;
+      mm_forces[i + 0 * fortran_vars.clatoms] += cpu_partial_mm_forces(j,i).x;
+      mm_forces[i + 1 * fortran_vars.clatoms] += cpu_partial_mm_forces(j,i).y;
+      mm_forces[i + 2 * fortran_vars.clatoms] += cpu_partial_mm_forces(j,i).z;
     }
   }
   reduce.pause();

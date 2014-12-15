@@ -98,7 +98,7 @@ __device__ __constant__ uint TERM_TYPE_GAUSSIANS[6] = { 1, 3, 9, 6, 18, 36 };
 // Also, should the loop over MM atoms be broken up to be done by multiple blocks rather than a block looping over every MM atom?
 template<class scalar_type, uint term_type>
 __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_values, uint* func2nuc,/*scalar_type* a_values1, scalar_type* a_values2, scalar_type* cc_values,*/ scalar_type* dens_values, uint* func_code, uint* local_dens,//uint* orbital1, uint* orbital2, //uint* func1, uint* func2,
-                                 /*uint* nuclei1, uint* nuclei2,*/ vec_type<scalar_type,3>* mm_forces, vec_type<scalar_type,3>* qm_forces, uint global_stride )//, uint s_func_end, uint p_func_end )
+                                 /*uint* nuclei1, uint* nuclei2,*/ vec_type<scalar_type,3>* mm_forces, vec_type<scalar_type,3>* qm_forces, uint global_stride, vec_type<scalar_type,3>* clatom_pos, scalar_type *clatom_chg )//, uint s_func_end, uint p_func_end )
 {
 
   assert(QMMM_FORCES_BLOCK_SIZE == 128);
@@ -232,8 +232,8 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
     for (int i = 0; i < gpu_clatoms; i += QMMM_FORCES_BLOCK_SIZE)
     {
       if (i + tid < gpu_clatoms) {
-        clatom_position_sh[tid] = gpu_clatom_positions[i+tid];
-        clatom_charge_sh[tid] = gpu_clatom_charges[i+tid];
+        clatom_position_sh[tid] = clatom_pos[i+tid];
+        clatom_charge_sh[tid] = clatom_chg[i+tid];
       }
       __syncthreads();
       // Inner loop: process block of MM atoms; each thread calculates a single primitive/primitive overlap force term

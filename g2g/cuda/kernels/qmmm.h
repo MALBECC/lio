@@ -254,7 +254,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
           //
           // Do the core part of the forces calculation - the evaluation of the Obara-Saika recursion equations
           // This is where the different term types differ the most, so these are moved into separate files in the qmmm_terms directory
-          // Current version: p-s and d-d are manually unrolled, and d-d is split up over six threads per primitive pair
+          // Current version: p-s through d-d are manually unrolled, and d-d is split up over six threads per primitive pair
           //
           // BEGIN TERM-TYPE DEPENDENT PART
           switch (term_type)
@@ -300,8 +300,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
         //
         // TODO: should we do the per-block reduction here in this loop? or should each thread save its value to global memory for later accumulation?
         //
-        // IMPORTANT: ASSUMING WARP SIZE OF 32 (or maybe assuming memory access granularity = warp size?...assuming something here anyway)
-        // ALSO ASSUMING BLOCK SIZE OF 128
+        // IMPORTANT: ASSUMING BLOCK SIZE OF 128
         //
         // First half of block does x,y
         if (tid < QMMM_FORCES_HALF_BLOCK)

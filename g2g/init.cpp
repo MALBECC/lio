@@ -160,8 +160,13 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	fortran_vars.wang2 = FortranMatrix<double>(wang2, MEDIUM_GRID_SIZE, 1, MEDIUM_GRID_SIZE);
 	fortran_vars.wang3 = FortranMatrix<double>(wang3, BIG_GRID_SIZE, 1, BIG_GRID_SIZE);
 
+        // Arrays needed in the calculation of F(m,U) (sort of incomplete gamma functions) used in the Obara-Saika recursion relations
+        // F(m,U) is calculated by one of two methods, branching based on the value of U: Taylor expansion and asymptotic value
+        // STR: Table of precalculated values used in the Taylor expansion branch (TODO: the second index is accessed at most by (m+5),and we only go up to m=5, yet we store up to 22...)
         fortran_vars.str = FortranMatrix<double>(str, 880, 22, 880);
+        // FAC: Pre-factor for the different m values in the asymptotic branch (TODO: we only ever go up to m=5, yet FAC is length 17...)
         fortran_vars.fac = FortranMatrix<double>(fac, 17, 1, 17);
+        // Maximum Gaussian argument used as basis function overlap cut-off (Coulomb and QM/MM)
         fortran_vars.rmax = rmax;
 
 	fortran_vars.atom_atom_dists = HostMatrix<double>(fortran_vars.atoms, fortran_vars.atoms);
@@ -190,7 +195,9 @@ extern "C" void g2g_deinit_(void) {
 #endif
 }
 //============================================================================================================
-// Gets the Fortran pointers for MM locations/charges
+//
+// Gets the Fortran pointers for MM locations/charges (the array gets reallocated every step, so this needs to be called every step)
+//
 extern "C" void g2g_mm_init_(const unsigned int& nclatom, double* r_all, double* pc) {
 	fortran_vars.clatoms = nclatom;
 	cout << "MM point charges: " << fortran_vars.clatoms << endl;
@@ -257,9 +264,7 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
 #endif
 #endif
 
-// CH - 9/2/2014
-// sends MM atom positions/charges to device
-// code in prepartion for QM/MM forces (it works, but no QM/MM code yet, no point in sending the stuff)
+        // Read in MM atom information ... locations/charges get sent to the device before the QM/MM kernel
         if (fortran_vars.clatoms > 0) {
 	    fortran_vars.clatom_positions.resize(fortran_vars.clatoms);	// cpu version (double3)
   	    fortran_vars.clatom_charges.resize(fortran_vars.clatoms);

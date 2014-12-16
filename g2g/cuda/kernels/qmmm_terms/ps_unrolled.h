@@ -6,11 +6,7 @@
         scalar_type F_mU[3];
         {
           scalar_type U = (PmC[0] * PmC[0] + PmC[1] * PmC[1] + PmC[2] * PmC[2]) * (ai + aj);
-          //for (int m = 0; m <= 2; m++) 
-          //{
-          //  F_mU[m] = lio_gamma<scalar_type>(m,U);
           lio_gamma<scalar_type,2>(F_mU,U);
-          //}
         }
 
         // BEGIN calculation of individual (single primitive-primitive overlap) force terms

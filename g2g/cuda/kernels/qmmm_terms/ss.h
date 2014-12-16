@@ -2,20 +2,14 @@
         scalar_type F_mU[2];
         {
           scalar_type U = (PmC[0] * PmC[0] + PmC[1] * PmC[1] + PmC[2] * PmC[2]) * (ai + aj);
-          //F_mU[0] = (SQRT_PI / (2*sqrtU)) * erff(sqrtU);
-          //for (int m = 0; m <= 1; m++)
-          //{
-            // TODO (maybe): test out storing F(m,U) values in texture and doing a texture fetch here rather than the function calculation
-            //F_mU[m] = lio_gamma<scalar_type>(m,U);
-            lio_gamma<scalar_type,1>(F_mU,U);
-            //F_mU[m] = fetch(qmmm_F_values_tex,(float)(U/gamma_inc-0.5f),(float)(m+0.5f));
-          //}
+          // TODO (maybe): test out storing F(m,U) values in texture and doing a texture fetch here rather than the function calculation
+          lio_gamma<scalar_type,1>(F_mU,U);
         }
 
         // BEGIN calculation of individual (single primitive-primitive overlap) force terms
         {
           scalar_type A_force_term, B_force_term, C_force_term;
-          scalar_type mm_charge = clatom_charge_sh[j];// * dens[0];
+          scalar_type mm_charge = clatom_charge_sh[j];
   
           for (int grad_l = 0; grad_l < 3; grad_l++)
           {

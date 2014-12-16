@@ -8,12 +8,8 @@ print <<"END";
 //-------------------------------------------BEGIN TERM-TYPE DEPENDENT PART (D-P)-------------------------------------------
         scalar_type F_mU[5];
         {
-          scalar_type U = (PmC[0] * PmC[0] + PmC[1] * PmC[1] + PmC[2] * PmC[2]) * zeta;
-          //for (int m = 0; m <= 4; m++) 
-          //{
-          //  F_mU[m] = lio_gamma<scalar_type>(m,U);
+          scalar_type U = (PmC[0] * PmC[0] + PmC[1] * PmC[1] + PmC[2] * PmC[2]) * (ai + aj);
           lio_gamma<scalar_type,4>(F_mU,U);
-          //}
         }
 
         // BEGIN calculation of individual (single primitive-primitive overlap) force terms
@@ -21,18 +17,19 @@ print <<"END";
           C_force[0][tid] = 0.0f; C_force[1][tid] = 0.0f; C_force[2][tid] = 0.0f;
           scalar_type A_force_term, B_force_term, C_force_term;
           scalar_type AB_common;
-          //scalar_type mm_charge = clatom_charge_sh[j];
           uint dens_ind = 0;
 
 END
 #          for (int d_l1 = 0; d_l1 < 3; d_l1++)
 for $d_l1 (0..2) {
 print <<"END";
+          // d_l1 = $d_l1
           {
 END
 #            for (int d_l2 = 0; d_l2 <= d_l1; d_l2++)
 for $d_l2 (0..$d_l1) {
 print <<"END";
+            // d_l2 = $d_l2
             {
 
               scalar_type d_s0  = PmA[$d_l1] * (PmA[$d_l2] * F_mU[0] - PmC[$d_l2] * F_mU[1]); // p_s0 (d_l2)
@@ -52,6 +49,7 @@ END
 #              for (int p_l = 0; p_l < 3; p_l++)
 for $p_l (0..2) {
 print <<"END";
+              // p_l = $p_l
               {
 END
 if ($d_l1 == $d_l2) {
@@ -123,6 +121,7 @@ END
 #                for (int grad_l = 0; grad_l < 3; grad_l++)
 for $grad_l (0..2) {
 print <<"END";
+                // grad_l = $grad_l
                 {
                   C_force_term  = 0.0f;
                   AB_common = 0.0f;

@@ -19,7 +19,7 @@ namespace G2G {
 #if FULL_DOUBLE
 texture<int2, 2, cudaReadModeElementType> rmm_input_gpu_tex;
 texture<int2, 2, cudaReadModeElementType> rmm_input_gpu_tex2;
-texture<int2, cudaTextureType2D, cudaReadModeElementType> qmmm_str_tex;
+texture<int2, cudaTextureType2D, cudaReadModeElementType> qmmm_str_tex; // Texture for STR array (used in F(m,U))
 #else
 texture<float, 2, cudaReadModeElementType> rmm_input_gpu_tex;
 texture<float, 2, cudaReadModeElementType> rmm_input_gpu_tex2;
@@ -50,14 +50,23 @@ void gpu_set_variables(void) {
   cudaMemcpyToSymbol(gpu_atoms, &fortran_vars.atoms, sizeof(fortran_vars.atoms), 0, cudaMemcpyHostToDevice);
   cudaMemcpyToSymbol(gpu_Iexch, &fortran_vars.iexch, sizeof(fortran_vars.iexch), 0, cudaMemcpyHostToDevice);
   cudaMemcpyToSymbol(gpu_m, &fortran_vars.m, sizeof(fortran_vars.m), 0, cudaMemcpyHostToDevice);
+
+  // This is needed by d-d QM/MM forces calculations to know which orbital a thread maps to
   uint d_offset = fortran_vars.s_funcs + fortran_vars.p_funcs*3;
   cudaMemcpyToSymbol(gpu_d_offset, &d_offset, sizeof(d_offset), 0, cudaMemcpyHostToDevice);
+
   cudaAssertNoError("set_gpu_variables");
 }
 
+//
+// Set up arrays needed for F(m,U) calculation in QM/MM kernel (STR and FAC) and send them to device
+// FAC is small so it's put into constant memory
+// STR is large and accessed (potentially) with a random access pattern in the first index
+// TODO: putting STR into texture for now; need to see if there's a better way to access it in the kernel
+//
 template<class scalar_type>
-void gpu_set_gamma_arrays() {
-
+void gpu_set_gamma_arrays()
+{
   // Cast STR/FAC to appropriate type (float/double)
   HostMatrix<scalar_type> h_str(880,22), h_fac(17);
   for (uint i = 0; i < 880; i++) {
@@ -83,29 +92,18 @@ void gpu_set_gamma_arrays() {
   // FAC data h->d
   cudaMemcpyToSymbol(gpu_fac,h_fac.data,h_fac.bytes(),0,cudaMemcpyHostToDevice);
 
-  /*scalar_type* d_gamma_ptr;
-  cudaMalloc((void**)&d_gamma_ptr,GAMMA_LENGTH*6*sizeof(scalar_type));
-
-  dim3 pg_threads(GAMMA_LENGTH,6);
-  dim3 pg_blockSize(32,6);
-  dim3 pg_gridSize(divUp(pg_threads,pg_blockSize));
-  precompute_gamma<scalar_type><<<pg_gridSize,pg_blockSize>>>(GAMMA_LENGTH,GAMMA_INC,d_gamma_ptr);
-
-  qmmm_F_values_tex.normalized = false;
-  qmmm_F_values_tex.filterMode = cudaFilterModeLinear;
-  cudaMallocArray(&gammaArray,&qmmm_F_values_tex.channelDesc,GAMMA_LENGTH,6);
-  cudaMemcpyToArray(gammaArray,0,0,d_gamma_ptr,sizeof(scalar_type)*GAMMA_LENGTH*6,cudaMemcpyDeviceToDevice);
-  cudaFree(d_gamma_ptr);
-  // Don't need STR past this point if precomputing F(m,U)
-  // Can free STR on-device here*/
-
   cudaAssertNoError("gpu_set_gamma_arrays");
 }
 
 template<class T> void gpu_set_atom_positions(const HostMatrix<T>& m) {
   cudaMemcpyToSymbol(gpu_atom_positions, m.data, m.bytes(), 0, cudaMemcpyHostToDevice);
 }
-void gpu_set_clatoms(void) {//const HostMatrix<T>& m_pos, const HostMatrix<U>& m_charge) {
+
+//
+// Tell the GPU how many MM atoms are being used this step
+//
+void gpu_set_clatoms(void)
+{
   cudaMemcpyToSymbol(gpu_clatoms, &fortran_vars.clatoms, sizeof(fortran_vars.clatoms), 0, cudaMemcpyHostToDevice);
 
   cudaAssertNoError("gpu_set_clatoms");
@@ -113,11 +111,11 @@ void gpu_set_clatoms(void) {//const HostMatrix<T>& m_pos, const HostMatrix<U>& m
 
 #if FULL_DOUBLE
 template void gpu_set_gamma_arrays<double>( void );
-template void gpu_set_atom_positions<double3>(const HostMatrix<double3>& m);
 #else
 template void gpu_set_gamma_arrays<float>( void );
-template void gpu_set_atom_positions<float3>(const HostMatrix<float3>& m);
 #endif
+template void gpu_set_atom_positions<double3>(const HostMatrix<double3>& m);
+template void gpu_set_atom_positions<float3>(const HostMatrix<float3>& m);
 //template<class scalar_type,true> __global__ void gpu_update_rmm(scalar_type* factors, uint points, scalar_type* rmm, scalar_type* function_values, uint m);
 //template<class scalar_type,false> __global__ void gpu_update_rmm(scalar_type* factors, uint points, scalar_type* rmm, scalar_type* function_values, uint m);
 
@@ -870,7 +868,7 @@ void PointGroup<scalar_type>::compute_weights(void)
 template class PointGroup<double>;
 template class PointGroup<float>;
 
-#define NUM_TERM_TYPES 6
+#define NUM_TERM_TYPES 6 // 6 types when using s,p,and d functions: s-s,p-s,p-p,d-s,d-p,d-d
 #define MAX_TERM_TYPE 6
 
 template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_forces)
@@ -882,16 +880,12 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
   double ai,aj;
   double dsq,ksi,zeta;
   uint num_terms=0, total_num_terms = 0;
-  //std::list<uint> func_code, local_dens;
   std::vector<uint> func_code, local_dens;
-  //std::vector<scalar_type> a_values1,a_values2;
-  //std::vector<scalar_type> cc_values;
   std::vector<scalar_type> dens_values;
-  //std::vector<uint> nuclei1, nuclei2;
 
-  uint term_type_counts[NUM_TERM_TYPES];
-  uint term_type_offsets[NUM_TERM_TYPES];
-  term_type_offsets[0] = 0;
+  uint term_type_counts[NUM_TERM_TYPES]; // Number of threads for a particular type of term (0 = s-s, 1 = p-s, etc)
+  uint term_type_offsets[NUM_TERM_TYPES]; // Offsets into the input arrays for each term type
+  term_type_offsets[0] = 0; // s-s starts at 0
   uint i_begin, i_end, j_begin, j_end;
   uint tmp_ind = 0;
   uint s_start = 0, p_start = fortran_vars.s_funcs, d_start = fortran_vars.s_funcs + fortran_vars.p_funcs*3, m = fortran_vars.m;
@@ -908,9 +902,12 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
   uint dens_counts[NUM_TERM_TYPES], dens_offsets[NUM_TERM_TYPES];
   dens_offsets[0] = 0;
   uint tmp_dens_ind = 0;
-  //uint local_orbitals;
 
   Timer nuc,check,prep,kernel,down,reduce;
+
+  //
+  // First, the gradient of the nuclear-nuclear interaction between QM and MM centers
+  //
   nuc.start_and_sync();
   for (i = 0; i < fortran_vars.atoms; i++) {
     double3 qm_pos = fortran_vars.atom_positions(i);
@@ -930,10 +927,16 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
     }
   }
   nuc.pause();
-  check.start();
 
-  //uint last_code = 0;
-  //uint last_dens = 0;
+  //
+  // Do check between all basis primitives to find those with significant overlap
+  // Check the resulting Gaussian argument from two primitives to the rmax parameter; only use primitives within that cut-off
+  //
+  // A single thread gets mapped to a pair of significant primitives 
+  // We set up here arrays that tell which two functions/two primitives a thread is calculating
+  // We also pick out the density matrix elements for significant functions here
+  //
+  check.start();
   for (uint current_term_type = 0; current_term_type < NUM_TERM_TYPES; current_term_type++) {
 
     term_type_counts[current_term_type] = 0;
@@ -945,7 +948,7 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
     dens_counts[current_term_type] = 0;
     local_dens_ind = 0;
 
-    //std::list<scalar_type> zetas;
+    // We pad the input arrays between term types, so the offsets for each term type need to be tracked
     if (current_term_type > 0) {
       tmp_ind += COALESCED_DIMENSION(term_type_counts[current_term_type-1]);
       term_type_offsets[current_term_type] = tmp_ind;
@@ -963,8 +966,10 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
         B = fortran_vars.atom_positions(nuc_j);
         AmB = A - B;
         dsq = length2(AmB);
-        bool use_funcs = false;
+        bool use_funcs = false; // Do these two functions have any significant primitive pairs?
+        // primitive ni, function i
         for (ni = 0; ni < fortran_vars.contractions(i); ni++) {
+          // primitive nj, function j
           for (nj = 0; nj < fortran_vars.contractions(j); nj++) {
             ai = fortran_vars.a_values(i,ni);
             aj = fortran_vars.a_values(j,nj);
@@ -974,52 +979,26 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
 
             if (dsq*ksi < fortran_vars.rmax) {
               use_funcs = true;
-              //local_orbitals = 0;
-              //for (uint i_orbital = 0; i_orbital < i_orbitals; i_orbital++) {
-              //  uint j_orbital_finish = (i==j)? i_orbital+1 : j_orbitals;
-              //  for (uint j_orbital = 0; j_orbital < j_orbital_finish; j_orbital++) {
-                  num_terms++;
-                  term_type_counts[current_term_type]++;
+              num_terms++;
+              term_type_counts[current_term_type]++;
 
-                  // Encoding which two primitives this thread will calculate a force term for in one number
-                  // TODO: Might need to rethink this, depending on how big func_code can get
-                  uint this_func_code = nj;                                                                    // First, primitive # nj in the lowest part
-                  this_func_code     += ni            * MAX_CONTRACTIONS;                                      // Primitive # ni after the space for nj
-                  this_func_code     += (j/*+j_orbital*/) * MAX_CONTRACTIONS * MAX_CONTRACTIONS;                   // Function # j after space for primitives
-                  this_func_code     += (i/*+i_orbital*/) * MAX_CONTRACTIONS * MAX_CONTRACTIONS * fortran_vars.m;  // Finally, function # i in the highest part
+              // Encoding which two primitives this thread will calculate a force term for in one number
+              // NOTE: with a long integer, we can use this scheme up to an m of about 9000
+              //       if m needs to ever be larger than that, we need to break this up into multiple arrays
+              uint this_func_code = nj;                                                         // First, primitive # nj in the lowest part
+              this_func_code     += ni * MAX_CONTRACTIONS;                                      // Primitive # ni after the space for nj
+              this_func_code     += j  * MAX_CONTRACTIONS * MAX_CONTRACTIONS;                   // Function # j after space for primitives
+              this_func_code     += i  * MAX_CONTRACTIONS * MAX_CONTRACTIONS * fortran_vars.m;  // Finally, function # i in the highest part
 
-                  //last_code = this_func_code;
-                  //last_dens = local_dens_ind;
+              func_code.push_back(this_func_code); // Which primitives the thread represents
+              local_dens.push_back(local_dens_ind); // Which part of the (reduced) density matrix the thread needs
 
-                  //typename std::list<scalar_type>::iterator zeta_iter;
-                  //typename std::list<uint>::iterator func_iter = func_code.begin(), dens_iter = local_dens.begin();
-                  //std::advance(func_iter,term_type_offsets[current_term_type]);
-                  //std::advance(dens_iter,term_type_offsets[current_term_type]);
-                  //for (zeta_iter = zetas.begin(); zeta_iter != zetas.end(); ++zeta_iter,++func_iter,++dens_iter) {
-                  //  if (zeta <= (*zeta_iter)) break;
-                  //}
-                  //zetas.insert(zeta_iter,zeta);
-                  //func_code.insert(func_iter,this_func_code);
-                  //local_dens.insert(dens_iter,local_dens_ind);
-
-                  func_code.push_back(this_func_code);
-                  local_dens.push_back(local_dens_ind);
-
-              //    local_orbitals++;
-              //    local_dens_ind++;
-
-                  //uint dens_ind = (i+i_orbital) + (2*fortran_vars.m-((j+j_orbital)+1))*(j+j_orbital)/2;
-                  //dens_values.push_back(fortran_vars.rmm_input_ndens1.data[dens_ind]);
-              //  }
-              //}
-              //local_dens_ind -= local_orbitals;
             }
           }
         }
-        for (uint i_orbital = 0; i_orbital < i_orbitals; i_orbital++) {
-          uint j_orbital_finish = (i==j)? i_orbital+1 : j_orbitals;
-          for (uint j_orbital = 0; j_orbital < j_orbital_finish; j_orbital++) { total_dens_terms++; }
-        }
+
+        total_dens_terms += (i==j)? i_orbitals*(i_orbitals+1)/2 : i_orbitals * j_orbitals;
+        // dens_values is a reduced density matrix that only keeps the elements of functions with significant primitive pairs
         if (use_funcs) {
           for (uint i_orbital = 0; i_orbital < i_orbitals; i_orbital++) {
             uint j_orbital_finish = (i==j)? i_orbital+1 : j_orbitals;
@@ -1035,60 +1014,41 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
         }
       }
     }
-    /*typename std::list<scalar_type>::iterator zeta_iter;
-    typename std::list<uint>::iterator func_iter = func_code.begin();
-    std::advance(func_iter,term_type_offsets[current_term_type]);
-    for (zeta_iter = zetas.begin(); zeta_iter != zetas.end(); ++zeta_iter,++func_iter) {
-      uint code = (*func_iter);
-      uint nj = code % MAX_CONTRACTIONS;
-      code /= MAX_CONTRACTIONS;
-      uint ni = code % MAX_CONTRACTIONS;
-      code /= MAX_CONTRACTIONS;
-      uint fj = code % fortran_vars.m;
-      code /= fortran_vars.m;
-      uint fi = code;
-      cout << fi << " " << ni << " " << fj << " " << nj << " " << fortran_vars.a_values(fi,ni) << " " << fortran_vars.a_values(fj,nj) << " " << *zeta_iter << endl;
-    }*/
+    // Pad the input arrays so the next term type has an aligned offset
     for (j = term_type_counts[current_term_type]; j < COALESCED_DIMENSION(term_type_counts[current_term_type]); j++) {
-      func_code.push_back(func_code[term_type_offsets[current_term_type]]);
+      func_code.push_back(func_code[term_type_offsets[current_term_type]]); // Use the first code from this term type
       local_dens.push_back(local_dens[term_type_offsets[current_term_type]]);
-      //dens_values.push_back(dens_values[term_type_offsets[current_term_type]]);
     }
     for (j = dens_counts[current_term_type]; j < COALESCED_DIMENSION(dens_counts[current_term_type]); j++) {
       dens_values.push_back(dens_values[dens_offsets[current_term_type]]);
     }
   }
   check.pause();
-  prep.start();
 
   std::cout << "[G2G_QMMM] Number of threads: " << num_terms << std::endl;
   std::cout << "[G2G_QMMM] Total Gaussian pairs: " << total_num_terms << std::endl;
   std::cout << "[G2G_QMMM] Number of significant density elements: " << num_dens_terms << std::endl;
   std::cout << "[G2G_QMMM] Total density elements: " << total_dens_terms << std::endl;
 
+  prep.start();
+
   // Pad the input so that out-of-range threads do a dummy calculation (same as the first thread), rather than branching and idling
-  for (i = 0; i < QMMM_FORCES_BLOCK_SIZE - (term_type_counts[NUM_TERM_TYPES-1] % QMMM_FORCES_BLOCK_SIZE); i++) {
-    //a_values1.push_back(a_values1[0]);
-    //a_values2.push_back(a_values2[0]);
-    //cc_values.push_back(cc_values[0]);
-    //dens_values.push_back(dens_values[0]);
-    //nuclei1.push_back(nuclei1[0]);
-    //nuclei2.push_back(nuclei2[0]);
+  for (i = 0; i < QMMM_FORCES_BLOCK_SIZE - (COALESCED_DIMENSION(term_type_counts[NUM_TERM_TYPES-1]) % QMMM_FORCES_BLOCK_SIZE); i++) {
     func_code.push_back(func_code[term_type_offsets[NUM_TERM_TYPES-1]]);
     local_dens.push_back(local_dens[term_type_offsets[NUM_TERM_TYPES-1]]);
-    //orbital1.push_back(orbital1[0]);
-    //orbital2.push_back(orbital2[0]);
   }
-  for (i = 0; i < QMMM_FORCES_BLOCK_SIZE - (dens_counts[NUM_TERM_TYPES-1] % QMMM_FORCES_BLOCK_SIZE); i++) {
+  for (i = 0; i < QMMM_FORCES_BLOCK_SIZE - (COALESCED_DIMENSION(dens_counts[NUM_TERM_TYPES-1]) % QMMM_FORCES_BLOCK_SIZE); i++) {
     dens_values.push_back(dens_values[dens_offsets[NUM_TERM_TYPES-1]]);
   }
 
-  //uint total_funcs = fortran_vars.s_funcs + fortran_vars.p_funcs + fortran_vars.d_funcs;
-  HostMatrix<vec_type<scalar_type, 2> > factor_ac_cpu(COALESCED_DIMENSION(/*total_funcs*/fortran_vars.m), MAX_CONTRACTIONS);
-  HostMatrixUInt nuc_cpu(/*total_funcs*/fortran_vars.m, 1);
+  HostMatrix<vec_type<scalar_type, 2> > factor_ac_cpu(COALESCED_DIMENSION(fortran_vars.m), MAX_CONTRACTIONS);
+  HostMatrixUInt nuc_cpu(fortran_vars.m, 1);
   CudaMatrix<vec_type<scalar_type, 2> > factor_ac_gpu;
   CudaMatrixUInt nuc_gpu;
 
+  //
+  // Set up device arrays for function values and mapping function -> nuclei
+  //
   // TODO: tried contracting the nuc / function value arrays to a size of total_funcs rather than m, seems to slow down the kernel
   // Doing this requires some more indexing math in the kernel, but need to test on bigger test case
   uint localfunc = 0, func = 0;
@@ -1097,15 +1057,15 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
     for (uint k = 0; k < fortran_vars.contractions(func); k++) {
       factor_ac_cpu(localfunc, k) = vec_type<scalar_type, 2>(fortran_vars.a_values(func, k), fortran_vars.c_values(func, k));
     }
-    //if (func < fortran_vars.s_funcs)                               { func += 1; }
-    //else if (func < fortran_vars.s_funcs + fortran_vars.p_funcs*3) { func += 3; }
-    //else                                                           { func += 6; }
     func++;
     localfunc++;
   }
   factor_ac_gpu = factor_ac_cpu;
   nuc_gpu = nuc_cpu;
 
+  //
+  // Send the MM atom positions and charges to the device
+  //
   CudaMatrix<vec_type<scalar_type, 3> > clatom_pos_gpu;
   CudaMatrix<scalar_type> clatom_chg_gpu;
   {
@@ -1119,26 +1079,20 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
     clatom_chg_gpu = clatom_chg_cpu;
   }
 
-  // Send forces input to device (a values, thread function #s, thread nuclei #s)
-  CudaMatrix<scalar_type> /*dev_a_values1(a_values1), dev_a_values2(a_values2), dev_cc_values(cc_values),*/ dev_dens_values(dens_values);
-  //std::vector<uint> func_codev, local_densv;
-  //typename std::list<uint>::iterator iter;
-  //for (iter = func_code.begin(); iter != func_code.end(); iter++) {
-  //  func_codev.push_back(*iter);
-  //}
-  //for (iter = local_dens.begin(); iter != local_dens.end(); iter++) {
-  //  local_densv.push_back(*iter);
-  //}
-  CudaMatrixUInt dev_func_code(func_code), dev_local_dens(local_dens)/*dev_orb1(orbital1), dev_orb2(orbital2),*/; // dev_nuclei1(nuclei1), dev_nuclei2(nuclei2);
+  //
+  // Send reduced density matrix to the device
+  //
+  CudaMatrix<scalar_type> dev_dens_values(dens_values);
+  //
+  // Send input arrays (thread->primitive map and thread->density map) to the device
+  //
+  CudaMatrixUInt dev_func_code(func_code), dev_local_dens(local_dens);
 
-  /*dim3 testThreads(100,6);
-  dim3 testBlock(32,6);
-  dim3 testGrid(divUp(testThreads,testBlock));
-  gpu_test_fmu_tex<scalar_type><<<testGrid,testBlock>>>( 0.5,GAMMA_INC );*/
-
+  //
   // Allocate output arrays on device (forces)
-  CudaMatrix<vec_type<scalar_type,3> > gpu_partial_mm_forces, gpu_partial_qm_forces;//, gpu_mm_forces, gpu_qm_forces;
-
+  // Currently, each block in the kernel reduces its forces, so the size of the output is (# atoms) x (# blocks)
+  //
+  CudaMatrix<vec_type<scalar_type,3> > gpu_partial_mm_forces, gpu_partial_qm_forces;
   uint partial_forces_size = 0;
   uint force_offsets[NUM_TERM_TYPES];
   force_offsets[0] = 0;
@@ -1149,22 +1103,24 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
   }
   gpu_partial_mm_forces.resize(COALESCED_DIMENSION(partial_forces_size), fortran_vars.clatoms);
   gpu_partial_qm_forces.resize(COALESCED_DIMENSION(partial_forces_size), fortran_vars.atoms);
-  //gpu_mm_forces.resize(fortran_vars.clatoms,1);
-  //gpu_qm_forces.resize(fortran_vars.atoms,1);
 
   cudaBindTextureToArray(qmmm_str_tex,gammaArray);
 
+  prep.pause_and_sync();
+
+  kernel.start();
 #define qmmm_parameters \
-  term_type_counts[i], factor_ac_gpu.data, nuc_gpu.data, /*dev_a_values1.data+offset, dev_a_values2.data+offset, dev_cc_values.data+offset,*/\
-  dev_dens_values.data+dens_offset, /*dev_orb1.data+offset, dev_orb2.data+offset,*/dev_func_code.data+offset,dev_local_dens.data+offset, /*dev_nuclei1.data+offset, dev_nuclei2.data+offset,*/ \
+  term_type_counts[i], factor_ac_gpu.data, nuc_gpu.data, dev_dens_values.data+dens_offset, dev_func_code.data+offset,dev_local_dens.data+offset, \
   gpu_partial_mm_forces.data+force_offset, gpu_partial_qm_forces.data+force_offset, COALESCED_DIMENSION(partial_forces_size),clatom_pos_gpu.data,clatom_chg_gpu.data
 
-  prep.pause_and_sync();
-  kernel.start();
+  // Each term type is calculated asynchronously
   cudaStream_t stream[NUM_TERM_TYPES];
   for (i = 0; i < NUM_TERM_TYPES; i++) {
     cudaStreamCreate(&stream[i]);
   }
+  //
+  // Begin launching kernels (one for each type of term, 0 = s-s, 1 = p-s, etc)
+  //
   for (i = 0; i < NUM_TERM_TYPES; i++)
   {
     uint offset = term_type_offsets[i];
@@ -1187,18 +1143,26 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
     cudaStreamDestroy(stream[i]);
   }
   kernel.pause();
+
+  //
+  // Download the partial forces output from the device 
+  // TODO: this could maybe be done asynchronously with the kernels; as one term type finishes we can download its forces, etc
+  //
   down.start();
-
-  HostMatrix<vec_type<scalar_type,3> > cpu_partial_mm_forces(gpu_partial_mm_forces), cpu_partial_qm_forces(gpu_partial_qm_forces);//cpu_mm_forces(gpu_mm_forces), cpu_qm_forces(gpu_qm_forces);
+  HostMatrix<vec_type<scalar_type,3> > cpu_partial_mm_forces(gpu_partial_mm_forces), cpu_partial_qm_forces(gpu_partial_qm_forces);
   down.pause_and_sync();
-  reduce.start();
 
+  reduce.start();
+  //
+  // Accumulate partial force results
+  //
   // TODO: need to think about how to accumulate individual force terms
   // Currently, we reduce on a per-block basis in the kernel, then accumulate the block results here on the host
   // Maybe we could skip the reduction in the kernel (will speed it up, but by how much?), and each thread writes its own term to global memory, followed by a second kernel
   // that reduces all the individual thread terms (this is basically how the XC code works)
   // However, not sure that the memory requirements of each thread saving its term will be OK
   // Alternative: keep the kernel reduction, and reduce the block results in another kernel (rather than here on the host)
+  //
   for (i = 0; i < fortran_vars.atoms; i++) {
     for (j = 0; j < partial_forces_size; j++) {
       qm_forces[i + 0 * fortran_vars.atoms] += cpu_partial_qm_forces(j,i).x;

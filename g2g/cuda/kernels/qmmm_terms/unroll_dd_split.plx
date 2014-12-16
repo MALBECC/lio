@@ -9,14 +9,7 @@ print <<"END";
         scalar_type F_mU[6];
         {
           scalar_type U = (PmC[0] * PmC[0] + PmC[1] * PmC[1] + PmC[2] * PmC[2]) * (ai + aj);
-          //F_mU[0] = (SQRT_PI / (2*sqrtU)) * erff(sqrtU);
-          //for (int m = 0; m <= 5; m++) 
-          //{
-            // TODO (maybe): test out storing F(m,U) values in texture and doing a texture fetch here rather than the function calculation
-          //  F_mU[m] = lio_gamma<scalar_type>(m,U);
           lio_gamma<scalar_type,5>(F_mU,U);
-            //F_mU[m] = fetch(qmmm_F_values_tex,(float)(U/gamma_inc-0.5f),(float)(m+0.5f));
-          //}
         }
 
         // BEGIN calculation of individual (single primitive-primitive overlap) force terms
@@ -36,51 +29,53 @@ print <<"END";
           scalar_type d1_s2  = PmA[d1_l1] * (PmA[d1_l2] * F_mU[2] - PmC[d1_l2] * F_mU[3]); // p_s2 (d1_l2)
           d1_s2             -= PmC[d1_l1] * (PmA[d1_l2] * F_mU[3] - PmC[d1_l2] * F_mU[4]); // p_s3 (d1_l2)
           d1_s2             += del_d1 * inv_two_zeta * (F_mU[2] - F_mU[3]);
-          scalar_type d1_s3  = PmA[d1_l1] * (PmA[d1_l2] * F_mU[3] - PmC[d1_l2] * F_mU[4]); // p_s2 (d1_l2)
-          d1_s3             -= PmC[d1_l1] * (PmA[d1_l2] * F_mU[4] - PmC[d1_l2] * F_mU[5]); // p_s3 (d1_l2)
+          scalar_type d1_s3  = PmA[d1_l1] * (PmA[d1_l2] * F_mU[3] - PmC[d1_l2] * F_mU[4]); // p_s3 (d1_l2)
+          d1_s3             -= PmC[d1_l1] * (PmA[d1_l2] * F_mU[4] - PmC[d1_l2] * F_mU[5]); // p_s4 (d1_l2)
           d1_s3             += del_d1 * inv_two_zeta * (F_mU[3] - F_mU[4]);
 END
 #          for (int d2_l1 = 0; d2_l1 < 3; d2_l1++)
 for $d2_l1 (0..2) {
 print <<"END";
+          // d2_l1 = $d2_l1
           {
             bool del_d1l1_d2l1 = d1_l1 == $d2_l1, del_d1l2_d2l1 = d1_l2 == $d2_l1;
 
             scalar_type p_p0_d1l1_d2l1  = PmB[$d2_l1] * (PmA[d1_l1] * F_mU[0] - PmC[d1_l1] * F_mU[1]); // p_s0 (d1_l1)
             p_p0_d1l1_d2l1             -= PmC[$d2_l1] * (PmA[d1_l1] * F_mU[1] - PmC[d1_l1] * F_mU[2]); // p_s1 (d1_l1)
             p_p0_d1l1_d2l1             += del_d1l1_d2l1 * inv_two_zeta * (F_mU[0] - F_mU[1]);
-            scalar_type p_p1_d1l1_d2l1  = PmB[$d2_l1] * (PmA[d1_l1] * F_mU[1] - PmC[d1_l1] * F_mU[2]); // p_s0 (d1_l1)
-            p_p1_d1l1_d2l1             -= PmC[$d2_l1] * (PmA[d1_l1] * F_mU[2] - PmC[d1_l1] * F_mU[3]); // p_s1 (d1_l1)
+            scalar_type p_p1_d1l1_d2l1  = PmB[$d2_l1] * (PmA[d1_l1] * F_mU[1] - PmC[d1_l1] * F_mU[2]); // p_s1 (d1_l1)
+            p_p1_d1l1_d2l1             -= PmC[$d2_l1] * (PmA[d1_l1] * F_mU[2] - PmC[d1_l1] * F_mU[3]); // p_s2 (d1_l1)
             p_p1_d1l1_d2l1             += del_d1l1_d2l1 * inv_two_zeta * (F_mU[1] - F_mU[2]);
-            scalar_type p_p2_d1l1_d2l1  = PmB[$d2_l1] * (PmA[d1_l1] * F_mU[2] - PmC[d1_l1] * F_mU[3]); // p_s0 (d1_l1)
-            p_p2_d1l1_d2l1             -= PmC[$d2_l1] * (PmA[d1_l1] * F_mU[3] - PmC[d1_l1] * F_mU[4]); // p_s1 (d1_l1)
+            scalar_type p_p2_d1l1_d2l1  = PmB[$d2_l1] * (PmA[d1_l1] * F_mU[2] - PmC[d1_l1] * F_mU[3]); // p_s2 (d1_l1)
+            p_p2_d1l1_d2l1             -= PmC[$d2_l1] * (PmA[d1_l1] * F_mU[3] - PmC[d1_l1] * F_mU[4]); // p_s3 (d1_l1)
             p_p2_d1l1_d2l1             += del_d1l1_d2l1 * inv_two_zeta * (F_mU[2] - F_mU[3]);
             scalar_type p_p0_d1l2_d2l1  = PmB[$d2_l1] * (PmA[d1_l2] * F_mU[0] - PmC[d1_l2] * F_mU[1]); // p_s0 (d1_l2)
             p_p0_d1l2_d2l1             -= PmC[$d2_l1] * (PmA[d1_l2] * F_mU[1] - PmC[d1_l2] * F_mU[2]); // p_s1 (d1_l2)
             p_p0_d1l2_d2l1             += del_d1l2_d2l1 * inv_two_zeta * (F_mU[0] - F_mU[1]);
-            scalar_type p_p1_d1l2_d2l1  = PmB[$d2_l1] * (PmA[d1_l2] * F_mU[1] - PmC[d1_l2] * F_mU[2]); // p_s0 (d1_l2)
-            p_p1_d1l2_d2l1             -= PmC[$d2_l1] * (PmA[d1_l2] * F_mU[2] - PmC[d1_l2] * F_mU[3]); // p_s1 (d1_l2)
+            scalar_type p_p1_d1l2_d2l1  = PmB[$d2_l1] * (PmA[d1_l2] * F_mU[1] - PmC[d1_l2] * F_mU[2]); // p_s1 (d1_l2)
+            p_p1_d1l2_d2l1             -= PmC[$d2_l1] * (PmA[d1_l2] * F_mU[2] - PmC[d1_l2] * F_mU[3]); // p_s2 (d1_l2)
             p_p1_d1l2_d2l1             += del_d1l2_d2l1 * inv_two_zeta * (F_mU[1] - F_mU[2]);
-            scalar_type p_p2_d1l2_d2l1  = PmB[$d2_l1] * (PmA[d1_l2] * F_mU[2] - PmC[d1_l2] * F_mU[3]); // p_s0 (d1_l2)
-            p_p2_d1l2_d2l1             -= PmC[$d2_l1] * (PmA[d1_l2] * F_mU[3] - PmC[d1_l2] * F_mU[4]); // p_s1 (d1_l2)
+            scalar_type p_p2_d1l2_d2l1  = PmB[$d2_l1] * (PmA[d1_l2] * F_mU[2] - PmC[d1_l2] * F_mU[3]); // p_s2 (d1_l2)
+            p_p2_d1l2_d2l1             -= PmC[$d2_l1] * (PmA[d1_l2] * F_mU[3] - PmC[d1_l2] * F_mU[4]); // p_s3 (d1_l2)
             p_p2_d1l2_d2l1             += del_d1l2_d2l1 * inv_two_zeta * (F_mU[2] - F_mU[3]);
 
             scalar_type d1_p0_d2l1       = del_d1l1_d2l1 * ((PmA[d1_l2] * F_mU[0] - PmC[d1_l2] * F_mU[1]) - (PmA[d1_l2] * F_mU[1] - PmC[d1_l2] * F_mU[2]));  // p_s0 (d1_l2) - p_s1 (d1_l2)
             d1_p0_d2l1                  += del_d1l2_d2l1 * ((PmA[d1_l1] * F_mU[0] - PmC[d1_l1] * F_mU[1]) - (PmA[d1_l1] * F_mU[1] - PmC[d1_l1] * F_mU[2]));  // p_s0 (d1_l1) - p_s1 (d1_l1)
             d1_p0_d2l1                  *= inv_two_zeta;
             d1_p0_d2l1                  += PmB[$d2_l1] * d1_s0 - PmC[$d2_l1] * d1_s1;
-            scalar_type d1_p1_d2l1       = del_d1l1_d2l1 * ((PmA[d1_l2] * F_mU[1] - PmC[d1_l2] * F_mU[2]) - (PmA[d1_l2] * F_mU[2] - PmC[d1_l2] * F_mU[3]));  // p_s0 (d1_l2) - p_s1 (d1_l2)
-            d1_p1_d2l1                  += del_d1l2_d2l1 * ((PmA[d1_l1] * F_mU[1] - PmC[d1_l1] * F_mU[2]) - (PmA[d1_l1] * F_mU[2] - PmC[d1_l1] * F_mU[3]));  // p_s0 (d1_l1) - p_s1 (d1_l1)
+            scalar_type d1_p1_d2l1       = del_d1l1_d2l1 * ((PmA[d1_l2] * F_mU[1] - PmC[d1_l2] * F_mU[2]) - (PmA[d1_l2] * F_mU[2] - PmC[d1_l2] * F_mU[3]));  // p_s1 (d1_l2) - p_s2 (d1_l2)
+            d1_p1_d2l1                  += del_d1l2_d2l1 * ((PmA[d1_l1] * F_mU[1] - PmC[d1_l1] * F_mU[2]) - (PmA[d1_l1] * F_mU[2] - PmC[d1_l1] * F_mU[3]));  // p_s1 (d1_l1) - p_s2 (d1_l1)
             d1_p1_d2l1                  *= inv_two_zeta;
             d1_p1_d2l1                  += PmB[$d2_l1] * d1_s1 - PmC[$d2_l1] * d1_s2;
-            scalar_type d1_p2_d2l1       = del_d1l1_d2l1 * ((PmA[d1_l2] * F_mU[2] - PmC[d1_l2] * F_mU[3]) - (PmA[d1_l2] * F_mU[3] - PmC[d1_l2] * F_mU[4]));  // p_s0 (d1_l2) - p_s1 (d1_l2)
-            d1_p2_d2l1                  += del_d1l2_d2l1 * ((PmA[d1_l1] * F_mU[2] - PmC[d1_l1] * F_mU[3]) - (PmA[d1_l1] * F_mU[3] - PmC[d1_l1] * F_mU[4]));  // p_s0 (d1_l1) - p_s1 (d1_l1)
+            scalar_type d1_p2_d2l1       = del_d1l1_d2l1 * ((PmA[d1_l2] * F_mU[2] - PmC[d1_l2] * F_mU[3]) - (PmA[d1_l2] * F_mU[3] - PmC[d1_l2] * F_mU[4]));  // p_s2 (d1_l2) - p_s3 (d1_l2)
+            d1_p2_d2l1                  += del_d1l2_d2l1 * ((PmA[d1_l1] * F_mU[2] - PmC[d1_l1] * F_mU[3]) - (PmA[d1_l1] * F_mU[3] - PmC[d1_l1] * F_mU[4]));  // p_s2 (d1_l1) - p_s3 (d1_l1)
             d1_p2_d2l1                  *= inv_two_zeta;
             d1_p2_d2l1                  += PmB[$d2_l1] * d1_s2 - PmC[$d2_l1] * d1_s3;
 END
 #            for (int d2_l2 = 0; d2_l2 <= $d2_l1; d2_l2++)
 for $d2_l2 (0..$d2_l1) {
 print <<"END";
+            // d2_l2 = $d2_l2
             {
               bool del_d1l1_d2l2 = d1_l1 == $d2_l2, del_d1l2_d2l2 = d1_l2 == $d2_l2;
               scalar_type pre_term;
@@ -120,11 +115,11 @@ print <<"END";
               d1_p0_d2l2                 += del_d1l2_d2l2 * ((PmA[d1_l1] * F_mU[0] - PmC[d1_l1] * F_mU[1]) - (PmA[d1_l1] * F_mU[1] - PmC[d1_l1] * F_mU[2]));  // p_s0 (d1_l1) - p_s1 (d1_l1)
               d1_p0_d2l2                 *= inv_two_zeta;
               d1_p0_d2l2                 += PmB[$d2_l2] * d1_s0 - PmC[$d2_l2] * d1_s1;
-              scalar_type d1_p1_d2l2      = del_d1l1_d2l2 * ((PmA[d1_l2] * F_mU[1] - PmC[d1_l2] * F_mU[2]) - (PmA[d1_l2] * F_mU[2] - PmC[d1_l2] * F_mU[3]));  // p_s0 (d1_l2) - p_s1 (d1_l2)
-              d1_p1_d2l2                 += del_d1l2_d2l2 * ((PmA[d1_l1] * F_mU[1] - PmC[d1_l1] * F_mU[2]) - (PmA[d1_l1] * F_mU[2] - PmC[d1_l1] * F_mU[3]));  // p_s0 (d1_l1) - p_s1 (d1_l1)
+              scalar_type d1_p1_d2l2      = del_d1l1_d2l2 * ((PmA[d1_l2] * F_mU[1] - PmC[d1_l2] * F_mU[2]) - (PmA[d1_l2] * F_mU[2] - PmC[d1_l2] * F_mU[3]));  // p_s1 (d1_l2) - p_s2 (d1_l2)
+              d1_p1_d2l2                 += del_d1l2_d2l2 * ((PmA[d1_l1] * F_mU[1] - PmC[d1_l1] * F_mU[2]) - (PmA[d1_l1] * F_mU[2] - PmC[d1_l1] * F_mU[3]));  // p_s1 (d1_l1) - p_s2 (d1_l1)
               d1_p1_d2l2                 *= inv_two_zeta;
               d1_p1_d2l2                 += PmB[$d2_l2] * d1_s1 - PmC[$d2_l2] * d1_s2;
-              scalar_type p_d2_0_d1l1     = del_d1l1_d2l2 * ((PmB[$d2_l1] * F_mU[0] - PmC[$d2_l1] * F_mU[1]) - (PmB[$d2_l1] * F_mU[1] - PmC[$d2_l1] * F_mU[2]));  // p_s0 (d1_l2) - p_s1 (d1_l2)
+              scalar_type p_d2_0_d1l1     = del_d1l1_d2l2 * ((PmB[$d2_l1] * F_mU[0] - PmC[$d2_l1] * F_mU[1]) - (PmB[$d2_l1] * F_mU[1] - PmC[$d2_l1] * F_mU[2]));  // s_p0 (d2_l1) - s_p1 (d2_l1)
 END
 if ($d2_l1 == $d2_l2) {
 print <<"END";
@@ -134,31 +129,31 @@ END
 print <<"END";
               p_d2_0_d1l1                *= inv_two_zeta;
               p_d2_0_d1l1                += PmB[$d2_l2] * p_p0_d1l1_d2l1 - PmC[$d2_l2] * p_p1_d1l1_d2l1;
-              scalar_type p_d2_1_d1l1     = del_d1l1_d2l2 * ((PmB[$d2_l1] * F_mU[1] - PmC[$d2_l1] * F_mU[2]) - (PmB[$d2_l1] * F_mU[2] - PmC[$d2_l1] * F_mU[3]));  // p_s0 (d1_l2) - p_s1 (d1_l2)
+              scalar_type p_d2_1_d1l1     = del_d1l1_d2l2 * ((PmB[$d2_l1] * F_mU[1] - PmC[$d2_l1] * F_mU[2]) - (PmB[$d2_l1] * F_mU[2] - PmC[$d2_l1] * F_mU[3]));  // s_p1 (d2_l1) - s_p2 (d2_l1)
 END
 if ($d2_l1 == $d2_l2) {
 print <<"END";
-              p_d2_1_d1l1                += (PmA[d1_l1] * F_mU[1] - PmC[d1_l1] * F_mU[2]) - (PmA[d1_l1] * F_mU[2] - PmC[d1_l1] * F_mU[3]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
+              p_d2_1_d1l1                += (PmA[d1_l1] * F_mU[1] - PmC[d1_l1] * F_mU[2]) - (PmA[d1_l1] * F_mU[2] - PmC[d1_l1] * F_mU[3]);  // p_s1 (d1_l1) - p_s2 (d1_l1)
 END
 }
 print <<"END";
               p_d2_1_d1l1                *= inv_two_zeta;
               p_d2_1_d1l1                += PmB[$d2_l2] * p_p1_d1l1_d2l1 - PmC[$d2_l2] * p_p2_d1l1_d2l1;
-              scalar_type p_d2_0_d1l2     = del_d1l2_d2l2 * ((PmB[$d2_l1] * F_mU[0] - PmC[$d2_l1] * F_mU[1]) - (PmB[$d2_l1] * F_mU[1] - PmC[$d2_l1] * F_mU[2]));  // p_s0 (d1_l2) - p_s1 (d1_l2)
+              scalar_type p_d2_0_d1l2     = del_d1l2_d2l2 * ((PmB[$d2_l1] * F_mU[0] - PmC[$d2_l1] * F_mU[1]) - (PmB[$d2_l1] * F_mU[1] - PmC[$d2_l1] * F_mU[2]));  // s_p0 (d2_l1) - s_p1 (d2_l1)
 END
 if ($d2_l1 == $d2_l2) {
 print <<"END";
-              p_d2_0_d1l2                += (PmA[d1_l2] * F_mU[0] - PmC[d1_l2] * F_mU[1]) - (PmA[d1_l2] * F_mU[1] - PmC[d1_l2] * F_mU[2]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
+              p_d2_0_d1l2                += (PmA[d1_l2] * F_mU[0] - PmC[d1_l2] * F_mU[1]) - (PmA[d1_l2] * F_mU[1] - PmC[d1_l2] * F_mU[2]);  // p_s0 (d1_l2) - p_s1 (d1_l2)
 END
 }
 print <<"END";
               p_d2_0_d1l2                *= inv_two_zeta;
               p_d2_0_d1l2                += PmB[$d2_l2] * p_p0_d1l2_d2l1 - PmC[$d2_l2] * p_p1_d1l2_d2l1;
-              scalar_type p_d2_1_d1l2     = del_d1l2_d2l2 * ((PmB[$d2_l1] * F_mU[1] - PmC[$d2_l1] * F_mU[2]) - (PmB[$d2_l1] * F_mU[2] - PmC[$d2_l1] * F_mU[3]));  // p_s0 (d1_l2) - p_s1 (d1_l2)
+              scalar_type p_d2_1_d1l2     = del_d1l2_d2l2 * ((PmB[$d2_l1] * F_mU[1] - PmC[$d2_l1] * F_mU[2]) - (PmB[$d2_l1] * F_mU[2] - PmC[$d2_l1] * F_mU[3]));  // s_p1 (d2_l1) - s_p2 (d2_l1)
 END
 if ($d2_l1 == $d2_l2) {
 print <<"END";
-              p_d2_1_d1l2                += (PmA[d1_l2] * F_mU[1] - PmC[d1_l2] * F_mU[2]) - (PmA[d1_l2] * F_mU[2] - PmC[d1_l2] * F_mU[3]);  // p_s0 (d1_l1) - p_s1 (d1_l1)
+              p_d2_1_d1l2                += (PmA[d1_l2] * F_mU[1] - PmC[d1_l2] * F_mU[2]) - (PmA[d1_l2] * F_mU[2] - PmC[d1_l2] * F_mU[3]);  // p_s1 (d1_l2) - p_s2 (d1_l2)
 END
 }
 print <<"END";
@@ -191,6 +186,7 @@ END
 #              for (int grad_l = 0; grad_l < 3; grad_l++)
 for $grad_l (0..2) {
 print <<"END";
+              // grad_l = $grad_l
               {
                 bool del_d1l1g = d1_l1 == $grad_l, del_d1l2g = d1_l2 == $grad_l;
                 C_force_term  = del_d1l1g * p_d2_1_d1l2;

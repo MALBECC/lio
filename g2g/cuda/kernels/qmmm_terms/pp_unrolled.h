@@ -5,7 +5,7 @@
 //-------------------------------------------BEGIN TERM-TYPE DEPENDENT PART (P-P)-------------------------------------------
         scalar_type F_mU[4];
         {
-          scalar_type U = (PmC[0] * PmC[0] + PmC[1] * PmC[1] + PmC[2] * PmC[2]) * zeta;
+          scalar_type U = (PmC[0] * PmC[0] + PmC[1] * PmC[1] + PmC[2] * PmC[2]) * (ai + aj);
           //for (int m = 0; m <= 3; m++) 
           //{
           //  F_mU[m] = lio_gamma<scalar_type>(m,U);

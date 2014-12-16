@@ -13,6 +13,7 @@ __device__ __constant__ uint gpu_atoms;
 __device__ __constant__ uint gpu_clatoms;
 __device__ __constant__ uint gpu_Iexch;
 __device__ __constant__ uint gpu_m;
+__device__ __constant__ uint gpu_d_offset;
 #if FULL_DOUBLE
 __device__ __constant__ double3 gpu_atom_positions[MAX_ATOMS];
 __device__ __constant__ double gpu_normalization_factor;

@@ -1,7 +1,7 @@
 //--------------------------------------------BEGIN TERM-TYPE DEPENDENT PART (S-S)-------------------------------------------
         scalar_type F_mU[2];
         {
-          scalar_type U = (PmC[0] * PmC[0] + PmC[1] * PmC[1] + PmC[2] * PmC[2]) * zeta;
+          scalar_type U = (PmC[0] * PmC[0] + PmC[1] * PmC[1] + PmC[2] * PmC[2]) * (ai + aj);
           //F_mU[0] = (SQRT_PI / (2*sqrtU)) * erff(sqrtU);
           //for (int m = 0; m <= 1; m++)
           //{

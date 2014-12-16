@@ -84,25 +84,6 @@
                     dens_ind += !skip;
                   }
 
-                  scalar_type p_p0_d1l1_d2l2  = PmB[d2_l2] * (PmA[d1_l1] * F_mU[0] - PmC[d1_l1] * F_mU[1]); // p_s0 (d1_l1)
-                  p_p0_d1l1_d2l2             -= PmC[d2_l2] * (PmA[d1_l1] * F_mU[1] - PmC[d1_l1] * F_mU[2]); // p_s1 (d1_l1)
-                  p_p0_d1l1_d2l2             += del_d1l1_d2l2 * inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  scalar_type p_p1_d1l1_d2l2  = PmB[d2_l2] * (PmA[d1_l1] * F_mU[1] - PmC[d1_l1] * F_mU[2]); // p_s0 (d1_l1)
-                  p_p1_d1l1_d2l2             -= PmC[d2_l2] * (PmA[d1_l1] * F_mU[2] - PmC[d1_l1] * F_mU[3]); // p_s1 (d1_l1)
-                  p_p1_d1l1_d2l2             += del_d1l1_d2l2 * inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  scalar_type p_p2_d1l1_d2l2  = PmB[d2_l2] * (PmA[d1_l1] * F_mU[2] - PmC[d1_l1] * F_mU[3]); // p_s0 (d1_l1)
-                  p_p2_d1l1_d2l2             -= PmC[d2_l2] * (PmA[d1_l1] * F_mU[3] - PmC[d1_l1] * F_mU[4]); // p_s1 (d1_l1)
-                  p_p2_d1l1_d2l2             += del_d1l1_d2l2 * inv_two_zeta * (F_mU[2] - F_mU[3]);
-                  scalar_type p_p0_d1l2_d2l2  = PmB[d2_l2] * (PmA[d1_l2] * F_mU[0] - PmC[d1_l2] * F_mU[1]); // p_s0 (d1_l2)
-                  p_p0_d1l2_d2l2             -= PmC[d2_l2] * (PmA[d1_l2] * F_mU[1] - PmC[d1_l2] * F_mU[2]); // p_s1 (d1_l2)
-                  p_p0_d1l2_d2l2             += del_d1l2_d2l2 * inv_two_zeta * (F_mU[0] - F_mU[1]);
-                  scalar_type p_p1_d1l2_d2l2  = PmB[d2_l2] * (PmA[d1_l2] * F_mU[1] - PmC[d1_l2] * F_mU[2]); // p_s0 (d1_l2)
-                  p_p1_d1l2_d2l2             -= PmC[d2_l2] * (PmA[d1_l2] * F_mU[2] - PmC[d1_l2] * F_mU[3]); // p_s1 (d1_l2)
-                  p_p1_d1l2_d2l2             += del_d1l2_d2l2 * inv_two_zeta * (F_mU[1] - F_mU[2]);
-                  scalar_type p_p2_d1l2_d2l2  = PmB[d2_l2] * (PmA[d1_l2] * F_mU[2] - PmC[d1_l2] * F_mU[3]); // p_s0 (d1_l2)
-                  p_p2_d1l2_d2l2             -= PmC[d2_l2] * (PmA[d1_l2] * F_mU[3] - PmC[d1_l2] * F_mU[4]); // p_s1 (d1_l2)
-                  p_p2_d1l2_d2l2             += del_d1l2_d2l2 * inv_two_zeta * (F_mU[2] - F_mU[3]);
-
                   scalar_type d1_p0_d2l2      = del_d1l1_d2l2 * ((PmA[d1_l2] * F_mU[0] - PmC[d1_l2] * F_mU[1]) - (PmA[d1_l2] * F_mU[1] - PmC[d1_l2] * F_mU[2]));  // p_s0 (d1_l2) - p_s1 (d1_l2)
                   d1_p0_d2l2                 += del_d1l2_d2l2 * ((PmA[d1_l1] * F_mU[0] - PmC[d1_l1] * F_mU[1]) - (PmA[d1_l1] * F_mU[1] - PmC[d1_l1] * F_mU[2]));  // p_s0 (d1_l1) - p_s1 (d1_l1)
                   d1_p0_d2l2                 *= inv_two_zeta;

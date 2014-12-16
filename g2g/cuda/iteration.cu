@@ -50,6 +50,8 @@ void gpu_set_variables(void) {
   cudaMemcpyToSymbol(gpu_atoms, &fortran_vars.atoms, sizeof(fortran_vars.atoms), 0, cudaMemcpyHostToDevice);
   cudaMemcpyToSymbol(gpu_Iexch, &fortran_vars.iexch, sizeof(fortran_vars.iexch), 0, cudaMemcpyHostToDevice);
   cudaMemcpyToSymbol(gpu_m, &fortran_vars.m, sizeof(fortran_vars.m), 0, cudaMemcpyHostToDevice);
+  uint d_offset = fortran_vars.s_funcs + fortran_vars.p_funcs*3;
+  cudaMemcpyToSymbol(gpu_d_offset, &d_offset, sizeof(d_offset), 0, cudaMemcpyHostToDevice);
   cudaAssertNoError("set_gpu_variables");
 }
 
@@ -899,7 +901,7 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
   uint i_end_vals[MAX_TERM_TYPE]     = { p_start,   d_start,   d_start,   m,         m,         m      };
   uint j_begin_vals[MAX_TERM_TYPE]   = { s_start,   s_start,   p_start,   s_start,   p_start,   d_start};
   uint j_end_vals[MAX_TERM_TYPE]     = { p_start-1, p_start-1, d_start-1, p_start-1, d_start-1, m-1    };
-  uint i_orbital_vals[MAX_TERM_TYPE] = { 1,         3,         3,         6,         6,         6      };
+  uint i_orbital_vals[MAX_TERM_TYPE] = { 1,         3,         3,         6,         6,         1      }; // 1 for d-d means 6 threads use one of dxx, dyx, etc for func i
   uint j_orbital_vals[MAX_TERM_TYPE] = { 1,         1,         3,         1,         3,         6      };
 
   uint local_dens_ind, num_dens_terms = 0, total_dens_terms = 0;
@@ -1077,7 +1079,7 @@ template <class scalar_type> void get_qmmm_forces(double* qm_forces, double* mm_
     //orbital1.push_back(orbital1[0]);
     //orbital2.push_back(orbital2[0]);
   }
-  for (i = 0; i < QMMM_FORCES_BLOCK_SIZE - (dens_offsets[NUM_TERM_TYPES-1]+dens_counts[NUM_TERM_TYPES-1]) % QMMM_FORCES_BLOCK_SIZE; i++) {
+  for (i = 0; i < QMMM_FORCES_BLOCK_SIZE - (dens_counts[NUM_TERM_TYPES-1] % QMMM_FORCES_BLOCK_SIZE); i++) {
     dens_values.push_back(dens_values[dens_offsets[NUM_TERM_TYPES-1]]);
   }
 

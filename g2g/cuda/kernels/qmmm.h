@@ -92,7 +92,7 @@ __device__ void warpReduce(volatile scalar_type *sdata, unsigned int tid)
   sdata[tid] += sdata[tid + 1];
 }
 
-__device__ __constant__ uint TERM_TYPE_GAUSSIANS[6] = { 1, 3, 9, 6, 18, 36 };
+__device__ __constant__ uint TERM_TYPE_GAUSSIANS[6] = { 1, 3, 9, 6, 18, 6 };
 
 // TODO: currently, one thread maps to one primitive-primitive overlap force term; is there a better mapping? (thread to function, thread to sub-shell, etc)
 // Also, should the loop over MM atoms be broken up to be done by multiple blocks rather than a block looping over every MM atom?
@@ -118,11 +118,14 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
     // Shared memory space for reduction of MM atom force terms
     __shared__ scalar_type C_force[3][QMMM_FORCES_BLOCK_SIZE];
 
-    scalar_type ai, aj, zeta, prefactor_mm, inv_two_zeta;
-    scalar_type dens[term_type==0? 1 : (term_type==1? 3 : (term_type==2? 9 : (term_type==3? 6 : (term_type==4? 18 : 36))))];
+    scalar_type ai, aj, prefactor_mm, inv_two_zeta;
+    scalar_type dens[term_type==0? 1 : (term_type==1? 3 : (term_type==2? 9 : (term_type==3? 6 : (term_type==4? 18 : 6))))];
     scalar_type P[3], PmA[3], PmB[3];
     bool same_func = false;
     //uint orb1 = 0, orb2 = 0;
+
+    uint d1_l1, d1_l2; // These are only used by the d-d kernel
+
     //int max_m = 1;
     // TODO: each thread calculates its own zeta, overlap, etc here; should these be precalculated and saved (for use here and in Coulomb calculation)?
     {
@@ -141,7 +144,22 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
         my_func_code /= div;
         uint f1 = my_func_code;// % div;
         //my_func_code /= div;
-        same_func = f1 == f2;
+
+        uint orb1;
+        if (term_type == 5) {
+          orb1 = (f1 - gpu_d_offset) % 6;
+          switch (orb1) {
+            case 0: d1_l1 = 0; d1_l2 = 0; break;
+            case 1: d1_l1 = 1; d1_l2 = 0; break;
+            case 2: d1_l1 = 1; d1_l2 = 1; break;
+            case 3: d1_l1 = 2; d1_l2 = 0; break;
+            case 4: d1_l1 = 2; d1_l2 = 1; break;
+            case 5: d1_l1 = 2; d1_l2 = 2; break;
+          }
+          same_func = (f1-orb1) == f2;
+        } else {
+          same_func = f1 == f2;
+        }
 
         uint dens_ind = local_dens[ffnum];
         if (term_type == 2 && same_func) {
@@ -149,7 +167,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
             dens[i] = dens_values[dens_ind+i];
           }
         } else if (term_type == 5 && same_func) {
-          for (uint i = 0; i < 21; i++) {
+          for (uint i = 0; i <= orb1; i++) {
             dens[i] = dens_values[dens_ind+i];
           }
         } else {
@@ -198,7 +216,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
       A = gpu_atom_positions[nuc1];
       B = gpu_atom_positions[nuc2];
   
-      zeta = ai + aj;
+      scalar_type zeta = ai + aj;
       //if (valid_thread && term_type==0) printf("THREADNUM: %d %f\n",ffnum,zeta);
       //scalar_type inv_zeta = 1.0f / zeta;
       inv_two_zeta = 1.0f / (2.0f * zeta);
@@ -277,7 +295,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
             }
             case 5:
             {
-              #include "qmmm_terms/dd_unrolled.h"
+              #include "qmmm_terms/dd_split_unrolled.h"//_unrolled.h"
               break;
             }
           }

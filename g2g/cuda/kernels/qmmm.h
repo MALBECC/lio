@@ -22,15 +22,15 @@ __device__ void lio_gamma(scalar_type* __restrict__ F_mU, scalar_type U)
   // There's 6 reads to gpu_str, and currently U is not ordered wrt thread order, so the access pattern is terrible
   // Ideas: -reorder threads wrt U (seems to make things worse)
   //        -place gpu_str in texture memory (current implementation, doesn't seem to improve over global memory)
-  if (U <= 43.975)
+  if (U <= 43.975f)
   {
-    it = 20.0 * (U + 0.025);
+    it = 20.0f * (U + 0.025f);
     ti = it;
-    delt = U - 0.05 * ti;
-    delt3 = delt * 0.333333333333333;
-    delt4 = 0.25 * delt;
+    delt = U - 0.05f * ti;
+    delt3 = delt * 0.333333333333333f;
+    delt4 = 0.25f * delt;
     delt2 = delt4 + delt4;
-    delt5 = 0.20 * delt;
+    delt5 = 0.20f * delt;
 
     scalar_type tf0,tf1,tf2,tf3,tf4,tf5;
     tf0 = fetch(qmmm_str_tex,(float)it,0.0f);//qmmm_str[it];
@@ -200,14 +200,17 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
       A = gpu_atom_positions[nuc1];
       B = gpu_atom_positions[nuc2];
   
-      scalar_type zeta = ai + aj;
-      inv_two_zeta = 1.0f / (2.0f * zeta);
-      // Noticed that precomputing the inverse and multiplying rather than dividing here led to a 3x worse round-off error in the QM forces (compared to intsolG)
-      // However, using inv_two_zeta for prefactor_qm further down doesn't have an effect...maybe because P goes into PmA/PmB/PmC/U which are then used in more
-      // operations than prefactor_qm, which is just multiplied once at the end?
-      P[0] = (A.x*ai + B.x*aj) / zeta;
-      P[1] = (A.y*ai + B.y*aj) / zeta;
-      P[2] = (A.z*ai + B.z*aj) / zeta;
+      //
+      // ai and aj can differ by several orders of magnitude
+      // They're involved in two additions here, with the results involved in a division
+      // Using double precision here is important to maintain precision in the final results
+      //
+      double zeta = (double)ai + (double)aj;
+      inv_two_zeta = 1.0 / (2.0 * zeta);
+      P[0] = (A.x*(double)ai + B.x*(double)aj) / zeta;
+      P[1] = (A.y*(double)ai + B.y*(double)aj) / zeta;
+      P[2] = (A.z*(double)ai + B.z*(double)aj) / zeta;
+
       PmA[0] = P[0] - A.x;
       PmA[1] = P[1] - A.y;
       PmA[2] = P[2] - A.z;
@@ -217,7 +220,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
 
       vec_type<scalar_type,3> AmB = A - B;
       scalar_type ds2 = length2(AmB);
-      scalar_type ksi = ai*aj/zeta;
+      scalar_type ksi = ((double)ai*(double)aj)/zeta;
       ovlap = exp(-ds2*ksi);
 
       if (term_type == 0) {

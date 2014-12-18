@@ -264,32 +264,32 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
           {
             case 0:
             {
-              #include "qmmm_terms/ss.h"
+              #include "qmmm_terms/forces/ss.h"
               break;
             }
             case 1:
             {
-              #include "qmmm_terms/ps_unrolled.h"
+              #include "qmmm_terms/forces/ps_unrolled.h"
               break;
             }
             case 2:
             {
-              #include "qmmm_terms/pp_unrolled.h"
+              #include "qmmm_terms/forces/pp_unrolled.h"
               break;
             }
             case 3:
             {
-              #include "qmmm_terms/ds_unrolled.h"
+              #include "qmmm_terms/forces/ds_unrolled.h"
               break;
             }
             case 4:
             {
-              #include "qmmm_terms/dp_unrolled.h"
+              #include "qmmm_terms/forces/dp_unrolled.h"
               break;
             }
             case 5:
             {
-              #include "qmmm_terms/dd_split_unrolled.h"
+              #include "qmmm_terms/forces/dd_split_unrolled.h"
               break;
             }
           }

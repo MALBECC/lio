@@ -892,7 +892,7 @@ c      write(*,*) 'estoooo',ngpru, ngDyn, ng0, natom
       call g2g_parameter_init(NORM,natom,natom,ngDyn,
      >                        rqm,Rm2,Iz,Nr,Nr2,Nuc,
      >                        M,ncont,nshell,c,a, 
-     >                        RMM,M18,M5,M3,rhoalpha,rhobeta,
+     >                        RMM,M18,M5,M11,M3,rhoalpha,rhobeta,
      >                        NCO,OPEN,Nunp,nopt,Iexch,
      >                        e_, e_2, e3, wang, wang2, wang3,
      >                        STR, FAC, rmax)

@@ -62,7 +62,7 @@ void gpu_set_clatoms(void);
 extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int& natom, const unsigned int& max_atoms, const unsigned int& ngaussians,
                                     double* r, double* Rm, const unsigned int* Iz, const unsigned int* Nr, const unsigned int* Nr2, unsigned int* Nuc,
                                     const unsigned int& M, unsigned int* ncont, const unsigned int* nshell, double* c, double* a,
-                                    double* RMM, const unsigned int& M18, const unsigned int& M5, const unsigned int& M3, double* rhoalpha, double* rhobeta,
+                                    double* RMM, const unsigned int& M18, const unsigned int& M5, const unsigned int& M11, const unsigned int& M3, double* rhoalpha, double* rhobeta,
                                     const unsigned int& nco, bool& OPEN, const unsigned int& nunp, const unsigned int& nopt, const unsigned int& Iexch,
                                     double* e, double* e2, double* e3, double* wang, double* wang2, double* wang3, double* str, double* fac, double& rmax)
 {
@@ -151,6 +151,8 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
         	fortran_vars.rmm_input_ndens1 = FortranMatrix<double>(RMM, fortran_vars.m, fortran_vars.m, fortran_vars.m);
 		// matriz de Fock
 		fortran_vars.rmm_output = FortranMatrix<double>(RMM + (M5 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
+                // 1e Fock matrix
+		fortran_vars.rmm_1e_output = FortranMatrix<double>(RMM + (M11 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
 	}
 
 	fortran_vars.e1 = FortranMatrix<double>(e, SMALL_GRID_SIZE, 3, SMALL_GRID_SIZE);
@@ -292,14 +294,24 @@ extern "C" void g2g_new_grid_(const unsigned int& grid_type) {
 }
 //===============================================================================================================
 namespace G2G {
-  template<class T> void get_qmmm_forces(double* qm_forces, double* mm_forces);
+  template<class T,bool forces> void get_qmmm_forces(double* qm_forces, double* mm_forces, double& Ens, double& Es);
 }
 extern "C" void g2g_qmmm_forces_(double* qm_forces, double* mm_forces)
 {
+  double Ens = 0.0, Es = 0.0;
 #if FULL_DOUBLE
-  G2G::get_qmmm_forces<double>(qm_forces,mm_forces);
+  G2G::get_qmmm_forces<double,true>(qm_forces,mm_forces,Ens,Es);
 #else
-  G2G::get_qmmm_forces<float>(qm_forces,mm_forces);
+  G2G::get_qmmm_forces<float,true>(qm_forces,mm_forces,Ens,Es);
+#endif
+}
+extern "C" void g2g_qmmm_fock_(double& Es, double& Ens)
+{
+  Ens = 0.0; Es = 0.0;
+#if FULL_DOUBLE
+  G2G::get_qmmm_forces<double,false>((double*)0,(double*)0,Ens,Es);
+#else
+  G2G::get_qmmm_forces<float,false>((double*)0,(double*)0,Ens,Es);
 #endif
 }
 

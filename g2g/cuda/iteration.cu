@@ -1139,12 +1139,14 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
     gpu_partial_qm_forces.resize(COALESCED_DIMENSION(partial_out_size), fortran_vars.atoms);
   // Fock: ouptut is partial Fock elements
   } else {
-    gpu_partial_fock.resize(COALESCED_DIMENSION(max_partial_size), num_dens_terms);
+    //gpu_partial_fock.resize(COALESCED_DIMENSION(max_partial_size), num_dens_terms);
+    gpu_partial_fock.resize(COALESCED_DIMENSION(num_dens_terms),max_partial_size);
     //cudaMemset(gpu_partial_fock.data, 0.0f, COALESCED_DIMENSION(max_partial_size) * num_dens_terms * sizeof(scalar_type));
-    dim3 threads(COALESCED_DIMENSION(max_partial_size),num_dens_terms);
+    //dim3 threads(COALESCED_DIMENSION(max_partial_size),num_dens_terms);
+    dim3 threads(COALESCED_DIMENSION(num_dens_terms),max_partial_size);
     dim3 blockSize(32,4);
     dim3 gridSize = divUp(threads,blockSize);
-    zero_fock<scalar_type><<<gridSize,blockSize>>>(gpu_partial_fock.data,COALESCED_DIMENSION(max_partial_size),num_dens_terms);
+    zero_fock<scalar_type><<<gridSize,blockSize>>>(gpu_partial_fock.data,COALESCED_DIMENSION(num_dens_terms),max_partial_size);
   }
 
   cudaBindTextureToArray(qmmm_str_tex,gammaArray);
@@ -1197,7 +1199,7 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
 
 #define qmmm_fock_parameters \
   term_type_counts[i], factor_ac_gpu.data, nuc_gpu.data, dev_func_code.data+offset,dev_local_dens.data+offset, /*num_dens_terms,*/ \
-  gpu_partial_fock.data+fock_offset, COALESCED_DIMENSION(max_partial_size),clatom_pos_gpu.data,clatom_chg_gpu.data//,fock_out_offset
+  gpu_partial_fock.data+fock_offset, COALESCED_DIMENSION(num_dens_terms),clatom_pos_gpu.data,clatom_chg_gpu.data//,fock_out_offset
     // Each term type is calculated asynchronously
     cudaStream_t stream[NUM_TERM_TYPES];
     for (i = 0; i < NUM_TERM_TYPES; i++) {
@@ -1209,7 +1211,7 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
     for (i = 0; i < NUM_TERM_TYPES; i++)
     {
       uint offset = term_type_offsets[i];
-      uint fock_offset = dens_offsets[i] * COALESCED_DIMENSION(max_partial_size);
+      uint fock_offset = dens_offsets[i];// * COALESCED_DIMENSION(max_partial_size);
       dim3 threads = term_type_counts[i];
       dim3 blockSize(QMMM_FORCES_BLOCK_SIZE);
       dim3 gridSize = divUp(threads, blockSize);
@@ -1228,7 +1230,6 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
     }
     kernel.pause();
   }
-  cout << "HEEEEEEEERE" << endl;
 
   if (forces) {
     //
@@ -1275,8 +1276,8 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
       uint dens_ind = local2globaldens[i];
       double E_term = 0.0;
       for (j = 0; j < max_partial_size; j++) {
-        fortran_vars.rmm_1e_output(dens_ind) += cpu_partial_fock(j,i);
-        E_term += cpu_partial_fock(j,i);
+        fortran_vars.rmm_1e_output(dens_ind) += cpu_partial_fock(i,j);
+        E_term += cpu_partial_fock(i,j);
       }
       Es += E_term * fortran_vars.rmm_input_ndens1.data[dens_ind];
     }

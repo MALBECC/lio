@@ -165,12 +165,12 @@ __global__ void gpu_qmmm_fock( uint num_terms, vec_type<scalar_type,2>* ac_value
           }
           case 4:
           {
-            #include "qmmm_terms/energy/dp.h"
+            #include "qmmm_terms/energy/dp_unrolled.h"
             break;
           }
           case 5:
           {
-            #include "qmmm_terms/energy/dd.h"
+            #include "qmmm_terms/energy/dd_unrolled.h"
             break;
           }
         }
@@ -185,14 +185,14 @@ __global__ void gpu_qmmm_fock( uint num_terms, vec_type<scalar_type,2>* ac_value
     uint bl_fock_ind = 0;//(fock_ind - min_ind) % TERM_TYPE_GAUSSIANS_EN[term_type];
 
     __shared__ uint fock_ind_sh[QMMM_FORCES_BLOCK_SIZE];
-    __shared__ bool fock_flags[QMMM_FORCES_BLOCK_SIZE];
+    //__shared__ bool fock_flags[QMMM_FORCES_BLOCK_SIZE];
     __shared__ bool same_func_sh[QMMM_FORCES_BLOCK_SIZE];
     __shared__ scalar_type fock_sh[QMMM_FORCES_BLOCK_SIZE];
 
     fock_ind_sh[tid] = fock_ind;
     __syncthreads();
     uint curr_ind = fock_ind_sh[0], curr_bl_ind = 0;
-    for (uint i = 1; i < QMMM_FORCES_BLOCK_SIZE; i++) {
+    for (int i = 1; i < QMMM_FORCES_BLOCK_SIZE; i++) {
       curr_bl_ind += curr_ind != fock_ind_sh[i];
       curr_ind = fock_ind_sh[i];
       bl_fock_ind = (curr_ind == fock_ind) * curr_bl_ind + (curr_ind != fock_ind) * bl_fock_ind;
@@ -204,18 +204,18 @@ __global__ void gpu_qmmm_fock( uint num_terms, vec_type<scalar_type,2>* ac_value
     //
     // First figure out which fock elements this block contains
     //
-    fock_flags[tid] = false;
+    //fock_flags[tid] = false;
     same_func_sh[tid] = false;
     __syncthreads();
-    fock_flags[bl_fock_ind] = true;
+    //fock_flags[bl_fock_ind] = true;
     same_func_sh[bl_fock_ind] = same_func;
     fock_ind_sh[bl_fock_ind] = fock_ind;
     __syncthreads();
-    for (int i = 0; i < QMMM_FORCES_BLOCK_SIZE; i++)
+    for (int i = 0; i <= curr_bl_ind/*QMMM_FORCES_BLOCK_SIZE*/; i++)
     {
       // Only for this block's fock
-      if (fock_flags[i] == true)
-      {
+      //if (fock_flags[i] == true)
+      //{
         //
         // Load the individual thread's fock terms into the appropriate shared location
         //
@@ -242,11 +242,11 @@ __global__ void gpu_qmmm_fock( uint num_terms, vec_type<scalar_type,2>* ac_value
           if (tid < WARP_SIZE) { warpReduce<scalar_type>(fock_sh, tid); }
           if (tid == 0) {
             //printf("%d %d %d %d %d\n",fock_ind_sh[i],j,blockIdx.x,fock_out,global_stride*(fock_ind_sh[i]+j)+(blockIdx.x-fock_out));
-            fock[global_stride*(fock_ind_sh[i]+j)+blockIdx.x] = fock_sh[0];
+            fock[fock_ind_sh[i]+j+global_stride*blockIdx.x] = fock_sh[0];
           }
           __syncthreads();
         }
-      }
+      //}
     }
   }
 }

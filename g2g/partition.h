@@ -107,6 +107,7 @@ class PointGroup {
         HostMatrix<double> &, int, HostMatrix<double> &, bool) = 0;
 
     bool is_significative(FunctionType, double exponent, double coeff, double d2);
+    void assign_functions(HostMatrix<double>, const std::vector<double>&, const std::vector<double>&);
     bool operator<(const PointGroup<scalar_type>& T) const;
     size_t size_in_gpu() const;
     int elements() const;

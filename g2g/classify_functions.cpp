@@ -10,15 +10,76 @@
 using namespace std;
 using namespace G2G;
 
+template <class scalar_type>
+void PointGroup<scalar_type>::assign_functions(HostMatrix<double> dists,
+    const std::vector<double>& min_exps, const std::vector<double>& min_coeff) {
+  uint func = 0;
+  set<uint> functions_set;
+  set<uint> nucleii_set;
+
+  /** S **/
+  while (func < fortran_vars.s_funcs) {
+    uint atom_nuc = fortran_vars.nucleii(func) - 1;
+    if (assign_all_functions || is_significative(FUNCTION_S, min_exps[func], min_coeff[func], dists(atom_nuc))) {
+      functions_set.insert(func); s_functions++;
+      nucleii_set.insert(atom_nuc);
+    }
+    func++;
+  }
+
+  /** P **/
+  while (func < fortran_vars.s_funcs + fortran_vars.p_funcs * 3) {
+    uint atom_nuc = fortran_vars.nucleii(func) - 1;
+    if (assign_all_functions || is_significative(FUNCTION_P, min_exps[func], min_coeff[func], dists(atom_nuc))) {
+      functions_set.insert(func); p_functions++;
+      nucleii_set.insert(atom_nuc);
+    }
+    func += 3;
+  }
+
+  /** D **/
+  while (func < fortran_vars.s_funcs + fortran_vars.p_funcs * 3 + fortran_vars.d_funcs * 6) {
+    uint atom_nuc = fortran_vars.nucleii(func) - 1;
+    if (assign_all_functions || is_significative(FUNCTION_D, min_exps[func], min_coeff[func], dists(atom_nuc))) {
+      functions_set.insert(func); d_functions++;
+      nucleii_set.insert(atom_nuc);
+    }
+    func += 6;
+  }
+
+  local2global_func.resize(functions_set.size());
+  copy(functions_set.begin(), functions_set.end(), local2global_func.begin());
+
+  local2global_nuc.resize(nucleii_set.size());
+  copy(nucleii_set.begin(), nucleii_set.end(), local2global_nuc.begin());
+}
+
+template<class scalar_type>
+void PointGroup<scalar_type>::compute_nucleii_maps(void)
+{
+  if (total_functions_simple() != 0) {
+    func2global_nuc.resize(total_functions_simple());
+    for (uint i = 0; i < total_functions_simple(); i++) {
+      func2global_nuc(i) = fortran_vars.nucleii(local2global_func[i]) - 1;
+    }
+
+    func2local_nuc.resize(total_functions());
+    uint ii = 0;
+    for (uint i = 0; i < total_functions_simple(); i++) {
+      uint global_atom = func2global_nuc(i);
+      uint local_atom = std::distance(local2global_nuc.begin(),
+          std::find(local2global_nuc.begin(), local2global_nuc.end(), global_atom));
+      uint inc = small_function_type(i);
+      for (uint k = 0; k < inc; k++, ii++) func2local_nuc(ii) = local_atom;
+    }
+  }
+}
 
 /*******************************
  * Cube
  *******************************/
 
-void Cube::assign_significative_functions(const double3& cube_coord, const vector<double>& min_exps, const vector<double>& min_coeff)
-{
-  uint func = 0;
-
+void Cube::assign_significative_functions(const double3& cube_coord, const std::vector<double>& min_exps, const std::vector<double>& min_coeff) {
   HostMatrix<double> atom_cube_dists(fortran_vars.atoms);
   for (uint i = 0; i < fortran_vars.atoms; i++) {
     const double3& atom_pos = fortran_vars.atom_positions(i);
@@ -35,46 +96,7 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
 
     atom_cube_dists(i) = length2(dist_vec);
   }
-
-  set<uint> functions_set;
-  set<uint> nucleii_set;
-
-  /** S **/
-  while (func < fortran_vars.s_funcs) {
-    uint atom_nuc = fortran_vars.nucleii(func) - 1;
-    if (assign_all_functions || is_significative(FUNCTION_S, min_exps[func], min_coeff[func], atom_cube_dists(atom_nuc))) {
-      functions_set.insert(func); s_functions++;
-      nucleii_set.insert(atom_nuc);
-    }
-    func++;
-  }
-
-  /** P **/
-  while (func < fortran_vars.s_funcs + fortran_vars.p_funcs * 3) {
-    uint atom_nuc = fortran_vars.nucleii(func) - 1;
-    if (assign_all_functions || is_significative(FUNCTION_P, min_exps[func], min_coeff[func], atom_cube_dists(atom_nuc))) {
-      functions_set.insert(func); p_functions++;
-      nucleii_set.insert(atom_nuc);
-    }
-    func += 3;
-  }
-
-  /** D **/
-  while (func < fortran_vars.s_funcs + fortran_vars.p_funcs * 3 + fortran_vars.d_funcs * 6) {
-    uint atom_nuc = fortran_vars.nucleii(func) - 1;
-    if (assign_all_functions || is_significative(FUNCTION_D, min_exps[func], min_coeff[func], atom_cube_dists(atom_nuc))) {
-      functions_set.insert(func); d_functions++;
-      nucleii_set.insert(atom_nuc);
-    }
-    func += 6;
-  }
-
-  local2global_func.resize(functions_set.size());
-  copy(functions_set.begin(), functions_set.end(), local2global_func.begin());
-
-  local2global_nuc.resize(nucleii_set.size());
-  copy(nucleii_set.begin(), nucleii_set.end(), local2global_nuc.begin());
-
+  assign_functions(atom_cube_dists, min_exps, min_coeff);
   compute_nucleii_maps();
 }
 
@@ -82,8 +104,6 @@ void Cube::assign_significative_functions(const double3& cube_coord, const vecto
  * Sphere
  *****************************/
 void Sphere::assign_significative_functions(const std::vector<double>& min_exps, const std::vector<double>& min_coeff) {
-   uint func = 0;
-
   // TODO: esto solo es necesario para los atomos en nucleii, idem arriba
   HostMatrix<double> atom_sphere_dists(fortran_vars.atoms);
   const double3& own_atom_pos = fortran_vars.atom_positions(atom);
@@ -98,46 +118,6 @@ void Sphere::assign_significative_functions(const std::vector<double>& min_exps,
       atom_sphere_dists(i) = dist * dist;
     }
   }
-
-  set<uint> functions_set;
-  set<uint> nucleii_set;
-
-  /** S **/
-  while (func < fortran_vars.s_funcs) {
-    uint atom_nuc = fortran_vars.nucleii(func) - 1;
-    if (assign_all_functions || is_significative(FUNCTION_S, min_exps[func], min_coeff[func], atom_sphere_dists(atom_nuc))) {
-      functions_set.insert(func); s_functions++;
-      nucleii_set.insert(atom_nuc);
-    }
-    func++;
-  }
-
-  /** P **/
-  while (func < fortran_vars.s_funcs + fortran_vars.p_funcs * 3) {
-    uint atom_nuc = fortran_vars.nucleii(func) - 1;
-    if (assign_all_functions || is_significative(FUNCTION_P, min_exps[func], min_coeff[func], atom_sphere_dists(atom_nuc))) {
-      functions_set.insert(func); p_functions++;
-      nucleii_set.insert(atom_nuc);
-    }
-
-    func += 3;
-  }
-
-  /** D **/
-  while (func < fortran_vars.s_funcs + fortran_vars.p_funcs * 3 + fortran_vars.d_funcs * 6) {
-    uint atom_nuc = fortran_vars.nucleii(func) - 1;
-    if (assign_all_functions || is_significative(FUNCTION_D, min_exps[func], min_coeff[func], atom_sphere_dists(atom_nuc))) {
-      functions_set.insert(func); d_functions++;
-      nucleii_set.insert(atom_nuc);
-    }
-    func += 6;
-  }
-
-  local2global_func.resize(functions_set.size());
-  copy(functions_set.begin(), functions_set.end(), local2global_func.begin());
-
-  local2global_nuc.resize(nucleii_set.size());
-  copy(nucleii_set.begin(), nucleii_set.end(), local2global_nuc.begin());
-
+  assign_functions(atom_sphere_dists, min_exps, min_coeff);
   compute_nucleii_maps();
 }

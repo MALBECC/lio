@@ -2,23 +2,23 @@
        module sysdata
 !--------------------------------------------------------------------!
        implicit none
-       double precision :: Energy_Total
-       double precision :: Dipole_Moment(3)
+       real*8 :: Energy_Total
+       real*8 :: Dipole_Moment(3)
 
-       double precision :: External_Field(3)
+       real*8 :: External_Field(3)
 
-       integer                      :: Quantum_Atoms
-       double precision,allocatable :: Quantum_Coords(:,:)
-       double precision,allocatable :: Quantum_Forces(:,:)
+       integer                :: Quantum_Atoms
+       real*8,allocatable     :: Quantum_Coords(:,:)
+       real*8,allocatable     :: Quantum_Forces(:,:)
 
-       integer                      :: Classic_Particles
-       double precision,allocatable :: Classic_Coords(:,:)
-       double precision,allocatable :: Classic_Forces(:,:)
+       integer                :: Classic_Particles
+       real*8,allocatable     :: Classic_Coords(:,:)
+       real*8,allocatable     :: Classic_Forces(:,:)
 
-       integer                      :: Basis_Functions
-       double precision,allocatable :: Smat(:,:)
-       double precision,allocatable :: Fmat(:,:)
-       complex*16,allocatable       :: Pmat(:,:)
+       integer                :: Basis_Functions
+       real*8,allocatable     :: Smat(:,:)
+       real*8,allocatable     :: Fmat(:,:)
+       complex*16,allocatable :: Pmat(:,:)
 
        contains
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

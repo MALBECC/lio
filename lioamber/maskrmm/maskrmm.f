@@ -1,20 +1,23 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       module liokeys
+       module maskrmm
+!--------------------------------------------------------------------!
+!
+!
+! INCLUDE FILES WITH HEADERS:
 !--------------------------------------------------------------------!
        implicit none
-       character(len=10) :: runtype
-
-       namelist /lio_keywords/ runtype
+       include 'rhomess_h.f'
+       include 'rhofix_h.f'
        contains
 !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       subroutine start_liokeys(UnitSlot)
-!--------------------------------------------------------------------!
-       integer,intent(in) :: UnitSlot
-       runtype='scf'
 !
-       read(unit=UnitSlot,nml=lio_keywords)
-       end subroutine
+! INCLUDE FILES WITH PROCEDURES:
+!--------------------------------------------------------------------!
+       include 'spunpack.f'
+       include 'sprepack.f'
+       include 'rhomess.f'
+       include 'rhofix.f'
        end module
+!
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

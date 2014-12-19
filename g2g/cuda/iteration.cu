@@ -973,11 +973,11 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
     if (current_term_type > 0) {
       tmp_ind += COALESCED_DIMENSION(term_type_counts[current_term_type-1]);
       term_type_offsets[current_term_type] = tmp_ind;
-      if (forces) {
+//      if (forces) {
         tmp_dens_ind += COALESCED_DIMENSION(dens_counts[current_term_type-1]);
-      } else {
-        tmp_dens_ind += dens_counts[current_term_type-1];
-      }
+//      } else {
+//        tmp_dens_ind += dens_counts[current_term_type-1];
+//      }
       dens_offsets[current_term_type] = tmp_dens_ind;
     }
 
@@ -1032,9 +1032,9 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
               dens_counts[current_term_type]++;
 
               uint dens_ind = (i+i_orbital) + (2*fortran_vars.m-((j+j_orbital)+1))*(j+j_orbital)/2;
-              if (forces) {
+//              if (forces) {
                 dens_values.push_back(fortran_vars.rmm_input_ndens1.data[dens_ind]);
-              } else {
+              if (!forces) {
                 local2globaldens.push_back(dens_ind);
               }
               local_dens_ind++;
@@ -1048,11 +1048,14 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
       func_code.push_back(func_code[term_type_offsets[current_term_type]]); // Use the first code from this term type
       local_dens.push_back(local_dens[term_type_offsets[current_term_type]]);
     }
-    if (forces) {
+//    if (forces) {
       for (j = dens_counts[current_term_type]; j < COALESCED_DIMENSION(dens_counts[current_term_type]); j++) {
         dens_values.push_back(dens_values[dens_offsets[current_term_type]]);
+        if (!forces) {
+          local2globaldens.push_back(local2globaldens[dens_offsets[current_term_type]]);
+        }
       }
-    }
+//    }
   }
   check.pause();
 
@@ -1068,11 +1071,11 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
     func_code.push_back(func_code[term_type_offsets[NUM_TERM_TYPES-1]]);
     local_dens.push_back(local_dens[term_type_offsets[NUM_TERM_TYPES-1]]);
   }
-  if (forces) {
+//  if (forces) {
     for (i = 0; i < QMMM_FORCES_BLOCK_SIZE - (COALESCED_DIMENSION(dens_counts[NUM_TERM_TYPES-1]) % QMMM_FORCES_BLOCK_SIZE); i++) {
       dens_values.push_back(dens_values[dens_offsets[NUM_TERM_TYPES-1]]);
     }
-  }
+//  }
 
   HostMatrix<vec_type<scalar_type, 2> > factor_ac_cpu(COALESCED_DIMENSION(fortran_vars.m), MAX_CONTRACTIONS);
   HostMatrixUInt nuc_cpu(fortran_vars.m, 1);
@@ -1116,6 +1119,10 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
   // Send input arrays (thread->primitive map and thread->density map) to the device
   //
   CudaMatrixUInt dev_func_code(func_code), dev_local_dens(local_dens);
+  //
+  // Send reduced density matrix to the device
+  //
+  CudaMatrix<scalar_type> dev_dens_values(dens_values);
 
   //
   // Allocate output arrays on device
@@ -1140,25 +1147,30 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
   // Fock: ouptut is partial Fock elements
   } else {
     //gpu_partial_fock.resize(COALESCED_DIMENSION(max_partial_size), num_dens_terms);
-    gpu_partial_fock.resize(COALESCED_DIMENSION(num_dens_terms),max_partial_size);
+    gpu_partial_fock.resize(dens_values.size()/*COALESCED_DIMENSION(num_dens_terms)*/,max_partial_size);
     //cudaMemset(gpu_partial_fock.data, 0.0f, COALESCED_DIMENSION(max_partial_size) * num_dens_terms * sizeof(scalar_type));
     //dim3 threads(COALESCED_DIMENSION(max_partial_size),num_dens_terms);
-    dim3 threads(COALESCED_DIMENSION(num_dens_terms),max_partial_size);
+    dim3 threads(dens_values.size()/*COALESCED_DIMENSION(num_dens_terms)*/,max_partial_size);
     dim3 blockSize(32,4);
     dim3 gridSize = divUp(threads,blockSize);
-    zero_fock<scalar_type><<<gridSize,blockSize>>>(gpu_partial_fock.data,COALESCED_DIMENSION(num_dens_terms),max_partial_size);
+    zero_fock<scalar_type><<<gridSize,blockSize>>>(gpu_partial_fock.data,dens_values.size()/*COALESCED_DIMENSION(num_dens_terms)*/,max_partial_size);
+  }
+
+  uint energies_offsets[NUM_TERM_TYPES];
+  uint energies_size = 0;
+  CudaMatrix<scalar_type> gpu_qmmm_partial_energies;
+  if (!forces) {
+    for (i = 0; i < NUM_TERM_TYPES; i++) {
+      energies_offsets[i] = energies_size;
+      energies_size += divUp(dens_counts[i],QMMM_REDUCE_BLOCK_SIZE);
+    }
+    gpu_qmmm_partial_energies.resize(energies_size,1);
   }
 
   cudaBindTextureToArray(qmmm_str_tex,gammaArray);
   prep.pause_and_sync();
 
   if (forces) {
-    prep.start();
-    //
-    // Send reduced density matrix to the device
-    //
-    CudaMatrix<scalar_type> dev_dens_values(dens_values);
-    prep.pause_and_sync();
 
     kernel.start();
 #define qmmm_forces_parameters \
@@ -1195,11 +1207,12 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
     }
     kernel.pause();
   } else {
+
     kernel.start();
 
 #define qmmm_fock_parameters \
   term_type_counts[i], factor_ac_gpu.data, nuc_gpu.data, dev_func_code.data+offset,dev_local_dens.data+offset, /*num_dens_terms,*/ \
-  gpu_partial_fock.data+fock_offset, COALESCED_DIMENSION(num_dens_terms),clatom_pos_gpu.data,clatom_chg_gpu.data//,fock_out_offset
+  gpu_partial_fock.data+fock_offset, dens_values.size()/*COALESCED_DIMENSION(num_dens_terms)*/,clatom_pos_gpu.data,clatom_chg_gpu.data//,fock_out_offset
     // Each term type is calculated asynchronously
     cudaStream_t stream[NUM_TERM_TYPES];
     for (i = 0; i < NUM_TERM_TYPES; i++) {
@@ -1223,6 +1236,12 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
         case 4: gpu_qmmm_fock<scalar_type,4><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
         case 5: gpu_qmmm_fock<scalar_type,5><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
       }
+      
+      dim3 reduceThreads = dens_counts[i];
+      dim3 reduceBlockSize(QMMM_REDUCE_BLOCK_SIZE);
+      dim3 reduceGridSize = divUp(reduceThreads,reduceBlockSize);
+      gpu_qmmm_fock_reduce<scalar_type><<<reduceGridSize,reduceBlockSize,0,stream[i]>>>( gpu_partial_fock.data+fock_offset, dev_dens_values.data+fock_offset, gpu_qmmm_partial_energies.data+energies_offsets[i],
+                                                                                         dens_values.size(), max_partial_size, dens_counts[i] );
     }
     cudaDeviceSynchronize();
     for (i = 0; i < NUM_TERM_TYPES; i++) {
@@ -1268,24 +1287,32 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
     reduce.pause();
   } else {
     down.start();
-    HostMatrix<scalar_type> cpu_partial_fock(gpu_partial_fock);
+    //HostMatrix<scalar_type> cpu_partial_fock(gpu_partial_fock);
+    HostMatrix<scalar_type> cpu_fock(dens_values.size());
+    cudaMemcpy(cpu_fock.data,gpu_partial_fock.data,cpu_fock.bytes(),cudaMemcpyDeviceToHost);
+    HostMatrix<scalar_type> cpu_partial_energies(gpu_qmmm_partial_energies);
     down.pause_and_sync();
 
     reduce.start();
-    for (i = 0; i < num_dens_terms; i++) {
-      uint dens_ind = local2globaldens[i];
-      double E_term = 0.0;
-      for (j = 0; j < max_partial_size; j++) {
-        fortran_vars.rmm_1e_output(dens_ind) += cpu_partial_fock(i,j);
-        E_term += cpu_partial_fock(i,j);
+    for (uint t = 0; t < NUM_TERM_TYPES; t++) {
+      for (i = dens_offsets[t]; i < dens_offsets[t] + dens_counts[t]; i++) {
+        uint dens_ind = local2globaldens[i];
+        //double E_term = 0.0;
+        //for (j = 0; j < max_partial_size; j++) {
+        fortran_vars.rmm_1e_output(dens_ind) += cpu_fock(i);
+          //E_term += cpu_partial_fock(i,j);
+        //}
+        //Es += E_term * fortran_vars.rmm_input_ndens1.data[dens_ind];
       }
-      Es += E_term * fortran_vars.rmm_input_ndens1.data[dens_ind];
+    }
+    for (i = 0; i < energies_size; i++) {
+      Es += cpu_partial_energies(i);
     }
     reduce.pause();
   }
 
   cout << "[G2G_QMMM] nuc-nuc: " << nuc << " overlap check: " << check << " kernel prep: " << prep << endl;
-  cout << "[G2G_QMMM] kernel: " << kernel << " download: " << down << " reduction: " << reduce << endl;
+  cout << "[G2G_QMMM] kernel: " << kernel << " download: " << down << " host reduction: " << reduce << endl;
 
   cudaUnbindTexture(qmmm_str_tex);
 

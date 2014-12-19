@@ -261,3 +261,40 @@ __global__ void zero_fock( scalar_type* fock, uint global_stride, uint fock_leng
     fock[my_x + global_stride * my_y] = 0.0f;
   }
 }
+
+template<class scalar_type>
+__global__ void gpu_qmmm_fock_reduce( scalar_type* fock, scalar_type* dens, scalar_type* energies, uint stride, uint depth, uint width )
+{
+  uint my_fock_ind = index_x(blockDim, blockIdx, threadIdx);
+  uint tid = threadIdx.x;
+  scalar_type my_partial_fock = 0.0f;
+
+  if (my_fock_ind < width) {
+    for (uint i = 0; i < depth; i++) {
+      my_partial_fock += fock[stride*i + my_fock_ind];
+    }
+    fock[my_fock_ind] = my_partial_fock;
+  }
+
+  __shared__ scalar_type energies_sh[QMMM_REDUCE_BLOCK_SIZE];
+  scalar_type my_dens = 0.0f;
+  if (my_fock_ind < width) {
+    my_dens = dens[my_fock_ind];
+  }
+  energies_sh[tid] = my_partial_fock * my_dens;
+  __syncthreads();
+
+  if (tid < 64)
+  {
+    energies_sh[tid] += energies_sh[tid+64];
+  }
+  __syncthreads();
+
+  if (tid < WARP_SIZE) { warpReduce<scalar_type>(energies_sh, tid); }
+  if (tid == 0) { energies[blockIdx.x] = energies_sh[0]; }
+}
+
+
+
+
+

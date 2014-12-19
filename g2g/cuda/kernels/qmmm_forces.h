@@ -1,7 +1,7 @@
 #define WARP_SIZE 32
 #define WARP_SIZE2 2*WARP_SIZE
 #define WARP_SIZE3 3*WARP_SIZE
-#define QMMM_FORCES_HALF_BLOCK QMMM_FORCES_BLOCK_SIZE/2
+#define QMMM_FORCES_HALF_BLOCK QMMM_BLOCK_SIZE/2
 
 #define PI 3.141592653589793238462643383f
 
@@ -95,7 +95,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
                                  vec_type<scalar_type,3>* mm_forces, vec_type<scalar_type,3>* qm_forces, uint global_stride, vec_type<scalar_type,3>* clatom_pos, scalar_type *clatom_chg )
 {
 
-  assert(QMMM_FORCES_BLOCK_SIZE == 128);
+  assert(QMMM_BLOCK_SIZE == 128);
   uint ffnum = index_x(blockDim, blockIdx, threadIdx);
   int tid = threadIdx.x;
   bool valid_thread = (ffnum < num_terms);
@@ -106,10 +106,10 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
   scalar_type prefactor_qm;
 
   {
-    __shared__ vec_type<scalar_type,3> clatom_position_sh[QMMM_FORCES_BLOCK_SIZE];
-    __shared__ scalar_type clatom_charge_sh[QMMM_FORCES_BLOCK_SIZE];
+    __shared__ vec_type<scalar_type,3> clatom_position_sh[QMMM_BLOCK_SIZE];
+    __shared__ scalar_type clatom_charge_sh[QMMM_BLOCK_SIZE];
     // Shared memory space for reduction of MM atom force terms
-    __shared__ scalar_type C_force[3][QMMM_FORCES_BLOCK_SIZE];
+    __shared__ scalar_type C_force[3][QMMM_BLOCK_SIZE];
 
     scalar_type ai, aj, prefactor_mm, inv_two_zeta;
     scalar_type dens[term_type==0? 1 : (term_type==1? 3 : (term_type==2? 9 : (term_type==3? 6 : (term_type==4? 18 : 6))))];
@@ -234,7 +234,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
     //
     // Outer loop: read in block of MM atom information into shared memory
     //
-    for (int i = 0; i < gpu_clatoms; i += QMMM_FORCES_BLOCK_SIZE)
+    for (int i = 0; i < gpu_clatoms; i += QMMM_BLOCK_SIZE)
     {
       if (i + tid < gpu_clatoms) {
         clatom_position_sh[tid] = clatom_pos[i+tid];
@@ -244,7 +244,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
       //
       // Inner loop: process block of MM atoms; each thread calculates a single primitive/primitive overlap force term
       //
-      for (int j = 0; j < QMMM_FORCES_BLOCK_SIZE && i+j < gpu_clatoms; j++)
+      for (int j = 0; j < QMMM_BLOCK_SIZE && i+j < gpu_clatoms; j++)
       {
         {
           scalar_type PmC[3];
@@ -343,12 +343,12 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
   // TODO: (same question as for the MM forces) - should we do the per-block reduction in this kernel?
   {
     __shared__ bool nuc_flags[MAX_ATOMS];
-    __shared__ scalar_type QM_force[3][QMMM_FORCES_BLOCK_SIZE];
+    __shared__ scalar_type QM_force[3][QMMM_BLOCK_SIZE];
 
     //
     // First figure out which nuclei are present in this block
     //
-    for (int i = 0; i < gpu_atoms; i += QMMM_FORCES_BLOCK_SIZE) {
+    for (int i = 0; i < gpu_atoms; i += QMMM_BLOCK_SIZE) {
       if (i+tid<gpu_atoms) nuc_flags[i+tid] = false;
     }
     __syncthreads();

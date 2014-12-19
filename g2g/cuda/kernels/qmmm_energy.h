@@ -3,10 +3,10 @@ __device__ __constant__ uint TERM_TYPE_GAUSSIANS_EN[6] = { 1, 3, 9, 6, 18, 36 };
 #define DD_SAME_FUNC_SIZE 21
 
 //
-// QM/MM forces kernel - calculate gradients for QM/MM 1-e operator over significant basis primitives
-// Each thread maps to a pair of primitives, so each thread contributes partial forces on 1 or 2 QM nuclei
-// Each thread iterates over every MM atom, so each thread contributes partial forces on every MM atom
-// The partial forces are calculated using the Obara-Saika recursion relations, and then reduced per-block
+// QM/MM energy kernel - calculate Fock elements for QM/MM 1-e operator over significant basis primitives
+// Each thread maps to a pair of primitives, and calculates part of one Fock element
+// Each thread iterates over every MM atom
+// The Fock integrals are calculated using the Obara-Saika recursion relations, and then reduced per-block
 //
 // The template parameter term_type defines which type of functions are being calculated
 // 0 = s-s , 1 = p-s , 2 = p-p, 3 = d-s , 4 = d-p , 5 = d-d
@@ -15,17 +15,18 @@ __device__ __constant__ uint TERM_TYPE_GAUSSIANS_EN[6] = { 1, 3, 9, 6, 18, 36 };
 // TODO: should the loop over MM atoms be broken up to be done by multiple blocks rather than a block looping over every MM atom?
 //
 template<class scalar_type, uint term_type>
-__global__ void gpu_qmmm_fock( uint num_terms, vec_type<scalar_type,2>* ac_values, uint* func2nuc, uint* func_code, uint* local_fock_ind,// uint fock_size,
-                                 scalar_type* fock, uint global_stride, vec_type<scalar_type,3>* clatom_pos, scalar_type *clatom_chg )//, uint fock_out )
+__global__ void gpu_qmmm_fock( uint num_terms, vec_type<scalar_type,2>* ac_values, uint* func2nuc, uint* func_code, uint* local_fock_ind,
+                                 scalar_type* fock, uint global_stride, vec_type<scalar_type,3>* clatom_pos, scalar_type *clatom_chg )
 {
 
-  assert(QMMM_FORCES_BLOCK_SIZE == 128);
+  assert(QMMM_BLOCK_SIZE == 128);
   uint ffnum = index_x(blockDim, blockIdx, threadIdx);
   int tid = threadIdx.x;
   bool valid_thread = (ffnum < num_terms);
 
-  // Each thread maps to a single pair of QM nuclei, so these forces are computed locally and accumulated at the end
   scalar_type prefactor;
+  // Each thread accumulates its own energy terms
+  // TODO: are these staying on registers or going into local memory? might need to rethink it...
   scalar_type my_fock[term_type==0? 1 : (term_type==1? 3 : (term_type==2? 9 : (term_type==3? 6 : (term_type==4? 18 : 36))))];
   for (uint i = 0; i < TERM_TYPE_GAUSSIANS_EN[term_type]; i++) {
     my_fock[i] = 0.0f;
@@ -34,8 +35,8 @@ __global__ void gpu_qmmm_fock( uint num_terms, vec_type<scalar_type,2>* ac_value
   bool same_func;
 
   {
-    __shared__ vec_type<scalar_type,3> clatom_position_sh[QMMM_FORCES_BLOCK_SIZE];
-    __shared__ scalar_type clatom_charge_sh[QMMM_FORCES_BLOCK_SIZE];
+    __shared__ vec_type<scalar_type,3> clatom_position_sh[QMMM_BLOCK_SIZE];
+    __shared__ scalar_type clatom_charge_sh[QMMM_BLOCK_SIZE];
 
     scalar_type ai, aj, inv_two_zeta;
     scalar_type P[3], PmA[3], PmB[3];
@@ -79,7 +80,7 @@ __global__ void gpu_qmmm_fock( uint num_terms, vec_type<scalar_type,2>* ac_value
       }
 
       //
-      // Precalulate the terms and prefactors that will show up in the forces calculation
+      // Precalulate the terms and prefactors that will show up in the energy calculation
       //
       scalar_type ovlap;
   
@@ -116,7 +117,7 @@ __global__ void gpu_qmmm_fock( uint num_terms, vec_type<scalar_type,2>* ac_value
     //
     // Outer loop: read in block of MM atom information into shared memory
     //
-    for (int i = 0; i < gpu_clatoms; i += QMMM_FORCES_BLOCK_SIZE)
+    for (int i = 0; i < gpu_clatoms; i += QMMM_BLOCK_SIZE)
     {
       if (i + tid < gpu_clatoms) {
         clatom_position_sh[tid] = clatom_pos[i+tid];
@@ -124,9 +125,9 @@ __global__ void gpu_qmmm_fock( uint num_terms, vec_type<scalar_type,2>* ac_value
       }
       __syncthreads();
       //
-      // Inner loop: process block of MM atoms; each thread calculates a single primitive/primitive overlap force term
+      // Inner loop: process block of MM atoms; each thread calculates a single primitive/primitive overlap energy term
       //
-      for (int j = 0; j < QMMM_FORCES_BLOCK_SIZE && i+j < gpu_clatoms; j++)
+      for (int j = 0; j < QMMM_BLOCK_SIZE && i+j < gpu_clatoms; j++)
       {
         scalar_type PmC[3];
         {
@@ -136,9 +137,9 @@ __global__ void gpu_qmmm_fock( uint num_terms, vec_type<scalar_type,2>* ac_value
           PmC[2] = P[2] - clatom_pos.z;
         }
         //
-        // Do the core part of the forces calculation - the evaluation of the Obara-Saika recursion equations
+        // Do the core part of the Fock element calculation - the evaluation of the Obara-Saika recursion equations
         // This is where the different term types differ the most, so these are moved into separate files in the qmmm_terms directory
-        // Current version: p-s through d-d are manually unrolled, and d-d is split up over six threads per primitive pair
+        // Current version: d-p and d-d are manually unrolled
         //
         // BEGIN TERM-TYPE DEPENDENT PART
         switch (term_type)
@@ -180,77 +181,88 @@ __global__ void gpu_qmmm_fock( uint num_terms, vec_type<scalar_type,2>* ac_value
     }
   }
 
+  //
+  // Reduce the partial fock elements
+  //
   {
 
-    uint bl_fock_ind = 0;//(fock_ind - min_ind) % TERM_TYPE_GAUSSIANS_EN[term_type];
+    uint bl_fock_ind = 0;
 
-    __shared__ uint fock_ind_sh[QMMM_FORCES_BLOCK_SIZE];
-    //__shared__ bool fock_flags[QMMM_FORCES_BLOCK_SIZE];
-    __shared__ bool same_func_sh[QMMM_FORCES_BLOCK_SIZE];
-    __shared__ scalar_type fock_sh[QMMM_FORCES_BLOCK_SIZE];
+    __shared__ uint fock_ind_sh[QMMM_BLOCK_SIZE];
+    __shared__ bool same_func_sh[QMMM_BLOCK_SIZE];
+    __shared__ scalar_type fock_sh[QMMM_BLOCK_SIZE];
 
+    //
+    // First figure out which fock elements this block contains
+    // TODO: there's probably a better way to do this, but this part is tiny compared to the main loop, so...
+    //
     fock_ind_sh[tid] = fock_ind;
     __syncthreads();
     uint curr_ind = fock_ind_sh[0], curr_bl_ind = 0;
-    for (int i = 1; i < QMMM_FORCES_BLOCK_SIZE; i++) {
+    //
+    // Each thread loops through the block's Fock indices, keeps track of the number of unique indices, and finds its own
+    // index relative to the block (bl_fock_ind)
+    //
+    for (int i = 1; i < QMMM_BLOCK_SIZE; i++) {
       curr_bl_ind += curr_ind != fock_ind_sh[i];
       curr_ind = fock_ind_sh[i];
       bl_fock_ind = (curr_ind == fock_ind) * curr_bl_ind + (curr_ind != fock_ind) * bl_fock_ind;
     }
 
     //
-    // Reduce the partial fock elements
+    // Each thread tells the block which global Fock index corresponds to its own block-local index, and if its Fock index
+    // corresponds to an element where function i = function j
     //
-    //
-    // First figure out which fock elements this block contains
-    //
-    //fock_flags[tid] = false;
     same_func_sh[tid] = false;
     __syncthreads();
-    //fock_flags[bl_fock_ind] = true;
     same_func_sh[bl_fock_ind] = same_func;
     fock_ind_sh[bl_fock_ind] = fock_ind;
     __syncthreads();
-    for (int i = 0; i <= curr_bl_ind/*QMMM_FORCES_BLOCK_SIZE*/; i++)
+    //
+    // Loop over the Fock elements in this block
+    //
+    for (int i = 0; i <= curr_bl_ind; i++)
     {
-      // Only for this block's fock
-      //if (fock_flags[i] == true)
-      //{
+      bool use_fock = bl_fock_ind == i;
+      //
+      // For the symmetric cases (p-p and d-d) we need to check if we're looking at a Fock element where function i = function j
+      // For these diagonal Fock blocks, only the lower (upper?) triangular part of the block is needed
+      //
+      uint last_j = TERM_TYPE_GAUSSIANS_EN[term_type];
+      if (term_type == 2 && same_func_sh[i]) {
+        last_j = PP_SAME_FUNC_SIZE;
+      } else if (term_type == 5 && same_func_sh[i]) {
+        last_j = DD_SAME_FUNC_SIZE;
+      }
+      for (int j = 0; j < last_j; j++) {
         //
-        // Load the individual thread's fock terms into the appropriate shared location
+        // Load the individual thread's Fock terms into the appropriate shared location
         //
-        bool use_fock = bl_fock_ind == i;
-        uint last_j = TERM_TYPE_GAUSSIANS_EN[term_type];
-        if (term_type == 2 && same_func_sh[i]) {
-          last_j = PP_SAME_FUNC_SIZE;
-        } else if (term_type == 5 && same_func_sh[i]) {
-          last_j = DD_SAME_FUNC_SIZE;
-        }
-        for (int j = 0; j < last_j/*TERM_TYPE_GAUSSIANS_EN[term_type]*/; j++) {
-          fock_sh[tid] = valid_thread * use_fock * prefactor * my_fock[j];
-          __syncthreads();
+        fock_sh[tid] = valid_thread * use_fock * prefactor * my_fock[j];
+        __syncthreads();
 
-          //
-          // Reduce the fock terms
-          //
-          if (tid < QMMM_FORCES_HALF_BLOCK)
-          {
-            fock_sh[tid] += fock_sh[tid+QMMM_FORCES_HALF_BLOCK];
-          }
-          __syncthreads();
-
-          if (tid < WARP_SIZE) { warpReduce<scalar_type>(fock_sh, tid); }
-          if (tid == 0) {
-            //printf("%d %d %d %d %d\n",fock_ind_sh[i],j,blockIdx.x,fock_out,global_stride*(fock_ind_sh[i]+j)+(blockIdx.x-fock_out));
-            fock[fock_ind_sh[i]+j+global_stride*blockIdx.x] = fock_sh[0];
-          }
-          __syncthreads();
+        //
+        // Reduce the Fock terms
+        //
+        if (tid < QMMM_FORCES_HALF_BLOCK)
+        {
+          fock_sh[tid] += fock_sh[tid+QMMM_FORCES_HALF_BLOCK];
         }
-      //}
+        __syncthreads();
+
+        if (tid < WARP_SIZE) { warpReduce<scalar_type>(fock_sh, tid); }
+        if (tid == 0) {
+          fock[fock_ind_sh[i]+j+global_stride*blockIdx.x] = fock_sh[0];
+        }
+        __syncthreads();
+      }
     }
   }
 }
 
+//
+// Zero the partial Fock array
+//
 template<class scalar_type>
 __global__ void zero_fock( scalar_type* fock, uint global_stride, uint fock_length )
 {
@@ -262,9 +274,15 @@ __global__ void zero_fock( scalar_type* fock, uint global_stride, uint fock_leng
   }
 }
 
+//
+// Reduce the partial Fock array into the first row
+// Also, reduce corresponding partial energies over the block
+//
 template<class scalar_type>
 __global__ void gpu_qmmm_fock_reduce( scalar_type* fock, scalar_type* dens, scalar_type* energies, uint stride, uint depth, uint width )
 {
+
+  assert(QMMM_REDUCE_BLOCK_SIZE==128);
   uint my_fock_ind = index_x(blockDim, blockIdx, threadIdx);
   uint tid = threadIdx.x;
   scalar_type my_partial_fock = 0.0f;

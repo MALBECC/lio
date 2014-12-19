@@ -175,9 +175,9 @@ c in intsol)
 c
       call int1(En)
       if(nsol.gt.0) then
-        call g2g_timer_start('intsol')
-        call intsol(E1s,Ens,.true.)
-        call g2g_timer_stop('intsol')
+        call g2g_timer_start('g2g_qmmm_fock')
+        call g2g_qmmm_fock(E1s,Ens)!intsol(E1s,Ens,.true.)
+        call g2g_timer_stop('g2g_qmmm_fock')
       endif
 c
 c test ---------------------------------------------------------

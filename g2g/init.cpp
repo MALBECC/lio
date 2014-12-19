@@ -293,27 +293,30 @@ extern "C" void g2g_new_grid_(const unsigned int& grid_type) {
 		compute_new_grid(grid_type);
 }
 //===============================================================================================================
+//                                  QM/MM routines
+//===============================================================================================================
 namespace G2G {
-  template<class T,bool forces> void get_qmmm_forces(double* qm_forces, double* mm_forces, double& Ens, double& Es);
+  template<class T,bool forces> void g2g_qmmm(double* qm_forces, double* mm_forces, double& Ens, double& Es);
 }
 extern "C" void g2g_qmmm_forces_(double* qm_forces, double* mm_forces)
 {
   double Ens = 0.0, Es = 0.0;
 #if FULL_DOUBLE
-  G2G::get_qmmm_forces<double,true>(qm_forces,mm_forces,Ens,Es);
+  G2G::g2g_qmmm<double,true>(qm_forces,mm_forces,Ens,Es);
 #else
-  G2G::get_qmmm_forces<float,true>(qm_forces,mm_forces,Ens,Es);
+  G2G::g2g_qmmm<float,true>(qm_forces,mm_forces,Ens,Es);
 #endif
 }
 extern "C" void g2g_qmmm_fock_(double& Es, double& Ens)
 {
   Ens = 0.0; Es = 0.0;
 #if FULL_DOUBLE
-  G2G::get_qmmm_forces<double,false>((double*)0,(double*)0,Ens,Es);
+  G2G::g2g_qmmm<double,false>((double*)0,(double*)0,Ens,Es);
 #else
-  G2G::get_qmmm_forces<float,false>((double*)0,(double*)0,Ens,Es);
+  G2G::g2g_qmmm<float,false>((double*)0,(double*)0,Ens,Es);
 #endif
 }
+//===============================================================================================================
 
 template<bool compute_rmm, bool lda, bool compute_forces> void g2g_iteration(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr)
 {

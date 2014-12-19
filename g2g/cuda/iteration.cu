@@ -60,7 +60,7 @@ void gpu_set_variables(void) {
 }
 
 //
-// Set up arrays needed for F(m,U) calculation in QM/MM kernel (STR and FAC) and send them to device
+// Set up arrays needed for F(m,U) calculation in QM/MM kernels (STR and FAC) and send them to device
 // FAC is small so it's put into constant memory
 // STR is large and accessed (potentially) with a random access pattern in the first index
 // TODO: putting STR into texture for now; need to see if there's a better way to access it in the kernel
@@ -872,7 +872,13 @@ template class PointGroup<float>;
 #define NUM_TERM_TYPES 6 // 6 types when using s,p,and d functions: s-s,p-s,p-p,d-s,d-p,d-d
 #define MAX_TERM_TYPE 6
 
-template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces, double* mm_forces, double& Ens, double& Es)
+//
+// Main QM/MM routine
+// If forces = true, calculate gradients of QM/MM operator and return in qm_forces and mm_forces
+// If forces = false, calculate Fock matrix elements of QM/MM operator (returned in RMM(M11) back in Fortran)
+//                    and QM/MM energy of the current density (nuc-nuc in Ens, e-nuc in Es)
+//
+template <class scalar_type,bool forces> void g2g_qmmm(double* qm_forces, double* mm_forces, double& Ens, double& Es)
 {
   uint i,j,ni,nj;
   uint i_orbitals, j_orbitals;
@@ -883,7 +889,7 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
   uint num_terms=0, total_num_terms = 0;
   std::vector<uint> func_code, local_dens;
 
-  std::vector<uint> local2globaldens;
+  std::vector<uint> local2globaldens; // Maps reduced density/Fock -> full density/Fock
   std::vector<scalar_type> dens_values;
 
   uint term_type_counts[NUM_TERM_TYPES]; // Number of threads for a particular type of term (0 = s-s, 1 = p-s, etc)
@@ -912,7 +918,7 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
   Timer nuc,check,prep,kernel,down,reduce;
 
   //
-  // First, the gradient of the nuclear-nuclear interaction between QM and MM centers
+  // First, the energy/gradient of the nuclear-nuclear interaction between QM and MM centers
   //
   nuc.start_and_sync();
   if (forces) {
@@ -973,11 +979,7 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
     if (current_term_type > 0) {
       tmp_ind += COALESCED_DIMENSION(term_type_counts[current_term_type-1]);
       term_type_offsets[current_term_type] = tmp_ind;
-//      if (forces) {
-        tmp_dens_ind += COALESCED_DIMENSION(dens_counts[current_term_type-1]);
-//      } else {
-//        tmp_dens_ind += dens_counts[current_term_type-1];
-//      }
+      tmp_dens_ind += COALESCED_DIMENSION(dens_counts[current_term_type-1]);
       dens_offsets[current_term_type] = tmp_dens_ind;
     }
 
@@ -1024,6 +1026,7 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
 
         total_dens_terms += (i==j)? i_orbitals*(i_orbitals+1)/2 : i_orbitals * j_orbitals;
         // dens_values is a reduced density matrix that only keeps the elements of functions with significant primitive pairs
+        // local2globaldens maps from a reduced density/Fock index back to the full matrix
         if (use_funcs) {
           for (uint i_orbital = 0; i_orbital < i_orbitals; i_orbital++) {
             uint j_orbital_finish = (i==j)? i_orbital+1 : j_orbitals;
@@ -1032,8 +1035,7 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
               dens_counts[current_term_type]++;
 
               uint dens_ind = (i+i_orbital) + (2*fortran_vars.m-((j+j_orbital)+1))*(j+j_orbital)/2;
-//              if (forces) {
-                dens_values.push_back(fortran_vars.rmm_input_ndens1.data[dens_ind]);
+              dens_values.push_back(fortran_vars.rmm_input_ndens1.data[dens_ind]);
               if (!forces) {
                 local2globaldens.push_back(dens_ind);
               }
@@ -1048,14 +1050,12 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
       func_code.push_back(func_code[term_type_offsets[current_term_type]]); // Use the first code from this term type
       local_dens.push_back(local_dens[term_type_offsets[current_term_type]]);
     }
-//    if (forces) {
-      for (j = dens_counts[current_term_type]; j < COALESCED_DIMENSION(dens_counts[current_term_type]); j++) {
-        dens_values.push_back(dens_values[dens_offsets[current_term_type]]);
-        if (!forces) {
-          local2globaldens.push_back(local2globaldens[dens_offsets[current_term_type]]);
-        }
+    for (j = dens_counts[current_term_type]; j < COALESCED_DIMENSION(dens_counts[current_term_type]); j++) {
+      dens_values.push_back(dens_values[dens_offsets[current_term_type]]);
+      if (!forces) {
+        local2globaldens.push_back(local2globaldens[dens_offsets[current_term_type]]);
       }
-//    }
+    }
   }
   check.pause();
 
@@ -1067,15 +1067,13 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
   prep.start();
 
   // Pad the input so that out-of-range threads do a dummy calculation (same as the first thread), rather than branching and idling
-  for (i = 0; i < QMMM_FORCES_BLOCK_SIZE - (COALESCED_DIMENSION(term_type_counts[NUM_TERM_TYPES-1]) % QMMM_FORCES_BLOCK_SIZE); i++) {
+  for (i = 0; i < QMMM_BLOCK_SIZE - (COALESCED_DIMENSION(term_type_counts[NUM_TERM_TYPES-1]) % QMMM_BLOCK_SIZE); i++) {
     func_code.push_back(func_code[term_type_offsets[NUM_TERM_TYPES-1]]);
     local_dens.push_back(local_dens[term_type_offsets[NUM_TERM_TYPES-1]]);
   }
-//  if (forces) {
-    for (i = 0; i < QMMM_FORCES_BLOCK_SIZE - (COALESCED_DIMENSION(dens_counts[NUM_TERM_TYPES-1]) % QMMM_FORCES_BLOCK_SIZE); i++) {
-      dens_values.push_back(dens_values[dens_offsets[NUM_TERM_TYPES-1]]);
-    }
-//  }
+  for (i = 0; i < QMMM_BLOCK_SIZE - (COALESCED_DIMENSION(dens_counts[NUM_TERM_TYPES-1]) % QMMM_BLOCK_SIZE); i++) {
+    dens_values.push_back(dens_values[dens_offsets[NUM_TERM_TYPES-1]]);
+  }
 
   HostMatrix<vec_type<scalar_type, 2> > factor_ac_cpu(COALESCED_DIMENSION(fortran_vars.m), MAX_CONTRACTIONS);
   HostMatrixUInt nuc_cpu(fortran_vars.m, 1);
@@ -1131,31 +1129,41 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
   uint partial_out_size = 0, max_partial_size = 0;
   uint out_offsets[NUM_TERM_TYPES];
   out_offsets[0] = 0;
-  // Output arrays (probably) don't need to be padded for alignment as only one (well, three) threads per block write to them
+  // Output arrays (probably) don't need to be padded for alignment as only one (or three) threads per block write to them
   for (i = 0; i < NUM_TERM_TYPES; i++) {
-    uint this_count = divUp(term_type_counts[i],QMMM_FORCES_BLOCK_SIZE);
+    uint this_count = divUp(term_type_counts[i],QMMM_BLOCK_SIZE);
     if (this_count > max_partial_size) max_partial_size = this_count;
-    partial_out_size += this_count;//divUp(term_type_counts[i],QMMM_FORCES_BLOCK_SIZE);
+    partial_out_size += this_count;
     if (i+1<NUM_TERM_TYPES) { out_offsets[i+1] = partial_out_size; }
   }
   CudaMatrix<vec_type<scalar_type,3> > gpu_partial_mm_forces, gpu_partial_qm_forces;
   CudaMatrix<scalar_type> gpu_partial_fock;
+  //
   // Forces: output is partial QM and MM forces
-  if (forces) {
+  //
+  if (forces)
+  {
     gpu_partial_mm_forces.resize(COALESCED_DIMENSION(partial_out_size), fortran_vars.clatoms);
     gpu_partial_qm_forces.resize(COALESCED_DIMENSION(partial_out_size), fortran_vars.atoms);
+  //
   // Fock: ouptut is partial Fock elements
-  } else {
-    //gpu_partial_fock.resize(COALESCED_DIMENSION(max_partial_size), num_dens_terms);
-    gpu_partial_fock.resize(dens_values.size()/*COALESCED_DIMENSION(num_dens_terms)*/,max_partial_size);
-    //cudaMemset(gpu_partial_fock.data, 0.0f, COALESCED_DIMENSION(max_partial_size) * num_dens_terms * sizeof(scalar_type));
-    //dim3 threads(COALESCED_DIMENSION(max_partial_size),num_dens_terms);
-    dim3 threads(dens_values.size()/*COALESCED_DIMENSION(num_dens_terms)*/,max_partial_size);
+  //
+  }
+  else {
+    // The partial Fock matrix is partitioned by term type, so the second (partial) dimension needs to be as big as largest count of a single term type
+    gpu_partial_fock.resize(dens_values.size(),max_partial_size);
+    dim3 threads(dens_values.size(),max_partial_size);
     dim3 blockSize(32,4);
     dim3 gridSize = divUp(threads,blockSize);
-    zero_fock<scalar_type><<<gridSize,blockSize>>>(gpu_partial_fock.data,dens_values.size()/*COALESCED_DIMENSION(num_dens_terms)*/,max_partial_size);
+    //
+    // Zero the partial Fock matrix on the GPU
+    //
+    zero_fock<scalar_type><<<gridSize,blockSize>>>(gpu_partial_fock.data,dens_values.size(),max_partial_size);
   }
 
+  //
+  // When calculating energies, the energy gets reduced per-block; we figure out the offets/counts of different term types into the partial output energy array here
+  //
   uint energies_offsets[NUM_TERM_TYPES];
   uint energies_size = 0;
   CudaMatrix<scalar_type> gpu_qmmm_partial_energies;
@@ -1167,9 +1175,15 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
     gpu_qmmm_partial_energies.resize(energies_size,1);
   }
 
+  //
+  // The STR table for F(m,U) calculation is being accessed via texture fetches
+  //
   cudaBindTextureToArray(qmmm_str_tex,gammaArray);
   prep.pause_and_sync();
 
+  //
+  // Forces kernel
+  //
   if (forces) {
 
     kernel.start();
@@ -1190,7 +1204,7 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
       uint dens_offset = dens_offsets[i];
       uint force_offset = out_offsets[i];
       dim3 threads = term_type_counts[i];
-      dim3 blockSize(QMMM_FORCES_BLOCK_SIZE);
+      dim3 blockSize(QMMM_BLOCK_SIZE);
       dim3 gridSize = divUp(threads, blockSize);
       switch (i) {
         case 0: gpu_qmmm_forces<scalar_type,0><<<gridSize,blockSize,0,stream[i]>>>( qmmm_forces_parameters ); break;
@@ -1206,7 +1220,11 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
       cudaStreamDestroy(stream[i]);
     }
     kernel.pause();
-  } else {
+  }
+  //
+  // Energy/Fock kernel
+  //
+  else {
 
     kernel.start();
 
@@ -1224,9 +1242,9 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
     for (i = 0; i < NUM_TERM_TYPES; i++)
     {
       uint offset = term_type_offsets[i];
-      uint fock_offset = dens_offsets[i];// * COALESCED_DIMENSION(max_partial_size);
+      uint fock_offset = dens_offsets[i];
       dim3 threads = term_type_counts[i];
-      dim3 blockSize(QMMM_FORCES_BLOCK_SIZE);
+      dim3 blockSize(QMMM_BLOCK_SIZE);
       dim3 gridSize = divUp(threads, blockSize);
       switch (i) {
         case 0: gpu_qmmm_fock<scalar_type,0><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
@@ -1237,6 +1255,9 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
         case 5: gpu_qmmm_fock<scalar_type,5><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
       }
       
+      //
+      // Reduce the partial Fock terms for a particular term type as soon as that kernel is done; also calculate partial energies for that type
+      //
       dim3 reduceThreads = dens_counts[i];
       dim3 reduceBlockSize(QMMM_REDUCE_BLOCK_SIZE);
       dim3 reduceGridSize = divUp(reduceThreads,reduceBlockSize);
@@ -1264,10 +1285,8 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
     //
     // TODO: need to think about how to accumulate individual force terms
     // Currently, we reduce on a per-block basis in the kernel, then accumulate the block results here on the host
-    // Maybe we could skip the reduction in the kernel (will speed it up, but by how much?), and each thread writes its own term to global memory, followed by a second kernel
-    // that reduces all the individual thread terms (this is basically how the XC code works)
-    // However, not sure that the memory requirements of each thread saving its term will be OK
-    // Alternative: keep the kernel reduction, and reduce the block results in another kernel (rather than here on the host)
+    //
+    // The energy partial results are being reduced on-device and that works very well, could probably do that for forces too
     //
     reduce.start();
     for (i = 0; i < fortran_vars.atoms; i++) {
@@ -1286,23 +1305,24 @@ template <class scalar_type,bool forces> void get_qmmm_forces(double* qm_forces,
     }
     reduce.pause();
   } else {
+    //
+    // Download reduced Fock matrix and partially reduced energies
+    // The Fock matrix has been reduced to the first row of the output, so we only want that much of the device array
+    //
     down.start();
-    //HostMatrix<scalar_type> cpu_partial_fock(gpu_partial_fock);
     HostMatrix<scalar_type> cpu_fock(dens_values.size());
     cudaMemcpy(cpu_fock.data,gpu_partial_fock.data,cpu_fock.bytes(),cudaMemcpyDeviceToHost);
     HostMatrix<scalar_type> cpu_partial_energies(gpu_qmmm_partial_energies);
     down.pause_and_sync();
 
+    //
+    // Send Fock elements back to RMM(M11) and do final reduction of e-nuc energies into Es
+    //
     reduce.start();
     for (uint t = 0; t < NUM_TERM_TYPES; t++) {
       for (i = dens_offsets[t]; i < dens_offsets[t] + dens_counts[t]; i++) {
         uint dens_ind = local2globaldens[i];
-        //double E_term = 0.0;
-        //for (j = 0; j < max_partial_size; j++) {
         fortran_vars.rmm_1e_output(dens_ind) += cpu_fock(i);
-          //E_term += cpu_partial_fock(i,j);
-        //}
-        //Es += E_term * fortran_vars.rmm_input_ndens1.data[dens_ind];
       }
     }
     for (i = 0; i < energies_size; i++) {
@@ -1329,12 +1349,12 @@ void clean_gamma( void ) {
   cudaAssertNoError("clean_gamma");
 }
 #if FULL_DOUBLE
-template void get_qmmm_forces<double,true>(double* qm_forces, double* mm_forces, double& Ens, double& Es);
-template void get_qmmm_forces<double,false>(double* qm_forces, double* mm_forces, double& Ens, double& Es);
+template void g2g_qmmm<double,true>(double* qm_forces, double* mm_forces, double& Ens, double& Es);
+template void g2g_qmmm<double,false>(double* qm_forces, double* mm_forces, double& Ens, double& Es);
 template void clean_gamma<double>( void );
 #else
-template void get_qmmm_forces<float,true>(double* qm_forces, double* mm_forces, double& Ens, double& Es);
-template void get_qmmm_forces<float,false>(double* qm_forces, double* mm_forces, double& Ens, double& Es);
+template void g2g_qmmm<float,true>(double* qm_forces, double* mm_forces, double& Ens, double& Es);
+template void g2g_qmmm<float,false>(double* qm_forces, double* mm_forces, double& Ens, double& Es);
 template void clean_gamma<float>( void );
 #endif
 

@@ -24,9 +24,9 @@ c       real*8 ftot(3)
 
        !g2gff=0
        !g2gffcl=0
-       call g2g_timer_start('g2g_qmmm')
+       call g2g_timer_start('g2g_qmmm_forces')
        call g2g_qmmm_forces(ff,ffcl)
-       call g2g_timer_stop('g2g_qmmm')
+       call g2g_timer_stop('g2g_qmmm_forces')
 
        !mx = 0
        !s = 0

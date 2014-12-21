@@ -22,6 +22,15 @@ namespace G2G {
     float normalization_factor;
 #endif
     uint s_funcs, p_funcs, d_funcs, spd_funcs, m;
+
+    /* ---DENSITY BASIS--- */
+    uint gaussians_dens,s_gaussians_dens,p_gaussians_dens;
+    uint s_funcs_dens, p_funcs_dens, d_funcs_dens, spd_funcs_dens, m_dens;
+    FortranMatrix<uint> nucleii_dens, contractions_dens;
+    FortranMatrix<double> a_values_dens, c_values_dens;
+    FortranMatrix<double> af_input_ndens1;
+    /* ---DENSITY BASIS--- */
+ 
     uint nco;
     bool OPEN;
     uint nunp;

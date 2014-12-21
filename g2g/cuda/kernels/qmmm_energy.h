@@ -4,7 +4,7 @@ __device__ __constant__ uint TERM_TYPE_GAUSSIANS_EN[6] = { 1, 3, 9, 6, 18, 36 };
 
 //
 // QM/MM energy kernel - calculate Fock elements for QM/MM 1-e operator over significant basis primitives
-// Each thread maps to a pair of primitives, and calculates part of one Fock element
+// Each thread maps to a pair of primitives, and calculates part of each element in one block (s-s,p-s,d-d,etc) of the Fock matrix
 // Each thread iterates over every MM atom
 // The Fock integrals are calculated using the Obara-Saika recursion relations, and then reduced per-block
 //

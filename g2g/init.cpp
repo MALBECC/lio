@@ -59,9 +59,10 @@ template<class T> void gpu_set_atom_positions(const HostMatrix<T>& m);
 void gpu_set_clatoms(void);
 }
 //==========================================================================================
-extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int& natom, const unsigned int& max_atoms, const unsigned int& ngaussians,
+extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int& natom, const unsigned int& max_atoms, const unsigned int& ngaussians,// const unsigned int& ngaussiansd,
                                     double* r, double* Rm, const unsigned int* Iz, const unsigned int* Nr, const unsigned int* Nr2, unsigned int* Nuc,
                                     const unsigned int& M, unsigned int* ncont, const unsigned int* nshell, double* c, double* a,
+                                    const unsigned int& Md, unsigned int* ncontd, const unsigned int* nshelld, double* cd, double* ad, unsigned int* Nucd, double* af,
                                     double* RMM, const unsigned int& M18, const unsigned int& M5, const unsigned int& M11, const unsigned int& M3, double* rhoalpha, double* rhobeta,
                                     const unsigned int& nco, bool& OPEN, const unsigned int& nunp, const unsigned int& nopt, const unsigned int& Iexch,
                                     double* e, double* e2, double* e3, double* wang, double* wang2, double* wang3, double* str, double* fac, double& rmax)
@@ -87,6 +88,7 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
   feenableexcept(FE_INVALID);
   #endif
 
+        /* MO BASIS SET */
 	fortran_vars.s_funcs = nshell[0];
 	fortran_vars.p_funcs = nshell[1] / 3;
 	fortran_vars.d_funcs = nshell[2] / 6;
@@ -94,8 +96,19 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	fortran_vars.spd_funcs = fortran_vars.s_funcs + fortran_vars.p_funcs + fortran_vars.d_funcs;
 // M =	# of contractions
 	fortran_vars.m = M;
+
 	fortran_vars.nco = nco;
   cout << "m: " << fortran_vars.m  << " nco: " << fortran_vars.nco << endl;
+
+        /* DENSITY BASIS SET */
+	fortran_vars.s_funcs_dens = nshelld[0];
+	fortran_vars.p_funcs_dens = nshelld[1] / 3;
+	fortran_vars.d_funcs_dens = nshelld[2] / 6;
+        cout << "density basis: s: " << fortran_vars.s_funcs_dens  << " p: " << fortran_vars.p_funcs_dens << " d: " << fortran_vars.d_funcs_dens << endl;
+	fortran_vars.spd_funcs_dens = fortran_vars.s_funcs_dens + fortran_vars.p_funcs_dens + fortran_vars.d_funcs_dens;
+// Md =	# of contractions
+	fortran_vars.m_dens = Md;
+        cout << "density basis: m: " << fortran_vars.m_dens << endl;
 
 	fortran_vars.iexch = Iexch;
   if (Iexch == 4 || Iexch == 5) cout << "***** WARNING ***** : Iexch 4 y 5 no andan bien todavia" << endl;
@@ -116,6 +129,7 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells2(i) = Nr2[Iz[i]]; }
 	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.rm(i) = Rm[Iz[i]]; }
 
+        /* MO BASIS SET */
 	fortran_vars.nucleii = FortranMatrix<uint>(Nuc, fortran_vars.m, 1, 1);
 	fortran_vars.contractions = FortranMatrix<uint>(ncont, fortran_vars.m, 1, 1);
         for (uint i = 0; i < fortran_vars.m; i++) {
@@ -123,6 +137,30 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
  	}
 	fortran_vars.a_values = FortranMatrix<double>(a, fortran_vars.m, MAX_CONTRACTIONS, ngaussians);
 	fortran_vars.c_values = FortranMatrix<double>(c, fortran_vars.m, MAX_CONTRACTIONS, ngaussians);
+
+        /* DENSITY BASIS SET */
+	fortran_vars.nucleii_dens = FortranMatrix<uint>(Nucd, fortran_vars.m_dens, 1, 1);
+	fortran_vars.contractions_dens = FortranMatrix<uint>(ncontd, fortran_vars.m_dens, 1, 1);
+        for (uint i = 0; i < fortran_vars.m_dens; i++) {
+        	if ((fortran_vars.contractions_dens(i) - 1) > MAX_CONTRACTIONS)  throw runtime_error("Maximum functions per contraction reached!");
+ 	}
+        uint num_dens_gauss = 0,num_s_gauss=0,num_p_gauss=0;
+        for (uint i = 0; i < fortran_vars.s_funcs_dens; i++) {
+          num_dens_gauss += fortran_vars.contractions_dens(i);
+          num_s_gauss += fortran_vars.contractions_dens(i);
+        }
+        for (uint i = fortran_vars.s_funcs_dens; i < fortran_vars.s_funcs_dens+fortran_vars.p_funcs_dens*3; i++) {
+          num_dens_gauss += fortran_vars.contractions_dens(i);
+          num_p_gauss += fortran_vars.contractions_dens(i);
+        }
+        for (uint i = fortran_vars.s_funcs_dens+fortran_vars.p_funcs_dens*3; i < fortran_vars.m_dens; i++) {
+          num_dens_gauss += fortran_vars.contractions_dens(i);
+        }
+        fortran_vars.gaussians_dens = num_dens_gauss;
+        fortran_vars.s_gaussians_dens = num_s_gauss;
+        fortran_vars.p_gaussians_dens = num_p_gauss;
+	fortran_vars.a_values_dens = FortranMatrix<double>(ad, fortran_vars.m_dens, MAX_CONTRACTIONS, num_dens_gauss);
+	fortran_vars.c_values_dens = FortranMatrix<double>(cd, fortran_vars.m_dens, MAX_CONTRACTIONS, num_dens_gauss);
 
 // nco = number of Molecular orbitals ocupped
 	fortran_vars.nco = nco;
@@ -151,8 +189,11 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
         	fortran_vars.rmm_input_ndens1 = FortranMatrix<double>(RMM, fortran_vars.m, fortran_vars.m, fortran_vars.m);
 		// matriz de Fock
 		fortran_vars.rmm_output = FortranMatrix<double>(RMM + (M5 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
+
                 // 1e Fock matrix
 		fortran_vars.rmm_1e_output = FortranMatrix<double>(RMM + (M11 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
+                // Fitted density in density basis
+                fortran_vars.af_input_ndens1 = FortranMatrix<double>(af, fortran_vars.m_dens);
 	}
 
 	fortran_vars.e1 = FortranMatrix<double>(e, SMALL_GRID_SIZE, 3, SMALL_GRID_SIZE);
@@ -314,6 +355,30 @@ extern "C" void g2g_qmmm_fock_(double& Es, double& Ens)
   G2G::g2g_qmmm<double,false>((double*)0,(double*)0,Ens,Es);
 #else
   G2G::g2g_qmmm<float,false>((double*)0,(double*)0,Ens,Es);
+#endif
+}
+//===============================================================================================================
+//                                  Coulomb routines
+//===============================================================================================================
+namespace G2G {
+  template<class T,bool forces> void g2g_coulomb(double* qm_forces, double& Es);
+}
+extern "C" void g2g_coulomb_forces_(double* qm_forces)
+{
+  double Es = 0.0;
+#if FULL_DOUBLE
+  G2G::g2g_coulomb<double,true>(qm_forces,Es);
+#else
+  G2G::g2g_coulomb<float,true>(qm_forces,Es);
+#endif
+}
+extern "C" void g2g_coulomb_fock_(double& Es)
+{
+  Es = 0.0;
+#if FULL_DOUBLE
+  G2G::g2g_coulomb<double,false>((double*)0,Es);
+#else
+  G2G::g2g_coulomb<float,false>((double*)0,Es);
 #endif
 }
 //===============================================================================================================

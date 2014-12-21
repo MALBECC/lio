@@ -39,3 +39,7 @@ cuda/iteration.cu_o: cuda/kernels/qmmm_terms/energy/ss.h
 cuda/iteration.cu_o: cuda/kernels/qmmm_terms/energy/ps.h cuda/kernels/qmmm_terms/energy/pp.h
 cuda/iteration.cu_o: cuda/kernels/qmmm_terms/energy/ds.h cuda/kernels/qmmm_terms/energy/dp_unrolled.h
 cuda/iteration.cu_o: cuda/kernels/qmmm_terms/energy/dd_unrolled.h
+cuda/iteration.cu_o: cuda/kernels/coulomb_forces.h cuda/kernels/coulomb_terms/forces/ss_s.h
+cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/ps_s.h cuda/kernels/coulomb_terms/forces/pp_s.h
+cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/ds_s.h cuda/kernels/coulomb_terms/forces/dp_s.h
+cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/dd_s.h

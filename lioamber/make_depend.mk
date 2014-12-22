@@ -29,7 +29,6 @@ objects += liomain.o SCF.o SCFop.o TD.o
 objects += dip.o dipmem.o jarz.o magnus.o predictor.o mulliken.o
 objects += dft_get_mm_forces.o dft_get_qm_forces.o
 objects += matmuldiag.o
-objects += conmut.o conmutc.o conmutcc.o
 objects += init.o init_amber.o lio_init.o lio_finalize.o
 objects += alg.o drive.o func.o grid.o
 objects += int1.o int1G.o int2.o int2G.o
@@ -70,7 +69,7 @@ else
   optim3=-O3
 endif
 
-objlist := matmuldiag.o conmut.o int3lu.o
+objlist := matmuldiag.o int3lu.o
 objlist += mathsubs.o
 $(objlist:%.o=$(obj_path)/%.o) : private myflags+=$(optim3) -parallel
 
@@ -80,7 +79,6 @@ $(objlist:%.o=$(obj_path)/%.o) : private myflags+=$(optim1)
 
 objlist := SCF.o TD.o ehrenfest.o magnus.o predictor.o
 objlist += FixMessRho.o get_unit.o mulliken.o PackedStorage.f
-objlist += conmutcc.o conmutc.o
 objlist += init_amber.o init.o lio_init.o liomain.o lio_finalize.o
 objlist += dft_get_mm_forces.o dft_get_qm_forces.o
 objlist += alg.o drive.o func.o grid.o dipmem.o jarz.o

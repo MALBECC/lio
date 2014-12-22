@@ -521,8 +521,9 @@ c-------------------------------------------------------------------------------
 c--rho(j,k) y fock(j,k) son las matrices densidad y de fock respect (forma cuadrada)--
 c---------Calculo de conmutadores [F,P]-------------------------------------------
 
-          call conmut(fock_a,rho_a,FP_PF_a,M)
-          call conmut(fock_b,rho_b,FP_PF_b,M)
+          FP_PF_a=commutator(fock_a,rho_a)
+          FP_PF_b=commutator(fock_b,rho_b)
+
 
 c---------Pasar Conmutador a vector (guardamos la media matriz de abajo)------------------------------------------------
 c#######OJO, SAQUE EL -1########

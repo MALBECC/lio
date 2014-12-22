@@ -474,9 +474,9 @@ c           if(istep.eq.1) then
 c             rhold=rho+(tdstep*Im*(matmul(fock,rho)))
 c             rhold=rhold-(tdstep*Im*(matmul(rho,fock)))
 c           endif
-c using conmutc
+c using commutator
               if(istep.eq.1) then
-                 call conmutc(fock,rho,rhold,M)
+                 rhold=commutator(fock,rho)
                  rhold=rho+dt_lpfrg*(Im*rhold)
               endif
 !####################################################################!
@@ -485,8 +485,8 @@ c using conmutc
 c           rhonew=rhold-(tdstep*Im*(matmul(fock,rho)))
 c           rhonew=rhonew+(tdstep*Im*(matmul(rho,fock)))
 c--------------------------------------c
-! using conmutc:
-              call conmutc(fock,rho,rhonew,M)
+! using commutator:
+              rhonew=commutator(fock,rho)
               rhonew=rhold-dt_lpfrg*(Im*rhonew)
 c Density update (rhold-->rho, rho-->rhonew)
               do i=1,M

@@ -531,7 +531,7 @@ void Partition::regenerate(void)
     for(int i = 0; i < spheres.size(); i++)
       if(spheres[i]->is_big_group(inner_threads)) {
         work[outer_threads+current_gpu].push_back(i+cubes.size());
-        //current_gpu = (current_gpu + 1) % gpu_threads;
+        current_gpu = (current_gpu + 1) % gpu_threads;
       }
 
     diagnostic(inner_threads, outer_threads);

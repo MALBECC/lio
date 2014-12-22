@@ -147,8 +147,9 @@ void diagnostic(int inner, int outer) {
 
 template <class T>
 bool is_big_group(const T& points) {
-  return (points.size() > 600);
+    return (points.size() > getintenv("LIO_SPLIT_POINTS", 600));
 }
+
 template <class T>
 struct sorter {
   bool operator() (const T* l, const T* r) { return (l->cost() < r->cost());}

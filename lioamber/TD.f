@@ -311,8 +311,10 @@ c s is in RMM(M13,M13+1,M13+2,...,M13+MM)
        rho=matmul(ytrans,rho)
        rho=matmul(rho,y)
 ! with matmulnanoc
-!            call matmulnanoc(rho,Y,rho,M)
+! (NO LONGER AVAILABLE; USE BASECHANGE INSTEAD)
+!            call matmulnanoc(rho,Y,rho1,M)
 !            rho=rho1
+!            rho=basechange(M,Ytrans,rho,Y)
 !--------------------------------------!
             call g2g_timer_start('int2')
             call int2()
@@ -516,7 +518,9 @@ c with matmul:
               rho1=matmul(rho1,xtrans)
 !       rho1=REAL(rho1)
 c with matmulnanoc:
+c (NO LONGER AVAILABLE; USE BASECHANGE INSTEAD)
 c          call matmulnanoc(rho,xtrans,rho1,M)
+c          rho1=basechange(M,X,rho,Xtrans)
 c          rho1 = REAL(rho1)
 c The real part of the density matrix in the atomic orbital basis is copied in RMM(1,2,3,...,MM) to compute the corresponding fock matrix.
               do j=1,M

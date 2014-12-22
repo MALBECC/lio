@@ -9,6 +9,7 @@ c Dario Estrin, 1992
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       subroutine SCF(E,dipxyz)
       use garcha_mod
+      use mathsubs
 c      use qmmm_module, only : qmmm_struct, qmmm_nml
 c
       implicit real*8 (a-h,o-z)
@@ -503,8 +504,7 @@ c
             enddo
           enddo
 
-          call matmulnano(rho,Y,rho1,M)
-          rho=rho1
+          rho=basechange(M,Ytrans,rho,Y)
 c
 c------------Ahora tenemos rho transformado en la base ON y en forma cuadrada-----------------------------
 c-------------------------Escritura de fock cuadrada--------------------------------------
@@ -519,8 +519,7 @@ c-----------Parte de arriba a la derecha de la matriz (sin incluir terminos diag
             enddo
           enddo
 
-          call matmulnano(fock,X,rho1,M)
-          fock=rho1                     ! RHO1 lo uso como scratch
+          fock=basechange(M,Xtrans,fock,X)
 
 c--------------En este punto ya tenemos F transformada en base de ON y en su forma cuadrada-----
 c--------------Acumulamos las matrices de fock (ver si está bien)-------------------------------

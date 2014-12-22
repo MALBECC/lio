@@ -1,4 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! BASECHANGE
 ! BASETRANSFORM PROCEDURES
 !
 ! (1) Initialization of Matm(nnd,ndd) and Mato(nii,ndd)
@@ -6,7 +7,7 @@
 ! (3) Second Product Utrp(nii,nni)*Matm(nni,ndd)
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       function transbase_d(M,Utrp,Mati,Umat) result(Mato)
+       function basechange_d(M,Utrp,Mati,Umat) result(Mato)
        implicit none
        integer,intent(in)     :: M
        real*8,intent(in)      :: Utrp(M,M),Umat(M,M)
@@ -41,7 +42,7 @@
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       function transbase_c(M,Utrp,Mati,Umat) result(Mato)
+       function basechange_c(M,Utrp,Mati,Umat) result(Mato)
        implicit none
        integer,intent(in)     :: M
        real*8,intent(in)      :: Utrp(M,M),Umat(M,M)
@@ -76,7 +77,7 @@
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       function transbase_z(M,Utrp,Mati,Umat) result(Mato)
+       function basechange_z(M,Utrp,Mati,Umat) result(Mato)
        implicit none
        integer,intent(in)     :: M
        real*8,intent(in)      :: Utrp(M,M),Umat(M,M)

@@ -29,6 +29,7 @@ src_paths += mathsubs
 vpath %.mod $(obj_path)
 vpath %.o   $(obj_path)
 vpath %.f   $(src_paths)
+vpath %.mk  $(src_paths)
 
 include make_options.mk
 
@@ -36,6 +37,7 @@ all: liblio-g2g.so
 
 objects :=
 include make_depend.mk
+include liomods/liomods.mk
 include maskrmm/maskrmm.mk
 include mathsubs/mathsubs.mk
 

@@ -1,7 +1,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       interface transbase
-         module procedure transbase_d
-         module procedure transbase_c
-         module procedure transbase_z
+       interface basechange
+         module procedure basechange_d
+         module procedure basechange_c
+         module procedure basechange_z
        end interface
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

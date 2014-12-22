@@ -11,7 +11,6 @@
 #include "matrix.h"
 #include "partition.h"
 #include "timer.h"
-#include "mkl.h"
 using namespace std;
 
 namespace G2G {
@@ -304,14 +303,14 @@ void Partition::compute_functions(bool forces, bool gga) {
 
   #pragma omp parallel for schedule(guided,8)
   for(int i = 0; i < cubes.size(); i++){
-    if(!cubes[i].is_big_group(0xDEADBEEF))
-      cubes[i].compute_functions(forces, gga);
+    if(!cubes[i]->is_big_group(0xDEADBEEF))
+      cubes[i]->compute_functions(forces, gga);
   }
 
   #pragma omp parallel for schedule(guided,8)
   for(int i = 0; i < spheres.size(); i++){
-    if(!spheres[i].is_big_group(0xDEADBEEF))
-      spheres[i].compute_functions(forces, gga);
+    if(!spheres[i]->is_big_group(0xDEADBEEF))
+      spheres[i]->compute_functions(forces, gga);
   }
 
   t1.stop_and_sync();
@@ -319,84 +318,62 @@ void Partition::compute_functions(bool forces, bool gga) {
 }
 
 void Partition::clear() {
+  for(int i = 0; i < cubes.size(); i++)
+    delete cubes[i];
+  for(int i = 0; i < spheres.size(); i++)
+    delete spheres[i];
   cubes.clear(); spheres.clear(); work.clear();
 }
 
+
 void Partition::rebalance(vector<double> & times, vector<double> & finishes)
 {
-  std::cout << "flen: " << finishes.size() << std::endl;
-  int gpu_threads = 0;
+    int gpu_threads = 0;
 #if GPU_KERNELS
-  assert(cudaGetDeviceCount(&gpu_threads) == cudaSuccess);
+    cudaGetDeviceCount(&gpu_threads);
+#ifndef _OPENMP
+    gpu_threads = 1;
 #endif
-  int outer = finishes.size()-gpu_threads;
-  for(int group = 0; group < 1; group++) {
-    for(int rondas = 0; rondas < 5; rondas++){
-      int largest, smallest;
-      int max_time=-1; int min_time=1<<30;
-      if(group == 0)  {
-        for(int i = 0; i < outer; i++){
-          if (finishes[i] > max_time) {
-            largest = i; max_time = finishes[i];
-          }
-          if (finishes[i] < min_time) {
-            smallest = i; min_time = finishes[i];
-          }
-        }
-      } else {
-        if(gpu_threads<1) return;
-        for(int i = 0; i < gpu_threads; i++){
-          if (finishes[outer+i] > max_time) {
-            largest = outer+i; max_time = finishes[outer+i];
-          }
-          if (finishes[outer+i] < min_time) {
-            smallest = outer+i; min_time = finishes[outer+i];
+#endif
+
+  for(int rondas = 0; rondas < 5; rondas++){
+    int largest = std::max_element(finishes.begin(),finishes.end()-gpu_threads) - finishes.begin();
+    int smallest = std::min_element(finishes.begin(),finishes.end()-gpu_threads) - finishes.begin();
+
+    double diff = finishes[largest] - finishes[smallest];
+
+    if(largest != smallest && work[largest].size() > 1) {
+      double lt = finishes[largest]; double moved = 0;
+      while(diff / lt >= 0.02) {
+        int mini = -1; double currentmini = diff;
+        for(int i = 0; i < work[largest].size(); i++) {
+          int ind = work[largest][i];
+          if(times[ind] > diff / 2) continue;
+          double cost = times[ind];
+          if(currentmini > diff - 2*cost) {
+            currentmini = diff - 2*cost;
+            mini = i;
           }
         }
 
+        if(mini == -1){
+          //printf("Nothing more to swap!\n");
+          return;
+        }
+
+        int topass = mini;
+        int workindex = work[largest][topass];
+
+        printf("Swapping %d from %d to %d\n", work[largest][topass], largest, smallest);
+
+        work[smallest].push_back(work[largest][topass]);
+        work[largest].erase(work[largest].begin() + topass);
+
+        diff -= 2*times[workindex];
+        moved += times[workindex];
       }
-
-      double diff = finishes[largest] - finishes[smallest];
-
-      if(largest != smallest && work[largest].size() > 1) {
-        double lt = finishes[largest]; double moved = 0;
-        while(diff / lt >= 0.02) {
-          int mini = -1; double currentmini = diff;
-          for(int i = 0; i < work[largest].size(); i++) {
-            int ind = work[largest][i];
-            if(times[ind] > diff / 2) continue;
-            double cost = times[ind];
-            if(currentmini > diff - 2*cost) {
-              currentmini = diff - 2*cost;
-              mini = i;
-            }
-          }
-
-          if(mini == -1){
-            //printf("Nothing more to swap!\n");
-            break;
-          }
-
-          int topass = mini;
-          int workindex = work[largest][topass];
-          if(group==1) {
-            if(workindex < cubes.size())
-              cubes[workindex].deallocate();
-            else
-              spheres[workindex-cubes.size()].deallocate();
-          }
-
-          printf("Swapping %d from %d to %d\n", work[largest][topass], largest, smallest);
-
-          work[smallest].push_back(work[largest][topass]);
-          work[largest].erase(work[largest].begin() + topass);
-
-          diff -= 2*times[workindex];
-          moved += times[workindex];
-        }
-        finishes[largest] -= moved;
-        finishes[smallest] += moved;
-      }
+      finishes[largest] -= moved;
+      finishes[smallest] += moved;
     }
   }
 }
@@ -448,11 +425,11 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
         element.start();
 
       if(ind >= cubes.size()){
-        spheres[ind-cubes.size()].solve(ts, compute_rmm,lda,compute_forces, compute_energy,
+        spheres[ind-cubes.size()]->solve(ts, compute_rmm,lda,compute_forces, compute_energy,
             local_energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1, spheres_energy_c2,
             fort_forces_ms[i], 1, rmm_outputs[i], OPEN);
       } else {
-        cubes[ind].solve(ts, compute_rmm,lda,compute_forces, compute_energy,
+        cubes[ind]->solve(ts, compute_rmm,lda,compute_forces, compute_energy,
             local_energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, cubes_energy_c2,
             fort_forces_ms[i], 1, rmm_outputs[i], OPEN);
       }
@@ -522,16 +499,6 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
 
   enditer.stop(); cout << "enditer = " << enditer << endl;
 }
-
-/**********************
- * Sphere
- **********************/
-Sphere::Sphere(void) : atom(0), radius(0) { }
-Sphere::Sphere(uint _atom, double _radius) : atom(_atom), radius(_radius) { }
-
-/**********************
- * Cube
- **********************/
 
 template class PointGroup<double>;
 template class PointGroup<float>;

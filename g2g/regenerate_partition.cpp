@@ -43,11 +43,11 @@ void load_pools(const vector<int> & elements, const vector< vector<int> > & work
 }
 
 template <typename T>
-long long total_costs(const vector<T> & elements)
+long long total_costs(const vector<T*> & elements)
 {
     long long res = 0;
     for(int i = 0; i < elements.size(); i++)
-        res += elements[i].cost();
+        res += elements[i]->cost();
     return res;
 }
 
@@ -83,13 +83,13 @@ void Partition::compute_work_partition()
 {
   vector< pair<long long, int> > costs;
   for(int i = 0; i < cubes.size(); i++)
-    if(!cubes[i].is_big_group(inner_threads))
-      costs.push_back(make_pair(cubes[i].cost(), i));
+    if(!cubes[i]->is_big_group(inner_threads))
+      costs.push_back(make_pair(cubes[i]->cost(), i));
 
   const int ncubes = cubes.size();
   for(int i = 0; i < spheres.size(); i++)
-    if(!spheres[i].is_big_group(inner_threads))
-      costs.push_back(make_pair(spheres[i].cost(), ncubes+i));
+    if(!spheres[i]->is_big_group(inner_threads))
+      costs.push_back(make_pair(spheres[i]->cost(), ncubes+i));
 
   if(costs.size() == 0) return;
 
@@ -137,14 +137,23 @@ int getintenv(const char * str, int default_value) {
   return ret;
 }
 
-void diagnostic(int inner, int outer)
-{
+void diagnostic(int inner, int outer) {
     printf("--> Thread OMP: %d\n", omp_get_max_threads());
     printf("--> Thread internos: %d\n", inner);
     printf("--> Thread externos: %d\n", outer);
     printf("--> Correccion de cubos chicos: %d\n", MINCOST);
     printf("--> Threshold en threads para considerar grande: %d\n", THRESHOLD);
 }
+
+template <class T>
+bool is_big_group(const T& points) {
+  return (points.size() > 600);
+}
+template <class T>
+struct sorter {
+  bool operator() (const T* l, const T* r) { return (l->cost() < r->cost());}
+};
+
 
 /* methods */
 void Partition::regenerate(void)
@@ -214,14 +223,17 @@ void Partition::regenerate(void)
     // Generamos la particion en cubos.
     uint3 prism_size = ceil_uint3((x1 - x0) / little_cube_size);
 
-    vector<vector<vector<Cube> > >
-      prism(prism_size.x, vector<vector<Cube> >(prism_size.y, vector<Cube>(prism_size.z)));
+    typedef vector<Point> Group;
+    vector<vector<vector<Group> > >
+      prism(prism_size.x, vector<vector<Group> >(prism_size.y, vector<Group>(prism_size.z)));
 
     // Inicializamos las esferas.
-    vector<Sphere> sphere_array;
+    vector<Group> sphere_points;
+    vector<double> sphere_radius_array;
     if (sphere_radius > 0)
     {
-        sphere_array.resize(fortran_vars.atoms);
+        sphere_radius_array.resize(fortran_vars.atoms);
+        sphere_points.resize(fortran_vars.atoms);
         for (uint atom = 0; atom < fortran_vars.atoms; atom++)
         {
             uint atom_shells = fortran_vars.shells(atom);
@@ -238,7 +250,7 @@ void Partition::regenerate(void)
                 radius = rm * (1.0 + x) / (1.0 - x);
             }
             _DBG(cout << "esfera incluye " << included_shells << " capas de " << atom_shells << " (radio: " << radius << ")" << endl);
-            sphere_array[atom] = Sphere(atom, radius);
+            sphere_radius_array[atom] = radius;
         }
     }
 
@@ -248,7 +260,7 @@ void Partition::regenerate(void)
         const double3& atom_i_position(fortran_vars.atom_positions(i));
         double nearest_neighbor_dist = numeric_limits<double>::max();
 
-        double sphere_i_radius = (sphere_radius > 0 ? sphere_array[i].radius : 0);
+        double sphere_i_radius = (sphere_radius > 0 ? sphere_radius_array[i] : 0);
 
         for (uint j = 0; j < fortran_vars.atoms; j++)
         {
@@ -305,8 +317,7 @@ void Partition::regenerate(void)
                     if (shell >= (atom_shells - included_shells))
                     {
                         // Asignamos este punto a la esfera de este atomo.
-                        Sphere& sphere = sphere_array[atom];
-                        sphere.add_point(point_object);
+                        sphere_points[atom].push_back(point_object);
                     }
                     else
                     {
@@ -314,7 +325,7 @@ void Partition::regenerate(void)
                         uint3 cube_coord = floor_uint3((point_position - x0) / little_cube_size);
                         if (cube_coord.x >= prism_size.x || cube_coord.y >= prism_size.y || cube_coord.z >= prism_size.z)
                             throw std::runtime_error("Se accedio a un cubo invalido");
-                        prism[cube_coord.x][cube_coord.y][cube_coord.z].add_point(point_object);
+                        prism[cube_coord.x][cube_coord.y][cube_coord.z].push_back(point_object);
                     }
                 }
             }
@@ -333,35 +344,62 @@ void Partition::regenerate(void)
         {
             for (uint k = 0; k < prism_size.z; k++)
             {
-                Cube& cube_ijk = prism[i][j][k];
+                Group& points_ijk = prism[i][j][k];
 
                 double3 cube_coord_abs = x0 + make_uint3(i,j,k) * little_cube_size;
+                PointGroup<base_scalar_type>* cube_funcs;
+                #if GPU_KERNELS
+                if(is_big_group(points_ijk))
+                  cube_funcs = new PointGroupGPU<base_scalar_type>();
+                else
+                  cube_funcs = new PointGroupCPU<base_scalar_type>();
+                #else
+                cube_funcs = new PointGroupCPU<base_scalar_type>();
+                #endif
 
-                cube_ijk.assign_significative_functions(cube_coord_abs, min_exps_func, min_coeff_func);
-                if (cube_ijk.total_functions_simple() == 0) // Este cubo no tiene funciones.
-                    continue;
-                if (cube_ijk.number_of_points < min_points_per_cube) // Este cubo no tiene suficientes puntos.
-                    continue;
+                for(int point = 0; point < prism[i][j][k].size(); point++)
+                  cube_funcs->add_point(prism[i][j][k][point]);
 
-                Cube cube(cube_ijk);
-                assert(cube.number_of_points != 0);
+                cube_funcs->assign_functions_as_cube(cube_coord_abs, min_exps_func, min_coeff_func);
+
+                if ((cube_funcs->total_functions_simple() == 0) || (cube_funcs->number_of_points < min_points_per_cube)) {
+                  // Este cubo no tiene funciones o no tiene suficientes puntos.
+                  delete cube_funcs;
+                  continue;
+                }
+                PointGroup<base_scalar_type>* cube;
+
+                #if GPU_KERNELS
+                if(is_big_group(points_ijk))
+                  cube = new PointGroupGPU<base_scalar_type>(*
+                      (dynamic_cast<PointGroupGPU<base_scalar_type> *>(cube_funcs)));
+                else
+                  cube = new PointGroupCPU<base_scalar_type>(*
+                      (dynamic_cast<PointGroupCPU<base_scalar_type> *>(cube_funcs)));
+                #else
+                cube = new PointGroupCPU<base_scalar_type>(*
+                    (dynamic_cast<PointGroupCPU<base_scalar_type> *>(cube_funcs)));
+                #endif
+
+                delete cube_funcs;
 
                 tweights.start();
-                cube.compute_weights();
+                cube->compute_weights();
                 tweights.pause();
 
-                if (cube.number_of_points < min_points_per_cube)
+                if (cube->number_of_points < min_points_per_cube)
                 {
-                    cout << "not enough points" << endl;
+                    cout << "CUBE: not enough points" << endl;
+                    delete cube;
                     continue;
                 }
                 cubes.push_back(cube);
 
-                puntos_finales += cube.number_of_points;
-                funciones_finales += cube.number_of_points * cube.total_functions();
-                costo += cube.number_of_points * (cube.total_functions() * cube.total_functions());
-                nco_m += cube.total_functions() * fortran_vars.nco;
-                m_m += cube.total_functions() * cube.total_functions();
+                puntos_finales += cube->number_of_points;
+                funciones_finales += cube->number_of_points * cube->total_functions();
+                costo += cube->number_of_points * (cube->total_functions() * cube->total_functions());
+                nco_m += cube->total_functions() * fortran_vars.nco;
+                m_m += cube->total_functions() * cube->total_functions();
             }
         }
     }
@@ -371,41 +409,70 @@ void Partition::regenerate(void)
     {
         for (uint i = 0; i < fortran_vars.atoms; i++)
         {
-            Sphere& sphere_i = sphere_array[i];
+            Group& sphere_i = sphere_points[i];
+            assert(sphere_i.size() != 0);
 
-            assert(sphere_i.number_of_points != 0);
+            PointGroup<base_scalar_type>* sphere_funcs;
+            #if GPU_KERNELS
+            if(is_big_group(sphere_i))
+              sphere_funcs = new PointGroupGPU<base_scalar_type>();
+            else
+              sphere_funcs = new PointGroupCPU<base_scalar_type>();
+            #else
+            sphere_funcs = new PointGroupCPU<base_scalar_type>();
+            #endif
+            for(int point = 0; point < sphere_i.size(); point++)
+              sphere_funcs->add_point(sphere_i[point]);
 
-            sphere_i.assign_significative_functions(min_exps_func, min_coeff_func);
-            assert(sphere_i.total_functions_simple() != 0);
-            if (sphere_i.number_of_points < min_points_per_cube)
+            sphere_funcs->assign_functions_as_sphere(i, sphere_radius_array[i], min_exps_func, min_coeff_func);
+            assert(sphere_funcs->total_functions_simple() != 0);
+            if (sphere_funcs->number_of_points < min_points_per_cube)
             {
                 cout << "not enough points" << endl;
+                delete sphere_funcs;
                 continue;
             }
 
-            Sphere sphere(sphere_i);
-            assert(sphere.number_of_points != 0);
+            PointGroup<base_scalar_type>* sphere;
+            #if GPU_KERNELS
+            if(is_big_group(sphere_i)) {
+              sphere = new PointGroupGPU<base_scalar_type>(*
+                  (static_cast<PointGroupGPU<base_scalar_type> *>(sphere_funcs)));
+            }
+            else {
+              sphere = new PointGroupCPU<base_scalar_type>(*
+                  (static_cast<PointGroupCPU<base_scalar_type> *>(sphere_funcs)));
+            }
+            #else
+            sphere = new PointGroupCPU<base_scalar_type>(*
+                (static_cast<PointGroupCPU<base_scalar_type> *>(sphere_funcs)));
+            #endif
+            delete sphere_funcs;
+
+            assert(sphere->number_of_points != 0);
             tweights.start();
-            sphere.compute_weights();
+            sphere->compute_weights();
             tweights.pause();
-            if (sphere.number_of_points < min_points_per_cube)
+            if (sphere->number_of_points < min_points_per_cube)
             {
                 cout << "not enough points" << endl;
+                delete sphere;
                 continue;
             }
-            assert(sphere.number_of_points != 0);
+            assert(sphere->number_of_points != 0);
             spheres.push_back(sphere);
 
-            puntos_finales += sphere.number_of_points;
-            funciones_finales += sphere.number_of_points * sphere.total_functions();
-            costo += sphere.number_of_points * (sphere.total_functions() * sphere.total_functions());
-            nco_m += sphere.total_functions() * fortran_vars.nco;
-            m_m += sphere.total_functions() * sphere.total_functions();
+            puntos_finales += sphere->number_of_points;
+            funciones_finales += sphere->number_of_points * sphere->total_functions();
+            costo += sphere->number_of_points * (sphere->total_functions() * sphere->total_functions());
+            nco_m += sphere->total_functions() * fortran_vars.nco;
+            m_m += sphere->total_functions() * sphere->total_functions();
         }
     }
 
-    sort(spheres.begin(), spheres.end());
-    sort(cubes.begin(), cubes.end());
+    // TODO fix these sorts now that spheres and cubes are pointers
+    //sort(spheres.begin(), spheres.end(), sorter());
+    //sort(cubes.begin(), cubes.end(), sorter());
 
     //Initialize the global memory pool for CUDA, with the default safety factor
     //If it is CPU, then this doesn't matter
@@ -420,18 +487,18 @@ void Partition::regenerate(void)
 
     #ifdef OUTPUT_COSTS
     for(int i = 0; i < cubes.size(); i++) {
-      printf("CUBE: "); cubes[i].output_cost(); printf("\n");
+      printf("CUBE: "); cubes[i]->output_cost(); printf("\n");
     }
     for(int i = 0; i < spheres.size(); i++) {
-      printf("SPHERE: "); spheres[i].output_cost(); printf("\n");
+      printf("SPHERE: "); spheres[i]->output_cost(); printf("\n");
     }
     #endif
 
     for(int i = 0; i < cubes.size(); i++) {
-      cubes[i].compute_indexes();
+      cubes[i]->compute_indexes();
     }
     for(int i = 0; i < spheres.size(); i++) {
-      spheres[i].compute_indexes();
+      spheres[i]->compute_indexes();
     }
 
     compute_work_partition();
@@ -456,13 +523,13 @@ void Partition::regenerate(void)
       work.push_back(vector<int>());
 
     for(int i = 0; i < cubes.size(); i++)
-      if(cubes[i].is_big_group(inner_threads)) {
+      if(cubes[i]->is_big_group(inner_threads)) {
         work[outer_threads+current_gpu].push_back(i);
         current_gpu = (current_gpu + 1) % gpu_threads;
       }
 
     for(int i = 0; i < spheres.size(); i++)
-      if(spheres[i].is_big_group(inner_threads)) {
+      if(spheres[i]->is_big_group(inner_threads)) {
         work[outer_threads+current_gpu].push_back(i+cubes.size());
         //current_gpu = (current_gpu + 1) % gpu_threads;
       }

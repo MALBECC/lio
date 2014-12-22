@@ -108,7 +108,11 @@ class PointGroup {
         HostMatrix<double> &, int, HostMatrix<double> &, bool) = 0;
 
     bool is_significative(FunctionType, double exponent, double coeff, double d2);
+
+    void assign_functions_as_sphere(uint, double, const std::vector<double>&, const std::vector<double>&);
+    void assign_functions_as_cube(const double3&, const std::vector<double>&, const std::vector<double>&);
     void assign_functions(HostMatrix<double>, const std::vector<double>&, const std::vector<double>&);
+
     bool operator<(const PointGroup<scalar_type>& T) const;
     size_t size_in_gpu() const;
     int elements() const;
@@ -184,31 +188,11 @@ class PointGroupGPU: public PointGroup<scalar_type> {
 
 
 
-// ===== Sphere Class =======//
 #if FULL_DOUBLE
 typedef double base_scalar_type;
 #else
 typedef float base_scalar_type;
 #endif
-#if GPU_KERNELS
-class Sphere : public PointGroupGPU<base_scalar_type> {
-#else
-class Sphere : public PointGroupCPU<base_scalar_type> {
-#endif
-  public:
-    Sphere(void);
-    Sphere(uint _atom, double _radius);
-
-    void assign_significative_functions(const std::vector<double>& min_exps, const std::vector<double>& min_coeff);
-
-    uint atom;
-    double radius;
-};
-
-class Cube : public PointGroupCPU<base_scalar_type> {
-  public:
-    void assign_significative_functions(const double3& cube_coord, const std::vector<double>& min_exps, const std::vector<double>& min_coeff);
-};
 
 // =======Partition Class ========//
 
@@ -223,8 +207,8 @@ class Partition {
     void compute_functions(bool forces, bool gga);
     void rebalance(std::vector<double> &, std::vector<double> &);
 
-    std::vector<Cube> cubes;
-    std::vector<Sphere> spheres;
+    std::vector<PointGroup<base_scalar_type>*> cubes;
+    std::vector<PointGroup<base_scalar_type>*> spheres;
 
     std::vector< HostMatrix<double> > fort_forces_ms;
     std::vector< HostMatrix<double> > rmm_outputs;

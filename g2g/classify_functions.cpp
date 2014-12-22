@@ -2,7 +2,6 @@
 #include <fstream>
 #include <vector>
 #include <cmath>
-#include "common.h"
 #include "init.h"
 #include "matrix.h"
 #include "partition.h"
@@ -78,8 +77,8 @@ void PointGroup<scalar_type>::compute_nucleii_maps(void)
 /*******************************
  * Cube
  *******************************/
-
-void Cube::assign_significative_functions(const double3& cube_coord, const std::vector<double>& min_exps, const std::vector<double>& min_coeff) {
+template <class scalar_type>
+void PointGroup<scalar_type>::assign_functions_as_cube(const double3& cube_coord, const std::vector<double>& min_exps, const std::vector<double>& min_coeff) {
   HostMatrix<double> atom_cube_dists(fortran_vars.atoms);
   for (uint i = 0; i < fortran_vars.atoms; i++) {
     const double3& atom_pos = fortran_vars.atom_positions(i);
@@ -103,7 +102,8 @@ void Cube::assign_significative_functions(const double3& cube_coord, const std::
 /*****************************
  * Sphere
  *****************************/
-void Sphere::assign_significative_functions(const std::vector<double>& min_exps, const std::vector<double>& min_coeff) {
+template<class scalar_type>
+void PointGroup<scalar_type>::assign_functions_as_sphere(uint atom, double radius, const std::vector<double>& min_exps, const std::vector<double>& min_coeff) {
   // TODO: esto solo es necesario para los atomos en nucleii, idem arriba
   HostMatrix<double> atom_sphere_dists(fortran_vars.atoms);
   const double3& own_atom_pos = fortran_vars.atom_positions(atom);
@@ -121,3 +121,6 @@ void Sphere::assign_significative_functions(const std::vector<double>& min_exps,
   assign_functions(atom_sphere_dists, min_exps, min_coeff);
   compute_nucleii_maps();
 }
+
+template class PointGroup<double>;
+template class PointGroup<float>;

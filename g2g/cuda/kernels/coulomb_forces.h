@@ -23,7 +23,7 @@ __global__ void gpu_coulomb_forces( uint num_terms, vec_type<scalar_type,2>* ac_
   assert(QMMM_BLOCK_SIZE == 128);
   uint ffnum = index_x(blockDim, blockIdx, threadIdx);
   int tid = threadIdx.x;
-  bool valid_thread = (ffnum < num_terms);// && term_type == 0;
+  bool valid_thread = (ffnum < num_terms);// && term_type == 5;
 
   // Each thread maps to a single pair of QM nuclei, so these forces are computed locally and accumulated at the end
   scalar_type A_force[3] = { 0.0f,0.0f,0.0f }, B_force[3] = { 0.0f,0.0f,0.0f };
@@ -230,6 +230,9 @@ __global__ void gpu_coulomb_forces( uint num_terms, vec_type<scalar_type,2>* ac_
                   case 1:
                     #include "coulomb_terms/forces/ss_p.h"
                     break;
+                  case 2:
+                    #include "coulomb_terms/forces/ss_d.h"
+                    break;
                 }
                 break;
               case 1:
@@ -240,6 +243,9 @@ __global__ void gpu_coulomb_forces( uint num_terms, vec_type<scalar_type,2>* ac_
                     break;
                   case 1:
                     #include "coulomb_terms/forces/ps_p.h"
+                    break;
+                  case 2:
+                    #include "coulomb_terms/forces/ps_d.h"
                     break;
                 }
                 break;
@@ -252,6 +258,9 @@ __global__ void gpu_coulomb_forces( uint num_terms, vec_type<scalar_type,2>* ac_
                   case 1:
                     #include "coulomb_terms/forces/pp_p.h"
                     break;
+                  case 2:
+                    #include "coulomb_terms/forces/pp_d.h"
+                    break;
                 }
                 break;
               case 3:
@@ -262,6 +271,9 @@ __global__ void gpu_coulomb_forces( uint num_terms, vec_type<scalar_type,2>* ac_
                     break;
                   case 1:
                     #include "coulomb_terms/forces/ds_p.h"
+                    break;
+                  case 2:
+                    #include "coulomb_terms/forces/ds_d.h"
                     break;
                 }
                 break;
@@ -274,6 +286,9 @@ __global__ void gpu_coulomb_forces( uint num_terms, vec_type<scalar_type,2>* ac_
                   case 1:
                     #include "coulomb_terms/forces/dp_p.h"
                     break;
+                  case 2:
+                    #include "coulomb_terms/forces/dp_d.h"
+                    break;
                 }
                 break;
               case 5:
@@ -284,6 +299,9 @@ __global__ void gpu_coulomb_forces( uint num_terms, vec_type<scalar_type,2>* ac_
                     break;
                   case 1:
                     #include "coulomb_terms/forces/dd_p.h"
+                    break;
+                  case 2:
+                    #include "coulomb_terms/forces/dd_d.h"
                     break;
                 }
                 break;

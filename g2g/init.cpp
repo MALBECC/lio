@@ -372,7 +372,7 @@ extern "C" void g2g_coulomb_forces_(double* qm_forces)
   G2G::g2g_coulomb<float,true>(qm_forces,Es);
 #endif
 }
-extern "C" void g2g_coulomb_fock_(double& Es)
+/*extern "C" void g2g_coulomb_fock_(double& Es)
 {
   Es = 0.0;
 #if FULL_DOUBLE
@@ -380,7 +380,7 @@ extern "C" void g2g_coulomb_fock_(double& Es)
 #else
   G2G::g2g_coulomb<float,false>((double*)0,Es);
 #endif
-}
+}*/
 //===============================================================================================================
 
 template<bool compute_rmm, bool lda, bool compute_forces> void g2g_iteration(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr)

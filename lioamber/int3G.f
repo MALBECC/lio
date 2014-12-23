@@ -134,6 +134,11 @@ c        write(*,*) 'exchnum int3G'
          endif
       call g2g_timer_stop('ExcG')
 
+      call g2g_timer_start('g2g_coulomb_forces')
+      call g2g_coulomb_forces(f)
+      call g2g_timer_stop('g2g_coulomb_forces')
+      return
+
 c DEBUG DEBUG
 c      do k=1,natom
 c        write(*,'("fuerza",I,D,D,D)') k,f(k,1),f(k,2),f(k,3)

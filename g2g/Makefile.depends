@@ -46,3 +46,6 @@ cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/dp_s.h cuda/kernels/coulo
 cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/ss_p.h cuda/kernels/coulomb_terms/forces/ps_p.h
 cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/pp_p.h cuda/kernels/coulomb_terms/forces/ds_p.h
 cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/dp_p.h cuda/kernels/coulomb_terms/forces/dd_p.h
+cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/ss_d.h cuda/kernels/coulomb_terms/forces/ps_d.h
+cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/pp_d.h cuda/kernels/coulomb_terms/forces/ds_d.h
+cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/dp_d.h cuda/kernels/coulomb_terms/forces/dd_d.h

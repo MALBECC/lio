@@ -1514,10 +1514,10 @@ template <class scalar_type,bool forces> void g2g_coulomb(double* qm_forces, dou
   }
   check.pause();
 
-  std::cout << "[G2G_COULOMB] Number of threads: " << num_terms << std::endl;
-  std::cout << "[G2G_COULOMB] Total Gaussian pairs: " << total_num_terms << std::endl;
-  std::cout << "[G2G_COULOMB] Number of significant density elements: " << num_dens_terms << std::endl;
-  std::cout << "[G2G_COULOMB] Total density elements: " << total_dens_terms << std::endl;
+  //std::cout << "[G2G_COULOMB] Number of threads: " << num_terms << std::endl;
+  //std::cout << "[G2G_COULOMB] Total Gaussian pairs: " << total_num_terms << std::endl;
+  //std::cout << "[G2G_COULOMB] Number of significant density elements: " << num_dens_terms << std::endl;
+  //std::cout << "[G2G_COULOMB] Total density elements: " << total_dens_terms << std::endl;
 
   prep.start();
 
@@ -1856,8 +1856,8 @@ template <class scalar_type,bool forces> void g2g_coulomb(double* qm_forces, dou
     reduce.pause();
   }*/
 
-  cout << "[G2G_COULOMB] overlap check: " << check << " kernel prep: " << prep << endl;
-  cout << "[G2G_COULOMB] kernel: " << kernel << " download: " << down << " host reduction: " << reduce << endl;
+  //cout << "[G2G_COULOMB] overlap check: " << check << " kernel prep: " << prep << endl;
+  //cout << "[G2G_COULOMB] kernel: " << kernel << " download: " << down << " host reduction: " << reduce << endl;
 
   cudaUnbindTexture(qmmm_str_tex);
 

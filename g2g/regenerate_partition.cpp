@@ -373,13 +373,13 @@ void Partition::regenerate(void)
                 #if GPU_KERNELS
                 if(is_big_group(points_ijk))
                   cube = new PointGroupGPU<base_scalar_type>(*
-                      (dynamic_cast<PointGroupGPU<base_scalar_type> *>(cube_funcs)));
+                      (static_cast<PointGroupGPU<base_scalar_type> *>(cube_funcs)));
                 else
                   cube = new PointGroupCPU<base_scalar_type>(*
-                      (dynamic_cast<PointGroupCPU<base_scalar_type> *>(cube_funcs)));
+                      (static_cast<PointGroupCPU<base_scalar_type> *>(cube_funcs)));
                 #else
                 cube = new PointGroupCPU<base_scalar_type>(*
-                    (dynamic_cast<PointGroupCPU<base_scalar_type> *>(cube_funcs)));
+                    (static_cast<PointGroupCPU<base_scalar_type> *>(cube_funcs)));
                 #endif
 
                 delete cube_funcs;

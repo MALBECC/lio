@@ -328,6 +328,7 @@ void Partition::clear() {
 
 void Partition::rebalance(vector<double> & times, vector<double> & finishes)
 {
+    int cpu_threads = 0;
     int gpu_threads = 0;
 #if GPU_KERNELS
     cudaGetDeviceCount(&gpu_threads);
@@ -335,45 +336,63 @@ void Partition::rebalance(vector<double> & times, vector<double> & finishes)
     gpu_threads = 1;
 #endif
 #endif
+    cpu_threads = finishes.size()-gpu_threads;
+  for(int device = 0; device < 2; device++) {
+    for(int rondas = 0; rondas < 5; rondas++) {
+      int largest = 0;
+      int smallest = 0;
 
-  for(int rondas = 0; rondas < 5; rondas++){
-    int largest = std::max_element(finishes.begin(),finishes.end()-gpu_threads) - finishes.begin();
-    int smallest = std::min_element(finishes.begin(),finishes.end()-gpu_threads) - finishes.begin();
-
-    double diff = finishes[largest] - finishes[smallest];
-
-    if(largest != smallest && work[largest].size() > 1) {
-      double lt = finishes[largest]; double moved = 0;
-      while(diff / lt >= 0.02) {
-        int mini = -1; double currentmini = diff;
-        for(int i = 0; i < work[largest].size(); i++) {
-          int ind = work[largest][i];
-          if(times[ind] > diff / 2) continue;
-          double cost = times[ind];
-          if(currentmini > diff - 2*cost) {
-            currentmini = diff - 2*cost;
-            mini = i;
-          }
-        }
-
-        if(mini == -1){
-          //printf("Nothing more to swap!\n");
-          return;
-        }
-
-        int topass = mini;
-        int workindex = work[largest][topass];
-
-        printf("Swapping %d from %d to %d\n", work[largest][topass], largest, smallest);
-
-        work[smallest].push_back(work[largest][topass]);
-        work[largest].erase(work[largest].begin() + topass);
-
-        diff -= 2*times[workindex];
-        moved += times[workindex];
+      if(device == 0) {
+        largest = std::max_element(finishes.begin(),finishes.end()-gpu_threads) - finishes.begin();
+        smallest = std::min_element(finishes.begin(),finishes.end()-gpu_threads) - finishes.begin();
       }
-      finishes[largest] -= moved;
-      finishes[smallest] += moved;
+      else {
+        largest = std::max_element(finishes.begin()+cpu_threads, finishes.end()) - finishes.begin();
+        smallest= std::min_element(finishes.begin()+cpu_threads, finishes.end()) - finishes.begin();
+      }
+
+      double diff = finishes[largest] - finishes[smallest];
+
+      if(largest != smallest && work[largest].size() > 1) {
+        double lt = finishes[largest]; double moved = 0;
+        while(diff / lt >= 0.02) {
+          int mini = -1; double currentmini = diff;
+          for(int i = 0; i < work[largest].size(); i++) {
+            int ind = work[largest][i];
+            if(times[ind] > diff / 2) continue;
+            double cost = times[ind];
+            if(currentmini > diff - 2*cost) {
+              currentmini = diff - 2*cost;
+              mini = i;
+            }
+          }
+
+          if(mini == -1){
+            //printf("Nothing more to swap!\n");
+            break;
+          }
+
+          int topass = mini;
+          int workindex = work[largest][topass];
+
+          printf("Swapping %d from %d to %d\n", work[largest][topass], largest, smallest);
+
+          if(device == 1) {
+            if(workindex < cubes.size())
+              cubes[workindex]->deallocate();
+            else
+              spheres[workindex - cubes.size()]->deallocate();
+          }
+
+          work[smallest].push_back(work[largest][topass]);
+          work[largest].erase(work[largest].begin() + topass);
+
+          diff -= 2*times[workindex];
+          moved += times[workindex];
+        }
+        finishes[largest] -= moved;
+        finishes[smallest] += moved;
+      }
     }
   }
 }

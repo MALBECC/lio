@@ -473,9 +473,9 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
       const int rows = fortran_vars.rmm_output.width;
       const int reduce_threads = 2;
       const int chunk_size = rows / reduce_threads;
-//#pragma omp parallel num_threads(reduce_threads)
+#pragma omp parallel num_threads(reduce_threads)
       {
-//#pragma omp for schedule(static, chunksize)
+#pragma omp for schedule(static, chunksize)
         for(int i = 0; i < fortran_vars.rmm_output.width; i++) {
           for(int j = 0; j < fortran_vars.rmm_output.height; j++) {
             fortran_vars.rmm_output(i,j) += rmm_outputs[k](i,j);

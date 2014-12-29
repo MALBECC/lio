@@ -469,18 +469,14 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   }
 
   if (compute_rmm) {
+    double * dst = fortran_vars.rmm_output.data;
+    const int elements = fortran_vars.rmm_output.width * fortran_vars.rmm_output.height;
     for(int k = 0; k < rmm_outputs.size(); k++) {
-      const int rows = fortran_vars.rmm_output.width;
-      const int reduce_threads = 2;
-      const int chunk_size = rows / reduce_threads;
-#pragma omp parallel num_threads(reduce_threads)
-      {
-#pragma omp for schedule(static, chunksize)
-        for(int i = 0; i < fortran_vars.rmm_output.width; i++) {
-          for(int j = 0; j < fortran_vars.rmm_output.height; j++) {
-            fortran_vars.rmm_output(i,j) += rmm_outputs[k](i,j);
-          }
-        }
+      const double * src = rmm_outputs[k].asArray();
+      #pragma ivdep
+      #pragma vector always
+      for(int i = 0; i < elements; i++) {
+        dst[i] += src[i];
       }
     }
   }

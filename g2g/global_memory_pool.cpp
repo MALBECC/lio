@@ -64,7 +64,8 @@ void GlobalMemoryPool::init(double free_global_memory)
 #endif
     _init = true;
 }
-static size_t GlobalMemoryPool::getFreeMemory() {
+
+size_t GlobalMemoryPool::getFreeMemory() {
   if(!_init) init();
   int current_device;
   cudaGetDevice(&current_device);

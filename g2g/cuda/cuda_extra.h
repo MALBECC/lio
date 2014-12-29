@@ -297,13 +297,12 @@ inline void cudaAssertNoError(const char* msg = NULL) {
 #endif
 
 inline int cudaGetGPUCount() {
-  #if GPU_KERNELS
   int devices = 0;
+  #if GPU_KERNELS
   if (cudaGetDeviceCount(&devices) != CUDA_SUCCESS)
     throw std::runtime_error("cudaGetDeviceCount failed");
-  return devices;
   #endif
-  return 0;
+  return devices;
 }
 
 inline void cudaGetMemoryInfo(size_t& free, size_t& total) {

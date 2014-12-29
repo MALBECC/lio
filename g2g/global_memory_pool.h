@@ -12,12 +12,7 @@ class GlobalMemoryPool {
     static int tryAlloc (size_t size);
     static void dealloc(size_t size, int device);
     static void dealloc (size_t size);
-    static size_t getFreeMemory() {
-      if(!_init) init();
-      int current_device;
-      cudaGetDevice(&current_device);
-      return _freeGlobalMemory[current_device];
-    }
+    static size_t getFreeMemory();
 
   private:
     static std::vector<size_t> _totalGlobalMemory;

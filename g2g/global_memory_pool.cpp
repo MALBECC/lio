@@ -40,7 +40,7 @@ void GlobalMemoryPool::init(double free_global_memory)
 {
 #if GPU_KERNELS
     int previous_device; cudaGetDevice(&previous_device);
-    int gpu_count; cudaGetDeviceCount(&gpu_count);
+    int gpu_count = cudaGetGPUCount();
     for (int i = 0; i < gpu_count; i++) {
       size_t free_memory=0, total_memory=0;
       cudaSetDevice(i);
@@ -64,6 +64,13 @@ void GlobalMemoryPool::init(double free_global_memory)
 #endif
     _init = true;
 }
+static size_t GlobalMemoryPool::getFreeMemory() {
+  if(!_init) init();
+  int current_device;
+  cudaGetDevice(&current_device);
+  return _freeGlobalMemory[current_device];
+}
+
 
 std::vector<size_t> GlobalMemoryPool::_freeGlobalMemory;
 std::vector<size_t> GlobalMemoryPool::_totalGlobalMemory;

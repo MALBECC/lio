@@ -328,15 +328,9 @@ void Partition::clear() {
 
 void Partition::rebalance(vector<double> & times, vector<double> & finishes)
 {
-    int cpu_threads = 0;
-    int gpu_threads = 0;
-#if GPU_KERNELS
-    cudaGetDeviceCount(&gpu_threads);
-#ifndef _OPENMP
-    gpu_threads = 1;
-#endif
-#endif
-    cpu_threads = finishes.size()-gpu_threads;
+  int cpu_threads = 0;
+  int gpu_threads = cudaGetGPUCount();
+  cpu_threads = finishes.size()-gpu_threads;
   for(int device = 0; device < 2; device++) {
     for(int rondas = 0; rondas < 5; rondas++) {
       int largest = 0;
@@ -410,11 +404,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   Timer smallgroups, biggroups;
 
 
-  int gpu_threads = 0;
-#if GPU_KERNELS
-  cudaGetDeviceCount(&gpu_threads);
-#endif
-
+  int gpu_threads = cudaGetGPUCount();
   #pragma omp parallel for num_threads(outer_threads+gpu_threads) schedule(static)
   for(int i = 0; i< work.size(); i++) {
     bool gpu_thread = false;
@@ -427,10 +417,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
     double local_energy = 0;
 
     Timers ts; Timer t;
-    if(gpu_thread)
-      t.start_and_sync();
-    else
-      t.start();
+    t.start_and_sync();
 
     if(compute_forces) fort_forces_ms[i].zero();
     if(compute_rmm) rmm_outputs[i].zero();
@@ -438,10 +425,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
     for(int j = 0; j < work[i].size(); j++) {
       int ind = work[i][j];
       Timer element;
-      if(gpu_thread)
-        element.start_and_sync();
-      else
-        element.start();
+      element.start_and_sync();
 
       if(ind >= cubes.size()){
         spheres[ind-cubes.size()]->solve(ts, compute_rmm,lda,compute_forces, compute_energy,
@@ -458,16 +442,10 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
       }
 #endif
 
-      if(gpu_thread)
-        element.stop_and_sync();
-      else
-        element.stop();
+      element.stop_and_sync();
       timeforgroup[ind] = element.getTotal();
     }
-    if(gpu_thread)
-      t.stop_and_sync();
-    else
-      t.stop();
+    t.stop_and_sync();
     printf("Workload %d: (%d) ", i, (int) work[i].size());
     cout << t; cout << ts;
 
@@ -492,9 +470,16 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
 
   if (compute_rmm) {
     for(int k = 0; k < rmm_outputs.size(); k++) {
-      for(int i = 0; i < fortran_vars.rmm_output.width; i++) {
-        for(int j = 0; j < fortran_vars.rmm_output.height; j++) {
-          fortran_vars.rmm_output(i,j) += rmm_outputs[k](i,j);
+      const int rows = fortran_vars.rmm_output.width;
+      const int reduce_threads = 2;
+      const int chunk_size = rows / reduce_threads;
+//#pragma omp parallel num_threads(reduce_threads)
+      {
+//#pragma omp for schedule(static, chunksize)
+        for(int i = 0; i < fortran_vars.rmm_output.width; i++) {
+          for(int j = 0; j < fortran_vars.rmm_output.height; j++) {
+            fortran_vars.rmm_output(i,j) += rmm_outputs[k](i,j);
+          }
         }
       }
     }

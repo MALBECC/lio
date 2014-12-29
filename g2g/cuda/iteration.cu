@@ -43,7 +43,7 @@ using std::endl;
 
 void gpu_set_variables(void) {
   int previous_device; cudaGetDevice(&previous_device);
-  int gpu_devices; cudaGetDeviceCount(&gpu_devices);
+  int gpu_devices = cudaGetGPUCount();
   for(int i = 0; i < gpu_devices; i++) {
     if(cudaSetDevice(i) != cudaSuccess)
       std::cout << "Error: can't set the device " << i << std::endl;
@@ -57,7 +57,7 @@ void gpu_set_variables(void) {
 
 template<class T> void gpu_set_atom_positions(const HostMatrix<T>& m) {
   int previous_device; cudaGetDevice(&previous_device);
-  int gpu_devices; cudaGetDeviceCount(&gpu_devices);
+  int gpu_devices = cudaGetGPUCount();
   for(int i = 0; i < gpu_devices; i++) {
     if(cudaSetDevice(i) != cudaSuccess)
       std::cout << "Error: can't set the device " << i << std::endl;
@@ -770,35 +770,11 @@ void PointGroupGPU<scalar_type>::compute_weights(void)
       this->number_of_points, point_positions_gpu.data, atom_position_rm_gpu.data, weights_gpu.data, nucleii_gpu.data, this->total_nucleii());
   cudaAssertNoError("compute_weights");
 
-  #if REMOVE_ZEROS
-  std::vector<Point> nonzero_points;
-  uint nonzero_number_of_points = 0;
-  #endif
-
-  uint ceros = 0;
-
   HostMatrix<scalar_type> weights_cpu(weights_gpu);
   uint i = 0;
   for (vector<Point>::iterator p =this->points.begin(); p != this->points.end(); ++p, ++i) {
     p->weight *= weights_cpu(i);
-
-    if (p->weight == 0.0) {
-      ceros++;
     }
-    #if REMOVE_ZEROS
-    else {
-      nonzero_points.push_back(*p);
-      nonzero_number_of_points++;
-    }
-    #endif
-  }
-
-  //cout << "ceros: " << ceros << "/" << group.number_of_points << " (" << (ceros / (double)group.number_of_points) * 100 << "%)" << endl;
-
-  #if REMOVE_ZEROS
-  points = nonzero_points;
-  number_of_points = nonzero_number_of_points;
-  #endif
 }
 
 template class PointGroup<double>;

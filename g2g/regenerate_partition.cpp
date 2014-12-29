@@ -504,9 +504,7 @@ void Partition::regenerate(void)
 
     compute_work_partition();
     int gpu_threads = 0;
-#if GPU_KERNELS
-    cudaGetDeviceCount(&gpu_threads);
-#endif
+    gpu_threads = cudaGetGPUCount();
 
     timeforgroup.resize(cubes.size() + spheres.size());
     next.resize(outer_threads+gpu_threads);

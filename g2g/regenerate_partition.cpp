@@ -91,7 +91,7 @@ void Partition::compute_work_partition()
     if(!spheres[i]->is_big_group(inner_threads))
       costs.push_back(make_pair(spheres[i]->cost(), ncubes+i));
 
-  if(costs.size() == 0) return;
+  if(costs.empty()) return;
 
   sort(costs.begin(), costs.end());
   reverse(costs.begin(), costs.end());

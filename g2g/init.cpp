@@ -6,7 +6,6 @@
 #include <signal.h>
 #include <cassert>
 #include "common.h"
-#include "cuda_includes.h"
 #include "init.h"
 #include "timer.h"
 #include "partition.h"

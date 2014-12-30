@@ -66,108 +66,108 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
                                     const unsigned int& nco, bool& OPEN, const unsigned int& nunp, const unsigned int& nopt, const unsigned int& Iexch,
                                     double* e, double* e2, double* e3, double* wang, double* wang2, double* wang3)
 {
-	printf("<======= GPU Code Initialization ========>\n");
-	fortran_vars.atoms = natom;
-        fortran_vars.max_atoms = max_atoms;
-        fortran_vars.gaussians = ngaussians;
+  printf("<======= GPU Code Initialization ========>\n");
+  fortran_vars.atoms = natom;
+  fortran_vars.max_atoms = max_atoms;
+  fortran_vars.gaussians = ngaussians;
 
-	cout << "atoms: " << fortran_vars.atoms << endl;
-        cout << "max atoms: " << fortran_vars.max_atoms << endl;
-        cout << "number of gaussians: " << fortran_vars.gaussians << endl;
+  cout << "atoms: " << fortran_vars.atoms << endl;
+  cout << "max atoms: " << fortran_vars.max_atoms << endl;
+  cout << "number of gaussians: " << fortran_vars.gaussians << endl;
 
-	fortran_vars.do_forces = (nopt == 2);
-	cout << "do_forces: " << boolalpha << fortran_vars.do_forces << endl;
+  fortran_vars.do_forces = (nopt == 2);
+  cout << "do_forces: " << boolalpha << fortran_vars.do_forces << endl;
 
-	fortran_vars.normalize = norm;
-	fortran_vars.normalization_factor = (fortran_vars.normalize ? (1.0/sqrt(3)) : 1.0);
+  fortran_vars.normalize = norm;
+  fortran_vars.normalization_factor = (fortran_vars.normalize ? (1.0/sqrt(3)) : 1.0);
 
-  #ifdef _DEBUG
+#ifdef _DEBUG
   // trap floating point exceptions on debug
   signal(SIGFPE, SIG_DFL);
   feenableexcept(FE_INVALID);
-  #endif
+#endif
 
-	fortran_vars.s_funcs = nshell[0];
-	fortran_vars.p_funcs = nshell[1] / 3;
-	fortran_vars.d_funcs = nshell[2] / 6;
-        cout << "s: " << fortran_vars.s_funcs  << " p: " << fortran_vars.p_funcs << " d: " << fortran_vars.d_funcs << endl;
-	fortran_vars.spd_funcs = fortran_vars.s_funcs + fortran_vars.p_funcs + fortran_vars.d_funcs;
-// M =	# of contractions
-	fortran_vars.m = M;
-	fortran_vars.nco = nco;
+  fortran_vars.s_funcs = nshell[0];
+  fortran_vars.p_funcs = nshell[1] / 3;
+  fortran_vars.d_funcs = nshell[2] / 6;
+  cout << "s: " << fortran_vars.s_funcs  << " p: " << fortran_vars.p_funcs << " d: " << fortran_vars.d_funcs << endl;
+  fortran_vars.spd_funcs = fortran_vars.s_funcs + fortran_vars.p_funcs + fortran_vars.d_funcs;
+  // M =	# of contractions
+  fortran_vars.m = M;
+  fortran_vars.nco = nco;
   cout << "m: " << fortran_vars.m  << " nco: " << fortran_vars.nco << endl;
 
-	fortran_vars.iexch = Iexch;
+  fortran_vars.iexch = Iexch;
   if (Iexch == 4 || Iexch == 5) cout << "***** WARNING ***** : Iexch 4 y 5 no andan bien todavia" << endl;
   fortran_vars.lda = (Iexch <= 3);
   fortran_vars.gga = !fortran_vars.lda;
   assert(0 < Iexch && Iexch <= 9);
 
-	fortran_vars.atom_positions_pointer = FortranMatrix<double>(r, fortran_vars.atoms, 3, max_atoms);
-	fortran_vars.atom_types.resize(fortran_vars.atoms);
-	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.atom_types(i) = Iz[i] - 1; }
+  fortran_vars.atom_positions_pointer = FortranMatrix<double>(r, fortran_vars.atoms, 3, max_atoms);
+  fortran_vars.atom_types.resize(fortran_vars.atoms);
+  for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.atom_types(i) = Iz[i] - 1; }
 
-	fortran_vars.shells1.resize(fortran_vars.atoms);
-	fortran_vars.shells2.resize(fortran_vars.atoms);
-	fortran_vars.rm.resize(fortran_vars.atoms);
+  fortran_vars.shells1.resize(fortran_vars.atoms);
+  fortran_vars.shells2.resize(fortran_vars.atoms);
+  fortran_vars.rm.resize(fortran_vars.atoms);
 
-	/* ignore the 0th element on these */
-	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells1(i) = Nr[Iz[i]];  }
-	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells2(i) = Nr2[Iz[i]]; }
-	for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.rm(i) = Rm[Iz[i]]; }
+  /* ignore the 0th element on these */
+  for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells1(i) = Nr[Iz[i]];  }
+  for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.shells2(i) = Nr2[Iz[i]]; }
+  for (uint i = 0; i < fortran_vars.atoms; i++) { fortran_vars.rm(i) = Rm[Iz[i]]; }
 
-	fortran_vars.nucleii = FortranMatrix<uint>(Nuc, fortran_vars.m, 1, 1);
-	fortran_vars.contractions = FortranMatrix<uint>(ncont, fortran_vars.m, 1, 1);
-        for (uint i = 0; i < fortran_vars.m; i++) {
-        	if ((fortran_vars.contractions(i) - 1) > MAX_CONTRACTIONS)  throw runtime_error("Maximum functions per contraction reached!");
- 	}
-	fortran_vars.a_values = FortranMatrix<double>(a, fortran_vars.m, MAX_CONTRACTIONS, ngaussians);
-	fortran_vars.c_values = FortranMatrix<double>(c, fortran_vars.m, MAX_CONTRACTIONS, ngaussians);
+  fortran_vars.nucleii = FortranMatrix<uint>(Nuc, fortran_vars.m, 1, 1);
+  fortran_vars.contractions = FortranMatrix<uint>(ncont, fortran_vars.m, 1, 1);
+  for (uint i = 0; i < fortran_vars.m; i++) {
+    if ((fortran_vars.contractions(i) - 1) > MAX_CONTRACTIONS)  throw runtime_error("Maximum functions per contraction reached!");
+  }
+  fortran_vars.a_values = FortranMatrix<double>(a, fortran_vars.m, MAX_CONTRACTIONS, ngaussians);
+  fortran_vars.c_values = FortranMatrix<double>(c, fortran_vars.m, MAX_CONTRACTIONS, ngaussians);
 
-// nco = number of Molecular orbitals ocupped
-	fortran_vars.nco = nco;
+  // nco = number of Molecular orbitals ocupped
+  fortran_vars.nco = nco;
 
-	fortran_vars.OPEN = OPEN;
+  fortran_vars.OPEN = OPEN;
 
-	if(fortran_vars.OPEN){
-		fortran_vars.nunp = nunp;
-                cout << "LIOAMBER OPEN SHELL DFT :) " << endl;
-                cout << "Number of MO(UP): "<<fortran_vars.nco<<endl;
-                cout << "Number of MO(DOWN): "<<fortran_vars.nco+fortran_vars.nunp<<endl;
+  if(fortran_vars.OPEN){
+    fortran_vars.nunp = nunp;
+    cout << "LIOAMBER OPEN SHELL DFT :) " << endl;
+    cout << "Number of MO(UP): "<<fortran_vars.nco<<endl;
+    cout << "Number of MO(DOWN): "<<fortran_vars.nco+fortran_vars.nunp<<endl;
 
-                //fortran_vars.ncoa = nco;
-                //fortran_vars.ncob =
+    //fortran_vars.ncoa = nco;
+    //fortran_vars.ncob =
 
-                fortran_vars.rmm_dens_a = FortranMatrix<double>(rhoalpha, fortran_vars.m, fortran_vars.m, fortran_vars.m);
-        	fortran_vars.rmm_dens_b = FortranMatrix<double>(rhobeta,  fortran_vars.m, fortran_vars.m, fortran_vars.m);
+    fortran_vars.rmm_dens_a = FortranMatrix<double>(rhoalpha, fortran_vars.m, fortran_vars.m, fortran_vars.m);
+    fortran_vars.rmm_dens_b = FortranMatrix<double>(rhobeta,  fortran_vars.m, fortran_vars.m, fortran_vars.m);
 
-		//  Matriz de fock
-        	fortran_vars.rmm_output_a = FortranMatrix<double>(RMM + (M5 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
-		fortran_vars.rmm_output_b = FortranMatrix<double>(RMM + (M3 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
-	}
-	else{
-		cout << " nco: " << fortran_vars.nco << endl;
-		// matriz densidad
-        	fortran_vars.rmm_input_ndens1 = FortranMatrix<double>(RMM, fortran_vars.m, fortran_vars.m, fortran_vars.m);
-		// matriz de Fock
-		fortran_vars.rmm_output = FortranMatrix<double>(RMM + (M5 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
-	}
+    //  Matriz de fock
+    fortran_vars.rmm_output_a = FortranMatrix<double>(RMM + (M5 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
+    fortran_vars.rmm_output_b = FortranMatrix<double>(RMM + (M3 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
+  }
+  else{
+    cout << " nco: " << fortran_vars.nco << endl;
+    // matriz densidad
+    fortran_vars.rmm_input_ndens1 = FortranMatrix<double>(RMM, fortran_vars.m, fortran_vars.m, fortran_vars.m);
+    // matriz de Fock
+    fortran_vars.rmm_output = FortranMatrix<double>(RMM + (M5 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
+  }
 
-	fortran_vars.e1 = FortranMatrix<double>(e, SMALL_GRID_SIZE, 3, SMALL_GRID_SIZE);
-	fortran_vars.e2 = FortranMatrix<double>(e2, MEDIUM_GRID_SIZE, 3, MEDIUM_GRID_SIZE);
-	fortran_vars.e3 = FortranMatrix<double>(e3, BIG_GRID_SIZE, 3, BIG_GRID_SIZE);
-	fortran_vars.wang1 = FortranMatrix<double>(wang, SMALL_GRID_SIZE, 1, SMALL_GRID_SIZE);
-	fortran_vars.wang2 = FortranMatrix<double>(wang2, MEDIUM_GRID_SIZE, 1, MEDIUM_GRID_SIZE);
-	fortran_vars.wang3 = FortranMatrix<double>(wang3, BIG_GRID_SIZE, 1, BIG_GRID_SIZE);
+  fortran_vars.e1 = FortranMatrix<double>(e, SMALL_GRID_SIZE, 3, SMALL_GRID_SIZE);
+  fortran_vars.e2 = FortranMatrix<double>(e2, MEDIUM_GRID_SIZE, 3, MEDIUM_GRID_SIZE);
+  fortran_vars.e3 = FortranMatrix<double>(e3, BIG_GRID_SIZE, 3, BIG_GRID_SIZE);
+  fortran_vars.wang1 = FortranMatrix<double>(wang, SMALL_GRID_SIZE, 1, SMALL_GRID_SIZE);
+  fortran_vars.wang2 = FortranMatrix<double>(wang2, MEDIUM_GRID_SIZE, 1, MEDIUM_GRID_SIZE);
+  fortran_vars.wang3 = FortranMatrix<double>(wang3, BIG_GRID_SIZE, 1, BIG_GRID_SIZE);
 
-	fortran_vars.atom_atom_dists = HostMatrix<double>(fortran_vars.atoms, fortran_vars.atoms);
-	fortran_vars.nearest_neighbor_dists = HostMatrix<double>(fortran_vars.atoms);
+  fortran_vars.atom_atom_dists = HostMatrix<double>(fortran_vars.atoms, fortran_vars.atoms);
+  fortran_vars.nearest_neighbor_dists = HostMatrix<double>(fortran_vars.atoms);
 
 #if GPU_KERNELS
   G2G::gpu_set_variables();
 #endif
 
-	read_options();
+  read_options();
 }
 //============================================================================================================
 extern "C" void g2g_deinit_(void) {
@@ -221,7 +221,6 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
 		double3 pos = make_double3(fortran_vars.atom_positions_pointer(i, 0), fortran_vars.atom_positions_pointer(i, 1), fortran_vars.atom_positions_pointer(i, 2));
 		fortran_vars.atom_positions(i) = pos;
 		atom_positions(i) = make_float3(pos.x, pos.y, pos.z);
-//    cout << atom_positions(i) << endl;
 	}
 
 #if GPU_KERNELS
@@ -237,7 +236,7 @@ extern "C" void g2g_reload_atom_positions_(const unsigned int& grid_type) {
 extern "C" void g2g_new_grid_(const unsigned int& grid_type) {
 //	cout << "<======= GPU New Grid (" << grid_type << ")========>" << endl;
 	if (grid_type == (uint)fortran_vars.grid_type)
-                                                             ;
+    ;
 //		cout << "not loading, same grid as loaded" << endl;
 	else
 		compute_new_grid(grid_type);
@@ -263,12 +262,12 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 // COMPUTE_FORCE_ONLY      3
 
  /*	cout << "<================ iteracion [";
-	switch(computation_type) {
-    		case COMPUTE_RMM: cout << "rmm"; break;
-		case COMPUTE_ENERGY_ONLY: cout << "energia"; break;
-		case COMPUTE_ENERGY_FORCE: cout << "energia+fuerzas"; break;
-		case COMPUTE_FORCE_ONLY: cout << "fuerzas"; break;
-	}
+  switch(computation_type) {
+    case COMPUTE_RMM: cout << "rmm"; break;
+    case COMPUTE_ENERGY_ONLY: cout << "energia"; break;
+    case COMPUTE_ENERGY_FORCE: cout << "energia+fuerzas"; break;
+    case COMPUTE_FORCE_ONLY: cout << "fuerzas"; break;
+  }
 	cout << "] ==========>" << endl;
 */
   bool compute_energy = (computation_type == COMPUTE_ENERGY_ONLY || computation_type == COMPUTE_ENERGY_FORCE);
@@ -285,9 +284,9 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
     else {
       if (compute_forces) g2g_iteration<true, false, true>(compute_energy, fort_energy_ptr, fort_forces_ptr);
       else {
-		g2g_iteration<true, false, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
-    		cout << "XC energy: " << *fort_energy_ptr << endl;
-	}
+        g2g_iteration<true, false, false>(compute_energy, fort_energy_ptr, fort_forces_ptr);
+        cout << "XC energy: " << *fort_energy_ptr << endl;
+      }
     }
   }
   else {
@@ -308,20 +307,18 @@ namespace G2G {
 	uint max_function_exponent = 10;
 	double little_cube_size = 8.0;
 	uint min_points_per_cube = 1;
-	double becke_cutoff = 1e-7;
-  	bool assign_all_functions = false;
-  	double sphere_radius = 0.6;
-  	bool remove_zero_weights = true;
-  	bool energy_all_iterations = false;
-  	double big_function_cutoff = 1;
-  	double free_global_memory = 0.0;
+  bool assign_all_functions = false;
+  double sphere_radius = 0.6;
+  bool remove_zero_weights = true;
+  bool energy_all_iterations = false;
+  double free_global_memory = 0.0;
 }
 //=================================================================================================================
 void read_options(void) {
 	cout << "<====== read_options ========>" << endl;
 	char * optsfile = getenv("LIO_OPTIONS_FILE");
-    if(!optsfile) optsfile = "gpu_options";
-    cout << "--> using " << optsfile << " for options" << endl;
+  if(!optsfile) optsfile = "gpu_options";
+  cout << "--> using " << optsfile << " for options" << endl;
 	ifstream f(optsfile);
 	if (!f) { cout << "No \"gpu_options\" file: using defaults" << endl; return; }
 
@@ -335,20 +332,16 @@ void read_options(void) {
 			{ f >> little_cube_size; cout << little_cube_size; }
 		else if (option == "min_points_per_cube")
 			{ f >> min_points_per_cube; cout << min_points_per_cube; }
-		else if (option == "becke_cutoff")
-			{ f >> becke_cutoff; cout << becke_cutoff; }
-    		else if (option == "assign_all_functions")
-      			{ f >> assign_all_functions; cout << assign_all_functions; }
-    		else if (option == "sphere_radius")
-      			{ f >> sphere_radius; cout << sphere_radius; }
-    		else if (option == "remove_zero_weights")
-      			{ f >> remove_zero_weights; cout << remove_zero_weights; }
-    		else if (option == "energy_all_iterations")
-      			{ f >> energy_all_iterations; cout << energy_all_iterations; }
-    		else if (option == "big_function_cutoff")
-      			{ f >> big_function_cutoff; cout << big_function_cutoff; }
-               else if (option == "free_global_memory")
-                   	{ f >> free_global_memory; cout << free_global_memory; }
+    else if (option == "assign_all_functions")
+      { f >> assign_all_functions; cout << assign_all_functions; }
+    else if (option == "sphere_radius")
+      { f >> sphere_radius; cout << sphere_radius; }
+    else if (option == "remove_zero_weights")
+      { f >> remove_zero_weights; cout << remove_zero_weights; }
+    else if (option == "energy_all_iterations")
+      { f >> energy_all_iterations; cout << energy_all_iterations; }
+    else if (option == "free_global_memory")
+      { f >> free_global_memory; cout << free_global_memory; }
 
 		else throw runtime_error(string("Invalid option: ") + option);
 

@@ -299,7 +299,7 @@ inline void cudaAssertNoError(const char* msg = NULL) {
 inline int cudaGetGPUCount() {
   int devices = 0;
   #if GPU_KERNELS
-  if (cudaGetDeviceCount(&devices) != CUDA_SUCCESS)
+  if (cudaGetDeviceCount(&devices) != cudaSuccess)
     throw std::runtime_error("cudaGetDeviceCount failed");
   #endif
   return devices;

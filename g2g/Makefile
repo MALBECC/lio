@@ -6,7 +6,7 @@ SRCS:=$(wildcard *.cpp)
 OBJ:=$(SRCS:%.cpp=%.o)
 
 ifeq ($(openmp),1)
-  CXXFLAGS += -openmp
+  CXXFLAGS += -fopenmp
 endif
 
 ifeq ($(cpu),1)

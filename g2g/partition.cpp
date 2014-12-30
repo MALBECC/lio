@@ -302,13 +302,13 @@ void Partition::compute_functions(bool forces, bool gga) {
   t1.start_and_sync();
 
   #pragma omp parallel for schedule(guided,8)
-  for(int i = 0; i < cubes.size(); i++){
+  for(uint i = 0; i < cubes.size(); i++){
     if(!cubes[i]->is_big_group(0xDEADBEEF))
       cubes[i]->compute_functions(forces, gga);
   }
 
   #pragma omp parallel for schedule(guided,8)
-  for(int i = 0; i < spheres.size(); i++){
+  for(uint i = 0; i < spheres.size(); i++){
     if(!spheres[i]->is_big_group(0xDEADBEEF))
       spheres[i]->compute_functions(forces, gga);
   }
@@ -318,9 +318,9 @@ void Partition::compute_functions(bool forces, bool gga) {
 }
 
 void Partition::clear() {
-  for(int i = 0; i < cubes.size(); i++)
+  for(uint i = 0; i < cubes.size(); i++)
     delete cubes[i];
-  for(int i = 0; i < spheres.size(); i++)
+  for(uint i = 0; i < spheres.size(); i++)
     delete spheres[i];
   cubes.clear(); spheres.clear(); work.clear();
 }
@@ -351,7 +351,7 @@ void Partition::rebalance(vector<double> & times, vector<double> & finishes)
         double lt = finishes[largest]; double moved = 0;
         while(diff / lt >= 0.02) {
           int mini = -1; double currentmini = diff;
-          for(int i = 0; i < work[largest].size(); i++) {
+          for(uint i = 0; i < work[largest].size(); i++) {
             int ind = work[largest][i];
             if(times[ind] > diff / 2) continue;
             double cost = times[ind];
@@ -372,7 +372,7 @@ void Partition::rebalance(vector<double> & times, vector<double> & finishes)
           printf("Swapping %d from %d to %d\n", work[largest][topass], largest, smallest);
 
           if(device == 1) {
-            if(workindex < cubes.size())
+            if(workindex < (int) cubes.size())
               cubes[workindex]->deallocate();
             else
               spheres[workindex - cubes.size()]->deallocate();
@@ -406,7 +406,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
 
   int gpu_threads = cudaGetGPUCount();
   #pragma omp parallel for num_threads(outer_threads+gpu_threads) schedule(static)
-  for(int i = 0; i< work.size(); i++) {
+  for(uint i = 0; i< work.size(); i++) {
     bool gpu_thread = false;
 #if GPU_KERNELS
     if(i>=outer_threads) {
@@ -422,7 +422,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
     if(compute_forces) fort_forces_ms[i].zero();
     if(compute_rmm) rmm_outputs[i].zero();
 
-    for(int j = 0; j < work[i].size(); j++) {
+    for(uint j = 0; j < work[i].size(); j++) {
       int ind = work[i][j];
       Timer element;
       element.start_and_sync();
@@ -459,7 +459,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   if (compute_forces) {
     FortranMatrix<double> fort_forces_out(fort_forces_ptr,
       fortran_vars.atoms, 3, fortran_vars.max_atoms);
-    for(int k = 0; k < fort_forces_ms.size(); k++) {
+    for(uint k = 0; k < fort_forces_ms.size(); k++) {
       for(int i = 0; i < fortran_vars.atoms; i++) {
         for(int j = 0; j < 3; j++) {
           fort_forces_out(i,j) += fort_forces_ms[k](i,j);
@@ -471,7 +471,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   if (compute_rmm) {
     double * dst = fortran_vars.rmm_output.data;
     const int elements = fortran_vars.rmm_output.width * fortran_vars.rmm_output.height;
-    for(int k = 0; k < rmm_outputs.size(); k++) {
+    for(uint k = 0; k < rmm_outputs.size(); k++) {
       const double * src = rmm_outputs[k].asArray();
       #pragma ivdep
       #pragma vector always

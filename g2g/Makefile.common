@@ -1,19 +1,17 @@
 # -*- mode: make -*-
 
-CXXFLAGS+= -fPIC -Wall -Wextra -g -std=c++0x
+CXXFLAGS+= -fPIC -Wall -g -std=c++0x -I. -I$(CUDAHOME)/include
 
 ifeq ($(gcc),1)
   CXX      := g++
-  CXXFLAGS := $(CXXFLAGS) -Wno-long-long -ansi -Wno-unused -I$(CUDAHOME)/include
+  CXXFLAGS := $(CXXFLAGS) -Wno-long-long -ansi -Wno-unused-variable -Wno-unused-parameter
 else
   CXX      := icc
-  CXXFLAGS := $(CXXFLAGS) -qopt-report=5 -I. -I$(CUDAHOME)/include
+  CXXFLAGS := $(CXXFLAGS) -qopt-report=5
 endif
 
 # Debug/release configuration
-ifeq ($(dbg),1)
-	COMMONFLAGS := -g -D_DEBUG
-else
+ifneq ($(dbg),1)
 	COMMONFLAGS := -DNDEBUG
 	ifeq ($(gcc),1)
     CXXFLAGS  += -O4 -fno-strict-aliasing

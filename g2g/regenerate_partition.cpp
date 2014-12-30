@@ -33,9 +33,9 @@ void sortBySize(std::vector<T> & input) {
 
 void load_pools(const vector<int> & elements, const vector< vector<int> > & work, vector< int > & pool_sizes) {
   pool_sizes.clear();
-  for(int i = 0; i < work.size(); i++) {
+  for(uint i = 0; i < work.size(); i++) {
     int largest_pool = 0;
-    for(int j = 0; j < work[i].size(); j++) {
+    for(uint j = 0; j < work[i].size(); j++) {
       largest_pool = max(largest_pool, elements[work[i][j]]);
     }
     pool_sizes.push_back(largest_pool);
@@ -46,7 +46,7 @@ template <typename T>
 long long total_costs(const vector<T*> & elements)
 {
     long long res = 0;
-    for(int i = 0; i < elements.size(); i++)
+    for(uint i = 0; i < elements.size(); i++)
         res += elements[i]->cost();
     return res;
 }
@@ -55,11 +55,11 @@ int split_bins(const vector< pair<long long, int> > & costs, vector< vector<int>
 {
   // Bin Packing heuristic
   workloads.clear();
-  for(int i = 0; i < costs.size(); i++) {
+  for(uint i = 0; i < costs.size(); i++) {
     int next_bin = -1;
-    for(int j = 0; j < workloads.size(); j++) {
+    for(uint j = 0; j < workloads.size(); j++) {
       long long slack = capacity;
-      for(int k = 0; k < workloads[j].size(); k++){
+      for(uint k = 0; k < workloads[j].size(); k++){
         slack -= costs[workloads[j][k]].first;
       }
       if (slack >= costs[i].first && next_bin == -1) {
@@ -82,12 +82,12 @@ int split_bins(const vector< pair<long long, int> > & costs, vector< vector<int>
 void Partition::compute_work_partition()
 {
   vector< pair<long long, int> > costs;
-  for(int i = 0; i < cubes.size(); i++)
+  for(uint i = 0; i < cubes.size(); i++)
     if(!cubes[i]->is_big_group(inner_threads))
       costs.push_back(make_pair(cubes[i]->cost(), i));
 
-  const int ncubes = cubes.size();
-  for(int i = 0; i < spheres.size(); i++)
+  const uint ncubes = cubes.size();
+  for(uint i = 0; i < spheres.size(); i++)
     if(!spheres[i]->is_big_group(inner_threads))
       costs.push_back(make_pair(spheres[i]->cost(), ncubes+i));
 
@@ -112,13 +112,13 @@ void Partition::compute_work_partition()
   }
 
   split_bins(costs, work, max_cost);
-  for(int i = 0; i < work.size(); i++)
+  for(uint i = 0; i < work.size(); i++)
       sort(work[i].begin(), work[i].end());
 
   double maxp = 0, minp = total_costs(cubes)+total_costs(spheres)+1;
-  for(int i = 0; i < work.size(); i++) {
+  for(uint i = 0; i < work.size(); i++) {
     long long total = 0;
-    for(int j = 0; j < work[i].size(); j++) {
+    for(uint j = 0; j < work[i].size(); j++) {
       long long c = costs[work[i][j]].first;
       work[i][j] = costs[work[i][j]].second;
       total += c;
@@ -147,7 +147,7 @@ void diagnostic(int inner, int outer) {
 
 template <class T>
 bool is_big_group(const T& points) {
-    return (points.size() > getintenv("LIO_SPLIT_POINTS", 600));
+    return (points.size() > (uint)getintenv("LIO_SPLIT_POINTS", 600));
 }
 
 template <class T>
@@ -261,8 +261,6 @@ void Partition::regenerate(void)
         const double3& atom_i_position(fortran_vars.atom_positions(i));
         double nearest_neighbor_dist = numeric_limits<double>::max();
 
-        double sphere_i_radius = (sphere_radius > 0 ? sphere_radius_array[i] : 0);
-
         for (uint j = 0; j < fortran_vars.atoms; j++)
         {
             const double3& atom_j_position(fortran_vars.atom_positions(j));
@@ -358,7 +356,7 @@ void Partition::regenerate(void)
                 cube_funcs = new PointGroupCPU<base_scalar_type>();
                 #endif
 
-                for(int point = 0; point < prism[i][j][k].size(); point++)
+                for(uint point = 0; point < prism[i][j][k].size(); point++)
                   cube_funcs->add_point(prism[i][j][k][point]);
 
                 cube_funcs->assign_functions_as_cube(cube_coord_abs, min_exps_func, min_coeff_func);
@@ -422,7 +420,7 @@ void Partition::regenerate(void)
             #else
             sphere_funcs = new PointGroupCPU<base_scalar_type>();
             #endif
-            for(int point = 0; point < sphere_i.size(); point++)
+            for(uint point = 0; point < sphere_i.size(); point++)
               sphere_funcs->add_point(sphere_i[point]);
 
             sphere_funcs->assign_functions_as_sphere(i, sphere_radius_array[i], min_exps_func, min_coeff_func);
@@ -495,10 +493,10 @@ void Partition::regenerate(void)
     }
     #endif
 
-    for(int i = 0; i < cubes.size(); i++) {
+    for(uint i = 0; i < cubes.size(); i++) {
       cubes[i]->compute_indexes();
     }
-    for(int i = 0; i < spheres.size(); i++) {
+    for(uint i = 0; i < spheres.size(); i++) {
       spheres[i]->compute_indexes();
     }
 
@@ -521,13 +519,13 @@ void Partition::regenerate(void)
     for(int i = 0; i<gpu_threads; i++)
       work.push_back(vector<int>());
 
-    for(int i = 0; i < cubes.size(); i++)
+    for(uint i = 0; i < cubes.size(); i++)
       if(cubes[i]->is_big_group(inner_threads)) {
         work[outer_threads+current_gpu].push_back(i);
         current_gpu = (current_gpu + 1) % gpu_threads;
       }
 
-    for(int i = 0; i < spheres.size(); i++)
+    for(uint i = 0; i < spheres.size(); i++)
       if(spheres[i]->is_big_group(inner_threads)) {
         work[outer_threads+current_gpu].push_back(i+cubes.size());
         current_gpu = (current_gpu + 1) % gpu_threads;

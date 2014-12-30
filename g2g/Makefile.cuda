@@ -122,10 +122,6 @@ ifeq ($(verbose),1)
   NVCCFLAGS += --verbose
 endif
 
-ifneq ($(maxregs),undefined)
-	NVCCFLAGS += -maxrregcount=$(maxregs)
-endif
-
 GENCODE_SM20    := -gencode arch=compute_20,code=sm_20
 GENCODE_SM35    := -gencode arch=compute_35,code=sm_35
 # Eventually for Maxwell, requires at leaste CUDA 6.5

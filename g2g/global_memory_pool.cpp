@@ -67,9 +67,13 @@ void GlobalMemoryPool::init(double free_global_memory)
 
 size_t GlobalMemoryPool::getFreeMemory() {
   if(!_init) init();
+  size_t free_memory = 0;
+#if GPU_KERNEL
   int current_device;
   cudaGetDevice(&current_device);
-  return _freeGlobalMemory[current_device];
+  free_memory = _freeGlobalMemory[current_device];
+#endif
+  return free_memory;
 }
 
 

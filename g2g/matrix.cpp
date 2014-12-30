@@ -40,7 +40,7 @@ template<class T> void HostMatrix<T>::alloc_data(void) {
 	if (pinned) {
     #if GPU_KERNELS
 		cudaError_t error_status = cudaMallocHost((void**)&this->data, this->bytes());
-		assert(error_status != cudaErrorMemoryAllocation);
+		assert(error_status == cudaSuccess);
     #else
     assert(false);
     #endif

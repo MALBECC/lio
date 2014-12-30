@@ -1,9 +1,8 @@
 # DO NOT DELETE
 
-classify_functions.o: common.h init.h matrix.h cuda_includes.h
-classify_functions.o: cuda/cuda_extra.h scalar_vector_types.h
-classify_functions.o: datatypes/cpu_primitives.h partition.h timer.h
-classify_functions.o: global_memory_pool.h
+classify_functions.o: init.h matrix.h cuda_includes.h cuda/cuda_extra.h
+classify_functions.o: scalar_vector_types.h datatypes/cpu_primitives.h
+classify_functions.o: partition.h timer.h global_memory_pool.h
 global_memory_pool.o: global_memory_pool.h cuda/cuda_extra.h cuda_includes.h
 init.o: common.h cuda_includes.h cuda/cuda_extra.h init.h matrix.h
 init.o: scalar_vector_types.h datatypes/cpu_primitives.h timer.h partition.h

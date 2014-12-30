@@ -1,13 +1,13 @@
 # -*- mode: make -*-
 
-CUDAHOME=/opt/cuda
+CXXFLAGS+= -fPIC -Wall -Wextra -g -std=c++0x
 
 ifeq ($(gcc),1)
   CXX      := g++
-  CXXFLAGS := $(CXXFLAGS) -fPIC -Wall -Wno-long-long -ansi -Wno-unused -I$(CUDAHOME)/include
+  CXXFLAGS := $(CXXFLAGS) -Wno-long-long -ansi -Wno-unused -I$(CUDAHOME)/include
 else
   CXX      := icc
-  CXXFLAGS := $(CXXFLAGS) -fPIC -Wall -Wextra -qopt-report=5 -g -I. -I$(CUDAHOME)/include
+  CXXFLAGS := $(CXXFLAGS) -qopt-report=5 -I. -I$(CUDAHOME)/include
 endif
 
 # Debug/release configuration

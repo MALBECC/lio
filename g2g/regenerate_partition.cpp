@@ -150,9 +150,9 @@ bool is_big_group(const T& points) {
     return (points.size() > (uint)getintenv("LIO_SPLIT_POINTS", 600));
 }
 
+struct Sorter {
 template <class T>
-struct sorter {
-  bool operator() (const T* l, const T* r) { return (l->cost() < r->cost());}
+  bool operator() (const T l, const T r) { return (l->cost() < r->cost());}
 };
 
 
@@ -470,8 +470,8 @@ void Partition::regenerate(void)
     }
 
     // TODO fix these sorts now that spheres and cubes are pointers
-    //sort(spheres.begin(), spheres.end(), sorter());
-    //sort(cubes.begin(), cubes.end(), sorter());
+    sort(spheres.begin(), spheres.end(), Sorter());
+    sort(cubes.begin(), cubes.end(), Sorter());
 
     //Initialize the global memory pool for CUDA, with the default safety factor
     //If it is CPU, then this doesn't matter

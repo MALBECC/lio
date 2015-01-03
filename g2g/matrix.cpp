@@ -416,63 +416,31 @@ template<class T> FortranMatrix<T>::FortranMatrix(T* _data, unsigned int _width,
 /**
  * Instantiations
  */
-template class Matrix< vec_type<float, 2> >;
-template class Matrix< vec_type<float, 3> >;
-template class Matrix< vec_type<float, 4> >;
-
-template class Matrix< vec_type<double, 2> >;
-template class Matrix< vec_type<double, 3> >;
-template class Matrix< vec_type<double, 4> >;
-
-template class Matrix<double3>;
 template class Matrix<double>;
+template class Matrix<double3>;
 template class Matrix<float>;
-// template class Matrix<float1>;
-// template class Matrix<float2>;
 template class Matrix<float3>;
-// template class Matrix<float4>;
-// template class Matrix<uint1>;
-// template class Matrix<uint2>;
 template class Matrix<uint>;
 
 template class HostMatrix< vec_type<float, 2> >;
-template class HostMatrix< vec_type<float, 3> >;
 template class HostMatrix< vec_type<float, 4> >;
-
 template class HostMatrix< vec_type<double, 2> >;
-template class HostMatrix< vec_type<double, 3> >;
 template class HostMatrix< vec_type<double, 4> >;
-
 template class CudaMatrix< vec_type<float, 2> >;
-template class CudaMatrix< vec_type<float, 3> >;
 template class CudaMatrix< vec_type<float, 4> >;
-
 template class CudaMatrix< vec_type<double, 2> >;
-template class CudaMatrix< vec_type<double, 3> >;
 template class CudaMatrix< vec_type<double, 4> >;
 
 template class HostMatrix<double>;
 template class HostMatrix<float>;
 
 template class HostMatrix<double3>;
-template class HostMatrix<float1>;
-template class HostMatrix<float2>;
 template class HostMatrix<float3>;
-template class HostMatrix<float4>;
-template class HostMatrix<uint1>;
-template class HostMatrix<uint2>;
 template class HostMatrix<uint>;
 
 template class CudaMatrix<float>;
-template class CudaMatrix<float1>;
-template class CudaMatrix<float2>;
-template class CudaMatrix<float3>;
-template class CudaMatrix<float4>;
 template class CudaMatrix<uint>;
-template class CudaMatrix<uint2>;
 template class CudaMatrix<double>;
-template class CudaMatrix<double3>;
-template class CudaMatrix<double4>;
 
 template class FortranMatrix<double>;
 template class FortranMatrix<unsigned int>;

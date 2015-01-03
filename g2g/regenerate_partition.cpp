@@ -501,8 +501,7 @@ void Partition::regenerate(void)
     }
 
     compute_work_partition();
-    int gpu_threads = 0;
-    gpu_threads = cudaGetGPUCount();
+    int gpu_threads = cudaGetGPUCount();
 
     timeforgroup.resize(cubes.size() + spheres.size());
     next.resize(outer_threads+gpu_threads);
@@ -516,8 +515,7 @@ void Partition::regenerate(void)
     }
 
     int current_gpu = 0;
-    for(int i = 0; i<gpu_threads; i++)
-      work.push_back(vector<int>());
+    work.resize(work.size()+gpu_threads);
 
     for(uint i = 0; i < cubes.size(); i++)
       if(cubes[i]->is_big_group(inner_threads)) {

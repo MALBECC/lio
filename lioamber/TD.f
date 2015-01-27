@@ -26,6 +26,7 @@ c  are stored in files x.dip, y.dip, z.dip.
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 c       USE latom
        USE garcha_mod
+       use mathsubs
        IMPLICIT REAL*8 (a-h,o-z)
 
        INTEGER :: istep

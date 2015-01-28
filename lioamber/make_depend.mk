@@ -23,6 +23,25 @@
 # with the right path; note that this variable is set in the
 # main makefile).
 #
+#
+######################################################################
+# IMPORTANT: the target specific flags section has been
+# implemented in a way in which inheritance of these variables
+# is allowed, which has two consequences: (1) groups with no
+# specification in them may inherit one because of being the
+# dependency of another target that has it; (2) in order to
+# override inherited variables, "myflag" has to be overwritten
+# instead of just appending the flags, so all assignment groups
+# have to be excluding (targets should not appear in two groups).
+#
+# This current inconvinience is due to the incompatibility of the
+# keyword 'private' with the version of GNUmake included in the
+# most common repositories. This should be open to review in the
+# near future (either because GNUmake version 3.82 has become
+# commonplace or a more flexible non-exclusive grouping method
+# has become more convenient for target-specific assignment).
+#
+#
 ######################################################################
 # Object List
 objects += liomain.o SCF.o SCFop.o TD.o
@@ -59,7 +78,7 @@ objlist := SCF.o SCFop.o
 $(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/mathsubs.o
 $(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/mathsubs.mod
 ######################################################################
-# Custom flags
+# Target specific flags
 myflags :=
 ifeq ($(non_optimize),1)
   optim1=-O0
@@ -71,11 +90,13 @@ endif
 
 objlist := matmuldiag.o int3lu.o
 objlist += mathsubs.o
-$(objlist:%.o=$(obj_path)/%.o) : private myflags+=$(optim3) -parallel
+$(objlist:%.o=$(obj_path)/%.o) : myflags:=$(optim3) -parallel
+#$(objlist:%.o=$(obj_path)/%.o) : private myflags+=$(optim3) -parallel
 
 objlist := dip.o SCFop.o
 objlist += intfld.o int1G.o int3G.o intsolG.o intsolGs.o intsol.o
-$(objlist:%.o=$(obj_path)/%.o) : private myflags+=$(optim1)
+$(objlist:%.o=$(obj_path)/%.o) : myflags:=$(optim1)
+#$(objlist:%.o=$(obj_path)/%.o) : private myflags+=$(optim1)
 
 objlist := SCF.o TD.o ehrenfest.o magnus.o predictor.o
 objlist += FixMessRho.o get_unit.o mulliken.o PackedStorage.f
@@ -84,5 +105,6 @@ objlist += dft_get_mm_forces.o dft_get_qm_forces.o
 objlist += alg.o drive.o func.o grid.o dipmem.o jarz.o
 objlist += int1.o int2.o int2G.o int3mem.o int3mems.o intSG.o
 objlist += garcha_mod.o
-$(objlist:%.o=$(obj_path)/%.o) : private myflags+=$(optim3) -mp1 -ip
+$(objlist:%.o=$(obj_path)/%.o) : myflags:=$(optim3) -mp1 -ip
+#$(objlist:%.o=$(obj_path)/%.o) : private myflags+=$(optim3) -mp1 -ip
 ######################################################################

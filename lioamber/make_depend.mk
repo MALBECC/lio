@@ -35,6 +35,7 @@ objects += liokeys.o
 objects += sysdata.o
 objects += mathsubs.o
 objects += maskrmm.o
+objects += SCF_in.o
 
 #
 ######################################################################

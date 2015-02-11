@@ -19,7 +19,7 @@ include mathsubs/mathsubs.mk
 # OBJECTS LIST : This is the list of ALL the objects to be
 # linked for making LIO, including both free subroutines and
 # modules (their corresponding .o files).
-objects += liomain.o SCF.o SCFop.o TD.o
+objects += liomain.o SCF.o SCFop.o SCF_in.o TD.o
 objects += dip.o dipmem.o jarz.o magnus.o predictor.o mulliken.o
 objects += dft_get_mm_forces.o dft_get_qm_forces.o
 objects += matmuldiag.o

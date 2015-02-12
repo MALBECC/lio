@@ -12,7 +12,7 @@
                 {
                   scalar_type A_force_term, B_force_term, C_force_term;
                   uint dens_ind = 0;
-                  #pragma unroll 3
+                  //#pragma unroll 3
                   for (uint d_l1 = 0; d_l1 < 3; d_l1++) {
 
                     scalar_type p1_s0 = PmA[d_l1] * F_mT[0] + WmP[d_l1] * F_mT[1];

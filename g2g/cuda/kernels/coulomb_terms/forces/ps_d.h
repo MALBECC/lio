@@ -20,7 +20,7 @@
                     scalar_type ps_s3 = PmA[p_l] * F_mT[3] + WmP[p_l] * F_mT[4];
 
                     uint fit_dens_ind = 0;
-                    #pragma unroll 3
+                    //#pragma unroll 3
                     for (uint d_l1 = 0; d_l1 < 3; d_l1++) {
 
                       scalar_type ss_p1_1 = WmQ[d_l1] * F_mT[2];

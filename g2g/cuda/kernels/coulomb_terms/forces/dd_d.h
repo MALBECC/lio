@@ -12,7 +12,7 @@
                 {
                   scalar_type A_force_term, B_force_term, C_force_term;
                   uint mo_dens_ind = 0;
-                  #pragma unroll 3
+                  //#pragma unroll 3
                   for (uint d1_l1 = 0; d1_l1 < 3; d1_l1++) {
 
                     scalar_type p1s_s0 = PmA[d1_l1] * F_mT[0] + WmP[d1_l1] * F_mT[1];
@@ -52,7 +52,7 @@
                         norm1 = del_12 * gpu_normalization_factor + !del_12 * 1.0f;
                       }
 
-                      #pragma unroll 3
+                      //#pragma unroll 3
                       for (uint d2_l1 = 0; d2_l1 < 3; d2_l1++) {
 
                         scalar_type sp1_s0  = PmB[d2_l1] * F_mT[0] + WmP[d2_l1] * F_mT[1];
@@ -203,7 +203,7 @@
                           }
 
                           uint fit_dens_ind = 0;
-                          #pragma unroll 3
+                          //#pragma unroll 3
                           for (uint d3_l1 = 0; d3_l1 < 3; d3_l1++) {
 
                             scalar_type ds_p1_1   = WmQ[d3_l1] * ds_s2;

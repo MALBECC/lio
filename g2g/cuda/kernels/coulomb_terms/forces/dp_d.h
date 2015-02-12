@@ -12,7 +12,7 @@
                 {
                   scalar_type A_force_term, B_force_term, C_force_term;
                   uint mo_dens_ind = 0;
-                  #pragma unroll 3
+                  //#pragma unroll 3
                   for (uint d1_l1 = 0; d1_l1 < 3; d1_l1++) {
 
                     scalar_type p1s_s0 = PmA[d1_l1] * F_mT[0] + WmP[d1_l1] * F_mT[1];
@@ -96,7 +96,7 @@
                         mo_dens_ind++;
 
                         uint fit_dens_ind = 0;
-                        #pragma unroll 3
+                        //#pragma unroll 3
                         for (uint d3_l1 = 0; d3_l1 < 3; d3_l1++) {
 
                           scalar_type p1s_p1_1 = WmQ[d3_l1] * p1s_s2;

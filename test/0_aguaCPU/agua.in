@@ -4,6 +4,6 @@ natom=3
 charge=0
 timedep=0
 ntdstep=1000
-iexch=3
+iexch=9
 writeforces=t
 &end

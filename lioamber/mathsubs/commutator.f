@@ -1,5 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       function commutate_dd(MA,MB)
+       function commutator_dd(MA,MB)
      > result(MC)
        implicit none
        real*8,intent(in)      :: MA(:,:)
@@ -17,7 +17,7 @@
 !
 !
 !--------------------------------------------------------------------!
-       function commutate_zd(MA,MB)
+       function commutator_zd(MA,MB)
      > result(MC)
        implicit none
        complex*16,intent(in)  :: MA(:,:)
@@ -35,7 +35,7 @@
 !
 !
 !--------------------------------------------------------------------!
-       function commutate_dz(MA,MB)
+       function commutator_dz(MA,MB)
      > result(MC)
        implicit none
        real*8,intent(in)      :: MA(:,:)
@@ -53,7 +53,7 @@
 !
 !
 !--------------------------------------------------------------------!
-       function commutate_zz(MA,MB)
+       function commutator_zz(MA,MB)
      > result(MC)
        implicit none
        complex*16,intent(in)  :: MA(:,:)
@@ -71,7 +71,7 @@
 !
 !
 !--------------------------------------------------------------------!
-       function commutate_cd(MA,MB)
+       function commutator_cd(MA,MB)
      > result(MC)
        implicit none
        complex*8,intent(in)  :: MA(:,:)
@@ -89,7 +89,7 @@
 !
 !
 !--------------------------------------------------------------------!
-       function commutate_dc(MA,MB)
+       function commutator_dc(MA,MB)
      > result(MC)
        implicit none
        real*8,intent(in)      :: MA(:,:)
@@ -107,7 +107,7 @@
 !
 !
 !--------------------------------------------------------------------!
-       function commutate_cc(MA,MB)
+       function commutator_cc(MA,MB)
      > result(MC)
        implicit none
        complex*8,intent(in)  :: MA(:,:)

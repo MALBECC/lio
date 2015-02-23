@@ -41,7 +41,9 @@ c          write(87,*) i, j , r(i,j)
 !--------------------------------------------------------------------!
 ! I am not sure this should be here, but it is the only
 ! place to put it right now (FFR)
-      call lio_init()
+       call liomain()
+       if (.not.allocated(Smat))    allocate(Smat(M,M))
+       if (.not.allocated(RealRho)) allocate(RealRho(M,M))
 !--------------------------------------------------------------------!
 
       if(OPEN) then 
@@ -49,7 +51,8 @@ c          write(87,*) i, j , r(i,j)
       else
         call SCF(E,dipxyz)
       endif
-
+!
+!--------------------------------------------------------------------!
  345  format(2x,I2,2x,3(f10.6,2x))
       return;end subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -2,6 +2,12 @@
 
 CXXFLAGS+= -fPIC -Wall -g -std=c++0x -I. -I$(CUDAHOME)/include
 
+ifeq ($(non_optimize), 1)
+  OPTIMIZE:=-O2
+else
+  OPTIMIZE:=-O3
+endif
+
 ifeq ($(gcc),1)
   CXX      := g++
   CXXFLAGS := $(CXXFLAGS) -Wno-long-long -ansi -Wno-unused-variable -Wno-unused-parameter
@@ -14,9 +20,9 @@ endif
 ifneq ($(dbg),1)
 	COMMONFLAGS := -DNDEBUG
 	ifeq ($(gcc),1)
-    CXXFLAGS  += -O4 -fno-strict-aliasing
+    	CXXFLAGS  += $(OPTIMIZE) -fno-strict-aliasing
 	else
-    CXXFLAGS  += -O3 -fno-strict-aliasing
+    	CXXFLAGS  += $(OPTIMIZE) -fno-strict-aliasing
 	endif
 endif
 

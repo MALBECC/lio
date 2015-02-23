@@ -147,7 +147,10 @@ c       write(*,*) natom,ntatom,ngDyn,ngdDyn,ng0,ngd0
 c       write(*,*) ng2,ngDyn,ngdDyn
 c--------------------------------------------------------
        call drive(ng2,ngDyn,ngdDyn)
-       call lio_init()   !initialize lio
+!       call lio_init()   !initialize lio
+       call liomain()
+       if (.not.allocated(Smat))    allocate(Smat(M,M))
+       if (.not.allocated(RealRho)) allocate(RealRho(M,M))
 c--------------------------------------------------------
        if(OPEN) then
          call SCFOP(escf,dipxyz)
@@ -172,6 +175,6 @@ c       write(*,*) dxyzqm
        enddo
        deallocate (dxyzqm)
        endif 
-       call lio_finalize()     
+       call lio_finalize()
        end
 

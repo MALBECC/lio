@@ -32,6 +32,7 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
       REAL*8,ALLOCATABLE :: MatrixVec(:),TestMatrix(:)
       INTEGER            :: LWORK2
       REAL*8,ALLOCATABLE :: WORK2(:)
+        logical :: just_int3n,ematalloct
 
       call g2g_timer_start('SCF')
       write(*,*) '======>>>> INGRESO A SCFop <<<<=========='

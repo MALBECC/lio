@@ -3,7 +3,7 @@
 !------------------------------------------------------------------------------!
        implicit real*8 (a-h,o-z)
 
-      INCLUDE 'param'
+      INCLUDE 'param.f'
       logical verbose 
       integer M,Md,natom,ntatom,NMAX,NCO,NUNP,igrid,igrid2
      >  ,Iexch,nsol,npas,npasw,idip,watermod,noconverge,

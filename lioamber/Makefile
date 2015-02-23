@@ -52,13 +52,14 @@ vpath %.mk $(src_paths)
 
 # This indicates which flags to use during the compilation
 # of the different objects and which flags to use during
-# the final linking of the library.
+# the final linking of the library. It also contains the
+# options to make with different compilers.
 # LIBS is commented because for the time being LIO may rely
 # on information set via environment variables.
-FC     = ifort
-#LIBS   =
+FC = gfortran
 FFLAGS =
 LFLAGS =
+#LIBS   =
 include make_flags.mk
 include make_links.mk
 

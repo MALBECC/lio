@@ -48,11 +48,12 @@ c       USE latom
      >   pert_steps,lpfrg_steps,chkpntF1a,chkpntF1b
        REAL*8 ::
      >   dt_magnus,dt_lpfrg
+        logical :: just_int3n,ematalloct
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        call g2g_timer_start('TD')
        call g2g_timer_start('inicio')
-       just_int3n = false
+       just_int3n = .false.
        ALLOCATE(factorial(NBCH))
 !!------------------------------------!!
        if(propagator.eq.2) then

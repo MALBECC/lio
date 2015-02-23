@@ -2,9 +2,18 @@
 # GENERAL FLAGS : This sets the configuration for the general
 # flags that will be used in compiling all of the target objects
 # (both for free subroutines and modules alike).
-FFLAGS += -Dpack -fPIC -DG2G -g -fpp
-FFLAGS += -module $(obj_path)
+FFLAGS += -Dpack -fPIC -DG2G -g
 FFLAGS += $(optim) $(myflags) $(DEFINE) $(PROFILE)
+
+ifeq ($(ifort),1)
+  FC = ifort
+  FFLAGS += -module $(obj_path)
+  FFLAGS += -fpp
+else
+  FFLAGS += -I$(obj_path) -J$(obj_path)
+#  FFLAGS += $(src_paths:%=-I/%)
+  FFLAGS += -cpp
+endif
 
 #
 ######################################################################
@@ -69,21 +78,22 @@ $(objlist:%.o=$(obj_path)/%.o) : optim:=$(optim3)
 # (*)
 myflags :=
 
-objlist := matmuldiag.o int3lu.o
-objlist += mathsubs.o
-$(objlist:%.o=$(obj_path)/%.o) : myflags:=-parallel
-#$(objlist:%.o=$(obj_path)/%.o) : private myflags+=-parallel
+ifeq ($(ifort),1)
+  objlist := matmuldiag.o int3lu.o
+  objlist += mathsubs.o
+  $(objlist:%.o=$(obj_path)/%.o) : myflags:=-parallel
+  #$(objlist:%.o=$(obj_path)/%.o) : private myflags+=-parallel
 
-objlist := SCF.o TD.o ehrenfest.o magnus.o predictor.o
-objlist += FixMessRho.o get_unit.o mulliken.o PackedStorage.f
-objlist += init_amber.o init.o lio_init.o liomain.o lio_finalize.o
-objlist += dft_get_mm_forces.o dft_get_qm_forces.o
-objlist += alg.o drive.o func.o grid.o dipmem.o jarz.o
-objlist += int1.o int2.o int2G.o int3mem.o int3mems.o intSG.o
-objlist += garcha_mod.o
-$(objlist:%.o=$(obj_path)/%.o) : myflags:=-mp1 -ip
-#$(objlist:%.o=$(obj_path)/%.o) : private myflags+=$(optim3) -mp1 -ip
-
+  objlist := SCF.o TD.o ehrenfest.o magnus.o predictor.o
+  objlist += FixMessRho.o get_unit.o mulliken.o PackedStorage.f
+  objlist += init_amber.o init.o lio_init.o liomain.o lio_finalize.o
+  objlist += dft_get_mm_forces.o dft_get_qm_forces.o
+  objlist += alg.o drive.o func.o grid.o dipmem.o jarz.o
+  objlist += int1.o int2.o int2G.o int3mem.o int3mems.o intSG.o
+  objlist += garcha_mod.o
+  $(objlist:%.o=$(obj_path)/%.o) : myflags:=-mp1 -ip
+  #$(objlist:%.o=$(obj_path)/%.o) : private myflags+=$(optim3) -mp1 -ip
+endif
 #
 ######################################################################
 # (*) IMPORTANT: due to the incompatibility of most common

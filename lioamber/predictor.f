@@ -4,6 +4,7 @@
 ! This routine recives: F1a,F1b,rho2
 ! And gives: F5 = F(t+(deltat/2))      
        use garcha_mod
+       use mathsubs
        REAL*8,intent(inout) :: F1a(M,M),F1b(M,M),FON(M,M)
        REAL*8,intent(in) :: Xtrans(M,M)
        REAL*8, intent(in) :: factorial(NBCH)
@@ -52,7 +53,7 @@ c Initializations/Defaults
        call magnus(F3,rho2,rho4,M,NBCH,tdstep1,factorial)
 ! Paso3: Escribimos rho4 en el RMM para poder obtener F5 en el siguiente paso.
 ! Step3: rho4 is copied to RMM(1,2,3,...,MM)
-       call matmulnanoc(rho4,xtrans,rho2t,M)
+       rho2t=basechange(M,X,rho4,Xtrans)
        do j=1,M
           do k=j,M
              if(j.eq.k) then
@@ -73,7 +74,7 @@ c Initializations/Defaults
              FBA(j,k)=RMM(M5+k+(M2-j)*(j-1)/2-1)
           enddo
        enddo
-       call matmulnano(FBA,X,FON,M)
+       FON=basechange(M,Xtrans,FBA,X)
        DEALLOCATE(rho4,rho2t,F3,FBA)
        RETURN;END
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

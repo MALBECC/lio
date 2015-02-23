@@ -185,18 +185,18 @@ inline __device__ __host__ float length2(const float3& a) {
 
 inline double& elem(double3& a, uint i) {
 	switch(i) {
-		case 0: return a.x; break;
-		case 1: return a.y; break;
-		case 2: return a.z; break;
+		case 0: return a.x;
+		case 1: return a.y;
+		case 2: return a.z;
 	}
   return a.x;
 }
 
 inline const double& elem(const double3& a, uint i) {
 	switch(i) {
-		case 0: return a.x; break;
-		case 1: return a.y; break;
-		case 2: return a.z; break;
+		case 0: return a.x;
+		case 1: return a.y;
+		case 2: return a.z;
 	}
   return a.x;
 }

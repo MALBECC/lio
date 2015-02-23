@@ -10,6 +10,7 @@ c Nano and Will 2014 (nanolebrero@gmail.com , wagudelos@gmail.com)
 c---------------------------------------------------
       subroutine SCFOP(E,dipxyz)
       use garcha_mod
+      use mathsubs
       REAL*8:: En,E2,E,Es,Ex,Exc
 
       dimension work(1000)
@@ -29,6 +30,8 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
       INTEGER :: ErrID,iii,jjj
       LOGICAL :: docholesky
       REAL*8,ALLOCATABLE :: MatrixVec(:),TestMatrix(:)
+      INTEGER            :: LWORK2
+      REAL*8,ALLOCATABLE :: WORK2(:)
 
       call g2g_timer_start('SCF')
       write(*,*) '======>>>> INGRESO A SCFop <<<<=========='
@@ -220,7 +223,13 @@ c ESSL OPTION ------------------------------------------
 c
 c LAPACK OPTION -----------------------------------------
 #ifdef pack
-        call dspev('V','L',M,RMM(M5),RMM(M13),X,M,RMM(M15),info)
+        do ii=1,M; do jj=1,M
+          X(ii,jj)=Smat(ii,jj)
+        enddo; enddo
+        if (allocated(WORK2)) deallocate(WORK2); allocate(WORK2(1))
+        call dsyev('V','L',M,X,M,RMM(M13),WORK2,-1,info)
+        LWORK2=int(WORK2(1)); deallocate(WORK2); allocate(WORK2(LWORK2))
+        call dsyev('V','L',M,X,M,RMM(M13),WORK2,LWORK2,info)
 #endif
 c-----------------------------------------------------------
 c 
@@ -380,7 +389,7 @@ c
 c End of Starting guess (No MO , AO known)-------------------------------
 c------------------------------------------------------------------------
 c
-      call int22()
+      call int2()
 c
 **
       if (MEMO) then
@@ -464,10 +473,9 @@ c
 c
           enddo
 
-          call matmulnano(rho_a,Y,rho1_a,M)
-          call matmulnano(rho_b,Y,rho1_b,M)
-          rho_a=rho1_a
-          rho_b=rho1_b
+          rho_a=basechange(M,Ytrans,rho_a,Y)
+          rho_b=basechange(M,Ytrans,rho_b,Y)
+
 c
 c------------Ahora tenemos rho transformado en la base ON y en forma cuadrada-----------------------------
 c
@@ -486,10 +494,9 @@ c-----------Parte de arriba a la derecha de la matriz (sin incluir terminos diag
             enddo
           enddo
 
-          call matmulnano(fock_a,X,rho1_a,M)
-          call matmulnano(fock_b,X,rho1_b,M)
-          fock_a=rho1_a                     ! RHO1 lo uso como scratch
-          fock_b=rho1_b                     ! RHO1 lo uso como scratch
+
+          fock_a=basechange(M,Xtrans,fock_a,X)
+          fock_b=basechange(M,Xtrans,fock_b,X)
 
 c--------------En este punto ya tenemos F transformada en base de ON y en su forma cuadrada-----
 c
@@ -514,8 +521,9 @@ c-------------------------------------------------------------------------------
 c--rho(j,k) y fock(j,k) son las matrices densidad y de fock respect (forma cuadrada)--
 c---------Calculo de conmutadores [F,P]-------------------------------------------
 
-          call conmut(fock_a,rho_a,FP_PF_a,M)
-          call conmut(fock_b,rho_b,FP_PF_b,M)
+          FP_PF_a=commutator(fock_a,rho_a)
+          FP_PF_b=commutator(fock_b,rho_b)
+
 
 c---------Pasar Conmutador a vector (guardamos la media matriz de abajo)------------------------------------------------
 c#######OJO, SAQUE EL -1########

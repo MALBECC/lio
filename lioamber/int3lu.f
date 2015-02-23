@@ -138,7 +138,6 @@ c        write(*,*) 'cosas',M,Md,kknums,MM
           iikk=(kk-1)*Md
              do k=1,Md
           Rc(k)=Rc(k)+RMM(kkind(kk))*cool(iikk+k)
-                 
 c               write(88,*) cool(iikk+k), iikk+k
          enddo
          enddo
@@ -148,6 +147,7 @@ c               write(88,*) cool(iikk+k), iikk+k
           iikk=(kk-1)*Md
              do k=1,Md
           Rc(k)=Rc(k)+RMM(kkinds(kk))*cools(iikk+k)
+
 
          enddo
          enddo

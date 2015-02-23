@@ -7,8 +7,8 @@ c---------------------------------------------------------------------
 
       character(len=20)::argument,inpfile,inpbasis,inpcoords
       integer::charge
-      logical::filexist
-      REAL*8, dimension (:,:), ALLOCATABLE   :: dxyzqm,dxyzqmmm
+      logical::filexist,writeforces
+      REAL*8, dimension (:,:), ALLOCATABLE   :: dxyzqm
       namelist /lio/ natom,nsol,charge,OPEN,NMAX,Nunp,VCINP,frestartin,
      > GOLD,told,rmax,rmaxs,predcoef,
      > idip,writexyz,intsoldouble,DIIS,ndiis,dgtrig,
@@ -132,7 +132,7 @@ c       write(*,*) pc(i),r(i,1:3)
        enddo
        r=r/0.529177D0
        rqm=rqm/0.529177D0
-     
+
        call g2g_init()   !initialize g2g
 
         nqnuc=0
@@ -147,6 +147,10 @@ c       write(*,*) natom,ntatom,ngDyn,ngdDyn,ng0,ngd0
 c       write(*,*) ng2,ngDyn,ngdDyn
 c--------------------------------------------------------
        call drive(ng2,ngDyn,ngdDyn)
+!       call lio_init()   !initialize lio
+       call liomain()
+       if (.not.allocated(Smat))    allocate(Smat(M,M))
+       if (.not.allocated(RealRho)) allocate(RealRho(M,M))
 c--------------------------------------------------------
        if(OPEN) then
          call SCFOP(escf,dipxyz)
@@ -157,40 +161,20 @@ c--------------------------------------------------------
 
        write(*,*) 'SCF ENRGY=',escf 
 
-       if(writeforces) then
-        
+      if(writeforces) then        
+       open(unit=123,file='fuerzas')
        allocate (dxyzqm(3,natom))
-       dxyzqm=0
-      
-  
+       dxyzqm=0.0
        call dft_get_qm_forces(dxyzqm)
 c       call g2g_solve_groups(3, Exc, dxyzqm)
 c       write(*,*) dxyzqm
-       open(unit=123,file='fuerzasqm')
+
        do k=1,natom
          write(123,'("fuerza",I,D,D,D)') 
      >     k,dxyzqm(k,1),dxyzqm(k,2),dxyzqm(k,3)
        enddo
-       deallocate(dxyzqm)
-       
-        if(nsol.gt.0) then
-        allocate (dxyzqmmm(3,natom+nsol))
-
-           dxyzqmmm=0
-
-       call dft_get_mm_forces(dxyzqmmm)
-
-       open(unit=124,file='fuerzasmm')
-       do k=1,natom
-         write(124,'("fuerza",I,D,D,D)')
-     >     k,dxyzqmmm(k,1),dxyzqmmm(k,2),dxyzqmmm(k,3)
-       enddo
-       deallocate(dxyzqmmm)
-
-        endif
-       endif
-
-       
-       call lio_finalize()     
+       deallocate (dxyzqm)
+       endif 
+       call lio_finalize()
        end
 

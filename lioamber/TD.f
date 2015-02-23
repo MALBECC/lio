@@ -26,6 +26,7 @@ c  are stored in files x.dip, y.dip, z.dip.
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 c       USE latom
        USE garcha_mod
+       use mathsubs
        IMPLICIT REAL*8 (a-h,o-z)
 
        INTEGER :: istep
@@ -39,6 +40,8 @@ c       USE latom
      >   rho,rhonew,rhold,xnano,rho1
        DIMENSION q(natom)
        REAL*8,dimension(:),ALLOCATABLE :: factorial
+       INTEGER            :: LWORK,ii,jj
+       REAL*8,ALLOCATABLE :: WORK(:)
 !!------------------------------------!!
 !! FFR ADD
        INTEGER ::
@@ -248,7 +251,13 @@ c s is in RMM(M13,M13+1,M13+2,...,M13+MM)
 !--------------------------------------!
 ! LAPACK OPTION
 #ifdef pack
-       call dspev('V','L',M,RMM(M5),RMM(M13),X,M,RMM(M15),info)
+       do ii=1,M; do jj=1,M
+         X(ii,jj)=Smat(ii,jj)
+       enddo; enddo
+       if (allocated(WORK)) deallocate(WORK); allocate(WORK(1))
+       call dsyev('V','L',M,X,M,RMM(M13),WORK,-1,info)
+       LWORK=int(WORK(1));  deallocate(WORK); allocate(WORK(LWORK))
+       call dsyev('V','L',M,X,M,RMM(M13),WORK,LWORK,info)
 #endif
 !--------------------------------------!
 ! Here, we obtain the transformation matrices X and Y for converting 
@@ -303,12 +312,14 @@ c s is in RMM(M13,M13+1,M13+2,...,M13+MM)
        rho=matmul(ytrans,rho)
        rho=matmul(rho,y)
 ! with matmulnanoc
-!            call matmulnanoc(rho,Y,rho,M)
+! (NO LONGER AVAILABLE; USE BASECHANGE INSTEAD)
+!            call matmulnanoc(rho,Y,rho1,M)
 !            rho=rho1
+!            rho=basechange(M,Ytrans,rho,Y)
 !--------------------------------------!
-            call g2g_timer_start('int22')
-            call int22()
-            call g2g_timer_stop('int22')
+            call g2g_timer_start('int2')
+            call int2()
+            call g2g_timer_stop('int2')
             call g2g_timer_start('int3mmem')
             call int3mem()
             call int3mems()
@@ -350,7 +361,7 @@ c ELECTRIC FIELD CASE - Type=gaussian (ON)
                    fac=(2.54D0*2.00D0)
 !
                  endif
-                 call dip2(g,Fxx,Fyy,Fzz)
+                 call intfld(g,Fxx,Fyy,Fzz)
                  E1=-1.00D0*g*(Fx*ux+Fy*uy+Fz*uz)/fac -
      >        0.50D0*(1.0D0-1.0D0/epsilon)*Qc2/a0
               endif
@@ -464,9 +475,9 @@ c           if(istep.eq.1) then
 c             rhold=rho+(tdstep*Im*(matmul(fock,rho)))
 c             rhold=rhold-(tdstep*Im*(matmul(rho,fock)))
 c           endif
-c using conmutc
+c using commutator
               if(istep.eq.1) then
-                 call conmutc(fock,rho,rhold,M)
+                 rhold=commutator(fock,rho)
                  rhold=rho+dt_lpfrg*(Im*rhold)
               endif
 !####################################################################!
@@ -475,8 +486,8 @@ c using conmutc
 c           rhonew=rhold-(tdstep*Im*(matmul(fock,rho)))
 c           rhonew=rhonew+(tdstep*Im*(matmul(rho,fock)))
 c--------------------------------------c
-! using conmutc:
-              call conmutc(fock,rho,rhonew,M)
+! using commutator:
+              rhonew=commutator(fock,rho)
               rhonew=rhold-dt_lpfrg*(Im*rhonew)
 c Density update (rhold-->rho, rho-->rhonew)
               do i=1,M
@@ -508,7 +519,9 @@ c with matmul:
               rho1=matmul(rho1,xtrans)
 !       rho1=REAL(rho1)
 c with matmulnanoc:
+c (NO LONGER AVAILABLE; USE BASECHANGE INSTEAD)
 c          call matmulnanoc(rho,xtrans,rho1,M)
+c          rho1=basechange(M,X,rho,Xtrans)
 c          rho1 = REAL(rho1)
 c The real part of the density matrix in the atomic orbital basis is copied in RMM(1,2,3,...,MM) to compute the corresponding fock matrix.
               do j=1,M

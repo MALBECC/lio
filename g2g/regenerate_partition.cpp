@@ -17,17 +17,12 @@ using namespace G2G;
 
 //Sorting the cubes in increasing order of size in bytes in GPU.
 template <typename T>
-std::list<T> sortBySize(std::list<T> input) {
-    std::vector<std::pair<int,T> > sorting(input.size());
-    uint j=0;
-    for (typename std::list<T>::const_iterator it = input.begin(); it != input.end(); ++it)
-      sorting[j++]=std::make_pair((*it)->size_in_gpu(),*it);
-
-    sort(sorting.begin(),sorting.end());
-    std::list<T> sorted;
-    for(j=0; j<sorting.size(); j++)
-        sorted.push_back(sorting[j].second);
-    return sorted;
+bool comparison_by_size(const T & a, const T & b) {
+    return a.size_in_gpu() < b.size_in_gpu();
+}
+template <typename T>
+void sortBySize(std::vector<T>& input) {
+    sort(input.begin(), input.end(), comparison_by_size<T>);
 }
 
 /* methods */
@@ -237,7 +232,7 @@ void Partition::regenerate(void)
                     cout << "not enough points" << endl;
                     continue;
                 }
-                cubes.push_back(new Cube(cube));
+                cubes.push_back(cube);
 
                 // para hacer histogramas
 //#ifdef HISTOGRAM
@@ -253,7 +248,7 @@ void Partition::regenerate(void)
             }
         }
     }
-    cubes = sortBySize<Cube*>(cubes);
+    sortBySize<Cube>(cubes);
 
     // Si esta habilitada la particion en esferas, entonces clasificamos y las agregamos a la particion tambien.
     if (sphere_radius > 0)
@@ -281,7 +276,7 @@ void Partition::regenerate(void)
                 continue;
             }
             assert(sphere.number_of_points != 0);
-            spheres.push_back(new Sphere(sphere));
+            spheres.push_back(sphere);
 
 //#ifdef HISTOGRAM
             //cout << "sphere: " << sphere.number_of_points << " puntos, " << sphere.total_functions() <<
@@ -297,7 +292,7 @@ void Partition::regenerate(void)
         }
     }
     //Sorting the spheres in increasing order
-    spheres = sortBySize<Sphere*>(spheres);
+    sortBySize<Sphere>(spheres);
 
     //Initialize the global memory pool for CUDA, with the default safety factor
     //If it is CPU, then this doesn't matter

@@ -4,7 +4,6 @@ ifeq ($(magma),1)
 endif
 
 liosolo: main.f
-	ifort -L ../lioamber/ -llio-g2g -L ../g2g/ -lg2g  -I../lioamber/ $(LIBS)  main.f -o liosolo
+	ifort -L ../lioamber/ -llio-g2g -L ../g2g/ -lg2g  -I../lioamber/obj $(LIBS)  main.f -o liosolo
 clean:
-	rm liosolo
-
+	rm -rf liosolo

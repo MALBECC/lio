@@ -2,6 +2,12 @@
 
 CUDAHOME=/opt/cuda
 
+ifeq ($(non_optimize), 1)
+  OPTIMIZE:=-O2
+else
+  OPTIMIZE:=-O3
+endif
+
 ifeq ($(gcc),1)
   CXX      := g++
   CXXFLAGS := $(CXXFLAGS) -fPIC -Wall -Wno-long-long -ansi -Wno-unused -I$(CUDAHOME)/include
@@ -16,9 +22,9 @@ ifeq ($(dbg),1)
 else
 	COMMONFLAGS := -DNDEBUG
 	ifeq ($(gcc),1)
-    CXXFLAGS  += -O4 -fno-strict-aliasing
+    	CXXFLAGS  += $(OPTIMIZE) -fno-strict-aliasing
 	else
-    CXXFLAGS  += -O3 -fno-strict-aliasing
+    	CXXFLAGS  += $(OPTIMIZE) -fno-strict-aliasing
 	endif
 endif
 

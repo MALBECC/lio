@@ -1,13 +1,15 @@
-c SCF subroutine ----------------------------------
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+c SCF subroutine
 c DIRECT VERSION
 c Calls all integrals generator subroutines : 1 el integrals,
 c 2 el integrals, exchange fitting , so it gets S matrix, F matrix
 c and P matrix in lower storage mode ( symmetric matrices)
 c
 c Dario Estrin, 1992
-c---------------------------------------------------
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       subroutine SCF(E,dipxyz)
       use garcha_mod
+      use mathsubs
 c      use qmmm_module, only : qmmm_struct, qmmm_nml
 c
       implicit real*8 (a-h,o-z)
@@ -15,7 +17,7 @@ c
        dimension q(natom),work(1000),IWORK(1000)
        REAL*8 , intent(inout)  :: dipxyz(3)
        real*8, dimension (:,:), ALLOCATABLE ::xnano,znano
-       real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15,rmm13,
+       real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15,
      >   bcoef, suma, FP_PFv
       real*8, dimension (:,:), allocatable :: fock,fockm,rho,FP_PF,
      >   FP_PFm,EMAT,Y,Ytrans,Xtrans,rho1,EMAT2
@@ -27,9 +29,11 @@ c       REAL*8 , intent(in)  :: qmcoords(3,natom)
 c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
         INTEGER :: ErrID,iii,jjj
         LOGICAL :: docholesky
-        REAL*8,ALLOCATABLE :: MatrixVec(:),TestMatrix(:)
+        INTEGER            :: LWORK2
         REAL*8,ALLOCATABLE :: WORK2(:)
         INTEGER, ALLOCATABLE :: IWORK2(:),IPIV(:)
+!--------------------------------------------------------------------!
+
 
 #ifdef magma
        call magmaf_init()
@@ -97,7 +101,7 @@ c
 c
       Nel=2*NCO+Nunp
 c
-      allocate(rmm5(MM),rmm13(m),rmm15(mm))
+      allocate(rmm5(MM),rmm15(mm))
 c
       good=1.00D0
       niter=0
@@ -145,6 +149,12 @@ c Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
         nnpd(nuc(iikk))=iikk
       enddo
 
+c
+c -Create integration grid for XC here
+c -Assign points to groups (spheres/cubes)
+c -Assign significant functions to groups
+c -Calculate point weights
+c
       call g2g_reload_atom_positions(igrid2)
 
       if (predcoef.and.npas.gt.3) then
@@ -171,11 +181,13 @@ c test ---------------------------------------------------------
 c
 c Diagonalization of S matrix, after this is not needed anymore
 c
-      docholesky=.true.
+      docholesky=.false.
       call g2g_timer_start('cholesky')
 
       IF (docholesky) THEN
 #ifdef magma
+        ! ESTO SIGUE USANDO Smat EN RMM(M5)
+        ! CAMBIARLO CUANDO SE SIGA PROBANDO MAGMA
         PRINT*,'DOING CHOLESKY'
 
         ALLOCATE(Y(M,M),Ytrans(M,M))
@@ -189,49 +201,38 @@ c
 
         CALL MAGMAF_DPOTRF('L',M,Y,M,ErrID)
 
-          Ytrans= transpose(Y)
+        Ytrans= transpose(Y)
         ALLOCATE(Xtrans(M,M))
-          Xtrans=Y
+        Xtrans=Y
         CALL MAGMAF_DTRTRI('L','N',M,Xtrans,M,ErrID)
         if(ErrID.ne.0) STOP ('Error in cholesky decomp.')
         xnano= transpose(Xtrans)
         do i=1,M;doj=1,M
-        X(i,j)=Xnano(i,j)
+          X(i,j)=Xnano(i,j)
         enddo;enddo
         PRINT*,'CHOLESKY MAGMA'
 
 #else
         PRINT*,'DOING CHOLESKY'
-        ALLOCATE(MatrixVec(MM))
-        DO iii=1,MM
-          MatrixVec(iii)=RMM(M5+iii-1)
-        ENDDO
+        ALLOCATE(Y(M,M),Ytrans(M,M),Xtrans(M,M))
 
-        CALL DPPTRF('L',M,MatrixVec,ErrID)
-        PRINT*,ErrID
-        ALLOCATE(Y(M,M),Ytrans(M,M))
+        Y=Smat
+        CALL dpotrf('L',M,Y,M,info)
         DO iii=1,M;DO jjj=1,M
-          Y(iii,jjj)=0
-          IF (jjj.LE.iii) THEN
-            Y(iii,jjj)=MatrixVec(iii+(2*M-jjj)*(jjj-1)/2)
+          IF (jjj.GT.iii) THEN
+            Y(iii,jjj)=0.0d0
           ENDIF
           Ytrans(jjj,iii)=Y(iii,jjj)
         ENDDO;ENDDO
 
-        CALL DTPTRI('L','N',M,MatrixVec,ErrID)
-        PRINT*,ErrID
-        ALLOCATE(Xtrans(M,M))
+        Xtrans=Y
+        CALL dtrtri('L','N',M,Xtrans,M,info)
         DO iii=1,M;DO jjj=1,M
-          Xtrans(iii,jjj)=0
-          IF (jjj.LE.iii) THEN
-            Xtrans(iii,jjj)=MatrixVec(iii+(2*M-jjj)*(jjj-1)/2)
+          IF (jjj.GT.iii) THEN
+            Xtrans(iii,jjj)=0.0d0
           ENDIF
           X(jjj,iii)=Xtrans(iii,jjj)
         ENDDO;ENDDO
-
-        DEALLOCATE(MatrixVec)
-
-
 #endif
       ELSE
 
@@ -248,8 +249,13 @@ c
 c LAPACK OPTION -----------------------------------------
 #ifdef pack
 c       call magmaf_dsyev('V','L',M,xxx,M,
-
-       call dspev('V','L',M,RMM5,RMM13,X,M,RMM15,info)
+       do ii=1,M; do jj=1,M
+         X(ii,jj)=Smat(ii,jj)
+       enddo; enddo
+       if (allocated(WORK2)) deallocate(WORK2); allocate(WORK2(1))
+       call dsyev('V','L',M,X,M,RMM(M13),WORK2,-1,info)
+       LWORK2=int(WORK2(1)); deallocate(WORK2); allocate(WORK2(LWORK2))
+       call dsyev('V','L',M,X,M,RMM(M13),WORK2,LWORK2,info)
 #endif
 c-----------------------------------------------------------
 c
@@ -258,11 +264,11 @@ c LINEAR DEPENDENCY ELIMINATION
 c
         do i=1,MM
           RMM(M5+i-1)=rmm5(i)
+          ! WHAT IS THE POINT OF DOING THIS?
 c          write(56,*) RMM(M15+1)
         enddo
 
         do j=1,M
-          RMM(M13+j-1)=rmm13(j)
           if (RMM(M13+j-1).lt.1.0D-06) then
             write(*,*) 'LINEAR DEPENDENCY DETECTED'
             do i=1,M
@@ -330,7 +336,6 @@ c ESSL OPTION
           rmm5(i)=RMM(M5+i-1)
         enddo
         rmm15=0
-        rmm13=0
         xnano=0
 #ifdef essl
         call DSPEV(1,RMM(M5),RMM(M13),X(1,M+1),M,M,RMM(M15),M2)
@@ -338,7 +343,7 @@ c ESSL OPTION
 c LAPACK OPTION -----------------------------------------
 #ifdef pack
 c
-        call dspev('V','L',M,RMM5,RMM13,Xnano,M,RMM15,info)
+        call dspev('V','L',M,RMM5,RMM(M13),Xnano,M,RMM15,info)
 #endif
         do i =1,M
           do j=1,M
@@ -376,8 +381,10 @@ c
             kk=kk+1
             RMM(kk)=0.D0
 c
+c one factor of 2 for alpha+beta
             if(i.eq.j) then
              ff=2.D0
+c another factor of 2 for direct triangular sum (j>i) w/ real basis
             else
              ff=4.D0
             endif
@@ -396,7 +403,7 @@ c
         call TD()
         return
       endif
-      call int22()
+      call int2()
 c
 **
       if (MEMO) then
@@ -497,8 +504,7 @@ c
             enddo
           enddo
 
-          call matmulnano(rho,Y,rho1,M)
-          rho=rho1
+          rho=basechange(M,Ytrans,rho,Y)
 c
 c------------Ahora tenemos rho transformado en la base ON y en forma cuadrada-----------------------------
 c-------------------------Escritura de fock cuadrada--------------------------------------
@@ -513,8 +519,7 @@ c-----------Parte de arriba a la derecha de la matriz (sin incluir terminos diag
             enddo
           enddo
 
-          call matmulnano(fock,X,rho1,M)
-          fock=rho1                     ! RHO1 lo uso como scratch
+          fock=basechange(M,Xtrans,fock,X)
 
 c--------------En este punto ya tenemos F transformada en base de ON y en su forma cuadrada-----
 c--------------Acumulamos las matrices de fock (ver si está bien)-------------------------------
@@ -537,7 +542,9 @@ c-------------------------------------------------------------------------------
 c--rho(j,k) y fock(j,k) son las matrices densidad y de fock respect (forma cuadrada)--
 c---------Calculo de conmutadores [F,P]-------------------------------------------
 
-          call conmut(fock,rho,FP_PF,M)
+!          call g2g_timer_start('ffr-new')
+          FP_PF=commutator(fock,rho)
+!          call g2g_timer_stop('ffr-new')
 
 c---------Pasar Conmutador a vector (guardamos la media matriz de abajo)------------------------------------------------
 c#######OJO, SAQUE EL -1########
@@ -757,6 +764,12 @@ c--------Eventualmente se puede probar con la matriz densidad-------------------
             call g2g_timer_stop('diis')
         endif
       endif
+
+c
+c F' diagonalization now
+c X(1,M) will contain (X^-1)*C
+c
+
        call g2g_timer_start('dspev')
 c ESSL OPTION ---------------------------------------------------
 #ifdef essl
@@ -817,6 +830,9 @@ c new coefficients
          enddo
        enddo
 c
+c-----------------------------------------------------------
+c Recover C from (X^-1)*C; put into xnano
+c-----------------------------------------------------------
 #ifdef magma
 
       do i=1,M
@@ -865,8 +881,10 @@ c
            kk=kk+1
            tmp=RMM(kk)
            RMM(kk)=0.
+c one factor of 2 for alpha+beta
            if(i.eq.j) then
              ff=2.D0
+c another factor of 2 for direct triangular sum (j>i) w/ real basis
            else
              ff=4.D0
            endif
@@ -1047,39 +1065,22 @@ c      write(*,*)
 c u in Debyes
       endif
 c
-c calculates Mulliken poputations
-c       if (ipop.eq.1) then
-      call int1(En)
-c
-c--------------------------------------------------------------
-      do n=1,natom
-        q(n)=Iz(n)
-      enddo
-c
-      do i=1,M
-        do j=1,i-1
-          kk=i+(M2-j)*(j-1)/2
-          t0=RMM(kk)*RMM(M5+kk-1)/2.D0
-          q(Nuc(i))=q(Nuc(i))-t0
-        enddo
-c
-        kk=i+(M2-i)*(i-1)/2
-        t0=RMM(kk)*RMM(M5+kk-1)
-        q(Nuc(i))=q(Nuc(i))-t0
-c
-        do j=i+1,M
-          kk=j+(M2-i)*(i-1)/2
-          t0=RMM(kk)*RMM(M5+kk-1)/2.D0
-          q(Nuc(i))=q(Nuc(i))-t0
-        enddo
-      enddo
-c
-      write(85,*) 'MULLIKEN POPULATION ANALYSIS'
-      write(85,770)
 
-      do n=1,natom
-        write(85,760) n,Iz(n),q(n)
-      enddo
+
+
+! MULLIKEN POPULATION ANALYSIS (FFR - Simplified)
+!--------------------------------------------------------------------!
+       call int1(En)
+       call spunpack('L',M,RMM(M5),Smat)
+       call spunpack('L',M,RMM(M1),RealRho)
+       call fixrho(M,RealRho)
+       call mulliken_calc(natom,M,RealRho,Smat,Nuc,Iz,q)
+       call mulliken_write(85,natom,Iz,q)
+
+! NOTE: If 'mulliken_calc' is renamed as 'mulliken', the code will
+! malfunction. I DON'T KNOW WHY.
+!--------------------------------------------------------------------!
+
 c
 c        endif
 c ELECTRICAL POTENTIAL AND POINT CHARGES EVALUATION
@@ -1128,7 +1129,7 @@ c      endif
         deallocate (Y,Ytrans,Xtrans,fock,fockm,rho,FP_PF,FP_PFv,FP_PFm,
      >  znano,EMAT, bcoef, suma,rho1)
       endif
-      deallocate (xnano,rmm5,rmm13,rmm15)
+      deallocate (xnano,rmm5,rmm15)
 
       deallocate (kkind,kkinds)
       deallocate(cool,cools)
@@ -1139,7 +1140,9 @@ c       E=E*627.509391D0
       if(timedep.eq.1) then
         call TD()
       endif
-c
+!
+!--------------------------------------------------------------------!
+      call g2g_timer_stop('SCF')
  500  format('SCF TIME ',I6,' sec')
  450  format ('SCF ENERGY = ',F19.12)
  400  format(4(E14.7E2,2x))
@@ -1164,10 +1167,7 @@ c
  346  format(2x,4(f10.6,2x))
  682  format(2x,f15.10)
   88  format(5(2x,f8.5))
-  45  format(E14.6E4)
+  45  format(E15.6E4)
   91  format(F14.7,4x,F14.7)
-c
-      call g2g_timer_stop('SCF')
-      return
-      end
-C  -------------------------
+      return;end subroutine
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -24,7 +24,7 @@ c
 c
        integer ndiist
 c       dimension d(natom,natom)
-       logical  hagodiis,alloqueo, ematalloc
+       logical  hagodiis,alloqueo, ematalloc, cpu
 c       REAL*8 , intent(in)  :: qmcoords(3,natom)
 c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
         INTEGER :: ErrID,iii,jjj
@@ -175,9 +175,16 @@ c in intsol)
 c
       call int1(En)
       if(nsol.gt.0) then
-        call g2g_timer_start('g2g_qmmm_fock')
-        call g2g_qmmm_fock(E1s,Ens)!intsol(E1s,Ens,.true.)
-        call g2g_timer_stop('g2g_qmmm_fock')
+        call g2g_query_cpu(cpu)
+        if (cpu) then
+          call g2g_timer_start('intsol')
+          call intsol(E1s,Ens,.true.)
+          call g2g_timer_stop('intsol')
+        else
+          call g2g_timer_start('g2g_qmmm_fock')
+          call g2g_qmmm_fock(E1s,Ens)
+          call g2g_timer_stop('g2g_qmmm_fock')
+        endif
       endif
 c
 c test ---------------------------------------------------------

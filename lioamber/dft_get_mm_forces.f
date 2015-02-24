@@ -6,27 +6,50 @@
        REAL*8 , intent(inout) :: dxyzqm(3,natom)
        REAL*8 , intent(inout) :: dxyzcl(3,nsol)
        real*8, dimension (:,:), ALLOCATABLE :: ff,ffcl!,g2gff,g2gffcl
+       logical cpu
        !real*8 diff,rms,rmscl,mx,mxcl,s
 c       real*8, dimension (:,:), ALLOCATABLE :: ffs,ffcls
 !
 !
 !--------------------------------------------------------------------!
-       allocate(ff(natom,3), ffcl(nsol,3))!ntatom,3))
+       !allocate(ff(natom,3), ffcl(nsol,3))!ntatom,3))
        !allocate(g2gff(natom,3), g2gffcl(ntatom,3))
 c       allocate(ffs(natom,3), ffcls(ntatom,3))
 c       real*8 ftot(3)
        ffcl=0
        ff=0
+       factor=1.D0
 
-       !call g2g_timer_start('intsolG')
-       !call intsolG(ff,ffcl)
-       !call g2g_timer_stop('intsolG')
+       call g2g_query_cpu(cpu)
+       if (cpu) then
+         ! The old version of intsolG expected the MM force array to be
+         ! padded in front with # QM atoms spots for some reason
+         allocate(ff(natom,3), ffcl(ntatom,3))
 
-       !g2gff=0
-       !g2gffcl=0
-       call g2g_timer_start('g2g_qmmm_forces')
-       call g2g_qmmm_forces(ff,ffcl)
-       call g2g_timer_stop('g2g_qmmm_forces')
+         call g2g_timer_start('intsolG')
+         call intsolG(ff,ffcl)
+         call g2g_timer_stop('intsolG')
+
+         do jj=1,nsol
+         do j=1,3
+           dxyzcl(j,jj)=ffcl(natom+jj,j)*factor!+dxyzcl(j,jj)
+         enddo
+         enddo         
+       else
+         ! The GPU version of the QM/MM gradients only uses space for the MM
+         ! forces in the MM force array
+         allocate(ff(natom,3), ffcl(nsol,3))
+
+         call g2g_timer_start('g2g_qmmm_forces')
+         call g2g_qmmm_forces(ff,ffcl)
+         call g2g_timer_stop('g2g_qmmm_forces')
+
+         do jj=1,nsol
+         do j=1,3
+           dxyzcl(j,jj)=ffcl(jj,j)*factor!+dxyzcl(j,jj)
+         enddo
+         enddo         
+       endif
 
        !mx = 0
        !s = 0
@@ -54,18 +77,12 @@ c       real*8 ftot(3)
        !write(*,*) "RMS DIFF QM: ",rms
        !write(*,*) "RMS DIFF MM: ",rmscl
 
-       factor=1.D0
        do i=1,natom 
        do j=1,3
          dxyzqm(j,i)=ff(i,j)*factor+dxyzqm(j,i)
        enddo
        enddo
 
-       do jj=1,nsol
-       do j=1,3
-         dxyzcl(j,jj)=ffcl(jj,j)*factor!natom+jj,j)*factor!+dxyzcl(j,jj)
-       enddo
-       enddo         
 c       write(*,*) 'aca toyyyy'
 !
 !

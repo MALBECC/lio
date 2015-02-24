@@ -382,6 +382,14 @@ extern "C" void g2g_coulomb_forces_(double* qm_forces)
 #endif
 }*/
 //===============================================================================================================
+extern "C" void g2g_query_cpu_(bool& cpu)
+{
+#if CPU_KERNELS
+    cpu = true;
+#else
+    cpu = false;
+#endif  
+}
 
 template<bool compute_rmm, bool lda, bool compute_forces> void g2g_iteration(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr)
 {

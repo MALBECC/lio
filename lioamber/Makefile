@@ -56,7 +56,7 @@ vpath %.mk $(src_paths)
 # options to make with different compilers.
 # LIBS is commented because for the time being LIO may rely
 # on information set via environment variables.
-FC = gfortran
+FC =
 FFLAGS =
 LFLAGS =
 #LIBS   =

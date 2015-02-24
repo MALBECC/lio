@@ -2,18 +2,18 @@
 # GENERAL FLAGS : This sets the configuration for the general
 # flags that will be used in compiling all of the target objects
 # (both for free subroutines and modules alike).
+ifeq ($(ifort),1)
+  FC     = ifort
+  FFLAGS+= -module $(obj_path)
+  FFLAGS+= -fpp
+else
+  FC     = gfortran
+  FFLAGS+= -I$(obj_path) -J$(obj_path)
+  FFLAGS+= -cpp
+endif
 FFLAGS += -Dpack -fPIC -DG2G -g
 FFLAGS += $(optim) $(myflags) $(DEFINE) $(PROFILE)
 
-ifeq ($(ifort),1)
-  FC = ifort
-  FFLAGS += -module $(obj_path)
-  FFLAGS += -fpp
-else
-  FFLAGS += -I$(obj_path) -J$(obj_path)
-#  FFLAGS += $(src_paths:%=-I/%)
-  FFLAGS += -cpp
-endif
 
 #
 ######################################################################

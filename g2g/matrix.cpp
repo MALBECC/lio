@@ -2,9 +2,9 @@
 #include <stdexcept>
 #include <cstring>
 #include <cstdio>
+#include <cstdlib>
 #include "common.h"
 #include "matrix.h"
-#include "mkl.h"
 #include "scalar_vector_types.h"
 using namespace std;
 
@@ -45,7 +45,7 @@ template<class T> void HostMatrix<T>::alloc_data(void) {
     assert(false);
     #endif
 	}
-	else this->data = (T *) mkl_malloc(this->bytes(), 64);
+	else this->data = (T* ) malloc(this->bytes()); // (T *) mkl_malloc(this->bytes(), 64);
 
 	assert(this->data);
 }
@@ -58,7 +58,7 @@ template<class T> void HostMatrix<T>::dealloc_data(void) {
     assert(false);
     #endif
   }
-	else mkl_free(this->data);
+	else free(this->data); //mkl_free(this->data);
 }
 
 template<class T> void HostMatrix<T>::copy_to_tmp(T * dst) const {

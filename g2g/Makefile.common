@@ -5,7 +5,7 @@ CXXFLAGS+= -fPIC -Wall -g -std=c++0x -I. -I$(CUDAHOME)/include
 ifeq ($(non_optimize), 1)
   OPTIMIZE:=-O2
 else
-  OPTIMIZE:=-O3
+  OPTIMIZE:=-Ofast
 endif
 
 ifeq ($(gcc),1)

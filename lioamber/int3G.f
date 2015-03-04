@@ -31,7 +31,8 @@ c
 
       implicit real*8 (a-h,o-z)
 c
-      logical calc_energy, cpu
+      logical calc_energy
+      integer cpu
       dimension Q(3),W(3),af2(ngd),ftot(3)
       dimension Jx(ng),f(natom,3)
 c scratch space
@@ -134,9 +135,9 @@ c        write(*,*) 'exchnum int3G'
          endif
       call g2g_timer_stop('ExcG')
 
-      call g2g_query_cpu(cpu)
+      call g2g_query_coulomb_cpu(cpu)
       
-      if (.not.cpu) then
+      if (cpu.eq.0) then
         call g2g_timer_start('g2g_coulomb_forces')
         call g2g_coulomb_forces(f)
         call g2g_timer_stop('g2g_coulomb_forces')

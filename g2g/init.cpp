@@ -382,12 +382,24 @@ extern "C" void g2g_coulomb_forces_(double* qm_forces)
 #endif
 }*/
 //===============================================================================================================
-extern "C" void g2g_query_cpu_(bool& cpu)
+extern "C" void g2g_query_cpu_(int& cpu)
 {
 #if CPU_KERNELS
-    cpu = true;
+    cpu = 1;
 #else
-    cpu = false;
+    cpu = 0;
+#endif  
+}
+extern "C" void g2g_query_coulomb_cpu_(int& coulomb_cpu)
+{
+#if GPU_COULOMB
+#if CPU_KERNELS
+    coulomb_cpu = 1;
+#else
+    coulomb_cpu = 0;
+#endif
+#else
+    coulomb_cpu = 1;
 #endif  
 }
 

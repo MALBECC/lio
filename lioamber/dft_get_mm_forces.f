@@ -6,7 +6,7 @@
        REAL*8 , intent(inout) :: dxyzqm(3,natom)
        REAL*8 , intent(inout) :: dxyzcl(3,nsol)
        real*8, dimension (:,:), ALLOCATABLE :: ff,ffcl!,g2gff,g2gffcl
-       logical cpu
+       integer cpu
        !real*8 diff,rms,rmscl,mx,mxcl,s
 c       real*8, dimension (:,:), ALLOCATABLE :: ffs,ffcls
 !
@@ -19,7 +19,7 @@ c       real*8 ftot(3)
        factor=1.D0
 
        call g2g_query_cpu(cpu)
-       if (cpu) then
+       if (cpu.eq.1) then
          ! The old version of intsolG expected the MM force array to be
          ! padded in front with # QM atoms spots for some reason
          allocate(ff(natom,3), ffcl(ntatom,3))

@@ -23,6 +23,10 @@ else
   OBJ          += $(CUDA_SOURCES:%.cu=%.cu_o)
 endif
 
+ifeq ($(coulomb_gpu),1)
+  CXXFLAGS     += -DGPU_COULOMB=1
+endif
+
 ## Other options
 ifeq ($(print), 1)
         CXXFLAGS += -DPRINT_MATRICES

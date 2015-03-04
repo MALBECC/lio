@@ -23,9 +23,9 @@ c
       real*8, dimension (:,:), allocatable :: fock,fockm,rho,!,FP_PF,
      >   FP_PFm,EMAT,Y,Ytrans,Xtrans,rho1,EMAT2
 c
-       integer ndiist
+       integer ndiist,cpu
 c       dimension d(natom,natom)
-       logical  hagodiis,alloqueo, ematalloc, cpu
+       logical  hagodiis,alloqueo, ematalloc
 c       REAL*8 , intent(in)  :: qmcoords(3,natom)
 c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
         INTEGER :: ErrID,iii,jjj
@@ -178,7 +178,7 @@ c
       call int1(En)
       if(nsol.gt.0) then
         call g2g_query_cpu(cpu)
-        if (cpu) then
+        if (cpu.eq.1) then
           call g2g_timer_start('intsol')
           call intsol(E1s,Ens,.true.)
           call g2g_timer_stop('intsol')

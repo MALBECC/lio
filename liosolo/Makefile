@@ -1,15 +1,25 @@
-ifeq ($(gcc),1)
-  CXX = gfortran
+######################################################################
+ifeq ($(ifort),1)
+  FC   = ifort
+  LIBS+= -module ../lioamber/obj
 else
-  CXX = ifort
-endif 
+  FC   = gfortran
+  LIBS+= -I../lioamber/obj -J../lioamber/obj
+endif
+
+LIBS += -L../g2g -lg2g
+LIBS += -L../lioamber -llio-g2g
+FLAGS =
 
 ifeq ($(magma),1)
         DEFINE   += -Dmagma
         LIBS     += -L$(MAGMAROOT)/lib -lmagma
 endif
 
- liosolo:
-	$(CXX) main.f -L ../lioamber/ -llio-g2g -L ../g2g/ -lg2g -I../lioamber/ $(LIBS) -o liosolo
- clean:
-	rm -f liosolo
+######################################################################
+liosolo: main.f
+	$(FC) $< -o $@ $(FLAGS) $(LIBS)
+
+clean:
+	rm -rf liosolo
+######################################################################

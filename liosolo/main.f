@@ -1,7 +1,7 @@
+      program liosolo
 c MAIN SUBROUTINE ----------------------------------------------------
 C DFT calculation with gaussian basis sets
 c---------------------------------------------------------------------
-
       use garcha_mod
       implicit real*8 (a-h,o-z)
 
@@ -170,11 +170,12 @@ c       call g2g_solve_groups(3, Exc, dxyzqm)
 c       write(*,*) dxyzqm
 
        do k=1,natom
-         write(123,'("fuerza",I,D,D,D)') 
+!         write(123,'("fuerza",I,D,D,D)')
+         write(123,"('fuerza',I6,D6.2,D6.2,D6.2)") 
      >     k,dxyzqm(k,1),dxyzqm(k,2),dxyzqm(k,3)
        enddo
        deallocate (dxyzqm)
        endif 
        call lio_finalize()
-       end
+       end program
 

@@ -26,6 +26,7 @@ c  are stored in files x.dip, y.dip, z.dip.
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 c       USE latom
        USE garcha_mod
+       use mathsubs
        IMPLICIT REAL*8 (a-h,o-z)
 
        INTEGER :: istep
@@ -47,11 +48,12 @@ c       USE latom
      >   pert_steps,lpfrg_steps,chkpntF1a,chkpntF1b
        REAL*8 ::
      >   dt_magnus,dt_lpfrg
+        logical :: just_int3n,ematalloct
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        call g2g_timer_start('TD')
        call g2g_timer_start('inicio')
-       just_int3n = false
+       just_int3n = .false.
        ALLOCATE(factorial(NBCH))
 !!------------------------------------!!
        if(propagator.eq.2) then
@@ -311,8 +313,10 @@ c s is in RMM(M13,M13+1,M13+2,...,M13+MM)
        rho=matmul(ytrans,rho)
        rho=matmul(rho,y)
 ! with matmulnanoc
-!            call matmulnanoc(rho,Y,rho,M)
+! (NO LONGER AVAILABLE; USE BASECHANGE INSTEAD)
+!            call matmulnanoc(rho,Y,rho1,M)
 !            rho=rho1
+!            rho=basechange(M,Ytrans,rho,Y)
 !--------------------------------------!
             call g2g_timer_start('int2')
             call int2()
@@ -472,9 +476,9 @@ c           if(istep.eq.1) then
 c             rhold=rho+(tdstep*Im*(matmul(fock,rho)))
 c             rhold=rhold-(tdstep*Im*(matmul(rho,fock)))
 c           endif
-c using conmutc
+c using commutator
               if(istep.eq.1) then
-                 call conmutc(fock,rho,rhold,M)
+                 rhold=commutator(fock,rho)
                  rhold=rho+dt_lpfrg*(Im*rhold)
               endif
 !####################################################################!
@@ -483,8 +487,8 @@ c using conmutc
 c           rhonew=rhold-(tdstep*Im*(matmul(fock,rho)))
 c           rhonew=rhonew+(tdstep*Im*(matmul(rho,fock)))
 c--------------------------------------c
-! using conmutc:
-              call conmutc(fock,rho,rhonew,M)
+! using commutator:
+              rhonew=commutator(fock,rho)
               rhonew=rhold-dt_lpfrg*(Im*rhonew)
 c Density update (rhold-->rho, rho-->rhonew)
               do i=1,M
@@ -516,7 +520,9 @@ c with matmul:
               rho1=matmul(rho1,xtrans)
 !       rho1=REAL(rho1)
 c with matmulnanoc:
+c (NO LONGER AVAILABLE; USE BASECHANGE INSTEAD)
 c          call matmulnanoc(rho,xtrans,rho1,M)
+c          rho1=basechange(M,X,rho,Xtrans)
 c          rho1 = REAL(rho1)
 c The real part of the density matrix in the atomic orbital basis is copied in RMM(1,2,3,...,MM) to compute the corresponding fock matrix.
               do j=1,M

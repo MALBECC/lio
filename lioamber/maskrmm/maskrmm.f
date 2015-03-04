@@ -1,22 +1,22 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       module mathsubs
+       module maskrmm
 !--------------------------------------------------------------------!
 !
 !
 ! INCLUDE FILES WITH HEADERS:
 !--------------------------------------------------------------------!
        implicit none
-       include 'gaussbell_h.f'
-       include 'commutator_h.f'
-       include 'basechange_h.f'
+       include 'rhomess_h.f'
+       include 'rhofix_h.f'
        contains
 !
 !
 ! INCLUDE FILES WITH PROCEDURES:
 !--------------------------------------------------------------------!
-       include 'gaussbell.f'
-       include 'commutator.f'
-       include 'basechange.f'
+       include 'spunpack.f'
+       include 'sprepack.f'
+       include 'rhomess.f'
+       include 'rhofix.f'
        end module
 !
 !

@@ -9,6 +9,7 @@ c Dario Estrin, 1992
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       subroutine SCF(E,dipxyz)
       use garcha_mod
+      use mathsubs
 c      use qmmm_module, only : qmmm_struct, qmmm_nml
 c
       implicit real*8 (a-h,o-z)
@@ -32,6 +33,7 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
         INTEGER            :: LWORK2
         REAL*8,ALLOCATABLE :: WORK2(:)
         INTEGER, ALLOCATABLE :: IWORK2(:),IPIV(:)
+        logical :: just_int3n,ematalloct
 !--------------------------------------------------------------------!
 
 

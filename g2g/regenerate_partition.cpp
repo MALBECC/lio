@@ -341,7 +341,7 @@ void Partition::regenerate(void)
 
     G2G::MINCOST = getintenv("LIO_MINCOST_OFFSET", 250000);
     G2G::THRESHOLD = getintenv("LIO_SPLIT_THRESHOLD", 80);
-    G2G::SPLITPOINTS = getintenv("LIO_SPLIT_POINTS", 400);
+    G2G::SPLITPOINTS = getintenv("LIO_SPLIT_POINTS", 200);
 
     // La grilla computada ahora tiene |puntos_totales| puntos, y |fortran_vars.m| funciones.
     uint nco_m = 0;

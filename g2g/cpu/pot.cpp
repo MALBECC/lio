@@ -100,6 +100,9 @@ void cpu_pot_tmpl(scalar_type dens, scalar_type& ex, scalar_type& ec, scalar_typ
 			y2a = v0 + vc;
 		}
 		break;
+    default:
+     throw std::runtime_error("Error, invalid iexch");
+    break;
 	}
 }
 

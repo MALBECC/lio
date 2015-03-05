@@ -150,8 +150,8 @@ inline double& elem(double3& a, uint i) {
 		case 0: return a.x;
 		case 1: return a.y;
 		case 2: return a.z;
+    default: return a.x;
 	}
-  return a.x;
 }
 
 inline const double& elem(const double3& a, uint i) {
@@ -159,8 +159,8 @@ inline const double& elem(const double3& a, uint i) {
 		case 0: return a.x;
 		case 1: return a.y;
 		case 2: return a.z;
+    default: return a.x;
 	}
-  return a.x;
 }
 
 inline __device__ __host__ double length(const double3& a) {

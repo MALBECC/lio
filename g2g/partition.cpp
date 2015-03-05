@@ -15,7 +15,7 @@ using namespace std;
 
 namespace G2G {
 
-int MINCOST, THRESHOLD;
+int MINCOST, THRESHOLD, SPLITPOINTS;
 Partition partition;
 
 ostream& operator<<(ostream& io, const Timers& t) {
@@ -39,13 +39,13 @@ void PointGroupCPU<scalar_type>::output_cost() const
 }
 
 template<class scalar_type>
-bool PointGroupCPU<scalar_type>::is_big_group(int threads_to_use) const
+bool PointGroupCPU<scalar_type>::is_big_group() const
 {
   return false;
 }
 
 template<class scalar_type>
-bool PointGroupGPU<scalar_type>::is_big_group(int threads_to_use) const
+bool PointGroupGPU<scalar_type>::is_big_group() const
 {
   return true;
 }
@@ -303,13 +303,13 @@ void Partition::compute_functions(bool forces, bool gga) {
 
   #pragma omp parallel for schedule(guided,8)
   for(uint i = 0; i < cubes.size(); i++){
-    if(!cubes[i]->is_big_group(0xDEADBEEF))
+    if(!cubes[i]->is_big_group())
       cubes[i]->compute_functions(forces, gga);
   }
 
   #pragma omp parallel for schedule(guided,8)
   for(uint i = 0; i < spheres.size(); i++){
-    if(!spheres[i]->is_big_group(0xDEADBEEF))
+    if(!spheres[i]->is_big_group())
       spheres[i]->compute_functions(forces, gga);
   }
 
@@ -328,9 +328,6 @@ void Partition::clear() {
 
 void Partition::rebalance(vector<double> & times, vector<double> & finishes)
 {
-  int cpu_threads = 0;
-  int gpu_threads = cudaGetGPUCount();
-  cpu_threads = finishes.size()-gpu_threads;
   for(int device = 0; device < 2; device++) {
     for(int rondas = 0; rondas < 5; rondas++) {
       int largest = 0;
@@ -369,7 +366,7 @@ void Partition::rebalance(vector<double> & times, vector<double> & finishes)
           int topass = mini;
           int workindex = work[largest][topass];
 
-          printf("Swapping %d from %d to %d\n", work[largest][topass], largest, smallest);
+          //printf("Swapping %d from %d to %d\n", work[largest][topass], largest, smallest);
 
           if(device == 1) {
             if(workindex < (int) cubes.size())
@@ -404,14 +401,13 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   Timer smallgroups, biggroups;
 
 
-  int gpu_threads = cudaGetGPUCount();
-  #pragma omp parallel for num_threads(outer_threads+gpu_threads) schedule(static)
+  #pragma omp parallel for num_threads(cpu_threads+gpu_threads) schedule(static)
   for(uint i = 0; i< work.size(); i++) {
     bool gpu_thread = false;
 #if GPU_KERNELS
-    if(i>=outer_threads) {
+    if(i>=cpu_threads) {
       gpu_thread = true;
-      cudaSetDevice(i-outer_threads);
+      cudaSetDevice(i-cpu_threads);
     }
 #endif
     double local_energy = 0;
@@ -446,8 +442,8 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
       timeforgroup[ind] = element.getTotal();
     }
     t.stop_and_sync();
-    printf("Workload %d: (%d) ", i, (int) work[i].size());
-    cout << t; cout << ts;
+    //printf("Workload %d: (%d) ", i, (int) work[i].size());
+    //cout << t; cout << ts;
 
     next[i] = t.getTotal();
 
@@ -497,7 +493,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
      exit(1);
    }
 
-  enditer.stop(); cout << "enditer = " << enditer << endl;
+  //enditer.stop(); cout << "enditer = " << enditer << endl;
 }
 
 template class PointGroup<double>;

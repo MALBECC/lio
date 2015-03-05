@@ -1,6 +1,6 @@
 # -*- mode: make -*-
 
-CXXFLAGS+= -fPIC -Wall -g -std=c++0x -I. -I$(CUDAHOME)/include
+CXXFLAGS+= -fopenmp -fPIC -Wall -Wextra -Wshadow -std=c++0x -I. -I$(CUDAHOME)/include
 
 ifeq ($(non_optimize), 1)
   OPTIMIZE:=-O2
@@ -8,22 +8,20 @@ else
   OPTIMIZE:=-Ofast
 endif
 
-ifeq ($(gcc),1)
+ifneq ($(ifort),1)
   CXX      := g++
-  CXXFLAGS := $(CXXFLAGS) -Wno-long-long -ansi -Wno-unused-variable -Wno-unused-parameter
+  CXXFLAGS := $(CXXFLAGS) -Wno-unused-variable -Wno-unused-parameter
 else
   CXX      := icc
-  CXXFLAGS := $(CXXFLAGS) -qopt-report=5
+  CXXFLAGS := $(CXXFLAGS) -qopt-report=3
 endif
 
 # Debug/release configuration
 ifneq ($(dbg),1)
-	COMMONFLAGS := -DNDEBUG
-	ifeq ($(gcc),1)
-    	CXXFLAGS  += $(OPTIMIZE) -fno-strict-aliasing
-	else
-    	CXXFLAGS  += $(OPTIMIZE) -fno-strict-aliasing
-	endif
+  COMMONFLAGS := -DNDEBUG
+  CXXFLAGS  += $(OPTIMIZE)
+else
+  CXXFLAGS +=-ggdb
 endif
 
 CXXFLAGS  	+= $(COMMONFLAGS) -I$(MKLROOT)/include

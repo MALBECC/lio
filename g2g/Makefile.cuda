@@ -73,7 +73,7 @@ CWARN_FLAGS := $(CXXWARN_FLAGS) \
 
 # Compiler-specific flags
 NVCCFLAGS   := $(ARCHFLAGS) -shared --compiler-options -fPIC --compiler-options -Wall
-ifeq ($(gcc),1)
+ifneq ($(ifort),0)
   CXXFLAGS    += $(CXXWARN_FLAGS)
 endif
 
@@ -85,14 +85,10 @@ ifeq ($(profile),1)
 	NVCCFLAGS += --compiler-options -pg
 endif
 
-ifeq ($(regcount),1)
-  NVCCFLAGS += --ptxas-options=-v
-endif
-
 ifeq ($(non_optimize), 1)
   OPTIMIZE := -O3
 else
-  OPTIMIZE := -O0
+  OPTIMIZE := -O2
 endif
 
 # Debug/release configuration
@@ -104,17 +100,17 @@ ifeq ($(keep), 1)
 	NVCCFLAGS   += --keep
 endif
 
-ifeq ($(cpu),1)
+ifneq ($(cpu),0)
 	NVCCFLAGS += -DCPU_KERNELS=1
 endif
 
 ifeq ($(ptx),1)
-	NVCCFLAGS += --ptx
+  NVCCFLAGS += --ptx
 endif
 ################################################################################
 # Check for input flags and set compiler flags appropriately
 ################################################################################
-ifeq ($(fastmath), 1)
+ifneq ($(fastmath), 0)
   NVCCFLAGS += -use_fast_math
 endif
 

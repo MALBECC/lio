@@ -96,7 +96,7 @@ unsigned long Timer::getSec(void) const {
 }
 
 double Timer::getTotal(void) const {
-    return res.tv_nsec + res.tv_sec * 1000000000.0;
+    return res.tv_nsec + res.tv_sec * 1000.0 * 1000.0 * 1000.0;
 }
 
 bool Timer::operator<(const Timer& other) const {
@@ -106,11 +106,9 @@ bool Timer::operator<(const Timer& other) const {
 
 void Timer::sync(void) {
 #ifdef TIMINGS
-#ifndef NOSYNC
   #if GPU_KERNELS
 	cudaThreadSynchronize();
   #endif
-#endif
 #endif
 }
 

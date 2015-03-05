@@ -89,7 +89,7 @@ class PointGroup {
     void add_point(const Point& p);
     virtual void compute_weights(void) = 0;
 
-    virtual bool is_big_group(int) const = 0;
+    virtual bool is_big_group() const = 0;
     void compute_indexes();
     std::vector<uint> rmm_rows;
     std::vector<uint> rmm_cols;
@@ -130,7 +130,7 @@ class PointGroupCPU: public PointGroup<scalar_type> {
     virtual void compute_functions(bool, bool);
     virtual void compute_weights(void);
     void output_cost() const;
-    bool is_big_group(int) const;
+    bool is_big_group() const;
     virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const;
     virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input) const;
     virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input_a, G2G::HostMatrix<scalar_type>& rmm_input_b) const;
@@ -162,7 +162,7 @@ class PointGroupGPU: public PointGroup<scalar_type> {
     virtual void deallocate();
     virtual void compute_functions(bool, bool);
     virtual void compute_weights(void);
-    bool is_big_group(int) const;
+    bool is_big_group() const;
     virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input, FortranMatrix<double>& source) const;
     virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input) const;
     virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input_a, G2G::HostMatrix<scalar_type>& rmm_input_b) const;
@@ -216,11 +216,10 @@ class Partition {
     std::vector< std::vector< int > > work;
     std::vector< double > next;
     std::vector< double > timeforgroup;
-
-    int outer_threads, inner_threads;
 };
 
-extern int MINCOST, THRESHOLD;
+extern int MINCOST, THRESHOLD, SPLITPOINTS;
+extern int cpu_threads, gpu_threads;
 
 }
 

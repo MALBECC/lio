@@ -81,14 +81,16 @@ int split_bins(const vector< pair<long long, int> > & costs, vector< vector<int>
 
 void Partition::compute_work_partition()
 {
+  if(G2G::cpu_threads == 0)
+    return;
   vector< pair<long long, int> > costs;
   for(uint i = 0; i < cubes.size(); i++)
-    if(!cubes[i]->is_big_group(inner_threads))
+    if(!cubes[i]->is_big_group())
       costs.push_back(make_pair(cubes[i]->cost(), i));
 
   const uint ncubes = cubes.size();
   for(uint i = 0; i < spheres.size(); i++)
-    if(!spheres[i]->is_big_group(inner_threads))
+    if(!spheres[i]->is_big_group())
       costs.push_back(make_pair(spheres[i]->cost(), ncubes+i));
 
   if(costs.empty()) return;
@@ -104,7 +106,7 @@ void Partition::compute_work_partition()
 
     vector< vector<int> > workloads;
     int bins = split_bins(costs, workloads, candidate);
-    if(bins <= outer_threads) {
+    if(bins <= G2G::cpu_threads) {
       max_cost = candidate;
     } else {
       min_cost = candidate;
@@ -137,17 +139,22 @@ int getintenv(const char * str, int default_value) {
   return ret;
 }
 
-void diagnostic(int inner, int outer) {
+void diagnostic() {
     printf("--> Thread OMP: %d\n", omp_get_max_threads());
-    printf("--> Thread internos: %d\n", inner);
-    printf("--> Thread externos: %d\n", outer);
+    printf("--> Thread CPU: %d\n", G2G::cpu_threads);
+    printf("--> Thread GPU: %d\n", G2G::gpu_threads);
     printf("--> Correccion de cubos chicos: %d\n", MINCOST);
-    printf("--> Threshold en threads para considerar grande: %d\n", THRESHOLD);
+    printf("--> Puntos de separacion: %d\n", SPLITPOINTS);
 }
 
 template <class T>
 bool is_big_group(const T& points) {
-    return (points.size() > (uint)getintenv("LIO_SPLIT_POINTS", 600));
+  assert(G2G::cpu_threads > 0 || G2G::gpu_threads > 0);
+  if (G2G::cpu_threads == 0)
+    return true;
+  if (G2G::gpu_threads == 0)
+    return false;
+  return (points.size() > G2G::SPLITPOINTS);
 }
 
 struct Sorter {
@@ -159,6 +166,7 @@ template <class T>
 /* methods */
 void Partition::regenerate(void)
 {
+
     Timer tweights;
     // Determina el exponente minimo para cada tipo de atomo.
     // uno por elemento de la tabla periodica.
@@ -331,6 +339,10 @@ void Partition::regenerate(void)
         }
     }
 
+    G2G::MINCOST = getintenv("LIO_MINCOST_OFFSET", 250000);
+    G2G::THRESHOLD = getintenv("LIO_SPLIT_THRESHOLD", 80);
+    G2G::SPLITPOINTS = getintenv("LIO_SPLIT_POINTS", 400);
+
     // La grilla computada ahora tiene |puntos_totales| puntos, y |fortran_vars.m| funciones.
     uint nco_m = 0;
     uint m_m = 0;
@@ -477,21 +489,8 @@ void Partition::regenerate(void)
     //If it is CPU, then this doesn't matter
     GlobalMemoryPool::init(G2G::free_global_memory);
 
-    inner_threads = outer_threads = omp_get_max_threads();
-
-    G2G::MINCOST = getintenv("LIO_MINCOST_OFFSET", 250000);
-    G2G::THRESHOLD = getintenv("LIO_SPLIT_THRESHOLD", 80);
 
     cout << "Weights: " << tweights << endl;
-
-    #ifdef OUTPUT_COSTS
-    for(int i = 0; i < cubes.size(); i++) {
-      printf("CUBE: "); cubes[i]->output_cost(); printf("\n");
-    }
-    for(int i = 0; i < spheres.size(); i++) {
-      printf("SPHERE: "); spheres[i]->output_cost(); printf("\n");
-    }
-    #endif
 
     for(uint i = 0; i < cubes.size(); i++) {
       cubes[i]->compute_indexes();
@@ -501,33 +500,33 @@ void Partition::regenerate(void)
     }
 
     compute_work_partition();
-    int gpu_threads = cudaGetGPUCount();
 
     timeforgroup.resize(cubes.size() + spheres.size());
-    next.resize(outer_threads+gpu_threads);
+    next.resize(G2G::cpu_threads+G2G::gpu_threads);
 
-    fort_forces_ms.resize(outer_threads+gpu_threads);
-    rmm_outputs.resize(outer_threads+gpu_threads);
+    fort_forces_ms.resize(G2G::cpu_threads+G2G::gpu_threads);
+    rmm_outputs.resize(G2G::cpu_threads+G2G::gpu_threads);
 
-    for(int i = 0; i < outer_threads+gpu_threads; i++) {
+    for(int i = 0; i < G2G::cpu_threads+G2G::gpu_threads; i++) {
       fort_forces_ms[i].resize(fortran_vars.max_atoms, 3);
       rmm_outputs[i].resize(fortran_vars.rmm_output.width, fortran_vars.rmm_output.height);
     }
 
     int current_gpu = 0;
-    work.resize(work.size()+gpu_threads);
+    for (int i = work.size(); i < G2G::cpu_threads + G2G::gpu_threads; i++)
+      work.push_back(vector<int>());
 
     for(uint i = 0; i < cubes.size(); i++)
-      if(cubes[i]->is_big_group(inner_threads)) {
-        work[outer_threads+current_gpu].push_back(i);
-        current_gpu = (current_gpu + 1) % gpu_threads;
+      if(cubes[i]->is_big_group()) {
+        work[G2G::cpu_threads+current_gpu].push_back(i);
+        current_gpu = (current_gpu + 1) % G2G::gpu_threads;
       }
 
     for(uint i = 0; i < spheres.size(); i++)
-      if(spheres[i]->is_big_group(inner_threads)) {
-        work[outer_threads+current_gpu].push_back(i+cubes.size());
-        current_gpu = (current_gpu + 1) % gpu_threads;
+      if(spheres[i]->is_big_group()) {
+        work[G2G::cpu_threads+current_gpu].push_back(i+cubes.size());
+        current_gpu = (current_gpu + 1) % G2G::gpu_threads;
       }
 
-    diagnostic(inner_threads, outer_threads);
+    diagnostic();
 }

@@ -26,6 +26,8 @@ void read_options(void);
 /* global variables */
 namespace G2G {
 	FortranVars fortran_vars;
+  int cpu_threads=0;
+  int gpu_threads=0;
 }
 
 /* methods */
@@ -33,9 +35,7 @@ namespace G2G {
 extern "C" void g2g_init_(void)
 {
   cout << "<====== Initializing G2G ======>"<<endl;
-
   #if GPU_KERNELS
-
   cuInit(0);
   int devcount = cudaGetGPUCount();
   int devnum = -1;
@@ -44,11 +44,16 @@ extern "C" void g2g_init_(void)
     if (cudaGetDeviceProperties(&devprop, i) != cudaSuccess) throw runtime_error("Could not get device propierties!");
     cout << "GPU Device used: " << devprop.name << endl;
   }
+  G2G::gpu_threads = devcount;
   cout << "Kernels: gpu" << endl;
   #endif
   #if CPU_KERNELS
+  G2G::cpu_threads = omp_get_max_threads() - G2G::gpu_threads;
   cout << "Kernels: cpu" << endl;
   #endif
+  if(gpu_threads == 0 && cpu_threads == 0)
+    throw runtime_error("Error: Either a gpu or a cpu thread is needed to run G2G");
+  cout << "Using " << G2G::cpu_threads << " CPU Threads and " << G2G::gpu_threads << " GPU Threads" << endl;
 
   cout.precision(10);
 }
@@ -191,6 +196,9 @@ void compute_new_grid(const unsigned int grid_type) {
 			fortran_vars.e = fortran_vars.e3; fortran_vars.wang = fortran_vars.wang3;
 			fortran_vars.shells = fortran_vars.shells2;
 		break;
+    default:
+      throw std::runtime_error("Error de grilla");
+    break;
 	}
 
 
@@ -312,6 +320,7 @@ namespace G2G {
   bool energy_all_iterations = false;
   double free_global_memory = 0.0;
 }
+
 //=================================================================================================================
 void read_options(void) {
 	cout << "<====== read_options ========>" << endl;

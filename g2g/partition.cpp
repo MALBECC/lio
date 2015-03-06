@@ -82,7 +82,7 @@ void PointGroupCPU<scalar_type>::get_rmm_input(HostMatrix<scalar_type>& rmm_inpu
   const int indexes = this->rmm_bigs.size();
   for(int i = 0; i < indexes; i++) {
     int ii = this->rmm_rows[i], jj = this->rmm_cols[i], bi = this->rmm_bigs[i];
-    rmm_input(ii, jj) = (scalar_type) source.data[bi];
+    rmm_input(ii, jj) = rmm_input(jj, ii) = (scalar_type) source.data[bi];
   }
 }
 

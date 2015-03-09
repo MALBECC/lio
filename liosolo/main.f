@@ -8,7 +8,7 @@ c---------------------------------------------------------------------
       character(len=20)::argument,inpfile,inpbasis,inpcoords
       integer::charge
       logical::filexist,writeforces
-      REAL*8, dimension (:,:), ALLOCATABLE   :: dxyzqm
+      REAL*8, dimension (:,:), ALLOCATABLE   :: dxyzqm,dxyzcl
       namelist /lio/ natom,nsol,charge,OPEN,NMAX,Nunp,VCINP,frestartin,
      > GOLD,told,rmax,rmaxs,predcoef,
      > idip,writexyz,intsoldouble,DIIS,ndiis,dgtrig,
@@ -165,17 +165,34 @@ c--------------------------------------------------------
        open(unit=123,file='fuerzas')
        allocate (dxyzqm(3,natom))
        dxyzqm=0.0
+
+       if(nsol.gt.0) then 
+          allocate (dxyzcl(3,natom+nsol))
+          dxyzcl=0.
+       endif
+
        call dft_get_qm_forces(dxyzqm)
+       call dft_get_mm_forces(dxyzcl,dxyzqm)
 c       call g2g_solve_groups(3, Exc, dxyzqm)
 c       write(*,*) dxyzqm
 
        do k=1,natom
 !         write(123,'("fuerza",I,D,D,D)')
-         write(123,"('fuerza',I6,D6.2,D6.2,D6.2)") 
+         write(123,100) 
      >     k,dxyzqm(k,1),dxyzqm(k,2),dxyzqm(k,3)
        enddo
+         if(nsol.gt.0) then
+          do k=natom,natom+nsol
+!         write(123,'("fuerza",I,D,D,D)')
+           write(123,100)
+     >     k,dxyzcl(k,1),dxyzcl(k,2),dxyzcl(k,3)
+          enddo
+
+         endif
        deallocate (dxyzqm)
+       if(nsol.gt.0) deallocate(dxyzcl)
        endif 
        call lio_finalize()
+100    format (I5,2x,f10.6,2x,f10.6,2x,f10.6)
        end program
 

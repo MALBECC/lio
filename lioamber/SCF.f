@@ -32,6 +32,7 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
         INTEGER            :: LWORK2
         REAL*8,ALLOCATABLE :: WORK2(:)
         INTEGER, ALLOCATABLE :: IWORK2(:),IPIV(:)
+        logical :: just_int3n,ematalloct
 !--------------------------------------------------------------------!
 
 

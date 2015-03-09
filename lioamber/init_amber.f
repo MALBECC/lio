@@ -27,7 +27,7 @@ c      parameter (ngdDyn=850)
 c      include 'param'
         integer , intent(in) :: charge, nclatom
        integer , intent(in)  :: natomin
-         integer , intent(in)  :: Izin(natom)
+         integer , intent(in)  :: Izin(natomin)
        character(len=20) :: basis_i
        character(len=20) :: output_i
        character(len=20) :: fcoord_i

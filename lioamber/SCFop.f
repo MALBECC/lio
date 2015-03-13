@@ -94,7 +94,7 @@ c------------------------------------------------
       allocate (znano(M,M),xnano(M,M))
 c      allocate(rmm5(MM),rmm13(m),rmm15(mm))
 
-      just_int3n = .false.
+c      just_int3n = .false.
       alloqueo = .true.
       ematalloc=.false.
       hagodiis=.false.
@@ -664,7 +664,7 @@ c              xnano=matmul(xnano,znano)
 
           allocate(EMAT2_a(ndiist+1,ndiist+1))
           EMAT2_a=EMATa
-          ematalloct=.true.
+c          ematalloct=.true.
 c
 c********************************************************************
 c   THE MATRIX EMAT SHOULD HAVE FORM
@@ -917,7 +917,7 @@ c              xnano=matmul(xnano,znano)
 
           allocate(EMAT2_b(ndiist+1,ndiist+1))
           EMAT2_b=EMATb
-          ematalloct=.true.
+c          ematalloct=.true.
 c
 c********************************************************************
 c   THE MATRIX EMAT SHOULD HAVE FORM
@@ -1113,9 +1113,9 @@ c      IDAMP=0
 c      if (IDAMP.EQ.1) then
 c        DAMP=DAMP0
 c        if (abs(D1).lt.1.D-5) then
-c          fac=dmax1(0.90D0,abs(D1/D2))
-c          fac=dmin1(fac,1.1D0)
-c          DAMP=DAMP0*fac
+c          factor=dmax1(0.90D0,abs(D1/D2))
+c          factor=dmin1(factor,1.1D0)
+c          DAMP=DAMP0*factor
 c        endif
 c
 c        E=E1+E2+En

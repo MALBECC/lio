@@ -21,7 +21,6 @@ int GlobalMemoryPool::tryAlloc(size_t size)
 
 void GlobalMemoryPool::dealloc(size_t size, int device) {
   if(!_init) init();
-  assert (_freeGlobalMemory[device] > size);
   _freeGlobalMemory[device] += size;
 }
 
@@ -69,7 +68,7 @@ void GlobalMemoryPool::init(double free_global_memory)
 size_t GlobalMemoryPool::getFreeMemory() {
   if(!_init) init();
   size_t free_memory = 0;
-#if GPU_KERNEL
+#if GPU_KERNELS
   int current_device;
   cudaGetDevice(&current_device);
   free_memory = _freeGlobalMemory[current_device];

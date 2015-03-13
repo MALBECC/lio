@@ -116,7 +116,7 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve_closed(Timers
         scalar_type ww2xc = 0, ww2yc = 0, ww2zc = 0;
 
         const scalar_type * rm = rmm_input.row(i);
-        #pragma vector aligned always
+        #pragma vector always
         for(int j = 0; j <= i; j++) {
           const scalar_type rmj = rm[j];
           w += fv[j] * rmj;
@@ -237,7 +237,7 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve_closed(Timers
       const scalar_type * fvr = function_values_transposed.row(row);
       const scalar_type * fvc = function_values_transposed.row(col);
 
-      #pragma vector aligned always
+      #pragma vector always
       for(int point = 0; point < npoints; point++) {
         res += fvr[point] * fvc[point] * factors_rmm(point);
       }

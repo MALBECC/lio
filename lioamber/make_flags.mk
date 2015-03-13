@@ -58,7 +58,7 @@ objlist += intsolG.o intsolGs.o intsol.o
 $(objlist:%.o=$(obj_path)/%.o) : optim:=$(optim1)
 #$(objlist:%.o=$(obj_path)/%.o) : private optim+=$(optim1)
 
-objlist := matmuldiag.o int3lu.o
+objlist := matmuldiag.o int3lu.o fock_commuts.o
 objlist := SCF.o TD.o ehrenfest.o magnus.o predictor.o
 objlist += FixMessRho.o get_unit.o mulliken.o PackedStorage.f
 objlist += init_amber.o init.o lio_init.o liomain.o lio_finalize.o
@@ -79,7 +79,7 @@ $(objlist:%.o=$(obj_path)/%.o) : optim:=$(optim3)
 myflags :=
 
 ifeq ($(ifort),1)
-  objlist := matmuldiag.o int3lu.o
+  objlist := matmuldiag.o int3lu.o fock_commuts.o
   objlist += mathsubs.o
   $(objlist:%.o=$(obj_path)/%.o) : myflags:=-parallel
   #$(objlist:%.o=$(obj_path)/%.o) : private myflags+=-parallel

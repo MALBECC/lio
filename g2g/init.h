@@ -14,7 +14,7 @@ namespace G2G {
   };
 
   struct FortranVars {
-    uint atoms, max_atoms, gaussians;
+    uint atoms, clatoms, max_atoms, gaussians;
     bool normalize;
 #if FULL_DOUBLE
     double normalization_factor;
@@ -22,6 +22,15 @@ namespace G2G {
     float normalization_factor;
 #endif
     uint s_funcs, p_funcs, d_funcs, spd_funcs, m;
+
+    /* ---DENSITY BASIS--- */
+    uint gaussians_dens,s_gaussians_dens,p_gaussians_dens;
+    uint s_funcs_dens, p_funcs_dens, d_funcs_dens, spd_funcs_dens, m_dens;
+    FortranMatrix<uint> nucleii_dens, contractions_dens;
+    FortranMatrix<double> a_values_dens, c_values_dens;
+    FortranMatrix<double> af_input_ndens1;
+    /* ---DENSITY BASIS--- */
+ 
     uint nco;
     bool OPEN;
     uint nunp;
@@ -31,16 +40,24 @@ namespace G2G {
     GridType grid_type;
     GridSize grid_size;
     FortranMatrix<double> atom_positions_pointer;
+    FortranMatrix<double> clatom_positions_pointer;
+    FortranMatrix<double> clatom_charges_pointer;
     HostMatrix<double3> atom_positions;
+    HostMatrix<double3> clatom_positions;
     HostMatrix<uint> atom_types;
+    HostMatrix<double> clatom_charges;
     HostMatrix<uint> shells, shells1, shells2;
     HostMatrix<double> rm;
     HostMatrix<double> atom_atom_dists, nearest_neighbor_dists;
     FortranMatrix<uint> nucleii, contractions;
     FortranMatrix<double> a_values, c_values;
-    FortranMatrix<double> rmm_input_ndens1, rmm_output;
+    FortranMatrix<double> rmm_input_ndens1, rmm_output, rmm_1e_output;
     FortranMatrix<double> rmm_dens_a, rmm_dens_b, rmm_output_a, rmm_output_b;
     FortranMatrix<double> e, e1, e2, e3, wang, wang1, wang2, wang3;
+    // Arrays used for numerical evaluation of F(m,U) functions in Obara-Saika recursion
+    FortranMatrix<double> str, fac;
+    // Gaussian argument cut-off for QM/MM, Coulomb
+    double rmax;
   };
 
   extern FortranVars fortran_vars;

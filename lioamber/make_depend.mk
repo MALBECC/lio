@@ -22,7 +22,7 @@ include mathsubs/mathsubs.mk
 objects += liomain.o SCF.o SCFop.o SCF_in.o TD.o
 objects += dip.o dipmem.o jarz.o magnus.o predictor.o mulliken.o
 objects += dft_get_mm_forces.o dft_get_qm_forces.o
-objects += matmuldiag.o
+objects += matmuldiag.o fock_commuts.o
 objects += init.o init_amber.o lio_init.o lio_finalize.o
 objects += alg.o drive.o func.o grid.o
 objects += int1.o int1G.o int2.o int2G.o

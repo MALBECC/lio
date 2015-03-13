@@ -21,10 +21,14 @@ ifneq ($(dbg),1)
   COMMONFLAGS := -DNDEBUG
   CXXFLAGS  += $(OPTIMIZE)
 else
-  CXXFLAGS +=-ggdb
+  CXXFLAGS +=-ggdb -O2
 endif
 
-CXXFLAGS  	+= $(COMMONFLAGS) -I$(MKLROOT)/include
+ifeq ($(gcc),1)
+  CXXFLAGS      += $(COMMONFLAGS) -I$(PACK_INC_DIR)
+else
+  CXXFLAGS  	+= $(COMMONFLAGS) -I$(MKLROOT)/include
+endif
 
 %.o:%.cpp %.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@

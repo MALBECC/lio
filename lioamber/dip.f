@@ -540,18 +540,18 @@ c
 
 
 
-c fac : for charged species dipole moment depends on the origin
+c factor : for charged species dipole moment depends on the origin
 c definition - Using the factor, it is defined with respect to the
 c center of charge (important in Reaction Field calculations)
 c For neutral systems it doesn't matter
 c
-      fac=(Qc+Nel)/Nel
+      factor=(Qc+Nel)/Nel
 c test
-c     fac=1
+c     factor=1
 c
-      ux=uxa-ux*fac
-      uy=uya-uy*fac
-      uz=uza-uz*fac
+      ux=uxa-ux*factor
+      uy=uya-uy*factor
+      uz=uza-uz*factor
 c
 c
 c Contributions from the solvent (calculated from point charges)

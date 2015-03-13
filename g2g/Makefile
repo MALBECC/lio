@@ -22,6 +22,10 @@ ifneq ($(cuda),0)
   LIBRARIES    := $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
 endif
 
+ifeq ($(coulomb_gpu),1)
+  CXXFLAGS     += -DGPU_COULOMB=1
+endif
+
 ## Other options
 ifeq ($(print), 1)
         CXXFLAGS += -DPRINT_MATRICES
@@ -50,7 +54,12 @@ else
   NVCCFLAGS += -DFULL_DOUBLE=0
 endif
 
-LIBRARIES += -lrt
+## Define libraries
+LIBRARIES := $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
+ifneq ($(ifort),1)
+  LIBRARIES += -L$(PACK_LIB_DIR) -lcblas
+endif
+
 LIBRARY=libg2g.so
 ## Targets
 all: $(LIBRARY)

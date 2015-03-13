@@ -14,6 +14,7 @@ c----------------------------------------------------------------
 c
       subroutine drive(ng2,ngDyn,ngdDyn)
        use garcha_mod
+
 c
       implicit real*8 (a-h,o-z)
       logical Exx, parsearch
@@ -888,12 +889,14 @@ c      write(*,*) 'estoooo',ngpru, ngDyn, ng0, natom
         allocate(rhoalpha(1),rhobeta(1))
       endif
 
-      call g2g_parameter_init(NORM,natom,natom,ngDyn,
+      call g2g_parameter_init(NORM,natom,natom,ngDyn,!ngdDyn,
      >                        rqm,Rm2,Iz,Nr,Nr2,Nuc,
-     >                        M,ncont,nshell,c,a, 
-     >                        RMM,M18,M5,M3,rhoalpha,rhobeta,
+     >                        M,ncont,nshell,c,a,
+     >                        Md,ncontd,nshelld,cd,ad,Nucd,af,
+     >                        RMM,M18,M5,M11,M3,rhoalpha,rhobeta,
      >                        NCO,OPEN,Nunp,nopt,Iexch,
-     >                        e_, e_2, e3, wang, wang2, wang3)
+     >                        e_, e_2, e3, wang, wang2, wang3,
+     >                        STR, FAC, rmax)
 
 c      write(*,*) '======>>>> SALIENDO DE DRIVE <<<<=========='
 

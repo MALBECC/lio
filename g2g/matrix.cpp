@@ -35,22 +35,21 @@ template<class T> bool Matrix<T>::is_allocated(void) const {
  ***************************/
 template<class T> void HostMatrix<T>::alloc_data(void) {
   assert(this->bytes() != 0);
-    int bytes = this->bytes();
-    bytes = bytes + 64 - (bytes % 64);
-	if (pinned) {
-    #if GPU_KERNELS
-		cudaError_t error_status = cudaMallocHost((void**)&this->data, this->bytes());
-		assert(error_status == cudaSuccess);
-    #else
+  int bytes = this->bytes();
+  if (pinned) {
+#if GPU_KERNELS
+    cudaError_t error_status = cudaMallocHost((void**)&this->data, this->bytes());
+    assert(error_status == cudaSuccess);
+#else
     assert(false);
-    #endif
-	}
-	else 
-    {
-        posix_memalign((void **) &this->data, 64, this->bytes());
-    }
+#endif
+  }
+  else
+  {
+    posix_memalign((void **) &this->data, 64, this->bytes());
+  }
 
-	assert(this->data);
+  assert(this->data);
 }
 
 template<class T> void HostMatrix<T>::dealloc_data(void) {
@@ -100,8 +99,6 @@ template<class T> HostMatrix<T>& HostMatrix<T>::resize(unsigned int _width, unsi
   if (_height == 0 ) throw std::runtime_error("La altura no puede ser 0");
   if (_width != this->width || _height != this->height) {
     if (this->data) dealloc_data();
-    static const int ALIGN = 64 / sizeof(T);
-    _width = ((_width + ALIGN - 1) / ALIGN) * ALIGN;
     this->width = _width; this->height = _height;
     alloc_data();
   }
@@ -209,9 +206,7 @@ template<class T> void HostMatrix<T>::to_constant(const char* symbol) {
 }
 
 template<class T> void HostMatrix<T>::transpose(HostMatrix<T>& out) const {
-  int height = this->height; int ALIGN = 64 / sizeof(T);
-  height = ((height + ALIGN - 1 ) / ALIGN) * ALIGN;
-  out.resize(height, this->width);
+  out.resize(this->height, this->width);
   out.zero();
   for (uint i = 0; i < this->width; i++) {
     for (uint j = 0; j < this->height; j++) {
@@ -426,12 +421,16 @@ template class Matrix<float3>;
 template class Matrix<uint>;
 
 template class HostMatrix< vec_type<float, 2> >;
+template class HostMatrix< vec_type<float, 3> >;
 template class HostMatrix< vec_type<float, 4> >;
 template class HostMatrix< vec_type<double, 2> >;
+template class HostMatrix< vec_type<double, 3> >;
 template class HostMatrix< vec_type<double, 4> >;
 template class CudaMatrix< vec_type<float, 2> >;
+template class CudaMatrix< vec_type<float, 3> >;
 template class CudaMatrix< vec_type<float, 4> >;
 template class CudaMatrix< vec_type<double, 2> >;
+template class CudaMatrix< vec_type<double, 3> >;
 template class CudaMatrix< vec_type<double, 4> >;
 
 template class HostMatrix<double>;

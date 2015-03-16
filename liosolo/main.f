@@ -157,11 +157,11 @@ c--------------------------------------------------------
        else
          call SCF(escf,dipxyz)
        endif
-c-------------------------------------------------------- 
+c--------------------------------------------------------
 
-       write(*,*) 'SCF ENRGY=',escf 
+       write(*,*) 'SCF ENRGY=',escf
 
-      if(writeforces) then        
+      if(writeforces) then
        open(unit=123,file='fuerzas')
        allocate (dxyzqm(3,natom))
        dxyzqm=0.0
@@ -170,12 +170,12 @@ c       call g2g_solve_groups(3, Exc, dxyzqm)
 c       write(*,*) dxyzqm
 
        do k=1,natom
-!         write(123,'("fuerza",I,D,D,D)')
-         write(123,"('fuerza',I6,D6.2,D6.2,D6.2)") 
+       write(123,100)
      >     k,dxyzqm(k,1),dxyzqm(k,2),dxyzqm(k,3)
        enddo
        deallocate (dxyzqm)
-       endif 
+       endif
        call lio_finalize()
+100    format (I5,2x,f10.6,2x,f10.6,2x,f10.6)
        end program
 

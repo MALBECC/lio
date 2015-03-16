@@ -1354,8 +1354,15 @@ void clean_gamma( void ) {
   //scalar_type* d_str_ptr;
   //cudaMemcpyFromSymbol(&d_str_ptr,gpu_str,sizeof(d_str_ptr));
   //cudaFree(d_str_ptr);
-  cudaFreeArray(gammaArray);
 
+  int previous_device; cudaGetDevice(&previous_device);
+  int gpu_devices = cudaGetGPUCount();
+  for(int i = 0; i < gpu_devices; i++) {
+    if(cudaSetDevice(i) != cudaSuccess)
+      std::cout << "Error: can't set the device " << i << std::endl;
+      cudaFreeArray(gammaArray);
+  }
+  cudaSetDevice(previous_device);
   cudaAssertNoError("clean_gamma");
 }
 #if FULL_DOUBLE

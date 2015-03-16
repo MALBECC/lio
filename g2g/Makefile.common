@@ -21,6 +21,7 @@ ifneq ($(dbg),1)
   COMMONFLAGS := -DNDEBUG
   CXXFLAGS  += $(OPTIMIZE)
 else
+  COMMONFLAGS := -D_DEBUG
   CXXFLAGS +=-ggdb -O2
 endif
 

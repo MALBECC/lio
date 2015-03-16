@@ -64,8 +64,6 @@ void gpu_set_variables(void) {
     cudaMemcpyToSymbol(gpu_dens_gauss, &fortran_vars.gaussians_dens, sizeof(fortran_vars.gaussians_dens), 0, cudaMemcpyHostToDevice);
     cudaMemcpyToSymbol(gpu_dens_s_gauss, &fortran_vars.s_gaussians_dens, sizeof(fortran_vars.s_gaussians_dens), 0, cudaMemcpyHostToDevice);
     cudaMemcpyToSymbol(gpu_dens_p_gauss, &fortran_vars.p_gaussians_dens, sizeof(fortran_vars.p_gaussians_dens), 0, cudaMemcpyHostToDevice);
-
-
   }
   cudaSetDevice(previous_device);
   cudaAssertNoError("set_gpu_variables");
@@ -81,31 +79,28 @@ template<class scalar_type>
 void gpu_set_gamma_arrays()
 {
   // Cast STR/FAC to appropriate type (float/double)
-  scalar_type h_fac[17];
-  scalar_type h_str[880*22];
-  for (uint i = 0, k = 0; i < 880; i++) {
-    for (uint j = 0; j < 22; j++, k++) {
-      h_str[k] = fortran_vars.str(i,j);
+  HostMatrix<scalar_type> h_str(880,22), h_fac(17);
+  for (uint i = 0; i < 880; i++) {
+    for (uint j = 0; j < 22; j++) {
+      h_str(i,j) = fortran_vars.str(i,j);
     }
   }
   for (uint i = 0; i < 17; i++) {
-    h_fac[i] = fortran_vars.fac(i);
+    h_fac(i) = fortran_vars.fac(i);
   }
 
   qmmm_str_tex.normalized = false;
   qmmm_str_tex.filterMode = cudaFilterModePoint;
-  cudaMallocArray(&gammaArray,&qmmm_str_tex.channelDesc,880,22);//GAMMA_LENGTH,6);
-  cudaMemcpyToArray(gammaArray,0,0,h_str,sizeof(scalar_type)*880*22,cudaMemcpyHostToDevice);
-  //scalar_type* d_str_ptr;
-  //cudaMalloc((void**)&d_str_ptr,880*22*sizeof(scalar_type));
-  // STR data host->device
-  //cudaMemcpy(d_str_ptr,h_str.data,h_str.bytes(),cudaMemcpyHostToDevice);
-  // STR device pointer h->d
-  //cudaMemcpyToSymbol(gpu_str,&d_str_ptr,sizeof(gpu_str),0,cudaMemcpyHostToDevice);
-
-  // FAC data h->d
-  cudaMemcpyToSymbol(gpu_fac,h_fac,sizeof(scalar_type)*17,0,cudaMemcpyHostToDevice);
-
+  int previous_device; cudaGetDevice(&previous_device);
+  int gpu_devices = cudaGetGPUCount();
+  for(int i = 0; i < gpu_devices; i++) {
+    if(cudaSetDevice(i) != cudaSuccess)
+      std::cout << "Error: can't set the device " << i << std::endl;
+    cudaMallocArray(&gammaArray,&qmmm_str_tex.channelDesc,880,22);//GAMMA_LENGTH,6);
+    cudaMemcpyToArray(gammaArray,0,0,h_str.data,sizeof(scalar_type)*880*22,cudaMemcpyHostToDevice);
+    cudaMemcpyToSymbol(gpu_fac,h_fac.data,h_fac.bytes(),0,cudaMemcpyHostToDevice);
+  }
+  cudaSetDevice(previous_device);
   cudaAssertNoError("gpu_set_gamma_arrays");
 }
 
@@ -133,6 +128,7 @@ void gpu_set_clatoms(void)
   cudaMemcpyToSymbol(gpu_clatoms, &fortran_vars.clatoms, sizeof(fortran_vars.clatoms), 0, cudaMemcpyHostToDevice);
   }
 
+  cudaSetDevice(previous_device);
   cudaAssertNoError("gpu_set_clatoms");
 }
 

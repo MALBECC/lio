@@ -93,11 +93,12 @@ void gpu_set_gamma_arrays()
   qmmm_str_tex.filterMode = cudaFilterModePoint;
   int previous_device; cudaGetDevice(&previous_device);
   int gpu_devices = cudaGetGPUCount();
+  gammaArrays = new cudaArray*[gpu_devices];
   for(int i = 0; i < gpu_devices; i++) {
     if(cudaSetDevice(i) != cudaSuccess)
       std::cout << "Error: can't set the device " << i << std::endl;
-    cudaMallocArray(&gammaArray,&qmmm_str_tex.channelDesc,880,22);//GAMMA_LENGTH,6);
-    cudaMemcpyToArray(gammaArray,0,0,h_str.data,sizeof(scalar_type)*880*22,cudaMemcpyHostToDevice);
+    cudaMallocArray(&gammaArrays[i],&qmmm_str_tex.channelDesc,880,22);//GAMMA_LENGTH,6);
+    cudaMemcpyToArray(gammaArrays[i],0,0,h_str.data,sizeof(scalar_type)*880*22,cudaMemcpyHostToDevice);
     cudaMemcpyToSymbol(gpu_fac,h_fac.data,h_fac.bytes(),0,cudaMemcpyHostToDevice);
   }
   cudaSetDevice(previous_device);
@@ -890,6 +891,8 @@ template class PointGroupGPU<float>;
 //
 template <class scalar_type,bool forces> void g2g_qmmm(double* qm_forces, double* mm_forces, double& Ens, double& Es)
 {
+  int devnum = -1;
+  if (cudaGetDevice(&devnum) != cudaSuccess) throw std::runtime_error("Could not get device number! (QM/MM)");
   uint i,j,ni,nj;
   uint i_orbitals, j_orbitals;
   uint nuc_i,nuc_j;
@@ -1188,7 +1191,7 @@ template <class scalar_type,bool forces> void g2g_qmmm(double* qm_forces, double
   //
   // The STR table for F(m,U) calculation is being accessed via texture fetches
   //
-  cudaBindTextureToArray(qmmm_str_tex,gammaArray);
+  cudaBindTextureToArray(qmmm_str_tex,gammaArrays[devnum]);
   prep.pause_and_sync();
 
   //
@@ -1351,17 +1354,13 @@ template <class scalar_type,bool forces> void g2g_qmmm(double* qm_forces, double
 
 template<class scalar_type>
 void clean_gamma( void ) {
-  //scalar_type* d_str_ptr;
-  //cudaMemcpyFromSymbol(&d_str_ptr,gpu_str,sizeof(d_str_ptr));
-  //cudaFree(d_str_ptr);
-
   int previous_device; cudaGetDevice(&previous_device);
   int gpu_devices = cudaGetGPUCount();
   for(int i = 0; i < gpu_devices; i++) {
-    if(cudaSetDevice(i) != cudaSuccess)
-      std::cout << "Error: can't set the device " << i << std::endl;
-      cudaFreeArray(gammaArray);
+    if(cudaSetDevice(i) != cudaSuccess)  std::cout << "Error: can't set the device " << i << std::endl;
+    cudaFreeArray(gammaArrays[i]);
   }
+  delete[] gammaArrays;
   cudaSetDevice(previous_device);
   cudaAssertNoError("clean_gamma");
 }
@@ -1385,6 +1384,8 @@ template void clean_gamma<float>( void );
 //
 template <class scalar_type,bool forces> void g2g_coulomb(double* qm_forces, double& Es)
 {
+  int devnum = -1;
+  if (cudaGetDevice(&devnum) != cudaSuccess) throw std::runtime_error("Could not get device number! (Coulomb)");
   uint i,j,ni,nj;
   uint i_orbitals, j_orbitals;
   uint nuc_i,nuc_j;
@@ -1721,7 +1722,7 @@ template <class scalar_type,bool forces> void g2g_coulomb(double* qm_forces, dou
   //
   // The STR table for F(m,U) calculation is being accessed via texture fetches
   //
-  cudaBindTextureToArray(qmmm_str_tex,gammaArray);
+  cudaBindTextureToArray(qmmm_str_tex,gammaArrays[devnum]);
   prep.pause_and_sync();
 
   //

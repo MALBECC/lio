@@ -6,7 +6,7 @@
 //#define GAMMA_INC 1
 //#define GAMMA_LENGTH 100
 
-cudaArray* gammaArray;
+cudaArray** gammaArrays;
 
 /* grid */
 __device__ __constant__ uint gpu_atoms;

@@ -5,11 +5,7 @@
 #include <cassert>
 
 // TODO: para cuando es multiplo, le suma igual y no deberia
-#if USING_FERMI
 #define COALESCED_DIMENSION(d) (d + 32 - (d % 32))
-#else
-#define COALESCED_DIMENSION(d) (d + 16 - (d % 16))
-#endif
 
 #include "cuda_includes.h"
 #include "scalar_vector_types.h"

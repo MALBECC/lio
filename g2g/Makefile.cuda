@@ -82,26 +82,18 @@ NVCCFLAGS += $(INCLUDES) -DUNIX
 CXXFLAGS  += $(INCLUDES) -DUNIX
 
 ifeq ($(profile),1)
-	NVCCFLAGS += --compiler-options -pg
-endif
-
-ifeq ($(non_optimize), 1)
-  OPTIMIZE := -O3
-else
-  OPTIMIZE := -O2
+  NVCCFLAGS += -pg
 endif
 
 # Debug/release configuration
-ifneq ($(dbg),1)
-	NVCCFLAGS   += $(OPTIMIZE) --compiler-options -fno-strict-aliasing -lineinfo
-endif
-
-ifeq ($(keep), 1)
-	NVCCFLAGS   += --keep
+ifeq ($(dbg),1)
+  NVCCFLAGS   += -O1 --debug --device-debug --generate-line-info
+else
+  NVCCFLAGS   += -O3 --compiler-options -fno-strict-aliasing
 endif
 
 ifneq ($(cpu),0)
-	NVCCFLAGS += -DCPU_KERNELS=1
+  NVCCFLAGS += -DCPU_KERNELS=1
 endif
 
 ifeq ($(ptx),1)
@@ -126,23 +118,20 @@ endif
 
 GENCODE_SM20    := -gencode arch=compute_20,code=sm_20
 GENCODE_SM35    := -gencode arch=compute_35,code=sm_35
-# Eventually for Maxwell, requires at leaste CUDA 6.5
+# Eventually for Maxwell, requires at least CUDA 6.5
 #GENCODE_SM50    := -gencode arch=compute_50,code=sm_50
 #GENCODE_SM52    := -gencode arch=compute_52,code=sm_52
 GENCODE_FLAGS   ?= $(GENCODE_SM20) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM52)
 
-
-ifeq ($(sm_1x),1)
-  NVCCFLAGS += -arch=sm_1x
+# If SM20 or SM35 is active, then compile specifically for that.
+ifeq ($(sm20),1)
+  NVCCFLAGS += $(GENCODE_SM20)
 else
-  NVCCFLAGS += -DNVIDIA_HAS_DOUBLE -DUSING_FERMI
-  CXXFLAGS  += -DUSING_FERMI
-  NVCCFLAGS += $(GENCODE_FLAGS)
-endif
-
-ifeq ($(nvcc_warn_verbose),1)
-  NVCCFLAGS += $(addprefix --compiler-options ,$(CXXWARN_FLAGS))
-  NVCCFLAGS += --compiler-options -fno-strict-aliasing
+  ifeq ($(sm35),1)
+    NVCCFLAGS += $(GENCODE_SM35)
+  else
+    NVCCFLAGS += $(GENCODE_FLAGS)
+  endif
 endif
 
 ################################################################################

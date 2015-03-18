@@ -135,13 +135,11 @@ void gpu_set_clatoms(void)
 
 #if FULL_DOUBLE
 template void gpu_set_gamma_arrays<double>( void );
+template void gpu_set_atom_positions<double3>(const HostMatrix<double3>& m);
 #else
 template void gpu_set_gamma_arrays<float>( void );
-#endif
-template void gpu_set_atom_positions<double3>(const HostMatrix<double3>& m);
 template void gpu_set_atom_positions<float3>(const HostMatrix<float3>& m);
-//template<class scalar_type,true> __global__ void gpu_update_rmm(scalar_type* factors, uint points, scalar_type* rmm, scalar_type* function_values, uint m);
-//template<class scalar_type,false> __global__ void gpu_update_rmm(scalar_type* factors, uint points, scalar_type* rmm, scalar_type* function_values, uint m);
+#endif
 
 template<class scalar_type>
 void PointGroupGPU<scalar_type>::solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
@@ -253,10 +251,6 @@ void PointGroupGPU<scalar_type>::solve_closed(Timers& timers, bool compute_rmm,
    **********************************************************************
    */
 
-  //Comentado porque ahora vamos a hacer esto a mano por la textura
-  // TODO: pasarlo a un metodo dentro de matrix.cpp
-  //rmm_input_gpu = rmm_input_cpu; //Aca copia de CPU a GPU
-
   cudaArray* cuArray;
   cudaMallocArray(&cuArray, &rmm_input_gpu_tex.channelDesc, rmm_input_cpu.width, rmm_input_cpu.height);
   cudaMemcpyToArray(cuArray, 0, 0, rmm_input_cpu.data, sizeof(scalar_type)*rmm_input_cpu.width*rmm_input_cpu.height, cudaMemcpyHostToDevice);
@@ -299,7 +293,7 @@ void PointGroupGPU<scalar_type>::solve_closed(Timers& timers, bool compute_rmm,
     HostMatrix<scalar_type> energy_cpu(energy_gpu);
     for (uint i = 0; i < this->number_of_points; i++) {
       energy += energy_cpu(i);
-    } // TODO: hacer con un kernel?
+    }
   }
   else {
 #undef compute_parameters
@@ -325,26 +319,24 @@ void PointGroupGPU<scalar_type>::solve_closed(Timers& timers, bool compute_rmm,
 #undef accumulate_parameters
 
   timers.density.pause_and_sync();
-  //************ Repongo los valores que puse a cero antes, para las fuerzas son necesarios (o por lo mens utiles)
-  for (uint i=0; i<(group_m); i++) {
-    for(uint j=0; j<(group_m); j++) {
-      if((i>=group_m) || (j>=group_m) || (j > i))
-      {
-        rmm_input_cpu.data[COALESCED_DIMENSION(group_m)*i+j]=rmm_input_cpu.data[COALESCED_DIMENSION(group_m)*j+i] ;
-      }
-    }
-  }
-
-   dim3 threads;
-
   /* compute forces */
   if (compute_forces) {
+    //************ Repongo los valores que puse a cero antes, para las fuerzas son necesarios (o por lo mens utiles)
+    for (uint i=0; i<(group_m); i++) {
+      for(uint j=0; j<(group_m); j++) {
+        if((i>=group_m) || (j>=group_m) || (j > i))
+        {
+          rmm_input_cpu.data[COALESCED_DIMENSION(group_m)*i+j]=rmm_input_cpu.data[COALESCED_DIMENSION(group_m)*j+i] ;
+        }
+      }
+    }
+
     timers.density_derivs.start_and_sync();
     cudaMemcpyToArray(cuArray, 0, 0,rmm_input_cpu.data,
       sizeof(scalar_type)*rmm_input_cpu.width*rmm_input_cpu.height, cudaMemcpyHostToDevice);
 
     timers.density_derivs.start_and_sync();
-    threads = dim3(this->number_of_points);
+    dim3 threads = dim3(this->number_of_points);
     threadBlock = dim3(DENSITY_DERIV_BLOCK_SIZE);
     threadGrid = divUp(threads, threadBlock);
 
@@ -805,7 +797,6 @@ void PointGroupGPU<scalar_type>::compute_functions(bool forces, bool gga)
   dim3 threadBlock(FUNCTIONS_BLOCK_SIZE);
   dim3 threadGrid = divUp(threads, threadBlock);
 
- // cout << "points: " << threads.x << " " << threadGrid.x << " " << threadBlock.x << endl;
 #define compute_functions_parameters \
   points_position_gpu.data,this->number_of_points,contractions_gpu.data,factor_ac_gpu.data,nuc_gpu.data,function_values.data,gradient_values.data,hessian_values.data,group_functions
   if (forces) {

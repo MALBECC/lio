@@ -1,34 +1,23 @@
 # -*- mode: make -*-
 
 CXXFLAGS+= -fopenmp -fPIC -Wall -Wextra -Wshadow -std=c++0x -I. -I$(CUDAHOME)/include
-
-ifeq ($(non_optimize), 1)
-  OPTIMIZE:=-O2
-else
-  OPTIMIZE:=-Ofast
-endif
+OPTIMIZECPU :=
 
 ifneq ($(ifort),1)
-  CXX      := g++
-  CXXFLAGS := $(CXXFLAGS) -Wno-unused-variable -Wno-unused-parameter
+  CXX          := g++
+  OPTIMIZECPU  := -O3
+  CXXFLAGS     := $(CXXFLAGS) -Wno-unused-variable -Wno-unused-parameter
 else
-  CXX      := icc
-  CXXFLAGS := $(CXXFLAGS) -qopt-report=3
+  CXX          := icc
+  OPTIMIZECPU  := -Ofast -xHost -no-prec-div -ipo
+  CXXFLAGS     := $(CXXFLAGS) -qopt-report=3
 endif
 
 # Debug/release configuration
 ifneq ($(dbg),1)
-  COMMONFLAGS := -DNDEBUG
-  CXXFLAGS  += $(OPTIMIZE)
+  CXXFLAGS  += $(OPTIMIZECPU)
 else
-  COMMONFLAGS := -D_DEBUG
-  CXXFLAGS +=-ggdb -O2
-endif
-
-ifeq ($(gcc),1)
-  CXXFLAGS      += $(COMMONFLAGS) -I$(PACK_INC_DIR)
-else
-  CXXFLAGS  	+= $(COMMONFLAGS) -I$(MKLROOT)/include
+  CXXFLAGS += -D_DEBUG -g -ggdb
 endif
 
 %.o:%.cpp %.h

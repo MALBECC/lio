@@ -66,7 +66,7 @@ for line in sys.stdin.readlines():
     if re.search("master$", remote_ref):
         tmpdir = repo.make_clean_copy()
         call("make clean", cwd=tmpdir, save_output=False)
-        _, _, pid = call("make -j cpu=1 time=1", cwd=tmpdir, save_output=False)
+        _, _, pid = call("make -j3 cpu=1 time=1", cwd=tmpdir, save_output=False)
         if pid != 0:
             print "\033[1;31mError! Fallo la compilacion de LIO ergo no se debe pushear a master\033[0m"
             sys.exit(1)

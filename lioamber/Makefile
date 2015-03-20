@@ -71,14 +71,15 @@ include make_links.mk
 # other make files. They should not be modified under normal
 # circumstances; modifications of added files or change in the
 # compilation flags should be done through these variables.
-liblio-g2g.so: $(objects:%.o=$(obj_path)/%.o)
+liblio-g2g.so : $(objects:%.o=$(obj_path)/%.o)
 	$(FC) $(LFLAGS) $^ $(LIBS) -o $@
 
-$(obj_path)/%.o   :  %.f $(makefiles) |  $(obj_path)
+$(obj_path)/%.o   : %.f $(makefiles) |  $(obj_path)
 	$(FC) $(FFLAGS) -c $< -o $@
 
-$(obj_path)/%.mod :  %.f $(makefiles) |  $(obj_path)
+$(obj_path)/%.mod : %.f $(makefiles) |  $(obj_path)
 	$(FC) $(FFLAGS) -c $< -o $(@:%.mod=%.o)
+	@touch $@
 
 $(obj_path) :
 	mkdir -p $@

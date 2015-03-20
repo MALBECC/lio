@@ -82,7 +82,17 @@ NVCCFLAGS += $(INCLUDES) -DUNIX
 CXXFLAGS  += $(INCLUDES) -DUNIX
 
 ifeq ($(profile),1)
-  NVCCFLAGS += -pg
+	NVCCFLAGS += --compiler-options -pg
+endif
+
+ifeq ($(regcount),1)
+  NVCCFLAGS += --ptxas-options=-v
+endif
+
+ifeq ($(non_optimize), 1)
+  OPTIMIZE := -O0
+else
+  OPTIMIZE := -O3
 endif
 
 # Debug/release configuration

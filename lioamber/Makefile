@@ -73,11 +73,12 @@ include make_links.mk
 liblio-g2g.so : $(objects:%.o=$(obj_path)/%.o)
 	$(FC) $(LFLAGS) $^ $(LIBS) -o $@
 
-$(obj_path)/%.o $(obj_path)/%.mod : %.f $(makefiles) |  $(obj_path)
+$(obj_path)/%.o   : %.f $(makefiles) |  $(obj_path)
 	$(FC) $(FFLAGS) -c $< -o $@ 
 
-#$(obj_path)/%.mod :  %.f $(makefiles) |  $(obj_path)
-#	$(FC) $(FFLAGS) -c $< -o $(@:%.mod=%.o)
+$(obj_path)/%.mod : %.f $(makefiles) |  $(obj_path)
+	$(FC) $(FFLAGS) -c $< -o $(@:%.mod=%.o)
+	@touch $@
 
 $(obj_path) :
 	mkdir -p $@

@@ -664,7 +664,8 @@ c
       endif
 c
       if (iprob.eq.1) then
-        pause
+         write(*,*) 'PAUSE IS A DELETED FEATURE'
+!        pause
       endif
 c
 c -------------------------------------------------------------

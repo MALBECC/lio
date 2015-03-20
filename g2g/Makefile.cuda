@@ -90,9 +90,9 @@ ifeq ($(regcount),1)
 endif
 
 ifeq ($(non_optimize), 1)
-  OPTIMIZE := -O3
-else
   OPTIMIZE := -O0
+else
+  OPTIMIZE := -O3
 endif
 
 # Debug/release configuration

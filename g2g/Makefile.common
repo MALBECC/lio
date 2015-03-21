@@ -1,12 +1,12 @@
 # -*- mode: make -*-
 
-CXXFLAGS+= -fopenmp -fPIC -Wall -Wextra -Wshadow -std=c++0x -I. -I$(CUDAHOME)/include
+CXXFLAGS+= -fopenmp -fPIC -Wall -Wextra -Wshadow -I. -I$(CUDAHOME)/include
 OPTIMIZECPU :=
 
 ifneq ($(ifort),1)
   CXX          := g++
   OPTIMIZECPU  := -O3
-  CXXFLAGS     := $(CXXFLAGS) -Wno-unused-variable -Wno-unused-parameter
+  CXXFLAGS     := $(CXXFLAGS) -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare
 else
   CXX          := icc
   OPTIMIZECPU  := -Ofast -xHost -no-prec-div -ipo

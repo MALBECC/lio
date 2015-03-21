@@ -12,6 +12,8 @@
       parameter (nng=100)
       character*65 title
       character*20 basis,whatis,stdbas
+      character*40 basis_set, fitting_set
+      logical int_basis
       character*4 date
       character*20 output,fcoord,fmulliken,frestart,frestartin,solv,
      > solv2

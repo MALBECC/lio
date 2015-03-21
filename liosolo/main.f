@@ -20,6 +20,9 @@ c---------------------------------------------------------------------
 
      !defaults
       basis='input'  ! name of the base file
+      basis_set='DZVP'
+      fitting_set='DZVP Coulomb Fitting'
+      int_basis=.false.
       output='output'
       fcoord='qm.xyz'
       fmulliken='mulliken'
@@ -68,6 +71,13 @@ c---------------------------------------------------------------------
             call get_command_argument(i+1,inpfile)
           case("-b")
             call get_command_argument(i+1,basis)
+          case("-bs")
+            call get_command_argument(i+1,basis_set)
+          case("-fs")
+            call get_command_argument(i+1,fitting_set)
+          case("-ib")
+            int_basis=.true.
+            !call get_command_argument(i+1,int_basis)
           case("-c")
             call get_command_argument(i+1,inpcoords)
           case("-v")

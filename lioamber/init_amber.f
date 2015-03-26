@@ -6,6 +6,7 @@
      > , integ_i, DENS_i , IGRID_i, IGRID2_i , timedep_i , tdstep_i 
      > , ntdstep_i, field_i, exter_i, a0_i, epsilon_i, Fx_i
      > , Fy_i, Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i)
+c     > , basis_set_i, fitting_set_i, int_basis_i)
 
       use garcha_mod
 c      use qmmm_module, only : qmmm_struct,qmmm_nml
@@ -29,6 +30,9 @@ c      include 'param'
        integer , intent(in)  :: natomin
          integer , intent(in)  :: Izin(natomin)
        character(len=20) :: basis_i
+c       character(len=40) :: basis_set_i
+c       character(len=40) :: fitting_set_i
+c       logical :: int_basis_i
        character(len=20) :: output_i
        character(len=20) :: fcoord_i
          character(len=20) :: fmulliken_i
@@ -72,6 +76,9 @@ c      include 'param'
 
 
        basis= basis_i
+       basis_set=""        ! basis_set_i
+       fitting_set=""      ! fitting_set_i
+       int_basis=.false.   ! int_basis_i
        Output= output_i
        fcoord=fcoord_i
        fmulliken=fmulliken_i

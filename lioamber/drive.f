@@ -18,6 +18,10 @@ c
 c
       implicit real*8 (a-h,o-z)
       logical Exx, parsearch
+      character*255 int_basis_file, fit_basis_file
+      character*255 liohome
+      character*255 inp_line
+      character inp_char
 c      namelist /scfinp/ OPEN,NMAX,Nunp,ATRHO,VCINP,DIRECT,
 c     >EXTR,SHFT,SHI,IDAMP,GOLD,told,write1,MEMO,rmax,rmaxs,predcoef,
 c     >idip,writexyz,intsoldouble,watermod,DIIS,ndiis,dgtrig
@@ -124,6 +128,7 @@ c
 c-----------------------------------------------------------------------
 c reads input file
       
+      if (.not.int_basis) then
       inquire(file=basis,exist=exists)
       if (.not.exists) then
       write(*,*) 'ERROR CANNOT FIND INPUT FILE ON UNIT 1',basis
@@ -140,6 +145,7 @@ c      name2=basis(1:ikk)//'.out'
 c
       open(unit=1,file=basis,iostat=ios)
 c      open(unit=2,file=output)
+      endif
       endif
 
       open(unit=18,file=fcoord)
@@ -171,7 +177,9 @@ c !The contractions don't need to be normalized, it will be done
 c automatically
 c
 c
-      read(1,100) whatis
+      if (.not.int_basis) then
+        read(1,100) whatis
+      endif
 c      write(2,100) whatis
 c
 c
@@ -192,6 +200,7 @@ c
 c-------------------------------------------------------------------------
 c  BASIS SETS ------------------------------------------------------------
 c-------------------------------------------------------------------------
+      if (.not.int_basis) then
       do 25 while (whatis.ne.'endbasis')
 c
         NBAS=NBAS+1
@@ -403,6 +412,342 @@ c
         read(1,100) whatis
 c        write(2,100) whatis
  25   enddo
+
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccc  READING FROM INTERNAL LIO BASIS  cccccccccccccccc
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      else
+
+      call getenv("LIOHOME",liohome)
+      if (liohome == "") then
+        write(*,*) "LIOHOME is not set! Cannot use basis set keywords"
+        write(*,*) "Either set LIOHOME to your lio installation location
+     > or specify a basis set file"
+        stop
+      endif
+      int_basis_file=trim(liohome)//"/dat/basis/"//basis_set
+      fit_basis_file=trim(liohome)//"/dat/basis/fitting/"//fitting_set
+      !write(*,*) "INTERNAL BASIS FILE: ",trim(int_basis_file)
+      !write(*,*) "INTERNAL FIT BASIS FILE: ",trim(fit_basis_file)
+
+      inquire(file=int_basis_file,exist=exists)
+      if (.not.exists) then
+        write(*,*) 'THE BASIS SET ',trim(basis_set),
+     >               ' COULD NOT BE FOUND'
+        stop
+      endif
+      inquire(file=fit_basis_file,exist=exists)
+      if (.not.exists) then
+      write(*,*) 'THE FITTING BASIS SET ',trim(fitting_set),
+     >             ' COULD NOT BE FOUND'
+      stop
+      endif
+
+      open(unit=1,file=int_basis_file,iostat=ios)
+
+      ! skip over all commented and blank lines
+      inp_line = ""
+      do while (inp_line == "")
+        read(1,*) inp_line
+        read(inp_line,'(a1)') inp_char
+        if (inp_char == "#" .or. inp_line == "") then
+          inp_line = ""
+        endif
+      enddo
+
+      read(inp_line,100) whatis
+
+      ! NOTE: we assume the entire section for an element (from "gaussian"
+      ! to the last function values) is not broken by blank or commented lines
+      do 26 while (whatis.ne.'endbasis')
+c
+        NBAS=NBAS+1
+c signals if a basis set was not used
+        used=.false.
+        atmint=100000.
+        read(1,*) iatom,nraw,ncon
+        if (nraw.gt.nng) then
+          write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+          write(*,*) "This basis set contains an element with more",
+     > " total primitives than your current maximum:",nng
+          write(*,*) "Set nng in lioamber/liomods/garcha_mod.f to",
+     > " a higher number, at least",nraw,"and recompile"
+          write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+          stop
+        endif
+c        write(2,600) iatom,nraw,ncon
+c
+c reads contraction scheme. The value for p,d ,f should not be repeated
+c 3 ,6 , 10 .....   times
+c reads also angular momentum for each of the contractions
+c 0 for s 1 for p, etc
+c
+        read(1,*) (ncf(i),i=1,ncon)
+c        write(2,*) (ncf(i),i=1,ncon)
+        read(1,*) (lt(i),i=1,ncon)
+c        write(2,*) (lt(i),i=1,ncon)
+c
+c loop over all primitives, no repeating p, d
+        do i=1,nraw
+          read(1,*) at(i),ct(i)
+c       write(2,700) at(i),ct(i)
+c       write(*,*) atmint,at(i)
+          if(at(i).lt.atmint) atmint=at(i)
+        enddo
+c
+        do j=1,natom
+          if(Iz(j).eq.iatom.and.(.not.done(j))) then
+          do i=1,ncon
+            if (ncf(i).gt.nl) then
+              write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+              write(*,*) "This basis set contains a function with more",
+     > " primives than your currently set maximum: ",nl
+              write(*,*) "Change nl in lioamber/liomods/param.f and",
+     > " MAX_CONTRACTIONS in g2g/common.h to a larger number (at least",
+     > ncf(i), ") and recompile"
+              write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+              stop
+            endif
+          enddo
+            nnat(NBAS)=nnat(NBAS)+1
+            done(j)=.true.
+            used=.true.
+            atmin(j)=atmint
+
+c  cosas que puso nano para "atomos cerca"
+
+            nns(j)=0
+            nnp(j)=0
+            nnd(j)=0        
+
+            do kkk=1,ncon
+              if (lt(kkk).eq.0) nns(j)=nns(j)+Num(lt(kkk))
+              if (lt(kkk).eq.1) nnp(j)=nnp(j)+Num(lt(kkk))
+              if (lt(kkk).eq.2) nnd(j)=nnd(j)+Num(lt(kkk))
+            enddo
+
+c      write(*,*) 'nns y etc',nns(j),nnp(j),nnd(j),nnps(j)
+c     > ,nnpp(j),nnpd(j)
+
+c =====>>>>>>  M stores # of contractions  <<<<<<===========
+            index=0
+            do k=1,ncon
+c
+              M=M+Num(lt(k))
+
+c nshell gives the # of functions s, p, d  etc
+              nshell(lt(k))=nshell(lt(k))+Num(lt(k))
+c
+              do l2=1,Num(lt(k))
+                No=No+1
+c
+c normalization
+c
+                if (NORM) then
+                  do l=1,ncf(k)
+c 
+                    index=index+1
+
+                    if(lt(k).eq.0) then
+c
+                      xnorm=sqrt((2.D0*at(index)/pi)**3)
+                      xnorm=sqrt(xnorm)   
+                      c(No,l)=ct(index)*xnorm
+                      a(No,l)=at(index)
+                    elseif(lt(k).eq.1) then
+c
+                      xnorm=sqrt((2.D0*at(index)/pi)**3)*4.D0*at(index)
+                      xnorm=sqrt(xnorm)
+                      c(No,l)=ct(index)*xnorm
+                      a(No,l)=at(index)
+                    elseif (lt(k).eq.2) then
+c
+                  xnorm=sqrt((2.D0*at(index)/pi)**3)*(4.D0*at(index))**2
+                      xnorm=sqrt(xnorm)
+                      c(No,l)=ct(index)*xnorm
+                      a(No,l)=at(index)
+                    else
+                write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                      write(*,*) "The basis set ",trim(basis_set),
+     > " contains f (or higher) functions, and lio does not currently", 
+     > " support them.  Choose another basis set."
+                write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                      stop
+                    endif
+                  enddo
+                else
+c no normalization case
+                  do l=1,ncf(k)
+                    index=index+1
+                    c(No,l)=ct(index)
+                    a(No,l)=at(index)
+                  enddo
+                endif
+
+c repeat the index only for p,d and f
+                if (l2.ne.Num(lt(k))) then
+                  index=index-ncf(k)
+                endif
+c
+                Nuc(No)=j
+                ncont(No)=ncf(k)
+                nlb(No)=lt(k)
+              enddo
+            enddo
+          endif
+        enddo
+c     
+        if (.not.used.and.VERBOSE) then
+          write(*,200) iatom
+        endif
+
+        ! skip over all commented and blank lines
+        inp_line = ""
+        do while (inp_line == "")
+          read(1,*) inp_line
+          read(inp_line,'(a1)') inp_char
+          if (inp_char == "#" .or. inp_line == "") then
+            inp_line = ""
+          endif
+        enddo
+        read(inp_line,100) whatis
+
+26    enddo
+
+      close(1)
+
+      open(unit=1,file=fit_basis_file,iostat=ios)
+
+      ! skip over all commented and blank lines
+      inp_line = ""
+      do while (inp_line == "")
+        read(1,*) inp_line
+        read(inp_line,'(a1)') inp_char
+        if (inp_char == "#" .or. inp_line == "") then
+          inp_line = ""
+        endif
+      enddo
+
+      read(inp_line,100) whatis
+c
+c Exactly the same should be repeated for charge density
+c and exchange correlation potential basis sets
+c
+c CHARGE DENSITY --------------------------------------------------
+c
+      ! NOTE: we don't check right now for total primitives in the cd basis
+      ! being less than nng...probably not a problem...
+      do 27 while (whatis.ne.'endbasis')
+        read(1,*) iatom,nraw,ncon
+c        write(2,*) iatom,nraw,ncon
+c
+c reads contraction scheme. The value for p,d ,f should not be repeated
+c 3 ,6 , 10 .....   times. Reads also angular type , 
+c 0 for s , 1 for p etc
+        read(1,*) (ncf(i),i=1,ncon)
+c        write(2,*) (ncf(i),i=1,ncon)
+        read(1,*) (lt(i),i=1,ncon)
+c        write(2,*) (lt(i),i=1,ncon)
+c     
+c
+c loop over all primitives, repeating p, d
+        do i=1,nraw
+          read(1,*) at(i),ct(i)
+c          write(2,700) at(i),ct(i)
+        enddo
+c
+        do 48 j=1,natom
+          if (Iz(j).eq.iatom) then
+c
+c Mdd stores # of contractions in final basis, counting all possibilities
+c for p , d etc
+c
+          index=0
+          do 49 k=1,ncon
+c
+            Md=Md+Num(lt(k))
+c          write(*,*) md 
+            nshelld(lt(k))=nshelld(lt(k))+Num(lt(k))
+c
+            do 49 l2=1,Num(lt(k))
+c
+              Nd=Nd+1
+c
+              if (NORM) then
+                do 50 l=1,ncf(k)
+                  index=index+1
+c
+                  goto (72,82,92) lt(k)+1
+                write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                      write(*,*) "The basis set ",trim(fitting_set),
+     > " contains f (or higher) functions, and lio does not currently", 
+     > " support them.  Choose another basis set"
+                write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                  stop
+c
+ 72               xnorm=sqrt((2.D0*at(index)/pi)**3)
+                  xnorm=sqrt(xnorm)
+                  cd(Nd,l)=ct(index)*xnorm
+                  ad(Nd,l)=at(index)
+c                  ad(Nd,l)=2.D0*at(index)
+                  goto 50
+c
+ 82               xnorm=sqrt((2.D0*at(index)/pi)**3)*4.D0*at(index)
+                  xnorm=sqrt(xnorm)
+                  cd(Nd,l)=ct(index)*xnorm
+c                  ad(Nd,l)=2.D0*at(index)
+                  ad(Nd,l)=at(index)
+                  goto 50
+c
+ 92               xnorm=sqrt((2.D0*at(index)/pi)**3)*(4.D0*at(index))**2
+                  xnorm=sqrt(xnorm)
+                  cd(Nd,l)=ct(index)*xnorm
+c                  ad(Nd,l)=2.D0*at(index)
+                  ad(Nd,l)=at(index)
+                  goto 50
+c
+ 50             continue
+              else
+c
+c no normalization case
+c
+                do l=1,ncf(k)
+                  index=index+1
+c
+                   cd(Nd,l)=ct(index)
+c                  ad(Nd,l)=2.D0*at(index)
+                  ad(Nd,l)=at(index)
+                enddo
+              endif
+c
+c repeat the index only for p,d and f, criterium l2<max(l2)
+              if (l2.ne.Num(lt(k))) then
+                index=index-ncf(k)
+              endif
+c
+              Nucd(Nd)=j
+              ncontd(Nd)=ncf(k)
+              nld(Nd)=lt(k)
+c
+ 49         continue
+          endif
+ 48     continue
+c
+        ! skip over all commented and blank lines
+        inp_line = ""
+        do while (inp_line == "")
+          read(1,*) inp_line
+          read(inp_line,'(a1)') inp_char
+          if (inp_char == "#" .or. inp_line == "") then
+            inp_line = ""
+          endif
+        enddo
+
+        read(inp_line,100) whatis
+c        write(2,100) whatis
+ 27   enddo
+      close(1)
+      endif
 c----- DIMENSION CONTROLS ------------------------------------
 c
       iprob=0

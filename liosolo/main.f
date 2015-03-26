@@ -14,7 +14,8 @@ c---------------------------------------------------------------------
      > idip,writexyz,intsoldouble,DIIS,ndiis,dgtrig,
      > Iexch,integ,dens,igrid,igrid2,timedep, tdstep, ntdstep,
      > propagator,NBCH,
-     > field,a0,epsilon,exter,Fx,Fy,Fz, tdrestart, writedens,writeforces
+     > field,a0,epsilon,exter,Fx,Fy,Fz, tdrestart, writedens,
+     > writeforces,basis_set,fitting_set,int_basis
 
       integer :: ifind, ierr
 

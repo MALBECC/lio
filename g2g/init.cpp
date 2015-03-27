@@ -227,7 +227,7 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 #if GPU_KERNELS
   G2G::gpu_set_variables();
   G2G::gpu_set_qmmm_coul_variables();
-#if FULL_DOUBLE
+#if !QMMM_MP || !COULOMB_MP || FULL_DOUBLE
   G2G::gpu_set_gamma_arrays<double>();
 #else
   G2G::gpu_set_gamma_arrays<float>();
@@ -241,7 +241,7 @@ extern "C" void g2g_deinit_(void) {
   cout << "<====== Deinitializing G2G ======>" << endl;
   partition.clear();
 #if GPU_KERNELS
-#if FULL_DOUBLE
+#if !QMMM_MP || !COULOMB_MP || FULL_DOUBLE
   G2G::clean_gamma<double>();
 #else
   G2G::clean_gamma<float>();
@@ -355,19 +355,19 @@ namespace G2G {
 extern "C" void g2g_qmmm_forces_(double* qm_forces, double* mm_forces)
 {
   double Ens = 0.0, Es = 0.0;
-#if FULL_DOUBLE
-  G2G::g2g_qmmm<double,true>(qm_forces,mm_forces,Ens,Es);
-#else
+#if QMMM_MP && !FULL_DOUBLE
   G2G::g2g_qmmm<float,true>(qm_forces,mm_forces,Ens,Es);
+#else
+  G2G::g2g_qmmm<double,true>(qm_forces,mm_forces,Ens,Es);
 #endif
 }
 extern "C" void g2g_qmmm_fock_(double& Es, double& Ens)
 {
   Ens = 0.0; Es = 0.0;
-#if FULL_DOUBLE
-  G2G::g2g_qmmm<double,false>((double*)0,(double*)0,Ens,Es);
-#else
+#if QMMM_MP && !FULL_DOUBLE
   G2G::g2g_qmmm<float,false>((double*)0,(double*)0,Ens,Es);
+#else
+  G2G::g2g_qmmm<double,false>((double*)0,(double*)0,Ens,Es);
 #endif
 }
 //===============================================================================================================
@@ -379,10 +379,10 @@ namespace G2G {
 extern "C" void g2g_coulomb_forces_(double* qm_forces)
 {
   double Es = 0.0;
-#if FULL_DOUBLE
-  G2G::g2g_coulomb<double,true>(qm_forces,Es);
-#else
+#if COULOMB_MP && !FULL_DOUBLE
   G2G::g2g_coulomb<float,true>(qm_forces,Es);
+#else
+  G2G::g2g_coulomb<double,true>(qm_forces,Es);
 #endif
 }
 /*extern "C" void g2g_coulomb_fock_(double& Es)

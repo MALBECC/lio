@@ -26,6 +26,14 @@ endif
 ifeq ($(coulomb_gpu),1)
   CXXFLAGS     += -DGPU_COULOMB=1
 endif
+ifeq ($(coulomb_mp),1)
+  CXXFLAGS     += -DCOULOMB_MP=1
+  NVCCFLAGS    += -DCOULOMB_MP=1
+endif
+ifeq ($(qmmm_mp),1)
+  CXXFLAGS     += -DQMMM_MP=1
+  NVCCFLAGS    += -DQMMM_MP=1
+endif
 
 ## Other options
 ifeq ($(print), 1)

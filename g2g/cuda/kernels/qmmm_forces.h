@@ -5,6 +5,17 @@
 
 #define PI 3.141592653589793238462643383f
 
+#if FULL_DOUBLE || !QMMM_MP || !COULOMB_MP
+static __inline__ __device__ double qmmm_fetch_double(texture<int2, 2> t, float x, float y)
+{
+    int2 v = tex2D(t,x,y);
+    return __hiloint2double(v.y, v.x);
+}
+#define qmmm_fetch(t,x,y) qmmm_fetch_double(t,x,y)
+#else
+#define qmmm_fetch(t,x,y) tex2D(t,x,y)
+#endif
+
 //
 // Calculates F(m,U) values for m = 0 to max_m (F(m,U) is used in the Obara-Saika recursion relations)
 // F(m,U) is calculated by one of two methods based on the value of U
@@ -33,12 +44,13 @@ __device__ void lio_gamma(scalar_type* __restrict__ F_mU, scalar_type U)
     delt5 = 0.20f * delt;
 
     scalar_type tf0,tf1,tf2,tf3,tf4,tf5;
-    tf0 = fetch(qmmm_str_tex,(float)it,0.0f);//qmmm_str[it];
-    tf1 = fetch(qmmm_str_tex,(float)it,1.0f);//qmmm_str[it+880];
-    tf2 = fetch(qmmm_str_tex,(float)it,2.0f);//qmmm_str[it+1760];
-    tf3 = fetch(qmmm_str_tex,(float)it,3.0f);//qmmm_str[it+2640];
-    tf4 = fetch(qmmm_str_tex,(float)it,4.0f);//qmmm_str[it+3520];
-    tf5 = fetch(qmmm_str_tex,(float)it,5.0f);//qmmm_str[it+4400];
+    tf0 = qmmm_fetch(qmmm_str_tex,(float)it,0.0f);//qmmm_str[it];
+    tf1 = qmmm_fetch(qmmm_str_tex,(float)it,1.0f);//qmmm_str[it+880];
+    tf2 = qmmm_fetch(qmmm_str_tex,(float)it,2.0f);//qmmm_str[it+1760];
+    tf3 = qmmm_fetch(qmmm_str_tex,(float)it,3.0f);//qmmm_str[it+2640];
+    tf4 = qmmm_fetch(qmmm_str_tex,(float)it,4.0f);//qmmm_str[it+3520];
+    tf5 = qmmm_fetch(qmmm_str_tex,(float)it,5.0f);//qmmm_str[it+4400];
+
     F_mU[0] = tf0-delt * (tf1-delt2 * (tf2-delt3 * (tf3-delt4 * (tf4-delt5 * tf5))));
     for (uint m = 1; m <= m_max; m++) {
       tf0 = tf1;
@@ -46,7 +58,7 @@ __device__ void lio_gamma(scalar_type* __restrict__ F_mU, scalar_type U)
       tf2 = tf3;
       tf3 = tf4;
       tf4 = tf5;
-      tf5 = fetch(qmmm_str_tex,(float)it,(float)(m+5.0f));//qmmm_str[it+(m+5)*880];
+      tf5 = qmmm_fetch(qmmm_str_tex,(float)it,(float)(m+5.0f));//qmmm_str[it+(m+5)*880];
 
       F_mU[m] = tf0-delt * (tf1-delt2 * (tf2-delt3 * (tf3-delt4 * (tf4-delt5 * tf5))));
     }
@@ -197,8 +209,14 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
       scalar_type ovlap;
   
       vec_type<scalar_type,3> A, B;
-      A = gpu_atom_positions[nuc1];
-      B = gpu_atom_positions[nuc2];
+      //A = gpu_atom_positions[nuc1];
+      A.x = gpu_atom_positions[nuc1].x;
+      A.y = gpu_atom_positions[nuc1].y;
+      A.z = gpu_atom_positions[nuc1].z;
+      //B = gpu_atom_positions[nuc2];
+      B.x = gpu_atom_positions[nuc2].x;
+      B.y = gpu_atom_positions[nuc2].y;
+      B.z = gpu_atom_positions[nuc2].z;
   
       //
       // ai and aj can differ by several orders of magnitude

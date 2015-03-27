@@ -125,8 +125,14 @@ __global__ void gpu_coulomb_forces( uint num_terms, vec_type<scalar_type,2>* ac_
       scalar_type ovlap;
   
       vec_type<scalar_type,3> A, B;
-      A = gpu_atom_positions[nuc1];
-      B = gpu_atom_positions[nuc2];
+      //A = gpu_atom_positions[nuc1];
+      A.x = gpu_atom_positions[nuc1].x;
+      A.y = gpu_atom_positions[nuc1].y;
+      A.z = gpu_atom_positions[nuc1].z;
+      //B = gpu_atom_positions[nuc2];
+      B.x = gpu_atom_positions[nuc2].x;
+      B.y = gpu_atom_positions[nuc2].y;
+      B.z = gpu_atom_positions[nuc2].z;
   
       //
       // ai and aj can differ by several orders of magnitude

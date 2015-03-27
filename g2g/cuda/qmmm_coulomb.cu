@@ -13,13 +13,12 @@ using std::vector;
 using std::endl;
 
 namespace G2G {
-#if FULL_DOUBLE
+#if !QMMM_MP || !COULOMB_MP || FULL_DOUBLE
 texture<int2, cudaTextureType2D, cudaReadModeElementType> qmmm_str_tex; // Texture for STR array (used in F(m,U))
 #else
 texture<float, cudaTextureType2D, cudaReadModeElementType> qmmm_str_tex;
 #endif
 
-//#include "gpu_variables.h"
 #include "qmmm_coul_gpu_variables.h"
 #include "kernels/qmmm_forces.h"
 #include "kernels/qmmm_energy.h"
@@ -98,9 +97,24 @@ void gpu_set_clatoms(void)
   cudaAssertNoError("gpu_set_clatoms");
 }
 
-#if FULL_DOUBLE
+template<class scalar_type>
+void clean_gamma( void ) {
+  int previous_device; cudaGetDevice(&previous_device);
+  int gpu_devices = cudaGetGPUCount();
+  for(int i = 0; i < gpu_devices; i++) {
+    if(cudaSetDevice(i) != cudaSuccess)  std::cout << "Error: can't set the device " << i << std::endl;
+    cudaFreeArray(gammaArrays[i]);
+  }
+  delete[] gammaArrays;
+  cudaSetDevice(previous_device);
+  cudaAssertNoError("clean_gamma");
+}
+
+#if !QMMM_MP || !COULOMB_MP || FULL_DOUBLE
+template void clean_gamma<double>( void );
 template void gpu_set_gamma_arrays<double>( void );
 #else
+template void clean_gamma<float>( void );
 template void gpu_set_gamma_arrays<float>( void );
 #endif
 
@@ -576,27 +590,14 @@ template <class scalar_type,bool forces> void g2g_qmmm(double* qm_forces, double
   cudaAssertNoError("qmmm");
 }
 
-template<class scalar_type>
-void clean_gamma( void ) {
-  int previous_device; cudaGetDevice(&previous_device);
-  int gpu_devices = cudaGetGPUCount();
-  for(int i = 0; i < gpu_devices; i++) {
-    if(cudaSetDevice(i) != cudaSuccess)  std::cout << "Error: can't set the device " << i << std::endl;
-    cudaFreeArray(gammaArrays[i]);
-  }
-  delete[] gammaArrays;
-  cudaSetDevice(previous_device);
-  cudaAssertNoError("clean_gamma");
-}
-#if FULL_DOUBLE
-template void g2g_qmmm<double,true>(double* qm_forces, double* mm_forces, double& Ens, double& Es);
-template void g2g_qmmm<double,false>(double* qm_forces, double* mm_forces, double& Ens, double& Es);
-template void clean_gamma<double>( void );
-#else
+#if QMMM_MP && !FULL_DOUBLE
 template void g2g_qmmm<float,true>(double* qm_forces, double* mm_forces, double& Ens, double& Es);
 template void g2g_qmmm<float,false>(double* qm_forces, double* mm_forces, double& Ens, double& Es);
-template void clean_gamma<float>( void );
+#else
+template void g2g_qmmm<double,true>(double* qm_forces, double* mm_forces, double& Ens, double& Es);
+template void g2g_qmmm<double,false>(double* qm_forces, double* mm_forces, double& Ens, double& Es);
 #endif
+
 
 #define NUM_COULOMB_TERM_TYPES 6 // 6 types when using s,p,and d functions: s-s,p-s,p-p,d-s,d-p,d-d
 
@@ -1101,12 +1102,12 @@ template <class scalar_type,bool forces> void g2g_coulomb(double* qm_forces, dou
   cudaAssertNoError("qmmm");
 }
 
-#if FULL_DOUBLE
-template void g2g_coulomb<double,true>(double* qm_forces, double& Es);
-template void g2g_coulomb<double,false>(double* qm_forces, double& Es);
-#else
+#if COULOMB_MP && !FULL_DOUBLE
 template void g2g_coulomb<float,true>(double* qm_forces, double& Es);
 template void g2g_coulomb<float,false>(double* qm_forces, double& Es);
+#else
+template void g2g_coulomb<double,true>(double* qm_forces, double& Es);
+template void g2g_coulomb<double,false>(double* qm_forces, double& Es);
 #endif
 
 }

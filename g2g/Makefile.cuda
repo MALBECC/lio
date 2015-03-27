@@ -72,7 +72,7 @@ CWARN_FLAGS := $(CXXWARN_FLAGS) \
 	-Wmain \
 
 # Compiler-specific flags
-NVCCFLAGS   := $(ARCHFLAGS) -shared --compiler-options -fPIC --compiler-options -Wall
+NVCCFLAGS   := $(ARCHFLAGS) --compiler-options -fPIC --compiler-options -Wall
 ifneq ($(ifort),0)
   CXXFLAGS    += $(CXXWARN_FLAGS)
 endif
@@ -151,9 +151,17 @@ endif
 # Rules
 ################################################################################
 
+## Unified GPU Object
+UGO          := cuda/lio_gpu.o
+
+CUDA_SOURCES := $(wildcard cuda/*.cu)
+CUDA_OBJ     := $(CUDA_SOURCES:%.cu=%.o)
+
 # Commented should be in config file
 # CC=icc
 # CXX=icc
+$(UGO): $(CUDA_OBJ)
+	nvcc $(NVCCFLAGS) -dlink $(CUDA_OBJ) -o $@
 
-%.cu_o : %.cu
-	nvcc $(NVCCFLAGS) -o $@ -c $<
+cuda/%.o:cuda/%.cu
+	nvcc $(NVCCFLAGS) -o $@ -dc $<

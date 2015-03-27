@@ -21,6 +21,19 @@
 #include "datatypes/cpu_primitives.h"
 #endif
 
+#if GPU_KERNELS
+#if FULL_DOUBLE
+static __inline__ __device__ double fetch_double(texture<int2, 2> t, float x, float y)
+{
+    int2 v = tex2D(t,x,y);
+    return __hiloint2double(v.y, v.x);
+}
+#define fetch(t,x,y) fetch_double(t,x,y)
+#else
+#define fetch(t,x,y) tex2D(t,x,y)
+#endif
+#endif
+
 // TODO: usar cutil sdk para todos estos operadores, o usar classes de C++ templatizadas
 /** operators **/
 inline __device__ __host__ float2 operator -(const float2 a)

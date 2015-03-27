@@ -1,3 +1,5 @@
+.DEFAULT_GOAL := all
+
 # -*- mode: make -*-
 include Makefile.common
 
@@ -14,9 +16,8 @@ CPU          := 1
 ifneq ($(cuda),0)
   include Makefile.cuda
   CUDA_LIBS    := -lcudart -lcuda
-  CUDA_SOURCES := $(wildcard cuda/*.cu)
   SRCS         += $(CUDA_SOURCES)
-  OBJ          += $(CUDA_SOURCES:%.cu=%.cu_o)
+  OBJ          += $(UGO) $(CUDA_OBJ)
   CXXFLAGS     += -DGPU_KERNELS=1
   NVCCFLAGS    += -DGPU_KERNELS=1
   LIBRARIES    := $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
@@ -69,7 +70,7 @@ include Makefile.depends
 depend:
 	@touch Makefile.depends
 	@makedepend -Y -fMakefile.depends $(SRCS) > /dev/null 2>&1
-	@sed -ri 's|(cuda/.*)\.o|\1.cu_o|g' Makefile.depends
+	#@sed -ri 's|(cuda/.*)\.o|\1.cu_o|g' Makefile.depends
 	@rm -f Makefile.depends.bak
 
 libg2g.so: $(OBJ)

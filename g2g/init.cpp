@@ -61,6 +61,7 @@ extern "C" void g2g_init_(void)
 //==========================================================================================
 namespace G2G {
 void gpu_set_variables(void);
+void gpu_set_qmmm_coul_variables(void);
 template<class scalar_type> void clean_gamma(void);
 template<class scalar_type> void gpu_set_gamma_arrays(void);
 template<class T> void gpu_set_atom_positions(const HostMatrix<T>& m);
@@ -225,6 +226,7 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 
 #if GPU_KERNELS
   G2G::gpu_set_variables();
+  G2G::gpu_set_qmmm_coul_variables();
 #if FULL_DOUBLE
   G2G::gpu_set_gamma_arrays<double>();
 #else

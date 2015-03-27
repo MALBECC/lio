@@ -31,46 +31,52 @@ cpu/pot.o: matrix.h
 cpu/weight.o: common.h init.h matrix.h cuda_includes.h cuda/cuda_extra.h
 cpu/weight.o: scalar_vector_types.h datatypes/cpu_primitives.h matrix.h
 cpu/weight.o: partition.h timer.h global_memory_pool.h
-cuda/iteration.cu_o: common.h init.h matrix.h cuda_includes.h cuda/cuda_extra.h
-cuda/iteration.cu_o: scalar_vector_types.h datatypes/cpu_primitives.h
-cuda/iteration.cu_o: cuda/cuda_extra.h matrix.h timer.h partition.h timer.h
-cuda/iteration.cu_o: global_memory_pool.h scalar_vector_types.h
-cuda/iteration.cu_o: global_memory_pool.h cuda/gpu_variables.h
-cuda/iteration.cu_o: cuda/kernels/pot.h cuda/kernels/pot_open.h
-cuda/iteration.cu_o: cuda/kernels/accumulate_point.h cuda/kernels/energy.h
-cuda/iteration.cu_o: cuda/kernels/energy_open.h cuda/kernels/energy_derivs.h
-cuda/iteration.cu_o: cuda/kernels/rmm.h cuda/kernels/weight.h
-cuda/iteration.cu_o: cuda/kernels/functions.h cuda/kernels/force.h
-cuda/iteration.cu_o: cuda/kernels/transpose.h cuda/kernels/qmmm_forces.h
-cuda/iteration.cu_o: cuda/kernels/qmmm_terms/forces/ss.h
-cuda/iteration.cu_o: cuda/kernels/qmmm_terms/forces/ps_unrolled.h
-cuda/iteration.cu_o: cuda/kernels/qmmm_terms/forces/pp_unrolled.h
-cuda/iteration.cu_o: cuda/kernels/qmmm_terms/forces/ds_unrolled.h
-cuda/iteration.cu_o: cuda/kernels/qmmm_terms/forces/dp_unrolled.h
-cuda/iteration.cu_o: cuda/kernels/qmmm_terms/forces/dd_split_unrolled.h
-cuda/iteration.cu_o: cuda/kernels/qmmm_energy.h
-cuda/iteration.cu_o: cuda/kernels/qmmm_terms/energy/ss.h
-cuda/iteration.cu_o: cuda/kernels/qmmm_terms/energy/ps.h
-cuda/iteration.cu_o: cuda/kernels/qmmm_terms/energy/pp.h
-cuda/iteration.cu_o: cuda/kernels/qmmm_terms/energy/ds.h
-cuda/iteration.cu_o: cuda/kernels/qmmm_terms/energy/dp_unrolled.h
-cuda/iteration.cu_o: cuda/kernels/qmmm_terms/energy/dd_unrolled.h
-cuda/iteration.cu_o: cuda/kernels/coulomb_forces.h
-cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/ss_s.h
-cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/ss_p.h
-cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/ss_d.h
-cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/ps_s.h
-cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/ps_p.h
-cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/ps_d.h
-cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/pp_s.h
-cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/pp_p.h
-cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/pp_d.h
-cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/ds_s.h
-cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/ds_p.h
-cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/ds_d.h
-cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/dp_s.h
-cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/dp_p.h
-cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/dp_d.h
-cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/dd_s.h
-cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/dd_p.h
-cuda/iteration.cu_o: cuda/kernels/coulomb_terms/forces/dd_d.h
+cuda/iteration.o: common.h init.h matrix.h cuda_includes.h cuda/cuda_extra.h
+cuda/iteration.o: scalar_vector_types.h datatypes/cpu_primitives.h
+cuda/iteration.o: cuda/cuda_extra.h matrix.h timer.h partition.h timer.h
+cuda/iteration.o: global_memory_pool.h scalar_vector_types.h
+cuda/iteration.o: global_memory_pool.h cuda/gpu_variables.h
+cuda/iteration.o: cuda/kernels/pot.h cuda/kernels/pot_open.h
+cuda/iteration.o: cuda/kernels/accumulate_point.h cuda/kernels/energy.h
+cuda/iteration.o: cuda/kernels/energy_open.h cuda/kernels/energy_derivs.h
+cuda/iteration.o: cuda/kernels/rmm.h cuda/kernels/weight.h
+cuda/iteration.o: cuda/kernels/functions.h cuda/kernels/force.h
+cuda/iteration.o: cuda/kernels/transpose.h
+cuda/qmmm_coulomb.o: common.h init.h matrix.h cuda_includes.h
+cuda/qmmm_coulomb.o: cuda/cuda_extra.h scalar_vector_types.h
+cuda/qmmm_coulomb.o: datatypes/cpu_primitives.h cuda/cuda_extra.h matrix.h
+cuda/qmmm_coulomb.o: timer.h scalar_vector_types.h
+cuda/qmmm_coulomb.o: cuda/qmmm_coul_gpu_variables.h
+cuda/qmmm_coulomb.o: cuda/kernels/qmmm_forces.h
+cuda/qmmm_coulomb.o: cuda/kernels/qmmm_terms/forces/ss.h
+cuda/qmmm_coulomb.o: cuda/kernels/qmmm_terms/forces/ps_unrolled.h
+cuda/qmmm_coulomb.o: cuda/kernels/qmmm_terms/forces/pp_unrolled.h
+cuda/qmmm_coulomb.o: cuda/kernels/qmmm_terms/forces/ds_unrolled.h
+cuda/qmmm_coulomb.o: cuda/kernels/qmmm_terms/forces/dp_unrolled.h
+cuda/qmmm_coulomb.o: cuda/kernels/qmmm_terms/forces/dd_split_unrolled.h
+cuda/qmmm_coulomb.o: cuda/kernels/qmmm_energy.h
+cuda/qmmm_coulomb.o: cuda/kernels/qmmm_terms/energy/ss.h
+cuda/qmmm_coulomb.o: cuda/kernels/qmmm_terms/energy/ps.h
+cuda/qmmm_coulomb.o: cuda/kernels/qmmm_terms/energy/pp.h
+cuda/qmmm_coulomb.o: cuda/kernels/qmmm_terms/energy/ds.h
+cuda/qmmm_coulomb.o: cuda/kernels/qmmm_terms/energy/dp_unrolled.h
+cuda/qmmm_coulomb.o: cuda/kernels/qmmm_terms/energy/dd_unrolled.h
+cuda/qmmm_coulomb.o: cuda/kernels/coulomb_forces.h
+cuda/qmmm_coulomb.o: cuda/kernels/coulomb_terms/forces/ss_s.h
+cuda/qmmm_coulomb.o: cuda/kernels/coulomb_terms/forces/ss_p.h
+cuda/qmmm_coulomb.o: cuda/kernels/coulomb_terms/forces/ss_d.h
+cuda/qmmm_coulomb.o: cuda/kernels/coulomb_terms/forces/ps_s.h
+cuda/qmmm_coulomb.o: cuda/kernels/coulomb_terms/forces/ps_p.h
+cuda/qmmm_coulomb.o: cuda/kernels/coulomb_terms/forces/ps_d.h
+cuda/qmmm_coulomb.o: cuda/kernels/coulomb_terms/forces/pp_s.h
+cuda/qmmm_coulomb.o: cuda/kernels/coulomb_terms/forces/pp_p.h
+cuda/qmmm_coulomb.o: cuda/kernels/coulomb_terms/forces/pp_d.h
+cuda/qmmm_coulomb.o: cuda/kernels/coulomb_terms/forces/ds_s.h
+cuda/qmmm_coulomb.o: cuda/kernels/coulomb_terms/forces/ds_p.h
+cuda/qmmm_coulomb.o: cuda/kernels/coulomb_terms/forces/ds_d.h
+cuda/qmmm_coulomb.o: cuda/kernels/coulomb_terms/forces/dp_s.h
+cuda/qmmm_coulomb.o: cuda/kernels/coulomb_terms/forces/dp_p.h
+cuda/qmmm_coulomb.o: cuda/kernels/coulomb_terms/forces/dp_d.h
+cuda/qmmm_coulomb.o: cuda/kernels/coulomb_terms/forces/dd_s.h
+cuda/qmmm_coulomb.o: cuda/kernels/coulomb_terms/forces/dd_p.h
+cuda/qmmm_coulomb.o: cuda/kernels/coulomb_terms/forces/dd_d.h

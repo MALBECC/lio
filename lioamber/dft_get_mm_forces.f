@@ -16,6 +16,7 @@ c       real*8, dimension (:,:), ALLOCATABLE :: ffs,ffcls
        !allocate(g2gff(natom,3), g2gffcl(ntatom,3))
 c       allocate(ffs(natom,3), ffcls(ntatom,3))
 c       real*8 ftot(3)
+       if (nsol.le.0) return
        factor=1.D0
 
        call g2g_query_cpu(cpu)

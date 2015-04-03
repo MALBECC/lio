@@ -65,6 +65,7 @@ c       write(*,*) 'M=',M
       En=0.0D0
       E2=0.0D0
       Es=0.0D0
+      Ens=0.0D0
 
       ngeo=ngeo+1
 
@@ -1193,6 +1194,13 @@ c writes down MO coefficients and orbital energies
         enddo
         close(29)
       endif
+
+      if (cube_gen) then
+        call g2g_timer_start('cube gen')
+        call cubegen(M15,Xnano)
+        call g2g_timer_stop('cube gen')
+      endif
+
 c
 c-------------------------------------------------
 c      endif

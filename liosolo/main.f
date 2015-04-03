@@ -14,7 +14,9 @@ c---------------------------------------------------------------------
      > idip,writexyz,intsoldouble,DIIS,ndiis,dgtrig,
      > Iexch,integ,dens,igrid,igrid2,timedep, tdstep, ntdstep,
      > propagator,NBCH,
-     > field,a0,epsilon,exter,Fx,Fy,Fz, tdrestart, writedens,writeforces
+     > field,a0,epsilon,exter,Fx,Fy,Fz, tdrestart, writedens,
+     > writeforces,basis_set,fitting_set,int_basis,
+     > cube_gen, cube_res, cube_sel, cube_file
 
       integer :: ifind, ierr
 
@@ -23,6 +25,10 @@ c---------------------------------------------------------------------
       basis_set='DZVP'
       fitting_set='DZVP Coulomb Fitting'
       int_basis=.false.
+      cube_gen=.false.
+      cube_res=40
+      cube_sel=-1
+      cube_file="lio.cube"
       output='output'
       fcoord='qm.xyz'
       fmulliken='mulliken'

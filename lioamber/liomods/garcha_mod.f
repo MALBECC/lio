@@ -28,6 +28,10 @@
 
       logical tdrestart, writedens
 
+      logical cube_gen
+      integer cube_res, cube_sel
+      character*20 cube_file
+
 
       dimension OCC(40),oc2(400),ATCOEF(100*ng0),ighost(ntq),
      > ighost1(ntq)

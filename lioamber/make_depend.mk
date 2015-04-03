@@ -19,7 +19,7 @@ include mathsubs/mathsubs.mk
 # OBJECTS LIST : This is the list of ALL the objects to be
 # linked for making LIO, including both free subroutines and
 # modules (their corresponding .o files).
-objects += liomain.o SCF.o SCFop.o SCF_in.o TD.o
+objects += liomain.o SCF.o SCFop.o SCF_in.o TD.o cubegen.o
 objects += dip.o dipmem.o jarz.o magnus.o predictor.o mulliken.o
 objects += dft_get_mm_forces.o dft_get_qm_forces.o
 objects += matmuldiag.o fock_commuts.o
@@ -52,7 +52,7 @@ objlist += dip.o dipmem.o drive.o grid.o init_amber.o init.o
 objlist += int1.o int2.o int3lu.o int3mem.o int3mems.o intfld.o intsol.o
 objlist += int1G.o int2G.o int3G.o intSG.o intsolG.o intsolGs.o
 objlist += jarz.o lio_finalize.o predictor.o
-objlist += SCF.o SCF_in.o SCFop.o TD.o
+objlist += SCF.o SCF_in.o SCFop.o TD.o cubegen.o
 $(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/garcha_mod.o
 $(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/garcha_mod.mod
 

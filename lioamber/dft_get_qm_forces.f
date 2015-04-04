@@ -5,7 +5,7 @@
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       use garcha_mod,only:natom
+       use garcha_mod,only:natom,cubegen_only
        implicit none
        real*8,intent(out) :: dxyzqm(3,natom)
        real*8,allocatable :: ff1G(:,:),ffSG(:,:),ff3G(:,:)
@@ -14,6 +14,7 @@
        logical            :: print_forces
 
 !--------------------------------------------------------------------!
+       if(cubegen_only) return
        allocate(ff1G(natom,3),ffSG(natom,3),ff3G(natom,3))
 
        call g2g_timer_start('int1G')

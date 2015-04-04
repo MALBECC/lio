@@ -9,7 +9,8 @@
       real*8 :: max_radius, max_dim, vox_dim, p_val, p_func
       real*8 :: p_dist
 
-      open(unit=4242,file=cube_file)
+      if (cube_dens) open(unit=4242,file=cube_dens_file)
+      if (cube_orb) open(unit=4243,file=cube_orb_file)
 
       ! first find the rectangular prism that the system lies in
       ivox = cube_res
@@ -54,26 +55,51 @@
       ivoxy = ceiling((x1(2)-x0(2)) / vox_dim)
       ivoxz = ceiling((x1(3)-x0(3)) / vox_dim)
 
-      write(4242,*) "LIO CUBE FILE"
-      if (cube_sel.eq.-1) then
+      if (cube_dens) then
+        write(4242,*) "LIO CUBE FILE"
         write(4242,*) "CUBE FORMAT FILE FOR ELECTRON DENSITY"
-      elseif (cube_sel.gt.0.and.cube_sel.le.M) then
-        write(4242,*) "CUBE FORMAT FILE FOR MOLECULAR ORBITAL"
-      else
-        write(*,*) "cube_sel VALUE NOT SUPPORTED!"
-        close(4242)
-        stop
+        write(4242,42) natom,origin(:)
+        write(4242,42) ivoxx,vox_dim,0.,0.
+        write(4242,42) ivoxy,0.,vox_dim,0.
+        write(4242,42) ivoxz,0.,0.,vox_dim
+        do i=1,natom
+          write(4242,424) Iz(i),0.,r(i,:)
+        enddo
       endif
-      write(4242,42) natom,origin(:)
-      write(4242,42) ivoxx,vox_dim,0.,0.
-      write(4242,42) ivoxy,0.,vox_dim,0.
-      write(4242,42) ivoxz,0.,0.,vox_dim
-      do i=1,natom
-        write(4242,424) Iz(i),0.,r(i,:)
-      enddo
+      if (cube_orb) then
+        write(4243,*) "LIO CUBE FILE"
+        if (cube_sel.eq.0) then
+          write(4243,*) "CUBE FORMAT FILE FOR MOLECULAR ORBITALS"
+        elseif (cube_sel.gt.0.and.cube_sel.le.NCO) then
+          write(4243,*) "CUBE FORMAT FILE FOR SINGLE MOLECULAR ORBITAL"
+        else
+          write(*,*) "cube_sel VALUE NOT SUPPORTED!"
+          stop
+        endif
+        if (cube_sel.eq.0) then
+          write(4243,42) -natom,origin(:)
+        else
+          write(4243,42) natom,origin(:)
+        endif
+        write(4243,42) ivoxx,vox_dim,0.,0.
+        write(4243,42) ivoxy,0.,vox_dim,0.
+        write(4243,42) ivoxz,0.,0.,vox_dim
+        do i=1,natom
+          write(4243,424) Iz(i),0.,r(i,:)
+        enddo
+        if (cube_sel.eq.0) then
+          write(4243,'(I4)',advance='no') NCO
+          do i=1,NCO
+            write(4243,'(I4)',advance='no') i
+          enddo
+          write(4243,*) ""
+        endif
+      endif
+
       ns = nshell(0)
       np = nshell(1)
-      kk = 1
+      kk_dens = 1
+      kk_orb = 1
       ! for each voxel...
       do i=1,ivoxx
         eval_p(1) = origin(1) + (i-1) * vox_dim
@@ -134,9 +160,9 @@
               enddo
             enddo
 
-            p_val = 0.D0
-            if (cube_sel.eq.-1) then
+            if (cube_dens) then
               ! calculate density for this voxel
+              p_val = 0.D0
               kkk = 0
               do ii=1,M
                 do jj=ii,M
@@ -144,28 +170,55 @@
                   p_val=p_val+RMM(kkk)*RMM(M15+ii-1)*RMM(M15+jj-1)
                 enddo
               enddo
+              write(4242,'(E13.5)',advance='no') p_val
+              if (mod(kk_dens,6) .eq. 0) then
+                write(4242,*) ""
+              endif
+              kk_dens = kk_dens + 1
+            endif
 
-            elseif (cube_sel.gt.0.and.cube_sel.le.M) then
-              ! calculate orbital^2 for this voxel
-              do ii=1,M
-                ! TODO: need to take advantage of symmetry here
-                do jj=1,M
-                  p_val=p_val+MO_v(cube_sel,ii)*RMM(M15+ii-1)*
-     >                        MO_v(cube_sel,jj)*RMM(M15+jj-1)
+            if (cube_orb) then
+              if (cube_sel.eq.0) then
+                do kk=1,NCO
+                  ! calculate orbital^2 for this voxel
+                  p_val = 0.D0
+                  do ii=1,M
+                    do jj=ii+1,M
+                      p_val=p_val+2.D0*MO_v(kk,ii)*RMM(M15+ii-1)*
+     >                        MO_v(kk,jj)*RMM(M15+jj-1)
+                    enddo
+                    p_val=p_val+MO_v(kk,ii)*RMM(M15+ii-1)*
+     >                        MO_v(kk,ii)*RMM(M15+ii-1)
+                  enddo
+                  write(4243,'(E13.5)',advance='no') p_val
+                  if (mod(kk_orb,6) .eq. 0) then
+                    write(4243,*) ""
+                  endif
+                  kk_orb = kk_orb + 1
                 enddo
-              enddo
-
+              else
+                ! calculate orbital^2 for this voxel
+                p_val = 0.D0
+                do ii=1,M
+                  do jj=ii+1,M
+                    p_val=p_val+2.D0*MO_v(cube_sel,ii)*RMM(M15+ii-1)*
+     >                        MO_v(cube_sel,jj)*RMM(M15+jj-1)
+                  enddo
+                  p_val=p_val+MO_v(cube_sel,ii)*RMM(M15+ii-1)*
+     >                        MO_v(cube_sel,ii)*RMM(M15+ii-1)
+                enddo
+                write(4243,'(E13.5)',advance='no') p_val
+                if (mod(kk_orb,6) .eq. 0) then
+                  write(4243,*) ""
+                endif
+                kk_orb = kk_orb + 1
+              endif
             endif
-            write(4242,'(E13.5)',advance='no') p_val
-
-            if (mod(kk,6) .eq. 0) then
-              write(4242,*) ""
-            endif
-            kk = kk + 1
           enddo
         enddo
       enddo
-      close(4242)
+      if (cube_dens) close(4242)
+      if (cube_orb) close(4243)
 
   42  format(I5,3(f12.6))
  424  format(I5,4(f12.6))

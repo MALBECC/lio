@@ -16,7 +16,9 @@ c---------------------------------------------------------------------
      > propagator,NBCH,
      > field,a0,epsilon,exter,Fx,Fy,Fz, tdrestart, writedens,
      > writeforces,basis_set,fitting_set,int_basis,
-     > cube_gen, cube_res, cube_sel, cube_file
+     > cubegen_only,cube_res,
+     > cube_dens,cube_dens_file,
+     > cube_orb,cube_sel,cube_orb_file
 
       integer :: ifind, ierr
 
@@ -25,10 +27,13 @@ c---------------------------------------------------------------------
       basis_set='DZVP'
       fitting_set='DZVP Coulomb Fitting'
       int_basis=.false.
-      cube_gen=.false.
+      cubegen_only=.false.
       cube_res=40
-      cube_sel=-1
-      cube_file="lio.cube"
+      cube_dens=.false.
+      cube_dens_file='dens.cube'
+      cube_orb=.false.
+      cube_sel=0
+      cube_orb_file="orb.cube"
       output='output'
       fcoord='qm.xyz'
       fmulliken='mulliken'

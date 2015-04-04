@@ -28,9 +28,9 @@
 
       logical tdrestart, writedens
 
-      logical cube_gen
-      integer cube_res, cube_sel
-      character*20 cube_file
+      logical cubegen_only,cube_dens,cube_orb
+      integer cube_res,cube_sel
+      character*20 cube_dens_file,cube_orb_file
 
 
       dimension OCC(40),oc2(400),ATCOEF(100*ng0),ighost(ntq),

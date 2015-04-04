@@ -7,8 +7,10 @@
      > , ntdstep_i, field_i, exter_i, a0_i, epsilon_i, Fx_i
      > , Fy_i, Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i
 #ifdef MOD_AMBER
-     > , basis_set_i, fitting_set_i, int_basis_i, cubegen_i
-     > , cuberes_i, cubesel_i, cubefile_i)
+     > , basis_set_i, fitting_set_i, int_basis_i
+     > , cubegen_only_i, cuberes_i
+     > , cubedens_i, cubedensfile_i
+     > , cubeorb_i, cubesel_i, cubeorbfile_i)
 #else
      > )
 #endif
@@ -38,9 +40,9 @@ c      include 'param'
 #ifdef MOD_AMBER
        character(len=40) :: basis_set_i
        character(len=40) :: fitting_set_i
-       logical :: int_basis_i, cubegen_i
+       logical :: int_basis_i,cubegen_only_i,cubedens_i,cubeorb_i
        integer :: cuberes_i, cubesel_i
-       character(len=20) :: cubefile_i
+       character(len=20) :: cubedensfile_i,cubeorbfile_i
 #endif
        character(len=20) :: output_i
        character(len=20) :: fcoord_i
@@ -89,18 +91,24 @@ c      include 'param'
        basis_set=basis_set_i
        fitting_set=fitting_set_i
        int_basis=int_basis_i
-       cube_gen = cubegen_i
+       cubegen_only = cubegen_only_i
        cube_res = cuberes_i
+       cube_dens = cubedens_i
+       cube_dens_file = cubedensfile_i
+       cube_orb = cubeorb_i
        cube_sel = cubesel_i
-       cube_file = cubefile_i
+       cube_orb_file = cubeorbfile_i
 #else
        basis_set="DZVP"
        fitting_set="DZVP Coulomb Fitting"
        int_basis=.false.
-       cube_gen = .false.
+       cubegen_only = .false.
        cube_res = 40
-       cube_sel = -1
-       cube_file = "lio.cube"
+       cube_dens =.false.
+       cube_dens_file = 'dens.cube'
+       cube_orb = .false.
+       cube_sel = 0
+       cube_orb_file = "orb.cube"
 #endif
        Output= output_i
        fcoord=fcoord_i

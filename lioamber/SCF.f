@@ -101,6 +101,28 @@ c weights (in case of using option )
 c
 * RAM storage of two-electron integrals (if MEMO=T)
       M20 = M19 + natom*50*Nang
+
+      if (cubegen_only.and.(cube_dens.or.cube_orb)) then
+        if (.not.VCINP) then
+          write(*,*) "cubegen_only CAN ONLY BE USED WITH VCINP"
+          stop
+        endif
+        kk=0
+        do k=1,NCO
+          do i=1,M
+            kk=kk+1
+            Xnano(k,i) = RMM(M18+kk-1)
+          enddo
+        enddo
+
+        call g2g_timer_start('cube gen')
+        call cubegen(M15,Xnano)
+        call g2g_timer_stop('cube gen')
+
+        deallocate (znano,xnano,scratch,scratch1)
+        call g2g_timer_stop('SCF')
+        return
+      endif
 c
       Nel=2*NCO+Nunp
 c
@@ -1195,7 +1217,7 @@ c writes down MO coefficients and orbital energies
         close(29)
       endif
 
-      if (cube_gen) then
+      if (cube_dens.or.cube_orb) then
         call g2g_timer_start('cube gen')
         call cubegen(M15,Xnano)
         call g2g_timer_stop('cube gen')

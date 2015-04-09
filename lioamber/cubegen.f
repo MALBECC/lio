@@ -8,7 +8,7 @@
       real*8 :: min_exps(120),x0(3),x1(3),origin(3),eval_p(3)
       real*8 :: max_radius, max_dim, vox_dim, p_val, p_func
       real*8 :: p_dist
-
+      parameter(expmax=10)
       if (cube_dens) open(unit=4242,file=cube_dens_file)
       if (cube_orb) open(unit=4243,file=cube_orb_file)
 
@@ -107,7 +107,7 @@
           eval_p(2) = origin(2) + (j-1) * vox_dim
           do k=1,ivoxz
             eval_p(3) = origin(3) + (k-1) * vox_dim
-            
+              p_val = 0.D0
             ! calculate function values at this voxel, store in RMM(M15)
             ! s functions
             do ii=1,ns
@@ -117,7 +117,8 @@
               enddo
               p_func = 0.D0
               do ni=1,ncont(ii)
-                p_func = p_func + c(ii,ni) * exp(-a(ii,ni)*p_dist)
+               if(a(ii,ni)*p_dist.lt.expmax) 
+     >            p_func = p_func + c(ii,ni) * exp(-a(ii,ni)*p_dist)
               enddo
 
               RMM(M15+ii-1) = p_func
@@ -131,7 +132,8 @@
               enddo
               p_func = 0.D0
               do ni=1,ncont(ii)
-                p_func = p_func + c(ii,ni) * exp(-a(ii,ni)*p_dist)
+               if(a(ii,ni)*p_dist.lt.expmax) 
+     >          p_func = p_func + c(ii,ni) * exp(-a(ii,ni)*p_dist)
               enddo
 
               do jj = 1,3
@@ -147,7 +149,8 @@
               enddo
               p_func = 0.D0
               do ni=1,ncont(ii)
-                p_func = p_func + c(ii,ni) * exp(-a(ii,ni)*p_dist)
+               if(a(ii,ni)*p_dist.lt.expmax) 
+     >           p_func = p_func + c(ii,ni) * exp(-a(ii,ni)*p_dist)
               enddo
 
               kkk = 0
@@ -160,9 +163,9 @@
               enddo
             enddo
 
+
             if (cube_dens) then
               ! calculate density for this voxel
-              p_val = 0.D0
               kkk = 0
               do ii=1,M
                 do jj=ii,M
@@ -219,6 +222,8 @@
       enddo
       if (cube_dens) close(4242)
       if (cube_orb) close(4243)
+
+      call elec(ivoxx,ivoxy,ivoxz,vox_dim,origin(1),origin(2),origin(3))
 
   42  format(I5,3(f12.6))
  424  format(I5,4(f12.6))

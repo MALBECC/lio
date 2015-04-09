@@ -18,7 +18,7 @@ c---------------------------------------------------------------------
      > writeforces,basis_set,fitting_set,int_basis,
      > cubegen_only,cube_res,
      > cube_dens,cube_dens_file,
-     > cube_orb,cube_sel,cube_orb_file
+     > cube_orb,cube_sel,cube_orb_file,cube_elec,cube_elec_file
 
       integer :: ifind, ierr
 
@@ -34,6 +34,8 @@ c---------------------------------------------------------------------
       cube_orb=.false.
       cube_sel=0
       cube_orb_file="orb.cube"
+      cube_elec=.false.
+      cube_elec_file="field.cube"
       output='output'
       fcoord='qm.xyz'
       fmulliken='mulliken'

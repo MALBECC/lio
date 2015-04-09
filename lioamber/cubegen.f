@@ -223,7 +223,9 @@
       if (cube_dens) close(4242)
       if (cube_orb) close(4243)
 
+      if (cube_elec) then 
       call elec(ivoxx,ivoxy,ivoxz,vox_dim,origin(1),origin(2),origin(3))
+      endif
 
   42  format(I5,3(f12.6))
  424  format(I5,4(f12.6))

@@ -406,6 +406,13 @@ c
 ****
 
          call g2g_timer_start('int3lu')
+!         write(*,*) "int3lu Ea:",Ea
+!         call g2g_query_coulomb_cpu(icpu)
+!         if (icpu.eq.0) then
+!           Ea=0.D0
+!           call g2g_coulomb_fock(Ea)
+!           write(*,*) "g2g Ea:",Ea
+!         else
           if (open) then       
          do kk=1,kknumd
               iikk=(kk-1)*Md
@@ -440,6 +447,7 @@ c
           enddo
 
          endif
+!         endif
 
          call g2g_timer_stop('int3lu')
 

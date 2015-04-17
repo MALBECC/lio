@@ -85,8 +85,14 @@ __global__ void gpu_qmmm_fock( uint num_terms, vec_type<scalar_type,2>* ac_value
       scalar_type ovlap;
   
       vec_type<scalar_type,3> A, B;
-      A = gpu_atom_positions[nuc1];
-      B = gpu_atom_positions[nuc2];
+      //A = gpu_atom_positions[nuc1];
+      A.x = gpu_atom_positions[nuc1].x;
+      A.y = gpu_atom_positions[nuc1].y;
+      A.z = gpu_atom_positions[nuc1].z;
+      //B = gpu_atom_positions[nuc2];
+      B.x = gpu_atom_positions[nuc2].x;
+      B.y = gpu_atom_positions[nuc2].y;
+      B.z = gpu_atom_positions[nuc2].z;
   
       //
       // ai and aj can differ by several orders of magnitude
@@ -279,7 +285,7 @@ __global__ void zero_fock( scalar_type* fock, uint global_stride, uint fock_leng
 // Also, reduce corresponding partial energies over the block
 //
 template<class scalar_type>
-__global__ void gpu_qmmm_fock_reduce( scalar_type* fock, scalar_type* dens, scalar_type* energies, uint stride, uint depth, uint width )
+__global__ void gpu_fock_reduce( scalar_type* fock, scalar_type* dens, scalar_type* energies, uint stride, uint depth, uint width )
 {
 
   assert(QMMM_REDUCE_BLOCK_SIZE==128);

@@ -138,7 +138,7 @@ sub inc_m {
 #########################################################################################
 
 sub print_one_ind_rule {
-  my ($integral,$level) = @_;
+  my ($integral,$level,$ind_val) = @_;
 
   my $center_num = $INDEX_MAP[$level-1];
   my $str_int = &print_integral(@$integral);
@@ -152,24 +152,32 @@ sub print_one_ind_rule {
   my $str = "scalar_type $str_int =";
 
   if ($center_num == 1) {
-    $str = "$str PmA[i${level}] * $red1_str";
+    #$str = "$str PmA[i${level}] * $red1_str";
+    $str = "$str PmA[$ind_val] * $red1_str";
   } elsif ($center_num == 2) {
-    $str = "$str PmB[i${level}] * $red1_str";
+    #$str = "$str PmB[i${level}] * $red1_str";
+    $str = "$str PmB[$ind_val] * $red1_str";
   } elsif ($center_num == 3 && $INDICES != 3) {
-    $str = "$str QmC[i${level}] * $red1_str";
+    #$str = "$str QmC[i${level}] * $red1_str";
+    $str = "$str QmC[$ind_val] * $red1_str";
   } elsif ($center_num == 4) {
-    $str = "$str QmD[i${level}] * $red1_str";
+    #$str = "$str QmD[i${level}] * $red1_str";
+    $str = "$str QmD[$ind_val] * $red1_str";
   }
 
   if ($INDICES == 2) {
-    $str = "$str - PmC[i$level] * $m1_str;";
+    #$str = "$str - PmC[i$level] * $m1_str;";
+    $str = "$str - PmC[$ind_val] * $m1_str;";
   } elsif ($INDICES == 3 && $center_num == 3) {
-    $str = "$str WmQ[i$level] * $m1_str;";
+    #$str = "$str WmQ[i$level] * $m1_str;";
+    $str = "$str WmQ[$ind_val] * $m1_str;";
   } else { 
     if ($center_num <= 2) {
-      $str = "$str + WmP[i$level] * $m1_str;";
+      #$str = "$str + WmP[i$level] * $m1_str;";
+      $str = "$str + WmP[$ind_val] * $m1_str;";
     } else {
-      $str = "$str + WmQ[i$level] * $m1_str;";
+      #$str = "$str + WmQ[i$level] * $m1_str;";
+      $str = "$str + WmQ[i$ind_val] * $m1_str;";
     }
   }
 
@@ -189,7 +197,7 @@ sub print_two_ind_rule {
   my @red2_m1 = &inc_m(@red2_integral);
   my $m1_str = &print_integral(@red2_m1);
 
-  my $str = "$str_int += del_$ind2$ind1 *";
+  my $str = "$str_int +=";# del_$ind2$ind1 *";
   if ($center1 <= 2 and $center2 <= 2) {
     $str = "$str inv_two_zeta * ($red2_str -";
     if ($INDICES > 2) {
@@ -208,7 +216,7 @@ sub print_two_ind_rule {
 sub print_preterm {
   my ($level,$indent) = @_;
 
-  my $str = "$indent  scalar_type preterm =";
+  my $str = "${indent}scalar_type preterm =";
   my $first = 1;
   for (1..$level) {
     if ($NORM_INDICES[$_-1]) {
@@ -219,188 +227,54 @@ sub print_preterm {
         $str = "$str * norm$_";
       }
     }
-    if ($SAME_FUNC_INDICES[$_-1]) {
-      if ($first) {
-        $str = "$str !skip$_";
-        $first = 0;
-      } else {
-        $str = "$str * !skip$_";
-      }
-    }
+#    if ($SAME_FUNC_INDICES[$_-1]) {
+#      if ($first) {
+#        $str = "$str !skip$_";
+#        $first = 0;
+#      } else {
+#        $str = "$str * !skip$_";
+#      }
+#    }
   }
   $str = "$str;\n";
 
   return $str;
 }
 
-sub print_skip {
-  my ($level) = @_;
+#sub print_skip {
+#  my ($level,@ind_vals) = @_;
 
-  my $str = "bool skip$level =";
-  $str = "$str same_func &&";
-  if ($IND_TO_L[$level-1] == 1) {
-    my $lm1 = $level - 1;
-    $str = "$str (i$level > i$lm1)";
-  } elsif ($IND_TO_L[$level-1] == 2) {
-    my $lm1 = $level - 1;
-    my $lm2 = $level - 2;
-    my $lm3 = $level - 3;
-    $str = "$str (i$lm1 > i$lm3 || (i$lm1 == i$lm3 && i$level > i$lm2))";
-  }
+#  my $str = "bool skip$level =";
+  #$str = "$str same_func &&";
+#  if ($IND_TO_L[$level-1] == 1) {
+    #my $lm1 = $level - 1;
+#    if ($ind_vals[$level-1] > $ind_vals[$level-2]) {
+      #$str = "$str (i$level > i$lm1)";
+#      $str = "$str same_func";
+#    } else {
+#      $str = "$str false";
+#    }
+#  } elsif ($IND_TO_L[$level-1] == 2) {
+    #my $lm1 = $level - 1;
+    #my $lm2 = $level - 2;
+    #my $lm3 = $level - 3;
+#    if ($ind_vals[$level-2] > $ind_vals[$level-4] or ($ind_vals[$level-2] == $ind_vals[$level-4] and $ind_vals[$level-1] > $ind_vals[$level-3])) {
+      #$str = "$str (i$lm1 > i$lm3 || (i$lm1 == i$lm3 && i$level > i$lm2))";
+#      $str = "$str same_func";
+#    } else {
+#      $str = "$str false";
+#    }
+#  }
 
-  return $str;
-}
+#  return $str;
+#}
 
-#########################################################################################
-#                               O-S EVALUATION
-#########################################################################################
-
-sub OS_level {
-  my ($level,$lower_str,@level_reqs) = @_;
-  return $lower_str if $level == 0;
-
-  my @new_level_reqs = ();
-  my @calc = ();
-
-  my $left_index = $INDEX_MAP[$level-1] <= 2;
-
-  for my $ref (@level_reqs) {
-    my @integral = @$ref;
-    my @skip = ($level);
-    my @red1_integral = &reduce_integral(\@skip,\@integral);
-    if (not &same_integral(\@red1_integral,\@integral)) {
-      push @calc, \@integral;
-      if ($INDICES != 3 or $left_index) {
-        &add_integral(\@new_level_reqs,\@red1_integral);
-      }
-      my @m_plus1 = &inc_m(@red1_integral);
-      &add_integral(\@new_level_reqs,\@m_plus1);
-      for (1..$level-1) {
-        my $this_left = $INDEX_MAP[$_-1] <= 2;
-        @skip = ($_,$level);
-        my @red2_integral = &reduce_integral(\@skip,\@integral);
-        if ($this_left == $left_index) {
-          &add_integral(\@new_level_reqs,\@red2_integral);
-        }
-        my @red2_m_plus1 = &inc_m(@red2_integral);
-        &add_integral(\@new_level_reqs,\@red2_m_plus1);
-      }
-    } else {
-      &add_integral(\@new_level_reqs,\@integral);
-    }
-  }
-
-  my $indent = "";
-  $indent = "$indent  " for (1..$level);
-  my $str = "${indent}//START INDEX i$level, CENTER $INDEX_MAP[$level-1]\n";
-  $str = "$str${indent}uint dens1_ind = 0;\n" if $level == 1;
-  $str = "$str${indent}\{\n";
-  for my $integral (@calc) {
-    my $one_ind_rule = &print_one_ind_rule($integral,$level);
-    $str = "$str$indent  $one_ind_rule\n";
-  }
-  for my $ind2 (1..$level-1) {
-    $str = "$str$indent  scalar_type norm$level;\n" if $NORM_INDICES[$level-1] and $ind2 == $level-1;
-    $str = "$str$indent  \{\n";
-    $str = "$str$indent    bool del_${ind2}${level} = i$ind2 == i$level;\n";
-    for my $integral(@calc) {
-      my @skip = ($level);
-      my @red1_integral = &reduce_integral(\@skip,$integral);
-      @skip = ($ind2,$level);
-      my @red2_integral = &reduce_integral(\@skip,$integral);
-      if (not &same_integral(\@red1_integral,\@red2_integral)) {
-        my $two_ind_rule = &print_two_ind_rule($integral,$level,$ind2);
-        $str = "$str$indent    $two_ind_rule\n";
-      }
-    }
-    $str = "$str$indent    norm$level = del_${ind2}${level} * gpu_normalization_factor + !del_${ind2}${level} * 1.0f;\n" if $NORM_INDICES[$level-1] and $ind2 == $level-1;
-    $str = "$str$indent  \}\n";
-  }
-  if ($SAME_FUNC_INDICES[$level-1]) {
-    my $skip_str = &print_skip($level);
-    $str = "$str$indent  $skip_str;\n";
-  }
-  if ($OUTER_DENS_UPDATE[$level-1]) {
-    $str = "$str$indent  dens1_ind++;\n";
-    $str = "$str$indent  uint dens2_ind = 0;\n" if $INDICES > 2;
-  }
-  $str = "$str$lower_str";
-  $str = "$str$indent  dens2_ind++;\n" if $INNER_DENS_UPDATE[$level-1];
-  $str = "$str${indent}\}\n";
-
-  return &OS_level($level-1,$str,@new_level_reqs);
-}
-
-#########################################################################################
-#                               MAIN PROGRAM ENTRY
-#########################################################################################
-
-my ($gradient,@integral) = @ARGV;
-
-$INDICES = @integral;
-@INDEX_MAP = ();
-@NORM_INDICES = ();
-
-my $symm1 = ($integral[0] > 0 and $integral[0] == $integral[1]);
-my $symm2 = ($INDICES == 4 and $integral[2] > 0 and $integral[2] == $integral[3]);
-@SAME_FUNC_INDICES = ();
-$NORM_SAME_COUNT = 0;
-
-@IND_TO_L = ();
-
-@OUTER_DENS_UPDATE = ();
-@INNER_DENS_UPDATE = ();
-
-my $l = 0;
-$l += $_ for (@integral);
-
-my @req = ();
-my $count = 0;
-my @first_req = ();
-my $ind_count = 0;
-for my $index (@integral) {
-  $ind_count += 1;
-  my @tmp = ();
-  push @tmp, $index;
-  for (0..$index-1) {
-    $count += 1;
-    push @tmp, $count;
-    push @INDEX_MAP, $ind_count;
-    push @NORM_INDICES, 0;
-    push @SAME_FUNC_INDICES, 0;
-    push @OUTER_DENS_UPDATE, 0;
-    push @INNER_DENS_UPDATE, 0;
-    push @IND_TO_L, $index;
-  }
-  $NORM_INDICES[$#NORM_INDICES] = 1 if $index == 2;
-  $SAME_FUNC_INDICES[$#SAME_FUNC_INDICES] = 1 if ($symm1 and $ind_count == 2) or ($symm2 and $ind_count == 4);
-  $NORM_SAME_COUNT += 1 if $index == 2 or ($symm1 and $ind_count == 2) or ($symm2 and $ind_count == 4);
-  $OUTER_DENS_UPDATE[$#OUTER_DENS_UPDATE] = 1 if $index > 0 and $ind_count == 2;
-  $INNER_DENS_UPDATE[$#INNER_DENS_UPDATE] = 1 if $index > 0 and (($INDICES == 3 and $ind_count == 3) or $ind_count == 4);
-  push @first_req, \@tmp;
-}
-push @first_req, 0;
-push @req, \@first_req;
-
-my $indent = "";
-$indent = "$indent  " for (1..$l);
-my $str = "";
-if ($NORM_SAME_COUNT > 0) {
-  my $preterm_str = &print_preterm($l,$indent);
-  $str = "$str$preterm_str";
-}
-if ($gradient) {
-  my @m_p1 = &inc_m(@first_req);
-  &add_integral(\@req,\@m_p1);
-  for (1..$l) {
-    my @skip = ($_);
-    my @red_integral = &reduce_integral(\@skip,\@first_req);
-    my @red_m_p1 = &inc_m(@red_integral);
-    &add_integral(\@req,\@red_integral);
-    &add_integral(\@req,\@red_m_p1);
-  }
+sub print_gradient_inner {
+  my ($l,$indent,$ref,$str) = @_;
+  my @first_req = @$ref;
   my $grad_l = $l + 1;
   $str = "$str$indent  //START INDEX i$grad_l, GRADIENT\n";
+  $str = "$str$indent  for (int i$grad_l = 0; i$grad_l < 3; i$grad_l++)\n";
   $str = "$str$indent  \{\n";
   if ($INDICES == 2) {
     my $int_str = &print_integral(@first_req);
@@ -448,16 +322,299 @@ if ($gradient) {
   }
   $str = "$str$indent  \}\n";
 }
-if (not $gradient) {
-  $str = "$str$indent  my_fock[dens1_ind] +=";
+sub print_energy_inner {
+  my ($str,$indent,$ref,$dens1_ind,$dens2_ind) = @_;
+  my @first_req = @$ref;
+  #$str = "$str$indent  my_fock[dens1_ind] +=";
+  $str = "$str${indent}my_fock[$dens1_ind] += (double)(";
   $str = "$str preterm *" if $NORM_SAME_COUNT > 0;
   if ($INDICES == 2) {
     $str = "$str clatom_charge_sh[j] *";
   } else {
-    $str = "$str dens2[j+dens2_ind] * dens_prefactor *";
+    #$str = "$str fit_dens_sh[j+dens2_ind] * prefactor_dens *";
+    $str = "$str fit_dens_sh[j+$dens2_ind] * prefactor_dens * ";
   }
   my $int_str = &print_integral(@first_req);
-  $str = "$str $int_str;\n";
+  $str = "$str $int_str );\n";
 }
 
-print &OS_level($l,$str,@req);
+#########################################################################################
+#                               O-S EVALUATION
+#########################################################################################
+
+sub OS_level {
+  #my ($level,$lower_str,$vals_ref,$dens1_ind,$dens2_ind,$reqs_ref) = @_;
+  my ($level,$vals_ref,$dens1_ind,$dens2_ind,$reqs_ref) = @_;
+  my @level_reqs = @$reqs_ref;
+  my $indent = "  ";
+  $indent = "$indent  " for (1..$level);
+  my $str = "";
+  my $lower_str = "";
+  #return $lower_str if $level == 0;
+  if ($level-1 == $l) {
+    my $count = 0;
+    my @first_req = ();
+    for my $index (@BASE_INTEGRAL) {
+      my @tmp = ();
+      push @tmp, $index;
+      for (0..$index-1) {
+        $count++;
+        push @tmp, $count;
+      }
+      push @first_req,\@tmp;
+    }
+    push @first_req, 0;
+    push @$reqs_ref, \@first_req;
+    if ($NORM_SAME_COUNT > 0) {
+      my $preterm_str = &print_preterm($l,$indent);
+      $str = "$str$preterm_str";
+    }
+    if ($GRADIENT) {
+      my @m_p1 = &inc_m(@first_req);
+      &add_integral($reqs_ref,\@m_p1);
+      for (1..$l) {
+        my @skip = ($_);
+        my @red_integral = &reduce_integral(\@skip,\@first_req);
+        my @red_m_p1 = &inc_m(@red_integral);
+        &add_integral($reqs_ref,\@red_integral);
+        &add_integral($reqs_ref,\@red_m_p1);
+      }
+      my $lower_str = &print_gradient_inner($l,$indent,\@first_req,$str);
+      return "$str$lower_str";
+    } else {
+      my $lower_str = &print_energy_inner("",$indent,\@first_req,$$dens1_ind,$$dens2_ind);
+      return "$str$lower_str";
+    }
+  }
+
+  my @ind_vals = @$vals_ref;
+
+  my $left_index = $INDEX_MAP[$level-1] <= 2;
+
+  my $imax = 2;
+  if ($LOCAL_LEVEL[$level-1]!=0) {
+    #$str = "$str${indent}for (int i$level = 0; i$level < 3; i$level++)\n";
+    $imax = $ind_vals[$level-2];
+  }# else {
+  #  my $last_level = $level-1;
+  #  $str = "$str${indent}for (int i$level = 0; i$level <= i$last_level; i$level++)\n";
+  #}
+  if ($level==1 and $INDEX_MAP[$level-1] >= 3) {
+    $$dens2_ind = 0;
+  }
+  for my $this_ind (0..$imax) {
+
+    $ind_vals[$level-1] = $this_ind;
+    #$str = &OS_level($level+1,$str,\@ind_vals,$pass_dens1_ind,$pass_dens2_ind,\@new_level_reqs);
+    my @new_level_reqs = ();
+    my @calc = ();
+    if (($INDEX_MAP[$level-1] <= 2 and ($level < $l and $INDEX_MAP[$level] >= 3))) {
+      #$str = "$str${indent}uint dens2_ind = 0;\n" if $INDICES > 2;
+      $$dens2_ind = 0;
+    }
+    $lower_str = &OS_level($level+1,\@ind_vals,$dens1_ind,$dens2_ind,\@new_level_reqs);
+    $$dens1_ind++ if $OUTER_DENS_UPDATE[$level-1];
+    $$dens2_ind++ if $INNER_DENS_UPDATE[$level-1];
+
+    for my $ref (@new_level_reqs) {
+      my @integral = @$ref;
+      my @skip = ($level);
+      my @red1_integral = &reduce_integral(\@skip,\@integral);
+      if (not &same_integral(\@red1_integral,\@integral)) {
+        push @calc, \@integral;
+        if ($INDICES != 3 or $left_index) {
+          &add_integral($reqs_ref,\@red1_integral);
+        }
+        my @m_plus1 = &inc_m(@red1_integral);
+        &add_integral($reqs_ref,\@m_plus1);
+        for (1..$level-1) {
+          if ($ind_vals[$level-1] == $ind_vals[$_-1]) {
+            my $this_left = $INDEX_MAP[$_-1] <= 2;
+            @skip = ($_,$level);
+            my @red2_integral = &reduce_integral(\@skip,\@integral);
+            if ($this_left == $left_index) {
+              &add_integral($reqs_ref,\@red2_integral);
+            }
+            my @red2_m_plus1 = &inc_m(@red2_integral);
+            &add_integral($reqs_ref,\@red2_m_plus1);
+          }
+        }
+      } else {
+        &add_integral($reqs_ref,$ref);
+      }
+    }
+
+    $str = "$str${indent}//START INDEX i$level=$this_ind, CENTER $INDEX_MAP[$level-1]\n";
+    $str = "$str${indent}\{\n";
+    for my $integral (@calc) {
+      my $one_ind_rule = &print_one_ind_rule($integral,$level,$this_ind);
+      $str = "$str$indent  $one_ind_rule\n";
+    }
+    for my $ind2 (1..$level-1) {
+      $str = "$str$indent  scalar_type norm$level = 1.0f;\n" if $NORM_INDICES[$level-1] and $ind2 == $level-1;
+      #$str = "$str$indent    bool del_${ind2}${level} = i$ind2 == i$level;\n";
+      if ($ind_vals[$level-1] == $ind_vals[$ind2-1]) {
+        #$str = "$str$indent  \{\n";
+        for my $integral(@calc) {
+          my @skip = ($level);
+          my @red1_integral = &reduce_integral(\@skip,$integral);
+          @skip = ($ind2,$level);
+          my @red2_integral = &reduce_integral(\@skip,$integral);
+          if (not &same_integral(\@red1_integral,\@red2_integral)) {
+            my $two_ind_rule = &print_two_ind_rule($integral,$level,$ind2);
+            $str = "$str$indent  $two_ind_rule\n";
+          }
+        }
+        #$str = "$str$indent    norm$level = del_${ind2}${level} * gpu_normalization_factor + !del_${ind2}${level} * 1.0f;\n" if $NORM_INDICES[$level-1] and $ind2 == $level-1;
+        $str = "$str$indent  norm$level = gpu_normalization_factor;\n" if $NORM_INDICES[$level-1] and $ind2 == $level-1;
+        #$str = "$str$indent  \}\n";
+      }
+    }
+    $str = "$str$lower_str";
+    $str = "$str${indent}\}\n";
+  }
+#  if ($SAME_FUNC_INDICES[$level-1]) {
+#    my $skip_str = &print_skip($level,@ind_vals);
+#    $str = "$str$indent  $skip_str;\n";
+#  }
+  #$str = "$str$lower_str";
+#  if ($OUTER_DENS_UPDATE[$level-1]) {
+#    if ($SAME_FUNC_INDICES[$level-1]) {
+#      $str = "$str$indent  dens1_ind += !skip$level;\n";
+#    } else {
+      #$str = "$str$indent  dens1_ind++;\n";
+#    }
+#  }
+  #$str = "$str$indent  dens2_ind++;\n" if $INNER_DENS_UPDATE[$level-1];
+
+  return $str;
+}
+
+#########################################################################################
+#                               MAIN PROGRAM ENTRY
+#########################################################################################
+
+($GRADIENT,@BASE_INTEGRAL) = @ARGV;
+
+$INDICES = @BASE_INTEGRAL;
+@INDEX_MAP = ();
+@NORM_INDICES = ();
+
+my $symm1 = ($BASE_INTEGRAL[0] > 0 and $BASE_INTEGRAL[0] == $BASE_INTEGRAL[1]);
+my $symm2 = ($INDICES == 4 and $BASE_INTEGRAL[2] > 0 and $BASE_INTEGRAL[2] == $BASE_INTEGRAL[3]);
+#@SAME_FUNC_INDICES = ();
+$NORM_SAME_COUNT = 0;
+
+@IND_TO_L = ();
+
+@OUTER_DENS_UPDATE = ();
+@INNER_DENS_UPDATE = ();
+
+$l = 0;
+$l += $_ for (@BASE_INTEGRAL);
+@ind_vals_init = ();
+push @ind_vals_init, 0 for (1..$l);
+$F_l = $l + 1;
+$gamma_l = $l;
+if ($GRADIENT) {
+    $F_l++;
+    $gamma_l++;
+}
+if ($INDICES>2) {
+print <<"END";
+{
+  scalar_type F_mT[$F_l];
+  {
+    scalar_type PmQ[3];
+    PmQ[0] = P[0] - nuc_pos_dens_sh[j].x;
+    PmQ[1] = P[1] - nuc_pos_dens_sh[j].y;
+    PmQ[2] = P[2] - nuc_pos_dens_sh[j].z;
+    scalar_type T = (PmQ[0] * PmQ[0] + PmQ[1] * PmQ[1] + PmQ[2] * PmQ[2]) * rho;
+    lio_gamma<scalar_type,$gamma_l>(F_mT,T);
+  }
+  {
+END
+#    uint dens1_ind = 0;
+  if (($INDICES == 3 and $BASE_INTEGRAL[2] == 0) or ($INDICES == 4 and ($BASE_INTEGRAL[2] == 0 and $BASE_INTEGRAL[3] == 0))) {
+    #print "    uint dens2_ind = 0;\n";
+  }
+} else {
+print <<"END";
+{
+  scalar_type F_mU[$F_l];
+  {
+    scalar_type U = (PmC[0] * PmC[0] + PmC[1] * PmC[1] + PmC[2] * PmC[2]) * (ai + aj);
+    // TODO (maybe): test out storing F(m,U) values in texture and doing a texture fetch here rather than the function calculation
+    lio_gamma<scalar_type,$gamma_l>(F_mU,U);
+  }
+  {
+END
+#    uint dens1_ind = 0;
+}
+
+my @req = ();
+my $count = 0;
+my @first_req = ();
+my $ind_count = 0;
+@LOCAL_LEVEL = ();
+for my $index (@BASE_INTEGRAL) {
+  $ind_count += 1;
+  #my @tmp = ();
+  #push @tmp, $index;
+  for (0..$index-1) {
+    $count += 1;
+    #push @tmp, $count;
+    push @LOCAL_LEVEL, $_;
+    push @INDEX_MAP, $ind_count;
+    push @NORM_INDICES, 0;
+#    push @SAME_FUNC_INDICES, 0;
+    push @OUTER_DENS_UPDATE, 0;
+    push @INNER_DENS_UPDATE, 0;
+    push @IND_TO_L, $index;
+  }
+  $NORM_INDICES[$#NORM_INDICES] = 1 if $index == 2;
+#  $SAME_FUNC_INDICES[$#SAME_FUNC_INDICES] = 1 if ($symm1 and $ind_count == 2) or ($symm2 and $ind_count == 4);
+  $NORM_SAME_COUNT += 1 if $index == 2;# or ($symm1 and $ind_count == 2) or ($symm2 and $ind_count == 4);
+  if ($index > 0) {
+    $OUTER_DENS_UPDATE[$#OUTER_DENS_UPDATE] = 1 if $ind_count == 2;
+    $INNER_DENS_UPDATE[$#INNER_DENS_UPDATE] = 1 if ($INDICES == 3 and $ind_count == 3) or $ind_count == 4;
+  } elsif ($ind_count == 2 and $BASE_INTEGRAL[0] > 0) {
+    $OUTER_DENS_UPDATE[$#OUTER_DENS_UPDATE] = 1;
+  } elsif ($ind_count == 4 and $BASE_INTEGRAL[2] > 0) {
+    $INNER_DENS_UPDATE[$#INNER_DENS_UPDATE] = 1;
+  }
+  #push @first_req, \@tmp;
+}
+#push @first_req, 0;
+#push @req, \@first_req;
+
+my $indent = "  ";
+$indent = "$indent  " for (1..$l);
+my $str = "";
+#if ($NORM_SAME_COUNT > 0) {
+#  my $preterm_str = &print_preterm($l,$indent);
+#  $str = "$str$preterm_str";
+#}
+#if ($gradient) {
+#  my @m_p1 = &inc_m(@first_req);
+#  &add_BASE_INTEGRAL(\@req,\@m_p1);
+#  for (1..$l) {
+#    my @skip = ($_);
+#    my @red_BASE_INTEGRAL = &reduce_BASE_INTEGRAL(\@skip,\@first_req);
+#    my @red_m_p1 = &inc_m(@red_BASE_INTEGRAL);
+#    &add_BASE_INTEGRAL(\@req,\@red_BASE_INTEGRAL);
+#    &add_BASE_INTEGRAL(\@req,\@red_m_p1);
+#  }
+  #$str = &print_gradient_inner($l,$indent,\@first_req,$str);
+#}
+#if (not $gradient) {
+  #$str = &print_energy_inner($str,$indent,\@first_req);
+#}
+
+#print &OS_level(1,$str,\@ind_vals_init,0,0,\@req);
+my $dens1_ind = 0;
+my $dens2_ind = 0;
+print &OS_level(1,\@ind_vals_init,\$dens1_ind,\$dens2_ind,\@req);
+
+print "  }\n";
+print "}\n";

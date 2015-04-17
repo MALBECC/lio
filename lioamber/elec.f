@@ -119,9 +119,9 @@ c
 
  202  continue
  201  continue
-       write(*,*) 'un ss hecho'
+!       write(*,*) 'un ss hecho'
  200  continue
-       write(*,*) 'elec ss hecho'
+!       write(*,*) 'elec ss hecho'
 c
 c------------------------------------------------------------------
 c

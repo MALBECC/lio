@@ -102,7 +102,7 @@ c
 * RAM storage of two-electron integrals (if MEMO=T)
       M20 = M19 + natom*50*Nang
 
-      if (cubegen_only.and.(cube_dens.or.cube_orb)) then
+      if (cubegen_only.and.(cube_dens.or.cube_orb.or.cube_elec)) then
         if (.not.VCINP) then
           write(*,*) "cubegen_only CAN ONLY BE USED WITH VCINP"
           stop
@@ -1217,7 +1217,7 @@ c writes down MO coefficients and orbital energies
         close(29)
       endif
 
-      if (cube_dens.or.cube_orb) then
+      if (cube_dens.or.cube_orb.or.cube_elec) then
         call g2g_timer_start('cube gen')
         call cubegen(M15,Xnano)
         call g2g_timer_stop('cube gen')

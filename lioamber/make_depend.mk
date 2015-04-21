@@ -26,7 +26,7 @@ objects += matmuldiag.o fock_commuts.o
 objects += init.o init_amber.o lio_init.o lio_finalize.o
 objects += alg.o drive.o func.o grid.o
 objects += int1.o int1G.o int2.o int2G.o
-objects += int3lu.o int3mem.o int3mems.o int3G.o
+objects += int3lu.o int3mem.o int3G.o
 objects += intsol.o intsolG.o intsolGs.o
 objects += intfld.o intSG.o
 objects += FixMessRho.o get_unit.o PackedStorage.f
@@ -49,7 +49,7 @@ objects += maskrmm.o
 # garcha_mod
 objlist := dft_get_mm_forces.o dft_get_qm_forces.o
 objlist += dip.o dipmem.o drive.o grid.o init_amber.o init.o
-objlist += int1.o int2.o int3lu.o int3mem.o int3mems.o intfld.o intsol.o
+objlist += int1.o int2.o int3lu.o int3mem.o intfld.o intsol.o
 objlist += int1G.o int2G.o int3G.o intSG.o intsolG.o intsolGs.o
 objlist += jarz.o lio_finalize.o predictor.o
 objlist += SCF.o SCF_in.o SCFop.o TD.o

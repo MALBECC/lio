@@ -64,7 +64,7 @@ objlist += FixMessRho.o get_unit.o mulliken.o PackedStorage.f
 objlist += init_amber.o init.o lio_init.o liomain.o lio_finalize.o
 objlist += dft_get_mm_forces.o dft_get_qm_forces.o
 objlist += alg.o drive.o func.o grid.o dipmem.o jarz.o
-objlist += int1.o int2.o int2G.o int3mem.o int3mems.o intSG.o
+objlist += int1.o int2.o int2G.o int3mem.o intSG.o
 objlist += garcha_mod.o mathsubs.o
 $(objlist:%.o=$(obj_path)/%.o) : optim:=$(optim3)
 #UNNECESSARY IF PREVIOUS ASSIGNMENT USED PRIVATE KEYWORD
@@ -89,7 +89,7 @@ ifeq ($(ifort),1)
   objlist += init_amber.o init.o lio_init.o liomain.o lio_finalize.o
   objlist += dft_get_mm_forces.o dft_get_qm_forces.o
   objlist += alg.o drive.o func.o grid.o dipmem.o jarz.o
-  objlist += int1.o int2.o int2G.o int3mem.o int3mems.o intSG.o
+  objlist += int1.o int2.o int2G.o int3mem.o intSG.o
   objlist += garcha_mod.o
   $(objlist:%.o=$(obj_path)/%.o) : myflags:=-mp1 -ip
   #$(objlist:%.o=$(obj_path)/%.o) : private myflags+=$(optim3) -mp1 -ip

@@ -36,6 +36,11 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
         logical :: just_int3n,ematalloct
 !--------------------------------------------------------------------!
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	write(*,*) "Nick"
+	write(*,*) "ecpmode ", ecpmode, "tipeECP ",tipeECP
+	write(*,*) "ZlistECP",ZlistECP
 
 #ifdef magma
        call magmaf_init()

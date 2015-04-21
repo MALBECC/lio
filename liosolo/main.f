@@ -15,7 +15,9 @@ c---------------------------------------------------------------------
      > Iexch,integ,dens,igrid,igrid2,timedep, tdstep, ntdstep,
      > propagator,NBCH,
      > field,a0,epsilon,exter,Fx,Fy,Fz, tdrestart, writedens,
-     > writeforces,basis_set,fitting_set,int_basis
+     > writeforces,basis_set,fitting_set,int_basis,
+     > ecpmode,tipeECP,ZlistECP
+!ultima linea agregada para ECP, Nick
 
       integer :: ifind, ierr
 
@@ -64,6 +66,12 @@ c---------------------------------------------------------------------
       writedens=.true.
       writeforces=.false.
       narg=command_argument_count()
+
+!ECP!!!!!!!!!!!!!!!!!!!!!!!!!!!!! tocado, Nick
+      ecpmode=.false.
+      tipeECP='CEP'
+      ZlistECP=0
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       do i=1, narg
         call get_command_argument(i,argument)

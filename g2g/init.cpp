@@ -364,24 +364,24 @@ extern "C" void g2g_qmmm_fock_(double& Es, double& Ens)
 //                                  Coulomb routines
 //===============================================================================================================
 namespace G2G {
-  template<class T,bool forces> void g2g_coulomb(double* qm_forces, double& Es);
+  template<class T,bool forces> void g2g_coulomb(double* qm_forces, double& Es,double* Ginv);
 }
 extern "C" void g2g_coulomb_forces_(double* qm_forces)
 {
   double Es = 0.0;
 #if COULOMB_MP && !FULL_DOUBLE
-  G2G::g2g_coulomb<float,true>(qm_forces,Es);
+  G2G::g2g_coulomb<float,true>(qm_forces,Es,(double*)0);
 #else
-  G2G::g2g_coulomb<double,true>(qm_forces,Es);
+  G2G::g2g_coulomb<double,true>(qm_forces,Es,(double*)0);
 #endif
 }
-extern "C" void g2g_coulomb_fock_(double& Es)
+extern "C" void g2g_coulomb_fock_(double& Es,double* rmm,const unsigned int& m9)
 {
   Es = 0.0;
 #if COULOMB_MP && !FULL_DOUBLE
-  G2G::g2g_coulomb<float,false>((double*)0,Es);
+  G2G::g2g_coulomb<float,false>((double*)0,Es,rmm+m9-1);
 #else
-  G2G::g2g_coulomb<double,false>((double*)0,Es);
+  G2G::g2g_coulomb<double,false>((double*)0,Es,rmm+m9-1);
 #endif
 }
 //===============================================================================================================

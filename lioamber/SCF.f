@@ -464,7 +464,9 @@ c Precalculate two-index (density basis) "G" matrix used in density fitting
 c here (S_ij in Dunlap, et al JCP 71(8) 1979) into RMM(M7)
 c Also, pre-calculate G^-1 if G is not ill-conditioned into RMM(M9)
 c
+      call g2g_timer_start('int2')
       call int2()
+      call g2g_timer_stop('int2')
 c
 **
 c
@@ -472,6 +474,7 @@ c Precalculate three-index (two in MO basis, one in density basis) matrix
 c used in density fitting / Coulomb F element calculation here
 c (t_i in Dunlap)
 c
+      MEMO=.true.!.false.
       if (MEMO) then
          call g2g_timer_start('int3mem')
 c Large elements of t_i put into double-precision cool here
@@ -526,7 +529,9 @@ c      if (MEMO) then
 c
 c Fit density basis to current MO coeff and calculate Coulomb F elements
 c
+            call g2g_timer_start('int3lu total')
             call int3lu(E2)
+            call g2g_timer_stop('int3lu total')
 c
 c XC integration / Fock elements
 c
@@ -1232,8 +1237,10 @@ c      endif
       endif
       deallocate (xnano,rmm5,rmm15)
 
-      deallocate (kkind,kkinds)
-      deallocate(cool,cools)
+      if (MEMO) then
+        deallocate (kkind,kkinds)
+        deallocate(cool,cools)
+      endif
       if(allocated(WORK2)) deallocate (WORK2)
 
 c       E=E*627.509391D0

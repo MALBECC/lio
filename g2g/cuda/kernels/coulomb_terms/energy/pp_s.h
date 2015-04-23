@@ -17,17 +17,29 @@
       {
         scalar_type p1p2s_0 = PmB[0] * p1ss_0 + WmP[0] * p1ss_1;
         p1p2s_0 += inv_two_zeta * (F_mT[0] - rho_zeta * F_mT[1]);
+#ifdef FOCK_CALC
         my_fock[0] += (double)( fit_dens_sh[j+0] * prefactor_dens *  p1p2s_0 );
+#else
+        rc_sh[0][tid] += (double)( dens[0] * prefactor_dens *  p1p2s_0 );
+#endif
       }
       //START INDEX i2=1, CENTER 2
       {
         scalar_type p1p2s_0 = PmB[1] * p1ss_0 + WmP[1] * p1ss_1;
+#ifdef FOCK_CALC
         my_fock[1] += (double)( fit_dens_sh[j+0] * prefactor_dens *  p1p2s_0 );
+#else
+        rc_sh[0][tid] += (double)( dens[1] * prefactor_dens *  p1p2s_0 );
+#endif
       }
       //START INDEX i2=2, CENTER 2
       {
         scalar_type p1p2s_0 = PmB[2] * p1ss_0 + WmP[2] * p1ss_1;
+#ifdef FOCK_CALC
         my_fock[2] += (double)( fit_dens_sh[j+0] * prefactor_dens *  p1p2s_0 );
+#else
+        rc_sh[0][tid] += (double)( dens[2] * prefactor_dens *  p1p2s_0 );
+#endif
       }
     }
     //START INDEX i1=1, CENTER 1
@@ -37,18 +49,30 @@
       //START INDEX i2=0, CENTER 2
       {
         scalar_type p1p2s_0 = PmB[0] * p1ss_0 + WmP[0] * p1ss_1;
+#ifdef FOCK_CALC
         my_fock[3] += (double)( fit_dens_sh[j+0] * prefactor_dens *  p1p2s_0 );
+#else
+        rc_sh[0][tid] += (double)( dens[3] * prefactor_dens *  p1p2s_0 );
+#endif
       }
       //START INDEX i2=1, CENTER 2
       {
         scalar_type p1p2s_0 = PmB[1] * p1ss_0 + WmP[1] * p1ss_1;
         p1p2s_0 += inv_two_zeta * (F_mT[0] - rho_zeta * F_mT[1]);
+#ifdef FOCK_CALC
         my_fock[4] += (double)( fit_dens_sh[j+0] * prefactor_dens *  p1p2s_0 );
+#else
+        rc_sh[0][tid] += (double)( dens[4] * prefactor_dens *  p1p2s_0 );
+#endif
       }
       //START INDEX i2=2, CENTER 2
       {
         scalar_type p1p2s_0 = PmB[2] * p1ss_0 + WmP[2] * p1ss_1;
+#ifdef FOCK_CALC
         my_fock[5] += (double)( fit_dens_sh[j+0] * prefactor_dens *  p1p2s_0 );
+#else
+        rc_sh[0][tid] += (double)( dens[5] * prefactor_dens *  p1p2s_0 );
+#endif
       }
     }
     //START INDEX i1=2, CENTER 1
@@ -58,18 +82,30 @@
       //START INDEX i2=0, CENTER 2
       {
         scalar_type p1p2s_0 = PmB[0] * p1ss_0 + WmP[0] * p1ss_1;
+#ifdef FOCK_CALC
         my_fock[6] += (double)( fit_dens_sh[j+0] * prefactor_dens *  p1p2s_0 );
+#else
+        rc_sh[0][tid] += (double)( dens[6] * prefactor_dens *  p1p2s_0 );
+#endif
       }
       //START INDEX i2=1, CENTER 2
       {
         scalar_type p1p2s_0 = PmB[1] * p1ss_0 + WmP[1] * p1ss_1;
+#ifdef FOCK_CALC
         my_fock[7] += (double)( fit_dens_sh[j+0] * prefactor_dens *  p1p2s_0 );
+#else
+        rc_sh[0][tid] += (double)( dens[7] * prefactor_dens *  p1p2s_0 );
+#endif
       }
       //START INDEX i2=2, CENTER 2
       {
         scalar_type p1p2s_0 = PmB[2] * p1ss_0 + WmP[2] * p1ss_1;
         p1p2s_0 += inv_two_zeta * (F_mT[0] - rho_zeta * F_mT[1]);
+#ifdef FOCK_CALC
         my_fock[8] += (double)( fit_dens_sh[j+0] * prefactor_dens *  p1p2s_0 );
+#else
+        rc_sh[0][tid] += (double)( dens[8] * prefactor_dens *  p1p2s_0 );
+#endif
       }
     }
   }

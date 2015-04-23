@@ -3,6 +3,8 @@
 
 #include "../common.h"
 
+#define NUM_COULOMB_TERM_TYPES 6
+
 cudaArray* gammaArray;
 
 /* grid */
@@ -13,6 +15,7 @@ __device__ __constant__ uint gpu_d_offset; // Needed for d-d in QM/MM
 __device__ __constant__ uint gpu_dens_gauss;
 __device__ __constant__ uint gpu_dens_s_gauss;
 __device__ __constant__ uint gpu_dens_p_gauss;
+__device__ __constant__ uint gpu_out_offsets[NUM_COULOMB_TERM_TYPES];
 #if FULL_DOUBLE
 extern __device__ __constant__ double3 gpu_atom_positions[MAX_ATOMS];
 extern __device__ __constant__ double gpu_normalization_factor;

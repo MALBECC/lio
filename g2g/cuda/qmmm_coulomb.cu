@@ -25,6 +25,7 @@ texture<float, cudaTextureType2D, cudaReadModeElementType> qmmm_str_tex;
 #include "kernels/qmmm_energy.h"
 #include "kernels/coulomb_forces.h"
 #include "kernels/coulomb_energy.h"
+#include "kernels/coulomb_fit.h"
 
 void gpu_set_qmmm_coul_variables(void) {
   cudaMemcpyToSymbol(gpu_m, &fortran_vars.m, sizeof(fortran_vars.m), 0, cudaMemcpyHostToDevice);
@@ -103,6 +104,7 @@ template void gpu_set_gamma_arrays<float>( void );
 //
 template <class scalar_type,bool forces> void g2g_qmmm(double* qm_forces, double* mm_forces, double& Ens, double& Es)
 {
+  assert(QMMM_BLOCK_SIZE==128);
   uint i,j,ni,nj;
   uint i_orbitals, j_orbitals;
   uint nuc_i,nuc_j;
@@ -571,7 +573,6 @@ template void g2g_qmmm<double,false>(double* qm_forces, double* mm_forces, doubl
 #endif
 
 
-#define NUM_COULOMB_TERM_TYPES 6 // 6 types when using s,p,and d functions: s-s,p-s,p-p,d-s,d-p,d-d
 
 //
 // Main QM/MM routine
@@ -579,8 +580,9 @@ template void g2g_qmmm<double,false>(double* qm_forces, double* mm_forces, doubl
 // If forces = false, calculate Fock matrix elements of QM/MM operator (returned in RMM(M11) back in Fortran)
 //                    and QM/MM energy of the current density (nuc-nuc in Ens, e-nuc in Es)
 //
-template <class scalar_type,bool forces> void g2g_coulomb(double* qm_forces, double& Es)
+template <class scalar_type,bool forces> void g2g_coulomb(double* qm_forces, double& Es, double* Ginv)
 {
+  assert(QMMM_BLOCK_SIZE==128);
   uint i,j,ni,nj;
   uint i_orbitals, j_orbitals;
   uint nuc_i,nuc_j;
@@ -617,6 +619,7 @@ template <class scalar_type,bool forces> void g2g_coulomb(double* qm_forces, dou
   uint tmp_dens_ind = 0;
 
   Timer check,prep,kernel,down,reduce;
+  Timer rc_calc, reduce_fit;
 
   //
   // Do check between all basis primitives to find those with significant overlap
@@ -764,6 +767,7 @@ template <class scalar_type,bool forces> void g2g_coulomb(double* qm_forces, dou
   std::vector<scalar_type> fit_dens_cpu;
   std::vector<vec_type<scalar_type,3> > nuc_dens_cpu;
   std::vector<uint> nuc_ind_dens_cpu;
+  std::vector<uint> input_ind_cpu;
   uint input_size = 0;
   for (func = 0; func < fortran_vars.s_funcs_dens; func++) {
     uint nuc_ind = fortran_vars.nucleii_dens(func) - 1;
@@ -772,7 +776,8 @@ template <class scalar_type,bool forces> void g2g_coulomb(double* qm_forces, dou
       factor_ac_dens_cpu.push_back(vec_type<scalar_type,2>(fortran_vars.a_values_dens(func,k),fortran_vars.c_values_dens(func,k)));
       nuc_dens_cpu.push_back(vec_type<scalar_type, 3>(nuc_pos.x, nuc_pos.y, nuc_pos.z));
       nuc_ind_dens_cpu.push_back(nuc_ind);
-      fit_dens_cpu.push_back(fortran_vars.af_input_ndens1(func));
+      if (forces) fit_dens_cpu.push_back(fortran_vars.af_input_ndens1(func));
+      input_ind_cpu.push_back(input_size);
       input_size++;
     }
   }
@@ -782,7 +787,7 @@ template <class scalar_type,bool forces> void g2g_coulomb(double* qm_forces, dou
     factor_ac_dens_cpu.push_back(factor_ac_dens_cpu[tmp_size-1]);
     nuc_dens_cpu.push_back(nuc_dens_cpu[tmp_size-1]);
     nuc_ind_dens_cpu.push_back(nuc_ind_dens_cpu[tmp_size-1]);
-    fit_dens_cpu.push_back(fit_dens_cpu[tmp_size-1]);
+    if (forces) fit_dens_cpu.push_back(fit_dens_cpu[tmp_size-1]);
     input_size++;
   }
   uint p_offset = input_size;
@@ -795,7 +800,8 @@ template <class scalar_type,bool forces> void g2g_coulomb(double* qm_forces, dou
         factor_ac_dens_cpu.push_back(vec_type<scalar_type,2>(fortran_vars.a_values_dens(func,k),fortran_vars.c_values_dens(func,k)));
         nuc_dens_cpu.push_back(vec_type<scalar_type, 3>(nuc_pos.x, nuc_pos.y, nuc_pos.z));
         nuc_ind_dens_cpu.push_back(nuc_ind);
-        fit_dens_cpu.push_back(fortran_vars.af_input_ndens1(func+f));
+        if (forces) fit_dens_cpu.push_back(fortran_vars.af_input_ndens1(func+f));
+        input_ind_cpu.push_back(input_size+f);
       }
       tmp_size += 3;
       input_size += 3;
@@ -803,7 +809,7 @@ template <class scalar_type,bool forces> void g2g_coulomb(double* qm_forces, dou
         for (uint f = 0; f < 2; f++) factor_ac_dens_cpu.push_back(vec_type<scalar_type,2>(fortran_vars.a_values_dens(func,k),fortran_vars.c_values_dens(func,k)));
         for (uint f = 0; f < 2; f++) nuc_dens_cpu.push_back(vec_type<scalar_type, 3>(nuc_pos.x, nuc_pos.y, nuc_pos.z));
         for (uint f = 0; f < 2; f++) nuc_ind_dens_cpu.push_back(nuc_ind);
-        for (uint f = 0; f < 2; f++) fit_dens_cpu.push_back(fortran_vars.af_input_ndens1(func+f));
+        if (forces) { for (uint f = 0; f < 2; f++) fit_dens_cpu.push_back(fortran_vars.af_input_ndens1(func+f)); }
         tmp_size = 0;
         input_size += 2;
       }
@@ -815,7 +821,7 @@ template <class scalar_type,bool forces> void g2g_coulomb(double* qm_forces, dou
     factor_ac_dens_cpu.push_back(factor_ac_dens_cpu[tmp_size-1]);
     nuc_dens_cpu.push_back(nuc_dens_cpu[tmp_size-1]);
     nuc_ind_dens_cpu.push_back(nuc_ind_dens_cpu[tmp_size-1]);
-    fit_dens_cpu.push_back(fit_dens_cpu[tmp_size-1]);
+    if (forces) fit_dens_cpu.push_back(fit_dens_cpu[tmp_size-1]);
     input_size++;
   }
   uint d_offset = input_size;
@@ -828,7 +834,8 @@ template <class scalar_type,bool forces> void g2g_coulomb(double* qm_forces, dou
         factor_ac_dens_cpu.push_back(vec_type<scalar_type,2>(fortran_vars.a_values_dens(func,k),fortran_vars.c_values_dens(func,k)));
         nuc_dens_cpu.push_back(vec_type<scalar_type, 3>(nuc_pos.x, nuc_pos.y, nuc_pos.z));
         nuc_ind_dens_cpu.push_back(nuc_ind);
-        fit_dens_cpu.push_back(fortran_vars.af_input_ndens1(func+f));
+        if (forces) fit_dens_cpu.push_back(fortran_vars.af_input_ndens1(func+f));
+        input_ind_cpu.push_back(input_size+f);
       }
       tmp_size += 6;
       input_size += 6;
@@ -836,7 +843,7 @@ template <class scalar_type,bool forces> void g2g_coulomb(double* qm_forces, dou
         for (uint f = 0; f < 2; f++) factor_ac_dens_cpu.push_back(vec_type<scalar_type,2>(fortran_vars.a_values_dens(func,k),fortran_vars.c_values_dens(func,k)));
         for (uint f = 0; f < 2; f++) nuc_dens_cpu.push_back(vec_type<scalar_type, 3>(nuc_pos.x, nuc_pos.y, nuc_pos.z));
         for (uint f = 0; f < 2; f++) nuc_ind_dens_cpu.push_back(nuc_ind);
-        for (uint f = 0; f < 2; f++) fit_dens_cpu.push_back(fortran_vars.af_input_ndens1(func+f));
+        if (forces) { for (uint f = 0; f < 2; f++) fit_dens_cpu.push_back(fortran_vars.af_input_ndens1(func+f)); }
         tmp_size = 0;
         input_size += 2;
       }
@@ -845,8 +852,8 @@ template <class scalar_type,bool forces> void g2g_coulomb(double* qm_forces, dou
   uint d_end = input_size;
   CudaMatrix<vec_type<scalar_type,2> > factor_ac_dens_gpu(factor_ac_dens_cpu);
   CudaMatrix<vec_type<scalar_type, 3> > nuc_dens_gpu(nuc_dens_cpu);
-  CudaMatrix<scalar_type> fit_dens_gpu(fit_dens_cpu);
   CudaMatrix<uint> nuc_ind_dens_gpu(nuc_ind_dens_cpu);
+  CudaMatrix<uint> input_ind_gpu(input_ind_cpu);
 
   //
   // Send input arrays (thread->primitive map and thread->density map) to the device
@@ -918,13 +925,14 @@ template <class scalar_type,bool forces> void g2g_coulomb(double* qm_forces, dou
   // The STR table for F(m,U) calculation is being accessed via texture fetches
   //
   cudaBindTextureToArray(qmmm_str_tex,gammaArray);
-  prep.pause_and_sync();
 
   //
   // Forces kernel
   //
   if (forces) {
 
+    CudaMatrix<scalar_type> fit_dens_gpu(fit_dens_cpu);
+    prep.pause_and_sync();
     kernel.start();
 #define coulomb_forces_parameters \
   term_type_counts[i], factor_ac_gpu.data, nuc_gpu.data, dev_dens_values.data+dens_offset, dev_func_code.data+offset,dev_local_dens.data+offset, \
@@ -966,8 +974,45 @@ template <class scalar_type,bool forces> void g2g_coulomb(double* qm_forces, dou
   //
   else {
 
-    kernel.start();
+    HostMatrix<scalar_type> Ginv_h(COALESCED_DIMENSION(fortran_vars.m_dens),fortran_vars.m_dens);
+    for (i = 0; i < fortran_vars.m_dens; i++)
+    {
+      for (j = 0; j < i; j++)
+      {
+        Ginv_h(i,j) = Ginv[i+(2*fortran_vars.m_dens-(j+1))*j/2];
+      }
+      for (j = i; j < fortran_vars.m_dens; j++)
+      {
+        Ginv_h(i,j) = Ginv[j+(2*fortran_vars.m_dens-(i+1))*i/2];
+      }
+    }
+    CudaMatrix<scalar_type> Ginv_gpu = Ginv_h;
 
+    CudaMatrix<scalar_type> fit_dens_gpu;
+    CudaMatrix<double> rc_partial_gpu;
+    fit_dens_gpu.resize(input_size);
+    {
+      dim3 threads(input_size);
+      dim3 blockSize(QMMM_BLOCK_SIZE);
+      dim3 gridSize = divUp(threads,blockSize);
+      zero_fock<scalar_type><<<gridSize,blockSize>>>(fit_dens_gpu.data,input_size,1);
+    }
+    rc_partial_gpu.resize(COALESCED_DIMENSION(fortran_vars.m_dens),partial_out_size);
+    {
+      dim3 threads(COALESCED_DIMENSION(fortran_vars.m_dens),partial_out_size);
+      dim3 blockSize(32,4);
+      dim3 gridSize = divUp(threads,blockSize);
+      zero_fock<double><<<gridSize,blockSize>>>(rc_partial_gpu.data,COALESCED_DIMENSION(fortran_vars.m_dens),partial_out_size);
+    }
+
+    cudaMemcpyToSymbol(gpu_out_offsets,out_offsets,NUM_COULOMB_TERM_TYPES*sizeof(uint),0,cudaMemcpyHostToDevice);
+
+    prep.pause_and_sync();
+
+#define fit1_parameters \
+  term_type_counts[i], factor_ac_gpu.data, nuc_gpu.data, dev_dens_values.data+dens_offset, dev_func_code.data+offset,dev_local_dens.data+offset, \
+  rc_partial_gpu.data+rc_offset, COALESCED_DIMENSION(fortran_vars.m_dens),factor_ac_dens_gpu.data,nuc_dens_gpu.data, \
+  s_end, p_end, d_end, p_offset, d_offset
 #define coulomb_fock_parameters \
   term_type_counts[i], factor_ac_gpu.data, nuc_gpu.data, dev_func_code.data+offset,dev_local_dens.data+offset, \
   gpu_partial_fock.data+fock_offset, dens_values.size(),factor_ac_dens_gpu.data,nuc_dens_gpu.data,fit_dens_gpu.data, \
@@ -977,6 +1022,56 @@ template <class scalar_type,bool forces> void g2g_coulomb(double* qm_forces, dou
     for (i = 0; i < NUM_COULOMB_TERM_TYPES; i++) {
       cudaStreamCreate(&stream[i]);
     }
+    rc_calc.start();
+    //
+    // Begin launching kernels (one for each type of term, 0 = s-s, 1 = p-s, etc)
+    //
+    for (i = 0; i < NUM_COULOMB_TERM_TYPES; i++)
+    {
+      uint offset = term_type_offsets[i];
+      uint dens_offset = dens_offsets[i];
+      uint rc_offset = out_offsets[i] * COALESCED_DIMENSION(fortran_vars.m_dens);
+      dim3 threads = term_type_counts[i];
+      dim3 blockSize(QMMM_BLOCK_SIZE);
+      dim3 gridSize = divUp(threads, blockSize);
+      switch (i) {
+        case 0: gpu_coulomb_fit1<scalar_type,0><<<gridSize,blockSize,0,stream[i]>>>( fit1_parameters ); break;
+        case 1: gpu_coulomb_fit1<scalar_type,1><<<gridSize,blockSize,0,stream[i]>>>( fit1_parameters ); break;
+        case 2: gpu_coulomb_fit1<scalar_type,2><<<gridSize,blockSize,0,stream[i]>>>( fit1_parameters ); break;
+        case 3: gpu_coulomb_fit1<scalar_type,3><<<gridSize,blockSize,0,stream[i]>>>( fit1_parameters ); break;
+        case 4: gpu_coulomb_fit1<scalar_type,4><<<gridSize,blockSize,0,stream[i]>>>( fit1_parameters ); break;
+        case 5: gpu_coulomb_fit1<scalar_type,5><<<gridSize,blockSize,0,stream[i]>>>( fit1_parameters ); break;
+      }
+      dim3 reduceThreads = fortran_vars.m_dens;
+      dim3 reduceBlockSize(QMMM_REDUCE_BLOCK_SIZE);
+      dim3 reduceGridSize = divUp(reduceThreads,reduceBlockSize);
+      gpu_coulomb_rc_term_reduce<scalar_type><<<reduceGridSize,reduceBlockSize,0,stream[i]>>>( rc_partial_gpu.data,COALESCED_DIMENSION(fortran_vars.m_dens),
+                                                                                               out_offsets[i], (i<NUM_COULOMB_TERM_TYPES-1?out_offsets[i+1]:partial_out_size) ,fortran_vars.m_dens );
+    }
+    cudaDeviceSynchronize();
+    rc_calc.pause_and_sync();
+    reduce_fit.start();
+    {
+      dim3 reduceThreads = fortran_vars.m_dens;
+      dim3 reduceBlockSize(QMMM_REDUCE_BLOCK_SIZE);
+      dim3 reduceGridSize = divUp(reduceThreads,reduceBlockSize);
+      gpu_coulomb_rc_reduce<scalar_type><<<reduceGridSize,reduceBlockSize>>>( rc_partial_gpu.data,COALESCED_DIMENSION(fortran_vars.m_dens),fortran_vars.m_dens,NUM_COULOMB_TERM_TYPES );
+    }
+    cudaDeviceSynchronize();
+    {
+      dim3 threads = fortran_vars.m_dens;
+      dim3 blockSize(QMMM_BLOCK_SIZE);
+      dim3 gridSize = divUp(threads,blockSize);
+      gpu_coulomb_fit2<scalar_type><<<gridSize,blockSize>>>( rc_partial_gpu.data,fit_dens_gpu.data,Ginv_gpu.data,input_ind_gpu.data,fortran_vars.m_dens );
+    }
+    cudaAssertNoError("fit2");
+    cudaDeviceSynchronize();
+    HostMatrix<scalar_type> fit_dens_h(fit_dens_gpu);
+    for (i = 0; i < fortran_vars.m_dens; i++) {
+      fortran_vars.af_input_ndens1(i) = fit_dens_h(input_ind_cpu[i]);
+    }
+    reduce_fit.pause_and_sync();
+    kernel.start();
     //
     // Begin launching kernels (one for each type of term, 0 = s-s, 1 = p-s, etc)
     //
@@ -1066,8 +1161,9 @@ template <class scalar_type,bool forces> void g2g_coulomb(double* qm_forces, dou
     reduce.pause();
   }
 
-  //cout << "[G2G_COULOMB] overlap check: " << check << " kernel prep: " << prep << endl;
-  //cout << "[G2G_COULOMB] kernel: " << kernel << " download: " << down << " host reduction: " << reduce << endl;
+  cout << "[G2G_COULOMB] overlap check: " << check << " kernel prep: " << prep << endl;
+  cout << "[G2G_COULOMB] kernel: " << kernel << " download: " << down << " host reduction: " << reduce << endl;
+  cout << "[G2G_COULOMB] rc calc: " << rc_calc << " reduce and fit: " << reduce_fit << endl;
 
   cudaUnbindTexture(qmmm_str_tex);
 
@@ -1075,11 +1171,11 @@ template <class scalar_type,bool forces> void g2g_coulomb(double* qm_forces, dou
 }
 
 #if COULOMB_MP && !FULL_DOUBLE
-template void g2g_coulomb<float,true>(double* qm_forces, double& Es);
-template void g2g_coulomb<float,false>(double* qm_forces, double& Es);
+template void g2g_coulomb<float,true>(double* qm_forces, double& Es, double* Ginv);
+template void g2g_coulomb<float,false>(double* qm_forces, double& Es, double* Ginv);
 #else
-template void g2g_coulomb<double,true>(double* qm_forces, double& Es);
-template void g2g_coulomb<double,false>(double* qm_forces, double& Es);
+template void g2g_coulomb<double,true>(double* qm_forces, double& Es, double* Ginv);
+template void g2g_coulomb<double,false>(double* qm_forces, double& Es, double* Ginv);
 #endif
 
 }

@@ -87,3 +87,4 @@ cuda/qmmm_coulomb.o: cuda/kernels/coulomb_terms/energy/dp_d.h
 cuda/qmmm_coulomb.o: cuda/kernels/coulomb_terms/energy/dd_s.h
 cuda/qmmm_coulomb.o: cuda/kernels/coulomb_terms/energy/dd_p.h
 cuda/qmmm_coulomb.o: cuda/kernels/coulomb_terms/energy/dd_d.h
+cuda/qmmm_coulomb.o: cuda/kernels/coulomb_fit.h

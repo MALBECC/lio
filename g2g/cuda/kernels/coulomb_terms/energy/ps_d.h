@@ -27,7 +27,11 @@
           p1sd23_0 += inv_two_eta * (p1ss_0 - rho_eta * p1ss_1);
           norm3 = gpu_normalization_factor;
           scalar_type preterm = norm3;
+#ifdef FOCK_CALC
           my_fock[0] += (double)( preterm * fit_dens_sh[j+0] * prefactor_dens *  p1sd23_0 );
+#else
+          rc_sh[0][tid] += (double)( preterm * dens[0] * prefactor_dens *  p1sd23_0 );
+#endif
         }
       }
       //START INDEX i2=1, CENTER 3
@@ -40,7 +44,11 @@
           p1sd23_0 += inv_two_zeta_eta * ssp2_1;
           scalar_type norm3 = 1.0f;
           scalar_type preterm = norm3;
+#ifdef FOCK_CALC
           my_fock[0] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  p1sd23_0 );
+#else
+          rc_sh[1][tid] += (double)( preterm * dens[0] * prefactor_dens *  p1sd23_0 );
+#endif
         }
         //START INDEX i3=1, CENTER 3
         {
@@ -49,7 +57,11 @@
           p1sd23_0 += inv_two_eta * (p1ss_0 - rho_eta * p1ss_1);
           norm3 = gpu_normalization_factor;
           scalar_type preterm = norm3;
+#ifdef FOCK_CALC
           my_fock[0] += (double)( preterm * fit_dens_sh[j+2] * prefactor_dens *  p1sd23_0 );
+#else
+          rc_sh[2][tid] += (double)( preterm * dens[0] * prefactor_dens *  p1sd23_0 );
+#endif
         }
       }
       //START INDEX i2=2, CENTER 3
@@ -62,14 +74,22 @@
           p1sd23_0 += inv_two_zeta_eta * ssp2_1;
           scalar_type norm3 = 1.0f;
           scalar_type preterm = norm3;
+#ifdef FOCK_CALC
           my_fock[0] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  p1sd23_0 );
+#else
+          rc_sh[3][tid] += (double)( preterm * dens[0] * prefactor_dens *  p1sd23_0 );
+#endif
         }
         //START INDEX i3=1, CENTER 3
         {
           scalar_type p1sd23_0 = WmQ[1] * p1sp2_1;
           scalar_type norm3 = 1.0f;
           scalar_type preterm = norm3;
+#ifdef FOCK_CALC
           my_fock[0] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  p1sd23_0 );
+#else
+          rc_sh[4][tid] += (double)( preterm * dens[0] * prefactor_dens *  p1sd23_0 );
+#endif
         }
         //START INDEX i3=2, CENTER 3
         {
@@ -78,7 +98,11 @@
           p1sd23_0 += inv_two_eta * (p1ss_0 - rho_eta * p1ss_1);
           norm3 = gpu_normalization_factor;
           scalar_type preterm = norm3;
+#ifdef FOCK_CALC
           my_fock[0] += (double)( preterm * fit_dens_sh[j+5] * prefactor_dens *  p1sd23_0 );
+#else
+          rc_sh[5][tid] += (double)( preterm * dens[0] * prefactor_dens *  p1sd23_0 );
+#endif
         }
       }
     }
@@ -97,7 +121,11 @@
           p1sd23_0 += inv_two_eta * (p1ss_0 - rho_eta * p1ss_1);
           norm3 = gpu_normalization_factor;
           scalar_type preterm = norm3;
+#ifdef FOCK_CALC
           my_fock[1] += (double)( preterm * fit_dens_sh[j+0] * prefactor_dens *  p1sd23_0 );
+#else
+          rc_sh[0][tid] += (double)( preterm * dens[1] * prefactor_dens *  p1sd23_0 );
+#endif
         }
       }
       //START INDEX i2=1, CENTER 3
@@ -110,7 +138,11 @@
           scalar_type p1sd23_0 = WmQ[0] * p1sp2_1;
           scalar_type norm3 = 1.0f;
           scalar_type preterm = norm3;
+#ifdef FOCK_CALC
           my_fock[1] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  p1sd23_0 );
+#else
+          rc_sh[1][tid] += (double)( preterm * dens[1] * prefactor_dens *  p1sd23_0 );
+#endif
         }
         //START INDEX i3=1, CENTER 3
         {
@@ -120,7 +152,11 @@
           p1sd23_0 += inv_two_eta * (p1ss_0 - rho_eta * p1ss_1);
           norm3 = gpu_normalization_factor;
           scalar_type preterm = norm3;
+#ifdef FOCK_CALC
           my_fock[1] += (double)( preterm * fit_dens_sh[j+2] * prefactor_dens *  p1sd23_0 );
+#else
+          rc_sh[2][tid] += (double)( preterm * dens[1] * prefactor_dens *  p1sd23_0 );
+#endif
         }
       }
       //START INDEX i2=2, CENTER 3
@@ -132,7 +168,11 @@
           scalar_type p1sd23_0 = WmQ[0] * p1sp2_1;
           scalar_type norm3 = 1.0f;
           scalar_type preterm = norm3;
+#ifdef FOCK_CALC
           my_fock[1] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  p1sd23_0 );
+#else
+          rc_sh[3][tid] += (double)( preterm * dens[1] * prefactor_dens *  p1sd23_0 );
+#endif
         }
         //START INDEX i3=1, CENTER 3
         {
@@ -140,7 +180,11 @@
           p1sd23_0 += inv_two_zeta_eta * ssp2_1;
           scalar_type norm3 = 1.0f;
           scalar_type preterm = norm3;
+#ifdef FOCK_CALC
           my_fock[1] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  p1sd23_0 );
+#else
+          rc_sh[4][tid] += (double)( preterm * dens[1] * prefactor_dens *  p1sd23_0 );
+#endif
         }
         //START INDEX i3=2, CENTER 3
         {
@@ -149,7 +193,11 @@
           p1sd23_0 += inv_two_eta * (p1ss_0 - rho_eta * p1ss_1);
           norm3 = gpu_normalization_factor;
           scalar_type preterm = norm3;
+#ifdef FOCK_CALC
           my_fock[1] += (double)( preterm * fit_dens_sh[j+5] * prefactor_dens *  p1sd23_0 );
+#else
+          rc_sh[5][tid] += (double)( preterm * dens[1] * prefactor_dens *  p1sd23_0 );
+#endif
         }
       }
     }
@@ -168,7 +216,11 @@
           p1sd23_0 += inv_two_eta * (p1ss_0 - rho_eta * p1ss_1);
           norm3 = gpu_normalization_factor;
           scalar_type preterm = norm3;
+#ifdef FOCK_CALC
           my_fock[2] += (double)( preterm * fit_dens_sh[j+0] * prefactor_dens *  p1sd23_0 );
+#else
+          rc_sh[0][tid] += (double)( preterm * dens[2] * prefactor_dens *  p1sd23_0 );
+#endif
         }
       }
       //START INDEX i2=1, CENTER 3
@@ -179,7 +231,11 @@
           scalar_type p1sd23_0 = WmQ[0] * p1sp2_1;
           scalar_type norm3 = 1.0f;
           scalar_type preterm = norm3;
+#ifdef FOCK_CALC
           my_fock[2] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  p1sd23_0 );
+#else
+          rc_sh[1][tid] += (double)( preterm * dens[2] * prefactor_dens *  p1sd23_0 );
+#endif
         }
         //START INDEX i3=1, CENTER 3
         {
@@ -188,7 +244,11 @@
           p1sd23_0 += inv_two_eta * (p1ss_0 - rho_eta * p1ss_1);
           norm3 = gpu_normalization_factor;
           scalar_type preterm = norm3;
+#ifdef FOCK_CALC
           my_fock[2] += (double)( preterm * fit_dens_sh[j+2] * prefactor_dens *  p1sd23_0 );
+#else
+          rc_sh[2][tid] += (double)( preterm * dens[2] * prefactor_dens *  p1sd23_0 );
+#endif
         }
       }
       //START INDEX i2=2, CENTER 3
@@ -201,14 +261,22 @@
           scalar_type p1sd23_0 = WmQ[0] * p1sp2_1;
           scalar_type norm3 = 1.0f;
           scalar_type preterm = norm3;
+#ifdef FOCK_CALC
           my_fock[2] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  p1sd23_0 );
+#else
+          rc_sh[3][tid] += (double)( preterm * dens[2] * prefactor_dens *  p1sd23_0 );
+#endif
         }
         //START INDEX i3=1, CENTER 3
         {
           scalar_type p1sd23_0 = WmQ[1] * p1sp2_1;
           scalar_type norm3 = 1.0f;
           scalar_type preterm = norm3;
+#ifdef FOCK_CALC
           my_fock[2] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  p1sd23_0 );
+#else
+          rc_sh[4][tid] += (double)( preterm * dens[2] * prefactor_dens *  p1sd23_0 );
+#endif
         }
         //START INDEX i3=2, CENTER 3
         {
@@ -218,7 +286,11 @@
           p1sd23_0 += inv_two_eta * (p1ss_0 - rho_eta * p1ss_1);
           norm3 = gpu_normalization_factor;
           scalar_type preterm = norm3;
+#ifdef FOCK_CALC
           my_fock[2] += (double)( preterm * fit_dens_sh[j+5] * prefactor_dens *  p1sd23_0 );
+#else
+          rc_sh[5][tid] += (double)( preterm * dens[2] * prefactor_dens *  p1sd23_0 );
+#endif
         }
       }
     }

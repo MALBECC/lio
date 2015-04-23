@@ -9,6 +9,10 @@
     lio_gamma<scalar_type,0>(F_mT,T);
   }
   {
+#ifdef FOCK_CALC
     my_fock[0] += (double)( fit_dens_sh[j+0] * prefactor_dens *  F_mT[0] );
+#else
+    rc_sh[0][tid] += (double)( dens[0] * prefactor_dens *  F_mT[0] );
+#endif
   }
 }

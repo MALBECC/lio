@@ -20,7 +20,6 @@ __global__ void gpu_coulomb_forces( uint num_terms, vec_type<scalar_type,2>* ac_
                                     uint* nuc_ind_dens, scalar_type* fit_dens, uint s_end, uint p_end, uint d_end, uint p_offset, uint d_offset )
 {
 
-  assert(QMMM_BLOCK_SIZE == 128);
   uint ffnum = index_x(blockDim, blockIdx, threadIdx);
   int tid = threadIdx.x;
   bool valid_thread = (ffnum < num_terms);// && term_type == 5;

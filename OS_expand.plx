@@ -326,6 +326,8 @@ sub print_energy_inner {
   my ($str,$indent,$ref,$dens1_ind,$dens2_ind) = @_;
   my @first_req = @$ref;
   #$str = "$str$indent  my_fock[dens1_ind] +=";
+  my $int_str = &print_integral(@first_req);
+  $str = "$str#ifdef FOCK_CALC\n" if ($INDICES == 3);
   $str = "$str${indent}my_fock[$dens1_ind] += (double)(";
   $str = "$str preterm *" if $NORM_SAME_COUNT > 0;
   if ($INDICES == 2) {
@@ -334,8 +336,15 @@ sub print_energy_inner {
     #$str = "$str fit_dens_sh[j+dens2_ind] * prefactor_dens *";
     $str = "$str fit_dens_sh[j+$dens2_ind] * prefactor_dens * ";
   }
-  my $int_str = &print_integral(@first_req);
   $str = "$str $int_str );\n";
+  if ($INDICES == 3) {
+    $str = "$str#else\n";
+    $str = "$str${indent}rc_sh[$dens2_ind][tid] += (double)(";
+    $str = "$str preterm *" if $NORM_SAME_COUNT > 0;
+    $str = "$str dens[$dens1_ind] * prefactor_dens * ";
+    $str = "$str $int_str );\n";
+    $str = "$str#endif\n";
+  }
 }
 
 #########################################################################################

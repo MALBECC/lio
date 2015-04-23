@@ -107,7 +107,6 @@ __global__ void gpu_qmmm_forces( uint num_terms, vec_type<scalar_type,2>* ac_val
                                  vec_type<scalar_type,3>* mm_forces, vec_type<scalar_type,3>* qm_forces, uint global_stride, vec_type<scalar_type,3>* clatom_pos, scalar_type *clatom_chg )
 {
 
-  assert(QMMM_BLOCK_SIZE == 128);
   uint ffnum = index_x(blockDim, blockIdx, threadIdx);
   int tid = threadIdx.x;
   bool valid_thread = (ffnum < num_terms);

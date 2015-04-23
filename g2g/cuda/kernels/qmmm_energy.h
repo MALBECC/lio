@@ -19,7 +19,6 @@ __global__ void gpu_qmmm_fock( uint num_terms, vec_type<scalar_type,2>* ac_value
                                  scalar_type* fock, uint global_stride, vec_type<scalar_type,3>* clatom_pos, scalar_type *clatom_chg )
 {
 
-  assert(QMMM_BLOCK_SIZE == 128);
   uint ffnum = index_x(blockDim, blockIdx, threadIdx);
   int tid = threadIdx.x;
   bool valid_thread = (ffnum < num_terms);
@@ -288,7 +287,6 @@ template<class scalar_type>
 __global__ void gpu_fock_reduce( scalar_type* fock, scalar_type* dens, scalar_type* energies, uint stride, uint depth, uint width )
 {
 
-  assert(QMMM_REDUCE_BLOCK_SIZE==128);
   uint my_fock_ind = index_x(blockDim, blockIdx, threadIdx);
   uint tid = threadIdx.x;
   scalar_type my_partial_fock = 0.0f;

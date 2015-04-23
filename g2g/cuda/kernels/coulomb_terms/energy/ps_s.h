@@ -12,17 +12,29 @@
     //START INDEX i1=0, CENTER 1
     {
       scalar_type p1ss_0 = PmA[0] * F_mT[0] + WmP[0] * F_mT[1];
+#ifdef FOCK_CALC
       my_fock[0] += (double)( fit_dens_sh[j+0] * prefactor_dens *  p1ss_0 );
+#else
+      rc_sh[0][tid] += (double)( dens[0] * prefactor_dens *  p1ss_0 );
+#endif
     }
     //START INDEX i1=1, CENTER 1
     {
       scalar_type p1ss_0 = PmA[1] * F_mT[0] + WmP[1] * F_mT[1];
+#ifdef FOCK_CALC
       my_fock[1] += (double)( fit_dens_sh[j+0] * prefactor_dens *  p1ss_0 );
+#else
+      rc_sh[0][tid] += (double)( dens[1] * prefactor_dens *  p1ss_0 );
+#endif
     }
     //START INDEX i1=2, CENTER 1
     {
       scalar_type p1ss_0 = PmA[2] * F_mT[0] + WmP[2] * F_mT[1];
+#ifdef FOCK_CALC
       my_fock[2] += (double)( fit_dens_sh[j+0] * prefactor_dens *  p1ss_0 );
+#else
+      rc_sh[0][tid] += (double)( dens[2] * prefactor_dens *  p1ss_0 );
+#endif
     }
   }
 }

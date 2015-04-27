@@ -19,7 +19,7 @@ c       real*8 ftot(3)
        if (nsol.le.0.or.cubegen_only) return
        factor=1.D0
 
-       call g2g_query_cpu(cpu)
+       call aint_query_cpu(cpu)
        if (cpu.eq.1) then
          ! The old version of intsolG expected the MM force array to be
          ! padded in front with # QM atoms spots for some reason
@@ -43,9 +43,9 @@ c       real*8 ftot(3)
          ffcl=0
          ff=0
 
-         call g2g_timer_start('g2g_qmmm_forces')
-         call g2g_qmmm_forces(ff,ffcl)
-         call g2g_timer_stop('g2g_qmmm_forces')
+         call g2g_timer_start('aint_qmmm_forces')
+         call aint_qmmm_forces(ff,ffcl)
+         call g2g_timer_stop('aint_qmmm_forces')
 
          do jj=1,nsol
          do j=1,3
@@ -57,11 +57,11 @@ c       real*8 ftot(3)
        !mx = 0
        !s = 0
        !do i=1,natom
-       !  do j=1,3
-       !    diff = abs(ff(i,j)-g2gff(i,j))
-       !    mx = max(diff,mx)
-       !    s = s + diff**2
-       !  enddo
+         !do j=1,3
+           !diff = abs(ff(i,j)-g2gff(i,j))
+           !mx = max(diff,mx)
+           !s = s + diff**2
+         !enddo
        !enddo
        !rms = sqrt(s/(natom*3))
 

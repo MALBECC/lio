@@ -414,21 +414,6 @@ c
 
          call g2g_timer_stop('principio int3lu')
          call g2g_timer_start('int3lu')
-         endif
-!         do 4242 k=1,MM
-! 4242     RMM(M5+k-1)=RMM(M11+k-1)
-!         call g2g_query_coulomb_cpu(icpu)
-!         if (icpu.eq.1) then
-!           Ea=0.D0
-!           call g2g_coulomb_fock(Ea,RMM,M9)
-!           Eb=0.D0
-!           do 6101 m1=1,Md
-!             do 6111 k=1,m1
-! 6111           Eb=Eb+af(k)*af(m1)*RMM(M7+m1+(2*Md-k)*(k-1)/2-1)
-!             do 6121 k=m1+1,Md
-! 6121           Eb=Eb+af(k)*af(m1)*RMM(M7+k+(2*Md-m1)*(m1-1)/2-1)
-! 6101       continue
-!         else
           if (open) then       
          do kk=1,kknumd
               iikk=(kk-1)*Md
@@ -463,9 +448,21 @@ c
           enddo
 
          endif
-!         endif
+         call g2g_timer_stop('int3lu')
+         else
+           do 4242 k=1,MM
+ 4242        RMM(M5+k-1)=RMM(M11+k-1)
+           Ea=0.D0
+           call aint_coulomb_fock(Ea)
+           Eb=0.D0
+           do 6101 m1=1,Md
+             do 6111 k=1,m1
+ 6111           Eb=Eb+af(k)*af(m1)*RMM(M7+m1+(2*Md-k)*(k-1)/2-1)
+             do 6121 k=m1+1,Md
+ 6121           Eb=Eb+af(k)*af(m1)*RMM(M7+k+(2*Md-m1)*(m1-1)/2-1)
+ 6101       continue
+         endif
  
-         if (MEMO) call g2g_timer_stop('int3lu')
 
 
 

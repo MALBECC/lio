@@ -135,12 +135,12 @@ c        write(*,*) 'exchnum int3G'
          endif
       call g2g_timer_stop('ExcG')
 
-      call g2g_query_coulomb_cpu(cpu)
+      call aint_query_coulomb_cpu(cpu)
       
       if (cpu.eq.0) then
-        call g2g_timer_start('g2g_coulomb_forces')
-        call g2g_coulomb_forces(f)
-        call g2g_timer_stop('g2g_coulomb_forces')
+        call g2g_timer_start('aint_coulomb_forces')
+        call aint_coulomb_forces(f)
+        call g2g_timer_stop('aint_coulomb_forces')
         
       else
 

@@ -175,7 +175,7 @@ c Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
       enddo
 
       ! get MM pointers in g2g
-      call g2g_mm_init(nsol,r,pc)
+      ! call g2g_mm_init(nsol,r,pc)
 
 c
 c -Create integration grid for XC here
@@ -184,6 +184,9 @@ c -Assign significant functions to groups
 c -Calculate point weights
 c
       call g2g_reload_atom_positions(igrid2)
+
+      call aint_query_cpu(cpu)
+      if (cpu.eq.0) call aint_new_step()
 
       if (predcoef.and.npas.gt.3) then
         if (.not.OPEN) then
@@ -200,16 +203,18 @@ c in intsol)
 c
       call int1(En)
       if(nsol.gt.0) then
-        call g2g_query_cpu(cpu)
         if (cpu.eq.1) then
           call g2g_timer_start('intsol')
           call intsol(E1s,Ens,.true.)
           call g2g_timer_stop('intsol')
         else
-          call g2g_timer_start('g2g_qmmm_fock')
-          call g2g_qmmm_fock(E1s,Ens)
-          call g2g_timer_stop('g2g_qmmm_fock')
+          call aint_qmmm_init(nsol,r,pc)
+
+          call g2g_timer_start('aint_qmmm_fock')
+          call aint_qmmm_fock(E1s,Ens)
+          call g2g_timer_stop('aint_qmmm_fock')
         endif
+        write(*,*) "SOLVENT E:",E1s,Ens
       endif
 c
 c test ---------------------------------------------------------
@@ -474,7 +479,12 @@ c Precalculate three-index (two in MO basis, one in density basis) matrix
 c used in density fitting / Coulomb F element calculation here
 c (t_i in Dunlap)
 c
-      MEMO=.true.!.false.
+      call aint_query_coulomb_cpu(icpu)
+      if (icpu.eq.0) then
+        MEMO = .false. 
+        call aint_coulomb_init()
+      endif
+      !MEMO=.true.
       if (MEMO) then
          call g2g_timer_start('int3mem')
 c Large elements of t_i put into double-precision cool here

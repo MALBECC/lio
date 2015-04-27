@@ -7,6 +7,8 @@ g2g/*.o
 g2g/*.so
 g2g/*/*.o
 g2g/*/*.cu_o
+g2g/analytic_integral/*.o
+g2g/analytic_integral/*/*.o
 test/*/*.orb
 test/*/*.out
 dtest/*/*.xyz

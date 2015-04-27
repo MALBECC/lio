@@ -17,6 +17,7 @@
        deallocate(natomc,nnps,nnpp,nnpd,nns)
        deallocate(nnd,nnp,atmin,jatc,d)
        call g2g_deinit()
+       call aint_deinit()
 !--------------------------------------------------------------------!
        return;end subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

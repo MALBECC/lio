@@ -165,7 +165,12 @@ endif
 ## Unified GPU Object
 UGO          := cuda/lio_gpu.o
 
+AINT_SRC     := $(wildcard analytic_integral/*.cpp)
+SRCS         += $(AINT_SRC)
+OBJ          += $(AINT_SRC:%.cpp=%.o)
+
 CUDA_SOURCES := $(wildcard cuda/*.cu)
+CUDA_SOURCES += $(wildcard analytic_integral/cuda/*.cu)
 CUDA_OBJ     := $(CUDA_SOURCES:%.cu=%.o)
 
 # Commented should be in config file
@@ -175,4 +180,7 @@ $(UGO): $(CUDA_OBJ)
 	nvcc $(NVCCFLAGS) -dlink $(CUDA_OBJ) -o $@
 
 cuda/%.o:cuda/%.cu
+	nvcc $(NVCCFLAGS) -o $@ -dc $<
+
+analytic_integral/cuda/%.o:analytic_integral/cuda/%.cu
 	nvcc $(NVCCFLAGS) -o $@ -dc $<

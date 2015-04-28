@@ -544,6 +544,13 @@ c inversion of G matrix , kept in Gm
 c
       if (SVD) then
        write(*,900) ss
+       call aint_query_coulomb_cpu(icpu)
+       if (icpu.eq.0) then
+         write(*,*) "G IS ILL-CONDITIONED"
+         write(*,*) "THE SVD AUXILIARY DENSITY FIT IS NOT SUPPORTED"
+         write(*,*) "IN THE GPU VERSION OF LIO"
+         stop
+       endif
        
       else
 c

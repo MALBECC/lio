@@ -26,6 +26,7 @@ c-----------------------------------------------------------------
 c
       implicit real*8 (a-h,o-z)
        real*8, dimension(:), allocatable :: dgelss_temp
+       real*8 XXX(Md,Md)
 c
 c aux . things
       dimension Q(3),aux(ngd),Det(2)
@@ -507,16 +508,31 @@ c
 c CH - why call dgelss here? We only want the singular values - couldn't just
 c something like dgesvd be called without calculating singular vectors?
 c
-      call dgelss(Md,Md,1,XX,Md,aux,Md,RMM(M9),rcond,irank,RMM(M10),
-     >            -1,info)
+c      call dgelss(Md,Md,1,XX,Md,aux,Md,RMM(M9),rcond,irank,RMM(M10),
+c     >            -1,info)
+c      Md5=RMM(M10)
+c      allocate(dgelss_temp(Md5))
+c      call dgelss(Md,Md,1,XX,Md,aux,Md,RMM(M9),rcond,irank,dgelss_temp,
+c     >            Md5,info)
+c      deallocate(dgelss_temp)
+
+c It seems like specifying 'N' for both U and V^T would be faster for this
+c (rather, the second) call; however, I get a floating point exception when I do that
+      call dgesvd('S','N',Md,Md,XX,Md,RMM(M9),XXX,Md,0,1,
+     >            RMM(M10),-1,info)
       Md5=RMM(M10)
       allocate(dgelss_temp(Md5))
-      call dgelss(Md,Md,1,XX,Md,aux,Md,RMM(M9),rcond,irank,dgelss_temp,
-     >            Md5,info)
+#ifdef magma
+      call magmaf_dgesvd('S','N',Md,Md,XX,Md,RMM(M9),XXX,Md,0,1,
+     >            dgelss_temp,Md5,info)
+#else
+      call dgesvd('S','N',Md,Md,XX,Md,RMM(M9),XXX,Md,0,1,
+     >            dgelss_temp,Md5,info)
+#endif
       deallocate(dgelss_temp)
 
-
       ss=RMM(M9)/RMM(M9+Md-1)
+
 c
 #endif
        if (ss.gt.1.D14) then
@@ -570,4 +586,4 @@ c
 c-------------------------------------------------------------------
       return
       end
-c
+

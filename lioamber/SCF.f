@@ -214,7 +214,6 @@ c
           call aint_qmmm_fock(E1s,Ens)
           call g2g_timer_stop('aint_qmmm_fock')
         endif
-        write(*,*) "SOLVENT E:",E1s,Ens
       endif
 c
 c test ---------------------------------------------------------

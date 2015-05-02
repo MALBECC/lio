@@ -1,41 +1,205 @@
-//--------------------------------------------BEGIN TERM-TYPE DEPENDENT PART (S-S)-------------------------------------------
-        scalar_type F_mU[4];
+{
+  scalar_type F_mU[4];
+  {
+    scalar_type U = (PmC[0] * PmC[0] + PmC[1] * PmC[1] + PmC[2] * PmC[2]) * (ai + aj);
+    // TODO (maybe): test out storing F(m,U) values in texture and doing a texture fetch here rather than the function calculation
+    lio_gamma<scalar_type,3>(F_mU,U);
+  }
+  {
+    //START INDEX i1=0, CENTER 1
+    {
+      scalar_type p1s_0 = PmA[0] * F_mU[0] - PmC[0] * F_mU[1];
+      scalar_type p1s_1 = PmA[0] * F_mU[1] - PmC[0] * F_mU[2];
+      scalar_type p1s_2 = PmA[0] * F_mU[2] - PmC[0] * F_mU[3];
+      //START INDEX i2=0, CENTER 1
+      {
+        scalar_type d12s_0 = PmA[0] * p1s_0 - PmC[0] * p1s_1;
+        scalar_type d12s_1 = PmA[0] * p1s_1 - PmC[0] * p1s_2;
+        scalar_type p2s_0 = PmA[0] * F_mU[0] - PmC[0] * F_mU[1];
+        scalar_type p2s_1 = PmA[0] * F_mU[1] - PmC[0] * F_mU[2];
+        scalar_type norm2 = 1.0f;
+        d12s_0 += inv_two_zeta * (F_mU[0] - F_mU[1]);
+        d12s_1 += inv_two_zeta * (F_mU[1] - F_mU[2]);
+        norm2 = G2G::gpu_normalization_factor;
+        //START INDEX i3=0, CENTER 2
         {
-          scalar_type U = (PmC[0] * PmC[0] + PmC[1] * PmC[1] + PmC[2] * PmC[2]) * (ai + aj);
-          // TODO (maybe): test out storing F(m,U) values in texture and doing a texture fetch here rather than the function calculation
-          lio_gamma<scalar_type,3>(F_mU,U);
+          scalar_type d12p3_0 = PmB[0] * d12s_0 - PmC[0] * d12s_1;
+          d12p3_0 += inv_two_zeta * (p2s_0 - p2s_1);
+          d12p3_0 += inv_two_zeta * (p1s_0 - p1s_1);
+          scalar_type preterm = norm2;
+          my_fock[0] += (double)( preterm * clatom_charge_sh[j] * d12p3_0 );
         }
-
-        // BEGIN calculation of individual (single primitive-primitive overlap) force terms
+        //START INDEX i3=1, CENTER 2
         {
-          scalar_type preterm,term;
-
-          uint curr_ind = 0;
-          for (uint d_l1 = 0; d_l1 < 3; d_l1++) {
-            scalar_type p_s0_1 = PmA[d_l1] * F_mU[0] - PmC[d_l1] * F_mU[1];
-            scalar_type p_s1_1 = PmA[d_l1] * F_mU[1] - PmC[d_l1] * F_mU[2];
-            scalar_type p_s2_1 = PmA[d_l1] * F_mU[2] - PmC[d_l1] * F_mU[3];
-            for (uint d_l2 = 0; d_l2 <= d_l1; d_l2++) {
-              scalar_type d_s0 = PmA[d_l2] * p_s0_1 - PmC[d_l2] * p_s1_1;
-              d_s0            += (d_l1 == d_l2) * inv_two_zeta * (F_mU[0] - F_mU[1]);
-              scalar_type d_s1 = PmA[d_l2] * p_s1_1 - PmC[d_l2] * p_s2_1;
-              d_s1            += (d_l1 == d_l2) * inv_two_zeta * (F_mU[1] - F_mU[2]);
-
-              scalar_type p_s0_2 = PmA[d_l2] * F_mU[0] - PmC[d_l2] * F_mU[1];
-              scalar_type p_s1_2 = PmA[d_l2] * F_mU[1] - PmC[d_l2] * F_mU[2];
-              preterm  = (d_l1 != d_l2) * 1.0f + (d_l1 == d_l2) * G2G::gpu_normalization_factor;
-              for (uint p_l = 0; p_l < 3; p_l++) {
-
-                term  = PmB[p_l] * d_s0 - PmC[p_l] * d_s1;
-                term += (d_l1 == p_l) * inv_two_zeta * (p_s0_2 - p_s1_2);
-                term += (d_l2 == p_l) * inv_two_zeta * (p_s0_1 - p_s1_1);
-
-                my_fock[curr_ind] += preterm * clatom_charge_sh[j] * term;
-                curr_ind++;
-              }
-            }
-          }
-  
+          scalar_type d12p3_0 = PmB[1] * d12s_0 - PmC[1] * d12s_1;
+          scalar_type preterm = norm2;
+          my_fock[1] += (double)( preterm * clatom_charge_sh[j] * d12p3_0 );
         }
-        // END individual force terms 
-//------------------------------------------END TERM-TYPE DEPENDENT PART (S-S)----------------------------------------------
+        //START INDEX i3=2, CENTER 2
+        {
+          scalar_type d12p3_0 = PmB[2] * d12s_0 - PmC[2] * d12s_1;
+          scalar_type preterm = norm2;
+          my_fock[2] += (double)( preterm * clatom_charge_sh[j] * d12p3_0 );
+        }
+      }
+    }
+    //START INDEX i1=1, CENTER 1
+    {
+      scalar_type p1s_0 = PmA[1] * F_mU[0] - PmC[1] * F_mU[1];
+      scalar_type p1s_1 = PmA[1] * F_mU[1] - PmC[1] * F_mU[2];
+      scalar_type p1s_2 = PmA[1] * F_mU[2] - PmC[1] * F_mU[3];
+      //START INDEX i2=0, CENTER 1
+      {
+        scalar_type d12s_0 = PmA[0] * p1s_0 - PmC[0] * p1s_1;
+        scalar_type d12s_1 = PmA[0] * p1s_1 - PmC[0] * p1s_2;
+        scalar_type p2s_0 = PmA[0] * F_mU[0] - PmC[0] * F_mU[1];
+        scalar_type p2s_1 = PmA[0] * F_mU[1] - PmC[0] * F_mU[2];
+        scalar_type norm2 = 1.0f;
+        //START INDEX i3=0, CENTER 2
+        {
+          scalar_type d12p3_0 = PmB[0] * d12s_0 - PmC[0] * d12s_1;
+          d12p3_0 += inv_two_zeta * (p1s_0 - p1s_1);
+          scalar_type preterm = norm2;
+          my_fock[3] += (double)( preterm * clatom_charge_sh[j] * d12p3_0 );
+        }
+        //START INDEX i3=1, CENTER 2
+        {
+          scalar_type d12p3_0 = PmB[1] * d12s_0 - PmC[1] * d12s_1;
+          d12p3_0 += inv_two_zeta * (p2s_0 - p2s_1);
+          scalar_type preterm = norm2;
+          my_fock[4] += (double)( preterm * clatom_charge_sh[j] * d12p3_0 );
+        }
+        //START INDEX i3=2, CENTER 2
+        {
+          scalar_type d12p3_0 = PmB[2] * d12s_0 - PmC[2] * d12s_1;
+          scalar_type preterm = norm2;
+          my_fock[5] += (double)( preterm * clatom_charge_sh[j] * d12p3_0 );
+        }
+      }
+      //START INDEX i2=1, CENTER 1
+      {
+        scalar_type d12s_0 = PmA[1] * p1s_0 - PmC[1] * p1s_1;
+        scalar_type d12s_1 = PmA[1] * p1s_1 - PmC[1] * p1s_2;
+        scalar_type p2s_0 = PmA[1] * F_mU[0] - PmC[1] * F_mU[1];
+        scalar_type p2s_1 = PmA[1] * F_mU[1] - PmC[1] * F_mU[2];
+        scalar_type norm2 = 1.0f;
+        d12s_0 += inv_two_zeta * (F_mU[0] - F_mU[1]);
+        d12s_1 += inv_two_zeta * (F_mU[1] - F_mU[2]);
+        norm2 = G2G::gpu_normalization_factor;
+        //START INDEX i3=0, CENTER 2
+        {
+          scalar_type d12p3_0 = PmB[0] * d12s_0 - PmC[0] * d12s_1;
+          scalar_type preterm = norm2;
+          my_fock[6] += (double)( preterm * clatom_charge_sh[j] * d12p3_0 );
+        }
+        //START INDEX i3=1, CENTER 2
+        {
+          scalar_type d12p3_0 = PmB[1] * d12s_0 - PmC[1] * d12s_1;
+          d12p3_0 += inv_two_zeta * (p2s_0 - p2s_1);
+          d12p3_0 += inv_two_zeta * (p1s_0 - p1s_1);
+          scalar_type preterm = norm2;
+          my_fock[7] += (double)( preterm * clatom_charge_sh[j] * d12p3_0 );
+        }
+        //START INDEX i3=2, CENTER 2
+        {
+          scalar_type d12p3_0 = PmB[2] * d12s_0 - PmC[2] * d12s_1;
+          scalar_type preterm = norm2;
+          my_fock[8] += (double)( preterm * clatom_charge_sh[j] * d12p3_0 );
+        }
+      }
+    }
+    //START INDEX i1=2, CENTER 1
+    {
+      scalar_type p1s_0 = PmA[2] * F_mU[0] - PmC[2] * F_mU[1];
+      scalar_type p1s_1 = PmA[2] * F_mU[1] - PmC[2] * F_mU[2];
+      scalar_type p1s_2 = PmA[2] * F_mU[2] - PmC[2] * F_mU[3];
+      //START INDEX i2=0, CENTER 1
+      {
+        scalar_type d12s_0 = PmA[0] * p1s_0 - PmC[0] * p1s_1;
+        scalar_type d12s_1 = PmA[0] * p1s_1 - PmC[0] * p1s_2;
+        scalar_type p2s_0 = PmA[0] * F_mU[0] - PmC[0] * F_mU[1];
+        scalar_type p2s_1 = PmA[0] * F_mU[1] - PmC[0] * F_mU[2];
+        scalar_type norm2 = 1.0f;
+        //START INDEX i3=0, CENTER 2
+        {
+          scalar_type d12p3_0 = PmB[0] * d12s_0 - PmC[0] * d12s_1;
+          d12p3_0 += inv_two_zeta * (p1s_0 - p1s_1);
+          scalar_type preterm = norm2;
+          my_fock[9] += (double)( preterm * clatom_charge_sh[j] * d12p3_0 );
+        }
+        //START INDEX i3=1, CENTER 2
+        {
+          scalar_type d12p3_0 = PmB[1] * d12s_0 - PmC[1] * d12s_1;
+          scalar_type preterm = norm2;
+          my_fock[10] += (double)( preterm * clatom_charge_sh[j] * d12p3_0 );
+        }
+        //START INDEX i3=2, CENTER 2
+        {
+          scalar_type d12p3_0 = PmB[2] * d12s_0 - PmC[2] * d12s_1;
+          d12p3_0 += inv_two_zeta * (p2s_0 - p2s_1);
+          scalar_type preterm = norm2;
+          my_fock[11] += (double)( preterm * clatom_charge_sh[j] * d12p3_0 );
+        }
+      }
+      //START INDEX i2=1, CENTER 1
+      {
+        scalar_type d12s_0 = PmA[1] * p1s_0 - PmC[1] * p1s_1;
+        scalar_type d12s_1 = PmA[1] * p1s_1 - PmC[1] * p1s_2;
+        scalar_type p2s_0 = PmA[1] * F_mU[0] - PmC[1] * F_mU[1];
+        scalar_type p2s_1 = PmA[1] * F_mU[1] - PmC[1] * F_mU[2];
+        scalar_type norm2 = 1.0f;
+        //START INDEX i3=0, CENTER 2
+        {
+          scalar_type d12p3_0 = PmB[0] * d12s_0 - PmC[0] * d12s_1;
+          scalar_type preterm = norm2;
+          my_fock[12] += (double)( preterm * clatom_charge_sh[j] * d12p3_0 );
+        }
+        //START INDEX i3=1, CENTER 2
+        {
+          scalar_type d12p3_0 = PmB[1] * d12s_0 - PmC[1] * d12s_1;
+          d12p3_0 += inv_two_zeta * (p1s_0 - p1s_1);
+          scalar_type preterm = norm2;
+          my_fock[13] += (double)( preterm * clatom_charge_sh[j] * d12p3_0 );
+        }
+        //START INDEX i3=2, CENTER 2
+        {
+          scalar_type d12p3_0 = PmB[2] * d12s_0 - PmC[2] * d12s_1;
+          d12p3_0 += inv_two_zeta * (p2s_0 - p2s_1);
+          scalar_type preterm = norm2;
+          my_fock[14] += (double)( preterm * clatom_charge_sh[j] * d12p3_0 );
+        }
+      }
+      //START INDEX i2=2, CENTER 1
+      {
+        scalar_type d12s_0 = PmA[2] * p1s_0 - PmC[2] * p1s_1;
+        scalar_type d12s_1 = PmA[2] * p1s_1 - PmC[2] * p1s_2;
+        scalar_type p2s_0 = PmA[2] * F_mU[0] - PmC[2] * F_mU[1];
+        scalar_type p2s_1 = PmA[2] * F_mU[1] - PmC[2] * F_mU[2];
+        scalar_type norm2 = 1.0f;
+        d12s_0 += inv_two_zeta * (F_mU[0] - F_mU[1]);
+        d12s_1 += inv_two_zeta * (F_mU[1] - F_mU[2]);
+        norm2 = G2G::gpu_normalization_factor;
+        //START INDEX i3=0, CENTER 2
+        {
+          scalar_type d12p3_0 = PmB[0] * d12s_0 - PmC[0] * d12s_1;
+          scalar_type preterm = norm2;
+          my_fock[15] += (double)( preterm * clatom_charge_sh[j] * d12p3_0 );
+        }
+        //START INDEX i3=1, CENTER 2
+        {
+          scalar_type d12p3_0 = PmB[1] * d12s_0 - PmC[1] * d12s_1;
+          scalar_type preterm = norm2;
+          my_fock[16] += (double)( preterm * clatom_charge_sh[j] * d12p3_0 );
+        }
+        //START INDEX i3=2, CENTER 2
+        {
+          scalar_type d12p3_0 = PmB[2] * d12s_0 - PmC[2] * d12s_1;
+          d12p3_0 += inv_two_zeta * (p2s_0 - p2s_1);
+          d12p3_0 += inv_two_zeta * (p1s_0 - p1s_1);
+          scalar_type preterm = norm2;
+          my_fock[17] += (double)( preterm * clatom_charge_sh[j] * d12p3_0 );
+        }
+      }
+    }
+  }
+}

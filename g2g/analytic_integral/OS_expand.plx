@@ -270,57 +270,143 @@ sub print_preterm {
 #}
 
 sub print_gradient_inner {
-  my ($l,$indent,$ref,$str) = @_;
+  my ($l,$indent,$ref,$str,$vals_ref,$dens1_ind,$dens2_ind) = @_;
+  my @ind_vals = @$vals_ref;
   my @first_req = @$ref;
   my $grad_l = $l + 1;
-  $str = "$str$indent  //START INDEX i$grad_l, GRADIENT\n";
-  $str = "$str$indent  for (int i$grad_l = 0; i$grad_l < 3; i$grad_l++)\n";
-  $str = "$str$indent  \{\n";
-  if ($INDICES == 2) {
+  if ($NORM_SAME_COUNT > 0) {
+    if ($INDICES == 2) {
+      $str = "$str${indent}preterm *= clatom_charge_sh[j] *";
+    } elsif ($INDICES == 3) {
+      $str = "$str${indent}preterm *= fit_dens_sh[j+$dens2_ind] * prefactor_dens *";
+    }
+  } else {
+    if ($INDICES == 2) {
+      $str = "$str${indent}scalar_type preterm = clatom_charge_sh[j] *";
+    } elsif ($INDICES == 3) {
+      $str = "$str${indent}scalar_type preterm = fit_dens_sh[j+$dens2_ind] * prefactor_dens *";
+    }
+  }
+  $str = "$str dens[$dens1_ind];\n";
+  for $grad_ind (0..2) {
+    $str = "$str${indent}//START INDEX igrad=$grad_ind\n";
+    $str = "$str${indent}\{\n";
     my $int_str = &print_integral(@first_req);
     my @m_p1 = &inc_m(@first_req);
     my $m1_str = &print_integral(@m_p1);
-    $str = "$str$indent    scalar_type C_force_term = PmC[i$grad_l] * $m1_str;\n";
+    my $used = 0;
     for (1..$l) {
       my @skip = ($_);
       my @red_integral = &reduce_integral(\@skip,\@first_req);
       if (not &same_integral(\@red_integral,\@first_req)) {
         my @red_m_p1 = &inc_m(@red_integral);
-        my $red1_str = &print_integral(@red_m_p1);
-        $str = "$str$indent    C_force_term += (i$_ == i$grad_l) * inv_two_zeta * $red1_str;\n";
-      }
-    }
-    $str = "$str$indent    scalar_type A_force_term = -C_force_term;\n";
-    for (1..$l) {
-      my @skip = ($_);
-      my @red_integral = &reduce_integral(\@skip,\@first_req);
-      if (not &same_integral(\@red_integral,\@first_req)) {
-        my $red_str = &print_integral(@red_integral);
-        $str = "$str$indent    A_force_term += (i$_ == i$grad_l) * inv_two_zeta * $red_str;\n";
-      }
-    }
-    $str = "$str$indent    scalar_type B_force_term = PmB[i$grad_l] * $int_str + A_force_term;\n";
-    $str = "$str$indent    A_force_term += PmA[i$grad_l] * $int_str;\n";
-    $str = "$str$indent    A_force_term *= 2.0f * ai;\n";
-    $str = "$str$indent    B_force_term *= 2.0f * aj;\n";
-    for (1..$l) {
-      my @skip = ($_);
-      my @red_integral = &reduce_integral(\@skip,\@first_req);
-      if (not &same_integral(\@red_integral,\@first_req)) {
-        my $red_str = &print_integral(@red_integral);
-        if ($INDEX_MAP[$_-1] == 1) {
-          $str = "$str$indent    A_force_term -= (i$_ == i$grad_l) * $red_str;\n";
-        } else {
-          $str = "$str$indent    B_force_term -= (i$_ == i$grad_l) * $red_str;\n";
+        my $red1_str = &print_integral(@red_integral);
+        my $red1_m_str = &print_integral(@red_m_p1);
+        my $add_str = "";
+        if ($INDICES == 2) {
+          $add_str = $red1_m_str;
+        } elsif ($INDICES == 3) {
+          if ($INDEX_MAP[$_-1] <= 2) {
+            $add_str = "inv_two_zeta_eta * $red1_m_str";
+          } else {
+            $add_str = "inv_two_eta * ($red1_str - rho_eta * $red1_m_str)";
+          }
+        }
+        if ($grad_ind == $ind_vals[$_-1]) {
+          if (not $used) {
+            $str = "$str$indent  scalar_type C_force_term = $add_str;\n";
+            $used = 1;
+          } else {
+            $str = "$str$indent  C_force_term += $add_str;\n";
+          }
         }
       }
     }
-    $str = "$str$indent    A_force[i$grad_l] += preterm * clatom_sh[j] * dens1[dens1_ind] * A_force_term;\n";
-    $str = "$str$indent    B_force[i$grad_l] += preterm * clatom_sh[j] * dens1[dens1_ind] * B_force_term;\n";
-    $str = "$str$indent    C_force[i$grad_l][tid] += preterm * clatom_sh[j] * dens1[dens1_ind] * C_force_term;\n";
-  } else {
+    if (not $used) {
+      if ($INDICES == 2) {
+        $str = "$str$indent  scalar_type C_force_term = PmC[$grad_ind] * $m1_str;\n";
+      } elsif ($INDICES == 3) {
+        $str = "$str$indent  scalar_type C_force_term = WmQ[$grad_ind] * $m1_str;\n";
+      }
+    } else {
+      if ($INDICES == 2) {
+        $str = "$str$indent  C_force_term *= inv_two_zeta;\n";
+        $str = "$str$indent  C_force_term += PmC[$grad_ind] * $m1_str;\n";
+      } elsif ($INDICES == 3) {
+        $str = "$str$indent  C_force_term += WmQ[$grad_ind] * $m1_str;\n";
+      }
+    }
+    $used = 0;
+    for (1..$l) {
+      my @skip = ($_);
+      my @red_integral = &reduce_integral(\@skip,\@first_req);
+      if (not &same_integral(\@red_integral,\@first_req)) {
+        my $red_str = &print_integral(@red_integral);
+        my @incm = &inc_m(@red_integral);
+        my $red_m_str = &print_integral(@incm);
+        my $add_str = "";
+        if ($INDICES == 2) {
+          $add_str = $red_str;
+        } elsif ($INDICES == 3) {
+          if ($INDEX_MAP[$_-1] <= 2) {
+            $add_str = "inv_two_zeta * ($red_str - rho_zeta * $red_m_str)";
+          } else {
+            $add_str = "inv_two_zeta_eta * $red_m_str";
+          }
+        }
+        if ($grad_ind == $ind_vals[$_-1]) {
+          if (not $used) {
+            $str = "$str$indent  scalar_type A_force_term = $add_str;\n";
+            $used = 1;
+          } else {
+            $str = "$str$indent  A_force_term += $add_str;\n";
+          }
+        }
+      }
+    }
+    if (not $used) {
+      if ($INDICES == 2) {
+        $str = "$str$indent  scalar_type A_force_term = -C_force_term;\n";
+      } else {
+        $str = "$str$indent  scalar_type A_force_term = WmP[$grad_ind] * $m1_str;\n";
+      }
+    } else {
+      if ($INDICES == 2) {
+        $str = "$str$indent  A_force_term *= inv_two_zeta;\n";
+        $str = "$str$indent  A_force_term -= C_force_term;\n";
+      } elsif ($INDICES == 3) {
+        $str = "$str$indent  A_force_term += WmP[$grad_ind] * $m1_str;\n";
+      }
+    }
+    $str = "$str$indent  scalar_type B_force_term = PmB[$grad_ind] * $int_str + A_force_term;\n";
+    $str = "$str$indent  A_force_term += PmA[$grad_ind] * $int_str;\n";
+    $str = "$str$indent  A_force_term *= 2.0f * ai;\n";
+    $str = "$str$indent  B_force_term *= 2.0f * aj;\n";
+    if ($INDICES == 3) {
+      $str = "$str$indent  C_force_term *= 2.0f * ac_val_dens_sh[j].x;\n";
+    }
+    for (1..$l) {
+      my @skip = ($_);
+      my @red_integral = &reduce_integral(\@skip,\@first_req);
+      if (not &same_integral(\@red_integral,\@first_req)) {
+        my $red_str = &print_integral(@red_integral);
+        if ($grad_ind == $ind_vals[$_-1]) {
+          if ($INDEX_MAP[$_-1] == 1) {
+            $str = "$str$indent  A_force_term -= $red_str;\n";
+          } elsif ($INDEX_MAP[$_-1] == 2) {
+            $str = "$str$indent  B_force_term -= $red_str;\n";
+          } elsif ($INDEX_MAP[$_-1] == 3) {
+            $str = "$str$indent  C_force_term -= $red_str;\n";
+          }
+        }
+      }
+    }
+    $str = "$str$indent  A_force[$grad_ind]      += preterm * A_force_term;\n";
+    $str = "$str$indent  B_force[$grad_ind]      += preterm * B_force_term;\n";
+    $str = "$str$indent  C_force[$grad_ind][tid] += preterm * C_force_term;\n";
+    $str = "$str$indent\}\n";
   }
-  $str = "$str$indent  \}\n";
+  return $str;
 }
 sub print_energy_inner {
   my ($str,$indent,$ref,$dens1_ind,$dens2_ind) = @_;
@@ -334,17 +420,19 @@ sub print_energy_inner {
     $str = "$str clatom_charge_sh[j] *";
   } else {
     #$str = "$str fit_dens_sh[j+dens2_ind] * prefactor_dens *";
-    $str = "$str fit_dens_sh[j+$dens2_ind] * prefactor_dens * ";
+    $str = "$str fit_dens_sh[j+$dens2_ind] * prefactor_dens *";
   }
   $str = "$str $int_str );\n";
   if ($INDICES == 3) {
     $str = "$str#else\n";
     $str = "$str${indent}rc_sh[$dens2_ind][tid] += (double)(";
     $str = "$str preterm *" if $NORM_SAME_COUNT > 0;
-    $str = "$str dens[$dens1_ind] * prefactor_dens * ";
+    $str = "$str dens[$dens1_ind] * prefactor_dens *";
     $str = "$str $int_str );\n";
     $str = "$str#endif\n";
   }
+
+  return $str;
 }
 
 #########################################################################################
@@ -388,7 +476,7 @@ sub OS_level {
         &add_integral($reqs_ref,\@red_integral);
         &add_integral($reqs_ref,\@red_m_p1);
       }
-      my $lower_str = &print_gradient_inner($l,$indent,\@first_req,$str);
+      my $lower_str = &print_gradient_inner($l,$indent,\@first_req,"",$vals_ref,$$dens1_ind,$$dens2_ind);
       return "$str$lower_str";
     } else {
       my $lower_str = &print_energy_inner("",$indent,\@first_req,$$dens1_ind,$$dens2_ind);
@@ -475,7 +563,7 @@ sub OS_level {
           }
         }
         #$str = "$str$indent    norm$level = del_${ind2}${level} * gpu_normalization_factor + !del_${ind2}${level} * 1.0f;\n" if $NORM_INDICES[$level-1] and $ind2 == $level-1;
-        $str = "$str$indent  norm$level = gpu_normalization_factor;\n" if $NORM_INDICES[$level-1] and $ind2 == $level-1;
+        $str = "$str$indent  norm$level = G2G::gpu_normalization_factor;\n" if $NORM_INDICES[$level-1] and $ind2 == $level-1;
         #$str = "$str$indent  \}\n";
       }
     }

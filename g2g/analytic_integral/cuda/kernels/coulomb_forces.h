@@ -18,7 +18,7 @@ __global__ void gpu_coulomb_forces( uint num_terms, G2G::vec_type<scalar_type,2>
 
   uint ffnum = index_x(blockDim, blockIdx, threadIdx);
   int tid = threadIdx.x;
-  bool valid_thread = (ffnum < num_terms);// && term_type == 5;
+  bool valid_thread = (ffnum < num_terms);
 
   // Each thread maps to a single pair of QM nuclei, so these forces are computed locally and accumulated at the end
   scalar_type A_force[3] = { 0.0f,0.0f,0.0f }, B_force[3] = { 0.0f,0.0f,0.0f };
@@ -88,12 +88,34 @@ __global__ void gpu_coulomb_forces( uint num_terms, G2G::vec_type<scalar_type,2>
         //
         uint dens_ind = local_dens[ffnum];
         if (term_type == 2 && same_func) {
-          for (uint i = 0; i < 6; i++) {
-            dens[i] = dens_values[dens_ind+i];
+          uint true_ind = 0, false_ind = 0;
+          for (uint p1 = 0; p1 < 3; p1++) {
+            for (uint p2 = 0; p2 < 3; p2++) {
+              if (p2 <= p1) {
+                dens[false_ind] = dens_values[dens_ind+true_ind];
+                true_ind++;
+              } else {
+                dens[false_ind] = 0.0f;
+              }
+              false_ind++;
+            }
           }
         } else if (term_type == 5 && same_func) {
-          for (uint i = 0; i < 21; i++) {
-            dens[i] = dens_values[dens_ind+i];
+          uint true_ind = 0, false_ind = 0;
+          for (uint d1_1 = 0; d1_1 < 3; d1_1++) {
+            for (uint d1_2 = 0; d1_2 <= d1_1; d1_2++) {
+              for (uint d2_1 = 0; d2_1 < 3; d2_1++) {
+                for (uint d2_2 = 0; d2_2 <= d2_1; d2_2++) {
+                  if (!(d2_1 > d1_1 || (d2_1 == d1_1 && d2_2 > d1_2))) {
+                    dens[false_ind] = dens_values[dens_ind+true_ind];
+                    true_ind++;
+                  } else {
+                    dens[false_ind] = 0.0f;
+                  }
+                  false_ind++;
+                }
+              }
+            }
           }
         } else {
           for (uint i = 0; i < TERM_TYPE_GAUSSIANS[term_type]; i++) {
@@ -152,11 +174,7 @@ __global__ void gpu_coulomb_forces( uint num_terms, G2G::vec_type<scalar_type,2>
       scalar_type ksi = ((double)ai*(double)aj)/zeta;
       ovlap = exp(-ds2*ksi);
 
-      if (term_type == 0) {
-        prefactor_mo = (double)(dens[0] * cc * 2.0f * PI52 * ovlap) / zeta;
-      } else {
-        prefactor_mo = (double)(cc * 2.0f * PI52 * ovlap) / zeta;
-      }
+      prefactor_mo = (double)(cc * 2.0f * PI52 * ovlap) / zeta;
     }
     __shared__ uint term_start[3];
     term_start[0] = 0; term_start[1] = p_offset; term_start[2] = d_offset;
@@ -188,7 +206,7 @@ __global__ void gpu_coulomb_forces( uint num_terms, G2G::vec_type<scalar_type,2>
         {
           {
             scalar_type WmP[3], WmQ[3], inv_two_zeta_eta, rho, rho_zeta, prefactor_dens;
-            scalar_type inv_two_ak, rho_ak;
+            scalar_type inv_two_eta, rho_eta;
             {
               double zeta = (double)ai + (double)aj;
               double zeta_eta = zeta + (double)ac_val_dens_sh[j].x;
@@ -205,13 +223,9 @@ __global__ void gpu_coulomb_forces( uint num_terms, G2G::vec_type<scalar_type,2>
               rho = ((double)ac_val_dens_sh[j].x * zeta) / zeta_eta;
               inv_two_zeta_eta = 1.0 / (2.0 * zeta_eta);
               rho_zeta = (double)ac_val_dens_sh[j].x / zeta_eta;
-              inv_two_ak = 1.0 / (2.0 * (double)ac_val_dens_sh[j].x);
-              rho_ak = zeta / zeta_eta;
-              if (i+j < term_end[0]) {
-                prefactor_dens = (double)(fit_dens_sh[j]*ac_val_dens_sh[j].y) / ((double)ac_val_dens_sh[j].x * sqrt(zeta_eta));
-              } else {
-                prefactor_dens = (double)ac_val_dens_sh[j].y / ((double)ac_val_dens_sh[j].x * sqrt(zeta_eta));
-              }
+              inv_two_eta = 1.0 / (2.0 * (double)ac_val_dens_sh[j].x);
+              rho_eta = zeta / zeta_eta;
+              prefactor_dens = (double)ac_val_dens_sh[j].y / ((double)ac_val_dens_sh[j].x * sqrt(zeta_eta));
             }
             //
             // Do the core part of the forces calculation - the evaluation of the Obara-Saika recursion equations
@@ -308,6 +322,9 @@ __global__ void gpu_coulomb_forces( uint num_terms, G2G::vec_type<scalar_type,2>
                 break;
             }
             // END TERM-TYPE DEPENDENT PART
+            C_force[0][tid] *= valid_thread * prefactor_mo;
+            C_force[1][tid] *= valid_thread * prefactor_mo;
+            C_force[2][tid] *= valid_thread * prefactor_mo;
           }
 
           __syncthreads();

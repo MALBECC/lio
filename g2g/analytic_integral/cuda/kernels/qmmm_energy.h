@@ -167,12 +167,12 @@ __global__ void gpu_qmmm_fock( uint num_terms, G2G::vec_type<scalar_type,2>* ac_
           }
           case 4:
           {
-            #include "qmmm_terms/energy/dp_unrolled.h"
+            #include "qmmm_terms/energy/dp.h"
             break;
           }
           case 5:
           {
-            #include "qmmm_terms/energy/dd_unrolled.h"
+            #include "qmmm_terms/energy/dd.h"
             break;
           }
         }
@@ -181,6 +181,39 @@ __global__ void gpu_qmmm_fock( uint num_terms, G2G::vec_type<scalar_type,2>* ac_
       __syncthreads();
     }
   }
+
+  if (term_type == 2) {
+    if (same_func) {
+      uint true_ind = 0, false_ind = 0;
+      for (uint p1 = 0; p1 < 3; p1++) {
+        for (uint p2 = 0; p2 < 3; p2++) {
+          if (p2 <= p1) {
+            my_fock[true_ind] = my_fock[false_ind];
+            true_ind++;
+          }
+          false_ind++;
+        }
+      }
+    }
+  } else if (term_type == 5) {
+    if (same_func) {
+      uint true_ind = 0, false_ind = 0;
+      for (uint d1_1 = 0; d1_1 < 3; d1_1++) {
+        for (uint d1_2 = 0; d1_2 <= d1_1; d1_2++) {
+          for (uint d2_1 = 0; d2_1 < 3; d2_1++) {
+            for (uint d2_2 = 0; d2_2 <= d2_1; d2_2++) {
+              if (!(d2_1 > d1_1 || (d2_1 == d1_1 && d2_2 > d1_2))) {
+                my_fock[true_ind] = my_fock[false_ind];
+                true_ind++;
+              }
+              false_ind++;
+            }
+          }
+        }
+      }
+    }
+  }
+
 
   //
   // Reduce the partial fock elements

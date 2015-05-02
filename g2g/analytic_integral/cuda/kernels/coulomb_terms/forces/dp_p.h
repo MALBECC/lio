@@ -1,158 +1,4180 @@
-//--------------------------------------------BEGIN TERM-TYPE DEPENDENT PART (DP-P)-------------------------------------------
-              {
-                scalar_type F_mT[6];
-                {
-                  scalar_type PmQ[3];
-                  PmQ[0] = P[0] - nuc_pos_dens_sh[j].x;
-                  PmQ[1] = P[1] - nuc_pos_dens_sh[j].y;
-                  PmQ[2] = P[2] - nuc_pos_dens_sh[j].z;
-                  scalar_type T = (PmQ[0] * PmQ[0] + PmQ[1] * PmQ[1] + PmQ[2] * PmQ[2]) * rho;
-                  lio_gamma<scalar_type,5>(F_mT,T);
-                }
-                {
-                  scalar_type A_force_term, B_force_term, C_force_term;
-                  uint mo_dens_ind = 0;
-                  //#pragma unroll 3
-                  for (uint d_l1 = 0; d_l1 < 3; d_l1++) {
-
-                    scalar_type p1s_s0 = PmA[d_l1] * F_mT[0] + WmP[d_l1] * F_mT[1];
-                    scalar_type p1s_s1 = PmA[d_l1] * F_mT[1] + WmP[d_l1] * F_mT[2];
-                    scalar_type p1s_s2 = PmA[d_l1] * F_mT[2] + WmP[d_l1] * F_mT[3];
-                    scalar_type p1s_s3 = PmA[d_l1] * F_mT[3] + WmP[d_l1] * F_mT[4];
-                    scalar_type p1s_s4 = PmA[d_l1] * F_mT[4] + WmP[d_l1] * F_mT[5];
-
-                    //#pragma unroll 3
-                    for (uint d_l2 = 0; d_l2 <= d_l1; d_l2++) {
-
-                      scalar_type p2s_s0 = PmA[d_l2] * F_mT[0] + WmP[d_l2] * F_mT[1];
-                      scalar_type p2s_s1 = PmA[d_l2] * F_mT[1] + WmP[d_l2] * F_mT[2];
-                      scalar_type p2s_s2 = PmA[d_l2] * F_mT[2] + WmP[d_l2] * F_mT[3];
-                      scalar_type p2s_s3 = PmA[d_l2] * F_mT[3] + WmP[d_l2] * F_mT[4];
-
-                      scalar_type ds_s0 = PmA[d_l2] * p1s_s0 + WmP[d_l2] * p1s_s1;
-                      scalar_type ds_s1 = PmA[d_l2] * p1s_s1 + WmP[d_l2] * p1s_s2;
-                      scalar_type ds_s2 = PmA[d_l2] * p1s_s2 + WmP[d_l2] * p1s_s3;
-                      scalar_type ds_s3 = PmA[d_l2] * p1s_s3 + WmP[d_l2] * p1s_s4;
-
-                      scalar_type norm;
-                      {
-                        bool del_12 = d_l1 == d_l2;
-                        ds_s0 += del_12 * inv_two_zeta * (F_mT[0] - rho_zeta * F_mT[1]);
-                        ds_s1 += del_12 * inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
-                        ds_s2 += del_12 * inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
-                        ds_s3 += del_12 * inv_two_zeta * (F_mT[3] - rho_zeta * F_mT[4]);
-                        norm = del_12 * G2G::gpu_normalization_factor + !del_12 * 1.0f;
-                      }
-
-                      #pragma unroll 3
-                      for (uint p2_l = 0; p2_l < 3; p2_l++) {
-
-                        scalar_type sp_s1  = PmB[p2_l] * F_mT[1] + WmP[p2_l] * F_mT[2];
-                        scalar_type sp_s2  = PmB[p2_l] * F_mT[2] + WmP[p2_l] * F_mT[3];
-
-                        scalar_type p1p_s1 = PmB[p2_l] * p1s_s1 + WmP[p2_l] * p1s_s2;
-                        scalar_type p1p_s2 = PmB[p2_l] * p1s_s2 + WmP[p2_l] * p1s_s3;
-
-                        scalar_type p2p_s1 = PmB[p2_l] * p2s_s1 + WmP[p2_l] * p2s_s2;
-                        scalar_type p2p_s2 = PmB[p2_l] * p2s_s2 + WmP[p2_l] * p2s_s3;
-
-                        scalar_type dp_s0  = PmB[p2_l] * ds_s0 + WmP[p2_l] * ds_s1;
-                        scalar_type dp_s1  = PmB[p2_l] * ds_s1 + WmP[p2_l] * ds_s2;
-                        scalar_type dp_s2  = PmB[p2_l] * ds_s2 + WmP[p2_l] * ds_s3;
-
-                        {
-                          bool del_13 = d_l1 == p2_l;
-                          p1p_s1 += del_13 * inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
-                          p1p_s2 += del_13 * inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
-                          dp_s0  += del_13 * inv_two_zeta * (p2s_s0 - rho_zeta * p2s_s1);
-                          dp_s1  += del_13 * inv_two_zeta * (p2s_s1 - rho_zeta * p2s_s2);
-                          dp_s2  += del_13 * inv_two_zeta * (p2s_s2 - rho_zeta * p2s_s3);
-                        }
-                        {
-                          bool del_23 = d_l2 == p2_l;
-                          p2p_s1 += del_23 * inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
-                          p2p_s2 += del_23 * inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
-                          dp_s0  += del_23 * inv_two_zeta * (p1s_s0 - rho_zeta * p1s_s1);
-                          dp_s1  += del_23 * inv_two_zeta * (p1s_s1 - rho_zeta * p1s_s2);
-                          dp_s2  += del_23 * inv_two_zeta * (p1s_s2 - rho_zeta * p1s_s3);
-                        }
-
-                        scalar_type mo_pre_term = norm * prefactor_dens * dens[mo_dens_ind];
-                        mo_dens_ind++;
-
-                        #pragma unroll 3
-                        for (uint p3_l = 0; p3_l < 3; p3_l++) {
-
-                          scalar_type ds_p0  = WmQ[p3_l] * ds_s1;
-                          scalar_type ds_p1  = WmQ[p3_l] * ds_s2;
-
-                          scalar_type p1p_p0 = WmQ[p3_l] * p1p_s1;
-                          scalar_type p1p_p1 = WmQ[p3_l] * p1p_s2;
-
-                          scalar_type p2p_p0 = WmQ[p3_l] * p2p_s1;
-                          scalar_type p2p_p1 = WmQ[p3_l] * p2p_s2;
-
-                          scalar_type dp_p0  = WmQ[p3_l] * dp_s1;
-                          scalar_type dp_p1  = WmQ[p3_l] * dp_s2;
-                          {
-                            bool del_14 = d_l1 == p3_l;
-                            ds_p0  += del_14 * inv_two_zeta_eta * p2s_s1;
-                            ds_p1  += del_14 * inv_two_zeta_eta * p2s_s2;
-                            p1p_p0 += del_14 * inv_two_zeta_eta * sp_s1;
-                            p1p_p1 += del_14 * inv_two_zeta_eta * sp_s2;
-                            dp_p0  += del_14 * inv_two_zeta_eta * p2p_s1;
-                            dp_p1  += del_14 * inv_two_zeta_eta * p2p_s2;
-                          }
-                          {
-                            bool del_24 = d_l2 == p3_l;
-                            ds_p0  += del_24 * inv_two_zeta_eta * p1s_s1;
-                            ds_p1  += del_24 * inv_two_zeta_eta * p1s_s2;
-                            p2p_p0 += del_24 * inv_two_zeta_eta * sp_s1;
-                            p2p_p1 += del_24 * inv_two_zeta_eta * sp_s2;
-                            dp_p0  += del_24 * inv_two_zeta_eta * p1p_s1;
-                            dp_p1  += del_24 * inv_two_zeta_eta * p1p_s2;
-                          }
-                          {
-                            bool del_34 = p2_l == p3_l;
-                            p1p_p0 += del_34 * inv_two_zeta_eta * p1s_s1;
-                            p1p_p1 += del_34 * inv_two_zeta_eta * p1s_s2;
-                            p2p_p0 += del_34 * inv_two_zeta_eta * p2s_s1;
-                            p2p_p1 += del_34 * inv_two_zeta_eta * p2s_s2;
-                            dp_p0  += del_34 * inv_two_zeta_eta * ds_s1;
-                            dp_p1  += del_34 * inv_two_zeta_eta * ds_s2;
-                          }
-
-                          scalar_type pre_term = mo_pre_term * fit_dens_sh[j+p3_l];
-
-                          #pragma unroll 3
-                          for (uint grad_l = 0; grad_l < 3; grad_l++) {
-                            bool del_d1g = d_l1 == grad_l, del_d2g = d_l2 == grad_l, del_p2g = p2_l == grad_l, del_p3g = p3_l == grad_l;
-
-                            A_force_term  = WmP[grad_l] * dp_p1;
-                            A_force_term += del_d1g * inv_two_zeta * (p2p_p0 - rho_zeta * p2p_p1);
-                            A_force_term += del_d2g * inv_two_zeta * (p1p_p0 - rho_zeta * p1p_p1);
-                            A_force_term += del_p2g * inv_two_zeta * (ds_p0 - rho_zeta * ds_p1);
-                            A_force_term += del_p3g * inv_two_zeta_eta * dp_s1;
-                            B_force_term  = PmB[grad_l] * dp_p0 + A_force_term;
-                            A_force_term  = PmA[grad_l] * dp_p0 + A_force_term;
-
-                            C_force_term  = WmQ[grad_l] * dp_p1;
-                            C_force_term += del_d1g * inv_two_zeta_eta * p2p_p1;
-                            C_force_term += del_d2g * inv_two_zeta_eta * p1p_p1;
-                            C_force_term += del_p2g * inv_two_zeta_eta * ds_p1;
-                            C_force_term += del_p3g * inv_two_ak * (dp_s0 - rho_ak * dp_s1);
-  
-                            A_force[grad_l]      += pre_term * (2.0f * ai * A_force_term - del_d1g * p2p_p0 - del_d2g * p1p_p0);
-                            B_force[grad_l]      += pre_term * (2.0f * aj * B_force_term - del_p2g * ds_p0);
-                            C_force[grad_l][tid] += pre_term * (2.0f * ac_val_dens_sh[j].x * C_force_term - del_p3g * dp_s0);
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-                C_force[0][tid] *= valid_thread * prefactor_mo;
-                C_force[1][tid] *= valid_thread * prefactor_mo;
-                C_force[2][tid] *= valid_thread * prefactor_mo;
-              }
-//------------------------------------------END TERM-TYPE DEPENDENT PART (DP-P)----------------------------------------------
+{
+  scalar_type F_mT[6];
+  {
+    scalar_type PmQ[3];
+    PmQ[0] = P[0] - nuc_pos_dens_sh[j].x;
+    PmQ[1] = P[1] - nuc_pos_dens_sh[j].y;
+    PmQ[2] = P[2] - nuc_pos_dens_sh[j].z;
+    scalar_type T = (PmQ[0] * PmQ[0] + PmQ[1] * PmQ[1] + PmQ[2] * PmQ[2]) * rho;
+    lio_gamma<scalar_type,5>(F_mT,T);
+  }
+  {
+    //START INDEX i1=0, CENTER 1
+    {
+      scalar_type p1ss_1 = PmA[0] * F_mT[1] + WmP[0] * F_mT[2];
+      scalar_type p1ss_2 = PmA[0] * F_mT[2] + WmP[0] * F_mT[3];
+      scalar_type p1ss_3 = PmA[0] * F_mT[3] + WmP[0] * F_mT[4];
+      scalar_type p1ss_4 = PmA[0] * F_mT[4] + WmP[0] * F_mT[5];
+      scalar_type p1ss_0 = PmA[0] * F_mT[0] + WmP[0] * F_mT[1];
+      //START INDEX i2=0, CENTER 1
+      {
+        scalar_type d12ss_1 = PmA[0] * p1ss_1 + WmP[0] * p1ss_2;
+        scalar_type d12ss_2 = PmA[0] * p1ss_2 + WmP[0] * p1ss_3;
+        scalar_type p2ss_1 = PmA[0] * F_mT[1] + WmP[0] * F_mT[2];
+        scalar_type p2ss_2 = PmA[0] * F_mT[2] + WmP[0] * F_mT[3];
+        scalar_type d12ss_3 = PmA[0] * p1ss_3 + WmP[0] * p1ss_4;
+        scalar_type p2ss_3 = PmA[0] * F_mT[3] + WmP[0] * F_mT[4];
+        scalar_type d12ss_0 = PmA[0] * p1ss_0 + WmP[0] * p1ss_1;
+        scalar_type p2ss_0 = PmA[0] * F_mT[0] + WmP[0] * F_mT[1];
+        scalar_type norm2 = 1.0f;
+        d12ss_1 += inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
+        d12ss_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
+        d12ss_3 += inv_two_zeta * (F_mT[3] - rho_zeta * F_mT[4]);
+        d12ss_0 += inv_two_zeta * (F_mT[0] - rho_zeta * F_mT[1]);
+        norm2 = G2G::gpu_normalization_factor;
+        //START INDEX i3=0, CENTER 2
+        {
+          scalar_type d12p3s_1 = PmB[0] * d12ss_1 + WmP[0] * d12ss_2;
+          scalar_type p2p3s_1 = PmB[0] * p2ss_1 + WmP[0] * p2ss_2;
+          scalar_type p1p3s_1 = PmB[0] * p1ss_1 + WmP[0] * p1ss_2;
+          scalar_type d12p3s_2 = PmB[0] * d12ss_2 + WmP[0] * d12ss_3;
+          scalar_type p2p3s_2 = PmB[0] * p2ss_2 + WmP[0] * p2ss_3;
+          scalar_type p1p3s_2 = PmB[0] * p1ss_2 + WmP[0] * p1ss_3;
+          scalar_type sp3s_1 = PmB[0] * F_mT[1] + WmP[0] * F_mT[2];
+          scalar_type sp3s_2 = PmB[0] * F_mT[2] + WmP[0] * F_mT[3];
+          scalar_type d12p3s_0 = PmB[0] * d12ss_0 + WmP[0] * d12ss_1;
+          d12p3s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
+          p1p3s_1 += inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
+          d12p3s_2 += inv_two_zeta * (p2ss_2 - rho_zeta * p2ss_3);
+          p1p3s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
+          d12p3s_0 += inv_two_zeta * (p2ss_0 - rho_zeta * p2ss_1);
+          d12p3s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
+          p2p3s_1 += inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
+          d12p3s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
+          p2p3s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
+          d12p3s_0 += inv_two_zeta * (p1ss_0 - rho_zeta * p1ss_1);
+          //START INDEX i4=0, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[0] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[0] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[0] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[0] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[0] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[0] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[0] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[0] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p2p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p2p3s_2;
+            p1p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p1p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p2ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p2ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p1p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p1p3s_2;
+            p2p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p2p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p1ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p1ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * d12ss_1;
+            d12p3p4_1 += inv_two_zeta_eta * d12ss_2;
+            p2p3p4_0 += inv_two_zeta_eta * p2ss_1;
+            p2p3p4_1 += inv_two_zeta_eta * p2ss_2;
+            p1p3p4_0 += inv_two_zeta_eta * p1ss_1;
+            p1p3p4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+0] * prefactor_dens * dens[0];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              B_force_term -= d12sp4_0;
+              C_force_term -= d12p3s_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=1, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[1] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[1] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[1] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[1] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[1] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[1] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[1] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[1] * d12ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+1] * prefactor_dens * dens[0];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              B_force_term -= d12sp4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              C_force_term -= d12p3s_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=2, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[2] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[2] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[2] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[2] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[2] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[2] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[2] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[2] * d12ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+2] * prefactor_dens * dens[0];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              B_force_term -= d12sp4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              C_force_term -= d12p3s_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+        }
+        //START INDEX i3=1, CENTER 2
+        {
+          scalar_type d12p3s_1 = PmB[1] * d12ss_1 + WmP[1] * d12ss_2;
+          scalar_type p2p3s_1 = PmB[1] * p2ss_1 + WmP[1] * p2ss_2;
+          scalar_type p1p3s_1 = PmB[1] * p1ss_1 + WmP[1] * p1ss_2;
+          scalar_type d12p3s_2 = PmB[1] * d12ss_2 + WmP[1] * d12ss_3;
+          scalar_type p2p3s_2 = PmB[1] * p2ss_2 + WmP[1] * p2ss_3;
+          scalar_type p1p3s_2 = PmB[1] * p1ss_2 + WmP[1] * p1ss_3;
+          scalar_type sp3s_1 = PmB[1] * F_mT[1] + WmP[1] * F_mT[2];
+          scalar_type sp3s_2 = PmB[1] * F_mT[2] + WmP[1] * F_mT[3];
+          scalar_type d12p3s_0 = PmB[1] * d12ss_0 + WmP[1] * d12ss_1;
+          //START INDEX i4=0, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[0] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[0] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[0] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[0] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[0] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[0] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[0] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[0] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p2p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p2p3s_2;
+            p1p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p1p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p2ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p2ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p1p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p1p3s_2;
+            p2p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p2p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p1ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+0] * prefactor_dens * dens[1];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              C_force_term -= d12p3s_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=1, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[1] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[1] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[1] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[1] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[1] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[1] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[1] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[1] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * d12ss_1;
+            d12p3p4_1 += inv_two_zeta_eta * d12ss_2;
+            p2p3p4_0 += inv_two_zeta_eta * p2ss_1;
+            p2p3p4_1 += inv_two_zeta_eta * p2ss_2;
+            p1p3p4_0 += inv_two_zeta_eta * p1ss_1;
+            p1p3p4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+1] * prefactor_dens * dens[1];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              C_force_term -= d12p3s_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=2, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[2] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[2] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[2] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[2] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[2] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[2] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[2] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[2] * d12ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+2] * prefactor_dens * dens[1];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              C_force_term -= d12p3s_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+        }
+        //START INDEX i3=2, CENTER 2
+        {
+          scalar_type d12p3s_1 = PmB[2] * d12ss_1 + WmP[2] * d12ss_2;
+          scalar_type p2p3s_1 = PmB[2] * p2ss_1 + WmP[2] * p2ss_2;
+          scalar_type p1p3s_1 = PmB[2] * p1ss_1 + WmP[2] * p1ss_2;
+          scalar_type d12p3s_2 = PmB[2] * d12ss_2 + WmP[2] * d12ss_3;
+          scalar_type p2p3s_2 = PmB[2] * p2ss_2 + WmP[2] * p2ss_3;
+          scalar_type p1p3s_2 = PmB[2] * p1ss_2 + WmP[2] * p1ss_3;
+          scalar_type sp3s_1 = PmB[2] * F_mT[1] + WmP[2] * F_mT[2];
+          scalar_type sp3s_2 = PmB[2] * F_mT[2] + WmP[2] * F_mT[3];
+          scalar_type d12p3s_0 = PmB[2] * d12ss_0 + WmP[2] * d12ss_1;
+          //START INDEX i4=0, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[0] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[0] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[0] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[0] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[0] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[0] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[0] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[0] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p2p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p2p3s_2;
+            p1p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p1p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p2ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p2ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p1p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p1p3s_2;
+            p2p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p2p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p1ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+0] * prefactor_dens * dens[2];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              C_force_term -= d12p3s_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=1, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[1] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[1] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[1] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[1] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[1] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[1] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[1] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[1] * d12ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+1] * prefactor_dens * dens[2];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              C_force_term -= d12p3s_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=2, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[2] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[2] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[2] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[2] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[2] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[2] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[2] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[2] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * d12ss_1;
+            d12p3p4_1 += inv_two_zeta_eta * d12ss_2;
+            p2p3p4_0 += inv_two_zeta_eta * p2ss_1;
+            p2p3p4_1 += inv_two_zeta_eta * p2ss_2;
+            p1p3p4_0 += inv_two_zeta_eta * p1ss_1;
+            p1p3p4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+2] * prefactor_dens * dens[2];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              C_force_term -= d12p3s_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+        }
+      }
+    }
+    //START INDEX i1=1, CENTER 1
+    {
+      scalar_type p1ss_1 = PmA[1] * F_mT[1] + WmP[1] * F_mT[2];
+      scalar_type p1ss_2 = PmA[1] * F_mT[2] + WmP[1] * F_mT[3];
+      scalar_type p1ss_3 = PmA[1] * F_mT[3] + WmP[1] * F_mT[4];
+      scalar_type p1ss_4 = PmA[1] * F_mT[4] + WmP[1] * F_mT[5];
+      scalar_type p1ss_0 = PmA[1] * F_mT[0] + WmP[1] * F_mT[1];
+      //START INDEX i2=0, CENTER 1
+      {
+        scalar_type d12ss_1 = PmA[0] * p1ss_1 + WmP[0] * p1ss_2;
+        scalar_type d12ss_2 = PmA[0] * p1ss_2 + WmP[0] * p1ss_3;
+        scalar_type d12ss_3 = PmA[0] * p1ss_3 + WmP[0] * p1ss_4;
+        scalar_type p2ss_1 = PmA[0] * F_mT[1] + WmP[0] * F_mT[2];
+        scalar_type p2ss_2 = PmA[0] * F_mT[2] + WmP[0] * F_mT[3];
+        scalar_type p2ss_3 = PmA[0] * F_mT[3] + WmP[0] * F_mT[4];
+        scalar_type d12ss_0 = PmA[0] * p1ss_0 + WmP[0] * p1ss_1;
+        scalar_type p2ss_0 = PmA[0] * F_mT[0] + WmP[0] * F_mT[1];
+        scalar_type norm2 = 1.0f;
+        //START INDEX i3=0, CENTER 2
+        {
+          scalar_type d12p3s_1 = PmB[0] * d12ss_1 + WmP[0] * d12ss_2;
+          scalar_type p1p3s_1 = PmB[0] * p1ss_1 + WmP[0] * p1ss_2;
+          scalar_type d12p3s_2 = PmB[0] * d12ss_2 + WmP[0] * d12ss_3;
+          scalar_type p1p3s_2 = PmB[0] * p1ss_2 + WmP[0] * p1ss_3;
+          scalar_type p2p3s_1 = PmB[0] * p2ss_1 + WmP[0] * p2ss_2;
+          scalar_type sp3s_1 = PmB[0] * F_mT[1] + WmP[0] * F_mT[2];
+          scalar_type p2p3s_2 = PmB[0] * p2ss_2 + WmP[0] * p2ss_3;
+          scalar_type sp3s_2 = PmB[0] * F_mT[2] + WmP[0] * F_mT[3];
+          scalar_type d12p3s_0 = PmB[0] * d12ss_0 + WmP[0] * d12ss_1;
+          d12p3s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
+          d12p3s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
+          p2p3s_1 += inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
+          p2p3s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
+          d12p3s_0 += inv_two_zeta * (p1ss_0 - rho_zeta * p1ss_1);
+          //START INDEX i4=0, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[0] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[0] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[0] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[0] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[0] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[0] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[0] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[0] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p1p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p1p3s_2;
+            p2p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p2p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p1ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p1ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * d12ss_1;
+            d12p3p4_1 += inv_two_zeta_eta * d12ss_2;
+            p2p3p4_0 += inv_two_zeta_eta * p2ss_1;
+            p2p3p4_1 += inv_two_zeta_eta * p2ss_2;
+            p1p3p4_0 += inv_two_zeta_eta * p1ss_1;
+            p1p3p4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+0] * prefactor_dens * dens[3];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              B_force_term -= d12sp4_0;
+              C_force_term -= d12p3s_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=1, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[1] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[1] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[1] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[1] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[1] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[1] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[1] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[1] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p2p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p2p3s_2;
+            p1p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p1p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p2ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p2ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+1] * prefactor_dens * dens[3];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              B_force_term -= d12sp4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              C_force_term -= d12p3s_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=2, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[2] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[2] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[2] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[2] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[2] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[2] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[2] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[2] * d12ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+2] * prefactor_dens * dens[3];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              B_force_term -= d12sp4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              C_force_term -= d12p3s_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+        }
+        //START INDEX i3=1, CENTER 2
+        {
+          scalar_type d12p3s_1 = PmB[1] * d12ss_1 + WmP[1] * d12ss_2;
+          scalar_type p1p3s_1 = PmB[1] * p1ss_1 + WmP[1] * p1ss_2;
+          scalar_type d12p3s_2 = PmB[1] * d12ss_2 + WmP[1] * d12ss_3;
+          scalar_type p1p3s_2 = PmB[1] * p1ss_2 + WmP[1] * p1ss_3;
+          scalar_type p2p3s_1 = PmB[1] * p2ss_1 + WmP[1] * p2ss_2;
+          scalar_type sp3s_1 = PmB[1] * F_mT[1] + WmP[1] * F_mT[2];
+          scalar_type p2p3s_2 = PmB[1] * p2ss_2 + WmP[1] * p2ss_3;
+          scalar_type sp3s_2 = PmB[1] * F_mT[2] + WmP[1] * F_mT[3];
+          scalar_type d12p3s_0 = PmB[1] * d12ss_0 + WmP[1] * d12ss_1;
+          d12p3s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
+          p1p3s_1 += inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
+          d12p3s_2 += inv_two_zeta * (p2ss_2 - rho_zeta * p2ss_3);
+          p1p3s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
+          d12p3s_0 += inv_two_zeta * (p2ss_0 - rho_zeta * p2ss_1);
+          //START INDEX i4=0, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[0] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[0] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[0] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[0] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[0] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[0] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[0] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[0] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p1p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p1p3s_2;
+            p2p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p2p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p1ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+0] * prefactor_dens * dens[4];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              C_force_term -= d12p3s_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              B_force_term -= d12sp4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=1, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[1] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[1] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[1] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[1] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[1] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[1] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[1] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[1] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p2p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p2p3s_2;
+            p1p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p1p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p2ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p2ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * d12ss_1;
+            d12p3p4_1 += inv_two_zeta_eta * d12ss_2;
+            p2p3p4_0 += inv_two_zeta_eta * p2ss_1;
+            p2p3p4_1 += inv_two_zeta_eta * p2ss_2;
+            p1p3p4_0 += inv_two_zeta_eta * p1ss_1;
+            p1p3p4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+1] * prefactor_dens * dens[4];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              B_force_term -= d12sp4_0;
+              C_force_term -= d12p3s_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=2, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[2] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[2] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[2] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[2] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[2] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[2] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[2] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[2] * d12ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+2] * prefactor_dens * dens[4];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              B_force_term -= d12sp4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              C_force_term -= d12p3s_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+        }
+        //START INDEX i3=2, CENTER 2
+        {
+          scalar_type d12p3s_1 = PmB[2] * d12ss_1 + WmP[2] * d12ss_2;
+          scalar_type p1p3s_1 = PmB[2] * p1ss_1 + WmP[2] * p1ss_2;
+          scalar_type d12p3s_2 = PmB[2] * d12ss_2 + WmP[2] * d12ss_3;
+          scalar_type p1p3s_2 = PmB[2] * p1ss_2 + WmP[2] * p1ss_3;
+          scalar_type p2p3s_1 = PmB[2] * p2ss_1 + WmP[2] * p2ss_2;
+          scalar_type sp3s_1 = PmB[2] * F_mT[1] + WmP[2] * F_mT[2];
+          scalar_type p2p3s_2 = PmB[2] * p2ss_2 + WmP[2] * p2ss_3;
+          scalar_type sp3s_2 = PmB[2] * F_mT[2] + WmP[2] * F_mT[3];
+          scalar_type d12p3s_0 = PmB[2] * d12ss_0 + WmP[2] * d12ss_1;
+          //START INDEX i4=0, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[0] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[0] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[0] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[0] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[0] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[0] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[0] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[0] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p1p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p1p3s_2;
+            p2p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p2p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p1ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+0] * prefactor_dens * dens[5];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              C_force_term -= d12p3s_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=1, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[1] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[1] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[1] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[1] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[1] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[1] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[1] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[1] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p2p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p2p3s_2;
+            p1p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p1p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p2ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p2ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+1] * prefactor_dens * dens[5];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              C_force_term -= d12p3s_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=2, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[2] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[2] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[2] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[2] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[2] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[2] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[2] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[2] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * d12ss_1;
+            d12p3p4_1 += inv_two_zeta_eta * d12ss_2;
+            p2p3p4_0 += inv_two_zeta_eta * p2ss_1;
+            p2p3p4_1 += inv_two_zeta_eta * p2ss_2;
+            p1p3p4_0 += inv_two_zeta_eta * p1ss_1;
+            p1p3p4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+2] * prefactor_dens * dens[5];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              C_force_term -= d12p3s_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+        }
+      }
+      //START INDEX i2=1, CENTER 1
+      {
+        scalar_type d12ss_1 = PmA[1] * p1ss_1 + WmP[1] * p1ss_2;
+        scalar_type d12ss_2 = PmA[1] * p1ss_2 + WmP[1] * p1ss_3;
+        scalar_type d12ss_3 = PmA[1] * p1ss_3 + WmP[1] * p1ss_4;
+        scalar_type p2ss_1 = PmA[1] * F_mT[1] + WmP[1] * F_mT[2];
+        scalar_type p2ss_2 = PmA[1] * F_mT[2] + WmP[1] * F_mT[3];
+        scalar_type p2ss_3 = PmA[1] * F_mT[3] + WmP[1] * F_mT[4];
+        scalar_type d12ss_0 = PmA[1] * p1ss_0 + WmP[1] * p1ss_1;
+        scalar_type p2ss_0 = PmA[1] * F_mT[0] + WmP[1] * F_mT[1];
+        scalar_type norm2 = 1.0f;
+        d12ss_1 += inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
+        d12ss_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
+        d12ss_3 += inv_two_zeta * (F_mT[3] - rho_zeta * F_mT[4]);
+        d12ss_0 += inv_two_zeta * (F_mT[0] - rho_zeta * F_mT[1]);
+        norm2 = G2G::gpu_normalization_factor;
+        //START INDEX i3=0, CENTER 2
+        {
+          scalar_type d12p3s_1 = PmB[0] * d12ss_1 + WmP[0] * d12ss_2;
+          scalar_type d12p3s_2 = PmB[0] * d12ss_2 + WmP[0] * d12ss_3;
+          scalar_type p2p3s_1 = PmB[0] * p2ss_1 + WmP[0] * p2ss_2;
+          scalar_type p2p3s_2 = PmB[0] * p2ss_2 + WmP[0] * p2ss_3;
+          scalar_type p1p3s_1 = PmB[0] * p1ss_1 + WmP[0] * p1ss_2;
+          scalar_type p1p3s_2 = PmB[0] * p1ss_2 + WmP[0] * p1ss_3;
+          scalar_type d12p3s_0 = PmB[0] * d12ss_0 + WmP[0] * d12ss_1;
+          scalar_type sp3s_1 = PmB[0] * F_mT[1] + WmP[0] * F_mT[2];
+          scalar_type sp3s_2 = PmB[0] * F_mT[2] + WmP[0] * F_mT[3];
+          //START INDEX i4=0, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[0] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[0] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[0] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[0] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[0] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[0] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[0] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[0] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * d12ss_1;
+            d12p3p4_1 += inv_two_zeta_eta * d12ss_2;
+            p2p3p4_0 += inv_two_zeta_eta * p2ss_1;
+            p2p3p4_1 += inv_two_zeta_eta * p2ss_2;
+            p1p3p4_0 += inv_two_zeta_eta * p1ss_1;
+            p1p3p4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+0] * prefactor_dens * dens[6];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              C_force_term -= d12p3s_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=1, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[1] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[1] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[1] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[1] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[1] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[1] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[1] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[1] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p2p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p2p3s_2;
+            p1p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p1p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p2ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p2ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p1p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p1p3s_2;
+            p2p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p2p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p1ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+1] * prefactor_dens * dens[6];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              C_force_term -= d12p3s_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=2, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[2] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[2] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[2] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[2] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[2] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[2] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[2] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[2] * d12ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+2] * prefactor_dens * dens[6];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              C_force_term -= d12p3s_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+        }
+        //START INDEX i3=1, CENTER 2
+        {
+          scalar_type d12p3s_1 = PmB[1] * d12ss_1 + WmP[1] * d12ss_2;
+          scalar_type d12p3s_2 = PmB[1] * d12ss_2 + WmP[1] * d12ss_3;
+          scalar_type p2p3s_1 = PmB[1] * p2ss_1 + WmP[1] * p2ss_2;
+          scalar_type p2p3s_2 = PmB[1] * p2ss_2 + WmP[1] * p2ss_3;
+          scalar_type p1p3s_1 = PmB[1] * p1ss_1 + WmP[1] * p1ss_2;
+          scalar_type p1p3s_2 = PmB[1] * p1ss_2 + WmP[1] * p1ss_3;
+          scalar_type d12p3s_0 = PmB[1] * d12ss_0 + WmP[1] * d12ss_1;
+          scalar_type sp3s_1 = PmB[1] * F_mT[1] + WmP[1] * F_mT[2];
+          scalar_type sp3s_2 = PmB[1] * F_mT[2] + WmP[1] * F_mT[3];
+          d12p3s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
+          d12p3s_2 += inv_two_zeta * (p2ss_2 - rho_zeta * p2ss_3);
+          p1p3s_1 += inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
+          p1p3s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
+          d12p3s_0 += inv_two_zeta * (p2ss_0 - rho_zeta * p2ss_1);
+          d12p3s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
+          d12p3s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
+          p2p3s_1 += inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
+          p2p3s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
+          d12p3s_0 += inv_two_zeta * (p1ss_0 - rho_zeta * p1ss_1);
+          //START INDEX i4=0, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[0] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[0] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[0] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[0] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[0] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[0] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[0] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[0] * d12ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+0] * prefactor_dens * dens[7];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              C_force_term -= d12p3s_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              B_force_term -= d12sp4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=1, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[1] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[1] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[1] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[1] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[1] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[1] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[1] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[1] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p2p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p2p3s_2;
+            p1p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p1p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p2ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p2ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p1p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p1p3s_2;
+            p2p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p2p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p1ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p1ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * d12ss_1;
+            d12p3p4_1 += inv_two_zeta_eta * d12ss_2;
+            p2p3p4_0 += inv_two_zeta_eta * p2ss_1;
+            p2p3p4_1 += inv_two_zeta_eta * p2ss_2;
+            p1p3p4_0 += inv_two_zeta_eta * p1ss_1;
+            p1p3p4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+1] * prefactor_dens * dens[7];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              B_force_term -= d12sp4_0;
+              C_force_term -= d12p3s_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=2, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[2] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[2] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[2] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[2] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[2] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[2] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[2] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[2] * d12ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+2] * prefactor_dens * dens[7];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              B_force_term -= d12sp4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              C_force_term -= d12p3s_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+        }
+        //START INDEX i3=2, CENTER 2
+        {
+          scalar_type d12p3s_1 = PmB[2] * d12ss_1 + WmP[2] * d12ss_2;
+          scalar_type d12p3s_2 = PmB[2] * d12ss_2 + WmP[2] * d12ss_3;
+          scalar_type p2p3s_1 = PmB[2] * p2ss_1 + WmP[2] * p2ss_2;
+          scalar_type p2p3s_2 = PmB[2] * p2ss_2 + WmP[2] * p2ss_3;
+          scalar_type p1p3s_1 = PmB[2] * p1ss_1 + WmP[2] * p1ss_2;
+          scalar_type p1p3s_2 = PmB[2] * p1ss_2 + WmP[2] * p1ss_3;
+          scalar_type d12p3s_0 = PmB[2] * d12ss_0 + WmP[2] * d12ss_1;
+          scalar_type sp3s_1 = PmB[2] * F_mT[1] + WmP[2] * F_mT[2];
+          scalar_type sp3s_2 = PmB[2] * F_mT[2] + WmP[2] * F_mT[3];
+          //START INDEX i4=0, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[0] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[0] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[0] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[0] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[0] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[0] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[0] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[0] * d12ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+0] * prefactor_dens * dens[8];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              C_force_term -= d12p3s_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=1, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[1] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[1] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[1] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[1] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[1] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[1] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[1] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[1] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p2p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p2p3s_2;
+            p1p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p1p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p2ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p2ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p1p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p1p3s_2;
+            p2p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p2p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p1ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+1] * prefactor_dens * dens[8];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              C_force_term -= d12p3s_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=2, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[2] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[2] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[2] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[2] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[2] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[2] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[2] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[2] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * d12ss_1;
+            d12p3p4_1 += inv_two_zeta_eta * d12ss_2;
+            p2p3p4_0 += inv_two_zeta_eta * p2ss_1;
+            p2p3p4_1 += inv_two_zeta_eta * p2ss_2;
+            p1p3p4_0 += inv_two_zeta_eta * p1ss_1;
+            p1p3p4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+2] * prefactor_dens * dens[8];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              C_force_term -= d12p3s_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+        }
+      }
+    }
+    //START INDEX i1=2, CENTER 1
+    {
+      scalar_type p1ss_1 = PmA[2] * F_mT[1] + WmP[2] * F_mT[2];
+      scalar_type p1ss_2 = PmA[2] * F_mT[2] + WmP[2] * F_mT[3];
+      scalar_type p1ss_3 = PmA[2] * F_mT[3] + WmP[2] * F_mT[4];
+      scalar_type p1ss_4 = PmA[2] * F_mT[4] + WmP[2] * F_mT[5];
+      scalar_type p1ss_0 = PmA[2] * F_mT[0] + WmP[2] * F_mT[1];
+      //START INDEX i2=0, CENTER 1
+      {
+        scalar_type d12ss_1 = PmA[0] * p1ss_1 + WmP[0] * p1ss_2;
+        scalar_type d12ss_2 = PmA[0] * p1ss_2 + WmP[0] * p1ss_3;
+        scalar_type d12ss_3 = PmA[0] * p1ss_3 + WmP[0] * p1ss_4;
+        scalar_type p2ss_1 = PmA[0] * F_mT[1] + WmP[0] * F_mT[2];
+        scalar_type p2ss_2 = PmA[0] * F_mT[2] + WmP[0] * F_mT[3];
+        scalar_type p2ss_3 = PmA[0] * F_mT[3] + WmP[0] * F_mT[4];
+        scalar_type d12ss_0 = PmA[0] * p1ss_0 + WmP[0] * p1ss_1;
+        scalar_type p2ss_0 = PmA[0] * F_mT[0] + WmP[0] * F_mT[1];
+        scalar_type norm2 = 1.0f;
+        //START INDEX i3=0, CENTER 2
+        {
+          scalar_type d12p3s_1 = PmB[0] * d12ss_1 + WmP[0] * d12ss_2;
+          scalar_type p1p3s_1 = PmB[0] * p1ss_1 + WmP[0] * p1ss_2;
+          scalar_type d12p3s_2 = PmB[0] * d12ss_2 + WmP[0] * d12ss_3;
+          scalar_type p1p3s_2 = PmB[0] * p1ss_2 + WmP[0] * p1ss_3;
+          scalar_type p2p3s_1 = PmB[0] * p2ss_1 + WmP[0] * p2ss_2;
+          scalar_type sp3s_1 = PmB[0] * F_mT[1] + WmP[0] * F_mT[2];
+          scalar_type p2p3s_2 = PmB[0] * p2ss_2 + WmP[0] * p2ss_3;
+          scalar_type sp3s_2 = PmB[0] * F_mT[2] + WmP[0] * F_mT[3];
+          scalar_type d12p3s_0 = PmB[0] * d12ss_0 + WmP[0] * d12ss_1;
+          d12p3s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
+          d12p3s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
+          p2p3s_1 += inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
+          p2p3s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
+          d12p3s_0 += inv_two_zeta * (p1ss_0 - rho_zeta * p1ss_1);
+          //START INDEX i4=0, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[0] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[0] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[0] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[0] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[0] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[0] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[0] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[0] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p1p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p1p3s_2;
+            p2p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p2p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p1ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p1ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * d12ss_1;
+            d12p3p4_1 += inv_two_zeta_eta * d12ss_2;
+            p2p3p4_0 += inv_two_zeta_eta * p2ss_1;
+            p2p3p4_1 += inv_two_zeta_eta * p2ss_2;
+            p1p3p4_0 += inv_two_zeta_eta * p1ss_1;
+            p1p3p4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+0] * prefactor_dens * dens[9];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              B_force_term -= d12sp4_0;
+              C_force_term -= d12p3s_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=1, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[1] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[1] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[1] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[1] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[1] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[1] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[1] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[1] * d12ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+1] * prefactor_dens * dens[9];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              B_force_term -= d12sp4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              C_force_term -= d12p3s_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=2, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[2] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[2] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[2] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[2] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[2] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[2] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[2] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[2] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p2p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p2p3s_2;
+            p1p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p1p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p2ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p2ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+2] * prefactor_dens * dens[9];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              B_force_term -= d12sp4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              C_force_term -= d12p3s_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+        }
+        //START INDEX i3=1, CENTER 2
+        {
+          scalar_type d12p3s_1 = PmB[1] * d12ss_1 + WmP[1] * d12ss_2;
+          scalar_type p1p3s_1 = PmB[1] * p1ss_1 + WmP[1] * p1ss_2;
+          scalar_type d12p3s_2 = PmB[1] * d12ss_2 + WmP[1] * d12ss_3;
+          scalar_type p1p3s_2 = PmB[1] * p1ss_2 + WmP[1] * p1ss_3;
+          scalar_type p2p3s_1 = PmB[1] * p2ss_1 + WmP[1] * p2ss_2;
+          scalar_type sp3s_1 = PmB[1] * F_mT[1] + WmP[1] * F_mT[2];
+          scalar_type p2p3s_2 = PmB[1] * p2ss_2 + WmP[1] * p2ss_3;
+          scalar_type sp3s_2 = PmB[1] * F_mT[2] + WmP[1] * F_mT[3];
+          scalar_type d12p3s_0 = PmB[1] * d12ss_0 + WmP[1] * d12ss_1;
+          //START INDEX i4=0, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[0] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[0] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[0] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[0] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[0] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[0] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[0] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[0] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p1p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p1p3s_2;
+            p2p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p2p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p1ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+0] * prefactor_dens * dens[10];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              C_force_term -= d12p3s_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=1, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[1] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[1] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[1] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[1] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[1] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[1] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[1] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[1] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * d12ss_1;
+            d12p3p4_1 += inv_two_zeta_eta * d12ss_2;
+            p2p3p4_0 += inv_two_zeta_eta * p2ss_1;
+            p2p3p4_1 += inv_two_zeta_eta * p2ss_2;
+            p1p3p4_0 += inv_two_zeta_eta * p1ss_1;
+            p1p3p4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+1] * prefactor_dens * dens[10];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              C_force_term -= d12p3s_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=2, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[2] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[2] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[2] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[2] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[2] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[2] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[2] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[2] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p2p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p2p3s_2;
+            p1p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p1p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p2ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p2ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+2] * prefactor_dens * dens[10];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              C_force_term -= d12p3s_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+        }
+        //START INDEX i3=2, CENTER 2
+        {
+          scalar_type d12p3s_1 = PmB[2] * d12ss_1 + WmP[2] * d12ss_2;
+          scalar_type p1p3s_1 = PmB[2] * p1ss_1 + WmP[2] * p1ss_2;
+          scalar_type d12p3s_2 = PmB[2] * d12ss_2 + WmP[2] * d12ss_3;
+          scalar_type p1p3s_2 = PmB[2] * p1ss_2 + WmP[2] * p1ss_3;
+          scalar_type p2p3s_1 = PmB[2] * p2ss_1 + WmP[2] * p2ss_2;
+          scalar_type sp3s_1 = PmB[2] * F_mT[1] + WmP[2] * F_mT[2];
+          scalar_type p2p3s_2 = PmB[2] * p2ss_2 + WmP[2] * p2ss_3;
+          scalar_type sp3s_2 = PmB[2] * F_mT[2] + WmP[2] * F_mT[3];
+          scalar_type d12p3s_0 = PmB[2] * d12ss_0 + WmP[2] * d12ss_1;
+          d12p3s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
+          p1p3s_1 += inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
+          d12p3s_2 += inv_two_zeta * (p2ss_2 - rho_zeta * p2ss_3);
+          p1p3s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
+          d12p3s_0 += inv_two_zeta * (p2ss_0 - rho_zeta * p2ss_1);
+          //START INDEX i4=0, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[0] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[0] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[0] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[0] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[0] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[0] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[0] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[0] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p1p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p1p3s_2;
+            p2p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p2p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p1ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+0] * prefactor_dens * dens[11];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              C_force_term -= d12p3s_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              B_force_term -= d12sp4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=1, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[1] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[1] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[1] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[1] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[1] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[1] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[1] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[1] * d12ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+1] * prefactor_dens * dens[11];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              C_force_term -= d12p3s_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              B_force_term -= d12sp4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=2, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[2] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[2] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[2] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[2] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[2] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[2] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[2] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[2] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p2p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p2p3s_2;
+            p1p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p1p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p2ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p2ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * d12ss_1;
+            d12p3p4_1 += inv_two_zeta_eta * d12ss_2;
+            p2p3p4_0 += inv_two_zeta_eta * p2ss_1;
+            p2p3p4_1 += inv_two_zeta_eta * p2ss_2;
+            p1p3p4_0 += inv_two_zeta_eta * p1ss_1;
+            p1p3p4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+2] * prefactor_dens * dens[11];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              B_force_term -= d12sp4_0;
+              C_force_term -= d12p3s_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+        }
+      }
+      //START INDEX i2=1, CENTER 1
+      {
+        scalar_type d12ss_1 = PmA[1] * p1ss_1 + WmP[1] * p1ss_2;
+        scalar_type d12ss_2 = PmA[1] * p1ss_2 + WmP[1] * p1ss_3;
+        scalar_type d12ss_3 = PmA[1] * p1ss_3 + WmP[1] * p1ss_4;
+        scalar_type p2ss_1 = PmA[1] * F_mT[1] + WmP[1] * F_mT[2];
+        scalar_type p2ss_2 = PmA[1] * F_mT[2] + WmP[1] * F_mT[3];
+        scalar_type p2ss_3 = PmA[1] * F_mT[3] + WmP[1] * F_mT[4];
+        scalar_type d12ss_0 = PmA[1] * p1ss_0 + WmP[1] * p1ss_1;
+        scalar_type p2ss_0 = PmA[1] * F_mT[0] + WmP[1] * F_mT[1];
+        scalar_type norm2 = 1.0f;
+        //START INDEX i3=0, CENTER 2
+        {
+          scalar_type d12p3s_1 = PmB[0] * d12ss_1 + WmP[0] * d12ss_2;
+          scalar_type d12p3s_2 = PmB[0] * d12ss_2 + WmP[0] * d12ss_3;
+          scalar_type p2p3s_1 = PmB[0] * p2ss_1 + WmP[0] * p2ss_2;
+          scalar_type p2p3s_2 = PmB[0] * p2ss_2 + WmP[0] * p2ss_3;
+          scalar_type p1p3s_1 = PmB[0] * p1ss_1 + WmP[0] * p1ss_2;
+          scalar_type p1p3s_2 = PmB[0] * p1ss_2 + WmP[0] * p1ss_3;
+          scalar_type d12p3s_0 = PmB[0] * d12ss_0 + WmP[0] * d12ss_1;
+          scalar_type sp3s_1 = PmB[0] * F_mT[1] + WmP[0] * F_mT[2];
+          scalar_type sp3s_2 = PmB[0] * F_mT[2] + WmP[0] * F_mT[3];
+          //START INDEX i4=0, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[0] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[0] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[0] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[0] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[0] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[0] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[0] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[0] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * d12ss_1;
+            d12p3p4_1 += inv_two_zeta_eta * d12ss_2;
+            p2p3p4_0 += inv_two_zeta_eta * p2ss_1;
+            p2p3p4_1 += inv_two_zeta_eta * p2ss_2;
+            p1p3p4_0 += inv_two_zeta_eta * p1ss_1;
+            p1p3p4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+0] * prefactor_dens * dens[12];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              C_force_term -= d12p3s_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=1, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[1] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[1] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[1] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[1] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[1] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[1] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[1] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[1] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p1p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p1p3s_2;
+            p2p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p2p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p1ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+1] * prefactor_dens * dens[12];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              C_force_term -= d12p3s_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=2, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[2] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[2] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[2] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[2] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[2] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[2] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[2] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[2] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p2p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p2p3s_2;
+            p1p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p1p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p2ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p2ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+2] * prefactor_dens * dens[12];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              C_force_term -= d12p3s_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+        }
+        //START INDEX i3=1, CENTER 2
+        {
+          scalar_type d12p3s_1 = PmB[1] * d12ss_1 + WmP[1] * d12ss_2;
+          scalar_type d12p3s_2 = PmB[1] * d12ss_2 + WmP[1] * d12ss_3;
+          scalar_type p2p3s_1 = PmB[1] * p2ss_1 + WmP[1] * p2ss_2;
+          scalar_type p2p3s_2 = PmB[1] * p2ss_2 + WmP[1] * p2ss_3;
+          scalar_type p1p3s_1 = PmB[1] * p1ss_1 + WmP[1] * p1ss_2;
+          scalar_type p1p3s_2 = PmB[1] * p1ss_2 + WmP[1] * p1ss_3;
+          scalar_type d12p3s_0 = PmB[1] * d12ss_0 + WmP[1] * d12ss_1;
+          scalar_type sp3s_1 = PmB[1] * F_mT[1] + WmP[1] * F_mT[2];
+          scalar_type sp3s_2 = PmB[1] * F_mT[2] + WmP[1] * F_mT[3];
+          d12p3s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
+          d12p3s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
+          p2p3s_1 += inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
+          p2p3s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
+          d12p3s_0 += inv_two_zeta * (p1ss_0 - rho_zeta * p1ss_1);
+          //START INDEX i4=0, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[0] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[0] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[0] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[0] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[0] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[0] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[0] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[0] * d12ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+0] * prefactor_dens * dens[13];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              C_force_term -= d12p3s_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              B_force_term -= d12sp4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=1, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[1] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[1] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[1] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[1] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[1] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[1] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[1] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[1] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p1p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p1p3s_2;
+            p2p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p2p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p1ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p1ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * d12ss_1;
+            d12p3p4_1 += inv_two_zeta_eta * d12ss_2;
+            p2p3p4_0 += inv_two_zeta_eta * p2ss_1;
+            p2p3p4_1 += inv_two_zeta_eta * p2ss_2;
+            p1p3p4_0 += inv_two_zeta_eta * p1ss_1;
+            p1p3p4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+1] * prefactor_dens * dens[13];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              B_force_term -= d12sp4_0;
+              C_force_term -= d12p3s_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=2, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[2] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[2] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[2] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[2] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[2] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[2] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[2] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[2] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p2p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p2p3s_2;
+            p1p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p1p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p2ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p2ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+2] * prefactor_dens * dens[13];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              B_force_term -= d12sp4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              C_force_term -= d12p3s_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+        }
+        //START INDEX i3=2, CENTER 2
+        {
+          scalar_type d12p3s_1 = PmB[2] * d12ss_1 + WmP[2] * d12ss_2;
+          scalar_type d12p3s_2 = PmB[2] * d12ss_2 + WmP[2] * d12ss_3;
+          scalar_type p2p3s_1 = PmB[2] * p2ss_1 + WmP[2] * p2ss_2;
+          scalar_type p2p3s_2 = PmB[2] * p2ss_2 + WmP[2] * p2ss_3;
+          scalar_type p1p3s_1 = PmB[2] * p1ss_1 + WmP[2] * p1ss_2;
+          scalar_type p1p3s_2 = PmB[2] * p1ss_2 + WmP[2] * p1ss_3;
+          scalar_type d12p3s_0 = PmB[2] * d12ss_0 + WmP[2] * d12ss_1;
+          scalar_type sp3s_1 = PmB[2] * F_mT[1] + WmP[2] * F_mT[2];
+          scalar_type sp3s_2 = PmB[2] * F_mT[2] + WmP[2] * F_mT[3];
+          d12p3s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
+          d12p3s_2 += inv_two_zeta * (p2ss_2 - rho_zeta * p2ss_3);
+          p1p3s_1 += inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
+          p1p3s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
+          d12p3s_0 += inv_two_zeta * (p2ss_0 - rho_zeta * p2ss_1);
+          //START INDEX i4=0, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[0] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[0] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[0] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[0] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[0] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[0] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[0] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[0] * d12ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+0] * prefactor_dens * dens[14];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              C_force_term -= d12p3s_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              B_force_term -= d12sp4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=1, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[1] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[1] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[1] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[1] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[1] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[1] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[1] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[1] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p1p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p1p3s_2;
+            p2p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p2p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p1ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+1] * prefactor_dens * dens[14];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              C_force_term -= d12p3s_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              B_force_term -= d12sp4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=2, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[2] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[2] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[2] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[2] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[2] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[2] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[2] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[2] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p2p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p2p3s_2;
+            p1p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p1p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p2ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p2ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * d12ss_1;
+            d12p3p4_1 += inv_two_zeta_eta * d12ss_2;
+            p2p3p4_0 += inv_two_zeta_eta * p2ss_1;
+            p2p3p4_1 += inv_two_zeta_eta * p2ss_2;
+            p1p3p4_0 += inv_two_zeta_eta * p1ss_1;
+            p1p3p4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+2] * prefactor_dens * dens[14];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p1p3p4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              B_force_term -= d12sp4_0;
+              C_force_term -= d12p3s_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+        }
+      }
+      //START INDEX i2=2, CENTER 1
+      {
+        scalar_type d12ss_1 = PmA[2] * p1ss_1 + WmP[2] * p1ss_2;
+        scalar_type d12ss_2 = PmA[2] * p1ss_2 + WmP[2] * p1ss_3;
+        scalar_type d12ss_3 = PmA[2] * p1ss_3 + WmP[2] * p1ss_4;
+        scalar_type p2ss_1 = PmA[2] * F_mT[1] + WmP[2] * F_mT[2];
+        scalar_type p2ss_2 = PmA[2] * F_mT[2] + WmP[2] * F_mT[3];
+        scalar_type p2ss_3 = PmA[2] * F_mT[3] + WmP[2] * F_mT[4];
+        scalar_type d12ss_0 = PmA[2] * p1ss_0 + WmP[2] * p1ss_1;
+        scalar_type p2ss_0 = PmA[2] * F_mT[0] + WmP[2] * F_mT[1];
+        scalar_type norm2 = 1.0f;
+        d12ss_1 += inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
+        d12ss_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
+        d12ss_3 += inv_two_zeta * (F_mT[3] - rho_zeta * F_mT[4]);
+        d12ss_0 += inv_two_zeta * (F_mT[0] - rho_zeta * F_mT[1]);
+        norm2 = G2G::gpu_normalization_factor;
+        //START INDEX i3=0, CENTER 2
+        {
+          scalar_type d12p3s_1 = PmB[0] * d12ss_1 + WmP[0] * d12ss_2;
+          scalar_type d12p3s_2 = PmB[0] * d12ss_2 + WmP[0] * d12ss_3;
+          scalar_type p2p3s_1 = PmB[0] * p2ss_1 + WmP[0] * p2ss_2;
+          scalar_type p2p3s_2 = PmB[0] * p2ss_2 + WmP[0] * p2ss_3;
+          scalar_type p1p3s_1 = PmB[0] * p1ss_1 + WmP[0] * p1ss_2;
+          scalar_type p1p3s_2 = PmB[0] * p1ss_2 + WmP[0] * p1ss_3;
+          scalar_type d12p3s_0 = PmB[0] * d12ss_0 + WmP[0] * d12ss_1;
+          scalar_type sp3s_1 = PmB[0] * F_mT[1] + WmP[0] * F_mT[2];
+          scalar_type sp3s_2 = PmB[0] * F_mT[2] + WmP[0] * F_mT[3];
+          //START INDEX i4=0, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[0] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[0] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[0] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[0] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[0] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[0] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[0] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[0] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * d12ss_1;
+            d12p3p4_1 += inv_two_zeta_eta * d12ss_2;
+            p2p3p4_0 += inv_two_zeta_eta * p2ss_1;
+            p2p3p4_1 += inv_two_zeta_eta * p2ss_2;
+            p1p3p4_0 += inv_two_zeta_eta * p1ss_1;
+            p1p3p4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+0] * prefactor_dens * dens[15];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              C_force_term -= d12p3s_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=1, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[1] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[1] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[1] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[1] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[1] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[1] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[1] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[1] * d12ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+1] * prefactor_dens * dens[15];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              C_force_term -= d12p3s_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=2, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[2] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[2] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[2] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[2] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[2] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[2] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[2] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[2] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p2p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p2p3s_2;
+            p1p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p1p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p2ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p2ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p1p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p1p3s_2;
+            p2p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p2p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p1ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+2] * prefactor_dens * dens[15];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              C_force_term -= d12p3s_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+        }
+        //START INDEX i3=1, CENTER 2
+        {
+          scalar_type d12p3s_1 = PmB[1] * d12ss_1 + WmP[1] * d12ss_2;
+          scalar_type d12p3s_2 = PmB[1] * d12ss_2 + WmP[1] * d12ss_3;
+          scalar_type p2p3s_1 = PmB[1] * p2ss_1 + WmP[1] * p2ss_2;
+          scalar_type p2p3s_2 = PmB[1] * p2ss_2 + WmP[1] * p2ss_3;
+          scalar_type p1p3s_1 = PmB[1] * p1ss_1 + WmP[1] * p1ss_2;
+          scalar_type p1p3s_2 = PmB[1] * p1ss_2 + WmP[1] * p1ss_3;
+          scalar_type d12p3s_0 = PmB[1] * d12ss_0 + WmP[1] * d12ss_1;
+          scalar_type sp3s_1 = PmB[1] * F_mT[1] + WmP[1] * F_mT[2];
+          scalar_type sp3s_2 = PmB[1] * F_mT[2] + WmP[1] * F_mT[3];
+          //START INDEX i4=0, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[0] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[0] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[0] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[0] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[0] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[0] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[0] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[0] * d12ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+0] * prefactor_dens * dens[16];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              C_force_term -= d12p3s_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=1, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[1] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[1] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[1] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[1] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[1] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[1] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[1] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[1] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * d12ss_1;
+            d12p3p4_1 += inv_two_zeta_eta * d12ss_2;
+            p2p3p4_0 += inv_two_zeta_eta * p2ss_1;
+            p2p3p4_1 += inv_two_zeta_eta * p2ss_2;
+            p1p3p4_0 += inv_two_zeta_eta * p1ss_1;
+            p1p3p4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+1] * prefactor_dens * dens[16];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              C_force_term -= d12p3s_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=2, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[2] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[2] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[2] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[2] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[2] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[2] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[2] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[2] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p2p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p2p3s_2;
+            p1p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p1p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p2ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p2ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p1p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p1p3s_2;
+            p2p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p2p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p1ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+2] * prefactor_dens * dens[16];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              B_force_term -= d12sp4_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              C_force_term -= d12p3s_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+        }
+        //START INDEX i3=2, CENTER 2
+        {
+          scalar_type d12p3s_1 = PmB[2] * d12ss_1 + WmP[2] * d12ss_2;
+          scalar_type d12p3s_2 = PmB[2] * d12ss_2 + WmP[2] * d12ss_3;
+          scalar_type p2p3s_1 = PmB[2] * p2ss_1 + WmP[2] * p2ss_2;
+          scalar_type p2p3s_2 = PmB[2] * p2ss_2 + WmP[2] * p2ss_3;
+          scalar_type p1p3s_1 = PmB[2] * p1ss_1 + WmP[2] * p1ss_2;
+          scalar_type p1p3s_2 = PmB[2] * p1ss_2 + WmP[2] * p1ss_3;
+          scalar_type d12p3s_0 = PmB[2] * d12ss_0 + WmP[2] * d12ss_1;
+          scalar_type sp3s_1 = PmB[2] * F_mT[1] + WmP[2] * F_mT[2];
+          scalar_type sp3s_2 = PmB[2] * F_mT[2] + WmP[2] * F_mT[3];
+          d12p3s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
+          d12p3s_2 += inv_two_zeta * (p2ss_2 - rho_zeta * p2ss_3);
+          p1p3s_1 += inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
+          p1p3s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
+          d12p3s_0 += inv_two_zeta * (p2ss_0 - rho_zeta * p2ss_1);
+          d12p3s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
+          d12p3s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
+          p2p3s_1 += inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
+          p2p3s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
+          d12p3s_0 += inv_two_zeta * (p1ss_0 - rho_zeta * p1ss_1);
+          //START INDEX i4=0, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[0] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[0] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[0] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[0] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[0] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[0] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[0] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[0] * d12ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+0] * prefactor_dens * dens[17];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              C_force_term -= d12p3s_0;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              B_force_term -= d12sp4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=1, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[1] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[1] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[1] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[1] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[1] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[1] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[1] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[1] * d12ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+1] * prefactor_dens * dens[17];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              C_force_term -= d12p3s_0;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              B_force_term -= d12sp4_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+          //START INDEX i4=2, CENTER 3
+          {
+            scalar_type d12p3p4_0 = WmQ[2] * d12p3s_1;
+            scalar_type d12p3p4_1 = WmQ[2] * d12p3s_2;
+            scalar_type p2p3p4_0 = WmQ[2] * p2p3s_1;
+            scalar_type p2p3p4_1 = WmQ[2] * p2p3s_2;
+            scalar_type p1p3p4_0 = WmQ[2] * p1p3s_1;
+            scalar_type p1p3p4_1 = WmQ[2] * p1p3s_2;
+            scalar_type d12sp4_0 = WmQ[2] * d12ss_1;
+            scalar_type d12sp4_1 = WmQ[2] * d12ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p2p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p2p3s_2;
+            p1p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p1p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p2ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p2ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * p1p3s_1;
+            d12p3p4_1 += inv_two_zeta_eta * p1p3s_2;
+            p2p3p4_0 += inv_two_zeta_eta * sp3s_1;
+            p2p3p4_1 += inv_two_zeta_eta * sp3s_2;
+            d12sp4_0 += inv_two_zeta_eta * p1ss_1;
+            d12sp4_1 += inv_two_zeta_eta * p1ss_2;
+            d12p3p4_0 += inv_two_zeta_eta * d12ss_1;
+            d12p3p4_1 += inv_two_zeta_eta * d12ss_2;
+            p2p3p4_0 += inv_two_zeta_eta * p2ss_1;
+            p2p3p4_1 += inv_two_zeta_eta * p2ss_2;
+            p1p3p4_0 += inv_two_zeta_eta * p1ss_1;
+            p1p3p4_1 += inv_two_zeta_eta * p1ss_2;
+            scalar_type preterm = norm2;
+            preterm *= fit_dens_sh[j+2] * prefactor_dens * dens[17];
+            //START INDEX igrad=0
+            {
+              scalar_type C_force_term = WmQ[0] * d12p3p4_1;
+              scalar_type A_force_term = WmP[0] * d12p3p4_1;
+              scalar_type B_force_term = PmB[0] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[0] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[0]      += preterm * A_force_term;
+              B_force[0]      += preterm * B_force_term;
+              C_force[0][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=1
+            {
+              scalar_type C_force_term = WmQ[1] * d12p3p4_1;
+              scalar_type A_force_term = WmP[1] * d12p3p4_1;
+              scalar_type B_force_term = PmB[1] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[1] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force[1]      += preterm * A_force_term;
+              B_force[1]      += preterm * B_force_term;
+              C_force[1][tid] += preterm * C_force_term;
+            }
+            //START INDEX igrad=2
+            {
+              scalar_type C_force_term = inv_two_zeta_eta * p2p3p4_1;
+              C_force_term += inv_two_zeta_eta * p1p3p4_1;
+              C_force_term += inv_two_zeta_eta * d12sp4_1;
+              C_force_term += inv_two_eta * (d12p3s_0 - rho_eta * d12p3s_1);
+              C_force_term += WmQ[2] * d12p3p4_1;
+              scalar_type A_force_term = inv_two_zeta * (p2p3p4_0 - rho_zeta * p2p3p4_1);
+              A_force_term += inv_two_zeta * (p1p3p4_0 - rho_zeta * p1p3p4_1);
+              A_force_term += inv_two_zeta * (d12sp4_0 - rho_zeta * d12sp4_1);
+              A_force_term += inv_two_zeta_eta * d12p3s_1;
+              A_force_term += WmP[2] * d12p3p4_1;
+              scalar_type B_force_term = PmB[2] * d12p3p4_0 + A_force_term;
+              A_force_term += PmA[2] * d12p3p4_0;
+              A_force_term *= 2.0f * ai;
+              B_force_term *= 2.0f * aj;
+              C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+              A_force_term -= p2p3p4_0;
+              A_force_term -= p1p3p4_0;
+              B_force_term -= d12sp4_0;
+              C_force_term -= d12p3s_0;
+              A_force[2]      += preterm * A_force_term;
+              B_force[2]      += preterm * B_force_term;
+              C_force[2][tid] += preterm * C_force_term;
+            }
+          }
+        }
+      }
+    }
+  }
+}

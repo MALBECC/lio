@@ -1,30 +1,53 @@
-//--------------------------------------------BEGIN TERM-TYPE DEPENDENT PART (SS-S)-------------------------------------------
-              {
-                scalar_type F_mT[2];
-                {
-                  scalar_type PmQ[3];
-                  PmQ[0] = P[0] - nuc_pos_dens_sh[j].x;
-                  PmQ[1] = P[1] - nuc_pos_dens_sh[j].y;
-                  PmQ[2] = P[2] - nuc_pos_dens_sh[j].z;
-                  scalar_type T = (PmQ[0] * PmQ[0] + PmQ[1] * PmQ[1] + PmQ[2] * PmQ[2]) * rho;
-                  lio_gamma<scalar_type,1>(F_mT,T);
-                }
-                {
-                  scalar_type A_force_term, B_force_term, C_force_term;
-                  #pragma unroll 3
-                  for (uint grad_l = 0; grad_l < 3; grad_l++) {
-                    C_force_term = WmQ[grad_l] * F_mT[1];
-                    A_force_term = WmP[grad_l] * F_mT[1];
-                    B_force_term = PmB[grad_l] * F_mT[0] + A_force_term;
-                    A_force_term = PmA[grad_l] * F_mT[0] + A_force_term;
-
-                    A_force[grad_l]      += prefactor_dens * 2.0f * ai * A_force_term;
-                    B_force[grad_l]      += prefactor_dens * 2.0f * aj * B_force_term;
-                    C_force[grad_l][tid] += prefactor_dens * C_force_term;
-                  }
-                }
-                C_force[0][tid] *= valid_thread * prefactor_mo * 2.0f * ac_val_dens_sh[j].x;
-                C_force[1][tid] *= valid_thread * prefactor_mo * 2.0f * ac_val_dens_sh[j].x;
-                C_force[2][tid] *= valid_thread * prefactor_mo * 2.0f * ac_val_dens_sh[j].x;
-              }
-//------------------------------------------END TERM-TYPE DEPENDENT PART (SS-S)----------------------------------------------
+{
+  scalar_type F_mT[2];
+  {
+    scalar_type PmQ[3];
+    PmQ[0] = P[0] - nuc_pos_dens_sh[j].x;
+    PmQ[1] = P[1] - nuc_pos_dens_sh[j].y;
+    PmQ[2] = P[2] - nuc_pos_dens_sh[j].z;
+    scalar_type T = (PmQ[0] * PmQ[0] + PmQ[1] * PmQ[1] + PmQ[2] * PmQ[2]) * rho;
+    lio_gamma<scalar_type,1>(F_mT,T);
+  }
+  {
+    scalar_type preterm = fit_dens_sh[j+0] * prefactor_dens * dens[0];
+    //START INDEX igrad=0
+    {
+      scalar_type C_force_term = WmQ[0] * F_mT[1];
+      scalar_type A_force_term = WmP[0] * F_mT[1];
+      scalar_type B_force_term = PmB[0] * F_mT[0] + A_force_term;
+      A_force_term += PmA[0] * F_mT[0];
+      A_force_term *= 2.0f * ai;
+      B_force_term *= 2.0f * aj;
+      C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+      A_force[0]      += preterm * A_force_term;
+      B_force[0]      += preterm * B_force_term;
+      C_force[0][tid] += preterm * C_force_term;
+    }
+    //START INDEX igrad=1
+    {
+      scalar_type C_force_term = WmQ[1] * F_mT[1];
+      scalar_type A_force_term = WmP[1] * F_mT[1];
+      scalar_type B_force_term = PmB[1] * F_mT[0] + A_force_term;
+      A_force_term += PmA[1] * F_mT[0];
+      A_force_term *= 2.0f * ai;
+      B_force_term *= 2.0f * aj;
+      C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+      A_force[1]      += preterm * A_force_term;
+      B_force[1]      += preterm * B_force_term;
+      C_force[1][tid] += preterm * C_force_term;
+    }
+    //START INDEX igrad=2
+    {
+      scalar_type C_force_term = WmQ[2] * F_mT[1];
+      scalar_type A_force_term = WmP[2] * F_mT[1];
+      scalar_type B_force_term = PmB[2] * F_mT[0] + A_force_term;
+      A_force_term += PmA[2] * F_mT[0];
+      A_force_term *= 2.0f * ai;
+      B_force_term *= 2.0f * aj;
+      C_force_term *= 2.0f * ac_val_dens_sh[j].x;
+      A_force[2]      += preterm * A_force_term;
+      B_force[2]      += preterm * B_force_term;
+      C_force[2][tid] += preterm * C_force_term;
+    }
+  }
+}

@@ -105,6 +105,8 @@ extern "C" void aint_new_step_( void )
 	os_integral.new_cutoff();
 	os_integral.load_input();
 	os_integral.alloc_output();
+
+        integral_vars.clatoms = 0;
 }
 //==============================================================================================================
 extern "C" void aint_qmmm_init_( const unsigned int& nclatom, double* r_all, double* pc )
@@ -167,24 +169,26 @@ extern "C" void aint_coulomb_fock_(double& Es)
   coulomb_integral.calc_fock(Es);
 }
 //===============================================================================================================
-extern "C" void aint_query_cpu_(int& cpu)
+extern "C" void aint_query_gpu_level_(int& gpu_level)
 {
 #if CPU_KERNELS
-    cpu = 1;
+    gpu_level = 0;
 #else
-    cpu = 0;
-#endif  
-}
-extern "C" void aint_query_coulomb_cpu_(int& coulomb_cpu)
-{
-#if GPU_COULOMB
-#if CPU_KERNELS
-    coulomb_cpu = 1;
+
+// 0 - No GPU acceleration
+// 1 - Only XC on GPU (no difference from 0 for us here)
+// 2 - 1 + QM/MM energy and gradient terms on GPU
+// 3 - 1-2 + Coulomb gradient terms on GPU
+// 4 - 1-3 + Nuclear attraction gradient terms on GPU
+// 5 - 1-4 + Coulomb auxiliary basis fitting and energy terms on GPU
+#ifdef AINT_GPU_LEVEL
+    if (AINT_GPU_LEVEL < 0)      { gpu_level = 0; }
+    else if (AINT_GPU_LEVEL > 5) { gpu_level = 5; }
+    else                         { gpu_level = AINT_GPU_LEVEL; }
 #else
-    coulomb_cpu = 0;
+    gpu_level = 2;
 #endif
-#else
-    coulomb_cpu = 1;
+
 #endif  
 }
 //===============================================================================================================

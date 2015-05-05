@@ -204,6 +204,15 @@ void CoulombIntegral<scalar_type>::calc_gradient( double* qm_forces )
 
     os_int.reload_density();
 
+#if AINT_GPU_LEVEL < 5
+    G2G::HostMatrix<scalar_type> fit_dens_h(input_size);
+    for (uint i = 0; i < input_size; i++) fit_dens_h(i) = 0.0;
+    for (uint i = 0; i < integral_vars.m_dens; i++) {
+      fit_dens_h(input_ind_cpu[i]) = integral_vars.af_input_ndens1(i);
+    }
+    fit_dens_dev = fit_dens_h;
+#endif
+
     uint partial_out_size = 0, max_partial_size = 0;
     for (uint i = 0; i < NUM_TERM_TYPES; i++) {
       uint this_count = divUp(os_int.term_type_counts[i],QMMM_BLOCK_SIZE);

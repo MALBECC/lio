@@ -1241,8 +1241,11 @@ c      write(*,*) 'estoooo',ngpru, ngDyn, ng0, natom
      >                        NCO,OPEN,Nunp,nopt,Iexch,
      >                        e_, e_2, e3, wang, wang2, wang3)
 
+      call aint_query_gpu_level(igpu)
+      if (igpu.gt.1) then
       call aint_parameter_init(Md, ncontd, nshelld, cd, ad, Nucd,
      >                         af, RMM, M9, M11, STR, FAC, rmax)
+      endif
 
 c      write(*,*) '======>>>> SALIENDO DE DRIVE <<<<=========='
 

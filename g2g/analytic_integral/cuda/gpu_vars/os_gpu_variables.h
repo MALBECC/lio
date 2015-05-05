@@ -14,5 +14,6 @@ extern texture<float, cudaTextureType2D, cudaReadModeElementType> str_tex;
 #endif
 
 extern __device__ __constant__ uint TERM_TYPE_GAUSSIANS[6]; // How many individual force terms each type (s-s,etc) is calculating
+extern __device__ __constant__ uint gpu_atom_types[MAX_ATOMS];
 
 #endif

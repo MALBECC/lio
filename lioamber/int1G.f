@@ -110,6 +110,14 @@ c
  54    ff(i,3)=ff(i,3)-tt*(r(i,3)-r(j,3))
 c
  52   continue
+
+      call aint_query_gpu_level(igpu)
+      ! doing nuclear attraction part on GPU - KE part still is
+      ! done here
+      if (igpu.gt.3) then
+        natomold = natom
+        natom = 0
+      endif
 c
 c first loop (s|s) case -------------------------------------------
 c
@@ -1821,6 +1829,8 @@ c
 c end nuclear attraction part --------
 c
  700  continue
+
+      if (igpu.gt.3) natom = natomold
 c
 c test of penalty function ------------------------------------
 c     f1=d(1,2)-2.89D0

@@ -32,7 +32,6 @@ c
       implicit real*8 (a-h,o-z)
 c
       logical calc_energy
-      integer cpu
       dimension Q(3),W(3),af2(ngd),ftot(3)
       dimension Jx(ng),f(natom,3)
 c scratch space
@@ -135,9 +134,9 @@ c        write(*,*) 'exchnum int3G'
          endif
       call g2g_timer_stop('ExcG')
 
-      call aint_query_coulomb_cpu(cpu)
+      call aint_query_gpu_level(igpu)
       
-      if (cpu.eq.0) then
+      if (igpu.gt.2) then
         call g2g_timer_start('aint_coulomb_forces')
         call aint_coulomb_forces(f)
         call g2g_timer_stop('aint_coulomb_forces')

@@ -11,7 +11,7 @@
 // TODO: currently, one thread maps to one primitive-primitive overlap force term; is there a better mapping? (thread to function, thread to sub-shell, etc)
 // TODO: should the loop over MM atoms be broken up to be done by multiple blocks rather than a block looping over every MM atom?
 //
-template<class scalar_type, uint term_type>
+template<class scalar_type, uint term_type, bool do_cl>
 __global__ void gpu_qmmm_forces( uint num_terms, G2G::vec_type<scalar_type,2>* ac_values, uint* func2nuc, scalar_type* dens_values, uint* func_code, uint* local_dens,
                                  G2G::vec_type<scalar_type,3>* mm_forces, G2G::vec_type<scalar_type,3>* qm_forces, uint global_stride, G2G::vec_type<scalar_type,3>* clatom_pos, scalar_type *clatom_chg )
 {
@@ -176,6 +176,119 @@ __global__ void gpu_qmmm_forces( uint num_terms, G2G::vec_type<scalar_type,2>* a
       prefactor_qm = prefactor_mm * inv_two_zeta;
     }
 
+#if AINT_GPU_LEVEL > 3
+    //
+    // Outer loop: read in block of MM atom information into shared memory
+    //
+    for (int i = 0; i < G2G::gpu_atoms; i += QMMM_BLOCK_SIZE)
+    {
+      if (i + tid < G2G::gpu_atoms) {
+        clatom_position_sh[tid].x = G2G::gpu_atom_positions[i+tid].x;//clatom_pos[i+tid];
+        clatom_position_sh[tid].y = G2G::gpu_atom_positions[i+tid].y;//clatom_pos[i+tid];
+        clatom_position_sh[tid].z = G2G::gpu_atom_positions[i+tid].z;//clatom_pos[i+tid];
+        clatom_charge_sh[tid] = (scalar_type)(gpu_atom_types[i+tid]+1);//clatom_chg[i+tid];
+      }
+      __syncthreads();
+      //
+      // Inner loop: process block of MM atoms; each thread calculates a single primitive/primitive overlap force term
+      //
+      for (int j = 0; j < QMMM_BLOCK_SIZE && i+j < G2G::gpu_atoms; j++)
+      {
+        {
+          scalar_type PmC[3];
+          PmC[0] = P[0] - clatom_position_sh[j].x;
+          PmC[1] = P[1] - clatom_position_sh[j].y;
+          PmC[2] = P[2] - clatom_position_sh[j].z;
+          //
+          // Do the core part of the forces calculation - the evaluation of the Obara-Saika recursion equations
+          // This is where the different term types differ the most, so these are moved into separate files in the qmmm_terms directory
+          // Current version: p-s through d-d are manually unrolled, and d-d is split up over six threads per primitive pair
+          //
+          // BEGIN TERM-TYPE DEPENDENT PART
+          C_force[0][tid] = 0.0f;
+          C_force[1][tid] = 0.0f;
+          C_force[2][tid] = 0.0f;
+          switch (term_type)
+          {
+            case 0:
+            {
+              #include "qmmm_terms/forces/ss.h"
+              break;
+            }
+            case 1:
+            {
+              #include "qmmm_terms/forces/ps.h"
+              break;
+            }
+            case 2:
+            {
+              #include "qmmm_terms/forces/pp.h"
+              break;
+            }
+            case 3:
+            {
+              #include "qmmm_terms/forces/ds.h"
+              break;
+            }
+            case 4:
+            {
+              #include "qmmm_terms/forces/dp.h"
+              break;
+            }
+            case 5:
+            {
+              #include "qmmm_terms/forces/dd.h"
+              break;
+            }
+          }
+          C_force[0][tid] *= valid_thread * prefactor_mm;
+          C_force[1][tid] *= valid_thread * prefactor_mm;
+          C_force[2][tid] *= valid_thread * prefactor_mm;
+          // END TERM-TYPE DEPENDENT PART
+        }
+
+        __syncthreads();
+
+        //
+        // BEGIN reduction of MM atom force terms
+        //
+        // TODO: should we do the per-block reduction here in this loop? or should each thread save its value to global memory for later accumulation?
+        //
+        // IMPORTANT: ASSUMING BLOCK SIZE OF 128
+        //
+        // First half of block does x,y
+        if (tid < QMMM_FORCES_HALF_BLOCK)
+        {
+          C_force[0][tid] += C_force[0][tid+QMMM_FORCES_HALF_BLOCK];
+          C_force[1][tid] += C_force[1][tid+QMMM_FORCES_HALF_BLOCK];
+        }
+        // Second half does z (probably doesn't make much of a difference)
+        else
+        {
+          C_force[2][tid-QMMM_FORCES_HALF_BLOCK] += C_force[2][tid];
+        }
+        __syncthreads();
+        // first warp does x
+        if (tid < WARP_SIZE)       { warpReduce<scalar_type>(C_force[0], tid); }
+        // second warp does y
+        else if (tid < WARP_SIZE2) { warpReduce<scalar_type>(C_force[1], tid-WARP_SIZE); }
+        // third warp does z
+        else if (tid < WARP_SIZE3) { warpReduce<scalar_type>(C_force[2], tid-WARP_SIZE2); }
+
+        // TODO: tried turning this into one global read to get the force vector object, but didn't seem to improve performance, maybe there's a better way?
+        if (tid == 0)               { qm_forces[global_stride*(i+j)+blockIdx.x].x = C_force[0][0]; }
+        else if (tid == WARP_SIZE)  { qm_forces[global_stride*(i+j)+blockIdx.x].y = C_force[1][0]; }
+        else if (tid == WARP_SIZE2) { qm_forces[global_stride*(i+j)+blockIdx.x].z = C_force[2][0]; }
+        //
+        // END reduction
+        //
+
+        __syncthreads();
+      }
+    }
+#endif
+
+    if (do_cl) {
     //
     // Outer loop: read in block of MM atom information into shared memory
     //
@@ -193,12 +306,9 @@ __global__ void gpu_qmmm_forces( uint num_terms, G2G::vec_type<scalar_type,2>* a
       {
         {
           scalar_type PmC[3];
-          {
-            G2G::vec_type<scalar_type, 3> clatom_pos = clatom_position_sh[j];
-            PmC[0] = P[0] - clatom_pos.x;
-            PmC[1] = P[1] - clatom_pos.y;
-            PmC[2] = P[2] - clatom_pos.z;
-          }
+          PmC[0] = P[0] - clatom_position_sh[j].x;
+          PmC[1] = P[1] - clatom_position_sh[j].y;
+          PmC[2] = P[2] - clatom_position_sh[j].z;
           //
           // Do the core part of the forces calculation - the evaluation of the Obara-Saika recursion equations
           // This is where the different term types differ the most, so these are moved into separate files in the qmmm_terms directory
@@ -286,6 +396,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, G2G::vec_type<scalar_type,2>* a
         __syncthreads();
       }
     }
+    }
   }
 
   //
@@ -342,9 +453,9 @@ __global__ void gpu_qmmm_forces( uint num_terms, G2G::vec_type<scalar_type,2>* a
         // third warp does z
         else if (tid < WARP_SIZE3) { warpReduce<scalar_type>(QM_force[2], tid-WARP_SIZE2); }
 
-        if (tid == 0)               { qm_forces[global_stride*i+blockIdx.x].x = QM_force[0][0]; }
-        else if (tid == WARP_SIZE)  { qm_forces[global_stride*i+blockIdx.x].y = QM_force[1][0]; }
-        else if (tid == WARP_SIZE2) { qm_forces[global_stride*i+blockIdx.x].z = QM_force[2][0]; }
+        if (tid == 0)               { qm_forces[global_stride*i+blockIdx.x].x += QM_force[0][0]; }
+        else if (tid == WARP_SIZE)  { qm_forces[global_stride*i+blockIdx.x].y += QM_force[1][0]; }
+        else if (tid == WARP_SIZE2) { qm_forces[global_stride*i+blockIdx.x].z += QM_force[2][0]; }
         __syncthreads();
       }
       // At this point, the global QM array is uninitialized; since we'll accumulate all entries, it needs to be zeroed

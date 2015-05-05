@@ -27,8 +27,9 @@ else
   LIBRARIES    := $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
 endif
 
-ifeq ($(coulomb_gpu),1)
-  CXXFLAGS     += -DGPU_COULOMB=1
+ifneq ($(aint_gpu_level),undefined)
+  CXXFLAGS     += -DAINT_GPU_LEVEL=$(aint_gpu_level)
+  NVCCFLAGS    += -DAINT_GPU_LEVEL=$(aint_gpu_level)
 endif
 ifeq ($(aint_mp),1)
   CXXFLAGS     += -DAINT_MP=1

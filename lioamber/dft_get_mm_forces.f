@@ -6,7 +6,6 @@
        REAL*8 , intent(inout) :: dxyzqm(3,natom)
        REAL*8 , intent(inout) :: dxyzcl(3,nsol)
        real*8, dimension (:,:), ALLOCATABLE :: ff,ffcl!,g2gff,g2gffcl
-       integer cpu
        !real*8 diff,rms,rmscl,mx,mxcl,s
 c       real*8, dimension (:,:), ALLOCATABLE :: ffs,ffcls
 !
@@ -19,8 +18,8 @@ c       real*8 ftot(3)
        if (nsol.le.0.or.cubegen_only) return
        factor=1.D0
 
-       call aint_query_cpu(cpu)
-       if (cpu.eq.1) then
+       call aint_query_gpu_level(igpu)
+       if (igpu.lt.2) then
          ! The old version of intsolG expected the MM force array to be
          ! padded in front with # QM atoms spots for some reason
          allocate(ff(natom,3), ffcl(ntatom,3))
@@ -44,6 +43,7 @@ c       real*8 ftot(3)
          ff=0
 
          call g2g_timer_start('aint_qmmm_forces')
+         if (igpu.gt.3) call int1G(ff)
          call aint_qmmm_forces(ff,ffcl)
          call g2g_timer_stop('aint_qmmm_forces')
 

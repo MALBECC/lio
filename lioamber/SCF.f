@@ -23,7 +23,7 @@ c
       real*8, dimension (:,:), allocatable :: fock,fockm,rho,!,FP_PF,
      >   FP_PFm,EMAT,Y,Ytrans,Xtrans,rho1,EMAT2
 c
-       integer ndiist,cpu
+       integer ndiist
 c       dimension d(natom,natom)
        logical  hagodiis,alloqueo, ematalloc
 c       REAL*8 , intent(in)  :: qmcoords(3,natom)
@@ -185,8 +185,8 @@ c -Calculate point weights
 c
       call g2g_reload_atom_positions(igrid2)
 
-      call aint_query_cpu(cpu)
-      if (cpu.eq.0) call aint_new_step()
+      call aint_query_gpu_level(igpu)
+      if (igpu.gt.1) call aint_new_step()
 
       if (predcoef.and.npas.gt.3) then
         if (.not.OPEN) then
@@ -203,7 +203,7 @@ c in intsol)
 c
       call int1(En)
       if(nsol.gt.0) then
-        if (cpu.eq.1) then
+        if (igpu.le.1) then
           call g2g_timer_start('intsol')
           call intsol(E1s,Ens,.true.)
           call g2g_timer_stop('intsol')
@@ -478,11 +478,11 @@ c Precalculate three-index (two in MO basis, one in density basis) matrix
 c used in density fitting / Coulomb F element calculation here
 c (t_i in Dunlap)
 c
-      call aint_query_coulomb_cpu(icpu)
-      if (icpu.eq.0) then
-        MEMO = .false. 
+      call aint_query_gpu_level(igpu)
+      if (igpu.gt.2) then
         call aint_coulomb_init()
       endif
+      if (igpu.eq.5) MEMO = .false.
       !MEMO=.true.
       if (MEMO) then
          call g2g_timer_start('int3mem')

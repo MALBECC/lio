@@ -5,22 +5,30 @@
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       use garcha_mod,only:natom,cubegen_only
+       use garcha_mod,only:natom,nsol,cubegen_only
        implicit none
        real*8,intent(out) :: dxyzqm(3,natom)
        real*8,allocatable :: ff1G(:,:),ffSG(:,:),ff3G(:,:)
        real*8             :: factor
-       integer            :: fileunit,kk,ii
+       integer            :: fileunit,kk,ii,igpu
        logical            :: print_forces
 
 !--------------------------------------------------------------------!
        if(cubegen_only) return
        allocate(ff1G(natom,3),ffSG(natom,3),ff3G(natom,3))
 
-       call g2g_timer_start('int1G')
        ff1G=0.0d0
-       call int1G(ff1G)
-       call g2g_timer_stop('int1G')
+       call aint_query_gpu_level(igpu)
+       if (igpu.lt.4) then
+         call g2g_timer_start('int1G')
+         call int1G(ff1G)
+         call g2g_timer_stop('int1G')
+       elseif (nsol.le.0) then
+         call g2g_timer_start('int1G')
+         call int1G(ff1G)
+         call aint_qmmm_forces(ff1G,0)
+         call g2g_timer_stop('int1G')
+       endif
 
        call g2g_timer_start('intSG')
        ffSG=0.0d0

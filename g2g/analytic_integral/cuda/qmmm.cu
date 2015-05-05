@@ -198,13 +198,24 @@ void QMMMIntegral<scalar_type>::calc_gradient(double* qm_forces, double* mm_forc
       dim3 threads = os_int.term_type_counts[i];
       dim3 blockSize(QMMM_BLOCK_SIZE);
       dim3 gridSize = divUp(threads, blockSize);
-      switch (i) {
-        case 0: gpu_qmmm_forces<scalar_type,0><<<gridSize,blockSize,0,stream[i]>>>( qmmm_forces_parameters ); break;
-        case 1: gpu_qmmm_forces<scalar_type,1><<<gridSize,blockSize,0,stream[i]>>>( qmmm_forces_parameters ); break;
-        case 2: gpu_qmmm_forces<scalar_type,2><<<gridSize,blockSize,0,stream[i]>>>( qmmm_forces_parameters ); break;
-        case 3: gpu_qmmm_forces<scalar_type,3><<<gridSize,blockSize,0,stream[i]>>>( qmmm_forces_parameters ); break;
-        case 4: gpu_qmmm_forces<scalar_type,4><<<gridSize,blockSize,0,stream[i]>>>( qmmm_forces_parameters ); break;
-        case 5: gpu_qmmm_forces<scalar_type,5><<<gridSize,blockSize,0,stream[i]>>>( qmmm_forces_parameters ); break;
+      if (integral_vars.clatoms > 0) {
+        switch (i) {
+          case 0: gpu_qmmm_forces<scalar_type,0,true><<<gridSize,blockSize,0,stream[i]>>>( qmmm_forces_parameters ); break;
+          case 1: gpu_qmmm_forces<scalar_type,1,true><<<gridSize,blockSize,0,stream[i]>>>( qmmm_forces_parameters ); break;
+          case 2: gpu_qmmm_forces<scalar_type,2,true><<<gridSize,blockSize,0,stream[i]>>>( qmmm_forces_parameters ); break;
+          case 3: gpu_qmmm_forces<scalar_type,3,true><<<gridSize,blockSize,0,stream[i]>>>( qmmm_forces_parameters ); break;
+          case 4: gpu_qmmm_forces<scalar_type,4,true><<<gridSize,blockSize,0,stream[i]>>>( qmmm_forces_parameters ); break;
+          case 5: gpu_qmmm_forces<scalar_type,5,true><<<gridSize,blockSize,0,stream[i]>>>( qmmm_forces_parameters ); break;
+        }
+      } else {
+        switch (i) {
+          case 0: gpu_qmmm_forces<scalar_type,0,false><<<gridSize,blockSize,0,stream[i]>>>( qmmm_forces_parameters ); break;
+          case 1: gpu_qmmm_forces<scalar_type,1,false><<<gridSize,blockSize,0,stream[i]>>>( qmmm_forces_parameters ); break;
+          case 2: gpu_qmmm_forces<scalar_type,2,false><<<gridSize,blockSize,0,stream[i]>>>( qmmm_forces_parameters ); break;
+          case 3: gpu_qmmm_forces<scalar_type,3,false><<<gridSize,blockSize,0,stream[i]>>>( qmmm_forces_parameters ); break;
+          case 4: gpu_qmmm_forces<scalar_type,4,false><<<gridSize,blockSize,0,stream[i]>>>( qmmm_forces_parameters ); break;
+          case 5: gpu_qmmm_forces<scalar_type,5,false><<<gridSize,blockSize,0,stream[i]>>>( qmmm_forces_parameters ); break;
+        }
       }
     }
     cudaDeviceSynchronize();
@@ -215,7 +226,7 @@ void QMMMIntegral<scalar_type>::calc_gradient(double* qm_forces, double* mm_forc
     cudaUnbindTexture(str_tex);
 
     os_int.get_gradient_output(qm_forces,partial_out_size);
-    get_gradient_output(mm_forces,partial_out_size);
+    if (integral_vars.clatoms > 0) get_gradient_output(mm_forces,partial_out_size);
 
     cudaAssertNoError("QMMMIntegral::calc_gradient");
 }

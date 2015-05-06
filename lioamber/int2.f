@@ -516,10 +516,13 @@ c      call dgelss(Md,Md,1,XX,Md,aux,Md,RMM(M9),rcond,irank,dgelss_temp,
 c     >            Md5,info)
 c      deallocate(dgelss_temp)
 
-c It seems like specifying 'N' for both U and V^T would be faster for this
-c (rather, the second) call; however, I get a floating point exception when I do that
+#ifdef magma
+      call magmaf_dgesdd('N',Md,Md,XX,Md,RMM(M9),0,1,0,1,
+     >            RMM(M10),-1,XXX,info)
+#else
       call dgesdd('N',Md,Md,XX,Md,RMM(M9),0,1,0,1,
      >            RMM(M10),-1,XXX,info)
+#endif
       Md5=RMM(M10)
       allocate(dgelss_temp(Md5))
 #ifdef magma

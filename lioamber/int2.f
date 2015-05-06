@@ -26,7 +26,7 @@ c-----------------------------------------------------------------
 c
       implicit real*8 (a-h,o-z)
        real*8, dimension(:), allocatable :: dgelss_temp
-       real*8 XXX(Md,Md)
+       integer XXX(8*Md)
 c
 c aux . things
       dimension Q(3),aux(ngd),Det(2)
@@ -518,16 +518,16 @@ c      deallocate(dgelss_temp)
 
 c It seems like specifying 'N' for both U and V^T would be faster for this
 c (rather, the second) call; however, I get a floating point exception when I do that
-      call dgesvd('S','N',Md,Md,XX,Md,RMM(M9),XXX,Md,0,1,
-     >            RMM(M10),-1,info)
+      call dgesdd('N',Md,Md,XX,Md,RMM(M9),0,1,0,1,
+     >            RMM(M10),-1,XXX,info)
       Md5=RMM(M10)
       allocate(dgelss_temp(Md5))
 #ifdef magma
-      call magmaf_dgesvd('S','N',Md,Md,XX,Md,RMM(M9),XXX,Md,0,1,
-     >            dgelss_temp,Md5,info)
+      call magmaf_dgesdd('N',Md,Md,XX,Md,RMM(M9),0,1,0,1,
+     >            dgelss_temp,Md5,XXX,info)
 #else
-      call dgesvd('S','N',Md,Md,XX,Md,RMM(M9),XXX,Md,0,1,
-     >            dgelss_temp,Md5,info)
+      call dgesdd('N',Md,Md,XX,Md,RMM(M9),0,1,0,1,
+     >            dgelss_temp,Md5,XXX,info)
 #endif
       deallocate(dgelss_temp)
 

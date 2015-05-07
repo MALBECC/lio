@@ -4,4 +4,6 @@
 #define QMMM_BLOCK_SIZE 128
 #define QMMM_REDUCE_BLOCK_SIZE 128
 
+#define MAX_TERM_TYPES 6
+
 #endif

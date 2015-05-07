@@ -18,6 +18,8 @@ using std::endl;
 
 namespace AINT {
 
+uint NUM_TERM_TYPES;
+
 //
 // Do check between all basis primitives to find those with significant overlap
 // Check the resulting Gaussian argument from two primitives to the rmax parameter; only use primitives within that cut-off
@@ -45,16 +47,19 @@ void OSIntegral<scalar_type>::new_cutoff( void )
   uint s_start = 0, p_start = G2G::fortran_vars.s_funcs, d_start = G2G::fortran_vars.s_funcs + G2G::fortran_vars.p_funcs*3, m = G2G::fortran_vars.m;
 
   //                                       s-s        p-s        p-p        d-s        d-p        d-d
-  uint i_begin_vals[NUM_TERM_TYPES]   = { s_start,   p_start,   p_start,   d_start,   d_start,   d_start};
-  uint i_end_vals[NUM_TERM_TYPES]     = { p_start,   d_start,   d_start,   m,         m,         m      };
-  uint j_begin_vals[NUM_TERM_TYPES]   = { s_start,   s_start,   p_start,   s_start,   p_start,   d_start};
-  uint j_end_vals[NUM_TERM_TYPES]     = { p_start-1, p_start-1, d_start-1, p_start-1, d_start-1, m-1    };
-  uint i_orbital_vals[NUM_TERM_TYPES] = { 1,         3,         3,         6,         6,         6       };
-  uint j_orbital_vals[NUM_TERM_TYPES] = { 1,         1,         3,         1,         3,         6      };
+  uint i_begin_vals[MAX_TERM_TYPES]   = { s_start,   p_start,   p_start,   d_start,   d_start,   d_start};
+  uint i_end_vals[MAX_TERM_TYPES]     = { p_start,   d_start,   d_start,   m,         m,         m      };
+  uint j_begin_vals[MAX_TERM_TYPES]   = { s_start,   s_start,   p_start,   s_start,   p_start,   d_start};
+  uint j_end_vals[MAX_TERM_TYPES]     = { p_start-1, p_start-1, d_start-1, p_start-1, d_start-1, m-1    };
+  uint i_orbital_vals[MAX_TERM_TYPES] = { 1,         3,         3,         6,         6,         6       };
+  uint j_orbital_vals[MAX_TERM_TYPES] = { 1,         1,         3,         1,         3,         6      };
 
   uint local_dens_ind, num_dens_terms = 0, total_dens_terms = 0;
   this->dens_offsets[0] = 0;
   uint tmp_dens_ind = 0;
+
+  if (d_start == m) { NUM_TERM_TYPES = 3; }
+  else              { NUM_TERM_TYPES = 6; }
 
   for (uint current_term_type = 0; current_term_type < NUM_TERM_TYPES; current_term_type++) {
 
@@ -155,6 +160,7 @@ void OSIntegral<scalar_type>::new_cutoff( void )
     this->dens_values.push_back(dens_values[dens_offsets[NUM_TERM_TYPES-1]]);
       this->local2globaldens.push_back(local2globaldens[dens_offsets[NUM_TERM_TYPES-1]]);
   }
+
 }
 
 #if AINT_MP && !FULL_DOUBLE

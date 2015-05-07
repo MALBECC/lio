@@ -8,7 +8,7 @@
 #include "../scalar_vector_types.h"
 #include "../timer.h"
 
-#define NUM_TERM_TYPES 6
+#include "aint_common.h"
 
 namespace AINT {
 
@@ -22,12 +22,12 @@ class OSIntegral {
     bool apply_cutoff;
 
     // Details of the distribution of the valid primitive-primitive and density terms
-    uint term_type_offsets[NUM_TERM_TYPES];
-    uint dens_offsets[NUM_TERM_TYPES];
-    uint out_offsets[NUM_TERM_TYPES];
-    uint energies_offsets[NUM_TERM_TYPES];
-    uint term_type_counts[NUM_TERM_TYPES];
-    uint dens_counts[NUM_TERM_TYPES];
+    uint term_type_offsets[MAX_TERM_TYPES];
+    uint dens_offsets[MAX_TERM_TYPES];
+    uint out_offsets[MAX_TERM_TYPES];
+    uint energies_offsets[MAX_TERM_TYPES];
+    uint term_type_counts[MAX_TERM_TYPES];
+    uint dens_counts[MAX_TERM_TYPES];
 
     // Input
     std::vector<uint> func_code;

@@ -30,6 +30,8 @@ namespace AINT {
 
   extern AINT::FortranVars integral_vars;
 
+  extern uint NUM_TERM_TYPES;
+
 }
 
 #endif

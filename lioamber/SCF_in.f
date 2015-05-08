@@ -7,6 +7,8 @@
       nsol=nsolin
       ntatom=nsol+natom
 
+      call g2g_timer_start("Total")
+
       deallocate (r,v,Em,Rm,pc,nnat)
 
       allocate (r(ntatom,3),v(ntatom,3),Em(ntatom)

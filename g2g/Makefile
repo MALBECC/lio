@@ -44,6 +44,10 @@ endif
 ifeq ($(time), 1)
   CXXFLAGS += -DTIMINGS
 endif
+ifeq ($(time), 2)
+  CXXFLAGS += -DTIMINGS
+  CXXFLAGS += -DTIMER_SUMMARY
+endif
 
 ifeq ($(nosync), 1)
   CXXFLAGS += -DNOSYNC

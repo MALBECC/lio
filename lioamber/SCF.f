@@ -422,7 +422,6 @@ c Recover C from (X^-1)*C
             enddo
           enddo
         enddo
-      call g2g_timer_stop('initial guess')
 c
 c Density Matrix
 c
@@ -456,6 +455,7 @@ c
         enddo
 c
       endif
+      call g2g_timer_stop('initial guess')
 
 c End of Starting guess (No MO , AO known)-------------------------------
 c
@@ -526,7 +526,7 @@ c-------------------------------------------------------------------
 c-------------------------------------------------------------------
       do 999 while (good.ge.told.and.niter.le.NMAX)
 
-        call g2g_timer_start('Total iter')
+        call g2g_timer_start('Iteration')
         niter=niter+1
         if(niter.le.ndiis) then
           ndiist=niter
@@ -540,11 +540,13 @@ c Fit density basis to current MO coeff and calculate Coulomb F elements
 c
             call g2g_timer_start('int3lu total')
             call int3lu(E2)
-            call g2g_timer_stop('int3lu total')
+            call g2g_timer_pause('int3lu total')
 c
 c XC integration / Fock elements
 c
+            call g2g_timer_start('XC')
             call g2g_solve_groups(0,Ex,0)
+            call g2g_timer_pause('XC')
 c-------------------------------------------------------
         E1=0.0D0
 c
@@ -743,7 +745,7 @@ c constant to diagonal (virtual) elements
           enddo
         endif
 
-        call g2g_timer_stop('actualiza rmm')
+        call g2g_timer_pause('actualiza rmm')
 
 c----------Si hagodiis(ver mas arriba) es true entonces sigo-----------------------
 c        write(*,*) 'good < dgtrig DIIS!!! PARA LA SIGUIENTE ITERACION'
@@ -856,9 +858,9 @@ c--------Eventualmente se puede probar con la matriz densidad-------------------
             do i=1,MM
               RMM(M5+i-1)=suma(i)
             enddo
-            call g2g_timer_stop('diis')
         endif
       endif
+      call g2g_timer_pause('diis')
 
 c
 c F' diagonalization now
@@ -903,7 +905,7 @@ c---------------------
      > M,RMM(M15),info)
 #endif
 #endif
-       call g2g_timer_stop('dspev')
+       call g2g_timer_pause('dspev')
 c       do ik=1,M
 c         do jk=1,M
 c         write(45,*) X(ik,M+jk),fock(ik,jk)
@@ -952,7 +954,7 @@ c-----------------------------------------------------------
         enddo
       enddo
 #endif
-      call g2g_timer_stop('coeff')
+      call g2g_timer_pause('coeff')
       call g2g_timer_start('otras cosas')
 c
 c --- For the first iteration, damping on density matrix
@@ -1037,11 +1039,11 @@ c
         E=E+Es
 c
 c
-        call g2g_timer_stop('otras cosas')
+        call g2g_timer_pause('otras cosas')
 
         if(verbose) write(6,*) 'iter',niter,'QM Energy=',E+Ex
 c
-        call g2g_timer_stop('Total iter')
+        call g2g_timer_pause('Iteration')
  999  continue
 c-------------------------------------------------------------------
 c

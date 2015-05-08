@@ -99,6 +99,8 @@ c---------------------------------------------------------------------
         end select
       enddo
 
+      call g2g_timer_start("Total")
+
       inquire(file=inpfile,exist=filexist)
 
       if(filexist) then

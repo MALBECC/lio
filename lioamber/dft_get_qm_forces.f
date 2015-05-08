@@ -81,6 +81,12 @@ c       factor=627.509391D0/0.5291772108D0
          close(fileunit)
        endif
 
+       if (nsol.le.0) then
+         call g2g_timer_stop("Total")
+         call g2g_timer_summary()
+         call g2g_timer_clear()
+       endif
+
 !--------------------------------------------------------------------!
        deallocate(ff1G,ffSG,ff3G)
  200   format(1X,A4,1X,I4,3(2X,E14.7))

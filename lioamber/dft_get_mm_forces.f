@@ -86,6 +86,10 @@ c       real*8 ftot(3)
        enddo
        enddo
 
+       call g2g_timer_stop("Total")
+       call g2g_timer_summary()
+       call g2g_timer_clear()
+
 c       write(*,*) 'aca toyyyy'
 !
 !

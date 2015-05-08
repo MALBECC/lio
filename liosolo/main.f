@@ -3,6 +3,7 @@ c MAIN SUBROUTINE ----------------------------------------------------
 C DFT calculation with gaussian basis sets
 c---------------------------------------------------------------------
       use garcha_mod
+      use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP
       implicit real*8 (a-h,o-z)
 
       character(len=20)::argument,inpfile,inpbasis,inpcoords
@@ -16,7 +17,7 @@ c---------------------------------------------------------------------
      > propagator,NBCH,
      > field,a0,epsilon,exter,Fx,Fy,Fz, tdrestart, writedens,
      > writeforces,basis_set,fitting_set,int_basis,
-     > ecpmode,tipeECP,ZlistECP
+     > ecpmode,ecptypes,tipeECP,ZlistECP
 !ultima linea agregada para ECP, Nick
 
       integer :: ifind, ierr
@@ -69,8 +70,9 @@ c---------------------------------------------------------------------
 
 !ECP!!!!!!!!!!!!!!!!!!!!!!!!!!!!! tocado, Nick
       ecpmode=.false.
-      tipeECP='CEP'
+      tipeECP='NOT-DEFINED'
       ZlistECP=0
+      ecptypes=0
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       do i=1, narg

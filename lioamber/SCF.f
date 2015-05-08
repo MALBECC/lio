@@ -10,6 +10,7 @@ c Dario Estrin, 1992
       subroutine SCF(E,dipxyz)
       use garcha_mod
       use mathsubs
+      use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP
 c      use qmmm_module, only : qmmm_struct, qmmm_nml
 c
       implicit real*8 (a-h,o-z)
@@ -38,9 +39,12 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	write(*,*) "Nick"
-	write(*,*) "ecpmode ", ecpmode, "tipeECP ",tipeECP
+	write(*,*) "Nick, testeando variables en SCF.f"
+	write(*,*) "ecpmode ", ecpmode, "ecptypes", ecptypes, "tipeECP ",tipeECP
 	write(*,*) "ZlistECP",ZlistECP
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
 
 #ifdef magma
        call magmaf_init()

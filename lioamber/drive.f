@@ -13,8 +13,8 @@ c input file is simple
 c----------------------------------------------------------------
 c
       subroutine drive(ng2,ngDyn,ngdDyn)
-       use garcha_mod
-
+      use garcha_mod
+      use ECP_mod, only : ecpmode
 c
       implicit real*8 (a-h,o-z)
       logical Exx, parsearch
@@ -1356,6 +1356,10 @@ c---------------------------------------------------
 
        allocate(old2(MM))
        allocate(old3(MM))
+c agregadas por Nick para lectura de ECP
+	if (ecpmode) call lecturaECP()
+cccccccccccccccccccccccccccccccccccccccccccccccc
+
 
  100  format (A8)
  200  format ('basis set corresponding to Z ',I3,' was not used')

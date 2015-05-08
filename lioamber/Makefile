@@ -49,6 +49,7 @@ objects   =
 src_paths =
 include make_depend.mk
 vpath %.f  $(src_paths)
+vpath %.f90 $(src_paths)
 vpath %.mk $(src_paths)
 
 # This indicates which flags to use during the compilation
@@ -80,6 +81,15 @@ $(obj_path)/%.o   : %.f $(makefiles) |  $(obj_path)
 $(obj_path)/%.mod : %.f $(makefiles) |  $(obj_path)
 	$(FC) $(FFLAGS) -c $< -o $(@:%.mod=%.o)
 	@touch $@
+
+$(obj_path)/%.o   : %.f90 $(makefiles) |  $(obj_path)
+	$(FC) $(FFLAGS) -c $< -o $@
+
+$(obj_path)/%.mod : %.f90 $(makefiles) |  $(obj_path)
+	$(FC) $(FFLAGS) -c $< -o $(@:%.mod=%.o)
+	@touch $@
+
+
 
 $(obj_path) :
 	mkdir -p $@

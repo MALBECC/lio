@@ -35,6 +35,10 @@ objects += liokeys.o
 objects += sysdata.o
 objects += mathsubs.o
 objects += maskrmm.o
+objects += ECP_mod.o
+objects += readECP.o
+objects += drive.o
+
 
 #
 ######################################################################
@@ -59,5 +63,15 @@ $(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/garcha_mod.mod
 # mathsubs
 objlist := SCF.o SCFop.o
 $(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/mathsubs.mod
+
+# ECP_mod
+objlist := SCF.o
+objlist += readECP.o
+objlist += drive.o
+$(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/ECP_mod.mod
+
+
+objlist := drive.o
+$(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/readECP.o
 
 ######################################################################

@@ -428,7 +428,8 @@ __global__ void gpu_coulomb_fit2( double* rc, scalar_type* fit_dens, double* G_i
 
   uint ffnum = index_x(blockDim, blockIdx, threadIdx);
   bool valid_thread = ffnum < m_dens;
-  uint af_ind = input_ind[ffnum*valid_thread];
+  uint af_ind;
+  if (valid_thread) af_ind = input_ind[ffnum];
   int tid = threadIdx.x;
 
   __shared__ double rc_sh[QMMM_BLOCK_SIZE];
@@ -442,12 +443,15 @@ __global__ void gpu_coulomb_fit2( double* rc, scalar_type* fit_dens, double* G_i
       rc_sh[tid] = rc[i+tid];
     }
     __syncthreads();
-    for (int j = 0; j < QMMM_BLOCK_SIZE && i+j < m_dens; j++)
+    if (valid_thread)
     {
-      my_fit_dens += rc_sh[j] * G_inv[(i+j)*COALESCED_DIMENSION(m_dens)+ffnum*valid_thread];
+      for (int j = 0; j < QMMM_BLOCK_SIZE && i+j < m_dens; j++)
+      {
+        my_fit_dens += rc_sh[j] * G_inv[(i+j)*COALESCED_DIMENSION(m_dens)+ffnum];
+      }
     }
     __syncthreads();
   }
-  fit_dens[af_ind] = my_fit_dens*valid_thread;
+  if (valid_thread) fit_dens[af_ind] = my_fit_dens;
 }
 

@@ -126,20 +126,19 @@ c
 c      if (.not.OPEN) then
 
 c        write(*,*) 'exchnum int3G'
-      call g2g_timer_start('ExcG')
+      call g2g_timer_start('Exchange-correlation gradients')
           if (calc_energy) then
               call g2g_solve_groups(2, Exc, f)
           else
               call g2g_solve_groups(3, Exc, f)
          endif
-      call g2g_timer_stop('ExcG')
+      call g2g_timer_stop('Exchange-correlation gradients')
 
       call aint_query_gpu_level(igpu)
       
+      call g2g_timer_start('Coulomb gradients')
       if (igpu.gt.2) then
-        call g2g_timer_start('aint_coulomb_forces')
         call aint_coulomb_forces(f)
-        call g2g_timer_stop('aint_coulomb_forces')
         
       else
 
@@ -169,7 +168,6 @@ c
 c commented now for debuggings
       do 217 k=1,Md
  217   af2(k)=af(k)+B(k,2)
-      call g2g_timer_start('CoulG')
 ct
 c
 c-------------------------------------------------------------
@@ -4099,7 +4097,6 @@ c
  481  continue
  482  continue
  480  continue
-      call g2g_timer_stop('CoulG')
 c
 c
 c-------------------------------------------------------------
@@ -4117,5 +4114,6 @@ c      enddo
 c
 c
       endif
+      call g2g_timer_stop('Coulomb gradients')
       return
       end

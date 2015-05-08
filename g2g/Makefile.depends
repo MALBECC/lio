@@ -45,6 +45,7 @@ analytic_integral/qmmm_nuc.o: scalar_vector_types.h
 analytic_integral/qmmm_nuc.o: analytic_integral/aint_init.h
 analytic_integral/qmmm_nuc.o: analytic_integral/qmmm_integral.h
 analytic_integral/qmmm_nuc.o: analytic_integral/os_integral.h
+analytic_integral/qmmm_nuc.o: analytic_integral/aint_common.h
 cuda/iteration.o: common.h init.h matrix.h cpu/cpu_vector_types.h
 cuda/iteration.o: cuda_includes.h cuda/cuda_extra.h scalar_vector_types.h
 cuda/iteration.o: datatypes/cpu_primitives.h cuda/cuda_extra.h matrix.h
@@ -65,6 +66,7 @@ analytic_integral/cuda/coulomb.o: scalar_vector_types.h
 analytic_integral/cuda/coulomb.o: analytic_integral/coulomb_integral.h
 analytic_integral/cuda/coulomb.o: scalar_vector_types.h timer.h
 analytic_integral/cuda/coulomb.o: analytic_integral/os_integral.h
+analytic_integral/cuda/coulomb.o: analytic_integral/aint_common.h
 analytic_integral/cuda/coulomb.o: analytic_integral/aint_init.h matrix.h
 analytic_integral/cuda/coulomb.o: analytic_integral/aint_common.h
 analytic_integral/cuda/coulomb.o: analytic_integral/cuda/gpu_vars/g2g_gpu_variables.h
@@ -118,6 +120,7 @@ analytic_integral/cuda/os_common.o: datatypes/cpu_primitives.h matrix.h
 analytic_integral/cuda/os_common.o: timer.h scalar_vector_types.h
 analytic_integral/cuda/os_common.o: analytic_integral/os_integral.h
 analytic_integral/cuda/os_common.o: scalar_vector_types.h timer.h
+analytic_integral/cuda/os_common.o: analytic_integral/aint_common.h
 analytic_integral/cuda/os_common.o: analytic_integral/aint_init.h matrix.h
 analytic_integral/cuda/os_common.o: analytic_integral/aint_common.h
 analytic_integral/cuda/os_common.o: analytic_integral/cuda/gpu_vars/g2g_gpu_variables.h
@@ -129,6 +132,7 @@ analytic_integral/cuda/qmmm.o: scalar_vector_types.h
 analytic_integral/cuda/qmmm.o: analytic_integral/qmmm_integral.h
 analytic_integral/cuda/qmmm.o: scalar_vector_types.h timer.h
 analytic_integral/cuda/qmmm.o: analytic_integral/os_integral.h
+analytic_integral/cuda/qmmm.o: analytic_integral/aint_common.h
 analytic_integral/cuda/qmmm.o: analytic_integral/aint_init.h matrix.h
 analytic_integral/cuda/qmmm.o: analytic_integral/aint_common.h
 analytic_integral/cuda/qmmm.o: analytic_integral/cuda/gpu_vars/g2g_gpu_variables.h

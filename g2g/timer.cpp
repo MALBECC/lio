@@ -232,7 +232,7 @@ extern "C" void g2g_timer_clear_( void ) {
 #ifdef TIMER_SUMMARY
 void print_timer(string indent, string timer_name, Timer& timer, float total, string parent) {
   float time = timer.getSec() + (float)(timer.getMicrosec()) / 1000000.0f;
-  printf("%s%-25s%12.6fs (%6.2f%% of %s)\n",indent.c_str(),timer_name.c_str(),time,(100.0f * time / total),parent.c_str());
+  printf("%s%-35s%12.6fs (%6.2f%% of %s)\n",indent.c_str(),timer_name.c_str(),time,(100.0f * time / total),parent.c_str());
   indent.append("  ");
   for (set<string>::iterator it = timer_children[timer_name].begin(); it != timer_children[timer_name].end(); ++it) {
     print_timer(indent, *it, *all_timers[(*it)], time, timer_name);
@@ -247,14 +247,13 @@ extern "C" void g2g_timer_summary_( void ) {
   total_time = total_timer.getSec() + (float)(total_timer.getMicrosec()) / 1000000.0f;
 
   string indent = "";
-  cout << "------------------------------------------------------------------" << endl;
+  cout << "-------------------------------------------------------------------------------------------" << endl;
   cout << "                   LIO TIMING INFORMATION:" << endl;
-  cout << "------------------------------------------------------------------" << endl << endl;
+  cout << "-------------------------------------------------------------------------------------------" << endl << endl;
   cout << "Total time: " << total_time << "s" << endl;
   for (map<string,Timer*>::iterator it = top_timers.begin(); it != top_timers.end(); ++it) {
     print_timer(indent, it->first, *(it->second), total_time, "Total");
   }
-  cout << endl << "------------------------------------------------------------------" << endl;
-  cout << "------------------------------------------------------------------" << endl;
+  cout << "-------------------------------------------------------------------------------------------" << endl;
 #endif
 }

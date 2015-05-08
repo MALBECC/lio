@@ -42,6 +42,7 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
 #endif
 
       call g2g_timer_start('SCF')
+      call g2g_timer_start('Initialize SCF')
 c      just_int3n = .false.
       alloqueo = .true.
       ematalloc=.false.
@@ -120,6 +121,7 @@ c
         call g2g_timer_stop('cube gen')
 
         deallocate (znano,xnano,scratch,scratch1)
+        call g2g_timer_stop('Initialize SCF')
         call g2g_timer_stop('SCF')
         return
       endif
@@ -183,7 +185,9 @@ c -Assign points to groups (spheres/cubes)
 c -Assign significant functions to groups
 c -Calculate point weights
 c
+      call g2g_timer_start('Exchange-correlation grid setup')
       call g2g_reload_atom_positions(igrid2)
+      call g2g_timer_stop('Exchange-correlation grid setup')
 
       call aint_query_gpu_level(igpu)
       if (igpu.gt.1) call aint_new_step()
@@ -201,19 +205,20 @@ c
 c Calculate 1e part of F here (kinetic/nuc in int1, MM point charges
 c in intsol)
 c
+      call g2g_timer_start('1-e Fock')
+      call g2g_timer_start('Nuclear attraction')
       call int1(En)
+      call g2g_timer_stop('Nuclear attraction')
       if(nsol.gt.0) then
+          call g2g_timer_start('QM/MM')
         if (igpu.le.1) then
-          call g2g_timer_start('intsol')
           call intsol(E1s,Ens,.true.)
-          call g2g_timer_stop('intsol')
         else
           call aint_qmmm_init(nsol,r,pc)
 
-          call g2g_timer_start('aint_qmmm_fock')
           call aint_qmmm_fock(E1s,Ens)
-          call g2g_timer_stop('aint_qmmm_fock')
         endif
+          call g2g_timer_stop('QM/MM')
       endif
 c
 c test ---------------------------------------------------------
@@ -221,13 +226,14 @@ c test ---------------------------------------------------------
       do k=1,MM
         E1=E1+RMM(k)*RMM(M11+k-1)
       enddo
+      call g2g_timer_stop('1-e Fock')
 c
 c Diagonalization of S matrix, after this is not needed anymore
 c S = YY^T ; X = (Y^-1)^T
 c => (X^T)SX = 1
 c
       docholesky=.true.!.false.
-      call g2g_timer_start('cholesky')
+      call g2g_timer_start('Overlap decomposition')
 
       IF (docholesky) THEN
 #ifdef magma
@@ -337,9 +343,8 @@ c          write(56,*) RMM(M15+1)
 
       ENDIF
 
-      call g2g_timer_stop('cholesky')
+      call g2g_timer_stop('Overlap decomposition')
 
-      call g2g_timer_start('initial guess')
 c
 c CASE OF NO STARTING GUESS PROVIDED, 1 E FOCK MATRIX USED
 c FCe = SCe; (X^T)SX = 1
@@ -349,6 +354,7 @@ c
 
 c Calculate F' in RMM(M5)
       if((.not.ATRHO).and.(.not.VCINP).and.primera) then
+        call g2g_timer_start('initial guess')
         primera=.false.
         do i=1,M
 ! X is upper triangular
@@ -454,13 +460,15 @@ c
           enddo
         enddo
 c
+        call g2g_timer_stop('initial guess')
       endif
-      call g2g_timer_stop('initial guess')
 
 c End of Starting guess (No MO , AO known)-------------------------------
 c
       if ((timedep.eq.1).and.(tdrestart)) then
+        call g2g_timer_start('TD-DFT')
         call TD()
+        call g2g_timer_stop('TD-DFT')
         return
       endif
 c 
@@ -468,9 +476,9 @@ c Precalculate two-index (density basis) "G" matrix used in density fitting
 c here (S_ij in Dunlap, et al JCP 71(8) 1979) into RMM(M7)
 c Also, pre-calculate G^-1 if G is not ill-conditioned into RMM(M9)
 c
-      call g2g_timer_start('int2')
+      call g2g_timer_start('Coulomb G matrix')
       call int2()
-      call g2g_timer_stop('int2')
+      call g2g_timer_stop('Coulomb G matrix')
 c
 **
 c
@@ -485,14 +493,14 @@ c
       if (igpu.eq.5) MEMO = .false.
       !MEMO=.true.
       if (MEMO) then
-         call g2g_timer_start('int3mem')
+         call g2g_timer_start('Coulomb precalc')
 c Large elements of t_i put into double-precision cool here
 c Size criteria based on size of pre-factor in Gaussian Product Theorem
 c (applied to MO basis indices)
          call int3mem() 
 c Small elements of t_i put into single-precision cools here
          call int3mems()
-         call g2g_timer_stop('int3mem')
+         call g2g_timer_stop('Coulomb precalc')
       endif
 ****
 c---------------------------------------------------------------------
@@ -519,6 +527,7 @@ c       write(*,*) 'eme=', M
      >  FP_PFm(MM,ndiis),EMAT(ndiis+1,ndiis+1),bcoef(ndiis+1)
      >  ,suma(MM))
       endif
+      call g2g_timer_stop('Initialize SCF')
 c-------------------------------------------------------------------
 c-------------------------------------------------------------------
 c      write(*,*) 'empiezo el loop',NMAX
@@ -527,6 +536,7 @@ c-------------------------------------------------------------------
       do 999 while (good.ge.told.and.niter.le.NMAX)
 
         call g2g_timer_start('Iteration')
+        call g2g_timer_start('Fock integrals')
         niter=niter+1
         if(niter.le.ndiis) then
           ndiist=niter
@@ -538,26 +548,27 @@ c      if (MEMO) then
 c
 c Fit density basis to current MO coeff and calculate Coulomb F elements
 c
-            call g2g_timer_start('int3lu total')
+            call g2g_timer_start('Coulomb fit + Fock')
             call int3lu(E2)
-            call g2g_timer_pause('int3lu total')
+            call g2g_timer_pause('Coulomb fit + Fock')
 c
 c XC integration / Fock elements
 c
-            call g2g_timer_start('XC')
+            call g2g_timer_start('Exchange-correlation Fock')
             call g2g_solve_groups(0,Ex,0)
-            call g2g_timer_pause('XC')
+            call g2g_timer_pause('Exchange-correlation Fock')
 c-------------------------------------------------------
         E1=0.0D0
 c
 c REACTION FIELD CASE --------------------------------------------
 c
-        call g2g_timer_start('actualiza rmm')
 c----------------------------------------------------------------
 c E1 includes solvent 1 electron contributions
         do k=1,MM
           E1=E1+RMM(k)*RMM(M11+k-1)
         enddo
+        call g2g_timer_pause('Fock integrals')
+        call g2g_timer_start('SCF acceleration')
 c
 c
 c now, we know S matrix, and F matrix, and E for a given P
@@ -583,6 +594,8 @@ c If DIIS is turned on, update fockm with the current transformed F' (into ON
 c basis) and update FP_PFm with the current transformed [F',P']
 c-----------------------------------------------------------------------------------------
         if (DIIS) then
+          call g2g_timer_start('DIIS')
+          call g2g_timer_start('DIIS prep')
 c-----------------------------------------------------------------------------------------
 c Expand F into square form
 c (for better memory access patterns in coming multiplications)
@@ -641,6 +654,8 @@ c-------------------------------------------------------------------------------
               FP_PFm(i,ndiis)=scratch(j,k)-scratch1(j,k)
             enddo
           enddo
+          call g2g_timer_pause('DIIS prep')
+          call g2g_timer_pause('DIIS')
         endif
 c
 c-------------Decidiendo cual critero de convergencia usar-----------
@@ -660,6 +675,7 @@ c If we are not doing diis this iteration, apply damping to F, save this
 c F in RMM(M3) for next iteration's damping and put F' = X^T * F * X in RMM(M5)
 c-----------------------------------------------------------------------------------------
         if(.not.hagodiis) then 
+          call g2g_timer_start('Fock damping')
           if(niter.ge.2) then
             do k=1,MM
               kk=M5+k-1
@@ -723,6 +739,7 @@ c
               enddo
             enddo
           enddo
+          call g2g_timer_pause('Fock damping')
         endif
 c
 c now F contains transformed F
@@ -745,14 +762,14 @@ c constant to diagonal (virtual) elements
           enddo
         endif
 
-        call g2g_timer_pause('actualiza rmm')
 
 c----------Si hagodiis(ver mas arriba) es true entonces sigo-----------------------
 c        write(*,*) 'good < dgtrig DIIS!!! PARA LA SIGUIENTE ITERACION'
-        call g2g_timer_start('diis')
 c--------Pasar columnas de FP_PFm a matrices y multiplicarlas y escribir EMAT-------
 
         if(DIIS) then
+          call g2g_timer_start('DIIS')
+          call g2g_timer_start('DIIS Fock update')
           deallocate(EMAT)
           allocate(EMAT(ndiist+1,ndiist+1))
 ! Before ndiis iterations, we just start from the old EMAT
@@ -859,15 +876,17 @@ c--------Eventualmente se puede probar con la matriz densidad-------------------
               RMM(M5+i-1)=suma(i)
             enddo
         endif
+        call g2g_timer_pause('DIIS Fock update')
+        call g2g_timer_pause('DIIS')
       endif
-      call g2g_timer_pause('diis')
 
 c
 c F' diagonalization now
 c X(1,M) will contain (X^-1)*C
 c
 
-       call g2g_timer_start('dspev')
+       call g2g_timer_pause('SCF acceleration')
+       call g2g_timer_start('diagonalization')
 c ESSL OPTION ---------------------------------------------------
 #ifdef essl
        call DSPEV(1,RMM(M5),RMM(M13),X(1,M+1),M,M,RMM(M15),M2)
@@ -905,7 +924,7 @@ c---------------------
      > M,RMM(M15),info)
 #endif
 #endif
-       call g2g_timer_pause('dspev')
+       call g2g_timer_pause('diagonalization')
 c       do ik=1,M
 c         do jk=1,M
 c         write(45,*) X(ik,M+jk),fock(ik,jk)
@@ -914,7 +933,7 @@ c
 c         enddo
 c
 c       enddo
-       call g2g_timer_start('coeff')
+       call g2g_timer_start('MO coefficients')
 
 c-----------------------------------------------------------
 c
@@ -954,8 +973,8 @@ c-----------------------------------------------------------
         enddo
       enddo
 #endif
-      call g2g_timer_pause('coeff')
-      call g2g_timer_start('otras cosas')
+      call g2g_timer_pause('MO coefficients')
+      call g2g_timer_start('new density')
 c
 c --- For the first iteration, damping on density matrix
 c Important for the case of strating guess of AO
@@ -1039,7 +1058,7 @@ c
         E=E+Es
 c
 c
-        call g2g_timer_pause('otras cosas')
+        call g2g_timer_pause('new density')
 
         if(verbose) write(6,*) 'iter',niter,'QM Energy=',E+Ex
 c
@@ -1048,6 +1067,7 @@ c
 c-------------------------------------------------------------------
 c
 c-------------------------------------------------------------------
+      call g2g_timer_start('Finalize SCF')
 
       if (niter.ge.NMAX) then
         write(6,*) 'NO CONVERGENCE AT ',NMAX,' ITERATIONS'
@@ -1079,12 +1099,12 @@ c
 !    this again; Ens isn't changed from before...
 c -- SOLVENT CASE --------------------------------------
 c      if (sol) then
-      call g2g_timer_start('intsol 2')
-      if(nsol.gt.0) then
-        call intsol(E1s,Ens,.false.)
+c      call g2g_timer_start('intsol 2')
+c      if(nsol.gt.0) then
+c        call intsol(E1s,Ens,.false.)
 c        write(*,*) 'cosillas',E1s,Ens
-        call g2g_timer_stop('intsol 2')
-      endif
+c        call g2g_timer_stop('intsol 2')
+c      endif
 c      call mmsol(natom,Nsol,natsol,Iz,pc,r,Em,Rm,Es)
       Es=Es+E1s+Ens
 c     endif
@@ -1094,6 +1114,7 @@ c  ????
 c         if (sol) then
 c         endif
 c       call g2g_timer_start('exchnum')
+        call g2g_timer_start('Exchange-correlation energy')
 #ifdef G2G
 #ifdef ULTIMA_CPU
         call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
@@ -1111,6 +1132,7 @@ c       write(*,*) 'g2g-Exc',Exc
 #else
 #endif
 #endif
+        call g2g_timer_stop('Exchange-correlation energy')
         ! -------------------------------------------------
         ! Total SCF energy = 
         ! E1 - kinetic+nuclear attraction+QM/MM interaction
@@ -1138,6 +1160,7 @@ c--------------------------------------------------------------
       endif
 c calculation of energy weighted density matrix
 c
+      call g2g_timer_start('energy-weighted density')
       kk=0
       do j=1,M
         do i=j,M
@@ -1155,6 +1178,7 @@ c
           enddo
         enddo
       enddo
+      call g2g_timer_stop('energy-weighted density')
 c
 c      if (nopt.eq.1) then
 c
@@ -1178,6 +1202,7 @@ c
 
 
 
+       call g2g_timer_start('Mulliken')
 ! MULLIKEN POPULATION ANALYSIS (FFR - Simplified)
 !--------------------------------------------------------------------!
        call int1(En)
@@ -1190,6 +1215,7 @@ c
 ! NOTE: If 'mulliken_calc' is renamed as 'mulliken', the code will
 ! malfunction. I DON'T KNOW WHY.
 !--------------------------------------------------------------------!
+       call g2g_timer_stop('Mulliken')
 
 c
 c        endif
@@ -1261,6 +1287,7 @@ c       E=E*627.509391D0
       endif
 !
 !--------------------------------------------------------------------!
+      call g2g_timer_stop('Finalize SCF')
       call g2g_timer_stop('SCF')
  500  format('SCF TIME ',I6,' sec')
  450  format ('SCF ENERGY = ',F19.12)

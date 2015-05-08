@@ -15,30 +15,31 @@
 
 !--------------------------------------------------------------------!
        if(cubegen_only) return
+       call g2g_timer_start('Forces')
        allocate(ff1G(natom,3),ffSG(natom,3),ff3G(natom,3))
 
        ff1G=0.0d0
        call aint_query_gpu_level(igpu)
        if (igpu.lt.4) then
-         call g2g_timer_start('int1G')
+         call g2g_timer_start('Nuclear attraction gradients')
          call int1G(ff1G)
-         call g2g_timer_stop('int1G')
+         call g2g_timer_stop('Nuclear attraction gradients')
        elseif (nsol.le.0) then
-         call g2g_timer_start('int1G')
+         call g2g_timer_start('Nuclear attraction gradients')
          call int1G(ff1G)
          call aint_qmmm_forces(ff1G,0)
-         call g2g_timer_stop('int1G')
+         call g2g_timer_stop('Nuclear attraction gradients')
        endif
 
-       call g2g_timer_start('intSG')
+       call g2g_timer_start('Overlap gradients')
        ffSG=0.0d0
        call intSG(ffSG)
-       call g2g_timer_stop('intSG')
+       call g2g_timer_stop('Overlap gradients')
 
-       call g2g_timer_start('int3G')
+       call g2g_timer_start('Coulomb+Exchange-correlation')
        ff3G=0.0d0
        call int3G(ff3G,.true.)
-       call g2g_timer_stop('int3G')
+       call g2g_timer_stop('Coulomb+Exchange-correlation')
 
        factor=1.D0
 c       factor=627.509391D0/0.5291772108D0
@@ -82,6 +83,7 @@ c       factor=627.509391D0/0.5291772108D0
        endif
 
        if (nsol.le.0) then
+         call g2g_timer_stop('Forces')
          call g2g_timer_stop("Total")
          call g2g_timer_summary()
          call g2g_timer_clear()

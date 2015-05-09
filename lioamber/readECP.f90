@@ -81,18 +81,21 @@
 			read(7,*) simbolo
 !			write(*,*) simbolo,elemento
 			if    (simbolo.eq.elemento) then
-				write (*,*) simbolo,elemento
+				write (*,*) simbolo
 !lee linea por linea hasta encontrar el atomo que busca 
 				found=.false.       
 				read(7,*) boba, dataECP(Z,-1), dataECP(Z,-2)
+				write(*,*) "carga",z,"lmax",dataECP(Z,-1)
 ! asigna Lmax y Ncore
 !asigna los valores de nECP, bECP y aECP al leerlos desde el pseudopotencial
 
 !LeeLmax
 				read(7,*)
 				read(7,*) dataECP(Z,dataECP(Z,-1))
+				write(*,*) "terminos lmax",dataECP(Z,dataECP(Z,-1))
 				do u=1, dataECP(Z,dataECP(Z,-1))
 					read(7,*) nECP(Z,dataECP(Z,dataECP(Z,-1)),u), bECP(Z,dataECP(Z,dataECP(Z,-1)),u), aECP(Z,dataECP(Z,dataECP(Z,-1)),u)
+					write(*,*) Z, dataECP(Z,dataECP(Z,-1)) , u
 					write(*,*) nECP(Z,dataECP(Z,dataECP(Z,-1)),u), bECP(Z,dataECP(Z,dataECP(Z,-1)),u), aECP(Z,dataECP(Z,dataECP(Z,-1)),u)
 				end do
 !repite para l=0 hasta Lmax-1
@@ -101,6 +104,7 @@
 					read(7,*) dataECP(Z,w)
 					do u=1, dataECP(Z,w)
 						read(7,*) nECP(Z,w,u), bECP(Z,w,u), aECP(Z,w,u)
+						write(*,*) Z, w, u
 						write(*,*) nECP(Z,w,u), bECP(Z,w,u), aECP(Z,w,u)
 					end do
 				end do

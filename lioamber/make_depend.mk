@@ -37,6 +37,7 @@ objects += mathsubs.o
 objects += maskrmm.o
 objects += ECP_mod.o
 objects += readECP.o
+objects += intECP.o
 objects += drive.o
 
 
@@ -68,8 +69,12 @@ $(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/mathsubs.mod
 objlist := SCF.o
 objlist += readECP.o
 objlist += drive.o
+objlist += intECP.o
 $(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/ECP_mod.mod
 
+# intECP
+objlist := SCF.o
+$(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/intECP.o
 
 objlist := drive.o
 $(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/readECP.o

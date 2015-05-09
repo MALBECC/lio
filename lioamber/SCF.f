@@ -41,7 +41,8 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
 	write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	write(*,*) "Nick, testeando variables en SCF.f"
 	write(*,*) "ecpmode ", ecpmode, "ecptypes", ecptypes, "tipeECP ",tipeECP
-	write(*,*) "ZlistECP",ZlistECP
+!	write(*,*) "ZlistECP",ZlistECP
+	call intECP()
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 

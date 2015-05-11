@@ -1,17 +1,25 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&IIIIIIIIIIIIIIIIII
       module ECP_mod
       implicit none
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !valiables del namelist!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       logical :: ecpmode
+!activa los pseudopotenciales
       integer :: ecptypes
+!cantidad de atomos con ECP
       character (len=30) :: tipeECP
+!tipoo de ECP usado, tiene que estar en $LIOHOME/libraries/ECP
       integer, dimension(128) :: ZlistECP
+!Z de atomos con ECP
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 !Datos de los ECP
+        integer, dimension(118) :: Zcore, Lmax
+        integer, dimension(118,0:5) :: expnumbersECP
+!expnumbersECP(Z,l) cantidad de terminos del ECP para el atomo Z y l
 	integer, dimension(118,0:5,10) :: nECP
 	double precision, dimension(118,0:5,10) :: bECP, aECP
-	integer, dimension(118,0:5) :: expnumbersECP
-	integer, dimension(118) :: Zcore, Lmax
+!coeficientes y exponentes del pseudopotencial
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&hasta aca testeado FFFFFFFFFFFFFFFFFFFFFFF
 

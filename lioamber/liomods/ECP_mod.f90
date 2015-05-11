@@ -10,7 +10,8 @@
 !Datos de los ECP
 	integer, dimension(118,0:5,10) :: nECP
 	double precision, dimension(118,0:5,10) :: bECP, aECP
-	integer, dimension(118,-2:5) :: dataECP
+	integer, dimension(118,0:5) :: expnumbersECP
+	integer, dimension(118) :: Zcore, Lmax
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&hasta aca testeado FFFFFFFFFFFFFFFFFFFFFFF
 

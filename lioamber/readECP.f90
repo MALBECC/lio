@@ -1,25 +1,26 @@
 !Rutina para la lectura de coeficientes del ECP
 	subroutine lecturaECP
-	use ECP_mod, only : ecptypes, tipeECP, ZlistECP,asignacion,dataECP, nECP, bECP, aECP
+	use ECP_mod, only : ecptypes, tipeECP, ZlistECP,asignacion,Zcore, Lmax, expnumbersECP, nECP, bECP, aECP
 	use garcha_mod, only : Iz, natom
 	implicit none
-	integer :: Z,jj,ppotat,ppotati
+	integer :: i,jj,ppotat,ppotati
 	character :: simb*3
 	write(*,*) "Leyendo parametros de pseudopotencial"
 	write(*,*) "tipos de atomos con ECP ", ecptypes
 	write(*,*) "pseudopotencial elegido ", tipeECP
 	ppotat=0
-	dataECP=0
+	Lmax=0
+	Zcore=0
 	nECP=0
 	bECP=0.d0
 	aECP=0.d0
 
-	do Z=1,ecptypes
+	do i=1,ecptypes
 	ppotati=0
-	call asignacion(ZlistECP(Z),simb)
-	call dataECPelement(ZlistECP(Z),simb)
+	call asignacion(ZlistECP(i),simb)
+	call dataECPelement(ZlistECP(i),simb)
 	do jj=1,natom
-          if (Iz(jj).eq.ZlistECP(Z)) then
+          if (Iz(jj).eq.ZlistECP(i)) then
                ppotati=ppotati+1
           end if
         end do
@@ -35,12 +36,12 @@
 
 	Subroutine dataECPelement(Z,elemento)
 !lee los valores de aECP, bECP, nECP, para el elemento pedido
-	use ECP_mod, only : dataECP, nECP, bECP, aECP,tipeECP
+	use ECP_mod, only : Zcore, Lmax,expnumbersECP , nECP, bECP, aECP,tipeECP
 !el array data tiene la forma data(Z,i)
 !i=-2 Zcore, i=-1 Lmaximo del ECP, i=0 terminos s del ECP, i=1 terminos p ....   i=5 terminos h
 	implicit none
 	integer, intent(in) :: Z
-	integer :: u,w
+	integer :: u,l
 
 !tipeECP contiene el tipo de pseudopotencial
 !elemento es aquel que buscara en el archivo de pseudopotenciales, simbolo sirve para buscar el atomo el el archivo ECP
@@ -69,7 +70,7 @@
 !cheque q el archivo ECP este, si no esta corta el programa y avisa q no esta el pseudopotencial
 	if (.not.existeECP) then
 		write(*,*) "falta el archivo de ECP o no tiene el nombre correcto"
-		write(*,*) "revisar $LIOHOME/libraries/pseudopotentiales/"
+		write(*,*) "revisar $LIOHOME/libraries/ECP/"
 		stop
 
 	else
@@ -84,28 +85,28 @@
 				write (*,*) simbolo
 !lee linea por linea hasta encontrar el atomo que busca 
 				found=.false.       
-				read(7,*) boba, dataECP(Z,-1), dataECP(Z,-2)
-				write(*,*) "carga",z,"lmax",dataECP(Z,-1)
+				read(7,*) boba, Lmax(Z), Zcore(Z)
+				write(*,*) "carga",z,"lmax",Lmax(Z), "zcore", Zcore(Z)
 ! asigna Lmax y Ncore
 !asigna los valores de nECP, bECP y aECP al leerlos desde el pseudopotencial
 
 !LeeLmax
 				read(7,*)
-				read(7,*) dataECP(Z,dataECP(Z,-1))
-				write(*,*) "terminos lmax",dataECP(Z,dataECP(Z,-1))
-				do u=1, dataECP(Z,dataECP(Z,-1))
-					read(7,*) nECP(Z,dataECP(Z,dataECP(Z,-1)),u), bECP(Z,dataECP(Z,dataECP(Z,-1)),u), aECP(Z,dataECP(Z,dataECP(Z,-1)),u)
-					write(*,*) Z, dataECP(Z,dataECP(Z,-1)) , u
-					write(*,*) nECP(Z,dataECP(Z,dataECP(Z,-1)),u), bECP(Z,dataECP(Z,dataECP(Z,-1)),u), aECP(Z,dataECP(Z,dataECP(Z,-1)),u)
+				read(7,*) expnumbersECP(Z,Lmax(Z))
+				write(*,*) "terminos lmax",expnumbersECP(Z,Lmax(Z))
+				do u=1, expnumbersECP(Z,Lmax(Z))
+					read(7,*) nECP(Z,Lmax(Z),u), bECP(Z,Lmax(Z),u), aECP(Z,Lmax(Z),u)
+!a					write(*,*) Z, dataECP(Z,dataECP(Z,-1)) , u
+!					write(*,*) nECP(Z,dataECP(Z,dataECP(Z,-1)),u), bECP(Z,dataECP(Z,dataECP(Z,-1)),u), aECP(Z,dataECP(Z,dataECP(Z,-1)),u)
 				end do
 !repite para l=0 hasta Lmax-1
-				do w=0, dataECP(Z,-1)-1
+				do l=0, Lmax(Z)-1
 					read(7,*)
-					read(7,*) dataECP(Z,w)
-					do u=1, dataECP(Z,w)
-						read(7,*) nECP(Z,w,u), bECP(Z,w,u), aECP(Z,w,u)
-						write(*,*) Z, w, u
-						write(*,*) nECP(Z,w,u), bECP(Z,w,u), aECP(Z,w,u)
+					read(7,*) expnumbersECP(Z,l)
+					do u=1, expnumbersECP(Z,l)
+						read(7,*) nECP(Z,l,u), bECP(Z,l,u), aECP(Z,l,u)
+!						write(*,*) Z, w, u
+!						write(*,*) nECP(Z,w,u), bECP(Z,w,u), aECP(Z,w,u)
 					end do
 				end do
 		        endif

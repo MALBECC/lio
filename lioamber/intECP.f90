@@ -1,5 +1,5 @@
 	subroutine intECP
-	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,dataECP
+	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP
 	implicit none
 	integer z,l,j,u,w,t
 
@@ -11,9 +11,9 @@
 	do z=1,118
 !	write(*,*) "carga", z
 !	write(*,*) "lmax", dataECP(z,-1)
-	do l=0,dataECP(z,-1)
+	do l=0,Lmax(Z)
 !	write(*,*) "termminos", dataECP(z,l)
-	do j=1,dataECP(z,dataECP(z,l))
+	do j=1,expnumbersECP(Z,l)
 !	write(*,9018) z,l,j,nECP(z,l,j), bECP(z,l,j),aECP(z,l,j)
 	end do
 	end do
@@ -32,8 +32,8 @@
 !	end do
 
         do z=1,118
-                do l=0, dataECP(Z,-1)
-                        do t=1, dataECP(Z,l)
+                do l=0, Lmax(Z)
+                        do t=1, expnumbersECP(Z,l)
                                 write(*,9018) Z,l,t,nECP(Z,l,t), bECP(Z,l,t), aECP(Z,l,t)
                         end do
                 end do

@@ -199,19 +199,19 @@ void CoulombIntegral<scalar_type>::clear( void )
 }
 
 template <class scalar_type>
-void CoulombIntegral<scalar_type>::calc_gradient( double* qm_forces )
+void CoulombIntegral<scalar_type>::calc_gradient( double* qm_forces, bool cpu_fit_dens )
 {
 
     os_int.reload_density();
 
-#if AINT_GPU_LEVEL < 5
+    if (cpu_fit_dens) {
     G2G::HostMatrix<scalar_type> fit_dens_h(input_size);
     for (uint i = 0; i < input_size; i++) fit_dens_h(i) = 0.0;
     for (uint i = 0; i < integral_vars.m_dens; i++) {
       fit_dens_h(input_ind_cpu[i]) = integral_vars.af_input_ndens1(i);
     }
     fit_dens_dev = fit_dens_h;
-#endif
+    }
 
     uint partial_out_size = 0, max_partial_size = 0;
     for (uint i = 0; i < NUM_TERM_TYPES; i++) {

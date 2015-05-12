@@ -61,7 +61,7 @@ class CoulombIntegral {
     // Main kernel calls
     void fit_aux_density( void );
     void calc_fock( double& Es );
-    void calc_gradient( double* qm_forces );
+    void calc_gradient( double* qm_forces, bool cpu_fit_dens );
 
     void clear( void );
     

@@ -147,7 +147,23 @@ extern "C" void aint_coulomb_init_( void )
 extern "C" void aint_qmmm_forces_(double* qm_forces, double* mm_forces)
 {
   qmmm_integral.calc_nuc_gradient(qm_forces, mm_forces);
-  qmmm_integral.calc_gradient(qm_forces, mm_forces);
+#ifdef AINT_GPU_LEVEL
+  if (AINT_GPU_LEVEL > 3) {
+    if (integral_vars.clatoms > 0) {
+      qmmm_integral.calc_gradient(qm_forces, mm_forces, true, true);
+    } else {
+      qmmm_integral.calc_gradient(qm_forces, mm_forces, false, true);
+    }
+  } else {
+#endif
+    if (integral_vars.clatoms > 0) {
+      qmmm_integral.calc_gradient(qm_forces, mm_forces, true, false);
+    } else {
+      qmmm_integral.calc_gradient(qm_forces, mm_forces, false, false); // This branch does nothing...
+    }
+#ifdef AINT_GPU_LEVEL
+  }
+#endif
 }
 extern "C" void aint_qmmm_fock_(double& Es, double& Ens)
 {
@@ -160,7 +176,15 @@ extern "C" void aint_qmmm_fock_(double& Es, double& Ens)
 //===============================================================================================================
 extern "C" void aint_coulomb_forces_(double* qm_forces)
 {
-  coulomb_integral.calc_gradient(qm_forces);
+#ifdef AINT_GPU_LEVEL
+  if (AINT_GPU_LEVEL >= 5) {
+    coulomb_integral.calc_gradient(qm_forces,false);
+  } else {
+#endif
+    coulomb_integral.calc_gradient(qm_forces,true);
+#ifdef AINT_GPU_LEVEL
+  }
+#endif
 }
 extern "C" void aint_coulomb_fock_(double& Es)
 {

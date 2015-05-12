@@ -46,7 +46,8 @@ class QMMMIntegral {
 
     // Main kernel calls
     void calc_fock( double& Es );
-    void calc_gradient( double* qm_forces, double* mm_forces );
+
+    void calc_gradient( double* qm_forces, double* mm_forces, bool do_cl, bool do_qm );
 
     // Get results from GPU and send to final output
     void get_gradient_output( double* mm_forces, uint partial_size );

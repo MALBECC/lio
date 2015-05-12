@@ -11,7 +11,7 @@
 // TODO: currently, one thread maps to one primitive-primitive overlap force term; is there a better mapping? (thread to function, thread to sub-shell, etc)
 // TODO: should the loop over MM atoms be broken up to be done by multiple blocks rather than a block looping over every MM atom?
 //
-template<class scalar_type, uint term_type, bool do_cl>
+template<class scalar_type, uint term_type, bool do_cl, bool do_qm>
 __global__ void gpu_qmmm_forces( uint num_terms, G2G::vec_type<scalar_type,2>* ac_values, uint* func2nuc, scalar_type* dens_values, uint* func_code, uint* local_dens,
                                  G2G::vec_type<scalar_type,3>* mm_forces, G2G::vec_type<scalar_type,3>* qm_forces, uint global_stride, G2G::vec_type<scalar_type,3>* clatom_pos, scalar_type *clatom_chg )
 {
@@ -176,7 +176,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, G2G::vec_type<scalar_type,2>* a
       prefactor_qm = prefactor_mm * inv_two_zeta;
     }
 
-#if AINT_GPU_LEVEL > 3
+    if (do_qm) {
     //
     // Outer loop: read in block of MM atom information into shared memory
     //
@@ -286,7 +286,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, G2G::vec_type<scalar_type,2>* a
         __syncthreads();
       }
     }
-#endif
+    }
 
     if (do_cl) {
     //

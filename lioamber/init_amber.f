@@ -123,7 +123,6 @@ c       logical :: int_basis_i
 
 c      parameter (norbit=800,Ngrid=0)
 
-
          natom=natomin
 
 c       integer, intent(in) :: Iiiz(natom)

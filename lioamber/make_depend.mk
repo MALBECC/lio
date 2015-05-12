@@ -70,6 +70,7 @@ objlist := SCF.o
 objlist += readECP.o
 objlist += drive.o
 objlist += intECP.o
+objlist += init.o
 $(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/ECP_mod.mod
 
 # intECP

@@ -45,6 +45,34 @@
 
 
 	contains
+
+	DOUBLE PRECISION FUNCTION VijlocalAAA
+	implicit none
+	double precision :: acumk, acuml, acumm
+	integer :: k,l,m
+	VijlocalAAA=0.d0
+!	do 
+	end function VijlocalAAA
+
+!subrutinas mixtas
+	DOUBLE PRECISION FUNCTION SAAA (k,alpha,Ccoef,na,ma,la,nb,mb,lb,necp)
+	use ECP_mod, only :  Qnl
+	implicit none
+	integer, intent(in) :: na,ma,la,nb,mb,lb,necp
+	double precision, intent (in) :: k,alpha,Ccoef
+	integer :: lambda, lmax
+	Qnl=0.d0
+	SAAA=0.d0
+	lmax=na+ma+la+nb+mb+lb
+!lmax  = 0 para <s||s>, 1 para <s||p>, 2 para <s||d>, ... , 6 para <d||d>
+!Ccoef = exponente basei + exponente base j + exponente ecp
+	call Qtype1(K,Ccoef,lmax,necp)
+		do lambda=0, lmax
+!			SAAA=SAAA + Qnl(na+ma+la+nb+mb+lb+necp,lambda)*OMEGA1(K,lambda,na+nb,ma+mb,la+lb)
+		end do
+	return
+	end function SAAA
+
 !subrutinas angulares
 
 	DOUBLE PRECISION FUNCTION OMEGA2(K,lambda,l,m,a,b,c)
@@ -125,6 +153,7 @@
 		SUM1=0.d0
 		SUM2=0.d0
 	end do
+	return
 	end function OMEGA1
 
 
@@ -413,11 +442,25 @@
 
         end subroutine ByCdoble
 
-
-
-
-
-
+	subroutine ReasignZ
+!cambia la carga del nucleo sacandole la carga del core y guarda las cargas originales en IzECP
+	use garcha_mod, only :Iz,nuc,nshell, natom
+	use ECP_mod, only : ZlistECP,IzECP,Zcore,ecptypes
+	implicit none
+	integer :: i,j
+	allocate (IzECP(natom))
+	do i=1,nshell(0)+nshell(1)+nshell(2) !sumas mas si se agregan funciones f,g,etc
+		IzECP(nuc(i))=Iz(nuc(i))
+		write(*,*) "carga antes", Iz(i)
+		do j=1, ecptypes
+			if (Iz(i) .eq. ZlistECP(j)) then
+				Iz(i)=Iz(i)-Zcore(j)
+				write(*,*) "carga nueva" , Iz(i)
+				write(*,*) "caraga guardada", IzECP(nuc(i))
+			end if
+		end do
+	end do
+	end subroutine ReasignZ
 
 !	9018 format(/1x,'Z =',i4,2x, 'L =',i4,2x,'coefnumber =',i3,2x, 'n =',i2,2x, 'b =', f15.5,2x,'c =',f15.5)
 !        end subroutine intECP

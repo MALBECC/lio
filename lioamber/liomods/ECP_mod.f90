@@ -21,6 +21,8 @@
 	double precision, dimension(118,0:5,10) :: bECP, aECP
 !coeficientes y exponentes del pseudopotencial
 
+	integer, dimension (:), ALLOCATABLE :: IzECP
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&hasta aca testeado FFFFFFFFFFFFFFFFFFFFFFF
 
 

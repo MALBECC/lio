@@ -1,6 +1,7 @@
       subroutine init_lio(natomin,Izin,nclatom,charge)
 
       use garcha_mod
+	use ECP_mod, only : IzECP
 c      use qmmm_module, only : qmmm_struct,qmmm_nml
       implicit real*8 (a-h,o-z)
 c
@@ -52,7 +53,7 @@ c      write(*,*) 'ng2 en init',ng2,ngdyn,ngddyn
 
       allocate (r(ntatom,3),v(ntatom,3),rqm(natom,3),Em(ntatom)
      >,Rm(ntatom),pc(ntatom),Iz(natom),nnat(ntatom),af(natom*ngd0),
-     >  B(natom*ngd0,3))
+     >  B(natom*ngd0,3),IzECP(natom))
       allocate(d(natom,natom))
          Iz=Izin
 

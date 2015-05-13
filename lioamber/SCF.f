@@ -43,12 +43,9 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
 	write(*,*) "ecpmode ", ecpmode, "ecptypes", ecptypes, "tipeECP ",tipeECP
 !	write(*,*) "ZlistECP",ZlistECP
 	call intECP()
+!este call es solo para testeo de la rutina, luego hay q sacarlo
 
 !reasigna las cargas
-	do i=1,10
-	write(*,*) "Cuidado hay que corregir cargas en IZ prendiendo lo a mano"
-	end do
-
         if (ecpmode) call ReasignZ
 
 

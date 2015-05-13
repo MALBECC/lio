@@ -444,22 +444,31 @@
 
 	subroutine ReasignZ
 !cambia la carga del nucleo sacandole la carga del core y guarda las cargas originales en IzECP
-	use garcha_mod, only :Iz,nuc,nshell, natom
+!tambien corrige la cantidad de electrones sacando los que van al core
+	use garcha_mod, only :Iz,nuc,nshell, natom, NCO
 	use ECP_mod, only : ZlistECP,IzECP,Zcore,ecptypes
 	implicit none
 	integer :: i,j
 	allocate (IzECP(natom))
-	do i=1,nshell(0)+nshell(1)+nshell(2) !sumas mas si se agregan funciones f,g,etc
-		IzECP(nuc(i))=Iz(nuc(i))
-		write(*,*) "carga antes", Iz(i)
+	do i=1, natom
+!barre atomos
+		IzECP(i)=Iz(i)
 		do j=1, ecptypes
-			if (Iz(i) .eq. ZlistECP(j)) then
-				Iz(i)=Iz(i)-Zcore(j)
-				write(*,*) "carga nueva" , Iz(i)
-				write(*,*) "caraga guardada", IzECP(nuc(i))
+!barre atomos con ecp
+			if (IzECP(i) .eq. ZlistECP(j)) then
+				write(*,*) "editando atomo", i
+				Iz(i)=Iz(i)-Zcore(ZlistECP(j))
+				write(*,*) "carga nuclear efectiva = ", Iz(i)
+!cambia la carga del nucleo
+				NCO=NCO-Zcore(ZlistECP(j))/2
+!saca e-
+				write(*,*) "electrones del sistema removidos ", Zcore(ZlistECP(j))
+!				write(*,*) "carga nueva" , Iz(i)
+!				write(*,*) "caraga guardada", IzECP(i)
 			end if
 		end do
 	end do
+
 	end subroutine ReasignZ
 
 !	9018 format(/1x,'Z =',i4,2x, 'L =',i4,2x,'coefnumber =',i3,2x, 'n =',i2,2x, 'b =', f15.5,2x,'c =',f15.5)

@@ -42,11 +42,13 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
 	write(*,*) "Nick, testeando variables en SCF.f"
 	write(*,*) "ecpmode ", ecpmode, "ecptypes", ecptypes, "tipeECP ",tipeECP
 !	write(*,*) "ZlistECP",ZlistECP
-	call intECP()
-!este call es solo para testeo de la rutina, luego hay q sacarlo
 
 !reasigna las cargas
         if (ecpmode) call ReasignZ
+
+
+!este call es solo para testeo de la rutina, luego hay q sacarlo
+        call intECP()
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

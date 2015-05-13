@@ -5,6 +5,7 @@
 	integer z,l,t
 
 !Escribe coeficientes como testeo
+	if ( .false. ) then
         do z=1,118
                 do l=0, Lmax(Z)
                         do t=1, expnumbersECP(Z,l)
@@ -12,6 +13,7 @@
                         end do
                 end do
         end do
+	end if
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -20,9 +22,9 @@
 
 
 
+	call intECPAAA()
 
-
-
+!	write(*,*) VijlocalAAA()
 
 
 
@@ -46,12 +48,70 @@
 
 	contains
 
+	Subroutine intECPAAA
+	use garcha_mod, only : a,c,ncont, nshell, nuc, ncont
+	use ECP_mod, only :nECP,bECP, aECP, ecptypes, IzECP, Lmax
+	implicit none
+	integer :: i,j,k, ii,ji,l, lmaxQ
+	double precision :: local, nonlocal, Kbessel, exponente
+	local=0.d0
+	nonlocal=0.d0
+	Kbessel=0.d0
+	exponente=0.d0
+	lmaxQ=0
+
+
+	do i=1, nshell(0)+nshell(1)+nshell(2)
+!barre un coef de la base
+		do j=i, nshell(0)+nshell(1)+nshell(2)
+!barre el otro coef de la base j>=i ya que la matriz tiene q ser simetrica
+			if (nuc(i) .eq. nuc(j)) then
+!solo calcula si los terminos corresponden al mismo atomo
+				do k=1, ecptypes
+!barre atomos con ecp
+					if (IzECP(nuc(i)) .eq. ZlistECP(k))then
+!solo calcula si el atomo tiene ECP
+						write(*,*) "1 coincidencia", ZlistECP(k)
+						do ii=1, ncont(i)
+						do ji=1, ncont(j)
+!ji y ii barren terminos de la funcion de base
+
+!local part
+						do l=1, expnumbersECP(ZlistECP(k),Lmax(k))
+!						exponente=C(i,ii)+C(j,ji)+bECP(ZlistECP(k)
+!						call Qtype1(Kbessel,exponente,l,lmax,nECP(ZlistECP(k),ltotal,l))
+!						Qtype1(K,Ccoef,lmax,necp)
+!falta definir ltotal 0 para ss, 1 para sp, 2 para sd, etc
+						end do
+
+
+
+
+						end do
+						end do
+
+					end if
+				end do
+
+			end if
+		end do
+	end do
+
+
+
+
+	end subroutine intECPAAA
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!esto no lo voy a usar !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	DOUBLE PRECISION FUNCTION VijlocalAAA
 	implicit none
 	double precision :: acumk, acuml, acumm
 	integer :: k,l,m
 	VijlocalAAA=0.d0
 !	do 
+	write(*,*) SAAA (0.5d0,0.55d0,0.333d0,1,0,0,1,0,0,2)
 	end function VijlocalAAA
 
 !subrutinas mixtas
@@ -66,12 +126,20 @@
 	lmax=na+ma+la+nb+mb+lb
 !lmax  = 0 para <s||s>, 1 para <s||p>, 2 para <s||d>, ... , 6 para <d||d>
 !Ccoef = exponente basei + exponente base j + exponente ecp
+	write(*,*) "yegue a SAAA"
 	call Qtype1(K,Ccoef,lmax,necp)
+	call Qtype1(0,Ccoef,lmax,necp)
 		do lambda=0, lmax
+			write(*,*) Qnl(na+ma+la+nb+mb+lb+necp,lambda)
+			write(*,*) OMEGA1((/0.00d0,0.00d0,0.00d0/),lambda,na+nb,ma+mb,la+lb)
 !			SAAA=SAAA + Qnl(na+ma+la+nb+mb+lb+necp,lambda)*OMEGA1(K,lambda,na+nb,ma+mb,la+lb)
 		end do
 	return
 	end function SAAA
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 !subrutinas angulares
 
@@ -131,6 +199,13 @@
 	SUM1=0.d0
 	SUM2=0.d0
 	OMEGA1=0.d0
+	if ( all(K .eq. (/0.d0,0.d0,0.d0/))) then
+!caso especial para los terminos <A|A|A>
+	
+	return
+	end if
+
+
 	Kun=K/sqrt(K(1)**2 + K(2)**2 + K(3)**2)
 
 !	write(*,*) "l",l

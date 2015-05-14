@@ -20,8 +20,10 @@
 	integer, dimension(118,0:5,10) :: nECP
 	double precision, dimension(118,0:5,10) :: bECP, aECP
 !coeficientes y exponentes del pseudopotencial
-
 	integer, dimension (:), ALLOCATABLE :: IzECP
+!cargas sin corregir por el Zcore
+	integer, dimension (:,:), ALLOCATABLE :: Lxyz
+
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&hasta aca testeado FFFFFFFFFFFFFFFFFFFFFFF
 

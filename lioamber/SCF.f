@@ -45,7 +45,7 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
 
 !reasigna las cargas
         if (ecpmode) call ReasignZ
-
+	call obtainls()
 
 !este call es solo para testeo de la rutina, luego hay q sacarlo
         call intECP()

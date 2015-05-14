@@ -102,6 +102,57 @@
 
 	end subroutine intECPAAA
 
+!	subroutine obtainls
+!arma una matriz que contenga los exponentes de la parte ngular de la base
+! |x> = A x^lx y^ly z^lz *e^-ar^2
+! devuelve angularL(i,j) j=1 lx, j=2, ly, j=3 lz para la funcion i de la base
+!        use garcha_mod, only : nshell
+!        use ECP_mod, only : Lxyz
+!	implicit none
+!	integer :: i
+!	integer :: D, lx,ly,lz
+!	integer :: resto
+!	D = nshell(0)+nshell(1)+nshell(2)
+!	allocate (Lxyz(D, 3))
+!	Lxyz=0
+!	do i=nshell(0)+1,D
+!		if (i .le. nshell(0)+nshell(1)) then
+!funciones p
+!			resto=modulo(i,3)
+!			if (resto .eq. 1) Lxyz(i,1)=1
+!			if (resto .eq. 2) Lxyz(i,2)=1
+!			if (resto .eq. 0) Lxyz(i,3)=1
+!		else if (i .le. D) then
+!			resto=modulo(i,6)
+!			if (resto .eq. 1) Lxyz(i,1)=2
+!			if (resto .eq. 2) then
+!				Lxyz(i,1)=1
+!				Lxyz(i,2)=1
+!			end if
+!			if (resto .eq. 3) Lxyz(i,2)=2
+!			if (resto .eq. 4) then 
+!				Lxyz(i,1)=1
+!				Lxyz(i,3)=1
+!			end if
+!			if (resto .eq. 5) then 
+!				Lxyz(i,2)=1
+!				Lxyz(i,3)=1
+!			end if
+!			if (resto .eq. 0) Lxyz(i,3)=2
+!		end if
+!		
+!	end do
+
+!testeo escribiendo
+!	do i=1,D
+!		write(*,*) i,Lxyz(i,1),Lxyz(i,2),Lxyz(i,3)
+!	end do
+
+!	write(*,*) nshell(0),nshell(1),nshell(2)
+
+
+!	end subroutine obtainls
+
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!esto no lo voy a usar !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -548,4 +599,58 @@
 
 !	9018 format(/1x,'Z =',i4,2x, 'L =',i4,2x,'coefnumber =',i3,2x, 'n =',i2,2x, 'b =', f15.5,2x,'c =',f15.5)
 !        end subroutine intECP
+
+
+        subroutine obtainls
+!arma una matriz que contenga los exponentes de la parte ngular de la base
+! |x> = A x^lx y^ly z^lz *e^-ar^2
+! devuelve angularL(i,j) j=1 lx, j=2, ly, j=3 lz para la funcion i de la base
+        use garcha_mod, only : nshell
+        use ECP_mod, only : Lxyz
+        implicit none
+        integer :: i
+        integer :: D, lx,ly,lz
+        integer :: resto
+        D = nshell(0)+nshell(1)+nshell(2)
+        allocate (Lxyz(D, 3))
+        Lxyz=0
+        do i=nshell(0)+1,D
+                if (i .le. nshell(0)+nshell(1)) then
+!funciones p
+                        resto=modulo(i-nshell(0),3)
+                        if (resto .eq. 1) Lxyz(i,1)=1
+                        if (resto .eq. 2) Lxyz(i,2)=1
+                        if (resto .eq. 0) Lxyz(i,3)=1
+                else if (i .le. D) then
+                        resto=modulo(i-nshell(0)+nshell(1),6)
+                        if (resto .eq. 1) Lxyz(i,1)=2
+                        if (resto .eq. 2) then
+                                Lxyz(i,1)=1
+                                Lxyz(i,2)=1
+                        end if
+                        if (resto .eq. 3) Lxyz(i,2)=2
+                        if (resto .eq. 4) then
+                                Lxyz(i,1)=1
+                                Lxyz(i,3)=1
+                        end if
+                        if (resto .eq. 5) then
+                                Lxyz(i,2)=1
+                                Lxyz(i,3)=1
+                        end if
+                        if (resto .eq. 0) Lxyz(i,3)=2
+!		else
+!			write(*,*) "sobra este i",i
+                end if
+                
+        end do
+
+!testeo escribiendo
+!        do i=1,D
+!                write(*,*) i,Lxyz(i,1),Lxyz(i,2),Lxyz(i,3)
+!        end do
+
+!        write(*,*) nshell(0),nshell(1),nshell(2)
+
+
+        end subroutine obtainls
 

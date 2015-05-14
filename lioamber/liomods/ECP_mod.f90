@@ -19,11 +19,12 @@
 !expnumbersECP(Z,l) cantidad de terminos del ECP para el atomo Z y l
 	integer, dimension(118,0:5,10) :: nECP
 	double precision, dimension(118,0:5,10) :: bECP, aECP
-!coeficientes y exponentes del pseudopotencial
+!coeficientes(aECP) y exponentes(bECP) del pseudopotencial
 	integer, dimension (:), ALLOCATABLE :: IzECP
 !cargas sin corregir por el Zcore
 	integer, dimension (:,:), ALLOCATABLE :: Lxyz
-
+! devuelve Lxyz(i,j) contiene los exponentes de la parte angular de la funcion de base i
+!|x> = A x^lx y^ly z^lz *e^-ar^2, j=1 lx, j=2, ly, j=3 lz para la funcion i de la base
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&hasta aca testeado FFFFFFFFFFFFFFFFFFFFFFF
 

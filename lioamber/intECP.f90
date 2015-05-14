@@ -50,9 +50,9 @@
 
 	Subroutine intECPAAA
 	use garcha_mod, only : a,c,ncont, nshell, nuc, ncont
-	use ECP_mod, only :nECP,bECP, aECP, ecptypes, IzECP, Lmax
+	use ECP_mod, only :nECP,bECP, aECP, ecptypes, IzECP, Lmax, Lxyz
 	implicit none
-	integer :: i,j,k, ii,ji,l, lmaxQ
+	integer :: i,j,k, ii,ji,l, lmaxQ, lx,ly,lz
 	double precision :: local, nonlocal, Kbessel, exponente
 	local=0.d0
 	nonlocal=0.d0
@@ -75,6 +75,10 @@
 						do ii=1, ncont(i)
 						do ji=1, ncont(j)
 !ji y ii barren terminos de la funcion de base
+						lx=Lxyz(i,1)+Lxyz(j,1)
+						ly=Lxyz(i,2)+Lxyz(j,2)
+						lz=Lxyz(i,3)+Lxyz(j,3)
+						write(*,*) AAAlocal(i,j,k,ii,ji,lx,ly,lz)
 
 !local part
 						do l=1, expnumbersECP(ZlistECP(k),Lmax(k))
@@ -97,10 +101,65 @@
 		end do
 	end do
 
+        end subroutine intECPAAA
+
+	DOUBLE PRECISION function AAANonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
+!i,j funciones de la base
+!ii,ji termino de la funcion
+!k atomo con ecp
+!lx(y o z)i(j) exponente de la parte angular de la base x^lx y=ly z^lz
+	implicit none
+	integer, intent(in) :: i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj
+	AAANonLocal=0.d0
+	end function AAANonLocal
 
 
 
-	end subroutine intECPAAA
+	DOUBLE PRECISION function AAAlocal(i,j,k,ii,ji,lx,ly,lz)
+!i,j funcion de base
+!ii,ij coeiciente q calcula de la base
+!k atomo con ECP
+        use garcha_mod, only : a,c
+        use ECP_mod, only :nECP,bECP, aECP, ZlistECP, Lmax, expnumbersECP, Qnl, angularint
+	implicit none
+	integer :: w,n,z,l
+	integer, intent(in) :: i,j,k,ii,ji,lx,ly,lz
+	double precision :: Ccoef
+	z=ZlistECP(k)
+	L=Lmax(ZlistECP(k))
+	n=lx+ly+lz
+	AAAlocal=0.d0
+	do w =1, expnumbersECP(z,l)
+!barre todos los terminos del Lmaximo
+		Qnl=0.d0
+		Ccoef=bECP(z,L,w)+a(i,ii)+a(j,ji)
+		call Qtype1(0.1,Ccoef,n,nECP(z,l,w))
+!falta Qtype1
+		AAAlocal=AAAlocal+aECP(z,L,w)*angularint(lx,ly,lz)*Q0(n+nECP(z,l,w),Ccoef)
+
+!		write(*,*) "1",aECP(z,L,w)
+!		write(*,*) "2",angularint(lx,ly,lz)
+!		write(*,*) "3",Qnl(n+nECP(z,l,w),0)
+!		write(*,*) "4", Q0(n+nECP(z,l,w),Ccoef)
+!la ultima trae problemas, programos una rutina nueva
+	end do
+	return
+	end function AAAlocal
+
+	DOUBLE PRECISION function Q0(n,alpha)
+	use ECP_mod, only :doublefac, pi12, fac
+	implicit none
+	integer, intent(in) :: n
+	double precision, intent(in) :: alpha
+	if ( .not. mod(n,2)) then
+		Q0=0.5d0*pi12/sqrt(alpha) * doublefac(2*n-1)/(2*alpha**n)
+		return
+	else
+		Q0=fac((n-1)/2)/(2*alpha**((n+1)/2))
+		return
+	end if
+	end function Q0
+
 
 !	subroutine obtainls
 !arma una matriz que contenga los exponentes de la parte ngular de la base
@@ -156,37 +215,37 @@
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!esto no lo voy a usar !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	DOUBLE PRECISION FUNCTION VijlocalAAA
-	implicit none
-	double precision :: acumk, acuml, acumm
-	integer :: k,l,m
-	VijlocalAAA=0.d0
+!	DOUBLE PRECISION FUNCTION VijlocalAAA
+!	implicit none
+!	double precision :: acumk, acuml, acumm
+!	integer :: k,l,m
+!	VijlocalAAA=0.d0
 !	do 
-	write(*,*) SAAA (0.5d0,0.55d0,0.333d0,1,0,0,1,0,0,2)
-	end function VijlocalAAA
+!	write(*,*) SAAA (0.5d0,0.55d0,0.333d0,1,0,0,1,0,0,2)
+!	end function VijlocalAAA
 
 !subrutinas mixtas
-	DOUBLE PRECISION FUNCTION SAAA (k,alpha,Ccoef,na,ma,la,nb,mb,lb,necp)
-	use ECP_mod, only :  Qnl
-	implicit none
-	integer, intent(in) :: na,ma,la,nb,mb,lb,necp
-	double precision, intent (in) :: k,alpha,Ccoef
-	integer :: lambda, lmax
-	Qnl=0.d0
-	SAAA=0.d0
-	lmax=na+ma+la+nb+mb+lb
+!	DOUBLE PRECISION FUNCTION SAAA (k,alpha,Ccoef,na,ma,la,nb,mb,lb,necp)
+!	use ECP_mod, only :  Qnl
+!	implicit none
+!	integer, intent(in) :: na,ma,la,nb,mb,lb,necp
+!	double precision, intent (in) :: k,alpha,Ccoef
+!	integer :: lambda, lmax
+!	Qnl=0.d0
+!	SAAA=0.d0
+!	lmax=na+ma+la+nb+mb+lb
 !lmax  = 0 para <s||s>, 1 para <s||p>, 2 para <s||d>, ... , 6 para <d||d>
 !Ccoef = exponente basei + exponente base j + exponente ecp
-	write(*,*) "yegue a SAAA"
-	call Qtype1(K,Ccoef,lmax,necp)
-	call Qtype1(0,Ccoef,lmax,necp)
-		do lambda=0, lmax
-			write(*,*) Qnl(na+ma+la+nb+mb+lb+necp,lambda)
-			write(*,*) OMEGA1((/0.00d0,0.00d0,0.00d0/),lambda,na+nb,ma+mb,la+lb)
+!	write(*,*) "yegue a SAAA"
+!	call Qtype1(K,Ccoef,lmax,necp)
+!	call Qtype1(0,Ccoef,lmax,necp)
+!		do lambda=0, lmax
+!			write(*,*) Qnl(na+ma+la+nb+mb+lb+necp,lambda)
+!			write(*,*) OMEGA1((/0.00d0,0.00d0,0.00d0/),lambda,na+nb,ma+mb,la+lb)
 !			SAAA=SAAA + Qnl(na+ma+la+nb+mb+lb+necp,lambda)*OMEGA1(K,lambda,na+nb,ma+mb,la+lb)
-		end do
-	return
-	end function SAAA
+!		end do
+!	return
+!	end function SAAA
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

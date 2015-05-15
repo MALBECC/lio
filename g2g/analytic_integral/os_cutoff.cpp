@@ -161,6 +161,9 @@ void OSIntegral<scalar_type>::new_cutoff( void )
       this->local2globaldens.push_back(local2globaldens[dens_offsets[NUM_TERM_TYPES-1]]);
   }
 
+  cout << "AINT NUMBER OF THREADS: " << num_terms << " (" << this->func_code.size() << ")" << endl;
+  cout << "AINT DENSITY TERMS: " << num_dens_terms << " (" << this->dens_values.size() << ")" << endl;
+
 }
 
 #if AINT_MP && !FULL_DOUBLE

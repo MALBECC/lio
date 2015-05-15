@@ -52,11 +52,11 @@ class CoulombIntegral {
 
     // Allocate Coulomb auxiliary basis on GPU
     // (Needs to be done only once)
-    void load_aux_basis( void );
+    bool load_aux_basis( void );
 
     // Allocate Coulomb-only input on GPU
-    void load_input( void );
-    void alloc_output( void );
+    bool load_input( void );
+    bool alloc_output( void );
 
     // Main kernel calls
     void fit_aux_density( void );

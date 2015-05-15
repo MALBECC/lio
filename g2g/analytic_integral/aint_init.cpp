@@ -103,8 +103,14 @@ extern "C" void aint_deinit_( void )
 extern "C" void aint_new_step_( void )
 {
 	os_integral.new_cutoff();
-	os_integral.load_input();
-	os_integral.alloc_output();
+        int stat = 0;
+	if (!os_integral.load_input()) stat = 1;
+	if (!os_integral.alloc_output()) stat = 2;
+
+        if (stat != 0) {
+          cout << "Could not initialize AINT module; probably due to not enough GPU memory" << endl;
+          exit(-1);
+        }
 
         integral_vars.clatoms = 0;
 }
@@ -112,6 +118,7 @@ extern "C" void aint_new_step_( void )
 extern "C" void aint_qmmm_init_( const unsigned int& nclatom, double* r_all, double* pc )
 {
 
+        int stat = 0;
 	integral_vars.clatoms = nclatom;
 	cout << "MM point charges: " << integral_vars.clatoms << endl;
         if (integral_vars.clatoms > 0) {
@@ -129,17 +136,28 @@ extern "C" void aint_qmmm_init_( const unsigned int& nclatom, double* r_all, dou
 		integral_vars.clatom_positions(i) = pos;
                 integral_vars.clatom_charges(i) = charge;
 	    }
-  	    qmmm_integral.load_clatoms();
-	    qmmm_integral.alloc_output();
+            qmmm_integral.clear();
+  	    if (!qmmm_integral.load_clatoms()) stat = 1;
+	    if (!qmmm_integral.alloc_output()) stat = 2;
+            if (stat != 0) {
+              cout << "Could not initialize QM/MM module; probably due to not enough GPU memory" << endl;
+              exit(-1);
+            }
 
         }
 }
 //==============================================================================================================
 extern "C" void aint_coulomb_init_( void )
 {
-        coulomb_integral.load_aux_basis();
-	coulomb_integral.load_input();
-	coulomb_integral.alloc_output();
+        coulomb_integral.clear();
+        int stat = 0;
+        if (!coulomb_integral.load_aux_basis()) stat = 1;
+	if (!coulomb_integral.load_input()) stat = 2;
+	if (!coulomb_integral.alloc_output()) stat = 3;
+        if (stat != 0) {
+          cout << "Could not initialize COULOMB module; probably due to not enough GPU memory" << endl;
+          exit(-1);
+        }
 }
 //===============================================================================================================
 //                                  QM/MM routines

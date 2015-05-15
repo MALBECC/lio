@@ -41,8 +41,8 @@ class QMMMIntegral {
     void calc_nuc_energy( double& Ens );
     void calc_nuc_gradient( double* qm_forces, double* mm_forces );
 
-    void load_clatoms( void );
-    void alloc_output( void );
+    bool load_clatoms( void );
+    bool alloc_output( void );
 
     // Main kernel calls
     void calc_fock( double& Es );

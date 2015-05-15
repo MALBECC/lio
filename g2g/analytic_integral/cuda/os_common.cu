@@ -8,6 +8,7 @@
 #include "../../matrix.h"
 #include "../../timer.h"
 #include "../../scalar_vector_types.h"
+#include "../../global_memory_pool.h"
 
 #include "../os_integral.h"
 #include "../aint_init.h"
@@ -87,12 +88,20 @@ void OSIntegral<scalar_type>::clear( void )
     dens_values.clear();
     local2globaldens.clear();
 
+    if (factor_ac_dev.is_allocated()) {
+      size_t gpu_size = factor_ac_dev.bytes() + nuc_dev.bytes() + func_code_dev.bytes() + local_dens_dev.bytes() + dens_values_dev.bytes();
+      globalMemoryPool::dealloc(gpu_size);
+    }
     factor_ac_dev.deallocate();
     nuc_dev.deallocate();
     func_code_dev.deallocate();
     local_dens_dev.deallocate();
     dens_values_dev.deallocate();
 
+    if (factor_ac_dev.is_allocated()) {
+      size_t gpu_size = partial_fock_dev.bytes() + partial_energies_dev.bytes() + partial_qm_forces_dev.bytes();
+      globalMemoryPool::dealloc(gpu_size);
+    }
     partial_fock_dev.deallocate();
     partial_energies_dev.deallocate();
     partial_qm_forces_dev.deallocate();
@@ -111,7 +120,7 @@ void OSIntegral<scalar_type>::deinit( void )
 }
 
 template<class scalar_type>
-void OSIntegral<scalar_type>::load_input( void )
+bool OSIntegral<scalar_type>::load_input( void )
 {
     //
     // Set up device arrays for function values and mapping function -> nuclei
@@ -130,6 +139,13 @@ void OSIntegral<scalar_type>::load_input( void )
       func++;
       localfunc++;
     }
+    size_t gpu_size = factor_ac_cpu.bytes() + nuc_cpu.bytes();
+    gpu_size += (func_code.size() + local_dens.size()) * sizeof(uint);
+    gpu_size += dens_values.size() * sizeof(scalar_type);
+    float mb_size = (float)gpu_size / 1048576.0f;
+    cout << "O-S common input size: " << mb_size << " MB" << endl;
+    if (globalMemoryPool::tryAlloc(gpu_size)) return false;
+
     factor_ac_dev = factor_ac_cpu;
     nuc_dev = nuc_cpu;
 
@@ -144,6 +160,8 @@ void OSIntegral<scalar_type>::load_input( void )
     dens_values_dev = dens_values;
 
     cudaAssertNoError("OSIntegral::load_input");
+
+    return true;
 }
 
 template<class scalar_type>
@@ -159,7 +177,7 @@ void OSIntegral<scalar_type>::reload_density( void )
 }
 
 template<class scalar_type>
-void OSIntegral<scalar_type>::alloc_output( void )
+bool OSIntegral<scalar_type>::alloc_output( void )
 {
     //
     // Allocate output arrays on device
@@ -175,6 +193,21 @@ void OSIntegral<scalar_type>::alloc_output( void )
       if (i+1<NUM_TERM_TYPES) { out_offsets[i+1] = partial_out_size; }
     }
     //
+    // When calculating energies, the energy gets reduced per-block; we figure out the offets/counts of different term types into the partial output energy array here
+    //
+    uint energies_size = 0;
+    for (uint i = 0; i < NUM_TERM_TYPES; i++) {
+      energies_offsets[i] = energies_size;
+      energies_size += divUp(dens_counts[i],QMMM_REDUCE_BLOCK_SIZE);
+    }
+
+    size_t gpu_size = COALESCED_DIMENSION(partial_out_size) * G2G::fortran_vars.atoms * 3 * sizeof(scalar_type);
+    gpu_size += (dens_values.size() * max_partial_size + energies_size) * sizeof(double);
+    float mb_size = (float)gpu_size / 1048576.0f;
+    cout << "O-S common output size: " << mb_size << " MB" << endl;
+    if (globalMemoryPool::tryAlloc(gpu_size)) return false;
+
+    //
     // Forces: output is partial forces
     //
     partial_qm_forces_dev.resize(COALESCED_DIMENSION(partial_out_size), G2G::fortran_vars.atoms);
@@ -184,17 +217,11 @@ void OSIntegral<scalar_type>::alloc_output( void )
     // The partial Fock matrix is partitioned by term type, so the second (partial) dimension needs to be as big as largest count of a single term type
     partial_fock_dev.resize(dens_values.size(),max_partial_size);
 
-    //
-    // When calculating energies, the energy gets reduced per-block; we figure out the offets/counts of different term types into the partial output energy array here
-    //
-    uint energies_size = 0;
-    for (uint i = 0; i < NUM_TERM_TYPES; i++) {
-      energies_offsets[i] = energies_size;
-      energies_size += divUp(dens_counts[i],QMMM_REDUCE_BLOCK_SIZE);
-    }
     partial_energies_dev.resize(energies_size,1);
 
     cudaAssertNoError("OSIntegral::alloc_output");
+
+    return true;
 }
 
 template<class scalar_type>

@@ -8,6 +8,7 @@
 #include "../../matrix.h"
 #include "../../timer.h"
 #include "../../scalar_vector_types.h"
+#include "../../global_memory_pool.h"
 
 #include "../coulomb_integral.h"
 #include "../aint_init.h"
@@ -35,10 +36,8 @@ namespace AINT
 
 // -----------------------------------------------------------------------------------------------------------------
 template <class scalar_type>
-void CoulombIntegral<scalar_type>::load_aux_basis( void )
+bool CoulombIntegral<scalar_type>::load_aux_basis( void )
 {
-  clear();
-
   std::vector<G2G::vec_type<scalar_type,2> > factor_ac_dens_cpu;
   std::vector<scalar_type> fit_dens_cpu;
   std::vector<G2G::vec_type<scalar_type,3> > nuc_dens_cpu;
@@ -135,6 +134,14 @@ void CoulombIntegral<scalar_type>::load_aux_basis( void )
   d_end = input_size;
   cudaMemcpyToSymbol(gpu_d_end, &d_end, sizeof(d_end), 0, cudaMemcpyHostToDevice);
 
+  size_t gpu_size = factor_ac_dens_cpu.size() * 2 * sizeof(scalar_type);
+  gpu_size += nuc_dens_cpu.size() * 3 * sizeof(scalar_type);
+  gpu_size += (nuc_ind_dens_cpu.size() + input_ind_cpu.size()) * sizeof(uint);
+  gpu_size += input_size * sizeof(scalar_type);
+  float mb_size = (float)gpu_size / 1048576.0f;
+  cout << "Coulomb aux basis input size: " << mb_size << " MB" << endl;
+  if (globalMemoryPool::tryAlloc(gpu_size)) return false;
+
   factor_ac_dens_dev = factor_ac_dens_cpu;
   nuc_dens_dev = nuc_dens_cpu;
   nuc_ind_dens_dev = nuc_ind_dens_cpu;
@@ -143,10 +150,12 @@ void CoulombIntegral<scalar_type>::load_aux_basis( void )
   fit_dens_dev.resize(input_size);
 
   cudaAssertNoError("CoulombIntegral::load_aux_basis");
+
+  return true;
 }
 
 template <class scalar_type>
-void CoulombIntegral<scalar_type>::load_input( void )
+bool CoulombIntegral<scalar_type>::load_input( void )
 {
     
     G2G::HostMatrix<double> Ginv_h(COALESCED_DIMENSION(integral_vars.m_dens),integral_vars.m_dens);
@@ -161,15 +170,22 @@ void CoulombIntegral<scalar_type>::load_input( void )
         Ginv_h(i,j) = integral_vars.Ginv_input(j+(2*integral_vars.m_dens-(i+1))*i/2);
       }
     }
+    size_t gpu_size = Ginv_h.bytes();
+    float mb_size = (float)gpu_size / 1048576.0f;
+    cout << "Coulomb input size: " << mb_size << " MB" << endl;
+    if (globalMemoryPool::tryAlloc(gpu_size)) return false;
+    
     Ginv_dev = Ginv_h;
 
     cudaMemcpyToSymbol(gpu_out_offsets,os_int.out_offsets,NUM_TERM_TYPES*sizeof(uint),0,cudaMemcpyHostToDevice);
 
     cudaAssertNoError("CoulombIntegral::load_input");
+
+    return true;
 }
 
 template <class scalar_type>
-void CoulombIntegral<scalar_type>::alloc_output( void )
+bool CoulombIntegral<scalar_type>::alloc_output( void )
 {
     uint partial_out_size = 0;
     // Output arrays (probably) don't need to be padded for alignment as only one (or three) threads per block write to them
@@ -177,9 +193,16 @@ void CoulombIntegral<scalar_type>::alloc_output( void )
       uint this_count = divUp(os_int.term_type_counts[i],QMMM_BLOCK_SIZE);
       partial_out_size += this_count;
     }
+    size_t gpu_size = COALESCED_DIMENSION(integral_vars.m_dens) * partial_out_size * sizeof(double);
+    float mb_size = (float)gpu_size / 1048576.0f;
+    cout << "Coulomb output size: " << mb_size << " MB" << endl;
+    if (globalMemoryPool::tryAlloc(gpu_size)) return false;
+
     rc_partial_dev.resize(COALESCED_DIMENSION(integral_vars.m_dens),partial_out_size);
 
     cudaAssertNoError("CoulombIntegral::alloc_output");
+
+    return true;
 }
 
 template <class scalar_type>
@@ -187,12 +210,24 @@ void CoulombIntegral<scalar_type>::clear( void )
 {
     input_ind_cpu.clear();
 
+    if (fit_dens_dev.is_allocated()) {
+      size_t gpu_size = fit_dens_dev.bytes() + factor_ac_dens_dev.bytes() + nuc_dens_dev.bytes() + nuc_ind_dens_dev.bytes() + input_ind_dev.bytes();
+      globalMemoryPool::dealloc(gpu_size);
+    }
     fit_dens_dev.deallocate();
     factor_ac_dens_dev.deallocate();
     nuc_dens_dev.deallocate();
     nuc_ind_dens_dev.deallocate();
     input_ind_dev.deallocate();
+    if (Ginv_dev.is_allocated()) {
+      size_t gpu_size = Ginv_dev.bytes();
+      globalMemoryPool::dealloc(gpu_size);
+    }
     Ginv_dev.deallocate();
+    if (rc_partial_dev.is_allocated()) {
+      size_t gpu_size = rc_partial_dev.bytes();
+      globalMemoryPool::dealloc(gpu_size);
+    }
     rc_partial_dev.deallocate();
 
     cudaAssertNoError("CoulombIntegral::clear");

@@ -65,8 +65,8 @@ class OSIntegral {
     // Allocate common input/output on GPU
     void load_params( void );
 
-    void load_input( void );
-    void alloc_output( void );
+    bool load_input( void );
+    bool alloc_output( void );
 
     void reload_density( void );
 

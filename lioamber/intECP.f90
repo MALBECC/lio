@@ -1,12 +1,12 @@
 	subroutine intECP
-	use garcha_mod, only :nshell
-	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP,VAAA
+	use garcha_mod, only :nshell,nuc
+	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP,VAAAcuadrada,lxyz
 	implicit none
 
 
 	integer z,l,t
 
-        integer :: ns,np,nd,M,i,j
+        integer :: ns,np,nd,M,i,j,e
         ns=nshell(0)
         np=nshell(1)
         nd=nshell(2)
@@ -38,12 +38,30 @@
 
 
 	if ( .true. ) then
+!escribe coeficientes de fock del ECP AAA
+	write(*,*) "test Vij AAA"
 		do i=1,M
-			do j=1,M
-				write(*,*) VAAA(i,j), VAAA(j,i), VAAA(i,j)-VAAA(j,i)
+			do j=i,M
+				if (nuc(i) .eq. nuc(j)) then
+!					write(*,9015) i,j,VAAA(i,j), VAAA(j,i), VAAA(i,j)-VAAA(j,i)
+					if (abs(VAAAcuadrada(i,j)-VAAAcuadrada(j,i)) .gt. 0.0000000000001) then
+						do e=1,20
+						write(*,*) "*********  error matriz VAAA no simetrica  **********"
+						end do
+					end if
+
+				end if
 			end do
 		end do
 !		write(*,*) VAAA
+	end if
+
+	if ( .false. ) then
+!escribe matriz de esponentes de la parte angular
+		write(*,*) "escribe lx,ly,lz"
+		do i=1, M
+			write(*,9014) i,lxyz(i,1),lxyz(i,2),lxyz(i,3)
+		end do
 	end if
 
 
@@ -53,11 +71,8 @@
 
 
 
-
-
-
-
-
+	9014 format(/1x,"i",i3,2x,"lx",i2,2x,"ly",i2,2x,"lz",i2)
+	9015 format(/1x,"i",i3,2x,"j",i3,2x,"Vij",f10.5,2x,"Vji",f10.5,2x,     "diff",f18.15)
         9018 format(/1x,'Z =',i4,2x, 'L =',i4,2x,'coefnumber =',i3,2x,  'n =',i2,2x, 'b =', f15.5,2x,'c =',f15.5)
 
 
@@ -66,20 +81,20 @@
 
 	subroutine allocateV
 	use garcha_mod, only :nshell
-	use ECP_mod, only :VAAA
+	use ECP_mod, only :VAAAcuadrada
 	implicit none
 	integer :: ns,np,nd,M
 	ns=nshell(0)
         np=nshell(1)
         nd=nshell(2)
         M=ns+np+nd
-	allocate (VAAA(M,M))
-	VAAA=0.d0
+	allocate (VAAAcuadrada(M,M))
+	VAAAcuadrada=0.d0
 	end subroutine allocateV
 
 	Subroutine intECPAAA
 	use garcha_mod, only : a,c,ncont, nshell, nuc, ncont
-	use ECP_mod, only :nECP,bECP, aECP, ecptypes, IzECP, Lmax, Lxyz, VAAA
+	use ECP_mod, only :nECP,bECP, aECP, ecptypes, IzECP, Lmax, Lxyz, VAAAcuadrada
 	implicit none
 	integer :: i,j,k, ii,ji,l, lmaxQ, lxi, lxj,lyi,lyj,lzi, lzj
 	double precision :: local, nonlocal, Kbessel, exponente, AAA, acum
@@ -88,7 +103,7 @@
 	Kbessel=0.d0
 	exponente=0.d0
 	lmaxQ=0
-
+	AAA=0.d0
 
 	do i=1, nshell(0)+nshell(1)+nshell(2)
 !barre un coef de la base
@@ -101,7 +116,7 @@
 !barre atomos con ecp
 					if (IzECP(nuc(i)) .eq. ZlistECP(k))then
 !solo calcula si el atomo tiene ECP
-						write(*,*) "1 coincidencia", ZlistECP(k)
+!						write(*,*) "1 coincidencia", ZlistECP(k)
 						do ii=1, ncont(i)
 						do ji=1, ncont(j)
 !ji y ii barren terminos de la funcion de base
@@ -114,10 +129,12 @@
 						lyj=Lxyz(j,2)
 						lzi=Lxyz(i,3)
 						lzj=Lxyz(j,3)
+!						AAA=AAANonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
 						AAA=AAAlocal(i,j,k,ii,ji,lxi+lxj,lyi+lyj,lzi+lzj) + AAANonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
 						acum=acum+AAA*c(j,ji)
 						end do
-						VAAA(i,j) = VAAA(i,j) + acum*c(i,ii)
+						VAAAcuadrada(i,j) = VAAAcuadrada(i,j) + acum*c(i,ii)
+						acum=0.d0
 						end do
 
 					end if

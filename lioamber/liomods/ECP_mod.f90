@@ -28,7 +28,7 @@
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&hasta aca testeado FFFFFFFFFFFFFFFFFFFFFFF
 
-	double precision, dimension(:,:), Allocatable :: VAAA
+	double precision, dimension(:,:), Allocatable :: VAAAcuadrada
 !VAAA contiene los terminos <A|A|A> del pseudo potencial
 
 !parameters for radial integral of type 2

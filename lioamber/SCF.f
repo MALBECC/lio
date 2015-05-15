@@ -45,8 +45,12 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
 
 !reasigna las cargas
         if (ecpmode) then 
-	call ReasignZ
+	call ReasignZ()
+!reasigna las cargas
 	call obtainls()
+!obtiene una matriz con lx,ly y lz
+!	call allocateV()
+!allocatea la matriz de fock de pseudopotenciales
 
 !este call es solo para testeo de la rutina, luego hay q sacarlo
         call intECP()

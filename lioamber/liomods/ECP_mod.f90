@@ -28,7 +28,8 @@
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&hasta aca testeado FFFFFFFFFFFFFFFFFFFFFFF
 
-
+	double precision, dimension(:,:), Allocatable :: VAAA
+!VAAA contiene los terminos <A|A|A> del pseudo potencial
 
 !parameters for radial integral of type 2
 !alpha y betha contains coeficients for expantion of modified spherical bessel function

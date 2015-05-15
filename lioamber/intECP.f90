@@ -1,8 +1,17 @@
 	subroutine intECP
-	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP
+	use garcha_mod, only :nshell
+	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP,VAAA
 	implicit none
 
+
 	integer z,l,t
+
+        integer :: ns,np,nd,M,i,j
+        ns=nshell(0)
+        np=nshell(1)
+        nd=nshell(2)
+        M=ns+np+nd
+
 
 !Escribe coeficientes como testeo
 	if ( .false. ) then
@@ -21,14 +30,21 @@
 !termino local
 
 
-
+	call allocateV()
 	call intECPAAA()
 
 !	write(*,*) VijlocalAAA()
 
 
 
-
+	if ( .true. ) then
+		do i=1,M
+			do j=1,M
+				write(*,*) VAAA(i,j), VAAA(j,i), VAAA(i,j)-VAAA(j,i)
+			end do
+		end do
+!		write(*,*) VAAA
+	end if
 
 
 
@@ -48,12 +64,25 @@
 
 	contains
 
+	subroutine allocateV
+	use garcha_mod, only :nshell
+	use ECP_mod, only :VAAA
+	implicit none
+	integer :: ns,np,nd,M
+	ns=nshell(0)
+        np=nshell(1)
+        nd=nshell(2)
+        M=ns+np+nd
+	allocate (VAAA(M,M))
+	VAAA=0.d0
+	end subroutine allocateV
+
 	Subroutine intECPAAA
 	use garcha_mod, only : a,c,ncont, nshell, nuc, ncont
-	use ECP_mod, only :nECP,bECP, aECP, ecptypes, IzECP, Lmax, Lxyz
+	use ECP_mod, only :nECP,bECP, aECP, ecptypes, IzECP, Lmax, Lxyz, VAAA
 	implicit none
-	integer :: i,j,k, ii,ji,l, lmaxQ, lx,ly,lz
-	double precision :: local, nonlocal, Kbessel, exponente
+	integer :: i,j,k, ii,ji,l, lmaxQ, lxi, lxj,lyi,lyj,lzi, lzj
+	double precision :: local, nonlocal, Kbessel, exponente, AAA, acum
 	local=0.d0
 	nonlocal=0.d0
 	Kbessel=0.d0
@@ -63,7 +92,8 @@
 
 	do i=1, nshell(0)+nshell(1)+nshell(2)
 !barre un coef de la base
-		do j=i, nshell(0)+nshell(1)+nshell(2)
+		do j=1, nshell(0)+nshell(1)+nshell(2)
+!j debe comensar desde i, no desde 1 ya que solo hay q barrer media matriz por simetria. lo dejo asi para testeo
 !barre el otro coef de la base j>=i ya que la matriz tiene q ser simetrica
 			if (nuc(i) .eq. nuc(j)) then
 !solo calcula si los terminos corresponden al mismo atomo
@@ -75,23 +105,19 @@
 						do ii=1, ncont(i)
 						do ji=1, ncont(j)
 !ji y ii barren terminos de la funcion de base
-						lx=Lxyz(i,1)+Lxyz(j,1)
-						ly=Lxyz(i,2)+Lxyz(j,2)
-						lz=Lxyz(i,3)+Lxyz(j,3)
-						write(*,*) AAAlocal(i,j,k,ii,ji,lx,ly,lz)
-
-!local part
-						do l=1, expnumbersECP(ZlistECP(k),Lmax(k))
-!						exponente=C(i,ii)+C(j,ji)+bECP(ZlistECP(k)
-!						call Qtype1(Kbessel,exponente,l,lmax,nECP(ZlistECP(k),ltotal,l))
-!						Qtype1(K,Ccoef,lmax,necp)
-!falta definir ltotal 0 para ss, 1 para sp, 2 para sd, etc
+!						lx=Lxyz(i,1)+Lxyz(j,1)
+!						ly=Lxyz(i,2)+Lxyz(j,2)
+!						lz=Lxyz(i,3)+Lxyz(j,3)
+						lxi=Lxyz(i,1)
+						lxj=Lxyz(j,1)
+						lyi=Lxyz(i,2)
+						lyj=Lxyz(j,2)
+						lzi=Lxyz(i,3)
+						lzj=Lxyz(j,3)
+						AAA=AAAlocal(i,j,k,ii,ji,lxi+lxj,lyi+lyj,lzi+lzj) + AAANonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
+						acum=acum+AAA*c(j,ji)
 						end do
-
-
-
-
-						end do
+						VAAA(i,j) = VAAA(i,j) + acum*c(i,ii)
 						end do
 
 					end if
@@ -108,10 +134,53 @@
 !ii,ji termino de la funcion
 !k atomo con ecp
 !lx(y o z)i(j) exponente de la parte angular de la base x^lx y=ly z^lz
+	use garcha_mod, only : a,c
+	use ECP_mod, only :ZlistECP,Lmax,aECP,nECP,bECP
 	implicit none
 	integer, intent(in) :: i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj
+	integer :: l,m, term
+!auxiliades para ciclos
+	integer :: Z,n
+	double precision :: A2, Ccoef
+!Z= carga del nucleo
 	AAANonLocal=0.d0
+	A2=0.d0
+	Z=ZlistECP(k)
+	n=lxi+lxj+lyi+lyj+lzi+lzj
+!barre todos los terminos del Lmaximo
+!        Qnl=0.d0
+!                call Qtype1(0.1,Ccoef,n,nECP(z,l,w))
+
+	do l = 0 , Lmax(z)-1
+!barre l
+		do term=1, expnumbersECP(z,l)
+!barre terminos del ECP para z y l
+			do m=-l,l
+				A2=A2+Aintegral(l,m,lxi,lyi,lzi)*Aintegral(l,m,lxj,lyj,lzj)
+			end do
+			Ccoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
+			AAANonLocal=AAANonLocal+A2*aECP(z,L,term)*Q0(n+nECP(z,l,term),Ccoef)
+
+			A2=0.d0
+		end do
+	end do
+	return
 	end function AAANonLocal
+
+	DOUBLE PRECISION function Aintegral(l,m,lx,ly,lz)
+	use ECP_mod, only :angularint
+	implicit none
+	integer, intent(in) :: l,m,lx,ly,lz	
+	integer :: ix,iy,iz
+	Aintegral=0.d0
+		do ix=0,l
+			do iy=0,l-ix
+				iz=l-ix-iy
+				Aintegral=Aintegral+Ucoef(l,m,ix,iy,iz)*angularint(lx+ix,ly+iy,lz+iz)
+			end do
+		end do
+	return
+	end function Aintegral
 
 
 
@@ -131,9 +200,9 @@
 	AAAlocal=0.d0
 	do w =1, expnumbersECP(z,l)
 !barre todos los terminos del Lmaximo
-		Qnl=0.d0
+!		Qnl=0.d0
 		Ccoef=bECP(z,L,w)+a(i,ii)+a(j,ji)
-		call Qtype1(0.1,Ccoef,n,nECP(z,l,w))
+!		call Qtype1(0.1,Ccoef,n,nECP(z,l,w))
 !falta Qtype1
 		AAAlocal=AAAlocal+aECP(z,L,w)*angularint(lx,ly,lz)*Q0(n+nECP(z,l,w),Ccoef)
 

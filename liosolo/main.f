@@ -137,7 +137,7 @@ c      write(*,*)ng2,ngDyn,ngdDyn,norbit,Ngrid
      > ,cd(ngdnu,nl),ad(ngdnu,nl),Nucd(ngdnu),ncontd(ngdnu)
      > ,indexii(ngnu),indexiid(ngdnu))
 
-	write(*,*) ngnu,nl, "Nick************"
+!	write(*,*) ngnu,nl, "Nick************"
 
 
       allocate (r(ntatom,3),v(ntatom,3),rqm(natom,3),Em(ntatom)

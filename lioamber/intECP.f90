@@ -1,12 +1,12 @@
 	subroutine intECP
 	use garcha_mod, only :nshell,nuc
-	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP,VAAAcuadrada,lxyz
+	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP,VAAAcuadrada,lxyz, VAAA
 	implicit none
 
 
 	integer z,l,t
 
-        integer :: ns,np,nd,M,i,j,e
+        integer :: ns,np,nd,M,i,j,e,pos
         ns=nshell(0)
         np=nshell(1)
         nd=nshell(2)
@@ -38,7 +38,7 @@
 
 
 	if ( .true. ) then
-!escribe coeficientes de fock del ECP AAA
+!escribe coeficientes de fock del ECP AAA y testea que la matriz sea simetrica
 	write(*,*) "test Vij AAA"
 		do i=1,M
 			do j=i,M
@@ -56,6 +56,26 @@
 !		write(*,*) VAAA
 	end if
 
+	if ( .true. ) then
+!compara la matriz cuadrada con el vector
+	write(*,*) "testeando array de VAAA"
+	        do i=1,M
+                        do j=i,M
+                                if (nuc(i) .eq. nuc(j)) then
+                                    pos=i+(1-j)*(j-2*M)/2
+				write(*,9013) VAAA(pos), VAAAcuadrada(i,j), VAAA(pos)-VAAAcuadrada(i,j)
+					if ( abs(VAAA(pos)-VAAAcuadrada(i,j)) .gt. 0.0000000000000001 ) then
+						do e=1,20
+						write(*,*) "no coinciden la matgriz cuadrada con el vector"
+						end do
+					end if
+				end if
+			end do
+		end do
+	end if
+
+
+
 	if ( .false. ) then
 !escribe matriz de esponentes de la parte angular
 		write(*,*) "escribe lx,ly,lz"
@@ -70,7 +90,7 @@
 
 
 
-
+	9013 format(/1x,"vector",f18.10,2x,"matriz",f18.10,2x,"diff",f18.10)
 	9014 format(/1x,"i",i3,2x,"lx",i2,2x,"ly",i2,2x,"lz",i2)
 	9015 format(/1x,"i",i3,2x,"j",i3,2x,"Vij",f10.5,2x,"Vji",f10.5,2x,     "diff",f18.15)
         9018 format(/1x,'Z =',i4,2x, 'L =',i4,2x,'coefnumber =',i3,2x,  'n =',i2,2x, 'b =', f15.5,2x,'c =',f15.5)
@@ -80,23 +100,27 @@
 	contains
 
 	subroutine allocateV
+!Allocatea VAAA, que contendra los terminos del ECP <A|A|A>
 	use garcha_mod, only :nshell
-	use ECP_mod, only :VAAAcuadrada
+	use ECP_mod, only :VAAAcuadrada,VAAA
 	implicit none
-	integer :: ns,np,nd,M
+	integer :: ns,np,nd,M,Mcuad
 	ns=nshell(0)
         np=nshell(1)
         nd=nshell(2)
         M=ns+np+nd
 	allocate (VAAAcuadrada(M,M))
 	VAAAcuadrada=0.d0
+        Mcuad=M*(M+1)/2
+        allocate (VAAA(Mcuad))
+	VAAA=0.d0
 	end subroutine allocateV
 
 	Subroutine intECPAAA
 	use garcha_mod, only : a,c,ncont, nshell, nuc, ncont
-	use ECP_mod, only :nECP,bECP, aECP, ecptypes, IzECP, Lmax, Lxyz, VAAAcuadrada
+	use ECP_mod, only :nECP,bECP, aECP, ecptypes, IzECP, Lmax, Lxyz, VAAAcuadrada,VAAA
 	implicit none
-	integer :: i,j,k, ii,ji,l, lmaxQ, lxi, lxj,lyi,lyj,lzi, lzj
+	integer :: i,j,k, ii,ji,l, lmaxQ, lxi, lxj,lyi,lyj,lzi, lzj,pos,M
 	double precision :: local, nonlocal, Kbessel, exponente, AAA, acum
 	local=0.d0
 	nonlocal=0.d0
@@ -104,10 +128,11 @@
 	exponente=0.d0
 	lmaxQ=0
 	AAA=0.d0
+	M=nshell(0)+nshell(1)+nshell(2)
 
-	do i=1, nshell(0)+nshell(1)+nshell(2)
+	do i=1, M
 !barre un coef de la base
-		do j=1, nshell(0)+nshell(1)+nshell(2)
+		do j=1, M
 !j debe comensar desde i, no desde 1 ya que solo hay q barrer media matriz por simetria. lo dejo asi para testeo
 !barre el otro coef de la base j>=i ya que la matriz tiene q ser simetrica
 			if (nuc(i) .eq. nuc(j)) then
@@ -134,6 +159,11 @@
 						acum=acum+AAA*c(j,ji)
 						end do
 						VAAAcuadrada(i,j) = VAAAcuadrada(i,j) + acum*c(i,ii)
+						if (j .ge. i) then
+!este if hay q sacarlo al fina, cuando cambie el rango en el q barre j , en vez de comenzar en 1 comience en i
+							pos=i+(1-j)*(j-2*M)/2
+							VAAA(pos) = VAAA(pos) + acum*c(i,ii) 
+						end if
 						acum=0.d0
 						end do
 

@@ -1,6 +1,6 @@
 	subroutine intECP
 	use garcha_mod, only :nshell,nuc
-	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP,VAAAcuadrada,lxyz, VAAA
+	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP,VAAAcuadrada,lxyz, VAAA, VAAAcuadrada
 	implicit none
 
 
@@ -60,13 +60,13 @@
 !compara la matriz cuadrada con el vector
 	write(*,*) "testeando array de VAAA"
 	        do i=1,M
-                        do j=i,M
+                        do j=1,i
                                 if (nuc(i) .eq. nuc(j)) then
-                                    pos=i+(1-j)*(j-2*M)/2
-				write(*,9013) VAAA(pos), VAAAcuadrada(i,j), VAAA(pos)-VAAAcuadrada(i,j)
+                	                pos=i+(1-j)*(j-2*M)/2
+					write(*,9013) VAAA(pos), VAAAcuadrada(i,j), VAAA(pos)-VAAAcuadrada(i,j)
 					if ( abs(VAAA(pos)-VAAAcuadrada(i,j)) .gt. 0.0000000000000001 ) then
 						do e=1,20
-						write(*,*) "no coinciden la matgriz cuadrada con el vector"
+						write(*,*) "no coinciden la matgriz cuadrada con el vector",i,j,pos
 						end do
 					end if
 				end if
@@ -133,7 +133,7 @@
 	do i=1, M
 !barre un coef de la base
 		do j=1, M
-!j debe comensar desde i, no desde 1 ya que solo hay q barrer media matriz por simetria. lo dejo asi para testeo
+!cambiar ppor do j=i,M para barrer solo la mitad de la matriz
 !barre el otro coef de la base j>=i ya que la matriz tiene q ser simetrica
 			if (nuc(i) .eq. nuc(j)) then
 !solo calcula si los terminos corresponden al mismo atomo
@@ -159,13 +159,23 @@
 						acum=acum+AAA*c(j,ji)
 						end do
 						VAAAcuadrada(i,j) = VAAAcuadrada(i,j) + acum*c(i,ii)
-						if (j .ge. i) then
+						if (i .ge. j) then
 !este if hay q sacarlo al fina, cuando cambie el rango en el q barre j , en vez de comenzar en 1 comience en i
-							pos=i+(1-j)*(j-2*M)/2
-							VAAA(pos) = VAAA(pos) + acum*c(i,ii) 
+							pos=i+(1-j)*(j-2*M)/2   !chekeada
+!							write(31,*) pos
+							VAAA(pos) = VAAA(pos) + acum*c(i,ii)
+!							write(*,*) VAAAcuadrada(i,j),VAAA(pos),VAAA(pos)-VAAAcuadrada(i,j)
+							if (abs(VAAA(pos)-VAAAcuadrada(i,j)) .gt. 0.000000000001) then
+								do e=1,20
+									write(*,*) i,j,pos,"arma mal el vector!!!!"
+								end do
+							end if
+!							write(*,*) VAAA(pos),VAAAcuadrada(i,j)
 						end if
 						acum=0.d0
+!						write(*,*) pos,VAAA(pos)
 						end do
+						write(*,*) pos,VAAA(pos)
 
 					end if
 				end do

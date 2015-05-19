@@ -10,7 +10,12 @@ c Dario Estrin, 1992
       subroutine SCF(E,dipxyz)
       use garcha_mod
       use mathsubs
-      use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP
+      use ECP_mod, only : ecpmode, term1e, VAAA
+!ecptypes, tipeECP, ZlistECP,term1e,VAAA
+c ecptypes, tipeECP, ZlistECP no son necvesarias aca
+
+
+
 c      use qmmm_module, only : qmmm_struct, qmmm_nml
 c
       implicit real*8 (a-h,o-z)
@@ -38,22 +43,22 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
 !--------------------------------------------------------------------!
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	write(*,*) "Nick, testeando variables en SCF.f"
-	write(*,*) "ecpmode ", ecpmode, "ecptypes", ecptypes, "tipeECP ",tipeECP
+!	write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+!	write(*,*) "Nick, testeando variables en SCF.f"
+!	write(*,*) "ecpmode ", ecpmode, "ecptypes", ecptypes, "tipeECP ",tipeECP
 !	write(*,*) "ZlistECP",ZlistECP
 
 !reasigna las cargas
         if (ecpmode) then 
-	call ReasignZ()
+!	call ReasignZ()
 !reasigna las cargas
-	call obtainls()
+!	call obtainls()
 !obtiene una matriz con lx,ly y lz
 !	call allocateV()
 !allocatea la matriz de fock de pseudopotenciales
 
-!este call es solo para testeo de la rutina, luego hay q sacarlo
-        call intECP()
+        call intECP(1)
+!alocatea variables, calcula cariables comunes, y calcula terminos AAA del ECP
 	end if
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -199,6 +204,20 @@ c Calculate 1e part of F here (kinetic/nuc in int1, MM point charges
 c in intsol)
 c
       call int1(En)
+
+      if (ecpmode) then
+          write(*,*) "agrego terminos AAA a los de 1e"
+          do k=1,MM
+               term1e(k)=RMM(M11+k-1)
+!copia los terminos de 1e
+               RMM(M11+k-1)=RMM(M11+k-1)+VAAA(k)
+!agrega el ECP AAA a los terminos de 1 e
+          enddo
+      end if
+
+
+
+
       if(nsol.gt.0) then
         call g2g_query_cpu(cpu)
         if (cpu.eq.1) then

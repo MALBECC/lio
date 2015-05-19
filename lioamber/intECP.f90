@@ -1,9 +1,11 @@
-	subroutine intECP
+	subroutine intECP(tipodecalculo)
 	use garcha_mod, only :nshell,nuc
 	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP,VAAAcuadrada,lxyz, VAAA, VAAAcuadrada
 	implicit none
 
-
+	integer, intent(in) :: tipodecalculo
+!tipodecalculo=1 alocatea variables y alcula terminos AAA
+!tipodecalculo=2 calcula terminos ABB y ABC
 	integer z,l,t
 
         integer :: ns,np,nd,M,i,j,e,pos
@@ -11,6 +13,18 @@
         np=nshell(1)
         nd=nshell(2)
         M=ns+np+nd
+
+	if (tipodecalculo .eq. 1) then
+	
+	!reasigna las cargas
+        call ReasignZ()
+!reasigna las cargas
+        call obtainls()
+!obtiene una matriz con lx,ly y lz
+	call allocateV()
+!allocatea la matriz de fock de pseudopotenciales
+	call intECPAAA()
+!calcula terminos AAA
 
 
 !Escribe coeficientes como testeo
@@ -29,9 +43,6 @@
 !terminos <Ai|V|Aj>
 !termino local
 
-
-	call allocateV()
-	call intECPAAA()
 
 !	write(*,*) VijlocalAAA()
 
@@ -63,7 +74,7 @@
                         do j=1,i
                                 if (nuc(i) .eq. nuc(j)) then
                 	                pos=i+(1-j)*(j-2*M)/2
-					write(*,9013) VAAA(pos), VAAAcuadrada(i,j), VAAA(pos)-VAAAcuadrada(i,j)
+!					write(*,9013) VAAA(pos), VAAAcuadrada(i,j), VAAA(pos)-VAAAcuadrada(i,j)
 					if ( abs(VAAA(pos)-VAAAcuadrada(i,j)) .gt. 0.0000000000000001 ) then
 						do e=1,20
 						write(*,*) "no coinciden la matgriz cuadrada con el vector",i,j,pos
@@ -85,7 +96,9 @@
 	end if
 
 
-
+	else 
+		Write(*,*) "ERROR in tipe of ECP calculation"
+	end if
 
 
 
@@ -102,7 +115,7 @@
 	subroutine allocateV
 !Allocatea VAAA, que contendra los terminos del ECP <A|A|A>
 	use garcha_mod, only :nshell
-	use ECP_mod, only :VAAAcuadrada,VAAA
+	use ECP_mod, only :VAAAcuadrada,VAAA,term1e
 	implicit none
 	integer :: ns,np,nd,M,Mcuad
 	ns=nshell(0)
@@ -112,7 +125,7 @@
 	allocate (VAAAcuadrada(M,M))
 	VAAAcuadrada=0.d0
         Mcuad=M*(M+1)/2
-        allocate (VAAA(Mcuad))
+        allocate (VAAA(Mcuad),term1e(Mcuad))
 	VAAA=0.d0
 	end subroutine allocateV
 
@@ -175,7 +188,7 @@
 						acum=0.d0
 !						write(*,*) pos,VAAA(pos)
 						end do
-						write(*,*) pos,VAAA(pos)
+!						write(*,*) pos,VAAA(pos)
 
 					end if
 				end do

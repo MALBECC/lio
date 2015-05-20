@@ -55,9 +55,10 @@
 			do j=i,M
 				if (nuc(i) .eq. nuc(j)) then
 !					write(*,9015) i,j,VAAA(i,j), VAAA(j,i), VAAA(i,j)-VAAA(j,i)
-					if (abs(VAAAcuadrada(i,j)-VAAAcuadrada(j,i)) .gt. 0.0000000000001) then
+					if (abs(VAAAcuadrada(i,j)-VAAAcuadrada(j,i)) .gt. 1E-10) then
 						do e=1,20
 						write(*,*) "*********  error matriz VAAA no simetrica  **********"
+						write(*,*) VAAAcuadrada(i,j),VAAAcuadrada(j,i),VAAAcuadrada(i,j)-VAAAcuadrada(j,i)
 						end do
 					end if
 

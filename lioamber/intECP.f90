@@ -74,15 +74,23 @@
 	        do i=1,M
                         do j=1,i
                                 if (nuc(i) .eq. nuc(j)) then
-                	                pos=i+(1-j)*(j-2*M)/2
+					pos=i+(1-j)*(j-2*M)/2
 !					write(*,9013) VAAA(pos), VAAAcuadrada(i,j), VAAA(pos)-VAAAcuadrada(i,j)
 					if ( abs(VAAA(pos)-VAAAcuadrada(i,j)) .gt. 0.0000000000000001 ) then
 						do e=1,20
-						write(*,*) "no coinciden la matgriz cuadrada con el vector",i,j,pos
+						write(*,*) "no coinciden la matriz cuadrada con el vector",i,j,pos
 						end do
 					end if
 				end if
 			end do
+		end do
+	end if
+
+	if (.true.) then
+!escribe VAAA
+	write(73,*) "testeando array de VAAA"
+		do pos=1,M*(M+1)/2
+			write(73,*) pos, VAAA(pos)
 		end do
 	end if
 
@@ -143,6 +151,11 @@
 	lmaxQ=0
 	AAA=0.d0
 	M=nshell(0)+nshell(1)+nshell(2)
+
+	Write(*,*) "a", a ,"c",c
+
+
+
 
 	do i=1, M
 !barre un coef de la base
@@ -232,6 +245,9 @@
 			Ccoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
 			AAANonLocal=AAANonLocal+A2*aECP(z,L,term)*Q0(n+nECP(z,l,term),Ccoef)
 
+			write(*,*) "integral radial",Q0(n+nECP(z,l,term),Ccoef),n+nECP(z,l,term),Ccoef
+
+
 			A2=0.d0
 		end do
 	end do
@@ -287,12 +303,16 @@
 	end function AAAlocal
 
 	DOUBLE PRECISION function Q0(n,alpha)
+!calcula  int r^n * exp(-alphar^2) dr entre 0 e infinito
 	use ECP_mod, only :doublefac, pi12, fac
 	implicit none
 	integer, intent(in) :: n
 	double precision, intent(in) :: alpha
 	if ( .not. mod(n,2)) then
-		Q0=0.5d0*pi12/sqrt(alpha) * doublefac(2*n-1)/(2*alpha**n)
+!		Q0=0.5d0*pi12/sqrt(alpha) * doublefac(2*n-1)/(2*alpha**n)
+               Q0=0.5d0*pi12/sqrt(alpha) * doublefac(n-1)/((2*alpha)**(n/2))
+!		write(*,*) 0.5d0,pi12/sqrt(alpha),doublefac(n-1),1/((2*alpha)**(n/2))
+!		write(*,*) "npar"
 		return
 	else
 		Q0=fac((n-1)/2)/(2*alpha**((n+1)/2))

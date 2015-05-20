@@ -26,6 +26,7 @@ c  are stored in files x.dip, y.dip, z.dip.
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 c       USE latom
        USE garcha_mod
+       use ECP_mod, only : ecpmode, term1e, VAAA
        use mathsubs
        IMPLICIT REAL*8 (a-h,o-z)
 
@@ -234,6 +235,18 @@ c xmm es la primer matriz de (M,M) en el vector X
 !------------------------------------------------------------------------------!
 ! H H core, 1 electron matrix elements
             call int1(En)
+
+      if (ecpmode) then
+!ECP, Nick terminos de VAAA
+          write(*,*) "agrego terminos AAA a los de 1e"
+          do k=1,MM
+               term1e(k)=RMM(M11+k-1)
+!copia los terminos de 1e
+               RMM(M11+k-1)=RMM(M11+k-1)+VAAA(k)
+!agrega el ECP AAA a los terminos de 1 e
+          enddo
+      end if
+
 !--------------------------------------!
 ! SOLVENT CASE
             call intsol(E1s,Ens,.true.)

@@ -1,0 +1,40 @@
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+       module cublasmath
+!--------------------------------------------------------------------!
+! INCLUDE FILES WITH HEADERS:
+!--------------------------------------------------------------------!
+       implicit none
+       include 'cuconmut_h.f'
+       include 'cumagnusfac_h.f'
+       include 'cumatmulnanoc_h.f'
+       include 'cumpx_h.f'
+       include 'cumpxt_h.f'
+       include 'cumxp_h.f'
+       include 'cumxtp_h.f'
+       include 'cupredictor_h.f'
+       include 'cupredictor_op_h.f'
+
+!--------------------------------------------------------------------!
+! INCLUDE FILES WITH PROCEDURES:
+!--------------------------------------------------------------------!
+       CONTAINS
+       include 'cuconmut_r.f'
+       include 'cumatmulnanoc.f'
+       include 'cumfx.f'
+       include 'cumpxt.f'
+       include 'cumpxt_r.f'
+       include 'cumxtf.f'
+       include 'cuconmut.f'
+       include 'cumagnusfac.f'
+       include 'cumatmul_r.f'
+       include 'cumpx.f'
+       include 'cumpx_r.f'
+       include 'cumxp.f'
+       include 'cumxp_r.f'
+       include 'cumxtp.f'
+       include 'cupredictor.f'
+       end module
+!
+!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

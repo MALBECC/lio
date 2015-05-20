@@ -64,7 +64,6 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-
 #ifdef magma
        call magmaf_init()
 #endif
@@ -155,6 +154,7 @@ c Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
         do j=1,natom
           d(i,j)=(r(i,1)-r(j,1))**2+(r(i,2)-r(j,2))**2+
      >        (r(i,3)-r(j,3))**2
+
           zij=atmin(i)+atmin(j)
           ti=atmin(i)/zij
           tj=atmin(j)/zij
@@ -182,7 +182,7 @@ c Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
       ! get MM pointers in g2g
       call g2g_mm_init(nsol,r,pc)
 
-c
+
 c -Create integration grid for XC here
 c -Assign points to groups (spheres/cubes)
 c -Assign significant functions to groups
@@ -198,13 +198,12 @@ c
           enddo
          endif
        endif
-        
+       
 c
 c Calculate 1e part of F here (kinetic/nuc in int1, MM point charges
 c in intsol)
 c
       call int1(En)
-
       if (ecpmode) then
           write(*,*) "agrego terminos AAA a los de 1e"
           do k=1,MM
@@ -491,6 +490,7 @@ c Precalculate three-index (two in MO basis, one in density basis) matrix
 c used in density fitting / Coulomb F element calculation here
 c (t_i in Dunlap)
 c
+
       if (MEMO) then
          call g2g_timer_start('int3mem')
 c Large elements of t_i put into double-precision cool here
@@ -1235,6 +1235,7 @@ c writes down MO coefficients and orbital energies
         enddo
         close(29)
       endif
+
 c
 c-------------------------------------------------
 c      endif

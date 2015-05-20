@@ -812,7 +812,7 @@ c      enddo
 c      endif
 c
 c-- prueba ----------------
-      En=En+0.0D0*(d(1,2)-2.89D0)**2
+c      En=En+0.0D0*(d(1,2)-2.89D0)**2
 c--------------------------
 c
 c     write(*,*) 'matriz overlap'

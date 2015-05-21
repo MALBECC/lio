@@ -152,7 +152,7 @@
 	AAA=0.d0
 	M=nshell(0)+nshell(1)+nshell(2)
 
-	Write(*,*) "a", a ,"c",c
+!	Write(*,*) "a", a ,"c",c
 
 
 
@@ -245,7 +245,7 @@
 			Ccoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
 			AAANonLocal=AAANonLocal+A2*aECP(z,L,term)*Q0(n+nECP(z,l,term),Ccoef)
 
-			write(*,*) "integral radial",Q0(n+nECP(z,l,term),Ccoef),n+nECP(z,l,term),Ccoef
+!			write(*,*) "integral radial",Q0(n+nECP(z,l,term),Ccoef),n+nECP(z,l,term),Ccoef
 
 
 			A2=0.d0
@@ -310,7 +310,7 @@
 	double precision, intent(in) :: alpha
 	if ( .not. mod(n,2)) then
 !		Q0=0.5d0*pi12/sqrt(alpha) * doublefac(2*n-1)/(2*alpha**n)
-               Q0=0.5d0*pi12/sqrt(alpha) * doublefac(n-1)/((2*alpha)**(n/2))
+                Q0=0.5d0*pi12/sqrt(alpha) * doublefac(n-1)/((2*alpha)**(n/2))
 !		write(*,*) 0.5d0,pi12/sqrt(alpha),doublefac(n-1),1/((2*alpha)**(n/2))
 !		write(*,*) "npar"
 		return

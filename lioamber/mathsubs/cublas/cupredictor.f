@@ -6,16 +6,20 @@
 ! Esta rutina recibe: F1a,F1b,rho2
 ! Tira: F5 = F(t+(deltat/2))      
        use garcha_mod
+       implicit real*8 (a-h,o-z)
+!       IMPLICIT REAL*8 (a-h,o-z)
        REAL*8,intent(inout) :: F1a(M,M),F1b(M,M),FON(M,M)
        integer*8,intent(in) :: devPtrX,devPtrXc
-       REAL*8,allocatable :: F3(:,:),FBA(:,:)
+!       integer :: i,j,k,kk,stat,M1,M2,MM,M5,M7,M9,MMD,M11,M13,M15,M17
+!       integer :: M19,M20,M3,M18
        integer :: i,j,k,kk,stat
+       REAL*8,allocatable :: F3(:,:),FBA(:,:)
        real*8 :: E2, tdstep1
       external CUBLAS_INIT, CUBLAS_SHUTDOWN
       integer CUBLAS_INIT
       REAL*8,intent(in) :: factorial(NBCH)
       REAL*8,intent(in) :: g,Fxx,Fyy,Fzz
-       COMPLEX*16, intent(in) :: rho2(M,M)
+       COMPLEX*16, intent(in) :: rho2(:,:)
        COMPLEX*16,allocatable :: rho4(:,:),rho2t(:,:)
 !-----------------------------------------------------------------------------n
       ALLOCATE(rho4(M,M),rho2t(M,M),F3(M,M),FBA(M,M))
@@ -118,10 +122,12 @@ c xmm es la primer matriz de (M,M) en el
 ! Esta rutina recibe: F1a,F1b,rho2
 ! Tira: F5 = F(t+(deltat/2))      
        use garcha_mod
+       IMPLICIT REAL*8 (a-h,o-z)
        REAL*8,intent(inout) :: F1a(M,M),F1b(M,M),FON(M,M)
        integer*8,intent(in) :: devPtrX,devPtrXc
        REAL*8,allocatable :: F3(:,:),FBA(:,:)
-       integer :: i,j,k,kk,stat
+       integer :: i,j,k,kk,stat,M1,M2,MM,M5,M7,M9,MMD,M11,M13,M15,M17
+       integer :: M19,M20,M3,M18
        real*8 :: E2, tdstep1
       external CUBLAS_INIT, CUBLAS_SHUTDOWN
       integer CUBLAS_INIT

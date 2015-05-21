@@ -3,10 +3,9 @@
 !--------------------------------------------------------------------!
 ! INCLUDE FILES WITH HEADERS:
 !--------------------------------------------------------------------!
-       implicit none
+c       implicit none
        include 'cuconmut_h.f'
        include 'cumagnusfac_h.f'
-       include 'cumatmulnanoc_h.f'
        include 'cumpx_h.f'
        include 'cumpxt_h.f'
        include 'cumxp_h.f'
@@ -19,7 +18,6 @@
 !--------------------------------------------------------------------!
        CONTAINS
        include 'cuconmut_r.f'
-       include 'cumatmulnanoc.f'
        include 'cumfx.f'
        include 'cumpxt.f'
        include 'cumpxt_r.f'
@@ -33,6 +31,7 @@
        include 'cumxp_r.f'
        include 'cumxtp.f'
        include 'cupredictor.f'
+       include 'cupredictor_op.f'
        end module
 !
 !

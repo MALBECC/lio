@@ -24,7 +24,7 @@
        REAL*8, INTENT(IN)                   :: factorial(N)
        COMPLEX*16 alpha,beta
        COMPLEX*16,ALLOCATABLE,DIMENSION(:,:) :: Omega1
-       COMPLEX*16,INTENT(INOUT)              :: RhoOld(M,M)
+       COMPLEX*16,INTENT(IN)              :: RhoOld(M,M)
        COMPLEX*16,INTENT(OUT)                :: RhoNew(M,M)
        COMPLEX*16,PARAMETER :: icmplx=CMPLX(0.0D0,1.0D0)
        INTEGER, PARAMETER :: sizeof_complex=16
@@ -167,7 +167,7 @@
        REAL*8, INTENT(IN)                   :: factorial(N)
        COMPLEX*8 alpha,beta
        COMPLEX*8,ALLOCATABLE,DIMENSION(:,:) :: Omega1
-       COMPLEX*8,INTENT(INOUT)              :: RhoOld(M,M)
+       COMPLEX*8,INTENT(IN)              :: RhoOld(M,M)
        COMPLEX*8,INTENT(OUT)                :: RhoNew(M,M)
        COMPLEX*8,PARAMETER :: icmplx=CMPLX(0.0D0,1.0D0)
        INTEGER, PARAMETER :: sizeof_complex=8

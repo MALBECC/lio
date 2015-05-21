@@ -1,6 +1,6 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        interface cupredictor_op
-         module procedure cupredictor_op_dz
-         module procedure cupredictor_op_dc
+         module procedure cupredictor_op_DZ
+         module procedure cupredictor_op_DC
        end interface
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

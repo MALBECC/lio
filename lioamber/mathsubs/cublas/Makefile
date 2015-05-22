@@ -1,6 +1,6 @@
 include ../../make.inc
 
-all: $(obj_path)/cublasmath.o
+all: $(obj_path)/cublasmath.o 
 
 $(obj_path)/fortran.o: $(CUDA_HOME)/src/fortran.c
 	$(CC) -fPIC -DCUBLAS_GFORTRAN -O3 -c $< -o $@ -I$(CUDA_HOME)/include

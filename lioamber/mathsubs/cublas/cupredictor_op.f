@@ -70,7 +70,7 @@ c now G
 !       call matmulnano(FBA,X,FON_b,M)
        call fock_ao_to_on(FBA,devPtrX,FON_b,M)
        DEALLOCATE(rho4,rho2t,F3,FBA)
-       RETURN;END
+       RETURN;END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        subroutine cupredictor_op_DC(F1a_a,F1b_a,F1a_b,F1b_b,FON_a,FON_b,
      > rho2_a,rho2_b,factorial,devPtrX,Fxx,Fyy,Fzz,g,devPtrXc)
@@ -143,6 +143,6 @@ c now G
 !       call matmulnano(FBA,X,FON_b,M)
        call fock_ao_to_on(FBA,devPtrX,FON_b,M)
        DEALLOCATE(rho4,rho2t,F3,FBA)
-       RETURN;END
+       RETURN;END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 

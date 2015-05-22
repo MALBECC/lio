@@ -69,7 +69,7 @@
       call CUBLAS_FREE ( devPtrScratch )
       call CUBLAS_SHUTDOWN
       return
-      end
+      end subroutine
 !========================================================================!
             subroutine cumpx_cd(A,devPtrX,C,M)
 !========================================================================!
@@ -142,4 +142,4 @@
       call CUBLAS_FREE ( devPtrScratch )
       call CUBLAS_SHUTDOWN
       return
-      end
+      end subroutine

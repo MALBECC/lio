@@ -44,7 +44,7 @@
       call CUBLAS_FREE ( devPtrScratch2 )
       call CUBLAS_SHUTDOWN
       return
-      end
+      end subroutine
 
 
 

@@ -4,7 +4,9 @@
 src_paths += liomods
 src_paths += maskrmm
 src_paths += mathsubs
-
+ifeq ($(cublas),1)
+src_paths += mathsubs/cublas
+endif
 #
 ######################################################################
 # MODULE INTERNALS : This is the inclusion of all .mk files
@@ -13,6 +15,9 @@ src_paths += mathsubs
 include liomods/liomods.mk
 include maskrmm/maskrmm.mk
 include mathsubs/mathsubs.mk
+ifeq ($(cublas),1)
+include mathsubs/cublas/cublasmath.mk
+endif
 
 #
 ######################################################################
@@ -35,6 +40,9 @@ objects += liokeys.o
 objects += sysdata.o
 objects += mathsubs.o
 objects += maskrmm.o
+ifeq ($(cublas),1)
+objects += cublasmath.o 
+endif
 
 #
 ######################################################################
@@ -52,12 +60,21 @@ objlist += dip.o dipmem.o drive.o grid.o init_amber.o init.o
 objlist += int1.o int2.o int3lu.o int3mem.o intfld.o intsol.o
 objlist += int1G.o int2G.o int3G.o intSG.o intsolG.o intsolGs.o
 objlist += jarz.o lio_finalize.o predictor.o
-objlist += SCF.o SCF_in.o SCFop.o TD.o
+objlist += SCF.o SCF_in.o SCFop.o TD.o 
 $(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/garcha_mod.mod
 
 
 # mathsubs
 objlist := SCF.o SCFop.o
 $(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/mathsubs.mod
+
+ifeq ($(cublas),1)
+#cublasmath
+objlist := cublasmath.o
+$(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/garcha_mod.mod
+
+objlist := SCF.o SCFop.o TD.o
+$(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/cublasmath.mod
+endif
 
 ######################################################################

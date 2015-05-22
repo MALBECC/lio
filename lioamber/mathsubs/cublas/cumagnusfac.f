@@ -140,7 +140,7 @@
       call CUBLAS_FREE ( devPPrev )
       call CUBLAS_SHUTDOWN
       DEALLOCATE(Omega1)
-      RETURN;END
+      RETURN;END subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        SUBROUTINE cumagnusfac_dc(Fock,RhoOld,RhoNew,M,N,dt,factorial)
 !------------------------------------------------------------------------------!
@@ -283,6 +283,6 @@
       call CUBLAS_FREE ( devPPrev )
       call CUBLAS_SHUTDOWN
       DEALLOCATE(Omega1)
-      RETURN;END
+      RETURN;END subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 

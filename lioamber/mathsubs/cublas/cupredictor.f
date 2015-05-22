@@ -113,7 +113,7 @@ c xmm es la primer matriz de (M,M) en el
 !       call g2g_timer_stop('cumatmul2_predictor')
        call fock_ao_to_on(FBA,devPtrX,FON,M)
        DEALLOCATE(rho4,rho2t,F3,FBA)
-       RETURN;END
+       RETURN;END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        subroutine cupredictor_DC(F1a,F1b,FON,rho2,devPtrX,factorial,
      > Fxx,Fyy,Fzz,g,devPtrXc)
@@ -227,6 +227,6 @@ c xmm es la primer matriz de (M,M) en el
 !       call g2g_timer_stop('cumatmul2_predictor')
        call fock_ao_to_on(FBA,devPtrX,FON,M)
        DEALLOCATE(rho4,rho2t,F3,FBA)
-       RETURN;END
+       RETURN;END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 

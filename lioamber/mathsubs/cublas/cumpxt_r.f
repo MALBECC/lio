@@ -42,7 +42,7 @@
       call CUBLAS_SHUTDOWN
       DEALLOCATE(scratch1,scratch2)
       return
-      end
+      end subroutine
 !==========================================================================!
 
 

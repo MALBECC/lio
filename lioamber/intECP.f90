@@ -249,12 +249,18 @@
 
 	DOUBLE PRECISION function AAANonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
 !calcula el termino no local del pseudopotencial
+
+!suma m=-l hasta l  [<xi|lm> V(l-LM) <lm|xj>] = 
+!=Ni Nj C(l-LM) suma m=-l, l int(r^n exp(-alpha *r^2) dr, 0, inf) * int ((x/r)^ni (y/r)^li (z/r)^mi Ylm d(angulo solido) *
+! * int ((x/r)^nj (y/r)^lj (z/r)^mj Ylm d(angulo solido)
+!los coef de la base se multiplican en la rutina que llama a esta
+
 !i,j funciones de la base
 !ii,ji numero de contraccion de la funcion
 !k atomo con ecp
-!lx(y o z)i(j) exponente de la parte angular de la base x^lx y^ly z^lz
+!lx, ly, lz; i,j exponente de la parte angular de la base x^lx y^ly z^lz
 	use garcha_mod, only : a,c
-	use ECP_mod, only :ZlistECP,Lmax,aECP,nECP,bECP
+	use ECP_mod, only :ZlistECP,Lmax,aECP,nECP,bECP, expnumbersECP
 	implicit none
 	integer, intent(in) :: i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj
 	integer :: l,m, term
@@ -270,7 +276,7 @@
 	do l = 0 , Lmax(z)-1
 !barre todos los l de la parte no local
 		do term=1, expnumbersECP(z,l)
-!barre terminos del ECP para el atomo con carga z y l del ecp
+!barre contracciones del ECP para el atomo con carga z y l del ecp
 			do m=-l,l
 !barre m
 				A2=A2+Aintegral(l,m,lxi,lyi,lzi)*Aintegral(l,m,lxj,lyj,lzj)
@@ -279,7 +285,7 @@
 			Acoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
 !Acoef es el exponente de la integral radial
 			AAANonLocal=AAANonLocal+A2*aECP(z,L,term)*Q0(n+nECP(z,l,term),Acoef)
-!Q0 integral radial
+!Q0 integral radial   Q0(n,alpha)= int r^n exp(-alpha * r^2) dr fron 0 to inf
 !aECP coeficiente del ECP
 			A2=0.d0
 		end do
@@ -288,6 +294,9 @@
 	end function AAANonLocal
 
 	DOUBLE PRECISION function Aintegral(l,m,lx,ly,lz)
+!calcula int ((x/r)^lx (y/r)^ly (z/r)^lz * Ylm d(angulo solido)
+!expande el armonico esferico en cartesianas e integra
+!Ucoef es el coeficiente de la expansion
 	use ECP_mod, only :angularint
 	implicit none
 	integer, intent(in) :: l,m,lx,ly,lz	
@@ -297,6 +306,7 @@
 			do iy=0,l-ix
 				iz=l-ix-iy
 				Aintegral=Aintegral+Ucoef(l,m,ix,iy,iz)*angularint(lx+ix,ly+iy,lz+iz)
+!angularint(nx,ny,nz) calcula int ((x/r)^nx (y/r)^ny (z/r)^nz d(angulo solido)
 			end do
 		end do
 	return
@@ -305,11 +315,17 @@
 
 
 	DOUBLE PRECISION function AAAlocal(i,j,k,ii,ji,lx,ly,lz)
+!Calcula el termino local del pseudopotencial
+!   [<xi|V(LM)|xj>] = 
+!=Ni Nj C(LM) int(r^n exp(-alpha *r^2) dr, 0, inf) * int ((x/r)^ni (y/r)^li (z/r)^mi d(angulo solido)
+!los coef de la base se multiplican en la rutina que llama a esta
+
 !i,j funcion de base
-!ii,ij coeiciente q calcula de la base
+!ii,ji numero de contraccion de la funcion de base
 !k atomo con ECP
         use garcha_mod, only : a,c
         use ECP_mod, only :nECP,bECP, aECP, ZlistECP, Lmax, expnumbersECP, Qnl, angularint
+!expnumbersECP(Z,l) cantidad de terminos del ECP para el atomo con carga nuclear Z y l del ECP
 	implicit none
 	integer :: w,n,z,l
 	integer, intent(in) :: i,j,k,ii,ji,lx,ly,lz
@@ -320,32 +336,20 @@
 	AAAlocal=0.d0
 	do w =1, expnumbersECP(z,l)
 !barre todos los terminos del Lmaximo
-!		Qnl=0.d0
 		Ccoef=bECP(z,L,w)+a(i,ii)+a(j,ji)
-!		call Qtype1(0.1,Ccoef,n,nECP(z,l,w))
-!falta Qtype1
 		AAAlocal=AAAlocal+aECP(z,L,w)*angularint(lx,ly,lz)*Q0(n+nECP(z,l,w),Ccoef)
-
-!		write(*,*) "1",aECP(z,L,w)
-!		write(*,*) "2",angularint(lx,ly,lz)
-!		write(*,*) "3",Qnl(n+nECP(z,l,w),0)
-!		write(*,*) "4", Q0(n+nECP(z,l,w),Ccoef)
-!la ultima trae problemas, programos una rutina nueva
 	end do
 	return
 	end function AAAlocal
 
 	DOUBLE PRECISION function Q0(n,alpha)
-!calcula  int r^n * exp(-alphar^2) dr entre 0 e infinito
+!calcula  int r^n * exp(-alpha * r^2) dr entre 0 e infinito
 	use ECP_mod, only :doublefac, pi12, fac
 	implicit none
 	integer, intent(in) :: n
 	double precision, intent(in) :: alpha
 	if ( .not. mod(n,2)) then
-!		Q0=0.5d0*pi12/sqrt(alpha) * doublefac(2*n-1)/(2*alpha**n)
                 Q0=0.5d0*pi12/sqrt(alpha) * doublefac(n-1)/((2*alpha)**(n/2))
-!		write(*,*) 0.5d0,pi12/sqrt(alpha),doublefac(n-1),1/((2*alpha)**(n/2))
-!		write(*,*) "npar"
 		return
 	else
 		Q0=fac((n-1)/2)/(2*alpha**((n+1)/2))
@@ -353,95 +357,6 @@
 	end if
 	end function Q0
 
-
-!	subroutine obtainls
-!arma una matriz que contenga los exponentes de la parte ngular de la base
-! |x> = A x^lx y^ly z^lz *e^-ar^2
-! devuelve angularL(i,j) j=1 lx, j=2, ly, j=3 lz para la funcion i de la base
-!        use garcha_mod, only : nshell
-!        use ECP_mod, only : Lxyz
-!	implicit none
-!	integer :: i
-!	integer :: D, lx,ly,lz
-!	integer :: resto
-!	D = nshell(0)+nshell(1)+nshell(2)
-!	allocate (Lxyz(D, 3))
-!	Lxyz=0
-!	do i=nshell(0)+1,D
-!		if (i .le. nshell(0)+nshell(1)) then
-!funciones p
-!			resto=modulo(i,3)
-!			if (resto .eq. 1) Lxyz(i,1)=1
-!			if (resto .eq. 2) Lxyz(i,2)=1
-!			if (resto .eq. 0) Lxyz(i,3)=1
-!		else if (i .le. D) then
-!			resto=modulo(i,6)
-!			if (resto .eq. 1) Lxyz(i,1)=2
-!			if (resto .eq. 2) then
-!				Lxyz(i,1)=1
-!				Lxyz(i,2)=1
-!			end if
-!			if (resto .eq. 3) Lxyz(i,2)=2
-!			if (resto .eq. 4) then 
-!				Lxyz(i,1)=1
-!				Lxyz(i,3)=1
-!			end if
-!			if (resto .eq. 5) then 
-!				Lxyz(i,2)=1
-!				Lxyz(i,3)=1
-!			end if
-!			if (resto .eq. 0) Lxyz(i,3)=2
-!		end if
-!		
-!	end do
-
-!testeo escribiendo
-!	do i=1,D
-!		write(*,*) i,Lxyz(i,1),Lxyz(i,2),Lxyz(i,3)
-!	end do
-
-!	write(*,*) nshell(0),nshell(1),nshell(2)
-
-
-!	end subroutine obtainls
-
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!esto no lo voy a usar !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!	DOUBLE PRECISION FUNCTION VijlocalAAA
-!	implicit none
-!	double precision :: acumk, acuml, acumm
-!	integer :: k,l,m
-!	VijlocalAAA=0.d0
-!	do 
-!	write(*,*) SAAA (0.5d0,0.55d0,0.333d0,1,0,0,1,0,0,2)
-!	end function VijlocalAAA
-
-!subrutinas mixtas
-!	DOUBLE PRECISION FUNCTION SAAA (k,alpha,Ccoef,na,ma,la,nb,mb,lb,necp)
-!	use ECP_mod, only :  Qnl
-!	implicit none
-!	integer, intent(in) :: na,ma,la,nb,mb,lb,necp
-!	double precision, intent (in) :: k,alpha,Ccoef
-!	integer :: lambda, lmax
-!	Qnl=0.d0
-!	SAAA=0.d0
-!	lmax=na+ma+la+nb+mb+lb
-!lmax  = 0 para <s||s>, 1 para <s||p>, 2 para <s||d>, ... , 6 para <d||d>
-!Ccoef = exponente basei + exponente base j + exponente ecp
-!	write(*,*) "yegue a SAAA"
-!	call Qtype1(K,Ccoef,lmax,necp)
-!	call Qtype1(0,Ccoef,lmax,necp)
-!		do lambda=0, lmax
-!			write(*,*) Qnl(na+ma+la+nb+mb+lb+necp,lambda)
-!			write(*,*) OMEGA1((/0.00d0,0.00d0,0.00d0/),lambda,na+nb,ma+mb,la+lb)
-!			SAAA=SAAA + Qnl(na+ma+la+nb+mb+lb+necp,lambda)*OMEGA1(K,lambda,na+nb,ma+mb,la+lb)
-!		end do
-!	return
-!	end function SAAA
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 !subrutinas angulares

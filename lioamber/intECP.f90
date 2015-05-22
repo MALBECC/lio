@@ -15,18 +15,31 @@
         M=ns+np+nd
 
 	if (tipodecalculo .eq. 1) then
-	
-	!reasigna las cargas
+!prepara variables y calcula los terminos AAA	
         call ReasignZ()
 !reasigna las cargas
         call obtainls()
 !obtiene una matriz con lx,ly y lz
 	call allocateV()
-!allocatea la matriz de fock de pseudopotenciales
+!allocatea la matriz de fock de pseudopotenciales, la matrix cuadrara para pruebas y el verctor con los terminos de 1 electron sin corregir
 	call intECPAAA()
 !calcula terminos AAA
+	elseif (tipodecalculo .eq. 2) then
+!calculo VAAB
+	write(*,*) "en proceso rutinas VAAB"
+	elseif (tipodecalculo .eq. 3) then
+!calculo VABC
+	write(*,*) "en proceso rutinas VABC"
+	elseif (tipodecalculo .eq. 4) then
+		call deallocateV()
+        else
+                Write(*,*) "ERROR in tipe of ECP calculation"
+	endif
 
 
+
+	if (tipodecalculo .ne. 4) then
+!bloque de test de ECP
 !Escribe coeficientes como testeo
 	if ( .false. ) then
         do z=1,118
@@ -39,13 +52,6 @@
 	end if
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-!terminos <Ai|V|Aj>
-!termino local
-
-
-!	write(*,*) VijlocalAAA()
-
 
 
 	if ( .true. ) then
@@ -86,6 +92,7 @@
 		end do
 	end if
 
+
 	if (.true.) then
 !escribe VAAA
 	write(73,*) "testeando array de VAAA"
@@ -105,8 +112,7 @@
 	end if
 
 
-	else 
-		Write(*,*) "ERROR in tipe of ECP calculation"
+
 	end if
 
 
@@ -125,6 +131,9 @@
 !Allocatea VAAA, que contendra los terminos del ECP <A|A|A>
 	use garcha_mod, only :nshell
 	use ECP_mod, only :VAAAcuadrada,VAAA,term1e
+!VAAA terminos de Fock de pseudopotencial para ECP y bases en el mismo atomo
+!VAAA cuadrada, idem
+!term1e terminos de fock de 1 electron sin agregarles VAAA
 	implicit none
 	integer :: ns,np,nd,M,Mcuad
 	ns=nshell(0)
@@ -133,34 +142,58 @@
         M=ns+np+nd
 	allocate (VAAAcuadrada(M,M))
 	VAAAcuadrada=0.d0
+!VAAAcuadrada terminos de Fock de pseudopotencial para ECP y bases en el mismo atomo
         Mcuad=M*(M+1)/2
         allocate (VAAA(Mcuad),term1e(Mcuad))
 	VAAA=0.d0
+	term1e=0.d0
 	end subroutine allocateV
 
-	Subroutine intECPAAA
-	use garcha_mod, only : a,c,ncont, nshell, nuc, ncont
-	use ECP_mod, only :nECP,bECP, aECP, ecptypes, IzECP, Lmax, Lxyz, VAAAcuadrada,VAAA
+	subroutine deallocateV
+!desalocatea variables
+	use ECP_mod, only :VAAAcuadrada,VAAA,term1e
 	implicit none
-	integer :: i,j,k, ii,ji,l, lmaxQ, lxi, lxj,lyi,lyj,lzi, lzj,pos,M
+	deallocate (VAAAcuadrada, VAAA, term1e)
+	end subroutine deallocateV
+
+	Subroutine intECPAAA
+!calcula los terminos de Fock para bases y pseudopotenciales en el mismo atomo
+	use garcha_mod, only : a,c,ncont, nshell, nuc, ncont
+!a(i,ni) exponente de la funcion de base i, contrccion ni
+!c(i,ni) coeficiente de la funcion de base i, contrccion ni
+!ncont(i) cantidad de contracciones de la funcion de base i
+!nshell(i) cantidad de funciones i=1 s, i=2, p, i=3, d
+	use ECP_mod, only :nECP,bECP, aECP, ecptypes, IzECP, Lmax, Lxyz, VAAAcuadrada,VAAA
+!nECP, bECP, aECP valores del pseudo potencial
+! aECP*r^b * exp(-bECP r^2)
+!estan escritos como: xECP(Z,l,i) Z carga del nucleo, l del ecp, i numero de funcion del ecp con Z,l
+!coeficientes(aECP) y exponentes(bECP) del pseudopotencial
+!ecptypes cantidad de atomos con ECP
+!IzECP cargas nucleares sin corregir por el Zcore
+! Lmax(Z) L maximo del ECP
+! Lxyz(i,j) contiene los exponentes de la parte angular de la funcion de base i
+!|x> = A x^lx y^ly z^lz *e^-ar^2, j=1 lx, j=2, ly, j=3 lz para la funcion i de la base
+!VAAA contiene los terminos <A|A|A> del pseudo potencial
+!VAAAcuadrada es solo para testeo de simetria
+	implicit none
+	integer :: i,j,k, ii,ji, lxi, lxj,lyi,lyj,lzi, lzj,pos,M
+!lmaxQ, l   !orrar esta linea
+!M cantidad total de funciones de base
 	double precision :: local, nonlocal, Kbessel, exponente, AAA, acum
 	local=0.d0
 	nonlocal=0.d0
 	Kbessel=0.d0
 	exponente=0.d0
-	lmaxQ=0
+!antes habia puesto esta variable, la saco pero dejo el comentario por si me olvide q se usaba en algun lado. sacarla al final!!!!!
+!	lmaxQ=0
 	AAA=0.d0
 	M=nshell(0)+nshell(1)+nshell(2)
 
-!	Write(*,*) "a", a ,"c",c
-
-
-
 
 	do i=1, M
-!barre un coef de la base
+!barre funciones de la base 
 		do j=1, M
-!cambiar ppor do j=i,M para barrer solo la mitad de la matriz
+!cambiar por do j=i,M para barrer solo la mitad de la matriz
 !barre el otro coef de la base j>=i ya que la matriz tiene q ser simetrica
 			if (nuc(i) .eq. nuc(j)) then
 !solo calcula si los terminos corresponden al mismo atomo
@@ -171,26 +204,28 @@
 !						write(*,*) "1 coincidencia", ZlistECP(k)
 						do ii=1, ncont(i)
 						do ji=1, ncont(j)
-!ji y ii barren terminos de la funcion de base
-!						lx=Lxyz(i,1)+Lxyz(j,1)
-!						ly=Lxyz(i,2)+Lxyz(j,2)
-!						lz=Lxyz(i,3)+Lxyz(j,3)
+!ji y ii barren contracciones de las funcion de base
 						lxi=Lxyz(i,1)
 						lxj=Lxyz(j,1)
 						lyi=Lxyz(i,2)
 						lyj=Lxyz(j,2)
 						lzi=Lxyz(i,3)
 						lzj=Lxyz(j,3)
-!						AAA=AAANonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
+!exponentes de la parte angular
 						AAA=AAAlocal(i,j,k,ii,ji,lxi+lxj,lyi+lyj,lzi+lzj) + AAANonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
+!suma los terminos locales y no locales del pseudopotencial
 						acum=acum+AAA*c(j,ji)
+!multiplica por el coeficiente de la base
 						end do
 						VAAAcuadrada(i,j) = VAAAcuadrada(i,j) + acum*c(i,ii)
+!multiplica por el otro coef de la base
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 						if (i .ge. j) then
 !este if hay q sacarlo al fina, cuando cambie el rango en el q barre j , en vez de comenzar en 1 comience en i
 							pos=i+(1-j)*(j-2*M)/2   !chekeada
 !							write(31,*) pos
-							VAAA(pos) = VAAA(pos) + acum*c(i,ii)
+							VAAA(pos) = VAAA(pos) + acum*c(i,ii) !esta linea es lo unico que quedaria!!!!!!!!!!!!!
 !							write(*,*) VAAAcuadrada(i,j),VAAA(pos),VAAA(pos)-VAAAcuadrada(i,j)
 							if (abs(VAAA(pos)-VAAAcuadrada(i,j)) .gt. 0.000000000001) then
 								do e=1,20
@@ -199,11 +234,10 @@
 							end if
 !							write(*,*) VAAA(pos),VAAAcuadrada(i,j)
 						end if
-						acum=0.d0
-!						write(*,*) pos,VAAA(pos)
-						end do
-!						write(*,*) pos,VAAA(pos)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+						acum=0.d0
+						end do
 					end if
 				end do
 
@@ -214,10 +248,11 @@
         end subroutine intECPAAA
 
 	DOUBLE PRECISION function AAANonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
+!calcula el termino no local del pseudopotencial
 !i,j funciones de la base
-!ii,ji termino de la funcion
+!ii,ji numero de contraccion de la funcion
 !k atomo con ecp
-!lx(y o z)i(j) exponente de la parte angular de la base x^lx y=ly z^lz
+!lx(y o z)i(j) exponente de la parte angular de la base x^lx y^ly z^lz
 	use garcha_mod, only : a,c
 	use ECP_mod, only :ZlistECP,Lmax,aECP,nECP,bECP
 	implicit none
@@ -225,29 +260,27 @@
 	integer :: l,m, term
 !auxiliades para ciclos
 	integer :: Z,n
-	double precision :: A2, Ccoef
+	double precision :: A2, Acoef
 !Z= carga del nucleo
 	AAANonLocal=0.d0
 	A2=0.d0
 	Z=ZlistECP(k)
 	n=lxi+lxj+lyi+lyj+lzi+lzj
-!barre todos los terminos del Lmaximo
-!        Qnl=0.d0
-!                call Qtype1(0.1,Ccoef,n,nECP(z,l,w))
 
 	do l = 0 , Lmax(z)-1
-!barre l
+!barre todos los l de la parte no local
 		do term=1, expnumbersECP(z,l)
-!barre terminos del ECP para z y l
+!barre terminos del ECP para el atomo con carga z y l del ecp
 			do m=-l,l
+!barre m
 				A2=A2+Aintegral(l,m,lxi,lyi,lzi)*Aintegral(l,m,lxj,lyj,lzj)
+!A2 contiene la parte angular de la integral
 			end do
-			Ccoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
-			AAANonLocal=AAANonLocal+A2*aECP(z,L,term)*Q0(n+nECP(z,l,term),Ccoef)
-
-!			write(*,*) "integral radial",Q0(n+nECP(z,l,term),Ccoef),n+nECP(z,l,term),Ccoef
-
-
+			Acoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
+!Acoef es el exponente de la integral radial
+			AAANonLocal=AAANonLocal+A2*aECP(z,L,term)*Q0(n+nECP(z,l,term),Acoef)
+!Q0 integral radial
+!aECP coeficiente del ECP
 			A2=0.d0
 		end do
 	end do

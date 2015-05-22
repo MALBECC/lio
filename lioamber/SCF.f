@@ -11,8 +11,6 @@ c Dario Estrin, 1992
       use garcha_mod
       use mathsubs
       use ECP_mod, only : ecpmode, term1e, VAAA
-!ecptypes, tipeECP, ZlistECP,term1e,VAAA
-c ecptypes, tipeECP, ZlistECP no son necvesarias aca
 
 
 
@@ -42,24 +40,12 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
         logical :: just_int3n,ematalloct
 !--------------------------------------------------------------------!
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!	write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-!	write(*,*) "Nick, testeando variables en SCF.f"
-!	write(*,*) "ecpmode ", ecpmode, "ecptypes", ecptypes, "tipeECP ",tipeECP
-!	write(*,*) "ZlistECP",ZlistECP
-
-!reasigna las cargas
         if (ecpmode) then 
-!	call ReasignZ()
-!reasigna las cargas
-!	call obtainls()
-!obtiene una matriz con lx,ly y lz
-!	call allocateV()
-!allocatea la matriz de fock de pseudopotenciales
-
         call intECP(1)
-!alocatea variables, calcula cariables comunes, y calcula terminos AAA del ECP
+!alocatea variables, calcula variables comunes, y calcula terminos AAA del ECP
 	end if
+
+
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -1248,6 +1234,14 @@ c      endif
       deallocate (kkind,kkinds)
       deallocate(cool,cools)
       if(allocated(WORK2)) deallocate (WORK2)
+
+
+       if (ecpmode) then
+        call intECP(4)
+!desalocatea variables de pseudopotenciales
+        end if
+
+
 
 c       E=E*627.509391D0
 

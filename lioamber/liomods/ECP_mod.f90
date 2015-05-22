@@ -15,24 +15,31 @@
 
 !Datos de los ECP
         integer, dimension(118) :: Zcore, Lmax
+!Zcore(Z) carga del core para el ECP elegido del atomo con carga nuclear Z, Lmax(Z) L maximo del ECP 
+!elegido para el atomo con carga nuclear Z
         integer, dimension(118,0:5) :: expnumbersECP
-!expnumbersECP(Z,l) cantidad de terminos del ECP para el atomo Z y l
+!expnumbersECP(Z,l) cantidad de terminos del ECP para el atomo con carga nuclear Z y l del ECP
 	integer, dimension(118,0:5,10) :: nECP
 	double precision, dimension(118,0:5,10) :: bECP, aECP
+!nECP, bECP, aECP valores del pseudo potencial
+! aECP*r^b * exp(-bECP r^2)
+!estan escritos como: xECP(Z,l,i) Z carga del nucleo, l del ecp, i numero de funcion del ecp con Z,l
 !coeficientes(aECP) y exponentes(bECP) del pseudopotencial
 	integer, dimension (:), ALLOCATABLE :: IzECP
-!cargas sin corregir por el Zcore
+!cargas nucleares sin corregir por el Zcore
 	integer, dimension (:,:), ALLOCATABLE :: Lxyz
-! devuelve Lxyz(i,j) contiene los exponentes de la parte angular de la funcion de base i
+! Lxyz(i,j) contiene los exponentes de la parte angular de la funcion de base i
 !|x> = A x^lx y^ly z^lz *e^-ar^2, j=1 lx, j=2, ly, j=3 lz para la funcion i de la base
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&hasta aca testeado FFFFFFFFFFFFFFFFFFFFFFF
-
-	double precision, dimension(:,:), Allocatable :: VAAAcuadrada
-	double precision, dimension(:), Allocatable :: VAAA,term1e
+        double precision, dimension(:,:), Allocatable :: VAAAcuadrada
+        double precision, dimension(:), Allocatable :: VAAA,term1e
 !VAAA contiene los terminos <A|A|A> del pseudo potencial
 !VAAAcuadrada es solo para testeo de simetria
 !term1e contiene una copia de los terminos de 1e
+
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&hasta aca testeado FFFFFFFFFFFFFFFFFFFFFFF
+
 
 !parameters for radial integral of type 2
 !alpha y betha contains coeficients for expantion of modified spherical bessel function

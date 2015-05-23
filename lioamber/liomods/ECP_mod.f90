@@ -11,6 +11,8 @@
 !tipoo de ECP usado, tiene que estar en $LIOHOME/libraries/ECP
       integer, dimension(128) :: ZlistECP
 !Z de atomos con ECP
+      double precision :: cutecp2, cutecp3
+!valores de corte para las integrales AAB y BAC
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 !Datos de los ECP
@@ -30,12 +32,15 @@
 	integer, dimension (:,:), ALLOCATABLE :: Lxyz
 ! Lxyz(i,j) contiene los exponentes de la parte angular de la funcion de base i
 !|x> = A x^lx y^ly z^lz *e^-ar^2, j=1 lx, j=2, ly, j=3 lz para la funcion i de la base
-
-        double precision, dimension(:,:), Allocatable :: VAAAcuadrada
-        double precision, dimension(:), Allocatable :: VAAA,term1e
+        double precision, dimension(:,:), Allocatable :: VAAAcuadrada, VAABcuadrada, VBACcuadrada
+        double precision, dimension(:), Allocatable :: VAAA, VAAB, VBAC,term1e
 !VAAA contiene los terminos <A|A|A> del pseudo potencial
 !VAAAcuadrada es solo para testeo de simetria
+!idem VAAB, VBAC
 !term1e contiene una copia de los terminos de 1e
+	double precision, dimension(:,:), Allocatable :: distx, disty, distz
+!guarda la distancia en x, y, z entre los atomos i y j  dist(i,j)=xi-xj
+!Cuidado, esta en unidades atomicas
 
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&hasta aca testeado FFFFFFFFFFFFFFFFFFFFFFF

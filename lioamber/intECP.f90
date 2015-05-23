@@ -25,6 +25,9 @@
 	call intECPAAA()
 !calcula terminos AAA
 	elseif (tipodecalculo .eq. 2) then
+	call obtaindistance()
+!ontiene arrays con la diatncia en x, y y z entre cada par de atomos i y j
+	call intECPAAB()
 !calculo VAAB
 	write(*,*) "en proceso rutinas VAAB"
 	elseif (tipodecalculo .eq. 3) then
@@ -129,8 +132,8 @@
 
 	subroutine allocateV
 !Allocatea VAAA, que contendra los terminos del ECP <A|A|A>
-	use garcha_mod, only :nshell
-	use ECP_mod, only :VAAAcuadrada,VAAA,term1e
+	use garcha_mod, only :nshell, natom
+	use ECP_mod, only :VAAAcuadrada,VAABcuadrada, VBACcuadrada,VAAA,VAAB,VBAC,term1e,distx, disty, distz
 !VAAA terminos de Fock de pseudopotencial para ECP y bases en el mismo atomo
 !VAAA cuadrada, idem
 !term1e terminos de fock de 1 electron sin agregarles VAAA
@@ -140,21 +143,65 @@
         np=nshell(1)
         nd=nshell(2)
         M=ns+np+nd
-	allocate (VAAAcuadrada(M,M))
+	allocate (VAAAcuadrada(M,M),VAABcuadrada(M,M), VBACcuadrada(M,M))
 	VAAAcuadrada=0.d0
+	VAABcuadrada=0.d0
+	VBACcuadrada=0.d0
 !VAAAcuadrada terminos de Fock de pseudopotencial para ECP y bases en el mismo atomo
         Mcuad=M*(M+1)/2
-        allocate (VAAA(Mcuad),term1e(Mcuad))
+        allocate (VAAA(Mcuad),VAAB(Mcuad),VBAC(Mcuad),term1e(Mcuad))
 	VAAA=0.d0
+	VAAB=0.d0
+	VBAC=0.d0
 	term1e=0.d0
+	allocate (distx(natom,natom), disty(natom,natom), distz(natom,natom))
+	distx=0.d0
+	disty=0.d0
+	distz=0.d0
 	end subroutine allocateV
 
 	subroutine deallocateV
 !desalocatea variables
-	use ECP_mod, only :VAAAcuadrada,VAAA,term1e
+	use ECP_mod, only :VAAAcuadrada,VAABcuadrada, VBACcuadrada,VAAA,VAAB,VBAC,term1e,distx, disty, distz
 	implicit none
-	deallocate (VAAAcuadrada, VAAA, term1e)
+	deallocate (VAAAcuadrada,VAABcuadrada, VBACcuadrada, VAAA,VAAB,VBAC, term1e,distx, disty, distz)
 	end subroutine deallocateV
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!rutinas para VAAB
+
+	subroutine intECPAAB()
+!calcula los terminos de Fock para <xA|VA|xB> 1 base en el mismo atomo que el ecp
+
+!esto chekea la matriz de distancias
+!	use garcha_mod, only :natom,r
+!	use ECP_mod, only :distx, disty, distz
+!	implicit none
+!	do i=1, natom
+!	do j=1, natom
+!	write(*,*) distx(i,j),disty(i,j),distz(i,j), r(i,1)
+!	end do
+!	end do
+
+
+	end subroutine intECPAAB
+
+	subroutine obtaindistance()
+!obtiene matrices de distancias
+	use garcha_mod, only :r, natom
+	use ECP_mod, only :distx, disty, distz
+!distx(i,j) = xi-xj
+	implicit none
+	integer :: i,j
+	do i=1,natom
+	do j=1,natom
+	distx(i,j)=r(i,1)-r(j,1)
+	disty(i,j)=r(i,2)-r(j,2)
+	distz(i,j)=r(i,3)-r(j,3)
+	end do
+	end do
+	end subroutine obtaindistance
+
 
 	Subroutine intECPAAA
 !calcula los terminos de Fock para bases y pseudopotenciales en el mismo atomo

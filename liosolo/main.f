@@ -3,7 +3,8 @@ c MAIN SUBROUTINE ----------------------------------------------------
 C DFT calculation with gaussian basis sets
 c---------------------------------------------------------------------
       use garcha_mod
-      use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP
+      use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP, cutecp2
+     & , cutecp3
       implicit real*8 (a-h,o-z)
 
       character(len=20)::argument,inpfile,inpbasis,inpcoords
@@ -17,7 +18,7 @@ c---------------------------------------------------------------------
      > propagator,NBCH,
      > field,a0,epsilon,exter,Fx,Fy,Fz, tdrestart, writedens,
      > writeforces,basis_set,fitting_set,int_basis,
-     > ecpmode,ecptypes,tipeECP,ZlistECP
+     > ecpmode,ecptypes,tipeECP,ZlistECP,cutecp2, cutecp3
 !ultima linea agregada para ECP, Nick
 
       integer :: ifind, ierr
@@ -73,6 +74,8 @@ c---------------------------------------------------------------------
       tipeECP='NOT-DEFINED'
       ZlistECP=0
       ecptypes=0
+      cutecp2=9E37
+      cutecp3=9E37
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       do i=1, narg
@@ -136,8 +139,6 @@ c      write(*,*)ng2,ngDyn,ngdDyn,norbit,Ngrid
      >  ,cx(ngdnu,nl),ax(ngdnu,nl),Nucx(ngdnu),ncontx(ngdnu)
      > ,cd(ngdnu,nl),ad(ngdnu,nl),Nucd(ngdnu),ncontd(ngdnu)
      > ,indexii(ngnu),indexiid(ngdnu))
-
-!	write(*,*) ngnu,nl, "Nick************"
 
 
       allocate (r(ntatom,3),v(ntatom,3),rqm(natom,3),Em(ntatom)

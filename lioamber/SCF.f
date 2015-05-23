@@ -43,6 +43,7 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
         if (ecpmode) then 
         call intECP(1)
 !alocatea variables, calcula variables comunes, y calcula terminos AAA del ECP
+	call intECP(2)
 	end if
 
 

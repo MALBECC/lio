@@ -13,6 +13,9 @@
 !Z de atomos con ECP
       double precision :: cutecp2, cutecp3
 !valores de corte para las integrales AAB y BAC
+      logical :: cutECP
+!activa cuts en las integrales de ECP
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 !Datos de los ECP

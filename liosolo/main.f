@@ -4,7 +4,7 @@ C DFT calculation with gaussian basis sets
 c---------------------------------------------------------------------
       use garcha_mod
       use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP, cutecp2
-     & , cutecp3
+     & , cutecp3,cutECP
       implicit real*8 (a-h,o-z)
 
       character(len=20)::argument,inpfile,inpbasis,inpcoords
@@ -18,7 +18,8 @@ c---------------------------------------------------------------------
      > propagator,NBCH,
      > field,a0,epsilon,exter,Fx,Fy,Fz, tdrestart, writedens,
      > writeforces,basis_set,fitting_set,int_basis,
-     > ecpmode,ecptypes,tipeECP,ZlistECP,cutecp2, cutecp3
+     > ecpmode,ecptypes,tipeECP,ZlistECP,cutecp2, cutecp3,
+     > cutECP
 !ultima linea agregada para ECP, Nick
 
       integer :: ifind, ierr
@@ -76,6 +77,7 @@ c---------------------------------------------------------------------
       ecptypes=0
       cutecp2=9E37
       cutecp3=9E37
+      cutECP=.false.
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       do i=1, narg

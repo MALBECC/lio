@@ -263,7 +263,7 @@
 
 !						AAB=AABlocal(i,j,k,ii,ji,lxj,lyj,lzj,-dx,-dy,-dz) +AABNonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
                                                 AAB=AABNonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
-
+!						write(*,*) AAB,i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz
 !suma los terminos locales y no locales del pseudopotencial
 !						write(*,*) AAB
                                                 acum=acum+AAB*c(i,ii)
@@ -345,6 +345,7 @@
 !barre contracciones del ECP para el atomo con carga z y l del ecp
 			Ccoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
 			call Qtype1(Kmod,Ccoef,lmaxbase,necp(Z,l,term))
+!			write(*,*) "variables Q",Kmod,Ccoef,lmaxbase,necp(Z,l,term)
 
 			do lx=0, lxj
 			do ly=0,lyj
@@ -354,17 +355,23 @@
 					acumang=0.d0
 	        	                do m=-l,l
 						acumang=acumang+Aintegral(l,m,lxi,lyi,lzi)*OMEGA2(Kvector,lambda,l,m,lx,ly,lz)
+!						write(*,*) Aintegral(l,m,lxi,lyi,lzi),OMEGA2(Kvector,lambda,l,m,lx,ly,lz)
 	        	                end do
-					acumint=acumint+acumang*Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda)
+					acumint=acumint+acumang*Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda) 
+					write(*,*) "Q",Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda)
+!					write(*,*) "acums",acumint,acumang
 				end do
-			AABz=AABz+acumint*dz**(lz-lzj)*comb(lz,lzj)
+			AABz=AABz+acumint * dz**(lzj-lz) * comb(lzj,lz)
+!			write(*,*) "AABz",comb(lzj,lz), dz**(lzj-lz), dz,lz,lzj
 			acumint=0.d0
 			end do
-			AABy=AABy+AABz*dy**(ly-lyj)*comb(ly,lyj)
+			AABy=AABy+AABz*dy**(lyj-ly)*comb(lyj,ly)
+!			write(*,*) AABy,"AABy",comb(ly,lyj)
 			AABz=0.d0
 			end do
-			AABx=AABx+AABy*dx**(lx-lxj)*comb(lx,lxj)
+			AABx=AABx+AABy*dx**(lxj-lx)*comb(lxj,lx)
 			AABy=0.d0
+!			write(*,*) AABx,"AABx",comb(lx,lxj)
 			end do
 			AABNonLocal=AABNonLocal+AABx*aECP(z,L,term)
 		end do

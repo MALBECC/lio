@@ -250,6 +250,7 @@
                                                 lzj=Lxyz(j,3)
 !exponentes de la parte angular
 						if (IzECP(nuc(i)) .eq. ZlistECP(k)) then
+!ECP en i
                                                 do ji=1, ncont(j)
 	                                                if ( .not. cutECP .or. (Distcoef*a(j,ji) .lt. cutecp2)) then
 !solo calcula los terminos que luego se multipliquen por un factor q no sea demasiado pequeño
@@ -260,7 +261,7 @@
 
 !                                                AAA=AAAlocal(i,j,k,ii,ji,lxi+lxj,lyi+lyj,lzi+lzj) + AAANonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
 
-						AAB=AABlocal(i,j,k,ii,ji,lxj,lyj,lzj,dx,dy,dz) !falta el no local
+						AAB=AABlocal(i,j,k,ii,ji,lxj,lyj,lzj,-dx,-dy,-dz) !falta el no local
 !suma los terminos locales y no locales del pseudopotencial
 !						write(*,*) AAB
                                                 acum=acum+AAB*c(i,ii)
@@ -311,8 +312,7 @@
 
         DOUBLE PRECISION function AABNonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
 !calcula el termino no local del pseudopotencial
-
-!suma m=-l hasta l  [<xi|lm> V(l-LM) <lm|xj>] = 
+!pseudopotencial centrado en i
 !los coef de la base se multiplican en la rutina que llama a esta
 
 !i,j funciones de la base
@@ -323,7 +323,7 @@
         use ECP_mod, only :ZlistECP,Lmax,aECP,nECP,bECP, expnumbersECP
         implicit none
         integer, intent(in) :: i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj
-        integer :: l,m, term
+        integer :: l,m, term, lx,ly,lz
 !auxiliades para ciclos
         integer :: Z,n
         double precision :: A2, Acoef
@@ -337,10 +337,14 @@
 !barre todos los l de la parte no local
                 do term=1, expnumbersECP(z,l)
 !barre contracciones del ECP para el atomo con carga z y l del ecp
+			do lx=0, lxj
+			do ly=0,lyj
+			do lz=0,lzj
 
 
-
-
+			end do
+			end do
+			end do
 
 
 
@@ -405,7 +409,7 @@
 				integral=integral + OMEGA1(Kvector,lambda,lxi,lyi,lzi) * Qnl(lxi+lyi+lzi+ nECP(Z,l,w),lambda)
 !				write(*,*) "integral", integral, OMEGA1(Kvector,lambda,lxi,lyi,lzi), Qnl(lxi+lyi+lzi+ nECP(Z,l,w),lambda)
 			end do
-			acum= acum + integral*dx**(lx-lxi) * dy**(ly-lyi) * dz**(lz-lzi)
+			acum= acum + integral*dx**(lx-lxi) * dy**(ly-lyi) * dz**(lz-lzi) *comb(lx,lxi) *comb(ly,lyi) * comb(lz,lzi)
 			integral=0.d0
 		end do
 		end do
@@ -416,6 +420,16 @@
 	end do
         return
         end function AABlocal
+
+
+        double precision function comb(a,b)
+!devuelve el combinatorio a,b; a>=b
+	use ECP_mod, only :fac
+        integer, intent(in) :: a,b
+        comb=0.d0
+        comb=fac(a)/((fac(b)*fac(a-b)))
+        return
+        end function comb
 
 
 

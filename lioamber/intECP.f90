@@ -261,7 +261,9 @@
 
 !                                                AAA=AAAlocal(i,j,k,ii,ji,lxi+lxj,lyi+lyj,lzi+lzj) + AAANonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
 
-						AAB=AABlocal(i,j,k,ii,ji,lxj,lyj,lzj,-dx,-dy,-dz) !falta el no local
+!						AAB=AABlocal(i,j,k,ii,ji,lxj,lyj,lzj,-dx,-dy,-dz) +AABNonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
+                                                AAB=AABNonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
+
 !suma los terminos locales y no locales del pseudopotencial
 !						write(*,*) AAB
                                                 acum=acum+AAB*c(i,ii)
@@ -310,7 +312,7 @@
 
 
 
-        DOUBLE PRECISION function AABNonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
+        DOUBLE PRECISION function AABNonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
 !calcula el termino no local del pseudopotencial
 !pseudopotencial centrado en i
 !los coef de la base se multiplican en la rutina que llama a esta
@@ -320,46 +322,58 @@
 !k atomo con ecp
 !lx, ly, lz; i,j exponente de la parte angular de la base x^lx y^ly z^lz
         use garcha_mod, only : a,c
-        use ECP_mod, only :ZlistECP,Lmax,aECP,nECP,bECP, expnumbersECP
+        use ECP_mod, only :ZlistECP,Lmax,aECP,nECP,bECP, expnumbersECP,Qnl
         implicit none
         integer, intent(in) :: i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj
-        integer :: l,m, term, lx,ly,lz
+	double precision, intent(in) :: dx,dy,dz
+	double precision, dimension(3) :: Kvector
+        integer :: l,m, term, lx,ly,lz, lambda,lmaxbase
 !auxiliades para ciclos
         integer :: Z,n
-        double precision :: A2, Acoef
+        double precision :: A2, Acoef, acumang, acumint, AABx, AABy, AABz, Kmod,Ccoef
 !Z= carga del nucleo
         AABNonLocal=0.d0
-        A2=0.d0
+!        A2=0.d0
         Z=ZlistECP(k)
         n=lxi+lxj+lyi+lyj+lzi+lzj
-
+	Kvector=(/-2.d0*dx,-2.d0*dy,-2.d0*dz/)
+        Kmod=2.d0 * sqrt(dx**2 + dy**2 + dz**2)
+        lmaxbase=lxj+lyj+lzj
         do l = 0 , Lmax(z)-1
 !barre todos los l de la parte no local
                 do term=1, expnumbersECP(z,l)
 !barre contracciones del ECP para el atomo con carga z y l del ecp
+			Ccoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
+			call Qtype1(Kmod,Ccoef,lmaxbase,necp(Z,l,term))
+
 			do lx=0, lxj
 			do ly=0,lyj
 			do lz=0,lzj
-
-
+				acumint=0.d0
+	                        do lambda=lxj+lyj+lzj,0,-2
+					acumang=0.d0
+	        	                do m=-l,l
+						acumang=acumang+Aintegral(l,m,lxi,lyi,lzi)*OMEGA2(Kvector,lambda,l,m,lx,ly,lz)
+	        	                end do
+					acumint=acumint+acumang*Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda)
+				end do
+			AABz=AABz+acumint*dz**(lz-lzj)*comb(lz,lzj)
+			acumint=0.d0
 			end do
+			AABy=AABy+AABz*dy**(ly-lyj)*comb(ly,lyj)
+			AABz=0.d0
 			end do
+			AABx=AABx+AABy*dx**(lx-lxj)*comb(lx,lxj)
+			AABy=0.d0
 			end do
-
-
-
-                        do m=-l,l
-!barre m
-                                A2=A2+Aintegral(l,m,lxi,lyi,lzi)*Aintegral(l,m,lxj,lyj,lzj)
-!A2 contiene la parte angular de la integral
-                        end do
-                        Acoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
+			AABNonLocal=AABNonLocal+AABx*aECP(z,L,term)
+		end do
+!                        Acoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
 !Acoef es el exponente de la integral radial
-                        AABNonLocal=AABNonLocal+A2*aECP(z,L,term)*Q0(n+nECP(z,l,term),Acoef)
+!                        AABNonLocal=AABNonLocal+A2*aECP(z,L,term)*Q0(n+nECP(z,l,term),Acoef)
 !Q0 integral radial   Q0(n,alpha)= int r^n exp(-alpha * r^2) dr fron 0 to inf
 !aECP coeficiente del ECP
-                        A2=0.d0
-                end do
+!                        A2=0.d0
         end do
 	return
 	end function AABNonLocal
@@ -424,6 +438,7 @@
 
         double precision function comb(a,b)
 !devuelve el combinatorio a,b; a>=b
+!en el futuro puedo pasarlo a un array
 	use ECP_mod, only :fac
         integer, intent(in) :: a,b
         comb=0.d0

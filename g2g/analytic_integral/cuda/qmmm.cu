@@ -118,11 +118,11 @@ void QMMMIntegral<scalar_type>::calc_fock( double& Es )
     }
 
     {
-      dim3 threads(os_int.dens_values.size(),max_partial_size);
-      dim3 blockSize(32,4);
+      dim3 threads(os_int.dens_values.size());
+      dim3 blockSize(QMMM_BLOCK_SIZE);
       dim3 gridSize = divUp(threads,blockSize);
       // Zero the partial Fock matrix on the GPU
-      zero_fock<double><<<gridSize,blockSize>>>(os_int.partial_fock_dev.data,os_int.dens_values.size(),max_partial_size);
+      zero_fock<double><<<gridSize,blockSize>>>(os_int.partial_fock_dev.data,os_int.dens_values.size(),1);;
     }
 
     //

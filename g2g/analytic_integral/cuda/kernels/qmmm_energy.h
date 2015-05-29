@@ -286,7 +286,7 @@ __global__ void gpu_qmmm_fock( uint num_terms, G2G::vec_type<scalar_type,2>* ac_
 
         if (tid < WARP_SIZE) { warpReduce<double>(fock_sh, tid); }
         if (tid == 0) {
-          fock[fock_ind_sh[i]+j+global_stride*blockIdx.x] = fock_sh[0];
+          atomicAdd(fock + fock_ind_sh[i] + j,fock_sh[0]);
         }
         __syncthreads();
       }

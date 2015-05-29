@@ -335,9 +335,7 @@ void CoulombIntegral<scalar_type>::fit_aux_density( void )
     //
     // The STR table for F(m,U) calculation is being accessed via texture fetches
     //
-    cudaAssertNoError("before tex");
     cudaBindTextureToArray(str_tex,gammaArray);
-    cudaAssertNoError("after tex");
 
 #define fit1_parameters \
   os_int.term_type_counts[i], os_int.factor_ac_dev.data, os_int.nuc_dev.data, os_int.dens_values_dev.data+dens_offset, os_int.func_code_dev.data+offset,os_int.local_dens_dev.data+offset, \
@@ -367,16 +365,13 @@ void CoulombIntegral<scalar_type>::fit_aux_density( void )
         case 4: gpu_coulomb_fit1<scalar_type,4><<<gridSize,blockSize,0,stream[i]>>>( fit1_parameters ); break;
         case 5: gpu_coulomb_fit1<scalar_type,5><<<gridSize,blockSize,0,stream[i]>>>( fit1_parameters ); break;
       }
-      cudaAssertNoError("kernel 1");
       dim3 reduceThreads = integral_vars.m_dens;
       dim3 reduceBlockSize(QMMM_REDUCE_BLOCK_SIZE);
       dim3 reduceGridSize = divUp(reduceThreads,reduceBlockSize);
       gpu_coulomb_rc_term_reduce<scalar_type><<<reduceGridSize,reduceBlockSize,0,stream[i]>>>( rc_partial_dev.data,COALESCED_DIMENSION(integral_vars.m_dens),
                                                                                                os_int.out_offsets[i], (i<NUM_TERM_TYPES-1?os_int.out_offsets[i+1]:partial_out_size) ,integral_vars.m_dens );
-      cudaAssertNoError("kernel 2");
     }
     cudaDeviceSynchronize();
-    cudaAssertNoError("kernel 3");
     for (uint i = 0; i < NUM_TERM_TYPES; i++) {
       cudaStreamDestroy(stream[i]);
     }
@@ -387,7 +382,6 @@ void CoulombIntegral<scalar_type>::fit_aux_density( void )
       dim3 reduceGridSize = divUp(reduceThreads,reduceBlockSize);
       gpu_coulomb_rc_reduce<scalar_type><<<reduceGridSize,reduceBlockSize>>>( rc_partial_dev.data,COALESCED_DIMENSION(integral_vars.m_dens),integral_vars.m_dens,NUM_TERM_TYPES );
     }
-    cudaAssertNoError("kernel 4");
     cudaDeviceSynchronize();
     {
       dim3 threads = integral_vars.m_dens;
@@ -395,13 +389,14 @@ void CoulombIntegral<scalar_type>::fit_aux_density( void )
       dim3 gridSize = divUp(threads,blockSize);
       gpu_coulomb_fit2<scalar_type><<<gridSize,blockSize>>>( rc_partial_dev.data,fit_dens_dev.data,Ginv_dev.data,input_ind_dev.data,integral_vars.m_dens );
     }
-    cudaAssertNoError("kernel 5");
     cudaDeviceSynchronize();
 
     G2G::HostMatrix<scalar_type> fit_dens_h(fit_dens_dev);
     for (uint i = 0; i < integral_vars.m_dens; i++) {
       integral_vars.af_input_ndens1(i) = fit_dens_h(input_ind_cpu[i]);
     }
+
+    //cudaUnbindTexture(str_tex);
 
     cudaAssertNoError("CoulombIntegral::fit_aux_density");
 }
@@ -417,14 +412,21 @@ void CoulombIntegral<scalar_type>::calc_fock( double& Es )
     }
 
     {
+      // I don't know why, but doing this zeroing kernel with this grid (rather than a more logical 1D grid)
+      // actually seems to speed things up...I can only guess it's due to some synchronization issue
       dim3 threads(os_int.dens_values.size(),max_partial_size);
-      dim3 blockSize(32,4);
+      dim3 blockSize(32,4);//QMMM_BLOCK_SIZE);
       dim3 gridSize = divUp(threads,blockSize);
       //
       // Zero the partial Fock matrix on the GPU
       //
-      zero_fock<double><<<gridSize,blockSize>>>(os_int.partial_fock_dev.data,os_int.dens_values.size(),max_partial_size);
+      zero_fock<double><<<gridSize,blockSize>>>(os_int.partial_fock_dev.data,os_int.dens_values.size(),1);
     }
+
+    //
+    // The STR table for F(m,U) calculation is being accessed via texture fetches
+    //
+    //cudaBindTextureToArray(str_tex,gammaArray);
 
 #define coulomb_fock_parameters \
   os_int.term_type_counts[i], os_int.factor_ac_dev.data, os_int.nuc_dev.data, os_int.func_code_dev.data+offset,os_int.local_dens_dev.data+offset, \

@@ -132,21 +132,22 @@ __global__ void gpu_fock_reduce( double* fock, scalar_type* dens, double* energi
 
   uint my_fock_ind = index_x(blockDim, blockIdx, threadIdx);
   uint tid = threadIdx.x;
-  double my_partial_fock = 0.0;
+  double my_fock = 0.0;
 
-  if (my_fock_ind < width) {
-    for (uint i = 0; i < depth; i++) {
-      my_partial_fock += fock[stride*i + my_fock_ind];
-    }
-    fock[my_fock_ind] = my_partial_fock;
-  }
+  //if (my_fock_ind < width) {
+  //  for (uint i = 0; i < depth; i++) {
+  //    my_partial_fock += fock[stride*i + my_fock_ind];
+  //  }
+  //  fock[my_fock_ind] = my_partial_fock;
+  //}
 
   __shared__ double energies_sh[QMMM_REDUCE_BLOCK_SIZE];
   scalar_type my_dens = 0.0f;
   if (my_fock_ind < width) {
     my_dens = dens[my_fock_ind];
+    my_fock = fock[my_fock_ind];
   }
-  energies_sh[tid] = my_partial_fock * (double)my_dens;
+  energies_sh[tid] = my_fock * (double)my_dens;
   __syncthreads();
 
   if (tid < 64)
@@ -157,5 +158,25 @@ __global__ void gpu_fock_reduce( double* fock, scalar_type* dens, double* energi
 
   if (tid < WARP_SIZE) { warpReduce<double>(energies_sh, tid); }
   if (tid == 0) { energies[blockIdx.x] = energies_sh[0]; }
+}
+
+// Double precision addition as an atomic operation
+// Taken from the CUDA Toolkit Documentation
+static __device__ double atomicAdd(double* address, double val)
+{
+    unsigned long long int* address_as_ull =
+                              (unsigned long long int*)address;
+    unsigned long long int old = *address_as_ull, assumed;
+
+    do {
+        assumed = old;
+        old = atomicCAS(address_as_ull, assumed,
+                        __double_as_longlong(val +
+                               __longlong_as_double(assumed)));
+
+    // Note: uses integer comparison to avoid hang in case of NaN (since NaN != NaN)
+    } while (assumed != old);
+
+    return __longlong_as_double(old);
 }
 

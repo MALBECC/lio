@@ -202,7 +202,7 @@ bool OSIntegral<scalar_type>::alloc_output( void )
     }
 
     size_t gpu_size = COALESCED_DIMENSION(partial_out_size) * G2G::fortran_vars.atoms * 3 * sizeof(scalar_type);
-    gpu_size += (dens_values.size() * max_partial_size + energies_size) * sizeof(double);
+    gpu_size += (dens_values.size() /* max_partial_size*/ + energies_size) * sizeof(double);
     float mb_size = (float)gpu_size / 1048576.0f;
     cout << "O-S common output size: " << mb_size << " MB" << endl;
     if (globalMemoryPool::tryAlloc(gpu_size)) return false;
@@ -215,7 +215,7 @@ bool OSIntegral<scalar_type>::alloc_output( void )
     // Fock: ouptut is partial Fock elements
     //
     // The partial Fock matrix is partitioned by term type, so the second (partial) dimension needs to be as big as largest count of a single term type
-    partial_fock_dev.resize(dens_values.size(),max_partial_size);
+    partial_fock_dev.resize(dens_values.size(),1);//max_partial_size);
 
     partial_energies_dev.resize(energies_size,1);
 
@@ -236,8 +236,8 @@ void OSIntegral<scalar_type>::get_fock_output( double& Es, G2G::FortranMatrix<do
     // Download reduced Fock matrix and partially reduced energies
     // The Fock matrix has been reduced to the first row of the output, so we only want that much of the device array
     //
-    G2G::HostMatrix<double> cpu_fock(dens_values.size());
-    cudaMemcpy(cpu_fock.data,partial_fock_dev.data,cpu_fock.bytes(),cudaMemcpyDeviceToHost);
+    G2G::HostMatrix<double> cpu_fock(partial_fock_dev);
+    //cudaMemcpy(cpu_fock.data,partial_fock_dev.data,cpu_fock.bytes(),cudaMemcpyDeviceToHost);
     G2G::HostMatrix<double> cpu_partial_energies(partial_energies_dev);
 
     //

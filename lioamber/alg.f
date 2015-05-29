@@ -1,6 +1,6 @@
       subroutine dppco(ap,n,rcond,z,info)
       integer n,info
-      double precision ap(1),z(1)
+      double precision ap((n*n+1)/2),z(n)
       double precision rcond
 c
 c     dppco factors a double precision symmetric positive definite

@@ -128,8 +128,9 @@ c      write(*,*)ng2,ngDyn,ngdDyn,norbit,Ngrid
      > ,indexii(ngnu),indexiid(ngdnu))
 
       allocate (r(ntatom,3),v(ntatom,3),rqm(natom,3),Em(ntatom)
-     >,Rm(ntatom),pc(ntatom),Iz(natom),nnat(ntatom),af(natom*ngd0),
+     >,Rm(ntatom),pc(ntatom),Iz(natom),af(natom*ngd0),
      >  B(natom*ngd0,3))
+      allocate (nnat(100))
       allocate(d(natom,natom))
 
       do i=1,natom

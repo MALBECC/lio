@@ -4,7 +4,9 @@
 src_paths += liomods
 src_paths += maskrmm
 src_paths += mathsubs
-
+ifeq ($(cublas),1)
+src_paths += mathsubs/cublas
+endif
 #
 ######################################################################
 # MODULE INTERNALS : This is the inclusion of all .mk files
@@ -13,6 +15,9 @@ src_paths += mathsubs
 include liomods/liomods.mk
 include maskrmm/maskrmm.mk
 include mathsubs/mathsubs.mk
+ifeq ($(cublas),1)
+include mathsubs/cublas/cublasmath.mk
+endif
 
 #
 ######################################################################
@@ -26,7 +31,11 @@ objects += matmuldiag.o fock_commuts.o
 objects += init.o init_amber.o lio_init.o lio_finalize.o
 objects += alg.o drive.o func.o grid.o
 objects += int1.o int1G.o int2.o int2G.o
+<<<<<<< HEAD
 objects += int3lu.o int3mem.o  int3G.o
+=======
+objects += int3lu.o int3mem.o int3G.o
+>>>>>>> ae7ea44b623b49dfaad5ae3adb72a5532500e6be
 objects += intsol.o intsolG.o intsolGs.o
 objects += intfld.o intSG.o
 objects += FixMessRho.o get_unit.o PackedStorage.f
@@ -35,6 +44,9 @@ objects += liokeys.o
 objects += sysdata.o
 objects += mathsubs.o
 objects += maskrmm.o
+ifeq ($(cublas),1)
+objects += cublasmath.o 
+endif
 
 #
 ######################################################################
@@ -49,15 +61,28 @@ objects += maskrmm.o
 # garcha_mod
 objlist := dft_get_mm_forces.o dft_get_qm_forces.o
 objlist += dip.o dipmem.o drive.o grid.o init_amber.o init.o
+<<<<<<< HEAD
 objlist += int1.o int2.o int3lu.o int3mem.o  intfld.o intsol.o
+=======
+objlist += int1.o int2.o int3lu.o int3mem.o intfld.o intsol.o
+>>>>>>> ae7ea44b623b49dfaad5ae3adb72a5532500e6be
 objlist += int1G.o int2G.o int3G.o intSG.o intsolG.o intsolGs.o
 objlist += jarz.o lio_finalize.o predictor.o
-objlist += SCF.o SCF_in.o SCFop.o TD.o
+objlist += SCF.o SCF_in.o SCFop.o TD.o 
 $(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/garcha_mod.mod
 
 
 # mathsubs
 objlist := SCF.o SCFop.o
 $(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/mathsubs.mod
+
+ifeq ($(cublas),1)
+#cublasmath
+objlist := cublasmath.o
+$(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/garcha_mod.mod
+
+objlist := SCF.o SCFop.o TD.o
+$(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/cublasmath.mod
+endif
 
 ######################################################################

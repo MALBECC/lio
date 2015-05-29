@@ -192,11 +192,13 @@ c in intsol)
 c
       call int1(En)
       if (ecpmode) then
-          write(*,*) "agrego terminos AAA a los de 1e"
+          write(*,*) "agrego terminos AAA,AAB a los de 1e"
           do k=1,MM
                term1e(k)=RMM(M11+k-1)
 !copia los terminos de 1e
-               RMM(M11+k-1)=RMM(M11+k-1)+VAAA(k)!+VAAB(k)
+!		write(89,*) RMM(M11+k-1),VAAA(k),VAAB(k)
+               RMM(M11+k-1)=RMM(M11+k-1)+VAAA(k)+VAAB(k)
+!		write(89,*) RMM(M11+k-1)
 !agrega el ECP AAA a los terminos de 1 e
           enddo
       end if

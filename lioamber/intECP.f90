@@ -28,6 +28,7 @@
 	call obtaindistance()
 !ontiene arrays con la diatncia en x, y y z entre cada par de atomos i y j
 	call intECPAAB()
+!	write(90,*) VAAB
 !calculo VAAB
 	write(*,*) "en proceso rutinas VAAB"
 	elseif (tipodecalculo .eq. 3) then
@@ -88,7 +89,7 @@
 	end do
 	end if
 
-        if ( .false. ) then
+        if ( .true. ) then
 !testea que la matriz VAAB sea simetrica
         write(*,*) "test Vij AAB"
                 do i=1,M
@@ -231,19 +232,24 @@
 	Distcoef=0.d0
 	AAB=0.d0
 	acum=0.d0
-
+!	write(*,*) "******entre AAB"
         do i=1, M
+!	write(*,*) i
 !barre funciones de la base 
                 do j=1, M
+!	write(*,*) i,j,nuc(i),nuc(j)
 !cambiar por do j=i,M para barrer solo la mitad de la matriz
 !barre el otro coef de la base j>=i ya que la matriz tiene q ser simetrica
                         if (nuc(i) .ne. nuc(j)) then
+!	write(*,*) nuc(i),nuc(j)
 !agarra bases de atomos distintos
 !				write(32,*) nuc(i),nuc(j),nuc(i)-nuc(j)
                                 do k=1, ecptypes
 !barre atomos con ecp
+!	write(*,*) "*******antes del if"
 					if (IzECP(nuc(i)) .eq. ZlistECP(k) .or. IzECP(nuc(j)) .eq. ZlistECP(k)) then
 !solo calcula si el atomo tiene ECP
+!	write(*,*) "************************************************pase un if"
 						dx=distx(nuc(i),nuc(j))
 						dy=disty(nuc(i),nuc(j))
 						dz=distz(nuc(i),nuc(j))
@@ -287,7 +293,7 @@
                                                 if (i .ge. j) then
 !este if hay q sacarlo al fina, cuando cambie el rango en el q barre j , en vez de comenzar en 1 comience en i
                                                         pos=i+(1-j)*(j-2*M)/2   !chekeada
-                                                        VAAB(pos) = VAAB(pos) + acum*c(j,ji) !esta linea es lo unico que quedaria!!!!!!!!!!!!!
+                                                        VAAB(pos) = VAAB(pos) + + acum*c(j,ji)*4*pi*exp(-Distcoef*a(j,ji))!esta linea es lo unico que quedaria!!!!!!!!!!!!!
                                                 end if
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 							end if
@@ -317,7 +323,7 @@
                                                 if (i .ge. j) then
 !este if hay q sacarlo al fina, cuando cambie el rango en el q barre j , en vez de comenzar en 1 comience en i
                                                         pos=i+(1-j)*(j-2*M)/2   !chekeada
-                                                        VAAB(pos) = VAAB(pos) + acum*c(i,ii) !esta linea es lo unico que quedaria!!!!!!!!!!!!!
+                                                        VAAB(pos) = VAAB(pos) + acum*c(i,ii)*4*pi*exp(-Distcoef*a(i,ii)) !esta linea es lo unico que quedaria!!!!!!!!!!!!!
                                                 end if
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                                                         end if
@@ -335,7 +341,7 @@
 
 
 
-
+!	write(91,*) VAAB
 
 
 
@@ -477,6 +483,7 @@
 		do lzi=0,lz
 !a,b,c barren desde 0 hasta lx,ly,lz
 			do lambda=lxi+lyi+lzi+kxi+kyi+kzi,0,-2
+!hay q chekear este rando de lambda
 				integral=integral + OMEGA1(Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi) * Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda)
 !				write(*,*) "integral", integral, OMEGA1(Kvector,lambda,lxi,lyi,lzi), Qnl(lxi+lyi+lzi+ nECP(Z,l,w),lambda)
 !				write(*,*) "Q", Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda),lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda
@@ -675,6 +682,7 @@
 			do iy=0,l-ix
 				iz=l-ix-iy
 				Aintegral=Aintegral+Ucoef(l,m,ix,iy,iz)*angularint(lx+ix,ly+iy,lz+iz)
+!				write(*,*) "integral"
 !angularint(nx,ny,nz) calcula int ((x/r)^nx (y/r)^ny (z/r)^nz d(angulo solido)
 			end do
 		end do
@@ -753,11 +761,13 @@
 			do s=0,lambda-r
 				t=lambda-r-s
                                 SUM1=SUM1+Ucoef(lambda,o,r,s,t)*Kun(1)**r * Kun(2)**s * Kun(3)**t
+!				write(*,*) "OMEGA2"
 !				write(15,*) "sum1",sum1
 				do u=0,l
 					do v = 0,l-u
 						w=l-u-v
 			                        SUM2=SUM2+Ucoef(lambda,o,r,s,t)*Ucoef(l,m,u,v,w)*angularint(a+r+u,b+s+v,c+t+w)
+!						write(*,*) "OMEGA2.2"
 !						write(15,*) "a+r+u,b+s+v,c+t+w",a+r+u,b+s+v,c+t+w
 !						write(15,*) "Ucoef(lambda,o,r,s,t)*Ucoef(l,m,u,v,w)*angularint(a+r+u,b+s+v,c+t+w)",Ucoef(lambda,o,r,s,t),Ucoef(l,m,u,v,w),angularint(a+r+u,b+s+v,c+t+w)
 !						write(15,*) "sum2",sum2,"u,v,w",u,v,w
@@ -804,6 +814,7 @@
 				t=l-r-s
 !				write(*,*) "t",t
 				SUM1=SUM1+Ucoef(l,u,r,s,t)*Kun(1)**r * Kun(2)**s * Kun(3)**t
+!				write(*,*) "OMEGA1"
 				SUM2=SUM2+Ucoef(l,u,r,s,t)*angularint(a+r,b+s,c+t)
 !Usa la funcion angular int en lugar del array int angular. Hay que agrandar el array
 !				write(*,*) SUM1, SUM2, angularint(a+r,b+s,c+t),a+r,b+s,c+t
@@ -831,7 +842,7 @@
         elseif (l .eq. 3) then
 	Ucoef=l3(0.5*lx*(9-lx)+ly+1,m)
 	else
-	write(*,*) "ECP error l is grater than 3"
+	write(*,*) "ECP error l is grater than 3",l
 	end if
 	return
 	end function Ucoef

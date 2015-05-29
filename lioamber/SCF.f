@@ -163,12 +163,14 @@ c
       call g2g_reload_atom_positions(igrid2)
 
       if (predcoef.and.npas.gt.3) then
-        if (.not.OPEN) then
-          if(verbose) write(*,*) 'prediciendo densidad'
-          do i=1,MM
-            RMM(i)=(3*old1(i))-(3*old2(i))+(old3(i))
-          enddo
-         endif
+        write(*,*) 'no devería estar aca!'
+
+c        if (.not.OPEN) then
+c          if(verbose) write(*,*) 'prediciendo densidad'
+c          do i=1,MM
+c            RMM(i)=(3*old1(i))-(3*old2(i))+(old3(i))
+c          enddo
+c         endif
        endif
         
 c
@@ -1020,14 +1022,14 @@ c-------------------------------------------------------------------
         converge=converge+1
       endif
 
-      old3=old2
+c      old3=old2
 
-      old2=old1
+c      old2=old1
 c        write(*,*) 'good final',good
 
-      do i=1,MM
-        old1(i)=RMM(i)
-      enddo
+c      do i=1,MM
+c        old1(i)=RMM(i)
+c      enddo
 
       if(noconverge.gt.4) then
         write(6,*)  'stop fon not convergion 4 times'

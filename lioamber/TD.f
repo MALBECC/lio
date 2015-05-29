@@ -323,7 +323,7 @@ c s is in RMM(M13,M13+1,M13+2,...,M13+MM)
             call g2g_timer_stop('int2')
             call g2g_timer_start('int3mmem')
             call int3mem()
-            call int3mems()
+c            call int3mems()
             call g2g_timer_stop('int3mmem')
 !------------------------------------------------------------------------------!
             call g2g_timer_stop('inicio')

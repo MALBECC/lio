@@ -120,7 +120,7 @@ c        write(*,*) natom,nsol
 c      write(*,*)ng2,ngDyn,ngdDyn,norbit,Ngrid
 
       allocate(X(ngDyn,ng3),XX(ngdDyn,ngdDyn))
-      allocate(RMM(ng2),RMM1(ng2),RMM2(ng2), RMM3(ng2))
+      allocate(RMM(ng2))
 
       allocate (c(ngnu,nl),a(ngnu,nl),Nuc(ngnu),ncont(ngnu)
      >  ,cx(ngdnu,nl),ax(ngdnu,nl),Nucx(ngdnu),ncontx(ngdnu)

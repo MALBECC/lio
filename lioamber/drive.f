@@ -1352,10 +1352,10 @@ c---------------------------------------------------
 c---------------------------------------------------
        deallocate(X,XX)
        allocate(X(M,4*M),XX(Md,Md))
-       allocate(old1(MM))
+c       allocate(old1(MM))
 
-       allocate(old2(MM))
-       allocate(old3(MM))
+c       allocate(old2(MM))
+c       allocate(old3(MM))
 
  100  format (A8)
  200  format ('basis set corresponding to Z ',I3,' was not used')

@@ -79,6 +79,7 @@ c       write(*,*) 'M=',M
       En=0.0D0
       E2=0.0D0
       Es=0.0D0
+      Eecp=0.d0
 
       ngeo=ngeo+1
 
@@ -1110,14 +1111,24 @@ c       write(*,*) 'g2g-Exc',Exc
         ! En - nuclear-nuclear repulsion
         ! Ens - MM point charge-nuclear interaction
         ! Exc - exchange-correlation
+	! Eecp - Efective core potential
         ! -------------------------------------------------
         E=E1+E2+En+Ens+Exc
         if (npas.eq.1) npasw = 0
         if (npas.gt.npasw) then
           write(6,*)
           write(6,600)
+        if (ecpmode) then
+          write(6,611)
+	        do k=1,MM
+	          Eecp=Eecp+RMM(k)*(VAAA(k)+VAAB(k))
+!falta agregar los terminos de VBAC, Nick
+	        enddo
+          write(6,621) E1-Eecp,E2-Ex,En,Eecp
+        else
           write(6,610)
           write(6,620) E1,E2-Ex,En
+	end if
 c         if (sol) then
 c          write(6,615)
 c          write(6,625) Es
@@ -1260,8 +1271,11 @@ c       E=E*627.509391D0
  300  format(I3,E14.6,2x,F14.7)
  600  format('  ENERGY CONTRIBUTIONS IN A.U.')
  610  format(2x,'ONE ELECTRON',9x,'COULOMB',11x,'NUCLEAR')
+ 611  format(4x,'ONE ELECTRON',9x,'COULOMB',9x,'NUCLEAR', 9x,
+     & 'E. CORE POT.')
  615  format(2x,'SOLVENT')
  620  format(F14.7,4x,F14.7,4x,F14.7)
+ 621  format(F14.7,6x,F14.7,2x,F14.7,4x,F14.7)
  625  format(F14.7)
  760  format(I3,9x,I3,6x,F10.4)
  770  format('ATOM #',4x,'ATOM TYPE',4x,'POPULATION')

@@ -10,7 +10,7 @@ c Dario Estrin, 1992
       subroutine SCF(E,dipxyz)
       use garcha_mod
       use mathsubs
-      use ECP_mod, only : ecpmode, term1e, VAAA
+      use ECP_mod, only : ecpmode, term1e, VAAA, VAAB
 
 
 
@@ -196,7 +196,7 @@ c
           do k=1,MM
                term1e(k)=RMM(M11+k-1)
 !copia los terminos de 1e
-               RMM(M11+k-1)=RMM(M11+k-1)+VAAA(k)
+               RMM(M11+k-1)=RMM(M11+k-1)+VAAA(k)!+VAAB(k)
 !agrega el ECP AAA a los terminos de 1 e
           enddo
       end if

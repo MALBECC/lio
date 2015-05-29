@@ -78,14 +78,24 @@
 	end if
 
 	if (tipodecalculo .eq. 2) then
-        if ( .true. ) then
-!escribe coeficientes de fock del ECP AAB y testea que la matriz sea simetrica
+	if ( .true. ) then
+!escribe coeficientes de fock del ECP AAB y AAA
+	write(*,*) "VAAB                     VAAA"
+	do i=1,M
+                do j=i,M
+			write(*,*) i,j,VAABcuadrada(i,j),VAAAcuadrada(i,j)
+		end do
+	end do
+	end if
+
+        if ( .false. ) then
+!testea que la matriz VAAB sea simetrica
         write(*,*) "test Vij AAB"
                 do i=1,M
                         do j=i,M
                                 if (nuc(i) .ne. nuc(j)) then
 !                                       write(*,9015) i,j,VAAB(i,j), VAAB(j,i), VAAB(i,j)-VAAB(j,i)
-                                        if (abs(VAAAcuadrada(i,j)-VAAAcuadrada(j,i)) .gt. 1E-10) then
+                                        if (abs(VAABcuadrada(i,j)-VAABcuadrada(j,i)) .gt. 1E-10) then
                                                 do e=1,20
 						write(*,*) "*********  error matriz VAAB no simetrica  **********"
                                                 write(*,*) VAABcuadrada(i,j),VAABcuadrada(j,i),VAABcuadrada(i,j)-VAABcuadrada(j,i)
@@ -95,7 +105,6 @@
                                 end if
                         end do
                 end do
-               write(*,*) VAABcuadrada
         end if
 	end if
 
@@ -110,7 +119,7 @@
 !					write(*,9013) VAAA(pos), VAAAcuadrada(i,j), VAAA(pos)-VAAAcuadrada(i,j)
 					if ( abs(VAAA(pos)-VAAAcuadrada(i,j)) .gt. 0.0000000000000001 ) then
 						do e=1,20
-						write(*,*) "no coinciden la matriz cuadrada con el vector",i,j,pos
+						write(*,*) "no coinciden la matriz cuadrada con el vector VAAA",i,j,pos
 						end do
 					end if
 				end if
@@ -230,14 +239,18 @@
 !barre el otro coef de la base j>=i ya que la matriz tiene q ser simetrica
                         if (nuc(i) .ne. nuc(j)) then
 !agarra bases de atomos distintos
+!				write(32,*) nuc(i),nuc(j),nuc(i)-nuc(j)
                                 do k=1, ecptypes
 !barre atomos con ecp
 					if (IzECP(nuc(i)) .eq. ZlistECP(k) .or. IzECP(nuc(j)) .eq. ZlistECP(k)) then
-!calculo para ECP en i, hay q repetir para j
 !solo calcula si el atomo tiene ECP
 						dx=distx(nuc(i),nuc(j))
 						dy=disty(nuc(i),nuc(j))
 						dz=distz(nuc(i),nuc(j))
+!testedo con distancia a mano, nick
+!						dx=-1.d0
+!						dy=0.d0
+!						dz=0.d0
 
 						Distcoef=(dx**2 + dy**2 + dz**2)
 !distancia entre atomos
@@ -250,48 +263,68 @@
                                                 lzj=Lxyz(j,3)
 !exponentes de la parte angular
 						if (IzECP(nuc(i)) .eq. ZlistECP(k)) then
-!ECP en i
+!calculo para ECP en i, hay q repetir para j
                                                 do ji=1, ncont(j)
 	                                                if ( .not. cutECP .or. (Distcoef*a(j,ji) .lt. cutecp2)) then
-!solo calcula los terminos que luego se multipliquen por un factor q no sea demasiado pequeño
+!solo calcula los terminos que luego se multipliquen por un factor q no sea demasiado pequeño,
+!el cut va a ser obligatorio, ya que si los atomos quedan muy separados el termino VAAB se obtiene como el producto de un numero MUY grande por uno que es casi 0
+!y se obtienen NAN para el numero muy grande
+!a distancias grades gana el termino que es casi 0
+
 								acum=0.d0
 		                                                do ii=1, ncont(i)
 !ji y ii barren contracciones de las funcion de base
 !me conviene que barra primero los terminos de la base de i, ya que el factor ezponencial que multiplica solo depende de j
 
-!                                                AAA=AAAlocal(i,j,k,ii,ji,lxi+lxj,lyi+lyj,lzi+lzj) + AAANonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
-
-!						AAB=AABlocal(i,j,k,ii,ji,lxj,lyj,lzj,-dx,-dy,-dz) +AABNonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
-                                                AAB=AABNonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
-!						write(*,*) AAB,i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz
-!suma los terminos locales y no locales del pseudopotencial
-!						write(*,*) AAB
+						AAB=AABlocal(i,j,k,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,-dx,-dy,-dz) +AABNonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
                                                 acum=acum+AAB*c(i,ii)
 !multiplica por el coeficiente de la base
                 		                                end do
                                                 VAABcuadrada(i,j) = VAABcuadrada(i,j) + acum*c(j,ji)*4*pi*exp(-Distcoef*a(j,ji))
 !multiplica por el otro coef de la base
-							end if
-
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!                                                if (i .ge. j) then
+                                                if (i .ge. j) then
 !este if hay q sacarlo al fina, cuando cambie el rango en el q barre j , en vez de comenzar en 1 comience en i
-!                                                        pos=i+(1-j)*(j-2*M)/2   !chekeada
-!                                                       write(31,*) pos
-!                                                        VAAA(pos) = VAAA(pos) + acum*c(i,ii) !esta linea es lo unico que quedaria!!!!!!!!!!!!!
-!                                                       write(*,*) VAAAcuadrada(i,j),VAAA(pos),VAAA(pos)-VAAAcuadrada(i,j)
-!                                                        if (abs(VAAA(pos)-VAAAcuadrada(i,j)) .gt. 0.000000000001) then
-!                                                                do e=1,20
-!                                                                        write(*,*) i,j,pos,"arma mal el vector!!!!"
-!                                                                end do
-!                                                        end if
-!                                                       write(*,*) VAAA(pos),VAAAcuadrada(i,j)
-!                                                end if
+                                                        pos=i+(1-j)*(j-2*M)/2   !chekeada
+                                                        VAAB(pos) = VAAB(pos) + acum*c(j,ji) !esta linea es lo unico que quedaria!!!!!!!!!!!!!
+                                                end if
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+							end if
                                                 end do
 						end if
+
+!!!!!!!!!!!!!!!!!!!!!!!!!%%%%%%%%%%%%%%%%%%%%arreglando
+
+                                                if (IzECP(nuc(j)) .eq. ZlistECP(k)) then
+!calculo para ECP en j
+                                                do ii=1, ncont(i)
+                                                        if ( .not. cutECP .or. (Distcoef*a(i,ii) .lt. cutecp2)) then
+!solo calcula los terminos que luego se multipliquen por un factor q no sea demasiado pequeño,
+                                                                acum=0.d0
+                                                                do ji=1, ncont(j)
+!ji y ii barren contracciones de las funcion de base
+!me conviene que barra primero los terminos de la base de j, ya que el factor ezponencial que multiplica solo depende de j
+
+                                                AAB=AABlocal(j,i,k,ji,ii,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz) +AABNonLocal(j,i,ji,ii,k,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
+                                                acum=acum+AAB*c(j,ji)
+!multiplica por el coeficiente de la base
+                                                                end do
+                                                VAABcuadrada(i,j) = VAABcuadrada(i,j) + acum*c(i,ii)*4*pi*exp(-Distcoef*a(i,ii))
+!multiplica por el otro coef de la base
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                                                if (i .ge. j) then
+!este if hay q sacarlo al fina, cuando cambie el rango en el q barre j , en vez de comenzar en 1 comience en i
+                                                        pos=i+(1-j)*(j-2*M)/2   !chekeada
+                                                        VAAB(pos) = VAAB(pos) + acum*c(i,ii) !esta linea es lo unico que quedaria!!!!!!!!!!!!!
+                                                end if
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                                                        end if
+                                                end do
+                                                end if
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
                                         end if
                                 end do
 
@@ -334,19 +367,24 @@
 !Z= carga del nucleo
         AABNonLocal=0.d0
 !        A2=0.d0
+
+
         Z=ZlistECP(k)
         n=lxi+lxj+lyi+lyj+lzi+lzj
-	Kvector=(/-2.d0*dx,-2.d0*dy,-2.d0*dz/)
-        Kmod=2.d0 * sqrt(dx**2 + dy**2 + dz**2)
+	Kvector=(/-2.d0*dx,-2.d0*dy,-2.d0*dz/)*a(j,ji)
+        Kmod=2.d0 * sqrt(dx**2 + dy**2 + dz**2) *a(j,ji)
         lmaxbase=lxj+lyj+lzj
         do l = 0 , Lmax(z)-1
 !barre todos los l de la parte no local
                 do term=1, expnumbersECP(z,l)
 !barre contracciones del ECP para el atomo con carga z y l del ecp
 			Ccoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
+			Qnl=0.d0
 			call Qtype1(Kmod,Ccoef,lmaxbase,necp(Z,l,term))
+!			write(*,*) "nolocal",Kmod,Ccoef,lmaxbase,necp(Z,l,term)
+!			write(*,*) "nolocal", Qnl(0,0),Qnl(1,0),Qnl(2,0),Qnl(3,0)
 !			write(*,*) "variables Q",Kmod,Ccoef,lmaxbase,necp(Z,l,term)
-
+!			write(*,*) "i,j,ai,aj,ci,cj",i,j,a(i,1),a(j,1),c(i,1), c(j,1)
 			do lx=0, lxj
 			do ly=0,lyj
 			do lz=0,lzj
@@ -358,7 +396,7 @@
 !						write(*,*) Aintegral(l,m,lxi,lyi,lzi),OMEGA2(Kvector,lambda,l,m,lx,ly,lz)
 	        	                end do
 					acumint=acumint+acumang*Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda) 
-					write(*,*) "Q",Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda)
+!					write(*,*) "Q",Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda),necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda
 !					write(*,*) "acums",acumint,acumang
 				end do
 			AABz=AABz+acumint * dz**(lzj-lz) * comb(lzj,lz)
@@ -391,9 +429,10 @@
 
 
 
-        DOUBLE PRECISION function AABlocal(i,j,k,ii,ji,lx,ly,lz,dx,dy,dz)
+        DOUBLE PRECISION function AABlocal(i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi,dx,dy,dz)
+
 !Calcula el termino local del pseudopotencial
-!   [<xi|V(LM)|xj>] =  para el pseudopotencial en i o j
+!   [<xi|V(LM)|xj>] =  para el pseudopotencial en i
 !los coef N de la base se multiplican en la rutina que llama a esta
 
 !i,j funcion de base
@@ -404,31 +443,43 @@
 !expnumbersECP(Z,l) cantidad de terminos del ECP para el atomo con carga nuclear Z y l del ECP
         implicit none
         integer :: w,n,z,l,lxi, lyi, lzi, lambda, lmaxbase
-        integer, intent(in) :: i,j,k,ii,ji,lx,ly,lz
+        integer, intent(in) :: i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi
         double precision :: Ccoef, acum,dx,dy,dz,integral, Kmod
 	double precision, dimension (3) :: Kvector
         z=ZlistECP(k)
         L=Lmax(ZlistECP(k))
-        lmaxbase=lx+ly+lz
+        lmaxbase=lx+ly+lz+kxi+kyi+kzi
         AABlocal=0.d0
 	acum=0.d0
 	integral=0.d0
-	Kvector=(/-2.d0*dx,-2.d0*dy,-2.d0*dz/)
-	Kmod=2.d0 * sqrt(dx**2 + dy**2 + dz**2)
+	Kvector=(/-2.d0*dx,-2.d0*dy,-2.d0*dz/)*a(j,ji)
+	Kmod= 2.d0 * sqrt(dx**2 + dy**2 + dz**2) *a(j,ji)
+
+
+!	write(*,*) "values", a(1,1), c(1,1)
 !	write(*,*) "K", Kmod
         do w =1, expnumbersECP(z,l)
 !barre todos los terminos del Lmaximo
 	        Qnl=0.d0
 		Ccoef=bECP(z,L,w)+a(i,ii)+a(j,ji)
+!		WRITE(*,*) "cCOEF",bECP(z,L,w),a(i,ii),a(j,ji),i,ii,j,ji
+!parece q esta mal K 
+!en C el problema parece ser bECP
+!		WRITE(*,*) "bECP",z,L,w
 		call Qtype1(Kmod,Ccoef,lmaxbase,necp(Z,l,w))
+!                write(*,*) "local",Kmod,Ccoef,lmaxbase,necp(Z,l,w)
+!                write(*,*) "local", Qnl(0,0),Qnl(1,0),Qnl(2,0),Qnl(3,0)
+
+
 
 		do lxi=0,lx
 		do lyi=0,ly
 		do lzi=0,lz
 !a,b,c barren desde 0 hasta lx,ly,lz
-			do lambda=lxi+lyi+lzi,0,-2
-				integral=integral + OMEGA1(Kvector,lambda,lxi,lyi,lzi) * Qnl(lxi+lyi+lzi+ nECP(Z,l,w),lambda)
+			do lambda=lxi+lyi+lzi+kxi+kyi+kzi,0,-2
+				integral=integral + OMEGA1(Kvector,lambda,lxi+kxi,lyi+kyi,lzi+kzi) * Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda)
 !				write(*,*) "integral", integral, OMEGA1(Kvector,lambda,lxi,lyi,lzi), Qnl(lxi+lyi+lzi+ nECP(Z,l,w),lambda)
+!				write(*,*) "Q", Qnl(lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda),lxi+lyi+lzi+kxi+kyi+kzi+nECP(Z,l,w),lambda
 			end do
 			acum= acum + integral*dx**(lx-lxi) * dy**(ly-lyi) * dz**(lz-lzi) *comb(lx,lxi) *comb(ly,lyi) * comb(lz,lzi)
 			integral=0.d0
@@ -807,14 +858,15 @@
 !variables auxiliares
 	integer :: n,l,i
         double precision :: acoef, gam, acum
-	
+!	write(*,*) "Q recibe:",  K,Ccoef,lmax,necp
 !Caso 1-calcula todas las integrales
 	nmin=necp
 	nmax=necp+lmax
 !	write(*,*) "Q, k", K
 	acoef=K/(2.d0*Ccoef)
 	gam=0.5d0*exp(K**2/(4*Ccoef))
-
+	Bn=0.d0
+	Cn=0.d0
 	call ByC(acoef,ccoef,nmin,nmax,Bn,Cn)
 
 
@@ -835,7 +887,7 @@
 		acum=0.d0
 	end do
 	end do
-
+!	write(*,*) "Q00",Qnl(0,0),"Q10", Qnl(1,0),"Q20", Qnl(2,0)
 !escribo todo como test
 !	write(*,*) "entro en QNL"
 !	do n=nmin,nmax
@@ -986,6 +1038,14 @@
 	gammacoef(1)=0.25d0*exp(Ccoef*acoef(1)**2)
 	gammacoef(2)=0.25d0*exp(Ccoef*acoef(2)**2)
 !	call ByCdoble(acoef(1),acoef(2),Ccoef,nmin,nmax)
+	Bn1=0.d0
+	Bn2=0.d0
+	Cn1=0.d0
+	Cn2=0.d0
+	rho=0.d0
+	tau=0.d0
+	sigma=0.d0
+	sigmaR=0.d0
 	call ByC(acoef(1),Ccoef,nmin,nmax,Bn1,Cn1)
 	call ByC(acoef(2),Ccoef,nmin,nmax,Bn2,Cn2)
 	rho=gammacoef(1)*Bn1-gammacoef(2)*Bn2
@@ -1010,7 +1070,7 @@
 !variables auxiliares
 	DOUBLE PRECISION :: c0sq,ncos,ca1,ca2
 	integer :: i
-	write(*,*) "byc",nmin,nmax
+!	write(*,*) "byc",nmin,nmax
 	c0sq=sqrt(c0coef)
 	Bn1(0)=pi12/c0sq
 	Bn2(0)=Bn1(0)
@@ -1034,7 +1094,7 @@
         if (nmin<0) then
 		Bn1(-1)=2*pi12*DAWERF(a1coef*c0sq)
 		Bn2(-1)=2*pi12*DAWERF(a2coef*c0sq)
-		write(*,*) "DAWERF(a2coef*c0sq)",DAWERF(a2coef*c0sq)
+!		write(*,*) "DAWERF(a2coef*c0sq)",DAWERF(a2coef*c0sq)
 		Cn1(-1)=2*pi12*DAW(a1coef*c0sq)
 		Cn2(-1)=2*pi12*DAW(a2coef*c0sq)
 		if (nmin<-1) then

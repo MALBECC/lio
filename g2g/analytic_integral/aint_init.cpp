@@ -89,22 +89,28 @@ extern "C" void aint_parameter_init_(const unsigned int& Md, unsigned int* ncont
         // Maximum Gaussian argument used as basis function overlap cut-off (Coulomb and QM/MM)
         integral_vars.rmax = rmax;
 
+#if !CPU_KERNELS
         os_integral.load_params();
+#endif
 
 }
 //============================================================================================================
 extern "C" void aint_deinit_( void )
 {
+#if !CPU_KERNELS
 	os_integral.deinit();
 	coulomb_integral.clear();
+#endif
 }
 //==============================================================================================================
 extern "C" void aint_new_step_( void )
 {
-	os_integral.new_cutoff();
         int stat = 0;
+#if !CPU_KERNELS
+	os_integral.new_cutoff();
 	if (!os_integral.load_input()) stat = 1;
 	if (!os_integral.alloc_output()) stat = 2;
+#endif
 
         if (stat != 0) {
           cout << "Could not initialize AINT module; probably due to not enough GPU memory" << endl;
@@ -140,8 +146,9 @@ extern "C" void aint_qmmm_init_( const unsigned int& nclatom, double* r_all, dou
 //==============================================================================================================
 extern "C" void aint_coulomb_init_( void )
 {
-        coulomb_integral.clear();
+#if !CPU_KERNELS
         int stat = 0;
+        coulomb_integral.clear();
         if (!coulomb_integral.load_aux_basis()) stat = 1;
 	if (!coulomb_integral.load_input()) stat = 2;
 	if (!coulomb_integral.alloc_output()) stat = 3;
@@ -149,12 +156,14 @@ extern "C" void aint_coulomb_init_( void )
           cout << "Could not initialize COULOMB module; probably due to not enough GPU memory" << endl;
           exit(-1);
         }
+#endif
 }
 //===============================================================================================================
 //                                  QM/MM routines
 //===============================================================================================================
 extern "C" void aint_qmmm_forces_(double* qm_forces, double* mm_forces)
 {
+#if !CPU_KERNELS
   int stat = 0;
   if (!qmmm_integral.load_clatoms()) stat = 1;
   if (!qmmm_integral.alloc_output()) stat = 2;
@@ -183,9 +192,12 @@ extern "C" void aint_qmmm_forces_(double* qm_forces, double* mm_forces)
 #endif
 
   qmmm_integral.clear();
+#endif
 }
 extern "C" void aint_qmmm_fock_(double& Es, double& Ens)
 {
+  Ens = 0.0; Es = 0.0;
+#if !CPU_KERNELS
   int stat = 0;
   if (!qmmm_integral.load_clatoms()) stat = 1;
   if (stat != 0) {
@@ -193,17 +205,18 @@ extern "C" void aint_qmmm_fock_(double& Es, double& Ens)
     exit(-1);
   }
 
-  Ens = 0.0; Es = 0.0;
   qmmm_integral.calc_nuc_energy(Ens);
   qmmm_integral.calc_fock(Es);
 
   qmmm_integral.clear();
+#endif
 }
 //===============================================================================================================
 //                                  Coulomb routines
 //===============================================================================================================
 extern "C" void aint_coulomb_forces_(double* qm_forces)
 {
+#if !CPU_KERNELS
 #ifdef AINT_GPU_LEVEL
   if (AINT_GPU_LEVEL >= 5) {
     coulomb_integral.calc_gradient(qm_forces,false);
@@ -213,12 +226,15 @@ extern "C" void aint_coulomb_forces_(double* qm_forces)
 #ifdef AINT_GPU_LEVEL
   }
 #endif
+#endif
 }
 extern "C" void aint_coulomb_fock_(double& Es)
 {
   Es = 0.0;
+#if !CPU_KERNELS
   coulomb_integral.fit_aux_density( );
   coulomb_integral.calc_fock(Es);
+#endif
 }
 //===============================================================================================================
 extern "C" void aint_query_gpu_level_(int& gpu_level)

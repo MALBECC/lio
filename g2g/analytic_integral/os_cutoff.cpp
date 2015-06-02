@@ -31,7 +31,9 @@ uint NUM_TERM_TYPES;
 template <class scalar_type>
 void OSIntegral<scalar_type>::new_cutoff( void )
 {
+#if !CPU_KERNELS
   clear();
+#endif
 
   uint i,j,ni,nj;
   uint i_orbitals, j_orbitals;

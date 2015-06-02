@@ -17,6 +17,8 @@
 namespace G2G
 {
 #include "gpu_vars/g2g_gpu_variables.h"
+
+extern double free_global_memory;
 }
 
 using std::cout;
@@ -88,7 +90,7 @@ void OSIntegral<scalar_type>::clear( void )
     dens_values.clear();
     local2globaldens.clear();
 
-    if (factor_ac_dev.is_allocated()) {
+    if (factor_ac_dev.is_allocated() && G2G::free_global_memory > 0.0) {
       size_t gpu_size = factor_ac_dev.bytes() + nuc_dev.bytes() + func_code_dev.bytes() + local_dens_dev.bytes() + dens_values_dev.bytes();
       globalMemoryPool::dealloc(gpu_size);
     }
@@ -98,7 +100,7 @@ void OSIntegral<scalar_type>::clear( void )
     local_dens_dev.deallocate();
     dens_values_dev.deallocate();
 
-    if (factor_ac_dev.is_allocated()) {
+    if (factor_ac_dev.is_allocated() && G2G::free_global_memory > 0.0) {
       size_t gpu_size = partial_fock_dev.bytes() + partial_energies_dev.bytes() + partial_qm_forces_dev.bytes();
       globalMemoryPool::dealloc(gpu_size);
     }
@@ -144,7 +146,7 @@ bool OSIntegral<scalar_type>::load_input( void )
     gpu_size += dens_values.size() * sizeof(scalar_type);
     float mb_size = (float)gpu_size / 1048576.0f;
     cout << "O-S common input size: " << mb_size << " MB" << endl;
-    if (globalMemoryPool::tryAlloc(gpu_size)) return false;
+    if (globalMemoryPool::tryAlloc(gpu_size) && G2G::free_global_memory > 0.0) return false;
 
     factor_ac_dev = factor_ac_cpu;
     nuc_dev = nuc_cpu;
@@ -205,7 +207,7 @@ bool OSIntegral<scalar_type>::alloc_output( void )
     gpu_size += (dens_values.size() /* max_partial_size*/ + energies_size) * sizeof(double);
     float mb_size = (float)gpu_size / 1048576.0f;
     cout << "O-S common output size: " << mb_size << " MB" << endl;
-    if (globalMemoryPool::tryAlloc(gpu_size)) return false;
+    if (globalMemoryPool::tryAlloc(gpu_size) && G2G::free_global_memory > 0.0) return false;
 
     //
     // Forces: output is partial forces

@@ -8,7 +8,6 @@
 #include "../../matrix.h"
 #include "../../timer.h"
 #include "../../scalar_vector_types.h"
-#include "../../global_memory_pool.h"
 
 #include "../qmmm_integral.h"
 #include "../aint_init.h"
@@ -51,7 +50,6 @@ bool QMMMIntegral<scalar_type>::load_clatoms( void )
     size_t gpu_size = clatom_pos_cpu.bytes() + clatom_chg_cpu.bytes();
     float mb_size = (float)gpu_size / 1048576.0f;
     cout << "QM/MM input size: " << mb_size << " MB" << endl;
-    if (globalMemoryPool::tryAlloc(gpu_size)) return false;
 
     clatom_pos_dev = clatom_pos_cpu;
     clatom_chg_dev = clatom_chg_cpu;
@@ -77,7 +75,6 @@ bool QMMMIntegral<scalar_type>::alloc_output( void )
     size_t gpu_size = COALESCED_DIMENSION(partial_out_size) * integral_vars.clatoms * 3 * sizeof(scalar_type);
     float mb_size = (float)gpu_size / 1048576.0f;
     cout << "QM/MM output size: " << mb_size << " MB" << endl;
-    if (globalMemoryPool::tryAlloc(gpu_size)) return false;
 
     // Forces: output is partial forces
     partial_mm_forces_dev.resize(COALESCED_DIMENSION(partial_out_size), integral_vars.clatoms);
@@ -90,16 +87,9 @@ bool QMMMIntegral<scalar_type>::alloc_output( void )
 template <class scalar_type>
 void QMMMIntegral<scalar_type>::clear( void )
 {
-    if (clatom_pos_dev.is_allocated()) {
-      size_t gpu_size = clatom_pos_dev.bytes() + clatom_chg_dev.bytes();
-      globalMemoryPool::dealloc(gpu_size);
-    }
     clatom_pos_dev.deallocate();
     clatom_chg_dev.deallocate();
-    if (partial_mm_forces_dev.is_allocated()) {
-      size_t gpu_size = partial_mm_forces_dev.bytes();
-      globalMemoryPool::dealloc(gpu_size);
-    }
+
     partial_mm_forces_dev.deallocate();
 
     cudaAssertNoError("QMMMIntegral::clear");

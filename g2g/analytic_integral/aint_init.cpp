@@ -96,7 +96,6 @@ extern "C" void aint_parameter_init_(const unsigned int& Md, unsigned int* ncont
 extern "C" void aint_deinit_( void )
 {
 	os_integral.deinit();
-	qmmm_integral.clear();
 	coulomb_integral.clear();
 }
 //==============================================================================================================
@@ -118,7 +117,6 @@ extern "C" void aint_new_step_( void )
 extern "C" void aint_qmmm_init_( const unsigned int& nclatom, double* r_all, double* pc )
 {
 
-        int stat = 0;
 	integral_vars.clatoms = nclatom;
 	cout << "MM point charges: " << integral_vars.clatoms << endl;
         if (integral_vars.clatoms > 0) {
@@ -136,13 +134,6 @@ extern "C" void aint_qmmm_init_( const unsigned int& nclatom, double* r_all, dou
 		integral_vars.clatom_positions(i) = pos;
                 integral_vars.clatom_charges(i) = charge;
 	    }
-            qmmm_integral.clear();
-  	    if (!qmmm_integral.load_clatoms()) stat = 1;
-	    if (!qmmm_integral.alloc_output()) stat = 2;
-            if (stat != 0) {
-              cout << "Could not initialize QM/MM module; probably due to not enough GPU memory" << endl;
-              exit(-1);
-            }
 
         }
 }
@@ -164,6 +155,14 @@ extern "C" void aint_coulomb_init_( void )
 //===============================================================================================================
 extern "C" void aint_qmmm_forces_(double* qm_forces, double* mm_forces)
 {
+  int stat = 0;
+  if (!qmmm_integral.load_clatoms()) stat = 1;
+  if (!qmmm_integral.alloc_output()) stat = 2;
+  if (stat != 0) {
+    cout << "Could not initialize QM/MM module; probably due to not enough GPU memory" << endl;
+    exit(-1);
+  }
+
   qmmm_integral.calc_nuc_gradient(qm_forces, mm_forces);
 #ifdef AINT_GPU_LEVEL
   if (AINT_GPU_LEVEL > 3) {
@@ -182,12 +181,23 @@ extern "C" void aint_qmmm_forces_(double* qm_forces, double* mm_forces)
 #ifdef AINT_GPU_LEVEL
   }
 #endif
+
+  qmmm_integral.clear();
 }
 extern "C" void aint_qmmm_fock_(double& Es, double& Ens)
 {
+  int stat = 0;
+  if (!qmmm_integral.load_clatoms()) stat = 1;
+  if (stat != 0) {
+    cout << "Could not initialize QM/MM module; probably due to not enough GPU memory" << endl;
+    exit(-1);
+  }
+
   Ens = 0.0; Es = 0.0;
   qmmm_integral.calc_nuc_energy(Ens);
   qmmm_integral.calc_fock(Es);
+
+  qmmm_integral.clear();
 }
 //===============================================================================================================
 //                                  Coulomb routines

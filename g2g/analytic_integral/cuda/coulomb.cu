@@ -17,6 +17,8 @@
 namespace G2G
 {
 #include "gpu_vars/g2g_gpu_variables.h"
+
+extern double free_global_memory;
 }
 
 using std::cout;
@@ -140,7 +142,7 @@ bool CoulombIntegral<scalar_type>::load_aux_basis( void )
   gpu_size += input_size * sizeof(scalar_type);
   float mb_size = (float)gpu_size / 1048576.0f;
   cout << "Coulomb aux basis input size: " << mb_size << " MB" << endl;
-  if (globalMemoryPool::tryAlloc(gpu_size)) return false;
+  if (globalMemoryPool::tryAlloc(gpu_size) && G2G::free_global_memory > 0.0) return false;
 
   factor_ac_dens_dev = factor_ac_dens_cpu;
   nuc_dens_dev = nuc_dens_cpu;
@@ -173,7 +175,7 @@ bool CoulombIntegral<scalar_type>::load_input( void )
     size_t gpu_size = Ginv_h.bytes();
     float mb_size = (float)gpu_size / 1048576.0f;
     cout << "Coulomb input size: " << mb_size << " MB" << endl;
-    if (globalMemoryPool::tryAlloc(gpu_size)) return false;
+    if (globalMemoryPool::tryAlloc(gpu_size) && G2G::free_global_memory > 0.0) return false;
     
     Ginv_dev = Ginv_h;
 
@@ -196,7 +198,7 @@ bool CoulombIntegral<scalar_type>::alloc_output( void )
     size_t gpu_size = COALESCED_DIMENSION(integral_vars.m_dens) * partial_out_size * sizeof(double);
     float mb_size = (float)gpu_size / 1048576.0f;
     cout << "Coulomb output size: " << mb_size << " MB" << endl;
-    if (globalMemoryPool::tryAlloc(gpu_size)) return false;
+    if (globalMemoryPool::tryAlloc(gpu_size) && G2G::free_global_memory > 0.0) return false;
 
     rc_partial_dev.resize(COALESCED_DIMENSION(integral_vars.m_dens),partial_out_size);
 
@@ -210,7 +212,7 @@ void CoulombIntegral<scalar_type>::clear( void )
 {
     input_ind_cpu.clear();
 
-    if (fit_dens_dev.is_allocated()) {
+    if (fit_dens_dev.is_allocated() && G2G::free_global_memory > 0.0) {
       size_t gpu_size = fit_dens_dev.bytes() + factor_ac_dens_dev.bytes() + nuc_dens_dev.bytes() + nuc_ind_dens_dev.bytes() + input_ind_dev.bytes();
       globalMemoryPool::dealloc(gpu_size);
     }
@@ -219,12 +221,12 @@ void CoulombIntegral<scalar_type>::clear( void )
     nuc_dens_dev.deallocate();
     nuc_ind_dens_dev.deallocate();
     input_ind_dev.deallocate();
-    if (Ginv_dev.is_allocated()) {
+    if (Ginv_dev.is_allocated() && G2G::free_global_memory > 0.0) {
       size_t gpu_size = Ginv_dev.bytes();
       globalMemoryPool::dealloc(gpu_size);
     }
     Ginv_dev.deallocate();
-    if (rc_partial_dev.is_allocated()) {
+    if (rc_partial_dev.is_allocated() && G2G::free_global_memory > 0.0) {
       size_t gpu_size = rc_partial_dev.bytes();
       globalMemoryPool::dealloc(gpu_size);
     }

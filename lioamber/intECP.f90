@@ -7,7 +7,7 @@
 !tipodecalculo=1 alocatea variables y alcula terminos AAA
 !tipodecalculo=2 calcula terminos ABB y ABC
 	integer z,l,t
-
+	integer m1,lx,ly,lz
         integer :: ns,np,nd,M,i,j,e,pos
         ns=nshell(0)
         np=nshell(1)
@@ -56,6 +56,21 @@
 	end if
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	if ( .false. ) then
+!escribe los coeficientes de expansir Slm en x^lx * y^ly * z^lz
+		write (32,*) " l m lx ly lz U"
+		do l=0,4
+			do m1=-l,l
+				do lx=0,l
+				do ly=0,l-lx
+				lz=l-lx-ly
+					write (32,9012) l,m1,lx,ly,lz,Ucoef(l,m1,lx,ly,lz)
+				end do
+				end do
+			end do
+		end do
+	end if
+
 
 
 	if ( .false. ) then
@@ -139,7 +154,7 @@
 
 
 
-	if ( .false. ) then
+	if ( .true. ) then
 !escribe matriz de esponentes de la parte angular
 		write(*,*) "escribe lx,ly,lz"
 		do i=1, M
@@ -152,8 +167,8 @@
 	end if
 
 
-
-
+!		l,m1,lx,ly,lz,Ucoef(l,m1,lx,ly,lz)
+	9012 format(/1x,i2,2x,i2,2x,i2,2x,i2,2x,i2,2x,f18.10)
 	9013 format(/1x,"vector",f18.10,2x,"matriz",f18.10,2x,"diff",f18.10)
 	9014 format(/1x,"i",i3,2x,"lx",i2,2x,"ly",i2,2x,"lz",i2)
 	9015 format(/1x,"i",i3,2x,"j",i3,2x,"Vij",f10.5,2x,"Vji",f10.5,2x,     "diff",f18.15)
@@ -830,19 +845,27 @@
 
 
 	DOUBLE PRECISION FUNCTION Ucoef(l,m,lx,ly,lz)
-	use ECP_mod, only :  l0,l1,l2,l3
+!lz esta al pedo, puedo usarlo para chekear que lx+ly+lz=l
+	use ECP_mod, only :  l0,l1,l2,l3,l4
 	implicit none
 	integer, intent(in) :: l,m,lx,ly,lz
+
+	if (lx+ly+lz .ne. l) then
+		write(*,*) "problem with Ucoef: lx+ly+lz not equal l"
+	end if
+
 	if (l .eq. 0) then
-	Ucoef=l0(1)
+		Ucoef=l0(1)
 	elseif (l .eq. 1) then
-	Ucoef=l1(2*lx+ly+1,m)
+		Ucoef=l1(2*lx+ly+1,m)
 	elseif (l .eq. 2) then
-	Ucoef=l2(0.5*lx*(7-lx)+ly+1,m)
+		Ucoef=l2(0.5*lx*(7-lx)+ly+1,m)
         elseif (l .eq. 3) then
-	Ucoef=l3(0.5*lx*(9-lx)+ly+1,m)
+		Ucoef=l3(0.5*lx*(9-lx)+ly+1,m)
+	elseif (l .eq. 4) then
+		Ucoef=l4(0.5*lx*(11-lx)+ly+1,m)
 	else
-	write(*,*) "ECP error l is grater than 3",l
+	write(*,*) "ECP error l is greater than 4",l
 	end if
 	return
 	end function Ucoef

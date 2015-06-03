@@ -287,7 +287,7 @@ extern "C" void aint_query_gpu_level_(int& gpu_level)
     else if (AINT_GPU_LEVEL > 5) { gpu_level = 5; }
     else                         { gpu_level = AINT_GPU_LEVEL; }
 #else
-    gpu_level = 2;
+    gpu_level = 5;
 #endif
 
 #endif  

@@ -1123,6 +1123,7 @@ c       write(*,*) 'g2g-Exc',Exc
 	        do k=1,MM
 	          Eecp=Eecp+RMM(k)*(VAAA(k)+VAAB(k))
 !falta agregar los terminos de VBAC, Nick
+		write(38,*) k,RMM(k)*(VAAA(k)+VAAB(k)),RMM(k),VAAA(k)+VAAB(k),VAAA(k)
 	        enddo
           write(6,621) E1-Eecp,E2-Ex,En,Eecp
         else

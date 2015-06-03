@@ -30,6 +30,9 @@ endif
 ifneq ($(aint_gpu_level),)
   CXXFLAGS     += -DAINT_GPU_LEVEL=$(aint_gpu_level)
   NVCCFLAGS    += -DAINT_GPU_LEVEL=$(aint_gpu_level)
+else
+  CXXFLAGS     += -DAINT_GPU_LEVEL=5
+  NVCCFLAGS    += -DAINT_GPU_LEVEL=5
 endif
 ifeq ($(aint_mp),1)
   CXXFLAGS     += -DAINT_MP=1

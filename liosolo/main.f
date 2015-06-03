@@ -15,7 +15,10 @@ c---------------------------------------------------------------------
      > Iexch,integ,dens,igrid,igrid2,timedep, tdstep, ntdstep,
      > propagator,NBCH,
      > field,a0,epsilon,exter,Fx,Fy,Fz, tdrestart, writedens,
-     > writeforces,basis_set,fitting_set,int_basis
+     > writeforces,basis_set,fitting_set,int_basis,
+     > cubegen_only,cube_res,
+     > cube_dens,cube_dens_file,
+     > cube_orb,cube_sel,cube_orb_file,cube_elec,cube_elec_file
 
       integer :: ifind, ierr
 
@@ -24,6 +27,15 @@ c---------------------------------------------------------------------
       basis_set='DZVP'
       fitting_set='DZVP Coulomb Fitting'
       int_basis=.false.
+      cubegen_only=.false.
+      cube_res=40
+      cube_dens=.false.
+      cube_dens_file='dens.cube'
+      cube_orb=.false.
+      cube_sel=0
+      cube_orb_file="orb.cube"
+      cube_elec=.false.
+      cube_elec_file="field.cube"
       output='output'
       fcoord='qm.xyz'
       fmulliken='mulliken'
@@ -86,6 +98,8 @@ c---------------------------------------------------------------------
           case default
         end select
       enddo
+
+      call g2g_timer_start("Total")
 
       inquire(file=inpfile,exist=filexist)
 

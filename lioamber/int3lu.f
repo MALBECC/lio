@@ -124,6 +124,7 @@ c end ------------------------------------------------
       sq3=1.D0
       endif
 
+      if (MEMO) then
       call g2g_timer_start('principio int3lu')
 c
       do 1 l=1,3
@@ -134,7 +135,7 @@ c
 c
 ******
 c        write(*,*) 'cosas',M,Md,kknums,MM
-        do kk=1,kknumd
+        do kk=1,kknumd!ns*(ns+1)/2+1,ns*(ns+1)/2+ns*np!kknumd
           iikk=(kk-1)*Md
              do k=1,Md
           Rc(k)=Rc(k)+RMM(kkind(kk))*cool(iikk+k)
@@ -151,6 +152,9 @@ c               write(88,*) cool(iikk+k), iikk+k
 
          enddo
          enddo
+        !do k=1,Md
+        !  write(*,*) "INT3LU RC ",k,Rc(k)
+        !enddo
                 
 c               write(88,*) cool(iikk+k), iikk+k
 
@@ -160,7 +164,6 @@ c            Rc(k) = Rc(k) + RMM(kk)*cool((kk-1)*Md+k)
 c         enddo
 c      enddo
 
-       call g2g_timer_stop('principio int3lu')
 *
 *
 c
@@ -309,6 +312,10 @@ c no constraint applied
  1202  af(m1)=af(m1)+Rc(k)*RMM(M9+k+(2*Md-m1)*(m1-1)/2-1)
  1200  continue
 
+      !do k=1,Md
+      !  write(*,*) "INT3LU AF:",k,af(k)
+      !enddo
+
       endif
       endif
 c----------------------------------------------------------------
@@ -405,6 +412,7 @@ c
 ****
 ****
 
+         call g2g_timer_stop('principio int3lu')
          call g2g_timer_start('int3lu')
           if (open) then       
          do kk=1,kknumd
@@ -440,8 +448,21 @@ c
           enddo
 
          endif
-
          call g2g_timer_stop('int3lu')
+         else
+           do 4242 k=1,MM
+ 4242        RMM(M5+k-1)=RMM(M11+k-1)
+           Ea=0.D0
+           call aint_coulomb_fock(Ea)
+           Eb=0.D0
+           do 6101 m1=1,Md
+             do 6111 k=1,m1
+ 6111           Eb=Eb+af(k)*af(m1)*RMM(M7+m1+(2*Md-k)*(k-1)/2-1)
+             do 6121 k=m1+1,Md
+ 6121           Eb=Eb+af(k)*af(m1)*RMM(M7+k+(2*Md-m1)*(m1-1)/2-1)
+ 6101       continue
+         endif
+ 
 
 
 

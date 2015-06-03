@@ -147,6 +147,10 @@ else
   endif
 endif
 
+ifneq ($(subscript_warn),1)
+  NVCCFLAGS += -Xcudafe "--diag_suppress=subscript_out_of_range"
+endif
+
 ################################################################################
 # Rules
 ################################################################################
@@ -155,6 +159,7 @@ endif
 UGO          := cuda/lio_gpu.o
 
 CUDA_SOURCES := $(wildcard cuda/*.cu)
+CUDA_SOURCES += $(wildcard analytic_integral/cuda/*.cu)
 CUDA_OBJ     := $(CUDA_SOURCES:%.cu=%.o)
 
 # Commented should be in config file
@@ -164,4 +169,7 @@ $(UGO): $(CUDA_OBJ)
 	nvcc $(NVCCFLAGS) -dlink $(CUDA_OBJ) -o $@
 
 cuda/%.o:cuda/%.cu
+	nvcc $(NVCCFLAGS) -o $@ -dc $<
+
+analytic_integral/cuda/%.o:analytic_integral/cuda/%.cu
 	nvcc $(NVCCFLAGS) -o $@ -dc $<

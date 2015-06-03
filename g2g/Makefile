@@ -7,6 +7,10 @@ include Makefile.common
 SRCS:=$(wildcard *.cpp)
 OBJ:=$(SRCS:%.cpp=%.o)
 
+AINT_SRC     := $(wildcard analytic_integral/*.cpp)
+SRCS         += $(AINT_SRC)
+OBJ          += $(AINT_SRC:%.cpp=%.o)
+
 CPU_SOURCES  := $(wildcard cpu/*.cpp)
 SRCS         += $(CPU_SOURCES)
 OBJ          += $(CPU_SOURCES:%.cpp=%.o)
@@ -23,16 +27,13 @@ ifneq ($(cuda),0)
   LIBRARIES    := $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
 endif
 
-ifeq ($(coulomb_gpu),1)
-  CXXFLAGS     += -DGPU_COULOMB=1
+ifneq ($(aint_gpu_level),)
+  CXXFLAGS     += -DAINT_GPU_LEVEL=$(aint_gpu_level)
+  NVCCFLAGS    += -DAINT_GPU_LEVEL=$(aint_gpu_level)
 endif
-ifeq ($(coulomb_mp),1)
-  CXXFLAGS     += -DCOULOMB_MP=1
-  NVCCFLAGS    += -DCOULOMB_MP=1
-endif
-ifeq ($(qmmm_mp),1)
-  CXXFLAGS     += -DQMMM_MP=1
-  NVCCFLAGS    += -DQMMM_MP=1
+ifeq ($(aint_mp),1)
+  CXXFLAGS     += -DAINT_MP=1
+  NVCCFLAGS    += -DAINT_MP=1
 endif
 
 ## Other options
@@ -42,6 +43,10 @@ endif
 
 ifeq ($(time), 1)
   CXXFLAGS += -DTIMINGS
+endif
+ifeq ($(time), 2)
+  CXXFLAGS += -DTIMINGS
+  CXXFLAGS += -DTIMER_SUMMARY
 endif
 
 ifeq ($(profile),1)
@@ -89,3 +94,4 @@ libg2g.so: $(OBJ)
 clean:
 	@echo "Removing objects"; rm -f *.o libg2g.so *.a cpu/*.o cuda/*.o
 	@rm -f cuda/*.cu_o cuda/*.cudafe* cuda/*.ptx cuda/*.hash cuda/*.cubin cuda/*.i cuda/*.ii cuda/*.fatbin.* cuda/*.cu.c
+	@rm -f analytic_integral/*.o analytic_integral/cuda/*.o

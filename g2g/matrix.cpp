@@ -420,6 +420,11 @@ template class Matrix<float>;
 template class Matrix<float3>;
 template class Matrix<uint>;
 
+template class Matrix< vec_type<float, 2> >;
+template class Matrix< vec_type<float, 3> >;
+template class Matrix< vec_type<double, 2> >;
+template class Matrix< vec_type<double, 3> >;
+
 template class HostMatrix< vec_type<float, 2> >;
 template class HostMatrix< vec_type<float, 3> >;
 template class HostMatrix< vec_type<float, 4> >;

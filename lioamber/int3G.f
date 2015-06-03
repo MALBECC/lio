@@ -32,7 +32,6 @@ c
       implicit real*8 (a-h,o-z)
 c
       logical calc_energy
-      integer cpu
       dimension Q(3),W(3),af2(ngd),ftot(3)
       dimension Jx(ng),f(natom,3)
 c scratch space
@@ -127,20 +126,19 @@ c
 c      if (.not.OPEN) then
 
 c        write(*,*) 'exchnum int3G'
-      call g2g_timer_start('ExcG')
+      call g2g_timer_start('Exchange-correlation gradients')
           if (calc_energy) then
               call g2g_solve_groups(2, Exc, f)
           else
               call g2g_solve_groups(3, Exc, f)
          endif
-      call g2g_timer_stop('ExcG')
+      call g2g_timer_stop('Exchange-correlation gradients')
 
-      call g2g_query_coulomb_cpu(cpu)
+      call aint_query_gpu_level(igpu)
       
-      if (cpu.eq.0) then
-        call g2g_timer_start('g2g_coulomb_forces')
-        call g2g_coulomb_forces(f)
-        call g2g_timer_stop('g2g_coulomb_forces')
+      call g2g_timer_start('Coulomb gradients')
+      if (igpu.gt.2) then
+        call aint_coulomb_forces(f)
         
       else
 
@@ -170,7 +168,6 @@ c
 c commented now for debuggings
       do 217 k=1,Md
  217   af2(k)=af(k)+B(k,2)
-      call g2g_timer_start('CoulG')
 ct
 c
 c-------------------------------------------------------------
@@ -4100,7 +4097,6 @@ c
  481  continue
  482  continue
  480  continue
-      call g2g_timer_stop('CoulG')
 c
 c
 c-------------------------------------------------------------
@@ -4118,5 +4114,6 @@ c      enddo
 c
 c
       endif
+      call g2g_timer_stop('Coulomb gradients')
       return
       end

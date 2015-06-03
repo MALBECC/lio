@@ -126,17 +126,20 @@ c
 c      if (.not.OPEN) then
 
 c        write(*,*) 'exchnum int3G'
-      call g2g_timer_start('Exchange-correlation gradients')
+      call g2g_timer_start('ExcG')
+      call g2g_timer_sum_start('Exchange-correlation gradients')
           if (calc_energy) then
               call g2g_solve_groups(2, Exc, f)
           else
               call g2g_solve_groups(3, Exc, f)
          endif
-      call g2g_timer_stop('Exchange-correlation gradients')
+      call g2g_timer_stop('ExcG')
+      call g2g_timer_sum_stop('Exchange-correlation gradients')
 
       call aint_query_gpu_level(igpu)
       
-      call g2g_timer_start('Coulomb gradients')
+      call g2g_timer_start('CoulG')
+      call g2g_timer_sum_start('Coulomb gradients')
       if (igpu.gt.2) then
         call aint_coulomb_forces(f)
         
@@ -148,13 +151,13 @@ c        write(*,'("fuerza",I,D,D,D)') k,f(k,1),f(k,2),f(k,3)
 c      enddo
 c
 c       else
-c         call g2g_timer_start('ExcG')
+c         call g2g_timer_sum_start('ExcG')
 c          if (calc_energy) then
 c              call g2g_solve_groups(2, Exc, f)
 c          else
 c              call g2g_solve_groups(3, Exc, f)
 c         endif
-c      call g2g_timer_stop('ExcG')
+c      call g2g_timer_sum_stop('ExcG')
 c
 c        NCOa=NCO
 c        NCOb=NCO+Nunp
@@ -4114,6 +4117,7 @@ c      enddo
 c
 c
       endif
-      call g2g_timer_stop('Coulomb gradients')
+      call g2g_timer_stop('CoulG')
+      call g2g_timer_sum_stop('Coulomb gradients')
       return
       end

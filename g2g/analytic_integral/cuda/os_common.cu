@@ -158,8 +158,8 @@ bool OSIntegral<scalar_type>::load_input( void )
     size_t gpu_size = factor_ac_cpu.bytes() + nuc_cpu.bytes();
     gpu_size += (func_code.size() + local_dens.size()) * sizeof(uint);
     gpu_size += dens_values.size() * sizeof(scalar_type);
-    float mb_size = (float)gpu_size / 1048576.0f;
-    cout << "O-S common input size: " << mb_size << " MB" << endl;
+//    float mb_size = (float)gpu_size / 1048576.0f;
+//    cout << "O-S common input size: " << mb_size << " MB" << endl;
     if (GlobalMemoryPool::tryAlloc(gpu_size) && G2G::free_global_memory > 0.0) return false;
 
     factor_ac_dev = factor_ac_cpu;
@@ -219,8 +219,8 @@ bool OSIntegral<scalar_type>::alloc_output( void )
 
     size_t gpu_size = COALESCED_DIMENSION(partial_out_size) * G2G::fortran_vars.atoms * 3 * sizeof(scalar_type);
     gpu_size += (dens_values.size() /* max_partial_size*/ + energies_size) * sizeof(double);
-    float mb_size = (float)gpu_size / 1048576.0f;
-    cout << "O-S common output size: " << mb_size << " MB" << endl;
+//    float mb_size = (float)gpu_size / 1048576.0f;
+//    cout << "O-S common output size: " << mb_size << " MB" << endl;
     if (GlobalMemoryPool::tryAlloc(gpu_size) && G2G::free_global_memory > 0.0) return false;
 
     //

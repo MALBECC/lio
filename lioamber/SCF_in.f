@@ -7,7 +7,7 @@
       nsol=nsolin
       ntatom=nsol+natom
 
-      call g2g_timer_start("Total")
+      call g2g_timer_sum_start("Total")
 
       deallocate (r,v,Em,Rm,pc,nnat)
 

@@ -140,8 +140,8 @@ bool CoulombIntegral<scalar_type>::load_aux_basis( void )
   gpu_size += nuc_dens_cpu.size() * 3 * sizeof(scalar_type);
   gpu_size += (nuc_ind_dens_cpu.size() + input_ind_cpu.size()) * sizeof(uint);
   gpu_size += input_size * sizeof(scalar_type);
-  float mb_size = (float)gpu_size / 1048576.0f;
-  cout << "Coulomb aux basis input size: " << mb_size << " MB" << endl;
+//  float mb_size = (float)gpu_size / 1048576.0f;
+//  cout << "Coulomb aux basis input size: " << mb_size << " MB" << endl;
   if (GlobalMemoryPool::tryAlloc(gpu_size) && G2G::free_global_memory > 0.0) return false;
 
   factor_ac_dens_dev = factor_ac_dens_cpu;
@@ -173,8 +173,8 @@ bool CoulombIntegral<scalar_type>::load_input( void )
       }
     }
     size_t gpu_size = Ginv_h.bytes();
-    float mb_size = (float)gpu_size / 1048576.0f;
-    cout << "Coulomb input size: " << mb_size << " MB" << endl;
+//    float mb_size = (float)gpu_size / 1048576.0f;
+//    cout << "Coulomb input size: " << mb_size << " MB" << endl;
     if (GlobalMemoryPool::tryAlloc(gpu_size) && G2G::free_global_memory > 0.0) return false;
     
     Ginv_dev = Ginv_h;
@@ -196,8 +196,8 @@ bool CoulombIntegral<scalar_type>::alloc_output( void )
       partial_out_size += this_count;
     }
     size_t gpu_size = COALESCED_DIMENSION(integral_vars.m_dens) * partial_out_size * sizeof(double);
-    float mb_size = (float)gpu_size / 1048576.0f;
-    cout << "Coulomb output size: " << mb_size << " MB" << endl;
+//    float mb_size = (float)gpu_size / 1048576.0f;
+//    cout << "Coulomb output size: " << mb_size << " MB" << endl;
     if (GlobalMemoryPool::tryAlloc(gpu_size) && G2G::free_global_memory > 0.0) return false;
 
     rc_partial_dev.resize(COALESCED_DIMENSION(integral_vars.m_dens),partial_out_size);

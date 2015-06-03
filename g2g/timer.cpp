@@ -154,16 +154,19 @@ map<string, Timer> fortran_timers;
 //
 extern "C" void g2g_timer_start_(const char* timer_name, unsigned int length_arg) {
 #ifdef TIMINGS
+#ifndef TIMER_SUMMARY
   string tname(timer_name,length_arg);
   tname.append("\0");
   if (fortran_timers.find(tname) == fortran_timers.end()) fortran_timers[tname] = Timer();
   Timer::sync();
   fortran_timers[tname].start();
 #endif
+#endif
 }
 
 extern "C" void g2g_timer_stop_(const char* timer_name, unsigned int length_arg) {
 #ifdef TIMINGS
+#ifndef TIMER_SUMMARY
   string tname(timer_name, length_arg);
   tname.append("\0");
   Timer::sync();
@@ -171,16 +174,19 @@ extern "C" void g2g_timer_stop_(const char* timer_name, unsigned int length_arg)
   fortran_timers[tname].stop();
   cout << "TIMER [" << tname << "]: " << fortran_timers[tname] << endl;
 #endif
+#endif
 }
 
 extern "C" void g2g_timer_pause_(const char* timer_name, unsigned int length_arg) {
 #ifdef TIMINGS
+#ifndef TIMER_SUMMARY
   string tname(timer_name, length_arg);
   tname.append("\0");
   Timer::sync();
   if (fortran_timers.find(tname) == fortran_timers.end()) cout << "no existe timer! (" << tname << ")" << endl;
   fortran_timers[tname].pause();
   cout << "TIMER [" << tname << "]: " << fortran_timers[tname] << "(so far)" << endl;
+#endif
 #endif
 }
 

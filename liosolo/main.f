@@ -99,7 +99,7 @@ c---------------------------------------------------------------------
         end select
       enddo
 
-      call g2g_timer_start("Total")
+      call g2g_timer_sum_start("Total")
 
       inquire(file=inpfile,exist=filexist)
 

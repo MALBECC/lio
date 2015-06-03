@@ -47,9 +47,9 @@ bool QMMMIntegral<scalar_type>::load_clatoms( void )
       clatom_pos_cpu(i) = G2G::vec_type<scalar_type,3>(integral_vars.clatom_positions(i).x,integral_vars.clatom_positions(i).y,integral_vars.clatom_positions(i).z);
       clatom_chg_cpu(i) = integral_vars.clatom_charges(i);
     }
-    size_t gpu_size = clatom_pos_cpu.bytes() + clatom_chg_cpu.bytes();
-    float mb_size = (float)gpu_size / 1048576.0f;
-    cout << "QM/MM input size: " << mb_size << " MB" << endl;
+//    size_t gpu_size = clatom_pos_cpu.bytes() + clatom_chg_cpu.bytes();
+//    float mb_size = (float)gpu_size / 1048576.0f;
+//    cout << "QM/MM input size: " << mb_size << " MB" << endl;
 
     clatom_pos_dev = clatom_pos_cpu;
     clatom_chg_dev = clatom_chg_cpu;
@@ -72,9 +72,9 @@ bool QMMMIntegral<scalar_type>::alloc_output( void )
       uint this_count = divUp(os_int.term_type_counts[i],QMMM_BLOCK_SIZE);
       partial_out_size += this_count;
     }
-    size_t gpu_size = COALESCED_DIMENSION(partial_out_size) * integral_vars.clatoms * 3 * sizeof(scalar_type);
-    float mb_size = (float)gpu_size / 1048576.0f;
-    cout << "QM/MM output size: " << mb_size << " MB" << endl;
+//    size_t gpu_size = COALESCED_DIMENSION(partial_out_size) * integral_vars.clatoms * 3 * sizeof(scalar_type);
+//    float mb_size = (float)gpu_size / 1048576.0f;
+//    cout << "QM/MM output size: " << mb_size << " MB" << endl;
 
     // Forces: output is partial forces
     partial_mm_forces_dev.resize(COALESCED_DIMENSION(partial_out_size), integral_vars.clatoms);

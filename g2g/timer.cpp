@@ -149,11 +149,49 @@ map<string, Timer*> top_timers;
 map<string, Timer> fortran_timers;
 #endif
 
+//
+// One-time Fortran timer calls - these time sections and report timings immediately
+//
 extern "C" void g2g_timer_start_(const char* timer_name, unsigned int length_arg) {
 #ifdef TIMINGS
   string tname(timer_name,length_arg);
   tname.append("\0");
+  if (fortran_timers.find(tname) == fortran_timers.end()) fortran_timers[tname] = Timer();
+  Timer::sync();
+  fortran_timers[tname].start();
+#endif
+}
+
+extern "C" void g2g_timer_stop_(const char* timer_name, unsigned int length_arg) {
+#ifdef TIMINGS
+  string tname(timer_name, length_arg);
+  tname.append("\0");
+  Timer::sync();
+  if (fortran_timers.find(tname) == fortran_timers.end()) cout << "no existe timer! (" << tname << ")" << endl;
+  fortran_timers[tname].stop();
+  cout << "TIMER [" << tname << "]: " << fortran_timers[tname] << endl;
+#endif
+}
+
+extern "C" void g2g_timer_pause_(const char* timer_name, unsigned int length_arg) {
+#ifdef TIMINGS
+  string tname(timer_name, length_arg);
+  tname.append("\0");
+  Timer::sync();
+  if (fortran_timers.find(tname) == fortran_timers.end()) cout << "no existe timer! (" << tname << ")" << endl;
+  fortran_timers[tname].pause();
+  cout << "TIMER [" << tname << "]: " << fortran_timers[tname] << "(so far)" << endl;
+#endif
+}
+
+//
+// Summary timer calls - these store timings until g2g_timer_summary is called, when a summary
+// of all timings up to that point is given in a tree-sorted display
+//
+extern "C" void g2g_timer_sum_start_(const char* timer_name, unsigned int length_arg) {
 #ifdef TIMER_SUMMARY
+  string tname(timer_name,length_arg);
+  tname.append("\0");
   if (timer_children.find(tname) == timer_children.end()) timer_children[tname] = set<string>();
   if (current_timer.length() == 0) {
     if (top_timers.find(tname) == top_timers.end()) top_timers[tname] = new Timer();
@@ -171,53 +209,37 @@ extern "C" void g2g_timer_start_(const char* timer_name, unsigned int length_arg
     all_timers[tname]->start();
     current_timer = tname;
   }
-#else
-  if (fortran_timers.find(tname) == fortran_timers.end()) fortran_timers[tname] = Timer();
-  Timer::sync();
-  fortran_timers[tname].start();
-#endif
 #endif
 }
 
-extern "C" void g2g_timer_stop_(const char* timer_name, unsigned int length_arg) {
-#ifdef TIMINGS
+extern "C" void g2g_timer_sum_stop_(const char* timer_name, unsigned int length_arg) {
+#ifdef TIMER_SUMMARY
   string tname(timer_name, length_arg);
   tname.append("\0");
   Timer::sync();
-#ifdef TIMER_SUMMARY
   if (current_timer.compare(tname) != 0) { cout << "Error: not the current timer: (" << tname << "," << current_timer << ")" << endl; }
   else {
     all_timers[current_timer]->stop();
     if (timer_parents.find(current_timer) == timer_parents.end()) { current_timer = ""; }
     else { current_timer = timer_parents[current_timer]; }
   }
-#else
-  if (fortran_timers.find(tname) == fortran_timers.end()) cout << "no existe timer! (" << tname << ")" << endl;
-  fortran_timers[tname].stop();
-  cout << "TIMER [" << tname << "]: " << fortran_timers[tname] << endl;
-#endif
 #endif
 }
 
-extern "C" void g2g_timer_pause_(const char* timer_name, unsigned int length_arg) {
-#ifdef TIMINGS
+extern "C" void g2g_timer_sum_pause_(const char* timer_name, unsigned int length_arg) {
+#ifdef TIMER_SUMMARY
   string tname(timer_name, length_arg);
   tname.append("\0");
   Timer::sync();
-#ifdef TIMER_SUMMARY
   if (current_timer.compare(tname) != 0) { cout << "Error: not the current timer: (" << tname << ")" << endl; }
   else {
     all_timers[current_timer]->pause();
     if (timer_parents.find(current_timer) == timer_parents.end()) { current_timer = ""; }
     else { current_timer = timer_parents[current_timer]; }
   }
-#else
-  if (fortran_timers.find(tname) == fortran_timers.end()) cout << "no existe timer! (" << tname << ")" << endl;
-  fortran_timers[tname].pause();
-  cout << "TIMER [" << tname << "]: " << fortran_timers[tname] << "(so far)" << endl;
-#endif
 #endif
 }
+
 
 extern "C" void g2g_timer_clear_( void ) {
 #ifdef TIMER_SUMMARY

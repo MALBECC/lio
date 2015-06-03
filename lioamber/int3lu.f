@@ -480,7 +480,7 @@ c
        NCOa=NCO
        NCOb=NCO+Nunp
 c       write(957,*) 'int3lu'
-c       call g2g_timer_start('exchfock')
+c       call g2g_timer_sum_start('exchfock')
 c        write(*,*) 'que pasa 2?'
 #ifdef G2G
 c       call g2g_solve_groups(0,0,0)
@@ -495,7 +495,7 @@ c        enddo
 c      enddo
 
 #endif
-c       call g2g_timer_stop('exchfock')
+c       call g2g_timer_sum_stop('exchfock')
       
        Ndens=Ndens+1
        endif

@@ -19,7 +19,7 @@ c       real*8 ftot(3)
        factor=1.D0
 
        call aint_query_gpu_level(igpu)
-       call g2g_timer_start('QM/MM gradients')
+       call g2g_timer_sum_start('QM/MM gradients')
        if (igpu.lt.2) then
          ! The old version of intsolG expected the MM force array to be
          ! padded in front with # QM atoms spots for some reason
@@ -27,7 +27,9 @@ c       real*8 ftot(3)
          ffcl=0
          ff=0
 
+         call g2g_timer_start('intsolG')
          call intsolG(ff,ffcl)
+         call g2g_timer_stop('intsolG')
 
          do jj=1,nsol
          do j=1,3
@@ -42,7 +44,9 @@ c       real*8 ftot(3)
          ff=0
 
          if (igpu.gt.3) call int1G(ff)
+         call g2g_timer_start('aint_qmmm_forces')
          call aint_qmmm_forces(ff,ffcl)
+         call g2g_timer_stop('aint_qmmm_forces')
 
          do jj=1,nsol
          do j=1,3
@@ -83,9 +87,9 @@ c       real*8 ftot(3)
        enddo
        enddo
 
-       call g2g_timer_stop('QM/MM gradients')
-       call g2g_timer_stop('Forces')
-       call g2g_timer_stop("Total")
+       call g2g_timer_sum_stop('QM/MM gradients')
+       call g2g_timer_sum_stop('Forces')
+       call g2g_timer_sum_stop("Total")
        call g2g_timer_summary()
        call g2g_timer_clear()
 

@@ -1,5 +1,5 @@
 	subroutine intECP(tipodecalculo)
-	use garcha_mod, only :nshell,nuc
+	use garcha_mod, only :nshell,nuc,a,c
 	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP,VAAAcuadrada,lxyz, VAAA, VAAAcuadrada, VAAB, VAABcuadrada,pi
 	implicit none
 
@@ -69,6 +69,14 @@
 				end do
 			end do
 		end do
+	end if
+
+	if ( .true. ) then
+!escribe a y c (solo el 1er valor)
+	write(52,*) "i, ai, ci"
+	do i=1,M
+		write(52,*) i,a(i,1),c(i,1)
+	end do
 	end if
 
 
@@ -154,7 +162,7 @@
 
 
 
-	if ( .true. ) then
+	if ( .false. ) then
 !escribe matriz de esponentes de la parte angular
 		write(*,*) "escribe lx,ly,lz"
 		do i=1, M
@@ -604,6 +612,7 @@
 						lzj=Lxyz(j,3)
 !exponentes de la parte angular
 						AAA=AAAlocal(i,j,k,ii,ji,lxi+lxj,lyi+lyj,lzi+lzj) + AAANonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
+!                                                AAA= AAANonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
 !suma los terminos locales y no locales del pseudopotencial
 						acum=acum+AAA*c(j,ji)
 !multiplica por el coeficiente de la base

@@ -616,9 +616,14 @@
 !suma los terminos locales y no locales del pseudopotencial
 						acum=acum+AAA*c(j,ji)
 !multiplica por el coeficiente de la base
+
 						end do
 						VAAAcuadrada(i,j) = VAAAcuadrada(i,j) + acum*c(i,ii)
 !multiplica por el otro coef de la base
+
+!                                                if ( i .eq. 1 .and. j .eq. 17) then
+!                                                        write(95,*) c(i,ii),c(j,ji)
+!                                                end if
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 						if (i .ge. j) then
@@ -687,6 +692,12 @@
 			AAANonLocal=AAANonLocal+A2*aECP(z,L,term)*Q0(n+nECP(z,l,term),Acoef)
 !Q0 integral radial   Q0(n,alpha)= int r^n exp(-alpha * r^2) dr fron 0 to inf
 !aECP coeficiente del ECP
+!                        if ( i .eq. 1 .and. j .eq. 17) then
+!				write(95,*) A2*aECP(z,L,term)*Q0(n+nECP(z,l,term),Acoef)
+!				write(95,*) A2,aECP(z,L,term),Q0(n+nECP(z,l,term),Acoef)
+!				write(95,*) n,nECP(z,l,term),Acoef
+!
+!			end if
 			A2=0.d0
 		end do
 	end do

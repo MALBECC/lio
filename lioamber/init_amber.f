@@ -10,7 +10,8 @@
      > , basis_set_i, fitting_set_i, int_basis_i
      > , cubegen_only_i, cuberes_i
      > , cubedens_i, cubedensfile_i
-     > , cubeorb_i, cubesel_i, cubeorbfile_i)
+     > , cubeorb_i, cubesel_i, cubeorbfile_i
+     > , restart_freq_i, energy_freq_i)
 #else
      > )
 #endif
@@ -43,6 +44,7 @@ c      include 'param'
        logical :: int_basis_i,cubegen_only_i,cubedens_i,cubeorb_i
        integer :: cuberes_i, cubesel_i
        character(len=20) :: cubedensfile_i,cubeorbfile_i
+       integer :: restart_freq_i, energy_freq_i
 #endif
        character(len=20) :: output_i
        character(len=20) :: fcoord_i
@@ -98,6 +100,8 @@ c      include 'param'
        cube_orb = cubeorb_i
        cube_sel = cubesel_i
        cube_orb_file = cubeorbfile_i
+       restart_freq = restart_freq_i
+       energy_freq = energy_freq_i
 #else
        basis_set="DZVP"
        fitting_set="DZVP Coulomb Fitting"
@@ -109,6 +113,8 @@ c      include 'param'
        cube_orb = .false.
        cube_sel = 0
        cube_orb_file = "orb.cube"
+       restart_freq = 1
+       energy_freq = 1
 #endif
        Output= output_i
        fcoord=fcoord_i

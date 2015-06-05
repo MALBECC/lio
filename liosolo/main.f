@@ -36,6 +36,8 @@ c---------------------------------------------------------------------
       cube_orb_file="orb.cube"
       cube_elec=.false.
       cube_elec_file="field.cube"
+      restart_freq=1
+      energy_freq=1
       output='output'
       fcoord='qm.xyz'
       fmulliken='mulliken'

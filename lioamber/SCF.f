@@ -478,9 +478,9 @@ c
 c End of Starting guess (No MO , AO known)-------------------------------
 c
       if ((timedep.eq.1).and.(tdrestart)) then
-        call g2g_timer_sum_start('TD-DFT')
+        call g2g_timer_sum_start('TD')
         call TD()
-        call g2g_timer_sum_stop('TD-DFT')
+        call g2g_timer_sum_stop('TD')
         return
       endif
 c 
@@ -1136,6 +1136,7 @@ c      call mmsol(natom,Nsol,natsol,Iz,pc,r,Em,Rm,Es)
 c     endif
 c--------------------------------------------------------------
 c  ????
+      if (MOD(npas,energy_freq).eq.0) then
       if (GRAD) then
 c         if (sol) then
 c         endif
@@ -1184,6 +1185,7 @@ c--------------------------------------------------------------
       else
         E=E-Ex
       endif
+      endif
 c calculation of energy weighted density matrix
 c
       call g2g_timer_sum_start('energy-weighted density')
@@ -1205,6 +1207,8 @@ c
         enddo
       enddo
       call g2g_timer_sum_stop('energy-weighted density')
+
+      if (MOD(npas,energy_freq).eq.0) then
 c
 c      if (nopt.eq.1) then
 c
@@ -1212,6 +1216,7 @@ c PROPERTIES CALCULATION
 c calculates dipole moment
 c
       if (idip.eq.1) then
+       call g2g_timer_sum_start('dipole')
         call dip(ux,uy,uz)
         u=sqrt(ux**2+uy**2+uz**2)
         dipxyz(1)=ux
@@ -1223,6 +1228,7 @@ c      write(*,*) 'DIPOLE MOMENT, X Y Z COMPONENTS AND NORM (DEBYES)'
 c       write(69,900) ux,uy,uz,u
 c      write(*,*)
 c u in Debyes
+       call g2g_timer_sum_stop('dipole')
       endif
 c
 
@@ -1242,6 +1248,7 @@ c
 ! malfunction. I DON'T KNOW WHY.
 !--------------------------------------------------------------------!
        call g2g_timer_sum_stop('Mulliken')
+       endif
 
 c
 c        endif
@@ -1260,6 +1267,8 @@ c
 c--------------------------------------------------------------
 c outputs final  MO ---------------------
 
+      if (MOD(npas,restart_freq).eq.0) then
+      call g2g_timer_sum_start('restart write')
       rewind 88
       do l=1,M
         do n=1,M
@@ -1270,6 +1279,8 @@ c
       do l=1,M
         write(88,400) (X(l,M+n),n=1,NCO)
       enddo
+      call g2g_timer_sum_stop('restart write')
+      endif
 c-------------------------------------------------
 c writes down MO coefficients and orbital energies
       if(1.gt.2) then
@@ -1291,6 +1302,7 @@ c writes down MO coefficients and orbital energies
         call g2g_timer_sum_stop('cube gen')
       endif
 
+
 c
 c-------------------------------------------------
 c      endif
@@ -1309,7 +1321,9 @@ c      endif
 c       E=E*627.509391D0
 
       if(timedep.eq.1) then
+        call g2g_timer_sum_start('TD')
         call TD()
+        call g2g_timer_sum_stop('TD')
       endif
 !
 !--------------------------------------------------------------------!

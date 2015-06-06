@@ -12,6 +12,10 @@
 #include "qmmm_integral.h"
 #include "coulomb_integral.h"
 
+#ifndef AINT_GPU_LEVEL
+#define AINT_GPU_LEVEL AINT_DEFAULT_GPU_LEVEL
+#endif
+
 using std::cout;
 using std::endl;
 using std::boolalpha;
@@ -191,7 +195,6 @@ extern "C" void aint_qmmm_forces_(double* qm_forces, double* mm_forces)
   }
 
   qmmm_integral.calc_nuc_gradient(qm_forces, mm_forces);
-#ifdef AINT_GPU_LEVEL
   if (AINT_GPU_LEVEL > 3) {
     if (integral_vars.clatoms > 0) {
       qmmm_integral.calc_gradient(qm_forces, mm_forces, true, true);
@@ -199,15 +202,12 @@ extern "C" void aint_qmmm_forces_(double* qm_forces, double* mm_forces)
       qmmm_integral.calc_gradient(qm_forces, mm_forces, false, true);
     }
   } else {
-#endif
     if (integral_vars.clatoms > 0) {
       qmmm_integral.calc_gradient(qm_forces, mm_forces, true, false);
     } else {
       qmmm_integral.calc_gradient(qm_forces, mm_forces, false, false); // This branch does nothing...
     }
-#ifdef AINT_GPU_LEVEL
   }
-#endif
 
   qmmm_integral.clear();
 
@@ -244,15 +244,11 @@ extern "C" void aint_coulomb_forces_(double* qm_forces)
 #if GPU_KERNELS
   int previous_device; cudaGetDevice(&previous_device);
   if(cudaSetDevice(os_integral.my_device) != cudaSuccess) std::cout << "Error: can't set the device " << os_integral.my_device << std::endl;
-#ifdef AINT_GPU_LEVEL
   if (AINT_GPU_LEVEL >= 5) {
     coulomb_integral.calc_gradient(qm_forces,false);
   } else {
-#endif
     coulomb_integral.calc_gradient(qm_forces,true);
-#ifdef AINT_GPU_LEVEL
   }
-#endif
   cudaSetDevice(previous_device);
 #endif
 }
@@ -282,14 +278,9 @@ extern "C" void aint_query_gpu_level_(int& gpu_level)
 // 3 - 1-2 + Coulomb gradient terms on GPU
 // 4 - 1-3 + Nuclear attraction gradient terms on GPU
 // 5 - 1-4 + Coulomb auxiliary basis fitting and energy terms on GPU
-#ifdef AINT_GPU_LEVEL
     if (AINT_GPU_LEVEL < 0)      { gpu_level = 0; }
     else if (AINT_GPU_LEVEL > 5) { gpu_level = 5; }
     else                         { gpu_level = AINT_GPU_LEVEL; }
-#else
-    gpu_level = 5;
 #endif
-
-#endif  
 }
 //===============================================================================================================

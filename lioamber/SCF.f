@@ -914,7 +914,7 @@ c ESSL OPTION ---------------------------------------------------
 c
 c LAPACK OPTION -----------------------------------------
 #ifdef pack
-#ifdef magma
+c#ifdef magma
 c-------nano tratando de usar magma
       if(.not.allocated(fock)) allocate (fock(M,M))
       fock=0
@@ -926,8 +926,13 @@ c-------nano tratando de usar magma
       enddo
 c---------------------
        LWORK=-1
+#ifdef magma
       call magmaf_dsyevd('V','L',M,fock,M,RMM(M13),WORK,LWORK
      > ,IWORK,LWORK,info)
+#else
+      call dsyevd('V','L',M,fock,M,RMM(M13),WORK,LWORK
+     > ,IWORK,LWORK,info)
+#endif
 
        LWORK=work(1)
       LIWORK=IWORK(1)
@@ -937,12 +942,17 @@ c---------------------
        allocate (WORK2(LWORK),IWORK2(LIWORK))
 
 
+#ifdef magma
       call magmaf_dsyevd('V','L',M,fock,M,RMM(M13),WORK2,LWORK
      > ,IWORK2,LIWORK,info)
 #else
-       call dspev('V','L',M,RMM(M5),RMM(M13),X(1,M+1),
-     > M,RMM(M15),info)
+      call dsyevd('V','L',M,fock,M,RMM(M13),WORK2,LWORK
+     > ,IWORK2,LIWORK,info)
 #endif
+c#else
+c       call dspev('V','L',M,RMM(M5),RMM(M13),X(1,M+1),
+c     > M,RMM(M15),info)
+c#endif
 #endif
        call g2g_timer_stop('dspev')
        call g2g_timer_sum_pause('diagonalization')
@@ -971,12 +981,13 @@ c
 c-----------------------------------------------------------
 c Recover C from (X^-1)*C; put into xnano
 c-----------------------------------------------------------
-#ifdef magma
+c#ifdef magma
 
       do i=1,M
         do j=1,M
             X(i,M2+j)=0.D0
-            do k=1,M
+            ! xnano is lower triangular
+            do k=i,M
               X(i,M2+j)=X(i,M2+j)+xnano(k,i)*fock(k,j)
             enddo
           enddo
@@ -984,17 +995,17 @@ c-----------------------------------------------------------
 
 
 
-#else
-      do i=1,M
-        do j=1,M
-          X(i,M2+j)=0.D0
-          ! xnano is lower triangular
-          do k=i,M
-            X(i,M2+j)=X(i,M2+j)+xnano(k,i)*X(k,M+j)
-          enddo
-        enddo
-      enddo
-#endif
+c#else
+c      do i=1,M
+c        do j=1,M
+c          X(i,M2+j)=0.D0
+c          ! xnano is lower triangular
+c          do k=i,M
+c            X(i,M2+j)=X(i,M2+j)+xnano(k,i)*X(k,M+j)
+c          enddo
+c        enddo
+c      enddo
+c#endif
       call g2g_timer_stop('coeff')
       call g2g_timer_start('otras cosas')
       call g2g_timer_sum_pause('MO coefficients')

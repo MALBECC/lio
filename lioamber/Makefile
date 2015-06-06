@@ -66,7 +66,7 @@ include make_links.mk
 
 # Only uncomment this if your version of Amber supports
 # lio/Amber basis set keywords and cube file generation
-FFLAGS += -DMOD_AMBER
+#FFLAGS += -DMOD_AMBER
 
 #
 ######################################################################

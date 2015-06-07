@@ -45,7 +45,7 @@ class QMMMIntegral {
     bool alloc_output( void );
 
     // Main kernel calls
-    void calc_fock( double& Es );
+    void calc_fock( double& Es, bool do_cl, bool do_qm );
 
     void calc_gradient( double* qm_forces, double* mm_forces, bool do_cl, bool do_qm );
 

@@ -96,7 +96,7 @@ void QMMMIntegral<scalar_type>::clear( void )
 }
 
 template <class scalar_type>
-void QMMMIntegral<scalar_type>::calc_fock( double& Es )
+void QMMMIntegral<scalar_type>::calc_fock( double& Es, bool do_cl, bool do_qm )
 {
     os_int.reload_density();
 
@@ -138,13 +138,38 @@ void QMMMIntegral<scalar_type>::calc_fock( double& Es )
       dim3 threads = os_int.term_type_counts[i];
       dim3 blockSize(QMMM_BLOCK_SIZE);
       dim3 gridSize = divUp(threads, blockSize);
-      switch (i) {
-        case 0: gpu_qmmm_fock<scalar_type,0><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
-        case 1: gpu_qmmm_fock<scalar_type,1><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
-        case 2: gpu_qmmm_fock<scalar_type,2><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
-        case 3: gpu_qmmm_fock<scalar_type,3><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
-        case 4: gpu_qmmm_fock<scalar_type,4><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
-        case 5: gpu_qmmm_fock<scalar_type,5><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
+      if (do_cl) {
+        if (do_qm) {
+          switch (i) {
+            case 0: gpu_qmmm_fock<scalar_type,0,true,true><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
+            case 1: gpu_qmmm_fock<scalar_type,1,true,true><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
+            case 2: gpu_qmmm_fock<scalar_type,2,true,true><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
+            case 3: gpu_qmmm_fock<scalar_type,3,true,true><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
+            case 4: gpu_qmmm_fock<scalar_type,4,true,true><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
+            case 5: gpu_qmmm_fock<scalar_type,5,true,true><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
+          }
+        } else {
+          switch (i) {
+            case 0: gpu_qmmm_fock<scalar_type,0,true,false><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
+            case 1: gpu_qmmm_fock<scalar_type,1,true,false><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
+            case 2: gpu_qmmm_fock<scalar_type,2,true,false><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
+            case 3: gpu_qmmm_fock<scalar_type,3,true,false><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
+            case 4: gpu_qmmm_fock<scalar_type,4,true,false><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
+            case 5: gpu_qmmm_fock<scalar_type,5,true,false><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
+          }
+        }
+      } else {
+        if (do_qm) {
+          switch (i) {
+            case 0: gpu_qmmm_fock<scalar_type,0,false,true><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
+            case 1: gpu_qmmm_fock<scalar_type,1,false,true><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
+            case 2: gpu_qmmm_fock<scalar_type,2,false,true><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
+            case 3: gpu_qmmm_fock<scalar_type,3,false,true><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
+            case 4: gpu_qmmm_fock<scalar_type,4,false,true><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
+            case 5: gpu_qmmm_fock<scalar_type,5,false,true><<<gridSize,blockSize,0,stream[i]>>>( qmmm_fock_parameters ); break;
+          }
+        } else {
+        }
       }
 
       //

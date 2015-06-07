@@ -222,14 +222,28 @@ extern "C" void aint_qmmm_fock_(double& Es, double& Ens)
   if(cudaSetDevice(os_integral.my_device) != cudaSuccess) std::cout << "Error: can't set the device " << os_integral.my_device << std::endl;
 
   int stat = 0;
-  if (!qmmm_integral.load_clatoms()) stat = 1;
+  if (integral_vars.clatoms > 0) {
+    if (!qmmm_integral.load_clatoms()) stat = 1;
+  }
   if (stat != 0) {
     cout << "Could not initialize QM/MM module; probably due to not enough GPU memory" << endl;
     exit(-1);
   }
 
   qmmm_integral.calc_nuc_energy(Ens);
-  qmmm_integral.calc_fock(Es);
+  if (AINT_GPU_LEVEL > 3) {
+    if (integral_vars.clatoms > 0) {
+      qmmm_integral.calc_fock(Es, true, true);
+    } else {
+      qmmm_integral.calc_fock(Es, false, true);
+    }
+  } else {
+    if (integral_vars.clatoms > 0) {
+      qmmm_integral.calc_fock(Es, true, false);
+    } else {
+      qmmm_integral.calc_fock(Es, false, false);
+    }
+  }
 
   qmmm_integral.clear();
 

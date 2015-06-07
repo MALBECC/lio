@@ -212,7 +212,7 @@ c
       call g2g_timer_sum_start('Nuclear attraction')
       call int1(En)
       call g2g_timer_sum_stop('Nuclear attraction')
-      if(nsol.gt.0) then
+      if(nsol.gt.0.or.igpu.ge.4) then
           call g2g_timer_sum_start('QM/MM')
         if (igpu.le.1) then
           call g2g_timer_start('intsol')

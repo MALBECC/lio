@@ -10,7 +10,7 @@
 // TODO: currently, one thread maps to one primitive-primitive overlap force term; is there a better mapping? (thread to function, thread to sub-shell, etc)
 // TODO: should the loop over MM atoms be broken up to be done by multiple blocks rather than a block looping over every MM atom?
 //
-template<class scalar_type, uint term_type>
+template<class scalar_type, uint term_type, bool do_cl, bool do_qm>
 __global__ void gpu_qmmm_fock( uint num_terms, G2G::vec_type<scalar_type,2>* ac_values, uint* func2nuc, uint* func_code, uint* local_fock_ind,
                                  double* fock, uint global_stride, G2G::vec_type<scalar_type,3>* clatom_pos, scalar_type *clatom_chg )
 {
@@ -115,6 +115,73 @@ __global__ void gpu_qmmm_fock( uint num_terms, G2G::vec_type<scalar_type,2>* ac_
       prefactor = -2.0f * PI * cc * ovlap / zeta;
     }
 
+    if (do_qm) {
+    //
+    // Outer loop: read in block of MM atom information into shared memory
+    //
+    for (int i = 0; i < G2G::gpu_atoms; i += QMMM_BLOCK_SIZE)
+    {
+      if (i + tid < G2G::gpu_atoms) {
+        clatom_position_sh[tid].x = G2G::gpu_atom_positions[i+tid].x;
+        clatom_position_sh[tid].y = G2G::gpu_atom_positions[i+tid].y;
+        clatom_position_sh[tid].z = G2G::gpu_atom_positions[i+tid].z;
+        clatom_charge_sh[tid] = (scalar_type)(gpu_atom_types[i+tid]+1);
+      }
+      __syncthreads();
+      //
+      // Inner loop: process block of MM atoms; each thread calculates a single primitive/primitive overlap energy term
+      //
+      for (int j = 0; j < QMMM_BLOCK_SIZE && i+j < G2G::gpu_atoms; j++)
+      {
+        scalar_type PmC[3];
+        PmC[0] = P[0] - clatom_position_sh[j].x;
+        PmC[1] = P[1] - clatom_position_sh[j].y;
+        PmC[2] = P[2] - clatom_position_sh[j].z;
+        //
+        // Do the core part of the Fock element calculation - the evaluation of the Obara-Saika recursion equations
+        // This is where the different term types differ the most, so these are moved into separate files in the qmmm_terms directory
+        // Current version: d-p and d-d are manually unrolled
+        //
+        // BEGIN TERM-TYPE DEPENDENT PART
+        switch (term_type)
+        {
+          case 0:
+          {
+            #include "qmmm_terms/energy/ss.h"
+            break;
+          }
+          case 1:
+          {
+            #include "qmmm_terms/energy/ps.h"
+            break;
+          }
+          case 2:
+          {
+            #include "qmmm_terms/energy/pp.h"
+            break;
+          }
+          case 3:
+          {
+            #include "qmmm_terms/energy/ds.h"
+            break;
+          }
+          case 4:
+          {
+            #include "qmmm_terms/energy/dp.h"
+            break;
+          }
+          case 5:
+          {
+            #include "qmmm_terms/energy/dd.h"
+            break;
+          }
+        }
+        // END TERM-TYPE DEPENDENT PART
+      }
+      __syncthreads();
+    }
+    }
+    if (do_cl) {
     //
     // Outer loop: read in block of MM atom information into shared memory
     //
@@ -179,6 +246,7 @@ __global__ void gpu_qmmm_fock( uint num_terms, G2G::vec_type<scalar_type,2>* ac_
         // END TERM-TYPE DEPENDENT PART
       }
       __syncthreads();
+    }
     }
   }
 

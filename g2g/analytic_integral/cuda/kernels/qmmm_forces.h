@@ -182,10 +182,10 @@ __global__ void gpu_qmmm_forces( uint num_terms, G2G::vec_type<scalar_type,2>* a
     for (int i = 0; i < G2G::gpu_atoms; i += QMMM_BLOCK_SIZE)
     {
       if (i + tid < G2G::gpu_atoms) {
-        clatom_position_sh[tid].x = G2G::gpu_atom_positions[i+tid].x;//clatom_pos[i+tid];
-        clatom_position_sh[tid].y = G2G::gpu_atom_positions[i+tid].y;//clatom_pos[i+tid];
-        clatom_position_sh[tid].z = G2G::gpu_atom_positions[i+tid].z;//clatom_pos[i+tid];
-        clatom_charge_sh[tid] = (scalar_type)(gpu_atom_types[i+tid]+1);//clatom_chg[i+tid];
+        clatom_position_sh[tid].x = G2G::gpu_atom_positions[i+tid].x;
+        clatom_position_sh[tid].y = G2G::gpu_atom_positions[i+tid].y;
+        clatom_position_sh[tid].z = G2G::gpu_atom_positions[i+tid].z;
+        clatom_charge_sh[tid] = (scalar_type)(gpu_atom_types[i+tid]+1);
       }
       __syncthreads();
       //

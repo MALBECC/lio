@@ -126,11 +126,11 @@ ifeq ($(verbose),1)
   NVCCFLAGS += --verbose
 endif
 
-GENCODE_SM20    := -gencode arch=compute_20,code=compute_20
-#GENCODE_SM20    += -gencode arch=compute_20,code=sm_20
-#GENCODE_SM20    += -gencode arch=compute_20,code=sm_21
-GENCODE_SM35    := -gencode arch=compute_35,code=compute_35
-#GENCODE_SM35    += -gencode arch=compute_35,code=sm_35
+#GENCODE_SM20    := -gencode arch=compute_20,code=compute_20
+GENCODE_SM20    += -gencode arch=compute_20,code=sm_20
+GENCODE_SM20    += -gencode arch=compute_20,code=sm_21
+#GENCODE_SM35    := -gencode arch=compute_35,code=compute_35
+GENCODE_SM35    += -gencode arch=compute_35,code=sm_35
 # Eventually for Maxwell, requires at least CUDA 6.5
 #GENCODE_SM50    := -gencode arch=compute_50,code=sm_50
 #GENCODE_SM52    := -gencode arch=compute_52,code=sm_52

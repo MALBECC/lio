@@ -20,7 +20,7 @@
         scalar_type d12ss_2 = PmA[0] * p1ss_2 + WmP[0] * p1ss_3;
         scalar_type p2ss_1 = PmA[0] * F_mT[1] + WmP[0] * F_mT[2];
         scalar_type p2ss_2 = PmA[0] * F_mT[2] + WmP[0] * F_mT[3];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         d12ss_1 += inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
         d12ss_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
         norm2 = G2G::gpu_normalization_factor;
@@ -158,7 +158,7 @@
         scalar_type d12ss_2 = PmA[0] * p1ss_2 + WmP[0] * p1ss_3;
         scalar_type p2ss_1 = PmA[0] * F_mT[1] + WmP[0] * F_mT[2];
         scalar_type p2ss_2 = PmA[0] * F_mT[2] + WmP[0] * F_mT[3];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         //START INDEX i3=0, CENTER 2
         {
           scalar_type d12p3s_1 = PmB[0] * d12ss_1 + WmP[0] * d12ss_2;
@@ -287,7 +287,7 @@
         scalar_type d12ss_2 = PmA[1] * p1ss_2 + WmP[1] * p1ss_3;
         scalar_type p2ss_1 = PmA[1] * F_mT[1] + WmP[1] * F_mT[2];
         scalar_type p2ss_2 = PmA[1] * F_mT[2] + WmP[1] * F_mT[3];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         d12ss_1 += inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
         d12ss_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
         norm2 = G2G::gpu_normalization_factor;
@@ -425,7 +425,7 @@
         scalar_type d12ss_2 = PmA[0] * p1ss_2 + WmP[0] * p1ss_3;
         scalar_type p2ss_1 = PmA[0] * F_mT[1] + WmP[0] * F_mT[2];
         scalar_type p2ss_2 = PmA[0] * F_mT[2] + WmP[0] * F_mT[3];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         //START INDEX i3=0, CENTER 2
         {
           scalar_type d12p3s_1 = PmB[0] * d12ss_1 + WmP[0] * d12ss_2;
@@ -554,7 +554,7 @@
         scalar_type d12ss_2 = PmA[1] * p1ss_2 + WmP[1] * p1ss_3;
         scalar_type p2ss_1 = PmA[1] * F_mT[1] + WmP[1] * F_mT[2];
         scalar_type p2ss_2 = PmA[1] * F_mT[2] + WmP[1] * F_mT[3];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         //START INDEX i3=0, CENTER 2
         {
           scalar_type d12p3s_1 = PmB[0] * d12ss_1 + WmP[0] * d12ss_2;
@@ -683,7 +683,7 @@
         scalar_type d12ss_2 = PmA[2] * p1ss_2 + WmP[2] * p1ss_3;
         scalar_type p2ss_1 = PmA[2] * F_mT[1] + WmP[2] * F_mT[2];
         scalar_type p2ss_2 = PmA[2] * F_mT[2] + WmP[2] * F_mT[3];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         d12ss_1 += inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
         d12ss_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
         norm2 = G2G::gpu_normalization_factor;

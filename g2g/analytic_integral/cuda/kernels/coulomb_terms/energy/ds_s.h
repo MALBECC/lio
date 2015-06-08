@@ -16,7 +16,7 @@
       //START INDEX i2=0, CENTER 1
       {
         scalar_type d12ss_0 = PmA[0] * p1ss_0 + WmP[0] * p1ss_1;
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         d12ss_0 += inv_two_zeta * (F_mT[0] - rho_zeta * F_mT[1]);
         norm2 = G2G::gpu_normalization_factor;
         scalar_type preterm = norm2;
@@ -34,7 +34,7 @@
       //START INDEX i2=0, CENTER 1
       {
         scalar_type d12ss_0 = PmA[0] * p1ss_0 + WmP[0] * p1ss_1;
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         scalar_type preterm = norm2;
 #ifdef FOCK_CALC
         my_fock[1] += (double)( preterm * fit_dens_sh[j+0] * prefactor_dens *  d12ss_0 );
@@ -45,7 +45,7 @@
       //START INDEX i2=1, CENTER 1
       {
         scalar_type d12ss_0 = PmA[1] * p1ss_0 + WmP[1] * p1ss_1;
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         d12ss_0 += inv_two_zeta * (F_mT[0] - rho_zeta * F_mT[1]);
         norm2 = G2G::gpu_normalization_factor;
         scalar_type preterm = norm2;
@@ -63,7 +63,7 @@
       //START INDEX i2=0, CENTER 1
       {
         scalar_type d12ss_0 = PmA[0] * p1ss_0 + WmP[0] * p1ss_1;
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         scalar_type preterm = norm2;
 #ifdef FOCK_CALC
         my_fock[3] += (double)( preterm * fit_dens_sh[j+0] * prefactor_dens *  d12ss_0 );
@@ -74,7 +74,7 @@
       //START INDEX i2=1, CENTER 1
       {
         scalar_type d12ss_0 = PmA[1] * p1ss_0 + WmP[1] * p1ss_1;
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         scalar_type preterm = norm2;
 #ifdef FOCK_CALC
         my_fock[4] += (double)( preterm * fit_dens_sh[j+0] * prefactor_dens *  d12ss_0 );
@@ -85,7 +85,7 @@
       //START INDEX i2=2, CENTER 1
       {
         scalar_type d12ss_0 = PmA[2] * p1ss_0 + WmP[2] * p1ss_1;
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         d12ss_0 += inv_two_zeta * (F_mT[0] - rho_zeta * F_mT[1]);
         norm2 = G2G::gpu_normalization_factor;
         scalar_type preterm = norm2;

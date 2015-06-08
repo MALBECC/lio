@@ -25,7 +25,7 @@ __global__ void gpu_coulomb_fit1( uint num_terms, G2G::vec_type<scalar_type,2>* 
   // TODO: are these staying on registers or going into local memory? might need to rethink it...
   /*double my_fock[term_type==0? 1 : (term_type==1? 3 : (term_type==2? 9 : (term_type==3? 6 : (term_type==4? 18 : 36))))];
   for (uint i = 0; i < TERM_TYPE_GAUSSIANS[term_type]; i++) {
-    my_fock[i] = 0.0f;
+    my_fock[i] = 0.0;
   }
   uint fock_ind;*/
   bool same_func;
@@ -74,7 +74,7 @@ __global__ void gpu_coulomb_fit1( uint num_terms, G2G::vec_type<scalar_type,2>* 
                 dens[false_ind] = dens_values[dens_ind+true_ind];
                 true_ind++;
               } else {
-                dens[false_ind] = 0.0f;
+                dens[false_ind] = 0.0;
               }
               false_ind++;
             }
@@ -89,7 +89,7 @@ __global__ void gpu_coulomb_fit1( uint num_terms, G2G::vec_type<scalar_type,2>* 
                     dens[false_ind] = dens_values[dens_ind+true_ind];
                     true_ind++;
                   } else {
-                    dens[false_ind] = 0.0f;
+                    dens[false_ind] = 0.0;
                   }
                   false_ind++;
                 }
@@ -154,7 +154,7 @@ __global__ void gpu_coulomb_fit1( uint num_terms, G2G::vec_type<scalar_type,2>* 
       scalar_type ksi = ((double)ai*(double)aj)/zeta;
       ovlap = exp(-ds2*ksi);
 
-      prefactor_mo = (double)(cc * 2.0f * PI52 * ovlap) / zeta;
+      prefactor_mo = (double)(cc * PI52 * ovlap) / zeta;
     }
     __shared__ uint term_start[3];
     term_start[0] = 0; term_start[1] = p_offset; term_start[2] = d_offset;

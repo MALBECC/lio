@@ -23,7 +23,7 @@
         scalar_type p2ss_2 = PmA[0] * F_mT[2] + WmP[0] * F_mT[3];
         scalar_type d12ss_3 = PmA[0] * p1ss_3 + WmP[0] * p1ss_4;
         scalar_type p2ss_3 = PmA[0] * F_mT[3] + WmP[0] * F_mT[4];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         d12ss_1 += inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
         d12ss_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
         d12ss_3 += inv_two_zeta * (F_mT[3] - rho_zeta * F_mT[4]);
@@ -58,7 +58,7 @@
             d12d34s_1 += inv_two_zeta * (p1p3s_1 - rho_zeta * p1p3s_2);
             p2d34s_1 += inv_two_zeta * (sp3s_1 - rho_zeta * sp3s_2);
             d12p4s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
             p2d34s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
             p1d34s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
@@ -121,7 +121,7 @@
             d12d34s_1 += inv_two_zeta * (p1p3s_1 - rho_zeta * p1p3s_2);
             p2d34s_1 += inv_two_zeta * (sp3s_1 - rho_zeta * sp3s_2);
             d12p4s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_0 = WmQ[0] * d12d34s_1;
@@ -163,7 +163,7 @@
             scalar_type p2d34s_1 = PmB[1] * p2p3s_1 + WmP[1] * p2p3s_2;
             scalar_type p1d34s_1 = PmB[1] * p1p3s_1 + WmP[1] * p1p3s_2;
             scalar_type d12p4s_1 = PmB[1] * d12ss_1 + WmP[1] * d12ss_2;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
             p2d34s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
             p1d34s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
@@ -226,7 +226,7 @@
             d12d34s_1 += inv_two_zeta * (p1p3s_1 - rho_zeta * p1p3s_2);
             p2d34s_1 += inv_two_zeta * (sp3s_1 - rho_zeta * sp3s_2);
             d12p4s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_0 = WmQ[0] * d12d34s_1;
@@ -268,7 +268,7 @@
             scalar_type p2d34s_1 = PmB[1] * p2p3s_1 + WmP[1] * p2p3s_2;
             scalar_type p1d34s_1 = PmB[1] * p1p3s_1 + WmP[1] * p1p3s_2;
             scalar_type d12p4s_1 = PmB[1] * d12ss_1 + WmP[1] * d12ss_2;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_0 = WmQ[0] * d12d34s_1;
@@ -310,7 +310,7 @@
             scalar_type p2d34s_1 = PmB[2] * p2p3s_1 + WmP[2] * p2p3s_2;
             scalar_type p1d34s_1 = PmB[2] * p1p3s_1 + WmP[2] * p1p3s_2;
             scalar_type d12p4s_1 = PmB[2] * d12ss_1 + WmP[2] * d12ss_2;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
             p2d34s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
             p1d34s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
@@ -367,7 +367,7 @@
         scalar_type p2ss_1 = PmA[0] * F_mT[1] + WmP[0] * F_mT[2];
         scalar_type p2ss_2 = PmA[0] * F_mT[2] + WmP[0] * F_mT[3];
         scalar_type p2ss_3 = PmA[0] * F_mT[3] + WmP[0] * F_mT[4];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         //START INDEX i3=0, CENTER 2
         {
           scalar_type d12p3s_1 = PmB[0] * d12ss_1 + WmP[0] * d12ss_2;
@@ -391,7 +391,7 @@
             d12d34s_1 += inv_two_zeta * (p1p3s_1 - rho_zeta * p1p3s_2);
             d12p4s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
             p2d34s_1 += inv_two_zeta * (sp3s_1 - rho_zeta * sp3s_2);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
             p1d34s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
             p2d34s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
@@ -455,7 +455,7 @@
             d12d34s_1 += inv_two_zeta * (p1p3s_1 - rho_zeta * p1p3s_2);
             p2d34s_1 += inv_two_zeta * (sp3s_1 - rho_zeta * sp3s_2);
             d12p4s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_0 = WmQ[0] * d12d34s_1;
@@ -500,7 +500,7 @@
             d12d34s_1 += inv_two_zeta * (p2p3s_1 - rho_zeta * p2p3s_2);
             p1d34s_1 += inv_two_zeta * (sp3s_1 - rho_zeta * sp3s_2);
             d12p4s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
             p1d34s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
             p2d34s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
@@ -560,7 +560,7 @@
             d12d34s_1 += inv_two_zeta * (p1p3s_1 - rho_zeta * p1p3s_2);
             p2d34s_1 += inv_two_zeta * (sp3s_1 - rho_zeta * sp3s_2);
             d12p4s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_0 = WmQ[0] * d12d34s_1;
@@ -605,7 +605,7 @@
             d12d34s_1 += inv_two_zeta * (p2p3s_1 - rho_zeta * p2p3s_2);
             p1d34s_1 += inv_two_zeta * (sp3s_1 - rho_zeta * sp3s_2);
             d12p4s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_0 = WmQ[0] * d12d34s_1;
@@ -647,7 +647,7 @@
             scalar_type p1d34s_1 = PmB[2] * p1p3s_1 + WmP[2] * p1p3s_2;
             scalar_type p2d34s_1 = PmB[2] * p2p3s_1 + WmP[2] * p2p3s_2;
             scalar_type d12p4s_1 = PmB[2] * d12ss_1 + WmP[2] * d12ss_2;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
             p1d34s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
             p2d34s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
@@ -697,7 +697,7 @@
         scalar_type p2ss_1 = PmA[1] * F_mT[1] + WmP[1] * F_mT[2];
         scalar_type p2ss_2 = PmA[1] * F_mT[2] + WmP[1] * F_mT[3];
         scalar_type p2ss_3 = PmA[1] * F_mT[3] + WmP[1] * F_mT[4];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         d12ss_1 += inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
         d12ss_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
         d12ss_3 += inv_two_zeta * (F_mT[3] - rho_zeta * F_mT[4]);
@@ -716,7 +716,7 @@
             scalar_type d12p4s_1 = PmB[0] * d12ss_1 + WmP[0] * d12ss_2;
             scalar_type p2d34s_1 = PmB[0] * p2p3s_1 + WmP[0] * p2p3s_2;
             scalar_type p1d34s_1 = PmB[0] * p1p3s_1 + WmP[0] * p1p3s_2;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
             p2d34s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
             p1d34s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
@@ -781,7 +781,7 @@
             scalar_type p2d34s_1 = PmB[0] * p2p3s_1 + WmP[0] * p2p3s_2;
             scalar_type p1d34s_1 = PmB[0] * p1p3s_1 + WmP[0] * p1p3s_2;
             scalar_type d12p4s_1 = PmB[0] * d12ss_1 + WmP[0] * d12ss_2;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_0 = WmQ[0] * d12d34s_1;
@@ -829,7 +829,7 @@
             d12d34s_1 += inv_two_zeta * (p1p3s_1 - rho_zeta * p1p3s_2);
             p2d34s_1 += inv_two_zeta * (sp3s_1 - rho_zeta * sp3s_2);
             d12p4s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
             p2d34s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
             p1d34s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
@@ -886,7 +886,7 @@
             scalar_type p2d34s_1 = PmB[0] * p2p3s_1 + WmP[0] * p2p3s_2;
             scalar_type p1d34s_1 = PmB[0] * p1p3s_1 + WmP[0] * p1p3s_2;
             scalar_type d12p4s_1 = PmB[0] * d12ss_1 + WmP[0] * d12ss_2;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_0 = WmQ[0] * d12d34s_1;
@@ -934,7 +934,7 @@
             d12d34s_1 += inv_two_zeta * (p1p3s_1 - rho_zeta * p1p3s_2);
             p2d34s_1 += inv_two_zeta * (sp3s_1 - rho_zeta * sp3s_2);
             d12p4s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_0 = WmQ[0] * d12d34s_1;
@@ -976,7 +976,7 @@
             scalar_type p2d34s_1 = PmB[2] * p2p3s_1 + WmP[2] * p2p3s_2;
             scalar_type p1d34s_1 = PmB[2] * p1p3s_1 + WmP[2] * p1p3s_2;
             scalar_type d12p4s_1 = PmB[2] * d12ss_1 + WmP[2] * d12ss_2;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
             p2d34s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
             p1d34s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
@@ -1033,7 +1033,7 @@
         scalar_type p2ss_1 = PmA[0] * F_mT[1] + WmP[0] * F_mT[2];
         scalar_type p2ss_2 = PmA[0] * F_mT[2] + WmP[0] * F_mT[3];
         scalar_type p2ss_3 = PmA[0] * F_mT[3] + WmP[0] * F_mT[4];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         //START INDEX i3=0, CENTER 2
         {
           scalar_type d12p3s_1 = PmB[0] * d12ss_1 + WmP[0] * d12ss_2;
@@ -1057,7 +1057,7 @@
             d12d34s_1 += inv_two_zeta * (p1p3s_1 - rho_zeta * p1p3s_2);
             d12p4s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
             p2d34s_1 += inv_two_zeta * (sp3s_1 - rho_zeta * sp3s_2);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
             p1d34s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
             p2d34s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
@@ -1117,7 +1117,7 @@
             d12d34s_1 += inv_two_zeta * (p1p3s_1 - rho_zeta * p1p3s_2);
             d12p4s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
             p2d34s_1 += inv_two_zeta * (sp3s_1 - rho_zeta * sp3s_2);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_0 = WmQ[0] * d12d34s_1;
@@ -1159,7 +1159,7 @@
             scalar_type p1d34s_1 = PmB[1] * p1p3s_1 + WmP[1] * p1p3s_2;
             scalar_type d12p4s_1 = PmB[1] * d12ss_1 + WmP[1] * d12ss_2;
             scalar_type p2d34s_1 = PmB[1] * p2p3s_1 + WmP[1] * p2p3s_2;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
             p1d34s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
             p2d34s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
@@ -1223,7 +1223,7 @@
             d12d34s_1 += inv_two_zeta * (p1p3s_1 - rho_zeta * p1p3s_2);
             p2d34s_1 += inv_two_zeta * (sp3s_1 - rho_zeta * sp3s_2);
             d12p4s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_0 = WmQ[0] * d12d34s_1;
@@ -1265,7 +1265,7 @@
             scalar_type p1d34s_1 = PmB[1] * p1p3s_1 + WmP[1] * p1p3s_2;
             scalar_type p2d34s_1 = PmB[1] * p2p3s_1 + WmP[1] * p2p3s_2;
             scalar_type d12p4s_1 = PmB[1] * d12ss_1 + WmP[1] * d12ss_2;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_0 = WmQ[0] * d12d34s_1;
@@ -1310,7 +1310,7 @@
             d12d34s_1 += inv_two_zeta * (p2p3s_1 - rho_zeta * p2p3s_2);
             p1d34s_1 += inv_two_zeta * (sp3s_1 - rho_zeta * sp3s_2);
             d12p4s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
             p1d34s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
             p2d34s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
@@ -1360,7 +1360,7 @@
         scalar_type p2ss_1 = PmA[1] * F_mT[1] + WmP[1] * F_mT[2];
         scalar_type p2ss_2 = PmA[1] * F_mT[2] + WmP[1] * F_mT[3];
         scalar_type p2ss_3 = PmA[1] * F_mT[3] + WmP[1] * F_mT[4];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         //START INDEX i3=0, CENTER 2
         {
           scalar_type d12p3s_1 = PmB[0] * d12ss_1 + WmP[0] * d12ss_2;
@@ -1375,7 +1375,7 @@
             scalar_type d12p4s_1 = PmB[0] * d12ss_1 + WmP[0] * d12ss_2;
             scalar_type p1d34s_1 = PmB[0] * p1p3s_1 + WmP[0] * p1p3s_2;
             scalar_type p2d34s_1 = PmB[0] * p2p3s_1 + WmP[0] * p2p3s_2;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
             p1d34s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
             p2d34s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
@@ -1436,7 +1436,7 @@
             scalar_type p1d34s_1 = PmB[0] * p1p3s_1 + WmP[0] * p1p3s_2;
             scalar_type d12p4s_1 = PmB[0] * d12ss_1 + WmP[0] * d12ss_2;
             scalar_type p2d34s_1 = PmB[0] * p2p3s_1 + WmP[0] * p2p3s_2;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_0 = WmQ[0] * d12d34s_1;
@@ -1481,7 +1481,7 @@
             d12d34s_1 += inv_two_zeta * (p1p3s_1 - rho_zeta * p1p3s_2);
             d12p4s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
             p2d34s_1 += inv_two_zeta * (sp3s_1 - rho_zeta * sp3s_2);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
             p1d34s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
             p2d34s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
@@ -1542,7 +1542,7 @@
             scalar_type p1d34s_1 = PmB[0] * p1p3s_1 + WmP[0] * p1p3s_2;
             scalar_type p2d34s_1 = PmB[0] * p2p3s_1 + WmP[0] * p2p3s_2;
             scalar_type d12p4s_1 = PmB[0] * d12ss_1 + WmP[0] * d12ss_2;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_0 = WmQ[0] * d12d34s_1;
@@ -1587,7 +1587,7 @@
             d12d34s_1 += inv_two_zeta * (p1p3s_1 - rho_zeta * p1p3s_2);
             p2d34s_1 += inv_two_zeta * (sp3s_1 - rho_zeta * sp3s_2);
             d12p4s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_0 = WmQ[0] * d12d34s_1;
@@ -1632,7 +1632,7 @@
             d12d34s_1 += inv_two_zeta * (p2p3s_1 - rho_zeta * p2p3s_2);
             p1d34s_1 += inv_two_zeta * (sp3s_1 - rho_zeta * sp3s_2);
             d12p4s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
             p1d34s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
             p2d34s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
@@ -1682,7 +1682,7 @@
         scalar_type p2ss_1 = PmA[2] * F_mT[1] + WmP[2] * F_mT[2];
         scalar_type p2ss_2 = PmA[2] * F_mT[2] + WmP[2] * F_mT[3];
         scalar_type p2ss_3 = PmA[2] * F_mT[3] + WmP[2] * F_mT[4];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         d12ss_1 += inv_two_zeta * (F_mT[1] - rho_zeta * F_mT[2]);
         d12ss_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
         d12ss_3 += inv_two_zeta * (F_mT[3] - rho_zeta * F_mT[4]);
@@ -1701,7 +1701,7 @@
             scalar_type d12p4s_1 = PmB[0] * d12ss_1 + WmP[0] * d12ss_2;
             scalar_type p2d34s_1 = PmB[0] * p2p3s_1 + WmP[0] * p2p3s_2;
             scalar_type p1d34s_1 = PmB[0] * p1p3s_1 + WmP[0] * p1p3s_2;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
             p2d34s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
             p1d34s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
@@ -1756,7 +1756,7 @@
             scalar_type d12p4s_1 = PmB[0] * d12ss_1 + WmP[0] * d12ss_2;
             scalar_type p2d34s_1 = PmB[0] * p2p3s_1 + WmP[0] * p2p3s_2;
             scalar_type p1d34s_1 = PmB[0] * p1p3s_1 + WmP[0] * p1p3s_2;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_0 = WmQ[0] * d12d34s_1;
@@ -1798,7 +1798,7 @@
             scalar_type d12p4s_1 = PmB[1] * d12ss_1 + WmP[1] * d12ss_2;
             scalar_type p2d34s_1 = PmB[1] * p2p3s_1 + WmP[1] * p2p3s_2;
             scalar_type p1d34s_1 = PmB[1] * p1p3s_1 + WmP[1] * p1p3s_2;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
             p2d34s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
             p1d34s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
@@ -1863,7 +1863,7 @@
             scalar_type p2d34s_1 = PmB[0] * p2p3s_1 + WmP[0] * p2p3s_2;
             scalar_type p1d34s_1 = PmB[0] * p1p3s_1 + WmP[0] * p1p3s_2;
             scalar_type d12p4s_1 = PmB[0] * d12ss_1 + WmP[0] * d12ss_2;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_0 = WmQ[0] * d12d34s_1;
@@ -1905,7 +1905,7 @@
             scalar_type p2d34s_1 = PmB[1] * p2p3s_1 + WmP[1] * p2p3s_2;
             scalar_type p1d34s_1 = PmB[1] * p1p3s_1 + WmP[1] * p1p3s_2;
             scalar_type d12p4s_1 = PmB[1] * d12ss_1 + WmP[1] * d12ss_2;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_0 = WmQ[0] * d12d34s_1;
@@ -1953,7 +1953,7 @@
             d12d34s_1 += inv_two_zeta * (p1p3s_1 - rho_zeta * p1p3s_2);
             p2d34s_1 += inv_two_zeta * (sp3s_1 - rho_zeta * sp3s_2);
             d12p4s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
             p2d34s_1 += inv_two_zeta * (p2ss_1 - rho_zeta * p2ss_2);
             p1d34s_1 += inv_two_zeta * (p1ss_1 - rho_zeta * p1ss_2);

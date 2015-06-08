@@ -21,7 +21,7 @@ __global__ void gpu_coulomb_forces( uint num_terms, G2G::vec_type<scalar_type,2>
   bool valid_thread = (ffnum < num_terms);
 
   // Each thread maps to a single pair of QM nuclei, so these forces are computed locally and accumulated at the end
-  scalar_type A_force[3] = { 0.0f,0.0f,0.0f }, B_force[3] = { 0.0f,0.0f,0.0f };
+  scalar_type A_force[3] = { 0.0,0.0,0.0 }, B_force[3] = { 0.0,0.0,0.0 };
   uint nuc1, nuc2;
   scalar_type prefactor_mo;
 
@@ -95,7 +95,7 @@ __global__ void gpu_coulomb_forces( uint num_terms, G2G::vec_type<scalar_type,2>
                 dens[false_ind] = dens_values[dens_ind+true_ind];
                 true_ind++;
               } else {
-                dens[false_ind] = 0.0f;
+                dens[false_ind] = 0.0;
               }
               false_ind++;
             }
@@ -110,7 +110,7 @@ __global__ void gpu_coulomb_forces( uint num_terms, G2G::vec_type<scalar_type,2>
                     dens[false_ind] = dens_values[dens_ind+true_ind];
                     true_ind++;
                   } else {
-                    dens[false_ind] = 0.0f;
+                    dens[false_ind] = 0.0;
                   }
                   false_ind++;
                 }
@@ -174,7 +174,7 @@ __global__ void gpu_coulomb_forces( uint num_terms, G2G::vec_type<scalar_type,2>
       scalar_type ksi = ((double)ai*(double)aj)/zeta;
       ovlap = exp(-ds2*ksi);
 
-      prefactor_mo = (double)(cc * 2.0f * PI52 * ovlap) / zeta;
+      prefactor_mo = (double)(cc * PI52 * ovlap) / zeta;
     }
     __shared__ uint term_start[3];
     term_start[0] = 0; term_start[1] = p_offset; term_start[2] = d_offset;
@@ -233,7 +233,7 @@ __global__ void gpu_coulomb_forces( uint num_terms, G2G::vec_type<scalar_type,2>
             // Current version: p-s through d-d are manually unrolled, and d-d is split up over six threads per primitive pair
             //
             // BEGIN TERM-TYPE DEPENDENT PART
-            C_force[0][tid] = 0.0f; C_force[1][tid] = 0.0f; C_force[2][tid] = 0.0f;
+            C_force[0][tid] = 0.0; C_force[1][tid] = 0.0; C_force[2][tid] = 0.0;
             switch (term_type)
             {
               case 0:

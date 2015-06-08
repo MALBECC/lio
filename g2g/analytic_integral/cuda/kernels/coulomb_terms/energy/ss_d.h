@@ -15,7 +15,7 @@
       //START INDEX i2=0, CENTER 3
       {
         scalar_type ssd12_0 = WmQ[0] * ssp1_1;
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         ssd12_0 += inv_two_eta * (F_mT[0] - rho_eta * F_mT[1]);
         norm2 = G2G::gpu_normalization_factor;
         scalar_type preterm = norm2;
@@ -32,7 +32,7 @@
       //START INDEX i2=0, CENTER 3
       {
         scalar_type ssd12_0 = WmQ[0] * ssp1_1;
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         scalar_type preterm = norm2;
 #ifdef FOCK_CALC
         my_fock[0] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  ssd12_0 );
@@ -43,7 +43,7 @@
       //START INDEX i2=1, CENTER 3
       {
         scalar_type ssd12_0 = WmQ[1] * ssp1_1;
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         ssd12_0 += inv_two_eta * (F_mT[0] - rho_eta * F_mT[1]);
         norm2 = G2G::gpu_normalization_factor;
         scalar_type preterm = norm2;
@@ -60,7 +60,7 @@
       //START INDEX i2=0, CENTER 3
       {
         scalar_type ssd12_0 = WmQ[0] * ssp1_1;
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         scalar_type preterm = norm2;
 #ifdef FOCK_CALC
         my_fock[0] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  ssd12_0 );
@@ -71,7 +71,7 @@
       //START INDEX i2=1, CENTER 3
       {
         scalar_type ssd12_0 = WmQ[1] * ssp1_1;
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         scalar_type preterm = norm2;
 #ifdef FOCK_CALC
         my_fock[0] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  ssd12_0 );
@@ -82,7 +82,7 @@
       //START INDEX i2=2, CENTER 3
       {
         scalar_type ssd12_0 = WmQ[2] * ssp1_1;
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         ssd12_0 += inv_two_eta * (F_mT[0] - rho_eta * F_mT[1]);
         norm2 = G2G::gpu_normalization_factor;
         scalar_type preterm = norm2;

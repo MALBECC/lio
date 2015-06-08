@@ -380,10 +380,10 @@ sub print_gradient_inner {
     }
     $str = "$str$indent  scalar_type B_force_term = PmB[$grad_ind] * $int_str + A_force_term;\n";
     $str = "$str$indent  A_force_term += PmA[$grad_ind] * $int_str;\n";
-    $str = "$str$indent  A_force_term *= 2.0f * ai;\n";
-    $str = "$str$indent  B_force_term *= 2.0f * aj;\n";
+    $str = "$str$indent  A_force_term *= 2.0 * ai;\n";
+    $str = "$str$indent  B_force_term *= 2.0 * aj;\n";
     if ($INDICES == 3) {
-      $str = "$str$indent  C_force_term *= 2.0f * ac_val_dens_sh[j].x;\n";
+      $str = "$str$indent  C_force_term *= 2.0 * ac_val_dens_sh[j].x;\n";
     }
     for (1..$l) {
       my @skip = ($_);
@@ -548,7 +548,7 @@ sub OS_level {
       $str = "$str$indent  $one_ind_rule\n";
     }
     for my $ind2 (1..$level-1) {
-      $str = "$str$indent  scalar_type norm$level = 1.0f;\n" if $NORM_INDICES[$level-1] and $ind2 == $level-1;
+      $str = "$str$indent  scalar_type norm$level = 1.0;\n" if $NORM_INDICES[$level-1] and $ind2 == $level-1;
       #$str = "$str$indent    bool del_${ind2}${level} = i$ind2 == i$level;\n";
       if ($ind_vals[$level-1] == $ind_vals[$ind2-1]) {
         #$str = "$str$indent  \{\n";
@@ -562,7 +562,7 @@ sub OS_level {
             $str = "$str$indent  $two_ind_rule\n";
           }
         }
-        #$str = "$str$indent    norm$level = del_${ind2}${level} * gpu_normalization_factor + !del_${ind2}${level} * 1.0f;\n" if $NORM_INDICES[$level-1] and $ind2 == $level-1;
+        #$str = "$str$indent    norm$level = del_${ind2}${level} * gpu_normalization_factor + !del_${ind2}${level} * 1.0;\n" if $NORM_INDICES[$level-1] and $ind2 == $level-1;
         $str = "$str$indent  norm$level = G2G::gpu_normalization_factor;\n" if $NORM_INDICES[$level-1] and $ind2 == $level-1;
         #$str = "$str$indent  \}\n";
       }

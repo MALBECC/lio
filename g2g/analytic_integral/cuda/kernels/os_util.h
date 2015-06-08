@@ -7,8 +7,10 @@
 #define PP_SAME_FUNC_SIZE 6
 #define DD_SAME_FUNC_SIZE 21
 
-#define PI 3.141592653589793238462643383f
-#define PI52 17.49341832762486284626282167987f
+#define PI 3.14159265358979312
+#define PI52 34.9868366552497108
+//#define PI 3.141592653589793238462643383
+//#define PI52 17.49341832762486284626282167987
 
 #if FULL_DOUBLE || !AINT_MP
 static __inline__ __device__ double os_fetch_double(texture<int2, 2> t, float x, float y)
@@ -38,23 +40,23 @@ __device__ void lio_gamma(scalar_type* __restrict__ F_mU, scalar_type U)
   // There's 6 reads to gpu_str, and currently U is not ordered wrt thread order, so the access pattern is terrible
   // Ideas: -reorder threads wrt U (seems to make things worse)
   //        -place gpu_str in texture memory (current implementation, doesn't seem to improve over global memory)
-  if (U <= 43.975f)
+  if (U <= 43.975)
   {
-    it = 20.0f * (U + 0.025f);
+    it = 20.0 * (U + 0.025);
     ti = it;
-    delt = U - 0.05f * ti;
-    delt3 = delt * 0.333333333333333f;
-    delt4 = 0.25f * delt;
+    delt = U - 0.05 * ti;
+    delt3 = delt * 0.333333333333333;
+    delt4 = 0.25 * delt;
     delt2 = delt4 + delt4;
-    delt5 = 0.20f * delt;
+    delt5 = 0.20 * delt;
 
     scalar_type tf0,tf1,tf2,tf3,tf4,tf5;
-    tf0 = os_fetch(str_tex,(float)it,0.0f);//qmmm_str[it];
-    tf1 = os_fetch(str_tex,(float)it,1.0f);//qmmm_str[it+880];
-    tf2 = os_fetch(str_tex,(float)it,2.0f);//qmmm_str[it+1760];
-    tf3 = os_fetch(str_tex,(float)it,3.0f);//qmmm_str[it+2640];
-    tf4 = os_fetch(str_tex,(float)it,4.0f);//qmmm_str[it+3520];
-    tf5 = os_fetch(str_tex,(float)it,5.0f);//qmmm_str[it+4400];
+    tf0 = os_fetch(str_tex,(float)it,0.0);//qmmm_str[it];
+    tf1 = os_fetch(str_tex,(float)it,1.0);//qmmm_str[it+880];
+    tf2 = os_fetch(str_tex,(float)it,2.0);//qmmm_str[it+1760];
+    tf3 = os_fetch(str_tex,(float)it,3.0);//qmmm_str[it+2640];
+    tf4 = os_fetch(str_tex,(float)it,4.0);//qmmm_str[it+3520];
+    tf5 = os_fetch(str_tex,(float)it,5.0);//qmmm_str[it+4400];
 
     F_mU[0] = tf0-delt * (tf1-delt2 * (tf2-delt3 * (tf3-delt4 * (tf4-delt5 * tf5))));
     for (uint m = 1; m <= m_max; m++) {
@@ -63,7 +65,7 @@ __device__ void lio_gamma(scalar_type* __restrict__ F_mU, scalar_type U)
       tf2 = tf3;
       tf3 = tf4;
       tf4 = tf5;
-      tf5 = os_fetch(str_tex,(float)it,(float)(m+5.0f));//qmmm_str[it+(m+5)*880];
+      tf5 = os_fetch(str_tex,(float)it,(float)(m+5.0));//qmmm_str[it+(m+5)*880];
 
       F_mU[m] = tf0-delt * (tf1-delt2 * (tf2-delt3 * (tf3-delt4 * (tf4-delt5 * tf5))));
     }
@@ -71,7 +73,7 @@ __device__ void lio_gamma(scalar_type* __restrict__ F_mU, scalar_type U)
   // Calculate large-U branch value of F(m,U)
   else
   {
-    scalar_type sqrtU = sqrtf(U);
+    scalar_type sqrtU = sqrt(U);
     for (uint m = 0; m <= m_max; m++) {
       F_mU[m] = gpu_fac[m]/(powf(U,m)*sqrtU);//sqrtf(U));
     }
@@ -103,7 +105,7 @@ __global__ void zero_fock( scalar_type* fock, uint global_stride, uint fock_leng
   uint my_y = blockDim.y * blockIdx.y + threadIdx.y;
 
   if (my_x < global_stride && my_y < fock_length) {
-    fock[my_x + global_stride * my_y] = 0.0f;
+    fock[my_x + global_stride * my_y] = 0.0;
   }
 }
 //
@@ -116,9 +118,9 @@ __global__ void zero_forces(G2G::vec_type<scalar_type,3>* forces,uint width,uint
   uint my_y = blockIdx.y * blockDim.y + threadIdx.y;
 
   if (my_x < width && my_y < height) {
-    forces[width*my_y + my_x].x = 0.0f;
-    forces[width*my_y + my_x].y = 0.0f;
-    forces[width*my_y + my_x].z = 0.0f;
+    forces[width*my_y + my_x].x = 0.0;
+    forces[width*my_y + my_x].y = 0.0;
+    forces[width*my_y + my_x].z = 0.0;
   }
 }
 
@@ -142,7 +144,7 @@ __global__ void gpu_fock_reduce( double* fock, scalar_type* dens, double* energi
   //}
 
   __shared__ double energies_sh[QMMM_REDUCE_BLOCK_SIZE];
-  scalar_type my_dens = 0.0f;
+  scalar_type my_dens = 0.0;
   if (my_fock_ind < width) {
     my_dens = dens[my_fock_ind];
     my_fock = fock[my_fock_ind];

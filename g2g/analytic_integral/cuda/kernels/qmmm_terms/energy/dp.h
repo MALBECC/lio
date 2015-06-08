@@ -17,7 +17,7 @@
         scalar_type d12s_1 = PmA[0] * p1s_1 - PmC[0] * p1s_2;
         scalar_type p2s_0 = PmA[0] * F_mU[0] - PmC[0] * F_mU[1];
         scalar_type p2s_1 = PmA[0] * F_mU[1] - PmC[0] * F_mU[2];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         d12s_0 += inv_two_zeta * (F_mU[0] - F_mU[1]);
         d12s_1 += inv_two_zeta * (F_mU[1] - F_mU[2]);
         norm2 = G2G::gpu_normalization_factor;
@@ -54,7 +54,7 @@
         scalar_type d12s_1 = PmA[0] * p1s_1 - PmC[0] * p1s_2;
         scalar_type p2s_0 = PmA[0] * F_mU[0] - PmC[0] * F_mU[1];
         scalar_type p2s_1 = PmA[0] * F_mU[1] - PmC[0] * F_mU[2];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         //START INDEX i3=0, CENTER 2
         {
           scalar_type d12p3_0 = PmB[0] * d12s_0 - PmC[0] * d12s_1;
@@ -82,7 +82,7 @@
         scalar_type d12s_1 = PmA[1] * p1s_1 - PmC[1] * p1s_2;
         scalar_type p2s_0 = PmA[1] * F_mU[0] - PmC[1] * F_mU[1];
         scalar_type p2s_1 = PmA[1] * F_mU[1] - PmC[1] * F_mU[2];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         d12s_0 += inv_two_zeta * (F_mU[0] - F_mU[1]);
         d12s_1 += inv_two_zeta * (F_mU[1] - F_mU[2]);
         norm2 = G2G::gpu_normalization_factor;
@@ -119,7 +119,7 @@
         scalar_type d12s_1 = PmA[0] * p1s_1 - PmC[0] * p1s_2;
         scalar_type p2s_0 = PmA[0] * F_mU[0] - PmC[0] * F_mU[1];
         scalar_type p2s_1 = PmA[0] * F_mU[1] - PmC[0] * F_mU[2];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         //START INDEX i3=0, CENTER 2
         {
           scalar_type d12p3_0 = PmB[0] * d12s_0 - PmC[0] * d12s_1;
@@ -147,7 +147,7 @@
         scalar_type d12s_1 = PmA[1] * p1s_1 - PmC[1] * p1s_2;
         scalar_type p2s_0 = PmA[1] * F_mU[0] - PmC[1] * F_mU[1];
         scalar_type p2s_1 = PmA[1] * F_mU[1] - PmC[1] * F_mU[2];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         //START INDEX i3=0, CENTER 2
         {
           scalar_type d12p3_0 = PmB[0] * d12s_0 - PmC[0] * d12s_1;
@@ -175,7 +175,7 @@
         scalar_type d12s_1 = PmA[2] * p1s_1 - PmC[2] * p1s_2;
         scalar_type p2s_0 = PmA[2] * F_mU[0] - PmC[2] * F_mU[1];
         scalar_type p2s_1 = PmA[2] * F_mU[1] - PmC[2] * F_mU[2];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         d12s_0 += inv_two_zeta * (F_mU[0] - F_mU[1]);
         d12s_1 += inv_two_zeta * (F_mU[1] - F_mU[2]);
         norm2 = G2G::gpu_normalization_factor;

@@ -29,7 +29,7 @@
         scalar_type d12ss_1 = PmA[0] * p1ss_1 + WmP[0] * p1ss_2;
         scalar_type p2ss_0 = PmA[0] * F_mT[0] + WmP[0] * F_mT[1];
         scalar_type p2ss_1 = PmA[0] * F_mT[1] + WmP[0] * F_mT[2];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         d12ss_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
         d12ss_3 += inv_two_zeta * (F_mT[3] - rho_zeta * F_mT[4]);
         d12ss_4 += inv_two_zeta * (F_mT[4] - rho_zeta * F_mT[5]);
@@ -91,7 +91,7 @@
             p2p4s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
             d12d34s_0 += inv_two_zeta * (p1p3s_0 - rho_zeta * p1p3s_1);
             d12d34s_1 += inv_two_zeta * (p1p3s_1 - rho_zeta * p1p3s_2);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_2 += inv_two_zeta * (d12ss_2 - rho_zeta * d12ss_3);
             p2d34s_2 += inv_two_zeta * (p2ss_2 - rho_zeta * p2ss_3);
             p1d34s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
@@ -129,7 +129,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -154,7 +154,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[0] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -165,7 +165,7 @@
               //START INDEX i6=1, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -190,7 +190,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[0] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -201,7 +201,7 @@
               //START INDEX i6=1, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[0] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -212,7 +212,7 @@
               //START INDEX i6=2, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -264,7 +264,7 @@
             d12d34s_1 += inv_two_zeta * (p1p3s_1 - rho_zeta * p1p3s_2);
             d12p4s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
             p2p4s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_1 = WmQ[0] * d12d34s_2;
@@ -286,7 +286,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -314,7 +314,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[1] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -326,7 +326,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -350,7 +350,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[1] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -362,7 +362,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[1] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -373,7 +373,7 @@
               //START INDEX i6=2, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -396,7 +396,7 @@
             scalar_type d12p4s_2 = PmB[1] * d12ss_2 + WmP[1] * d12ss_3;
             scalar_type p2p4s_2 = PmB[1] * p2ss_2 + WmP[1] * p2ss_3;
             scalar_type p1p4s_2 = PmB[1] * p1ss_2 + WmP[1] * p1ss_3;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_2 += inv_two_zeta * (d12ss_2 - rho_zeta * d12ss_3);
             p2d34s_2 += inv_two_zeta * (p2ss_2 - rho_zeta * p2ss_3);
             p1d34s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
@@ -418,7 +418,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -449,7 +449,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[2] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -462,7 +462,7 @@
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -485,7 +485,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[2] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -498,7 +498,7 @@
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[2] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -509,7 +509,7 @@
               //START INDEX i6=2, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -561,7 +561,7 @@
             d12d34s_1 += inv_two_zeta * (p1p3s_1 - rho_zeta * p1p3s_2);
             d12p4s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
             p2p4s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_1 = WmQ[0] * d12d34s_2;
@@ -583,7 +583,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -606,7 +606,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[3] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -617,7 +617,7 @@
               //START INDEX i6=1, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -645,7 +645,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[3] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -656,7 +656,7 @@
               //START INDEX i6=1, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[3] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -668,7 +668,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -691,7 +691,7 @@
             scalar_type d12p4s_2 = PmB[1] * d12ss_2 + WmP[1] * d12ss_3;
             scalar_type p2p4s_2 = PmB[1] * p2ss_2 + WmP[1] * p2ss_3;
             scalar_type p1p4s_2 = PmB[1] * p1ss_2 + WmP[1] * p1ss_3;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_1 = WmQ[0] * d12d34s_2;
@@ -706,7 +706,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -731,7 +731,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[4] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -743,7 +743,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -770,7 +770,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[4] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -782,7 +782,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[4] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -794,7 +794,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -817,7 +817,7 @@
             scalar_type d12p4s_2 = PmB[2] * d12ss_2 + WmP[2] * d12ss_3;
             scalar_type p2p4s_2 = PmB[2] * p2ss_2 + WmP[2] * p2ss_3;
             scalar_type p1p4s_2 = PmB[2] * p1ss_2 + WmP[2] * p1ss_3;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_2 += inv_two_zeta * (d12ss_2 - rho_zeta * d12ss_3);
             p2d34s_2 += inv_two_zeta * (p2ss_2 - rho_zeta * p2ss_3);
             p1d34s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
@@ -839,7 +839,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -860,7 +860,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[5] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -871,7 +871,7 @@
               //START INDEX i6=1, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -902,7 +902,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[5] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -913,7 +913,7 @@
               //START INDEX i6=1, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[5] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -926,7 +926,7 @@
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -961,7 +961,7 @@
         scalar_type p2ss_4 = PmA[0] * F_mT[4] + WmP[0] * F_mT[5];
         scalar_type p2ss_0 = PmA[0] * F_mT[0] + WmP[0] * F_mT[1];
         scalar_type p2ss_1 = PmA[0] * F_mT[1] + WmP[0] * F_mT[2];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         //START INDEX i3=0, CENTER 2
         {
           scalar_type d12p3s_2 = PmB[0] * d12ss_2 + WmP[0] * d12ss_3;
@@ -999,7 +999,7 @@
             d12d34s_1 += inv_two_zeta * (p1p3s_1 - rho_zeta * p1p3s_2);
             p2d34s_2 += inv_two_zeta * (sp3s_2 - rho_zeta * sp3s_3);
             p2p4s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_2 += inv_two_zeta * (d12ss_2 - rho_zeta * d12ss_3);
             p1d34s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
             d12d34s_0 += inv_two_zeta * (d12ss_0 - rho_zeta * d12ss_1);
@@ -1028,7 +1028,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -1056,7 +1056,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[6] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -1068,7 +1068,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -1092,7 +1092,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[6] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -1104,7 +1104,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[6] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -1115,7 +1115,7 @@
               //START INDEX i6=2, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -1169,7 +1169,7 @@
             p2d34s_2 += inv_two_zeta * (sp3s_2 - rho_zeta * sp3s_3);
             d12p4s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
             p2p4s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_1 = WmQ[0] * d12d34s_2;
@@ -1184,7 +1184,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -1215,7 +1215,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[7] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -1228,7 +1228,7 @@
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -1251,7 +1251,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[7] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -1264,7 +1264,7 @@
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[7] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -1275,7 +1275,7 @@
               //START INDEX i6=2, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -1304,7 +1304,7 @@
             d12d34s_1 += inv_two_zeta * (p2p3s_1 - rho_zeta * p2p3s_2);
             d12p4s_2 += inv_two_zeta * (p2ss_2 - rho_zeta * p2ss_3);
             p1p4s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_2 += inv_two_zeta * (d12ss_2 - rho_zeta * d12ss_3);
             p1d34s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
             d12d34s_0 += inv_two_zeta * (d12ss_0 - rho_zeta * d12ss_1);
@@ -1321,7 +1321,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -1355,7 +1355,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[8] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -1369,7 +1369,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -1391,7 +1391,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[8] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -1405,7 +1405,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[8] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -1416,7 +1416,7 @@
               //START INDEX i6=2, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -1462,7 +1462,7 @@
             p2d34s_2 += inv_two_zeta * (sp3s_2 - rho_zeta * sp3s_3);
             d12p4s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
             p2p4s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_1 = WmQ[0] * d12d34s_2;
@@ -1477,7 +1477,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -1502,7 +1502,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[9] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -1514,7 +1514,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -1541,7 +1541,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[9] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -1553,7 +1553,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[9] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -1565,7 +1565,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -1594,7 +1594,7 @@
             d12d34s_1 += inv_two_zeta * (p2p3s_1 - rho_zeta * p2p3s_2);
             d12p4s_2 += inv_two_zeta * (p2ss_2 - rho_zeta * p2ss_3);
             p1p4s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_1 = WmQ[0] * d12d34s_2;
@@ -1604,7 +1604,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -1631,7 +1631,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[10] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -1644,7 +1644,7 @@
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -1670,7 +1670,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[10] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -1683,7 +1683,7 @@
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[10] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -1695,7 +1695,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -1718,7 +1718,7 @@
             scalar_type d12p4s_2 = PmB[2] * d12ss_2 + WmP[2] * d12ss_3;
             scalar_type p1p4s_2 = PmB[2] * p1ss_2 + WmP[2] * p1ss_3;
             scalar_type p2p4s_2 = PmB[2] * p2ss_2 + WmP[2] * p2ss_3;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_2 += inv_two_zeta * (d12ss_2 - rho_zeta * d12ss_3);
             p1d34s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
             d12d34s_0 += inv_two_zeta * (d12ss_0 - rho_zeta * d12ss_1);
@@ -1735,7 +1735,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -1757,7 +1757,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[11] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -1769,7 +1769,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -1799,7 +1799,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[11] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -1811,7 +1811,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[11] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -1824,7 +1824,7 @@
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -1850,7 +1850,7 @@
         scalar_type p2ss_4 = PmA[1] * F_mT[4] + WmP[1] * F_mT[5];
         scalar_type p2ss_0 = PmA[1] * F_mT[0] + WmP[1] * F_mT[1];
         scalar_type p2ss_1 = PmA[1] * F_mT[1] + WmP[1] * F_mT[2];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         d12ss_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
         d12ss_3 += inv_two_zeta * (F_mT[3] - rho_zeta * F_mT[4]);
         d12ss_4 += inv_two_zeta * (F_mT[4] - rho_zeta * F_mT[5]);
@@ -1880,7 +1880,7 @@
             scalar_type p2p4s_2 = PmB[0] * p2ss_2 + WmP[0] * p2ss_3;
             scalar_type p1p4s_2 = PmB[0] * p1ss_2 + WmP[0] * p1ss_3;
             scalar_type sd34s_2 = PmB[0] * sp3s_2 + WmP[0] * sp3s_3;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_2 += inv_two_zeta * (d12ss_2 - rho_zeta * d12ss_3);
             d12d34s_0 += inv_two_zeta * (d12ss_0 - rho_zeta * d12ss_1);
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
@@ -1902,7 +1902,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -1933,7 +1933,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[12] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -1946,7 +1946,7 @@
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -1969,7 +1969,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[12] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -1982,7 +1982,7 @@
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[12] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -1993,7 +1993,7 @@
               //START INDEX i6=2, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -2049,7 +2049,7 @@
             scalar_type sd34s_2 = PmB[0] * sp3s_2 + WmP[0] * sp3s_3;
             scalar_type p2p4s_2 = PmB[0] * p2ss_2 + WmP[0] * p2ss_3;
             scalar_type p1p4s_2 = PmB[0] * p1ss_2 + WmP[0] * p1ss_3;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_1 = WmQ[0] * d12d34s_2;
@@ -2059,7 +2059,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -2093,7 +2093,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[13] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -2107,7 +2107,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -2129,7 +2129,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[13] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -2143,7 +2143,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[13] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -2154,7 +2154,7 @@
               //START INDEX i6=2, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -2189,7 +2189,7 @@
             p2d34s_2 += inv_two_zeta * (sp3s_2 - rho_zeta * sp3s_3);
             d12p4s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
             p2p4s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_2 += inv_two_zeta * (d12ss_2 - rho_zeta * d12ss_3);
             d12d34s_0 += inv_two_zeta * (d12ss_0 - rho_zeta * d12ss_1);
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
@@ -2203,7 +2203,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -2240,7 +2240,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[14] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -2255,7 +2255,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -2276,7 +2276,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[14] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -2291,7 +2291,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[14] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -2302,7 +2302,7 @@
               //START INDEX i6=2, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -2342,7 +2342,7 @@
             scalar_type d12p4s_2 = PmB[0] * d12ss_2 + WmP[0] * d12ss_3;
             scalar_type p2p4s_2 = PmB[0] * p2ss_2 + WmP[0] * p2ss_3;
             scalar_type p1p4s_2 = PmB[0] * p1ss_2 + WmP[0] * p1ss_3;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_1 = WmQ[0] * d12d34s_2;
@@ -2352,7 +2352,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -2379,7 +2379,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[15] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -2392,7 +2392,7 @@
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -2418,7 +2418,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[15] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -2431,7 +2431,7 @@
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[15] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -2443,7 +2443,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -2478,14 +2478,14 @@
             p2d34s_2 += inv_two_zeta * (sp3s_2 - rho_zeta * sp3s_3);
             d12p4s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
             p2p4s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_1 = WmQ[0] * d12d34s_2;
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -2514,7 +2514,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[16] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -2528,7 +2528,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -2553,7 +2553,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[16] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -2567,7 +2567,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[16] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -2579,7 +2579,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -2602,7 +2602,7 @@
             scalar_type d12p4s_2 = PmB[2] * d12ss_2 + WmP[2] * d12ss_3;
             scalar_type p2p4s_2 = PmB[2] * p2ss_2 + WmP[2] * p2ss_3;
             scalar_type p1p4s_2 = PmB[2] * p1ss_2 + WmP[2] * p1ss_3;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_2 += inv_two_zeta * (d12ss_2 - rho_zeta * d12ss_3);
             d12d34s_0 += inv_two_zeta * (d12ss_0 - rho_zeta * d12ss_1);
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
@@ -2616,7 +2616,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -2639,7 +2639,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[17] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -2652,7 +2652,7 @@
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -2681,7 +2681,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[17] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -2694,7 +2694,7 @@
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[17] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -2707,7 +2707,7 @@
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -2742,7 +2742,7 @@
         scalar_type p2ss_4 = PmA[0] * F_mT[4] + WmP[0] * F_mT[5];
         scalar_type p2ss_0 = PmA[0] * F_mT[0] + WmP[0] * F_mT[1];
         scalar_type p2ss_1 = PmA[0] * F_mT[1] + WmP[0] * F_mT[2];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         //START INDEX i3=0, CENTER 2
         {
           scalar_type d12p3s_2 = PmB[0] * d12ss_2 + WmP[0] * d12ss_3;
@@ -2780,7 +2780,7 @@
             d12d34s_1 += inv_two_zeta * (p1p3s_1 - rho_zeta * p1p3s_2);
             p2d34s_2 += inv_two_zeta * (sp3s_2 - rho_zeta * sp3s_3);
             p2p4s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_2 += inv_two_zeta * (d12ss_2 - rho_zeta * d12ss_3);
             p1d34s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
             d12d34s_0 += inv_two_zeta * (d12ss_0 - rho_zeta * d12ss_1);
@@ -2809,7 +2809,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -2832,7 +2832,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[18] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -2843,7 +2843,7 @@
               //START INDEX i6=1, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -2871,7 +2871,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[18] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -2882,7 +2882,7 @@
               //START INDEX i6=1, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[18] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -2894,7 +2894,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -2938,7 +2938,7 @@
             d12p4s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
             p2d34s_2 += inv_two_zeta * (sp3s_2 - rho_zeta * sp3s_3);
             p2p4s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_1 = WmQ[0] * d12d34s_2;
@@ -2953,7 +2953,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -2978,7 +2978,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[19] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -2990,7 +2990,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -3017,7 +3017,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[19] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -3029,7 +3029,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[19] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -3041,7 +3041,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -3064,7 +3064,7 @@
             scalar_type p2d34s_2 = PmB[1] * p2p3s_2 + WmP[1] * p2p3s_3;
             scalar_type sd34s_2 = PmB[1] * sp3s_2 + WmP[1] * sp3s_3;
             scalar_type p2p4s_2 = PmB[1] * p2ss_2 + WmP[1] * p2ss_3;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_2 += inv_two_zeta * (d12ss_2 - rho_zeta * d12ss_3);
             p1d34s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
             d12d34s_0 += inv_two_zeta * (d12ss_0 - rho_zeta * d12ss_1);
@@ -3081,7 +3081,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -3108,7 +3108,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[20] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -3121,7 +3121,7 @@
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -3147,7 +3147,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[20] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -3160,7 +3160,7 @@
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[20] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -3172,7 +3172,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -3226,7 +3226,7 @@
             p2d34s_2 += inv_two_zeta * (sp3s_2 - rho_zeta * sp3s_3);
             d12p4s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
             p2p4s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_1 = WmQ[0] * d12d34s_2;
@@ -3241,7 +3241,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -3262,7 +3262,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[21] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -3273,7 +3273,7 @@
               //START INDEX i6=1, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -3304,7 +3304,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[21] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -3315,7 +3315,7 @@
               //START INDEX i6=1, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[21] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -3328,7 +3328,7 @@
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -3351,7 +3351,7 @@
             scalar_type sd34s_2 = PmB[1] * sp3s_2 + WmP[1] * sp3s_3;
             scalar_type p1p4s_2 = PmB[1] * p1ss_2 + WmP[1] * p1ss_3;
             scalar_type p2p4s_2 = PmB[1] * p2ss_2 + WmP[1] * p2ss_3;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_1 = WmQ[0] * d12d34s_2;
@@ -3361,7 +3361,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -3383,7 +3383,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[22] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -3395,7 +3395,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -3425,7 +3425,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[22] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -3437,7 +3437,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[22] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -3450,7 +3450,7 @@
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -3479,7 +3479,7 @@
             d12d34s_1 += inv_two_zeta * (p2p3s_1 - rho_zeta * p2p3s_2);
             d12p4s_2 += inv_two_zeta * (p2ss_2 - rho_zeta * p2ss_3);
             p1p4s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_2 += inv_two_zeta * (d12ss_2 - rho_zeta * d12ss_3);
             p1d34s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
             d12d34s_0 += inv_two_zeta * (d12ss_0 - rho_zeta * d12ss_1);
@@ -3496,7 +3496,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -3515,7 +3515,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[23] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -3526,7 +3526,7 @@
               //START INDEX i6=1, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -3560,7 +3560,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[23] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -3571,7 +3571,7 @@
               //START INDEX i6=1, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[23] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -3585,7 +3585,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -3611,7 +3611,7 @@
         scalar_type p2ss_4 = PmA[1] * F_mT[4] + WmP[1] * F_mT[5];
         scalar_type p2ss_0 = PmA[1] * F_mT[0] + WmP[1] * F_mT[1];
         scalar_type p2ss_1 = PmA[1] * F_mT[1] + WmP[1] * F_mT[2];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         //START INDEX i3=0, CENTER 2
         {
           scalar_type d12p3s_2 = PmB[0] * d12ss_2 + WmP[0] * d12ss_3;
@@ -3635,7 +3635,7 @@
             scalar_type p2d34s_2 = PmB[0] * p2p3s_2 + WmP[0] * p2p3s_3;
             scalar_type p2p4s_2 = PmB[0] * p2ss_2 + WmP[0] * p2ss_3;
             scalar_type sd34s_2 = PmB[0] * sp3s_2 + WmP[0] * sp3s_3;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_2 += inv_two_zeta * (d12ss_2 - rho_zeta * d12ss_3);
             d12d34s_0 += inv_two_zeta * (d12ss_0 - rho_zeta * d12ss_1);
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
@@ -3657,7 +3657,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -3682,7 +3682,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[24] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -3694,7 +3694,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -3721,7 +3721,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[24] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -3733,7 +3733,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[24] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -3745,7 +3745,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -3789,7 +3789,7 @@
             scalar_type p2d34s_2 = PmB[0] * p2p3s_2 + WmP[0] * p2p3s_3;
             scalar_type sd34s_2 = PmB[0] * sp3s_2 + WmP[0] * sp3s_3;
             scalar_type p2p4s_2 = PmB[0] * p2ss_2 + WmP[0] * p2ss_3;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_1 = WmQ[0] * d12d34s_2;
@@ -3799,7 +3799,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -3826,7 +3826,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[25] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -3839,7 +3839,7 @@
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -3865,7 +3865,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[25] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -3878,7 +3878,7 @@
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[25] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -3890,7 +3890,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -3919,7 +3919,7 @@
             d12p4s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
             p2d34s_2 += inv_two_zeta * (sp3s_2 - rho_zeta * sp3s_3);
             p2p4s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_2 += inv_two_zeta * (d12ss_2 - rho_zeta * d12ss_3);
             d12d34s_0 += inv_two_zeta * (d12ss_0 - rho_zeta * d12ss_1);
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
@@ -3933,7 +3933,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -3962,7 +3962,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[26] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -3976,7 +3976,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -4001,7 +4001,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[26] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -4015,7 +4015,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[26] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -4027,7 +4027,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -4075,7 +4075,7 @@
             scalar_type sd34s_2 = PmB[0] * sp3s_2 + WmP[0] * sp3s_3;
             scalar_type p1p4s_2 = PmB[0] * p1ss_2 + WmP[0] * p1ss_3;
             scalar_type p2p4s_2 = PmB[0] * p2ss_2 + WmP[0] * p2ss_3;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_1 = WmQ[0] * d12d34s_2;
@@ -4085,7 +4085,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -4107,7 +4107,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[27] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -4119,7 +4119,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -4149,7 +4149,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[27] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -4161,7 +4161,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[27] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -4174,7 +4174,7 @@
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -4203,14 +4203,14 @@
             p2d34s_2 += inv_two_zeta * (sp3s_2 - rho_zeta * sp3s_3);
             d12p4s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
             p2p4s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_1 = WmQ[0] * d12d34s_2;
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -4233,7 +4233,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[28] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -4246,7 +4246,7 @@
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -4275,7 +4275,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[28] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -4288,7 +4288,7 @@
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[28] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -4301,7 +4301,7 @@
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -4330,7 +4330,7 @@
             p1d34s_2 += inv_two_zeta * (sp3s_2 - rho_zeta * sp3s_3);
             d12p4s_2 += inv_two_zeta * (p2ss_2 - rho_zeta * p2ss_3);
             p1p4s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_2 += inv_two_zeta * (d12ss_2 - rho_zeta * d12ss_3);
             d12d34s_0 += inv_two_zeta * (d12ss_0 - rho_zeta * d12ss_1);
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
@@ -4344,7 +4344,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -4363,7 +4363,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[29] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -4375,7 +4375,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -4408,7 +4408,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[29] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -4420,7 +4420,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[29] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -4434,7 +4434,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -4460,7 +4460,7 @@
         scalar_type p2ss_4 = PmA[2] * F_mT[4] + WmP[2] * F_mT[5];
         scalar_type p2ss_0 = PmA[2] * F_mT[0] + WmP[2] * F_mT[1];
         scalar_type p2ss_1 = PmA[2] * F_mT[1] + WmP[2] * F_mT[2];
-        scalar_type norm2 = 1.0f;
+        scalar_type norm2 = 1.0;
         d12ss_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
         d12ss_3 += inv_two_zeta * (F_mT[3] - rho_zeta * F_mT[4]);
         d12ss_4 += inv_two_zeta * (F_mT[4] - rho_zeta * F_mT[5]);
@@ -4490,7 +4490,7 @@
             scalar_type p2p4s_2 = PmB[0] * p2ss_2 + WmP[0] * p2ss_3;
             scalar_type p1p4s_2 = PmB[0] * p1ss_2 + WmP[0] * p1ss_3;
             scalar_type sd34s_2 = PmB[0] * sp3s_2 + WmP[0] * sp3s_3;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_2 += inv_two_zeta * (d12ss_2 - rho_zeta * d12ss_3);
             d12d34s_0 += inv_two_zeta * (d12ss_0 - rho_zeta * d12ss_1);
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
@@ -4512,7 +4512,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -4533,7 +4533,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[30] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -4544,7 +4544,7 @@
               //START INDEX i6=1, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -4575,7 +4575,7 @@
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[30] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -4586,7 +4586,7 @@
               //START INDEX i6=1, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[30] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -4599,7 +4599,7 @@
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -4635,7 +4635,7 @@
             scalar_type p2p4s_2 = PmB[0] * p2ss_2 + WmP[0] * p2ss_3;
             scalar_type p1p4s_2 = PmB[0] * p1ss_2 + WmP[0] * p1ss_3;
             scalar_type sd34s_2 = PmB[0] * sp3s_2 + WmP[0] * sp3s_3;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_1 = WmQ[0] * d12d34s_2;
@@ -4645,7 +4645,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -4667,7 +4667,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[31] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -4679,7 +4679,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -4709,7 +4709,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[31] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -4721,7 +4721,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[31] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -4734,7 +4734,7 @@
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -4757,7 +4757,7 @@
             scalar_type p2p4s_2 = PmB[1] * p2ss_2 + WmP[1] * p2ss_3;
             scalar_type p1p4s_2 = PmB[1] * p1ss_2 + WmP[1] * p1ss_3;
             scalar_type sd34s_2 = PmB[1] * sp3s_2 + WmP[1] * sp3s_3;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_2 += inv_two_zeta * (d12ss_2 - rho_zeta * d12ss_3);
             d12d34s_0 += inv_two_zeta * (d12ss_0 - rho_zeta * d12ss_1);
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
@@ -4771,7 +4771,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -4794,7 +4794,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[32] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -4807,7 +4807,7 @@
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -4836,7 +4836,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[32] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -4849,7 +4849,7 @@
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[32] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -4862,7 +4862,7 @@
                 scalar_type d12d34d56_0 = WmQ[2] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -4918,7 +4918,7 @@
             scalar_type sd34s_2 = PmB[0] * sp3s_2 + WmP[0] * sp3s_3;
             scalar_type p2p4s_2 = PmB[0] * p2ss_2 + WmP[0] * p2ss_3;
             scalar_type p1p4s_2 = PmB[0] * p1ss_2 + WmP[0] * p1ss_3;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_1 = WmQ[0] * d12d34s_2;
@@ -4928,7 +4928,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -4947,7 +4947,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[33] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -4958,7 +4958,7 @@
               //START INDEX i6=1, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -4992,7 +4992,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[33] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -5003,7 +5003,7 @@
               //START INDEX i6=1, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[33] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -5017,7 +5017,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -5040,14 +5040,14 @@
             scalar_type sd34s_2 = PmB[1] * sp3s_2 + WmP[1] * sp3s_3;
             scalar_type p2p4s_2 = PmB[1] * p2ss_2 + WmP[1] * p2ss_3;
             scalar_type p1p4s_2 = PmB[1] * p1ss_2 + WmP[1] * p1ss_3;
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             //START INDEX i5=0, CENTER 3
             {
               scalar_type d12d34p5_1 = WmQ[0] * d12d34s_2;
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -5066,7 +5066,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[34] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -5078,7 +5078,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -5111,7 +5111,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[34] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -5123,7 +5123,7 @@
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[34] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -5137,7 +5137,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p2d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -5172,7 +5172,7 @@
             p2d34s_2 += inv_two_zeta * (sp3s_2 - rho_zeta * sp3s_3);
             d12p4s_2 += inv_two_zeta * (p1ss_2 - rho_zeta * p1ss_3);
             p2p4s_2 += inv_two_zeta * (F_mT[2] - rho_zeta * F_mT[3]);
-            scalar_type norm4 = 1.0f;
+            scalar_type norm4 = 1.0;
             d12d34s_2 += inv_two_zeta * (d12ss_2 - rho_zeta * d12ss_3);
             d12d34s_0 += inv_two_zeta * (d12ss_0 - rho_zeta * d12ss_1);
             d12d34s_1 += inv_two_zeta * (d12ss_1 - rho_zeta * d12ss_2);
@@ -5186,7 +5186,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -5203,7 +5203,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[35] += (double)( preterm * fit_dens_sh[j+1] * prefactor_dens *  d12d34d56_0 );
@@ -5214,7 +5214,7 @@
               //START INDEX i6=1, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;
@@ -5251,7 +5251,7 @@
               //START INDEX i6=0, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[0] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[35] += (double)( preterm * fit_dens_sh[j+3] * prefactor_dens *  d12d34d56_0 );
@@ -5262,7 +5262,7 @@
               //START INDEX i6=1, CENTER 3
               {
                 scalar_type d12d34d56_0 = WmQ[1] * d12d34p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 scalar_type preterm = norm2 * norm4 * norm6;
 #ifdef FOCK_CALC
                 my_fock[35] += (double)( preterm * fit_dens_sh[j+4] * prefactor_dens *  d12d34d56_0 );
@@ -5277,7 +5277,7 @@
                 d12d34d56_0 += inv_two_zeta_eta * p1d34p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p4p5_1;
                 d12d34d56_0 += inv_two_zeta_eta * d12p3p5_1;
-                scalar_type norm6 = 1.0f;
+                scalar_type norm6 = 1.0;
                 d12d34d56_0 += inv_two_eta * (d12d34s_0 - rho_eta * d12d34s_1);
                 norm6 = G2G::gpu_normalization_factor;
                 scalar_type preterm = norm2 * norm4 * norm6;

@@ -20,7 +20,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, G2G::vec_type<scalar_type,2>* a
   bool valid_thread = (ffnum < num_terms);
 
   // Each thread maps to a single pair of QM nuclei, so these forces are computed locally and accumulated at the end
-  scalar_type A_force[3] = { 0.0f,0.0f,0.0f }, B_force[3] = { 0.0f,0.0f,0.0f };
+  scalar_type A_force[3] = { 0.0,0.0,0.0 }, B_force[3] = { 0.0,0.0,0.0 };
   uint nuc1, nuc2;
   scalar_type prefactor_qm;
 
@@ -92,7 +92,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, G2G::vec_type<scalar_type,2>* a
                 dens[false_ind] = dens_values[dens_ind+true_ind];
                 true_ind++;
               } else {
-                dens[false_ind] = 0.0f;
+                dens[false_ind] = 0.0;
               }
               false_ind++;
             }
@@ -107,7 +107,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, G2G::vec_type<scalar_type,2>* a
                     dens[false_ind] = dens_values[dens_ind+true_ind];
                     true_ind++;
                   } else {
-                    dens[false_ind] = 0.0f;
+                    dens[false_ind] = 0.0;
                   }
                   false_ind++;
                 }
@@ -171,7 +171,7 @@ __global__ void gpu_qmmm_forces( uint num_terms, G2G::vec_type<scalar_type,2>* a
       scalar_type ksi = ((double)ai*(double)aj)/zeta;
       ovlap = exp(-ds2*ksi);
 
-      prefactor_mm = -cc * 4.0f * PI * ovlap;
+      prefactor_mm = -cc * 4.0 * PI * ovlap;
       prefactor_qm = prefactor_mm * inv_two_zeta;
     }
 
@@ -204,9 +204,9 @@ __global__ void gpu_qmmm_forces( uint num_terms, G2G::vec_type<scalar_type,2>* a
           // Current version: p-s through d-d are manually unrolled, and d-d is split up over six threads per primitive pair
           //
           // BEGIN TERM-TYPE DEPENDENT PART
-          C_force[0][tid] = 0.0f;
-          C_force[1][tid] = 0.0f;
-          C_force[2][tid] = 0.0f;
+          C_force[0][tid] = 0.0;
+          C_force[1][tid] = 0.0;
+          C_force[2][tid] = 0.0;
           switch (term_type)
           {
             case 0:
@@ -314,9 +314,9 @@ __global__ void gpu_qmmm_forces( uint num_terms, G2G::vec_type<scalar_type,2>* a
           // Current version: p-s through d-d are manually unrolled, and d-d is split up over six threads per primitive pair
           //
           // BEGIN TERM-TYPE DEPENDENT PART
-          C_force[0][tid] = 0.0f;
-          C_force[1][tid] = 0.0f;
-          C_force[2][tid] = 0.0f;
+          C_force[0][tid] = 0.0;
+          C_force[1][tid] = 0.0;
+          C_force[2][tid] = 0.0;
           switch (term_type)
           {
             case 0:
@@ -461,9 +461,9 @@ __global__ void gpu_qmmm_forces( uint num_terms, G2G::vec_type<scalar_type,2>* a
       // TODO: Zeroing out the partial qm array before this kernel might be better
       //else
       //{
-      //  if (tid == 0)       { qm_forces[global_stride*i+blockIdx.x].x = 0.0f; }
-      //  else if (tid == 32) { qm_forces[global_stride*i+blockIdx.x].y = 0.0f; }
-      //  else if (tid == 64) { qm_forces[global_stride*i+blockIdx.x].z = 0.0f; }
+      //  if (tid == 0)       { qm_forces[global_stride*i+blockIdx.x].x = 0.0; }
+      //  else if (tid == 32) { qm_forces[global_stride*i+blockIdx.x].y = 0.0; }
+      //  else if (tid == 64) { qm_forces[global_stride*i+blockIdx.x].z = 0.0; }
       //}
     }
   }

@@ -74,10 +74,9 @@ __device__ void lio_gamma(scalar_type* __restrict__ F_mU, scalar_type U)
   else
   {
     scalar_type sqrtU = sqrt(U);
-    scalar_type powU = 1.0;
     for (uint m = 0; m <= m_max; m++) {
-      F_mU[m] = gpu_fac[m]/(powU*sqrtU);//sqrtf(U));
-      powU *= U;
+      F_mU[m] = gpu_fac[m]/(sqrtU);//sqrtf(U));
+      sqrtU *= U;
     }
   }
 }

@@ -1083,16 +1083,21 @@
         return
         end function doublefacrecursive
 
-	integer*8 function doublefac(N)
-	implicit none
+
+        integer*8 function doublefac(N)
+        implicit none
         integer, intent(in) :: N
-	integer :: i
-	doublefac=1
+        integer :: i
+        doublefac=1
+        if (n .gt. 33) then
+                stop "error in doublefac function N greater than 33"
+        end if
+        doublefac=1
         if (n.gt.1) then
-		do i=N,2,-2
-			doublefac=doublefac*N
-		end do
-	end if
+                do i=N,2,-2
+                        doublefac=doublefac*i
+                end do
+        end if
         return
         end function doublefac
 

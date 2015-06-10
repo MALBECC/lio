@@ -1,6 +1,6 @@
 	subroutine intECP(tipodecalculo)
 	use garcha_mod, only :nshell,nuc,a,c
-	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP,VAAAcuadrada,lxyz, VAAA, VAAAcuadrada, VAAB, VAABcuadrada,pi
+	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP,VAAAcuadrada,lxyz, VAAA, VAAAcuadrada, VAAB, VAABcuadrada,pi,doublefac
 	implicit none
 
 	integer, intent(in) :: tipodecalculo
@@ -8,7 +8,8 @@
 !tipodecalculo=2 calcula terminos ABB y ABC
 	integer z,l,t
 	integer m1,lx,ly,lz
-        integer :: ns,np,nd,M,i,j,e,pos
+        integer :: ns,np,nd,M,i,j,e,pos,n
+	double precision :: alpha
         ns=nshell(0)
         np=nshell(1)
         nd=nshell(2)
@@ -40,6 +41,13 @@
                 Write(*,*) "ERROR in tipe of ECP calculation"
 	endif
 
+	if ( .true. ) then
+	do n=0,10
+	do alpha=1d0,100d0 
+		write(125,*) alpha,n,Q0(n,alpha)!, doublefac(n-1)
+	end do
+	end do
+	end if
 
 
 	if (tipodecalculo .ne. 4) then
@@ -71,7 +79,7 @@
 		end do
 	end if
 
-	if ( .true. ) then
+	if ( .false. ) then
 !escribe a y c (solo el 1er valor)
 	write(52,*) "i, ai, ci"
 	do i=1,M
@@ -107,7 +115,7 @@
 	write(*,*) "VAAB                     VAAA"
 	do i=1,M
                 do j=i,M
-			write(*,*) i,j,VAABcuadrada(i,j),VAAAcuadrada(i,j)
+			write(92,*) i,j,VAABcuadrada(i,j),VAAAcuadrada(i,j)
 		end do
 	end do
 	end if
@@ -181,8 +189,7 @@
 	9014 format(/1x,"i",i3,2x,"lx",i2,2x,"ly",i2,2x,"lz",i2)
 	9015 format(/1x,"i",i3,2x,"j",i3,2x,"Vij",f10.5,2x,"Vji",f10.5,2x,     "diff",f18.15)
         9018 format(/1x,'Z =',i4,2x, 'L =',i4,2x,'coefnumber =',i3,2x,  'n =',i2,2x, 'b =', f15.5,2x,'c =',f15.5)
-
-
+	1111 format(/1x,"i",i4,1x,"j",i4,1x,"l",i2,1x,"m",i2,1x,"a2",f18.10,1x,"q",f18.10)
 
 	contains
 
@@ -685,11 +692,29 @@
 			do m=-l,l
 !barre m
 				A2=A2+Aintegral(l,m,lxi,lyi,lzi)*Aintegral(l,m,lxj,lyj,lzj)
+!				if (i .ge. 17 .and. j .ge. 17) then
+!					if (j .ge. i .and. l .eq. 2) then
+!						write(84,1112) i,l,m,lxi,lyi,lzi,Aintegral(l,m,lxi,lyi,lzi)
+!					end if
+!				end if
 !A2 contiene la parte angular de la integral
 			end do
 			Acoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
 !Acoef es el exponente de la integral radial
 			AAANonLocal=AAANonLocal+A2*aECP(z,L,term)*Q0(n+nECP(z,l,term),Acoef)
+
+!			if (i .ge. 17 .and. j .ge. 17) then
+!				if (j .ge. i) then
+!					if (l .eq. 0) then
+!					write(80,1111) i,j,l,m,A2,Q0(n+nECP(z,l,term),Acoef)
+!					elseif (l .eq. 1) then
+!					write(81,1111) i,j,l,m,A2,Q0(n+nECP(z,l,term),Acoef)
+!					elseif (l .eq. 2) then
+!					write(82,1111) i,j,l,m,A2,Q0(n+nECP(z,l,term),Acoef)
+!					end if
+!				end if
+!				write(98,1111) i,j,"******************", "l",l, "m",m, "A2",A2,"q", Q0(n+nECP(z,l,term),Acoef)
+!			end if
 !Q0 integral radial   Q0(n,alpha)= int r^n exp(-alpha * r^2) dr fron 0 to inf
 !aECP coeficiente del ECP
 !                        if ( i .eq. 1 .and. j .eq. 17) then
@@ -702,6 +727,10 @@
 		end do
 	end do
 	return
+        1111 format(/1x,"i",i4,1x,"j",i4,1x,"l",i2,1x,"m",i2,1x,"a2",f18.10,1x,"q",f18.10)
+        1112 format(/1x,"i",i4,1x,"l",i4,1x,"m",i4,1x,"lx",i2,1x,"ly",i2,1x,"lx",1x,i2,"aint",f18.10,1x)
+
+
 	end function AAANonLocal
 
 	DOUBLE PRECISION function Aintegral(l,m,lx,ly,lz)

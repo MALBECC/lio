@@ -27,8 +27,10 @@ c  are stored in files x.dip, y.dip, z.dip.
 c       USE latom
        USE garcha_mod
        use mathsubs
+#ifdef CUBLAS
+        use cublasmath
+#endif
        IMPLICIT REAL*8 (a-h,o-z)
-
        INTEGER :: istep
        REAL*8 :: t,E2
        REAL*8,ALLOCATABLE,DIMENSION(:,:) :: 
@@ -49,7 +51,27 @@ c       USE latom
        REAL*8 ::
      >   dt_magnus,dt_lpfrg
         logical :: just_int3n,ematalloct
-
+!! CUBLAS
+#ifdef CUBLAS
+      integer sizeof_real
+      parameter(sizeof_real=8)
+      integer sizeof_complex
+#ifdef TD_SIMPLE
+      parameter(sizeof_complex=8)
+#else
+      parameter(sizeof_complex=16)
+#endif
+      integer stat
+      integer*8 devPtrX, devPtrY,devPtrXc
+      external CUBLAS_INIT, CUBLAS_SET_MATRIX
+      external CUBLAS_SHUTDOWN, CUBLAS_ALLOC,CUBLAS_GET_MATRIX
+      integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX,CUBLAS_GET_MATRIX
+#endif
+!!   GROUP OF CHARGES
+       LOGICAL             :: groupcharge
+       INTEGER             :: ngroup
+       INTEGER,ALLOCATABLE :: group(:)
+       REAL*8,ALLOCATABLE  :: qgr(:)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        call g2g_timer_start('TD')
        call g2g_timer_start('inicio')
@@ -231,16 +253,57 @@ c xmm es la primer matriz de (M,M) en el vector X
             do ii=M,nshell(0)+nshell(1)+1,-1
               nnpd(nuc(ii))=ii
             enddo
+!------------------------------------------------------------------!
+c
+c -Create integration grid for XC here
+c -Assign points to groups (spheres/cubes)
+c -Assign significant functions to groups
+c -Calculate point weights
+c
+      call g2g_timer_sum_start('Exchange-correlation grid setup')
+      call g2g_reload_atom_positions(igrid2)
+      call g2g_timer_sum_stop('Exchange-correlation grid setup')
+
+      call aint_query_gpu_level(igpu)
+      if (igpu.gt.1) call aint_new_step()
+
+      if (predcoef.and.npas.gt.3) then
+        write(*,*) 'no devería estar aca!'
+
+c        if (.not.OPEN) then
+c          if(verbose) write(*,*) 'prediciendo densidad'
+c          do i=1,MM
+c            RMM(i)=(3*old1(i))-(3*old2(i))+(old3(i))
+c          enddo
+c         endif
+       endif
 !------------------------------------------------------------------------------!
 ! H H core, 1 electron matrix elements
-            call int1(En)
+      call g2g_timer_sum_start('1-e Fock')
+      call g2g_timer_sum_start('Nuclear attraction')
+      call int1(En)
+      call g2g_timer_sum_stop('Nuclear attraction')
+      if(nsol.gt.0.or.igpu.ge.4) then
+          call g2g_timer_sum_start('QM/MM')
+        if (igpu.le.1) then
+          call g2g_timer_start('intsol')
+          call intsol(E1s,Ens,.true.)
+          call g2g_timer_stop('intsol')
+        else
+          call aint_qmmm_init(nsol,r,pc)
+
+          call g2g_timer_start('aint_qmmm_fock')
+          call aint_qmmm_fock(E1s,Ens)
+          call g2g_timer_stop('aint_qmmm_fock')
+        endif
+          call g2g_timer_sum_stop('QM/MM')
+      endif
 !--------------------------------------!
-! SOLVENT CASE
-            call intsol(E1s,Ens,.true.)
             E1=0.D0
             do k=1,MM
               E1=E1+RMM(k)*RMM(M11+k-1)
             enddo
+            call g2g_timer_sum_stop('1-e Fock')
 !--------------------------------------!
 c Diagonalization of S matrix, after this is not needed anymore
 c s is in RMM(M13,M13+1,M13+2,...,M13+MM)
@@ -318,14 +381,29 @@ c s is in RMM(M13,M13+1,M13+2,...,M13+MM)
 !            rho=rho1
 !            rho=basechange(M,Ytrans,rho,Y)
 !--------------------------------------!
-            call g2g_timer_start('int2')
-            call int2()
-            call g2g_timer_stop('int2')
-            call g2g_timer_start('int3mmem')
-            call int3mem()
-c            call int3mems()
-            call g2g_timer_stop('int3mmem')
-!------------------------------------------------------------------------------!
+c Precalculate three-index (two in MO basis, one in density basis) matrix
+c used in density fitting / Coulomb F element calculation here
+c (t_i in Dunlap)
+c
+      call aint_query_gpu_level(igpu)
+      if (igpu.gt.2) then
+        call aint_coulomb_init()
+      endif
+      if (igpu.eq.5) MEMO = .false.
+      !MEMO=.true.
+      if (MEMO) then
+         call g2g_timer_start('int3mem')
+         call g2g_timer_sum_start('Coulomb precalc')
+c Large elements of t_i put into double-precision cool here
+c Size criteria based on size of pre-factor in Gaussian Product Theorem
+c (applied to MO basis indices)
+         call int3mem()
+c Small elements of t_i put into single-precision cools here
+c         call int3mems()
+         call g2g_timer_stop('int3mem')
+         call g2g_timer_sum_stop('Coulomb precalc')
+      endif
+****
             call g2g_timer_stop('inicio')
 !##############################################################################!
 ! HERE STARTS THE TIME EVOLUTION
@@ -472,24 +550,24 @@ c
 c In the first step of the propagation we extrapolate rho back in time
 c using Verlet algorithm to calculate rhold.
 c using matmul 
-c           if(istep.eq.1) then
-c             rhold=rho+(tdstep*Im*(matmul(fock,rho)))
-c             rhold=rhold-(tdstep*Im*(matmul(rho,fock)))
-c           endif
+           if(istep.eq.1) then
+             rhold=rho+(dt_lpfrg*Im*(matmul(fock,rho)))
+             rhold=rhold-(dt_lpfrg*Im*(matmul(rho,fock)))
+           endif
 c using commutator
-              if(istep.eq.1) then
-                 rhold=commutator(fock,rho)
-                 rhold=rho+dt_lpfrg*(Im*rhold)
-              endif
+!              if(istep.eq.1) then
+!                 rhold=commutator(fock,rho)
+!                 rhold=rho+dt_lpfrg*(Im*rhold)
+!              endif
 !####################################################################!
 ! DENSITY MATRIX PROPAGATION USING VERLET ALGORITHM
 ! using matmul:
-c           rhonew=rhold-(tdstep*Im*(matmul(fock,rho)))
-c           rhonew=rhonew+(tdstep*Im*(matmul(rho,fock)))
+           rhonew=rhold-(dt_lpfrg*Im*(matmul(fock,rho)))
+           rhonew=rhonew+(dt_lpfrg*Im*(matmul(rho,fock)))
 c--------------------------------------c
 ! using commutator:
-              rhonew=commutator(fock,rho)
-              rhonew=rhold-dt_lpfrg*(Im*rhonew)
+!              rhonew=commutator(fock,rho)
+!              rhonew=rhold-dt_lpfrg*(Im*rhonew)
 c Density update (rhold-->rho, rho-->rhonew)
               do i=1,M
                  do j=1,M

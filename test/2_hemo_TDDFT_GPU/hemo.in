@@ -1,0 +1,17 @@
+&lio
+ nsol=0
+ natom=48
+ charge=0
+ nmax=100
+ vcinp=f
+ writeforces=t
+ cube_res=50
+ cube_dens=t
+ cube_orb=f
+ cube_elec=t
+ timedep=1
+ propagator=2
+ ntdstep=220
+ tdstep=0.01
+ NBCH=10
+&end

@@ -38,7 +38,8 @@ c now G
 !
 !       call matmulnanoc(rho2t,xtrans,rho4,M)
 !       call rho_transform(rho2t,devPtrX,rho4,M)
-       call complex_rho_on_to_ao(rho2t,devPtrXc,rho4,M)
+!       call complex_rho_on_to_ao(rho2t,devPtrXc,rho4,M)
+       rho4=basechange_cublas(M,rho2t,devPtrXc,'inv')
        call sprepack_ctr('L',M,rhoalpha,rho4)
        call sprepack_ctr('L',M,RMM,rho4)
 !
@@ -50,7 +51,8 @@ c now G
        rho4=0
 !       call matmulnanoc(rho2t,xtrans,rho4,M)
 !       call rho_transform(rho2t,devPtrX,rho4,M)
-       call complex_rho_on_to_ao(rho2t,devPtrXc,rho4,M)
+!       call complex_rho_on_to_ao(rho2t,devPtrXc,rho4,M)
+       rho4=basechange_cublas(M,rho2t,devPtrXc,'inv')
        call sprepack_ctr('L',M,rhobeta,rho4)
        DO i=1,MM
           RMM(i)=RMM(i)+rhobeta(i)
@@ -60,15 +62,17 @@ c now G
        call g2g_solve_groups(0,Ex,0)
       if (field) then
          write(*,*) 'FIELD PREDICTOR'
-         call dip2(g,Fxx,Fyy,Fzz)
+         call intfld(g,Fxx,Fyy,Fzz)
       endif
 !
        call spunpack('L',M,RMM(M5),FBA)
 !       call matmulnano(FBA,X,FON_a,M)
-       call fock_ao_to_on(FBA,devPtrX,FON_a,M)
+!       call fock_ao_to_on(FBA,devPtrX,FON_a,M)
+       FON_a=basechange_cublas(M,FBA,devPtrX,'dir')
        call spunpack('L',M,RMM(M3),FBA)
 !       call matmulnano(FBA,X,FON_b,M)
-       call fock_ao_to_on(FBA,devPtrX,FON_b,M)
+!       call fock_ao_to_on(FBA,devPtrX,FON_b,M)
+       FON_b=basechange_cublas(M,FBA,devPtrX,'dir')
        DEALLOCATE(rho4,rho2t,F3,FBA)
        RETURN;END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -111,7 +115,8 @@ c now G
 !
 !       call matmulnanoc(rho2t,xtrans,rho4,M)
 !       call rho_transform(rho2t,devPtrX,rho4,M)
-       call complex_rho_on_to_ao(rho2t,devPtrXc,rho4,M)
+!       call complex_rho_on_to_ao(rho2t,devPtrXc,rho4,M)
+       rho4=basechange_cublas(M,rho2t,devPtrXc,'inv')
        call sprepack_ctr('L',M,rhoalpha,rho4)
        call sprepack_ctr('L',M,RMM,rho4)
 !
@@ -123,7 +128,8 @@ c now G
        rho4=0
 !       call matmulnanoc(rho2t,xtrans,rho4,M)
 !       call rho_transform(rho2t,devPtrX,rho4,M)
-       call complex_rho_on_to_ao(rho2t,devPtrXc,rho4,M)
+!       call complex_rho_on_to_ao(rho2t,devPtrXc,rho4,M)
+       rho4=basechange_cublas(M,rho2t,devPtrXc,'inv')
        call sprepack_ctr('L',M,rhobeta,rho4)
        DO i=1,MM
           RMM(i)=RMM(i)+rhobeta(i)
@@ -133,15 +139,17 @@ c now G
        call g2g_solve_groups(0,Ex,0)
       if (field) then
          write(*,*) 'FIELD PREDICTOR'
-         call dip2(g,Fxx,Fyy,Fzz)
+         call intfld(g,Fxx,Fyy,Fzz)
       endif
 !
        call spunpack('L',M,RMM(M5),FBA)
 !       call matmulnano(FBA,X,FON_a,M)
-       call fock_ao_to_on(FBA,devPtrX,FON_a,M)
+!       call fock_ao_to_on(FBA,devPtrX,FON_a,M)
+       FON_a=basechange_cublas(M,FBA,devPtrX,'dir')
        call spunpack('L',M,RMM(M3),FBA)
 !       call matmulnano(FBA,X,FON_b,M)
-       call fock_ao_to_on(FBA,devPtrX,FON_b,M)
+!       call fock_ao_to_on(FBA,devPtrX,FON_b,M)
+       FON_b=basechange_cublas(M,FBA,devPtrX,'dir')
        DEALLOCATE(rho4,rho2t,F3,FBA)
        RETURN;END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

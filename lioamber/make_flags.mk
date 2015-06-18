@@ -83,7 +83,7 @@ objlist += alg.o drive.o func.o grid.o dipmem.o jarz.o
 objlist += int1.o int2.o int2G.o int3mem.o intSG.o
 objlist += garcha_mod.o mathsubs.o cubegen.o
 ifeq ($(cublas),1)
-objlist += cublasmath.o
+objlist += cublasmath.o 
 endif
 $(objlist:%.o=$(obj_path)/%.o) : optim:=$(optim3)
 #UNNECESSARY IF PREVIOUS ASSIGNMENT USED PRIVATE KEYWORD
@@ -109,13 +109,13 @@ ifeq ($(ifort),1)
   objlist += dft_get_mm_forces.o dft_get_qm_forces.o
   objlist += alg.o drive.o func.o grid.o dipmem.o jarz.o
   objlist += int1.o int2.o int2G.o int3mem.o  intSG.o
-  objlist += garcha_mod.o cubegen.o
+  objlist += garcha_mod.o cubegen.o 
   $(objlist:%.o=$(obj_path)/%.o) : myflags:=-mp1 -ip
   #$(objlist:%.o=$(obj_path)/%.o) : private myflags+=$(optim3) -mp1 -ip
 endif
 
 ifeq ($(cublas),1)
-  objlist := cublasmath.o
+  objlist += cublasmath.o 
 #  $(objlist:%.o=$(obj_path)/%.o) 
 endif
 

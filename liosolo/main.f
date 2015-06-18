@@ -3,6 +3,9 @@ c MAIN SUBROUTINE ----------------------------------------------------
 C DFT calculation with gaussian basis sets
 c---------------------------------------------------------------------
       use garcha_mod
+#ifdef CUBLAS
+      use cublasmath
+#endif
       implicit real*8 (a-h,o-z)
 
       character(len=20)::argument,inpfile,inpbasis,inpcoords

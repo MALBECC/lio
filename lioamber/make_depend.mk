@@ -5,7 +5,8 @@ src_paths += liomods
 src_paths += maskrmm
 src_paths += mathsubs
 ifeq ($(cublas),1)
-src_paths += mathsubs/cublas
+src_paths += mathsubs/cublas/
+
 endif
 #
 ######################################################################
@@ -34,7 +35,7 @@ objects += int1.o int1G.o int2.o int2G.o
 objects += int3lu.o int3mem.o  int3G.o
 objects += intsol.o intsolG.o intsolGs.o
 objects += intfld.o intSG.o
-objects += FixMessRho.o get_unit.o PackedStorage.f
+objects += FixMessRho.o get_unit.o PackedStorage.o
 objects += garcha_mod.o
 objects += liokeys.o
 objects += sysdata.o

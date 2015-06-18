@@ -542,6 +542,10 @@ c       write(*,*) 'eme=', M
      >  ,suma(MM))
       endif
       call g2g_timer_sum_stop('Initialize SCF')
+      do i=1,MM
+         if(RMM(i).ne.RMM(i)) stop 'NAN en RHO'
+         if(RMM(M5+i).ne.RMM(M5+i)) stop 'NAN en fock'
+      enddo
 c-------------------------------------------------------------------
 c-------------------------------------------------------------------
 c      write(*,*) 'empiezo el loop',NMAX
@@ -572,6 +576,11 @@ c
             call g2g_timer_sum_start('Exchange-correlation Fock')
             call g2g_solve_groups(0,Ex,0)
             call g2g_timer_sum_pause('Exchange-correlation Fock')
+      do i=1,MM
+         if(RMM(i).ne.RMM(i)) stop 'NAN en RHO2'
+         if(RMM(M5+i).ne.RMM(M5+i)) stop 'NAN en fock2'
+      enddo
+
 c-------------------------------------------------------
         E1=0.0D0
 c

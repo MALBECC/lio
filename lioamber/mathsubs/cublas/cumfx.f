@@ -12,7 +12,7 @@
       parameter(sizeof_real=8)
       integer,intent(in) :: M
       REAL*8 , intent(in) :: A(M,M)
-      COMPLEX*8, intent(out) :: C(M,M)
+      REAL*8, intent(out) :: C(M,M)
       REAL*8 alpha,beta
       integer i,j,stat
       external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX

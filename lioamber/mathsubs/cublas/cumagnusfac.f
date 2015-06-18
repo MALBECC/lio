@@ -31,16 +31,11 @@
        INTEGER CUBLAS_ZGEMM,CUBLAS_ZAXPY,CUBLAS_INIT
 !------------------------------------------------------------------------------!
        ALLOCATE(Omega1(M,M))
-      stat=CUBLAS_INIT()
-      if (stat.NE.0) then
-        write(*,*) "initialization failed -cumagnusfac"
-        call CUBLAS_SHUTDOWN
-        stop
-      endif
 ! Omega1 (=W) instantiation
        do i=1,M
        do j=1,M
        Omega1(i,j)=(-1)*(icmplx)*(Fock(i,j))*(dt)
+       write(111111,*) Omega1(i,j)
        enddo
        enddo
 !------------------------------------------------------------------------------!
@@ -94,7 +89,7 @@
       stop
       endif
 !======================================!
-         beta=(-1.0E0,0.0E0)
+         beta=(-1.0D0,0.0D0)
          stat=CUBLAS_ZGEMM('N','N',M,M,M,
      >        alpha,devPPrev,M,devPOmega,M,
      >        beta,devPNext,M)
@@ -138,7 +133,6 @@
       call CUBLAS_FREE ( devPRho )
       call CUBLAS_FREE ( devPNext )
       call CUBLAS_FREE ( devPPrev )
-      call CUBLAS_SHUTDOWN
       DEALLOCATE(Omega1)
       RETURN;END subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

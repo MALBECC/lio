@@ -1,11 +1,11 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       interface basechange
-         module procedure commutator_dd_cublas
-         module procedure commutator_zz_cublas
-         module procedure commutator_cc_cublas
-         module procedure commutator_zd_cublas
-         module procedure commutator_dz_cublas
-         module procedure commutator_cd_cublas
-         module procedure commutator_dc_cublas
+       interface commutator_cublas
+         module procedure commutator_cublas_dd
+         module procedure commutator_cublas_zz
+         module procedure commutator_cublas_cc
+         module procedure commutator_cublas_zd
+         module procedure commutator_cublas_dz
+         module procedure commutator_cublas_cd
+         module procedure commutator_cublas_dc
        end interface
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

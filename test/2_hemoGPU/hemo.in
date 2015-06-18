@@ -5,8 +5,8 @@
  nmax=100
  vcinp=f
  writeforces=t
-cube_res=50
-cube_dens=t
-cube_orb=f
-cube_elec=t
+ cube_res=50
+ cube_dens=t
+ cube_orb=f
+ cube_elec=t
 &end

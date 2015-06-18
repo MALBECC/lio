@@ -23,12 +23,7 @@
        COMPLEX*16,allocatable :: rho4(:,:),rho2t(:,:)
 !-----------------------------------------------------------------------------n
       ALLOCATE(rho4(M,M),rho2t(M,M),F3(M,M),FBA(M,M))
-      stat=CUBLAS_INIT()
-      if (stat.NE.0) then
-        write(*,*) "initialization failed -predictor"
-        call CUBLAS_SHUTDOWN
-        stop
-      endif
+      write(*,*) 'PREDICTOR DZ'
       M2=2*M
       MM=M*(M+1)/2
 c first i
@@ -73,8 +68,9 @@ c xmm es la primer matriz de (M,M) en el
 !       call g2g_timer_start('cumatmul_predictor')
 !       call cumxp(rho4,devPtrX,rho2t,M)
 !       call cumpxt(rho2t,devPtrX,rho2t,M)
+        rho2t=basechange_cublas(M,rho4,devPtrXc,'inv')
 !       call g2g_timer_stop('cumatmul_predictor')
-       call complex_rho_on_to_ao(rho4,devPtrXc,rho2t,M)
+!       call complex_rho_on_to_ao(rho4,devPtrXc,rho2t,M)
 !       do j=1,M
 !       do k=j,M
 !         if(j.eq.k) then
@@ -85,12 +81,17 @@ c xmm es la primer matriz de (M,M) en el
 !       enddo
 !       enddo
       call sprepack_ctr('L',M,RMM,rho2t)
+       DO i=1,M
+          DO j=1,M
+             if(rho2t(i,j).ne.rho2t(i,j)) stop 'NAN en FBA -predictor'
+          ENDDO
+       ENDDO
 ! Paso4: La matriz densidad 4 es usada para calcular F5------> Corrector
       call int3lu(E2)
       call g2g_solve_groups(0,Ex,0)
       if (field) then
          write(*,*) 'FIELD PREDICTOR'
-         call dip2(g,Fxx,Fyy,Fzz)
+         call intfld(g,Fxx,Fyy,Fzz)
       endif
 !------------------------------------------------------------------------------!
 ! Escritura de fock cuadrada
@@ -106,12 +107,23 @@ c xmm es la primer matriz de (M,M) en el
 !         enddo
 !       enddo
        call spunpack('L',M,RMM(M5),FBA)
+       DO i=1,M
+          DO j=1,M
+             if(FBA(i,j).ne.FBA(i,j)) stop 'NAN en FBA -predictor'
+          ENDDO
+       ENDDO
 ! Ahora tenemos F5 transformada en base de ON y en su forma cuadrada
 !       call g2g_timer_start('cumatmul2_predictor')
 !       call cumxtf(FBA,devPtrX,FON,M)
 !       call cumfx(FON,DevPtrX,FON,M)
 !       call g2g_timer_stop('cumatmul2_predictor')
-       call fock_ao_to_on(FBA,devPtrX,FON,M)
+!       call fock_ao_to_on(FBA,devPtrX,FON,M)
+       FON=basechange_cublas(M,FBA,devPtrX,'dir')
+       DO i=1,M
+          DO j=1,M
+             if(FON(i,j).ne.FON(i,j)) stop 'NAN en FON -predictor'
+          ENDDO
+       ENDDO
        DEALLOCATE(rho4,rho2t,F3,FBA)
        RETURN;END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -137,14 +149,9 @@ c xmm es la primer matriz de (M,M) en el
        COMPLEX*8,allocatable :: rho4(:,:),rho2t(:,:)
 !-----------------------------------------------------------------------------n
       ALLOCATE(rho4(M,M),rho2t(M,M),F3(M,M),FBA(M,M))
-      stat=CUBLAS_INIT()
-      if (stat.NE.0) then
-        write(*,*) "initialization failed -predictor"
-        call CUBLAS_SHUTDOWN
-        stop
-      endif
       M2=2*M
       MM=M*(M+1)/2
+      write(*,*) 'PREDICTOR DC'
 c first i
       M1=1
 c now Fold
@@ -188,7 +195,8 @@ c xmm es la primer matriz de (M,M) en el
 !       call cumxp(rho4,devPtrX,rho2t,M)
 !       call cumpxt(rho2t,devPtrX,rho2t,M)
 !       call g2g_timer_stop('cumatmul_predictor')
-       call complex_rho_on_to_ao(rho4,devPtrXc,rho2t,M)
+!       call complex_rho_on_to_ao(rho4,devPtrXc,rho2t,M)
+        rho2t=basechange_cublas(M,rho4,devPtrXc,'inv')
 !       do j=1,M
 !       do k=j,M
 !         if(j.eq.k) then
@@ -204,7 +212,7 @@ c xmm es la primer matriz de (M,M) en el
       call g2g_solve_groups(0,Ex,0)
       if (field) then
          write(*,*) 'FIELD PREDICTOR'
-         call dip2(g,Fxx,Fyy,Fzz)
+         call intfld(g,Fxx,Fyy,Fzz)
       endif
 !------------------------------------------------------------------------------!
 ! Escritura de fock cuadrada
@@ -225,7 +233,8 @@ c xmm es la primer matriz de (M,M) en el
 !       call cumxtf(FBA,devPtrX,FON,M)
 !       call cumfx(FON,DevPtrX,FON,M)
 !       call g2g_timer_stop('cumatmul2_predictor')
-       call fock_ao_to_on(FBA,devPtrX,FON,M)
+!       call fock_ao_to_on(FBA,devPtrX,FON,M)
+       FON=basechange_cublas(M,FBA,devPtrX,'dir')
        DEALLOCATE(rho4,rho2t,F3,FBA)
        RETURN;END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

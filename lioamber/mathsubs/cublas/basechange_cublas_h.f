@@ -1,7 +1,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       interface basechange
-         module procedure basechange_d_cublas
-         module procedure basechange_c_cublas
-         module procedure basechange_z_cublas
+       interface basechange_cublas
+         module procedure basechange_cublas_d
+         module procedure basechange_cublas_c
+         module procedure basechange_cublas_z
        end interface
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

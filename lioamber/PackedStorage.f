@@ -74,6 +74,47 @@
 
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+       SUBROUTINE spunpack_rho(UPLO,NM,Vector,Matrix)
+       IMPLICIT NONE
+       CHARACTER(LEN=1)   :: UPLO
+       INTEGER,INTENT(IN) :: NM
+       REAL*8,INTENT(IN)  :: Vector(NM*(NM+1)/2)
+       REAL*8,INTENT(OUT) :: Matrix(NM,NM)
+       INTEGER            :: ii,jj,idx
+!
+!------------------------------------------------------------------------------!
+!
+       IF (UPLO.EQ.'U') THEN
+         DO jj=1,NM
+            DO ii=1,jj-1
+               idx=ii+(jj*(jj-1)/2)
+               Matrix(ii,jj)=Vector(idx)/2
+               Matrix(jj,ii)=Vector(idx)/2
+            ENDDO
+               idx=jj+(jj*(jj-1)/2)
+               Matrix(jj,jj)=Vector(idx)
+         ENDDO
+
+       ELSE IF (UPLO.EQ.'L') THEN
+         DO ii=1,NM
+            DO jj=1,ii-1
+               idx=ii+(2*NM-jj)*(jj-1)/2
+               Matrix(ii,jj)=Vector(idx)/2
+               Matrix(jj,ii)=Vector(idx)/2
+            ENDDO
+               idx=jj+(2*NM-jj)*(jj-1)/2
+               Matrix(jj,jj)=Vector(idx)
+         ENDDO
+
+       ELSE
+         PRINT*,'NOT GOOD INPUT FOR UPLO'
+       ENDIF
+!
+!------------------------------------------------------------------------------!
+       RETURN;END SUBROUTINE
+
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        SUBROUTINE sprepack(UPLO,NM,Vector,Matrix)
        IMPLICIT NONE
        CHARACTER(LEN=1)   :: UPLO
@@ -110,3 +151,96 @@
 
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+       SUBROUTINE spunpack_rtc(UPLO,NM,Vector,Matrix)
+       IMPLICIT NONE
+       CHARACTER(LEN=1)   :: UPLO
+       INTEGER,INTENT(IN) :: NM
+       REAL*8,INTENT(IN)  :: Vector(NM*(NM+1)/2)
+#ifdef TD_SIMPLE
+       COMPLEX*8,INTENT(OUT) :: Matrix(NM,NM)
+#else
+       COMPLEX*16,INTENT(OUT) :: Matrix(NM,NM)
+#endif
+       INTEGER            :: ii,jj,idx
+!
+!------------------------------------------------------------------------------!
+!
+       IF (UPLO.EQ.'U') THEN
+         DO jj=1,NM
+            DO ii=1,jj-1
+               idx=ii+(jj*(jj-1)/2)
+                  Matrix(ii,jj)=cmplx(Vector(idx),0.0D0)
+                  Matrix(ii,jj)=Matrix(ii,jj)*0.50D0      ! RHO CASE
+                  Matrix(jj,ii)=Matrix(ii,jj)
+             ENDDO
+             idx=ii+(ii*(ii-1)/2)
+             Matrix(ii,ii)=cmplx(Vector(idx),0.0D0)
+          ENDDO
+       ELSE IF (UPLO.EQ.'L') THEN
+         DO ii=1,NM
+            DO jj=1,ii-1
+               idx=ii+(2*NM-jj)*(jj-1)/2
+               Matrix(ii,jj)=cmplx(Vector(idx),0.0D0)
+               Matrix(ii,jj)=Matrix(ii,jj)*0.50D0
+            ENDDO     
+            Matrix(ii,ii)=Vector(ii+(2*NM-ii)*(ii-1)/2)
+            DO jj=ii+1,NM
+               idx=jj+(2*NM-ii)*(ii-1)/2
+               Matrix(ii,jj)=cmplx(Vector(idx),0.0D0)
+               Matrix(ii,jj)=Matrix(ii,jj)*0.50D0
+            ENDDO
+         ENDDO
+       ELSE
+         PRINT*,'NOT GOOD INPUT FOR UPLO'
+       ENDIF
+!
+!------------------------------------------------------------------------------!
+       RETURN;END SUBROUTINE
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+       SUBROUTINE sprepack_ctr(UPLO,NM,Vector,Matrix)
+       IMPLICIT NONE
+       CHARACTER(LEN=1)   :: UPLO
+       INTEGER,INTENT(IN) :: NM
+       REAL*8,INTENT(OUT) :: Vector(NM*(NM+1)/2)
+#ifdef TD_SIMPLE
+       COMPLEX*8,INTENT(IN) :: Matrix(NM,NM)
+#else
+       COMPLEX*16,INTENT(IN) :: Matrix(NM,NM)
+#endif
+       INTEGER            :: ii,jj,idx
+!
+!------------------------------------------------------------------------------!
+!
+       IF (UPLO.EQ.'U') THEN
+         DO jj=1,NM
+         DO ii=1,jj
+           idx=ii+(jj*(jj-1)/2)
+           if(ii.eq.jj) then
+              Vector(idx)=REAL(Matrix(ii,jj))
+           else
+              Vector(idx)=REAL(Matrix(ii,jj))
+              Vector(idx)=Vector(idx)*2.0D0
+           endif
+         ENDDO
+         ENDDO
+       ELSE IF (UPLO.EQ.'L') THEN
+         DO ii=1,NM
+         DO jj=1,ii
+           idx=ii+(2*NM-jj)*(jj-1)/2
+           IF(ii.eq.jj) THEN
+             Vector(idx)=REAL(Matrix(ii,jj))
+           ELSE
+             Vector(idx)=REAL(Matrix(ii,jj))
+             Vector(idx)=Vector(idx)*2.0D0
+           ENDIF
+         ENDDO
+         ENDDO
+
+       ELSE
+         PRINT*,'NOT GOOD INPUT FOR UPLO'
+       ENDIF
+!
+!------------------------------------------------------------------------------!
+       RETURN;END SUBROUTINE
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+

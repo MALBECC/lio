@@ -1,4 +1,4 @@
-obj_path=$(LIOHOME)/lioamber/obj/
+obj_path=$(LIOHOME)lioamber/obj/
 
 ######################################################################
 # GENERAL FLAGS : This sets the configuration for the general
@@ -8,7 +8,9 @@ ifeq ($(ifort),1)
   FC     = ifort
   FFLAGS+= -module $(obj_path)
   FFLAGS+= -fpp
+  CC=icc
 else
+  CC=gcc
   FC     = gfortran
   FFLAGS+= -I$(obj_path) -J$(obj_path)
   FFLAGS+= -cpp

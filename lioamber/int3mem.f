@@ -127,6 +127,7 @@ c 6     Rc(k)=0.D0
 
       ix=0
       kknumd=0
+      kknums=0
 c para dimecionar cool
       do 3114 i=1,ns
 

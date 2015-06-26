@@ -18,12 +18,6 @@
       parameter(sizeof_complex=16)
       COMPLEX*16 alpha,beta
 !-------------------------------------------------------------------------------!
-      stat=CUBLAS_INIT()
-      if (stat.NE.0) then
-        write(*,*) "initialization failed -cumpxt"
-        call CUBLAS_SHUTDOWN
-        stop
-      endif
       alpha=cmplx(1.0D0,0.0D0)
       beta=cmplx(0.0D0,0.0D0)
 !--------------------------------------------------------------------!
@@ -67,7 +61,6 @@
 !--------------------------------------------------------------------!
       call CUBLAS_FREE ( devPtrA )
       call CUBLAS_FREE ( devPtrScratch )
-      call CUBLAS_SHUTDOWN
       return
       end subroutine
 !===================================================================!
@@ -91,12 +84,6 @@
       parameter(sizeof_complex=8)
       COMPLEX*8 alpha,beta
 !-------------------------------------------------------------------------------!
-      stat=CUBLAS_INIT()
-      if (stat.NE.0) then
-        write(*,*) "initialization failed -cumpxt"
-        call CUBLAS_SHUTDOWN
-        stop
-      endif
       alpha=cmplx(1.0D0,0.0D0)
       beta=cmplx(0.0D0,0.0D0)
 !--------------------------------------------------------------------!
@@ -140,7 +127,6 @@
 !--------------------------------------------------------------------!
       call CUBLAS_FREE ( devPtrA )
       call CUBLAS_FREE ( devPtrScratch )
-      call CUBLAS_SHUTDOWN
       return
       end subroutine
 !=====================================================================!

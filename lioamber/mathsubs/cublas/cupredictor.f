@@ -63,12 +63,16 @@ c xmm es la primer matriz de (M,M) en el
 !       F3=1.750D0*F1b-0.750D0*F1a
 ! Paso2: Usando H3, la matriz densidad rho2 es propagada a rho4----> Prediccion
        rho2t=rho2
+       call g2g_timer_start('magnus ins predictor')
        call cumagnusfac(F3,rho2,rho4,M,NBCH,tdstep1,factorial)
+       call g2g_timer_stop('magnus ins predictor')
 ! Paso3: Escribimos rho4 en el RMM para poder obtener F5 en el siguiente paso.
 !       call g2g_timer_start('cumatmul_predictor')
 !       call cumxp(rho4,devPtrX,rho2t,M)
 !       call cumpxt(rho2t,devPtrX,rho2t,M)
+       call g2g_timer_start('basechange ins predictor')
         rho2t=basechange_cublas(M,rho4,devPtrXc,'inv')
+       call g2g_timer_stop('basechange ins predictor')
 !       call g2g_timer_stop('cumatmul_predictor')
 !       call complex_rho_on_to_ao(rho4,devPtrXc,rho2t,M)
 !       do j=1,M
@@ -87,8 +91,10 @@ c xmm es la primer matriz de (M,M) en el
           ENDDO
        ENDDO
 ! Paso4: La matriz densidad 4 es usada para calcular F5------> Corrector
+      call g2g_timer_start('int3lu + g2g_solve')
       call int3lu(E2)
       call g2g_solve_groups(0,Ex,0)
+      call g2g_timer_stop('int3lu + g2g_solve')
       if (field) then
          write(*,*) 'FIELD PREDICTOR'
          call intfld(g,Fxx,Fyy,Fzz)

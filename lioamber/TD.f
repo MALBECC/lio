@@ -21,7 +21,7 @@ c  A narrow gaussian type electric field can be introduced during the time
 c  evolution in order to excite all electronic frequencies with the same intensity.
 c  Once this perturbation is turned on (Field=t, exter=t) each component of the
 c  external electric field has to be specified in the input file (Fx,Fy,Fz).
-c  In each step of the propagation the cartesian components of the sistem's dipole
+c  In each step of the propagation the cartesian components of the sistems dipole
 c  are stored in files x.dip, y.dip, z.dip.
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 c       USE latom
@@ -285,9 +285,9 @@ c Initializations/Defaults
             enddo
 !------------------------------------------------------------------!
 c
-c -Create integration grid for XC here
-c -Assign points to groups (spheres/cubes)
-c -Assign significant functions to groups
+c Create integration grid for XC here
+c Assign points to groups (spheres/cubes)
+c Assign significant functions to groups
 c -Calculate point weights
 c
       call g2g_timer_sum_start('Exchange-correlation grid setup')
@@ -298,7 +298,6 @@ c
       if (igpu.gt.1) call aint_new_step()
 
       if (predcoef.and.npas.gt.3) then
-        write(*,*) 'no debería estar aca!'
 
 c        if (.not.OPEN) then
 c          if(verbose) write(*,*) 'prediciendo densidad'
@@ -474,10 +473,10 @@ c         call int3mems()
          call g2g_timer_stop('int3mem')
          call g2g_timer_sum_stop('Coulomb precalc')
       endif
-****
 #ifdef CUBLAS
             call CUBLAS_FREE(devPtrY)
 #endif
+
             call g2g_timer_stop('inicio')
 !##############################################################################!
 ! HERE STARTS THE TIME EVOLUTION
@@ -672,10 +671,26 @@ c using commutator
 ! using matmul:
 !           rhonew=rhold-(dt_lpfrg*Im*(matmul(fock,rho)))
 !           rhonew=rhonew+(dt_lpfrg*Im*(matmul(rho,fock)))
+!           if(istep.eq.1) then
+!             rhold=rho+(dt_lpfrg*Im*(matmul(fock,rho)))
+!             rhold=rhold-(dt_lpfrg*Im*(matmul(rho,fock)))
+!           endif
+c using commutator
+              if(istep.eq.1) then
+                 rhold=commutator(fock,rho)
+                 rhold=rho+dt_lpfrg*(Im*rhold)
+              endif
+!####################################################################!
+! DENSITY MATRIX PROPAGATION USING VERLET ALGORITHM
+! using matmul:
+!           rhonew=rhold-(dt_lpfrg*Im*(matmul(fock,rho)))
+!           rhonew=rhonew+(dt_lpfrg*Im*(matmul(rho,fock)))
 c--------------------------------------c
 ! using commutator:
+            call g2g_timer_start('commutator')
               rhonew=commutator(fock,rho)
               rhonew=rhold-dt_lpfrg*(Im*rhonew)
+            call  g2g_timer_stop('commutator')
 c Density update (rhold-->rho, rho-->rhonew)
               do i=1,M
                  do j=1,M
@@ -696,8 +711,16 @@ c Density update (rhold-->rho, rho-->rhonew)
                 call g2g_timer_stop('cupredictor')
                 call g2g_timer_start('cumagnus')
                 call cumagnusfac(fock,rho,rhonew,M,NBCH,dt_magnus,
-     >factorial) 
+     >factorial)
                 call g2g_timer_stop('cumagnus')
+!                rhold=rhonew
+!                call g2g_timer_start('MAGNUS_MODIFIED')
+!                call magnus_cublas(fock,rho,rhonew,M,NBCH,dt_magnus,
+!     >factorial) 
+!                call g2g_timer_stop('MAGNUS_MODIFIED')
+!                rhold=rhonew-rhold
+!                write(22222222,*) rhold
+!                stop 'hemos escrito rhold'
 #else
                 call g2g_timer_start('predictor')
                 call predictor(F1a,F1b,fock,rho,factorial,
@@ -716,7 +739,7 @@ c Density update (rhold-->rho, rho-->rhonew)
 !####################################################################!
 c Here we transform the density to the atomic orbital basis and take the real part of it. The imaginary part of the density 
 c can be descarted since for a basis set of purely real functions the fock matrix is real and symetric and depends only on 
-c the real part of the complex density matrix. (This won't be true in the case of hybrid functionals)
+c the real part of the complex density matrix. (This wont be true in the case of hybrid functionals)
 c with matmul:
 #ifdef CUBLAS
              call g2g_timer_start('complex_rho_on_to_ao-cu')
@@ -791,7 +814,7 @@ c-------------------------------------------------------------------------------
 !       endif
 c
 c      write(*,*) 'Coulomb E',E2-Ex,Ex
-               call g2g_timer_stop('iteration')
+               call g2g_timer_stop('TD step')
                write(*,*)
  999           continue
 !

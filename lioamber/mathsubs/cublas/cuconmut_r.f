@@ -23,12 +23,6 @@
       integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
       integer CUBLAS_INIT
 !-------------------------------------------------------------------!
-      stat=CUBLAS_INIT()
-      if (stat.NE.0) then
-        write(*,*) "initialization failed -cuconmutc_r"
-        call CUBLAS_SHUTDOWN
-        stop
-      endif
        allocate(scratch(M,M))
        alpha=1.0000000000
        beta=0.00000000000
@@ -72,7 +66,6 @@
       call CUBLAS_FREE ( devPtrP )
       call CUBLAS_FREE ( devPtrF )
       call CUBLAS_FREE ( devPtrC )
-      call CUBLAS_SHUTDOWN
       DEALLOCATE(scratch)
       RETURN;END SUBROUTINE
 !========================================================================!

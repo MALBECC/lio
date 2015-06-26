@@ -11,7 +11,7 @@
        REAL*8,INTENT(IN)                    :: Fock(M,M),dt
        INTEGER                              :: ii,stat
        EXTERNAL CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-       EXTERNAL CUBLAS_SHUTDOWN, CUBLAS_ALLOC,CUBLAS_CGEMM
+       EXTERNAL CUBLAS_SHUTDOWN, CUBLAS_ALLOC,CUBLAS_CGEMM, CUBLAS_ZCOPY
        EXTERNAL CUBLAS_CAXPY 
        INTEGER CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
        INTEGER*8 devPOmega
@@ -20,7 +20,7 @@
        INTEGER*8 devPRho
        INTEGER*8 devPScratch
        INTEGER i,j
-       REAL*4 Fact
+       REAL*8 Fact
        REAL*8, INTENT(IN)                   :: factorial(N)
        COMPLEX*16 alpha,beta
        COMPLEX*16,ALLOCATABLE,DIMENSION(:,:) :: Omega1
@@ -28,14 +28,13 @@
        COMPLEX*16,INTENT(OUT)                :: RhoNew(M,M)
        COMPLEX*16,PARAMETER :: icmplx=CMPLX(0.0D0,1.0D0)
        INTEGER, PARAMETER :: sizeof_complex=16
-       INTEGER CUBLAS_ZGEMM,CUBLAS_ZAXPY,CUBLAS_INIT
+       INTEGER CUBLAS_ZGEMM,CUBLAS_ZAXPY,CUBLAS_INIT,CUBLAS_ZCOPY
 !------------------------------------------------------------------------------!
        ALLOCATE(Omega1(M,M))
 ! Omega1 (=W) instantiation
        do i=1,M
        do j=1,M
-       Omega1(i,j)=(-1)*(icmplx)*(Fock(i,j))*(dt)
-       write(111111,*) Omega1(i,j)
+       Omega1(i,j)=(icmplx)*(Fock(i,j))*(dt)
        enddo
        enddo
 !------------------------------------------------------------------------------!
@@ -60,10 +59,10 @@
       stop
       endif
 !=======================================!
-       stat= CUBLAS_SET_MATRIX(M,M,sizeof_complex,RhoOld,M,devPRho,M)
+      stat = CUBLAS_ZCOPY(M*M, devPPrev, 1,devPRho , 1)
 !=======================================!
       if (stat.NE.0) then
-      write(*,*) "data allocation failed -cumagnusfac/3"
+      write(*,*) "data allocation failed -cumagnusfac ZCOPY"
       call CUBLAS_SHUTDOWN()
       stop
       endif
@@ -168,16 +167,10 @@
        INTEGER CUBLAS_CGEMM,CUBLAS_CAXPY,CUBLAS_INIT
 !------------------------------------------------------------------------------!
        ALLOCATE(Omega1(M,M))
-      stat=CUBLAS_INIT()
-      if (stat.NE.0) then
-        write(*,*) "initialization failed -cumagnusfac"
-        call CUBLAS_SHUTDOWN
-        stop
-      endif
 ! Omega1 (=W) instantiation
        do i=1,M
        do j=1,M
-       Omega1(i,j)=(-1)*(icmplx)*(Fock(i,j))*(dt)
+       Omega1(i,j)=(icmplx)*(Fock(i,j))*(dt)
        enddo
        enddo
 !------------------------------------------------------------------------------!
@@ -275,7 +268,6 @@
       call CUBLAS_FREE ( devPRho )
       call CUBLAS_FREE ( devPNext )
       call CUBLAS_FREE ( devPPrev )
-      call CUBLAS_SHUTDOWN
       DEALLOCATE(Omega1)
       RETURN;END subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

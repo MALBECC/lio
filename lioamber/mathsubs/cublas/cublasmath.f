@@ -14,6 +14,7 @@ c       implicit none
        include 'cupredictor_op_h.f'
        include 'basechange_cublas_h.f'
        include 'commutator_cublas_h.f'
+       include 'magnus_cublas_h.f'
 
 !--------------------------------------------------------------------!
 ! INCLUDE FILES WITH PROCEDURES:
@@ -36,6 +37,7 @@ c       implicit none
        include 'cupredictor_op.f'
        include 'basechange_cublas.f'
        include 'commutator_cublas.f'
+       include 'magnus_cublas.f'
        end module
 !
 !

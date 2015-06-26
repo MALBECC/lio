@@ -25,12 +25,6 @@
        stat=CUBLAS_INIT()
        nn=size(MA,1)
        allocate(MC(nn,nn))
-       stat=CUBLAS_INIT()
-       if (stat.NE.0) then
-         write(*,*) "initialization failed -cuconmutc_r"
-         call CUBLAS_SHUTDOWN
-       stop
-       endif
        alpha=1.0000000000
        beta=0.00000000000
        MC=0.0D0
@@ -100,7 +94,6 @@
       call CUBLAS_FREE ( devPtrA )
       call CUBLAS_FREE ( devPtrB )
       call CUBLAS_FREE ( devPtrC )
-      call CUBLAS_SHUTDOWN
       return;end function
 !
 !--------------------------------------------------------------------!

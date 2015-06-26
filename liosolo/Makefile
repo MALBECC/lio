@@ -1,5 +1,11 @@
 LIBS=
-FLAGS = -fopenmp -fpp
+FLAGS = -fopenmp 
+ifeq ($(ifort),1)
+FLAGS += -fpp
+else
+FLAGS += -cpp
+endif
+
 ifeq ($(xeon_phi),1)
   FLAGS += -mmic
   LIBS= -Qoption,link,-rpath=/opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/mic -Qoption,link,-rpath=/opt/intel/composer_xe_2013_sp1.3.174/compiler/lib/mic/

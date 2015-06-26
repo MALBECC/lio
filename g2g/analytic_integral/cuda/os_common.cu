@@ -114,7 +114,7 @@ void OSIntegral<scalar_type>::clear( void )
     local_dens_dev.deallocate();
     dens_values_dev.deallocate();
 
-    if (factor_ac_dev.is_allocated() && G2G::free_global_memory > 0.0) {
+    if (partial_qm_forces_dev.is_allocated() && G2G::free_global_memory > 0.0) {
       size_t gpu_size = partial_fock_dev.bytes() + partial_energies_dev.bytes() + partial_qm_forces_dev.bytes();
       GlobalMemoryPool::dealloc(gpu_size);
     }

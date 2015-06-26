@@ -17,12 +17,6 @@
       integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
       integer CUBLAS_INIT
       allocate(scratch1(M,M),scratch2(M,M))
-      stat=CUBLAS_INIT()
-      if (stat.NE.0) then
-        write(*,*) "initialization failed -cumpx_r"
-        call CUBLAS_SHUTDOWN
-        stop
-      endif
       alpha=1.0D0
       beta=0.0D0
       scratch1=A
@@ -54,7 +48,6 @@
       endif
       call CUBLAS_FREE ( devPtrScratch1 )
       call CUBLAS_FREE ( devPtrScratch2 )
-      call CUBLAS_SHUTDOWN
       DEALLOCATE(scratch1,scratch2)
       return
       end subroutine

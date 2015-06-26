@@ -23,12 +23,6 @@
       complex*16 :: alpha,beta
       COMPLEX*16, dimension (:,:), ALLOCATABLE :: scratch
 !-------------------------------------------------------------------!
-      stat=CUBLAS_INIT()
-      if (stat.NE.0) then
-        write(*,*) "initialization failed -cuconmutc"
-        call CUBLAS_SHUTDOWN
-        stop
-      endif
        allocate(scratch(M,M))
        alpha=(1,0)
        beta=(0,0)
@@ -74,7 +68,6 @@
       call CUBLAS_FREE ( devPtrP )
       call CUBLAS_FREE ( devPtrF )
       call CUBLAS_FREE ( devPtrC )
-      call CUBLAS_SHUTDOWN
       DEALLOCATE(scratch)
       RETURN;END SUBROUTINE
 !================================================================================!
@@ -98,12 +91,6 @@
       complex*8 :: alpha,beta
       COMPLEX*8, dimension (:,:), ALLOCATABLE :: scratch
 !--------------------------------------------------------------------------------!
-      stat=CUBLAS_INIT()
-      if (stat.NE.0) then
-        write(*,*) "initialization failed -cuconmutc"
-        call CUBLAS_SHUTDOWN
-        stop
-      endif
        allocate(scratch(M,M))
        alpha=(1,0)
        beta=(0,0)
@@ -149,7 +136,6 @@
       call CUBLAS_FREE ( devPtrP )
       call CUBLAS_FREE ( devPtrF )
       call CUBLAS_FREE ( devPtrC )
-      call CUBLAS_SHUTDOWN
       DEALLOCATE(scratch)
       RETURN;END SUBROUTINE
 !==========================================================================!

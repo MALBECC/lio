@@ -671,25 +671,16 @@ c using commutator
 ! using matmul:
 !           rhonew=rhold-(dt_lpfrg*Im*(matmul(fock,rho)))
 !           rhonew=rhonew+(dt_lpfrg*Im*(matmul(rho,fock)))
-!           if(istep.eq.1) then
-!             rhold=rho+(dt_lpfrg*Im*(matmul(fock,rho)))
-!             rhold=rhold-(dt_lpfrg*Im*(matmul(rho,fock)))
-!           endif
-c using commutator
-              if(istep.eq.1) then
-                 rhold=commutator(fock,rho)
-                 rhold=rho+dt_lpfrg*(Im*rhold)
-              endif
-!####################################################################!
-! DENSITY MATRIX PROPAGATION USING VERLET ALGORITHM
-! using matmul:
-!           rhonew=rhold-(dt_lpfrg*Im*(matmul(fock,rho)))
-!           rhonew=rhonew+(dt_lpfrg*Im*(matmul(rho,fock)))
 c--------------------------------------c
 ! using commutator:
             call g2g_timer_start('commutator')
+#ifdef CUBLAS
+              rhonew=commutator_cublas(fock,rho)
+              rhonew=rhold-dt_lpfrg*(Im*rhonew)
+#else
               rhonew=commutator(fock,rho)
               rhonew=rhold-dt_lpfrg*(Im*rhonew)
+#endif
             call  g2g_timer_stop('commutator')
 c Density update (rhold-->rho, rho-->rhonew)
               do i=1,M

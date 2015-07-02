@@ -38,6 +38,7 @@ c       implicit none
        include 'basechange_cublas.f'
        include 'commutator_cublas.f'
        include 'magnus_cublas.f'
+       include 'cu_fock_commuts.f'
        end module
 !
 !

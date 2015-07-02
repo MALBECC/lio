@@ -10,6 +10,9 @@ c Dario Estrin, 1992
       subroutine SCF(E,dipxyz)
       use garcha_mod
       use mathsubs
+#ifdef CUBLAS
+      use cublasmath
+#endif
 c      use qmmm_module, only : qmmm_struct, qmmm_nml
 c
       implicit real*8 (a-h,o-z)
@@ -34,6 +37,15 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
         REAL*8,ALLOCATABLE :: WORK2(:)
         INTEGER, ALLOCATABLE :: IWORK2(:),IPIV(:)
         logical :: just_int3n,ematalloct
+#ifdef CUBLAS
+        integer sizeof_real
+        parameter(sizeof_real=8)
+        integer stat
+        integer*8 devPtrX, devPtrY
+        external CUBLAS_INIT, CUBLAS_SET_MATRIX
+        external CUBLAS_SHUTDOWN, CUBLAS_ALLOC,CUBLAS_FREE
+        integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX
+#endif
 !--------------------------------------------------------------------!
 
 
@@ -352,7 +364,25 @@ c          write(56,*) RMM(M15+1)
       ENDIF
 
       call g2g_timer_stop('cholesky')
-
+!! CUBLAS ---------------------------------------------------------------------!
+#ifdef CUBLAS
+            stat=CUBLAS_INIT()
+            stat = CUBLAS_ALLOC(M*M, sizeof_real, devPtrX)
+            stat = CUBLAS_ALLOC(M*M, sizeof_real, devPtrY)
+            if (stat.NE.0) then
+            write(*,*) "X and/or Y memory allocation failed"
+            call CUBLAS_SHUTDOWN
+            stop
+            endif
+            stat = CUBLAS_SET_MATRIX(M,M,sizeof_real,X,M,devPtrX,M)
+            stat = CUBLAS_SET_MATRIX(M,M,sizeof_real,Y,M,devPtrY,M)
+            if (stat.NE.0) then
+            write(*,*) "X and/or Y setting failed"
+            call CUBLAS_SHUTDOWN
+            stop
+            endif
+#endif
+!------------------------------------------------------------------------------!
       call g2g_timer_start('initial guess')
       call g2g_timer_sum_stop('Overlap decomposition')
 
@@ -576,10 +606,6 @@ c
             call g2g_timer_sum_start('Exchange-correlation Fock')
             call g2g_solve_groups(0,Ex,0)
             call g2g_timer_sum_pause('Exchange-correlation Fock')
-      do i=1,MM
-         if(RMM(i).ne.RMM(i)) stop 'NAN en RHO2'
-         if(RMM(M5+i).ne.RMM(M5+i)) stop 'NAN en fock2'
-      enddo
 
 c-------------------------------------------------------
         E1=0.0D0
@@ -649,8 +675,13 @@ c-------------------------------------------------------------------------------
           enddo
 
           ! Calculate F' and [F',P']
+          call g2g_timer_start('commutators + basechange')
+#ifdef CUBLAS
+          call cu_calc_fock_commuts(fock,rho,devPtrX,devPtrY,scratch,M)
+#else
           call calc_fock_commuts(fock,rho,X,Y,scratch,scratch1,M)
-
+#endif
+          call g2g_timer_stop('commutators + basechange')
           ! update fockm with F'
           do j=ndiis-(ndiist-1),ndiis-1
             do i=1,MM
@@ -673,12 +704,21 @@ c-------------------------------------------------------------------------------
               FP_PFm(i,j)=FP_PFm(i,j+1)
             enddo
           enddo
+#ifdef CUBLAS
+          do k=1,M
+            do j=k,M
+              i=j+(M2-k)*(k-1)/2
+              FP_PFm(i,ndiis)=scratch(j,k)
+            enddo
+          enddo
+#else
           do k=1,M
             do j=k,M
               i=j+(M2-k)*(k-1)/2
               FP_PFm(i,ndiis)=scratch(j,k)-scratch1(j,k)
             enddo
           enddo
+#endif
           call g2g_timer_sum_pause('DIIS prep')
           call g2g_timer_sum_pause('DIIS')
         endif
@@ -700,7 +740,7 @@ c If we are not doing diis this iteration, apply damping to F, save this
 c F in RMM(M3) for next iteration's damping and put F' = X^T * F * X in RMM(M5)
 c-----------------------------------------------------------------------------------------
         if(.not.hagodiis) then 
-          call g2g_timer_sum_start('Fock damping')
+          call g2g_timer_start('Fock damping')
           if(niter.ge.2) then
             do k=1,MM
               kk=M5+k-1
@@ -712,59 +752,83 @@ c-------------------------------------------------------------------------------
 c the newly constructed damped matrix is stored, for next iteration
 c in RMM(M3)
 c
-          do k=1,MM
-            kk=M5+k-1
-            kk2=M3+k-1
-            RMM(kk2)=RMM(kk)
-          enddo
+!         do k=1,MM
+!            kk=M5+k-1
+!            kk2=M3+k-1
+!            RMM(kk2)=RMM(kk)
+!          enddo
 c
 ! xnano=X^T
-          do i=1,M
-            ! X is upper triangular
-            do j=1,i
-              xnano(i,j)=X(j,i)
-            enddo
-          enddo
-
+!          do i=1,M
+!            ! X is upper triangular
+!            do j=1,i
+!              xnano(i,j)=X(j,i)
+!            enddo
+!          enddo
+!
 ! RMM(M5) gets F' = X^T * F * X
-          do j=1,M
-            do i=1,M
-              X(i,M+j)=0.D0
-            enddo
-            do k=1,j
-              ! xnano is lower triangular
-              do i=k,M
-                X(i,M+j)=X(i,M+j)+Xnano(i,k)*RMM(M5+j+(M2-k)*(k-1)/2-1)
-              enddo
-            enddo
+!          do j=1,M
+!            do i=1,M
+!              X(i,M+j)=0.D0
+!            enddo
+!            do k=1,j
+!              ! xnano is lower triangular
+!              do i=k,M
+!                X(i,M+j)=X(i,M+j)+Xnano(i,k)*RMM(M5+j+(M2-k)*(k-1)/2-1)
+!              enddo
+!            enddo
 c
-            do k=j+1,M
-              ! xnano is lower triangular
-              do i=k,M
-                X(i,M+j)=X(i,M+j)+Xnano(i,k)*RMM(M5+k+(M2-j)*(j-1)/2-1)
-              enddo
-            enddo
+!            do k=j+1,M
+!              ! xnano is lower triangular
+!              do i=k,M
+!                X(i,M+j)=X(i,M+j)+Xnano(i,k)*RMM(M5+k+(M2-j)*(j-1)/2-1)
+!              enddo
+!            enddo
+!
+!          enddo
 c
-          enddo
-c
-          kk=0
-          do i=1,M
-            do k=1,M
-              xnano(k,i)=X(i,M+k)
-            enddo
-          enddo
-
-          do j=1,M
-            do i=j,M
-              kk=kk+1
-              RMM(M5+kk-1)=0.D0
-              ! X is upper triangular
+!          kk=0
+!          do i=1,M
+!            do k=1,M
+!              xnano(k,i)=X(i,M+k)
+!            enddo
+!          enddo
+!
+!          do j=1,M
+!            do i=j,M
+!              kk=kk+1
+!              RMM(M5+kk-1)=0.D0
+!              ! X is upper triangular
+!              do k=1,j
+!                RMM(M5+kk-1)=RMM(M5+kk-1)+Xnano(k,i)*X(k,j)
+!              enddo
+!            enddo
+!          enddo
+!-------------------------------------------------------------!
+            fock=0
+            do j=1,M
               do k=1,j
-                RMM(M5+kk-1)=RMM(M5+kk-1)+Xnano(k,i)*X(k,j)
+                 fock(k,j)=RMM(M5+j+(M2-k)*(k-1)/2-1)
+              enddo
+              do k=j+1,M
+                 fock(k,j)=RMM(M5+k+(M2-j)*(j-1)/2-1)
               enddo
             enddo
+#ifdef CUBLAS
+            call cumxtf(fock,devPtrX,fock,M)
+            call cumfx(fock,DevPtrX,fock,M)
+#else
+            fock=basechange_gemm(M,fock,x)
+#endif     
+          do j=1,M
+             do k=1,j
+                RMM(M5+j+(M2-k)*(k-1)/2-1)=fock(j,k)
+             enddo
+             do k=j+1,M
+                RMM(M5+k+(M2-j)*(j-1)/2-1)=fock(j,k)
+             enddo
           enddo
-          call g2g_timer_sum_pause('Fock damping')
+          call g2g_timer_stop('Fock damping')
         endif
 c
 c now F contains transformed F
@@ -833,8 +897,11 @@ c-------Escribimos en xnano y znano dos conmutadores de distintas iteraciones---
               enddo
             enddo
 
+!#ifdef CUBLAS (Only diagonal elements must be computed, so the entire multiplication is a waste..)
+!                   call cumatmul_r(xnano,znano,rho1,M)
+!#else
             call matmuldiag(xnano,znano,rho1,M)
-c              xnano=matmul(xnano,znano)
+!#endif
 
             EMAT(ndiist,kk)=0.
             if(kk.ne.ndiist) EMAT(kk,ndiist)=0.
@@ -979,20 +1046,24 @@ c       enddo
 c-----------------------------------------------------------
 c
 c diagonalization now
-c
+c-----------------------------------------------------------
+c Recover C from (X^-1)*C; put into xnano
+c-----------------------------------------------------------
+#ifdef CUBLAS
+        call cumxp_r(fock,devPtrX,xnano,M)
+        do i=1,M
+          do j=1,M
+             X(i,M2+j)=xnano(i,j)
+          enddo
+       enddo
+#else
 c new coefficients
        do i=1,M
          do k=1,M
            xnano(i,k)=X(k,i)
          enddo
        enddo
-c
-c-----------------------------------------------------------
-c Recover C from (X^-1)*C; put into xnano
-c-----------------------------------------------------------
-c#ifdef magma
-
-      do i=1,M
+       do i=1,M
         do j=1,M
             X(i,M2+j)=0.D0
             ! xnano is lower triangular
@@ -1001,20 +1072,7 @@ c#ifdef magma
             enddo
           enddo
       enddo
-
-
-
-c#else
-c      do i=1,M
-c        do j=1,M
-c          X(i,M2+j)=0.D0
-c          ! xnano is lower triangular
-c          do k=i,M
-c            X(i,M2+j)=X(i,M2+j)+xnano(k,i)*X(k,M+j)
-c          enddo
-c        enddo
-c      enddo
-c#endif
+#endif
       call g2g_timer_stop('coeff')
       call g2g_timer_start('otras cosas')
       call g2g_timer_sum_pause('MO coefficients')
@@ -1023,7 +1081,6 @@ c
 c --- For the first iteration, damping on density matrix
 c Important for the case of strating guess of AO
 c
-
       kk=0
       do k=1,NCO
         do i=1,M
@@ -1034,35 +1091,20 @@ c
       enddo
 c
 c Construction of new density matrix and comparison with old one
-       kk=0
-       good=0.
-c
-       do j=1,M
-         do i=j,M
-           kk=kk+1
-           tmp=RMM(kk)
-           RMM(kk)=0.
-c one factor of 2 for alpha+beta
-           if(i.eq.j) then
-             ff=2.D0
-c another factor of 2 for direct triangular sum (j>i) w/ real basis
-           else
-             ff=4.D0
-           endif
-
-          do k=1,NCO
-c            RMM(kk)=RMM(kk)+ff*X(i,M2+k)*X(j,M2+k)
-            RMM(kk)=RMM(kk)+ff*Xnano(k,i)*Xnano(k,j)
-          enddo
-          del=RMM(kk)-tmp
-          if (i.ne.j) then
-            del=del*sq2
-           endif
-           good=good+del**2
+      kk=0
+      good=0.
+      call g2g_timer_start('dens_GPU')
+      call density(M,NCO,X,xnano)
+      do j=1,M
+         do k=j,M
+               del=xnano(j,k)-(RMM(k+(M2-j)*(j-1)/2))
+               del=del*sq2
+               good=good+del**2
+               RMM(k+(M2-j)*(j-1)/2)=xnano(j,k)
          enddo
-       enddo
-c
-       good=sqrt(good)/float(M)
+      enddo
+      good=sqrt(good)/float(M)
+      call g2g_timer_stop('dens_GPU')
 
        if (SHFT) then
 c Level Shifting
@@ -1345,6 +1387,11 @@ c       E=E*627.509391D0
         call TD()
         call g2g_timer_sum_stop('TD')
       endif
+#ifdef CUBLAS
+      call CUBLAS_FREE(devPtrX)
+      call CUBLAS_FREE(devPtrY)
+      call CUBLAS_SHUTDOWN
+#endif
 !
 !--------------------------------------------------------------------!
       call g2g_timer_stop('SCF')

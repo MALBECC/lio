@@ -41,6 +41,7 @@ objects += liokeys.o
 objects += sysdata.o
 objects += mathsubs.o
 objects += maskrmm.o
+objects += density.o
 ifeq ($(cublas),1)
 objects += cublasmath.o 
 endif

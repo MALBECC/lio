@@ -71,7 +71,8 @@ c
       Ndens=1
 c---------------------
 c       write(*,*) 'M=',M
-      allocate (znano(M,M),xnano(M,M),scratch(M,M),scratch1(M,M))
+      allocate (znano(M,M),xnano(M,M),scratch(M,M),scratch1(M,M),
+     > fock(M,M))
 
       npas=npas+1
       E=0.0D0
@@ -567,7 +568,7 @@ c
       if (DIIS.and.alloqueo) then
         alloqueo=.false.
 c       write(*,*) 'eme=', M
-       allocate(rho1(M,M),rho(M,M),fock(M,M),fockm(MM,ndiis),
+       allocate(rho1(M,M),rho(M,M),fockm(MM,ndiis),
      >  FP_PFm(MM,ndiis),EMAT(ndiis+1,ndiis+1),bcoef(ndiis+1)
      >  ,suma(MM))
       endif
@@ -748,15 +749,14 @@ c-------------------------------------------------------------------------------
               RMM(kk)=(RMM(kk)+DAMP*RMM(kk2))/(1.D0+DAMP)
             enddo
           endif
-
 c the newly constructed damped matrix is stored, for next iteration
 c in RMM(M3)
 c
-!         do k=1,MM
-!            kk=M5+k-1
-!            kk2=M3+k-1
-!            RMM(kk2)=RMM(kk)
-!          enddo
+         do k=1,MM
+            kk=M5+k-1
+            kk2=M3+k-1
+            RMM(kk2)=RMM(kk)
+          enddo
 c
 ! xnano=X^T
 !          do i=1,M
@@ -765,7 +765,7 @@ c
 !              xnano(i,j)=X(j,i)
 !            enddo
 !          enddo
-!
+
 ! RMM(M5) gets F' = X^T * F * X
 !          do j=1,M
 !            do i=1,M
@@ -777,7 +777,7 @@ c
 !                X(i,M+j)=X(i,M+j)+Xnano(i,k)*RMM(M5+j+(M2-k)*(k-1)/2-1)
 !              enddo
 !            enddo
-c
+!c
 !            do k=j+1,M
 !              ! xnano is lower triangular
 !              do i=k,M
@@ -786,14 +786,14 @@ c
 !            enddo
 !
 !          enddo
-c
+!c
 !          kk=0
 !          do i=1,M
 !            do k=1,M
 !              xnano(k,i)=X(i,M+k)
 !            enddo
 !          enddo
-!
+!!
 !          do j=1,M
 !            do i=j,M
 !              kk=kk+1

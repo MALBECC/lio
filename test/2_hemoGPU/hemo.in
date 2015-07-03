@@ -4,6 +4,7 @@
  charge=0
  nmax=100
  vcinp=f
+ diis=.false.
  writeforces=t
  cube_res=50
  cube_dens=t

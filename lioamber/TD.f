@@ -787,16 +787,30 @@ c The real part of the density matrix in the atomic orbital basis is copied in R
                 open(unit=134,file='x.dip')
                 open(unit=135,file='y.dip')
                 open(unit=136,file='z.dip')
+                open(unit=13600,file='abs.dip')
         write(134,*) '#Time (fs) vs DIPOLE MOMENT, X COMPONENT (DEBYES)'
         write(135,*) '#Time (fs) vs DIPOLE MOMENT, Y COMPONENT (DEBYES)'
         write(136,*) '#Time (fs) vs DIPOLE MOMENT, Z COMPONENT (DEBYES)'
+        write(13600,*) '#Time (fs) vs DIPOLE MOMENT (DEBYES)'
               endif
-              call g2g_timer_start('DIPOLE') 
-              call dip(ux,uy,uz)
-              call g2g_timer_stop('DIPOLE')
-              write(134,901) t,ux
-              write(135,901) t,uy
-              write(136,901) t,uz
+              if ((propagator.eq.2).and.(istep.lt.lpfrg_steps)
+     >      .and. (.not.tdrestart)) then
+                  if(mod ((istep-1),10) == 0) then
+                     call g2g_timer_start('DIPOLE')
+                     call dip(ux,uy,uz)
+                     call g2g_timer_stop('DIPOLE')
+                     write(134,901) t,ux
+                     write(135,901) t,uy
+                     write(136,901) t,uz
+                  endif
+              else
+                  call g2g_timer_start('DIPOLE')
+                  call dip(ux,uy,uz)
+                  call g2g_timer_stop('DIPOLE')
+                  write(134,901) t,ux
+                  write(135,901) t,uy
+                  write(136,901) t,uz
+              endif
 c u in Debyes
 !# END OF DIPOLE MOMENT CALCULATION
 c------------------------------------------------------------------------------------

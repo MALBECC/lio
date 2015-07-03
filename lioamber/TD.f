@@ -71,6 +71,7 @@ c       USE latom
       integer*8 devPtrX, devPtrY,devPtrXc
       external CUBLAS_INIT, CUBLAS_SET_MATRIX
       external CUBLAS_SHUTDOWN, CUBLAS_ALLOC,CUBLAS_GET_MATRIX
+      external CUBLAS_FREE
       integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX,CUBLAS_GET_MATRIX
 #endif
 !!   GROUP OF CHARGES
@@ -93,7 +94,7 @@ c       USE latom
        write(*,*) 'USING CUBLAS'
        stat=CUBLAS_INIT()
        if (stat.NE.0) then
-           write(*,*) "initialization failed -predictor"
+           write(*,*) "initialization failed -TD"
            call CUBLAS_SHUTDOWN
            stop
        endif
@@ -936,6 +937,12 @@ c      do n=1,NCO+3
 !       close(29)
 !--------------------------------------!
       endif
+#ifdef CUBLAS
+            call CUBLAS_FREE(devPtrX)
+            call CUBLAS_FREE(devPtrXc)
+            call CUBLAS_FREE(devPtrY)
+            call CUBLAS_SHUTDOWN()
+#endif
 c
 c
 c---- DEBUGGINGS

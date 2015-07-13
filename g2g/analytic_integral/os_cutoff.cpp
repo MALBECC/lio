@@ -76,9 +76,11 @@ void OSIntegral<scalar_type>::new_cutoff( void )
 
     // We pad the input arrays between term types, so the offsets for each term type need to be tracked
     if (current_term_type > 0) {
-      tmp_ind += COALESCED_DIMENSION(term_type_counts[current_term_type-1]);
+      tmp_ind += term_type_counts[current_term_type-1];
+      tmp_ind += QMMM_BLOCK_SIZE - (term_type_counts[current_term_type-1] % QMMM_BLOCK_SIZE);
       this->term_type_offsets[current_term_type] = tmp_ind;
-      tmp_dens_ind += COALESCED_DIMENSION(dens_counts[current_term_type-1]);
+      tmp_dens_ind += dens_counts[current_term_type-1];
+      tmp_dens_ind += QMMM_BLOCK_SIZE - (dens_counts[current_term_type-1] % QMMM_BLOCK_SIZE);
       this->dens_offsets[current_term_type] = tmp_dens_ind;
     }
 
@@ -143,25 +145,25 @@ void OSIntegral<scalar_type>::new_cutoff( void )
       }
     }
     // Pad the input arrays so the next term type has an aligned offset
-    for (j = term_type_counts[current_term_type]; j < COALESCED_DIMENSION(term_type_counts[current_term_type]); j++) {
+    for (j = 0; j < QMMM_BLOCK_SIZE - (term_type_counts[current_term_type] % QMMM_BLOCK_SIZE); j++) {
       this->func_code.push_back(func_code[term_type_offsets[current_term_type]]); // Use the first code from this term type
       this->local_dens.push_back(local_dens[term_type_offsets[current_term_type]]);
     }
-    for (j = dens_counts[current_term_type]; j < COALESCED_DIMENSION(dens_counts[current_term_type]); j++) {
+    for (j = 0; j < QMMM_BLOCK_SIZE - (dens_counts[current_term_type] % QMMM_BLOCK_SIZE); j++) {
       this->dens_values.push_back(dens_values[dens_offsets[current_term_type]]);
       this->local2globaldens.push_back(local2globaldens[dens_offsets[current_term_type]]);
     }
   }
 
   // Pad the input so that out-of-range threads do a dummy calculation (same as the first thread), rather than branching and idling
-  for (i = 0; i < QMMM_BLOCK_SIZE - (COALESCED_DIMENSION(term_type_counts[NUM_TERM_TYPES-1]) % QMMM_BLOCK_SIZE); i++) {
+/*  for (i = 0; i < QMMM_BLOCK_SIZE - (COALESCED_DIMENSION(term_type_counts[NUM_TERM_TYPES-1]) % QMMM_BLOCK_SIZE); i++) {
     this->func_code.push_back(func_code[term_type_offsets[NUM_TERM_TYPES-1]]);
     this->local_dens.push_back(local_dens[term_type_offsets[NUM_TERM_TYPES-1]]);
   }
   for (i = 0; i < QMMM_BLOCK_SIZE - (COALESCED_DIMENSION(dens_counts[NUM_TERM_TYPES-1]) % QMMM_BLOCK_SIZE); i++) {
     this->dens_values.push_back(dens_values[dens_offsets[NUM_TERM_TYPES-1]]);
       this->local2globaldens.push_back(local2globaldens[dens_offsets[NUM_TERM_TYPES-1]]);
-  }
+  }*/
 
 //  cout << "AINT NUMBER OF THREADS: " << num_terms << " (" << this->func_code.size() << ")" << endl;
 //  cout << "AINT DENSITY TERMS: " << num_dens_terms << " (" << this->dens_values.size() << ")" << endl;

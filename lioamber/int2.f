@@ -519,8 +519,10 @@ c
       ss=RMM(M9)/RMM(M9+Md-1)
 c
 #endif
+	write (*,*) ss, "criterio ajuste base auxiliar, Nick"
        if (ss.gt.1.D14) then
         SVD=.true.
+	stop "trata de usar SVD"
        endif
 c
 c------------------------------

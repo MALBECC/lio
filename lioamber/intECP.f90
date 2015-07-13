@@ -1,12 +1,12 @@
 	subroutine intECP(tipodecalculo)
-	use garcha_mod, only :nshell,nuc,a,c
-	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP,VAAAcuadrada,lxyz, VAAA, VAAAcuadrada, VAAB, VAABcuadrada,pi,doublefac
+	use garcha_mod, only :nshell,nuc,a,c, ncont, natom
+	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP,VAAAcuadrada,lxyz, VAAA, VAAAcuadrada, VAAB, VAABcuadrada,pi,doublefac,VXXXgamess
 	implicit none
 
 	integer, intent(in) :: tipodecalculo
 !tipodecalculo=1 alocatea variables y alcula terminos AAA
 !tipodecalculo=2 calcula terminos ABB y ABC
-	integer z,l,t
+	integer z,l,t,ji,ii,jk,ik,jii,iii
 	integer m1,lx,ly,lz
         integer :: ns,np,nd,M,i,j,e,pos,n
 	double precision :: alpha
@@ -14,8 +14,9 @@
         np=nshell(1)
         nd=nshell(2)
         M=ns+np+nd
-
 	if (tipodecalculo .eq. 1) then
+!edita normalizacion base d
+	call correctbasis(1)
 !prepara variables y calcula los terminos AAA	
         call ReasignZ()
 !reasigna las cargas
@@ -24,6 +25,7 @@
 	call allocateV()
 !allocatea la matriz de fock de pseudopotenciales, la matrix cuadrara para pruebas y el verctor con los terminos de 1 electron sin corregir
 	call intECPAAA()
+	call correctbasis(-1)
 !calcula terminos AAA
 	elseif (tipodecalculo .eq. 2) then
 	call obtaindistance()
@@ -41,7 +43,8 @@
                 Write(*,*) "ERROR in tipe of ECP calculation"
 	endif
 
-	if ( .true. ) then
+	if ( .false. ) then
+!testea integran Q0
 	do n=0,10
 	do alpha=1d0,100d0 
 		write(125,*) alpha,n,Q0(n,alpha)!, doublefac(n-1)
@@ -79,11 +82,13 @@
 		end do
 	end if
 
-	if ( .false. ) then
+	if ( .true. ) then
 !escribe a y c (solo el 1er valor)
-	write(52,*) "i, ai, ci"
-	do i=1,M
-		write(52,*) i,a(i,1),c(i,1)
+	write(52,*) "i, ai, ci",ns,np,nd
+	do i=1,ns+np+nd
+		do j=1,ncont(i)
+			write(52,*) i,j,a(i,j),c(i,j)
+		end do
 	end do
 	end if
 
@@ -109,6 +114,75 @@
 !		write(*,*) VAAA
 	end if
 
+        if (tipodecalculo .eq. 1) then
+        if ( .true. ) then
+!escribe coeficientes de fock del ECP AAB y AAA
+        write(*,*) "VAAA"
+!        do i=1,M
+!                do j=i,M
+!barrido de gamess
+	write(*,*) nshell(0),nshell(1),nshell(2),M, "chequeardimm, Nick"
+	VXXXgamess=0.d0
+!copia VAAAcuadrada a VXXXgamess cambiando el orden para que sea el mismo que en gamess. solo para testeto
+	do j=1,M
+		do i=1,j
+			if (j .le. nshell(0)+nshell(1) .and. i .le. nshell(0)+nshell(1)) then
+				VXXXgamess(i,j)=VAAAcuadrada(i,j)
+			else
+				ji=j
+				ii=i
+				jk=0
+				ik=0
+				if (j .gt. nshell(0)+nshell(1)) then
+					
+					ji=j-nshell(0)-nshell(1)
+					jk=ji/6
+!					write(*,*) "*********************",j,ji,jk
+					ji=modulo(ji,6)
+!					write(*,*) "****************", ji
+					if (ji .eq. 0) jii=-3
+					if (ji .eq. 1) jii=1
+                                        if (ji .eq. 2) jii=4
+                                        if (ji .eq. 3) jii=2
+                                        if (ji .eq. 4) jii=5
+                                        if (ji .eq. 5) jii=6
+					if (ji .gt. 5) stop "error ji gt 5"
+					ji=jii+jk*6+nshell(0)+nshell(1)
+!					write(*,*) "**** nuevo ji", ji
+!					write(*,*) "***",j,ji,jii,jk
+				end if
+				if (i .gt. nshell(0)+nshell(1)) then
+                                        ii=i-nshell(0)-nshell(1)
+					ik=ii/6
+                                        ii=modulo(ii,6)
+                                        if (ii .eq. 0) iii=-3
+                                        if (ii .eq. 1) iii=1
+                                        if (ii .eq. 2) iii=4
+                                        if (ii .eq. 3) iii=2
+                                        if (ii .eq. 4) iii=5
+                                        if (ii .eq. 5) iii=6
+					ii=iii+ik*6+nshell(0)+nshell(1)
+				end if
+				VXXXgamess(ii,ji)=VAAAcuadrada(i,j)
+!				write(*,*) "viejo",i,j,"nuevo",ii,ji
+			end if
+		end do
+	end do
+	
+
+	n=1
+	do j=1,M
+		do i=1,j
+                        write(*,*) VXXXgamess(i,j),",",i,",",j,",",n
+!                        write(*,*) VAAAcuadrada(i,j),",",i,",",j,",",n
+
+			n=n+1
+                end do
+        end do
+        end if
+	end if
+
+
 	if (tipodecalculo .eq. 2) then
 	if ( .true. ) then
 !escribe coeficientes de fock del ECP AAB y AAA
@@ -119,6 +193,8 @@
 		end do
 	end do
 	end if
+
+
 
         if ( .true. ) then
 !testea que la matriz VAAB sea simetrica
@@ -189,14 +265,47 @@
 	9014 format(/1x,"i",i3,2x,"lx",i2,2x,"ly",i2,2x,"lz",i2)
 	9015 format(/1x,"i",i3,2x,"j",i3,2x,"Vij",f10.5,2x,"Vji",f10.5,2x,     "diff",f18.15)
         9018 format(/1x,'Z =',i4,2x, 'L =',i4,2x,'coefnumber =',i3,2x,  'n =',i2,2x, 'b =', f15.5,2x,'c =',f15.5)
+	9019 format(/1x,i3,2x,i3,2x,f18.10)
 	1111 format(/1x,"i",i4,1x,"j",i4,1x,"l",i2,1x,"m",i2,1x,"a2",f18.10,1x,"q",f18.10)
 
 	contains
 
+	subroutine correctbasis(r)
+!cambia el coeficiente de las funciones d x^2, y^2 y z^2
+	use garcha_mod, only :nshell,c,ncont
+	implicit none
+	integer :: i,j
+	integer, intent(in) :: r
+	double precision :: factor
+        ns=nshell(0)
+        np=nshell(1)
+        nd=nshell(2)
+
+	if (r.eq.1) then
+		factor=sqrt(1.d0/3.d0)
+	else if (r.eq.-1)then
+		factor=sqrt(3.d0)
+	end if
+
+	write(*,*) " EDITANDO BASE D *****************************************"
+        do i=ns+np+1,ns+np+nd,6
+	write(*,*) "edita i=",i
+		do j=1,ncont(i)
+			c(i,j)=c(i,j)*factor
+		end do
+                do j=1,ncont(i+2)
+                        c(i+2,j)=c(i+2,j)*factor
+                end do
+                do j=1,ncont(i+5)
+                        c(i+5,j)=c(i+5,j)*factor
+                end do
+        end do
+	end subroutine correctbasis
+
 	subroutine allocateV
 !Allocatea VAAA, que contendra los terminos del ECP <A|A|A>
 	use garcha_mod, only :nshell, natom
-	use ECP_mod, only :VAAAcuadrada,VAABcuadrada, VBACcuadrada,VAAA,VAAB,VBAC,term1e,distx, disty, distz
+	use ECP_mod, only :VAAAcuadrada,VAABcuadrada, VBACcuadrada,VAAA,VAAB,VBAC,term1e,distx, disty, distz, VXXXgamess
 !VAAA terminos de Fock de pseudopotencial para ECP y bases en el mismo atomo
 !VAAA cuadrada, idem
 !term1e terminos de fock de 1 electron sin agregarles VAAA
@@ -206,7 +315,7 @@
         np=nshell(1)
         nd=nshell(2)
         M=ns+np+nd
-	allocate (VAAAcuadrada(M,M),VAABcuadrada(M,M), VBACcuadrada(M,M))
+	allocate (VAAAcuadrada(M,M),VAABcuadrada(M,M), VBACcuadrada(M,M),VXXXgamess(M,M))
 	VAAAcuadrada=0.d0
 	VAABcuadrada=0.d0
 	VBACcuadrada=0.d0
@@ -569,7 +678,7 @@
 !c(i,ni) coeficiente de la funcion de base i, contrccion ni
 !ncont(i) cantidad de contracciones de la funcion de base i
 !nshell(i) cantidad de funciones i=1 s, i=2, p, i=3, d
-	use ECP_mod, only :nECP,bECP, aECP, ecptypes, IzECP, Lmax, Lxyz, VAAAcuadrada,VAAA
+	use ECP_mod, only :nECP,bECP, aECP, ecptypes, IzECP, Lmax, Lxyz, VAAAcuadrada,VAAA,local_nonlocal, ecpdebug
 !nECP, bECP, aECP valores del pseudo potencial
 ! aECP*r^b * exp(-bECP r^2)
 !estan escritos como: xECP(Z,l,i) Z carga del nucleo, l del ecp, i numero de funcion del ecp con Z,l
@@ -619,7 +728,13 @@
 						lzj=Lxyz(j,3)
 !exponentes de la parte angular
 						AAA=AAAlocal(i,j,k,ii,ji,lxi+lxj,lyi+lyj,lzi+lzj) + AAANonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
-!                                                AAA= AAANonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
+
+						if (local_nonlocal .eq. 1 .and. ecpdebug) then
+! local_nonlocal 1 y 2 son solo para debugueo
+							AAA=AAAlocal(i,j,k,ii,ji,lxi+lxj,lyi+lyj,lzi+lzj)
+						else if (local_nonlocal .eq. 2 .and. ecpdebug) then
+                                        	        AAA= AAANonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
+						end if
 !suma los terminos locales y no locales del pseudopotencial
 						acum=acum+AAA*c(j,ji)
 !multiplica por el coeficiente de la base
@@ -679,6 +794,7 @@
 !auxiliades para ciclos
 	integer :: Z,n
 	double precision :: A2, Acoef
+	integer :: suma1, suma2
 !Z= carga del nucleo
 	AAANonLocal=0.d0
 	A2=0.d0
@@ -689,9 +805,25 @@
 !barre todos los l de la parte no local
 		do term=1, expnumbersECP(z,l)
 !barre contracciones del ECP para el atomo con carga z y l del ecp
-			do m=-l,l
+			do m=-l,l     !este do se tiene que poder poner antes del do de term=1, expnumbersECP(z,l)
 !barre m
 				A2=A2+Aintegral(l,m,lxi,lyi,lzi)*Aintegral(l,m,lxj,lyj,lzj)
+
+
+!!!!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!!!!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!!!!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!saca la parte s-d, Nick
+!				suma1=lxi+lyi+lzi
+!				suma2=lxj+lyj+lzj
+!				if ( suma1 .eq. 2 .or. suma2 .eq. 2) then
+!				if ( suma1 .eq. 0 .or. suma2 .eq. 0) then
+!					A2=A2-Aintegral(l,m,lxi,lyi,lzi)*Aintegral(l,m,lxj,lyj,lzj)
+!				end if
+!				end if
+!!!!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!!!!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!!!!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
 !				if (i .ge. 17 .and. j .ge. 17) then
 !					if (j .ge. i .and. l .eq. 2) then
 !						write(84,1112) i,l,m,lxi,lyi,lzi,Aintegral(l,m,lxi,lyi,lzi)
@@ -702,7 +834,11 @@
 			Acoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
 !Acoef es el exponente de la integral radial
 			AAANonLocal=AAANonLocal+A2*aECP(z,L,term)*Q0(n+nECP(z,l,term),Acoef)
-
+			if ( i .eq. 1 .and. j .eq. 1) then
+!				write(*,*) "aca Q", Q0(n+nECP(z,l,term),Acoef), n+nECP(z,l,term),Acoef
+!				write(*,*) "use", bECP(z,L,term),a(i,ii),a(j,ji)
+!				write(*,*) "angular", A2
+			end if
 !			if (i .ge. 17 .and. j .ge. 17) then
 !				if (j .ge. i) then
 !					if (l .eq. 0) then
@@ -764,7 +900,7 @@
 !i,j funcion de base
 !ii,ji numero de contraccion de la funcion de base
 !k atomo con ECP
-        use garcha_mod, only : a,c
+        use garcha_mod, only : a,c,nshell
         use ECP_mod, only :nECP,bECP, aECP, ZlistECP, Lmax, expnumbersECP, Qnl, angularint
 !expnumbersECP(Z,l) cantidad de terminos del ECP para el atomo con carga nuclear Z y l del ECP
 	implicit none
@@ -779,6 +915,18 @@
 !barre todos los terminos del Lmaximo
 		Ccoef=bECP(z,L,w)+a(i,ii)+a(j,ji)
 		AAAlocal=AAAlocal+aECP(z,L,w)*angularint(lx,ly,lz)*Q0(n+nECP(z,l,w),Ccoef)
+!		if (i .eq. 5 .and. j .eq.7) then
+!			write(*,*) "************************", aECP(z,L,w),angularint(lx,ly,lz),Q0(n+nECP(z,l,w),Ccoef)
+!		end if
+
+!!!!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!!!!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!!!!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!		if ( i .le. nshell(0) .or. j .le. nshell(0) ) then
+!		if ( i .gt. nshell(0)+nshell(1) .or. j .gt. nshell(0)+nshell(1) ) then
+!			AAAlocal=AAAlocal-aECP(z,L,w)*angularint(lx,ly,lz)*Q0(n+nECP(z,l,w),Ccoef)
+!		end if
+!		end if
+!!!!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!!!!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!!!!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!!!!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 	end do
 	return
 	end function AAAlocal

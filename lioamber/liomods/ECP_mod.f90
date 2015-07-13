@@ -16,6 +16,10 @@
       logical :: cutECP
 !activa cuts en las integrales de ECP
 
+!para debugueo
+      logical :: ecpdebug
+      integer :: local_nonlocal
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 !Datos de los ECP
@@ -37,6 +41,9 @@
 !|x> = A x^lx y^ly z^lz *e^-ar^2, j=1 lx, j=2, ly, j=3 lz para la funcion i de la base
         double precision, dimension(:,:), Allocatable :: VAAAcuadrada, VAABcuadrada, VBACcuadrada
         double precision, dimension(:), Allocatable :: VAAA, VAAB, VBAC,term1e
+
+	double precision, dimension(:,:), Allocatable :: VXXXgamess !agregada para chekeo con gamess
+
 !VAAA contiene los terminos <A|A|A> del pseudo potencial
 !VAAAcuadrada es solo para testeo de simetria
 !idem VAAB, VBAC
@@ -88,6 +95,14 @@
         Double precision, parameter :: aux2= 0.5d0 * sqrt(15.d0/pi)
         Double precision, parameter :: aux3= 0.25d0 * sqrt(5.d0/pi)
 	DOUBLE PRECISION, dimension (6,-2:2) :: l2=(/0.d0,0.d0,0.d0,0.d0,aux2,0.d0,0.d0,aux2,0.d0,0.d0,0.d0,0.d0,2*aux3,0.d0,-aux3,0.d0,0.d0,-aux3,0.d0,0.d0,0.d0,aux2,0.d0,0.d0,0.d0,0.d0,-0.5d0*aux2,0.d0,0.d0,0.5d0*aux2/)
+
+
+
+
+
+!parece haber 1 numero diferente al comparar con gamess ver el caso m=0 x^2
+!l2=(/0.d0,0.d0,0.d0,0.d0,aux2,0.d0,0.d0,aux2,0.d0,0.d0,0.d0,0.d0,6*aux3,0.d0,-aux3,0.d0,0.d0,-aux3,0.d0,0.d0,0.d0,aux2,0.d0,0.d0,0.d0,0.d0,-0.5d0*aux2,0.d0,0.d0,0.5d0*aux2/)
+
 	!l2 chekeado
 	Double precision, parameter :: aux4=0.25d0 * sqrt(17.5d0/pi)
 	Double precision, parameter :: aux5=0.5d0 * sqrt(105.d0/pi)
@@ -1055,10 +1070,26 @@
 
 
 
-        recursive integer function facrecursive(N)
-!esta rutina ya no esta en uso,fue suplantada por un array. la dejo por las dudas
+!        recursive integer function facrecursive(N)
+!rutina vieja, anda hasta n=13
+!        implicit none
+!        integer, intent(in) :: N
+!        if (n.eq.-1 .or. n.eq.0 .or. n.eq.1) then
+!        facrecursive=1
+!        else
+!        facrecursive=N*facrecursive(N-1)
+!        end if
+!        return
+!        end function facrecursive
+
+
+        recursive double precision function facrecursive(N)
+!hay q cambiar esta rutina por un array
         implicit none
         integer, intent(in) :: N
+        if ( n .gt. 170) then
+        stop "n greather than 170 in facrecursive function"
+        end if
         if (n.eq.-1 .or. n.eq.0 .or. n.eq.1) then
         facrecursive=1
         else
@@ -1066,6 +1097,8 @@
         end if
         return
         end function facrecursive
+
+
 
         recursive integer*8 function doublefacrecursive(N)
 !esta rutina no se utiliza, se reemplazara por un array

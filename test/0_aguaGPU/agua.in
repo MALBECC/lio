@@ -2,20 +2,7 @@
 nsol=0
 natom=3
 charge=0
-timedep=1
-propagator=2
-ntdstep=10000
-Field=t
-exter=t
+timedep=0
+ntdstep=1000
 writeforces=t
-!cube_dens=t
-!cube_orb=t
-!cube_elec=t
-!cube_elec_file='campo.cube'
-      Fx=0.1
-      Fy=0.0
-      Fz=0.0
-      tdstep = 2.D-2
-
-
 &end

@@ -2,12 +2,6 @@
  nsol=0
  natom=92
  charge=0
- ndiis=10
  nmax=300
- writeforces=f
- vcinp=t
- timedep=1
- propagator=2
-  field=.true.
-ntdstep=1000
+ writeforces=t
 &end

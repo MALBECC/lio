@@ -1013,8 +1013,8 @@ c---------------------
        LWORK=work(1)
       LIWORK=IWORK(1)
 
-      if(allocated(WORK2)) deallocate (WORK2,IWORK2)
-
+       if(allocated(WORK2))  deallocate (WORK2)
+       if(allocated(IWORK2)) deallocate (IWORK2)
        allocate (WORK2(LWORK),IWORK2(LIWORK))
 
 

@@ -523,6 +523,7 @@ c ELECTRIC FIELD CASE - Type=gaussian (ON)
                    factor=(2.54D0*2.00D0)
 !
                  endif
+                 write(*,*) 'epsilon =', epsilon
                  call intfld(g,Fxx,Fyy,Fzz)
                  E1=-1.00D0*g*(Fx*ux+Fy*uy+Fz*uz)/factor -
      >        0.50D0*(1.0D0-1.0D0/epsilon)*Qc2/a0

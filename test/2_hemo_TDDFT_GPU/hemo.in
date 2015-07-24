@@ -11,7 +11,9 @@
  cube_elec=t
  timedep=1
  propagator=2
- ntdstep=500
+ ntdstep=5
  tdstep=0.01
  NBCH=10
+ field=.true.
+ exter=.true.
 &end

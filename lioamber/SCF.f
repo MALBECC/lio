@@ -255,7 +255,6 @@ c
       docholesky=.true.!.false.
       call g2g_timer_start('cholesky')
       call g2g_timer_sum_start('Overlap decomposition')
-
       IF (docholesky) THEN
 #ifdef magma
         ! ESTO SIGUE USANDO Smat EN RMM(M5)
@@ -1013,8 +1012,9 @@ c---------------------
        LWORK=work(1)
       LIWORK=IWORK(1)
 
-       if(allocated(WORK2))  deallocate (WORK2)
-       if(allocated(IWORK2)) deallocate (IWORK2)
+      if(allocated(WORK2)) deallocate (WORK2)
+      if(allocated(IWORK2)) deallocate (IWORK2)
+
        allocate (WORK2(LWORK),IWORK2(LIWORK))
 
 
@@ -1058,20 +1058,31 @@ c-----------------------------------------------------------
        enddo
 #else
 c new coefficients
-       do i=1,M
-         do k=1,M
-           xnano(i,k)=X(k,i)
-         enddo
-       enddo
-       do i=1,M
-        do j=1,M
-            X(i,M2+j)=0.D0
-            ! xnano is lower triangular
-            do k=i,M
-              X(i,M2+j)=X(i,M2+j)+xnano(k,i)*fock(k,j)
-            enddo
+        do i=1,M
+           do j=1,M
+              xnano(i,j)=x(i,j)
+           enddo
+        enddo
+        xnano=matmul(xnano,fock)
+        do i=1,M
+          do j=1,M
+             X(i,M2+j)=xnano(i,j)
           enddo
-      enddo
+       enddo
+!       do i=1,M
+!         do k=1,M
+!           xnano(i,k)=X(k,i)
+!         enddo
+!       enddo
+!       do i=1,M
+!        do j=1,M
+!            X(i,M2+j)=0.D0
+!            ! xnano is lower triangular
+!            do k=i,M
+!              X(i,M2+j)=X(i,M2+j)+xnano(k,i)*fock(k,j)
+!            enddo
+!          enddo
+!      enddo
 #endif
       call g2g_timer_stop('coeff')
       call g2g_timer_start('otras cosas')

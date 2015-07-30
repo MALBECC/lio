@@ -42,6 +42,8 @@ objects += sysdata.o
 objects += mathsubs.o
 objects += maskrmm.o
 objects += density.o
+objects += vvfterm.o read_groups.o select_atoms.o lowdinpop.o
+objects += choldcmp.o
 ifeq ($(cublas),1)
 objects += cublasmath.o 
 endif

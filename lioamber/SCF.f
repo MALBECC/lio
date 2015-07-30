@@ -37,6 +37,12 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
         REAL*8,ALLOCATABLE :: WORK2(:)
         INTEGER, ALLOCATABLE :: IWORK2(:),IPIV(:)
         logical :: just_int3n,ematalloct
+
+!FFR!
+        real*8              :: weight
+        real*8,allocatable  :: Utrp(:,:),sqsmat(:,:),myxmat(:,:)
+        integer,allocatable :: atom_group(:),atom_selection(:)
+
 #ifdef CUBLAS
         integer sizeof_real
         parameter(sizeof_real=8)
@@ -252,7 +258,8 @@ c Diagonalization of S matrix, after this is not needed anymore
 c S = YY^T ; X = (Y^-1)^T
 c => (X^T)SX = 1
 c
-      docholesky=.true.!.false.
+!      docholesky=.false.
+      docholesky=.true.
       call g2g_timer_start('cholesky')
       call g2g_timer_sum_start('Overlap decomposition')
       IF (docholesky) THEN
@@ -332,6 +339,8 @@ c-----------------------------------------------------------
 c
 c LINEAR DEPENDENCY ELIMINATION
         allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
+!FFR!
+        allocate (Utrp(M,M),myxmat(M,M))
 c
         do i=1,MM
           RMM(M5+i-1)=rmm5(i)
@@ -348,7 +357,9 @@ c          write(56,*) RMM(M15+1)
             enddo
           else
             do i=1,M
+              Utrp(j,i)=X(i,j) !FFR!
               X(i,j)=X(i,j)/sqrt(RMM(M13+j-1))
+              myxmat(i,j)=X(i,j) !FFR!
               Y(i,j)=X(i,j)*(RMM(M13+j-1))
             enddo
           endif
@@ -360,6 +371,11 @@ c          write(56,*) RMM(M15+1)
               Xtrans(i,j)=X(j,i)
             enddo
          enddo
+
+!FFR!
+      Utrp=MATMUL(myxmat,Utrp)
+      call spunpack('L',M,RMM(M5),Smat)
+      Utrp=MATMUL(Utrp,Smat)
 
       ENDIF
 
@@ -659,6 +675,15 @@ c-------------------------------------------------------------------------------
               fock(j,k)=RMM(M5+k+(M2-j)*(j-1)/2-1)
             enddo
           enddo
+
+!FFR! This is some van voorhis stuff
+          allocate(atom_selection(natom),atom_group(natom))
+          weight=0.0d0
+!          weight=0.5d0
+          call read_groups(natom,'',atom_group)
+          call select_atoms(natom,1,atom_group,atom_selection)
+          call vvfterm(M,Utrp,atom_selection,weight,fock)
+
 c-----------------------------------------------------------------------------------------
 c Expand density matrix into full square form (before, density matrix was set up for triangular sums
 c (sum j>=i) so off-diagonal elements need to be divided by 2 to get square-form numbers)
@@ -813,6 +838,20 @@ c
                  fock(k,j)=RMM(M5+k+(M2-j)*(j-1)/2-1)
               enddo
             enddo
+!FFR!
+!          if (.not.allocated(atom_group)) then
+!            allocate(atom_group(natom))
+!            call read_groups(natom,'atomgroup',atom_group)
+!          endif
+!          if (.not.allocated(atom_selection)) then
+!            allocate(atom_selection(natom))
+!          endif
+!          weight=0.0d0
+!          weight=0.5d0
+!          call select_atoms(natom,1,atom_group,atom_selection)
+!          call vvfterm(M,Utrp,atom_selection,weight,fock)
+
+
 #ifdef CUBLAS
             call cumxtf(fock,devPtrX,fock,M)
             call cumfx(fock,DevPtrX,fock,M)
@@ -1321,6 +1360,11 @@ c
 ! malfunction. I DON'T KNOW WHY.
 !--------------------------------------------------------------------!
        call g2g_timer_sum_stop('Mulliken')
+!       do kk=1,natom
+!         q(kk)=real(Iz(kk))
+!       enddo
+!       call lowdinpop(M,natom,RealRho,Utrp,Nuc,q)
+!       call mulliken_write(85,natom,Iz,q)
        endif
 
 c

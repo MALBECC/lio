@@ -252,7 +252,7 @@ c Diagonalization of S matrix, after this is not needed anymore
 c S = YY^T ; X = (Y^-1)^T
 c => (X^T)SX = 1
 c
-      docholesky=.true.!.false.
+      docholesky=.true.
       call g2g_timer_start('cholesky')
       call g2g_timer_sum_start('Overlap decomposition')
       IF (docholesky) THEN
@@ -398,22 +398,16 @@ c Calculate F' in RMM(M5)
         call g2g_timer_sum_start('initial guess')
         primera=.false.
         do i=1,M
-! X is upper triangular
-          do j=1,i-1
+          do j=1,M
             X(i,M+j)=0.D0
             do k=1,j
               X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+j+(M2-k)*(k-1)/2-1)
             enddo
-            do k=j+1,i
+            do k=j+1,M
               X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+k+(M2-j)*(j-1)/2-1)
             enddo
           enddo
-          do j=i,M
-            X(i,M+j)=0.D0
-            do k=1,i
-              X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+j+(M2-k)*(k-1)/2-1)
-            enddo
-          enddo
+
         enddo
 
         kk=0
@@ -463,8 +457,7 @@ c Recover C from (X^-1)*C
         do i=1,M
           do j=1,M
             X(i,M2+j)=0.D0
-! X is upper triangular
-            do k=i,M
+            do k=1,M
               X(i,M2+j)=X(i,M2+j)+X(i,k)*X(k,M+j)
             enddo
           enddo

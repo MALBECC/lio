@@ -13,9 +13,9 @@
       REAL*8 alpha,beta
       integer i,j,stat
       external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-      external CUBLAS_SHUTDOWN, CUBLAS_ALLOC
+      external CUBLAS_SHUTDOWN, CUBLAS_ALLOC, CUBLAS_DGEMM
       integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-      integer CUBLAS_INIT
+      integer CUBLAS_INIT, CUBLAS_DGEMM
       REAL*8 , intent(in) :: A(M,M)
       REAL*8 , intent(out) :: C(M,M)
 !---------------------------------------------------------------------!
@@ -28,7 +28,7 @@
       stat = CUBLAS_SET_MATRIX(M,M,sizeof_real,A,M,
      > devPtrScratch1,M)
 !------------------------REAL----------------------------------------!
-      call CUBLAS_DGEMM ('N','N',M,M,M,alpha,devPtrX
+      stat=CUBLAS_DGEMM ('N','N',M,M,M,alpha,devPtrX
      > ,M ,devPtrScratch1,M, beta, devPtrScratch2,M)
 !--------------------------------------------------------------------!
       stat = CUBLAS_GET_MATRIX(M,M,sizeof_real,devPtrScratch2,M,

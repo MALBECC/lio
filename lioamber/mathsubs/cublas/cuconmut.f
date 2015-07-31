@@ -14,9 +14,9 @@
       REAL*8 , intent(in) :: F(M,M)
       integer i,j,stat
       external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-      external CUBLAS_SHUTDOWN, CUBLAS_ALLOC
+      external CUBLAS_SHUTDOWN, CUBLAS_ALLOC, CUBLAS_ZGEMM
       integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-      integer CUBLAS_INIT
+      integer CUBLAS_INIT, CUBLAS_ZGEMM
       parameter(sizeof_complex=16)
       COMPLEX*16 , intent(in) :: P(M,M)
       COMPLEX*16, intent(out) :: C(M,M)
@@ -50,10 +50,10 @@
           stop
       endif
 !
-      call CUBLAS_ZGEMM ('N','N',M,M,M,alpha,devPtrF
+      stat=CUBLAS_ZGEMM ('N','N',M,M,M,alpha,devPtrF
      > ,M ,devPtrP,M, beta, devPtrC,M)
       beta=(-1,0)
-      call CUBLAS_ZGEMM ('N','N',M,M,M,alpha,
+      stat=CUBLAS_ZGEMM ('N','N',M,M,M,alpha,
      > devPtrP,M ,devPtrF,M, beta, devPtrC,M)
 !
       stat = CUBLAS_GET_MATRIX(M, M, sizeof_complex, devPtrC, M, c, M )
@@ -82,9 +82,9 @@
       REAL*8 , intent(in) :: F(M,M)
       integer i,j,stat
       external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-      external CUBLAS_SHUTDOWN, CUBLAS_ALLOC
+      external CUBLAS_SHUTDOWN, CUBLAS_ALLOC, CUBLAS_CGEMM
       integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-      integer CUBLAS_INIT
+      integer CUBLAS_INIT, CUBLAS_CGEMM
       parameter(sizeof_complex=8)
       COMPLEX*8 , intent(in) :: P(M,M)
       COMPLEX*8, intent(out) :: C(M,M)
@@ -118,10 +118,10 @@
           stop
       endif
 !
-      call CUBLAS_CGEMM ('N','N',M,M,M,alpha,devPtrF
+      stat=CUBLAS_CGEMM ('N','N',M,M,M,alpha,devPtrF
      > ,M ,devPtrP,M, beta, devPtrC,M)
       beta=(-1,0)
-      call CUBLAS_CGEMM ('N','N',M,M,M,alpha,devPtrP
+      stat=CUBLAS_CGEMM ('N','N',M,M,M,alpha,devPtrP
      > ,M ,devPtrF,M, beta, devPtrC,M)
 !
       stat = CUBLAS_GET_MATRIX(M, M, sizeof_complex, devPtrC, M, c, M )

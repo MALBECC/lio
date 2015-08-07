@@ -10,6 +10,7 @@ c Dario Estrin, 1992
       subroutine SCF(E,dipxyz)
       use garcha_mod
       use mathsubs
+      use general_module
 #ifdef CUBLAS
       use cublasmath
 #endif
@@ -39,9 +40,16 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
         logical :: just_int3n,ematalloct
 
 !FFR!
-        real*8              :: weight
-        real*8,allocatable  :: Utrp(:,:),sqsmat(:,:),myxmat(:,:)
-        integer,allocatable :: atom_group(:),atom_selection(:)
+       real*8              :: weight
+       integer,allocatable :: atom_group(:)
+       integer,allocatable :: orb_group(:)
+       integer,allocatable :: orb_selection(:)
+
+       real*8,dimension(:,:),allocatable :: Xmat,Xtrp,Ymat,Ytrp
+       real*8,dimension(:,:),allocatable :: sqsm
+       real*8,dimension(:,:),allocatable :: Vmat
+       real*8,dimension(:),allocatable   :: Dvec
+
 
 #ifdef CUBLAS
         integer sizeof_real
@@ -164,6 +172,14 @@ c
       Qc=Qc-Nel
       Qc2=Qc**2
 
+
+! FFR: Variable Allocation
+!--------------------------------------------------------------------!
+       allocate(Xmat(M,M),Xtrp(M,M),Ymat(M,M),Ytrp(M,M))
+       allocate(Vmat(M,M),Dvec(M))
+       allocate(sqsm(M,M))
+
+
 C----------------------------------------
 c Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
 
@@ -258,15 +274,15 @@ c Diagonalization of S matrix, after this is not needed anymore
 c S = YY^T ; X = (Y^-1)^T
 c => (X^T)SX = 1
 c
-!      docholesky=.false.
-      docholesky=.true.
+      docholesky=.false.
+!      docholesky=.true.
       call g2g_timer_start('cholesky')
       call g2g_timer_sum_start('Overlap decomposition')
       IF (docholesky) THEN
 #ifdef magma
         ! ESTO SIGUE USANDO Smat EN RMM(M5)
         ! CAMBIARLO CUANDO SE SIGA PROBANDO MAGMA
-        PRINT*,'DOING CHOLESKY'
+        PRINT*,'DOING MAGMA-CHOLESKY'
 
         ALLOCATE(Y(M,M),Ytrans(M,M))
         DO iii=1,M;DO jjj=1,M
@@ -291,94 +307,50 @@ c
         PRINT*,'CHOLESKY MAGMA'
 
 #else
-        PRINT*,'DOING CHOLESKY'
-        ALLOCATE(Y(M,M),Ytrans(M,M),Xtrans(M,M))
 
-        Y=Smat
-        CALL dpotrf('L',M,Y,M,info)
-        DO iii=1,M;DO jjj=1,M
-          IF (jjj.GT.iii) THEN
-            Y(iii,jjj)=0.0d0
-          ENDIF
-          Ytrans(jjj,iii)=Y(iii,jjj)
-        ENDDO;ENDDO
+! FFR: Cholesky Decomposition of Overlap
+!--------------------------------------------------------------------!
+! I am keeping Y,Ytrans and Xtrans but they should be replaced
+! by the much nicer Ymat,Ytrp,Xtrp (and X by Xmat). The outputs
+! Dvec and Vmat don't have the same meaning as in the diagona-
+! lization (they are not eigenvalues or eigenvectors. No S1/2
+! matrix can be obtained.
+!
+! Magma option should be introduced INSIDE of che call
+!
+         call sdcmp_cholesky(Smat,Dvec,Vmat,Ymat,Xtrp,Ytrp,Xmat)
 
-        Xtrans=Y
-        CALL dtrtri('L','N',M,Xtrans,M,info)
-        DO iii=1,M;DO jjj=1,M
-          IF (jjj.GT.iii) THEN
-            Xtrans(iii,jjj)=0.0d0
-          ENDIF
-          X(jjj,iii)=Xtrans(iii,jjj)
-        ENDDO;ENDDO
+         allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
+         X=Xmat
+         Y=Ymat
+         Xtrans=Xtrp
+         Ytrans=Ytrp
+         do kk=1,M
+           RMM(M13+kk-1)=0.0d0
+         enddo
+
 #endif
       ELSE
 
+! FFR: Canonical Diagonalization of Overlap
+!--------------------------------------------------------------------!
+! I am keeping Y,Ytrans and Xtrans but they should be replaced
+! by the much nicer Ymat,Ytrp,Xtrp (and X by Xmat). Also, copy
+! into RMM.
+!
+         call sdiag_canonical(Smat,Dvec,Vmat,Xmat,Xtrp,Ymat,Ytrp)
+         sqsm=matmul(Vmat,Ytrp)
 
-c ESSL OPTION ------------------------------------------
-        do i=1,MM
-         rmm5(i)=RMM(M5+i-1)
-c        write(56,*) RMM(M15+1)
-        enddo
-#ifdef essl
-        call DSPEV(1,RMM(M5),RMM(M13),X,M,M,RMM(M15),M2)
-#endif
-c
-c LAPACK OPTION -----------------------------------------
-#ifdef pack
-c       call magmaf_dsyev('V','L',M,xxx,M,
-       do ii=1,M; do jj=1,M
-         X(ii,jj)=Smat(ii,jj)
-       enddo; enddo
-       if (allocated(WORK2)) deallocate(WORK2); allocate(WORK2(1))
-       call dsyev('V','L',M,X,M,RMM(M13),WORK2,-1,info)
-       LWORK2=int(WORK2(1)); deallocate(WORK2); allocate(WORK2(LWORK2))
-       call dsyev('V','L',M,X,M,RMM(M13),WORK2,LWORK2,info)
-#endif
-c-----------------------------------------------------------
-c
-c LINEAR DEPENDENCY ELIMINATION
-        allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
-!FFR!
-        allocate (Utrp(M,M),myxmat(M,M))
-c
-        do i=1,MM
-          RMM(M5+i-1)=rmm5(i)
-          ! WHAT IS THE POINT OF DOING THIS?
-c          write(56,*) RMM(M15+1)
-        enddo
-
-        do j=1,M
-          if (RMM(M13+j-1).lt.1.0D-06) then
-            write(*,*) 'LINEAR DEPENDENCY DETECTED'
-            do i=1,M
-              X(i,j)=0.0D0
-              Y(i,j)=0.0D0
-            enddo
-          else
-            do i=1,M
-              Utrp(j,i)=X(i,j) !FFR!
-              X(i,j)=X(i,j)/sqrt(RMM(M13+j-1))
-              myxmat(i,j)=X(i,j) !FFR!
-              Y(i,j)=X(i,j)*(RMM(M13+j-1))
-            enddo
-          endif
+         allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
+         X=Xmat
+         Y=Ymat
+         Xtrans=Xtrp
+         Ytrans=Ytrp
+         do kk=1,M
+           RMM(M13+kk-1)=Dvec(kk)
          enddo
-
-         do i=1,M
-            do j=1,M
-              Ytrans(i,j)=Y(j,i)
-              Xtrans(i,j)=X(j,i)
-            enddo
-         enddo
-
-!FFR!
-      Utrp=MATMUL(myxmat,Utrp)
-      call spunpack('L',M,RMM(M5),Smat)
-      Utrp=MATMUL(Utrp,Smat)
 
       ENDIF
-
       call g2g_timer_stop('cholesky')
 !! CUBLAS ---------------------------------------------------------------------!
 #ifdef CUBLAS
@@ -414,22 +386,16 @@ c Calculate F' in RMM(M5)
         call g2g_timer_sum_start('initial guess')
         primera=.false.
         do i=1,M
-! X is upper triangular
-          do j=1,i-1
+          do j=1,M
             X(i,M+j)=0.D0
             do k=1,j
               X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+j+(M2-k)*(k-1)/2-1)
             enddo
-            do k=j+1,i
+            do k=j+1,M
               X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+k+(M2-j)*(j-1)/2-1)
             enddo
           enddo
-          do j=i,M
-            X(i,M+j)=0.D0
-            do k=1,i
-              X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+j+(M2-k)*(k-1)/2-1)
-            enddo
-          enddo
+
         enddo
 
         kk=0
@@ -479,8 +445,7 @@ c Recover C from (X^-1)*C
         do i=1,M
           do j=1,M
             X(i,M2+j)=0.D0
-! X is upper triangular
-            do k=i,M
+            do k=1,M
               X(i,M2+j)=X(i,M2+j)+X(i,k)*X(k,M+j)
             enddo
           enddo
@@ -676,13 +641,26 @@ c-------------------------------------------------------------------------------
             enddo
           enddo
 
-!FFR! This is some van voorhis stuff
-          allocate(atom_selection(natom),atom_group(natom))
+! FFR: Van Voorhis Term for DIIS
+!--------------------------------------------------------------------!
+          if (.not.allocated(atom_group)) then
+            allocate(atom_group(natom))
+            call read_list('atomgroup',atom_group)
+          endif
+          if (.not.allocated(orb_group)) then
+            allocate(orb_group(M))
+            call atmorb(atom_group,nuc,orb_group)
+          endif
+          if (.not.allocated(orb_selection)) then
+            allocate(orb_selection(M))
+          endif
           weight=0.0d0
-!          weight=0.5d0
-          call read_groups(natom,'',atom_group)
-          call select_atoms(natom,1,atom_group,atom_selection)
-          call vvfterm(M,Utrp,atom_selection,weight,fock)
+          weight=0.0d0
+          call vector_selection(1,orb_group,orb_selection)
+          call fterm_biaspot(M,sqsm,orb_selection,weight,fock)
+          weight=-weight
+          call vector_selection(2,orb_group,orb_selection)
+          call fterm_biaspot(M,sqsm,orb_selection,weight,fock)
 
 c-----------------------------------------------------------------------------------------
 c Expand density matrix into full square form (before, density matrix was set up for triangular sums
@@ -838,18 +816,29 @@ c
                  fock(k,j)=RMM(M5+k+(M2-j)*(j-1)/2-1)
               enddo
             enddo
-!FFR!
-!          if (.not.allocated(atom_group)) then
-!            allocate(atom_group(natom))
-!            call read_groups(natom,'atomgroup',atom_group)
-!          endif
-!          if (.not.allocated(atom_selection)) then
-!            allocate(atom_selection(natom))
-!          endif
-!          weight=0.0d0
-!          weight=0.5d0
-!          call select_atoms(natom,1,atom_group,atom_selection)
-!          call vvfterm(M,Utrp,atom_selection,weight,fock)
+
+! FFR: Van Voorhis Term for not DIIS
+!--------------------------------------------------------------------!
+          write(*,*) 'applying VV'
+          if (.not.allocated(atom_group)) then
+            allocate(atom_group(natom))
+            call read_list('atomgroup',atom_group)
+          endif
+          if (.not.allocated(orb_group)) then
+            allocate(orb_group(M))
+            call atmorb(atom_group,nuc,orb_group)
+          endif
+          if (.not.allocated(orb_selection)) then
+            allocate(orb_selection(M))
+          endif
+          weight=0.0d0
+          weight=0.19d0
+          call vector_selection(1,orb_group,orb_selection)
+          call fterm_biaspot(M,sqsm,orb_selection,weight,fock)
+          weight=-weight
+          call vector_selection(2,orb_group,orb_selection)
+          call fterm_biaspot(M,sqsm,orb_selection,weight,fock)
+
 
 
 #ifdef CUBLAS
@@ -1363,7 +1352,7 @@ c
 !       do kk=1,natom
 !         q(kk)=real(Iz(kk))
 !       enddo
-!       call lowdinpop(M,natom,RealRho,Utrp,Nuc,q)
+!       call lowdinpop(M,natom,RealRho,sqsm,Nuc,q)
 !       call mulliken_write(85,natom,Iz,q)
        endif
 

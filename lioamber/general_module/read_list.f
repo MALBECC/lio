@@ -1,19 +1,20 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       pure subroutine select_atoms
-     > (N,chosen_group,atom_group,atom_selection)
-
+       subroutine read_list_n(file_name,list)
        implicit none
-       integer,intent(in)   :: N,chosen_group
-       integer,intent(in)   :: atom_group(N)
-       integer,intent(out)  :: atom_selection(N)
+       character(len=*)     :: file_name
+       integer,intent(out)  :: list(:)
 
-       integer :: kk
+       integer :: kk,errorid
 !------------------------------------------------------------------------------!
 
-       do kk=1,N
-         atom_selection(kk)=0
-         if (atom_group(kk).EQ.chosen_group) atom_selection(kk)=1
+       open(unit=1001,file=file_name)
+
+       do kk=1,size(list)
+         read(unit=1001,fmt=*,iostat=errorid) list(kk)
        enddo
+
+       if (errorid.ne.0)
+     >   stop ('Error while reading list of integers.')
 
 !------------------------------------------------------------------------------!
        return; end subroutine

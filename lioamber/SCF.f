@@ -45,10 +45,12 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
        integer,allocatable :: orb_group(:)
        integer,allocatable :: orb_selection(:)
 
+       real*8,dimension(:,:),allocatable :: fockbias
        real*8,dimension(:,:),allocatable :: Xmat,Xtrp,Ymat,Ytrp
        real*8,dimension(:,:),allocatable :: sqsm
        real*8,dimension(:,:),allocatable :: Vmat
        real*8,dimension(:),allocatable   :: Dvec
+
 
 
 #ifdef CUBLAS
@@ -178,6 +180,20 @@ c
        allocate(Xmat(M,M),Xtrp(M,M),Ymat(M,M),Ytrp(M,M))
        allocate(Vmat(M,M),Dvec(M))
        allocate(sqsm(M,M))
+       allocate(fockbias(M,M))
+
+       if (.not.allocated(atom_group)) then
+          allocate(atom_group(natom))
+          call read_list('atomgroup',atom_group)
+       endif
+       if (.not.allocated(orb_group)) then
+          allocate(orb_group(M))
+          call atmorb(atom_group,nuc,orb_group)
+       endif
+       if (.not.allocated(orb_selection)) then
+          allocate(orb_selection(M))
+       endif
+
 
 
 C----------------------------------------
@@ -340,6 +356,15 @@ c
 !
          call sdiag_canonical(Smat,Dvec,Vmat,Xmat,Xtrp,Ymat,Ytrp)
          sqsm=matmul(Vmat,Ytrp)
+         fockbias=0.0d0
+
+         weight=0.195d0
+         call vector_selection(1,orb_group,orb_selection)
+         call fterm_biaspot(M,sqsm,orb_selection,weight,fockbias)
+
+         weight=-weight
+         call vector_selection(2,orb_group,orb_selection)
+         call fterm_biaspot(M,sqsm,orb_selection,weight,fockbias)
 
          allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
          X=Xmat
@@ -643,24 +668,7 @@ c-------------------------------------------------------------------------------
 
 ! FFR: Van Voorhis Term for DIIS
 !--------------------------------------------------------------------!
-          if (.not.allocated(atom_group)) then
-            allocate(atom_group(natom))
-            call read_list('atomgroup',atom_group)
-          endif
-          if (.not.allocated(orb_group)) then
-            allocate(orb_group(M))
-            call atmorb(atom_group,nuc,orb_group)
-          endif
-          if (.not.allocated(orb_selection)) then
-            allocate(orb_selection(M))
-          endif
-          weight=0.0d0
-          weight=0.0d0
-          call vector_selection(1,orb_group,orb_selection)
-          call fterm_biaspot(M,sqsm,orb_selection,weight,fock)
-          weight=-weight
-          call vector_selection(2,orb_group,orb_selection)
-          call fterm_biaspot(M,sqsm,orb_selection,weight,fock)
+          fock=fock+fockbias
 
 c-----------------------------------------------------------------------------------------
 c Expand density matrix into full square form (before, density matrix was set up for triangular sums
@@ -819,25 +827,7 @@ c
 
 ! FFR: Van Voorhis Term for not DIIS
 !--------------------------------------------------------------------!
-          write(*,*) 'applying VV'
-          if (.not.allocated(atom_group)) then
-            allocate(atom_group(natom))
-            call read_list('atomgroup',atom_group)
-          endif
-          if (.not.allocated(orb_group)) then
-            allocate(orb_group(M))
-            call atmorb(atom_group,nuc,orb_group)
-          endif
-          if (.not.allocated(orb_selection)) then
-            allocate(orb_selection(M))
-          endif
-          weight=0.0d0
-          weight=0.19d0
-          call vector_selection(1,orb_group,orb_selection)
-          call fterm_biaspot(M,sqsm,orb_selection,weight,fock)
-          weight=-weight
-          call vector_selection(2,orb_group,orb_selection)
-          call fterm_biaspot(M,sqsm,orb_selection,weight,fock)
+          fock=fock+fockbias
 
 
 

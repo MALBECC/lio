@@ -196,7 +196,7 @@ c Calculate 1e part of F here (kinetic/nuc in int1, MM point charges
 c in intsol)
 c
       call int1(En)
-      if (ecpmode) then
+      if (ecpmode .and. .false. ) then
           write(*,*) "agrego terminos AAA,AAB, BAC a los de 1e"
           do k=1,MM
                term1e(k)=RMM(M11+k-1)
@@ -431,6 +431,18 @@ c Recover C from (X^-1)*C
           enddo
         enddo
       call g2g_timer_stop('initial guess')
+
+
+
+
+      if (ecpmode ) then
+          write(*,*) "agrego terminos AAA,AAB, BAC a los de 1e"
+          do k=1,MM
+               term1e(k)=RMM(M11+k-1)
+               RMM(M11+k-1)=RMM(M11+k-1)+VAAA(k)+VAAB(k)+VBAC(k)
+          enddo
+      end if
+
 c
 c Density Matrix
 c
@@ -539,11 +551,47 @@ c      if (MEMO) then
 c
 c Fit density basis to current MO coeff and calculate Coulomb F elements
 c
+	do inick=1,MM
+	 if (RMM(inick) .ne. RMM(inick)) then
+	  write(*,*) "NAN en Rho",inick
+	  stop
+	 end if
+	 if (RMM(M5+inick-1) .ne. RMM(M5+inick-1)) then
+	  stop "NAN en Fock"
+	 end if
+	end do
+
             call int3lu(E2)
+
+
+        do inick=1,MM
+         if (RMM(inick) .ne. RMM(inick)) then
+          write(*,*) "NAN en Rho 2",inick
+          stop
+         end if
+         if (RMM(M5+inick-1) .ne. RMM(M5+inick-1)) then
+          stop "NAN en Fock 2"
+         end if
+        end do
+
 c
 c XC integration / Fock elements
 c
             call g2g_solve_groups(0,Ex,0)
+
+
+
+        do inick=1,MM
+         if (RMM(inick) .ne. RMM(inick)) then
+          write(*,*) "NAN en Rho 3",inick
+          stop
+         end if
+         if (RMM(M5+inick-1) .ne. RMM(M5+inick-1)) then
+          stop "NAN en Fock 3"
+         end if
+        end do
+
+
 c-------------------------------------------------------
         E1=0.0D0
 c

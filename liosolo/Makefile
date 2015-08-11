@@ -6,7 +6,7 @@ ifeq ($(xeon_phi),1)
 endif
 ######################################################################
 ifeq ($(ifort),1)
-  FC   = ifort
+  FC   = ifort -check bounds
   LIBS+= -module ../lioamber/obj
 else
   FC   = gfortran

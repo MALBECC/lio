@@ -17,7 +17,7 @@
 !activa cuts en las integrales de ECP
 
 !para debugueo
-      logical :: ecpdebug
+      logical :: ecpdebug,ecp_full_range_int
       integer :: local_nonlocal
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -52,7 +52,6 @@
 !guarda la distancia en x, y, z entre los atomos i y j  dist(i,j)=xi-xj
 !Cuidado, esta en unidades atomicas
 
-
 !&&&&&&&&&&&&&&&&&&&&&&&&&hasta aca testeado FFFFFFFFFFFFFFFFFFFFFFF
 
 
@@ -78,7 +77,7 @@
 !Parameters
 	DOUBLE PRECISION, parameter :: pi=3.14159265358979312D0, pi12=1.77245385090552D0 !pi12 = pi^0.5
 !factorial
-	integer, dimension(-1:15) :: fac = (/1,1,1,2,6,24,120,720,5040,40320,362880,3628800,39916800,479001600,1932053504,1278945280,2004310016/)
+	integer, dimension(0:15) :: fac = (/1,1,2,6,24,120,720,5040,40320,362880,3628800,39916800,479001600,1932053504,1278945280,2004310016/)
 !test
 	INTEGER, PARAMETER  :: dp = SELECTED_REAL_KIND(12, 60)
 
@@ -89,7 +88,7 @@
 !ul=F(f(lx,ly,lz),m)
         DOUBLE PRECISION, dimension (1) :: l0 = (/0.5d0/pi12/)
 	!l0 chequeado
-	Double precision, parameter :: aux1=sqrt(3.d0)/(2*pi12)
+	Double precision, parameter :: aux1=sqrt(3.d0)/(2d0*pi12)
 	DOUBLE PRECISION, dimension (3,-1:1) :: l1=(/0.d0,aux1,0.d0,aux1,0.d0,0.d0,0.d0,0.d0,aux1/)
 	!l1 chequeado
         Double precision, parameter :: aux2= 0.5d0 * sqrt(15.d0/pi)
@@ -1061,6 +1060,7 @@
 !si sgn=1 calcula Bn; si sgn=-1 calcula Cn
         integer, intent(in) :: sgn,n
         DOUBLE PRECISION, intent(in) :: cados,expo,c0coef,coefn1, coefn2
+	if ( -n-1 .lt. 0) stop " se pide fac(n), n<0 en NEXTCOEF"
         NEXTCOEF=(1+sgn*(-1)**(-n-1))*cados**(-n-1)*expo/fac(-n-1)-2*c0coef*coefn2 +cados*coefn1
 !	write(*,*) (1+sgn*(-1)**(-n-1))*cados**(-n-1)*expo/fac(-n-1)/(-n-1),-2*c0coef*coefn2/(-n-1),cados*coefn1/(-n-1)
 !	write(*,*) "n",n, "sgn", sgn, "(1+sgn*(-1)**(-n-1))", (1+sgn*(-1)**(-n-1))

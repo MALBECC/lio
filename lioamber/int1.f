@@ -33,7 +33,10 @@ c-----auxiliar quantities
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !
        allocate(s0s(natom),s1s(natom),s2s(natom))
-       allocate(s3s(natom),s4s(natom),Iaux(natom))
+!       allocate(s3s(natom),s4s(natom),Iaux(natom))
+       allocate(s3s(natom))
+       allocate(s4s(natom))
+!       allocate(Iaux(natom))
        if (.not.allocated(Smat)) allocate(Smat(M,M))
 
 c-----distance between pairs of centers
@@ -826,6 +829,6 @@ c     pause
       do i=1,M
         Smat(i,i)=Smat(i,i)/2
       enddo
-      deallocate(s0s,s1s,s2s,s3s,s4s,Iaux)
+      deallocate(s0s,s1s,s2s,s3s,s4s)!,Iaux)
       return;end subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

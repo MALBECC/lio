@@ -8,6 +8,7 @@
       integer M,Md,natom,ntatom,NMAX,NCO,NUNP,igrid,igrid2
      >  ,Iexch,nsol,npas,npasw,idip,watermod,noconverge,
      > converge,ndiis,NGEO,nang,timedep,ntdstep,propagator,NBCH 
+      integer restart_freq, energy_freq
       real*8 GOLD, TOLD, qmmmcut, dgtrig
       parameter (nng=100)
       character*65 title
@@ -27,6 +28,10 @@
       logical dens1,integ1,sol1,free,free1, field, extern
 
       logical tdrestart, writedens
+
+      logical cubegen_only,cube_dens,cube_orb,cube_elec
+      integer cube_res,cube_sel
+      character*20 cube_dens_file,cube_orb_file,cube_elec_file
 
 
       dimension OCC(40),oc2(400),ATCOEF(100*ng0),ighost(ntq),

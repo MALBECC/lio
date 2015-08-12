@@ -17,9 +17,9 @@
 !activa cuts en las integrales de ECP
 
 !para debugueo
-      logical :: ecpdebug,ecp_full_range_int
+      logical :: ecp_debug,ecp_full_range_int
       integer :: local_nonlocal
-
+      integer :: verbose_ECP
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 !Datos de los ECP

@@ -5,8 +5,16 @@
      > , writexyz_i, intsoldouble_i, DIIS_i, ndiis_i, dgtrig_i, Iexch_i
      > , integ_i, DENS_i , IGRID_i, IGRID2_i , timedep_i , tdstep_i 
      > , ntdstep_i, field_i, exter_i, a0_i, epsilon_i, Fx_i
-     > , Fy_i, Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i)
-c     > , basis_set_i, fitting_set_i, int_basis_i)
+     > , Fy_i, Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i
+#ifdef MOD_AMBER
+     > , basis_set_i, fitting_set_i, int_basis_i
+     > , cubegen_only_i, cuberes_i
+     > , cubedens_i, cubedensfile_i
+     > , cubeorb_i, cubesel_i, cubeorbfile_i
+     > , restart_freq_i, energy_freq_i)
+#else
+     > )
+#endif
 
       use garcha_mod
 c      use qmmm_module, only : qmmm_struct,qmmm_nml
@@ -30,9 +38,14 @@ c      include 'param'
        integer , intent(in)  :: natomin
          integer , intent(in)  :: Izin(natomin)
        character(len=20) :: basis_i
-c       character(len=40) :: basis_set_i
-c       character(len=40) :: fitting_set_i
-c       logical :: int_basis_i
+#ifdef MOD_AMBER
+       character(len=40) :: basis_set_i
+       character(len=40) :: fitting_set_i
+       logical :: int_basis_i,cubegen_only_i,cubedens_i,cubeorb_i
+       integer :: cuberes_i, cubesel_i
+       character(len=20) :: cubedensfile_i,cubeorbfile_i
+       integer :: restart_freq_i, energy_freq_i
+#endif
        character(len=20) :: output_i
        character(len=20) :: fcoord_i
          character(len=20) :: fmulliken_i
@@ -76,9 +89,33 @@ c       logical :: int_basis_i
 
 
        basis= basis_i
-       basis_set=""        ! basis_set_i
-       fitting_set=""      ! fitting_set_i
-       int_basis=.false.   ! int_basis_i
+#ifdef MOD_AMBER
+       basis_set=basis_set_i
+       fitting_set=fitting_set_i
+       int_basis=int_basis_i
+       cubegen_only = cubegen_only_i
+       cube_res = cuberes_i
+       cube_dens = cubedens_i
+       cube_dens_file = cubedensfile_i
+       cube_orb = cubeorb_i
+       cube_sel = cubesel_i
+       cube_orb_file = cubeorbfile_i
+       restart_freq = restart_freq_i
+       energy_freq = energy_freq_i
+#else
+       basis_set="DZVP"
+       fitting_set="DZVP Coulomb Fitting"
+       int_basis=.false.
+       cubegen_only = .false.
+       cube_res = 40
+       cube_dens =.false.
+       cube_dens_file = 'dens.cube'
+       cube_orb = .false.
+       cube_sel = 0
+       cube_orb_file = "orb.cube"
+       restart_freq = 1
+       energy_freq = 1
+#endif
        Output= output_i
        fcoord=fcoord_i
        fmulliken=fmulliken_i

@@ -1238,11 +1238,15 @@ c      write(*,*) 'estoooo',ngpru, ngDyn, ng0, natom
       call g2g_parameter_init(NORM,natom,natom,ngDyn,!ngdDyn,
      >                        rqm,Rm2,Iz,Nr,Nr2,Nuc,
      >                        M,ncont,nshell,c,a,
-     >                        Md,ncontd,nshelld,cd,ad,Nucd,af,
-     >                        RMM,M18,M5,M11,M3,rhoalpha,rhobeta,
+     >                        RMM,M18,M5,M3,rhoalpha,rhobeta,
      >                        NCO,OPEN,Nunp,nopt,Iexch,
-     >                        e_, e_2, e3, wang, wang2, wang3,
-     >                        STR, FAC, rmax)
+     >                        e_, e_2, e3, wang, wang2, wang3)
+
+      call aint_query_gpu_level(igpu)
+      if (igpu.gt.1) then
+      call aint_parameter_init(Md, ncontd, nshelld, cd, ad, Nucd,
+     >                         af, RMM, M9, M11, STR, FAC, rmax)
+      endif
 
 c      write(*,*) '======>>>> SALIENDO DE DRIVE <<<<=========='
 
@@ -1352,14 +1356,14 @@ c---------------------------------------------------
 c---------------------------------------------------
        deallocate(X,XX)
        allocate(X(M,4*M),XX(Md,Md))
-       allocate(old1(MM))
+c       allocate(old1(MM))
 
-       allocate(old2(MM))
-       allocate(old3(MM))
 c agregadas por Nick para lectura de ECP
 	if (ecpmode) call lecturaECP()
 cccccccccccccccccccccccccccccccccccccccccccccccc
 
+c       allocate(old2(MM))
+c       allocate(old3(MM))
 
  100  format (A8)
  200  format ('basis set corresponding to Z ',I3,' was not used')

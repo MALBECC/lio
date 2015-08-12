@@ -11,9 +11,9 @@ c Dario Estrin, 1992
       use garcha_mod
       use mathsubs
       use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC
-
-
-
+#ifdef CUBLAS
+      use cublasmath
+#endif
 c      use qmmm_module, only : qmmm_struct, qmmm_nml
 c
       implicit real*8 (a-h,o-z)
@@ -27,7 +27,7 @@ c
       real*8, dimension (:,:), allocatable :: fock,fockm,rho,!,FP_PF,
      >   FP_PFm,EMAT,Y,Ytrans,Xtrans,rho1,EMAT2
 c
-       integer ndiist,cpu
+       integer ndiist
 c       dimension d(natom,natom)
        logical  hagodiis,alloqueo, ematalloc
 c       REAL*8 , intent(in)  :: qmcoords(3,natom)
@@ -38,6 +38,15 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
         REAL*8,ALLOCATABLE :: WORK2(:)
         INTEGER, ALLOCATABLE :: IWORK2(:),IPIV(:)
         logical :: just_int3n,ematalloct
+#ifdef CUBLAS
+        integer sizeof_real
+        parameter(sizeof_real=8)
+        integer stat
+        integer*8 devPtrX, devPtrY
+        external CUBLAS_INIT, CUBLAS_SET_MATRIX
+        external CUBLAS_SHUTDOWN, CUBLAS_ALLOC,CUBLAS_FREE
+        integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX
+#endif
 !--------------------------------------------------------------------!
 
         if (ecpmode) then 
@@ -60,6 +69,8 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
 #endif
 
       call g2g_timer_start('SCF')
+      call g2g_timer_sum_start('SCF')
+      call g2g_timer_sum_start('Initialize SCF')
 c      just_int3n = .false.
       alloqueo = .true.
       ematalloc=.false.
@@ -75,7 +86,8 @@ c
       Ndens=1
 c---------------------
 c       write(*,*) 'M=',M
-      allocate (znano(M,M),xnano(M,M),scratch(M,M),scratch1(M,M))
+      allocate (znano(M,M),xnano(M,M),scratch(M,M),scratch1(M,M),
+     > fock(M,M))
 
       npas=npas+1
       E=0.0D0
@@ -84,6 +96,7 @@ c       write(*,*) 'M=',M
       E2=0.0D0
       Es=0.0D0
       Eecp=0.d0
+      Ens=0.0D0
 
       ngeo=ngeo+1
 
@@ -119,6 +132,29 @@ c weights (in case of using option )
 c
 * RAM storage of two-electron integrals (if MEMO=T)
       M20 = M19 + natom*50*Nang
+
+      if (cubegen_only.and.(cube_dens.or.cube_orb.or.cube_elec)) then
+        if (.not.VCINP) then
+          write(*,*) "cubegen_only CAN ONLY BE USED WITH VCINP"
+          stop
+        endif
+        kk=0
+        do k=1,NCO
+          do i=1,M
+            kk=kk+1
+            Xnano(k,i) = RMM(M18+kk-1)
+          enddo
+        enddo
+
+        call g2g_timer_sum_start('cube gen')
+        call cubegen(M15,Xnano)
+        call g2g_timer_sum_stop('cube gen')
+
+        deallocate (znano,xnano,scratch,scratch1)
+        call g2g_timer_sum_stop('Initialize SCF')
+        call g2g_timer_sum_stop('SCF')
+        return
+      endif
 c
       Nel=2*NCO+Nunp
 c
@@ -172,7 +208,7 @@ c Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
       enddo
 
       ! get MM pointers in g2g
-      call g2g_mm_init(nsol,r,pc)
+      ! call g2g_mm_init(nsol,r,pc)
 
 
 c -Create integration grid for XC here
@@ -180,21 +216,30 @@ c -Assign points to groups (spheres/cubes)
 c -Assign significant functions to groups
 c -Calculate point weights
 c
+      call g2g_timer_sum_start('Exchange-correlation grid setup')
       call g2g_reload_atom_positions(igrid2)
+      call g2g_timer_sum_stop('Exchange-correlation grid setup')
+
+      call aint_query_gpu_level(igpu)
+      if (igpu.gt.1) call aint_new_step()
 
       if (predcoef.and.npas.gt.3) then
-        if (.not.OPEN) then
-          if(verbose) write(*,*) 'prediciendo densidad'
-          do i=1,MM
-            RMM(i)=(3*old1(i))-(3*old2(i))+(old3(i))
-          enddo
-         endif
+        write(*,*) 'no devería estar aca!'
+
+c        if (.not.OPEN) then
+c          if(verbose) write(*,*) 'prediciendo densidad'
+c          do i=1,MM
+c            RMM(i)=(3*old1(i))-(3*old2(i))+(old3(i))
+c          enddo
+c         endif
        endif
        
 c
 c Calculate 1e part of F here (kinetic/nuc in int1, MM point charges
 c in intsol)
 c
+      call g2g_timer_sum_start('1-e Fock')
+      call g2g_timer_sum_start('Nuclear attraction')
       call int1(En)
       if (ecpmode .and. .false. ) then
           write(*,*) "agrego terminos AAA,AAB, BAC a los de 1e"
@@ -211,17 +256,21 @@ c
 
 
 
-      if(nsol.gt.0) then
-        call g2g_query_cpu(cpu)
-        if (cpu.eq.1) then
+      call g2g_timer_sum_stop('Nuclear attraction')
+      if(nsol.gt.0.or.igpu.ge.4) then
+          call g2g_timer_sum_start('QM/MM')
+       if (igpu.le.1) then
           call g2g_timer_start('intsol')
           call intsol(E1s,Ens,.true.)
           call g2g_timer_stop('intsol')
         else
-          call g2g_timer_start('g2g_qmmm_fock')
-          call g2g_qmmm_fock(E1s,Ens)
-          call g2g_timer_stop('g2g_qmmm_fock')
+          call aint_qmmm_init(nsol,r,pc)
+
+          call g2g_timer_start('aint_qmmm_fock')
+          call aint_qmmm_fock(E1s,Ens)
+          call g2g_timer_stop('aint_qmmm_fock')
         endif
+          call g2g_timer_sum_stop('QM/MM')
       endif
 c
 c test ---------------------------------------------------------
@@ -229,14 +278,15 @@ c test ---------------------------------------------------------
       do k=1,MM
         E1=E1+RMM(k)*RMM(M11+k-1)
       enddo
+      call g2g_timer_sum_stop('1-e Fock')
 c
 c Diagonalization of S matrix, after this is not needed anymore
 c S = YY^T ; X = (Y^-1)^T
 c => (X^T)SX = 1
 c
-      docholesky=.true.!.false.
+      docholesky=.true.
       call g2g_timer_start('cholesky')
-
+      call g2g_timer_sum_start('Overlap decomposition')
       IF (docholesky) THEN
 #ifdef magma
         ! ESTO SIGUE USANDO Smat EN RMM(M5)
@@ -346,8 +396,28 @@ c          write(56,*) RMM(M15+1)
       ENDIF
 
       call g2g_timer_stop('cholesky')
-
+!! CUBLAS ---------------------------------------------------------------------!
+#ifdef CUBLAS
+            stat=CUBLAS_INIT()
+            stat = CUBLAS_ALLOC(M*M, sizeof_real, devPtrX)
+            stat = CUBLAS_ALLOC(M*M, sizeof_real, devPtrY)
+            if (stat.NE.0) then
+            write(*,*) "X and/or Y memory allocation failed"
+            call CUBLAS_SHUTDOWN
+            stop
+            endif
+            stat = CUBLAS_SET_MATRIX(M,M,sizeof_real,X,M,devPtrX,M)
+            stat = CUBLAS_SET_MATRIX(M,M,sizeof_real,Y,M,devPtrY,M)
+            if (stat.NE.0) then
+            write(*,*) "X and/or Y setting failed"
+            call CUBLAS_SHUTDOWN
+            stop
+            endif
+#endif
+!------------------------------------------------------------------------------!
       call g2g_timer_start('initial guess')
+      call g2g_timer_sum_stop('Overlap decomposition')
+
 c
 c CASE OF NO STARTING GUESS PROVIDED, 1 E FOCK MATRIX USED
 c FCe = SCe; (X^T)SX = 1
@@ -357,24 +427,19 @@ c
 
 c Calculate F' in RMM(M5)
       if((.not.ATRHO).and.(.not.VCINP).and.primera) then
+        call g2g_timer_sum_start('initial guess')
         primera=.false.
         do i=1,M
-! X is upper triangular
-          do j=1,i-1
+          do j=1,M
             X(i,M+j)=0.D0
             do k=1,j
               X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+j+(M2-k)*(k-1)/2-1)
             enddo
-            do k=j+1,i
+            do k=j+1,M
               X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+k+(M2-j)*(j-1)/2-1)
             enddo
           enddo
-          do j=i,M
-            X(i,M+j)=0.D0
-            do k=1,i
-              X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+j+(M2-k)*(k-1)/2-1)
-            enddo
-          enddo
+
         enddo
 
         kk=0
@@ -424,8 +489,7 @@ c Recover C from (X^-1)*C
         do i=1,M
           do j=1,M
             X(i,M2+j)=0.D0
-! X is upper triangular
-            do k=i,M
+            do k=1,M
               X(i,M2+j)=X(i,M2+j)+X(i,k)*X(k,M+j)
             enddo
           enddo
@@ -475,12 +539,15 @@ c
           enddo
         enddo
 c
+        call g2g_timer_sum_stop('initial guess')
       endif
 
 c End of Starting guess (No MO , AO known)-------------------------------
 c
       if ((timedep.eq.1).and.(tdrestart)) then
+        call g2g_timer_sum_start('TD')
         call TD()
+        call g2g_timer_sum_stop('TD')
         return
       endif
 c 
@@ -488,7 +555,9 @@ c Precalculate two-index (density basis) "G" matrix used in density fitting
 c here (S_ij in Dunlap, et al JCP 71(8) 1979) into RMM(M7)
 c Also, pre-calculate G^-1 if G is not ill-conditioned into RMM(M9)
 c
+      call g2g_timer_sum_start('Coulomb G matrix')
       call int2()
+      call g2g_timer_sum_stop('Coulomb G matrix')
 c
 **
 c
@@ -497,8 +566,15 @@ c used in density fitting / Coulomb F element calculation here
 c (t_i in Dunlap)
 c
 
+      call aint_query_gpu_level(igpu)
+      if (igpu.gt.2) then
+        call aint_coulomb_init()
+      endif
+      if (igpu.eq.5) MEMO = .false.
+      !MEMO=.true.
       if (MEMO) then
          call g2g_timer_start('int3mem')
+         call g2g_timer_sum_start('Coulomb precalc')
 c Large elements of t_i put into double-precision cool here
 c Size criteria based on size of pre-factor in Gaussian Product Theorem
 c (applied to MO basis indices)
@@ -506,6 +582,7 @@ c (applied to MO basis indices)
 c Small elements of t_i put into single-precision cools here
 c         call int3mems()
          call g2g_timer_stop('int3mem')
+         call g2g_timer_sum_stop('Coulomb precalc')
       endif
 ****
 c---------------------------------------------------------------------
@@ -528,10 +605,15 @@ c
       if (DIIS.and.alloqueo) then
         alloqueo=.false.
 c       write(*,*) 'eme=', M
-       allocate(rho1(M,M),rho(M,M),fock(M,M),fockm(MM,ndiis),
+       allocate(rho1(M,M),rho(M,M),fockm(MM,ndiis),
      >  FP_PFm(MM,ndiis),EMAT(ndiis+1,ndiis+1),bcoef(ndiis+1)
      >  ,suma(MM))
       endif
+      call g2g_timer_sum_stop('Initialize SCF')
+      do i=1,MM
+         if(RMM(i).ne.RMM(i)) stop 'NAN en RHO'
+         if(RMM(M5+i).ne.RMM(M5+i)) stop 'NAN en fock'
+      enddo
 c-------------------------------------------------------------------
 c-------------------------------------------------------------------
 c      write(*,*) 'empiezo el loop',NMAX
@@ -540,6 +622,8 @@ c-------------------------------------------------------------------
       do 999 while (good.ge.told.and.niter.le.NMAX)
 
         call g2g_timer_start('Total iter')
+        call g2g_timer_sum_start('Iteration')
+        call g2g_timer_sum_start('Fock integrals')
         niter=niter+1
         if(niter.le.ndiis) then
           ndiist=niter
@@ -561,8 +645,10 @@ c
 	 end if
 	end do
 
-            call int3lu(E2)
 
+
+            call g2g_timer_sum_start('Coulomb fit + Fock')
+            call int3lu(E2)
 
         do inick=1,MM
          if (RMM(inick) .ne. RMM(inick)) then
@@ -574,9 +660,12 @@ c
          end if
         end do
 
+
+            call g2g_timer_sum_pause('Coulomb fit + Fock')
 c
 c XC integration / Fock elements
 c
+            call g2g_timer_sum_start('Exchange-correlation Fock')
             call g2g_solve_groups(0,Ex,0)
 
 
@@ -591,6 +680,7 @@ c
          end if
         end do
 
+            call g2g_timer_sum_pause('Exchange-correlation Fock')
 
 c-------------------------------------------------------
         E1=0.0D0
@@ -603,6 +693,8 @@ c E1 includes solvent 1 electron contributions
         do k=1,MM
           E1=E1+RMM(k)*RMM(M11+k-1)
         enddo
+        call g2g_timer_sum_pause('Fock integrals')
+        call g2g_timer_sum_start('SCF acceleration')
 c
 c
 c now, we know S matrix, and F matrix, and E for a given P
@@ -628,6 +720,8 @@ c If DIIS is turned on, update fockm with the current transformed F' (into ON
 c basis) and update FP_PFm with the current transformed [F',P']
 c-----------------------------------------------------------------------------------------
         if (DIIS) then
+          call g2g_timer_sum_start('DIIS')
+          call g2g_timer_sum_start('DIIS prep')
 c-----------------------------------------------------------------------------------------
 c Expand F into square form
 c (for better memory access patterns in coming multiplications)
@@ -656,8 +750,13 @@ c-------------------------------------------------------------------------------
           enddo
 
           ! Calculate F' and [F',P']
+          call g2g_timer_start('commutators + basechange')
+#ifdef CUBLAS
+          call cu_calc_fock_commuts(fock,rho,devPtrX,devPtrY,scratch,M)
+#else
           call calc_fock_commuts(fock,rho,X,Y,scratch,scratch1,M)
-
+#endif
+          call g2g_timer_stop('commutators + basechange')
           ! update fockm with F'
           do j=ndiis-(ndiist-1),ndiis-1
             do i=1,MM
@@ -680,12 +779,23 @@ c-------------------------------------------------------------------------------
               FP_PFm(i,j)=FP_PFm(i,j+1)
             enddo
           enddo
+#ifdef CUBLAS
+          do k=1,M
+            do j=k,M
+              i=j+(M2-k)*(k-1)/2
+              FP_PFm(i,ndiis)=scratch(j,k)
+            enddo
+          enddo
+#else
           do k=1,M
             do j=k,M
               i=j+(M2-k)*(k-1)/2
               FP_PFm(i,ndiis)=scratch(j,k)-scratch1(j,k)
             enddo
           enddo
+#endif
+          call g2g_timer_sum_pause('DIIS prep')
+          call g2g_timer_sum_pause('DIIS')
         endif
 c
 c-------------Decidiendo cual critero de convergencia usar-----------
@@ -705,6 +815,7 @@ c If we are not doing diis this iteration, apply damping to F, save this
 c F in RMM(M3) for next iteration's damping and put F' = X^T * F * X in RMM(M5)
 c-----------------------------------------------------------------------------------------
         if(.not.hagodiis) then 
+          call g2g_timer_start('Fock damping')
           if(niter.ge.2) then
             do k=1,MM
               kk=M5+k-1
@@ -712,62 +823,86 @@ c-------------------------------------------------------------------------------
               RMM(kk)=(RMM(kk)+DAMP*RMM(kk2))/(1.D0+DAMP)
             enddo
           endif
-
 c the newly constructed damped matrix is stored, for next iteration
 c in RMM(M3)
 c
-          do k=1,MM
+         do k=1,MM
             kk=M5+k-1
             kk2=M3+k-1
             RMM(kk2)=RMM(kk)
           enddo
 c
 ! xnano=X^T
-          do i=1,M
-            ! X is upper triangular
-            do j=1,i
-              xnano(i,j)=X(j,i)
-            enddo
-          enddo
+!          do i=1,M
+!            ! X is upper triangular
+!            do j=1,i
+!              xnano(i,j)=X(j,i)
+!            enddo
+!          enddo
 
 ! RMM(M5) gets F' = X^T * F * X
-          do j=1,M
-            do i=1,M
-              X(i,M+j)=0.D0
-            enddo
-            do k=1,j
-              ! xnano is lower triangular
-              do i=k,M
-                X(i,M+j)=X(i,M+j)+Xnano(i,k)*RMM(M5+j+(M2-k)*(k-1)/2-1)
-              enddo
-            enddo
-c
-            do k=j+1,M
-              ! xnano is lower triangular
-              do i=k,M
-                X(i,M+j)=X(i,M+j)+Xnano(i,k)*RMM(M5+k+(M2-j)*(j-1)/2-1)
-              enddo
-            enddo
-c
-          enddo
-c
-          kk=0
-          do i=1,M
-            do k=1,M
-              xnano(k,i)=X(i,M+k)
-            enddo
-          enddo
-
-          do j=1,M
-            do i=j,M
-              kk=kk+1
-              RMM(M5+kk-1)=0.D0
-              ! X is upper triangular
+!          do j=1,M
+!            do i=1,M
+!              X(i,M+j)=0.D0
+!            enddo
+!            do k=1,j
+!              ! xnano is lower triangular
+!              do i=k,M
+!                X(i,M+j)=X(i,M+j)+Xnano(i,k)*RMM(M5+j+(M2-k)*(k-1)/2-1)
+!              enddo
+!            enddo
+!c
+!            do k=j+1,M
+!              ! xnano is lower triangular
+!              do i=k,M
+!                X(i,M+j)=X(i,M+j)+Xnano(i,k)*RMM(M5+k+(M2-j)*(j-1)/2-1)
+!              enddo
+!            enddo
+!
+!          enddo
+!c
+!          kk=0
+!          do i=1,M
+!            do k=1,M
+!              xnano(k,i)=X(i,M+k)
+!            enddo
+!          enddo
+!!
+!          do j=1,M
+!            do i=j,M
+!              kk=kk+1
+!              RMM(M5+kk-1)=0.D0
+!              ! X is upper triangular
+!              do k=1,j
+!                RMM(M5+kk-1)=RMM(M5+kk-1)+Xnano(k,i)*X(k,j)
+!              enddo
+!            enddo
+!          enddo
+!-------------------------------------------------------------!
+            fock=0
+            do j=1,M
               do k=1,j
-                RMM(M5+kk-1)=RMM(M5+kk-1)+Xnano(k,i)*X(k,j)
+                 fock(k,j)=RMM(M5+j+(M2-k)*(k-1)/2-1)
+              enddo
+              do k=j+1,M
+                 fock(k,j)=RMM(M5+k+(M2-j)*(j-1)/2-1)
               enddo
             enddo
+#ifdef CUBLAS
+            call cumxtf(fock,devPtrX,fock,M)
+            call cumfx(fock,DevPtrX,fock,M)
+#else
+            fock=basechange_gemm(M,fock,x)
+#endif     
+          do j=1,M
+             do k=1,j
+                RMM(M5+j+(M2-k)*(k-1)/2-1)=fock(j,k)
+             enddo
+             do k=j+1,M
+                RMM(M5+k+(M2-j)*(j-1)/2-1)=fock(j,k)
+             enddo
           enddo
+          call g2g_timer_stop('Fock damping')
         endif
 c
 c now F contains transformed F
@@ -798,6 +933,8 @@ c        write(*,*) 'good < dgtrig DIIS!!! PARA LA SIGUIENTE ITERACION'
 c--------Pasar columnas de FP_PFm a matrices y multiplicarlas y escribir EMAT-------
 
         if(DIIS) then
+          call g2g_timer_sum_start('DIIS')
+          call g2g_timer_sum_start('DIIS Fock update')
           deallocate(EMAT)
           allocate(EMAT(ndiist+1,ndiist+1))
 ! Before ndiis iterations, we just start from the old EMAT
@@ -834,8 +971,11 @@ c-------Escribimos en xnano y znano dos conmutadores de distintas iteraciones---
               enddo
             enddo
 
+!#ifdef CUBLAS (Only diagonal elements must be computed, so the entire multiplication is a waste..)
+!                   call cumatmul_r(xnano,znano,rho1,M)
+!#else
             call matmuldiag(xnano,znano,rho1,M)
-c              xnano=matmul(xnano,znano)
+!#endif
 
             EMAT(ndiist,kk)=0.
             if(kk.ne.ndiist) EMAT(kk,ndiist)=0.
@@ -905,6 +1045,8 @@ c--------Eventualmente se puede probar con la matriz densidad-------------------
             enddo
             call g2g_timer_stop('diis')
         endif
+        call g2g_timer_sum_pause('DIIS Fock update')
+        call g2g_timer_sum_pause('DIIS')
       endif
 
 c
@@ -913,6 +1055,8 @@ c X(1,M) will contain (X^-1)*C
 c
 
        call g2g_timer_start('dspev')
+       call g2g_timer_sum_pause('SCF acceleration')
+       call g2g_timer_sum_start('diagonalization')
 c ESSL OPTION ---------------------------------------------------
 #ifdef essl
        call DSPEV(1,RMM(M5),RMM(M13),X(1,M+1),M,M,RMM(M15),M2)
@@ -920,7 +1064,7 @@ c ESSL OPTION ---------------------------------------------------
 c
 c LAPACK OPTION -----------------------------------------
 #ifdef pack
-#ifdef magma
+c#ifdef magma
 c-------nano tratando de usar magma
       if(.not.allocated(fock)) allocate (fock(M,M))
       fock=0
@@ -932,25 +1076,37 @@ c-------nano tratando de usar magma
       enddo
 c---------------------
        LWORK=-1
+#ifdef magma
       call magmaf_dsyevd('V','L',M,fock,M,RMM(M13),WORK,LWORK
      > ,IWORK,LWORK,info)
+#else
+      call dsyevd('V','L',M,fock,M,RMM(M13),WORK,LWORK
+     > ,IWORK,LWORK,info)
+#endif
 
        LWORK=work(1)
       LIWORK=IWORK(1)
 
-      if(allocated(WORK2)) deallocate (WORK2,IWORK2)
+      if(allocated(WORK2)) deallocate (WORK2)
+      if(allocated(IWORK2)) deallocate (IWORK2)
 
        allocate (WORK2(LWORK),IWORK2(LIWORK))
 
 
+#ifdef magma
       call magmaf_dsyevd('V','L',M,fock,M,RMM(M13),WORK2,LWORK
      > ,IWORK2,LIWORK,info)
 #else
-       call dspev('V','L',M,RMM(M5),RMM(M13),X(1,M+1),
-     > M,RMM(M15),info)
+      call dsyevd('V','L',M,fock,M,RMM(M13),WORK2,LWORK
+     > ,IWORK2,LIWORK,info)
 #endif
+c#else
+c       call dspev('V','L',M,RMM(M5),RMM(M13),X(1,M+1),
+c     > M,RMM(M15),info)
+c#endif
 #endif
        call g2g_timer_stop('dspev')
+       call g2g_timer_sum_pause('diagonalization')
 c       do ik=1,M
 c         do jk=1,M
 c         write(45,*) X(ik,M+jk),fock(ik,jk)
@@ -960,52 +1116,57 @@ c         enddo
 c
 c       enddo
        call g2g_timer_start('coeff')
+       call g2g_timer_sum_start('MO coefficients')
 
 c-----------------------------------------------------------
 c
 c diagonalization now
-c
-c new coefficients
-       do i=1,M
-         do k=1,M
-           xnano(i,k)=X(k,i)
-         enddo
-       enddo
-c
 c-----------------------------------------------------------
 c Recover C from (X^-1)*C; put into xnano
 c-----------------------------------------------------------
-#ifdef magma
-
-      do i=1,M
-        do j=1,M
-            X(i,M2+j)=0.D0
-            do k=1,M
-              X(i,M2+j)=X(i,M2+j)+xnano(k,i)*fock(k,j)
-            enddo
+#ifdef CUBLAS
+        call cumxp_r(fock,devPtrX,xnano,M)
+        do i=1,M
+          do j=1,M
+             X(i,M2+j)=xnano(i,j)
           enddo
-      enddo
-
-
-
+       enddo
 #else
-      do i=1,M
-        do j=1,M
-          X(i,M2+j)=0.D0
-          ! xnano is lower triangular
-          do k=i,M
-            X(i,M2+j)=X(i,M2+j)+xnano(k,i)*X(k,M+j)
-          enddo
+c new coefficients
+        do i=1,M
+           do j=1,M
+              xnano(i,j)=x(i,j)
+           enddo
         enddo
-      enddo
+        xnano=matmul(xnano,fock)
+        do i=1,M
+          do j=1,M
+             X(i,M2+j)=xnano(i,j)
+          enddo
+       enddo
+!       do i=1,M
+!         do k=1,M
+!           xnano(i,k)=X(k,i)
+!         enddo
+!       enddo
+!       do i=1,M
+!        do j=1,M
+!            X(i,M2+j)=0.D0
+!            ! xnano is lower triangular
+!            do k=i,M
+!              X(i,M2+j)=X(i,M2+j)+xnano(k,i)*fock(k,j)
+!            enddo
+!          enddo
+!      enddo
 #endif
       call g2g_timer_stop('coeff')
       call g2g_timer_start('otras cosas')
+      call g2g_timer_sum_pause('MO coefficients')
+      call g2g_timer_sum_start('new density')
 c
 c --- For the first iteration, damping on density matrix
 c Important for the case of strating guess of AO
 c
-
       kk=0
       do k=1,NCO
         do i=1,M
@@ -1016,35 +1177,20 @@ c
       enddo
 c
 c Construction of new density matrix and comparison with old one
-       kk=0
-       good=0.
-c
-       do j=1,M
-         do i=j,M
-           kk=kk+1
-           tmp=RMM(kk)
-           RMM(kk)=0.
-c one factor of 2 for alpha+beta
-           if(i.eq.j) then
-             ff=2.D0
-c another factor of 2 for direct triangular sum (j>i) w/ real basis
-           else
-             ff=4.D0
-           endif
-
-          do k=1,NCO
-c            RMM(kk)=RMM(kk)+ff*X(i,M2+k)*X(j,M2+k)
-            RMM(kk)=RMM(kk)+ff*Xnano(k,i)*Xnano(k,j)
-          enddo
-          del=RMM(kk)-tmp
-          if (i.ne.j) then
-            del=del*sq2
-           endif
-           good=good+del**2
+      kk=0
+      good=0.
+      call g2g_timer_start('dens_GPU')
+      call density(M,NCO,X,xnano)
+      do j=1,M
+         do k=j,M
+               del=xnano(j,k)-(RMM(k+(M2-j)*(j-1)/2))
+               del=del*sq2
+               good=good+del**2
+               RMM(k+(M2-j)*(j-1)/2)=xnano(j,k)
          enddo
-       enddo
-c
-       good=sqrt(good)/float(M)
+      enddo
+      good=sqrt(good)/float(M)
+      call g2g_timer_stop('dens_GPU')
 
        if (SHFT) then
 c Level Shifting
@@ -1085,14 +1231,17 @@ c
 c
 c
         call g2g_timer_stop('otras cosas')
+        call g2g_timer_sum_pause('new density')
 
         if(verbose) write(6,*) 'iter',niter,'QM Energy=',E+Ex
 c
         call g2g_timer_stop('Total iter')
+        call g2g_timer_sum_pause('Iteration')
  999  continue
 c-------------------------------------------------------------------
 c
 c-------------------------------------------------------------------
+      call g2g_timer_sum_start('Finalize SCF')
 
       if (niter.ge.NMAX) then
         write(6,*) 'NO CONVERGENCE AT ',NMAX,' ITERATIONS'
@@ -1104,14 +1253,14 @@ c-------------------------------------------------------------------
         converge=converge+1
       endif
 
-      old3=old2
+c      old3=old2
 
-      old2=old1
+c      old2=old1
 c        write(*,*) 'good final',good
 
-      do i=1,MM
-        old1(i)=RMM(i)
-      enddo
+c      do i=1,MM
+c        old1(i)=RMM(i)
+c      enddo
 
       if(noconverge.gt.4) then
         write(6,*)  'stop fon not convergion 4 times'
@@ -1124,12 +1273,12 @@ c
 !    this again; Ens isn't changed from before...
 c -- SOLVENT CASE --------------------------------------
 c      if (sol) then
-      call g2g_timer_start('intsol 2')
-      if(nsol.gt.0) then
-        call intsol(E1s,Ens,.false.)
+c      call g2g_timer_sum_start('intsol 2')
+c      if(nsol.gt.0) then
+c        call intsol(E1s,Ens,.false.)
 c        write(*,*) 'cosillas',E1s,Ens
-        call g2g_timer_stop('intsol 2')
-      endif
+c        call g2g_timer_sum_stop('intsol 2')
+c      endif
 c      call mmsol(natom,Nsol,natsol,Iz,pc,r,Em,Rm,Es)
       Es=Es+E1s+Ens
 c     endif
@@ -1138,10 +1287,12 @@ c--------------------------------------------------------------
 	write(*,*) "buscando muerte 1"
 
 c  ????
+      if (MOD(npas,energy_freq).eq.0) then
       if (GRAD) then
 c         if (sol) then
 c         endif
-c       call g2g_timer_start('exchnum')
+c       call g2g_timer_sum_start('exchnum')
+        call g2g_timer_sum_start('Exchange-correlation energy')
 #ifdef G2G
 #ifdef ULTIMA_CPU
         write(*,*) "buscando muerte 1.1"
@@ -1164,6 +1315,7 @@ c       write(*,*) 'g2g-Exc',Exc
 #else
 #endif
 #endif
+        call g2g_timer_sum_stop('Exchange-correlation energy')
         ! -------------------------------------------------
         ! Total SCF energy = 
         ! E1 - kinetic+nuclear attraction+QM/MM interaction
@@ -1202,10 +1354,12 @@ c--------------------------------------------------------------
       else
         E=E-Ex
       endif
+      endif
 c calculation of energy weighted density matrix
 c
 
         write(*,*) "buscando muerte 3"
+      call g2g_timer_sum_start('energy-weighted density')
       kk=0
       do j=1,M
         do i=j,M
@@ -1225,6 +1379,9 @@ c
       enddo
 
         write(*,*) "buscando muerte 4"
+      call g2g_timer_sum_stop('energy-weighted density')
+
+      if (MOD(npas,energy_freq).eq.0) then
 c
 c      if (nopt.eq.1) then
 c
@@ -1232,6 +1389,7 @@ c PROPERTIES CALCULATION
 c calculates dipole moment
 c
       if (idip.eq.1) then
+       call g2g_timer_sum_start('dipole')
         call dip(ux,uy,uz)
         u=sqrt(ux**2+uy**2+uz**2)
         dipxyz(1)=ux
@@ -1243,11 +1401,14 @@ c      write(*,*) 'DIPOLE MOMENT, X Y Z COMPONENTS AND NORM (DEBYES)'
 c       write(69,900) ux,uy,uz,u
 c      write(*,*)
 c u in Debyes
+       call g2g_timer_sum_stop('dipole')
       endif
 c
 
 
         write(*,*) "buscando muerte 5"
+
+       call g2g_timer_sum_start('Mulliken')
 ! MULLIKEN POPULATION ANALYSIS (FFR - Simplified)
 !--------------------------------------------------------------------!
 
@@ -1267,6 +1428,8 @@ c
 ! NOTE: If 'mulliken_calc' is renamed as 'mulliken', the code will
 ! malfunction. I DON'T KNOW WHY.
 !--------------------------------------------------------------------!
+       call g2g_timer_sum_stop('Mulliken')
+       endif
 
 c
 c        endif
@@ -1285,6 +1448,8 @@ c
 c--------------------------------------------------------------
 c outputs final  MO ---------------------
 
+      if (MOD(npas,restart_freq).eq.0) then
+      call g2g_timer_sum_start('restart write')
       rewind 88
       do l=1,M
         do n=1,M
@@ -1295,6 +1460,8 @@ c
       do l=1,M
         write(88,400) (X(l,M+n),n=1,NCO)
       enddo
+      call g2g_timer_sum_stop('restart write')
+      endif
 c-------------------------------------------------
 c writes down MO coefficients and orbital energies
       if(1.gt.2) then
@@ -1310,6 +1477,14 @@ c writes down MO coefficients and orbital energies
         close(29)
       endif
         write(*,*) "buscando muerte 12"
+
+      if (cube_dens.or.cube_orb.or.cube_elec) then
+        call g2g_timer_sum_start('cube gen')
+        call cubegen(M15,Xnano)
+        call g2g_timer_sum_stop('cube gen')
+      endif
+
+
 c
 c-------------------------------------------------
 c      endif
@@ -1330,8 +1505,10 @@ c      endif
 
         write(*,*) "buscando muerte 13"
 
-      deallocate (kkind,kkinds)
-      deallocate(cool,cools)
+      if (MEMO) then
+        deallocate (kkind,kkinds)
+        deallocate(cool,cools)
+      endif
       if(allocated(WORK2)) deallocate (WORK2)
         write(*,*) "buscando muerte 14"
 
@@ -1339,7 +1516,9 @@ c      endif
 c       E=E*627.509391D0
 
       if(timedep.eq.1) then
+        call g2g_timer_sum_start('TD')
         call TD()
+        call g2g_timer_sum_stop('TD')
       endif
         write(*,*) "buscando muerte 15"
        if (ecpmode) then
@@ -1348,9 +1527,16 @@ c       E=E*627.509391D0
        end if
         write(*,*) "buscando muerte 16"
 
+#ifdef CUBLAS
+      call CUBLAS_FREE(devPtrX)
+      call CUBLAS_FREE(devPtrY)
+      call CUBLAS_SHUTDOWN
+#endif
 !
 !--------------------------------------------------------------------!
       call g2g_timer_stop('SCF')
+      call g2g_timer_sum_stop('Finalize SCF')
+      call g2g_timer_sum_stop('SCF')
  500  format('SCF TIME ',I6,' sec')
  450  format ('SCF ENERGY = ',F19.12)
  400  format(4(E14.7E2,2x))
@@ -1381,7 +1567,7 @@ c       E=E*627.509391D0
   45  format(E15.6E4)
   91  format(F14.7,4x,F14.7)
 c
-      !call g2g_timer_stop('SCF');
+      !call g2g_timer_sum_stop('SCF');
       return
       end
 C  -------------------------

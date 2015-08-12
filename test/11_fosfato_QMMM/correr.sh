@@ -1,6 +1,6 @@
 #! /bin/bash
 if [ -z "$LIOBIN" ] ; then
-  LIOBIN=/home/nano/lio/liosolo/liosolo
+  LIOBIN=../../liosolo/liosolo
 fi
 SALIDA=salida
 if [ -n "$1" ]

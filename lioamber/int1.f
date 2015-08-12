@@ -104,9 +104,18 @@ c Nuclear Repulsion part ------------------------------------------
          En=En+Iz(i)*Iz(j)/sqrt(d(i,j))
        enddo
        enddo
+
+      call aint_query_gpu_level(igpu)
+      ! doing nuclear attraction part on GPU - KE part still is
+      ! done here
+      if (igpu.gt.3) then
+        natomold = natom
+        natom = 0
+      endif
 c
 c first loop (s|s) case -------------------------------------------
 c
+
       do 200 i=1,ns
       do 200 j=1,i
 c
@@ -801,6 +810,7 @@ c      write(*,*) k,RMM(M5+k-1),RMM(M11+k-1)
 c gradient debuggings
 c
          E1=0.D0
+        write(*,*) "aca toyyyy 3"
 
         do 802 k=1,MM
  802     E1=E1+RMM(k)*RMM(M11+k-1)
@@ -829,6 +839,12 @@ c     pause
       do i=1,M
         Smat(i,i)=Smat(i,i)/2
       enddo
-      deallocate(s0s,s1s,s2s,s3s,s4s)!,Iaux)
+
+      deallocate(s0s,s1s,s2s,s3s,s4s)
+c      deallocate(Iaux) 
+
+
+      if (igpu.gt.3) natom = natomold
+
       return;end subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -65,6 +65,10 @@ LFLAGS =
 include make_flags.mk
 include make_links.mk
 
+# Only uncomment this if your version of Amber supports
+# lio/Amber basis set keywords and cube file generation
+#FFLAGS += -DMOD_AMBER
+
 #
 ######################################################################
 # GENERAL RULES : The following rules have been written to be
@@ -72,6 +76,22 @@ include make_links.mk
 # other make files. They should not be modified under normal
 # circumstances; modifications of added files or change in the
 # compilation flags should be done through these variables.
+ifeq ($(cublas),1)
+
+liblio-g2g.so : $(objects:%.o=$(obj_path)/%.o)
+	$(FC) $(LFLAGS) $^ $(LIBS) -o $@
+
+$(obj_path)/%.o   : %.f $(makefiles) |  $(obj_path)
+	$(FC) $(FFLAGS) -c $< -o $@
+
+$(obj_path)/%.mod : %.f $(makefiles) |  $(obj_path)
+	$(FC) $(FFLAGS) -c $< -o $(@:%.mod=%.o) 
+	@touch $@
+
+$(obj_path)cublasmath.o: $(obj_path)garcha_mod.mod $(obj_path)fortran.o
+	$(FC) -module ../../obj  -fpp -Dpack -fPIC -DG2G -g -c -O3 /mathsubs/cublas/$(*F).f -o $@
+
+else
 liblio-g2g.so : $(objects:%.o=$(obj_path)/%.o)
 	$(FC) $(LFLAGS) $^ $(LIBS) -o $@
 
@@ -81,6 +101,7 @@ $(obj_path)/%.o   : %.f $(makefiles) |  $(obj_path)
 $(obj_path)/%.mod : %.f $(makefiles) |  $(obj_path)
 	$(FC) $(FFLAGS) -c $< -o $(@:%.mod=%.o)
 	@touch $@
+endif
 
 $(obj_path)/%.o   : %.f90 $(makefiles) |  $(obj_path)
 	$(FC) $(FFLAGS) -c $< -o $@

@@ -7,10 +7,13 @@
       nsol=nsolin
       ntatom=nsol+natom
 
+      call g2g_timer_sum_start("Total")
+
       deallocate (r,v,Em,Rm,pc,nnat)
 
       allocate (r(ntatom,3),v(ntatom,3),Em(ntatom)
-     >,Rm(ntatom),pc(ntatom),nnat(ntatom))
+     >,Rm(ntatom),pc(ntatom))
+      allocate (nnat(100))
        ngDyn=natom*ng0
        
       if(writexyz) write(18,*) natom

@@ -6,7 +6,6 @@
        REAL*8 , intent(inout) :: dxyzqm(3,natom)
        REAL*8 , intent(inout) :: dxyzcl(3,nsol)
        real*8, dimension (:,:), ALLOCATABLE :: ff,ffcl!,g2gff,g2gffcl
-       integer cpu
        !real*8 diff,rms,rmscl,mx,mxcl,s
 c       real*8, dimension (:,:), ALLOCATABLE :: ffs,ffcls
 !
@@ -16,10 +15,12 @@ c       real*8, dimension (:,:), ALLOCATABLE :: ffs,ffcls
        !allocate(g2gff(natom,3), g2gffcl(ntatom,3))
 c       allocate(ffs(natom,3), ffcls(ntatom,3))
 c       real*8 ftot(3)
+       if (nsol.le.0.or.cubegen_only) return
        factor=1.D0
 
-       call g2g_query_cpu(cpu)
-       if (cpu.eq.1) then
+       call aint_query_gpu_level(igpu)
+       call g2g_timer_sum_start('QM/MM gradients')
+       if (igpu.lt.2) then
          ! The old version of intsolG expected the MM force array to be
          ! padded in front with # QM atoms spots for some reason
          allocate(ff(natom,3), ffcl(ntatom,3))
@@ -42,9 +43,10 @@ c       real*8 ftot(3)
          ffcl=0
          ff=0
 
-         call g2g_timer_start('g2g_qmmm_forces')
-         call g2g_qmmm_forces(ff,ffcl)
-         call g2g_timer_stop('g2g_qmmm_forces')
+         if (igpu.gt.3) call int1G(ff)
+         call g2g_timer_start('aint_qmmm_forces')
+         call aint_qmmm_forces(ff,ffcl)
+         call g2g_timer_stop('aint_qmmm_forces')
 
          do jj=1,nsol
          do j=1,3
@@ -56,11 +58,11 @@ c       real*8 ftot(3)
        !mx = 0
        !s = 0
        !do i=1,natom
-       !  do j=1,3
-       !    diff = abs(ff(i,j)-g2gff(i,j))
-       !    mx = max(diff,mx)
-       !    s = s + diff**2
-       !  enddo
+         !do j=1,3
+           !diff = abs(ff(i,j)-g2gff(i,j))
+           !mx = max(diff,mx)
+           !s = s + diff**2
+         !enddo
        !enddo
        !rms = sqrt(s/(natom*3))
 
@@ -84,6 +86,12 @@ c       real*8 ftot(3)
          dxyzqm(j,i)=ff(i,j)*factor+dxyzqm(j,i)
        enddo
        enddo
+
+       call g2g_timer_sum_stop('QM/MM gradients')
+       call g2g_timer_sum_stop('Forces')
+       call g2g_timer_sum_stop("Total")
+       call g2g_timer_summary()
+       call g2g_timer_clear()
 
 c       write(*,*) 'aca toyyyy'
 !

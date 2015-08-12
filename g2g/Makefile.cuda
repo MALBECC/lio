@@ -128,23 +128,40 @@ endif
 
 GENCODE_SM20    := -gencode arch=compute_20,code=compute_20
 GENCODE_SM20    += -gencode arch=compute_20,code=sm_20
-GENCODE_SM20    += -gencode arch=compute_20,code=sm_21
+#GENCODE_SM20    += -gencode arch=compute_20,code=sm_21
+GENCODE_SM30    := -gencode arch=compute_30,code=sm_30
 GENCODE_SM35    := -gencode arch=compute_35,code=compute_35
-GENCODE_SM35    += -gencode arch=compute_35,code=sm_35
+GENCODE_SM35    := -gencode arch=compute_35,code=sm_35
 # Eventually for Maxwell, requires at least CUDA 6.5
 #GENCODE_SM50    := -gencode arch=compute_50,code=sm_50
 #GENCODE_SM52    := -gencode arch=compute_52,code=sm_52
-GENCODE_FLAGS   ?= $(GENCODE_SM20) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM52)
+#GENCODE_FLAGS   ?= $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM52)
 
 # If SM20 or SM35 is active, then compile specifically for that.
 ifeq ($(sm20),1)
-  NVCCFLAGS += $(GENCODE_SM20)
-else
-  ifeq ($(sm35),1)
-    NVCCFLAGS += $(GENCODE_SM35)
-  else
-    NVCCFLAGS += $(GENCODE_FLAGS)
-  endif
+#  NVCCFLAGS += $(GENCODE_SM20)
+  GENCODE_FLAGS   += $(GENCODE_SM20)
+endif
+ifeq ($(sm30),1)
+#  NVCCFLAGS += $(GENCODE_SM30)
+  GENCODE_FLAGS   += $(GENCODE_SM30)
+endif
+ifeq ($(sm35),1)
+#  NVCCFLAGS += $(GENCODE_SM35)
+  GENCODE_FLAGS   += $(GENCODE_SM35)
+endif
+ifeq ($(sm50),1)
+  GENCODE_FLAGS   += $(GENCODE_SM50)
+endif
+ifeq ($(sm52),1)
+  GENCODE_FLAGS   += $(GENCODE_SM52)
+endif
+
+GENCODE_FLAGS   ?= $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM52)
+NVCCFLAGS += $(GENCODE_FLAGS)
+
+ifneq ($(subscript_warn),1)
+  NVCCFLAGS += -Xcudafe "--diag_suppress=subscript_out_of_range"
 endif
 
 ################################################################################
@@ -155,6 +172,7 @@ endif
 UGO          := cuda/lio_gpu.o
 
 CUDA_SOURCES := $(wildcard cuda/*.cu)
+CUDA_SOURCES += $(wildcard analytic_integral/cuda/*.cu)
 CUDA_OBJ     := $(CUDA_SOURCES:%.cu=%.o)
 
 # Commented should be in config file
@@ -164,4 +182,7 @@ $(UGO): $(CUDA_OBJ)
 	nvcc $(NVCCFLAGS) -dlink $(CUDA_OBJ) -o $@
 
 cuda/%.o:cuda/%.cu
+	nvcc $(NVCCFLAGS) -o $@ -dc $<
+
+analytic_integral/cuda/%.o:analytic_integral/cuda/%.cu
 	nvcc $(NVCCFLAGS) -o $@ -dc $<

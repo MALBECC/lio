@@ -1,6 +1,6 @@
 	subroutine intECP(tipodecalculo)
 	use garcha_mod, only :nshell,nuc,a,c, ncont, natom
-	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP,VAAAcuadrada,lxyz, VAAA, VAAAcuadrada, VAAB, VAABcuadrada,pi,doublefac,VXXXgamess,distx,disty,distz,VBAC,VBACcuadrada
+	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP,VAAAcuadrada,lxyz, VAAA, VAAAcuadrada, VAAB, VAABcuadrada,pi,doublefac,VXXXgamess,distx,disty,distz,VBAC,VBACcuadrada,verbose_ECP,ecp_debug
 	implicit none
 
 	integer, intent(in) :: tipodecalculo
@@ -49,40 +49,8 @@
                 Write(*,*) "ERROR in tipe of ECP calculation"
 	endif
 
-	if ( .true. ) then
-	if (tipodecalculo .eq. 2) then 
-		write(*,*) "i      j      dx      dy      dz"
-	        do i=1,natom
-	        do j=1,natom
-			write(*,*) i,j,distx(i,j),disty(i,j),distz(i,j)
-	        end do
-	        end do
-	endif
-	endif
 
 
-	if ( .false. ) then
-!testea integran Q0
-	do n=0,10
-	do alpha=1d0,100d0 
-		write(125,*) alpha,n,Q0(n,alpha)!, doublefac(n-1)
-	end do
-	end do
-	end if
-
-
-	if (tipodecalculo .ne. 4) then
-!bloque de test de ECP
-!Escribe coeficientes como testeo
-	if ( .false. ) then
-        do z=1,118
-                do l=0, Lmax(Z)
-                        do t=1, expnumbersECP(Z,l)
-                                write(*,9018) Z,l,t,nECP(Z,l,t), bECP(Z,l,t), aECP(Z,l,t)
-                        end do
-                end do
-        end do
-	end if
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	if ( .false. ) then
@@ -112,25 +80,6 @@
 
 
 
-	if ( .true. ) then
-!escribe coeficientes de fock del ECP AAA y testea que la matriz sea simetrica
-	write(*,*) "test Vij AAA"
-		do i=1,M
-			do j=i,M
-				if (nuc(i) .eq. nuc(j)) then
-!					write(*,9015) i,j,VAAA(i,j), VAAA(j,i), VAAA(i,j)-VAAA(j,i)
-					if (abs(VAAAcuadrada(i,j)-VAAAcuadrada(j,i)) .gt. 1E-10) then
-						do e=1,20
-						write(*,*) "*********  error matriz VAAA no simetrica  **********"
-						write(*,*) VAAAcuadrada(i,j),VAAAcuadrada(j,i),VAAAcuadrada(i,j)-VAAAcuadrada(j,i)
-						end do
-					end if
-
-				end if
-			end do
-		end do
-!		write(*,*) VAAA
-	end if
 
         if (tipodecalculo .eq. 2) then
         if ( .true. ) then
@@ -192,8 +141,6 @@
 	do j=1,M
 		do i=1,j
                         write(*,*) VXXXgamess(i,j),",",i,",",j,",",n
-!                        write(*,*) VAAAcuadrada(i,j),",",i,",",j,",",n
-
 			n=n+1
                 end do
         end do
@@ -201,84 +148,24 @@
 	end if
 
 
-	if (tipodecalculo .eq. 3) then
-	if ( .true. ) then
-!escribe coeficientes de fock del ECP AAB y AAA
-	write(92,*) "   i           j         VBAC          VAAB          VAAA"
-	do i=1,M
-                do j=i,M
-			write(92,*) i,",",j,",",VBACcuadrada(i,j),",",VAABcuadrada(i,j),",",VAAAcuadrada(i,j)
-		end do
-	end do
+
+
+
+
+
+
+	if ( verbose_ECP .gt. 0) then
+		call WRITE_ECP_PARAMETERS()
+		call WRITE_FOCK_ECP()
+		call WRITE_ANG_EXP()
+		call WRITE_DISTANCE()
 	end if
 
-
-
-        if ( .true. ) then
-!testea que la matriz VAAB sea simetrica
-        write(*,*) "test Vij AAB"
-                do i=1,M
-                        do j=i,M
-                                if (nuc(i) .ne. nuc(j)) then
-!                                       write(*,9015) i,j,VAAB(i,j), VAAB(j,i), VAAB(i,j)-VAAB(j,i)
-                                        if (abs(VAABcuadrada(i,j)-VAABcuadrada(j,i)) .gt. 1E-10) then
-                                                do e=1,20
-						write(*,*) "*********  error matriz VAAB no simetrica  **********"
-                                                write(*,*) VAABcuadrada(i,j),VAABcuadrada(j,i),VAABcuadrada(i,j)-VAABcuadrada(j,i)
-						write(*,*) i,j,VAABcuadrada(i,j)
-                                                end do
-                                        end if
-
-                                end if
-                        end do
-                end do
-        end if
+	if ( ecp_debug ) then
+		call TEST_SYMMETRY()
+		call TEST_COPY_FOCK()
 	end if
 
-
-	if ( .true. ) then
-!compara la matriz cuadrada con el vector
-	write(*,*) "testeando array de VAAA"
-	        do i=1,M
-                        do j=1,i
-                                if (nuc(i) .eq. nuc(j)) then
-					pos=i+(1-j)*(j-2*M)/2
-!					write(*,9013) VAAA(pos), VAAAcuadrada(i,j), VAAA(pos)-VAAAcuadrada(i,j)
-					if ( abs(VAAA(pos)-VAAAcuadrada(i,j)) .gt. 0.0000000000000001 ) then
-						do e=1,20
-						write(*,*) "no coinciden la matriz cuadrada con el vector VAAA",i,j,pos
-						end do
-					end if
-				end if
-			end do
-		end do
-	end if
-
-
-	if (.false.) then
-!escribe VAAA
-	write(73,*) "testeando array de VAAA"
-		do pos=1,M*(M+1)/2
-			write(73,*) pos, VAAA(pos)
-		end do
-	end if
-
-
-
-	if ( .false. ) then
-!escribe matriz de esponentes de la parte angular
-		write(*,*) "escribe lx,ly,lz"
-		do i=1, M
-			write(*,9014) i,lxyz(i,1),lxyz(i,2),lxyz(i,3)
-		end do
-	end if
-
-
-
-	end if
-
-
-!		l,m1,lx,ly,lz,Ucoef(l,m1,lx,ly,lz)
 	9012 format(/1x,i2,2x,i2,2x,i2,2x,i2,2x,i2,2x,f18.10)
 	9013 format(/1x,"vector",f18.10,2x,"matriz",f18.10,2x,"diff",f18.10)
 	9014 format(/1x,"i",i3,2x,"lx",i2,2x,"ly",i2,2x,"lz",i2)
@@ -385,7 +272,7 @@
 
 	DOUBLE PRECISION function ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2)
 	use garcha_mod, only : a,c
-	use ECP_mod, only :ZlistECP,expnumbersECP, Qnl
+	use ECP_mod, only :ZlistECP,expnumbersECP, Qnl,bECP
 	implicit none
         integer, intent(in) :: i,j,ii,ji
 !terminos de la base
@@ -449,7 +336,7 @@
 
 	DOUBLE PRECISION function ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
         use garcha_mod, only : a,c
-        use ECP_mod, only : ZlistECP,Qnl1l2,necp
+        use ECP_mod, only : ZlistECP,Qnl1l2,necp,bECP
 	implicit none
 	integer, intent(in) :: i,j,ii,ji,k
 !i,j funciones de la base
@@ -620,7 +507,7 @@
 !c(i,ni) coeficiente de la funcion de base i, contrccion ni
 !ncont(i) cantidad de contracciones de la funcion de base i
 !nshell(i) cantidad de funciones i=1 s, i=2, p, i=3, d
-        use ECP_mod, only : ecptypes,cutECP,IzECP,cutecp2,distx, disty, distz,Lxyz, VAAB, VAABcuadrada,local_nonlocal, ecpdebug
+        use ECP_mod, only : ecptypes,cutECP,IzECP,cutecp2,distx, disty, distz,Lxyz, VAAB, VAABcuadrada,local_nonlocal, ecp_debug
 !nECP, bECP, aECP valores del pseudo potencial
 ! aECP*r^b * exp(-bECP r^2)
 !estan escritos como: xECP(Z,l,i) Z carga del nucleo, l del ecp, i numero de funcion del ecp con Z,l
@@ -700,13 +587,13 @@
 !						write(*,*) "aab nolocal",AABNonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
 
 
-                                                if (local_nonlocal .eq. 1 .and. ecpdebug) then
+                                                if (local_nonlocal .eq. 1 .and. ecp_debug) then
 ! local_nonlocal 1 y 2 son solo para debugueo
 							AAB=AABlocal(i,j,k,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,-dx,-dy,-dz)
 	                                               write(*,*) "entro local"
 						       write(*,*) "local", AAB
 
-                                                else if (local_nonlocal .eq. 2 .and. ecpdebug) then
+                                                else if (local_nonlocal .eq. 2 .and. ecp_debug) then
 							AAB=AABNonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz)
 							write(*,*) "entro no local *************************************"
  						     write(*,*) "nonlocal", AAB
@@ -756,12 +643,12 @@
 
 
 
-                                                if (local_nonlocal .eq. 1 .and. ecpdebug) then
+                                                if (local_nonlocal .eq. 1 .and. ecp_debug) then
 ! local_nonlocal 1 y 2 son solo para debugueo
 							write(*,*) "entro local"
                                                         AAB=AABlocal(j,i,k,ji,ii,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
 							write(*,*) "local", AAB
-                                                else if (local_nonlocal .eq. 2 .and. ecpdebug) then
+                                                else if (local_nonlocal .eq. 2 .and. ecp_debug) then
 							write(*,*) "entro no local *************************************"
                                                         AAB=AABNonLocal(j,i,ji,ii,k,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz)
 							write(*,*) "nonlocal", AAB
@@ -1010,7 +897,7 @@
 !c(i,ni) coeficiente de la funcion de base i, contrccion ni
 !ncont(i) cantidad de contracciones de la funcion de base i
 !nshell(i) cantidad de funciones i=1 s, i=2, p, i=3, d
-	use ECP_mod, only :nECP,bECP, aECP, ecptypes, IzECP, Lmax, Lxyz, VAAAcuadrada,VAAA,local_nonlocal, ecpdebug
+	use ECP_mod, only :nECP,bECP, aECP, ecptypes, IzECP, Lmax, Lxyz, VAAAcuadrada,VAAA,local_nonlocal, ecp_debug
 !nECP, bECP, aECP valores del pseudo potencial
 ! aECP*r^b * exp(-bECP r^2)
 !estan escritos como: xECP(Z,l,i) Z carga del nucleo, l del ecp, i numero de funcion del ecp con Z,l
@@ -1061,10 +948,10 @@
 !exponentes de la parte angular
 						AAA=AAAlocal(i,j,k,ii,ji,lxi+lxj,lyi+lyj,lzi+lzj) + AAANonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
 
-						if (local_nonlocal .eq. 1 .and. ecpdebug) then
+						if (local_nonlocal .eq. 1 .and. ecp_debug) then
 ! local_nonlocal 1 y 2 son solo para debugueo
 							AAA=AAAlocal(i,j,k,ii,ji,lxi+lxj,lyi+lyj,lzi+lzj)
-						else if (local_nonlocal .eq. 2 .and. ecpdebug) then
+						else if (local_nonlocal .eq. 2 .and. ecp_debug) then
                                         	        AAA= AAANonLocal(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
 						end if
 !suma los terminos locales y no locales del pseudopotencial
@@ -1810,4 +1697,222 @@
 
 
         end subroutine obtainls
+
+
+!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! rutinas para verbose_ECP
+
+	subroutine WRITE_FOCK_ECP()
+!escribe los terminos de fock del pseudopotencial
+	use ECP_mod, only : VAAA, VAAB, VBAC
+	use garcha_mod, only : nshell
+	implicit none
+	integer :: i,j,k,M
+	M=nshell(0)+nshell(1)+nshell(2)
+	write(*,4020)
+        write(*,4021)
+        write(*,4022)
+        write(*,4023)
+        write(*,4024)
+	do i=1,M
+	do j=1,M
+		if (i .ge. j) then
+			k=i+(1-j)*(j-2*M)/2
+			write(*,4025) i,j,VAAA(k),VAAB(k),VBAC(k)
+                end if
+	end do
+	end do
+	write(*,4026)
+
+	4020 format("╔═══════════════════════════════════════════════════════"&
+		,"════════════╗") 
+	4021 format("║                       FOCK Pseudopotencials           "&
+		,"            ║")
+	4022 format("╠═══╦═══╦═══════════════════╦═══════════════════╦═══════"&
+		,"════════════╣")
+	4023 format("║ i ║ j ║      <A|A|A>      ║      <A|A|B>      ║      <"&
+		,"B|A|C>      ║")
+	4024 format("╠═══╬═══╬═══════════════════╬═══════════════════╬═══════"&
+		,"════════════╣")
+	4025 format("║",i2,1x,"║",i2,1x,"║",f18.15,1x,"║",f18.15,1x,"║",f18.15,1x,"║",f18.15,1x,"║")
+	4026 format("╚═══╩═══╩═══════════════════╩═══════════════════╩═══════"&
+		,"════════════╝ ")
+	end subroutine WRITE_FOCK_ECP
+
+
+	subroutine WRITE_ANG_EXP()
+!escribe el exponente de la parte angular de la funcion de base:
+!xi(x,y,z)= x^nx * y^ny * z^nz *f(r)
+	use ECP_mod, only :lxyz
+	use garcha_mod, only : nshell
+	implicit none
+	integer :: i
+
+	write(*,4040)
+	write(*,4041)
+	write(*,4042)
+        write(*,4043)
+        write(*,4044)
+
+	do i=1,nshell(0)+nshell(1)+nshell(2)
+		write(*,4045) i,lxyz(i,1),lxyz(i,2),lxyz(i,3)
+	end do
+
+        write(*,4046)
+
+	4040 format("╔═══════════════════╗")
+	4041 format("║ Angular Exponents ║")
+	4042 format("╠═══════╦═══╦═══╦═══╣")
+	4043 format("║ Basis ║ x ║ y ║ z ║")
+	4044 format("╠═══════╬═══╬═══╬═══╣")
+	4045 format("║",2x,i2,3x,"║",i2,1x,"║",i2,1x,"║",i2,1x,"║")
+	4046 format("╚═══════╩═══╩═══╩═══╝ ")
+	end subroutine WRITE_ANG_EXP
+
+	subroutine WRITE_DISTANCE
+	use ECP_mod, only :distx,disty,distz
+	use garcha_mod, only : natom
+	implicit none
+	integer :: i,j
+
+	write(*,4050)
+	write(*,4051)
+	write(*,4052)
+	write(*,4053)
+	write(*,4054)
+
+	do i=1,natom
+	do j=1,natom
+		write(*,4055) i,j,distx(i,j),disty(i,j),distz(i,j)
+	end do
+	end do
+	write(*,4056)
+
+        4050 format("╔════════════════════════════════════════════════" &
+		,"═════════════════════════════╗")
+        4051 format("║                               Distances (Bohr) " &
+		,"                             ║")
+        4052 format("╠════════╦════════╦═══════════════════╦══════════" &
+		,"═════════╦═══════════════════╣")
+        4053 format("║ atom i ║ atom j ║     distance x    ║     dista" &
+		,"nce y    ║     distance z    ║")
+        4054 format("╠════════╬════════╬═══════════════════╬══════════" &
+		,"═════════╬═══════════════════╣")
+        4055 format("║",2x,i3,3x,"║",2x,i3,3x,"║",f18.15,1x,"║",f18.15,1x,"║",f18.15,1x,"║")
+        4056 format("╚════════╩════════╩═══════════════════╩══════════" &
+		,"═════════╩═══════════════════╝ ")
+
+	end subroutine WRITE_DISTANCE
+
+	subroutine WRITE_ECP_PARAMETERS()
+	use ECP_mod, only : ecptypes,Lmax,ZlistECP,expnumbersECP,ZlistECP,nECP,bECP,aECP,asignacion,Zcore
+	implicit none
+	integer :: k,l,w,z
+        character :: simb*3
+	write(*,*)
+	write(*,*)
+	write(*,4060)
+	write(*,4061)
+	write(*,4062)
+
+	do k=1, ecptypes
+	z=ZlistECP(k)
+		call asignacion(Z,simb)
+		write(*,*)
+		write(*,4063)
+		write(*,4064) simb,Zcore(z),Lmax(z)
+		write(*,4065)
+!barre todos los atomos con ECP
+	do l=0,Lmax(z)
+		write(*,4066) l
+		write(*,4067)
+		write(*,4068)
+		write(*,4069)
+!barre momento angular del ecp
+		do w =1, expnumbersECP(z,l)
+!barre funciones
+			write(*,4070) necp(Z,l,w),bECP(z,L,w),aECP(z,L,w)
+		end do
+		if ( l .lt. Lmax(z) ) write(*,4071)
+		if ( l .eq. Lmax(z) ) write(*,4072)
+	end do
+	end do
+
+
+        4060 format(4x,"╔═════════════════════════════════════════════╗")
+        4061 format(4x,"║     EFFECTIVE CORE POTENTIAL PARAMETERS     ║")
+	4062 format(4x,"╚═════════════════════════════════════════════╝")
+	4063 format(8x,"╔════════╦════════════════╦═══════════╗")
+        4064 format(8x,"║",2x,A3,3x,"║",2x,"ZCore=",i3,5x,"║",2x,"Lmax=",i1,3x,"║")
+	4065 format(8x,"╠════════╩════════════════╩═══════════╣")
+	4066 format(8x,"║   L=",i1,"                               ║") 
+	4067 format(8x,"╠═══╦════════════════╦════════════════╣")
+	4068 format(8x,"║ n ║    exponent    ║  coefficient   ║")
+	4069 format(8x,"╠═══╬════════════════╬════════════════║")
+	4070 format(8x,"║",1x,i1,1x,"║",f12.6,4x,"║",f12.6,4x,"║")
+	4071 format(8x,"╠═══╩════════════════╩════════════════╣")
+        4072 format(8x,"╚═══╩════════════════╩════════════════╝")
+
+	end subroutine WRITE_ECP_PARAMETERS
+
+!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! rutinas para debug_ecp
+
+	subroutine TEST_SYMMETRY()
+        use ECP_mod, only : VAAAcuadrada,VAABcuadrada,VBACcuadrada
+        use garcha_mod, only : nshell
+	implicit none
+	integer :: i,j,M
+	logical :: Er
+	Er=.false.
+	M=nshell(0)+nshell(1)+nshell(2)
+	do i=1,M
+	do j=i,M
+		if (abs(VAAAcuadrada(i,j) - VAAAcuadrada(j,i)) .gt. 1D-08) then
+			write(*,*) "symmetry error in ecp-fock matrix for <xA|VA|xA> terms"
+			write(*,4031) i,j,VAAAcuadrada(i,j), VAAAcuadrada(j,i)
+			Er=.true.
+		end if
+		if (abs(VAABcuadrada(i,j) - VAABcuadrada(j,i)) .gt. 1D-08) then
+			write(*,*) "symmetry error in ecp-fock matrix for <xA|VA|xB> terms",i,j
+			write(*,4031) i,j,VAABcuadrada(i,j), VAABcuadrada(j,i)
+			Er=.true.
+		end if
+		if (abs(VBACcuadrada(i,j) - VBACcuadrada(j,i)) .gt. 1D-08) then
+			write(*,*) "symmetry error in ecp-fock matrix for <xB|VA|xC> terms",i,j
+			write(*,4031) i,j,VBACcuadrada(i,j), VBACcuadrada(j,i)
+			Er=.true.
+		end if
+	end do
+	end do
+	if ( Er ) stop "check ECP routines"
+	4031 format("i",i2,1x,"j",i2,1x,"V(i,j)",f18.15,1x,"V(j,i)")
+	end subroutine TEST_SYMMETRY
+
+	subroutine TEST_COPY_FOCK
+!testea que la matriz cuadrada y la matriz guardada como vector sean iguales
+	use ECP_mod, only : VAAAcuadrada,VAABcuadrada,VBACcuadrada,VAAA,VAAB,VBAC
+	use garcha_mod, only : nshell
+	implicit none
+	integer :: pos,i,j,M
+	logical :: Er1,Er2,Er3
+	Er1 = .false.
+	Er2 = .false.
+	Er3 = .false.
+	M=nshell(0)+nshell(1)+nshell(2)
+	do i=1,M
+	do j=1,M
+		if (i .ge. j) then
+			pos=i+(1-j)*(j-2*M)/2 
+			if (VAAA(pos) .ne. VAAAcuadrada(i,j)) Er1 = .true.
+			if (VAAB(pos) .ne. VAABcuadrada(i,j)) Er2 = .true.
+			if (VBAC(pos) .ne. VBACcuadrada(i,j)) Er3 = .true.
+		end if
+	end do
+	end do
+
+	if ( Er1 ) stop " Error in ECP-FOCK vector VAAA"
+	if ( Er2 ) stop " Error in ECP-FOCK vector VAAB"
+	if ( Er3 ) stop " Error in ECP-FOCK vector VBAC"
+	end subroutine
 

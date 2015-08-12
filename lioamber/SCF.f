@@ -184,7 +184,7 @@ c
        allocate(fockbias(M,M))
 
        dovv=.false.
-       if (dovv.eq..true.) then
+       if (dovv.eqv..true.) then
 
         if (.not.allocated(atom_group)) then
           allocate(atom_group(natom))
@@ -361,7 +361,7 @@ c
          sqsm=matmul(Vmat,Ytrp)
 
 
-         if (dovv.eq..true.) then
+         if (dovv.eqv..true.) then
           fockbias=0.0d0
 
           weight=0.195d0
@@ -675,7 +675,7 @@ c-------------------------------------------------------------------------------
 
 ! FFR: Van Voorhis Term for DIIS
 !--------------------------------------------------------------------!
-         if (dovv.eq..true.) fock=fock+fockbias
+         if (dovv.eqv..true.) fock=fock+fockbias
 
 c-----------------------------------------------------------------------------------------
 c Expand density matrix into full square form (before, density matrix was set up for triangular sums
@@ -834,7 +834,7 @@ c
 
 ! FFR: Van Voorhis Term for not DIIS
 !--------------------------------------------------------------------!
-         if (dovv.eq..true.) fock=fock+fockbias
+         if (dovv.eqv..true.) fock=fock+fockbias
 
 
 #ifdef CUBLAS

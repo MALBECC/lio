@@ -13,9 +13,9 @@
       REAL*8, dimension (:,:), ALLOCATABLE :: scratch1,scratch2
       integer i,j,stat
       external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-      external CUBLAS_SHUTDOWN, CUBLAS_ALLOC
+      external CUBLAS_SHUTDOWN, CUBLAS_ALLOC, CUBLAS_DGEMM
       integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-      integer CUBLAS_INIT
+      integer CUBLAS_INIT, CUBLAS_DGEMM
       allocate(scratch1(M,M),scratch2(M,M))
       alpha=1.0D0
       beta=0.0D0
@@ -37,7 +37,7 @@
         call CUBLAS_SHUTDOWN
         stop
       endif
-      call CUBLAS_DGEMM ('N','N',M,M,M,alpha,devPtrScratch1
+      stat=CUBLAS_DGEMM ('N','N',M,M,M,alpha,devPtrScratch1
      > ,M ,devPtrX,M, beta, devPtrScratch2,M)
       stat = CUBLAS_GET_MATRIX(M,M,sizeof_real,devPtrScratch2,M,
      > C,M)

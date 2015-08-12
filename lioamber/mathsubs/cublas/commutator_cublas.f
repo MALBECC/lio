@@ -19,9 +19,9 @@
        REAL*8 alpha,beta
        integer i,j,stat
        external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-       external CUBLAS_SHUTDOWN, CUBLAS_ALLOC
+       external CUBLAS_SHUTDOWN, CUBLAS_ALLOC, CUBLAS_DGEMM
        integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-       integer CUBLAS_INIT
+       integer CUBLAS_INIT, CUBLAS_DGEMM
        stat=CUBLAS_INIT()
        nn=size(MA,1)
        allocate(MC(nn,nn))
@@ -65,7 +65,7 @@
          call CUBLAS_SHUTDOWN
          stop
        endif
-       call CUBLAS_DGEMM ('N','N',nn,nn,nn,alpha,devPtrA
+       stat=CUBLAS_DGEMM ('N','N',nn,nn,nn,alpha,devPtrA
      > ,nn ,devPtrB,nn, beta, devPtrC,nn)
        if (stat.NE.0) then
          call CUBLAS_FREE( devPtrC )
@@ -74,7 +74,7 @@
          stop
        endif
        beta=(-1.00000000000,0.00000000000)
-      call CUBLAS_DGEMM ('N','N',nn,nn,nn,alpha,devPtrB
+      stat=CUBLAS_DGEMM ('N','N',nn,nn,nn,alpha,devPtrB
      > ,nn ,devPtrA,nn, beta, devPtrC,nn)  
       if (stat.NE.0) then
          call CUBLAS_FREE( devPtrC )
@@ -111,9 +111,9 @@
        integer*8 devPtrC
        integer i,j,stat
        external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-       external CUBLAS_SHUTDOWN, CUBLAS_ALLOC
+       external CUBLAS_SHUTDOWN, CUBLAS_ALLOC, CUBLAS_ZGEMM
        integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-       integer CUBLAS_INIT
+       integer CUBLAS_INIT,CUBLAS_ZGEMM
        COMPLEX*16, dimension (:,:), ALLOCATABLE :: scratch
        parameter(sizeof_complex=16)
 !
@@ -171,7 +171,7 @@
         call CUBLAS_SHUTDOWN
         stop
       endif
-      call CUBLAS_ZGEMM ('N','N',nn,nn,nn,alpha,devPtrB
+      stat=CUBLAS_ZGEMM ('N','N',nn,nn,nn,alpha,devPtrB
      > ,nn ,devPtrA,nn, beta, devPtrC,nn)
       if (stat.NE.0) then
         write(*,*) "ZGEMM failed -conmutator_zd"
@@ -179,7 +179,7 @@
         stop
       endif
       beta=(-1.0D0,0.0D0)
-      call CUBLAS_ZGEMM ('N','N',nn,nn,nn,alpha,
+      stat=CUBLAS_ZGEMM ('N','N',nn,nn,nn,alpha,
      > devPtrA,nn ,devPtrB,nn, beta, devPtrC,nn)
       if (stat.NE.0) then
         write(*,*) "ZGEMM failed -conmutator_zd"
@@ -217,9 +217,9 @@
        integer*8 devPtrC
        integer i,j,stat
        external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-       external CUBLAS_SHUTDOWN, CUBLAS_ALLOC
+       external CUBLAS_SHUTDOWN, CUBLAS_ALLOC,CUBLAS_ZGEMM
        integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-       integer CUBLAS_INIT
+       integer CUBLAS_INIT,CUBLAS_ZGEMM
        COMPLEX*16, dimension (:,:), ALLOCATABLE :: scratch
        parameter(sizeof_complex=16)
 !
@@ -277,7 +277,7 @@
         call CUBLAS_SHUTDOWN
         stop
       endif
-      call CUBLAS_ZGEMM ('N','N',nn,nn,nn,alpha,devPtrB
+      stat=CUBLAS_ZGEMM ('N','N',nn,nn,nn,alpha,devPtrB
      > ,nn ,devPtrA,nn, beta, devPtrC,nn)
       if (stat.NE.0) then
         write(*,*) "ZGEMM failed -conmutator_dz"
@@ -285,7 +285,7 @@
         stop
       endif
       beta=(-1.0D0,0.0D0)
-      call CUBLAS_ZGEMM ('N','N',nn,nn,nn,alpha,
+      stat=CUBLAS_ZGEMM ('N','N',nn,nn,nn,alpha,
      > devPtrA,nn ,devPtrB,nn, beta, devPtrC,nn)
       if (stat.NE.0) then
         write(*,*) "ZGEMM failed -conmutator_dz"
@@ -323,9 +323,9 @@
        integer*8 devPtrC
        integer i,j,stat
        external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-       external CUBLAS_SHUTDOWN, CUBLAS_ALLOC
+       external CUBLAS_SHUTDOWN, CUBLAS_ALLOC, CUBLAS_ZGEMM
        integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-       integer CUBLAS_INIT
+       integer CUBLAS_INIT,CUBLAS_ZGEMM
        COMPLEX*16, dimension (:,:), ALLOCATABLE :: scratch
        parameter(sizeof_complex=16)
 !
@@ -378,7 +378,7 @@
         call CUBLAS_SHUTDOWN
         stop
       endif
-      call CUBLAS_ZGEMM ('N','N',nn,nn,nn,alpha,devPtrB
+      stat=CUBLAS_ZGEMM ('N','N',nn,nn,nn,alpha,devPtrB
      > ,nn ,devPtrA,nn, beta, devPtrC,nn)
       if (stat.NE.0) then
         write(*,*) "ZGEMM failed -conmutator_zz"
@@ -386,7 +386,7 @@
         stop
       endif
       beta=(-1.0D0,0.0D0)
-      call CUBLAS_ZGEMM ('N','N',nn,nn,nn,alpha,
+      stat=CUBLAS_ZGEMM ('N','N',nn,nn,nn,alpha,
      > devPtrA,nn ,devPtrB,nn, beta, devPtrC,nn)
       if (stat.NE.0) then
         write(*,*) "ZGEMM failed -conmutator_zz"
@@ -423,9 +423,9 @@
        integer*8 devPtrC
        integer i,j,stat
        external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-       external CUBLAS_SHUTDOWN, CUBLAS_ALLOC
+       external CUBLAS_SHUTDOWN, CUBLAS_ALLOC,CUBLAS_CGEMM
        integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-       integer CUBLAS_INIT
+       integer CUBLAS_INIT, CUBLAS_CGEMM 
        COMPLEX*8, dimension (:,:), ALLOCATABLE :: scratch
        parameter(sizeof_complex=8)
 !
@@ -483,7 +483,7 @@
         call CUBLAS_SHUTDOWN
         stop
       endif
-      call CUBLAS_CGEMM ('N','N',nn,nn,nn,alpha,devPtrB
+      stat=CUBLAS_CGEMM ('N','N',nn,nn,nn,alpha,devPtrB
      > ,nn ,devPtrA,nn, beta, devPtrC,nn)
       if (stat.NE.0) then
         write(*,*) "ZGEMM failed -conmutator_zd"
@@ -491,7 +491,7 @@
         stop
       endif
       beta=(-1.0E0,0.0E0)
-      call CUBLAS_CGEMM ('N','N',nn,nn,nn,alpha,
+      stat=CUBLAS_CGEMM ('N','N',nn,nn,nn,alpha,
      > devPtrA,nn ,devPtrB,nn, beta, devPtrC,nn)
       if (stat.NE.0) then
         write(*,*) "ZGEMM failed -conmutator_zd"
@@ -529,9 +529,9 @@
        integer*8 devPtrC
        integer i,j,stat
        external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-       external CUBLAS_SHUTDOWN, CUBLAS_ALLOC
+       external CUBLAS_SHUTDOWN, CUBLAS_ALLOC, CUBLAS_CGEMM
        integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-       integer CUBLAS_INIT
+       integer CUBLAS_INIT, CUBLAS_CGEMM
        COMPLEX*8, dimension (:,:), ALLOCATABLE :: scratch
        parameter(sizeof_complex=8)
 !
@@ -589,7 +589,7 @@
         call CUBLAS_SHUTDOWN
         stop
       endif
-      call CUBLAS_ZGEMM ('N','N',nn,nn,nn,alpha,devPtrB
+      stat=CUBLAS_CGEMM ('N','N',nn,nn,nn,alpha,devPtrB
      > ,nn ,devPtrA,nn, beta, devPtrC,nn)
       if (stat.NE.0) then
         write(*,*) "CGEMM failed -conmutator_dc"
@@ -597,7 +597,7 @@
         stop
       endif
       beta=(-1.0D0,0.0D0)
-      call CUBLAS_ZGEMM ('N','N',nn,nn,nn,alpha,
+      stat=CUBLAS_CGEMM ('N','N',nn,nn,nn,alpha,
      > devPtrA,nn ,devPtrB,nn, beta, devPtrC,nn)
       if (stat.NE.0) then
         write(*,*) "CGEMM failed -conmutator_dc"
@@ -635,9 +635,9 @@
        integer*8 devPtrC
        integer i,j,stat
        external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-       external CUBLAS_SHUTDOWN, CUBLAS_ALLOC
+       external CUBLAS_SHUTDOWN, CUBLAS_ALLOC, CUBLAS_CGEMM
        integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-       integer CUBLAS_INIT
+       integer CUBLAS_INIT, CUBLAS_CGEMM
        COMPLEX*8, dimension (:,:), ALLOCATABLE :: scratch
        parameter(sizeof_complex=8)
 !
@@ -690,7 +690,7 @@
         call CUBLAS_SHUTDOWN
         stop
       endif
-      call CUBLAS_ZGEMM ('N','N',nn,nn,nn,alpha,devPtrB
+      stat=CUBLAS_CGEMM ('N','N',nn,nn,nn,alpha,devPtrB
      > ,nn ,devPtrA,nn, beta, devPtrC,nn)
       if (stat.NE.0) then
         write(*,*) "ZGEMM failed -conmutator_cc"
@@ -698,7 +698,7 @@
         stop
       endif
       beta=(-1.0D0,0.0D0)
-      call CUBLAS_ZGEMM ('N','N',nn,nn,nn,alpha,
+      stat=CUBLAS_CGEMM ('N','N',nn,nn,nn,alpha,
      > devPtrA,nn ,devPtrB,nn, beta, devPtrC,nn)
       if (stat.NE.0) then
         write(*,*) "ZGEMM failed -conmutator_cc"

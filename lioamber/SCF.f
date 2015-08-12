@@ -290,8 +290,7 @@ c Diagonalization of S matrix, after this is not needed anymore
 c S = YY^T ; X = (Y^-1)^T
 c => (X^T)SX = 1
 c
-      docholesky=.false.
-!      docholesky=.true.
+      docholesky=.true.
       call g2g_timer_start('cholesky')
       call g2g_timer_sum_start('Overlap decomposition')
       IF (docholesky) THEN

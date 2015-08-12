@@ -40,6 +40,7 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
         logical :: just_int3n,ematalloct
 
 !FFR!
+       logical             :: dovv
        real*8              :: weight
        integer,allocatable :: atom_group(:)
        integer,allocatable :: orb_group(:)
@@ -182,18 +183,21 @@ c
        allocate(sqsm(M,M))
        allocate(fockbias(M,M))
 
-       if (.not.allocated(atom_group)) then
+       dovv=.false.
+       if (dovv.eq..true.) then
+
+        if (.not.allocated(atom_group)) then
           allocate(atom_group(natom))
           call read_list('atomgroup',atom_group)
-       endif
-       if (.not.allocated(orb_group)) then
+        endif
+        if (.not.allocated(orb_group)) then
           allocate(orb_group(M))
           call atmorb(atom_group,nuc,orb_group)
-       endif
-       if (.not.allocated(orb_selection)) then
+        endif
+        if (.not.allocated(orb_selection)) then
           allocate(orb_selection(M))
+        endif
        endif
-
 
 
 C----------------------------------------
@@ -354,16 +358,19 @@ c
 ! into RMM.
 !
          call sdiag_canonical(Smat,Dvec,Vmat,Xmat,Xtrp,Ymat,Ytrp)
-         sqsm=matmul(Vmat,Ytrp)
-         fockbias=0.0d0
 
-         weight=0.195d0
-         call vector_selection(1,orb_group,orb_selection)
-         call fterm_biaspot(M,sqsm,orb_selection,weight,fockbias)
+         if (dovv.eq..true.) then
+          sqsm=matmul(Vmat,Ytrp)
+          fockbias=0.0d0
 
-         weight=-weight
-         call vector_selection(2,orb_group,orb_selection)
-         call fterm_biaspot(M,sqsm,orb_selection,weight,fockbias)
+          weight=0.195d0
+          call vector_selection(1,orb_group,orb_selection)
+          call fterm_biaspot(M,sqsm,orb_selection,weight,fockbias)
+
+          weight=-weight
+          call vector_selection(2,orb_group,orb_selection)
+          call fterm_biaspot(M,sqsm,orb_selection,weight,fockbias)
+         endif
 
          allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
          X=Xmat
@@ -667,7 +674,7 @@ c-------------------------------------------------------------------------------
 
 ! FFR: Van Voorhis Term for DIIS
 !--------------------------------------------------------------------!
-          fock=fock+fockbias
+         if (dovv.eq..true.) fock=fock+fockbias
 
 c-----------------------------------------------------------------------------------------
 c Expand density matrix into full square form (before, density matrix was set up for triangular sums
@@ -826,8 +833,7 @@ c
 
 ! FFR: Van Voorhis Term for not DIIS
 !--------------------------------------------------------------------!
-          fock=fock+fockbias
-
+         if (dovv.eq..true.) fock=fock+fockbias
 
 
 #ifdef CUBLAS

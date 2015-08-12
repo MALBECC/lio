@@ -358,9 +358,10 @@ c
 ! into RMM.
 !
          call sdiag_canonical(Smat,Dvec,Vmat,Xmat,Xtrp,Ymat,Ytrp)
+         sqsm=matmul(Vmat,Ytrp)
+
 
          if (dovv.eq..true.) then
-          sqsm=matmul(Vmat,Ytrp)
           fockbias=0.0d0
 
           weight=0.195d0

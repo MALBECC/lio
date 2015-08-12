@@ -45,7 +45,6 @@ objects += mathsubs.o
 objects += maskrmm.o
 objects += density.o
 objects += fterm_biaspot.o lowdinpop.o general_module.o
-objects += choldcmp.o
 ifeq ($(cublas),1)
 objects += cublasmath.o 
 endif

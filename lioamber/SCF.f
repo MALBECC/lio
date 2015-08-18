@@ -340,7 +340,11 @@ c
          call sdcmp_cholesky(Smat,Dvec,Vmat,Ymat,Xtrp,Ytrp,Xmat)
 
          allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
-         X=Xmat
+         do iii=1,M
+         do jjj=1,M
+           X(iii,jjj)=Xmat(iii,jjj)
+         enddo
+         enddo
          Y=Ymat
          Xtrans=Xtrp
          Ytrans=Ytrp
@@ -374,7 +378,11 @@ c
          endif
 
          allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
-         X=Xmat
+         do iii=1,M
+         do jjj=1,M
+           X(iii,jjj)=Xmat(iii,jjj)
+         enddo
+         enddo
          Y=Ymat
          Xtrans=Xtrp
          Ytrans=Ytrp

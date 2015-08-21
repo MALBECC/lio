@@ -241,7 +241,7 @@ c
       call g2g_timer_sum_start('1-e Fock')
       call g2g_timer_sum_start('Nuclear attraction')
       call int1(En)
-      if (ecpmode .and. .false. ) then
+      if (ecpmode ) then
           write(*,*) "agrego terminos AAA,AAB, BAC a los de 1e"
           do k=1,MM
                term1e(k)=RMM(M11+k-1)
@@ -252,7 +252,6 @@ c
 !agrega el ECP AAA a los terminos de 1 e
           enddo
       end if
-
 
 
 
@@ -498,14 +497,6 @@ c Recover C from (X^-1)*C
 
 
 
-
-      if (ecpmode ) then
-          write(*,*) "agrego terminos AAA,AAB, BAC a los de 1e"
-          do k=1,MM
-               term1e(k)=RMM(M11+k-1)
-               RMM(M11+k-1)=RMM(M11+k-1)+VAAA(k)+VAAB(k)+VBAC(k)
-          enddo
-      end if
 
 c
 c Density Matrix

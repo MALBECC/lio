@@ -15,7 +15,8 @@
        call g2g_timer_start('mulliken')
 !
        do kk=1,N
-         q(kk)=real(q0(kk))
+!         q(kk)=real(q0(kk))
+         q(kk)=0. !real(q0(kk))
        enddo
 
        do ii=1,M

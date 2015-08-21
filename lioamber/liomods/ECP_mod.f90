@@ -52,6 +52,8 @@
 !guarda la distancia en x, y, z entre los atomos i y j  dist(i,j)=xi-xj
 !Cuidado, esta en unidades atomicas
 
+	double precision, dimension(:,:), Allocatable :: Cnorm
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&hasta aca testeado FFFFFFFFFFFFFFFFFFFFFFF
 
 
@@ -1091,7 +1093,7 @@
         stop "n greather than 170 in facrecursive function"
         end if
         if (n.eq.-1 .or. n.eq.0 .or. n.eq.1) then
-        facrecursive=1
+        facrecursive=1.d0
         else
         facrecursive=N*facrecursive(N-1)
         end if
@@ -1106,7 +1108,7 @@
         implicit none
         integer, intent(in) :: N
         if (n.eq.-1 .or. n.eq.0 .or. n.eq.1) then
-        doublefacrecursive=1
+        doublefacrecursive=1.d0
 	else if (n .gt. 33) then
 		write(*,*) "Error in doble factorial routine, n greater than 33"
 		write(*,*) "insuficient presicion"
@@ -1125,7 +1127,7 @@
         if (n .gt. 33) then
                 stop "error in doublefac function N greater than 33"
         end if
-        doublefac=1
+        doublefac=1.d0
         if (n.gt.1) then
                 do i=N,2,-2
                         doublefac=doublefac*i
@@ -1135,12 +1137,13 @@
         end function doublefac
 
 	DOUBLE PRECISION function angularint(i,j,k)
+	implicit none
 	integer, intent(in) :: i,j,k
-!	DOUBLE PRECISION, parameter :: pi=3.14159265358979312D0
+	DOUBLE PRECISION, parameter :: pi=3.14159265358979312D0
 !esta rutina calcula la integral (x/r)^i (y/r)^j (z/r)^k, luego sera reemplazada por un array
 	if (mod(i,2) .eq. 0 .and. mod(j,2) .eq. 0 .and.mod(k,2) .eq. 0 ) then
-        angularint=4*pi*doublefacrecursive(i-1)*doublefacrecursive(j-1)*doublefacrecursive(k-1)/doublefacrecursive(i+j+k+1)
-	write(21,*) i+j+k+1,doublefacrecursive(i+j+k+1)
+        angularint=4.d0*pi*doublefacrecursive(i-1)*doublefacrecursive(j-1)*doublefacrecursive(k-1)/doublefacrecursive(i+j+k+1)
+!	write(21,*) i+j+k+1,doublefacrecursive(i+j+k+1)
         else
         angularint=0.d0
         end if

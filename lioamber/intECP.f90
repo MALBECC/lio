@@ -18,8 +18,6 @@
 	if (tipodecalculo .eq. 1) then
         call allocate_ECP()
 !allocatea la matriz de fock de pseudopotenciales, la matrix cuadrara para pruebas y el verctor con los terminos de 1 electron sin corregir
-
-
 !edita normalizacion base d, luego lo cambiare aguadabdo los coeficientes en un array
 	call correctbasis(1)
 !prepara variables y calcula los terminos AAA	
@@ -30,6 +28,7 @@
 	call intECPAAA()
 	call correctbasis(-1)
 	write(*,*) "termino ECP tipo 1"
+	go to 325
 !calcula terminos AAA
 	elseif (tipodecalculo .eq. 2) then
         call correctbasis(1)
@@ -40,12 +39,14 @@
 !calculo VAAB
         call correctbasis(-1)
 	write(*,*) "termino ECP tipo 2"
+	go to 325
 	elseif (tipodecalculo .eq. 3) then
 !calculo VABC
         call correctbasis(1)
 	call intECPABC()
         call correctbasis(-1)
-	write(*,*) "en proceso rutinas VABC"
+	write(*,*) "termino ECP tipo 3"
+		go to 324
 	elseif (tipodecalculo .eq. 4) then
 		call deallocateV()
 		go to 325
@@ -76,7 +77,7 @@
 
 
         if (tipodecalculo .eq. 2) then
-        if ( .true. ) then
+        if ( .false. ) then
 !escribe coeficientes de fock del ECP AAB y AAA
         write(*,*) "VAAA+VAAB"
 !        do i=1,M
@@ -146,7 +147,7 @@
 
 
 
-
+ 324    write(*,*) "ahora rutinas de debug y verbose"
 
 	if ( verbose_ECP .gt. 0) then
 		call WRITE_BASIS()
@@ -340,21 +341,21 @@
 
         do l = 0 , Lmax(z)-1
 !barre todos los l de la parte no local
-           do m=-l,l     
+!           do m=-l,l     
 !barre m
-              A2=A2+Aintegral(l,m,lxi,lyi,lzi)*Aintegral(l,m,lxj,lyj,lzj)
+!              A2=A2+Aintegral(l,m,lxi,lyi,lzi)*Aintegral(l,m,lxj,lyj,lzj)
 !A2 contiene la parte angular de la integral
-           end do
+!           end do
 
            do term=1, expnumbersECP(z,l)
 !barre contracciones del ECP para el atomo con carga z y l del ecp
 
 !%%%%%%%%%%%%%%%%%%%%asi estaba antes!!!!!!!!!!!!!
-!              do m=-l,l     !este do se tiene que poder poner antes del do de term=1, expnumbersECP(z,l)
+              do m=-l,l     !este do se tiene que poder poner antes del do de term=1, expnumbersECP(z,l)
 !barre m
-!                 A2=A2+Aintegral(l,m,lxi,lyi,lzi)*Aintegral(l,m,lxj,lyj,lzj)
+                 A2=A2+Aintegral(l,m,lxi,lyi,lzi)*Aintegral(l,m,lxj,lyj,lzj)
 !A2 contiene la parte angular de la integral
-!              end do
+              end do
 !%%%%%%%%%%%%%%%%%%%%asi estaba antes!!!!!!!!!!!!!
 
               Acoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
@@ -364,11 +365,11 @@
 !aECP coeficiente del ECP
 
 !%%%%%%%%%%%%%%%%%%%%asi estaba antes!!!!!!!!!!!!!
-!              A2=0.d0
+              A2=0.d0
 !%%%%%%%%%%%%%%%%%%%%asi estaba antes!!!!!!!!!!!!!
 
            end do
-	   A2=0.d0
+!	   A2=0.d0
         end do
         return
         end function AAA_SEMILOCAL
@@ -675,7 +676,6 @@
 	M=nshell(0)+nshell(1)+nshell(2)
 	acum=0.d0
 	ABC=0.d0
-	write(*,*) "entre en abc"
 	do i=1,M
 	do j=1,M
 !barre la base
@@ -705,7 +705,7 @@
 	               do ii=1, ncont(i)
 	               do ji=1, ncont(j)
 !barre contracciones de la base
-	                  Distcoef=a(i,ii)*(dxi**2.d0+dyi**2.d0+dzi**2.d0) + a(j,ji)*(dxj**2.d0+dyj**2.d0+dzj**2.d0)
+	                  Distcoef=a(i,ii)*(dxi**2.d0 + dyi**2.d0 + dzi**2.d0) + a(j,ji)*(dxj**2.d0 + dyj**2.d0 + dzj**2.d0)
 
 			 if (Distcoef .ge. cutecp3) write(*,*) "cut 3 sobrepasado omit int"
                           if ( .not. cutECP .or. (Distcoef .lt. cutecp3)) then
@@ -765,6 +765,12 @@
 
 	integer :: ac,bc,cc,dc,ec,fc,w,lambda
 !variables auxiliares
+
+
+!temporales para debug
+	double precision :: radial1,omegal
+
+
 	ABC_LOCAL=0.d0
 	L=Lmax(ZlistECP(k))
 	z=ZlistECP(k)
@@ -773,6 +779,7 @@
 	Kvector=-2.d0*Kvector
 	Kmod=sqrt(Kvector(1)**2.d0+Kvector(2)**2.d0+Kvector(3)**2.d0)
 	integral=0.d0
+	acum=0.d0
 
 	do w =1, expnumbersECP(z,l)
 !barre terminos del ECP para el atomo con carga nuclear Z y l del ECP
@@ -792,7 +799,7 @@
               end do
 	      auxcomb=comb(lxi,ac)*comb(lyi,bc)*comb(lzi,cc)*comb(lxj,dc)*comb(lyj,ec)*comb(lzj,fc)
 	      auxdist=dx1**(lxi-ac)*dy1**(lyi-bc)*dz1**(lzi-cc)*dx2**(lxj-dc)*dy2**(lyj-ec)*dz2**(lzj-fc)
-	      acum=auxcomb*auxdist*integral
+	      acum=acum + auxcomb*auxdist*integral
 	      integral=0.d0
 	   end do
            end do
@@ -825,7 +832,10 @@
 	integer :: l,term,ac,bc,cc,dc,ec,fc,lambdai, lambdaj,m
 !auxiliares ciclos
 	double precision :: acumang,integral,auxcomb,auxdist,acum
-!auxiliares 
+!auxiliaresa
+
+
+ 
 
 	ABC_SEMILOCAL=0.d0
 	integral=0.d0
@@ -853,6 +863,8 @@
 	      Qnl1l2=0.d0
 	      Ccoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
 	      call Qtype2(Kimod,Kjmod,Ccoef,l1max,l2max,necp(Z,l,term))
+
+
 !agrega a la matriz Qnl1l2 los terminos correspondientes a un termino radiales.
 	      do ac=0,lxi
 	      do bc=0,lyi
@@ -868,15 +880,15 @@
                        acumang=acumang+OMEGA2(Kivector,lambdai,l,m,ac,bc,cc)*OMEGA2(Kjvector,lambdaj,l,m,dc,ec,fc)
                     end do
 	            integral=integral+acumang*Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj)
-
                     if (Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj) .eq. 0.d0) stop " qnl1l2 = 0 in ABC_SEMILOCAL"
 	         end do
 	         end do
                  auxcomb=comb(lxi,ac)*comb(lyi,bc)*comb(lzi,cc)*comb(lxj,dc)*comb(lyj,ec)*comb(lzj,fc)
                  auxdist=dxi**(lxi-ac)*dyi**(lyi-bc)*dzi**(lzi-cc)*dxj**(lxj-dc)*dyj**(lyj-ec)*dzj**(lzj-fc)
-                 acum=auxcomb*auxdist*integral
+                 acum=acum + auxcomb*auxdist*integral
 
                  integral=0.d0
+
 	      end do
 	      end do
 	      end do
@@ -996,7 +1008,7 @@
         DOUBLE PRECISION,dimension(3) :: Kun
         integer :: o,r,s,t,u,v,w
         Double precision :: SUM1, SUM2
-        Kun=K/sqrt(K(1)**2d0 + K(2)**2.d0 + K(3)**2.d0)
+        Kun=K/sqrt(K(1)**2.d0 + K(2)**2.d0 + K(3)**2.d0)
         SUM1=0.d0
         SUM2=0.d0
         OMEGA2=0.d0

@@ -158,9 +158,9 @@
 	end if
 
 	if ( ecp_debug ) then
+		call SEARCH_NAN()
 		call TEST_SYMMETRY()
 		call TEST_COPY_FOCK()
-		call SEARCH_NAN()
 	end if
 
  325    write(*,*) "corriendo con ECP version betha"
@@ -716,6 +716,8 @@
 
 	                     ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,-dxi,-dyi,-dzi,-dxj,-dyj,-dzj)+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 
+				write(*,*) "abc",abc,Distcoef
+
                                 if (local_nonlocal .eq. 1 .and. ecp_debug) then
 ! local_nonlocal 1 y 2 son solo para debugueo
                                    ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,-dxi,-dyi,-dzi,-dxj,-dyj,-dzj)
@@ -733,6 +735,7 @@
 !este if hay q sacarlo al fina, cuando cambie el rango en el q barre j , en vez de comenzar en 1 comience en i
 	                  pos=i+(1-j)*(j-2*M)/2   !chekeada
 	                  VBAC(pos) = VBAC(pos) + acum*c(i,ii)*4.d0*pi !esta linea es lo unico que quedaria!!!!!!!!!!!!!
+			  write(*,*) i,j,pos,VBAC(pos)
 	               end if
                        acum=0.d0
 	               end do
@@ -1546,6 +1549,8 @@
 	use garcha_mod, only : nshell
 	implicit none
 	integer :: i,j,k,M
+	logical :: no_zero
+	no_zero = .true.
 	M=nshell(0)+nshell(1)+nshell(2)
 	write(*,4020)
         write(*,4021)
@@ -1556,7 +1561,13 @@
 	do j=1,M
 	   if (i .ge. j) then
 	      k=i+(1-j)*(j-2*M)/2
-	      write(*,4025) i,j,VAAA(k),VAAB(k),VBAC(k)
+	         if (no_zero) then
+	            if ( abs(VAAA(k)+VAAB(k)+VBAC(k)) .gt. 1E-30) then
+	               write(*,4025) i,j,VAAA(k),VAAB(k),VBAC(k)
+	            end if
+	         else
+	            write(*,4025) i,j,VAAA(k),VAAB(k),VBAC(k)
+	         end if
             end if
 	end do
 	end do
@@ -1714,9 +1725,9 @@
 	M=nshell(0)+nshell(1)+nshell(2)
 	MM=M*(M+1)/2
 	do i=1,MM
-	   if (VAAA(i) .ne. VAAA(i)) stop "error in VAAA"
-	   if (VAAB(i) .ne. VAAB(i)) stop "error in VAAA"
-	   if (VBAC(i) .ne. VBAC(i)) stop "error in VAAA"
+	   if (VAAA(i) .ne. VAAA(i)) stop "NAN in VAAA"
+	   if (VAAB(i) .ne. VAAB(i)) stop "NAN in VAAB"
+	   if (VBAC(i) .ne. VBAC(i)) stop "NAN in VBAC"
 	end do
 	end subroutine SEARCH_NAN
 

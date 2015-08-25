@@ -29,4 +29,8 @@ ifeq ($(magma),1)
   LIBS += -L$(MAGMAROOT)/lib -lmagma
 endif
 
+ifeq ($(cublas),1)
+  LIBS += -lstdc++ -L$(CUDA_HOME)/lib64/ -lcudart -lcublas
+endif
+
 ######################################################################

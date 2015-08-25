@@ -27,12 +27,12 @@ ifeq ($(magma),1)
         LIBS     += -L$(MAGMAROOT)/lib -lmagma
 endif
 
-FORTRAN_WRAPER=
+#FORTRAN_WRAPER=
 ifeq ($(cublas),1)
-LIBS +=-L../g2g -lg2g -lstdc++ -L $(CUDA_HOME)/lib64/ -lcudart -lcublas 
-FORTRAN_WRAPER=../lioamber/obj/fortran.o
+#LIBS += -lstdc++ -L$(CUDA_HOME)/lib64/ -lcudart -lcublas
+#FORTRAN_WRAPER=../lioamber/obj/fortran.o
 endif
-FLAGS +=$(FORTRAN_WRAPER)
+#FLAGS +=$(FORTRAN_WRAPER)
 
 
 ######################################################################

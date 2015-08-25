@@ -11,8 +11,10 @@ else
   FFLAGS+= -I$(obj_path) -J$(obj_path)
   FFLAGS+= -cpp
 endif
-FFLAGS += -Dpack -fPIC -DG2G -g
-FFLAGS += $(optim) $(myflags) $(DEFINE) $(PROFILE)
+DEFINE  += -Dpack -DG2G
+PROFILE += -g
+FFLAGS  += -fPIC
+FFLAGS  += $(DEFINE) $(PROFILE) $(optim) $(myflags)
 
 
 #
@@ -37,18 +39,11 @@ endif
 
 FORTRAN_WRAPPER=
 ifeq ($(cublas),1)
-        CUBLAS_OBJ=$(CUBLAS_SRC:cublas/%.f=obj/garcha_g2g_obj/%.o)
-        CFLAGS += -DCUBLAS
-        CFLAGS2 += -DCUBLAS
-        CFLAGS3 += -DCUBLAS
-        FFLAGS += -DCUBLAS
-        FORTRAN_WRAPPER = obj/fortran.o
+  DEFINE += -DCUBLAS
 endif
+
 ifeq ($(td_simple),1)
-        CFLAGS += -DTD_SIMPLE
-        CFLAGS2 += -DTD_SIMPLE
-        CFLAGS3 += -DTD_SIMPLE
-        FFLAGS += -DTD_SIMPLE
+  DEFINE += -DTD_SIMPLE
 endif
 
 #
@@ -68,24 +63,24 @@ else ifeq ($(full_optimize),1)
 endif
 optim=$(optim3)
 
-objlist := dip.o SCFop.o
-objlist += intfld.o int1G.o int3G.o
-objlist += intsolG.o intsolGs.o intsol.o
-$(objlist:%.o=$(obj_path)/%.o) : optim:=$(optim1)
-#$(objlist:%.o=$(obj_path)/%.o) : private optim+=$(optim1)
+tmplist := dip.o SCFop.o
+tmplist += intfld.o int1G.o int3G.o
+tmplist += intsolG.o intsolGs.o intsol.o
+$(tmplist:%.o=$(obj_path)/%.o) : optim:=$(optim1)
+#$(tmplist:%.o=$(obj_path)/%.o) : private optim+=$(optim1)
 
-objlist := matmuldiag.o int3lu.o fock_commuts.o
-objlist := SCF.o TD.o ehrenfest.o magnus.o predictor.o
-objlist += FixMessRho.o get_unit.o mulliken.o PackedStorage.f
-objlist += init_amber.o init.o lio_init.o liomain.o lio_finalize.o
-objlist += dft_get_mm_forces.o dft_get_qm_forces.o
-objlist += alg.o drive.o func.o grid.o dipmem.o jarz.o
-objlist += int1.o int2.o int2G.o int3mem.o intSG.o
-objlist += garcha_mod.o mathsubs.o cubegen.o density.o
+tmplist := matmuldiag.o int3lu.o fock_commuts.o
+tmplist := SCF.o TD.o ehrenfest.o magnus.o predictor.o
+tmplist += FixMessRho.o get_unit.o mulliken.o PackedStorage.f
+tmplist += init_amber.o init.o lio_init.o liomain.o lio_finalize.o
+tmplist += dft_get_mm_forces.o dft_get_qm_forces.o
+tmplist += alg.o drive.o func.o grid.o dipmem.o jarz.o
+tmplist += int1.o int2.o int2G.o int3mem.o intSG.o
+tmplist += garcha_mod.o mathsubs.o cubegen.o density.o
 ifeq ($(cublas),1)
-objlist += cublasmath.o 
+tmplist += cublasmath.o 
 endif
-$(objlist:%.o=$(obj_path)/%.o) : optim:=$(optim3)
+$(tmplist:%.o=$(obj_path)/%.o) : optim:=$(optim3)
 #UNNECESSARY IF PREVIOUS ASSIGNMENT USED PRIVATE KEYWORD
 
 #
@@ -93,31 +88,27 @@ $(objlist:%.o=$(obj_path)/%.o) : optim:=$(optim3)
 # TARGET-SPECIFIC FLAGS (GENERAL) : This following section has
 # all rest of the target-specific flags. More of these can be
 # assigned to individual objects or to a whole list of them,
-# grouped together inside the objlist, simultaneusly.
+# grouped together inside the tmplist, simultaneusly.
 # (*)
 myflags :=
 
 ifeq ($(ifort),1)
-  objlist := matmuldiag.o int3lu.o fock_commuts.o
-  objlist += mathsubs.o
-  $(objlist:%.o=$(obj_path)/%.o) : myflags:=-parallel
-  #$(objlist:%.o=$(obj_path)/%.o) : private myflags+=-parallel
+  tmplist := matmuldiag.o int3lu.o fock_commuts.o
+  tmplist += mathsubs.o
+  $(tmplist:%.o=$(obj_path)/%.o) : myflags:=-parallel
+  #$(tmplist:%.o=$(obj_path)/%.o) : private myflags+=-parallel
 
-  objlist := SCF.o TD.o ehrenfest.o magnus.o predictor.o
-  objlist += FixMessRho.o get_unit.o mulliken.o PackedStorage.f
-  objlist += init_amber.o init.o lio_init.o liomain.o lio_finalize.o
-  objlist += dft_get_mm_forces.o dft_get_qm_forces.o
-  objlist += alg.o drive.o func.o grid.o dipmem.o jarz.o
-  objlist += int1.o int2.o int2G.o int3mem.o  intSG.o
-  objlist += garcha_mod.o cubegen.o density.o
-  $(objlist:%.o=$(obj_path)/%.o) : myflags:=-mp1 -ip
-  #$(objlist:%.o=$(obj_path)/%.o) : private myflags+=$(optim3) -mp1 -ip
+  tmplist := SCF.o TD.o ehrenfest.o magnus.o predictor.o
+  tmplist += FixMessRho.o get_unit.o mulliken.o PackedStorage.f
+  tmplist += init_amber.o init.o lio_init.o liomain.o lio_finalize.o
+  tmplist += dft_get_mm_forces.o dft_get_qm_forces.o
+  tmplist += alg.o drive.o func.o grid.o dipmem.o jarz.o
+  tmplist += int1.o int2.o int2G.o int3mem.o  intSG.o
+  tmplist += garcha_mod.o cubegen.o density.o
+  $(tmplist:%.o=$(obj_path)/%.o) : myflags:=-mp1 -ip
+  #$(tmplist:%.o=$(obj_path)/%.o) : private myflags+=$(optim3) -mp1 -ip
 endif
 
-ifeq ($(cublas),1)
-  objlist += cublasmath.o 
-#  $(objlist:%.o=$(obj_path)/%.o) 
-endif
 
 #
 ######################################################################

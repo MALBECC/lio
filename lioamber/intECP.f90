@@ -152,6 +152,7 @@
 	if ( verbose_ECP .gt. 0) then
 		call WRITE_BASIS()
 		call WRITE_ECP_PARAMETERS()
+		call WRITE_FOCK_ECP_TERMS()
 		call WRITE_FOCK_ECP()
 		call WRITE_ANG_EXP()
 		call WRITE_DISTANCE()
@@ -163,7 +164,7 @@
 		call TEST_COPY_FOCK()
 	end if
 
- 325    write(*,*) "corriendo con ECP version betha"
+ 325    write(*,*) "terminaron calculos de ECP version betha"
 
 	9012 format(/1x,i2,2x,i2,2x,i2,2x,i2,2x,i2,2x,f18.10)
 	9013 format(/1x,"vector",f18.10,2x,"matriz",f18.10,2x,"diff",f18.10)
@@ -680,6 +681,10 @@
 	do j=1,M
 !barre la base
 	   do k=1, natom 
+
+
+!		write(*,*) "calculando abc para", k
+
 !necesito que este do barra por todos los nucleos del sistema
 	      if (nuc(i) .ne. k .and. nuc(j) .ne.k) then
 !solo calcula los terminos en q las 2 funciones de base NO corres ponden al atomo con el ECP
@@ -688,12 +693,15 @@
 	            if ( IzECP(k) .eq. ZlistECP(ki)) then
 !solo calcula si el nucleo tiene ecp
 
-                       dxi=distx(nuc(i),k)
-                       dyi=disty(nuc(i),k)
-                       dzi=distz(nuc(i),k)
-                       dxj=distx(nuc(j),k)
-                       dyj=disty(nuc(j),k)
-                       dzj=distz(nuc(j),k)
+
+!			write(*,*) "k,ki,izecp,zlist",k,ki,IzECP(k),ZlistECP(ki)
+
+                       dxi=-distx(nuc(i),k)
+                       dyi=-disty(nuc(i),k)
+                       dzi=-distz(nuc(i),k)
+                       dxj=-distx(nuc(j),k)
+                       dyj=-disty(nuc(j),k)
+                       dzj=-distz(nuc(j),k)
 !distancias
                        lxi=Lxyz(i,1)
                        lxj=Lxyz(j,1)
@@ -714,17 +722,24 @@
 !y se obtienen NAN para el numero muy grande
 !a distancias grades gana el termino que es casi 0
 
-	                     ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,-dxi,-dyi,-dzi,-dxj,-dyj,-dzj)+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+	                     ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 
-				write(*,*) "abc",abc,Distcoef
+
+!				if ( i .eq. j) write(*,*) "dist coef",Distcoef
+!				if ( i .eq. j) write(*,*) "i,j,abc",i,j,abc
 
                                 if (local_nonlocal .eq. 1 .and. ecp_debug) then
 ! local_nonlocal 1 y 2 son solo para debugueo
-                                   ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,-dxi,-dyi,-dzi,-dxj,-dyj,-dzj)
+                                   ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
                                 else if (local_nonlocal .eq. 2 .and. ecp_debug) then
                                    ABC=4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
                                 end if
 		                        acum=acum + ABC*c(j,ji)*exp(-Distcoef)
+!			if ( i .eq. j) write(*,*) "i,j,abc",i,j,abc
+!			if ( i .eq. j) write(*,*) "ii,ji,k", ii,ji,k
+!			if ( i .eq. j) write(*,*) "lxi,lyi,lzi,lxj,lyj,lzj",lxi,lyi,lzi,lxj,lyj,lzj
+!			if ( i .eq. j) write(*,*) "-dxi,-dyi,-dzi,-dxj,-dyj,-dz",-dxi,-dyi,-dzi,-dxj,-dyj,-dzj
+
 	                     ABC=0.d0
 	                  end if
 	               end do
@@ -735,7 +750,7 @@
 !este if hay q sacarlo al fina, cuando cambie el rango en el q barre j , en vez de comenzar en 1 comience en i
 	                  pos=i+(1-j)*(j-2*M)/2   !chekeada
 	                  VBAC(pos) = VBAC(pos) + acum*c(i,ii)*4.d0*pi !esta linea es lo unico que quedaria!!!!!!!!!!!!!
-			  write(*,*) i,j,pos,VBAC(pos)
+!			  write(*,*) i,j,pos,VBAC(pos)
 	               end if
                        acum=0.d0
 	               end do
@@ -750,7 +765,7 @@
 
 	DOUBLE PRECISION function ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2)
 	use garcha_mod, only : a,c
-	use ECP_mod, only :ZlistECP,expnumbersECP, Qnl,bECP
+	use ECP_mod, only :expnumbersECP, Qnl,bECP,IzECP
 	implicit none
         integer, intent(in) :: i,j,ii,ji
 !terminos de la base
@@ -775,8 +790,8 @@
 
 
 	ABC_LOCAL=0.d0
-	L=Lmax(ZlistECP(k))
-	z=ZlistECP(k)
+	z=IzECP(k)
+	L=Lmax(Z)
 	lmaxbase=lxi+lyi+lzi+lxj+lyj+lzj
 	Kvector=(/a(i,ii)*dx1+a(j,ji)*dx2,a(i,ii)*dy1+a(j,ji)*dy2,a(i,ii)*dz1+a(j,ji)*dz2/)
 	Kvector=-2.d0*Kvector
@@ -784,10 +799,20 @@
 	integral=0.d0
 	acum=0.d0
 
+!	write(*,*) "testeando local"
+!	write(*,*) "kvector",Kvector
+!	if (Kvector(1) .ge. 0.d0) Kvector(1)=-Kvector(1)
+
 	do w =1, expnumbersECP(z,l)
 !barre terminos del ECP para el atomo con carga nuclear Z y l del ECP
 	   Qnl=0.d0
            Ccoef=bECP(z,L,w)+a(i,ii)+a(j,ji)
+		if (i .eq. j) then
+!			write(*,*) "llamando a Q", i, j
+!			write(*,*) "b,a1,a2",bECP(z,L,w),a(i,ii),a(j,ji)
+			write(*,*) "becp,z,l,w",bECP(z,L,w),z,L,w
+!			write(*,*) Kmod,Ccoef,lmaxbase,necp(Z,l,w)
+		end if
 	   call Qtype1(Kmod,Ccoef,lmaxbase,necp(Z,l,w))
 !calcula integral radial
 	   do ac=0,lxi
@@ -799,10 +824,22 @@
 !barre los coef de la expansion en el binomio de Newton
               do lambda=ac+bc+cc+dc+ec+fc,0,-2
                  integral=integral + OMEGA1(Kvector,lambda,ac+dc,bc+ec,cc+fc) * Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)
+
+		if (i .eq. j) then
+!			write(*,*) "*************************************"
+!			write(*,*) "omega, int",OMEGA1(Kvector,lambda,ac+dc,bc+ec,cc+fc),Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)
+!	                write(*,*) "*************************************"
+		endif
+
+!		if ( i .eq. j) write(*,*) "omega,Q",OMEGA1(Kvector,lambda,ac+dc,bc+ec,cc+fc),Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)
+		if (Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda) .ne. Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)) stop "Q-1314=0"
               end do
 	      auxcomb=comb(lxi,ac)*comb(lyi,bc)*comb(lzi,cc)*comb(lxj,dc)*comb(lyj,ec)*comb(lzj,fc)
 	      auxdist=dx1**(lxi-ac)*dy1**(lyi-bc)*dz1**(lzi-cc)*dx2**(lxj-dc)*dy2**(lyj-ec)*dz2**(lzj-fc)
 	      acum=acum + auxcomb*auxdist*integral
+		if (i .eq. j) then
+!		write(*,*) "auxcomb*auxdist*integral",auxcomb,auxdist,integral
+		end if
 	      integral=0.d0
 	   end do
            end do
@@ -818,7 +855,7 @@
 
 	DOUBLE PRECISION function ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
         use garcha_mod, only : a,c
-        use ECP_mod, only : ZlistECP,Qnl1l2,necp,bECP
+        use ECP_mod, only : Qnl1l2,necp,bECP,IzECP
 	implicit none
 	integer, intent(in) :: i,j,ii,ji,k
 !i,j funciones de la base
@@ -848,7 +885,7 @@
 	auxcomb=0.d0
 	auxdist=0.d0
 
-        Z=ZlistECP(k)
+        Z=IzECP(k)
 	l1max=lxi+lyi+lzi
 	l2max=lxj+lyj+lzj
 
@@ -1543,7 +1580,7 @@
 	end subroutine WRITE_BASIS
 
 
-	subroutine WRITE_FOCK_ECP()
+	subroutine WRITE_FOCK_ECP_TERMS()
 !escribe los terminos de fock del pseudopotencial
 	use ECP_mod, only : VAAA, VAAB, VBAC
 	use garcha_mod, only : nshell
@@ -1586,6 +1623,42 @@
 	4025 format("║",i2,1x,"║",i2,1x,"║",f18.15,1x,"║",f18.15,1x,"║",f18.15,1x,"║",f18.15,1x,"║")
 	4026 format("╚═══╩═══╩═══════════════════╩═══════════════════╩═══════"&
 		,"════════════╝ ")
+	end subroutine WRITE_FOCK_ECP_TERMS
+
+
+	subroutine WRITE_FOCK_ECP()
+	        use ECP_mod, only : VAAA, VAAB, VBAC
+        use garcha_mod, only : nshell
+        implicit none
+        integer :: i,j,k,M
+        logical :: no_zero
+        no_zero = .true.
+        M=nshell(0)+nshell(1)+nshell(2)
+        write(*,4032)
+        write(*,4033)
+        write(*,4034)
+        do i=1,M
+        do j=1,M
+           if (i .ge. j) then
+              k=i+(1-j)*(j-2*M)/2
+                 if (no_zero) then
+                    if ( abs(VAAA(k)+VAAB(k)+VBAC(k)) .gt. 1E-30) then
+                       write(*,4035) i,j,VAAA(k)+VAAB(k)+VBAC(k)
+                    end if
+                 else
+                    write(*,4035) i,j,VAAA(k)+VAAB(k)+VBAC(k)
+                 end if
+            end if
+        end do
+        end do
+        write(*,4036)
+
+	4032 format(5x,"╔═══╦═══╦═══════════════════════╗")
+	4033 format(5x,"║ i ║ j ║ FOCK Pseudopotencials ║")
+	4034 format(5x,"╠═══╬═══╬═══════════════════════╣")
+	4035 format(5x,"║",i2,1x,"║",i2,1x,"║",2x,f18.15,3x,"║")
+	4036 format(5x,"╚═══╩═══╩═══════════════════════╝ ")
+
 	end subroutine WRITE_FOCK_ECP
 
 

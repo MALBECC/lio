@@ -2,7 +2,7 @@
 # GENERAL FLAGS : This sets the configuration for the general
 # flags that will be used in compiling all of the target objects
 # (both for free subroutines and modules alike).
-ifeq ($(ifort),1)
+ifeq ($(intel),1)
   FC     = ifort
   FFLAGS+= -module $(obj_path)
   FFLAGS+= -fpp
@@ -45,6 +45,11 @@ endif
 ifeq ($(td_simple),1)
   DEFINE += -DTD_SIMPLE
 endif
+
+
+# Only uncomment this if your version of Amber supports
+# lio/Amber basis set keywords and cube file generation
+#FFLAGS += -DMOD_AMBER
 
 #
 ######################################################################
@@ -92,7 +97,7 @@ $(tmplist:%.o=$(obj_path)/%.o) : optim:=$(optim3)
 # (*)
 myflags :=
 
-ifeq ($(ifort),1)
+ifeq ($(intel),1)
   tmplist := matmuldiag.o int3lu.o fock_commuts.o
   tmplist += mathsubs.o
   $(tmplist:%.o=$(obj_path)/%.o) : myflags:=-parallel

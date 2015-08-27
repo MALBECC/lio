@@ -1,6 +1,6 @@
 LIBS=
 FLAGS = -fopenmp 
-ifeq ($(ifort),1)
+ifeq ($(intel),1)
 FLAGS += -fpp
 else
 FLAGS += -cpp
@@ -11,7 +11,7 @@ ifeq ($(xeon_phi),1)
   LIBS= -Qoption,link,-rpath=/opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/mic -Qoption,link,-rpath=/opt/intel/composer_xe_2013_sp1.3.174/compiler/lib/mic/
 endif
 ######################################################################
-ifeq ($(ifort),1)
+ifeq ($(intel),1)
   FC   = ifort
   LIBS+= -module ../lioamber/obj -I../lioamber/obj 
 else

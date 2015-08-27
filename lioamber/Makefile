@@ -1,55 +1,74 @@
 ######################################################################
 # LIBLIO MAKEFILE
 ######################################################################
-# This is the main file directing the compilation for the
-# library LIO. It was designed to simplify the customization
-# of every aspect of this process and thus it should not be
-# modified under normal code tinkering. Instead, one should
-# attempt first to modify the auxiliary .mk files (beware
-# not to change these files' names though).
-makefiles := Makefile
-
-# This should contain the list of all objects and modules
-# to be compiled and their internal dependencies/relations.
-# It should also specify the locations of the source files
-# (.f files) for these targets and include all .mk files
-# containing information on how to compile modules.
-makefiles += make_depend.mk
-
-# This should contain the default flags for compilation
-# as well as the specific flags for those targets that
-# require them, and optional flags to be defined during
-# compilation by the user.
-makefiles += make_flags.mk
-
-# This should contain the default flags for final linking
-# as well as the optional linking flags to be defined
-# during compilation by the user. This also includes all
-# external libraries that are to be linked to LIO.
-makefiles += make_links.mk
-
 #
-
+# DESIGN NOTES:
+#
+# The compilation process for the liblio-g2g.so library is currently
+# being organized by this file and its companions: "make_depend.mk",
+# "make_flags.mk" and "make_links.mk". The general scheeme is defined
+# here, as well as all global/general variables to be used, and
+# customization can be done by modifying the companion files. For
+# the most part, this file should be left untouched (unless it is
+# the compilation process itself what you want to modify).
+#
+# make_depend: This file contains the list of all objects and
+#              modules to be compiled and incorporated in the
+#              library. It also contains the information on how
+#              these objects depend on one another and specifies
+#              the paths to the sources, be those code files or .mk
+#              files containing information on internal dependencies
+#              for the modules on non compiling source files (which
+#              are included in the compiling files instead).
+#
+# make_flags: This file contains the information on the flags to
+#             be used during the compilaton of the objects. This
+#             includes default flags as well as specific for a
+#             group of objects or optional ones.
+#
+# make_links: This file contains the information on the flags to
+#             be used during the final linking of the library, as
+#             well as the information of the external libraries to
+#             be linked (as well as other internal ones, such as
+#             g2g which has to be precompiled).
+#
 ######################################################################
 
-# This indicates the main target.
+# First things firs: we indicate the main target of the makefile.
 all : liblio-g2g.so
 
-# This indicates where to store the objects and modules produced
-# by the compilation process. Vpath is not reliable for finding
-# these files; obj_path shoud be added to objects explicitly.
-obj_path := obj
+
+# This variable will contain all .mk files that provide the details
+# of how to compile the library. All objects will depend on this
+# files, so that any modification in compilation options will
+# trigger the recompilation of the code. We add here the basic ones
+# and the rest should be incorporated to this variable in the
+# make_depend file.
+makefiles :=
+makefiles += Makefile
+makefiles += make_depend.mk
+makefiles += make_flags.mk
+makefiles += make_links.mk
+
+
+# Variables are defined to list all the objects to be compiled and
+# incorporated into liolib ("objects"), as well as the list of places
+# where to find the source files ("src_path") and a single place
+# where to put the objects and modules compiled ("obj_path").
+# We set this paths for the makefile using vpath, which is not
+# reliable for finding files that change during compilation time
+# (that is, the .o and .mod) and thus it is not used for targets
+# but for dependencies only, so the "obj_path" variable needs to
+# be added explicitly in some places.
+objects   :=
+obj_path  := obj
+src_paths := 
+include make_depend.mk
 vpath %.o   $(obj_path)
 vpath %.mod $(obj_path)
-
-# This indicates which objects are to be compiled, in which
-# order, and where to look for its source files (or other
-# dependencies, like .mk files)
-objects   =
-src_paths =
-include make_depend.mk
-vpath %.f  $(src_paths)
-vpath %.mk $(src_paths)
+vpath %.f   $(src_paths)
+vpath %.f90 $(src_paths)
+vpath %.mk  $(src_paths)
 
 # This indicates which flags to use during the compilation
 # of the different objects and which flags to use during
@@ -64,26 +83,27 @@ LFLAGS =
 include make_flags.mk
 include make_links.mk
 
-# Only uncomment this if your version of Amber supports
-# lio/Amber basis set keywords and cube file generation
-#FFLAGS += -DMOD_AMBER
 
-#
+# GENERAL RULES
 ######################################################################
-# GENERAL RULES : The following rules have been written to be
-# general and make use of variables defined along this and the
-# other make files. They should not be modified under normal
-# circumstances; modifications of added files or change in the
-# compilation flags should be done through these variables.
-#ifeq ($(cublas),1)
+#   The following rules have been written to be general and make use
+# of variables defined along this file and filled by the information
+# provided by the other .mk files.
+#   These rules should not be modified under normal circumstances;
+# modifications of added files or change in the compilation flags
+# and regular customization should be done through the variables
+# defined before by modifying them inside the respective .mk file.
 
 liblio-g2g.so : $(objects:%.o=$(obj_path)/%.o)
 	$(FC) $(LFLAGS) $^ $(LIBS) -o $@
 
-$(obj_path)/%.mod : %.o
+$(obj_path)/%.mod : $(obj_path)/%.o
 	@touch $@
 
-$(obj_path)/%.o   : %.f $(makefiles) |  $(obj_path)
+$(obj_path)/%.o   : %.f   $(makefiles) |  $(obj_path)
+	$(FC) $(FFLAGS) -c $< -o $@
+
+$(obj_path)/%.o   : %.f90 $(makefiles) |  $(obj_path)
 	$(FC) $(FFLAGS) -c $< -o $@
 
 $(obj_path) :

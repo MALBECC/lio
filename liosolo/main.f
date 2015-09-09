@@ -93,8 +93,8 @@ c---------------------------------------------------------------------
       tipeECP='NOT-DEFINED'
       ZlistECP=0
       ecptypes=0
-      cutecp2=9E37
-      cutecp3=9E37
+      cutecp2=7E2
+      cutecp3=7E2
       cutECP=.false.
       local_nonlocal=0
       ecp_debug=.false.

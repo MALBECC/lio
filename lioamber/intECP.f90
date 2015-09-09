@@ -543,7 +543,7 @@
         integer :: Z,n
         double precision :: A2, Acoef, acumang, acumint, AABx, AABy, AABz, Kmod,Ccoef
 !Z= carga del nucleo
-
+	integer :: lambmin
         AAB_SEMILOCAL=0.d0
         Z=ZlistECP(k)
         n=lxi+lxj+lyi+lyj+lzi+lzj
@@ -555,6 +555,8 @@
 	AABz=0.d0
 	acumint=0.d0
 	acumang=0.d0
+
+
         do l = 0 , Lmax(z)-1
 !barre todos los l de la parte no local
 	   do term=1, expnumbersECP(z,l)
@@ -566,10 +568,20 @@
 	      do ly=0,lyj
 	      do lz=0,lzj
 	         acumint=0.d0
-	         do lambda=lxj+lyj+lzj,0,-1
+
+                 lambmin=0
+                 if (l-lxj-lyj-lzj .gt. 0) lambmin=l-lxj-lyj-lzj
+
+	         do lambda=lxj+lyj+lzj+l,lambmin,-1
 	            acumang=0.d0
 	            do m=-l,l
 	               acumang=acumang+Aintegral(l,m,lxi,lyi,lzi)*OMEGA2(Kvector,lambda,l,m,lx,ly,lz)
+			if ( abs(OMEGA2(Kvector,lambda,l,m,lx,ly,lz)-OMEGA2n(Kvector,lambda,l,m,lx,ly,lz)) .gt. 1.d-9) then
+				write (*,*) "***********************************************"
+				write (*,*) "error in omega 2"
+				write (*,*) "***********************************************"
+				stop
+			end if
 	            end do
 	            acumint=acumint+acumang*Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda)*aECP(z,L,term) 
 	            if (Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda) .eq. 0.d0)  stop " q = 0 "
@@ -681,10 +693,6 @@
 	do j=1,M
 !barre la base
 	   do k=1, natom 
-
-
-!		write(*,*) "calculando abc para", k
-
 !necesito que este do barra por todos los nucleos del sistema
 	      if (nuc(i) .ne. k .and. nuc(j) .ne.k) then
 !solo calcula los terminos en q las 2 funciones de base NO corres ponden al atomo con el ECP
@@ -692,9 +700,6 @@
 !barre atomos con ecp
 	            if ( IzECP(k) .eq. ZlistECP(ki)) then
 !solo calcula si el nucleo tiene ecp
-
-
-!			write(*,*) "k,ki,izecp,zlist",k,ki,IzECP(k),ZlistECP(ki)
 
                        dxi=-distx(nuc(i),k)
                        dyi=-disty(nuc(i),k)
@@ -722,8 +727,11 @@
 !y se obtienen NAN para el numero muy grande
 !a distancias grades gana el termino que es casi 0
 
-	                     ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)+4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+	                     ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj) +4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 
+
+
+!en la parte semilocal va -2*4.d0*pi*4.d0*pi*ABC_SEMILOCAL, todavia no se por que es para <s||s> asi que parece haber un error en la parte angular de la parte semilocal
 
 !				if ( i .eq. j) write(*,*) "dist coef",Distcoef
 !				if ( i .eq. j) write(*,*) "i,j,abc",i,j,abc
@@ -733,8 +741,10 @@
                                    ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
                                 else if (local_nonlocal .eq. 2 .and. ecp_debug) then
                                    ABC=4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+					if (i.eq.1 .and. j.eq.1) write(*,*) "abc",abc
                                 end if
 		                        acum=acum + ABC*c(j,ji)*exp(-Distcoef)
+					if (i.eq.1 .and. j.eq.1) write(*,*) "acum",acum
 !			if ( i .eq. j) write(*,*) "i,j,abc",i,j,abc
 !			if ( i .eq. j) write(*,*) "ii,ji,k", ii,ji,k
 !			if ( i .eq. j) write(*,*) "lxi,lyi,lzi,lxj,lyj,lzj",lxi,lyi,lzi,lxj,lyj,lzj
@@ -745,12 +755,13 @@
 	               end do
 
 	               VBACcuadrada(i,j)= VBACcuadrada(i,j) + acum*c(i,ii)*4.d0*pi
+                                        if (i.eq.1 .and. j.eq.1) write(*,*) "fock",acum*c(i,ii)*4.d0*pi
+			if (i.eq.1 .and. j.eq.1) write(*,*) "mirando fock",VBACcuadrada(i,j) 
 
 	               if (i .ge. j) then
 !este if hay q sacarlo al fina, cuando cambie el rango en el q barre j , en vez de comenzar en 1 comience en i
 	                  pos=i+(1-j)*(j-2*M)/2   !chekeada
 	                  VBAC(pos) = VBAC(pos) + acum*c(i,ii)*4.d0*pi !esta linea es lo unico que quedaria!!!!!!!!!!!!!
-!			  write(*,*) i,j,pos,VBAC(pos)
 	               end if
                        acum=0.d0
 	               end do
@@ -794,7 +805,9 @@
 	L=Lmax(Z)
 	lmaxbase=lxi+lyi+lzi+lxj+lyj+lzj
 	Kvector=(/a(i,ii)*dx1+a(j,ji)*dx2,a(i,ii)*dy1+a(j,ji)*dy2,a(i,ii)*dz1+a(j,ji)*dz2/)
+!	write(*,*) "armamo K",a(i,ii),dx1,a(j,ji),dx2
 	Kvector=-2.d0*Kvector
+!hay que chekear el signo de K!!!!!!!!!!!!!
 	Kmod=sqrt(Kvector(1)**2.d0+Kvector(2)**2.d0+Kvector(3)**2.d0)
 	integral=0.d0
 	acum=0.d0
@@ -810,10 +823,14 @@
 		if (i .eq. j) then
 !			write(*,*) "llamando a Q", i, j
 !			write(*,*) "b,a1,a2",bECP(z,L,w),a(i,ii),a(j,ji)
-			write(*,*) "becp,z,l,w",bECP(z,L,w),z,L,w
+!			write(*,*) "becp,z,l,w",bECP(z,L,w),z,L,w
 !			write(*,*) Kmod,Ccoef,lmaxbase,necp(Z,l,w)
 		end if
 	   call Qtype1(Kmod,Ccoef,lmaxbase,necp(Z,l,w))
+		if (i.eq. 4 .and. j.eq. 4) then
+!			write(*,*) "llame Q1"
+!			write(*,*) "Kmod,Ccoef",Kmod,Ccoef
+		end if
 !calcula integral radial
 	   do ac=0,lxi
 	   do bc=0,lyi
@@ -823,8 +840,15 @@
 	   do fc=0,lzj
 !barre los coef de la expansion en el binomio de Newton
               do lambda=ac+bc+cc+dc+ec+fc,0,-2
+		
                  integral=integral + OMEGA1(Kvector,lambda,ac+dc,bc+ec,cc+fc) * Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)
-
+		if (i.eq. 4 .and. j.eq. 4) then
+!			write(*,*) "asd",lambda,ac+bc+cc+dc+ec+fc,OMEGA1(Kvector,lambda,ac+dc,bc+ec,cc+fc),Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)
+!			write(*,*) "Q","ome", Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda),ac+bc+cc+dc+ec+fc+nECP(Z,l,w),OMEGA1(Kvector,lambda,ac+dc,bc+ec,cc+fc)
+!			write(*,*) "param q", ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda
+!			write(*,*) "K",Kvector,"lamb","xyz",lambda,ac+dc,bc+ec,cc+fc
+!			write(*,*) "OME",OMEGA1(Kvector,lambda,ac+dc,bc+ec,cc+fc)
+		end if
 		if (i .eq. j) then
 !			write(*,*) "*************************************"
 !			write(*,*) "omega, int",OMEGA1(Kvector,lambda,ac+dc,bc+ec,cc+fc),Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)
@@ -832,15 +856,23 @@
 		endif
 
 !		if ( i .eq. j) write(*,*) "omega,Q",OMEGA1(Kvector,lambda,ac+dc,bc+ec,cc+fc),Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)
-		if (Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda) .ne. Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)) stop "Q-1314=0"
+		if (Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda) .ne. Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)) stop " qnl1l2 = 0 in ABC_SEMILOCAL"
               end do
 	      auxcomb=comb(lxi,ac)*comb(lyi,bc)*comb(lzi,cc)*comb(lxj,dc)*comb(lyj,ec)*comb(lzj,fc)
 	      auxdist=dx1**(lxi-ac)*dy1**(lyi-bc)*dz1**(lzi-cc)*dx2**(lxj-dc)*dy2**(lyj-ec)*dz2**(lzj-fc)
 	      acum=acum + auxcomb*auxdist*integral
+
+		if (i.eq. 4 .and. j.eq. 4) then
+!			write(*,*) "comb, dist, int",auxcomb,auxdist,integral
+!			write(*,*) "acum",acum
+		end if
+
 		if (i .eq. j) then
 !		write(*,*) "auxcomb*auxdist*integral",auxcomb,auxdist,integral
 		end if
 	      integral=0.d0
+	      auxcomb=0.d0
+	      auxdist=0.d0
 	   end do
            end do
            end do
@@ -855,7 +887,7 @@
 
 	DOUBLE PRECISION function ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
         use garcha_mod, only : a,c
-        use ECP_mod, only : Qnl1l2,necp,bECP,IzECP
+        use ECP_mod, only : Qnl1l2,necp,bECP,IzECP,pi
 	implicit none
 	integer, intent(in) :: i,j,ii,ji,k
 !i,j funciones de la base
@@ -869,23 +901,23 @@
 !Z= carga del nucleo, y momento angular de la base i y j
         double precision, dimension (3) :: Kivector,Kjvector
         double precision :: Kimod, Kjmod,Ccoef
-	integer :: l,term,ac,bc,cc,dc,ec,fc,lambdai, lambdaj,m
+	integer :: l,term,ac,bc,cc,dc,ec,fc,lambdai, lambdaj,m,lambimin, lambjmin
 !auxiliares ciclos
-	double precision :: acumang,integral,auxcomb,auxdist,acum
+	double precision :: acumang,acumang1,acumang2,integral,auxcomb,auxdist,acum
 !auxiliaresa
-
-
- 
-
 	ABC_SEMILOCAL=0.d0
 	integral=0.d0
 	acum=0.d0
 	Qnl1l2=0.d0
 	acumang=0.d0
+	acumang1=0.d0
+	acumang2=0.d0
 	auxcomb=0.d0
 	auxdist=0.d0
 
+
         Z=IzECP(k)
+
 	l1max=lxi+lyi+lzi
 	l2max=lxj+lyj+lzj
 
@@ -895,16 +927,19 @@
         Kimod=sqrt(Kivector(1)**2.d0+Kivector(2)**2.d0+Kivector(3)**2.d0)
 	Kjmod=sqrt(Kjvector(1)**2.d0+Kjvector(2)**2.d0+Kjvector(3)**2.d0)
 
-
         do l = 0 , Lmax(z)-1
 !barre todos los l de la parte no local
+!        if (i.eq.1 .and. j .eq. 1) write(*,*) "l",l
            do term=1, expnumbersECP(z,l)
+!	if (i.eq.1 .and. j .eq. 1) write(*,*) "term",term
+!	if (i.eq.1 .and. j .eq. 1) write(*,*) "n,cof,exp",necp(Z,l,term),bECP(z,L,term),aECP(z,L,term)
 !barre contracciones del ECP para el atomo con carga z y l del ecp
 	      Qnl1l2=0.d0
 	      Ccoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
 	      call Qtype2(Kimod,Kjmod,Ccoef,l1max,l2max,necp(Z,l,term))
-
-
+!		if (i.eq.1 .and. j.eq.1) then
+!			write(*,*) "calculo Q:k,k,c",Kimod,Kjmod,Ccoef
+!		end if
 !agrega a la matriz Qnl1l2 los terminos correspondientes a un termino radiales.
 	      do ac=0,lxi
 	      do bc=0,lyi
@@ -912,22 +947,111 @@
 	      do dc=0,lxj
 	      do ec=0,lyj
 	      do fc=0,lzj
+	         auxcomb=comb(lxi,ac)*comb(lyi,bc)*comb(lzi,cc)*comb(lxj,dc)*comb(lyj,ec)*comb(lzj,fc)
+	         auxdist=dxi**(lxi-ac)*dyi**(lyi-bc)*dzi**(lzi-cc)*dxj**(lxj-dc)*dyj**(lyj-ec)*dzj**(lzj-fc)
 
-	         do lambdai=ac+bc+cc,0,-2
-	         do lambdaj=dc+ec+fc,0,-2
+!		if (i.eq.1 .and. j.eq.1) then
+!			write(*,*) "comb, dist",auxcomb,auxdist
+!		end if
+
+		!poner un if para q no calcule si auxdist=0
+
+!cut para lambda minimo: l-a-b-c, 0
+	         lambimin=0
+	         lambjmin=0
+	         if (l-ac-bc-cc .gt. 0) lambimin=l-ac-bc-cc
+	         if (l-dc-ec-fc .gt. 0) lambjmin=l-dc-ec-fc
+
+	         do lambdai=ac+bc+cc+l,lambimin,-2
+	         do lambdaj=dc+ec+fc+l,lambjmin,-2
+!esta mal el rango en el q barren los lamba
                     acumang=0.d0
                     do m=-l,l
-                       acumang=acumang+OMEGA2(Kivector,lambdai,l,m,ac,bc,cc)*OMEGA2(Kjvector,lambdaj,l,m,dc,ec,fc)
-                    end do
+!esto esta MAL, revisar ecuacion pg 7 faltan loops, los loops estan dentro de OMEGA2
+!				write(*,*) l,m
+
+                       acumang1=acumang1+OMEGA2(Kivector,lambdai,l,m,ac,bc,cc)
+!			if (i.eq.4 .and. j.eq.1) then
+!				write(*,*)
+!				write(*,*) "omega",OMEGA2(Kivector,lambdai,l,m,ac,bc,cc)
+!				write(*,*) "K, lamb,l,m",Kivector,lambdai,l,m
+!				write(*,*) "a,b,c",ac,bc,cc
+!				write(*,*)
+!			end if
+
+
+		       acumang2=acumang2+OMEGA2(Kjvector,lambdaj,l,m,dc,ec,fc)
+!			if (i.eq.4 .and. j.eq.1 .and. auxdist .gt. 0.d0) then
+!				write(*,*) "************************************************"
+!				write(*,*) "omega 1",OMEGA2(Kivector,lambdai,l,m,ac,bc,cc)
+!				write(*,*) "l,lam,m",l,lambdai,m
+!				write(*,*) "a,b,c",ac,bc,cc
+!				write(*,*)
+!				write(*,*) "omega 2",OMEGA2(Kjvector,lambdaj,l,m,dc,ec,fc)
+!				write(*,*) "l,lam,m",l,lambdaj,m
+!				write(*,*) "d,e,f",dc,ec,fc
+!				write(*,*) "dist",auxdist
+!				write(*,*) "************************************************"
+!			end if
+
+
+!		if ( abs(OMEGA2(Kivector,lambdai,l,m,ac,bc,cc)-OMEGA2n(Kivector,lambdai,l,m,ac,bc,cc)) .gt. 1.d-9) then
+!		     write (*,*) "***********************************************"
+!                                write (*,*) "error in omega 2.1"
+!		 write (*,*) "***********************************************"
+!                                stop
+!                end if
+		
+!                        if ( abs(OMEGA2(Kjvector,lambdaj,l,m,dc,ec,fc)-OMEGA2n(Kjvector,lambdaj,l,m,dc,ec,fc)) .gt. 1.d-9) then
+!		         write (*,*) "***********************************************"
+!                                write (*,*) "error in omega 2.2"
+!		        write (*,*) "***********************************************"
+!                                stop
+!	                end if
+
+			acumang=acumang+OMEGA2(Kivector,lambdai,l,m,ac,bc,cc)*OMEGA2(Kjvector,lambdaj,l,m,dc,ec,fc)
+                end do
+!			acumang=acumang1*acumang2
+
+!                if (i.eq. 4 .and. j .eq.1) then
+!                        write(*,*) "ang1,ang2",acumang1,acumang2
+!			write(*,*) "lambda,l,m,a,b,c"
+!			write(*,*) "i",lambdai,l,m,ac,bc,cc
+!			write(*,*) "j",lambdaj,l,m,dc,ec,fc
+!			if ( abs(acumang) .gt. 0.d0 .and. abs(auxdist) .gt. 0.d0) then
+!				write(*,*) "*****************************"
+!				write(*,*) "******************************************acumang",acumang
+!				write(*,*) "l,lambda,m,a,b,c"
+!	                       write(*,*) "i",l,lambdai,m,ac,bc,cc
+!	                       write(*,*) "j",l,lambdaj,m,dc,ec,fc
+!				write(*,*) "*****************************"
+!			end if
+!                end if
+
+			acumang1=0.d0
+			acumang2=0.d0
 	            integral=integral+acumang*Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj)
-                    if (Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj) .eq. 0.d0) stop " qnl1l2 = 0 in ABC_SEMILOCAL"
+			acumang=0.d0
+!		if (i.eq.4 .and. j.eq.1) write(*,*) "radial",Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj)
+!		if (i.eq.1 .and. j.eq.1) write(*,*) "uso: n,l,l",ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj
+!		if (i.eq.1 .and. j.eq.1) write(*,*) "ang,Q",acumang,Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj)
+!			if (i.eq.1 .and. j.eq.1) write(*,*) "rad",Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj) 
+!                    if (Qnl1l2(ac+bc+cc+dc+ec+fc+necp(Z,l,term),lambdai,lambdaj) .eq. 0.d0) stop " qnl1l2 = 0 in ABC_SEMILOCAL"
+
+
 	         end do
 	         end do
-                 auxcomb=comb(lxi,ac)*comb(lyi,bc)*comb(lzi,cc)*comb(lxj,dc)*comb(lyj,ec)*comb(lzj,fc)
-                 auxdist=dxi**(lxi-ac)*dyi**(lyi-bc)*dzi**(lzi-cc)*dxj**(lxj-dc)*dyj**(lyj-ec)*dzj**(lzj-fc)
                  acum=acum + auxcomb*auxdist*integral
-
+!		if (i.eq.4 .and. j.eq.1) then
+!			 write(*,*) "acum", acum
+!			write(*,*) "comb, dist",auxcomb,auxdist
+!			Write(*,*) 
+!			write(*,*)
+!		end if
+!		if (i.eq.1 .and. j.eq.1) write(*,*) "auxcomb,auxdist",auxcomb,auxdist
                  integral=0.d0
+		auxcomb=0.d0
+		auxdist=0.d0
 
 	      end do
 	      end do
@@ -935,11 +1059,14 @@
 	      end do
 	      end do
 	      end do
-              ABC_SEMILOCAL=ABC_SEMILOCAL+aECP(z,L,term)*acum
+              ABC_SEMILOCAL=ABC_SEMILOCAL+aECP(Z,L,term)*acum
+!			if (i.eq.1 .and. j.eq.1) write(*,*) "cont",aECP(z,L,term)*acum*4.d0*pi
+!,"abcs",ABC_SEMILOCAL
               acum=0.d0
 	   end do
 	end do
 	return
+	4315 format(1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x,f10.7,1x)
 	end function ABC_SEMILOCAL
 
 
@@ -1048,15 +1175,53 @@
         DOUBLE PRECISION,dimension(3) :: Kun
         integer :: o,r,s,t,u,v,w
         Double precision :: SUM1, SUM2
+!	Double precision :: testfactor
         Kun=K/sqrt(K(1)**2.d0 + K(2)**2.d0 + K(3)**2.d0)
         SUM1=0.d0
         SUM2=0.d0
         OMEGA2=0.d0
+
+!	if (.false.) then
         do o=-lambda,lambda
            do r=0,lambda
               do s=0,lambda-r
                  t=lambda-r-s
+!		testfactor=1.d0
+!		if (r.gt.0) then
+!			if (abs(Kun(1)) .gt. 0.d0) then
+!				testfactor=testfactor* (Kun(1)**r)
+!			else
+!				testfactor=0.d0
+!			end if
+!		end if
+
+!                if (s.gt.0) then
+!                        if (abs(Kun(2)) .gt. 0.d0) then
+!                                testfactor=testfactor* (Kun(2)**s)
+!                        else
+!                                testfactor=0.d0
+!                        end if
+!                end if
+
+!                if (t.gt.0) then
+!                        if (abs(Kun(3)) .gt. 0.d0) then
+!                                testfactor=testfactor* (Kun(3)**t)
+!                        else
+!                                testfactor=0.d0
+!                        end if
+!                end if
+		
                  SUM1=SUM1+Ucoef(lambda,o,r,s,t)*Kun(1)**r * Kun(2)**s * Kun(3)**t
+
+!		SUM1=SUM1+Ucoef(lambda,o,r,s,t)*testfactor
+
+
+!		if( lambda .eq. 2 .and. l .eq. 1 .and. m .eq. -1) then
+!			if (Kun(1)**r * Kun(2)**s * Kun(3)**t .gt. 0.d0) then
+!			write(*,*) Kun(1)**r , Kun(2)**s , Kun(3)**t
+!			end if
+!		end if
+
                  do u=0,l
                     do v = 0,l-u
                        w=l-u-v
@@ -1069,7 +1234,68 @@
            SUM1=0.d0
            SUM2=0.d0
         end do
+!	end if
         end function OMEGA2
+
+	DOUBLE PRECISION FUNCTION OMEGA2n(K,lambda,l,m,a,b,c)
+	use ECP_mod, only : intangular,angularint
+	implicit none
+	DOUBLE PRECISION, intent(in), dimension(3) :: K
+        integer, intent(in) :: lambda,l,m,a,b,c
+        DOUBLE PRECISION,dimension(3) :: Kun
+	DOUBLE PRECISION :: YdeK,integral
+	integer :: tita,d,e,f,g,h,i,j,ki,n
+        Kun=K/sqrt(K(1)**2.d0 + K(2)**2.d0 + K(3)**2.d0)
+        OMEGA2n=0.d0
+	YdeK=0.d0
+	integral=0.d0
+
+
+!	write(*,*) "entre omega","k",Kun
+
+
+	do tita=-lambda,lambda
+	  do d=0,lambda
+	     do e=0,lambda-d
+	        f=lambda-d-e
+	        YdeK=YdeK+Ucoef(lambda,tita,d,e,f)*Kun(1)**d * Kun(2)**e * Kun(3)**f
+
+!                if( lambda .eq. 2 .and. l .eq. 1 .and. m .eq. -1) then
+!                        write(*,*) "coef",Kun(1)**d , Kun(2)**e , Kun(3)**f
+!                end if
+
+!			if (l.eq.1 .and. lambda .eq.2 .and. m .eq. -1 .and. b .eq. 1 .and. a+c .eq.0) then
+!				if (Ucoef(lambda,tita,d,e,f)*Kun(1)**d * Kun(2)**e * Kun(3)**f .gt. 0.d0) then
+!				write(*,*) "def",d,e,f
+!				write(*,*) Kun(1)**d,Kun(2)**e,Kun(3)**f
+!				write(*,*) Ucoef(lambda,tita,d,e,f)
+!				end if
+!			end if
+
+	     end do
+	  end do
+
+	  do g=0,l
+	     do h=0,l-g
+	        i=l-h-g
+	        do j=0,lambda
+	           do ki=0,lambda-j
+	              n=lambda-j-ki
+	              integral=integral+Ucoef(lambda,tita,j,ki,n)*Ucoef(l,m,g,h,i)*angularint(a+g+j,b+h+ki,c+i+n)
+
+
+
+	           end do
+	        end do
+	     end do
+	  end do 
+	  OMEGA2n=OMEGA2n+YdeK*integral
+	  YdeK=0.d0
+	  integral=0.d0
+	end do
+	return
+	4235 format(1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x,2x,f18.15)
+	end function OMEGA2n
 
 
 

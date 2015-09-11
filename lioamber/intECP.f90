@@ -733,8 +733,8 @@
 	               end do
 
 	               VBACcuadrada(i,j)= VBACcuadrada(i,j) + acum*c(i,ii)*4.d0*pi
-                                        if (i.eq.1 .and. j.eq.1) write(*,*) "fock",acum*c(i,ii)*4.d0*pi
-			if (i.eq.1 .and. j.eq.1) write(*,*) "mirando fock",VBACcuadrada(i,j) 
+!                                        if (i.eq.1 .and. j.eq.1) write(*,*) "fock",acum*c(i,ii)*4.d0*pi
+!			if (i.eq.1 .and. j.eq.1) write(*,*) "mirando fock",VBACcuadrada(i,j) 
 
 	               if (i .ge. j) then
 !este if hay q sacarlo al fina, cuando cambie el rango en el q barre j , en vez de comenzar en 1 comience en i
@@ -748,13 +748,14 @@
 	      end if
 	   end do
 	end do
+	write(*,*) "termine i",i
 	end do
 	end subroutine intECPABC
 
 
 	DOUBLE PRECISION function ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2)
 	use garcha_mod, only : a,c
-	use ECP_mod, only :expnumbersECP, Qnl,bECP,IzECP
+	use ECP_mod, only :expnumbersECP, Qnl,bECP,IzECP,angularint,pi
 	implicit none
         integer, intent(in) :: i,j,ii,ji
 !terminos de la base
@@ -779,6 +780,9 @@
 	lmaxbase=lxi+lyi+lzi+lxj+lyj+lzj
 	Kvector=(/a(i,ii)*dx1+a(j,ji)*dx2,a(i,ii)*dy1+a(j,ji)*dy2,a(i,ii)*dz1+a(j,ji)*dz2/)
 	Kvector=-2.d0*Kvector
+!	write(*,*) "exp",a(i,ii),a(j,ji)
+!	write(*,*) "dist",dx1,dy1,dz1,dx2,dy2,dz2
+!	write(*,*) "kvector",Kvector
 !hay que chekear el signo de K!!!!!!!!!!!!!
 	Kmod=sqrt(Kvector(1)**2.d0+Kvector(2)**2.d0+Kvector(3)**2.d0)
 	integral=0.d0
@@ -790,6 +794,7 @@
 	   Qnl=0.d0
            Ccoef=bECP(z,L,w)+a(i,ii)+a(j,ji)
 	   call Qtype1(Kmod,Ccoef,lmaxbase,necp(Z,l,w))
+!		write(*,*) "calcula Q",Kmod,Ccoef,i,j
 !calcula integral radial
 	   do ac=0,lxi
 	   do bc=0,lyi
@@ -800,9 +805,16 @@
 !barre los coef de la expansion en el binomio de Newton
               do lambda=ac+bc+cc+dc+ec+fc,0,-2
 		
-                 integral=integral + OMEGA1(Kvector,lambda,ac+dc,bc+ec,cc+fc) * Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)
-
-		if (Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda) .ne. Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)) stop " qnl1l2 = 0 in ABC_SEMILOCAL"
+	         if ( Kmod .gt. 0.d0 ) then
+                    integral=integral + OMEGA1(Kvector,lambda,ac+dc,bc+ec,cc+fc) * Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)
+		    if (Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda) .ne. Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)) stop " qnl1l2 = 0 in ABC_SEMILOCAL"
+!corta de no calculo la integral radial
+		 else
+                    integral=integral + angularint(ac+dc,bc+ec,cc+fc) * Q0(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),Ccoef) *0.25d0/pi
+!parche para el caso accidental en que K fuera = (0,0,0) por compensacion de a(i,ii)*dx1+a(j,ji)*dx2 (idem y,z)
+!0.25d0/pi compensa el factor 4pi por el q se multiplica luego a la suma de las integreles
+		 end if
+!			write(*,*) OMEGA1(Kvector,lambda,ac+dc,bc+ec,cc+fc),Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda),ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda
               end do
 	      auxcomb=comb(lxi,ac)*comb(lyi,bc)*comb(lzi,cc)*comb(lxj,dc)*comb(lyj,ec)*comb(lzj,fc)
 	      auxdist=dx1**(lxi-ac)*dy1**(lyi-bc)*dz1**(lzi-cc)*dx2**(lxj-dc)*dy2**(lyj-ec)*dz2**(lzj-fc)
@@ -1698,7 +1710,7 @@
 !escribe el exponente de la parte angular de la funcion de base:
 !xi(x,y,z)= x^nx * y^ny * z^nz *f(r)
 	use ECP_mod, only :lxyz
-	use garcha_mod, only : nshell
+	use garcha_mod, only : nshell,nuc
 	implicit none
 	integer :: i
 
@@ -1709,18 +1721,18 @@
         write(*,4044)
 
 	do i=1,nshell(0)+nshell(1)+nshell(2)
-	   write(*,4045) i,lxyz(i,1),lxyz(i,2),lxyz(i,3)
+	   write(*,4045) i,nuc(i),lxyz(i,1),lxyz(i,2),lxyz(i,3)
 	end do
 
         write(*,4046)
 
-	4040 format("╔═══════════════════╗")
-	4041 format("║ Angular Exponents ║")
-	4042 format("╠═══════╦═══╦═══╦═══╣")
-	4043 format("║ Basis ║ x ║ y ║ z ║")
-	4044 format("╠═══════╬═══╬═══╬═══╣")
-	4045 format("║",2x,i2,3x,"║",i2,1x,"║",i2,1x,"║",i2,1x,"║")
-	4046 format("╚═══════╩═══╩═══╩═══╝ ")
+	4040 format("╔══════════════════════════╗")
+	4041 format("║     Angular Exponents    ║")
+	4042 format("╠═══════╦══════╦═══╦═══╦═══╣")
+	4043 format("║ Basis ║ Atom ║ x ║ y ║ z ║")
+	4044 format("╠═══════╬══════╬═══╬═══╬═══╣")
+	4045 format("║",2x,i3,2x,"║",2x,i2,2x,"║",i2,1x,"║",i2,1x,"║",i2,1x,"║")
+	4046 format("╚═══════╩══════╩═══╩═══╩═══╝ ")
 	end subroutine WRITE_ANG_EXP
 
 	subroutine WRITE_DISTANCE

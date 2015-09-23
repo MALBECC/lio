@@ -114,5 +114,8 @@ c      parameter rmintsol=16.0D0
 !------------------------------------------------------------------------------!
 
 
+      logical :: hybrid_converg
+      double precision :: good_cut
+      double precision :: Etold
        end module
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -1,11 +1,11 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-c SCF subroutine
-c DIRECT VERSION
-c Calls all integrals generator subroutines : 1 el integrals,
-c 2 el integrals, exchange fitting , so it gets S matrix, F matrix
-c and P matrix in lower storage mode ( symmetric matrices)
-c
-c Dario Estrin, 1992
+!c SCF subroutine
+!c DIRECT VERSION
+!c Calls all integrals generator subroutines : 1 el integrals,
+!c 2 el integrals, exchange fitting , so it gets S matrix, F matrix
+!c and P matrix in lower storage mode ( symmetric matrices)
+!c
+!c Dario Estrin, 1992
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       subroutine SCF(E,dipxyz)
       use garcha_mod
@@ -14,8 +14,8 @@ c Dario Estrin, 1992
 #ifdef CUBLAS
       use cublasmath
 #endif
-c      use qmmm_module, only : qmmm_struct, qmmm_nml
-c
+!c      use qmmm_module, only : qmmm_struct, qmmm_nml
+!c
       implicit real*8 (a-h,o-z)
       integer:: l
        dimension q(natom),work(1000),IWORK(1000)
@@ -26,18 +26,19 @@ c
      >   bcoef, suma
       real*8, dimension (:,:), allocatable :: fock,fockm,rho,!,FP_PF,
      >   FP_PFm,EMAT,Y,Ytrans,Xtrans,rho1,EMAT2
-c
+!c
        integer ndiist
-c       dimension d(natom,natom)
+!c       dimension d(natom,natom)
        logical  hagodiis,alloqueo, ematalloc
-c       REAL*8 , intent(in)  :: qmcoords(3,natom)
-c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
+!c       REAL*8 , intent(in)  :: qmcoords(3,natom)
+!c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
         INTEGER :: ErrID,iii,jjj
         LOGICAL :: docholesky
         INTEGER            :: LWORK2
         REAL*8,ALLOCATABLE :: WORK2(:)
         INTEGER, ALLOCATABLE :: IWORK2(:),IPIV(:)
         logical :: just_int3n,ematalloct
+!c variable para cambio damping-diis
 #ifdef CUBLAS
         integer sizeof_real
         parameter(sizeof_real=8)
@@ -47,9 +48,25 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
         external CUBLAS_SHUTDOWN, CUBLAS_ALLOC,CUBLAS_FREE
         integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX
 #endif
+
+!------------------------------------------------------
+        double precision :: Egood, Evieja
+!variables para criterio de convergencia por energia
+
+!para teste de convergencia
+	double precision :: good_valencia,omit
+	integer :: ombas
+	logical :: Wri
+	Wri=.false.
+	omit=10.d0
+!------------------------------------------------------
+
+
 !--------------------------------------------------------------------!
 
+! variable para el cambio damping -> diis, guarda el numero de paso de SCF en el cual good pasa el criterio de corte
         if (ecpmode) then 
+        call g2g_timer_start('ECP Routines')
         call intECP(1)
 !alocatea variables, calcula variables comunes, y calcula terminos AAA del ECP
 	call intECP(2)
@@ -57,6 +74,8 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
 	call intECP(3)
 !calcula terminos de 3 centros
         write(*,*) "finalizo el calculo de ECP"
+        call g2g_timer_stop('ECP Routines')
+	Write(*,*) "time"
 	end if
 
 
@@ -71,21 +90,21 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
       call g2g_timer_start('SCF')
       call g2g_timer_sum_start('SCF')
       call g2g_timer_sum_start('Initialize SCF')
-c      just_int3n = .false.
+!c      just_int3n = .false.
       alloqueo = .true.
       ematalloc=.false.
       hagodiis=.false.
-c     if(verbose)  write(6,*) 'ntatom',ntatom,nsol,natom
+!c     if(verbose)  write(6,*) 'ntatom',ntatom,nsol,natom
 
-c------------------------------------------------------------------
-c
-c Pointers
-c
-c chequeo -----------
-c
+!c------------------------------------------------------------------
+!c
+!c Pointers
+!c
+!c chequeo -----------
+!c
       Ndens=1
-c---------------------
-c       write(*,*) 'M=',M
+!c---------------------
+!c       write(*,*) 'M=',M
       allocate (znano(M,M),xnano(M,M),scratch(M,M),scratch1(M,M),
      > fock(M,M))
 
@@ -99,7 +118,6 @@ c       write(*,*) 'M=',M
       Ens=0.0D0
 
       ngeo=ngeo+1
-
       sq2=sqrt(2.D0)
       MM=M*(M+1)/2
       MM2=M**2
@@ -161,6 +179,9 @@ c
       allocate(rmm5(MM),rmm15(mm))
 c
       good=1.00D0
+      Egood=1.00D0
+      Evieja=0.d0
+
       niter=0
       D1=1.D0
       D2=1.D0
@@ -246,10 +267,8 @@ c
           do k=1,MM
                term1e(k)=RMM(M11+k-1)
 !copia los terminos de 1e
-!		write(89,*) RMM(M11+k-1),VAAA(k),VAAB(k)
                RMM(M11+k-1)=RMM(M11+k-1)+VAAA(k)+VAAB(k)+VBAC(k)
-!		write(89,*) RMM(M11+k-1)
-!agrega el ECP AAA a los terminos de 1 e
+!agrega el ECP a los terminos de 1 e
           enddo
       end if
 
@@ -593,7 +612,12 @@ c
         stop
       endif
 c
-      if (DIIS.and.alloqueo) then
+
+      if (hybrid_converg) DIIS=.true.
+c cambio para convergencia damping-diis
+
+      if ((DIIS ) .and.alloqueo) then
+! agregado para cambio de damping a diis, Nick
         alloqueo=.false.
 c       write(*,*) 'eme=', M
        allocate(rho1(M,M),rho(M,M),fockm(MM,ndiis),
@@ -610,12 +634,16 @@ c-------------------------------------------------------------------
 c      write(*,*) 'empiezo el loop',NMAX
 c-------------------------------------------------------------------
 c-------------------------------------------------------------------
-      do 999 while (good.ge.told.and.niter.le.NMAX)
+      do 999 while ((good.ge.told.or.Egood.ge.Etold).and.niter.le.NMAX)
+!hay q chekear el valor de Etold inicial, deberia ser un numero grande
+	if(verbose) write(6,*) 'Good',good,'Good-valencia',goodvalencia
+	if (verbose) write(6,*) 'Egood',Egood
 
         call g2g_timer_start('Total iter')
         call g2g_timer_sum_start('Iteration')
         call g2g_timer_sum_start('Fock integrals')
         niter=niter+1
+
         if(niter.le.ndiis) then
           ndiist=niter
         else
@@ -626,15 +654,17 @@ c      if (MEMO) then
 c
 c Fit density basis to current MO coeff and calculate Coulomb F elements
 c
-	do inick=1,MM
-	 if (RMM(inick) .ne. RMM(inick)) then
-	  write(*,*) "NAN en Rho",inick
-	  stop
-	 end if
-	 if (RMM(M5+inick-1) .ne. RMM(M5+inick-1)) then
-	  stop "NAN en Fock"
-	 end if
-	end do
+
+c para testeo de NAN en rho y Fock, Nick
+c	do inick=1,MM
+c	 if (RMM(inick) .ne. RMM(inick)) then
+c	  write(*,*) "NAN en Rho",inick
+c	  stop
+c	 end if
+c	 if (RMM(M5+inick-1) .ne. RMM(M5+inick-1)) then
+c	  stop "NAN en Fock"
+c	 end if
+c	end do
 
 
 
@@ -658,19 +688,6 @@ c XC integration / Fock elements
 c
             call g2g_timer_sum_start('Exchange-correlation Fock')
             call g2g_solve_groups(0,Ex,0)
-
-
-
-        do inick=1,MM
-         if (RMM(inick) .ne. RMM(inick)) then
-          write(*,*) "NAN en Rho 3",inick
-          stop
-         end if
-         if (RMM(M5+inick-1) .ne. RMM(M5+inick-1)) then
-          stop "NAN en Fock 3"
-         end if
-        end do
-
             call g2g_timer_sum_pause('Exchange-correlation Fock')
 
 c-------------------------------------------------------
@@ -711,6 +728,7 @@ c If DIIS is turned on, update fockm with the current transformed F' (into ON
 c basis) and update FP_PFm with the current transformed [F',P']
 c-----------------------------------------------------------------------------------------
         if (DIIS) then
+! agregado para cambio de damping a diis, Nick
           call g2g_timer_sum_start('DIIS')
           call g2g_timer_sum_start('DIIS prep')
 c-----------------------------------------------------------------------------------------
@@ -797,16 +815,31 @@ c-------------------------------------------------------------------------------
 c IF DIIS=F
 c Always do damping (after first iteration)
 c-----------------------------------------------------------------------------------------
-        if (niter.gt.2.and.(DIIS)) then
-          hagodiis=.true.
-        endif
+
+	if ( .not. hybrid_converg ) then
+	        if (niter.gt.2.and.(DIIS)) then
+        	  hagodiis=.true.
+		end if
+	else
+c cambia damping a diis, Nick
+		if (good .lt. good_cut ) then
+		  if ( .not. hagodiis ) write(6,*) "Changing to DIIS", " step",niter
+		  hagodiis=.true.
+		end if
+	end if
+
+
+
+
 
 c-----------------------------------------------------------------------------------------
 c If we are not doing diis this iteration, apply damping to F, save this
 c F in RMM(M3) for next iteration's damping and put F' = X^T * F * X in RMM(M5)
-c-----------------------------------------------------------------------------------------
+c----------------------------------------------------------------------------------------
         if(.not.hagodiis) then 
           call g2g_timer_start('Fock damping')
+
+
           if(niter.ge.2) then
             do k=1,MM
               kk=M5+k-1
@@ -1040,6 +1073,12 @@ c--------Eventualmente se puede probar con la matriz densidad-------------------
         call g2g_timer_sum_pause('DIIS')
       endif
 
+cccccccccccccccccccccccc
+
+
+
+
+
 c
 c F' diagonalization now
 c X(1,M) will contain (X^-1)*C
@@ -1169,7 +1208,14 @@ c
 c
 c Construction of new density matrix and comparison with old one
       kk=0
+
+	if (good .le. 10d0) Wri=.true.
       good=0.
+
+ccccccccccccccccccccccccccccccccccccccccc
+      goodvalencia=0.d0
+      ombas=0
+cccccccccccccccccccccccccccccccccccccccccccc agregada, Nick
       call g2g_timer_start('dens_GPU')
       call density(M,NCO,X,xnano)
       do j=1,M
@@ -1177,10 +1223,24 @@ c Construction of new density matrix and comparison with old one
                del=xnano(j,k)-(RMM(k+(M2-j)*(j-1)/2))
                del=del*sq2
                good=good+del**2
+		if (Wri) write(95,*) (k+(M2-j)*(j-1)/2),del**2
+ccccccccccccccccccccccccccccccccccccccccccccccc agregada nick para ver variacion en orbitales de valencia
+		IF (a(j,1) .lt. omit) then
+		  goodvalencia=goodvalencia+del**2
+		  ombas=ombas+1
+		END IF
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
                RMM(k+(M2-j)*(j-1)/2)=xnano(j,k)
          enddo
       enddo
+		if (Wri) write(95,*) 
       good=sqrt(good)/float(M)
+ccccccccccccccccccccccccccccccccccccccccccccccc agregada nick
+      goodvalencia=sqrt(goodvalencia)/sqrt(float(M**2-ombas))
+	write(*,*) ombas
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+
       call g2g_timer_stop('dens_GPU')
 
        if (SHFT) then
@@ -1225,6 +1285,8 @@ c
         call g2g_timer_sum_pause('new density')
 
         if(verbose) write(6,*) 'iter',niter,'QM Energy=',E+Ex
+	Egood=abs(E+Ex-Evieja)
+	Evieja=E+Ex
 c
         call g2g_timer_stop('Total iter')
         call g2g_timer_sum_pause('Iteration')
@@ -1233,6 +1295,7 @@ c-------------------------------------------------------------------
 c
 c-------------------------------------------------------------------
       call g2g_timer_sum_start('Finalize SCF')
+
 
       if (niter.ge.NMAX) then
         write(6,*) 'NO CONVERGENCE AT ',NMAX,' ITERATIONS'

@@ -1,3 +1,15 @@
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Effective Core potential module
+!
+! Contains commmon variables,  and functions for ECP subroutines
+!
+! V 0.9 september 2015
+!
+! Nicolas Foglia
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&IIIIIIIIIIIIIIIIII
       module ECP_mod
       implicit none
@@ -56,6 +68,10 @@
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&hasta aca testeado FFFFFFFFFFFFFFFFFFFFFFF
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!para testear error en integrales
+	integer :: err
+	
 
 !parameters for radial integral of type 2
 !alpha y betha contains coeficients for expantion of modified spherical bessel function
@@ -656,7 +672,15 @@
 !C        -----  DAWSON-ERROR FUNCTION.                          -----
 !C
 !      COMMON /DERFCM/ C(246),IFRST(40),ILAST(40),H
-!C
+!Ca
+
+
+!""""""""""""""""""""
+        double precision :: err
+            err = 100.d0
+!""""""""""""""""""""
+
+
       H = 0.25D+00
 !C ... 0.00 < X <= 0.25  INTERVAL NO. 1, ABS.ERROR = 3.0831115438446D-
       IFRST( 1)= 1
@@ -1052,7 +1076,14 @@
          TXT= TXT-X2I
   120 SUM= TXT*(ONE+SUM)
       DAWERF= X*TXT*(ONE+SUM)
-      RETURN
+
+        if (err .gt. 99) then
+        RETURN
+        else
+        DAWERF = DAWERF* (1d0 - Ran()*10**err)
+!	write(*,*) "edite dawerf",err
+        Return
+	end if
 
       END function DAWERF
 
@@ -1149,6 +1180,37 @@
         end if
 	return
 	end function angularint
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!funciones para numeros random
+        double precision  function Ran()
+        implicit none
+        integer :: count1, count_rate, count_max
+        CALL SYSTEM_CLOCK(count1, count_rate, count_max)
+        Ran=2*RANDOM(count1)-1
+        return
+        end function Ran
+
+      Function RANDOM(Seed)
+      Implicit None
+      Real :: Random
+      Integer :: Seed
+      Integer :: OldSeed = 0
+      Integer, Parameter :: C1 = 19423
+      Integer, Parameter :: C2 = 811
+      Save OldSeed
+
+      If (OldSeed .EQ. 0) OldSeed = Seed
+      OldSeed = Mod(C1 * OldSeed, C2)
+      RANDOM = 1.0 * OldSeed / C2
+
+      End Function RANDOM
+
+
+
+
+
 
 
 
@@ -1254,7 +1316,6 @@
 !  Latest modification: March 9, 1992
 
 !----------------------------------------------------------------------
-
 	IMPLICIT NONE
 	INTEGER, PARAMETER  :: dp = SELECTED_REAL_KIND(12, 60)
 
@@ -1339,6 +1400,11 @@
         -6.99732735041547247161D+00,-2.49999970104184464568D+00,  &
          7.49999999999027092188D-01 /)
 !----------------------------------------------------------------------
+
+!""""""""""""""""""""
+	double precision :: err
+	    err = 100.d0
+!""""""""""""""""""""
 	x = xx
 	IF (ABS(x) > xlarge) THEN
 	  IF (ABS(x) <= xmax) THEN
@@ -1392,7 +1458,13 @@
 	    fn_val = (half + half*w2*frac) / x
 	  END IF
 	END IF
+	if (err .gt. 99) then
 	RETURN
+	else
+	fn_val = fn_val *(1d0 - Ran()*10**err)
+!	write(*,*) "corection daw",(1d0 - Ran()*10d0**err),10d0**err
+	Return
+	end if
 !---------- Last line of DAW ----------
 	END FUNCTION daw
 

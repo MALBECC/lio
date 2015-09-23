@@ -5,7 +5,7 @@ c---------------------------------------------------------------------
       use garcha_mod
       use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP, cutecp2
      & , cutecp3,cutECP,local_nonlocal, ecp_debug,ecp_full_range_int
-     & ,verbose_ECP
+     & ,verbose_ECP,Cnorm,err
 #ifdef CUBLAS
       use cublasmath
 #endif
@@ -16,18 +16,20 @@ c---------------------------------------------------------------------
       logical::filexist,writeforces
       REAL*8, dimension (:,:), ALLOCATABLE   :: dxyzqm,dxyzcl
       namelist /lio/ natom,nsol,charge,OPEN,NMAX,Nunp,VCINP,frestartin,
-     > GOLD,told,rmax,rmaxs,predcoef,
+     > GOLD,told,Etold,rmax,rmaxs,predcoef,
      > idip,writexyz,intsoldouble,DIIS,ndiis,dgtrig,
      > Iexch,integ,dens,igrid,igrid2,timedep, tdstep, ntdstep,
      > propagator,NBCH,
      > field,a0,epsilon,exter,Fx,Fy,Fz, tdrestart, writedens,
      > writeforces,basis_set,fitting_set,int_basis,
-     > ecpmode,ecptypes,tipeECP,ZlistECP,cutecp2, cutecp3,
+     > ecpmode,ecptypes,tipeECP,ZlistECP,cutecp2, cutecp3,err,
      > cutECP,local_nonlocal, ecp_debug,ecp_full_range_int,verbose_ECP,
+     > hybrid_converg, good_cut,verbose,
 !ultima linea agregada para ECP, Nick
      > cubegen_only,cube_res,
      > cube_dens,cube_dens_file,
      > cube_orb,cube_sel,cube_orb_file,cube_elec,cube_elec_file
+
 
       integer :: ifind, ierr
 
@@ -59,6 +61,7 @@ c---------------------------------------------------------------------
       VCINP= .false.
       GOLD= 10.
       told=1.0D-6
+      Etold=1.0D-4
       rmax=16
       rmaxs=5
       predcoef=.false.
@@ -87,6 +90,10 @@ c---------------------------------------------------------------------
       writedens=.true.
       writeforces=.false.
       narg=command_argument_count()
+!para cambio de damping a diis
+      hybrid_converg=.false.
+      good_cut=1D-5
+      err = 1000
 
 !ECP!!!!!!!!!!!!!!!!!!!!!!!!!!!!! tocado, Nick
       ecpmode=.false.
@@ -165,6 +172,11 @@ c      write(*,*)ng2,ngDyn,ngdDyn,norbit,Ngrid
      >  ,cx(ngdnu,nl),ax(ngdnu,nl),Nucx(ngdnu),ncontx(ngdnu)
      > ,cd(ngdnu,nl),ad(ngdnu,nl),Nucd(ngdnu),ncontd(ngdnu)
      > ,indexii(ngnu),indexiid(ngdnu))
+
+      if (ecpmode) then
+         allocate (Cnorm(ngnu,nl))
+!matriz de coeficientes de la base normalizados, diferenciando x^2,y^2,z^2 de xy,xz,yx
+      end if
 
 
       allocate (r(ntatom,3),v(ntatom,3),rqm(natom,3),Em(ntatom)

@@ -42,6 +42,7 @@ objects += sysdata.o
 objects += mathsubs.o
 objects += maskrmm.o
 objects += ECP_mod.o
+objects += esp_funct.o
 objects += readECP.o
 objects += intECP.o
 objects += drive.o

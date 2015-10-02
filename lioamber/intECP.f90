@@ -11,7 +11,7 @@
 
 	subroutine intECP(tipodecalculo)
 	use garcha_mod, only :nshell,nuc,a,c, ncont, natom
-	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP,VAAAcuadrada,lxyz, VAAA, VAAAcuadrada, VAAB, VAABcuadrada,pi,doublefac,distx,disty,distz,VBAC,VBACcuadrada,verbose_ECP,ecp_debug
+	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP,VAAAcuadrada,lxyz, VAAA, VAAAcuadrada, VAAB, VAABcuadrada,pi,doublefactorial,distx,disty,distz,VBAC,VBACcuadrada,verbose_ECP,ecp_debug
 	implicit none
 
 	integer, intent(in) :: tipodecalculo
@@ -912,12 +912,12 @@
 
         DOUBLE PRECISION function Q0(n,alpha)
 !calcula  int r^n * exp(-alpha * r^2) dr entre 0 e infinito
-        use ECP_mod, only :doublefac, pi12, fac
+        use ECP_mod, only : pi12, fac,doublefactorial
         implicit none
         integer, intent(in) :: n
         double precision, intent(in) :: alpha
         if ( .not. mod(n,2)) then
-           Q0=0.5d0*pi12/sqrt(alpha) * doublefac(n-1)/((2*alpha)**(n/2))
+           Q0=0.5d0*pi12/sqrt(alpha) * doublefactorial(n-1)/((2*alpha)**(n/2))
            return
         else
            if ( (n-1)/2 .lt. 0) stop "Er factorial de un negativo en Q0"
@@ -1261,7 +1261,8 @@
 
         subroutine ByC(Acoef,Ccoef,nmin,nmax,Barray,Carray)
 !calcula los coeficientes B y C 
-	use ECP_mod, only : DAW,DAWERF,NEXTCOEF,pi,pi12
+	use ECP_mod, only : DAW,NEXTCOEF,pi,pi12
+	use ESP_FUNCT, only : HYB_DAW_ERR
 	IMPLICIT NONE
 !acoef,ccoef son los coeficientes para el calculo de B y C
 ! A(ccoef,acoef)= int exp(-ccoef*x^2)(x+acoef)^n dx from -acoef to inf
@@ -1291,7 +1292,8 @@
 	end if
 
         if (nmin<0) then
-	   Barray(-1)=2*pi12*DAWERF(Acoef*C0sq)
+!	   Barray(-1)=2*pi12*DAWERF(Acoef*C0sq)
+	   Barray(-1)=2*pi12*HYB_DAW_ERR(Acoef*C0sq)
 	   Carray(-1)=2*pi12*DAW(Acoef*C0sq)
 	   if (nmin<-1) then
 	      ca=2*Ccoef*Acoef

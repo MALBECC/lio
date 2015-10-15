@@ -1,7 +1,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Effective Core potential subroutines
 ! 
-! V 0.9 september 2015 first functional version
+! V 0.9 september 2015 first functional version for energy calculations
 !
 ! Nicolas Foglia
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -11,7 +11,7 @@
 
 	subroutine intECP(tipodecalculo)
 	use garcha_mod, only :nshell,nuc,a,c, ncont, natom
-	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP,VAAAcuadrada,lxyz, VAAA, VAAAcuadrada, VAAB, VAABcuadrada,pi,doublefactorial,distx,disty,distz,VBAC,VBACcuadrada,verbose_ECP,ecp_debug
+	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP,VAAAcuadrada,lxyz, VAAA, VAAAcuadrada, VAAB, VAABcuadrada,pi,doublefactorial,distx,disty,distz,VBAC,VBACcuadrada,verbose_ECP,ecp_debug,defineparams
 	implicit none
 
 	integer, intent(in) :: tipodecalculo
@@ -26,6 +26,7 @@
         nd=nshell(2)
         M=ns+np+nd
 	if (tipodecalculo .eq. 1) then
+	call defineparams()
         call allocate_ECP()
 !allocatea la matriz de fock de pseudopotenciales, la matrix cuadrara para pruebas y el verctor con los terminos de 1 electron sin corregir
 !edita normalizacion base d, luego lo cambiare aguadabdo los coeficientes en un array
@@ -962,7 +963,7 @@
         DOUBLE PRECISION FUNCTION OMEGA1(K,l,a,b,c)
 !Esta funcion devuelve el valor de omega evaluado en el vector K
 !OMEGA1(K,l,a,b,c) = Suma(u=-l a u=l) ( Ylu(K)* int(x/r)^a * (y/r)^b * (z/r)^c Ylu() d angulo solido )
-        use ECP_mod, only : intangular,angularint
+        use ECP_mod, only : angularint!intangular,angularint
         implicit none
         DOUBLE PRECISION, intent(in), dimension(3) :: K
         integer, intent(in) :: l,a,b,c
@@ -996,7 +997,7 @@
         DOUBLE PRECISION FUNCTION OMEGA2(K,lambda,l,m,a,b,c)
 !Esta funcion devuelve el valor de omega2 evaluado en el vector K
 !OMEGA2(K,lambda,l,m,a,b,c) = Suma(o=-lambda a o=lambda) ( Y lambda o(K)*  int (x/r)^a * (y/r)^b * (z/r)^c Ylambda o() Ylm()  d angulo solido )
-        use ECP_mod, only : intangular,angularint
+        use ECP_mod, only : angularint!intangular,angularint
         implicit none
         DOUBLE PRECISION, intent(in), dimension(3) :: K
         integer, intent(in) :: lambda,l,m,a,b,c
@@ -1031,7 +1032,7 @@
         end function OMEGA2
 
 	DOUBLE PRECISION FUNCTION OMEGA2n(K,lambda,l,m,a,b,c)
-	use ECP_mod, only : intangular,angularint
+	use ECP_mod, only : angularint!intangular,angularint
 	implicit none
 	DOUBLE PRECISION, intent(in), dimension(3) :: K
         integer, intent(in) :: lambda,l,m,a,b,c
@@ -1504,7 +1505,7 @@
         subroutine allocate_ECP
 !alocatea todas las variables que van a necesitar los pseudopotenciales
         use garcha_mod, only :nshell, natom
-        use ECP_mod, only :VAAAcuadrada,VAABcuadrada, VBACcuadrada,VAAA,VAAB,VBAC,term1e,distx, disty, distz, IzECP,Lxyz,Cnorm,VXXXgamess
+        use ECP_mod, only :VAAAcuadrada,VAABcuadrada, VBACcuadrada,VAAA,VAAB,VBAC,term1e,distx, disty, distz, IzECP,Lxyz,Cnorm
 !	use param, only :nl
 !term1e terminos de fock de 1 electron sin agregarles VAAA
         implicit none
@@ -1513,7 +1514,7 @@
         np=nshell(1)
         nd=nshell(2)
         M=ns+np+nd
-        allocate (VAAAcuadrada(M,M),VAABcuadrada(M,M), VBACcuadrada(M,M),VXXXgamess(M,M))
+        allocate (VAAAcuadrada(M,M),VAABcuadrada(M,M), VBACcuadrada(M,M))
         VAAAcuadrada=0.d0
         VAABcuadrada=0.d0
         VBACcuadrada=0.d0
@@ -1561,6 +1562,8 @@
 	   end do
 	end do
 
+
+!dx2,dxy,dyy,dzx,dzy,dzz
 	do i=ns+np+1,ns+np+nd,6
         write(*,*) "edita i=",i
                 do j=1,ncont(i)

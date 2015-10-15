@@ -5,7 +5,7 @@ c---------------------------------------------------------------------
       use garcha_mod
       use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP, cutecp2
      & , cutecp3,cutECP,local_nonlocal, ecp_debug,ecp_full_range_int
-     & ,verbose_ECP,Cnorm,err
+     & ,verbose_ECP,Cnorm
 #ifdef CUBLAS
       use cublasmath
 #endif
@@ -22,7 +22,7 @@ c---------------------------------------------------------------------
      > propagator,NBCH,
      > field,a0,epsilon,exter,Fx,Fy,Fz, tdrestart, writedens,
      > writeforces,basis_set,fitting_set,int_basis,
-     > ecpmode,ecptypes,tipeECP,ZlistECP,cutecp2, cutecp3,err,
+     > ecpmode,ecptypes,tipeECP,ZlistECP,cutecp2, cutecp3,
      > cutECP,local_nonlocal, ecp_debug,ecp_full_range_int,verbose_ECP,
      > hybrid_converg, good_cut,verbose,
 !ultima linea agregada para ECP, Nick
@@ -93,7 +93,6 @@ c---------------------------------------------------------------------
 !para cambio de damping a diis
       hybrid_converg=.false.
       good_cut=1D-5
-      err = 1000
 
 !ECP!!!!!!!!!!!!!!!!!!!!!!!!!!!!! tocado, Nick
       ecpmode=.false.

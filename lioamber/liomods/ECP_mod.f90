@@ -1,152 +1,338 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Effective Core potential module
-!
-! Contains commmon variables,  and functions for ECP subroutines
-!
-! V 0.9 september 2015
-!
-! Nicolas Foglia
+!%%%%%%%%%%%%%%    Effective Core Potential Module    %%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Contains commmon variables and functions for ECP subroutines       !
+!                                                                    !
+! V0.9 sept 2015, first functional version for energy calculations   !
+!                                                                    !
+! Nicolas Foglia                                                     !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 
+      MODULE ECP_mod
+      IMPLICIT NONE
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&IIIIIIIIIIIIIIIIII
-      module ECP_mod
-      implicit none
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!valiables del namelist!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%    Namelist Variables    %%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
       logical :: ecpmode
 !activa los pseudopotenciales
       integer :: ecptypes
 !cantidad de atomos con ECP
       character (len=30) :: tipeECP
-!tipoo de ECP usado, tiene que estar en $LIOHOME/libraries/ECP
+!tipo de ECP usado, tiene que estar en $LIOHOME/libraries/ECP
       integer, dimension(128) :: ZlistECP
 !Z de atomos con ECP
-      double precision :: cutecp2, cutecp3
-!valores de corte para las integrales AAB y BAC
       logical :: cutECP
 !activa cuts en las integrales de ECP
+      double precision :: cutecp2, cutecp3
+!valores de corte para las integrales de 2 y 3 centros (AAB y BAC)
 
-!para debugueo
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%    Dbug & Verbose Variables    %%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       logical :: ecp_debug,ecp_full_range_int
+! ecp_debug activa el modo de debugueo, ecp_full_range_int activa el
+! calculo de integrales radiales en todo el rango disponible por los
+! arrays
       integer :: local_nonlocal
+! =1 solo calcula terminos locales <xi|V|xj>
+! =2 solo calcula terminos no locales <xi|Ylm>V<Ylm|xj>
+! default =0
       integer :: verbose_ECP
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! controla la impresion de variables
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!Datos de los ECP
+
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%     Effective Core potential Data    %%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
         integer, dimension(118) :: Zcore, Lmax
-!Zcore(Z) carga del core para el ECP elegido del atomo con carga nuclear Z, Lmax(Z) L maximo del ECP 
-!elegido para el atomo con carga nuclear Z
+! Zcore(Z) carga del core para el ECP elegido del atomo con carga
+! nuclear Z, Lmax(Z) L maximo del ECP elegido para el atomo con
+! carga nuclear Z
         integer, dimension(118,0:5) :: expnumbersECP
-!expnumbersECP(Z,l) cantidad de terminos del ECP para el atomo con carga nuclear Z y l del ECP
-	integer, dimension(118,0:5,10) :: nECP
+!expnumbersECP(Z,l) cantidad de terminos del ECP para el atomo con
+! carga nuclear Z y l del ECP
+        integer, dimension(118,0:5,10) :: nECP
 	double precision, dimension(118,0:5,10) :: bECP, aECP
-!nECP, bECP, aECP valores del pseudo potencial
-! aECP*r^b * exp(-bECP r^2)
-!estan escritos como: xECP(Z,l,i) Z carga del nucleo, l del ecp, i numero de funcion del ecp con Z,l
-!coeficientes(aECP) y exponentes(bECP) del pseudopotencial
+
+! Los pseudopotenciales vienen dados por:
+
+!                     _LMAX-1         _l
+! \  / = \  /     +  \    \  /       \    |l,m\/l,m|
+!  \/     \/LMAX     /_    \/l-LMAX  /_   |   /\   |
+!                    l=0             m=-l
+
+!donde Vl= aECP * r^nECP * exp(-bECP r^2)
+
+! Los  xECP estan escritos como: xECP(Z,l,i) Z carga del nucleo, l 
+!momento angular de la expansion del ecp, i numero de funcion del
+! ecp con Z,l
+
 	integer, dimension (:), ALLOCATABLE :: IzECP
-!cargas nucleares sin corregir por el Zcore
+!cargas nucleares sin corregir por la carga del core (Zcore)
+
 	integer, dimension (:,:), ALLOCATABLE :: Lxyz
-! Lxyz(i,j) contiene los exponentes de la parte angular de la funcion de base i
-!|x> = A x^lx y^ly z^lz *e^-ar^2, j=1 lx, j=2, ly, j=3 lz para la funcion i de la base
+! Lxyz(i,j) contiene los exponentes de la parte angular de la funcion
+! de base i
+!|xi> = ci x^lx y^ly z^lz *e^(-a * r^2)
+!j=1 lx, j=2 ly, j=3 lz para la funcion i de la base
+
         double precision, dimension(:,:), Allocatable :: VAAAcuadrada, VAABcuadrada, VBACcuadrada
         double precision, dimension(:), Allocatable :: VAAA, VAAB, VBAC,term1e
+! VXXX contiene los coeficientes de Fock del pseudopotencial.
+! VAAA integrales de un centro (base y ecp en el mismo atomo)
+! VAAB integrales de 2 centros (1 base y ecp en el mismo atomo)
+! VBAC integrales de 3 centros (ninguna base en el atomo con ecp)
+! term1e contiene una copia de los terminos de 1e- sin la modificaion
+! por agregar los terminos de los pseudopotenciales
 
-	double precision, dimension(:,:), Allocatable :: VXXXgamess !agregada para chekeo con gamess
-
-!VAAA contiene los terminos <A|A|A> del pseudo potencial
-!VAAAcuadrada es solo para testeo de simetria
-!idem VAAB, VBAC
-!term1e contiene una copia de los terminos de 1e
 	double precision, dimension(:,:), Allocatable :: distx, disty, distz
 !guarda la distancia en x, y, z entre los atomos i y j  dist(i,j)=xi-xj
 !Cuidado, esta en unidades atomicas
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
+
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%    Normalized Basis Coeficients    %%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 	double precision, dimension(:,:), Allocatable :: Cnorm
+! Lio guarda en el array c los coeficientes de la base 
+! |xi> = ci x^lx y^ly z^lz *e^(-a * r^2)
+! En el caso de las funciones d el coeficiente ci esta normalizado 
+! para todos los terminos como si fueran xy, xz o yz.
+! para los terminos xx, yy y zz hay que dividir por 3^0.5
+! en los calculos de lio este factor ya se considera, mientras que en 
+! los calculos con pseudo potenciales se modica la base copiandola 
+! a Cnorm para hacer a la rutina mas facil de adaptar a otras 
+! implementaciones
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&hasta aca testeado FFFFFFFFFFFFFFFFFFFFFFF
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!para testear error en integrales
-	integer :: err
-	
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%    Parameters For Radial Integration    %%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!parameters for radial integral of type 2
-!alpha y betha contains coeficients for expantion of modified spherical bessel function
-!of the first kind Mk(x) in terms of sinh(x)/x^i (betha(k+1,i) and cosh(x)/x^i (alpha(k,i))
-!for k between 0 and 4, it is enought for energy calculations of functions s to g
 	integer, parameter, dimension (4,4) :: alpha = (/1,0,1,0,0,-3,0,-10,0,0,15,0,0,0,0,-105/)
 	integer, parameter, dimension (5,5) :: betha = (/1,0,1,0,1,0,-1,0,-6,0,0,0,3,0,45,0,0,0,-15,0,0,0,0,0,105/)
 
+!alpha y betha contains coeficients for expantion of modified
+! spherical bessel function of the first kind Mk(x) in terms of 
+!sinh(x)/x^i (betha(k+1,i) and cosh(x)/x^i (alpha(k,i)) for k between
+! 0 and 4, it is enought for energy calculations of functions s to g
+
+        DOUBLE PRECISION, dimension (-12:14) :: Bn1, Bn2, Cn1, Cn2, rho, tau, sigma, sigmaR
+        DOUBLE PRECISION, dimension (-12:14) :: Bn,Cn
+
 !Bni(j) contain the value of  int t^(n-2-j)*(exp)-c(t-ai)^2 + exp(-c(t+ai)^2) from 0 to inf
 !Cni(j) contain the value of  int t^(n-2-j)*(exp)-c(t-ai)^2 - exp(-c(t+ai)^2) from 0 to inf
+
 ! rho(n) = int exp(-cr^2) * sinh(Ka*r)* sinh(Kb*r) r^n  dr  from 0 to inf
 ! sigma(n) = int exp(-cr^2) * sinh(Ka*r)* cosh(Kb*r) r^n  dr  from 0 to inf
 ! sigmaR(n) = int exp(-cr^2) * cosh(Ka*r)* sinh(Kb*r) r^n  dr  from 0 to inf
 ! tau(n) = int exp(-cr^2) * cosh(Ka*r)* cosh(Kb*r) r^n  dr  from 0 to inf
-	DOUBLE PRECISION, dimension (-12:14) :: Bn1, Bn2, Cn1, Cn2, rho, tau, sigma, sigmaR
-	DOUBLE PRECISION, dimension (-12:14) :: Bn,Cn
+
+        DOUBLE PRECISION, dimension (0:10,0:4,0:4) :: Qnl1l2
 !Qnl1l2(n,l1,l2) = int Ml1(kA*r)* Ml2(kB*r)*r^n * exp(-cr^2) dr from 0 to inf
-	DOUBLE PRECISION, dimension (0:10,0:4,0:4) :: Qnl1l2
-!Qnl(n,l) = int Ml(k*r)*r^n * exp(-cr^2) dr from 0 to inf
+
         DOUBLE PRECISION, dimension (0:10,0:4) :: Qnl
+!Qnl(n,l) = int Ml(k*r)*r^n * exp(-cr^2) dr from 0 to inf
+
 !Parameters
 	DOUBLE PRECISION, parameter :: pi=3.14159265358979312D0, pi12=1.77245385090552D0 !pi12 = pi^0.5
 !factorial
 	integer, dimension(0:15) :: fac = (/1,1,2,6,24,120,720,5040,40320,362880,3628800,39916800,479001600,1932053504,1278945280,2004310016/)
 !double factorial
         integer*8, parameter, dimension (-1:33) :: doublefactorial=(/1,1,1,2,3,8,15,48,105,384,945,3840,10395,46080,135135,645120,2027025,10321920,34459425,185794560,654729075,3715891200,13749310575,81749606400,316234143225,1961990553600,7905853580625,51011754393600,213458046676875,1428329123020800,6190283353629375,42849873690624000,191898783962510625,1371195958099968000,6332659870762850625/)
-!test
-	INTEGER, PARAMETER  :: dp = SELECTED_REAL_KIND(12, 60)
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!variables para integrales angulares
-!li contains the coeficiente ul,m,lx,ly,lz fof expansion of Normalized real spherical harmonics Slm in terms of 
-!unitary sphere polinomials
-!S(l,m)= sum ul,m,lx,ly,lz  (x/r)^lx * (y/r)^ly * (z/r)^lz               / lx+ly+lz=l
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%    Parameters for Angular Integrals    %%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!li contains the coeficiente ul,m,lx,ly,lz fof expansion of 
+! Normalized real spherical harmonics Slm in terms of unitary sphere
+! polinomials
+!S(l,m)= sum ul(m,lx,ly,lz) * (x/r)^lx * (y/r)^ly * (z/r)^lz
+! lx+ly+lz=l
 !ul=F(f(lx,ly,lz),m)
         DOUBLE PRECISION, dimension (1) :: l0 = (/0.5d0/pi12/)
-	!l0 chequeado
 	Double precision, parameter :: aux1=sqrt(3.d0)/(2d0*pi12)
 	DOUBLE PRECISION, dimension (3,-1:1) :: l1=(/0.d0,aux1,0.d0,aux1,0.d0,0.d0,0.d0,0.d0,aux1/)
-	!l1 chequeado
         Double precision, parameter :: aux2= 0.5d0 * sqrt(15.d0/pi)
         Double precision, parameter :: aux3= 0.25d0 * sqrt(5.d0/pi)
 	DOUBLE PRECISION, dimension (6,-2:2) :: l2=(/0.d0,0.d0,0.d0,0.d0,aux2,0.d0,0.d0,aux2,0.d0,0.d0,0.d0,0.d0,2*aux3,0.d0,-aux3,0.d0,0.d0,-aux3,0.d0,0.d0,0.d0,aux2,0.d0,0.d0,0.d0,0.d0,-0.5d0*aux2,0.d0,0.d0,0.5d0*aux2/)
-
-
-
-
-
-!parece haber 1 numero diferente al comparar con gamess ver el caso m=0 x^2
-!l2=(/0.d0,0.d0,0.d0,0.d0,aux2,0.d0,0.d0,aux2,0.d0,0.d0,0.d0,0.d0,6*aux3,0.d0,-aux3,0.d0,0.d0,-aux3,0.d0,0.d0,0.d0,aux2,0.d0,0.d0,0.d0,0.d0,-0.5d0*aux2,0.d0,0.d0,0.5d0*aux2/)
-
-	!l2 chekeado
 	Double precision, parameter :: aux4=0.25d0 * sqrt(17.5d0/pi)
 	Double precision, parameter :: aux5=0.5d0 * sqrt(105.d0/pi)
 	Double precision, parameter :: aux6=sqrt(10.5d0/pi)
 	Double precision, parameter :: aux7=sqrt(7.0d0/pi)
 	DOUBLE PRECISION, dimension (10,-3:3) :: l3=(/0.d0,0.d0,0.d0,-aux4,0.d0,0.d0,0.d0,0.d0,3.d0*aux4,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,aux5,0.d0,0.d0,0.d0,0.d0,0.d0,aux6,0.d0,-0.25d0*aux6,0.d0,0.d0,0.d0,0.d0,-0.25d0*aux6,0.d0,0.5d0*aux7,0.d0,-0.75d0*aux7,0.d0,0.d0,0.d0,0.d0,-0.75d0*aux7,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,aux6,0.d0,-0.25*aux6,0.d0,0.d0,-0.25d0*aux6,0.d0,0.d0,-0.5d0*aux5,0.d0,0.d0,0.d0,0.d0,0.5d0*aux5,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,-3.d0*aux4,0.d0,0.d0,aux4/)
-	!l3 chekeado
 	Double precision, parameter :: aux8=sqrt(35.d0/pi)
         Double precision, parameter :: aux9=sqrt(35.d0/(2*pi))
         Double precision, parameter :: aux10=sqrt(5.d0/pi)
         Double precision, parameter :: aux11=sqrt(5.d0/(2*pi))
         Double precision, parameter :: aux12=1.d0/pi12
         DOUBLE PRECISION, dimension (15,-4:4) :: l4=(/0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,-0.75d0*aux8,0.d0,0.d0,0.d0,0.d0,0.75d0*aux8,0.d0,0.d0,0.d0,0.d0,-0.75d0*aux9,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,2.25d0*aux9,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,4.5d0*aux10,0.d0,-0.75d0*aux10,0.d0,0.d0,0.d0,0.d0,-0.75d0*aux10,0.d0,0.d0,3.d0*aux11,0.d0,-2.25d0*aux11,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,-2.25d0*aux11,0.d0,0.d0,0.d0,0.d0,1.5d0*aux12,0.d0,-4.5d0*aux12,0.d0,0.5625d0*aux12,0.d0,0.d0,0.d0,0.d0,-4.5d0*aux12,0.d0,1.125d0*aux12,0.d0,0.d0,0.5625d0*aux12,0.d0,0.d0,0.d0,0.d0,0.d0,3.d0*aux11,0.d0,-2.25d0*aux11,0.d0,0.d0,0.d0,0.d0,-2.25d0*aux11,0.d0,0.d0,0.d0,0.d0,-2.25d0*aux10,0.d0,0.375d0*aux10,0.d0,0.d0,0.d0,0.d0,2.25*aux10,0.d0,0.d0,0.d0,0.d0,-0.375*aux10,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,-2.25d0*aux9,0.d0,0.d0,0.d0,0.d0,0.75d0*aux9,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.1875d0*aux8,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,-1.125d0*aux8,0.d0,0.d0,0.1875d0*aux8/)
-	!l4 chekeado
 
 
-	DOUBLEPRECISION,dimension(0:5,0:5,0:5)::intangular=(/12.5663706143592,0.000000000000000E+000,4.18879020478639,0.000000000000000E+000,2.51327412287183,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,4.18879020478639,0.000000000000000E+000,0.837758040957278,0.000000000000000E+000,0.359039160410262,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,2.51327412287183,0.000000000000000E+000,0.359039160410262,0.000000000000000E+000,0.119679720136754,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,4.18879020478639,0.000000000000000E+000,0.837758040957278,0.000000000000000E+000,0.359039160410262,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.837758040957278,0.000000000000000E+000,0.119679720136754,0.000000000000000E+000,3.989324004558467E-002,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.359039160410262,0.000000000000000E+000,3.989324004558467E-002,0.000000000000000E+000,1.087997455788673E-002,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,2.51327412287183,0.000000000000000E+000,0.359039160410262,0.000000000000000E+000,0.119679720136754,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.359039160410262,0.000000000000000E+000,3.989324004558467E-002,0.000000000000000E+000,1.087997455788673E-002,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.119679720136754,0.000000000000000E+000,1.087997455788673E-002,0.000000000000000E+000,2.510763359512322E-003,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000,0.000000000000000E+000/)
-
-
-
-
+        double precision, dimension (0:9,0:9,0:9) :: angularint
+! contiene los valores tabulados de  la rutina del mismo nombre (comentada mas abajo)
 
 	Contains
+	
+	subroutine defineparams()
+!define parametros de variables del modulo
+	implicit none
+!parametros auxiliares para integrales angulares
+!angular int
+	angularint=0D0
+        angularint(0,0,0)=12.5663706143592D0
+        angularint(0,0,2)=4.18879020478639D0
+        angularint(0,0,4)=2.51327412287183D0
+        angularint(0,0,6)=1.79519580205131D0
+        angularint(0,0,8)=1.39626340159546D0
+        angularint(0,2,0)=4.18879020478639D0
+        angularint(0,2,2)=0.837758040957278D0
+        angularint(0,2,4)=0.359039160410262D0
+        angularint(0,2,6)=0.199466200227923D0
+        angularint(0,2,8)=0.126933036508679D0
+        angularint(0,4,0)=2.51327412287183D0
+        angularint(0,4,2)=0.359039160410262D0
+        angularint(0,4,4)=0.119679720136754D0
+        angularint(0,4,6)=5.439987278943365D-2
+        angularint(0,4,8)=2.929223919431043D-2
+        angularint(0,6,0)=1.79519580205131D0
+        angularint(0,6,2)=0.199466200227923D0
+        angularint(0,6,4)=5.439987278943364D-2
+        angularint(0,6,6)=2.092302799593602D-2
+        angularint(0,6,8)=9.764079731436807D-3
+        angularint(0,8,0)=1.39626340159546D0
+        angularint(0,8,2)=0.126933036508679D0
+        angularint(0,8,4)=2.929223919431043D-2
+        angularint(0,8,6)=9.764079731436809D-3
+        angularint(0,8,8)=4.020503418826921D-3
+        angularint(2,0,0)=4.18879020478639D0
+        angularint(2,0,2)=0.837758040957278D0
+        angularint(2,0,4)=0.359039160410262D0
+        angularint(2,0,6)=0.199466200227923D0
+        angularint(2,0,8)=0.126933036508679D0
+        angularint(2,2,0)=0.837758040957278D0
+        angularint(2,2,2)=0.119679720136754D0
+        angularint(2,2,4)=3.989324004558467D-2
+        angularint(2,2,6)=1.813329092981121D-2
+        angularint(2,2,8)=9.764079731436809D-3
+        angularint(2,4,0)=0.359039160410262D0
+        angularint(2,4,2)=3.989324004558467D-2
+        angularint(2,4,4)=1.087997455788673D-2
+        angularint(2,4,6)=4.184605599187203D-3
+        angularint(2,4,8)=1.952815946287362D-3
+        angularint(2,6,0)=0.199466200227923D0
+        angularint(2,6,2)=1.813329092981121D-2
+        angularint(2,6,4)=4.184605599187203D-3
+        angularint(2,6,6)=1.394868533062401D-3
+        angularint(2,6,8)=5.743576312609886D-4
+        angularint(2,8,0)=0.126933036508679D0
+        angularint(2,8,2)=9.764079731436809D-3
+        angularint(2,8,4)=1.952815946287362D-3
+        angularint(2,8,6)=5.743576312609887D-4
+        angularint(2,8,8)=2.116054430961537D-4
+        angularint(4,0,0)=2.51327412287183D0
+        angularint(4,0,2)=0.359039160410262D0
+        angularint(4,0,4)=0.119679720136754D0
+        angularint(4,0,6)=5.439987278943365D-2
+        angularint(4,0,8)=2.929223919431043D-2
+        angularint(4,2,0)=0.359039160410262D0
+        angularint(4,2,2)=3.989324004558467D-2
+        angularint(4,2,4)=1.087997455788673D-2
+        angularint(4,2,6)=4.184605599187203D-3
+        angularint(4,2,8)=1.952815946287362D-3
+        angularint(4,4,0)=0.119679720136754D0
+        angularint(4,4,2)=1.087997455788673D-2
+        angularint(4,4,4)=2.510763359512322D-3
+        angularint(4,4,6)=8.369211198374407D-4
+        angularint(4,4,8)=3.446145787565932D-4
+        angularint(4,6,0)=5.439987278943365D-2
+        angularint(4,6,2)=4.184605599187203D-3
+        angularint(4,6,4)=8.369211198374408D-4
+        angularint(4,6,6)=2.461532705404238D-4
+        angularint(4,6,8)=9.068804704120875D-5
+        angularint(4,8,0)=2.929223919431043D-2
+        angularint(4,8,2)=1.952815946287362D-3
+        angularint(4,8,4)=3.446145787565932D-4
+        angularint(4,8,6)=9.068804704120875D-5
+        angularint(4,8,8)=3.022934901373625D-5
+        angularint(6,0,0)=1.79519580205131D0
+        angularint(6,0,2)=0.199466200227923D0
+        angularint(6,0,4)=5.439987278943364D-2
+        angularint(6,0,6)=2.092302799593602D-2
+        angularint(6,0,8)=9.764079731436807D-3
+        angularint(6,2,0)=0.199466200227923D0
+        angularint(6,2,2)=1.813329092981121D-2
+        angularint(6,2,4)=4.184605599187203D-3
+        angularint(6,2,6)=1.394868533062401D-3
+        angularint(6,2,8)=5.743576312609886D-4
+        angularint(6,4,0)=5.439987278943364D-2
+        angularint(6,4,2)=4.184605599187203D-3
+        angularint(6,4,4)=8.369211198374406D-4
+        angularint(6,4,6)=2.461532705404237D-4
+        angularint(6,4,8)=9.068804704120873D-5
+        angularint(6,6,0)=2.092302799593602D-2
+        angularint(6,6,2)=1.394868533062401D-3
+        angularint(6,6,4)=2.461532705404238D-4
+        angularint(6,6,6)=6.477717645800625D-5
+        angularint(6,6,8)=2.159239215266875D-5
+        angularint(6,8,0)=9.764079731436807D-3
+        angularint(6,8,2)=5.743576312609886D-4
+        angularint(6,8,4)=9.068804704120873D-5
+        angularint(6,8,6)=2.159239215266875D-5
+        angularint(6,8,8)=6.571597611681793D-6
+        angularint(8,0,0)=1.39626340159546D0
+        angularint(8,0,2)=0.126933036508679D0
+        angularint(8,0,4)=2.929223919431043D-2
+        angularint(8,0,6)=9.764079731436809D-3
+        angularint(8,0,8)=4.020503418826921D-3
+        angularint(8,2,0)=0.126933036508679D0
+        angularint(8,2,2)=9.764079731436809D-3
+        angularint(8,2,4)=1.952815946287362D-3
+        angularint(8,2,6)=5.743576312609887D-4
+        angularint(8,2,8)=2.116054430961537D-4
+        angularint(8,4,0)=2.929223919431043D-2
+        angularint(8,4,2)=1.952815946287362D-3
+        angularint(8,4,4)=3.446145787565932D-4
+        angularint(8,4,6)=9.068804704120875D-5
+        angularint(8,4,8)=3.022934901373625D-5
+        angularint(8,6,0)=9.764079731436809D-3
+        angularint(8,6,2)=5.743576312609887D-4
+        angularint(8,6,4)=9.068804704120875D-5
+        angularint(8,6,6)=2.159239215266875D-5
+        angularint(8,6,8)=6.571597611681793D-6
+        angularint(8,8,0)=4.020503418826921D-3
+        angularint(8,8,2)=2.116054430961537D-4
+        angularint(8,8,4)=3.022934901373625D-5
+        angularint(8,8,6)=6.571597611681793D-6
+        angularint(8,8,8)=1.840047331270902D-6
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+	end subroutine defineparams
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&IIIIIIIIIII
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%    Other Functions/Subs    %%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
         subroutine asignacion(Z,simb)
 !Toma el numero atomico (Z)  y devuelve el simbolo del elemento en mayusculas (simb)
@@ -159,7 +345,6 @@
         return
         end subroutine asignacion
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&FFFFFFFFFFFFFFFF
 
         DOUBLE PRECISION FUNCTION NEXTCOEF(sgn,n,cados,expo,c0coef,coefn1, coefn2)
 !calcula el coef Bn y Cn, con n<2
@@ -168,8 +353,6 @@
         DOUBLE PRECISION, intent(in) :: cados,expo,c0coef,coefn1, coefn2
 	if ( -n-1 .lt. 0) stop " se pide fac(n), n<0 en NEXTCOEF"
         NEXTCOEF=(1+sgn*(-1)**(-n-1))*cados**(-n-1)*expo/fac(-n-1)-2*c0coef*coefn2 +cados*coefn1
-!	write(*,*) (1+sgn*(-1)**(-n-1))*cados**(-n-1)*expo/fac(-n-1)/(-n-1),-2*c0coef*coefn2/(-n-1),cados*coefn1/(-n-1)
-!	write(*,*) "n",n, "sgn", sgn, "(1+sgn*(-1)**(-n-1))", (1+sgn*(-1)**(-n-1))
 	NEXTCOEF=NEXTCOEF/(-n-1)
         RETURN
         END Function NEXTCOEF
@@ -177,7 +360,7 @@
 
 
 !        recursive double precision function facrecursive(N)
-!rutina reemplazada por el array fac
+! rutina reemplazada por el array fac
 !        implicit none
 !        integer, intent(in) :: N
 !        if ( n .gt. 170) then
@@ -191,10 +374,8 @@
 !        return
 !        end function facrecursive
 
-
-
 !        recursive integer*8 function doublefacrecursive(N)
-!esta rutina no se utiliza, se reemplazara por un array
+! rutina reemplazada por el array doublefactorial
 !la rutina funciona hasta N=19
 !        implicit none
 !        integer, intent(in) :: N
@@ -228,58 +409,53 @@
 !        return
 !        end function doublefac
 
-	DOUBLE PRECISION function angularint(i,j,k)
-	implicit none
-	integer, intent(in) :: i,j,k
-	DOUBLE PRECISION, parameter :: pi=3.14159265358979312D0
+!	DOUBLE PRECISION function angularint(i,j,k)
+!	implicit none
+!	integer, intent(in) :: i,j,k
+!	DOUBLE PRECISION, parameter :: pi=3.14159265358979312D0
 !esta rutina calcula la integral (x/r)^i (y/r)^j (z/r)^k, luego sera reemplazada por un array
-	if (mod(i,2) .eq. 0 .and. mod(j,2) .eq. 0 .and.mod(k,2) .eq. 0 ) then
-!        angularint=4.d0*pi*doublefacrecursive(i-1)*doublefacrecursive(j-1)*doublefacrecursive(k-1)/doublefacrecursive(i+j+k+1)
+!	if (mod(i,2) .eq. 0 .and. mod(j,2) .eq. 0 .and.mod(k,2) .eq. 0 ) then
+!	   angularint=4.d0*pi*doublefactorial(i-1)*doublefactorial(j-1)*doublefactorial(k-1)/doublefactorial(i+j+k+1)
+!        else
+!           angularint=0.d0
+!        end if
+!	return
+!	end function angularint
 
-	angularint=4.d0*pi*doublefactorial(i-1)*doublefactorial(j-1)*doublefactorial(k-1)/doublefactorial(i+j+k+1)
-
-!	write(21,*) i+j+k+1,doublefacrecursive(i+j+k+1)
-        else
-        angularint=0.d0
-        end if
-	return
-	end function angularint
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!funciones para numeros random
-!solo para test
-        double precision  function Ran()
-        implicit none
-        integer :: count1, count_rate, count_max
-        CALL SYSTEM_CLOCK(count1, count_rate, count_max)
-        Ran=2*RANDOM(count1)-1
-        return
-        end function Ran
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%    Other Functions/Subs    %%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-      Function RANDOM(Seed)
-      Implicit None
-      Real :: Random
-      Integer :: Seed
-      Integer :: OldSeed = 0
-      Integer, Parameter :: C1 = 19423
-      Integer, Parameter :: C2 = 811
-      Save OldSeed
+!      double precision  function Ran()
+!      implicit none
+!      integer :: count1, count_rate, count_max
+!      CALL SYSTEM_CLOCK(count1, count_rate, count_max)
+!      Ran=2*RANDOM(count1)-1
+!      return
+!      end function Ran
 
-      If (OldSeed .EQ. 0) OldSeed = Seed
-      OldSeed = Mod(C1 * OldSeed, C2)
-      RANDOM = 1.0 * OldSeed / C2
+!      Function RANDOM(Seed)
+!      Implicit None
+!      Real :: Random
+!      Integer :: Seed
+!      Integer :: OldSeed = 0
+!      Integer, Parameter :: C1 = 19423
+!      Integer, Parameter :: C2 = 811
+!      Save OldSeed
 
-      End Function RANDOM
+!      If (OldSeed .EQ. 0) OldSeed = Seed
+!      OldSeed = Mod(C1 * OldSeed, C2)
+!      RANDOM = 1.0 * OldSeed / C2
+!      End Function RANDOM
 
 
 
-
-
-
-
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%    Not Made By Nicolas    %%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 
 	FUNCTION DAW(XX) RESULT(fn_val)
@@ -520,9 +696,9 @@
 	END IF
 	Return
 !---------- Last line of DAW ----------
-	END FUNCTION daw
+	END FUNCTION DAW
 
-
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 
 	end module ECP_mod

@@ -200,7 +200,7 @@
 	implicit none
 !parametros auxiliares para integrales angulares
 !angular int
-	angularint=0D0
+	angularint=0.D0
         angularint(0,0,0)=12.5663706143592D0
         angularint(0,0,2)=4.18879020478639D0
         angularint(0,0,4)=2.51327412287183D0

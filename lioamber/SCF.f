@@ -64,23 +64,22 @@
 
 !--------------------------------------------------------------------!
 
-! variable para el cambio damping -> diis, guarda el numero de paso de SCF en el cual good pasa el criterio de corte
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%    Effective Core Potential Fock    %%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
         if (ecpmode) then 
         call g2g_timer_start('ECP Routines')
         call intECP(1)
-!alocatea variables, calcula variables comunes, y calcula terminos AAA del ECP
+!alocatea variables, calcula variables comunes, y calcula terminos de 1 centro
 	call intECP(2)
 !calcula terminos de 2 centros
 	call intECP(3)
 !calcula terminos de 3 centros
         write(*,*) "finalizo el calculo de ECP"
         call g2g_timer_stop('ECP Routines')
-	Write(*,*) "time"
 	end if
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 #ifdef magma
@@ -262,15 +261,21 @@ c
       call g2g_timer_sum_start('1-e Fock')
       call g2g_timer_sum_start('Nuclear attraction')
       call int1(En)
+
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%    Effective Core Potential Add    %%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       if (ecpmode ) then
-          write(*,*) "agrego terminos AAA,AAB, BAC a los de 1e"
+          write(*,*) "Modifying Fock Matrix with ECP terms"
           do k=1,MM
                term1e(k)=RMM(M11+k-1)
 !copia los terminos de 1e
                RMM(M11+k-1)=RMM(M11+k-1)+VAAA(k)+VAAB(k)+VBAC(k)
-!agrega el ECP a los terminos de 1 e
+!agrega el ECP a los terminos de 1e
           enddo
       end if
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 
 
@@ -708,7 +713,7 @@ c
 c now, we know S matrix, and F matrix, and E for a given P
 c 1) diagonalize S, get X=U s^(-1/2)
 c 2) get U F Ut
-!c 3) diagonalize F
+c 3) diagonalize F
 c 4) get vec ( coeff) ---->  P new
 c 5) iterate
 c call diagonalization routine for S , get after U s^(-1/2)
@@ -1338,7 +1343,6 @@ c      call mmsol(natom,Nsol,natsol,Iz,pc,r,Em,Rm,Es)
 c     endif
 c--------------------------------------------------------------
 
-	write(*,*) "buscando muerte 1"
 
 c  ????
       if (MOD(npas,energy_freq).eq.0) then
@@ -1349,22 +1353,17 @@ c       call g2g_timer_sum_start('exchnum')
         call g2g_timer_sum_start('Exchange-correlation energy')
 #ifdef G2G
 #ifdef ULTIMA_CPU
-        write(*,*) "buscando muerte 1.1"
         call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
      >              M18,NCO,Exc,nopt)
 #else
-        write(*,*) "buscando muerte 1.2"
       ! Resolve with last density to get XC energy
         call g2g_new_grid(igrid)
-        write(*,*) "buscando muerte 1.3"
         call g2g_solve_groups(1, Exc, 0)
 c       write(*,*) 'g2g-Exc',Exc
 #endif
 #else
 #ifdef ULTIMA_G2G
-        write(*,*) "buscando muerte 1.4"
         call g2g_new_grid(igrid)
-        write(*,*) "buscando muerte 1.5"
         call g2g_solve_groups(1, Exc, 0)
 #else
 #endif
@@ -1384,12 +1383,13 @@ c       write(*,*) 'g2g-Exc',Exc
         if (npas.gt.npasw) then
           write(6,*)
           write(6,600)
+
         if (ecpmode) then
+!caso particular de escritura de energia si ECP esta prendido
           write(6,611)
 	        do k=1,MM
-	          Eecp=Eecp+RMM(k)*(VAAA(k)+VAAB(k))
-!falta agregar los terminos de VBAC, Nick
-		write(38,*) k,RMM(k)*(VAAA(k)+VAAB(k)),RMM(k),VAAA(k)+VAAB(k),VAAA(k)
+	          Eecp=Eecp+RMM(k)*(VAAA(k)+VAAB(k)+VBAC(k))
+!		write(38,*) k,RMM(k)*(VAAA(k)+VAAB(k)+VBAC(k)),RMM(k)
 	        enddo
           write(6,621) E1-Eecp,E2-Ex,En,Eecp
         else
@@ -1397,7 +1397,6 @@ c       write(*,*) 'g2g-Exc',Exc
           write(6,620) E1,E2-Ex,En
 	end if
 
-        write(*,*) "buscando muerte 2"
 c         if (sol) then
 c          write(6,615)
 c          write(6,625) Es
@@ -1412,7 +1411,6 @@ c--------------------------------------------------------------
 c calculation of energy weighted density matrix
 c
 
-        write(*,*) "buscando muerte 3"
       call g2g_timer_sum_start('energy-weighted density')
       kk=0
       do j=1,M
@@ -1432,7 +1430,6 @@ c
         enddo
       enddo
 
-        write(*,*) "buscando muerte 4"
       call g2g_timer_sum_stop('energy-weighted density')
 
       if (MOD(npas,energy_freq).eq.0) then
@@ -1460,24 +1457,17 @@ c u in Debyes
 c
 
 
-        write(*,*) "buscando muerte 5"
 
        call g2g_timer_sum_start('Mulliken')
 ! MULLIKEN POPULATION ANALYSIS (FFR - Simplified)
 !--------------------------------------------------------------------!
 
        call int1(En)
-        write(*,*) "buscando muerte 6"
        call spunpack('L',M,RMM(M5),Smat)
-        write(*,*) "buscando muerte 7"
        call spunpack('L',M,RMM(M1),RealRho)
-        write(*,*) "buscando muerte 8"
        call fixrho(M,RealRho)
-        write(*,*) "buscando muerte 9"
        call mulliken_calc(natom,M,RealRho,Smat,Nuc,Iz,q)
-        write(*,*) "buscando muerte 10"
        call mulliken_write(85,natom,Iz,q)
-        write(*,*) "buscando muerte 11"
 
 ! NOTE: If 'mulliken_calc' is renamed as 'mulliken', the code will
 ! malfunction. I DON'T KNOW WHY.
@@ -1530,7 +1520,6 @@ c writes down MO coefficients and orbital energies
         enddo
         close(29)
       endif
-        write(*,*) "buscando muerte 12"
 
       if (cube_dens.or.cube_orb.or.cube_elec) then
         call g2g_timer_sum_start('cube gen')
@@ -1546,25 +1535,19 @@ c      endif
         deallocate (Y,Ytrans,Xtrans,fock,fockm,rho,FP_PFm,
      >  znano,EMAT, bcoef, suma,rho1, scratch, scratch1)
       endif
-        write(*,*) "buscando muerte 12.1"
 
 !      deallocate (xnano,rmm5,rmm15)
-        write(*,*) "buscando muerte 12.2"
       deallocate (xnano)
-        write(*,*) "buscando muerte 12.3"
       deallocate (rmm5)
-        write(*,*) "buscando muerte 12.4"
 !	write(19,*) rmm15
       deallocate (rmm15)
 
-        write(*,*) "buscando muerte 13"
 
       if (MEMO) then
         deallocate (kkind,kkinds)
         deallocate(cool,cools)
       endif
       if(allocated(WORK2)) deallocate (WORK2)
-        write(*,*) "buscando muerte 14"
 
 
 c       E=E*627.509391D0
@@ -1574,12 +1557,10 @@ c       E=E*627.509391D0
         call TD()
         call g2g_timer_sum_stop('TD')
       endif
-        write(*,*) "buscando muerte 15"
        if (ecpmode) then
         call intECP(4)
 !desalocatea variables de pseudopotenciales
        end if
-        write(*,*) "buscando muerte 16"
 
 #ifdef CUBLAS
       call CUBLAS_FREE(devPtrX)

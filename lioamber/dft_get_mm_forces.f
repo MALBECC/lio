@@ -93,7 +93,6 @@ c       real*8 ftot(3)
        call g2g_timer_summary()
        call g2g_timer_clear()
 
-c       write(*,*) 'aca toyyyy'
 !
 !
 !--------------------------------------------------------------------!       

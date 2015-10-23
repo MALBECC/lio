@@ -1,14 +1,92 @@
-!Rutina para la lectura de coeficientes del ECP
-	subroutine lecturaECP
-	use ECP_mod, only : ecptypes, tipeECP, ZlistECP,asignacion,Zcore, Lmax, expnumbersECP, nECP, bECP, aECP
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Effective Core Potential Read Subroutines                          !
+!                                                                    !
+! This routines read ECP parameter located in                        !
+! $LIOHOME/dat/ECP/"tipeECP"                                         !
+!                                                                    ! 
+! V 1.0 september 2015                                               !
+!                                                                    !
+! Nicolas Foglia                                                     !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%   ECP name format   %%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!                                                                    !
+!Atom_symbol(in capitals)                                            !
+!Junk    LMax_of_ECP   Z_CORE                                        !
+!Junk                                                                !
+!Number_of_functions_for_LMax                                        !
+!n1_ECP b1_ECP a1_ECP                                                !
+!n2_ECP b2_ECP a2_ECP                                                !
+!...                                                                 !
+!...                                                                 ! 
+!...                                                                 !
+!Number_of_functions_for_L=0                                         !
+!n1_ECP b1_ECP a1_ECP                                                !
+!n2_ECP b2_ECP a2_ECP                                                !
+!...                                                                 !
+!...                                                                 !
+!...                                                                 !
+!Number_of_functions_for_L=1                                         !
+!...                                                                 !
+!...                                                                 !
+!...                                                                 !
+!END                                                                   !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! where V = ai_ECP * r^ni_ECP * exp(-bi_ECP r^2)                     !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!Example:                                                            !
+!                                                                    !
+!V     0                                                             !
+!V-ECP     2     10                                                  !
+!d-ul potential                                                      !
+!  1                                                                 !
+!1     12.7965900             -3.7914600                             !
+!s-ul potential                                                      !
+!  3                                                                 !
+!0      1.5043900              3.4325800                             !
+!2      4.2732100            178.0395700                             !
+!2      3.8412100           -156.3060500                             !
+!p-ul potential                                                      !
+!  2                                                                 !
+!0     30.8372000              3.7648100                             !
+!2      8.3445400             58.9650300                             !
+!CR     0                                                            !
+!CR-ECP     2     10                                                 !
+!d-ul potential                                                      !
+!  1                                                                 !
+!1     13.9330700             -3.6436200                             !
+!s-ul potential                                                      !
+!  3                                                                 !
+!0      1.7213600              3.5967900                             !
+!2      4.7568100            184.0766300                             !
+!2      4.2534800           -161.4199600                             !
+!p-ul potential                                                      !
+!  2                                                                 !
+!0     32.2822300              3.6886200                             !
+!2      9.2813700             65.4804600                             !
+!END                                                                    !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+
+
+	subroutine LecturaECP
+	use ECP_mod, only : ecptypes, tipeECP, ZlistECP,asignacion,Zcore, Lmax, expnumbersECP, nECP, bECP, aECP,verbose_ECP
 	use garcha_mod, only : Iz, natom
 	implicit none
-	integer :: i,jj,ppotat,ppotati
+	integer :: i,jj,ppotat,ppotati,ppotat_acum
 	character :: simb*3
-	write(*,*) "Leyendo parametros de pseudopotencial"
-	write(*,*) "tipos de atomos con ECP ", ecptypes
-	write(*,*) "pseudopotencial elegido ", tipeECP
+
+	write(*,*) 
+	write(*,4160)
+	write(*,4161)
+	write(*,4162)
+	write(*,4163)
+	write(*,4164)
+
 	ppotat=0
+	ppotat_acum=0
 	Lmax=0
 	Zcore=0
 	nECP=0
@@ -16,103 +94,107 @@
 	aECP=0.d0
 
 	do i=1,ecptypes
-	ppotati=0
-	call asignacion(ZlistECP(i),simb)
-	call dataECPelement(ZlistECP(i),simb)
-	do jj=1,natom
-          if (Iz(jj).eq.ZlistECP(i)) then
-               ppotati=ppotati+1
-          end if
-        end do
-                ppotat=ppotat+ppotati
-	write(*,*) ppotati, "atomo(s) de ", simb, "con ECP", tipeECP
-                ppotati=0
-        end do
+	   ppotati=0
+	   call asignacion(ZlistECP(i),simb)
+	   call dataECPelement(ZlistECP(i),simb)
+	   do jj=1,natom
+	      if (Iz(jj).eq.ZlistECP(i)) then
+	         ppotati=ppotati+1
+	      end if
+	   end do
+	   ppotat=ppotat+ppotati
+	
+	   if (verbose_ECP .gt. 0) then
+	      write(*,4165) simb, ppotati,tipeECP
+	   else
+	      if (ppotati .gt. 0) write(*,4165) simb, ppotati,tipeECP
+	   end if
+	   ppotat_acum=ppotat_acum+ppotati
+	   ppotati=0
+	end do
 
-       write(*,*) "atomo(s) con ecp", ppotat, tipeECP
+	write(*,4166)
+	write(*,4167),ppotat_acum
+	write(*,4168)
+	write(*,*)
 
+	4160 format(4x,"╔═══════════════════════════════════════════════════╗")
+	4161 format(4x,"║    READING EFFECTIVE CORE POTENTIAL PARAMETERS    ║")
+	4162 format(4x,"╠══════════════╦═════════════════════╦══════════════╣")
+	4163 format(4x,"║   ATOM TYPE  ║   NUMBER IN SYSTEM  ║   ECP TYPE   ║")
+	4164 format(4x,"╠══════════════╬═════════════════════╬══════════════╣")
+	4165 format(4x,"║",a9,5x,"║",i11,10x,"║",5x,a9 ,"║")
+	4166 format(4x,"╠══════════════╬═════════════════════╬══════════════╝")
+	4167 format(4x,"║     TOTAL    ║",i11,10x,"║")
+	4168 format(4x,"╚══════════════╩═════════════════════╝")
 	end subroutine lecturaECP
 
 
 	Subroutine dataECPelement(Z,elemento)
-!lee los valores de aECP, bECP, nECP, para el elemento pedido
+!lee los valores del pseudopotencial para el "elemento" pedido
 	use ECP_mod, only : Zcore, Lmax,expnumbersECP , nECP, bECP, aECP,tipeECP
-!el array data tiene la forma data(Z,i)
-!i=-2 Zcore, i=-1 Lmaximo del ECP, i=0 terminos s del ECP, i=1 terminos p ....   i=5 terminos h
 	implicit none
 	integer, intent(in) :: Z
-	integer :: u,l
-
+!Z = nuclear charge
 !tipeECP contiene el tipo de pseudopotencial
-!elemento es aquel que buscara en el archivo de pseudopotenciales, simbolo sirve para buscar el atomo el el archivo ECP
-! y boba para eliminar partes de la lectura del archivo que no sirven
         character :: boba*6
+!boba para eliminar partes de la lectura del archivo que no sirven
         character,intent(in) :: elemento*3!
+!elemento es aquel que buscara en el archivo de pseudopotenciales
         character :: simbolo*3!
+!simbolo sirve para buscar el atomo en el archivo ECP
 
 !variables q contienen datos del pseudopotencial
-!el pseudo potencial viene escrito como: Vl,AREP= A * r^n * e^(-b*r^2)
+!el pseudo potencial viene escrito como: Vl= A * r^n * e^(-B*r^2)
 !nECP, bECP y aECP contiene los coeficientes n,b y A respectivamente de cada contraccion de los pseudopotenciales
 
-!declara variables extra
-        logical :: existeECP,found!existe la uso
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!auxiliar variables
+	integer :: u,l
+	CHARACTER(len=255) :: lio
+	logical :: existeECP,found
 
-!!!!!!!!!!!!!!!!!!!!! variables para lectura en carpeta de lio
-        CHARACTER(len=255) :: lio!
-            CALL get_environment_variable("LIOHOME", lio)!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+	CALL get_environment_variable("LIOHOME", lio)!
 	existeECP=0
+        inquire(file=TRIM(lio)//"/dat/ECP/"//tipeECP, exist=existeECP)
 
-        inquire(file=TRIM(lio)//"/libraries/ECP/"//tipeECP, exist=existeECP)
-
-!cheque q el archivo ECP este, si no esta corta el programa y avisa q no esta el pseudopotencial
-	if (.not.existeECP) then
-		write(*,*) "falta el archivo de ECP o no tiene el nombre correcto"
-		write(*,*) "revisar $LIOHOME/libraries/ECP/"
-		stop
-
+	if ( .not. existeECP) then
+!cheque que el archivo ECP este
+	   write(*,*) "Effective Core potential parameters file not found"
+	   write(*,*) "check ",TRIM(lio),"/dat/ECP/"
+	   stop
 	else
-!		open(unit=7,file=tECP)
-		open(unit=7,file=TRIM(lio)//"/libraries/ECP/"//tipeECP)
-!open abre el archivo en la unidad 7
-		found=.true.
-		do while(found)
-			read(7,*) simbolo
-!			write(*,*) simbolo,elemento
-			if    (simbolo.eq.elemento) then
-				write (*,*) simbolo
+	   open(unit=7,file=TRIM(lio)//"/dat/ECP/"//tipeECP)
+	   found=.true.
+	   do while(found)
+	      read(7,*) simbolo
+	      if (simbolo.eq.elemento) then
 !lee linea por linea hasta encontrar el atomo que busca 
-				found=.false.       
-				read(7,*) boba, Lmax(Z), Zcore(Z)
-				write(*,*) "carga",z,"lmax",Lmax(Z), "zcore", Zcore(Z)
+	         found=.false.       
+	         read(7,*) boba, Lmax(Z), Zcore(Z)
 ! asigna Lmax y Ncore
 !asigna los valores de nECP, bECP y aECP al leerlos desde el pseudopotencial
+	         read(7,*)
+	         read(7,*) expnumbersECP(Z,Lmax(Z))
 
-!LeeLmax
-				read(7,*)
-				read(7,*) expnumbersECP(Z,Lmax(Z))
-				write(*,*) "terminos lmax",expnumbersECP(Z,Lmax(Z))
-				do u=1, expnumbersECP(Z,Lmax(Z))
-					read(7,*) nECP(Z,Lmax(Z),u), bECP(Z,Lmax(Z),u), aECP(Z,Lmax(Z),u)
-!a					write(*,*) Z, dataECP(Z,dataECP(Z,-1)) , u
-!					write(*,*) nECP(Z,dataECP(Z,dataECP(Z,-1)),u), bECP(Z,dataECP(Z,dataECP(Z,-1)),u), aECP(Z,dataECP(Z,dataECP(Z,-1)),u)
-				end do
+	         do u=1, expnumbersECP(Z,Lmax(Z))
+	            read(7,*) nECP(Z,Lmax(Z),u), bECP(Z,Lmax(Z),u), aECP(Z,Lmax(Z),u)
+	         end do
 !repite para l=0 hasta Lmax-1
-				do l=0, Lmax(Z)-1
-					read(7,*)
-					read(7,*) expnumbersECP(Z,l)
-					do u=1, expnumbersECP(Z,l)
-						read(7,*) nECP(Z,l,u), bECP(Z,l,u), aECP(Z,l,u)
-!						write(*,*) Z, w, u
-!						write(*,*) nECP(Z,w,u), bECP(Z,w,u), aECP(Z,w,u)
-					end do
-				end do
-		        endif
-!si no encuentra el peudopotencial explota, hay q agregar un try-except
-	        enddo
-        close(7)
+	         do l=0, Lmax(Z)-1
+	            read(7,*)
+	            read(7,*) expnumbersECP(Z,l)
+	            do u=1, expnumbersECP(Z,l)
+	               read(7,*) nECP(Z,l,u), bECP(Z,l,u), aECP(Z,l,u)
+	            end do
+	         end do
+	      elseif (simbolo .eq. "END") then
+!corta el calculo si no encuentra el pseudopotencial
+	         write (*,*) "element not found in ECP file"
+	         write(*,*) "check ",TRIM(lio),"/dat/ECP/",tipeECP
+	         stop
+	      endif
+	   enddo
+	   close(7)
 	endif
 	end subroutine dataECPelement
 

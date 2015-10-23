@@ -810,7 +810,6 @@ c      write(*,*) k,RMM(M5+k-1),RMM(M11+k-1)
 c gradient debuggings
 c
          E1=0.D0
-        write(*,*) "aca toyyyy 3"
 
         do 802 k=1,MM
  802     E1=E1+RMM(k)*RMM(M11+k-1)

@@ -1,16 +1,20 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Effective Core potential subroutines
-! 
-! V 0.9 september 2015 first functional version for energy calculations
-!
-! Nicolas Foglia
+! Effective Core Potential Subroutines                               !
+!                                                                    !
+! This routines calculate Fock matrix elements for effective core    !
+! potential                                                          !
+!                                                                    ! 
+! V 0.91 october 2015 optimized version for energy calculations      !
+! V 0.9 september 2015 1st functional version for energy calculations!
+!                                                                    !
+! Nicolas Foglia                                                     !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 
 
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%    Main Routine    %%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%    Main ECP Routine    %%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 	subroutine intECP(tipodecalculo)
@@ -19,86 +23,77 @@
 	implicit none
 
 	integer, intent(in) :: tipodecalculo
-!tipodecalculo=1 alocatea variables y alcula terminos AAA
-!tipodecalculo=2 calcula terminos ABB y ABC
-	integer z,l,t,ji,ii,jk,ik,jii,iii
-	integer m1,lx,ly,lz
-        integer :: ns,np,nd,M,i,j,e,pos,n
-	double precision :: alpha
-        ns=nshell(0)
-        np=nshell(1)
-        nd=nshell(2)
-        M=ns+np+nd
+!tipodecalculo=1 alocatea variables y calcula terminos de un centro
+! (AAA)
+!tipodecalculo=2 calcula terminos de dos centros (ABB)
+!tipodecalculo=3 calcula terminos de tres centros (ABC)
 	if (tipodecalculo .eq. 1) then
-	call defineparams()
-        call allocate_ECP()
-!allocatea la matriz de fock de pseudopotenciales, la matrix cuadrara para pruebas y el verctor con los terminos de 1 electron sin corregir
-!edita normalizacion base d, luego lo cambiare aguadabdo los coeficientes en un array
-!	call correctbasis(1)
-	call norm_C()
-!prepara variables y calcula los terminos AAA	
-        call ReasignZ()
-!reasigna las cargas
-        call obtainls()
-!obtiene una matriz con lx,ly y lz
-	call intECPAAA()
+	   call defineparams()
+           call allocate_ECP()
+!allocatea la matriz de fock de pseudopotenciales, la matrix cuadrada
+!para pruebas y el verctor con los terminos de 1 electron sin corregir
+
+!	   call correctbasis(1)
+!reedita la matriz c para corregir la normalizacion de la base,
+!reemplazada por norm_C()
+	   call norm_C()
+!guarda los coeficientes de la base normalizados correctamente para
+!las funciones d en un nuevo aray
+           call ReasignZ()
+!reasigna las cargas de los nucleos removiendo la carga del core
+           call obtainls()
+!obtiene una matriz con lx,ly y lz para cada base
+	   call intECPAAA()
+!calcula terminos de un centro (AAA)
 !	call correctbasis(-1)
-	write(*,*) "termino ECP tipo 1"
-	go to 325
-!calcula terminos AAA
+!reedita la matriz c para devolverla a su estado original
+	   write(*,*) "Fock Calculations Completed for ECP type 1"
+	   go to 325
 	elseif (tipodecalculo .eq. 2) then
-!        call correctbasis(1)
-	call obtaindistance()
-!ontiene arrays con la diatncia en x, y y z entre cada par de atomos i y j
-	call intECPAAB()
-!	write(90,*) VAAB
-!calculo VAAB
+!           call correctbasis(1)
+	   call obtaindistance()
+!obtiene arrays con la diatncia en x, y y z entre cada par de atomos i,j
+	   call intECPAAB()
+!calcula terminos de dos centros (AAB)
 !        call correctbasis(-1)
-	write(*,*) "termino ECP tipo 2"
-	go to 325
+	   write(*,*) "Fock Calculations Completed for ECP type 2"
+	   go to 325
 	elseif (tipodecalculo .eq. 3) then
-!calculo VABC
 !        call correctbasis(1)
-	call intECPABC()
+	   call intECPABC()
+!calcula terminos de tres centros (ABC)
 !        call correctbasis(-1)
-	write(*,*) "termino ECP tipo 3"
-		go to 324
+	   write(*,*) "termino ECP tipo 3"
+	   go to 324
 	elseif (tipodecalculo .eq. 4) then
-		call deallocateV()
-		go to 325
+	   call deallocateV()
+! desalocatea variables de la rutina
+	   go to 325
         else
-                Write(*,*) "ERROR in tipe of ECP calculation"
+           write(*,*) "ERROR in type of ECP calculation"
 	endif
 
  324    write(*,*) "ahora rutinas de debug y verbose"
 
 	if ( verbose_ECP .gt. 0) then
-		call WRITE_BASIS()
-		call WRITE_ECP_PARAMETERS()
-		call WRITE_FOCK_ECP_TERMS()
-		call WRITE_FOCK_ECP()
-		call WRITE_ANG_EXP()
-		call WRITE_DISTANCE()
+	   call WRITE_BASIS()
+	   call WRITE_ECP_PARAMETERS()
+	   call WRITE_FOCK_ECP_TERMS()
+	   call WRITE_FOCK_ECP()
+	   call WRITE_ANG_EXP()
+	   call WRITE_DISTANCE()
 	end if
 
 	if ( ecp_debug ) then
-		call SEARCH_NAN()
-		call TEST_SYMMETRY()
-		call TEST_COPY_FOCK()
+	   call SEARCH_NAN()
+	   call TEST_SYMMETRY()
+	   call TEST_COPY_FOCK()
 	end if
 
- 325    write(*,*) "terminaron calculos de ECP version betha"
-
-	9012 format(/1x,i2,2x,i2,2x,i2,2x,i2,2x,i2,2x,f18.10)
-	9013 format(/1x,"vector",f18.10,2x,"matriz",f18.10,2x,"diff",f18.10)
-	9014 format(/1x,"i",i3,2x,"lx",i2,2x,"ly",i2,2x,"lz",i2)
-	9015 format(/1x,"i",i3,2x,"j",i3,2x,"Vij",f10.5,2x,"Vji",f10.5,2x,     "diff",f18.15)
-        9018 format(/1x,'Z =',i4,2x, 'L =',i4,2x,'coefnumber =',i3,2x,  'n =',i2,2x, 'b =', f15.5,2x,'c =',f15.5)
-	9019 format(/1x,i3,2x,i3,2x,f18.10)
-	1111 format(/1x,"i",i4,1x,"j",i4,1x,"l",i2,1x,"m",i2,1x,"a2",f18.10,1x,"q",f18.10)
+        write(*,*) "terminaron calculos de ECP version betha"
+ 325    write(*,*)
 
 	contains
-
 
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -108,36 +103,51 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
         Subroutine intECPAAA
-!calcula los terminos de Fock para bases y pseudopotenciales en el mismo atomo
-        use garcha_mod, only : a,ncont, nshell, nuc, ncont
-!a(i,ni) exponente de la funcion de base i, contrccion ni
-!c(i,ni) coeficiente de la funcion de base i, contrccion ni
+!calcula los terminos de Fock para bases y pseudopotenciales en el
+! mismo atomo
+        use garcha_mod, only : a,ncont, nshell, nuc
+!a(i,ni) exponente de la funcion de base i, contraccion ni
+!c(i,ni) coeficiente de la funcion de base i, contraccion ni
 !ncont(i) cantidad de contracciones de la funcion de base i
 !nshell(i) cantidad de funciones i=1 s, i=2, p, i=3, d
+!nuc(i) atomo al que corresponde la base i
         use ECP_mod, only :nECP,bECP, aECP, ecptypes, IzECP, Lmax, Lxyz, VAAAcuadrada,VAAA,local_nonlocal, ecp_debug, Cnorm
 !nECP, bECP, aECP valores del pseudo potencial
-! aECP*r^b * exp(-bECP r^2)
-!estan escritos como: xECP(Z,l,i) Z carga del nucleo, l del ecp, i numero de funcion del ecp con Z,l
-!coeficientes(aECP) y exponentes(bECP) del pseudopotencial
+! V = aECP * r^b * exp(-bECP r^2)
+! estan escritos como: xECP(Z,l,i) Z carga del nucleo, l momento
+! angular del ecp, i numero de funcion del ecp con Z,l
+
 !ecptypes cantidad de atomos con ECP
 !IzECP cargas nucleares sin corregir por el Zcore
 ! Lmax(Z) L maximo del ECP
-! Lxyz(i,j) contiene los exponentes de la parte angular de la funcion de base i
-!|x> = A x^lx y^ly z^lz *e^-ar^2, j=1 lx, j=2, ly, j=3 lz para la funcion i de la base
+! Lxyz(i,j) contiene los exponentes de la parte angular de la funcion
+! de base i
+!|x> = A x^lx y^ly z^lz *e^-ar^2, j=1 lx, j=2, ly, j=3 lz para la
+! funcion i de la base
+
 !VAAA contiene los terminos <A|A|A> del pseudo potencial
 !VAAAcuadrada es solo para testeo de simetria
+
+!ecp_debug activa el modo de debug
+!local_nonlocal 1 solo calcula parte local, 2 solo calcula parte no local
+
+!Cnorm(i,ni) coeficiente de la funcion de base i, contraccion ni
+!coreectamente normalizados
+
         implicit none
-        integer :: i,j,k, ii,ji, lxi, lxj,lyi,lyj,lzi, lzj,pos,M
-!lmaxQ, l   !orrar esta linea
-!M cantidad total de funciones de base
-        double precision :: local, nonlocal, Kbessel, exponente, AAA, acum
-        local=0.d0
-        nonlocal=0.d0
-        Kbessel=0.d0
-        exponente=0.d0
-!antes habia puesto esta variable, la saco pero dejo el comentario por si me olvide q se usaba en algun lado. sacarla al final!!!!!
-!       lmaxQ=0
+        integer :: i,j,k,ii,ji,pos
+!variables auxiliares
+
+        integer :: lxi, lxj,lyi,lyj,lzi, lzj,M
+!l?$  pootencia de la parte angular de la base 
+!M cantidad de funciones de base
+
+        double precision :: AAA, acum
+!variables auxiliares
+
+
         AAA=0.d0
+	acum=0.d0
         M=nshell(0)+nshell(1)+nshell(2)
 
         do i=1, M
@@ -162,13 +172,16 @@
                           lzj=Lxyz(j,3)
 !exponentes de la parte angular
                           AAA=AAA_LOCAL(i,j,k,ii,ji,lxi+lxj,lyi+lyj,lzi+lzj) + AAA_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
+!contribucion local y semilocal al ECP
+
 
                           if (local_nonlocal .eq. 1 .and. ecp_debug) then
-! local_nonlocal 1 y 2 son solo para debugueo, este pedazo hay q sacarlo al final
+! solo para debugueo
                              AAA=AAA_LOCAL(i,j,k,ii,ji,lxi+lxj,lyi+lyj,lzi+lzj)
                           else if (local_nonlocal .eq. 2 .and. ecp_debug) then
                              AAA= AAA_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
                           end if
+
 
 !suma los terminos locales y no locales del pseudopotencial
                           acum=acum+AAA*Cnorm(j,ji)
@@ -184,9 +197,7 @@
                           pos=i+(1-j)*(j-2*M)/2   !chekeada
                           VAAA(pos) = VAAA(pos) + acum*Cnorm(i,ii) !esta linea es lo unico que quedaria!!!!!!!!!!!!!
                              if (abs(VAAA(pos)-VAAAcuadrada(i,j)) .gt. 0.000000000001) then
-                                do e=1,20
-                                write(*,*) i,j,pos,"arma mal el vector!"
-                                end do
+                                stop "arma mal el vector 1"
                              end if
                         end if
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -201,25 +212,36 @@
 
 
 
-
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
         DOUBLE PRECISION function AAA_LOCAL(i,j,k,ii,ji,lx,ly,lz)
-!Calcula el termino local del pseudopotencial
-!   [<xi|V(LM)|xj>] = 
-!=Ni Nj C(LM) int(r^n exp(-alpha *r^2) dr, 0, inf) * int ((x/r)^ni (y/r)^li (z/r)^mi d(angulo solido)
+!Calcula el termino local del pseudopotencial  [<xi|V(LM)|xj>]  
+!=Ni Nj C(LM) int(r^n exp(-alpha *r^2) dr, 0, inf) *
+! int ((x/r)^ni (y/r)^li (z/r)^mi d(angulo solido)
+
 !los coef de la base se multiplican en la rutina que llama a esta
 
         use garcha_mod, only : a,nshell
-        use ECP_mod, only :nECP,bECP, aECP, ZlistECP, Lmax, expnumbersECP, Qnl, angularint
-!expnumbersECP(Z,l) cantidad de terminos del ECP para el atomo con carga nuclear Z y l del ECP
+        use ECP_mod, only :nECP,bECP, aECP, ZlistECP, Lmax, expnumbersECP, angularint
+!ZlistECP(k) carga del atomo k con ECP
+
+!Lmax(Z) maximo momento angular del pseudopotencial para el atomo
+!con carga nuclear Z
+!expnumbersECP(Z,l) cantidad de terminos del ECP para el atomo con
+!carga nuclear Z y momento angular l 
         implicit none
-        integer :: w,n,Z,l
+        integer :: n,Z,l
         integer, intent(in) :: i,j,k,ii,ji,lx,ly,lz
 !i,j funcion de base
 !ii,ji numero de contraccion de la funcion de base
 !k atomo con ECP
 !Z carga del nucleo
+
         double precision :: Ccoef
+!exponente de la gaussiana para la integral angular
+
+	integer :: w
+!variable auxiliares
         Z=ZlistECP(k)
         L=Lmax(Z)
         n=lx+ly+lz
@@ -235,23 +257,26 @@
         DOUBLE PRECISION function AAA_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
 !calcula el termino semilocal del pseudopotencial
 !suma m=-l hasta l  [<xi|lm> V(l-LM) <lm|xj>] = 
-!=Ni Nj C(l-LM) suma m=-l, l int(r^n exp(-alpha *r^2) dr, 0, inf) * int ((x/r)^ni (y/r)^li (z/r)^mi Ylm d(angulo solido) *
+!=Ni Nj C(l-LM) suma m=-l, l int(r^n exp(-alpha *r^2) dr, 0, inf) *
+! int ((x/r)^ni (y/r)^li (z/r)^mi Ylm d(angulo solido) *
 ! * int ((x/r)^nj (y/r)^lj (z/r)^mj Ylm d(angulo solido)
 !los coef de la base se multiplican en la rutina que llama a esta
+
         use garcha_mod, only : a
         use ECP_mod, only :ZlistECP,Lmax,aECP,nECP,bECP, expnumbersECP
+
         implicit none
         integer, intent(in) :: i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj
 !i,j funciones de la base
 !ii,ji numero de contraccion de la funcion
 !k atomo con ecp
 !lx, ly, lz; i,j exponente de la parte angular de la base x^lx y^ly z^lz
-        integer :: l,m,term
-!auxiliades para ciclos
-        integer :: Z,n
+        integer :: Z
 !Z= carga del nucleo
         double precision :: A2, Acoef
         integer :: suma1, suma2
+	integer :: l,m,term,n
+!variables auxiliares
         AAA_SEMILOCAL=0.d0
         A2=0.d0
         Z=ZlistECP(k)
@@ -266,6 +291,7 @@
            end do
 
 	   if ( A2 .ne. 0.d0) then
+!solo calcula cuando la parte angular no es cero
               do term=1, expnumbersECP(z,l)
 !barre contracciones del ECP para el atomo con carga z y l del ecp
                  Acoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
@@ -309,7 +335,7 @@
 !VAAA contiene los terminos <A|A|A> del pseudo potencial
 !VAAAcuadrada es solo para testeo de simetria
         implicit none
-        integer :: i,j,k,M,ii,ji,lxi,lxj,lyi,lyj,lzi,lzj
+        integer :: i,j,k,M,ii,ji,lxi,lxj,lyi,lyj,lzi,lzj,pos
 !M cantidad total de funciones de base
         double precision :: Distcoef, AAB, acum, dx,dy,dz
 	M=nshell(0)+nshell(1)+nshell(2)
@@ -1252,7 +1278,6 @@
 	end if
 
         if (nmin<0) then
-!	   Barray(-1)=2*pi12*DAWERF(Acoef*C0sq)
 	   Barray(-1)=2*pi12*HYB_DAW_ERR(Acoef*C0sq)
 	   Carray(-1)=2*pi12*DAW(Acoef*C0sq)
 	   if (nmin<-1) then
@@ -1449,15 +1474,13 @@
 	end subroutine integrals
 
 
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%    Subr. for Prep.    %%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
 !rutinas de preparacion y calculo de variables previas
 
         subroutine allocate_ECP
@@ -1543,15 +1566,6 @@
                         Cnorm(i+5,j)=c(i+5,j)*factor
                 end do
         end do
-!	write(*,*) "tamaños"
-!	write(*,*) size(c), size(Cnorm)
-
-!	do i=1,ns+np+nd
-!	do j=1,ncont(i)
-!		write(*,*) i,j,c(i,j)/Cnorm(i,j)
-!	end do
-!	end do
-
 	end subroutine norm_C
 
         subroutine correctbasis(r)
@@ -1673,22 +1687,11 @@
 
 
 
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-! rutinas para verbose_ECP
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%    Subr. for Verbose    %%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 	subroutine WRITE_BASIS()
 !luego agregar para q escriba el atomo, y el momento angular, y que use los coeficiente d bien normalizados
@@ -1916,18 +1919,12 @@
 
 	end subroutine WRITE_ECP_PARAMETERS
 
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-! rutinas para debug_ecp 
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%    Subr. for Debug    %%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 	subroutine SEARCH_NAN()
 	use ECP_mod, only : VAAA,VAAB,VBAC

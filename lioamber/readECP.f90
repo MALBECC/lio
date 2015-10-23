@@ -189,7 +189,7 @@
 	         end do
 	      elseif (simbolo .eq. "END") then
 !corta el calculo si no encuentra el pseudopotencial
-	         write (*,*) "element not found in ECP file"
+	         write (*,*) "element ",elemento ," not found in ECP file"
 	         write(*,*) "check ",TRIM(lio),"/dat/ECP/",tipeECP
 	         stop
 	      endif

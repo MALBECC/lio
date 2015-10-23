@@ -10,7 +10,8 @@
       subroutine SCF(E,dipxyz)
       use garcha_mod
       use mathsubs
-      use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC
+      use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, 
+     & FOCK_ECP_read,FOCK_ECP_write
 #ifdef CUBLAS
       use cublasmath
 #endif
@@ -68,6 +69,11 @@
 !%%%%%%%%%%%%%%%    Effective Core Potential Fock    %%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
         if (ecpmode) then 
+	if (FOCK_ECP_read) then
+	   call intECP(0)
+!alocatea variables comunes y las lee del archivo ECP_restart
+	   go to 321
+	end if
         call g2g_timer_start('ECP Routines')
         call intECP(1)
 !alocatea variables, calcula variables comunes, y calcula terminos de 1 centro
@@ -75,9 +81,11 @@
 !calcula terminos de 2 centros
 	call intECP(3)
 !calcula terminos de 3 centros
-        write(*,*) "finalizo el calculo de ECP"
         call g2g_timer_stop('ECP Routines')
-	end if
+	if (FOCK_ECP_write) call WRITE_ECP()
+
+321     write(*,*) "Effective Core Potential Routines END"
+ 	end if
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 

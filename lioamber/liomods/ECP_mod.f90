@@ -28,6 +28,9 @@
 !activa cuts en las integrales de ECP
       double precision :: cutecp2, cutecp3
 !valores de corte para las integrales de 2 y 3 centros (AAB y BAC)
+      logical :: FOCK_ECP_read, FOCK_ECP_write
+!activan lectura y grabado de Fock para evitar recalcularlo en
+!dinamicas a nucleo fijo
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -5,7 +5,7 @@ c---------------------------------------------------------------------
       use garcha_mod
       use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP, cutecp2
      & , cutecp3,cutECP,local_nonlocal, ecp_debug,ecp_full_range_int
-     & ,verbose_ECP,Cnorm
+     & ,verbose_ECP,Cnorm,FOCK_ECP_read, FOCK_ECP_write
 #ifdef CUBLAS
       use cublasmath
 #endif
@@ -22,10 +22,11 @@ c---------------------------------------------------------------------
      > propagator,NBCH,
      > field,a0,epsilon,exter,Fx,Fy,Fz, tdrestart, writedens,
      > writeforces,basis_set,fitting_set,int_basis,
+!todo esto es de pseudopotenciales %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
      > ecpmode,ecptypes,tipeECP,ZlistECP,cutecp2, cutecp3,
      > cutECP,local_nonlocal, ecp_debug,ecp_full_range_int,verbose_ECP,
-     > hybrid_converg, good_cut,verbose,
-!ultima linea agregada para ECP, Nick
+     > hybrid_converg, good_cut,verbose,FOCK_ECP_read, FOCK_ECP_write,
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
      > cubegen_only,cube_res,
      > cube_dens,cube_dens_file,
      > cube_orb,cube_sel,cube_orb_file,cube_elec,cube_elec_file
@@ -109,6 +110,8 @@ c---------------------------------------------------------------------
       ecp_debug=.false.
       ecp_full_range_int=.false.
       verbose_ECP=0
+      FOCK_ECP_read=.false.
+      FOCK_ECP_write=.false.
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

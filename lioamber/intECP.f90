@@ -23,11 +23,16 @@
 	implicit none
 
 	integer, intent(in) :: tipodecalculo
+!tipodecalculo=0 allocatea variables comunes y las lee de un restar
 !tipodecalculo=1 alocatea variables y calcula terminos de un centro
 ! (AAA)
 !tipodecalculo=2 calcula terminos de dos centros (ABB)
 !tipodecalculo=3 calcula terminos de tres centros (ABC)
-	if (tipodecalculo .eq. 1) then
+	if (tipodecalculo .eq. 0) then
+	   call allocate_ECP()
+	   call ReasignZ()
+	   call READ_ECP()
+	else if (tipodecalculo .eq. 1) then
 	   call defineparams()
            call allocate_ECP()
 !allocatea la matriz de fock de pseudopotenciales, la matrix cuadrada
@@ -1511,7 +1516,6 @@
         distz=0.d0
 	allocate (IzECP(natom))
 	allocate (Lxyz(M, 3))
-!	allocate (Cnorm(ngnu,nl))
         end subroutine allocate_ECP
 
         subroutine deallocateV
@@ -1685,6 +1689,46 @@
         end subroutine obtaindistance
 
 
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%    Subr. for Write/Read Fock ECP    %%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+	subroutine READ_ECP()
+	use garcha_mod, only :nshell
+	use ECP_mod, only : VAAA, VAAB, VBAC
+	implicit none
+	integer :: ns,np,nd,k,M,MM
+	ns=nshell(0)
+	np=nshell(1)
+	nd=nshell(2)
+	M=ns+np+nd
+	MM=M*(M+1)/2
+	open(unit=69,file="ECP_restart")
+	do k=1,MM
+	   read(69,*) VAAA(k),VAAB(k),VBAC(K)
+	end do
+	close(69)
+	end subroutine READ_ECP
+
+	subroutine WRITE_ECP()
+	use garcha_mod, only :nshell
+	use ECP_mod, only : VAAA, VAAB, VBAC
+	implicit none
+	integer :: ns,np,nd,k,M,MM
+	ns=nshell(0)
+	np=nshell(1)
+	nd=nshell(2)
+	M=ns+np+nd
+	MM=M*(M+1)/2
+	open(unit=69,file="ECP_restart")
+	do k=1,MM
+	   write(69,*) VAAA(k),VAAB(k),VBAC(K)
+	end do
+	close(69)
+	end subroutine WRITE_ECP
 
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

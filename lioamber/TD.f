@@ -26,7 +26,7 @@ c  are stored in files x.dip, y.dip, z.dip.
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 c       USE latom
        USE garcha_mod
-       use ECP_mod, only : ecpmode, term1e, VAAA, VAAB
+       use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC
        use mathsubs
 #ifdef CUBLAS
         use cublasmath
@@ -320,7 +320,7 @@ c         endif
                term1e(k)=RMM(M11+k-1)
 !copia los terminos de 1e
 !               write(89,*) RMM(M11+k-1),VAAA(k),VAAB(k)
-               RMM(M11+k-1)=RMM(M11+k-1)+VAAA(k)+VAAB(k)
+               RMM(M11+k-1)=RMM(M11+k-1)+VAAA(k)+VAAB(k)+VBAC(k)
 !               write(89,*) RMM(M11+k-1)
 !agrega el ECP AAA a los terminos de 1 e
           enddo

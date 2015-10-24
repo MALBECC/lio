@@ -55,6 +55,7 @@ c
 c NORM true , expansion in normalized gaussians, so normalization factor
 c included in coefficients
 c default most stable isotopes, for mass asignation
+
       do i = 1,54
         isotop(i) = 1
       enddo

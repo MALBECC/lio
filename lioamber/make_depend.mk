@@ -47,6 +47,7 @@ objects += readECP.o
 objects += intECP.o
 objects += drive.o
 objects += density.o
+objects += extras.o
 ifeq ($(cublas),1)
 objects += cublasmath.o 
 endif

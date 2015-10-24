@@ -72,6 +72,9 @@
 	if (FOCK_ECP_read) then
 	   call intECP(0)
 !alocatea variables comunes y las lee del archivo ECP_restart
+! se observan discreparcias en la Energia en el orden de 1E-1 al
+! utilizar el restart,habria que ver si no se esta perdiendo
+! precision en los valores de fock al guardar/escribir
 	   go to 321
 	end if
         call g2g_timer_start('ECP Routines')
@@ -84,7 +87,7 @@
         call g2g_timer_stop('ECP Routines')
 	if (FOCK_ECP_write) call WRITE_ECP()
 
-321     write(*,*) "Effective Core Potential Routines END"
+321     call WRITE_POST(1)
  	end if
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -1611,6 +1614,13 @@ c       E=E*627.509391D0
   91  format(F14.7,4x,F14.7)
 c
       !call g2g_timer_sum_stop('SCF');
+
+c Nick, Formats cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c 3911 format(4x,"╔══════════════════════════════════════╗")
+c 3912 format(4x,"║    End of Effective Core Potential   ║")
+c 3913 format(4x,"╚══════════════════════════════════════╝")
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       return
       end
 C  -------------------------

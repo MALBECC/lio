@@ -78,7 +78,7 @@
            write(*,*) "ERROR in type of ECP calculation"
 	endif
 
- 324    write(*,*) "ahora rutinas de debug y verbose"
+ 324    write(*,*)
 
 	if ( verbose_ECP .gt. 0) then
 	   call WRITE_BASIS()
@@ -90,14 +90,12 @@
 	end if
 
 	if ( ecp_debug ) then
+	   call WRITE_POST(2)
 	   call SEARCH_NAN()
 	   call TEST_SYMMETRY()
 	   call TEST_COPY_FOCK()
 	end if
-
-        write(*,*) "terminaron calculos de ECP version betha"
  325    write(*,*)
-
 	contains
 
 
@@ -1610,25 +1608,56 @@
 !cambia la carga de los nucleos con pseudopotenciales  sacandole la carga del core y guarda las cargas originales en IzECP
 !tambien corrige la cantidad de electrones sacando los que van al core
         use garcha_mod, only :Iz,nuc,nshell, natom, NCO
-        use ECP_mod, only : ZlistECP,IzECP,Zcore,ecptypes
+        use ECP_mod, only : ZlistECP,IzECP,Zcore,ecptypes,asignacion
         implicit none
-        integer :: i,j
+	character  :: simb*3
+        integer :: i,j,elec_remov
+	elec_remov=0
+	
+	write(*,3900)
+	write(*,3901)
+	write(*,3902)
+	write(*,3903)
+	write(*,3904)
+	write(*,3905)
         do i=1, natom
 !barre atomos
 	 IzECP(i)=Iz(i)
          do j=1, ecptypes
 !barre atomos con ecp
           if (IzECP(i) .eq. ZlistECP(j)) then
-           write(*,*) "editando atomo", i
+!           write(*,*) "editando atomo", i
            Iz(i)=Iz(i)-Zcore(ZlistECP(j))
-           write(*,*) "carga nuclear efectiva = ", Iz(i)
+!           write(*,*) "carga nuclear efectiva = ", Iz(i)
 !cambia la carga del nucleo
            NCO=NCO-Zcore(ZlistECP(j))/2
 !saca e-
-           write(*,*) "electrones del sistema removidos ", Zcore(ZlistECP(j))
+!           write(*,*) "electrones del sistema removidos ", Zcore(ZlistECP(j))
+	   call asignacion(IzECP(i),simb)
+	   write(*,3906) i,simb,Iz(i),Zcore(ZlistECP(j)) 
+	   elec_remov=elec_remov+Zcore(ZlistECP(j))
           end if
          end do
         end do
+
+	write(*,3907)
+	write(*,*)
+	write(*,3908)
+	write(*,3909) elec_remov
+	write(*,3910)
+
+	3900 format(4x,"╔══════════════════════════════════════╗")
+	3901 format(4x,"║          ATOM MODIFICATIONS          ║")
+	3902 format(4x,"╠═══════╦══════╦═══════════╦═══════════╣")
+	3903 format(4x,"║ Atom  ║ Atom ║ Eff. Nuc. ║ Electrons ║")
+	3904 format(4x,"║ Numb. ║ Type ║   Charge  ║  Removed  ║")
+	3905 format(4x,"╠═══════╬══════╬═══════════╬═══════════╣")
+	3906 format(4x,"║",1x,i3,3x,"║",2x,a3,1x,"║",3x,i3,5x,"║",1x,i5,5x,"║")
+	3907 format(4x,"╚═══════╩══════╩═══════════╩═══════════╝")
+	3908 format(4x,"╔═══════════════════════════╦══════════╗")
+	3909 format(4x,"║  TOTAL ELECTRONS REMOVED  ║",1x,i5,4x,"║")
+	3910 format(4x,"╚═══════════════════════════╩══════════╝")
+
         end subroutine ReasignZ
 
 
@@ -1730,6 +1759,18 @@
 	close(69)
 	end subroutine WRITE_ECP
 
+	subroutine WRITE_POST(i)
+	implicit none
+	integer, intent(in) :: i
+	write(*,3911)
+	if (i.eq.1) write(*,3913)
+	if (i.eq.2) write(*,3914)
+	write(*,3912) 
+ 3911   format(4x,"╔══════════════════════════════════════╗")
+ 3912   format(4x,"╚══════════════════════════════════════╝")
+ 3913   format(4x,"║    End of Effective Core Potential   ║")
+ 3914   format(4x,"║        Staring Debug Routines        ║")
+	end subroutine WRITE_POST
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

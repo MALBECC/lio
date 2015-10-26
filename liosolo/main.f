@@ -140,13 +140,17 @@ c---------------------------------------------------------------------
         end select
       enddo
 
+
       call g2g_timer_sum_start("Total")
+
+
 
       inquire(file=inpfile,exist=filexist)
 
       if(filexist) then
         open(unit=100,file=inpfile,iostat=ios)
       else
+
         write(*,*) 'input file ',adjustl(inpfile),' not found'
         stop
       endif
@@ -154,15 +158,18 @@ c---------------------------------------------------------------------
 
       if(ierr.gt.0) stop 'input error in lio namelist'
 
+
       inquire(file=inpcoords,exist=filexist)
       if(filexist) then
         open(unit=101,file=inpcoords,iostat=ios)
       else
+
         write(*,*) 'input file ',adjustl(inpcoords),' not found'
         stop
       endif
 c        write(*,*) natom,nsol
       write(*,nml=lio)
+c aca escribe el namelist
 
       ntatom=natom+nsol
       ngnu=natom*ng0
@@ -207,6 +214,7 @@ c       write(*,*) pc(i),r(i,1:3)
        rqm=rqm/0.529177D0
 
        call g2g_init()   !initialize g2g
+
 
         nqnuc=0
        do i=1,natom

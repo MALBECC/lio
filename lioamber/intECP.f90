@@ -33,6 +33,7 @@
 	   call ReasignZ()
 	   call READ_ECP()
 	else if (tipodecalculo .eq. 1) then
+	   call WRITE_POST(3)
 	   call defineparams()
            call allocate_ECP()
 !allocatea la matriz de fock de pseudopotenciales, la matrix cuadrada
@@ -1735,9 +1736,9 @@
 	nd=nshell(2)
 	M=ns+np+nd
 	MM=M*(M+1)/2
-	open(unit=69,file="ECP_restart")
+	open(unit=69,file="ECP_restart", STATUS='UNKNOWN', ACCESS='STREAM')
 	do k=1,MM
-	   read(69,*) VAAA(k),VAAB(k),VBAC(K)
+	   read(69) VAAA(k),VAAB(k),VBAC(K)
 	end do
 	close(69)
 	end subroutine READ_ECP
@@ -1752,9 +1753,9 @@
 	nd=nshell(2)
 	M=ns+np+nd
 	MM=M*(M+1)/2
-	open(unit=69,file="ECP_restart")
+	open(unit=69,file="ECP_restart", STATUS='UNKNOWN', ACCESS='STREAM')
 	do k=1,MM
-	   write(69,*) VAAA(k),VAAB(k),VBAC(K)
+	   write(69) VAAA(k),VAAB(k),VBAC(K)
 	end do
 	close(69)
 	end subroutine WRITE_ECP
@@ -1765,11 +1766,13 @@
 	write(*,3911)
 	if (i.eq.1) write(*,3913)
 	if (i.eq.2) write(*,3914)
+	if (i.eq.3) write(*,3915)
 	write(*,3912) 
  3911   format(4x,"╔══════════════════════════════════════╗")
  3912   format(4x,"╚══════════════════════════════════════╝")
  3913   format(4x,"║    End of Effective Core Potential   ║")
  3914   format(4x,"║        Staring Debug Routines        ║")
+ 3915   format(4x,"║    Doing Eff. Core Pot. Integrals    ║")
 	end subroutine WRITE_POST
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

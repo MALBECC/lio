@@ -29,11 +29,12 @@
 !tipodecalculo=2 calcula terminos de dos centros (ABB)
 !tipodecalculo=3 calcula terminos de tres centros (ABC)
 	if (tipodecalculo .eq. 0) then
+	   call check_params()
 	   call allocate_ECP()
 	   call ReasignZ()
 	   call READ_ECP()
 	else if (tipodecalculo .eq. 1) then
-	   call WRITE_POST(3)
+	   call check_params()
 	   call defineparams()
            call allocate_ECP()
 !allocatea la matriz de fock de pseudopotenciales, la matrix cuadrada
@@ -48,35 +49,44 @@
            call ReasignZ()
 !reasigna las cargas de los nucleos removiendo la carga del core
            call obtainls()
+
+	   call WRITE_POST(3)
 !obtiene una matriz con lx,ly y lz para cada base
+	   call g2g_timer_start('ECPAAA')
 	   call intECPAAA()
+	   call g2g_timer_stop('ECPAAA')
+	   call WRITE_POST(5)
 !calcula terminos de un centro (AAA)
 !	call correctbasis(-1)
 !reedita la matriz c para devolverla a su estado original
-	   write(*,*) "Fock Calculations Completed for ECP type 1"
 	   go to 325
 	elseif (tipodecalculo .eq. 2) then
 !           call correctbasis(1)
 	   call obtaindistance()
 !obtiene arrays con la diatncia en x, y y z entre cada par de atomos i,j
+	   call g2g_timer_start('ECPAAB')
 	   call intECPAAB()
+	   call g2g_timer_stop('ECPAAB')
+	   call WRITE_POST(6)
 !calcula terminos de dos centros (AAB)
 !        call correctbasis(-1)
-	   write(*,*) "Fock Calculations Completed for ECP type 2"
 	   go to 325
 	elseif (tipodecalculo .eq. 3) then
 !        call correctbasis(1)
+	   call g2g_timer_start('ECPABC')
 	   call intECPABC()
+	   call g2g_timer_stop('ECPABC')
+	   call WRITE_POST(7)
 !calcula terminos de tres centros (ABC)
 !        call correctbasis(-1)
-	   write(*,*) "termino ECP tipo 3"
 	   go to 324
 	elseif (tipodecalculo .eq. 4) then
 	   call deallocateV()
 ! desalocatea variables de la rutina
 	   go to 325
         else
-           write(*,*) "ERROR in type of ECP calculation"
+	   call WRITE_POST(4)   
+!           write(*,*) "ERROR in type of ECP calculation"
 	endif
 
  324    write(*,*)
@@ -624,6 +634,10 @@
 	M=nshell(0)+nshell(1)+nshell(2)
 	acum=0.d0
 	ABC=0.d0
+!	call g2g_timer_sum_start('ABC_semi-local')
+!	call g2g_timer_sum_pause('ABC_semi-local')
+!	call g2g_timer_sum_start('ABC_local')
+!	call g2g_timer_sum_pause('ABC_local')
 	do i=1,M
 	do j=1,M
 !barre la base
@@ -692,8 +706,9 @@
 	      end if
 	   end do
 	end do
-	write(*,*) "termine i",i
 	end do
+!        call g2g_timer_sum_stop('ABC_semi-local')
+!        call g2g_timer_sum_stop('ABC_local')
 	end subroutine intECPABC
 
 
@@ -718,6 +733,7 @@
 	integer :: ac,bc,cc,dc,ec,fc,w,lambda
 !variables auxiliares
 
+!	call g2g_timer_start('ABC_local')
 	ABC_LOCAL=0.d0
 	z=IzECP(k)
 	L=Lmax(Z)
@@ -766,7 +782,7 @@
 	         if ( Kmod .gt. 0.d0 ) then
                     integral=integral + OMEGA1(Kvector,lambda,ac+dc,bc+ec,cc+fc) * Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)
 		    if (Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda) .ne. Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)) stop " qnl1l2 = 0 in ABC_SEMILOCAL"
-	            if (Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda) .eq. 0.d0)  stop " q = 0 in abc loc"
+!	            if (Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda) .eq. 0.d0)  stop " q = 0 in abc loc"
 !corta de no calculo la integral radial
 		 else
                     integral=integral + angularint(ac+dc,bc+ec,cc+fc) * Q0(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),Ccoef) *0.25d0/pi
@@ -796,6 +812,7 @@
            ABC_LOCAL=ABC_LOCAL+aECP(z,L,w)*acum
            acum=0.d0
 	end do
+!	call g2g_timer_pause('ABC_local')
 	return
 	end function ABC_LOCAL
 
@@ -819,6 +836,7 @@
 !auxiliares ciclos
 	double precision :: acumang,acumang1,acumang2,integral,auxcomb,auxdist,acum,auxdista,auxdistb,auxdistc,auxdistd,auxdiste,auxdistf
 !auxiliaresa
+!	call g2g_timer_start('ABC_semi-local')
 	ABC_SEMILOCAL=0.d0
 	integral=0.d0
 	acum=0.d0
@@ -911,6 +929,7 @@
               acum=0.d0
 	   end do
 	end do
+!	call g2g_timer_pause('ABC_semi-local')
 	return
 	4315 format(1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x,f10.7,1x)
 	end function ABC_SEMILOCAL
@@ -1158,10 +1177,9 @@
         integer :: n,l,i
         double precision :: acoef, gam, acum
         if (ecp_full_range_int) then
-!solucion temporal hasta ver el rango correcto de calculo
-!           nmin=0
-!           nmax=10
-!           lmax=4
+           nmin=0
+           nmax=10
+           lmax=4
         end if
 
         acoef=K/(2.d0*Ccoef)
@@ -1181,8 +1199,10 @@
            acum=acum+betha(l+1,i)*Cn(n-i)/k**i
         end do
         if (acum .eq. 0.d0) then
-           write(*,*) "error en Qtype 1, integral radial 0. n,l",n,l
-           stop
+           write(*,*) "error en Qtype 1N, integral radial 0. n,l",n,l
+	   write(*,*) "k",K
+	   write(*,*) "ccoef",Ccoef
+!           stop
         end if
                 Qnl(n,l)=Qnl(n,l)+acum*gam
                 acum=0.d0
@@ -1217,9 +1237,9 @@
 	
 	if (ecp_full_range_int) then
 !solucion temporal hasta ver el rango correcto de calculo
-	   nmin=0
-	   nmax=10
-	   lmax=4
+!	   nmin=0
+!	   nmax=10
+!	   lmax=4
 	end if
 
 	acoef=K/(2.d0*Ccoef)
@@ -1486,6 +1506,21 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !rutinas de preparacion y calculo de variables previas
+	subroutine check_params
+!verifica que los valores de algunas variables sean acceptables
+	use ECP_mod, only : cutECP,cutecp2,cutecp3
+	if (cutECP) then
+	   if (cutecp2.gt.700) then
+	      write(*,*) "WARNING cutecp2 > 700, using cutecp2=700"
+	      cutecp2=700
+	   end if
+	   if (cutecp3.gt.700) then
+	      write(*,*) "WARNING cutecp3 > 700, using cutecp3=700"
+	      cutecp3=700
+	   end if
+	end if
+	end subroutine
+
 
         subroutine allocate_ECP
 !alocatea todas las variables que van a necesitar los pseudopotenciales
@@ -1539,7 +1574,6 @@
         np=nshell(1)
         nd=nshell(2)
 	factor=sqrt(1.d0/3.d0)
-	write(*,*) " OBTENIENDO BASE CORREGIDA "
 	do i=1,ns+np
 	   do j=1,ncont(i)
 	      Cnorm(i,j)=c(i,j)
@@ -1549,7 +1583,6 @@
 
 !dx2,dxy,dyy,dzx,dzy,dzz
 	do i=ns+np+1,ns+np+nd,6
-        write(*,*) "edita i=",i
                 do j=1,ncont(i)
                         Cnorm(i,j)=c(i,j)*factor
                 end do
@@ -1731,16 +1764,26 @@
 	use ECP_mod, only : VAAA, VAAB, VBAC
 	implicit none
 	integer :: ns,np,nd,k,M,MM
+	logical :: hay_restart
 	ns=nshell(0)
 	np=nshell(1)
 	nd=nshell(2)
 	M=ns+np+nd
 	MM=M*(M+1)/2
+
+        inquire(file="ECP_restart", exist=hay_restart)
+
+        if ( .not. hay_restart) then
+!cheque que el archivo ECP este
+         write(*,*) "ECP_restart not Found"
+	 stop
+        else
 	open(unit=69,file="ECP_restart", STATUS='UNKNOWN', ACCESS='STREAM')
 	do k=1,MM
 	   read(69) VAAA(k),VAAB(k),VBAC(K)
 	end do
 	close(69)
+	endif
 	end subroutine READ_ECP
 
 	subroutine WRITE_ECP()
@@ -1767,12 +1810,20 @@
 	if (i.eq.1) write(*,3913)
 	if (i.eq.2) write(*,3914)
 	if (i.eq.3) write(*,3915)
+	if (i.eq.4) write(*,3916)
+	if (i.eq.5) write(*,3917)
+	if (i.eq.6) write(*,3918)
+	if (i.eq.7) write(*,3919)
 	write(*,3912) 
  3911   format(4x,"╔══════════════════════════════════════╗")
  3912   format(4x,"╚══════════════════════════════════════╝")
  3913   format(4x,"║    End of Effective Core Potential   ║")
  3914   format(4x,"║        Staring Debug Routines        ║")
  3915   format(4x,"║    Doing Eff. Core Pot. Integrals    ║")
+ 3916   format(4x,"║   ERROR in type of ECP calculation   ║")
+ 3917   format(4x,"║        1 Center Int. Finished        ║")
+ 3918   format(4x,"║       2 Centers Int. Finished        ║")
+ 3919   format(4x,"║       3 Centers Int. Finished        ║")
 	end subroutine WRITE_POST
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

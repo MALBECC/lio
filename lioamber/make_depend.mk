@@ -30,7 +30,7 @@ objects += dip.o dipmem.o jarz.o magnus.o predictor.o mulliken.o
 objects += dft_get_mm_forces.o dft_get_qm_forces.o
 objects += matmuldiag.o fock_commuts.o
 objects += init.o init_amber.o lio_init.o lio_finalize.o
-objects += alg.o drive.o func.o grid.o
+objects += drive.o func.o grid.o
 objects += int1.o int1G.o int2.o int2G.o
 objects += int3lu.o int3mem.o  int3G.o
 objects += intsol.o intsolG.o intsolGs.o
@@ -91,6 +91,12 @@ $(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/intECP.o
 
 objlist := drive.o
 $(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/readECP.o
+
+#esp_funct
+objlist := intECP.o
+objlist += ECP_mod.mod
+$(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/esp_funct.mod
+
 ifeq ($(cublas),1)
 #cublasmath
 objlist := cublasmath.o

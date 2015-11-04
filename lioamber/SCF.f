@@ -11,7 +11,7 @@
       use garcha_mod
       use mathsubs
       use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, 
-     & FOCK_ECP_read,FOCK_ECP_write
+     & FOCK_ECP_read,FOCK_ECP_write,IzECP
 #ifdef CUBLAS
       use cublasmath
 #endif
@@ -62,7 +62,7 @@
 	omit=10.d0
 !------------------------------------------------------
 
-
+	call g2g_timer_start('SCF_full')
 !--------------------------------------------------------------------!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -71,13 +71,12 @@
         if (ecpmode) then 
 	if (FOCK_ECP_read) then
 	   call intECP(0)
-!alocatea variables comunes y las lee del archivo ECP_restart
+! alocatea variables comunes y las lee del archivo ECP_restart
 ! se observan discreparcias en la Energia en el orden de 1E-1 al
 ! utilizar el restart,habria que ver si no se esta perdiendo
 ! precision en los valores de fock al guardar/escribir
-	   go to 321
 	end if
-        call g2g_timer_start('ECP Routines')
+320     call g2g_timer_start('ECP Routines')
         call intECP(1)
 !alocatea variables, calcula variables comunes, y calcula terminos de 1 centro
 	call intECP(2)
@@ -1478,7 +1477,13 @@ c
        call spunpack('L',M,RMM(M1),RealRho)
        call fixrho(M,RealRho)
        call mulliken_calc(natom,M,RealRho,Smat,Nuc,Iz,q)
-       call mulliken_write(85,natom,Iz,q)
+
+       if (ecpmode) then
+!Modification for Effective Core Potential, Nick
+          call mulliken_write(85,natom,IzECP,q)
+       else
+          call mulliken_write(85,natom,Iz,q)
+       end if
 
 ! NOTE: If 'mulliken_calc' is renamed as 'mulliken', the code will
 ! malfunction. I DON'T KNOW WHY.
@@ -1615,11 +1620,8 @@ c       E=E*627.509391D0
 c
       !call g2g_timer_sum_stop('SCF');
 
-c Nick, Formats cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-c 3911 format(4x,"╔══════════════════════════════════════╗")
-c 3912 format(4x,"║    End of Effective Core Potential   ║")
-c 3913 format(4x,"╚══════════════════════════════════════╝")
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+	call g2g_timer_stop('SCF_full')
 
       return
       end

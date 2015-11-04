@@ -34,6 +34,7 @@ c---------------------------------------------------------------------
 
       integer :: ifind, ierr
 
+
      !defaults
       basis='input'  ! name of the base file
       basis_set='DZVP'

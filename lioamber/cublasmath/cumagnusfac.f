@@ -21,12 +21,12 @@
        INTEGER*8 devPScratch
        INTEGER i,j
        REAL*8 Fact
-       REAL*8, INTENT(IN)                   :: factorial(N)
+       REAL*8, INTENT(IN)     :: factorial(N)
        COMPLEX*16 alpha,beta
        COMPLEX*16,ALLOCATABLE,DIMENSION(:,:) :: Omega1
        COMPLEX*16,INTENT(IN)              :: RhoOld(M,M)
        COMPLEX*16,INTENT(OUT)                :: RhoNew(M,M)
-       COMPLEX*16,PARAMETER :: icmplx=CMPLX(0.0D0,1.0D0)
+       COMPLEX*16,PARAMETER :: icmplx=DCMPLX(0.0D0,1.0D0)
        INTEGER, PARAMETER :: sizeof_complex=16
        INTEGER CUBLAS_ZGEMM,CUBLAS_ZAXPY,CUBLAS_INIT,CUBLAS_ZCOPY
 !------------------------------------------------------------------------------!
@@ -34,7 +34,7 @@
 ! Omega1 (=W) instantiation
        do i=1,M
        do j=1,M
-       Omega1(i,j)=(icmplx)*(Fock(i,j))*(dt)
+       Omega1(i,j)=(-1)*(icmplx)*(Fock(i,j))*(dt)
        enddo
        enddo
 !------------------------------------------------------------------------------!
@@ -59,10 +59,10 @@
       stop
       endif
 !=======================================!
-      stat = CUBLAS_ZCOPY(M*M, devPPrev, 1,devPRho , 1)
+       stat= CUBLAS_SET_MATRIX(M,M,sizeof_complex,RhoOld,M,devPRho,M)
 !=======================================!
       if (stat.NE.0) then
-      write(*,*) "data allocation failed -cumagnusfac ZCOPY"
+      write(*,*) "data allocation failed -cumagnusfac/3"
       call CUBLAS_SHUTDOWN()
       stop
       endif
@@ -72,14 +72,14 @@
        alpha=(1.0D0,0.0D0)
        DO ii=1,N
          Fact=factorial(ii)
-         alpha=CMPLX(Fact,0.0D0)
+         alpha=DCMPLX(Fact,0.0D0)
          beta=(0.0D0,0.0D0)
          stat=CUBLAS_ZGEMM('N','N',M,M,M,
      >        alpha,devPOmega,M,devPPrev,M,
      >        beta,devPNext,M)
 !=======================================!
       if (stat.NE.0) then
-      write(*,*) "ZGEM failed -cumagnusfac/1"
+      write(*,*) "CGEM failed -cumagnusfac/1"
       call CUBLAS_FREE ( devPOmega )
       call CUBLAS_FREE ( devPRho )
       call CUBLAS_FREE ( devPNext )
@@ -88,26 +88,24 @@
       stop
       endif
 !======================================!
-         beta=(-1.0D0,0.0D0)
+         beta=(-1.0E0,0.0E0)
          stat=CUBLAS_ZGEMM('N','N',M,M,M,
      >        alpha,devPPrev,M,devPOmega,M,
      >        beta,devPNext,M)
 !=======================================!
       if (stat.NE.0) then
-      write(*,*) "ZGEM failed -cumagnusfac/2"
+      write(*,*) "CGEM failed -cumagnusfac/2"
       call CUBLAS_FREE ( devPOmega )
       call CUBLAS_FREE ( devPRho )
       call CUBLAS_FREE ( devPNext )
       call CUBLAS_FREE ( devPPrev )
-      call CUBLAS_SHUTDOWN()
-      stop
       endif
 !=======================================!
          stat=CUBLAS_ZAXPY(M*M,1.0D0,devPNext,1,
      >   devPRho,1)
 !=======================================!
       if (stat.NE.0) then
-      write(*,*) "ZAXPY failed -cumagnusfac"
+      write(*,*) "CAXPY failed -cumagnusfac"
       call CUBLAS_FREE ( devPOmega )
       call CUBLAS_FREE ( devPRho )
       call CUBLAS_FREE ( devPNext )
@@ -118,7 +116,7 @@
 !=======================================!
       devPScratch=devPPrev
       devPPrev=devPNext
-      devPNext=devPScratch         
+      devPNext=devPScratch
       ENDDO
       stat = CUBLAS_GET_MATRIX(M,M,sizeof_complex,devPRho,M,Rhonew,M)
 !=======================================!

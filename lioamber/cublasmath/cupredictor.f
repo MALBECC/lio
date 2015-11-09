@@ -4,8 +4,10 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !Predictor-Corrector Cheng, V.Vooris.PhysRevB.2006.74.155112
 ! Esta rutina recibe: F1a,F1b,rho2
-! Tira: F5 = F(t+(deltat/2))      
-       use garcha_mod
+! Tira: F5 = F(t+(deltat/2))  
+      use garcha_mod
+      use mathsubs
+      use general_module    
        implicit real*8 (a-h,o-z)
 !       IMPLICIT REAL*8 (a-h,o-z)
        REAL*8,intent(inout) :: F1a(M,M),F1b(M,M),FON(M,M)
@@ -19,7 +21,7 @@
       integer CUBLAS_INIT
       REAL*8,intent(in) :: factorial(NBCH)
       REAL*8,intent(in) :: g,Fxx,Fyy,Fzz
-       COMPLEX*16, intent(in) :: rho2(:,:)
+       COMPLEX*16, intent(in) :: rho2(M,M)
        COMPLEX*16,allocatable :: rho4(:,:),rho2t(:,:)
 !-----------------------------------------------------------------------------n
       ALLOCATE(rho4(M,M),rho2t(M,M),F3(M,M),FBA(M,M))
@@ -58,6 +60,7 @@ c xmm es la primer matriz de (M,M) en el
 !------------------------------------------------------------------------------!
 ! tdstep predictor es 0.5 tdstep magnum
        tdstep1=tdstep*0.5
+       write(*,*) 'TDSTEP =', tdstep1
 ! Paso1: Con las matrices pasadas F1a y F1b extrapolamos a F3----> Extrapolacion
        F3=(7.D0/4.D0)*F1b-(3.D0/4.D0)*F1a
 !       F3=1.750D0*F1b-0.750D0*F1a
@@ -91,10 +94,12 @@ c xmm es la primer matriz de (M,M) en el
           ENDDO
        ENDDO
 ! Paso4: La matriz densidad 4 es usada para calcular F5------> Corrector
+      write(*,*) 'ANTES'
       call g2g_timer_start('int3lu + g2g_solve')
       call int3lu(E2)
       call g2g_solve_groups(0,Ex,0)
       call g2g_timer_stop('int3lu + g2g_solve')
+      write(*,*) 'DESPUES'
       if (field) then
          write(*,*) 'FIELD PREDICTOR'
          call intfld(g,Fxx,Fyy,Fzz)
@@ -112,6 +117,7 @@ c xmm es la primer matriz de (M,M) en el
 !           FBA(j,k)=RMM(M5+k+(M2-j)*(j-1)/2-1)
 !         enddo
 !       enddo
+       write(*,*) 'FBA escrita'
        call spunpack('L',M,RMM(M5),FBA)
        DO i=1,M
           DO j=1,M

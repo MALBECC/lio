@@ -31,9 +31,12 @@
        INTEGER CUBLAS_ZGEMM,CUBLAS_ZAXPY,CUBLAS_INIT,CUBLAS_ZCOPY
 !------------------------------------------------------------------------------!
        ALLOCATE(Omega1(M,M))
-       write(100000,*) Rhoold
-       write(100001,*) factorial
-       write(100002,*) Fock
+
+!       write(100000,*) Rhoold
+!       write(100001,*) factorial
+!       write(100002,*) Fock
+! estos writes son pruebas de Uriel, los comento por que escriben archivos pesadisimos, Nick
+
        write(*,*) 'M =', M, 'N =', N
 ! Omega1 (=W) instantiation
        do i=1,M

@@ -19,10 +19,11 @@
 
 	subroutine intECP(tipodecalculo)
 	use garcha_mod, only :nshell,nuc,a,c, ncont, natom
-	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP,VAAAcuadrada,lxyz, VAAA, VAAAcuadrada, VAAB, VAABcuadrada,pi,doublefactorial,distx,disty,distz,VBAC,VBACcuadrada,verbose_ECP,ecp_debug,defineparams
+	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP,VAAAcuadrada,lxyz, VAAA, VAAAcuadrada, VAAB, VAABcuadrada,pi,doublefactorial,distx,disty,distz,VBAC,VBACcuadrada,verbose_ECP,ecp_debug,defineparams,Fulltimer_ECP,Tiempo
 	implicit none
-
 	integer, intent(in) :: tipodecalculo
+	double precision :: t1,t2
+
 !tipodecalculo=0 allocatea variables comunes y las lee de un restar
 !tipodecalculo=1 alocatea variables y calcula terminos de un centro
 ! (AAA)
@@ -52,9 +53,18 @@
 
 	   call WRITE_POST(3)
 !obtiene una matriz con lx,ly y lz para cada base
-	   call g2g_timer_start('ECPAAA')
+!	   call g2g_timer_start('ECPAAA')
+	   if (Fulltimer_ECP) call cpu_time ( t1 )
+
 	   call intECPAAA()
-	   call g2g_timer_stop('ECPAAA')
+!	   call g2g_timer_stop('ECPAAA')
+
+	   if (Fulltimer_ECP) then
+	      call cpu_time ( t2 )
+	      Tiempo = t2-t1
+	      call WRITE_POST(8)
+	   end if
+
 	   call WRITE_POST(5)
 !calcula terminos de un centro (AAA)
 !	call correctbasis(-1)
@@ -64,18 +74,35 @@
 !           call correctbasis(1)
 	   call obtaindistance()
 !obtiene arrays con la diatncia en x, y y z entre cada par de atomos i,j
-	   call g2g_timer_start('ECPAAB')
+!	   call g2g_timer_start('ECPAAB')
+	   if (Fulltimer_ECP) call cpu_time ( t1 )
 	   call intECPAAB()
-	   call g2g_timer_stop('ECPAAB')
+!	   call g2g_timer_stop('ECPAAB')
+
+           if (Fulltimer_ECP) then
+              call cpu_time ( t2 )
+              Tiempo = t2-t1
+              call WRITE_POST(8)
+           end if
+
 	   call WRITE_POST(6)
 !calcula terminos de dos centros (AAB)
 !        call correctbasis(-1)
 	   go to 325
 	elseif (tipodecalculo .eq. 3) then
 !        call correctbasis(1)
-	   call g2g_timer_start('ECPABC')
+!	   call g2g_timer_start('ECPABC')
+	   if (Fulltimer_ECP) call cpu_time ( t1 )
 	   call intECPABC()
-	   call g2g_timer_stop('ECPABC')
+!	   call g2g_timer_stop('ECPABC')
+
+           if (Fulltimer_ECP) then
+              call cpu_time ( t2 )
+              Tiempo = t2-t1
+              call WRITE_POST(8)
+           end if
+
+
 	   call WRITE_POST(7)
 !calcula terminos de tres centros (ABC)
 !        call correctbasis(-1)
@@ -90,6 +117,7 @@
 	endif
 
  324    write(*,*)
+
 
 	if ( verbose_ECP .gt. 0) then
 	   call WRITE_BASIS()
@@ -336,7 +364,7 @@
 !c(i,ni) coeficiente de la funcion de base i, contrccion ni
 !ncont(i) cantidad de contracciones de la funcion de base i
 !nshell(i) cantidad de funciones i=1 s, i=2, p, i=3, d
-        use ECP_mod, only : ecptypes,cutECP,IzECP,cutecp2,distx, disty, distz,Lxyz, VAAB, VAABcuadrada,local_nonlocal, ecp_debug,Cnorm
+        use ECP_mod, only : ecptypes,cutECP,IzECP,cutecp2,distx, disty, distz,Lxyz, VAAB, VAABcuadrada,local_nonlocal, ecp_debug,Cnorm,Fulltimer_ECP,tsemilocal,tlocal,Tiempo,tQ1
 !nECP, bECP, aECP valores del pseudo potencial
 ! aECP*r^b * exp(-bECP r^2)
 !estan escritos como: xECP(Z,l,i) Z carga del nucleo, l del ecp, i numero de funcion del ecp con Z,l
@@ -352,6 +380,14 @@
         integer :: i,j,k,M,ii,ji,lxi,lxj,lyi,lyj,lzi,lzj,pos
 !M cantidad total de funciones de base
         double precision :: Distcoef, AAB, acum, dx,dy,dz
+
+        if (Fulltimer_ECP) then
+           tsemilocal=0.d0
+           tlocal=0.d0
+           tQ1=0.d0
+        end if
+
+
 	M=nshell(0)+nshell(1)+nshell(2)
 	Distcoef=0.d0
 	AAB=0.d0
@@ -456,6 +492,16 @@
            end if
         end do
         end do
+
+        if (Fulltimer_ECP) then
+	   Tiempo = tQ1
+	   call WRITE_POST(11)
+           Tiempo = tlocal
+           call WRITE_POST(9)
+           Tiempo = tsemilocal
+           call WRITE_POST(10)
+        end if
+
 	end subroutine intECPAAB
 
 
@@ -470,7 +516,7 @@
 !k atomo con ecp
 !lx, ly, lz; i,j exponente de la parte angular de la base x^lx y^ly z^lz
         use garcha_mod, only : a
-        use ECP_mod, only :ZlistECP,Lmax,aECP,nECP,bECP, expnumbersECP,Qnl
+        use ECP_mod, only :ZlistECP,Lmax,aECP,nECP,bECP, expnumbersECP,Qnl,Fulltimer_ECP,tsemilocal,tQ1
         implicit none
         integer, intent(in) :: i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj
 	double precision, intent(in) :: dx,dy,dz
@@ -481,6 +527,12 @@
         double precision :: A2, Acoef, acumang, acumint, AABx, AABy, AABz, Kmod,Ccoef, auxdistx,auxdisty,auxdistz
 !Z= carga del nucleo
 	integer :: lambmin
+
+        double precision :: t1,t2,t1q, t2q
+!auxiliares para timers
+        if (Fulltimer_ECP) call cpu_time ( t1 )
+
+
         AAB_SEMILOCAL=0.d0
         Z=ZlistECP(k)
         n=lxi+lxj+lyi+lyj+lzi+lzj
@@ -500,8 +552,18 @@
 !barre contracciones del ECP para el atomo con carga z y l del ecp
 	      Ccoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
 	      Qnl=0.d0
+
+	      if (Fulltimer_ECP) call cpu_time ( t1q )
+
 !	      call Qtype1(Kmod,Ccoef,lmaxbase,necp(Z,l,term))
 	      call Qtype1N(Kmod,Ccoef,lmaxbase+l,necp(Z,l,term)+n,necp(Z,l,term))
+
+	      if (Fulltimer_ECP) then
+                 call cpu_time ( t2q )
+                 tQ1=tQ1 +t2q-t1q
+              end if
+
+
 	      do lx=0,lxj
 	         auxdistx=dx**(lxj-lx)
 	         if (auxdistx .ne. 0.d0) then
@@ -549,6 +611,13 @@
 	      AABx=0.d0
 	   end do
         end do
+
+        if (Fulltimer_ECP) then
+           call cpu_time ( t2 )
+           tsemilocal=tsemilocal+t2-t1
+        end if
+
+
 	return
 	end function AAB_SEMILOCAL
 
@@ -560,13 +629,18 @@
 !ii,ji numero de contraccion de la funcion de base
 !k atomo con ECP
         use garcha_mod, only : a
-        use ECP_mod, only :nECP,bECP, aECP, ZlistECP, Lmax, expnumbersECP, Qnl, angularint
+        use ECP_mod, only :nECP,bECP, aECP, ZlistECP, Lmax, expnumbersECP, Qnl, angularint,Fulltimer_ECP,tlocal,tQ1
 !expnumbersECP(Z,l) cantidad de terminos del ECP para el atomo con carga nuclear Z y l del ECP
         implicit none
         integer :: w,n,z,l,lxi, lyi, lzi, lambda, Lmaxbase
         integer, intent(in) :: i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi
         double precision :: Ccoef, acum,dx,dy,dz,integral, Kmod,distcoefx, distcoefy,distcoefz
 	double precision, dimension (3) :: Kvector
+
+!variables auxiliares
+        double precision :: t1,t2,t1q,t2q
+!auxiliares para timers
+        if (Fulltimer_ECP) call cpu_time ( t1 )
 
 
         Z=ZlistECP(k)
@@ -582,8 +656,16 @@
 !barre todos los terminos del Lmaximo
 	   Qnl=0.d0
 	   Ccoef=bECP(z,L,w)+a(i,ii)+a(j,ji)
+	   if (Fulltimer_ECP) call cpu_time ( t1q )
 !	   call Qtype1(Kmod,Ccoef,lmaxbase,necp(Z,l,w))
 	   call Qtype1N(Kmod,Ccoef,Lmaxbase,necp(Z,l,w)+Lmaxbase,necp(Z,l,w)+kxi+kyi+kzi)
+           if (Fulltimer_ECP) then
+              call cpu_time ( t2q )
+              tQ1=tQ1 +t2q-t1q
+           end if
+
+
+
 	   do lxi=0,lx
 		distcoefx=dx**(lx-lxi)
 		if ( distcoefx .ne. 0.d0) then
@@ -610,6 +692,13 @@
 	   acum=0.d0
 !aca multiplica x el coef
 	end do
+
+        if (Fulltimer_ECP) then
+           call cpu_time ( t2 )
+           tlocal=tlocal+t2-t1
+        end if
+
+
         return
         end function AAB_LOCAL
 
@@ -626,18 +715,24 @@
 
 	subroutine intECPABC()
 	use garcha_mod, only : nshell,nuc,ncont,natom,a
-	use ECP_mod, only : pi,ecptypes,cutECP,cutecp3,Lxyz,IzECP,VBACcuadrada,VBAC,local_nonlocal,ecp_debug,distx,disty,distz,Cnorm
+	use ECP_mod, only : pi,ecptypes,cutECP,cutecp3,Lxyz,IzECP,VBACcuadrada,VBAC,local_nonlocal,ecp_debug,distx,disty,distz,Cnorm, Fulltimer_ECP,tsemilocal,tlocal,Tiempo,tQ1,tQ2,Taux
 	implicit none
 	integer :: i,j,ii,ji,M,k,ki
 	Double Precision :: Distcoef,dxi,dxj,dyi,dyj,dzi,dzj,ABC,acum,pos
 	integer :: lxi,lxj,lyi,lyj,lzi,lzj
+
+
+	if (Fulltimer_ECP) then
+	   tsemilocal=0.d0
+	   tlocal=0.d0
+	   tQ1=0.d0
+	   tQ2=0.d0
+	   Taux=0.d0
+	end if
+
 	M=nshell(0)+nshell(1)+nshell(2)
 	acum=0.d0
 	ABC=0.d0
-!	call g2g_timer_sum_start('ABC_semi-local')
-!	call g2g_timer_sum_pause('ABC_semi-local')
-!	call g2g_timer_sum_start('ABC_local')
-!	call g2g_timer_sum_pause('ABC_local')
 	do i=1,M
 	do j=1,M
 !barre la base
@@ -707,14 +802,26 @@
 	   end do
 	end do
 	end do
-!        call g2g_timer_sum_stop('ABC_semi-local')
-!        call g2g_timer_sum_stop('ABC_local')
+
+	if (Fulltimer_ECP) then
+	   Tiempo=tQ1
+	   call WRITE_POST(11)
+	   Tiempo=tQ2
+	   call WRITE_POST(12)
+	   Tiempo = tlocal
+	   call WRITE_POST(9)
+	   Tiempo = tsemilocal
+	   call WRITE_POST(10)
+	   Tiempo = Taux
+	   call WRITE_POST(13)
+	end if
+
 	end subroutine intECPABC
 
 
 	DOUBLE PRECISION function ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2)
 	use garcha_mod, only : a,c
-	use ECP_mod, only :expnumbersECP, Qnl,bECP,IzECP,angularint,pi
+	use ECP_mod, only :expnumbersECP, Qnl,bECP,IzECP,angularint,pi,Fulltimer_ECP,tlocal,tQ1
 	implicit none
         integer, intent(in) :: i,j,ii,ji
 !terminos de la base
@@ -732,15 +839,17 @@
 
 	integer :: ac,bc,cc,dc,ec,fc,w,lambda
 !variables auxiliares
+        double precision :: t1,t2,t1q,t2q
+!auxiliares para timers
+        if (Fulltimer_ECP) call cpu_time ( t1 )
 
-!	call g2g_timer_start('ABC_local')
+
 	ABC_LOCAL=0.d0
 	z=IzECP(k)
 	L=Lmax(Z)
 	lmaxbase=lxi+lyi+lzi+lxj+lyj+lzj
 	Kvector=(/a(i,ii)*dx1+a(j,ji)*dx2,a(i,ii)*dy1+a(j,ji)*dy2,a(i,ii)*dz1+a(j,ji)*dz2/)
 	Kvector=-2.d0*Kvector
-!hay que chekear el signo de K!!!!!!!!!!!!!
 	Kmod=sqrt(Kvector(1)**2.d0+Kvector(2)**2.d0+Kvector(3)**2.d0)
 	integral=0.d0
 	acum=0.d0
@@ -750,9 +859,14 @@
 !barre terminos del ECP para el atomo con carga nuclear Z y l del ECP
 	   Qnl=0.d0
            Ccoef=bECP(z,L,w)+a(i,ii)+a(j,ji)
+	   if (Fulltimer_ECP) call cpu_time ( t1q )
 !	   call Qtype1(Kmod,Ccoef,lmaxbase,necp(Z,l,w))
 	   call Qtype1N(Kmod,Ccoef,Lmaxbase,necp(Z,l,w)+Lmaxbase,necp(Z,l,w))
-!		write(*,*) "calcula Q",Kmod,Ccoef,i,j
+	   if (Fulltimer_ECP) then
+	      call cpu_time ( t2q )
+	      tQ1=tQ1 +t2q-t1q
+	   end if
+
 !calcula integral radial
 	   do ac=0,lxi
 		auxdista=dx1**(lxi-ac)
@@ -775,19 +889,16 @@
 
 !barre los coef de la expansion en el binomio de Newton
 		auxdist=auxdista*auxdistb*auxdistc*auxdistd*auxdiste*auxdistf
-!	      auxdist=dx1**(lxi-ac)*dy1**(lyi-bc)*dz1**(lzi-cc)*dx2**(lxj-dc)*dy2**(lyj-ec)*dz2**(lzj-fc)
-!	      if ( auxdist .ne. 0.d0) then
               do lambda=ac+bc+cc+dc+ec+fc,0,-2
 		
 	         if ( Kmod .gt. 0.d0 ) then
                     integral=integral + OMEGA1(Kvector,lambda,ac+dc,bc+ec,cc+fc) * Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)
 		    if (Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda) .ne. Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)) stop " qnl1l2 = 0 in ABC_SEMILOCAL"
-!	            if (Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda) .eq. 0.d0)  stop " q = 0 in abc loc"
 !corta de no calculo la integral radial
 		 else
                     integral=integral + angularint(ac+dc,bc+ec,cc+fc) * Q0(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),Ccoef) *0.25d0/pi
 !parche para el caso accidental en que K fuera = (0,0,0) por compensacion de a(i,ii)*dx1+a(j,ji)*dx2 (idem y,z)
-!0.25d0/pi compensa el factor 4pi por el q se multiplica luego a la suma de las integreles
+!0.25d0/pi compensa el factor 4pi por el q se multiplica luego a la suma de las integrales
 		 end if
               end do
 	      auxcomb=comb(lxi,ac)*comb(lyi,bc)*comb(lzi,cc)*comb(lxj,dc)*comb(lyj,ec)*comb(lzj,fc)
@@ -796,7 +907,6 @@
 	      integral=0.d0
 	      auxcomb=0.d0
 	      auxdist=0.d0
-!	      end if
 		end if
 	   end do
 		end if
@@ -812,13 +922,18 @@
            ABC_LOCAL=ABC_LOCAL+aECP(z,L,w)*acum
            acum=0.d0
 	end do
-!	call g2g_timer_pause('ABC_local')
+
+        if (Fulltimer_ECP) then
+           call cpu_time ( t2 )
+           tlocal=tlocal+t2-t1
+        end if
+
 	return
 	end function ABC_LOCAL
 
 	DOUBLE PRECISION function ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
         use garcha_mod, only : a
-        use ECP_mod, only : Qnl1l2,necp,bECP,IzECP,pi
+        use ECP_mod, only : Qnl1l2,necp,bECP,IzECP,pi,Fulltimer_ECP,tsemilocal,tQ2,Taux
 	implicit none
 	integer, intent(in) :: i,j,ii,ji,k
 !i,j funciones de la base
@@ -835,8 +950,12 @@
 	integer :: l,term,ac,bc,cc,dc,ec,fc,lambdai, lambdaj,m,lambimin, lambjmin
 !auxiliares ciclos
 	double precision :: acumang,acumang1,acumang2,integral,auxcomb,auxdist,acum,auxdista,auxdistb,auxdistc,auxdistd,auxdiste,auxdistf
-!auxiliaresa
-!	call g2g_timer_start('ABC_semi-local')
+!auxiliares
+	double precision :: t1,t2, t1q,t2q,t1aux,t2aux
+!auxiliares para timers
+	if (Fulltimer_ECP) call cpu_time ( t1 )
+
+
 	ABC_SEMILOCAL=0.d0
 	integral=0.d0
 	acum=0.d0
@@ -866,7 +985,12 @@
 	      Qnl1l2=0.d0
 	      Ccoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
 !	      call Qtype2(Kimod,Kjmod,Ccoef,l1max,l2max,necp(Z,l,term))
+		if (Fulltimer_ECP) call cpu_time ( t1q )
 		call Qtype2N(Kimod,Kjmod,Ccoef,l1max+l,l2max+l,necp(Z,l,term)+l1max+l2max,necp(Z,l,term))
+		if (Fulltimer_ECP) then
+		   call cpu_time ( t2q )
+		   tQ2=tQ2 +t2q-t1q
+		end if
 !agrega a la matriz Qnl1l2 los terminos correspondientes a un termino radiales.
 	      do ac=0,lxi
 	        auxdista=dxi**(lxi-ac)
@@ -887,7 +1011,7 @@
 	                                      auxdistf=dzj**(lzj-fc)
 	                                      if (auxdistf .ne. 0.d0) then
 
-
+		    if (Fulltimer_ECP) call cpu_time ( t1aux )
 	            auxdist=auxdista*auxdistb*auxdistc*auxdistd*auxdiste*auxdistf
 !solo calcula cuando el coef de distancias no es cero
 !cut para lambda minimo: l-a-b-c, 0
@@ -912,6 +1036,8 @@
 	            integral=0.d0
 	            auxcomb=0.d0
 	            auxdist=0.d0
+                    if (Fulltimer_ECP) call cpu_time ( t2aux )
+		    Taux=Taux+t2aux-t1aux
 	                                      end if
 	                                   end do
 	                                end if
@@ -929,9 +1055,14 @@
               acum=0.d0
 	   end do
 	end do
-!	call g2g_timer_pause('ABC_semi-local')
+
+	if (Fulltimer_ECP) then
+	   call cpu_time ( t2 )
+	   tsemilocal=tsemilocal+t2-t1
+	end if
+
 	return
-	4315 format(1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x,f10.7,1x)
+!	4315 format(1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x,f10.7,1x)
 	end function ABC_SEMILOCAL
 
 
@@ -1804,6 +1935,7 @@
 	end subroutine WRITE_ECP
 
 	subroutine WRITE_POST(i)
+	use ECP_mod, only :Tiempo
 	implicit none
 	integer, intent(in) :: i
 	write(*,3911)
@@ -1814,7 +1946,14 @@
 	if (i.eq.5) write(*,3917)
 	if (i.eq.6) write(*,3918)
 	if (i.eq.7) write(*,3919)
+	if (i.eq.8) write(*,3920) Tiempo
+	if (i.eq.9) write(*,3921) Tiempo
+	if (i.eq.10) write(*,3922) Tiempo
+	if (i.eq.11) write(*,3923) Tiempo
+	if (i.eq.12) write(*,3924) Tiempo
+        if (i.eq.13) write(*,3925) Tiempo
 	write(*,3912) 
+
  3911   format(4x,"╔══════════════════════════════════════╗")
  3912   format(4x,"╚══════════════════════════════════════╝")
  3913   format(4x,"║    End of Effective Core Potential   ║")
@@ -1824,6 +1963,12 @@
  3917   format(4x,"║        1 Center Int. Finished        ║")
  3918   format(4x,"║       2 Centers Int. Finished        ║")
  3919   format(4x,"║       3 Centers Int. Finished        ║")
+ 3920   format(4x,"║         Time ",f12.9," s          ║")
+ 3921   format(4x,"║      Time Local ",f12.9," s       ║")
+ 3922   format(4x,"║    Time Semilocal ",f12.9," s     ║")
+ 3923   format(4x,"║       Radial Q1 ",f12.9," s       ║")
+ 3924   format(4x,"║       Radial Q2 ",f12.9," s       ║")
+ 3925   format(4x,"║    Ciclos Semiloc  ",f12.9," s    ║")
 	end subroutine WRITE_POST
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

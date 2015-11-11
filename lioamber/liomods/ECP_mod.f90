@@ -31,6 +31,10 @@
       logical :: FOCK_ECP_read, FOCK_ECP_write
 !activan lectura y grabado de Fock para evitar recalcularlo en
 !dinamicas a nucleo fijo
+      logical :: Fulltimer_ECP
+!activa los timers para int radiales
+      double precision :: tlocal,tsemilocal,tQ1,tQ2,Tiempo, Taux
+!auxiiares para timers
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

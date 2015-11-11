@@ -5,7 +5,7 @@ c---------------------------------------------------------------------
       use garcha_mod
       use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP, cutecp2
      & , cutecp3,cutECP,local_nonlocal, ecp_debug,ecp_full_range_int
-     & ,verbose_ECP,Cnorm,FOCK_ECP_read, FOCK_ECP_write
+     & ,verbose_ECP,Cnorm,FOCK_ECP_read, FOCK_ECP_write,Fulltimer_ECP
 #ifdef CUBLAS
       use cublasmath
 #endif
@@ -26,6 +26,7 @@ c---------------------------------------------------------------------
      > ecpmode,ecptypes,tipeECP,ZlistECP,cutecp2, cutecp3,
      > cutECP,local_nonlocal, ecp_debug,ecp_full_range_int,verbose_ECP,
      > hybrid_converg, good_cut,verbose,FOCK_ECP_read, FOCK_ECP_write,
+     > Fulltimer_ECP,
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
      > cubegen_only,cube_res,
      > cube_dens,cube_dens_file,
@@ -113,6 +114,7 @@ c---------------------------------------------------------------------
       verbose_ECP=0
       FOCK_ECP_read=.false.
       FOCK_ECP_write=.false.
+      Fulltimer_ECP=.false.
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

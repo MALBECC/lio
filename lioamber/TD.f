@@ -543,6 +543,8 @@ c ELECTRIC FIELD CASE - Type=gaussian (ON)
                  E1=-1.00D0*g*(Fx*ux+Fy*uy+Fz*uz)/factor -
      >        0.50D0*(1.0D0-1.0D0/epsilon)*Qc2/a0
               endif
+            else
+            field=.false.
             endif
 !------------------------------------------------------------------------------!
 ! E1 includes solvent 1 electron contributions

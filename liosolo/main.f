@@ -97,6 +97,7 @@ c---------------------------------------------------------------------
       hybrid_converg=.false.
       good_cut=1D-5
 
+      omit_bas=.false.
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%    Effective Core Potential Variables    %%%%%%%%%%%%%!
@@ -129,6 +130,7 @@ c---------------------------------------------------------------------
           case("-b")
             call get_command_argument(i+1,basis)
           case("-bs")
+            omit_bas=.true.
             call get_command_argument(i+1,basis_set)
           case("-fs")
             call get_command_argument(i+1,fitting_set)

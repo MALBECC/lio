@@ -21,7 +21,7 @@
       integer :: ecptypes
 !cantidad de atomos con ECP
       character (len=30) :: tipeECP
-!tipo de ECP usado, tiene que estar en $LIOHOME/libraries/ECP
+!tipo de ECP usado, tiene que estar en $LIOHOME/dat/ECP/
       integer, dimension(128) :: ZlistECP
 !Z de atomos con ECP
       logical :: cutECP

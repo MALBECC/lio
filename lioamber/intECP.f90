@@ -194,7 +194,7 @@
 
         do i=1, M
 !barre funciones de la base 
-           do j=1, M
+           do j=1, i
 !cambiar por do j=i,M para barrer solo la mitad de la matriz
 !barre el otro coef de la base j>=i ya que la matriz tiene q ser simetrica
               if (nuc(i) .eq. nuc(j)) then
@@ -234,14 +234,14 @@
 !multiplica por el otro coef de la base
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                       if (i .ge. j) then
+!                       if (i .ge. j) then
 !este if hay q sacarlo al fina, cuando cambie el rango en el q barre j , en vez de comenzar en 1 comience en i
                           pos=i+(1-j)*(j-2*M)/2   !chekeada
                           VAAA(pos) = VAAA(pos) + acum*Cnorm(i,ii) !esta linea es lo unico que quedaria!!!!!!!!!!!!!
-                             if (abs(VAAA(pos)-VAAAcuadrada(i,j)) .gt. 0.000000000001) then
-                                stop "arma mal el vector 1"
-                             end if
-                        end if
+!                             if (abs(VAAA(pos)-VAAAcuadrada(i,j)) .gt. 0.000000000001) then
+!                                stop "arma mal el vector 1"
+!                             end if
+!                        end if
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                         acum=0.d0
                         end do
@@ -394,7 +394,7 @@
 	acum=0.d0
         do i=1, M
 !barre funciones de la base 
-        do j=1, M
+        do j=1, i
 !cambiar por do j=i,M para barrer solo la mitad de la matriz
 !barre el otro coef de la base j>=i ya que la matriz tiene q ser simetrica
            if (nuc(i) .ne. nuc(j)) then
@@ -441,11 +441,11 @@
                              VAABcuadrada(i,j) = VAABcuadrada(i,j) + acum*Cnorm(j,ji)*4*pi*exp(-Distcoef*a(j,ji))
 !multiplica por el otro coef de la base
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                             if (i .ge. j) then
+!                             if (i .ge. j) then
 !este if hay q sacarlo al fina, cuando cambie el rango en el q barre j , en vez de comenzar en 1 comience en i
                                 pos=i+(1-j)*(j-2*M)/2   
                                 VAAB(pos) = VAAB(pos) + + acum*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))!esta linea es lo unico que quedaria!!!
-                             end if
+!                             end if
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	                  end if
                        end do
@@ -477,11 +477,11 @@
 !multiplica por el otro coef de la base
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                             if (i .ge. j) then
+!                             if (i .ge. j) then
 !este if hay q sacarlo al fina, cuando cambie el rango en el q barre j , en vez de comenzar en 1 comience en i
                                 pos=i+(1-j)*(j-2*M)/2   !chekeada
                                 VAAB(pos) = VAAB(pos) + acum*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii)) !esta linea es lo unico que quedaria!!!!!!!!!!!!!
-                             end if
+!                             end if
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                           end if
                        end do
@@ -734,7 +734,7 @@
 	acum=0.d0
 	ABC=0.d0
 	do i=1,M
-	do j=1,M
+	do j=1,i
 !barre la base
 	   do k=1, natom 
 !necesito que este do barra por todos los nucleos del sistema
@@ -789,11 +789,11 @@
 !                                        if (i.eq.1 .and. j.eq.1) write(*,*) "fock",acum*c(i,ii)*4.d0*pi
 !			if (i.eq.1 .and. j.eq.1) write(*,*) "mirando fock",VBACcuadrada(i,j) 
 
-	               if (i .ge. j) then
+!	               if (i .ge. j) then
 !este if hay q sacarlo al fina, cuando cambie el rango en el q barre j , en vez de comenzar en 1 comience en i
 	                  pos=i+(1-j)*(j-2*M)/2   !chekeada
 	                  VBAC(pos) = VBAC(pos) + acum*Cnorm(i,ii)*4.d0*pi !esta linea es lo unico que quedaria!!!!!!!!!!!!!
-	               end if
+!	               end if
                        acum=0.d0
 	               end do
 	            end if 

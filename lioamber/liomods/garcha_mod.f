@@ -113,9 +113,12 @@ c      parameter rmintsol=16.0D0
 !       real*8,allocatable,dimension(:,:) :: Lmat,Linv,Umat,Uinv
 !------------------------------------------------------------------------------!
 
-
+!-variables for hibrid damping-diis
       logical :: hybrid_converg
       double precision :: good_cut
       double precision :: Etold
+
+!-Variables for library reading
+      logical :: omit_bas
        end module
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

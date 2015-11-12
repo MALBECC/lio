@@ -598,7 +598,7 @@ c
           endif
         enddo
 c     
-        if (.not.used.and.VERBOSE) then
+        if (.not.used.and.VERBOSE.and. .not.omit_bas) then
           write(*,200) iatom
         endif
 

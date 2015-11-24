@@ -6,6 +6,7 @@ c---------------------------------------------------------------------
       use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP, cutecp2
      & , cutecp3,cutECP,local_nonlocal, ecp_debug,ecp_full_range_int
      & ,verbose_ECP,Cnorm,FOCK_ECP_read, FOCK_ECP_write,Fulltimer_ECP
+     & ,distcutECP, distcutECP_bohr2,cut2_0
 #ifdef CUBLAS
       use cublasmath
 #endif
@@ -26,7 +27,10 @@ c---------------------------------------------------------------------
      > ecpmode,ecptypes,tipeECP,ZlistECP,cutecp2, cutecp3,
      > cutECP,local_nonlocal, ecp_debug,ecp_full_range_int,verbose_ECP,
      > hybrid_converg, good_cut,verbose,FOCK_ECP_read, FOCK_ECP_write,
-     > Fulltimer_ECP,
+     > Fulltimer_ECP,distcutECP,cut2_0,
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!para inicialguess nuevo
+     > RHO_RESTART_IN,RHO_RESTART_OUT,
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
      > cubegen_only,cube_res,
      > cube_dens,cube_dens_file,
@@ -99,6 +103,12 @@ c---------------------------------------------------------------------
 
       omit_bas=.false.
 
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+      RHO_RESTART_IN=.false.
+      RHO_RESTART_OUT=.false.
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%    Effective Core Potential Variables    %%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -116,6 +126,8 @@ c---------------------------------------------------------------------
       FOCK_ECP_read=.false.
       FOCK_ECP_write=.false.
       Fulltimer_ECP=.false.
+      distcutECP=100.d0
+      cut2_0=100000.d0
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -164,6 +176,15 @@ c---------------------------------------------------------------------
       if(ierr.gt.0) stop 'input error in lio namelist'
 
 
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%    Effective Core Potential Variables    %%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+      distcutECP_bohr2=(1.889725989d0*distcutECP)**2
+!valor comparable en el cauclo de ECP
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
       inquire(file=inpcoords,exist=filexist)
       if(filexist) then
         open(unit=101,file=inpcoords,iostat=ios)
@@ -182,8 +203,25 @@ c aca escribe el namelist
       ngDyn=ngnu
       ngdDyn=ngdnu
       ng3=4*ngDyn
+
+	write(*,*) "*********************************"
+!testeo nick
+	write(*,*) "ngDyn",ngDyn,"ngdDyn",ngdDyn
+	write(*,*) "T1",5*ngDyn*(ngDyn+1)/2
+	write(*,*) "T2",3*ngdDyn*(ngdDyn+1)/2
+	write(*,*) "T3",ngDyn
+	write(*,*) "T4",ngDyn*norbit
+	write(*,*) "T5",Ngrid
+	write(*,*) "*********************************"
       ng2=5*ngDyn*(ngDyn+1)/2+3*ngdDyn*(ngdDyn+1)/2+
      >           ngDyn+ngDyn*norbit+Ngrid
+
+
+        write(*,*) "*********************************"
+	write(*,*) ng2
+        write(*,*) "*********************************"
+c aca hay un bug para sistemas muy grandes ng2 da <0
+
 c      write(*,*)ng2,ngDyn,ngdDyn,norbit,Ngrid
 
       allocate(X(ngDyn,ng3),XX(ngdDyn,ngdDyn))

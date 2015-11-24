@@ -567,6 +567,30 @@ c
         call g2g_timer_sum_stop('initial guess')
       endif
 
+c ca meto mi guess NIck
+
+        if (RHO_RESTART_IN) then
+c agrego un restart en rho, Nick
+c        inquire(file="rho_restart.in", exist=hay_restart)
+
+c        if ( .not. hay_restart) then
+c!cheque que el archivo ECP este
+c         write(*,*) "ECP_restart not Found"
+c         stop
+c        else
+	write(*,*) "Usando restart en rho"
+        open(unit=27,file="rho_restart.in", STATUS='UNKNOWN')
+	   read(27,*)
+           DO i=1,MM
+              read(27,*) RMM(i)
+c              write(*,*) i,RMM(i)
+           ENDDO
+        close(27)
+        end if
+
+
+     
+
 c End of Starting guess (No MO , AO known)-------------------------------
 c
       if ((timedep.eq.1).and.(tdrestart)) then
@@ -1305,6 +1329,18 @@ c
 c
         call g2g_timer_stop('Total iter')
         call g2g_timer_sum_pause('Iteration')
+
+	if (RHO_RESTART_OUT) then
+c agrego un restart en rho, Nick
+        open(unit=27,file="rho_restart.out", STATUS='UNKNOWN')
+	   write(27,*) nshell(0),nshell(1),nshell(2)
+           DO i=1,MM
+              write(27,*) RMM(i)
+           ENDDO
+        close(27)
+
+	end if
+
  999  continue
 c-------------------------------------------------------------------
 c

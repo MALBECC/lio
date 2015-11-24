@@ -117,6 +117,8 @@ c      parameter rmintsol=16.0D0
       logical :: hybrid_converg
       double precision :: good_cut
       double precision :: Etold
+!-agregadas para inicial guess nuevo, Nick
+      logical :: RHO_RESTART_IN,RHO_RESTART_OUT
 
 !-Variables for library reading
       logical :: omit_bas

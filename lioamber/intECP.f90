@@ -53,6 +53,10 @@
 
 	   call WRITE_POST(3)
 !obtiene una matriz con lx,ly y lz para cada base
+
+	   call obtain_Raction()
+!obtiene radios de accion dependientes de la base
+
 !	   call g2g_timer_start('ECPAAA')
 	   if (Fulltimer_ECP) call cpu_time ( t1 )
 
@@ -131,7 +135,7 @@
 	if ( ecp_debug ) then
 	   call WRITE_POST(2)
 	   call SEARCH_NAN()
-	   call TEST_SYMMETRY()
+!	   call TEST_SYMMETRY()
 	   call TEST_COPY_FOCK()
 	end if
  325    write(*,*)
@@ -364,7 +368,7 @@
 !c(i,ni) coeficiente de la funcion de base i, contrccion ni
 !ncont(i) cantidad de contracciones de la funcion de base i
 !nshell(i) cantidad de funciones i=1 s, i=2, p, i=3, d
-        use ECP_mod, only : ecptypes,cutECP,IzECP,cutecp2,distx, disty, distz,Lxyz, VAAB, VAABcuadrada,local_nonlocal, ecp_debug,Cnorm,Fulltimer_ECP,tsemilocal,tlocal,Tiempo,tQ1
+        use ECP_mod, only : ecptypes,cutECP,IzECP,cutecp2,distx, disty, distz,Lxyz, VAAB, VAABcuadrada,local_nonlocal, ecp_debug,Cnorm,Fulltimer_ECP,tsemilocal,tlocal,Tiempo,tQ1,distcutECP_bohr2,Raction
 !nECP, bECP, aECP valores del pseudo potencial
 ! aECP*r^b * exp(-bECP r^2)
 !estan escritos como: xECP(Z,l,i) Z carga del nucleo, l del ecp, i numero de funcion del ecp con Z,l
@@ -386,7 +390,6 @@
            tlocal=0.d0
            tQ1=0.d0
         end if
-
 
 	M=nshell(0)+nshell(1)+nshell(2)
 	Distcoef=0.d0
@@ -417,7 +420,12 @@
 	            if (IzECP(nuc(i)) .eq. ZlistECP(k)) then
 !calculo para ECP en i, hay q repetir para j
                        do ji=1, ncont(j)
-	                  if ( .not. cutECP .or. (Distcoef*a(j,ji) .lt. cutecp2)) then
+
+			  if ( .not. cutECP .or. ((Distcoef*a(j,ji) .lt. cutecp2) .and. Distcoef .le. Raction(IzECP(nuc(i))))) then
+!	                  if ( .not. cutECP .or. ((Distcoef*a(j,ji) .lt. cutecp2) .and. Distcoef .le. distcutECP_bohr2)) then
+!cut unico
+
+!	                  if (( .not. cutECP .or. (Distcoef*a(j,ji) .lt. cutecp2)) .and. dx**2+dy**2+dz**2 .le. distcut) then
 !solo calcula los terminos que luego se multipliquen por un factor q no sea demasiado pequeño,
 !el cut va a ser obligatorio, ya que si los atomos quedan muy separados el termino VAAB se obtiene como el producto de un numero MUY grande por uno que es casi 0
 !y se obtienen NAN para el numero muy grande
@@ -454,7 +462,15 @@
 !calculo para ECP en j
 	               do ii=1, ncont(i)
 !			 if (Distcoef*a(i,ii) .ge. cutecp2) write(*,*) "cut 2 sobro omit int"
-                          if ( .not. cutECP .or. (Distcoef*a(i,ii) .lt. cutecp2)) then
+
+
+			   if ( .not. cutECP .or. ((Distcoef*a(i,ii) .lt. cutecp2) .and. Distcoef .le. Raction(IzECP(nuc(j))))) then
+
+!	                   if ( .not. cutECP .or. ((Distcoef*a(i,ii) .lt. cutecp2) .and. Distcoef .le. distcutECP_bohr2)) then
+!cut unico
+
+
+!                          if (( .not. cutECP .or. (Distcoef*a(i,ii) .lt. cutecp2)) .and. dx**2+dy**2+dz**2 .le. distcut ) then
 !solo calcula los terminos que luego se multipliquen por un factor q no sea demasiado pequeño,
                              acum=0.d0
                              do ji=1, ncont(j)
@@ -715,7 +731,7 @@
 
 	subroutine intECPABC()
 	use garcha_mod, only : nshell,nuc,ncont,natom,a
-	use ECP_mod, only : pi,ecptypes,cutECP,cutecp3,Lxyz,IzECP,VBACcuadrada,VBAC,local_nonlocal,ecp_debug,distx,disty,distz,Cnorm, Fulltimer_ECP,tsemilocal,tlocal,Tiempo,tQ1,tQ2,Taux
+	use ECP_mod, only : pi,ecptypes,cutECP,cutecp3,Lxyz,IzECP,VBACcuadrada,VBAC,local_nonlocal,ecp_debug,distx,disty,distz,Cnorm, Fulltimer_ECP,tsemilocal,tlocal,Tiempo,tQ1,tQ2,Taux,distcutECP_bohr2,Raction
 	implicit none
 	integer :: i,j,ii,ji,M,k,ki
 	Double Precision :: Distcoef,dxi,dxj,dyi,dyj,dzi,dzj,ABC,acum,pos
@@ -765,7 +781,15 @@
 	                  Distcoef=a(i,ii)*(dxi**2.d0 + dyi**2.d0 + dzi**2.d0) + a(j,ji)*(dxj**2.d0 + dyj**2.d0 + dzj**2.d0)
 
 !			 if (Distcoef .ge. cutecp3) write(*,*) "cut 3 sobrepasado omit int",i,ii,j,ji
-                          if ( .not. cutECP .or. (Distcoef .lt. cutecp3)) then
+
+
+			   if (.not.cutECP .or. ((Distcoef .lt. cutecp3).and. dxi**2+dyi**2+dzi**2 .le. Raction(IzECP(nuc(i))) .and. dxj**2+dyj**2+dzj**2 .le. Raction(IzECP(nuc(j))))) then
+
+!	                   if (.not.cutECP .or. ((Distcoef .lt. cutecp3).and. dxi**2+dyi**2+dzi**2 .le. distcutECP_bohr2 .and. dxj**2+dyj**2+dzj**2 .le. distcutECP_bohr2)) then
+!cut unico
+
+
+!                          if (( .not. cutECP .or. (Distcoef .lt. cutecp3)).and. dxi**2+dyi**2+dzi**2 .le. distcut .and. dxj**2+dyj**2+dzj**2 .le. distcut) then
 !solo calcula los terminos que luego se multipliquen por un factor q no sea demasiado pequeño,
 !el cut va a ser obligatorio, ya que si los atomos quedan muy separados el termino de Fock se obtiene como el producto de un numero MUY grande por uno que es casi 0
 !y se obtienen NAN para el numero muy grande
@@ -1330,9 +1354,9 @@
            acum=acum+betha(l+1,i)*Cn(n-i)/k**i
         end do
         if (acum .eq. 0.d0) then
-           write(*,*) "error en Qtype 1N, integral radial 0. n,l",n,l
-	   write(*,*) "k",K
-	   write(*,*) "ccoef",Ccoef
+!           write(*,*) "error en Qtype 1N, integral radial 0. n,l",n,l
+!	   write(*,*) "k",K
+!	   write(*,*) "ccoef",Ccoef
 !           stop
         end if
                 Qnl(n,l)=Qnl(n,l)+acum*gam
@@ -1682,6 +1706,39 @@
 	allocate (IzECP(natom))
 	allocate (Lxyz(M, 3))
         end subroutine allocate_ECP
+
+	subroutine obtain_Raction()
+!enrealidad obtiene r^2
+	use ECP_mod, only : IzECP,Raction,cut2_0
+	use garcha_mod, only : nshell,ncont,a,nuc
+	implicit none
+	integer :: i,ii,M
+	double precision :: alfam 
+	double precision, dimension(128) :: alfamin
+	call g2g_timer_start('Raction')
+        M=nshell(0)+nshell(1)+nshell(2)
+	alfamin=5d10
+        do i=1,M
+	   alfam=5d10
+	   do ii=1, ncont(i)
+	      if (a(i,ii) .lt. alfam) alfam=a(i,ii)
+	   end do
+	   if (alfam .lt. alfamin(IzECP(nuc(i)))) alfamin(IzECP(nuc(i)))=alfam
+	end do
+	
+
+!	Raction(IzECP(nuc(i)))
+
+	Raction=cut2_0/alfamin
+	
+	do i=1,128
+!		write(*,*) i,alfamin(i),Raction(i)
+	end do
+
+!Raction(IzECP(nuc(i)))
+	call g2g_timer_stop('Raction')
+	end subroutine
+
 
         subroutine deallocateV
 !desalocatea variables de ECP

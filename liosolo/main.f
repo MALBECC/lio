@@ -3,10 +3,10 @@ c MAIN SUBROUTINE ----------------------------------------------------
 C DFT calculation with gaussian basis sets
 c---------------------------------------------------------------------
       use garcha_mod
-      use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP, cutecp2
-     & , cutecp3,cutECP,local_nonlocal, ecp_debug,ecp_full_range_int
+      use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP
+     & ,cutECP,local_nonlocal, ecp_debug,ecp_full_range_int
      & ,verbose_ECP,Cnorm,FOCK_ECP_read, FOCK_ECP_write,Fulltimer_ECP
-     & ,distcutECP, distcutECP_bohr2,cut2_0
+     & ,cut2_0,cut3_0
 #ifdef CUBLAS
       use cublasmath
 #endif
@@ -24,10 +24,10 @@ c---------------------------------------------------------------------
      > field,a0,epsilon,exter,Fx,Fy,Fz, tdrestart, writedens,
      > writeforces,basis_set,fitting_set,int_basis,
 !todo esto es de pseudopotenciales %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-     > ecpmode,ecptypes,tipeECP,ZlistECP,cutecp2, cutecp3,
+     > ecpmode,ecptypes,tipeECP,ZlistECP,
      > cutECP,local_nonlocal, ecp_debug,ecp_full_range_int,verbose_ECP,
      > hybrid_converg, good_cut,verbose,FOCK_ECP_read, FOCK_ECP_write,
-     > Fulltimer_ECP,distcutECP,cut2_0,
+     > Fulltimer_ECP,cut2_0,cut3_0,
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !para inicialguess nuevo
      > RHO_RESTART_IN,RHO_RESTART_OUT,
@@ -116,8 +116,6 @@ c---------------------------------------------------------------------
       tipeECP='NOT-DEFINED'
       ZlistECP=0
       ecptypes=0
-      cutecp2=7E2
-      cutecp3=7E2
       cutECP=.false.
       local_nonlocal=0
       ecp_debug=.false.
@@ -126,8 +124,8 @@ c---------------------------------------------------------------------
       FOCK_ECP_read=.false.
       FOCK_ECP_write=.false.
       Fulltimer_ECP=.false.
-      distcutECP=100.d0
-      cut2_0=100000.d0
+      cut2_0=15.d0
+      cut3_0=12.d0
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -176,14 +174,6 @@ c---------------------------------------------------------------------
       if(ierr.gt.0) stop 'input error in lio namelist'
 
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%    Effective Core Potential Variables    %%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-      distcutECP_bohr2=(1.889725989d0*distcutECP)**2
-!valor comparable en el cauclo de ECP
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
       inquire(file=inpcoords,exist=filexist)
       if(filexist) then

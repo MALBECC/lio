@@ -3,7 +3,8 @@
 !                                                                    !
 ! This routines calculate Fock matrix elements for effective core    !
 ! potential                                                          !
-!                                                                    ! 
+!                                                                    !
+! V 0.95 december 2015 cutoff for interacions                        !                                                                   ! 
 ! V 0.91 october 2015 optimized version for energy calculations      !
 ! V 0.9 september 2015 1st functional version for energy calculations!
 !                                                                    !
@@ -12,19 +13,17 @@
 
 
 
-
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%    Main ECP Routine    %%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 	subroutine intECP(tipodecalculo)
-	use garcha_mod, only :nshell,nuc,a,c, ncont, natom
-	use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP,nECP,bECP, aECP,Zcore, Lmax, expnumbersECP,VAAAcuadrada,lxyz, VAAA, VAAAcuadrada, VAAB, VAABcuadrada,pi,doublefactorial,distx,disty,distz,VBAC,VBACcuadrada,verbose_ECP,ecp_debug,defineparams,Fulltimer_ECP,Tiempo
+	use ECP_mod, only : verbose_ECP,ecp_debug,Fulltimer_ECP,Tiempo,defineparams
 	implicit none
 	integer, intent(in) :: tipodecalculo
 	double precision :: t1,t2
 
-!tipodecalculo=0 allocatea variables comunes y las lee de un restar
+!tipodecalculo=0 allocatea variables comunes y las lee de un restart
 !tipodecalculo=1 alocatea variables y calcula terminos de un centro
 ! (AAA)
 !tipodecalculo=2 calcula terminos de dos centros (ABB)
@@ -38,29 +37,20 @@
 	   call check_params()
 	   call defineparams()
            call allocate_ECP()
-!allocatea la matriz de fock de pseudopotenciales, la matrix cuadrada
-!para pruebas y el verctor con los terminos de 1 electron sin corregir
-
-!	   call correctbasis(1)
-!reedita la matriz c para corregir la normalizacion de la base,
-!reemplazada por norm_C()
+!allocatea la matriz de fock de pseudopotenciales y el verctor con los
+!terminos de 1 electron sin corregir
 	   call norm_C()
 !guarda los coeficientes de la base normalizados correctamente para
 !las funciones d en un nuevo aray
            call ReasignZ()
 !reasigna las cargas de los nucleos removiendo la carga del core
            call obtainls()
-
-	   call WRITE_POST(3)
 !obtiene una matriz con lx,ly y lz para cada base
-
-	   call obtain_Raction()
-!obtiene radios de accion dependientes de la base
+	   call WRITE_POST(3)
 
 !	   call g2g_timer_start('ECPAAA')
 	   if (Fulltimer_ECP) call cpu_time ( t1 )
-
-	   call intECPAAA()
+	      call intECPAAA()
 !	   call g2g_timer_stop('ECPAAA')
 
 	   if (Fulltimer_ECP) then
@@ -71,11 +61,7 @@
 
 	   call WRITE_POST(5)
 !calcula terminos de un centro (AAA)
-!	call correctbasis(-1)
-!reedita la matriz c para devolverla a su estado original
-	   go to 325
 	elseif (tipodecalculo .eq. 2) then
-!           call correctbasis(1)
 	   call obtaindistance()
 !obtiene arrays con la diatncia en x, y y z entre cada par de atomos i,j
 !	   call g2g_timer_start('ECPAAB')
@@ -91,10 +77,7 @@
 
 	   call WRITE_POST(6)
 !calcula terminos de dos centros (AAB)
-!        call correctbasis(-1)
-	   go to 325
 	elseif (tipodecalculo .eq. 3) then
-!        call correctbasis(1)
 !	   call g2g_timer_start('ECPABC')
 	   if (Fulltimer_ECP) call cpu_time ( t1 )
 	   call intECPABC()
@@ -106,23 +89,16 @@
               call WRITE_POST(8)
            end if
 
-
 	   call WRITE_POST(7)
 !calcula terminos de tres centros (ABC)
-!        call correctbasis(-1)
-	   go to 324
 	elseif (tipodecalculo .eq. 4) then
 	   call deallocateV()
 ! desalocatea variables de la rutina
-	   go to 325
         else
 	   call WRITE_POST(4)   
-!           write(*,*) "ERROR in type of ECP calculation"
 	endif
 
- 324    write(*,*)
-
-
+	if (tipodecalculo.eq.0 .or. tipodecalculo.eq.3) then
 	if ( verbose_ECP .gt. 0) then
 	   call WRITE_BASIS()
 	   call WRITE_ECP_PARAMETERS()
@@ -131,14 +107,14 @@
 	   call WRITE_ANG_EXP()
 	   call WRITE_DISTANCE()
 	end if
+	end if
 
-	if ( ecp_debug ) then
+	if ( ecp_debug .and. (tipodecalculo.eq.0 .or. tipodecalculo.eq.3)) then
 	   call WRITE_POST(2)
 	   call SEARCH_NAN()
 !	   call TEST_SYMMETRY()
-	   call TEST_COPY_FOCK()
+!	   call TEST_COPY_FOCK()
 	end if
- 325    write(*,*)
 	contains
 
 
@@ -150,29 +126,28 @@
 
         Subroutine intECPAAA
 !calcula los terminos de Fock para bases y pseudopotenciales en el
-! mismo atomo
+!mismo atomo
         use garcha_mod, only : a,ncont, nshell, nuc
 !a(i,ni) exponente de la funcion de base i, contraccion ni
 !c(i,ni) coeficiente de la funcion de base i, contraccion ni
 !ncont(i) cantidad de contracciones de la funcion de base i
 !nshell(i) cantidad de funciones i=1 s, i=2, p, i=3, d
 !nuc(i) atomo al que corresponde la base i
-        use ECP_mod, only :nECP,bECP, aECP, ecptypes, IzECP, Lmax, Lxyz, VAAAcuadrada,VAAA,local_nonlocal, ecp_debug, Cnorm
+        use ECP_mod, only :nECP,bECP, aECP, ecptypes, IzECP, Lmax, Lxyz, VAAA,local_nonlocal, ecp_debug, Cnorm,ZlistECP
 !nECP, bECP, aECP valores del pseudo potencial
 ! V = aECP * r^b * exp(-bECP r^2)
 ! estan escritos como: xECP(Z,l,i) Z carga del nucleo, l momento
 ! angular del ecp, i numero de funcion del ecp con Z,l
 
 !ecptypes cantidad de atomos con ECP
-!IzECP cargas nucleares sin corregir por el Zcore
+! IzECP cargas nucleares sin corregir por el Zcore
 ! Lmax(Z) L maximo del ECP
 ! Lxyz(i,j) contiene los exponentes de la parte angular de la funcion
 ! de base i
-!|x> = A x^lx y^ly z^lz *e^-ar^2, j=1 lx, j=2, ly, j=3 lz para la
+! |x> = A x^lx y^ly z^lz *e^-ar^2, j=1 lx, j=2, ly, j=3 lz para la
 ! funcion i de la base
 
 !VAAA contiene los terminos <A|A|A> del pseudo potencial
-!VAAAcuadrada es solo para testeo de simetria
 
 !ecp_debug activa el modo de debug
 !local_nonlocal 1 solo calcula parte local, 2 solo calcula parte no local
@@ -191,11 +166,9 @@
         double precision :: AAA, acum
 !variables auxiliares
 
-
         AAA=0.d0
 	acum=0.d0
         M=nshell(0)+nshell(1)+nshell(2)
-
         do i=1, M
 !barre funciones de la base 
            do j=1, i
@@ -227,26 +200,12 @@
                           else if (local_nonlocal .eq. 2 .and. ecp_debug) then
                              AAA= AAA_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj)
                           end if
-
-
 !suma los terminos locales y no locales del pseudopotencial
                           acum=acum+AAA*Cnorm(j,ji)
 !multiplica por el coeficiente de la base
-
                        end do
-                       VAAAcuadrada(i,j) = VAAAcuadrada(i,j) + acum*Cnorm(i,ii)
-!multiplica por el otro coef de la base
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!                       if (i .ge. j) then
-!este if hay q sacarlo al fina, cuando cambie el rango en el q barre j , en vez de comenzar en 1 comience en i
-                          pos=i+(1-j)*(j-2*M)/2   !chekeada
-                          VAAA(pos) = VAAA(pos) + acum*Cnorm(i,ii) !esta linea es lo unico que quedaria!!!!!!!!!!!!!
-!                             if (abs(VAAA(pos)-VAAAcuadrada(i,j)) .gt. 0.000000000001) then
-!                                stop "arma mal el vector 1"
-!                             end if
-!                        end if
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                          pos=i+(1-j)*(j-2*M)/2
+                          VAAA(pos) = VAAA(pos) + acum*Cnorm(i,ii)
                         acum=0.d0
                         end do
                     end if
@@ -368,7 +327,7 @@
 !c(i,ni) coeficiente de la funcion de base i, contrccion ni
 !ncont(i) cantidad de contracciones de la funcion de base i
 !nshell(i) cantidad de funciones i=1 s, i=2, p, i=3, d
-        use ECP_mod, only : ecptypes,cutECP,IzECP,cutecp2,distx, disty, distz,Lxyz, VAAB, VAABcuadrada,local_nonlocal, ecp_debug,Cnorm,Fulltimer_ECP,tsemilocal,tlocal,Tiempo,tQ1,distcutECP_bohr2,Raction
+        use ECP_mod, only : ecptypes,cutECP,IzECP,cutecp2,distx, disty, distz,Lxyz, VAAB, local_nonlocal, ecp_debug,Cnorm,Fulltimer_ECP,tsemilocal,tlocal,Tiempo,tQ1,cut2_0,ZlistECP,pi
 !nECP, bECP, aECP valores del pseudo potencial
 ! aECP*r^b * exp(-bECP r^2)
 !estan escritos como: xECP(Z,l,i) Z carga del nucleo, l del ecp, i numero de funcion del ecp con Z,l
@@ -379,12 +338,13 @@
 ! Lxyz(i,j) contiene los exponentes de la parte angular de la funcion de base i
 !|x> = A x^lx y^ly z^lz *e^-ar^2, j=1 lx, j=2, ly, j=3 lz para la funcion i de la base
 !VAAA contiene los terminos <A|A|A> del pseudo potencial
-!VAAAcuadrada es solo para testeo de simetria
         implicit none
         integer :: i,j,k,M,ii,ji,lxi,lxj,lyi,lyj,lzi,lzj,pos
 !M cantidad total de funciones de base
         double precision :: Distcoef, AAB, acum, dx,dy,dz
-
+	integer, dimension (-400:400) :: hisAAB
+	integer :: order
+	hisAAB=0
         if (Fulltimer_ECP) then
            tsemilocal=0.d0
            tlocal=0.d0
@@ -421,11 +381,9 @@
 !calculo para ECP en i, hay q repetir para j
                        do ji=1, ncont(j)
 
-			  if ( .not. cutECP .or. ((Distcoef*a(j,ji) .lt. cutecp2) .and. Distcoef .le. Raction(IzECP(nuc(i))))) then
-!	                  if ( .not. cutECP .or. ((Distcoef*a(j,ji) .lt. cutecp2) .and. Distcoef .le. distcutECP_bohr2)) then
-!cut unico
+			   if ( .not. cutECP .or. ((Distcoef*a(j,ji) .lt. cutecp2) .and. Distcoef*a(j,ji) .le. cut2_0)) then
+!cut por contraccion de la base
 
-!	                  if (( .not. cutECP .or. (Distcoef*a(j,ji) .lt. cutecp2)) .and. dx**2+dy**2+dz**2 .le. distcut) then
 !solo calcula los terminos que luego se multipliquen por un factor q no sea demasiado pequeño,
 !el cut va a ser obligatorio, ya que si los atomos quedan muy separados el termino VAAB se obtiene como el producto de un numero MUY grande por uno que es casi 0
 !y se obtienen NAN para el numero muy grande
@@ -446,31 +404,24 @@
 	                     AAB=0.d0
 !multiplica por el coeficiente de la base
 	                     end do
-                             VAABcuadrada(i,j) = VAABcuadrada(i,j) + acum*Cnorm(j,ji)*4*pi*exp(-Distcoef*a(j,ji))
+
+!                             if (abs(acum*Cnorm(j,ji)*4*pi*exp(-Distcoef*a(j,ji))) .gt. 1.d-322) then
+!			        order=int(log10(abs(acum*Cnorm(j,ji)*4*pi*exp(-Distcoef*a(j,ji)))))
+!			        hisAAB(order)=hisAAB(order)+1
+!                             else
+!                                hisAAB(-322) = hisAAB(-322) +1
+!			     end if
 !multiplica por el otro coef de la base
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!                             if (i .ge. j) then
-!este if hay q sacarlo al fina, cuando cambie el rango en el q barre j , en vez de comenzar en 1 comience en i
                                 pos=i+(1-j)*(j-2*M)/2   
                                 VAAB(pos) = VAAB(pos) + + acum*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))!esta linea es lo unico que quedaria!!!
-!                             end if
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	                  end if
                        end do
 	            end if
                     if (IzECP(nuc(j)) .eq. ZlistECP(k)) then
 !calculo para ECP en j
 	               do ii=1, ncont(i)
-!			 if (Distcoef*a(i,ii) .ge. cutecp2) write(*,*) "cut 2 sobro omit int"
-
-
-			   if ( .not. cutECP .or. ((Distcoef*a(i,ii) .lt. cutecp2) .and. Distcoef .le. Raction(IzECP(nuc(j))))) then
-
-!	                   if ( .not. cutECP .or. ((Distcoef*a(i,ii) .lt. cutecp2) .and. Distcoef .le. distcutECP_bohr2)) then
-!cut unico
-
-
-!                          if (( .not. cutECP .or. (Distcoef*a(i,ii) .lt. cutecp2)) .and. dx**2+dy**2+dz**2 .le. distcut ) then
+			   if ( .not. cutECP .or. ((Distcoef*a(i,ii) .lt. cutecp2) .and.Distcoef*a(i,ii) .le. cut2_0)) then
+!cut por contraccion de la base
 !solo calcula los terminos que luego se multipliquen por un factor q no sea demasiado pequeño,
                              acum=0.d0
                              do ji=1, ncont(j)
@@ -489,25 +440,30 @@
 	                        AAB=0.d0
 !multiplica por el coeficiente de la base
                              end do
-                             VAABcuadrada(i,j) = VAABcuadrada(i,j) + acum*Cnorm(i,ii)*4*pi*exp(-Distcoef*a(i,ii))
 !multiplica por el otro coef de la base
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!                             if (i .ge. j) then
-!este if hay q sacarlo al fina, cuando cambie el rango en el q barre j , en vez de comenzar en 1 comience en i
-                                pos=i+(1-j)*(j-2*M)/2   !chekeada
+                                pos=i+(1-j)*(j-2*M)/2
                                 VAAB(pos) = VAAB(pos) + acum*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii)) !esta linea es lo unico que quedaria!!!!!!!!!!!!!
-!                             end if
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!				if (abs(acum*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii))) .gt. 1.d-322) then
+!                                   order=int(log10(abs(acum*Cnorm(i,ii)*4.d0*pi*exp(-Distcoef*a(i,ii)))))
+!                                   hisAAB(order)=hisAAB(order)+1
+!				else 
+!		   		   hisAAB(-322) = hisAAB(-322) +1
+!				end if
+
                           end if
                        end do
                     end if
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                  end if
               end do
            end if
         end do
         end do
+
+!	do order=-400, 400, 1
+!	   write(120,*) order, hisAAB(order)
+!	end do
 
         if (Fulltimer_ECP) then
 	   Tiempo = tQ1
@@ -731,11 +687,13 @@
 
 	subroutine intECPABC()
 	use garcha_mod, only : nshell,nuc,ncont,natom,a
-	use ECP_mod, only : pi,ecptypes,cutECP,cutecp3,Lxyz,IzECP,VBACcuadrada,VBAC,local_nonlocal,ecp_debug,distx,disty,distz,Cnorm, Fulltimer_ECP,tsemilocal,tlocal,Tiempo,tQ1,tQ2,Taux,distcutECP_bohr2,Raction
+	use ECP_mod, only : pi,ecptypes,cutECP,cutecp3,Lxyz,IzECP,VBAC,local_nonlocal,ecp_debug,distx,disty,distz,Cnorm, Fulltimer_ECP,tsemilocal,tlocal,Tiempo,tQ1,tQ2,Taux,cut3_0,ZlistECP
 	implicit none
 	integer :: i,j,ii,ji,M,k,ki
 	Double Precision :: Distcoef,dxi,dxj,dyi,dyj,dzi,dzj,ABC,acum,pos
 	integer :: lxi,lxj,lyi,lyj,lzi,lzj
+        integer, dimension (-400:400) :: hisAAC
+        integer :: order
 
 
 	if (Fulltimer_ECP) then
@@ -776,24 +734,20 @@
                        lzj=Lxyz(j,3)
 
 	               do ii=1, ncont(i)
+			  if (.not.cutECP .or. (a(i,ii)*(dxi**2+dyi**2+dzi**2) .le. cut3_0)) then
 	               do ji=1, ncont(j)
 !barre contracciones de la base
+		 	  if (.not.cutECP .or. (a(j,ji)*(dxj**2+dyj**2+dzj**2) .le. cut3_0)) then
+
 	                  Distcoef=a(i,ii)*(dxi**2.d0 + dyi**2.d0 + dzi**2.d0) + a(j,ji)*(dxj**2.d0 + dyj**2.d0 + dzj**2.d0)
 
-!			 if (Distcoef .ge. cutecp3) write(*,*) "cut 3 sobrepasado omit int",i,ii,j,ji
-
-
-			   if (.not.cutECP .or. ((Distcoef .lt. cutecp3).and. dxi**2+dyi**2+dzi**2 .le. Raction(IzECP(nuc(i))) .and. dxj**2+dyj**2+dzj**2 .le. Raction(IzECP(nuc(j))))) then
-
-!	                   if (.not.cutECP .or. ((Distcoef .lt. cutecp3).and. dxi**2+dyi**2+dzi**2 .le. distcutECP_bohr2 .and. dxj**2+dyj**2+dzj**2 .le. distcutECP_bohr2)) then
-!cut unico
-
-
-!                          if (( .not. cutECP .or. (Distcoef .lt. cutecp3)).and. dxi**2+dyi**2+dzi**2 .le. distcut .and. dxj**2+dyj**2+dzj**2 .le. distcut) then
+			  if (.not.cutECP .or. ((Distcoef .lt. cutecp3) ))then
+!cut por exponente de la base
 !solo calcula los terminos que luego se multipliquen por un factor q no sea demasiado pequeño,
 !el cut va a ser obligatorio, ya que si los atomos quedan muy separados el termino de Fock se obtiene como el producto de un numero MUY grande por uno que es casi 0
 !y se obtienen NAN para el numero muy grande
 !a distancias grades gana el termino que es casi 0
+
 
 	                     ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj) +4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 
@@ -805,20 +759,23 @@
 					if (i.eq.1 .and. j.eq.1) write(*,*) "abc",abc
                                 end if
 		                        acum=acum + ABC*Cnorm(j,ji)*exp(-Distcoef)
-	                     ABC=0.d0
+
+!                                if (abs(ABC*Cnorm(j,ji)*exp(-Distcoef)*Cnorm(i,ii)*4.d0*pi) .gt. 1.d-322) then
+!                                   order=int(log10(abs(ABC*Cnorm(j,ji)*exp(-Distcoef)*Cnorm(i,ii)*4.d0*pi)))
+!                                   hisAAC(order)=hisAAC(order)+1
+!                                else
+!                                   hisAAC(-322)=hisAAC(-322)+1
+!                                end if
+
+                                ABC=0.d0
 	                  end if
+			  end if
 	               end do
 
-	               VBACcuadrada(i,j)= VBACcuadrada(i,j) + acum*Cnorm(i,ii)*4.d0*pi
-!                                        if (i.eq.1 .and. j.eq.1) write(*,*) "fock",acum*c(i,ii)*4.d0*pi
-!			if (i.eq.1 .and. j.eq.1) write(*,*) "mirando fock",VBACcuadrada(i,j) 
-
-!	               if (i .ge. j) then
-!este if hay q sacarlo al fina, cuando cambie el rango en el q barre j , en vez de comenzar en 1 comience en i
-	                  pos=i+(1-j)*(j-2*M)/2   !chekeada
-	                  VBAC(pos) = VBAC(pos) + acum*Cnorm(i,ii)*4.d0*pi !esta linea es lo unico que quedaria!!!!!!!!!!!!!
-!	               end if
+	                  pos=i+(1-j)*(j-2*M)/2
+	                  VBAC(pos) = VBAC(pos) + acum*Cnorm(i,ii)*4.d0*pi
                        acum=0.d0
+		       end if
 	               end do
 	            end if 
 	         end do
@@ -826,6 +783,11 @@
 	   end do
 	end do
 	end do
+
+!        do order=-400, 400, 1
+!           write(121,*) order, hisAAC(order)
+!        end do
+
 
 	if (Fulltimer_ECP) then
 	   Tiempo=tQ1
@@ -845,7 +807,7 @@
 
 	DOUBLE PRECISION function ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2)
 	use garcha_mod, only : a,c
-	use ECP_mod, only :expnumbersECP, Qnl,bECP,IzECP,angularint,pi,Fulltimer_ECP,tlocal,tQ1
+	use ECP_mod, only :expnumbersECP, Qnl,bECP,IzECP,angularint,pi,Fulltimer_ECP,tlocal,tQ1,Lmax,necp,aECP
 	implicit none
         integer, intent(in) :: i,j,ii,ji
 !terminos de la base
@@ -957,7 +919,7 @@
 
 	DOUBLE PRECISION function ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
         use garcha_mod, only : a
-        use ECP_mod, only : Qnl1l2,necp,bECP,IzECP,pi,Fulltimer_ECP,tsemilocal,tQ2,Taux
+        use ECP_mod, only : Qnl1l2,necp,bECP,IzECP,pi,Fulltimer_ECP,tsemilocal,tQ2,Taux,Lmax,expnumbersECP,aECP
 	implicit none
 	integer, intent(in) :: i,j,ii,ji,k
 !i,j funciones de la base
@@ -1086,7 +1048,6 @@
 	end if
 
 	return
-!	4315 format(1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x,f10.7,1x)
 	end function ABC_SEMILOCAL
 
 
@@ -1667,11 +1628,11 @@
 	if (cutECP) then
 	   if (cutecp2.gt.700) then
 	      write(*,*) "WARNING cutecp2 > 700, using cutecp2=700"
-	      cutecp2=700
+!	      cutecp2=700
 	   end if
 	   if (cutecp3.gt.700) then
 	      write(*,*) "WARNING cutecp3 > 700, using cutecp3=700"
-	      cutecp3=700
+!	      cutecp3=700
 	   end if
 	end if
 	end subroutine
@@ -1689,10 +1650,10 @@
         np=nshell(1)
         nd=nshell(2)
         M=ns+np+nd
-        allocate (VAAAcuadrada(M,M),VAABcuadrada(M,M), VBACcuadrada(M,M))
-        VAAAcuadrada=0.d0
-        VAABcuadrada=0.d0
-        VBACcuadrada=0.d0
+!        allocate (VAAAcuadrada(M,M),VAABcuadrada(M,M), VBACcuadrada(M,M))
+!        VAAAcuadrada=0.d0
+!        VAABcuadrada=0.d0
+!        VBACcuadrada=0.d0
         Mcuad=M*(M+1)/2
         allocate (VAAA(Mcuad),VAAB(Mcuad),VBAC(Mcuad),term1e(Mcuad))
         VAAA=0.d0
@@ -1707,44 +1668,12 @@
 	allocate (Lxyz(M, 3))
         end subroutine allocate_ECP
 
-	subroutine obtain_Raction()
-!enrealidad obtiene r^2
-	use ECP_mod, only : IzECP,Raction,cut2_0
-	use garcha_mod, only : nshell,ncont,a,nuc
-	implicit none
-	integer :: i,ii,M
-	double precision :: alfam 
-	double precision, dimension(128) :: alfamin
-	call g2g_timer_start('Raction')
-        M=nshell(0)+nshell(1)+nshell(2)
-	alfamin=5d10
-        do i=1,M
-	   alfam=5d10
-	   do ii=1, ncont(i)
-	      if (a(i,ii) .lt. alfam) alfam=a(i,ii)
-	   end do
-	   if (alfam .lt. alfamin(IzECP(nuc(i)))) alfamin(IzECP(nuc(i)))=alfam
-	end do
-	
-
-!	Raction(IzECP(nuc(i)))
-
-	Raction=cut2_0/alfamin
-	
-	do i=1,128
-!		write(*,*) i,alfamin(i),Raction(i)
-	end do
-
-!Raction(IzECP(nuc(i)))
-	call g2g_timer_stop('Raction')
-	end subroutine
-
 
         subroutine deallocateV
 !desalocatea variables de ECP
-        use ECP_mod, only :VAAAcuadrada,VAABcuadrada, VBACcuadrada,VAAA,VAAB,VBAC,term1e,distx, disty, distz,IzECP,Lxyz,Cnorm
+        use ECP_mod, only :VAAA,VAAB,VBAC,term1e,distx, disty, distz,IzECP,Lxyz,Cnorm
         implicit none
-        deallocate (VAAAcuadrada,VAABcuadrada, VBACcuadrada)
+!        deallocate (VAAAcuadrada,VAABcuadrada, VBACcuadrada)
         deallocate (VAAA,VAAB,VBAC)
         deallocate (term1e)
         deallocate (distx, disty, distz)

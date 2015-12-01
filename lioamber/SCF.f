@@ -69,24 +69,21 @@
 !%%%%%%%%%%%%%%%    Effective Core Potential Fock    %%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
         if (ecpmode) then 
-	if (FOCK_ECP_read) then
-	   call intECP(0)
+	   if (FOCK_ECP_read) then
+	      call intECP(0)
 ! alocatea variables comunes y las lee del archivo ECP_restart
-! se observan discreparcias en la Energia en el orden de 1E-1 al
-! utilizar el restart,habria que ver si no se esta perdiendo
-! precision en los valores de fock al guardar/escribir
-	end if
-320     call g2g_timer_start('ECP Routines')
-        call intECP(1)
+	   else
+              call g2g_timer_start('ECP Routines')
+              call intECP(1)
 !alocatea variables, calcula variables comunes, y calcula terminos de 1 centro
-	call intECP(2)
+	      call intECP(2)
 !calcula terminos de 2 centros
-	call intECP(3)
+	      call intECP(3)
 !calcula terminos de 3 centros
-        call g2g_timer_stop('ECP Routines')
+              call g2g_timer_stop('ECP Routines')
+	   end if
 	if (FOCK_ECP_write) call WRITE_ECP()
-
-321     call WRITE_POST(1)
+        call WRITE_POST(1)
  	end if
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 

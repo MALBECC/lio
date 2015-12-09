@@ -2,7 +2,7 @@
 # LINK FLAGS : This are the flags related to the linkage of all
 # the objects, modules and libraries (internal and external) to
 # compile the LIO library.
-LFLAGS += -shared -fPIC -check bounds
+LFLAGS += -shared -fPIC #-check bounds
 
 #
 ######################################################################

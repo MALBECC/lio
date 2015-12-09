@@ -2,13 +2,18 @@
 ! Effective Core Potential Subroutines                               !
 !                                                                    !
 ! This routines calculate Fock matrix elements for effective core    !
-! potential                                                          !
+! potential.                                                         !
 !                                                                    !
 ! V 0.95 december 2015 cutoff for interacions                        !                                                                   ! 
 ! V 0.91 october 2015 optimized version for energy calculations      !
 ! V 0.9 september 2015 1st functional version for energy calculations!
 !                                                                    !
 ! Nicolas Foglia                                                     !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! References                                                         !
+!citar papers
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 
@@ -327,7 +332,8 @@
 !c(i,ni) coeficiente de la funcion de base i, contrccion ni
 !ncont(i) cantidad de contracciones de la funcion de base i
 !nshell(i) cantidad de funciones i=1 s, i=2, p, i=3, d
-        use ECP_mod, only : ecptypes,cutECP,IzECP,cutecp2,distx, disty, distz,Lxyz, VAAB, local_nonlocal, ecp_debug,Cnorm,Fulltimer_ECP,tsemilocal,tlocal,Tiempo,tQ1,cut2_0,ZlistECP,pi
+        use ECP_mod, only : ecptypes,cutECP,IzECP,cutecp2,distx, disty, distz,Lxyz, VAAB, local_nonlocal, ecp_debug,Cnorm, &
+        Fulltimer_ECP,tsemilocal,tlocal,Tiempo,tQ1,cut2_0,ZlistECP,pi
 !nECP, bECP, aECP valores del pseudo potencial
 ! aECP*r^b * exp(-bECP r^2)
 !estan escritos como: xECP(Z,l,i) Z carga del nucleo, l del ecp, i numero de funcion del ecp con Z,l
@@ -392,7 +398,8 @@
 	                     do ii=1, ncont(i)
 !ji y ii barren contracciones de las funcion de base
 !me conviene que barra primero los terminos de la base de i, ya que el factor ezponencial que multiplica solo depende de j
-	                        AAB=AAB_LOCAL(i,j,k,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz) +AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
+	                        AAB=AAB_LOCAL(i,j,k,ii,ji,lxj,lyj,lzj,lxi,lyi,lzi,dx,dy,dz) + &
+                                AAB_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx,dy,dz)
 
                                 if (local_nonlocal .eq. 1 .and. ecp_debug) then
 ! local_nonlocal 1 y 2 son solo para debugueo
@@ -413,7 +420,7 @@
 !			     end if
 !multiplica por el otro coef de la base
                                 pos=i+(1-j)*(j-2*M)/2   
-                                VAAB(pos) = VAAB(pos) + + acum*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))!esta linea es lo unico que quedaria!!!
+                                VAAB(pos) = VAAB(pos) + acum*Cnorm(j,ji)*4.d0*pi*exp(-Distcoef*a(j,ji))!esta linea es lo unico que quedaria!!!
 	                  end if
                        end do
 	            end if
@@ -427,7 +434,8 @@
                              do ji=1, ncont(j)
 !ji y ii barren contracciones de las funcion de base
 !me conviene que barra primero los terminos de la base de j, ya que el factor ezponencial que multiplica solo depende de j
-                                AAB=AAB_LOCAL(j,i,k,ji,ii,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz) +AAB_SEMILOCAL(j,i,ji,ii,k,lxj,lyj,lzj,lxi,lyi,lzi,-dx,-dy,-dz)
+                                AAB=AAB_LOCAL(j,i,k,ji,ii,lxi,lyi,lzi,lxj,lyj,lzj,-dx,-dy,-dz) + &
+                                AAB_SEMILOCAL(j,i,ji,ii,k,lxj,lyj,lzj,lxi,lyi,lzi,-dx,-dy,-dz)
 
                                 if (local_nonlocal .eq. 1 .and. ecp_debug) then
 ! local_nonlocal 1 y 2 son solo para debugueo
@@ -687,10 +695,11 @@
 
 	subroutine intECPABC()
 	use garcha_mod, only : nshell,nuc,ncont,natom,a
-	use ECP_mod, only : pi,ecptypes,cutECP,cutecp3,Lxyz,IzECP,VBAC,local_nonlocal,ecp_debug,distx,disty,distz,Cnorm, Fulltimer_ECP,tsemilocal,tlocal,Tiempo,tQ1,tQ2,Taux,cut3_0,ZlistECP
+	use ECP_mod, only : pi,ecptypes,cutECP,cutecp3,Lxyz,IzECP,VBAC,local_nonlocal,ecp_debug,distx,disty,distz,Cnorm, Fulltimer_ECP, & 
+        tsemilocal,tlocal,Tiempo,tQ1,tQ2,Taux,cut3_0,ZlistECP
 	implicit none
-	integer :: i,j,ii,ji,M,k,ki
-	Double Precision :: Distcoef,dxi,dxj,dyi,dyj,dzi,dzj,ABC,acum,pos
+	integer :: i,j,ii,ji,M,k,ki,pos
+	Double Precision :: Distcoef,dxi,dxj,dyi,dyj,dzi,dzj,ABC,acum
 	integer :: lxi,lxj,lyi,lyj,lzi,lzj
         integer, dimension (-400:400) :: hisAAC
         integer :: order
@@ -749,7 +758,8 @@
 !a distancias grades gana el termino que es casi 0
 
 
-	                     ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj) +4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
+	                     ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj) + & 
+                             4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
 
                                 if (local_nonlocal .eq. 1 .and. ecp_debug) then
 ! local_nonlocal 1 y 2 son solo para debugueo
@@ -879,7 +889,8 @@
 		
 	         if ( Kmod .gt. 0.d0 ) then
                     integral=integral + OMEGA1(Kvector,lambda,ac+dc,bc+ec,cc+fc) * Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)
-		    if (Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda) .ne. Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)) stop " qnl1l2 = 0 in ABC_SEMILOCAL"
+		    if (Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda) .ne. Qnl(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),lambda)) &
+                    stop " qnl1l2 = 0 in ABC_SEMILOCAL"
 !corta de no calculo la integral radial
 		 else
                     integral=integral + angularint(ac+dc,bc+ec,cc+fc) * Q0(ac+bc+cc+dc+ec+fc+nECP(Z,l,w),Ccoef) *0.25d0/pi
@@ -1064,7 +1075,7 @@
         implicit none
         integer, intent(in) :: n
         double precision, intent(in) :: alpha
-        if ( .not. mod(n,2)) then
+        if ( mod(n,2).eq.0) then
            Q0=0.5d0*pi12/sqrt(alpha) * doublefactorial(n-1)/((2*alpha)**(n/2))
            return
         else
@@ -1226,13 +1237,13 @@
         if (l .eq. 0) then
            Ucoef=l0(1)
         elseif (l .eq. 1) then
-           Ucoef=l1(2*lx+ly+1,m)
+           Ucoef=l1(int(2*lx+ly+1),m)
         elseif (l .eq. 2) then
-           Ucoef=l2(0.5*lx*(7-lx)+ly+1,m)
+           Ucoef=l2(int(0.5*lx*(7-lx)+ly+1),m)
         elseif (l .eq. 3) then
-           Ucoef=l3(0.5*lx*(9-lx)+ly+1,m)
+           Ucoef=l3(int(0.5*lx*(9-lx)+ly+1),m)
         elseif (l .eq. 4) then
-           Ucoef=l4(0.5*lx*(11-lx)+ly+1,m)
+           Ucoef=l4(int(0.5*lx*(11-lx)+ly+1),m)
         else
            stop "ECP error l is greater than 4"
         end if
@@ -1797,18 +1808,24 @@
 	write(*,3909) elec_remov
 	write(*,3910)
 
-	3900 format(4x,"╔══════════════════════════════════════╗")
-	3901 format(4x,"║          ATOM MODIFICATIONS          ║")
-	3902 format(4x,"╠═══════╦══════╦═══════════╦═══════════╣")
-	3903 format(4x,"║ Atom  ║ Atom ║ Eff. Nuc. ║ Electrons ║")
-	3904 format(4x,"║ Numb. ║ Type ║   Charge  ║  Removed  ║")
-	3905 format(4x,"╠═══════╬══════╬═══════════╬═══════════╣")
-	3906 format(4x,"║",1x,i3,3x,"║",2x,a3,1x,"║",3x,i3,5x,"║",1x,i5,5x,"║")
-	3907 format(4x,"╚═══════╩══════╩═══════════╩═══════════╝")
-	3908 format(4x,"╔═══════════════════════════╦══════════╗")
-	3909 format(4x,"║  TOTAL ELECTRONS REMOVED  ║",1x,i5,4x,"║")
-	3910 format(4x,"╚═══════════════════════════╩══════════╝")
 
+        3900 format(4x,"╔══════════════════════════════════&
+        ════╗")
+        3901 format(4x,"║          ATOM MODIFICATIONS          ║")
+        3902 format(4x,"╠═══════╦══════╦═══════════╦═══════&
+        ════╣")
+        3903 format(4x,"║ Atom  ║ Atom ║ Eff. Nuc. ║ Electrons ║")
+        3904 format(4x,"║ Numb. ║ Type ║   Charge  ║  Removed  ║")
+        3905 format(4x,"╠═══════╬══════╬═══════════╬═══════&
+        ════╣")
+        3906 format(4x,"║",1x,i3,3x,"║",2x,a3,1x,"║",3x,i3,5x,"║",1x,i5,5x,"║")
+        3907 format(4x,"╚═══════╩══════╩═══════════╩═══════&
+        ════╝")
+        3908 format(4x,"╔═══════════════════════════╦══════&
+        ════╗")
+        3909 format(4x,"║  TOTAL ELECTRONS REMOVED  ║",1x,i5,4x,"║")
+        3910 format(4x,"╚═══════════════════════════╩══════&
+        ════╝")
         end subroutine ReasignZ
 
 
@@ -1940,8 +1957,11 @@
         if (i.eq.13) write(*,3925) Tiempo
 	write(*,3912) 
 
- 3911   format(4x,"╔══════════════════════════════════════╗")
- 3912   format(4x,"╚══════════════════════════════════════╝")
+
+ 3911   format(4x,"╔════════════════════════════════════&
+        ══╗")
+ 3912   format(4x,"╚════════════════════════════════════&
+        ══╝")
  3913   format(4x,"║    End of Effective Core Potential   ║")
  3914   format(4x,"║        Staring Debug Routines        ║")
  3915   format(4x,"║    Doing Eff. Core Pot. Integrals    ║")
@@ -1982,13 +2002,17 @@
         end do
 	write(*,4016)
 
-	4010 format("╔═══════════════════════════════════════════╗")
-	4011 format("║            NORMALIZED BASIS SET           ║")
-	4012 format("╠═══════╦═══════╦════════════╦══════════════╣")
-	4013 format("║ Basis ║ Cont. ║  Exponent  ║ Coefficient  ║")
-	4014 format("╠═══════╬═══════╬════════════╬══════════════╣")
-	4015 format("║",1x,i3,3x,"║",1x,i3,3x,"║",1x,f10.7,1x,"║",1x,f12.9,1x,"║")
-	4016 format("╚═══════╩═══════╩════════════╩══════════════╝ ")
+ 4010 format("╔══════════════════════════════════════&
+      ═════╗")
+ 4011 format("║            NORMALIZED BASIS SET           ║")
+ 4012 format("╠═══════╦═══════╦════════════╦═════════&
+      ═════╣")
+ 4013 format("║ Basis ║ Cont. ║  Exponent  ║ Coefficient  ║")
+ 4014 format("╠═══════╬═══════╬════════════╬═════════&
+      ═════╣")
+ 4015 format("║",1x,i3,3x,"║",1x,i3,3x,"║",1x,f10.7,1x,"║",1x,f12.9,1x,"║")
+ 4016 format("╚═══════╩═══════╩════════════╩═════════&
+      ═════╝ ")
 	end subroutine WRITE_BASIS
 
 
@@ -2022,19 +2046,19 @@
 	end do
 	write(*,4026)
 
-	4020 format("╔═══════════════════════════════════════════════════════"&
-		,"════════════╗") 
-	4021 format("║                       FOCK Pseudopotencials           "&
-		,"            ║")
-	4022 format("╠═══╦═══╦═══════════════════╦═══════════════════╦═══════"&
-		,"════════════╣")
-	4023 format("║ i ║ j ║      <A|A|A>      ║      <A|A|B>      ║      <"&
-		,"B|A|C>      ║")
-	4024 format("╠═══╬═══╬═══════════════════╬═══════════════════╬═══════"&
-		,"════════════╣")
-	4025 format("║",i2,1x,"║",i2,1x,"║",f18.15,1x,"║",f18.15,1x,"║",f18.15,1x,"║",f18.15,1x,"║")
-	4026 format("╚═══╩═══╩═══════════════════╩═══════════════════╩═══════"&
-		,"════════════╝ ")
+ 4020 format("╔════════════════════════════════════&
+      ═══════════════════════════════╗")
+ 4021 format("║                       FOCK Pseudopotencials           "&
+                ,"            ║")
+ 4022 format("╠═══╦═══╦═══════════════════╦═══════&
+      ════════════╦═══════════════════╣")
+ 4023 format("║ i ║ j ║      <A|A|A>      ║      <A|A|B>      ║      <"&
+         ,"B|A|C>      ║")
+ 4024 format("╠═══╬═══╬═══════════════════╬═══════&
+      ════════════╬═══════════════════╣")     
+ 4025 format("║",i2,1x,"║",i2,1x,"║",f18.15,1x,"║",f18.15,1x,"║",f18.15,1x,"║",f18.15,1x,"║")
+ 4026 format("╚═══╩═══╩═══════════════════╩═══════&
+      ════════════╩═══════════════════╝ ")
 	end subroutine WRITE_FOCK_ECP_TERMS
 
 
@@ -2122,19 +2146,24 @@
 	end do
 	write(*,4056)
 
-        4050 format("╔════════════════════════════════════════════════" &
-		,"═════════════════════════════╗")
-        4051 format("║                               Distances (Bohr) " &
-		,"                             ║")
-        4052 format("╠════════╦════════╦═══════════════════╦══════════" &
-		,"═════════╦═══════════════════╣")
-        4053 format("║ atom i ║ atom j ║     distance x    ║     dista" &
-		,"nce y    ║     distance z    ║")
-        4054 format("╠════════╬════════╬═══════════════════╬══════════" &
-		,"═════════╬═══════════════════╣")
-        4055 format("║",2x,i3,3x,"║",2x,i3,3x,"║",f18.15,1x,"║",f18.15,1x,"║",f18.15,1x,"║")
-        4056 format("╚════════╩════════╩═══════════════════╩══════════" &
-		,"═════════╩═══════════════════╝ ")
+
+ 4050 format("╔═══════════════════════════════════&
+      ═════════════════════════════════════════&
+      ═╗")
+ 4051 format("║                               Distances (Bohr) " &
+                ,"                             ║")
+ 4052 format("╠════════╦════════╦═════════════════&
+      ══╦═══════════════════╦══════════════════&
+      ═╣")
+ 4053 format("║ atom i ║ atom j ║     distance x    ║     dista" &
+                ,"nce y    ║     distance z    ║")
+ 4054 format("╠════════╬════════╬═════════════════&
+      ══╬═══════════════════╬══════════════════&
+      ═╣")
+ 4055 format("║",2x,i3,3x,"║",2x,i3,3x,"║",f18.15,1x,"║",f18.15,1x,"║",f18.15,1x,"║")
+ 4056 format("╚════════╩════════╩═════════════════&
+      ══╩═══════════════════╩══════════════════&
+      ═╝ ")
 
 	end subroutine WRITE_DISTANCE
 
@@ -2172,20 +2201,27 @@
 	   end do
 	end do
 
-
-        4060 format(4x,"╔═════════════════════════════════════════════╗")
-        4061 format(4x,"║     EFFECTIVE CORE POTENTIAL PARAMETERS     ║")
-	4062 format(4x,"╚═════════════════════════════════════════════╝")
-	4063 format(8x,"╔════════╦════════════════╦═══════════╗")
-        4064 format(8x,"║",2x,A3,3x,"║",2x,"ZCore=",i3,5x,"║",2x,"Lmax=",i1,3x,"║")
-	4065 format(8x,"╠════════╩════════════════╩═══════════╣")
-	4066 format(8x,"║   L=",i1,"                               ║") 
-	4067 format(8x,"╠═══╦════════════════╦════════════════╣")
-	4068 format(8x,"║ n ║    exponent    ║  coefficient   ║")
-	4069 format(8x,"╠═══╬════════════════╬════════════════║")
-	4070 format(8x,"║",1x,i1,1x,"║",f12.6,4x,"║",f12.6,4x,"║")
-	4071 format(8x,"╠═══╩════════════════╩════════════════╣")
-        4072 format(8x,"╚═══╩════════════════╩════════════════╝")
+ 4060 format(4x,"╔═════════════════════════════════════&
+      ════════╗")
+ 4061 format(4x,"║     EFFECTIVE CORE POTENTIAL PARAMETERS     ║")
+ 4062 format(4x,"╚═════════════════════════════════════&
+      ════════╝")
+ 4063 format(8x,"╔════════╦════════════════╦═══════════&
+      ╗")
+ 4064 format(8x,"║",2x,A3,3x,"║",2x,"ZCore=",i3,5x,"║",2x,"Lmax=",i1,3x,"║")
+ 4065 format(8x,"╠════════╩════════════════╩═══════════&
+      ╣")
+ 4066 format(8x,"║   L=",i1,"                               ║")
+ 4067 format(8x,"╠═══╦════════════════╦════════════════&
+      ╣")
+ 4068 format(8x,"║ n ║    exponent    ║  coefficient   ║")
+ 4069 format(8x,"╠═══╬════════════════╬════════════════&
+      ║")
+ 4070 format(8x,"║",1x,i1,1x,"║",f12.6,4x,"║",f12.6,4x,"║")
+ 4071 format(8x,"╠═══╩════════════════╩════════════════&
+      ╣")
+ 4072 format(8x,"╚═══╩════════════════╩════════════════&
+      ╝")
 
 	end subroutine WRITE_ECP_PARAMETERS
 

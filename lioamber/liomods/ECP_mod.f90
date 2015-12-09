@@ -31,10 +31,9 @@
         DOUBLE PRECISION :: cut2_0, cut3_0
 !valores de corte para las integrales de 2 y 3 centros (AAB y BAC)
         LOGICAL :: FOCK_ECP_read, FOCK_ECP_write
-!activan lectura y grabado de Fock para evitar recalcularlo en
-!dinamicas a nucleo fijo
+!activan lectura y grabado de Fock para evitar recalcularlo en dinamicas a nucleo fijo
         LOGICAL :: Fulltimer_ECP
-!activa los timers para int radiales
+!activa los timers para int. radiales
         DOUBLE PRECISION :: tlocal,tsemilocal,tQ1,tQ2,Tiempo, Taux
 !auxiiares para timers
 
@@ -66,12 +65,10 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
         INTEGER, DIMENSION(118) :: Zcore, Lmax
-! Zcore(Z) carga del core para el ECP elegido del atomo con carga
-! nuclear Z, Lmax(Z) L maximo del ECP elegido para el atomo con
-! carga nuclear Z
+! Zcore(Z) carga del core para el ECP elegido del atomo con carga nuclear Z
+! Lmax(Z) L maximo del ECP elegido para el atomo con carga nuclear Z
         INTEGER, DIMENSION(118,0:5) :: expnumbersECP
-! expnumbersECP(Z,l) cantidad de terminos del ECP para el atomo con
-! carga nuclear Z y l del ECP
+! expnumbersECP(Z,l) cantidad de terminos del ECP para el atomo con carga nuclear Z y momento angular l del ECP
         INTEGER, DIMENSION(118,0:5,10) :: nECP
         DOUBLE PRECISION, DIMENSION(118,0:5,10) :: bECP, aECP
 
@@ -82,27 +79,31 @@
 !  \/     \/LMAX     /_    \/l-LMAX  /_   |   /\   |
 !                    l=0             m=-l
 
-!donde Vl= aECP * r^nECP * exp(-bECP r^2)
 
-! Los  xECP estan escritos como: xECP(Z,l,i) Z carga del nucleo,
-! l = momento angular de la expansion del ecp, i numero de funcion del ecp con Z,l
+!donde Vl= Σ aECP * r^nECP * exp(-bECP r^2)
+!          i
+
+! Los  xECP estan escritos como: xECP(Z,l,i) Z carga del nucleo, l = momento angular de la expansion del ecp, i numero de funcion
+! del ecp con Z,l
 
         INTEGER, DIMENSION (:), ALLOCATABLE :: IzECP
 !cargas nucleares sin corregir por la carga del core (Zcore)
 
         INTEGER, DIMENSION (:,:), ALLOCATABLE :: Lxyz
 ! Lxyz(i,j) contiene los exponentes de la parte angular de la funcion de base i
-!|xi> = ci x^lx y^ly z^lz *e^(-a * r^2)
+
+!|xi> =Σci x^lx y^ly z^lz *e^(-a * r^2)
+!      i
+
 !j=1 lx, j=2 ly, j=3 lz para la funcion i de la base
 
         DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: VAAA, VAAB, VBAC,term1e
         DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: VAAAcuadrada, VAABcuadrada, VBACcuadrada
-! VXXX contiene los coeficientes de Fock del pseudopotencial.
+! VXXX contiene los valores de la Matriz de Fock del pseudopotencial.
 ! VAAA integrales de un centro (base y ecp en el mismo atomo)
 ! VAAB integrales de 2 centros (1 base y ecp en el mismo atomo)
 ! VBAC integrales de 3 centros (ninguna base en el atomo con ecp)
-! term1e contiene una copia de los terminos de 1e- sin la modificaion
-! por agregar los terminos de los pseudopotenciales
+! term1e contiene una copia de los terminos de 1e- sin la modificacion por agregar los terminos de los pseudopotenciales
 
         DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: distx, disty, distz
 !guarda la distancia en x, y, z entre los atomos i y j dist(i,j)=xi-xj
@@ -134,27 +135,44 @@
 
         INTEGER, PARAMETER, DIMENSION (4,4) :: alpha = reshape((/1,0,1,0,0,-3,0,-10,0,0,15,0,0,0,0,-105/),(/4,4/))
         INTEGER, PARAMETER, DIMENSION (5,5) :: betha = reshape((/1,0,1,0,1,0,-1,0,-6,0,0,0,3,0,45,0,0,0,-15,0,0,0,0,0,105/),(/5,5/))
-
 ! alpha y betha contains coeficients for expantion of modified spherical bessel function of the first kind Mk(x) in terms of 
 ! sinh(x)/x^i (betha(k+1,i) and cosh(x)/x^i (alpha(k,i)) for k between 0 and 4, it is enought for energy calculations of functions
 ! s to g
 
         DOUBLE PRECISION, DIMENSION (-12:14) :: Bn1, Bn2, Cn1, Cn2, rho, tau, sigma, sigmaR
         DOUBLE PRECISION, DIMENSION (-12:14) :: Bn,Cn
+!                                ͚ 
+! Bni(j) contain the value of  ʃ t^(n-2-j)*(exp)-c(t-ai)^2 + exp(-c(t+ai)^2) dt
+!                              ̊ 
 
-! Bni(j) contain the value of  int t^(n-2-j)*(exp)-c(t-ai)^2 + exp(-c(t+ai)^2) from 0 to inf
-! Cni(j) contain the value of  int t^(n-2-j)*(exp)-c(t-ai)^2 - exp(-c(t+ai)^2) from 0 to inf
+!                                ͚ 
+! Cni(j) contain the value of  ʃ t^(n-2-j)*(exp)-c(t-ai)^2 - exp(-c(t+ai)^2) dt
+!                              ̊ 
 
-! rho(n) = int exp(-cr^2) * sinh(Ka*r)* sinh(Kb*r) r^n  dr  from 0 to inf
-! sigma(n) = int exp(-cr^2) * sinh(Ka*r)* cosh(Kb*r) r^n  dr  from 0 to inf
-! sigmaR(n) = int exp(-cr^2) * cosh(Ka*r)* sinh(Kb*r) r^n  dr  from 0 to inf
-! tau(n) = int exp(-cr^2) * cosh(Ka*r)* cosh(Kb*r) r^n  dr  from 0 to inf
+!            ͚  
+! rho(n) = ʃ exp(-cr^2) * sinh(Ka*r)* sinh(Kb*r) r^n dr
+!          ̊ 
+!              ͚ 
+! sigma(n) = ʃ exp(-cr^2) * sinh(Ka*r)* cosh(Kb*r) r^n dr
+!            ̊ 
+!               ͚ 
+! sigmaR(n) = ʃ exp(-cr^2) * cosh(Ka*r)* sinh(Kb*r) r^n dr
+!             ̊ 
+!            ͚ 
+! tau(n) = ʃ exp(-cr^2) * cosh(Ka*r)* cosh(Kb*r) r^n dr
+!          ̊ 
 
         DOUBLE PRECISION, DIMENSION (0:10,0:4,0:4) :: Qnl1l2
-! Qnl1l2(n,l1,l2) = int Ml1(kA*r)* Ml2(kB*r)*r^n * exp(-cr^2) dr from 0 to inf
+!                     ͚
+! Qnl1l2(n,l1,l2) = ʃ Ml1(kA*r)* Ml2(kB*r)*r^n * exp(-cr^2) dr 
+!                   ̊ 
+
 
         DOUBLE PRECISION, DIMENSION (0:10,0:4) :: Qnl
-! Qnl(n,l) = int Ml(k*r)*r^n * exp(-cr^2) dr from 0 to inf
+!              ͚ 
+! Qnl(n,l) = ʃ Ml(k*r)*r^n * exp(-cr^2) dr
+!            ̊ 
+
 
 ! Parameters
         DOUBLE PRECISION, PARAMETER :: pi=3.14159265358979312D0, pi12=1.77245385090552D0 !pi12 = pi^0.5
@@ -175,11 +193,12 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    Parameters for Angular Integrals    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-! li contains the coeficiente ul,m,lx,ly,lz fof expansion of 
-! Normalized real spherical harmonics Slm in terms of unitary sphere
+! li contains the coeficient ul,m,lx,ly,lz for expansion of normalized real spherical harmonics Slm in terms of unitary sphere
 ! polinomials
-! S(l,m)= sum ul(m,lx,ly,lz) * (x/r)^lx * (y/r)^ly * (z/r)^lz
-! lx+ly+lz=l
+
+! S(l,m)= Σ ul(m,lx,ly,lz) * (x/r)^lx * (y/r)^ly * (z/r)^lz
+!     lx+ly+lz=l
+
 ! ul=F(f(lx,ly,lz),m)
 
         DOUBLE PRECISION, DIMENSION (1) :: l0 = (/0.5d0/pi12/)

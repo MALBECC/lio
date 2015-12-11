@@ -4,9 +4,9 @@ C DFT calculation with gaussian basis sets
 c---------------------------------------------------------------------
       use garcha_mod
       use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP
-     & ,cutECP,local_nonlocal, ecp_debug,ecp_full_range_int
-     & ,verbose_ECP,Cnorm,FOCK_ECP_read, FOCK_ECP_write,Fulltimer_ECP
-     & ,cut2_0,cut3_0
+     > ,cutECP,local_nonlocal, ecp_debug,ecp_full_range_int
+     > ,verbose_ECP,Cnorm,FOCK_ECP_read, FOCK_ECP_write,Fulltimer_ECP
+     > ,cut2_0,cut3_0
 #ifdef CUBLAS
       use cublasmath
 #endif

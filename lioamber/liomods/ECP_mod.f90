@@ -232,8 +232,7 @@
         0.d0,0.75d0*aux9,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,0.1875d0*aux8,0.d0,0.d0,0.d0,0.d0,0.d0,0.d0,-1.125d0*aux8,0.d0,0.d0,        &
         0.1875d0*aux8/),(/15,9/))
 
-        DOUBLE PRECISION, DIMENSION (0:9,0:9,0:9) :: angularint
-! contiene los valores tabulados de  la rutina del mismo nombre (comentada mas abajo)
+        DOUBLE PRECISION, DIMENSION (0:9,0:9,0:9) :: angularint ! angularint(i,j,k)= ʃ(x/r)^i (y/r)^j (z/r)^k dΩ
 
         Contains
 
@@ -459,10 +458,11 @@
 !        end function DOUBLEfac
 
 !	DOUBLE PRECISION function angularint(i,j,k)
+! angularint(i,j,k)= ʃ(x/r)^i (y/r)^j (z/r)^k dΩ
+
 !	IMPLICIT NONE
 !	INTEGER, INTENT(in) :: i,j,k
 !	DOUBLE PRECISION, PARAMETER :: pi=3.14159265358979312D0
-!esta rutina calcula la integral (x/r)^i (y/r)^j (z/r)^k, luego sera reemplazada por un array
 !	if (mod(i,2) .eq. 0 .and. mod(j,2) .eq. 0 .and.mod(k,2) .eq. 0 ) then
 !	   angularint=4.d0*pi*DOUBLEfactorial(i-1)*DOUBLEfactorial(j-1)*DOUBLEfactorial(k-1)/DOUBLEfactorial(i+j+k+1)
 !        else

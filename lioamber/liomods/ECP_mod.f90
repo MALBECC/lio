@@ -16,26 +16,16 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    Namelist Variables    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-        LOGICAL :: ecpmode
-!activa los pseudopotenciales
-        INTEGER :: ecptypes
-!cantidad de atomos con ECP
-        CHARACTER (LEN=30) :: tipeECP
-!tipo de ECP usado, tiene que estar en $LIOHOME/dat/ECP/
-        INTEGER, DIMENSION(128) :: ZlistECP
-!Z de atomos con ECP
-        LOGICAL :: cutECP
-!activa cuts en las integrales de ECP
-        DOUBLE PRECISION, PARAMETER :: cutecp2=7D2, cutecp3=7D2
-!cuts limite para evitar 0 * NAN
-        DOUBLE PRECISION :: cut2_0, cut3_0
-!valores de corte para las integrales de 2 y 3 centros (AAB y BAC)
-        LOGICAL :: FOCK_ECP_read, FOCK_ECP_write
-!activan lectura y grabado de Fock para evitar recalcularlo en dinamicas a nucleo fijo
-        LOGICAL :: Fulltimer_ECP
-!activa los timers para int. radiales
-        DOUBLE PRECISION :: tlocal,tsemilocal,tQ1,tQ2,Tiempo, Taux
-!auxiiares para timers
+        LOGICAL :: ecpmode !activa los pseudopotenciales
+        INTEGER :: ecptypes !cantidad de atomos con ECP
+        CHARACTER (LEN=30) :: tipeECP !tipo de ECP usado, tiene que estar en $LIOHOME/dat/ECP/
+        INTEGER, DIMENSION(128) :: ZlistECP !Z de atomos con ECP
+        LOGICAL :: cutECP !activa cuts en las integrales de ECP
+        DOUBLE PRECISION, PARAMETER :: cutecp2=7D2, cutecp3=7D2 !cuts limite para evitar 0 * NAN
+        DOUBLE PRECISION :: cut2_0, cut3_0 !valores de corte para las integrales de 2 y 3 centros (AAB y BAC)
+        LOGICAL :: FOCK_ECP_read, FOCK_ECP_write !activan lectura y escritura Fock
+        LOGICAL :: Fulltimer_ECP !activa los timers para int. radiales
+        DOUBLE PRECISION :: tlocal,tsemilocal,tQ1,tQ2,Tiempo, Taux !auxiiares para timers
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -52,8 +42,7 @@
 ! =1 solo calcula terminos locales <xi|V|xj>
 ! =2 solo calcula terminos no locales <xi|Ylm>V<Ylm|xj>
 ! default =0
-        INTEGER :: verbose_ECP
-! controla la impresion de variables
+        INTEGER :: verbose_ECP ! controla la impresion
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -86,11 +75,8 @@
 ! Los  xECP estan escritos como: xECP(Z,l,i) Z carga del nucleo, l = momento angular de la expansion del ecp, i numero de funcion
 ! del ecp con Z,l
 
-        INTEGER, DIMENSION (:), ALLOCATABLE :: IzECP
-!cargas nucleares sin corregir por la carga del core (Zcore)
-
-        INTEGER, DIMENSION (:,:), ALLOCATABLE :: Lxyz
-! Lxyz(i,j) contiene los exponentes de la parte angular de la funcion de base i
+        INTEGER, DIMENSION (:), ALLOCATABLE :: IzECP ! cargas nucleares sin corregir por la carga del core (Zcore)
+        INTEGER, DIMENSION (:,:), ALLOCATABLE :: Lxyz ! exponentes de la parte angular de la funcion de base i
 
 !|xi> =Σci x^lx y^ly z^lz *e^(-a * r^2)
 !      i
@@ -136,7 +122,7 @@
         INTEGER, PARAMETER, DIMENSION (4,4) :: alpha = reshape((/1,0,1,0,0,-3,0,-10,0,0,15,0,0,0,0,-105/),(/4,4/))
         INTEGER, PARAMETER, DIMENSION (5,5) :: betha = reshape((/1,0,1,0,1,0,-1,0,-6,0,0,0,3,0,45,0,0,0,-15,0,0,0,0,0,105/),(/5,5/))
 ! alpha y betha contains coeficients for expantion of modified spherical bessel function of the first kind Mk(x) in terms of 
-! sinh(x)/x^i (betha(k+1,i) and cosh(x)/x^i (alpha(k,i)) for k between 0 and 4, it is enought for energy calculations of functions
+! sinh(x)/x^i (betha(k+1,i)) and cosh(x)/x^i (alpha(k,i)) for k between 0 and 4, it is enought for energy calculations of functions
 ! s to g
 
         DOUBLE PRECISION, DIMENSION (-12:14) :: Bn1, Bn2, Cn1, Cn2, rho, tau, sigma, sigmaR
@@ -166,7 +152,7 @@
 !                     ͚
 ! Qnl1l2(n,l1,l2) = ʃ Ml1(kA*r)* Ml2(kB*r)*r^n * exp(-cr^2) dr 
 !                   ̊ 
-
+! Ml(x) are modified spherical Bessel functions
 
         DOUBLE PRECISION, DIMENSION (0:10,0:4) :: Qnl
 !              ͚ 
@@ -179,9 +165,9 @@
 ! factorial
         INTEGER, DIMENSION(0:15) :: fac=(/1,1,2,6,24,120,720,5040,40320, 362880,3628800,39916800,479001600,1932053504,1278945280,  &
         2004310016/)
-! DOUBLE factorial
+! double factorial
         INTEGER, PARAMETER :: i16 = selected_int_kind (16)
-        INTEGER (KIND=i16), PARAMETER, DIMENSION(-1:33) :: DOUBLEfactorial=(/1_i16, 1_i16,1_i16,2_i16,3_i16,8_i16,15_i16,48_i16,   &
+        INTEGER (KIND=i16), PARAMETER, DIMENSION(-1:33) :: doublefactorial=(/1_i16, 1_i16,1_i16,2_i16,3_i16,8_i16,15_i16,48_i16,   &
         105_i16,384_i16,945_i16,3840_i16,10395_i16,46080_i16,135135_i16,645120_i16,2027025_i16,10321920_i16,34459425_i16,          &
         185794560_i16,654729075_i16,3715891200_i16,13749310575_i16,81749606400_i16,316234143225_i16,1961990553600_i16,             &
         7905853580625_i16,51011754393600_i16,213458046676875_i16,1428329123020800_i16,6190283353629375_i16, 42849873690624000_i16, &
@@ -234,13 +220,11 @@
 
         DOUBLE PRECISION, DIMENSION (0:9,0:9,0:9) :: angularint ! angularint(i,j,k)= ʃ(x/r)^i (y/r)^j (z/r)^k dΩ
 
-        Contains
+        CONTAINS
 
-        subroutine defineparams()
-! define parametros de variables del modulo
+        SUBROUTINE defineparams() ! define parametros de variables del modulo
          IMPLICIT NONE
 ! parametros auxiliares para integrales angulares
-! angular int
          angularint=0.D0
          angularint(0,0,0)=12.5663706143592D0
          angularint(0,0,2)=4.18879020478639D0
@@ -368,14 +352,14 @@
          angularint(8,8,6)=6.571597611681793D-6
          angularint(8,8,8)=1.840047331270902D-6
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-        end subroutine defineparams
+        END SUBROUTINE defineparams
 
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    Other Functions/Subs    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-        subroutine asignacion(Z,simb)
+        SUBROUTINE asignacion(Z,simb)
 ! Toma el numero atomico (Z)  y devuelve el simbolo del elemento en mayusculas (simb)
          IMPLICIT NONE
          INTEGER,INTENT(in) :: Z
@@ -391,7 +375,7 @@
 
          simb=vec(Z)
          RETURN
-        end subroutine asignacion
+        END SUBROUTINE asignacion
 
 
         DOUBLE PRECISION FUNCTION NEXTCOEF(sgn,n,cados,expo,c0coef,coefn1, coefn2)
@@ -403,7 +387,7 @@
          NEXTCOEF=(1+sgn*(-1)**(-n-1))*cados**(-n-1)*expo/fac(-n-1)-2*c0coef*coefn2 +cados*coefn1
          NEXTCOEF=NEXTCOEF/(-n-1)
          RETURN
-        END Function NEXTCOEF
+        END FUNCTION NEXTCOEF
 
 
 

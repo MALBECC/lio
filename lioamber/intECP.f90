@@ -26,7 +26,7 @@
 ! Rutina principal, llama a las otras rutinas
 ! tipodecalculo=0 allocatea variables comunes y las lee de un restart
 ! tipodecalculo=1 alocatea variables y calcula terminos de un centro (AAA)
-! tipodecalculo=2 calcula terminos de DOs centros (ABB)
+! tipodecalculo=2 calcula terminos de dos centros (ABB)
 ! tipodecalculo=3 calcula terminos de tres centros (ABC)
 ! tipodecalculo=4 desalocatea variables
 
@@ -120,8 +120,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-        SUBROUTINE intECPAAA
-!calcula los terminos de Fock para bases y pseudopotenciales en el mismo atomo
+        SUBROUTINE intECPAAA !calcula los terminos de Fock para bases y pseudopotenciales en el mismo atomo
         USE garcha_mod, ONLY : a,ncont, nshell, nuc
 !a(i,ni) exponente de la funcion de base i, contraccion ni
 !c(i,ni) coeficiente de la funcion de base i, contraccion ni
@@ -131,9 +130,9 @@
         USE ECP_mod, ONLY :nECP,bECP, aECP, ecptypes, IzECP, Lmax, Lxyz, VAAA,ecp_debug, local_nonlocal, Cnorm,ZlistECP
 !nECP, bECP, aECP valores del pseudo potencial
 ! V = Σ aECP * r^b * exp(-bECP r^2)
-! estan escritos como: xECP(Z,l,i) Z carga del nucleo, l momento angular del ecp, i numero de funcion del ecp con Z,l
+! estan guardados como: xECP(Z,l,i) Z carga del nucleo, l momento angular del ecp, i numero de funcion del ecp con Z,l
 
-!ecptypes cantidad de atomos con ECP
+! ecptypes cantidad de atomos con ECP
 ! IzECP(i) carga nuclear sin corregir por el Zcore para el atomo i
 ! Lmax(Z) L maximo del ECP
 ! Lxyz(i,j) contiene los exponentes de la parte angular de la funcion de base i
@@ -153,7 +152,7 @@
         DOUBLE PRECISION :: AAA, acum
 !variables auxiliares
 
-        INTEGER :: lxi, lxj,lyi,lyj,lzi, lzj,M
+        INTEGER :: lxi,lxj,lyi,lyj,lzi,lzj,M
 !l?$  pootencia de la parte angular de la base
 !M cantidad de funciones de base
 
@@ -225,7 +224,7 @@
 !Z carga del nucleo
 
         DOUBLE PRECISION :: Ccoef !exponente de la gaussiana para la integral angular
-	INTEGER :: w !variable auxiliare
+	INTEGER :: w !variable auxiliar
 
         Z=ZlistECP(k)
         L=Lmax(Z)
@@ -672,8 +671,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    3 Center terms <Xb|Va|Xc>    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!calcula los terminos de Fock en el caso en que ninguna base este centrada en un atomo con ECP
-!<Xb|Va|Xc>, <Xb|Va|Xb>
+!calcula los terminos de Fock en el caso en que ninguna base este centrada en el atomo con ECP <Xb|Va|Xc>, <Xb|Va|Xb>
 
 
 	SUBROUTINE intECPABC()
@@ -747,7 +745,7 @@
 
 			  IF (.NOT.cutECP .OR. ((Distcoef .LT. cutecp3) )) THEN
 !cut por exponente de la base
-!solo calcula los terminos que luego se multipliquen por un factor q no sea demasiado pequeño para evitar NAN*0
+!solo calcula los terminos que luego se multipliquen por un factor que no sea demasiado pequeño para evitar NAN*0
 
 	                     ABC=ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj) + & 
                              4.d0*pi*ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
@@ -1071,7 +1069,7 @@
 
         DOUBLE PRECISION FUNCTION Aintegral(l,m,lx,ly,lz)
 ! calcula angularint(i,j,k)= ʃ(x/r)^i (y/r)^j (z/r)^k YlmdΩ
-! Ylm es el armonico esferico real ortonorma
+! Ylm es el armonico esferico real ortonormal
         USE ECP_mod, ONLY :angularint
         IMPLICIT NONE
         INTEGER, INTENT(IN) :: l,m,lx,ly,lz     
@@ -1125,7 +1123,6 @@
 
 
         DOUBLE PRECISION FUNCTION OMEGA2(K,lambda,l,m,a,b,c)
-!Esta funcion devuelve el valor de omega2 evaluado en el vector K
 !                           lambda
 !OMEGA2(K,lambda,l,m,a,b,c) = Σ Y(lambda,o)(K) * ʃ(x/r)^a * (y/r)^b * (z/r)^c Y(lambda,o)(Ω) Ylm(Ω) dΩ
 !                           o=-lambda
@@ -1947,17 +1944,17 @@
         END DO
 	WRITE(*,4016)
 
- 4010 FORMAT("╔══════════════════════════════════════&
-      ═════╗")
- 4011 FORMAT("║            NORMALIZED BASIS SET           ║")
- 4012 FORMAT("╠═══════╦═══════╦════════════╦═════════&
-      ═════╣")
- 4013 FORMAT("║ Basis ║ Cont. ║  Exponent  ║ Coefficient  ║")
- 4014 FORMAT("╠═══════╬═══════╬════════════╬═════════&
-      ═════╣")
- 4015 FORMAT("║",1x,i3,3x,"║",1x,i3,3x,"║",1x,f10.7,1x,"║",1x,f12.9,1x,"║")
- 4016 FORMAT("╚═══════╩═══════╩════════════╩═════════&
-      ═════╝ ")
+ 4010 FORMAT(4x,"╔═════════════════════════════════════&
+      ══════╗")
+ 4011 FORMAT(4x,"║            NORMALIZED BASIS SET           ║")
+ 4012 FORMAT(4x,"╠═══════╦═══════╦════════════╦════════&
+      ══════╣")
+ 4013 FORMAT(4x,"║ Basis ║ Cont. ║  Exponent  ║ Coefficient  ║")
+ 4014 FORMAT(4x,"╠═══════╬═══════╬════════════╬════════&
+      ══════╣")
+ 4015 FORMAT(4x,"║",1x,i3,3x,"║",1x,i3,3x,"║",1x,f10.7,1x,"║",1x,f12.9,1x,"║")
+ 4016 FORMAT(4x,"╚═══════╩═══════╩════════════╩════════&
+      ══════╝ ")
 	END SUBROUTINE WRITE_BASIS
 
 
@@ -1991,19 +1988,19 @@
 	END DO
 	WRITE(*,4026)
 
- 4020 FORMAT("╔════════════════════════════════════&
-      ═══════════════════════════════╗")
- 4021 FORMAT("║                       FOCK Pseudopotencials           "&
-                ,"            ║")
- 4022 FORMAT("╠═══╦═══╦═══════════════════╦═══════&
-      ════════════╦═══════════════════╣")
- 4023 FORMAT("║ i ║ j ║      <A|A|A>      ║      <A|A|B>      ║      <"&
+ 4020 FORMAT(2x,"╔════════════════════════════════════&
+      ═══════════════════════════════════╗")
+ 4021 FORMAT(2x,"║                         FOCK Pseudopotencials         "&
+                ,"                ║")
+ 4022 FORMAT(2x,"╠═════╦═════╦═══════════════════╦═════&
+      ══════════════╦═══════════════════╣")
+ 4023 FORMAT(2x,"║  i  ║  j  ║      <A|A|A>      ║      <A|A|B>      ║      <"&
          ,"B|A|C>      ║")
- 4024 FORMAT("╠═══╬═══╬═══════════════════╬═══════&
-      ════════════╬═══════════════════╣")     
- 4025 FORMAT("║",i2,1x,"║",i2,1x,"║",f18.15,1x,"║",f18.15,1x,"║",f18.15,1x,"║",f18.15,1x,"║")
- 4026 FORMAT("╚═══╩═══╩═══════════════════╩═══════&
-      ════════════╩═══════════════════╝ ")
+ 4024 FORMAT(2x,"╠═════╬═════╬═══════════════════╬═════&
+      ══════════════╬═══════════════════╣")     
+ 4025 FORMAT(2x,"║",1x,i3,1x,"║",1x,i3,1x,"║",f18.15,1x,"║",f18.15,1x,"║",f18.15,1x,"║",f18.15,1x,"║")
+ 4026 FORMAT(2x,"╚═════╩═════╩═══════════════════╩═════&
+      ══════════════╩═══════════════════╝ ")
 	END SUBROUTINE WRITE_FOCK_ECP_TERMS
 
 
@@ -2034,11 +2031,11 @@
         END DO
         WRITE(*,4036)
 
-	4032 FORMAT(5x,"╔═══╦═══╦═══════════════════════╗")
-	4033 FORMAT(5x,"║ i ║ j ║ FOCK Pseudopotencials ║")
-	4034 FORMAT(5x,"╠═══╬═══╬═══════════════════════╣")
-	4035 FORMAT(5x,"║",i2,1x,"║",i2,1x,"║",2x,f18.15,3x,"║")
-	4036 FORMAT(5x,"╚═══╩═══╩═══════════════════════╝ ")
+	4032 FORMAT(5x,"╔═════╦═════╦═══════════════════════╗")
+	4033 FORMAT(5x,"║  i  ║  j  ║ FOCK Pseudopotencials ║")
+	4034 FORMAT(5x,"╠═════╬═════╬═══════════════════════╣")
+	4035 FORMAT(5x,"║",1x,i3,1x,"║",1x,i3,1x,"║",2x,f18.15,3x,"║")
+	4036 FORMAT(5x,"╚═════╩═════╩═══════════════════════╝ ")
 
 	END SUBROUTINE WRITE_FOCK_ECP
 
@@ -2063,13 +2060,13 @@
 
         WRITE(*,4046)
 
-	4040 FORMAT("╔══════════════════════════╗")
-	4041 FORMAT("║     Angular Exponents    ║")
-	4042 FORMAT("╠═══════╦══════╦═══╦═══╦═══╣")
-	4043 FORMAT("║ Basis ║ Atom ║ x ║ y ║ z ║")
-	4044 FORMAT("╠═══════╬══════╬═══╬═══╬═══╣")
-	4045 FORMAT("║",2x,i3,2x,"║",2x,i2,2x,"║",i2,1x,"║",i2,1x,"║",i2,1x,"║")
-	4046 FORMAT("╚═══════╩══════╩═══╩═══╩═══╝ ")
+	4040 FORMAT(6x,"╔══════════════════════════╗")
+	4041 FORMAT(6x,"║     Angular Exponents    ║")
+	4042 FORMAT(6x,"╠═══════╦══════╦═══╦═══╦═══╣")
+	4043 FORMAT(6x,"║ Basis ║ Atom ║ x ║ y ║ z ║")
+	4044 FORMAT(6x,"╠═══════╬══════╬═══╬═══╬═══╣")
+	4045 FORMAT(6x,"║",2x,i3,2x,"║",2x,i2,2x,"║",i2,1x,"║",i2,1x,"║",i2,1x,"║")
+	4046 FORMAT(6x,"╚═══════╩══════╩═══╩═══╩═══╝ ")
 	END SUBROUTINE WRITE_ANG_EXP
 
 	SUBROUTINE WRITE_DISTANCE
@@ -2092,21 +2089,21 @@
 	WRITE(*,4056)
 
 
- 4050 FORMAT("╔═══════════════════════════════════&
+ 4050 FORMAT(2x,"╔═══════════════════════════════════&
       ═════════════════════════════════════════&
       ═╗")
- 4051 FORMAT("║                               Distances (Bohr) " &
+ 4051 FORMAT(2x,"║                               Distances (Bohr) " &
                 ,"                             ║")
- 4052 FORMAT("╠════════╦════════╦═════════════════&
+ 4052 FORMAT(2x,"╠════════╦════════╦═════════════════&
       ══╦═══════════════════╦══════════════════&
       ═╣")
- 4053 FORMAT("║ atom i ║ atom j ║     distance x    ║     dista" &
+ 4053 FORMAT(2x,"║ atom i ║ atom j ║     distance x    ║     dista" &
                 ,"nce y    ║     distance z    ║")
- 4054 FORMAT("╠════════╬════════╬═════════════════&
+ 4054 FORMAT(2x,"╠════════╬════════╬═════════════════&
       ══╬═══════════════════╬══════════════════&
       ═╣")
- 4055 FORMAT("║",2x,i3,3x,"║",2x,i3,3x,"║",f18.15,1x,"║",f18.15,1x,"║",f18.15,1x,"║")
- 4056 FORMAT("╚════════╩════════╩═════════════════&
+ 4055 FORMAT(2x,"║",2x,i3,3x,"║",2x,i3,3x,"║",f18.14,1x,"║",f18.14,1x,"║",f18.14,1x,"║")
+ 4056 FORMAT(2x,"╚════════╩════════╩═════════════════&
       ══╩═══════════════════╩══════════════════&
       ═╝ ")
 

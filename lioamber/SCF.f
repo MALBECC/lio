@@ -51,8 +51,11 @@
 #endif
 
 !------------------------------------------------------
-        double precision :: Egood, Evieja
-!variables para criterio de convergencia por energia
+
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+        logical :: hay_restart !auxiliar, para restart en rho (Nick)
+        double precision :: Egood, Evieja !variables para criterio de convergencia por energia
 
 !para teste de convergencia
 	double precision :: good_valencia,omit
@@ -60,6 +63,7 @@
 	logical :: Wri
 	Wri=.false.
 	omit=10.d0
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !------------------------------------------------------
 
 	call g2g_timer_start('SCF_full')
@@ -70,20 +74,16 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
         if (ecpmode) then 
 	   if (FOCK_ECP_read) then
-	      call intECP(0)
-! alocatea variables comunes y las lee del archivo ECP_restart
+	      call intECP(0) ! alocatea variables comunes y las lee del archivo ECP_restart
 	   else
               call g2g_timer_start('ECP Routines')
-              call intECP(1)
-!alocatea variables, calcula variables comunes, y calcula terminos de 1 centro
-	      call intECP(2)
-!calcula terminos de 2 centros
-	      call intECP(3)
-!calcula terminos de 3 centros
+              call intECP(1) !alocatea variables, calcula variables comunes, y calcula terminos de 1 centro
+	      call intECP(2) !calcula terminos de 2 centros
+	      call intECP(3) !calcula terminos de 3 centros
               call g2g_timer_stop('ECP Routines')
 	   end if
-	if (FOCK_ECP_write) call WRITE_ECP()
-        call WRITE_POST(1)
+	   if (FOCK_ECP_write) call WRITE_ECP()
+           call WRITE_POST(1)
  	end if
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -276,14 +276,13 @@ c
       if (ecpmode ) then
           write(*,*) "Modifying Fock Matrix with ECP terms"
           do k=1,MM
-               term1e(k)=RMM(M11+k-1)
-!copia los terminos de 1e
-               RMM(M11+k-1)=RMM(M11+k-1)+VAAA(k)+VAAB(k)+VBAC(k)
-!agrega el ECP a los terminos de 1e
+               term1e(k)=RMM(M11+k-1) !copia los terminos de 1e
+               RMM(M11+k-1)=RMM(M11+k-1)+VAAA(k)+VAAB(k)+VBAC(k) !agrega el ECP a los terminos de 1e
           enddo
       end if
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 
       call g2g_timer_sum_stop('Nuclear attraction')
@@ -564,27 +563,32 @@ c
         call g2g_timer_sum_stop('initial guess')
       endif
 
-c ca meto mi guess NIck
 
+
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%    Rho initial Guess    %%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!Added by Nick
+!no elimina al calculo del iniciail guess
         if (RHO_RESTART_IN) then
-c agrego un restart en rho, Nick
-c        inquire(file="rho_restart.in", exist=hay_restart)
-
-c        if ( .not. hay_restart) then
-c!cheque que el archivo ECP este
-c         write(*,*) "ECP_restart not Found"
-c         stop
-c        else
-	write(*,*) "Usando restart en rho"
-        open(unit=27,file="rho_restart.in", STATUS='UNKNOWN')
-	   read(27,*)
-           DO i=1,MM
+          inquire(file="rho_restart.in", exist=hay_restart)
+          if ( .not. hay_restart) then !cheque que el archivo ECP este
+            stop "rho_restart.in not found"
+          else
+	    write(*,*) "Using rho restart"
+            open(unit=27,file="rho_restart.in", STATUS='UNKNOWN')
+	    read(27,*)
+            DO i=1,MM
               read(27,*) RMM(i)
 c              write(*,*) i,RMM(i)
-           ENDDO
-        close(27)
+            ENDDO
+            close(27)
+          end if
         end if
-
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
      
 
@@ -1327,16 +1331,24 @@ c
         call g2g_timer_stop('Total iter')
         call g2g_timer_sum_pause('Iteration')
 
-	if (RHO_RESTART_OUT) then
-c agrego un restart en rho, Nick
-        open(unit=27,file="rho_restart.out", STATUS='UNKNOWN')
-	   write(27,*) nshell(0),nshell(1),nshell(2)
-           DO i=1,MM
-              write(27,*) RMM(i)
-           ENDDO
-        close(27)
 
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%    Rho initial Guess    %%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!added by Nick, guarda un restart de rho
+	if (RHO_RESTART_OUT) then
+          open(unit=27,file="rho_restart.out", STATUS='UNKNOWN')
+	  write(27,*) nshell(0),nshell(1),nshell(2)
+          DO i=1,MM
+            write(27,*) RMM(i)
+          ENDDO
+          close(27)
 	end if
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
 
  999  continue
 c-------------------------------------------------------------------

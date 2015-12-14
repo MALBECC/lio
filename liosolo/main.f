@@ -267,6 +267,7 @@ c--------------------------------------------------------
        if (.not.allocated(RealRho)) allocate(RealRho(M,M))
 c--------------------------------------------------------
        if(OPEN) then
+         if (ecpmode) stop "Lio havent got ECP for open shell"         
          call SCFOP(escf,dipxyz)
        else
          call SCF(escf,dipxyz)

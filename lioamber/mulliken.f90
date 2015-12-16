@@ -15,8 +15,8 @@
        call g2g_timer_start('mulliken')
 !
        do kk=1,N
-!         q(kk)=real(q0(kk))
-         q(kk)=0. !real(q0(kk))
+         q(kk)=real(q0(kk))
+!         q(kk)=0. !real(q0(kk))
        enddo
 
        do ii=1,M
@@ -42,21 +42,29 @@
        integer            :: kk
        call g2g_timer_start('mulliken_write')
 !
-       write(UID,300)
-       write(UID,200) 'MULLIKEN POPULATION ANALYSIS'
-       write(UID,200)
-       write(UID,201) 'ATOM #','ATOM TYPE','POPULATION'
+        write(UID,*)
+        write(UID,300)
+        write(UID,301)
+        write(UID,302)
+        write(UID,303)
+        write(UID,304)
        do kk=1,N
-         write(UID,202) kk,q0(kk),q(kk)
+         write(UID,305) kk,q0(kk),q(kk)
        enddo
-       write(UID,200)
-!
+       write(UID,306)
+       write(UID,*)
+
        call g2g_timer_stop('mulliken_write')
- 200   format(A)
- 201   format(A,4x,A,4x,A)
- 202   format(I3,9X,I3,6X,F14.8)
- 300   format('##################################################'
-     > ,'##########')
-       return;end subroutine
+
+ 300   FORMAT(8x,"╔═════════════════&
+       ════════════════╗")
+ 301   FORMAT(8x,"║   MULLIKEN POPULATION ANALYSIS  ║")
+ 302   FORMAT(8x,"╠════════╦═══════════╦════════════╣")
+ 303   FORMAT(8x,"║ ATOM # ║ ATOM TYPE ║ POPULATION ║")
+ 304   FORMAT(8x,"╠════════╬═══════════╬════════════╣")
+ 305   FORMAT(8x,"║",2x,i3,3x,"║"3x,i3,5x,"║",1x,F10.7,1x,"║")
+ 306   FORMAT(8x,"╚════════╩═══════════╩════════════╝")
+       return
+       end subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 

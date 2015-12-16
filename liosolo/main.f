@@ -171,7 +171,7 @@ c---------------------------------------------------------------------
       endif
       read(100,nml=lio,iostat=ierr)
 	write(325,nml=lio)
-c      if(ierr.gt.0) stop 'input error in lio namelist'
+      if(ierr.gt.0) stop 'input error in lio namelist'
 
 
 

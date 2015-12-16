@@ -570,7 +570,7 @@ c
 !%%%%%%%%%%%%%%%%%%%%%    Rho initial Guess    %%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !Added by Nick
-!no elimina al calculo del iniciail guess
+!no elimine al calculo del iniciail guess, luego pondre un if donde corresponda
         if (RHO_RESTART_IN) then
           inquire(file="rho_restart.in", exist=hay_restart)
           if ( .not. hay_restart) then !cheque que el archivo ECP este

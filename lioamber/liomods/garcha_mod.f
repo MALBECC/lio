@@ -122,5 +122,7 @@ c      parameter rmintsol=16.0D0
 
 !-Variables for library reading
       logical :: omit_bas
+!-Variables for outout format
+      logical :: style, allnml
        end module
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

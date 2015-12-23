@@ -676,8 +676,11 @@ c-------------------------------------------------------------------
 c-------------------------------------------------------------------
       do 999 while ((good.ge.told.or.Egood.ge.Etold).and.niter.le.NMAX)
 !hay q chekear el valor de Etold inicial, deberia ser un numero grande
-	if(verbose) write(6,*) 'Good',good,'Good-valencia',goodvalencia
-	if (verbose) write(6,*) 'Egood',Egood
+	if (verbose) then
+         write(6,*) 'Good',good
+         write(6,*) 'Good-valencia',goodvalencia
+	 write(6,*) 'Egood',Egood
+        end if
 
         call g2g_timer_start('Total iter')
         call g2g_timer_sum_start('Iteration')
@@ -1324,7 +1327,18 @@ c
         call g2g_timer_stop('otras cosas')
         call g2g_timer_sum_pause('new density')
 
-        if(verbose) write(6,*) 'iter',niter,'QM Energy=',E+Ex
+c        if(verbose) write(6,*) 'iter',niter,'QM Energy=',E+Ex
+c vieja escritura
+
+
+	if(verbose) then
+c escribe energia por paso
+          write(6,8500)
+          write(6,8501) niter,E+Ex
+          write(6,8502)
+	end if
+
+
 	Egood=abs(E+Ex-Evieja)
 	Evieja=E+Ex
 c
@@ -1333,28 +1347,28 @@ c
 
 
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%    Rho initial Guess    %%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!added by Nick, guarda un restart de rho
-	if (RHO_RESTART_OUT) then
-          open(unit=27,file="rho_restart.out", STATUS='UNKNOWN')
-	  write(27,*) nshell(0),nshell(1),nshell(2)
-          DO i=1,MM
-            write(27,*) RMM(i)
-          ENDDO
-          close(27)
-	end if
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
-
  999  continue
 c-------------------------------------------------------------------
 c
 c-------------------------------------------------------------------
       call g2g_timer_sum_start('Finalize SCF')
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%    Rho initial Guess    %%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!added by Nick, guarda un restart de rho
+        if (RHO_RESTART_OUT) then
+          open(unit=27,file="rho_restart.out", STATUS='UNKNOWN')
+          write(27,*) nshell(0),nshell(1),nshell(2)
+          DO i=1,MM
+            write(27,*) RMM(i)
+          ENDDO
+          close(27)
+        end if
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
 
 
       if (niter.ge.NMAX) then
@@ -1436,21 +1450,41 @@ c       write(*,*) 'g2g-Exc',Exc
         E=E1+E2+En+Ens+Exc
         if (npas.eq.1) npasw = 0
         if (npas.gt.npasw) then
-          write(6,*)
-          write(6,600)
 
-        if (ecpmode) then
+!%%%%%%%%%%%%%%%%%   Escritura de energias   %%%%%%%%%%%%%%%%%
+
+
+!!escritura vieja
+!          write(6,*)
+!          write(6,600)
+!        if (ecpmode) then
 !caso particular de escritura de energia si ECP esta prendido
-          write(6,611)
-	        do k=1,MM
-	          Eecp=Eecp+RMM(k)*(VAAA(k)+VAAB(k)+VBAC(k))
-!		write(38,*) k,RMM(k)*(VAAA(k)+VAAB(k)+VBAC(k)),RMM(k)
-	        enddo
-          write(6,621) E1-Eecp,E2-Ex,En,Eecp
-        else
-          write(6,610)
-          write(6,620) E1,E2-Ex,En
+!	  write(*,*)
+!          write(6,611)
+!	        do k=1,MM
+!	          Eecp=Eecp+RMM(k)*(VAAA(k)+VAAB(k)+VBAC(k))
+!	        enddo
+!          write(6,621) E1-Eecp,E2-Ex,En,Eecp
+!	  write(*,*)
+!        else
+!	  write(*,*)
+!          write(6,610)
+!          write(6,620) E1,E2-Ex,En
+!	  write(*,*)
+!	end if
+!
+
+!escritura nueva
+        if (ecpmode) then
+               do k=1,MM
+                 Eecp=Eecp+RMM(k)*(VAAA(k)+VAAB(k)+VBAC(k))
+               enddo
 	end if
+
+	call WriteEnergies(E1,E2,En,Eecp,Exc,Ex,ecpmode)
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 
 c         if (sol) then
 c          write(6,615)
@@ -1465,6 +1499,7 @@ c--------------------------------------------------------------
       endif
 c calculation of energy weighted density matrix
 c
+
 
       call g2g_timer_sum_start('energy-weighted density')
       kk=0
@@ -1618,9 +1653,10 @@ c       E=E*627.509391D0
         call TD()
         call g2g_timer_sum_stop('TD')
       endif
+
        if (ecpmode) then
-        call intECP(4)
 !desalocatea variables de pseudopotenciales
+        call intECP(4)
        end if
 
 #ifdef CUBLAS
@@ -1662,6 +1698,19 @@ c       E=E*627.509391D0
   88  format(5(2x,f8.5))
   45  format(E15.6E4)
   91  format(F14.7,4x,F14.7)
+
+
+!%%%%%%%%%%%%%%%%%%%%%%%%% Nuevos Formatos, Nick %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ 8500 FORMAT(4x,"╔════════╦════════
+     >═════╦═══════════╦═════
+     >══════════════════╗")
+ 8501 FORMAT(4x,"║ iter # ║",2x,I10,1x,
+     > "║ QM Energy ║",2x,D19.12,1x,"║")
+ 8502 FORMAT(4x,"╚════════╩════════
+     >═════╩═══════════╩═════
+     >══════════════════╝")
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 c
       !call g2g_timer_sum_stop('SCF');
 

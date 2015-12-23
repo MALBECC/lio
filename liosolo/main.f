@@ -31,10 +31,13 @@ c---------------------------------------------------------------------
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !para inicialguess nuevo
      > RHO_RESTART_IN,RHO_RESTART_OUT,
+!para output format%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+     > style, allnml,
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
      > cubegen_only,cube_res,
      > cube_dens,cube_dens_file,
      > cube_orb,cube_sel,cube_orb_file,cube_elec,cube_elec_file
+
 
 
       integer :: ifind, ierr
@@ -107,6 +110,8 @@ c---------------------------------------------------------------------
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       RHO_RESTART_IN=.false.
       RHO_RESTART_OUT=.false.
+      style=.true.
+      allnml=.true.
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -183,9 +188,14 @@ c---------------------------------------------------------------------
         write(*,*) 'input file ',adjustl(inpcoords),' not found'
         stop
       endif
+
+c%%%%%%%%%%%%%%%%%%   Namelist write   %%%%%%%%%%%%%%%%%%
 c        write(*,*) natom,nsol
-      write(*,nml=lio)
-c aca escribe el namelist
+      if (allnml)write(*,nml=lio)
+      if (style) call NEW_WRITE_NML(charge)
+c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 
       ntatom=natom+nsol
       ngnu=natom*ng0
@@ -277,6 +287,7 @@ c--------------------------------------------------------
        write(*,*) 'SCF ENRGY=',escf
 
       if(writeforces) then
+	if (ecpmode) stop "Lio havent got ECP forces"
        open(unit=123,file='fuerzas')
        allocate (dxyzqm(3,natom))
        dxyzqm=0.0

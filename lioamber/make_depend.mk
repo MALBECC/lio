@@ -69,7 +69,7 @@ objlist += dip.o dipmem.o drive.o grid.o init_amber.o init.o
 objlist += int1.o int2.o int3lu.o int3mem.o  intfld.o intsol.o
 objlist += int1G.o int2G.o int3G.o intSG.o intsolG.o intsolGs.o
 objlist += jarz.o lio_finalize.o predictor.o
-objlist += SCF.o SCF_in.o SCFop.o TD.o cubegen.o
+objlist += SCF.o SCF_in.o SCFop.o TD.o cubegen.o extras.o
 $(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/garcha_mod.mod
 
 
@@ -82,7 +82,7 @@ objlist := SCF.o
 objlist += readECP.o
 objlist += drive.o
 objlist += intECP.o
-objlist += init.o
+objlist += init.o extras.o
 $(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/ECP_mod.mod
 
 # intECP

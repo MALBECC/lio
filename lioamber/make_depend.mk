@@ -44,7 +44,6 @@ objects += density.o
 objects += fterm_biaspot.o lowdinpop.o
 objects += elec.o
 
-
 # garcha_mod: Description pending
 ######################################################################
 objects   += garcha_mod.o
@@ -104,6 +103,19 @@ $(tmplist:%.o=$(obj_path)/%.o) : $(obj_path)/cublasmath.mod
 $(obj_path)/fortran.o: $(CUDA_HOME)/src/fortran.c
 	$(CC) -fPIC -DCUBLAS_GFORTRAN -O3 -c $< -o $@ -I$(CUDA_HOME)/include
 endif
+
+
+# liosubs: Generic and simple subroutines. Should compile before any 
+# of the other objects and so it should not use any other module.
+# TODO: move routines from general_module to this module.
+######################################################################
+allothers := $(objects)
+objects   += liosubs.o
+src_paths += liosubs
+include liosubs/liosubs.mk
+
+tmplist := $(allothers)
+$(tmplist:%.o=$(obj_path)/%.o) : $(obj_path)/liosubs.mod
 
 #
 ######################################################################

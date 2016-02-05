@@ -12,6 +12,7 @@
 !--------------------------------------------------------------------!
   include 'set_masses.f90'
   include 'writegeom.f90'
+  include 'nuclear_verlet.f90'
   end module
 !
 !

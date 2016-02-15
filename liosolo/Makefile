@@ -45,5 +45,5 @@ liomd.x: liomd.f90
 	$(FC) $< -o $@ $(FLAGS) $(LIBS)
 
 clean:
-	rm -rf liosolo
+	rm -rf liosolo liomd.x
 ######################################################################

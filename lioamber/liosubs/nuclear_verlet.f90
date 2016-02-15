@@ -4,7 +4,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   implicit none
   integer,intent(in)     :: Npart ! Degrees of Freedom
-  real*8,intent(in)      :: dt  ! Time step
+  real*8,intent(in)      :: dt    ! Time step
 
   real*8,intent(in)      :: mass(Npart)
   real*8,intent(in)      :: force(Npart,3)
@@ -24,7 +24,7 @@
 
   do kk=1,3
   do nn=1,Npart
-    newpos(nn,kk)=2.0d0*nowpos(nn,kk)
+    newpos(nn,kk)=(2.0d0)*nowpos(nn,kk)
     newpos(nn,kk)=newpos(nn,kk)-oldpos(nn,kk)
     newpos(nn,kk)=newpos(nn,kk)+(dtsq*force(nn,kk))/mass(nn)
 

@@ -207,9 +207,11 @@
 
 
   md_steps=5000
-  tdstep=4.13414d0!/2.0d0
+  tdstep=0.0001       ! time in ps
+  tdstep=tdstep*41341 ! ps to au
   open(unit=501,file='liomd-trays.xyz')
   open(unit=502,file='liomd-energy.dat')
+  call write_energy(-1.0d0,escf,Kenergy,escf+Kenergy,502)
   do nn=1,md_steps
     call nuclear_verlet(natom,tdstep,atom_mass,dxyzqm,oldpos,nucpos,&
                         newpos,nucvel,Kenergy)
@@ -232,8 +234,9 @@
       write(unit=989,fmt=*) dxyzqm(:,kk)
     enddo
     write(unit=989,fmt=*) ''
-    call writegeom(natom,Iz,nucpos,501)
-    write(unit=502,fmt=*) 'MDSTEP',nn,escf+Kenergy,escf,Kenergy
+    call write_geom(natom,Iz,nucpos,501)
+    call write_energy(nn*tdstep,escf,Kenergy,escf+Kenergy,502)
+!    write(unit=502,fmt=*) 'MDSTEP',nn,escf+Kenergy,escf,Kenergy
     write(unit=999,fmt=*) ftot
   enddo
   close(unit=654)

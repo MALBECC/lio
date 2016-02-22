@@ -43,6 +43,7 @@ objects += sysdata.o
 objects += density.o
 objects += fterm_biaspot.o lowdinpop.o
 objects += elec.o
+objects += read_lio_nml.o
 
 # garcha_mod: Description pending
 ######################################################################
@@ -56,6 +57,7 @@ tmplist += int1.o int2.o int3lu.o int3mem.o intfld.o intsol.o
 tmplist += int1G.o int2G.o int3G.o intSG.o intsolG.o intsolGs.o
 tmplist += jarz.o lio_finalize.o predictor.o
 tmplist += SCF.o SCF_in.o SCFop.o TD.o cubegen.o
+tmplist += read_lio_nml.o
 $(tmplist:%.o=$(obj_path)/%.o) : $(obj_path)/garcha_mod.mod
 
 

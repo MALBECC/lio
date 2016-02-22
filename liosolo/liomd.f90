@@ -135,7 +135,6 @@
     write(*,*) 'input file ',adjustl(inpcoords),' not found'
     stop
   endif
-!    write(*,*) natom,nsol
   write(*,nml=lio)
 
   ntatom=natom+nsol
@@ -146,7 +145,6 @@
   ng3=4*ngDyn
   ng2=5*ngDyn*(ngDyn+1)/2+3*ngdDyn*(ngdDyn+1)/2+&
         ngDyn+ngDyn*norbit+Ngrid
-!  write(*,*)ng2,ngDyn,ngdDyn,norbit,Ngrid
 
   allocate(X(ngDyn,ng3),XX(ngdDyn,ngdDyn))
   allocate(RMM(ng2))
@@ -165,11 +163,9 @@
   do ii=1,natom
     read(101,*) iz(ii),r(ii,1:3)
     rqm(ii,1:3)=r(ii,1:3)
-!   write(*,*) iz(i),r(i,1:3)
   enddo
   do ii=natom+1,ntatom
     read(101,*) pc(ii),r(ii,1:3)   ! o es pc(i-natom)???
-!   write(*,*) pc(i),r(i,1:3)
    enddo
    r=r/0.529177D0
    rqm=rqm/0.529177D0
@@ -215,8 +211,8 @@
 ! RUN DYNAMIC
 !--------------------------------------------------------------------!
   md_steps=5000
-  time_step=0.0001
-  time_step=time_step*41341.0d0
+  time_step=0.0001               ! time in ps
+  time_step=time_step*41341.0d0  ! time from ps to au
   open(unit=501,file='liomd-trays.xyz')
   open(unit=502,file='liomd-energy.dat')
   call write_energy(-1.0d0,escf,Kenergy,escf+Kenergy,502)

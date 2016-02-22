@@ -14,6 +14,7 @@
   include 'write_geom.f90'
   include 'write_energy.f90'
   include 'nuclear_verlet.f90'
+  include 'find_free_unit.f90'
   end module
 !
 !

@@ -30,3 +30,5 @@ liosolo/liosolo
 liosolo/*.x
 test/performance-measures/*
 lioamber/utests/*.x
+lioamber/liosubs/utests/*.x
+lioamber/liosubs/utests/Output-*

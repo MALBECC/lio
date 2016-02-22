@@ -5,7 +5,7 @@
   implicit none
   integer,intent(in)     :: Nsize
   integer,intent(in)     :: Vatnum(Nsize)
-  real*8,intent(in)      :: Vatpos(3,Nsize)
+  real*8,intent(in)      :: Vatpos(Nsize,3)
   integer,intent(in)     :: oUnit
 
   integer :: kk
@@ -18,9 +18,9 @@
 
   do kk=1,Nsize
     write(Unit=oUnit,fmt=103) Vatnum(kk),                &
-                              Vatpos(1,kk)*(0.529177d0), &
-                              Vatpos(2,kk)*(0.529177d0), &
-                              Vatpos(3,kk)*(0.529177d0)
+                              Vatpos(kk,1)*(0.529177d0), &
+                              Vatpos(kk,2)*(0.529177d0), &
+                              Vatpos(kk,3)*(0.529177d0)
   enddo
 
 100 format(A)

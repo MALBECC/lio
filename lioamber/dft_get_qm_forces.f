@@ -57,7 +57,7 @@ c       factor=627.509391D0/0.5291772108D0
        enddo
 
 !--------------------------------------------------------------------!
-       print_forces=.false.
+       print_forces=.true.
        if (print_forces) then
          fileunit=3242
          open(unit=fileunit,file='Forces.log',access='APPEND')

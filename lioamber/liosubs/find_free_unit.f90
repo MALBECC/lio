@@ -1,6 +1,9 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   subroutine find_free_unit(search_start,search_stop,file_unit)
-!--------------------------------------------------------------------!
+!
+! Finds units that are not opened to open new files.
+!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   implicit none
   integer,intent(in)  :: search_start
   integer,intent(in)  :: search_stop

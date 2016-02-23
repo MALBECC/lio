@@ -1,6 +1,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+  include "../catch_iostat.f90"
   include "../find_free_unit.f90"
-  program find_free_unit_t01
+  program find_free_unit_ut
   implicit none
   integer           :: test_number
   integer           :: unit_found

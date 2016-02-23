@@ -1,41 +1,32 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   subroutine find_free_unit(search_start,search_stop,file_unit)
-!
-! Finds units that are not opened to open new files.
-!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   implicit none
   integer,intent(in)  :: search_start
   integer,intent(in)  :: search_stop
   integer,intent(out) :: file_unit
   integer             :: iost
-  logical             :: keep_looking, is_open
+  logical             :: is_open
 
   iost=0
   is_open=.true.
   file_unit=max(-1,search_start-1)
-  keep_looking=(search_start.le.search_stop)
 
-  do while (keep_looking)
+  do while ((is_open).and.(file_unit.lt.search_stop))
     file_unit=file_unit+1
     inquire(unit=file_unit,opened=is_open,iostat=iost)
-    keep_looking=&
-    (is_open).and.(iost.eq.0).and.(file_unit.lt.search_stop)
+    call catch_iostat('find_free_unit',1,file_unit,iost)
   enddo
 
-  if (iost.ne.0) then
-    print*,''
-    print*,'Error in find_free_unit:'
-    print*,'An error occurred while inquiring unit: ',file_unit
-    print*,'(iostat=',iost,')'
-    stop
-  endif
-
-  if ((file_unit.ge.search_stop).and.(is_open))then
-    print*,''
-    print*,'Error in find_free_unit:'
-    print*,'All units in range were occupied or range is invalid'
-    print*,'(from ',search_start,' to ',search_stop,')'
+  if (is_open) then
+    print '(A)', ''
+    print '(A)', &
+    'Error in find_free_unit: Either no free unit available in'
+    print '(A)', &
+    'range, or range selected is invalid.'
+    print '(A,I6)', '  From unit: ',search_start
+    print '(A,I6)', '  To unit:   ',search_stop
+    print '(A)',    ''
     stop
   endif
 

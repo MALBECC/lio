@@ -5,8 +5,7 @@ FC := gfortran
 
 tests :=
 tests += nuclear_verlet_t01.x
-tests += find_free_unit_t01.x
-tests += safely_open_ut.x
+tests += find_free_unit_ut.x
 
 all : $(tests)
 

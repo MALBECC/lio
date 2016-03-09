@@ -76,7 +76,7 @@ $(tmplist:%.o=$(obj_path)/%.o) : optim:=$(optim1)
 
 tmplist := matmuldiag.o int3lu.o fock_commuts.o
 tmplist := SCF.o TD.o ehrenfest.o magnus.o predictor.o
-tmplist += FixMessRho.o get_unit.o mulliken.o PackedStorage.f
+tmplist += FixMessRho.o mulliken.o PackedStorage.f
 tmplist += init_amber.o init.o lio_init.o liomain.o lio_finalize.o
 tmplist += dft_get_mm_forces.o dft_get_qm_forces.o
 tmplist += alg.o drive.o func.o grid.o dipmem.o jarz.o
@@ -104,7 +104,7 @@ ifeq ($(intel),1)
   #$(tmplist:%.o=$(obj_path)/%.o) : private myflags+=-parallel
 
   tmplist := SCF.o TD.o ehrenfest.o magnus.o predictor.o
-  tmplist += FixMessRho.o get_unit.o mulliken.o PackedStorage.f
+  tmplist += FixMessRho.o mulliken.o PackedStorage.f
   tmplist += init_amber.o init.o lio_init.o liomain.o lio_finalize.o
   tmplist += dft_get_mm_forces.o dft_get_qm_forces.o
   tmplist += alg.o drive.o func.o grid.o dipmem.o jarz.o

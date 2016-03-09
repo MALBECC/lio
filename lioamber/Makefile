@@ -103,7 +103,13 @@ $(obj_path)/%.mod : $(obj_path)/%.o
 $(obj_path)/%.o   : %.f   $(makefiles) |  $(obj_path)
 	$(FC) $(FFLAGS) -c $< -o $@
 
+$(obj_path)/%.o   : %.F   $(makefiles) |  $(obj_path)
+	$(FC) $(FFLAGS) -c $< -o $@
+
 $(obj_path)/%.o   : %.f90 $(makefiles) |  $(obj_path)
+	$(FC) $(FFLAGS) -c $< -o $@
+
+$(obj_path)/%.o   : %.F90 $(makefiles) |  $(obj_path)
 	$(FC) $(FFLAGS) -c $< -o $@
 
 $(obj_path) :

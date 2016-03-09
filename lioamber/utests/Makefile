@@ -12,6 +12,15 @@ all : $(tests)
 %.x : %.f Makefile
 	$(FC) $< -o $@
 
+%.x : %.F Makefile
+	$(FC) $< -o $@
+
+%.x : %.f90 Makefile
+	$(FC) $< -o $@
+
+%.x : %.F90 Makefile
+	$(FC) $< -o $@
+
 .PHONY: clean
 clean:
 	rm -rf $(tests)

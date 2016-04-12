@@ -8,10 +8,10 @@
   do jj=1,M
     do ii=jj,M
       idx=ii+(2*M-jj)*(jj-1)/2
-      DensMao(ii,jj)=RMM(idx)
-      DensMao(jj,ii)=RMM(idx)
+      DensMao(ii,jj)=RMM(idx)/2.0d0
+      DensMao(jj,ii)=RMM(idx)/2.0d0
     enddo
-    DensMao(jj,jj)=DensMao(jj,jj)/2.0d0
+    DensMao(jj,jj)=DensMao(jj,jj)*2.0d0
   enddo
 
   return;end subroutine
@@ -25,10 +25,10 @@
   do jj=1,M
     do ii=jj,M
       idx=ii+(2*M-jj)*(jj-1)/2
-      DensMao(ii,jj)=RMM(idx)
-      DensMao(jj,ii)=RMM(idx)
+      DensMao(ii,jj)=RMM(idx)/2.0d0
+      DensMao(jj,ii)=RMM(idx)/2.0d0
     enddo
-    DensMao(jj,jj)=DensMao(jj,jj)/2.0d0
+    DensMao(jj,jj)=DensMao(jj,jj)*2.0d0
   enddo
 
   return;end subroutine
@@ -42,10 +42,10 @@
   do jj=1,M
     do ii=jj,M
       idx=ii+(2*M-jj)*(jj-1)/2
-      DensMao(ii,jj)=cmplx(RMM(idx))
-      DensMao(jj,ii)=cmplx(RMM(idx))
+      DensMao(ii,jj)=cmplx(RMM(idx)/2.0d0)
+      DensMao(jj,ii)=cmplx(RMM(idx)/2.0d0)
     enddo
-    DensMao(jj,jj)=DensMao(jj,jj)/2.0d0
+    DensMao(jj,jj)=DensMao(jj,jj)*2.0d0
   enddo
 
   return;end subroutine
@@ -59,10 +59,10 @@
   do jj=1,M
     do ii=jj,M
       idx=ii+(2*M-jj)*(jj-1)/2
-      DensMao(ii,jj)=dcmplx(RMM(idx))
-      DensMao(jj,ii)=dcmplx(RMM(idx))
+      DensMao(ii,jj)=dcmplx(RMM(idx)/2.0d0)
+      DensMao(jj,ii)=dcmplx(RMM(idx)/2.0d0)
     enddo
-    DensMao(jj,jj)=DensMao(jj,jj)/2.0d0
+    DensMao(jj,jj)=DensMao(jj,jj)*2.0d0
   enddo
 
   return;end subroutine

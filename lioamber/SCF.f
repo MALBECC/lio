@@ -56,13 +56,14 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
         logical :: hay_restart !auxiliar, para restart en rho (Nick)
         double precision :: Egood, Evieja !variables para criterio de convergencia por energia
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !para teste de convergencia
-	double precision :: good_valencia,omit
-	integer :: ombas
-	logical :: Wri
-	Wri=.false.
-	omit=10.d0
+!	double precision :: good_valencia,omit
+!	integer :: ombas
+c	logical :: Wri
+c	Wri=.false.
+!	omit=10.d0
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !------------------------------------------------------
 
@@ -283,6 +284,7 @@ c
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
 
 
       call g2g_timer_sum_stop('Nuclear attraction')
@@ -570,7 +572,7 @@ c
 !%%%%%%%%%%%%%%%%%%%%%    Rho initial Guess    %%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !Added by Nick
-!no elimine al calculo del iniciail guess, luego pondre un if donde corresponda
+!no elimine al calculo del iniciail guess viejo, luego pondre un if donde corresponda
         if (RHO_RESTART_IN) then
           inquire(file="rho_restart.in", exist=hay_restart)
           if ( .not. hay_restart) then !cheque que el archivo ECP este
@@ -589,8 +591,6 @@ c              write(*,*) i,RMM(i)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
-     
 
 c End of Starting guess (No MO , AO known)-------------------------------
 c
@@ -675,11 +675,19 @@ c      write(*,*) 'empiezo el loop',NMAX
 c-------------------------------------------------------------------
 c-------------------------------------------------------------------
       do 999 while ((good.ge.told.or.Egood.ge.Etold).and.niter.le.NMAX)
-!hay q chekear el valor de Etold inicial, deberia ser un numero grande
+
 	if (verbose) then
-         write(6,*) 'Good',good
-         write(6,*) 'Good-valencia',goodvalencia
-	 write(6,*) 'Egood',Egood
+c         write(6,*) 'Good',good
+c         write(6,*) 'Good-valencia',goodvalencia
+c	 write(6,*) 'Egood',Egood
+
+        Write(6,8601)
+        Write(6,8602)
+        Write(6,8603)
+        Write(6,8604)good,told
+        Write(6,8605)Egood,Etold
+        Write(6,8606)
+
         end if
 
         call g2g_timer_start('Total iter')
@@ -710,6 +718,16 @@ c	 end if
 c	end do
 
 
+        do inick=1,MM
+         if (RMM(inick) .ne. RMM(inick)) then
+          write(*,*) "NAN en Rho 20",inick
+          stop
+         end if
+         if (RMM(M5+inick-1) .ne. RMM(M5+inick-1)) then
+          stop "NAN en Fock 20"
+         end if
+        end do
+
 
             call g2g_timer_sum_start('Coulomb fit + Fock')
             call int3lu(E2)
@@ -732,6 +750,19 @@ c
             call g2g_timer_sum_start('Exchange-correlation Fock')
             call g2g_solve_groups(0,Ex,0)
             call g2g_timer_sum_pause('Exchange-correlation Fock')
+
+
+        do inick=1,MM
+         if (RMM(inick) .ne. RMM(inick)) then
+          write(*,*) "NAN en Rho 30",inick
+          stop
+         end if
+         if (RMM(M5+inick-1) .ne. RMM(M5+inick-1)) then
+          stop "NAN en Fock 30"
+         end if
+        end do
+
+
 
 c-------------------------------------------------------
         E1=0.0D0
@@ -866,7 +897,14 @@ c-------------------------------------------------------------------------------
 	else
 c cambia damping a diis, Nick
 		if (good .lt. good_cut ) then
-		  if ( .not. hagodiis ) write(6,*) "Changing to DIIS", " step",niter
+		  if ( .not. hagodiis ) then
+!		    write(6,*) "Changing to DIIS", " step",niter
+		    write(6,*)
+		    write(6,8503)
+		    write(6,8504) niter
+		    write(6,8505)
+		    write(6,*)
+		  end if 
 		  hagodiis=.true.
 		end if
 	end if
@@ -1252,13 +1290,14 @@ c
 c Construction of new density matrix and comparison with old one
       kk=0
 
-	if (good .le. 10d0) Wri=.true.
+c	if (good .le. 10d0) Wri=.true.
       good=0.
 
-ccccccccccccccccccccccccccccccccccccccccc
-      goodvalencia=0.d0
-      ombas=0
-cccccccccccccccccccccccccccccccccccccccccccc agregada, Nick
+c%%%%%%%%%%%%%%%%%agregada nick para ver variacion en orbitales de valencia
+c      goodvalencia=0.d0
+c      ombas=0
+c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
       call g2g_timer_start('dens_GPU')
       call density(M,NCO,X,xnano)
       do j=1,M
@@ -1266,23 +1305,28 @@ cccccccccccccccccccccccccccccccccccccccccccc agregada, Nick
                del=xnano(j,k)-(RMM(k+(M2-j)*(j-1)/2))
                del=del*sq2
                good=good+del**2
-		if (Wri) write(95,*) (k+(M2-j)*(j-1)/2),del**2
-ccccccccccccccccccccccccccccccccccccccccccccccc agregada nick para ver variacion en orbitales de valencia
-		IF (a(j,1) .lt. omit) then
-		  goodvalencia=goodvalencia+del**2
-		  ombas=ombas+1
-		END IF
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c		if (Wri) write(95,*) (k+(M2-j)*(j-1)/2),del**2
+
+
+
+c%%%%%%%%%%%%%%%%%agregada nick para ver variacion en orbitales de valencia
+c		IF (a(j,1) .lt. omit) then
+c		  goodvalencia=goodvalencia+del**2
+c		  ombas=ombas+1
+c		END IF
+c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
                RMM(k+(M2-j)*(j-1)/2)=xnano(j,k)
          enddo
       enddo
-		if (Wri) write(95,*) 
+c		if (Wri) write(95,*) 
       good=sqrt(good)/float(M)
-ccccccccccccccccccccccccccccccccccccccccccccccc agregada nick
-      goodvalencia=sqrt(goodvalencia)/sqrt(float(M**2-ombas))
-	write(*,*) ombas
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
+c%%%%%%%%%%%%%%%%%agregada nick para ver variacion en orbitales de valencia
+c      goodvalencia=sqrt(goodvalencia)/sqrt(float(M**2-ombas))
+c	write(*,*) ombas
+c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       call g2g_timer_stop('dens_GPU')
 
@@ -1332,7 +1376,7 @@ c vieja escritura
 
 
 	if(verbose) then
-c escribe energia por paso
+c escribe energia en cada paso
           write(6,8500)
           write(6,8501) niter,E+Ex
           write(6,8502)
@@ -1344,6 +1388,17 @@ c escribe energia por paso
 c
         call g2g_timer_stop('Total iter')
         call g2g_timer_sum_pause('Iteration')
+
+
+        do inick=1,MM
+         if (RMM(inick) .ne. RMM(inick)) then
+          write(*,*) "NAN en Rho 40",inick
+          stop
+         end if
+         if (RMM(M5+inick-1) .ne. RMM(M5+inick-1)) then
+          stop "NAN en Fock 40"
+         end if
+        end do
 
 
 
@@ -1391,7 +1446,7 @@ c        old1(i)=RMM(i)
 c      enddo
 
       if(noconverge.gt.4) then
-        write(6,*)  'stop fon not convergion 4 times'
+        write(6,*)  'stop for not convergion 4 times'
         stop
       endif
 
@@ -1452,8 +1507,6 @@ c       write(*,*) 'g2g-Exc',Exc
         if (npas.gt.npasw) then
 
 !%%%%%%%%%%%%%%%%%   Escritura de energias   %%%%%%%%%%%%%%%%%
-
-
 !!escritura vieja
 !          write(6,*)
 !          write(6,600)
@@ -1701,14 +1754,34 @@ c       E=E*627.509391D0
 
 
 !%%%%%%%%%%%%%%%%%%%%%%%%% Nuevos Formatos, Nick %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 8500 FORMAT(4x,"╔════════╦════════
-     >═════╦═══════════╦═════
-     >══════════════════╗")
+ 8500 FORMAT(4x,"╔════════╦═══════",
+     >"══════╦═══════════╦══",
+     >"════════════════════╗")
  8501 FORMAT(4x,"║ iter # ║",2x,I10,1x,
      > "║ QM Energy ║",2x,D19.12,1x,"║")
- 8502 FORMAT(4x,"╚════════╩════════
-     >═════╩═══════════╩═════
-     >══════════════════╝")
+ 8502 FORMAT(4x,"╚════════╩═══════",
+     >"══════╩═══════════╩══",
+     >"════════════════════╝")
+
+
+ 8503 FORMAT(4x,"╔════════════════",
+     >"══╦══════╦═══════╗")
+ 8504 FORMAT(4x,"║ Changing to DIIS ║ step ║",2x,i4,1x,"║")
+ 8505 FORMAT(4x,"╚════════════════",
+     >"══╩══════╩═══════╝")
+
+
+ 8601 FORMAT(4x,"           ╔════════════╦",
+     >"═════════════╗")
+ 8602 FORMAT(4x,"           ║    Value   ║ Conv. Crit. ║")
+ 8603 FORMAT(4x,"╔══════════╬═════",
+     >"═══════╬════════════",
+     >"═╣")
+ 8604 FORMAT(4x,"║ Good     ║",1x,E10.3,1x,"║",1x,E10.3,2x,"║")
+ 8605 FORMAT(4x,"║ En. Good ║",1x,E10.3,1x,"║",1x,E10.3,2x,"║")
+ 8606 FORMAT(4x,"╚══════════╩═════",
+     >"═══════╩════════════",
+     >"═╝")
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 c

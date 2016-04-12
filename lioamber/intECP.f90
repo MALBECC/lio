@@ -3,7 +3,8 @@
 !                                                                                                                                  !
 ! This routines calculate Fock matrix elements for effective core potential (ECP).                                                 !
 !                                                                                                                                  !
-! V 0.95 december 2015 cutoff for interacions, linear scaling                                                                      !  
+! V 1.00 February 2016 Final version for ECP energy calculations                                                                   !
+! V 0.95 december 2015 cutoff for ECP interacions, linear scaling                                                                  !  
 ! V 0.91 october 2015 optimized version for energy calculations                                                                    !
 ! V 0.9 september 2015 1st functional version for energy calculations                                                              !
 !                                                                                                                                  !
@@ -99,6 +100,8 @@
         IF ( verbose_ECP .GT. 1) THEN
          CALL WRITE_BASIS()
          CALL WRITE_ANG_EXP()
+        END IF
+        IF ( verbose_ECP .GT. 2) THEN
          CALL WRITE_DISTANCE()
          CALL WRITE_FOCK_ECP_TERMS()
          CALL WRITE_FOCK_ECP()
@@ -149,13 +152,10 @@
 
         IMPLICIT NONE
         INTEGER :: i,j,k,ii,ji,pos
-        DOUBLE PRECISION :: AAA, acum
-!variables auxiliares
+        DOUBLE PRECISION :: AAA, acum !variables auxiliares
 
-        INTEGER :: lxi,lxj,lyi,lyj,lzi,lzj,M
-!l?$  pootencia de la parte angular de la base
-!M cantidad de funciones de base
-
+        INTEGER :: lxi,lxj,lyi,lyj,lzi,lzj !l?$  pootencia de la parte angular de la base
+        INTEGER :: M !M cantidad de funciones de base
 
         AAA=0.d0
         acum=0.d0
@@ -200,7 +200,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-        DOUBLE PRECISION FUNCTION AAA_LOCAL(i,j,k,ii,ji,lx,ly,lz)    !   ͚
+        DOUBLE PRECISION FUNCTION AAA_LOCAL(i,j,k,ii,ji,lx,ly,lz)!       ͚
 !Calcula el termino local del pseudopotencial  [<xi|V(LM)|xj>] = a(LM) ʃr^n exp(-alpha *r^2) dr *
 !                                                                      ̊ 
 ! * ʃ((x/r)^ni (y/r)^li (z/r)^mi dΩ
@@ -211,7 +211,7 @@
         USE ECP_mod, ONLY :nECP,bECP, aECP, ZlistECP, Lmax, expnumbersECP, angularint
 !nECP, bECP, aECP valores del pseudo potencial
 ! V = Σ aECP * r^b * exp(-bECP r^2)
-! estan escritos como: xECP(Z,l,i) Z carga del nucleo, l momento angular del ecp, i numero de funcion del ecp con Z,l
+! estan escritos como: ?ECP(Z,l,i) Z carga del nucleo, l momento angular del ecp, i numero de funcion del ecp con Z,l
 !ZlistECP(k) carga del atomo k con ECP
 !Lmax(Z) maximo momento angular del pseudopotencial para el atomo con carga nuclear Z
 !expnumbersECP(Z,l) cantidad de terminos del ECP para el atomo con carga nuclear Z y momento angular l 
@@ -224,7 +224,7 @@
 !Z carga del nucleo
 
         DOUBLE PRECISION :: Ccoef !exponente de la gaussiana para la integral angular
-	INTEGER :: w !variable auxiliar
+        INTEGER :: w !variable auxiliar
 
         Z=ZlistECP(k)
         L=Lmax(Z)
@@ -256,12 +256,10 @@
 !ii,ji numero de contraccion de la funcion
 !k atomo con ecp
 !lx, ly, lz; i,j exponente de la parte angular de la base x^lx y^ly z^lz
-        INTEGER :: Z !Z= carga del nucleo
+        INTEGER :: Z !carga del nucleo
 
         DOUBLE PRECISION :: A2, Acoef
-        INTEGER :: suma1, suma2
-	INTEGER :: l,m,term,n
-!variables auxiliares
+        INTEGER :: l,m,term,n !variables auxiliares
 
         AAA_SEMILOCAL=0.d0
         A2=0.d0
@@ -274,7 +272,7 @@
 !A2 contiene la parte angular de la integral
            END DO
 
-	   IF ( A2 .NE. 0.d0) THEN !solo calcula cuando la parte angular no es cero
+           IF ( A2 .NE. 0.d0) THEN !solo calcula cuando la parte angular no es cero
               DO term=1, expnumbersECP(z,l) !barre contracciones del ECP para el atomo con carga z y l del ecp
                  Acoef=bECP(z,L,term)+a(i,ii)+a(j,ji) !Acoef es el exponente de la integral radial
                  AAA_SEMILOCAL=AAA_SEMILOCAL+A2*aECP(z,L,term)*Q0(n+nECP(z,l,term),Acoef)
@@ -283,8 +281,8 @@
 !              ̊ 
 !aECP coeficiente del ECP
               END DO
-	      A2=0.d0
-	   END IF
+              A2=0.d0
+           END IF
         END DO
         RETURN
         END FUNCTION AAA_SEMILOCAL
@@ -298,8 +296,6 @@
 
 
 
-
-
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    2 Center terms <Xa|Va|Xb>    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -309,11 +305,11 @@
 !<Xa|Va|Xb>,<Xb|Va|Xa> NO incluye el caso <Xb|Va|Xb>
 
 
-	SUBROUTINE intECPAAB()
+        SUBROUTINE intECPAAB()
         USE garcha_mod, ONLY : nshell,nuc,a,ncont
 !nshell(i) cantidad de funciones i=1 s, i=2, p, i=3, d
 !nuc(i) atomo al que corresponde la base i
-!a(i,ni) exponente de la funcion de base i, contrccion ni
+!a(i,ni) exponente de la funcion de base i, contraccion ni
 !ncont(i) cantidad de contracciones de la funcion de base i
         USE ECP_mod, ONLY : ecptypes,cutECP,IzECP,cutecp2,distx, disty, distz,Lxyz, VAAB,ecp_debug, local_nonlocal, Cnorm, &
         Fulltimer_ECP,tsemilocal,tlocal,Tiempo,tQ1,cut2_0,ZlistECP,pi
@@ -342,31 +338,31 @@
            tQ1=0.d0
         END if
 
-	M=nshell(0)+nshell(1)+nshell(2)
-	Distcoef=0.d0
-	AAB=0.d0
-	acum=0.d0
+        M=nshell(0)+nshell(1)+nshell(2)
+        Distcoef=0.d0
+        AAB=0.d0
+        acum=0.d0
         DO i=1, M !barre funciones de la base 
         DO j=1, i !barre el otro coef de la base j<=i ya que la matriz tiene que ser simetrica
            IF (nuc(i) .NE. nuc(j)) THEN !solo calcula si las bases estan en atomos distintos
               DO k=1, ecptypes ! barre atomos con ecp
-	         IF (IzECP(nuc(i)) .EQ. ZlistECP(k) .OR. IzECP(nuc(j)) .EQ. ZlistECP(k)) THEN !solo calcula si el atomo tiene ECP
-	            dx=distx(nuc(i),nuc(j))
-	            dy=disty(nuc(i),nuc(j))
-	            dz=distz(nuc(i),nuc(j))
-	            Distcoef=(dx**2.d0 + dy**2.d0 + dz**2.d0)
+                 IF (IzECP(nuc(i)) .EQ. ZlistECP(k) .OR. IzECP(nuc(j)) .EQ. ZlistECP(k)) THEN !solo calcula si el atomo tiene ECP
+                    dx=distx(nuc(i),nuc(j))
+                    dy=disty(nuc(i),nuc(j))
+                    dz=distz(nuc(i),nuc(j))
+                    Distcoef=(dx**2.d0 + dy**2.d0 + dz**2.d0)
                     lxi=Lxyz(i,1)
                     lxj=Lxyz(j,1)
                     lyi=Lxyz(i,2)
                     lyj=Lxyz(j,2)
                     lzi=Lxyz(i,3)
                     lzj=Lxyz(j,3) !exponentes de la parte angular
-	            IF (IzECP(nuc(i)) .EQ. ZlistECP(k)) THEN !calculo para ECP en i 
+                    IF (IzECP(nuc(i)) .EQ. ZlistECP(k)) THEN !calculo para ECP en i 
                        DO ji=1, ncont(j) !barre contracciones de la base j
 			   IF ( .NOT. cutECP .OR. ((Distcoef*a(j,ji) .LT. cutecp2) .AND. Distcoef*a(j,ji) .LE. cut2_0)) THEN
 ! cut por contraccion de la base
 
-! solo calcula los terminos que luego se multipliquen por un factor q no sea demasiado peqeño ya que si los atomos quedan muy
+! solo calcula los terminos que luego se multipliquen por un factor que no sea demasiado pequeño ya que si los atomos quedan muy
 ! separados el termino VAAB se obtiene como el producto de un numero muy grande por uno que es casi 0
 	                     acum=0.d0
 	                     DO ii=1, ncont(i) !ii barre contracciones de las funcion de base i
@@ -395,7 +391,7 @@
 			   IF ( .NOT. cutECP .OR. ((Distcoef*a(i,ii) .LT. cutecp2) .AND.Distcoef*a(i,ii) .le. cut2_0)) THEN
 !cut por contraccion de la base
 
-! solo calcula los terminos que luego se multipliquen por un factor q no sea demasiado peqeño ya que si los atomos quedan muy
+! solo calcula los terminos que luego se multipliquen por un factor que no sea demasiado pequeño ya que si los atomos quedan muy
 ! separados el termino VAAB se obtiene como el producto de un numero muy grande por uno que es casi 0
                              acum=0.d0
                              DO ji=1, ncont(j) !barre contracciones de las funcion de base j
@@ -449,8 +445,7 @@
 
 ! los coef de la base se multiplican en la rutina que llama a esta
 
-        USE garcha_mod, ONLY : a
-!a(i,ni) exponente de la funcion de base i, contrccion ni
+        USE garcha_mod, ONLY : a !a(i,ni) exponente de la funcion de base i, contrccion ni
         USE ECP_mod, ONLY :ZlistECP,Lmax,aECP,nECP,bECP, expnumbersECP,Qnl,Fulltimer_ECP,tsemilocal,tQ1
 ! ZlistECP(k) carga del atomo k con ECP
 ! Lmax(Z) maximo momento angular del pseudopotencial para el atomo con carga nuclear Z
@@ -475,7 +470,7 @@
         INTEGER :: Z,n !Z= carga del nucleo
         DOUBLE PRECISION :: A2, Acoef, acumang, acumint, AABx, AABy, AABz, Kmod,Ccoef, auxdistx,auxdisty,auxdistz
 !auxiliares
-	INTEGER :: lambmin
+	INTEGER :: lambmin !minimo valor de lambda para integral angular no nula
 
         DOUBLE PRECISION :: t1,t2,t1q, t2q !auxiliares para timers
 
@@ -499,7 +494,6 @@
 	      Qnl=0.d0
 	      IF (Fulltimer_ECP) CALL cpu_time ( t1q )
 
-!	      CALL Qtype1(Kmod,Ccoef,lmaxbase,necp(Z,l,term))
 	      CALL Qtype1N(Kmod,Ccoef,lmaxbase+l,necp(Z,l,term)+n,necp(Z,l,term)) !calcula integrales radiales
 !              ͚ 
 ! Qnl(n,l) = ʃ Ml(k*r)*r^n * exp(-cr^2) dr
@@ -522,17 +516,11 @@
 	         IF (auxdistz .NE. 0.d0) THEN 
 	         acumint=0.d0
                  lambmin=0
-                 IF (l-lxj-lyj-lzj .GT. 0) lambmin=l-lxj-lyj-lzj !minimo valor da lambda para integral angular no nula
+                 IF (l-lxj-lyj-lzj .GT. 0) lambmin=l-lxj-lyj-lzj !minimo valor de lambda para integral angular no nula
 	         DO lambda=lxj+lyj+lzj+l,lambmin,-1
 	            acumang=0.d0
 	            DO m=-l,l
 	               acumang=acumang+Aintegral(l,m,lxi,lyi,lzi)*OMEGA2(Kvector,lambda,l,m,lx,ly,lz)
-!			IF ( abs(OMEGA2(Kvector,lambda,l,m,lx,ly,lz)-OMEGA2n(Kvector,lambda,l,m,lx,ly,lz)) .gt. 1.d-9) THEN
-!				WRITE (*,*) "***********************************************"
-!				WRITE (*,*) "error in omega 2"
-!				WRITE (*,*) "***********************************************"
-!				STOP
-!			END IF
 	            END DO
 
 	            acumint=acumint+acumang*Qnl(necp(Z,l,term)+lx+ly+lz+lxi+lyi+lzi,lambda)*aECP(z,L,term) 
@@ -569,7 +557,7 @@
 
         DOUBLE PRECISION FUNCTION AAB_LOCAL(i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi,dx,dy,dz)
 !Calcula el termino local del pseudopotencial centrado en i [<xi|Vi(LM)|xj>]  
-!los coef N de la base se multiplican en la rutina que llama a esta
+!los coef de la base se multiplican en la rutina que llama a esta
 !i,j funcion de base
 !ii,ji numero de contraccion de la funcion de base
 !k atomo con ECP
@@ -587,15 +575,18 @@
 ! semilocal,tQ1 auxiliares para el calculo de tiempos
 
 ! angularint(i,j,k)= ʃ(x/r)^i (y/r)^j (z/r)^k dΩ
-
+! tlocal,tQ1 auxiliares para timers
 
 
         IMPLICIT NONE
-        INTEGER :: w,n,z,l,lxi, lyi, lzi, lambda, Lmaxbase
         INTEGER, INTENT(IN) :: i,j,k,ii,ji,lx,ly,lz,kxi,kyi,kzi
-        DOUBLE PRECISION :: Ccoef, acum,dx,dy,dz,integral, Kmod,distcoefx, distcoefy,distcoefz
-	DOUBLE PRECISION,DIMENSION (3) :: Kvector
-
+        DOUBLE PRECISION, INTENT(IN) :: dx,dy,dz
+        INTEGER :: z,l,Lmaxbase
+! Z carga nuclear
+! l maximo valor del momento angular del pseudopotencial
+        INTEGER :: w,lxi,lyi,lzi,lambda !Auxiliares
+        DOUBLE PRECISION :: Ccoef, acum,integral, Kmod,distcoefx, distcoefy,distcoefz
+        DOUBLE PRECISION,DIMENSION (3) :: Kvector
         DOUBLE PRECISION :: t1,t2,t1q,t2q !auxiliares para timers
         IF (Fulltimer_ECP) CALL cpu_time ( t1 )
 
@@ -604,24 +595,21 @@
         L=Lmax(Z)
         Lmaxbase=lx+ly+lz+kxi+kyi+kzi
         AAB_LOCAL=0.d0
-	acum=0.d0
-	integral=0.d0
-	Kvector=(/-2.d0*dx,-2.d0*dy,-2.d0*dz/)*a(j,ji)
-	Kmod= 2.d0 * sqrt(dx**2.d0 + dy**2.d0 + dz**2.d0) *a(j,ji)
+        acum=0.d0
+        integral=0.d0
+        Kvector=(/-2.d0*dx,-2.d0*dy,-2.d0*dz/)*a(j,ji)
+        Kmod= 2.d0 * sqrt(dx**2.d0 + dy**2.d0 + dz**2.d0) *a(j,ji)
 
-        DO w =1, expnumbersECP(z,l)
-!barre todos los terminos del Lmaximo
-	   Qnl=0.d0
-	   Ccoef=bECP(z,L,w)+a(i,ii)+a(j,ji)
-	   IF (Fulltimer_ECP) CALL cpu_time ( t1q )
-!	   CALL Qtype1(Kmod,Ccoef,lmaxbase,necp(Z,l,w))
+        DO w =1, expnumbersECP(z,l) !barre todos los terminos del Lmaximo
+           Qnl=0.d0
+           Ccoef=bECP(z,L,w)+a(i,ii)+a(j,ji)
+           IF (Fulltimer_ECP) CALL cpu_time ( t1q )
 	   CALL Qtype1N(Kmod,Ccoef,Lmaxbase,necp(Z,l,w)+Lmaxbase,necp(Z,l,w)+kxi+kyi+kzi) !calcula integrales radiales
 
            IF (Fulltimer_ECP) THEN
               CALL cpu_time ( t2q )
               tQ1=tQ1 +t2q-t1q
            END IF
-
 
 
 	   DO lxi=0,lx !barre potencias por expansion del binomio de Newton (x - dx)^lx
@@ -705,7 +693,7 @@
         INTEGER :: order
 
 
-	if (Fulltimer_ECP) THEN
+	IF (Fulltimer_ECP) THEN
 	   tsemilocal=0.d0
 	   tlocal=0.d0
 	   tQ1=0.d0
@@ -803,8 +791,8 @@
         INTEGER, INTENT(IN) :: i,j,ii,ji !terminos de la base
 	INTEGER, INTENT(IN) :: lxi,lyi,lzi,lxj,lyj,lzj !potencias de la parte angular
 	DOUBLE PRECISION, INTENT(IN) :: dx1,dy1,dz1,dx2,dy2,dz2 !distancias del centro con ecp a cada nucleo
-        INTEGER, INTENT(IN) :: k !numero de atomo,
-        INTEGER :: L, Z !L maximo del ecp, Z carga sin modificar
+        INTEGER, INTENT(IN) :: k !numero de atomo
+        INTEGER :: L, Z !L maximo del ecp, Z carga nuclear sin modificar
         DOUBLE PRECISION,DIMENSION (3) :: Kvector
 	DOUBLE PRECISION :: Kmod,Ccoef, integral,auxcomb,auxdist,acum, auxdista, auxdistb, auxdistc, auxdistd, auxdiste, auxdistf
 	INTEGER :: lmaxbase
@@ -945,7 +933,6 @@
 	      Qnl1l2=0.d0
 	      Ccoef=bECP(z,L,term)+a(i,ii)+a(j,ji)
 		IF (Fulltimer_ECP) CALL cpu_time ( t1q )
-!		CALL Qtype2(Kimod,Kjmod,Ccoef,l1max,l2max,necp(Z,l,term))
 		call Qtype2N(Kimod,Kjmod,Ccoef,l1max+l,l2max+l,necp(Z,l,term)+l1max+l2max,necp(Z,l,term))
 !agrega a la matriz Qnl1l2 los terminos correspondientes a un termino radiales.
 
@@ -1046,13 +1033,12 @@
 !                ͚
 ! Q0(n,alpha)= ʃ r^n exp(-alpha *r^2)dr
 !              ̊ 
-
-        USE ECP_mod, ONLY : pi12, fac,doublefactorial
+        USE ECP_mod, ONLY : pi12,fac,doublefactorial
         IMPLICIT NONE
         INTEGER, INTENT(IN) :: n
         DOUBLE PRECISION, INTENT(IN) :: alpha
         IF ( mod(n,2).EQ.0) THEN
-           Q0=0.5d0*pi12/sqrt(alpha) * DOublefactorial(n-1)/((2*alpha)**(n/2))
+           Q0=0.5d0*pi12/sqrt(alpha) * doublefactorial(n-1)/((2*alpha)**(n/2))
            RETURN
         ELSE
            IF ( (n-1)/2 .lt. 0) STOP "Er factorial de un negativo en Q0"
@@ -1068,7 +1054,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
         DOUBLE PRECISION FUNCTION Aintegral(l,m,lx,ly,lz)
-! calcula angularint(i,j,k)= ʃ(x/r)^i (y/r)^j (z/r)^k YlmdΩ
+! calcula angularint(i,j,k)= ʃ(x/r)^i (y/r)^j (z/r)^k Ylm dΩ
 ! Ylm es el armonico esferico real ortonormal
         USE ECP_mod, ONLY :angularint
         IMPLICIT NONE
@@ -1090,7 +1076,7 @@
         DOUBLE PRECISION FUNCTION OMEGA1(K,l,a,b,c)
 !Esta funcion devuelve el valor de omega evaluado en el vector K
 !                    l
-!OMEGA1(K,l,a,b,c) = Σ Ylu(K) * ʃ x/r)^a * (y/r)^b * (z/r)^c Ylu(Ω) dΩ
+!OMEGA1(K,l,a,b,c) = Σ Ylu(K) * ʃ (x/r)^a * (y/r)^b * (z/r)^c Ylu(Ω) dΩ
 !                   u=-l
 
         USE ECP_mod, ONLY : angularint 
@@ -1158,48 +1144,6 @@
         END DO
         END FUNCTION OMEGA2
 
-	DOUBLE PRECISION FUNCTION OMEGA2N(K,lambda,l,m,a,b,c)
-	USE ECP_mod, ONLY : angularint
-	IMPLICIT NONE
-	DOUBLE PRECISION, INTENT(IN), DIMENSION(3) :: K
-        INTEGER, INTENT(IN) :: lambda,l,m,a,b,c
-        DOUBLE PRECISION, DIMENSION(3) :: Kun
-	DOUBLE PRECISION :: YdeK,integral
-	INTEGER :: tita,d,e,f,g,h,i,j,ki,n
-        Kun=K/sqrt(K(1)**2.d0 + K(2)**2.d0 + K(3)**2.d0)
-        OMEGA2n=0.d0
-	YdeK=0.d0
-	integral=0.d0
-
-
-	DO tita=-lambda,lambda
-	  DO d=0,lambda
-	     DO e=0,lambda-d
-	        f=lambda-d-e
-	        YdeK=YdeK+Ucoef(lambda,tita,d,e,f)*Kun(1)**d * Kun(2)**e * Kun(3)**f
-	     END DO
-	  END DO
-
-	  DO g=0,l
-	     DO h=0,l-g
-	        i=l-h-g
-	        DO j=0,lambda
-	           DO ki=0,lambda-j
-	              n=lambda-j-ki
-	              integral=integral+Ucoef(lambda,tita,j,ki,n)*Ucoef(l,m,g,h,i)*angularint(a+g+j,b+h+ki,c+i+n)
-	           END DO
-	        END DO
-	     END DO
-	  END DO 
-	  OMEGA2n=OMEGA2n+YdeK*integral
-	  YdeK=0.d0
-	  integral=0.d0
-	END DO
-	RETURN
- 4235   FORMAT(1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x,2x,f18.15)
-	END FUNCTION OMEGA2n
-
-
 
         DOUBLE PRECISION FUNCTION Ucoef(l,m,lx,ly,lz)
         USE ECP_mod, ONLY :  l0,l1,l2,l3,l4
@@ -1207,7 +1151,7 @@
         INTEGER, INTENT(IN) :: l,m,lx,ly,lz
 
         IF (lx+ly+lz .ne. l) THEN
-           STOP "problem with Ucoef: lx+ly+lz not.EQ.al l"
+           STOP "problem with Ucoef: lx+ly+lz not equal to l"
         END if
 
         IF (l .EQ. 0) THEN
@@ -1234,8 +1178,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-        DOUBLE PRECISION FUNCTION comb(a,b)
-!devuelve el combinatorio a,b; a>=b
+        DOUBLE PRECISION FUNCTION comb(a,b) !devuelve el combinatorio a,b; a>=b
         USE ECP_mod, ONLY :fac
         INTEGER, INTENT(IN) :: a,b
         IF (a .lt. 0 .or. b .lt. 0) STOP "comb con numeros negativos"
@@ -1255,12 +1198,12 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
         SUBROUTINE Qtype1N(K,Ccoef,lmax,nmax,nmin)
 !this routine obtain Q(l,n,k,a) where
-
 !              ͚
 !Q(l,n,k,a)= ʃ r^n exp(-ar^2) Ml(kr) dr 
 !            ̊ 
 !where Ml are the modified spherical Bessel function of the first kind.
 
+!agrega a la matriz Qnl los terminos correspondientes a un termino del pseudopotencial.
 !CUIDADO no borra Qnl ya que hay q llamar a esta rutina por cada termino del pseudopotencial
 
         USE ECP_mod, ONLY :  alpha, betha, Bn, Cn, Qnl, ecp_full_range_int
@@ -1296,61 +1239,17 @@
         DO i=l+1,1,-2
            acum=acum+betha(l+1,i)*Cn(n-i)/k**i
         END DO
+
+        IF (acum .EQ. 0.d0) THEN
+           WRITE(*,*) "error en Qtype 1, integral radial 0. n,l",n,l
+           STOP
+        END IF
+
                 Qnl(n,l)=Qnl(n,l)+acum*gam
                 acum=0.d0
         END DO
         END DO
         End SUBROUTINE Qtype1N
-
-
-        SUBROUTINE Qtype1(K,Ccoef,lmax,necp)
-!this routine obtain Q(l,n,k,a) where
-!Q(l,n,k,a)= int r^n exp(-ar^2) Ml(kr) dr form r=0 to inf
-!where Ml are the modified spherical Bessel FUNCTION of the first kind.
-
-!cuidado esta mal el rango en que se calcula Q, hay q c.EQ.ear
-!agrega a la matriz Qnl los terminos correspondientes a un termino del pseudopotencial.
-!CUIDADO no borra Qnl ya que hay q llamar a esta rutina por cada termino del pseudopotencial
-!luego hay que optimizar la rutina para que calcule Qnl a partir de otros Qnl
-	USE ECP_mod, ONLY :  alpha, betha, Bn, Cn, Qnl, ecp_full_range_int
-	IMPLICIT NONE
-	DOUBLE PRECISION, INTENT(IN) :: K,Ccoef
-!lmax  = 0 para <s||s>, 1 para <s||p>, 2 para <s||d>, ... , 6 para <d||d>	
-!necp corresponde al exponente del paseudopotencial en r^n
-	INTEGER :: necp,lmax
-!nmin y nmax dan el rango en que tiene q calcular Q
-	INTEGER :: nmin,nmax
-!variables auxiliares
-	INTEGER :: n,l,i
-        DOUBLE PRECISION :: acoef, gam, acum
-	nmin=necp
-	nmax=necp+lmax
-	
-	acoef=K/(2.d0*Ccoef)
-	gam=0.5d0*exp(K**2.d0/(4.d0*Ccoef))
-	Bn=0.d0
-	Cn=0.d0
-	CALL ByC(Acoef,Ccoef,nmin-1,nmax,Bn,Cn)
-
-	DO n=nmin,nmax
-	DO l=0,lmax
-
-	acum=0.d0
-	DO i=l,1,-2
-	   acum=acum+alpha(l,i)*Bn(n-i)/k**i
-	END DO
-	DO i=l+1,1,-2
-	   acum=acum+betha(l+1,i)*Cn(n-i)/k**i
-	END DO
-	IF (acum .EQ. 0.d0) THEN
-	   WRITE(*,*) "error en Qtype 1, integral radial 0. n,l",n,l
-	   STOP
-	END IF 
-		Qnl(n,l)=Qnl(n,l)+acum*gam
-		acum=0.d0
-	END DO
-	END DO
-        End SUBROUTINE Qtype1
 
 
         SUBROUTINE ByC(Acoef,Ccoef,nmin,nmax,Barray,Carray)
@@ -1403,37 +1302,34 @@
 
         SUBROUTINE Qtype2N(Ka,Kb,Ccoef,l1max,l2max,nmax,nmin)
 !this routine obtain Q(l1,l2,n,k1,k2,a) where
-!Q(l1,l2,n,k1,k2,a)= int r^n exp(-ar^2) Ml1(k1r) Ml2(k2r) dr form r=0 to inf
-!where Ml are the modified spherical Bessel FUNCTION of the first kind.
+!                      ͚
+!Q(l1,l2,n,k1,k2,a)= ʃ r^n exp(-ar^2) Ml1(k1*r) Ml2(k2*r) dr 
+!                    ̊ 
+!where Ml are the modified spherical Bessel function of the first kind.
 
 !agrega a la matriz Qnl1l2 los terminos correspondientes a un termino del pseudopotencial.
-!CUIDADO no borra Qnl1l2 ya que hay q llamar a esta rutina por cada termino del pseudopotencial
-!luego hay que optimizar la rutina para que calcule Qnl1l2 a partir de otros Qnl1l2
+!CUIDADO no borra Qnl1l2 ya que hay que llamar a esta rutina por cada termino del pseudopotencial
         USE ECP_mod, ONLY :  alpha, betha, rho, tau, sigma, sigmaR, Qnl1l2,ecp_full_range_int
         IMPLICIT NONE
         DOUBLE PRECISION, INTENT(IN) :: Ka,Kb,Ccoef
 !l1max y l2max = 0 para s, 1 para p, 2 para d, etc      
 !n corresponde al exponente del paseudopotencial en r^n
-!       INTEGER, INTENT(IN) :: necp,l1max, l2max
         INTEGER :: necp,l1max, l2max
         INTEGER :: nmin,nmax
 !variables auxiliares
         INTEGER :: i,j,n,l1,l2
         DOUBLE PRECISION :: alfok, betok, acum1
         
-!Caso 1-calcula todas las integrales
-!        nmin=necp
-!        nmax=necp+l1max+l2max
 
         IF (ecp_full_range_int) THEN
-!solucion temporal hasta ver el rango correcto de calculo
-!           nmin=0
-!           nmax=10
-!           l1max=4
-!a           l2max=4
+           nmin=0
+           nmax=10
+           l1max=4
+           l2max=4
         END IF
-!        CALL integrals(Ka,Kb,Ccoef,necp-2-l1max-l2max,necp+l1max+l2max-2)
+
 	CALL integrals(Ka,Kb,Ccoef,nmin-l1max-l2max-2,nmax+1)
+
         acum1=0.d0
         DO n=nmin,nmax
         DO l1=0,l1max
@@ -1471,74 +1367,6 @@
 
 
 
-        SUBROUTINE Qtype2(Ka,Kb,Ccoef,l1max,l2max,necp)
-!this routine obtain Q(l1,l2,n,k1,k2,a) where
-!Q(l1,l2,n,k1,k2,a)= int r^n exp(-ar^2) Ml1(k1r) Ml2(k2r) dr form r=0 to inf
-!where Ml are the modified spherical Bessel FUNCTION of the first kind.
-
-!agrega a la matriz Qnl1l2 los terminos correspondientes a un termino del pseudopotencial.
-!CUIDADO no borra Qnl1l2 ya que hay q llamar a esta rutina por cada termino del pseudopotencial
-!luego hay que optimizar la rutina para que calcule Qnl1l2 a partir de otros Qnl1l2
-	USE ECP_mod, ONLY :  alpha, betha, rho, tau, sigma, sigmaR, Qnl1l2,ecp_full_range_int
-	IMPLICIT NONE
-	DOUBLE PRECISION, INTENT(IN) :: Ka,Kb,Ccoef
-!l1max y l2max = 0 para s, 1 para p, 2 para d, etc	
-!n corresponde al exponente del paseudopotencial en r^n
-!	INTEGER, INTENT(IN) :: necp,l1max, l2max
-	INTEGER :: necp,l1max, l2max
-	INTEGER :: nmin,nmax
-!variables auxiliares
-	INTEGER :: i,j,n,l1,l2
-	DOUBLE PRECISION :: alfok, betok, acum1
-	
-!Caso 1-calcula todas las integrales
-	nmin=necp
-	nmax=necp+l1max+l2max
-
-	IF (ecp_full_range_int) THEN
-!solucion temporal hasta ver el rango correcto de calculo
-	   nmin=0
-	   nmax=10
-	   l1max=4
-	   l2max=4
-	END IF
-
-	call integrals(Ka,Kb,Ccoef,necp-2-l1max-l2max,necp+l1max+l2max-2)
-	acum1=0.d0
-	DO n=nmin,nmax
-	DO l1=0,l1max
-	DO l2=0,l2max
-	   DO i=l1,1,-2
-	      alfok=alpha(l1,i)/Ka**i
-	      DO j=l2,1,-2
-	         IF (tau(n-i-j) == 0.d0) STOP "Error, no calculo tau"
-	         acum1=acum1+alpha(l2,j)*tau(n-i-j)/Kb**j
-	      END DO
-	      DO j=l2+1,1,-2
-	         acum1=acum1+betha(l2+1,j)*sigmaR(n-i-j)/Kb**j
-		 IF (sigmaR(n-i-j) == 0.d0) STOP "Error, no calculo sigmaR"
-	      END DO
-	   Qnl1l2(n,l1,l2)=Qnl1l2(n,l1,l2)+acum1*alfok
-	   acum1=0.d0
-	   END DO
-	   DO i=l1+1,1,-2
-	      betok=betha(l1+1,i)/Ka**i
-	      DO j=l2,1,-2
-	         acum1=acum1+alpha(l2,j)*sigma(n-i-j)/Kb**j
-	         IF (sigma(n-i-j) == 0.d0) STOP "Error, no calculo sigma"
-	      END DO
-	      DO j=l2+1,1,-2
-	         acum1=acum1+betha(l2+1,j)*rho(n-i-j)/Kb**j
-	         IF (rho(n-i-j) == 0.d0) STOP "Error, no calculo rho"
-	      END DO
-	      Qnl1l2(n,l1,l2)=Qnl1l2(n,l1,l2)+acum1*betok
-	      acum1=0.d0
-	   END DO
-	END DO
-	END DO
-	END DO
-        End SUBROUTINE Qtype2
-
 	SUBROUTINE integrals(Ka,Kb,Ccoef,nmin,nmax)
 !obtain integrals rho, tau, sigma.AND.sigmaR from n between nmin.AND.nmax
 ! rho(n) = int exp(-cr^2) * sinh(Ka*r)* sinh(Kb*r) r^n  dr  from 0 to inf
@@ -1548,7 +1376,6 @@
 
 	USE ECP_mod, ONLY : Bn1,Bn2,Cn1,Cn2,rho, tau, sigma, sigmaR,ecp_full_range_int
 	IMPLICIT NONE
-!	INTEGER, INTENT(IN) :: nmin,nmax
 	INTEGER :: nmin,nmax
 	DOUBLE PRECISION, INTENT(IN) :: Ka,Kb,Ccoef
 	DOUBLE PRECISION, DIMENSION(2) :: acoef,gammacoef
@@ -1557,7 +1384,6 @@
 	acoef(2)=0.5d0*abs(Ka-Kb)/Ccoef
 	gammacoef(1)=0.25d0*exp(Ccoef*acoef(1)**2.d0)
 	gammacoef(2)=0.25d0*exp(Ccoef*acoef(2)**2.d0)
-!	call ByCdoble(acoef(1),acoef(2),Ccoef,nmin,nmax)
 	Bn1=0.d0
 	Bn2=0.d0
 	Cn1=0.d0
@@ -1568,10 +1394,10 @@
 	sigmaR=0.d0
 
         IF (ecp_full_range_int) THEN
-!solucion temporal hasta ver el rango correcto de calculo
            nmin=-12
            nmax=14
         END IF
+
 	CALL ByC(acoef(1),Ccoef,nmin,nmax,Bn1,Cn1)
 	CALL ByC(acoef(2),Ccoef,nmin,nmax,Bn2,Cn2)
 	rho=gammacoef(1)*Bn1-gammacoef(2)*Bn2
@@ -1587,15 +1413,14 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    Subr. for Prep.    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
-!rutinas de preparacion y calculo de variables previas
+!rutinas para preparacion y calculo de variables previas
 
 
         SUBROUTINE allocate_ECP
 !alocatea todas las variables que van a necesitar los pseudopotenciales
         USE garcha_mod, ONLY :nshell, natom
-        USE ECP_mod, ONLY :VAAAcuadrada,VAABcuadrada, VBACcuadrada,VAAA,VAAB,VBAC,term1e,distx, disty, distz, IzECP,Lxyz,Cnorm
-!	USE param, ONLY :nl
+!        USE ECP_mod, ONLY :VAAAcuadrada,VAABcuadrada, VBACcuadrada
+        USE ECP_mod, ONLY :VAAA,VAAB,VBAC,term1e,distx, disty, distz, IzECP,Lxyz,Cnorm
 !term1e terminos de fock de 1 electron sin agregarles VAAA
         IMPLICIT NONE
         INTEGER :: ns,np,nd,M,Mcuad
@@ -1617,16 +1442,15 @@
         distx=0.d0
         disty=0.d0
         distz=0.d0
-	ALLOCATE (IzECP(natom))
-	ALLOCATE (Lxyz(M, 3))
+        ALLOCATE (IzECP(natom))
+        ALLOCATE (Lxyz(M, 3))
         END SUBROUTINE allocate_ECP
 
 
-        SUBROUTINE deallocateV
-!desalocatea variables de ECP
+        SUBROUTINE deallocateV !desalocatea variables de ECP
         USE ECP_mod, ONLY :VAAA,VAAB,VBAC,term1e,distx, disty, distz,IzECP,Lxyz,Cnorm
         IMPLICIT NONE
-!        deallocate (VAAAcuadrada,VAABcuadrada, VBACcuadrada)
+!        DEALLOCATE (VAAAcuadrada,VAABcuadrada, VBACcuadrada)
         DEALLOCATE (VAAA,VAAB,VBAC)
         DEALLOCATE (term1e)
         DEALLOCATE (distx, disty, distz)
@@ -1634,7 +1458,7 @@
 	DEALLOCATE (Cnorm)
         END SUBROUTINE deallocateV
 
-	SUBROUTINE norm_C()
+	SUBROUTINE norm_C() !Escribe la matriz C corrigiendo la normalizacion de las funciones d
         USE garcha_mod, ONLY :nshell,c,ncont
 	USE ECP_mod, ONLY :Cnorm
 	IMPLICIT NONE
@@ -1674,43 +1498,43 @@
         END DO
 	END SUBROUTINE norm_C
 
-        SUBROUTINE correctbasis(r)
+!        SUBROUTINE correctbasis(r)
 !cambia el coeficiente de las funciones d x^2, y^2 y z^2
 !esta rutina ya no se usa, se reemplazo por norm_C
-        USE garcha_mod, ONLY :nshell,c,ncont
-        IMPLICIT NONE
-        INTEGER :: i,j,ns,np,nd
-        INTEGER, INTENT(IN) :: r
-        DOUBLE PRECISION :: factor
-        ns=nshell(0)
-        np=nshell(1)
-        nd=nshell(2)
+!        USE garcha_mod, ONLY :nshell,c,ncont
+!        IMPLICIT NONE
+!        INTEGER :: i,j,ns,np,nd
+!        INTEGER, INTENT(IN) :: r
+!        DOUBLE PRECISION :: factor
+!        ns=nshell(0)
+!        np=nshell(1)
+!        nd=nshell(2)
 
-        IF (r.EQ.1) THEN
-                factor=sqrt(1.d0/3.d0)
-        ELSE IF (r.EQ.-1)then
-                factor=sqrt(3.d0)
-        END IF
+!        IF (r.EQ.1) THEN
+!                factor=sqrt(1.d0/3.d0)
+!        ELSE IF (r.EQ.-1)then
+!                factor=sqrt(3.d0)
+!        END IF
 
-	WRITE(*,*) " EDITANDO BASE D *****************************************"
-        DO i=ns+np+1,ns+np+nd,6
-        WRITE(*,*) "edita i=",i
-                DO j=1,ncont(i)
-                        c(i,j)=c(i,j)*factor
-                END DO
-                DO j=1,ncont(i+2)
-                        c(i+2,j)=c(i+2,j)*factor
-                END DO
-                DO j=1,ncont(i+5)
-                        c(i+5,j)=c(i+5,j)*factor
-                END DO
-        END DO
-        END SUBROUTINE correctbasis
+!	WRITE(*,*) " EDITANDO BASE D *****************************************"
+!        DO i=ns+np+1,ns+np+nd,6
+!        WRITE(*,*) "edita i=",i
+!                DO j=1,ncont(i)
+!                        c(i,j)=c(i,j)*factor
+!                END DO
+!                DO j=1,ncont(i+2)
+!                        c(i+2,j)=c(i+2,j)*factor
+!                END DO
+!                DO j=1,ncont(i+5)
+!                        c(i+5,j)=c(i+5,j)*factor
+!                END DO
+!        END DO
+!        END SUBROUTINE correctbasis
 
 
         SUBROUTINE ReasignZ
-!cambia la carga de los nucleos con pseudopotenciales  sa.AND.le la carga del core y guarda las cargas originales en IzECP
-!tambien corrige la cantidad de electrones sa.AND. los que van al core
+!cambia la carga de los nucleos con pseudopotenciales sacandole la carga del core y guarda las cargas originales en IzECP
+!tambien corrige la cantidad de electrones restando los que van al core
         USE garcha_mod, ONLY :Iz,nuc,nshell, natom, NCO
         USE ECP_mod, ONLY : ZlistECP,IzECP,Zcore,ecptypes,asignacion
         IMPLICIT NONE
@@ -1724,19 +1548,12 @@
 	WRITE(*,3903)
 	WRITE(*,3904)
 	WRITE(*,3905)
-        DO i=1, natom
-!barre atomos
+        DO i=1, natom !barre atomos
 	 IzECP(i)=Iz(i)
-         DO j=1, ecptypes
-!barre atomos con ecp
+         DO j=1, ecptypes !barre atomos con ecp
           IF (IzECP(i) .EQ. ZlistECP(j)) THEN
-!           WRITE(*,*) "edi.AND. atomo", i
-           Iz(i)=Iz(i)-Zcore(ZlistECP(j))
-!           WRITE(*,*) "carga nuclear efectiva = ", Iz(i)
-!cambia la carga del nucleo
-           NCO=NCO-Zcore(ZlistECP(j))/2
-!saca e-
-!           WRITE(*,*) "electrones del sistema removidos ", Zcore(ZlistECP(j))
+           Iz(i)=Iz(i)-Zcore(ZlistECP(j)) !cambia la carga del nucleo
+           NCO=NCO-Zcore(ZlistECP(j))/2 !saca e-
 	   CALL asignacion(IzECP(i),simb)
 	   WRITE(*,3906) i,simb,Iz(i),Zcore(ZlistECP(j)) 
 	   elec_remov=elec_remov+Zcore(ZlistECP(j))
@@ -1783,14 +1600,12 @@
         M = nshell(0)+nshell(1)+nshell(2)
         Lxyz=0
         DO i=nshell(0)+1,M
-           IF (i .LE. nshell(0)+nshell(1)) THEN
-!funciones p
+           IF (i .LE. nshell(0)+nshell(1)) THEN !funciones p
               resto=modulo(i-nshell(0),3)
               IF (resto .EQ. 1) Lxyz(i,1)=1
               IF (resto .EQ. 2) Lxyz(i,2)=1
               IF (resto .EQ. 0) Lxyz(i,3)=1
-           ELSE IF (i .le. M) THEN
-!funciones d
+           ELSE IF (i .le. M) THEN !funciones d
               resto=modulo(i-nshell(0)+nshell(1),6)
               IF (resto .EQ. 1) Lxyz(i,1)=2
               IF (resto .EQ. 2) THEN
@@ -1811,11 +1626,9 @@
         END DO
         END SUBROUTINE obtainls
 
-        SUBROUTINE obtaindistance()
-!obtiene matrices de distancias
+        SUBROUTINE obtaindistance() !obtiene matrices de distancias
         USE garcha_mod, ONLY :r, natom
-        USE ECP_mod, ONLY :distx, disty, distz
-!distx(i,j) = xi-xj
+        USE ECP_mod, ONLY :distx, disty, distz !distx(i,j) = xi-xj
         IMPLICIT NONE
         INTEGER :: i,j
         DO i=1,natom
@@ -1849,8 +1662,7 @@
 
         INQUIRE(FILE="ECP_restart", EXIST=hay_restart)
 
-        IF ( .NOT. hay_restart) THEN
-!c.EQ.e que el archivo ECP este
+        IF ( .NOT. hay_restart) THEN ! verifica que el archivo ECP este
          WRITE(*,*) "ECP_restart not Found"
 	 STOP
         ELSE
@@ -1931,7 +1743,6 @@
 	IMPLICIT NONE
 	INTEGER :: i,j,M
 	M=nshell(0)+nshell(1)+nshell(2)
-!escribe a y c (solo el 1er valor)
         WRITE(*,4010)
 	WRITE(*,4011)
 	WRITE(*,4012)
@@ -1958,8 +1769,7 @@
 	END SUBROUTINE WRITE_BASIS
 
 
-	SUBROUTINE WRITE_FOCK_ECP_TERMS()
-!escribe los terminos de fock del pseudopotencial
+	SUBROUTINE WRITE_FOCK_ECP_TERMS() !escribe los terminos de Fock del pseudopotencial
 	USE ECP_mod, ONLY : VAAA, VAAB, VBAC
 	USE garcha_mod, ONLY : nshell
 	IMPLICIT NONE
@@ -2120,22 +1930,21 @@
 	WRITE(*,4061)
 	WRITE(*,4062)
 
-	DO k=1, ecptypes
+	DO k=1, ecptypes !barre todos los atomos con ECP
 	z=ZlistECP(k)
 	   CALL asignacion(Z,simb)
 	   WRITE(*,*)
 	   WRITE(*,4063)
 	   WRITE(*,4064) simb,Zcore(z),Lmax(z)
 	   WRITE(*,4065)
-!barre todos los atomos con ECP
-	   DO l=0,Lmax(z)
+
+	   DO l=0,Lmax(z) !barre momento angular del ecp
 	      WRITE(*,4066) l
 	      WRITE(*,4067)
 	      WRITE(*,4068)
 	      WRITE(*,4069)
-!barre momento angular del ecp
-	         DO w =1, expnumbersECP(z,l)
-!barre funciones
+
+	         DO w =1, expnumbersECP(z,l) !barre funciones
 	            WRITE(*,4070) necp(Z,l,w),bECP(z,L,w),aECP(z,L,w)
 	         END DO
 	      IF ( l .LT. Lmax(z) ) WRITE(*,4071)
@@ -2189,80 +1998,80 @@
 	END SUBROUTINE SEARCH_NAN
 
 
-	SUBROUTINE TEST_SYMMETRY()
-        USE ECP_mod, ONLY : VAAAcuadrada,VAABcuadrada,VBACcuadrada
-        USE garcha_mod, ONLY : nshell,nuc
-	IMPLICIT NONE
-	INTEGER :: i,j,M
-	logical :: Er
-	Er=.false.
-	M=nshell(0)+nshell(1)+nshell(2)
-	DO i=1,M
-	DO j=i,M
+!	SUBROUTINE TEST_SYMMETRY()
+!        USE ECP_mod, ONLY : VAAAcuadrada,VAABcuadrada,VBACcuadrada
+!        USE garcha_mod, ONLY : nshell,nuc
+!	IMPLICIT NONE
+!	INTEGER :: i,j,M
+!	logical :: Er
+!	Er=.false.
+!	M=nshell(0)+nshell(1)+nshell(2)
+!	DO i=1,M
+!	DO j=i,M
+!
+!	   IF (abs(VAAAcuadrada(i,j) - VAAAcuadrada(j,i)) .GT. 1D-08) THEN
+!			WRITE(*,*) "symmetry error in ecp-fock matrix for <xA|VA|xA> terms"
+!			WRITE(*,4031) i,j,VAAAcuadrada(i,j), VAAAcuadrada(j,i)
+!			Er=.true.
+!	   END IF
 
-	   IF (abs(VAAAcuadrada(i,j) - VAAAcuadrada(j,i)) .GT. 1D-08) THEN
-			WRITE(*,*) "symmetry error in ecp-fock matrix for <xA|VA|xA> terms"
-			WRITE(*,4031) i,j,VAAAcuadrada(i,j), VAAAcuadrada(j,i)
-			Er=.true.
-	   END IF
+!	   IF (abs(VAABcuadrada(i,j) - VAABcuadrada(j,i)) .GT. 1D-08) THEN
+!		WRITE(*,*) "symmetry error in ecp-fock matrix for <xA|VA|xB> terms",i,j
+!		WRITE(*,4031) i,j,VAABcuadrada(i,j), VAABcuadrada(j,i)
+!		Er=.true.
+!	   END IF
 
-	   IF (abs(VAABcuadrada(i,j) - VAABcuadrada(j,i)) .GT. 1D-08) THEN
-		WRITE(*,*) "symmetry error in ecp-fock matrix for <xA|VA|xB> terms",i,j
-		WRITE(*,4031) i,j,VAABcuadrada(i,j), VAABcuadrada(j,i)
-		Er=.true.
-	   END IF
+!	   IF (abs(VBACcuadrada(i,j) - VBACcuadrada(j,i)) .GT. 1D-08) THEN
+!		WRITE(*,*) "symmetry error in ecp-fock matrix for <xB|VA|xC> terms",i,j
+!		WRITE(*,4031) i,j,VBACcuadrada(i,j), VBACcuadrada(j,i)
+!		Er=.true.
+!	   END IF
+!
+!	END DO
+!	END DO
 
-	   IF (abs(VBACcuadrada(i,j) - VBACcuadrada(j,i)) .GT. 1D-08) THEN
-		WRITE(*,*) "symmetry error in ecp-fock matrix for <xB|VA|xC> terms",i,j
-		WRITE(*,4031) i,j,VBACcuadrada(i,j), VBACcuadrada(j,i)
-		Er=.true.
-	   END IF
+!	IF ( Er ) THEN
+!           OPEN(UNIT=92,FILE="ECP-FOCK",STATUS="UNKNOWN",ACTION="WRITE")
+!	   WRITE(92,4032)
+!	   WRITE(92,*)
+!	   DO i=1,M
+!           DO j=1,M
+!	      WRITE(92,4033) i,j,nuc(i), nuc(j),VAAAcuadrada(i,j)+VAABcuadrada(i,j)+VBACcuadrada(i,j)
+!	   END DO
+!	   END DO
+!	   CLOSE(92)
+!	   STOP "check ECP routines, ECP FOCK MATRIX WRITED in ECP-FOCK"
+!	END IF
+!	4031 FORMAT("i",i2,1x,"j",i2,1x,"V(i,j)",f18.15,1x,"V(j,i)",f18.15,1x)
+!	4032 FORMAT(7x,"i",5x,"j",3x,"nuci",2x,"nucj",7x,"ECP-FOCK")
+!!le agregue a 4033 para q escriba los nuc
+!	4033 FORMAT(5x,i3,3x,i3,3x,i3,3x,i3,4x,f18.15)
+!	END SUBROUTINE TEST_SYMMETRY
 
-	END DO
-	END DO
-
-	IF ( Er ) THEN
-           OPEN(UNIT=92,FILE="ECP-FOCK",STATUS="UNKNOWN",ACTION="WRITE")
-	   WRITE(92,4032)
-	   WRITE(92,*)
-	   DO i=1,M
-           DO j=1,M
-	      WRITE(92,4033) i,j,nuc(i), nuc(j),VAAAcuadrada(i,j)+VAABcuadrada(i,j)+VBACcuadrada(i,j)
-	   END DO
-	   END DO
-	   CLOSE(92)
-	   STOP "check ECP routines, ECP FOCK MATRIX WRITEd in ECP-FOCK"
-	END IF
-	4031 FORMAT("i",i2,1x,"j",i2,1x,"V(i,j)",f18.15,1x,"V(j,i)",f18.15,1x)
-	4032 FORMAT(7x,"i",5x,"j",3x,"nuci",2x,"nucj",7x,"ECP-FOCK")
-!le agregue a 4033 para q escriba los nuc
-	4033 FORMAT(5x,i3,3x,i3,3x,i3,3x,i3,4x,f18.15)
-	END SUBROUTINE TEST_SYMMETRY
-
-	SUBROUTINE TEST_COPY_FOCK
+!	SUBROUTINE TEST_COPY_FOCK
 !testea que la matriz cuadrada y la matriz guardada como vector sean iguales
-	USE ECP_mod, ONLY : VAAAcuadrada,VAABcuadrada,VBACcuadrada,VAAA,VAAB,VBAC
-	USE garcha_mod, ONLY : nshell
-	IMPLICIT NONE
-	INTEGER :: pos,i,j,M
-	logical :: Er1,Er2,Er3
-	Er1 = .false.
-	Er2 = .false.
-	Er3 = .false.
-	M=nshell(0)+nshell(1)+nshell(2)
-	DO i=1,M
-	DO j=1,M
-	   IF (i .GE. j) THEN
-	      pos=i+(1-j)*(j-2*M)/2 
-	      IF (VAAA(pos) .NE. VAAAcuadrada(i,j)) Er1 = .true.
-	      IF (VAAB(pos) .NE. VAABcuadrada(i,j)) Er2 = .true.
-	      IF (VBAC(pos) .NE. VBACcuadrada(i,j)) Er3 = .true.
-	   END IF
-	END DO
-	END DO
+!	USE ECP_mod, ONLY : VAAAcuadrada,VAABcuadrada,VBACcuadrada,VAAA,VAAB,VBAC
+!	USE garcha_mod, ONLY : nshell
+!	IMPLICIT NONE
+!	INTEGER :: pos,i,j,M
+!	logical :: Er1,Er2,Er3
+!	Er1 = .false.
+!	Er2 = .false.
+!	Er3 = .false.
+!	M=nshell(0)+nshell(1)+nshell(2)
+!	DO i=1,M
+!	DO j=1,M
+!	   IF (i .GE. j) THEN
+!	      pos=i+(1-j)*(j-2*M)/2 
+!	      IF (VAAA(pos) .NE. VAAAcuadrada(i,j)) Er1 = .true.
+!	      IF (VAAB(pos) .NE. VAABcuadrada(i,j)) Er2 = .true.
+!	      IF (VBAC(pos) .NE. VBACcuadrada(i,j)) Er3 = .true.
+!	   END IF
+!	END DO
+!	END DO
 
-	IF ( Er1 ) STOP " Error in ECP-FOCK vector VAAA"
-	IF ( Er2 ) STOP " Error in ECP-FOCK vector VAAB"
-	IF ( Er3 ) STOP " Error in ECP-FOCK vector VBAC"
-	END SUBROUTINE
+!	IF ( Er1 ) STOP " Error in ECP-FOCK vector VAAA"
+!	IF ( Er2 ) STOP " Error in ECP-FOCK vector VAAB"
+!	IF ( Er3 ) STOP " Error in ECP-FOCK vector VBAC"
+!	END SUBROUTINE
 

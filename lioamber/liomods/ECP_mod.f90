@@ -3,6 +3,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Contains commmon variables and functions for ECP subroutines                                                                     !
 !                                                                                                                                  !
+! V 1.00 February 2016 Final version for ECP energy calculations                                                                   !
 ! V 0.95 december 2015, optimized Module, and compatible with gfortran                                                             !
 ! V 0.9  sept 2015, first functional version for energy calculations                                                               !
 !                                                                                                                                  !
@@ -84,7 +85,7 @@
 !j=1 lx, j=2 ly, j=3 lz para la funcion i de la base
 
         DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: VAAA, VAAB, VBAC,term1e
-        DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: VAAAcuadrada, VAABcuadrada, VBACcuadrada
+!        DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: VAAAcuadrada, VAABcuadrada, VBACcuadrada
 ! VXXX contiene los valores de la Matriz de Fock del pseudopotencial.
 ! VAAA integrales de un centro (base y ecp en el mismo atomo)
 ! VAAB integrales de 2 centros (1 base y ecp en el mismo atomo)

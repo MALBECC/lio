@@ -540,7 +540,7 @@ c      deallocate(dgelss_temp)
 
 c
 #endif
-	write (*,*) ss, "criterio ajuste base auxiliar, Nick"
+c	write (*,*) ss, "criterio ajuste base auxiliar, Nick"
        if (ss.gt.1.D14) then
         SVD=.true.
 	stop "trata de usar SVD"

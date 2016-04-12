@@ -84,6 +84,7 @@ c matrix elements no,
 c they're stored in Fock matrix and in the Energy directly
 c in order to reduce the memory requirements
 c
+
        Smat=0.0d0
        do i=1,MM
          RMM(M5+i-1)=0.D0
@@ -110,7 +111,7 @@ c Nuclear Repulsion part ------------------------------------------
       ! done here
       if (igpu.gt.3) then
         natomold = natom
-        natom = 0
+c        natom = 0
       endif
 c
 c first loop (s|s) case -------------------------------------------
@@ -146,6 +147,7 @@ c loop over nuclei, nuclear attraction matrix elements
 c tna: accumulates nuc. attraction over all nuclei
 c
        tna=0.D0
+
       do n=1,natom
        u=(Q(1)-r(n,1))**2+(Q(2)-r(n,2))**2+(Q(3)-r(n,3))**2
        u=u*zij
@@ -157,6 +159,7 @@ c
       term=ccoef*(tn+tna)
       RMM(M11+k-1)=RMM(M11+k-1)+ term
  200  continue
+
 c
 c------------------------------------------------------------------
 c
@@ -219,6 +222,7 @@ c loop over nuclei, specific part
 c
 
  300  continue       
+
 c-------------------------------------------------------------------
 c 
 c (p|p) case

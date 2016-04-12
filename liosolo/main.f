@@ -23,17 +23,26 @@ c---------------------------------------------------------------------
      > propagator,NBCH,
      > field,a0,epsilon,exter,Fx,Fy,Fz, tdrestart, writedens,
      > writeforces,basis_set,fitting_set,int_basis,
-!todo esto es de pseudopotenciales %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+!%% Effective Core Potential Variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
      > ecpmode,ecptypes,tipeECP,ZlistECP,
      > cutECP,local_nonlocal, ecp_debug,ecp_full_range_int,verbose_ECP,
-     > hybrid_converg, good_cut,verbose,FOCK_ECP_read, FOCK_ECP_write,
+     > verbose,FOCK_ECP_read, FOCK_ECP_write,
      > Fulltimer_ECP,cut2_0,cut3_0,
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!para inicialguess nuevo
+
+!%% Hybrid damping-diis Variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+     > hybrid_converg,good_cut,
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+!%% New Initial Guess Variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
      > RHO_RESTART_IN,RHO_RESTART_OUT,
-!para output format%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+!%% Output format Variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
      > style, allnml,
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
      > cubegen_only,cube_res,
      > cube_dens,cube_dens_file,
      > cube_orb,cube_sel,cube_orb_file,cube_elec,cube_elec_file
@@ -100,19 +109,19 @@ c---------------------------------------------------------------------
       writedens=.true.
       writeforces=.false.
       narg=command_argument_count()
-!para cambio de damping a diis
+
+!%% Hybrid damping-diis Variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       hybrid_converg=.false.
       good_cut=1D-5
-
       omit_bas=.false.
 
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% Restart Variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       RHO_RESTART_IN=.false.
       RHO_RESTART_OUT=.false.
+
+!%% Output format Variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       style=.true.
       allnml=.true.
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%    Effective Core Potential Variables    %%%%%%%%%%%%%!
@@ -135,7 +144,7 @@ c---------------------------------------------------------------------
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-	call LIO_LOGO()
+	call LIO_LOGO2()
 
       do i=1, narg
         call get_command_argument(i,argument)
@@ -175,7 +184,6 @@ c---------------------------------------------------------------------
         stop
       endif
       read(100,nml=lio,iostat=ierr)
-	write(325,nml=lio)
       if(ierr.gt.0) stop 'input error in lio namelist'
 
 
@@ -191,11 +199,9 @@ c---------------------------------------------------------------------
 
 c%%%%%%%%%%%%%%%%%%   Namelist write   %%%%%%%%%%%%%%%%%%
 c        write(*,*) natom,nsol
-      if (allnml)write(*,nml=lio)
+      if (allnml) write(*,nml=lio)
       if (style) call NEW_WRITE_NML(charge)
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
 
       ntatom=natom+nsol
       ngnu=natom*ng0
@@ -204,24 +210,23 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       ngdDyn=ngdnu
       ng3=4*ngDyn
 
-	write(*,*) "*********************************"
+!	write(*,*) "*********************************"
 !testeo nick
-	write(*,*) "ngDyn",ngDyn,"ngdDyn",ngdDyn
-	write(*,*) "T1",5*ngDyn*(ngDyn+1)/2
-	write(*,*) "T2",3*ngdDyn*(ngdDyn+1)/2
-	write(*,*) "T3",ngDyn
-	write(*,*) "T4",ngDyn*norbit
-	write(*,*) "T5",Ngrid
-	write(*,*) "*********************************"
+!	write(*,*) "ngDyn",ngDyn,"ngdDyn",ngdDyn
+!	write(*,*) "T1",5*ngDyn*(ngDyn+1)/2
+!	write(*,*) "T2",3*ngdDyn*(ngdDyn+1)/2
+!	write(*,*) "T3",ngDyn
+!	write(*,*) "T4",ngDyn*norbit
+!	write(*,*) "T5",Ngrid
+!	write(*,*) "*********************************"
       ng2=5*ngDyn*(ngDyn+1)/2+3*ngdDyn*(ngdDyn+1)/2+
      >           ngDyn+ngDyn*norbit+Ngrid
 
 
-        write(*,*) "*********************************"
-	write(*,*) ng2
-        write(*,*) "*********************************"
-c aca hay un bug para sistemas muy grandes ng2 da <0
-
+!        write(*,*) "*********************************"
+!	write(*,*) ng2
+!        write(*,*) "*********************************"
+c aca hay un bug para sistemas muy grandes ng2 da <0, Nick
 c      write(*,*)ng2,ngDyn,ngdDyn,norbit,Ngrid
 
       allocate(X(ngDyn,ng3),XX(ngdDyn,ngdDyn))
@@ -233,8 +238,8 @@ c      write(*,*)ng2,ngDyn,ngdDyn,norbit,Ngrid
      > ,indexii(ngnu),indexiid(ngdnu))
 
       if (ecpmode) then
+! Cnorm contains correct normalized coefficient of basis, diff C for  x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)
          allocate (Cnorm(ngnu,nl))
-!matriz de coeficientes de la base normalizados, diferenciando x^2,y^2,z^2 de xy,xz,yx
       end if
 
 

@@ -80,6 +80,7 @@ c       USE latom
        INTEGER             :: ngroup
        INTEGER,ALLOCATABLE :: group(:)
        REAL*8,ALLOCATABLE  :: qgr(:)
+       REAL*8 :: tiempo1000
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        call g2g_timer_start('TD')
        call g2g_timer_start('inicio')
@@ -840,6 +841,14 @@ c
 c      write(*,*) 'Coulomb E',E2-Ex,Ex
                call g2g_timer_stop('TD step')
                write(*,*)
+	if (istep .eq. 1000) then
+		call g2g_timer_start('corrida 1000')
+		tiempo1000=t
+	elseif (istep .eq. 2000) then
+		call g2g_timer_stop('corrida 1000')
+		write(*,*) t-tiempo1000
+	end if
+
  999           continue
 !
 !##############################################################################!

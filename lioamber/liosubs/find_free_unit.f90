@@ -5,17 +5,18 @@
   integer,intent(in)  :: search_start
   integer,intent(in)  :: search_stop
   integer,intent(out) :: file_unit
-  integer             :: iost
-  logical             :: is_open
+
+  logical :: is_open
+  integer :: iost
 
   iost=0
   is_open=.true.
-  file_unit=max(-1,search_start-1)
+  file_unit=max(9,search_start-1)
 
   do while ((is_open).and.(file_unit.lt.search_stop))
     file_unit=file_unit+1
     inquire(unit=file_unit,opened=is_open,iostat=iost)
-    call catch_iostat('find_free_unit',1,file_unit,iost)
+    call catch_iostat(iost,file_unit,'find_free_unit',1)
   enddo
 
   if (is_open) then

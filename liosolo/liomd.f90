@@ -210,7 +210,7 @@
 
 ! RUN DYNAMIC
 !--------------------------------------------------------------------!
-  md_steps=5000
+  md_steps=0
   time_step=0.0001               ! time in ps
   time_step=time_step*41341.0d0  ! time from ps to au
   open(unit=501,file='liomd-trays.xyz')

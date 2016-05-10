@@ -1,14 +1,11 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   subroutine set_masses(Nsize,Vatnum,Vmass)
-!
-! Masses are in uma
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   implicit none
-  integer,intent(in)     :: Nsize
-  integer,intent(in)     :: Vatnum(Nsize)
-  real*8,intent(out)     :: Vmass(Nsize)
-
-  integer :: kk
+  integer,intent(in)   :: Nsize
+  integer,intent(in)   :: Vatnum(Nsize)
+  real*8,intent(out)   :: Vmass(Nsize)
+  integer              :: kk
 
 
   do kk=1,Nsize
@@ -27,9 +24,10 @@
         print*,'ATOMIC NUMBER IS NOT SUPPORTED'
         stop
     endselect
-  ! Convert UMA to atomic mass
+!   Convert UMA to atomic mass:
     Vmass(kk)=Vmass(kk)*(1822.88857149)
   enddo
+
 
   return;end subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

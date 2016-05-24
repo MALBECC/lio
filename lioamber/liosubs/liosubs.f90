@@ -16,6 +16,9 @@
 
     include 'set_masses.f90'
     include 'nuclear_verlet.f90'
+
+    include 'write_geom.f90'
+    include 'write_energy.f90'
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

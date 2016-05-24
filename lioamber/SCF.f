@@ -50,8 +50,10 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
        real*8,dimension(:,:),allocatable :: Xmat,Xtrp,Ymat,Ytrp
        real*8,dimension(:,:),allocatable :: sqsm
        real*8,dimension(:,:),allocatable :: Vmat
-       real*8,dimension(:),allocatable   :: Dvec
+       real*8,dimension(:),  allocatable :: Dvec
 
+       real*8,allocatable :: eigen_vecs(:,:), eigen_vals(:)
+!--------------------------------------------------------------------!
 
 
 #ifdef CUBLAS
@@ -608,6 +610,7 @@ c-------------------------------------------------------------------
         call g2g_timer_sum_start('Iteration')
         call g2g_timer_sum_start('Fock integrals')
         niter=niter+1
+
         if(niter.le.ndiis) then
           ndiist=niter
         else
@@ -707,6 +710,7 @@ c-------------------------------------------------------------------------------
 #else
           call calc_fock_commuts(fock,rho,X,Y,scratch,scratch1,M)
 #endif
+
           call g2g_timer_stop('commutators + basechange')
           ! update fockm with F'
           do j=ndiis-(ndiist-1),ndiis-1
@@ -760,7 +764,6 @@ c-------------------------------------------------------------------------------
         if (niter.gt.2.and.(DIIS)) then
           hagodiis=.true.
         endif
-
 c-----------------------------------------------------------------------------------------
 c If we are not doing diis this iteration, apply damping to F, save this
 c F in RMM(M3) for next iteration's damping and put F' = X^T * F * X in RMM(M5)
@@ -861,6 +864,8 @@ c
           enddo
           call g2g_timer_stop('Fock damping')
         endif
+
+
 c
 c now F contains transformed F
 c diagonalization now
@@ -950,8 +955,13 @@ c-------Escribimos en xnano y znano dos conmutadores de distintas iteraciones---
           enddo
           EMAT(ndiist+1, ndiist+1)= 0.0
 
+
           allocate(EMAT2(ndiist+1,ndiist+1))
+
+
           EMAT2=EMAT
+
+
 c        ematalloct=.true.
 c********************************************************************
 c   THE MATRIX EMAT SHOULD HAVE FORM
@@ -988,6 +998,7 @@ c-----Resuelve la ecuación A*X = B. (EMAT*ci=bcoef). La solución la escribe en
       CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT,
      > ndiist+1, bcoef, ndiist+1, WORK, LWORK, INFO )
 
+
 c--------Construccion de la "nueva" matriz de fock como cl de las anteriores--------------
 c--------Eventualmente se puede probar con la matriz densidad-----------------------------
             suma=0
@@ -1018,11 +1029,18 @@ c ESSL OPTION ---------------------------------------------------
 #ifdef essl
        call DSPEV(1,RMM(M5),RMM(M13),X(1,M+1),M,M,RMM(M15),M2)
 #endif
+
+       if(.not.allocated(fock)) allocate (fock(M,M))
+       fock=0
+       do j=1,M
+       do k=1,j
+         i=j+(M2-k)*(k-1)/2
+         fock(j,k)=RMM(M5+i-1)
+       enddo
+       enddo
+
 c
-c LAPACK OPTION -----------------------------------------
-#ifdef pack
-c#ifdef magma
-c-------nano tratando de usar magma
+
       if(.not.allocated(fock)) allocate (fock(M,M))
       fock=0
       do j=1,M
@@ -1031,37 +1049,60 @@ c-------nano tratando de usar magma
          fock(j,k)=RMM(M5+i-1)
         enddo
       enddo
-c---------------------
+!
+!
+! FFR: Fock Diagonaliation is now external
+!--------------------------------------------------------------------!
+       call g2g_timer_start('scf - fock diagonalization')
+
+       if ( allocated(eigen_vecs) ) deallocate(eigen_vecs)
+       allocate( eigen_vecs(M,M) )
+       if ( allocated(eigen_vals) ) deallocate(eigen_vals)
+       allocate( eigen_vals(M) )
+
+       call fockon_diagonalize( M, fock, eigen_vecs, eigen_vals)
+       fock=eigen_vecs
+       do kk=1,M
+         RMM(M13+kk-1) = eigen_vals(kk)
+       end do
+
+       call g2g_timer_stop('scf - fock diagonalization')
+!
+!
+! FFR: Old version - kept until functionality is assured
+!--------------------------------------------------------------------!
+      if (.false.) then
        LWORK=-1
+
 #ifdef magma
-      call magmaf_dsyevd('V','L',M,fock,M,RMM(M13),WORK,LWORK
+       call magmaf_dsyevd('V','L',M,fock,M,RMM(M13),WORK,LWORK
      > ,IWORK,LWORK,info)
 #else
-      call dsyevd('V','L',M,fock,M,RMM(M13),WORK,LWORK
+       call dsyevd('V','L',M,fock,M,RMM(M13),WORK,LWORK
      > ,IWORK,LWORK,info)
 #endif
 
        LWORK=work(1)
-      LIWORK=IWORK(1)
-
-      if(allocated(WORK2)) deallocate (WORK2)
-      if(allocated(IWORK2)) deallocate (IWORK2)
-
+       LIWORK=IWORK(1)
+       if(allocated(WORK2)) deallocate (WORK2)
+       if(allocated(IWORK2)) deallocate (IWORK2)
        allocate (WORK2(LWORK),IWORK2(LIWORK))
-
-
+ 
 #ifdef magma
-      call magmaf_dsyevd('V','L',M,fock,M,RMM(M13),WORK2,LWORK
+       call magmaf_dsyevd('V','L',M,fock,M,RMM(M13),WORK2,LWORK
      > ,IWORK2,LIWORK,info)
 #else
-      call dsyevd('V','L',M,fock,M,RMM(M13),WORK2,LWORK
+       call dsyevd('V','L',M,fock,M,RMM(M13),WORK2,LWORK
      > ,IWORK2,LIWORK,info)
 #endif
-c#else
-c       call dspev('V','L',M,RMM(M5),RMM(M13),X(1,M+1),
-c     > M,RMM(M15),info)
-c#endif
-#endif
+      end if
+!
+!
+!
+!--------------------------------------------------------------------!
+
+
+
        call g2g_timer_stop('dspev')
        call g2g_timer_sum_pause('diagonalization')
 c       do ik=1,M

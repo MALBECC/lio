@@ -1,5 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-  module maskrmm
+module maskrmm
 !
 !
 !--------------------------------------------------------------------!
@@ -10,15 +10,16 @@
   include 'rmmget_dens_h.f90'
   include 'rmmput_fock_h.f90'
   include 'rmmget_fock_h.f90'
-  contains
 !
 !--------------------------------------------------------------------!
 ! INCLUDE FILES WITH PROCEDURES:
 !--------------------------------------------------------------------!
+contains
   include 'rmmput_dens_all.f90'
   include 'rmmget_dens_all.f90'
   include 'rmmput_fock_all.f90'
   include 'rmmget_fock_all.f90'
-  end module
-!
+  include 'rmmcalc_fockmao.f90'
+  include 'rmmcalc_overlap.f90'
+end module
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

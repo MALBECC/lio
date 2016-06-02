@@ -4,7 +4,6 @@ subroutine rmmcalc_fockmao( dens_mao, fock_mao, energy )
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-  use maskrmm
   use garcha_mod, only:M,Md,RMM
   implicit none
   complex*16,intent(in) :: dens_mao(M,M)
@@ -35,7 +34,7 @@ subroutine rmmcalc_fockmao( dens_mao, fock_mao, energy )
 
   energy=energy+energy_1e
   energy=energy+energy_Coulomb
-  energy=energy+energy_Exchange
+  energy=energy+energy_xc
   call g2g_timer_stop('rmmcalc_fockmao')
 
 end subroutine

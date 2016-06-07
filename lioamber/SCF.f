@@ -8,6 +8,7 @@ c
 c Dario Estrin, 1992
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       subroutine SCF(E,dipxyz)
+      use linear_algebra
       use garcha_mod
       use mathsubs
       use general_module
@@ -1060,11 +1061,12 @@ c
        if ( allocated(eigen_vals) ) deallocate(eigen_vals)
        allocate( eigen_vals(M) )
 
-       call fockon_diagonalize( M, fock, eigen_vecs, eigen_vals)
+       call matrix_diagon( fock, eigen_vecs, eigen_vals )
        fock=eigen_vecs
        do kk=1,M
          RMM(M13+kk-1) = eigen_vals(kk)
        end do
+
 
        call g2g_timer_stop('scf - fock diagonalization')
 !

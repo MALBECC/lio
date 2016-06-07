@@ -31,7 +31,8 @@ c
       dimension Q(3),W(3)
 C,Rc(ngd),FF(ngd),P(ngd)
 C      dimension d(ntq,ntq),Jx(ng)
-      real*8, dimension (:), ALLOCATABLE :: Jx 
+c      real*8, dimension (:), ALLOCATABLE :: Jx ! deviera ser integer???!!! 
+       integer, dimension (:), ALLOCATABLE :: Jx !! 
 
 *****
 *****

@@ -152,7 +152,6 @@ subroutine matrix_diagon_dsyevd( matrix_in, eigen_vecs, eigen_vals , info )
     end do
     end do
   end if
-  stop
 !
 !
 !

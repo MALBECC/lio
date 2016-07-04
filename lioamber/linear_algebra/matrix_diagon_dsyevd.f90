@@ -15,8 +15,9 @@ subroutine matrix_diagon_dsyevd( matrix_in, eigen_vecs, eigen_vals , info )
   integer             :: liwork
   integer,allocatable :: iwork(:)
 
-  integer :: M
+  integer :: M,ii,jj
   integer :: local_stat
+  logical :: be_safe
 !
 !
 !
@@ -132,6 +133,26 @@ subroutine matrix_diagon_dsyevd( matrix_in, eigen_vecs, eigen_vals , info )
       stop
     end if
   end if
+
+  be_safe=.true.
+  if (be_safe.eqv..true.) then
+    do ii=1,size(eigen_vecs,1)
+    do jj=1,size(eigen_vecs,2)
+      if ( eigen_vecs(ii,jj) /= eigen_vecs(ii,jj) ) then
+        if ( present(info) ) then
+          info = 4
+          return
+        else
+          print*,'matrix_diagon_dsyevd : critical error has not been &
+                 &recognized by lapack!'
+          print*,'local info: ', local_stat
+          stop
+        end if
+      end if
+    end do
+    end do
+  end if
+  stop
 !
 !
 !

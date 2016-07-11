@@ -1360,25 +1360,24 @@ c
 c
 c      if (nopt.eq.1) then
 c
-c PROPERTIES CALCULATION
-c calculates dipole moment
-c
-      if (idip.eq.1) then
-       call g2g_timer_sum_start('dipole')
-        call dip(ux,uy,uz)
-        u=sqrt(ux**2+uy**2+uz**2)
-        dipxyz(1)=ux
-        dipxyz(2)=uy
-        dipxyz(3)=uz
-c
-c      write(*,*)
-c      write(*,*) 'DIPOLE MOMENT, X Y Z COMPONENTS AND NORM (DEBYES)'
-c       write(69,900) ux,uy,uz,u
-c      write(*,*)
-c u in Debyes
-       call g2g_timer_sum_stop('dipole')
-      endif
-c
+
+!----------------------------------------------------------!
+! PROPERTIES CALCULATION - DIPOLE MOMENT (DEBYES)
+       if (idip.eq.1) then
+         call g2g_timer_sum_start('dipole')
+         call dip(ux,uy,uz)
+         u=sqrt(ux**2+uy**2+uz**2)
+
+!         write(*,*)
+!         write(*,*) 'DIPOLE MOMENT, X Y Z COMPONENTS AND NORM (DEBYES)'
+         write(69,900) ux,uy,uz,u
+!         write(*,*)
+         dipxyz(1)=ux
+         dipxyz(2)=uy
+         dipxyz(3)=uz
+         call g2g_timer_sum_stop('dipole')
+       endif
+!----------------------------------------------------------!
 
 
 

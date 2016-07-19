@@ -27,7 +27,7 @@
 
       PROGRAM TDANALYZE
 !Variables description:
-!mu at first have dipole moment(t) after is transform into du/dt (t)
+!mu at first have dipole moment [Debyes] after is transform into du/dt [Debyes/fs]
 !fti,ftr imaginary and real part of fourier transform of du/dt
 !ts = time step (fs)
 !nu = frequency computed in 1/fs

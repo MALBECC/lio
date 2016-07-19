@@ -808,6 +808,8 @@ c The real part of the density matrix in the atomic orbital basis is copied in R
                 open(unit=135,file='y.dip')
                 open(unit=136,file='z.dip')
                 open(unit=13600,file='abs.dip')
+
+!aca hay q agregar q escriba ts  NCO  field en cada archivo, si o es splito propagation en NCO poner 1
         write(134,*) '#Time (fs) vs DIPOLE MOMENT, X COMPONENT (DEBYES)'
         write(135,*) '#Time (fs) vs DIPOLE MOMENT, Y COMPONENT (DEBYES)'
         write(136,*) '#Time (fs) vs DIPOLE MOMENT, Z COMPONENT (DEBYES)'

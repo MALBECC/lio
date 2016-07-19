@@ -19,7 +19,7 @@ c
 
       parameter (ntq=200,ntc=0,nss=1)
       parameter (nt=ntq+nss*ntc)
-      parameter (ng0=100,ng=ntq*ng0,nl=7)
+      parameter (ng0=100,ng=ntq*ng0,nl=13)
 cng0 era 100 y ngd0 500, Nick
       parameter (ngd0=500,ngd=ntq*ngd0)
       parameter (ntqss=ntq+nss)

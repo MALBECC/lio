@@ -10,7 +10,7 @@
 #define _DBG(x)
 #endif
 
-#define MAX_CONTRACTIONS 7
+#define MAX_CONTRACTIONS 13
 
 /* Los block sizes deben ser multiplos de 16 */
 

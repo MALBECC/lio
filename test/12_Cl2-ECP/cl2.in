@@ -1,0 +1,25 @@
+&lio
+ nsol=0
+ NMAX=500
+ natom=2
+ vcinp=f
+ charge=0
+ ecpmode=t
+ ecp_debug=f
+ cutecp=t
+ tipeecp="SBKJC"
+ ecptypes=1
+ ZlistECP=17
+ diis=f
+ gold=30
+ ecp_full_range_int=f
+ verbose_ECP=5
+ hybrid_converg=t
+ good_cut=1d-1
+ verbose=t
+ told=10d-3
+ Etold=10d-5
+ rmax=25
+ rmaxs=26
+&end
+

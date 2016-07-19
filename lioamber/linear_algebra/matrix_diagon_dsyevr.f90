@@ -67,7 +67,7 @@ subroutine matrix_diagon_dsyevr( matrix_in, eigen_vecs, eigen_vals , info )
 
   if ( local_stat == 0 ) then
     if ( allocated(neig_vecs) ) deallocate(neig_vecs)
-    allocate( neig_vecs(M), stat=local_stat )
+    allocate( neig_vecs(2*M), stat=local_stat )
   end if
 
   if ( local_stat == 0 ) then

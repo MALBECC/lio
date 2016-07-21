@@ -28,7 +28,10 @@
        errorfound=(errorfound).or.(size(Umat,2).ne.N)
        errorfound=(errorfound).or.(size(Uinv,1).ne.N)
        errorfound=(errorfound).or.(size(Uinv,2).ne.N)
-       if (errorfound) stop('wrong sizes in cholesky_sdcmp')
+       if (errorfound) then
+         print*,'wrong sizes in cholesky_sdcmp'
+         stop
+       end if
 
        errorfound=.false.
        do jj=1,N
@@ -36,7 +39,10 @@
          errorfound=(errorfound).or.(Smat(ii,jj).ne.Smat(jj,ii))
        enddo
        enddo
-       if (errorfound) stop('input matrix is not symetric')
+       if (errorfound) then
+         print*,'input matrix is not symetric'
+         stop
+       end if
 
 
 ! OBTAIN LMAT AND LINV - USING LAPACK

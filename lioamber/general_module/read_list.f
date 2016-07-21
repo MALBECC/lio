@@ -13,8 +13,10 @@
          read(unit=1001,fmt=*,iostat=errorid) list(kk)
        enddo
 
-       if (errorid.ne.0)
-     >   stop ('Error while reading list of integers.')
+       if (errorid.ne.0) then
+         print*,'Error while reading list of integers.'
+         stop
+       end if
 
 !------------------------------------------------------------------------------!
        return; end subroutine

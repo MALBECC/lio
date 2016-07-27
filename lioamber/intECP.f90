@@ -37,14 +37,14 @@
        DOUBLE PRECISION :: t1,t2
 
        IF (tipodecalculo .EQ. 0) THEN
-        CALL allocate_ECP() !allocatea la matriz de Fock de p-potenciales y el vector con los terminos de 1 electron sin corregir
-        CALL ReasignZ() !reasigna las cargas de los nucleos removiendo la carga del core
+!        CALL allocate_ECP() !allocatea la matriz de Fock de p-potenciales y el vector con los terminos de 1 electron sin corregir
+!        CALL ReasignZ() !reasigna las cargas de los nucleos removiendo la carga del core
         CALL READ_ECP() !lee la matriz de Fock de los pseudopotenciales de una restart
        ELSE IF (tipodecalculo .EQ. 1) THEN
         CALL defineparams() !define parametros auxiliares
-        CALL allocate_ECP() !allocatea la matriz de Fock de p-potenciales y el vector con los terminos de 1 electron sin corregir
+!        CALL allocate_ECP() !allocatea la matriz de Fock de p-potenciales y el vector con los terminos de 1 electron sin corregir
         CALL norm_C() !guarda los coeficientes de la base normalizados correctamente para las funciones d en un nuevo aray
-        CALL ReasignZ() !reasigna las cargas de los nucleos removiendo la carga del core
+!        CALL ReasignZ() !reasigna las cargas de los nucleos removiendo la carga del core
         CALL obtainls() !obtiene una matriz con lx,ly y lz para cada base
         CALL WRITE_POST(3)
 !       CALL g2g_timer_start('ECPAAA')

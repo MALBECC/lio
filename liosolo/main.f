@@ -210,22 +210,10 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       ngdDyn=ngdnu
       ng3=4*ngDyn
 
-!	write(*,*) "*********************************"
-!testeo nick
-!	write(*,*) "ngDyn",ngDyn,"ngdDyn",ngdDyn
-!	write(*,*) "T1",5*ngDyn*(ngDyn+1)/2
-!	write(*,*) "T2",3*ngdDyn*(ngdDyn+1)/2
-!	write(*,*) "T3",ngDyn
-!	write(*,*) "T4",ngDyn*norbit
-!	write(*,*) "T5",Ngrid
-!	write(*,*) "*********************************"
       ng2=5*ngDyn*(ngDyn+1)/2+3*ngdDyn*(ngdDyn+1)/2+
      >           ngDyn+ngDyn*norbit+Ngrid
 
 
-!        write(*,*) "*********************************"
-!	write(*,*) ng2
-!        write(*,*) "*********************************"
 c aca hay un bug para sistemas muy grandes ng2 da <0, Nick
 c      write(*,*)ng2,ngDyn,ngdDyn,norbit,Ngrid
 
@@ -261,8 +249,39 @@ c       write(*,*) pc(i),r(i,1:3)
        r=r/0.529177D0
        rqm=rqm/0.529177D0
 
-       call g2g_init()   !initialize g2g
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
+c       aca toco nico!!!!!!!!!!!!!!!
+c        if (ecpmode) then
+c           if (FOCK_ECP_read) then
+c              call intECP(0) ! alocatea variables comunes y las lee del archivo ECP_restart
+c           else
+c              call g2g_timer_start('ECP Routines')
+c              call intECP(1) !alocatea variables, calcula variables comunes, y calcula terminos de 1 centro
+c              call intECP(2) !calcula terminos de 2 centros
+c              call intECP(3) !calcula terminos de 3 centros
+c              call g2g_timer_stop('ECP Routines')
+c           end if
+c           if (FOCK_ECP_write) call WRITE_ECP()
+c           call WRITE_POST(1)
+c        end if
+c        if (ecpmode) then
+c        CALL allocate_ECP() !allocatea la matriz de Fock de p-potenciales y el vector con los terminos de 1 electron sin corregir
+c        CALL ReasignZ() !reasigna las cargas de los nucleos removiendo la carga del core
+c	endif
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+cpor aca hay q arreglar parametros antes q se los pase a las variables de las g2g
+c        Iz(1)=Iz(1)-10
+c        Iz(2)=Iz(2)-10
+
+       call g2g_init()   !initialize g2g
 
         nqnuc=0
        do i=1,natom
@@ -271,16 +290,26 @@ c       write(*,*) pc(i),r(i,1:3)
 
        nco=((nqnuc - charge)-Nunp)/2
 
+
+c	nco=nco-10
+
 c       write(*,*) 'NCO=',NCO
 c       write(*,*) natom,ntatom,ngDyn,ngdDyn,ng0,ngd0
 c       write(*,*) ng2,ngDyn,ngdDyn
 c--------------------------------------------------------
-       call drive(ng2,ngDyn,ngdDyn)
+       call drive(ng2,ngDyn,ngdDyn)   !en esta rutina le pasa variables a g2g
 !       call lio_init()   !initialize lio
-       call liomain()
+       call liomain()       !no hace nada!!!!!!
        if (.not.allocated(Smat))    allocate(Smat(M,M))
        if (.not.allocated(RealRho)) allocate(RealRho(M,M))
 c--------------------------------------------------------
+
+c        Iz(1)=Iz(1)+10
+c        Iz(2)=Iz(2)+10
+c        nco=nco+10
+
+
+
        if(OPEN) then
          if (ecpmode) stop "Lio havent got ECP for open shell"         
          call SCFOP(escf,dipxyz)

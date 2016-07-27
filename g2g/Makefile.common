@@ -3,7 +3,7 @@
 CXXFLAGS+= -fopenmp -fPIC -Wall -Wextra -Wshadow -I. -I$(CUDAHOME)/include
 OPTIMIZECPU :=
 
-ifneq ($(ifort),1)
+ifneq ($(intel),1)
   CXX          := g++
   OPTIMIZECPU  := -O3
   CXXFLAGS     := $(CXXFLAGS) -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare

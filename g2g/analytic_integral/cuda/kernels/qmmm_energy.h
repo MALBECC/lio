@@ -32,6 +32,7 @@ __global__ void gpu_qmmm_fock( uint num_terms, G2G::vec_type<scalar_type,2>* ac_
   {
     __shared__ G2G::vec_type<scalar_type,3> clatom_position_sh[QMMM_BLOCK_SIZE];
     __shared__ scalar_type clatom_charge_sh[QMMM_BLOCK_SIZE];
+//////////////////////////////
 
     scalar_type ai, aj, inv_two_zeta;
     scalar_type P[3], PmA[3], PmB[3];

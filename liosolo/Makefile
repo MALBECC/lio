@@ -1,6 +1,6 @@
 LIBS=
 FLAGS = -fopenmp 
-ifeq ($(ifort),1)
+ifeq ($(intel),1)
 FLAGS += -fpp
 else
 FLAGS += -cpp
@@ -11,8 +11,8 @@ ifeq ($(xeon_phi),1)
   LIBS= -Qoption,link,-rpath=/opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/mic -Qoption,link,-rpath=/opt/intel/composer_xe_2013_sp1.3.174/compiler/lib/mic/
 endif
 ######################################################################
-ifeq ($(ifort),1)
-  FC   = ifort -check bounds
+ifeq ($(intel),1)
+  FC   = ifort
   LIBS+= -module ../lioamber/obj -I../lioamber/obj 
 else
   FC   = gfortran
@@ -27,18 +27,23 @@ ifeq ($(magma),1)
         LIBS     += -L$(MAGMAROOT)/lib -lmagma
 endif
 
-FORTRAN_WRAPER=
+#FORTRAN_WRAPER=
 ifeq ($(cublas),1)
-LIBS +=-L../g2g -lg2g -lstdc++ -L $(CUDA_HOME)/lib64/ -lcudart -lcublas 
-FORTRAN_WRAPER=../lioamber/obj/fortran.o
+#LIBS += -lstdc++ -L$(CUDA_HOME)/lib64/ -lcudart -lcublas
+#FORTRAN_WRAPER=../lioamber/obj/fortran.o
 endif
-FLAGS +=$(FORTRAN_WRAPER)
+#FLAGS +=$(FORTRAN_WRAPER)
 
 
 ######################################################################
-liosolo: main.f
+all: liosolo liomd.x
+
+liosolo: main.f ../lioamber/liblio-g2g.so
+	$(FC) $< -o $@ $(FLAGS) $(LIBS)
+
+liomd.x: liomd.f90 ../lioamber/liblio-g2g.so
 	$(FC) $< -o $@ $(FLAGS) $(LIBS)
 
 clean:
-	rm -rf liosolo
+	rm -rf liosolo liomd.x
 ######################################################################

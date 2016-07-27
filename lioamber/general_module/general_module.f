@@ -1,22 +1,23 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       module maskrmm
+       module general_module
 !--------------------------------------------------------------------!
 !
 !
 ! INCLUDE FILES WITH HEADERS:
 !--------------------------------------------------------------------!
        implicit none
-       include 'rhomess_h.f'
-       include 'rhofix_h.f'
+       include 'read_list_h.f'
+       include 'atmorb_h.f'
        contains
 !
 !
 ! INCLUDE FILES WITH PROCEDURES:
 !--------------------------------------------------------------------!
-       include 'spunpack.f'
-       include 'sprepack.f'
-       include 'rhomess.f'
-       include 'rhofix.f'
+       include 'read_list.f'
+       include 'vector_selection.f'
+       include 'atmorb.f'
+       include 'sdcmp_cholesky.f'
+       include 'sdiag_canonical.f'
        end module
 !
 !

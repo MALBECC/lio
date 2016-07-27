@@ -111,7 +111,7 @@ c Nuclear Repulsion part ------------------------------------------
       ! done here
       if (igpu.gt.3) then
         natomold = natom
-c        natom = 0
+        natom = 0
       endif
 c
 c first loop (s|s) case -------------------------------------------

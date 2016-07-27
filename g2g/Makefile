@@ -70,7 +70,7 @@ endif
 
 ## Define libraries
 LIBRARIES := $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
-ifneq ($(ifort),1)
+ifneq ($(intel),1)
   LIBRARIES += -L$(PACK_LIB_DIR) -lcblas
 endif
 

@@ -73,7 +73,7 @@ CWARN_FLAGS := $(CXXWARN_FLAGS) \
 
 # Compiler-specific flags
 NVCCFLAGS   := $(ARCHFLAGS) --compiler-options -fPIC --compiler-options -Wall
-ifneq ($(ifort),0)
+ifneq ($(intel),0)
   CXXFLAGS    += $(CXXWARN_FLAGS)
 endif
 

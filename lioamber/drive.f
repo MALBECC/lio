@@ -1224,6 +1224,28 @@ c      ATRHO=TMP1
 c      VCINP=TMP2
 c--------------------------
 c
+
+c aca deberia cambiar los parematros de los ECP, nick
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c agregadas por Nick para lectura de ECP
+        if (ecpmode) then
+	   call lecturaECP()   !lee parametros
+	   CALL allocate_ECP() !allocatea la matriz de Fock de p-potenciales y el vector con los terminos de 1 electron sin corregir
+           CALL ReasignZ() !reasigna las cargas de los nucleos removiendo la carga del core
+	end if
+cccccccccccccccccccccccccccccccccccccccccccccccc
+
+
+
+
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+
+
 c------- G2G Initialization ---------------------
 c
       ntqpru=natom
@@ -1360,7 +1382,7 @@ c---------------------------------------------------
 c       allocate(old1(MM))
 
 c agregadas por Nick para lectura de ECP
-	if (ecpmode) call lecturaECP()
+c	if (ecpmode) call lecturaECP()
 cccccccccccccccccccccccccccccccccccccccccccccccc
 
 c       allocate(old2(MM))

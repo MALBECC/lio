@@ -15,7 +15,7 @@ LIBS += -lg2g -lstdc++
 LIBS += -lm -Wl,-rpath='$$ORIGIN/' -Wl,-rpath='$$ORIGIN/../g2g'
 LIBS += -L$(MKLROOT)/lib/intel64 -I$(MKLROOT)/include
 
-ifeq ($(ifort),1)
+ifeq ($(intel),1)
   LIBS += -L$(MKLROOT)/lib/intel64 -I$(MKLROOT)/include
   LIBS += -lmkl_lapack95_lp64 -lmkl_intel_lp64
   LIBS += -lmkl_intel_thread -lmkl_core
@@ -24,9 +24,12 @@ else
   LIBS += -L/usr/lib -llapack
 endif
 
-
 ifeq ($(magma),1)
   LIBS += -L$(MAGMAROOT)/lib -lmagma
+endif
+
+ifeq ($(cublas),1)
+  LIBS += -lstdc++ -L$(CUDA_HOME)/lib64/ -lcudart -lcublas
 endif
 
 ######################################################################

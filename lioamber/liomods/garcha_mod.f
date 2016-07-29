@@ -21,6 +21,7 @@
       character*4 ctype
       logical exists,MEMO,predcoef
       logical done(ntq),used,NORM,OPEN,ATRHO,DIRECT,VCINP,SHFT,DIIS
+      logical done_fit(ntq)
       logical TMP1,TMP2,dens,EXTR,write1,SVD,ANG,field1
       logical Coul,Scf1,Prop,GRAD,BSSE,integ,SVD1,sol,tipe
       logical exter,exter1,resp1,popf,primera,writexyz,intsoldouble
@@ -113,7 +114,7 @@ c      parameter rmintsol=16.0D0
 !       real*8,allocatable,dimension(:,:) :: Lmat,Linv,Umat,Uinv
 !------------------------------------------------------------------------------!
 
-!-variables for hibrid damping-diis
+!-Variables for hibrid damping-diis
       logical :: hybrid_converg
       double precision :: good_cut
       double precision :: Etold

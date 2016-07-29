@@ -14,14 +14,16 @@ c----------------------------------------------------------------
 c
       subroutine drive(ng2,ngDyn,ngdDyn)
       use garcha_mod
-      use ECP_mod, only : ecpmode
+      use ECP_mod, only : ecpmode, asignacion
 c
       implicit real*8 (a-h,o-z)
-      logical Exx, parsearch
+      logical Exx, parsearch, basis_check
       character*255 int_basis_file, fit_basis_file
       character*255 liohome
       character*255 inp_line
       character inp_char
+      CHARACTER*3 simb
+
 c      namelist /scfinp/ OPEN,NMAX,Nunp,ATRHO,VCINP,DIRECT,
 c     >EXTR,SHFT,SHI,IDAMP,GOLD,told,write1,MEMO,rmax,rmaxs,predcoef,
 c     >idip,writexyz,intsoldouble,watermod,DIIS,ndiis,dgtrig
@@ -158,6 +160,7 @@ c-------------------------------------------------------
       call system(date)
       do i=1,natom
         done(i)=.false.
+        done_fit(i)=.false.
       enddo
 
 c -------------------------------------------------------------
@@ -341,6 +344,7 @@ c          write(2,700) at(i),ct(i)
 c
         do 45 j=1,natom
           if (Iz(j).eq.iatom) then
+            done_fit(j)=.true.
 c
 c Mdd stores # of contractions in final basis, counting all possibilities
 c for p , d etc
@@ -659,6 +663,7 @@ c          write(2,700) at(i),ct(i)
 c
         do 48 j=1,natom
           if (Iz(j).eq.iatom) then
+             done_fit(j)=.true.
 c
 c Mdd stores # of contractions in final basis, counting all possibilities
 c for p , d etc
@@ -749,6 +754,35 @@ c        write(2,100) whatis
  27   enddo
       close(1)
       endif
+
+
+
+
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      basis_check=.true.
+      do i=1,natom
+c chekeo de lectura de base para todos los atomos, Nick
+        if (.not. done(i)) then
+           call asignacion(Iz(i),simb)
+           write(*,*) simb," havent got a basis set, check basis file"
+           basis_check=.false.
+        end if
+      enddo
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      do i=1,natom
+c chekeo de lectura de base auxiliar para todos los atomos, Nick
+        if (.not. done_fit(i)) then
+           call asignacion(Iz(i),simb)
+           write(*,*) simb," havent got a fitting basis set, check",
+     >" auxiliar basis file"
+           basis_check=.false.
+        end if
+      enddo
+      if (.not. basis_check) stop
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+
+
 c----- DIMENSION CONTROLS ------------------------------------
 c
       iprob=0
@@ -1225,18 +1259,13 @@ c      VCINP=TMP2
 c--------------------------
 c
 
-c aca deberia cambiar los parematros de los ECP, nick
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-c agregadas por Nick para lectura de ECP
         if (ecpmode) then
+c agregadas por Nick para lectura de ECP
 	   call lecturaECP()   !lee parametros
 	   CALL allocate_ECP() !allocatea la matriz de Fock de p-potenciales y el vector con los terminos de 1 electron sin corregir
            CALL ReasignZ() !reasigna las cargas de los nucleos removiendo la carga del core
 	end if
 cccccccccccccccccccccccccccccccccccccccccccccccc
-
 
 
 
@@ -1380,11 +1409,6 @@ c---------------------------------------------------
        deallocate(X,XX)
        allocate(X(M,4*M),XX(Md,Md))
 c       allocate(old1(MM))
-
-c agregadas por Nick para lectura de ECP
-c	if (ecpmode) call lecturaECP()
-cccccccccccccccccccccccccccccccccccccccccccccccc
-
 c       allocate(old2(MM))
 c       allocate(old3(MM))
 

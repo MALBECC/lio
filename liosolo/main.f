@@ -226,8 +226,7 @@ c      write(*,*)ng2,ngDyn,ngdDyn,norbit,Ngrid
      > ,indexii(ngnu),indexiid(ngdnu))
 
       if (ecpmode) then
-! Cnorm contains correct normalized coefficient of basis, diff C for  x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)
-         allocate (Cnorm(ngnu,nl))
+         allocate (Cnorm(ngnu,nl)) ! Cnorm contains correct normalized coefficient of basis, diff C for  x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)
       end if
 
 
@@ -248,34 +247,6 @@ c       write(*,*) pc(i),r(i,1:3)
        enddo
        r=r/0.529177D0
        rqm=rqm/0.529177D0
-
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-
-c       aca toco nico!!!!!!!!!!!!!!!
-c        if (ecpmode) then
-c           if (FOCK_ECP_read) then
-c              call intECP(0) ! alocatea variables comunes y las lee del archivo ECP_restart
-c           else
-c              call g2g_timer_start('ECP Routines')
-c              call intECP(1) !alocatea variables, calcula variables comunes, y calcula terminos de 1 centro
-c              call intECP(2) !calcula terminos de 2 centros
-c              call intECP(3) !calcula terminos de 3 centros
-c              call g2g_timer_stop('ECP Routines')
-c           end if
-c           if (FOCK_ECP_write) call WRITE_ECP()
-c           call WRITE_POST(1)
-c        end if
-c        if (ecpmode) then
-c        CALL allocate_ECP() !allocatea la matriz de Fock de p-potenciales y el vector con los terminos de 1 electron sin corregir
-c        CALL ReasignZ() !reasigna las cargas de los nucleos removiendo la carga del core
-c	endif
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 
        call g2g_init()   !initialize g2g
@@ -298,12 +269,6 @@ c--------------------------------------------------------
        if (.not.allocated(Smat))    allocate(Smat(M,M))
        if (.not.allocated(RealRho)) allocate(RealRho(M,M))
 c--------------------------------------------------------
-
-c        Iz(1)=Iz(1)+10
-c        Iz(2)=Iz(2)+10
-c        nco=nco+10
-
-
 
        if(OPEN) then
          if (ecpmode) stop "Lio havent got ECP for open shell"         

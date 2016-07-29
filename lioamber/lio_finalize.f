@@ -5,7 +5,12 @@
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        use garcha_mod
+       use ECP_mod, only : ecpmode
        implicit none
+       if (idip.eq.1) then
+        write(69,8703)
+        CLOSE(69)
+       end if
 !--------------------------------------------------------------------!
        if (allocated(Smat))    deallocate(Smat)
        if (allocated(RealRho)) deallocate(RealRho)
@@ -19,5 +24,15 @@ c       deallocate(old1,old2,old3)
        call g2g_deinit()
        call aint_deinit()
 !--------------------------------------------------------------------!
+       if (ecpmode) call intECP(4) !desalocatea variables de pseudopotenciales
+
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Nuevos formatos, Nick
+ 8703 FORMAT(4x,"╚═══════════════╩",
+     >"═══════════════╩═════",
+     >"══════════╩══════════",
+     >"═════╝")
+
        return;end subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

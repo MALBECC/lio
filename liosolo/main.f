@@ -130,7 +130,7 @@ c---------------------------------------------------------------------
       tipeECP='NOT-DEFINED'
       ZlistECP=0
       ecptypes=0
-      cutECP=.false.
+      cutECP=.true.
       local_nonlocal=0
       ecp_debug=.false.
       ecp_full_range_int=.false.
@@ -277,9 +277,6 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
-cpor aca hay q arreglar parametros antes q se los pase a las variables de las g2g
-c        Iz(1)=Iz(1)-10
-c        Iz(2)=Iz(2)-10
 
        call g2g_init()   !initialize g2g
 
@@ -291,14 +288,12 @@ c        Iz(2)=Iz(2)-10
        nco=((nqnuc - charge)-Nunp)/2
 
 
-c	nco=nco-10
-
 c       write(*,*) 'NCO=',NCO
 c       write(*,*) natom,ntatom,ngDyn,ngdDyn,ng0,ngd0
 c       write(*,*) ng2,ngDyn,ngdDyn
 c--------------------------------------------------------
        call drive(ng2,ngDyn,ngdDyn)   !en esta rutina le pasa variables a g2g
-!       call lio_init()   !initialize lio
+       call lio_init()   !initialize lio
        call liomain()       !no hace nada!!!!!!
        if (.not.allocated(Smat))    allocate(Smat(M,M))
        if (.not.allocated(RealRho)) allocate(RealRho(M,M))

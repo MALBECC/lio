@@ -1664,7 +1664,7 @@ c
 
 !         write(*,*)
 !         write(*,*) 'DIPOLE MOMENT, X Y Z COMPONENTS AND NORM (DEBYES)'
-         write(69,900) ux,uy,uz,u
+         write(69,8704) ux,uy,uz,u
 !         write(*,*)
          dipxyz(1)=ux
          dipxyz(2)=uy
@@ -1786,10 +1786,10 @@ c       E=E*627.509391D0
         call g2g_timer_sum_stop('TD')
       endif
 
-       if (ecpmode) then
+!       if (ecpmode) then
 !desalocatea variables de pseudopotenciales
-        call intECP(4)
-       end if
+!        call intECP(4)
+!       end if
 
 #ifdef CUBLAS
       call CUBLAS_FREE(devPtrX)
@@ -1861,6 +1861,8 @@ c       E=E*627.509391D0
  8606 FORMAT(4x,"╚══════════╩═════",
      >"═══════╩════════════",
      >"═╝")
+
+ 8704 FORMAT(4x,4("║"F13.9,2x),"║")
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 c

@@ -1,0 +1,22 @@
+&lio
+ nsol=0
+ NMAX=100
+ natom=48
+ vcinp=f
+ charge=0
+ ecpmode=t
+ tipeecp="SBKJC"
+ ecptypes=4
+ ZlistECP=6,7,8,26
+ diis=f
+ gold=30
+ verbose_ECP=0
+ hybrid_converg=t
+ good_cut=1d-1
+ verbose=t
+ told=10d-3
+ Etold=10d-5
+ rmax=25
+ rmaxs=26
+&end
+

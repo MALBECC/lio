@@ -166,17 +166,34 @@
         CHARACTER(LEN=255) :: lio
         LOGICAL :: existeECP,found
 
-        CALL get_environment_variable("LIOHOME", lio)!
-        existeECP=.true.
-        INQUIRE(FILE=TRIM(lio)//"/dat/ECP/"//tipeECP, EXIST=existeECP)
-
+        IF (tipeECP.EQ."USSERDEF") THEN
+          existeECP=.true.
+          INQUIRE(FILE="ECPPARAM", EXIST=existeECP)
+        ELSE
+          CALL get_environment_variable("LIOHOME", lio)!
+          existeECP=.true.
+          INQUIRE(FILE=TRIM(lio)//"/dat/ECP/"//tipeECP, EXIST=existeECP)
+        ENDIF
 
         IF ( .NOT. existeECP) THEN !verifica la existencia del archivo de parametros
          WRITE(*,*) "Effective Core Potential parameters file not found"
-         WRITE(*,*) "check ",TRIM(lio),"/dat/ECP/"
+
+         IF (tipeECP.EQ."USSERDEF") THEN
+           WRITE(*,*) "Effective Core potential parameter file have", &
+           " to be name ECPPARAM"
+         ELSE       
+           WRITE(*,*) "check ",TRIM(lio),"/dat/ECP/"
+         ENDIF
+
          STOP
+
         ELSE
-         OPEN(UNIT=7,FILE=TRIM(lio)//"/dat/ECP/"//tipeECP)
+         IF (tipeECP.EQ."USSERDEF") THEN
+           OPEN(UNIT=7,FILE="ECPPARAM")
+         ELSE
+           OPEN(UNIT=7,FILE=TRIM(lio)//"/dat/ECP/"//tipeECP)
+         END IF
+
          found=.true.
          DO WHILE(found)
           READ(7,*) simbolo
@@ -199,7 +216,11 @@
            END DO
           ELSEIF (simbolo .EQ. "END") THEN !corta el calculo si no encuentra el pseudopotencial
            WRITE (*,*) "element ",elemento ," not found in ECP file"
-           WRITE(*,*) "check ",TRIM(lio),"/dat/ECP/",tipeECP
+           IF (tipeECP.EQ."USSERDEF") THEN
+             WRITE(*,*) "check your ECP param file"
+           ELSE
+             WRITE(*,*) "check ",TRIM(lio),"/dat/ECP/",tipeECP
+           END IF
            STOP
           ENDIF
          ENDDO

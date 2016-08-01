@@ -151,9 +151,6 @@
 #endif
 
       integer, intent(in) :: charge
-
-
-
 !LIO
 	write(*,8000)
 	write(*,8100)

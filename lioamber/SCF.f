@@ -76,13 +76,6 @@
         double precision :: Egood, Evieja !variables para criterio de convergencia por energia
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!para teste de convergencia
-!	double precision :: good_valencia,omit
-!	integer :: ombas
-c	logical :: Wri
-c	Wri=.false.
-!	omit=10.d0
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !------------------------------------------------------
 
 	call g2g_timer_start('SCF_full')
@@ -600,6 +593,7 @@ c
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !Added by Nick
 !no elimine al calculo del iniciail guess viejo, luego pondre un if donde corresponda
+!
         if (RHO_RESTART_IN) then
           inquire(file="rho_restart.in", exist=hay_restart)
           if ( .not. hay_restart) then !cheque que el archivo ECP este
@@ -692,10 +686,14 @@ c       write(*,*) 'eme=', M
      >  ,suma(MM))
       endif
       call g2g_timer_sum_stop('Initialize SCF')
-      do i=1,MM
-         if(RMM(i).ne.RMM(i)) stop 'NAN en RHO'
-         if(RMM(M5+i).ne.RMM(M5+i)) stop 'NAN en fock'
-      enddo
+
+c-------------------------------------------------------------------
+c Test for NaN
+        call SEEK_NaN(RMM,1,MM,"RHO 1")
+        call SEEK_NaN(RMM,M5-1,M5-1+MM,"FOCK 1")
+c-------------------------------------------------------------------
+
+
 c-------------------------------------------------------------------
 c-------------------------------------------------------------------
 c      write(*,*) 'empiezo el loop',NMAX
@@ -733,41 +731,22 @@ c
 c Fit density basis to current MO coeff and calculate Coulomb F elements
 c
 
-c para testeo de NAN en rho y Fock, Nick
-c	do inick=1,MM
-c	 if (RMM(inick) .ne. RMM(inick)) then
-c	  write(*,*) "NAN en Rho",inick
-c	  stop
-c	 end if
-c	 if (RMM(M5+inick-1) .ne. RMM(M5+inick-1)) then
-c	  stop "NAN en Fock"
-c	 end if
-c	end do
 
-
-        do inick=1,MM
-         if (RMM(inick) .ne. RMM(inick)) then
-          write(*,*) "NAN en Rho 20",inick
-          stop
-         end if
-         if (RMM(M5+inick-1) .ne. RMM(M5+inick-1)) then
-          stop "NAN en Fock 20"
-         end if
-        end do
+c-------------------------------------------------------------------
+c Test for NaN
+        call SEEK_NaN(RMM,1,MM,"RHO 20")
+        call SEEK_NaN(RMM,M5-1,M5-1+MM,"FOCK 20")
+c-------------------------------------------------------------------
 
 
             call g2g_timer_sum_start('Coulomb fit + Fock')
             call int3lu(E2)
 
-        do inick=1,MM
-         if (RMM(inick) .ne. RMM(inick)) then
-          write(*,*) "NAN en Rho 2",inick
-          stop
-         end if
-         if (RMM(M5+inick-1) .ne. RMM(M5+inick-1)) then
-          stop "NAN en Fock 2"
-         end if
-        end do
+c-------------------------------------------------------------------
+c Test for NaN
+        call SEEK_NaN(RMM,1,MM,"RHO 2")
+        call SEEK_NaN(RMM,M5-1,M5-1+MM,"FOCK 2")
+c-------------------------------------------------------------------
 
 
             call g2g_timer_sum_pause('Coulomb fit + Fock')
@@ -778,16 +757,11 @@ c
             call g2g_solve_groups(0,Ex,0)
             call g2g_timer_sum_pause('Exchange-correlation Fock')
 
-
-        do inick=1,MM
-         if (RMM(inick) .ne. RMM(inick)) then
-          write(*,*) "NAN en Rho 30",inick
-          stop
-         end if
-         if (RMM(M5+inick-1) .ne. RMM(M5+inick-1)) then
-          stop "NAN en Fock 30"
-         end if
-        end do
+c-------------------------------------------------------------------
+c Test for NaN
+        call SEEK_NaN(RMM,1,MM,"RHO 30")
+        call SEEK_NaN(RMM,M5-1,M5-1+MM,"FOCK 30")
+c-------------------------------------------------------------------
 
 
 
@@ -1368,11 +1342,6 @@ c Construction of new density matrix and comparison with old one
 c	if (good .le. 10d0) Wri=.true.
       good=0.
 
-c%%%%%%%%%%%%%%%%%agregada nick para ver variacion en orbitales de valencia
-c      goodvalencia=0.d0
-c      ombas=0
-c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
       call g2g_timer_start('dens_GPU')
       call density(M,NCO,X,xnano)
       do j=1,M
@@ -1381,27 +1350,11 @@ c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                del=del*sq2
                good=good+del**2
 c		if (Wri) write(95,*) (k+(M2-j)*(j-1)/2),del**2
-
-
-
-c%%%%%%%%%%%%%%%%%agregada nick para ver variacion en orbitales de valencia
-c		IF (a(j,1) .lt. omit) then
-c		  goodvalencia=goodvalencia+del**2
-c		  ombas=ombas+1
-c		END IF
-c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
                RMM(k+(M2-j)*(j-1)/2)=xnano(j,k)
          enddo
       enddo
 c		if (Wri) write(95,*) 
       good=sqrt(good)/float(M)
-
-c%%%%%%%%%%%%%%%%%agregada nick para ver variacion en orbitales de valencia
-c      goodvalencia=sqrt(goodvalencia)/sqrt(float(M**2-ombas))
-c	write(*,*) ombas
-c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       call g2g_timer_stop('dens_GPU')
 
@@ -1465,15 +1418,11 @@ c
         call g2g_timer_sum_pause('Iteration')
 
 
-        do inick=1,MM
-         if (RMM(inick) .ne. RMM(inick)) then
-          write(*,*) "NAN en Rho 40",inick
-          stop
-         end if
-         if (RMM(M5+inick-1) .ne. RMM(M5+inick-1)) then
-          stop "NAN en Fock 40"
-         end if
-        end do
+c-------------------------------------------------------------------
+c Test for NaN
+        call SEEK_NaN(RMM,1,MM,"RHO end 1 cicle of SCF")
+        call SEEK_NaN(RMM,M5-1,M5-1+MM,"FOCK end 1 cicle of SCF")
+c-------------------------------------------------------------------
 
 
 

@@ -41,6 +41,7 @@ objects += FixMessRho.o PackedStorage.o
 objects += liokeys.o
 objects += sysdata.o
 objects += ECP_mod.o
+objects += test_subs.o
 objects += esp_funct.o
 objects += readECP.o
 objects += intECP.o

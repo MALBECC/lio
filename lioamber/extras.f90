@@ -470,3 +470,36 @@
  7010 FORMAT(4x,"║   TOTAL          ║",4x,F14.7,7x"║")
         END SUBROUTINE
 
+
+        SUBROUTINE WRITE_E_STEP(STEP, ENERGY)
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: STEP
+        DOUBLE PRECISION, INTENT(IN) :: ENERGY
+          WRITE(6,8500)
+          WRITE(6,8501) STEP,ENERGY
+          WRITE(6,8502)
+ 8500 FORMAT(4x,"╔════════╦═════════════╦═══════════&
+ ╦══════════════════════╗")
+ 8501 FORMAT(4x,"║ iter # ║",2x,I10,1x,"║ QM Energy ║",4x,F14.7,4x,"║")
+ 8502 FORMAT(4x,"╚════════╩═════════════╩═══════════&
+ ╩══════════════════════╝")
+        END SUBROUTINE WRITE_E_STEP
+
+        SUBROUTINE WRITE_CONV_STATUS(GOOD,TOLD,EGOOD,ETOLD)
+        IMPLICIT NONE
+        DOUBLE PRECISION, INTENT(IN) :: GOOD,TOLD,EGOOD,ETOLD
+          Write(6,8601)
+          Write(6,8602)
+          Write(6,8603)
+          Write(6,8604) GOOD,TOLD
+          Write(6,8605) EGOOD,ETOLD
+          Write(6,8606)
+ 8601 FORMAT(4x,"           ╔════════════╦═════════════╗")
+ 8602 FORMAT(4x,"           ║    Value   ║ Conv. Crit. ║")
+ 8603 FORMAT(4x,"╔══════════╬════════════╬══════════&
+ ═══╣")
+ 8604 FORMAT(4x,"║ Good     ║",1x,E10.3,1x,"║",1x,E10.3,2x,"║")
+ 8605 FORMAT(4x,"║ En. Good ║",1x,E10.3,1x,"║",1x,E10.3,2x,"║")
+ 8606 FORMAT(4x,"╚══════════╩════════════╩══════════&
+ ═══╝")
+        END SUBROUTINE WRITE_CONV_STATUS

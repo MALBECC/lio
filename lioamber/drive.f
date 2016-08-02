@@ -154,6 +154,7 @@ c      open(unit=2,file=output)
       open(unit=18,file=fcoord)
       open(unit=85,file=fmulliken)
       open(unit=88,file=frestart)
+
 c-------------------------------------------------------
       date='date'
       write(*,*) 'JOB STARTED NOW'
@@ -1035,6 +1036,19 @@ c      pause
       endif
 c
 c
+
+
+
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+        if (ecpmode) then
+c agregadas por Nick para lectura de ECP
+           call lecturaECP()   !lee parametros
+           CALL allocate_ECP() !allocatea la matriz de Fock de p-potenciales y el vector con los terminos de 1 electron sin corregir
+           CALL ReasignZ() !reasigna las cargas de los nucleos removiendo la carga del core
+        end if
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
 c DIMENSION TESTS -----------------------------------------------
 c
       Ndim=5*M*(M+1)/2+3*Md*(Md+1)/2+M+M*NCO!+M*Ngrid
@@ -1061,6 +1075,7 @@ c the given in input
           do l=1,M
             read(89,*) (XX(l,n),n=1,NCO)
           enddo
+
 c
 c puts vectors in dynamical allocation (to be used later)
 c
@@ -1259,22 +1274,6 @@ c      VCINP=TMP2
 c--------------------------
 c
 
-        if (ecpmode) then
-c agregadas por Nick para lectura de ECP
-	   call lecturaECP()   !lee parametros
-	   CALL allocate_ECP() !allocatea la matriz de Fock de p-potenciales y el vector con los terminos de 1 electron sin corregir
-           CALL ReasignZ() !reasigna las cargas de los nucleos removiendo la carga del core
-	end if
-cccccccccccccccccccccccccccccccccccccccccccccccc
-
-
-
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-
-
-
 c------- G2G Initialization ---------------------
 c
       ntqpru=natom
@@ -1415,6 +1414,7 @@ c       allocate(old3(MM))
  100  format (A8)
  200  format ('basis set corresponding to Z ',I3,' was not used')
  400  format ('not implemented for open shell yet')
+ 401  format(4(E14.7E2,2x))
  500  format (i3,3x,F11.6,2x,F11.6,2x,F11.6)
  501  format (i3,3x,F11.6,2x,F11.6,2x,F11.6, ' CLASSICAL')
  600  format (3(i2,2x))

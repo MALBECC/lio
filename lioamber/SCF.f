@@ -70,9 +70,7 @@
 
 !------------------------------------------------------
 
-
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-        logical :: hay_restart !auxiliar, para restart en rho (Nick)
         double precision :: Egood, Evieja !variables para criterio de convergencia por energia
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -313,8 +311,8 @@ c
       if (ecpmode ) then
           write(*,*) "Modifying Fock Matrix with ECP terms"
           do k=1,MM
-               term1e(k)=RMM(M11+k-1) !copia los terminos de 1e
-               RMM(M11+k-1)=RMM(M11+k-1)+VAAA(k)+VAAB(k)+VBAC(k) !agrega el ECP a los terminos de 1e
+               term1e(k)=RMM(M11+k-1) !backup of 1e terms
+               RMM(M11+k-1)=RMM(M11+k-1)+VAAA(k)+VAAB(k)+VBAC(k) !add ECP terms to 1e- Fock Matrix
           enddo
       end if
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -548,8 +546,6 @@ c Recover C from (X^-1)*C
       call g2g_timer_stop('initial guess')
 
 
-
-
 c
 c Density Matrix
 c
@@ -587,31 +583,6 @@ c
 
 
 
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%    Rho initial Guess    %%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!Added by Nick
-!no elimine al calculo del iniciail guess viejo, luego pondre un if donde corresponda
-!
-        if (RHO_RESTART_IN) then
-          inquire(file="rho_restart.in", exist=hay_restart)
-          if ( .not. hay_restart) then !cheque que el archivo ECP este
-            stop "rho_restart.in not found"
-          else
-	    write(*,*) "Using rho restart"
-            open(unit=27,file="rho_restart.in", STATUS='UNKNOWN')
-	    read(27,*)
-            DO i=1,MM
-              read(27,*) RMM(i)
-c              write(*,*) i,RMM(i)
-            ENDDO
-            close(27)
-          end if
-        end if
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 c End of Starting guess (No MO , AO known)-------------------------------
 c
@@ -701,19 +672,9 @@ c-------------------------------------------------------------------
 c-------------------------------------------------------------------
       do 999 while ((good.ge.told.or.Egood.ge.Etold).and.niter.le.NMAX)
 
-	if (verbose) then
-c         write(6,*) 'Good',good
-c         write(6,*) 'Good-valencia',goodvalencia
-c	 write(6,*) 'Egood',Egood
+	if (verbose) call WRITE_CONV_STATUS(GOOD,TOLD,EGOOD,ETOLD)
+c Escribe los criterios de convergencia y el valor del paso de dinamica
 
-        Write(6,8601)
-        Write(6,8602)
-        Write(6,8603)
-        Write(6,8604)good,told
-        Write(6,8605)Egood,Etold
-        Write(6,8606)
-
-        end if
 
         call g2g_timer_start('Total iter')
         call g2g_timer_sum_start('Iteration')
@@ -887,13 +848,18 @@ c-------------------------------------------------------------------------------
           call g2g_timer_sum_pause('DIIS prep')
           call g2g_timer_sum_pause('DIIS')
         endif
+
+
 c
 c-------------Decidiendo cual critero de convergencia usar-----------
 c-----------------------------------------------------------------------------------------
 c iF DIIS=T
 c Do simple damping 2nd iteration; DIIS afterwards
 c-----------------------------------------------------------------------------------------
-c IF DIIS=F
+c IF DIIS=F and hybrid_converg T
+c Do Do simple damping until GOOD<=GOOD_CUT. DIIS afterwards
+c-----------------------------------------------------------------------------------------
+c IF DIIS=F and hybrid_converg F
 c Always do damping (after first iteration)
 c-----------------------------------------------------------------------------------------
 
@@ -905,7 +871,6 @@ c-------------------------------------------------------------------------------
 c cambia damping a diis, Nick
 		if (good .lt. good_cut ) then
 		  if ( .not. hagodiis ) then
-!		    write(6,*) "Changing to DIIS", " step",niter
 		    write(6,*)
 		    write(6,8503)
 		    write(6,8504) niter
@@ -1172,11 +1137,6 @@ c--------Eventualmente se puede probar con la matriz densidad-------------------
         call g2g_timer_sum_pause('DIIS')
       endif
 
-cccccccccccccccccccccccc
-
-
-
-
 
 c
 c F' diagonalization now
@@ -1403,12 +1363,8 @@ c        if(verbose) write(6,*) 'iter',niter,'QM Energy=',E+Ex
 c vieja escritura
 
 
-	if(verbose) then
+	if(verbose) call WRITE_E_STEP(niter, E+Ex)
 c escribe energia en cada paso
-          write(6,8500)
-          write(6,8501) niter,E+Ex
-          write(6,8502)
-	end if
 
 
 	Egood=abs(E+Ex-Evieja)
@@ -1419,11 +1375,10 @@ c
 
 
 c-------------------------------------------------------------------
-c Test for NaN
+c Test for NaN in Fock and Rho
         call SEEK_NaN(RMM,1,MM,"RHO end 1 cicle of SCF")
         call SEEK_NaN(RMM,M5-1,M5-1+MM,"FOCK end 1 cicle of SCF")
 c-------------------------------------------------------------------
-
 
 
  999  continue
@@ -1431,23 +1386,6 @@ c-------------------------------------------------------------------
 c
 c-------------------------------------------------------------------
       call g2g_timer_sum_start('Finalize SCF')
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%    Rho initial Guess    %%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!added by Nick, guarda un restart de rho
-        if (RHO_RESTART_OUT) then
-          open(unit=27,file="rho_restart.out", STATUS='UNKNOWN')
-          write(27,*) nshell(0),nshell(1),nshell(2)
-          DO i=1,MM
-            write(27,*) RMM(i)
-          ENDDO
-          close(27)
-        end if
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
 
 
       if (niter.ge.NMAX) then
@@ -1530,34 +1468,14 @@ c       write(*,*) 'g2g-Exc',Exc
         if (npas.eq.1) npasw = 0
         if (npas.gt.npasw) then
 
-!%%%%%%%%%%%%%%%%%   Escritura de energias   %%%%%%%%%%%%%%%%%
-!!escritura vieja
-!          write(6,*)
-!          write(6,600)
-!        if (ecpmode) then
-!caso particular de escritura de energia si ECP esta prendido
-!	  write(*,*)
-!          write(6,611)
-!	        do k=1,MM
-!	          Eecp=Eecp+RMM(k)*(VAAA(k)+VAAB(k)+VBAC(k))
-!	        enddo
-!          write(6,621) E1-Eecp,E2-Ex,En,Eecp
-!	  write(*,*)
-!        else
-!	  write(*,*)
-!          write(6,610)
-!          write(6,620) E1,E2-Ex,En
-!	  write(*,*)
-!	end if
-!
 
-!escritura nueva
+!%%%%%%%%%%%%%%   Write Energie Contributions   %%%%%%%%%%%%%%
         if (ecpmode) then
+               Eecp=0.d0
                do k=1,MM
                  Eecp=Eecp+RMM(k)*(VAAA(k)+VAAB(k)+VBAC(k))
                enddo
 	end if
-
 	call WriteEnergies(E1,E2,En,Eecp,Exc,Ex,ecpmode)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1678,9 +1596,13 @@ c outputs final  MO ---------------------
         enddo
       enddo
 c
+
       do l=1,M
+c graba un restart de los coeficientes
         write(88,400) (X(l,M+n),n=1,NCO)
       enddo
+
+
       call g2g_timer_sum_stop('restart write')
       endif
 c-------------------------------------------------
@@ -1735,11 +1657,6 @@ c       E=E*627.509391D0
         call g2g_timer_sum_stop('TD')
       endif
 
-!       if (ecpmode) then
-!desalocatea variables de pseudopotenciales
-!        call intECP(4)
-!       end if
-
 #ifdef CUBLAS
       call CUBLAS_FREE(devPtrX)
       call CUBLAS_FREE(devPtrY)
@@ -1782,39 +1699,15 @@ c       E=E*627.509391D0
 
 
 !%%%%%%%%%%%%%%%%%%%%%%%%% Nuevos Formatos, Nick %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 8500 FORMAT(4x,"╔════════╦═══════",
-     >"══════╦═══════════╦══",
-     >"════════════════════╗")
- 8501 FORMAT(4x,"║ iter # ║",2x,I10,1x,
-     > "║ QM Energy ║",2x,D19.12,1x,"║")
- 8502 FORMAT(4x,"╚════════╩═══════",
-     >"══════╩═══════════╩══",
-     >"════════════════════╝")
-
-
  8503 FORMAT(4x,"╔════════════════",
      >"══╦══════╦═══════╗")
  8504 FORMAT(4x,"║ Changing to DIIS ║ step ║",2x,i4,1x,"║")
  8505 FORMAT(4x,"╚════════════════",
      >"══╩══════╩═══════╝")
 
-
- 8601 FORMAT(4x,"           ╔════════════╦",
-     >"═════════════╗")
- 8602 FORMAT(4x,"           ║    Value   ║ Conv. Crit. ║")
- 8603 FORMAT(4x,"╔══════════╬═════",
-     >"═══════╬════════════",
-     >"═╣")
- 8604 FORMAT(4x,"║ Good     ║",1x,E10.3,1x,"║",1x,E10.3,2x,"║")
- 8605 FORMAT(4x,"║ En. Good ║",1x,E10.3,1x,"║",1x,E10.3,2x,"║")
- 8606 FORMAT(4x,"╚══════════╩═════",
-     >"═══════╩════════════",
-     >"═╝")
-
  8704 FORMAT(4x,4("║"F13.9,2x),"║")
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-c
       !call g2g_timer_sum_stop('SCF');
 
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc

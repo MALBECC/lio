@@ -35,10 +35,6 @@ c---------------------------------------------------------------------
      > hybrid_converg,good_cut,
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-!%% New Initial Guess Variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-     > RHO_RESTART_IN,RHO_RESTART_OUT,
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 !%% Output format Variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
      > style, allnml,
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -114,10 +110,6 @@ c---------------------------------------------------------------------
       hybrid_converg=.false.
       good_cut=1D-5
       omit_bas=.false.
-
-!%% Restart Variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      RHO_RESTART_IN=.false.
-      RHO_RESTART_OUT=.false.
 
 !%% Output format Variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       style=.true.
@@ -221,12 +213,12 @@ c      write(*,*)ng2,ngDyn,ngdDyn,norbit,Ngrid
       allocate(RMM(ng2))
 
       allocate (c(ngnu,nl),a(ngnu,nl),Nuc(ngnu),ncont(ngnu)
-     >  ,cx(ngdnu,nl),ax(ngdnu,nl),Nucx(ngdnu),ncontx(ngdnu)
+     > ,cx(ngdnu,nl),ax(ngdnu,nl),Nucx(ngdnu),ncontx(ngdnu)
      > ,cd(ngdnu,nl),ad(ngdnu,nl),Nucd(ngdnu),ncontd(ngdnu)
      > ,indexii(ngnu),indexiid(ngdnu))
 
       if (ecpmode) then
-         allocate (Cnorm(ngnu,nl)) ! Cnorm contains correct normalized coefficient of basis, diff C for  x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)
+         allocate (Cnorm(ngnu,nl)) ! Cnorm contains normalized coefficient to 1 of basis, diff C for  x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)
       end if
 
 

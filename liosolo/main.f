@@ -270,7 +270,7 @@ c--------------------------------------------------------
        endif
 c--------------------------------------------------------
 
-       write(*,*) 'SCF ENRGY=',escf
+c       write(*,*) 'SCF ENRGY=',escf
 
       if(writeforces) then
 	if (ecpmode) stop "Lio havent got ECP forces"

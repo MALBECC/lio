@@ -112,6 +112,15 @@ $(obj_path)/%.o   : %.f90 $(makefiles) |  $(obj_path)
 $(obj_path)/%.o   : %.F90 $(makefiles) |  $(obj_path)
 	$(FC) $(FFLAGS) -c $< -o $@
 
+$(obj_path)/%.o   : %.f90 $(makefiles) |  $(obj_path)
+	$(FC) $(FFLAGS) -c $< -o $@
+
+$(obj_path)/%.mod : %.f90 $(makefiles) |  $(obj_path)
+	$(FC) $(FFLAGS) -c $< -o $(@:%.mod=%.o)
+	@touch $@
+
+
+
 $(obj_path) :
 	mkdir -p $@
 

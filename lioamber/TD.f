@@ -26,6 +26,7 @@ c  are stored in files x.dip, y.dip, z.dip.
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 c       USE latom
        USE garcha_mod
+       use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC
        use mathsubs
 #ifdef CUBLAS
         use cublasmath
@@ -79,6 +80,7 @@ c       USE latom
        INTEGER             :: ngroup
        INTEGER,ALLOCATABLE :: group(:)
        REAL*8,ALLOCATABLE  :: qgr(:)
+       REAL*8 :: tiempo1000
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        call g2g_timer_start('TD')
        call g2g_timer_start('inicio')
@@ -312,6 +314,20 @@ c         endif
       call g2g_timer_sum_start('1-e Fock')
       call g2g_timer_sum_start('Nuclear attraction')
       call int1(En)
+
+      if (ecpmode) then
+          write(*,*) "agrego terminos AAA,AAB a los de 1e"
+          do k=1,MM
+               term1e(k)=RMM(M11+k-1)
+!copia los terminos de 1e
+!               write(89,*) RMM(M11+k-1),VAAA(k),VAAB(k)
+               RMM(M11+k-1)=RMM(M11+k-1)+VAAA(k)+VAAB(k)+VBAC(k)
+!               write(89,*) RMM(M11+k-1)
+!agrega el ECP AAA a los terminos de 1 e
+          enddo
+      end if
+
+
       call g2g_timer_sum_stop('Nuclear attraction')
       if(nsol.gt.0.or.igpu.ge.4) then
           call g2g_timer_sum_start('QM/MM')
@@ -528,6 +544,8 @@ c ELECTRIC FIELD CASE - Type=gaussian (ON)
                  E1=-1.00D0*g*(Fx*ux+Fy*uy+Fz*uz)/factor -
      >        0.50D0*(1.0D0-1.0D0/epsilon)*Qc2/a0
               endif
+            else
+            field=.false.
             endif
 !------------------------------------------------------------------------------!
 ! E1 includes solvent 1 electron contributions
@@ -790,6 +808,8 @@ c The real part of the density matrix in the atomic orbital basis is copied in R
                 open(unit=135,file='y.dip')
                 open(unit=136,file='z.dip')
                 open(unit=13600,file='abs.dip')
+
+!aca hay q agregar q escriba ts  NCO  field en cada archivo, si o es splito propagation en NCO poner 1
         write(134,*) '#Time (fs) vs DIPOLE MOMENT, X COMPONENT (DEBYES)'
         write(135,*) '#Time (fs) vs DIPOLE MOMENT, Y COMPONENT (DEBYES)'
         write(136,*) '#Time (fs) vs DIPOLE MOMENT, Z COMPONENT (DEBYES)'
@@ -823,6 +843,14 @@ c
 c      write(*,*) 'Coulomb E',E2-Ex,Ex
                call g2g_timer_stop('TD step')
                write(*,*)
+	if (istep .eq. 1000) then
+		call g2g_timer_start('corrida 1000')
+		tiempo1000=t
+	elseif (istep .eq. 2000) then
+		call g2g_timer_stop('corrida 1000')
+		write(*,*) t-tiempo1000
+	end if
+
  999           continue
 !
 !##############################################################################!

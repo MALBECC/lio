@@ -33,7 +33,10 @@ c-----auxiliar quantities
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !
        allocate(s0s(natom),s1s(natom),s2s(natom))
-       allocate(s3s(natom),s4s(natom),Iaux(natom))
+!       allocate(s3s(natom),s4s(natom),Iaux(natom))
+       allocate(s3s(natom))
+       allocate(s4s(natom))
+!       allocate(Iaux(natom))
        if (.not.allocated(Smat)) allocate(Smat(M,M))
 
 c-----distance between pairs of centers
@@ -81,6 +84,7 @@ c matrix elements no,
 c they're stored in Fock matrix and in the Energy directly
 c in order to reduce the memory requirements
 c
+
        Smat=0.0d0
        do i=1,MM
          RMM(M5+i-1)=0.D0
@@ -112,6 +116,7 @@ c Nuclear Repulsion part ------------------------------------------
 c
 c first loop (s|s) case -------------------------------------------
 c
+
       do 200 i=1,ns
       do 200 j=1,i
 c
@@ -142,6 +147,7 @@ c loop over nuclei, nuclear attraction matrix elements
 c tna: accumulates nuc. attraction over all nuclei
 c
        tna=0.D0
+
       do n=1,natom
        u=(Q(1)-r(n,1))**2+(Q(2)-r(n,2))**2+(Q(3)-r(n,3))**2
        u=u*zij
@@ -153,6 +159,7 @@ c
       term=ccoef*(tn+tna)
       RMM(M11+k-1)=RMM(M11+k-1)+ term
  200  continue
+
 c
 c------------------------------------------------------------------
 c
@@ -215,6 +222,7 @@ c loop over nuclei, specific part
 c
 
  300  continue       
+
 c-------------------------------------------------------------------
 c 
 c (p|p) case
@@ -820,7 +828,7 @@ c      enddo
 c      endif
 c
 c-- prueba ----------------
-      En=En+0.0D0*(d(1,2)-2.89D0)**2
+c      En=En+0.0D0*(d(1,2)-2.89D0)**2
 c--------------------------
 c
 c     write(*,*) 'matriz overlap'
@@ -834,7 +842,10 @@ c     pause
       do i=1,M
         Smat(i,i)=Smat(i,i)/2
       enddo
-      deallocate(s0s,s1s,s2s,s3s,s4s,Iaux)
+
+      deallocate(s0s,s1s,s2s,s3s,s4s)
+c      deallocate(Iaux) 
+
 
       if (igpu.gt.3) natom = natomold
 

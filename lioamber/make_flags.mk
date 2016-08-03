@@ -6,6 +6,7 @@ ifeq ($(intel),1)
   FC     = ifort
   FFLAGS+= -module $(obj_path)
   FFLAGS+= -fpp
+#  FFLAGS+= -check bounds
 else
   FC     = gfortran
   FFLAGS+= -I$(obj_path) -J$(obj_path)
@@ -82,6 +83,7 @@ tmplist += dft_get_mm_forces.o dft_get_qm_forces.o
 tmplist += alg.o drive.o func.o grid.o dipmem.o jarz.o
 tmplist += int1.o int2.o int2G.o int3mem.o intSG.o
 tmplist += garcha_mod.o mathsubs.o cubegen.o density.o
+
 ifeq ($(cublas),1)
 tmplist += cublasmath.o 
 endif

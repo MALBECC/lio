@@ -396,7 +396,6 @@ c
       if (MEMO) then
          call g2g_timer_start('int3mem')
          call int3mem() 
-c         call int3mems()
          call g2g_timer_stop('int3mem')
       endif
 ****

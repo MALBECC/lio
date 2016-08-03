@@ -32,7 +32,7 @@ objects += dip.o dipmem.o jarz.o magnus.o predictor.o mulliken.o
 objects += dft_get_mm_forces.o dft_get_qm_forces.o
 objects += matmuldiag.o fock_commuts.o
 objects += init.o init_amber.o lio_init.o lio_finalize.o
-objects += alg.o drive.o func.o grid.o
+objects += drive.o func.o grid.o
 objects += int1.o int1G.o int2.o int2G.o
 objects += int3lu.o int3mem.o  int3G.o
 objects += intsol.o intsolG.o intsolGs.o
@@ -40,7 +40,13 @@ objects += intfld.o intSG.o
 objects += FixMessRho.o PackedStorage.o
 objects += liokeys.o
 objects += sysdata.o
+objects += ECP_mod.o
+objects += test_subs.o
+objects += esp_funct.o
+objects += readECP.o
+objects += intECP.o
 objects += density.o
+objects += extras.o
 objects += fterm_biaspot.o lowdinpop.o
 objects += elec.o
 #
@@ -93,6 +99,26 @@ include general_module/general_module.mk
 tmplist := SCF.o
 $(tmplist:%.o=$(obj_path)/%.o) : $(obj_path)/general_module.mod
 
+
+# ECP_mod
+objlist := SCF.o
+objlist += readECP.o
+objlist += drive.o
+objlist += intECP.o
+objlist += init.o extras.o
+$(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/ECP_mod.mod
+
+# intECP
+objlist := SCF.o
+$(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/intECP.o
+
+objlist := drive.o
+$(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/readECP.o
+
+#esp_funct
+objlist := intECP.o
+objlist += ECP_mod.mod
+$(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/esp_funct.mod
 
 # cublas: Description pending
 ######################################################################

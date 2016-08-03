@@ -59,8 +59,11 @@
            ene = 1.241462463E3/lambda
 
            write (2,100) lambda, ene, ftr*ts, fti*ts
-           write (3,101) ene, ftr*(-1)/(2*pi)
-           write (5,101) lambda, ftr*(-1)/(2*pi)
+           write (3,101) ene, ftr*(-1)/(2*pi)          
+!           write (5,101) lambda, ftr*(-1)/(2*pi)
+           ftr=ABS(DCMPLX(ftr,fti))
+           ftr=ftr/(4*pi*pi)
+           write (5,101) lambda, ftr
 !          write (5,101) lambda, fti*nu
          enddo
 

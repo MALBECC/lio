@@ -13,15 +13,17 @@ c input file is simple
 c----------------------------------------------------------------
 c
       subroutine drive(ng2,ngDyn,ngdDyn)
-       use garcha_mod
-
+      use garcha_mod
+      use ECP_mod, only : ecpmode, asignacion
 c
       implicit real*8 (a-h,o-z)
-      logical Exx, parsearch
+      logical Exx, parsearch, basis_check
       character*255 int_basis_file, fit_basis_file
       character*255 liohome
       character*255 inp_line
       character inp_char
+      CHARACTER*3 simb
+
 c      namelist /scfinp/ OPEN,NMAX,Nunp,ATRHO,VCINP,DIRECT,
 c     >EXTR,SHFT,SHI,IDAMP,GOLD,told,write1,MEMO,rmax,rmaxs,predcoef,
 c     >idip,writexyz,intsoldouble,watermod,DIIS,ndiis,dgtrig
@@ -55,6 +57,7 @@ c
 c NORM true , expansion in normalized gaussians, so normalization factor
 c included in coefficients
 c default most stable isotopes, for mass asignation
+
       do i = 1,54
         isotop(i) = 1
       enddo
@@ -151,12 +154,14 @@ c      open(unit=2,file=output)
       open(unit=18,file=fcoord)
       open(unit=85,file=fmulliken)
       open(unit=88,file=frestart)
+
 c-------------------------------------------------------
       date='date'
       write(*,*) 'JOB STARTED NOW'
       call system(date)
       do i=1,natom
         done(i)=.false.
+        done_fit(i)=.false.
       enddo
 
 c -------------------------------------------------------------
@@ -340,6 +345,7 @@ c          write(2,700) at(i),ct(i)
 c
         do 45 j=1,natom
           if (Iz(j).eq.iatom) then
+            done_fit(j)=.true.
 c
 c Mdd stores # of contractions in final basis, counting all possibilities
 c for p , d etc
@@ -597,7 +603,7 @@ c
           endif
         enddo
 c     
-        if (.not.used.and.VERBOSE) then
+        if (.not.used.and.VERBOSE.and. .not.omit_bas) then
           write(*,200) iatom
         endif
 
@@ -658,6 +664,7 @@ c          write(2,700) at(i),ct(i)
 c
         do 48 j=1,natom
           if (Iz(j).eq.iatom) then
+             done_fit(j)=.true.
 c
 c Mdd stores # of contractions in final basis, counting all possibilities
 c for p , d etc
@@ -748,6 +755,35 @@ c        write(2,100) whatis
  27   enddo
       close(1)
       endif
+
+
+
+
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      basis_check=.true.
+      do i=1,natom
+c chekeo de lectura de base para todos los atomos, Nick
+        if (.not. done(i)) then
+           call asignacion(Iz(i),simb)
+           write(*,*) simb," havent got a basis set, check basis file"
+           basis_check=.false.
+        end if
+      enddo
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      do i=1,natom
+c chekeo de lectura de base auxiliar para todos los atomos, Nick
+        if (.not. done_fit(i)) then
+           call asignacion(Iz(i),simb)
+           write(*,*) simb," havent got a fitting basis set, check",
+     >" auxiliar basis file"
+           basis_check=.false.
+        end if
+      enddo
+      if (.not. basis_check) stop
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+
+
 c----- DIMENSION CONTROLS ------------------------------------
 c
       iprob=0
@@ -1000,6 +1036,19 @@ c      pause
       endif
 c
 c
+
+
+
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+        if (ecpmode) then
+c agregadas por Nick para lectura de ECP
+           call lecturaECP()   !lee parametros
+           CALL allocate_ECP() !allocatea la matriz de Fock de p-potenciales y el vector con los terminos de 1 electron sin corregir
+           CALL ReasignZ() !reasigna las cargas de los nucleos removiendo la carga del core
+        end if
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
 c DIMENSION TESTS -----------------------------------------------
 c
       Ndim=5*M*(M+1)/2+3*Md*(Md+1)/2+M+M*NCO!+M*Ngrid
@@ -1026,6 +1075,7 @@ c the given in input
           do l=1,M
             read(89,*) (XX(l,n),n=1,NCO)
           enddo
+
 c
 c puts vectors in dynamical allocation (to be used later)
 c
@@ -1223,6 +1273,7 @@ c      ATRHO=TMP1
 c      VCINP=TMP2
 c--------------------------
 c
+
 c------- G2G Initialization ---------------------
 c
       ntqpru=natom
@@ -1357,13 +1408,13 @@ c---------------------------------------------------
        deallocate(X,XX)
        allocate(X(M,4*M),XX(Md,Md))
 c       allocate(old1(MM))
-
 c       allocate(old2(MM))
 c       allocate(old3(MM))
 
  100  format (A8)
  200  format ('basis set corresponding to Z ',I3,' was not used')
  400  format ('not implemented for open shell yet')
+ 401  format(4(E14.7E2,2x))
  500  format (i3,3x,F11.6,2x,F11.6,2x,F11.6)
  501  format (i3,3x,F11.6,2x,F11.6,2x,F11.6, ' CLASSICAL')
  600  format (3(i2,2x))

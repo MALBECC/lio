@@ -54,7 +54,16 @@ objects += elec.o
 #     Trying a new way of makefile organization: put every important
 # information inside of the module.mk
 ######################################################################
+# linear_algebra
+objects += linear_algebra.o
+src_paths += linear_algebra
 include linear_algebra/linear_algebra.mk
+
+# liosubs
+objects += liosubs.o
+src_paths += liosubs
+include liosubs/liosubs.mk
+
 
 
 # garcha_mod: Description pending
@@ -139,17 +148,4 @@ $(obj_path)/fortran.o: $(CUDA_HOME)/src/fortran.c
 endif
 
 
-# liosubs: Generic and simple subroutines. Should compile before any 
-# of the other objects and so it should not use any other module.
-# TODO: move routines from general_module to this module.
-######################################################################
-allothers := $(objects)
-objects   += liosubs.o
-src_paths += liosubs
-include liosubs/liosubs.mk
-
-tmplist := $(allothers)
-$(tmplist:%.o=$(obj_path)/%.o) : $(obj_path)/liosubs.mod
-
-#
 ######################################################################

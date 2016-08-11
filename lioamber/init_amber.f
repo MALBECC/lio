@@ -17,6 +17,11 @@
 #endif
 
       use garcha_mod
+      use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP
+     > ,cutECP,local_nonlocal, ecp_debug,ecp_full_range_int
+     > ,verbose_ECP,Cnorm,FOCK_ECP_read, FOCK_ECP_write,Fulltimer_ECP
+     > ,cut2_0,cut3_0
+
 c      use qmmm_module, only : qmmm_struct,qmmm_nml
       implicit real*8 (a-h,o-z)
 c
@@ -248,7 +253,42 @@ c
 c        write(*,*) 'NCO=',NCO
 c       write(*,*) natom,ntatom,ngDyn,ngdDyn,ng0,ngd0
 c       write(*,*) ng2,ngDyn,ngdDyn
-c--------------------------------------------------------
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% Hybrid damping-diis Variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+      hybrid_converg=.false.
+      good_cut=1D-5
+      omit_bas=.false.
+      Etold=1.0d0
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% Output format Variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+      style=.true.
+      allnml=.true.
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%    Effective Core Potential Variables    %%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+      ecpmode=.false.
+      tipeECP='NOT-DEFINED'
+      ZlistECP=0
+      ecptypes=0
+      cutECP=.true.
+      local_nonlocal=0
+      ecp_debug=.false.
+      ecp_full_range_int=.false.
+      verbose_ECP=0
+      FOCK_ECP_read=.false.
+      FOCK_ECP_write=.false.
+      Fulltimer_ECP=.false.
+      cut2_0=15.d0
+      cut3_0=12.d0
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
       call drive(ng2,ngDyn,ngdDyn)
 c        write(*,*) 'Lio init amber'
 

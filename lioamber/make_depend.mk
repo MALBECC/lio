@@ -49,6 +49,7 @@ objects += density.o
 objects += extras.o
 objects += fterm_biaspot.o lowdinpop.o
 objects += elec.o
+objects += init_gromacs.o SCF_gro.o
 #
 #
 #     Trying a new way of makefile organization: put every important

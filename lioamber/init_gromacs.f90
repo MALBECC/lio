@@ -60,55 +60,59 @@
                      cube_elec_file
 
 !     Names of files used for input and output.
-      basis     = 'basis'    ; output = 'output' ;
-      fmulliken = 'mulliken' ; fcoord = 'qm.xyz' ;
+      basis          = 'basis'       ; output             = 'output'      ;
+      fmulliken      = 'mulliken'    ; fcoord             = 'qm.xyz'      ;
 
 !     Theory level options.
-      OPEN      = .false. ; ndiis = 30     ; good_cut = 1D-5    ;
-      NMAX      = 100     ; GOLD  = 10.    ; rmax     = 16      ;
-      basis_set = "DZVP"  ; told  = 1.0D-6 ; rmaxs    = 5       ;
-      fitting_set = "DZVP Coulomb Fitting" ; omit_bas = .false. ;
-      int_basis = .false. ; Etold = 1.0d0  ;
-      DIIS      = .true.  ; hybrid_converg = .false.            ; 
+      OPEN           = .false.       ; told               = 1.0D-6        ;
+      NMAX           = 100           ; Etold              = 1.0d0         ;
+      basis_set      = "DZVP"        ; hybrid_converg     = .false.       ;
+      int_basis      = .false.       ; good_cut           = 1D-5          ;
+      DIIS           = .true.        ; rmax               = 16            ;
+      ndiis          = 30            ; rmaxs              = 5             ;
+      GOLD           = 10.           ; omit_bas           = .false.       ;
+      fitting_set    = "DZVP Coulomb Fitting" ;
 
 !     Effective Core Potential options.
-      ecpmode        = .false.       ; cut2_0             = 15.d0   ;
-      ecptypes       = 0             ; cut3_0             = 12.d0   ;
-      tipeECP        = 'NOT-DEFINED' ; verbose_ECP        = 0       ;
-      ZlistECP       = 0             ; ecp_debug          = .false. ;
-      FOCK_ECP_read  = .false.       ; Fulltimer_ECP      = .false. ;
-      FOCK_ECP_write = .false.       ; local_nonlocal     = 0       ;
-      cutECP         = .true.        ; ecp_full_range_int = .false. ;
+      ecpmode        = .false.       ; cut2_0             = 15.d0         ;
+      ecptypes       = 0             ; cut3_0             = 12.d0         ;
+      tipeECP        = 'NOT-DEFINED' ; verbose_ECP        = 0             ;
+      ZlistECP       = 0             ; ecp_debug          = .false.       ;
+      FOCK_ECP_read  = .false.       ; Fulltimer_ECP      = .false.       ;
+      FOCK_ECP_write = .false.       ; local_nonlocal     = 0             ;
+      cutECP         = .true.        ; ecp_full_range_int = .false.       ;
 
 !     TD-DFT options.
-      timedep    = 0     ; NBCH = 10   ; field     = .false. ;
-      propagator = 1     ; Fx   = 0.05 ; tdrestart = .false. ;
-      tdstep     = 2.D-3 ; Fy   = 0.05 ; exter     = .false. ;
-      ntdstep    = 1     ; Fz   = 0.05 ;
+      timedep        = 0             ; Fx                 = 0.05          ;
+      propagator     = 1             ; Fy                 = 0.05          ;
+      tdstep         = 2.D-3         ; Fz                 = 0.05          ;
+      ntdstep        = 1             ; tdrestart          = .false.       ;
+      NBCH           = 10            ; exter              = .false.       ;
+      field          = .false.       ;
 
 !     Write options and Restart options.
-      verbose   = .true.  ; writexyz    = .true.        ;
-      writedens = .false. ; frestart    = 'restart.out' ;
-      VCINP     = .false. ; frestartin  = 'restart.in'  ;
-      restart_freq = 1    ; writeforces = .false.       ;
+      verbose        = .false.        ; writexyz           = .true.        ;
+      writedens      = .false.       ; frestart           = 'restart.out' ;
+      VCINP          = .false.       ; frestartin         = 'restart.in'  ;
+      restart_freq   = 1             ; writeforces        = .false.       ;
 
 !     Cube, grid and other options.
-      predcoef     = .false. ; cubegen_only   = .false.      ;
-      idip         = 1       ; cube_res       = 40           ;
-      intsoldouble = .true.  ; cube_dens      = .false.      ;
-      dgtrig       = 100.    ; cube_orb       = .false.      ;
-      Iexch        = 9       ; cube_sel       = 0            ;
-      integ        = .true.  ; cube_orb_file  = "orb.cube"   ;
-      DENS         = .true.  ; cube_dens_file = 'dens.cube'  ;
-      IGRID        = 2       ; cube_elec      = .false.      ;
-      IGRID2       = 2       ; cube_elec_file = 'field.cube' ;
-      a0           = 1000.0  ; style          = .true.       ; 
-      epsilon      = 1.D0    ; allnml         = .true.       ;
-      NUNP         = 1       ; energy_freq    = 1            ;
+      predcoef       = .false.       ; cubegen_only       = .false.       ;
+      idip           = 1             ; cube_res           = 40            ;
+      intsoldouble   = .true.        ; cube_dens          = .false.       ;
+      dgtrig         = 100.          ; cube_orb           = .false.       ;
+      Iexch          = 9             ; cube_sel           = 0             ;
+      integ          = .true.        ; cube_orb_file      = "orb.cube"    ;
+      DENS           = .true.        ; cube_dens_file     = 'dens.cube'   ;
+      IGRID          = 2             ; cube_elec          = .false.       ;
+      IGRID2         = 2             ; cube_elec_file     = 'field.cube'  ;
+      a0             = 1000.0        ; style              = .true.        ; 
+      epsilon        = 1.D0          ; allnml             = .true.        ;
+      NUNP           = 0             ; energy_freq        = 1             ;
 
 !     Checks if input file exists and writes data to namelist variables.
+      input_file = 'lio.in'
       inquire(file = input_file, exist = file_exists)
-
       if(file_exists) then
           open(unit = 100, file = input_file, iostat = ios)
           read(100, nml = lio, iostat = ierr)

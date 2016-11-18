@@ -91,7 +91,8 @@ c      include 'param'
        integer :: propagator_i
        logical :: writedens_i
        logical :: tdrestart_i
-
+       
+       call lio_defaults()  
 
        basis= basis_i
 #ifdef MOD_AMBER
@@ -162,135 +163,5 @@ c      include 'param'
        writedens=writedens_i
        tdrestart=tdrestart_i
 
-
-c      parameter (norbit=800,Ngrid=0)
-
-         natom=natomin
-
-c       integer, intent(in) :: Iiiz(natom)
-         ntatom=natom+nclatom
-         ntatom=ntatom ! the number of clasical atoms can change
-         ngnu=natom*ng0
-         ngdnu=natom*ngd0
-         ngDyn=ngnu
-         ngdDyn=ngdnu
-c
-        ng3=4*ngDyn
-c para version en memoria
-      ng2=5*ngDyn*(ngDyn+1)/2+3*ngdDyn*(ngdDyn+1)/2+
-     >           ngDyn+ngDyn*norbit+Ngrid
-
-c      write(*,*) 'ng2 en init',ng2,ngDyn,ngdDyn,norbit,Ngrid
-
-      allocate(X(ngDyn,ng3),XX(ngdDyn,ngdDyn))
-      allocate(RMM(ng2),RMM1(ng2),RMM2(ng2), RMM3(ng2))
-      
-       allocate (c(ngnu,nl),a(ngnu,nl),Nuc(ngnu),ncont(ngnu)
-     >  ,cx(ngdnu,nl),ax(ngdnu,nl),Nucx(ngdnu),ncontx(ngdnu)
-     > ,cd(ngdnu,nl),ad(ngdnu,nl),Nucd(ngdnu),ncontd(ngdnu)
-     > ,indexii(ngnu),indexiid(ngdnu))
-
-      allocate (r(ntatom,3),v(ntatom,3),rqm(natom,3),Em(ntatom)
-     >,Rm(ntatom),pc(ntatom),Iz(natom),nnat(ntatom),af(natom*ngd0),
-     >  B(natom*ngd0,3))
-      allocate(d(natom,natom))
-         Iz=Izin
-      if(verbose) then
-      write(6,*) '---------Lio options-------'
-      write(6,*)      '  OPEN ', OPEN
-       write(6,*)     '  NMAX ', NMAX
-       write(6,*)     '  NUNP ', NUNP
-       write(6,*)     '  VCINP ', VCINP
-!   write(6,*)     '  GOLD ', GOLD
-       write(6,*)     '  told ', told
-!   write(6,*)     '  rmax ', rmax
-!   write(6,*)     '  rmaxs ', rmaxs
-!     write(6,*)     '  predcoef ', predcoef
-!     write(6,*)     '  idip ', idip
-       write(6,*)     '  writexyz ', writexyz
-       write(6,*)     '  DIIS ', DIIS
-       write(6,*)     '  ndiis ', ndiis
-       write(6,*)     '  Iexch ', Iexch
-!   write(6,*)     '  integ ', integ
-!     write(6,*)     '  DENS ' ,  DENS
-       write(6,*)     '  IGRID ', IGRID
-       write(6,*)     '  IGRID2 ', IGRID2
-       write(6,*)     '  timedep ', timedep
-       write(6,*)     '  tdstep ', tdstep
-       write(6,*)     '  ntdstep ', ntdstep
-       write(6,*)     '  field ', field
-       write(6,*)     '  exter ', exter
-       write(6,*)     '  a0 ', a0
-       write(6,*)     '  epsilon ', epsilon
-       write(6,*)     '  Fx ', Fx
-       write(6,*)     '  Fy ', Fy
-       write(6,*)     '  Fz ', Fz
-       write(6,*)     '  NBCH ', NBCH
-       write(6,*)     '  propagator ', propagator
-       write(6,*)     '  writedens ', writedens
-       write(6,*)     '  tdrestart ', tdrestart
-        write(6,*) '-----end Lio options-------'
-       endif
-
-
-c        write(92,*) izin
-c      write(*,*) (ngDyn*ng3+ngdDyn**2+ng2+ngDyn*
-c     > (NgDyn+1)/2*NgdDyn)*8*1.0D-06, '  Memoria en MB'
-c      write(*,*)   ng2
-!#ifdef G2G
-      call g2g_init()
-!#endif
-        nqnuc=0
-       do i=1,natom
-        nqnuc=nqnuc+Iz(i)
-        enddo
-
-c !!! REVISAR QUE nco se un numero ENTERO ¡¡¡¡¡¡
-
-        nco=((nqnuc - charge)-Nunp)/2
-
-c
-c        write(*,*) 'NCO=',NCO
-c       write(*,*) natom,ntatom,ngDyn,ngdDyn,ng0,ngd0
-c       write(*,*) ng2,ngDyn,ngdDyn
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% Hybrid damping-diis Variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-      hybrid_converg=.false.
-      good_cut=1D-5
-      omit_bas=.false.
-      Etold=1.0d0
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% Output format Variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-      style=.true.
-      allnml=.true.
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%    Effective Core Potential Variables    %%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-      ecpmode=.false.
-      tipeECP='NOT-DEFINED'
-      ZlistECP=0
-      ecptypes=0
-      cutECP=.true.
-      local_nonlocal=0
-      ecp_debug=.false.
-      ecp_full_range_int=.false.
-      verbose_ECP=0
-      FOCK_ECP_read=.false.
-      FOCK_ECP_write=.false.
-      Fulltimer_ECP=.false.
-      cut2_0=15.d0
-      cut3_0=12.d0
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
-      call drive(ng2,ngDyn,ngdDyn)
-c        write(*,*) 'Lio init amber'
-
+      call lio_init() 
       end
-c---------------------------------------------------------------------

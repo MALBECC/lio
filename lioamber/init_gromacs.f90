@@ -59,57 +59,7 @@
                      cube_orb, cube_sel, cube_orb_file, cube_elec,             &
                      cube_elec_file
 
-!     Names of files used for input and output.
-      basis          = 'basis'       ; output             = 'output'      ;
-      fmulliken      = 'mulliken'    ; fcoord             = 'qm.xyz'      ;
-
-!     Theory level options.
-      OPEN           = .false.       ; told               = 1.0D-6        ;
-      NMAX           = 100           ; Etold              = 1.0d0         ;
-      basis_set      = "DZVP"        ; hybrid_converg     = .false.       ;
-      int_basis      = .false.       ; good_cut           = 1D-5          ;
-      DIIS           = .true.        ; rmax               = 16            ;
-      ndiis          = 30            ; rmaxs              = 5             ;
-      GOLD           = 10.           ; omit_bas           = .false.       ;
-      fitting_set    = "DZVP Coulomb Fitting" ;
-
-!     Effective Core Potential options.
-      ecpmode        = .false.       ; cut2_0             = 15.d0         ;
-      ecptypes       = 0             ; cut3_0             = 12.d0         ;
-      tipeECP        = 'NOT-DEFINED' ; verbose_ECP        = 0             ;
-      ZlistECP       = 0             ; ecp_debug          = .false.       ;
-      FOCK_ECP_read  = .false.       ; Fulltimer_ECP      = .false.       ;
-      FOCK_ECP_write = .false.       ; local_nonlocal     = 0             ;
-      cutECP         = .true.        ; ecp_full_range_int = .false.       ;
-
-!     TD-DFT options.
-      timedep        = 0             ; Fx                 = 0.05          ;
-      propagator     = 1             ; Fy                 = 0.05          ;
-      tdstep         = 2.D-3         ; Fz                 = 0.05          ;
-      ntdstep        = 1             ; tdrestart          = .false.       ;
-      NBCH           = 10            ; exter              = .false.       ;
-      field          = .false.       ;
-
-!     Write options and Restart options.
-      verbose        = .false.        ; writexyz           = .true.        ;
-      writedens      = .false.       ; frestart           = 'restart.out' ;
-      VCINP          = .false.       ; frestartin         = 'restart.in'  ;
-      restart_freq   = 1             ; writeforces        = .false.       ;
-
-!     Cube, grid and other options.
-      predcoef       = .false.       ; cubegen_only       = .false.       ;
-      idip           = 1             ; cube_res           = 40            ;
-      intsoldouble   = .true.        ; cube_dens          = .false.       ;
-      dgtrig         = 100.          ; cube_orb           = .false.       ;
-      Iexch          = 9             ; cube_sel           = 0             ;
-      integ          = .true.        ; cube_orb_file      = "orb.cube"    ;
-      DENS           = .true.        ; cube_dens_file     = 'dens.cube'   ;
-      IGRID          = 2             ; cube_elec          = .false.       ;
-      IGRID2         = 2             ; cube_elec_file     = 'field.cube'  ;
-      a0             = 1000.0        ; style              = .true.        ; 
-      epsilon        = 1.D0          ; allnml             = .true.        ;
-      NUNP           = 0             ; energy_freq        = 1             ;
-
+      call lio_defaults()
 !     Checks if input file exists and writes data to namelist variables.
       input_file = 'lio.in'
       inquire(file = input_file, exist = file_exists)
@@ -120,51 +70,9 @@
       else
           write(*,*) 'Inputfile lio.in not found. Using defaults.'
       endif
+      
+      call lio_init(natomin, Izin, nclatom, chargein)
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% Additional parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Natom is updated since it may change in every simulation step. Ngrid may be  !
-! set to 0  in the case of Numerical Integration.                              !
-! ngDyn  : n° of atoms times the n° of basis functions.                        !
-! norbit : n° of molecular orbitals involved.                                  !
-! ngdDyn : n° of atoms times the n° of auxiliary functions.                    !
-! Ngrid  : n° of grid points (LS-SCF part).                                    !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-      charge = chargein
-      natom  = natomin         
-      ngnu   = natom*ng0 
-      ngdnu  = natom*ngd0  
-      Iz     = Izin            
-      ngDyn  = ngnu      
-      ngdDyn = ngdnu      
-      ntatom = natom + nclatom 
-      ng2    = 5*ngDyn*(ngDyn+1)/2 + 3*ngdDyn*(ngdDyn+1)/2 + ngDyn +     &
-               ngDyn*norbit + Ngrid 
-      ng3    = 4*ngDyn         
-
-      allocate(X(ngDyn,ng3) , XX(ngdDyn,ngdDyn), RMM(ng2)   , d(natom, natom), &
-               c(ngnu,nl)   , a(ngnu,nl)       , Nuc(ngnu)  , ncont(ngnu)    , &
-               cx(ngdnu,nl) , ax(ngdnu,nl)     , Nucx(ngdnu), ncontx(ngdnu)  , &
-               cd(ngdnu,nl) , ad(ngdnu,nl)     , Nucd(ngdnu), ncontd(ngdnu)  , &
-               indexii(ngnu), indexiid(ngdnu)  , r(ntatom,3), v(ntatom,3)    , &
-               rqm(natom,3) , Em(ntatom)       , Rm(ntatom) , pc(ntatom)     , &
-               nnat(ntatom) , af(natom*ngd0)   , B(natom*ngd0,3))
-
-      call g2g_init()
-      nqnuc = 0
-      do i = 1, natom
-          nqnuc = nqnuc + Iz(i)
-      enddo
-      nco = ((nqnuc - charge) - Nunp)/2
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% Final Step %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-      call LIO_LOGO()
-      call NEW_WRITE_NML(charge)
-      call drive(ng2, ngDyn, ngdDyn)
-      write(*,*)     '--- LIO Initialization OK ---'
       end
       
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

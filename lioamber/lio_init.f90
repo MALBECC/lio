@@ -1,4 +1,16 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% LIO_INIT.F90  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! This file contains common initialization routines, including assignation of  !
+! default values for options, wether LIO is run alone or in tantem with AMBER  !
+! or GROMACS software packages. Routines currently included are:               !
+! * lio_defaults     (called from the last two routines and liomd/liosolo)     !
+! * lio_init         (called from the last two routines and liomd/liosolo)     !
+! * init_lio_gromacs (calls the first two routines when running with GROMACS)  !
+! * init_lio_amber   (calls the first two routines when running with AMBER)    !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% LIO_DEFAULTS  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Subroutine lio_defaults gives default values to LIO runtime options.         !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

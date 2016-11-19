@@ -63,7 +63,7 @@
 
 !     Cube, grid and other options.
       predcoef       = .false.       ; cubegen_only       = .false.       ;
-      idip           = 1             ; cube_res           = 40            ;
+      idip           = 0             ; cube_res           = 40            ;
       intsoldouble   = .true.        ; cube_dens          = .false.       ;
       dgtrig         = 100.          ; cube_orb           = .false.       ;
       Iexch          = 9             ; cube_sel           = 0             ;
@@ -89,7 +89,8 @@
                              ax, Nucx, ncontx, cd, ad, Nucd, ncontd, indexii,  &
                              indexiid, r, v, rqm, Em, Rm, pc, nnat, af, B, Iz, &
                              natom, nco, ng0, ngd0, ngrid, nl, norbit, ntatom, &
-                             cube_elec, cube_elec_file
+                             allnml, style                             
+      use ECP_mod,    only : Cnorm, ecpmode
 
       implicit none
       integer , intent(in) :: charge, nclatom, natomin, Izin(natomin)
@@ -103,6 +104,7 @@
 ! norbit : n° of molecular orbitals involved.                                  !
 ! ngdDyn : n° of atoms times the n° of auxiliary functions.                    !
 ! Ngrid  : n° of grid points (LS-SCF part).                                    !
+! For large systems, ng2 may result in <0 due to overflow.                     !
       Iz     = Izin       ;
       natom  = natomin    ;  ntatom = natom + nclatom  ;
       ngnu   = natom*ng0  ;  ngdnu  = natom*ngd0       ;
@@ -119,6 +121,10 @@
                rqm(natom,3) , Em(ntatom)       , Rm(ntatom) , pc(ntatom)     , &
                nnat(ntatom) , af(natom*ngd0)   , B(natom*ngd0,3))
 
+      ! Cnorm contains normalized coefficients of basis.
+      ! Differentiate C for x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)
+      if (ecpmode) allocate (Cnorm(ngnu,nl)) 
+
       call g2g_init()
       nqnuc = 0
       do i = 1, natom
@@ -127,13 +133,11 @@
       nco = ((nqnuc - charge) - Nunp)/2
 
       ! Header for the file containing dipole moments.
-      if (idip.eq.1) then
-          call write_dip_header(69)
-      endif
+      if (idip.eq.1) call write_dip_header(69)
 
 !     Prints LIO logo to output and options chosen for the run. 
-      call LIO_LOGO()
-      call NEW_WRITE_NML(charge)
+      if (style) call LIO_LOGO()
+      if (style) call NEW_WRITE_NML(charge)
       call drive(ng2, ngDyn, ngdDyn)
 
 !     call g2g_timer_stop('lio_init')

@@ -38,100 +38,16 @@ c---------------------------------------------------------------------
 !%% Output format Variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
      > style, allnml,
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
      > cubegen_only,cube_res,
      > cube_dens,cube_dens_file,
      > cube_orb,cube_sel,cube_orb_file,cube_elec,cube_elec_file
 
-
-
       integer :: ifind, ierr
 
-
-     !defaults
-      basis='input'  ! name of the base file
-      basis_set='DZVP'
-      fitting_set='DZVP Coulomb Fitting'
-      int_basis=.false.
-      cubegen_only=.false.
-      cube_res=40
-      cube_dens=.false.
-      cube_dens_file='dens.cube'
-      cube_orb=.false.
-      cube_sel=0
-      cube_orb_file="orb.cube"
-      cube_elec=.false.
-      cube_elec_file="field.cube"
-      restart_freq=1
-      energy_freq=1
-      output='output'
-      fcoord='qm.xyz'
-      fmulliken='mulliken'
-      frestart='restart.out'
-      frestartin='restart.in'
-      verbose=.false.
-      OPEN=.false.
-      NMAX= 100
-      NUNP= 0
-      VCINP= .false.
-      GOLD= 10.
-      told=1.0D-6
-      Etold=1.0D-4
-      rmax=16
-      rmaxs=5
-      predcoef=.false.
-      idip=1
-      writexyz=.true.
-      intsoldouble=.true.
-      DIIS=.true.
-      ndiis=30
-      dgtrig=100.
-      Iexch=9
-      integ=.true.
-      DENS = .true.
-      IGRID = 2
-      IGRID2 = 2
-      timedep = 0
-      tdstep = 2.D-3
-      field=.false.
-      a0=1000.0
-      epsilon=1.D0
-      Fx=0.05
-      Fy=0.05
-      Fz=0.05
-      NBCH=10
-      propagator=1
-      tdrestart=.false.
-      writedens=.true.
-      writeforces=.false.
+      ! Defaults
       narg=command_argument_count()
+      call lio_defaults()
 
-!%% Hybrid damping-diis Variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      hybrid_converg=.false.
-      good_cut=1D-5
-      omit_bas=.false.
-
-!%% Output format Variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      style=.true.
-      allnml=.true.
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%    Effective Core Potential Variables    %%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-      ecpmode=.false.
-      tipeECP='NOT-DEFINED'
-      ZlistECP=0
-      ecptypes=0
-      cutECP=.true.
-      local_nonlocal=0
-      ecp_debug=.false.
-      ecp_full_range_int=.false.
-      verbose_ECP=0
-      FOCK_ECP_read=.false.
-      FOCK_ECP_write=.false.
-      Fulltimer_ECP=.false.
-      cut2_0=15.d0
-      cut3_0=12.d0
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -179,7 +95,6 @@ c---------------------------------------------------------------------
       if(ierr.gt.0) stop 'input error in lio namelist'
 
 
-
       inquire(file=inpcoords,exist=filexist)
       if(filexist) then
         open(unit=101,file=inpcoords,iostat=ios)
@@ -189,74 +104,30 @@ c---------------------------------------------------------------------
         stop
       endif
 
-c%%%%%%%%%%%%%%%%%%   Namelist write   %%%%%%%%%%%%%%%%%%
-c        write(*,*) natom,nsol
-      if (allnml) write(*,nml=lio)
-      if (style) call NEW_WRITE_NML(charge)
-c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-      ntatom=natom+nsol
-      ngnu=natom*ng0
-      ngdnu=natom*ngd0
-      ngDyn=ngnu
-      ngdDyn=ngdnu
-      ng3=4*ngDyn
+      ! Coordinate file needs to be read twice; first time to get Iz.
+      allocate (iz(natom), r(1,3))
+      do i=1, natom
+        read(101,*) iz(i),r(1,1:3)
+      enddo
+      deallocate (r)
 
-      ng2=5*ngDyn*(ngDyn+1)/2+3*ngdDyn*(ngdDyn+1)/2+
-     >           ngDyn+ngDyn*norbit+Ngrid
+      call lio_init(natom, Iz, sol, charge)
 
-
-c aca hay un bug para sistemas muy grandes ng2 da <0, Nick
-c      write(*,*)ng2,ngDyn,ngdDyn,norbit,Ngrid
-
-      allocate(X(ngDyn,ng3),XX(ngdDyn,ngdDyn))
-      allocate(RMM(ng2))
-
-      allocate (c(ngnu,nl),a(ngnu,nl),Nuc(ngnu),ncont(ngnu)
-     > ,cx(ngdnu,nl),ax(ngdnu,nl),Nucx(ngdnu),ncontx(ngdnu)
-     > ,cd(ngdnu,nl),ad(ngdnu,nl),Nucd(ngdnu),ncontd(ngdnu)
-     > ,indexii(ngnu),indexiid(ngdnu))
-
-      if (ecpmode) then
-         allocate (Cnorm(ngnu,nl)) ! Cnorm contains normalized coefficient to 1 of basis, diff C for  x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)
-      end if
-
-
-      allocate (r(ntatom,3),v(ntatom,3),rqm(natom,3),Em(ntatom)
-     >,Rm(ntatom),pc(ntatom),Iz(natom),af(natom*ngd0),
-     >  B(natom*ngd0,3))
-      allocate (nnat(100))
-      allocate(d(natom,natom))
-
+      ! Coordinates file is read again to get all available data.
       do i=1,natom
         read(101,*) iz(i),r(i,1:3)
         rqm(i,1:3)=r(i,1:3)
-c       write(*,*) iz(i),r(i,1:3)
       enddo
       do i=natom+1,ntatom
-        read(101,*) pc(i),r(i,1:3)   ! o es pc(i-natom)???
-c       write(*,*) pc(i),r(i,1:3)
-       enddo
-       r=r/0.529177D0
-       rqm=rqm/0.529177D0
+        read(101,*) pc(i),r(i,1:3)  
+      enddo
+      r=r/0.529177D0
+      rqm=rqm/0.529177D0
 
 
-       call g2g_init()   !initialize g2g
-
-        nqnuc=0
-       do i=1,natom
-         nqnuc=nqnuc+Iz(i)
-       enddo
-
-       nco=((nqnuc - charge)-Nunp)/2
-
-
-c       write(*,*) 'NCO=',NCO
-c       write(*,*) natom,ntatom,ngDyn,ngdDyn,ng0,ngd0
-c       write(*,*) ng2,ngDyn,ngdDyn
 c--------------------------------------------------------
-       call drive(ng2,ngDyn,ngdDyn)   !en esta rutina le pasa variables a g2g
-       call lio_init()   !initialize lio
+ 
        call liomain()       !no hace nada!!!!!!
        if (.not.allocated(Smat))    allocate(Smat(M,M))
        if (.not.allocated(RealRho)) allocate(RealRho(M,M))

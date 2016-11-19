@@ -20,11 +20,8 @@
                              Iexch, integ, DENS, IGRID, IGRID2, a0, epsilon,   &
                              cubegen_only, cube_res, cube_dens, cube_orb,      &
                              cube_sel, cube_orb_file, cube_dens_file, NUNP,    &
-                             energy_freq, style, allnml, X, XX, RMM, d, c, a,  &
-                             Nuc, ncont, cx, ax, Nucx, ncontx, cd, ad, Nucd,   &
-                             ncontd, indexii, indexiid, r, v, rqm, Em, Rm, pc, &
-                             nnat, af, B, Iz, natom, nco, ng0, ngd0, ngrid, nl,&
-                             norbit, ntatom, cube_elec, cube_elec_file
+                             energy_freq, style, allnml, cube_elec_file,       &
+                             cube_elec
       use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,     &
                              local_nonlocal, ecp_debug, ecp_full_range_int,    &
                              verbose_ECP, Cnorm, FOCK_ECP_read, FOCK_ECP_write,&
@@ -35,8 +32,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       implicit none
       integer , intent(in) :: chargein, nclatom, natomin, Izin(natomin)
-      integer              :: i, ng2, ng3, ngdnu, ngnu, ngdDyn, ngDyn, nqnuc,  &
-                              ierr, ios, charge 
+      integer              :: ierr, ios 
       logical              :: writeforces, file_exists
       character(len=20)    :: input_file
 
@@ -54,12 +50,14 @@
                      local_nonlocal, ecp_debug,ecp_full_range_int,verbose_ECP, &
                      verbose, FOCK_ECP_read, FOCK_ECP_write, Fulltimer_ECP,    &
                      cut2_0, cut3_0,                                           &
-!                    Cube variables
+!                    Cube variables.
                      cubegen_only, cube_res, cube_dens, cube_dens_file,        &
                      cube_orb, cube_sel, cube_orb_file, cube_elec,             &
                      cube_elec_file
 
+!     Initializes default variables.
       call lio_defaults()
+
 !     Checks if input file exists and writes data to namelist variables.
       input_file = 'lio.in'
       inquire(file = input_file, exist = file_exists)

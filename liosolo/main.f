@@ -22,7 +22,8 @@ c---------------------------------------------------------------------
      > Iexch,integ,dens,igrid,igrid2,timedep, tdstep, ntdstep,
      > propagator,NBCH,
      > field,a0,epsilon,exter,Fx,Fy,Fz, tdrestart, writedens,
-     > writeforces,basis_set,fitting_set,int_basis,
+     > basis_set,fitting_set,int_basis,
+     > writeforces,
 
 !%% Effective Core Potential Variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
      > ecpmode,ecptypes,tipeECP,ZlistECP,
@@ -115,6 +116,7 @@ c---------------------------------------------------------------------
       call lio_init(natom, Iz, sol, charge)
 
       ! Coordinates file is read again to get all available data.
+      rewind(101)
       do i=1,natom
         read(101,*) iz(i),r(i,1:3)
         rqm(i,1:3)=r(i,1:3)
@@ -124,7 +126,6 @@ c---------------------------------------------------------------------
       enddo
       r=r/0.529177D0
       rqm=rqm/0.529177D0
-
 
 c--------------------------------------------------------
  
@@ -174,7 +175,7 @@ c       write(*,*) dxyzqm
 
          endif
        deallocate (dxyzqm)
-       if(nsol.gt.0) deallocate(dxyzcl)
+       if(nsol.gt.0) deallocate (dxyzcl)
        endif
        call lio_finalize()
 100    format (I5,2x,f10.6,2x,f10.6,2x,f10.6)

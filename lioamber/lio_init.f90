@@ -15,19 +15,14 @@
                              Iexch, integ, DENS, IGRID, IGRID2, a0, epsilon,   &
                              cubegen_only, cube_res, cube_dens, cube_orb,      &
                              cube_sel, cube_orb_file, cube_dens_file, NUNP,    &
-                             energy_freq, style, allnml,                       &
-                             X, XX, RMM, d, c, a,                              &
-                             Nuc, ncont, cx, ax, Nucx, ncontx, cd, ad, Nucd,   &
-                             ncontd, indexii, indexiid, r, v, rqm, Em, Rm, pc, &
-                             nnat, af, B, Iz, natom, nco, ng0, ngd0, ngrid, nl,&
-                             norbit, ntatom, cube_elec, cube_elec_file
+                             energy_freq, style, allnml, writeforces,          &
+                             cube_elec, cube_elec_file
       use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,     &
                              local_nonlocal, ecp_debug, ecp_full_range_int,    &
                              verbose_ECP, Cnorm, FOCK_ECP_read, FOCK_ECP_write,&
                              Fulltimer_ECP, cut2_0, cut3_0
 
       implicit none
-      logical :: writeforces
 
 !     Names of files used for input and output.
       basis          = 'basis'       ; output             = 'output'      ;
@@ -168,7 +163,7 @@
                              cubegen_only, cube_res, cube_dens, cube_orb,      &
                              cube_sel, cube_orb_file, cube_dens_file, NUNP,    &
                              energy_freq, style, allnml, cube_elec_file,       &
-                             cube_elec
+                             cube_elec, writeforces
       use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,     &
                              local_nonlocal, ecp_debug, ecp_full_range_int,    &
                              verbose_ECP, Cnorm, FOCK_ECP_read, FOCK_ECP_write,&
@@ -177,7 +172,7 @@
       implicit none
       integer , intent(in) :: chargein, nclatom, natomin, Izin(natomin)
       integer              :: ierr, ios 
-      logical              :: writeforces, file_exists
+      logical              :: file_exists
       character(len=20)    :: input_file
 
 !                    Common LIO variables.

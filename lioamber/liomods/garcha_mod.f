@@ -28,7 +28,7 @@
       logical OPEN1
       logical dens1,integ1,sol1,free,free1, field, extern
 
-      logical tdrestart, writedens
+      logical tdrestart, writedens, writeforces
 
       logical cubegen_only,cube_dens,cube_orb,cube_elec
       integer cube_res,cube_sel

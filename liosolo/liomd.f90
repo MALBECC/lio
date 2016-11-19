@@ -14,7 +14,7 @@
 
   character(len=20)::argument,inpfile,inpbasis,inpcoords
   integer::charge
-  logical::filexist,writeforces
+  logical::filexist
   REAL*8, dimension (:,:), ALLOCATABLE   :: dxyzqm,dxyzcl
 
   namelist /lio/ natom,nsol,charge,OPEN,NMAX,Nunp,VCINP,frestartin, &

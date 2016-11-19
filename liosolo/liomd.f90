@@ -36,62 +36,9 @@
   real*8,allocatable  :: atom_mass(:)
 
  !defaults
-  basis='input'  ! name of the base file
-  basis_set='DZVP'
-  fitting_set='DZVP Coulomb Fitting'
-  int_basis=.false.
-  cubegen_only=.false.
-  cube_res=40
-  cube_dens=.false.
-  cube_dens_file='dens.cube'
-  cube_orb=.false.
-  cube_sel=0
-  cube_orb_file="orb.cube"
-  cube_elec=.false.
-  cube_elec_file="field.cube"
-  restart_freq=1
-  energy_freq=1
-  output='output'
-  fcoord='qm.xyz'
-  fmulliken='mulliken'
-  frestart='restart.out'
-  frestartin='restart.in'
-  verbose=.false.
-  OPEN=.false.
-  NMAX= 100
-  NUNP= 0
-  VCINP= .false.
-  GOLD= 10.
-  told=1.0D-6
-  rmax=16
-  rmaxs=5
-  predcoef=.false.
-  idip=1
-  writexyz=.true.
-  intsoldouble=.true.
-  DIIS=.true.
-  ndiis=30
-  dgtrig=100.
-  Iexch=9
-  integ=.true.
-  DENS = .true.
-  IGRID = 2
-  IGRID2 = 2
-  timedep = 0
-  tdstep = 2.D-3
-  field=.false.
-  a0=1000.0
-  epsilon=1.D0
-  Fx=0.05
-  Fy=0.05
-  Fz=0.05
-  NBCH=10
-  propagator=1
-  tdrestart=.false.
-  writedens=.true.
-  writeforces=.false.
+  call lio_defaults()
   narg=command_argument_count()
-
+  
   do ii=1, narg
     call get_command_argument(ii,argument)
     select case(adjustl(argument))
@@ -135,30 +82,15 @@
     write(*,*) 'input file ',adjustl(inpcoords),' not found'
     stop
   endif
-  write(*,nml=lio)
 
-  ntatom=natom+nsol
-  ngnu=natom*ng0
-  ngdnu=natom*ngd0
-  ngDyn=ngnu
-  ngdDyn=ngdnu
-  ng3=4*ngDyn
-  ng2=5*ngDyn*(ngDyn+1)/2+3*ngdDyn*(ngdDyn+1)/2+&
-        ngDyn+ngDyn*norbit+Ngrid
+      allocate (iz(natom), r(1,3))
+      do i=1, natom
+        read(101,*) iz(i),r(1,1:3)
+      enddo
+      deallocate (r)
 
-  allocate(X(ngDyn,ng3),XX(ngdDyn,ngdDyn))
-  allocate(RMM(ng2))
+      call lio_init(natom, Iz, nsol, charge)
 
-  allocate (c(ngnu,nl),a(ngnu,nl),Nuc(ngnu),ncont(ngnu) &
-   ,cx(ngdnu,nl),ax(ngdnu,nl),Nucx(ngdnu),ncontx(ngdnu) &
-  ,cd(ngdnu,nl),ad(ngdnu,nl),Nucd(ngdnu),ncontd(ngdnu) &
-  ,indexii(ngnu),indexiid(ngdnu))
-
-  allocate (r(ntatom,3),v(ntatom,3),rqm(natom,3),Em(ntatom) &
-  ,Rm(ntatom),pc(ntatom),Iz(natom),af(natom*ngd0), &
-   B(natom*ngd0,3))
-  allocate (nnat(100))
-  allocate(d(natom,natom))
 
   do ii=1,natom
     read(101,*) iz(ii),r(ii,1:3)
@@ -170,17 +102,7 @@
    r=r/0.529177D0
    rqm=rqm/0.529177D0
 
-   call g2g_init()   !initialize g2g
 
-    nqnuc=0
-   do ii=1,natom
-     nqnuc=nqnuc+Iz(ii)
-   enddo
-
-  nco=((nqnuc - charge)-Nunp)/2
-
-  call drive(ng2,ngDyn,ngdDyn)
-!  call lio_init()   !initialize lio
   call liomain()
 
 ! ALLOCATION AND INITIALIZATION

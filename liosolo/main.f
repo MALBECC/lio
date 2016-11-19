@@ -113,7 +113,7 @@ c---------------------------------------------------------------------
       enddo
       deallocate (r)
 
-      call lio_init(natom, Iz, sol, charge)
+      call lio_init(natom, Iz, nsol, charge)
 
       ! Coordinates file is read again to get all available data.
       rewind(101)

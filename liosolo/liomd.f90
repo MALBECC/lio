@@ -83,25 +83,20 @@
     stop
   endif
 
-      allocate (iz(natom), r(1,3))
-      do i=1, natom
-        read(101,*) iz(i),r(1,1:3)
+      ! Reads coordinates file.
+      ntatom = natom + nsol
+      allocate (iz(natom), r(ntatom,3), rqm(natom,3), pc(ntatom))
+      do i=1,natom
+        read(101,*) iz(i),r(i,1:3)
+        rqm(i,1:3)=r(i,1:3)
       enddo
-      deallocate (r)
+      do i=natom+1,ntatom
+        read(101,*) pc(i),r(i,1:3)
+      enddo
+      r=r/0.529177D0
+      rqm=rqm/0.529177D0
 
-      call lio_init(natom, Iz, nsol, charge)
-
-
-  do ii=1,natom
-    read(101,*) iz(ii),r(ii,1:3)
-    rqm(ii,1:3)=r(ii,1:3)
-  enddo
-  do ii=natom+1,ntatom
-    read(101,*) pc(ii),r(ii,1:3)   ! o es pc(i-natom)???
-   enddo
-   r=r/0.529177D0
-   rqm=rqm/0.529177D0
-
+      call lio_init(natom, Iz, nsol, charge, 0)
 
   call liomain()
 

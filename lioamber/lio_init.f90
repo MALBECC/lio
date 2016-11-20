@@ -95,7 +95,7 @@
 !%% LIO_INIT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Subroutine lio_defaults gives default values to LIO runtime options.         !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-      subroutine lio_init(natomin, Izin, nclatom, charge)
+      subroutine lio_init(natomin, Izin, nclatom, charge, callfrom)
 
       use garcha_mod, only : idip, nunp, X, XX, RMM, d, c, a, Nuc, ncont, cx,  &
                              ax, Nucx, ncontx, cd, ad, Nucd, ncontd, indexii,  &
@@ -105,7 +105,7 @@
       use ECP_mod,    only : Cnorm, ecpmode
 
       implicit none
-      integer , intent(in) :: charge, nclatom, natomin, Izin(natomin)
+      integer , intent(in) :: charge, nclatom, natomin, Izin(natomin), callfrom
       integer              :: i, ng2, ng3, ngdnu, ngnu, ngdDyn, ngDyn, nqnuc,  &
                               ierr, ios
 !     call g2g_timer_start('lio_init')
@@ -117,21 +117,24 @@
 ! ngdDyn : n° of atoms times the n° of auxiliary functions.                    !
 ! Ngrid  : n° of grid points (LS-SCF part).                                    !
 ! For large systems, ng2 may result in <0 due to overflow.                     !
-      Iz     = Izin       ;
-      natom  = natomin    ;  ntatom = natom + nclatom  ;
+      if (callfrom.eq.1) then
+          natom  = natomin          ;  Iz = Izin  ;
+          ntatom = natom + nclatom  ;
+          allocate(r(ntatom,3), rqm(natom,3), pc(ntatom))
+      endif
+     
       ngnu   = natom*ng0  ;  ngdnu  = natom*ngd0       ;
       ngDyn  = ngnu       ;  ngdDyn = ngdnu            ;
       ng2    = 5*ngDyn*(ngDyn+1)/2 + 3*ngdDyn*(ngdDyn+1)/2 + ngDyn +           &
                ngDyn*norbit + Ngrid
       ng3    = 4*ngDyn
 
-      allocate(X(ngDyn,ng3) , XX(ngdDyn,ngdDyn), RMM(ng2)   , d(natom, natom), &
-               c(ngnu,nl)   , a(ngnu,nl)       , Nuc(ngnu)  , ncont(ngnu)    , &
-               cx(ngdnu,nl) , ax(ngdnu,nl)     , Nucx(ngdnu), ncontx(ngdnu)  , &
-               cd(ngdnu,nl) , ad(ngdnu,nl)     , Nucd(ngdnu), ncontd(ngdnu)  , &
-               indexii(ngnu), indexiid(ngdnu)  , r(ntatom,3), v(ntatom,3)    , &
-               rqm(natom,3) , Em(ntatom)       , Rm(ntatom) , pc(ntatom)     , &
-               nnat(ntatom) , af(natom*ngd0)   , B(natom*ngd0,3))
+      allocate(X(ngDyn,ng3) , XX(ngdDyn,ngdDyn), RMM(ng2)    , d(natom, natom),&
+               c(ngnu,nl)   , a(ngnu,nl)       , Nuc(ngnu)   , ncont(ngnu)    ,&
+               cx(ngdnu,nl) , ax(ngdnu,nl)     , Nucx(ngdnu) , ncontx(ngdnu)  ,&
+               cd(ngdnu,nl) , ad(ngdnu,nl)     , Nucd(ngdnu) , ncontd(ngdnu)  ,&
+               indexii(ngnu), indexiid(ngdnu)  , v(ntatom,3) , Em(ntatom)     ,&
+               Rm(ntatom)   , af(natom*ngd0)   , nnat(ntatom), B(natom*ngd0,3))
 
       ! Cnorm contains normalized coefficients of basis.
       ! Differentiate C for x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)
@@ -224,8 +227,8 @@
           write(*,*) 'Inputfile lio.in not found. Using defaults.'
       endif
 
-!     Initializes LIO.
-      call lio_init(natomin, Izin, nclatom, chargein)
+!     Initializes LIO. The last argument indicates LIO is not being used alone.
+      call lio_init(natomin, Izin, nclatom, chargein, 1)
 
       return
       end subroutine init_lio_gromacs
@@ -324,7 +327,7 @@
       propagator     = propagator_i   ; writedens     = writedens_i    ;
       tdrestart      = tdrestart_i
 
-!     Initializes LIO.
-      call lio_init(natomin, Izin, nclatom, charge) 
+!     Initializes LIO. The last argument indicates LIO is not being used alone.
+      call lio_init(natomin, Izin, nclatom, charge, 1) 
       end subroutine init_lio_amber
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

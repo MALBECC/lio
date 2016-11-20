@@ -13,7 +13,7 @@ c---------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
 
       character(len=20)::argument,inpfile,inpbasis,inpcoords
-      integer::charge
+      integer::charge, initcall
       logical::filexist
       REAL*8, dimension (:,:), ALLOCATABLE   :: dxyzqm,dxyzcl
       namelist /lio/ natom,nsol,charge,OPEN,NMAX,Nunp,VCINP,frestartin,
@@ -53,7 +53,7 @@ c---------------------------------------------------------------------
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-	call LIO_LOGO2()
+      call LIO_LOGO2()
 
       do i=1, narg
         call get_command_argument(i,argument)
@@ -106,26 +106,22 @@ c---------------------------------------------------------------------
       endif
 
 
-      ! Coordinate file needs to be read twice; first time to get Iz.
-      allocate (iz(natom), r(1,3))
-      do i=1, natom
-        read(101,*) iz(i),r(1,1:3)
-      enddo
-      deallocate (r)
-
-      call lio_init(natom, Iz, nsol, charge)
-
-      ! Coordinates file is read again to get all available data.
-      rewind(101)
+      ! Reads coordinates file.
+      ntatom = natom + nsol
+      allocate (iz(natom), r(ntatom,3), rqm(natom,3), pc(ntatom))
       do i=1,natom
         read(101,*) iz(i),r(i,1:3)
         rqm(i,1:3)=r(i,1:3)
       enddo
       do i=natom+1,ntatom
-        read(101,*) pc(i),r(i,1:3)  
+        read(101,*) pc(i),r(i,1:3)
       enddo
       r=r/0.529177D0
       rqm=rqm/0.529177D0
+ 
+      ! The last argument indicates LIO is being used alone.
+      call lio_init(natom, Iz, nsol, charge, 0)
+
 
 c--------------------------------------------------------
  

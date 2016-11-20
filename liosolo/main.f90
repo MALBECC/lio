@@ -68,7 +68,7 @@
           endselect
       enddo
 
-      ! Checks input files' existance.
+      ! Checks input files' existence.
       call g2g_timer_sum_start("Total")
 
       inquire(file=inpfile,exist=filexist)

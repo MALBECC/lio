@@ -87,7 +87,7 @@
       r=r/0.529177D0
       rqm=rqm/0.529177D0
 
-      call lio_init(natom, Iz, nsol, charge, 0)
+      call init_lio_common(natom, Iz, nsol, charge, 0)
 
       call liomain()
 

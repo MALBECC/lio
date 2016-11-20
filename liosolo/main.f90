@@ -103,7 +103,7 @@
       rqm= rqm / 0.529177D0
   
       ! The last argument indicates LIO is being used alone.
-      call lio_init(natom, Iz, nsol, charge, 0)
+      call init_lio_common(natom, Iz, nsol, charge, 0)
 
 
  

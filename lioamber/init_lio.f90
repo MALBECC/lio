@@ -4,7 +4,7 @@
 ! default values for options, wether LIO is run alone or in tantem with AMBER  !
 ! or GROMACS software packages. Routines currently included are:               !
 ! * lio_defaults     (called from the last two routines and liomd/liosolo)     !
-! * lio_init         (called from the last two routines and liomd/liosolo)     !
+! * init_lio_common  (called from the last two routines and liomd/liosolo)     !
 ! * init_lio_gromacs (calls the first two routines when running with GROMACS)  !
 ! * init_lio_amber   (calls the first two routines when running with AMBER)    !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -95,7 +95,7 @@
 !%% LIO_INIT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Subroutine lio_defaults gives default values to LIO runtime options.         !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-      subroutine lio_init(natomin, Izin, nclatom, charge, callfrom)
+      subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
 
       use garcha_mod, only : idip, nunp, X, XX, RMM, d, c, a, Nuc, ncont, cx,  &
                              ax, Nucx, ncontx, cd, ad, Nucd, ncontd, indexii,  &
@@ -157,7 +157,7 @@
 
 !     call g2g_timer_stop('lio_init')
       return 
-      end subroutine lio_init
+      end subroutine init_lio_common
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -228,7 +228,7 @@
       endif
 
 !     Initializes LIO. The last argument indicates LIO is not being used alone.
-      call lio_init(natomin, Izin, nclatom, chargein, 1)
+      call init_lio_common(natomin, Izin, nclatom, chargein, 1)
 
       return
       end subroutine init_lio_gromacs
@@ -328,6 +328,6 @@
       tdrestart      = tdrestart_i
 
 !     Initializes LIO. The last argument indicates LIO is not being used alone.
-      call lio_init(natomin, Izin, nclatom, charge, 1) 
+      call init_lio_common(natomin, Izin, nclatom, charge, 1) 
       end subroutine init_lio_amber
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

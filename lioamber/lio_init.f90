@@ -189,7 +189,7 @@
                              Fulltimer_ECP, cut2_0, cut3_0
 
       implicit none
-      integer , intent(in) :: chargein, nclatom, natomin, Izin(natomin)
+      integer,  intent(in) :: chargein, nclatom, natomin, Izin(natomin)
       integer              :: ierr, ios 
       logical              :: file_exists
       character(len=20)    :: input_file
@@ -198,7 +198,7 @@
       namelist /lio/ OPEN, NMAX, Nunp, VCINP, frestartin, GOLD, told, Etold,   &
                      rmax, rmaxs, predcoef, idip, writexyz, intsoldouble, DIIS,&
                      ndiis, dgtrig, Iexch, integ, dens, igrid, igrid2,         &
-                     hybrid_converg, good_cut, style, allnml,                  &
+                     hybrid_converg, good_cut, style, allnml, frestart,        &
 !                    TD-DFT Variables.
                      timedep, tdstep, ntdstep, propagator, NBCH, field, a0,    &
                      epsilon, exter, Fx, Fy, Fz, tdrestart, writedens,         &

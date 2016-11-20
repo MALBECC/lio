@@ -8,7 +8,7 @@
 #endif
   implicit none
   real*8  :: escf,dipxyz(3)
-  integer :: ii,kk
+  integer :: ii,kk, i
   integer :: narg,nqnuc,ios
   integer :: ng2,ng3,ngdDyn,ngdnu,ngDyn,ngnu
 

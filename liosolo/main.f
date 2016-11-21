@@ -195,11 +195,25 @@ c        write(*,*) natom,nsol
       if (style) call NEW_WRITE_NML(charge)
 c%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccca
+c esto esta cambiado de lugar para calcular el tamaño de algunas variables
+      allocate (Iz(natom), r(natom,3), rqm(natom,3))
+      do i=1,natom
+        read(101,*) iz(i),r(i,1:3)
+        rqm(i,1:3)=r(i,1:3)
+c       write(*,*) iz(i),r(i,1:3)
+      enddo
+      call dymdrive(ngDyn,ngdDyn)
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       ntatom=natom+nsol
-      ngnu=natom*ng0
-      ngdnu=natom*ngd0
-      ngDyn=ngnu
-      ngdDyn=ngdnu
+
+
+      
+!      ngnu=natom*ng0
+!      ngdnu=natom*ngd0
+!      ngDyn=ngnu
+!      ngdDyn=ngdnu
       ng3=4*ngDyn
 
       ng2=5*ngDyn*(ngDyn+1)/2+3*ngdDyn*(ngdDyn+1)/2+
@@ -212,27 +226,31 @@ c      write(*,*)ng2,ngDyn,ngdDyn,norbit,Ngrid
       allocate(X(ngDyn,ng3),XX(ngdDyn,ngdDyn))
       allocate(RMM(ng2))
 
-      allocate (c(ngnu,nl),a(ngnu,nl),Nuc(ngnu),ncont(ngnu)
-     > ,cx(ngdnu,nl),ax(ngdnu,nl),Nucx(ngdnu),ncontx(ngdnu)
-     > ,cd(ngdnu,nl),ad(ngdnu,nl),Nucd(ngdnu),ncontd(ngdnu)
-     > ,indexii(ngnu),indexiid(ngdnu))
+      allocate (c(ngDyn,nl),a(ngDyn,nl),Nuc(ngDyn),ncont(ngDyn)
+     > ,cx(ngdDyn,nl),ax(ngdDyn,nl),Nucx(ngdDyn),ncontx(ngdDyn)
+     > ,cd(ngdDyn,nl),ad(ngdDyn,nl),Nucd(ngdDyn),ncontd(ngdDyn)
+     > ,indexii(ngDyn),indexiid(ngdDyn))
 
       if (ecpmode) then
-         allocate (Cnorm(ngnu,nl)) ! Cnorm contains normalized coefficient to 1 of basis, diff C for  x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)
+         allocate (Cnorm(ngDyn,nl)) ! Cnorm contains normalized coefficient to 1 of basis, diff C for  x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)
       end if
 
 
-      allocate (r(ntatom,3),v(ntatom,3),rqm(natom,3),Em(ntatom)
-     >,Rm(ntatom),pc(ntatom),Iz(natom),af(natom*ngd0),
+      allocate (v(ntatom,3),Em(ntatom)
+     >,Rm(ntatom),pc(ntatom),af(natom*ngd0),
      >  B(natom*ngd0,3))
       allocate (nnat(100))
       allocate(d(natom,natom))
 
-      do i=1,natom
-        read(101,*) iz(i),r(i,1:3)
-        rqm(i,1:3)=r(i,1:3)
+c esto lo puse mas arriba para dimensionar variables, Nick
+c      do i=1,natom
+c        read(101,*) iz(i),r(i,1:3)
+c        rqm(i,1:3)=r(i,1:3)
 c       write(*,*) iz(i),r(i,1:3)
-      enddo
+c      enddo
+
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       do i=natom+1,ntatom
         read(101,*) pc(i),r(i,1:3)   ! o es pc(i-natom)???
 c       write(*,*) pc(i),r(i,1:3)

@@ -24,17 +24,6 @@ c
       character inp_char
       CHARACTER*3 simb
 
-c      namelist /scfinp/ OPEN,NMAX,Nunp,ATRHO,VCINP,DIRECT,
-c     >EXTR,SHFT,SHI,IDAMP,GOLD,told,write1,MEMO,rmax,rmaxs,predcoef,
-c     >idip,writexyz,intsoldouble,watermod,DIIS,ndiis,dgtrig
-c      namelist /EXCH/ Iexch,integ,dens,igrid,igrid2
-c      namelist /COULx/ SVD,iconst
-c      namelist /GEO/ FTOL,imin,ibrent,delta,inmod,thermo,TEMP,sigma
-c      namelist /Propx/ ipop,ispin,icharge,popf,parsearch!,map
-c      namelist /BSSE1/ nco1,nunp1,open1,ighost1
-c      namelist /fieldx/ a0,epsilon,exter,Fx,Fy,Fz
-c      namelist /solx/ Nsol,natsol,solv,free
-c      namelist /rfield/ F
 c ------------------
 c parameters for 2 basis sets, normal, density 
 c ng maximum # of contracted functions , nl maximum # of primitives in
@@ -57,6 +46,7 @@ c
 c NORM true , expansion in normalized gaussians, so normalization factor
 c included in coefficients
 c default most stable isotopes, for mass asignation
+
 
       do i = 1,54
         isotop(i) = 1
@@ -472,10 +462,14 @@ c signals if a basis set was not used
         used=.false.
         atmint=100000.
         read(1,*) iatom,nraw,ncon
-        if (nraw.gt.nng) then
+!         nng=1000
+        if (nraw.gt.max_func) then         !aca hay algo raro, Nick usa nraw!!!!
           write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
           write(*,*) "This basis set contains an element with more",
      > " total primitives than your current maximum:",nng
+
+	write(*,*) "iatom vale ", iatom
+
           write(*,*) "Set nng in lioamber/liomods/garcha_mod.f to",
      > " a higher number, at least",nraw,"and recompile"
           write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
@@ -532,7 +526,7 @@ c  cosas que puso nano para "atomos cerca"
               if (lt(kkk).eq.2) nnd(j)=nnd(j)+Num(lt(kkk))
             enddo
 
-c      write(*,*) 'nns y etc',nns(j),nnp(j),nnd(j),nnps(j)
+c      write(*,*|) 'nns y etc',nns(j),nnp(j),nnd(j),nnps(j)
 c     > ,nnpp(j),nnpd(j)
 
 c =====>>>>>>  M stores # of contractions  <<<<<<===========
@@ -1040,9 +1034,7 @@ c
 
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-
-        if (ecpmode) then
-c agregadas por Nick para lectura de ECP
+        if (ecpmode) then !agregadas por Nick para lectura de ECP
            call lecturaECP()   !lee parametros
            CALL allocate_ECP() !allocatea la matriz de Fock de p-potenciales y el vector con los terminos de 1 electron sin corregir
            CALL ReasignZ() !reasigna las cargas de los nucleos removiendo la carga del core
@@ -1410,6 +1402,7 @@ c---------------------------------------------------
 c       allocate(old1(MM))
 c       allocate(old2(MM))
 c       allocate(old3(MM))
+
 
  100  format (A8)
  200  format ('basis set corresponding to Z ',I3,' was not used')

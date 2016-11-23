@@ -127,7 +127,7 @@
  
 
 
-      call dymdrive(ngDyn,ngdDyn) !found dimention for impoortant arrays
+      call DIMdrive(ngDyn,ngdDyn) !found dimention for impoortant arrays
 
 ! falta cambiar ngnu y ngdnu
   

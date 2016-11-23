@@ -17,10 +17,12 @@
       REAL*8 , intent(in) :: qmcoords(3*natom), clcoords(3*nsolin), &
                              clcharge(nsolin )
       REAL*8  :: dipxyz(3), E
-      integer :: ngDyn, i, j, n, nsolin
+      integer :: i, j, n, nsolin
+!     integer :: ngDyn
 
       dipxyz = 0d0          ; nsol   = nsolin    ;
-      ntatom = nsol + natom ; ngDyn  = natom*ng0 ;
+      ntatom = nsol + natom ; 
+!     ngDyn  = natom*ng0
 
       call g2g_timer_sum_start("Total")
 

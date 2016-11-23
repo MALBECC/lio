@@ -154,5 +154,5 @@
        call lio_finalize()
 
 100    format (I5,2x,f10.6,2x,f10.6,2x,f10.6)
-       end program
+       end program liosolo
 

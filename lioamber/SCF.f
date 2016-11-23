@@ -18,7 +18,7 @@
       use cublasmath
 #endif
 !c      use qmmm_module, only : qmmm_struct, qmmm_nml
-!c
+!c    hola
       implicit real*8 (a-h,o-z)
       integer:: l
        dimension q(natom),work(1000),IWORK(1000)

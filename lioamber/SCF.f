@@ -1517,6 +1517,7 @@ c
 
       call g2g_timer_sum_stop('energy-weighted density')
 
+
       if (MOD(npas,energy_freq).eq.0) then
 c
 c      if (nopt.eq.1) then
@@ -1541,7 +1542,6 @@ c
 !----------------------------------------------------------!
 
 
-
        call g2g_timer_sum_start('Mulliken')
 ! MULLIKEN POPULATION ANALYSIS (FFR - Simplified)
 !--------------------------------------------------------------------!
@@ -1551,6 +1551,7 @@ c
        call spunpack('L',M,RMM(M1),RealRho)
        call fixrho(M,RealRho)
        call mulliken_calc(natom,M,RealRho,Smat,Nuc,Iz,q)
+
 
        if (ecpmode) then
 !Modification for Effective Core Potential, Nick
@@ -1569,6 +1570,7 @@ c
 !       call lowdinpop(M,natom,RealRho,sqsm,Nuc,q)
 !       call mulliken_write(85,natom,Iz,q)
        endif
+
 
 c
 c        endif
@@ -1620,6 +1622,7 @@ c writes down MO coefficients and orbital energies
         close(29)
       endif
 
+
       if (cube_dens.or.cube_orb.or.cube_elec) then
         call g2g_timer_sum_start('cube gen')
         call cubegen(M15,Xnano)
@@ -1662,6 +1665,8 @@ c       E=E*627.509391D0
       call CUBLAS_FREE(devPtrY)
       call CUBLAS_SHUTDOWN
 #endif
+
+
 !
 !--------------------------------------------------------------------!
       call g2g_timer_stop('SCF')

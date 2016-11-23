@@ -105,7 +105,6 @@
       ! The last argument indicates LIO is being used alone.
       call init_lio_common(natom, Iz, nsol, charge, 0)
 
-
  
       call liomain()       !no hace nada!!!!!!
       if (.not.allocated(Smat))    allocate(Smat(M,M))

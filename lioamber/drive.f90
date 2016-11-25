@@ -33,7 +33,7 @@
       CHARACTER :: inp_char
       CHARACTER*3 :: simb
 
-      REAL*8, INTENT(IN) :: ng2, ngDyn, ngdDyn
+      INTEGER, INTENT(IN) :: ng2, ngDyn, ngdDyn
       REAL*8 :: atmint, iatom, iprob
       REAL*8 :: xnorm
       INTEGER :: NCOa, NCOb, ncon, nraw, NAO, NGF

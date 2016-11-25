@@ -8,6 +8,6 @@
 !   integer, intent(out), optional :: info
 
     matc = matmul( mata, matb ) - matmul( matb, mata )
-
+    info=0
 ! end function matmult_xx
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

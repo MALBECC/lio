@@ -43,6 +43,9 @@
 
       ! Calls default values for variables.
       call lio_defaults()
+
+	write(*,*) "en lio editado"
+
  
       ! Reads command line arguments for LIO.
       narg=command_argument_count()

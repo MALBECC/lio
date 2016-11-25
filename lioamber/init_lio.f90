@@ -128,7 +128,6 @@
 
 
       call DIMdrive(ngDyn,ngdDyn) !found dimention for impoortant arrays
-
 ! falta cambiar ngnu y ngdnu
   
 !      ngnu   = natom*ng0  ;  ngdnu  = natom*ngd0       ;
@@ -162,6 +161,7 @@
 !     Prints LIO logo to output and options chosen for the run. 
       if (style) call LIO_LOGO()
       if (style) call NEW_WRITE_NML(charge)
+
       call drive(ng2, ngDyn, ngdDyn)
 
 !     call g2g_timer_stop('lio_init')

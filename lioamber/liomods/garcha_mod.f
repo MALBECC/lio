@@ -45,7 +45,7 @@
 
       real*8, dimension (:,:), ALLOCATABLE :: r,v,rqm,d
       real*8, dimension (:), ALLOCATABLE ::  Em, Rm, pc
-       integer, dimension (:), ALLOCATABLE :: Iz, nnat
+      integer, dimension (:), ALLOCATABLE :: Iz, nnat
 
       dimension isotop(54)!,Pm(nt)
       dimension Rm2(0:54), STR(880,0:21), FAC(0:16)
@@ -57,7 +57,7 @@ c ncf, lt,at,ct parameters for atomic basis sets
        integer iconst1,idip1,ipop1,ispin1,
      > icharge1,Nsol1,natsol1,Ll(3)
       
-        real*8, dimension (:), ALLOCATABLE :: af
+       real*8, dimension (:), ALLOCATABLE :: af
        real*8, dimension (:,:), ALLOCATABLE :: c,a,cx,ax,cd,ad,B
        integer, dimension (:), ALLOCATABLE :: Nuc,ncont,Nucx,ncontx,Nucd
      >  ,ncontd

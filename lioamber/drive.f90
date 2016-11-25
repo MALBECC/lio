@@ -9,9 +9,21 @@
 !------------------------------------------------------------------------------!
 
       SUBROUTINE drive(ng2,ngDyn,ngdDyn)
-      USE garcha_mod
+      USE garcha_mod, ONLY : a,c, isotop, basis, done, done_fit, natomc, nnps, &
+      nnpp, nnpd, nns, nnp, nnd, atmin, jatc, ncf, lt, at, ct, nnat, nshell,   &
+      nuc, ncont, nlb, nshelld, cd, ad, Nucd, ncontd, nld, Nucx, indexii,      &
+      ncontx, cx, ax, indexiid, X, XX, RMM, rhoalpha,rhobeta, af, oc2, ANG,    &
+      ATRHO, BSSE, date, basis_set, fitting_set, dens, e_, e_2, e3, exists,    &
+      NORM, fcoord, fmulliken, natom, frestart, M, FAC, GRAD, Iexch, int_basis,&
+      nsteps, max_func, integ, frestartin, MEMO, Md, NCO, nng, npas, Nr, popf, &
+      used, STR, Scf1, verbose, omit_bas, Nr2, primera, wang, wang2, wang3,    &
+      VCINP, OPEN, OPEN1, SHFT, sol, whatis, Prop, TMP1, TMP2, Num, Iz, pi,    &
+      Rm2, title, rqm, rmax, watermod, write1, OCC, ATCOEF, Nunp, nl, nt, ng,  &
+      ngd
       USE ECP_mod, ONLY : ecpmode, asignacion
 !      implicit real*8 (a-h,o-z)
+
+!quiza saque alguna variable demas
 
       IMPLICIT NONE
       LOGICAL :: Exx, parsearch, basis_check
@@ -58,33 +70,31 @@
         isotop(i) = 1
       enddo
 
-      ngeo=0
       MEMO=.true.
 !      iconst=0
-      idip=1
+!      idip=1
 !      ispin=1
 !      ipop=1
 !      icharge=0
       write1=.false.
       NORM=.true.
-      SVD=.false.
+!      SVD=.false.
       title='               '
       nopt=0
-      Nang=50
-      DIRECT=.true.
+!      Nang=50
+!      DIRECT=.true.
       ATRHO=.false.
       SHFT=.false.
       ANG=.false.
 !      SHI=1.D0
-      EXTR=.false.
+!      EXTR=.false.
 !      istart=0
-      SVD=.false.
+!      SVD=.false.
       Exx=.true.
-      Coul=.false.
+!      Coul=.false.
       Scf1=.true.
       Prop=.false.
 !      iforce=0
-      ngeo=0
 !      inmod = 0
 !      imin=0
       GRAD=.true.
@@ -99,12 +109,12 @@
       nsteps=10
 !      Nscale=20000
       sol=.false.
-      free=.false.
+!      free=.false.
       primera=.true.
       parsearch=.false.
       watermod=0
-      noconverge=0
-      converge=0
+!      noconverge=0
+!      converge=0
 
 !c
 !c calls generator of table for incomplete gamma functions
@@ -985,7 +995,7 @@
 !c      NCO2=NCO
 !      Nunp2=Nunp
 !c
-      idip1=idip
+!      idip1=idip
 !      ipop1=ipop
 !      icharge1=icharge
 !      ispin1=ispin

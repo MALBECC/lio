@@ -43,6 +43,9 @@
 
       ! Calls default values for variables.
       call lio_defaults()
+
+	write(*,*) "en lio editado"
+
  
       ! Reads command line arguments for LIO.
       narg=command_argument_count()
@@ -105,7 +108,6 @@
       ! The last argument indicates LIO is being used alone.
       call init_lio_common(natom, Iz, nsol, charge, 0)
 
-
  
       call liomain()       !no hace nada!!!!!!
       if (.not.allocated(Smat))    allocate(Smat(M,M))
@@ -154,5 +156,5 @@
        call lio_finalize()
 
 100    format (I5,2x,f10.6,2x,f10.6,2x,f10.6)
-       end program
+       end program liosolo
 

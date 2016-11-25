@@ -69,7 +69,7 @@
 
 !     Write options and Restart options.
       verbose        = .false.       ; writexyz           = .true.        ;
-      writedens      = .false.       ; frestart           = 'restart.out' ;
+      writedens      = .false.       ; frestart           ='restart.out'  ;
       VCINP          = .false.       ; frestartin         = 'restart.in'  ;
       restart_freq   = 1             ; writeforces        = .false.       ;
 
@@ -106,8 +106,10 @@
 
       implicit none
       integer , intent(in) :: charge, nclatom, natomin, Izin(natomin), callfrom
-      integer              :: i, ng2, ng3, ngdnu, ngnu, ngdDyn, ngDyn, nqnuc,  &
-                              ierr, ios
+      integer              :: i, ng2, ng3, ngdDyn, ngDyn, nqnuc, ierr, ios
+!      integer              :: i, ng2, ng3, ngdnu, ngnu, ngdDyn, ngDyn, nqnuc,  &
+!                              ierr, ios
+
 !     call g2g_timer_start('lio_init')
 
 ! Some important values are: 
@@ -122,23 +124,29 @@
           ntatom = natom + nclatom  ;
           allocate(r(ntatom,3), rqm(natom,3), pc(ntatom))
       endif
-     
-      ngnu   = natom*ng0  ;  ngdnu  = natom*ngd0       ;
-      ngDyn  = ngnu       ;  ngdDyn = ngdnu            ;
+ 
+
+
+      call DIMdrive(ngDyn,ngdDyn) !found dimention for impoortant arrays
+! falta cambiar ngnu y ngdnu
+  
+!      ngnu   = natom*ng0  ;  ngdnu  = natom*ngd0       ;
+!      ngDyn  = ngnu       ;  ngdDyn = ngdnu            ;
+
       ng2    = 5*ngDyn*(ngDyn+1)/2 + 3*ngdDyn*(ngdDyn+1)/2 + ngDyn +           &
                ngDyn*norbit + Ngrid
       ng3    = 4*ngDyn
 
-      allocate(X(ngDyn,ng3) , XX(ngdDyn,ngdDyn), RMM(ng2)    , d(natom, natom),&
-               c(ngnu,nl)   , a(ngnu,nl)       , Nuc(ngnu)   , ncont(ngnu)    ,&
-               cx(ngdnu,nl) , ax(ngdnu,nl)     , Nucx(ngdnu) , ncontx(ngdnu)  ,&
-               cd(ngdnu,nl) , ad(ngdnu,nl)     , Nucd(ngdnu) , ncontd(ngdnu)  ,&
-               indexii(ngnu), indexiid(ngdnu)  , v(ntatom,3) , Em(ntatom)     ,&
-               Rm(ntatom)   , af(natom*ngd0)   , nnat(ntatom), B(natom*ngd0,3))
+      allocate(X(ngDyn,ng3)  , XX(ngdDyn,ngdDyn) , RMM(ng2)    , d(natom, natom), &
+               c(ngDyn,nl)   , a(ngDyn,nl)       , Nuc(ngDyn)  , ncont(ngDyn)   , &
+               cx(ngdDyn,nl) , ax(ngdDyn,nl)     , Nucx(ngdDyn), ncontx(ngdDyn) , &
+               cd(ngdDyn,nl) , ad(ngdDyn,nl)     , Nucd(ngdDyn), ncontd(ngdDyn) , &
+               indexii(ngDyn), indexiid(ngdDyn)  , v(ntatom,3) , Em(ntatom)     , &
+               Rm(ntatom)    , af(ngdDyn)         , nnat(ntatom), B(ngdDyn,3))
 
       ! Cnorm contains normalized coefficients of basis.
       ! Differentiate C for x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)
-      if (ecpmode) allocate (Cnorm(ngnu,nl)) 
+      if (ecpmode) allocate (Cnorm(ngDyn,nl)) 
 
       call g2g_init()
       nqnuc = 0
@@ -153,6 +161,7 @@
 !     Prints LIO logo to output and options chosen for the run. 
       if (style) call LIO_LOGO()
       if (style) call NEW_WRITE_NML(charge)
+
       call drive(ng2, ngDyn, ngdDyn)
 
 !     call g2g_timer_stop('lio_init')

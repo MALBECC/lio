@@ -10,3 +10,5 @@ fi
 
 $LIOBIN -i agua.in -b basis -c agua.xyz -v > $SALIDA
 
+
+tail $SALIDA

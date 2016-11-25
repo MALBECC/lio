@@ -10,7 +10,7 @@
      > converge,ndiis,NGEO,nang,timedep,ntdstep,propagator,NBCH 
       integer restart_freq, energy_freq
       real*8 GOLD, TOLD, qmmmcut, dgtrig
-      parameter (nng=100)
+!      parameter (nng=100)
       character*65 title
       character*20 basis,whatis,stdbas
       character*40 basis_set, fitting_set
@@ -38,7 +38,6 @@
 
       dimension OCC(40),oc2(400),ATCOEF(100*ng0),ighost(ntq),
      > ighost1(ntq)
-      dimension ncf(nng),lt(nng)
       real*8 e_(50,3),wang(50),e_2(116,3),wang2(116),e3(194,3), ! intg1 e intg2
      > wang3(194)                                               !
       integer Nr(0:54),Nr2(0:54)
@@ -46,19 +45,19 @@
 
       real*8, dimension (:,:), ALLOCATABLE :: r,v,rqm,d
       real*8, dimension (:), ALLOCATABLE ::  Em, Rm, pc
-       integer, dimension (:), ALLOCATABLE :: Iz, nnat
+      integer, dimension (:), ALLOCATABLE :: Iz, nnat
 
       dimension isotop(54)!,Pm(nt)
       dimension Rm2(0:54), STR(880,0:21), FAC(0:16)
       dimension alpha(nss)
 c Everything is dimensioned for 2 basis, normal and density
 c ncf, lt,at,ct parameters for atomic basis sets
-      dimension at(nng),ct(nng),nshell(0:4)
+      dimension nshell(0:4)
       dimension Num(0:3),nlb(ng),nld(ngd),nshelld(0:4)
        integer iconst1,idip1,ipop1,ispin1,
      > icharge1,Nsol1,natsol1,Ll(3)
       
-        real*8, dimension (:), ALLOCATABLE :: af
+       real*8, dimension (:), ALLOCATABLE :: af
        real*8, dimension (:,:), ALLOCATABLE :: c,a,cx,ax,cd,ad,B
        integer, dimension (:), ALLOCATABLE :: Nuc,ncont,Nucx,ncontx,Nucd
      >  ,ncontd
@@ -124,5 +123,16 @@ c      parameter rmintsol=16.0D0
       logical :: omit_bas
 !-Variables for outout format
       logical :: style, allnml
+
+
+!     parameter (nng=100)
+      integer :: nng, max_func
+      integer, allocatable, dimension(:) :: ncf, lt
+      real*8, allocatable, dimension(:) :: at, ct
+     
+!      dimension ncf(nng),lt(nng)
+!      dimension at(nng),ct(nng)
+
+
        end module
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

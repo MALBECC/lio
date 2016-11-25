@@ -33,14 +33,8 @@ c
       dimension Jx(M)
       real*8 E2
 *****
-*****
-c scratch space
-c
 c auxiliars
       dimension aux(ngd)
-c
-*check      COMMON /TABLE/ STR(880,0:21)
-
 c
 c------------------------------------------------------------------
 c now 16 loops for all combinations, first 2 correspond to
@@ -118,6 +112,8 @@ c         Mmem1=Mmem + M*(M+1)/2*Md+1
 c
 c
 c end ------------------------------------------------
+
+
       if (NORM) then
       sq3=dsqrt(3.D0)
       else
@@ -134,12 +130,10 @@ c
  6     Rc(k)=0.D0
 c
 ******
-c        write(*,*) 'cosas',M,Md,kknums,MM
         do kk=1,kknumd!ns*(ns+1)/2+1,ns*(ns+1)/2+ns*np!kknumd
           iikk=(kk-1)*Md
              do k=1,Md
           Rc(k)=Rc(k)+RMM(kkind(kk))*cool(iikk+k)
-c               write(88,*) cool(iikk+k), iikk+k
          enddo
          enddo
 
@@ -152,20 +146,7 @@ c               write(88,*) cool(iikk+k), iikk+k
 
          enddo
          enddo
-        !do k=1,Md
-        !  write(*,*) "INT3LU RC ",k,Rc(k)
-        !enddo
                 
-c               write(88,*) cool(iikk+k), iikk+k
-
-c         do  kk = 1,MM
-c           do  k = 1,Md
-c            Rc(k) = Rc(k) + RMM(kk)*cool((kk-1)*Md+k)
-c         enddo
-c      enddo
-
-*
-*
 c
 c------------------------------------------------
 c     write(*,*) 'Nro integ',ix
@@ -184,6 +165,7 @@ c
  199   RMM(M9+k-1)=0.0D0
       do 208 k=1,Md
        af(k)=0.0D0
+	write(*,*) "0", k
  208   RMM(M9+k-1)=Rc(k)
 c
        k1=0
@@ -216,6 +198,7 @@ c LAPACK OPTION
 #ifdef pack
       do i=1,Md
         af(i)=Rc(i)
+        write(*,*) "1", i
       enddo
 c
       Md5=5*Md
@@ -296,28 +279,22 @@ c
        ss9=ss9+af(m1)*P(m1)
  200  continue
 
-c tests
-c     do i=1,Md
-c      write(20,*) i,Rc(i),af(i)
-c     enddo
-c     write(20,*) Nel,bda,ss9
-c
 c no constraint applied
       else
+
       do 1200 m1=1,Md
       af(m1)=0.D0
+        write(*,*) "4", m1
       do 1201 k=1,m1-1
  1201  af(m1)=af(m1)+Rc(k)*RMM(M9+m1+(2*Md-k)*(k-1)/2-1)
       do 1202 k=m1,Md
  1202  af(m1)=af(m1)+Rc(k)*RMM(M9+k+(2*Md-m1)*(m1-1)/2-1)
  1200  continue
 
-      !do k=1,Md
-      !  write(*,*) "INT3LU AF:",k,af(k)
-      !enddo
+      endif
+      endif
 
-      endif
-      endif
+
 c----------------------------------------------------------------
 c
 c Initialization of Fock matrix elements
@@ -378,13 +355,17 @@ c
       Ea=0.D0
       Eb=0.D0
 c
+
       do 610 m1=1,Md
        Ex=Ex+B(m1,1)*Rc(m1)
        Ea=Ea+af(m1)*Rc(m1)
+        write(*,*) "5", m1
       do 611 k=1,m1
  611   Eb=Eb+af(k)*af(m1)*RMM(M7+m1+(2*Md-k)*(k-1)/2-1)
+	        write(*,*) "6", k,m1
       do 612 k=m1+1,Md
  612   Eb=Eb+af(k)*af(m1)*RMM(M7+k+(2*Md-m1)*(m1-1)/2-1)
+		        write(*,*) "7", k,m1
  610  continue
 c
 c
@@ -414,7 +395,7 @@ c
 
          call g2g_timer_stop('principio int3lu')
          call g2g_timer_start('int3lu')
-          if (open) then       
+          if (open) then    
          do kk=1,kknumd
               iikk=(kk-1)*Md
              do k=1,Md
@@ -448,6 +429,7 @@ c
           enddo
 
          endif
+
          call g2g_timer_stop('int3lu')
          else
            do 4242 k=1,MM
@@ -455,6 +437,7 @@ c
            Ea=0.D0
            call aint_coulomb_fock(Ea)
            Eb=0.D0
+
            do 6101 m1=1,Md
              do 6111 k=1,m1
  6111           Eb=Eb+af(k)*af(m1)*RMM(M7+m1+(2*Md-k)*(k-1)/2-1)
@@ -463,37 +446,26 @@ c
  6101       continue
          endif
  
-
-
-
 ****
 ****
 c
 c Numerical integration for obtaining the exchange-correlation part
 c of Fock matrix and also for the exchange-correlation energy
-c
+ca
+
+
       do 317 k=1,Md
- 317   af(k)=af(k)-B(k,2)
+        af(k)=af(k)-B(k,2)
+  317 end do
 c
        if (integ) then
-
        NCOa=NCO
        NCOb=NCO+Nunp
-c       write(957,*) 'int3lu'
-c       call g2g_timer_sum_start('exchfock')
-c        write(*,*) 'que pasa 2?'
 #ifdef G2G
 c       call g2g_solve_groups(0,0,0)
 #else
 c       call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
 c     >        M,M18,NCOa,NCOb,RMM,Ex)
-c       write(*,*) 'energia cpu',Ex
-c      do kk=1,m
-c        do jj=kk,m
-c          write(*,*) 'rmm output',RMM(i)
-c        enddo
-c      enddo
-
 #endif
 c       call g2g_timer_sum_stop('exchfock')
       
@@ -504,7 +476,5 @@ c
 c
       E2=Ea-Eb/2.D0
 
-c      write(*,*) 'en int3lu',Ea, Eb,E2
-c
       return
-      end
+      end subroutine int3lu

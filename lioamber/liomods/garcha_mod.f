@@ -31,7 +31,7 @@
       logical tdrestart, writedens
       logical writeforces
 
-      logical cubegen_only,cube_dens,cube_orb,cube_elec
+      logical cubegen_only,cube_dens,cube_orb,cube_elec, cube_sqrt_orb
       integer cube_res,cube_sel
       character*20 cube_dens_file,cube_orb_file,cube_elec_file
 

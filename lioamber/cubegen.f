@@ -7,7 +7,7 @@
       real*8, dimension(M,M) :: MO_v
       real*8 :: min_exps(120),x0(3),x1(3),origin(3),eval_p(3)
       real*8 :: max_radius, max_dim, vox_dim, p_val, p_func
-      real*8 :: p_dist
+      real*8 :: p_dist, Morb
       parameter(expmax=10)
       if (cube_dens) open(unit=4242,file=cube_dens_file)
       if (cube_orb) open(unit=4243,file=cube_orb_file)
@@ -88,9 +88,9 @@
           write(4243,424) Iz(i),0.,r(i,:)
         enddo
         if (cube_sel.eq.0) then
-          write(4243,'(I4)',advance='no') NCO
-          do i=1,NCO
-            write(4243,'(I4)',advance='no') i
+          write(4243,'(I4)',advance='no') M
+          do i=1,M
+            write(4243,'(I4)',advance='no') i-NCO
           enddo
           write(4243,*) ""
         endif
@@ -182,16 +182,20 @@
 
             if (cube_orb) then
               if (cube_sel.eq.0) then
-                do kk=1,NCO
-                  ! calculate orbital^2 for this voxel
+                do kk=1,M
+                  ! calculate orbital or orbital^2 if cube_sqrt_orb=treu for this voxel
                   p_val = 0.D0
                   do ii=1,M
                     do jj=ii+1,M
-                      p_val=p_val+2.D0*MO_v(kk,ii)*RMM(M15+ii-1)*
-     >                        MO_v(kk,jj)*RMM(M15+jj-1)
+                      Morb=2.D0*MO_v(kk,ii)*RMM(M15+ii-1)
+                      if (cube_sqrt_orb) Morb=Morb*MO_v(kk,ii)*
+     >                RMM(M15+ii-1)
+                      p_val=p_val+Morb
                     enddo
-                    p_val=p_val+MO_v(kk,ii)*RMM(M15+ii-1)*
-     >                        MO_v(kk,ii)*RMM(M15+ii-1)
+                      Morb=MO_v(kk,ii)*RMM(M15+ii-1)
+                      if (cube_sqrt_orb) Morb=Morb*MO_v(kk,ii)*
+     >                RMM(M15+ii-1)
+                      p_val=p_val+Morb
                   enddo
                   write(4243,'(E13.5)',advance='no') p_val
                   if (mod(kk_orb,6) .eq. 0) then
@@ -200,15 +204,19 @@
                   kk_orb = kk_orb + 1
                 enddo
               else
-                ! calculate orbital^2 for this voxel
+                ! calculate orbital or orbital^2 if cube_sqrt_orb=treu for this voxel
                 p_val = 0.D0
                 do ii=1,M
                   do jj=ii+1,M
-                    p_val=p_val+2.D0*MO_v(cube_sel,ii)*RMM(M15+ii-1)*
-     >                        MO_v(cube_sel,jj)*RMM(M15+jj-1)
+                    Morb=2.D0*MO_v(cube_sel,ii)*RMM(M15+ii-1)
+                    if (cube_sqrt_orb) Morb=Morb*MO_v(cube_sel,jj)*
+     >              RMM(M15+jj-1)
+                    p_val=p_val+Morb
                   enddo
-                  p_val=p_val+MO_v(cube_sel,ii)*RMM(M15+ii-1)*
-     >                        MO_v(cube_sel,ii)*RMM(M15+ii-1)
+                    Morb=MO_v(cube_sel,ii)*RMM(M15+ii-1)
+                    if (cube_sqrt_orb) Morb=Morb*MO_v(cube_sel,ii)*
+     >              RMM(M15+ii-1)
+                    p_val=p_val+Morb
                 enddo
                 write(4243,'(E13.5)',advance='no') p_val
                 if (mod(kk_orb,6) .eq. 0) then

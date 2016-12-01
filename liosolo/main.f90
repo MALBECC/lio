@@ -14,7 +14,8 @@
                              intsoldouble, m, nbch, ntatom,ntdstep, nunp,      &
                              omit_bas, predcoef, propagator, rmax, rmaxs,      &
                              style, tdrestart, tdstep, timedep, told, vcinp,   &
-                             verbose, writedens, writeforces, writexyz, ndiis
+                             verbose, writedens, writeforces, writexyz, ndiis, &
+                             cube_sqrt_orb
       use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,     &
                              local_nonlocal, ecp_debug, ecp_full_range_int,    &
                              verbose_ECP, FOCK_ECP_read, FOCK_ECP_write,       &
@@ -39,7 +40,9 @@
                      verbose, FOCK_ECP_read, FOCK_ECP_write, Fulltimer_ECP,    &
                      cut2_0, cut3_0, hybrid_converg, good_cut, style, allnml,  &
                      cube_elec, cube_dens, cube_dens_file, cube_orb_file,      &
-                     cube_orb, cube_sel, cubegen_only, cube_res, cube_elec_file
+                     cube_orb, cube_sel, cubegen_only, cube_res,               &
+                     cube_elec_file, cube_sqrt_orb
+                     
 
       ! Calls default values for variables.
       call lio_defaults()

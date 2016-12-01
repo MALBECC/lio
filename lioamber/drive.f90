@@ -21,7 +21,6 @@
       Rm2, title, rqm, rmax, watermod, write1, OCC, ATCOEF, Nunp, nl, nt, ng,  &
       ngd
       USE ECP_mod, ONLY : ecpmode, asignacion
-!      implicit real*8 (a-h,o-z)
 
 !quiza saque alguna variable demas
 

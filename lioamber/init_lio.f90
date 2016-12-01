@@ -28,7 +28,7 @@
                              cubegen_only, cube_res, cube_dens, cube_orb,      &
                              cube_sel, cube_orb_file, cube_dens_file, NUNP,    &
                              energy_freq, style, allnml, writeforces,          &
-                             cube_elec, cube_elec_file
+                             cube_elec, cube_elec_file, cube_sqrt_orb
       use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,     &
                              local_nonlocal, ecp_debug, ecp_full_range_int,    &
                              verbose_ECP, Cnorm, FOCK_ECP_read, FOCK_ECP_write,&
@@ -86,6 +86,7 @@
       a0             = 1000.0        ; style              = .true.        ;
       epsilon        = 1.D0          ; allnml             = .true.        ;
       NUNP           = 0             ; energy_freq        = 1             ;
+      cube_sqrt_orb  = .false. !implrime orbitales al cuadrado
 
       return
       end subroutine lio_defaults
@@ -191,7 +192,7 @@
                              cubegen_only, cube_res, cube_dens, cube_orb,      &
                              cube_sel, cube_orb_file, cube_dens_file, NUNP,    &
                              energy_freq, style, allnml, cube_elec_file,       &
-                             cube_elec, writeforces
+                             cube_elec, writeforces, cube_sqrt_orb
       use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,     &
                              local_nonlocal, ecp_debug, ecp_full_range_int,    &
                              verbose_ECP, Cnorm, FOCK_ECP_read, FOCK_ECP_write,&
@@ -217,10 +218,10 @@
                      local_nonlocal, ecp_debug,ecp_full_range_int,verbose_ECP, &
                      verbose, FOCK_ECP_read, FOCK_ECP_write, Fulltimer_ECP,    &
                      cut2_0, cut3_0,                                           &
-!                    Cube variables.
+!                    Varibles for print orbitals.
                      cubegen_only, cube_res, cube_dens, cube_dens_file,        &
                      cube_orb, cube_sel, cube_orb_file, cube_elec,             &
-                     cube_elec_file
+                     cube_elec_file, cube_sqrt_orb
 
 !     Gives default values to variables.
       call lio_defaults()
@@ -279,7 +280,7 @@
                              cubegen_only, cube_res, cube_dens, cube_orb,      &
                              cube_sel, cube_orb_file, cube_dens_file, NUNP,    &
                              energy_freq, style, allnml, cube_elec_file,       &
-                             cube_elec
+                             cube_elec, cube_sqrt_orb
       use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,     &
                              local_nonlocal, ecp_debug, ecp_full_range_int,    &
                              verbose_ECP, Cnorm, FOCK_ECP_read, FOCK_ECP_write,&

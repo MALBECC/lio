@@ -1625,11 +1625,21 @@ c writes down MO coefficients and orbital energies
       endif
 
 
-      if (cube_dens.or.cube_orb.or.cube_elec) then
-        call g2g_timer_sum_start('cube gen')
-        call cubegen(M15,Xnano)
-        call g2g_timer_sum_stop('cube gen')
-      endif
+        if (cube_dens.or.cube_orb.or.cube_elec) then
+c orbital/density plot
+          call g2g_timer_sum_start('cube gen')
+          kk=0
+
+          do k=1,M
+            do i=1,M
+              kk=kk+1
+              xnano(k,i)  = X(i,M2+k)
+            enddo
+          enddo
+
+          call cubegen(M15,Xnano)
+          call g2g_timer_sum_stop('cube gen')
+        endif
 
 
 c

@@ -28,7 +28,10 @@
                              cubegen_only, cube_res, cube_dens, cube_orb,      &
                              cube_sel, cube_orb_file, cube_dens_file, NUNP,    &
                              energy_freq, style, allnml, writeforces,          &
-                             cube_elec, cube_elec_file, cube_sqrt_orb
+                             cube_elec, cube_elec_file, cube_sqrt_orb, MEMO,   &
+                             NORM, ATRHO, SHFT, GRAD, BSSE, sol, primera,      &
+                             watermod
+
       use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,     &
                              local_nonlocal, ecp_debug, ecp_full_range_int,    &
                              verbose_ECP, Cnorm, FOCK_ECP_read, FOCK_ECP_write,&
@@ -87,7 +90,15 @@
       epsilon        = 1.D0          ; allnml             = .true.        ;
       NUNP           = 0             ; energy_freq        = 1             ;
       cube_sqrt_orb  = .false. !implrime orbitales al cuadrado
-
+      MEMO=.true.
+      NORM=.true.
+      ATRHO=.false.
+      SHFT=.false.
+      GRAD=.true.
+      BSSE=.false.
+      sol=.false.
+      primera=.true.
+      watermod=0
       return
       end subroutine lio_defaults
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

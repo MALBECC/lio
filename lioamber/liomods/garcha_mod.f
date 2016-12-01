@@ -22,9 +22,11 @@
       logical exists,MEMO,predcoef
       logical done(ntq),used,NORM,OPEN,ATRHO,DIRECT,VCINP,SHFT,DIIS
       logical done_fit(ntq)
-      logical TMP1,TMP2,dens,EXTR,write1,SVD,ANG,field1
-      logical Coul,Scf1,Prop,GRAD,BSSE,integ,SVD1,sol,tipe
-      logical exter,exter1,resp1,popf,primera,writexyz,intsoldouble
+      logical TMP1,TMP2,dens,EXTR,SVD,field1
+!write1
+      logical Coul,GRAD,BSSE,integ,SVD1,sol,tipe
+!Prop,GRAD,BSSE,integ,SVD1,sol,tipe
+      logical exter,exter1,resp1,primera,writexyz,intsoldouble
       logical OPEN1
       logical dens1,integ1,sol1,free,free1, field, extern
 
@@ -89,7 +91,7 @@ c      common /index/ ii,iid
 c
       Data Num /1,3,6,10/
       dimension jatom(2,100),coef(100),dist(100,3),distt(100)
-      integer ndis,nsteps
+      integer ndis
       real*8 kjar,xini,xfinal   
 
       integer, dimension(:), ALLOCATABLE :: natomc,nnps,nnpp,nnpd,nns

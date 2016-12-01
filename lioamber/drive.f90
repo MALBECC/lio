@@ -12,20 +12,16 @@
       USE garcha_mod, ONLY : a,c, isotop, basis, done, done_fit, natomc, nnps, &
       nnpp, nnpd, nns, nnp, nnd, atmin, jatc, ncf, lt, at, ct, nnat, nshell,   &
       nuc, ncont, nlb, nshelld, cd, ad, Nucd, ncontd, nld, Nucx, indexii,      &
-      ncontx, cx, ax, indexiid, X, XX, RMM, rhoalpha,rhobeta, af, oc2, ANG,    &
-      ATRHO, BSSE, date, basis_set, fitting_set, dens, e_, e_2, e3, exists,    &
-      NORM, fcoord, fmulliken, natom, frestart, M, FAC, GRAD, Iexch, int_basis,&
-      nsteps, max_func, integ, frestartin, MEMO, Md, NCO, nng, npas, Nr, popf, &
-      used, STR, Scf1, verbose, omit_bas, Nr2, primera, wang, wang2, wang3,    &
-      VCINP, OPEN, OPEN1, SHFT, sol, whatis, Prop, TMP1, TMP2, Num, Iz, pi,    &
-      Rm2, title, rqm, rmax, watermod, write1, OCC, ATCOEF, Nunp, nl, nt, ng,  &
-      ngd
+      ncontx, cx, ax, indexiid, X, XX, RMM, rhoalpha,rhobeta, af, oc2, ATRHO,  &
+      date, basis_set, fitting_set, dens, e_, e_2, e3, exists, NORM, fcoord,   &
+      fmulliken, natom, frestart, M, FAC, Iexch, int_basis, max_func, integ,   &
+      frestartin, Md, NCO, nng, npas, Nr, used, STR, verbose, omit_bas, Nr2,   &
+      wang, wang2, wang3, VCINP, OPEN, OPEN1, whatis, TMP1, TMP2, Num, Iz, pi, &
+      Rm2, rqm, rmax, OCC, ATCOEF, Nunp, nl, nt, ng, ngd
       USE ECP_mod, ONLY : ecpmode, asignacion
 
-!quiza saque alguna variable demas
-
       IMPLICIT NONE
-      LOGICAL :: Exx, parsearch, basis_check
+      LOGICAL :: basis_check
       CHARACTER*255 :: int_basis_file, fit_basis_file
       CHARACTER*255 :: liohome
       CHARACTER*255 :: inp_line
@@ -69,62 +65,17 @@
         isotop(i) = 1
       enddo
 
-      MEMO=.true.
-!      iconst=0
-!      idip=1
-!      ispin=1
-!      ipop=1
-!      icharge=0
-      write1=.false.
-      NORM=.true.
-!      SVD=.false.
-      title='               '
       nopt=0
-!      Nang=50
-!      DIRECT=.true.
-      ATRHO=.false.
-      SHFT=.false.
-      ANG=.false.
-!      SHI=1.D0
-!      EXTR=.false.
-!      istart=0
-!      SVD=.false.
-      Exx=.true.
-!      Coul=.false.
-      Scf1=.true.
-      Prop=.false.
-!      iforce=0
-!      inmod = 0
-!      imin=0
-      GRAD=.true.
-      BSSE=.false.
-!      scale=1.0D0
-!      scale2=1.0D0
-!      thermo=0
-!      TEMP=298.0D0
-!      sigma=1
-      popf=.false.
-!      h=0.15D0
-      nsteps=10
-!      Nscale=20000
-      sol=.false.
-!      free=.false.
-      primera=.true.
-      parsearch=.false.
-      watermod=0
-!      noconverge=0
-!      converge=0
-
-!c
-!c calls generator of table for incomplete gamma functions
-!c
+!
+! calls generator of table for incomplete gamma functions
+!
        call GENERF
        call GENERFS
        call GRIDLIO
        npas=0
-!c-----------------------------------------------------------------------
+!-----------------------------------------------------------------------
 
-!c reads input file
+! reads input file
       
       if (.not.int_basis) then
       inquire(file=basis,exist=exists)
@@ -132,17 +83,17 @@
       write(*,*) 'ERROR CANNOT FIND INPUT FILE ON UNIT 1',basis
       stop
       else
-!c  name of output file
+!  name of output file
       ikk=1
       do while (basis(ikk:ikk).ne.' ')
        ikk=ikk+1
       enddo
-!c
+!
       ikk=ikk-1
-!c      name2=basis(1:ikk)//'.out'
-!c
+!      name2=basis(1:ikk)//'.out'
+!
       open(unit=1,file=basis,iostat=ios)
-!c      open(unit=2,file=output)
+!      open(unit=2,file=output)
       endif
       endif
 
@@ -150,7 +101,7 @@
       open(unit=85,file=fmulliken)
       open(unit=88,file=frestart)
 
-!c-------------------------------------------------------
+!-------------------------------------------------------
       date='date'
       write(*,*) 'JOB STARTED NOW'
       call system(date)
@@ -183,7 +134,6 @@
 
       No=0
       Nd=0
-!      Ne=0
       NBAS=0
       M=0
       Md=0
@@ -221,8 +171,6 @@
 !c loop over all primitives, no repeating p, d
         do i=1,nraw
           read(1,*) at(i),ct(i)
-!c       write(2,700) at(i),ct(i)
-!c       write(*,*) atmint,at(i)
           if(at(i).lt.atmint) atmint=at(i)
         enddo
 !c
@@ -319,21 +267,16 @@
 !c CHARGE DENSITY --------------------------------------------------
 !c
         read(1,*) iatom,nraw,ncon
-!c        write(2,*) iatom,nraw,ncon
 !c
 !c reads contraction scheme. The value for p,d ,f should not be repeated
 !c 3 ,6 , 10 .....   times. Reads also angular type , 
 !c 0 for s , 1 for p etc
         read(1,*) (ncf(i),i=1,ncon)
-!c        write(2,*) (ncf(i),i=1,ncon)
         read(1,*) (lt(i),i=1,ncon)
-!c        write(2,*) (lt(i),i=1,ncon)
-!c     
 !c
 !c loop over all primitives, repeating p, d
         do i=1,nraw
           read(1,*) at(i),ct(i)
-!c          write(2,700) at(i),ct(i)
         enddo
 !c
         do 45 j=1,natom
@@ -408,7 +351,6 @@
  45     continue
 !c
         read(1,100) whatis
-!c        write(2,100) whatis
  25   enddo
 
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -464,7 +406,6 @@
         used=.false.
         atmint=100000.
         read(1,*) iatom,nraw,ncon
-!         nng=1000
         if (nraw.gt.max_func) then         !aca hay algo raro, Nick usa nraw!!!!
           write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
           write(*,*) "This basis set contains an element with more", &
@@ -477,7 +418,6 @@
           write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
           stop
         endif
-!c        write(2,600) iatom,nraw,ncon
 !c
 !c reads contraction scheme. The value for p,d ,f should not be repeated
 !c 3 ,6 , 10 .....   times
@@ -640,10 +580,7 @@
 !c 3 ,6 , 10 .....   times. Reads also angular type , 
 !c 0 for s , 1 for p etc
         read(1,*) (ncf(i),i=1,ncon)
-!c        write(2,*) (ncf(i),i=1,ncon)
         read(1,*) (lt(i),i=1,ncon)
-!c        write(2,*) (lt(i),i=1,ncon)
-!c     
 !c
 !c loop over all primitives, repeating p, d
         do i=1,nraw
@@ -661,7 +598,6 @@
           do 49 k=1,ncon
 !c
             Md=Md+Num(lt(k))
-!c          write(*,*) md 
             nshelld(lt(k))=nshelld(lt(k))+Num(lt(k))
 !c
             do 49 l2=1,Num(lt(k))
@@ -738,7 +674,6 @@
         enddo
 
         read(inp_line,100) whatis
-!c        write(2,100) whatis
  27   enddo
       close(1)
       endif
@@ -984,29 +919,11 @@
 !c vectors of MO alpha
       M18=MMd+M17
 !c vectors of MO beta
-!c     M18b=M18+M*NCOa
-!c------------------------------------------------------------
 !c
 !c Density matrix  construction - For closed shell only <<<<=========
 !c
 !c variables defined in namelist cannot be in common ?
       OPEN1=OPEN
-!c      NCO2=NCO
-!      Nunp2=Nunp
-!c
-!      idip1=idip
-!      ipop1=ipop
-!      icharge1=icharge
-!      ispin1=ispin
-!c      do n=1,ntq
-!c        map1(n)=map(n)
-!c      enddo
-!c
-!c      if (ANG) then
-!c        a01=a0/.529177D0
-!c      else
-!c        a01=a0
-!c      endif
        
       if ((Iexch.ge.4).and.(.not.(integ)).and.(.not.(dens))) then
         write(*,*) 'OPTION SELECTED NOT AVAILABLE'
@@ -1146,8 +1063,6 @@
 !c         read(1,nml=RHOINP)
 !c
           do j=1,nnat(i)
-!c
-
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1249,9 +1164,6 @@
 
 !c------- G2G Initialization ---------------------
 !c
-!      ntqpru=natom
-!      ngpru=ng0*natom
-
       if(OPEN) then
         allocate(rhoalpha(M*(M+1)/2),rhobeta(M*(M+1)/2))
       else
@@ -1402,8 +1314,6 @@
           READ(1,100) whatis
  25     END DO
         CLOSE(1)
-
-
 
       ELSE
 

@@ -29,11 +29,11 @@
       CHARACTER*3 :: simb
 
       INTEGER, INTENT(IN) :: ng2, ngDyn, ngdDyn
-      REAL*8 :: atmint, iatom, iprob
+      REAL*8 :: atmint, iprob
       REAL*8 :: xnorm
       INTEGER :: NCOa, NCOb, ncon, nraw, NAO, NGF
       INTEGER :: is,ip,id, index
-      INTEGER :: igpu, ios, NBAS
+      INTEGER :: igpu, ios, NBAS, iatom
       INTEGER :: M3, M5, M7, M9, M11, M13, M15, M17, M18, M18b, MM, MMd !punteros
       INTEGER :: Nd, Ndim, nopt
       INTEGER :: i,ikk,j,k,k1,kk,kl,kkk,l,l1,l2,n,NN, No !auxiliars
@@ -1188,7 +1188,7 @@
 
 
  100  format (A8)
- 200  format ('basis set corresponding to Z ',I3,' was not used')
+ 200  format ('basis set corresponding to Z ', I3,' was not used')
  400  format ('not implemented for open shell yet')
  401  format(4(E14.7E2,2x))
  500  format (i3,3x,F11.6,2x,F11.6,2x,F11.6)

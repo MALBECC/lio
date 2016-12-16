@@ -49,7 +49,7 @@ objects += density.o
 objects += extras.o
 objects += fterm_biaspot.o lowdinpop.o
 objects += elec.o
-objects += SCF_gro.o
+objects += SCF_gro.o properties.f90
 # objects += init_gromacs.o init_amber.o init.o lio_init.o
 #
 #

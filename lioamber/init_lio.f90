@@ -145,7 +145,7 @@
 !      ngnu   = natom*ng0  ;  ngdnu  = natom*ngd0       ;
 !      ngDyn  = ngnu       ;  ngdDyn = ngdnu            ;
 
-      ng2    = 5*ngDyn*(ngDyn+1)/2 + 3*ngdDyn*(ngdDyn+1)/2 + ngDyn +           &
+      ng2    = 5*ngDyn*(ngDyn+1)/2 + 3*ngdDyn*(ngdDyn+1)/2 + ngDyn + &
                ngDyn*norbit + Ngrid
       ng3    = 4*ngDyn
 
@@ -156,7 +156,7 @@
                indexii(ngDyn), indexiid(ngdDyn)  , v(ntatom,3) , Em(ntatom)     , &
                Rm(ntatom)    , af(ngdDyn)         , nnat(ntatom), B(ngdDyn,3))
 
-      ! Cnorm contains normalized coefficients of basis.
+      ! Cnorm contains normalized coefficients of basis functions.
       ! Differentiate C for x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)
       if (ecpmode) allocate (Cnorm(ngDyn,nl)) 
 

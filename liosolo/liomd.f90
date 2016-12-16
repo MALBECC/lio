@@ -23,7 +23,7 @@
                      igrid2, timedep, tdstep, ntdstep, propagator, NBCH, field,&
                      a0, epsilon, exter, Fx, Fy, Fz, tdrestart, writedens,     &
                      writeforces, basis_set, fitting_set, int_basis, cube_res, &
-                     cubegen_only, cube_dens, cube_dens_file, cube_orb,        &
+                     cubegen_only, cube_dens, cube_dens_file, cube_orb, fukui, &
                      cube_sel,cube_orb_file, cube_elec, cube_elec_file, frestart
 
       ! Loads default variable values.

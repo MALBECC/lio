@@ -30,7 +30,7 @@
                              energy_freq, style, allnml, writeforces,          &
                              cube_elec, cube_elec_file, cube_sqrt_orb, MEMO,   &
                              NORM, ATRHO, SHFT, GRAD, BSSE, sol, primera,      &
-                             watermod
+                             watermod, fukui
 
       use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,     &
                              local_nonlocal, ecp_debug, ecp_full_range_int,    &
@@ -75,6 +75,7 @@
       writedens      = .false.       ; frestart           ='restart.out'  ;
       VCINP          = .false.       ; frestartin         = 'restart.in'  ;
       restart_freq   = 1             ; writeforces        = .false.       ;
+      fukui          = .false.       ;
 
 !     Cube, grid and other options.
       predcoef       = .false.       ; cubegen_only       = .false.       ;
@@ -89,7 +90,7 @@
       a0             = 1000.0        ; style              = .true.        ;
       epsilon        = 1.D0          ; allnml             = .true.        ;
       NUNP           = 0             ; energy_freq        = 1             ;
-      cube_sqrt_orb  = .false. !implrime orbitales al cuadrado
+      cube_sqrt_orb  = .false.       ; !implrime orbitales al cuadrado
       MEMO=.true.
       NORM=.true.
       ATRHO=.false.
@@ -122,7 +123,7 @@
 !      integer              :: i, ng2, ng3, ngdnu, ngnu, ngdDyn, ngDyn, nqnuc,  &
 !                              ierr, ios
 
-!     call g2g_timer_start('lio_init')
+!      call g2g_timer_start('lio_init')
 
 ! Some important values are: 
 ! Ngrid may be set to 0  in the case of Numerical Integration.                 !
@@ -203,7 +204,7 @@
                              cubegen_only, cube_res, cube_dens, cube_orb,      &
                              cube_sel, cube_orb_file, cube_dens_file, NUNP,    &
                              energy_freq, style, allnml, cube_elec_file,       &
-                             cube_elec, writeforces, cube_sqrt_orb
+                             cube_elec, writeforces, cube_sqrt_orb, fukui
       use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,     &
                              local_nonlocal, ecp_debug, ecp_full_range_int,    &
                              verbose_ECP, Cnorm, FOCK_ECP_read, FOCK_ECP_write,&
@@ -219,7 +220,7 @@
       namelist /lio/ OPEN, NMAX, Nunp, VCINP, frestartin, GOLD, told, Etold,   &
                      rmax, rmaxs, predcoef, idip, writexyz, intsoldouble, DIIS,&
                      ndiis, dgtrig, Iexch, integ, dens, igrid, igrid2,         &
-                     hybrid_converg, good_cut, style, allnml, frestart,        &
+                     hybrid_converg, good_cut, style, allnml, frestart, fukui, &
 !                    TD-DFT Variables.
                      timedep, tdstep, ntdstep, propagator, NBCH, field, a0,    &
                      epsilon, exter, Fx, Fy, Fz, tdrestart, writedens,         &

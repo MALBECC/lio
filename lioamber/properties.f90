@@ -3,27 +3,12 @@
 ! This file contains several molecular properties calculation and printing     !
 ! routines. Currently includes:                                                !
 ! * get_degeneration (gets degeneration and degenerated MOs for a chosen MO)   !
+! Regarding Electronic Population Analysis:                           [ EPA ]  !
+! Regarding Reactivity Indexes:                                       [ RXI ]  !
 ! * get_softness     (gets the molecule's global softness)                     !
 ! * fukui_calc       (calculates CS condensed-to-atoms fukui function)         !
 ! * fukui_calc_os    (calculates CS condensed-to-atoms fukui function)         !
 ! * fukui_write      (handles Fukui function printing to output)               !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% GET_SOFTNESS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Gets the molecule's global softness using the energy of HOMO/LUMO ALPHA/BETA !
-! MOs. In a closed-shell context, enAH=enBH and enAL=enBL.                     !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-      subroutine get_softness(enAH, enAL, enBH, enBL, softness)
- 
-          implicit none
-          real*8, intent(in)  :: enAH, enAL, enBH, enBL
-          real*8, intent(out) :: softness
-
-          softness = 4 / (enAH + enBH - enAL - enBL)
-          
-          return
-      end subroutine get_softness
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -46,7 +31,7 @@
              return
           endif
 
-          ratio = 0d0 ; nDeg = 0 ; criterium = 0.000005
+          ratio = 0d0 ; nDeg = 0 ; criterium = 0.000005 ; nDegMO = 0 ;
 
           ! Assings counting limits in order to avoid exploring all MOs.
           ! Special cases: only one MO, or MO of interest is the first one.
@@ -60,7 +45,7 @@
 
           ! Performs energy comparisons, upwards and downwards.
           do i=iCountU, M, 1
-             ratio = (energ(i) - energ(orb)) / ((energ(i) + energ(orb))/2)
+             ratio = abs((energ(i) - energ(orb)) / ((energ(i) + energ(orb))/2))
              if (ratio.le.criterium) then
                  nDeg         = nDeg + 1
                  nDegMO(nDeg) = i
@@ -70,7 +55,7 @@
           enddo
           
           do i=iCountD, 1, -1
-             ratio = (energ(i) - energ(orb)) / ((energ(i) + energ(orb))/2)
+             ratio = abs((energ(i) - energ(orb)) / ((energ(i) + energ(orb))/2))
              if (ratio.le.criterium) then 
                  nDeg         = nDeg + 1
                  nDegMO(nDeg) = i
@@ -81,6 +66,31 @@
 
           return
       end subroutine get_degeneration
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%% ELECTRONIC POPULATION ANALYSIS [ EPA ] %%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%% REACTIVITY INDEXES [ RXI ] %%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% GET_SOFTNESS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Gets the molecule's global softness using the energy of HOMO/LUMO ALPHA/BETA !
+! MOs. In a closed-shell context, enAH=enBH and enAL=enBL.                     !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+      subroutine get_softness(enAH, enAL, enBH, enBL, softness)
+
+          implicit none
+          real*8, intent(in)  :: enAH, enAL, enBH, enBL
+          real*8, intent(out) :: softness
+
+          softness = 4 / (enAH + enBH - enAL - enBL)
+
+          return
+      end subroutine get_softness
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -124,8 +134,8 @@
                       shapeH(NofM(i)) = shapeH(NofM(i)) + dummy
                   enddo
                   do k=1, nDegL
-                      dummy            = coef(i, degMOL(k)) *         &
-                                         coef(j, degMOL(k)) * Smat(i,j)
+                      dummy           = coef(i, degMOL(k)) *         &
+                                        coef(j, degMOL(k)) * Smat(i,j)
                       shapeL(NofM(i)) = shapeL(NofM(i)) + dummy
                   enddo
               enddo
@@ -134,7 +144,7 @@
           do i=1, N
               fukuiNeg(i) = shapeH(i) / nDegH
               fukuiPos(i) = shapeL(i) / nDegL
-              fukuiRad(i) = ( fukuiNeg(i)       + fukuiPos(i)       ) / 2
+              fukuiRad(i) = ( fukuiNeg(i) + fukuiPos(i) ) / 2
           enddo
 
           deallocate (degMOH, degMOL)

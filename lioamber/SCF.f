@@ -43,7 +43,7 @@
         logical :: just_int3n,ematalloct
 !FFR!
        logical             :: dovv
-       real*8              :: weight
+       real*8              :: weight, softness
        integer,allocatable :: atom_group(:)
        integer,allocatable :: orb_group(:)
        integer,allocatable :: orb_selection(:)
@@ -52,7 +52,7 @@
        real*8,dimension(:,:),allocatable :: Xmat,Xtrp,Ymat,Ytrp
        real*8,dimension(:,:),allocatable :: sqsm
        real*8,dimension(:,:),allocatable :: Vmat
-       real*8,dimension(:),  allocatable :: Dvec
+       real*8,dimension(:),  allocatable :: Dvec, fukuip, fukuim, fukuin
 
        real*8,allocatable :: eigen_vecs(:,:), eigen_vals(:)
 !--------------------------------------------------------------------!
@@ -1611,15 +1611,16 @@ c graba un restart de los coeficientes
       endif
 c-------------------------------------------------
 c writes down MO coefficients and orbital energies
+c 
       if(1.gt.2) then
         write(29,*) 'ORBITAL COEFFICIENTS eh AND ENERGIES, CLOSED SHELL'
         do n=1,NCO
           write(29,850) n,RMM(M13+n-1)
-          write(29,400) (X(l,M+n),l=1,M)
+          write(29,400) (X(l,M2+n),l=1,M)
         enddo
         do n=NCO+1,M
           write(29,851) n,RMM(M13+n-1)
-          write(29,400) (X(l,M+n),l=1,M)
+          write(29,400) (X(l,M2+n),l=1,M)
         enddo
         close(29)
       endif
@@ -1642,6 +1643,18 @@ c orbital/density plot
         endif
 
 
+      if (fukui) then
+          allocate(fukuim(natom), fukuin(natom), fukuip(natom))
+          call fukui_calc(X(1,M2+1), NCO, M, natom, Nuc, Smat, fukuim, 
+     >                    fukuip, fukuin, RMM(M13))
+
+          call get_softness(RMM(M13+NCO-1), RMM(M13+NCO), 
+     >                      RMM(M13+NCO-1), RMM(M13+NCO), softness)
+          call fukui_write(fukuim, fukuip, fukuin, natom, Iz, 
+     >                     softness)
+          deallocate(fukuim, fukuin, fukuip)
+
+      endif
 c
 c-------------------------------------------------
 c      endif

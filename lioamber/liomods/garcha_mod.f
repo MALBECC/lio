@@ -125,7 +125,7 @@ c      parameter rmintsol=16.0D0
       logical :: omit_bas
 !-Variables for outout format
       logical :: style, allnml
-
+      logical :: fukui
 
 !     parameter (nng=100)
       integer :: nng, max_func

@@ -28,7 +28,7 @@
 #
 ######################################################################
 objects += liomain.o SCF.o SCFop.o SCF_in.o TD.o cubegen.o
-objects += dip.o dipmem.o jarz.o magnus.o predictor.o mulliken.o
+objects += dip.o dipmem.o jarz.o magnus.o predictor.o 
 objects += dft_get_mm_forces.o dft_get_qm_forces.o
 objects += matmuldiag.o fock_commuts.o
 objects += init_lio.o lio_finalize.o

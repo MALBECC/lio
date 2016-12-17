@@ -4,6 +4,8 @@
 ! routines. Currently includes:                                                !
 ! * get_degeneration (gets degeneration and degenerated MOs for a chosen MO)   !
 ! Regarding Electronic Population Analysis:                           [ EPA ]  !
+! * mulliken_calc    (calculates atomic Mulliken charges)                      !
+! * mulliken_write   (handles Mulliken charge printing to output)              !
 ! Regarding Reactivity Indexes:                                       [ RXI ]  !
 ! * get_softness     (gets the molecule's global softness)                     !
 ! * fukui_calc       (calculates CS condensed-to-atoms fukui function)         !
@@ -71,6 +73,92 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%% ELECTRONIC POPULATION ANALYSIS [ EPA ] %%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% MULLIKEN_CALC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Performs a Mulliken Population Analysis and outputs atomic charges.          !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+      subroutine mulliken_calc(N,M,RealRho,Smat,NofM,q0,q)
+
+          ! RealRho         : Rho written in atomic orbitals.                !
+          ! q0, q           : Starting and final Mulliken charges.           !
+          ! M, N, NofM, Smat: N° of basis functions, atoms, Nuclei belonging !
+          !                   to each function M, overlap matrix.            !
+          implicit none
+          integer, intent(in)  :: N, M, NofM(M), q0(N)
+          real*8 , intent(in)  :: RealRho(M,M), Smat(M,M)
+          real*8 , intent(out) :: q(N)
+
+          integer :: i, j, k
+          real*8  :: qe
+
+          call g2g_timer_start('mulliken')
+
+          do k=1,N
+            q(k)=real(q0(k))
+          enddo
+
+          do i=1,M
+              do j=1,M
+                  qe=RealRho(i,j)*Smat(i,j)
+                  q(NofM(i))=q(NofM(i))-qe
+              enddo
+          enddo
+
+          call g2g_timer_stop('mulliken')
+
+          return
+      end subroutine mulliken_calc
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% MULLIKEN_WRITE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Writes Mulliken charges to output.                                           !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+      subroutine mulliken_write(UID,N,q0,q)
+
+          implicit none
+          integer, intent(in) :: UID, N, q0(N)
+          real*8 , intent(in) :: q(N)
+ 
+          real*8  :: qtotal
+          integer :: i
+
+          call g2g_timer_start('mulliken_write')
+          qtotal=0.d0
+          write(UID,*)
+          write(UID,300)
+          write(UID,301)
+          write(UID,302)
+          write(UID,303)
+          write(UID,304)
+
+          do i=1,N
+              qtotal=qtotal+q(i)
+              write(UID,305) i, q0(i), q(i)
+          enddo
+          write(UID,306)
+          write(UID,307) qtotal
+          write(UID,308)
+          write(UID,*)
+
+          call g2g_timer_stop('mulliken_write')
+
+ 300   FORMAT(8x,"╔═════════════════&
+       ════════════════╗")
+ 301   FORMAT(8x,"║   MULLIKEN POPULATION ANALYSIS  ║")
+ 302   FORMAT(8x,"╠════════╦═══════════╦════════════╣")
+ 303   FORMAT(8x,"║ ATOM # ║ ATOM TYPE ║ POPULATION ║")
+ 304   FORMAT(8x,"╠════════╬═══════════╬════════════╣")
+ 305   FORMAT(8x,"║",2x,i3,3x,"║"3x,i3,5x,"║",1x,F10.7,1x,"║")
+ 306   FORMAT(8x,"╚════════╬═══════════╬════════════╣")
+ 307   FORMAT(8x,"         ║   TOTAL   ║",1x,F10.7,1x,"║")
+ 308   FORMAT(8x,"         ╚═══════════╩════════════╝")
+       
+       return
+       end subroutine mulliken_write
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%% REACTIVITY INDEXES [ RXI ] %%%%%%%%%%%%%%%%%%%%%%%%%%!

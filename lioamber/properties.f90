@@ -4,7 +4,8 @@
 ! routines. Currently includes:                                                !
 ! * get_degeneration (gets degeneration and degenerated MOs for a chosen MO)   !
 ! Regarding Electronic Population Analysis:                           [ EPA ]  !
-! * mulliken_calc    (calculates atomic Mulliken charges)                      !
+! * mulliken_calc    (calculates atomic Mulliken population charges)           !
+! * lowdinpop        (calculates atomic Löwdin population charges)             !
 ! * mulliken_write   (handles Mulliken charge printing to output)              !
 ! Regarding Reactivity Indexes:                                       [ RXI ]  !
 ! * get_softness     (gets the molecule's global softness)                     !
@@ -78,7 +79,7 @@
 !%% MULLIKEN_CALC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs a Mulliken Population Analysis and outputs atomic charges.          !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-      subroutine mulliken_calc(N,M,RealRho,Smat,NofM,q0,q)
+      subroutine mulliken_calc(N, M, RealRho, Smat, NofM, q0, q)
 
           ! RealRho         : Rho written in atomic orbitals.                !
           ! q0, q           : Starting and final Mulliken charges.           !
@@ -111,11 +112,39 @@
       end subroutine mulliken_calc
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
+!%% LOWDINPOP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Performs a Löwdin Population Analysis and outputs atomic charges.            !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+      subroutine lowdinpop(M, N, rhomat, sqsmat, atomorb, atomicq)
+ 
+          implicit none
+          integer,intent(in)   :: M, N, atomorb(M)
+          real*8,intent(in)    :: rhomat(M,M), sqsmat(M,M)
+          real*8,intent(inout) :: atomicq(N)
+
+          real*8  :: newterm
+          integer :: natom
+          integer :: i, j, k
+
+          do k=1, M
+              natom=atomorb(k)
+              do i=1, M
+                  do j=1, M
+                      newterm = sqsmat(k, i) * rhomat(i, j) * sqsmat(j, k)
+                      atomicq(natom) = atomicq(natom) - newterm
+                  enddo
+              enddo
+          enddo
+
+          return
+      end subroutine lowdinpop
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% MULLIKEN_WRITE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Writes Mulliken charges to output.                                           !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-      subroutine mulliken_write(UID,N,q0,q)
+      subroutine mulliken_write(UID, N, q0, q)
 
           implicit none
           integer, intent(in) :: UID, N, q0(N)

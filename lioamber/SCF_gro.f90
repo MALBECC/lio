@@ -1,6 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% SCF_GRO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! File SCF_gro.f contains SCF_gro subroutine, which performs the SCF cycles    !
 ! within the molecular dynamics when called from Gromacs software package for a!
 ! QM/MM calculation. See also init_gromacs.f, which deals with initialization. !
@@ -48,15 +47,13 @@
           if(writexyz) write(18,345) Iz(i), rqm(i,:)*0.529
       enddo
 
-
-
       do i = 1, nsol
           n     = natom+i
           pc(n) = clcharge(i)
           do j = 1, 3
               r(n, j) = clcoords((i-1)*3+j)
           enddo
-          if(writexyz) write(18,346) pc(n), r(n,:)*0.529
+!          if(writexyz) write(18,346) pc(n), r(n,:)*0.529
       enddo
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -66,15 +63,7 @@
 ! allocation routine calls. SCFOP calls for an open-shell SCF calculation,     !
 ! while SFC deals with closed-shell systems.                                   !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       call liomain()
-       if (.not.allocated(Smat))    allocate(Smat(M,M))
-       if (.not.allocated(RealRho)) allocate(RealRho(M,M))
-
-      if(OPEN) then 
-          call SCFOP(E, dipxyz)
-      else
-          call SCF(E, dipxyz)
-      endif
+      call liomain(E, dipxyz)
 
  345  format(2x,I2,2x,3(f10.6,2x))
  346  format(2x,f10.6,2x,3(f10.6,2x))

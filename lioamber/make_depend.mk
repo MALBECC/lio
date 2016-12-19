@@ -27,7 +27,7 @@
 # compiling.
 #
 ######################################################################
-objects += liomain.o SCF.o SCFop.o SCF_in.o TD.o cubegen.o
+objects += SCF.o SCFop.o SCF_exter.o TD.o cubegen.o liomain.o
 objects += dip.o dipmem.o jarz.o magnus.o predictor.o 
 objects += dft_get_mm_forces.o dft_get_qm_forces.o
 objects += matmuldiag.o fock_commuts.o
@@ -49,7 +49,7 @@ objects += density.o
 objects += extras.o
 objects += fterm_biaspot.o
 objects += elec.o
-objects += SCF_gro.o properties.f90
+objects += properties.o
 # objects += init_gromacs.o init_amber.o init.o lio_init.o
 #
 #

@@ -38,7 +38,7 @@ endif
 ######################################################################
 all: liosolo liomd.x
 
-liosolo: main.f90 ../lioamber/liblio-g2g.so
+liosolo: liosolo.f90 ../lioamber/liblio-g2g.so
 	$(FC) $< -o $@ $(FLAGS) $(LIBS)
 
 liomd.x: liomd.f90 ../lioamber/liblio-g2g.so

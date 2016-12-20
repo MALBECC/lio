@@ -7,22 +7,27 @@
 ! * Calls SCF or SCFOP for closed/open shell calculations.                     !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
  
-      subroutine liomain(E, dipxyz)
-      use garcha_mod, only : M, Smat, RealRho, OPEN
-      use ecp_mod,    only : ecpmode
+subroutine liomain(E, dipxyz)
+    use garcha_mod, only : M, Smat, RealRho, OPEN, writeforces
+    use ecp_mod,    only : ecpmode
  
-          implicit none
-          REAL*8  :: dipxyz(3), E
+    implicit none
+    REAL*8  :: dipxyz(3), E
 
-          if (.not.allocated(Smat))    allocate(Smat(M,M))
-          if (.not.allocated(RealRho)) allocate(RealRho(M,M))
+    if (.not.allocated(Smat))    allocate(Smat(M,M))
+    if (.not.allocated(RealRho)) allocate(RealRho(M,M))
 
-          if(OPEN) then
-              if (ecpmode) stop "ECP is unavailable for Open Shell systems."
-              call SCFOP(E, dipxyz)
-          else
-              call SCF(E, dipxyz)
-          endif
+    if(OPEN) then
+        if (ecpmode) stop "ECP is unavailable for Open Shell systems."
+        call SCFOP(E, dipxyz)
+    else
+        call SCF(E, dipxyz)
+    endif
 
-          return
-      end subroutine liomain
+    if(writeforces) then
+        if (ecpmode) stop "ECP does not currently feature forces calculation."
+        call write_forces()
+    endif
+
+    return
+end subroutine liomain

@@ -135,6 +135,13 @@ c      parameter rmintsol=16.0D0
 !      dimension ncf(nng),lt(nng)
 !      dimension at(nng),ct(nng)
 
+! GPU OPTIONS
+      logical :: assign_all_functions, remove_zero_weights, 
+     >              energy_all_iterations
+      real*8  :: free_global_memory, sphere_radius, little_cube_size
+      integer :: min_points_per_cube, max_function_exponent
+
+
 
        end module
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -175,7 +175,6 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
   G2G::gpu_set_variables();
 #endif
 
-  read_options();
 }
 //============================================================================================================
 extern "C" void g2g_deinit_(void) {
@@ -315,16 +314,41 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 }
 //================================================================================================================
 /* general options */
-namespace G2G {
-	uint max_function_exponent = 10;
-	double little_cube_size = 8.0;
-	uint min_points_per_cube = 1;
-  bool assign_all_functions = false;
-  double sphere_radius = 0.6;
-  bool remove_zero_weights = true;
-  bool energy_all_iterations = false;
-  double free_global_memory = 0.0;
+namespace G2G 
+{
+    uint   max_function_exponent = 10   ;
+    double little_cube_size      = 8.0  ;
+    uint   min_points_per_cube   = 1    ;
+    bool   assign_all_functions  = false;
+    double sphere_radius         = 0.6  ;
+    bool   remove_zero_weights   = true ;
+    bool   energy_all_iterations = false;
+    double free_global_memory    = 0.0  ;
 }
+
+//=================================================================================================================
+extern "C" void g2g_set_options_(double * fort_fgm , double * fort_lcs, 
+                                 double * fort_sr  , bool   * fort_aaf, 
+                                 bool   * fort_eai , bool   * fort_rzw, 
+                                 uint   & fort_mppc, uint   & fort_mfe)
+{
+    free_global_memory    = *fort_fgm ; little_cube_size      = *fort_lcs  ;
+    sphere_radius         = *fort_sr  ; assign_all_functions  = *fort_aaf  ;
+    energy_all_iterations = *fort_eai ; remove_zero_weights   = *fort_rzw  ;
+    min_points_per_cube   = fort_mppc ; max_function_exponent = fort_mfe   ;
+
+    cout << "fgm: " << free_global_memory    << endl;
+    cout << "lcs: " << little_cube_size      << endl;
+    cout << "sr:  " << sphere_radius         << endl;
+    cout << "aaf: " << assign_all_functions  << endl;
+    cout << "eai: " << energy_all_iterations << endl;
+    cout << "rzw: " << remove_zero_weights   << endl;
+    cout << "mppc:" << min_points_per_cube   << endl;
+    cout << "mfe: " << max_function_exponent << endl;
+}
+
+
+//=================================================================================================================
 
 //=================================================================================================================
 void read_options(void) {

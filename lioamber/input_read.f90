@@ -19,7 +19,12 @@ subroutine read_options(inputFile, charge)
                            a0, cubegen_only, cube_res, cube_dens, cube_orb,    &
                            cube_sel, cube_orb_file, cube_dens_file, cube_elec, &
                            cube_elec_file, energy_freq, NUNP, style, allnml,   &
-                           writeforces, cube_sqrt_orb, fukui
+                           writeforces, cube_sqrt_orb, fukui, little_cube_size,&
+                           max_function_exponent, min_points_per_cube,         &
+                           assign_all_functions, remove_zero_weights,          &
+                           energy_all_iterations, free_global_memory,          &
+                           sphere_radius
+
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, verbose_ECP,  &
                            cutECP, local_nonlocal, ecp_debug, FOCK_ECP_read,   &
                            FOCK_ECP_write, ecp_full_range_int, Fulltimer_ECP,  &
@@ -50,6 +55,10 @@ subroutine read_options(inputFile, charge)
                    cubegen_only, cube_res, cube_sel, cube_dens, cube_dens_file,&
                    cube_orb, cube_orb_file, cube_elec, cube_elec_file,         &
                    cube_sqrt_orb,                                              &
+                   ! Variables for GPU options.
+                   little_cube_size, max_function_exponent, free_global_memory,&
+                   min_points_per_cube, assign_all_functions, sphere_radius,   &
+                   remove_zero_weights, energy_all_iterations,                 &
                    ! Variables when LIO is used alone.
                    natom, nsol, charge
 

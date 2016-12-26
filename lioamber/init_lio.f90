@@ -30,7 +30,10 @@ subroutine lio_defaults()
                            energy_freq, style, allnml, writeforces,            &
                            cube_elec, cube_elec_file, cube_sqrt_orb, MEMO,     &
                            NORM, ATRHO, SHFT, GRAD, BSSE, sol, primera,        &
-                           watermod, fukui
+                           watermod, fukui, little_cube_size, sphere_radius,   &
+                           max_function_exponent, min_points_per_cube,         &
+                           assign_all_functions, remove_zero_weights,          &
+                           energy_all_iterations, free_global_memory
 
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,       &
                            local_nonlocal, ecp_debug, ecp_full_range_int,      &
@@ -77,6 +80,12 @@ subroutine lio_defaults()
     restart_freq   = 1             ; writeforces        = .false.       ;
     fukui          = .false.       ;
 
+!   GPU_options
+    max_function_exponent = 10     ; little_cube_size     = 8.0         ;
+    min_points_per_cube   = 1      ; assign_all_functions = .false.     ;
+    sphere_radius         = 0.6    ; remove_zero_weights  = .true.      ;
+    energy_all_iterations = .false.; free_global_memory   = 0.0         ;
+
 !   Cube, grid and other options.
     predcoef       = .false.       ; cubegen_only       = .false.       ;
     idip           = 0             ; cube_res           = 40            ;
@@ -106,11 +115,14 @@ end subroutine lio_defaults
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
 
-    use garcha_mod, only : idip, nunp, X, XX, RMM, d, c, a, Nuc, ncont, cx,  &
-                           ax, Nucx, ncontx, cd, ad, Nucd, ncontd, indexii,  &
-                           indexiid, r, v, rqm, Em, Rm, pc, nnat, af, B, Iz, &
-                           natom, nco, ng0, ngd0, ngrid, nl, norbit, ntatom, &
-                           allnml, style                             
+    use garcha_mod, only : idip, nunp, X, XX, RMM, d, c, a, Nuc, ncont, cx,    &
+                           ax, Nucx, ncontx, cd, ad, Nucd, ncontd, indexii,    &
+                           indexiid, r, v, rqm, Em, Rm, pc, nnat, af, B, Iz,   &
+                           natom, nco, ng0, ngd0, ngrid, nl, norbit, ntatom,   &
+                           allnml, style, free_global_memory, little_cube_size,&
+                           assign_all_functions, energy_all_iterations,        &
+                           remove_zero_weights, min_points_per_cube,           &
+                           max_function_exponent, sphere_radius                          
     use ECP_mod,    only : Cnorm, ecpmode
 
     implicit none
@@ -150,7 +162,12 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
     ! Differentiate C for x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)
     if (ecpmode) allocate (Cnorm(ngDyn,nl)) 
 
+    call g2g_set_options(free_global_memory, little_cube_size, sphere_radius, &
+                         assign_all_functions, energy_all_iterations,         &
+                         remove_zero_weights, min_points_per_cube,            &
+                         max_function_exponent)
     call g2g_init()
+
     nqnuc = 0
     do i = 1, natom
         nqnuc = nqnuc + Iz(i)

@@ -333,15 +333,6 @@ extern "C" void g2g_set_options_(double * fort_fgm , double * fort_lcs,
     sphere_radius         = *fort_sr  ; assign_all_functions  = *fort_aaf  ;
     energy_all_iterations = *fort_eai ; remove_zero_weights   = *fort_rzw  ;
     min_points_per_cube   = fort_mppc ; max_function_exponent = fort_mfe   ;
-
-    cout << "fgm: " << free_global_memory    << endl;
-    cout << "lcs: " << little_cube_size      << endl;
-    cout << "sr:  " << sphere_radius         << endl;
-    cout << "aaf: " << assign_all_functions  << endl;
-    cout << "eai: " << energy_all_iterations << endl;
-    cout << "rzw: " << remove_zero_weights   << endl;
-    cout << "mppc:" << min_points_per_cube   << endl;
-    cout << "mfe: " << max_function_exponent << endl;
 }
 
 

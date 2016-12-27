@@ -19,11 +19,11 @@
 !--------------------------------------------------------------------!
 
 
-	deallocate(r,v,rqm, Em, Rm)
-	deallocate(pc, Iz, cx, ax, cd, ad, c, a)
-       deallocate(Nuc,ncont,Nucx,ncontx,Nucd
+       deallocate(r,v,rqm, Em, Rm)
+       deallocate(pc, Iz, cx, ax, cd, ad, c, a)
+      deallocate(Nuc,ncont,Nucx,ncontx,Nucd
      > ,ncontd, indexii, indexiid, RMM, X, XX)
-        deallocate(nnat, B, af)
+       deallocate(nnat, B, af)
        deallocate(natomc,nnps,nnpp,nnpd,nns)
        deallocate(nnd,nnp,atmin,jatc,d)
 

@@ -156,7 +156,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
              cx(ngdDyn,nl) , ax(ngdDyn,nl)     , Nucx(ngdDyn), ncontx(ngdDyn) ,&
              cd(ngdDyn,nl) , ad(ngdDyn,nl)     , Nucd(ngdDyn), ncontd(ngdDyn) ,&
              indexii(ngDyn), indexiid(ngdDyn)  , v(ntatom,3) , Em(ntatom)     ,&
-             Rm(ntatom)    , af(ngdDyn)        , nnat(ntatom), B(ngdDyn,3))
+             Rm(ntatom)    , af(ngdDyn)        , nnat(ngDyn), B(ngdDyn,3))
 
     ! Cnorm contains normalized coefficients of basis functions.
     ! Differentiate C for x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)

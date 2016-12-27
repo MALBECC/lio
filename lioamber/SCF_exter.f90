@@ -11,7 +11,7 @@
 ! Performs SCF setup and routine calls from AMBER.                             !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       subroutine SCF_in(E,qmcoords,clcoords,nsolin,dipxyz)
-      use garcha_mod, only : r, v, Em, Rm, pc, nnat, natom, ntatom, nsol, rqm, &
+      use garcha_mod, only : r, v, Em, Rm, pc, natom, ntatom, nsol, rqm, &
                              writexyz, Iz
 
           implicit none
@@ -25,9 +25,9 @@
 
           call g2g_timer_sum_start("Total")
 
-          deallocate (r, v, Em, Rm, pc, nnat)
+          deallocate (r, v, Em, Rm, pc)
           allocate (r(ntatom, 3), v(ntatom, 3), Em(ntatom), Rm(ntatom), &
-                    pc(ntatom), nnat(100))
+                    pc(ntatom))
 
           ! This section converts the coordinates array and partial charges    !
           ! array received from Gromacs into the r (all positions), rqm (QM    !
@@ -84,9 +84,9 @@
 
           call g2g_timer_sum_start("Total")
 
-          deallocate (r, v, Em, Rm, pc, nnat)
+          deallocate (r, v, Em, Rm, pc)
           allocate (r(ntatom,3), v(ntatom,3), Em(ntatom), Rm(ntatom), &
-                    pc(ntatom), nnat(100))
+                    pc(ntatom))
 
           ! This section converts the coordinates array and partial charges    !
           ! array received from Gromacs into the r (all positions), rqm (QM    !

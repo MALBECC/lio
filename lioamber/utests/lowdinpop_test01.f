@@ -1,6 +1,6 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       include "../lowdinpop.f"
-       program lowdinpop_test01
+       include "../lowdin_calc.f"
+       program lowdin_calc_test01
        implicit none
        real*8   :: rhomat(2,2),sqsmat(2,2)
        integer  :: atomorb(2)
@@ -25,7 +25,7 @@
        atomorb(2)=2
 
        outvec(:)=0.0d0
-       call lowdinpop(2,2,rhomat,sqsmat,atomorb,outvec)
+       call lowdin_calc(2,2,rhomat,sqsmat,atomorb,outvec)
        write(*,*) 'null vector from null sqs:'
        write(*,*) outvec(1),outvec(2)
        write(*,*) ''
@@ -46,7 +46,7 @@
        atomorb(2)=2
 
        outvec(:)=0.0d0
-       call lowdinpop(2,2,rhomat,sqsmat,atomorb,outvec)
+       call lowdin_calc(2,2,rhomat,sqsmat,atomorb,outvec)
        write(*,*) 'null vector from null rho:'
        write(*,*) outvec(1),outvec(2)
        write(*,*) ''
@@ -67,7 +67,7 @@
        atomorb(2)=2
 
        outvec(:)=0.0d0
-       call lowdinpop(2,2,rhomat,sqsmat,atomorb,outvec)
+       call lowdin_calc(2,2,rhomat,sqsmat,atomorb,outvec)
        write(*,*) 'expected result is (6,3) :'
        write(*,*) outvec(1),outvec(2)
        write(*,*) ''
@@ -88,7 +88,7 @@
        atomorb(2)=2
 
        outvec(:)=0.0d0
-       call lowdinpop(2,2,rhomat,sqsmat,atomorb,outvec)
+       call lowdin_calc(2,2,rhomat,sqsmat,atomorb,outvec)
        write(*,*) 'expected result is (12,6) :'
        write(*,*) outvec(1),outvec(2)
        write(*,*) ''
@@ -109,7 +109,7 @@
        atomorb(2)=1
 
        outvec(:)=0.0d0
-       call lowdinpop(2,1,rhomat,sqsmat,atomorb,outvec)
+       call lowdin_calc(2,1,rhomat,sqsmat,atomorb,outvec)
        write(*,*) 'expected result is (18,0) :'
        write(*,*) outvec(1),outvec(2)
        write(*,*) ''

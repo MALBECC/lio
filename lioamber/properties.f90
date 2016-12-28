@@ -7,8 +7,8 @@
 ! Regarding Electronic Population Analysis:                           [ EPA ]  !
 ! * do_population_analysis (performs the analysis required)                    !
 ! * mulliken_calc    (calculates atomic Mulliken population charges)           !
-! * lowdinpop        (calculates atomic Löwdin population charges)             !
-! * mulliken_write   (handles Mulliken charge printing to output)              !
+! * lowdin_calc      (calculates atomic Löwdin population charges)             !
+! * population_write (handles population/charge printing to output)            !
 ! Regarding Reactivity Indexes:                                       [ RXI ]  !
 ! * get_softness     (gets the molecule's global softness)                     !
 ! * fukui_calc       (calculates CS condensed-to-atoms fukui function)         !
@@ -125,20 +125,19 @@ end subroutine write_forces
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_population_analysis()
    use garcha_mod, only : RMM, Smat, RealRho, M, Enucl, Nuc, Iz, natom, &
-                          mulliken
+                          mulliken, lowdin, sqsm
    use ECP_mod   , only : ecpmode, IzECP
 
    implicit none
-   integer :: M1, M5, IzUsed(natom)
+   integer :: M1, M5, IzUsed(natom), kk
    real*8  :: q(natom)
+
+   ! Needed until we dispose of RMM.
+   M1=1 ; M5=1+M*(M+1)
 
    ! Iz used to write the population file.
    IzUsed = Iz
    if (ecpmode) IzUsed = IzECP
- 
-   ! Needed until we dispose of RMM.
-   M1=1
-   M5=1+M*(M+1)
 
    ! Decompresses and fixes S and RealRho matrixes, which are needed for
    ! population analysis.
@@ -150,7 +149,15 @@ subroutine do_population_analysis()
    ! Performs Mulliken Population Analysis if required.
    if (mulliken) then
        call mulliken_calc(natom,M,RealRho,Smat,Nuc,Iz,q)
-       call mulliken_write(85,natom,IzUsed,q)
+       call population_write(85,natom,IzUsed,q,0)
+   endif
+   ! Performs Löwdin Population Analysis if required.
+   if (lowdin) then 
+       do kk=1,natom
+           q(kk)=real(Iz(kk))
+       enddo
+       call lowdin_calc(M,natom,RealRho,sqsm,Nuc,q)
+       call population_write(85,natom,IzUsed,q,1)
    endif
 
    return
@@ -196,7 +203,7 @@ end subroutine mulliken_calc
 !%% LOWDINPOP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs a Löwdin Population Analysis and outputs atomic charges.            !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine lowdinpop(M, N, rhomat, sqsmat, atomorb, atomicq)
+subroutine lowdin_calc(M, N, rhomat, sqsmat, atomorb, atomicq)
  
     implicit none
     integer,intent(in)   :: M, N, atomorb(M)
@@ -218,17 +225,17 @@ subroutine lowdinpop(M, N, rhomat, sqsmat, atomorb, atomicq)
     enddo
 
     return
-end subroutine lowdinpop
+end subroutine lowdin_calc
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% MULLIKEN_WRITE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Writes Mulliken charges to output.                                           !
+!%% POPULATION_WRITE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Writes Mulliken/Löwdin charges to output.                                    !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine mulliken_write(UID, N, q0, q)
+subroutine population_write(UID, N, q0, q, pop)
 
     implicit none
-    integer, intent(in) :: UID, N, q0(N)
+    integer, intent(in) :: UID, N, q0(N), pop
     real*8 , intent(in) :: q(N)
  
     real*8  :: qtotal
@@ -239,7 +246,8 @@ subroutine mulliken_write(UID, N, q0, q)
     
     write(UID,*)
     write(UID,300)
-    write(UID,301)
+    if (pop.eq.0) write(UID,301)
+    if (pop.eq.1) write(UID,309)
     write(UID,302)
     write(UID,303)
     write(UID,304)
@@ -264,9 +272,9 @@ subroutine mulliken_write(UID, N, q0, q)
 306 FORMAT(8x,"╚════════╬═══════════╬════════════╣")
 307 FORMAT(8x,"         ║   TOTAL   ║",1x,F10.7,1x,"║")
 308 FORMAT(8x,"         ╚═══════════╩════════════╝")
-      
+309 FORMAT(8x,"║    LÖWDIN POPULATION ANALYSIS   ║")     
     return
-end subroutine mulliken_write
+end subroutine population_write
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 

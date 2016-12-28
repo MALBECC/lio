@@ -50,7 +50,6 @@
 
        real*8,dimension(:,:),allocatable :: fockbias
        real*8,dimension(:,:),allocatable :: Xmat,Xtrp,Ymat,Ytrp
-       real*8,dimension(:,:),allocatable :: sqsm
        real*8,dimension(:,:),allocatable :: Vmat
        real*8,dimension(:),  allocatable :: Dvec, fukuip, fukuim, fukuin
 
@@ -218,7 +217,6 @@ c
 !--------------------------------------------------------------------!
        allocate(Xmat(M,M),Xtrp(M,M),Ymat(M,M),Ytrp(M,M))
        allocate(Vmat(M,M),Dvec(M))
-       allocate(sqsm(M,M))
        allocate(fockbias(M,M))
 
        dovv=.false.
@@ -350,6 +348,7 @@ c S = YY^T ; X = (Y^-1)^T
 c => (X^T)SX = 1
 c
       docholesky=.true.
+      if (lowdin) docholesky=.false.
       call g2g_timer_start('cholesky')
       call g2g_timer_sum_start('Overlap decomposition')
       IF (docholesky) THEN
@@ -1519,9 +1518,18 @@ c
 
       call g2g_timer_sum_stop('energy-weighted density')
   
+!     NICO: A partir de aca saque tooodo lo que pude. Tuve que dejar un par de 
+!     variables para poder hacer las cosas, tipo esta nueva Enucl que ahora está
+!     en garchamod. También pasé sqsm a garchamod, y movi su allocate a liomain
+!     así que fijate de sacar esas dos lineas de acá. 
+!     Por ultimo, puse un if arriba para que si lowdin=t, entonces docholesky=f 
+!     porque para lowdin se necesita sqsm.
+!     No me pegues =D
 
 !     Variables needed for further calculations (Populations, Dip, etc).        
       Enucl = En
+
+!   THINGS TO REMOOOOVE
       if (MOD(npas,energy_freq).eq.0) then
 
 ! PROPERTIES CALCULATION - DIPOLE MOMENT (DEBYES)
@@ -1541,13 +1549,6 @@ c
        endif
 !----------------------------------------------------------!
        endif
-
-!       do kk=1,natom
-!         q(kk)=real(Iz(kk))
-!       enddo
-!       call lowdinpop(M,natom,RealRho,sqsm,Nuc,q)
-!       call mulliken_write(85,natom,Iz,q)
-
 
 c outputs final  MO ---------------------
 

@@ -9,7 +9,7 @@
  
 subroutine liomain(E, dipxyz)
     use garcha_mod, only : M, Smat, RealRho, OPEN, writeforces, energy_freq, &
-                           npas
+                           npas, sqsm
     use ecp_mod,    only : ecpmode, IzECP
  
     implicit none
@@ -17,6 +17,7 @@ subroutine liomain(E, dipxyz)
 
     if (.not.allocated(Smat))    allocate(Smat(M,M))
     if (.not.allocated(RealRho)) allocate(RealRho(M,M))
+    if (.not.allocated(sqsm))    allocate(sqsm(M,M))
 
     if(OPEN) then
         if (ecpmode) stop "ECP is unavailable for Open Shell systems."

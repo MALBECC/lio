@@ -50,7 +50,7 @@
        real*8,dimension(:,:),allocatable :: fockbias
        real*8,dimension(:,:),allocatable :: Xmat,Xtrp,Ymat,Ytrp
        real*8,dimension(:,:),allocatable :: Vmat
-       real*8,dimension(:),  allocatable :: Dvec, fukuip, fukuim, fukuin
+       real*8,dimension(:),  allocatable :: Dvec
 
        real*8,allocatable :: eigen_vecs(:,:), eigen_vals(:)
 !--------------------------------------------------------------------!

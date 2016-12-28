@@ -9,11 +9,11 @@
  
 subroutine liomain(E, dipxyz)
     use garcha_mod, only : M, Smat, RealRho, OPEN, writeforces, energy_freq, &
-                           npas, sqsm
+                           npas, sqsm, mulliken, lowdin, dipole
     use ecp_mod,    only : ecpmode, IzECP
  
     implicit none
-    REAL*8  :: dipxyz(3), E
+    REAL*8, intent(inout) :: dipxyz(3), E
 
     if (.not.allocated(Smat))    allocate(Smat(M,M))
     if (.not.allocated(RealRho)) allocate(RealRho(M,M))
@@ -28,12 +28,15 @@ subroutine liomain(E, dipxyz)
  
     ! Perform Mulliken and Lowdin analysis, get fukui functions and dipole.
     if (MOD(npas, energy_freq).eq.0) then
-        call do_population_analysis()
-    endif
 
-    if(writeforces) then
-        if (ecpmode) stop "ECP does not currently feature forces calculation."
-        call write_forces()
+        if (mulliken.or.lowdin) call do_population_analysis()
+
+        if (dipole) call do_dipole(dipxyz, 69)
+
+        if(writeforces) then
+            if (ecpmode) stop "ECP does not feature forces calculation."
+            call write_forces()
+        endif
     endif
 
     return

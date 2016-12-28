@@ -98,7 +98,7 @@ subroutine lio_defaults()
     DENS           = .true.        ; cube_dens_file     = 'dens.cube'   ;
     IGRID          = 2             ; cube_elec          = .false.       ;
     IGRID2         = 2             ; cube_elec_file     = 'field.cube'  ;
-    a0             = 1000.0        ; style              = .true.        ;
+    a0             = 1000.0        ; style              = .false.       ;
     epsilon        = 1.D0          ; allnml             = .true.        ;
     NUNP           = 0             ; energy_freq        = 1             ;
     cube_sqrt_orb  = .false.       ; MEMO               = .true.        ; 
@@ -175,9 +175,6 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
         nqnuc = nqnuc + Iz(i)
     enddo
     nco = ((nqnuc - charge) - Nunp)/2
-
-    ! Header for the file containing dipole moments.
-    if (idip.eq.1) call write_dip_header(69)
 
 !   Prints LIO logo to output and options chosen for the run. 
     if (style) call LIO_LOGO()

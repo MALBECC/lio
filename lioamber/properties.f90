@@ -4,6 +4,7 @@
 ! routines. Currently includes:                                                !
 ! * get_degeneration (gets degeneration and degenerated MOs for a chosen MO)   !
 ! * write_forces     (writes forces to output file)                            !
+! * do_dipole        (calculates dipole moment)                                !
 ! Regarding Electronic Population Analysis:                           [ EPA ]  !
 ! * do_population_analysis (performs the analysis required)                    !
 ! * mulliken_calc    (calculates atomic Mulliken population charges)           !
@@ -114,6 +115,62 @@ subroutine write_forces()
     return
 end subroutine write_forces
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% DO_DIPOLE    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Sets variables up and calls dipole calculation.                              !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine do_dipole(dipxyz, uid)
+    use garcha_mod, only : style
+
+    implicit none
+    integer, intent(in)    :: uid
+    real*8 , intent(inout) :: dipxyz(3)
+    real*8                 :: u
+
+    call g2g_timer_sum_start('dipole')
+    call dip(dipxyz(1), dipxyz(2), dipxyz(3))
+    u = sqrt(dipxyz(1)**2 + dipxyz(2)**2 + dipxyz(3)**2)
+
+    open(unit = uid, file = "dipole_moment")
+    if (style) then
+        write(UID,8698)
+        write(UID,8699)
+        write(UID,8700)
+        write(UID,8701)
+        write(UID,8702)
+        write(UID,8704) dipxyz(1), dipxyz(2), dipxyz(3), u
+    else
+        write(UID,*)
+        write(UID,*) 'DIPOLE MOMENT, X Y Z COMPONENTS AND NORM (DEBYES)'
+        write(UID,*)
+        write(UID,*) dipxyz(1), dipxyz(2), dipxyz(3), u
+    endif
+ 
+    call g2g_timer_sum_stop('dipole')
+
+ 8698 FORMAT(4x,"╔════════════════",&
+      "═════════════════════",&
+      "═════════════════════","═════╗")
+
+ 8699 FORMAT(4x,"║                         Dipole Moment            ", &
+      "             ║")
+ 8700 FORMAT(4x,"╠═══════════════╦", &
+      "═══════════════╦═════",       &
+      "══════════╦══════════",       &
+      "═════╣")
+ 8701 FORMAT(4x,"║       ux      ║       uy      ║       uz     ",&
+      " ║       u       ║")
+ 8702 FORMAT(4x,"╠═══════════════╬", &
+      "═══════════════╬═════",       &
+      "══════════╬══════════",       &
+      "═════╣")
+ 8704 FORMAT(4x,4("║"F13.9,2x),"║")
+
+    return
+end subroutine do_dipole
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%% ELECTRONIC POPULATION ANALYSIS [ EPA ] %%%%%%%%%%%%%%%%%%%%%!

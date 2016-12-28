@@ -1530,25 +1530,6 @@ c
       Enucl = En
 
 !   THINGS TO REMOOOOVE
-      if (MOD(npas,energy_freq).eq.0) then
-
-! PROPERTIES CALCULATION - DIPOLE MOMENT (DEBYES)
-       if (idip.eq.1) then
-         call g2g_timer_sum_start('dipole')
-         call dip(ux,uy,uz)
-         u=sqrt(ux**2+uy**2+uz**2)
-
-!         write(*,*)
-!         write(*,*) 'DIPOLE MOMENT, X Y Z COMPONENTS AND NORM (DEBYES)'
-         write(69,8704) ux,uy,uz,u
-!         write(*,*)
-         dipxyz(1)=ux
-         dipxyz(2)=uy
-         dipxyz(3)=uz
-         call g2g_timer_sum_stop('dipole')
-       endif
-!----------------------------------------------------------!
-       endif
 
 c outputs final  MO ---------------------
 
@@ -1696,7 +1677,6 @@ c       E=E*627.509391D0
  8505 FORMAT(4x,"╚════════════════",
      >"══╩══════╩═══════╝")
 
- 8704 FORMAT(4x,4("║"F13.9,2x),"║")
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       !call g2g_timer_sum_stop('SCF');

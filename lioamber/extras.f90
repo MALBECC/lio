@@ -503,35 +503,3 @@
  8606 FORMAT(4x,"╚══════════╩════════════╩══════════&
  ═══╝")
         END SUBROUTINE WRITE_CONV_STATUS
-
-        SUBROUTINE WRITE_DIP_HEADER(UID)
-        IMPLICIT NONE
-        INTEGER, INTENT(IN) :: UID
-
-        OPEN(UNIT=UID,FILE="dipole_moment")
-        write(UID,8698)
-        write(UID,8699)
-        write(UID,8700)
-        write(UID,8701)
-        write(UID,8702)
-
-
- 8698 FORMAT(4x,"╔════════════════",      &
-                "═════════════════════",  &
-                "═════════════════════", "═════╗")
-
- 8699 FORMAT(4x,"║                         Dipole Moment            ", &
-      "             ║")
- 8700 FORMAT(4x,"╠═══════════════╦", &
-      "═══════════════╦═════",       &
-      "══════════╦══════════",       &
-      "═════╣")
- 8701 FORMAT(4x,"║       ux      ║       uy      ║       uz     ",&
-      " ║       u       ║")
- 8702 FORMAT(4x,"╠═══════════════╬", &
-      "═══════════════╬═════",       &
-      "══════════╬══════════",       &
-      "═════╣")
-
-        RETURN
-        END SUBROUTINE WRITE_DIP_HEADER

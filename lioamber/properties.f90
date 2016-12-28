@@ -5,6 +5,7 @@
 ! * get_degeneration (gets degeneration and degenerated MOs for a chosen MO)   !
 ! * write_forces     (writes forces to output file)                            !
 ! * do_dipole        (calculates dipole moment)                                !
+! * write_dipole     (writes dipole moment)                                    !
 ! Regarding Electronic Population Analysis:                           [ EPA ]  !
 ! * do_population_analysis (performs the analysis required)                    !
 ! * mulliken_calc    (calculates atomic Mulliken population charges)           !
@@ -117,12 +118,10 @@ end subroutine write_forces
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% DO_DIPOLE    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% DO_DIPOLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Sets variables up and calls dipole calculation.                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_dipole(dipxyz, uid)
-    use garcha_mod, only : style
-
     implicit none
     integer, intent(in)    :: uid
     real*8 , intent(inout) :: dipxyz(3)
@@ -131,6 +130,24 @@ subroutine do_dipole(dipxyz, uid)
     call g2g_timer_sum_start('dipole')
     call dip(dipxyz(1), dipxyz(2), dipxyz(3))
     u = sqrt(dipxyz(1)**2 + dipxyz(2)**2 + dipxyz(3)**2)
+ 
+    call write_dipole(dipxyz, u, uid)
+    call g2g_timer_sum_stop('dipole')
+ 
+    return
+end subroutine do_dipole
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% WRITE_DIPOLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Sets variables up and calls dipole calculation.                              !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine write_dipole(dipxyz, u, uid)
+    use garcha_mod, only : style
+
+    implicit none
+    integer, intent(in) :: uid
+    real*8 , intent(in) :: dipxyz(3), u
 
     open(unit = uid, file = "dipole_moment")
     if (style) then
@@ -146,8 +163,6 @@ subroutine do_dipole(dipxyz, uid)
         write(UID,*)
         write(UID,*) dipxyz(1), dipxyz(2), dipxyz(3), u
     endif
- 
-    call g2g_timer_sum_stop('dipole')
 
  8698 FORMAT(4x,"╔════════════════",&
       "═════════════════════",&
@@ -168,7 +183,7 @@ subroutine do_dipole(dipxyz, uid)
  8704 FORMAT(4x,4("║"F13.9,2x),"║")
 
     return
-end subroutine do_dipole
+end subroutine write_dipole
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 

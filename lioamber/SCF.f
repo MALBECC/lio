@@ -7,7 +7,7 @@
 !c
 !c Dario Estrin, 1992
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-      subroutine SCF(E,dipxyz)
+      subroutine SCF(E)
       use linear_algebra
       use garcha_mod
       use mathsubs
@@ -22,7 +22,6 @@
       implicit real*8 (a-h,o-z)
       integer:: l
        dimension q(natom),work(1000),IWORK(1000)
-       REAL*8 , intent(inout)  :: dipxyz(3)
        real*8, dimension (:,:), ALLOCATABLE::xnano,znano,scratch
        real*8, dimension (:,:), ALLOCATABLE::scratch1
        real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15,rmm13,

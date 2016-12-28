@@ -23,7 +23,7 @@ subroutine liomain(E, dipxyz)
         if (ecpmode) stop "ECP is unavailable for Open Shell systems."
         call SCFOP(E, dipxyz)
     else
-        call SCF(E, dipxyz)
+        call SCF(E)
     endif
  
     ! Perform Mulliken and Lowdin analysis, get fukui functions and dipole.

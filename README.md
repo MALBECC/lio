@@ -19,13 +19,17 @@ COMPILATION
 ------------
 
 The program can be compiled using the make command. The following options can be used to modify
-compilation. For example, the following compiles the GPU kernels.
+compilation. For example, the following compiles the GPU kernels:
 
 ```
-make cuda=1
+make cuda=1 gpu=1
 ```
 
-Available options:
+When using Intel's ICC/MKL or NVIDIA's CUDA libraries, add them to LD\_LIBRARY\_PATH environment variable before compilation. Available options for compilation include:
+
+* _cpu_: compile CPU version.
+
+* _gpu_: compile GPU version.
 
 * _dbg_: enable debugging information. It also enables several asserts which degrade performance.
 
@@ -38,6 +42,36 @@ Available options:
 * *cpu_recompute*: recomputes=0 mantains in memory the value of the functions for each point (more memory is used but execution time goes down by around 10%). Only used for the CPU kernels.
 
 * *full_double*: generate the application using full double precision instead of mixed precision (which is the default).
+
+INSTALLATION
+------------
+
+Compilation will produce two dynamic libraries, which should be added to LD\_LIBRARY\_PATH and PATH environment variables.
+
+  1. g2g/libg2g.so
+  2. lioamber/liblio-g2g.so
+
+Then set LIOHOME environment variable, pointing to LIO location.
+
+INSTALLATION WITH AMBER
+-----------------------
+
+  1. Compile LIO as indicated above. 
+  2. Be sure to check (or edit if needed) the /src/configure2 file in AMBER so that liolibs variable correctly points to LIO library folders.
+  3. Configure and compile AMBER with the -lio option (see Amber installation instructions).
+  4. Done!
+
+INSTALLATION WITH GROMACS
+-------------------------
+
+NOTE: GROMACS is not yet officially supported on the other side, but we have our own up-to-date Gromacs repository with the files needed.
+  1. Compile LIO as indicated above.
+  2. Compile GROMACS as usual, but changing compilation flags (see Gromacs installation instructions):
+
+```
+cmake -DGMX_GPU=0 -DGMX_THREAD_MPI=0 -DGMX_QMMM_PROGRAM="lio" -DLIO_LINK_FLAGS="-L/usr/lib -L/usr/lib64 -L/PATHTOLIOLIBRARIES -lg2g -llio-g2g"
+```
+  3. Done!
 
 TESTS
 -----
@@ -72,32 +106,6 @@ can be done either by running a clean compile with make, or by executing
 ```
   make hooks
 ```
-
-INSTALLATION
-------------
-
-After setting LD\_LIBRARY\_PATH to point to the MKL and ICC libraries.
-
-Sample compilation for CPU
-
-```
-  make -j cpu=1 time=1
-```
-
-After setting LD\_LIBRARY\_PATH to point to both MKL, ICC and CUDA libraries.
-
-Sample compilation for GPU
-
-```
-  make -j cuda=1 time=1
-```
-
-Both result in 2 dynamic libraries:
-
-  1. g2g/libg2g.so
-  2. lioamber/liblio-g2g.so
-
-Be sure to add both dynamic libraries to LD\_LIBRARY\_PATH before running Amber.
 
 PUBLICATIONS
 ------------

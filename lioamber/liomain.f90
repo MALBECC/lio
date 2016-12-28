@@ -8,8 +8,9 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
  
 subroutine liomain(E, dipxyz)
-    use garcha_mod, only : M, Smat, RealRho, OPEN, writeforces
-    use ecp_mod,    only : ecpmode
+    use garcha_mod, only : M, Smat, RealRho, OPEN, writeforces, energy_freq, &
+                           npas
+    use ecp_mod,    only : ecpmode, IzECP
  
     implicit none
     REAL*8  :: dipxyz(3), E
@@ -22,6 +23,11 @@ subroutine liomain(E, dipxyz)
         call SCFOP(E, dipxyz)
     else
         call SCF(E, dipxyz)
+    endif
+ 
+    ! Perform Mulliken and Lowdin analysis, get fukui functions and dipole.
+    if (MOD(npas, energy_freq).eq.0) then
+        call do_population_analysis()
     endif
 
     if(writeforces) then

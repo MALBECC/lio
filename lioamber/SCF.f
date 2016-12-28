@@ -1518,14 +1518,12 @@ c
       enddo
 
       call g2g_timer_sum_stop('energy-weighted density')
+  
 
-
+!     Variables needed for further calculations (Populations, Dip, etc).        
+      Enucl = En
       if (MOD(npas,energy_freq).eq.0) then
-c
-c      if (nopt.eq.1) then
-c
 
-!----------------------------------------------------------!
 ! PROPERTIES CALCULATION - DIPOLE MOMENT (DEBYES)
        if (idip.eq.1) then
          call g2g_timer_sum_start('dipole')
@@ -1542,53 +1540,15 @@ c
          call g2g_timer_sum_stop('dipole')
        endif
 !----------------------------------------------------------!
+       endif
 
-
-       call g2g_timer_sum_start('Mulliken')
-! MULLIKEN POPULATION ANALYSIS (FFR - Simplified)
-!--------------------------------------------------------------------!
-
-       call int1(En)
-       call spunpack('L',M,RMM(M5),Smat)
-       call spunpack('L',M,RMM(M1),RealRho)
-       call fixrho(M,RealRho)
-       call mulliken_calc(natom,M,RealRho,Smat,Nuc,Iz,q)
-
-
-       if (ecpmode) then
-!Modification for Effective Core Potential, Nick
-          call mulliken_write(85,natom,IzECP,q)
-       else
-          call mulliken_write(85,natom,Iz,q)
-       end if
-
-! NOTE: If 'mulliken_calc' is renamed as 'mulliken', the code will
-! malfunction. I DON'T KNOW WHY.
-!--------------------------------------------------------------------!
-       call g2g_timer_sum_stop('Mulliken')
 !       do kk=1,natom
 !         q(kk)=real(Iz(kk))
 !       enddo
 !       call lowdinpop(M,natom,RealRho,sqsm,Nuc,q)
 !       call mulliken_write(85,natom,Iz,q)
-       endif
 
 
-c
-c        endif
-c ELECTRICAL POTENTIAL AND POINT CHARGES EVALUATION
-c
-c        if (icharge.eq.1) then
-c          Q1=-(2*NCO+Nunp)
-c         do n=1,natom
-c          Q1=Q1+Iz(n)
-c         enddo
-c          stop
-c         call charge(NORM,natom,r,Nuc,Iz,M,Md,ncont,nshell,
-c     >            c,a,RMM,map,Q1)
-c        endif
-c
-c--------------------------------------------------------------
 c outputs final  MO ---------------------
 
       if (MOD(npas,restart_freq).eq.0) then

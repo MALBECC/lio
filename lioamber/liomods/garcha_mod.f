@@ -121,11 +121,12 @@ c      parameter rmintsol=16.0D0
       double precision :: good_cut
       double precision :: Etold
 
-!-Variables for library reading
+!-Variables for library reading.
       logical :: omit_bas
-!-Variables for outout format
+!-Variables for outout format.
       logical :: style, allnml
-      logical :: fukui
+!-Variables for property calculations.
+      logical :: fukui, dipole, lowdin, mulliken 
 
 !     parameter (nng=100)
       integer :: nng, max_func
@@ -141,6 +142,8 @@ c      parameter rmintsol=16.0D0
       real*8  :: free_global_memory, sphere_radius, little_cube_size
       integer :: min_points_per_cube, max_function_exponent
 
+! Energy contributions
+      real*8 :: Enucl
 
 
        end module

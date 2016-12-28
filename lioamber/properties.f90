@@ -5,6 +5,7 @@
 ! * get_degeneration (gets degeneration and degenerated MOs for a chosen MO)   !
 ! * write_forces     (writes forces to output file)                            !
 ! Regarding Electronic Population Analysis:                           [ EPA ]  !
+! * do_population_analysis (performs the analysis required)                    !
 ! * mulliken_calc    (calculates atomic Mulliken population charges)           !
 ! * lowdinpop        (calculates atomic Löwdin population charges)             !
 ! * mulliken_write   (handles Mulliken charge printing to output)              !
@@ -117,6 +118,43 @@ end subroutine write_forces
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%% ELECTRONIC POPULATION ANALYSIS [ EPA ] %%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% DO_POPULATION_ANALYSIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Performs the different population analyisis available.                       !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine do_population_analysis()
+   use garcha_mod, only : RMM, Smat, RealRho, M, Enucl, Nuc, Iz, natom, &
+                          mulliken
+   use ECP_mod   , only : ecpmode, IzECP
+
+   implicit none
+   integer :: M1, M5, IzUsed(natom)
+   real*8  :: q(natom)
+
+   ! Iz used to write the population file.
+   IzUsed = Iz
+   if (ecpmode) IzUsed = IzECP
+ 
+   ! Needed until we dispose of RMM.
+   M1=1
+   M5=1+M*(M+1)
+
+   ! Decompresses and fixes S and RealRho matrixes, which are needed for
+   ! population analysis.
+   call int1(Enucl)
+   call spunpack('L',M,RMM(M5),Smat)
+   call spunpack('L',M,RMM(M1),RealRho)
+   call fixrho(M,RealRho)
+
+   ! Performs Mulliken Population Analysis if required.
+   if (mulliken) then
+       call mulliken_calc(natom,M,RealRho,Smat,Nuc,Iz,q)
+       call mulliken_write(85,natom,IzUsed,q)
+   endif
+
+   return
+endsubroutine do_population_analysis
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% MULLIKEN_CALC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -23,7 +23,7 @@ subroutine read_options(inputFile, charge)
                            max_function_exponent, min_points_per_cube,         &
                            assign_all_functions, remove_zero_weights,          &
                            energy_all_iterations, free_global_memory,          &
-                           sphere_radius
+                           sphere_radius, dipole, lowdin, mulliken
 
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, verbose_ECP,  &
                            cutECP, local_nonlocal, ecp_debug, FOCK_ECP_read,   &
@@ -38,14 +38,15 @@ subroutine read_options(inputFile, charge)
     logical :: fileExists
 
                    ! Common LIO variables.
-    namelist /lio/ OPEN, NMAX, Nunp, VCINP, frestartin, GOLD, told, Etold,     &
-                   rmax, rmaxs, predcoef, idip, writexyz, intsoldouble, DIIS,  &
-                   ndiis, dgtrig, Iexch, integ, dens, igrid, igrid2, good_cut, &
-                   hybrid_converg, style, allnml, frestart, fukui,             &
+    namelist /lio/ OPEN, NMAX, Nunp, VCINP, GOLD, told, Etold, rmax, rmaxs,    &
+                   predcoef, idip, writexyz, intsoldouble, DIIS, ndiis, dgtrig,&
+                   Iexch, integ, dens, igrid, igrid2, good_cut, hybrid_converg,&
+                   ! File Input/Output.
+                   frestartin, style, allnml, frestart, fukui, dipole, lowdin, &
+                   mulliken, writeforces, int_basis, fitting_set, basis_set,   &
                    ! DFT and TD-DFT Variables.
                    timedep, tdstep, ntdstep, propagator, NBCH, field, epsilon, &
-                   a0, exter, Fx, Fy, Fz, tdrestart, writedens, writeforces,   &
-                   basis_set, fitting_set, int_basis,                          &
+                   a0, exter, Fx, Fy, Fz, tdrestart, writedens,                &
                    ! Effective Core Potential Variables.
                    ecpmode, ecptypes, tipeECP, ZlistECP, cutECP, ecp_debug,    &
                    local_nonlocal, ecp_debug, ecp_full_range_int, verbose_ECP, &

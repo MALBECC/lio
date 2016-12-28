@@ -67,7 +67,6 @@ INSTALLATION WITH GROMACS
 NOTE: GROMACS is not yet officially supported on the other side, but we have our own up-to-date Gromacs repository with the files needed.
   1. Compile LIO as indicated above.
   2. Compile GROMACS as usual, but changing compilation flags (see Gromacs installation instructions):
-
 ```
 cmake -DGMX_GPU=0 -DGMX_THREAD_MPI=0 -DGMX_QMMM_PROGRAM="lio" -DLIO_LINK_FLAGS="-L/usr/lib -L/usr/lib64 -L/PATHTOLIOLIBRARIES -lg2g -llio-g2g"
 ```

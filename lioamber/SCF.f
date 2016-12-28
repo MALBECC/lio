@@ -1521,12 +1521,16 @@ c
 !     variables para poder hacer las cosas, tipo esta nueva Enucl que ahora está
 !     en garchamod. También pasé sqsm a garchamod, y movi su allocate a liomain
 !     así que fijate de sacar esas dos lineas de acá. 
+!     Tambien saqué dipxyz, se calcula en otra parte.
 !     Por ultimo, puse un if arriba para que si lowdin=t, entonces docholesky=f 
 !     porque para lowdin se necesita sqsm.
 !     No me pegues =D
 
 !     Variables needed for further calculations (Populations, Dip, etc).        
       Enucl = En
+      do kk=1, M
+          Eorbs(kk) = RMM(M13+kk-1)
+      enddo
 
 !   THINGS TO REMOOOOVE
 
@@ -1584,18 +1588,6 @@ c orbital/density plot
         endif
 
 
-      if (fukui) then
-          allocate(fukuim(natom), fukuin(natom), fukuip(natom))
-          call fukui_calc(X(1,M2+1), NCO, M, natom, Nuc, Smat, fukuim, 
-     >                    fukuip, fukuin, RMM(M13))
-
-          call get_softness(RMM(M13+NCO-1), RMM(M13+NCO), 
-     >                      RMM(M13+NCO-1), RMM(M13+NCO), softness)
-          call fukui_write(fukuim, fukuip, fukuin, natom, Iz, 
-     >                     softness)
-          deallocate(fukuim, fukuin, fukuip)
-
-      endif
 c
 c-------------------------------------------------
 c      endif

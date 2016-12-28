@@ -144,8 +144,10 @@ c      parameter rmintsol=16.0D0
 
 ! Energy contributions
       real*8 :: Enucl
+      real*8,dimension(:)  ,allocatable :: Eorbs
 ! need this for lowdin
       real*8,dimension(:,:),allocatable :: sqsm
+      
 
        end module
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

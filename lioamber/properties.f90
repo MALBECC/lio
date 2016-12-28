@@ -12,6 +12,7 @@
 ! * lowdin_calc      (calculates atomic Löwdin population charges)             !
 ! * population_write (handles population/charge printing to output)            !
 ! Regarding Reactivity Indexes:                                       [ RXI ]  !
+! * do_fukui         (performs Fukui function calculation and printing)        !
 ! * get_softness     (gets the molecule's global softness)                     !
 ! * fukui_calc       (calculates CS condensed-to-atoms fukui function)         !
 ! * fukui_calc_os    (calculates CS condensed-to-atoms fukui function)         !
@@ -369,6 +370,29 @@ subroutine get_softness(enAH, enAL, enBH, enBL, softness)
 
     return
 end subroutine get_softness
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% DO_FUKUI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Performs Fukui function calls and printing.                                  !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine do_fukui()
+    use garcha_mod, only : X, NCO, M, natom, Nuc, Smat, Eorbs, Iz, OPEN
+
+    implicit none
+    real*8  :: fukuim(natom), fukuin(natom), fukuip(natom), softness
+
+    if (OPEN) then
+    else
+        call fukui_calc(X(1,M*2+1), NCO, M, natom, Nuc, Smat, fukuim, fukuip, &
+                        fukuin, Eorbs)
+        call get_softness(Eorbs(NCO-1), Eorbs(NCO), Eorbs(NCO-1), Eorbs(NCO), &
+                          softness)
+        call fukui_write(fukuim, fukuip, fukuin, natom, Iz, softness)
+    endif
+ 
+    return
+end subroutine do_fukui
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -16,6 +16,9 @@
 !--------------------------------------------------------------------!
        if (allocated(Smat))    deallocate(Smat)
        if (allocated(RealRho)) deallocate(RealRho)
+       if (allocated(sqsm))    deallocate(sqsm)
+       if (allocated(Eorbs))   deallocate(Eorbs)
+
 !--------------------------------------------------------------------!
 
 

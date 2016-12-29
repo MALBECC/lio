@@ -8,9 +8,10 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
  
 subroutine liomain(E, dipxyz)
-    use garcha_mod, only : M, Smat, RealRho, OPEN, writeforces, energy_freq, &
-                           npas, sqsm, mulliken, lowdin, dipole, Eorbs, fukui
-    use ecp_mod,    only : ecpmode, IzECP
+    use garcha_mod, only : M, Smat, RealRho, OPEN, writeforces, energy_freq,   &
+                           restart_freq, npas, sqsm, mulliken, lowdin, dipole, &
+                           Eorbs, fukui
+    use ecp_mod   , only : ecpmode, IzECP
  
     implicit none
     REAL*8, intent(inout) :: dipxyz(3), E
@@ -41,6 +42,8 @@ subroutine liomain(E, dipxyz)
             call write_forces()
         endif
     endif
+
+    if ((restart_freq.gt.0).and.(MOD(npas, restart_freq).eq.0)) call write_restart(88)
 
     return
 end subroutine liomain

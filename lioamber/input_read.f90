@@ -44,6 +44,7 @@ subroutine read_options(inputFile, charge)
                    ! File Input/Output.
                    frestartin, style, allnml, frestart, fukui, dipole, lowdin, &
                    mulliken, writeforces, int_basis, fitting_set, basis_set,   &
+                   restart_freq,                                               &
                    ! DFT and TD-DFT Variables.
                    timedep, tdstep, ntdstep, propagator, NBCH, field, epsilon, &
                    a0, exter, Fx, Fy, Fz, tdrestart, writedens,                &

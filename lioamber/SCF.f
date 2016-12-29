@@ -1533,28 +1533,6 @@ c
       enddo
 
 !   THINGS TO REMOOOOVE
-
-c outputs final  MO ---------------------
-
-      if (MOD(npas,restart_freq).eq.0) then
-      call g2g_timer_sum_start('restart write')
-      rewind 88
-      do l=1,M
-        do n=1,M
-          X(indexii(l),M+n)=X(l,M2+n)
-        enddo
-      enddo
-c
-
-      do l=1,M
-c graba un restart de los coeficientes
-        write(88,400) (X(l,M+n),n=1,NCO)
-      enddo
-
-
-      call g2g_timer_sum_stop('restart write')
-      endif
-c-------------------------------------------------
 c writes down MO coefficients and orbital energies
 c 
       if(1.gt.2) then

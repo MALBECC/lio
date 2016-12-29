@@ -49,7 +49,7 @@ objects += density.o
 objects += extras.o
 objects += fterm_biaspot.o
 objects += elec.o
-objects += properties.o
+objects += properties.o write_output.o
 
 #     Trying a new way of makefile organization: put every important
 # information inside of the module.mk

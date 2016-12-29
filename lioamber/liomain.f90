@@ -10,7 +10,7 @@
 subroutine liomain(E, dipxyz)
     use garcha_mod, only : M, Smat, RealRho, OPEN, writeforces, energy_freq,   &
                            restart_freq, npas, sqsm, mulliken, lowdin, dipole, &
-                           Eorbs, fukui
+                           Eorbs, fukui, print_coeffs
     use ecp_mod   , only : ecpmode, IzECP
  
     implicit none
@@ -37,10 +37,12 @@ subroutine liomain(E, dipxyz)
   
         if (fukui) call do_fukui()
 
-        if(writeforces) then
+        if (writeforces) then
             if (ecpmode) stop "ECP does not feature forces calculation."
             call write_forces()
         endif
+
+        if (print_coeffs) call print_orbitals(29)
     endif
 
     if ((restart_freq.gt.0).and.(MOD(npas, restart_freq).eq.0)) call write_restart(88)

@@ -23,7 +23,7 @@ subroutine read_options(inputFile, charge)
                            max_function_exponent, min_points_per_cube,         &
                            assign_all_functions, remove_zero_weights,          &
                            energy_all_iterations, free_global_memory,          &
-                           sphere_radius, dipole, lowdin, mulliken
+                           sphere_radius, dipole, lowdin, mulliken, print_coeffs
 
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, verbose_ECP,  &
                            cutECP, local_nonlocal, ecp_debug, FOCK_ECP_read,   &
@@ -44,7 +44,7 @@ subroutine read_options(inputFile, charge)
                    ! File Input/Output.
                    frestartin, style, allnml, frestart, fukui, dipole, lowdin, &
                    mulliken, writeforces, int_basis, fitting_set, basis_set,   &
-                   restart_freq,                                               &
+                   restart_freq, print_coeffs,                                 &
                    ! DFT and TD-DFT Variables.
                    timedep, tdstep, ntdstep, propagator, NBCH, field, epsilon, &
                    a0, exter, Fx, Fy, Fz, tdrestart, writedens,                &

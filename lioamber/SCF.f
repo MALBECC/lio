@@ -1532,25 +1532,8 @@ c
           Eorbs(kk) = RMM(M13+kk-1)
       enddo
 
-!   THINGS TO REMOOOOVE
-c writes down MO coefficients and orbital energies
-c 
-      if(1.gt.2) then
-        write(29,*) 'ORBITAL COEFFICIENTS eh AND ENERGIES, CLOSED SHELL'
-        do n=1,NCO
-          write(29,850) n,RMM(M13+n-1)
-          write(29,400) (X(l,M2+n),l=1,M)
-        enddo
-        do n=NCO+1,M
-          write(29,851) n,RMM(M13+n-1)
-          write(29,400) (X(l,M2+n),l=1,M)
-        enddo
-        close(29)
-      endif
-
-
+!     Performs orbital/density plots.
         if (cube_dens.or.cube_orb.or.cube_elec) then
-c orbital/density plot
           call g2g_timer_sum_start('cube gen')
           kk=0
 
@@ -1565,19 +1548,13 @@ c orbital/density plot
           call g2g_timer_sum_stop('cube gen')
         endif
 
-
-c
-c-------------------------------------------------
-c      endif
       if(DIIS) then
         deallocate (Y,Ytrans,Xtrans,fock,fockm,rho,FP_PFm,
      >  znano,EMAT, bcoef, suma,rho1, scratch, scratch1)
       endif
 
-!      deallocate (xnano,rmm5,rmm15)
       deallocate (xnano)
       deallocate (rmm5)
-!	write(19,*) rmm15
       deallocate (rmm15)
 
 
@@ -1610,7 +1587,6 @@ c       E=E*627.509391D0
       call g2g_timer_sum_stop('SCF')
  500  format('SCF TIME ',I6,' sec')
  450  format ('SCF ENERGY = ',F19.12)
- 400  format(4(E14.7E2,2x))
  300  format(I3,E14.6,2x,F14.7)
  600  format('  ENERGY CONTRIBUTIONS IN A.U.')
  610  format(2x,'ONE ELECTRON',9x,'COULOMB',11x,'NUCLEAR')
@@ -1622,9 +1598,6 @@ c       E=E*627.509391D0
  625  format(F14.7)
  760  format(I3,9x,I3,6x,F10.4)
  770  format('ATOM #',4x,'ATOM TYPE',4x,'POPULATION')
- 850  format('MOLECULAR ORBITAL #',2x,I3,3x,'ORBITAL ENERGY ',F14.7)
- 851  format('MOLECULAR ORBITAL #',2x,I3,3x,'ORBITAL ENERGY ',F14.7,
-     >    '(NON OCC.)')
  900  format(3(F15.9,2x),2x,F15.9)
  777  format(4(F8.4,2x))
  778  format('C',2x,3(F8.4,2x))

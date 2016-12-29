@@ -126,7 +126,7 @@ c      parameter rmintsol=16.0D0
 !-Variables for outout format.
       logical :: style, allnml
 !-Variables for property calculations.
-      logical :: fukui, dipole, lowdin, mulliken 
+      logical :: fukui, dipole, lowdin, mulliken, print_coeffs
 
 !     parameter (nng=100)
       integer :: nng, max_func

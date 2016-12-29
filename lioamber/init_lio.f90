@@ -34,7 +34,7 @@ subroutine lio_defaults()
                            max_function_exponent, min_points_per_cube,         &
                            assign_all_functions, remove_zero_weights,          &
                            energy_all_iterations, free_global_memory, dipole,  &
-                           lowdin, mulliken
+                           lowdin, mulliken, print_coeffs
 
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,       &
                            local_nonlocal, ecp_debug, ecp_full_range_int,      &
@@ -81,6 +81,7 @@ subroutine lio_defaults()
     restart_freq   = 1             ; writeforces        = .false.       ;
     fukui          = .false.       ; lowdin             = .false.       ;
     mulliken       = .false.       ; dipole             = .false.       ;
+    print_coeffs   = .false.       ;
 
 !   Old GPU_options
     max_function_exponent = 10     ; little_cube_size     = 8.0         ;

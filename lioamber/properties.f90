@@ -3,7 +3,7 @@
 ! This file contains several molecular properties calculation and printing     !
 ! routines. Currently includes:                                                !
 ! * get_degeneration (gets degeneration and degenerated MOs for a chosen MO)   !
-! * write_forces     (writes forces to output file)                            !
+! * do_forces        (calculates forces/gradients)                             !
 ! * do_dipole        (calculates dipole moment)                                !
 ! * write_dipole     (writes dipole moment)                                    !
 ! Regarding Electronic Population Analysis:                           [ EPA ]  !
@@ -73,7 +73,7 @@ end subroutine get_degeneration
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% WRITE_FORCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% DO_FORCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Calculates forces for QM and MM regions and writes them to output.           !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_forces(uid)
@@ -110,26 +110,6 @@ end subroutine do_forces
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% WRITE_FORCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Calculates forces for QM and MM regions and writes them to output.           !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine write_forces(dxyz, natom, offset, uid)
-    implicit none
-    integer, intent(in) :: uid, natom, offset
-    real*8 , intent(in) :: dxyz(natom, 3)
-    integer             :: kk
-    
-    do kk=offset, offset+natom
-        write(uid,100) kk, dxyz(kk, 1), dxyz(kk, 2), dxyz(kk, 3)
-    enddo
-
-100 format (I5,2x,f10.6,2x,f10.6,2x,f10.6)
-
-    return
-end subroutine write_forces
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% DO_DIPOLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Sets variables up and calls dipole calculation.                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -149,55 +129,6 @@ subroutine do_dipole(dipxyz, uid)
     return
 end subroutine do_dipole
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% WRITE_DIPOLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Sets variables up and calls dipole calculation.                              !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine write_dipole(dipxyz, u, uid)
-    use garcha_mod, only : style
-
-    implicit none
-    integer, intent(in) :: uid
-    real*8 , intent(in) :: dipxyz(3), u
-
-    open(unit = uid, file = "dipole_moment")
-    if (style) then
-        write(UID,8698)
-        write(UID,8699)
-        write(UID,8700)
-        write(UID,8701)
-        write(UID,8702)
-        write(UID,8704) dipxyz(1), dipxyz(2), dipxyz(3), u
-    else
-        write(UID,*)
-        write(UID,*) 'DIPOLE MOMENT, X Y Z COMPONENTS AND NORM (DEBYES)'
-        write(UID,*)
-        write(UID,*) dipxyz(1), dipxyz(2), dipxyz(3), u
-    endif
-
- 8698 FORMAT(4x,"╔════════════════",&
-      "═════════════════════",&
-      "═════════════════════","═════╗")
-
- 8699 FORMAT(4x,"║                         Dipole Moment            ", &
-      "             ║")
- 8700 FORMAT(4x,"╠═══════════════╦", &
-      "═══════════════╦═════",       &
-      "══════════╦══════════",       &
-      "═════╣")
- 8701 FORMAT(4x,"║       ux      ║       uy      ║       uz     ",&
-      " ║       u       ║")
- 8702 FORMAT(4x,"╠═══════════════╬", &
-      "═══════════════╬═════",       &
-      "══════════╬══════════",       &
-      "═════╣")
- 8704 FORMAT(4x,4("║"F13.9,2x),"║")
-
-    return
-end subroutine write_dipole
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%% ELECTRONIC POPULATION ANALYSIS [ EPA ] %%%%%%%%%%%%%%%%%%%%%!
@@ -284,7 +215,7 @@ subroutine mulliken_calc(N, M, RealRho, Smat, NofM, q0, q)
 end subroutine mulliken_calc
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!%% LOWDINPOP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% LOWDIN_CALC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs a Löwdin Population Analysis and outputs atomic charges.            !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine lowdin_calc(M, N, rhomat, sqsmat, atomorb, atomicq)
@@ -310,55 +241,6 @@ subroutine lowdin_calc(M, N, rhomat, sqsmat, atomorb, atomicq)
 
     return
 end subroutine lowdin_calc
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% POPULATION_WRITE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Writes Mulliken/Löwdin charges to output.                                    !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine population_write(UID, N, q0, q, pop)
-
-    implicit none
-    integer, intent(in) :: UID, N, q0(N), pop
-    real*8 , intent(in) :: q(N)
- 
-    real*8  :: qtotal
-    integer :: i
-
-    call g2g_timer_start('mulliken_write')
-    qtotal=0.d0
-    
-    write(UID,*)
-    write(UID,300)
-    if (pop.eq.0) write(UID,301)
-    if (pop.eq.1) write(UID,309)
-    write(UID,302)
-    write(UID,303)
-    write(UID,304)
-    do i=1,N
-        qtotal=qtotal+q(i)
-        write(UID,305) i, q0(i), q(i)
-    enddo
-    write(UID,306)
-    write(UID,307) qtotal
-    write(UID,308)
-    write(UID,*)
-
-    call g2g_timer_stop('mulliken_write')
-
-300 FORMAT(8x,"╔═════════════════&
-    ════════════════╗")
-301 FORMAT(8x,"║   MULLIKEN POPULATION ANALYSIS  ║")
-302 FORMAT(8x,"╠════════╦═══════════╦════════════╣")
-303 FORMAT(8x,"║ ATOM # ║ ATOM TYPE ║ POPULATION ║")
-304 FORMAT(8x,"╠════════╬═══════════╬════════════╣")
-305 FORMAT(8x,"║",2x,i3,3x,"║"3x,i3,5x,"║",1x,F10.7,1x,"║")
-306 FORMAT(8x,"╚════════╬═══════════╬════════════╣")
-307 FORMAT(8x,"         ║   TOTAL   ║",1x,F10.7,1x,"║")
-308 FORMAT(8x,"         ╚═══════════╩════════════╝")
-309 FORMAT(8x,"║    LÖWDIN POPULATION ANALYSIS   ║")     
-    return
-end subroutine population_write
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 
@@ -539,25 +421,4 @@ subroutine fukui_calc_os(coefAlp, coefBet, nAlpha, nBeta, M, N, NofM, &
     
     return
 end subroutine fukui_calc_os
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% FUKUI_WRITE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Writes Fukui function and local softness to output.                          !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine fukui_write(fukuiNeg, fukuiPos, fukuiRad, N, Iz, soft)
-      
-    implicit none
-    integer, intent(in) :: N, Iz(N)
-    real*8 , intent(in) :: fukuiNeg(N), fukuiPos(N), fukuiRad(N), soft
-    integer :: i
-          
-    write(*,*) "Global Softness (A.U.):  ", soft
-    write(*,*) "N", "Fukui-", "Fukui+", "Fukui0", "Local Softness (A.U.)"
-    do i=1, N 
-        write(*,*) Iz(i), fukuiNeg(i), fukuiPos(i), fukuiRad(i), &
-                   abs(soft*fukuiRad(i))
-    enddo 
-
-end subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

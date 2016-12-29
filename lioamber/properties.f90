@@ -76,41 +76,52 @@ end subroutine get_degeneration
 !%% WRITE_FORCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Calculates forces for QM and MM regions and writes them to output.           !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine write_forces()
+subroutine do_forces(uid)
 
-    use garcha_mod, only : natom, nsol, ntatom
+    use garcha_mod, only : natom, nsol
 
     implicit none
-    real*8, allocatable :: dxyzqm(:,:), dxyzcl(:,:)
+    integer, intent(in) :: uid
     integer             :: k
+    real*8, allocatable :: dxyzqm(:,:), dxyzcl(:,:)
 
-    open(unit=123,file='forces')
+    open(unit=uid, file='forces')
 
     allocate ( dxyzqm(3, natom) )
     dxyzqm = 0.0
 
-    if(nsol.gt.0) then
-         allocate ( dxyzcl(3, ntatom) )
-        dxyzcl = 0.0
-    endif
-
     call dft_get_qm_forces(dxyzqm)
     if (nsol.gt.0) then
+        allocate ( dxyzcl(3, natom+nsol) )
+        dxyzcl = 0.0
         call dft_get_mm_forces(dxyzcl, dxyzqm)
     endif
 
-    do k=1,natom
-        write(123,100) k, dxyzqm(k,1), dxyzqm(k,2), dxyzqm(k,3)
-    enddo
-
+    call write_forces(dxyzqm, natom-1, 1, uid)
+    deallocate (dxyzqm)
+    
     if(nsol.gt.0) then
-        do k=natom,natom+nsol
-            write(123,100) k, dxyzcl(k,1), dxyzcl(k,2), dxyzcl(k,3)
-        enddo
+        call write_forces(dxyzcl, nsol, natom, uid)       
+        deallocate (dxyzcl)
     endif
 
-    deallocate (dxyzqm)
-    if(nsol.gt.0) deallocate (dxyzcl)
+    return
+end subroutine do_forces
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% WRITE_FORCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Calculates forces for QM and MM regions and writes them to output.           !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine write_forces(dxyz, natom, offset, uid)
+    implicit none
+    integer, intent(in) :: uid, natom, offset
+    real*8 , intent(in) :: dxyz(natom, 3)
+    integer             :: kk
+    
+    do kk=offset, offset+natom
+        write(uid,100) kk, dxyz(kk, 1), dxyz(kk, 2), dxyz(kk, 3)
+    enddo
 
 100 format (I5,2x,f10.6,2x,f10.6,2x,f10.6)
 

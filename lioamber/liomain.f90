@@ -27,7 +27,7 @@ subroutine liomain(E, dipxyz)
     else
         call SCF(E)
     endif
- 
+
     ! Perform Mulliken and Lowdin analysis, get fukui functions and dipole.
     if (MOD(npas, energy_freq).eq.0) then
 
@@ -39,7 +39,7 @@ subroutine liomain(E, dipxyz)
 
         if (writeforces) then
             if (ecpmode) stop "ECP does not feature forces calculation."
-            call write_forces()
+            call do_forces(123)
         endif
 
         if (print_coeffs) call print_orbitals(29)

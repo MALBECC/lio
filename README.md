@@ -22,18 +22,16 @@ The program can be compiled using the make command. The following options can be
 compilation. For example, the following compiles the GPU kernels:
 
 ```
-make cuda=1 gpu=1
+make cuda=1 cpu=0
 ```
 
 When using Intel's ICC/MKL or NVIDIA's CUDA libraries, add them to LD\_LIBRARY\_PATH environment variable before compilation. Available options for compilation include:
 
 * _cpu_: compile CPU version.
 
-* _gpu_: compile GPU version.
+* _cuda_: compile GPU version. Requires CUDA Toolkit.
 
 * _dbg_: enable debugging information. It also enables several asserts which degrade performance.
-
-* _cpu_: utilized non-optimized kernels in CPU instead of GPU (not recommended, only to compare running the same code in CPU and GPU).
 
 * _time_: enables the timers to obtain detailed timing information from different parts of the program.
 

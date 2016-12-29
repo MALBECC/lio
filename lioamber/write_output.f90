@@ -1,30 +1,12 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% PRINT_ORBITALS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Prints orbital energies and coefficients.                                    !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine print_orbitals(UID)
-    use garcha_mod, only : NCO, M, X, Eorbs
-
-    implicit none
-    integer, intent(in) :: UID
-    integer             :: nn, ll
-
-    write(UID,*) 'ORBITAL COEFFICIENTS AND ENERGIES, CLOSED SHELL'
-    do nn = 1, NCO
-       write(UID, 850) nn, Eorbs(nn)
-       write(UID, 400) (X(ll, 2*M +nn), ll = 1, M)
-    enddo
-    do nn = NCO+1, M
-       write(UID, 851) nn, Eorbs(nn)
-       write(UID, 400) (X(ll, 2*M +nn), ll = 1, M)
-    enddo
-
-400 format(4(E14.7E2, 2x))
-850 format('MOLECULAR ORBITAL #',2x,I3,3x,'ORBITAL ENERGY ',F14.7)
-851 format('MOLECULAR ORBITAL #',2x,I3,3x,'ORBITAL ENERGY ',F14.7, '(NON OCC.)')
-
-    return
-endsubroutine print_orbitals
+!%% WRITE_OUTPUT.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! This file contains several output-file printing routines. Currently includes:!
+! * write_dipole     (handles dipole moment printing)                          !
+! * write_forces     (handles grandient printing to output)                    !
+! * write_fukui      (handles Fukui function printing to output)               !
+! * write_orbitals   (prints orbitals and energies to output)                  !
+! * write_population (handles population/charge printing to output)            !
+! * write_restart    (prints an orbital coefficient restart file)              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -96,10 +78,60 @@ end subroutine write_forces
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% POPULATION_WRITE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% WRITE_FUKUI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Writes Fukui function and local softness to output.                          !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine write_fukui(fukuiNeg, fukuiPos, fukuiRad, N, Iz, soft)
+
+    implicit none
+    integer, intent(in) :: N, Iz(N)
+    real*8 , intent(in) :: fukuiNeg(N), fukuiPos(N), fukuiRad(N), soft
+    integer :: i
+
+    write(*,*) "Global Softness (A.U.):  ", soft
+    write(*,*) "N", "Fukui-", "Fukui+", "Fukui0", "Local Softness (A.U.)"
+    do i=1, N
+        write(*,*) Iz(i), fukuiNeg(i), fukuiPos(i), fukuiRad(i), &
+                   abs(soft*fukuiRad(i))
+    enddo
+
+end subroutine write_fukui
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% WRITE_ORBITALS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Prints orbital energies and coefficients.                                    !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine write_orbitals(UID)
+    use garcha_mod, only : NCO, M, X, Eorbs
+
+    implicit none
+    integer, intent(in) :: UID
+    integer             :: nn, ll
+
+    write(UID,*) 'ORBITAL COEFFICIENTS AND ENERGIES, CLOSED SHELL'
+    do nn = 1, NCO
+       write(UID, 850) nn, Eorbs(nn)
+       write(UID, 400) (X(ll, 2*M +nn), ll = 1, M)
+    enddo
+    do nn = NCO+1, M
+       write(UID, 851) nn, Eorbs(nn)
+       write(UID, 400) (X(ll, 2*M +nn), ll = 1, M)
+    enddo
+
+400 format(4(E14.7E2, 2x))
+850 format('MOLECULAR ORBITAL #',2x,I3,3x,'ORBITAL ENERGY ',F14.7)
+851 format('MOLECULAR ORBITAL #',2x,I3,3x,'ORBITAL ENERGY ',F14.7, '(NON OCC.)')
+
+    return
+endsubroutine write_orbitals
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% WRITE_POPULATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Writes Mulliken/Löwdin charges to output.                                    !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine population_write(UID, N, q0, q, pop)
+subroutine write_population(UID, N, q0, q, pop)
 
     implicit none
     integer, intent(in) :: UID, N, q0(N), pop
@@ -141,7 +173,7 @@ subroutine population_write(UID, N, q0, q, pop)
 308 FORMAT(8x,"         ╚═══════════╩════════════╝")
 309 FORMAT(8x,"║    LÖWDIN POPULATION ANALYSIS   ║")
     return
-end subroutine population_write
+end subroutine write_population
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

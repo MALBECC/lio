@@ -1,22 +1,19 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% PROPERTIES.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! This file contains several molecular properties calculation and printing     !
-! routines. Currently includes:                                                !
+! This file contains several molecular properties calculation. Currently       !
+! includes:                                                                    !
 ! * get_degeneration (gets degeneration and degenerated MOs for a chosen MO)   !
 ! * do_forces        (calculates forces/gradients)                             !
 ! * do_dipole        (calculates dipole moment)                                !
-! * write_dipole     (writes dipole moment)                                    !
 ! Regarding Electronic Population Analysis:                           [ EPA ]  !
 ! * do_population_analysis (performs the analysis required)                    !
 ! * mulliken_calc    (calculates atomic Mulliken population charges)           !
 ! * lowdin_calc      (calculates atomic Löwdin population charges)             !
-! * population_write (handles population/charge printing to output)            !
 ! Regarding Reactivity Indexes:                                       [ RXI ]  !
 ! * do_fukui         (performs Fukui function calculation and printing)        !
 ! * get_softness     (gets the molecule's global softness)                     !
 ! * fukui_calc       (calculates CS condensed-to-atoms fukui function)         !
 ! * fukui_calc_os    (calculates CS condensed-to-atoms fukui function)         !
-! * fukui_write      (handles Fukui function printing to output)               !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -164,7 +161,7 @@ subroutine do_population_analysis()
    ! Performs Mulliken Population Analysis if required.
    if (mulliken) then
        call mulliken_calc(natom,M,RealRho,Smat,Nuc,Iz,q)
-       call population_write(85,natom,IzUsed,q,0)
+       call write_population(85,natom,IzUsed,q,0)
    endif
    ! Performs Löwdin Population Analysis if required.
    if (lowdin) then 
@@ -172,7 +169,7 @@ subroutine do_population_analysis()
            q(kk)=real(Iz(kk))
        enddo
        call lowdin_calc(M,natom,RealRho,sqsm,Nuc,q)
-       call population_write(85,natom,IzUsed,q,1)
+       call write_population(85,natom,IzUsed,q,1)
    endif
 
    return
@@ -281,7 +278,7 @@ subroutine do_fukui()
                         fukuin, Eorbs)
         call get_softness(Eorbs(NCO-1), Eorbs(NCO), Eorbs(NCO-1), Eorbs(NCO), &
                           softness)
-        call fukui_write(fukuim, fukuip, fukuin, natom, Iz, softness)
+        call write_fukui(fukuim, fukuip, fukuin, natom, Iz, softness)
     endif
  
     return

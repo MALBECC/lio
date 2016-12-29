@@ -42,7 +42,7 @@ subroutine liomain(E, dipxyz)
             call do_forces(123)
         endif
 
-        if (print_coeffs) call print_orbitals(29)
+        if (print_coeffs) call write_orbitals(29)
     endif
 
     if ((restart_freq.gt.0).and.(MOD(npas, restart_freq).eq.0)) call write_restart(88)

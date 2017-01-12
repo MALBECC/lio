@@ -135,8 +135,10 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
 !    call g2g_timer_start('lio_init')
 
     if (callfrom.eq.1) then
-        natom  = natomin          ;  Iz = Izin  ;
-        ntatom = natom + nclatom  ;
+        natom  = natomin
+        if (.not.(allocated(Iz))) allocate(Iz(natom)
+        Iz = Izin
+        ntatom = natom + nclatom
         allocate(r(ntatom,3), rqm(natom,3), pc(ntatom))
     endif
 

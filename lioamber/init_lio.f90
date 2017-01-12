@@ -136,7 +136,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
 
     if (callfrom.eq.1) then
         natom  = natomin
-        if (.not.(allocated(Iz))) allocate(Iz(natom)
+        if (.not.(allocated(Iz))) allocate(Iz(natom))
         Iz = Izin
         ntatom = natom + nclatom
         allocate(r(ntatom,3), rqm(natom,3), pc(ntatom))

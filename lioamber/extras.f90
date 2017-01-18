@@ -426,9 +426,10 @@
         END SUBROUTINE
 
 
-        SUBROUTINE WriteEnergies(E1,E2,En,Eecp,Exc,Ex,ecpmode)
+        SUBROUTINE WriteEnergies(E1,E2,En,Eecp,Exc,Ex,ecpmode,E_restrain)
+          use garcha_mod, only : number_restr
 	  IMPLICIT NONE
-          double precision, intent(in) :: E1,E2,En,Eecp,Exc,Ex
+          double precision, intent(in) :: E1,E2,En,Eecp,Exc,Ex,E_restrain
           logical, intent (in) :: ecpmode
 
           write(*,*)
@@ -448,6 +449,10 @@
           write(*,7002)
           write(*,7009) Exc
           write(*,7002)
+        IF (number_restr.GT.0) THEN
+          write(*,7011) E_restrain
+          write(*,7002)
+        END IF
           write(*,7010) E1+E2-Ex+En+Exc
           write(*,7003)
           write(*,*)
@@ -468,6 +473,7 @@
  7008 FORMAT(4x,"║   E. CORE POT    ║",4x,F14.7,7x"║")
  7009 FORMAT(4x,"║   EXC. - CORR.   ║",4x,F14.7,7x"║")
  7010 FORMAT(4x,"║   TOTAL          ║",4x,F14.7,7x"║")
+ 7011 FORMAT(4x,"║   E. RESTR.      ║",4x,F14.7,7x"║")
         END SUBROUTINE
 
 

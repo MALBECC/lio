@@ -135,6 +135,12 @@ c      parameter rmintsol=16.0D0
 !      dimension ncf(nng),lt(nng)
 !      dimension at(nng),ct(nng)
 
+!-Variables for distance combination restrain
+      INTEGER :: number_restr, number_index
+      INTEGER, ALLOCATABLE, DIMENSION(:,:) :: restr_pairs
+      INTEGER, ALLOCATABLE, DIMENSION(:) ::  restr_index
+      DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: restr_k, restr_w,
+     > restr_r0
 
        end module
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

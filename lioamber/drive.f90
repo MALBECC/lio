@@ -17,7 +17,9 @@
       fmulliken, natom, frestart, M, FAC, Iexch, int_basis, max_func, integ,   &
       frestartin, Md, NCO, nng, npas, Nr, used, STR, verbose, omit_bas, Nr2,   &
       wang, wang2, wang3, VCINP, OPEN, OPEN1, whatis, TMP1, TMP2, Num, Iz, pi, &
-      Rm2, rqm, rmax, OCC, ATCOEF, Nunp, nl, nt, ng, ngd
+      Rm2, rqm, rmax, OCC, ATCOEF, Nunp, nl, nt, ng, ngd, number_restr,        &
+      restr_pairs,restr_index,restr_k,restr_w,restr_r0
+
       USE ECP_mod, ONLY : ecpmode, asignacion
 
       IMPLICIT NONE
@@ -1185,6 +1187,19 @@
 
        deallocate(X,XX)
        allocate(X(M,4*M),XX(Md,Md))
+
+
+!--------------------------------------------------------------------------------------
+      IF (number_restr.GT.0) THEN
+! Distance Restrain parameters read
+       ALLOCATE( restr_pairs(2,number_restr), restr_index(number_restr)& 
+       ,restr_k(number_restr), restr_w(number_restr),&
+       restr_r0(number_restr))
+        call read_restrain_params()
+      END IF
+!--------------------------------------------------------------------------------------
+
+
 
 
  100  format (A8)

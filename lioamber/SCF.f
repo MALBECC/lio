@@ -55,6 +55,9 @@
        real*8,dimension(:),  allocatable :: Dvec, fukuip, fukuim, fukuin
 
        real*8,allocatable :: eigen_vecs(:,:), eigen_vals(:)
+
+!Restrain
+       real*8 E_restrain
 !--------------------------------------------------------------------!
 
 
@@ -79,8 +82,6 @@
 	call g2g_timer_start('SCF_full')
 !--------------------------------------------------------------------!
 
-	write(*,*) "en editado"
-
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%    Effective Core Potential Fock    %%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -97,6 +98,12 @@
 	   if (FOCK_ECP_write) call WRITE_ECP()
            call WRITE_POST(1)
  	end if
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%    Distance Restrain     %%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+       call get_restrain_energy(E_restrain)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 
@@ -1467,6 +1474,9 @@ c       write(*,*) 'g2g-Exc',Exc
 	! Eecp - Efective core potential
         ! -------------------------------------------------
         E=E1+E2+En+Ens+Exc
+!extra para restrain, Nick
+        E=E+E_restrain
+
         if (npas.eq.1) npasw = 0
         if (npas.gt.npasw) then
 
@@ -1478,7 +1488,7 @@ c       write(*,*) 'g2g-Exc',Exc
                  Eecp=Eecp+RMM(k)*(VAAA(k)+VAAB(k)+VBAC(k))
                enddo
 	end if
-	call WriteEnergies(E1,E2,En,Eecp,Exc,Ex,ecpmode)
+	call WriteEnergies(E1,E2,En,Eecp,Exc,Ex,ecpmode,E_restrain)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 

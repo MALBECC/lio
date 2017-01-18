@@ -30,7 +30,7 @@ subroutine lio_defaults()
                            energy_freq, style, allnml, writeforces,            &
                            cube_elec, cube_elec_file, cube_sqrt_orb, MEMO,     &
                            NORM, ATRHO, SHFT, GRAD, BSSE, sol, primera,        &
-                           watermod, fukui
+                           watermod, fukui, number_restr
 
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,       &
                            local_nonlocal, ecp_debug, ecp_full_range_int,      &
@@ -69,6 +69,9 @@ subroutine lio_defaults()
     ntdstep        = 1             ; tdrestart          = .false.       ;
     NBCH           = 10            ; exter              = .false.       ;
     field          = .false.       ;
+
+!   Distance restrain options
+    number_restr   = 0             ;
 
 !   Write options and Restart options.
     verbose        = .false.       ; writexyz           = .true.        ;

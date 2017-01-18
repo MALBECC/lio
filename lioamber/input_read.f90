@@ -19,7 +19,7 @@ subroutine read_options(inputFile, charge)
                            a0, cubegen_only, cube_res, cube_dens, cube_orb,    &
                            cube_sel, cube_orb_file, cube_dens_file, cube_elec, &
                            cube_elec_file, energy_freq, NUNP, style, allnml,   &
-                           writeforces, cube_sqrt_orb, fukui
+                           writeforces, cube_sqrt_orb, fukui, number_restr
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, verbose_ECP,  &
                            cutECP, local_nonlocal, ecp_debug, FOCK_ECP_read,   &
                            FOCK_ECP_write, ecp_full_range_int, Fulltimer_ECP,  &
@@ -46,6 +46,8 @@ subroutine read_options(inputFile, charge)
                    local_nonlocal, ecp_debug, ecp_full_range_int, verbose_ECP, &
                    verbose, FOCK_ECP_read, FOCK_ECP_write, Fulltimer_ECP,      &
                    cut2_0, cut3_0,                                             &
+                   ! Distance Restrain
+                   number_restr,                                               &
                    ! Variables for orbital printing.
                    cubegen_only, cube_res, cube_sel, cube_dens, cube_dens_file,&
                    cube_orb, cube_orb_file, cube_elec, cube_elec_file,         &

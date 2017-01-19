@@ -4,7 +4,8 @@
 !This routine calculate forces for a distance restrain
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       use garcha_mod,only:natom,r, number_index, number_restr, restr_index, restr_pairs, restr_k, restr_r0, restr_w, verbose
+       use garcha_mod,only:natom,r, number_index, number_restr,         &
+       restr_index, restr_pairs, restr_k, restr_r0, restr_w, verbose
        implicit none
        integer :: i,j, k, l !auxiliar
        real*8, dimension(natom,natom) :: distx,disty,distz
@@ -96,7 +97,8 @@
 !This routine calculate energy for a distance restrain
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       use garcha_mod,only:natom,r, number_index, number_restr, restr_index, restr_pairs, restr_k, restr_r0, restr_w
+       use garcha_mod,only:natom,r, number_index, number_restr,      &
+       restr_index, restr_pairs, restr_k, restr_r0, restr_w
        implicit none
        integer :: i,j,k,l !auxiliar
        real*8, dimension(natom,natom) :: distx,disty,distz

@@ -151,6 +151,8 @@ c      parameter rmintsol=16.0D0
       INTEGER :: number_restr, number_index
       INTEGER, ALLOCATABLE, DIMENSION(:,:) :: restr_pairs
       INTEGER, ALLOCATABLE, DIMENSION(:) ::  restr_index
-      DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: restr_k, restr_w,
+      DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: restr_k,restr_w,
      > restr_r0
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+      end module
+

@@ -21,9 +21,6 @@ using namespace G2G;
 
 Partition partition;
 
-/* internal function prototypes */
-void read_options(void);
-
 /* global variables */
 namespace G2G {
 	FortranVars fortran_vars;
@@ -175,7 +172,6 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
   G2G::gpu_set_variables();
 #endif
 
-  read_options();
 }
 //============================================================================================================
 extern "C" void g2g_deinit_(void) {
@@ -315,51 +311,29 @@ extern "C" void g2g_solve_groups_(const uint& computation_type, double* fort_ene
 }
 //================================================================================================================
 /* general options */
-namespace G2G {
-	uint max_function_exponent = 10;
-	double little_cube_size = 8.0;
-	uint min_points_per_cube = 1;
-  bool assign_all_functions = false;
-  double sphere_radius = 0.6;
-  bool remove_zero_weights = true;
-  bool energy_all_iterations = false;
-  double free_global_memory = 0.0;
+namespace G2G 
+{
+    uint   max_function_exponent = 10   ;
+    double little_cube_size      = 8.0  ;
+    uint   min_points_per_cube   = 1    ;
+    bool   assign_all_functions  = false;
+    double sphere_radius         = 0.6  ;
+    bool   remove_zero_weights   = true ;
+    bool   energy_all_iterations = false;
+    double free_global_memory    = 0.0  ;
 }
 
 //=================================================================================================================
-void read_options(void) {
-	cout << "<====== read_options ========>" << endl;
-	char * optsfile = getenv("LIO_OPTIONS_FILE");
-  if(!optsfile) optsfile = "gpu_options";
-  cout << "--> using " << optsfile << " for options" << endl;
-	ifstream f(optsfile);
-	if (!f) { cout << "No \"gpu_options\" file: using defaults" << endl; return; }
-
-	string option;
-	while (f >> option) {
-		cout << option << " ";
-
-		if (option == "max_function_exponent")
-			{ f >> max_function_exponent; cout << max_function_exponent; }
-		else if (option == "little_cube_size")
-			{ f >> little_cube_size; cout << little_cube_size; }
-		else if (option == "min_points_per_cube")
-			{ f >> min_points_per_cube; cout << min_points_per_cube; }
-    else if (option == "assign_all_functions")
-      { f >> assign_all_functions; cout << assign_all_functions; }
-    else if (option == "sphere_radius")
-      { f >> sphere_radius; cout << sphere_radius; }
-    else if (option == "remove_zero_weights")
-      { f >> remove_zero_weights; cout << remove_zero_weights; }
-    else if (option == "energy_all_iterations")
-      { f >> energy_all_iterations; cout << energy_all_iterations; }
-    else if (option == "free_global_memory")
-      { f >> free_global_memory; cout << free_global_memory; }
-
-		else throw runtime_error(string("Invalid option: ") + option);
-
-		cout << endl;
-		if (!f) throw runtime_error(string("Error reading gpu options file (last option: ") + option + string(")"));
-	}
+extern "C" void g2g_set_options_(double * fort_fgm , double * fort_lcs, 
+                                 double * fort_sr  , bool   * fort_aaf, 
+                                 bool   * fort_eai , bool   * fort_rzw, 
+                                 uint   & fort_mppc, uint   & fort_mfe)
+{
+    free_global_memory    = *fort_fgm ; little_cube_size      = *fort_lcs  ;
+    sphere_radius         = *fort_sr  ; assign_all_functions  = *fort_aaf  ;
+    energy_all_iterations = *fort_eai ; remove_zero_weights   = *fort_rzw  ;
+    min_points_per_cube   = fort_mppc ; max_function_exponent = fort_mfe   ;
 }
-//=====================================================================================================================
+
+
+//=================================================================================================================

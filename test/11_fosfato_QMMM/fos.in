@@ -5,4 +5,8 @@
  nmax=100
  vcinp=f
  writeforces=t
+ little_cube_size=8
+ max_function_exponent=8
+ sphere_radius=0.6
+ free_global_memory=0.7
 &end

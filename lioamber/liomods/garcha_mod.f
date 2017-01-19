@@ -121,11 +121,12 @@ c      parameter rmintsol=16.0D0
       double precision :: good_cut
       double precision :: Etold
 
-!-Variables for library reading
+!-Variables for library reading.
       logical :: omit_bas
-!-Variables for outout format
+!-Variables for outout format.
       logical :: style, allnml
-      logical :: fukui
+!-Variables for property calculations.
+      logical :: fukui, dipole, lowdin, mulliken, print_coeffs
 
 !     parameter (nng=100)
       integer :: nng, max_func
@@ -135,12 +136,21 @@ c      parameter rmintsol=16.0D0
 !      dimension ncf(nng),lt(nng)
 !      dimension at(nng),ct(nng)
 
+! GPU OPTIONS
+      logical :: assign_all_functions, remove_zero_weights, 
+     >              energy_all_iterations
+      real*8  :: free_global_memory, sphere_radius, little_cube_size
+      integer :: min_points_per_cube, max_function_exponent
+
+! Energy contributions
+      real*8 :: Enucl
+      real*8,dimension(:)  ,allocatable :: Eorbs
+! need this for lowdin
+      real*8,dimension(:,:),allocatable :: sqsm
 !-Variables for distance combination restrain
       INTEGER :: number_restr, number_index
       INTEGER, ALLOCATABLE, DIMENSION(:,:) :: restr_pairs
       INTEGER, ALLOCATABLE, DIMENSION(:) ::  restr_index
       DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: restr_k, restr_w,
      > restr_r0
-
-       end module
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

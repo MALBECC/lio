@@ -19,7 +19,12 @@ subroutine read_options(inputFile, charge)
                            a0, cubegen_only, cube_res, cube_dens, cube_orb,    &
                            cube_sel, cube_orb_file, cube_dens_file, cube_elec, &
                            cube_elec_file, energy_freq, NUNP, style, allnml,   &
-                           writeforces, cube_sqrt_orb, fukui, number_restr
+                           writeforces, cube_sqrt_orb, fukui, little_cube_size,&
+                           max_function_exponent, min_points_per_cube,         &
+                           assign_all_functions, remove_zero_weights,          &
+                           energy_all_iterations, free_global_memory,          &
+                           sphere_radius, dipole, lowdin, mulliken,            &
+                           print_coeffs, number_restr
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, verbose_ECP,  &
                            cutECP, local_nonlocal, ecp_debug, FOCK_ECP_read,   &
                            FOCK_ECP_write, ecp_full_range_int, Fulltimer_ECP,  &
@@ -33,14 +38,16 @@ subroutine read_options(inputFile, charge)
     logical :: fileExists
 
                    ! Common LIO variables.
-    namelist /lio/ OPEN, NMAX, Nunp, VCINP, frestartin, GOLD, told, Etold,     &
-                   rmax, rmaxs, predcoef, idip, writexyz, intsoldouble, DIIS,  &
-                   ndiis, dgtrig, Iexch, integ, dens, igrid, igrid2, good_cut, &
-                   hybrid_converg, style, allnml, frestart, fukui,             &
+    namelist /lio/ OPEN, NMAX, Nunp, VCINP, GOLD, told, Etold, rmax, rmaxs,    &
+                   predcoef, idip, writexyz, intsoldouble, DIIS, ndiis, dgtrig,&
+                   Iexch, integ, dens, igrid, igrid2, good_cut, hybrid_converg,&
+                   ! File Input/Output.
+                   frestartin, style, allnml, frestart, fukui, dipole, lowdin, &
+                   mulliken, writeforces, int_basis, fitting_set, basis_set,   &
+                   restart_freq, print_coeffs,                                 &
                    ! DFT and TD-DFT Variables.
                    timedep, tdstep, ntdstep, propagator, NBCH, field, epsilon, &
-                   a0, exter, Fx, Fy, Fz, tdrestart, writedens, writeforces,   &
-                   basis_set, fitting_set, int_basis,                          &
+                   a0, exter, Fx, Fy, Fz, tdrestart, writedens,                &
                    ! Effective Core Potential Variables.
                    ecpmode, ecptypes, tipeECP, ZlistECP, cutECP, ecp_debug,    &
                    local_nonlocal, ecp_debug, ecp_full_range_int, verbose_ECP, &
@@ -52,6 +59,10 @@ subroutine read_options(inputFile, charge)
                    cubegen_only, cube_res, cube_sel, cube_dens, cube_dens_file,&
                    cube_orb, cube_orb_file, cube_elec, cube_elec_file,         &
                    cube_sqrt_orb,                                              &
+                   ! Variables for GPU options.
+                   little_cube_size, max_function_exponent, free_global_memory,&
+                   min_points_per_cube, assign_all_functions, sphere_radius,   &
+                   remove_zero_weights, energy_all_iterations,                 &
                    ! Variables when LIO is used alone.
                    natom, nsol, charge
 

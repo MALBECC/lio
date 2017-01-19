@@ -7,7 +7,7 @@
 !c
 !c Dario Estrin, 1992
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-      subroutine SCF(E,dipxyz)
+      subroutine SCF(E)
       use linear_algebra
       use garcha_mod
       use mathsubs
@@ -22,7 +22,6 @@
       implicit real*8 (a-h,o-z)
       integer:: l
        dimension q(natom),work(1000),IWORK(1000)
-       REAL*8 , intent(inout)  :: dipxyz(3)
        real*8, dimension (:,:), ALLOCATABLE::xnano,znano,scratch
        real*8, dimension (:,:), ALLOCATABLE::scratch1
        real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15,rmm13,
@@ -50,9 +49,8 @@
 
        real*8,dimension(:,:),allocatable :: fockbias
        real*8,dimension(:,:),allocatable :: Xmat,Xtrp,Ymat,Ytrp
-       real*8,dimension(:,:),allocatable :: sqsm
        real*8,dimension(:,:),allocatable :: Vmat
-       real*8,dimension(:),  allocatable :: Dvec, fukuip, fukuim, fukuin
+       real*8,dimension(:),  allocatable :: Dvec
 
        real*8,allocatable :: eigen_vecs(:,:), eigen_vals(:)
 
@@ -225,7 +223,6 @@ c
 !--------------------------------------------------------------------!
        allocate(Xmat(M,M),Xtrp(M,M),Ymat(M,M),Ytrp(M,M))
        allocate(Vmat(M,M),Dvec(M))
-       allocate(sqsm(M,M))
        allocate(fockbias(M,M))
 
        dovv=.false.
@@ -357,6 +354,7 @@ c S = YY^T ; X = (Y^-1)^T
 c => (X^T)SX = 1
 c
       docholesky=.true.
+      if (lowdin) docholesky=.false.
       call g2g_timer_start('cholesky')
       call g2g_timer_sum_start('Overlap decomposition')
       IF (docholesky) THEN
@@ -1528,116 +1526,24 @@ c
       enddo
 
       call g2g_timer_sum_stop('energy-weighted density')
+  
+!     NICO: A partir de aca saque tooodo lo que pude. Tuve que dejar un par de 
+!     variables para poder hacer las cosas, tipo esta nueva Enucl que ahora está
+!     en garchamod. También pasé sqsm a garchamod, y movi su allocate a liomain
+!     así que fijate de sacar esas dos lineas de acá. 
+!     Tambien saqué dipxyz, se calcula en otra parte.
+!     Por ultimo, puse un if arriba para que si lowdin=t, entonces docholesky=f 
+!     porque para lowdin se necesita sqsm.
+!     No me pegues =D
 
-
-      if (MOD(npas,energy_freq).eq.0) then
-c
-c      if (nopt.eq.1) then
-c
-
-!----------------------------------------------------------!
-! PROPERTIES CALCULATION - DIPOLE MOMENT (DEBYES)
-       if (idip.eq.1) then
-         call g2g_timer_sum_start('dipole')
-         call dip(ux,uy,uz)
-         u=sqrt(ux**2+uy**2+uz**2)
-
-!         write(*,*)
-!         write(*,*) 'DIPOLE MOMENT, X Y Z COMPONENTS AND NORM (DEBYES)'
-         write(69,8704) ux,uy,uz,u
-!         write(*,*)
-         dipxyz(1)=ux
-         dipxyz(2)=uy
-         dipxyz(3)=uz
-         call g2g_timer_sum_stop('dipole')
-       endif
-!----------------------------------------------------------!
-
-
-       call g2g_timer_sum_start('Mulliken')
-! MULLIKEN POPULATION ANALYSIS (FFR - Simplified)
-!--------------------------------------------------------------------!
-
-       call int1(En)
-       call spunpack('L',M,RMM(M5),Smat)
-       call spunpack('L',M,RMM(M1),RealRho)
-       call fixrho(M,RealRho)
-       call mulliken_calc(natom,M,RealRho,Smat,Nuc,Iz,q)
-
-
-       if (ecpmode) then
-!Modification for Effective Core Potential, Nick
-          call mulliken_write(85,natom,IzECP,q)
-       else
-          call mulliken_write(85,natom,Iz,q)
-       end if
-
-! NOTE: If 'mulliken_calc' is renamed as 'mulliken', the code will
-! malfunction. I DON'T KNOW WHY.
-!--------------------------------------------------------------------!
-       call g2g_timer_sum_stop('Mulliken')
-!       do kk=1,natom
-!         q(kk)=real(Iz(kk))
-!       enddo
-!       call lowdinpop(M,natom,RealRho,sqsm,Nuc,q)
-!       call mulliken_write(85,natom,Iz,q)
-       endif
-
-
-c
-c        endif
-c ELECTRICAL POTENTIAL AND POINT CHARGES EVALUATION
-c
-c        if (icharge.eq.1) then
-c          Q1=-(2*NCO+Nunp)
-c         do n=1,natom
-c          Q1=Q1+Iz(n)
-c         enddo
-c          stop
-c         call charge(NORM,natom,r,Nuc,Iz,M,Md,ncont,nshell,
-c     >            c,a,RMM,map,Q1)
-c        endif
-c
-c--------------------------------------------------------------
-c outputs final  MO ---------------------
-
-      if (MOD(npas,restart_freq).eq.0) then
-      call g2g_timer_sum_start('restart write')
-      rewind 88
-      do l=1,M
-        do n=1,M
-          X(indexii(l),M+n)=X(l,M2+n)
-        enddo
-      enddo
-c
-
-      do l=1,M
-c graba un restart de los coeficientes
-        write(88,400) (X(l,M+n),n=1,NCO)
+!     Variables needed for further calculations (Populations, Dip, etc).        
+      Enucl = En
+      do kk=1, M
+          Eorbs(kk) = RMM(M13+kk-1)
       enddo
 
-
-      call g2g_timer_sum_stop('restart write')
-      endif
-c-------------------------------------------------
-c writes down MO coefficients and orbital energies
-c 
-      if(1.gt.2) then
-        write(29,*) 'ORBITAL COEFFICIENTS eh AND ENERGIES, CLOSED SHELL'
-        do n=1,NCO
-          write(29,850) n,RMM(M13+n-1)
-          write(29,400) (X(l,M2+n),l=1,M)
-        enddo
-        do n=NCO+1,M
-          write(29,851) n,RMM(M13+n-1)
-          write(29,400) (X(l,M2+n),l=1,M)
-        enddo
-        close(29)
-      endif
-
-
+!     Performs orbital/density plots.
         if (cube_dens.or.cube_orb.or.cube_elec) then
-c orbital/density plot
           call g2g_timer_sum_start('cube gen')
           kk=0
 
@@ -1652,31 +1558,13 @@ c orbital/density plot
           call g2g_timer_sum_stop('cube gen')
         endif
 
-
-      if (fukui) then
-          allocate(fukuim(natom), fukuin(natom), fukuip(natom))
-          call fukui_calc(X(1,M2+1), NCO, M, natom, Nuc, Smat, fukuim, 
-     >                    fukuip, fukuin, RMM(M13))
-
-          call get_softness(RMM(M13+NCO-1), RMM(M13+NCO), 
-     >                      RMM(M13+NCO-1), RMM(M13+NCO), softness)
-          call fukui_write(fukuim, fukuip, fukuin, natom, Iz, 
-     >                     softness)
-          deallocate(fukuim, fukuin, fukuip)
-
-      endif
-c
-c-------------------------------------------------
-c      endif
       if(DIIS) then
         deallocate (Y,Ytrans,Xtrans,fock,fockm,rho,FP_PFm,
      >  znano,EMAT, bcoef, suma,rho1, scratch, scratch1)
       endif
 
-!      deallocate (xnano,rmm5,rmm15)
       deallocate (xnano)
       deallocate (rmm5)
-!	write(19,*) rmm15
       deallocate (rmm15)
 
 
@@ -1709,7 +1597,6 @@ c       E=E*627.509391D0
       call g2g_timer_sum_stop('SCF')
  500  format('SCF TIME ',I6,' sec')
  450  format ('SCF ENERGY = ',F19.12)
- 400  format(4(E14.7E2,2x))
  300  format(I3,E14.6,2x,F14.7)
  600  format('  ENERGY CONTRIBUTIONS IN A.U.')
  610  format(2x,'ONE ELECTRON',9x,'COULOMB',11x,'NUCLEAR')
@@ -1721,9 +1608,6 @@ c       E=E*627.509391D0
  625  format(F14.7)
  760  format(I3,9x,I3,6x,F10.4)
  770  format('ATOM #',4x,'ATOM TYPE',4x,'POPULATION')
- 850  format('MOLECULAR ORBITAL #',2x,I3,3x,'ORBITAL ENERGY ',F14.7)
- 851  format('MOLECULAR ORBITAL #',2x,I3,3x,'ORBITAL ENERGY ',F14.7,
-     >    '(NON OCC.)')
  900  format(3(F15.9,2x),2x,F15.9)
  777  format(4(F8.4,2x))
  778  format('C',2x,3(F8.4,2x))
@@ -1745,7 +1629,6 @@ c       E=E*627.509391D0
  8505 FORMAT(4x,"╚════════════════",
      >"══╩══════╩═══════╝")
 
- 8704 FORMAT(4x,4("║"F13.9,2x),"║")
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       !call g2g_timer_sum_stop('SCF');

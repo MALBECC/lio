@@ -50,7 +50,7 @@ objects += density.o
 objects += extras.o
 objects += fterm_biaspot.o
 objects += elec.o
-objects += properties.o
+objects += properties.o write_output.o
 
 #     Trying a new way of makefile organization: put every important
 # information inside of the module.mk
@@ -81,6 +81,7 @@ tmplist += int1G.o int2G.o int3G.o intSG.o intsolG.o intsolGs.o
 tmplist += jarz.o lio_finalize.o predictor.o
 tmplist += SCF.o SCF_in.o SCFop.o TD.o cubegen.o
 tmplist += maskrmm.o
+tmplist += write_output.o SCF_exter.o
 $(tmplist:%.o=$(obj_path)/%.o) : $(obj_path)/garcha_mod.mod
 
 
@@ -112,11 +113,17 @@ $(tmplist:%.o=$(obj_path)/%.o) : $(obj_path)/general_module.mod
 
 
 # ECP_mod
+######################################################################
 objlist := SCF.o
 objlist += readECP.o
 objlist += drive.o
 objlist += intECP.o
-objlist += init.o extras.o
+objlist += init.o
+objlist += extras.o
+objlist += input_read.o
+objlist += liomain.o
+objlist += properties.o
+objlist += init_lio.o
 $(objlist:%.o=$(obj_path)/%.o) : $(obj_path)/ECP_mod.mod
 
 # intECP

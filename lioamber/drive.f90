@@ -17,8 +17,8 @@
       fmulliken, natom, frestart, M, FAC, Iexch, int_basis, max_func, integ,   &
       frestartin, Md, NCO, nng, npas, Nr, used, STR, verbose, omit_bas, Nr2,   &
       wang, wang2, wang3, VCINP, OPEN, OPEN1, whatis, TMP1, TMP2, Num, Iz, pi, &
-      Rm2, rqm, rmax, OCC, ATCOEF, Nunp, nl, nt, ng, ngd, number_restr,        &
-      restr_pairs,restr_index,restr_k,restr_w,restr_r0
+      Rm2, rqm, rmax, OCC, ATCOEF, Nunp, nl, nt, ng, ngd, restart_freq,        &
+      writexyz, number_restr, restr_pairs,restr_index,restr_k,restr_w,restr_r0
 
       USE ECP_mod, ONLY : ecpmode, asignacion
 
@@ -99,9 +99,9 @@
       endif
       endif
 
-      open(unit=18,file=fcoord)
+      if (writexyz) open(unit=18,file=fcoord)
       open(unit=85,file=fmulliken)
-      open(unit=88,file=frestart)
+      if (restart_freq.gt.0) open(unit=88,file=frestart)
 
 !-------------------------------------------------------
       date='date'

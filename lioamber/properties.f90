@@ -1,18 +1,19 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% PROPERTIES.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! This file contains several molecular properties calculation and printing     !
-! routines. Currently includes:                                                !
+! This file contains several molecular properties calculation. Currently       !
+! includes:                                                                    !
 ! * get_degeneration (gets degeneration and degenerated MOs for a chosen MO)   !
-! * write_forces     (writes forces to output file)                            !
+! * do_forces        (calculates forces/gradients)                             !
+! * do_dipole        (calculates dipole moment)                                !
 ! Regarding Electronic Population Analysis:                           [ EPA ]  !
+! * do_population_analysis (performs the analysis required)                    !
 ! * mulliken_calc    (calculates atomic Mulliken population charges)           !
-! * lowdinpop        (calculates atomic Löwdin population charges)             !
-! * mulliken_write   (handles Mulliken charge printing to output)              !
+! * lowdin_calc      (calculates atomic Löwdin population charges)             !
 ! Regarding Reactivity Indexes:                                       [ RXI ]  !
+! * do_fukui         (performs Fukui function calculation and printing)        !
 ! * get_softness     (gets the molecule's global softness)                     !
 ! * fukui_calc       (calculates CS condensed-to-atoms fukui function)         !
 ! * fukui_calc_os    (calculates CS condensed-to-atoms fukui function)         !
-! * fukui_write      (handles Fukui function printing to output)               !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -69,54 +70,110 @@ end subroutine get_degeneration
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% WRITE_FORCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% DO_FORCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Calculates forces for QM and MM regions and writes them to output.           !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine write_forces()
+subroutine do_forces(uid)
 
-    use garcha_mod, only : natom, nsol, ntatom
+    use garcha_mod, only : natom, nsol
 
     implicit none
-    real*8, allocatable :: dxyzqm(:,:), dxyzcl(:,:)
+    integer, intent(in) :: uid
     integer             :: k
+    real*8, allocatable :: dxyzqm(:,:), dxyzcl(:,:)
 
-    open(unit=123,file='forces')
+    open(unit=uid, file='forces')
 
     allocate ( dxyzqm(3, natom) )
     dxyzqm = 0.0
 
-    if(nsol.gt.0) then
-         allocate ( dxyzcl(3, ntatom) )
-        dxyzcl = 0.0
-    endif
-
     call dft_get_qm_forces(dxyzqm)
     if (nsol.gt.0) then
+        allocate ( dxyzcl(3, natom+nsol) )
+        dxyzcl = 0.0
         call dft_get_mm_forces(dxyzcl, dxyzqm)
     endif
 
-    do k=1,natom
-        write(123,100) k, dxyzqm(k,1), dxyzqm(k,2), dxyzqm(k,3)
-    enddo
-
+    call write_forces(dxyzqm, natom-1, 1, uid)
+    deallocate (dxyzqm)
+    
     if(nsol.gt.0) then
-        do k=natom,natom+nsol
-            write(123,100) k, dxyzcl(k,1), dxyzcl(k,2), dxyzcl(k,3)
-        enddo
+        call write_forces(dxyzcl, nsol, natom, uid)       
+        deallocate (dxyzcl)
     endif
 
-    deallocate (dxyzqm)
-    if(nsol.gt.0) deallocate (dxyzcl)
-
-100 format (I5,2x,f10.6,2x,f10.6,2x,f10.6)
-
     return
-end subroutine write_forces
+end subroutine do_forces
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% DO_DIPOLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Sets variables up and calls dipole calculation.                              !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine do_dipole(dipxyz, uid)
+    implicit none
+    integer, intent(in)    :: uid
+    real*8 , intent(inout) :: dipxyz(3)
+    real*8                 :: u
+
+    call g2g_timer_sum_start('dipole')
+    call dip(dipxyz(1), dipxyz(2), dipxyz(3))
+    u = sqrt(dipxyz(1)**2 + dipxyz(2)**2 + dipxyz(3)**2)
+ 
+    call write_dipole(dipxyz, u, uid)
+    call g2g_timer_sum_stop('dipole')
+ 
+    return
+end subroutine do_dipole
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%% ELECTRONIC POPULATION ANALYSIS [ EPA ] %%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% DO_POPULATION_ANALYSIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Performs the different population analyisis available.                       !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine do_population_analysis()
+   use garcha_mod, only : RMM, Smat, RealRho, M, Enucl, Nuc, Iz, natom, &
+                          mulliken, lowdin, sqsm
+   use ECP_mod   , only : ecpmode, IzECP
+
+   implicit none
+   integer :: M1, M5, IzUsed(natom), kk
+   real*8  :: q(natom)
+
+   ! Needed until we dispose of RMM.
+   M1=1 ; M5=1+M*(M+1)
+
+   ! Iz used to write the population file.
+   IzUsed = Iz
+   if (ecpmode) IzUsed = IzECP
+
+   ! Decompresses and fixes S and RealRho matrixes, which are needed for
+   ! population analysis.
+   call int1(Enucl)
+   call spunpack('L',M,RMM(M5),Smat)
+   call spunpack('L',M,RMM(M1),RealRho)
+   call fixrho(M,RealRho)
+
+   ! Performs Mulliken Population Analysis if required.
+   if (mulliken) then
+       call mulliken_calc(natom,M,RealRho,Smat,Nuc,Iz,q)
+       call write_population(85,natom,IzUsed,q,0)
+   endif
+   ! Performs Löwdin Population Analysis if required.
+   if (lowdin) then 
+       do kk=1,natom
+           q(kk)=real(Iz(kk))
+       enddo
+       call lowdin_calc(M,natom,RealRho,sqsm,Nuc,q)
+       call write_population(85,natom,IzUsed,q,1)
+   endif
+
+   return
+endsubroutine do_population_analysis
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% MULLIKEN_CALC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -155,10 +212,10 @@ subroutine mulliken_calc(N, M, RealRho, Smat, NofM, q0, q)
 end subroutine mulliken_calc
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!%% LOWDINPOP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% LOWDIN_CALC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs a Löwdin Population Analysis and outputs atomic charges.            !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine lowdinpop(M, N, rhomat, sqsmat, atomorb, atomicq)
+subroutine lowdin_calc(M, N, rhomat, sqsmat, atomorb, atomicq)
  
     implicit none
     integer,intent(in)   :: M, N, atomorb(M)
@@ -180,55 +237,7 @@ subroutine lowdinpop(M, N, rhomat, sqsmat, atomorb, atomicq)
     enddo
 
     return
-end subroutine lowdinpop
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% MULLIKEN_WRITE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Writes Mulliken charges to output.                                           !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine mulliken_write(UID, N, q0, q)
-
-    implicit none
-    integer, intent(in) :: UID, N, q0(N)
-    real*8 , intent(in) :: q(N)
- 
-    real*8  :: qtotal
-    integer :: i
-
-    call g2g_timer_start('mulliken_write')
-    qtotal=0.d0
-    
-    write(UID,*)
-    write(UID,300)
-    write(UID,301)
-    write(UID,302)
-    write(UID,303)
-    write(UID,304)
-    do i=1,N
-        qtotal=qtotal+q(i)
-        write(UID,305) i, q0(i), q(i)
-    enddo
-    write(UID,306)
-    write(UID,307) qtotal
-    write(UID,308)
-    write(UID,*)
-
-    call g2g_timer_stop('mulliken_write')
-
-300 FORMAT(8x,"╔═════════════════&
-    ════════════════╗")
-301 FORMAT(8x,"║   MULLIKEN POPULATION ANALYSIS  ║")
-302 FORMAT(8x,"╠════════╦═══════════╦════════════╣")
-303 FORMAT(8x,"║ ATOM # ║ ATOM TYPE ║ POPULATION ║")
-304 FORMAT(8x,"╠════════╬═══════════╬════════════╣")
-305 FORMAT(8x,"║",2x,i3,3x,"║"3x,i3,5x,"║",1x,F10.7,1x,"║")
-306 FORMAT(8x,"╚════════╬═══════════╬════════════╣")
-307 FORMAT(8x,"         ║   TOTAL   ║",1x,F10.7,1x,"║")
-308 FORMAT(8x,"         ╚═══════════╩════════════╝")
-      
-    return
-end subroutine mulliken_write
+end subroutine lowdin_calc
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 
@@ -251,6 +260,29 @@ subroutine get_softness(enAH, enAL, enBH, enBL, softness)
 
     return
 end subroutine get_softness
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% DO_FUKUI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Performs Fukui function calls and printing.                                  !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine do_fukui()
+    use garcha_mod, only : X, NCO, M, natom, Nuc, Smat, Eorbs, Iz, OPEN
+
+    implicit none
+    real*8  :: fukuim(natom), fukuin(natom), fukuip(natom), softness
+
+    if (OPEN) then
+    else
+        call fukui_calc(X(1,M*2+1), NCO, M, natom, Nuc, Smat, fukuim, fukuip, &
+                        fukuin, Eorbs)
+        call get_softness(Eorbs(NCO-1), Eorbs(NCO), Eorbs(NCO-1), Eorbs(NCO), &
+                          softness)
+        call write_fukui(fukuim, fukuip, fukuin, natom, Iz, softness)
+    endif
+ 
+    return
+end subroutine do_fukui
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -386,25 +418,4 @@ subroutine fukui_calc_os(coefAlp, coefBet, nAlpha, nBeta, M, N, NofM, &
     
     return
 end subroutine fukui_calc_os
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% FUKUI_WRITE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Writes Fukui function and local softness to output.                          !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine fukui_write(fukuiNeg, fukuiPos, fukuiRad, N, Iz, soft)
-      
-    implicit none
-    integer, intent(in) :: N, Iz(N)
-    real*8 , intent(in) :: fukuiNeg(N), fukuiPos(N), fukuiRad(N), soft
-    integer :: i
-          
-    write(*,*) "Global Softness (A.U.):  ", soft
-    write(*,*) "N", "Fukui-", "Fukui+", "Fukui0", "Local Softness (A.U.)"
-    do i=1, N 
-        write(*,*) Iz(i), fukuiNeg(i), fukuiPos(i), fukuiRad(i), &
-                   abs(soft*fukuiRad(i))
-    enddo 
-
-end subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

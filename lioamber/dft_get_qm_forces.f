@@ -5,13 +5,17 @@
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       use garcha_mod,only:natom,nsol,cubegen_only
+       use garcha_mod,only:natom,nsol,cubegen_only,r,number_restr
        implicit none
        real*8,intent(out) :: dxyzqm(3,natom)
        real*8,allocatable :: ff1G(:,:),ffSG(:,:),ff3G(:,:)
        real*8             :: factor
        integer            :: fileunit,kk,ii,igpu
        logical            :: print_forces
+!variables for restrain calculations
+       real*8 :: f_r
+       integer :: i
+
 
 !--------------------------------------------------------------------!
        if(cubegen_only) return
@@ -56,6 +60,14 @@ c       factor=627.509391D0/0.5291772108D0
        enddo
        enddo
 
+
+
+!--------------------------------------------------------------------!
+        IF (number_restr.GT.0) THEN
+! distance restrain case
+          call get_restrain_forces(dxyzqm, f_r)
+	  WRITE(*,*) "DISTANCE RESTRAIN ADDED TO FORCES"
+        END IF
 !--------------------------------------------------------------------!
        print_forces=.false.
        if (print_forces) then

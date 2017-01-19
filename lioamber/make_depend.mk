@@ -30,6 +30,7 @@
 objects += SCF.o SCFop.o SCF_exter.o TD.o cubegen.o liomain.o
 objects += dip.o dipmem.o jarz.o magnus.o predictor.o 
 objects += dft_get_mm_forces.o dft_get_qm_forces.o
+objects += get_restrain_energy_forces.o
 objects += matmuldiag.o fock_commuts.o
 objects += init_lio.o lio_finalize.o input_read.o
 objects += drive.o func.o grid.o
@@ -73,6 +74,7 @@ src_paths += liomods
 include liomods/liomods.mk
 
 tmplist := dft_get_mm_forces.o dft_get_qm_forces.o
+tmplist += get_restrain_energy_forces.o 
 tmplist += dip.o dipmem.o drive.o grid.o init_amber.o init.o
 tmplist += int1.o int2.o int3lu.o int3mem.o intfld.o intsol.o
 tmplist += int1G.o int2G.o int3G.o intSG.o intsolG.o intsolGs.o

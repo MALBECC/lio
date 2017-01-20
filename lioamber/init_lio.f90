@@ -34,7 +34,7 @@ subroutine lio_defaults()
                            max_function_exponent, min_points_per_cube,         &
                            assign_all_functions, remove_zero_weights,          &
                            energy_all_iterations, free_global_memory, dipole,  &
-                           lowdin, mulliken, print_coeffs
+                           lowdin, mulliken, print_coeffs, number_restr
 
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,       &
                            local_nonlocal, ecp_debug, ecp_full_range_int,      &
@@ -73,6 +73,9 @@ subroutine lio_defaults()
     ntdstep        = 1             ; tdrestart          = .false.       ;
     NBCH           = 10            ; exter              = .false.       ;
     field          = .false.       ;
+
+!   Distance restrain options
+    number_restr   = 0             ;
 
 !   Write options and Restart options.
     verbose        = .false.       ; writexyz           = .true.        ;
@@ -135,8 +138,10 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
 !    call g2g_timer_start('lio_init')
 
     if (callfrom.eq.1) then
-        natom  = natomin          ;  Iz = Izin  ;
-        ntatom = natom + nclatom  ;
+        natom  = natomin
+        if (.not.(allocated(Iz))) allocate(Iz(natom))
+        Iz = Izin
+        ntatom = natom + nclatom
         allocate(r(ntatom,3), rqm(natom,3), pc(ntatom))
     endif
 

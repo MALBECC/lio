@@ -42,14 +42,15 @@
 !FFR!
        logical             :: dovv
        real*8              :: weight, softness
-       integer,allocatable :: atom_group(:)
-       integer,allocatable :: orb_group(:)
-       integer,allocatable :: orb_selection(:)
+!       integer,allocatable :: atom_group(:)
+!       integer,allocatable :: orb_group(:)
+!       integer,allocatable :: orb_selection(:)
 
        real*8,dimension(:,:),allocatable :: fockbias
-       real*8,dimension(:,:),allocatable :: Xmat,Xtrp,Ymat,Ytrp
-       real*8,dimension(:,:),allocatable :: Vmat
-       real*8,dimension(:),  allocatable :: Dvec
+!       real*8,dimension(:,:),allocatable :: Xtrp,Ytrp
+!       real*8,dimension(:,:),allocatable :: Xmat,Xtrp,Ymat,Ytrp
+!       real*8,dimension(:,:),allocatable :: Vmat
+!      real*8,dimension(:),  allocatable :: Dvec
 
        real*8,allocatable :: eigen_vecs(:,:), eigen_vals(:)
 
@@ -202,29 +203,30 @@
 
 ! FFR: Variable Allocation
 !--------------------------------------------------------------------!
-       allocate(Xmat(M,M),Xtrp(M,M),Ymat(M,M),Ytrp(M,M))
-       allocate(Vmat(M,M),Dvec(M))
+!       allocate(Xmat(M,M),Xtrp(M,M),Ymat(M,M),Ytrp(M,M))
+
+!       allocate(Vmat(M,M),Dvec(M))
        allocate(fockbias(M,M))
 
        dovv=.false.
-       if (dovv.eqv..true.) then
+!       if (dovv.eqv..true.) then
 
-        if (.not.allocated(atom_group)) then
-          allocate(atom_group(natom))
-          call read_list('atomgroup',atom_group)
-        endif
-        if (.not.allocated(orb_group)) then
-          allocate(orb_group(M))
-          call atmorb(atom_group,nuc,orb_group)
-        endif
-        if (.not.allocated(orb_selection)) then
-          allocate(orb_selection(M))
-        endif
-       endif
+!        if (.not.allocated(atom_group)) then
+!          allocate(atom_group(natom))
+!          call read_list('atomgroup',atom_group)
+!        endif
+!        if (.not.allocated(orb_group)) then
+!          allocate(orb_group(M))
+!          call atmorb(atom_group,nuc,orb_group)
+!        endif
+!        if (.not.allocated(orb_selection)) then
+!          allocate(orb_selection(M))
+!        endif
+!       endif
 
 
 !----------------------------------------
-        call neighbor_list_2e() ! Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
+      call neighbor_list_2e() ! Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
 
 ! -Create integration grid for XC here
 ! -Assign points to groups (spheres/cubes)
@@ -295,110 +297,137 @@
         E1=E1+RMM(k)*RMM(M11+k-1)
       enddo
       call g2g_timer_sum_stop('1-e Fock')
+
+
+
+
+
+
+
+!#########################################################################################
+!#########################################################################################
+	allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
+	call overlap_diag(fockbias, dovv,Y,Ytrans,Xtrans)
+
 !
 ! Diagonalization of S matrix, after this is not needed anymore
 ! S = YY^T ; X = (Y^-1)^T
 ! => (X^T)SX = 1
 !
-      docholesky=.true.
-      if (lowdin) docholesky=.false.
-      call g2g_timer_start('cholesky')
-      call g2g_timer_sum_start('Overlap decomposition')
-      IF (docholesky) THEN 
-#ifdef  magma
-        ! ESTO SIGUE USANDO Smat EN RMM(M5)
-        ! CAMBIARLO CUANDO SE SIGA PROBANDO MAGMA
-        PRINT*,'DOING MAGMA-CHOLESKY'
-
-        ALLOCATE(Y(M,M),Ytrans(M,M))
-        DO iii=1,M;DO jjj=1,M
-          Y(iii,jjj)=0
-          IF (jjj.LE.iii) THEN
-            iiindex=iii+(2*M-jjj)*(jjj-1)/2
-            Y(iii,jjj)=RMM(M5+iiindex-1)
-          ENDIF
-        ENDDO;ENDDO
-
-        CALL MAGMAF_DPOTRF('L',M,Y,M,ErrID)
-
-        Ytrans= transpose(Y)
-        ALLOCATE(Xtrans(M,M))
-        Xtrans=Y
-        CALL MAGMAF_DTRTRI('L','N',M,Xtrans,M,ErrID)
-        if(ErrID.ne.0) STOP ('Error in cholesky decomp.')
-        xnano= transpose(Xtrans)
-        do i=1,M;doj=1,M
-          X(i,j)=Xnano(i,j)
-        enddo;enddo
-        PRINT*,'CHOLESKY MAGMA'
-
-#else
-
-! FFR: Cholesky Decomposition of Overlap
-!--------------------------------------------------------------------!
-! I am keeping Y,Ytrans and Xtrans but they should be replaced
-! by the much nicer Ymat,Ytrp,Xtrp (and X by Xmat). The outputs
-! Dvec and Vmat don't have the same meaning as in the diagona-
-! lization (they are not eigenvalues or eigenvectors. No S1/2
-! matrix can be obtained.
+!      docholesky=.true.
+!      if (lowdin) docholesky=.false.
+!      call g2g_timer_start('cholesky')
+!      call g2g_timer_sum_start('Overlap decomposition')
+!      IF (docholesky) THEN 
+!!#ifdef  magma
+!        ! ESTO SIGUE USANDO Smat EN RMM(M5)
+!        ! CAMBIARLO CUANDO SE SIGA PROBANDO MAGMA
+!!        PRINT*,'DOING MAGMA-CHOLESKY'
 !
-! Magma option should be introduced INSIDE of che call
+!!        ALLOCATE(Y(M,M),Ytrans(M,M))
+!!        DO iii=1,M;DO jjj=1,M
+!!          Y(iii,jjj)=0
+!!          IF (jjj.LE.iii) THEN
+!!            iiindex=iii+(2*M-jjj)*(jjj-1)/2
+!!            Y(iii,jjj)=RMM(M5+iiindex-1)
+!!          ENDIF
+!!        ENDDO;ENDDO
+
+!!        CALL MAGMAF_DPOTRF('L',M,Y,M,ErrID)
 !
-         call sdcmp_cholesky(Smat,Dvec,Vmat,Ymat,Xtrp,Ytrp,Xmat)
-
-         allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
-         do iii=1,M
-         do jjj=1,M
-           X(iii,jjj)=Xmat(iii,jjj)
-         enddo
-         enddo
-         Y=Ymat
-         Xtrans=Xtrp
-         Ytrans=Ytrp
-         do kk=1,M
-           RMM(M13+kk-1)=0.0d0
-         enddo
- 
-#endif
-      ELSE
-
-! FFR: Canonical Diagonalization of Overlap
-!--------------------------------------------------------------------!
-! I am keeping Y,Ytrans and Xtrans but they should be replaced
-! by the much nicer Ymat,Ytrp,Xtrp (and X by Xmat). Also, copy
-! into RMM.
+!!        Ytrans= transpose(Y)
+!!        ALLOCATE(Xtrans(M,M))
+!!        Xtrans=Y
+!!        CALL MAGMAF_DTRTRI('L','N',M,Xtrans,M,ErrID)
+!!        if(ErrID.ne.0) STOP ('Error in cholesky decomp.')
+!!        xnano= transpose(Xtrans)
+!!        do i=1,M;doj=1,M
+!!          X(i,j)=Xnano(i,j)
+!!        enddo;enddo
+!!        PRINT*,'CHOLESKY MAGMA'
+!!
+!!#else
 !
-         call sdiag_canonical(Smat,Dvec,Vmat,Xmat,Xtrp,Ymat,Ytrp)
-         sqsm=matmul(Vmat,Ytrp)
+!! FFR: Cholesky Decomposition of Overlap
+!!--------------------------------------------------------------------!
+!! I am keeping Y,Ytrans and Xtrans but they should be replaced
+!! by the much nicer Ymat,Ytrp,Xtrp (and X by Xmat). The outputs
+!! Dvec and Vmat don't have the same meaning as in the diagona-
+!! lization (they are not eigenvalues or eigenvectors. No S1/2
+!! matrix can be obtained.
+!!
+!! Magma option should be introduced INSIDE of che call
+!!
+!         call sdcmp_cholesky(Smat,Dvec,Vmat,Ymat,Xtrp,Ytrp,Xmat)
+!
+!         allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
+!         do iii=1,M
+!         do jjj=1,M
+!           X(iii,jjj)=Xmat(iii,jjj)
+!         enddo
+!         enddo
+!         Y=Ymat
+!         Xtrans=Xtrp
+!         Ytrans=Ytrp
+!         do kk=1,M
+!           RMM(M13+kk-1)=0.0d0
+!         enddo
+! 
+!!#endif
+!      ELSE
+!
+!! FFR: Canonical Diagonalization of Overlap
+!!--------------------------------------------------------------------!
+!! I am keeping Y,Ytrans and Xtrans but they should be replaced
+!! by the much nicer Ymat,Ytrp,Xtrp (and X by Xmat). Also, copy
+!! into RMM.
+!!
+!         call sdiag_canonical(Smat,Dvec,Vmat,Xmat,Xtrp,Ymat,Ytrp)
+!         sqsm=matmul(Vmat,Ytrp)
+!
+!
+!         if (dovv.eqv..true.) then
+!          fockbias=0.0d0
+!
+!          weight=0.195d0
+!          call vector_selection(1,orb_group,orb_selection)
+!          call fterm_biaspot(M,sqsm,orb_selection,weight,fockbias)
+!
+!          weight=-weight
+!          call vector_selection(2,orb_group,orb_selection)
+!          call fterm_biaspot(M,sqsm,orb_selection,weight,fockbias)
+!         endif
+!
+!         allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
+!         do iii=1,M
+!         do jjj=1,M
+!           X(iii,jjj)=Xmat(iii,jjj)
+!         enddo
+!         enddo
+!         Y=Ymat
+!         Xtrans=Xtrp
+!         Ytrans=Ytrp
+!         do kk=1,M
+!           RMM(M13+kk-1)=Dvec(kk)
+!         enddo
+!
+!      ENDIF
+!      call g2g_timer_stop('cholesky')
+!
+!
+!
+!
 
 
-         if (dovv.eqv..true.) then
-          fockbias=0.0d0
 
-          weight=0.195d0
-          call vector_selection(1,orb_group,orb_selection)
-          call fterm_biaspot(M,sqsm,orb_selection,weight,fockbias)
 
-          weight=-weight
-          call vector_selection(2,orb_group,orb_selection)
-          call fterm_biaspot(M,sqsm,orb_selection,weight,fockbias)
-         endif
 
-         allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
-         do iii=1,M
-         do jjj=1,M
-           X(iii,jjj)=Xmat(iii,jjj)
-         enddo
-         enddo
-         Y=Ymat
-         Xtrans=Xtrp
-         Ytrans=Ytrp
-         do kk=1,M
-           RMM(M13+kk-1)=Dvec(kk)
-         enddo
+!##################################################################################################
+!##################################################################################################
 
-      ENDIF
-      call g2g_timer_stop('cholesky')
+
+
+
 !! CUBLAS ---------------------------------------------------------------------!
 #ifdef CUBLAS
             stat=CUBLAS_INIT()
@@ -1620,6 +1649,110 @@
         END SUBROUTINE neighbor_list_2e
 
 
+
+	SUBROUTINE overlap_diag(fockbias, dovv,Y,Ytrans,Xtrans)
+	use garcha_mod, ONLY: lowdin,M,Md,RMM,Smat,X,sqsm, nuc, natom
+	USE general_module, ONLY :  sdcmp_cholesky, sdiag_canonical, vector_selection, read_list, atmorb
+	IMPLICIT NONE
+	LOGICAL :: docholesky
+	real*8,dimension(:),  allocatable :: Dvec
+	real*8,dimension(:,:),allocatable :: Vmat
+        real*8,dimension(:,:),allocatable :: Ymat, Xmat, Xtrp, Ytrp
+        real*8,dimension(M,M),intent(inout) :: Y,Ytrans,Xtrans
+	real*8,dimension(M,M),intent(inout) :: fockbias
+	logical, intent(in) :: dovv
+       integer,allocatable :: atom_group(:)
+       integer,allocatable :: orb_group(:)
+       integer,allocatable :: orb_selection(:)
+	real*8 :: weight
+	INTEGER :: M13, MM, MMd !temporal hasta que rompamos RMM
+	INTEGER :: iii, jjj, kk
+	allocate(Vmat(M,M),Dvec(M))
+        allocate(Ymat(M,M),Xmat(M,M),Xtrp(M,M),Ytrp(M,M))
+
+        MM=M*(M+1)/2
+        MMd=Md*(Md+1)/2
+	M13=1 + 4*MM + 2*MMd !temporal hasta que rompamos RMM
+	WRITE(*,*) "entre al nuevo overlap diag"
+
+
+!       dovv=.false.
+       if (dovv.eqv..true.) then
+
+        if (.not.allocated(atom_group)) then
+          allocate(atom_group(natom))
+          call read_list('atomgroup',atom_group)
+        endif
+        if (.not.allocated(orb_group)) then
+          allocate(orb_group(M))
+          call atmorb(atom_group,nuc,orb_group)
+        endif
+        if (.not.allocated(orb_selection)) then
+          allocate(orb_selection(M))
+        endif
+       endif
+!
+! Diagonalization of S matrix, after this is not needed anymore
+! S = YY^T ; X = (Y^-1)^T
+! => (X^T)SX = 1
+!
+      docholesky=.true.
+      if (lowdin) docholesky=.false.
+      call g2g_timer_start('cholesky')
+      call g2g_timer_sum_start('Overlap decomposition')
+      IF (docholesky) THEN
+         call sdcmp_cholesky(Smat,Dvec,Vmat,Ymat,Xtrp,Ytrp,Xmat)
+
+!         allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
+         do iii=1,M
+         do jjj=1,M
+           X(iii,jjj)=Xmat(iii,jjj)
+         enddo
+         enddo
+         Y=Ymat
+         Xtrans=Xtrp
+         Ytrans=Ytrp
+         do kk=1,M
+           RMM(M13+kk-1)=0.0d0
+         enddo
+      ELSE
+
+! FFR: Canonical Diagonalization of Overlap
+!--------------------------------------------------------------------!
+! I am keeping Y,Ytrans and Xtrans but they should be replaced
+! by the much nicer Ymat,Ytrp,Xtrp (and X by Xmat). Also, copy
+! into RMM.
+!
+         call sdiag_canonical(Smat,Dvec,Vmat,Xmat,Xtrp,Ymat,Ytrp)
+         sqsm=matmul(Vmat,Ytrp)
+
+         if (dovv.eqv..true.) then
+          fockbias=0.0d0
+
+          weight=0.195d0
+          call vector_selection(1,orb_group,orb_selection)
+          call fterm_biaspot(M,sqsm,orb_selection,weight,fockbias)
+
+          weight=-weight
+          call vector_selection(2,orb_group,orb_selection)
+          call fterm_biaspot(M,sqsm,orb_selection,weight,fockbias)
+         endif
+
+!         allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
+         do iii=1,M
+         do jjj=1,M
+           X(iii,jjj)=Xmat(iii,jjj)
+         enddo
+         enddo
+         Y=Ymat
+         Xtrans=Xtrp
+         Ytrans=Ytrp
+         do kk=1,M
+           RMM(M13+kk-1)=Dvec(kk)
+         enddo
+      ENDIF
+      call g2g_timer_stop('cholesky')
+	END SUBROUTINE overlap_diag
 
 
 

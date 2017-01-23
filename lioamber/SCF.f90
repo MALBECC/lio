@@ -18,7 +18,6 @@
       use cublasmath 
 #endif
 !c      use qmmm_module, only : qmmm_struct, qmmm_nml
-!c    hola
       implicit real*8 (a-h,o-z)
       integer:: l
        dimension q(natom),work(1000),IWORK(1000)
@@ -101,10 +100,13 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%    Distance Restrain     %%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       call get_restrain_energy(E_restrain)
+        E_restrain=0.d0
+        IF (number_restr.GT.0) THEN
+! distance restrain case
+          call get_restrain_energy(E_restrain)
+          WRITE(*,*) "DISTANCE RESTRAIN ADDED TO FORCES"
+        END IF
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
-
  
 #ifdef  magma
        call magmaf_init() 
@@ -113,21 +115,13 @@
       call g2g_timer_start('SCF')
       call g2g_timer_sum_start('SCF')
       call g2g_timer_sum_start('Initialize SCF')
-!c      just_int3n = .false.
       alloqueo = .true.
       ematalloc=.false.
       hagodiis=.false.
-!c     if(verbose)  write(6,*) 'ntatom',ntatom,nsol,natom
 
 !c------------------------------------------------------------------
-!c
-!c Pointers
-!c
-!c chequeo -----------
-!c
       Ndens=1
 !c---------------------
-!c       write(*,*) 'M=',M
       allocate (znano(M,M),xnano(M,M),scratch(M,M),scratch1(M,M), &
        fock(M,M))
 
@@ -230,41 +224,7 @@
 
 
 !----------------------------------------
-! Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
-
-      do i=1,natom
-        natomc(i)=0
-        do j=1,natom
-          d(i,j)=(r(i,1)-r(j,1))**2+(r(i,2)-r(j,2))**2+ &
-              (r(i,3)-r(j,3))**2
-
-          zij=atmin(i)+atmin(j)
-          ti=atmin(i)/zij
-          tj=atmin(j)/zij
-          alf=atmin(i)*tj
-          rexp=alf*d(i,j)
-          if (rexp.lt.rmax) then
-            natomc(i)=natomc(i)+1
-            jatc(natomc(i),i)=j
-          endif
-        enddo
-      enddo
-
-      do iij=nshell(0),1,-1
-        nnps(nuc(iij))=iij
-      enddo
-
-      do iik=nshell(0)+nshell(1),nshell(0)+1,-1
-        nnpp(nuc(iik))=iik
-      enddo
-
-      do iikk=M,nshell(0)+nshell(1)+1,-1
-        nnpd(nuc(iikk))=iikk
-      enddo
-
-      ! get MM pointers in g2g
-      ! call g2g_mm_init(nsol,r,pc)
-
+        call neighbor_list_2e() ! Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
 
 ! -Create integration grid for XC here
 ! -Assign points to groups (spheres/cubes)
@@ -1616,3 +1576,50 @@
       return
       end
 !  -------------------------
+
+
+
+
+
+
+        SUBROUTINE neighbor_list_2e()
+! Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
+        USE garcha_mod, ONLY : natom, natomc, r, d, jatc, rmax, nshell, atmin, nnps, nnpp, nnpd, M, nuc
+        IMPLICIT NONE
+        INTEGER :: i,j, iij, iik, iikk
+        REAL*8 :: zij, ti, tj, alf, rexp
+          do i=1,natom
+          natomc(i)=0
+            do j=1,natom
+              d(i,j)=(r(i,1)-r(j,1))**2+(r(i,2)-r(j,2))**2+ &
+                 (r(i,3)-r(j,3))**2
+
+              zij=atmin(i)+atmin(j)
+              ti=atmin(i)/zij
+              tj=atmin(j)/zij
+              alf=atmin(i)*tj
+              rexp=alf*d(i,j)
+              if (rexp.lt.rmax) then
+                natomc(i)=natomc(i)+1
+                jatc(natomc(i),i)=j
+              endif
+            enddo
+          enddo
+
+          do iij=nshell(0),1,-1
+            nnps(nuc(iij))=iij
+          enddo
+
+          do iik=nshell(0)+nshell(1),nshell(0)+1,-1
+            nnpp(nuc(iik))=iik
+          enddo
+
+          do iikk=M,nshell(0)+nshell(1)+1,-1
+            nnpd(nuc(iikk))=iikk
+          enddo
+        END SUBROUTINE neighbor_list_2e
+
+
+
+
+

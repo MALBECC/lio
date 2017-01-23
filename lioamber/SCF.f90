@@ -42,15 +42,8 @@
 !FFR!
        logical             :: dovv
        real*8              :: weight, softness
-!       integer,allocatable :: atom_group(:)
-!       integer,allocatable :: orb_group(:)
-!       integer,allocatable :: orb_selection(:)
 
        real*8,dimension(:,:),allocatable :: fockbias
-!       real*8,dimension(:,:),allocatable :: Xtrp,Ytrp
-!       real*8,dimension(:,:),allocatable :: Xmat,Xtrp,Ymat,Ytrp
-!       real*8,dimension(:,:),allocatable :: Vmat
-!      real*8,dimension(:),  allocatable :: Dvec
 
        real*8,allocatable :: eigen_vecs(:,:), eigen_vals(:)
 
@@ -87,8 +80,8 @@
          if (FOCK_ECP_read) then
             call intECP(0) ! alocatea variables comunes y las lee del ar
          else
-              call g2g_timer_start('ECP Routines')
-              call intECP(1) !alocatea variables, calcula variables comu
+            call g2g_timer_start('ECP Routines')
+            call intECP(1) !alocatea variables, calcula variables comu
             call intECP(2) !calcula terminos de 2 centros
             call intECP(3) !calcula terminos de 3 centros
               call g2g_timer_stop('ECP Routines')
@@ -103,16 +96,11 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
         E_restrain=0.d0
         IF (number_restr.GT.0) THEN
-! distance restrain case
           call get_restrain_energy(E_restrain)
           WRITE(*,*) "DISTANCE RESTRAIN ADDED TO FORCES"
         END IF
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
  
-#ifdef  magma
-       call magmaf_init() 
-#endif
-
       call g2g_timer_start('SCF')
       call g2g_timer_sum_start('SCF')
       call g2g_timer_sum_start('Initialize SCF')
@@ -203,28 +191,8 @@
 
 ! FFR: Variable Allocation
 !--------------------------------------------------------------------!
-!       allocate(Xmat(M,M),Xtrp(M,M),Ymat(M,M),Ytrp(M,M))
-
-!       allocate(Vmat(M,M),Dvec(M))
        allocate(fockbias(M,M))
-
        dovv=.false.
-!       if (dovv.eqv..true.) then
-
-!        if (.not.allocated(atom_group)) then
-!          allocate(atom_group(natom))
-!          call read_list('atomgroup',atom_group)
-!        endif
-!        if (.not.allocated(orb_group)) then
-!          allocate(orb_group(M))
-!          call atmorb(atom_group,nuc,orb_group)
-!        endif
-!        if (.not.allocated(orb_selection)) then
-!          allocate(orb_selection(M))
-!        endif
-!       endif
-
-
 !----------------------------------------
       call neighbor_list_2e() ! Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
 
@@ -298,130 +266,11 @@
       enddo
       call g2g_timer_sum_stop('1-e Fock')
 
-
-
-
-
-
-
 !#########################################################################################
 !#########################################################################################
 	allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
-	call overlap_diag(fockbias, dovv,Y,Ytrans,Xtrans)
-
-!
 ! Diagonalization of S matrix, after this is not needed anymore
-! S = YY^T ; X = (Y^-1)^T
-! => (X^T)SX = 1
-!
-!      docholesky=.true.
-!      if (lowdin) docholesky=.false.
-!      call g2g_timer_start('cholesky')
-!      call g2g_timer_sum_start('Overlap decomposition')
-!      IF (docholesky) THEN 
-!!#ifdef  magma
-!        ! ESTO SIGUE USANDO Smat EN RMM(M5)
-!        ! CAMBIARLO CUANDO SE SIGA PROBANDO MAGMA
-!!        PRINT*,'DOING MAGMA-CHOLESKY'
-!
-!!        ALLOCATE(Y(M,M),Ytrans(M,M))
-!!        DO iii=1,M;DO jjj=1,M
-!!          Y(iii,jjj)=0
-!!          IF (jjj.LE.iii) THEN
-!!            iiindex=iii+(2*M-jjj)*(jjj-1)/2
-!!            Y(iii,jjj)=RMM(M5+iiindex-1)
-!!          ENDIF
-!!        ENDDO;ENDDO
-
-!!        CALL MAGMAF_DPOTRF('L',M,Y,M,ErrID)
-!
-!!        Ytrans= transpose(Y)
-!!        ALLOCATE(Xtrans(M,M))
-!!        Xtrans=Y
-!!        CALL MAGMAF_DTRTRI('L','N',M,Xtrans,M,ErrID)
-!!        if(ErrID.ne.0) STOP ('Error in cholesky decomp.')
-!!        xnano= transpose(Xtrans)
-!!        do i=1,M;doj=1,M
-!!          X(i,j)=Xnano(i,j)
-!!        enddo;enddo
-!!        PRINT*,'CHOLESKY MAGMA'
-!!
-!!#else
-!
-!! FFR: Cholesky Decomposition of Overlap
-!!--------------------------------------------------------------------!
-!! I am keeping Y,Ytrans and Xtrans but they should be replaced
-!! by the much nicer Ymat,Ytrp,Xtrp (and X by Xmat). The outputs
-!! Dvec and Vmat don't have the same meaning as in the diagona-
-!! lization (they are not eigenvalues or eigenvectors. No S1/2
-!! matrix can be obtained.
-!!
-!! Magma option should be introduced INSIDE of che call
-!!
-!         call sdcmp_cholesky(Smat,Dvec,Vmat,Ymat,Xtrp,Ytrp,Xmat)
-!
-!         allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
-!         do iii=1,M
-!         do jjj=1,M
-!           X(iii,jjj)=Xmat(iii,jjj)
-!         enddo
-!         enddo
-!         Y=Ymat
-!         Xtrans=Xtrp
-!         Ytrans=Ytrp
-!         do kk=1,M
-!           RMM(M13+kk-1)=0.0d0
-!         enddo
-! 
-!!#endif
-!      ELSE
-!
-!! FFR: Canonical Diagonalization of Overlap
-!!--------------------------------------------------------------------!
-!! I am keeping Y,Ytrans and Xtrans but they should be replaced
-!! by the much nicer Ymat,Ytrp,Xtrp (and X by Xmat). Also, copy
-!! into RMM.
-!!
-!         call sdiag_canonical(Smat,Dvec,Vmat,Xmat,Xtrp,Ymat,Ytrp)
-!         sqsm=matmul(Vmat,Ytrp)
-!
-!
-!         if (dovv.eqv..true.) then
-!          fockbias=0.0d0
-!
-!          weight=0.195d0
-!          call vector_selection(1,orb_group,orb_selection)
-!          call fterm_biaspot(M,sqsm,orb_selection,weight,fockbias)
-!
-!          weight=-weight
-!          call vector_selection(2,orb_group,orb_selection)
-!          call fterm_biaspot(M,sqsm,orb_selection,weight,fockbias)
-!         endif
-!
-!         allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
-!         do iii=1,M
-!         do jjj=1,M
-!           X(iii,jjj)=Xmat(iii,jjj)
-!         enddo
-!         enddo
-!         Y=Ymat
-!         Xtrans=Xtrp
-!         Ytrans=Ytrp
-!         do kk=1,M
-!           RMM(M13+kk-1)=Dvec(kk)
-!         enddo
-!
-!      ENDIF
-!      call g2g_timer_stop('cholesky')
-!
-!
-!
-!
-
-
-
-
-
+	call overlap_diag(fockbias, dovv,Y,Ytrans,Xtrans)
 !##################################################################################################
 !##################################################################################################
 
@@ -447,127 +296,140 @@
             endif 
 #endif
 !------------------------------------------------------------------------------!
-      call g2g_timer_start('initial guess')
-      call g2g_timer_sum_stop('Overlap decomposition')
+!############################################################################
+!############################################################################
+!############################################################################
+	write(*,*) "llegue al starting guess"
+	call starting_guess(xnano)
+
+!      call g2g_timer_start('initial guess')
+!      call g2g_timer_sum_stop('Overlap decomposition')
 
 !
-! CASE OF NO STARTING GUESS PROVIDED, 1 E FOCK MATRIX USED
-! FCe = SCe; (X^T)SX = 1
-! F' = (X^T)FX
-! => (X^-1*C)^-1 * F' * (X^-1*C) = e
-!
+!! CASE OF NO STARTING GUESS PROVIDED, 1 E FOCK MATRIX USED
+!! FCe = SCe; (X^T)SX = 1
+!! F' = (X^T)FX
+!! => (X^-1*C)^-1 * F' * (X^-1*C) = e
+!!
 
-! Calculate F' in RMM(M5)
-      if((.not.ATRHO).and.(.not.VCINP).and.primera) then
-        call g2g_timer_sum_start('initial guess')
-        primera=.false.
-        do i=1,M
-          do j=1,M
-            X(i,M+j)=0.D0
-            do k=1,j
-              X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+j+(M2-k)*(k-1)/2-1)
-            enddo
-            do k=j+1,M
-              X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+k+(M2-j)*(j-1)/2-1)
-            enddo
-          enddo
-
-        enddo
-
-        kk=0
-        do j=1,M
-          do i=j,M
-            kk=kk+1
-            RMM(M5+kk-1)=0.D0
-            do k=1,j
-              RMM(M5+kk-1)=RMM(M5+kk-1)+X(i,M+k)*X(k,j)
-            enddo
-          enddo
-        enddo
+!! Calculate F' in RMM(M5)
+!      if((.not.ATRHO).and.(.not.VCINP).and.primera) then
+!        call g2g_timer_sum_start('initial guess')
+!        primera=.false.
+!        do i=1,M
+!          do j=1,M
+!            X(i,M+j)=0.D0
+!            do k=1,j
+!              X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+j+(M2-k)*(k-1)/2-1)
+!            enddo
+!            do k=j+1,M
+!              X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+k+(M2-j)*(j-1)/2-1)
+!            enddo
+!          enddo
 !
-! F' diagonalization now
-! xnano will contain (X^-1)*C
+!        enddo
 !
-        do i=1,M
-          RMM(M15+i-1)=0.D0
-          RMM(M13+i-1)=0.D0
-        enddo
+!        kk=0
+!        do j=1,M
+!          do i=j,M
+!            kk=kk+1
+!            RMM(M5+kk-1)=0.D0
+!            do k=1,j
+!              RMM(M5+kk-1)=RMM(M5+kk-1)+X(i,M+k)*X(k,j)
+!            enddo
+!          enddo
+!        enddo
+!!
+!! F' diagonalization now
+!! xnano will contain (X^-1)*C
+!!
+!        do i=1,M
+!          RMM(M15+i-1)=0.D0
+!          RMM(M13+i-1)=0.D0
+!        enddo
+!!
+!! ESSL OPTION
+!        do i=1,MM
+!          rmm5(i)=RMM(M5+i-1)
+!        enddo
+!        rmm15=0
+!        xnano=0 
+!#ifdef  essl
+!        call DSPEV(1,RMM(M5),RMM(M13),X(1,M+1),M,M,RMM(M15),M2) 
+!#endif
+!! LAPACK OPTION -----------------------------------------
+!#ifdef pack
+!!
+!        call dspev('V','L',M,RMM5,RMM(M13),Xnano,M,RMM15,info) 
+!#endif
+!        do i =1,M
+!          do j=1,M
+!            X(i,M+j)=xnano(i,j)
+!          enddo
+!        enddo
+!!-----------------------------------------------------------
+!! Recover C from (X^-1)*C
+!        do i=1,MM
+!          RMM(M5+i-1)=rmm5(i)
+!        enddo
 !
-! ESSL OPTION
-        do i=1,MM
-          rmm5(i)=RMM(M5+i-1)
-        enddo
-        rmm15=0
-        xnano=0 
-#ifdef  essl
-        call DSPEV(1,RMM(M5),RMM(M13),X(1,M+1),M,M,RMM(M15),M2) 
-#endif
-! LAPACK OPTION -----------------------------------------
-#ifdef pack
+!        do i=1,M
+!          do j=1,M
+!            X(i,M2+j)=0.D0
+!            do k=1,M
+!              X(i,M2+j)=X(i,M2+j)+X(i,k)*X(k,M+j)
+!            enddo
+!          enddo
+!        enddo
+!      call g2g_timer_stop('initial guess')
 !
-        call dspev('V','L',M,RMM5,RMM(M13),Xnano,M,RMM15,info) 
-#endif
-        do i =1,M
-          do j=1,M
-            X(i,M+j)=xnano(i,j)
-          enddo
-        enddo
-!-----------------------------------------------------------
-! Recover C from (X^-1)*C
-        do i=1,MM
-          RMM(M5+i-1)=rmm5(i)
-        enddo
-
-        do i=1,M
-          do j=1,M
-            X(i,M2+j)=0.D0
-            do k=1,M
-              X(i,M2+j)=X(i,M2+j)+X(i,k)*X(k,M+j)
-            enddo
-          enddo
-        enddo
-      call g2g_timer_stop('initial guess')
-
-
+!!
+!! Density Matrix
+!!
+!        kk=0
+!!
+!        do k=1,NCO
+!          do i=1,M
+!            kk=kk+1
+!            RMM(M18+kk-1)=X(i,M2+k)
+!          enddo
+!        enddo
+!!
+!        kk=0
+!        do j=1,M
+!          do i=j,M
+!            kk=kk+1
+!            RMM(kk)=0.D0
+!!
+!! one factor of 2 for alpha+beta
+!            if(i.eq.j) then
+!             ff=2.D0
+!! another factor of 2 for direct triangular sum (j>i) w/ real basis
+!            else
+!             ff=4.D0
+!            endif
+!!
+!            do k=1,NCO
+!              RMM(kk)=RMM(kk)+ff*X(i,M2+k)*X(j,M2+k)
+!            enddo
+!          enddo
+!        enddo
 !
-! Density Matrix
-!
-        kk=0
-!
-        do k=1,NCO
-          do i=1,M
-            kk=kk+1
-            RMM(M18+kk-1)=X(i,M2+k)
-          enddo
-        enddo
-!
-        kk=0
-        do j=1,M
-          do i=j,M
-            kk=kk+1
-            RMM(kk)=0.D0
-!
-! one factor of 2 for alpha+beta
-            if(i.eq.j) then
-             ff=2.D0
-! another factor of 2 for direct triangular sum (j>i) w/ real basis
-            else
-             ff=4.D0
-            endif
-!
-            do k=1,NCO
-              RMM(kk)=RMM(kk)+ff*X(i,M2+k)*X(j,M2+k)
-            enddo
-          enddo
-        enddo
-!
-        call g2g_timer_sum_stop('initial guess')
-      endif
-
+!        call g2g_timer_sum_stop('initial guess')
+!      endif
 
 
 
-! End of Starting guess (No MO , AO known)-------------------------------
+
+!! End of Starting guess (No MO , AO known)-------------------------------
+
+
+
+!############################################################################
+!############################################################################
+!############################################################################
+
+
 !
       if ((timedep.eq.1).and.(tdrestart)) then
         call g2g_timer_sum_start('TD')
@@ -628,13 +490,10 @@
       endif
 !
 
-      if (hybrid_converg) DIIS=.true.
-! cambio para convergencia damping-diis
+      if (hybrid_converg) DIIS=.true. ! cambio para convergencia damping-diis
 
-      if ((DIIS ) .and.alloqueo) then
-! agregado para cambio de damping a diis, Nick
+      if ((DIIS ) .and.alloqueo) then ! agregado para cambio de damping a diis, Nick
         alloqueo=.false.
-!       write(*,*) 'eme=', M
        allocate(rho1(M,M),rho(M,M),fockm(MM,ndiis), &
         FP_PFm(MM,ndiis),EMAT(ndiis+1,ndiis+1),bcoef(ndiis+1) &
         ,suma(MM))
@@ -1673,8 +1532,6 @@
         MM=M*(M+1)/2
         MMd=Md*(Md+1)/2
 	M13=1 + 4*MM + 2*MMd !temporal hasta que rompamos RMM
-	WRITE(*,*) "entre al nuevo overlap diag"
-
 
 !       dovv=.false.
        if (dovv.eqv..true.) then
@@ -1755,4 +1612,159 @@
 	END SUBROUTINE overlap_diag
 
 
+
+	SUBROUTINE starting_guess(xnano)
+	use garcha_mod, ONLY: RMM, ATRHO, VCINP, primera, M, X, Md, NCO
+!      use linear_algebra
+!      use mathsubs
+!#ifdef  CUBLAS
+!      use cublasmath
+!#endif
+!	use general_module
+
+	IMPLICIT NONE
+	integer :: info
+	real*8, dimension (M,M), intent(inout)::xnano
+	real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15
+	integer :: M1,M2,M3, M5, M7, M9, M11, M13, M15, M17, M18, MM, MMd !temporales hasta q rompamos RMM
+	integer :: i,j,k,kk !auxiliares
+	real*8 :: ff
+      call g2g_timer_start('initial guess')
+      call g2g_timer_sum_stop('Overlap decomposition')
+
+      MM=M*(M+1)/2
+      MMd=Md*(Md+1)/2
+      allocate(rmm5(MM),rmm15(mm))
+
+      M1=1 ! first P
+      M2=2*M
+      M3=M1+MM ! now Pnew
+      M5=M3+MM! now S, F also uses the same position after S was used
+      M7=M5+MM! now G
+      M9=M7+MMd ! now Gm
+      M11=M9+MMd! now H
+      M13=M11+MM! W ( eigenvalues ), also this space is used in least squares
+      M15=M13+M! aux ( vector for ESSl)
+      M17=M15+MM! Least squares
+      M18=M17+MMd! vectors of MO
+
+
+
+!
+! CASE OF NO STARTING GUESS PROVIDED, 1 E FOCK MATRIX USED
+! FCe = SCe; (X^T)SX = 1
+! F' = (X^T)FX
+! => (X^-1*C)^-1 * F' * (X^-1*C) = e
+!
+! Calculate F' in RMM(M5)
+      if((.not.ATRHO).and.(.not.VCINP).and.primera) then
+        call g2g_timer_sum_start('initial guess')
+        primera=.false.
+        do i=1,M
+          do j=1,M
+            X(i,M+j)=0.D0
+            do k=1,j
+              X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+j+(M2-k)*(k-1)/2-1)
+            enddo
+            do k=j+1,M
+              X(i,M+j)=X(i,M+j)+X(k,i)*RMM(M11+k+(M2-j)*(j-1)/2-1)
+            enddo
+          enddo
+
+        enddo
+
+        kk=0
+        do j=1,M
+          do i=j,M
+            kk=kk+1
+            RMM(M5+kk-1)=0.D0
+            do k=1,j
+              RMM(M5+kk-1)=RMM(M5+kk-1)+X(i,M+k)*X(k,j)
+            enddo
+          enddo
+        enddo
+!
+! F' diagonalization now
+! xnano will contain (X^-1)*C
+!
+
+        do i=1,M
+          RMM(M15+i-1)=0.D0
+          RMM(M13+i-1)=0.D0
+        enddo
+!
+! ESSL OPTION
+        do i=1,MM
+          rmm5(i)=RMM(M5+i-1)
+        enddo
+        rmm15=0
+        xnano=0
+#ifdef  essl
+        call DSPEV(1,RMM(M5),RMM(M13),X(1,M+1),M,M,RMM(M15),M2)
+#endif
+! LAPACK OPTION -----------------------------------------
+#ifdef pack
+!
+        call dspev('V','L',M,RMM5,RMM(M13),Xnano,M,RMM15,info)
+#endif
+
+        do i =1,M
+          do j=1,M
+            X(i,M+j)=xnano(i,j)
+          enddo
+        enddo
+!-----------------------------------------------------------
+! Recover C from (X^-1)*C
+        do i=1,MM
+          RMM(M5+i-1)=rmm5(i)
+        enddo
+
+        do i=1,M
+          do j=1,M
+            X(i,M2+j)=0.D0
+            do k=1,M
+              X(i,M2+j)=X(i,M2+j)+X(i,k)*X(k,M+j)
+            enddo
+          enddo
+        enddo
+      call g2g_timer_stop('initial guess')
+
+
+!
+! Density Matrix
+!
+        kk=0
+!
+        do k=1,NCO
+          do i=1,M
+            kk=kk+1
+            RMM(M18+kk-1)=X(i,M2+k)
+          enddo
+        enddo
+!
+        kk=0
+        do j=1,M
+          do i=j,M
+            kk=kk+1
+            RMM(kk)=0.D0
+!
+! one factor of 2 for alpha+beta
+            if(i.eq.j) then
+             ff=2.D0
+! another factor of 2 for direct triangular sum (j>i) w/ real basis
+            else
+             ff=4.D0
+            endif
+!
+            do k=1,NCO
+              RMM(kk)=RMM(kk)+ff*X(i,M2+k)*X(j,M2+k)
+            enddo
+          enddo
+        enddo
+!
+        call g2g_timer_sum_stop('initial guess')
+      endif
+	deallocate(rmm5,rmm15)
+! End of Starting guess (No MO , AO known)-------------------------------
+	END SUBROUTINE starting_guess
 

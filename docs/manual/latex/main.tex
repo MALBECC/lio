@@ -1,4 +1,3 @@
-%\documentclass[acs,preprint,floats]{revtex4}
 \documentclass[journal=jctcce,manuscript=article]{achemso}
 %journal=ancac3, % for ACS Nano
 %journal=acbcct, % for ACS Chem. Biol.
@@ -44,34 +43,211 @@ proyecto de manual de lio, hay q ponerle el formato adecuado
 %\maketitle
 
 \newpage
+\section{Quick Reference}
+This section provides a quick reference for LIO input variables, also providing the default values.
 
-\section{Restrains}
-Lio may add an extra potential term to Hamiltonian for penalty the distance between specified pairs of atoms. 
+    \subsection{File I/O}
+    \begin{table}  [H]
+      \begin{center}
+      \begin{tabular}{ l c c l}
+         Variable & Type & Default & Description \\
+         basis    & char*20 & 'basis' & Filename for the basis set file (if a custom basis set is used).   \\
+         output & char*20 & 'output' & Output file. \\
+         fCoord & char*20 & 'qm.xyz' & xyz file (without the header) containing the QM System \\
+            & & & coordinates. \\
+         writexyz & logical & false & Writes an xyz file containing the QM system coordinates, \\
+            & & & useful when using LIO in tandem with AMBER/GROMACS. \\
+         verbose & integer & 1 & Verbose level. \\
+         VCInp & logical & false & \\
+         restart\_freq & integer & 1 & \\
+         frestart & char*20 & 'restart.out' & Output restart file. \\
+         frestartin & char*20 & 'restart.in' & Input restart file. \\
+       \end{tabular}
+       \end{center}
+      \label{lio.fileio.var}
+    \end{table}
+
+    \subsection{Electronic Properties}
+    \begin{table}  [H]
+      \begin{center}
+      \begin{tabular}{ l c c l}
+         Variable & Type & Default & Description \\
+         writeDens & logical & false & Writes electronic density to an output file after calculation. \\
+         writeForces & logical & false & Writes final forces to output. \\
+         print\_coeffs & logical & false & Prints MO coefficients in AO basis. \\
+         mulliken & logical & false & Performs a Mulliken Population Analysis. \\
+         lowdin & logical & false & Performs a Lowdin Population Analysis. \\
+         fukui & logical & false & Calculates condensed-to-atoms Fukui function (Spin Polarized \\
+            & & & Fukui in open-shell systems).
+       \end{tabular}
+       \end{center}
+      \label{lio.properties.var}
+    \end{table}
+
+    \subsection{Theory Level Options}
+    \begin{table}  [H]
+      \begin{center}
+      \begin{tabular}{ l c c l}
+         Variable & Type & Default & Description \\
+         natom & integer & 0 & Number of QM atoms (ignored from \\
+            & & & AMBER/GROMACS). \\
+         nsol & integer & 0 & Number of classical atoms (ignored from \\
+            & & & AMBER/GROMACS). \\
+         charge & integer & 0 & QM system total charge. \\
+         open & logical & false & Perform an open-shell calculation. \\
+         nUnp & integer & 0 & Number of unpaired electrons. \\
+         int\_basis & logical & true & If set to false, an external basis file must be \\ 
+            & & & provided. \\
+         basis\_set & char*20 & 'DZVP' & Name of the basis set used in the calculation. \\
+            & & & Ignored if int\_basis is set to false. \\
+         fitting\_set & char*40 & 'DZVP Coulomb Fitting' & Name of the fitting set used in the calculation. \\
+            & & & Ignored if int\_basis is set to false. \\
+         nMax & integer & 100 & Maximum number of SCF steps. \\
+         number\_restr & integer & 0 & Amount of distance restraints used. \\
+      \end{tabular}
+       \end{center}
+      \label{lio.theory.var}
+    \end{table}  
+    
+    \subsection{Theory Level Advanced Options}
+    \begin{table}  [H]
+      \begin{center}
+      \begin{tabular}{ l c c l}
+         Variable & Type & Default & Description \\
+         DIIS & logical & true & Use DIIS convergence. \\
+         nDIIS & integer & 30 & \\
+         hybrid\_converg & logical & false & Use Hybrid convergence. \\
+         gold & real*8 & 10 & \\
+         told & real*8 & 1.0D-6 & \\
+         ETold & real*8 & 1.0D0 & \\
+         good\_cut & real*8 & 1.0D-5 & \\
+         rmax & real*8 & 16 & \\
+         rmaxs & real*8 & 5 & \\
+         omit\_bas & logical & false & \\
+         predCoef & logical & false & \\
+         dgTrig & integer & 100 & \\
+         iExch & integer & 9 & \\
+         integ & logical & true & \\
+         intSolDouble & logical & true & \\
+         dens & logical & true & \\
+         iGrid & integer & 2 & \\
+         iGrid2 & integer & 2 & \\         
+       \end{tabular}
+       \end{center}
+      \label{lio.theorya.var}
+    \end{table}    
+    
+    \subsection{TD-DFT Options}
+    \begin{table}  [H]
+      \begin{center}
+      \begin{tabular}{ l c c l}
+         Variable & Type & Default & Description \\
+         timeDep & integer & 0 & Use TDDFT (when =1). \\
+         tdStep & real*8 & 2.D-5 & Timestep for TD-DFT (in atomic units). \\
+         ntdStep & integer & 0 & Maximum number of TD-DFT steps. \\
+         propagator & integer & 1 & \\
+         NBCH & integer & 10 & \\
+         field & logical & false & \\
+         epsilon & real*8 & 1.D0 & \\
+         a0 & real*8 & 1000 & \\
+         exter & logical & false & Apply an external electric field. \\
+         Fx, Fy, Fz & real*8 & 0.05 &  The strength of the external electric field. \\
+         tdrestart & logical & false & \\
+       \end{tabular}
+       \end{center}
+      \label{lio.tddft.var}
+    \end{table}    
+
+    \subsection{Effective Core Potential Options}
+    \begin{table}  [H]
+      \begin{center}
+      \begin{tabular}{ l c c l}
+         Variable & Type & Default & Description \\
+         ECPMode & logical & false & Activate the ECP mode. \\
+         ECPTypes & integer & 0 & \\
+         tipeECP & char*20 & 'NOT-DEFINED' & \\
+         ZListECP & integer & 0 & \\
+         cutECP & logical & true & \\
+         ECP\_debug &  logical & false & \\
+         local\_nonlocal & integer & 0 & \\
+         ECP\_full\_range\_int & logical & false & \\
+         verbose\_ECP & integer & 0 & \\
+         fock\_ECP\_read & logical & false & \\
+         fock\_ECP\_write & logical & false & \\
+         fullTimer\_ECP & logical & false & \\
+         cut2\_0 & real*8 & 15.D0 & \\
+         cut3\_0 & real*8 & 12.D0 & \\
+       \end{tabular}
+       \end{center}
+      \label{lio.ecp.var}
+    \end{table}    
+
+    \subsection{Orbital Printing Options}
+    \begin{table}  [H]
+      \begin{center}
+      \begin{tabular}{ l c c l}
+         Variable & Type & Default & Description \\
+         cubeGen\_only & logical & false & \\
+         cube\_res & integer & 40 & \\
+         cube\_sel & integer & 0 & \\
+         cube\_dens & logical & false & Prints the electronic density.  \\
+         cube\_dens\_file & char*20 & 'dens.cube' & File containing the electronic density. \\
+         cube\_orb & logical & false & Prints orbital shapes. \\
+         cube\_orb\_file & char*20 & 'orb.cube' & File containing the orbital shapes. \\
+         cube\_elec & logical & false & Prints the electric field. \\
+         cube\_elec\_file & char*20 & 'field.cube' & File containing the electric field. \\
+         cube\_sqrt\_orb & logical & false & \\
+       \end{tabular}
+       \end{center}
+      \label{lio.ecp.var}
+    \end{table}    
+    
+    \subsection{GPU Options}
+    \begin{table}  [H]
+      \begin{center}
+      \begin{tabular}{ l c c l}
+         Variable & Type & Default & Description \\
+         max\_function\_exponent & integer & 10 & \\
+         little\_cube\_size & real*8 & 8.0 & \\
+         min\_points\_per\_cube & integer & 1 & \\
+         assign\_all\_functions & logical & false & \\
+         sphere\_radius & real*8 & 0.6 & \\
+         remove\_zero\_weights & logical & true & \\
+         energy\_all\_iterations & logical & false & \\
+         free\_global\_memory & real*8 & 0.0 & \\
+       \end{tabular}
+       \end{center}
+      \label{lio.ecp.var}
+    \end{table}    
+
+\newpage
+\section{Restraints}
+LIO may add an extra potential term to the Hamiltonian in order to restrain the distance between specified pairs of atoms.
 
     \subsection{Implemenation}
     The implementation is a simple harmonic potential over a generalized coordinate $r$.
-    
+
     \begin{equation}
       U=\frac{1}{2} k [r - l_0]^2  
       \label{E_restrain}
     \end{equation}
-    
+
     $r$ may be defined as a weighted combination of distances between pairs of atoms.
-    
+
     \begin{equation}
       r=  \sum_{i} \sum_{j>i} w_{ij} |\vec{r_i} - \vec{r_j}|
       \label{gen_coord}
     \end{equation}
-    
+
     In this formulation the force over an atom l is:
-    
+
     \begin{equation}
       \vec{F_l}= -k [r - l_0] \sum_{i} \sum_{j>i} w_{ij} \frac{\vec{r_{ij}}}{r_{ij}} \eta_{ijl}     
       \label{rest_force}
-    \end{equation} 
-    
-    Where $\eta_{ijl}$ is defines as:
-    
+    \end{equation}
+
+    Where $\eta_{ijl}$ is defined as:
+
     \begin{equation*}
       \eta_{ijl} =
        \begin{cases}
@@ -81,16 +257,15 @@ Lio may add an extra potential term to Hamiltonian for penalty the distance betw
        \end{cases}
        \label{eta}
     \end{equation*}
-    
-    
 
-    \subsection{Using Restrain}
 
-    The number of pairs of atoms that going to be added in potential(s) in lio is defined with the variable number\_restr, and the list of distance restrains have to be added to in an extra lio.restrain file like in the following example:
+    \subsection{Using Restraints}
+
+    The number of pairs of atoms to be added in the restraint potential(s) is defined by setting the variable number\_restr, and a list of distance restrains have to be added to in an additional lio.restrain file. For example:
 
     \begin{table}  [H]
       \begin{center}
-      \begin{tabular}{ l c c c c c} 
+      \begin{tabular}{ l c c c c c}
          ai & aj & index &   k  &    wij   &  l0    \\
          1  &  2 &   0   &  0.1 &    1.0   & 7.86   \\
          3  &  4 &   0   &  0.1 &   -1.0   & 7.86   \\
@@ -104,19 +279,17 @@ Lio may add an extra potential term to Hamiltonian for penalty the distance betw
       \label{lio.restrain}
     \end{table}
 
-In columns ai and aj you find the atom numbers in de QM system to be restrained, index number determine which distances contribute to a same generalized reaction coordinate. Finally k, wij and l0 are the force constant, weight of that distance in the generalized coordinate and equilibrium position in atomic units.
-    
+Columns ai and aj contain the atom numbers in the QM system to be restrained, while the index number determines which distances contribute to a same generalized reaction coordinate. The remaining columns are the force constants (k), weights of that distance in the generalized coordinate (wij) and equilibrium positions in atomic units (l0).
+
     \subsection{Examples}
 
     \textbf{1)In lio.in:}
     
-    number\_restr = 1
-    
-    \textbf{in lio.restrain:}
-    
+        \textbf{in lio.restrain:}
+
     \begin{table}  [H]
       \begin{center}
-      \begin{tabular}{ l c c c c c} 
+      \begin{tabular}{ l c c c c c}
          ai & aj & index &   k  &    wij   &  l0    \\
          1  &  2 &   0   &  0.1 &    1.0   & 7.86   \\
        \end{tabular}
@@ -125,22 +298,22 @@ In columns ai and aj you find the atom numbers in de QM system to be restrained,
     \end{table}
 
     \textbf{Potential added to system:}
-    
+
     \begin{equation}
       U=\frac{1}{2} 0.1 \Big{[} 1.0 |\vec{r_1} - \vec{r_2}| - 7.86\Big{]}^2  
       \label{Ex1}
     \end{equation}
-    
-    
+
+
     \textbf{2)In lio.in:}
-    
+
     number\_restr = 2
-    
+
     \textbf{in lio.restrain:}
-    
+
     \begin{table}  [H]
       \begin{center}
-      \begin{tabular}{ l c c c c c} 
+      \begin{tabular}{ l c c c c c}
          ai & aj & index &   k  &    wij   &  l0    \\
          1  &  2 &   0   &  0.1 &    1.0   & 7.86   \\
          3  &  4 &   0   &  0.1 &   -1.0   & 7.86   \\
@@ -150,22 +323,22 @@ In columns ai and aj you find the atom numbers in de QM system to be restrained,
     \end{table}
 
     \textbf{Potential added to system:}
-    
+
     \begin{equation}
       U=\frac{1}{2} 0.1 \Big{[} 1.0 |\vec{r_1} - \vec{r_2}| - 1.0 |\vec{r_3} - \vec{r_4}| - 7.86\Big{]}^2  
       \label{Ex2}
     \end{equation}
-    
-    
+
+
     \textbf{3)In lio.in:}
-    
+
     number\_restr = 4
-    
+
     \textbf{in lio.restrain:}
-    
+
     \begin{table}  [H]
       \begin{center}
-      \begin{tabular}{ l c c c c c} 
+      \begin{tabular}{ l c c c c c}
          ai & aj & index &   k  &    wij   &  l0    \\
          1  &  2 &   0   &  0.1 &    1.0   & 7.86   \\
          3  &  4 &   0   &  0.1 &   -1.0   & 7.86   \\
@@ -177,12 +350,12 @@ In columns ai and aj you find the atom numbers in de QM system to be restrained,
     \end{table}
 
     \textbf{Potential added to system:}
-    
+
     \begin{equation}
       U=\frac{1}{2} 0.1 \Big{[} 1.0 |\vec{r_1} - \vec{r_2}| - 1.0 |\vec{r_3} - \vec{r_4}| - 7.86\Big{]}^2 + \frac{1}{2} 0.3 \Big{[} 3.5 |\vec{r_1} - \vec{r_3}| - 2.2 |\vec{r_7} - \vec{r_8}| +2.31\Big{]}^2 
       \label{Ex3}
     \end{equation}
-    
+
 
 
 \end{document}

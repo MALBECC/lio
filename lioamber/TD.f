@@ -92,6 +92,8 @@ c       USE latom
 ! Group of charges
        groupcharge=.false.
 !!------------------------------------!!
+	nopt=0
+
 #ifdef CUBLAS
        write(*,*) 'USING CUBLAS'
        stat=CUBLAS_INIT()

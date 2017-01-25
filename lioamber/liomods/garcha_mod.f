@@ -7,7 +7,7 @@
       logical verbose 
       integer M,Md,natom,ntatom,NMAX,NCO,NUNP,igrid,igrid2
      >  ,Iexch,nsol,npas,npasw,idip,watermod,noconverge,
-     > converge,ndiis,NGEO,nang,timedep,ntdstep,propagator,NBCH 
+     > converge,ndiis,nang,timedep,ntdstep,propagator,NBCH 
       integer restart_freq, energy_freq
       real*8 GOLD, TOLD, qmmmcut, dgtrig
 !      parameter (nng=100)

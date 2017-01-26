@@ -10,17 +10,22 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       subroutine SCF(E)
 !      use linear_algebra
-      use garcha_mod, only : M,Md, NCO,natom,Nang, number_restr, hybrid_converg, MEMO, npas, verbose, RMM, X, SHFT, GRAD, npasw, igrid, energy_freq, converge, noconverge, cubegen_only, cube_dens, cube_orb, cube_elec, VCINP, Nunp, GOLD, igrid2, predcoef, nsol, r, pc, timedep, tdrestart, DIIS, told, Etold, Enucl, Eorbs, kkind,kkinds,cool,cools,NMAX
+      use garcha_mod, only : M,Md, NCO,natom,Nang, number_restr, hybrid_converg, MEMO, &
+      npas, verbose, RMM, X, SHFT, GRAD, npasw, igrid, energy_freq, converge,          &
+      noconverge, cubegen_only, cube_dens, cube_orb, cube_elec, VCINP, Nunp, GOLD,     &
+      igrid2, predcoef, nsol, r, pc, timedep, tdrestart, DIIS, told, Etold, Enucl,     &
+      Eorbs, kkind,kkinds,cool,cools,NMAX
 !      use mathsubs
       use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
        FOCK_ECP_read,FOCK_ECP_write,IzECP
 !      use general_module 
-#ifdef  CUBLAS
+!#ifdef  CUBLAS
 !      use cublasmath 
-#endif
+!#endif
 !      implicit real*8 (a-h,o-z)
 	IMPLICIT NONE
-	integer :: M1,M2,M3, M5, M7, M9, M11, M13, M15, M17, M18,M19, M20, MM,MM2,MMd,Md2 !temporales hasta q rompamos RMM
+	integer :: M1,M2,M3, M5, M7, M9, M11, M13, M15, M17, M18,M19, M20, MM,MM2,MMd,  &
+        Md2 !temporales hasta q rompamos RMM
 	integer :: i,j,k, kk !Auxiliares
 	integer :: Nel, niter
 	real*8 :: sq2, ff
@@ -29,12 +34,7 @@
 	INTEGER :: IDAMP !estan en una parte del codigo q no se usa. consultar para sacarlas
 	REAL*8 :: DAMP0, DAMP
 	INTEGER :: igpu
-
-
-
-
       integer:: l
-!       dimension q(natom),work(1000),IWORK(1000)
        real*8, dimension (:,:), ALLOCATABLE::xnano,znano,scratch
        real*8, dimension (:,:), ALLOCATABLE::scratch1
        real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15,rmm13
@@ -49,7 +49,7 @@
        logical             :: dovv
        real*8              :: weight, softness
        real*8,dimension(:,:),allocatable :: fockbias
-! Energy contributions
+! Energy and contributions
        real*8 :: E, E1,E1s, E2,Eecp, En, Ens, Es, E_restrain, Ex, Exc
 !--------------------------------------------------------------------!
 
@@ -180,14 +180,6 @@
       D2=1.D0
       DAMP0=GOLD
       DAMP=DAMP0
-!
-!      Qc=0.0D0
-!      do i=1,natom
-!       Qc=Qc+Iz(i)
-!      enddo
-!      Qc=Qc-Nel
-!      Qc2=Qc**2
-
 
 ! FFR: Variable Allocation
 !--------------------------------------------------------------------!
@@ -481,18 +473,12 @@
 !#################################################################################
 !#################################################################################
 
-
-
-
-
 !
         E=E1+E2+En
         E=E+Es
 !
-!
         call g2g_timer_stop('otras cosas')
         call g2g_timer_sum_pause('new density')
-
 
       if(verbose) call WRITE_E_STEP(niter, E+Ex) !escribe energia en cada paso
 

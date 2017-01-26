@@ -11,6 +11,4 @@ min_points_per_cube=1
 sphere_radius=0.5 
 energy_all_iterations=t
 free_global_memory=0.6
-DIIS=.false.
-hybrid_converg=.true.
 &end

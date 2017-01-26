@@ -14,7 +14,7 @@
       npas, verbose, RMM, X, SHFT, GRAD, npasw, igrid, energy_freq, converge,          &
       noconverge, cubegen_only, cube_dens, cube_orb, cube_elec, VCINP, Nunp, GOLD,     &
       igrid2, predcoef, nsol, r, pc, timedep, tdrestart, DIIS, told, Etold, Enucl,     &
-      Eorbs, kkind,kkinds,cool,cools,NMAX
+      Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug
 !      use mathsubs
       use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
        FOCK_ECP_read,FOCK_ECP_write,IzECP
@@ -80,10 +80,10 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
         if (ecpmode) then
          if (FOCK_ECP_read) then
-            call intECP(0) ! alocatea variables comunes y las lee del ar
+            call intECP(0) ! alocatea variables comunes y las lee del archivo ECP_restart
          else
             call g2g_timer_start('ECP Routines')
-            call intECP(1) !alocatea variables, calcula variables comu
+            call intECP(1) !alocatea variables, calcula variables comunes, y calcula terminos de 1 centro
             call intECP(2) !calcula terminos de 2 centros
             call intECP(3) !calcula terminos de 3 centros
               call g2g_timer_stop('ECP Routines')
@@ -99,10 +99,8 @@
       ematalloc=.false.
       hagodiis=.false.
 
-!c------------------------------------------------------------------
-!      Ndens=1
-!c---------------------
       allocate (znano(M,M),xnano(M,M),scratch(M,M),scratch1(M,M))
+
       npas=npas+1
       E=0.0D0
       E1=0.0D0
@@ -122,8 +120,6 @@
         END IF
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-
-!      ngeo=ngeo+1
       sq2=sqrt(2.D0)
       MM=M*(M+1)/2
       MM2=M**2
@@ -211,7 +207,7 @@
       call g2g_timer_sum_start('1-e Fock')
       call g2g_timer_sum_start('Nuclear attraction')
       call int1(En)
-
+	
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%    Effective Core Potential Add    %%%%%%%%%%%%%%%%%!
@@ -349,13 +345,6 @@
       call g2g_timer_sum_stop('Initialize SCF')
 
 !-------------------------------------------------------------------
-! Test for NaN
-        call SEEK_NaN(RMM,1,MM,"RHO 1")
-        call SEEK_NaN(RMM,M5-1,M5-1+MM,"FOCK 1")
-!-------------------------------------------------------------------
-
-
-!-------------------------------------------------------------------
 !-------------------------------------------------------------------
       do 999 while ((good.ge.told.or.Egood.ge.Etold).and.niter.le.NMAX)
 
@@ -372,24 +361,24 @@
 
 !-------------------------------------------------------------------
 ! Test for NaN
-        call SEEK_NaN(RMM,1,MM,"RHO 20")
-        call SEEK_NaN(RMM,M5-1,M5-1+MM,"FOCK 20")
+        if (Dbug) call SEEK_NaN(RMM,1,MM,"RHO Start")
+        if (Dbug) call SEEK_NaN(RMM,M5-1,M5-1+MM,"FOCK Start")
 !-------------------------------------------------------------------
             call g2g_timer_sum_start('Coulomb fit + Fock')
             call int3lu(E2) ! Computes Coulomb part of Fock, and energy on E2
             call g2g_timer_sum_pause('Coulomb fit + Fock')
 !-------------------------------------------------------------------
 ! Test for NaN
-        call SEEK_NaN(RMM,1,MM,"RHO 2")
-        call SEEK_NaN(RMM,M5-1,M5-1+MM,"FOCK 2")
+        if (Dbug) call SEEK_NaN(RMM,1,MM,"RHO Coulomb")
+        if (Dbug) call SEEK_NaN(RMM,M5-1,M5-1+MM,"FOCK Coulomb")
 !-------------------------------------------------------------------
             call g2g_timer_sum_start('Exchange-correlation Fock')
             call g2g_solve_groups(0,Ex,0) ! XC integration / Fock elements
             call g2g_timer_sum_pause('Exchange-correlation Fock')
 !-------------------------------------------------------------------
 ! Test for NaN
-        call SEEK_NaN(RMM,1,MM,"RHO 30")
-        call SEEK_NaN(RMM,M5-1,M5-1+MM,"FOCK 30")
+        if (Dbug) call SEEK_NaN(RMM,1,MM,"RHO Ex-Corr")
+        if (Dbug) call SEEK_NaN(RMM,M5-1,M5-1+MM,"FOCK Ex-Corr")
 !-------------------------------------------------------------------
 
 
@@ -407,7 +396,6 @@
         enddo
         call g2g_timer_sum_pause('Fock integrals')
         call g2g_timer_sum_start('SCF acceleration')
-
 
 
 #ifdef CUBLAS
@@ -487,15 +475,6 @@
 !
         call g2g_timer_stop('Total iter')
         call g2g_timer_sum_pause('Iteration')
-
-
-!-------------------------------------------------------------------
-! Test for NaN in Fock and Rho
-        call SEEK_NaN(RMM,1,MM,"RHO end 1 cicle of SCF")
-        call SEEK_NaN(RMM,M5-1,M5-1+MM,"FOCK end 1 cicle of SCF")
-!-------------------------------------------------------------------
-
-
  999  continue
 !-------------------------------------------------------------------
 !
@@ -672,41 +651,6 @@
       call g2g_timer_stop('SCF')
       call g2g_timer_sum_stop('Finalize SCF')
       call g2g_timer_sum_stop('SCF')
-
-
-
-
-
-!################ Formats ########################3
-
- 500  format('SCF TIME ',I6,' sec')
- 450  format ('SCF ENERGY = ',F19.12)
- 300  format(I3,E14.6,2x,F14.7)
- 600  format('  ENERGY CONTRIBUTIONS IN A.U.')
- 610  format(2x,'ONE ELECTRON',9x,'COULOMB',11x,'NUCLEAR')
- 611  format(4x,'ONE ELECTRON',9x,'COULOMB',9x,'NUCLEAR', 9x, &
-       'E. CORE POT.')
- 615  format(2x,'SOLVENT')
- 620  format(F14.7,4x,F14.7,4x,F14.7)
- 621  format(F14.7,6x,F14.7,2x,F14.7,4x,F14.7)
- 625  format(F14.7)
- 760  format(I3,9x,I3,6x,F10.4)
- 770  format('ATOM #',4x,'ATOM TYPE',4x,'POPULATION')
- 900  format(3(F15.9,2x),2x,F15.9)
- 777  format(4(F8.4,2x))
- 778  format('C',2x,3(F8.4,2x))
- 776  format (3(F8.4,2x))
- 756  format(2x,I3,2x,f8.4,2x,f8.4,2x,f8.4)
- 556  format ('evar',2x,(7(f10.5,2x)))
- 345  format(2x,I2,2x,3(f10.6,2x))
- 346  format(2x,4(f10.6,2x))
- 682  format(2x,f15.10)
-  88  format(5(2x,f8.5))
-  45  format(E15.6E4)
-  91  format(F14.7,4x,F14.7)
-
-      !call g2g_timer_sum_stop('SCF');
-
       call g2g_timer_stop('SCF_full')
       return
       END SUBROUTINE SCF
@@ -1573,3 +1517,20 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	END SUBROUTINE obtain_new_P
+
+
+
+	SUBROUTINE COPY_VEC(VEC,DIM_VEC,POINTER_RMM)
+!subrutina temporal para empezar a romper RMM
+!copia el vector VEC a RMM posicion POINTER_RMM
+	use garcha_mod, ONLY: RMM
+	IMPLICIT NONE
+	integer, intent(in) :: DIM_VEC,POINTER_RMM
+	real*8, dimension(DIM_VEC), intent(in) :: VEC
+	integer :: i
+	do i=1, DIM_VEC
+	   RMM(POINTER_RMM+i-1)=VEC(i)
+	end do
+	END SUBROUTINE COPY_VEC
+
+

@@ -153,6 +153,19 @@ c      parameter rmintsol=16.0D0
       INTEGER, ALLOCATABLE, DIMENSION(:) ::  restr_index
       DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: restr_k,restr_w,
      > restr_r0
+!-Dbug
+      Logical :: Dbug
+
+!-para ir rompiendo RMM
+	logical :: break_rmm
+!- Futuro reemplazo de RMM
+      real*8, dimension (:), ALLOCATABLE :: Fock_Hcore, Fock_Overlap,
+     > P_density
+! Fock_Hcore contains core-Hamiltonian matrix, reemplaze RMM(M11)
+! Fock_Overlap reemplaze RMM(M5)
+! P_density reemplaze RMM(M1)
+
+
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       end module
 

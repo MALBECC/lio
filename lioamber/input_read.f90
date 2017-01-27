@@ -55,7 +55,7 @@ subroutine read_options(inputFile, charge)
                    cut2_0, cut3_0,                                             &
                    ! Distance Restrain
                    number_restr,                                               &
-                   ! Dbug
+                   ! Debug variables
                    Dbug,                                                       &
                    ! Variables for orbital printing.
                    cubegen_only, cube_res, cube_sel, cube_dens, cube_dens_file,&

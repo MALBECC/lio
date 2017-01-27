@@ -153,17 +153,15 @@ c      parameter rmintsol=16.0D0
       INTEGER, ALLOCATABLE, DIMENSION(:) ::  restr_index
       DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: restr_k,restr_w,
      > restr_r0
-!-Dbug
+!-Debug. Activates check of NaN in Fock and Rho
       Logical :: Dbug
 
-!-para ir rompiendo RMM
+!-Temporal variable for the transition of change RMM array int smaller arrays
 	logical :: break_rmm
-!- Futuro reemplazo de RMM
-      real*8, dimension (:), ALLOCATABLE :: Fock_Hcore, Fock_Overlap,
-     > P_density
-! Fock_Hcore contains core-Hamiltonian matrix, reemplaze RMM(M11)
-! Fock_Overlap reemplaze RMM(M5)
-! P_density reemplaze RMM(M1)
+!-Arrays that going to reemplaze RMM
+      real*8, dimension (:), ALLOCATABLE :: Fock_Hcore !contains core-Hamiltonian matrix, reemplaze RMM(M11)
+      real*8, dimension (:), ALLOCATABLE :: Fock_Overlap ! reemplaze RMM(M5)
+      real*8, dimension (:), ALLOCATABLE :: P_density ! reemplaze RMM(M1)
 
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

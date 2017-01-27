@@ -1,5 +1,6 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        subroutine int1_new(En)
+!Copy of subroutine int1 that dont use RMM array. it will reemplaze int1 in future
 !------------------------------------------------------------------------------!
 !
 !      Integrals subroutine

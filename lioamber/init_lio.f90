@@ -77,7 +77,7 @@ subroutine lio_defaults()
 !   Distance restrain options
     number_restr   = 0             ;
 
-!   Dbug
+!   Debug
     Dbug = .false.                 ;
 
 !   Write options and Restart options.

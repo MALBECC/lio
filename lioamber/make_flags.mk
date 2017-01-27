@@ -7,7 +7,7 @@ ifeq ($(intel),1)
   FFLAGS+= -module $(obj_path)
   FFLAGS+= -fpp
 #  FFLAGS+= -check bounds
-#  FFLAGS+= -traceback -check all -fp-stack-check
+  FFLAGS+= -traceback -check all -fp-stack-check
 else
   FC     = gfortran
   FFLAGS+= -I$(obj_path) -J$(obj_path)

@@ -94,7 +94,7 @@ subroutine do_forces(uid)
         call dft_get_mm_forces(dxyzcl, dxyzqm)
     endif
 
-    call write_forces(dxyzqm, natom-1, 1, uid)
+    call write_forces(dxyzqm, natom, 0, uid)
     deallocate (dxyzqm)
     
     if(nsol.gt.0) then

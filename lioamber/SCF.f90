@@ -401,8 +401,9 @@
 #ifdef CUBLAS
         call obtain_new_P(niter, DAMP, dovv, fockbias, good, xnano, znano, devPtrX, devPtrY)
 #else
-        call obtain_new_P(niter, DAMP, dovv, fockbias, good, xnano, znano)
+        call obtain_new_P(niter, DAMP, dovv, fockbias, good, xnano, znano, Y)
 #endif
+
 
 
       do j=1,M
@@ -946,7 +947,8 @@
 	SUBROUTINE obtain_new_P(niter, DAMP, dovv, fockbias, good, xnano, znano, devPtrX, devPtrY)
         use cublasmath, only : cumxp_r, cumfx, cumxtf, cu_calc_fock_commuts
 #else
-        SUBROUTINE obtain_new_P(niter, DAMP, dovv, fockbias, good, xnano, znano)
+        SUBROUTINE obtain_new_P(niter, DAMP, dovv, fockbias, good, xnano, znano, Y)
+	use mathsubs, only : basechange_gemm
 #endif
 	use garcha_mod, ONLY: RMM, DIIS, M, Md, NCO, ndiis, hybrid_converg, SHFT, good_cut, X
 	use linear_algebra, only :matrix_diagon
@@ -970,12 +972,16 @@
 	integer :: ndiist
 	logical, save :: hagodiis
 	INTEGER :: INFO, LWORK
+        real*8, dimension (M,M) :: scratch
 !FFR!
        real*8,allocatable :: eigen_vecs(:,:),eigen_vals(:)
 
 #ifdef  CUBLAS
         integer*8 :: devPtrX, devPtrY !ver intent
-        real*8, dimension (M,M) :: scratch
+!        real*8, dimension (M,M) :: scratch
+#else
+	real*8, dimension (M,M) :: Y
+        real*8, dimension (M,M) :: scratch1
 #endif
 
         if(niter.le.ndiis) then

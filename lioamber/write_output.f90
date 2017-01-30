@@ -64,7 +64,7 @@ end subroutine write_dipole
 subroutine write_forces(dxyz, natom, offset, uid)
     implicit none
     integer, intent(in) :: uid, natom, offset
-    real*8 , intent(in) :: dxyz(natom, 3)
+    real*8 , intent(in) :: dxyz(natom+offset, 3)
     integer             :: kk
     do kk=offset+1, offset+natom
         write(uid,100) kk, dxyz(kk, 1), dxyz(kk, 2), dxyz(kk, 3)

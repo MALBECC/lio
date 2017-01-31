@@ -116,12 +116,12 @@ subroutine do_dipole(dipxyz, uid)
     real*8 , intent(inout) :: dipxyz(3)
     real*8                 :: u
 
-    call g2g_timer_sum_start('dipole')
+    call g2g_timer_start('dipole')
     call dipnew(dipxyz)
     u = sqrt(dipxyz(1)**2 + dipxyz(2)**2 + dipxyz(3)**2)
  
     call write_dipole(dipxyz, u, uid)
-    call g2g_timer_sum_stop('dipole')
+    call g2g_timer_stop('dipole')
  
     return
 end subroutine do_dipole

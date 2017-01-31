@@ -1,4 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% DIP.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Subroutine used for the calculation of the dipole moment in NEUTRAL          !
 ! (non-ionic) systems. Integrals are evaluated using the Obara Saika method.   !
 ! Inputs the density basis and outputs the dipole moment components.           !
@@ -20,20 +21,30 @@ subroutine dipnew(uDip)
     implicit none
     real*8, intent(inout) :: uDip(3)
 
-    real*8 :: aux(3), aux1(3), aux2(3), aux3(3), aux4(3), aux5(3), aux6(3),    &
-              srs(3), Q(3), uDipAt(3)
-    real*8 :: sq3, alf, alf2, cc, ccoef, dd, dp, dijs, f1, f2, factor,  &
-              z2, zij, Qc, ps, pis, pjs, ss, t0, t1
-    integer :: M2, ns, np, nd, i, j, k, ii, jj, l1, l2, l3, l4, l12, l34, nElec, &
-               n, ni, nj, icrd
+    real*8  :: notRMM(M*(M+1)/2)  ! Until we get rid of RMM.
+    real*8  :: aux(3), aux1(3), aux2(3), aux3(3), aux4(3), aux5(3), aux6(3),   &
+               srs(3), Q(3), uDipAt(3)
+    real*8  :: sq3, alf, alf2, cc, ccoef, dd, dp, dijs, f1, f2, factor, z2,    &
+               zij, Qc, ps, pis, pjs, ss, t0, t1
+    integer :: M2, ns, np, nd, i, j, k, ii, jj, l1, l2, l3, l4, l12, l34, n,   &
+               ni, nj, icrd, nElec
      
-    ns  = nshell(0)    ;
-    np  = nshell(1)    ; 
-    nd  = nshell(2)    ;
-    M2  = 2*M   ; nElec = 2*NCO + Nunp ;
+    ! Constants
+    ns  = nshell(0)   
+    np  = nshell(1)    
+    nd  = nshell(2)    
+    M2  = 2*M    
     uDip = 0.0D0
-    sq3  = 1.D0  ; if (NORM) sq3 = sqrt( 3.D0 )
+    sq3  = 1.D0  
+    if (NORM) sq3 = sqrt( 3.D0 )
+    nElec = 2*NCO + Nunp
     
+    ! This is until we get rid of RMM.
+    k = M*(M+1) /2
+    do i=1, k
+       notRMM(i) = RMM(i)
+    enddo 
+
     ! First Loop: <s|s> case.
     do i=1, ns
     do j=1, i
@@ -45,7 +56,7 @@ subroutine dipnew(uDip)
             ss    = pi32 * exp(-alf*dd) / (zij*sqrt(zij))
             k     = i + ((M2-j) * (j-1)) /2
             ccoef = c(i,ni) * c(j,nj)
-            cc    = ccoef * RMM(k)
+            cc    = ccoef * notRMM(k)
             do icrd = 1, 3
                 Q(icrd)    = (a(i,ni) * r(Nuc(i),icrd)     &
                            +  a(j,nj) * r(Nuc(j),icrd)) /zij
@@ -56,6 +67,7 @@ subroutine dipnew(uDip)
        enddo
    enddo
    enddo
+
 
    ! Second Loop: <p|s> case.
    do i = ns + 1, ns+np, 3
@@ -80,7 +92,7 @@ subroutine dipnew(uDip)
            ! the shell.
            do l1 = 1, 3        
                k  = i + ((M2-j) * (j-1)) /2 + (l1-1)
-               cc = ccoef * RMM(k)
+               cc = ccoef * notRMM(k)
                aux = (Q(l1) - r(Nuc(i),l1)) * srs
                aux(l1) = aux(l1) + ss /z2
                uDip = uDip + cc * aux
@@ -126,7 +138,7 @@ subroutine dipnew(uDip)
                  
                    if(ii.ge.jj) then
                        k    = ii + ((M2 -jj)*(jj -1))/2
-                       cc   = RMM(k)*ccoef
+                       cc   = notRMM(k)*ccoef
                        uDip = uDip + cc*aux1
                    endif
                enddo
@@ -182,7 +194,7 @@ subroutine dipnew(uDip)
                    ! xx, yx, yy, zx, zy, zz (11, 21, 22, 31, 32, 33)
                    ii = i  + l12 - 1
                    k  = ii + ((M2-j)*(j-1))/2
-                   cc = RMM(k) * ccoef /f1
+                   cc = notRMM(k) * ccoef /f1
 
                    uDip = uDip + cc *aux1
                enddo
@@ -259,7 +271,7 @@ subroutine dipnew(uDip)
                        jj  = j + l3  - 1
            
                        k  = ii + ((M2-jj)*(jj-1)) /2
-                       cc = ccoef /f1 *RMM(k)
+                       cc = ccoef /f1 *notRMM(k)
 
                        uDip = uDip + cc *aux3
                    enddo
@@ -375,7 +387,7 @@ subroutine dipnew(uDip)
 
                            if (ii.ge.jj) then
                                k    = ii + ((M2-jj)*(jj-1)) /2
-                               cc   = ccoef / (f1*f2) * RMM(k)
+                               cc   = ccoef / (f1*f2) * notRMM(k)
                                uDip = uDip + cc*aux6
                            endif
                        enddo
@@ -410,9 +422,7 @@ subroutine dipnew(uDip)
 ! systems this is not necessary.                                               !
 
    factor = (Qc + nElec)/nElec
-   uDip(1) = (uDipAt(1) - uDip(1)*factor) * 2.54D0
-   uDip(2) = (uDipAt(2) - uDip(2)*factor) * 2.54D0
-   uDip(3) = (uDipAt(3) - uDip(3)*factor) * 2.54D0
+   uDip = (uDipAt - uDip*factor) * 2.54D0
  
    return
 end subroutine dipnew

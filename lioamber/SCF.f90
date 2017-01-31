@@ -35,8 +35,8 @@
 	REAL*8 :: DAMP0, DAMP
 	INTEGER :: igpu
       integer:: l
-       real*8, dimension (:,:), ALLOCATABLE::xnano,znano,scratch
-       real*8, dimension (:,:), ALLOCATABLE::scratch1
+       real*8, dimension (:,:), ALLOCATABLE::xnano,znano
+!       real*8, dimension (:,:), ALLOCATABLE::scratch1, scratch
        real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15,rmm13
       real*8, dimension (:,:), allocatable :: Y,Ytrans,Xtrans
        logical  hagodiis, ematalloc
@@ -99,7 +99,7 @@
       ematalloc=.false.
       hagodiis=.false.
 
-      allocate (znano(M,M),xnano(M,M),scratch(M,M),scratch1(M,M))
+      allocate (znano(M,M),xnano(M,M))
 
       npas=npas+1
       E=0.0D0
@@ -157,7 +157,8 @@
         call cubegen(M15,Xnano)
         call g2g_timer_sum_stop('cube gen')
 
-        deallocate (znano,xnano,scratch,scratch1)
+        deallocate (znano,xnano)
+!,scratch,scratch1)
         call g2g_timer_sum_stop('Initialize SCF')
         call g2g_timer_sum_stop('SCF')
         return
@@ -625,8 +626,9 @@
           call g2g_timer_sum_stop('cube gen')
         endif
 
-      if(DIIS) deallocate (Y,Ytrans,Xtrans,znano, scratch, scratch1)
 
+      deallocate (Y)
+      deallocate (Ytrans, Xtrans, znano)
       deallocate (xnano, rmm5, rmm15)
 
 
@@ -1027,7 +1029,9 @@
           DAMP=0.0D0
 	  hagodiis=.false.
 	  if (DIIS ) then ! agregado para cambio de damping a diis, Nick
-            allocate(fockm(MM,ndiis),FP_PFm(MM,ndiis),bcoef(ndiis+1))
+	    if (.not. allocated(fockm)) allocate(fockm(MM,ndiis))
+            if (.not. allocated(FP_PFm)) allocate(FP_PFm(MM,ndiis))
+            if (.not. allocated(bcoef)) allocate(bcoef(ndiis+1))
           endif
        endif
 
@@ -1303,7 +1307,7 @@
           EMAT(ndiist+1, ndiist+1)= 0.0
 
 
-          allocate(EMAT2(ndiist+1,ndiist+1))
+          if (.not. allocated(EMAT2)) allocate(EMAT2(ndiist+1,ndiist+1))
 
 
           EMAT2=EMAT

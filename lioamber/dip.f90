@@ -13,7 +13,7 @@
 ! ns, np, nd are markers for the end of s, p and d sections respectively.      !
 ! r(Nuc(i),j) is j component of position of nucleus i, j = 1..3.               !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine dipnew(uDip)
+subroutine dip(uDip)
 
     use garcha_mod, only : RMM, NCO, Nunp, nuc, Iz, a, c, r, ncont, M, pc, d,  &
                            nshell, norm, natom, nsol, pi32, pi5, sol
@@ -425,4 +425,4 @@ subroutine dipnew(uDip)
    uDip = (uDipAt - uDip*factor) * 2.54D0
  
    return
-end subroutine dipnew
+end subroutine dip

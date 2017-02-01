@@ -117,7 +117,7 @@ subroutine do_dipole(dipxyz, uid)
     real*8                 :: u
 
     call g2g_timer_start('dipole')
-    call dipnew(dipxyz)
+    call dip(dipxyz)
     u = sqrt(dipxyz(1)**2 + dipxyz(2)**2 + dipxyz(3)**2)
  
     call write_dipole(dipxyz, u, uid)

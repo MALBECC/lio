@@ -24,10 +24,10 @@ subroutine dip(uDip)
     real*8  :: notRMM(M*(M+1)/2)  ! Until we get rid of RMM.
     real*8  :: aux(3), aux1(3), aux2(3), aux3(3), aux4(3), aux5(3), aux6(3),   &
                srs(3), Q(3), uDipAt(3)
-    real*8  :: sq3, alf, alf2, cc, ccoef, dd, dp, dijs, f1, f2, factor, z2,    &
+    real*8  :: sq3, alf, alf2, cc, cCoef, dd, dp, dijs, f1, f2, factor, z2,    &
                zij, Qc, ps, pis, pjs, ss, t0, t1
     integer :: M2, ns, np, nd, i, j, k, ii, jj, l1, l2, l3, l4, l12, l34, n,   &
-               ni, nj, icrd, nElec
+               ni, nj, iCrd, nElec
      
     ! Constants
     ns  = nshell(0)   
@@ -55,13 +55,13 @@ subroutine dip(uDip)
             alf   = a(i,ni) * a(j,nj) / zij
             ss    = pi32 * exp(-alf*dd) / (zij*sqrt(zij))
             k     = i + ((M2-j) * (j-1)) /2
-            ccoef = c(i,ni) * c(j,nj)
-            cc    = ccoef * notRMM(k)
-            do icrd = 1, 3
-                Q(icrd)    = (a(i,ni) * r(Nuc(i),icrd)     &
-                           +  a(j,nj) * r(Nuc(j),icrd)) /zij
-                srs(icrd)  = Q(icrd) * ss
-                uDip(icrd) = uDip(icrd) + cc * srs(icrd)
+            cCoef = c(i,ni) * c(j,nj)
+            cc    = cCoef * notRMM(k)
+            do iCrd = 1, 3
+                Q(iCrd)    = (a(i,ni) * r(Nuc(i),iCrd)     &
+                           +  a(j,nj) * r(Nuc(j),iCrd)) /zij
+                srs(iCrd)  = Q(iCrd) * ss
+                uDip(iCrd) = uDip(iCrd) + cc * srs(iCrd)
             enddo
        enddo
        enddo
@@ -79,20 +79,20 @@ subroutine dip(uDip)
            alf  = a(i,ni) * a(j,nj) /zij
            ss   = pi32 * exp(-alf*dd) / (zij*sqrt(zij))
 
-           do icrd = 1, 3
-               Q(icrd)   = (a(i,ni) *r(Nuc(i),icrd)     &
-                         +  a(j,nj) *r(Nuc(j),icrd)) /zij
-               srs(icrd) = Q(icrd)*ss
+           do iCrd = 1, 3
+               Q(iCrd)   = (a(i,ni) *r(Nuc(i),iCrd)     &
+                         +  a(j,nj) *r(Nuc(j),iCrd)) /zij
+               srs(iCrd) = Q(iCrd)*ss
            enddo
 
-           ccoef = c(i,ni) * c(j,nj)
+           cCoef = c(i,ni) * c(j,nj)
            z2    = 2.D0 * zij
            ! Different types of p in the p shell (x, y, z respectively)
            ! The l1-1 term takes into account the different components of 
            ! the shell.
            do l1 = 1, 3        
                k  = i + ((M2-j) * (j-1)) /2 + (l1-1)
-               cc = ccoef * notRMM(k)
+               cc = cCoef * notRMM(k)
                aux = (Q(l1) - r(Nuc(i),l1)) * srs
                aux(l1) = aux(l1) + ss /z2
                uDip = uDip + cc * aux
@@ -112,14 +112,14 @@ subroutine dip(uDip)
            t0  = a(i,ni) * a(j,nj)
            alf = t0 /zij
            ss  = pi32 * exp(-alf*dd) /(zij*sqrt(zij))
-           do icrd = 1, 3
-               Q(icrd)   = (a(i, ni) *r(Nuc(i), icrd)     &
-                         +  a(j, nj) *r(Nuc(j), icrd)) /zij
-               srs(icrd) = Q(icrd)*ss
+           do iCrd = 1, 3
+               Q(iCrd)   = (a(i, ni) *r(Nuc(i), iCrd)     &
+                         +  a(j, nj) *r(Nuc(j), iCrd)) /zij
+               srs(iCrd) = Q(iCrd)*ss
            enddo
 
            z2  = 2.D0 * zij
-           ccoef=c(i,ni)*c(j,nj)
+           cCoef=c(i,ni)*c(j,nj)
 
            do l1 = 1,3
                t1  = Q(l1) - r(Nuc(i), l1)
@@ -138,7 +138,7 @@ subroutine dip(uDip)
                  
                    if(ii.ge.jj) then
                        k    = ii + ((M2 -jj)*(jj -1))/2
-                       cc   = notRMM(k)*ccoef
+                       cc   = notRMM(k)*cCoef
                        uDip = uDip + cc*aux1
                    endif
                enddo
@@ -159,15 +159,15 @@ subroutine dip(uDip)
            alf=a(i,ni)*a(j,nj)/zij
            ss=pi32*exp(-alf*dd)/(zij*sqrt(zij))
 
-           do icrd = 1, 3
-               Q(icrd)   = (a(i, ni) *r(Nuc(i), icrd)     &
-                         +  a(j, nj) *r(Nuc(j), icrd)) /zij
-               srs(icrd) = Q(icrd)*ss
+           do iCrd = 1, 3
+               Q(iCrd)   = (a(i, ni) *r(Nuc(i), iCrd)     &
+                         +  a(j, nj) *r(Nuc(j), iCrd)) /zij
+               srs(iCrd) = Q(iCrd)*ss
            enddo
 
            z2 = 2.D0*zij
            alf2=2.D0*alf
-           ccoef=c(i,ni)*c(j,nj)
+           cCoef=c(i,ni)*c(j,nj)
 
            do l1 = 1, 3
                t1=Q(l1)-r(Nuc(i),l1)
@@ -194,7 +194,7 @@ subroutine dip(uDip)
                    ! xx, yx, yy, zx, zy, zz (11, 21, 22, 31, 32, 33)
                    ii = i  + l12 - 1
                    k  = ii + ((M2-j)*(j-1))/2
-                   cc = notRMM(k) * ccoef /f1
+                   cc = notRMM(k) * cCoef /f1
 
                    uDip = uDip + cc *aux1
                enddo
@@ -215,14 +215,14 @@ subroutine dip(uDip)
            alf = a(i,ni) *a(j,nj) /zij
            ss  = pi32*exp(-alf*dd)/(zij*sqrt(zij))
 
-           do icrd = 1, 3
-               Q(icrd)   = (a(i, ni) *r(Nuc(i), icrd)     &
-                         +  a(j, nj) *r(Nuc(j), icrd)) /zij
-               srs(icrd) = Q(icrd)*ss
+           do iCrd = 1, 3
+               Q(iCrd)   = (a(i, ni) *r(Nuc(i), iCrd)     &
+                         +  a(j, nj) *r(Nuc(j), iCrd)) /zij
+               srs(iCrd) = Q(iCrd)*ss
            enddo
 
            z2  = 2.D0*zij
-           ccoef=c(i,ni)*c(j,nj)
+           cCoef=c(i,ni)*c(j,nj)
 
            do l1 = 1, 3
                t1  = Q(l1) - r(Nuc(i),l1)
@@ -271,7 +271,7 @@ subroutine dip(uDip)
                        jj  = j + l3  - 1
            
                        k  = ii + ((M2-jj)*(jj-1)) /2
-                       cc = ccoef /f1 *notRMM(k)
+                       cc = cCoef /f1 *notRMM(k)
 
                        uDip = uDip + cc *aux3
                    enddo
@@ -293,15 +293,15 @@ subroutine dip(uDip)
            alf = a(i,ni) * a(j,nj) /zij
            ss  = pi32*exp(-alf*dd)/(zij*sqrt(zij))
 
-           do icrd = 1, 3
-               Q(icrd)   = (a(i, ni) *r(Nuc(i), icrd)     &
-                         +  a(j, nj) *r(Nuc(j), icrd)) /zij
-               srs(icrd) = Q(icrd)*ss
+           do iCrd = 1, 3
+               Q(iCrd)   = (a(i, ni) *r(Nuc(i), iCrd)     &
+                         +  a(j, nj) *r(Nuc(j), iCrd)) /zij
+               srs(iCrd) = Q(iCrd)*ss
            enddo
 
            alf2  = 2.D0 *alf
            z2    = 2.D0 *zij
-           ccoef = c(i,ni)*c(j,nj)
+           cCoef = c(i,ni)*c(j,nj)
 
            do l1=1,3
                t1  = Q(l1) - r(Nuc(i),l1)
@@ -387,7 +387,7 @@ subroutine dip(uDip)
 
                            if (ii.ge.jj) then
                                k    = ii + ((M2-jj)*(jj-1)) /2
-                               cc   = ccoef / (f1*f2) * notRMM(k)
+                               cc   = cCoef / (f1*f2) * notRMM(k)
                                uDip = uDip + cc*aux6
                            endif
                        enddo

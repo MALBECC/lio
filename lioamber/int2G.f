@@ -32,7 +32,6 @@ c aux . things
 c
 c------------------------------------------
 c
-	write(*,*) "buscando int2g"
 
       if (NORM) then
       sq3=sqrt(3.D0)

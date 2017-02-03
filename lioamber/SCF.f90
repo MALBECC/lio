@@ -50,7 +50,7 @@
        real*8              :: weight, softness
        real*8,dimension(:,:),allocatable :: fockbias
 ! Energy and contributions
-       real*8 :: E, E1,E1s, E2,Eecp, En, Ens, Es, E_restrain, Ex, Exc
+       real*8 :: E, E1, E1s, E2,Eecp, En, Ens, Es, E_restrain, Ex, Exc
 !--------------------------------------------------------------------!
 
  
@@ -537,6 +537,23 @@
 #endif 
 #endif
         call g2g_timer_sum_stop('Exchange-correlation energy')
+!----------- COmputing the QM/MM contribution to total energy
+
+         Es=Ens   ! NucleusQM-CHarges MM
+
+       call int1(En) ! One electron Kinetic (with aint >3) or Kinetic + Nuc-elec (aint >=3)
+
+       if(nsol.gt.0.and.igpu.ge.1) then ! Computing the E1-fock without the MM atoms
+          call aint_qmmm_init(0,r,pc)
+          call aint_qmmm_fock(E1s,Ens)
+      endif
+      E1s=0.D0
+      do k=1,MM
+        E1s=E1s+RMM(k)*RMM(M11+k-1)  ! E1s (here) is the 1e-energy without the MM contribution 
+      enddo
+
+      Es=Es+E1-E1s ! Es is the QM/MM energy computated as total 1e - E1s + QMnuc-MMcharges
+ 
         ! -------------------------------------------------
         ! Total SCF energy =
         ! E1 - kinetic+nuclear attraction+QM/MM interaction
@@ -547,7 +564,9 @@
         ! Eecp - Efective core potential
         ! E_restrain - distance restrain
         ! -------------------------------------------------
-        E=E1+E2+En+Ens+Exc+E_restrain
+        E=E1+E2+En+Ens+Exc+E_restrain ! Part of the QM/MM contrubution are in E1
+
+
 
         if (npas.eq.1) npasw = 0
         if (npas.gt.npasw) then
@@ -559,8 +578,11 @@
                do k=1,MM
                  Eecp=Eecp+RMM(k)*(VAAA(k)+VAAB(k)+VBAC(k))
                enddo
+
+          Es=Es-Eecp  ! 
+
         end if
-        call WriteEnergies(E1,E2,En,Eecp,Exc,Ex,ecpmode,E_restrain)
+        call WriteEnergies(E1,E2,En,Eecp,Exc,Es,ecpmode,E_restrain)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
           npasw=npas+10

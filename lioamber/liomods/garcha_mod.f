@@ -7,7 +7,7 @@
       logical verbose 
       integer M,Md,natom,ntatom,NMAX,NCO,NUNP,igrid,igrid2
      >  ,Iexch,nsol,npas,npasw,idip,watermod,noconverge,
-     > converge,ndiis,NGEO,nang,timedep,ntdstep,propagator,NBCH 
+     > converge,ndiis,nang,timedep,ntdstep,propagator,NBCH 
       integer restart_freq, energy_freq
       real*8 GOLD, TOLD, qmmmcut, dgtrig
 !      parameter (nng=100)
@@ -153,6 +153,17 @@ c      parameter rmintsol=16.0D0
       INTEGER, ALLOCATABLE, DIMENSION(:) ::  restr_index
       DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: restr_k,restr_w,
      > restr_r0
+!-Debug. Activates check of NaN in Fock and Rho
+      Logical :: Dbug
+
+!-Temporal variable for the transition of change RMM array int smaller arrays
+	logical :: break_rmm
+!-Arrays that going to reemplaze RMM
+      real*8, dimension (:), ALLOCATABLE :: Fock_Hcore !contains core-Hamiltonian matrix, reemplaze RMM(M11)
+      real*8, dimension (:), ALLOCATABLE :: Fock_Overlap ! reemplaze RMM(M5)
+      real*8, dimension (:), ALLOCATABLE :: P_density ! reemplaze RMM(M1)
+
+
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       end module
 

@@ -51,7 +51,6 @@ c V(i,j) obtained by adding af(k) * t(i,j,k)
 c
 c------------------------------------------------------------------
 
-	write(*,*) "buscando int3g"
 
       ns=nshell(0)
       np=nshell(1)

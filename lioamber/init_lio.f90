@@ -34,7 +34,7 @@ subroutine lio_defaults()
                            max_function_exponent, min_points_per_cube,         &
                            assign_all_functions, remove_zero_weights,          &
                            energy_all_iterations, free_global_memory, dipole,  &
-                           lowdin, mulliken, print_coeffs, number_restr
+                           lowdin, mulliken, print_coeffs, number_restr, Dbug
 
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,       &
                            local_nonlocal, ecp_debug, ecp_full_range_int,      &
@@ -76,6 +76,9 @@ subroutine lio_defaults()
 
 !   Distance restrain options
     number_restr   = 0             ;
+
+!   Debug
+    Dbug = .false.                 ;
 
 !   Write options and Restart options.
     verbose        = .false.       ; writexyz           = .true.        ;
@@ -128,12 +131,14 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
                            allnml, style, free_global_memory, little_cube_size,&
                            assign_all_functions, energy_all_iterations,        &
                            remove_zero_weights, min_points_per_cube,           &
-                           max_function_exponent, sphere_radius                          
+                           max_function_exponent, sphere_radius, M,Fock_Hcore, &
+                           Fock_Overlap, P_density
+                         
     use ECP_mod,    only : Cnorm, ecpmode
 
     implicit none
     integer , intent(in) :: charge, nclatom, natomin, Izin(natomin), callfrom
-    integer              :: i, ng2, ng3, ngdDyn, ngDyn, nqnuc, ierr, ios
+    integer              :: i, ng2, ng3, ngdDyn, ngDyn, nqnuc, ierr, ios, MM
 
 !    call g2g_timer_start('lio_init')
 
@@ -188,6 +193,10 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
 
     call drive(ng2, ngDyn, ngdDyn)
 !    call g2g_timer_stop('lio_init')
+
+! reemplazos de RMM
+    MM=M*(M+1)/2
+    allocate(Fock_Hcore(MM), Fock_Overlap(MM), P_density(MM))
 
     return 
 end subroutine init_lio_common

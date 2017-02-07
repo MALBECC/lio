@@ -32,6 +32,7 @@ c       USE latom
         use cublasmath
 #endif
        IMPLICIT REAL*8 (a-h,o-z)
+       real*8 :: dipxyz(3)
        INTEGER :: istep
        REAL*8 :: t,E2
        REAL*8,ALLOCATABLE,DIMENSION(:,:) :: 
@@ -524,7 +525,7 @@ c         call int3mems()
 c ELECTRIC FIELD CASE - Type=gaussian (ON)
             if(istep.lt.pert_steps) then
                if (field) then
-                 call dip(ux,uy,uz)
+                 call dip(dipxyz)
                  if (exter) then
                    g=1.0D0
                    factor=2.54D0
@@ -535,16 +536,16 @@ c ELECTRIC FIELD CASE - Type=gaussian (ON)
 !
                  else
                    g=2.0D0*(epsilon-1.0D0)/((2.0D0*epsilon+1.0D0)*a0**3)
-                   Fx=ux/2.54D0
-                   Fy=uy/2.54D0
-                   Fz=uz/2.54D0
+                   Fx=dipxyz(1)/2.54D0
+                   Fy=dipxyz(2)/2.54D0
+                   Fz=dipxyz(3)/2.54D0
                    factor=(2.54D0*2.00D0)
 !
                  endif
                  write(*,*) 'epsilon =', epsilon
                  call intfld(g,Fxx,Fyy,Fzz)
-                 E1=-1.00D0*g*(Fx*ux+Fy*uy+Fz*uz)/factor -
-     >        0.50D0*(1.0D0-1.0D0/epsilon)*Qc2/a0
+                 E1=-1.00D0*g*(Fx*dipxyz(1)+Fy*dipxyz(2)+Fz*dipxyz(3))
+     >              /factor - 0.50D0*(1.0D0-1.0D0/epsilon)*Qc2/a0
               endif
             else
             field=.false.
@@ -821,19 +822,19 @@ c The real part of the density matrix in the atomic orbital basis is copied in R
      >      .and. (.not.tdrestart)) then
                   if(mod ((istep-1),10) == 0) then
                      call g2g_timer_start('DIPOLE')
-                     call dip(ux,uy,uz)
+                     call dip(dipxyz)
                      call g2g_timer_stop('DIPOLE')
-                     write(134,901) t,ux
-                     write(135,901) t,uy
-                     write(136,901) t,uz
+                     write(134,901) t, dipxyz(1)
+                     write(135,901) t, dipxyz(2)
+                     write(136,901) t, dipxyz(3)
                   endif
               else
                   call g2g_timer_start('DIPOLE')
-                  call dip(ux,uy,uz)
+                  call dip(dipxyz)
                   call g2g_timer_stop('DIPOLE')
-                  write(134,901) t,ux
-                  write(135,901) t,uy
-                  write(136,901) t,uz
+                  write(134,901) t, dipxyz(1)
+                  write(135,901) t, dipxyz(2)
+                  write(136,901) t, dipxyz(3)
               endif
 c u in Debyes
 !# END OF DIPOLE MOMENT CALCULATION

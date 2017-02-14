@@ -5,14 +5,14 @@
 # DESIGN NOTES:
 #
 # The compilation process for the liblio-g2g.so library is currently
-# being organized by this file and its companions: "make_depend.mk",
-# "make_flags.mk" and "make_links.mk". The general scheeme is defined
+# being organized by this file and its companions: "Makefile.depend",
+# "Makefile.flags" and "Makefile.links". The general scheeme is defined
 # here, as well as all global/general variables to be used, and
 # customization can be done by modifying the companion files. For
 # the most part, this file should be left untouched (unless it is
 # the compilation process itself what you want to modify).
 #
-# make_depend: This file contains the list of all objects and
+# Makefile.depend: This file contains the list of all objects and
 #              modules to be compiled and incorporated in the
 #              library. It also contains the information on how
 #              these objects depend on one another and specifies
@@ -21,12 +21,12 @@
 #              for the modules on non compiling source files (which
 #              are included in the compiling files instead).
 #
-# make_flags: This file contains the information on the flags to
+# Makefile.flags: This file contains the information on the flags to
 #             be used during the compilaton of the objects. This
 #             includes default flags as well as specific for a
 #             group of objects or optional ones.
 #
-# make_links: This file contains the information on the flags to
+# Makefile.links: This file contains the information on the flags to
 #             be used during the final linking of the library, as
 #             well as the information of the external libraries to
 #             be linked (as well as other internal ones, such as
@@ -43,12 +43,12 @@ all : liblio-g2g.so
 # files, so that any modification in compilation options will
 # trigger the recompilation of the code. We add here the basic ones
 # and the rest should be incorporated to this variable in the
-# make_depend file.
+# Makefile.depend file.
 makefiles :=
 makefiles += Makefile
-makefiles += make_depend.mk
-makefiles += make_flags.mk
-makefiles += make_links.mk
+makefiles += Makefile.depend
+makefiles += Makefile.flags
+makefiles += Makefile.links
 
 
 # Variables are defined to list all the objects to be compiled and
@@ -63,7 +63,7 @@ makefiles += make_links.mk
 objects   :=
 obj_path  := obj
 src_paths := 
-include make_depend.mk
+include Makefile.depend
 vpath %.o   $(obj_path)
 vpath %.mod $(obj_path)
 vpath %.f   $(src_paths)
@@ -80,8 +80,8 @@ FC =
 FFLAGS =
 LFLAGS =
 #LIBS   =
-include make_flags.mk
-include make_links.mk
+include Makefile.flags
+include Makefile.links
 
 
 # GENERAL RULES

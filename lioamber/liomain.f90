@@ -149,7 +149,7 @@ subroutine do_population_analysis()
    ! Performs Löwdin Population Analysis if required.
    if (lowdin) then
        do kk=1,natom
-           q(kk)=real(Iz(kk))
+           q(kk) = real(IzUsed(kk))
        enddo
        call lowdin_calc(M,natom,RealRho,sqsm,Nuc,q)
        call write_population(85,natom,IzUsed,q,1)

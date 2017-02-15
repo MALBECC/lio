@@ -3,7 +3,7 @@
 ######################################################################
 
 FC = gfortran
-TESTS = test-properties.x
+TESTS = test-properties.x test-ftermbias.x
 
 all: $(TESTS)
 

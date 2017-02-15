@@ -1,8 +1,14 @@
 ######################################################################
 # MAKEFILE FOR TESTS
 ######################################################################
-all:
-	gfortran test-properties.f90
+
+FC = gfortran
+TESTS = test-properties.x
+
+all: $(TESTS)
+
+%.x: %.f90
+	$(FC) $< -o $@
 
 .PHONY: clean
 clean:

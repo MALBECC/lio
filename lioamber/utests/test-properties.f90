@@ -1,14 +1,30 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 include "../properties.f90"
 program test_properties
+ 
+    ! Electronic Population Analysis.     [EPA]
     call test_lowdin() 
     call test_mulliken()
 
+    ! Orbital energy related functions.   [OEF]
+    call test_degeneration()
+    call test_softness()
+
+    ! Fukui function tests.               [FUK]
+    call test_fukui()
+    call test_fukuiOS() 
+
 end program test_properties
 
+
+
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% Electronic Population Analysis.                                    [EPA] %%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine test_mulliken()
 
-endsubroutine test_mulliken()
+end subroutine test_mulliken
 
 subroutine test_lowdin()
     implicit none
@@ -85,4 +101,28 @@ subroutine test_lowdin()
 
     return 
 end subroutine test_lowdin
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% Orbital Energy related Functions.                                  [OEF] %%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine test_degeneration()
+end subroutine test_degeneration
+
+subroutine test_softness()
+end subroutine test_softness
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% Fukui function tests.                                              [FUK] %%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+subroutine test_fukui()
+end subroutine test_fukui
+
+subroutine test_fukuiOS()
+end subroutine test_fukuiOS
+
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -170,6 +170,8 @@ subroutine do_fukui()
     real*8  :: fukuim(natom), fukuin(natom), fukuip(natom), softness
 
     if (OPEN) then
+        ! TO-DO
+        ! Add call fukui_calc_OS when openshell is available.
     else
         call fukui_calc(X(1,M*2+1), NCO, M, natom, Nuc, Smat, fukuim, fukuip, &
                         fukuin, Eorbs)

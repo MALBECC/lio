@@ -1,15 +1,20 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 include "../properties.f90"
 program test_properties
-    call test_lowdin()
+    call test_lowdin() 
+    call test_mulliken()
 
 end program test_properties
+
+subroutine test_mulliken()
+
+endsubroutine test_mulliken()
 
 subroutine test_lowdin()
     implicit none
     real*8       :: rhomat(2,2),sqsmat(2,2), outvec(2), criteria
     character*20 :: testResult
-    integer      :: atomorb(2), nPassed
+    integer      :: atomorb(2)
     logical      :: testCond
 
     write(*,*) '- Löwdin Population Tests -'

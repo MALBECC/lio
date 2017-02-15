@@ -1,7 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 include "../properties.f90"
-include "dummy-ecp_mod.f90"
-include "dummy-garcha_mod.f90"
 program test_properties
     call test_lowdin()
 

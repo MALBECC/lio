@@ -1,11 +1,11 @@
 ######################################################################
 # MAKEFILE FOR TESTS
 ######################################################################
-
-gfortran test-properties.f90 dummy-ecp_mod.f90  dummy-garcha_mod.f90
+all:
+	gfortran test-properties.f90
 
 .PHONY: clean
 clean:
-	rm -rf $(tests)
+	rm -rf *.x *.out
 
 ######################################################################

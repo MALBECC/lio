@@ -68,7 +68,7 @@ subroutine test_mulliken()
     testResult = "FAILED"
 
     call mulliken_calc(2, 2, Rho, S, atomOrb, inVec, outVec)
-    testCond = (abs(outVec(1)+6) < criteria).and.(abs(outVec(2)+3) < criteria)
+    testCond = (abs(outVec(1)+2) < criteria).and.(abs(outVec(2)+1) < criteria)
     if (testCond) testResult = "PASSED"
     write(*,*) testResult, ' - Usage of diagonal S matrix.'
 
@@ -83,16 +83,16 @@ subroutine test_mulliken()
     testResult = "FAILED"
 
     call mulliken_calc(2, 2, Rho, S, atomOrb, inVec, outVec)
-    testCond = (abs(outVec(1)+12) < criteria).and.(abs(outVec(2)+6) < criteria)
+    testCond = (abs(outVec(1)+6) < criteria).and.(abs(outVec(2)+2) < criteria)
     if (testCond) testResult = "PASSED"
     write(*,*) testResult, ' - Usage of a negative element in S matrix.'
 
     ! Same test as before, but changing the value of M.
-    outvec     = 0.0d0
+    outVec     = 0.0d0
     testResult = "FAILED"
 
     call mulliken_calc(1, 2, Rho, S,atomOrb, inVec, outVec)
-    testCond = (abs(outVec(1)+8) < criteria).and.(abs(outVec(2)) < criteria)
+    testCond = (abs(outVec(1)+6) < criteria).and.(abs(outVec(2)+2) < criteria)
     if (testCond) testResult = "PASSED"
     write(*,*) testResult, ' - Usage of a single orbital.'
 
@@ -101,76 +101,76 @@ end subroutine test_mulliken
 
 subroutine test_lowdin()
     implicit none
-    real*8       :: rhomat(2,2),sqsmat(2,2), outvec(2), criteria
+    real*8       :: Rho(2,2),SQS(2,2), outVec(2), criteria
     character*20 :: testResult
-    integer      :: atomorb(2)
+    integer      :: atomOrb(2)
     logical      :: testCond
 
     write(*,*) '- Löwdin Population Tests -'
-    atomorb(1) = 1
-    atomorb(2) = 2
+    atomOrb(1) = 1
+    atomOrb(2) = 2
     criteria   = 0.000000001d0
  
     ! Tests for null sqs matrix.
-    rhomat     = 1.0d0
-    sqsmat     = 0.0d0
-    outvec     = 0.0d0
+    Rho    = 1.0d0
+    SQS    = 0.0d0
+    outVec = 0.0d0
     testResult = "FAILED"
 
-    call lowdin_calc( 2, 2, rhomat, sqsmat, atomorb, outvec)
-    testCond = (abs(outvec(1)) < criteria).and.(abs(outvec(2)) < criteria)
+    call lowdin_calc( 2, 2, Rho, SQS, atomOrb, outVec)
+    testCond = (abs(outVec(1)) < criteria).and.(abs(outVec(2)) < criteria)
     if (testCond) testResult = "PASSED"
     write(*,*) testResult, ' - Obtain null vector from null SQS.'
 
     ! Tests for null rho matrix.
-    rhomat     = 0.0d0
-    sqsmat     = 1.0d0
-    outvec     = 0.0d0
+    Rho     = 0.0d0
+    SQS     = 1.0d0
+    outVec     = 0.0d0
     testResult = "FAILED"
   
-    call lowdin_calc(2 , 2, rhomat, sqsmat, atomorb, outvec)
-    testCond = (abs(outvec(1)) < criteria).and.(abs(outvec(2)) < criteria)
+    call lowdin_calc(2 , 2, Rho, SQS, atomOrb, outVec)
+    testCond = (abs(outVec(1)) < criteria).and.(abs(outVec(2)) < criteria)
     if (testCond) testResult = "PASSED"
     write(*,*) testResult, ' - Obtain null vector from null RHO.'
 
     ! Tests for diagonal sqs matrix.
-    rhomat(1,1) = 1.0d0 ; rhomat(1,2) = 0.0d0 ;
-    rhomat(2,1) = 0.0d0 ; rhomat(2,2) = 1.0d0 ;
+    Rho(1,1) = 1.0d0 ; Rho(1,2) = 0.0d0 ;
+    Rho(2,1) = 0.0d0 ; Rho(2,2) = 1.0d0 ;
 
-    sqsmat(1,1) = 2.0d0 ; sqsmat(1,2) = 2.0d0 ;
-    sqsmat(2,1) = 1.0d0 ; sqsmat(2,2) = 1.0d0 ;
+    SQS(1,1) = 2.0d0 ; SQS(1,2) = 2.0d0 ;
+    SQS(2,1) = 1.0d0 ; SQS(2,2) = 1.0d0 ;
 
-    outvec     = 0.0d0
+    outVec     = 0.0d0
     testResult = "FAILED"
 
-    call lowdin_calc(2, 2, rhomat, sqsmat, atomorb, outvec)
-    testCond = (abs(outvec(1)+6) < criteria).and.(abs(outvec(2)+3) < criteria)
+    call lowdin_calc(2, 2, Rho, SQS, atomOrb, outVec)
+    testCond = (abs(outVec(1)+6) < criteria).and.(abs(outVec(2)+3) < criteria)
     if (testCond) testResult = "PASSED"
     write(*,*) testResult, ' - Usage of diagonal SQS matrix.'
 
     ! Tests for a sqs matrix with a negative value.
-    rhomat(1,1) = 2.0d0 ; rhomat(1,2) = 1.0d0 ;
-    rhomat(2,1) =-1.0d0 ; rhomat(2,2) = 3.0d0 ;
+    Rho(1,1) = 2.0d0 ; Rho(1,2) = 1.0d0 ;
+    Rho(2,1) =-1.0d0 ; Rho(2,2) = 3.0d0 ;
 
-    sqsmat(1,1) = 2.0d0 ; sqsmat(1,2) = 2.0d0 ;
-    sqsmat(2,1) = 1.0d0 ; sqsmat(2,2) = 1.0d0 ;
+    SQS(1,1) = 2.0d0 ; SQS(1,2) = 2.0d0 ;
+    SQS(2,1) = 1.0d0 ; SQS(2,2) = 1.0d0 ;
 
-    outvec(:)  = 0.0d0
+    outVec(:)  = 0.0d0
     testResult = "FAILED"
  
-    call lowdin_calc(2, 2, rhomat, sqsmat, atomorb, outvec)
-    testCond = (abs(outvec(1)+12) < criteria).and.(abs(outvec(2)+6) < criteria)
+    call lowdin_calc(2, 2, Rho, SQS, atomOrb, outVec)
+    testCond = (abs(outVec(1)+12) < criteria).and.(abs(outVec(2)+6) < criteria)
     if (testCond) testResult = "PASSED"
     write(*,*) testResult, ' - Usage of a negative element in SQS matrix.'
 
     ! Same test as before, but changing the value of M.
-    outvec(:)  = 0.0d0
+    outVec(:)  = 0.0d0
     testResult = "FAILED"
 
-    call lowdin_calc(1, 2, rhomat, sqsmat, atomorb, outvec)
-    testCond = (abs(outvec(1)+8) < criteria).and.(abs(outvec(2)) < criteria) 
+    call lowdin_calc(1, 2, Rho, SQS, atomOrb, outVec)
+    testCond = (abs(outVec(1)+8) < criteria).and.(abs(outVec(2)) < criteria) 
     if (testCond) testResult = "PASSED"
-    write(*,*) testResult, ' - Usage of a negative element in SQS matrix.'
+    write(*,*) testResult, ' - Usage of a single orbital.'
 
     return 
 end subroutine test_lowdin

@@ -254,9 +254,11 @@ end subroutine test_softness
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 subroutine test_fukui()
+! TO-DO: Proper Fukui function test.
 end subroutine test_fukui
 
 subroutine test_fukuiOS()
+! TO-DO: Proper open-shell Fukui function test.
 end subroutine test_fukuiOS
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

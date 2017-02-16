@@ -17,8 +17,6 @@ program test_properties
 end program test_properties
 
 
-
-
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% Electronic Population Analysis.                                    [EPA] %%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -180,6 +178,69 @@ end subroutine test_lowdin
 !%% Orbital Energy related Functions.                                  [OEF] %%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine test_degeneration()
+
+
+! Inputs:  energy matrix, NofM, M
+! Outputs: nDegen, nDegMO
+implicit none
+    integer              :: M, nDeg, nOrb
+    integer, allocatable :: nDegMO(:)
+    real*8 , allocatable :: energies(:)
+    character*20         :: testResult
+    logical              :: testCond
+ 
+    write(*,*) '- Get Degeneration Tests -'
+   
+    ! Test for a single orbital.
+    M = 1
+    allocate(energies(M), nDegMO(M))
+    nOrb       = 1
+    energies   = 1.0d0
+    nDeg       = 0
+    nDegMO     = 0
+    testResult = "FAILED"
+
+    call get_degeneration(energies, nOrb, M, nDeg, nDegMO)   
+    testCond = (nDeg.eq.1).and.(nDegMO(1).eq.1)
+    if (testCond) testResult = "PASSED"
+    write(*,*) testResult, ' - Usage of a single orbital.'
+    deallocate(energies, nDegMO)
+
+    ! Test for similar but not equal energies.
+    M = 10
+    allocate(energies(M), nDegMO(M))
+    energies    = 1.0d0 ; energies(1) = 2.0d0
+    energies(2) = 2.0d0 ; energies(3) = 2.000011d0
+    nDeg   = 0
+    nDegMO = 0
+    nOrb   = 3
+
+    call get_degeneration(energies, nOrb, M, nDeg, nDegMO)
+    testCond = (nDeg.eq.1).and.(nDegMO(1).eq.3)
+    if (testCond) testResult = "PASSED"
+    write(*,*) testResult, ' - Similar but non-equal energies.'
+
+    ! Test for 2 degenerate orbitals.
+    nOrb = 1
+
+    call get_degeneration(energies, nOrb, M, nDeg, nDegMO)
+    testCond = (nDeg.eq.2).and.(nDegMO(1).eq.1).and.(nDegMO(2).eq.2)
+    if (testCond) testResult = "PASSED"
+    write(*,*) testResult, ' - Two degenerated orbitals.'
+
+    ! Test for more than 2 degenerate orbitals.
+    nOrb = 4
+
+    call get_degeneration(energies, nOrb, M, nDeg, nDegMO)
+    testCond = (nDeg.eq.7).and.(nDegMO(1).eq.4).and.(nDegMO(2).eq.5).and.      &
+               (nDegMO(3).eq.6).and.(nDegMO(4).eq.7).and.(nDegMO(5).eq.8).and. &
+               (nDegMO(6).eq.9).and.(nDegMO(7).eq.10)
+    if (testCond) testResult = "PASSED"
+    write(*,*) testResult, ' - More than two degenerated orbitals.'
+
+
+    deallocate(energies, nDegMO)
+
 end subroutine test_degeneration
 
 subroutine test_softness()

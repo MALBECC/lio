@@ -178,11 +178,7 @@ end subroutine test_lowdin
 !%% Orbital Energy related Functions.                                  [OEF] %%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine test_degeneration()
-
-
-! Inputs:  energy matrix, NofM, M
-! Outputs: nDegen, nDegMO
-implicit none
+    implicit none
     integer              :: M, nDeg, nOrb
     integer, allocatable :: nDegMO(:)
     real*8 , allocatable :: energies(:)
@@ -214,6 +210,7 @@ implicit none
     nDeg   = 0
     nDegMO = 0
     nOrb   = 3
+    testResult = "FAILED"
 
     call get_degeneration(energies, nOrb, M, nDeg, nDegMO)
     testCond = (nDeg.eq.1).and.(nDegMO(1).eq.3)
@@ -222,14 +219,16 @@ implicit none
 
     ! Test for 2 degenerate orbitals.
     nOrb = 1
+    testResult = "FAILED"
 
     call get_degeneration(energies, nOrb, M, nDeg, nDegMO)
-    testCond = (nDeg.eq.2).and.(nDegMO(1).eq.1).and.(nDegMO(2).eq.2)
+    testCond = (nDeg.eq.2).and.(nDegMO(1).eq.2).and.(nDegMO(2).eq.1)
     if (testCond) testResult = "PASSED"
     write(*,*) testResult, ' - Two degenerated orbitals.'
 
     ! Test for more than 2 degenerate orbitals.
     nOrb = 4
+    testResult = "FAILED"
 
     call get_degeneration(energies, nOrb, M, nDeg, nDegMO)
     testCond = (nDeg.eq.7).and.(nDegMO(1).eq.4).and.(nDegMO(2).eq.5).and.      &
@@ -237,15 +236,27 @@ implicit none
                (nDegMO(6).eq.9).and.(nDegMO(7).eq.10)
     if (testCond) testResult = "PASSED"
     write(*,*) testResult, ' - More than two degenerated orbitals.'
-
-
     deallocate(energies, nDegMO)
-
 end subroutine test_degeneration
 
 subroutine test_softness()
-end subroutine test_softness
+    implicit none
+    real*8 :: enAH, enAL, enBH, enBL, soft, criteria
+    character*20 :: testResult
+    logical      :: testCond
 
+    write(*,*) '- Get Softness -'
+
+    enAH = -1.0d0 ; enBH = -2.0d0
+    enAL =  3.0d0 ; enBL =  4.0d0
+    soft =  0.0d0 ; criteria = 0.000000001d0
+    testResult = "FAILED"
+
+    call get_softness(enAH, enAL, enBH, enAL, soft)
+    testCond = ((soft-0.4d0) < criteria)
+    if (testCond) testResult = "PASSED"
+    write(*,*) testResult, ' - Softness properly calculated.'
+end subroutine test_softness
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 

@@ -87,7 +87,6 @@ subroutine mulliken_calc(N, M, RealRho, Smat, NofM, q0, q)
     integer :: i, j, k
     real*8  :: qe
 
-    call g2g_timer_start('mulliken')
 
     do k=1,N
         q(k)=real(q0(k))
@@ -99,8 +98,6 @@ subroutine mulliken_calc(N, M, RealRho, Smat, NofM, q0, q)
              q(NofM(i)) = q(NofM(i)) - qe
         enddo
     enddo
-
-    call g2g_timer_stop('mulliken')
 
     return
 end subroutine mulliken_calc

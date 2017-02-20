@@ -1,28 +1,17 @@
 ######################################################################
 # MAKEFILE FOR TESTS
 ######################################################################
-FC := gfortran
 
-tests :=
-tests += vvfterm_test01.x
-tests += lowdinpop_test01.x
+FC = gfortran
+TESTS = test-properties.x test-ftermbias.x
 
-all : $(tests)
+all: $(TESTS)
 
-%.x : %.f Makefile
-	$(FC) $< -o $@
-
-%.x : %.F Makefile
-	$(FC) $< -o $@
-
-%.x : %.f90 Makefile
-	$(FC) $< -o $@
-
-%.x : %.F90 Makefile
+%.x: %.f90
 	$(FC) $< -o $@
 
 .PHONY: clean
 clean:
-	rm -rf $(tests)
+	rm -rf *.x *.out
 
 ######################################################################

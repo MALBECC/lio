@@ -29,6 +29,7 @@ subroutine get_degeneration(energ, orb, M, nDeg, nDegMO)
          
     if (M.eq.1) then
         nDeg = 1
+        nDegMO(1) = 1
         return
     endif
 

@@ -24,13 +24,12 @@ subroutine test_mulliken()
     implicit none
     real*8       :: Rho(2,2), S(2,2), outVec(2), criteria
     character*20 :: testResult
-    integer      :: atomOrb(2), inVec(2)
+    integer      :: atomOrb(2)
     logical      :: testCond
 
     write(*,*) '- Mulliken Population Tests -'
     atomOrb(1) = 1
     atomOrb(2) = 2
-    inVec      = 0.0d0
     criteria   = 0.000000001d0
 
     ! Tests for null sqs matrix.
@@ -39,7 +38,7 @@ subroutine test_mulliken()
     outVec = 0.0d0
     testResult = "FAILED"
 
-    call mulliken_calc( 2, 2, Rho, S, atomOrb, inVec, outVec)
+    call mulliken_calc( 2, 2, Rho, S, atomOrb, outVec)
     testCond = (abs(outVec(1)) < criteria).and.(abs(outVec(2)) < criteria)
     if (testCond) testResult = "PASSED"
     write(*,*) testResult, ' - Obtain null vector from null S.'
@@ -50,7 +49,7 @@ subroutine test_mulliken()
     outVec = 0.0d0
     testResult = "FAILED"
 
-    call mulliken_calc(2 , 2, Rho, S, atomOrb, inVec, outVec)
+    call mulliken_calc(2 , 2, Rho, S, atomOrb, outVec)
     testCond = (abs(outVec(1)) < criteria).and.(abs(outVec(2)) < criteria)
     if (testCond) testResult = "PASSED"
     write(*,*) testResult, ' - Obtain null vector from null RHO.'
@@ -65,7 +64,7 @@ subroutine test_mulliken()
     outVec     = 0.0d0
     testResult = "FAILED"
 
-    call mulliken_calc(2, 2, Rho, S, atomOrb, inVec, outVec)
+    call mulliken_calc(2, 2, Rho, S, atomOrb, outVec)
     testCond = (abs(outVec(1)+2) < criteria).and.(abs(outVec(2)+1) < criteria)
     if (testCond) testResult = "PASSED"
     write(*,*) testResult, ' - Usage of diagonal S matrix.'
@@ -80,7 +79,7 @@ subroutine test_mulliken()
     outVec     = 0.0d0
     testResult = "FAILED"
 
-    call mulliken_calc(2, 2, Rho, S, atomOrb, inVec, outVec)
+    call mulliken_calc(2, 2, Rho, S, atomOrb, outVec)
     testCond = (abs(outVec(1)+6) < criteria).and.(abs(outVec(2)+2) < criteria)
     if (testCond) testResult = "PASSED"
     write(*,*) testResult, ' - Usage of a negative element in S matrix.'
@@ -89,7 +88,7 @@ subroutine test_mulliken()
     outVec     = 0.0d0
     testResult = "FAILED"
 
-    call mulliken_calc(1, 2, Rho, S,atomOrb, inVec, outVec)
+    call mulliken_calc(1, 2, Rho, S,atomOrb, outVec)
     testCond = (abs(outVec(1)+6) < criteria).and.(abs(outVec(2)+2) < criteria)
     if (testCond) testResult = "PASSED"
     write(*,*) testResult, ' - Usage of a single orbital.'

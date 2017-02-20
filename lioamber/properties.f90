@@ -81,7 +81,7 @@ subroutine mulliken_calc(N, M, RealRho, Smat, NofM, q)
     ! M, N, NofM, Smat: N° of basis functions, atoms, Nuclei belonging !
     !                   to each function M, overlap matrix.            !
     implicit none
-    integer, intent(in)  :: N, M, NofM(M), q0(N)
+    integer, intent(in)  :: N, M, NofM(M)
     real*8 , intent(in)  :: RealRho(M,M), Smat(M,M)
     real*8 , intent(inout) :: q(N)
 

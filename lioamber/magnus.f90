@@ -22,7 +22,7 @@ subroutine magnus(fock, rhoOld, rhoNew, M, N, dt, factorial)
     RhoNew   = RhoOld
 
     ! Omega1 (=W) instantiation.
-    ,Omega1 = (-1)*(icmplx)*(Fock)*(dt)
+    Omega1 = (-1)*(icmplx)*(Fock)*(dt)
 
     ! Density matrix propagation
     do ii=1, N

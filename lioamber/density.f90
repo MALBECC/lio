@@ -84,9 +84,5 @@ subroutine density(M, NCO, X, C)
 
     deallocate(A)
     return
-end
-
-
-
-
-
+end subroutine density
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

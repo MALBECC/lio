@@ -47,23 +47,4 @@
        enddo
 
        return;end subroutine
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       SUBROUTINE messrho_old(M,Matrix)
-!------------------------------------------------------------------------------!
-       implicit none
-       integer,intent(in) :: M
-       real*8,intent(out) :: Matrix(M,M)
-       integer            :: ii,jj
-!
-       do ii=1,M
-       do jj=1,M
-         if (ii.ne.jj) then
-           Matrix(ii,jj)=2*Matrix(ii,jj)
-         endif
-       enddo
-       enddo
-!
-       return;end subroutine
-
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

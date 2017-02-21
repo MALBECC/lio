@@ -1,14 +1,20 @@
-      subroutine matmuldiag(A,B,C,M)
-!!!!!!!!  Hace C=(A*B) para matrices cuadradas solo la diagonal
-      REAL*8 , intent(in)  :: A(M,M), B(M,M)
-      REAL*8 , intent(out)  :: C(M,M)
-      C=0
-      do k= 1,M
-        do i=1,M
-          C(i,i)= C(i,i) + A(i,k)*B(k,i)
-        enddo
-      enddo
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% MATMULDIAG.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Performs C = A*B for square matrices.                                        !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine matmuldiag(A, B, C, M)
+    implicit none
+    real*8, intent(in)  :: A(M,M), B(M,M)
+    real*8, intent(out) :: C(M,M)
+    integer :: i, k
 
-      return
-      end
+    C = 0
+    do k = 1, M
+    do i = 1, M
+        C(i,i) = C(i,i) + A(i,k)*B(k,i)
+    enddo
+    enddo
 
+    return
+end subroutine matmuldiag
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

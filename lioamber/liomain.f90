@@ -69,6 +69,7 @@ subroutine do_forces(uid)
     integer             :: k
     real*8, allocatable :: dxyzqm(:,:), dxyzcl(:,:)
 
+    call g2g_timer_start('Forces')
     open(unit=uid, file='forces')
 
     allocate ( dxyzqm(3, natom) )
@@ -88,6 +89,7 @@ subroutine do_forces(uid)
         call write_forces(dxyzcl, nsol, natom, uid)
         deallocate (dxyzcl)
     endif
+    call g2g_timer_stop('Forces')
 
     return
 end subroutine do_forces
@@ -103,12 +105,12 @@ subroutine do_dipole(dipxyz, uid)
     real*8 , intent(inout) :: dipxyz(3)
     real*8                 :: u
 
-    call g2g_timer_start('dipole')
+    call g2g_timer_start('Dipole')
     call dip(dipxyz)
     u = sqrt(dipxyz(1)**2 + dipxyz(2)**2 + dipxyz(3)**2)
 
     call write_dipole(dipxyz, u, uid)
-    call g2g_timer_stop('dipole')
+    call g2g_timer_stop('Dipole')
 
     return
 end subroutine do_dipole
@@ -141,18 +143,24 @@ subroutine do_population_analysis()
    call spunpack('L',M,RMM(M1),RealRho)
    call fixrho(M,RealRho)
 
+   do kk=1,natom
+       q(kk) = real(IzUsed(kk))
+   enddo
+
    ! Performs Mulliken Population Analysis if required.
    if (mulliken) then
-       call mulliken_calc(natom,M,RealRho,Smat,Nuc,Iz,q)
-       call write_population(85,natom,IzUsed,q,0)
+       call g2g_timer_start('Mulliken')
+       call mulliken_calc(natom, M, RealRho, Smat, Nuc, q)
+       call write_population(85, natom, Iz, q, 0)
+       call g2g_timer_stop('Mulliken')
    endif
+
    ! Performs Löwdin Population Analysis if required.
    if (lowdin) then
-       do kk=1,natom
-           q(kk) = real(IzUsed(kk))
-       enddo
-       call lowdin_calc(M,natom,RealRho,sqsm,Nuc,q)
-       call write_population(85,natom,IzUsed,q,1)
+       call g2g_timer_start('Lowdin')
+       call lowdin_calc(M, natom, RealRho, sqsm, Nuc, q)
+       call write_population(85, natom, Iz, q, 1)
+       call g2g_timer_stop('Lowdin')
    endif
 
    return
@@ -169,6 +177,8 @@ subroutine do_fukui()
     implicit none
     real*8  :: fukuim(natom), fukuin(natom), fukuip(natom), softness
 
+
+    call g2g_timer_start("Fukui")
     if (OPEN) then
         ! TO-DO
         ! Add call fukui_calc_OS when openshell is available.
@@ -179,6 +189,7 @@ subroutine do_fukui()
                           softness)
         call write_fukui(fukuim, fukuip, fukuin, natom, Iz, softness)
     endif
+    call g2g_timer_stop("Fukui")
 
     return
 end subroutine do_fukui

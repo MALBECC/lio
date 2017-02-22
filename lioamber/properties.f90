@@ -29,6 +29,7 @@ subroutine get_degeneration(energ, orb, M, nDeg, nDegMO)
          
     if (M.eq.1) then
         nDeg = 1
+        nDegMO(1) = 1
         return
     endif
 
@@ -73,24 +74,19 @@ end subroutine get_degeneration
 !%% MULLIKEN_CALC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs a Mulliken Population Analysis and outputs atomic charges.          !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine mulliken_calc(N, M, RealRho, Smat, NofM, q0, q)
+subroutine mulliken_calc(N, M, RealRho, Smat, NofM, q)
 
     ! RealRho         : Rho written in atomic orbitals.                !
-    ! q0, q           : Starting and final Mulliken charges.           !
+    ! q               : Starting and final Mulliken charges.           !
     ! M, N, NofM, Smat: N° of basis functions, atoms, Nuclei belonging !
     !                   to each function M, overlap matrix.            !
     implicit none
-    integer, intent(in)  :: N, M, NofM(M), q0(N)
+    integer, intent(in)  :: N, M, NofM(M)
     real*8 , intent(in)  :: RealRho(M,M), Smat(M,M)
-    real*8 , intent(out) :: q(N)
+    real*8 , intent(inout) :: q(N)
 
     integer :: i, j, k
     real*8  :: qe
-
-
-    do k=1,N
-        q(k)=real(q0(k))
-    enddo
 
     do i=1,M
         do j=1,M

@@ -77,7 +77,7 @@ end subroutine get_degeneration
 subroutine mulliken_calc(N, M, RealRho, Smat, NofM, q)
 
     ! RealRho         : Rho written in atomic orbitals.                !
-    ! q0, q           : Starting and final Mulliken charges.           !
+    ! q               : Starting and final Mulliken charges.           !
     ! M, N, NofM, Smat: N° of basis functions, atoms, Nuclei belonging !
     !                   to each function M, overlap matrix.            !
     implicit none

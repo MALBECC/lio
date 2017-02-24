@@ -4,8 +4,9 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine matmuldiag(A, B, C, M)
     implicit none
-    real*8, intent(in)  :: A(M,M), B(M,M)
-    real*8, intent(out) :: C(M,M)
+    integer, intent(in)  :: M
+    real*8,  intent(in)  :: A(M,M), B(M,M)
+    real*8,  intent(out) :: C(M,M)
     integer :: i, k
 
     C = 0

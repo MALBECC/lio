@@ -109,7 +109,7 @@ subroutine sprepack(UPLO, NM, Vector, Matrix)
     if (UPLO.eq.'U') then
         do jj = 1, NM
         do ii = 1, jj
-            aidx = ii + (jj*(jj-1)/2)
+            idx = ii + (jj*(jj-1)/2)
             Vector(idx) = Matrix(ii,jj)
         enddo
         enddo

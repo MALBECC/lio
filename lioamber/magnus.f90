@@ -35,5 +35,5 @@ subroutine magnus(fock, rhoOld, rhoNew, M, N, dt, factorial)
 
     deallocate(ConmPrev, ConmNext, Omega1, Scratch)
     return
-end
+end subroutine magnus
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

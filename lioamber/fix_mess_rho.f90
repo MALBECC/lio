@@ -1,5 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% fixMessRho.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% FIX_MESS_RHO.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! In the RMM vector, Rho is stored in packed storage but each non diagonal     !
 ! position has dobule the real value. So before putting a density matrix in    !
 ! RMM, non diagonal positions need to be x2 (messrho) and when taking it! out  !

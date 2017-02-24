@@ -8,8 +8,7 @@
 ! Where A = X^T * F * P * Y                                                    !
 ! Output: A (scratch), A^T (scratch1), F' (fock)                               !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine calc_fock_commuts(fock,rho,X,Y,scratch,scratch1,M)
-
+subroutine calc_fock_commuts(fock, rho, X, Y, scratch, scratch1, M)
     implicit none
     integer, intent(in)    :: M
     REAL*8,  intent(in)    :: rho(M,M),X(M,M),Y(M,M)

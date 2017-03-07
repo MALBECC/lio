@@ -65,7 +65,7 @@ objects += liosubs.o
 src_paths += liosubs
 include liosubs/liosubs.mk
 
-
+objects += build_info.o
 
 # garcha_mod: Description pending
 ######################################################################

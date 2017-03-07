@@ -5,14 +5,14 @@
 # DESIGN NOTES:
 #
 # The compilation process for the liblio-g2g.so library is currently
-# being organized by this file and its companions: "Makefile.depend",
+# being organized by this file and its companions: "Makefile.depends",
 # "Makefile.flags" and "Makefile.links". The general scheeme is defined
 # here, as well as all global/general variables to be used, and
 # customization can be done by modifying the companion files. For
 # the most part, this file should be left untouched (unless it is
 # the compilation process itself what you want to modify).
 #
-# Makefile.depend: This file contains the list of all objects and
+# Makefile.depends: This file contains the list of all objects and
 #              modules to be compiled and incorporated in the
 #              library. It also contains the information on how
 #              these objects depend on one another and specifies
@@ -39,14 +39,14 @@ all : liblio-g2g.so
 
 
 # This variable will contain all .mk files that provide the details
-# of how to compile the library. All objects will depend on this
+# of how to compile the library. All objects will depends on this
 # files, so that any modification in compilation options will
 # trigger the recompilation of the code. We add here the basic ones
 # and the rest should be incorporated to this variable in the
-# Makefile.depend file.
+# Makefile.depends file.
 makefiles :=
 makefiles += Makefile
-makefiles += Makefile.depend
+makefiles += Makefile.depends
 makefiles += Makefile.flags
 makefiles += Makefile.links
 
@@ -63,7 +63,7 @@ makefiles += Makefile.links
 objects   :=
 obj_path  := obj
 src_paths := 
-include Makefile.depend
+include Makefile.depends
 vpath %.o   $(obj_path)
 vpath %.mod $(obj_path)
 vpath %.f   $(src_paths)
@@ -97,29 +97,20 @@ include Makefile.links
 liblio-g2g.so : $(objects:%.o=$(obj_path)/%.o)
 	$(FC) $(LFLAGS) $^ $(LIBS) -o $@
 
-$(obj_path)/%.mod : $(obj_path)/%.o
+$(obj_path)/%.o :  %.f   $(makefiles) | $(obj_path)
+	$(FC) $(FFLAGS) -c $< -o $@
+
+$(obj_path)/%.o :  %.F   $(makefiles) | $(obj_path)
+	$(FC) $(FFLAGS) -c $< -o $@
+
+$(obj_path)/%.o :  %.f90 $(makefiles) | $(obj_path)
+	$(FC) $(FFLAGS) -c $< -o $@
+
+$(obj_path)/%.o :  %.F90 $(makefiles) | $(obj_path)
+	$(FC) $(FFLAGS) -c $< -o $@
+
+%.mod : %.o              $(makefiles) | $(obj_path)
 	@touch $@
-
-$(obj_path)/%.o   : %.f   $(makefiles) |  $(obj_path)
-	$(FC) $(FFLAGS) -c $< -o $@
-
-$(obj_path)/%.o   : %.F   $(makefiles) |  $(obj_path)
-	$(FC) $(FFLAGS) -c $< -o $@
-
-$(obj_path)/%.o   : %.f90 $(makefiles) |  $(obj_path)
-	$(FC) $(FFLAGS) -c $< -o $@
-
-$(obj_path)/%.o   : %.F90 $(makefiles) |  $(obj_path)
-	$(FC) $(FFLAGS) -c $< -o $@
-
-$(obj_path)/%.o   : %.f90 $(makefiles) |  $(obj_path)
-	$(FC) $(FFLAGS) -c $< -o $@
-
-$(obj_path)/%.mod : %.f90 $(makefiles) |  $(obj_path)
-	$(FC) $(FFLAGS) -c $< -o $(@:%.mod=%.o)
-	@touch $@
-
-
 
 $(obj_path) :
 	mkdir -p $@

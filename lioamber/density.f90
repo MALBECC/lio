@@ -5,6 +5,10 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine density(M, NCO, X, C)
 
+    ! M:    number of atomic basis functions.
+    ! NCO:  number of occupied orbitals.
+    ! X:    matrix containing Fock coefficients.
+    ! C:    matrix containing output density matrix.
     implicit none
     integer,intent(in)  :: M, NCO
     real*8, intent(in)  :: X(M, 3*M)
@@ -57,7 +61,7 @@ subroutine density(M, NCO, X, C)
         stop 
     endif
 
-    ! Peforms the matrix multiplication.
+    ! Peforms the matrix multiplication, obtaining C as A*A.
     call CUBLAS_DGEMM('N', 'T', M, M, NCO, 2.0D0, devPtrA, M, devPtrA, M, &
                       0.0D0, devPtrC, M)
 
@@ -69,10 +73,11 @@ subroutine density(M, NCO, X, C)
     call CUBLAS_FREE(devPtrC)
 
 #else
+    ! Obtains C as A*A.
     call DGEMM('N', 'T', M, M, NCO, 2.0D0, A, M, A, M, 0.0D0, C, M)
 #endif
     
-    ! Only for the close shell case: ! SHOULDNT THIS BE IF (OPEN)?
+    ! Multiplies by 2 all non diagonal elements.
     do i=1,M
         do j=1,i-1
             C(i,j)=2.0D0*C(i,j)

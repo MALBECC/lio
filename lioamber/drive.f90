@@ -72,7 +72,6 @@
 ! calls generator of table for incomplete gamma functions
 !
        call GENERF
-       call GENERFS
        call GRIDLIO
        npas=0
 !-----------------------------------------------------------------------

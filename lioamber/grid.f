@@ -1,45 +1,40 @@
-c subroutine to generate and store angular grids points
-c and weights
-c Lebedev ( Becke's method)
-c for 50 and 116 angular points
-c 12-02-93 , D.E
-c-------------------------------------------------------
-      SUBROUTINE GRIDLIO
-       use garcha_mod
-      implicit real*8 (a-h,o-z)
-*      real*16 e,e2,e3,wang,wang2,wang3,pi,pi4
-c
-        dimension Rm2t(0:54),Nrt(0:54),Nr2t(0:54)
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% GRID.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Dario Original - 12/February/1993                                            !
+! This is a subroutine to generate and store angular grids points and weights  !
+! for 50 and 116 angular points. Lebedev (Becke's method).                     !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+       subroutine gridlio
+       use garcha_mod, only : e_, e_2, e3, Rm2, Nr, Nr2, 
+     > wang, wang2, wang3, pi
+      implicit none
+
+      real*8, dimension(0:54) :: Rm2t, Nrt, Nr2t
+      real*8 :: el, emgrid, p1, pi4, q1, r1, sq2, ssq3, u1, w1
+      integer :: i, k
+
 c Slater's radii
       data Rm2t /1.00,0.35,0.93,1.45,1.05,0.85,0.70,0.65,0.60,0.50,0.71,
-c    >  1.80,1.50,1.25,1.10,1.00,1.00,1.00,0.50,
      >  3.60,1.50,1.25,1.10,1.00,1.00,1.00,2.00,
      >  2.20,1.80,1.60,1.40,1.35,1.40,1.40,1.40,1.35,1.35,1.35,
      >  1.35,1.30,
      >  1.25,1.15,1.15,1.15,1.15,
      >  2.35,2.00,1.80,1.55,1.45,1.45,1.35,1.30,1.35,1.40,
      >  1.60,1.55,1.55,1.45,1.45,1.40,1.40,1.31/
-c elemgridents not  included yet
-c    >  2.60,2.15,1.95,1.85,1.85,1.85,
-c    >  1.85,1.85,1.85,1.80,1.75,1.75,1.75,1.75,1.75,1.75,1.75,
-c    >  1.55,1.45,1.35,1.35,1.30,1.35,1.35,1.35,1.50,1.90,
-c    >  1.80,1.60,1.90/
-c
-c Number of shells for Least-Squares Fit
+
+! Number of shells for Least-Squares Fit
       data Nrt /20,20,20,25,25,25,25,25,25,25,25,
      >  30,30,30,30,30,30,30,30,
-c    >  60,30,30,30,30,30,30,60,
      >  35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,
      >  40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40,40/
 c
       data Nr2t /30,30,30,35,35,35,35,35,35,35,35,
-c    >  120,40,40,40,40,40,40,120,
      >  40,40,40,40,40,40,40,40,
      >  45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,45,
      >  50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50/
 c
-         do i=0,54
-           Rm2(i)=Rm2t(i)/(2.D0*0.529177D0)
+         do i=0, 54
+           Rm2(i) = Rm2t(i) / (2.D0*0.529177D0)
            Nr(i)=Nrt(i)
            Nr2(i)=Nr2t(i)
          enddo
@@ -51,24 +46,31 @@ c and weights
 c
 c Lebedev , Zh.Mat. Mat. Fiz. 15,1,48 (1975)
 c
-      do 101 i=1,50
-      do 101 k=1,3
- 101   e_(i,k)=0.0D0
+      do i=1,50
+      do k=1,3
+       e_(i,k)=0.0D0
+      enddo
+      enddo
 c
-      do 102 i=1,6
- 102    wang(i)=0.0126984126985D0
+      do i=1,6
+       wang(i)=0.0126984126985D0
+      enddo
 c
-      do 103 i=7,18
- 103    wang(i)=0.0225749559083D0
+      do i=7,18
+       wang(i)=0.0225749559083D0
+      enddo
 c
-      do 104 i=19,26
- 104    wang(i)=0.02109375D0
+      do i=19,26
+      wang(i)=0.02109375D0
+      enddo
 c
-      do 105 i=27,50
- 105    wang(i)=0.0201733355379D0
+      do i=27,50
+      wang(i)=0.0201733355379D0
+      enddo
 c
       do 106 i=1,50
- 106    wang(i)=wang(i)*pi4
+       wang(i)=wang(i)*pi4
+      enddo
 c
        e_(1,3)=1.D0
        e_(2,3)=-1.D0
@@ -1213,4 +1215,4 @@ c
        e3(194,2)=-r1
        e3(194,3)=-u1
 c
-         end
+      end subroutine gridlio

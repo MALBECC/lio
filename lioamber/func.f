@@ -3,150 +3,148 @@
 ! Dario Original - 11/March/1992                                               !
 ! This small program is taken from old version of gdfmol. It is the            !
 ! implementation of the Obara-Saika method for the evaluation of F(m,T), using !
-! a 2 branch calculation.
-! DEBUGGING VERSION, this is the attempt to generalize and improve previous    !
-! version ( up to F16 ) 
-c Ref: JCP 84 3963 (1986)
-c it seems to work
-c This is the version that should be included in definitive
-c program
+! a 2 branch calculation. Ref: JCP 84 3963 (1986)                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-      real*8 function FUNCT(N, T)                                               
-      use garcha_mod, only : STR, FAC
+real*8 function funct(N, T)                                               
+   use garcha_mod, only : STR, FAC
 
-      implicit none
-      real*8, intent(inout)  :: T
-      integer, intent(in) :: N
+   implicit none
+   real*8 , intent(inout) :: T
+   integer, intent(in)    :: N
 
-      integer :: it
-      real*8  :: delt, delt2, delt3, delt4, delt5, fcap, ti 
-      real*8  :: tf0, tf1, tf2, tf3, tf4, tf5
+   integer :: it
+   real*8  :: delt, delt2, delt3, delt4, delt5, fcap, ti, tf0, tf1, tf2, tf3, &
+              tf4, tf5
      
-      if (T.lt.0.0D0) then
-       write(*,*) 'Problems',T
-       T=abs(T)
-      endif
+   if (T.lt.0.0D0) then
+      write(*,*) 'funct: Inout variable T is negative. Taking absolute value...'
+      T=abs(T)
+   endif
                                                                        
-      IF (T.LE.43.975D0)   THEN                          
-       IT = 20.0D0 * (T + 0.025D0)                                        
-       TI = DFLOAT(IT)                                                   
-       IT=IT + 1                                                         
-       DELT = T - 0.05D0 * TI                                             
-       DELT3 = DELT * 0.333333333333333D0                                
-       DELT4 = 0.25D0 * DELT                                             
-       DELT2 = DELT4 + DELT4                                             
-       DELT5 = 0.20D0 * DELT                                             
+   if (T.le.43.975D0) then                          
+      it = 20.0D0 * (T + 0.025D0)                                        
+      ti = DFLOAT(it)                                                   
+      it = it + 1                                                         
 
+      delt  = T - 0.05D0 * ti                                             
+      delt3 = delt   * 0.333333333333333D0                                
+      delt4 = 0.25D0 * delt                                             
+      delt2 = delt4  + delt4                                             
+      delt5 = 0.20D0 * delt                                             
 
+      tf0 = STR(it, N   )                                                    
+      tf1 = STR(it, N +1)                                                    
+      tf2 = STR(it, N +2)                                                    
+      tf3 = STR(it, N +3)                                                    
+      tf4 = STR(it, N +4)                                                    
+      tf5 = STR(it, N +5)                                                    
 
-       TF0 = STR(IT,N)                                                    
-       TF1 = STR(IT,N+1)                                                    
-       TF2 = STR(IT,N+2)                                                    
-       TF3 = STR(IT,N+3)                                                    
-       TF4 = STR(IT,N+4)                                                    
-       TF5 = STR(IT,N+5)                                                    
-
-       FCAP=TF0-DELT*( TF1-DELT2*(TF2-DELT3*(TF3-DELT4*               
-     >    (TF4-DELT5*TF5))))                                           
-       FUNCT = FCAP                                                   
-       RETURN                                                            
-                                                                       
-       
-       ELSE
-      FUNCT = FAC(N)*1.D0/(T**N*dsqrt(T))
-     
-      ENDIF
-
-      END            
+      fcap  = tf0 -delt*(tf1 -delt2*(tf2 -delt3*(tf3 -delt4*(tf4 -delt5*tf5))))
+      funct = fcap                                                   
+   else   
+      funct = FAC(N)*1.D0 / (T**N*dsqrt(T))
+   endif  
+   return
+end function funct            
   
-C ----------------------------------------------                        
-c subroutine for generating tables, used later on in the Taylor expansion
-c for the incomplete Gamma functions
-c-----------------------------------------------
-      SUBROUTINE GENERF
-      USE garcha_mod, only : STR, FAC
-      IMPLICIT none
-      real*8, parameter :: sqpi=1.77245385090551588D0
-      real*8 :: t, u, w, y, FMCH, f
-      integer :: i, n, m
-c loop over T values in the table ( 0. to 43.95 , interval 0.05)
+! Subroutine for table generation, used later in the Taylor expansion for 
+! incomplete Gamma functions
+subroutine generf
+   use garcha_mod, only : STR, FAC
+ 
+   implicit none
+   real*8, parameter :: SQPI=1.77245385090551588D0
 
-      DO 799 I=1,880
-       T = 0.05D0 * DFLOAT(I-1)
-       Y = DEXP(-T)
-       U = T + T
-       F = FMCH(22,T)
-c loop over order of incomple Gamma functions ( 0 to 21, the ones
-c necessary for evaluating orders 0-16)
-      DO 99 M=21,0,-1
-       W=2.D0*DFLOAT(M)+1.D0
-       STR(I,M) = (Y + U * F)/W
-       F=STR(I,M)
-  99  CONTINUE
-c
-  799 CONTINUE
-c calculation of the function [(v+1/2)/2**v+1*sqrt(pi) ]
-c
-      FAC(0)=sqpi/2.D0
-      do n=1,16
-       FAC(n)=FAC(n-1)*(2*n-1)/2
+   real*8 :: t, u, w, y, fmch, f
+   integer :: i, n, m
+
+   ! Loops over t values in the table ( 0. to 43.95 , interval 0.05)
+   do i = 1, 880
+      t = 0.05D0 * DFLOAT(i-1)
+      y = DEXP(-t)
+      u = t + t
+      f = fmch(22, t)
+      ! Loop over order of incomple Gamma functions ( 0 to 21, the ones
+      ! necessary for evaluating orders 0-16)
+      do m = 21, 0, -1
+         w = 2.D0* DFLOAT(m) + 1.D0
+         str(i, m) = (y + u*f) /w
+         f = STR(i, m)
       enddo
-c
-      RETURN
-      END
+  enddo
 
-c-------------------
-c same version as in old version of GDFMOL
-      real*8 FUNCTION FMCH(M,X)
-      implicit none
-      real*8, intent(in) :: X
-      integer, intent(in) :: M
+  ! Calculation of the function [(v+1/2)/2**v+1*sqrt(pi) ]
+  FAC(0) = SQPI /2.D0
+  do n = 1, 16
+      FAC(n) = FAC(n-1) * (2*n-1) /2
+  enddo
 
-      real*8, parameter :: sqpi=1.77245385090551588D0
+  return
+end subroutine generf
+
+real*8 function fmch(M, X)
+   implicit none
+   real*8 , intent(in) :: X
+   integer, intent(in) :: M
+
+   real*8, parameter :: SQPI=1.77245385090551588D0
      
-      real*8 ::  Y, A, B, APPROX, FIMULT, FIPROP, PTLSUM
-      real*8 :: TERM, XD
-      integer :: i, iw, notrms
+   real*8  ::  y, a, b, approx, fimult, fiprop, ptlsum, term, xd
+   integer :: i, iw, notrms
 
-      Y=DEXP(-X)
-      IF (X.GT.10.D0) GO TO 20
-      A = DFLOAT(M)
-      A = A + 0.5D0
-      TERM = 1.0D0 / A
-      PTLSUM = TERM
-      DO 11 I=2,50
-      TERM = TERM * X / (A + DFLOAT(I-1))
-      PTLSUM = PTLSUM + TERM
-      IF(TERM/PTLSUM.LT.1.0D-12)GO TO 12
-   11 CONTINUE 
-      STOP     
-   12 FMCH = 0.5D0 * PTLSUM * Y
-      RETURN   
-c
-   20 A = DFLOAT(M)
-      B = A + 0.5D0
-      XD = 1.0D0 / X
-      APPROX = 0.886226925452758D0 * DSQRT(XD) * XD**M
-      DO 22 I=1,M
-   22 APPROX = APPROX * (B - DFLOAT(I))
-      FIMULT = 0.5D0 * Y * XD
-      PTLSUM = 0.0D0
-      IF(FIMULT.EQ.0.0D0)GO TO 25
-      FIPROP = FIMULT/APPROX
-      TERM = 1.0D0
-      PTLSUM = TERM
-      NOTRMS = X
-      NOTRMS = NOTRMS + M
-      DO 24 I=2,NOTRMS
-      A = B - DFLOAT(I-1)
-      TERM = TERM * A * XD
-      PTLSUM = PTLSUM + TERM
-      IF(DABS(TERM*FIPROP/PTLSUM).LE.1.0D-10)GO TO 25
-   24 CONTINUE
-      WRITE (IW,999) M,X
-   25 FMCH = APPROX - FIMULT * PTLSUM
-      RETURN
-  999 FORMAT ('23H0FMCH DOES NOT CONVERGE',I6,1PE16.8)
-      END
-C     -----------------------
+   y = DEXP(-X)
+   if (X.GT.10.D0) then
+      a      = DFLOAT(M)
+      b      = a + 0.5D0 
+      xd     = 1.0D0 / X
+      approx = 0.886226925452758D0 * DSQRT(xd) * xd**M
+
+      do i = 1 , M
+         approx = approx * (b - DFLOAT(i))
+      enddo
+  
+      fimult = 0.5D0 * Y * xd
+      ptlsum = 0.0D0
+
+      if (fimult.eq.0.0D0) then 
+         fmch = approx - fimult * ptlsum
+         return
+      endif
+
+      fiprop = fimult / approx
+      term   = 1.0D0
+      ptlsum = term
+      notrms = X + M
+
+      do i = 2, notrms
+         a      = b - DFLOAT(i-1)
+         term   = term * a * xd
+         ptlsum = ptlsum + term
+         if( DABS(term*fiprop/ptlsum).le.1.0D-10 ) then
+            fmch = approx - fimult * ptlsum
+            return
+         endif
+      enddo
+      
+      write (iw, 999) M, X
+      fmch = approx - fimult * ptlsum
+      return
+
+   else
+      a      = DFLOAT(M) + 0.5D0
+      term   = 1.0D0 / a
+      ptlsum = term
+
+      do i = 2, 50
+         term = term * X / (A + DFLOAT(I-1))
+         ptlsum = ptlsum + term
+         if ( (term/ptlsum).lt.1.0D-12) then
+            fmch = 0.5D0 * ptlsum * Y
+            return
+         endif
+      enddo     
+   endif
+
+999 format ('fmch: convergence not achieved.', I6, 1PE16.8)
+end function fmch

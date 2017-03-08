@@ -72,7 +72,7 @@ optim=$(optim3)
 
 tmplist := dip.o SCFop.o
 tmplist += intfld.o int1G.o int3G.o
-tmplist += intsolG.o intsolGs.o intsol.o
+tmplist += intsolG.o intsol.o
 $(tmplist:%.o=$(obj_path)/%.o) : optim:=$(optim1)
 #$(tmplist:%.o=$(obj_path)/%.o) : private optim+=$(optim1)
 

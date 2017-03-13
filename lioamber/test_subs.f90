@@ -1,22 +1,27 @@
-      SUBROUTINE SEEK_NaN(VEC_TO_TEST,INICIO, FIN,FRASE)
-!subroutine for seek NaN in vectors
-        IMPLICIT NONE
-        DOUBLE PRECISION, INTENT(IN) :: VEC_TO_TEST(*) !vector to analize
-        INTEGER, INTENT(IN) :: INICIO, FIN  !range of analize in vector
-        CHARACTER (LEN=*), INTENT(IN) :: FRASE !output phrase in case of NaN
-        INTEGER :: iNick
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% TEST_SUBS.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! This file contains subroutines intended to be used in debug.                 !
+! Subroutines included are:                                                    !
+! * seek_nan (Seeks NAN in vectors)                                            !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine seek_nan(vecToTest, vecStart, vecEnd, phrase)
+    implicit none
+    real*8           , intent(in) :: vecToTest(*)     ! Vector to analize.
+    integer          , intent(in) :: vecStart, vecEnd ! Vector range to analize.
+    character (len=*), intent(in) :: phrase           ! Output phrase for NaN.
+    integer :: iNick
 
-        IF (INICIO .GT. FIN) THEN
-          WRITE(*,*) "Error: Inicio mayor a Fin en test"
-          WRITE(*,*) FRASE
-          STOP
-        END IF
+    if (vecStart .gt. vecEnd) then
+        write(*,*) "Error: vector start index greater than end index."
+        write(*,*) phrase
+        stop
+    endif
 
-        do iNick=INICIO,FIN
-         if (VEC_TO_TEST(iNick) .ne. VEC_TO_TEST(iNick)) then
-          write(*,*) "NAN en ",FRASE, iNick
-          stop
-         end if
-        end do
-      ENDSUBROUTINE SEEK_NaN
-
+    do iNick = vecStart, vecEnd
+        if (vecToTest(iNick) .ne. vecToTest(iNick)) then
+            write(*,*) "NaN found in: ", phrase, iNick
+            stop
+        end if
+    enddo
+endsubroutine seek_nan
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

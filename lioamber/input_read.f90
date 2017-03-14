@@ -1,3 +1,7 @@
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% INPUT_READ.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! This file contains routines aimed to read input files, both options and      !
+! coordinates. (maybe basis-files read should also be here? )                  !
 ! * read_options     (reads option inputfile.)                                 !
 ! * read_coords      (reads coordinates inputfile.)                            !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

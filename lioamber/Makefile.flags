@@ -72,7 +72,7 @@ optim=$(optim3)
 
 tmplist := dip.o SCFop.o
 tmplist += intfld.o int1G.o int3G.o
-tmplist += intsolG.o intsolGs.o intsol.o
+tmplist += intsolG.o intsol.o
 $(tmplist:%.o=$(obj_path)/%.o) : optim:=$(optim1)
 #$(tmplist:%.o=$(obj_path)/%.o) : private optim+=$(optim1)
 
@@ -81,7 +81,7 @@ tmplist := SCF.o TD.o ehrenfest.o magnus.o predictor.o
 tmplist += fix_mess_rho.o mulliken.o packed_storage.o
 tmplist += init_amber.o init.o lio_init.o liomain.o lio_finalize.o
 tmplist += dft_get_mm_forces.o dft_get_qm_forces.o
-tmplist += alg.o drive.o func.o grid.o dipmem.o jarz.o
+tmplist += alg.o drive.o func.o grid.o dipmem.o 
 tmplist += int1.o int2.o int2G.o int3mem.o intSG.o
 tmplist += garcha_mod.o mathsubs.o cubegen.o density.o
 
@@ -110,7 +110,7 @@ ifeq ($(intel),1)
   tmplist += fix_mess_rho.o mulliken.o packed_storage.o
   tmplist += init_amber.o init.o lio_init.o liomain.o lio_finalize.o
   tmplist += dft_get_mm_forces.o dft_get_qm_forces.o
-  tmplist += alg.o drive.o func.o grid.o dipmem.o jarz.o
+  tmplist += alg.o drive.o func.o grid.o dipmem.o
   tmplist += int1.o int2.o int2G.o int3mem.o  intSG.o
   tmplist += garcha_mod.o cubegen.o density.o
   $(tmplist:%.o=$(obj_path)/%.o) : myflags:=-mp1 -ip

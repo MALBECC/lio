@@ -117,10 +117,10 @@ subroutine LecturaECP
 
 4160 FORMAT(4x,"╔═════════════════════════════════════&
       ══════════════╗")
-4161 FORMAT(4x,"║    readinG EFFECTIVE CORE POTENTIAL PARAMETERS    ║")
+4161 FORMAT(4x,"║    READING EFFECTIVE CORE POTENTIAL PARAMETERS    ║")
 4162 FORMAT(4x,"╠══════════════╦═════════════════════╦&
       ══════════════╣")
-4163 FORMAT(4x,"║   ATOM TYPE  ║   NUMBER in SYSTEM  ║   ECP TYPE   ║")
+4163 FORMAT(4x,"║   ATOM TYPE  ║   NUMBER IN SYSTEM  ║   ECP TYPE   ║")
 4164 FORMAT(4x,"╠══════════════╬═════════════════════╬&
       ══════════════╣")
 4165 FORMAT(4x,"║",a9,5x,"║",i11,10x,"║",5x,a9 ,"║")

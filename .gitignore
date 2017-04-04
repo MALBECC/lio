@@ -25,6 +25,7 @@ fort.*
 mulliken
 qm.xyz
 salida
+lioamber/*.log
 lioamber/*.mod
 liosolo/liosolo
 liosolo/*.x

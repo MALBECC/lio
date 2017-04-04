@@ -1,0 +1,171 @@
+################################################################################
+# MAKEFILE - OPTIONS
+################################################################################
+FFLAGS += -fPIC $(DEFINE)
+
+LFLAGS += -fPIC -shared
+LFLAGS += -Wl,-rpath='$$ORIGIN/'
+LFLAGS += -Wl,-rpath='$$ORIGIN/../g2g'
+
+LFLAGS += -L/usr/lib -L/usr/lib64 -L../g2g
+LIBS   += -lm -lstdc++ -lg2g
+
+# Is this necessary? We should have no definitions by default
+DEFINE  = -Dpack -DG2G
+
+# These variables will be filled by compiler specific flags
+OPTIM0P =
+OPTIM0I =
+DEBUG01 =
+DEBUG02 =
+
+
+################################################################################
+ifeq ($(cuda),0)
+
+else ifeq ($(cuda),1)
+
+else ifeq ($(cuda),2)
+  DEFINE += -DCUBLAS
+  LFLAGS += -L$(CUDA_HOME)/lib64/
+  LIBS   += -lcudart -lcublas
+  cublas  = 1 # This is necessary for current status of Makefile.depends but
+              # should be changed in the future.
+
+else ifeq ($(cuda),3)
+  DEFINE += -DCUBLAS
+  LFLAGS += -L$(CUDA_HOME)/lib64/
+  LIBS   += -lcudart -lcublas
+  cublas  = 1 # This is necessary for current status of Makefile.depends
+              # should be changed in the future.
+
+  DEFINE += -Dmagma
+  LFLAGS += -L$(MAGMAROOT)/lib
+  LIBS   += -lmagma
+
+else
+  $(error Invalid value in option cuda = $(cuda))
+endif
+
+
+################################################################################
+ifeq ($(intel),0)
+  FC      = gfortran
+  LC      = gfortran
+  FFLAGS += -cpp -I$(OBJPATH) -J$(OBJPATH)
+  LFLAGS += -L/usr/lib
+  LIBS   += -llapack
+
+  DEBUG01 = -g -Wtabs -fcheck=all
+  DEBUG02 = -g -Wall -Wextra -fcheck=all -fbacktrace -pedantic
+  OPTIM0P = #TODO: no flags for parallelization using gfortran?
+  OPTIM0I = #TODO: no flags for precision and inlining using gfortran?
+
+else ifeq ($(intel),1)
+  FC      = ifort
+  LC      = ifort
+  FFLAGS += -fpp -module $(OBJPATH)
+  LFLAGS += -L/usr/lib
+  LIBS   += -llapack
+  LIBS   += -liomp5 -lpthread
+
+  DEBUG01 = -g -check bounds -traceback
+  DEBUG02 = -g -check bounds -traceback -check all -fp-stack-check
+  OPTIM0P = -parallel
+  OPTIM0I = -mp1 -ip
+
+else ifeq ($(intel),2)
+  FC      = ifort
+  LC      = ifort
+  FFLAGS += -fpp -module $(OBJPATH)
+  LFLAGS += -L$(MKLROOT)/lib/intel64 -I$(MKLROOT)/include
+  LIBS   += -lmkl_lapack95_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core
+  LIBS   += -liomp5 -lpthread
+
+  DEBUG01 = -g -check bounds -traceback
+  DEBUG02 = -g -check bounds -traceback -check all -fp-stack-check
+  OPTIM0P = -parallel
+  OPTIM0I = -mp1 -ip
+
+else
+  $(error Invalid value in option intel = $(intel))
+endif
+
+
+################################################################################
+ifeq ($(parallel),0)
+else
+  $(warning This option is not available yet, set it to 0 or avoid it.)
+  $(error Invalid value in option intel = $(intel))
+endif
+
+
+################################################################################
+ifeq ($(precision),0)
+  DEFINE += -DTD_SIMPLE
+
+else ifeq ($(precision),1)
+
+else
+  $(error Invalid value in option intel = $(intel))
+endif
+
+
+################################################################################
+ifeq ($(analytics),0)
+
+else ifeq ($(analytics),1)
+  DEFINE += -DPROFILING=1
+  FFLAGS += -pg
+  LFLAGS += -pg
+
+else ifeq ($(analytics),-1)
+  #TODO: DPRINT_MATRICES unnecessary, code should recognize DEBUGGING
+  DEFINE += -DDEBUGGING=1 -DPRINT_MATRICES
+  FFLAGS += $(DEBUG01)
+  LFLAGS += $(DEBUG01)
+
+else ifeq ($(analytics),-2)
+  #TODO: DPRINT_MATRICES unnecessary, code should recognize DEBUGGING
+  DEFINE += -DDEBUGGING=2 -DPRINT_MATRICES
+  FFLAGS += $(DEBUG02)
+  LFLAGS += $(DEBUG02)
+
+else
+  $(error Invalid value in option intel = $(intel))
+endif
+
+
+################################################################################
+# PRIVATE FLAGS: 
+#
+# The following section assigns to specific OBJECTS certain flags, such as
+# which level of optimization corresponds to each object. Intermediate flags
+# are used to store the private information and then these option is added
+# to the general compilation flags.
+
+private_flag := -O3 
+
+tmplist :=
+tmplist += dip.o SCFop.o
+tmplist += intfld.o int1G.o int3G.o
+tmplist += intsolG.o intsolGs.o intsol.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : private_flag := -O1 
+
+tmplist :=
+tmplist += mathsubs.o matmuldiag.o int3lu.o fock_commuts.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : private_flag := -O3 $(OPTIMP)
+
+tmplist :=
+tmplist += SCF.o TD.o ehrenfest.o magnus.o predictor.o
+tmplist += FixMessRho.o mulliken.o PackedStorage.f
+tmplist += init_amber.o init.o lio_init.o liomain.o lio_finalize.o
+tmplist += dft_get_mm_forces.o dft_get_qm_forces.o
+tmplist += alg.o drive.o func.o grid.o dipmem.o jarz.o
+tmplist += int1.o int2.o int2G.o int3mem.o  intSG.o
+tmplist += garcha_mod.o cubegen.o density.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : private_flag := -O3 $(OPTIMI)
+
+FFLAGS += $(private_flag)
+
+################################################################################

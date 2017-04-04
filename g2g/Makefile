@@ -2,6 +2,7 @@
 
 # -*- mode: make -*-
 include Makefile.common
+include Makefile.translate
 
 ## Define sources and objects
 SRCS:=$(wildcard *.cpp)

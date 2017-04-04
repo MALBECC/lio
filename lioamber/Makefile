@@ -42,11 +42,11 @@ vpath %.mod $(OBJPATH)
 
 MAKEFILES =  Makefile
 MAKEFILES += Makefile.optchck
-MAKEFILES += Makefile.depends
+MAKEFILES += Makefile.depend
 MAKEFILES += Makefile.options
 
 include Makefile.optchck
-include Makefile.depends
+include Makefile.depend
 include Makefile.options
 
 vpath %.f   $(SRCDIRS)

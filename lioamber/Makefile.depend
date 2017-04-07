@@ -165,6 +165,7 @@ tmplist += int1G.o int2G.o int3G.o intSG.o intsolG.o intsolGs.o
 tmplist += jarz.o lio_finalize.o predictor.o
 tmplist += SCF.o SCF_in.o SCFop.o TD.o cubegen.o
 tmplist += maskrmm.o write_output.o SCF_exter.o
+tmplist += intECP.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
 
 

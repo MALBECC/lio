@@ -184,7 +184,8 @@ Makefile.log: $(MAKEFILES)
 	@echo 'Creating new Makefile.log'
 	@echo '##############################################################'\
                > Makefile.log
-	@echo '# BUILD INFORMATION' >> Makefile.log
+	@echo '# BUILD INFORMATION                                          #'\
+               >> Makefile.log
 	@echo '##############################################################'\
                >> Makefile.log
 	@echo 'current_version   := $(version)' >> Makefile.log

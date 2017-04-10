@@ -96,7 +96,7 @@ endif
 ifeq ($(parallel),0)
 else
   $(warning This option is not available yet, set it to 0 or avoid it.)
-  $(error Invalid value in option intel = $(intel))
+  $(error Invalid value in option parallel = $(parallel))
 endif
 
 
@@ -107,7 +107,7 @@ ifeq ($(precision),0)
 else ifeq ($(precision),1)
 
 else
-  $(error Invalid value in option intel = $(intel))
+  $(error Invalid value in option precision = $(precision))
 endif
 
 
@@ -132,7 +132,7 @@ else ifeq ($(analytics),-2)
   LFLAGS += $(DEBUG02)
 
 else
-  $(error Invalid value in option intel = $(intel))
+  $(error Invalid value in option analytics = $(analytics))
 endif
 
 

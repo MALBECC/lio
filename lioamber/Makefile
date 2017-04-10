@@ -86,7 +86,6 @@ $(OBJPATH)/%.o :  %.F90 $(MAKEFILES) | $(OBJPATH)
 liblio-g2g.so : $(OBJECTS:%.o=$(OBJPATH)/%.o)
 	$(LC) $^ $(LFLAGS) $(LIBS) -o $@
 
-#.PHONY: force clean install uninstall
 .PHONY: .FORCE
 .FORCE:
 

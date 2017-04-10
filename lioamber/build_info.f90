@@ -103,7 +103,9 @@ contains
          write( unit=outunit, fmt= '(A)') &
          '  There has been a problem with the data passed during'
          write( unit=outunit, fmt= '(A)') &
-         '  compilation. This is a bug and needs to be reported.'
+         '  compilation. This is a bug and needs to be reported'
+         write( unit=outunit, fmt= '(A)') &
+         '  to us in github.com/MALBECC/lio.'
          write( unit=outunit, fmt= '(A)') ''
 #     endif
       write( unit=outunit, fmt= '(A)')  &

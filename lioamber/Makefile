@@ -40,11 +40,11 @@ vpath %.mod $(OBJPATH)
 
 MAKEFILES =  Makefile
 MAKEFILES += Makefile.optchck
-MAKEFILES += Makefile.depend
+MAKEFILES += Makefile.depends
 MAKEFILES += Makefile.options
 
 include Makefile.optchck
-include Makefile.depend
+include Makefile.depends
 include Makefile.options
 
 vpath %.f   $(SRCDIRS)
@@ -72,13 +72,7 @@ $(OBJPATH) :
 $(OBJPATH)/%.o :  %.f   $(MAKEFILES) | $(OBJPATH)
 	$(FC) $(FFLAGS) -c $< -o $@
 
-$(OBJPATH)/%.o :  %.F   $(MAKEFILES) | $(OBJPATH)
-	$(FC) $(FFLAGS) -c $< -o $@
-
 $(OBJPATH)/%.o :  %.f90 $(MAKEFILES) | $(OBJPATH)
-	$(FC) $(FFLAGS) -c $< -o $@
-
-$(OBJPATH)/%.o :  %.F90 $(MAKEFILES) | $(OBJPATH)
 	$(FC) $(FFLAGS) -c $< -o $@
 
 liblio-g2g.so : $(OBJECTS:%.o=$(OBJPATH)/%.o)

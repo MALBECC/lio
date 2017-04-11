@@ -1,131 +1,102 @@
-######################################################################
-# LIBLIO MAKEFILE
-######################################################################
+################################################################################
+# Makefile - liblio
 #
-# DESIGN NOTES:
+# The following makefile coordinates the compilation of the liblio library.
+# This is a general purpose makefile, with generic rules that use generic
+# variables. Please instead of modifying it directly, customize the process
+# through the provided variables in the corresponding extra makefiles:
 #
-# The compilation process for the liblio-g2g.so library is currently
-# being organized by this file and its companions: "Makefile.depend",
-# "Makefile.flags" and "Makefile.links". The general scheeme is defined
-# here, as well as all global/general variables to be used, and
-# customization can be done by modifying the companion files. For
-# the most part, this file should be left untouched (unless it is
-# the compilation process itself what you want to modify).
 #
-# Makefile.depend: This file contains the list of all objects and
-#              modules to be compiled and incorporated in the
-#              library. It also contains the information on how
-#              these objects depend on one another and specifies
-#              the paths to the sources, be those code files or .mk
-#              files containing information on internal dependencies
-#              for the modules on non compiling source files (which
-#              are included in the compiling files instead).
+# (*) Makefile.depends contains information about which objects should be
+#     compiled, how objects depend on one another, and where to look for the 
+#     files to be compiled. Check this file when you are adding new objects.
+#     This is where the variables OBJECTS and SRCDIRS are filled.
 #
-# Makefile.flags: This file contains the information on the flags to
-#             be used during the compilaton of the objects. This
-#             includes default flags as well as specific for a
-#             group of objects or optional ones.
+# (*) Makefile.options: contains information on the aplication of the
+#     different compilation options. Check this file when you are customizing
+#     how an object should be compiled.
+#     This is where the variables FC, FFLAGS, LC, LIBS, LFLAGS are filled.
 #
-# Makefile.links: This file contains the information on the flags to
-#             be used during the final linking of the library, as
-#             well as the information of the external libraries to
-#             be linked (as well as other internal ones, such as
-#             g2g which has to be precompiled).
+# (*) Makefile.optchck: script-like section to create and check a log on
+#     how the code is being compiled. This allows to keep a record and keep
+#     compilations consistent. Should not be modified frequently.
 #
-######################################################################
+################################################################################
 
-# First things firs: we indicate the main target of the makefile.
-all : liblio-g2g.so
+.DEFAULT_GOAL := liblio-g2g.so
 
-
-# This variable will contain all .mk files that provide the details
-# of how to compile the library. All objects will depend on this
-# files, so that any modification in compilation options will
-# trigger the recompilation of the code. We add here the basic ones
-# and the rest should be incorporated to this variable in the
-# Makefile.depend file.
-makefiles :=
-makefiles += Makefile
-makefiles += Makefile.depend
-makefiles += Makefile.flags
-makefiles += Makefile.links
-
-
-# Variables are defined to list all the objects to be compiled and
-# incorporated into liolib ("objects"), as well as the list of places
-# where to find the source files ("src_path") and a single place
-# where to put the objects and modules compiled ("obj_path").
-# We set this paths for the makefile using vpath, which is not
-# reliable for finding files that change during compilation time
-# (that is, the .o and .mod) and thus it is not used for targets
-# but for dependencies only, so the "obj_path" variable needs to
-# be added explicitly in some places.
-objects   :=
-obj_path  := obj
-src_paths := 
-include Makefile.depend
-vpath %.o   $(obj_path)
-vpath %.mod $(obj_path)
-vpath %.f   $(src_paths)
-vpath %.f90 $(src_paths)
-vpath %.mk  $(src_paths)
-
-# This indicates which flags to use during the compilation
-# of the different objects and which flags to use during
-# the final linking of the library. It also contains the
-# options to make with different compilers.
-# LIBS is commented because for the time being LIO may rely
-# on information set via environment variables.
 FC =
 FFLAGS =
+
+LC =
+LIBS =
 LFLAGS =
-#LIBS   =
-include Makefile.flags
-include Makefile.links
 
+OBJECTS  =
+SRCDIRS  =
+OBJPATH := obj
+vpath %.o   $(OBJPATH)
+vpath %.mod $(OBJPATH)
 
-# GENERAL RULES
-######################################################################
-#   The following rules have been written to be general and make use
-# of variables defined along this file and filled by the information
-# provided by the other .mk files.
-#   These rules should not be modified under normal circumstances;
-# modifications of added files or change in the compilation flags
-# and regular customization should be done through the variables
-# defined before by modifying them inside the respective .mk file.
+MAKEFILES =  Makefile
+MAKEFILES += Makefile.optchck
+MAKEFILES += Makefile.depend
+MAKEFILES += Makefile.options
 
-liblio-g2g.so : $(objects:%.o=$(obj_path)/%.o)
-	$(FC) $(LFLAGS) $^ $(LIBS) -o $@
+include Makefile.optchck
+include Makefile.depend
+include Makefile.options
 
-$(obj_path)/%.mod : $(obj_path)/%.o
-	@touch $@
+vpath %.f   $(SRCDIRS)
+vpath %.F   $(SRCDIRS)
+vpath %.f90 $(SRCDIRS)
+vpath %.F90 $(SRCDIRS)
+vpath %.mk  $(SRCDIRS)
 
-$(obj_path)/%.o   : %.f   $(makefiles) |  $(obj_path)
-	$(FC) $(FFLAGS) -c $< -o $@
+################################################################################
+# RULES SECTION
+#
+# All objects depend on the important MAKEFILES because changes in the
+# compilation process should always cause all objects to be recompiled.
+# OBJPATH is set as an order-only prerequisite because we only want to
+# make sure it is there, but we don't want to have every object recompile
+# just because something was modified inside of it (else it would always
+# cause full recompilation).
 
-$(obj_path)/%.o   : %.F   $(makefiles) |  $(obj_path)
-	$(FC) $(FFLAGS) -c $< -o $@
-
-$(obj_path)/%.o   : %.f90 $(makefiles) |  $(obj_path)
-	$(FC) $(FFLAGS) -c $< -o $@
-
-$(obj_path)/%.o   : %.F90 $(makefiles) |  $(obj_path)
-	$(FC) $(FFLAGS) -c $< -o $@
-
-$(obj_path)/%.o   : %.f90 $(makefiles) |  $(obj_path)
-	$(FC) $(FFLAGS) -c $< -o $@
-
-$(obj_path)/%.mod : %.f90 $(makefiles) |  $(obj_path)
-	$(FC) $(FFLAGS) -c $< -o $(@:%.mod=%.o)
-	@touch $@
-
-
-
-$(obj_path) :
+$(OBJPATH) :
 	mkdir -p $@
+
+%.mod : %.o             $(MAKEFILES) | $(OBJPATH)
+	@touch $@
+
+$(OBJPATH)/%.o :  %.f   $(MAKEFILES) | $(OBJPATH)
+	$(FC) $(FFLAGS) -c $< -o $@
+
+$(OBJPATH)/%.o :  %.F   $(MAKEFILES) | $(OBJPATH)
+	$(FC) $(FFLAGS) -c $< -o $@
+
+$(OBJPATH)/%.o :  %.f90 $(MAKEFILES) | $(OBJPATH)
+	$(FC) $(FFLAGS) -c $< -o $@
+
+$(OBJPATH)/%.o :  %.F90 $(MAKEFILES) | $(OBJPATH)
+	$(FC) $(FFLAGS) -c $< -o $@
+
+liblio-g2g.so : $(OBJECTS:%.o=$(OBJPATH)/%.o)
+	$(LC) $^ $(LFLAGS) $(LIBS) -o $@
+
+.PHONY: .FORCE
+.FORCE:
 
 .PHONY: clean
 clean:
-	rm -rf liblio-g2g.so $(obj_path)
+	rm -rf Makefile.log liblio-g2g.so *.o *.mod $(OBJPATH)
 
-######################################################################
+.PHONY: install
+install:
+	@echo 'This option is not available yet.'
+
+.PHONY: uninstall
+uninstall:
+	@echo 'This option is not available yet.'
+
+################################################################################

@@ -1,5 +1,5 @@
 ################################################################################
-# LIBLIO MAKEFILE
+# Makefile - liblio
 #
 # The following makefile coordinates the compilation of the liblio library.
 # This is a general purpose makefile, with generic rules that use generic
@@ -9,15 +9,13 @@
 #
 # (*) Makefile.depends contains information about which objects should be
 #     compiled, how objects depend on one another, and where to look for the 
-#     files with the code. Check this file when you are adding new objects.
+#     files to be compiled. Check this file when you are adding new objects.
 #     This is where the variables OBJECTS and SRCDIRS are filled.
-#
 #
 # (*) Makefile.options: contains information on the aplication of the
 #     different compilation options. Check this file when you are customizing
 #     how an object should be compiled.
 #     This is where the variables FC, FFLAGS, LC, LIBS, LFLAGS are filled.
-#
 #
 # (*) Makefile.optchck: script-like section to create and check a log on
 #     how the code is being compiled. This allows to keep a record and keep

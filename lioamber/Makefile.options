@@ -1,5 +1,37 @@
 ################################################################################
-# MAKEFILE - OPTIONS
+# Makefile.options
+#
+# The following makefile translates the information provided in the form of
+# options ("make target opt1=n opt2=m ...") into definitions and flags passed
+# to the compiler, libraries included during linking, etc. All customization
+# involving options should be included here. The following is the list and
+# brief description of currently available options.
+#
+# cuda : Enables the use of nvidia gpu-boards.
+#    0 = GPU disabled.
+#    1 = Uses gpu specific kernels.
+#    2 = Uses gpu kernels and cublas library.
+#    3 = Uses gpu kernels and cublas and magma libraries.
+#
+# intel : Enables the use of intel compilers.
+#    0 = no intel compilers; use gnu fortran compiler and libraries.
+#    1 = use the intel compilers instead of the GNU ones.
+#    2 = use the intel compilers and the MKL library for lapack.
+#
+# parallel : Option not enabled yet. Will be reserved for activating the use
+# of openmp and mpi.
+#
+# precision : Increase the precision of some of the internal variables of the
+# program.
+#    0 = Use lowest real precision whenever possible.
+#    1 = Increase precision in ... (TODO).
+#
+# analytics : Enables profiling or debugging information and flags.
+#    0 = No extra information is provided.
+#    1 = Profiling information is enabled.
+#    2 = Basic debugging information is enabled.
+#    3 = Detailed debugging information is enabled.
+#
 ################################################################################
 FFLAGS += -fPIC $(DEFINE)
 
@@ -115,19 +147,19 @@ endif
 ifeq ($(analytics),0)
 
 else ifeq ($(analytics),1)
-  DEFINE += -DPROFILING=1
+  DEFINE += -DPROFILING
   FFLAGS += -pg
   LFLAGS += -pg
 
-else ifeq ($(analytics),-1)
+else ifeq ($(analytics),2)
   #TODO: DPRINT_MATRICES unnecessary, code should recognize DEBUGGING
-  DEFINE += -DDEBUGGING=1 -DPRINT_MATRICES
+  DEFINE += -DDEBUGGING -DPRINT_MATRICES
   FFLAGS += $(DEBUG01)
   LFLAGS += $(DEBUG01)
 
-else ifeq ($(analytics),-2)
+else ifeq ($(analytics),3)
   #TODO: DPRINT_MATRICES unnecessary, code should recognize DEBUGGING
-  DEFINE += -DDEBUGGING=2 -DPRINT_MATRICES
+  DEFINE += -DDEBUGGING -DPRINT_MATRICES
   FFLAGS += $(DEBUG02)
   LFLAGS += $(DEBUG02)
 

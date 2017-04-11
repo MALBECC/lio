@@ -1,10 +1,10 @@
 ################################################################################
-# MAKEFILE - DEPENDS
+# Makefile.depends
 #
 # This file contains the information of dependencies between the different
-# objects that make up LIBLIO. The list "OBJECTS" contains ALL the objects
-# to be linked for making LIO, including both free subroutines and modules
-# (or rather their corresponding '.o' files).
+# objects that make up liblio. The list "OBJECTS" contains ALL the objects
+# to be linked for making the library, including both free subroutines and
+# modules (or rather their corresponding '.o' files).
 #
 # When adding new content, you should:
 # 

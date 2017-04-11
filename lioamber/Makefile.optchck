@@ -1,4 +1,14 @@
 ################################################################################
+# Makefile.optchck
+#
+# The following makefile is a companion to the "Makefile.options": it records
+# the options used during the current compilation in two places. The first is
+# "Makefile.log", which can be read when recompilation is requested in order
+# to check for option consistency. The second is the build_info module of the
+# liblio library, where compilation information can be accessed by the code and
+# shown in the outputs to facilitate reproducibility of results.
+#
+################################################################################
 # SETUPS SECTION
 #
 # Unspecified options are given default values. If git is installed, the

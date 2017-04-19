@@ -1,9 +1,14 @@
-! Make an NVE ensamble MD.
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 program liomd
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Make an NVE ensamble MD.
 
     use garcha_mod, only : basis, basis_set, fitting_set, natom, ntatom, nsol, &
                            Iz, r, rqm, int_basis, omit_bas, verbose
     use liosubs   , only : write_energy, write_geom, set_masses, nuclear_verlet
+    use ehrenfest
+    use basis_data
+
 #ifdef CUBLAS
     use cublasmath
 #endif

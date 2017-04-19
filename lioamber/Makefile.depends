@@ -97,6 +97,25 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/build_info.mod
 
 
 ################################################################################
+# Ehrenfest
+include ehrenfest.mk
+OBJECTS += ehrenfest.o
+
+tmplist :=
+tmplist += SCF.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ehrenfest.mod
+
+
+################################################################################
+OBJECTS += basis_data.o
+
+tmplist :=
+tmplist += ehrenfest.o init_lio.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/basis_data.mod
+
+
+
+################################################################################
 # TO-DO: reformulate the following modules so that there exists mathcpu,
 #        mathcublas. Perhaps also a mathlio, which could be an interface
 #        that would load either mathcpu or mathcublas accordingly).
@@ -175,6 +194,10 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
 include maskrmm/maskrmm.mk
 SRCDIRS += maskrmm
 OBJECTS += maskrmm.o
+
+tmplist :=
+tmplist += ehrenfest.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/maskrmm.mod
 
 
 ################################################################################

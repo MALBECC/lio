@@ -25,9 +25,14 @@
 
           call g2g_timer_sum_start("Total")
 
-          deallocate (r, v, Em, Rm, pc)
-          allocate (r(ntatom, 3), v(ntatom, 3), Em(ntatom), Rm(ntatom), &
-                    pc(ntatom))
+          if (allocated(r))  deallocate(r)
+          if (allocated(v))  deallocate(v)
+          if (allocated(Em)) deallocate(Em)
+          if (allocated(Rm)) deallocate(Rm)
+          if (allocated(pc)) deallocate(pc)
+
+          allocate ( r(ntatom,3), v(ntatom,3), Em(ntatom), Rm(ntatom), &
+                     pc(ntatom) )
 
           ! This section converts the coordinates array and partial charges    !
           ! array received from Gromacs into the r (all positions), rqm (QM    !
@@ -63,6 +68,54 @@
       return
       end subroutine SCF_in
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% ehren_in %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Performs ehrenfest setup and routine calls from AMBER.                       !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine ehren_in( qmcoords, qmvels, clcoords, nsolin, dipxyz, E)
+
+   use garcha_mod, only: M, natom, nucpos, nucvel, RealRho, Smat, atom_mass, Iz
+   use ehrenfest,  only: ehren_masses 
+
+   implicit none
+   real*8,  intent(in)    :: qmcoords(3,natom)
+   real*8,  intent(in)    :: qmvels(3,natom)
+   real*8,  intent(in)    :: clcoords(4,nsolin)
+   integer, intent(in)    :: nsolin
+   real*8,  intent(inout) :: dipxyz(3)
+   real*8,  intent(inout) :: E
+
+   integer :: ii, kk
+
+   if (allocated(nucpos)) deallocate(nucpos)
+   if (allocated(nucvel)) deallocate(nucvel)
+   allocate(nucpos(3,natom))
+   allocate(nucvel(3,natom))
+
+   do ii=1,natom
+   do kk=1,3
+      ! velocity units in angstrom per 1/20.455 pico-second, and must go 
+      ! to atomic units
+      nucpos(kk,ii) = qmcoords(kk,ii) / 0.529177D0
+      nucvel(kk,ii) = qmvels(kk,ii)
+      nucvel(kk,ii) = nucvel(kk,ii)*(20.455d0)
+      nucvel(kk,ii) = nucvel(kk,ii)*(2.418884326505E-5)*(1.889725989d0)
+   enddo
+   enddo
+
+   if (.not.allocated(RealRho)) allocate(RealRho(M,M))
+   if (.not.allocated(Smat))    allocate(Smat(M,M))
+   if (allocated(atom_mass)) deallocate(atom_mass)
+   allocate(atom_mass(natom))
+   call ehren_masses( natom, Iz, atom_mass )
+   call SCF_in(E,qmcoords,clcoords,nsolin,dipxyz)
+
+end subroutine ehren_in
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% SCF_GRO %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -5,7 +5,9 @@
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       use garcha_mod,only:natom,nsol,cubegen_only,r,number_restr
+       use garcha_mod, only: natom,nsol,cubegen_only,r,number_restr
+     &                     , first_step, fix_nuclei, do_ehrenfest
+     &                     , qm_forces_ds, qm_forces_total
        implicit none
        real*8,intent(out) :: dxyzqm(3,natom)
        real*8,allocatable :: ff1G(:,:),ffSG(:,:),ff3G(:,:)
@@ -40,7 +42,11 @@
        call g2g_timer_start('intSG')
        call g2g_timer_sum_start('Overlap gradients')
        ffSG=0.0d0
-       call intSG(ffSG)
+       if (do_ehrenfest) then
+          ffSG=-transpose(qm_forces_ds)
+       else
+          call intSG(ffSG)
+       endif
        call g2g_timer_stop('intSG')
        call g2g_timer_sum_stop('Overlap gradients')
 
@@ -60,6 +66,15 @@ c       factor=627.509391D0/0.5291772108D0
        enddo
        enddo
 
+!
+! FFR - Ehrenfest needs to keep track of forces
+!--------------------------------------------------------------------!
+       if ( fix_nuclei ) dxyzqm(:,:)=0.0d0
+       if (do_ehrenfest) then
+         qm_forces_total=qm_forces_ds
+         qm_forces_total=qm_forces_total-transpose(ff1G)
+         qm_forces_total=qm_forces_total-transpose(ff3G)
+       endif
 
 
 !--------------------------------------------------------------------!
@@ -68,11 +83,20 @@ c       factor=627.509391D0/0.5291772108D0
           call get_restrain_forces(dxyzqm, f_r)
 	  WRITE(*,*) "DISTANCE RESTRAIN ADDED TO FORCES"
         END IF
+
+
+! FFR: force calculation should be separated from force passing and
+!      force writing. All can be in the same module, but different
+!      subroutines.
 !--------------------------------------------------------------------!
        print_forces=.false.
        if (print_forces) then
          fileunit=3242
-         open(unit=fileunit,file='Forces.log',access='APPEND')
+         if (first_step) then
+            open(unit=fileunit,file='Forces.log')
+         else
+            open(unit=fileunit,file='Forces.log',access='APPEND')
+         endif
 
          write(fileunit,'(A)')
      >   '------------------------------------------------------------'
@@ -107,6 +131,8 @@ c       factor=627.509391D0/0.5291772108D0
          call g2g_timer_clear()
        endif
 
+! FFR: No other place for this to go right now.
+       if (first_step) first_step=.false.
 !--------------------------------------------------------------------!
        deallocate(ff1G,ffSG,ff3G)
  200   format(1X,A4,1X,I4,3(2X,E14.7))

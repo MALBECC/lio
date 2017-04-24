@@ -29,7 +29,7 @@
   real*8              :: term0,term2,term4
 
   real*8           :: SQPI
-  real*8,parameter :: PI=3.14159265358979323846264338327
+  real*8,parameter :: PI=3.14159265358979323846264338327d0
 
 
 
@@ -43,13 +43,13 @@
   GI0=SQPI*b1
 
   b3=b1*b2
-  GI2=SQPI*b3*(0.500)
+  GI2=SQPI*b3*(0.500d0)
 
   b5=b3*b2
-  GI4=SQPI*b5*(0.750)
+  GI4=SQPI*b5*(0.750d0)
 
   b7=b5*b2
-  GI6=SQPI*b7*(1.875)
+  GI6=SQPI*b7*(1.875d0)
 
 
   do kk=1,3

@@ -941,8 +941,8 @@ c-------Escribimos en xnano y znano dos conmutadores de distintas iteraciones---
             call matmuldiag(xnano,znano,rho1,M)
 !#endif
 
-            EMAT(ndiist,kk)=0.
-            if(kk.ne.ndiist) EMAT(kk,ndiist)=0.
+            EMAT(ndiist,kk)=0.0d0
+            if(kk.ne.ndiist) EMAT(kk,ndiist)=0.0d0
             do l=1,M
               EMAT(ndiist,kk)=EMAT(ndiist,kk)+rho1(l,l)
               if (kk.ne.ndiist) then
@@ -952,10 +952,10 @@ c-------Escribimos en xnano y znano dos conmutadores de distintas iteraciones---
           enddo
 
           do i=1,ndiist
-            EMAT(i,ndiist+1)= -1.0
-            EMAT(ndiist+1,i)= -1.0
+            EMAT(i,ndiist+1)= -1.0d0
+            EMAT(ndiist+1,i)= -1.0d0
           enddo
-          EMAT(ndiist+1, ndiist+1)= 0.0
+          EMAT(ndiist+1, ndiist+1)= 0.0d0
 
           allocate(EMAT2(ndiist+1,ndiist+1))
           EMAT2=EMAT

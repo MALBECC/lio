@@ -29,7 +29,7 @@
         print*,'ATOMIC NUMBER ',Vatnum(kk),' IS NOT SUPPORTED'
         stop
     endselect
-    Vmass(kk)=Vmass(kk)*(1822.88857149)
+    Vmass(kk)=Vmass(kk)*(1822.88857149d0)
   enddo
 
   return;end subroutine

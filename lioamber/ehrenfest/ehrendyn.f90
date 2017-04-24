@@ -55,7 +55,7 @@
 !------------------------------------------------------------------------------!
   do ii=1,natom
   do kk=1,3
-    nucvel(kk,ii)=nucvel(kk,ii)+(1.5)*dt*qm_forces_total(kk,ii)/atom_mass(ii)
+    nucvel(kk,ii)=nucvel(kk,ii)+(1.5d0)*dt*qm_forces_total(kk,ii)/atom_mass(ii)
   enddo
   enddo
 
@@ -132,7 +132,7 @@
    print*,''
    print*,' Timer: ',total_time
    print*,''
-   total_time=total_time+dt*0.0241888
+   total_time=total_time+dt*0.0241888d0
   endif
 
   call g2g_timer_stop('ehrendyn step')

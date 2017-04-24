@@ -87,14 +87,14 @@
     end do
 
 !!! Time Gaussian Shape (time in fs)
-!    timeof_peak =  50 * ( tdstep * 0.0241888 )
-!    timeof_pert = 100 * ( tdstep * 0.0241888 )
-!    alpha       = 0.2 / ( tdstep * 0.0241888 )**2
+!    timeof_peak =  50.0d0 * ( tdstep * 0.0241888d0 )
+!    timeof_pert = 100.0d0 * ( tdstep * 0.0241888d0 )
+!    alpha       =   0.2d0 / ( tdstep * 0.0241888d0 )**2
 
-    timeof_peak = 20
-    timeof_pert = 50
-!    alpha       = 0.1E-7 / ( tdstep * 0.0241888 )**2
-    alpha       = 0.1E-7 / ( 2.06706875E-002 * 0.0241888 )**2
+    timeof_peak = 20.0d0
+    timeof_pert = 50.0d0
+!    alpha       = 0.1d-7 / ( tdstep * 0.0241888d0 )**2
+    alpha       = 0.1d-7 / ( 2.06706875d-002 * 0.0241888d0 )**2
 
     shapeshift   = exp( (-alpha) * ( total_time - timeof_peak )**2 )
     efield_shape = efield_shape * shapeshift
@@ -104,10 +104,10 @@
 
 !!! Laser shape
     laser_is_on = .true.
-!    laser_long = 139.3 !nm
-    laser_long = 83.22 !nm
-!    laser_long =123.22 !nm
-    laser_freq = (6.28318530718) * (299.792458) / (laser_long)
+!    laser_long = 139.3d0 !nm
+    laser_long = 83.22d0 !nm
+!    laser_long =123.22d0 !nm
+    laser_freq = (6.28318530718d0) * (299.792458d0) / (laser_long)
 !   [freq fs-1] = [2pi] * [c in nm/fs] / [long]
     shapeshift = sin( laser_freq * total_time )
     if ( laser_is_on ) then

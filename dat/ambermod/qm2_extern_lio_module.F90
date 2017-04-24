@@ -85,8 +85,7 @@ contains
 
     implicit none
 
-! FFR MODS
-#  include "../include/md.h"
+#  include "../include/md.h" ! FFR-Ehrenfest
 
 
     logical, intent(in) :: do_grad              ! Return gradient/not
@@ -95,7 +94,7 @@ contains
     character(len=3), intent(in) :: id          ! ID number for PIMD or REMD
     integer, intent(in) :: nqmatoms             ! Number of QM atoms
     _REAL_,  intent(in) :: qmcoords(3,nqmatoms) ! QM atom coordinates
-    _REAL_              :: qmvels(3,nqmatoms)   ! QM atom velocities (of previous step)
+    _REAL_              :: qmvels(3,nqmatoms)   ! QM atom velocities (of previous step) (FFR-Ehrenfest)
     integer, intent(in) :: nclatoms             ! Number of MM atoms
     _REAL_,  intent(in) :: clcoords(4,nclatoms) ! MM atom coordinates and charges in au
     _REAL_, intent(out) :: escf                 ! SCF energy
@@ -105,7 +104,7 @@ contains
 
     type(lio_nml_type), save     :: lio_nml
     logical, save                :: first_call = .true.
-    integer                      :: nn,i
+    integer                      :: nn,i        ! FFR-Ehrenfest: added nn
     integer                      :: printed =-1 ! Used to tell if we have printed this step yet 
                                                 ! since the same step may be called multiple times
     ! for system call
@@ -137,8 +136,8 @@ contains
           lio_nml%Fx, lio_nml%Fy, lio_nml%Fz, lio_nml%NBCH, &
 !          lio_nml%propagator, lio_nml%writedens, lio_nml%tdrestart)
           lio_nml%propagator, lio_nml%writedens, lio_nml%tdrestart,dt)
-    end if
 !------------------------------------------------------------------------------!
+    end if
 
 !           if(writexyz) then
 !            do i=1,nqmatoms
@@ -154,9 +153,6 @@ contains
 !------------------------------------------------------------------------------!
 ! FFR - EHRENFEST ADAPTATION
 !------------------------------------------------------------------------------!
-      write(666,*) qmvels
-      write(666,*) ''
-
       do nn=1,nqmatoms
         qmvels(1,nn)=x(lvel+3*qmmm_struct%iqmatoms(nn)-3)
         qmvels(2,nn)=x(lvel+3*qmmm_struct%iqmatoms(nn)-2)

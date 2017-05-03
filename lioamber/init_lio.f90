@@ -34,7 +34,11 @@ subroutine lio_defaults()
                            max_function_exponent, min_points_per_cube,         &
                            assign_all_functions, remove_zero_weights,          &
                            energy_all_iterations, free_global_memory, dipole,  &
-                           lowdin, mulliken, print_coeffs, number_restr, Dbug
+                           lowdin, mulliken, print_coeffs, number_restr, Dbug, &
+                           steep, Force_cut, Energy_cut, minimzation_steep,    &
+                           n_min_steeps, lineal_search, n_points
+
+
 
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,       &
                            local_nonlocal, ecp_debug, ecp_full_range_int,      &
@@ -76,6 +80,12 @@ subroutine lio_defaults()
 
 !   Distance restrain options
     number_restr   = 0             ;
+
+!   Geometry Optimizations
+    steep= 0.005                   ; Force_cut=1D-5                     ;
+    Energy_cut= 1D-4               ; minimzation_steep=5D-3             ;
+    n_min_steeps = 500             ; lineal_search=.true.               ;
+    n_points = 5                   ;
 
 !   Debug
     Dbug = .false.                 ;

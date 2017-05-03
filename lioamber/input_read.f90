@@ -57,6 +57,9 @@ subroutine read_options(inputFile, charge)
                    number_restr,                                               &
                    ! Debug variables
                    Dbug,                                                       &
+                   ! Geometry optimizations
+                   steep, Force_cut, Energy_cut, minimzation_steep,            &
+                   n_min_steeps,lineal_search,n_points,                        &
                    ! Variables for orbital printing.
                    cubegen_only, cube_res, cube_sel, cube_dens, cube_dens_file,&
                    cube_orb, cube_orb_file, cube_elec, cube_elec_file,         &

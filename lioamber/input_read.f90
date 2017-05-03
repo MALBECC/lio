@@ -24,7 +24,11 @@ subroutine read_options(inputFile, charge)
                            assign_all_functions, remove_zero_weights,          &
                            energy_all_iterations, free_global_memory,          &
                            sphere_radius, dipole, lowdin, mulliken,            &
-                           print_coeffs, number_restr, Dbug
+                           print_coeffs, number_restr, Dbug, steep, Force_cut, &
+                           Energy_cut, minimzation_steep, n_min_steeps,        &
+                           lineal_search, n_points
+
+
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, verbose_ECP,  &
                            cutECP, local_nonlocal, ecp_debug, FOCK_ECP_read,   &
                            FOCK_ECP_write, ecp_full_range_int, Fulltimer_ECP,  &

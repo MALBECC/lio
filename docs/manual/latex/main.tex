@@ -16,6 +16,11 @@
 \usepackage[flushleft]{threeparttable}
 \usepackage{multirow}
 \renewcommand{\baselinestretch}{2}
+
+%flechas y diagramas
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows}
+
 %\bibliographystyle{unsrt}
 
 %\begin{document}
@@ -32,6 +37,18 @@ Pab. II, Buenos Aires (C1428EHA) Argentina}
 
 
 \begin{document}
+
+% Define block styles
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=blue!30]
+\tikzstyle{element} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm, text centered, draw=black, text width=4cm, fill=yellow!30]
+\tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!30]
+
+
+\tikzstyle{yes} = [circle, minimum size=1cm, text centered, draw=black, fill=red!30]
+\tikzstyle{no} = [circle, minimum size=1cm, text centered, draw=black, fill=red!30]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+
 
 
 \begin{abstract}
@@ -182,7 +199,24 @@ This section provides a quick reference for LIO input variables, also providing 
       \label{lio.ecp.var}
     \end{table}    
 
-    \subsection{Orbital Printing Options}
+    \subsection{Geometry Optimizations}
+    \begin{table}  [H]
+      \begin{center}
+      \begin{tabular}{ l c c l}
+         Variable & Type & Default & Description \\
+         steep & logical & false & Activate steepest descend algorithm \\
+         Force\_cut & real*8 & $5 * 10^{-4}$ & convergence criteria in forces (Hartree/bohr)\\
+         Energy\_cut & real*8 & $1 * 10^{-4}$& convergence criteria in energy (Hartree)\\
+         minimzation\_steep & real*8 & 0.05 & initial distance steep (bohr)\\
+         n\_points & integer & 5 & number of points scaned for lineal search \\
+         n\_min\_steeps  &  integer & 500 & number of optimization steps\\
+         lineal\_search & logical & true & enable lineal search\\
+       \end{tabular}
+       \end{center}
+      \label{geom.optim}
+    \end{table} 
+    
+    \subsection{Others}
     \begin{table}  [H]
       \begin{center}
       \begin{tabular}{ l c c l}
@@ -199,7 +233,7 @@ This section provides a quick reference for LIO input variables, also providing 
          cube\_sqrt\_orb & logical & false & \\
        \end{tabular}
        \end{center}
-      \label{lio.ecp.var}
+      \label{lio.ecp.var.1}
     \end{table}    
     
     \subsection{GPU Options}
@@ -217,9 +251,110 @@ This section provides a quick reference for LIO input variables, also providing 
          free\_global\_memory & real*8 & 0.0 & \\
        \end{tabular}
        \end{center}
-      \label{lio.ecp.var}
+      \label{lio.ecp.var.2}
     \end{table}    
 
+\newpage
+\section{Geometry optimizations}
+
+Geometry optimizations or energy minimization is the process of finding an atomic arrangement in space where the force on each atom is acceptably close to zero.
+
+    \subsection{Implemenation}
+    
+    Lio have a simple steepest-descend algorithm. The idea is just move the system in the force direction a $\lambda$ value.
+    
+    \begin{equation}
+      \vec{r}^i_{new}=\vec{r}^i + \lambda  \vec{F}^i  
+      \label{new_force}
+    \end{equation}
+    
+    In NO lineal search algorithm $\lambda$ is obtained as $\frac{steep\_ size}{|\vec{F}_{max}|}$. If energy decrease with the movement the step is accepted but if energy increase with the steep the steep is rejected and $\lambda$ is reduced. Each accepted movement increase steep size a 20\% and each rejected move decrease steep size a 50\%.
+    
+    In lineal search algorithm the system scan energy as function of $\lambda$ and predict the best value of $\lambda$ for move system in force direction.
+    
+    \begin{table}  [H]
+      \begin{center}
+      \begin{tabular}{ c c }
+
+    \textbf{No Linear Search algorithm} & \textbf{Linear Search algorithm} \\
+
+    \begin{tikzpicture}[node distance=2cm]
+      \node (start) [startstop] {$\vec{r}$, E};
+      \node (forces) [element, below of=start ] {Calculate $\vec{F}$};
+      \node (fmax) [element, below of=forces ] {Obtain  $|\vec{F}|_{max}$};
+      \node (Enew) [element, below of=fmax ] {move and calculate $E_{new}$};
+      \node (Edescend) [decision, below of=Enew, yshift=-0.5cm ] {$E_{new} < E$ ?};
+      \node (yes2) [yes, below of=Edescend, xshift=-1.5cm ] {yes};
+      \node (no2) [no, below of=Edescend, xshift=1.5cm ] {no};
+      \node (increase) [element, below of=yes2, xshift=-1.0cm ] {accept $\vec{r}$, increase steep size 20\%};
+      \node (decrease) [element, below of=no2, xshift=1.0cm ] {reject $\vec{r}$, decrease steep size 50\%};
+      \node (converge) [decision, below of=increase, yshift=-0.5cm ] {converged?};
+      \node (yes1) [yes, below of=converge, yshift=-0.5cm ] {yes};
+      \node (no1) [no, right of=converge, xshift=5.5cm ] {no};
+      \node (finish) [startstop, below of=yes1 ] {End};
+
+      \draw [arrow] (start) -- (forces);
+      \draw [arrow] (forces) -- (fmax);
+      \draw [arrow] (fmax) -- (Enew);
+      \draw [arrow] (Enew) -- (Edescend);
+      \draw [arrow] (Edescend) -- (yes2);
+      \draw [arrow] (Edescend) -- (no2);
+      \draw [arrow] (yes2) -- (increase);
+      \draw [arrow] (increase) -- (converge);
+      \draw [arrow] (no2) -- (decrease);
+      \draw [arrow] (decrease) |- (Enew);
+      \draw [arrow] (converge) -- (yes1);
+      \draw [arrow] (converge) -- (no1);
+      \draw [arrow] (yes1) -- (finish);
+      \draw [arrow] (no1) |- (forces);
+    \end{tikzpicture}
+    
+    &
+
+    \begin{tikzpicture}[node distance=2cm]
+      \node (start) [startstop] {$\vec{r}$, E};
+      \node (forces) [element, below of=start ] {Calculate $\vec{F}$};
+      \node (fmax) [element, below of=forces ] {Obtain  $|\vec{F}|_{max}$};
+      \node (Elamb) [element, below of=fmax ] {Obtain  E($\lambda$)};
+      \node (lamb) [element, below of=Elamb ] {Obtain best $\lambda$};
+      \node (newr) [element, below of=lamb ] {move and recalculate E};
+      \node (converge) [decision, below of=newr, yshift=-0.5cm ] {converged?};
+      \node (yes1) [yes, below of=converge, yshift=-0.5cm ] {yes};
+      \node (no1) [no, right of=converge, xshift=0.5cm ] {no};
+      \node (finish) [startstop, below of=yes1 ] {End};
+
+      \draw [arrow] (start) -- (forces);
+      \draw [arrow] (forces) -- (fmax);
+      \draw [arrow] (fmax) -- (Elamb);
+      \draw [arrow] (Elamb) -- (lamb);
+      \draw [arrow] (lamb) -- (newr);
+      \draw [arrow] (newr) -- (converge);
+      \draw [arrow] (converge) -- (yes1);
+      \draw [arrow] (converge) -- (no1);
+      \draw [arrow] (yes1) -- (finish);
+      \draw [arrow] (no1) |- (forces);
+    \end{tikzpicture}
+
+       \end{tabular}
+       \end{center}
+      \label{steep-algorithm}
+    \end{table}   
+    
+Best $\lambda$ in lineal search algorithm is obtained by a quadratic function ajust using minimun energy of the scan and previus and next points.
+
+    \subsection{Using geometry optimizations}
+    
+    Adding steep=t in lio input enables geometry optimization (steepest descend, lineal search by default).
+    Cutoff criteria are sets by Force\_cut and Energy\_cut (5E-4 Hartree/bohr and 1E-4 Hartree by Default).
+    Number of minimization steeps is set by n\_min\_steeps (500 by default) and initial distance steep is set by minimzation\_steep (by default 0.05 bohr)\\
+    It is recomendable to compile lio in double precision for minimice error in exchange-correlation forces (full\_double=1).
+    
+    Outputs of geometry optimizations are traj.xyz (atoms coordinates in each steepes descend movement) and optimization.out (steep, energy and others). If verbose=true optimization.out include energy of each lineal search point.
+    
+    \subsection{Examples}
+    
+    Examples of geometry optimization are made in lio/test/13\_geom\_optim.
+    
 \newpage
 \section{Restraints}
 LIO may add an extra potential term to the Hamiltonian in order to restrain the distance between specified pairs of atoms.
@@ -284,6 +419,8 @@ Columns $a_i$ and $a_j$ contain the atom numbers in the QM system to be restrain
     \subsection{Examples}
 
     \textbf{1)In lio.in:}
+    
+    number\_restr = 1
     
         \textbf{in lio.restrain:}
 

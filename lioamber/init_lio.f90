@@ -82,8 +82,8 @@ subroutine lio_defaults()
     number_restr   = 0             ;
 
 !   Geometry Optimizations
-    steep= 0.05                    ; Force_cut=1D-5                     ;
-    Energy_cut= 1D-4               ; minimzation_steep=5D-3             ;
+    steep= .false.                 ; Force_cut=1D-5                     ;
+    Energy_cut= 1D-4               ; minimzation_steep=5D-2             ;
     n_min_steeps = 500             ; lineal_search=.true.               ;
     n_points = 5                   ;
 

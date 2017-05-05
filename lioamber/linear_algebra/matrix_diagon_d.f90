@@ -14,7 +14,8 @@ subroutine matrix_diagon_d( matrix_in, eigen_vecs, eigen_vals , info )
   local_stat=0
   if ( present(info) ) info=0
 
-
+! WARNING: I had cases where dsyevd fails but no information is passed to
+!          local stat. May be necessary to always use dsyevr...
   call matrix_diagon_dsyevd &
        ( matrix_in, eigen_vecs, eigen_vals , info=local_stat )
 

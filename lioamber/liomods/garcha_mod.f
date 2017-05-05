@@ -105,15 +105,20 @@ c
       real*4, dimension (:), ALLOCATABLE :: cools
 c      parameter rmintsol=16.0D0
 !
+!
+! FFR - My global variables
 !------------------------------------------------------------------------------!
        real*8,allocatable,dimension(:,:)     :: Smat
        real*8,allocatable,dimension(:,:)     :: RealRho
-!       real*8,allocatable,dimension(:,:)     :: Gmat !DK
-!       real*8,allocatable,dimension(:,:)     :: Hmat !DK
-!       real*8,allocatable,dimension(:,:)     :: FockMat
-!       complex*16,allocatable,dimension(:,:) :: RhoOld,RhoNew
 
-!       real*8,allocatable,dimension(:,:) :: Lmat,Linv,Umat,Uinv
+       logical                               :: do_ehrenfest = .false.
+       logical                               :: fix_nuclei = .false.
+       logical                               :: first_step
+       real*8,allocatable,dimension(:)       :: atom_mass
+       real*8,allocatable,dimension(:,:)     :: nucpos, nucvel
+       real*8                                :: total_time
+       real*8,allocatable,dimension(:,:)     :: qm_forces_ds
+       real*8,allocatable,dimension(:,:)     :: qm_forces_total
 !------------------------------------------------------------------------------!
 
 !-Variables for hibrid damping-diis

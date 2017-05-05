@@ -230,6 +230,7 @@ subroutine init_lio_gromacs(natomin, Izin, nclatom, chargein)
 end subroutine init_lio_gromacs
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
+
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% INIT_LIO_AMBER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Subroutine init_lio_amber performs Lio initialization when called from AMBER !
@@ -278,7 +279,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge, basis_i              &
     real*8            :: GOLD_i, told_i, rmax_i, rmaxs_i, dgtrig_i, tdstep_i,  &
                          a0_i, epsilon_i, Fx_i, Fy_i, Fz_i
 
-    ! Gives default values to variables.       
+    ! Gives default values to variables.
     call lio_defaults()
 
     ! Checks if input file exists and writes data to namelist variables.
@@ -308,8 +309,89 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge, basis_i              &
     tdrestart      = tdrestart_i
 
     ! Initializes LIO. The last argument indicates LIO is not being used alone.
-    call init_lio_common(natomin, Izin, nclatom, charge, 1) 
+    call init_lio_common(natomin, Izin, nclatom, charge, 1)
 
     return
 end subroutine init_lio_amber
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+
+
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% INIT_LIOAMBER_EHREN %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Performs LIO variable initialization.                                        !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge, basis_i         &
+           , output_i, fcoord_i, fmulliken_i, frestart_i, frestartin_i         &
+           , verbose_i, OPEN_i, NMAX_i, NUNP_i, VCINP_i, GOLD_i, told_i        &
+           , rmax_i, rmaxs_i, predcoef_i, idip_i, writexyz_i                   &
+           , intsoldouble_i, DIIS_i, ndiis_i, dgtrig_i, Iexch_i, integ_i       &
+           , DENS_i , IGRID_i, IGRID2_i , timedep_i , tdstep_i                 &
+           , ntdstep_i, field_i, exter_i, a0_i, epsilon_i, Fx_i, Fy_i          &
+           , Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i, dt_i        &
+           )
+
+   use garcha_mod, only: M, timedep, first_step, fix_nuclei, do_ehrenfest      &
+                      &, nshell, nuc, ncont, a, c, tdstep
+
+   use ehrenfest,  only: RhoSaveA, RhoSaveB
+
+   use basis_data, only: basis_data_set
+
+   implicit none
+   integer, intent(in) :: charge, nclatom, natomin, Izin(natomin)
+
+   character(len=20) :: basis_i, output_i, fcoord_i, fmulliken_i, frestart_i   &
+                     &, frestartin_i, inputFile
+
+   logical :: verbose_i, OPEN_i, VCINP_i, predcoef_i, writexyz_i, DIIS_i       &
+           &, intsoldouble_i, integ_i, DENS_i, field_i, exter_i, writedens_i   &
+           &, tdrestart_i
+
+   integer :: NMAX_i, NUNP_i, idip_i, ndiis_i, Iexch_i, IGRID_i, IGRID2_i      &
+           &, timedep_i, ntdstep_i, NBCH_i, propagator_i, dummy
+
+   real*8  :: GOLD_i, told_i, rmax_i, rmaxs_i, dgtrig_i, tdstep_i, a0_i        &
+           &, epsilon_i, Fx_i, Fy_i, Fz_i, dt_i
+
+
+   call init_lio_amber(natomin, Izin, nclatom, charge, basis_i                 &
+           , output_i, fcoord_i, fmulliken_i, frestart_i, frestartin_i         &
+           , verbose_i, OPEN_i, NMAX_i, NUNP_i, VCINP_i, GOLD_i, told_i        &
+           , rmax_i, rmaxs_i, predcoef_i, idip_i, writexyz_i                   &
+           , intsoldouble_i, DIIS_i, ndiis_i, dgtrig_i, Iexch_i, integ_i       &
+           , DENS_i , IGRID_i, IGRID2_i , timedep_i , tdstep_i                 &
+           , ntdstep_i, field_i, exter_i, a0_i, epsilon_i, Fx_i, Fy_i          &
+           , Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i              &
+           )
+
+   if (allocated(RhoSaveA)) deallocate(RhoSaveA)
+   if (allocated(RhoSaveB)) deallocate(RhoSaveB)
+   allocate(RhoSaveA(M,M))
+   allocate(RhoSaveB(M,M))
+
+   first_step=.true.
+   fix_nuclei=.false.
+   do_ehrenfest=.false.
+
+   if ( timedep .eq. 2 ) then
+      fix_nuclei=.true.
+      do_ehrenfest=.true.
+   else if ( timedep .eq. 3 ) then
+      fix_nuclei=.false.
+      do_ehrenfest=.true.
+   end if
+
+   call basis_data_set(nshell(0),nshell(1),nshell(2),nuc,ncont,a,c)
+
+!  Amber should have time units in 1/20.455 ps, but apparently it has time
+!  in ps. Just have to transform to atomic units
+!  ( AU = 2.418884326505 x 10e-17 s )
+!
+!   tdstep = (dt_i) / ( (20.455) * (2.418884326505E-5) )
+   tdstep = (dt_i) * (41341.3733366)
+
+end subroutine init_lioamber_ehren
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+

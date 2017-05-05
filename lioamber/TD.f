@@ -544,6 +544,7 @@ c ELECTRIC FIELD CASE - Type=gaussian (ON)
                  endif
                  write(*,*) 'epsilon =', epsilon
                  call intfld(g,Fxx,Fyy,Fzz)
+!TODO: shouldn't E1 use Fxx instead of Fx?? (idem y, z)
                  E1=-1.00D0*g*(Fx*dipxyz(1)+Fy*dipxyz(2)+Fz*dipxyz(3))
      >              /factor - 0.50D0*(1.0D0-1.0D0/epsilon)*Qc2/a0
               endif
@@ -763,6 +764,24 @@ c with matmul:
              call g2g_timer_stop('complex_rho_on_to_ao-cu')
 #else
              call g2g_timer_start('complex_rho_on_to_ao')
+!---------------------------------------------------------------!
+!FFR: I used to get an error that had to do with the size of X.
+!     I'm not sure the problem persists, I'm temporarily leaving
+!     here my implemented solution.
+!
+!        This should go in declarations:
+!            real*8, allocatable :: xmat(:,:)
+!
+!        This should go here:
+!             if (.not.allocated(xmat)) allocate(xmat(M,M))
+!             do ii=1,M
+!             do jj=1,M
+!               xmat(ii,jj) = x(ii,jj)
+!             end do
+!             end do
+!             rho1=matmul(xmat,rho)
+!             rho1=matmul(rho1,xtrans)
+!---------------------------------------------------------------!
              rho1=matmul(x,rho)
              rho1=matmul(rho1,xtrans)
              call g2g_timer_stop('complex_rho_on_to_ao')

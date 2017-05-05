@@ -15,8 +15,10 @@
 subroutine liomain(E, dipxyz)
     use garcha_mod, only : M, Smat, RealRho, OPEN, writeforces, energy_freq,   &
                            restart_freq, npas, sqsm, mulliken, lowdin, dipole, &
+                           do_ehrenfest, first_step,                           &
                            Eorbs, fukui, print_coeffs
     use ecp_mod   , only : ecpmode, IzECP
+    use ehrenfest,  only : ehrendyn
  
     implicit none
     REAL*8, intent(inout) :: dipxyz(3), E
@@ -26,11 +28,20 @@ subroutine liomain(E, dipxyz)
     if (.not.allocated(sqsm))    allocate(sqsm(M,M))
     if (.not.allocated(Eorbs))   allocate(Eorbs(M))
 
-    if(OPEN) then
-        if (ecpmode) stop "ECP is unavailable for Open Shell systems."
-        call SCFOP(E, dipxyz)
+!------------------------------------------------------------------------------!
+! FFR - Option to do ehrenfest
+    if ( do_ehrenfest ) then
+       if ( first_step ) call SCF( E, dipxyz )
+       call ehrendyn( E, dipxyz )
+
     else
-        call SCF(E)
+       if(OPEN) then
+          if (ecpmode) stop "ECP is unavailable for Open Shell systems."
+          call SCFOP(E, dipxyz)
+       else
+          call SCF(E)
+       endif
+
     endif
 
     ! Perform Mulliken and Lowdin analysis, get fukui functions and dipole.

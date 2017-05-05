@@ -10,11 +10,13 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       subroutine SCF(E)
 !      use linear_algebra
+      use ehrenfest, only: ehrensetup
       use garcha_mod, only : M,Md, NCO,natom,Nang, number_restr, hybrid_converg, MEMO, &
       npas, verbose, RMM, X, SHFT, GRAD, npasw, igrid, energy_freq, converge,          &
       noconverge, cubegen_only, cube_dens, cube_orb, cube_elec, VCINP, Nunp, GOLD,     &
       igrid2, predcoef, nsol, r, pc, timedep, tdrestart, DIIS, told, Etold, Enucl,     &
-      Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug
+      Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug                                         &
+      , do_ehrenfest, first_step, RealRho, tdstep, total_time 
 !      use mathsubs
       use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
        FOCK_ECP_read,FOCK_ECP_write,IzECP
@@ -45,10 +47,20 @@
         INTEGER            :: LWORK2
         INTEGER, ALLOCATABLE :: IPIV(:)
         logical :: just_int3n,ematalloct
-!FFR!
+
+! FFR - vvterm
+!----------------------------------------------------------!
        logical             :: dovv
        real*8              :: weight, softness
        real*8,dimension(:,:),allocatable :: fockbias
+
+! FFR - ehrenfest (temp)
+!----------------------------------------------------------!
+       real*8 :: mux, muy, muz
+
+!----------------------------------------------------------!
+
+
 ! Energy and contributions
        real*8 :: E, E1, E1s, E2,Eecp, En, Ens, Es, E_restrain, Ex, Exc
 !--------------------------------------------------------------------!
@@ -178,7 +190,7 @@
       DAMP0=GOLD
       DAMP=DAMP0
 
-! FFR: Variable Allocation
+! FFR - vvterm : Variable Allocation
 !--------------------------------------------------------------------!
        allocate(fockbias(M,M))
        dovv=.false.
@@ -631,6 +643,40 @@
       do kk=1, M
           Eorbs(kk) = RMM(M13+kk-1)
       enddo
+
+!==============================================================================!
+! FFR - Ehrenfest
+
+! TODO: have ehrendyn call SCF and have SCF always save the resulting rho in
+!       a module so that ehrendyn can retrieve it afterwards. Remove all this.
+      if (do_ehrenfest) then
+         call spunpack('L',M,RMM(M1),RealRho)
+         call fixrho(M,RealRho)
+         call ehrensetup(M,RealRho)
+      endif
+
+! TODO: have a separate module handle the dipole moment
+       if (first_step) then
+         open(unit=134,file='x.dip')
+         open(unit=135,file='y.dip')
+         open(unit=136,file='z.dip')
+         write(134,*) '#Time (fs) vs DIPOLE MOMENT, X COMPONENT (DEBYE)'
+         write(135,*) '#Time (fs) vs DIPOLE MOMENT, Y COMPONENT (DEBYE)'
+         write(136,*) '#Time (fs) vs DIPOLE MOMENT, Z COMPONENT (DEBYE)'
+         total_time=0.0d0
+       endif
+
+       call dip(mux,muy,muz)
+       write(134,901) total_time,mux
+       write(135,901) total_time,muy
+       write(136,901) total_time,muz
+       print*,''
+       print*,' Timer: ',total_time
+       print*,''
+       total_time=total_time+tdstep*0.0241888
+ 901  format(F15.9,2x,F15.9)
+!==============================================================================!
+
 
 !     Performs orbital/density plots.
         if (cube_dens.or.cube_orb.or.cube_elec) then

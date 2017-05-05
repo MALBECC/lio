@@ -381,7 +381,7 @@ c------ IMPRIMIENDO DENSIDADES ---------------------------------
       do i=1,M
         do j=i,M
           kk=kk+1 
-          write(*,'(I,X,I,X,I,X,F8.5,X,F8.5,X,F8.5)') 
+          write(*,'(I4,X,I4,X,I4,X,F8.5,X,F8.5,X,F8.5)') 
      <          kk,i,j,RMM(kk),rhoalpha(kk),rhobeta(kk)
         enddo
       enddo

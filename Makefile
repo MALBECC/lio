@@ -2,27 +2,25 @@
 # LIO MAKEFILE
 ################################################################################
 
-all: liosolo/liosolo lioamber/liblio-g2g.so g2g/libg2g.so
+all: liosolo liblio g2g
 
 
 .PHONY: liosolo
-liosolo: liosolo/liosolo
-liosolo/liosolo: lioamber/liblio-g2g.so
+liosolo: liblio
 	$(MAKE) -C liosolo
 
 
 .PHONY: liblio
-liblio: lioamber/liblio-g2g.so
-lioamber/liblio-g2g.so: g2g/libg2g.so
+liblio: g2g
 	$(MAKE) -C lioamber
 
 
 .PHONY: g2g
-g2g: g2g/libg2g.so
-g2g/libg2g.so:
+g2g:
 	$(MAKE) -C g2g
 
 
+.PHONY: clean
 clean:
 	$(MAKE) clean -C liosolo
 	$(MAKE) clean -C lioamber

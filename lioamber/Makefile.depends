@@ -27,6 +27,7 @@
 OBJECTS += SCF.o
 OBJECTS += SCFop.o
 OBJECTS += SCF_exter.o
+OBJECTS += steep.o
 OBJECTS += TD.o cubegen.o
 OBJECTS += liomain.o
 OBJECTS += dip.o

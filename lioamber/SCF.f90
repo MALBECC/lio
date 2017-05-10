@@ -15,7 +15,7 @@
       npas, verbose, RMM, X, SHFT, GRAD, npasw, igrid, energy_freq, converge,          &
       noconverge, cubegen_only, cube_dens, cube_orb, cube_elec, VCINP, Nunp, GOLD,     &
       igrid2, predcoef, nsol, r, pc, timedep, tdrestart, DIIS, told, Etold, Enucl,     &
-      Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug                                         &
+      Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip                                   &
       , do_ehrenfest, first_step, RealRho, tdstep, total_time 
 !      use mathsubs
       use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
@@ -220,7 +220,6 @@
       call g2g_timer_sum_start('1-e Fock')
       call g2g_timer_sum_start('Nuclear attraction')
       call int1(En)
-	
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%    Effective Core Potential Add    %%%%%%%%%%%%%%%%%!
@@ -629,15 +628,6 @@
 
       call g2g_timer_sum_stop('energy-weighted density')
 
-!     NICO: A partir de aca saque tooodo lo que pude. Tuve que dejar un par de
-!     variables para poder hacer las cosas, tipo esta nueva Enucl que ahora está
-!     en garchamod. También pasé sqsm a garchamod, y movi su allocate a liomain
-!     así que fijate de sacar esas dos lineas de acá.
-!     Tambien saqué dipxyz, se calcula en otra parte.
-!     Por ultimo, puse un if arriba para que si lowdin=t, entonces docholesky=f
-!     porque para lowdin se necesita sqsm.
-!     No me pegues =D
-
 !     Variables needed for further calculations (Populations, Dip, etc).
       Enucl = En
       do kk=1, M
@@ -656,24 +646,27 @@
       endif
 
 ! TODO: have a separate module handle the dipole moment
-       if (first_step) then
-         open(unit=134,file='x.dip')
-         open(unit=135,file='y.dip')
-         open(unit=136,file='z.dip')
-         write(134,*) '#Time (fs) vs DIPOLE MOMENT, X COMPONENT (DEBYE)'
-         write(135,*) '#Time (fs) vs DIPOLE MOMENT, Y COMPONENT (DEBYE)'
-         write(136,*) '#Time (fs) vs DIPOLE MOMENT, Z COMPONENT (DEBYE)'
-         total_time=0.0d0
-       endif
+       if (idip .eq. 1) then
+         if (first_step) then
+           open(unit=134,file='x.dip')
+           open(unit=135,file='y.dip')
+           open(unit=136,file='z.dip')
+	   write(134,*) '#Time (fs) vs DIPOLE MOMENT, X COMPONENT (DEBYE)'
+	   write(135,*) '#Time (fs) vs DIPOLE MOMENT, Y COMPONENT (DEBYE)'
+	   write(136,*) '#Time (fs) vs DIPOLE MOMENT, Z COMPONENT (DEBYE)'
+           total_time=0.0d0
+         endif
+  
+         call dip(mux,muy,muz)
+         write(134,901) total_time,mux
+         write(135,901) total_time,muy
+         write(136,901) total_time,muz
+         print*,''
+         print*,' Timer: ',total_time
+         print*,''
+       end if
 
-       call dip(mux,muy,muz)
-       write(134,901) total_time,mux
-       write(135,901) total_time,muy
-       write(136,901) total_time,muz
-       print*,''
-       print*,' Timer: ',total_time
-       print*,''
-       total_time=total_time+tdstep*0.0241888
+       total_time=total_time+tdstep*0.0241888d0
  901  format(F15.9,2x,F15.9)
 !==============================================================================!
 

@@ -13,26 +13,34 @@
 !%% WRITE_DIPOLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Sets variables up and calls dipole calculation.                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine write_dipole(dipxyz, u, uid)
+subroutine write_dipole(dipxyz, u, uid, header)
     use garcha_mod, only : style
 
     implicit none
-    integer, intent(in) :: uid
     real*8 , intent(in) :: dipxyz(3), u
+    integer, intent(in) :: uid
+    logical, intent(in) :: header
+    
 
     open(unit = uid, file = "dipole_moment")
     if (style) then
-        write(UID,8698)
-        write(UID,8699)
-        write(UID,8700)
-        write(UID,8701)
-        write(UID,8702)
-        write(UID,8704) dipxyz(1), dipxyz(2), dipxyz(3), u
+        if (header) then
+            write(UID,8698)
+            write(UID,8699)
+            write(UID,8700)
+            write(UID,8701)
+            write(UID,8702)
+        else
+            write(UID,8704) dipxyz(1), dipxyz(2), dipxyz(3), u
+        endif
     else
-        write(UID,*)
-        write(UID,*) 'DIPOLE MOMENT, X Y Z COMPONENTS AND NORM (DEBYES)'
-        write(UID,*)
-        write(UID,*) dipxyz(1), dipxyz(2), dipxyz(3), u
+        if (header) then
+            write(UID,*)
+            write(UID,*) '#DIPOLE MOMENT, X Y Z COMPONENTS AND NORM (DEBYES)'
+            write(UID,*)
+        else
+            write(UID,*) dipxyz(1), dipxyz(2), dipxyz(3), u
+        endif
     endif
 
  8698 FORMAT(4x,"╔════════════════",&

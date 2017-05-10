@@ -128,7 +128,8 @@ subroutine do_dipole(dipxyz, uid)
     call dip(dipxyz)
     u = sqrt(dipxyz(1)**2 + dipxyz(2)**2 + dipxyz(3)**2)
 
-    call write_dipole(dipxyz, u, uid)
+    call write_dipole(dipxyz, u, uid, true)
+    call write_dipole(dipxyz, u, uid, false)
     call g2g_timer_stop('Dipole')
 
     return

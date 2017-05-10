@@ -32,7 +32,7 @@ c       USE latom
         use cublasmath
 #endif
        IMPLICIT REAL*8 (a-h,o-z)
-       real*8 :: dipxyz(3)
+       real*8 :: dipxyz(3), dipole_norm
        INTEGER :: istep
        REAL*8 :: t,E2
        REAL*8,ALLOCATABLE,DIMENSION(:,:) :: 
@@ -826,16 +826,8 @@ c The real part of the density matrix in the atomic orbital basis is copied in R
 !###################################################################!
 !# DIPOLE MOMENT CALCULATION
               if(istep.eq.1) then
-                open(unit=134,file='x.dip')
-                open(unit=135,file='y.dip')
-                open(unit=136,file='z.dip')
-                open(unit=13600,file='abs.dip')
-
+                 call write_dipole(dipxyz, 0, 134, .true.)
 !aca hay q agregar q escriba ts  NCO  field en cada archivo, si o es splito propagation en NCO poner 1
-        write(134,*) '#Time (fs) vs DIPOLE MOMENT, X COMPONENT (DEBYES)'
-        write(135,*) '#Time (fs) vs DIPOLE MOMENT, Y COMPONENT (DEBYES)'
-        write(136,*) '#Time (fs) vs DIPOLE MOMENT, Z COMPONENT (DEBYES)'
-        write(13600,*) '#Time (fs) vs DIPOLE MOMENT (DEBYES)'
               endif
               if ((propagator.eq.2).and.(istep.lt.lpfrg_steps)
      >      .and. (.not.tdrestart)) then
@@ -843,17 +835,17 @@ c The real part of the density matrix in the atomic orbital basis is copied in R
                      call g2g_timer_start('DIPOLE')
                      call dip(dipxyz)
                      call g2g_timer_stop('DIPOLE')
-                     write(134,901) t, dipxyz(1)
-                     write(135,901) t, dipxyz(2)
-                     write(136,901) t, dipxyz(3)
+                     dipole_norm = sqrt(dipxyz(1)**2 + dipxyz(2)**2
+     >                              + dipxyz(3)**2)
+                     call write_dipole(dipxyz, dipole_norm,134,.false.)
                   endif
               else
                   call g2g_timer_start('DIPOLE')
                   call dip(dipxyz)
                   call g2g_timer_stop('DIPOLE')
-                  write(134,901) t, dipxyz(1)
-                  write(135,901) t, dipxyz(2)
-                  write(136,901) t, dipxyz(3)
+                  dipole_norm = sqrt(dipxyz(1)**2 + dipxyz(2)**2
+     >                          + dipxyz(3)**2)
+                  call write_dipole(dipxyz, dipole_norm, 134, .false.)
               endif
 c u in Debyes
 !# END OF DIPOLE MOMENT CALCULATION

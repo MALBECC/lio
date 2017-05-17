@@ -645,44 +645,22 @@
          call ehrensetup(M,RealRho)
       endif
 
-<<<<<<< ecee3d9eecfccfeff237e8d2ee407dd8267bd1f7
 ! TODO: have a separate module handle the dipole moment
        if (idip .eq. 1) then
-         if (first_step) then
-           open(unit=134,file='x.dip')
-           open(unit=135,file='y.dip')
-           open(unit=136,file='z.dip')
-	   write(134,*) '#Time (fs) vs DIPOLE MOMENT, X COMPONENT (DEBYE)'
-	   write(135,*) '#Time (fs) vs DIPOLE MOMENT, Y COMPONENT (DEBYE)'
-	   write(136,*) '#Time (fs) vs DIPOLE MOMENT, Z COMPONENT (DEBYE)'
-           total_time=0.0d0
-         endif
-  
-         call dip(mux,muy,muz)
-         write(134,901) total_time,mux
-         write(135,901) total_time,muy
-         write(136,901) total_time,muz
-         print*,''
-         print*,' Timer: ',total_time
-         print*,''
-       end if
-
-       total_time=total_time+tdstep*0.0241888d0
-=======
-       if (first_step) then
-         call write_dipole(dipxyz, 0, 134, .true.)
-         total_time=0.0d0
-       endif
-       call dip(dipxyz)
-       dipole_norm = sqrt(dipxyz(1)**2 + dipxyz(2)**2 + dipxyz(3)**2)
-       call write_dipole(dipxyz, dipole_norm, 134, .false.)
+           if (first_step) then
+             call write_dipole(dipxyz, 0, 134, .true.)
+             total_time=0.0d0
+           endif
+           call dip(dipxyz)
+           dipole_norm = sqrt(dipxyz(1)**2 + dipxyz(2)**2 + dipxyz(3)**2)
+           call write_dipole(dipxyz, dipole_norm, 134, .false.)
        
-       print*,''
-       print*,' Timer: ',total_time
-       print*,''
-       total_time=total_time+tdstep*0.0241888
+           print*,''
+           print*,' Timer: ',total_time
+           print*,''
+           total_time=total_time+tdstep*0.0241888
+       endif
 
->>>>>>> Edited the calls to dipole routines and printing.
  901  format(F15.9,2x,F15.9)
 !==============================================================================!
 

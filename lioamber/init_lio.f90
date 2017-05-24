@@ -94,7 +94,7 @@ subroutine lio_defaults()
     verbose        = .false.       ; writexyz           = .true.        ;
     writedens      = .false.       ; frestart           ='restart.out'  ;
     VCINP          = .false.       ; frestartin         = 'restart.in'  ;
-    restart_freq   = 1             ; writeforces        = .false.       ;
+    restart_freq   = 0             ; writeforces        = .false.       ;
     fukui          = .false.       ; lowdin             = .false.       ;
     mulliken       = .false.       ; dipole             = .false.       ;
     print_coeffs   = .false.       ;

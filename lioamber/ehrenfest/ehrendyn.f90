@@ -17,7 +17,7 @@
   real*8,allocatable,dimension(:,:)     :: Bmat,Dmat
   complex*16,allocatable,dimension(:,:) :: Tmat
   real*8                                :: dt
-  real*8                                :: ux,uy,uz
+  real*8                                :: dipxyz(3), dipole_norm
   integer                               :: ii,jj,kk,idx
 
 ! Preliminaries
@@ -115,20 +115,13 @@
 ! Calculation of the dipole moment
 !------------------------------------------------------------------------------!
   if (first_step) then
-    open(unit=134,file='x.dip')
-    open(unit=135,file='y.dip')
-    open(unit=136,file='z.dip')
-    write(134,*) '#Time (fs) vs DIPOLE MOMENT, X COMPONENT (DEBYES)'
-    write(135,*) '#Time (fs) vs DIPOLE MOMENT, Y COMPONENT (DEBYES)'
-    write(136,*) '#Time (fs) vs DIPOLE MOMENT, Z COMPONENT (DEBYES)'
+    call write_dipole(dipxyz, 0, 134, .true.)
     total_time=0.0d0
-  endif
+  else
+   call dip(dipxyz)
+   dipole_norm = sqrt(dipxyz(1)**2 + dipxyz(2)**2 + dipxyz(3)**2)
+   call write_dipole(dipxyz, dipole_norm, 134, .false.)  
 
-  if (.not.first_step) then
-   call dip(ux,uy,uz)
-   write(134,901) total_time,ux
-   write(135,901) total_time,uy
-   write(136,901) total_time,uz
    print*,''
    print*,' Timer: ',total_time
    print*,''

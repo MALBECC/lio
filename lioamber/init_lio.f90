@@ -142,13 +142,13 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
                            assign_all_functions, energy_all_iterations,        &
                            remove_zero_weights, min_points_per_cube,           &
                            max_function_exponent, sphere_radius, M,Fock_Hcore, &
-                           Fock_Overlap, P_density
+                           Fock_Overlap, P_density, OPEN
                          
     use ECP_mod,    only : Cnorm, ecpmode
 
     implicit none
     integer , intent(in) :: charge, nclatom, natomin, Izin(natomin), callfrom
-    integer              :: i, ng2, ng3, ngdDyn, ngDyn, nqnuc, ierr, ios, MM
+    integer              :: i, ng2, ng3, ngdDyn, ngDyn, nqnuc, ierr, ios, MM, electrons
 
 !    call g2g_timer_start('lio_init')
 
@@ -195,6 +195,16 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
     do i = 1, natom
         nqnuc = nqnuc + Iz(i)
     enddo
+
+
+    electrons=nqnuc - charge
+    if (.not. OPEN .and. (mod(electrons,2) .ne. 0)) then
+	write(*,*) "odd number of electrons in a close-shell calculation"
+	write(*,*) "check system charge"
+	STOP 
+    end if
+
+
     nco = ((nqnuc - charge) - Nunp)/2
 
 !   Prints LIO logo to output and options chosen for the run. 

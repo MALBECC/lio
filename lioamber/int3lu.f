@@ -165,7 +165,6 @@ c
  199   RMM(M9+k-1)=0.0D0
       do 208 k=1,Md
        af(k)=0.0D0
-	write(*,*) "0", k
  208   RMM(M9+k-1)=Rc(k)
 c
        k1=0
@@ -198,7 +197,6 @@ c LAPACK OPTION
 #ifdef pack
       do i=1,Md
         af(i)=Rc(i)
-        write(*,*) "1", i
       enddo
 c
       Md5=5*Md
@@ -284,7 +282,6 @@ c no constraint applied
 
       do 1200 m1=1,Md
       af(m1)=0.D0
-        write(*,*) "4", m1
       do 1201 k=1,m1-1
  1201  af(m1)=af(m1)+Rc(k)*RMM(M9+m1+(2*Md-k)*(k-1)/2-1)
       do 1202 k=m1,Md
@@ -359,13 +356,10 @@ c
       do 610 m1=1,Md
        Ex=Ex+B(m1,1)*Rc(m1)
        Ea=Ea+af(m1)*Rc(m1)
-        write(*,*) "5", m1
       do 611 k=1,m1
  611   Eb=Eb+af(k)*af(m1)*RMM(M7+m1+(2*Md-k)*(k-1)/2-1)
-	        write(*,*) "6", k,m1
       do 612 k=m1+1,Md
  612   Eb=Eb+af(k)*af(m1)*RMM(M7+k+(2*Md-m1)*(m1-1)/2-1)
-		        write(*,*) "7", k,m1
  610  continue
 c
 c

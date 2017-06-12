@@ -168,8 +168,8 @@ subroutine write_population(UID, N, q0, q, pop)
 
     call g2g_timer_stop('mulliken_write')
 
-300 FORMAT(8x,"╔═════════════════&
-    ════════════════╗")
+300 FORMAT(8x,"╔════════════════", &
+    "═════════════════╗")
 301 FORMAT(8x,"║   MULLIKEN POPULATION ANALYSIS  ║")
 302 FORMAT(8x,"╠════════╦═══════════╦════════════╣")
 303 FORMAT(8x,"║ ATOM # ║ ATOM TYPE ║ POPULATION ║")

@@ -154,7 +154,7 @@ end subroutine ehren_in
                   r(i,j)  = qmcoords((i-1)*3+j)
                   rqm(i,j)= qmcoords((i-1)*3+j)
               enddo
-              if(writexyz) write(18,345) Iz(i), rqm(i,:)*52917725D0
+              if(writexyz) write(18,345) Iz(i), rqm(i,:)*0.52917725D0
           enddo
 
           do i = 1, nsol
@@ -163,7 +163,7 @@ end subroutine ehren_in
               do j = 1, 3
                   r(n, j) = clcoords((i-1)*3+j)
               enddo
-              !if(writexyz) write(18,346) pc(n), r(n,:)*52917725D0
+              !if(writexyz) write(18,346) pc(n), r(n,:)*0.52917725D0
           enddo
 
           ! Calls liomain, which performs common procedures and SCF.

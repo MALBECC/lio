@@ -72,6 +72,8 @@ OBJECTS += fterm_biaspot.o
 OBJECTS += elec.o
 OBJECTS += properties.o
 OBJECTS += write_output.o
+OBJECTS += lio_keywords.o
+OBJECTS += errlog.o
 
 
 ################################################################################
@@ -206,7 +208,14 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/maskrmm.mod
 ################################################################################
 OBJECTS += liosubs.o
 SRCDIRS += liosubs
+vpath %.f90 liosubs
 include liosubs/liosubs.mk
+
+tmplist :=
+tmplist += SCF.o
+tmplist += lio_keywords.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/liosubs.mod
+
 
 OBJECTS += general_module.o
 SRCDIRS += general_module

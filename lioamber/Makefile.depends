@@ -72,7 +72,7 @@ OBJECTS += fterm_biaspot.o
 OBJECTS += elec.o
 OBJECTS += properties.o
 OBJECTS += write_output.o
-OBJECTS += lio_keywords.o
+OBJECTS += liokeys.o
 OBJECTS += errlog.o
 
 
@@ -213,7 +213,7 @@ include liosubs/liosubs.mk
 
 tmplist :=
 tmplist += SCF.o
-tmplist += lio_keywords.o
+tmplist += liokeys.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/liosubs.mod
 
 

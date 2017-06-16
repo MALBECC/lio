@@ -1,5 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-module lio_keywords
+module liokeys
 !
 !    This module contains a set of keywords/options that the user can provide
 ! in order to customize the calculations. A description of each with posible

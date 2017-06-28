@@ -19,6 +19,6 @@ INCLUDES += cupredictor.f cupredictor_h.f
 INCLUDES += magnus_cublas.f magnus_cublas_h.f
 INCLUDES += cu_fock_commuts.f
 
-$(obj_path)/cublasmath.o : $(INCLUDES) cublasmath.mk
+$(OBJPATH)/cublasmath.o : $(INCLUDES) cublasmath.mk
 
 ######################################################################

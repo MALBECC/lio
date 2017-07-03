@@ -5,9 +5,9 @@ subroutine safeio_open( file_unit, file_name, open_mode, return_stat )
 !  >
 !  > = +-1   Opens existing file to read. 
 !  >
-!  > = +-2   Opens/creates file to write (overwritting existing).
+!  > = +-2   Opens/creates file to write (appending existing).
 !  >
-!  > = +-3   Opens/creates file to write (appending existing).
+!  > = +-3   Opens/creates file to write (overwritting existing).
 !  >
 !  > (positive numbers for formatted, negative for binary)
 !
@@ -25,7 +25,7 @@ subroutine safeio_open( file_unit, file_name, open_mode, return_stat )
    character(len=20) :: file_format
    character(len=20) :: file_status
 
-   logical                      :: can_exist, can_create, can_append
+   logical                      :: can_create, can_replace
    integer                      :: mystat
    character(len=20), parameter :: myname="safeio_open"
 
@@ -37,21 +37,18 @@ subroutine safeio_open( file_unit, file_name, open_mode, return_stat )
    select case (open_mode)
       case (1,-1)
          file_action = "read"
-         can_append  = .false.
-         can_exist   = .true.
          can_create  = .false.
+         can_replace = .false.
 
       case (2,-2)
          file_action = "write"
-         can_append  = .false.
-         can_exist   = .true.
          can_create  = .true.
+         can_replace = .false.
 
       case (3,-3)
          file_action = "write"
-         can_append  = .true.
-         can_exist   = .true.
          can_create  = .true.
+         can_replace = .true.
 
       case default
          mystat = open_mode
@@ -83,20 +80,16 @@ subroutine safeio_open( file_unit, file_name, open_mode, return_stat )
 
 
    if (file_exists) then
-      if (can_append) then
-         file_status = "old"
-      else
+      if (can_replace) then
          file_status = "replace"
-      end if
-      if (.not.can_exist) then
-        call catch_error( myname, mystat, 4, return_stat )
-        return
+      else
+         file_status = "old"
       end if
 
    else
       file_status = "new"
       if (.not.can_create) then
-        call catch_error( myname, mystat, 5, return_stat )
+        call catch_error( myname, mystat, 4, return_stat )
         return
       end if
 
@@ -108,14 +101,14 @@ subroutine safeio_open( file_unit, file_name, open_mode, return_stat )
 !------------------------------------------------------------------------------!
    mystat = 0
    call find_free_unit( file_unit, 1000, mystat )
-   call catch_error( myname, mystat, 6, return_stat )
+   call catch_error( myname, mystat, 5, return_stat )
    if ( mystat /= 0 ) return
 
 
    mystat = 0
    open( unit = file_unit,   file = file_name,     iostat = mystat,          &
        & form = file_format, status = file_status, action = file_action )
-   call catch_error( myname, mystat, 7, return_stat )
+   call catch_error( myname, mystat, 6, return_stat )
    if ( mystat /= 0 ) return
 
 

@@ -5,8 +5,13 @@
 ! RhoSaveA and RhoSaveB are stored in ON basis, except for the first step
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-  use garcha_mod, only: M, natom, tdstep, total_time, first_step, atom_mass    &
-                      , nucpos, nucvel, qm_forces_ds, qm_forces_total
+  use garcha_mod, &
+  &  only: M, natom, tdstep, total_time, first_step, atom_mass                 &
+  &      , nucpos, nucvel, qm_forces_ds, qm_forces_total
+
+  use liokeys, &
+  &  only: ndyn_steps, rst_filei, rst_fileo, rst_nfreq
+
   implicit none
   real*8,intent(inout) :: Energy,DipMom(3)
 
@@ -19,6 +24,7 @@
   real*8                                :: dt
   real*8                                :: dipxyz(3), dipole_norm
   integer                               :: ii,jj,kk,idx
+  logical                               :: save_this_step
 
 ! Preliminaries
 !------------------------------------------------------------------------------!
@@ -43,11 +49,13 @@
 
   dt=tdstep
 
-  if ( first_step .and. restart_dyn ) then
-     open( unit=rstinp_unit, file="ehren_rstinp" )
+  if ( first_step ) then
+  if ( trim(adjustl(rst_filei)) .ne. "" ) then
+     open( unit=rstinp_unit, file=rst_filei )
      print*,'Using restart'
      call rstload( rstinp_unit, Natom, qm_forces_total, M, RhoSaveA, RhoSaveB )
      close( unit=rstinp_unit )
+  end if
   end if
 
 
@@ -98,16 +106,14 @@
 
 ! Saving restart
 !------------------------------------------------------------------------------!
-  if ( modulo(step_number,save_lapse) == 1 ) then
-     save_step = .true.
-  else
-     save_step = .false.
+  save_this_step = .false.
+  if ( rst_nfreq > 0 ) then
+     if ( modulo(step_number,rst_nfreq) == 1 ) save_this_step = .true.
   end if
+  if ( step_number == (ndyn_steps+1) ) save_this_step = .true.
 
-  if ( step_number == last_step ) save_step = .true.
-
-  if ( save_step ) then
-     open( unit=rstout_unit, file="ehren_rstout" )
+  if ( save_this_step ) then
+     open( unit=rstout_unit, file=rst_filei )
      call rstsave( rstout_unit, Natom, qm_forces_total, M, RhoSaveA, RhoSaveB )
      close( unit=rstout_unit )
   end if
@@ -128,6 +134,12 @@
    total_time=total_time+dt*0.0241888d0
   endif
 
+
+  deallocate( Smat, Sinv )
+  deallocate( Lmat, Umat, Linv, Uinv )
+  deallocate( Fock, FockInt )
+  deallocate( RhoOld, RhoMid, RhoNew )
+  deallocate( Bmat, Dmat, Tmat )
   call g2g_timer_stop('ehrendyn step')
 
  901 format(F15.9,2x,F15.9)

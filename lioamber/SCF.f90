@@ -16,7 +16,7 @@
       noconverge, cubegen_only, cube_dens, cube_orb, cube_elec, VCINP, Nunp, GOLD,     &
       igrid2, predcoef, nsol, r, pc, timedep, tdrestart, DIIS, told, Etold, Enucl,     &
       Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip                                   &
-      , do_ehrenfest, first_step, RealRho, tdstep, total_time 
+      , doing_ehrenfest, first_step, RealRho, tdstep, total_time 
 !      use mathsubs
       use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
        FOCK_ECP_read,FOCK_ECP_write,IzECP
@@ -647,7 +647,7 @@
 
 ! TODO: have ehrendyn call SCF and have SCF always save the resulting rho in
 !       a module so that ehrendyn can retrieve it afterwards. Remove all this.
-      if (do_ehrenfest) then
+      if (doing_ehrenfest) then
          call spunpack('L',M,RMM(M1),RealRho)
          call fixrho(M,RealRho)
          call ehrensetup(M,RealRho)

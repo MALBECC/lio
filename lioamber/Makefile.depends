@@ -59,7 +59,6 @@ OBJECTS += intfld.o
 OBJECTS += intSG.o
 OBJECTS += fix_mess_rho.o
 OBJECTS += packed_storage.o
-OBJECTS += liokeys.o
 OBJECTS += sysdata.o
 OBJECTS += ECP_mod.o
 OBJECTS += test_subs.o
@@ -72,7 +71,6 @@ OBJECTS += fterm_biaspot.o
 OBJECTS += elec.o
 OBJECTS += properties.o
 OBJECTS += write_output.o
-OBJECTS += liokeys.o
 OBJECTS += errlog.o
 
 
@@ -89,6 +87,11 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/readECP.o
 
 tmplist := intECP.o ECP_mod.mod
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/esp_funct.mod
+
+
+OBJECTS += liokeys.o
+tmplist := ehrenfest.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/liokeys.mod
 
 
 ################################################################################
@@ -212,7 +215,7 @@ vpath %.f90 liosubs
 include liosubs/liosubs.mk
 
 tmplist :=
-tmplist += SCF.o
+tmplist += SCF.o init_lio.o
 tmplist += liokeys.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/liosubs.mod
 

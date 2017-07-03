@@ -352,12 +352,17 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge, basis_i         &
            , Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i, dt_i        &
            )
 
-   use garcha_mod, only: M, timedep, first_step, fix_nuclei, do_ehrenfest      &
+   use garcha_mod, only: M, timedep, first_step, doing_ehrenfest               &
                       &, nshell, nuc, ncont, a, c, tdstep
 
    use ehrenfest,  only: RhoSaveA, RhoSaveB
 
    use basis_data, only: basis_data_set
+
+   use liokeys,    only: liokeys_Readnml, ndyn_steps, edyn_steps
+
+   use liosubs,    only: catch_error
+
 
    implicit none
    integer, intent(in) :: charge, nclatom, natomin, Izin(natomin)
@@ -375,6 +380,8 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge, basis_i         &
    real*8  :: GOLD_i, told_i, rmax_i, rmaxs_i, dgtrig_i, tdstep_i, a0_i        &
            &, epsilon_i, Fx_i, Fy_i, Fz_i, dt_i
 
+   integer :: mystat
+
 
    call init_lio_amber(natomin, Izin, nclatom, charge, basis_i                 &
            , output_i, fcoord_i, fmulliken_i, frestart_i, frestartin_i         &
@@ -386,31 +393,36 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge, basis_i         &
            , Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i              &
            )
 
+   inputFile = 'lio.in'
+   mystat = 0
+   call liokeys_Readnml( inputFile, mystat )
+   if ( mystat == 1 ) then
+      print*, "No lio.in file to read."
+   else if ( mystat == 3 ) then
+      print*, "No lionml namelist in file lio.in"
+   else if ( mystat /= 0 ) then
+      print*, "A problem occurred while trying to read namelist lionml."
+      print*, "stat = ", mystat
+      stop
+   end if
+
    if (allocated(RhoSaveA)) deallocate(RhoSaveA)
    if (allocated(RhoSaveB)) deallocate(RhoSaveB)
    allocate(RhoSaveA(M,M))
    allocate(RhoSaveB(M,M))
 
    first_step=.true.
-   fix_nuclei=.false.
-   do_ehrenfest=.false.
 
-   if ( timedep .eq. 2 ) then
-      fix_nuclei=.true.
-      do_ehrenfest=.true.
-   else if ( timedep .eq. 3 ) then
-      fix_nuclei=.false.
-      do_ehrenfest=.true.
-   end if
+   if ( (ndyn_steps>0) .and. (edyn_steps>0) ) doing_ehrenfest=.true.
 
    call basis_data_set(nshell(0),nshell(1),nshell(2),nuc,ncont,a,c)
 
+   tdstep = (dt_i) * (41341.3733366)
+!  tdstep = (dt_i) / ( (20.455) * (2.418884326505E-5) )
+!
 !  Amber should have time units in 1/20.455 ps, but apparently it has time
 !  in ps. Just have to transform to atomic units
 !  ( AU = 2.418884326505 x 10e-17 s )
-!
-!   tdstep = (dt_i) / ( (20.455) * (2.418884326505E-5) )
-   tdstep = (dt_i) * (41341.3733366)
 
 end subroutine init_lioamber_ehren
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

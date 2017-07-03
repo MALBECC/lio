@@ -34,6 +34,7 @@ subroutine find_free_unit( free_unit, last_unit, return_stat )
    logical :: unit_is_open
 
 
+   mystat = 0
    first_try = max( free_unit, 10 )
    final_try = last_unit
    if ( first_try > final_try ) mystat = 1

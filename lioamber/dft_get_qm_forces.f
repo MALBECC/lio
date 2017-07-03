@@ -6,8 +6,10 @@
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        use garcha_mod, only: natom,nsol,cubegen_only,r,number_restr
-     &                     , first_step, fix_nuclei, do_ehrenfest
+     &                     , first_step, doing_ehrenfest
      &                     , qm_forces_ds, qm_forces_total
+
+       use liokeys, only: nullify_forces
        implicit none
        real*8,intent(out) :: dxyzqm(3,natom)
        real*8,allocatable :: ff1G(:,:),ffSG(:,:),ff3G(:,:)
@@ -42,7 +44,7 @@
        call g2g_timer_start('intSG')
        call g2g_timer_sum_start('Overlap gradients')
        ffSG=0.0d0
-       if (do_ehrenfest) then
+       if (doing_ehrenfest) then
           ffSG=-transpose(qm_forces_ds)
        else
           call intSG(ffSG)
@@ -69,8 +71,8 @@ c       factor=627.509391D0/0.5291772108D0
 !
 ! FFR - Ehrenfest needs to keep track of forces
 !--------------------------------------------------------------------!
-       if ( fix_nuclei ) dxyzqm(:,:)=0.0d0
-       if (do_ehrenfest) then
+       if ( nullify_forces ) dxyzqm(:,:)=0.0d0
+       if ( doing_ehrenfest ) then
          qm_forces_total=qm_forces_ds
          qm_forces_total=qm_forces_total-transpose(ff1G)
          qm_forces_total=qm_forces_total-transpose(ff3G)

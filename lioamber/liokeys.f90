@@ -8,15 +8,15 @@ module liokeys
 ! liokeys,
 !
 !    Some procedures are provided as well: checknml_liokeys allows to do a
-! consistency check for all related variables, whereas the readnml_liokeys
-! and writenml_liokeys allows the whole list to be read from or writen to a
+! consistency check for all related variables, whereas the liokeys_Readnml
+! and liokeys_Writenml allows the whole list to be read from or writen to a
 ! given file or unit (two versions exist of each):
 !
 !    checknml_liokeys( return_stat )
-!    readnml_liokeys( file_unit, return_stat )
-!    readnml_liokeys( file_name, return_stat )
-!    writenml_liokeys( file_unit, return_stat )
-!    writenml_liokeys( file_name, return_stat )
+!    liokeys_Readnml( file_unit, return_stat )
+!    liokeys_Readnml( file_name, return_stat )
+!    liokeys_Writenml( file_unit, return_stat )
+!    liokeys_Writenml( file_name, return_stat )
 !
 !    The parameters are self explanatory: file_unit is the unit of an already
 ! opened file, file_name is the name of a non-opened file, you can chose which
@@ -25,71 +25,92 @@ module liokeys
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    implicit none
-
-   integer :: runtype = 0  ! for SCF 
-!                     = 1  ! for TD
-!                     = 2  ! for Ehrenfest returning forces = 0
-!                     = 3  ! for Ehrenfest returning correct forces
+!
+   integer :: ndyn_steps = 0  ! Number of total nuclear dynamic steps
+   integer :: edyn_steps = 0  ! Number of total electronic dynamic steps PER
+                              ! nuclear dynamic step.
+!
+!  ndyn == 0 & edyn == 0   =>   Single point
+!  ndyn == 0 & edyn /= 0   =>   TD electron dynamic
+!  ndyn /= 0 & edyn == 0   =>   BO atomistic dynamic
+!  ndyn /= 0 & edyn /= 0   =>   Ehrenfest dynamic
+!
+   logical :: nullify_forces = .false.
+!
+!
+!  Restarting information
+!------------------------------------------------------------------------------!
+!     If (rst_filei != ""), the program will use the information there to
+!  restart the calculations. If (rst_nfreq != 0), the program will save all
+!  the necesary information to restart calculations every rstfreq steps in
+!  "rst_fileo".
+!
+   character(len=80) :: rst_filei = ""
+   character(len=80) :: rst_fileo = "liorst.out"
+   integer           :: rst_nfreq = 0
 !
 !
 !  External Electrical Field
 !------------------------------------------------------------------------------!
-   logical :: extEfld_is_on     = .false.
-   logical :: extEfld_is_light  = .false.
-   logical :: extEfld_is_finite = .false.
+!     An external field will be active starting from "stepi" (no external
+!  field if stepi<0) to "stepf" (always on if stepf < stepi). The field may
+!  have two modulations: an oscilating one (if wavelen /= 0) or a gaussian
+!  one (if timeamp != 0; will be a full gaussian if field has a stepf or half
+!  a gaussian if not).
+!
+   integer :: eefld_stepi = 0
+   integer :: eefld_stepf = 0
+   real*8  :: eefld_timeamp = 0.0d0 ! in ps
+   real*8  :: eefld_wavelen = 0.0d0 ! in nm
 
-   real*8  :: extEfld_wavelength = 0.0d0 ! in nm
-   real*8  :: extEfld_timeamp    = 0.0d0 ! in ps
-   real*8  :: extEfld_timepos    = 0.0d0 ! in ps
-
-   real*8  :: extEfld_ampx = 0.0d0 ! in au
-   real*8  :: extEfld_ampy = 0.0d0 ! in au
-   real*8  :: extEfld_ampz = 0.0d0 ! in au
+   real*8  :: eefld_ampx = 0.0d0 ! in au
+   real*8  :: eefld_ampy = 0.0d0 ! in au
+   real*8  :: eefld_ampz = 0.0d0 ! in au
 !
 !
 !  Namelist definition and interfaces
 !------------------------------------------------------------------------------!
-   namelist /liokeys/ &
-   &  runtype                                                                   &
-   &, extEfld_is_on, extEfld_is_light, extEfld_is_finite                        &
-   &, extEfld_wavelength, extEfld_timeamp, extEfld_timepos                      &
-   &, extEfld_ampx, extEfld_ampy, extEfld_ampz
-
-   interface readnml_liokeys
-      module procedure readnml_liokeys_fn
-      module procedure readnml_liokeys_fu
-   end interface readnml_liokeys
-
-   interface writenml_liokeys
-      module procedure writenml_liokeys_fn
-      module procedure writenml_liokeys_fu
-   end interface writenml_liokeys
-
+   namelist /lionml/ &
+   &  ndyn_steps, edyn_steps, nullify_forces                                   &
+   &, rst_filei, rst_fileo, rst_nfreq                                          &
+   &, eefld_stepi, eefld_stepf, eefld_timeamp, eefld_wavelen                   &
+   &, eefld_ampx, eefld_ampy, eefld_ampz
+!
+   interface liokeys_Readnml
+      module procedure liokeys_Readnml_fn
+      module procedure liokeys_Readnml_fu
+   end interface liokeys_Readnml
+!
+   interface liokeys_Writenml
+      module procedure liokeys_Writenml_fn
+      module procedure liokeys_Writenml_fu
+   end interface liokeys_Writenml
+!
 contains
 !
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine checknml_liokeys( return_stat )
+subroutine liokeys_Check( return_stat )
 
    use liosubs, only: catch_error
    implicit none
    integer, intent(out), optional :: return_stat
 
    integer                        :: mystat
-   character(len=*), parameter    :: myname="checknml_liokeys"
+   character(len=*), parameter    :: myname="liokeys_Check"
 
    mystat = 0
 !  PERFORM CHECKS
    call catch_error( myname, mystat, mystat, return_stat )
 
    if ( present(return_stat) ) return_stat = 0
-end subroutine checknml_liokeys
+end subroutine liokeys_Check
 !
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine readnml_liokeys_fu( file_unit, return_stat )
+subroutine liokeys_Readnml_fu( file_unit, return_stat )
 
    use liosubs, only: catch_error, safeio_rewind
    implicit none
@@ -97,7 +118,7 @@ subroutine readnml_liokeys_fu( file_unit, return_stat )
    integer, intent(out), optional :: return_stat
 
    integer                        :: mystat
-   character(len=*), parameter    :: myname="readnml_liokeys_fu"
+   character(len=*), parameter    :: myname="liokeys_Readnml_fu"
 !
 !
 !  Rewind to make sure the namelist has not been already passed
@@ -111,7 +132,7 @@ subroutine readnml_liokeys_fu( file_unit, return_stat )
 !  Read the namelist (if wasn't found, return error)
 !------------------------------------------------------------------------------!
    mystat = 0
-   read( unit = file_unit, nml = liokeys, iostat = mystat )
+   read( unit = file_unit, nml = lionml, iostat = mystat )
    if ( (mystat == 84) .or. (mystat == 85) ) then
 !     (case: namelist not found)
       call catch_error( myname, mystat, 2, return_stat )
@@ -124,12 +145,12 @@ subroutine readnml_liokeys_fu( file_unit, return_stat )
 
 
    if ( present(return_stat) ) return_stat = 0
-end subroutine readnml_liokeys_fu
+end subroutine liokeys_Readnml_fu
 !
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine readnml_liokeys_fn( file_name, return_stat )
+subroutine liokeys_Readnml_fn( file_name, return_stat )
 
    use liosubs, only: catch_error, safeio_open
    implicit none
@@ -138,12 +159,13 @@ subroutine readnml_liokeys_fn( file_name, return_stat )
 
    integer                        :: file_unit
    integer                        :: mystat
-   character(len=*), parameter    :: myname="readnml_liokeys_fn"
+   character(len=*), parameter    :: myname="liokeys_Readnml_fn"
 !
 !
 !  Open the file in an available unit
 !------------------------------------------------------------------------------!
    mystat = 0
+   file_unit = 10
    call safeio_open( file_unit, file_name, 1, mystat )
    if ( mystat == 5 ) then
 !     (case: file not found)
@@ -159,7 +181,7 @@ subroutine readnml_liokeys_fn( file_name, return_stat )
 !  Read the namelist
 !------------------------------------------------------------------------------!
    mystat = 0
-   call readnml_liokeys_fu( file_unit, mystat )
+   call liokeys_Readnml_fu( file_unit, mystat )
    if (mystat == 2) then
 !     (case: namelist not found)
       call catch_error( myname, mystat, 3, return_stat )
@@ -180,12 +202,12 @@ subroutine readnml_liokeys_fn( file_name, return_stat )
 
 
    if ( present(return_stat) ) return_stat = 0
-end subroutine readnml_liokeys_fn
+end subroutine liokeys_Readnml_fn
 !
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine writenml_liokeys_fu( file_unit, return_stat )
+subroutine liokeys_Writenml_fu( file_unit, return_stat )
 
    use liosubs, only: catch_error
    implicit none
@@ -194,7 +216,7 @@ subroutine writenml_liokeys_fu( file_unit, return_stat )
 
    logical                        :: unit_opened
    integer                        :: mystat
-   character(len=*), parameter    :: myname="writenml_liokeys_fu"
+   character(len=*), parameter    :: myname="liokeys_Writenml_fu"
 !
 !
 !  Sanity Check: confirm that unit is opened
@@ -215,18 +237,18 @@ subroutine writenml_liokeys_fu( file_unit, return_stat )
 !  Write the namelist
 !------------------------------------------------------------------------------!
    mystat = 0
-   write( unit = file_unit, nml = liokeys, iostat = mystat )
+   write( unit = file_unit, nml = lionml, iostat = mystat )
    call catch_error( myname, mystat, 3, return_stat )
    if ( mystat /= 0 ) return
 
 
    if ( present(return_stat) ) return_stat = 0
-end subroutine writenml_liokeys_fu
+end subroutine liokeys_Writenml_fu
 !
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine writenml_liokeys_fn( file_name, return_stat )
+subroutine liokeys_Writenml_fn( file_name, return_stat )
 
    use liosubs, only: catch_error, safeio_open
    implicit none
@@ -235,7 +257,7 @@ subroutine writenml_liokeys_fn( file_name, return_stat )
 
    integer                        :: file_unit
    integer                        :: mystat
-   character(len=*), parameter    :: myname="writenml_liokeys_fu"
+   character(len=*), parameter    :: myname="liokeys_Writenml_fn"
 !
 !
 !  Open, write, close, pretty clear which is which
@@ -246,7 +268,7 @@ subroutine writenml_liokeys_fn( file_name, return_stat )
    if ( mystat /= 0 ) return
 
    mystat = 0
-   call writenml_liokeys_fu( file_unit, mystat )
+   call liokeys_Writenml_fu( file_unit, mystat )
    call catch_error( myname, mystat, 2, return_stat )
    if ( mystat /= 0 ) return
 
@@ -256,7 +278,7 @@ subroutine writenml_liokeys_fn( file_name, return_stat )
    if ( mystat /= 0 ) return
 
    if ( present(return_stat) ) return_stat = 0
-end subroutine writenml_liokeys_fn
+end subroutine liokeys_Writenml_fn
 !
 !
 !

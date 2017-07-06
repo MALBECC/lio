@@ -9,7 +9,11 @@ FLAGS = -fopenmp
 ifeq ($(intel),1)
   FC    = ifort
   FLAGS+= -fpp
-  LIBS += -module ../lioamber/obj -I../lioamber/obj 
+  LIBS += -module ../lioamber/obj -I../lioamber/obj
+else ifeq ($(intel),2)
+  FC    = ifort
+  FLAGS+= -fpp
+  LIBS += -module ../lioamber/obj -I../lioamber/obj
 else
   FC    = gfortran
   FLAGS+= -cpp

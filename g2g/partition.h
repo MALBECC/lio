@@ -212,6 +212,8 @@ class Partition {
 
     std::vector< HostMatrix<double> > fort_forces_ms;
     std::vector< HostMatrix<double> > rmm_outputs;
+    std::vector< HostMatrix<double> > rmm_outputs_a;
+    std::vector< HostMatrix<double> > rmm_outputs_b;
 
     std::vector< std::vector< int > > work;
     std::vector< double > next;

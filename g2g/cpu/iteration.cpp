@@ -14,7 +14,9 @@
 #include "../partition.h"
 
 #include <stdlib.h>
-#include "cpu/pot.h"
+#include "pot.h"
+#include "../pointxc/calc_lda.h"
+#include "../pointxc/calc_gga.h"
 
 using std::cout;
 using std::endl;
@@ -93,7 +95,9 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve_closed
         partial_density += Fi * w;
       }
       scalar_type exc = 0, corr = 0, y2a = 0;
-      cpu_pot(partial_density, exc, corr, y2a, iexch);
+//      cpu_pot( partial_density, exc, corr, y2a, iexch );
+      cpu_pot( partial_density, exc, corr, y2a, iexch );
+
 
       if(compute_energy) {
         localenergy +=  (partial_density * this->points[point].weight) * (exc + corr);

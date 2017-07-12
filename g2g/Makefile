@@ -8,6 +8,10 @@ include Makefile.common
 SRCS:=$(wildcard *.cpp)
 OBJ:=$(SRCS:%.cpp=%.o)
 
+#POINTXC_SRC  := $(wildcard analytic_integral/*.cpp)
+#SRCS         += $(POINTXC_SRC)
+#OBJ          += $(POINTXC_SRC:%.cpp=%.o)
+
 AINT_SRC     := $(wildcard analytic_integral/*.cpp)
 SRCS         += $(AINT_SRC)
 OBJ          += $(AINT_SRC:%.cpp=%.o)

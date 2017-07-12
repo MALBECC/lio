@@ -430,6 +430,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
       Timer element;
       element.start_and_sync();
 
+      std::cout << "I'm thread " << omp_get_thread_num() << " and i is " << i << endl; // FF-Temp
       if(ind >= cubes.size()){
         spheres[ind-cubes.size()]->solve(ts, compute_rmm,lda,compute_forces, compute_energy,
             local_energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1, spheres_energy_c2,
@@ -439,6 +440,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
             local_energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, cubes_energy_c2,
             fort_forces_ms[i], 1, rmm_outputs[i], OPEN);
       }
+       std::cout << "Todo marcha bien Milhouse " <<  endl; // FF-Temp
 #if GPU_KERNEL
       if(gpu_thread) {
         cudaDeviceSynchronize();

@@ -13,6 +13,7 @@
 #include "../timer.h"
 #include "../partition.h"
 
+#include <stdlib.h>
 #include "cpu/pot.h"
 
 using std::cout;
@@ -21,19 +22,28 @@ using std::vector;
 
 namespace G2G {
 
-template<class scalar_type> void PointGroupCPU<scalar_type>::solve(Timers& timers,
-  bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,
-  double& energy, double& energy_i, double& energy_c, double& energy_c1, double& energy_c2,
-  HostMatrix<double> & fort_forces, int inner_threads, HostMatrix<double> & rmm_global_output, bool OPEN)
+template<class scalar_type> void PointGroupCPU<scalar_type>::solve
+( Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
+  bool compute_energy, double& energy, double& energy_i, double& energy_c,
+  double& energy_c1, double& energy_c2, HostMatrix<double> & fort_forces,
+  int inner_threads, HostMatrix<double> & rmm_global_output, bool OPEN)
 {
-
-  this->solve_closed(timers, compute_rmm, lda, compute_forces, compute_energy,
-    energy, fort_forces, inner_threads, rmm_global_output);
+   if (OPEN) {
+      this->solve_opened( timers, compute_rmm, lda, compute_forces,
+                          compute_energy, energy, energy_i, energy_c,
+                          energy_c1, energy_c2, fort_forces);
+   } else {
+//    THIS IS NEW
+      this->solve_closed( timers, compute_rmm, lda, compute_forces,
+                          compute_energy, energy, fort_forces,
+                          inner_threads, rmm_global_output);
+   };
 }
 
-template<class scalar_type> void PointGroupCPU<scalar_type>::solve_closed(Timers& timers,
-  bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,
-  double& energy, HostMatrix<double> & fort_forces, int inner_threads, HostMatrix<double> & rmm_global_output)
+template<class scalar_type> void PointGroupCPU<scalar_type>::solve_closed
+   ( Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
+     bool compute_energy, double& energy, HostMatrix<double> & fort_forces,
+     int inner_threads, HostMatrix<double> & rmm_global_output )
 {
   const uint group_m = this->total_functions();
   const int npoints = this->points.size();
@@ -257,11 +267,16 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve_closed(Timers
 #endif
 }
 
-template<class scalar_type>
-void PointGroupCPU<scalar_type>::solve_opened(Timers& timers, bool compute_rmm,
-    bool lda, bool compute_forces, bool compute_energy, double& energy,
-    double& energy_i, double& energy_c, double& energy_c1, double& energy_c2,
-    HostMatrix<double>& fort_forces_ms) { }
+template<class scalar_type> void PointGroupCPU<scalar_type>::solve_opened
+   ( Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
+     bool compute_energy, double& energy, double& energy_i,
+     double& energy_c, double& energy_c1, double& energy_c2,
+     HostMatrix<double>& fort_forces_ms)
+{
+// TODO
+   std::cout << " NO SOUP FOR YOU! \n";
+   exit();
+}
 
 template class PointGroup<double>;
 template class PointGroup<float>;

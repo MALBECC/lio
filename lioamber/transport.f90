@@ -1,9 +1,10 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 module transport
    implicit none
-   logical :: transport_calc, generate_rho0, gate_field
-   integer :: save_charge_freq
-   real*8  :: driving_rate, scratchgamma
+   logical              :: transport_calc, generate_rho0, gate_field
+   integer              :: save_charge_freq, ipop
+   complex*8            :: traza0, traza
+   real*8               :: driving_rate, scratchgamma, GammaMagnus, GammaVerlet, re_traza
 
 #ifdef TD_SIMPLE
    complex*8,allocatable  :: rhofirst (:,:)
@@ -11,6 +12,13 @@ module transport
    complex*16,allocatable :: rhofirst (:,:)
 #endif
    integer,allocatable,dimension(:,:) :: mapmat
+
+!Variables for default:
+   transport_calc    = .false.
+   generate_rho0     = .false.
+   gate_field        = .false.
+   driving_rate      = 0.001
+   save_charge_freq  = 0
 
 contains
 

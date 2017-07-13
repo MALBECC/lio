@@ -557,6 +557,7 @@
        if(nsol.gt.0.and.igpu.ge.1) then ! Computing the E1-fock without the MM atoms
           call aint_qmmm_init(0,r,pc)
           call aint_qmmm_fock(E1s,Ens)
+          call aint_qmmm_init(nsol,r,pc)
       endif
       E1s=0.D0
       do k=1,MM

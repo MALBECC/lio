@@ -34,6 +34,9 @@ subroutine read_options(inputFile, charge)
                            FOCK_ECP_write, ecp_full_range_int, Fulltimer_ECP,  &
                            cut2_0, cut3_0
 
+
+    use transport ,only  : transport_calc, generate_rho0, gate_field,          &
+                           save_charge_freq, driving_rate
     implicit none
     character(len=20), intent(in)  :: inputFile
     integer          , intent(out) :: charge
@@ -73,7 +76,10 @@ subroutine read_options(inputFile, charge)
                    min_points_per_cube, assign_all_functions, sphere_radius,   &
                    remove_zero_weights, energy_all_iterations,                 &
                    ! Variables when LIO is used alone.
-                   natom, nsol, charge
+                   natom, nsol, charge,                                        &
+                   ! Variables for Transport
+                   transport_calc, generate_rho0, gate_field,                  &
+                   save_charge_freq, driving_rate
 
     inquire(file = inputFile, exist = fileExists)
     if(fileExists) then

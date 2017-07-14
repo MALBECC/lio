@@ -1,8 +1,8 @@
 .DEFAULT_GOAL := all
 
 # -*- mode: make -*-
-include Makefile.common
 include Makefile.translate
+include Makefile.common
 
 ## Define sources and objects
 SRCS:=$(wildcard *.cpp)
@@ -71,7 +71,7 @@ endif
 
 ## Define libraries
 LIBRARIES := $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
-ifneq ($(intel),1)
+ifeq ($(intel),0)
   LIBRARIES += -L$(PACK_LIB_DIR) -lcblas
 endif
 

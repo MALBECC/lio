@@ -15,8 +15,8 @@
       npas, verbose, RMM, X, SHFT, GRAD, npasw, igrid, energy_freq, converge,          &
       noconverge, cubegen_only, cube_dens, cube_orb, cube_elec, VCINP, Nunp, GOLD,     &
       igrid2, predcoef, nsol, r, pc, timedep, tdrestart, DIIS, told, Etold, Enucl,     &
-      Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz, epsilon                      &
-      , do_ehrenfest, first_step, RealRho, tdstep, total_time 
+      Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz, epsilon,                     &
+      do_ehrenfest, first_step, RealRho, tdstep, total_time, field, Fx, Fy, Fz, a0      
 !      use mathsubs
       use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
        FOCK_ECP_read,FOCK_ECP_write,IzECP
@@ -63,7 +63,7 @@
 
 !FIELD variables (maybe temporary)
 
-       real*8 :: Qc, Qc2
+       real*8 :: Qc, Qc2, g
 !----------------------------------------------------------!
 
 ! Energy and contributions
@@ -420,8 +420,8 @@
            g=1.0D0
            factor=2.54D0
            call intfld(g,Fx,Fy,Fz)
-           E1=-1.00D0*g*(Fx*dipxyz(1)+Fy*dipxyz(2)+Fz*dipxyz(3))/factor -
-     >     0.50D0*(1.0D0-1.0D0/epsilon)*Qc2/a0
+           E1=-1.00D0*g*(Fx*dipxyz(1)+Fy*dipxyz(2)+Fz*dipxyz(3))/factor- &
+           0.50D0*(1.0D0-1.0D0/epsilon)*Qc2/a0
 
            do k=1,MM
                E1=E1+RMM(k)*RMM(M11+k-1)

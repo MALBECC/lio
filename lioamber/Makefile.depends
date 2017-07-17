@@ -72,8 +72,6 @@ OBJECTS += elec.o
 OBJECTS += properties.o
 OBJECTS += write_output.o
 OBJECTS += errlog.o
-OBJECTS += transport.o
-OBJECTS += lowdinpop.o
 
 ################################################################################
 tmplist := SCF.o readECP.o drive.o intECP.o init.o init_lio.o
@@ -117,6 +115,14 @@ OBJECTS += ehrenfest.o
 tmplist :=
 tmplist += SCF.o SCF_exter.o init_lio.o liomain.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ehrenfest.mod
+
+
+################################################################################
+OBJECTS += transport.o
+
+tmplist :=
+tmplist += TD.o SCF.o input_read.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/transport.mod
 
 
 ################################################################################
@@ -231,7 +237,7 @@ OBJECTS += general_module.o
 SRCDIRS += general_module
 include general_module/general_module.mk
 
-tmplist := SCF.o
+tmplist := SCF.o cublasmath.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/general_module.mod
 
 

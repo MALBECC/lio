@@ -1,10 +1,10 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 module transport
    implicit none
-   logical              :: transport_calc, generate_rho0, gate_field
-   integer              :: save_charge_freq, ipop
+   logical              :: transport_calc=.false., generate_rho0=.false., gate_field=.false.
+   integer              :: save_charge_freq=0, ipop
    complex*8            :: traza0, traza
-   real*8               :: driving_rate, scratchgamma, GammaMagnus, GammaVerlet, re_traza
+   real*8               :: driving_rate=0.001, scratchgamma, GammaMagnus, GammaVerlet, re_traza
 
 #ifdef TD_SIMPLE
    complex*8,allocatable  :: rhofirst (:,:)
@@ -12,13 +12,6 @@ module transport
    complex*16,allocatable :: rhofirst (:,:)
 #endif
    integer,allocatable,dimension(:,:) :: mapmat
-
-!Variables for default:
-   transport_calc    = .false.
-   generate_rho0     = .false.
-   gate_field        = .false.
-   driving_rate      = 0.001
-   save_charge_freq  = 0
 
 contains
 
@@ -57,11 +50,11 @@ end subroutine mat_map
 
 subroutine electrostat (rho1,mapmat,overlap,rhofirst,Gamma0, M)
    implicit none
-   integer, intent(in) :: :Gamma0, M
+   integer, intent(in) :: M
    integer, intent(in) :: mapmat(M,M)
    integer             :: i, j
    real*8,  intent(in) :: overlap(M,M)
-   real*8              :: GammaIny, GammaAbs
+   real*8              :: GammaIny, GammaAbs, Gamma0
    
 #ifdef TD_SIMPLE
    complex*8, intent(in)     :: rhofirst(M,M)
@@ -111,6 +104,14 @@ subroutine electrostat (rho1,mapmat,overlap,rhofirst,Gamma0, M)
       ENDDO
    ENDDO
 
+   GammaIny=Gamma0*0.5D0
+   GammaAbs=GammaIny
+   write(*,*) 'GammaAbs,GammaIny =',GammaAbs,GammaIny
+      DO i=1,M
+         DO j=1,M
+            rho1(i,j)= (GammaAbs*rho_scratch(i,j,1))-(GammaIny*rho_scratch(i,j,2))
+         ENDDO
+      ENDDO
 
 !-------Stop if NaN-----------!
 
@@ -127,6 +128,33 @@ subroutine electrostat (rho1,mapmat,overlap,rhofirst,Gamma0, M)
    call g2g_timer_stop('electrostat')
 
 end subroutine electrostat
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine lowdinpop(M,N,rhomat,sqsmat,atomorb,atomicq)
+   implicit none
+   integer,intent(in)   :: M,N
+   real*8,intent(in)    :: rhomat(M,M)
+   real*8,intent(in)    :: sqsmat(M,M)
+   integer,intent(in)   :: atomorb(M)
+   real*8,intent(inout) :: atomicq(N)
+   real*8, allocatable :: sqsmatrans(:,:)
+   real*8  :: newterm
+   integer :: natom
+   integer :: ii,jj,kk
+
+   allocate(sqsmatrans(M,M))
+   sqsmatrans=transpose(sqsmat)
+   do kk=1,M
+      natom=atomorb(kk)
+      do ii=1,M
+      do jj=1,M
+         newterm=sqsmatrans(ii,kk)*rhomat(ii,jj)*sqsmat(jj,kk)
+         atomicq(natom)=atomicq(natom)-newterm
+      enddo
+      enddo
+   enddo
+   deallocate(sqsmatrans)
+
+end subroutine lowdinpop
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end module

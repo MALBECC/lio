@@ -29,6 +29,7 @@ c       USE latom
        use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC
        use transport
        use mathsubs
+       USE general_module, ONLY :  atmorb
 #ifdef CUBLAS
         use cublasmath
 #endif
@@ -88,7 +89,6 @@ c       USE latom
        integer,allocatable :: orb_group(:)
        integer,allocatable :: orb_selection(:)
 
-       real*8,dimension(:,:),allocatable :: sqsm
        real*8,dimension(:,:),allocatable :: Vmat
        real*8,dimension(:),allocatable   :: Dvec
 
@@ -105,7 +105,11 @@ c       USE latom
 ! Mulliken
        ipop=1
 ! Group of charges
-       groupcharge=.false.
+      if (transport_calc) then
+         groupcharge=.true.
+      else
+         groupcharge=.false.
+      endif
 !!------------------------------------!!
 	nopt=0
 
@@ -170,6 +174,7 @@ c       USE latom
 !LOWDIN POPULATION: temporarily off
       lpop=.false.
 
+
 !TRANSPORT------------------------------------------------------------!
 
       IF (TRANSPORT_CALC) THEN
@@ -197,7 +202,7 @@ c       USE latom
             close(unit=678)
       endif
       IF(TRANSPORT_CALC) THEN
-         call mat_map(group,mapmat)
+         call mat_map(group,mapmat, Nuc, M, natom)
       ENDIF
 !--------------------------------------------------------------------!
 !
@@ -301,6 +306,7 @@ c Initializations/Defaults
            niter=0
            D1=1.D0
            D2=1.D0
+
 !--------------------------------------!
            Qc=0.0D0
            do i=1,natom
@@ -309,11 +315,16 @@ c Initializations/Defaults
            Qc=Qc-Nel
            Qc2=Qc**2
 
+
 ! FFR: Variable Allocation -charly: copiado de uriel
 !--------------------------------------------------------------------!
+       if ( allocated(Vmat) ) deallocate(Vmat)
+       if ( allocated(Dvec) ) deallocate(Dvec)
+       if ( allocated(sqsm) ) deallocate(sqsm)
+
        allocate(Vmat(M,M),Dvec(M))
        allocate(sqsm(M,M))
-
+     
        dovv=.true.
        if (dovv.eq..true.) then
         if (.not.allocated(orb_group)) then
@@ -325,9 +336,11 @@ c Initializations/Defaults
         endif
        endif
 
+
 !------------------------------------------------------------------------------!
 ! Two electron integral with neighbor list.
 !
+
             do i=1,natom
               natomc(i)=0
 !
@@ -354,6 +367,7 @@ c Initializations/Defaults
             do ii=M,nshell(0)+nshell(1)+1,-1
               nnpd(nuc(ii))=ii
             enddo
+
 !------------------------------------------------------------------!
 c
 c Create integration grid for XC here
@@ -418,10 +432,10 @@ c         endif
               E1=E1+RMM(k)*RMM(M11+k-1)
             enddo
             call g2g_timer_sum_stop('1-e Fock')
-            if(ipop.eq.1)then
+!            if(ipop.eq.1)then
               allocate(overlap(M,M),rhoscratch(M,M))
               call spunpack('L',M,RMM(M5),overlap)
-            endif
+!            endif
 
 
 ! Copy overlap matrix to device for Mulliken population analysis
@@ -481,7 +495,7 @@ c         endif
                 enddo
              end if
           enddo
-
+       endif
 !------------------------------------------------------------------------------!
 ! Here (second section of the previous else, starting in the do j),
 ! we obtain the transformation matrices X and Y for converting 
@@ -553,7 +567,6 @@ c         endif
 ! Rho is transformed to the orthonormal basis
 !
 !Transport --------------------------------------------------------------------!
-
       IF(TRANSPORT_CALC) THEN
          open(unit=100000,file='rhofirst')
          IF(generate_rho0) then
@@ -574,7 +587,6 @@ c         endif
          ENDIF
       ENDIF
 !-----------------------------------------------------------------------------!
-
 ! with matmul:
 ! charly: cambié las variables rho y rho1 para transport 
 #ifdef CUBLAS
@@ -649,9 +661,11 @@ c         call int3mems()
               if ((propagator.eq.2).and.(istep.lt.lpfrg_steps)
      >      .and. (.not.tdrestart)) then
                  t=(istep-1)*tdstep*0.1
-              else
+              elseif (.not.tdrestart) then
                  t=20*tdstep
                  t=t+(istep-200)*tdstep
+              else
+                 t=tdstep*(istep-1)
               endif
               if (propagator.eq.1) then
                  t=(istep-1)*tdstep
@@ -659,9 +673,14 @@ c         call int3mems()
               t=t*0.02419
               write(*,*) 'evolution time (fs)  =', t
 !--------------------------------------!
-              call int3lu(E2)
-              call g2g_solve_groups(0,Ex,0)
-              write(*,*) '! step & energy', istep,E
+            if ((propagator.eq.1).or.
+     >      (((propagator.eq.2).and.(istep.lt.lpfrg_steps))
+     >      .and. (.not.tdrestart))) then
+               call int3lu(E2)
+               call g2g_solve_groups(0,Ex,0)
+            endif
+
+              write(*,*) '! step & energy', istep, E
               E1=0.0D0
 c ELECTRIC FIELD CASE - Type=gaussian (ON)
          fxx=0.0D0
@@ -811,7 +830,7 @@ c
                     enddo
                  enddo
                endif
-            endi
+            endif
 !--------------------------------------------------------------------!
             E=E1+E2+En
             if (sol) then
@@ -851,6 +870,7 @@ c using commutator
 c--------------------------------------c
 !Transport: propagation in transport---------------------------------!
 
+
       if(TRANSPORT_CALC) then
          call g2g_timer_start('TRANSPORT - b Verlet -')
          if(istep.eq.1) then
@@ -860,7 +880,7 @@ c--------------------------------------c
          if(istep.ge.3) then
 ! compute the driving term for transport properties
             scratchgamma=GammaVerlet*exp(-0.0001*(dble(istep-1000))**2)    
-            call ELECTROSTAT(rho1,mapmat,overlap,rhofirst,gammascratch)
+          call ELECTROSTAT(rho1,mapmat,overlap,rhofirst,scratchgamma,M)
             re_traza=0.0D0
 ! Mulliken population analysis for the driving term
             if((ipop.eq.1).and.
@@ -954,7 +974,8 @@ c Density update (rhold-->rho, rho-->rhonew)
                 enddo
              enddo
 
-             call g2g_timer_stop('Verlet')      
+             call g2g_timer_stop('Verlet')
+
 ! END OF VERLET PROPAGATOR
 !####################################################################!
               else
@@ -968,11 +989,11 @@ c Density update (rhold-->rho, rho-->rhonew)
                open(unit=55555,file='DriveMul')
             endif
             if(istep.le.1000) then
-              scratchgamma=GammaMagnus*exp(-0.0001*(dble(istep-1000))**2)
+             scratchgamma=GammaMagnus*exp(-0.0001*(dble(istep-1000))**2)
             else
-              scratchgamma=GammaMagnus
+             scratchgamma=GammaMagnus
             endif
-            call ELECTROSTAT(rho1,mapmat,overlap,rhofirst,scratchgamma)
+           call ELECTROSTAT(rho1,mapmat,overlap,rhofirst,scratchgamma,M)
             re_traza=0.0D0
 ! Mulliken population analysis for the driving term
             if((ipop.eq.1).and.
@@ -1167,7 +1188,7 @@ c The real part of the density matrix in the atomic orbital basis is copied in R
             DO i=1,M
                traza=traza+rho(i,i)
             ENDDO
-            write(*,*) 'TRAZA =', traza
+            write(*,*) 'TRAZA =', real(traza)
          endif
 
 !###################################################################!
@@ -1176,6 +1197,7 @@ c The real part of the density matrix in the atomic orbital basis is copied in R
                  call write_dipole(dipxyz, 0, 134, .true.)
 !aca hay q agregar q escriba ts  NCO  field en cada archivo, si o es splito propagation en NCO poner 1
               endif
+
               if ((propagator.eq.2).and.(istep.lt.lpfrg_steps)
      >      .and. (.not.tdrestart)) then
                   if(mod ((istep-1),10) == 0) then
@@ -1198,6 +1220,7 @@ c u in Debyes
 !# END OF DIPOLE MOMENT CALCULATION
 c------------------------------------------------------------------------------------
 c-------------------------MULLIKEN CHARGES-----------------------------------------------!
+
             if(ipop.eq.1) then
                call g2g_timer_start('Mulliken Population')
 ! open files to store Mulliken Population Analysis each step of the dynamics
@@ -1332,11 +1355,13 @@ c
 
 !Transport: stops TD and indicate the generation of RHO0
 
-         if((istep.ge.10).and.(generate_rho0))
-     >   stop 'RHO0 GENERATED'
+         if((istep.ge.10).and.(generate_rho0)) then
+            print*, "RHO0 GENERATED"
+            exit
+         endif
+ 999     continue
 
 !charly: que es esto?
-               write(*,*)
 	if (istep .eq. 1000) then
 		call g2g_timer_start('corrida 1000')
 		tiempo1000=t
@@ -1345,7 +1370,6 @@ c
 		write(*,*) t-tiempo1000
 	end if
 
- 999           continue
 !
 !##############################################################################!
 ! HERE FINISHES THE PROPAGATION

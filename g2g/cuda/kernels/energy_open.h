@@ -1,10 +1,19 @@
 template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
-__global__ void gpu_compute_density_opened(const scalar_type* const point_weights,uint points, const scalar_type* function_values,
-                                           const vec_type<scalar_type,4>* gradient_values,const vec_type<scalar_type,4>* hessian_values, uint m,
-                                           scalar_type* out_partial_density_a,
-                                           vec_type<scalar_type,4>* out_dxyz_a, vec_type<scalar_type,4>* out_dd1_a, vec_type<scalar_type,4>*  out_dd2_a,
-                                           scalar_type* out_partial_density_b,
-                                           vec_type<scalar_type,4>* out_dxyz_b, vec_type<scalar_type,4>* out_dd1_b, vec_type<scalar_type,4>*  out_dd2_b)
+__global__ void gpu_compute_density_opened(
+     const scalar_type* 
+     const point_weights,uint points, 
+     const scalar_type* function_values,
+     const vec_type<scalar_type,4>* gradient_values, 
+     const vec_type<scalar_type,4>* hessian_values, 
+     uint m,
+     scalar_type* out_partial_density_a,
+     vec_type<scalar_type,4>* out_dxyz_a, 
+     vec_type<scalar_type,4>* out_dd1_a, 
+     vec_type<scalar_type,4>*  out_dd2_a,
+     scalar_type* out_partial_density_b,
+     vec_type<scalar_type,4>* out_dxyz_b, 
+     vec_type<scalar_type,4>* out_dd1_b, 
+     vec_type<scalar_type,4>*  out_dd2_b)
 {
 
     uint point = blockIdx.x;
@@ -102,19 +111,45 @@ __global__ void gpu_compute_density_opened(const scalar_type* const point_weight
 
 
         __syncthreads();
+        scalar_type fjreg = 0.0f;
+        vec_type<scalar_type, 3> fgjreg  = vec_type<scalar_type,3>(0.0f,0.0f,0.0f);
+        vec_type<scalar_type, 3> fh1jreg = vec_type<scalar_type,3>(0.0f,0.0f,0.0f);
+        vec_type<scalar_type, 3> fh2jreg = vec_type<scalar_type,3>(0.0f,0.0f,0.0f);
+
         if(valid_thread)
         {
             for(int j=0; j<DENSITY_BLOCK_SIZE; j++)
             {
-                scalar_type fjreg=fj_sh[j];
+                fjreg   = fj_sh[j];
+                if (!lda){
+                    fgjreg  = fgj_sh[j];
+                    fh1jreg = fh1j_sh[j];
+                    fh2jreg = fh2j_sh[j];
+                 }
 
-                vec_type<scalar_type, 3> fgjreg = fgj_sh[j];
-                vec_type<scalar_type, 3> fh1jreg = fh1j_sh[j];
-                vec_type<scalar_type, 3> fh2jreg = fh2j_sh[j];
-                //fetch es una macro para tex2D
-                scalar_type rdm_this_thread_a = fetch(rmm_input_gpu_tex, (float)(bj+j), (float)i);
-                scalar_type rdm_this_thread_b = fetch(rmm_input_gpu_tex2, (float)(bj+j), (float)i);
-                if(valid_thread2)
+                if ((bj+j) <= i)
+                {
+                   //fetch es una macro para tex2D
+                    scalar_type rdm_this_thread_a = fetch(rmm_input_gpu_tex, (float)(bj+j), (float)i);
+                    scalar_type rdm_this_thread_b = fetch(rmm_input_gpu_tex2, (float)(bj+j), (float)i);
+
+                    w_a += rdm_this_thread_a * fjreg;
+                    w_b += rdm_this_thread_b * fjreg;
+ 
+                   if(!lda)
+                   {
+                      w3_a  += fgjreg  * rdm_this_thread_a;
+                      ww1_a += fh1jreg * rdm_this_thread_a;
+                      ww2_a += fh2jreg * rdm_this_thread_a;
+
+                      w3_b  += fgjreg  * rdm_this_thread_b;
+                      ww1_b += fh1jreg * rdm_this_thread_b;
+                      ww2_b += fh2jreg * rdm_this_thread_b;
+                   }
+
+                }
+
+                if(valid_thread2 && ((bj+j) <= i2))
                 {
                     scalar_type rdm_this_thread2_a = fetch(rmm_input_gpu_tex, (float)(bj+j), (float)i2);
                     scalar_type rdm_this_thread2_b = fetch(rmm_input_gpu_tex2, (float)(bj+j), (float)i2);
@@ -122,28 +157,15 @@ __global__ void gpu_compute_density_opened(const scalar_type* const point_weight
                     w2_b += rdm_this_thread2_b * fjreg;
                     if(!lda)
                     {
-                        w32_a += fgjreg* rdm_this_thread2_a ;
+                        w32_a  += fgjreg  * rdm_this_thread2_a;
                         ww12_a += fh1jreg * rdm_this_thread2_a;
                         ww22_a += fh2jreg * rdm_this_thread2_a;
 
-                        w32_b += fgjreg* rdm_this_thread2_b ;
+                        w32_b  += fgjreg  * rdm_this_thread2_b;
                         ww12_b += fh1jreg * rdm_this_thread2_b;
                         ww22_b += fh2jreg * rdm_this_thread2_b;
                     }
                 }
-                w_a += rdm_this_thread_a * fjreg;
-                w_b += rdm_this_thread_b * fjreg;
-                if(!lda)
-                {
-                    w3_a += fgjreg* rdm_this_thread_a ;
-                    ww1_a += fh1jreg * rdm_this_thread_a;
-                    ww2_a += fh2jreg * rdm_this_thread_a;
-
-                    w3_b += fgjreg* rdm_this_thread_b ;
-                    ww1_b += fh1jreg * rdm_this_thread_b;
-                    ww2_b += fh2jreg * rdm_this_thread_b;
-                }
-
             }
         }
     }

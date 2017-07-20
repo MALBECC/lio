@@ -11,7 +11,7 @@ c---------------------------------------------------
       subroutine SCFOP(E,dipxyz)
       use garcha_mod
       use mathsubs
-      REAL*8:: E2,E,Es,Ex,Exc
+      REAL*8:: E2,E,Es,Ex,Exc, En
 
       dimension work(1000)
       real*8, dimension (:,:), ALLOCATABLE ::xnano,znano

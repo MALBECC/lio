@@ -100,6 +100,7 @@ subroutine safeio_open( file_unit, file_name, open_mode, return_stat )
 !  (3) Find a free unit and open the file there
 !------------------------------------------------------------------------------!
    mystat = 0
+   file_unit = 10
    call find_free_unit( file_unit, 1000, mystat )
    call catch_error( myname, mystat, 5, return_stat )
    if ( mystat /= 0 ) return

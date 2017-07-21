@@ -1,5 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-  subroutine ehrendyn(Energy,DipMom)
+  subroutine ehrendyn( Energy_o, DipMom_o )
 !------------------------------------------------------------------------------!
 !
 ! RhoSaveA and RhoSaveB are stored in ON basis, except for the first step
@@ -13,7 +13,9 @@
   &  only: ndyn_steps, rst_filei, rst_fileo, rst_nfreq
 
   implicit none
-  real*8,intent(inout) :: Energy,DipMom(3)
+  real*8,intent(inout) :: Energy_o, DipMom_o(3)
+
+  real*8 :: Energy, DipMom(3)
 
   real*8,allocatable,dimension(:,:)     :: Smat,Sinv,Lmat,Umat,Linv,Uinv
   real*8,allocatable,dimension(:,:)     :: Fock,FockInt
@@ -134,6 +136,9 @@
    total_time=total_time+dt*0.0241888d0
   endif
 
+  DipMom_o = DipMom
+  Energy_o = StoredEnergy
+  StoredEnergy = Energy
 
   deallocate( Smat, Sinv )
   deallocate( Lmat, Umat, Linv, Uinv )

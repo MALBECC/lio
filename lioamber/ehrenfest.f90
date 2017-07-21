@@ -2,10 +2,14 @@
 module ehrenfest
 !------------------------------------------------------------------------------!
    implicit none
-   integer :: step_number = 0
-   integer :: last_step   = 1+120
-   integer :: rstinp_unit = 654321
-   integer :: rstout_unit = 123456
+   real*8  :: StoredEnergy = 0.0d0
+   integer :: step_number  = 0
+   integer :: save_lapse   = 100
+   integer :: last_step    = 1+120
+   integer :: rstinp_unit  = 654321
+   integer :: rstout_unit  = 123456
+   logical :: save_step    = .false.
+   logical :: restart_dyn  = .false.
 
    complex*16,allocatable,dimension(:,:) :: RhoSaveA, RhoSaveB
 !

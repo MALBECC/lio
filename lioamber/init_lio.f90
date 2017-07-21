@@ -71,9 +71,9 @@ subroutine lio_defaults()
     cutECP         = .true.        ; ecp_full_range_int = .false.       ;
 
 !   TD-DFT options.
-    timedep        = 0             ; Fx                 = 0.05          ;
-    propagator     = 1             ; Fy                 = 0.05          ;
-    tdstep         = 2.D-3         ; Fz                 = 0.05          ;
+    timedep        = 0             ; Fx                 = 0.00          ;
+    propagator     = 1             ; Fy                 = 0.00          ;
+    tdstep         = 2.D-3         ; Fz                 = 0.00          ;
     ntdstep        = 1             ; tdrestart          = .false.       ;
     NBCH           = 10            ; exter              = .false.       ;
     field          = .false.       ;
@@ -417,8 +417,8 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge, basis_i         &
 
    call basis_data_set(nshell(0),nshell(1),nshell(2),nuc,ncont,a,c)
 
-   tdstep = (dt_i) * (41341.3733366)
-!  tdstep = (dt_i) / ( (20.455) * (2.418884326505E-5) )
+   tdstep = (dt_i) * (41341.3733366d0)
+!  tdstep = (dt_i) / ( (20.455d0) * (2.418884326505E-5) )
 !
 !  Amber should have time units in 1/20.455 ps, but apparently it has time
 !  in ps. Just have to transform to atomic units

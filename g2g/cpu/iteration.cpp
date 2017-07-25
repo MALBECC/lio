@@ -15,8 +15,10 @@
 
 #include <stdlib.h>
 #include "pot.h"
-#include "../pointxc/calc_lda.h"
-#include "../pointxc/calc_gga.h"
+#include "../pointxc/calc_ggaCS.h"
+#include "../pointxc/calc_ggaOS.h"
+#include "../pointxc/calc_ldaCS.h"
+//#include "..pointxc/calc_ldaOS.h"
 
 using std::cout;
 using std::endl;
@@ -30,7 +32,7 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve
   double& energy_c1, double& energy_c2, HostMatrix<double> & fort_forces,
   int inner_threads, HostMatrix<double> & rmm_global_output, bool OPEN)
 {
-   if (OPEN) {
+/*   if (OPEN) {
       this->solve_opened( timers, compute_rmm, lda, compute_forces,
                           compute_energy, energy, energy_i, energy_c,
                           energy_c1, energy_c2, fort_forces);
@@ -39,7 +41,7 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve
       this->solve_closed( timers, compute_rmm, lda, compute_forces,
                           compute_energy, energy, fort_forces,
                           inner_threads, rmm_global_output);
-   };
+   };*/
 }
 
 template<class scalar_type> void PointGroupCPU<scalar_type>::solve_closed
@@ -130,7 +132,9 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve_closed
         scalar_type ww2xc = 0, ww2yc = 0, ww2zc = 0;
 
         const scalar_type * rm = rmm_input.row(i);
-        #pragma vector always
+        #if INTEL_COMP
+          #pragma vector always
+        #endif
         for(int j = 0; j <= i; j++) {
           const scalar_type rmj = rm[j];
           w += fv[j] * rmj;
@@ -171,7 +175,9 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve_closed
       const vec_type3 dd1(tdd1x,tdd1y,tdd1z);
       const vec_type3 dd2(tdd2x,tdd2y,tdd2z);
 
-      cpu_potg(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch);
+//      cpu_potg(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch);
+      calc_ggaCS_in<scalar_type, 3>(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch);
+ 
       const scalar_type wp = this->points[point].weight;
 
       if (compute_energy) {
@@ -251,7 +257,9 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve_closed
       const scalar_type * fvr = function_values_transposed.row(row);
       const scalar_type * fvc = function_values_transposed.row(col);
 
-      #pragma vector always
+      #if INTEL_COMP
+        #pragma vector always
+      #endif
       for(int point = 0; point < npoints; point++) {
         res += fvr[point] * fvc[point] * factors_rmm(point);
       }
@@ -275,7 +283,8 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve_opened
    ( Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
      bool compute_energy, double& energy, double& energy_i,
      double& energy_c, double& energy_c1, double& energy_c2,
-     HostMatrix<double>& fort_forces_ms)
+     HostMatrix<double>& fort_forces_ms, HostMatrix<double>& rmm_output_local_a,
+    HostMatrix<double>& rmm_output_local_b)
 {
 // TODO
    std::cout << " NO SOUP FOR YOU! \n";

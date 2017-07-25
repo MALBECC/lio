@@ -1,32 +1,25 @@
-#include "calc_gga.h"
-//#include <iostream>
-//#include <fstream>
-//#include <map>
-//#include <string>
-//#include <limits>
-//#include "../common.h"
-//#include "../init.h"
-//#include "../cuda/cuda_extra.h"
-//#include "../matrix.h"
-//#include <float.h>
+#include "pbeOS_main.h"
+#include <float.h>
 
-namespace pointxc {
+#include "../fix_compile.h"
+#include "../scalar_vector_types.h"
 
-template<class scalar_type> __host__ __device__
+
+namespace G2G {
+
+template<class scalar_type, unsigned int width> __host__ __device__
 void calc_ggaOS( scalar_type dens_a, scalar_type dens_b,
-                 const vec_type<scalar_type,4>& grad_a,
-                 const vec_type<scalar_type,4>& grad_b,
-                 const vec_type<scalar_type,4>& hess1_a,
-                 const vec_type<scalar_type,4>& hess1_b,
-                 const vec_type<scalar_type,4>& hess2_a,
-                 const vec_type<scalar_type,4>& hess2_b,
+                 const vec_type<scalar_type,width>& grad_a,
+                 const vec_type<scalar_type,width>& grad_b,
+                 const vec_type<scalar_type,width>& hess1_a,
+                 const vec_type<scalar_type,width>& hess1_b,
+                 const vec_type<scalar_type,width>& hess2_a,
+                 const vec_type<scalar_type,width>& hess2_b,
                  scalar_type& exc_corr, scalar_type& exc,
                  scalar_type& corr,     scalar_type& corr1,
                  scalar_type& corr2,    scalar_type& v_a,
-                 scalar_type& v_b )
+                 scalar_type& v_b, int Vxc_id)
 {
-// Default values
-// v_a, v_b son y2a, y2b
    scalar_type expbe   = 0.0f;
    scalar_type vxpbe_a = 0.0f;
    scalar_type vxpbe_b = 0.0f;
@@ -37,32 +30,25 @@ void calc_ggaOS( scalar_type dens_a, scalar_type dens_b,
    exc_corr = exc = corr = corr1 = corr2 = v_a = v_b = 0.0f;
 
    scalar_type dgrad_a, delgrad_a, rlap_a, dgrad_b, delgrad_b, rlap_b;
-//===============================================================
-// VALOR UMBRAL DEL DENSIDAD  para continuar ...
    if ( (dens_a + dens_b) > ((scalar_type)1e-13f) ) {
-//===============================================================
-// PBE (gpu_Iexch == 9)
-      if (gpu_Iexch == 9) {
+      if (Vxc_id == 9) { //PBE
 
-//       scalar_type dens2 = dens*dens;
-         vec_type<scalar_type,4> grad;
+         vec_type<scalar_type,width> grad;
          grad.x = grad_a.x + grad_b.x;
          grad.y = grad_a.y + grad_b.y;
          grad.z = grad_a.z + grad_b.z;
 
-//       hess1: xx, yy, zz
-         vec_type<scalar_type,4> hess1;
+         vec_type<scalar_type,width> hess1;
          hess1.x = hess1_a.x + hess1_b.x;
          hess1.y = hess1_a.y + hess1_b.y;
          hess1.z = hess1_a.z + hess1_b.z;
 
-//       hess2: xy, xz, yz
-         vec_type<scalar_type,4> hess2;
+         vec_type<scalar_type,width> hess2;
          hess2.x = hess2_a.x + hess2_b.x;
          hess2.y = hess2_a.y + hess2_b.y;
          hess2.z = hess2_a.z + hess2_b.z;
 
-//   Up density
+         // Up density
          if (dens_a == ((scalar_type)0.0f)) {
             dgrad_a = 0.0f;
             rlap_a = 0.0f;
@@ -81,7 +67,7 @@ void calc_ggaOS( scalar_type dens_a, scalar_type dens_b,
                       / dgrad_a;
          }
 
-//   Down density
+         // Down density
          if (dens_b == ((scalar_type)0.0f)) {
             dgrad_b = 0.0f;
             rlap_b = 0.0f;
@@ -90,7 +76,7 @@ void calc_ggaOS( scalar_type dens_a, scalar_type dens_b,
             scalar_type grad2_b = pow(grad_b.x, 2)+ pow(grad_b.y, 2)+ pow(grad_b.z, 2);
             if (grad2_b == (scalar_type)0.0f) grad2_b = FLT_MIN;
             dgrad_b = sqrt(grad2_b);
-            rlap_b = hess1_b.x + hess1_b.y + hess1_b.z; // Laplacian Down
+            rlap_b = hess1_b.x + hess1_b.y + hess1_b.z;
 
             delgrad_b = (pow(grad_b.x, 2)*hess1_b.x
                       + (scalar_type)2.0f*grad_b.x*grad_b.y*hess2_b.x
@@ -100,7 +86,7 @@ void calc_ggaOS( scalar_type dens_a, scalar_type dens_b,
                       / dgrad_b;
          }
 
-//   Up + Down densities
+         // Up + Down densities
          scalar_type grad2 =  pow(grad.x, 2) + pow(grad.y, 2) + pow(grad.z, 2);
          if (grad2 == (scalar_type)0.0f) grad2 = FLT_MIN;
          scalar_type dgrad = sqrt(grad2);
@@ -110,12 +96,12 @@ void calc_ggaOS( scalar_type dens_a, scalar_type dens_b,
                              +  (scalar_type)2.0f*grad.x*grad.z*hess2.y)
                              / dgrad;
 
-         easypbe<scalar_type>
+         pbeOS_main<scalar_type>
          ( dens_a, dgrad_a, delgrad_a, rlap_a, dens_b, dgrad_b, delgrad_b,
            rlap_b, dgrad, delgrad, expbe, vxpbe_a, vxpbe_b, ecpbe, corr1,
            corr2, vcpbe_a, vcpbe_b);
       } else {
-//       NO HAY IMPLEMENTADO OTRO FUNCIONAL DE XC
+      // NO HAY IMPLEMENTADO OTRO FUNCIONAL DE XC
       }
    }
 

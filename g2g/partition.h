@@ -96,16 +96,19 @@ class PointGroup {
     std::vector<uint> rmm_bigs;
     virtual void compute_functions(bool forces, bool gga) = 0;
 
-    virtual void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
-        bool compute_energy, double& energy, double &, double &, double &, double &,
+    virtual void solve_opened(Timers& timers, bool compute_rmm, bool lda, 
+        bool compute_forces, bool compute_energy, double& energy, double &, 
+        double &, double &, double &, HostMatrix<double> &, HostMatrix<double> &,
         HostMatrix<double> &) = 0;
 
-    virtual void solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
-        bool compute_energy, double& energy, HostMatrix<double> &, int, HostMatrix<double> &) = 0;
+    virtual void solve_closed(Timers& timers, bool compute_rmm, bool lda, 
+        bool compute_forces, bool compute_energy, double& energy, 
+        HostMatrix<double> &, int, HostMatrix<double> &) = 0;
 
-    virtual void solve(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
-        bool compute_energy, double& energy, double &, double &, double &, double &,
-        HostMatrix<double> &, int, HostMatrix<double> &, bool) = 0;
+    virtual void solve(Timers& timers, bool compute_rmm, bool lda, 
+        bool compute_forces, bool compute_energy, double& energy, double &, 
+        double &, double &, double &, HostMatrix<double> &, int, 
+        HostMatrix<double> &, bool) = 0;
 
     bool is_significative(FunctionType, double exponent, double coeff, double d2);
 
@@ -136,7 +139,7 @@ class PointGroupCPU: public PointGroup<scalar_type> {
     virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input_a, G2G::HostMatrix<scalar_type>& rmm_input_b) const;
     virtual void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
         bool compute_energy, double& energy, double &, double &, double &, double &,
-        HostMatrix<double> &);
+        HostMatrix<double> &, HostMatrix<double> &, HostMatrix<double> &);
 
     virtual void solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
         bool compute_energy, double& energy, HostMatrix<double> &, int, HostMatrix<double> &);
@@ -168,7 +171,7 @@ class PointGroupGPU: public PointGroup<scalar_type> {
     virtual void get_rmm_input(G2G::HostMatrix<scalar_type>& rmm_input_a, G2G::HostMatrix<scalar_type>& rmm_input_b) const;
     virtual void solve_opened(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
         bool compute_energy, double& energy, double &, double &, double &, double &,
-        HostMatrix<double> &);
+        HostMatrix<double> &,  HostMatrix<double> &,  HostMatrix<double> &);
 
     virtual void solve_closed(Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
         bool compute_energy, double& energy, HostMatrix<double> &, int, HostMatrix<double> &);

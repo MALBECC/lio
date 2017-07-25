@@ -1,14 +1,9 @@
-#include "calc_lda.h"
-//#include <map>
-//#include <string>
-//#include <limits>
-//#include "../common.h"
-//#include "../init.h"
-//#include "../cuda/cuda_extra.h"
-//#include "../matrix.h"
-//#include <float.h>
+#include <cassert>
+#include <stdexcept>
+#include "../fix_compile.h"
 
-namespace pointxc {
+
+namespace G2G {
 
 // POT_ALPHA = -(3/PI)^(1/3)
 #define POT_ALPHA     ((scalar_type)-0.738558766382022447)
@@ -47,7 +42,7 @@ void calc_ldaCS( scalar_type dens, scalar_type& ex,
       return;
    }
 
-   scalar_type y = pow(dens, (scalar_type)0.333333333333333333);  // rho^(1/3)
+   scalar_type y = cbrt( dens );  // rho^(1/3)
    scalar_type v0 = (scalar_type)-0.984745021842697 * y; // -4/3 * (3/PI)^(1/3) * rho^(1/3)
    ex = POT_ALPHA * y; // -(3/PI)^(1/3) * rho^(1/3)
 
@@ -120,4 +115,20 @@ void calc_ldaCS_in( scalar_type dens, scalar_type& ex,
    }
 }
 
+
+#undef POT_ALPHA
+#undef POT_GL     
+#undef POT_VOSKO_A1
+#undef POT_VOSKO_B1
+#undef POT_VOSKO_C1
+#undef POT_VOSKO_X0
+#undef POT_VOSKO_Q
+#undef POT_VOSKO_A16
+#undef POT_T4
+#undef POT_VOSKO_2C1
+#undef POT_VOSKO_2B1Q
+#undef POT_VOSKO_B2X0Q
+#undef POT_VOSKO_4B1
+#undef POT_VOSKO_QSQ
+#undef POT_VOSKO_B1X0
 }

@@ -1,3 +1,14 @@
+#if FULL_DOUBLE
+static __inline__ __device__ double fetch_double(texture<int2, 2> t, float x, float y)
+{
+    int2 v = tex2D(t,x,y);
+    return __hiloint2double(v.y, v.x);
+}
+#define fetch(t,x,y) fetch_double(t,x,y)
+#else
+#define fetch(t,x,y) tex2D(t,x,y)
+#endif
+
 template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
 __global__ void gpu_compute_density_opened(
      const scalar_type* 
@@ -91,7 +102,7 @@ __global__ void gpu_compute_density_opened(
     }
 
 
-    for (int bj = min_i2; bj >= 0; bj -= DENSITY_BLOCK_SIZE)
+    for (int bj = 0; bj <= min_i2; bj += DENSITY_BLOCK_SIZE)
     {
         //Density deberia ser GET_DENSITY_BLOCK_SIZE
 

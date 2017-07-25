@@ -133,7 +133,8 @@ void PointGroup<scalar_type>::compute_indexes()
 }
 
 template<class scalar_type>
-void PointGroup<scalar_type>::add_rmm_output(const HostMatrix<scalar_type>& rmm_output,
+void PointGroup<scalar_type>::add_rmm_output(
+    const HostMatrix<scalar_type>& rmm_output,
     FortranMatrix<double>& target ) const {
   for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
     uint inc_i = small_function_type(i);
@@ -156,7 +157,8 @@ void PointGroup<scalar_type>::add_rmm_output(const HostMatrix<scalar_type>& rmm_
 
 template<class scalar_type>
 void PointGroup<scalar_type>::add_rmm_output(
-    const HostMatrix<scalar_type>& rmm_output, HostMatrix<double>& target) const {
+    const HostMatrix<scalar_type>& rmm_output, 
+    HostMatrix<double>& target) const {
   for (uint i = 0, ii = 0; i < total_functions_simple(); i++) {
     uint inc_i = small_function_type(i);
 
@@ -403,12 +405,12 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   // Verificar si anda reduction (+:energy) FF
   #pragma omp parallel for num_threads(cpu_threads+gpu_threads) schedule(static) reduction(+:energy)
   for(uint i = 0; i< work.size(); i++) {
-    bool gpu_thread = false;
 #if GPU_KERNELS
+    bool gpu_thread = false;
     if(i>=cpu_threads) {
       gpu_thread = true;
       cudaSetDevice(i-cpu_threads);
-    }
+    }  
 #endif
     double local_energy = 0;
 
@@ -440,7 +442,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
             local_energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, cubes_energy_c2,
             fort_forces_ms[i], 1, rmm_outputs[i], OPEN);
       }
-       std::cout << "Todo marcha bien Milhouse " <<  endl; // FF-Temp
+      std::cout << "Todo marcha bien Milhouse " <<  endl; // FF-Temp
 */
       if(OPEN) {
         if(ind >= cubes.size()){
@@ -516,8 +518,10 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
       for(uint k = 0; k < rmm_outputs_a.size(); k++) {
         const double * src_a = rmm_outputs_a[k].asArray();
         const double * src_b = rmm_outputs_b[k].asArray();
-        #pragma ivdep
-        #pragma vector always
+        #if INTEL_COMP
+          #pragma ivdep
+          #pragma vector always
+        #endif
         for(int i = 0; i < elements; i++) {
                 dst_a[i] += src_a[i];
                 dst_b[i] += src_b[i];
@@ -528,8 +532,10 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
       const int elements = fortran_vars.rmm_output.width * fortran_vars.rmm_output.height;
       for(uint k = 0; k < rmm_outputs.size(); k++) {
         const double * src = rmm_outputs[k].asArray();
-        #pragma ivdep
-        #pragma vector always
+        #if INTEL_COMP
+          #pragma ivdep
+          #pragma vector always
+        #endif
         for(int i = 0; i < elements; i++) {
 		dst[i] += src[i];
         }

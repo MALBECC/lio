@@ -15,8 +15,10 @@
 
 #include <stdlib.h>
 #include "pot.h"
-#include "../pointxc/calc_lda.h"
-#include "../pointxc/calc_gga.h"
+#include "../pointxc/calc_ggaCS.h"
+#include "../pointxc/calc_ggaOS.h"
+#include "../pointxc/calc_ldaCS.h"
+//#include "..pointxc/calc_ldaOS.h"
 
 using std::cout;
 using std::endl;
@@ -132,7 +134,9 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve_closed
         scalar_type ww2xc = 0, ww2yc = 0, ww2zc = 0;
 
         const scalar_type * rm = rmm_input.row(i);
-        #pragma vector always
+        #if INTEL_COMP
+          #pragma vector always
+        #endif
         for(int j = 0; j <= i; j++) {
           const scalar_type rmj = rm[j];
           w += fv[j] * rmj;
@@ -173,7 +177,9 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve_closed
       const vec_type3 dd1(tdd1x,tdd1y,tdd1z);
       const vec_type3 dd2(tdd2x,tdd2y,tdd2z);
 
-      cpu_potg(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch);
+//      cpu_potg(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch);
+      calc_ggaCS_in<scalar_type, 3>(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch);
+ 
       const scalar_type wp = this->points[point].weight;
 
       if (compute_energy) {
@@ -253,7 +259,9 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve_closed
       const scalar_type * fvr = function_values_transposed.row(row);
       const scalar_type * fvc = function_values_transposed.row(col);
 
-      #pragma vector always
+      #if INTEL_COMP
+        #pragma vector always
+      #endif
       for(int point = 0; point < npoints; point++) {
         res += fvr[point] * fvc[point] * factors_rmm(point);
       }

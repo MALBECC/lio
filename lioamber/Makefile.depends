@@ -156,6 +156,7 @@ OBJECTS += fortran.o
 
 tmplist := 
 tmplist += cublasmath.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/general_module.mod
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fortran.o
 

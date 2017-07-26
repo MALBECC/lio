@@ -103,10 +103,12 @@ c       factor=627.509391D0/0.5291772108D0
          write(fileunit,'(A)')
      >   '------------------------------------------------------------'
          do kk=1,natom
-           write(fileunit,200) 'TOTS',kk,
-     >       ff1G(kk,1)+ffSG(kk,1)+ff3G(kk,1),
-     >       ff1G(kk,2)+ffSG(kk,2)+ff3G(kk,2),
-     >       ff1G(kk,3)+ffSG(kk,3)+ff3G(kk,3)
+            write(fileunit,200) 'TOTS', kk,
+     >         dxyzqm(1,kk), dxyzqm(2,kk), dxyzqm(3,kk)
+!           write(fileunit,200) 'TOTS',kk,
+!     >       ff1G(kk,1)+ffSG(kk,1)+ff3G(kk,1),
+!     >       ff1G(kk,2)+ffSG(kk,2)+ff3G(kk,2),
+!     >       ff1G(kk,3)+ffSG(kk,3)+ff3G(kk,3)
          enddo
          write(fileunit,'(A)')
      >   '------------------------------------------------------------'
@@ -134,7 +136,7 @@ c       factor=627.509391D0/0.5291772108D0
        endif
 
 ! FFR: No other place for this to go right now.
-       if (first_step) first_step=.false.
+       if ( first_step ) first_step = .false.
 !--------------------------------------------------------------------!
        deallocate(ff1G,ffSG,ff3G)
  200   format(1X,A4,1X,I4,3(2X,E14.7))

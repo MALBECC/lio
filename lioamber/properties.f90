@@ -87,14 +87,13 @@ subroutine mulliken_calc(N, M, RealRho, Smat, NofM, q)
 
     integer :: i, j, k
     real*8  :: qe
-
+!carlos
     do i=1,M
         do j=1,M
              qe = RealRho(i, j) * Smat(i, j)
              q(NofM(i)) = q(NofM(i)) - qe
         enddo
     enddo
-
     return
 end subroutine mulliken_calc
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

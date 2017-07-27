@@ -75,10 +75,11 @@ OBJECTS += write_output.o
 OBJECTS += liokeys.o
 OBJECTS += errlog.o
 
+
 ################################################################################
 tmplist := SCF.o readECP.o drive.o intECP.o init.o init_lio.o
 tmplist += extras.o input_read.o liomain.o properties.o
-$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ECP_mod.mod
+$(tmplist:%.o=$(OBJPATH)/%.o)i : $(OBJPATH)/ECP_mod.mod
 
 tmplist := SCF.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/intECP.o
@@ -88,7 +89,6 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/readECP.o
 
 tmplist := intECP.o ECP_mod.mod
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/esp_funct.mod
-
 
 ################################################################################
 SRCDIRS +=
@@ -115,6 +115,8 @@ tmplist :=
 tmplist += TD.o SCF.o input_read.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/transport.mod
 
+###############################################################################
+TD.o : properties.o
 
 ################################################################################
 OBJECTS += basis_data.o
@@ -122,7 +124,6 @@ OBJECTS += basis_data.o
 tmplist :=
 tmplist += ehrenfest.o init_lio.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/basis_data.mod
-
 
 
 ################################################################################

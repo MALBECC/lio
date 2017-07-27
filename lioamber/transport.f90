@@ -22,6 +22,8 @@ subroutine mat_map (group, mapmat, Nuc, M, natom)
    integer, intent(in)   :: group(natom), Nuc(M)
    integer, intent(out)  :: mapmat (M,M)
    integer               :: i, j, k, nn, n
+   write(*,*) 'M =', M
+   write(*,*) 'natoms=', natom
 
    mapmat=0
    i=0
@@ -42,6 +44,16 @@ subroutine mat_map (group, mapmat, Nuc, M, natom)
           IF((group(nuc(i)).eq.3).and.(group(nuc(j)).eq.3)) mapmat(i,j)=9
        ENDDO
     ENDDO
+
+!TEST
+       DO i=1,M
+             if(mapmat(i,i).eq.1) k=k+1
+             if(mapmat(i,i).eq.5) nn=nn+1
+             if(mapmat(i,i).eq.9) n=n+1
+       ENDDO
+       write(*,*) 'Basis from group 1 =', k
+       write(*,*) 'Basis from group 2 =', nn
+       write(*,*) 'Basis from group 3 =', n
 
 
 end subroutine mat_map
@@ -73,34 +85,45 @@ subroutine electrostat (rho1,mapmat,overlap,rhofirst,Gamma0, M)
          
    DO i=1,M
       DO j=1,M
-         IF(mapmat(i,j).eq.0) THEN
+         IF((mapmat(i,j).eq.0).or.(mapmat(i,j).eq.9)) THEN
             rho_scratch(i,j,1)=dcmplx(0.0D0,0.0D0)
             rho_scratch(i,j,2)=dcmplx(0.0D0,0.0D0)
-         ENDIF
-         IF(mapmat(i,j).eq.9) THEN
-            rho_scratch(i,j,1)=dcmplx(0.0D0,0.0D0)
-            rho_scratch(i,j,2)=dcmplx(0.0D0,0.0D0)
-         ENDIF
-         IF(mapmat(i,j).eq.1) THEN
+         elseif((mapmat(i,j).eq.1).or.(mapmat(i,j).eq.2).or.(mapmat(i,j).eq.4).or.(mapmat(i,j).eq.5)) THEN
             rho_scratch(i,j,1)=(rho1(i,j))
             rho_scratch(i,j,2)=(rhofirst(i,j))
-         ENDIF
-         IF((mapmat(i,j).eq.3).or.(mapmat(i,j).eq.7)) THEN
+         elseif((mapmat(i,j).eq.3).or.(mapmat(i,j).eq.7).or.(mapmat(i,j).eq.6).or.(mapmat(i,j).eq.8)) then
             rho_scratch(i,j,1)=(0.50D0*rho1(i,j))
             rho_scratch(i,j,2)=(0.50D0*rhofirst(i,j))
-         ENDIF
-         IF((mapmat(i,j).eq.2).or.(mapmat(i,j).eq.4)) THEN
-            rho_scratch(i,j,1)=rho1(i,j)
-            rho_scratch(i,j,2)=(rhofirst(i,j))
-         ENDIF
-         IF(mapmat(i,j).eq.5) THEN
-            rho_scratch(i,j,1)=rho1(i,j)
-            rho_scratch(i,j,2)=rhofirst(i,j)
-         ENDIF
-         IF((mapmat(i,j).eq.6).or.(mapmat(i,j).eq.8)) THEN
-            rho_scratch(i,j,1)=(0.50D0*rho1(i,j))
-            rho_scratch(i,j,2)=(0.50D0*rhofirst(i,j))
-         ENDIF
+         endif
+
+!         IF(mapmat(i,j).eq.0) THEN
+!            rho_scratch(i,j,1)=dcmplx(0.0D0,0.0D0)
+!            rho_scratch(i,j,2)=dcmplx(0.0D0,0.0D0)
+!         ENDIF
+!         IF(mapmat(i,j).eq.9) THEN
+!            rho_scratch(i,j,1)=dcmplx(0.0D0,0.0D0)
+!            rho_scratch(i,j,2)=dcmplx(0.0D0,0.0D0)
+!         ENDIF
+!         IF(mapmat(i,j).eq.1) THEN
+!            rho_scratch(i,j,1)=(rho1(i,j))
+!            rho_scratch(i,j,2)=(rhofirst(i,j))
+!         ENDIF
+!         IF((mapmat(i,j).eq.3).or.(mapmat(i,j).eq.7)) THEN
+!            rho_scratch(i,j,1)=(0.50D0*rho1(i,j))
+!            rho_scratch(i,j,2)=(0.50D0*rhofirst(i,j))
+!         ENDIF
+!         IF((mapmat(i,j).eq.2).or.(mapmat(i,j).eq.4)) THEN
+!            rho_scratch(i,j,1)=rho1(i,j)
+!            rho_scratch(i,j,2)=(rhofirst(i,j))
+!         ENDIF
+!         IF(mapmat(i,j).eq.5) THEN
+!            rho_scratch(i,j,1)=rho1(i,j)
+!            rho_scratch(i,j,2)=rhofirst(i,j)
+!         ENDIF
+!         IF((mapmat(i,j).eq.6).or.(mapmat(i,j).eq.8)) THEN
+!            rho_scratch(i,j,1)=(0.50D0*rho1(i,j))
+!            rho_scratch(i,j,2)=(0.50D0*rhofirst(i,j))
+!         ENDIF
       ENDDO
    ENDDO
 
@@ -128,33 +151,6 @@ subroutine electrostat (rho1,mapmat,overlap,rhofirst,Gamma0, M)
    call g2g_timer_stop('electrostat')
 
 end subroutine electrostat
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine lowdinpop(M,N,rhomat,sqsmat,atomorb,atomicq)
-   implicit none
-   integer,intent(in)   :: M,N
-   real*8,intent(in)    :: rhomat(M,M)
-   real*8,intent(in)    :: sqsmat(M,M)
-   integer,intent(in)   :: atomorb(M)
-   real*8,intent(inout) :: atomicq(N)
-   real*8, allocatable :: sqsmatrans(:,:)
-   real*8  :: newterm
-   integer :: natom
-   integer :: ii,jj,kk
-
-   allocate(sqsmatrans(M,M))
-   sqsmatrans=transpose(sqsmat)
-   do kk=1,M
-      natom=atomorb(kk)
-      do ii=1,M
-      do jj=1,M
-         newterm=sqsmatrans(ii,kk)*rhomat(ii,jj)*sqsmat(jj,kk)
-         atomicq(natom)=atomicq(natom)-newterm
-      enddo
-      enddo
-   enddo
-   deallocate(sqsmatrans)
-
-end subroutine lowdinpop
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end module

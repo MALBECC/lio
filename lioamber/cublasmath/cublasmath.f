@@ -40,7 +40,6 @@ c       implicit none
        include 'commutator_cublas.f'
        include 'magnus_cublas.f'
        include 'cu_fock_commuts.f'
-       include 'cumsp_r.f'
        end module
 !
 !

@@ -112,7 +112,7 @@
   if ( rst_nfreq > 0 ) then
      if ( modulo(step_number,rst_nfreq) == 1 ) save_this_step = .true.
   end if
-  if ( step_number == (ndyn_steps+1) ) save_this_step = .true.
+!  if ( step_number == (ndyn_steps+1) ) save_this_step = .true.
 
   if ( save_this_step ) then
      open( unit=rstout_unit, file=rst_filei )

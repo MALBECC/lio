@@ -7,6 +7,6 @@
 &end
 
 &lionml
-  ndyn_steps = 500,
+  ndyn_steps = 1000,
   edyn_steps = 0,
 &end

@@ -28,11 +28,10 @@ c-----------------------------------------------------------------
        use garcha_mod
        implicit real*8 (a-h,o-z)
 c
-c
       dimension Q(3),W(3),Rc(Md),FF(Md),P(Md)
       dimension Jx(M)
       real*8 E2
-*****
+
 c auxiliars
       dimension aux(ngd)
 c
@@ -60,8 +59,8 @@ c
       npd=nshelld(1)
       ndd=nshelld(2)
       Md2=2*Md
+
 c  pointers
-c
       MM=M*(M+1)/2
       MMd=Md*(Md+1)/2
         NCOa=NCO
@@ -69,7 +68,6 @@ c
 
        iconst=0
        Ndens = 1
-c
 c first P
       M1=1
 c now Pnew
@@ -109,365 +107,281 @@ c
 *  Mmem = M20 in CLOSED SHELL case,  Mmem = M23 in OPEN SHELL case
 c
 c         Mmem1=Mmem + M*(M+1)/2*Md+1
-c
-c
 c end ------------------------------------------------
 
-
       if (NORM) then
-      sq3=dsqrt(3.D0)
+        sq3=dsqrt(3.D0)
       else
-      sq3=1.D0
+        sq3=1.D0
       endif
 
       if (MEMO) then
-      call g2g_timer_start('principio int3lu')
-c
-      do 1 l=1,3
- 1     Ll(l)=l*(l-1)/2
-c
-      do 6 k=1,Md
- 6     Rc(k)=0.D0
-c
-******
+        call g2g_timer_start('principio int3lu')
+
+        do 1 l=1,3
+ 1        Ll(l)=l*(l-1)/2
+
+        do 6 k=1,Md
+ 6        Rc(k)=0.D0
+
         do kk=1,kknumd!ns*(ns+1)/2+1,ns*(ns+1)/2+ns*np!kknumd
           iikk=(kk-1)*Md
-             do k=1,Md
-          Rc(k)=Rc(k)+RMM(kkind(kk))*cool(iikk+k)
-         enddo
-         enddo
-
+          do k=1,Md
+            Rc(k)=Rc(k)+RMM(kkind(kk))*cool(iikk+k)
+          enddo
+        enddo
 
         do kk=1,kknums
           iikk=(kk-1)*Md
-             do k=1,Md
-          Rc(k)=Rc(k)+RMM(kkinds(kk))*cools(iikk+k)
-
-
-         enddo
-         enddo
+          do k=1,Md
+            Rc(k)=Rc(k)+RMM(kkinds(kk))*cools(iikk+k)
+          enddo
+        enddo
                 
-c
 c------------------------------------------------
-c     write(*,*) 'Nro integ',ix
-c--- calculation of variational coefficients
-c
+c calculation of variational coefficients
 c calculation of fitting coefficients
-c
 c Constraint that integrated fitted density = N electrons
-c
-cSVD PART  ------------------------------------------------
-c
-      if (SVD) then
-c
-      MMp=Md*(Md+1)/2
-      do 199 k=1,MMp
- 199   RMM(M9+k-1)=0.0D0
-      do 208 k=1,Md
-       af(k)=0.0D0
- 208   RMM(M9+k-1)=Rc(k)
-c
-       k1=0
-       do 116 j=1,Md
-       do 116 i=j,Md
-c
-       k1=k1+1
-c
-        X(i,j)=RMM(M7+k1-1)
-        X(j,i)=X(i,j)
- 116   continue
-c
-      M10=M9+Md
-      M12=M10+Md
-      Md3=3*Md
+c------------------------------------------------
+c       SVD Part
+        if (SVD) then
+          MMp=Md*(Md+1)/2
+          do 199 k=1,MMp
+ 199        RMM(M9+k-1)=0.0D0
+          do 208 k=1,Md
+            af(k)=0.0D0
+ 208      RMM(M9+k-1)=Rc(k)
 
-      call g2g_timer_start('dgelss')
-c ESSL OPTION ------------------------
+          k1=0
+          do 116 j=1,Md
+          do 116 i=j,Md
+            k1=k1+1
+            X(i,j)=RMM(M7+k1-1)
+            X(j,i)=X(i,j)
+ 116      continue
+
+          M10=M9+Md
+          M12=M10+Md
+          Md3=3*Md
+          call g2g_timer_start('dgelss')
+
+c        ESSL OPTION
 #ifdef essl
-      CALL DGESVF(2,X,Md,RMM(M9),Md,1,RMM(M10),
-     >             Md,Md,RMM(M12),Md3)
-      imax=idamax(Md,RMM(M10),1)
-      ss=RMM(M10+imax-1)
-      tau=0.1192D-14*Md*ss
-
-      CALL DGESVS(X,Md,RMM(M9),Md,1,RMM(M10),af,Md,Md,Md,tau)
+          CALL DGESVF(2,X,Md,RMM(M9),Md,1,RMM(M10),Md,Md,RMM(M12),Md3)
+          imax=idamax(Md,RMM(M10),1)
+          ss=RMM(M10+imax-1)
+          tau=0.1192D-14*Md*ss
+          CALL DGESVS(X,Md,RMM(M9),Md,1,RMM(M10),af,Md,Md,Md,tau)
 #endif
-c---------------------------------------
-c LAPACK OPTION
+c         LAPACK OPTION
 #ifdef pack
-      do i=1,Md
-        af(i)=Rc(i)
-      enddo
-c
-      Md5=5*Md
-      rcond=1.0D-06
-      call dgelss(Md,Md,1,X,Md,af,Md,RMM(M9),rcond,irank,RMM(M10),
-     >            Md5,info)
-c
-c
+          do i=1,Md
+            af(i)=Rc(i)
+          enddo
+          Md5=5*Md
+          rcond=1.0D-06
+          call dgelss(Md,Md,1,X,Md,af,Md,RMM(M9),rcond,irank,RMM(M10),
+     >                Md5,info)
 #endif
-      call g2g_timer_stop('dgelss')
-c
-c END SVD PART --
-c
-c if SVD.eq.false, then goes to Normal equation method, with or without
-c constraint
-c
-      else
-c---------------------------------------
-c NORMAL EQUATION PART
-      if (iconst.eq.1) then
-c P : integrals of fitting functions --------------
-c
-      do 294 k=1,Md
- 294   P(k)=0.0D0
-c
-      do 295 k=1,nsd
-       do 295 nk=1,ncontd(k)
-c
- 295   P(k)=P(k)+cd(k,nk)/dsqrt(ad(k,nk)**3)
-c
-c p functions
-c all integrals 0.0
-c
-c d functions ----
-      do 297 k=nsd+npd+1,Md,6
-       do 297 nk=1,ncontd(k)
-c
-        t0=cd(k,nk)/(dsqrt(ad(k,nk)**3)*2.0D0*ad(k,nk))
-       do 297 l1=1,3
-       do 297 l2=1,l1
-        kk=k+Ll(l1)+l2-1
-c
-        if (l1.eq.l2) then
-        P(kk)=P(kk)+t0/sq3
-        endif
-c
- 297    continue
-c
-        do 298 k=1,Md
- 298     P(k)=P(k)*pi32
-c
+          call g2g_timer_stop('dgelss')
+!         END SVD
+
+!     if SVD.eq.false, then goes to Normal equation method, with or without constraint
+        else
+
+!       NORMAL EQUATION PART
+          if (iconst.eq.1) then ! Constrain applied
+
+!           P : integrals of fitting functions
+            do 294 k=1,Md
+ 294          P(k)=0.0D0
+
+            do 295 k=1,nsd
+            do 295 nk=1,ncontd(k)
+ 295          P(k)=P(k)+cd(k,nk)/dsqrt(ad(k,nk)**3)
+
+c           p and d functions
+            do 297 k=nsd+npd+1,Md,6
+            do 297 nk=1,ncontd(k)
+              t0=cd(k,nk)/(dsqrt(ad(k,nk)**3)*2.0D0*ad(k,nk))
+              do 297 l1=1,3
+              do 297 l2=1,l1
+                kk=k+Ll(l1)+l2-1
+                if (l1.eq.l2) then
+                  P(kk)=P(kk)+t0/sq3
+                endif
+ 297        continue
+
+            do 298 k=1,Md
+ 298          P(k)=P(k)*pi32
+
 c--------------------------------------
-      do 300 m1=1,Md
-       FF(m1)=0.0D0
-       do 301 k=1,m1-1
- 301   FF(m1)=FF(m1)+P(k)*RMM(M9+m1+(2*Md-k)*(k-1)/2-1)
-       do 302 k=m1,Md
- 302   FF(m1)=FF(m1)+P(k)*RMM(M9+k+(2*Md-m1)*(m1-1)/2-1)
- 300  continue
-c
-      r0=0.0D0
-      r1=0.0D0
-      do 900 m1=1,Md
-       r0=r0+FF(m1)*Rc(m1)
-       r1=r1+FF(m1)*P(m1)
- 900  continue
-c
-      Nel=2*NCO+Nunp
-      bda=(Nel-r0)/r1
-c
-      ss9=0.0D0
-      do 200 m1=1,Md
-      af(m1)=0.D0
-      do 201 k=1,m1-1
- 201  af(m1)=af(m1)+(Rc(k)+bda*P(k))*RMM(M9+m1+(2*Md-k)*(k-1)/2-1)
-      do 202 k=m1,Md
- 202  af(m1)=af(m1)+(Rc(k)+bda*P(k))*RMM(M9+k+(2*Md-m1)*(m1-1)/2-1)
-       ss9=ss9+af(m1)*P(m1)
- 200  continue
+            do 300 m1=1,Md
+              FF(m1)=0.0D0
+              do 301 k=1,m1-1
+ 301          FF(m1)=FF(m1)+P(k)*RMM(M9+m1+(2*Md-k)*(k-1)/2-1)
+              do 302 k=m1,Md
+ 302          FF(m1)=FF(m1)+P(k)*RMM(M9+k+(2*Md-m1)*(m1-1)/2-1)
+ 300        continue
 
-c no constraint applied
-      else
+            r0=0.0D0
+            r1=0.0D0
+            do 900 m1=1,Md
+              r0=r0+FF(m1)*Rc(m1)
+              r1=r1+FF(m1)*P(m1)
+ 900        continue
 
-      do 1200 m1=1,Md
-      af(m1)=0.D0
-      do 1201 k=1,m1-1
- 1201  af(m1)=af(m1)+Rc(k)*RMM(M9+m1+(2*Md-k)*(k-1)/2-1)
-      do 1202 k=m1,Md
- 1202  af(m1)=af(m1)+Rc(k)*RMM(M9+k+(2*Md-m1)*(m1-1)/2-1)
- 1200  continue
+            Nel=2*NCO+Nunp
+            bda=(Nel-r0)/r1
 
-      endif
-      endif
+            ss9=0.0D0
+            do 200 m1=1,Md
+              af(m1)=0.D0
+              do 201 k=1,m1-1
+ 201       af(m1)=af(m1)+(Rc(k)+bda*P(k))*RMM(M9+m1+(2*Md-k)*(k-1)/2-1)
+              do 202 k=m1,Md
+ 202      af(m1)=af(m1)+(Rc(k)+bda*P(k))*RMM(M9+k+(2*Md-m1)*(m1-1)/2-1)
+              ss9=ss9+af(m1)*P(m1)
+ 200        continue
+
+          else ! No constraint applied
+
+            do 1200 m1=1,Md
+               af(m1)=0.D0
+            do 1201 k=1,m1-1
+ 1201          af(m1)=af(m1)+Rc(k)*RMM(M9+m1+(2*Md-k)*(k-1)/2-1)
+            do 1202 k=m1,Md
+ 1202          af(m1)=af(m1)+Rc(k)*RMM(M9+k+(2*Md-m1)*(m1-1)/2-1)
+ 1200       continue
+          endif
+        endif
 
 
-c----------------------------------------------------------------
-c
-c Initialization of Fock matrix elements
-c
-c
-      do 215 k=1,MM
- 215   RMM(M5+k-1)=RMM(M11+k-1)
-c
-      if (OPEN) then
-      do 216 k=1,MM
- 216   RMM(M3+k-1)=RMM(M11+k-1)
-      endif
-c----------------------------------------------------------------
-c
-c
-c here af is ready
-c
+c-------------------------------------------------------
+c       Initialization of Fock matrix elements
+        do 215 k=1,MM
+ 215    RMM(M5+k-1)=RMM(M11+k-1)
+
+        if (OPEN) then
+        do 216 k=1,MM
+ 216      RMM(M3+k-1)=RMM(M11+k-1)
+        endif
+
+c Here af is ready
 c Ndens says if the density subroutines should evaluate
 c the density using the Density Matrix or the vectors
 c Since Damping is applied on Density Matrix, at the beggining
 c of the SCF it is more convenient to use the D.M.
-c
-c     if (Ncall.ge.2) then
-c      Ndens=2
-c     endif
-c
 c call fit for exchange correlation routine
-      if (integ) then
-c
-       do i=1,Md
-        B(i,1)=0.0D0
-        B(i,2)=0.0D0
-        B(i,3)=0.0D0
-       enddo
+        if (integ) then
+          do i=1,Md
+            B(i,1)=0.0D0
+            B(i,2)=0.0D0
+            B(i,3)=0.0D0
+          enddo
+        else
+          stop
+        endif
 
-       else
-       stop
-c ---- Least squares options, true recalculating functions at every
-c      iteration, and false, saving on disk
-c
-c      if (dens) then
-c      call exch(OPEN,NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,
-c     > Md,ncontd,nshelld,Nucd,cd,ad,RMM,NCOa,NCOb,M17,B)
-c      else
-c
-c      call exch2(OPEN,Iz,natom,RMM,nshelld,M,Md,M17,NCOa,NCOb,B)
-c
-c      endif
-      endif
-c------------------------------------------------------------------
-c
-c
-      Ex=0.D0
-c end of Least squares option ----------
-c
-c
+        Ex=0.D0
+        Ea=0.D0
+        Eb=0.D0
 
-      Ea=0.D0
-      Eb=0.D0
-c
+        do 610 m1=1,Md
+          Ex=Ex+B(m1,1)*Rc(m1)
+          Ea=Ea+af(m1)*Rc(m1)
+        do 611 k=1,m1
+ 611      Eb=Eb+af(k)*af(m1)*RMM(M7+m1+(2*Md-k)*(k-1)/2-1)
+        do 612 k=m1+1,Md
+ 612      Eb=Eb+af(k)*af(m1)*RMM(M7+k+(2*Md-m1)*(m1-1)/2-1)
+ 610    continue
 
-      do 610 m1=1,Md
-       Ex=Ex+B(m1,1)*Rc(m1)
-       Ea=Ea+af(m1)*Rc(m1)
-      do 611 k=1,m1
- 611   Eb=Eb+af(k)*af(m1)*RMM(M7+m1+(2*Md-k)*(k-1)/2-1)
-      do 612 k=m1+1,Md
- 612   Eb=Eb+af(k)*af(m1)*RMM(M7+k+(2*Md-m1)*(m1-1)/2-1)
- 610  continue
-c
-c
-c------------------------------------------------------------------
 c Calculation of all integrals again, for constructing the
 c Fock matrix
 c Previously energy was computed, and coefficients for
 c the fit were generated
-c------------------------------------------------------------------
-c
-      if (OPEN) then
-       do k=1,Md
-        aux(k)=af(k)+B(k,3)
-       enddo
-       else
-       do k=1,Md
-        aux(k)=0.0D0
-       enddo
-       endif
+        if (OPEN) then
+          do k=1,Md
+            aux(k)=af(k)+B(k,3)
+          enddo
+        else
+          do k=1,Md
+            aux(k)=0.0D0
+          enddo
+        endif
 
-c
         do 217 k=1,Md
-  217    af(k)=af(k)+B(k,2)
-c
-****
-****
+  217     af(k)=af(k)+B(k,2)
 
-         call g2g_timer_stop('principio int3lu')
-         call g2g_timer_start('int3lu')
-          if (open) then    
-         do kk=1,kknumd
-              iikk=(kk-1)*Md
-             do k=1,Md
-        RMM(M5+kkind(kk)-1)=RMM(M5+kkind(kk)-1)+af(k)*cool(iikk+k)
-        RMM(M3+kkind(kk)-1)=RMM(M3+kkind(kk)-1)+aux(k)*cool(iikk+k)
-         enddo
-         enddo
-         do kk=1,kknums
-              iikk=(kk-1)*Md
-             do k=1,Md
-        RMM(M5+kkinds(kk)-1)=RMM(M5+kkinds(kk)-1)+af(k)*cools(iikk+k)
-        RMM(M3+kkinds(kk)-1)=RMM(M3+kkinds(kk)-1)+aux(k)*cools(iikk+k)
-         enddo
-         enddo
-         else
-
+        call g2g_timer_stop('principio int3lu')
+        call g2g_timer_start('int3lu')
+        if (open) then ! Does the single and double precision
           do kk=1,kknumd
-               iikk=(kk-1)*Md
-               kkk=M5+kkind(kk)-1
-              do k=1,Md
-              RMM(kkk)=RMM(kkk)+af(k)*cool(iikk+k)
-              enddo
+            iikk=(kk-1)*Md
+            do k=1,Md
+           RMM(M5+kkind(kk)-1)=RMM(M5+kkind(kk)-1)+af(k)*cool(iikk+k)
+           RMM(M3+kkind(kk)-1)=RMM(M3+kkind(kk)-1)+aux(k)*cool(iikk+k)
+            enddo
           enddo
           do kk=1,kknums
-               iikk=(kk-1)*Md
-                rr=0.
-              do k=1,Md
-              rr=rr+af(k)*cools(iikk+k)
-              enddo
-         RMM(M5+kkinds(kk)-1)=RMM(M5+kkinds(kk)-1)+rr
+            iikk=(kk-1)*Md
+            do k=1,Md
+        RMM(M5+kkinds(kk)-1)=RMM(M5+kkinds(kk)-1)+af(k)*cools(iikk+k)
+        RMM(M3+kkinds(kk)-1)=RMM(M3+kkinds(kk)-1)+aux(k)*cools(iikk+k)
+            enddo
           enddo
-
-         endif
-
-         call g2g_timer_stop('int3lu')
-         else
-           do 4242 k=1,MM
- 4242        RMM(M5+k-1)=RMM(M11+k-1)
+        else
+          do kk=1,kknumd
+            iikk=(kk-1)*Md
+            kkk=M5+kkind(kk)-1
+            do k=1,Md
+              RMM(kkk)=RMM(kkk)+af(k)*cool(iikk+k)
+            enddo
+          enddo
+          do kk=1,kknums
+            iikk=(kk-1)*Md
+            rr=0.
+            do k=1,Md
+              rr=rr+af(k)*cools(iikk+k)
+            enddo
+            RMM(M5+kkinds(kk)-1)=RMM(M5+kkinds(kk)-1)+rr
+          enddo
+        endif
+        call g2g_timer_stop('int3lu')
+      else
+           do k=1, MM
+             if (OPEN) then
+               RMM(M5+k-1)=RMM(M11+k-1)
+               RMM(M3+k-1)=RMM(M11+k-1)
+             else
+               RMM(M5+k-1)=RMM(M11+k-1)
+             endif
+           enddo
            Ea=0.D0
            call aint_coulomb_fock(Ea)
            Eb=0.D0
 
            do 6101 m1=1,Md
              do 6111 k=1,m1
- 6111           Eb=Eb+af(k)*af(m1)*RMM(M7+m1+(2*Md-k)*(k-1)/2-1)
+ 6111           Eb = Eb +af(k)*af(m1)*RMM(M7+m1+(2*Md-k)*(k-1)/2-1)
              do 6121 k=m1+1,Md
- 6121           Eb=Eb+af(k)*af(m1)*RMM(M7+k+(2*Md-m1)*(m1-1)/2-1)
- 6101       continue
-         endif
+ 6121           Eb = Eb +af(k)*af(m1)*RMM(M7+k+(2*Md-m1)*(m1-1)/2-1)
+ 6101      continue
+      endif
+
  
-****
-****
-c
 c Numerical integration for obtaining the exchange-correlation part
 c of Fock matrix and also for the exchange-correlation energy
-ca
-
 
       do 317 k=1,Md
         af(k)=af(k)-B(k,2)
   317 end do
-c
-       if (integ) then
-       NCOa=NCO
-       NCOb=NCO+Nunp
-#ifdef G2G
-c       call g2g_solve_groups(0,0,0)
-#else
-c       call EXCHFOCK(OPEN,NORM,natom,Iz,Nuc,ncont,nshell,a,c,r,
-c     >        M,M18,NCOa,NCOb,RMM,Ex)
-#endif
-c       call g2g_timer_sum_stop('exchfock')
-      
-       Ndens=Ndens+1
-       endif
-c
-c
-c
+
+      if (integ) then
+        NCOa=NCO
+        NCOb=NCO+Nunp
+        Ndens=Ndens+1
+      endif
       E2=Ea-Eb/2.D0
 
       return

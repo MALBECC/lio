@@ -36,6 +36,7 @@
        use mathsubs
        use transport
        use general_module, ONLY :  atmorb
+       use faint_cpu77, only: int1, intsol, int3mem, intfld, int3lu
 #ifdef CUBLAS
         use cublasmath
 #endif

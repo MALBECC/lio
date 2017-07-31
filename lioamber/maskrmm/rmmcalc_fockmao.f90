@@ -5,6 +5,7 @@ subroutine rmmcalc_fockmao( dens_mao, fock_mao, energy )
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   use garcha_mod, only:M,Md,RMM
+  use faint_cpu77, only: int3lu
   implicit none
   complex*16,intent(in) :: dens_mao(M,M)
   real*8,intent(out)    :: fock_mao(M,M)

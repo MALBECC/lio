@@ -45,18 +45,6 @@ OBJECTS += input_read.o
 OBJECTS += drive.o
 OBJECTS += func.o
 OBJECTS += grid.o
-OBJECTS += int1.o
-OBJECTS += int1G.o
-OBJECTS += int2.o
-OBJECTS += int2G.o
-OBJECTS += int3lu.o
-OBJECTS += int3mem.o
-OBJECTS += int3G.o
-OBJECTS += intsol.o
-OBJECTS += intsolG.o
-OBJECTS += intsolGs.o
-OBJECTS += intfld.o
-OBJECTS += intSG.o
 OBJECTS += fix_mess_rho.o
 OBJECTS += packed_storage.o
 OBJECTS += sysdata.o
@@ -136,6 +124,27 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/basis_data.mod
 
 
 ################################################################################
+include faint_cpu77/faint_cpu77.mk
+SRCDIRS += faint_cpu77
+OBJECTS += faint_cpu77.o
+#
+#modusrs :=
+modusrs += cublasmath.o ehrensubs.o liomain.o maskrmm.o
+modusrs += predictor.o SCF.o SCFop.o TD.o
+modusrs += dft_get_mm_forces.o dft_get_qm_forces.o
+$(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/faint_cpu77.mod
+
+
+################################################################################
+include faint_cpu/faint_cpu.mk
+SRCDIRS += faint_cpu
+OBJECTS += faint_cpu.o
+#
+modusrs :=
+$(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/faint_cpu.mod
+
+
+################################################################################
 # TO-DO: reformulate the following modules so that there exists mathcpu,
 #        mathcublas. Perhaps also a mathlio, which could be an interface
 #        that would load either mathcpu or mathcublas accordingly).
@@ -200,12 +209,11 @@ SRCDIRS += liomods
 tmplist := dft_get_mm_forces.o dft_get_qm_forces.o
 tmplist += get_restrain_energy_forces.o 
 tmplist += dip.o dipmem.o drive.o grid.o init_amber.o init.o
-tmplist += int1.o int2.o int3lu.o int3mem.o intfld.o intsol.o
-tmplist += int1G.o int2G.o int3G.o intSG.o intsolG.o intsolGs.o
 tmplist += jarz.o lio_finalize.o predictor.o
 tmplist += SCF.o SCF_in.o SCFop.o TD.o cubegen.o
 tmplist += maskrmm.o write_output.o SCF_exter.o
 tmplist += intECP.o
+tmplist += faint_cpu77.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
 
 

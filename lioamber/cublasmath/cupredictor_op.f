@@ -5,6 +5,7 @@
 ! This routine recives: F1a,F1b,rho2
 ! And gives: F5 = F(t+(deltat/2))      
        use garcha_mod
+       use faint_cpu77, only: int3lu, intfld
        REAL*8,intent(inout) :: F1a_a(M,M),F1b_a(M,M),
      > F1a_b(M,M),F1b_b(M,M),FON_a(M,M),FON_b(M,M)
        integer*8,intent(in) :: devPtrX,devPtrXc

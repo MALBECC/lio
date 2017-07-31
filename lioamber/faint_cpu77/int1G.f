@@ -23,41 +23,24 @@ c all gradients, up to d functions
 c debugged ( or supposed to) 28-7-92
 c Dario Estrin
 c-------------------------------------------------------------------
-      subroutine intsolG(f,ff)
-          use garcha_mod
+      subroutine int1G(ff)
+        use garcha_mod
 c
       implicit real*8 (a-h,o-z)
-      dimension f(natom,3),fcampo(natom,3)
-      dimension ff(ntatom,3),rr(3)
-      logical, dimension (:), allocatable :: qmmmdo
+      dimension ff(natom,3)
 c
-c auxiliar quantities
-c
-      dimension Q(3)
-c      real*8, dimension (:,:), ALLOCATABLE :: d
-      real*8, dimension (:), ALLOCATABLE :: s0s,s1s,s2s,s3s,s4s
-     > , s5s,s6s
-      dimension dn(3),dn1(3),dn2(3)
+      dimension Q(3),s0s(ntq),s1s(ntq),
+     >            s2s(ntq),s3s(ntq),s4s(ntq)
+      dimension s5s(ntq),s6s(ntq)
+      dimension x0x(ntq,3),x1x(ntq,3),x2x(ntq,3),dn(3),dn1(3),dn2(3)
       dimension dn3(3),dn4(3),dn5(3),dn6(3),dn7(3),dn8(3),dn9(3),dn10(3)
       dimension dn2b(3),dn4b(3),dn5b(3),dn7b(3),dn8b(3),dn9b(3)
       dimension dn11(3),dn12(3)
-      real*8, dimension (:,:), ALLOCATABLE :: x0x,x1x,x2x,x3x,x4x,x5x
-c      dimension x3x(nt,3),x4x(nt,3),x5x(nt,3)
+      dimension x3x(ntq,3),x4x(ntq,3),x5x(ntq,3)
 c      dimension Ll(3)
+c distance between pairs of centers
 c
-c -----------------------------
 c
-c
-c       write(*,*) rmax,rmax
-      allocate (qmmmdo(natom+nsol))
-c      allocate(d(natom,natom))
-      allocate(s0s(ntatom),s1s(ntatom),s2s(ntatom),s3s(ntatom)
-     > ,s4s(ntatom),s5s(ntatom),s6s(ntatom))
- 
-      allocate(x0x(ntatom,3),x1x(ntatom,3),x2x(ntatom,3),x3x(ntatom,3)
-     >,x4x(ntatom,3),x5x(ntatom,3))
-
-
       if (NORM) then
       sq3=sqrt(3.D0)
       else
@@ -71,7 +54,6 @@ c
       MMd=Md*(Md+1)/2
       M2=2*M
 c
-
       do 181 l=1,3
  181   Ll(l)=l*(l-1)/2
 c
@@ -96,99 +78,49 @@ c they're stored in Fock matrix and in the Energy directly
 c in order to reduce the memory requirements
 c
 c
-
-c SOLVENT-SOLUTE ELECTROSTATIC AND LJ  INTERACTIONS
-c
-c       write(*,*) 'qmmmcut=',qmmmcut
-c       qmmmcut2=qmmmcut**2
-       qmmmdo=.true.
-        if(watermod.eq.1) nvecin=2 !tre sites
-        if(watermod.eq.2) nvecin=3 !four sites
-        if(watermod.eq.1.or.watermod.eq.2) then
-        qmmmdo=.false.
-
-       do i=natom+1,natom+nsol
-          ncerca=0
-          if(pc(i).gt.1.-6D0) qmmmdo(i)=.true. ! eliminate the sites without charge
-
-        do j=natom+1,natom+nsol
-          
-
-          distx=(r(i,1)-r(j,1))**2
-          disty=(r(i,2)-r(j,2))**2
-          distz=(r(i,3)-r(j,3))**2
-          distint=distx+disty+distz
-          if (distint.lt.8.45D0) then
-            ncerca=ncerca+1
-          endif
-
-         enddo
-          if(ncerca.le.nvecin) qmmmdo(i)=.false. ! eliminate the broken waters
-         enddo
-          endif
-       fcampo=0
-       do 125 j1=1,natom
-       do 125 j2=natom+1,natom+nsol
-c
-c
-       tx1=r(j1,1)-r(j2,1)
-       ty1=r(j1,2)-r(j2,2)
-       tz1=r(j1,3)-r(j2,3)
-       dd2=tx1**2+ty1**2+tz1**2
-        if(qmmmdo(j2)) then
-       dd2=sqrt(dd2)
-c
-c
-c        Ese=Ese+Iz(j1)*pc(ni)/dd2
-c
-c
-       et = -Iz(j1)*pc(j2)/dd2**3
-c       et2= -pc(j2)/dd2**3
-
-c        fcampo(j1,1) = fcampo(j1,1) + et2*tx1
-c        fcampo(j1,2) = fcampo(j1,2) + et2*ty1
-c        fcampo(j1,3) = fcampo(j1,3) + et2*tz1
-c       write(99,*) Iz(j1),pc(j2),dd2
-c
-       f(j1,1)=f(j1,1) + et*tx1
-       f(j1,2)=f(j1,2) + et*ty1
-       f(j1,3)=f(j1,3) + et*tz1
-c
-       ff(j2,1)=ff(j2,1) - et*tx1
-       ff(j2,2)=ff(j2,2) - et*ty1
-       ff(j2,3)=ff(j2,3) - et*tz1
-c
-
-       endif
- 125   continue
-c        do j1=1, natom
-c       write(6,*) fcampo(j1,1:3)
-c        enddo
-
 c      do 50 i=1,natom
 c      do 50 j=1,natom
 c       d(i,j)=(r(i,1)-r(j,1))**2+(r(i,2)-r(j,2))**2+
 c     >        (r(i,3)-r(j,3))**2
 c 50   continue
-
-c      write(33,*) natom+nsol
-c      do i=1,natom+nsol
-c          if (i.lt.natom.or.abs(pc(i)).gt.1.D-5) then
-c       write(33,*) 'C',r(i,1),r(i,2),r(i,3)
-c         endif
-c      enddo
-
-c      write(34,*) natom+nsol
-c      do i=1,natom+nsol
-c       write(34,*) 'C',pc(I)
-c      enddo
-
-
 c
-c first ioop (s|s) case -------------------------------------------
+c Nuclear Repulsion part ------------------------------------------
+      En=0.D0
+      do 51 i=1,natom
+      do 51 j=1,i-1
+ 51    En=En+Iz(i)*Iz(j)/sqrt(d(i,j))
 c
-       call g2g_timer_start('ss')
+      do 52 i=1,natom
+c
+       ff(i,1)=0.D0
+       ff(i,2)=0.D0
+       ff(i,3)=0.D0
+      do 53 j=1,i-1
+       tt=Iz(i)*Iz(j)/d(i,j)**1.5D0
 
+       ff(i,1)=ff(i,1)-tt*(r(i,1)-r(j,1))
+       ff(i,2)=ff(i,2)-tt*(r(i,2)-r(j,2))
+ 53    ff(i,3)=ff(i,3)-tt*(r(i,3)-r(j,3))
+c
+      do 54 j=i+1,natom
+       tt=Iz(i)*Iz(j)/d(i,j)**1.5D0
+
+       ff(i,1)=ff(i,1)-tt*(r(i,1)-r(j,1))
+       ff(i,2)=ff(i,2)-tt*(r(i,2)-r(j,2))
+ 54    ff(i,3)=ff(i,3)-tt*(r(i,3)-r(j,3))
+c
+ 52   continue
+
+      call aint_query_gpu_level(igpu)
+      ! doing nuclear attraction part on GPU - KE part still is
+      ! done here
+      if (igpu.gt.3) then
+        natomold = natom
+        natom = 0
+      endif
+c
+c first loop (s|s) case -------------------------------------------
+c
       do 200 i=1,ns
       do 200 j=1,i
 c
@@ -201,17 +133,18 @@ c (0|0) calculation
       zij=a(i,ni)+a(j,nj)
       z2=2.D0*zij
       alf=a(i,ni)*a(j,nj)/zij
+      alf2=alf*2.D0
       ti=a(i,ni)/zij
       tj=a(j,nj)/zij
       Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
       Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
       Q(3)=ti*r(Nuc(i),3)+tj*r(Nuc(j),3)
       ccoef=c(i,ni)*c(j,nj)
-      rexp=alf*dd
 c
-      if (rexp.lt.rmax) then
-
-      ss=pi32*exp(-rexp)/(zij*sqrt(zij))
+      ss=pi32*exp(-alf*dd)/(zij*sqrt(zij))
+      ovlap=ss
+      sks=alf*(3.D0-alf2*dd)*ovlap
+      tn=sks
 c
       k=i+((M2-j)*(j-1))/2
 c 
@@ -221,30 +154,24 @@ c
        tna=0.D0
        temp0=2.D0*sqrt(zij/pi)*ss
 c
-      do 202 n=natom+1,natom+nsol
-       if (qmmmdo(n)) then
-c
+      do 202 n=1,natom
        q1=Q(1)-r(n,1)
        q2=Q(2)-r(n,2)
        q3=Q(3)-r(n,3)
-       u=(q1**2+q2**2+q3**2)
-       
-       
+       u=q1**2+q2**2+q3**2
        u=u*zij
-       temp=-pc(n)*temp0
+       temp=-Iz(n)*temp0
        s0s(n)=temp*FUNCT(0,u)
        s1s(n)=temp*FUNCT(1,u)
        temp=z2*s1s(n)
        x0x(n,1)=temp*q1
        x0x(n,2)=temp*q2
        x0x(n,3)=temp*q3
-       tna=tna+s0s(n)
-       endif
-202    continue
- 
+ 202   tna=tna+s0s(n)
 c
 c l2: different p in the p shell GRADIENT PART ----------
 c
+      t3=alf2*ss
       te=RMM(k)*ccoef
       ty=te*2.D0
       t5=ty*a(j,nj)
@@ -253,28 +180,27 @@ c
 c
       do 205 l2=1,3
         t1=Q(l2)-r(Nuc(i),l2)
+        pis=t1*ss
+        piks=t1*sks+alf2*pis
         tx=r(Nuc(i),l2)-r(Nuc(j),l2)
+        skpi=piks+ tx*(sks+t3)
 c
-c loop over classical nuclei
-      do 203 n=natom+1,natom+nsol
-       if(qmmmdo(n)) then
+        ff(Nuc(i),l2)=ff(Nuc(i),l2)+t4*piks
+        ff(Nuc(j),l2)=ff(Nuc(j),l2)+t5*skpi
 c
+c loop over nuclei, specific part
+      do 203 n=1,natom
        piNs=t1*s0s(n)-(Q(l2)-r(n,l2))*s1s(n)
        sNpi=piNs+tx*s0s(n)
-       f(Nuc(i),l2)=f(Nuc(i),l2)+t4*piNs
-       f(Nuc(j),l2)=f(Nuc(j),l2)+t5*sNpi
+       ff(Nuc(i),l2)=ff(Nuc(i),l2)+t4*piNs
+       ff(Nuc(j),l2)=ff(Nuc(j),l2)+t5*sNpi
 c
         ff(n,l2)=ff(n,l2)+te*x0x(n,l2)
-        endif
  203  continue
 
  205    continue
-        endif
 c --------------------------------------------------------
  200  continue
-       call g2g_timer_stop('ss')
-
-       call g2g_timer_start('ps')
 c
 c------------------------------------------------------------------
 c (p|s) case  and gradients
@@ -295,25 +221,20 @@ c
       Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
       Q(3)=ti*r(Nuc(i),3)+tj*r(Nuc(j),3)
       alf=ti*a(j,nj)
-      rexp=alf*dd
-       if (rexp.lt.rmax) then
-      ss=pi32*exp(-rexp)/(zij*sqrt(zij))
+      alf2=2.D0*alf
+      ss=pi32*exp(-alf*dd)/(zij*sqrt(zij))
+      sks=alf*(3.D0-alf2*dd)*ss
 c
 c loop over nuclei, part common for all shell
       temp0=2.D0*sqrt(zij/pi)*ss
 c
-      do 302 n=natom+1,natom+nsol
-       if (qmmmdo(n)) then
-c
+      do 302 n=1,natom
        q1=Q(1)-r(n,1)
        q2=Q(2)-r(n,2)
        q3=Q(3)-r(n,3)
        u=q1**2+q2**2+q3**2
-       
-       
-       
        u=u*zij
-       temp=-temp0*pc(n)
+       temp=-temp0*Iz(n)
        s0s(n)=temp*FUNCT(0,u)
        s1s(n)=temp*FUNCT(1,u)
        s2s(n)=temp*FUNCT(2,u)
@@ -325,28 +246,63 @@ c
        x1x(n,1)=temp*q1
        x1x(n,2)=temp*q2
        x1x(n,3)=temp*q3
-       endif
  302  continue
 c
 c
       ccoef=c(i,ni)*c(j,nj)
+       t10=ss/z2
+       t15=sks/z2
+       t20=t15-alf*ss/a(i,ni)
 c
-c        te=RMM(k)*ccoef
-c        ty=te*2.D0
-c        t5=ty*a(j,nj)
-c        t4=ty*a(i,ni)
+      do 305 l1=1,3
+       t1=Q(l1)-r(Nuc(i),l1)
+       ps=ss*t1
+       pks=sks*t1+alf2*ps
 c
+        ii=i+l1-1
+c ii index , taking into account different components of the shell
+c
+        k=ii+((M2-j)*(j-1))/2
+c
+        te=RMM(k)*ccoef
+        ty=te*2.D0
+        t5=ty*a(j,nj)
+        t4=ty*a(i,ni)
+c
+      do 307 l2=1,3
+c
+       t1=Q(l2)-r(Nuc(i),l2)
+       t2=Q(l2)-r(Nuc(j),l2)
+       ds=t1*ps
+       dks=t1*pks
+       pp=t2*ps
+       pkp=t2*pks
+c
+       if (l1.eq.l2) then
+        ff(Nuc(i),l2)=ff(Nuc(i),l2)-te*sks
+        ds=ds+t10
+        dks=dks+t20
+        pp=pp+t10
+        pkp=pkp+t15
+       endif
+c
+       dks=dks+alf2*ds
+       pkp=pkp+alf2*pp
+c
+        ff(Nuc(i),l2)=ff(Nuc(i),l2)+t4*dks
+        ff(Nuc(j),l2)=ff(Nuc(j),l2)+t5*pkp
+c
+ 307  continue
+ 305  continue
 cc nuclear attraction part
 c
-      do 303 n=natom+1,natom+nsol
-       if(qmmmdo(n)) then
-c
+      do 303 n=1,natom
 c
       t50=(s0s(n)-s1s(n))/z2
 c
       do 306 l1=1,3
        t1=Q(l1)-r(Nuc(i),l1)
-       t2=Q(l1)-r(n,l1)
+       t2=Q(l1)-R(n,l1)
        p0s=t1*s0s(n)-t2*s1s(n)
        p1s=t1*s1s(n)-t2*s2s(n)
 c
@@ -371,7 +327,7 @@ c
 c
        if (l1.eq.l2) then
         dNs=dNs+t50
-        f(Nuc(i),l2)=f(Nuc(i),l2)-te*s0s(n)
+        ff(Nuc(i),l2)=ff(Nuc(i),l2)-te*s0s(n)
        endif
 c
       tx=r(Nuc(i),l2)-r(Nuc(j),l2)
@@ -380,21 +336,15 @@ c
         ty=te*2.D0
         t5=ty*a(j,nj)
         t4=ty*a(i,ni)
-      f(Nuc(i),l2)=f(Nuc(i),l2)+t4*dNs
-      f(Nuc(j),l2)=f(Nuc(j),l2)+t5*pNp
-c
-         ff(n,l2)=ff(n,l2)+te*dn(l2)
-c
+      ff(Nuc(i),l2)=ff(Nuc(i),l2)+t4*dNs
+      ff(Nuc(j),l2)=ff(Nuc(j),l2)+t5*pNp
+        ff(n,l2)=ff(n,l2)+te*dn(l2)
  308  continue
  306  continue
-       endif
 c
  303  continue
 c end nuclear attr. part ----------
-       endif
  300  continue
-       call g2g_timer_stop('ps')
-       call g2g_timer_start('pp')
 c-----------------------------------------------------------------
 c (p|p) case and gradients
       do 400 i=ns+1,ns+np,3
@@ -413,24 +363,19 @@ c
       Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
       Q(3)=ti*r(Nuc(i),3)+tj*r(Nuc(j),3)
       alf=ti*a(j,nj)
-       rexp=alf*dd
-       if (rexp.lt.rmax) then 
-      ss=pi32*exp(-rexp)/(zij*sqrt(zij))
+      alf2=2.D0*alf
+      ss=pi32*exp(-alf*dd)/(zij*sqrt(zij))
+      sks=alf*(3.D0-alf2*dd)*ss
       temp0=2.D0*sqrt(zij/pi)*ss
 c
 c loop over nuclei, part common for all shell
-      do 402 n=natom+1,natom+nsol
-c
-       if (qmmmdo(n)) then
-
+      do 402 n=1,natom
        q1=Q(1)-r(n,1)
        q2=Q(2)-r(n,2)
        q3=Q(3)-r(n,3)
        u=q1**2+q2**2+q3**2
-       
-       
        u=u*zij
-       temp=-temp0*pc(n)
+       temp=-temp0*Iz(n)
        s0s(n)=temp*FUNCT(0,u)
        s1s(n)=temp*FUNCT(1,u)
        s2s(n)=temp*FUNCT(2,u)
@@ -447,15 +392,89 @@ c
        x2x(n,1)=temp*q1
        x2x(n,2)=temp*q2
        x2x(n,3)=temp*q3
-
-        endif
  402  continue
 c
+c
+      t10=ss/z2
+      t20=sks/z2
+c
       ccoef=c(i,ni)*c(j,nj)
+c
+      do 405 l1=1,3
+       t1=Q(l1)-r(Nuc(i),l1)
+       pis=ss*t1
+       piks=sks*t1+alf2*pis
+       t11=pis/z2
+       t12=piks/z2
+       t16=t12-alf/a(j,nj)*pis
+c
+      lij=3
+      if (i.eq.j) then
+       lij=l1
+      endif
+c
+      do 405 l2=1,lij
+       t1=Q(l2)-r(Nuc(i),l2)
+       t2=Q(l2)-r(Nuc(j),l2)
+       spj=t2*ss
+       skpj=sks*t2+alf2*spj
+       t13=spj/z2
+       t15=skpj/z2
+       t14=t15-alf*spj/a(i,ni)
+c
+       pp=t2*pis
+       pkp=t2*piks
+c
+       if (l1.eq.l2) then
+        pp=pp+t10
+        pkp=pkp+t20
+       endif
+c
+       pkp=pkp+alf2*pp
+c
+      ii=i+l1-1
+      jj=j+l2-1
+      k=ii+((M2-jj)*(jj-1))/2
+c
+        te=RMM(k)*ccoef
+        ty=te*2.D0
+        t5=ty*a(j,nj)
+        t4=ty*a(i,ni)
+c
+      do 405 l3=1,3
+c
+       t1=Q(l3)-r(Nuc(i),l3)
+       t2=Q(l3)-r(Nuc(j),l3)
+       tx=r(Nuc(i),l3)-r(Nuc(j),l3)
+       dp=t1*pp
+       dkp=t1*pkp
+       pkd=t2*pkp
+c
+       if (l1.eq.l3) then
+        dp=dp+t13
+        dkp=dkp+t14
+        pkd=pkd+t15
+        ff(Nuc(i),l3)=ff(Nuc(i),l3)-te*skpj
+       endif
+c
+       if (l2.eq.l3) then
+        dp=dp+t11
+        dkp=dkp+t12
+        pkd=pkd+t16
+        ff(Nuc(j),l3)=ff(Nuc(j),l3)-te*piks
+       endif
+c
+       pd=dp+tx*pp
+       dkp=dkp+alf2*dp
+       pkd=pkd+alf2*pd
+c
+        ff(Nuc(i),l3)=ff(Nuc(i),l3)+t4*dkp
+        ff(Nuc(j),l3)=ff(Nuc(j),l3)+t5*pkd
+c
+ 405  continue
+c
 c Nuclear attraction part ----------
-      do 403 n=natom+1,natom+nsol
-       if(qmmmdo(n)) then
-
+      do 403 n=1,natom
 c
       t15=(s0s(n)-s1s(n))/z2
       t25=(s1s(n)-s2s(n))/z2
@@ -507,7 +526,7 @@ c
 c
        if (l1.eq.l2) then
         pNp=pNp+t15
-       pN1p=pN1p+t25
+        pN1p=pN1p+t25
         dn2(1)=dn2(1)+t26
         dn2(2)=dn2(2)+t27
         dn2(3)=dn2(3)+t28
@@ -531,31 +550,25 @@ c gradient part
 c
        if (l1.eq.l3) then
         dNp=dNp+t29
-        f(Nuc(i),l3)=f(Nuc(i),l3)-te*s0p
+        ff(Nuc(i),l3)=ff(Nuc(i),l3)-te*s0p
        endif
 c
        if (l2.eq.l3) then
         dNp=dNp+t30
-       f(Nuc(j),l3)=f(Nuc(j),l3)-te*p0s
+       ff(Nuc(j),l3)=ff(Nuc(j),l3)-te*p0s
        endif
 c
        tx=r(Nuc(i),l3)-r(Nuc(j),l3)
        pNd=dNp+tx*pNp
 c
-        f(Nuc(i),l3)=f(Nuc(i),l3)+t4*dNp
-        f(Nuc(j),l3)=f(Nuc(j),l3)+t5*pNd
-c
-         ff(n,l3)=ff(n,l3)+te*dn2(l3)
-
+        ff(Nuc(i),l3)=ff(Nuc(i),l3)+t4*dNp
+        ff(Nuc(j),l3)=ff(Nuc(j),l3)+t5*pNd
+        ff(n,l3)=ff(n,l3)+te*dn2(l3)
  406  continue
 c
-       endif
  403  continue
-      endif
 c
  400  continue
-       call g2g_timer_stop('pp')
-       call g2g_timer_start('ds')
 c
 c-------------------------------------------------------------------
 c (d|s) case and gradients
@@ -574,24 +587,23 @@ c
       Q(2)=(a(i,ni)*r(Nuc(i),2)+a(j,nj)*r(Nuc(j),2))/zij
       Q(3)=(a(i,ni)*r(Nuc(i),3)+a(j,nj)*r(Nuc(j),3))/zij
       alf=a(i,ni)*a(j,nj)/zij
-      rexp=alf*dd
-      if (rexp.lt.rmax) then
-      ss=pi32*exp(-rexp)/(zij*sqrt(zij))
+      alf2=2.D0*alf
+      alf3=alf/a(i,ni)
+      ss=pi32*exp(-alf*dd)/(zij*sqrt(zij))
+      sks=alf*(3.D0-alf2*dd)*ss
       temp0=2.D0*sqrt(zij/pi)*ss
 c
+      t10=ss/z2
+      t11=sks/z2-alf3*ss
 c
 c loop over nuclei, part common for all shell
-      do 502 n=natom+1,natom+nsol
-       if (qmmmdo(n)) then
-
+      do 502 n=1,natom
        q1=Q(1)-r(n,1)
        q2=Q(2)-r(n,2)
        q3=Q(3)-r(n,3)
        u=q1**2+q2**2+q3**2
-       
-       
        u=u*zij
-       temp=-temp0*pc(n)
+       temp=-temp0*Iz(n)
        s0s(n)=temp*FUNCT(0,u)
        s1s(n)=temp*FUNCT(1,u)
        s2s(n)=temp*FUNCT(2,u)
@@ -608,16 +620,90 @@ c loop over nuclei, part common for all shell
        x2x(n,1)=temp*q1
        x2x(n,2)=temp*q2
        x2x(n,3)=temp*q3
-       endif
  502  continue
 c
 c
       ccoef=c(i,ni)*c(j,nj)
 c
+      do 505 l1=1,3
+       t1=Q(l1)-r(Nuc(i),l1)
+       ps=ss*t1
+       pks=sks*t1+alf2*ps
+       t12=ps/z2
+       t13=pks/z2
+       t17=t13-alf3*ps
+c
+      do 505 l2=1,l1
+c
+       t1=Q(l2)-r(Nuc(i),l2)
+       pjs=ss*t1
+       pjks=t1*sks+alf2*pjs
+       t14=pjs/z2
+       t15=pjks/z2
+       t16=t15-alf3*pjs
+       ovlap=t1*ps
+       tn=t1*pks
+c
+       f1=1.D0
+       if (l1.eq.l2) then
+        ovlap=ovlap+t10
+        tn=tn+t11
+        f1=sq3
+       endif
+c
+       tn=tn+alf2*ovlap
+c
+       l12=l1*(l1-1)/2+l2
+c ordering of d shell should be:
+c xx,yx,yy,zx,zy,zz ( 11, 21, 22, 31, 32, 33 )
+c
+       ii=i+l12-1
+c
+       cc=ccoef/f1
+       term=cc*tn
+       k=ii+((M2-j)*(j-1))/2
+c now gradients
+c
+        te=RMM(k)*cc
+        ty=te*2.D0
+        t5=ty*a(j,nj)
+        t4=ty*a(i,ni)
+c
+      do 505 l3=1,3
+c
+       t1=Q(l3)-r(Nuc(j),l3)
+       t2=Q(l3)-r(Nuc(i),l3)
+       tx=r(Nuc(i),l3)-r(Nuc(j),l3)
+       dp=t1*ovlap
+       dkp=t1*tn
+       fks=t2*tn
+c
+       if (l1.eq.l3) then
+        dp=dp+t14
+        dkp=dkp+t15
+        fks=fks+t16
+        ff(Nuc(i),l1)=ff(Nuc(i),l1)-te*pjks
+       endif
+c
+       if (l2.eq.l3) then
+        dp=dp+t12
+        dkp=dkp+t13
+        fks=fks+t17
+        ff(Nuc(i),l2)=ff(Nuc(i),l2)-te*pks
+       endif
+c
+       fs=dp-tx*ovlap
+       dkp=dkp+alf2*dp
+       fks=fks+alf2*fs
+c
+        ff(Nuc(i),l3)=ff(Nuc(i),l3)+t4*fks
+        ff(Nuc(j),l3)=ff(Nuc(j),l3)+t5*dkp
+c
+ 505  continue
+c
 cc nuclear attraction part 
 c
-      do 503 n=natom+1,natom+nsol
-       if(qmmmdo(n)) then
+      do 503 n=1,natom
 c
       t7=(s0s(n)-s1s(n))/z2
       t8=(s1s(n)-s2s(n))/z2
@@ -627,7 +713,7 @@ c
 c
       do 506 l1=1,3
        t1=Q(l1)-r(Nuc(i),l1)
-       t2=Q(l1)-r(n,l1)
+       t2=Q(l1)-R(n,l1)
        p0s=t1*s0s(n)-t2*s1s(n)
        p1s=t1*s1s(n)-t2*s2s(n)
        p2s=t1*s2s(n)-t2*s3s(n)
@@ -699,28 +785,23 @@ c
 c
        if (l1.eq.l3) then
         dNp=dNp+t29
-        f(Nuc(i),l3)=f(Nuc(i),l3)-te*pj0s
+        ff(Nuc(i),l3)=ff(Nuc(i),l3)-te*pj0s
        endif
 c
        if (l2.eq.l3) then
         dNp=dNp+t30
-       f(Nuc(i),l3)=f(Nuc(i),l3)-te*p0s
+       ff(Nuc(i),l3)=ff(Nuc(i),l3)-te*p0s
        endif
 c
         fNs=dNp-tx*dNs
 c
-        f(Nuc(i),l3)=f(Nuc(i),l3)+t4*fNs
-        f(Nuc(j),l3)=f(Nuc(j),l3)+t5*dNp
-c
-         ff(n,l3)=ff(n,l3)+te*dn2(l3)
+        ff(Nuc(i),l3)=ff(Nuc(i),l3)+t4*fNs
+        ff(Nuc(j),l3)=ff(Nuc(j),l3)+t5*dNp
+        ff(n,l3)=ff(n,l3)+te*dn2(l3)
  506  continue
-       endif
  503  continue
 c end nuclear attr. part ----------
-       endif
  500  continue
-       call g2g_timer_stop('ds')
-       call g2g_timer_start('dp')
 c-----------------------------------------------------------------
 c
 c (d|p) case 
@@ -739,24 +820,24 @@ c
       Q(2)=(a(i,ni)*r(Nuc(i),2)+a(j,nj)*r(Nuc(j),2))/zij
       Q(3)=(a(i,ni)*r(Nuc(i),3)+a(j,nj)*r(Nuc(j),3))/zij
       alf=a(i,ni)*a(j,nj)/zij
-      rexp=alf*dd
-      if (rexp.lt.rmax) then
-      ss=pi32*exp(-rexp)/(zij*sqrt(zij))
+      alf2=2.D0*alf
+      alf3=alf/a(i,ni)
+      alf4=alf/a(j,nj)
+      ss=pi32*exp(-alf*dd)/(zij*sqrt(zij))
+      sks=alf*(3.D0-alf2*dd)*ss
       temp0=2.D0*sqrt(zij/pi)*ss
 c
+      t10=ss/z2
+      t30=sks/z2
+      t11=t30-alf3*ss
 c loop over nuclei, part common for all shell
-      do 602 n=natom+1,natom+nsol
-       if (qmmmdo(n)) then
-c
-
+      do 602 n=1,natom
        q1=Q(1)-r(n,1)
        q2=Q(2)-r(n,2)
        q3=Q(3)-r(n,3)
        u=q1**2+q2**2+q3**2
-       
-       
        u=u*zij
-       temp=-temp0*pc(n)
+       temp=-temp0*Iz(n)
 c
        s0s(n)=temp*FUNCT(0,u)
        s1s(n)=temp*FUNCT(1,u)
@@ -779,15 +860,134 @@ c
        x3x(n,1)=temp*q1
        x3x(n,2)=temp*q2
        x3x(n,3)=temp*q3
-       endif
  602  continue
 c
 c
       ccoef=c(i,ni)*c(j,nj)
 c
+      do 605 l1=1,3
+       t1=Q(l1)-r(Nuc(i),l1)
+       pis=ss*t1
+       piks=sks*t1+alf2*pis
+c
+       t14=pis/z2
+       t15=piks/z2
+      do 605 l2=1,l1
+       t1=Q(l2)-r(Nuc(i),l2)
+       pjs=ss*t1
+       pjks=sks*t1+alf2*pjs
+c
+       t12=pjs/z2
+       t13=pjks/z2
+       dijs=t1*pis
+       dijks=t1*piks
+       f1=1.D0
+c
+       if (l1.eq.l2) then
+        f1=sq3
+        dijs=dijs+t10
+        dijks=dijks+t11
+       endif
+c
+       dijks=dijks+alf2*dijs
+c
+       t22=dijs/z2
+       t23=dijks/z2
+       t24=t23-alf4*dijs
+c
+      do 605 l3=1,3
+c
+       t1=Q(l3)-r(Nuc(j),l3)
+       ovlap=t1*dijs 
+       tn=t1*dijks
+c
+       pipk=t1*pis
+       pikpk=t1*piks
+       pjpk=t1*pjs
+       pjkpk=t1*pjks
+c
+       if (l1.eq.l3) then
+        pipk=pipk+t10
+        pikpk=pikpk+t30
+        ovlap=ovlap+t12
+        tn=tn+t13
+       endif
+c
+       if (l2.eq.l3) then
+        pjpk=pjpk+t10
+        pjkpk=pjkpk+t30
+        ovlap=ovlap+t14
+        tn=tn+t15
+       endif
+c
+       pjkpk=pjkpk+alf2*pjpk
+       pikpk=pikpk+alf2*pipk
+c
+       t16=pjpk/z2
+       t17=pjkpk/z2
+       t18=t17-alf3*pjpk
+       t19=pipk/z2
+       t20=pikpk/z2
+       t21=t20-alf3*pipk
+c
+       tn=tn+alf2*ovlap
+       
+c
+       l12=l1*(l1-1)/2+l2
+       ii=i+l12-1
+       jj=j+l3-1
+c
+       cc=ccoef/f1
+       term=cc*tn
+       k=ii+((M2-jj)*(jj-1))/2
+c gradients
+c
+        te=RMM(k)*cc
+        ty=te*2.D0
+        t5=ty*a(j,nj)
+        t4=ty*a(i,ni)
+c
+      do 605 l4=1,3
+       t1=Q(l4)-r(Nuc(j),l4)
+       t2=Q(l4)-r(Nuc(i),l4)
+       tx=r(Nuc(i),l4)-r(Nuc(j),l4)
+c
+       fkp=t2*tn
+       dsd=t1*ovlap
+       dkd=t1*tn
+c
+       if (l1.eq.l4) then
+        dsd=dsd+t16
+        dkd=dkd+t17
+        fkp=fkp+t18
+        ff(Nuc(i),l4)=ff(Nuc(i),l4)-te*pjkpk
+       endif
+c
+       if (l2.eq.l4) then
+        dsd=dsd+t19
+        dkd=dkd+t20
+        fkp=fkp+t21
+        ff(Nuc(i),l4)=ff(Nuc(i),l4)-te*pikpk
+       endif
+c
+       if (l3.eq.l4) then
+        dsd=dsd+t22
+        dkd=dkd+t24
+        fkp=fkp+t23
+        ff(Nuc(j),l4)=ff(Nuc(j),l4)-te*dijks
+       endif
+c
+       fp=dsd-tx*ovlap
+       dkd=dkd+alf2*dsd
+       fkp=fkp+alf2*fp
+c
+        ff(Nuc(i),l4)=ff(Nuc(i),l4)+t4*fkp
+        ff(Nuc(j),l4)=ff(Nuc(j),l4)+t5*dkd
+c
+ 605  continue
+c
 c Nuclear attraction part ----------
-      do 603 n=natom+1,natom+nsol
-       if(qmmmdo(n)) then
+      do 603 n=1,natom
 c
       t7=(s0s(n)-s1s(n))/z2
       t8=(s1s(n)-s2s(n))/z2
@@ -943,40 +1143,34 @@ c
         dNd=t1*tna-t2*tn1a
 c
         if(l1.eq.l4) then
-         f(Nuc(i),l4)=f(Nuc(i),l4)-te*pj0p
+         ff(Nuc(i),l4)=ff(Nuc(i),l4)-te*pj0p
          dNd=dNd+(pj0p-pj1p)/z2
         endif
 c
         if(l2.eq.l4) then
-         f(Nuc(i),l4)=f(Nuc(i),l4)-te*pi0p
+         ff(Nuc(i),l4)=ff(Nuc(i),l4)-te*pi0p
          dNd=dNd+(pi0p-pi1p)/z2
         endif
 c
         if(l3.eq.l4) then
-         f(Nuc(j),l4)=f(Nuc(j),l4)-te*d0s
+         ff(Nuc(j),l4)=ff(Nuc(j),l4)-te*d0s
          dNd=dNd+(d0s-d1s)/z2
         endif
 c
         fNp=dNd-tx*tna
-        f(Nuc(i),l4)=f(Nuc(i),l4)+t4*fNp
-        f(Nuc(j),l4)=f(Nuc(j),l4)+t5*dNd
-c
-         ff(n,l4)=ff(n,l4)+te*dn5(l4)
+        ff(Nuc(i),l4)=ff(Nuc(i),l4)+t4*fNp
+        ff(Nuc(j),l4)=ff(Nuc(j),l4)+t5*dNd
+        ff(n,l4)=ff(n,l4)+te*dn5(l4)
 c
         fNp=dNd-tx*tna
  606  continue
-      endif
 c
  603  continue
-      endif
 c
  600  continue
-       call g2g_timer_stop('dp')
-       call g2g_timer_start('dd')
 c
 c-------------------------------------------------------------------
 c (d|d) case
-
 c
       do 700 i=ns+np+1,M,6
       do 700 j=ns+np+1,i,6
@@ -992,23 +1186,21 @@ c
       Q(2)=(a(i,ni)*r(Nuc(i),2)+a(j,nj)*r(Nuc(j),2))/zij
       Q(3)=(a(i,ni)*r(Nuc(i),3)+a(j,nj)*r(Nuc(j),3))/zij
       alf=a(i,ni)*a(j,nj)/zij
-      rexp=alf*dd
-      if (rexp.lt.rmax) then
-      ss=pi32*exp(-rexp)/(zij*sqrt(zij))
+      alf2=2.D0*alf
+      alf3=alf/a(i,ni)
+      alf4=alf/a(j,nj)
+      ss=pi32*exp(-alf*dd)/(zij*sqrt(zij))
+      sks=alf*(3.D0-alf2*dd)*ss
       temp0=2.D0*sqrt(zij/pi)*ss
 c
 c loop over nuclei, part common for all shell
-      do 702 n=natom+1,natom+nsol
-       if (qmmmdo(n)) then
-
+      do 702 n=1,natom
        q1=Q(1)-r(n,1)
        q2=Q(2)-r(n,2)
        q3=Q(3)-r(n,3)
        u=q1**2+q2**2+q3**2
-       
-       
        u=u*zij
-       temp=-temp0*pc(n)
+       temp=-temp0*Iz(n)
        s0s(n)=temp*FUNCT(0,u)
        s1s(n)=temp*FUNCT(1,u)
        s2s(n)=temp*FUNCT(2,u)
@@ -1036,16 +1228,228 @@ c loop over nuclei, part common for all shell
        x4x(n,1)=temp*q1
        x4x(n,2)=temp*q2
        x4x(n,3)=temp*q3
-       endif
  702  continue
 c
 c
       ccoef=c(i,ni)*c(j,nj)
 c
-c Loop over nuclei - Nuclear attraction part ---
-      do 703 n=natom+1,natom+nsol
-       if(qmmmdo(n)) then
+      t0=ss/z2
+      t12=sks/z2
+      t10=t12-alf3*ss
 c
+      do 705 l1=1,3
+c
+       t1=Q(l1)-r(Nuc(i),l1)
+       pis=ss*t1
+       piks=sks*t1+alf2*pis
+       t14=pis/z2
+       t15=piks/z2
+       t26=t15-alf4*pis
+c
+      do 705 l2=1,l1
+       t1=Q(l2)-r(Nuc(i),l2)
+       pjs=ss*t1
+       pjks=sks*t1+alf2*pjs
+       t11=pjs/z2
+       t13=pjks/z2
+       t25=t13-alf4*pjs
+c
+       f1=1.D0
+       t1=Q(l2)-r(Nuc(i),l2)
+       dijs=t1*pis
+       dijks=t1*piks
+c
+       if (l1.eq.l2) then
+        f1=sq3
+        dijs=dijs+t0
+        dijks=dijks+t10
+       endif
+c
+       dijks=dijks+alf2*dijs
+c
+       t20=dijs/z2
+       t21=dijks/z2-alf4*dijs
+c
+      lij=3
+      if (i.eq.j) then
+       lij=l1
+      endif
+c
+
+       do 705 l3=1,lij
+c
+       t2=Q(l3)-r(Nuc(j),l3)
+       spk=t2*ss
+       skpk=t2*sks+alf2*spk
+       t22=spk/z2
+       t23=skpk/z2
+c
+       pipk=t2*pis
+       pjpk=t2*pjs
+       pikpk=t2*piks
+       pjkpk=t2*pjks
+       dijpk=t2*dijs
+       dijkpk=t2*dijks
+c
+       if (l1.eq.l3) then
+        pipk=pipk+t0
+        dijpk=dijpk+t11
+        pikpk=pikpk+t12
+        dijkpk=dijkpk+t13
+       endif
+c
+       if (l2.eq.l3) then
+        pjpk=pjpk+t0
+        dijpk=dijpk+t14
+        pjkpk=pjkpk+t12
+        dijkpk=dijkpk+t15
+       endif
+c
+       pikpk=pikpk+alf2*pipk
+       pjkpk=pjkpk+alf2*pjpk
+       dijkpk=dijkpk+alf2*dijpk
+c 
+       t16=pjpk/z2
+       t17=pjkpk/z2
+       t18=pipk/z2
+       t19=pikpk/z2
+c
+      t39=dijpk/z2
+      t40=dijkpk/z2
+      t41=t40-alf4*dijpk
+c
+      lk=l3
+      if (i.eq.j) then
+       lk=min(l3,Ll(l1)-Ll(l3)+l2)
+      endif
+       do 705 l4=1,lk
+c
+       f2=1.D0
+       t1=Q(l4)-r(Nuc(j),l4)
+       ovlap=t1*dijpk
+       tn=t1*dijkpk
+c
+       pjdkl=t1*pjpk
+       pjkdkl=t1*pjkpk
+       pidkl=t1*pipk
+       pikdkl=t1*pikpk
+       dijpl=t1*dijs
+       dijkpl=t1*dijks
+c
+       if (l1.eq.l4) then
+        ovlap=ovlap+t16
+        tn=tn+t17
+        pidkl=pidkl+t22
+        pikdkl=pikdkl+t23
+        dijpl=dijpl+t11
+        dijkpl=dijkpl+t13
+       endif
+c
+       if (l2.eq.l4) then
+        ovlap=ovlap+t18
+        tn=tn+t19
+        pjdkl=pjdkl+t22
+        pjkdkl=pjkdkl+t23
+        dijpl=dijpl+t14
+        dijkpl=dijkpl+t15
+       endif
+c
+       if (l3.eq.l4) then
+        ovlap=ovlap+t20
+        tn=tn+t21
+        pjdkl=pjdkl+t11
+        pjkdkl=pjkdkl+t25
+        pidkl=pidkl+t14
+        pikdkl=pikdkl+t26
+        f2=sq3
+       endif
+c
+       pikdkl=pikdkl+alf2*pidkl
+       pjkdkl=pjkdkl+alf2*pjdkl
+       dijkpl=dijkpl+alf2*dijpl
+c
+c l12 and l34 go from 1 to 6, spanning the d shell in
+c the order xx, xy, yy, zx, zy, zz. The same order should be used
+c in ordering the basis set, before calculating the matrix elements
+c
+       l12=Ll(l1)+l2
+       l34=Ll(l3)+l4
+       ii=i+l12-1
+       jj=j+l34-1
+c
+       k=ii+((M2-jj)*(jj-1))/2
+       tn= tn+alf2*ovlap
+c
+       cc=ccoef/(f1*f2)
+       term=cc*tn
+c
+c
+c gradients
+c
+        te=RMM(k)*cc
+        ty=te*2.D0
+        t5=ty*a(j,nj)
+        t4=ty*a(i,ni)
+c
+      t30=pjdkl/z2
+      t31=pjkdkl/z2
+      t32=t31-alf3*pjdkl
+      t33=pidkl/z2
+      t34=pikdkl/z2
+      t35=t34-alf3*pidkl
+      t36=dijpl/z2
+      t37=dijkpl/z2
+      t38=t37-alf4*dijpl
+c
+
+      do 705 l5=1,3
+      t1=Q(l5)-r(Nuc(i),l5)
+      t2=Q(l5)-r(Nuc(j),l5)
+      tx=r(Nuc(i),l5)-r(Nuc(j),l5)
+c
+      fd=t1*ovlap
+      fkd=t1*tn
+      dkf=t2*tn
+c
+      if (l1.eq.l5) then
+       fd=fd+t30
+       fkd=fkd+t32
+       dkf=dkf+t31
+       ff(Nuc(i),l5)=ff(Nuc(i),l5)-te*pjkdkl
+      endif
+c
+      if (l2.eq.l5) then
+       fd=fd+t33
+       fkd=fkd+t35
+       dkf=dkf+t34
+       ff(Nuc(i),l5)=ff(Nuc(i),l5)-te*pikdkl
+      endif
+c
+      if (l3.eq.l5) then
+       fd=fd+t36
+       fkd=fkd+t37
+       dkf=dkf+t38
+       ff(Nuc(j),l5)=ff(Nuc(j),l5)-te*dijkpl
+      endif
+c
+      if (l4.eq.l5) then
+       fd=fd+t39
+       fkd=fkd+t40
+       dkf=dkf+t41
+       ff(Nuc(j),l5)=ff(Nuc(j),l5)-te*dijkpk
+      endif
+c
+        df=fd+tx*ovlap
+        fkd=fkd+alf2*fd
+        dkf=dkf+alf2*df
+c
+        ff(Nuc(i),l5)=ff(Nuc(i),l5)+t4*fkd
+        ff(Nuc(j),l5)=ff(Nuc(j),l5)+t5*dkf
+c
+ 705  continue
+c
+c Loop over nuclei - Nuclear attraction part ---
+      do 703 n=1,natom
 c
       t50=(s0s(n)-s1s(n))/z2
       t51=(s1s(n)-s2s(n))/z2
@@ -1314,7 +1718,7 @@ c
 c
        f2=1.D0
        t1=Q(l4)-R(Nuc(j),l4)
-       t2=Q(l4)-r(n,l4)
+       t2=Q(l4)-R(n,l4)
        tna=t1*d0p-t2*d1p
        tn1a=t1*d1p-t2*d2p
 c
@@ -1397,57 +1801,55 @@ c
 c
        if (l1.eq.l5) then
         fNd=fNd+t72
-        f(Nuc(i),l5)=f(Nuc(i),l5)-te*pj0d
+        ff(Nuc(i),l5)=ff(Nuc(i),l5)-te*pj0d
        endif
 c
        if (l2.eq.l5) then
         fNd=fNd+t73
-        f(Nuc(i),l5)=f(Nuc(i),l5)-te*pi0d
+        ff(Nuc(i),l5)=ff(Nuc(i),l5)-te*pi0d
        endif
 c
        if (l3.eq.l5) then
         fNd=fNd+t74
-        f(Nuc(j),l5)=f(Nuc(j),l5)-te*d0pl
+        ff(Nuc(j),l5)=ff(Nuc(j),l5)-te*d0pl
        endif
 c
        if (l4.eq.l5) then
         fNd=fNd+t64
-        f(Nuc(j),l5)=f(Nuc(j),l5)-te*d0p
+        ff(Nuc(j),l5)=ff(Nuc(j),l5)-te*d0p
        endif
 c
         dNf=fNd+tx*tna
-        f(Nuc(i),l5)=f(Nuc(i),l5)+t4*fNd
-        f(Nuc(j),l5)=f(Nuc(j),l5)+t5*dNf
-c
-         ff(n,l5)=ff(n,l5)+te*dn10(l5)
+        ff(Nuc(i),l5)=ff(Nuc(i),l5)+t4*fNd
+        ff(Nuc(j),l5)=ff(Nuc(j),l5)+t5*dNf
+        ff(n,l5)=ff(n,l5)+te*dn10(l5)
  706  continue
-       endif
 c
  703  continue
 c end nuclear attraction part --------
-       endif
 c
  700  continue
-       call g2g_timer_stop('dd')
-c       do 128 j1=1,natom
-c128     write(79,*) f(j1,1),f(j1,2),f(j1,3)
-c       do j1=natom+1,nsol+natom
-c         write(*,*) 'nsol',natom,nsol
-c       write(78,*) ff(j1,1),ff(j1,2),ff(j1,3)
-c        enddo
 
-c      stop
+      if (igpu.gt.3) natom = natomold
+c
+c test of penalty function ------------------------------------
+c     f1=d(1,2)-2.89D0
+c     f2=4.0D0*0.0D0*f1
+c     ff(1,1)=ff(1,1)+f2*(r(1,1)-r(2,1))
+c     ff(1,2)=ff(1,2)+f2*(r(1,2)-r(2,2))
+c     ff(1,3)=ff(1,3)+f2*(r(1,3)-r(2,3))
+c
+c     ff(2,1)=ff(2,1)-f2*(r(1,1)-r(2,1))
+c     ff(2,2)=ff(2,2)-f2*(r(1,2)-r(2,2))
+c     ff(2,3)=ff(2,3)-f2*(r(1,3)-r(2,3))
 c
 c----------------------------------------------------------------
-    
-      deallocate (qmmmdo)
-      deallocate(s0s,s1s,s2s,s3s
-     > ,s4s,s5s,s6s,x0x,x1x,x2x,x3x
-     >,x4x,x5x)
-
-
+c     write(*,*) 'int1G'
+c     do i=1,natom
+c      write(*,*) i,ff(i,1),ff(i,2),ff(i,3)
+c     enddo
       return
-      end
+      end subroutine
 c-------------------------------------------------------------------
 
 

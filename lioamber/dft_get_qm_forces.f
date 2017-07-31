@@ -10,6 +10,7 @@
      &                     , qm_forces_ds, qm_forces_total
 
        use lionml_data, only: nullify_forces
+       use faint_cpu77, only: int1G, intSG, int3G
        implicit none
        real*8,intent(out) :: dxyzqm(3,natom)
        real*8,allocatable :: ff1G(:,:),ffSG(:,:),ff3G(:,:)

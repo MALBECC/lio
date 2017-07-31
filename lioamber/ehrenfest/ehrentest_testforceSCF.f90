@@ -12,6 +12,7 @@ c Dario Estrin, 1992
       use garcha_mod
       use mathsubs
       use general_module
+      use faint_cpu77, only: int1, int2, intsol, int3mem, int3lu
 #ifdef CUBLAS
       use cublasmath
 #endif

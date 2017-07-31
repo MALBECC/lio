@@ -13,8 +13,9 @@ c---------------------------------------------------
       use mathsubs
       use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, 
      >     FOCK_ECP_read,FOCK_ECP_write,IzECP
-      REAL*8:: E2,E,Es,Ex,Exc, En
+      use faint_cpu77, only: int1, int2, intsol, int3mem, int3lu
 
+      REAL*8:: E2,En,E,Es,Ex,Exc
       dimension work(1000)
       real*8, dimension (:,:), ALLOCATABLE ::xnano,znano
       real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15,rmm13,

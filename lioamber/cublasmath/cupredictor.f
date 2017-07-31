@@ -8,6 +8,7 @@
       use garcha_mod
       use mathsubs
       use general_module    
+      use faint_cpu77, only: int3lu, intfld
        implicit real*8 (a-h,o-z)
 !       IMPLICIT REAL*8 (a-h,o-z)
        REAL*8,intent(inout) :: F1a(M,M),F1b(M,M),FON(M,M)

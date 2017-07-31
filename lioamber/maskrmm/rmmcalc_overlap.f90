@@ -6,6 +6,7 @@ subroutine rmmcalc_overlap( overlap_m, energy )
   use garcha_mod, only: M, Md, nuc, natom, natomc, d, r, atmin, &
                         rmax, jatc, nnps, nnpp, nnpd, nshell, &
                         igrid2, kkind, kkinds, cool, cools
+  use faint_cpu77, only: int1, int2, intsol, int3mem, int3lu
   implicit none
   real*8,intent(out) :: overlap_m(M,M)
   real*8,intent(out) :: energy

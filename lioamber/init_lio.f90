@@ -355,7 +355,7 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge, basis_i         &
    use garcha_mod, only: M, timedep, first_step, doing_ehrenfest               &
                       &, nshell, nuc, ncont, a, c, tdstep
 
-   use ehrenfest,  only: RhoSaveA, RhoSaveB
+   use ehrendata,  only: RhoSaveA, RhoSaveB
 
    use basis_data, only: basis_data_set
 

@@ -4,6 +4,7 @@
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine ehrensetup( Nbasis, RealRho )
+   use ehrendata, only: RhoSaveA, RhoSaveB
    implicit none
    integer, intent(in) :: Nbasis
    real*8,  intent(in) :: RealRho( Nbasis, Nbasis )

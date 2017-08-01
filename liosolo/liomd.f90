@@ -6,7 +6,7 @@ program liomd
     use garcha_mod, only : basis, basis_set, fitting_set, natom, ntatom, nsol, &
                            Iz, r, rqm, int_basis, omit_bas, verbose
     use liosubs   , only : write_energy, write_geom, set_masses, nuclear_verlet
-    use ehrenfest
+    use ehrensubs
     use basis_data
 
 #ifdef CUBLAS

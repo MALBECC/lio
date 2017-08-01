@@ -18,7 +18,7 @@ subroutine liomain(E, dipxyz)
                            doing_ehrenfest, first_step,                        &
                            Eorbs, fukui, print_coeffs, steep, idip
     use ecp_mod   , only : ecpmode, IzECP
-    use ehrenfest,  only : ehrendyn
+    use ehrensubs,  only : ehrendyn
  
     implicit none
     REAL*8, intent(inout) :: dipxyz(3), E

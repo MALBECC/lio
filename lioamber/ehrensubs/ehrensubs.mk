@@ -1,7 +1,4 @@
 ######################################################################
-SRCDIRS += ehrenfest
-
-# INTERNAL DEPENDENCIES
 included :=
 included += ehrendyn.f90
 included += ehrensetup.f90
@@ -20,5 +17,5 @@ included += RMMcalc0_Init.f90
 included += RMMcalc1_Overlap.f90
 included += RMMcalc2_FockMao.f90
 
-$(OBJPATH)/ehrenfest.o : $(included) ehrenfest.mk
+$(OBJPATH)/ehrensubs.o : $(included) ehrensubs.mk
 ######################################################################

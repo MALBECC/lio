@@ -84,9 +84,8 @@ tmplist := init_lio.f90
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/lionml_subs.mod
 
 tmplist := lionml_subs.o
-tmplist += ehrenfest.o
+tmplist += ehrensubs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/lionml_data.mod
-
 
 ################################################################################
 SRCDIRS +=
@@ -97,12 +96,17 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/build_info.mod
 
 
 ################################################################################
-include ehrenfest.mk
-OBJECTS += ehrenfest.o
+include ehrensubs/ehrensubs.mk
+OBJECTS += ehrendata.o
+OBJECTS += ehrensubs.o
+SRCDIRS += ehrensubs
 
 tmplist :=
-tmplist += SCF.o SCF_exter.o init_lio.o liomain.o
-$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ehrenfest.mod
+tmplist += SCF.o SCF_exter.o liomain.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ehrensubs.mod
+
+tmplist := ehrensubs.o init_lio.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ehrendata.mod
 
 
 ################################################################################
@@ -119,7 +123,7 @@ TD.o : properties.o
 OBJECTS += basis_data.o
 
 tmplist :=
-tmplist += ehrenfest.o init_lio.o
+tmplist += ehrensubs.o init_lio.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/basis_data.mod
 
 
@@ -225,7 +229,7 @@ SRCDIRS += maskrmm
 OBJECTS += maskrmm.o
 
 tmplist :=
-tmplist += ehrenfest.o
+tmplist += ehrensubs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/maskrmm.mod
 
 

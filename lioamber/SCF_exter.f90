@@ -77,7 +77,7 @@
 subroutine ehren_in( qmcoords, qmvels, clcoords, nsolin, dipxyz, E)
 
    use garcha_mod, only: M, natom, nucpos, nucvel, RealRho, Smat, atom_mass, Iz
-   use ehrenfest,  only: ehren_masses 
+   use ehrensubs,  only: ehren_masses 
 
    implicit none
    real*8,  intent(in)    :: qmcoords(3,natom)

@@ -89,9 +89,16 @@ tmplist := intECP.o ECP_mod.mod
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/esp_funct.mod
 
 
-OBJECTS += liokeys.o
-tmplist := ehrenfest.o
-$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/liokeys.mod
+################################################################################
+OBJECTS += lionml_data.o
+OBJECTS += lionml_subs.o 
+
+tmplist := init_lio.f90
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/lionml_subs.mod
+
+tmplist := lionml_subs.o
+tmplist += ehrenfest.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/lionml_data.mod
 
 
 ################################################################################
@@ -103,7 +110,6 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/build_info.mod
 
 
 ################################################################################
-# Ehrenfest
 include ehrenfest.mk
 OBJECTS += ehrenfest.o
 
@@ -216,7 +222,7 @@ include liosubs/liosubs.mk
 
 tmplist :=
 tmplist += SCF.o init_lio.o
-tmplist += liokeys.o
+tmplist += lionml_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/liosubs.mod
 
 

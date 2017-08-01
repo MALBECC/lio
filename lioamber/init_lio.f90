@@ -359,8 +359,9 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge, basis_i         &
 
    use basis_data, only: basis_data_set
 
-   use liokeys,    only: liokeys_Readnml, ndyn_steps, edyn_steps
-
+   use lionml_data, only: ndyn_steps, edyn_steps
+   use lionml_subs, only: lionml_Read
+      
    use liosubs,    only: catch_error
 
 
@@ -395,7 +396,7 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge, basis_i         &
 
    inputFile = 'lio.in'
    mystat = 0
-   call liokeys_Readnml( inputFile, mystat )
+   call lionml_Read( inputFile, mystat )
    if ( mystat == 1 ) then
       print*, "No lio.in file to read."
    else if ( mystat == 3 ) then

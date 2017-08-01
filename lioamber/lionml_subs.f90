@@ -1,22 +1,16 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-module liokeys
+module lionml_subs
 !
-!    This module contains a set of keywords/options that the user can provide
-! in order to customize the calculations. A description of each with posible
-! values should be included within each definition. Notice how the module and
-! this file are called "lio_keywords", whereas the actual namelist is called
-! liokeys,
-!
-!    Some procedures are provided as well: checknml_liokeys allows to do a
-! consistency check for all related variables, whereas the liokeys_Readnml
-! and liokeys_Writenml allows the whole list to be read from or writen to a
+!    Some procedures are provided as well: lionml_Check allows to do a
+! consistency check for all related variables, whereas the lionml_Read
+! and lionml_Write allows the whole list to be read from or writen to a
 ! given file or unit (two versions exist of each):
 !
-!    checknml_liokeys( return_stat )
-!    liokeys_Readnml( file_unit, return_stat )
-!    liokeys_Readnml( file_name, return_stat )
-!    liokeys_Writenml( file_unit, return_stat )
-!    liokeys_Writenml( file_name, return_stat )
+!    lionml_Check( return_stat )
+!    lionml_Read_fu( file_unit, return_stat )
+!    lionml_Read_fn( file_name, return_stat )
+!    lionml_Write_fu( file_unit, return_stat )
+!    lionml_Write_fn( file_name, return_stat )
 !
 !    The parameters are self explanatory: file_unit is the unit of an already
 ! opened file, file_name is the name of a non-opened file, you can chose which
@@ -25,100 +19,51 @@ module liokeys
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    implicit none
-!
-   integer :: ndyn_steps = 0  ! Number of total nuclear dynamic steps
-   integer :: edyn_steps = 0  ! Number of total electronic dynamic steps PER
-                              ! nuclear dynamic step.
-!
-!  ndyn == 0 & edyn == 0   =>   Single point
-!  ndyn == 0 & edyn /= 0   =>   TD electron dynamic
-!  ndyn /= 0 & edyn == 0   =>   BO atomistic dynamic
-!  ndyn /= 0 & edyn /= 0   =>   Ehrenfest dynamic
-!
-   logical :: nullify_forces = .false.
-!
-!
-!  Restarting information
-!------------------------------------------------------------------------------!
-!     If (rst_filei != ""), the program will use the information there to
-!  restart the calculations. If (rst_nfreq != 0), the program will save all
-!  the necesary information to restart calculations every rstfreq steps in
-!  "rst_fileo".
-!
-   character(len=80) :: rst_filei = ""
-   character(len=80) :: rst_fileo = "liorst.out"
-   integer           :: rst_nfreq = 0
-!
-!
-!  External Electrical Field
-!------------------------------------------------------------------------------!
-!     An external field will be active starting from "stepi" (no external
-!  field if stepi<0) to "stepf" (always on if stepf < stepi). The field may
-!  have two modulations: an oscilating one (if wavelen /= 0) or a gaussian
-!  one (if timeamp != 0; will be a full gaussian if field has a stepf or half
-!  a gaussian if not).
-!
-   integer :: eefld_stepi = 0
-   integer :: eefld_stepf = 0
-   real*8  :: eefld_timeamp = 0.0d0 ! in ps
-   real*8  :: eefld_wavelen = 0.0d0 ! in nm
 
-   real*8  :: eefld_ampx = 0.0d0 ! in au
-   real*8  :: eefld_ampy = 0.0d0 ! in au
-   real*8  :: eefld_ampz = 0.0d0 ! in au
-!
-!
-!  Namelist definition and interfaces
-!------------------------------------------------------------------------------!
-   namelist /lionml/ &
-   &  ndyn_steps, edyn_steps, nullify_forces                                   &
-   &, rst_filei, rst_fileo, rst_nfreq                                          &
-   &, eefld_stepi, eefld_stepf, eefld_timeamp, eefld_wavelen                   &
-   &, eefld_ampx, eefld_ampy, eefld_ampz
-!
-   interface liokeys_Readnml
-      module procedure liokeys_Readnml_fn
-      module procedure liokeys_Readnml_fu
-   end interface liokeys_Readnml
-!
-   interface liokeys_Writenml
-      module procedure liokeys_Writenml_fn
-      module procedure liokeys_Writenml_fu
-   end interface liokeys_Writenml
-!
+   interface lionml_Read
+      module procedure lionml_Read_fn
+      module procedure lionml_Read_fu
+   end interface lionml_Read
+
+   interface lionml_Write
+      module procedure lionml_Write_fn
+      module procedure lionml_Write_fu
+   end interface lionml_Write
+
 contains
 !
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine liokeys_Check( return_stat )
+subroutine lionml_Check( return_stat )
 
    use liosubs, only: catch_error
    implicit none
    integer, intent(out), optional :: return_stat
 
    integer                        :: mystat
-   character(len=*), parameter    :: myname="liokeys_Check"
+   character(len=*), parameter    :: myname="lionml_Check"
 
    mystat = 0
 !  PERFORM CHECKS
    call catch_error( myname, mystat, mystat, return_stat )
 
    if ( present(return_stat) ) return_stat = 0
-end subroutine liokeys_Check
+end subroutine lionml_Check
 !
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine liokeys_Readnml_fu( file_unit, return_stat )
+subroutine lionml_Read_fu( file_unit, return_stat )
 
    use liosubs, only: catch_error, safeio_rewind
+   use lionml_data, only: lionml
    implicit none
    integer, intent(in)            :: file_unit
    integer, intent(out), optional :: return_stat
 
    integer                        :: mystat
-   character(len=*), parameter    :: myname="liokeys_Readnml_fu"
+   character(len=*), parameter    :: myname="lionml_Read_fu"
 !
 !
 !  Rewind to make sure the namelist has not been already passed
@@ -145,21 +90,22 @@ subroutine liokeys_Readnml_fu( file_unit, return_stat )
 
 
    if ( present(return_stat) ) return_stat = 0
-end subroutine liokeys_Readnml_fu
+end subroutine lionml_Read_fu
 !
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine liokeys_Readnml_fn( file_name, return_stat )
+subroutine lionml_Read_fn( file_name, return_stat )
 
    use liosubs, only: catch_error, safeio_open
+   use lionml_data, only: lionml
    implicit none
    character(len=*), intent(in)   :: file_name
    integer, intent(out), optional :: return_stat
 
    integer                        :: file_unit
    integer                        :: mystat
-   character(len=*), parameter    :: myname="liokeys_Readnml_fn"
+   character(len=*), parameter    :: myname="lionml_Read_fn"
 !
 !
 !  Open the file in an available unit
@@ -181,7 +127,7 @@ subroutine liokeys_Readnml_fn( file_name, return_stat )
 !  Read the namelist
 !------------------------------------------------------------------------------!
    mystat = 0
-   call liokeys_Readnml_fu( file_unit, mystat )
+   call lionml_Read_fu( file_unit, mystat )
    if (mystat == 2) then
 !     (case: namelist not found)
       call catch_error( myname, mystat, 3, return_stat )
@@ -202,21 +148,22 @@ subroutine liokeys_Readnml_fn( file_name, return_stat )
 
 
    if ( present(return_stat) ) return_stat = 0
-end subroutine liokeys_Readnml_fn
+end subroutine lionml_Read_fn
 !
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine liokeys_Writenml_fu( file_unit, return_stat )
+subroutine lionml_Write_fu( file_unit, return_stat )
 
    use liosubs, only: catch_error
+   use lionml_data, only: lionml
    implicit none
    integer, intent(in)            :: file_unit
    integer, intent(out), optional :: return_stat
 
    logical                        :: unit_opened
    integer                        :: mystat
-   character(len=*), parameter    :: myname="liokeys_Writenml_fu"
+   character(len=*), parameter    :: myname="lionml_Write_fu"
 !
 !
 !  Sanity Check: confirm that unit is opened
@@ -243,21 +190,22 @@ subroutine liokeys_Writenml_fu( file_unit, return_stat )
 
 
    if ( present(return_stat) ) return_stat = 0
-end subroutine liokeys_Writenml_fu
+end subroutine lionml_Write_fu
 !
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine liokeys_Writenml_fn( file_name, return_stat )
+subroutine lionml_Write_fn( file_name, return_stat )
 
    use liosubs, only: catch_error, safeio_open
+   use lionml_data, only: lionml
    implicit none
    character(len=*), intent(in)   :: file_name
    integer, intent(out), optional :: return_stat
 
    integer                        :: file_unit
    integer                        :: mystat
-   character(len=*), parameter    :: myname="liokeys_Writenml_fn"
+   character(len=*), parameter    :: myname="lionml_Write_fn"
 !
 !
 !  Open, write, close, pretty clear which is which
@@ -268,7 +216,7 @@ subroutine liokeys_Writenml_fn( file_name, return_stat )
    if ( mystat /= 0 ) return
 
    mystat = 0
-   call liokeys_Writenml_fu( file_unit, mystat )
+   call lionml_Write_fu( file_unit, mystat )
    call catch_error( myname, mystat, 2, return_stat )
    if ( mystat /= 0 ) return
 
@@ -278,7 +226,7 @@ subroutine liokeys_Writenml_fn( file_name, return_stat )
    if ( mystat /= 0 ) return
 
    if ( present(return_stat) ) return_stat = 0
-end subroutine liokeys_Writenml_fn
+end subroutine lionml_Write_fn
 !
 !
 !

@@ -6,12 +6,16 @@ subroutine ehrendyn( Energy_o, DipMom_o )
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use garcha_mod, &
-   &  only: M, natom, tdstep, total_time, first_step, atom_mass                 &
+   &  only: M, natom, tdstep, total_time, first_step, atom_mass                &
    &      , nucpos, nucvel, qm_forces_ds, qm_forces_total
 
    use lionml_data, &
    &  only: ndyn_steps &
    &      , rsti_loads, rsti_fname, rsto_saves, rsto_nfreq, rsto_fname
+
+   use ehrendata, &
+   &  only: RhoSaveA, RhoSaveB, rsti_funit, rsto_funit, step_number          &
+   &      , StoredEnergy
 
    implicit none
    real*8,intent(inout) :: Energy_o, DipMom_o(3)
@@ -54,10 +58,10 @@ subroutine ehrendyn( Energy_o, DipMom_o )
 
    if (first_step) then
    if (rsti_loads) then
-      open( unit=rstinp_unit, file=rsti_fname )
+      open( unit=rsti_funit, file=rsti_fname )
       print*,'Using restart'
-      call rstload( rstinp_unit, Natom, qm_forces_total, M, RhoSaveA, RhoSaveB )
-      close( unit=rstinp_unit )
+      call rstload( rsti_funit, Natom, qm_forces_total, M, RhoSaveA, RhoSaveB )
+      close( unit=rsti_funit )
    end if
    end if
 
@@ -123,9 +127,9 @@ subroutine ehrendyn( Energy_o, DipMom_o )
       endif
 
       if ( save_this_step ) then
-         open( unit=rstout_unit, file=rsti_fname )
-         call rstsave(rstout_unit,Natom,qm_forces_total,M,RhoSaveA,RhoSaveB)
-         close( unit=rstout_unit )
+         open( unit=rsto_funit, file=rsti_fname )
+         call rstsave(rsto_funit,Natom,qm_forces_total,M,RhoSaveA,RhoSaveB)
+         close( unit=rsto_funit )
       endif
 
    endif

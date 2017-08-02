@@ -35,9 +35,9 @@ subroutine ehrendyn( Energy_o, DipMom_o )
 
 !  Preliminaries
 !------------------------------------------------------------------------------!
+   call g2g_timer_start('ehrendyn step')
    print*,'Doing ehrenfest!'
    step_number = step_number + 1
-   call g2g_timer_start('ehrendyn step')
    allocate( Smat(M,M), Sinv(M,M) )
    allocate( Lmat(M,M), Umat(M,M), Linv(M,M), Uinv(M,M) )
    allocate( Fock(M,M), FockInt(M,M) )
@@ -93,7 +93,8 @@ subroutine ehrendyn( Energy_o, DipMom_o )
 
 
 !  Density Propagation (works in ON)
-!------------------------------------------------------------------------------!
+!------------------------------------------------------------------------------
+   call g2g_timer_start('ehrendyn - density propagation')
    Fock=matmul(Fock,Uinv)
    Fock=matmul(Linv,Fock)
    Dmat=calc_Dmat(M,Linv,Uinv,Bmat)
@@ -109,6 +110,7 @@ subroutine ehrendyn( Energy_o, DipMom_o )
    call ehren_verlet_e(M,dt,Tmat,RhoOld,RhoMid,RhoNew)
    RhoSaveA=RhoMid
    RhoSaveB=RhoNew
+   call g2g_timer_stop('ehrendyn - density propagation')
 
 
 !  Saving restart
@@ -146,7 +148,7 @@ subroutine ehrendyn( Energy_o, DipMom_o )
       call write_dipole(dipxyz, dipole_norm, 134, .false.)  
 
       print*,''
-      print*,' Timer: ',total_time
+      print*,' Simulation Time: ',total_time
       print*,''
       total_time=total_time+dt*0.0241888d0
    endif

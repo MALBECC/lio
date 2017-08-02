@@ -1,5 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-  subroutine RMMcalc1_Overlap(Smat,Energy)
+subroutine RMMcalc1_Overlap(Smat,Energy)
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -11,10 +11,13 @@
   real*8,intent(out) :: Energy
   integer            :: igpu
 
+  call g2g_timer_start('RMMcalc1')
   call aint_query_gpu_level(igpu)
   if (igpu.gt.1) call aint_new_step()
   call int1(Energy)
   call rmmget_fock(Smat)
+  call g2g_timer_stop('RMMcalc1')
 
-  return; end subroutine
+
+end subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

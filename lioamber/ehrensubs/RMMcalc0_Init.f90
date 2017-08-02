@@ -11,7 +11,7 @@
   integer  :: zij,ti,tj
   integer  :: ii,jj
 
-
+  call g2g_timer_start('RMMcalc0')
   do ii=1,natom
     natomc(ii)=0
     do jj=1,natom
@@ -43,9 +43,7 @@
     nnpd(nuc(ii))=ii
   enddo
 
-  call g2g_timer_sum_start('Exchange-correlation grid setup')
   call g2g_reload_atom_positions(igrid2)
-  call g2g_timer_sum_stop('Exchange-correlation grid setup')
-
-  return; end subroutine
+  call g2g_timer_stop('RMMcalc0')
+end subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

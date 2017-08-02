@@ -39,6 +39,8 @@ subroutine RMMcalc2_FockMao( DensMao, FockMao, DipMom, Energy )
 !
 ! Calculate fixed-parts of fock
 !------------------------------------------------------------------------------!
+   call g2g_timer_start('RMMcalc2')
+   call g2g_timer_start('RMMcalc2-start')
    if (allocated(kkind))  deallocate(kkind)
    if (allocated(kkinds)) deallocate(kkinds)
    if (allocated(cool))   deallocate(cool)
@@ -55,27 +57,28 @@ subroutine RMMcalc2_FockMao( DensMao, FockMao, DipMom, Energy )
    endif
 
    call int2()
-
    if (igpu.gt.2) call aint_coulomb_init()
    if (igpu.eq.5) MEMO = .false.
+   call g2g_timer_stop('RMMcalc2-start')
    if (MEMO) then
-      call g2g_timer_start('int3mem')
+      call g2g_timer_start('RMMcalc2-int3mem')
       call int3mem()
-      call g2g_timer_stop('int3mem')
+      call g2g_timer_stop('RMMcalc2-int3mem')
    endif
 
 !
 !  Calculate unfixed Fock in RMM - int3lu and solve_groups
 !------------------------------------------------------------------------------!
+   call g2g_timer_start('RMMcalc2-solve3lu')
    call rmmput_dens(DensMao)
-   call g2g_timer_start('g2g-solve + int3lu')
    call int3lu(Energy_Coulomb)
    call g2g_solve_groups(0,Energy_Exchange,0)
-   call g2g_timer_stop('g2g-solve + int3lu')
+   call g2g_timer_stop('RMMcalc2-solve3lu')
 
 !
 !  Calculate unfixed Fock in RMM - electric field
 !------------------------------------------------------------------------------!
+   call g2g_timer_start('RMMcalc2-field')
    if (eefld_on) then
       g = 1.0d0
       factor = 2.54d0
@@ -119,10 +122,12 @@ subroutine RMMcalc2_FockMao( DensMao, FockMao, DipMom, Energy )
      Energy_Efield = Energy_Efield - strange_term
 
    end if
+   call g2g_timer_stop('RMMcalc2-field')
 !
 !
 ! Calculate Energy
 !------------------------------------------------------------------------------!
+   call g2g_timer_start('RMMcalc2-exit')
    MM=M*(M+1)/2
    MMd=Md*(Md+1)/2
    idx0=3*MM+2*MMd
@@ -142,7 +147,8 @@ subroutine RMMcalc2_FockMao( DensMao, FockMao, DipMom, Energy )
 ! Extract FockMao from RMM
 !------------------------------------------------------------------------------!
    call rmmget_fock(FockMao)
-
+   call g2g_timer_stop('RMMcalc2-exit')
+   call g2g_timer_stop('RMMcalc2')
 
 end subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

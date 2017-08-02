@@ -23,7 +23,7 @@
   integer    :: atomi,atomj
   integer    :: kk,ii,jj,ni,nj
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
+  call g2g_timer_start('calc_forceDS_dss')
   fterm=dcmplx(0.0d0,0.0d0)
   MatB(:,:)=0.0d0
 
@@ -74,5 +74,6 @@
   enddo
   enddo
 
-  return;end subroutine
+  call g2g_timer_stop('calc_forceDS_dss')
+end subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

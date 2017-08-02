@@ -1,5 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-  subroutine calc_forceDS &
+subroutine calc_forceDS &
   (Natoms,Nbasis,nucpos,nucvel,DensMao,FockMao,Sinv,Bmat,forceDS)
 !--------------------------------------------------------------------!
 !
@@ -21,10 +21,10 @@
   real*8,allocatable     :: Btrp(:,:)
   complex*16,allocatable :: InputMat(:,:),MatTrp(:,:),MatDir(:,:)
   complex*16,allocatable :: fterm1(:,:),fterm2(:,:),fterm3(:,:)
-
-! TEST
-  integer                :: ii,jj
+!
+!
 !--------------------------------------------------------------------!
+  call g2g_timer_start('calc_forceDS')
   allocate(InputMat(Nbasis,Nbasis))
   allocate(MatTrp(Nbasis,Nbasis),MatDir(Nbasis,Nbasis))
   allocate(Btrp(Nbasis,Nbasis))
@@ -66,5 +66,6 @@
 
   deallocate(InputMat,MatTrp,MatDir,Btrp)
   deallocate(fterm1,fterm2,fterm3)
-  return;end subroutine
+  call g2g_timer_stop('calc_forceDS')
+end subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -49,10 +49,7 @@ cpu/functions.o: global_memory_pool.h
 cpu/iteration.o: common.h init.h matrix.h cuda_includes.h cuda/cuda_extra.h
 cpu/iteration.o: scalar_vector_types.h datatypes/cpu_primitives.h
 cpu/iteration.o: cuda_includes.h matrix.h timer.h partition.h timer.h
-cpu/iteration.o: global_memory_pool.h cpu/pot.h
-cpu/pot.o: common.h init.h matrix.h cuda_includes.h cuda/cuda_extra.h
-cpu/pot.o: scalar_vector_types.h datatypes/cpu_primitives.h cuda/cuda_extra.h
-cpu/pot.o: matrix.h
+cpu/iteration.o: global_memory_pool.h
 cpu/weight.o: common.h init.h matrix.h cuda_includes.h cuda/cuda_extra.h
 cpu/weight.o: scalar_vector_types.h datatypes/cpu_primitives.h matrix.h
 cpu/weight.o: partition.h timer.h global_memory_pool.h
@@ -61,7 +58,6 @@ cuda/iteration.o: scalar_vector_types.h datatypes/cpu_primitives.h
 cuda/iteration.o: cuda/cuda_extra.h matrix.h timer.h partition.h timer.h
 cuda/iteration.o: global_memory_pool.h scalar_vector_types.h
 cuda/iteration.o: global_memory_pool.h cuda/gpu_variables.h
-cuda/iteration.o: cuda/kernels/pot.h cuda/kernels/pot_open.h
 cuda/iteration.o: cuda/kernels/accumulate_point.h cuda/kernels/energy.h
 cuda/iteration.o: cuda/kernels/energy_open.h cuda/kernels/energy_derivs.h
 cuda/iteration.o: cuda/kernels/rmm.h cuda/kernels/weight.h

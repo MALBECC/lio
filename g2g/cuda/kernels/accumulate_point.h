@@ -38,8 +38,6 @@ __global__ void gpu_accumulate_point_open(scalar_type* const energy, scalar_type
          _dd2_b += dd2_b[this_row];
      }
   }
-//  gpu_pot_open<scalar_type>(_partial_density_a, _partial_density_b, _dxyz_a, _dxyz_b, _dd1_a, _dd1_b, _dd2_a, _dd2_b,
-//      exc_corr, exc, corr, corr1, corr2, v_a, v_b);
   calc_ggaOS<scalar_type, WIDTH>(_partial_density_a, _partial_density_b, _dxyz_a, _dxyz_b, _dd1_a, _dd1_b, _dd2_a, _dd2_b,
       exc_corr, exc, corr, corr1, corr2, v_a, v_b, 9);
 
@@ -93,10 +91,8 @@ __global__ void gpu_accumulate_point(scalar_type* const energy, scalar_type* con
      }
   }
 
-//  gpu_pot<scalar_type, compute_energy, true, lda>(_partial_density, _dxyz, _dd1, _dd2, exc_corr, y2a);
   calc_ggaCS_in<scalar_type, 4>(_partial_density, _dxyz, _dd1, _dd2, exc_x, exc_c, y2a, 9);
   exc_corr = exc_x + exc_c;
-  // TODO: segundo parametro, que tenga en cuenta RMM+energy
 
   if (compute_energy && valid_thread)
     energy[point] = (_partial_density * point_weight) * exc_corr;

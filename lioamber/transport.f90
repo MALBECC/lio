@@ -2,7 +2,7 @@
 module transport
    implicit none
    logical              :: transport_calc=.false., generate_rho0=.false., gate_field=.false.
-   integer              :: save_charge_freq=0, ipop
+   integer              :: save_charge_freq=0, lpop
    complex*8            :: traza0, traza
    real*8               :: driving_rate=0.001, scratchgamma, GammaMagnus, GammaVerlet, re_traza
 

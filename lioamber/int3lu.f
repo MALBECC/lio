@@ -240,7 +240,7 @@ c--------------------------------------
               do 201 k=1,m1-1
  201       af(m1)=af(m1)+(Rc(k)+bda*P(k))*RMM(M9+m1+(2*Md-k)*(k-1)/2-1)
               do 202 k=m1,Md
- 202      af(m1)=af(m1)+(Rc(k)+bda*P(k))*RMM(M9+k+(2*Md-m1)*(m1-1)/2-1)
+ 202       af(m1)=af(m1)+(Rc(k)+bda*P(k))*RMM(M9+k+(2*Md-m1)*(m1-1)/2-1)
               ss9=ss9+af(m1)*P(m1)
  200        continue
 

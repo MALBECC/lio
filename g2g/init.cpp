@@ -47,10 +47,6 @@ extern "C" void g2g_init_(void)
   #endif
   #if CPU_KERNELS
   G2G::cpu_threads = omp_get_max_threads() - G2G::gpu_threads;
-  if (fortran_vars.OPEN){
-    G2G::cpu_threads = 0; // FF-Temp 
-    cout << "Openshell currently not supported with CPU multithreading.\n"; // FF-Temp
-  }
   cout << "Kernels: cpu" << endl;
   #endif
   if(gpu_threads == 0 && cpu_threads == 0)
@@ -145,9 +141,6 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
     cout << "Number of MO(DOWN): "<<fortran_vars.nco+fortran_vars.nunp<<endl;
 
     // HACERLO MEJOR
-    G2G::cpu_threads = 0; // FF-Temp
-    cout << "Openshell currently not supported with CPU multithreading.\n"; // FF-Temp
-
     fortran_vars.rmm_dens_a = FortranMatrix<double>(rhoalpha, fortran_vars.m, fortran_vars.m, fortran_vars.m);
     fortran_vars.rmm_dens_b = FortranMatrix<double>(rhobeta,  fortran_vars.m, fortran_vars.m, fortran_vars.m);
     fortran_vars.rmm_input_ndens1 = FortranMatrix<double>(RMM, fortran_vars.m, fortran_vars.m, fortran_vars.m);

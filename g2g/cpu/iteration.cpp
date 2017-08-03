@@ -14,7 +14,6 @@
 #include "../partition.h"
 
 #include <stdlib.h>
-#include "pot.h"
 #include "../pointxc/calc_ggaCS.h"
 #include "../pointxc/calc_ggaOS.h"
 #include "../pointxc/calc_ldaCS.h"
@@ -84,8 +83,8 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve_closed
         partial_density += Fi * w;
       }
       scalar_type exc = 0, corr = 0, y2a = 0;
-      cpu_pot( partial_density, exc, corr, y2a, iexch );
 
+      calc_ldaCS_in( partial_density, exc, corr, y2a, iexch);
 
       if(compute_energy) {
         localenergy +=  (partial_density * this->points[point].weight) * (exc + corr);

@@ -576,14 +576,6 @@
         ! E_restrain - distance restrain
         ! -------------------------------------------------
 
-!chakeo de E aca, nick
-! E1 tiene NQ-e-;NC-e-, ECP
-! E2 e- e- coulomb
-! Exc XC
-! E_restrain =
-! En NQM, NQM
-
-
         E=E1+E2+En+Ens+Exc+E_restrain ! Part of the QM/MM contrubution are in E1
 
 

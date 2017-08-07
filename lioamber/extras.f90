@@ -432,7 +432,6 @@
           double precision, intent(in) :: E1,E2,En,Ens,Eecp,Exc,E_restrain 
           logical, intent (in) :: ecpmode
 
-	write(*,*) "nsol vale", nsol
           write(*,*)
           write(*,7000)
           write(*,7004)
@@ -451,8 +450,6 @@
 !caso particular de escritura de energia QM/MM si nsol > 0
           write(*,7002)
           write(*,7013) Ens
-!          write(*,7002)
-!          write(*,7012) Es
         end if
           write(*,7002)
           write(*,7009) Exc

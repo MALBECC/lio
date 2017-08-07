@@ -24,7 +24,6 @@
 !#ifdef  CUBLAS
 !      use cublasmath 
 !#endif
-!      implicit real*8 (a-h,o-z)
 	IMPLICIT NONE
 	integer :: M1,M2,M3, M5, M7, M9, M11, M13, M15, M17, M18,M19, M20, MM,MM2,MMd,  &
         Md2 !temporales hasta q rompamos RMM
@@ -62,7 +61,7 @@
 
 
 ! Energy and contributions
-       real*8 :: E, E1, E1s, E2,Eecp, En, Ens, Es, E_restrain, Ex, Exc
+       real*8 :: E, E1, E1s, E2,Eecp, En, Ens, Es, E_restrain, Ex, Exc,Etrash
 !--------------------------------------------------------------------!
 
  
@@ -476,7 +475,7 @@
 
 !
         E=E1+E2+En
-        E=E+Es
+!        E=E+Es
 !
         call g2g_timer_stop('otras cosas')
         call g2g_timer_sum_pause('new density')
@@ -556,7 +555,7 @@
 
        if(nsol.gt.0.and.igpu.ge.1) then ! Computing the E1-fock without the MM atoms
           call aint_qmmm_init(0,r,pc)
-          call aint_qmmm_fock(E1s,Ens)
+          call aint_qmmm_fock(E1s,Etrash)
           call aint_qmmm_init(nsol,r,pc)
       endif
       E1s=0.D0
@@ -568,7 +567,7 @@
  
         ! -------------------------------------------------
         ! Total SCF energy =
-        ! E1 - kinetic+nuclear attraction+QM/MM interaction
+        ! E1 - kinetic+nuclear attraction+QM/MM interaction + effective core potential
         ! E2 - Coulomb
         ! En - nuclear-nuclear repulsion
         ! Ens - MM point charge-nuclear interaction
@@ -576,8 +575,16 @@
         ! Eecp - Efective core potential
         ! E_restrain - distance restrain
         ! -------------------------------------------------
-        E=E1+E2+En+Ens+Exc+E_restrain ! Part of the QM/MM contrubution are in E1
 
+!chakeo de E aca, nick
+! E1 tiene NQ-e-;NC-e-, ECP
+! E2 e- e- coulomb
+! Exc XC
+! E_restrain =
+! En NQM, NQM
+
+
+        E=E1+E2+En+Ens+Exc+E_restrain ! Part of the QM/MM contrubution are in E1
 
 
         if (npas.eq.1) npasw = 0
@@ -594,7 +601,7 @@
           Es=Es-Eecp  ! 
 
         end if
-        call WriteEnergies(E1,E2,En,Eecp,Exc,Es,ecpmode,E_restrain)
+        call WriteEnergies(E1,E2,En,Ens,Eecp,Exc,ecpmode,E_restrain)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
           npasw=npas+10

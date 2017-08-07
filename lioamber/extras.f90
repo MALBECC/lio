@@ -426,12 +426,13 @@
         END SUBROUTINE
 
 
-        SUBROUTINE WriteEnergies(E1,E2,En,Eecp,Exc,Es,ecpmode,E_restrain)
+        SUBROUTINE WriteEnergies(E1,E2,En,Ens,Eecp,Exc,ecpmode,E_restrain)
           use garcha_mod, only : number_restr,nsol
 	  IMPLICIT NONE
-          double precision, intent(in) :: E1,E2,En,Eecp,Exc,Es,E_restrain
+          double precision, intent(in) :: E1,E2,En,Ens,Eecp,Exc,E_restrain 
           logical, intent (in) :: ecpmode
 
+	write(*,*) "nsol vale", nsol
           write(*,*)
           write(*,7000)
           write(*,7004)
@@ -449,7 +450,9 @@
         if (nsol.gt.0) then
 !caso particular de escritura de energia QM/MM si nsol > 0
           write(*,7002)
-          write(*,7012) Es
+          write(*,7013) Ens
+!          write(*,7002)
+!          write(*,7012) Es
         end if
           write(*,7002)
           write(*,7009) Exc
@@ -458,7 +461,7 @@
           write(*,7011) E_restrain
           write(*,7002)
         END IF
-          write(*,7010) E1 + E2 + En + Exc
+          write(*,7010) E1 + E2 + En + Ens + Exc
           write(*,7003)
           write(*,*)
 
@@ -480,6 +483,7 @@
  7012 FORMAT(4x,"║   E QM-MM        ║",4x,F14.7,7x"║")
  7010 FORMAT(4x,"║   TOTAL          ║",4x,F14.7,7x"║")
  7011 FORMAT(4x,"║   E. RESTR.      ║",4x,F14.7,7x"║")
+ 7013 FORMAT(4x,"║   NUCLEAR QM-MM  ║",4x,F14.7,7x,"║")
         END SUBROUTINE
 
 

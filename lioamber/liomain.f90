@@ -102,10 +102,13 @@ subroutine do_forces(uid)
     endif
 
     call write_forces(dxyzqm, natom, 0, uid)
+
     deallocate (dxyzqm)
 
+
+
     if(nsol.gt.0) then
-        call write_forces(dxyzcl, nsol, natom, uid)
+        call write_forces(dxyzcl, nsol, 0, uid)
         deallocate (dxyzcl)
     endif
     call g2g_timer_stop('Forces')

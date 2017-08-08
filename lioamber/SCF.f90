@@ -580,28 +580,22 @@
 
 
         if (npas.eq.1) npasw = 0
-        if (npas.gt.npasw) then
 
-
-!%%%%%%%%%%%%%%   Write Energie Contributions   %%%%%%%%%%%%%%
-        if (ecpmode) then
-               Eecp=0.d0
-               do k=1,MM
-                 Eecp=Eecp+RMM(k)*(VAAA(k)+VAAB(k)+VBAC(k))
-               enddo
-
-          Es=Es-Eecp  ! 
-
-        end if
-        call WriteEnergies(E1,E2,En,Ens,Eecp,Exc,ecpmode,E_restrain)
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+!%%%%%%%%%%%%%%   Write Energy Contributions   %%%%%%%%%%%%%%
+        if (npas.gt.npasw) then  
+          if (ecpmode) then
+            Eecp=0.d0
+            do k=1,MM
+              Eecp=Eecp+RMM(k)*(VAAA(k)+VAAB(k)+VBAC(k))
+            enddo
+            Es=Es-Eecp  ! 
+          end if
+          call WriteEnergies(E1,E2,En,Ens,Eecp,Exc,ecpmode,E_restrain)
           npasw=npas+10
         endif
-!--------------------------------------------------------------
-      else
-        E=E-Ex
       endif
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
       endif
 ! calculation of energy weighted density matrix
 !

@@ -16,6 +16,8 @@ included += calc_kenergy.f90
 included += RMMcalc0_Init.f90
 included += RMMcalc1_Overlap.f90
 included += RMMcalc2_FockMao.f90
+included += RMMcalc3_FockMao.f90
+included += RMMcalc4_FockMao.f90
 
 $(OBJPATH)/ehrensubs.o : $(included) ehrensubs.mk
 ######################################################################

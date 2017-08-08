@@ -79,7 +79,7 @@ void PointGroupGPU<scalar_type>::solve(
     Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,
     double& energy,double& energy_i, double& energy_c, double& energy_c1, double& energy_c2,
     HostMatrix<double>& fort_forces_ms, int inner_threads, HostMatrix<double>& rmm_output_local, bool open ){
-
+/*
   if ( open ) {
       solve_opened( timers, compute_rmm, lda, compute_forces, compute_energy,
                     energy, energy_i, energy_c, energy_c1, energy_c2,
@@ -89,8 +89,7 @@ void PointGroupGPU<scalar_type>::solve(
       solve_closed( timers, compute_rmm, lda, compute_forces, compute_energy,
                     energy, fort_forces_ms, inner_threads, rmm_output_local );
   }
-
-
+*/
 //  counter_iter++;                                                            // For Debug FF
 //  std::cout << "Grupo " << counter_iter << " Energia : " << energy << " \n"; // For Debug FF
 
@@ -362,9 +361,16 @@ void PointGroupGPU<scalar_type>::solve_closed(
 //======================
 template<class scalar_type>
 void PointGroupGPU<scalar_type>::solve_opened(
-    Timers& timers, bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,
-    double& energy, double& energy_i, double& energy_c, double& energy_c1, double& energy_c2,
-    HostMatrix<double>& fort_forces_ms ){
+    Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
+    bool compute_energy, double& energy, double& energy_i,
+    double& energy_c, double& energy_c1, double& energy_c2,
+    HostMatrix<double>& fort_forces_ms,
+    HostMatrix<double>& rmm_output_local_a,
+    HostMatrix<double>& rmm_output_local_b){
+
+  int device;
+  cudaGetDevice(&device);
+  current_device = device;
 
   /*** Computo sobre cada cubo ****/
   CudaMatrix<scalar_type> point_weights_gpu;
@@ -636,8 +642,8 @@ void PointGroupGPU<scalar_type>::solve_opened(
     /*** Contribute this RMM to the total RMM ***/
     HostMatrix<scalar_type> rmm_output_a_cpu(rmm_output_a_gpu);
     HostMatrix<scalar_type> rmm_output_b_cpu(rmm_output_b_gpu);
-    this->add_rmm_output_a(rmm_output_a_cpu);
-    this->add_rmm_output_b(rmm_output_b_cpu);
+    this->add_rmm_output(rmm_output_a_cpu, rmm_output_local_a);
+    this->add_rmm_output(rmm_output_b_cpu, rmm_output_local_b);
   }
   timers.rmm.pause_and_sync();
 

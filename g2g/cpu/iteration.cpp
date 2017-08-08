@@ -28,6 +28,7 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve
   double& energy_c1, double& energy_c2, HostMatrix<double> & fort_forces,
   int inner_threads, HostMatrix<double> & rmm_global_output, bool OPEN)
 {
+/*
    if (OPEN) {
       this->solve_opened( timers, compute_rmm, lda, compute_forces,
                           compute_energy, energy, energy_i, energy_c,
@@ -38,6 +39,7 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve
                           compute_energy, energy, fort_forces,
                           inner_threads, rmm_global_output);
    };
+*/
 }
 
 template<class scalar_type> void PointGroupCPU<scalar_type>::solve_closed
@@ -271,11 +273,12 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve_opened
    ( Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
      bool compute_energy, double& energy, double& energy_i,
      double& energy_c, double& energy_c1, double& energy_c2,
-     HostMatrix<double>& fort_forces_ms)
+     HostMatrix<double>& fort_forces_ms, HostMatrix<double>& rmm_output_local_a,
+     HostMatrix<double>& rmm_output_local_b)
 {
 // TODO
    std::cout << " NO SOUP FOR YOU! \n";
-   exit();
+   std::exit(0);
 }
 
 template class PointGroup<double>;

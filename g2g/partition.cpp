@@ -429,7 +429,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
       int ind = work[i][j];
       Timer element;
       element.start_and_sync();
-
+/*
       std::cout << "I'm thread " << omp_get_thread_num() << " and i is " << i << endl; // FF-Temp
       if(ind >= cubes.size()){
         spheres[ind-cubes.size()]->solve(ts, compute_rmm,lda,compute_forces, compute_energy,
@@ -441,6 +441,31 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
             fort_forces_ms[i], 1, rmm_outputs[i], OPEN);
       }
        std::cout << "Todo marcha bien Milhouse " <<  endl; // FF-Temp
+*/
+      if(OPEN) {
+        if(ind >= cubes.size()){
+          spheres[ind-cubes.size()]->solve_opened(ts, compute_rmm, lda,
+              compute_forces, compute_energy, local_energy, spheres_energy_i,
+              spheres_energy_c, spheres_energy_c1, spheres_energy_c2,
+              fort_forces_ms[i], rmm_outputs_a[i], rmm_outputs_b[i]);
+        } else {
+          cubes[ind]->solve_opened(ts, compute_rmm, lda,
+              compute_forces, compute_energy, local_energy, spheres_energy_i,
+              spheres_energy_c, spheres_energy_c1, spheres_energy_c2,
+              fort_forces_ms[i], rmm_outputs_a[i], rmm_outputs_b[i]);
+        }
+      } else {
+        if(ind >= cubes.size()){
+          spheres[ind-cubes.size()]->solve_closed(ts, compute_rmm, lda,
+              compute_forces, compute_energy, local_energy, fort_forces_ms[i],
+              1, rmm_outputs[i]);
+        } else {
+          cubes[ind]->solve_closed(ts, compute_rmm, lda,
+              compute_forces, compute_energy, local_energy, fort_forces_ms[i],
+              1, rmm_outputs[i]);
+        }
+      }
+
 #if GPU_KERNEL
       if(gpu_thread) {
         cudaDeviceSynchronize();

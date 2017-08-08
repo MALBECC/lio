@@ -62,7 +62,22 @@
 
 ! Energy and contributions
        real*8 :: E, E1, E1s, E2,Eecp, En, Ens, Es, E_restrain, Ex, Exc,Etrash
-!--------------------------------------------------------------------!
+        ! -------------------------------------------------
+        ! E = Total SCF energy 
+        ! E1 - kinetic + nuclear attraction + e-/MM charge interaction + effective core potetial
+        ! E1s - kinetic + nuclear attraction + effective core potetial 
+        ! E2 - Coulomb (e- - e-)
+        ! Eecp - Efective core potential
+        ! En - nuclear-nuclear repulsion
+        ! Ens - MM point charge-nuclear interaction
+        ! Es
+        ! E_restrain - distance restrain
+        ! Ex - exchange-correlation inside SCF loop
+        ! Exc - exchange-correlation
+        ! Etrash - auxiliar variable
+        ! ------------------------------------------------
+
+
 
  
 #ifdef  CUBLAS
@@ -577,7 +592,6 @@
         ! -------------------------------------------------
 
         E=E1+E2+En+Ens+Exc+E_restrain ! Part of the QM/MM contrubution are in E1
-
 
         if (npas.eq.1) npasw = 0
 

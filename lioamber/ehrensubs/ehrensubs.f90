@@ -25,6 +25,8 @@ contains
 #  include "RMMcalc0_Init.f90"
 #  include "RMMcalc1_Overlap.f90"
 #  include "RMMcalc2_FockMao.f90"
+#  include "RMMcalc3_FockMao.f90"
+#  include "RMMcalc4_FockMao.f90"
 
 end module ehrensubs
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

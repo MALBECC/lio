@@ -11,7 +11,7 @@ subroutine ehrensetup( Natoms, Nbasis, RealRho )
    integer, intent(in) :: Nbasis
    real*8,  intent(in) :: RealRho( Nbasis, Nbasis )
 
-   RhoSaveA = DCMPLX( RealRho )
+   RhoSaveA = DCMPLX( 0.0d0, 0.0d0 )
    RhoSaveB = DCMPLX( RealRho )
 
    if (.not.allocated(qm_forces_total)) then

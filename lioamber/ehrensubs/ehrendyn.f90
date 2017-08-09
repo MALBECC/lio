@@ -20,10 +20,11 @@ subroutine ehrendyn( energy_o, dipmom_o )
    implicit none
    real*8,intent(inout) :: energy_o, dipmom_o(3)
    real*8               :: energy,   dipmom(3)
+   real*8               :: energy0
 
    real*8  :: dipmom_norm
    real*8  :: nucvel_update(3)
-   real*8  :: dtn
+   real*8  :: dtn, dte
    integer :: nn, kk
    logical :: first_from_scratch
 
@@ -31,6 +32,7 @@ subroutine ehrendyn( energy_o, dipmom_o )
    real*8,allocatable,dimension(:,:)     :: Lmat, Umat, Linv, Uinv
    real*8,allocatable,dimension(:,:)     :: Fock, Fock0
    complex*16,allocatable,dimension(:,:) :: RhoOld, RhoMid, RhoNew
+   complex*16,allocatable,dimension(:,:) :: RhoMidF
    real*8,allocatable,dimension(:,:)     :: Bmat, Dmat
    complex*16,allocatable,dimension(:,:) :: Tmat
 !
@@ -38,16 +40,17 @@ subroutine ehrendyn( energy_o, dipmom_o )
 !
 !  Preliminaries
 !------------------------------------------------------------------------------!
-   call g2g_timer_start('ehrendyn step')
+   call g2g_timer_start('ehrendyn - nuclear step')
    print*,'Doing ehrenfest!'
    step_number = step_number + 1
    allocate( Smat(M,M), Sinv(M,M) )
    allocate( Lmat(M,M), Umat(M,M), Linv(M,M), Uinv(M,M) )
    allocate( Fock(M,M), Fock0(M,M) )
-   allocate( RhoOld(M,M), RhoMid(M,M), RhoNew(M,M) )
+   allocate( RhoOld(M,M), RhoMid(M,M), RhoNew(M,M), RhoMidF(M,M) )
    allocate( Bmat(M,M), Dmat(M,M), Tmat(M,M) )
 
-   dtn=tdstep
+   dtn = tdstep
+   dte = ( tdstep / edyn_steps )
 
    if (first_step) then
    if (rsti_loads) then
@@ -56,11 +59,10 @@ subroutine ehrendyn( energy_o, dipmom_o )
    endif
    endif
 
-   first_from_scratch = (first_step).and.(.not.rsti_loads)
 !
 !
 !
-!  Update velocities
+!  Update velocities and calculate fixed fock
 !------------------------------------------------------------------------------!
    do nn=1,natom
    do kk=1,3
@@ -68,47 +70,56 @@ subroutine ehrendyn( energy_o, dipmom_o )
       nucvel(kk,nn)     = nucvel(kk,nn) + nucvel_update(kk)
    enddo
    enddo
-!
-!
-!
-!  Nuclear Force Calculation (works in AO)
-!------------------------------------------------------------------------------!
-   energy=0.0d0
+
+   energy0 = 0.0d0
    call RMMcalc0_Init()
-   call RMMcalc1_Overlap(Smat,energy)
-   call ehren_cholesky(M,Smat,Lmat,Umat,Linv,Uinv,Sinv)
+   call RMMcalc1_Overlap( Smat, energy0 )
+   call ehren_cholesky( M, Smat, Lmat, Umat, Linv, Uinv, Sinv )
+   call RMMcalc2_FockMao( Fock0, energy0 )
 
-!  Esto deja la Rho correcta en RMM, pero habria que ordenarlo mejor
-   RhoMid=RhoSaveB
-   if (.not.first_from_scratch) then
-      RhoMid=matmul(RhoMid,Linv)
-      RhoMid=matmul(Uinv,RhoMid)
-   endif
-   call RMMcalc2_FockMao(Fock,energy)
-   call RMMcalc3_FockMao(RhoMid,Fock,dipmom,energy)
-   call calc_forceDS(natom,M,nucpos,nucvel,RhoMid,Fock,Sinv,Bmat,qm_forces_ds)
-!
-!
-!
-!  Density Propagation (works in ON)
-!------------------------------------------------------------------------------
-   call g2g_timer_start('ehrendyn - density propagation')
-   Fock=matmul(Fock,Uinv)
-   Fock=matmul(Linv,Fock)
-   Dmat=calc_Dmat(M,Linv,Uinv,Bmat)
-   Tmat=DCMPLX(Fock)+DCMPLX(0.0d0,1.0d0)*DCMPLX(Dmat)
 
-   RhoOld=RhoSaveA
-   RhoMid=RhoSaveB
+   RhoOld = RhoSaveA
+   RhoMid = RhoSaveB
+   first_from_scratch = (first_step).and.(.not.rsti_loads)
    if (first_from_scratch) then
-      RhoMid=matmul(RhoMid,Lmat)
-      RhoMid=matmul(Umat,RhoMid)
-      call ehren_verlet_e(M,-(dtn/2.0d0),Tmat,RhoMid,RhoMid,RhoOld)
+      RhoMid = matmul(RhoMid, Lmat)
+      RhoMid = matmul(Umat, RhoMid)
    endif
-   call ehren_verlet_e(M,dtn,Tmat,RhoOld,RhoMid,RhoNew)
-   RhoSaveA=RhoMid
-   RhoSaveB=RhoNew
-   call g2g_timer_stop('ehrendyn - density propagation')
+!
+!
+!
+!  ELECTRONIC STEP CYCLE
+!------------------------------------------------------------------------------!
+      call g2g_timer_start('ehrendyn - electronic step')
+      dipmom(:) = 0.0d0
+      energy = energy0
+      Fock = Fock0
+
+      RhoMidF = RhoMid
+      RhoMidF = matmul(RhoMidF, Linv)
+      RhoMidF = matmul(Uinv, RhoMidF)
+
+!     This should leave the correct Rho in RMM for later get_forces
+      call RMMcalc3_FockMao( RhoMidF, Fock, dipmom, energy)
+
+!     Nuclear Force Calculation (works in AO)
+      call calc_forceDS( natom, M, nucpos, nucvel, RhoMidF, Fock, Sinv, &
+                    & Bmat, qm_forces_ds )
+
+!     Set ups propagation cuasi-fock matrix
+      Fock = matmul(Fock, Uinv)
+      Fock = matmul(Linv, Fock)
+      Dmat = calc_Dmat( M, Linv, Uinv, Bmat )
+      Tmat = DCMPLX(Fock) + DCMPLX(0.0d0,1.0d0) * DCMPLX(Dmat)
+
+!     Density Propagation (works in ON)
+      if (first_from_scratch) then
+         call ehren_verlet_e( M, -(dtn/2.0d0), Tmat, RhoMid, RhoMid, RhoOld )
+      endif
+      call ehren_verlet_e( M, dtn, Tmat, RhoOld, RhoMid, RhoNew )
+      RhoOld = RhoMid
+      RhoMid = RhoNew
+      call g2g_timer_stop('ehrendyn - electronic step')
 !
 !
 !
@@ -127,6 +138,9 @@ subroutine ehrendyn( energy_o, dipmom_o )
 !
 !  Finalizations
 !------------------------------------------------------------------------------!
+   RhoSaveA = RhoOld
+   RhoSaveB = RhoMid
+
    if (rsto_saves) then
       call ehrenrsto_save( rsto_fname, rsto_funit, rsto_nfreq, ndyn_steps,     &
          & step_number, Natom, qm_forces_total, nucvel, M, RhoSaveA, RhoSaveB)
@@ -139,9 +153,9 @@ subroutine ehrendyn( energy_o, dipmom_o )
    deallocate( Smat, Sinv )
    deallocate( Lmat, Umat, Linv, Uinv )
    deallocate( Fock, Fock0 )
-   deallocate( RhoOld, RhoMid, RhoNew )
+   deallocate( RhoOld, RhoMid, RhoNew, RhoMidF )
    deallocate( Bmat, Dmat, Tmat )
-   call g2g_timer_stop('ehrendyn step')
+   call g2g_timer_stop('ehrendyn - nuclear step')
 
 901 format(F15.9,2x,F15.9)
 end subroutine

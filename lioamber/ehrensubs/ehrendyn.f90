@@ -25,16 +25,19 @@ subroutine ehrendyn( energy_o, dipmom_o )
    real*8  :: dipmom_norm
    real*8  :: nucvel_update(3)
    real*8  :: dtn, dte
+   integer :: keep_step, step_e
    integer :: nn, kk
    logical :: first_from_scratch
 
-   real*8,allocatable,dimension(:,:)     :: Smat, Sinv
-   real*8,allocatable,dimension(:,:)     :: Lmat, Umat, Linv, Uinv
-   real*8,allocatable,dimension(:,:)     :: Fock, Fock0
-   complex*16,allocatable,dimension(:,:) :: RhoOld, RhoMid, RhoNew
-   complex*16,allocatable,dimension(:,:) :: RhoMidF
-   real*8,allocatable,dimension(:,:)     :: Bmat, Dmat
-   complex*16,allocatable,dimension(:,:) :: Tmat
+   real*8, allocatable, dimension(:,:) :: kept_forces
+   real*8, allocatable, dimension(:,:) :: Smat, Sinv
+   real*8, allocatable, dimension(:,:) :: Lmat, Umat, Linv, Uinv
+   real*8, allocatable, dimension(:,:) :: Fock, Fock0
+   real*8, allocatable, dimension(:,:) :: Bmat, Dmat
+
+   complex*16, allocatable, dimension(:,:) :: RhoOld, RhoMid, RhoNew
+   complex*16, allocatable, dimension(:,:) :: RhoMidF
+   complex*16, allocatable, dimension(:,:) :: Tmat
 !
 !
 !
@@ -43,6 +46,7 @@ subroutine ehrendyn( energy_o, dipmom_o )
    call g2g_timer_start('ehrendyn - nuclear step')
    print*,'Doing ehrenfest!'
    step_number = step_number + 1
+   allocate( kept_forces(3,natom) )
    allocate( Smat(M,M), Sinv(M,M) )
    allocate( Lmat(M,M), Umat(M,M), Linv(M,M), Uinv(M,M) )
    allocate( Fock(M,M), Fock0(M,M) )
@@ -54,7 +58,7 @@ subroutine ehrendyn( energy_o, dipmom_o )
 
    if (first_step) then
    if (rsti_loads) then
-      call ehrenrsti_load( rsti_fname, rsti_funit, Natom, qm_forces_total,  &
+      call ehrenrsti_load( rsti_fname, rsti_funit, natom, qm_forces_total,  &
                          & nucvel, M, RhoSaveA, RhoSaveB )
    endif
    endif
@@ -62,7 +66,7 @@ subroutine ehrendyn( energy_o, dipmom_o )
 !
 !
 !
-!  Update velocities and calculate fixed fock
+!  Update velocities, calculate fixed fock, load last step dens matrices
 !------------------------------------------------------------------------------!
    do nn=1,natom
    do kk=1,3
@@ -77,7 +81,6 @@ subroutine ehrendyn( energy_o, dipmom_o )
    call ehren_cholesky( M, Smat, Lmat, Umat, Linv, Uinv, Sinv )
    call RMMcalc2_FockMao( Fock0, energy0 )
 
-
    RhoOld = RhoSaveA
    RhoMid = RhoSaveB
    first_from_scratch = (first_step).and.(.not.rsti_loads)
@@ -90,23 +93,26 @@ subroutine ehrendyn( energy_o, dipmom_o )
 !
 !  ELECTRONIC STEP CYCLE
 !------------------------------------------------------------------------------!
+   keep_step = ceiling( real(edyn_steps) / 2.0 )
+   do step_e = 1, edyn_steps
       call g2g_timer_start('ehrendyn - electronic step')
       dipmom(:) = 0.0d0
       energy = energy0
       Fock = Fock0
 
+!     Fock and force calculation need density in AO
       RhoMidF = RhoMid
       RhoMidF = matmul(RhoMidF, Linv)
       RhoMidF = matmul(Uinv, RhoMidF)
 
-!     This should leave the correct Rho in RMM for later get_forces
+!     Fock Calculation (this should leave the right Rho in RMM for get_forces)
       call RMMcalc3_FockMao( RhoMidF, Fock, dipmom, energy)
 
-!     Nuclear Force Calculation (works in AO)
+!     Force Calculation
       call calc_forceDS( natom, M, nucpos, nucvel, RhoMidF, Fock, Sinv, &
-                    & Bmat, qm_forces_ds )
+                       & Bmat, qm_forces_ds )
 
-!     Set ups propagation cuasi-fock matrix
+!     Set ups propagation cuasi-fock matrix (needs fock in ON)
       Fock = matmul(Fock, Uinv)
       Fock = matmul(Linv, Fock)
       Dmat = calc_Dmat( M, Linv, Uinv, Bmat )
@@ -114,12 +120,18 @@ subroutine ehrendyn( energy_o, dipmom_o )
 
 !     Density Propagation (works in ON)
       if (first_from_scratch) then
-         call ehren_verlet_e( M, -(dtn/2.0d0), Tmat, RhoMid, RhoMid, RhoOld )
+         call ehren_verlet_e( M, -(dte/2.0d0), Tmat, RhoMid, RhoMid, RhoOld )
       endif
-      call ehren_verlet_e( M, dtn, Tmat, RhoOld, RhoMid, RhoNew )
+      call ehren_verlet_e( M, dte, Tmat, RhoOld, RhoMid, RhoNew )
+
       RhoOld = RhoMid
       RhoMid = RhoNew
+      if ( step_e == keep_step ) then
+         kept_forces = qm_forces_ds
+      endif
       call g2g_timer_stop('ehrendyn - electronic step')
+   enddo
+   qm_forces_ds = kept_forces
 !
 !
 !

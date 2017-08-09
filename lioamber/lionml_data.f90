@@ -61,7 +61,7 @@ module lionml_data
 !
    &  ndyn_steps, edyn_steps, nullify_forces                                   &
 !
-   &, rsti_loads, rsto_fname, rsto_saves, rsto_nfreq, rsto_fname               &
+   &, rsti_loads, rsti_fname, rsto_saves, rsto_nfreq, rsto_fname               &
 !
    &, eefld_on, eefld_ampx, eefld_ampy, eefld_ampz, eefld_wavelen              &
    &, eefld_timegih, eefld_timegfh, eefld_timepos, eefld_timeamp

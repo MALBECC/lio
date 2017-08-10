@@ -6,6 +6,7 @@ module ehrensubs
 !
 contains
 #  include "ehrendyn.f90"
+#  include "ehrenstep.f90"
 #  include "ehrensetup.f90"
 
 #  include "setim.f90"
@@ -18,7 +19,7 @@ contains
 #  include "ehrenrst.f90"
 #  include "ehren_cholesky.f90"
 #  include "ehren_magnus.f90"
-#  include "ehren_verlet_e.f90"
+#  include "ehren_verlet.f90"
 #  include "ehren_masses.f90"
 #  include "calc_kenergy.f90"
 

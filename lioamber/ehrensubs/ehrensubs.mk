@@ -1,6 +1,7 @@
 ######################################################################
 included :=
 included += ehrendyn.f90
+included += ehrenstep.f90
 included += ehrensetup.f90
 included += setim.f90
 included += calc_forceDS.f90
@@ -9,7 +10,7 @@ included += calc_forceDS_dds.f90
 
 included += ehrenrst.f90
 included += ehren_magnus.f90
-included += ehren_verlet_e.f90
+included += ehren_verlet.f90
 included += ehren_masses.f90
 included += calc_kenergy.f90
 

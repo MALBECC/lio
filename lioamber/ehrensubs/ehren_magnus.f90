@@ -1,5 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine ehren_magnus( Nsize, Norder, dt, Fmat, Rold, Rnew )
+subroutine ehren_magnus( Nsize, Norder, dt, Fmat, Rold, Rmid, Rnew )
 !
 ! Fmat,Rold,Rnew => All in the ON basis
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -8,15 +8,16 @@ subroutine ehren_magnus( Nsize, Norder, dt, Fmat, Rold, Rnew )
   real*8,intent(in)      :: dt
   complex*16,intent(in)  :: Fmat(Nsize,Nsize)
   complex*16,intent(in)  :: Rold(Nsize,Nsize)
+  complex*16,intent(in)  :: Rmid(Nsize,Nsize)
   complex*16,intent(out) :: Rnew(Nsize,Nsize)
 
-  integer :: kk,ii,jj
+  integer :: kk, ii, jj
   real*8  :: factinv, acum, tots
   complex*16,allocatable :: Omega1(:,:)
   complex*16,allocatable :: ConmutAcum(:,:)
   complex*16,allocatable :: TermPos(:,:),TermNeg(:,:)
-
-
+!
+!
 ! Initializations
 !------------------------------------------------------------------------------!
   allocate( Omega1(Nsize,Nsize) )
@@ -25,20 +26,22 @@ subroutine ehren_magnus( Nsize, Norder, dt, Fmat, Rold, Rnew )
 
   Rnew = Rold
   ConmutAcum = Rold
-  Omega1 = DCMPLX(0.0d0,-1.0d0) * (Fmat) * (dt)
-  factinv = 1.0d0
-
-
+  Omega1 = DCMPLX(0.0d0,-2.0d0) * (Fmat) * (dt)
+!  factinv = 1.0d0
+!
+!
 ! Calculations
 !------------------------------------------------------------------------------!
   do kk = 1, Norder
-    TermPos =matmul(Omega1, ConmutAcum)
-    TermNeg =matmul(ConmutAcum, Omega1)
-    ConmutAcum = TermPos - TermNeg
-    factinv = factinv / dble(kk)
-    Rnew = Rnew + factinv * ConmutAcum
+    TermPos = matmul(Omega1, ConmutAcum)
+    TermNeg = matmul(ConmutAcum, Omega1)
+    factinv = 1.0d0 / dble(kk)
+    ConmutAcum = (TermPos - TermNeg) * factinv
+    Rnew = Rnew + ConmutAcum
+!    factinv = factinv / dble(kk)
+!    Rnew = Rnew + factinv * ConmutAcum
   enddo
 
   deallocate( Omega1, ConmutAcum, TermPos, TermNeg )
-end subroutine
+end subroutine ehren_magnus
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

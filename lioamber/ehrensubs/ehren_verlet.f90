@@ -22,5 +22,5 @@ subroutine ehren_verlet( Nsize, dt, Fmat, Rold, Rnow, Rnew )
   ConmMat = TermPos - TermNeg
   Rnew = Rold - dt * CMPLX(0.0d0,2.0d0) * ConmMat
 
-end subroutine
+end subroutine ehren_verlet
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

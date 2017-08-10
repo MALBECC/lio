@@ -17,8 +17,8 @@ subroutine ehrendyn( energy_o, dipmom_o )
    &      , rsti_loads, rsti_fname, rsto_saves, rsto_nfreq, rsto_fname
 
    use ehrendata, &
-   &  only: RhoSaveA, RhoSaveB, rsti_funit, rsto_funit, step_number            &
-   &      , StoredEnergy
+   &  only: StoredEnergy, RhoSaveA, RhoSaveB, rsti_funit, rsto_funit           &
+   &      , qmn_nstep, qme_nstep
 
    implicit none
    real*8,intent(inout) :: energy_o, dipmom_o(3)
@@ -26,7 +26,7 @@ subroutine ehrendyn( energy_o, dipmom_o )
    real*8               :: energy0
 
    real*8  :: dipmom_norm
-   real*8  :: nucvel_update(3)
+   real*8  :: nucvel_update(3), time_factor
    real*8  :: dtn, dte
    integer :: keep_step, step_e
    integer :: nn, kk
@@ -48,7 +48,7 @@ subroutine ehrendyn( energy_o, dipmom_o )
 !------------------------------------------------------------------------------!
    call g2g_timer_start('ehrendyn - nuclear step')
    print*,'Doing ehrenfest!'
-   step_number = step_number + 1
+   qmn_nstep = qmn_nstep + 1
    allocate( kept_forces(3,natom) )
    allocate( Smat(M,M), Sinv(M,M) )
    allocate( Lmat(M,M), Umat(M,M), Linv(M,M), Uinv(M,M) )
@@ -73,7 +73,8 @@ subroutine ehrendyn( energy_o, dipmom_o )
 !------------------------------------------------------------------------------!
    do nn=1,natom
    do kk=1,3
-      nucvel_update(kk) = (1.5d0) * dtn * qm_forces_total(kk,nn) / atom_mass(nn)
+      time_factor       = (1.0d0) * dtn - (0.5d0) * dte
+      nucvel_update(kk) = time_factor * qm_forces_total(kk,nn) / atom_mass(nn)
       nucvel(kk,nn)     = nucvel(kk,nn) + nucvel_update(kk)
    enddo
    enddo
@@ -99,6 +100,7 @@ subroutine ehrendyn( energy_o, dipmom_o )
    keep_step = ceiling( real(edyn_steps) / 2.0 )
    do step_e = 1, edyn_steps
       call g2g_timer_start('ehrendyn - electronic step')
+      qme_nstep = qme_nstep + 1
       dipmom(:) = 0.0d0
       energy = energy0
       Fock = Fock0
@@ -112,8 +114,16 @@ subroutine ehrendyn( energy_o, dipmom_o )
       call RMMcalc3_FockMao( RhoMidF, Fock, dipmom, energy)
 
 !     Force Calculation
+!      if ( (nn==1) .or. (nn==keep_step) ) then
+      do nn=1,natom
+      do kk=1,3
+         nucvel_update(kk) = dte * qm_forces_total(kk,nn) / atom_mass(nn)
+         nucvel(kk,nn)     = nucvel(kk,nn) + nucvel_update(kk)
+      enddo
+      enddo
       call calc_forceDS( natom, M, nucpos, nucvel, RhoMidF, Fock, Sinv, &
                        & Bmat, qm_forces_ds )
+!      end if
 
 !     Set ups propagation cuasi-fock matrix (needs fock in ON)
       Fock = matmul(Fock, Uinv)
@@ -158,7 +168,7 @@ subroutine ehrendyn( energy_o, dipmom_o )
 
    if (rsto_saves) then
       call ehrenrsto_save( rsto_fname, rsto_funit, rsto_nfreq, ndyn_steps,     &
-         & step_number, Natom, qm_forces_total, nucvel, M, RhoSaveA, RhoSaveB)
+         & qmn_nstep, Natom, qm_forces_total, nucvel, M, RhoSaveA, RhoSaveB)
    endif
 
    dipmom_o = dipmom

@@ -10,7 +10,7 @@ subroutine ehrendyn( energy_o, dipmom_o )
    &      , qm_forces_ds, qm_forces_total
 
    use lionml_data, &
-   &  only: ndyn_steps, edyn_steps &
+   &  only: ndyn_steps, edyn_steps, propagator &
    &      , rsti_loads, rsti_fname, rsto_saves, rsto_nfreq, rsto_fname
 
    use ehrendata, &
@@ -23,9 +23,9 @@ subroutine ehrendyn( energy_o, dipmom_o )
    real*8               :: dipmom_norm
 
    real*8  :: nucvel_update(3), time_factor
-   real*8  :: dtn, dte
+   real*8  :: dtn, dte, dtaux
    integer :: elstep_local, elstep_keeps
-   integer :: substeps, substep
+   integer :: substep, substeps
    integer :: nn, kk
 
    logical :: first_nustep
@@ -109,53 +109,56 @@ subroutine ehrendyn( energy_o, dipmom_o )
    do elstep_local = 1, edyn_steps
       call g2g_timer_start('ehrendyn - electronic step')
       elstep_count = elstep_count + 1
+      dipmom(:) = 0.0d0
+      energy = energy0
+      Fock = Fock0
+      substeps = 20
 
-      substeps = 1
-      do substep = 1, substeps
-         dipmom(:) = 0.0d0
-         energy = energy0
-         Fock = Fock0
+      if (missing_last) then
+         dtaux = (-dte) / ( (2.0d0)*(substeps) )
+         RhoOld = RhoMid
+         call ehrenstep( 1, dtaux, M, natom, nucpos, nucvel, qm_forces_ds,     &
+                       & Sinv, Uinv, Linv, RhoOld, RhoMid, RhoNew, Fock,       &
+                       & energy, dipmom )
+         RhoOld = RhoNew
+         dtaux = (dte) / (substeps)
 
-!        Fock and force calculation need density in AO
-         RhoMidF = RhoMid
-         RhoMidF = matmul(RhoMidF, Linv)
-         RhoMidF = matmul(Uinv, RhoMidF)
-
-!        Fock Calculation (this should leave the right Rho in RMM for get_forces)
-         call RMMcalc3_FockMao( RhoMidF, Fock, dipmom, energy)
-
-!        Force Calculation
-         do nn = 1, natom
-         do kk = 1, 3
-            nucvel_update(kk) = dte * qm_forces_total(kk,nn) / atom_mass(nn)
-            nucvel(kk,nn)     = nucvel(kk,nn) + nucvel_update(kk)
+         do substep = 1, substeps
+            dipmom(:) = 0.0d0
+            energy = energy0
+            Fock = Fock0
+            call ehrenstep( 1, dtaux, M, natom, nucpos, nucvel, qm_forces_ds,  &
+                          & Sinv, Uinv, Linv, RhoOld, RhoMid, RhoNew, Fock,    &
+                          & energy, dipmom )
+            RhoOld = RhoMid
+            RhoMid = RhoNew
          enddo
-         enddo
-         call calc_forceDS( natom, M, nucpos, nucvel, RhoMidF, Fock, Sinv,     &
-                          & Bmat, qm_forces_ds )
+         RhoOld = RhoSaveB
+         missing_last = .false.
 
-!        Set ups propagation cuasi-fock matrix (needs fock in ON)
-         Fock = matmul(Fock, Uinv)
-         Fock = matmul(Linv, Fock)
-         Dmat = calc_Dmat( M, Linv, Uinv, Bmat )
-         Tmat = DCMPLX(Fock) + DCMPLX(0.0d0,1.0d0) * DCMPLX(Dmat)
-
-!        Density Propagation (works in ON)
-         if (missing_last) then
-            call ehren_verlet( M, -(dte/2.0d0), Tmat, RhoMid, RhoMid, RhoOld )
-         endif
-         call ehren_verlet( M, dte, Tmat, RhoOld, RhoMid, RhoNew )
-
+      else
+         call ehrenstep( propagator, dte, M, natom, nucpos, nucvel,            &
+                       & qm_forces_ds, Sinv, Uinv, Linv, RhoOld, RhoMid,       &
+                       & RhoNew, Fock, energy, dipmom )
          RhoOld = RhoMid
          RhoMid = RhoNew
+
+      end if
+
+      do nn = 1, natom
+      do kk = 1, 3
+         nucvel_update(kk) = dte * qm_forces_total(kk,nn) / atom_mass(nn)
+         nucvel(kk,nn)     = nucvel(kk,nn) + nucvel_update(kk)
+      enddo
       enddo
 
-      if ( elstep_local == elstep_keeps ) then
-         kept_forces = qm_forces_ds
-      endif
+      if ( elstep_local == elstep_keeps ) kept_forces = qm_forces_ds
       call g2g_timer_stop('ehrendyn - electronic step')
+
    enddo
 
+   RhoSaveA = RhoOld
+   RhoSaveB = RhoMid
    qm_forces_ds = kept_forces
 !
 !
@@ -175,9 +178,6 @@ subroutine ehrendyn( energy_o, dipmom_o )
 !
 !  Finalizations
 !------------------------------------------------------------------------------!
-   RhoSaveA = RhoOld
-   RhoSaveB = RhoMid
-
    if (rsto_saves) then
       call ehrenrsto_save( rsto_fname, rsto_funit, rsto_nfreq, ndyn_steps,     &
          & nustep_count, Natom, qm_forces_total, nucvel, M, RhoSaveA, RhoSaveB)

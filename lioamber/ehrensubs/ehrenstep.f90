@@ -58,10 +58,12 @@ subroutine ehrenstep( propagator_id, dt, nbasis, natoms,                       &
 
 !  Density Propagation (works in ON)
    if (propagator_id==propagator_id_verlet) then
+      print*,'This is verlet!'
       call ehren_verlet( nbasis, dt, Tmat, dens_old, dens_mid, dens_new )
 
    else if (propagator_id==propagator_id_magnus) then
-      call ehren_magnus( nbasis, 20, dt, Tmat, dens_old, dens_new )
+      print*,'This is magnus!'
+      call ehren_magnus( nbasis, 20, dt, Tmat, dens_mid, dens_old, dens_new )
 
    else
       print*,'Unidentified substep!'; stop

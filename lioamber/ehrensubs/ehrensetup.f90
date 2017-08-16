@@ -4,25 +4,29 @@
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine ehrensetup( Natoms, Nbasis, RealRho )
-   use ehrendata,  only: RhoSaveA, RhoSaveB
+   use ehrendata,  only: stored_densM1, stored_densM2
    use garcha_mod, only: qm_forces_ds, qm_forces_total
+
    implicit none
    integer, intent(in) :: Natoms
    integer, intent(in) :: Nbasis
    real*8,  intent(in) :: RealRho( Nbasis, Nbasis )
 
-   RhoSaveA = DCMPLX( 0.0d0, 0.0d0 )
-   RhoSaveB = DCMPLX( RealRho )
+   if (allocated(stored_densM1)) deallocate(stored_densM1)
+   allocate(stored_densM1( Nbasis, Nbasis ))
+   stored_densM1 = DCMPLX( 0.0d0, 0.0d0 )
 
-   if (.not.allocated(qm_forces_total)) then
-      allocate( qm_forces_total(3, Natoms) )
-      qm_forces_total = 0.0d0
-   endif
+   if (allocated(stored_densM2)) deallocate(stored_densM2)
+   allocate(stored_densM2( Nbasis, Nbasis ))
+   stored_densM2 = DCMPLX( RealRho )
 
-   if (.not.allocated(qm_forces_ds)) then
-      allocate( qm_forces_ds(3, Natoms) )
-      qm_forces_ds = 0.0d0
-   endif
+   if (allocated(qm_forces_total)) deallocate(qm_forces_total)
+   allocate( qm_forces_total(3, Natoms) )
+   qm_forces_total = 0.0d0
+
+   if (allocated(qm_forces_ds)) deallocate(qm_forces_ds)
+   allocate( qm_forces_ds(3, Natoms) )
+   qm_forces_ds = 0.0d0
 
 end subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

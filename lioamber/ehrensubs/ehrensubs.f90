@@ -17,6 +17,7 @@ contains
 #  include "calc_Dmat_cholesky.f90"
 
 #  include "ehrenrst.f90"
+#  include "ehren_setfld.f90"
 #  include "ehren_cholesky.f90"
 #  include "ehren_magnus.f90"
 #  include "ehren_verlet.f90"

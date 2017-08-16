@@ -74,8 +74,10 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine ehren_in( qmcoords, qmvels, clcoords, nsolin, dipxyz, E)
 
-   use garcha_mod, only: M, natom, nucpos, nucvel, RealRho, Smat, atom_mass, Iz
-   use ehrensubs,  only: ehren_masses 
+   use garcha_mod,  only: M, natom, nucpos, nucvel, RealRho, Smat, atom_mass  &
+                    &   , Iz, tdstep
+   use ehrensubs,   only: ehren_masses
+   use debug_tools, only: Check_posvel
 
    implicit none
    real*8,  intent(in)    :: qmcoords(3,natom)
@@ -85,7 +87,7 @@ subroutine ehren_in( qmcoords, qmvels, clcoords, nsolin, dipxyz, E)
    real*8,  intent(inout) :: dipxyz(3)
    real*8,  intent(inout) :: E
 
-   integer :: ii, kk
+   integer :: ii, kk, funit
 
    if (allocated(nucpos)) deallocate(nucpos)
    if (allocated(nucvel)) deallocate(nucvel)
@@ -102,6 +104,8 @@ subroutine ehren_in( qmcoords, qmvels, clcoords, nsolin, dipxyz, E)
       nucvel(kk,ii) = nucvel(kk,ii)*(2.418884326505E-5)*(1.889725989d0)
    enddo
    enddo
+
+   call Check_posvel( tdstep, natom, nucpos, nucvel, 'Check_posvel.log' )
 
    if (.not.allocated(RealRho)) allocate(RealRho(M,M))
    if (.not.allocated(Smat))    allocate(Smat(M,M))

@@ -9,6 +9,7 @@ included += calc_forceDS_dss.f90
 included += calc_forceDS_dds.f90
 
 included += ehrenrst.f90
+included += ehren_setfld.f90
 included += ehren_magnus.f90
 included += ehren_verlet.f90
 included += ehren_masses.f90

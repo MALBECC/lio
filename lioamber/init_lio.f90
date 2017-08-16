@@ -350,8 +350,6 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge, basis_i         &
                       &, nshell, nuc, ncont, a, c
    use td_data, only: timedep, tdstep
 
-   use ehrendata,  only: RhoSaveA, RhoSaveB
-
    use basis_data, only: basis_data_set
 
    use lionml_data, only: ndyn_steps, edyn_steps
@@ -386,10 +384,18 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge, basis_i         &
            , Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i              &
            )
 
-   if (allocated(RhoSaveA)) deallocate(RhoSaveA)
-   if (allocated(RhoSaveB)) deallocate(RhoSaveB)
-   allocate(RhoSaveA(M,M))
-   allocate(RhoSaveB(M,M))
+   inputFile = 'lio.in'
+   mystat = 0
+   call lionml_Read( inputFile, mystat )
+   if ( mystat == 1 ) then
+      print*, "No lio.in file to read."
+   else if ( mystat == 3 ) then
+      print*, "No lionml namelist in file lio.in"
+   else if ( mystat /= 0 ) then
+      print*, "A problem occurred while trying to read namelist lionml."
+      print*, "stat = ", mystat
+      stop
+   end if
 
    first_step=.true.
 

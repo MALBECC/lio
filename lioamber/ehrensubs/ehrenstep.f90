@@ -1,5 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine ehrenstep( propagator_id, dt, nbasis, natoms,                       &
+subroutine ehrenstep( propagator_id, time, dt, nbasis, natoms,                       &
                     & nucpos, nucvel, qm_forces_ds, Sinv, Uinv, Linv,          &
                     & dens_old, dens_mid, dens_new, fock_mid, energy, dipmom )
 !------------------------------------------------------------------------------!
@@ -9,6 +9,7 @@ subroutine ehrenstep( propagator_id, dt, nbasis, natoms,                       &
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    implicit none
    integer, intent(in)       :: propagator_id
+   real*8 , intent(in)       :: time
    real*8 , intent(in)       :: dt
    integer, intent(in)       :: nbasis
    integer, intent(in)       :: natoms
@@ -28,6 +29,7 @@ subroutine ehrenstep( propagator_id, dt, nbasis, natoms,                       &
    real*8    , intent(inout) :: energy
    real*8    , intent(inout) :: dipmom(3)
 
+   real*8                    :: elec_field(3)
    real*8    , allocatable   :: Bmat(:,:)
    real*8    , allocatable   :: Dmat(:,:)
    complex*16, allocatable   :: Tmat(:,:)
@@ -44,7 +46,8 @@ subroutine ehrenstep( propagator_id, dt, nbasis, natoms,                       &
    dens_mao = dens_mid
    dens_mao = matmul(dens_mao, Linv)
    dens_mao = matmul(Uinv, dens_mao)
-   call RMMcalc3_FockMao( dens_mao, fock_mid, dipmom, energy)
+   call ehren_setfld( time, elec_field )
+   call RMMcalc3_FockMao( dens_mao, elec_field, fock_mid, dipmom, energy)
    call calc_forceDS( natoms, nbasis, nucpos, nucvel, dens_mao, fock_mid, Sinv,&
                     & Bmat, qm_forces_ds )
 

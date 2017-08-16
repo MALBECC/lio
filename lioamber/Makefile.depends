@@ -63,6 +63,10 @@ OBJECTS += field_subs.o
 
 
 ################################################################################
+# GENERIC DEPENDENCIES
+TD.o : properties.o
+
+################################################################################
 tmplist := SCF.o readECP.o drive.o intECP.o init.o init_lio.o
 tmplist += extras.o input_read.o liomain.o properties.o
 tmplist += mask_ecp.o
@@ -163,7 +167,14 @@ tmplist += SCF.f90
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fockbias_subs.mod
 
 ###############################################################################
-TD.o : properties.o
+include debug_tools/debug_tools.mk
+OBJECTS += debug_tools.o
+SRCDIRS += debug_tools
+
+tmplist :=
+tmplist += SCF.o SCF_exter.o liomain.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/debug_tools.mod
+
 
 ################################################################################
 OBJECTS += basis_data.o

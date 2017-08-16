@@ -2,12 +2,11 @@
 subroutine ehrendyn( energy_o, dipmom_o )
 !------------------------------------------------------------------------------!
 !
-!  RhoSaveA and RhoSaveB are stored in ON basis, except for the first step
+!  stored_densM1 and stored_densM2 are stored in ON basis, except for the first step
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use garcha_mod, &
-   &  only: M, natom, total_time, first_step, atom_mass                &
-   &      , nucpos, nucvel, qm_forces_ds, qm_forces_total
+   &  only: M, natom, atom_mass, nucpos, nucvel, qm_forces_ds, qm_forces_total
 
    use td_data, &
    &  only: tdstep
@@ -17,8 +16,8 @@ subroutine ehrendyn( energy_o, dipmom_o )
    &      , rsti_loads, rsti_fname, rsto_saves, rsto_nfreq, rsto_fname
 
    use ehrendata, &
-   &  only: StoredEnergy, RhoSaveA, RhoSaveB, rsti_funit, rsto_funit           &
-   &      , nustep_count, elstep_count
+   &  only: stored_time, stored_energy, stored_densM1, stored_densM2           &
+   &      , rsti_funit, rsto_funit, nustep_count, elstep_count
 
    implicit none
    real*8,intent(inout) :: dipmom_o(3), energy_o
@@ -26,7 +25,7 @@ subroutine ehrendyn( energy_o, dipmom_o )
    real*8               :: dipmom_norm
 
    real*8  :: nucvel_update(3), time_factor
-   real*8  :: dtn, dte, dtaux
+   real*8  :: time, dtn, dte, dtaux
    integer :: elstep_local, elstep_keeps
    integer :: substep, substeps
    integer :: nn, kk
@@ -54,6 +53,7 @@ subroutine ehrendyn( energy_o, dipmom_o )
 
    call g2g_timer_start('ehrendyn - nuclear step')
    nustep_count = nustep_count + 1
+   time = stored_time
 
    allocate( kept_forces(3,natom) )
    allocate( Smat(M,M), Sinv(M,M) )
@@ -72,7 +72,7 @@ subroutine ehrendyn( energy_o, dipmom_o )
 
    if (load_restart) then
       call ehrenrsti_load( rsti_fname, rsti_funit, natom, qm_forces_total,  &
-                         & nucvel, M, RhoSaveA, RhoSaveB )
+                         & nucvel, M, stored_densM1, stored_densM2 )
    endif
 
 !
@@ -95,12 +95,12 @@ subroutine ehrendyn( energy_o, dipmom_o )
    call ehren_cholesky( M, Smat, Lmat, Umat, Linv, Uinv, Sinv )
    call RMMcalc2_FockMao( Fock0, energy0 )
 
-   RhoOld = RhoSaveA
-   RhoMid = RhoSaveB
+   RhoOld = stored_densM1
+   RhoMid = stored_densM2
    if (rhomid_in_ao) then
-      RhoMid   = matmul(RhoMid, Lmat)
-      RhoMid   = matmul(Umat, RhoMid)
-      RhoSaveB = RhoMid
+      RhoMid = matmul(RhoMid, Lmat)
+      RhoMid = matmul(Umat, RhoMid)
+      stored_densM2 = RhoMid
    endif
 !
 !
@@ -120,9 +120,9 @@ subroutine ehrendyn( energy_o, dipmom_o )
       if (missing_last) then
          dtaux = (-dte) / ( (2.0d0)*(substeps) )
          RhoOld = RhoMid
-         call ehrenstep( 1, dtaux, M, natom, nucpos, nucvel, qm_forces_ds,     &
-                       & Sinv, Uinv, Linv, RhoOld, RhoMid, RhoNew, Fock,       &
-                       & energy, dipmom )
+         call ehrenstep( 1, time, dtaux, M, natom, nucpos, nucvel,             &
+                       & qm_forces_ds, Sinv, Uinv, Linv, RhoOld, RhoMid,       &
+                       & RhoNew, Fock, energy, dipmom )
          RhoOld = RhoNew
          dtaux = (dte) / (substeps)
 
@@ -130,17 +130,17 @@ subroutine ehrendyn( energy_o, dipmom_o )
             dipmom(:) = 0.0d0
             energy = energy0
             Fock = Fock0
-            call ehrenstep( 1, dtaux, M, natom, nucpos, nucvel, qm_forces_ds,  &
-                          & Sinv, Uinv, Linv, RhoOld, RhoMid, RhoNew, Fock,    &
-                          & energy, dipmom )
+            call ehrenstep( 1, time, dtaux, M, natom, nucpos, nucvel,          &
+                          & qm_forces_ds, Sinv, Uinv, Linv, RhoOld, RhoMid,    &
+                          & RhoNew, Fock, energy, dipmom )
             RhoOld = RhoMid
             RhoMid = RhoNew
          enddo
-         RhoOld = RhoSaveB
+         RhoOld = stored_densM2
          missing_last = .false.
 
       else
-         call ehrenstep( propagator, dte, M, natom, nucpos, nucvel,            &
+         call ehrenstep( propagator, time, dte, M, natom, nucpos, nucvel,      &
                        & qm_forces_ds, Sinv, Uinv, Linv, RhoOld, RhoMid,       &
                        & RhoNew, Fock, energy, dipmom )
          RhoOld = RhoMid
@@ -160,8 +160,8 @@ subroutine ehrendyn( energy_o, dipmom_o )
 
    enddo
 
-   RhoSaveA = RhoOld
-   RhoSaveB = RhoMid
+   stored_densM1 = RhoOld
+   stored_densM2 = RhoMid
    qm_forces_ds = kept_forces
 !
 !
@@ -170,11 +170,16 @@ subroutine ehrendyn( energy_o, dipmom_o )
 !------------------------------------------------------------------------------!
    if (first_nustep) then
       call write_dipole(dipmom, 0, 134, .true.)
-      total_time = 0.0d0
+      time = 0.0d0
    else
       dipmom_norm = sqrt( dipmom(1)**2 + dipmom(2)**2 + dipmom(3)**2 )
+<<<<<<< HEAD
       call write_dipole( dipmom, dipmom_norm, 134, .false.)
       total_time = total_time + dtn * 0.0241888d0
+=======
+      call write_dipole( dipmom, dipmom_norm, 134, .false.)  
+      time = time + dtn * 0.0241888d0
+>>>>>>> Many small changes performed:
    endif
 !
 !
@@ -183,12 +188,14 @@ subroutine ehrendyn( energy_o, dipmom_o )
 !------------------------------------------------------------------------------!
    if (rsto_saves) then
       call ehrenrsto_save( rsto_fname, rsto_funit, rsto_nfreq, ndyn_steps,     &
-         & nustep_count, Natom, qm_forces_total, nucvel, M, RhoSaveA, RhoSaveB)
+         & nustep_count, Natom, qm_forces_total, nucvel,                       &
+         & M, stored_densM1, stored_densM2)
    endif
 
    dipmom_o = dipmom
-   energy_o = StoredEnergy
-   StoredEnergy = energy
+   energy_o = stored_energy
+   stored_energy = energy
+   stored_time = time
 
    deallocate( Smat, Sinv )
    deallocate( Lmat, Umat, Linv, Uinv )

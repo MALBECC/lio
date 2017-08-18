@@ -8,6 +8,10 @@ include Makefile.common
 SRCS:=$(wildcard *.cpp)
 OBJ:=$(SRCS:%.cpp=%.o)
 
+POINTXC_SRC  := $(wildcard pointxc/*.cpp)
+SRCS         += $(POINTXC_SRC)
+OBJ          += $(POINTXC_SRC:%.cpp=%.o)
+
 AINT_SRC     := $(wildcard analytic_integral/*.cpp)
 SRCS         += $(AINT_SRC)
 OBJ          += $(AINT_SRC:%.cpp=%.o)
@@ -73,7 +77,11 @@ endif
 LIBRARIES := $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
 ifeq ($(intel),0)
   LIBRARIES += -L$(PACK_LIB_DIR) -lcblas
+  CXXFLAGS += -DINTEL_COMP=0
+else 
+  CXXFLAGS += -DINTEL_COMP=1
 endif
+
 
 LIBRARY=libg2g.so
 ## Targets
@@ -88,11 +96,11 @@ depend:
 	@rm -f Makefile.depends.bak
 
 libg2g.so: $(OBJ)
-	#@if [ -z "$(CUDA_HOME)" ] ; then echo "CUDA_HOME is not set. Please, check it."; exit 1; fi;
-	#@if ! test -f $(CUDA_HOME)/lib/libcudart.so; then echo "libcudart.so can not be found in CUDA_HOME/lib/, current value is '"$(CUDA_HOME)/lib"'. Please check if CUDA_HOME variable is correctly set."; exit 1; fi;
+#@if [ -z "$(CUDA_HOME)" ] ; then echo "CUDA_HOME is not set. Please, check it."; exit 1; fi;
+#@if ! test -f $(CUDA_HOME)/lib/libcudart.so; then echo "libcudart.so can not be found in CUDA_HOME/lib/, current value is '"$(CUDA_HOME)/lib"'. Please check if CUDA_HOME variable is correctly set."; exit 1; fi;
 	$(CXX) -fopenmp -shared $(LDFLAGS) -o libg2g.so $(OBJ) $(LIBRARIES)
 
 clean:
-	@echo "Removing objects"; rm -f *.o libg2g.so *.a cpu/*.o cuda/*.o
+	@echo "Removing objects"; rm -f *.o libg2g.so *.a cpu/*.o cuda/*.o pointxc/*.o
 	@rm -f cuda/*.cu_o cuda/*.cudafe* cuda/*.ptx cuda/*.hash cuda/*.cubin cuda/*.i cuda/*.ii cuda/*.fatbin.* cuda/*.cu.c
 	@rm -f analytic_integral/*.o analytic_integral/cuda/*.o

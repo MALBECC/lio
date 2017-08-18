@@ -475,7 +475,13 @@ void CoulombIntegral<scalar_type>::calc_fock( double& Es )
 
     cudaUnbindTexture(str_tex);
 
-    os_int.get_fock_output(Es, G2G::fortran_vars.rmm_output);
+    if (G2G::fortran_vars.OPEN){
+      os_int.get_fock_output(Es, G2G::fortran_vars.rmm_output_a);
+      os_int.get_fock_output(Es, G2G::fortran_vars.rmm_output_b);
+      Es = Es / 2.0f;
+    } else {
+      os_int.get_fock_output(Es, G2G::fortran_vars.rmm_output);
+    }
 
     cudaAssertNoError("CoulombIntegral::calc_fock");
 }

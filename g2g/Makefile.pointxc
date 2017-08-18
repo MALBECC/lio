@@ -1,0 +1,11 @@
+# EXTERNALS
+accumulate_point.o: calc_ggaCS.h calc_ggaOS.h calc_ldaCS.h
+iteration.o: calc_ggaCS.h calc_ggaOS.h calc_ldaCS.h
+
+# INTERNALS
+#calc_ggaCS.h: pbeCS.h
+#calc_ggaOS.h: pbeOS_main.h
+#pbeOS_main.h: pbeOS_corr.h pbeOS_exch.h
+#pbeOS_corr.h: gcorc.h
+#pbeCS.h: gcorc.h
+

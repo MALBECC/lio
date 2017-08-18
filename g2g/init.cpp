@@ -140,11 +140,10 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
     cout << "Number of MO(UP): "<<fortran_vars.nco<<endl;
     cout << "Number of MO(DOWN): "<<fortran_vars.nco+fortran_vars.nunp<<endl;
 
-    //fortran_vars.ncoa = nco;
-    //fortran_vars.ncob =
-
+    // HACERLO MEJOR
     fortran_vars.rmm_dens_a = FortranMatrix<double>(rhoalpha, fortran_vars.m, fortran_vars.m, fortran_vars.m);
     fortran_vars.rmm_dens_b = FortranMatrix<double>(rhobeta,  fortran_vars.m, fortran_vars.m, fortran_vars.m);
+    fortran_vars.rmm_input_ndens1 = FortranMatrix<double>(RMM, fortran_vars.m, fortran_vars.m, fortran_vars.m);
 
     //  Matriz de fock
     fortran_vars.rmm_output_a = FortranMatrix<double>(RMM + (M5 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);

@@ -1,6 +1,6 @@
 # -*- mode: make -*-
 
-CXXFLAGS+= -fopenmp -fPIC -Wall -Wextra -Wshadow -I. -I$(CUDAHOME)/include
+CXXFLAGS+= -fopenmp -fPIC -Wall -Wextra -Wshadow -Wno-unused-function -I. -I$(CUDAHOME)/include
 OPTIMIZECPU :=
 
 ifeq ($(intel),0)

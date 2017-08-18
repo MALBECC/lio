@@ -24,7 +24,6 @@
 !#ifdef  CUBLAS
 !      use cublasmath 
 !#endif
-!      implicit real*8 (a-h,o-z)
 	IMPLICIT NONE
 	integer :: M1,M2,M3, M5, M7, M9, M11, M13, M15, M17, M18,M19, M20, MM,MM2,MMd,  &
         Md2 !temporales hasta q rompamos RMM
@@ -62,8 +61,23 @@
 
 
 ! Energy and contributions
-       real*8 :: E, E1, E1s, E2,Eecp, En, Ens, Es, E_restrain, Ex, Exc
-!--------------------------------------------------------------------!
+       real*8 :: E, E1, E1s, E2,Eecp, En, Ens, Es, E_restrain, Ex, Exc,Etrash
+        ! -------------------------------------------------
+        ! E = Total SCF energy 
+        ! E1 - kinetic + nuclear attraction + e-/MM charge interaction + effective core potetial
+        ! E1s - kinetic + nuclear attraction + effective core potetial 
+        ! E2 - Coulomb (e- - e-)
+        ! Eecp - Efective core potential
+        ! En - nuclear-nuclear repulsion
+        ! Ens - MM point charge-nuclear interaction
+        ! Es
+        ! E_restrain - distance restrain
+        ! Ex - exchange-correlation inside SCF loop
+        ! Exc - exchange-correlation
+        ! Etrash - auxiliar variable
+        ! ------------------------------------------------
+
+
 
  
 #ifdef  CUBLAS
@@ -476,7 +490,7 @@
 
 !
         E=E1+E2+En
-        E=E+Es
+!        E=E+Es
 !
         call g2g_timer_stop('otras cosas')
         call g2g_timer_sum_pause('new density')
@@ -556,7 +570,7 @@
 
        if(nsol.gt.0.and.igpu.ge.1) then ! Computing the E1-fock without the MM atoms
           call aint_qmmm_init(0,r,pc)
-          call aint_qmmm_fock(E1s,Ens)
+          call aint_qmmm_fock(E1s,Etrash)
           call aint_qmmm_init(nsol,r,pc)
       endif
       E1s=0.D0
@@ -568,7 +582,7 @@
  
         ! -------------------------------------------------
         ! Total SCF energy =
-        ! E1 - kinetic+nuclear attraction+QM/MM interaction
+        ! E1 - kinetic+nuclear attraction+QM/MM interaction + effective core potential
         ! E2 - Coulomb
         ! En - nuclear-nuclear repulsion
         ! Ens - MM point charge-nuclear interaction
@@ -576,33 +590,26 @@
         ! Eecp - Efective core potential
         ! E_restrain - distance restrain
         ! -------------------------------------------------
+
         E=E1+E2+En+Ens+Exc+E_restrain ! Part of the QM/MM contrubution are in E1
 
-
-
         if (npas.eq.1) npasw = 0
-        if (npas.gt.npasw) then
 
-
-!%%%%%%%%%%%%%%   Write Energie Contributions   %%%%%%%%%%%%%%
-        if (ecpmode) then
-               Eecp=0.d0
-               do k=1,MM
-                 Eecp=Eecp+RMM(k)*(VAAA(k)+VAAB(k)+VBAC(k))
-               enddo
-
-          Es=Es-Eecp  ! 
-
-        end if
-        call WriteEnergies(E1,E2,En,Eecp,Exc,Es,ecpmode,E_restrain)
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+!%%%%%%%%%%%%%%   Write Energy Contributions   %%%%%%%%%%%%%%
+        if (npas.gt.npasw) then  
+          if (ecpmode) then
+            Eecp=0.d0
+            do k=1,MM
+              Eecp=Eecp+RMM(k)*(VAAA(k)+VAAB(k)+VBAC(k))
+            enddo
+            Es=Es-Eecp  ! 
+          end if
+          call WriteEnergies(E1,E2,En,Ens,Eecp,Exc,ecpmode,E_restrain)
           npasw=npas+10
         endif
-!--------------------------------------------------------------
-      else
-        E=E-Ex
       endif
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
       endif
 ! calculation of energy weighted density matrix
 !

@@ -59,7 +59,6 @@ OBJECTS += intfld.o
 OBJECTS += intSG.o
 OBJECTS += fix_mess_rho.o
 OBJECTS += packed_storage.o
-OBJECTS += liokeys.o
 OBJECTS += sysdata.o
 OBJECTS += ECP_mod.o
 OBJECTS += test_subs.o
@@ -72,7 +71,6 @@ OBJECTS += fterm_biaspot.o
 OBJECTS += elec.o
 OBJECTS += properties.o
 OBJECTS += write_output.o
-OBJECTS += liokeys.o
 OBJECTS += errlog.o
 
 
@@ -92,6 +90,18 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/esp_funct.mod
 
 
 ################################################################################
+OBJECTS += lionml_data.o
+OBJECTS += lionml_subs.o 
+
+tmplist := init_lio.f90
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/lionml_subs.mod
+
+tmplist := lionml_subs.o
+tmplist += ehrenfest.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/lionml_data.mod
+
+
+################################################################################
 SRCDIRS +=
 OBJECTS += build_info.o
 tmplist :=
@@ -100,7 +110,6 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/build_info.mod
 
 
 ################################################################################
-# Ehrenfest
 include ehrenfest.mk
 OBJECTS += ehrenfest.o
 
@@ -212,8 +221,8 @@ vpath %.f90 liosubs
 include liosubs/liosubs.mk
 
 tmplist :=
-tmplist += SCF.o
-tmplist += liokeys.o
+tmplist += SCF.o init_lio.o
+tmplist += lionml_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/liosubs.mod
 
 

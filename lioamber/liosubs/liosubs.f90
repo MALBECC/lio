@@ -5,7 +5,6 @@ module liosubs
 !  This is a place for general use subroutines that don't belong in more 
 !  specific modules. It can also be used to temporarily store subroutines
 !  that would later will packed in another module which is not ready yet.
-!
 !  Whatever the case, procedures here should not depend on other lio modules
 !  but be as independent as possible instead.
 !
@@ -20,7 +19,8 @@ contains
 #  include "set_masses.f90"
 #  include "nuclear_verlet.f90"
 
-!  Possible IO-specific mode? 
+!  Possible IO-specific module? Think if the following procedures shouldn't
+!  go together but somewhere else.
 #  include "catch_iostat.f90"
 #  include "find_free_unit.f90"
 #  include "safeio_open.f90"

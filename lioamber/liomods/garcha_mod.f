@@ -108,17 +108,16 @@ c      parameter rmintsol=16.0D0
 !
 ! FFR - My global variables
 !------------------------------------------------------------------------------!
-       real*8,allocatable,dimension(:,:)     :: Smat
-       real*8,allocatable,dimension(:,:)     :: RealRho
+       real*8,allocatable,dimension(:,:) :: Smat
+       real*8,allocatable,dimension(:,:) :: RealRho
 
-       logical                               :: do_ehrenfest = .false.
-       logical                               :: fix_nuclei = .false.
-       logical                               :: first_step
-       real*8,allocatable,dimension(:)       :: atom_mass
-       real*8,allocatable,dimension(:,:)     :: nucpos, nucvel
-       real*8                                :: total_time
-       real*8,allocatable,dimension(:,:)     :: qm_forces_ds
-       real*8,allocatable,dimension(:,:)     :: qm_forces_total
+       logical                           :: doing_ehrenfest=.false.
+       logical                           :: first_step
+       real*8,allocatable,dimension(:)   :: atom_mass
+       real*8,allocatable,dimension(:,:) :: nucpos, nucvel
+       real*8                            :: total_time
+       real*8,allocatable,dimension(:,:) :: qm_forces_ds
+       real*8,allocatable,dimension(:,:) :: qm_forces_total
 !------------------------------------------------------------------------------!
 
 !-Variables for hibrid damping-diis

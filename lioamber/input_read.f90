@@ -80,6 +80,7 @@ subroutine read_options(inputFile, charge)
         open(unit = 100, file = inputFile, iostat = ios)
         read(100, nml = lio, iostat = iErr)
         if(ierr.gt.0) stop 'Input error in LIO namelist.'
+        close(unit = 100)
     else
         write(*,*) 'File ', adjustl(inputFile), ' not found. Using defaults.'
     endif

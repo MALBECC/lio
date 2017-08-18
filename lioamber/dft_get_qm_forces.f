@@ -6,8 +6,10 @@
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        use garcha_mod, only: natom,nsol,cubegen_only,r,number_restr
-     &                     , first_step, fix_nuclei, do_ehrenfest
+     &                     , first_step, doing_ehrenfest
      &                     , qm_forces_ds, qm_forces_total
+
+       use lionml_data, only: nullify_forces
        implicit none
        real*8,intent(out) :: dxyzqm(3,natom)
        real*8,allocatable :: ff1G(:,:),ffSG(:,:),ff3G(:,:)
@@ -42,7 +44,7 @@
        call g2g_timer_start('intSG')
        call g2g_timer_sum_start('Overlap gradients')
        ffSG=0.0d0
-       if (do_ehrenfest) then
+       if (doing_ehrenfest) then
           ffSG=-transpose(qm_forces_ds)
        else
           call intSG(ffSG)
@@ -69,8 +71,8 @@ c       factor=627.509391D0/0.5291772108D0
 !
 ! FFR - Ehrenfest needs to keep track of forces
 !--------------------------------------------------------------------!
-       if ( fix_nuclei ) dxyzqm(:,:)=0.0d0
-       if (do_ehrenfest) then
+       if ( nullify_forces ) dxyzqm(:,:)=0.0d0
+       if ( doing_ehrenfest ) then
          qm_forces_total=qm_forces_ds
          qm_forces_total=qm_forces_total-transpose(ff1G)
          qm_forces_total=qm_forces_total-transpose(ff3G)
@@ -101,10 +103,12 @@ c       factor=627.509391D0/0.5291772108D0
          write(fileunit,'(A)')
      >   '------------------------------------------------------------'
          do kk=1,natom
-           write(fileunit,200) 'TOTS',kk,
-     >       ff1G(kk,1)+ffSG(kk,1)+ff3G(kk,1),
-     >       ff1G(kk,2)+ffSG(kk,2)+ff3G(kk,2),
-     >       ff1G(kk,3)+ffSG(kk,3)+ff3G(kk,3)
+            write(fileunit,200) 'TOTS', kk,
+     >         dxyzqm(1,kk), dxyzqm(2,kk), dxyzqm(3,kk)
+!           write(fileunit,200) 'TOTS',kk,
+!     >       ff1G(kk,1)+ffSG(kk,1)+ff3G(kk,1),
+!     >       ff1G(kk,2)+ffSG(kk,2)+ff3G(kk,2),
+!     >       ff1G(kk,3)+ffSG(kk,3)+ff3G(kk,3)
          enddo
          write(fileunit,'(A)')
      >   '------------------------------------------------------------'
@@ -132,7 +136,7 @@ c       factor=627.509391D0/0.5291772108D0
        endif
 
 ! FFR: No other place for this to go right now.
-       if (first_step) first_step=.false.
+       if ( first_step ) first_step = .false.
 !--------------------------------------------------------------------!
        deallocate(ff1G,ffSG,ff3G)
  200   format(1X,A4,1X,I4,3(2X,E14.7))

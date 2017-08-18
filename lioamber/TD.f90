@@ -52,6 +52,7 @@
         xnano2,xmm,xtrans,ytrans,Y,fock,&
         F1a,F1b,overlap,rhoscratch
        real*8, dimension (:,:), ALLOCATABLE :: elmu
+
 #ifdef TD_SIMPLE
        COMPLEX*8 :: Im,Ix
        COMPLEX*8,ALLOCATABLE,DIMENSION(:,:) :: &
@@ -330,7 +331,7 @@
        allocate(sqsm(M,M))
 
        dovv=.true.
-       if (dovv.eq..true.) then
+       if (dovv.eqv..true.) then
         if (.not.allocated(orb_group)) then
           allocate(orb_group(M))
           call atmorb(group,nuc,orb_group)
@@ -515,7 +516,7 @@
             call CUBLAS_SHUTDOWN
             stop
             endif
-            rho1=0
+            rho1=0D0
 #endif
 !------------------------------------------------------------------------------!
 ! the transformation matrices is copied in xmm
@@ -621,7 +622,7 @@
 !Tansport: initializing Driging rate to the propagation------------------------!
       if(TRANSPORT_CALC) then
          GammaMagnus=driving_rate
-         GammaVerlet=GammaMagnus*0.1
+         GammaVerlet=GammaMagnus*0.1D0
          write(*,*) ' Driving Rate =', GammaMagnus
       end if
 !------------------------------------------------------------------------------!
@@ -645,7 +646,7 @@
               if (propagator.eq.1) then
                  t=(istep-1)*tdstep
               endif
-              t=t*0.02419
+              t=t*0.024190D0
               write(*,*) 'evolution time (fs)  =', t
 !--------------------------------------!
 !carlos:este if ya no estaba en el codigo nuevo
@@ -669,9 +670,9 @@
                  if (exter) then
                    g=1.0D0
                    factor=2.54D0
-                   fxx=fx*exp(-0.2*(real(istep-50))**2)
-                   fyy=fy*exp(-0.2*(real(istep-50))**2)
-                   fzz=fz*exp(-0.2*(real(istep-50))**2)
+                   fxx=fx*exp(-0.2D0*(real(istep-50))**2)
+                   fyy=fy*exp(-0.2D0*(real(istep-50))**2)
+                   fzz=fz*exp(-0.2D0*(real(istep-50))**2)
                    write(*,*) fxx,fyy,fzz
 !
                  else
@@ -854,7 +855,7 @@
 
          if(istep.ge.3) then
 ! compute the driving term for transport properties
-            scratchgamma=GammaVerlet*exp(-0.0001*(dble(istep-1000))**2)    
+            scratchgamma=GammaVerlet*exp(-0.0001D0*(dble(istep-1000))**2)    
 
           call ELECTROSTAT(rho1,mapmat,overlap,rhofirst,scratchgamma,M)
             re_traza=0.0D0
@@ -958,7 +959,7 @@
                open(unit=55555,file='DriveMul')
             endif
             if(istep.le.1000) then
-             scratchgamma=GammaMagnus*exp(-0.0001*(dble(istep-1000))**2)
+             scratchgamma=GammaMagnus*exp(-0.0001D0*(dble(istep-1000))**2)
             else
              scratchgamma=GammaMagnus
             endif
@@ -1054,7 +1055,7 @@
 #endif
 
 ! Add the driving term to the propagation
-         if(TRANSPORT_CALC == .true.) then
+         if(TRANSPORT_CALC .eqv. .true.) then
             write(*,*) 'adding driving term to the density'
             rhonew=rhonew-rho1
          endif
@@ -1321,6 +1322,13 @@
                call g2g_timer_stop('corrida 1000')
                write(*,*) t-tiempo1000
            end if
+
+!Transport: stops TD and indicate the generation of RHO0
+
+         if((istep.ge.1).and.(generate_rho0)) then
+            print*, "RHO0 GENERATED"
+            exit
+         endif
 
  999           continue
 !

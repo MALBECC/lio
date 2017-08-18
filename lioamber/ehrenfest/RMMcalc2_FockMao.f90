@@ -7,7 +7,7 @@ subroutine RMMcalc2_FockMao( DensMao, FockMao, DipMom, Energy )
    use maskrmm
    use garcha_mod, &
    &only: M, Md, RMM, kkind, kkinds, cool, cools, igrid2, epsilon, a0          &
-       &, natom, Iz, NCO, Nunp, total_time
+       &, natom, Iz, NCO, Nunp, total_time, MEMO
    use lionml_data, &
    &only: eefld_on, eefld_ampx, eefld_ampy, eefld_ampz, eefld_wavelen          &
        &, eefld_timegih, eefld_timegfh, eefld_timepos, eefld_timeamp
@@ -26,7 +26,6 @@ subroutine RMMcalc2_FockMao( DensMao, FockMao, DipMom, Energy )
 
    integer  :: kk, idx0
    integer  :: MM, MMd, igpu
-   logical  :: MEMO
 
 !  For electric field application
    real*8   :: FieldNow(3)

@@ -13,7 +13,8 @@ Production QMMM PBE dynamics
 &end
 
 &qmmm
-   qm_theory='EXTERN',
+!   qm_theory='EXTERN',
+   qm_theory='PM3',
    qmmask=':1'
    qmcharge=0,
    qmcut=15.0,

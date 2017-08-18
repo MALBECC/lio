@@ -1,22 +1,29 @@
 #/bin/bash
 ################################################################################
-RUNCOMPARE ()
-{
-   echo "vimdiff $1 $2"
-   sleep 1
-   vimdiff $1 $2
-}
+file1=watersymbo_bo.mdfrz
+file2=watersymbo_eh.mdfrz
 
-RUNCOMPARE watersymbo_bo.mdcrd watersymbo_bo.gdcrd
-RUNCOMPARE watersymbo_bo.mdvel watersymbo_bo.gdvel
-RUNCOMPARE watersymbo_bo.mdfrz watersymbo_bo.gdfrz
+echo; echo "Comparing EH and BO forces (should be similar):"
+echo "vimdiff ${file1} ${file2}"
+sleep 1
+vimdiff ${file1} ${file2}
 
-RUNCOMPARE watersymbo_eh.mdcrd watersymbo_eh.gdcrd
-RUNCOMPARE watersymbo_eh.mdvel watersymbo_eh.gdvel
-RUNCOMPARE watersymbo_eh.mdfrz watersymbo_eh.gdfrz
 
-RUNCOMPARE watersymbo_bo.mdcrd watersymbo_eh.mdcrd
-RUNCOMPARE watersymbo_bo.mdvel watersymbo_eh.mdvel
-RUNCOMPARE watersymbo_bo.mdfrz watersymbo_eh.mdfrz
+file1=watersymbo_bo.mdfrz
+file2=watersymbo_bo.gdfrz
+
+echo; echo "Comparing BO forces and reference (should be similar):"
+echo "vimdiff ${file1} ${file2}"
+sleep 1
+vimdiff ${file1} ${file2}
+
+
+file1=watersymbo_eh.mdfrz
+file2=watersymbo_eh.gdfrz
+
+echo; echo "Comparing EH forces and reference (should be similar):"
+echo "vimdiff ${file1} ${file2}"
+sleep 1
+vimdiff ${file1} ${file2}
 
 ################################################################################

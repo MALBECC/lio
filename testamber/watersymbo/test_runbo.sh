@@ -17,7 +17,6 @@ RUNSETUP ()
    mdvelo="${system}_bo.mdvel"
    mdfrzo="${system}_bo.mdfrz"
 
-   basisf="basis_dzvp.in"
    lioinp="liobo.in"
 }
 #------------------------------------------------------------------------------#
@@ -28,11 +27,9 @@ RUNAMBER ()
    cmdout="-o ${ambero} -r ${rstrto} -x ${mdcrdo}"
    cmdout=${cmdout}"  -frc ${mdfrzo} -v ${mdvelo}"
 
-   cp ${basisf} basis
    cp ${lioinp} lio.in
    ${sander} ${cmdinp} ${cmdout} > ${stdout}
-   rm basis lio.in
-   rm qm.xyz mdinfo fort.*
+   rm lio.in qm.xyz mdinfo
 }
 ################################################################################
 # RUN ORDER

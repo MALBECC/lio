@@ -1,8 +1,8 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 module transport
    implicit none
-   logical              :: transport_calc=.false., generate_rho0=.false., gate_field=.false.
-   integer              :: save_charge_freq=0, lpop
+   logical              :: transport_calc=.false., generate_rho0=.false., gate_field=.false., lpop
+   integer              :: save_charge_freq=0
    complex*8            :: traza0, traza
    real*8               :: driving_rate=0.001, scratchgamma, GammaMagnus, GammaVerlet, re_traza
 
@@ -65,8 +65,8 @@ subroutine electrostat (rho1,mapmat,overlap,rhofirst,Gamma0, M)
    integer, intent(in) :: M
    integer, intent(in) :: mapmat(M,M)
    integer             :: i, j
-   real*8,  intent(in) :: overlap(M,M)
-   real*8              :: GammaIny, GammaAbs, Gamma0
+   real*8,  intent(in) :: overlap(M,M), Gamma0
+   real*8              :: GammaIny, GammaAbs
    
 #ifdef TD_SIMPLE
    complex*8, intent(in)     :: rhofirst(M,M)
@@ -81,7 +81,7 @@ subroutine electrostat (rho1,mapmat,overlap,rhofirst,Gamma0, M)
    call g2g_timer_start('electrostat')
          
    allocate(rho_scratch(M,M,2))
-   rho_scratch=0
+   rho_scratch=0D0
          
    DO i=1,M
       DO j=1,M

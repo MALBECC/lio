@@ -101,7 +101,7 @@
       call CUBLAS_FREE ( devPPrev )
       endif
 !=======================================!
-         stat=CUBLAS_ZAXPY(M*M,1.0D0,devPNext,1,
+         stat=CUBLAS_ZAXPY(M*M,DCMPLX(1.0D0,0.0D0),devPNext,1,
      >   devPRho,1)
 !=======================================!
       if (stat.NE.0) then

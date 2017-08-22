@@ -23,6 +23,8 @@ contains
 #  include "ehrenaux_verlet.f90"
 #  include "ehrenaux_masses.f90"
 #  include "ehrenaux_calckyn.f90"
+#  include "ehrenaux_writedip.f90"
+#  include "ehrenaux_updatevel.f90"
 
 #  include "RMMcalc0_Init.f90"
 #  include "RMMcalc1_Overlap.f90"

@@ -1,7 +1,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine safeio_open( file_unit, file_name, open_mode, return_stat )
 !
-!  open_mode = ... 
+!  open_mode = ...
 !  >
 !  > = +-1   Opens existing file to read. 
 !  >
@@ -18,101 +18,76 @@ subroutine safeio_open( file_unit, file_name, open_mode, return_stat )
    integer,          intent(in)             :: open_mode
    integer,          intent(out),  optional :: return_stat
 
-   logical           :: file_exists
-   logical           :: file_opened
-
-   character(len=20) :: file_action
-   character(len=20) :: file_format
-   character(len=20) :: file_status
-
-   logical                      :: can_create, can_replace
+   logical                      :: file_opened
+   character(len=20)            :: file_format
    integer                      :: mystat
    character(len=20), parameter :: myname="safeio_open"
-
-
-
-!  (1) Apply setup according to option selected
+!
+!
+!
+! (1) Initialization and input mode check
 !------------------------------------------------------------------------------!
+   if ( present(return_stat) ) return_stat = 0
    mystat = 0
-   select case (open_mode)
-      case (1,-1)
-         file_action = "read"
-         can_create  = .false.
-         can_replace = .false.
-
-      case (2,-2)
-         file_action = "write"
-         can_create  = .true.
-         can_replace = .false.
-
-      case (3,-3)
-         file_action = "write"
-         can_create  = .true.
-         can_replace = .true.
-
-      case default
-         mystat = open_mode
-
-   end select
-   call catch_error( myname, mystat, 1, return_stat )
-   if ( mystat /= 0 ) return
 
    if ( open_mode > 0 ) then
       file_format = "formatted"
-   else
+   else if ( open_mode > 0 ) then
       file_format = "unformatted"
-   end if
+   else
+      mystat = 1
+   endif
 
+   if ( abs(open_mode) > 3 ) then
+      mystat = open_mode
+   endif
 
-!  (2) Inquire if file exists and if its opened and adapt to it
+   call catch_error( myname, mystat, 1, return_stat )
+   if ( mystat /= 0 ) return
+!
+!
+!
+! (2) Check that the file is not opened and there is available units
 !------------------------------------------------------------------------------!
    mystat = 0
-   inquire( file = file_name,   exist = file_exists, opened = file_opened, &
-          & iostat = mystat )
+   inquire( file = file_name, opened = file_opened, iostat = mystat )
    call catch_error( myname, mystat, 2, return_stat )
    if ( mystat /= 0 ) return
 
+   if (file_opened) mystat = 1
+   call catch_error( myname, mystat, 3, return_stat )
+   if ( mystat /= 0 ) return
 
-   if (file_opened) then
-      call catch_error( myname, 1, 3, return_stat )
-      return
-   end if
-
-
-   if (file_exists) then
-      if (can_replace) then
-         file_status = "replace"
-      else
-         file_status = "old"
-      end if
-
-   else
-      file_status = "new"
-      if (.not.can_create) then
-        call catch_error( myname, mystat, 4, return_stat )
-        return
-      end if
-
-   end if
-
-
-
-!  (3) Find a free unit and open the file there
+   if ( file_unit < 10 ) file_unit = 10
+   call find_free_unit( file_unit, 1000, mystat )
+   call catch_error( myname, mystat, 4, return_stat )
+   if ( mystat /= 0 ) return
+!
+!
+!
+! (3) Choose appropriate way of opening and do so
 !------------------------------------------------------------------------------!
    mystat = 0
-   file_unit = 10
-   call find_free_unit( file_unit, 1000, mystat )
+   select case (open_mode)
+
+      case (-1,1)
+         open( unit = file_unit,   file = file_name,    iostat = mystat,       &
+             & form = file_format, status = "old",      action = "read" )
+
+      case (-2,2)
+         open( unit = file_unit,   file = file_name,    iostat = mystat,       &
+             & form = file_format, position = "append", action = "write" )
+
+      case (-3,3)
+         open( unit = file_unit,   file = file_name,    iostat = mystat,       &
+             & form = file_format, status = "replace",  action = "write" )
+
+   end select
    call catch_error( myname, mystat, 5, return_stat )
    if ( mystat /= 0 ) return
-
-
-   mystat = 0
-   open( unit = file_unit,   file = file_name,     iostat = mystat,          &
-       & form = file_format, status = file_status, action = file_action )
-   call catch_error( myname, mystat, 6, return_stat )
-   if ( mystat /= 0 ) return
-
-
-   if ( present(return_stat) ) return_stat = 0
+!
+!
+!
+!------------------------------------------------------------------------------!
 end subroutine safeio_open
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

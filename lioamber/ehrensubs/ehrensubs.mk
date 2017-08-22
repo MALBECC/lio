@@ -17,6 +17,8 @@ included += ehrenaux_magnus.f90
 included += ehrenaux_verlet.f90
 included += ehrenaux_masses.f90
 included += ehrenaux_calckyn.f90
+included += ehrenaux_writedip.f90
+included += ehrenaux_updatevel.f90
 
 included += RMMcalc0_Init.f90
 included += RMMcalc1_Overlap.f90

@@ -25,7 +25,6 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
    real*8               :: dipmom(3)  , energy  , energy0
    real*8               :: dipmom_norm
 
-   real*8  :: nucvel_update(3), time_factor
    real*8  :: time, dtn, dte, dtaux
    integer :: elstep_local, elstep_keeps
    integer :: substep, substeps
@@ -50,8 +49,6 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
 !
 !  Preliminaries
 !------------------------------------------------------------------------------!
-   print*,'Doing ehrenfest!'
-
    call g2g_timer_start('ehrendyn - nuclear step')
    nustep_count = nustep_count + 1
    time = stored_time
@@ -72,8 +69,9 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
    missing_last = (first_nustep).and.(.not.rsti_loads)
 
    if (load_restart) then
-      call ehrenaux_rsti( rsti_fname, rsti_funit, natom, qm_forces_total,  &
-                         & nucvel, M, stored_densM1, stored_densM2 )
+      print*,'RESTART LOAD DISABLED FOR MAINTENANCE'
+!      call ehrenaux_rsti( rsti_fname, rsti_funit, natom, qm_forces_total,  &
+!                         & nucvel, M, stored_densM1, stored_densM2 )
    endif
 
 !
@@ -81,14 +79,7 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
 !
 !  Update velocities, calculate fixed fock, load last step dens matrices
 !------------------------------------------------------------------------------!
-   do nn=1,natom
-   do kk=1,3
-!      time_factor       = (1.0d0) * dtn - (0.5d0) * dte
-!      nucvel_update(kk) = time_factor * qm_forces_total(kk,nn) / atom_mass(nn)
-      nucvel_update(kk) = dtn * qm_forces_total(kk,nn) / atom_mass(nn)
-      nucvel(kk,nn)     = nucvel(kk,nn) + nucvel_update(kk)
-   enddo
-   enddo
+   call ehrenaux_updatevel( natom, atom_mass, qm_forces_total, nucvel, dtn )
 
    energy0 = 0.0d0
    call RMMcalc0_Init()
@@ -149,14 +140,9 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
 
       end if
 
-      do nn = 1, natom
-      do kk = 1, 3
-         nucvel_update(kk) = dte * qm_forces_total(kk,nn) / atom_mass(nn)
-         nucvel(kk,nn)     = nucvel(kk,nn) + nucvel_update(kk)
-      enddo
-      enddo
-
+      call ehrenaux_updatevel( natom, atom_mass, qm_forces_total, nucvel, dte )
       if ( elstep_local == elstep_keeps ) kept_forces = qm_forces_ds
+      time = time + dte * 0.0241888d0
       call g2g_timer_stop('ehrendyn - electronic step')
 
    enddo
@@ -167,25 +153,14 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
 !
 !
 !
-! Calculation of the dipole moment (TODO: REMOVE?)
-!------------------------------------------------------------------------------!
-   if (first_nustep) then
-      call write_dipole(dipmom, 0, 134, .true.)
-      time = 0.0d0
-   else
-      dipmom_norm = sqrt( dipmom(1)**2 + dipmom(2)**2 + dipmom(3)**2 )
-      call write_dipole( dipmom, dipmom_norm, 134, .false.)  
-      time = time + dtn * 0.0241888d0
-   endif
-!
-!
-!
 !  Finalizations
 !------------------------------------------------------------------------------!
+   call ehrenaux_writedip(nustep_count, 1, time, dipmom, "dipole_moment.dat")
    if (rsto_saves) then
-      call ehrenaux_rsto( rsto_fname, rsto_funit, rsto_nfreq, ndyn_steps,     &
-         & nustep_count, Natom, qm_forces_total, nucvel,                       &
-         & M, stored_densM1, stored_densM2)
+      print*,'RESTART SAVE DISABLED FOR MAINTENANCE'
+!      call ehrenaux_rsto( rsto_fname, rsto_funit, rsto_nfreq, ndyn_steps,     &
+!         & nustep_count, Natom, qm_forces_total, nucvel,                       &
+!         & M, stored_densM1, stored_densM2)
    endif
 
    dipmom_o = dipmom

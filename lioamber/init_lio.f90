@@ -384,18 +384,6 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge, basis_i         &
            , Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i              &
            )
 
-   inputFile = 'lio.in'
-   mystat = 0
-   call lionml_Read( inputFile, mystat )
-   if ( mystat == 1 ) then
-      print*, "No lio.in file to read."
-   else if ( mystat == 3 ) then
-      print*, "No lionml namelist in file lio.in"
-   else if ( mystat /= 0 ) then
-      print*, "A problem occurred while trying to read namelist lionml."
-      print*, "stat = ", mystat
-      stop
-   end if
 
    first_step=.true.
 

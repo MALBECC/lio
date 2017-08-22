@@ -1,9 +1,11 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine ehrendyn_init( Natoms, Nbasis, RealRho )
+!------------------------------------------------------------------------------!
 !
+! DESCRIPTION
 ! Save the forces and density matrix of the last position for restart purposes
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine ehrensetup( Natoms, Nbasis, RealRho )
    use ehrendata,  only: stored_densM1, stored_densM2
    use garcha_mod, only: qm_forces_ds, qm_forces_total
 
@@ -28,5 +30,5 @@ subroutine ehrensetup( Natoms, Nbasis, RealRho )
    allocate( qm_forces_ds(3, Natoms) )
    qm_forces_ds = 0.0d0
 
-end subroutine
+end subroutine ehrendyn_init
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

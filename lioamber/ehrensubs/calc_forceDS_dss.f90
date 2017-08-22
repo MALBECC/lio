@@ -1,10 +1,10 @@
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-  subroutine calc_forceDS_dss(natoms,nbasis,pos,vel,Mat0,MatB,fterm)
-!--------------------------------------------------------------------!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine calc_forceDS_dss(natoms,nbasis,pos,vel,Mat0,MatB,fterm)
+!------------------------------------------------------------------------------!
 !
+! DESCRIPTION
 !
-!--------------------------------------------------------------------!
-!  use testmod
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   use basis_data
   implicit none
   integer,intent(in)     :: natoms          ! Number of atoms
@@ -22,7 +22,8 @@
   integer    :: pi(3),pj(3)
   integer    :: atomi,atomj
   integer    :: kk,ii,jj,ni,nj
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+
   call g2g_timer_start('calc_forceDS_dss')
   fterm=dcmplx(0.0d0,0.0d0)
   MatB(:,:)=0.0d0
@@ -38,7 +39,7 @@
     do ni=1,orbital_contractions(ii)
       ai=gauss_expo(ni,ii)
       aj=gauss_expo(nj,jj)
-      call setim(0,1,ai,aj,ri,rj,IMTX)
+      call calc_gintmat( 0, 1, ai, aj, ri, rj, IMTX )
 
       cij=gauss_coef(ni,ii)*gauss_coef(nj,jj)
       ct2=cij*2
@@ -75,5 +76,5 @@
   enddo
 
   call g2g_timer_stop('calc_forceDS_dss')
-end subroutine
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+end subroutine calc_forceDS_dss
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

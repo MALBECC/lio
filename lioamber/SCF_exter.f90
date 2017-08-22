@@ -75,8 +75,9 @@
 subroutine ehren_in( qmcoords, qmvels, clcoords, nsolin, dipxyz, E)
 
    use garcha_mod,  only: M, natom, nucpos, nucvel, RealRho, Smat, atom_mass  &
-                    &   , Iz, tdstep
-   use ehrensubs,   only: ehren_masses
+                    &   , Iz
+   use td_data,     only: tdstep
+   use ehrensubs,   only: ehrenaux_masses
    use debug_tools, only: Check_posvel
 
    implicit none
@@ -111,7 +112,7 @@ subroutine ehren_in( qmcoords, qmvels, clcoords, nsolin, dipxyz, E)
    if (.not.allocated(Smat))    allocate(Smat(M,M))
    if (allocated(atom_mass)) deallocate(atom_mass)
    allocate(atom_mass(natom))
-   call ehren_masses( natom, Iz, atom_mass )
+   call ehrenaux_masses( natom, Iz, atom_mass )
    call SCF_in(E,qmcoords,clcoords,nsolin,dipxyz)
 
 end subroutine ehren_in

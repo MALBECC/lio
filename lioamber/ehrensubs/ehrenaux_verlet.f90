@@ -1,7 +1,10 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine ehren_verlet( Nsize, dt, Fmat, Rold, Rnow, Rnew )
+subroutine ehrenaux_verlet( Nsize, dt, Fmat, Rold, Rnow, Rnew )
+!------------------------------------------------------------------------------!
 !
+! DESCRIPTION
 ! Fmat,Rold,Rnew => All in the ON basis
+!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   implicit none
   integer,intent(in)     :: Nsize
@@ -22,5 +25,5 @@ subroutine ehren_verlet( Nsize, dt, Fmat, Rold, Rnow, Rnew )
   ConmMat = TermPos - TermNeg
   Rnew = Rold - dt * CMPLX(0.0d0,2.0d0) * ConmMat
 
-end subroutine ehren_verlet
+end subroutine ehrenaux_verlet
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -1,7 +1,9 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine ehren_setfld( current_time, elec_field )
+subroutine ehrenaux_setfld( current_time, elec_field )
+!------------------------------------------------------------------------------!
 !
-!  Time is in ps?fs?
+! DESCRIPTION
+! Time is in ps?fs?
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use lionml_data, &
@@ -45,5 +47,5 @@ subroutine ehren_setfld( current_time, elec_field )
    elec_field(2) = eefld_ampy * field_shape
    elec_field(3) = eefld_ampz * field_shape
 !
-end subroutine ehren_setfld
+end subroutine ehrenaux_setfld
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

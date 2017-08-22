@@ -1,5 +1,9 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-  subroutine ehren_cholesky(Nsize,Smat,Lmat,Umat,Linv,Uinv,Sinv)
+subroutine ehrenaux_cholesky( Nsize, Smat, Lmat, Umat, Linv, Uinv, Sinv )
+!------------------------------------------------------------------------------!
+!
+! DESCRIPTION
+!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   implicit none
   integer,intent(in) :: Nsize
@@ -27,5 +31,5 @@
   Sinv=matmul(Uinv,Linv)
 
 
-  return;end subroutine
+end subroutine ehrenaux_cholesky
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

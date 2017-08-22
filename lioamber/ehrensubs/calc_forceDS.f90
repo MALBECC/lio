@@ -1,11 +1,11 @@
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine calc_forceDS &
-  (Natoms,Nbasis,nucpos,nucvel,DensMao,FockMao,Sinv,Bmat,forceDS)
-!--------------------------------------------------------------------!
+  ( Natoms, Nbasis, nucpos, nucvel, DensMao, FockMao, Sinv, Bmat, forceDS )
+!------------------------------------------------------------------------------!
 !
+! DESCRIPTION
 !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!  use testmod
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   implicit none
   integer,intent(in)    :: Natoms
   integer,intent(in)    :: Nbasis
@@ -23,7 +23,7 @@ subroutine calc_forceDS &
   complex*16,allocatable :: fterm1(:,:),fterm2(:,:),fterm3(:,:)
 !
 !
-!--------------------------------------------------------------------!
+!------------------------------------------------------------------------------!
   call g2g_timer_start('calc_forceDS')
   allocate(InputMat(Nbasis,Nbasis))
   allocate(MatTrp(Nbasis,Nbasis),MatDir(Nbasis,Nbasis))
@@ -67,5 +67,5 @@ subroutine calc_forceDS &
   deallocate(InputMat,MatTrp,MatDir,Btrp)
   deallocate(fterm1,fterm2,fterm3)
   call g2g_timer_stop('calc_forceDS')
-end subroutine
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+end subroutine calc_forceDS
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

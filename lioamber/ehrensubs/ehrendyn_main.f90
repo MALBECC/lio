@@ -1,8 +1,9 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine ehrendyn( energy_o, dipmom_o )
+subroutine ehrendyn_main( energy_o, dipmom_o )
 !------------------------------------------------------------------------------!
 !
-!  stored_densM1 and stored_densM2 are stored in ON basis, except for the first step
+!  stored_densM1 and stored_densM2 are stored in ON basis, except for the 
+!  first step
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use garcha_mod, &
@@ -71,7 +72,7 @@ subroutine ehrendyn( energy_o, dipmom_o )
    missing_last = (first_nustep).and.(.not.rsti_loads)
 
    if (load_restart) then
-      call ehrenrsti_load( rsti_fname, rsti_funit, natom, qm_forces_total,  &
+      call ehrenaux_rsti( rsti_fname, rsti_funit, natom, qm_forces_total,  &
                          & nucvel, M, stored_densM1, stored_densM2 )
    endif
 
@@ -92,7 +93,7 @@ subroutine ehrendyn( energy_o, dipmom_o )
    energy0 = 0.0d0
    call RMMcalc0_Init()
    call RMMcalc1_Overlap( Smat, energy0 )
-   call ehren_cholesky( M, Smat, Lmat, Umat, Linv, Uinv, Sinv )
+   call ehrenaux_cholesky( M, Smat, Lmat, Umat, Linv, Uinv, Sinv )
    call RMMcalc2_FockMao( Fock0, energy0 )
 
    RhoOld = stored_densM1
@@ -120,7 +121,7 @@ subroutine ehrendyn( energy_o, dipmom_o )
       if (missing_last) then
          dtaux = (-dte) / ( (2.0d0)*(substeps) )
          RhoOld = RhoMid
-         call ehrenstep( 1, time, dtaux, M, natom, nucpos, nucvel,             &
+         call ehrendyn_step( 1, time, dtaux, M, natom, nucpos, nucvel,             &
                        & qm_forces_ds, Sinv, Uinv, Linv, RhoOld, RhoMid,       &
                        & RhoNew, Fock, energy, dipmom )
          RhoOld = RhoNew
@@ -130,7 +131,7 @@ subroutine ehrendyn( energy_o, dipmom_o )
             dipmom(:) = 0.0d0
             energy = energy0
             Fock = Fock0
-            call ehrenstep( 1, time, dtaux, M, natom, nucpos, nucvel,          &
+            call ehrendyn_step( 1, time, dtaux, M, natom, nucpos, nucvel,          &
                           & qm_forces_ds, Sinv, Uinv, Linv, RhoOld, RhoMid,    &
                           & RhoNew, Fock, energy, dipmom )
             RhoOld = RhoMid
@@ -140,7 +141,7 @@ subroutine ehrendyn( energy_o, dipmom_o )
          missing_last = .false.
 
       else
-         call ehrenstep( propagator, time, dte, M, natom, nucpos, nucvel,      &
+         call ehrendyn_step( propagator, time, dte, M, natom, nucpos, nucvel,      &
                        & qm_forces_ds, Sinv, Uinv, Linv, RhoOld, RhoMid,       &
                        & RhoNew, Fock, energy, dipmom )
          RhoOld = RhoMid
@@ -173,13 +174,8 @@ subroutine ehrendyn( energy_o, dipmom_o )
       time = 0.0d0
    else
       dipmom_norm = sqrt( dipmom(1)**2 + dipmom(2)**2 + dipmom(3)**2 )
-<<<<<<< HEAD
-      call write_dipole( dipmom, dipmom_norm, 134, .false.)
-      total_time = total_time + dtn * 0.0241888d0
-=======
       call write_dipole( dipmom, dipmom_norm, 134, .false.)  
       time = time + dtn * 0.0241888d0
->>>>>>> Many small changes performed:
    endif
 !
 !
@@ -187,7 +183,7 @@ subroutine ehrendyn( energy_o, dipmom_o )
 !  Finalizations
 !------------------------------------------------------------------------------!
    if (rsto_saves) then
-      call ehrenrsto_save( rsto_fname, rsto_funit, rsto_nfreq, ndyn_steps,     &
+      call ehrenaux_rsto( rsto_fname, rsto_funit, rsto_nfreq, ndyn_steps,     &
          & nustep_count, Natom, qm_forces_total, nucvel,                       &
          & M, stored_densM1, stored_densM2)
    endif
@@ -205,5 +201,5 @@ subroutine ehrendyn( energy_o, dipmom_o )
    call g2g_timer_stop('ehrendyn - nuclear step')
 
 901 format(F15.9,2x,F15.9)
-end subroutine
+end subroutine ehrendyn_main
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -1,6 +1,8 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
+!------------------------------------------------------------------------------!
 !
+! DESCRIPTION (Time is in ps?fs?)
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use maskrmm,     only: rmmput_dens, rmmput_fock, rmmget_fock

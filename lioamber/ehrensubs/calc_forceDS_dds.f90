@@ -1,9 +1,10 @@
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine calc_forceDS_dds(natoms,nbasis,pos,vel,Mat0,fterm)
-!--------------------------------------------------------------------!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine calc_forceDS_dds( natoms, nbasis, pos, vel, Mat0, fterm )
+!------------------------------------------------------------------------------!
 !
+! DESCRIPTION
 !
-!--------------------------------------------------------------------!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   use basis_data
   implicit none
   integer,intent(in)     :: natoms          ! Number of atoms
@@ -22,7 +23,7 @@ subroutine calc_forceDS_dds(natoms,nbasis,pos,vel,Mat0,fterm)
   integer    :: atomi,atomj
   integer    :: ii,jj,ni,nj,ki,kj
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
   call g2g_timer_start('calc_forceDS_dds')
   fterm=dcmplx(0.0d0,0.0d0)
 
@@ -38,7 +39,7 @@ subroutine calc_forceDS_dds(natoms,nbasis,pos,vel,Mat0,fterm)
       ai=gauss_expo(ni,ii)
       aj=gauss_expo(nj,jj)
       cij=gauss_coef(ni,ii)*gauss_coef(nj,jj)
-      call setim(0,1,ai,aj,ri,rj,IMTX)
+      call calc_gintmat( 0, 1, ai, aj, ri, rj, IMTX )
 
       do kj=1,3
       do ki=1,3
@@ -98,5 +99,5 @@ subroutine calc_forceDS_dds(natoms,nbasis,pos,vel,Mat0,fterm)
   enddo
 
   call g2g_timer_stop('calc_forceDS_dds')
-end subroutine
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+end subroutine calc_forceDS_dds
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

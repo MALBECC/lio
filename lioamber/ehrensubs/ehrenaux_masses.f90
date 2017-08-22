@@ -1,7 +1,10 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-  subroutine ehren_masses(Nsize,Vatnum,Vmass)
+subroutine ehrenaux_masses( Nsize, Vatnum, Vmass )
+!------------------------------------------------------------------------------!
 !
+! DESCRIPTION
 ! Masses are in uma
+!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   implicit none
   integer,intent(in)     :: Nsize
@@ -32,5 +35,5 @@
     Vmass(kk)=Vmass(kk)*(1822.88857149d0)
   enddo
 
-  return;end subroutine
+end subroutine ehrenaux_masses
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

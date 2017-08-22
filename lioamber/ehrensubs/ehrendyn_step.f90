@@ -1,5 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine ehrenstep( propagator_id, time, dt, nbasis, natoms,                       &
+subroutine ehrendyn_step( propagator_id, time, dt, nbasis, natoms,             &
                     & nucpos, nucvel, qm_forces_ds, Sinv, Uinv, Linv,          &
                     & dens_old, dens_mid, dens_new, fock_mid, energy, dipmom )
 !------------------------------------------------------------------------------!
@@ -46,7 +46,7 @@ subroutine ehrenstep( propagator_id, time, dt, nbasis, natoms,                  
    dens_mao = dens_mid
    dens_mao = matmul(dens_mao, Linv)
    dens_mao = matmul(Uinv, dens_mao)
-   call ehren_setfld( time, elec_field )
+   call ehrenaux_setfld( time, elec_field )
    call RMMcalc3_FockMao( dens_mao, elec_field, fock_mid, dipmom, energy)
    call calc_forceDS( natoms, nbasis, nucpos, nucvel, dens_mao, fock_mid, Sinv,&
                     & Bmat, qm_forces_ds )
@@ -62,11 +62,11 @@ subroutine ehrenstep( propagator_id, time, dt, nbasis, natoms,                  
 !  Density Propagation (works in ON)
    if (propagator_id==propagator_id_verlet) then
       print*,'This is verlet!'
-      call ehren_verlet( nbasis, dt, Tmat, dens_old, dens_mid, dens_new )
+      call ehrenaux_verlet( nbasis, dt, Tmat, dens_old, dens_mid, dens_new )
 
    else if (propagator_id==propagator_id_magnus) then
       print*,'This is magnus!'
-      call ehren_magnus( nbasis, 20, dt, Tmat, dens_mid, dens_old, dens_new )
+      call ehrenaux_magnus( nbasis, 20, dt, Tmat, dens_mid, dens_old, dens_new )
 
    else
       print*,'Unidentified substep!'; stop
@@ -74,5 +74,5 @@ subroutine ehrenstep( propagator_id, time, dt, nbasis, natoms,                  
    endif
 
    deallocate( Bmat, Dmat, Tmat, dens_mao)
-end subroutine ehrenstep
+end subroutine ehrendyn_step
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

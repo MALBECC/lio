@@ -5,24 +5,23 @@ module ehrensubs
 !
 !
 contains
-#  include "ehrendyn.f90"
-#  include "ehrenstep.f90"
-#  include "ehrensetup.f90"
+#  include "ehrendyn_main.f90"
+#  include "ehrendyn_init.f90"
+#  include "ehrendyn_step.f90"
 
-#  include "setim.f90"
+#  include "calc_gintmat.f90"
 #  include "calc_forceDS.f90"
 #  include "calc_forceDS_dss.f90"
 #  include "calc_forceDS_dds.f90"
-
 #  include "calc_Dmat_cholesky.f90"
 
-#  include "ehrenrst.f90"
-#  include "ehren_setfld.f90"
-#  include "ehren_cholesky.f90"
-#  include "ehren_magnus.f90"
-#  include "ehren_verlet.f90"
-#  include "ehren_masses.f90"
-#  include "calc_kenergy.f90"
+#  include "ehrenaux_rstx.f90"
+#  include "ehrenaux_setfld.f90"
+#  include "ehrenaux_cholesky.f90"
+#  include "ehrenaux_magnus.f90"
+#  include "ehrenaux_verlet.f90"
+#  include "ehrenaux_masses.f90"
+#  include "ehrenaux_calckyn.f90"
 
 #  include "RMMcalc0_Init.f90"
 #  include "RMMcalc1_Overlap.f90"

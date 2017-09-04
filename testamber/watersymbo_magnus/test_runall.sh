@@ -1,5 +1,7 @@
 #/bin/bash
 ################################################################################
+echo; echo "This test should take around 3 min ..."
+
 echo; echo "Running BO ..."
 ./test_runbo.sh
 

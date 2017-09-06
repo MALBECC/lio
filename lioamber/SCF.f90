@@ -8,7 +8,7 @@
 ! Modified to f90, 2017
 ! Dario Estrin, 1992
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-      subroutine SCF(E)
+subroutine SCF(E)
 !      use linear_algebra
       use ehrensubs, only: ehrensetup
       use garcha_mod, only : M,Md, NCO,natom,Nang, number_restr, hybrid_converg, MEMO, &
@@ -1046,21 +1046,23 @@
 #endif
 	use garcha_mod, ONLY: RMM, DIIS, M, Md, NCO, ndiis, hybrid_converg, SHFT, good_cut, X
 	use linear_algebra, only :matrix_diagon
-	IMPLICIT NONE
-	INTEGER :: i,ii,j,jnuevo,k,kk,kknueva,kk2, l !auxiliares
-	INTEGER, INTENT(IN) :: niter
-	REAL*8, INTENT(INOUT) :: DAMP, good
-	logical, intent(in) :: dovv
-	real*8,dimension(M,M),intent(in) :: fockbias
-	real*8, dimension (:,:), allocatable :: fock, rho, rho1, EMAT
+        use converger_subs, only: converger_init, conver
+
+        IMPLICIT NONE
+        INTEGER :: i,j,ii,jj,jnuevo,k,kk,kknueva,kk2, l !auxiliares
+        INTEGER, INTENT(IN) :: niter
+        REAL*8, INTENT(INOUT) :: DAMP, good
+        logical, intent(in)  :: dovv
+        real*8,dimension(M,M),intent(in) :: fockbias
+        real*8, dimension (:,:), allocatable :: fock, rho, rho1, EMAT
         real*8, dimension (:,:), allocatable, save :: fockm, FP_PFm, EMAT2
-	real*8, dimension (M,M), intent(inout) :: xnano, znano
-       real*8, dimension (:), ALLOCATABLE, save :: bcoef
-       real*8, dimension (:), ALLOCATABLE :: suma
-	REAL*8, dimension(1000) :: WORK, IWORK
+        real*8, dimension (M,M), intent(inout) :: xnano, znano
+        real*8, dimension (:), ALLOCATABLE, save :: bcoef
+        real*8, dimension (:), ALLOCATABLE :: suma
+        REAL*8, dimension(1000) :: WORK, IWORK
         REAL*8,ALLOCATABLE :: WORK2(:)
         INTEGER, ALLOCATABLE :: IWORK2(:)
-	INTEGER :: LIWORK  !hay algo mal con LIWORK e IWORK, Nick
+        INTEGER :: LIWORK  !hay algo mal con LIWORK e IWORK, Nick
 
 	integer :: M1,M2,M3, M5, M7, M9, M11, M13, M15, M17, M18, MM, MMd !temporales hasta q rompamos RMM
 	integer :: ndiist
@@ -1077,6 +1079,10 @@
 	real*8, dimension (M,M) :: Y
         real*8, dimension (M,M) :: scratch1
 #endif
+
+        real*8, dimension (M,M)  :: dens_try, fock_try, xmat_try, ymat_try, fock_bad
+
+        if (niter==1) call converger_init( M, ndiis, damp, DIIS, hybrid_converg )
 
         if(niter.le.ndiis) then
           ndiist=niter
@@ -1100,6 +1106,36 @@
       M17=M15+MM! Least squares
       M18=M17+MMd! vectors of MO
 
+!carlos: prueba de conver
+          do j=1,M
+            do k=1,j
+              fock_try(j,k)=RMM(M5+j+(M2-k)*(k-1)/2-1)
+            enddo
+            do k=j+1,M
+              fock_try(j,k)=RMM(M5+k+(M2-j)*(j-1)/2-1)
+            enddo
+          enddo
+
+          do j=1,M
+            do k=1,j-1
+              dens_try(j,k)=(RMM(j+(M2-k)*(k-1)/2))/2
+            enddo
+            dens_try(j,j)=RMM(j+(M2-j)*(j-1)/2)
+            do k=j+1,M
+              dens_try(j,k)=RMM(k+(M2-j)*(j-1)/2)/2
+            enddo
+          enddo
+
+
+#ifdef CUBLAS
+          xmat_try(1:M,1:M)=X(1:M,1:M)
+#else
+          xmat_try(1:M,1:M)=X(1:M,1:M)
+          ymat_try(1:M,1:M)=Y(1:M,1:M)
+#endif
+         
+
+!carlos!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 !
 !
@@ -1181,6 +1217,7 @@
           call calc_fock_commuts(fock,rho,X,Y,scratch,scratch1,M)
 #endif
           call g2g_timer_stop('commutators + basechange')
+
           ! update fockm with F'
           do j=ndiis-(ndiist-1),ndiis-1
             do i=1,MM
@@ -1252,12 +1289,30 @@
             end if
       end if
 
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! THIS IS DAMPING
+!
 !-----------------------------------------------------------------------------------------
 ! If we are not doing diis this iteration, apply damping to F, save this
 ! F in RMM(M3) for next iteration's damping and put F' = X^T * F * X in RMM(M5)
 !----------------------------------------------------------------------------------------
         if(.not.hagodiis) then
           call g2g_timer_start('Fock damping')
+
+! FFR BASURA
+!            do j=1,M
+!              do k=1,j
+!                 fock(k,j)=RMM(M5+j+(M2-k)*(k-1)/2-1)
+!              enddo
+!              do k=j+1,M
+!                 fock(k,j)=RMM(M5+k+(M2-j)*(j-1)/2-1)
+!              enddo
+!            enddo
+!          do ii=1,M
+!          do jj=1,M
+!             write(665,*) ii,jj,fock(ii,jj)
+!          enddo
+!          enddo
 
 
           if(niter.ge.2) then
@@ -1267,6 +1322,8 @@
               RMM(kk)=(RMM(kk)+DAMP*RMM(kk2))/(1.D0+DAMP)
             enddo
           endif
+
+
 ! the newly constructed damped matrix is stored, for next iteration
 ! in RMM(M3)
 !
@@ -1275,6 +1332,8 @@
             kk2=M3+k-1
             RMM(kk2)=RMM(kk)
           enddo
+
+
 !-------------------------------------------------------------!
             fock=0
             do j=1,M
@@ -1285,6 +1344,15 @@
                  fock(k,j)=RMM(M5+k+(M2-j)*(j-1)/2-1)
               enddo
             enddo
+
+!carlos
+
+   do ii=1,M
+   do jj=1,M
+      write(667,*) ii,jj,fock(ii,jj)
+   enddo
+   enddo
+
 
 ! FFR: Van Voorhis Term for not DIIS
 !--------------------------------------------------------------------!
@@ -1307,6 +1375,7 @@
           call g2g_timer_stop('Fock damping')
         endif
 
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !
 ! now F contains transformed F
@@ -1317,18 +1386,22 @@
           RMM(M13+i-1)=0.D0
         enddo
 
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! NEEDS TO BE FIXED
+!
 !---- LEVEL SHIFT
 !
-        if (SHFT) then
+!        if (SHFT) then
 !       shi=shi*0.99
 ! adition of level shifts
 ! constant to diagonal (virtual) elements
-          do i=NCO+1,M
-            ii=i+(i-1)*(M2-i)/2
-            RMM(M5+ii-1)=RMM(M5+ii-1)! +shi
+!          do i=NCO+1,M
+!            ii=i+(i-1)*(M2-i)/2
+!            RMM(M5+ii-1)=RMM(M5+ii-1)! +shi
 ! Este shi no esta definido en ningun lado, sirve para algo, Nick
-          enddo
-        endif
+!          enddo
+!        endif
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
         call g2g_timer_stop('actualiza rmm')
 
@@ -1456,6 +1529,35 @@
         call g2g_timer_sum_pause('DIIS Fock update')
         call g2g_timer_sum_pause('DIIS')
       endif
+
+
+#     ifdef cublas
+         call conver(niter, good, good_cut, M, dens_try, fock_try, devPtrX, devPtrY )
+#     else
+         call conver(niter, good, good_cut, M, dens_try, fock_try, xmat_try, ymat_try)
+#     endif 
+
+
+!carlos imprimiendo fock
+     
+       if(.not.allocated(fock)) allocate (fock(M,M))
+       fock=0
+          do j=1,M
+            do k=1,j
+              fock(j,k)=RMM(M5+j+(M2-k)*(k-1)/2-1)
+            enddo
+            do k=j+1,M
+              fock(j,k)=RMM(M5+k+(M2-j)*(j-1)/2-1)
+            enddo
+          enddo
+   
+        open (unit=1324, file="fock.dat")
+        write (1324, *), "fock ---- fock_try ---- diffs "
+        do ii=1, M
+        do jj=1, M
+           write (1324, *), fock (ii, jj), "----",fock_try (ii,jj),"----",fock (ii,jj)-fock_try (ii,jj)
+        end do
+        end do
 
 !
 ! F' diagonalization now

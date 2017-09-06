@@ -97,6 +97,31 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/build_info.mod
 
 
 ################################################################################
+OBJECTS += dftb_subs.o
+OBJECTS += dftb_data.o
+
+tmplist :=
+tmplist += SCF.o TD.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/dftb_subs.mod
+
+tmplist :=
+tmplist += dftb_subs.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/dftb_data.mod
+
+
+################################################################################
+OBJECTS += converger_data.o
+OBJECTS += converger_subs.o
+
+tmplist :=
+tmplist += SCF.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/converger_subs.mod
+
+tmplist := converger_subs.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/converger_data.mod
+
+
+################################################################################
 include ehrensubs/ehrensubs.mk
 OBJECTS += ehrendata.o
 OBJECTS += ehrensubs.o
@@ -179,7 +204,7 @@ include mathsubs/mathsubs.mk
 SRCDIRS += mathsubs
 OBJECTS += mathsubs.o
 tmplist :=
-tmplist += SCF.o SCFop.o predictor.o
+tmplist += SCF.o SCFop.o predictor.o converger_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/mathsubs.mod
 
 
@@ -202,7 +227,7 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fortran.o
 
 tmplist :=
-tmplist += SCF.o SCFop.o TD.o
+tmplist += SCF.o SCFop.o TD.o converger_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/cublasmath.mod
 
 $(OBJPATH)/fortran.o: $(CUDA_HOME)/src/fortran.c

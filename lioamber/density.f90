@@ -11,7 +11,7 @@ subroutine density(M, NCO, X, C)
     ! C:    matrix containing output density matrix.
     implicit none
     integer,intent(in)  :: M, NCO
-    real*8, intent(in)  :: X(M, 3*M)
+    real*8, intent(in)  :: X(M, M)
     real*8, intent(out) :: C(M, M)
 
     real*8, allocatable :: A(:, :)
@@ -34,10 +34,9 @@ subroutine density(M, NCO, X, C)
     if (OPEN) factor = 1.0D0
 
     allocate(A(M,NCO))
-    DOSM = 2*M
     do i=1, M
         do j=1, NCO
-             A(i, j) = X(i, DOSM+j)
+             A(i, j) = X(i, j)
         enddo
     enddo
     C = 0.0D0

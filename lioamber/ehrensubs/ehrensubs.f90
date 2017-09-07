@@ -9,6 +9,7 @@ contains
 #  include "ehrendyn_main.f90"
 #  include "ehrendyn_init.f90"
 #  include "ehrendyn_step.f90"
+#  include "ehrendyn_prep.f90"
 
 #  include "calc_gintmat.f90"
 #  include "calc_forceDS.f90"

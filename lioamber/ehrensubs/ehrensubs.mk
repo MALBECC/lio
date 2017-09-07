@@ -3,6 +3,7 @@ included :=
 included += ehrendyn_main.f90
 included += ehrendyn_init.f90
 included += ehrendyn_step.f90
+included += ehrendyn_prep.f90
 
 included += calc_gintmat.f90
 included += calc_forceDS.f90

@@ -14,17 +14,17 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
    &  only: tdstep
 
    use lionml_data, &
-   &  only: ndyn_steps, edyn_steps, propagator &
+   &  only: ndyn_steps, edyn_steps, propagator, wdip_nfreq, wdip_fname         &
    &      , rsti_loads, rsti_fname, rsto_saves, rsto_nfreq, rsto_fname
 
    use ehrendata, &
-   &  only: stored_time, stored_energy, stored_densM1, stored_densM2           &
+   &  only: stored_time, stored_energy, stored_dipmom                          &
+   &      , stored_densM1, stored_densM2                                       &
    &      , rsti_funit, rsto_funit, nustep_count, elstep_count
 
    implicit none
    real*8,intent(inout) :: dipmom_o(3), energy_o
    real*8               :: dipmom(3)  , energy  , energy0
-   real*8               :: dipmom_norm
 
    real*8  :: time, dtn, dte, dtaux
    integer :: elstep_local, elstep_keeps
@@ -45,6 +45,8 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
    complex*16, allocatable, dimension(:,:) :: RhoOld, RhoMid, RhoNew
    complex*16, allocatable, dimension(:,:) :: RhoMidF
    complex*16, allocatable, dimension(:,:) :: Tmat
+
+   logical, parameter :: velocity_recalc = .true.
 !
 !
 !
@@ -77,7 +79,12 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
 !
 !  Update velocities, calculate fixed fock, load last step dens matrices
 !------------------------------------------------------------------------------!
-   call ehrenaux_updatevel( natom, atom_mass, qm_forces_total, nucvel, dtn )
+   if (velocity_recalc) then
+      dtaux = dtn/2.0d0 - dte/2.0d0
+      call ehrenaux_updatevel( natom, atom_mass, qm_forces_total, nucvel, dtaux )
+   else
+      call ehrenaux_updatevel( natom, atom_mass, qm_forces_total, nucvel, dtn )
+   endif
 
    energy0 = 0.0d0
    call RMMcalc0_Init()
@@ -106,13 +113,16 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
       energy = energy0
       Fock = Fock0
 
+      if (velocity_recalc) call ehrenaux_updatevel &
+      &  ( natom, atom_mass, qm_forces_total, nucvel, dte )
+
       call ehrendyn_step( missing_last, propagator, time, dte, M, natom,       &
-                        & nucpos, nucvel, nucfor_ds, Sinv, Uinv, Linv,      &
+                        & nucpos, nucvel, nucfor_ds, Sinv, Uinv, Linv,         &
                         & RhoOld, RhoMid, RhoNew, Fock, dipmom, energy )
 
       RhoOld = RhoMid
       RhoMid = RhoNew
-      call ehrenaux_updatevel( natom, atom_mass, qm_forces_total, nucvel, dte )
+
       if ( elstep_local == elstep_keeps ) qm_forces_ds = nucfor_ds
       time = time + dte * 0.0241888d0
       call g2g_timer_stop('ehrendyn - electronic step')
@@ -126,14 +136,15 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
 !
 !  Finalizations
 !------------------------------------------------------------------------------!
-   call ehrenaux_writedip(nustep_count, 1, time, dipmom, "dipole_moment.dat")
+   call ehrenaux_writedip(nustep_count, wdip_nfreq, stored_time, dipmom, wdip_nfile)
 
    if (rsto_saves) call ehrenaux_rsto( rsto_fname, rsto_nfreq, &
    &  ndyn_steps, nustep_count, natom, qm_forces_total, nucvel, &
    &  M, stored_densM1, stored_densM2 )
 
-   dipmom_o = dipmom
+   dipmom_o = stored_dipmom
    energy_o = stored_energy
+   stored_dipmom = dipmom
    stored_energy = energy
    stored_time = time
 

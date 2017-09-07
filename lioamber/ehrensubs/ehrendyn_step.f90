@@ -38,8 +38,8 @@ subroutine ehrendyn_step( step_back, propagator_id, time_value, time_step,     &
    real*8                    :: dipmom0(3)
    real*8                    :: energy0
 
-   integer                   :: substep, substeps
-   real*8                    :: dt
+   integer                   :: substep, substeps, nn
+   real*8                    :: time, dt
    real*8                    :: elec_field(3)
    real*8    , allocatable   :: Bmat(:,:)
    real*8    , allocatable   :: Dmat(:,:)
@@ -60,6 +60,7 @@ subroutine ehrendyn_step( step_back, propagator_id, time_value, time_step,     &
    dipmom0(:) = 0.0d0
    energy0    = energy
 
+   time = time_value
    if (step_back) then
       substeps = 20
       dt = (-time_step) / ( (2.0d0)*(substeps) )
@@ -74,32 +75,20 @@ subroutine ehrendyn_step( step_back, propagator_id, time_value, time_step,     &
       fock_mid = Fock0
       dipmom   = dipmom0
       energy   = energy0
+      nucfor_ds(:,:) = 0.0d0
 
-!     Fock and Force calculation (needs density and fock in AO)
-!     (this should leave the right Rho in RMM for get_forces)
-      dens_mao = dens_mid
-      dens_mao = matmul(dens_mao, Linv)
-      dens_mao = matmul(Uinv, dens_mao)
-      call ehrenaux_setfld( time_value, elec_field )
-      call RMMcalc3_FockMao( dens_mao, elec_field, fock_mid, dipmom, energy)
-      call calc_forceDS( natoms, nbasis, nucpos, nucvel, dens_mao, fock_mid, Sinv,&
-                       & Bmat, nucfor_ds )
-
-
-!     Set ups propagation cuasi-fock matrix (needs fock in ON)
-      fock_mid = matmul(fock_mid, Uinv)
-      fock_mid = matmul(Linv, fock_mid)
-      Dmat = calc_Dmat( nbasis, Linv, Uinv, Bmat )
-      Tmat = DCMPLX(fock_mid) + DCMPLX(0.0d0,1.0d0) * DCMPLX(Dmat)
-
+!     Preparing matrices (received in AO and returned in ON)
+      call ehrendyn_prep( Nbasis, Natoms, time, .true., Uinv, Linv, Sinv, &
+                        & dens_mid, fock_mid, Bmat, Dmat, Tmat, &
+                        & nucpos, nucvel, nucfor_ds, dipmom, energy )
 
 !     Density Propagation (works in ON)
       if (propagator_id==propagator_id_verlet) then
-         print*,'This is verlet!'
+!         print*,'This is verlet!'
          call ehrenaux_verlet( nbasis, dt, Tmat, dens_old, dens_mid, dens_newo )
 
       else if (propagator_id==propagator_id_magnus) then
-         print*,'This is magnus!'
+!         print*,'This is magnus!'
          call ehrenaux_magnus( nbasis, 20, dt, Tmat, dens_mid, dens_newo )
 
       else
@@ -118,7 +107,6 @@ subroutine ehrendyn_step( step_back, propagator_id, time_value, time_step,     &
 
    enddo
 
- 
    deallocate( Bmat, Dmat, Tmat )
    deallocate( dens_old, dens_mid )
    deallocate( dens_mao )

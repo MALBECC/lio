@@ -4,12 +4,12 @@ Production QMMM PBE dynamics
    imin=0,
    ntx=5, irest=1,
    ntt=0, ifqnt=1,
-   dt = 5E-7,
-   nstlim = 4000,
+   dt = 4E-6,
+   nstlim = 500,
    cut=10.0,
    ioutfm=0,
-   ntpr=40, ntwf=40,
-   ntwx=40, ntwv=40,
+   ntpr=5, ntwf=5,
+   ntwx=5, ntwv=5,
    ntb=0, ntc=1, ntf=1,  
 &end
 

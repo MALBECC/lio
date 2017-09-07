@@ -100,7 +100,7 @@ subroutine ehrendyn_step( step_back, propagator_id, time_value, time_step,     &
 
       else if (propagator_id==propagator_id_magnus) then
          print*,'This is magnus!'
-         call ehrenaux_magnus( nbasis, 20, dt, Tmat, dens_mid, dens_old, dens_newo )
+         call ehrenaux_magnus( nbasis, 20, dt, Tmat, dens_mid, dens_newo )
 
       else
          print*,'Unidentified substep!'; stop

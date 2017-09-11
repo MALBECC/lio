@@ -45,6 +45,12 @@ __global__ void gpu_accumulate_point_open(scalar_type* const energy, scalar_type
     energy_c[point] = ((_partial_density_a + _partial_density_b) * point_weight) * corr;
     energy_c1[point] = ((_partial_density_a + _partial_density_b) * point_weight) * corr1;
     energy_c2[point] = ((_partial_density_a + _partial_density_b) * point_weight) * corr2;
+  } else {
+    energy[point] = 0.0f;
+    energy_i[point] = 0.0f;
+    energy_c[point] = 0.0f;
+    energy_c1[point] = 0.0f;
+    energy_c2[point] = 0.0f;
   }
 
   if (compute_factor && valid_thread){

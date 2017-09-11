@@ -180,8 +180,12 @@ void cpu_potg_tmpl(scalar_type dens, const vec_type<scalar_type,3>& grad, const 
   scalar_type dgrad = sqrt(grad2);
 
   scalar_type d0 = hess1.x + hess1.y + hess1.z;
-  scalar_type u0 = ((grad.x * grad.x) * hess1.x + 2.0 * grad.x * grad.y * hess2.x + 2.0 * grad.y * grad.z * hess2.z + 2.0 * grad.x * grad.z * hess2.y +
-      (grad.y * grad.y) * hess1.y + (grad.z * grad.z) * hess1.z) / dgrad; // esto ya difiere
+  scalar_type u0 = ((grad.x * grad.x) * hess1.x 
+                 + 2.0 * grad.x * grad.y * hess2.x 
+                 + 2.0 * grad.y * grad.z * hess2.z 
+                 + 2.0 * grad.x * grad.z * hess2.y 
+                 + (grad.y * grad.y) * hess1.y 
+                 + (grad.z * grad.z) * hess1.z) / dgrad; // esto ya difiere
 
   y2a = 0;
 
@@ -483,7 +487,7 @@ static void closedpbe(scalar_type rho, scalar_type agrad, scalar_type delgrad, s
   scalar_type RSTHRD = rs / 3.0;
   scalar_type FAC = CLOSEDPBE_DELTA / B + 1.0;
   scalar_type BEC = B2 * FAC / CLOSEDPBE_BETA;
-	scalar_type Q8 = Q5 * Q5 + CLOSEDPBE_DELTA * Q4 * Q5 * t2;
+  scalar_type Q8 = Q5 * Q5 + CLOSEDPBE_DELTA * Q4 * Q5 * t2;
   scalar_type Q9 = 1.0 + 2.0 * B * t2;
   scalar_type hB = -CLOSEDPBE_BETA * B * T6 * (2.0 + B * t2)/Q8;
   scalar_type hRS = -RSTHRD * hB * BEC * ecrs;

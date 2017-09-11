@@ -400,8 +400,8 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
 
   Timer smallgroups, biggroups;
 
-
-  #pragma omp parallel for num_threads(cpu_threads+gpu_threads) schedule(static)
+  // Verificar si anda reduction (+:energy) FF
+  #pragma omp parallel for num_threads(cpu_threads+gpu_threads) schedule(static) reduction(+:energy)
   for(uint i = 0; i< work.size(); i++) {
     bool gpu_thread = false;
 #if GPU_KERNELS
@@ -416,13 +416,21 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
     t.start_and_sync();
 
     if(compute_forces) fort_forces_ms[i].zero();
-    if(compute_rmm) rmm_outputs[i].zero();
+    if(compute_rmm){
+        if (OPEN){
+           rmm_outputs_a[i].zero();
+           rmm_outputs_b[i].zero();
+        } else {
+           rmm_outputs[i].zero();
+        }
+    }
 
     for(uint j = 0; j < work[i].size(); j++) {
       int ind = work[i][j];
       Timer element;
       element.start_and_sync();
-
+/*
+      std::cout << "I'm thread " << omp_get_thread_num() << " and i is " << i << endl; // FF-Temp
       if(ind >= cubes.size()){
         spheres[ind-cubes.size()]->solve(ts, compute_rmm,lda,compute_forces, compute_energy,
             local_energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1, spheres_energy_c2,
@@ -432,6 +440,32 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
             local_energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, cubes_energy_c2,
             fort_forces_ms[i], 1, rmm_outputs[i], OPEN);
       }
+       std::cout << "Todo marcha bien Milhouse " <<  endl; // FF-Temp
+*/
+      if(OPEN) {
+        if(ind >= cubes.size()){
+          spheres[ind-cubes.size()]->solve_opened(ts, compute_rmm, lda,
+              compute_forces, compute_energy, local_energy, spheres_energy_i,
+              spheres_energy_c, spheres_energy_c1, spheres_energy_c2,
+              fort_forces_ms[i], rmm_outputs_a[i], rmm_outputs_b[i]);
+        } else {
+          cubes[ind]->solve_opened(ts, compute_rmm, lda,
+              compute_forces, compute_energy, local_energy, spheres_energy_i,
+              spheres_energy_c, spheres_energy_c1, spheres_energy_c2,
+              fort_forces_ms[i], rmm_outputs_a[i], rmm_outputs_b[i]);
+        }
+      } else {
+        if(ind >= cubes.size()){
+          spheres[ind-cubes.size()]->solve_closed(ts, compute_rmm, lda,
+              compute_forces, compute_energy, local_energy, fort_forces_ms[i],
+              1, rmm_outputs[i]);
+        } else {
+          cubes[ind]->solve_closed(ts, compute_rmm, lda,
+              compute_forces, compute_energy, local_energy, fort_forces_ms[i],
+              1, rmm_outputs[i]);
+        }
+      }
+
 #if GPU_KERNEL
       if(gpu_thread) {
         cudaDeviceSynchronize();
@@ -465,22 +499,48 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
   }
 
   if (compute_rmm) {
-    double * dst = fortran_vars.rmm_output.data;
-    const int elements = fortran_vars.rmm_output.width * fortran_vars.rmm_output.height;
-    for(uint k = 0; k < rmm_outputs.size(); k++) {
-      const double * src = rmm_outputs[k].asArray();
-      #pragma ivdep
-      #pragma vector always
-      for(int i = 0; i < elements; i++) {
-        dst[i] += src[i];
+    if (fortran_vars.OPEN) {
+      double * dst_a = fortran_vars.rmm_output_a.data;
+      double * dst_b = fortran_vars.rmm_output_b.data;
+      const int elements = fortran_vars.rmm_output_a.width * fortran_vars.rmm_output_a.height;
+      const int elements_b = fortran_vars.rmm_output_b.width * fortran_vars.rmm_output_b.height;
+  
+      if (!(rmm_outputs_a.size() == rmm_outputs_b.size() )){
+        std::cout << "ERROR in partition.solve: outputs A and B of different size. \n";
+      }
+
+      if (!(elements == elements_b )){
+        std::cout << "ERROR in partition.solve: different number of elements A and B.\n";
+      }
+
+      for(uint k = 0; k < rmm_outputs_a.size(); k++) {
+        const double * src_a = rmm_outputs_a[k].asArray();
+        const double * src_b = rmm_outputs_b[k].asArray();
+        #pragma ivdep
+        #pragma vector always
+        for(int i = 0; i < elements; i++) {
+                dst_a[i] += src_a[i];
+                dst_b[i] += src_b[i];
+        }
+      }
+    } else {   
+      double * dst = fortran_vars.rmm_output.data;
+      const int elements = fortran_vars.rmm_output.width * fortran_vars.rmm_output.height;
+      for(uint k = 0; k < rmm_outputs.size(); k++) {
+        const double * src = rmm_outputs[k].asArray();
+        #pragma ivdep
+        #pragma vector always
+        for(int i = 0; i < elements; i++) {
+		dst[i] += src[i];
+        }
       }
     }
   }
 
   if(OPEN && compute_energy) {
-    std::cout << "Ei: " << cubes_energy_i+spheres_energy_i;
-    std::cout << " Ec: " << cubes_energy_c+spheres_energy_c;
-    std::cout << " Ec1: " << cubes_energy_c1+spheres_energy_c1;
+    std::cout << " Ei:  " << cubes_energy_i+spheres_energy_i << std::endl;
+    std::cout << " Ec:  " << cubes_energy_c+spheres_energy_c << std::endl;
+    std::cout << " Ec1: " << cubes_energy_c1+spheres_energy_c1 << std::endl;
     std::cout << " Ec2: " << cubes_energy_c2+spheres_energy_c2 << std::endl;
   }
 

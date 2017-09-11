@@ -499,22 +499,33 @@ void Partition::regenerate(void)
       spheres[i]->compute_indexes();
     }
 
+
     compute_work_partition();
 
     timeforgroup.resize(cubes.size() + spheres.size());
     next.resize(G2G::cpu_threads+G2G::gpu_threads);
 
     fort_forces_ms.resize(G2G::cpu_threads+G2G::gpu_threads);
-    rmm_outputs.resize(G2G::cpu_threads+G2G::gpu_threads);
+    if (!fortran_vars.OPEN){
+       rmm_outputs.resize(G2G::cpu_threads+G2G::gpu_threads);
+    } else {
+       rmm_outputs_a.resize(G2G::cpu_threads+G2G::gpu_threads);
+       rmm_outputs_b.resize(G2G::cpu_threads+G2G::gpu_threads);
+    };
 
     for(int i = 0; i < G2G::cpu_threads+G2G::gpu_threads; i++) {
       fort_forces_ms[i].resize(fortran_vars.max_atoms, 3);
-      rmm_outputs[i].resize(fortran_vars.rmm_output.width, fortran_vars.rmm_output.height);
+      if (fortran_vars.OPEN){
+        rmm_outputs_a[i].resize(fortran_vars.rmm_output_a.width, fortran_vars.rmm_output_a.height);
+        rmm_outputs_b[i].resize(fortran_vars.rmm_output_b.width, fortran_vars.rmm_output_b.height);
+      }else{
+        rmm_outputs[i].resize(fortran_vars.rmm_output.width, fortran_vars.rmm_output.height);
+      }
     }
-
     int current_gpu = 0;
     for (int i = work.size(); i < G2G::cpu_threads + G2G::gpu_threads; i++)
       work.push_back(vector<int>());
+
 
     for(uint i = 0; i < cubes.size(); i++)
       if(cubes[i]->is_big_group()) {
@@ -527,6 +538,5 @@ void Partition::regenerate(void)
         work[G2G::cpu_threads+current_gpu].push_back(i+cubes.size());
         current_gpu = (current_gpu + 1) % G2G::gpu_threads;
       }
-
     diagnostic();
 }

@@ -248,9 +248,3 @@ subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_f
 
     return
 end  subroutine SCF_hyb
-
-
-
-
-
-

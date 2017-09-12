@@ -32,8 +32,6 @@ texture<float, 2, cudaReadModeElementType> rmm_input_gpu_tex2;
 #endif
 /** KERNELS **/
 #include "gpu_variables.h"
-//#include "kernels/pot.h"
-//#include "kernels/pot_open.h"
 #include "kernels/accumulate_point.h"
 #include "kernels/energy.h"
 #include "kernels/energy_open.h"

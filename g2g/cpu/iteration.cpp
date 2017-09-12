@@ -32,18 +32,6 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve
   double& energy_c1, double& energy_c2, HostMatrix<double> & fort_forces,
   int inner_threads, HostMatrix<double> & rmm_global_output, bool OPEN)
 {
-/*
-   if (OPEN) {
-      this->solve_opened( timers, compute_rmm, lda, compute_forces,
-                          compute_energy, energy, energy_i, energy_c,
-                          energy_c1, energy_c2, fort_forces);
-   } else {
-//    THIS IS NEW
-      this->solve_closed( timers, compute_rmm, lda, compute_forces,
-                          compute_energy, energy, fort_forces,
-                          inner_threads, rmm_global_output);
-   };
-*/
 }
 
 template<class scalar_type> void PointGroupCPU<scalar_type>::solve_closed

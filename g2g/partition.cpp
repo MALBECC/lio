@@ -431,19 +431,6 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
       int ind = work[i][j];
       Timer element;
       element.start_and_sync();
-/*
-      std::cout << "I'm thread " << omp_get_thread_num() << " and i is " << i << endl; // FF-Temp
-      if(ind >= cubes.size()){
-        spheres[ind-cubes.size()]->solve(ts, compute_rmm,lda,compute_forces, compute_energy,
-            local_energy, spheres_energy_i, spheres_energy_c, spheres_energy_c1, spheres_energy_c2,
-            fort_forces_ms[i], 1, rmm_outputs[i], OPEN);
-      } else {
-        cubes[ind]->solve(ts, compute_rmm,lda,compute_forces, compute_energy,
-            local_energy, cubes_energy_i, cubes_energy_c, cubes_energy_c1, cubes_energy_c2,
-            fort_forces_ms[i], 1, rmm_outputs[i], OPEN);
-      }
-      std::cout << "Todo marcha bien Milhouse " <<  endl; // FF-Temp
-*/
       if(OPEN) {
         if(ind >= cubes.size()){
           spheres[ind-cubes.size()]->solve_opened(ts, compute_rmm, lda,
@@ -478,8 +465,6 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
       timeforgroup[ind] = element.getTotal();
     }
     t.stop_and_sync();
-    //printf("Workload %d: (%d) ", i, (int) work[i].size());
-    //cout << t; cout << ts;
 
     next[i] = t.getTotal();
 
@@ -559,7 +544,6 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
      exit(1);
    }
 
-  //enditer.stop(); cout << "enditer = " << enditer << endl;
 }
 
 template class PointGroup<double>;

@@ -185,7 +185,7 @@ void cpu_potg_tmpl(scalar_type dens, const vec_type<scalar_type,3>& grad, const 
                  + 2.0 * grad.y * grad.z * hess2.z 
                  + 2.0 * grad.x * grad.z * hess2.y 
                  + (grad.y * grad.y) * hess1.y 
-                 + (grad.z * grad.z) * hess1.z) / dgrad; // esto ya difiere
+                 + (grad.z * grad.z) * hess1.z) / dgrad;
 
   y2a = 0;
 

@@ -1,12 +1,12 @@
 /* -*- mode: c -*- */
+#include <cassert>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <math_constants.h>
 #include <string>
 #include <vector>
-#include <limits>
-#include <cassert>
 
 #include "../common.h"
 #include "../init.h"

@@ -49,8 +49,12 @@ template<class T> void HostMatrix<T>::alloc_data(void) {
   else
   {
     posix_return = posix_memalign((void **) &this->data, 64, this->bytes());
-    if (!(posix_return == 0)) { std::cout <<"HostMatrix: Error in posix_memalign.\n"; };
-  }
+    if ( posix_return != 0) 
+    { 
+       std::cout <<"HostMatrix: Error in posix_memalign.\n"; 
+       exit(1);
+    };
+  };
 
   assert(this->data);
 }

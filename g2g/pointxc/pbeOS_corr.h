@@ -46,8 +46,8 @@
 //      parameter(bet=0.06672455060314922d0,delt=bet/gama)
 //      parameter(eta=1.d-12)
 //----------------------------------------------------------------------
-#include "../fix_compile.h"
 #include <float.h>
+#include "../fix_compile.h"
 
 namespace G2G {
 

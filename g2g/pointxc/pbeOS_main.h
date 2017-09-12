@@ -16,9 +16,10 @@
 //       : expbe, vxpbe_a, vxpbe_b, ecpbe, vcpbe_a, vcpbe_b
 //
 //----------------------------------------------------------------------------//
-#include "../fix_compile.h"
-#include "pbeOS_exch.h"
 #include "pbeOS_corr.h"
+#include "pbeOS_exch.h"
+#include "../fix_compile.h"
+
 
 namespace G2G {
 #define EASYPBE_PI   ((scalar_type)  3.141592653589793238462643383279f)

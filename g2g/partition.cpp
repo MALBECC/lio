@@ -410,7 +410,7 @@ void Partition::solve(Timers& timers, bool compute_rmm,bool lda,bool compute_for
     if(i>=cpu_threads) {
       gpu_thread = true;
       cudaSetDevice(i-cpu_threads);
-    }  
+    }
 #endif
     double local_energy = 0;
 

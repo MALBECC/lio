@@ -4,7 +4,3 @@
 #else
 #   include <cuda_runtime.h>
 #endif
-
-#if !INTELCOMP
-#endif
-

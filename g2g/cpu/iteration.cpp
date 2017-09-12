@@ -18,7 +18,6 @@
 #include "../pointxc/calc_ggaCS.h"
 #include "../pointxc/calc_ggaOS.h"
 #include "../pointxc/calc_ldaCS.h"
-//#include "..pointxc/calc_ldaOS.h"
 
 using std::cout;
 using std::endl;
@@ -85,7 +84,6 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve_closed
         partial_density += Fi * w;
       }
       scalar_type exc = 0, corr = 0, y2a = 0;
-//      cpu_pot( partial_density, exc, corr, y2a, iexch );
       cpu_pot( partial_density, exc, corr, y2a, iexch );
 
 
@@ -165,7 +163,6 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve_closed
       const vec_type3 dd1(tdd1x,tdd1y,tdd1z);
       const vec_type3 dd2(tdd2x,tdd2y,tdd2z);
 
-//      cpu_potg(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch);
       calc_ggaCS_in<scalar_type, 3>(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch);
  
       const scalar_type wp = this->points[point].weight;

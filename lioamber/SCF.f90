@@ -15,13 +15,18 @@ subroutine SCF(E)
       npas, verbose, RMM, X, SHFT, GRAD, npasw, igrid, energy_freq, converge,          &
       noconverge, cubegen_only, cube_dens, cube_orb, cube_elec, VCINP, Nunp, GOLD,     &
       igrid2, predcoef, nsol, r, pc, timedep, tdrestart, DIIS, told, Etold, Enucl,     &
-      Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz, epsilon, field,              &
-      doing_ehrenfest, first_step, RealRho, tdstep, total_time, Fx, Fy, Fz, a0
+      Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz, epsilon, nuc,                &
+      doing_ehrenfest, first_step, RealRho, tdstep, total_time, field, Fx, Fy, Fz, a0      
 !      use mathsubs
       use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
        FOCK_ECP_read,FOCK_ECP_write,IzECP
       use transport, only : generate_rho0
       use faint_cpu77, only: int1, int2, intsol, int3mem, int3lu, intfld
+      use dftb_data, only : dftb_calc, MDFTB, MTB
+      use dftb_subs, only : dftb_init, getXY_DFTB, find_neighbors, build_chimera,      &
+                            extract_rhoDFT
+
+
 !      use general_module 
 !#ifdef  CUBLAS
 !      use cublasmath 
@@ -48,6 +53,17 @@ subroutine SCF(E)
         INTEGER            :: LWORK2
         INTEGER, ALLOCATABLE :: IPIV(:)
         logical :: just_int3n,ematalloct
+!carlos: variable mas comoda para inputs
+        integer :: M_in
+        integer :: NCO_in
+        real*8, allocatable :: rho_0(:,:)
+        real*8, allocatable :: fock_0(:,:)
+        real*8, allocatable :: rho(:,:)
+        real*8, allocatable :: fock(:,:)
+        real*8, allocatable :: morb_coefat(:,:)
+        real*8, allocatable :: morb_energy(:)
+        integer             :: i0, ii, jj, kkk
+
 
 ! FFR - vvterm
 !----------------------------------------------------------!
@@ -108,6 +124,22 @@ subroutine SCF(E)
 
       call g2g_timer_start('SCF_full')
 !--------------------------------------------------------------------!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!carlos: init para TB
+
+   allocate (fock_0(M,M), rho_0(M,M))
+
+   if (dftb_calc) then
+      call dftb_init(M)
+      allocate(fock(MDFTB,MDFTB), rho(MDFTB,MDFTB))
+      allocate(morb_energy(MDFTB), morb_coefat(MDFTB,MDFTB))
+   else
+      allocate(fock(M,M), rho(M,M))
+      allocate(morb_energy(M), morb_coefat(M,M))
+   end if
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%    Effective Core Potential Fock    %%%%%%%%%%%%%%%%!
@@ -296,19 +328,58 @@ subroutine SCF(E)
 	call overlap_diag(fockbias, dovv,Y,Ytrans,Xtrans)
 !#########################################################################################
 !#########################################################################################
+      
+!carlosDFTB: allocation of X and Y matrix for TB calculations
+
+       if (dftb_calc) then
+
+          M_in=MDFTB
+
+          if ( allocated(Xmat) ) deallocate(Xmat)
+          allocate( Xmat(MDFTB,MDFTB) )
+
+          if ( allocated(Ymat) ) deallocate(Ymat)
+          allocate( Ymat(MDFTB,MDFTB) )
+       
+          call getXY_DFTB(M,x,y,xmat,ymat)
+       
+       else
+
+          M_in=M
+          
+          if ( allocated(Xmat) ) deallocate(Xmat)
+          allocate( Xmat(M,M) )
+
+          if ( allocated(Ymat) ) deallocate(Ymat)
+          allocate( Ymat(M,M) )
+
+          do j = 1, M
+          do i = 1, M
+             Xmat(i,j) = x(i,j)
+             Ymat(i,j) = y(i,j)
+          enddo
+          enddo
+       
+      end if 
+
+
+!      MDFTB must be declared before
+!      call :
+!      agrandar y modificar las Xmat/Ymat
+!      modificar MDFTB
 
 !! CUBLAS ---------------------------------------------------------------------!
 #ifdef CUBLAS
             call CUBLAS_INIT()
-            stat = CUBLAS_ALLOC(M*M, sizeof_real, devPtrX)
-            stat = CUBLAS_ALLOC(M*M, sizeof_real, devPtrY)
+            stat = CUBLAS_ALLOC(M_in*M_in, sizeof_real, devPtrX)
+            stat = CUBLAS_ALLOC(M_in*M_in, sizeof_real, devPtrY)
             if (stat.NE.0) then
               write(*,*) "X and/or Y memory allocation failed"
               call CUBLAS_SHUTDOWN
               stop
             endif
-            stat = CUBLAS_SET_MATRIX(M,M,sizeof_real,X,M,devPtrX,M)
-            stat = CUBLAS_SET_MATRIX(M,M,sizeof_real,Y,M,devPtrY,M)
+            stat = CUBLAS_SET_MATRIX(M_in,M_in,sizeof_real,Xmat,M_in,devPtrX,M_in)
+            stat = CUBLAS_SET_MATRIX(M_in,M_in,sizeof_real,Ymat,M_in,devPtrY,M_in)
             if (stat.NE.0) then
               write(*,*) "X and/or Y setting failed"
               call CUBLAS_SHUTDOWN
@@ -444,28 +515,103 @@ subroutine SCF(E)
         ENDIF
         call g2g_timer_start('actualiza rmm')
         call g2g_timer_sum_pause('Fock integrals')
-        call g2g_timer_sum_start('SCF acceleration')
 
 
-       if ( allocated(Xmat) ) deallocate(Xmat)
-       allocate( Xmat(M,M) )
+!carlos: extraemos rho y fock antes
 
-       if ( allocated(Ymat) ) deallocate(Ymat)
-       allocate( Ymat(M,M) )
+      do jj=1,M
 
-       do i = 1, M
-       do j = 1, M
-          Xmat(i,j) = x(i,j)
-          Ymat(i,j) = y(i,j)
-       enddo
-       enddo
+         do kk=1,jj-1
+            fock_0(jj,kk)=RMM(M5+jj+(M2-kk)*(kk-1)/2-1)
+             rho_0(jj,kk)=(RMM(jj+(M2-kk)*(kk-1)/2))/2
+         enddo
+
+         fock_0(jj,jj)=RMM(M5+jj+(M2-jj)*(jj-1)/2-1)
+          rho_0(jj,jj)=RMM(jj+(M2-jj)*(jj-1)/2)
+
+         do kk=jj+1,M
+            fock_0(jj,kk)=RMM(M5+kk+(M2-jj)*(jj-1)/2-1)
+             rho_0(jj,kk)=RMM(kk+(M2-jj)*(jj-1)/2)/2
+         enddo
+
+      enddo
+
+!carlos: armamos la fock posta
+   if (dftb_calc) then
+      call find_neighbors(M_in,Nuc,natom)
+      call build_chimera (M, fock_0, fock, natom)
+
+      if (niter==1) then
+         rho=0.0D0
+         do ii=1, MTB
+            rho(ii,ii)=1.0D0
+            rho(MTB+M+ii,MTB+M+ii)=1.0D0 
+         end do
+      end if
+    
+      rho(MTB+1:MTB+M, MTB+1:MTB+M)=rho_0(:,:)
+
+   else
+      fock=fock_0
+      rho=rho_0
+   endif
+
+   if (dftb_calc) then
+      NCO_in = NCO+MTB
+   else
+      NCO_in = NCO
+   end if
+
 
 #ifdef CUBLAS
-       call obtain_new_P(niter, DAMP, dovv, xnano, devPtrX, devPtrY)
+       call obtain_new_P( M_in, NCO_in, niter, DAMP, good, fock, rho, morb_energy, morb_coefat, devPtrX, devPtrY)
 #else
-       call obtain_new_P(niter, DAMP, good, xnano, Xmat, Ymat )
+       call obtain_new_P( M_in, NCO_in, niter, DAMP, good, fock, rho, morb_energy, morb_coefat, Xmat, Ymat )
 #endif
 
+!------------------------------------------------------------------------------!
+!  We are not sure how to translate the sumation over molecular orbitals
+!  and energies when changing from DFTB system to DFT subsystem. Forces
+!  may be broken due to this.
+!  This should not be affecting normal DFT calculations.
+   i0 = 0
+   if (dftb_calc) i0=MTB
+
+   do kk=1,M
+      RMM(M13+kk-1) = morb_energy(kk)
+   end do
+
+   kkk = 0
+   do kk=1,NCO
+   do ii=1,M
+      kkk = kkk+1
+      RMM(M18+kkk-1) = morb_coefat( i0+ii, kk )
+   enddo
+   enddo
+
+   do ii=1,M
+!   do jj=1,NCO
+   do jj=1,M
+      X( ii, M2+jj ) = morb_coefat( i0+ii, jj )
+   enddo
+!   do jj=NCO,M
+!      X( ii, M2+jj ) = morb_coefat( i0+ii, jj+2*MTB )
+!   enddo
+
+   enddo
+
+!------------------------------------------------------------------------------!
+
+
+
+
+!carlos: agregado para separar de rho la parte DFT
+
+   if (dftb_calc) then
+      call extract_rhoDFT (M, rho, xnano)
+   else
+      xnano=rho
+   end if
 
       good = 0.0d0
       do j=1,M
@@ -993,168 +1139,81 @@ subroutine SCF(E)
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!carlos: sacando fock de la rutina
 #ifdef CUBLAS
-subroutine obtain_new_P( niter, damp, good, rho, devPtrX, devPtrY)
-        use cublasmath, only : cumxp_r, cumfx, cumxtf, cu_calc_fock_commuts
+subroutine obtain_new_P( M_in, NCO_in, niter, damp, good, fock, rho, morb_energy, morb_coefat, devPtrX, devPtrY)
+   use cublasmath, only : cumxp_r, cumfx, cumxtf, cu_calc_fock_commuts
 
 #else
-subroutine obtain_new_P( niter, damp, good, rho, Xmat, Ymat )
-        use mathsubs, only : basechange_gemm
+subroutine obtain_new_P( M_in, NCO_in, niter, damp, good, fock, rho, morb_energy, morb_coefat, Xmat, Ymat )
+   use mathsubs  , only : basechange_gemm
 #endif
 
-        use garcha_mod, ONLY: RMM, DIIS, M, Md, NCO, ndiis, hybrid_converg, good_cut
-        use linear_algebra, only: matrix_diagon
-        use converger_subs, only: converger_init, conver
+   use garcha_mod    , only: DIIS, NCO, ndiis, hybrid_converg, good_cut
+   use linear_algebra, only: matrix_diagon
+   use converger_subs, only: converger_init, conver
 
-        implicit none
-
-        integer, intent(in)  :: niter
-        real*8 , intent(in)  :: damp
-        real*8 , intent(in)  :: good
-        real*8 , intent(out) :: rho(M,M)
+   implicit none
+   integer  , intent(in)    :: M_in
+   integer  , intent(in)    :: NCO_in
+   integer  , intent(in)    :: niter
+   real*8   , intent(in)    :: damp
+   real*8   , intent(in)    :: good
+   real*8   , intent(inout)    :: fock(M_in, M_in)
+   real*8   , intent(inout) :: rho(M_in,M_in)
+   real*8   , intent(inout) :: morb_energy(M_in)
+   real*8   , intent(inout) :: morb_coefat(M_in, M_in)
 #ifdef  CUBLAS
-       integer*8, intent(in) :: devPtrX
-       integer*8, intent(in) :: devPtrY !ver intent
+   integer*8, intent(in)    :: devPtrX
+   integer*8, intent(in)    :: devPtrY
 #else
-       real*8, intent(in) :: Xmat(M,M)
-       real*8, intent(in) :: Ymat(M,M)
+   real*8   , intent(in)    :: Xmat(M_in,M_in)
+   real*8   , intent(in)    :: Ymat(M_in,M_in)
 #endif
-       integer :: ii, jj, kk, kkk
-
-       real*8, allocatable :: molorb_aocoef(:,:)
-       real*8, allocatable :: eigen_vecs(:,:)
-       real*8, allocatable :: eigen_vals(:)
-       real*8, allocatable :: fock(:,:)
-
-
-! temporales hasta q rompamos RMM
-       integer :: MM, MMd
-       integer :: M1, M2, M3, M5, M7, M9, M11, M13, M15, M17, M18
-
-      MM=M*(M+1)/2
-      MMd=Md*(Md+1)/2
-
-      M1=1        ! first P
-      M2=2*M
-      M3=M1+MM    ! now Pnew
-      M5=M3+MM    ! now S, F also uses the same position after S was used
-      M7=M5+MM    ! now G
-      M9=M7+MMd   ! now Gm
-      M11=M9+MMd  ! now H
-      M13=M11+MM  ! W ( eigenvalues ), also this space is used in least squares
-      M15=M13+M   ! aux ( vector for ESSl)
-      M17=M15+MM  ! Least squares
-      M18=M17+MMd ! vectors of MO
-
-
-      if ( allocated(molorb_aocoef) ) deallocate(molorb_aocoef)
-      allocate( molorb_aocoef(M,M) )
-
-      if ( allocated(eigen_vecs) ) deallocate(eigen_vecs)
-      allocate( eigen_vecs(M,M) )
-
-      if ( allocated(eigen_vals) ) deallocate(eigen_vals)
-      allocate( eigen_vals(M) )
-
-      if ( allocated(fock) ) deallocate(fock)
-      allocate( fock(M,M) )
+   real*8, allocatable :: eigen_vecs(:,:)
+   integer :: ii, jj
 !
 !
-!   CONVERGENCE ACCELERATION
+!  Convergence acceleration 
 !------------------------------------------------------------------------------!
+   call g2g_timer_sum_start('SCF acceleration')
+   if (niter==1) call converger_init( M_in, ndiis, damp, DIIS, hybrid_converg )
 
-      do jj=1,M
-
-         do kk=1,jj-1
-            fock(jj,kk)=RMM(M5+jj+(M2-kk)*(kk-1)/2-1)
-             rho(jj,kk)=(RMM(jj+(M2-kk)*(kk-1)/2))/2
-         enddo
-
-         fock(jj,jj)=RMM(M5+jj+(M2-jj)*(jj-1)/2-1)
-          rho(jj,jj)=RMM(jj+(M2-jj)*(jj-1)/2)
-
-         do kk=jj+1,M
-            fock(jj,kk)=RMM(M5+kk+(M2-jj)*(jj-1)/2-1)
-             rho(jj,kk)=RMM(kk+(M2-jj)*(jj-1)/2)/2
-         enddo
-
-      enddo
-
-      if (niter==1) call converger_init( M, ndiis, damp, DIIS, hybrid_converg )
-
-#     ifdef cublas
-         call conver(niter, good, good_cut, M, rho, fock, devPtrX, devPtrY )
-#     else
-         call conver(niter, good, good_cut, M, rho, fock, Xmat, Ymat)
-#     endif
-
-!      do j=1,M
-!         do k=1,M
-!            RMM(M5+j+(M2-k)*(k-1)/2-1)=fock(j,k)
-!         enddo
-!         do k=j+1,M
-!            RMM(M5+k+(M2-j)*(j-1)/2-1)=fock(j,k)
-!         enddo
-!      enddo
+#  ifdef CUBLAS
+      call conver(niter, good, good_cut, M_in, rho, fock, devPtrX, devPtrY )
+#  else
+      call conver(niter, good, good_cut, M_in, rho, fock, Xmat, Ymat)
+#  endif
+   call g2g_timer_sum_pause('SCF acceleration')
 !
 !
-! F' diagonalization now
-! X(1,M) will contain (X^-1)*C
-! FFR: Fock Diagonaliation is now external
+!  Fock(ON) diagonalization, base change of coeficients ( (X^-1)*C ) and
+!  construction of new density matrix
 !------------------------------------------------------------------------------!
-      call g2g_timer_start('dspev')
-      call g2g_timer_sum_pause('SCF acceleration')
-      call g2g_timer_sum_start('diagonalization')
+   if ( allocated(eigen_vecs) ) deallocate(eigen_vecs)
+   allocate( eigen_vecs(M_in,M_in) )
 
-      call g2g_timer_start('scf - fock diagonalization')
 
-      call matrix_diagon( fock, eigen_vecs, eigen_vals )
-      do kk=1,M
-         RMM(M13+kk-1) = eigen_vals(kk)
-      end do
+   call g2g_timer_start('SCF - Fock Diagonalization')
+   call g2g_timer_sum_start('SCF - Fock Diagonalization (sum)')
+   call matrix_diagon( fock, eigen_vecs, morb_energy )
+   call g2g_timer_sum_pause('SCF - Fock Diagonalization (sum)')
+   call g2g_timer_stop('SCF - Fock Diagonalization')
 
-      call g2g_timer_stop('scf - fock diagonalization')
-      call g2g_timer_stop('dspev')
-      call g2g_timer_sum_pause('diagonalization')
+   call g2g_timer_start('SCF - MOC base change')
+   call g2g_timer_sum_start('SCF - MOC base change (sum)')
+#  ifdef CUBLAS
+      call cumxp_r( eigen_vecs, devPtrX, morb_coefat, M_in)
+#  else
+      morb_coefat = matmul( Xmat, eigen_vecs )
+#  endif
+   call g2g_timer_sum_pause('SCF - MOC base change (sum)')
+   call g2g_timer_stop('SCF - MOC base change')
 
-      call g2g_timer_start('coeff')
-      call g2g_timer_sum_start('MO coefficients')
-!
-!
-!
-! Recover C from (X^-1)*C; put into xnano
-! new coefficients
-!------------------------------------------------------------------------------!
-#ifdef CUBLAS
-      call cumxp_r( eigen_vecs, devPtrX, molorb_aocoef, M)
-#else
-      molorb_aocoef = matmul( Xmat, eigen_vecs )
-#endif
+   if ( allocated(eigen_vecs) ) deallocate(eigen_vecs)
 
-      call g2g_timer_stop('coeff')
-      call g2g_timer_start('otras cosas')
-      call g2g_timer_sum_pause('MO coefficients')
-      call g2g_timer_sum_start('new density')
-!
-! --- For the first iteration, damping on density matrix
-! Important for the case of strating guess of AO
-!
-      kkk = 0
-      do kk=1,NCO
-      do ii=1,M
-         kkk = kkk+1
-         RMM(M18+kkk-1) = molorb_aocoef(ii,kk)
-      enddo
-      enddo
-      call g2g_timer_start('dens_GPU')
+   call density( M_in, NCO_in, morb_coefat, rho )
 
-!     Construction of new density matrix
-      call density( M, NCO, molorb_aocoef, rho )
-
-      if ( allocated(molorb_aocoef) ) deallocate(molorb_aocoef)
-      if ( allocated(eigen_vecs) ) deallocate(eigen_vecs)
-      if ( allocated(eigen_vals) ) deallocate(eigen_vals)
-      if ( allocated(fock) ) deallocate(fock)
 end subroutine obtain_new_P
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 

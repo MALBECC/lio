@@ -47,7 +47,7 @@ end subroutine converger_init
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-#ifdef cublas
+#ifdef CUBLAS
    subroutine conver ( niter, good, good_cut, M_in, rho, fock, devPtrX, devPtrY )
    use cublasmath, only : cumfx, cumxtf, cu_calc_fock_commuts
 #else

@@ -60,8 +60,6 @@ OBJECTS += elec.o
 OBJECTS += properties.o
 OBJECTS += write_output.o
 OBJECTS += errlog.o
-OBJECTS += transport.o
-OBJECTS += lowdinpop.o
 
 ################################################################################
 tmplist := SCF.o readECP.o drive.o intECP.o init.o init_lio.o
@@ -105,7 +103,7 @@ tmplist += SCF.o TD.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/dftb_subs.mod
 
 tmplist :=
-tmplist += dftb_subs.o
+tmplist += SCF.o dftb_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/dftb_data.mod
 
 

@@ -6,13 +6,13 @@ contains
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-subroutine converger_init( Mdim, ndiis_in, factor_in, do_diis, do_hybrid )
+subroutine converger_init( M_in, ndiis_in, factor_in, do_diis, do_hybrid )
 
    use converger_data, only: fockm, FP_PFm, conver_criter, fock_damped   &
                           &, hagodiis, damping_factor, bcoef, ndiis
          
    implicit none
-   integer, intent(in) :: Mdim
+   integer, intent(in) :: M_in
    integer, intent(in) :: ndiis_in
    real*8 , intent(in) :: factor_in
    logical, intent(in) :: do_diis, do_hybrid
@@ -31,16 +31,16 @@ subroutine converger_init( Mdim, ndiis_in, factor_in, do_diis, do_hybrid )
    endif
 
    if (conver_criter /= 1) then ! agregado para cambio de damping a diis, Nick
-      if (.not. allocated(fockm) )  allocate( fockm (Mdim, Mdim, ndiis) )
-      if (.not. allocated(FP_PFm) ) allocate( FP_PFm(Mdim, Mdim, ndiis) )
+      if (.not. allocated(fockm) )  allocate( fockm (M_in, M_in, ndiis) )
+      if (.not. allocated(FP_PFm) ) allocate( FP_PFm(M_in, M_in, ndiis) )
       if (.not. allocated(bcoef) )  allocate( bcoef (ndiis+1) )
    endif
 
 
-   if (.not. allocated(fock_damped) ) allocate(fock_damped(Mdim, Mdim))
+   if (.not. allocated(fock_damped) ) allocate(fock_damped(M_in, M_in))
    fock_damped(:,:) = 0.0d0
    if (conver_criter /= 2) then
-!      if (.not. allocated(fock_damped) ) allocate(fock_damped(Mdim, Mdim))
+!      if (.not. allocated(fock_damped) ) allocate(fock_damped(M_in, M_in))
    endif
 
 end subroutine converger_init
@@ -48,10 +48,10 @@ end subroutine converger_init
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #ifdef cublas
-   subroutine conver ( niter, good, good_cut, Mdim, rho, fock, devPtrX, devPtrY )
+   subroutine conver ( niter, good, good_cut, M_in, rho, fock, devPtrX, devPtrY )
    use cublasmath, only : cumfx, cumxtf, cu_calc_fock_commuts
 #else
-   subroutine conver ( niter, good, good_cut, Mdim, rho, fock, X, Y)
+   subroutine conver ( niter, good, good_cut, M_in, rho, fock, X, Y)
    use mathsubs, only : basechange_gemm
 #endif 
    use converger_data, only: damping_factor, hagodiis, fockm, FP_PFm, ndiis,  &
@@ -60,16 +60,16 @@ end subroutine converger_init
    implicit none
    integer, intent(in)    :: niter
    real*8 , intent(in)    :: good, good_cut
-   integer, intent(in)    :: Mdim
-   real*8 , intent(in)    :: rho(Mdim, Mdim)
-   real*8 , intent(inout) :: fock(Mdim, Mdim)
+   integer, intent(in)    :: M_in
+   real*8 , intent(in)    :: rho(M_in, M_in)
+   real*8 , intent(inout) :: fock(M_in, M_in)
 #ifdef  CUBLAS
 !  ver intent pointers...
    integer*8, intent(in) :: devPtrX
    integer*8, intent(in) :: devPtrY
 #else
-   real*8,  intent(in) :: X(Mdim,Mdim)
-   real*8,  intent(in) :: Y(Mdim,Mdim)
+   real*8,  intent(in) :: X(M_in,M_in)
+   real*8,  intent(in) :: Y(M_in,M_in)
 #endif
 
    real*8              :: damp
@@ -107,7 +107,7 @@ end subroutine converger_init
 !  Choosing convergence acceleration method for current step
 !
 !------------------------------------------------------------------------------!
-   allocate(fock00(Mdim,Mdim))
+   allocate(fock00(M_in,M_in))
 
 !Saving input fock
    fock00=fock
@@ -117,8 +117,13 @@ end subroutine converger_init
 
    if (conver_criter /= 1) then
 
-      allocate( suma(Mdim, Mdim), diag1(Mdim, Mdim) )
-      allocate( scratch1(Mdim, Mdim), scratch2(Mdim, Mdim) )
+      allocate( suma(M_in, M_in), diag1(M_in, M_in) )
+      allocate( scratch1(M_in, M_in), scratch2(M_in, M_in) )
+
+!-----------------------------------------------------------------------------------------
+! If DIIS is turned on, update fockm with the current transformed F' (into ON
+! basis) and update FP_PFm with the current transformed [F',P']
+!-----------------------------------------------------------------------------------------
 
       do jj = ndiis-(ndiist-1), ndiis-1
          fockm(:,:,jj)  = fockm(:,:,jj+1)
@@ -127,11 +132,15 @@ end subroutine converger_init
 
 
 #     ifdef  CUBLAS
-         call cu_calc_fock_commuts(fock,rho,devPtrX,devPtrY,scratch1,Mdim)
+         call cu_calc_fock_commuts(fock,rho,devPtrX,devPtrY,scratch1,M_in)
          FP_PFm(:,:,ndiis) = scratch1(:,:)
 
 #     else
-         call calc_fock_commuts(fock,rho,X,Y,scratch1,scratch2,Mdim)
+!-----------------------------------------------------------------------------------------
+! now, scratch1 = A = F' * P'; scratch2 = A^T
+! [F',P'] = A - A^T
+!-----------------------------------------------------------------------------------------
+         call calc_fock_commuts(fock,rho,X,Y,scratch1,scratch2,M_in)
          FP_PFm(:,:,ndiis) = scratch1(:,:) - scratch2(:,:)
 
 #     endif
@@ -186,8 +195,8 @@ end subroutine converger_init
 !------------------------------------------------------------------------------!
     if (.not.hagodiis) then
    
- !  do ii=1,Mdim
- !  do jj=1,Mdim
+ !  do ii=1,M_in
+ !  do jj=1,M_in
  !     write(668,*) ii,jj,fock(ii,jj)
  !  enddo
  !  enddo
@@ -202,10 +211,10 @@ end subroutine converger_init
 
 
 #      ifdef  CUBLAS
-          call cumxtf(fock,devPtrX,fock,Mdim)
-          call cumfx(fock,DevPtrX,fock,Mdim)
+          call cumxtf(fock,devPtrX,fock,M_in)
+          call cumfx(fock,DevPtrX,fock,M_in)
 #      else
-          fock = basechange_gemm(Mdim,fock,x)
+          fock = basechange_gemm(M_in,fock,x)
 #      endif
 
     endif
@@ -248,11 +257,11 @@ end subroutine converger_init
          scratch1(:,:) = FP_PFm(:,:,ndiis)
          scratch2(:,:) = FP_PFm(:,:,kknew)
 
-         call matmuldiag( scratch1, scratch2, diag1, Mdim )
+         call matmuldiag( scratch1, scratch2, diag1, M_in )
 
          EMAT(ndiist,kk) = 0.0d0
          if (kk.ne.ndiist) EMAT(kk,ndiist) = 0.0d0
-         do ii = 1, Mdim
+         do ii = 1, M_in
             EMAT(ndiist,kk) = EMAT(ndiist,kk) + diag1(ii,ii)
             if (kk.ne.ndiist) then
                EMAT(kk,ndiist) = EMAT(ndiist,kk)
@@ -308,8 +317,8 @@ end subroutine converger_init
          suma=0
          do kk=1,ndiist
             kknew = kk + (ndiis-ndiist)
-            do ii = 1, Mdim
-            do jj = 1, Mdim
+            do ii = 1, M_in
+            do jj = 1, M_in
                suma(ii,jj) = suma(ii,jj) + bcoef(kk)*fockm(ii,jj,kknew)
             enddo
             enddo

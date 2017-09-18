@@ -1,5 +1,4 @@
 //----------------------------------------------------------------------
-//      SUBROUTINE EXCHPBE(rho,S,U,V,lgga,lpot,EX,VX)
 //----------------------------------------------------------------------
 //  PBE EXCHANGE FOR A SPIN-UNPOLARIZED ELECTRONIC SYSTEM
 //  K Burke's modification of PW91 codes, May 14, 1996
@@ -46,16 +45,6 @@ void pbeOS_exch( scalar_type rho, scalar_type s, scalar_type u, scalar_type v,
    scalar_type rho13  = cbrt( rho );
    scalar_type exunif = (scalar_type)EASYPBE_AX * rho13;
 
-//---------------------//
-// WHAT IS THIS???
-//
-// if (lgga.eq.0) then
-//    ex = exunif
-//    vx = ex * thrd4
-//    return
-// endif
-//--------------------//
-
    // Construct PBE enhancement factor and calculate Ex
    scalar_type s2 = s * s;
    scalar_type s3 = s * s2;
@@ -63,11 +52,6 @@ void pbeOS_exch( scalar_type rho, scalar_type s, scalar_type u, scalar_type v,
 
    scalar_type fxpbe = (scalar_type)1.0f + EASYPBE_UK - EASYPBE_UK/p0;
    ex = exunif * fxpbe;
-
-//---------------------//
-// WHAT IS THIS???
-// if (lpot.eq.0) return 
-//---------------------//
 
    // Find first and second derivatives of Fx w.r.t s.
    // Fs = (1/s)*dFxPBE/ds  || Fss = d Fs/ds

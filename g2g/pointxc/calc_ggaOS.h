@@ -30,7 +30,9 @@ void calc_ggaOS( scalar_type dens_a, scalar_type dens_b,
    exc_corr = exc = corr = corr1 = corr2 = v_a = v_b = 0.0f;
 
    scalar_type dgrad_a, delgrad_a, rlap_a, dgrad_b, delgrad_b, rlap_b;
-   if ( (dens_a + dens_b) > ((scalar_type)1e-13f) ) {
+   const scalar_type MINIMUM_DENSITY_VALUE = 1e-13f;
+
+   if ( (dens_a + dens_b) > MINIMUM_DENSITY_VALUE ) {
       if (Vxc_id == 9) { //PBE
 
          vec_type<scalar_type,width> grad;

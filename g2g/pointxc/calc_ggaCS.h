@@ -44,7 +44,8 @@ void calc_ggaCS( scalar_type dens,
                  scalar_type& y2a)
 {
    // hess1: xx, yy, zz  || hess2: xy, xz, yz
-   if (dens < 1e-13) { ex = ec = 0; return; }
+   const scalar_type MINIMUM_DENSITY_VALUE = 1e-13f;
+   if (dens < MINIMUM_DENSITY_VALUE) { ex = ec = 0; return; }
 
    scalar_type y     = cbrt( (scalar_type)dens );  // rho^(1/3)
    scalar_type grad2 = grad.x * grad.x + grad.y * grad.y + grad.z * grad.z;

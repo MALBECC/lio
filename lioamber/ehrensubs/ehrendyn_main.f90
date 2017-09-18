@@ -125,22 +125,24 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
 
       if ( elstep_local == elstep_keeps ) qm_forces_ds = nucfor_ds
       time = time + dte * 0.0241888d0
+
+      call ehrenaux_writedip(elstep_count, wdip_nfreq, stored_time, dipmom,    &
+      &    wdip_fname)
+
+      if (rsto_saves) call ehrenaux_rsto( &
+      &  rsto_fname, rsto_nfreq, ndyn_steps*edyn_steps, elstep_count,          &
+      & natom, qm_forces_total, nucvel, M, RhoOld, RhoMid )
+
       call g2g_timer_stop('ehrendyn - electronic step')
 
    enddo
-
-   stored_densM1 = RhoOld
-   stored_densM2 = RhoMid
 !
 !
 !
 !  Finalizations
 !------------------------------------------------------------------------------!
-   call ehrenaux_writedip(nustep_count, wdip_nfreq, stored_time, dipmom, wdip_fname)
-
-   if (rsto_saves) call ehrenaux_rsto( rsto_fname, rsto_nfreq, &
-   &  ndyn_steps, nustep_count, natom, qm_forces_total, nucvel, &
-   &  M, stored_densM1, stored_densM2 )
+   stored_densM1 = RhoOld
+   stored_densM2 = RhoMid
 
    dipmom_o = stored_dipmom
    energy_o = stored_energy
@@ -155,6 +157,5 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
    deallocate( Bmat, Dmat, Tmat )
    call g2g_timer_stop('ehrendyn - nuclear step')
 
-901 format(F15.9,2x,F15.9)
 end subroutine ehrendyn_main
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -1,9 +1,12 @@
 # BADAMBER
 
-Checks amber behaviour of using different criteria to print coordinates,
+CONSIST: Checks amber behaviour of using different criteria to print coordinates,
 velocities and forces. Differences arrise when using different time steps
 and save frequency (1000 steps of 2E-7 fs, save every 100 steps, VS 10 steps
 of 2E-5 fs, save every step).
+
+RESTART: shows the difference between an amber run that doesn't use the rst7
+velocities and one that uses velocities as 0.
 
 NOTE: this test doesn't use lio, but PM3; extern behavior is commented so it
 is easy to switch back.

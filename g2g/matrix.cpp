@@ -36,6 +36,8 @@ template<class T> bool Matrix<T>::is_allocated(void) const {
 template<class T> void HostMatrix<T>::alloc_data(void) {
   assert(this->bytes() != 0);
   int bytes = this->bytes();
+  int posix_return = 0;
+
   if (pinned) {
 #if GPU_KERNELS
     cudaError_t error_status = cudaMallocHost((void**)&this->data, this->bytes());
@@ -46,8 +48,13 @@ template<class T> void HostMatrix<T>::alloc_data(void) {
   }
   else
   {
-    posix_memalign((void **) &this->data, 64, this->bytes());
-  }
+    posix_return = posix_memalign((void **) &this->data, 64, this->bytes());
+    if ( posix_return != 0) 
+    { 
+       std::cout <<"HostMatrix: Error in posix_memalign.\n"; 
+       exit(1);
+    };
+  };
 
   assert(this->data);
 }

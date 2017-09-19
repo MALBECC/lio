@@ -144,7 +144,7 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
     cout << "Number of MO(UP): "<<fortran_vars.nco<<endl;
     cout << "Number of MO(DOWN): "<<fortran_vars.nco+fortran_vars.nunp<<endl;
 
-    // HACERLO MEJOR
+    // To be removed in full-open shell
     G2G::cpu_threads = 0; // FF-Temp
     cout << "Openshell currently not supported with CPU multithreading.\n"; // FF-Temp
 

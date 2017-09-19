@@ -66,7 +66,8 @@ namespace G2G {
 
     public:
       vec_type(void) {}
-      vec_type(float x, float y, float z, float w) : x(x), y(y), z(z), _w(w) { }
+      vec_type(float x_in, float y_in, float z_in, float w_in) :
+               x(x_in), y(y_in), z(z_in), _w(w_in) { }
 
       friend std::ostream& operator<<(std::ostream& o, const vec_type & v) {
           o << v.x << " " << v.y << " " << v.z << " " << v._w;

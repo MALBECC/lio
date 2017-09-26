@@ -1,4 +1,4 @@
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!_o%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine ehrendyn_main( energy_o, dipmom_o )
 !------------------------------------------------------------------------------!
 !
@@ -53,8 +53,8 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
 !  Preliminaries
 !------------------------------------------------------------------------------!
    call g2g_timer_start('ehrendyn - nuclear step')
-!   if (first_step) return
 !  BEWARE OF COUNTING => EXTRA STEP WHEN NOT DOING RESTART...
+!   if (first_step) return
    nustep_count = nustep_count + 1
    time = stored_time
 
@@ -73,6 +73,7 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
    rhomid_in_ao = (first_nustep).and.(.not.rsti_loads)
    missing_last = (first_nustep).and.(.not.rsti_loads)
 
+   if (first_nustep) stored_energy = energy_o
    if (load_restart) call ehrenaux_rsti( rsti_fname, &
    &  natom, qm_forces_total, nucvel, M, stored_densM1, stored_densM2 )
 !

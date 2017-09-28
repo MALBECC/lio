@@ -1,9 +1,10 @@
 #if FULL_DOUBLE
+/*
 static __inline__ __device__ double fetch_double(texture<int2, 2> t, float x, float y)
 {
    int2 v = tex2D(t,x,y);
    return __hiloint2double(v.y, v.x);
-}
+}*/
 #define fetch(t,x,y) fetch_double(t,x,y)
 #else
 #define fetch(t,x,y) tex2D(t,x,y)

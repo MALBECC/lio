@@ -475,11 +475,21 @@ void CoulombIntegral<scalar_type>::calc_fock( double& Es )
 
     cudaUnbindTexture(str_tex);
 
-    if (G2G::fortran_vars.OPEN){
-      os_int.get_fock_output(Es, G2G::fortran_vars.rmm_output_a);
-      os_int.get_fock_output(Es, G2G::fortran_vars.rmm_output_b);
+/* The procedure os_int.get_fock_output will calculate the coulomb term for the fock matrix and the coulomb energy
+   contribution. As for the energy, closed shell goes through N/2 MO and then multiplies times two the results, the
+   procedure directly calculates this doubled energy. Then for the calculation of Ea and Eb the energies obtained
+   have that x2 factor as well, despite each going through Na and Nb MOs, and thus have to be halved when added.
+   This doesn't happen for the fock matrices as each Fa and Fb have the same general expresion as F in closed shell.
+*/
+    if (G2G::fortran_vars.OPEN) {
+       double Ea2, Eb2;
+       os_int.get_fock_output(Ea2, G2G::fortran_vars.rmm_output_a);
+       os_int.get_fock_output(Eb2, G2G::fortran_vars.rmm_output_b);
+       Es = Es + ( (Ea2 + Eb2) / 2.0f);
     } else {
-      os_int.get_fock_output(Es, G2G::fortran_vars.rmm_output);
+       double Ecs;
+       os_int.get_fock_output(Ecs, G2G::fortran_vars.rmm_output);
+       Es = Es + Ecs;
     }
 
     cudaAssertNoError("CoulombIntegral::calc_fock");

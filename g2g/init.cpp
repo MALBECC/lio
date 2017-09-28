@@ -47,10 +47,6 @@ extern "C" void g2g_init_(void)
   #endif
   #if CPU_KERNELS
   G2G::cpu_threads = omp_get_max_threads() - G2G::gpu_threads;
-  if (fortran_vars.OPEN){
-    G2G::cpu_threads = 0; // FF-Temp 
-    cout << "Openshell currently not supported with CPU multithreading.\n"; // FF-Temp
-  }
   cout << "Kernels: cpu" << endl;
   #endif
   if(gpu_threads == 0 && cpu_threads == 0)

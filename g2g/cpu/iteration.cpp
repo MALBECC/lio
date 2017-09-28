@@ -269,7 +269,7 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::solve_opened
    ( Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
      bool compute_energy, double& energy, double& energy_i,
      double& energy_c, double& energy_c1, double& energy_c2,
-     HostMatrix<double>& fort_forces_ms, HostMatrix<double>& rmm_output_local_a,
+     HostMatrix<double>& fort_forces, HostMatrix<double>& rmm_output_local_a,
      HostMatrix<double>& rmm_output_local_b)
 {
   //   std::exit(0);

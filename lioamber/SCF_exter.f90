@@ -175,3 +175,76 @@ end subroutine ehren_in
       return
       end subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% SCF_hyb %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Performs SCF & forces calculation calls from hybrid                          !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_forces)
+    use garcha_mod, only : r,rqm,pc, Iz, natom, nsol, ntatom, v, Em, rm
+    implicit none
+    integer, intent(in) :: hyb_natom, mm_natom !number of QM and MM atoms
+    double precision, intent(in) :: hyb_r(3,hyb_natom+mm_natom), Iz_cl(mm_natom) !positions and charge of MM atoms
+    double precision, intent(out) :: E !total LIO energy
+    double precision, intent(out) :: fdummy(3,hyb_natom+mm_natom) !forces
+    double precision :: fa(3,hyb_natom), fmm(3,mm_natom) !QM and MM forces
+    integer :: dummy !auxiliar variable
+    REAL*8 :: dipxyz(3) !dipole
+    integer :: i,j !auxiliar
+    logical :: do_SCF, do_QM_forces !SCF & forces control variable
+
+    nsol = mm_natom
+    ntatom = nsol + natom 
+
+    write(*,*) "doing SCF_in"
+    write(*,*) "atoms QM, MM, totals", natom, nsol, ntatom
+    write(*,*) "doing SCF?", do_SCF
+    write(*,*) "doing forces?", do_QM_forces
+
+    E=0.d0
+    fa=0.d0
+    dipxyz = 0d0
+
+    if (allocated(pc)) deallocate(pc)
+    if (allocated(r)) deallocate(r)
+    allocate ( pc(ntatom), r(ntatom,3) )
+
+    do i=1, ntatom
+      do j=1, 3
+        r(i,j)=hyb_r(j,i)
+        if (i .le. hyb_natom) rqm(i,j)=hyb_r(j,i) !posiciones qm
+      enddo
+        if (i .le. hyb_natom) pc(i)= Iz(i)
+        if (i .gt. hyb_natom) pc(i) = Iz_cl(i-hyb_natom) !cargas clasicas
+    end do
+
+! Calls main procedures.
+
+    if (do_SCF)  call liomain(E, dipxyz)
+    write(*,*) "Lio  E(H)", E
+    write(*,*) "Lio  E(eV)", E*27.211396132d0
+    fa=0.d0
+    fmm=0.d0
+
+
+    if (do_QM_forces) then
+      call  dft_get_qm_forces(fa)
+      call  dft_get_mm_forces(fmm,fa)
+    end if
+
+    fa=-2.d0*fa  ! - change gradient to forces 
+                 ! 2 change units for hybrid
+    fmm=-2.d0*fmm
+
+    do j=1, 3
+      do i=1, hyb_natom
+        fdummy(j,i)=fa(j,i)
+      end do
+      do i=1, mm_natom
+        fdummy(j,hyb_natom+i)=fmm(j,i)
+      end do
+    end do
+
+    return
+end  subroutine SCF_hyb

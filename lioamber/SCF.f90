@@ -209,10 +209,9 @@
       DAMP0=GOLD
       DAMP=DAMP0
 
-!Initialize Qc
       Qc=0.0D0
       do i=1,natom
-       Qc=Qc+Iz(i)
+         Qc=Qc+Iz(i)
       enddo
       Qc=Qc-Nel
       Qc2=Qc**2
@@ -428,7 +427,7 @@
 !
 ! REACTION FIELD CASE --------------------------------------------
 
-        IF(field.and.generate_rho0) THEN
+        if(field.and.generate_rho0) THEN
            dipxyz(:)=0.0D0
            call dip(dipxyz)
            g=1.0D0

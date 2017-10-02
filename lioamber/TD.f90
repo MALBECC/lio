@@ -649,7 +649,7 @@
               t=t*0.024190D0
               write(*,*) 'evolution time (fs)  =', t
 !--------------------------------------!
-!carlos:este if ya no estaba en el codigo nuevo
+
             if ((propagator.eq.1).or. &
             (((propagator.eq.2).and.(istep.lt.lpfrg_steps)) &
             .and. (.not.tdrestart))) then
@@ -703,7 +703,7 @@
 ! Here we obtain the fock matrix in the molecular orbital (MO) basis.
 ! where U matrix with eigenvectors of S , and s is vector with
 ! eigenvalues
-!carlos: este if ya no estaba en el codigo nuevo
+
             if ((propagator.eq.1).or. &
             (((propagator.eq.2).and.(istep.lt.lpfrg_steps)) &
             .and. (.not.tdrestart))) then

@@ -15,8 +15,8 @@
       npas, verbose, RMM, X, SHFT, GRAD, npasw, igrid, energy_freq, converge,          &
       noconverge, cubegen_only, cube_dens, cube_orb, cube_elec, VCINP, Nunp, GOLD,     &
       igrid2, predcoef, nsol, r, pc, timedep, tdrestart, DIIS, told, Etold, Enucl,     &
-      Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz, epsilon                      &
-      , doing_ehrenfest, first_step, RealRho, tdstep, total_time, Fx, Fy, Fz, a0
+      Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz, epsilon, field,              &
+      doing_ehrenfest, first_step, RealRho, tdstep, total_time, Fx, Fy, Fz, a0
 !      use mathsubs
       use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
        FOCK_ECP_read,FOCK_ECP_write,IzECP

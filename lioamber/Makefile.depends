@@ -77,7 +77,7 @@ OBJECTS += errlog.o
 ################################################################################
 tmplist := SCF.o readECP.o drive.o intECP.o init.o init_lio.o
 tmplist += extras.o input_read.o liomain.o properties.o
-$(tmplist:%.o=$(OBJPATH)/%.o)i : $(OBJPATH)/ECP_mod.mod
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ECP_mod.mod
 
 tmplist := SCF.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/intECP.o

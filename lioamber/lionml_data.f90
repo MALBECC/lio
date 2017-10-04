@@ -15,6 +15,9 @@ module lionml_data
 !  ndyn /= 0 & edyn /= 0   =>   Ehrenfest dynamic (aux mm)
 !
    logical :: nullify_forces = .false.
+   integer :: propagator = 1  ! 1 uses verlet
+                              ! 2 uses magnus
+                              ! (first steps always with smaller verlet)
 !
 !
 !  Restarting information
@@ -59,9 +62,9 @@ module lionml_data
 !------------------------------------------------------------------------------!
    namelist /lionml/ &
 !
-   &  ndyn_steps, edyn_steps, nullify_forces                                   &
+   &  ndyn_steps, edyn_steps, nullify_forces, propagator                       &
 !
-   &, rsti_loads, rsto_fname, rsto_saves, rsto_nfreq, rsto_fname               &
+   &, rsti_loads, rsti_fname, rsto_saves, rsto_nfreq, rsto_fname               &
 !
    &, eefld_on, eefld_ampx, eefld_ampy, eefld_ampz, eefld_wavelen              &
    &, eefld_timegih, eefld_timegfh, eefld_timepos, eefld_timeamp

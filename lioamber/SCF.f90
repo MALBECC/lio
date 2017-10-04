@@ -10,7 +10,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       subroutine SCF(E)
 !      use linear_algebra
-      use ehrenfest, only: ehrensetup
+      use ehrensubs, only: ehrensetup
       use garcha_mod, only : M,Md, NCO,natom,Nang, number_restr, hybrid_converg, MEMO, &
       npas, verbose, RMM, X, SHFT, GRAD, npasw, igrid, energy_freq, converge,          &
       noconverge, cubegen_only, cube_dens, cube_orb, cube_elec, VCINP, Nunp, GOLD,     &
@@ -21,6 +21,7 @@
       use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
        FOCK_ECP_read,FOCK_ECP_write,IzECP
       use transport, only : generate_rho0
+      use faint_cpu77, only: int1, int2, intsol, int3mem, int3lu
 !      use general_module 
 !#ifdef  CUBLAS
 !      use cublasmath 
@@ -677,7 +678,7 @@
       if (doing_ehrenfest) then
          call spunpack('L',M,RMM(M1),RealRho)
          call fixrho(M,RealRho)
-         call ehrensetup(M,RealRho)
+         call ehrensetup(natom, M, RealRho)
       endif
 
 ! TODO: have a separate module handle the dipole moment

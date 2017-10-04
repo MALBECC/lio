@@ -15,11 +15,12 @@
       npas, verbose, RMM, X, SHFT, GRAD, npasw, igrid, energy_freq, converge,          &
       noconverge, cubegen_only, cube_dens, cube_orb, cube_elec, VCINP, Nunp, GOLD,     &
       igrid2, predcoef, nsol, r, pc, timedep, tdrestart, DIIS, told, Etold, Enucl,     &
-      Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip                                   &
-      , doing_ehrenfest, first_step, RealRho, tdstep, total_time 
+      Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz, epsilon, field,              &
+      doing_ehrenfest, first_step, RealRho, tdstep, total_time, Fx, Fy, Fz, a0
 !      use mathsubs
       use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
        FOCK_ECP_read,FOCK_ECP_write,IzECP
+      use transport, only : generate_rho0
 !      use general_module 
 !#ifdef  CUBLAS
 !      use cublasmath 
@@ -59,6 +60,10 @@
 
 !----------------------------------------------------------!
 
+!FIELD variables (maybe temporary)
+
+       real*8 :: Qc, Qc2, g
+!----------------------------------------------------------!
 
 ! Energy and contributions
        real*8 :: E, E1, E1s, E2,Eecp, En, Ens, Es, E_restrain, Ex, Exc,Etrash
@@ -203,6 +208,14 @@
       D2=1.D0
       DAMP0=GOLD
       DAMP=DAMP0
+
+      Qc=0.0D0
+      do i=1,natom
+         Qc=Qc+Iz(i)
+      enddo
+      Qc=Qc-Nel
+      Qc2=Qc**2
+
 
 ! FFR - vvterm : Variable Allocation
 !--------------------------------------------------------------------!
@@ -413,13 +426,27 @@
         E1=0.0D0
 !
 ! REACTION FIELD CASE --------------------------------------------
-!
-        call g2g_timer_start('actualiza rmm')
+
+        if(field.and.generate_rho0) THEN
+           dipxyz(:)=0.0D0
+           call dip(dipxyz)
+           g=1.0D0
+           factor=2.54D0
+           call intfld(g,Fx,Fy,Fz)
+           E1=-1.00D0*g*(Fx*dipxyz(1)+Fy*dipxyz(2)+Fz*dipxyz(3))/factor- &
+           0.50D0*(1.0D0-1.0D0/epsilon)*Qc2/a0
+
+           do k=1,MM
+               E1=E1+RMM(k)*RMM(M11+k-1)
+           enddo
+        ELSE
 !----------------------------------------------------------------
 ! E1 includes solvent 1 electron contributions
-        do k=1,MM
-          E1=E1+RMM(k)*RMM(M11+k-1)
-        enddo
+           do k=1,MM
+              E1=E1+RMM(k)*RMM(M11+k-1)
+           enddo
+        ENDIF
+        call g2g_timer_start('actualiza rmm')
         call g2g_timer_sum_pause('Fock integrals')
         call g2g_timer_sum_start('SCF acceleration')
 
@@ -659,6 +686,7 @@
              call write_dipole(dipxyz, 0, 134, .true.)
              total_time=0.0d0
            endif
+           dipxyz(:)=0.0D0
            call dip(dipxyz)
            dipole_norm = sqrt(dipxyz(1)**2 + dipxyz(2)**2 + dipxyz(3)**2)
            call write_dipole(dipxyz, dipole_norm, 134, .false.)

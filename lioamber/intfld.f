@@ -37,7 +37,6 @@ c
 c
 c pointers
 c
-      write(*,*) 'intfld dip ',g,ux,uy,uz
       MM=M*(M+1)/2
       MM2=M**2
       MMd=Md*(Md+1)/2

@@ -13,10 +13,8 @@ __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors, int poin
     // There's more than one block; do the math to get position
     if (check_pos) {
         // Figure out where our block is in the lower triangle
-        // We get 1D index k = blockIdx.x; column 1 value of k in row j is always k_1 = j*(j+1);
-        // solving for j gives determinant 1+8*k_1
-        // Thus, 1+8*k_1 must be square of (odd) integer; take sqrt(1+8*k) and get first odd integer below it -
-        // get row and column from there
+        // We get 1D index k = blockIdx.x; column 1 value of k in row j is always k_1 = j*(j+1); solving for j gives determinant 1+8*k_1
+        // Thus, 1+8*k_1 must be square of (odd) integer; take sqrt(1+8*k) and get first odd integer below it - get row and column from there
         int n = sqrtf(1.0f+8.0f*blockIdx.x);
         n -= (1 - n % 2);
         int block_j = (n - 1) / 2;

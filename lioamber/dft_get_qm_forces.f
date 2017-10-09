@@ -5,31 +5,59 @@
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       use garcha_mod,only:natom
+       use garcha_mod, only: natom,nsol,cubegen_only,r,number_restr
+     &                     , first_step, doing_ehrenfest
+     &                     , qm_forces_ds, qm_forces_total
+
+       use lionml_data, only: nullify_forces
        implicit none
        real*8,intent(out) :: dxyzqm(3,natom)
        real*8,allocatable :: ff1G(:,:),ffSG(:,:),ff3G(:,:)
        real*8             :: factor
-       integer            :: fileunit,kk,ii
+       integer            :: fileunit,kk,ii,igpu
        logical            :: print_forces
+!variables for restrain calculations
+       real*8 :: f_r
+       integer :: i
+
 
 !--------------------------------------------------------------------!
+       if(cubegen_only) return
+       call g2g_timer_sum_start('Forces')
        allocate(ff1G(natom,3),ffSG(natom,3),ff3G(natom,3))
 
        call g2g_timer_start('int1G')
        ff1G=0.0d0
-       call int1G(ff1G)
+       call aint_query_gpu_level(igpu)
+       if (igpu.lt.4) then
+         call g2g_timer_sum_start('Nuclear attraction gradients')
+         call int1G(ff1G)
+         call g2g_timer_sum_stop('Nuclear attraction gradients')
+       elseif (nsol.le.0) then
+         call g2g_timer_sum_start('Nuclear attraction gradients')
+         call int1G(ff1G)
+         call aint_qmmm_forces(ff1G,0)
+         call g2g_timer_sum_stop('Nuclear attraction gradients')
+       endif
        call g2g_timer_stop('int1G')
 
        call g2g_timer_start('intSG')
+       call g2g_timer_sum_start('Overlap gradients')
        ffSG=0.0d0
-       call intSG(ffSG)
+       if (doing_ehrenfest) then
+          ffSG=-transpose(qm_forces_ds)
+       else
+          call intSG(ffSG)
+       endif
        call g2g_timer_stop('intSG')
+       call g2g_timer_sum_stop('Overlap gradients')
 
        call g2g_timer_start('int3G')
+       call g2g_timer_sum_start('Coulomb+Exchange-correlation')
        ff3G=0.0d0
        call int3G(ff3G,.true.)
        call g2g_timer_stop('int3G')
+       call g2g_timer_sum_stop('Coulomb+Exchange-correlation')
 
        factor=1.D0
 c       factor=627.509391D0/0.5291772108D0
@@ -40,19 +68,47 @@ c       factor=627.509391D0/0.5291772108D0
        enddo
        enddo
 
+!
+! FFR - Ehrenfest needs to keep track of forces
 !--------------------------------------------------------------------!
-       print_forces=.true.
+       if ( nullify_forces ) dxyzqm(:,:)=0.0d0
+       if ( doing_ehrenfest ) then
+         qm_forces_total=qm_forces_ds
+         qm_forces_total=qm_forces_total-transpose(ff1G)
+         qm_forces_total=qm_forces_total-transpose(ff3G)
+       endif
+
+
+!--------------------------------------------------------------------!
+        IF (number_restr.GT.0) THEN
+! distance restrain case
+          call get_restrain_forces(dxyzqm, f_r)
+	  WRITE(*,*) "DISTANCE RESTRAIN ADDED TO FORCES"
+        END IF
+
+
+! FFR: force calculation should be separated from force passing and
+!      force writing. All can be in the same module, but different
+!      subroutines.
+!--------------------------------------------------------------------!
+       print_forces=.false.
        if (print_forces) then
          fileunit=3242
-         open(unit=fileunit,file='Forces.log',access='APPEND')
+         if (first_step) then
+            open(unit=fileunit,file='Forces.log')
+         else
+            open(unit=fileunit,file='Forces.log',access='APPEND')
+         endif
 
          write(fileunit,'(A)')
      >   '------------------------------------------------------------'
          do kk=1,natom
-           write(fileunit,200) 'TOTS',kk,
-     >       ff1G(kk,1)+ffSG(kk,1)+ff3G(kk,1),
-     >       ff1G(kk,2)+ffSG(kk,2)+ff3G(kk,2),
-     >       ff1G(kk,3)+ffSG(kk,3)+ff3G(kk,3)
+            write(fileunit,200) 'TOTS', kk,
+     >         dxyzqm(1,kk), dxyzqm(2,kk), dxyzqm(3,kk)
+!           write(fileunit,200) 'TOTS',kk,
+!     >       ff1G(kk,1)+ffSG(kk,1)+ff3G(kk,1),
+!     >       ff1G(kk,2)+ffSG(kk,2)+ff3G(kk,2),
+!     >       ff1G(kk,3)+ffSG(kk,3)+ff3G(kk,3)
          enddo
          write(fileunit,'(A)')
      >   '------------------------------------------------------------'
@@ -72,6 +128,15 @@ c       factor=627.509391D0/0.5291772108D0
          close(fileunit)
        endif
 
+       if (nsol.le.0) then
+         call g2g_timer_sum_stop('Forces')
+         call g2g_timer_sum_stop("Total")
+         call g2g_timer_summary()
+         call g2g_timer_clear()
+       endif
+
+! FFR: No other place for this to go right now.
+       if ( first_step ) first_step = .false.
 !--------------------------------------------------------------------!
        deallocate(ff1G,ffSG,ff3G)
  200   format(1X,A4,1X,I4,3(2X,E14.7))

@@ -22,6 +22,7 @@ namespace G2G {
     float normalization_factor;
 #endif
     uint s_funcs, p_funcs, d_funcs, spd_funcs, m;
+
     uint nco;
     bool OPEN;
     uint nunp;

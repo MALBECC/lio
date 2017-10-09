@@ -1,4 +1,3 @@
-
 #if FULL_DOUBLE
 static __inline__ __device__ double fetch_double(texture<int2, 2> t, float x, float y)
 {

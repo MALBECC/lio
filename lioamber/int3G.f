@@ -50,6 +50,8 @@ c calculated again.
 c V(i,j) obtained by adding af(k) * t(i,j,k)
 c
 c------------------------------------------------------------------
+
+
       ns=nshell(0)
       np=nshell(1)
       nd=nshell(2)
@@ -127,12 +129,23 @@ c      if (.not.OPEN) then
 
 c        write(*,*) 'exchnum int3G'
       call g2g_timer_start('ExcG')
+      call g2g_timer_sum_start('Exchange-correlation gradients')
           if (calc_energy) then
               call g2g_solve_groups(2, Exc, f)
           else
               call g2g_solve_groups(3, Exc, f)
          endif
       call g2g_timer_stop('ExcG')
+      call g2g_timer_sum_stop('Exchange-correlation gradients')
+
+      call aint_query_gpu_level(igpu)
+      
+      call g2g_timer_start('CoulG')
+      call g2g_timer_sum_start('Coulomb gradients')
+      if (igpu.gt.2) then
+        call aint_coulomb_forces(f)
+        
+      else
 
 c DEBUG DEBUG
 c      do k=1,natom
@@ -140,13 +153,13 @@ c        write(*,'("fuerza",I,D,D,D)') k,f(k,1),f(k,2),f(k,3)
 c      enddo
 c
 c       else
-c         call g2g_timer_start('ExcG')
+c         call g2g_timer_sum_start('ExcG')
 c          if (calc_energy) then
 c              call g2g_solve_groups(2, Exc, f)
 c          else
 c              call g2g_solve_groups(3, Exc, f)
 c         endif
-c      call g2g_timer_stop('ExcG')
+c      call g2g_timer_sum_stop('ExcG')
 c
 c        NCOa=NCO
 c        NCOb=NCO+Nunp
@@ -160,7 +173,6 @@ c
 c commented now for debuggings
       do 217 k=1,Md
  217   af2(k)=af(k)+B(k,2)
-      call g2g_timer_start('CoulG')
 ct
 c
 c-------------------------------------------------------------
@@ -4090,7 +4102,6 @@ c
  481  continue
  482  continue
  480  continue
-      call g2g_timer_stop('CoulG')
 c
 c
 c-------------------------------------------------------------
@@ -4107,5 +4118,8 @@ c       write(22,*) i,f(i,1),f(i,2),f(i,3)
 c      enddo
 c
 c
+      endif
+      call g2g_timer_stop('CoulG')
+      call g2g_timer_sum_stop('Coulomb gradients')
       return
       end

@@ -26,6 +26,8 @@ c-----------------------------------------------------------------
 c
       implicit real*8 (a-h,o-z)
        real*8, dimension(:), allocatable :: dgelss_temp
+       real*8, dimension(Md) :: inv_work
+       integer XXX(8*Md)
 c
 c aux . things
       dimension Q(3),aux(ngd),Det(2)
@@ -503,27 +505,61 @@ c
        Md5=5*Md
       rcond=1.0D-07
 
-      call dgelss(Md,Md,1,XX,Md,aux,Md,RMM(M9),rcond,irank,RMM(M10),
-     >            -1,info)
+c
+c CH - why call dgelss here? We only want the singular values - couldn't just
+c something like dgesvd be called without calculating singular vectors?
+c
+c      call dgelss(Md,Md,1,XX,Md,aux,Md,RMM(M9),rcond,irank,RMM(M10),
+c     >            -1,info)
+c      Md5=RMM(M10)
+c      allocate(dgelss_temp(Md5))
+c      call dgelss(Md,Md,1,XX,Md,aux,Md,RMM(M9),rcond,irank,dgelss_temp,
+c     >            Md5,info)
+c      deallocate(dgelss_temp)
+
+      call g2g_timer_sum_start('G condition')
+#ifdef magma
+      call magmaf_dgesdd('N',Md,Md,XX,Md,RMM(M9),0,1,0,1,
+     >            RMM(M10),-1,XXX,info)
+#else
+      call dgesdd('N',Md,Md,XX,Md,RMM(M9),0,1,0,1,
+     >            RMM(M10),-1,XXX,info)
+#endif
       Md5=RMM(M10)
       allocate(dgelss_temp(Md5))
-      call dgelss(Md,Md,1,XX,Md,aux,Md,RMM(M9),rcond,irank,dgelss_temp,
-     >            Md5,info)
+#ifdef magma
+      call magmaf_dgesdd('N',Md,Md,XX,Md,RMM(M9),0,1,0,1,
+     >            dgelss_temp,Md5,XXX,info)
+#else
+      call dgesdd('N',Md,Md,XX,Md,RMM(M9),0,1,0,1,
+     >            dgelss_temp,Md5,XXX,info)
+#endif
       deallocate(dgelss_temp)
 
-
       ss=RMM(M9)/RMM(M9+Md-1)
+
 c
 #endif
+c	write (*,*) ss, "criterio ajuste base auxiliar, Nick"
        if (ss.gt.1.D14) then
         SVD=.true.
+	stop "trata de usar SVD"
        endif
+
+      call g2g_timer_sum_stop('G condition')
 c
 c------------------------------
 c inversion of G matrix , kept in Gm
 c
       if (SVD) then
        write(*,900) ss
+       call aint_query_gpu_level(igpu)
+       if (igpu.eq.5) then
+         write(*,*) "G IS ILL-CONDITIONED"
+         write(*,*) "THE SVD AUXILIARY DENSITY FIT IS NOT SUPPORTED"
+         write(*,*) "IN THE GPU VERSION OF LIO"
+         stop
+       endif
        
       else
 c
@@ -533,31 +569,62 @@ c
 c LINPACK OPTION
 #ifdef pack
 c
-      kk=0
-      do 313 j=1,Md
-       do 313 i=1,j
-       kk=kk+1
-       kx=M7+j+(2*Md-i)*(i-1)/2-1
-       RMM(M9+kk-1)=RMM(kx)
+      call g2g_timer_sum_start('G invert')
 
- 313  continue
+       do i=1,Md
+       do j=1,Md
+
+        if(i.ge.j) then
+         k=i+(Md*2-j)*(j-1)/2
+         else
+         k=j+(Md*2-i)*(i-1)/2
+        endif
+        XX(i,j)=RMM(M7+k-1)
+      enddo
+      enddo
+
+c      kk=0
+c      do 313 j=1,Md
+c       do 313 i=1,j
+c       kk=kk+1
+c       kx=M7+j+(2*Md-i)*(i-1)/2-1
+c       RMM(M9+kk-1)=RMM(kx)
 c
-      call dppco(RMM(M9),Md,rcond,aux,info)
-      call dpptri('U',Md,RMM(M9), info)
+c 313  continue
+c
+
+c      call dppco(RMM(M9),Md,rcond,aux,info)
+      call dsytrf('U',Md,XX,Md,XXX,RMM(M10),-1,info)
+      Md5=RMM(M10)
+      allocate(dgelss_temp(Md5))
+      call dsytrf('U',Md,XX,Md,XXX,dgelss_temp,Md5,info)
+      deallocate(dgelss_temp)
+
+c      call dpptri('U',Md,RMM(M9), info)
+      call dsytri('U',Md,XX,Md,XXX,inv_work,info)
+
 c      call dppdi(RMM(M9),Md,det,1)
 c
-      kk=0
-      do 314 j=1,Md
-      do 314 i=1,j
-      kk=kk+1
-      kx=j+(2*Md-i)*(i-1)/2-1
-       RMM(M15+kx)=RMM(M9+kk-1)
- 314  continue
+c      kk=0
+c      do 314 j=1,Md
+c      do 314 i=1,j
+c      kk=kk+1
+c      kx=j+(2*Md-i)*(i-1)/2-1
+c       RMM(M15+kx)=RMM(M9+kk-1)
+c 314  continue
 c
-      do 315 kk=1,MMp
+c      do 315 kk=1,MMp
+c
+c 315   RMM(M9+kk-1)=RMM(M15+kk-1)
+c
+      do i=1,Md
+      do j=1,i
+        k=i+(Md*2-j)*(j-1)/2
+        RMM(M9+k-1) = XX(j,i)
+      enddo
+      enddo
 
- 315   RMM(M9+kk-1)=RMM(M15+kk-1)
-c
+      call g2g_timer_sum_stop('G invert')
 #endif
 c
       endif
@@ -566,4 +633,4 @@ c
 c-------------------------------------------------------------------
       return
       end
-c
+

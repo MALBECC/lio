@@ -2,6 +2,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <map>
+#include <set>
 #include <string>
 #include "timer.h"
 
@@ -95,6 +96,10 @@ unsigned long Timer::getSec(void) const {
 	return res.tv_sec;
 }
 
+double Timer::getTotal(void) const {
+    return res.tv_nsec + res.tv_sec * 1000.0 * 1000.0 * 1000.0;
+}
+
 bool Timer::operator<(const Timer& other) const {
   return (res.tv_sec < other.res.tv_sec ||
 					(res.tv_sec == other.res.tv_sec && res.tv_nsec < other.res.tv_nsec));
@@ -102,11 +107,9 @@ bool Timer::operator<(const Timer& other) const {
 
 void Timer::sync(void) {
 #ifdef TIMINGS
-#ifndef NOSYNC
-  #if !CPU_KERNELS
+  #if GPU_KERNELS
 	cudaThreadSynchronize();
   #endif
-#endif
 #endif
 }
 
@@ -136,20 +139,34 @@ void Timer::print(void) {
 
 /**** to be used by fortran ****/
 Timer global_timer;
+#ifdef TIMER_SUMMARY
+string current_timer;
+map<string, set<string> > timer_children;
+map<string, string> timer_parents;
+map<string, Timer*> all_timers;
+map<string, Timer*> top_timers;
+#else
 map<string, Timer> fortran_timers;
+#endif
 
+//
+// One-time Fortran timer calls - these time sections and report timings immediately
+//
 extern "C" void g2g_timer_start_(const char* timer_name, unsigned int length_arg) {
 #ifdef TIMINGS
+#ifndef TIMER_SUMMARY
   string tname(timer_name,length_arg);
   tname.append("\0");
   if (fortran_timers.find(tname) == fortran_timers.end()) fortran_timers[tname] = Timer();
   Timer::sync();
   fortran_timers[tname].start();
 #endif
+#endif
 }
 
 extern "C" void g2g_timer_stop_(const char* timer_name, unsigned int length_arg) {
 #ifdef TIMINGS
+#ifndef TIMER_SUMMARY
   string tname(timer_name, length_arg);
   tname.append("\0");
   Timer::sync();
@@ -157,15 +174,116 @@ extern "C" void g2g_timer_stop_(const char* timer_name, unsigned int length_arg)
   fortran_timers[tname].stop();
   cout << "TIMER [" << tname << "]: " << fortran_timers[tname] << endl;
 #endif
+#endif
 }
 
 extern "C" void g2g_timer_pause_(const char* timer_name, unsigned int length_arg) {
 #ifdef TIMINGS
+#ifndef TIMER_SUMMARY
   string tname(timer_name, length_arg);
   tname.append("\0");
   Timer::sync();
   if (fortran_timers.find(tname) == fortran_timers.end()) cout << "no existe timer! (" << tname << ")" << endl;
   fortran_timers[tname].pause();
   cout << "TIMER [" << tname << "]: " << fortran_timers[tname] << "(so far)" << endl;
+#endif
+#endif
+}
+
+//
+// Summary timer calls - these store timings until g2g_timer_summary is called, when a summary
+// of all timings up to that point is given in a tree-sorted display
+//
+extern "C" void g2g_timer_sum_start_(const char* timer_name, unsigned int length_arg) {
+#ifdef TIMER_SUMMARY
+  string tname(timer_name,length_arg);
+  tname.append("\0");
+  if (timer_children.find(tname) == timer_children.end()) timer_children[tname] = set<string>();
+  if (current_timer.length() == 0) {
+    if (top_timers.find(tname) == top_timers.end()) top_timers[tname] = new Timer();
+    Timer::sync();
+    top_timers[tname]->start();
+    if (all_timers.find(tname) == all_timers.end()) all_timers[tname] = top_timers[tname];
+    current_timer = tname;
+  } else {
+    if ((timer_children[current_timer]).find(tname) == (timer_children[current_timer]).end()) {
+       timer_children[current_timer].insert(tname);
+       all_timers[tname] = new Timer();
+       timer_parents[tname] = current_timer;
+    }
+    Timer::sync();
+    all_timers[tname]->start();
+    current_timer = tname;
+  }
+#endif
+}
+
+extern "C" void g2g_timer_sum_stop_(const char* timer_name, unsigned int length_arg) {
+#ifdef TIMER_SUMMARY
+  string tname(timer_name, length_arg);
+  tname.append("\0");
+  Timer::sync();
+  if (current_timer.compare(tname) != 0) { cout << "Error: not the current timer: (" << tname << "," << current_timer << ")" << endl; }
+  else {
+    all_timers[current_timer]->stop();
+    if (timer_parents.find(current_timer) == timer_parents.end()) { current_timer = ""; }
+    else { current_timer = timer_parents[current_timer]; }
+  }
+#endif
+}
+
+extern "C" void g2g_timer_sum_pause_(const char* timer_name, unsigned int length_arg) {
+#ifdef TIMER_SUMMARY
+  string tname(timer_name, length_arg);
+  tname.append("\0");
+  Timer::sync();
+  if (current_timer.compare(tname) != 0) { cout << "Error: not the current timer: (" << tname << ")" << endl; }
+  else {
+    all_timers[current_timer]->pause();
+    if (timer_parents.find(current_timer) == timer_parents.end()) { current_timer = ""; }
+    else { current_timer = timer_parents[current_timer]; }
+  }
+#endif
+}
+
+
+extern "C" void g2g_timer_clear_( void ) {
+#ifdef TIMER_SUMMARY
+  for (map<string,Timer*>::iterator it = all_timers.begin(); it != all_timers.end(); ++it) {
+    delete it->second;
+  }
+  top_timers.clear();
+  all_timers.clear();
+  timer_parents.clear();
+  timer_children.clear();
+#endif
+}
+
+#ifdef TIMER_SUMMARY
+void print_timer(string indent, string timer_name, Timer& timer, float total, string parent) {
+  float time = timer.getSec() + (float)(timer.getMicrosec()) / 1000000.0f;
+  printf("%s%-35s%12.6fs (%6.2f%% of %s)\n",indent.c_str(),timer_name.c_str(),time,(100.0f * time / total),parent.c_str());
+  indent.append("  ");
+  for (set<string>::iterator it = timer_children[timer_name].begin(); it != timer_children[timer_name].end(); ++it) {
+    print_timer(indent, *it, *all_timers[(*it)], time, timer_name);
+  }
+}
+#endif
+
+extern "C" void g2g_timer_summary_( void ) {
+#ifdef TIMER_SUMMARY
+  Timer total_timer = *all_timers["Total"];
+  float total_time = 0.0f;
+  total_time = total_timer.getSec() + (float)(total_timer.getMicrosec()) / 1000000.0f;
+
+  string indent = "";
+  cout << "-------------------------------------------------------------------------------------------" << endl;
+  cout << "                   LIO TIMING INFORMATION:" << endl;
+  cout << "-------------------------------------------------------------------------------------------" << endl << endl;
+  cout << "Total time: " << total_time << "s" << endl;
+  for (map<string,Timer*>::iterator it = top_timers.begin(); it != top_timers.end(); ++it) {
+    print_timer(indent, it->first, *(it->second), total_time, "Total");
+  }
+  cout << "-------------------------------------------------------------------------------------------" << endl;
 #endif
 }

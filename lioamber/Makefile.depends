@@ -1,0 +1,246 @@
+################################################################################
+# Makefile.depends
+#
+# This file contains the information of dependencies between the different
+# objects that make up liblio. The list "OBJECTS" contains ALL the objects
+# to be linked for making the library, including both free subroutines and
+# modules (or rather their corresponding '.o' files).
+#
+# When adding new content, you should:
+# 
+#  (1) Include in the list OBJECTS the object file to be included.
+#
+#  (2) Specify the dependencies related to this object, preferably adding
+#      it to the list of the objects it depends upon and adding the objects
+#      that would depend on it to his own list.
+#
+#  (3) If your object's code is in a single file, you should be done now.
+#      If you have the code split in many files that are included in a main
+#      file, you should create a "filename.mk", include it here, and specify
+#      there the dependency on all these files (please check the other ".mk"
+#      files to see an example of this).
+#
+# PAY ATTENTION to how the OBJPATH is explicitly set in each case; vpath can't
+# be trusted with handling files generated DURING compation.
+#
+################################################################################
+OBJECTS += SCF.o
+OBJECTS += SCFop.o
+OBJECTS += SCF_exter.o
+OBJECTS += steep.o
+OBJECTS += TD.o cubegen.o
+OBJECTS += liomain.o
+OBJECTS += dip.o
+OBJECTS += jarz.o
+OBJECTS += magnus.o
+OBJECTS += predictor.o
+OBJECTS += dft_get_mm_forces.o
+OBJECTS += dft_get_qm_forces.o
+OBJECTS += get_restrain_energy_forces.o
+OBJECTS += matmuldiag.o
+OBJECTS += fock_commuts.o
+OBJECTS += init_lio.o
+OBJECTS += lio_finalize.o
+OBJECTS += input_read.o
+OBJECTS += drive.o
+OBJECTS += func.o
+OBJECTS += grid.o
+OBJECTS += int1.o
+OBJECTS += int1G.o
+OBJECTS += int2.o
+OBJECTS += int2G.o
+OBJECTS += int3lu.o
+OBJECTS += int3mem.o
+OBJECTS += int3G.o
+OBJECTS += intsol.o
+OBJECTS += intsolG.o
+OBJECTS += intsolGs.o
+OBJECTS += intfld.o
+OBJECTS += intSG.o
+OBJECTS += fix_mess_rho.o
+OBJECTS += packed_storage.o
+OBJECTS += sysdata.o
+OBJECTS += ECP_mod.o
+OBJECTS += test_subs.o
+OBJECTS += esp_funct.o
+OBJECTS += readECP.o
+OBJECTS += intECP.o
+OBJECTS += density.o
+OBJECTS += extras.o
+OBJECTS += fterm_biaspot.o
+OBJECTS += elec.o
+OBJECTS += properties.o
+OBJECTS += write_output.o
+OBJECTS += errlog.o
+
+
+################################################################################
+tmplist := SCF.o readECP.o drive.o intECP.o init.o init_lio.o
+tmplist += extras.o input_read.o liomain.o properties.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ECP_mod.mod
+
+tmplist := SCF.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/intECP.o
+
+tmplist := drive.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/readECP.o
+
+tmplist := intECP.o ECP_mod.mod
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/esp_funct.mod
+
+################################################################################
+OBJECTS += lionml_data.o
+OBJECTS += lionml_subs.o 
+
+tmplist := init_lio.f90
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/lionml_subs.mod
+
+tmplist := lionml_subs.o
+tmplist += ehrenfest.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/lionml_data.mod
+
+
+################################################################################
+SRCDIRS +=
+OBJECTS += build_info.o
+tmplist :=
+tmplist += liomain.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/build_info.mod
+
+
+################################################################################
+include ehrenfest.mk
+OBJECTS += ehrenfest.o
+
+tmplist :=
+tmplist += SCF.o SCF_exter.o init_lio.o liomain.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ehrenfest.mod
+
+
+################################################################################
+OBJECTS += transport.o
+
+tmplist :=
+tmplist += TD.o SCF.o input_read.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/transport.mod
+
+###############################################################################
+TD.o : properties.o
+
+################################################################################
+OBJECTS += basis_data.o
+
+tmplist :=
+tmplist += ehrenfest.o init_lio.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/basis_data.mod
+
+
+################################################################################
+# TO-DO: reformulate the following modules so that there exists mathcpu,
+#        mathcublas. Perhaps also a mathlio, which could be an interface
+#        that would load either mathcpu or mathcublas accordingly).
+#        Also, mathcublas should always be compiled; but if there is no
+#        cublas, the object should be empty.
+#        Another option would be to have everything under mathlio and have
+#        the ifdefs to handle what to include.
+################################################################################
+include linear_algebra/linear_algebra.mk
+SRCDIRS += linear_algebra
+OBJECTS += linear_algebra.o
+tmplist :=
+tmplist += SCF.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/linear_algebra.mod
+
+include mathsubs/mathsubs.mk
+SRCDIRS += mathsubs
+OBJECTS += mathsubs.o
+tmplist :=
+tmplist += SCF.o SCFop.o predictor.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/mathsubs.mod
+
+
+ifeq ($(cuda),2)
+  use_cublas = 1
+else ifeq ($(cuda),3)
+  use_cublas = 1
+endif
+
+ifeq ($(use_cublas),1)
+include cublasmath/cublasmath.mk
+SRCDIRS += cublasmath
+OBJECTS += cublasmath.o
+OBJECTS += fortran.o
+
+tmplist := 
+tmplist += cublasmath.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/general_module.mod
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fortran.o
+
+tmplist :=
+tmplist += SCF.o SCFop.o TD.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/cublasmath.mod
+
+$(OBJPATH)/fortran.o: $(CUDA_HOME)/src/fortran.c
+	$(CC) -fPIC -DCUBLAS_GFORTRAN -O3 -c $< -o $@ -I$(CUDA_HOME)/include
+
+endif
+
+
+################################################################################
+# TO-DO: garcha_mod should be separated into different mods that contain
+#        more specific information. For starters, there could be at least
+#        two different mods: one with system information (density matrix,
+#        nuclear position, dipole moment) and another with the keywords.
+################################################################################
+include liomods/liomods.mk
+OBJECTS += garcha_mod.o
+SRCDIRS += liomods
+
+tmplist := dft_get_mm_forces.o dft_get_qm_forces.o
+tmplist += get_restrain_energy_forces.o 
+tmplist += dip.o dipmem.o drive.o grid.o init_amber.o init.o
+tmplist += int1.o int2.o int3lu.o int3mem.o intfld.o intsol.o
+tmplist += int1G.o int2G.o int3G.o intSG.o intsolG.o intsolGs.o
+tmplist += jarz.o lio_finalize.o predictor.o
+tmplist += SCF.o SCF_in.o SCFop.o TD.o cubegen.o
+tmplist += maskrmm.o write_output.o SCF_exter.o
+tmplist += intECP.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
+
+
+################################################################################
+# TO-DO: Erradicate RMM from the face of earth.
+################################################################################
+include maskrmm/maskrmm.mk
+SRCDIRS += maskrmm
+OBJECTS += maskrmm.o
+
+tmplist :=
+tmplist += ehrenfest.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/maskrmm.mod
+
+
+################################################################################
+# TO-DO: Unify the two general purpose modules.
+################################################################################
+OBJECTS += liosubs.o
+SRCDIRS += liosubs
+vpath %.f90 liosubs
+include liosubs/liosubs.mk
+
+tmplist :=
+tmplist += SCF.o init_lio.o
+tmplist += lionml_subs.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/liosubs.mod
+
+
+OBJECTS += general_module.o
+SRCDIRS += general_module
+include general_module/general_module.mk
+
+tmplist := SCF.o cublasmath.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/general_module.mod
+
+
+################################################################################

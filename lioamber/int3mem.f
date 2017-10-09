@@ -31,7 +31,8 @@ c
       dimension Q(3),W(3)
 C,Rc(ngd),FF(ngd),P(ngd)
 C      dimension d(ntq,ntq),Jx(ng)
-      real*8, dimension (:), ALLOCATABLE :: Jx 
+c      real*8, dimension (:), ALLOCATABLE :: Jx ! deviera ser integer???!!! 
+       integer, dimension (:), ALLOCATABLE :: Jx !! 
 
 *****
 *****
@@ -40,6 +41,7 @@ c
 c auxiliars
 c      dimension aux(ngd)
        logical fato
+       logical fato2
         allocate (Jx(M))
 c
 c------------------------------------------------------------------
@@ -126,6 +128,7 @@ c 6     Rc(k)=0.D0
 
       ix=0
       kknumd=0
+      kknums=0
 c para dimecionar cool
       do 3114 i=1,ns
 
@@ -140,6 +143,7 @@ c para dimecionar cool
           dd=d(Nuc(i),Nuc(j))
 c
       fato=.true.
+      fato2=.true.
 
       do 310 ni=1,ncont(i)
       do 310 nj=1,ncont(j)
@@ -149,11 +153,18 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.lt.rmaxs) then
-       if (fato) then
-       kknumd = kknumd+1
-        fato=.false.
-       endif
+       if (rexp.lt.rmax) then
+           if (rexp.lt.rmaxs) then
+               if (fato) then
+                 kknumd = kknumd+1
+                 fato=.false.
+               endif
+           else
+               if (fato2) then
+                kknums = kknums+1
+                fato2=.false.
+               endif
+           endif
        endif
 310    continue
        endif
@@ -172,6 +183,7 @@ c
       k1=Jx(j)
 
       fato=.true.
+      fato2=.true.
 c1
       do 320 ni=1,ncont(i)
       do 320 nj=1,ncont(j)
@@ -181,6 +193,7 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
+       if (rexp.lt.rmax) then
        if (rexp.lt.rmaxs) then
        if (fato) then
         do iki=1,3
@@ -188,6 +201,15 @@ c
          enddo
         fato=.false.
         endif
+        else
+       if (fato2) then
+        do iki=1,3
+        kknums=kknums+1
+         enddo
+        fato2=.false.
+        endif
+
+         endif
         endif
 320    continue
 
@@ -198,6 +220,7 @@ c
         j=j+3
        if(j.le.i) then
         fato=.true.
+        fato2=.true.
       dd=d(Nuc(i),Nuc(j))
       do 330 ni=1,ncont(i)
       do 330 nj=1,ncont(j)
@@ -207,33 +230,55 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.lt.rmaxs) then
-       if (fato) then
-       if(i.eq.j) then
-          do iki=1,3
-           do jki=1,iki
-            kknumd=kknumd+1
-         enddo
-         enddo
-       else
-       do iki=1,3
-          do  jki=1,3
-             kknumd=kknumd+1
-            enddo
-         enddo
-        endif
-        fato=.false.
+       if (rexp.lt.rmax) then
+         if (rexp.lt.rmaxs) then
+           if (fato) then
+             if(i.eq.j) then
+                do iki=1,3
+                do jki=1,iki
+                  kknumd=kknumd+1
+                enddo
+                enddo
+             else
+                do iki=1,3
+                do  jki=1,3
+                 kknumd=kknumd+1
+                enddo
+                enddo
+             endif
+            fato=.false.
+           endif
+         else
+         if (fato2) then
+             if(i.eq.j) then
+                do iki=1,3
+                do jki=1,iki
+                  kknums=kknums+1
+                enddo
+                enddo
+             else
+                do iki=1,3
+                do  jki=1,3
+                 kknums=kknums+1
+                enddo
+                enddo
+             endif
+            fato2=.false.
+           endif
+
+
        endif
        endif     
 330    continue
         endif
-3333   continue
+3333   continue   
       do 340 i=ns+np+1,M,6
          do 340 knan=1,natomc(nuc(i))
          j=nnps(jatc(knan,nuc(i)))-1
       do 340 kknan=1,nns(jatc(knan,nuc(i)))
         j=j+1
        fato=.true.
+       fato2=.true.
       k1=Jx(j)
       dd=d(Nuc(i),Nuc(j))
       do 340 ni=1,ncont(i)
@@ -244,14 +289,23 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.lt.rmaxs) then
-       if (fato) then
-        do iki=1,6
-             kknumd=kknumd+1
-         enddo
-        fato=.false.
-       endif
-       endif
+       if (rexp.lt.rmax) then
+         if (rexp.lt.rmaxs) then
+            if (fato) then
+               do iki=1,6
+               kknumd=kknumd+1
+               enddo
+              fato=.false.
+            endif
+         else
+            if (fato2) then
+              do iki=1,6
+                kknums=kknums+1
+              enddo
+              fato2=.false.
+            endif
+         endif
+        endif
 340    continue
 
       do 350 i=ns+np+1,M,6
@@ -260,6 +314,7 @@ c
       do 350 kknan=1,nnp(jatc(knan,nuc(i))),3
         j=j+3
        fato=.true.
+       fato2=.true.
       dd=d(Nuc(i),Nuc(j))
       do 350 ni=1,ncont(i)
       do 350 nj=1,ncont(j)
@@ -269,6 +324,7 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
+       if (rexp.lt.rmax) then
        if (rexp.lt.rmaxs) then
        if (fato) then
         do iki=1,6
@@ -277,6 +333,17 @@ c
             enddo
          enddo
         fato=.false.
+       endif
+       else
+       if (fato2) then
+        do iki=1,6
+          do  jki=1,3
+             kknums=kknums+1
+            enddo
+         enddo
+        fato2=.false.
+       endif
+
        endif
        endif
 350    continue
@@ -287,6 +354,7 @@ c
         j=j+6
        if(j.le.i) then
       fato=.true.
+      fato2=.true.
       dd=d(Nuc(i),Nuc(j))
       do 360 ni=1,ncont(i)
       do 360 nj=1,ncont(j)
@@ -296,6 +364,7 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
+       if (rexp.lt.rmax) then
        if (rexp.lt.rmaxs) then
        if (fato) then
          fato=.false.
@@ -313,6 +382,25 @@ c
              enddo
          endif
        endif
+       else
+       if (fato2) then
+         fato2=.false.
+          if(i.eq.j) then
+             do iki=1,6
+               do jki=1,iki
+                 kknums=kknums+1
+               enddo
+             enddo
+          else
+            do iki=1,6
+              do jki=1,6
+                kknums=kknums+1
+              enddo
+             enddo
+         endif
+       endif
+
+       endif
        endif
 360     continue
          endif
@@ -320,9 +408,14 @@ c
 
       
         allocate(cool(kknumd*Md),kkind(kknumd))
+        allocate(cools(kknums*Md),kkinds(kknums))
+        write(*,*) 'kknum y kknums',kknumd,kknums
 
+         kknumsmax=kknums
         cool=0
+        cools=0
         kknumd=0
+        kknums=0
 
 c------------------------------------------------------------------
 c (ss|s)
@@ -340,6 +433,7 @@ c
           dd=d(Nuc(i),Nuc(j))
 c
       fato=.true.
+      fato2=.true.
 
       do 10 ni=1,ncont(i)
       do 10 nj=1,ncont(j)
@@ -349,11 +443,22 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.lt.rmaxs) then
-       if (fato) then
-       kknumd = kknumd+1
-       kkind(kknumd)=kk
-        fato=.false. 
+       if (rexp.lt.rmax) then
+          if (rexp.lt.rmaxs) then
+            if (fato) then
+              kknumd = kknumd+1
+              kkind(kknumd)=kk
+              fato=.false. 
+            endif
+          else
+            if (fato2) then
+               kknums = kknums+1 
+              if(kknumsmax.lt.kknums) stop '1'
+               kkinds(kknums)=kk
+              fato2=.false.
+         endif
+
+
        endif
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
@@ -376,12 +481,13 @@ c
       term=sks/t1*FUNCT(0,u)
       term=term*ccoef
 c
-      
-      id = (kknumd-1)*md+k
-
-c      id = (kk-1)*md+k
-
-      cool(id) = cool(id) + term
+           if (rexp.lt.rmaxs) then
+             id = (kknumd-1)*md+k
+             cool(id) = cool(id) + term
+           else
+             id = (kknums-1)*md+k
+            cools(id) = cools(id) + real(term)
+          endif
 
       ix=ix+1
  11   continue
@@ -417,10 +523,15 @@ c
       kn=k+l1-1
 c
 c
-      id = (kknumd-1)*Md+kn
-
+      if (rexp.lt.rmaxs) then
+       id = (kknumd-1)*Md+kn
       cool(id) = cool(id) + term
-      ix=ix+1
+      else
+       id = (kknums-1)*Md+kn
+      cools(id) = cools(id) + real(term)
+      endif 
+  
+       ix=ix+1
  75   continue
  71   continue
 
@@ -476,9 +587,15 @@ c
       kn=k+l12-1
 c
 c
-      id = (kknumd-1)*Md+kn
+c
+          if (rexp.lt.rmaxs) then
+             id = (kknumd-1)*Md+kn
+            cool(id) = cool(id) + term
+         else
+            id = (kknums-1)*Md+kn
+           cools(id) = cools(id) + real(term)
+         endif
 
-      cool(id) = cool(id) + term
       ix=ix+1
 
  135   continue
@@ -508,6 +625,7 @@ c
       k1=Jx(j)
 
       fato=.true.
+      fato2=.true.
 c1
       do 20 ni=1,ncont(i)
       do 20 nj=1,ncont(j)
@@ -517,6 +635,7 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
+       if (rexp.lt.rmax) then   
        if (rexp.lt.rmaxs) then   
        if (fato) then
         do iki=1,3
@@ -525,7 +644,17 @@ c
          enddo
         fato=.false.
        endif
+       else
+       if (fato2) then
+        do iki=1,3
+        kknums=kknums+1
+              if(kknumsmax.lt.kknums) stop '2'
+         kkinds(kknums)=i+k1+iki-1
+         enddo
+        fato2=.false.
+       endif
 
+       endif
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -567,11 +696,18 @@ c      ii=i+l1-1
 c
 c
 c       kk=ii+k1
+      if(rexp.lt.rmaxs) then
        kk=l1-1+kknumd-2
-
       id = (kk-1)*md+k
-
       cool(id) = cool(id) + term
+      else
+       kk=l1-1+kknums-2
+      id = (kk-1)*md+k
+      cools(id) = cools(id) + real(term)
+
+      endif
+
+
       ix=ix+1
  21   continue
 c------(ps|p)
@@ -622,12 +758,16 @@ c      ii=i+l1-1
       kk=k+l2-1
       term=term*ccoef
 c
+      if(rexp.lt.rmaxs) then
       kn=l1-1+kknumd-2
-
       id = (kn-1)*Md+kk
-c      write(*,*) 'psp',id,kn
-
       cool(id) = cool(id) + term
+       else
+      kn=l1-1+kknums-2
+      id = (kn-1)*Md+kk
+      cools(id) = cools(id) + real(term)
+
+      endif
       ix=ix+1
 c      write(*,*) 'ninteg',ninteg
  85   continue
@@ -706,9 +846,16 @@ c
       term=term*cc
 c
 c      kn=ii+k1
+      if(rexp.lt.rmaxs) then
       kn=l1-1+kknumd-2
       id = (kn-1)*Md+kk
       cool(id) = cool(id) + term
+      else
+      kn=l1-1+kknums-2
+      id = (kn-1)*Md+kk
+      cools(id) = cools(id) + real(term)
+      endif
+
       ix=ix+1
  145  continue
  141  continue
@@ -729,6 +876,7 @@ c (pp|s)
         j=j+3
        if(j.le.i) then
         fato=.true.
+        fato2=.true.
       dd=d(Nuc(i),Nuc(j))
       do 30 ni=1,ncont(i)
       do 30 nj=1,ncont(j)
@@ -738,26 +886,50 @@ c (pp|s)
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
+       if (rexp.lt.rmax) then   
        if (rexp.lt.rmaxs) then   
        if (fato) then
-       if(i.eq.j) then
-          do iki=1,3
-           do jki=1,iki
-            kknumd=kknumd+1
-            kkind(kknumd)=i+iki-1+Jx(j+jki-1)
-         enddo
-         enddo       
-       else 
-       do iki=1,3
-          do  jki=1,3
+          if(i.eq.j) then
+            do iki=1,3
+             do jki=1,iki
+              kknumd=kknumd+1
+               kkind(kknumd)=i+iki-1+Jx(j+jki-1)
+            enddo
+           enddo       
+          else 
+            do iki=1,3
+            do  jki=1,3
              kknumd=kknumd+1
              kkind(kknumd)=i+iki-1+Jx(j+jki-1)
             enddo
-         enddo
-        endif
+            enddo
+          endif
         fato=.false.
        endif
 
+       else
+        if (fato2) then
+          if(i.eq.j) then
+            do iki=1,3
+             do jki=1,iki
+              kknums=kknums+1
+              if(kknumsmax.lt.kknums) stop '3'
+               kkinds(kknums)=i+iki-1+Jx(j+jki-1)
+            enddo
+           enddo
+          else
+            do iki=1,3
+            do  jki=1,3
+             kknums=kknums+1
+              if(kknumsmax.lt.kknums) stop '4'
+             kkinds(kknums)=i+iki-1+Jx(j+jki-1)
+            enddo
+            enddo
+          endif
+        fato2=.false.
+       endif
+
+       endif
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -822,16 +994,23 @@ c
       ii=ii+1
 c
 c      kk=ii+Jx(jj)
-
+      if (rexp.lt.rmaxs) then   
       if(i.eq.j) then
       kk=ii+kknumd-6
       else
       kk=ii+kknumd-9      
       endif
       id = (kk-1)*Md+k
-c      write(*,*) 'pps',id,kk,l1,l2
-
       cool(id) = cool(id) + term
+      else
+      if(i.eq.j) then
+      kk=ii+kknums-6
+      else
+      kk=ii+kknums-9
+      endif
+      id = (kk-1)*Md+k
+      cools(id) = cools(id) + real(term)
+      endif
       ix=ix+1
  35   continue
  31   continue
@@ -915,6 +1094,7 @@ c
       term=term*ccoef
 c
 c     kn=ii+Jx(jj)
+      if (rexp.lt.rmaxs) then   
       if(i.eq.j) then
       kn=ii+kknumd-6
       else
@@ -922,6 +1102,18 @@ c     kn=ii+Jx(jj)
       endif
       id = (kn-1)*Md+kk
       cool(id) = cool(id) + term
+
+      else
+      if(i.eq.j) then
+      kn=ii+kknums-6
+      else
+      kn=ii+kknums-9
+      endif
+      id = (kn-1)*Md+kk
+      cools(id) = cools(id) + real(term)
+
+
+      endif
       ix=ix+1
 c      write(*,*) 'ninteg',ninteg
  95   continue
@@ -1045,7 +1237,9 @@ c
       cc=ccoef/f1
       term=term*cc
 c
-c      kn=ii+Jx(jj)
+c      kn=ii+Jx(jji)
+      if (rexp.lt.rmaxs) then
+
       if(i.eq.j) then
       kn=ii+kknumd-6
       else
@@ -1054,7 +1248,19 @@ c      kn=ii+Jx(jj)
       id = (kn-1)*Md+kk
 
       cool(id) = cool(id) + term
+      else
+
+      if(i.eq.j) then
+      kn=ii+kknums-6
+      else
+      kn=ii+kknums-9
+      endif
+      id = (kn-1)*Md+kk
+
+      cools(id) = cools(id) + real(term)
+      endif
       ix=ix+1
+
  155   continue
  151   continue
 
@@ -1073,6 +1279,7 @@ c (ds|s)
       do 40 kknan=1,nns(jatc(knan,nuc(i)))
         j=j+1
        fato=.true.
+       fato2=.true.
       k1=Jx(j)
       dd=d(Nuc(i),Nuc(j))
       do 40 ni=1,ncont(i)
@@ -1083,6 +1290,7 @@ c (ds|s)
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
+       if (rexp.lt.rmax) then   
        if (rexp.lt.rmaxs) then   
        if (fato) then
         do iki=1,6
@@ -1090,6 +1298,18 @@ c (ds|s)
              kkind(kknumd)=i+iki-1+k1
          enddo
         fato=.false.
+       endif
+       else
+
+       if (fato2) then
+        do iki=1,6
+             kknums=kknums+1
+              if(kknumsmax.lt.kknums) stop '5'
+             kkinds(kknums)=i+iki-1+k1
+         enddo
+        fato2=.false.
+       endif
+
        endif
 
 c
@@ -1150,10 +1370,16 @@ c
 c      ii=i+l12-1
 c
 c      kk=ii+k1
+       if (rexp.lt.rmaxs) then   
       kk=l12-1+kknumd-5
       id = (kk-1)*Md+k
-
       cool(id) = cool(id) + term
+      else
+      kk=l12-1+kknums-5
+      id = (kk-1)*Md+k
+      cools(id) = cools(id) + real(term)
+
+      endif
       ix=ix+1
 
  45   continue
@@ -1230,10 +1456,17 @@ c
       term=term*cc
 c
 c      kn=ii+k1
+       if (rexp.lt.rmaxs) then
       kn=l12-1+kknumd-5
       id = (kn-1)*Md+kk
-
       cool(id) = cool(id) + term
+      else
+      kn=l12-1+kknums-5
+      id = (kn-1)*Md+kk
+      cools(id) = cools(id) + real(term)
+      endif
+
+
       ix=ix+1
  105   continue
  101   continue
@@ -1346,9 +1579,18 @@ c
       cc=ccoef/(f1*f2)
       term=term*cc
 c      kn=ii+k1
+      if (rexp.lt.rmaxs) then
       kn=l12-1+kknumd-5
       id = (kn-1)*Md+kk
       cool(id) = cool(id) + term
+      else
+      kn=l12-1+kknums-5
+      id = (kn-1)*Md+kk
+      cools(id) = cools(id) + real(term)
+
+      endif
+
+
       ix=ix+1
  165   continue
  161   continue
@@ -1366,6 +1608,7 @@ c (dp|s)
       do 50 kknan=1,nnp(jatc(knan,nuc(i))),3
         j=j+3
        fato=.true.
+       fato2=.true.
       dd=d(Nuc(i),Nuc(j))
       do 50 ni=1,ncont(i)
       do 50 nj=1,ncont(j)
@@ -1375,6 +1618,7 @@ c (dp|s)
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
+       if (rexp.lt.rmax) then   
        if (rexp.lt.rmaxs) then   
        if (fato) then
         do iki=1,6
@@ -1385,6 +1629,22 @@ c (dp|s)
             enddo
          enddo
         fato=.false.
+       endif
+
+       else
+       if (fato2) then
+        do iki=1,6
+          do  jki=1,3
+             kknums=kknums+1
+              if(kknumsmax.lt.kknums) stop '6'
+             kkinds(kknums)=i+iki-1+Jx(j+jki-1)
+            enddo
+         enddo
+        fato2=.false.
+       endif
+
+
+
        endif
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
@@ -1472,10 +1732,16 @@ c
       term=term*cc
 c
 c      kk=ii+Jx(jj)
+       if (rexp.lt.rmaxs) then   
        kk=ii+kknumd-18
       id =(kk-1)*Md+k
-
       cool(id) = cool(id) + term
+      else
+       kk=ii+kknums-18
+      id =(kk-1)*Md+k
+      cools(id) = cools(id) + real(term)
+
+      endif
       ix=ix+1
  55   continue
  51   continue
@@ -1586,9 +1852,15 @@ c
       term=term*cc
 c
 c      kn=ii+Jx(jj)
+       if (rexp.lt.rmaxs) then   
        kn=ii+kknumd-18
       id =(kn-1)*Md+kk
       cool(id) = cool(id) + term
+      else
+       kn=ii+kknums-18
+      id =(kn-1)*Md+kk
+      cools(id) = cools(id) + real(term)
+      endif
       ix=ix+1
  115   continue
  111   continue
@@ -1744,10 +2016,15 @@ c
 c
 c
 c      kn=ii+Jx(jj)
+       if (rexp.lt.rmaxs) then   
        kn=ii+kknumd-18
       id =(kn-1)*Md+kk
-c      id = (kknumd-1)*Md+kk
       cool(id) = cool(id) + term
+       else
+       kn=ii+kknums-18
+      id =(kn-1)*Md+kk
+      cools(id) = cools(id) + real(term)
+       endif
       ix=ix+1
  175   continue
  171   continue
@@ -1765,6 +2042,7 @@ c (dd|s)
         j=j+6
        if(j.le.i) then
       fato=.true.
+      fato2=.true.
       ddij=d(Nuc(i),Nuc(j))
       do 60 ni=1,ncont(i)
       do 60 nj=1,ncont(j)
@@ -1774,6 +2052,7 @@ c (dd|s)
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*ddij
+       if (rexp.lt.rmax) then   
        if (rexp.lt.rmaxs) then   
        if (fato) then
          fato=.false.
@@ -1796,7 +2075,33 @@ c (dd|s)
              enddo
          endif
        endif
+       else
+       if (fato2) then
+         fato2=.false.
+          if(i.eq.j) then
+             do iki=1,6
+               do jki=1,iki
+                 kknums=kknums+1
+              if(kknumsmax.lt.kknums) stop 'a'
+                 ii=i+iki-1
+                 jj=j+jki-1
+                 kkinds(kknums)=ii+Jx(jj)
+               enddo
+             enddo
+          else
+            do iki=1,6
+              do jki=1,6
+                kknums=kknums+1
+              if(kknumsmax.lt.kknums) stop 'b'
+                kkinds(kknums)=i+iki-1+Jx(j+jki-1)
 
+              enddo
+             enddo
+         endif
+       endif
+
+
+       endif
 c
        Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
        Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
@@ -1937,6 +2242,7 @@ c
       term=term*cc
 c
 c      kk=ii+Jx(jj)
+       if (rexp.lt.rmaxs) then   
        if(j.eq.i) then
        kk=ii+kknumd-21
        else
@@ -1945,6 +2251,17 @@ c      kk=ii+Jx(jj)
       id = (kk-1)*Md+k
 
       cool(id) = cool(id) + term
+      else
+       if(j.eq.i) then
+       kk=ii+kknums-21
+       else
+       kk=ii+kknums-36
+        endif
+      id = (kk-1)*Md+k
+
+      cools(id) = cools(id) + real(term)
+
+      endif
       ix=ix+1
  65   continue
  61   continue
@@ -2134,6 +2451,7 @@ c
       term=term*cc
 c
 c      kn=ii+Jx(jj)
+       if (rexp.lt.rmaxs) then   
        if(j.eq.i) then
        kn=ii+kknumd-21
        else
@@ -2142,6 +2460,17 @@ c      kn=ii+Jx(jj)
       id = (kn-1)*Md+kk
 
       cool(id) = cool(id) + term
+      else
+       if(j.eq.i) then
+       kn=ii+kknums-21
+       else
+       kn=ii+kknums-36
+        endif
+      id = (kn-1)*Md+kk
+
+      cools(id) = cools(id) + real(term)
+      endif
+ 
       ix=ix+1
  125   continue
  121   continue
@@ -2432,6 +2761,7 @@ c      jj=j+l34-1
       kk=k+l56-1
 c
 c      kn=ii+Jx(jj)
+       if (rexp.lt.rmaxs) then
        if(j.eq.i) then
        kn=ii+kknumd-21
        else
@@ -2439,6 +2769,18 @@ c      kn=ii+Jx(jj)
         endif
       id = (kn-1)*Md+kk
       cool(id) = cool(id) + term
+
+      else
+       if(j.eq.i) then
+       kn=ii+kknums-21
+       else
+       kn=ii+kknums-36
+        endif
+      id = (kn-1)*Md+kk
+      cools(id) = cools(id) + real(term)
+
+
+      endif
 c      write(98,*) cool(id),id
       ix=ix+1
  185  continue

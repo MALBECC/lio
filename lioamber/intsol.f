@@ -660,7 +660,7 @@ c
 c
        f2=1.D0
        t1=Q(l4)-r(Nuc(j),l4)
-       t2=Q(l4)-r(l1,l4)
+       t2=Q(l4)-r(j1,l4)
        tna=t1*d0p-t2*d1p
 c
        if (l4.eq.l1) then

@@ -72,8 +72,8 @@ CWARN_FLAGS := $(CXXWARN_FLAGS) \
 	-Wmain \
 
 # Compiler-specific flags
-NVCCFLAGS   := $(ARCHFLAGS) -shared --compiler-options -fPIC --compiler-options -Wall
-ifeq ($(gcc),1)
+NVCCFLAGS   := $(ARCHFLAGS) --compiler-options -fPIC --compiler-options -Wall
+ifeq ($(intel),0)
   CXXFLAGS    += $(CXXWARN_FLAGS)
 endif
 
@@ -96,25 +96,23 @@ else
 endif
 
 # Debug/release configuration
-ifneq ($(dbg),1)
-	NVCCFLAGS   += $(OPTIMIZE) --compiler-options -fno-strict-aliasing -lineinfo
+ifeq ($(dbg),1)
+  NVCCFLAGS   += -O1 --debug --device-debug --generate-line-info
+else
+  NVCCFLAGS   += -O3 --compiler-options -fno-strict-aliasing
 endif
 
-ifeq ($(keep), 1)
-	NVCCFLAGS   += --keep
-endif
-
-ifeq ($(cpu),1)
-	NVCCFLAGS += -DCPU_KERNELS=1
+ifneq ($(cpu),0)
+  NVCCFLAGS += -DCPU_KERNELS=1
 endif
 
 ifeq ($(ptx),1)
-	NVCCFLAGS += --ptx
+  NVCCFLAGS += --ptx
 endif
 ################################################################################
 # Check for input flags and set compiler flags appropriately
 ################################################################################
-ifeq ($(fastmath), 1)
+ifneq ($(fastmath), 0)
   NVCCFLAGS += -use_fast_math
 endif
 
@@ -128,39 +126,71 @@ ifeq ($(verbose),1)
   NVCCFLAGS += --verbose
 endif
 
-ifneq ($(maxregs),undefined)
-	NVCCFLAGS += -maxrregcount=$(maxregs)
-endif
+GENCODE_SM20    := -gencode arch=compute_20,code=compute_20
+GENCODE_SM20    += -gencode arch=compute_20,code=sm_20
+#GENCODE_SM20    += -gencode arch=compute_20,code=sm_21
+GENCODE_SM30    := -gencode arch=compute_30,code=sm_30
+GENCODE_SM35    := -gencode arch=compute_35,code=compute_35
+GENCODE_SM35    := -gencode arch=compute_35,code=sm_35
+# Eventually for Maxwell, requires at least CUDA 6.5
+#GENCODE_SM50    := -gencode arch=compute_50,code=sm_50
+#GENCODE_SM52    := -gencode arch=compute_52,code=sm_52
+#GENCODE_FLAGS   ?= $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM52)
 
-ifeq ($(sm_1x),1)
-  NVCCFLAGS += -arch=sm_1x
-else
-  NVCCFLAGS += -DNVIDIA_HAS_DOUBLE -DUSING_FERMI
-  CXXFLAGS  += -DUSING_FERMI
-  ifeq ($(sm35),1)
-    NVCCFLAGS += -arch=sm_35
-  else
-    #DEFAULT IS SM20
-    NVCCFLAGS += -arch=sm_20
-  endif
-endif
-
+# If SM20 or SM35 is active, then compile specifically for that.
 ifeq ($(sm20),1)
+#  NVCCFLAGS += $(GENCODE_SM20)
+  GENCODE_FLAGS   += $(GENCODE_SM20)
+endif
+ifeq ($(sm30),1)
+#  NVCCFLAGS += $(GENCODE_SM30)
+  GENCODE_FLAGS   += $(GENCODE_SM30)
+endif
+ifeq ($(sm35),1)
+#  NVCCFLAGS += $(GENCODE_SM35)
+  GENCODE_FLAGS   += $(GENCODE_SM35)
+endif
+ifeq ($(sm50),1)
+  GENCODE_FLAGS   += $(GENCODE_SM50)
+endif
+ifeq ($(sm52),1)
+  GENCODE_FLAGS   += $(GENCODE_SM52)
 endif
 
+GENCODE_FLAGS   ?= $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM52)
+NVCCFLAGS += $(GENCODE_FLAGS)
 
-ifeq ($(nvcc_warn_verbose),1)
-  NVCCFLAGS += $(addprefix --compiler-options ,$(CXXWARN_FLAGS))
-  NVCCFLAGS += --compiler-options -fno-strict-aliasing
+ifneq ($(subscript_warn),1)
+  NVCCFLAGS += -Xcudafe "--diag_suppress=subscript_out_of_range"
 endif
 
 ################################################################################
 # Rules
 ################################################################################
 
+## Unified GPU Object
+UGO          := cuda/lio_gpu.o
+CUDA_OBJ     :=
+
+POINTXC_SRC  := $(wildcard pointxc/*.cpp)
+POINTXC_OBJ  := $(POINTXC_SRC:%.cpp=%.o)
+CUDA_OBJ     += $(POINTXC_OBJ)
+
+CUDA_SOURCES := $(wildcard cuda/*.cu)
+CUDA_SOURCES += $(wildcard analytic_integral/cuda/*.cu)
+CUDA_OBJ     += $(CUDA_SOURCES:%.cu=%.o)
+
 # Commented should be in config file
 # CC=icc
 # CXX=icc
+$(UGO): $(CUDA_OBJ)
+	nvcc $(NVCCFLAGS) -dlink $(CUDA_OBJ) -o $@
 
-%.cu_o : %.cu
-	nvcc $(NVCCFLAGS) -o $@ -c $<
+pointxc/%.o:pointxc/%.cpp
+	nvcc $(NVCCFLAGS) -o $@ -dc $<
+
+cuda/%.o:cuda/%.cu
+	nvcc $(NVCCFLAGS) -o $@ -dc $<
+
+analytic_integral/cuda/%.o:analytic_integral/cuda/%.cu
+	nvcc $(NVCCFLAGS) -o $@ -dc $<

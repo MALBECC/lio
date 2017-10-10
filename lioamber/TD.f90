@@ -112,7 +112,7 @@
        ALLOCATE(factorial(NBCH))
 !!------------------------------------!!
 ! Mulliken
-       ipop=1
+       ipop=0
 !!------------------------------------!!
         nopt=0
 
@@ -210,7 +210,6 @@
       IF(TRANSPORT_CALC) THEN
          call mat_map(group,mapmat, Nuc, M, natom)
       ENDIF
-
 !--------------------------------------------------------------------!
       if(propagator.eq.2) allocate (F1a(M,M),F1b(M,M))
 !--------------------------------------------------------------------!
@@ -320,7 +319,6 @@
            Qc=Qc-Nel
            Qc2=Qc**2
 
-
 ! FFR: Variable Allocation
 !--------------------------------------------------------------------!
        if ( allocated(Vmat) ) deallocate(Vmat)
@@ -333,14 +331,13 @@
        dovv=.true.
        if (dovv.eqv..true.) then
         if (.not.allocated(orb_group)) then
-          allocate(orb_group(M))
+          allocate(orb_group(M),group(M)) ! agrege que allocate la variable group
           call atmorb(group,nuc,orb_group)
         endif
         if (.not.allocated(orb_selection)) then
           allocate(orb_selection(M))
         endif
        endif
-
 
 !------------------------------------------------------------------------------!
 ! Two electron integral with neighbor list.
@@ -411,7 +408,6 @@
 !agrega el ECP AAA a los terminos de 1 e
           enddo
       end if
-
 
       call g2g_timer_sum_stop('Nuclear attraction')
       if(nsol.gt.0.or.igpu.ge.4) then
@@ -1099,7 +1095,8 @@
 !             rho1=matmul(xmat,rho)
 !             rho1=matmul(rho1,xtrans)
 !---------------------------------------------------------------!
-             rho1=matmul(x,rho)
+             rho1=matmul(x(1:M,1:M),rho)
+!             rho1=matmul(x,rho)
              rho1=matmul(rho1,xtrans)
              call g2g_timer_stop('complex_rho_on_to_ao')
 #endif
@@ -1211,7 +1208,7 @@
 
                call mulliken_calc(natom, M, rhoscratch, overlap, Nuc, q)
 
-                     if(transport_calc) qgr=0.0d0
+                     if (transport_calc) qgr=0.0d0
                         do n=1,natom
                            write(1111111,*) n,Iz(n),q(n)
                            if(transport_calc) then
@@ -1224,8 +1221,8 @@
                            enddo
                               write(678,*) '-------------------------'
                         endif
-                     endif
-                  elseif(mod ((istep-1),save_charge_freq) == 0) then
+                   endif
+                else if(mod ((istep-1),save_charge_freq) == 0) then
                      rhoscratch=REAL(rho1)
 
                      do n=1,natom

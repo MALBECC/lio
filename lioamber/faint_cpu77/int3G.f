@@ -4122,4 +4122,4 @@ c
       call g2g_timer_stop('CoulG')
       call g2g_timer_sum_stop('Coulomb gradients')
       return
-      end
+      end subroutine

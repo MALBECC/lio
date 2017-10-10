@@ -709,5 +709,5 @@ c       write(33,*) RMM(1:MM)
 c       stop
 c       endif       
       return
-      end
+      end subroutine
 c-------------------------------------------------------------------

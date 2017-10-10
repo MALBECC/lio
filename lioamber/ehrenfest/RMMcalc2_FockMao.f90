@@ -5,9 +5,12 @@ subroutine RMMcalc2_FockMao( DensMao, FockMao, DipMom, Energy )
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use maskrmm
+   use faint_cpu77, only: intsol, int2, int3mem, int3lu, intfld
+
    use garcha_mod, &
    &only: M, Md, RMM, kkind, kkinds, cool, cools, igrid2, epsilon, a0          &
        &, natom, Iz, NCO, Nunp, total_time, MEMO
+
    use lionml_data, &
    &only: eefld_on, eefld_ampx, eefld_ampy, eefld_ampz, eefld_wavelen          &
        &, eefld_timegih, eefld_timegfh, eefld_timepos, eefld_timeamp

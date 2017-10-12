@@ -132,6 +132,46 @@ subroutine electrostat (rho1,mapmat,overlap,rhofirst,Gamma0, M)
 
 end subroutine electrostat
 
+subroutine Drive_Population(Pop,natom,M,ngroup,rho,overlap,&
+                            Nuc,group,smat,q,uid)
+
+
+        implicit none
+
+        logical, intent(in) :: Pop
+        integer, intent(in) :: M, natom, ngroup, uid
+        real*8, dimension(M,M), intent(in) :: rho, overlap, smat
+        integer, dimension(M), intent(in) :: Nuc
+        integer, dimension(natom), intent(in) :: group
+        real*8, dimension(natom), intent(in) :: q
+        real*8, dimension(ngroup) :: qgr
+        real*8 :: traza
+        integer :: i
+
+        qgr(:) = 0.0D0
+        traza= 0.0D0
+
+        if ( Pop ) then
+             call mulliken_calc(natom,M,rho,overlap,Nuc,q)
+           else
+             call lowdin_calc(M,natom,rho,smat,Nuc,q)
+        endif
+
+        do i=1,natom
+           qgr(group(i)) = qgr(group(i)) + q(i)
+        enddo
+
+        do i=1,ngroup
+           write(uid,*) i, i, qgr(i)
+           traza = traza + qgr(i)
+        enddo
+
+        write(uid,*) "tot=", traza
+        write(uid,*) "---------arreglo--------------"
+
+
+end subroutine Drive_Population
+
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end module
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

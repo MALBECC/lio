@@ -47,7 +47,7 @@
                  Es,ff,t0
        INTEGER :: istep,ipop,nopt,M1,M2,M3,i,j,M5,M7,MM,MM2,&
                   MMd,Md2,k,M13,M15,M17,M9,M20,M18,M19,M11,Nel,&
-                  Nunp,igpu,info,kk,n
+                  Nunp,igpu,info,kk,n,unidad1,unidad2
        REAL*8 :: t,E2,E,En,E1
        REAL*8,ALLOCATABLE,DIMENSION(:,:) :: & 
         xnano2,xmm,xtrans,ytrans,Y,fock,&
@@ -98,7 +98,7 @@
        REAL*8 :: tiempo1000
 
 !FFR
-       logical             :: dovv
+       logical             :: dovv, Pop_Drive
        integer,allocatable :: orb_group(:)
        integer,allocatable :: orb_selection(:)
 
@@ -113,7 +113,7 @@
        ALLOCATE(factorial(NBCH))
 !!------------------------------------!!
 ! Mulliken
-       ipop=0
+       ipop=1
 !!------------------------------------!!
         nopt=0
 
@@ -209,7 +209,7 @@
             close(unit=678)
       endif
       IF(TRANSPORT_CALC) THEN
-         call mat_map(group,mapmat, Nuc, M, natom)
+         call mat_map(group, mapmat, Nuc, M, natom)
       ENDIF
 !--------------------------------------------------------------------!
       if(propagator.eq.2) allocate (F1a(M,M),F1b(M,M))
@@ -332,7 +332,7 @@
        dovv=.true.
        if (dovv.eqv..true.) then
         if (.not.allocated(orb_group)) then
-          allocate(orb_group(M),group(M)) ! agrege que allocate la variable group
+          allocate(orb_group(M))
           call atmorb(group,nuc,orb_group)
         endif
         if (.not.allocated(orb_selection)) then
@@ -843,74 +843,98 @@
 
 !Transport: propagation in transport---------------------------------!
 
+      Pop_Drive=.true.
 
       if(TRANSPORT_CALC) then
          call g2g_timer_start('TRANSPORT - b Verlet -')
          if(istep.eq.1) then
-            open(unit=55555,file='DriveMul')
+            unidad1 = 55555
+            if ( Pop_Drive ) then
+              open(unit=unidad1,file='DriveMul')
+            else
+              open(unit=unidad1,file='DriveLowd')
+            endif
          endif
 
          if(istep.ge.3) then
 ! compute the driving term for transport properties
             scratchgamma=GammaVerlet*exp(-0.0001D0*(dble(istep-1000))**2)    
 
-          call ELECTROSTAT(rho1,mapmat,overlap,rhofirst,scratchgamma,M)
-            re_traza=0.0D0
+           call ELECTROSTAT(rho1,mapmat,overlap,rhofirst,scratchgamma,M)
+        
+!            re_traza=0.0D0
 ! Mulliken population analysis for the driving term
-            if((ipop.eq.1).and. &
-            (mod(istep-1,save_charge_freq*10)==0)) then
-               rhoscratch=REAL(rho1)
-               do n=1,natom
-                  q(n)=0.0D0
-               enddo
-
-              call mulliken_calc(natom, M, rhoscratch, overlap, Nuc, q)
-
-               if(transport_calc) then
-                  qgr(:)=0.0d0
-                     do n=1,natom
-                        qgr(group(n))=qgr(group(n))+q(n)
-                     enddo
-                     do n=1,ngroup
-                        write(55555,*) n,n,qgr(n)
-                        re_traza=re_traza+qgr(n)
-                     enddo
-                     write(55555,*) 'tot=',re_traza
-                     re_traza=0
-                     write(55555,*) '-------------------------'
+               if (mod(istep-1,save_charge_freq*10)==0) then
+                   rhoscratch=REAL(rho1)
+                   q(:) = 0.0D0
+                   call Drive_Population(Pop_Drive,natom,M,ngroup,&
+                        rhoscratch,overlap,Nuc,group,sqsm,q,unidad1)
                endif
-            endif
-         endif
+          endif
+
+
+!##### ORIGINAL ########################
+!            if( (ipop.eq.1).and. &
+!                (mod(istep-1,save_charge_freq*10)==0) ) then
+               
+!                rhoscratch=REAL(rho1)
+!                call Drive_Population(natom,M,ngroup,rhoscratch,&
+!                                      overlap,Nuc,group)
+
+!             endif
+!        endif
+!               do n=1,natom
+!                  q(n)=0.0D0
+!               enddo
+
+!              call mulliken_calc(natom, M, rhoscratch, overlap, Nuc, q)
+
+!               if(transport_calc) then
+!                  qgr(:)=0.0d0
+!                     do n=1,natom
+!                        qgr(group(n))=qgr(group(n))+q(n)
+!                     enddo
+!                     do n=1,ngroup
+!                        write(55555,*) n,n,qgr(n)
+!                        re_traza=re_traza+qgr(n)
+!                     enddo
+!                     write(55555,*) 'tot=',re_traza
+!                     re_traza=0
+!                     write(55555,*) '-------------------------'
+!               endif
+!            endif
+!         endif
 
 !Lowdin Population
 
-         if(lpop) then
-            if(istep.eq.1) then
-               open(unit=525252,file='DriveLowd')
-            endif
-            if((istep.ge.3).and. &
-            (mod(istep-1,save_charge_freq*10)==0)) then
-               rhoscratch=REAL(rho1)
-               do n=1,natom
-                  q(n)=0.0D0
-               enddo
-               call lowdin_calc(M,natom,rhoscratch,sqsm,Nuc,q)
-               if(transport_calc) then
-                  qgr=0.0d0
-                  do n=1,natom
-                     qgr(group(n))=qgr(group(n))+q(n)
-                  enddo
-                  do n=1,ngroup
-                     write(525252,*) n,n,qgr(n)
-                  enddo
-                  write(525252,*) '-------------------------'
-               endif
-            endif
-         endif
+!         if(lpop) then
+!            if(istep.eq.1) then
+!               open(unit=525252,file='DriveLowd')
+!            endif
+!            if((istep.ge.3).and. &
+!            (mod(istep-1,save_charge_freq*10)==0)) then
+!               rhoscratch=REAL(rho1)
+!               do n=1,natom
+!                  q(n)=0.0D0
+!               enddo
+!               call lowdin_calc(M,natom,rhoscratch,sqsm,Nuc,q)
+!               if(transport_calc) then
+!                  qgr=0.0d0
+!                  do n=1,natom
+!                     qgr(group(n))=qgr(group(n))+q(n)
+!                  enddo
+!                  do n=1,ngroup
+!                     write(525252,*) n,n,qgr(n)
+!                  enddo
+!                  write(525252,*) '-------------------------'
+!               endif
+!            endif
+!         endif
+!#################################################
 #ifdef CUBLAS
             call g2g_timer_start('complex_rho_ao_to_on-cu')
             rho1=basechange_cublas(M,rho1,devPtrY,'dir')
-            call g2g_timer_stop('complex_rho_ao_to_on-cu')
+           call g2g_timer_stop('complex_rho_ao_to_on-cu')
 #endif
             call g2g_timer_stop('TRANSPORT - b Verlet -')
 
@@ -952,66 +976,71 @@
 
          if(TRANSPORT_CALC) then
             call g2g_timer_start('TRANSPORT - b magnus -')
-            if(istep.eq.1) then
-               open(unit=55555,file='DriveMul')
-            endif
+!            if(istep.eq.1) then
+!               open(unit=55555,file='DriveMul')
+!            endif
             if(istep.le.1000) then
              scratchgamma=GammaMagnus*exp(-0.0001D0*(dble(istep-1000))**2)
             else
              scratchgamma=GammaMagnus
             endif
            call ELECTROSTAT(rho1,mapmat,overlap,rhofirst,scratchgamma,M)
-            re_traza=0.0D0
+!            re_traza=0.0D0
 ! Mulliken population analysis for the driving term
-            if((ipop.eq.1).and. &
-            (mod(istep-1,save_charge_freq)==0)) then
-               rhoscratch=REAL(rho1)
-               do n=1,natom
-                  q(n)=0.0D0
-               enddo
+             if (mod(istep-1,save_charge_freq)==0) then
+                 rhoscratch=REAL(rho1)
+                 q(:) = 0.0D0
+                 call Drive_Population(Pop_Drive,natom,M,ngroup,rhoscratch,&
+                                       overlap,Nuc,group,sqsm,q,unidad1)
+             endif
+!########## ORIGINAL #########################
+!               do n=1,natom
+!                  q(n)=0.0D0
+!               enddo
 
-              call mulliken_calc(natom, M, rhoscratch, overlap, Nuc, q)
+!              call mulliken_calc(natom, M, rhoscratch, overlap, Nuc, q)
 
-            if(transport_calc) then
-                  qgr=0.0d0
-                  do n=1,natom
-                     qgr(group(n))=qgr(group(n))+q(n)
-                  enddo
-                  do n=1,ngroup
-                     write(55555,*) n,n,qgr(n)
-                     re_traza=re_traza+qgr(n)
-                  enddo
-                  write(55555,*) 'tot=',re_traza
-                  re_traza=0
-                  write(55555,*) '-------------------------'
-               endif
-            endif
+!            if(transport_calc) then
+!                  qgr=0.0d0
+!                  do n=1,natom
+!                     qgr(group(n))=qgr(group(n))+q(n)
+!                  enddo
+!                  do n=1,ngroup
+!                     write(55555,*) n,n,qgr(n)
+!                     re_traza=re_traza+qgr(n)
+!                  enddo
+!                  write(55555,*) 'tot=',re_traza
+!                  re_traza=0
+!                  write(55555,*) '-------------------------'
+!               endif
+!            endif
 
 ! Lowdin Population
 
-            if(lpop) then
-               if(istep.eq.1) then
-                  open(unit=525252,file='DriveLowd')
-               endif
-               if((istep.ge.3).and. &
-                  (mod(istep-1,save_charge_freq)==0)) then
-                  rhoscratch=REAL(rho1)
-                  do n=1,natom
-                     q(n)=0.0D0
-                  enddo
-                  call lowdin_calc(M,natom,rhoscratch,sqsm,Nuc,q)
-                  if(transport_calc) then
-                    qgr=0.0d0
-                    do n=1,natom
-                       qgr(group(n))=qgr(group(n))+q(n)
-                    enddo
-                    do n=1,ngroup
-                       write(525252,*) n,n,qgr(n)
-                    enddo
-                       write(525252,*) '-------------------------'
-                  endif
-               endif
-            endif
+!            if(lpop) then
+!               if(istep.eq.1) then
+!                  open(unit=525252,file='DriveLowd')
+!               endif
+!               if((istep.ge.3).and. &
+!                  (mod(istep-1,save_charge_freq)==0)) then
+!                  rhoscratch=REAL(rho1)
+!                  do n=1,natom
+!                     q(n)=0.0D0
+!                  enddo
+!                  call lowdin_calc(M,natom,rhoscratch,sqsm,Nuc,q)
+!                  if(transport_calc) then
+!                    qgr=0.0d0
+!                    do n=1,natom
+!                       qgr(group(n))=qgr(group(n))+q(n)
+!                    enddo
+!                    do n=1,ngroup
+!                       write(525252,*) n,n,qgr(n)
+!                    enddo
+!                       write(525252,*) '-------------------------'
+!                  endif
+!               endif
+!            endif
+!#######################################################
 
 #ifdef CUBLAS
               call g2g_timer_start('complex_rho_ao_to_on-cu')
@@ -1020,7 +1049,7 @@
 #endif
               call g2g_timer_stop('TRANSPORT - b magnus -')
 
-         endif ! end of transpor propagation
+         endif ! end of transport propagation
 
 #ifdef CUBLAS
                 call g2g_timer_start('cupredictor')
@@ -1188,125 +1217,154 @@
 !------------------------------------------------------------------------------------
 !-------------------------MULLIKEN CHARGES-----------------------------------------------!
 
-            if(ipop.eq.1) then
-               call g2g_timer_start('Mulliken Population')
-! open files to store Mulliken Population Analysis each step of the dynamics
-               if(istep.eq.1) then
-                  open(unit=1111111,file='Mulliken')
-                  if (transport_calc) then
-                     open(unit=678,file='MullikenGroup')
-                  endif
-               endif
-
-               if ((propagator.eq.2).and.(istep.lt.lpfrg_steps) &
-               .and. (.not.tdrestart)) then
-                  if(mod ((istep-1),save_charge_freq*10) == 0) then
-                     rhoscratch=REAL(rho1)
-
-                     do n=1,natom
-                        q(n)=Iz(n)
-                     enddo
-
-               call mulliken_calc(natom, M, rhoscratch, overlap, Nuc, q)
-
-                     if (transport_calc) qgr=0.0d0
-                        do n=1,natom
-                           write(1111111,*) n,Iz(n),q(n)
-                           if(transport_calc) then
-                              qgr(group(n))=qgr(group(n))+q(n)
-                           endif
-                        enddo
-                        if(transport_calc) then
-                           do n=1,ngroup
-                              write(678,*) n,n,qgr(n)
-                           enddo
-                              write(678,*) '-------------------------'
-                        endif
-                   endif
-                else if(mod ((istep-1),save_charge_freq) == 0) then
-                     rhoscratch=REAL(rho1)
-
-                     do n=1,natom
-                        q(n)=Iz(n)
-                     enddo
-
-               call mulliken_calc(natom, M, rhoscratch, overlap, Nuc, q)
-                     if(transport_calc) qgr=0.0d0
-                        do n=1,natom
-                           write(1111111,*) n,Iz(n),q(n)
-                           if(transport_calc) then
-                              qgr(group(n))=qgr(group(n))+q(n)
-                           endif
-                        enddo
-                        if(transport_calc) then
-                          do n=1,ngroup
-                            write(678,*) n,n,qgr(n)
-                          enddo
-                     write(678,*) '------------------------------------'
-                        endif
-                     endif
-                     call g2g_timer_stop('Mulliken Population')
-                  endif
-
-!-------------------END OF MULLIKEN CHARGES-----------------------------------------------
-!-------------------LOWDIN POPULATIONS----------------------------------------------------
-! open files to store Mulliken Population Analysis each step of the dynamics
-                if(lpop) then
-                   call g2g_timer_start('Lowdin Population')
-                   if(istep.eq.1) then
-!                      open(unit=12121212,file='Lowdin')
-                       if (transport_calc) then
-                          open(unit=13131313,file='LowdinGroup')
-                       endif
+            if (transport_calc) then
+                if (istep .eq. 1) then
+                    unidad2 = 678
+                    if (Pop_Drive) then
+                       open(unit=unidad2,file="MullikenGroup")
+                    else
+                       open(unit=unidad2,file="LowdinGroup")
                     endif
-                    if ((propagator.eq.2).and.(istep.lt.lpfrg_steps) &
+                endif
+
+                call g2g_timer_start("Mulliken Population")
+                do n=1,natom
+                   q(n)=Iz(n)
+                enddo
+                rhoscratch=REAL(rho1)
+                if ((propagator.eq.2).and.(istep.lt.lpfrg_steps) &
                     .and. (.not.tdrestart)) then
-                       if(mod ((istep-1),save_charge_freq*10) == 0) then
-                          rhoscratch=REAL(rho1)
-                          do n=1,natom
-                            q(n)=Iz(n)
-                          enddo
-                         call lowdin_calc(M,natom,rhoscratch,sqsm,Nuc,q)
-                          if(transport_calc) qgr=0.0d0
-                          do n=1,natom
-!                             write(12121212,*) n,Iz(n),q(n)
-                             if(transport_calc) then
-                                qgr(group(n))=qgr(group(n))+q(n)
-                             endif
-                          enddo
-                          if(transport_calc) then
-                             do n=1,ngroup
-                                write(13131313,*) n,n,qgr(n)
-                             enddo
-                             write(13131313,*) '----------------------'
-                         endif
-                      endif
-                   elseif(mod ((istep-1),save_charge_freq) == 0) then
-                   rhoscratch=REAL(rho1)
-                   do n=1,natom
-                         q(n)=Iz(n)
-                   enddo
-                   call lowdin_calc(M,natom,rhoscratch,sqsm,Nuc,q)
-                   if(transport_calc) qgr=0.0d0
-                        do n=1,natom
-!                            write(12121212,*) n,Iz(n),q(n)
-                            if(transport_calc) then
-                               qgr(group(n))=qgr(group(n))+q(n)
-                            endif
-                         enddo
-                         if(transport_calc) then
-                             do n=1,ngroup
-                                write(13131313,*) n,n,qgr(n)
-                             enddo
-                             write(13131313,*) '----------------------'
-                         endif
-                    endif
-                    call g2g_timer_stop('Lowdin Population')
-               endif
-!------------------------------------------------------------------------------------------
-
-
-!       if (nopt.ne.3) then
+                   if(mod((istep-1),save_charge_freq*10)==0) then
+                     call Drive_Population(Pop_Drive,natom,M,ngroup,&
+                          rhoscratch,overlap,Nuc,group,sqsm,q,unidad2)
+                   endif
+                elseif(mod((istep-1),save_charge_freq)==0) then
+                   call Drive_Population(Pop_Drive,natom,M,ngroup,&
+                        rhoscratch,overlap,Nuc,group,sqsm,q,unidad2)
+                endif
+            endif
+                    
+!################# ORIGINAL #########################
+!            if(ipop.eq.1) then
+!               call g2g_timer_start('Mulliken Population')
+! open files to store Mulliken Population Analysis each step of the dynamics
+!             
+!               if(istep.eq.1) then
+!                  open(unit=1111111,file='Mulliken')
+!                  if (transport_calc) then
+!                     open(unit=678,file='MullikenGroup')
+!                  endif
+!               endif
+!
+!               if ((propagator.eq.2).and.(istep.lt.lpfrg_steps) &
+!               .and. (.not.tdrestart)) then
+!                  if(mod ((istep-1),save_charge_freq*10) == 0) then
+!                     rhoscratch=REAL(rho1)
+!
+!                     do n=1,natom
+!                        q(n)=Iz(n)
+!                     enddo
+!
+!               call mulliken_calc(natom, M, rhoscratch, overlap, Nuc, q)
+!
+!                     if (transport_calc) qgr=0.0d0
+!                        do n=1,natom
+!                           write(1111111,*) n,Iz(n),q(n)
+!                           if(transport_calc) then
+!                              qgr(group(n))=qgr(group(n))+q(n)
+!                           endif
+!                        enddo
+!                        if(transport_calc) then
+!                           do n=1,ngroup
+!                              write(678,*) n,n,qgr(n)
+!                           enddo
+!                              write(678,*) '-------------------------'
+!                        endif
+!                   endif
+!                else if(mod ((istep-1),save_charge_freq) == 0) then
+!                     rhoscratch=REAL(rho1)
+!
+!                     do n=1,natom
+!                        q(n)=Iz(n)
+!                     enddo
+!
+!               call mulliken_calc(natom, M, rhoscratch, overlap, Nuc, q)
+!                     if(transport_calc) qgr=0.0d0
+!                        do n=1,natom
+!                           write(1111111,*) n,Iz(n),q(n)
+!                           if(transport_calc) then
+!                              qgr(group(n))=qgr(group(n))+q(n)
+!                           endif
+!                        enddo
+!                        if(transport_calc) then
+!                          do n=1,ngroup
+!                            write(678,*) n,n,qgr(n)
+!                          enddo
+!                     write(678,*) '------------------------------------'
+!                        endif
+!                     endif
+!                     call g2g_timer_stop('Mulliken Population')
+!                  endif
+!
+!!-------------------END OF MULLIKEN CHARGES-----------------------------------------------
+!!-------------------LOWDIN POPULATIONS----------------------------------------------------
+!! open files to store Mulliken Population Analysis each step of the dynamics
+!                if(lpop) then
+!                   call g2g_timer_start('Lowdin Population')
+!                   if(istep.eq.1) then
+!!                      open(unit=12121212,file='Lowdin')
+!                       if (transport_calc) then
+!                          open(unit=13131313,file='LowdinGroup')
+!                       endif
+!                    endif
+!                    if ((propagator.eq.2).and.(istep.lt.lpfrg_steps) &
+!                    .and. (.not.tdrestart)) then
+!                       if(mod ((istep-1),save_charge_freq*10) == 0) then
+!                          rhoscratch=REAL(rho1)
+!                          do n=1,natom
+!                            q(n)=Iz(n)
+!                          enddo
+!                         call lowdin_calc(M,natom,rhoscratch,sqsm,Nuc,q)
+!                          if(transport_calc) qgr=0.0d0
+!                          do n=1,natom
+!!                             write(12121212,*) n,Iz(n),q(n)
+!                             if(transport_calc) then
+!                                qgr(group(n))=qgr(group(n))+q(n)
+!                             endif
+!                          enddo
+!                          if(transport_calc) then
+!                             do n=1,ngroup
+!                                write(13131313,*) n,n,qgr(n)
+!                             enddo
+!                             write(13131313,*) '----------------------'
+!                         endif
+!                      endif
+!                   elseif(mod ((istep-1),save_charge_freq) == 0) then
+!                   rhoscratch=REAL(rho1)
+!                   do n=1,natom
+!                         q(n)=Iz(n)
+!                   enddo
+!                   call lowdin_calc(M,natom,rhoscratch,sqsm,Nuc,q)
+!                   if(transport_calc) qgr=0.0d0
+!                        do n=1,natom
+!!                            write(12121212,*) n,Iz(n),q(n)
+!                            if(transport_calc) then
+!                               qgr(group(n))=qgr(group(n))+q(n)
+!                            endif
+!                         enddo
+!                         if(transport_calc) then
+!                             do n=1,ngroup
+!                                write(13131313,*) n,n,qgr(n)
+!                             enddo
+!                             write(13131313,*) '----------------------'
+!                         endif
+!                    endif
+!                    call g2g_timer_stop('Lowdin Population')
+!               endif
+!!------------------------------------------------------------------------------------------
+!
+!
+!!       if (nopt.ne.3) then
 !       write(*,300) niter,DAMP,E
 !       endif
 !

@@ -15,7 +15,7 @@ c---------------------------------------------------
      >     FOCK_ECP_read,FOCK_ECP_write,IzECP
       use faint_cpu77, only: int1, int2, intsol, int3mem, int3lu
 
-      REAL*8:: E2,En,E,Es,Ex,Exc
+      REAL*8:: E2,En,E,Es,Ex,Exc,E1s,Ens
       dimension work(1000)
       real*8, dimension (:,:), ALLOCATABLE ::xnano,znano
       real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15,rmm13,

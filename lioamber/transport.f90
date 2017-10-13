@@ -2,7 +2,7 @@
 module transport
    implicit none
    logical              :: transport_calc=.false., generate_rho0=.false., gate_field=.false., lpop
-   integer              :: save_charge_freq=0
+   integer              :: save_charge_freq=0, Pop_Drive
    complex*8            :: traza0, traza
    real*8               :: driving_rate=0.001, scratchgamma, GammaMagnus, GammaVerlet, re_traza
 
@@ -132,16 +132,17 @@ subroutine electrostat (rho1,mapmat,overlap,rhofirst,Gamma0, M)
 
 end subroutine electrostat
 
-subroutine Drive_Population(Pop,natom,M,ngroup,rho,overlap,&
-                            Nuc,group,smat,q,uid)
-
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+subroutine Drive_Population(Pop,ngroup,rho,overlap,&
+                            group,smat,q,uid)
+        
+        use garcha_mod, only : Nuc,natom,M
 
         implicit none
 
-        logical, intent(in) :: Pop
-        integer, intent(in) :: M, natom, ngroup, uid
+        integer, intent(in) :: Pop
+        integer, intent(in) :: ngroup, uid
         real*8, dimension(M,M), intent(in) :: rho, overlap, smat
-        integer, dimension(M), intent(in) :: Nuc
         integer, dimension(natom), intent(in) :: group
         real*8, dimension(natom), intent(in) :: q
         real*8, dimension(ngroup) :: qgr
@@ -151,9 +152,9 @@ subroutine Drive_Population(Pop,natom,M,ngroup,rho,overlap,&
         qgr(:) = 0.0D0
         traza= 0.0D0
 
-        if ( Pop ) then
+        if ( Pop == 1) then
              call mulliken_calc(natom,M,rho,overlap,Nuc,q)
-           else
+        elseif ( Pop == 2 ) then
              call lowdin_calc(M,natom,rho,smat,Nuc,q)
         endif
 
@@ -165,13 +166,15 @@ subroutine Drive_Population(Pop,natom,M,ngroup,rho,overlap,&
            write(uid,*) i, i, qgr(i)
            traza = traza + qgr(i)
         enddo
-
-        write(uid,*) "tot=", traza
-        write(uid,*) "---------arreglo--------------"
-
+      
+        if (uid == 678) then
+           write(uid,*) "---------------------------"
+        else
+           write(uid,*) "tot=", traza
+           write(uid,*) "----------------------------"
+        endif
 
 end subroutine Drive_Population
-
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end module
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

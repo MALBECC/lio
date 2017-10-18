@@ -47,7 +47,7 @@
                  Es,ff,t0
        INTEGER :: istep,nopt,M1,M2,M3,i,j,M5,M7,MM,MM2,&
                   MMd,Md2,k,M13,M15,M17,M9,M20,M18,M19,M11,Nel,&
-                  Nunp,igpu,info,kk,n,unidad1,unidad2
+                  Nunp,igpu,info,kk,n,unit1,unit2
        REAL*8 :: t,E2,E,En,E1
        REAL*8,ALLOCATABLE,DIMENSION(:,:) :: & 
         xnano2,xmm,xtrans,ytrans,Y,fock,&
@@ -843,11 +843,11 @@
       if(TRANSPORT_CALC) then
          call g2g_timer_start('TRANSPORT - b Verlet -')
          if(istep.eq.1) then
-            unidad1 = 55555
+            unit1 = 55555
             if ( Pop_Drive == 1 ) then
-              open(unit=unidad1,file='DriveMul')
+              open(unit=unit1,file='DriveMul')
             elseif ( Pop_Drive == 2 ) then
-              open(unit=unidad1,file='DriveLowd')
+              open(unit=unit1,file='DriveLowd')
             endif
          endif
          if(istep.ge.3) then
@@ -858,7 +858,7 @@
                rhoscratch=REAL(rho1)
                q(:) = 0.0D0
                call Drive_Population(Pop_Drive,ngroup,&
-                    rhoscratch,overlap,group,sqsm,q,unidad1)
+                    rhoscratch,overlap,group,sqsm,q,unit1)
               endif
            endif
          endif
@@ -920,7 +920,7 @@
                  rhoscratch=REAL(rho1)
                  q(:) = 0.0D0
                  call Drive_Population(Pop_Drive,ngroup,&
-                      rhoscratch,overlap,group,sqsm,q,unidad1)
+                      rhoscratch,overlap,group,sqsm,q,unit1)
                 endif
              endif
 
@@ -1103,11 +1103,11 @@
 !################ MODIFICACION TRANSPORT
             if (transport_calc) then
                 if (istep .eq. 1) then
-                    unidad2 = 678
+                    unit2 = 678
                     if ( Pop_Drive == 1 ) then
-                       open(unit=unidad2,file="MullikenGroup")
+                       open(unit=unit2,file="MullikenGroup")
                     elseif ( Pop_Drive == 2 ) then
-                       open(unit=unidad2,file="LowdinGroup")
+                       open(unit=unit2,file="LowdinGroup")
                     endif
                 endif
                 call g2g_timer_start("Mulliken Population")
@@ -1120,11 +1120,11 @@
                                .and. (.not.tdrestart)) then
                        if(mod((istep-1),save_charge_freq*10)==0) then
                           call Drive_Population(Pop_Drive,ngroup,&
-                          rhoscratch,overlap,group,sqsm,q,unidad2)
+                          rhoscratch,overlap,group,sqsm,q,unit2)
                        endif
                     elseif(mod((istep-1),save_charge_freq)==0) then
                    call Drive_Population(Pop_Drive,ngroup,&
-                        rhoscratch,overlap,group,sqsm,q,unidad2)
+                        rhoscratch,overlap,group,sqsm,q,unit2)
                     endif
                 endif
             endif

@@ -116,6 +116,16 @@ tmplist :=
 tmplist += TD.o SCF.o input_read.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/transport.mod
 
+
+################################################################################
+OBJECTS += atompot_data.o
+OBJECTS += atompot_subs.o
+$(OBJPATH)/atompot_subs.o: $(OBJPATH)/atompot_data.mod
+
+tmplist :=
+tmplist += 
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/atompot_subs.mod
+
 ###############################################################################
 TD.o : properties.o
 

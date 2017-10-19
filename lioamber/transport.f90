@@ -2,7 +2,7 @@
 module transport
    implicit none
    logical              :: transport_calc=.false., generate_rho0=.false., gate_field=.false., lpop
-   integer              :: save_charge_freq=0
+   integer              :: save_charge_freq=0, Pop_Drive
    complex*8            :: traza0, traza
    real*8               :: driving_rate=0.001, scratchgamma, GammaMagnus, GammaVerlet, re_traza
 
@@ -132,6 +132,49 @@ subroutine electrostat (rho1,mapmat,overlap,rhofirst,Gamma0, M)
 
 end subroutine electrostat
 
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+subroutine Drive_Population(Pop,ngroup,rho,overlap,&
+                            group,smat,q,uid)
+        
+        use garcha_mod, only : Nuc,natom,M
+
+        implicit none
+
+        integer, intent(in) :: Pop
+        integer, intent(in) :: ngroup, uid
+        real*8, dimension(M,M), intent(in) :: rho, overlap, smat
+        integer, dimension(natom), intent(in) :: group
+        real*8, dimension(natom), intent(in) :: q
+        real*8, dimension(ngroup) :: qgr
+        real*8 :: traza
+        integer :: i
+
+        qgr(:) = 0.0D0
+        traza= 0.0D0
+
+        if ( Pop == 1) then
+             call mulliken_calc(natom,M,rho,overlap,Nuc,q)
+        elseif ( Pop == 2 ) then
+             call lowdin_calc(M,natom,rho,smat,Nuc,q)
+        endif
+
+        do i=1,natom
+           qgr(group(i)) = qgr(group(i)) + q(i)
+        enddo
+
+        do i=1,ngroup
+           write(uid,*) i, i, qgr(i)
+           traza = traza + qgr(i)
+        enddo
+      
+        if (uid == 678) then
+           write(uid,*) "---------------------------"
+        else
+           write(uid,*) "tot=", traza
+           write(uid,*) "----------------------------"
+        endif
+
+end subroutine Drive_Population
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end module
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

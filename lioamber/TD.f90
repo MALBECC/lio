@@ -45,9 +45,9 @@
        real*8 :: dipxyz(3), dipole_norm,Qc,Qc2,zij,ti,tj,alf,&
                  rexp,E1s,Ens,Ex,g,factor,fxx,fyy,fzz,fx,fy,fz,&
                  Es,ff,t0
-       INTEGER :: istep,ipop,nopt,M1,M2,M3,i,j,M5,M7,MM,MM2,&
+       INTEGER :: istep,nopt,M1,M2,M3,i,j,M5,M7,MM,MM2,&
                   MMd,Md2,k,M13,M15,M17,M9,M20,M18,M19,M11,Nel,&
-                  Nunp,igpu,info,kk,n
+                  Nunp,igpu,info,kk,n,unit1,unit2
        REAL*8 :: t,E2,E,En,E1
        REAL*8,ALLOCATABLE,DIMENSION(:,:) :: & 
         xnano2,xmm,xtrans,ytrans,Y,fock,&
@@ -73,7 +73,7 @@
         pert_steps,lpfrg_steps,chkpntF1a,chkpntF1b
        REAL*8 :: &
         dt_magnus,dt_lpfrg
-        logical :: just_int3n,ematalloct
+        logical :: ematalloct
 !! CUBLAS
 #ifdef CUBLAS
       integer sizeof_real
@@ -109,11 +109,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        call g2g_timer_start('TD')
        call g2g_timer_start('inicio')
-       just_int3n = .false.
        ALLOCATE(factorial(NBCH))
-!!------------------------------------!!
-! Mulliken
-       ipop=0
 !!------------------------------------!!
         nopt=0
 
@@ -209,7 +205,7 @@
             close(unit=678)
       endif
       IF(TRANSPORT_CALC) THEN
-         call mat_map(group,mapmat, Nuc, M, natom)
+         call mat_map(group, mapmat, Nuc, M, natom)
       ENDIF
 !--------------------------------------------------------------------!
       if(propagator.eq.2) allocate (F1a(M,M),F1b(M,M))
@@ -329,10 +325,9 @@
        allocate(Vmat(M,M),Dvec(M))
        allocate(sqsm(M,M))
 
-       dovv=.true.
-       if (dovv.eqv..true.) then
+       if (transport_calc) then
         if (.not.allocated(orb_group)) then
-          allocate(orb_group(M),group(M)) ! agrege que allocate la variable group
+          allocate(orb_group(M))
           call atmorb(group,nuc,orb_group)
         endif
         if (.not.allocated(orb_selection)) then
@@ -432,7 +427,8 @@
               E1=E1+RMM(k)*RMM(M11+k-1)
             enddo
             call g2g_timer_sum_stop('1-e Fock')
-            if(ipop.eq.1)then
+
+            if( transport_calc )then
               allocate(overlap(M,M),rhoscratch(M,M))
               call spunpack('L',M,RMM(M5),overlap)
             endif
@@ -843,74 +839,34 @@
 
 !Transport: propagation in transport---------------------------------!
 
-
+!####### Modificacion de transport
       if(TRANSPORT_CALC) then
          call g2g_timer_start('TRANSPORT - b Verlet -')
          if(istep.eq.1) then
-            open(unit=55555,file='DriveMul')
+            unit1 = 55555
+            if ( Pop_Drive == 1 ) then
+              open(unit=unit1,file='DriveMul')
+            elseif ( Pop_Drive == 2 ) then
+              open(unit=unit1,file='DriveLowd')
+            endif
          endif
-
          if(istep.ge.3) then
-! compute the driving term for transport properties
-            scratchgamma=GammaVerlet*exp(-0.0001D0*(dble(istep-1000))**2)    
-
-          call ELECTROSTAT(rho1,mapmat,overlap,rhofirst,scratchgamma,M)
-            re_traza=0.0D0
-! Mulliken population analysis for the driving term
-            if((ipop.eq.1).and. &
-            (mod(istep-1,save_charge_freq*10)==0)) then
+           scratchgamma=GammaVerlet*exp(-0.0001D0*(dble(istep-1000))**2)
+           call ELECTROSTAT(rho1,mapmat,overlap,rhofirst,scratchgamma,M)
+           if ( Pop_Drive == 1 .or. Pop_Drive == 2 ) then
+              if (mod(istep-1,save_charge_freq*10)==0) then
                rhoscratch=REAL(rho1)
-               do n=1,natom
-                  q(n)=0.0D0
-               enddo
-
-              call mulliken_calc(natom, M, rhoscratch, overlap, Nuc, q)
-
-               if(transport_calc) then
-                  qgr(:)=0.0d0
-                     do n=1,natom
-                        qgr(group(n))=qgr(group(n))+q(n)
-                     enddo
-                     do n=1,ngroup
-                        write(55555,*) n,n,qgr(n)
-                        re_traza=re_traza+qgr(n)
-                     enddo
-                     write(55555,*) 'tot=',re_traza
-                     re_traza=0
-                     write(55555,*) '-------------------------'
-               endif
-            endif
+               q(:) = 0.0D0
+               call Drive_Population(Pop_Drive,ngroup,&
+                    rhoscratch,overlap,group,sqsm,q,unit1)
+              endif
+           endif
          endif
-
-!Lowdin Population
-
-         if(lpop) then
-            if(istep.eq.1) then
-               open(unit=525252,file='DriveLowd')
-            endif
-            if((istep.ge.3).and. &
-            (mod(istep-1,save_charge_freq*10)==0)) then
-               rhoscratch=REAL(rho1)
-               do n=1,natom
-                  q(n)=0.0D0
-               enddo
-               call lowdin_calc(M,natom,rhoscratch,sqsm,Nuc,q)
-               if(transport_calc) then
-                  qgr=0.0d0
-                  do n=1,natom
-                     qgr(group(n))=qgr(group(n))+q(n)
-                  enddo
-                  do n=1,ngroup
-                     write(525252,*) n,n,qgr(n)
-                  enddo
-                  write(525252,*) '-------------------------'
-               endif
-            endif
-         endif
+!#####################################
 #ifdef CUBLAS
             call g2g_timer_start('complex_rho_ao_to_on-cu')
             rho1=basechange_cublas(M,rho1,devPtrY,'dir')
-            call g2g_timer_stop('complex_rho_ao_to_on-cu')
+           call g2g_timer_stop('complex_rho_ao_to_on-cu')
 #endif
             call g2g_timer_stop('TRANSPORT - b Verlet -')
 
@@ -950,68 +906,23 @@
 ! DENSITY MATRIX PROPAGATION USING MAGNUS ALGORITHM
                  write(*,*) 'Magnus'
 
+!################# MODIFICACION de TRANSPORT
          if(TRANSPORT_CALC) then
-            call g2g_timer_start('TRANSPORT - b magnus -')
-            if(istep.eq.1) then
-               open(unit=55555,file='DriveMul')
-            endif
-            if(istep.le.1000) then
+             call g2g_timer_start('TRANSPORT - b magnus -')
+             if(istep.le.1000) then
              scratchgamma=GammaMagnus*exp(-0.0001D0*(dble(istep-1000))**2)
-            else
+             else
              scratchgamma=GammaMagnus
-            endif
-           call ELECTROSTAT(rho1,mapmat,overlap,rhofirst,scratchgamma,M)
-            re_traza=0.0D0
-! Mulliken population analysis for the driving term
-            if((ipop.eq.1).and. &
-            (mod(istep-1,save_charge_freq)==0)) then
-               rhoscratch=REAL(rho1)
-               do n=1,natom
-                  q(n)=0.0D0
-               enddo
-
-              call mulliken_calc(natom, M, rhoscratch, overlap, Nuc, q)
-
-            if(transport_calc) then
-                  qgr=0.0d0
-                  do n=1,natom
-                     qgr(group(n))=qgr(group(n))+q(n)
-                  enddo
-                  do n=1,ngroup
-                     write(55555,*) n,n,qgr(n)
-                     re_traza=re_traza+qgr(n)
-                  enddo
-                  write(55555,*) 'tot=',re_traza
-                  re_traza=0
-                  write(55555,*) '-------------------------'
-               endif
-            endif
-
-! Lowdin Population
-
-            if(lpop) then
-               if(istep.eq.1) then
-                  open(unit=525252,file='DriveLowd')
-               endif
-               if((istep.ge.3).and. &
-                  (mod(istep-1,save_charge_freq)==0)) then
-                  rhoscratch=REAL(rho1)
-                  do n=1,natom
-                     q(n)=0.0D0
-                  enddo
-                  call lowdin_calc(M,natom,rhoscratch,sqsm,Nuc,q)
-                  if(transport_calc) then
-                    qgr=0.0d0
-                    do n=1,natom
-                       qgr(group(n))=qgr(group(n))+q(n)
-                    enddo
-                    do n=1,ngroup
-                       write(525252,*) n,n,qgr(n)
-                    enddo
-                       write(525252,*) '-------------------------'
-                  endif
-               endif
-            endif
+             endif
+             call ELECTROSTAT(rho1,mapmat,overlap,rhofirst,scratchgamma,M)
+             if (Pop_Drive == 1 .or. Pop_Drive == 2) then
+                if (mod(istep-1,save_charge_freq)==0) then
+                 rhoscratch=REAL(rho1)
+                 q(:) = 0.0D0
+                 call Drive_Population(Pop_Drive,ngroup,&
+                      rhoscratch,overlap,group,sqsm,q,unit1)
+                endif
+             endif
 
 #ifdef CUBLAS
               call g2g_timer_start('complex_rho_ao_to_on-cu')
@@ -1020,7 +931,8 @@
 #endif
               call g2g_timer_stop('TRANSPORT - b magnus -')
 
-         endif ! end of transpor propagation
+         endif ! end of transport propagation
+!##############################################
 
 #ifdef CUBLAS
                 call g2g_timer_start('cupredictor')
@@ -1188,125 +1100,37 @@
 !------------------------------------------------------------------------------------
 !-------------------------MULLIKEN CHARGES-----------------------------------------------!
 
-            if(ipop.eq.1) then
-               call g2g_timer_start('Mulliken Population')
-! open files to store Mulliken Population Analysis each step of the dynamics
-               if(istep.eq.1) then
-                  open(unit=1111111,file='Mulliken')
-                  if (transport_calc) then
-                     open(unit=678,file='MullikenGroup')
-                  endif
-               endif
-
-               if ((propagator.eq.2).and.(istep.lt.lpfrg_steps) &
-               .and. (.not.tdrestart)) then
-                  if(mod ((istep-1),save_charge_freq*10) == 0) then
-                     rhoscratch=REAL(rho1)
-
-                     do n=1,natom
-                        q(n)=Iz(n)
-                     enddo
-
-               call mulliken_calc(natom, M, rhoscratch, overlap, Nuc, q)
-
-                     if (transport_calc) qgr=0.0d0
-                        do n=1,natom
-                           write(1111111,*) n,Iz(n),q(n)
-                           if(transport_calc) then
-                              qgr(group(n))=qgr(group(n))+q(n)
-                           endif
-                        enddo
-                        if(transport_calc) then
-                           do n=1,ngroup
-                              write(678,*) n,n,qgr(n)
-                           enddo
-                              write(678,*) '-------------------------'
-                        endif
-                   endif
-                else if(mod ((istep-1),save_charge_freq) == 0) then
-                     rhoscratch=REAL(rho1)
-
-                     do n=1,natom
-                        q(n)=Iz(n)
-                     enddo
-
-               call mulliken_calc(natom, M, rhoscratch, overlap, Nuc, q)
-                     if(transport_calc) qgr=0.0d0
-                        do n=1,natom
-                           write(1111111,*) n,Iz(n),q(n)
-                           if(transport_calc) then
-                              qgr(group(n))=qgr(group(n))+q(n)
-                           endif
-                        enddo
-                        if(transport_calc) then
-                          do n=1,ngroup
-                            write(678,*) n,n,qgr(n)
-                          enddo
-                     write(678,*) '------------------------------------'
-                        endif
-                     endif
-                     call g2g_timer_stop('Mulliken Population')
-                  endif
-
-!-------------------END OF MULLIKEN CHARGES-----------------------------------------------
-!-------------------LOWDIN POPULATIONS----------------------------------------------------
-! open files to store Mulliken Population Analysis each step of the dynamics
-                if(lpop) then
-                   call g2g_timer_start('Lowdin Population')
-                   if(istep.eq.1) then
-!                      open(unit=12121212,file='Lowdin')
-                       if (transport_calc) then
-                          open(unit=13131313,file='LowdinGroup')
-                       endif
+!################ MODIFICACION TRANSPORT
+            if (transport_calc) then
+                if (istep .eq. 1) then
+                    unit2 = 678
+                    if ( Pop_Drive == 1 ) then
+                       open(unit=unit2,file="MullikenGroup")
+                    elseif ( Pop_Drive == 2 ) then
+                       open(unit=unit2,file="LowdinGroup")
                     endif
-                    if ((propagator.eq.2).and.(istep.lt.lpfrg_steps) &
-                    .and. (.not.tdrestart)) then
-                       if(mod ((istep-1),save_charge_freq*10) == 0) then
-                          rhoscratch=REAL(rho1)
-                          do n=1,natom
-                            q(n)=Iz(n)
-                          enddo
-                         call lowdin_calc(M,natom,rhoscratch,sqsm,Nuc,q)
-                          if(transport_calc) qgr=0.0d0
-                          do n=1,natom
-!                             write(12121212,*) n,Iz(n),q(n)
-                             if(transport_calc) then
-                                qgr(group(n))=qgr(group(n))+q(n)
-                             endif
-                          enddo
-                          if(transport_calc) then
-                             do n=1,ngroup
-                                write(13131313,*) n,n,qgr(n)
-                             enddo
-                             write(13131313,*) '----------------------'
-                         endif
-                      endif
-                   elseif(mod ((istep-1),save_charge_freq) == 0) then
-                   rhoscratch=REAL(rho1)
+                endif
+                call g2g_timer_start("Mulliken Population")
+                if (Pop_Drive == 1 .or. Pop_Drive == 2) then
                    do n=1,natom
-                         q(n)=Iz(n)
+                     q(n)=Iz(n)
                    enddo
-                   call lowdin_calc(M,natom,rhoscratch,sqsm,Nuc,q)
-                   if(transport_calc) qgr=0.0d0
-                        do n=1,natom
-!                            write(12121212,*) n,Iz(n),q(n)
-                            if(transport_calc) then
-                               qgr(group(n))=qgr(group(n))+q(n)
-                            endif
-                         enddo
-                         if(transport_calc) then
-                             do n=1,ngroup
-                                write(13131313,*) n,n,qgr(n)
-                             enddo
-                             write(13131313,*) '----------------------'
-                         endif
+                   rhoscratch=REAL(rho1)
+                   if ((propagator.eq.2).and.(istep.lt.lpfrg_steps) &
+                               .and. (.not.tdrestart)) then
+                       if(mod((istep-1),save_charge_freq*10)==0) then
+                          call Drive_Population(Pop_Drive,ngroup,&
+                          rhoscratch,overlap,group,sqsm,q,unit2)
+                       endif
+                    elseif(mod((istep-1),save_charge_freq)==0) then
+                   call Drive_Population(Pop_Drive,ngroup,&
+                        rhoscratch,overlap,group,sqsm,q,unit2)
                     endif
-                    call g2g_timer_stop('Lowdin Population')
-               endif
-!------------------------------------------------------------------------------------------
+                endif
+            endif
+!########################################
 
-
-!       if (nopt.ne.3) then
+!!       if (nopt.ne.3) then
 !       write(*,300) niter,DAMP,E
 !       endif
 !
@@ -1380,7 +1204,6 @@
 
           if (nopt.eq.0) then
 ! calculates Mulliken poputations
-             if (ipop.eq.1) then
                 call int1(En)
                 do n=1,natom
                    q(n)=Iz(n)
@@ -1406,7 +1229,7 @@
                     write(*,760) n,Iz(n),q(n)
                  enddo
                  write(*,*)
-             endif
+          endif
 ! ELECTRICAL POTENTIAL AND POINT CHARGES EVALUATION
 
 !        if (icharge.eq.1) then
@@ -1442,7 +1265,6 @@
 !       enddo
 !       close(29)
 !--------------------------------------!
-      endif
 #ifdef CUBLAS
             call CUBLAS_FREE(devPtrX)
             call CUBLAS_FREE(devPtrXc)

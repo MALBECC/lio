@@ -36,7 +36,7 @@ subroutine read_options(inputFile, charge)
 
 
     use transport ,only  : transport_calc, generate_rho0, gate_field,          &
-                           save_charge_freq, driving_rate
+                           save_charge_freq, driving_rate, Pop_Drive
     implicit none
     character(len=20), intent(in)  :: inputFile
     integer          , intent(out) :: charge
@@ -79,7 +79,7 @@ subroutine read_options(inputFile, charge)
                    natom, nsol, charge,                                        &
                    ! Variables for Transport
                    transport_calc, generate_rho0, gate_field,                  &
-                   save_charge_freq, driving_rate
+                   save_charge_freq, driving_rate, Pop_Drive
 
     inquire(file = inputFile, exist = fileExists)
     if(fileExists) then

@@ -8,7 +8,7 @@
 ! Modified to f90, 2017
 ! Dario Estrin, 1992
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-      subroutine SCF(E)
+subroutine SCF(E)
 !      use linear_algebra
       use ehrensubs, only: ehrensetup
       use garcha_mod, only : M,Md, NCO,natom,Nang, number_restr, hybrid_converg, MEMO, &
@@ -53,7 +53,9 @@
 !----------------------------------------------------------!
        logical             :: dovv
        real*8              :: weight, softness
-       real*8,dimension(:,:),allocatable :: fockbias
+       real*8, allocatable :: fockbias(:,:)
+       real*8, allocatable :: Xmat(:,:)
+       real*8, allocatable :: Ymat(:,:)
 
 ! FFR - ehrenfest (temp)
 !----------------------------------------------------------!
@@ -372,13 +374,6 @@
 ! only at the end of the SCF, the density matrix and the
 ! vectors are 'coherent'
 !---------------------------------------------------------------
-! LEVEL SHIFT CASE, contruction of initial vectors ------------------
-!
-      if (SHFT) then
-        write(*,*) 'Level SHIFT is not suported'
-        stop
-      endif
-!
 
       if (hybrid_converg) DIIS=.true. ! cambio para convergencia damping-diis
 
@@ -452,14 +447,27 @@
         call g2g_timer_sum_start('SCF acceleration')
 
 
+       if ( allocated(Xmat) ) deallocate(Xmat)
+       allocate( Xmat(M,M) )
+
+       if ( allocated(Ymat) ) deallocate(Ymat)
+       allocate( Ymat(M,M) )
+
+       do i = 1, M
+       do j = 1, M
+          Xmat(i,j) = x(i,j)
+          Ymat(i,j) = y(i,j)
+       enddo
+       enddo
+
 #ifdef CUBLAS
-        call obtain_new_P(niter, DAMP, dovv, fockbias, good, xnano, znano, devPtrX, devPtrY)
+       call obtain_new_P(niter, DAMP, dovv, xnano, devPtrX, devPtrY)
 #else
-        call obtain_new_P(niter, DAMP, dovv, fockbias, good, xnano, znano, Y)
+       call obtain_new_P(niter, DAMP, good, xnano, Xmat, Ymat )
 #endif
 
 
-
+      good = 0.0d0
       do j=1,M
          do k=j,M
                del=xnano(j,k)-(RMM(k+(M2-j)*(j-1)/2))
@@ -472,51 +480,9 @@
 
       call g2g_timer_stop('dens_GPU')
 
-       if (SHFT) then
-! Level Shifting
-         do i=1,M
-           do j=1,M
-             X(i,j)=X(i,M2+j)
-           enddo
-         enddo
-       endif
-!
-       if (SHFT) then
-         DAMP=0.0D0
-       endif
-!
 !--- Damping factor update -
-       DAMP=DAMP0
+      DAMP=DAMP0
 
-
-
-
-!#################################################################################
-!###################    PREGUNTAR    #############################################
-!#################################################################################
-       IDAMP=0
-       if (IDAMP.EQ.1) then !este if es siempre false. sirve para algo??, Nick
-         DAMP=DAMP0
-         if (abs(D1).lt.1.D-5) then
-           factor=dmax1(0.90D0,abs(D1/D2))
-           factor=dmin1(factor,1.1D0)
-           DAMP=DAMP0*factor
-         endif
-!
-         E=E1+E2+En
-         E=E+Es
-!
-         D2=D1
-         D1=(E-E0)
-!
-         E0=E
-         DAMP0=DAMP
-       endif
-!#################################################################################
-!#################################################################################
-!#################################################################################
-
-!
         E=E1+E2+En
 !        E=E+Es
 !
@@ -573,22 +539,9 @@
       if (GRAD) then
 !       call g2g_timer_sum_start('exchnum')
         call g2g_timer_sum_start('Exchange-correlation energy') 
-#ifdef  G2G 
-#ifdef  ULTIMA_CPU
-        call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM, &
-                    M18,NCO,Exc,nopt)
-#else
       ! Resolve with last density to get XC energy
         call g2g_new_grid(igrid)
         call g2g_solve_groups(1, Exc, 0)
-#endif
-#else 
-#ifdef  ULTIMA_G2G
-        call g2g_new_grid(igrid)
-        call g2g_solve_groups(1, Exc, 0)
-#else 
-#endif 
-#endif
         call g2g_timer_sum_stop('Exchange-correlation energy')
 !----------- COmputing the QM/MM contribution to total energy
 
@@ -1036,551 +989,148 @@
 	END SUBROUTINE starting_guess
 
 
-
+!
+!
+!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 #ifdef CUBLAS
-	SUBROUTINE obtain_new_P(niter, DAMP, dovv, fockbias, good, xnano, znano, devPtrX, devPtrY)
+subroutine obtain_new_P( niter, damp, good, rho, devPtrX, devPtrY)
         use cublasmath, only : cumxp_r, cumfx, cumxtf, cu_calc_fock_commuts
+
 #else
-        SUBROUTINE obtain_new_P(niter, DAMP, dovv, fockbias, good, xnano, znano, Y)
-	use mathsubs, only : basechange_gemm
+subroutine obtain_new_P( niter, damp, good, rho, Xmat, Ymat )
+        use mathsubs, only : basechange_gemm
 #endif
-	use garcha_mod, ONLY: RMM, DIIS, M, Md, NCO, ndiis, hybrid_converg, SHFT, good_cut, X
-	use linear_algebra, only :matrix_diagon
-	IMPLICIT NONE
-	INTEGER :: i,ii,j,jnuevo,k,kk,kknueva,kk2, l !auxiliares
-	INTEGER, INTENT(IN) :: niter
-	REAL*8, INTENT(INOUT) :: DAMP, good
-	logical, intent(in) :: dovv
-	real*8,dimension(M,M),intent(in) :: fockbias
-	real*8, dimension (:,:), allocatable :: fock, rho, rho1, EMAT
-        real*8, dimension (:,:), allocatable, save :: fockm, FP_PFm, EMAT2
-	real*8, dimension (M,M), intent(inout) :: xnano, znano
-       real*8, dimension (:), ALLOCATABLE, save :: bcoef
-       real*8, dimension (:), ALLOCATABLE :: suma
-	REAL*8, dimension(1000) :: WORK, IWORK
-        REAL*8,ALLOCATABLE :: WORK2(:)
-        INTEGER, ALLOCATABLE :: IWORK2(:)
-	INTEGER :: LIWORK  !hay algo mal con LIWORK e IWORK, Nick
 
-	integer :: M1,M2,M3, M5, M7, M9, M11, M13, M15, M17, M18, MM, MMd !temporales hasta q rompamos RMM
-	integer :: ndiist
-	logical, save :: hagodiis
-	INTEGER :: INFO, LWORK
-        real*8, dimension (M,M) :: scratch
-!FFR!
-       real*8,allocatable :: eigen_vecs(:,:),eigen_vals(:)
+        use garcha_mod, ONLY: RMM, DIIS, M, Md, NCO, ndiis, hybrid_converg, good_cut
+        use linear_algebra, only: matrix_diagon
+        use converger_subs, only: converger_init, conver
 
+        implicit none
+
+        integer, intent(in)  :: niter
+        real*8 , intent(in)  :: damp
+        real*8 , intent(in)  :: good
+        real*8 , intent(out) :: rho(M,M)
 #ifdef  CUBLAS
-        integer*8 :: devPtrX, devPtrY !ver intent
-!        real*8, dimension (M,M) :: scratch
+       integer*8, intent(in) :: devPtrX
+       integer*8, intent(in) :: devPtrY !ver intent
 #else
-	real*8, dimension (M,M) :: Y
-        real*8, dimension (M,M) :: scratch1
+       real*8, intent(in) :: Xmat(M,M)
+       real*8, intent(in) :: Ymat(M,M)
 #endif
+       integer :: ii, jj, kk, kkk
 
-        if(niter.le.ndiis) then
-          ndiist=niter
-        else
-          ndiist=ndiis
-        endif
+       real*8, allocatable :: molorb_aocoef(:,:)
+       real*8, allocatable :: eigen_vecs(:,:)
+       real*8, allocatable :: eigen_vals(:)
+       real*8, allocatable :: fock(:,:)
 
-	allocate (fock(M,M), rho(M,M), rho1(M,M))
 
-	MM=M*(M+1)/2
-	MMd=Md*(Md+1)/2
-      M1=1 ! first P
+! temporales hasta q rompamos RMM
+       integer :: MM, MMd
+       integer :: M1, M2, M3, M5, M7, M9, M11, M13, M15, M17, M18
+
+      MM=M*(M+1)/2
+      MMd=Md*(Md+1)/2
+
+      M1=1        ! first P
       M2=2*M
-      M3=M1+MM ! now Pnew
-      M5=M3+MM! now S, F also uses the same position after S was used
-      M7=M5+MM! now G
-      M9=M7+MMd ! now Gm
-      M11=M9+MMd! now H
-      M13=M11+MM! W ( eigenvalues ), also this space is used in least squares
-      M15=M13+M! aux ( vector for ESSl)
-      M17=M15+MM! Least squares
-      M18=M17+MMd! vectors of MO
+      M3=M1+MM    ! now Pnew
+      M5=M3+MM    ! now S, F also uses the same position after S was used
+      M7=M5+MM    ! now G
+      M9=M7+MMd   ! now Gm
+      M11=M9+MMd  ! now H
+      M13=M11+MM  ! W ( eigenvalues ), also this space is used in least squares
+      M15=M13+M   ! aux ( vector for ESSl)
+      M17=M15+MM  ! Least squares
+      M18=M17+MMd ! vectors of MO
 
 
+      if ( allocated(molorb_aocoef) ) deallocate(molorb_aocoef)
+      allocate( molorb_aocoef(M,M) )
+
+      if ( allocated(eigen_vecs) ) deallocate(eigen_vecs)
+      allocate( eigen_vecs(M,M) )
+
+      if ( allocated(eigen_vals) ) deallocate(eigen_vals)
+      allocate( eigen_vals(M) )
+
+      if ( allocated(fock) ) deallocate(fock)
+      allocate( fock(M,M) )
 !
 !
-! now, we know S matrix, and F matrix, and E for a given P
-! 1) diagonalize S, get X=U s^(-1/2)
-! 2) get U F Ut
-! 3) diagonalize F
-! 4) get vec ( coeff) ---->  P new
-! 5) iterate
-! call diagonalization routine for S , get after U s^(-1/2)
-! where U matrix with eigenvectors of S , and s is vector with
-! eigenvalues
+!   CONVERGENCE ACCELERATION
+!------------------------------------------------------------------------------!
+
+      do jj=1,M
+
+         do kk=1,jj-1
+            fock(jj,kk)=RMM(M5+jj+(M2-kk)*(kk-1)/2-1)
+             rho(jj,kk)=(RMM(jj+(M2-kk)*(kk-1)/2))/2
+         enddo
+
+         fock(jj,jj)=RMM(M5+jj+(M2-jj)*(jj-1)/2-1)
+          rho(jj,jj)=RMM(jj+(M2-jj)*(jj-1)/2)
+
+         do kk=jj+1,M
+            fock(jj,kk)=RMM(M5+kk+(M2-jj)*(jj-1)/2-1)
+             rho(jj,kk)=RMM(kk+(M2-jj)*(jj-1)/2)/2
+         enddo
+
+      enddo
+
+      if (niter==1) call converger_init( M, ndiis, damp, DIIS, hybrid_converg )
+
+#     ifdef cublas
+         call conver(niter, good, good_cut, M, rho, fock, devPtrX, devPtrY )
+#     else
+         call conver(niter, good, good_cut, M, rho, fock, Xmat, Ymat)
+#     endif
+
+!      do j=1,M
+!         do k=1,M
+!            RMM(M5+j+(M2-k)*(k-1)/2-1)=fock(j,k)
+!         enddo
+!         do k=j+1,M
+!            RMM(M5+k+(M2-j)*(j-1)/2-1)=fock(j,k)
+!         enddo
+!      enddo
 !
-! here in RMM(M5) it is stored the new Fock matrix
-! test damping on Fock matrix
-!
-!      DAMP=gold
-        if (niter.eq.1) then
-          DAMP=0.0D0
-	  hagodiis=.false.
-	  if (DIIS ) then ! agregado para cambio de damping a diis, Nick
-	    if (.not. allocated(fockm)) allocate(fockm(MM,ndiis))
-            if (.not. allocated(FP_PFm)) allocate(FP_PFm(MM,ndiis))
-            if (.not. allocated(bcoef)) allocate(bcoef(ndiis+1))
-          endif
-       endif
-
-	if (DIIS) then ! agregado para cambio de damping a diis, Nick
-            allocate(suma(MM))
-        endif
-
-
-
-!-----------------------------------------------------------------------------------------
-! If DIIS is turned on, update fockm with the current transformed F' (into ON
-! basis) and update FP_PFm with the current transformed [F',P']
-!-----------------------------------------------------------------------------------------
-        if (DIIS) then! agregado para cambio de damping a diis, Nick
-          call g2g_timer_sum_start('DIIS')
-          call g2g_timer_sum_start('DIIS prep')
-!-----------------------------------------------------------------------------------------
-!-----------------------------------------------------------------------------------------
-! Expand F into square form
-! (for better memory access patterns in coming multiplications)
-!-----------------------------------------------------------------------------------------
-          do j=1,M
-            do k=1,j
-              fock(j,k)=RMM(M5+j+(M2-k)*(k-1)/2-1)
-            enddo
-            do k=j+1,M
-              fock(j,k)=RMM(M5+k+(M2-j)*(j-1)/2-1)
-            enddo
-          enddo
-
-! FFR: Van Voorhis Term for DIIS
-!--------------------------------------------------------------------!
-         if (dovv.eqv..true.) fock=fock+fockbias
-
-!-----------------------------------------------------------------------------------------
-! Expand density matrix into full square form (before, density matrix was set up for triangular sums
-! (sum j>=i) so off-diagonal elements need to be divided by 2 to get square-form numbers)
-! (for better memory access patterns in coming multiplications)
-!-----------------------------------------------------------------------------------------
-          do j=1,M
-            do k=1,j-1
-              rho(j,k)=(RMM(j+(M2-k)*(k-1)/2))/2
-            enddo
-            rho(j,j)=RMM(j+(M2-j)*(j-1)/2)
-            do k=j+1,M
-              rho(j,k)=RMM(k+(M2-j)*(j-1)/2)/2
-            enddo
-          enddo
-
-          ! Calculate F' and [F',P']
-          call g2g_timer_start('commutators + basechange')
-#ifdef  CUBLAS
-          call cu_calc_fock_commuts(fock,rho,devPtrX,devPtrY,scratch,M)
-#else
-          call calc_fock_commuts(fock,rho,X,Y,scratch,scratch1,M)
-#endif
-          call g2g_timer_stop('commutators + basechange')
-          ! update fockm with F'
-          do j=ndiis-(ndiist-1),ndiis-1
-            do i=1,MM
-              fockm(i,j)=fockm(i,j+1)
-            enddo
-          enddo
-          do k=1,M
-            do j=k,M
-              i=j+(M2-k)*(k-1)/2
-              fockm(i,ndiis)=fock(j,k)
-            enddo
-          enddo
-!-----------------------------------------------------------------------------------------
-! now, scratch = A = F' * P'; scratch1 = A^T
-! [F',P'] = A - A^T
-!-----------------------------------------------------------------------------------------
-          ! update FP_PFm with [F',P']
-          do j=ndiis-(ndiist-1),ndiis-1
-            do i=1,MM
-              FP_PFm(i,j)=FP_PFm(i,j+1)
-            enddo
-          enddo
-#ifdef  CUBLAS
-          do k=1,M
-            do j=k,M
-              i=j+(M2-k)*(k-1)/2
-              FP_PFm(i,ndiis)=scratch(j,k)
-            enddo
-          enddo
-#else
-          do k=1,M
-            do j=k,M
-              i=j+(M2-k)*(k-1)/2
-              FP_PFm(i,ndiis)=scratch(j,k)-scratch1(j,k)
-            enddo
-          enddo
-#endif
-          call g2g_timer_sum_pause('DIIS prep')
-          call g2g_timer_sum_pause('DIIS')
-        endif
-
-!
-!-------------Decidiendo cual critero de convergencia usar-----------
-!-----------------------------------------------------------------------------------------
-! iF DIIS=T
-! Do simple damping 2nd iteration; DIIS afterwards
-!-----------------------------------------------------------------------------------------
-! IF DIIS=F and hybrid_converg T
-! Do Do simple damping until GOOD<=GOOD_CUT. DIIS afterwards
-!-----------------------------------------------------------------------------------------
-! IF DIIS=F and hybrid_converg F
-! Always do damping (after first iteration)
-!-----------------------------------------------------------------------------------------
-
-      if ( .not. hybrid_converg ) then
-              if (niter.gt.2.and.(DIIS)) then
-                hagodiis=.true.
-            end if
-      else ! change damping to diis, Nick
-            if (good .lt. good_cut ) then
-              if ( .not. hagodiis ) then
-                write(6,*)
-                write(6,8503)
-                write(6,8504) niter
-                write(6,8505)
-                write(6,*)
-              end if
-              hagodiis=.true.
-            end if
-      end if
-
-!-----------------------------------------------------------------------------------------
-! If we are not doing diis this iteration, apply damping to F, save this
-! F in RMM(M3) for next iteration's damping and put F' = X^T * F * X in RMM(M5)
-!----------------------------------------------------------------------------------------
-        if(.not.hagodiis) then
-          call g2g_timer_start('Fock damping')
-
-
-          if(niter.ge.2) then
-            do k=1,MM
-              kk=M5+k-1
-              kk2=M3+k-1
-              RMM(kk)=(RMM(kk)+DAMP*RMM(kk2))/(1.D0+DAMP)
-            enddo
-          endif
-! the newly constructed damped matrix is stored, for next iteration
-! in RMM(M3)
-!
-         do k=1,MM
-            kk=M5+k-1
-            kk2=M3+k-1
-            RMM(kk2)=RMM(kk)
-          enddo
-!-------------------------------------------------------------!
-            fock=0
-            do j=1,M
-              do k=1,j
-                 fock(k,j)=RMM(M5+j+(M2-k)*(k-1)/2-1)
-              enddo
-              do k=j+1,M
-                 fock(k,j)=RMM(M5+k+(M2-j)*(j-1)/2-1)
-              enddo
-            enddo
-
-! FFR: Van Voorhis Term for not DIIS
-!--------------------------------------------------------------------!
-         if (dovv.eqv..true.) fock=fock+fockbias
-
-#ifdef  CUBLAS
-            call cumxtf(fock,devPtrX,fock,M)
-            call cumfx(fock,DevPtrX,fock,M)
-#else
-            fock=basechange_gemm(M,fock,x)
-#endif
-          do j=1,M
-             do k=1,j
-                RMM(M5+j+(M2-k)*(k-1)/2-1)=fock(j,k)
-             enddo
-             do k=j+1,M
-                RMM(M5+k+(M2-j)*(j-1)/2-1)=fock(j,k)
-             enddo
-          enddo
-          call g2g_timer_stop('Fock damping')
-        endif
-
-
-!
-! now F contains transformed F
-! diagonalization now
-!
-        do i=1,M
-          RMM(M15+i-1)=0.D0
-          RMM(M13+i-1)=0.D0
-        enddo
-
-!---- LEVEL SHIFT
-!
-        if (SHFT) then
-!       shi=shi*0.99
-! adition of level shifts
-! constant to diagonal (virtual) elements
-          do i=NCO+1,M
-            ii=i+(i-1)*(M2-i)/2
-            RMM(M5+ii-1)=RMM(M5+ii-1)! +shi
-! Este shi no esta definido en ningun lado, sirve para algo, Nick
-          enddo
-        endif
-
-        call g2g_timer_stop('actualiza rmm')
-
-
-!----------Si hagodiis(ver mas arriba) es true entonces sigo-----------------------
-        call g2g_timer_start('diis')
-!--------Pasar columnas de FP_PFm a matrices y multiplicarlas y escribir EMAT-------
-
-
-        if(DIIS) then
-          call g2g_timer_sum_start('DIIS')
-          call g2g_timer_sum_start('DIIS Fock update')
-!          deallocate(EMAT)
-          allocate(EMAT(ndiist+1,ndiist+1))
-! Before ndiis iterations, we just start from the old EMAT
-          if(niter.gt.1.and.niter.le.ndiis) then
-            EMAT=0
-            do k=1,ndiist-1
-              do kk=1,ndiist-1
-                EMAT(K,KK)=EMAT2(K,KK)
-              enddo
-            enddo
-            deallocate (EMAT2)
-! After ndiis iterations, we start shifting out the oldest iteration stored
-          elseif(niter.gt.ndiis) then
-            do k=1,ndiist-1
-              do kk=1,ndiist-1
-                EMAT(K,KK)=EMAT2(K+1,KK+1)
-              enddo
-            enddo
-            deallocate (EMAT2)
-          endif
-
-          k=ndiist
-          do kk=1,ndiist
-            kknueva=kk+(ndiis-ndiist)
-!-------Escribimos en xnano y znano dos conmutadores de distintas iteraciones------
-            do i=1,M
-              do j=1,i
-                xnano(i,j)=FP_PFm(i+(M2-j)*(j-1)/2,ndiis)
-                znano(i,j)=FP_PFm(i+(M2-j)*(j-1)/2,kknueva)
-              enddo
-              do j=i+1,M
-                xnano(i,j)=FP_PFm(j+(M2-i)*(i-1)/2,ndiis)
-                znano(i,j)=FP_PFm(j+(M2-i)*(i-1)/2,kknueva)
-              enddo
-            enddo
-!#ifdef CUBLAS (Only diagonal elements must be computed, so the entire multiplication is a waste..)
-!                   call cumatmul_r(xnano,znano,rho1,M)
-!#else
-            call matmuldiag(xnano,znano,rho1,M)
-!#endif
-
-            EMAT(ndiist,kk)=0.
-            if(kk.ne.ndiist) EMAT(kk,ndiist)=0.
-            do l=1,M
-              EMAT(ndiist,kk)=EMAT(ndiist,kk)+rho1(l,l)
-              if (kk.ne.ndiist) then
-                EMAT(kk,ndiist)=EMAT(ndiist,kk)
-              endif
-            enddo
-          enddo
-
-          do i=1,ndiist
-            EMAT(i,ndiist+1)= -1.0
-            EMAT(ndiist+1,i)= -1.0
-          enddo
-          EMAT(ndiist+1, ndiist+1)= 0.0
-
-
-          if (.not. allocated(EMAT2)) allocate(EMAT2(ndiist+1,ndiist+1))
-
-
-          EMAT2=EMAT
-
-!        ematalloct=.true.
-!********************************************************************
-!   THE MATRIX EMAT SHOULD HAVE FORM
-!
-!      |<E(1)*E(1)>  <E(1)*E(2)> ...   -1.0|
-!      |<E(2)*E(1)>  <E(2)*E(2)> ...   -1.0|
-!      |<E(3)*E(1)>  <E(3)*E(2)> ...   -1.0|
-!      |<E(4)*E(1)>  <E(4)*E(2)> ...   -1.0|
-!      |     .            .      ...     . |
-!      |   -1.0         -1.0     ...    0. |
-!
-!   WHERE <E(I)*E(J)> IS THE SCALAR PRODUCT OF [F*P] FOR ITERATION I
-!   TIMES [F*P] FOR ITERATION J.
-!
-!********************************************************************
-!-----Pasamos a resolver con DGELS el problema EMAT*ci=bcoef-------
-          if (hagodiis) then
-            do i=1,ndiist
-              bcoef(i)=0
-            enddo
-            bcoef(ndiist+1)=-1
-
-!----------Cálculo de parámetro optimo para DGELS-------------------
-!
-!
-        LWORK = -1
-      CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT, &
-      ndiist+1, bcoef, ndiist+1, WORK, LWORK, INFO )
-        LWORK = MIN( 1000, INT( WORK( 1 ) ) )
-
-
-!-----Resuelve la ecuación A*X = B. (EMAT*ci=bcoef). La solución la escribe en bcoef------
-
-      CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT, &
-       ndiist+1, bcoef, ndiist+1, WORK, LWORK, INFO )
-!--------Construccion de la "nueva" matriz de fock como cl de las anteriores--------------
-!--------Eventualmente se puede probar con la matriz densidad-----------------------------
-            suma=0
-            do j=1,ndiist
-              jnuevo=j+(ndiis-ndiist)
-              do i=1,MM
-                suma(i)=suma(i)+bcoef(j)*fockm(i,jnuevo)
-              enddo
-            enddo
-            do i=1,MM
-              RMM(M5+i-1)=suma(i)
-            enddo
-            call g2g_timer_stop('diis')
-        endif
-        call g2g_timer_sum_pause('DIIS Fock update')
-        call g2g_timer_sum_pause('DIIS')
-      endif
-
 !
 ! F' diagonalization now
 ! X(1,M) will contain (X^-1)*C
-!
-
-       call g2g_timer_start('dspev')
-       call g2g_timer_sum_pause('SCF acceleration')
-       call g2g_timer_sum_start('diagonalization')
-! ESSL OPTION ---------------------------------------------------
-#ifdef essl
-       call DSPEV(1,RMM(M5),RMM(M13),X(1,M+1),M,M,RMM(M15),M2)
-#endif
-
-       if(.not.allocated(fock)) allocate (fock(M,M))
-       fock=0
-       do j=1,M
-       do k=1,j
-         i=j+(M2-k)*(k-1)/2
-         fock(j,k)=RMM(M5+i-1)
-       enddo
-       enddo
-
-!
-
-      if(.not.allocated(fock)) allocate (fock(M,M))
-      fock=0
-      do j=1,M
-        do k=1,j
-         i=j+(M2-k)*(k-1)/2
-         fock(j,k)=RMM(M5+i-1)
-        enddo
-      enddo
-!
 ! FFR: Fock Diagonaliation is now external
-!--------------------------------------------------------------------!
-       call g2g_timer_start('scf - fock diagonalization')
+!------------------------------------------------------------------------------!
+      call g2g_timer_start('dspev')
+      call g2g_timer_sum_pause('SCF acceleration')
+      call g2g_timer_sum_start('diagonalization')
 
-       if ( allocated(eigen_vecs) ) deallocate(eigen_vecs)
-       allocate( eigen_vecs(M,M) )
-       if ( allocated(eigen_vals) ) deallocate(eigen_vals)
-       allocate( eigen_vals(M) )
+      call g2g_timer_start('scf - fock diagonalization')
 
-       call matrix_diagon( fock, eigen_vecs, eigen_vals )
-       fock=eigen_vecs
-       do kk=1,M
+      call matrix_diagon( fock, eigen_vecs, eigen_vals )
+      do kk=1,M
          RMM(M13+kk-1) = eigen_vals(kk)
-       end do
+      end do
 
+      call g2g_timer_stop('scf - fock diagonalization')
+      call g2g_timer_stop('dspev')
+      call g2g_timer_sum_pause('diagonalization')
 
-       call g2g_timer_stop('scf - fock diagonalization')
+      call g2g_timer_start('coeff')
+      call g2g_timer_sum_start('MO coefficients')
 !
 !
-! FFR: Old version - kept until functionality is assured
-!--------------------------------------------------------------------!
-
-!######################################################################################
-!####################    PREGUNTAR  ###################################################
-!######################################################################################
-
-
-      if (.false.) then   !Esto lo seguimos dejando o ya se puede sacar???, Nick
-       LWORK=-1
-#ifdef  magma
-       call magmaf_dsyevd('V','L',M,fock,M,RMM(M13),WORK,LWORK &
-       ,IWORK,LWORK,info)
-#else
-       call dsyevd('V','L',M,fock,M,RMM(M13),WORK,LWORK &
-       ,IWORK,LWORK,info)
-#endif
-       LWORK=work(1)          
-       LIWORK=IWORK(1)
-       if(allocated(WORK2)) deallocate (WORK2)
-       if(allocated(IWORK2)) deallocate (IWORK2)
-       allocate (WORK2(LWORK),IWORK2(LIWORK))
-
-#ifdef  magma
-       call magmaf_dsyevd('V','L',M,fock,M,RMM(M13),WORK2,LWORK &
-       ,IWORK2,LIWORK,info)
-#else
-       call dsyevd('V','L',M,fock,M,RMM(M13),WORK2,LWORK &
-       ,IWORK2,LIWORK,info)
-#endif
-      end if
-
-!######################################################################################
-!######################################################################################
-!######################################################################################
-
 !
-!--------------------------------------------------------------------!
-
-       call g2g_timer_stop('dspev')
-       call g2g_timer_sum_pause('diagonalization')
-
-       call g2g_timer_start('coeff')
-       call g2g_timer_sum_start('MO coefficients')
-
-!-----------------------------------------------------------
-!
-! diagonalization now
-!-----------------------------------------------------------
 ! Recover C from (X^-1)*C; put into xnano
-!-----------------------------------------------------------
-#ifdef CUBLAS
-        call cumxp_r(fock,devPtrX,xnano,M)
-        do i=1,M
-          do j=1,M
-             X(i,M2+j)=xnano(i,j)
-          enddo
-       enddo
-#else
 ! new coefficients
-        do i=1,M
-           do j=1,M
-              xnano(i,j)=x(i,j)
-           enddo
-        enddo
-        xnano=matmul(xnano,fock)
-        do i=1,M
-          do j=1,M
-             X(i,M2+j)=xnano(i,j)
-          enddo
-       enddo
+!------------------------------------------------------------------------------!
+#ifdef CUBLAS
+      call cumxp_r( eigen_vecs, devPtrX, molorb_aocoef, M)
+#else
+      molorb_aocoef = matmul( Xmat, eigen_vecs )
 #endif
+
       call g2g_timer_stop('coeff')
       call g2g_timer_start('otras cosas')
       call g2g_timer_sum_pause('MO coefficients')
@@ -1589,36 +1139,24 @@
 ! --- For the first iteration, damping on density matrix
 ! Important for the case of strating guess of AO
 !
-      kk=0
-      do k=1,NCO
-        do i=1,M
-          kk=kk+1
-          RMM(M18+kk-1)=X(i,M2+k)
-          xnano(k,i)  = X(i,M2+k)
-        enddo
+      kkk = 0
+      do kk=1,NCO
+      do ii=1,M
+         kkk = kkk+1
+         RMM(M18+kkk-1) = molorb_aocoef(ii,kk)
       enddo
-!
-! Construction of new density matrix and comparison with old one
-      kk=0
-
-      good=0.
-
+      enddo
       call g2g_timer_start('dens_GPU')
-      call density(M,NCO,X,xnano)
 
+!     Construction of new density matrix
+      call density( M, NCO, molorb_aocoef, rho )
 
-      if(DIIS) deallocate (fock, rho, rho1)
-
-
-!%%%%%%%%%%%%%%%%%%%%%%%%% Nuevos Formatos, Nick %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 8503 FORMAT(4x,"╔════════════════", &
-      "══╦══════╦═══════╗")
- 8504 FORMAT(4x,"║ Changing to DIIS ║ step ║",2x,i4,1x,"║")
- 8505 FORMAT(4x,"╚════════════════", &
-      "══╩══════╩═══════╝")
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-	END SUBROUTINE obtain_new_P
+      if ( allocated(molorb_aocoef) ) deallocate(molorb_aocoef)
+      if ( allocated(eigen_vecs) ) deallocate(eigen_vecs)
+      if ( allocated(eigen_vals) ) deallocate(eigen_vals)
+      if ( allocated(fock) ) deallocate(fock)
+end subroutine obtain_new_P
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 
 

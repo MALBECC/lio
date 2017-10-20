@@ -9,4 +9,3 @@ if [ -n "$1" ]
 fi
 
 $LIOBIN -i hemo.in -b DZVP  -c hem.xyz -v > $SALIDA
-

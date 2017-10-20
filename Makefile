@@ -1,11 +1,29 @@
-.PHONY: all clean hooks
+################################################################################
+# LIO MAKEFILE
+################################################################################
 
-all:
-	cd g2g; make;
-	cd lioamber; make;
-	cd liosolo; make;
+all: liosolo liblio g2g
 
+
+.PHONY: liosolo
+liosolo: liblio
+	$(MAKE) -C liosolo
+
+
+.PHONY: liblio
+liblio: g2g
+	$(MAKE) -C lioamber
+
+
+.PHONY: g2g
+g2g:
+	$(MAKE) -C g2g
+
+
+.PHONY: clean
 clean:
-	cd g2g; make clean;
-	cd lioamber; make clean;
-	cd liosolo; make clean;
+	$(MAKE) clean -C liosolo
+	$(MAKE) clean -C lioamber
+	$(MAKE) clean -C g2g
+
+################################################################################

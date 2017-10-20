@@ -1,34 +1,24 @@
 # -*- mode: make -*-
 
-CUDAHOME=/opt/cuda
+CXXFLAGS+= -fopenmp -fPIC -Wall -Wextra -Wshadow -I. -I$(CUDAHOME)/include
+OPTIMIZECPU :=
 
-ifeq ($(non_optimize), 1)
-  OPTIMIZE:=-O2
+ifeq ($(intel),0)
+  CXX          := g++
+  OPTIMIZECPU  := -O3
+  CXXFLAGS     := $(CXXFLAGS) -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare
 else
-  OPTIMIZE:=-O3
-endif
-
-ifeq ($(gcc),1)
-  CXX      := g++
-  CXXFLAGS := $(CXXFLAGS) -fPIC -Wall -Wno-long-long -ansi -Wno-unused -I$(CUDAHOME)/include
-else
-  CXX      := icc
-  CXXFLAGS := $(CXXFLAGS) -fPIC  -vec-report1 -g -I. -I$(CUDAHOME)/include
+  CXX          := icc
+  OPTIMIZECPU  := -Ofast -xHost -no-prec-div -ipo
+  CXXFLAGS     := $(CXXFLAGS) -qopt-report=3
 endif
 
 # Debug/release configuration
-ifeq ($(dbg),1)
-	COMMONFLAGS := -g -D_DEBUG
+ifneq ($(dbg),1)
+  CXXFLAGS  += $(OPTIMIZECPU)
 else
-	COMMONFLAGS := -DNDEBUG
-	ifeq ($(gcc),1)
-    	CXXFLAGS  += $(OPTIMIZE) -fno-strict-aliasing
-	else
-    	CXXFLAGS  += $(OPTIMIZE) -fno-strict-aliasing
-	endif
+  CXXFLAGS += -D_DEBUG -g -ggdb
 endif
-
-CXXFLAGS  	+= $(COMMONFLAGS) -I$(MKLROOT)/include
 
 %.o:%.cpp %.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@

@@ -3,6 +3,11 @@
 #include <iostream>
 #include <limits>
 #include <vector>
+#include <fstream>
+#include <cstdlib>
+#include <cstdio>
+#include <climits>
+#include <cassert>
 
 #include "common.h"
 #include "init.h"
@@ -18,18 +23,151 @@ using namespace G2G;
 //Sorting the cubes in increasing order of size in bytes in GPU.
 template <typename T>
 bool comparison_by_size(const T & a, const T & b) {
-    return a.size_in_gpu() < b.size_in_gpu();
+  return a.size_in_gpu() < b.size_in_gpu();
 }
+
 template <typename T>
-void sortBySize(std::vector<T>& input) {
-    sort(input.begin(), input.end(), comparison_by_size<T>);
+void sortBySize(std::vector<T> & input) {
+  sort(input.begin(), input.end(), comparison_by_size<T>);
 }
+
+void load_pools(const vector<int> & elements, const vector< vector<int> > & work, vector< int > & pool_sizes) {
+  pool_sizes.clear();
+  for(uint i = 0; i < work.size(); i++) {
+    int largest_pool = 0;
+    for(uint j = 0; j < work[i].size(); j++) {
+      largest_pool = max(largest_pool, elements[work[i][j]]);
+    }
+    pool_sizes.push_back(largest_pool);
+  }
+}
+
+template <typename T>
+long long total_costs(const vector<T*> & elements)
+{
+    long long res = 0;
+    for(uint i = 0; i < elements.size(); i++)
+        res += elements[i]->cost();
+    return res;
+}
+
+int split_bins(const vector< pair<long long, int> > & costs, vector< vector<int> > & workloads, long long capacity)
+{
+  // Bin Packing heuristic
+  workloads.clear();
+  for(uint i = 0; i < costs.size(); i++) {
+    int next_bin = -1;
+    for(uint j = 0; j < workloads.size(); j++) {
+      long long slack = capacity;
+      for(uint k = 0; k < workloads[j].size(); k++){
+        slack -= costs[workloads[j][k]].first;
+      }
+      if (slack >= costs[i].first && next_bin == -1) {
+        next_bin = j;
+        break;
+      }
+    }
+    if(next_bin == -1) {
+      if (capacity < costs[i].second) {
+        return INT_MAX;
+      }
+      next_bin = workloads.size();
+      workloads.push_back(vector<int>());
+    }
+    workloads[next_bin].push_back(i);
+  }
+  return workloads.size();
+}
+
+void Partition::compute_work_partition()
+{
+  if(G2G::cpu_threads == 0)
+    return;
+  vector< pair<long long, int> > costs;
+  for(uint i = 0; i < cubes.size(); i++)
+    if(!cubes[i]->is_big_group())
+      costs.push_back(make_pair(cubes[i]->cost(), i));
+
+  const uint ncubes = cubes.size();
+  for(uint i = 0; i < spheres.size(); i++)
+    if(!spheres[i]->is_big_group())
+      costs.push_back(make_pair(spheres[i]->cost(), ncubes+i));
+
+  if(costs.empty()) return;
+
+  sort(costs.begin(), costs.end());
+  reverse(costs.begin(), costs.end());
+
+  long long min_cost = costs.front().second - 1,
+            max_cost = total_costs(cubes) + total_costs(spheres) + 1;
+
+  while(max_cost - min_cost > 1) {
+    long long candidate = min_cost + (max_cost - min_cost)/2;
+
+    vector< vector<int> > workloads;
+    int bins = split_bins(costs, workloads, candidate);
+    if(bins <= G2G::cpu_threads) {
+      max_cost = candidate;
+    } else {
+      min_cost = candidate;
+    }
+  }
+
+  split_bins(costs, work, max_cost);
+  for(uint i = 0; i < work.size(); i++)
+      sort(work[i].begin(), work[i].end());
+
+  double maxp = 0, minp = total_costs(cubes)+total_costs(spheres)+1;
+  for(uint i = 0; i < work.size(); i++) {
+    long long total = 0;
+    for(uint j = 0; j < work[i].size(); j++) {
+      long long c = costs[work[i][j]].first;
+      work[i][j] = costs[work[i][j]].second;
+      total += c;
+    }
+    if(minp > total) minp = total;
+    if(maxp < total) maxp = total;
+    printf("Particion %d: %lld\n", i, total);
+  }
+  printf("Relacion max / min = %lf\n", maxp / minp);
+}
+
+int getintenv(const char * str, int default_value) {
+  char * v = getenv(str);
+  if (v == NULL) return default_value;
+  int ret = strtol(v, NULL, 10);
+  return ret;
+}
+
+void diagnostic() {
+    printf("--> Thread OMP: %d\n", omp_get_max_threads());
+    printf("--> Thread CPU: %d\n", G2G::cpu_threads);
+    printf("--> Thread GPU: %d\n", G2G::gpu_threads);
+    printf("--> Correccion de cubos chicos: %d\n", MINCOST);
+    printf("--> Puntos de separacion: %d\n", SPLITPOINTS);
+}
+
+template <class T>
+bool is_big_group(const T& points) {
+  assert(G2G::cpu_threads > 0 || G2G::gpu_threads > 0);
+  if (G2G::cpu_threads == 0)
+    return true;
+  if (G2G::gpu_threads == 0)
+    return false;
+  return (points.size() > G2G::SPLITPOINTS);
+}
+
+struct Sorter {
+template <class T>
+  bool operator() (const T l, const T r) { return (l->cost() < r->cost());}
+};
+
 
 /* methods */
 void Partition::regenerate(void)
 {
-//	cout << "<============ G2G Partition (" << fortran_vars.grid_type << ")============>" << endl;
 
+    Timer tweights;
     // Determina el exponente minimo para cada tipo de atomo.
     // uno por elemento de la tabla periodica.
     vector<double> min_exps(120, numeric_limits<double>::max());
@@ -94,14 +232,17 @@ void Partition::regenerate(void)
     // Generamos la particion en cubos.
     uint3 prism_size = ceil_uint3((x1 - x0) / little_cube_size);
 
-    vector<vector<vector<Cube> > >
-      prism(prism_size.x, vector<vector<Cube> >(prism_size.y, vector<Cube>(prism_size.z)));
+    typedef vector<Point> Group;
+    vector<vector<vector<Group> > >
+      prism(prism_size.x, vector<vector<Group> >(prism_size.y, vector<Group>(prism_size.z)));
 
     // Inicializamos las esferas.
-    vector<Sphere> sphere_array;
+    vector<Group> sphere_points;
+    vector<double> sphere_radius_array;
     if (sphere_radius > 0)
     {
-        sphere_array.resize(fortran_vars.atoms);
+        sphere_radius_array.resize(fortran_vars.atoms);
+        sphere_points.resize(fortran_vars.atoms);
         for (uint atom = 0; atom < fortran_vars.atoms; atom++)
         {
             uint atom_shells = fortran_vars.shells(atom);
@@ -118,7 +259,7 @@ void Partition::regenerate(void)
                 radius = rm * (1.0 + x) / (1.0 - x);
             }
             _DBG(cout << "esfera incluye " << included_shells << " capas de " << atom_shells << " (radio: " << radius << ")" << endl);
-            sphere_array[atom] = Sphere(atom, radius);
+            sphere_radius_array[atom] = radius;
         }
     }
 
@@ -127,8 +268,6 @@ void Partition::regenerate(void)
     {
         const double3& atom_i_position(fortran_vars.atom_positions(i));
         double nearest_neighbor_dist = numeric_limits<double>::max();
-
-        double sphere_i_radius = (sphere_radius > 0 ? sphere_array[i].radius : 0);
 
         for (uint j = 0; j < fortran_vars.atoms; j++)
         {
@@ -185,8 +324,7 @@ void Partition::regenerate(void)
                     if (shell >= (atom_shells - included_shells))
                     {
                         // Asignamos este punto a la esfera de este atomo.
-                        Sphere& sphere = sphere_array[atom];
-                        sphere.add_point(point_object);
+                        sphere_points[atom].push_back(point_object);
                     }
                     else
                     {
@@ -194,12 +332,16 @@ void Partition::regenerate(void)
                         uint3 cube_coord = floor_uint3((point_position - x0) / little_cube_size);
                         if (cube_coord.x >= prism_size.x || cube_coord.y >= prism_size.y || cube_coord.z >= prism_size.z)
                             throw std::runtime_error("Se accedio a un cubo invalido");
-                        prism[cube_coord.x][cube_coord.y][cube_coord.z].add_point(point_object);
+                        prism[cube_coord.x][cube_coord.y][cube_coord.z].push_back(point_object);
                     }
                 }
             }
         }
     }
+
+    G2G::MINCOST = getintenv("LIO_MINCOST_OFFSET", 250000);
+    G2G::THRESHOLD = getintenv("LIO_SPLIT_THRESHOLD", 80);
+    G2G::SPLITPOINTS = getintenv("LIO_SPLIT_POINTS", 200);
 
     // La grilla computada ahora tiene |puntos_totales| puntos, y |fortran_vars.m| funciones.
     uint nco_m = 0;
@@ -213,93 +355,188 @@ void Partition::regenerate(void)
         {
             for (uint k = 0; k < prism_size.z; k++)
             {
-                Cube& cube_ijk = prism[i][j][k];
+                Group& points_ijk = prism[i][j][k];
 
                 double3 cube_coord_abs = x0 + make_uint3(i,j,k) * little_cube_size;
+                PointGroup<base_scalar_type>* cube_funcs;
+                #if GPU_KERNELS
+                if(is_big_group(points_ijk))
+                  cube_funcs = new PointGroupGPU<base_scalar_type>();
+                else
+                  cube_funcs = new PointGroupCPU<base_scalar_type>();
+                #else
+                cube_funcs = new PointGroupCPU<base_scalar_type>();
+                #endif
 
-                cube_ijk.assign_significative_functions(cube_coord_abs, min_exps_func, min_coeff_func);
-                if (cube_ijk.total_functions_simple() == 0) // Este cubo no tiene funciones.
-                    continue;
-                if (cube_ijk.number_of_points < min_points_per_cube) // Este cubo no tiene suficientes puntos.
-                    continue;
+                for(uint point = 0; point < prism[i][j][k].size(); point++)
+                  cube_funcs->add_point(prism[i][j][k][point]);
 
-                Cube cube(cube_ijk);
-                assert(cube.number_of_points != 0);
-                cube.compute_weights();
+                cube_funcs->assign_functions_as_cube(cube_coord_abs, min_exps_func, min_coeff_func);
 
-                if (cube.number_of_points < min_points_per_cube)
+                if ((cube_funcs->total_functions_simple() == 0) || (cube_funcs->number_of_points < min_points_per_cube)) {
+                  // Este cubo no tiene funciones o no tiene suficientes puntos.
+                  delete cube_funcs;
+                  continue;
+                }
+                PointGroup<base_scalar_type>* cube;
+
+                #if GPU_KERNELS
+                if(is_big_group(points_ijk))
+                  cube = new PointGroupGPU<base_scalar_type>(*
+                      (static_cast<PointGroupGPU<base_scalar_type> *>(cube_funcs)));
+                else
+                  cube = new PointGroupCPU<base_scalar_type>(*
+                      (static_cast<PointGroupCPU<base_scalar_type> *>(cube_funcs)));
+                #else
+                cube = new PointGroupCPU<base_scalar_type>(*
+                    (static_cast<PointGroupCPU<base_scalar_type> *>(cube_funcs)));
+                #endif
+
+                delete cube_funcs;
+
+                tweights.start();
+                cube->compute_weights();
+                tweights.pause();
+
+                if (cube->number_of_points < min_points_per_cube)
                 {
-                    cout << "not enough points" << endl;
+                    cout << "CUBE: not enough points" << endl;
+                    delete cube;
                     continue;
                 }
                 cubes.push_back(cube);
 
-                // para hacer histogramas
-//#ifdef HISTOGRAM
-                //cout << "[" << fortran_vars.grid_type << "] cubo: (" << i << "," << j << "," << k << "): " << cube.number_of_points << " puntos; " <<
-                     //cube.total_functions() << " funciones, vecinos: " << cube.total_nucleii() << endl;
-//#endif
-
-                puntos_finales += cube.number_of_points;
-                funciones_finales += cube.number_of_points * cube.total_functions();
-                costo += cube.number_of_points * (cube.total_functions() * cube.total_functions());
-                nco_m += cube.total_functions() * fortran_vars.nco;
-                m_m += cube.total_functions() * cube.total_functions();
+                puntos_finales += cube->number_of_points;
+                funciones_finales += cube->number_of_points * cube->total_functions();
+                costo += cube->number_of_points * (cube->total_functions() * cube->total_functions());
+                nco_m += cube->total_functions() * fortran_vars.nco;
+                m_m += cube->total_functions() * cube->total_functions();
             }
         }
     }
-    sortBySize<Cube>(cubes);
 
     // Si esta habilitada la particion en esferas, entonces clasificamos y las agregamos a la particion tambien.
     if (sphere_radius > 0)
     {
         for (uint i = 0; i < fortran_vars.atoms; i++)
         {
-            Sphere& sphere_i = sphere_array[i];
+            Group& sphere_i = sphere_points[i];
+            assert(sphere_i.size() != 0);
 
-            assert(sphere_i.number_of_points != 0);
+            PointGroup<base_scalar_type>* sphere_funcs;
+            #if GPU_KERNELS
+            if(is_big_group(sphere_i))
+              sphere_funcs = new PointGroupGPU<base_scalar_type>();
+            else
+              sphere_funcs = new PointGroupCPU<base_scalar_type>();
+            #else
+            sphere_funcs = new PointGroupCPU<base_scalar_type>();
+            #endif
+            for(uint point = 0; point < sphere_i.size(); point++)
+              sphere_funcs->add_point(sphere_i[point]);
 
-            sphere_i.assign_significative_functions(min_exps_func, min_coeff_func);
-            assert(sphere_i.total_functions_simple() != 0);
-            if (sphere_i.number_of_points < min_points_per_cube)
+            sphere_funcs->assign_functions_as_sphere(i, sphere_radius_array[i], min_exps_func, min_coeff_func);
+            assert(sphere_funcs->total_functions_simple() != 0);
+            if (sphere_funcs->number_of_points < min_points_per_cube)
             {
                 cout << "not enough points" << endl;
+                delete sphere_funcs;
                 continue;
             }
 
-            Sphere sphere(sphere_i);
-            assert(sphere.number_of_points != 0);
-            sphere.compute_weights();
-            if (sphere.number_of_points < min_points_per_cube)
+            PointGroup<base_scalar_type>* sphere;
+            #if GPU_KERNELS
+            if(is_big_group(sphere_i)) {
+              sphere = new PointGroupGPU<base_scalar_type>(*
+                  (static_cast<PointGroupGPU<base_scalar_type> *>(sphere_funcs)));
+            }
+            else {
+              sphere = new PointGroupCPU<base_scalar_type>(*
+                  (static_cast<PointGroupCPU<base_scalar_type> *>(sphere_funcs)));
+            }
+            #else
+            sphere = new PointGroupCPU<base_scalar_type>(*
+                (static_cast<PointGroupCPU<base_scalar_type> *>(sphere_funcs)));
+            #endif
+            delete sphere_funcs;
+
+            assert(sphere->number_of_points != 0);
+            tweights.start();
+            sphere->compute_weights();
+            tweights.pause();
+            if (sphere->number_of_points < min_points_per_cube)
             {
                 cout << "not enough points" << endl;
+                delete sphere;
                 continue;
             }
-            assert(sphere.number_of_points != 0);
+            assert(sphere->number_of_points != 0);
             spheres.push_back(sphere);
 
-//#ifdef HISTOGRAM
-            //cout << "sphere: " << sphere.number_of_points << " puntos, " << sphere.total_functions() <<
-                // " funciones | funcion x punto: " << sphere.total_functions() / (double)sphere.number_of_points <<
-                // " vecinos: " << sphere.total_nucleii() << endl;
-//#endif
-
-            puntos_finales += sphere.number_of_points;
-            funciones_finales += sphere.number_of_points * sphere.total_functions();
-            costo += sphere.number_of_points * (sphere.total_functions() * sphere.total_functions());
-            nco_m += sphere.total_functions() * fortran_vars.nco;
-            m_m += sphere.total_functions() * sphere.total_functions();
+            puntos_finales += sphere->number_of_points;
+            funciones_finales += sphere->number_of_points * sphere->total_functions();
+            costo += sphere->number_of_points * (sphere->total_functions() * sphere->total_functions());
+            nco_m += sphere->total_functions() * fortran_vars.nco;
+            m_m += sphere->total_functions() * sphere->total_functions();
         }
     }
-    //Sorting the spheres in increasing order
-    sortBySize<Sphere>(spheres);
+
+    // TODO fix these sorts now that spheres and cubes are pointers
+    sort(spheres.begin(), spheres.end(), Sorter());
+    sort(cubes.begin(), cubes.end(), Sorter());
 
     //Initialize the global memory pool for CUDA, with the default safety factor
     //If it is CPU, then this doesn't matter
-    globalMemoryPool::init(G2G::free_global_memory);
+    GlobalMemoryPool::init(G2G::free_global_memory);
 
-    //cout << "Grilla final: " << puntos_finales << " puntos (recordar que los de peso 0 se tiran), " << funciones_finales << " funciones" << endl ;
-    //cout << "Costo: " << costo << endl;
-    //cout << "NCOxM: " << nco_m << " MxM: " << m_m << endl;
-    //cout << "Particion final: " << spheres.size() << " esferas y " << cubes.size() << " cubos" << endl;
+
+    cout << "Weights: " << tweights << endl;
+
+    for(uint i = 0; i < cubes.size(); i++) {
+      cubes[i]->compute_indexes();
+    }
+    for(uint i = 0; i < spheres.size(); i++) {
+      spheres[i]->compute_indexes();
+    }
+
+
+    compute_work_partition();
+
+    timeforgroup.resize(cubes.size() + spheres.size());
+    next.resize(G2G::cpu_threads+G2G::gpu_threads);
+
+    fort_forces_ms.resize(G2G::cpu_threads+G2G::gpu_threads);
+    if (!fortran_vars.OPEN){
+       rmm_outputs.resize(G2G::cpu_threads+G2G::gpu_threads);
+    } else {
+       rmm_outputs_a.resize(G2G::cpu_threads+G2G::gpu_threads);
+       rmm_outputs_b.resize(G2G::cpu_threads+G2G::gpu_threads);
+    };
+
+    for(int i = 0; i < G2G::cpu_threads+G2G::gpu_threads; i++) {
+      fort_forces_ms[i].resize(fortran_vars.max_atoms, 3);
+      if (fortran_vars.OPEN){
+        rmm_outputs_a[i].resize(fortran_vars.rmm_output_a.width, fortran_vars.rmm_output_a.height);
+        rmm_outputs_b[i].resize(fortran_vars.rmm_output_b.width, fortran_vars.rmm_output_b.height);
+      }else{
+        rmm_outputs[i].resize(fortran_vars.rmm_output.width, fortran_vars.rmm_output.height);
+      }
+    }
+    int current_gpu = 0;
+    for (int i = work.size(); i < G2G::cpu_threads + G2G::gpu_threads; i++)
+      work.push_back(vector<int>());
+
+
+    for(uint i = 0; i < cubes.size(); i++)
+      if(cubes[i]->is_big_group()) {
+        work[G2G::cpu_threads+current_gpu].push_back(i);
+        current_gpu = (current_gpu + 1) % G2G::gpu_threads;
+      }
+
+    for(uint i = 0; i < spheres.size(); i++)
+      if(spheres[i]->is_big_group()) {
+        work[G2G::cpu_threads+current_gpu].push_back(i+cubes.size());
+        current_gpu = (current_gpu + 1) % G2G::gpu_threads;
+      }
+    diagnostic();
 }

@@ -1,7 +1,6 @@
 #ifndef _CPU_PRIMITIVES
 #define _CPU_PRIMITIVES
-
-#ifdef CPU_KERNELS
+#if (CPU_KERNELS && !GPU_KERNELS)
 
 typedef unsigned int uint;
 typedef struct uint1 {
@@ -141,6 +140,6 @@ typedef struct dim3
     operator uint3(void) { uint3 t; t.x = x; t.y = y; t.z = z; return t; }
 } dim3;
 
-#endif
 
+#endif
 #endif

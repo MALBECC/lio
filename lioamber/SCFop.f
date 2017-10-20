@@ -11,8 +11,11 @@ c---------------------------------------------------
       subroutine SCFOP(E,dipxyz)
       use garcha_mod
       use mathsubs
-      REAL*8:: En,E2,E,Es,Ex,Exc
+      use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, 
+     >     FOCK_ECP_read,FOCK_ECP_write,IzECP
+      use faint_cpu77, only: int1, int2, intsol, int3mem, int3lu
 
+      REAL*8:: E2,En,E,Es,Ex,Exc,E1s,Ens
       dimension work(1000)
       real*8, dimension (:,:), ALLOCATABLE ::xnano,znano
       real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15,rmm13,
@@ -33,6 +36,7 @@ c       REAL*8 , intent(in)  :: clcoords(4,nsolin)
       INTEGER            :: LWORK2
       REAL*8,ALLOCATABLE :: WORK2(:)
         logical :: just_int3n,ematalloct
+      INTEGER :: igpu
 
       call g2g_timer_start('SCF')
       write(*,*) '======>>>> INGRESO A SCFop <<<<=========='
@@ -94,7 +98,7 @@ c------------------------------------------------
       allocate (znano(M,M),xnano(M,M))
 c      allocate(rmm5(MM),rmm13(m),rmm15(mm))
 
-      just_int3n = .false.
+c      just_int3n = .false.
       alloqueo = .true.
       ematalloc=.false.
       hagodiis=.false.
@@ -159,24 +163,37 @@ c        write(*,*) 'que pasa?'
  
        call g2g_reload_atom_positions(igrid2)
 
+
+      call aint_query_gpu_level(igpu)
+      if (igpu.gt.1) call aint_new_step()
 c
-c H H core, 1 electron matrix elements
+c
+c-------------------------------------------------------
+c H CORE - 1 electron matrix elements and solvent 
 c
       call int1(En)
-c
-c -- SOLVENT CASE --------------------------------------
-c      if (sol) then
-c      call intsol(NORM,natom,Nsol,natsol,r,Nuc,Iz,M,Md,ncont,nshell,
-c     >            c,a,pc,RMM,E1s)
-c      call mmsol(natom,Nsol,natsol,Iz,pc,r,Em,Rm,Es)
-c      endif
-c-------------------------------------------------------
-c E1 Energia monoelectronica
-c
+
+      if(nsol.gt.0.or.igpu.ge.4) then
+          call g2g_timer_sum_start('QM/MM')
+       if (igpu.le.1) then
+          call g2g_timer_start('intsol')
+          call intsol(E1s,Ens,.true.)
+          call g2g_timer_stop('intsol')
+        else
+          call aint_qmmm_init(nsol,r,pc)
+          call g2g_timer_start('aint_qmmm_fock')
+          call aint_qmmm_fock(E1s,Ens)
+          call g2g_timer_stop('aint_qmmm_fock')
+        endif
+          call g2g_timer_sum_stop('QM/MM')
+      endif
+
       E1=0.D0
       do k=1,MM
         E1=E1+RMM(k)*RMM(M11+k-1)
       enddo
+c
+c-------------------------------------------------------
 
 c Diagonalization of S matrix, after this is not needed anymore
 c
@@ -381,26 +398,47 @@ c------ IMPRIMIENDO DENSIDADES ---------------------------------
       do i=1,M
         do j=i,M
           kk=kk+1 
-          write(*,'(I,X,I,X,I,X,F8.5,X,F8.5,X,F8.5)') 
+          write(*,'(I4,X,I4,X,I4,X,F8.5,X,F8.5,X,F8.5)') 
      <          kk,i,j,RMM(kk),rhoalpha(kk),rhobeta(kk)
         enddo
       enddo
 #endif
 c
 c End of Starting guess (No MO , AO known)-------------------------------
-c------------------------------------------------------------------------
-c
+!
+!
+!------------------------------------------------------------------------------!
+! Precalculate two-index (density basis) "G" matrix used in density fitting
+! here (S_ij in Dunlap, et al JCP 71(8) 1979) into RMM(M7)
+! Also, pre-calculate G^-1 if G is not ill-conditioned into RMM(M9)
+!
       call int2()
-c
-**
+!
+!
+! Precalculate three-index (two in MO basis, one in density basis) matrix
+! used in density fitting / Coulomb F element calculation here
+! (t_i in Dunlap)
+!
+      call aint_query_gpu_level(igpu)
+      if (igpu.gt.2) then
+         call aint_coulomb_init()
+      endif
+
+      if (igpu.eq.5) MEMO = .false.
       if (MEMO) then
          call g2g_timer_start('int3mem')
-         call int3mem() 
-         call int3mems()
+         call int3mem()   !*1
+!         call int3mems()  !*2
          call g2g_timer_stop('int3mem')
       endif
-****
-c---------------------------------------------------------------------
+!
+! *1) Large elements of t_i put into double-precision cool here
+! Size criteria based on size of pre-factor in Gaussian Product Theorem
+! (applied to MO basis indices)
+!
+! *2) Small elements of t_i put into single-precision cools here
+!
+!------------------------------------------------------------------------------!
 c
 c-------------------------------------------------------------------      
       if (DIIS.and.alloqueo) then
@@ -664,7 +702,7 @@ c              xnano=matmul(xnano,znano)
 
           allocate(EMAT2_a(ndiist+1,ndiist+1))
           EMAT2_a=EMATa
-          ematalloct=.true.
+c          ematalloct=.true.
 c
 c********************************************************************
 c   THE MATRIX EMAT SHOULD HAVE FORM
@@ -917,7 +955,7 @@ c              xnano=matmul(xnano,znano)
 
           allocate(EMAT2_b(ndiist+1,ndiist+1))
           EMAT2_b=EMATb
-          ematalloct=.true.
+c          ematalloct=.true.
 c
 c********************************************************************
 c   THE MATRIX EMAT SHOULD HAVE FORM
@@ -1113,9 +1151,9 @@ c      IDAMP=0
 c      if (IDAMP.EQ.1) then
 c        DAMP=DAMP0
 c        if (abs(D1).lt.1.D-5) then
-c          fac=dmax1(0.90D0,abs(D1/D2))
-c          fac=dmin1(fac,1.1D0)
-c          DAMP=DAMP0*fac
+c          factor=dmax1(0.90D0,abs(D1/D2))
+c          factor=dmin1(factor,1.1D0)
+c          DAMP=DAMP0*factor
 c        endif
 c
 c        E=E1+E2+En
@@ -1138,6 +1176,7 @@ c      endif
        call g2g_timer_stop('Total iter')
  999  continue
 c 995   continue
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
       if (niter.ge.NMAX) then
         write(6,*) 'NO CONVERGENCE AT ',NMAX,' ITERATIONS'
@@ -1154,6 +1193,11 @@ c       goto 995
         write(6,*)  'stop fon not convergion 4 times'
         stop
       endif
+
+
+      Es=Es+E1s+Ens
+      if (MOD(npas,energy_freq).eq.0) then
+      if (GRAD) then
 
 #ifdef G2G
 #ifdef ULTIMA_CPU
@@ -1173,215 +1217,97 @@ c       call g2g_solve_groups(1, Exc, 0)
 #else
 #endif       
 #endif
-        E=E1+E2+En+Es+Ens+Exc
 
-c         E=E+Exc-Ex
-c         write(*,*)
-c         write(*,450) E
-c       else
-c         E=E-Ex
-c       endif
-c calculation of energy weighted density matrix
-c
-c test -----------
-c     write(*,*) 'Eig alpha'
-c     do i=1,NCOa+10
-c      write(*,*) i,RMM(M13+i-1)
-c     enddo
-c
-c     write(*,*) 'Eig beta'
-c     do i=1,NCOb+10
-c      write(*,*) i,RMM(M22+i-1)
-c     enddo
-c
-      kk=M15-1
-      do j=1,M
-        do i=j,M
-          kk=kk+1
-          RMM(kk)=0.D0
-c
-          do k=1,NCOa
-            k0=M18+M*(k-1)-1
-            ki=k0+i
-            kj=k0+j
-            RMM(kk)=RMM(kk)-RMM(M13+k-1)*RMM(ki)*RMM(kj)
-          enddo
-c
-          do k=1,NCOb
-            k0=M18b+M*(k-1)-1
-            ki=k0+i
-            kj=k0+j
-            RMM(kk)=RMM(kk)-RMM(M22+k-1)*RMM(ki)*RMM(kj)
-          enddo
-c
-          if (i.ne.j) then
-            RMM(kk)=2.0D0*RMM(kk)
-          endif
-c
-        enddo
-      enddo
 
-c
-c-----------------------------------------------------------------
-c PROPERTIES CALCULATION
-c calculates dipole moment
-c
-c      if (idip.eq.1) then
-c        call dip(ux,uy,uz)
-c       u=sqrt(ux**2+uy**2+uz**2)
-c
-c      write(*,*)
-c      write(*,*) 'DIPOLE MOMENT, X Y Z COMPONENTS AND NORM (DEBYES)'
-c       write(*,900) ux,uy,uz,u
-c      write(*,*)
-c u in Debyes
-c      endif
-c
-c calculates Mulliken poputations
-c       if (ipop.eq.1) then
-c        call int1(En)
-c
-c
-c        do n=1,natom
-c          q(n)=Iz(n)
-c        enddo
-c
-c        do i=1,M
-c
-c          do j=1,i-1
-c            kk=i+(M2-j)*(j-1)/2
-c            t0=RMM(kk)*RMM(+kk-1)/2.D0
-c            q(Nuc(i))=q(Nuc(i))-t0
-c          enddo
-c
-c          kk=i+(M2-i)*(i-1)/2
-c          t0=RMM(kk)*RMM(M5+kk-1)
-c          q(Nuc(i))=q(Nuc(i))-t0
-c
-c          do j=i+1,M
-c            kk=j+(M2-i)*(i-1)/2
-c            t0=RMM(kk)*RMM(M5+kk-1)/2.D0
-c            q(Nuc(i))=q(Nuc(i))-t0
-c          enddo
-c        enddo
-c
-c        write(*,*) 'MULLIKEN POPULATION ANALYSIS'
-c        write(*,770)
+!------------------------------------------------------------------------------!
+! Calculation of final energy 
 
-c        do n=1,natom
-c         write(*,760) n,Iz(n),q(n)
-c        enddo
+       Es=Ens   ! NucleusQM-CHarges MM
+
+       call int1(En) ! One electron Kinetic (with aint >3) or Kinetic + Nuc-elec (aint >=3)
+
+       if(nsol.gt.0.and.igpu.ge.1) then ! Computing the E1-fock without the MM atoms
+          call aint_qmmm_init(0,r,pc)
+          call aint_qmmm_fock(E1s,Ens)
+       endif
+       E1s=0.D0
+       do k=1,MM
+          E1s=E1s+RMM(k)*RMM(M11+k-1)  ! E1s (here) is the 1e-energy without the MM contribution 
+       enddo
+
+       Es=Es+E1-E1s ! Es is the QM/MM energy computated as total 1e - E1s + QMnuc-MMcharge
+ 
+
+
+       E=E1+E2+En+Ens+Exc
+
+        write(*,*) "Etot = ", E
+        write(*,*) "E1 = ", E1
+        write(*,*) "E2 = ", E2
+        write(*,*) "Exc = ", Exc
+
+
+        if (npas.eq.1) npasw = 0
+        if (npas.gt.npasw) then
+          if (ecpmode) then
+               Eecp=0.d0
+               do k=1,MM
+                 Eecp=Eecp+RMM(k)*(VAAA(k)+VAAB(k)+VBAC(k))
+               enddo
+          Es=Es-Eecp  ! 
+          end if
+           call WriteEnergies(E1,E2,En,Eecp,Exc,Es,ecpmode,E_restrain)
+          npasw=npas+10
+        endif
+
+
+
+       else
+          E=E-Ex
+       endif
+       endif
+!------------------------------------------------------------------------------!
+! Calculation of energy weighted density matrix
+!
+       kk=M15-1
+       do j=1,M
+
+          do i=j,M
+             kk=kk+1
+             RMM(kk)=0.D0
 c
-c        write(*,*)
+             do k=1,NCOa
+                k0=M18+M*(k-1)-1
+                ki=k0+i
+                kj=k0+j
+                RMM(kk)=RMM(kk)-RMM(M13+k-1)*RMM(ki)*RMM(kj)
+             end do
 c
-c UNPAIRED SPIN POPULATION
-c M7 spin alpha density matrix, M11 spin beta density matrix
-c        kk=M7-1
-c        kk1=M11-1
-c        do j=1,M
-c          do i=j,M
-c            kk=kk+1
-c            kk1=kk1+1
-c            RMM(kk)=0.0D0
-c            RMM(kk1)=0.0D0
+             do k=1,NCOb
+                k0=M18b+M*(k-1)-1
+                ki=k0+i
+                kj=k0+j
+                RMM(kk)=RMM(kk)-RMM(M22+k-1)*RMM(ki)*RMM(kj)
+             end do
 c
-c            do k=1,NCOa
-c              k0=M18+M*(k-1)-1
-c              ki=k0+i
-c              kj=k0+j
-c              RMM(kk)=RMM(kk) + RMM(ki)*RMM(kj)
-c            enddo
+             if (i.ne.j) then
+                RMM(kk)=2.0D0*RMM(kk)
+             endif
 c
-c            do k=1,NCOb
-c              k0=M18b+M*(k-1)-1
-c              ki=k0+i
-c              kj=k0+j
-c              RMM(kk1)=RMM(kk1)  + RMM(ki)*RMM(kj)
-c            enddo
-c
-c            if (i.ne.j) then
-c              RMM(kk)=2.0D0*RMM(kk)
-c              RMM(kk1)=2.0D0*RMM(kk1)
-c            endif
-c
-c          enddo
-c        enddo
-       
-c        do n=1,natom
-c          q(n)=0.0D0
-c        enddo
-c
-c        do i=1,M
-c
-c          do j=1,i-1
-c            kk=i+(M2-j)*(j-1)/2
-c            kka=kk+M7-1
-c            kkb=kk+M11-1
-c         
-c            t0=(RMM(kka)-RMM(kkb))*RMM(M5+kk-1)/2.D0
-c            q(Nuc(i))=q(Nuc(i))-t0
-c          enddo
-c
-c          kk=i+(M2-i)*(i-1)/2
-c          kka=kk+M7-1
-c          kkb=kk+M11-1
-c          t0=(RMM(kka)-RMM(kkb))*RMM(M5+kk-1)
-c          q(Nuc(i))=q(Nuc(i))-t0
-c
-c          do j=i+1,M
-c            kk=j+(M2-i)*(i-1)/2
-c            kka=kk+M7-1
-c            kkb=kk+M11-1
-c
-c            t0=(RMM(kka)-RMM(kkb))*RMM(M5+kk-1)/2.D0
-c            q(Nuc(i))=q(Nuc(i))-t0
-c          enddo
-c        enddo
-c
-c        write(*,*) 'UNPAIRED SPIN MULLIKEN POPULATION ANALYSIS'
-c        write(*,770)
-c
-c        do n=1,natom
-c          write(*,760) n,Iz(n),q(n)
-c        enddo
-c
-c      endif
-c
-c ELECTRICAL POTENTIAL AND POINT CHARGES EVALUATION
-c
-c        if (icharge.eq.1) then
-c          Q1=-(2*NCO+Nunp)
-c         do n=1,natom
-c          Q1=Q1+Iz(n)
-c         enddo
-c         call charge(NORM,natom,r,Nuc,Iz,M,Md,ncont,nshell,
-c     >            c,a,RMM,map,Q1)
-c        endif
-c-----------------------------------------------------
-c      do l=1,M
-c        do n=1,NCOa
-c          kk=M18+(l-1)+M*(n-1)
-c          X(index(l),M+n)=RMM(kk)
-c        enddo
-c      enddo
-c
-c      do l=1,M
-c        write(2,400) (X(l,M+n),n=1,NCOa)
-c      enddo
-c
-c-------------------------------------------------
-c       do l=1,M
-c         do n=1,NCOb
-c           kk=M18b+(l-1)+M*(n-1)
-c           X(index(l),M+n)=RMM(kk)
-c         enddo
-c       enddo
-c
-c      do l=1,M
-c        write(2,400) (X(l,M+n),n=1,NCOb)
-c      enddo
-c-------------------------------------------------
-c
+          end do
+       end do
+!------------------------------------------------------------------------------!
+
+!
+!
+!------------------------------------------------------------------------------!
+! TODO - PROPERTIES CALCULATION
+! calculates dipole moment
+! calculates Mulliken poputations
+! UNPAIRED SPIN POPULATION
+! ELECTRICAL POTENTIAL AND POINT CHARGES EVALUATION
+!------------------------------------------------------------------------------!
+!
       if(DIIS) then
         deallocate (Y,Ytrans,Xtrans,rho1_a,rho_a,fock_a,fock_am,
      >           rho1_b,rho_b,fock_b,fock_bm,
@@ -1390,8 +1316,10 @@ c
      >           EMATa,EMATb,EMAT2_a,EMAT2_b,bcoef_a,bcoef_b,suma)
       endif
 
-      deallocate (kkind,kkinds)
-      deallocate(cool,cools)
+      if (MEMO) then
+         deallocate(kkind,kkinds)
+         deallocate(cool,cools)
+      endif
 
  500  format('SCF TIME ',I6,' sec')
  450  format ('SCF ENERGY = ',F14.7)

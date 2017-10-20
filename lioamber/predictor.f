@@ -5,6 +5,7 @@
 ! And gives: F5 = F(t+(deltat/2))      
        use garcha_mod
        use mathsubs
+       use faint_cpu77, only: int3lu
        REAL*8,intent(inout) :: F1a(M,M),F1b(M,M),FON(M,M)
        REAL*8,intent(in) :: Xtrans(M,M)
        REAL*8, intent(in) :: factorial(NBCH)

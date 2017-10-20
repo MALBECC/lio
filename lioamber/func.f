@@ -10,9 +10,10 @@ c This is the version that should be included in definitive
 c program
 c 11 March 1992 -----------------------------------------------
 c
-      FUNCTION FUNCT(M,T)                                               
+      FUNCTION FUNCT(N,T)                                               
+      USE garcha_mod
       IMPLICIT REAL*8 (A-H,O-Z)                                         
-      COMMON /TABLE/ STR(880,0:21),FAC(0:16)
+!      COMMON /TABLE/ STR(880,0:21),FAC(0:16)
 C
       if (T.lt.0.0D0) then
        write(*,*) 'Problems',T
@@ -31,12 +32,12 @@ C
 c
 c
 c
-       TF0 = STR(IT,M)                                                    
-       TF1 = STR(IT,M+1)                                                    
-       TF2 = STR(IT,M+2)                                                    
-       TF3 = STR(IT,M+3)                                                    
-       TF4 = STR(IT,M+4)                                                    
-       TF5 = STR(IT,M+5)                                                    
+       TF0 = STR(IT,N)                                                    
+       TF1 = STR(IT,N+1)                                                    
+       TF2 = STR(IT,N+2)                                                    
+       TF3 = STR(IT,N+3)                                                    
+       TF4 = STR(IT,N+4)                                                    
+       TF5 = STR(IT,N+5)                                                    
 c
        FCAP=TF0-DELT*( TF1-DELT2*(TF2-DELT3*(TF3-DELT4*               
      >    (TF4-DELT5*TF5))))                                           
@@ -45,7 +46,8 @@ c
 C                                                                       
        
        ELSE
-      FUNCT=FAC(M)*1.D0/(T**M*dsqrt(T))
+      FUNCT=FAC(N)*1.D0/(T**N*dsqrt(T))
+     
       ENDIF
 c
       END            
@@ -97,9 +99,10 @@ c subroutine for generating tables, used later on in the Taylor expansion
 c for the incomplete Gamma functions
 c-----------------------------------------------
       SUBROUTINE GENERF
+      USE garcha_mod
       IMPLICIT REAL*8 (A-H,O-Z)
       parameter (sqpi=1.77245385090551588D0)
-      COMMON /TABLE/ STR(880,0:21),FAC(0:16)
+!      COMMON /TABLE/ STR(880,0:21),FAC(0:16)
 c
 c loop over T values in the table ( 0. to 43.95 , interval 0.05)
 c
@@ -251,7 +254,7 @@ c
       WRITE (IW,999) M,X
    25 FMCHS = APPROX - FIMULT * PTLSUM
       RETURN
-  999 FORMAT ('23H0FMCHS DOES NOT CONVERGE',I6,1PE16.8)
+  999 FORMAT (24H0FMCHS DOES NOT CONVERGE,I6,1PE16.8)
       END
 C     -----------------------
 

@@ -4,4 +4,8 @@
  charge=0
  nmax=300
  writeforces=t
+ little_cube_size=8
+ max_function_exponent=8
+ sphere_radius=0.6
+ free_global_memory=0.5
 &end

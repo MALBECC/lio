@@ -1,22 +1,160 @@
 # DO NOT DELETE
+include Makefile.pointxc
 
-classify_functions.o: common.h init.h matrix.h cpu/cpu_vector_types.h
-classify_functions.o: cuda/cuda_extra.h partition.h
-init.o: common.h cuda/cuda_extra.h init.h matrix.h cpu/cpu_vector_types.h
-init.o: timer.h partition.h
-matrix.o: common.h matrix.h cpu/cpu_vector_types.h cuda/cuda_extra.h
-partition.o: global_memory_pool.h
-partition.o: common.h init.h matrix.h cpu/cpu_vector_types.h
-partition.o: cuda/cuda_extra.h partition.h timer.h global_memory_pool.h
+classify_functions.o: init.h matrix.h cuda_includes.h cuda/cuda_extra.h
+classify_functions.o: scalar_vector_types.h datatypes/cpu_primitives.h
+classify_functions.o: partition.h timer.h global_memory_pool.h
+global_memory_pool.o: global_memory_pool.h cuda/cuda_extra.h cuda_includes.h
+init.o: common.h init.h matrix.h cuda_includes.h cuda/cuda_extra.h
+init.o: scalar_vector_types.h datatypes/cpu_primitives.h timer.h partition.h
+init.o: global_memory_pool.h
+matrix.o: common.h matrix.h cuda_includes.h cuda/cuda_extra.h
+matrix.o: scalar_vector_types.h datatypes/cpu_primitives.h
+partition.o: common.h init.h matrix.h cuda_includes.h cuda/cuda_extra.h
+partition.o: scalar_vector_types.h datatypes/cpu_primitives.h partition.h
+partition.o: timer.h global_memory_pool.h
+regenerate_partition.o: common.h init.h matrix.h cuda_includes.h
+regenerate_partition.o: cuda/cuda_extra.h scalar_vector_types.h
+regenerate_partition.o: datatypes/cpu_primitives.h partition.h timer.h
 regenerate_partition.o: global_memory_pool.h
-regenerate_partition.o: common.h init.h matrix.h cpu/cpu_vector_types.h
-regenerate_partition.o: cuda/cuda_extra.h partition.h timer.h
-timer.o: timer.h
-cuda/iteration.cu_o: global_memory_pool.h
-cuda/iteration.cu_o: common.h init.h matrix.h cpu/cpu_vector_types.h
-cuda/iteration.cu_o: cuda/cuda_extra.h cuda/cuda_extra.h matrix.h timer.h
-cuda/iteration.cu_o: partition.h cuda/gpu_variables.h cuda/kernels/pot.h
-cuda/iteration.cu_o: cuda/kernels/energy.h cuda/kernels/energy_derivs.h
-cuda/iteration.cu_o: cuda/kernels/rmm.h cuda/kernels/weight.h
-cuda/iteration.cu_o: cuda/kernels/functions.h cuda/kernels/force.h
-global_memory_pool.o: global_memory_pool.h
+timer.o: timer.h cuda_includes.h cuda/cuda_extra.h
+analytic_integral/aint_init.o: common.h matrix.h cuda_includes.h
+analytic_integral/aint_init.o: cuda/cuda_extra.h scalar_vector_types.h
+analytic_integral/aint_init.o: datatypes/cpu_primitives.h init.h matrix.h
+analytic_integral/aint_init.o: analytic_integral/aint_common.h
+analytic_integral/aint_init.o: analytic_integral/aint_init.h
+analytic_integral/aint_init.o: analytic_integral/os_integral.h
+analytic_integral/aint_init.o: scalar_vector_types.h timer.h
+analytic_integral/aint_init.o: analytic_integral/qmmm_integral.h
+analytic_integral/aint_init.o: analytic_integral/coulomb_integral.h
+analytic_integral/os_cutoff.o: common.h init.h matrix.h cuda_includes.h
+analytic_integral/os_cutoff.o: cuda/cuda_extra.h scalar_vector_types.h
+analytic_integral/os_cutoff.o: datatypes/cpu_primitives.h matrix.h timer.h
+analytic_integral/os_cutoff.o: scalar_vector_types.h
+analytic_integral/os_cutoff.o: analytic_integral/aint_init.h
+analytic_integral/os_cutoff.o: analytic_integral/aint_common.h
+analytic_integral/os_cutoff.o: analytic_integral/os_integral.h
+analytic_integral/qmmm_nuc.o: common.h init.h matrix.h cuda_includes.h
+analytic_integral/qmmm_nuc.o: cuda/cuda_extra.h scalar_vector_types.h
+analytic_integral/qmmm_nuc.o: datatypes/cpu_primitives.h matrix.h timer.h
+analytic_integral/qmmm_nuc.o: scalar_vector_types.h
+analytic_integral/qmmm_nuc.o: analytic_integral/aint_init.h
+analytic_integral/qmmm_nuc.o: analytic_integral/qmmm_integral.h
+analytic_integral/qmmm_nuc.o: analytic_integral/os_integral.h
+analytic_integral/qmmm_nuc.o: analytic_integral/aint_common.h
+cpu/functions.o: common.h cuda_includes.h cuda/cuda_extra.h init.h matrix.h
+cpu/functions.o: cuda_includes.h scalar_vector_types.h
+cpu/functions.o: datatypes/cpu_primitives.h matrix.h partition.h timer.h
+cpu/functions.o: global_memory_pool.h
+cpu/iteration.o: common.h init.h matrix.h cuda_includes.h cuda/cuda_extra.h
+cpu/iteration.o: scalar_vector_types.h datatypes/cpu_primitives.h
+cpu/iteration.o: cuda_includes.h matrix.h timer.h partition.h timer.h
+cpu/iteration.o: global_memory_pool.h
+cpu/weight.o: common.h init.h matrix.h cuda_includes.h cuda/cuda_extra.h
+cpu/weight.o: scalar_vector_types.h datatypes/cpu_primitives.h matrix.h
+cpu/weight.o: partition.h timer.h global_memory_pool.h
+cuda/iteration.o: common.h init.h matrix.h cuda_includes.h cuda/cuda_extra.h
+cuda/iteration.o: scalar_vector_types.h datatypes/cpu_primitives.h
+cuda/iteration.o: cuda/cuda_extra.h matrix.h timer.h partition.h timer.h
+cuda/iteration.o: global_memory_pool.h scalar_vector_types.h
+cuda/iteration.o: global_memory_pool.h cuda/gpu_variables.h
+cuda/iteration.o: cuda/kernels/accumulate_point.h cuda/kernels/energy.h
+cuda/iteration.o: cuda/kernels/energy_open.h cuda/kernels/energy_derivs.h
+cuda/iteration.o: cuda/kernels/rmm.h cuda/kernels/weight.h
+cuda/iteration.o: cuda/kernels/functions.h cuda/kernels/force.h
+cuda/iteration.o: cuda/kernels/transpose.h
+analytic_integral/cuda/coulomb.o: common.h init.h matrix.h cuda_includes.h
+analytic_integral/cuda/coulomb.o: cuda/cuda_extra.h scalar_vector_types.h
+analytic_integral/cuda/coulomb.o: datatypes/cpu_primitives.h
+analytic_integral/cuda/coulomb.o: cuda/cuda_extra.h matrix.h timer.h
+analytic_integral/cuda/coulomb.o: scalar_vector_types.h global_memory_pool.h
+analytic_integral/cuda/coulomb.o: analytic_integral/coulomb_integral.h
+analytic_integral/cuda/coulomb.o: scalar_vector_types.h timer.h
+analytic_integral/cuda/coulomb.o: analytic_integral/os_integral.h
+analytic_integral/cuda/coulomb.o: analytic_integral/aint_common.h
+analytic_integral/cuda/coulomb.o: analytic_integral/aint_init.h matrix.h
+analytic_integral/cuda/coulomb.o: analytic_integral/aint_common.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/gpu_vars/g2g_gpu_variables.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/gpu_vars/os_gpu_variables.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/gpu_vars/coulomb_gpu_variables.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/os_util.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_forces.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/forces/ss_s.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/forces/ss_p.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/forces/ss_d.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/forces/ps_s.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/forces/ps_p.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/forces/ps_d.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/forces/pp_s.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/forces/pp_p.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/forces/pp_d.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/forces/ds_s.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/forces/ds_p.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/forces/ds_d.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/forces/dp_s.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/forces/dp_p.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/forces/dp_d.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/forces/dd_s.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/forces/dd_p.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/forces/dd_d.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_energy.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/energy/ss_s.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/energy/ss_p.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/energy/ss_d.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/energy/ps_s.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/energy/ps_p.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/energy/ps_d.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/energy/pp_s.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/energy/pp_p.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/energy/pp_d.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/energy/ds_s.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/energy/ds_p.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/energy/ds_d.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/energy/dp_s.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/energy/dp_p.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/energy/dp_d.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/energy/dd_s.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/energy/dd_p.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_terms/energy/dd_d.h
+analytic_integral/cuda/coulomb.o: analytic_integral/cuda/kernels/coulomb_fit.h
+analytic_integral/cuda/os_common.o: common.h cuda/cuda_extra.h init.h
+analytic_integral/cuda/os_common.o: matrix.h cuda_includes.h
+analytic_integral/cuda/os_common.o: cuda/cuda_extra.h scalar_vector_types.h
+analytic_integral/cuda/os_common.o: datatypes/cpu_primitives.h matrix.h
+analytic_integral/cuda/os_common.o: timer.h scalar_vector_types.h
+analytic_integral/cuda/os_common.o: global_memory_pool.h
+analytic_integral/cuda/os_common.o: analytic_integral/os_integral.h
+analytic_integral/cuda/os_common.o: scalar_vector_types.h timer.h
+analytic_integral/cuda/os_common.o: analytic_integral/aint_common.h
+analytic_integral/cuda/os_common.o: analytic_integral/aint_init.h matrix.h
+analytic_integral/cuda/os_common.o: analytic_integral/aint_common.h
+analytic_integral/cuda/os_common.o: analytic_integral/cuda/gpu_vars/g2g_gpu_variables.h
+analytic_integral/cuda/qmmm.o: common.h cuda/cuda_extra.h init.h matrix.h
+analytic_integral/cuda/qmmm.o: cuda_includes.h cuda/cuda_extra.h
+analytic_integral/cuda/qmmm.o: scalar_vector_types.h
+analytic_integral/cuda/qmmm.o: datatypes/cpu_primitives.h matrix.h timer.h
+analytic_integral/cuda/qmmm.o: scalar_vector_types.h
+analytic_integral/cuda/qmmm.o: analytic_integral/qmmm_integral.h
+analytic_integral/cuda/qmmm.o: scalar_vector_types.h timer.h
+analytic_integral/cuda/qmmm.o: analytic_integral/os_integral.h
+analytic_integral/cuda/qmmm.o: analytic_integral/aint_common.h
+analytic_integral/cuda/qmmm.o: analytic_integral/aint_init.h matrix.h
+analytic_integral/cuda/qmmm.o: analytic_integral/aint_common.h
+analytic_integral/cuda/qmmm.o: analytic_integral/cuda/gpu_vars/g2g_gpu_variables.h
+analytic_integral/cuda/qmmm.o: analytic_integral/cuda/gpu_vars/os_gpu_variables.h
+analytic_integral/cuda/qmmm.o: analytic_integral/cuda/gpu_vars/qmmm_gpu_variables.h
+analytic_integral/cuda/qmmm.o: analytic_integral/cuda/kernels/os_util.h
+analytic_integral/cuda/qmmm.o: analytic_integral/cuda/kernels/qmmm_forces.h
+analytic_integral/cuda/qmmm.o: analytic_integral/cuda/kernels/qmmm_terms/forces/ss.h
+analytic_integral/cuda/qmmm.o: analytic_integral/cuda/kernels/qmmm_terms/forces/ps.h
+analytic_integral/cuda/qmmm.o: analytic_integral/cuda/kernels/qmmm_terms/forces/pp.h
+analytic_integral/cuda/qmmm.o: analytic_integral/cuda/kernels/qmmm_terms/forces/ds.h
+analytic_integral/cuda/qmmm.o: analytic_integral/cuda/kernels/qmmm_terms/forces/dp.h
+analytic_integral/cuda/qmmm.o: analytic_integral/cuda/kernels/qmmm_terms/forces/dd.h
+analytic_integral/cuda/qmmm.o: analytic_integral/cuda/kernels/qmmm_energy.h
+analytic_integral/cuda/qmmm.o: analytic_integral/cuda/kernels/qmmm_terms/energy/ss.h
+analytic_integral/cuda/qmmm.o: analytic_integral/cuda/kernels/qmmm_terms/energy/ps.h
+analytic_integral/cuda/qmmm.o: analytic_integral/cuda/kernels/qmmm_terms/energy/pp.h
+analytic_integral/cuda/qmmm.o: analytic_integral/cuda/kernels/qmmm_terms/energy/ds.h
+analytic_integral/cuda/qmmm.o: analytic_integral/cuda/kernels/qmmm_terms/energy/dp.h
+analytic_integral/cuda/qmmm.o: analytic_integral/cuda/kernels/qmmm_terms/energy/dd.h

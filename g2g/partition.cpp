@@ -18,14 +18,13 @@ namespace G2G {
 int MINCOST, THRESHOLD, SPLITPOINTS;
 Partition partition;
 
-ostream& operator<<(ostream& io, const Timers& t) {
-#ifdef TIMINGS
-    ostringstream ss;
-    ss << "density = " << t.density << " rmm = " << t.rmm << " forces = " << t.forces
+ostream& operator<<(ostream& io, const Timers& t) 
+{
+   ostringstream ss;
+   ss << "density = " << t.density << " rmm = " << t.rmm << " forces = " << t.forces
       << " functions = " << t.functions;
-    io << ss.str() << endl;
-#endif
-  return io;
+   io << ss.str() << endl;
+   return io;
 }
 
 /********************

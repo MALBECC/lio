@@ -250,13 +250,8 @@ extern "C" void g2g_new_grid_(const unsigned int& grid_type) {
 
 template<bool compute_rmm, bool lda, bool compute_forces> void g2g_iteration(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr)
 {
-  Timer timer; Timers timers;
-
-  timer.start();
+  Timers timers;
   partition.solve(timers, compute_rmm, lda, compute_forces, compute_energy, fort_energy_ptr, fort_forces_ptr, fortran_vars.OPEN);
-  timer.stop();
-
-  cout << "iteracion total: " << timer << endl;
 }
 
 //===============================================================================================================

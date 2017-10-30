@@ -24,6 +24,8 @@ subroutine liomain(E, dipxyz)
     REAL*8, intent(inout) :: dipxyz(3), E
     integer :: idip_scrach
 
+    call g2g_timer_sum_start("Total")
+
     if (.not.allocated(Smat))    allocate(Smat(M,M))
     if (.not.allocated(RealRho)) allocate(RealRho(M,M))
     if (.not.allocated(sqsm))    allocate(sqsm(M,M))
@@ -70,6 +72,10 @@ subroutine liomain(E, dipxyz)
     endif
 
     if ((restart_freq.gt.0).and.(MOD(npas, restart_freq).eq.0)) call write_restart(88)
+
+    call g2g_timer_sum_stop("Total")
+    call g2g_timer_summary()
+    call g2g_timer_clear()
 
     return
 end subroutine liomain

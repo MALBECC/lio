@@ -90,10 +90,6 @@ c       real*8 ftot(3)
 
        call g2g_timer_sum_stop('QM/MM gradients')
        call g2g_timer_sum_stop('Forces')
-       call g2g_timer_sum_stop("Total")
-       call g2g_timer_summary()
-       call g2g_timer_clear()
-
 
 !
 !

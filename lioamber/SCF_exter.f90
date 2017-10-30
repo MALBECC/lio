@@ -23,8 +23,6 @@
 
           nsol = nsolin ; ntatom = nsol + natom ;
 
-          call g2g_timer_sum_start("Total")
-
           if (allocated(r))  deallocate(r)
           if (allocated(v))  deallocate(v)
           if (allocated(Em)) deallocate(Em)

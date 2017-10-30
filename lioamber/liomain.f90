@@ -73,10 +73,6 @@ subroutine liomain(E, dipxyz)
 
     if ((restart_freq.gt.0).and.(MOD(npas, restart_freq).eq.0)) call write_restart(88)
 
-    call g2g_timer_sum_stop("Total")
-    call g2g_timer_summary()
-    call g2g_timer_clear()
-
     return
 end subroutine liomain
 

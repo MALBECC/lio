@@ -1,10 +1,9 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-  subroutine calc_forceDS_dds(natoms,nbasis,pos,vel,Mat0,fterm)
+subroutine calc_forceDS_dds(natoms,nbasis,pos,vel,Mat0,fterm)
 !--------------------------------------------------------------------!
 !
 !
 !--------------------------------------------------------------------!
-!  use testmod
   use basis_data
   implicit none
   integer,intent(in)     :: natoms          ! Number of atoms
@@ -24,7 +23,7 @@
   integer    :: ii,jj,ni,nj,ki,kj
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
+  call g2g_timer_start('calc_forceDS_dds')
   fterm=dcmplx(0.0d0,0.0d0)
 
   do jj=1,Nbasis
@@ -98,5 +97,6 @@
   enddo
   enddo
 
-  return;end subroutine
+  call g2g_timer_stop('calc_forceDS_dds')
+end subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

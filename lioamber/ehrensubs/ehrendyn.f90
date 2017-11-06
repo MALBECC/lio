@@ -1,5 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine ehrendyn( Energy_o, DipMom_o )
+subroutine ehrendyn( energy_o, dipmom_o )
 !------------------------------------------------------------------------------!
 !
 !  RhoSaveA and RhoSaveB are stored in ON basis, except for the first step
@@ -10,160 +10,164 @@ subroutine ehrendyn( Energy_o, DipMom_o )
    &      , nucpos, nucvel, qm_forces_ds, qm_forces_total
 
    use lionml_data, &
-   &  only: ndyn_steps &
+   &  only: ndyn_steps, edyn_steps &
    &      , rsti_loads, rsti_fname, rsto_saves, rsto_nfreq, rsto_fname
 
    use ehrendata, &
-   &  only: RhoSaveA, RhoSaveB, rsti_funit, rsto_funit, step_number          &
+   &  only: RhoSaveA, RhoSaveB, rsti_funit, rsto_funit, step_number            &
    &      , StoredEnergy
 
    implicit none
-   real*8,intent(inout) :: Energy_o, DipMom_o(3)
+   real*8,intent(inout) :: energy_o, dipmom_o(3)
+   real*8               :: energy,   dipmom(3)
+   real*8               :: energy0
 
-   real*8 :: Energy, DipMom(3)
+   real*8  :: dipmom_norm
+   real*8  :: nucvel_update(3)
+   real*8  :: dtn, dte
+   integer :: keep_step, step_e
+   integer :: nn, kk
+   logical :: first_from_scratch
 
-   real*8,allocatable,dimension(:,:)     :: Smat,Sinv,Lmat,Umat,Linv,Uinv
-   real*8,allocatable,dimension(:,:)     :: Fock,FockInt
-   complex*16,allocatable,dimension(:,:) :: RhoOld,RhoMid,RhoNew
+   real*8, allocatable, dimension(:,:) :: kept_forces
+   real*8, allocatable, dimension(:,:) :: Smat, Sinv
+   real*8, allocatable, dimension(:,:) :: Lmat, Umat, Linv, Uinv
+   real*8, allocatable, dimension(:,:) :: Fock, Fock0
+   real*8, allocatable, dimension(:,:) :: Bmat, Dmat
 
-   real*8,allocatable,dimension(:,:)     :: Bmat,Dmat
-   complex*16,allocatable,dimension(:,:) :: Tmat
-   real*8                                :: dt
-   real*8                                :: dipxyz(3), dipole_norm
-   integer                               :: ii,jj,kk,idx
-   logical                               :: save_this_step
-
+   complex*16, allocatable, dimension(:,:) :: RhoOld, RhoMid, RhoNew
+   complex*16, allocatable, dimension(:,:) :: RhoMidF
+   complex*16, allocatable, dimension(:,:) :: Tmat
+!
+!
+!
 !  Preliminaries
 !------------------------------------------------------------------------------!
+   call g2g_timer_start('ehrendyn - nuclear step')
    print*,'Doing ehrenfest!'
    step_number = step_number + 1
-   call g2g_timer_start('ehrendyn step')
+   allocate( kept_forces(3,natom) )
    allocate( Smat(M,M), Sinv(M,M) )
    allocate( Lmat(M,M), Umat(M,M), Linv(M,M), Uinv(M,M) )
-   allocate( Fock(M,M), FockInt(M,M) )
-   allocate( RhoOld(M,M), RhoMid(M,M), RhoNew(M,M) )
+   allocate( Fock(M,M), Fock0(M,M) )
+   allocate( RhoOld(M,M), RhoMid(M,M), RhoNew(M,M), RhoMidF(M,M) )
    allocate( Bmat(M,M), Dmat(M,M), Tmat(M,M) )
 
-   if (.not.allocated(qm_forces_total)) then
-      allocate(qm_forces_total(3,natom))
-      qm_forces_total=0.0d0
-   endif
-
-   if (.not.allocated(qm_forces_ds)) then
-      allocate(qm_forces_ds(3,natom))
-      qm_forces_ds=0.0d0
-   endif
-
-   dt=tdstep
+   dtn = tdstep
+   dte = ( tdstep / edyn_steps )
 
    if (first_step) then
    if (rsti_loads) then
-      open( unit=rsti_funit, file=rsti_fname )
-      print*,'Using restart'
-      call rstload( rsti_funit, Natom, qm_forces_total, M, RhoSaveA, RhoSaveB )
-      close( unit=rsti_funit )
-   end if
-   end if
+      call ehrenrsti_load( rsti_fname, rsti_funit, natom, qm_forces_total,  &
+                         & nucvel, M, RhoSaveA, RhoSaveB )
+   endif
+   endif
 
-
-!  Update velocities
+!
+!
+!
+!  Update velocities, calculate fixed fock, load last step dens matrices
 !------------------------------------------------------------------------------!
-   do ii=1,natom
+   do nn=1,natom
    do kk=1,3
-      nucvel(kk,ii)=nucvel(kk,ii)+(1.5d0)*dt*qm_forces_total(kk,ii)/atom_mass(ii)
+      nucvel_update(kk) = (1.5d0) * dtn * qm_forces_total(kk,nn) / atom_mass(nn)
+      nucvel(kk,nn)     = nucvel(kk,nn) + nucvel_update(kk)
    enddo
    enddo
 
-!  Nuclear Force Calculation (works in AO)
-!------------------------------------------------------------------------------!
-   Energy=0.0d0
+   energy0 = 0.0d0
    call RMMcalc0_Init()
-   call RMMcalc1_Overlap(Smat,Energy)
-   call ehren_cholesky(M,Smat,Lmat,Umat,Linv,Uinv,Sinv)
+   call RMMcalc1_Overlap( Smat, energy0 )
+   call ehren_cholesky( M, Smat, Lmat, Umat, Linv, Uinv, Sinv )
+   call RMMcalc2_FockMao( Fock0, energy0 )
 
-!  Esto deja la Rho correcta en RMM, pero habria que ordenarlo mejor
-   RhoMid=RhoSaveB
-   if (.not.first_step) then
-      RhoMid=matmul(RhoMid,Linv)
-      RhoMid=matmul(Uinv,RhoMid)
+   RhoOld = RhoSaveA
+   RhoMid = RhoSaveB
+   first_from_scratch = (first_step).and.(.not.rsti_loads)
+   if (first_from_scratch) then
+      RhoMid = matmul(RhoMid, Lmat)
+      RhoMid = matmul(Umat, RhoMid)
    endif
-   call RMMcalc2_FockMao(RhoMid,Fock,DipMom,Energy)
-   call calc_forceDS(natom,M,nucpos,nucvel,RhoMid,Fock,Sinv,Bmat,qm_forces_ds)
-
-
-
-!  Density Propagation (works in ON)
+!
+!
+!
+!  ELECTRONIC STEP CYCLE
 !------------------------------------------------------------------------------!
-   Fock=matmul(Fock,Uinv)
-   Fock=matmul(Linv,Fock)
-   Dmat=calc_Dmat(M,Linv,Uinv,Bmat)
-   Tmat=DCMPLX(Fock)+DCMPLX(0.0d0,1.0d0)*DCMPLX(Dmat)
+   keep_step = ceiling( real(edyn_steps) / 2.0 )
+   do step_e = 1, edyn_steps
+      call g2g_timer_start('ehrendyn - electronic step')
+      dipmom(:) = 0.0d0
+      energy = energy0
+      Fock = Fock0
 
-   RhoOld=RhoSaveA
-   RhoMid=RhoSaveB
-   if (first_step) then
-      RhoMid=matmul(RhoMid,Lmat)
-      RhoMid=matmul(Umat,RhoMid)
-      call ehren_verlet_e(M,-(dt/2.0d0),Tmat,RhoMid,RhoMid,RhoOld)
-   endif
-   call ehren_verlet_e(M,dt,Tmat,RhoOld,RhoMid,RhoNew)
-   RhoSaveA=RhoMid
-   RhoSaveB=RhoNew
+!     Fock and force calculation need density in AO
+      RhoMidF = RhoMid
+      RhoMidF = matmul(RhoMidF, Linv)
+      RhoMidF = matmul(Uinv, RhoMidF)
 
+!     Fock Calculation (this should leave the right Rho in RMM for get_forces)
+      call RMMcalc3_FockMao( RhoMidF, Fock, dipmom, energy)
 
-!  Saving restart
-!------------------------------------------------------------------------------!
-   if (rsto_saves) then
-      save_this_step = .false.
+!     Force Calculation
+      call calc_forceDS( natom, M, nucpos, nucvel, RhoMidF, Fock, Sinv, &
+                       & Bmat, qm_forces_ds )
 
-      if ( rsto_nfreq > 0 ) then
-         if ( modulo(step_number,rsto_nfreq) == 1 ) then
-            save_this_step = .true.
-         endif
+!     Set ups propagation cuasi-fock matrix (needs fock in ON)
+      Fock = matmul(Fock, Uinv)
+      Fock = matmul(Linv, Fock)
+      Dmat = calc_Dmat( M, Linv, Uinv, Bmat )
+      Tmat = DCMPLX(Fock) + DCMPLX(0.0d0,1.0d0) * DCMPLX(Dmat)
+
+!     Density Propagation (works in ON)
+      if (first_from_scratch) then
+         call ehren_verlet_e( M, -(dte/2.0d0), Tmat, RhoMid, RhoMid, RhoOld )
       endif
+      call ehren_verlet_e( M, dte, Tmat, RhoOld, RhoMid, RhoNew )
 
-      if ( step_number == (ndyn_steps+1) ) then ! is the ndyn+1 part right?
-         save_this_step = .true.
+      RhoOld = RhoMid
+      RhoMid = RhoNew
+      if ( step_e == keep_step ) then
+         kept_forces = qm_forces_ds
       endif
-
-      if ( save_this_step ) then
-         open( unit=rsto_funit, file=rsti_fname )
-         call rstsave(rsto_funit,Natom,qm_forces_total,M,RhoSaveA,RhoSaveB)
-         close( unit=rsto_funit )
-      endif
-
-   endif
+      call g2g_timer_stop('ehrendyn - electronic step')
+   enddo
+   qm_forces_ds = kept_forces
+!
 !
 !
 ! Calculation of the dipole moment (TODO: REMOVE?)
 !------------------------------------------------------------------------------!
    if (first_step) then
-      call write_dipole(dipxyz, 0, 134, .true.)
-      total_time=0.0d0
+      call write_dipole(dipmom, 0, 134, .true.)
+      total_time = 0.0d0
    else
-      call dip(dipxyz)
-      dipole_norm = sqrt(dipxyz(1)**2 + dipxyz(2)**2 + dipxyz(3)**2)
-      call write_dipole(dipxyz, dipole_norm, 134, .false.)  
-
-      print*,''
-      print*,' Timer: ',total_time
-      print*,''
-      total_time=total_time+dt*0.0241888d0
+      dipmom_norm = sqrt( dipmom(1)**2 + dipmom(2)**2 + dipmom(3)**2 )
+      call write_dipole( dipmom, dipmom_norm, 134, .false.)  
+      total_time = total_time + dtn * 0.0241888d0
    endif
 !
 !
-!  Deallocation and end
+!
+!  Finalizations
 !------------------------------------------------------------------------------!
-   DipMom_o = DipMom
-   Energy_o = StoredEnergy
-   StoredEnergy = Energy
+   RhoSaveA = RhoOld
+   RhoSaveB = RhoMid
+
+   if (rsto_saves) then
+      call ehrenrsto_save( rsto_fname, rsto_funit, rsto_nfreq, ndyn_steps,     &
+         & step_number, Natom, qm_forces_total, nucvel, M, RhoSaveA, RhoSaveB)
+   endif
+
+   dipmom_o = dipmom
+   energy_o = StoredEnergy
+   StoredEnergy = energy
 
    deallocate( Smat, Sinv )
    deallocate( Lmat, Umat, Linv, Uinv )
-   deallocate( Fock, FockInt )
-   deallocate( RhoOld, RhoMid, RhoNew )
+   deallocate( Fock, Fock0 )
+   deallocate( RhoOld, RhoMid, RhoNew, RhoMidF )
    deallocate( Bmat, Dmat, Tmat )
-   call g2g_timer_stop('ehrendyn step')
+   call g2g_timer_stop('ehrendyn - nuclear step')
 
 901 format(F15.9,2x,F15.9)
 end subroutine

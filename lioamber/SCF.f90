@@ -631,7 +631,7 @@ subroutine SCF(E)
       if (doing_ehrenfest) then
          call spunpack('L',M,RMM(M1),RealRho)
          call fixrho(M,RealRho)
-         call ehrensetup(M,RealRho)
+         call ehrensetup(natom, M, RealRho)
       endif
 
 ! TODO: have a separate module handle the dipole moment

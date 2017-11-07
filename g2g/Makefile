@@ -46,14 +46,6 @@ ifeq ($(print), 1)
         CXXFLAGS += -DPRINT_MATRICES
 endif
 
-ifeq ($(time), 1)
-  CXXFLAGS += -DTIMINGS
-endif
-ifeq ($(time), 2)
-  CXXFLAGS += -DTIMINGS
-  CXXFLAGS += -DTIMER_SUMMARY
-endif
-
 ifeq ($(profile),1)
   CXXFLAGS += -pg -g
   LDFLAGS += -pg -g

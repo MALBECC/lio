@@ -36,7 +36,7 @@ subroutine lio_defaults()
                            energy_all_iterations, free_global_memory, dipole,  &
                            lowdin, mulliken, print_coeffs, number_restr, Dbug, &
                            steep, Force_cut, Energy_cut, minimzation_steep,    &
-                           n_min_steeps, lineal_search, n_points
+                           n_min_steeps, lineal_search, n_points, timers
 
 
 
@@ -78,7 +78,7 @@ subroutine lio_defaults()
     NBCH           = 10            ; exter              = .false.       ;
     field          = .false.       ;
 
-! TD-DFT transport options
+!   TD-DFT transport options
     Pop_Drive = 1;
 
 !   Distance restrain options
@@ -126,6 +126,7 @@ subroutine lio_defaults()
     SHFT           = .false.       ; GRAD               = .true.        ;
     BSSE           = .false.       ; sol                = .false.       ;
     primera        = .true.        ; watermod           = 0             ;
+    timers         = 0             ;
 
     return
 end subroutine lio_defaults
@@ -145,13 +146,19 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
                            assign_all_functions, energy_all_iterations,        &
                            remove_zero_weights, min_points_per_cube,           &
                            max_function_exponent, sphere_radius, M,Fock_Hcore, &
-                           Fock_Overlap, P_density, OPEN
+                           Fock_Overlap, P_density, OPEN, timers
                          
     use ECP_mod,    only : Cnorm, ecpmode
 
     implicit none
     integer , intent(in) :: charge, nclatom, natomin, Izin(natomin), callfrom
-    integer              :: i, ng2, ng3, ngdDyn, ngDyn, nqnuc, ierr, ios, MM, electrons
+    integer              :: i, ng2, ng3, ngdDyn, ngDyn, nqnuc, ierr, ios, MM,  &
+                            electrons
+
+    call g2g_set_options(free_global_memory, little_cube_size, sphere_radius, &
+                         assign_all_functions, energy_all_iterations,         &
+                         remove_zero_weights, min_points_per_cube,            &
+                         max_function_exponent, timers)
 
 !    call g2g_timer_start('lio_init')
 
@@ -188,10 +195,6 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
     ! Differentiate C for x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)
     if (ecpmode) allocate (Cnorm(ngDyn,nl)) 
 
-    call g2g_set_options(free_global_memory, little_cube_size, sphere_radius, &
-                         assign_all_functions, energy_all_iterations,         &
-                         remove_zero_weights, min_points_per_cube,            &
-                         max_function_exponent)
     call g2g_init()
 
     nqnuc = 0

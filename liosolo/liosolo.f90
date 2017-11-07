@@ -42,8 +42,6 @@ program liosolo
         endselect
     enddo
 
-    call g2g_timer_sum_start("Total")
-
     ! Reads options and coordinates files.
     call read_options(inpfile, charge)
     call read_coords(inpcoords)

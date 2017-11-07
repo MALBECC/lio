@@ -50,9 +50,6 @@ program liomd
         endselect
     enddo
 
-    ! Checks input files' existence.
-    call g2g_timer_sum_start("Total")
-
     ! Reads runtime options and input coordinates.
     call read_options(inpfile, charge)
     call read_coords(inpcoords)

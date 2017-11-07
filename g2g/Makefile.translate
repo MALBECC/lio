@@ -62,7 +62,6 @@ endif
 ifeq ($(analytics),0)
 
 else ifeq ($(analytics),1)
-   time=2
    profile=1
 
 else ifeq ($(analytics),2)

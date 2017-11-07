@@ -24,6 +24,8 @@ subroutine liomain(E, dipxyz)
     REAL*8, intent(inout) :: dipxyz(3), E
     integer :: idip_scrach
 
+    call g2g_timer_sum_start("Total")
+
     if (.not.allocated(Smat))    allocate(Smat(M,M))
     if (.not.allocated(RealRho)) allocate(RealRho(M,M))
     if (.not.allocated(sqsm))    allocate(sqsm(M,M))

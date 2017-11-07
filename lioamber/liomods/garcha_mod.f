@@ -159,6 +159,7 @@ c      parameter rmintsol=16.0D0
      > restr_r0
 !-Debug. Activates check of NaN in Fock and Rho
       Logical :: Dbug
+      integer :: timers
 
 !-Temporal variable for the transition of change RMM array int smaller arrays
 	logical :: break_rmm

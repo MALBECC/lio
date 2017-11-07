@@ -56,6 +56,9 @@ namespace G2G {
   extern bool energy_all_iterations;
   extern double big_function_cutoff;
   extern double free_global_memory;
+
+  extern bool timer_sum;
+  extern bool timer_single;
 }
 
 #endif

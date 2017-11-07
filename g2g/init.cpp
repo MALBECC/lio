@@ -250,13 +250,8 @@ extern "C" void g2g_new_grid_(const unsigned int& grid_type) {
 
 template<bool compute_rmm, bool lda, bool compute_forces> void g2g_iteration(bool compute_energy, double* fort_energy_ptr, double* fort_forces_ptr)
 {
-  Timer timer; Timers timers;
-
-  timer.start();
+  Timers timers;
   partition.solve(timers, compute_rmm, lda, compute_forces, compute_energy, fort_energy_ptr, fort_forces_ptr, fortran_vars.OPEN);
-  timer.stop();
-
-  cout << "iteracion total: " << timer << endl;
 }
 
 //===============================================================================================================
@@ -319,18 +314,33 @@ namespace G2G
     bool   remove_zero_weights   = true ;
     bool   energy_all_iterations = false;
     double free_global_memory    = 0.0  ;
+    bool   timer_single          = false;
+    bool   timer_sum             = false;
 }
 
 //=================================================================================================================
 extern "C" void g2g_set_options_(double * fort_fgm , double * fort_lcs, 
                                  double * fort_sr  , bool   * fort_aaf, 
                                  bool   * fort_eai , bool   * fort_rzw, 
-                                 uint   & fort_mppc, uint   & fort_mfe)
+                                 uint   & fort_mppc, uint   & fort_mfe,
+                                 uint   & fort_time)
 {
+    uint timer_level = 0;
+
     free_global_memory    = *fort_fgm ; little_cube_size      = *fort_lcs  ;
     sphere_radius         = *fort_sr  ; assign_all_functions  = *fort_aaf  ;
     energy_all_iterations = *fort_eai ; remove_zero_weights   = *fort_rzw  ;
     min_points_per_cube   = fort_mppc ; max_function_exponent = fort_mfe   ;
+    timer_level           = fort_time ;
+
+    if (timer_level > 1)
+    {
+       timer_sum = true;
+    }
+    if (timer_level % 2 == 1)
+    {
+       timer_single = true;
+    }
 }
 
 

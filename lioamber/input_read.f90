@@ -26,7 +26,7 @@ subroutine read_options(inputFile, charge)
                            sphere_radius, dipole, lowdin, mulliken,            &
                            print_coeffs, number_restr, Dbug, steep, Force_cut, &
                            Energy_cut, minimzation_steep, n_min_steeps,        &
-                           lineal_search, n_points
+                           lineal_search, n_points, timers
 
 
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, verbose_ECP,  &
@@ -63,7 +63,7 @@ subroutine read_options(inputFile, charge)
                    ! Distance Restrain
                    number_restr,                                               &
                    ! Debug variables
-                   Dbug,                                                       &
+                   Dbug, timers,                                               &
                    ! Geometry optimizations
                    steep, Force_cut, Energy_cut, minimzation_steep,            &
                    n_min_steeps,lineal_search,n_points,                        &

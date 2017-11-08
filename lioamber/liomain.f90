@@ -71,8 +71,6 @@ subroutine liomain(E, dipxyz)
         if (print_coeffs) call write_orbitals(29)
     endif
 
-    if ((restart_freq.gt.0).and.(MOD(npas, restart_freq).eq.0)) call write_restart(88)
-
     return
 end subroutine liomain
 

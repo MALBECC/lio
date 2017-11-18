@@ -213,24 +213,23 @@ else ifeq ($(cuda),3)
 endif
 
 ifeq ($(use_cublas),1)
-include cublasmath/cublasmath.mk
-SRCDIRS += cublasmath
-OBJECTS += cublasmath.o
-OBJECTS += fortran.o
+	include cublasmath/cublasmath.mk
+	SRCDIRS += cublasmath
+	OBJECTS += cublasmath.o
+	OBJECTS += fortran.o
 
-tmplist := 
-tmplist += cublasmath.o
-$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/general_module.mod
-$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
-$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fortran.o
+	tmplist :=
+	tmplist += cublasmath.o
+	$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/general_module.mod
+	$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
+	$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fortran.o
 
-tmplist :=
-tmplist += SCF.o SCFop.o TD.o converger_subs.o
-$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/cublasmath.mod
+	tmplist :=
+	tmplist += SCF.o SCFop.o TD.o converger_subs.o
+	$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/cublasmath.mod
 
-$(OBJPATH)/fortran.o: $(CUDA_HOME)/src/fortran.c
-	$(CC) -fPIC -DCUBLAS_GFORTRAN -O3 -c $< -o $@ -I$(CUDA_HOME)/include
-
+	$(OBJPATH)/fortran.o: $(CUDA_HOME)/src/fortran.c
+		$(CC) -fPIC -DCUBLAS_GFORTRAN -O3 -c $< -o $@ -I$(CUDA_HOME)/include
 endif
 
 
@@ -245,13 +244,13 @@ OBJECTS += garcha_mod.o
 SRCDIRS += liomods
 
 tmplist := dft_get_mm_forces.o dft_get_qm_forces.o
-tmplist += get_restrain_energy_forces.o 
+tmplist += get_restrain_energy_forces.o
 tmplist += dip.o dipmem.o drive.o grid.o init_amber.o init.o
 tmplist += jarz.o lio_finalize.o predictor.o
 tmplist += SCF.o SCF_in.o SCFop.o TD.o cubegen.o
 tmplist += maskrmm.o write_output.o SCF_exter.o
-tmplist += intECP.o
-tmplist += faint_cpu77.o
+tmplist += intECP.o elec.o func.o density.o
+tmplist += faint_cpu77.o steep.o transport.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
 
 
@@ -277,7 +276,7 @@ include liosubs/liosubs.mk
 
 tmplist :=
 tmplist += SCF.o init_lio.o
-tmplist += lionml_subs.o
+tmplist += lionml_subs.o atompot_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/liosubs.mod
 
 

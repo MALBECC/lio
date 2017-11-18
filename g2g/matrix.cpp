@@ -35,7 +35,6 @@ template<class T> bool Matrix<T>::is_allocated(void) const {
  ***************************/
 template<class T> void HostMatrix<T>::alloc_data(void) {
   assert(this->bytes() != 0);
-  int bytes = this->bytes();
   int posix_return = 0;
 
   if (pinned) {

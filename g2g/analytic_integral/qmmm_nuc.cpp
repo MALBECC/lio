@@ -15,21 +15,21 @@ using std::cout;
 using std::vector;
 using std::endl;
 
-namespace AINT
-{
+namespace AINT {
 
-template<class scalar_type>
-void QMMMIntegral<scalar_type>::calc_nuc_gradient( double* qm_forces, double* mm_forces )
-{
+template <class scalar_type>
+void QMMMIntegral<scalar_type>::calc_nuc_gradient(double* qm_forces,
+                                                  double* mm_forces) {
   for (uint i = 0; i < G2G::fortran_vars.atoms; i++) {
     double3 qm_pos = G2G::fortran_vars.atom_positions(i);
     for (uint j = 0; j < integral_vars.clatoms; j++) {
       double3 mm_pos = integral_vars.clatom_positions(j);
       double3 diff = qm_pos - mm_pos;
-      double dist = diff.x*diff.x + diff.y*diff.y + diff.z*diff.z;
+      double dist = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
       dist = sqrt(dist);
 
-      double prefactor = -integral_vars.clatom_charges(j) * (G2G::fortran_vars.atom_types(i)+1) / pow(dist,3.0);
+      double prefactor = -integral_vars.clatom_charges(j) *
+                         (G2G::fortran_vars.atom_types(i) + 1) / pow(dist, 3.0);
       qm_forces[i + 0 * G2G::fortran_vars.atoms] += prefactor * diff.x;
       qm_forces[i + 1 * G2G::fortran_vars.atoms] += prefactor * diff.y;
       qm_forces[i + 2 * G2G::fortran_vars.atoms] += prefactor * diff.z;
@@ -40,19 +40,19 @@ void QMMMIntegral<scalar_type>::calc_nuc_gradient( double* qm_forces, double* mm
   }
 }
 
-template<class scalar_type>
-void QMMMIntegral<scalar_type>::calc_nuc_energy( double& Ens )
-{
+template <class scalar_type>
+void QMMMIntegral<scalar_type>::calc_nuc_energy(double& Ens) {
   Ens = 0.0;
   for (uint i = 0; i < G2G::fortran_vars.atoms; i++) {
     double3 qm_pos = G2G::fortran_vars.atom_positions(i);
     for (uint j = 0; j < integral_vars.clatoms; j++) {
       double3 mm_pos = integral_vars.clatom_positions(j);
       double3 diff = qm_pos - mm_pos;
-      double dist = diff.x*diff.x + diff.y*diff.y + diff.z*diff.z;
+      double dist = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
       dist = sqrt(dist);
 
-      double E = integral_vars.clatom_charges(j) * (G2G::fortran_vars.atom_types(i)+1) / dist;
+      double E = integral_vars.clatom_charges(j) *
+                 (G2G::fortran_vars.atom_types(i) + 1) / dist;
       Ens += E;
     }
   }
@@ -63,5 +63,4 @@ template class QMMMIntegral<float>;
 #else
 template class QMMMIntegral<double>;
 #endif
-
 }

@@ -6,13 +6,13 @@
     PmQ[1] = P[1] - nuc_pos_dens_sh[j].y;
     PmQ[2] = P[2] - nuc_pos_dens_sh[j].z;
     scalar_type T = (PmQ[0] * PmQ[0] + PmQ[1] * PmQ[1] + PmQ[2] * PmQ[2]) * rho;
-    lio_gamma<scalar_type,0>(F_mT,T);
+    lio_gamma<scalar_type, 0>(F_mT, T);
   }
   {
 #ifdef FOCK_CALC
-    my_fock[0] += (double)( fit_dens_sh[j+0] * prefactor_dens *  F_mT[0] );
+    my_fock[0] += (double)(fit_dens_sh[j + 0] * prefactor_dens * F_mT[0]);
 #else
-    rc_sh[0][tid] += (double)( dens[0] * prefactor_dens *  F_mT[0] );
+    rc_sh[0][tid] += (double)(dens[0] * prefactor_dens * F_mT[0]);
 #endif
   }
 }

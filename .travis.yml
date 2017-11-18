@@ -1,1 +1,1 @@
-language: cpp
+script: ./configure && make -j cpu=1 cuda=0

@@ -1,1 +1,5 @@
+language: cpp
+sudo: required
+before_install:
+  - sudo apt-get install gfortran
 script: ./configure && make -j cpu=1 cuda=0

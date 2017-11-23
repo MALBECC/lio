@@ -1074,7 +1074,7 @@
 !###################################################################!
 !# DIPOLE MOMENT CALCULATION
               if(istep.eq.1) then
-                 call write_dipole(dipxyz, 0, 134, .true.)
+                 call write_dipole_td(dipxyz, 0, 134, .true.)
 !aca hay q agregar q escriba ts  NCO  field en cada archivo, si o es splito propagation en NCO poner 1
               endif
               if ((propagator.eq.2).and.(istep.lt.lpfrg_steps)&
@@ -1083,17 +1083,13 @@
                      call g2g_timer_start('DIPOLE')
                      call dip(dipxyz)
                      call g2g_timer_stop('DIPOLE')
-                     dipole_norm = sqrt(dipxyz(1)**2 + dipxyz(2)**2&
-                                   + dipxyz(3)**2)
-                     call write_dipole(dipxyz, dipole_norm,134,.false.)
+                     call write_dipole_td(dipxyz, t, 134, .false.)
                   endif
               else
                   call g2g_timer_start('DIPOLE')
                   call dip(dipxyz)
                   call g2g_timer_stop('DIPOLE')
-                  dipole_norm = sqrt(dipxyz(1)**2 + dipxyz(2)**2&
-                               + dipxyz(3)**2)
-                  call write_dipole(dipxyz, dipole_norm, 134, .false.)
+                  call write_dipole_td(dipxyz, t, 134, .false.)
               endif
 ! u in Debyes
 !# END OF DIPOLE MOMENT CALCULATION

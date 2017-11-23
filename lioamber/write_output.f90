@@ -80,9 +80,7 @@ subroutine write_dipole_td(dipxyz, time, uid, header)
 
     open(unit = uid, file = "dipole_moment_td")
     if (header) then
-       write(UID,*)
        write(UID,*) '# TIME (fs), DIPX, DIPY, DIPZ (Debye)'
-       write(UID,*)
     else
        write(UID,*) time, dipxyz(1), dipxyz(2), dipxyz(3)
     endif

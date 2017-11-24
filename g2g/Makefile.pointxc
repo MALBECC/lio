@@ -1,6 +1,8 @@
 # EXTERNALS
-accumulate_point.o: calc_ggaCS.h calc_ggaOS.h calc_ldaCS.h
-iteration.o: calc_ggaCS.h calc_ggaOS.h calc_ldaCS.h
+vpath 
+# accumulate_point.o: calc_ggaCS.h calc_ggaOS.h calc_ldaCS.h
+cpu/iteration.o : pointxc/calc_ggaCS.h pointxc/calc_ggaOS.h pointxc/calc_ldaCS.h
+cuda/iteration.o: pointxc/calc_ggaCS.h pointxc/calc_ggaOS.h pointxc/calc_ldaCS.h
 
 # INTERNALS
 #calc_ggaCS.h: pbeCS.h

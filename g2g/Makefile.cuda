@@ -47,7 +47,7 @@ ARCHFLAGS	 :=
 INCLUDES  += -I. -I$(CUDA_HOME)/include
 
 # Libs
-CUDA_LDFLAGS    := -L$(CUDA_HOME)/lib64 -L$(CUDA_HOME)/lib
+CUDA_LDFLAGS    := -L$(CUDA_HOME)/lib64/stubs -L$(CUDA_HOME)/lib64 -L$(CUDA_HOME)/lib
 
 # Warning flags
 CXXWARN_FLAGS := \

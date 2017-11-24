@@ -19,7 +19,7 @@ OBJ          += $(AINT_SRC:%.cpp=%.o)
 CPU_SOURCES  := $(wildcard cpu/*.cpp)
 SRCS         += $(CPU_SOURCES)
 OBJ          += $(CPU_SOURCES:%.cpp=%.o)
-CXXFLAGS     += -DCPU_KERNELS=1 -I$(MKLROOT)/include
+CXXFLAGS     += -DCPU_KERNELS=1 -I$(MKLROOT)/include -Wno-unused-function
 CPU          := 1
 
 ifneq ($(cuda),0)

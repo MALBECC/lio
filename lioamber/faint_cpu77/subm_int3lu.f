@@ -24,6 +24,7 @@ c F also updated with exchange correlation part, also energy
 c is updated
 c this subroutine calls the fitting for exchange-correlation
 c-----------------------------------------------------------------
+      module subm_int3lu; contains
       subroutine int3lu(E2)
        use garcha_mod
        implicit real*8 (a-h,o-z)
@@ -386,3 +387,4 @@ c of Fock matrix and also for the exchange-correlation energy
 
       return
       end subroutine int3lu
+      end module subm_int3lu

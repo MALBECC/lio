@@ -22,6 +22,7 @@ c Output: forces on nuclei
 c G matrix should be inverted, 
 c later on, for evaluating  Coulomb terms
 c-----------------------------------------------------------------
+      module subm_int2G; contains
       subroutine int2G(f)
             use garcha_mod
 c
@@ -797,3 +798,4 @@ c     enddo
 c-------------------------------------------------------------------
       return
       end subroutine
+      end module subm_int2G

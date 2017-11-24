@@ -22,6 +22,7 @@ c Output, derivative part coming from overlap
 c debugged ( or supposed to) 29-7-92
 c Dario Estrin
 c-------------------------------------------------------------------
+      module subm_intSG; contains
       subroutine intSG(ff)
         use garcha_mod
 c
@@ -644,3 +645,4 @@ c     pause
 c
       return
       end subroutine
+      end module subm_intSG

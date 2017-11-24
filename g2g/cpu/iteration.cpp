@@ -310,9 +310,10 @@ void PointGroupCPU<scalar_type>::solve_opened(
   vector<std::vector<vec_type3> > forces_mat_a, forces_mat_b;
   HostMatrix<scalar_type> factors_rmm_a, factors_rmm_b;
 
-  if (compute_rmm || compute_forces)
+  if (compute_rmm || compute_forces) {
     factors_rmm_a.resize(this->points.size(), 1);
-  factors_rmm_b.resize(this->points.size(), 1);
+    factors_rmm_b.resize(this->points.size(), 1);
+  }
 
   if (compute_forces) {
     forces_a.resize(this->total_nucleii(), vec_type3(0.f, 0.f, 0.f));

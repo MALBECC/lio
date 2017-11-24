@@ -121,7 +121,7 @@
           ppotati=0
        END DO
        WRITE(*,4166)
-       WRITE(*,4167),ppotat_acum
+       WRITE(*,4167) ppotat_acum
        WRITE(*,4168)
        WRITE(*,*)
 

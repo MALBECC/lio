@@ -16,7 +16,8 @@
 //----------------------------------------------------------------------
 // References:
 // [a]J.P.~Perdew, K.~Burke, and M.~Ernzerhof, submiited to PRL, May96
-// [b]J.P. Perdew and Y. Wang, Phys. Rev.  B {\bf 33},  8800  (1986); {\bf 40},  3399  (1989) (E).
+// [b]J.P. Perdew and Y. Wang, Phys. Rev.  B {\bf 33},  8800  (1986); {\bf 40},
+// 3399  (1989) (E).
 //----------------------------------------------------------------------
 // Formulas:
 //      e_x[unif]=ax*rho^(4/3)  [LDA]
@@ -31,45 +32,44 @@
 #include "../fix_compile.h"
 
 namespace G2G {
-#define EASYPBE_AX   ((scalar_type) -0.738558766382022405884230032680836f)
-#define EASYPBE_UM   ((scalar_type)  0.2195149727645171f)
-#define EASYPBE_UK   ((scalar_type)  0.804f)
-#define EASYPBE_UL   ((scalar_type)  0.273028573090195f)
+#define EASYPBE_AX ((scalar_type)-0.738558766382022405884230032680836f)
+#define EASYPBE_UM ((scalar_type)0.2195149727645171f)
+#define EASYPBE_UK ((scalar_type)0.804f)
+#define EASYPBE_UL ((scalar_type)0.273028573090195f)
 // UL = UM / UK
 
-template<class scalar_type> __host__ __device__
-void pbeOS_exch( scalar_type rho, scalar_type s, scalar_type u, scalar_type v,
-                 scalar_type& ex, scalar_type& vx)
-{
-   // Construct LDA exchange energy density
-   scalar_type rho13  = cbrt( rho );
-   scalar_type exunif = (scalar_type)EASYPBE_AX * rho13;
+template <class scalar_type>
+__host__ __device__ void pbeOS_exch(scalar_type rho, scalar_type s,
+                                    scalar_type u, scalar_type v,
+                                    scalar_type& ex, scalar_type& vx) {
+  // Construct LDA exchange energy density
+  scalar_type rho13 = cbrt(rho);
+  scalar_type exunif = (scalar_type)EASYPBE_AX * rho13;
 
-   // Construct PBE enhancement factor and calculate Ex
-   scalar_type s2 = s * s;
-   scalar_type s3 = s * s2;
-   scalar_type p0 = (scalar_type)1.0f + EASYPBE_UL * s2;
+  // Construct PBE enhancement factor and calculate Ex
+  scalar_type s2 = s * s;
+  scalar_type s3 = s * s2;
+  scalar_type p0 = (scalar_type)1.0f + EASYPBE_UL * s2;
 
-   scalar_type fxpbe = (scalar_type)1.0f + EASYPBE_UK - EASYPBE_UK/p0;
-   ex = exunif * fxpbe;
+  scalar_type fxpbe = (scalar_type)1.0f + EASYPBE_UK - EASYPBE_UK / p0;
+  ex = exunif * fxpbe;
 
-   // Find first and second derivatives of Fx w.r.t s.
-   // Fs = (1/s)*dFxPBE/ds  || Fss = d Fs/ds
-   scalar_type p2 = p0 * p0;
-   scalar_type Fs = 2.0f * EASYPBE_UM / p2;
+  // Find first and second derivatives of Fx w.r.t s.
+  // Fs = (1/s)*dFxPBE/ds  || Fss = d Fs/ds
+  scalar_type p2 = p0 * p0;
+  scalar_type Fs = 2.0f * EASYPBE_UM / p2;
 
-   scalar_type F1 = -4.0f * EASYPBE_UL * s * Fs;
-   scalar_type Fss = F1/p0;
+  scalar_type F1 = -4.0f * EASYPBE_UL * s * Fs;
+  scalar_type Fss = F1 / p0;
 
-   // Calculate potential from [b](24)
-   scalar_type vx2 = (4.0f / 3.0f) * fxpbe;
-   scalar_type vx3 = v * Fs;
-   scalar_type vx4 = (u - (4.0f / 3.0f) * s3) * Fss;
-   vx = exunif * (vx2 - vx4 - vx3);
+  // Calculate potential from [b](24)
+  scalar_type vx2 = (4.0f / 3.0f) * fxpbe;
+  scalar_type vx3 = v * Fs;
+  scalar_type vx4 = (u - (4.0f / 3.0f) * s3) * Fss;
+  vx = exunif * (vx2 - vx4 - vx3);
 }
 #undef EASYPBE_AX
 #undef EASYPBE_UM
 #undef EASYPBE_UK
 #undef EASYPBE_UL
-
 }

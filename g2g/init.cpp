@@ -23,9 +23,9 @@ Partition partition;
 
 /* global variables */
 namespace G2G {
-FortranVars fortran_vars;
-int cpu_threads = 0;
-int gpu_threads = 0;
+  FortranVars fortran_vars;
+  int cpu_threads=0;
+  int gpu_threads=0;
 }
 
 /* methods */
@@ -61,18 +61,15 @@ template <class T>
 void gpu_set_atom_positions(const HostMatrix<T>& m);
 }
 //==========================================================================================
-extern "C" void g2g_parameter_init_(
-    const unsigned int& norm, const unsigned int& natom,
-    const unsigned int& max_atoms,
-    const unsigned int& ngaussians,  // const unsigned int& ngaussiansd,
-    double* r, double* Rm, const unsigned int* Iz, const unsigned int* Nr,
-    const unsigned int* Nr2, unsigned int* Nuc, const unsigned int& M,
-    unsigned int* ncont, const unsigned int* nshell, double* c, double* a,
-    double* RMM, const unsigned int& M5,
-    const unsigned int& M3, double* rhoalpha, double* rhobeta,
-    const unsigned int& nco, bool& OPEN, const unsigned int& nunp,
-    const unsigned int& nopt, const unsigned int& Iexch, double* e, double* e2,
-    double* e3, double* wang, double* wang2, double* wang3){
+extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int& natom, const unsigned int& max_atoms, const unsigned int& ngaussians,// const unsigned int& ngaussiansd,
+                                    double* r, double* Rm, const unsigned int* Iz, const unsigned int* Nr, const unsigned int* Nr2, unsigned int* Nuc,
+                                    const unsigned int& M, unsigned int* ncont, const unsigned int* nshell, double* c, double* a,
+                                    double* RMM, const unsigned int& M5, const unsigned int& M3, double* rhoalpha, double* rhobeta,
+                                    const unsigned int& nco, bool& OPEN, const unsigned int& nunp, const unsigned int& nopt, const unsigned int& Iexch,
+                                    double* e, double* e2, double* e3, double* wang, double* wang2, double* wang3,
+                                    bool& use_libxc, const unsigned int& ex_functional_id, const unsigned int& ec_functional_id)
+{
+  printf("<======= GPU Code Initialization ========>\n");
   fortran_vars.atoms = natom;
   fortran_vars.max_atoms = max_atoms;
   fortran_vars.gaussians = ngaussians;
@@ -196,6 +193,11 @@ extern "C" void g2g_parameter_init_(
   fortran_vars.atom_atom_dists =
       HostMatrix<double>(fortran_vars.atoms, fortran_vars.atoms);
   fortran_vars.nearest_neighbor_dists = HostMatrix<double>(fortran_vars.atoms);
+
+  // Variables para configurar libxc
+  fortran_vars.use_libxc = use_libxc;
+  fortran_vars.ex_functional_id = ex_functional_id;
+  fortran_vars.ec_functional_id = ec_functional_id;
 
 #if GPU_KERNELS
   G2G::gpu_set_variables();

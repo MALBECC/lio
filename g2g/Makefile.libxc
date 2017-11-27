@@ -4,16 +4,22 @@
 INCLUDES += -I$(LIBXC_INCLUDE)
 
 #EXTERNALS
-libxcproxy.o: libxcproxy.h
+libxcproxy.o: /libxc/libxcproxy.h
 
 #LIBXC FLAGS
 #LIBXC_FLAGS = -L/opt/etsf/lib/
 
 #Common flags
 ifeq ($(libxc),1)
-    CXXFLAGS += -DUSE_LIBXC=1 $(INCLUDES)
+    CXXFLAGS += -fPIC -DUSE_LIBXC=1 $(INCLUDES)
 else
     CXXFLAGS += -DUSE_LIBXC=0 $(INCLUDES)
+endif
+
+ifeq ($(full_double),1)
+    CXXFLAGS += -DFULL_DOUBLE=1
+else
+    CXXFLAGS += -DFULL_DOUBLE=0
 endif
 
 

@@ -1,5 +1,6 @@
 # DO NOT DELETE
 include Makefile.pointxc
+include Makefile.libxc
 
 classify_functions.o: init.h matrix.h cuda_includes.h cuda/cuda_extra.h
 classify_functions.o: scalar_vector_types.h datatypes/cpu_primitives.h

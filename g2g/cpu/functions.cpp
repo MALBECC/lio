@@ -7,6 +7,7 @@
 #include "../init.h"
 #include "../matrix.h"
 #include "../partition.h"
+
 using namespace std;
 
 namespace G2G {

@@ -32,6 +32,10 @@ ifneq ($(cuda),0)
   LIBRARIES    := $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
 endif
 
+ifeq ($(libxc),1)
+  LIBXC_LIBS := -L$(LIBXCPATH) -lxc -lxcf03 -lxcf90
+endif
+
 ifneq ($(aint_gpu_level),)
   CXXFLAGS     += -DAINT_GPU_LEVEL=$(aint_gpu_level)
   NVCCFLAGS    += -DAINT_GPU_LEVEL=$(aint_gpu_level)
@@ -66,7 +70,7 @@ else
 endif
 
 ## Define libraries
-LIBRARIES := $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
+LIBRARIES := $(CUDA_LDFLAGS) $(CUDA_LIBS) $(LIBXC_LIBS) -lrt
 ifeq ($(intel),0)
   LIBRARIES += -L$(PACK_LIB_DIR) -lcblas
   CXXFLAGS += -DINTEL_COMP=0

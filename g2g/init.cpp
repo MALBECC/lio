@@ -86,7 +86,9 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
 #ifdef _DEBUG
   // trap floating point exceptions on debug
   signal(SIGFPE, SIG_DFL);
-  feenableexcept(FE_INVALID);
+  //feenableexcept(FE_INVALID);
+  // This line interferes with Lapack routines on floating point error catching.
+  // Commented out until a better solution is found.
 #endif
 
   /* MO BASIS SET */

@@ -282,7 +282,7 @@ c
 c ======>>>>>> CASE OF NO STARTING GUESS PROVIDED,  <<<<<=========
 c   1 E FOCK MATRIX USED
 c
-      if((.not.ATRHO).and.(.not.VCINP).and.primera) then
+      if((.not.VCINP).and.primera) then
         primera=.false.
 c QUE HACE ACA ?????
         do i=1,M

@@ -20,7 +20,7 @@
      > solv2
       character*4 ctype
       logical exists,MEMO,predcoef
-      logical done(ntq),used,NORM,OPEN,ATRHO,DIRECT,VCINP,SHFT,DIIS
+      logical done(ntq),used,NORM,OPEN,DIRECT,VCINP,SHFT,DIIS
       logical done_fit(ntq)
       logical dens,EXTR,SVD,field1
 !write1
@@ -38,8 +38,7 @@
       character*20 cube_dens_file,cube_orb_file,cube_elec_file
 
 
-      dimension OCC(40),oc2(400),ATCOEF(100*ng0),ighost(ntq),
-     > ighost1(ntq)
+      dimension ighost(ntq), ighost1(ntq)
       real*8 e_(50,3),wang(50),e_2(116,3),wang2(116),e3(194,3), ! intg1 e intg2
      > wang3(194)                                               !
       integer Nr(0:54),Nr2(0:54)

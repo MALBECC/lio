@@ -12,12 +12,12 @@
       USE garcha_mod, ONLY : a,c, isotop, basis, done, done_fit, natomc, nnps, &
       nnpp, nnpd, nns, nnp, nnd, atmin, jatc, ncf, lt, at, ct, nnat, nshell,   &
       nuc, ncont, nlb, nshelld, cd, ad, Nucd, ncontd, nld, Nucx, indexii,      &
-      ncontx, cx, ax, indexiid, X, XX, RMM, rhoalpha,rhobeta, af, oc2, ATRHO,  &
+      ncontx, cx, ax, indexiid, X, XX, RMM, rhoalpha,rhobeta, af,              &
       date, basis_set, fitting_set, dens, e_, e_2, e3, exists, NORM, fcoord,   &
       fmulliken, natom, frestart, M, FAC, Iexch, int_basis, max_func, integ,   &
       frestartin, Md, NCO, nng, npas, Nr, used, STR, verbose, omit_bas, Nr2,   &
       wang, wang2, wang3, VCINP, OPEN, OPEN1, whatis, Num, Iz, pi,             &
-      Rm2, rqm, rmax, OCC, ATCOEF, Nunp, nl, nt, ng, ngd, restart_freq,        &
+      Rm2, rqm, rmax, Nunp, nl, nt, ng, ngd, restart_freq,             &
       writexyz, number_restr, restr_pairs,restr_index,restr_k,restr_w,restr_r0,&
       mulliken
 
@@ -34,7 +34,7 @@
       INTEGER, INTENT(IN) :: ng2, ngDyn, ngdDyn
       REAL*8 :: atmint, iprob
       REAL*8 :: xnorm
-      INTEGER :: NCOa, NCOb, ncon, nraw, NAO, NGF
+      INTEGER :: NCOa, NCOb, ncon, nraw
       INTEGER :: is,ip,id, index
       INTEGER :: igpu, ios, NBAS, iatom
       INTEGER :: M3, M5, M7, M9, M11, M13, M15, M17, M18, M18b, MM, MMd !punteros
@@ -1048,96 +1048,12 @@
               enddo
             enddo
           enddo
-!c
         endif
       endif
-!c
-!c density matrix kept temporarily in S
 !c END of case in which density matrix is explicitly given in input
-!c--------------------------------------------------------------------
-!c
-!c case for initial guess constructed from atomic densities -------
-      if (ATRHO) then
-        k1=0
-        l1=0
-        NN=0
-        do i=1,NBAS
-!c
-!c         read(1,nml=RHOINP)
-!c
-          do j=1,nnat(i)
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! NAO y NGF de donde salen?????????????????????????, Nick
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-            do k=1,NAO
-              k1=k1+1
-!c
-              do l=1,NGF
-                l1=NN+l
-                kl=(k-1)*NGF+l
-                XX(l1,k1)=atcoef(kl)
-                oc2(k1)=OCC(k)
-              enddo
-            enddo
-!c
-            NN=NN+NGF
-          enddo
-        enddo
-!c------------------------------------------------------------
-!c S used as scratch array here
-        do i=1,M
-          do j=1,M
-            X(i,j)=0.
-            do l=1,k1
-              X(i,j)=X(i,j)+oc2(l)*XX(i,l)*XX(j,l)
-            enddo 
-          enddo
-        enddo
-!c
-!c approximate vectors construction
-!c
-        if (.not.OPEN) then
-          kk=M18-1
-          do k=1,NCO
-            do i=1,M
-              kk=kk+1
-              RMM(kk)=XX(i,k) 
-            enddo
-          enddo
-!c
-        else
-!c
-          NCOa=NCO
-          NCOb=NCO+Nunp
-          M18b=M18+M*NCOa
-!c
-          kk=M18-1
-          do k=1,NCOa
-            do i=1,M
-              kk=kk+1
-              RMM(kk)=XX(indexii(i),k)
-            enddo
-          enddo
-!c
-          kk=M18b-1
-          do k=1,NCOb
-            do i=1,M
-              kk=kk+1
-              RMM(kk)=XX(indexii(i),k)
-            enddo
-          enddo 
-        endif
-      endif
-!c
 !c density matrix stored temporarily in S, then it should be changed
 !c according to the shell ordering of the basis set and kept in P
-!c------ end of option atomic densities -------------------------------------
-!c
+
 !c changes to the shell order ( s , p, d....)
       k=0
       do j=1,M

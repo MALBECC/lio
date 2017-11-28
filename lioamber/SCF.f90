@@ -992,7 +992,7 @@ subroutine SCF(E)
 
 
 	SUBROUTINE starting_guess(xnano)
-	use garcha_mod, ONLY: RMM, ATRHO, VCINP, primera, M, X, Md, NCO
+	use garcha_mod, ONLY: RMM, VCINP, primera, M, X, Md, NCO
 	IMPLICIT NONE
 	integer :: info
 	real*8, dimension (M,M), intent(inout)::xnano
@@ -1026,7 +1026,7 @@ subroutine SCF(E)
 ! => (X^-1*C)^-1 * F' * (X^-1*C) = e
 !
 ! Calculate F' in RMM(M5)
-      if((.not.ATRHO).and.(.not.VCINP).and.primera) then
+      if((.not.VCINP).and.primera) then
         call g2g_timer_sum_start('initial guess')
         primera=.false.
         do i=1,M

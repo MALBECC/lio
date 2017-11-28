@@ -428,7 +428,7 @@ c => (X^-1*C)^-1 * F' * (X^-1*C) = e
 c
 
 c Calculate F' in RMM(M5)
-      if((.not.ATRHO).and.(.not.VCINP).and.primera) then
+      if((.not.VCINP).and.primera) then
         call g2g_timer_sum_start('initial guess')
         primera=.false.
         do i=1,M

@@ -22,7 +22,7 @@
       logical exists,MEMO,predcoef
       logical done(ntq),used,NORM,OPEN,ATRHO,DIRECT,VCINP,SHFT,DIIS
       logical done_fit(ntq)
-      logical TMP1,TMP2,dens,EXTR,SVD,field1
+      logical dens,EXTR,SVD,field1
 !write1
       logical Coul,GRAD,BSSE,integ,SVD1,sol,tipe
 !Prop,GRAD,BSSE,integ,SVD1,sol,tipe

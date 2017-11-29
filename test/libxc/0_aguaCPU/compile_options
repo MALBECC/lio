@@ -1,0 +1,1 @@
+cuda=0 cpu=1 libxc=1 openmp=0 time=1 non_optimize=1

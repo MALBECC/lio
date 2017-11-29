@@ -3,7 +3,7 @@ import itertools
 import random
 import sys
 if __name__ == '__main__':
-    opts = ["cpu","cuda","magma","cublas"]
+    opts = ["cpu","cuda","magma","cublas","libxc"]
 
     seq = list(itertools.product(["0","1"],repeat=len(opts)))
     all_sets = []

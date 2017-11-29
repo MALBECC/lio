@@ -57,24 +57,24 @@ LibxcProxy <scalar_type, width>::LibxcProxy()
 template <class scalar_type, int width>
 LibxcProxy <scalar_type, width>::LibxcProxy (int exchangeFunctionId, int correlationFuncionalId, int nspin)
 {
-    printf("LibxcProxy::LibxcProxy (%d,%d,%d) \n", exchangeFunctionId, correlationFuncionalId, nspin);
+    //printf("LibxcProxy::LibxcProxy (%d,%d,%d) \n", exchangeFunctionId, correlationFuncionalId, nspin);
 
     funcIdForExchange = exchangeFunctionId;
     funcIdForCorrelation = correlationFuncionalId;
     nspin = nspin;
 
-    printf("LibxcProxy::initFunctional () \n");
-    if (xc_func_init (&funcForExchange, funcIdForExchange, nspin) != 0){
-        fprintf (stderr, "Functional '%d' not found\n", funcIdForExchange);
+    //printf("LibxcProxy::initFunctional () \n");
+    if (xc_func_init (&funcForExchange, funcIdForExchange, nspin) != 0) {
+        //fprintf (stderr, "Functional '%d' not found\n", funcIdForExchange);
     } else {
-        fprintf (stdout, "Functional '%d' inited\n", funcIdForExchange);
+        //fprintf (stdout, "Functional '%d' inited\n", funcIdForExchange);
     }
 
-    printf("LibxcProxy::initFunctional () \n");
+    //printf("LibxcProxy::initFunctional () \n");
     if (xc_func_init (&funcForCorrelation, funcIdForCorrelation, nspin) != 0){
-        fprintf (stderr, "Functional '%d' not found\n", funcIdForCorrelation);
+        //fprintf (stderr, "Functional '%d' not found\n", funcIdForCorrelation);
     } else {
-        fprintf (stdout, "Functional '%d' inited\n", funcIdForCorrelation);
+        //fprintf (stdout, "Functional '%d' inited\n", funcIdForCorrelation);
     }
 
 }
@@ -93,7 +93,7 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type dens,
     const G2G::vec_type<scalar_type, width> &hess2,
     scalar_type &ex, scalar_type &ec, scalar_type &y2a)
 {
-    printf("LibxcProxy::doGGA () \n");
+    //printf("LibxcProxy::doGGA () \n");
 
     scalar_type rho[1] = {dens};
     // Libxc needs the 'contracted gradient'
@@ -126,7 +126,8 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type dens,
                 (double*)v2sigma,
                 NULL, NULL, NULL, NULL);
     } catch (int exception) {
-        fprintf (stderr, "Exception ocurred calling xc_gga for Exchange '%d' \n", exception);
+        //fprintf (stderr, "Exception ocurred calling xc_gga for Exchange '%d' \n", exception);
+        return;
     }
 
     try {
@@ -142,7 +143,8 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type dens,
                 (double*)v2sigmaC,
                 NULL, NULL, NULL, NULL);
     } catch (int exception) {
-        fprintf (stderr, "Exception ocurred calling xc_gga for Correlation '%d' \n", exception);
+        //fprintf (stderr, "Exception ocurred calling xc_gga for Correlation '%d' \n", exception);
+        return;
     }
 
     ex = exchange[0];

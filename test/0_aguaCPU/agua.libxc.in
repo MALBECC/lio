@@ -12,7 +12,7 @@ min_points_per_cube=1
 sphere_radius=0.5 
 energy_all_iterations=t
 verbose=t
-use_libxc=f
+use_libxc=t
 ex_functional_id=101
 ec_functional_id=130
 &end

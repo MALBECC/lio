@@ -7,6 +7,8 @@
       integer M,Md,natom,ntatom,NMAX,NCO,NUNP,igrid,igrid2
      >  ,Iexch,nsol,npas,npasw,idip,watermod,noconverge,
      > converge,ndiis,nang,propagator,NBCH
+      integer ex_functional_id, ec_functional_id
+      logical use_libxc
       integer restart_freq, energy_freq
       real*8 GOLD, TOLD, qmmmcut, dgtrig
 !      parameter (nng=100)

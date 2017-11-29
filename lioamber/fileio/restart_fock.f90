@@ -15,7 +15,7 @@
 ! Reads the Fock matrix from restart, rearranging it if needed, for open and   !
 ! closed shell cases in both single and double precision.                      !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine read_fock_cd(fock, M, UID)
+subroutine read_fock_restart_cd(fock, M, UID)
    ! fock : Fock matrix.
    ! M    : Fock matrix size.
    ! UID  : Input file unit ID.
@@ -26,9 +26,9 @@ subroutine read_fock_cd(fock, M, UID)
    rewind(UID)
    call read_sqmatrix(fock, M, UID)
    return
-end subroutine read_fock_cd
+end subroutine read_fock_restart_cd
 
-subroutine read_fock_cs(fock, M, UID)
+subroutine read_fock_restart_cs(fock, M, UID)
    ! fock : Fock matrix.
    ! M    : Fock matrix size.
    ! UID  : Input file unit ID.
@@ -39,9 +39,9 @@ subroutine read_fock_cs(fock, M, UID)
    rewind(UID)
    call read_sqmatrix(fock, M, UID)
    return
-end subroutine read_fock_cs
+end subroutine read_fock_restart_cs
 
-subroutine read_fock_od(fock_a, fock_b, M, UID)
+subroutine read_fock_restart_od(fock_a, fock_b, M, UID)
    ! fock_a : Fock matrix Alpha.
    ! fock_b : Fock matrix Beta.
    ! M      : Fock matrix size.
@@ -54,9 +54,9 @@ subroutine read_fock_od(fock_a, fock_b, M, UID)
    call read_sqmatrix(fock_a, M, UID)
    call read_sqmatrix(fock_b, M, UID)
    return
-end subroutine read_fock_od
+end subroutine read_fock_restart_od
 
-subroutine read_fock_os(fock_a, fock_b, M, UID)
+subroutine read_fock_restart_os(fock_a, fock_b, M, UID)
    ! fock_a : Fock matrix Alpha.
    ! fock_b : Fock matrix Beta.
    ! M      : Fock matrix size.
@@ -69,7 +69,7 @@ subroutine read_fock_os(fock_a, fock_b, M, UID)
    call read_sqmatrix(fock_a, M, UID)
    call read_sqmatrix(fock_b, M, UID)
    return
-end subroutine read_fock_os
+end subroutine read_fock_restart_os
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 
@@ -77,7 +77,7 @@ end subroutine read_fock_os
 ! Rearranges and prints Fock matrix for open and closed shell cases in both    !
 ! single and double precision.                                                 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine write_fock_cd(fock, M, UID)
+subroutine write_fock_restart_cd(fock, M, UID)
    ! fock : Fock matrix.
    ! M    : Fock matrix size.
    ! UID  : Output file unit ID.
@@ -88,9 +88,9 @@ subroutine write_fock_cd(fock, M, UID)
    rewind(UID)
    call write_sqmatrix(fock, M, UID)
    return
-end subroutine write_fock_cd
+end subroutine write_fock_restart_cd
 
-subroutine write_fock_cs(fock, M, UID)
+subroutine write_fock_restart_cs(fock, M, UID)
    ! fock : Fock matrix.
    ! M    : Fock matrix size.
    ! UID  : Output file unit ID.
@@ -101,9 +101,9 @@ subroutine write_fock_cs(fock, M, UID)
    rewind(UID)
    call write_sqmatrix(fock, M, UID)
    return
-end subroutine write_fock_cs
+end subroutine write_fock_restart_cs
 
-subroutine write_fock_od(fock_a, fock_b, M, UID)
+subroutine write_fock_restart_od(fock_a, fock_b, M, UID)
    ! fock_a : Fock matrix Alpha.
    ! fock_b : Fock matrix Beta.
    ! M      : Fock matrix size.
@@ -116,9 +116,9 @@ subroutine write_fock_od(fock_a, fock_b, M, UID)
    call write_sqmatrix(fock_a, M, UID)
    call write_sqmatrix(fock_b, M, UID)
    return
-end subroutine write_fock_od
+end subroutine write_fock_restart_od
 
-subroutine write_fock_os(fock_a, fock_b, M, UID)
+subroutine write_fock_restart_os(fock_a, fock_b, M, UID)
    ! fock_a : Fock matrix Alpha.
    ! fock_b : Fock matrix Beta.
    ! M      : Fock matrix size.
@@ -131,5 +131,5 @@ subroutine write_fock_os(fock_a, fock_b, M, UID)
    call write_sqmatrix(fock_a, M, UID)
    call write_sqmatrix(fock_b, M, UID)
    return
-end subroutine write_fock_os
+end subroutine write_fock_restart_os
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

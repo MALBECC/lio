@@ -23,7 +23,7 @@
 ! Reads the Rho matrix from restart, rearranging it if needed, for open and    !
 ! closed shell cases in both single and double precision, real and complex.    !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine read_rho_ccd(rho, M, UID)
+subroutine read_rho_restart_ccd(rho, M, UID)
    ! rho : Rho matrix.
    ! M   : Rho matrix size.
    ! UID : Input file unit ID.
@@ -34,9 +34,9 @@ subroutine read_rho_ccd(rho, M, UID)
    rewind(UID)
    call read_sqmatrix(rho, M, UID)
    return
-end subroutine read_rho_ccd
+end subroutine read_rho_restart_ccd
 
-subroutine read_rho_ccs(rho, M, UID)
+subroutine read_rho_restart_ccs(rho, M, UID)
    ! rho : Rho matrix.
    ! M   : Rho matrix size.
    ! UID : Input file unit ID.
@@ -47,9 +47,9 @@ subroutine read_rho_ccs(rho, M, UID)
    rewind(UID)
    call read_sqmatrix(rho, M, UID)
    return
-end subroutine read_rho_ccs
+end subroutine read_rho_restart_ccs
 
-subroutine read_rho_cd(rho, M, UID)
+subroutine read_rho_restart_cd(rho, M, UID)
    ! rho : Rho matrix.
    ! M   : Rho matrix size.
    ! UID : Input file unit ID.
@@ -60,9 +60,9 @@ subroutine read_rho_cd(rho, M, UID)
    rewind(UID)
    call read_sqmatrix(rho, M, UID)
    return
-end subroutine read_rho_cd
+end subroutine read_rho_restart_cd
 
-subroutine read_rho_cs(rho, M, UID)
+subroutine read_rho_restart_cs(rho, M, UID)
    ! rho : Rho matrix.
    ! M   : Rho matrix size.
    ! UID : Input file unit ID.
@@ -73,9 +73,9 @@ subroutine read_rho_cs(rho, M, UID)
    rewind(UID)
    call read_sqmatrix(rho, M, UID)
    return
-end subroutine read_rho_cs
+end subroutine read_rho_restart_cs
 
-subroutine read_rho_ocd(rho_a, rho_b, M, UID)
+subroutine read_rho_restart_ocd(rho_a, rho_b, M, UID)
    ! rho_a : Rho matrix Alpha.
    ! rho_b : Rho matrix Beta.
    ! M     : Rho matrix size.
@@ -88,9 +88,9 @@ subroutine read_rho_ocd(rho_a, rho_b, M, UID)
    call read_sqmatrix(rho_a, M, UID)
    call read_sqmatrix(rho_b, M, UID)
    return
-end subroutine read_rho_ocd
+end subroutine read_rho_restart_ocd
 
-subroutine read_rho_ocs(rho_a, rho_b, M, UID)
+subroutine read_rho_restart_ocs(rho_a, rho_b, M, UID)
    ! rho_a : Rho matrix Alpha.
    ! rho_b : Rho matrix Beta.
    ! M     : Rho matrix size.
@@ -103,9 +103,9 @@ subroutine read_rho_ocs(rho_a, rho_b, M, UID)
    call read_sqmatrix(rho_a, M, UID)
    call read_sqmatrix(rho_b, M, UID)
    return
-end subroutine read_rho_ocs
+end subroutine read_rho_restart_ocs
 
-subroutine read_rho_od(rho_a, rho_b, M, UID)
+subroutine read_rho_restart_od(rho_a, rho_b, M, UID)
    ! rho_a : Rho matrix Alpha.
    ! rho_b : Rho matrix Beta.
    ! M     : Rho matrix size.
@@ -118,9 +118,9 @@ subroutine read_rho_od(rho_a, rho_b, M, UID)
    call read_sqmatrix(rho_a, M, UID)
    call read_sqmatrix(rho_b, M, UID)
    return
-end subroutine read_rho_od
+end subroutine read_rho_restart_od
 
-subroutine read_rho_os(rho_a, rho_b, M, UID)
+subroutine read_rho_restart_os(rho_a, rho_b, M, UID)
    ! rho_a : Rho matrix Alpha.
    ! rho_b : Rho matrix Beta.
    ! M     : Rho matrix size.
@@ -133,7 +133,7 @@ subroutine read_rho_os(rho_a, rho_b, M, UID)
    call read_sqmatrix(rho_a, M, UID)
    call read_sqmatrix(rho_b, M, UID)
    return
-end subroutine read_rho_os
+end subroutine read_rho_restart_os
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 
@@ -141,7 +141,7 @@ end subroutine read_rho_os
 ! Rearranges and prints Rho matrix for open and closed shell cases in both     !
 ! single and double precision, real and complex                                !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine write_rho_ccd(rho, M, UID)
+subroutine write_rho_restart_ccd(rho, M, UID)
    ! rho : Rho matrix.
    ! M   : Rho matrix size.
    ! UID : Output file unit ID.
@@ -152,9 +152,9 @@ subroutine write_rho_ccd(rho, M, UID)
    rewind(UID)
    call write_sqmatrix(rho, M, UID)
    return
-end subroutine write_rho_ccd
+end subroutine write_rho_restart_ccd
 
-subroutine write_rho_ccs(rho, M, UID)
+subroutine write_rho_restart_ccs(rho, M, UID)
    ! rho : Rho matrix.
    ! M   : Rho matrix size.
    ! UID : Output file unit ID.
@@ -165,9 +165,9 @@ subroutine write_rho_ccs(rho, M, UID)
    rewind(UID)
    call write_sqmatrix(rho, M, UID)
    return
-end subroutine write_rho_ccs
+end subroutine write_rho_restart_ccs
 
-subroutine write_rho_cd(rho, M, UID)
+subroutine write_rho_restart_cd(rho, M, UID)
    ! rho : Rho matrix.
    ! M   : Rho matrix size.
    ! UID : Output file unit ID.
@@ -178,9 +178,9 @@ subroutine write_rho_cd(rho, M, UID)
    rewind(UID)
    call write_sqmatrix(rho, M, UID)
    return
-end subroutine write_rho_cd
+end subroutine write_rho_restart_cd
 
-subroutine write_rho_cs(rho, M, UID)
+subroutine write_rho_restart_cs(rho, M, UID)
    ! rho : Rho matrix.
    ! M   : Rho matrix size.
    ! UID : Output file unit ID.
@@ -191,9 +191,9 @@ subroutine write_rho_cs(rho, M, UID)
    rewind(UID)
    call write_sqmatrix(rho, M, UID)
    return
-end subroutine write_rho_cs
+end subroutine write_rho_restart_cs
 
-subroutine write_rho_ocd(rho_a, rho_b, M, UID)
+subroutine write_rho_restart_ocd(rho_a, rho_b, M, UID)
    ! rho_a : Rho matrix Alpha.
    ! rho_b : Rho matrix Beta.
    ! M     : Rho matrix size.
@@ -206,9 +206,9 @@ subroutine write_rho_ocd(rho_a, rho_b, M, UID)
    call write_sqmatrix(rho_a, M, UID)
    call write_sqmatrix(rho_b, M, UID)
    return
-end subroutine write_rho_ocd
+end subroutine write_rho_restart_ocd
 
-subroutine write_rho_ocs(rho_a, rho_b, M, UID)
+subroutine write_rho_restart_ocs(rho_a, rho_b, M, UID)
    ! rho_a : Rho matrix Alpha.
    ! rho_b : Rho matrix Beta.
    ! M     : Rho matrix size.
@@ -221,9 +221,9 @@ subroutine write_rho_ocs(rho_a, rho_b, M, UID)
    call write_sqmatrix(rho_a, M, UID)
    call write_sqmatrix(rho_b, M, UID)
    return
-end subroutine write_rho_ocs
+end subroutine write_rho_restart_ocs
 
-subroutine write_rho_od(rho_a, rho_b, M, UID)
+subroutine write_rho_restart_od(rho_a, rho_b, M, UID)
    ! rho_a : Rho matrix Alpha.
    ! rho_b : Rho matrix Beta.
    ! M     : Rho matrix size.
@@ -236,9 +236,9 @@ subroutine write_rho_od(rho_a, rho_b, M, UID)
    call write_sqmatrix(rho_a, M, UID)
    call write_sqmatrix(rho_b, M, UID)
    return
-end subroutine write_rho_od
+end subroutine write_rho_restart_od
 
-subroutine write_rho_os(rho_a, rho_b, M, UID)
+subroutine write_rho_restart_os(rho_a, rho_b, M, UID)
    ! rho_a : Rho matrix Alpha.
    ! rho_b : Rho matrix Beta.
    ! M     : Rho matrix size.
@@ -251,5 +251,5 @@ subroutine write_rho_os(rho_a, rho_b, M, UID)
    call write_sqmatrix(rho_a, M, UID)
    call write_sqmatrix(rho_b, M, UID)
    return
-end subroutine write_rho_os
+end subroutine write_rho_restart_os
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

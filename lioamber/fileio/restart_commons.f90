@@ -34,8 +34,8 @@ subroutine read_matrix_cd(matrix, size_a, size_b, start_a, start_b, UID)
    real*8                  :: temp_a, temp_b
    integer                 :: icount, jcount
 
-   do icount = 1, size_a
-   do jcount = 1, size_b
+   do icount = start_a, size_a
+   do jcount = start_b, size_b
       read(UID,*) temp_a, temp_b
       matrix(icount, jcount) = cmplx(temp_a, temp_b)
    enddo
@@ -51,8 +51,8 @@ subroutine read_matrix_cs(matrix, size_a, size_b, start_a, start_b, UID)
    real*4                  :: temp_a, temp_b
    integer                 :: icount, jcount
 
-   do icount = 1, size_a
-   do jcount = 1, size_b
+   do icount = start_a, size_a
+   do jcount = start_b, size_b
       read(UID,*) temp_a, temp_b
       matrix(icount, jcount) = cmplx(temp_a, temp_b)
    enddo
@@ -67,10 +67,8 @@ subroutine read_matrix_d(matrix, size_a, size_b, start_a, start_b, UID)
    real*8 , intent(out) :: matrix(size_a, size_b)
    integer              :: icount, jcount
 
-   do icount = 1, size_a
-   do jcount = 1, size_b
-      read(UID,*) matrix(icount, jcount)
-   enddo
+   do icount = start_a, size_a
+      read(UID,*) (matrix(icount, jcount), jcount = start_b, size_b)
    enddo
 
    return
@@ -82,10 +80,8 @@ subroutine read_matrix_s(matrix, size_a, size_b, start_a, start_b, UID)
    real*4 , intent(out) :: matrix(size_a, size_b)
    integer              :: icount, jcount
 
-   do icount = 1, size_a
-   do jcount = 1, size_b
-      read(UID,*) matrix(icount, jcount)
-   enddo
+   do icount = start_a, size_a
+      read(UID,*) (matrix(icount, jcount), jcount = start_b, size_b)
    enddo
 
    return
@@ -132,9 +128,9 @@ subroutine read_sqmatrix_d(sqmatrix, M, UID)
 
    call read_matrix_d(sqmatrix, M, M, 1, 1, UID)
    return
-end subroutine read_sqmatrix_cd
+end subroutine read_sqmatrix_d
 
-subroutine read_sqmatrix_cd(sqmatrix, M, UID)
+subroutine read_sqmatrix_s(sqmatrix, M, UID)
    ! sqmatrix : Readable matrix.
    ! M        : Matrix dimension.
    ! UID      : Output file unit.
@@ -144,7 +140,7 @@ subroutine read_sqmatrix_cd(sqmatrix, M, UID)
 
    call read_matrix_s(sqmatrix, M, M, 1, 1, UID)
    return
-end subroutine read_sqmatrix_cd
+end subroutine read_sqmatrix_s
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 
@@ -192,9 +188,7 @@ subroutine write_matrix_d(matrix, size_a, size_b, start_a, start_b, UID)
    integer             :: icount, jcount
 
    do icount = start_a, size_a
-   do jcount = start_b, size_b
-      write(UID, 400) matrix(icount, jcount)
-   enddo
+      write(UID,*) (matrix(icount, jcount), jcount = start_b, size_b)
    enddo
 
    return
@@ -208,9 +202,7 @@ subroutine write_matrix_s(matrix, size_a, size_b, start_a, start_b, UID)
    integer             :: icount, jcount
 
    do icount = start_a, size_a
-   do jcount = start_b, size_b
-      write(UID, 400) matrix(icount, jcount)
-   enddo
+      write(UID,*) (matrix(icount, jcount), jcount = start_b, size_b)
    enddo
 
    return
@@ -235,7 +227,7 @@ subroutine write_sqmatrix_cd(sqmatrix, M, UID)
 
    call write_matrix_cd(sqmatrix, M, M, 1, 1, UID)
    return
-end subroutine write_sqmatrix_restart_cd
+end subroutine write_sqmatrix_cd
 
 subroutine write_sqmatrix_cs(sqmatrix, M, UID)
    ! sqmatrix : Printable matrix.
@@ -248,7 +240,7 @@ subroutine write_sqmatrix_cs(sqmatrix, M, UID)
 
    call write_matrix_cs(sqmatrix, M, M, 1, 1, UID)
    return
-end subroutine write_sqmatrix_restart_cs
+end subroutine write_sqmatrix_cs
 
 subroutine write_sqmatrix_d(sqmatrix, M, UID)
    ! sqmatrix : Printable matrix.
@@ -261,7 +253,7 @@ subroutine write_sqmatrix_d(sqmatrix, M, UID)
 
    call write_matrix_d(sqmatrix, M, M, 1, 1, UID)
    return
-end subroutine write_sqmatrix_restart_d
+end subroutine write_sqmatrix_d
 
 subroutine write_sqmatrix_s(sqmatrix, M, UID)
    ! sqmatrix : Printable matrix.
@@ -274,5 +266,5 @@ subroutine write_sqmatrix_s(sqmatrix, M, UID)
 
    call write_matrix_s(sqmatrix, M, M, 1, 1, UID)
    return
-end subroutine write_sqmatrix_restart_s
+end subroutine write_sqmatrix_s
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

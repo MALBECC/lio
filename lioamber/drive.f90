@@ -22,6 +22,7 @@
       mulliken
 
       USE ECP_mod, ONLY : ecpmode, asignacion
+      USE fileio , ONLY : read_coef_restart
 
       IMPLICIT NONE
       LOGICAL :: basis_check
@@ -34,6 +35,8 @@
       INTEGER, INTENT(IN) :: ng2, ngDyn, ngdDyn
       REAL*8 :: atmint, iprob
       REAL*8 :: xnorm
+      REAL*8, ALLOCATABLE, DIMENSION(:,:) :: restart_coef, restart_coef_b, &
+                                             restart_dens
       INTEGER :: NCOa, NCOb, ncon, nraw
       INTEGER :: is,ip,id, index
       INTEGER :: igpu, ios, NBAS, iatom
@@ -964,105 +967,63 @@
 !        pause
       endif
 
-      ! Reads coefficient restart and builds density matrix.
+      ! Reads coefficient restart and builds density matrix. The MO
+      ! coefficients are read in the same order as basis sets.
+      ! Then vectors are put in dynamical allocation (to be used later)
       if (VCINP) then
-      allocate(X(ngDyn,4*ngDyn), XX(ngdDyn, ngdDyn))
-      open(unit=89, file=frestartin)
+         allocate(restart_dens(M, M), restart_coef(M, NCO))
+         open(unit=89, file=frestartin)
 
-      if (.not.OPEN) then
-         ! Closed Shell
-         ! reads vectors of MO coefficients, basis is in the same order as
-         ! the given in input
-         do l=1, M
-         do n=1, NCO
-            read(89,*) XX(l,n)
-         enddo
-         enddo
+         if (.not.OPEN) then
+            call read_coef_restart(restart_coef, restart_dens, M, NCO, 89)
 
-         ! Puts vectors in dynamical allocation (to be used later)
-         kk=0
-         do k=1, NCO
-         do i=1, M
-            kk = kk + 1
-            RMM(M18+kk-1) = XX(indexii(i), k)
-         enddo
-         enddo
-
-         do i=1, M
-         do j=1, M
-         do k=1, NCO
-            X(i,j) = X(i,j) + 2.0D0*XX(i,k)*XX(j,k)
-         enddo
-         enddo
-         enddo
-
-      else
-         ! Open Shell
-         NCOa = NCO
-         NCOb = NCO + Nunp
-         M18b = M18 + M*NCOa
-
-         ! Alpha Coefficients
-         do l=1, M
-         do n=1, NCOa
-            read(89,*) XX(l,n)
-         enddo
-         enddo
-
-         kk = M18 - 1
-         do k=1, NCOa
-         do i=1, M
-            kk = kk + 1
-            RMM(kk) = XX(indexii(i), k)
-         enddo
-         enddo
-
-         ! Alpha Density Matrix
-         do i=1, M
-         do j=1, M
-            X(i,j) = 0.0D0
-            do k=1, NCOa
-                X(i,j) = X(i,j) + XX(i,k)*XX(j,k)
+            kk = M18 - 1
+            do k=1, NCO
+            do i=1, M
+               kk = kk + 1
+               RMM(kk) = restart_coef(indexii(i), k)
             enddo
-         enddo
-         enddo
+            enddo
+         else
+            NCOa = NCO
+            NCOb = NCO + Nunp
+            M18b = M18 + M*NCOa
+            allocate(restart_coef_b(M, NCOb))
 
-         ! Beta Coefficients
-         do l=1, M
-         do n=1, NCOb
-            read(89,*) XX(l,n)
-         enddo
+            call read_coef_restart(restart_coef, restart_coef_b, restart_dens, &
+                                   M, NCOa, NCOb, 89)
+            kk = M18 - 1
+            do k=1, NCOa
+            do i=1, M
+               kk = kk + 1
+               RMM(kk) = restart_coef(indexii(i), k)
+            enddo
+            enddo
 
-         kk = M18b - 1
-         do k=1, NCOb
-         do i=1, M
-              kk=kk+1
-              RMM(kk)=XX(indexii(i),k)
-         enddo
-         enddo
+            kk = M18b - 1
+            do k=1, NCOb
+            do i=1, M
+               kk = kk + 1
+               RMM(kk) = restart_coef_b(indexii(i), k)
+            enddo
+            enddo
+            deallocate(restart_coef_b)
+         endif
 
-         ! Beta Density Matrix
-         do i=1, M
+         ! Reorders by s, p, d.
+         k = 0
          do j=1, M
-         do k=1, NCOb
-            X(i,j) = X(i,j) + XX(i,k)*XX(j,k)
+         do i=j, M
+            k = k + 1
+            RMM(k) = restart_dens(indexii(i), indexii(j))
+            if (i.ne.j) then
+               RMM(k) = RMM(k)*2.D0
+            endif
          enddo
          enddo
-         enddo
-      endif
 
-      ! Reorders by s, p, d.
-      k=0
-      do j=1, M
-      do i=j, M
-         k = k + 1
-         RMM(k) = X(indexii(i), indexii(j))
-         RMM(k) = RMM(k)*2.D0
-      enddo
-      enddo
-
-      deallocate(X, XX)
-      close(89)
+         deallocate(restart_dens, restart_coef)
+         close(89)
       endif
       ! End of restart.
 

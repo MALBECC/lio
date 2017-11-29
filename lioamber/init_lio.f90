@@ -160,7 +160,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
                          remove_zero_weights, min_points_per_cube,            &
                          max_function_exponent, timers)
 
-!    call g2g_timer_start('lio_init')
+    call g2g_timer_start('lio_init')
 
     if (callfrom.eq.1) then
         natom  = natomin
@@ -170,25 +170,25 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
         allocate(r(ntatom,3), rqm(natom,3), pc(ntatom))
     endif
 
-    ! ngDyn : n° of atoms times the n° of basis functions.                     !
+    ! ngDyn : n° of atoms times the n° of basis functions.                   !
     ! norbit: n° of molecular orbitals involved.                               !
-    ! ngdDyn: n° of atoms times the n° of auxiliary functions.                 !
+    ! ngdDyn: n° of atoms times the n° of auxiliary functions.               !
     ! Ngrid : n° of grid points (LS-SCF part).                                 !
     ! NOTES: Ngrid may be set to 0  in the case of Numerical Integration. For  ! 
     ! large systems, ng2 may result in <0 due to overflow.                     !
- 
-    ! Sets the dimensions for important arrays.
+
+    ! Sets the dimensions for important arrays.                                
     call DIMdrive(ngDyn,ngdDyn)
 
-    ng2 = 5*ngDyn*(ngDyn+1)/2 + 3*ngdDyn*(ngdDyn+1)/2 + ngDyn  + ngDyn*norbit +&
-          Ngrid
+    ng2 = 5*ngDyn*(ngDyn+1)/2 + 3*ngdDyn*(ngdDyn+1)/2 + &
+          ngDyn  + ngDyn*norbit + Ngrid
 
-    allocate(RMM(ng2)    , d(natom, natom),&
-             c(ngDyn,nl)   , a(ngDyn,nl)       , Nuc(ngDyn)  , ncont(ngDyn)   ,&
-             cx(ngdDyn,nl) , ax(ngdDyn,nl)     , Nucx(ngdDyn), ncontx(ngdDyn) ,&
-             cd(ngdDyn,nl) , ad(ngdDyn,nl)     , Nucd(ngdDyn), ncontd(ngdDyn) ,&
-             indexii(ngDyn), indexiid(ngdDyn)  , v(ntatom,3) , Em(ntatom)     ,&
-             Rm(ntatom)    , af(ngdDyn)        , nnat(200)   , B(ngdDyn,3))
+    allocate(RMM(ng2)    , d(natom, natom), c(ngDyn,nl)   , a(ngDyn,nl)     ,&
+             Nuc(ngDyn)  , ncont(ngDyn)   , cx(ngdDyn,nl) , ax(ngdDyn,nl)   ,& 
+             Nucx(ngdDyn), ncontx(ngdDyn) , cd(ngdDyn,nl) , ad(ngdDyn,nl)   ,&
+             Nucd(ngdDyn), ncontd(ngdDyn) , indexii(ngDyn), indexiid(ngdDyn),&
+             v(ntatom,3) , Em(ntatom)     , Rm(ntatom)    , af(ngdDyn)      ,&
+             nnat(200)   , B(ngdDyn,3))
 
     ! Cnorm contains normalized coefficients of basis functions.
     ! Differentiate C for x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)
@@ -212,16 +212,16 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
 
     nco = ((nqnuc - charge) - Nunp)/2
 
-!   Prints LIO logo to output and options chosen for the run. 
+    ! Prints LIO logo to output and options chosen for the run. 
     if (style) call LIO_LOGO()
     if (style) call NEW_WRITE_NML(charge)
 
     call drive(ng2, ngDyn, ngdDyn)
-!    call g2g_timer_stop('lio_init')
 
-! reemplazos de RMM
+    ! reemplazos de RMM
     MM=M*(M+1)/2
     allocate(Fock_Hcore(MM), Fock_Overlap(MM), P_density(MM))
+    call g2g_timer_stop('lio_init')
 
     return 
 end subroutine init_lio_common

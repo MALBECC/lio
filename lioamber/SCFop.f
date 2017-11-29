@@ -368,8 +368,6 @@ c
 c
             kk=kk+1
             RMM(kk)=0.D0
-            rhoalpha(kk)=0.D0
-            rhobeta(kk)=0.D0
 c
             do k=1,NCOa
               RMM(kk)=RMM(kk)+X(i,M2+k)*X(j,M2+k)

@@ -971,6 +971,7 @@
       ! coefficients are read in the same order as basis sets.
       ! Then vectors are put in dynamical allocation (to be used later)
       if (VCINP) then
+         call g2g_timer_start('restart_read')
          allocate(restart_dens(M, M), restart_coef(M, NCO))
          open(unit=89, file=frestartin)
 
@@ -1024,6 +1025,7 @@
 
          deallocate(restart_dens, restart_coef)
          close(89)
+         call g2g_timer_stop('restart_read')
       endif
       ! End of restart.
 
@@ -1034,6 +1036,8 @@
       else
         allocate(rhoalpha(1),rhobeta(1))
       endif
+      rhoalpha=0.0D0
+      rhobeta =0.0D0
 
       call g2g_parameter_init(NORM,natom,natom,ngDyn, &
                              rqm,Rm2,Iz,Nr,Nr2,Nuc, &

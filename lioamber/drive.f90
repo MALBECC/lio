@@ -963,120 +963,108 @@
          write(*,*) 'PAUSE IS A DELETED FEATURE'
 !        pause
       endif
-!c
-!c -------------------------------------------------------------
-!c case for initial guess given in input -------------------------
+
+      ! Reads coefficient restart and builds density matrix.
       if (VCINP) then
-!c closed shell
-        open(unit=89,file=frestartin)
-!c
-        if (.not.OPEN) then
-!c reads vectors of MO coefficients, basis is in the same order as 
-!c the given in input
-          do l=1,M
-            read(89,*) (XX(l,n),n=1,NCO)
-          enddo
+      allocate(X(ngDyn,4*ngDyn), XX(ngdDyn, ngdDyn))
+      open(unit=89, file=frestartin)
 
-!c
-!c puts vectors in dynamical allocation (to be used later)
-!c
-            kk=0
-          do k=1,NCO
-            do i=1,M
-             kk=kk+1
-             RMM(M18+kk-1)=XX(indexii(i),k)
-            enddo
-          enddo
+      if (.not.OPEN) then
+         ! Closed Shell
+         ! reads vectors of MO coefficients, basis is in the same order as
+         ! the given in input
+         do l=1, M
+         do n=1, NCO
+            read(89,*) XX(l,n)
+         enddo
+         enddo
 
-          do i=1,M
-            do j=1,M
-              do k=1,NCO
-                X(i,j)=X(i,j)+2.0D0*XX(i,k)*XX(j,k)
-              enddo
+         ! Puts vectors in dynamical allocation (to be used later)
+         kk=0
+         do k=1, NCO
+         do i=1, M
+            kk = kk + 1
+            RMM(M18+kk-1) = XX(indexii(i), k)
+         enddo
+         enddo
+
+         do i=1, M
+         do j=1, M
+         do k=1, NCO
+            X(i,j) = X(i,j) + 2.0D0*XX(i,k)*XX(j,k)
+         enddo
+         enddo
+         enddo
+
+      else
+         ! Open Shell
+         NCOa = NCO
+         NCOb = NCO + Nunp
+         M18b = M18 + M*NCOa
+
+         ! Alpha Coefficients
+         do l=1, M
+         do n=1, NCOa
+            read(89,*) XX(l,n)
+         enddo
+         enddo
+
+         kk = M18 - 1
+         do k=1, NCOa
+         do i=1, M
+            kk = kk + 1
+            RMM(kk) = XX(indexii(i), k)
+         enddo
+         enddo
+
+         ! Alpha Density Matrix
+         do i=1, M
+         do j=1, M
+            X(i,j) = 0.0D0
+            do k=1, NCOa
+                X(i,j) = X(i,j) + XX(i,k)*XX(j,k)
             enddo
-          enddo
-!c
-!c open shell case
-        else
-!c
-          NCOa=NCO
-          NCOb=NCO+Nunp
-          M18b=M18+M*NCOa
-!c alpha
-          do l=1,M
-            read(89,*) (XX(l,n),n=1,NCOa)
-          enddo
-!c
-          kk=M18-1
-          do k=1,NCOa
-            do i=1,M
+         enddo
+         enddo
+
+         ! Beta Coefficients
+         do l=1, M
+         do n=1, NCOb
+            read(89,*) XX(l,n)
+         enddo
+
+         kk = M18b - 1
+         do k=1, NCOb
+         do i=1, M
               kk=kk+1
               RMM(kk)=XX(indexii(i),k)
-            enddo
-          enddo
-!c
-!c Density Matrix
-!c
-          do 331 i=1,M
-            do 331 j=1,M
-              X(i,j)=0.0D0
-!c
-              do 139 k=1,NCOa
-                X(i,j)=X(i,j)+XX(i,k)*XX(j,k)
- 139          continue
- 331      continue
-!c
-!c beta
-          do l=1,M
-            read(89,*) (XX(l,n),n=1,NCOb)
-          enddo
-!c
-          kk=M18b-1
-          do k=1,NCOb
-            do i=1,M
-              kk=kk+1
-              RMM(kk)=XX(indexii(i),k)
-            enddo
-          enddo
-!c 
-!c Density Matrix
-!c
-          do i=1,M
-            do j=1,M
-              do k=1,NCOb
-                X(i,j)=X(i,j)+XX(i,k)*XX(j,k)
-              enddo
-            enddo
-          enddo
-        endif
+         enddo
+         enddo
+
+         ! Beta Density Matrix
+         do i=1, M
+         do j=1, M
+         do k=1, NCOb
+            X(i,j) = X(i,j) + XX(i,k)*XX(j,k)
+         enddo
+         enddo
+         enddo
       endif
-!c END of case in which density matrix is explicitly given in input
-!c density matrix stored temporarily in S, then it should be changed
-!c according to the shell ordering of the basis set and kept in P
 
-!c changes to the shell order ( s , p, d....)
+      ! Reorders by s, p, d.
       k=0
-      do j=1,M
-        do i=j,M
-          k=k+1
-          RMM(k)=X(indexii(i),indexii(j))
-        enddo
+      do j=1, M
+      do i=j, M
+         k = k + 1
+         RMM(k) = X(indexii(i), indexii(j))
+         RMM(k) = RMM(k)*2.D0
       enddo
-!c
-      k=0
-      do j=1,M
-        do i=j,M
-          k=k+1
-          if (i.ne.j) then
-            RMM(k)=RMM(k)*2.D0
-          endif
-        enddo
       enddo
-!c
-!c---- reads exchange fit data -------------
-!c
-!c--------------------------
-!c
+
+      deallocate(X, XX)
+      close(89)
+      endif
+      ! End of restart.
 
 !c------- G2G Initialization ---------------------
 !c
@@ -1098,9 +1086,7 @@
       call aint_parameter_init(Md, ncontd, nshelld, cd, ad, Nucd, &
       af, RMM, M9, M11, STR, FAC, rmax)
       endif
-
-       deallocate(X,XX)
-       allocate(X(M,4*M),XX(Md,Md))
+      allocate(X(M,4*M),XX(Md,Md))
 
 
 !--------------------------------------------------------------------------------------

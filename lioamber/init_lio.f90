@@ -138,7 +138,7 @@ end subroutine lio_defaults
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
 
-    use garcha_mod, only : idip, nunp, X, XX, RMM, d, c, a, Nuc, ncont, cx,    &
+    use garcha_mod, only : idip, nunp, RMM, d, c, a, Nuc, ncont, cx,           &
                            ax, Nucx, ncontx, cd, ad, Nucd, ncontd, indexii,    &
                            indexiid, r, v, rqm, Em, Rm, pc, nnat, af, B, Iz,   &
                            natom, nco, ng0, ngd0, ngrid, nl, norbit, ntatom,   &
@@ -152,7 +152,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
 
     implicit none
     integer , intent(in) :: charge, nclatom, natomin, Izin(natomin), callfrom
-    integer              :: i, ng2, ng3, ngdDyn, ngDyn, nqnuc, ierr, ios, MM,  &
+    integer              :: i, ng2, ngdDyn, ngDyn, nqnuc, ierr, ios, MM,      &
                             electrons
 
     call g2g_set_options(free_global_memory, little_cube_size, sphere_radius, &
@@ -182,9 +182,8 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
 
     ng2 = 5*ngDyn*(ngDyn+1)/2 + 3*ngdDyn*(ngdDyn+1)/2 + ngDyn  + ngDyn*norbit +&
           Ngrid
-    ng3 = 4*ngDyn
 
-    allocate(X(ngDyn,ng3)  , XX(ngdDyn,ngdDyn) , RMM(ng2)    , d(natom, natom),&
+    allocate(RMM(ng2)    , d(natom, natom),&
              c(ngDyn,nl)   , a(ngDyn,nl)       , Nuc(ngDyn)  , ncont(ngDyn)   ,&
              cx(ngdDyn,nl) , ax(ngdDyn,nl)     , Nucx(ngdDyn), ncontx(ngdDyn) ,&
              cd(ngdDyn,nl) , ad(ngdDyn,nl)     , Nucd(ngdDyn), ncontd(ngdDyn) ,&

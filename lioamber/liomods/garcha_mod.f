@@ -166,6 +166,7 @@ c      parameter rmintsol=16.0D0
       real*8, dimension (:), ALLOCATABLE :: Fock_Hcore !contains core-Hamiltonian matrix, reemplaze RMM(M11)
       real*8, dimension (:), ALLOCATABLE :: Fock_Overlap ! reemplaze RMM(M5)
       real*8, dimension (:), ALLOCATABLE :: P_density ! reemplaze RMM(M1)
+      real*8, dimension (:), ALLOCATABLE :: MO_coef, MO_coef_b
 !Geometry optimizations
       logical :: steep !enables steepest decend algorithm
       real*8 :: Force_cut, Energy_cut, minimzation_steep !energy and force convergence crit and initial steep

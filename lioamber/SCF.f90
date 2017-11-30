@@ -16,7 +16,8 @@ subroutine SCF(E)
       noconverge, cubegen_only, cube_dens, cube_orb, cube_elec, VCINP, Nunp, GOLD,     &
       igrid2, predcoef, nsol, r, pc, timedep, tdrestart, DIIS, told, Etold, Enucl,     &
       Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz, epsilon, nuc,                &
-      doing_ehrenfest, first_step, RealRho, tdstep, total_time, field, Fx, Fy, Fz, a0      
+      doing_ehrenfest, first_step, RealRho, tdstep, total_time, field, Fx, Fy, Fz, a0, &
+      MO_coef
 !      use mathsubs
       use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
        FOCK_ECP_read,FOCK_ECP_write,IzECP
@@ -215,7 +216,7 @@ subroutine SCF(E)
         do k=1,NCO
           do i=1,M
             kk=kk+1
-            Xnano(k,i) = RMM(M18+kk-1)
+            Xnano(k,i) = MO_coef(kk)
           enddo
         enddo
 
@@ -585,7 +586,7 @@ subroutine SCF(E)
    do kk=1,NCO
    do ii=1,M
       kkk = kkk+1
-      RMM(M18+kkk-1) = morb_coefat( i0+ii, kk )
+      MO_coef(kkk) = morb_coefat( i0+ii, kk )
    enddo
    enddo
 
@@ -992,7 +993,7 @@ subroutine SCF(E)
 
 
 	SUBROUTINE starting_guess(xnano)
-	use garcha_mod, ONLY: RMM, VCINP, primera, M, X, Md, NCO
+	use garcha_mod, ONLY: RMM, VCINP, primera, M, X, Md, NCO, MO_coef
 	IMPLICIT NONE
 	integer :: info
 	real*8, dimension (M,M), intent(inout)::xnano
@@ -1104,7 +1105,7 @@ subroutine SCF(E)
         do k=1,NCO
           do i=1,M
             kk=kk+1
-            RMM(M18+kk-1)=X(i,M2+k)
+            MO_coef(kk)=X(i,M2+k)
           enddo
         enddo
 !

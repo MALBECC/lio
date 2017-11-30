@@ -14,14 +14,14 @@
        end if
 
 !--------------------------------------------------------------------!
-       if (allocated(Smat))    deallocate(Smat)
-       if (allocated(RealRho)) deallocate(RealRho)
-       if (allocated(sqsm))    deallocate(sqsm)
-       if (allocated(Eorbs))   deallocate(Eorbs)
+       if (allocated(Smat))      deallocate(Smat)
+       if (allocated(RealRho))   deallocate(RealRho)
+       if (allocated(sqsm))      deallocate(sqsm)
+       if (allocated(Eorbs))     deallocate(Eorbs)
+       if (allocated(MO_coef))   deallocate(MO_coef)
+       if (allocated(MO_coef_b)) deallocate(MO_coef_b)
 
 !--------------------------------------------------------------------!
-
-
        deallocate(r,v,rqm, Em, Rm)
        deallocate(pc, Iz, cx, ax, cd, ad, c, a)
       deallocate(Nuc,ncont,Nucx,ncontx,Nucd

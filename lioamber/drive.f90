@@ -19,7 +19,7 @@
       wang, wang2, wang3, VCINP, OPEN, OPEN1, whatis, Num, Iz, pi,             &
       Rm2, rqm, rmax, Nunp, nl, nt, ng, ngd, restart_freq,             &
       writexyz, number_restr, restr_pairs,restr_index,restr_k,restr_w,restr_r0,&
-      mulliken
+      mulliken, MO_coef, MO_coef_b
 
       USE ECP_mod, ONLY : ecpmode, asignacion
       USE fileio , ONLY : read_coef_restart
@@ -978,34 +978,33 @@
          if (.not.OPEN) then
             call read_coef_restart(restart_coef, restart_dens, M, NCO, 89)
 
-            kk = M18 - 1
+            kk = 0
             do k=1, NCO
             do i=1, M
                kk = kk + 1
-               RMM(kk) = restart_coef(indexii(i), k)
+               MO_coef(kk) = restart_coef(indexii(i), k)
             enddo
             enddo
          else
             NCOa = NCO
             NCOb = NCO + Nunp
-            M18b = M18 + M*NCOa
             allocate(restart_coef_b(M, NCOb))
 
             call read_coef_restart(restart_coef, restart_coef_b, restart_dens, &
                                    M, NCOa, NCOb, 89)
-            kk = M18 - 1
+            kk = 0
             do k=1, NCOa
             do i=1, M
                kk = kk + 1
-               RMM(kk) = restart_coef(indexii(i), k)
+               MO_coef(kk) = restart_coef(indexii(i), k)
             enddo
             enddo
-
-            kk = M18b - 1
+             
+            kk = 0
             do k=1, NCOb
             do i=1, M
                kk = kk + 1
-               RMM(kk) = restart_coef_b(indexii(i), k)
+               MO_coef_b(kk) = restart_coef_b(indexii(i), k)
             enddo
             enddo
             deallocate(restart_coef_b)
@@ -1042,7 +1041,7 @@
       call g2g_parameter_init(NORM,natom,natom,ngDyn, &
                              rqm,Rm2,Iz,Nr,Nr2,Nuc, &
                              M,ncont,nshell,c,a, &
-                             RMM,M18,M5,M3,rhoalpha,rhobeta, &
+                             RMM,M5,M3,rhoalpha,rhobeta, &
                              NCO,OPEN,Nunp,nopt,Iexch, &
                              e_, e_2, e3, wang, wang2, wang3)
 

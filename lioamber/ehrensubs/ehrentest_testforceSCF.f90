@@ -149,7 +149,7 @@ c
         do k=1,NCO
           do i=1,M
             kk=kk+1
-            Xnano(k,i) = RMM(M18+kk-1)
+            Xnano(k,i) = MO_coef(kk)
           enddo
         enddo
 
@@ -505,7 +505,7 @@ c
         do k=1,NCO
           do i=1,M
             kk=kk+1
-            RMM(M18+kk-1)=X(i,M2+k)
+            MO_coef(kk)=X(i,M2+k)
           enddo
         enddo
 c
@@ -1136,7 +1136,7 @@ c
       do k=1,NCO
         do i=1,M
           kk=kk+1
-          RMM(M18+kk-1)=X(i,M2+k)
+          MO_coef(kk)=X(i,M2+k)
           xnano(k,i)  = X(i,M2+k)
         enddo
       enddo

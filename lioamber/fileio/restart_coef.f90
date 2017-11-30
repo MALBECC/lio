@@ -11,7 +11,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 
-!% READ_FOCK_XX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!% READ_COEF_XX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Reads the Coefficient matrix from restart, rearranging it if needed, for     !
 ! open and closed shell cases in both single and double precision.             !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -138,63 +138,69 @@ end subroutine read_coef_restart_os
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 
-!% WRITE_FOCK_XX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!% WRITE_COEF_XX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Rearranges and prints Coefficient matrix for open and closed shell cases in  !
 ! both single and double precision.                                            !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine write_coef_restart_cd(coef, M, UID)
+subroutine write_coef_restart_cd(coef, M, NCO, UID)
    ! coef : Coefficient matrix.
    ! M    : Coefficient matrix size.
+   ! NCO  : Number of occupied orbitals.
    ! UID  : Output file unit ID.
    implicit none
-   integer, intent(in) :: M, UID
-   real*8 , intent(in) :: coef(M,M)
+   integer, intent(in) :: M, NCO, UID
+   real*8 , intent(in) :: coef(M,NCO)
 
    rewind(UID)
-   call write_sqmatrix(coef, M, UID)
+   call write_matrix(coef, M, NCO, 1, 1, UID)
    return
 end subroutine write_coef_restart_cd
 
-subroutine write_coef_restart_cs(coef, M, UID)
+subroutine write_coef_restart_cs(coef, M, NCO, UID)
    ! coef : Coefficient matrix.
    ! M    : Coefficient matrix size.
+   ! NCO  : Number of occupied orbitals.
    ! UID  : Output file unit ID.
    implicit none
-   integer, intent(in) :: M, UID
-   real*4 , intent(in) :: coef(M,M)
+   integer, intent(in) :: M, NCO, UID
+   real*4 , intent(in) :: coef(M,NCO)
 
    rewind(UID)
-   call write_sqmatrix(coef, M, UID)
+   call write_matrix(coef, M, NCO, 1, 1, UID)
    return
 end subroutine write_coef_restart_cs
 
-subroutine write_coef_restart_od(coef_a, coef_b, M, UID)
+subroutine write_coef_restart_od(coef_a, coef_b, M, NCOa, NCOb, UID)
    ! coef_a : Coefficient matrix Alpha.
    ! coef_b : Coefficient matrix Beta.
    ! M      : Coefficient matrix size.
+   ! NCOa   : Number of occupied Alpha orbitals.
+   ! NCOb   : Number of occupied Beta orbitals.
    ! UID    : Output file unit ID.
    implicit none
-   integer, intent(in) :: M, UID
-   real*8 , intent(in) :: coef_a(M,M), coef_b(M,M)
+   integer, intent(in) :: M, NCOa, NCOb, UID
+   real*8 , intent(in) :: coef_a(M,NCOa), coef_b(M,NCOb)
 
    rewind(UID)
-   call write_sqmatrix(coef_a, M, UID)
-   call write_sqmatrix(coef_b, M, UID)
+   call write_matrix(coef_a, M, NCOa, 1, 1, UID)
+   call write_matrix(coef_b, M, NCOb, 1, 1, UID)
    return
 end subroutine write_coef_restart_od
 
-subroutine write_coef_restart_os(coef_a, coef_b, M, UID)
+subroutine write_coef_restart_os(coef_a, coef_b, M, NCOa, NCOb, UID)
    ! coef_a : Coefficient matrix Alpha.
    ! coef_b : Coefficient matrix Beta.
    ! M      : Coefficient matrix size.
+   ! NCOa   : Number of occupied Alpha orbitals.
+   ! NCOb   : Number of occupied Beta orbitals.
    ! UID    : Output file unit ID.
    implicit none
-   integer, intent(in) :: M, UID
-   real*4 , intent(in) :: coef_a(M,M), coef_b(M,M)
+   integer, intent(in) :: M, NCOa, NCOb, UID
+   real*4 , intent(in) :: coef_a(M,NCOa), coef_b(M,NCOb)
 
    rewind(UID)
-   call write_sqmatrix(coef_a, M, UID)
-   call write_sqmatrix(coef_b, M, UID)
+   call write_matrix(coef_a, M, NCOa, 1, 1, UID)
+   call write_matrix(coef_b, M, NCOb, 1, 1, UID)
    return
 end subroutine write_coef_restart_os
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

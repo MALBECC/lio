@@ -66,6 +66,30 @@ end subroutine write_dipole
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% WRITE_DIPOLE_TD %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Sets variables up and calls dipole calculation.                              !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine write_dipole_td(dipxyz, time, uid, header)
+    use garcha_mod, only : style
+
+    implicit none
+    real*8 , intent(in) :: dipxyz(3), time
+    integer, intent(in) :: uid
+    logical, intent(in) :: header
+
+
+    open(unit = uid, file = "dipole_moment_td")
+    if (header) then
+       write(UID,*) '# TIME (fs), DIPX, DIPY, DIPZ (Debye)'
+    else
+       write(UID,*) time, dipxyz(1), dipxyz(2), dipxyz(3)
+    endif
+
+    return
+end subroutine write_dipole_td
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% WRITE_FORCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Calculates forces for QM and MM regions and writes them to output.           !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

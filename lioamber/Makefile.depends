@@ -188,7 +188,7 @@ SRCDIRS += fileio
 OBJECTS += fileio.o
 
 tmplist :=
-tmplist += drive.o liomain.o
+tmplist += drive.o liomain.o TD.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fileio.mod
 ################################################################################
 

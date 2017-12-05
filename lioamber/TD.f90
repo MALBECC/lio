@@ -33,6 +33,8 @@
                                writedens, a0, sol, kkind, kkinds, cool, cools, &
                                GRAD, natom, sqsm, Fx, Fy, Fz
        use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC
+       use fileio,  only : read_td_restart_verlet, read_td_restart_magnus, &
+                           write_td_restart_verlet, write_td_restart_magnus
        use mathsubs
        use transport
        use general_module, ONLY :  atmorb
@@ -103,6 +105,7 @@
 
        real*8,dimension(:,:),allocatable :: Vmat
        real*8,dimension(:),allocatable   :: Dvec
+       character(len=20) :: restart_filename
 
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -211,59 +214,25 @@
       if(propagator.eq.2) allocate (F1a(M,M),F1b(M,M))
 !--------------------------------------------------------------------!
       if (tdrestart) then
-         inquire(file='rho.restart',exist=exists)
-         if (.not.exists) then
-             write(*,*) 'ERROR CANNOT FIND rho.restart'
-             write(*,*) '(if you are not restarting a previous &
-      run set tdrestart= false)'
-             stop
+         restart_filename = 'td_in.restart'
+         if (propagator.eq.2) then
+            call read_td_restart_magnus(rho, F1a, F1b, M, restart_filename)
+         else
+            call read_td_restart_verlet(rho, M, restart_filename)
          endif
-         open(unit=1544,file='rho.restart',status='old')
-         do j=1,M
-            do k=1,M
-               read(1544,*) rho(j,k)
-            enddo
-         enddo
-         do j=1,M
-            do k=j,M
-               if(j.eq.k) then
-                  RMM(k+(M2-j)*(j-1)/2)=REAL(rho(j,k))
-               else
-                  RMM(k+(M2-j)*(j-1)/2)=(REAL(rho(j,k)))*2
-               endif
-            enddo
-         enddo
-         if (propagator .eq. 2) then
-            inquire(file='F1a.restart',exist=exists)
-            if (.not.exists) then
-               write(*,*) 'ERROR CANNOT FIND F1a.restart'
-               write(*,*) '(if you are not restarting a &
-      previous run set tdrestart= false)'
-               stop
+
+         do j=1, M
+         do k=j, M
+            if(j.eq.k) then
+               RMM(k+(M2-j)*(j-1)/2) = realpart(rho(j,k))
+            else
+               RMM(k+(M2-j)*(j-1)/2) = (realpart(rho(j,k)))*2.0D0
             endif
-            inquire(file='F1b.restart',exist=exists)
-            if (.not.exists) then
-               write(*,*) 'ERROR CANNOT FIND F1b.restart'
-               write(*,*) '(if you are not restarting a &
-      previous run set tdrestart= false)'
-               stop
-            endif
-            open(unit=7777,file='F1a.restart',status='old')
-            do i=1,M
-               do j=1,M
-                  read(7777,*) F1a(i,j)
-               enddo
-            enddo
-            open(unit=7399,file='F1b.restart',status='old')
-            do i=1,M
-               do j=1,M
-                  read(7399,*) F1b(i,j)
-               enddo
-            enddo
-         endif
+         enddo
+         enddo
 !--------------------------------------------------------------------!
 ! We read the density matrix stored in RMM(1,2,3,...,MM) and it is copied in rho matrix.
-         else
+      else
 !          do j=1,M
 !             do k=1,j-1
 !                rho(j,k)=RMM(j+(M2-k)*(k-1)/2)/2
@@ -274,7 +243,7 @@
 !             enddo
 !           enddo
             call spunpack_rtc('L',M,RMM,rho)
-         endif
+      endif
 !------------------------------------------------------------------------------!
 ! first i
             M1=1
@@ -777,29 +746,7 @@
                   F1b=fock
                endif
             endif
-!  stores F1a and F1b checkpoints to restart the dynamics
-            if(writedens .and. propagator.eq.2) then
-               kk=istep+5
-               ii=istep+15
-            if(mod (kk,500) == 0) then
-               open(unit=7624,file='F1b.restart')
-               rewind 7624
-               do i=1,M
-                  do j=1,M
-                     write(7624,*) fock(i,j)
-                  enddo
-               enddo
-               endif
-               if(mod (ii,500) == 0) then
-                 open(unit=7625,file='F1a.restart')
-                 rewind 7625
-                 do i=1,M
-                    do j=1,M
-                       write(7625,*) fock(i,j)
-                    enddo
-                 enddo
-               endif
-            endif
+
             E=E1+E2+En
             if (sol) then
                 E=E+Es
@@ -1029,36 +976,16 @@
                       endif
                   enddo
               enddo
-! Stores the density matrix each 500 steps to be able to restart the dynamics
-              if(writedens) then
-                 if(mod (istep,500) == 0) then
-                     open(unit=5374,file='rho.restart')
-                     rewind 5374
-                     do j=1,M
-                        do k=1,M
-                           write(5374,*) rho1(j,k)
-                        enddo
-                     enddo
-                     open(unit=7624,file='F1b.restart')
-                     open(unit=7625,file='F1a.restart')
-                     rewind 7624
-                     rewind 7625
-                     do i=1,M
-                        do j=1,M
-                           write(7624,*) F1b(i,j)
-                           write(7625,*) F1a(i,j)
-                        enddo
-                     enddo
-                  endif
-! In the last step density matrix is stored
-                  if (istep.eq.ntdstep) then
-                    open(unit=44,file='rholast')
-                    do j=1,M
-                       do k=1,M
-                          write(44,*) rho1(j,k)
-                       enddo
-                    enddo
-                  endif
+
+              ! Stores the density matrix each td_restart_freq steps to be able to restart the dynamics.
+              if ((writedens).and.((mod(istep,50) == 0).or.(istep.eq.ntdstep))) then
+                 restart_filename='td.restart'
+                 if (istep.eq.ntdstep) restart_filename='td_last.restart'
+                 if (propagator.eq.2) then
+                    call write_td_restart_magnus(rho, F1a, F1b, M, restart_filename)
+                 else
+                    call write_td_restart_verlet(rho, M, restart_filename)
+                 endif
               endif
 
 !Compute the trace of the density matrix for population analysis

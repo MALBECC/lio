@@ -157,7 +157,7 @@ subroutine write_matrix_cd(matrix, size_a, size_b, start_a, start_b, UID)
 
    do icount = start_a, size_a
    do jcount = start_b, size_b
-      write(UID, 400) matrix(icount, jcount)
+      write(UID, 400) realpart(matrix(icount, jcount)), imagpart(matrix(icount, jcount))
    enddo
    enddo
 
@@ -173,7 +173,7 @@ subroutine write_matrix_cs(matrix, size_a, size_b, start_a, start_b, UID)
 
    do icount = start_a, size_a
    do jcount = start_b, size_b
-      write(UID, 400) matrix(icount, jcount)
+      write(UID, 400) realpart(matrix(icount, jcount)), imagpart(matrix(icount, jcount))
    enddo
    enddo
 

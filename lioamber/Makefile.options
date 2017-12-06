@@ -108,7 +108,7 @@ else ifeq ($(intel),1)
   LC      = ifort
   FFLAGS += -fpp -module $(OBJPATH)
   LFLAGS += -L/usr/lib
-  LIBS   += -llapack
+  LIBS   += -llapack -lblas
   LIBS   += -liomp5 -lpthread
 
   DEBUG01 = -g -check bounds -traceback

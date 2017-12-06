@@ -152,7 +152,7 @@ subroutine write_td_restart_verlet_d(rho, M, file_name)
    integer                       :: UID
    UID = 1550
 
-   open(unit = UID, file = file_name, status = 'old')
+   open(unit = UID, file = file_name)
    call write_rho_restart(rho, M, UID)
    close(UID)
 
@@ -170,7 +170,7 @@ subroutine write_td_restart_verlet_s(rho, M, file_name)
    integer                       :: UID
    UID = 1550
 
-   open(unit = UID, file = file_name, status = 'old')
+   open(unit = UID, file = file_name)
    call write_rho_restart(rho, M, UID)
    close(UID)
 
@@ -191,7 +191,7 @@ subroutine write_td_restart_magnus_d(rho, fock_a, fock_b, M, file_name)
    integer                       :: UID
    UID = 1550
 
-   open(unit = UID, file = file_name, status = 'old')
+   open(unit = UID, file = file_name)
    rewind(UID)
    call write_sqmatrix(rho, M, UID)
    call write_sqmatrix(fock_a, M, UID)
@@ -215,7 +215,7 @@ subroutine write_td_restart_magnus_s(rho, fock_a, fock_b, M, file_name)
    integer                       :: UID
    UID = 1550
 
-   open(unit = UID, file = file_name, status = 'old')
+   open(unit = UID, file = file_name)
    rewind(UID)
    call write_sqmatrix(rho, M, UID)
    call write_sqmatrix(fock_a, M, UID)

@@ -19,7 +19,7 @@
       wang, wang2, wang3, VCINP, OPEN, OPEN1, whatis, Num, Iz, pi,             &
       Rm2, rqm, rmax, Nunp, nl, nt, ng, ngd, restart_freq,             &
       writexyz, number_restr, restr_pairs,restr_index,restr_k,restr_w,restr_r0,&
-      mulliken, MO_coef, MO_coef_b
+      mulliken, MO_coef_at, MO_coef_at_b
 
       USE ECP_mod, ONLY : ecpmode, asignacion
       USE fileio , ONLY : read_coef_restart
@@ -982,7 +982,7 @@
             do k=1, NCO
             do i=1, M
                kk = kk + 1
-               MO_coef(kk) = restart_coef(indexii(i), k)
+               MO_coef_at(kk) = restart_coef(indexii(i), k)
             enddo
             enddo
          else
@@ -996,7 +996,7 @@
             do k=1, NCOa
             do i=1, M
                kk = kk + 1
-               MO_coef(kk) = restart_coef(indexii(i), k)
+               MO_coef_at(kk) = restart_coef(indexii(i), k)
             enddo
             enddo
              
@@ -1004,7 +1004,7 @@
             do k=1, NCOb
             do i=1, M
                kk = kk + 1
-               MO_coef_b(kk) = restart_coef_b(indexii(i), k)
+               MO_coef_at_b(kk) = restart_coef_b(indexii(i), k)
             enddo
             enddo
             deallocate(restart_coef_b)

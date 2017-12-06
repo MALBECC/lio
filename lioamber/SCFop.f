@@ -350,7 +350,7 @@ c
         do k=1,NCOa
           do i=1,M
              kk=kk+1
-             MO_coef(kk) = X(i,M2+k)
+             MO_coef_at(kk) = X(i,M2+k)
           enddo
         enddo
 c
@@ -358,7 +358,7 @@ c
         do k=1,NCOb
           do i=1,M
              kk=kk+1
-             MO_coef_b(kk) = X(i,M2+k)
+             MO_coef_at_b(kk) = X(i,M2+k)
           enddo
         enddo
 c
@@ -810,7 +810,7 @@ c
         do k=1,NCOa
           do i=1,M
             kk=kk+1
-            MO_coef(kk) = X(i,M2+k)
+            MO_coef_at(kk) = X(i,M2+k)
           enddo
         enddo
 c
@@ -1056,7 +1056,7 @@ c
         do k=1,NCOb
           do i=1,M
             kk=kk+1
-            MO_coef_b(kk) = X(i,M2+k)
+            MO_coef_at_b(kk) = X(i,M2+k)
           enddo
         enddo
 c
@@ -1113,16 +1113,16 @@ c
              k0 = M*(k-1)
              ki = k0 + i
              kj = k0 + j
-             RMM(kk)     = RMM(kk)      + MO_coef(ki)*MO_coef(kj)
-             rhoalpha(kk)= rhoalpha(kk) + MO_coef(ki)*MO_coef(kj)
+             RMM(kk)     = RMM(kk)     +MO_coef_at(ki)*MO_coef_at(kj)
+             rhoalpha(kk)= rhoalpha(kk)+MO_coef_at(ki)*MO_coef_at(kj)
            enddo
 c
            do k=1,NCOb
              k0 = M*(k-1)
              ki = k0 + i
              kj = k0 + j
-             RMM(kk)    = RMM(kk)     + MO_coef_b(ki)*MO_coef_b(kj)
-             rhobeta(kk)= rhobeta(kk) + MO_coef_b(ki)*MO_coef_b(kj)
+             RMM(kk)    = RMM(kk)    +MO_coef_at_b(ki)*MO_coef_at_b(kj)
+             rhobeta(kk)= rhobeta(kk)+MO_coef_at_b(ki)*MO_coef_at_b(kj)
            enddo
 c
            if (i.ne.j) then
@@ -1260,14 +1260,16 @@ c       goto 995
                 k0 = M*(k-1)
                 ki = k0 + i
                 kj = k0 + j
-                RMM(kk) = RMM(kk) - MO_coef(ki)*MO_coef(kj)*RMM(M13+k-1)
+                RMM(kk) = RMM(kk) - 
+     >                    MO_coef_at(ki)*MO_coef_at(kj)*RMM(M13+k-1)
              end do
 c
              do k=1,NCOb
                 k0 = M*(k-1)
                 ki = k0 + i
                 kj = k0 + j
-                RMM(kk)=RMM(kk)-MO_coef_b(ki)*MO_coef_b(kj)*RMM(M22+k-1)
+                RMM(kk)=RMM(kk) - 
+     >                  MO_coef_at_b(ki)*MO_coef_at_b(kj)*RMM(M22+k-1)
              end do
 c
              if (i.ne.j) then

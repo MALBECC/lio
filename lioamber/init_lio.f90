@@ -146,8 +146,8 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
                            assign_all_functions, energy_all_iterations,        &
                            remove_zero_weights, min_points_per_cube,           &
                            max_function_exponent, sphere_radius, M,Fock_Hcore, &
-                           Fock_Overlap, P_density, OPEN, timers, MO_coef,     &
-                           MO_coef_b
+                           Fock_Overlap, P_density, OPEN, timers, MO_coef_at,     &
+                           MO_coef_at_b
                          
     use ECP_mod,    only : Cnorm, ecpmode
 
@@ -211,8 +211,8 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
 
     NCO = ((nqnuc - charge) - NUNP)/2
 
-    allocate(MO_coef(ngDyn*NCO))
-    if (OPEN) allocate(MO_coef_b(ngDyn*(NCO+NUNP)))
+    allocate(MO_coef_at(ngDyn*NCO))
+    if (OPEN) allocate(MO_coef_at_b(ngDyn*(NCO+NUNP)))
 
 
     ! Prints LIO logo to output and options chosen for the run. 

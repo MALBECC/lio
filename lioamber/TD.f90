@@ -224,9 +224,9 @@
          do j=1, M
          do k=j, M
             if(j.eq.k) then
-               RMM(k+(M2-j)*(j-1)/2) = realpart(rho(j,k))
+               RMM(k+(M2-j)*(j-1)/2) = real(rho(j,k))
             else
-               RMM(k+(M2-j)*(j-1)/2) = (realpart(rho(j,k)))*2.0D0
+               RMM(k+(M2-j)*(j-1)/2) = (real(rho(j,k)))*2.0D0
             endif
          enddo
          enddo

@@ -17,7 +17,7 @@ subroutine SCF(E)
       igrid2, predcoef, nsol, r, pc, timedep, tdrestart, DIIS, told, Etold, Enucl,     &
       Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz, epsilon, nuc,                &
       doing_ehrenfest, first_step, RealRho, tdstep, total_time, field, Fx, Fy, Fz, a0, &
-      MO_coef
+      MO_coef_at
 !      use mathsubs
       use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
        FOCK_ECP_read,FOCK_ECP_write,IzECP
@@ -216,7 +216,7 @@ subroutine SCF(E)
         do k=1,NCO
           do i=1,M
             kk=kk+1
-            Xnano(k,i) = MO_coef(kk)
+            Xnano(k,i) = MO_coef_at(kk)
           enddo
         enddo
 
@@ -586,7 +586,7 @@ subroutine SCF(E)
    do kk=1,NCO
    do ii=1,M
       kkk = kkk+1
-      MO_coef(kkk) = morb_coefat( i0+ii, kk )
+      MO_coef_at(kkk) = morb_coefat( i0+ii, kk )
    enddo
    enddo
 
@@ -993,7 +993,7 @@ subroutine SCF(E)
 
 
 	SUBROUTINE starting_guess(xnano)
-	use garcha_mod, ONLY: RMM, VCINP, primera, M, X, Md, NCO, MO_coef
+	use garcha_mod, ONLY: RMM, VCINP, primera, M, X, Md, NCO, MO_coef_at
 	IMPLICIT NONE
 	integer :: info
 	real*8, dimension (M,M), intent(inout)::xnano
@@ -1105,7 +1105,7 @@ subroutine SCF(E)
         do k=1,NCO
           do i=1,M
             kk=kk+1
-            MO_coef(kk)=X(i,M2+k)
+            MO_coef_at(kk)=X(i,M2+k)
           enddo
         enddo
 !

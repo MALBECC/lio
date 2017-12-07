@@ -20,7 +20,7 @@ subroutine write_dipole(dipxyz, u, uid, header)
     real*8 , intent(in) :: dipxyz(3), u
     integer, intent(in) :: uid
     logical, intent(in) :: header
-    
+
 
     open(unit = uid, file = "dipole_moment")
     if (style) then
@@ -69,24 +69,29 @@ end subroutine write_dipole
 !%% WRITE_DIPOLE_TD %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Sets variables up and calls dipole calculation.                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine write_dipole_td(dipxyz, time, uid, header)
-    use garcha_mod, only : style
-
+subroutine write_dipole_td(dipxyz, time, uid)
     implicit none
     real*8 , intent(in) :: dipxyz(3), time
     integer, intent(in) :: uid
-    logical, intent(in) :: header
 
-
-    open(unit = uid, file = "dipole_moment_td")
-    if (header) then
-       write(UID,*) '# TIME (fs), DIPX, DIPY, DIPZ (Debye)'
-    else
-       write(UID,*) time, dipxyz(1), dipxyz(2), dipxyz(3)
-    endif
-
+    write(UID,*) time, dipxyz(1), dipxyz(2), dipxyz(3)
     return
 end subroutine write_dipole_td
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% WRITE_DIPOLE_TD_HEADER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Sets variables up and calls dipole calculation.                              !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine write_dipole_td_header(time_step, fx, fy, fz, uid)
+    implicit none
+    real*8 , intent(in) :: time_step, fx, fy, fz
+    integer, intent(in) :: uid
+
+    write(UID,*) '#', time_step, fx, fy, fz
+    return
+end subroutine write_dipole_td_header
+
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -213,7 +218,7 @@ end subroutine write_population
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine write_restart(UID)
     use garcha_mod, only : M, X, NCO, indexii
- 
+
     implicit none
     integer, intent(in) :: UID
     integer             :: ll, nn

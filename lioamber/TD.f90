@@ -2,22 +2,22 @@
          SUBROUTINE TD()
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! REAL TIME-TDDFT
-! 
+!
 ! Dario Estrin, 1992
 ! Nano, Dario, Uriel, Damian 2012
 !
 !  This subrutine takes the converged density matrix from an SCF calculation
 !  and evolves it in time. In the input file the total number of propagation
-!  steps is specified (nstep) as well as the time of each evolution step 
-!  (tdstep). 
-!  This implementation has two alternatives to evolve the density in time. The 
-!  first one (propagator=1) is the Verlet algorithm that uses a convination of 
-!  Liouville von Newmann expresion for the time derivative of the density matrix 
-!  and a first order Taylor expansion of the density matrix. The second one 
+!  steps is specified (nstep) as well as the time of each evolution step
+!  (tdstep).
+!  This implementation has two alternatives to evolve the density in time. The
+!  first one (propagator=1) is the Verlet algorithm that uses a convination of
+!  Liouville von Newmann expresion for the time derivative of the density matrix
+!  and a first order Taylor expansion of the density matrix. The second one
 !  (propagator=2) is the Magnus propagation scheme that uses Backer Campbell
-!  Hausdorff (BCH) formula. For this reason when Magnus is used the number of 
-!  total conmutators in the BCH espansion has to be specified (NBCH, default=10). 
-!  A narrow gaussian type electric field can be introduced during the time 
+!  Hausdorff (BCH) formula. For this reason when Magnus is used the number of
+!  total conmutators in the BCH espansion has to be specified (NBCH, default=10).
+!  A narrow gaussian type electric field can be introduced during the time
 !  evolution in order to excite all electronic frequencies with the same intensity.
 !  Once this perturbation is turned on (Field=t, exter=t) each component of the
 !  external electric field has to be specified in the input file (Fx,Fy,Fz).
@@ -25,13 +25,13 @@
 !  are stored in files x.dip, y.dip, z.dip.
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !       USE latom
-        USE garcha_mod, only : M, Md, NBCH, propagator, tdstep, idip,&
-                            tdrestart,exists,RMM,NCO,nang,Iz,natomc,&
-                            r,d,atmin,rmax,jatc,nshell,nnps,nnpp,nnpd,&
-                            igrid2,Nuc,predcoef,npas,nsol,pc,X,Smat,&
-                            MEMO,ntdstep,field,exter,epsilon,writedens,&
-                            a0,sol,kkind,kkinds,cool,cools,GRAD,natom, &
-                            sqsm
+        USE garcha_mod, only : M, Md, NBCH, propagator, tdstep, idip,          &
+                               tdrestart, exists, RMM, NCO, nang, Iz, natomc,  &
+                               r, d, atmin, rmax, jatc, nshell, nnps, nnpp,    &
+                               nnpd, igrid2, Nuc, predcoef, npas, nsol, pc, X, &
+                               Smat, MEMO, ntdstep, field, exter, epsilon,     &
+                               writedens, a0, sol, kkind, kkinds, cool, cools, &
+                               GRAD, natom, sqsm, Fx, Fy, Fz
        use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC
        use mathsubs
        use transport
@@ -43,13 +43,12 @@
        implicit none
        !IMPLICIT REAL*8 (a-h,o-z)
        real*8 :: dipxyz(3), dipole_norm,Qc,Qc2,zij,ti,tj,alf,&
-                 rexp,E1s,Ens,Ex,g,factor,fxx,fyy,fzz,fx,fy,fz,&
-                 Es,ff,t0
+                 rexp,E1s,Ens,Ex,g,factor,fxx,fyy,fzz,Es,ff,t0
        INTEGER :: istep,nopt,M1,M2,M3,i,j,M5,M7,MM,MM2,&
                   MMd,Md2,k,M13,M15,M17,M9,M20,M18,M19,M11,Nel,&
                   Nunp,igpu,info,kk,n,unit1,unit2
        REAL*8 :: t,E2,E,En,E1
-       REAL*8,ALLOCATABLE,DIMENSION(:,:) :: & 
+       REAL*8,ALLOCATABLE,DIMENSION(:,:) :: &
         xnano2,xmm,xtrans,ytrans,Y,fock,&
         F1a,F1b,overlap,rhoscratch
        real*8, dimension (:,:), ALLOCATABLE :: elmu
@@ -109,6 +108,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        call g2g_timer_start('TD')
        call g2g_timer_start('inicio')
+       open(unit = 134, file = "dipole_moment_td")
        ALLOCATE(factorial(NBCH))
 !!------------------------------------!!
         nopt=0
@@ -138,7 +138,7 @@
           DO ii=1,NBCH
              factorial(ii)=1.0D0/ii
           ENDDO
-#else     
+#else
        DO ii=2,NBCH
          factorial(ii)=factorial(ii-1)/ii
        ENDDO
@@ -164,7 +164,7 @@
        !ngeo=ngeo+1
        Im=(0.0D0,2.0D0)
        !sq2=sqrt(2.D0)
-       MM=M*(M+1)/2 
+       MM=M*(M+1)/2
        MM2=M**2
        MMd=Md*(Md+1)/2
        Md2=2*Md
@@ -214,7 +214,7 @@
          inquire(file='rho.restart',exist=exists)
          if (.not.exists) then
              write(*,*) 'ERROR CANNOT FIND rho.restart'
-             write(*,*) '(if you are not restarting a previous & 
+             write(*,*) '(if you are not restarting a previous &
       run set tdrestart= false)'
              stop
          endif
@@ -299,7 +299,7 @@
 ! weights (in case of using option )
             M19=M18+M*NCO
 ! RAM storage of two-electron integrals (if MEMO=T)
-            M20 = M19 + natom*50*nang   
+            M20 = M19 + natom*50*nang
 !
             Nel=2*NCO+Nunp
 ! Initializations/Defaults
@@ -352,7 +352,7 @@
                 if (rexp.lt.rmax) then
                   natomc(i)=natomc(i)+1
                   jatc(natomc(i),i)=j
-                endif 
+                endif
               enddo
             enddo
             do ii=nshell(0),1,-1
@@ -452,9 +452,9 @@
        call dsyev('V','L',M,X,M,RMM(M13),WORK,LWORK,info)
 #endif
 !--------------------------------------!
-! Here, we obtain the transformation matrices X and Y for converting 
+! Here, we obtain the transformation matrices X and Y for converting
 ! from the atomic orbital to a molecular orbital basis (truncated
-! during linear dependency elimination). 
+! during linear dependency elimination).
 ! S is the overlap matrix
 ! s is the diagonal eigenvalue matrix of S
 ! U is the eigenvector matrix of S
@@ -473,7 +473,7 @@
               else
                 do i=1,M
                   Y(i,j)=X(i,j)*sqrt(RMM(M13+j-1))
-                  X(i,j)=X(i,j)/sqrt(RMM(M13+j-1))       
+                  X(i,j)=X(i,j)/sqrt(RMM(M13+j-1))
                 enddo
               endif
             enddo
@@ -771,11 +771,11 @@
 !  stores F1a and F1b for magnus propagation
             if((propagator.eq.2) .and. (.not.tdrestart)) then
                if(istep.eq.chkpntF1a) then
-                  F1a=fock         
+                  F1a=fock
                endif
                if(istep.eq.chkpntF1b) then
-                  F1b=fock         
-               endif         
+                  F1b=fock
+               endif
             endif
 !  stores F1a and F1b checkpoints to restart the dynamics
             if(writedens .and. propagator.eq.2) then
@@ -789,7 +789,7 @@
                      write(7624,*) fock(i,j)
                   enddo
                enddo
-               endif 
+               endif
                if(mod (ii,500) == 0) then
                  open(unit=7625,file='F1a.restart')
                  rewind 7625
@@ -811,7 +811,7 @@
                 write(*,*) 'Verlet'
 ! In the first step of the propagation we extrapolate rho back in time
 ! using Verlet algorithm to calculate rhold.
-! using matmul 
+! using matmul
 !           if(istep.eq.1) then
 !             rhold=rho+(dt_lpfrg*Im*(matmul(fock,rho)))
 !             rhold=rhold-(dt_lpfrg*Im*(matmul(rho,fock)))
@@ -937,7 +937,7 @@
 #ifdef CUBLAS
                 call g2g_timer_start('cupredictor')
                 call cupredictor(F1a,F1b,fock,rho,devPtrX,factorial,&
-                                 fxx,fyy,fzz,g,devPtrXc) 
+                                 fxx,fyy,fzz,g,devPtrXc)
                 call g2g_timer_stop('cupredictor')
                 call g2g_timer_start('cumagnus')
                 call cumagnusfac(fock,rho,rhonew,M,NBCH,dt_magnus,&
@@ -949,7 +949,7 @@
 !                rhold=rhonew
 !                call g2g_timer_start('MAGNUS_MODIFIED')
 !                call magnus_cublas(fock,rho,rhonew,M,NBCH,dt_magnus,
-!                  factorial) 
+!                  factorial)
 !                call g2g_timer_stop('MAGNUS_MODIFIED')
 !                rhold=rhonew-rhold
 !                write(22222222,*) rhold
@@ -978,8 +978,8 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
               endif
 !####################################################################!
-! Here we transform the density to the atomic orbital basis and take the real part of it. The imaginary part of the density 
-! can be descarted since for a basis set of purely real functions the fock matrix is real and symetric and depends only on 
+! Here we transform the density to the atomic orbital basis and take the real part of it. The imaginary part of the density
+! can be descarted since for a basis set of purely real functions the fock matrix is real and symetric and depends only on
 ! the real part of the complex density matrix. (This wont be true in the case of hybrid functionals)
 ! with matmul:
 #ifdef CUBLAS
@@ -1073,24 +1073,23 @@
 
 !###################################################################!
 !# DIPOLE MOMENT CALCULATION
-              if(istep.eq.1) then
-                 call write_dipole_td(dipxyz, 0, 134, .true.)
-!aca hay q agregar q escriba ts  NCO  field en cada archivo, si o es splito propagation en NCO poner 1
-              endif
-              if ((propagator.eq.2).and.(istep.lt.lpfrg_steps)&
-                   .and.(.not.tdrestart)) then
-                  if(mod ((istep-1),10) == 0) then
-                     call g2g_timer_start('DIPOLE')
-                     call dip(dipxyz)
-                     call g2g_timer_stop('DIPOLE')
-                     call write_dipole_td(dipxyz, t, 134, .false.)
-                  endif
-              else
-                  call g2g_timer_start('DIPOLE')
-                  call dip(dipxyz)
-                  call g2g_timer_stop('DIPOLE')
-                  call write_dipole_td(dipxyz, t, 134, .false.)
-              endif
+         if(istep.eq.1) then
+            call write_dipole_td_header(tdstep, Fx, Fy, Fz, 134)
+         endif
+         if ((propagator.eq.2).and.(istep.lt.lpfrg_steps).and.(.not.tdrestart))&
+         then
+            if(mod ((istep-1),10) == 0) then
+               call g2g_timer_start('DIPOLE_TD')
+               call dip(dipxyz)
+               call g2g_timer_stop('DIPOLE_TD')
+               call write_dipole_td(dipxyz, t, 134)
+            endif
+         else
+            call g2g_timer_start('DIPOLE_TD')
+            call dip(dipxyz)
+            call g2g_timer_stop('DIPOLE_TD')
+            call write_dipole_td(dipxyz, t, 134)
+         endif
 ! u in Debyes
 !# END OF DIPOLE MOMENT CALCULATION
 !------------------------------------------------------------------------------------
@@ -1273,6 +1272,7 @@
 !      write(*,*) 'Exc, integrated and calculated',Exc,Ex
 !      write(*,*) 'Coulomb energy',E2-Ex
 
+       close(134)
        call g2g_timer_stop('TD')
        DEALLOCATE(xnano,xnano2,fock,rhonew,rhold, &
                   rho,xmm,xtrans,Y,ytrans,rho1)

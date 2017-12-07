@@ -208,10 +208,8 @@ subroutine calculate_spectrum(mu, field_i, time_step, ns, lmin, lmax, lambda,  &
          fti = fti + sin(2d0*pi*t*nu) * dmu(jcount) * exp(-t*damp)
       enddo
 
-
       ! Takes absolute value and corrects units.
       ft_abs = ABS( DCMPLX(ftr, fti) )
-!      write(*,*) ftr, fti, ft_abs
       ft_abs = ft_abs*time_step*4*pi
       absorptivity(icount) = ft_abs*factor
    enddo
@@ -259,7 +257,6 @@ subroutine logo()
    write(*,1204)
    write(*,1205)
    write(*,*)
-
 1200 FORMAT(4x,"████████╗██████╗      █████╗ ███╗   ██╗ █████&
      ╗ ██╗     ██╗   ██╗███████╗███████╗")
 1201 FORMAT(4x,"╚══██╔══╝██╔══██╗    ██╔══██╗████╗  ██║██&

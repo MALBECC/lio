@@ -48,7 +48,7 @@
        double precision :: lambda !auxiliar
        character(20)  :: trash !auxiliar
        integer :: i,j,l,extra !auxiliar
-      
+
 
        double precision, parameter :: c=299.792458d0 !light speed in nm/fs
        double precision, parameter :: pi=3.1415926535897932384626433832795d0
@@ -118,7 +118,7 @@
         write (formatout, "('(1x,E14.6,',I3.3,'(2x,E14.6))')") NCO+2 !define formato de salida
        end if
 
-       factor=0.5292d0/(c*field*2.542d0*0.02419d0*10d0) 
+       factor=0.5292d0/(c*field*2.542d0*0.02419d0*10d0)
        field=field*514.220652d0 !field is computed in V/nm
 
        do i = 1, ns
@@ -188,9 +188,9 @@
 
 100       format (1x,E14.6,2x,E14.6,2x,E14.6,2x,E14.6)
 101       format (1x,E14.6,2x,E14.6)
-102       format (1x,E14.6,30(2x,E14.6)) 
-103       format (1x,"computing lambda from ",I5,1x,"to "I5) 
-104       format (1x,"time step peak ", F8.2,1x,"nm, ", F10.2,1x,"eV") 
+102       format (1x,E14.6,30(2x,E14.6))
+103       format (1x,"computing lambda from ",I5,1x,"to "I5)
+104       format (1x,"time step peak ", F8.2,1x,"nm, ", F10.2,1x,"eV")
 
        contains
        subroutine obtain_ns(ns,input)

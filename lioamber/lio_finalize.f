@@ -8,8 +8,8 @@
        use ECP_mod, only : ecpmode
        implicit none
  	logical :: test
-       if (idip.eq.1) then
-        write(69,8703)
+       if ((idip.eq.1) .or. (dipole) )then
+        if (style) write(69,8703)
         CLOSE(69)
        end if
 

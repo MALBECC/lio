@@ -138,9 +138,9 @@ endsubroutine obtain_ns
 !%% READ_INPUT_FILE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine read_input_file(input, ns, column, mu, time_step, field)
    implicit none
-   character(20), intent(in)    :: input
-   integer      , intent(in)    :: ns, column
-   real*8       , intent(inout) :: mu(ns), time_step, field
+   character(20), intent(in)  :: input
+   integer      , intent(in)  :: ns, column
+   real*8       , intent(out) :: mu(ns), time_step, field
    real*8    :: t, mu_read(ns,3), field_read(3)
    integer   :: icount
    character :: hash(1)
@@ -154,7 +154,7 @@ subroutine read_input_file(input, ns, column, mu, time_step, field)
 
    ! Reads the dipole moment.
    do icount = 1, ns
-     read(100,*) t, mu_read(ns,1), mu_read(ns,2), mu_read(ns,3)
+     read(100,*) t, mu_read(icount,1), mu_read(icount,2), mu_read(icount,3)
      mu(icount) = mu_read(icount, column)
    enddo
    close(100)
@@ -194,10 +194,11 @@ subroutine calculate_spectrum(mu, field_i, time_step, ns, lmin, lmax, lambda,  &
       end if
 
       ! Frequency in 1/fs
-      nu  = c / lambda(icount)
-      fti = 0.0d0
-      ftr = 0.0d0
-      t   = 0.0
+      nu     = c / lambda(icount)
+      ft_abs = 0.0d0
+      fti    = 0.0d0
+      ftr    = 0.0d0
+      t      = 0.0d0
 
       do jcount = 1, ns - 1
          t = t + time_step
@@ -207,10 +208,12 @@ subroutine calculate_spectrum(mu, field_i, time_step, ns, lmin, lmax, lambda,  &
          fti = fti + sin(2d0*pi*t*nu) * dmu(jcount) * exp(-t*damp)
       enddo
 
+
       ! Takes absolute value and corrects units.
-      ft_abs = ABS(DCMPLX(ftr,fti))
+      ft_abs = ABS( DCMPLX(ftr, fti) )
+!      write(*,*) ftr, fti, ft_abs
       ft_abs = ft_abs*time_step*4*pi
-      absorptivity(icount) = ftr*factor
+      absorptivity(icount) = ft_abs*factor
    enddo
 
    write (*,104) c*2.d0*time_step, 1.241462463D3/(c*2.d0*time_step)
@@ -232,8 +235,8 @@ subroutine write_output(lmin, lmax, lambda, absorptivity)
    open (unit=101, file='espectro_nm')
    do icount = 1, 10*(lmax - lmin)
       energy = 1.241462463D3/lambda(icount)
-      write (3, 100) energy        , absorptivity(icount)
-      write (5, 100) lambda(icount), absorptivity(icount)
+      write (100, 100) energy        , absorptivity(icount)
+      write (101, 100) lambda(icount), absorptivity(icount)
    enddo
    close(100)
    close(101)
@@ -256,18 +259,19 @@ subroutine logo()
    write(*,1204)
    write(*,1205)
    write(*,*)
+
 1200 FORMAT(4x,"████████╗██████╗      █████╗ ███╗   ██╗ █████&
-    ╗ ██╗     ██╗   ██╗███████╗███████╗")
+     ╗ ██╗     ██╗   ██╗███████╗███████╗")
 1201 FORMAT(4x,"╚══██╔══╝██╔══██╗    ██╔══██╗████╗  ██║██&
-      ╔══██╗██║     ╚██╗ ██╔╝╚══███╔╝██╔════╝")
+     ╔══██╗██║     ╚██╗ ██╔╝╚══███╔╝██╔════╝")
 1202 FORMAT(4x,"   ██║   ██║  ██║    ███████║██╔██╗ ██║███████&
-      ║██║      ╚████╔╝   ███╔╝ █████╗  ")
+     ║██║      ╚████╔╝   ███╔╝ █████╗  ")
 1203 FORMAT(4x,"   ██║   ██║  ██║    ██╔══██║██║╚██╗██║██╔══██&
-      ║██║       ╚██╔╝   ███╔╝  ██╔══╝  ")
+     ║██║       ╚██╔╝   ███╔╝  ██╔══╝  ")
 1204 FORMAT(4x,"   ██║   ██████╔╝    ██║  ██║██║ ╚████║██║  ██║&
-      ███████╗   ██║   ███████╗███████╗")
+     ███████╗   ██║   ███████╗███████╗")
 1205 FORMAT(4x,"   ╚═╝   ╚═════╝     ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚═&
-      ═════╝   ╚═╝   ╚══════╝╚══════╝")
+     ═════╝   ╚═╝   ╚══════╝╚══════╝")
 end subroutine logo
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 

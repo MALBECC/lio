@@ -33,9 +33,19 @@
 #    3 = Detailed debugging information is enabled.
 #
 ################################################################################
+#
+# -lname tells the linker to look for external procedures in libname library.
+#
+# -Lpathname tells the linker to look for libraries in pathname.
+#
+# -Wl,-rpath='pathname' saves pathname inside the executable so it will look
+# for libraries there at runtime
+#
+#
 FFLAGS += -fPIC $(DEFINE)
 
 LFLAGS += -fPIC -shared
+LFLAGS += -Wl,--no-undefined
 LFLAGS += -Wl,-rpath='$$ORIGIN/'
 LFLAGS += -Wl,-rpath='$$ORIGIN/../g2g'
 
@@ -86,7 +96,7 @@ ifeq ($(intel),0)
   LC      = gfortran
   FFLAGS += -cpp -I$(OBJPATH) -J$(OBJPATH)
   LFLAGS += -L/usr/lib
-  LIBS   += -llapack
+  LIBS   += -lblas -llapack
 
   DEBUG01 = -g -Wtabs -fcheck=all
   DEBUG02 = -g -Wall -Wextra -fcheck=all -fbacktrace -pedantic
@@ -98,7 +108,7 @@ else ifeq ($(intel),1)
   LC      = ifort
   FFLAGS += -fpp -module $(OBJPATH)
   LFLAGS += -L/usr/lib
-  LIBS   += -llapack
+  LIBS   += -llapack -lblas
   LIBS   += -liomp5 -lpthread
 
   DEBUG01 = -g -check bounds -traceback
@@ -111,7 +121,8 @@ else ifeq ($(intel),2)
   LC      = ifort
   FFLAGS += -fpp -module $(OBJPATH)
   LFLAGS += -L$(MKLROOT)/lib/intel64 -I$(MKLROOT)/include
-  LIBS   += -lmkl_lapack95_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core
+  LIBS   += -lmkl_blas95_lp64 -lmkl_lapack95_lp64
+  LIBS   += -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core
   LIBS   += -liomp5 -lpthread
 
   DEBUG01 = -g -check bounds -traceback
@@ -180,12 +191,12 @@ private_flag := -O3
 
 tmplist :=
 tmplist += dip.o SCFop.o
-tmplist += intfld.o int1G.o int3G.o
-tmplist += intsolG.o intsolGs.o intsol.o
+tmplist += subm_intfld.o subm_int1G.o subm_int3G.o
+tmplist += subm_intsolG.o subm_intsolGs.o subm_intsol.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : private_flag := -O1 
 
 tmplist :=
-tmplist += mathsubs.o matmuldiag.o int3lu.o fock_commuts.o
+tmplist += mathsubs.o matmuldiag.o subm_int3lu.o fock_commuts.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : private_flag := -O3 $(OPTIMP)
 
 tmplist :=
@@ -194,7 +205,7 @@ tmplist += FixMessRho.o mulliken.o PackedStorage.f
 tmplist += init_amber.o init.o lio_init.o liomain.o lio_finalize.o
 tmplist += dft_get_mm_forces.o dft_get_qm_forces.o
 tmplist += alg.o drive.o func.o grid.o dipmem.o jarz.o
-tmplist += int1.o int2.o int2G.o int3mem.o  intSG.o
+tmplist += subm_int1.o subm_int2.o subm_int2G.o subm_int3mem.o subm_intSG.o
 tmplist += garcha_mod.o cubegen.o density.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : private_flag := -O3 $(OPTIMI)
 

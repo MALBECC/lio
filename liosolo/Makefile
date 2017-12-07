@@ -1,7 +1,14 @@
 ################################################################################
+# -lname tells the linker to look for external procedures in libname library.
+#
+# -Lpathname tells the linker to look for libraries in pathname.
+#
+# -Wl,-rpath='pathname' saves pathname inside the executable so it will look
+# for libraries there at runtime
+#
 LIBS  =
-LIBS += -L../g2g -lg2g
-LIBS += -L../lioamber -llio-g2g
+LIBS += -Wl,-rpath='$$ORIGIN/../g2g' -L../g2g -lg2g
+LIBS += -Wl,-rpath='$$ORIGIN/../lioamber' -L../lioamber -llio-g2g
 FLAGS = -fopenmp 
 
 

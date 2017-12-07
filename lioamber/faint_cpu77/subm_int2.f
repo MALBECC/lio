@@ -21,6 +21,7 @@ c Output: G matrix
 c G matrix should be inverted, 
 c later on, for evaluating  Coulomb terms
 c-----------------------------------------------------------------
+      module subm_int2; contains
       subroutine int2()
        use garcha_mod
 c
@@ -633,4 +634,5 @@ c
 c-------------------------------------------------------------------
       return
       end subroutine
+      end module subm_int2
 

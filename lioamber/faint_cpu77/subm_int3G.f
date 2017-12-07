@@ -24,8 +24,10 @@ c F also updated with exchange correlation part, also energy
 c is updated
 c this subroutine calls the fitting for exchange-correlation
 c-----------------------------------------------------------------
+      module subm_int3G; contains
       subroutine int3G(f,calc_energy)
           use garcha_mod
+          use subm_int2G
 
 c
 
@@ -4123,3 +4125,4 @@ c
       call g2g_timer_sum_stop('Coulomb gradients')
       return
       end subroutine
+      end module subm_int3G

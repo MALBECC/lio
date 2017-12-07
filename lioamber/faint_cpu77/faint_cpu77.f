@@ -1,17 +1,19 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        module faint_cpu77
-          contains
-#         include "int1.f"
-#         include "int1G.f"
-#         include "int2.f"
-#         include "int2G.f"
-#         include "int3lu.f"
-#         include "int3mem.f"
-#         include "int3G.f"
-#         include "intSG.f"
-#         include "intfld.f"
-#         include "intsol.f"
-#         include "intsolG.f"
-#         include "intsolGs.f"
+
+          use subm_int1
+          use subm_int2
+          use subm_int3lu
+          use subm_int3mem
+          use subm_intfld
+          use subm_intsol
+
+          use subm_intSG
+          use subm_int1G
+          use subm_int2G
+          use subm_int3G
+          use subm_intsolG
+          use subm_intsolGs
+
        end module faint_cpu77
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

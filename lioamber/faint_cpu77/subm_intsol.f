@@ -13,6 +13,7 @@ c It's the same as int.f, but using the solvent atoms partial charges
 c
 c 
 c-------------------------------------------------------------------
+      module subm_intsol; contains
       subroutine intsol(E1s,Ens,elec)
 
        use garcha_mod
@@ -710,4 +711,5 @@ c       stop
 c       endif       
       return
       end subroutine
+      end module subm_intsol
 c-------------------------------------------------------------------

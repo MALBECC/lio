@@ -22,6 +22,7 @@ c r(Nuc(i),j) j component of position of nucleus i , j=1,3
 c Input :  density basis 
 c Output:  dipole moment components 
 c-----------------------------------------------------------------
+      module subm_intfld; contains
       subroutine intfld(g,ux,uy,uz)
       use garcha_mod
       implicit real*8 (a-h,o-z)
@@ -581,3 +582,4 @@ c--------------------------------------------------------------
 c
       return
       end subroutine
+      end module subm_intfld

@@ -22,6 +22,7 @@ c F also updated with exchange correlation part, also energy
 c is updated
 c this subroutine calls the fitting for exchange-correlation
 c-----------------------------------------------------------------
+      module subm_int3mem; contains
       subroutine int3mem()
         use garcha_mod
 c
@@ -2800,3 +2801,4 @@ c-------------------------------------------------------------
       deallocate (Jx)
       return
       end subroutine
+      end module subm_int3mem

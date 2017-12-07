@@ -23,6 +23,7 @@ c all gradients, up to d functions
 c debugged ( or supposed to) 28-7-92
 c Dario Estrin
 c-------------------------------------------------------------------
+      module subm_intsolG; contains
       subroutine intsolG(f,ff)
           use garcha_mod
 c
@@ -1448,6 +1449,7 @@ c----------------------------------------------------------------
 
       return
       end subroutine
+      end module subm_intsolG
 c-------------------------------------------------------------------
 
 

@@ -32,8 +32,8 @@ LC =
 LIBS =
 LFLAGS =
 
-OBJECTS  =
-SRCDIRS  =
+OBJECTS :=
+SRCDIRS :=
 OBJPATH := obj
 vpath %.o   $(OBJPATH)
 vpath %.mod $(OBJPATH)

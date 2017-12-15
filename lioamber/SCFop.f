@@ -282,7 +282,7 @@ c
 c ======>>>>>> CASE OF NO STARTING GUESS PROVIDED,  <<<<<=========
 c   1 E FOCK MATRIX USED
 c
-      if((.not.ATRHO).and.(.not.VCINP).and.primera) then
+      if((.not.VCINP).and.primera) then
         primera=.false.
 c QUE HACE ACA ?????
         do i=1,M
@@ -349,16 +349,16 @@ c
         kk=0
         do k=1,NCOa
           do i=1,M
-            kk=kk+1
-            RMM(M18+kk-1)=X(i,M2+k)
+             kk=kk+1
+             MO_coef_at(kk) = X(i,M2+k)
           enddo
         enddo
 c
         kk=0
         do k=1,NCOb
           do i=1,M
-            kk=kk+1
-            RMM(M18b+kk-1)=X(i,M2+k)
+             kk=kk+1
+             MO_coef_at_b(kk) = X(i,M2+k)
           enddo
         enddo
 c
@@ -368,8 +368,6 @@ c
 c
             kk=kk+1
             RMM(kk)=0.D0
-            rhoalpha(kk)=0.D0
-            rhobeta(kk)=0.D0
 c
             do k=1,NCOa
               RMM(kk)=RMM(kk)+X(i,M2+k)*X(j,M2+k)
@@ -812,7 +810,7 @@ c
         do k=1,NCOa
           do i=1,M
             kk=kk+1
-            RMM(M18+kk-1)=X(i,M2+k)
+            MO_coef_at(kk) = X(i,M2+k)
           enddo
         enddo
 c
@@ -1058,7 +1056,7 @@ c
         do k=1,NCOb
           do i=1,M
             kk=kk+1
-            RMM(M18b+kk-1)=X(i,M2+k)
+            MO_coef_at_b(kk) = X(i,M2+k)
           enddo
         enddo
 c
@@ -1105,34 +1103,32 @@ c
         good=0.0D0
         do j=1,M
           do i=j,M
-            kk=kk+1
-            tmp=RMM(kk)
-            RMM(kk)=0.D0
-            rhoalpha(kk)=0.D0
-            rhobeta(kk)=0.D0
+            kk  = kk + 1
+            tmp = RMM(kk)
+            RMM(kk)     = 0.D0
+            rhoalpha(kk)= 0.D0
+            rhobeta(kk) = 0.D0
 c
            do k=1,NCOa
-             k0=M18+M*(k-1)-1
-             ki=k0+i
-             kj=k0+j
-             RMM(kk)=RMM(kk)+RMM(ki)*RMM(kj)
-c rhoalpha(M*(M+1)/2)
-             rhoalpha(kk)=rhoalpha(kk)+RMM(ki)*RMM(kj)
+             k0 = M*(k-1)
+             ki = k0 + i
+             kj = k0 + j
+             RMM(kk)     = RMM(kk)     +MO_coef_at(ki)*MO_coef_at(kj)
+             rhoalpha(kk)= rhoalpha(kk)+MO_coef_at(ki)*MO_coef_at(kj)
            enddo
 c
            do k=1,NCOb
-             k0=M18b+M*(k-1)-1
-             ki=k0+i
-             kj=k0+j
-             RMM(kk)=RMM(kk)+RMM(ki)*RMM(kj)
-c rhobeta(M*(M+1)/2) 
-             rhobeta(kk)=rhobeta(kk)+RMM(ki)*RMM(kj)
+             k0 = M*(k-1)
+             ki = k0 + i
+             kj = k0 + j
+             RMM(kk)    = RMM(kk)    +MO_coef_at_b(ki)*MO_coef_at_b(kj)
+             rhobeta(kk)= rhobeta(kk)+MO_coef_at_b(ki)*MO_coef_at_b(kj)
            enddo
 c
            if (i.ne.j) then
-             RMM(kk)=2.0D0*RMM(kk)
-             rhoalpha(kk)=2.0D0*rhoalpha(kk)
-             rhobeta(kk)=2.0D0*rhobeta(kk)
+             RMM(kk)      = 2.0D0*RMM(kk)
+             rhoalpha(kk) = 2.0D0*rhoalpha(kk)
+             rhobeta(kk)  = 2.0D0*rhobeta(kk)
            endif
 c
            del=RMM(kk)-tmp
@@ -1200,22 +1196,8 @@ c       goto 995
       if (GRAD) then
 
 #ifdef G2G
-#ifdef ULTIMA_CPU
-       call exchnum(NORM,natom,r,Iz,Nuc,M,ncont,nshell,c,a,RMM,
-     >              M18,NCO,Exc,nopt)
-#else
        call g2g_new_grid(igrid)
-
        call g2g_solve_groups(1, Exc, 0)
-
-c       write(*,*) 'g2g-Exc',Exc
-#endif
-#else
-#ifdef ULTIMA_G2G
-c       call g2g_new_grid(igrid)
-c       call g2g_solve_groups(1, Exc, 0)
-#else
-#endif       
 #endif
 
 
@@ -1271,23 +1253,23 @@ c       call g2g_solve_groups(1, Exc, 0)
 !
        kk=M15-1
        do j=1,M
-
           do i=j,M
              kk=kk+1
-             RMM(kk)=0.D0
-c
+             RMM(kk) = 0.D0
              do k=1,NCOa
-                k0=M18+M*(k-1)-1
-                ki=k0+i
-                kj=k0+j
-                RMM(kk)=RMM(kk)-RMM(M13+k-1)*RMM(ki)*RMM(kj)
+                k0 = M*(k-1)
+                ki = k0 + i
+                kj = k0 + j
+                RMM(kk) = RMM(kk) - 
+     >                    MO_coef_at(ki)*MO_coef_at(kj)*RMM(M13+k-1)
              end do
 c
              do k=1,NCOb
-                k0=M18b+M*(k-1)-1
-                ki=k0+i
-                kj=k0+j
-                RMM(kk)=RMM(kk)-RMM(M22+k-1)*RMM(ki)*RMM(kj)
+                k0 = M*(k-1)
+                ki = k0 + i
+                kj = k0 + j
+                RMM(kk)=RMM(kk) - 
+     >                  MO_coef_at_b(ki)*MO_coef_at_b(kj)*RMM(M22+k-1)
              end do
 c
              if (i.ne.j) then

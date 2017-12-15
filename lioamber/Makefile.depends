@@ -183,6 +183,16 @@ $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/faint_cpu.mod
 
 
 ################################################################################
+include fileio/fileio.mk
+SRCDIRS += fileio
+OBJECTS += fileio.o
+
+tmplist :=
+tmplist += drive.o liomain.o TD.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fileio.mod
+################################################################################
+
+################################################################################
 # TO-DO: reformulate the following modules so that there exists mathcpu,
 #        mathcublas. Perhaps also a mathlio, which could be an interface
 #        that would load either mathcpu or mathcublas accordingly).

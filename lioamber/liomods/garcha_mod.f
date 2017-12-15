@@ -20,9 +20,9 @@
      > solv2
       character*4 ctype
       logical exists,MEMO,predcoef
-      logical done(ntq),used,NORM,OPEN,ATRHO,DIRECT,VCINP,SHFT,DIIS
+      logical done(ntq),used,NORM,OPEN,DIRECT,VCINP,SHFT,DIIS
       logical done_fit(ntq)
-      logical TMP1,TMP2,dens,EXTR,SVD,field1
+      logical dens,EXTR,SVD,field1
 !write1
       logical Coul,GRAD,BSSE,integ,SVD1,sol,tipe
 !Prop,GRAD,BSSE,integ,SVD1,sol,tipe
@@ -38,8 +38,7 @@
       character*20 cube_dens_file,cube_orb_file,cube_elec_file
 
 
-      dimension OCC(40),oc2(400),ATCOEF(100*ng0),ighost(ntq),
-     > ighost1(ntq)
+      dimension ighost(ntq), ighost1(ntq)
       real*8 e_(50,3),wang(50),e_2(116,3),wang2(116),e3(194,3), ! intg1 e intg2
      > wang3(194)                                               !
       integer Nr(0:54),Nr2(0:54)
@@ -167,6 +166,7 @@ c      parameter rmintsol=16.0D0
       real*8, dimension (:), ALLOCATABLE :: Fock_Hcore !contains core-Hamiltonian matrix, reemplaze RMM(M11)
       real*8, dimension (:), ALLOCATABLE :: Fock_Overlap ! reemplaze RMM(M5)
       real*8, dimension (:), ALLOCATABLE :: P_density ! reemplaze RMM(M1)
+      real*8, dimension (:), ALLOCATABLE :: MO_coef_at, MO_coef_at_b
 !Geometry optimizations
       logical :: steep !enables steepest decend algorithm
       real*8 :: Force_cut, Energy_cut, minimzation_steep !energy and force convergence crit and initial steep

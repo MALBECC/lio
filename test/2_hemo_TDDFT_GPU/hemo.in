@@ -3,17 +3,20 @@
  natom=48
  charge=0
  nmax=100
- vcinp=f
  writeforces=t
  cube_res=50
- cube_dens=t
+ cube_dens=f
  cube_orb=f
- cube_elec=t
+ cube_elec=f
  timedep=1
  propagator=2
  ntdstep=300
- tdstep=0.01
+ tdstep=0.001
  NBCH=10
  field=.false.
  exter=.false.
+ writedens=t
+ restart_freq=0
+ VCINP=t
+ tdrestart=f
 &end

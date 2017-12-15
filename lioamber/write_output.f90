@@ -6,7 +6,6 @@
 ! * write_fukui      (handles Fukui function printing to output)               !
 ! * write_orbitals   (prints orbitals and energies to output)                  !
 ! * write_population (handles population/charge printing to output)            !
-! * write_restart    (prints an orbital coefficient restart file)              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -210,34 +209,4 @@ subroutine write_population(UID, N, q0, q, pop)
 309 FORMAT(8x,"║    LÖWDIN POPULATION ANALYSIS   ║")
     return
 end subroutine write_population
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% WRITE_RESTART %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Writes a coefficient restart file.                                           !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine write_restart(UID)
-    use garcha_mod, only : M, X, NCO, indexii
-
-    implicit none
-    integer, intent(in) :: UID
-    integer             :: ll, nn
-
-    call g2g_timer_sum_start('restart write')
-    rewind UID
-    do ll = 1, M
-        do nn = 1, M
-            X(indexii(ll), M +nn) = X(ll, 2*M +nn)
-        enddo
-    enddo
-
-    do ll = 1, M
-         write(UID,400) (X(ll, M +nn), nn = 1, NCO)
-    enddo
-
-    call g2g_timer_sum_stop('restart write')
-
-400 format(4(E14.7E2, 2x))
-    return
-end subroutine write_restart
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -12,16 +12,17 @@
       USE garcha_mod, ONLY : a,c, isotop, basis, done, done_fit, natomc, nnps, &
       nnpp, nnpd, nns, nnp, nnd, atmin, jatc, ncf, lt, at, ct, nnat, nshell,   &
       nuc, ncont, nlb, nshelld, cd, ad, Nucd, ncontd, nld, Nucx, indexii,      &
-      ncontx, cx, ax, indexiid, X, XX, RMM, rhoalpha,rhobeta, af, oc2, ATRHO,  &
+      ncontx, cx, ax, indexiid, X, XX, RMM, rhoalpha,rhobeta, af,              &
       date, basis_set, fitting_set, dens, e_, e_2, e3, exists, NORM, fcoord,   &
       fmulliken, natom, frestart, M, FAC, Iexch, int_basis, max_func, integ,   &
       frestartin, Md, NCO, nng, npas, Nr, used, STR, verbose, omit_bas, Nr2,   &
-      wang, wang2, wang3, VCINP, OPEN, OPEN1, whatis, TMP1, TMP2, Num, Iz, pi, &
-      Rm2, rqm, rmax, OCC, ATCOEF, Nunp, nl, nt, ng, ngd, restart_freq,        &
+      wang, wang2, wang3, VCINP, OPEN, OPEN1, whatis, Num, Iz, pi,             &
+      Rm2, rqm, rmax, Nunp, nl, nt, ng, ngd, restart_freq,             &
       writexyz, number_restr, restr_pairs,restr_index,restr_k,restr_w,restr_r0,&
-      mulliken
+      mulliken, MO_coef_at, MO_coef_at_b
 
       USE ECP_mod, ONLY : ecpmode, asignacion
+      USE fileio , ONLY : read_coef_restart
 
       IMPLICIT NONE
       LOGICAL :: basis_check
@@ -34,7 +35,9 @@
       INTEGER, INTENT(IN) :: ng2, ngDyn, ngdDyn
       REAL*8 :: atmint, iprob
       REAL*8 :: xnorm
-      INTEGER :: NCOa, NCOb, ncon, nraw, NAO, NGF
+      REAL*8, ALLOCATABLE, DIMENSION(:,:) :: restart_coef, restart_coef_b, &
+                                             restart_dens
+      INTEGER :: NCOa, NCOb, ncon, nraw
       INTEGER :: is,ip,id, index
       INTEGER :: igpu, ios, NBAS, iatom
       INTEGER :: M3, M5, M7, M9, M11, M13, M15, M17, M18, M18b, MM, MMd !punteros
@@ -963,207 +966,67 @@
          write(*,*) 'PAUSE IS A DELETED FEATURE'
 !        pause
       endif
-!c
-!c -------------------------------------------------------------
-!c case for initial guess given in input -------------------------
+
+      ! Reads coefficient restart and builds density matrix. The MO
+      ! coefficients are read in the same order as basis sets.
+      ! Then vectors are put in dynamical allocation (to be used later)
       if (VCINP) then
-!c closed shell
-        open(unit=89,file=frestartin)
-!c
-        if (.not.OPEN) then
-!c reads vectors of MO coefficients, basis is in the same order as 
-!c the given in input
-          do l=1,M
-            read(89,*) (XX(l,n),n=1,NCO)
-          enddo
+         call g2g_timer_start('restart_read')
+         allocate(restart_dens(M, M), restart_coef(M, NCO))
+         open(unit=89, file=frestartin)
 
-!c
-!c puts vectors in dynamical allocation (to be used later)
-!c
-            kk=0
-          do k=1,NCO
-            do i=1,M
-             kk=kk+1
-             RMM(M18+kk-1)=XX(indexii(i),k)
-            enddo
-          enddo
+         if (.not.OPEN) then
+            call read_coef_restart(restart_coef, restart_dens, M, NCO, 89)
 
-          do i=1,M
-            do j=1,M
-              do k=1,NCO
-                X(i,j)=X(i,j)+2.0D0*XX(i,k)*XX(j,k)
-              enddo
+            kk = 0
+            do k=1, NCO
+            do i=1, M
+               kk = kk + 1
+               MO_coef_at(kk) = restart_coef(indexii(i), k)
             enddo
-          enddo
-!c
-!c open shell case
-        else
-!c
-          NCOa=NCO
-          NCOb=NCO+Nunp
-          M18b=M18+M*NCOa
-!c alpha
-          do l=1,M
-            read(89,*) (XX(l,n),n=1,NCOa)
-          enddo
-!c
-          kk=M18-1
-          do k=1,NCOa
-            do i=1,M
-              kk=kk+1
-              RMM(kk)=XX(indexii(i),k)
             enddo
-          enddo
-!c
-!c Density Matrix
-!c
-          do 331 i=1,M
-            do 331 j=1,M
-              X(i,j)=0.0D0
-!c
-              do 139 k=1,NCOa
-                X(i,j)=X(i,j)+XX(i,k)*XX(j,k)
- 139          continue
- 331      continue
-!c
-!c beta
-          do l=1,M
-            read(89,*) (XX(l,n),n=1,NCOb)
-          enddo
-!c
-          kk=M18b-1
-          do k=1,NCOb
-            do i=1,M
-              kk=kk+1
-              RMM(kk)=XX(indexii(i),k)
+         else
+            NCOa = NCO
+            NCOb = NCO + Nunp
+            allocate(restart_coef_b(M, NCOb))
+
+            call read_coef_restart(restart_coef, restart_coef_b, restart_dens, &
+                                   M, NCOa, NCOb, 89)
+            kk = 0
+            do k=1, NCOa
+            do i=1, M
+               kk = kk + 1
+               MO_coef_at(kk) = restart_coef(indexii(i), k)
             enddo
-          enddo
-!c 
-!c Density Matrix
-!c
-          do i=1,M
-            do j=1,M
-              do k=1,NCOb
-                X(i,j)=X(i,j)+XX(i,k)*XX(j,k)
-              enddo
             enddo
-          enddo
-!c
-        endif
+             
+            kk = 0
+            do k=1, NCOb
+            do i=1, M
+               kk = kk + 1
+               MO_coef_at_b(kk) = restart_coef_b(indexii(i), k)
+            enddo
+            enddo
+            deallocate(restart_coef_b)
+         endif
+
+         ! Reorders by s, p, d.
+         k = 0
+         do j=1, M
+         do i=j, M
+            k = k + 1
+            RMM(k) = restart_dens(indexii(i), indexii(j))
+            if (i.ne.j) then
+               RMM(k) = RMM(k)*2.D0
+            endif
+         enddo
+         enddo
+
+         deallocate(restart_dens, restart_coef)
+         close(89)
+         call g2g_timer_stop('restart_read')
       endif
-!c
-!c density matrix kept temporarily in S
-!c END of case in which density matrix is explicitly given in input
-!c--------------------------------------------------------------------
-!c
-!c case for initial guess constructed from atomic densities -------
-      if (ATRHO) then
-        k1=0
-        l1=0
-        NN=0
-        do i=1,NBAS
-!c
-!c         read(1,nml=RHOINP)
-!c
-          do j=1,nnat(i)
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! NAO y NGF de donde salen?????????????????????????, Nick
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-            do k=1,NAO
-              k1=k1+1
-!c
-              do l=1,NGF
-                l1=NN+l
-                kl=(k-1)*NGF+l
-                XX(l1,k1)=atcoef(kl)
-                oc2(k1)=OCC(k)
-              enddo
-            enddo
-!c
-            NN=NN+NGF
-          enddo
-        enddo
-!c------------------------------------------------------------
-!c S used as scratch array here
-        do i=1,M
-          do j=1,M
-            X(i,j)=0.
-            do l=1,k1
-              X(i,j)=X(i,j)+oc2(l)*XX(i,l)*XX(j,l)
-            enddo 
-          enddo
-        enddo
-!c
-!c approximate vectors construction
-!c
-        if (.not.OPEN) then
-          kk=M18-1
-          do k=1,NCO
-            do i=1,M
-              kk=kk+1
-              RMM(kk)=XX(i,k) 
-            enddo
-          enddo
-!c
-        else
-!c
-          NCOa=NCO
-          NCOb=NCO+Nunp
-          M18b=M18+M*NCOa
-!c
-          kk=M18-1
-          do k=1,NCOa
-            do i=1,M
-              kk=kk+1
-              RMM(kk)=XX(indexii(i),k)
-            enddo
-          enddo
-!c
-          kk=M18b-1
-          do k=1,NCOb
-            do i=1,M
-              kk=kk+1
-              RMM(kk)=XX(indexii(i),k)
-            enddo
-          enddo 
-        endif
-      endif
-!c
-!c density matrix stored temporarily in S, then it should be changed
-!c according to the shell ordering of the basis set and kept in P
-!c------ end of option atomic densities -------------------------------------
-!c
-!c changes to the shell order ( s , p, d....)
-      k=0
-      do j=1,M
-        do i=j,M
-          k=k+1
-          RMM(k)=X(indexii(i),indexii(j))
-        enddo
-      enddo
-!c
-      k=0
-      do j=1,M
-        do i=j,M
-          k=k+1
-          if (i.ne.j) then
-            RMM(k)=RMM(k)*2.D0
-          endif
-        enddo
-      enddo
-!c
-!c---- reads exchange fit data -------------
-!c
-      TMP1=ATRHO
-      TMP2=VCINP
-!c
-!c--------------------------
-!c
+      ! End of restart.
 
 !c------- G2G Initialization ---------------------
 !c
@@ -1172,11 +1035,13 @@
       else
         allocate(rhoalpha(1),rhobeta(1))
       endif
+      rhoalpha=0.0D0
+      rhobeta =0.0D0
 
       call g2g_parameter_init(NORM,natom,natom,ngDyn, &
                              rqm,Rm2,Iz,Nr,Nr2,Nuc, &
                              M,ncont,nshell,c,a, &
-                             RMM,M18,M5,M3,rhoalpha,rhobeta, &
+                             RMM,M5,M3,rhoalpha,rhobeta, &
                              NCO,OPEN,Nunp,nopt,Iexch, &
                              e_, e_2, e3, wang, wang2, wang3)
 
@@ -1185,9 +1050,7 @@
       call aint_parameter_init(Md, ncontd, nshelld, cd, ad, Nucd, &
       af, RMM, M9, M11, STR, FAC, rmax)
       endif
-
-       deallocate(X,XX)
-       allocate(X(M,4*M),XX(Md,Md))
+      allocate(X(M,4*M),XX(Md,Md))
 
 
 !--------------------------------------------------------------------------------------

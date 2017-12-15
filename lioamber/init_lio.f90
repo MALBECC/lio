@@ -29,7 +29,7 @@ subroutine lio_defaults()
                            cube_sel, cube_orb_file, cube_dens_file, NUNP,      &
                            energy_freq, style, allnml, writeforces,            &
                            cube_elec, cube_elec_file, cube_sqrt_orb, MEMO,     &
-                           NORM, ATRHO, SHFT, GRAD, BSSE, sol, primera,        &
+                           NORM, SHFT, GRAD, BSSE, sol, primera,               &
                            watermod, fukui, little_cube_size, sphere_radius,   &
                            max_function_exponent, min_points_per_cube,         &
                            assign_all_functions, remove_zero_weights,          &
@@ -122,11 +122,11 @@ subroutine lio_defaults()
     epsilon        = 1.D0          ; allnml             = .true.        ;
     NUNP           = 0             ; energy_freq        = 1             ;
     cube_sqrt_orb  = .false.       ; MEMO               = .true.        ; 
-    NORM           = .true.        ; ATRHO              = .false.       ;
     SHFT           = .false.       ; GRAD               = .true.        ;
     BSSE           = .false.       ; sol                = .false.       ;
     primera        = .true.        ; watermod           = 0             ;
     timers         = 0             ;
+    NORM           = .true.        ;
 
     return
 end subroutine lio_defaults
@@ -138,7 +138,7 @@ end subroutine lio_defaults
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
 
-    use garcha_mod, only : idip, nunp, X, XX, RMM, d, c, a, Nuc, ncont, cx,    &
+    use garcha_mod, only : idip, nunp, RMM, d, c, a, Nuc, ncont, cx,           &
                            ax, Nucx, ncontx, cd, ad, Nucd, ncontd, indexii,    &
                            indexiid, r, v, rqm, Em, Rm, pc, nnat, af, B, Iz,   &
                            natom, nco, ng0, ngd0, ngrid, nl, norbit, ntatom,   &
@@ -146,13 +146,14 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
                            assign_all_functions, energy_all_iterations,        &
                            remove_zero_weights, min_points_per_cube,           &
                            max_function_exponent, sphere_radius, M,Fock_Hcore, &
-                           Fock_Overlap, P_density, OPEN, timers
+                           Fock_Overlap, P_density, OPEN, timers, MO_coef_at,     &
+                           MO_coef_at_b
                          
     use ECP_mod,    only : Cnorm, ecpmode
 
     implicit none
     integer , intent(in) :: charge, nclatom, natomin, Izin(natomin), callfrom
-    integer              :: i, ng2, ng3, ngdDyn, ngDyn, nqnuc, ierr, ios, MM,  &
+    integer              :: i, ng2, ngdDyn, ngDyn, nqnuc, ierr, ios, MM,      &
                             electrons
 
     call g2g_set_options(free_global_memory, little_cube_size, sphere_radius, &
@@ -160,7 +161,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
                          remove_zero_weights, min_points_per_cube,            &
                          max_function_exponent, timers)
 
-!    call g2g_timer_start('lio_init')
+    call g2g_timer_start('lio_init')
 
     if (callfrom.eq.1) then
         natom  = natomin
@@ -170,26 +171,25 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
         allocate(r(ntatom,3), rqm(natom,3), pc(ntatom))
     endif
 
-    ! ngDyn : n° of atoms times the n° of basis functions.                     !
+    ! ngDyn : n° of atoms times the n° of basis functions.                   !
     ! norbit: n° of molecular orbitals involved.                               !
-    ! ngdDyn: n° of atoms times the n° of auxiliary functions.                 !
+    ! ngdDyn: n° of atoms times the n° of auxiliary functions.               !
     ! Ngrid : n° of grid points (LS-SCF part).                                 !
     ! NOTES: Ngrid may be set to 0  in the case of Numerical Integration. For  ! 
     ! large systems, ng2 may result in <0 due to overflow.                     !
- 
-    ! Sets the dimensions for important arrays.
+
+    ! Sets the dimensions for important arrays.                                
     call DIMdrive(ngDyn,ngdDyn)
 
-    ng2 = 5*ngDyn*(ngDyn+1)/2 + 3*ngdDyn*(ngdDyn+1)/2 + ngDyn  + ngDyn*norbit +&
-          Ngrid
-    ng3 = 4*ngDyn
+    ng2 = 5*ngDyn*(ngDyn+1)/2 + 3*ngdDyn*(ngdDyn+1)/2 + &
+          ngDyn  + ngDyn*norbit + Ngrid
 
-    allocate(X(ngDyn,ng3)  , XX(ngdDyn,ngdDyn) , RMM(ng2)    , d(natom, natom),&
-             c(ngDyn,nl)   , a(ngDyn,nl)       , Nuc(ngDyn)  , ncont(ngDyn)   ,&
-             cx(ngdDyn,nl) , ax(ngdDyn,nl)     , Nucx(ngdDyn), ncontx(ngdDyn) ,&
-             cd(ngdDyn,nl) , ad(ngdDyn,nl)     , Nucd(ngdDyn), ncontd(ngdDyn) ,&
-             indexii(ngDyn), indexiid(ngdDyn)  , v(ntatom,3) , Em(ntatom)     ,&
-             Rm(ntatom)    , af(ngdDyn)        , nnat(200)   , B(ngdDyn,3))
+    allocate(RMM(ng2)    , d(natom, natom), c(ngDyn,nl)   , a(ngDyn,nl)     ,&
+             Nuc(ngDyn)  , ncont(ngDyn)   , cx(ngdDyn,nl) , ax(ngdDyn,nl)   ,& 
+             Nucx(ngdDyn), ncontx(ngdDyn) , cd(ngdDyn,nl) , ad(ngdDyn,nl)   ,&
+             Nucd(ngdDyn), ncontd(ngdDyn) , indexii(ngDyn), indexiid(ngdDyn),&
+             v(ntatom,3) , Em(ntatom)     , Rm(ntatom)    , af(ngdDyn)      ,&
+             nnat(200)   , B(ngdDyn,3))
 
     ! Cnorm contains normalized coefficients of basis functions.
     ! Differentiate C for x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)
@@ -202,7 +202,6 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
         nqnuc = nqnuc + Iz(i)
     enddo
 
-
     electrons=nqnuc - charge
     if (.not. OPEN .and. (mod(electrons,2) .ne. 0)) then
 	write(*,*) "odd number of electrons in a close-shell calculation"
@@ -210,19 +209,23 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
 	STOP 
     end if
 
+    NCO = ((nqnuc - charge) - NUNP)/2
 
-    nco = ((nqnuc - charge) - Nunp)/2
+    allocate(MO_coef_at(ngDyn*NCO))
+    if (OPEN) allocate(MO_coef_at_b(ngDyn*(NCO+NUNP)))
 
-!   Prints LIO logo to output and options chosen for the run. 
+
+    ! Prints LIO logo to output and options chosen for the run. 
     if (style) call LIO_LOGO()
     if (style) call NEW_WRITE_NML(charge)
 
     call drive(ng2, ngDyn, ngdDyn)
-!    call g2g_timer_stop('lio_init')
 
-! reemplazos de RMM
+    ! reemplazos de RMM
     MM=M*(M+1)/2
     allocate(Fock_Hcore(MM), Fock_Overlap(MM), P_density(MM))
+
+    call g2g_timer_stop('lio_init')
 
     return 
 end subroutine init_lio_common

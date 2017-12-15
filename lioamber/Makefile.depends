@@ -220,16 +220,16 @@ ifeq ($(use_cublas),1)
 
   tmplist :=
   tmplist += cublasmath.o
-	$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/general_module.mod
-	$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
-	$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fortran.o
+  $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/general_module.mod
+  $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
+  $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fortran.o
 
   tmplist :=
   tmplist += SCF.o SCFop.o TD.o converger_subs.o
-	$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/cublasmath.mod
+  $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/cublasmath.mod
 
-	$(OBJPATH)/fortran.o: $(CUDA_HOME)/src/fortran.c
-		$(CC) -fPIC -DCUBLAS_GFORTRAN -O3 -c $< -o $@ -I$(CUDA_HOME)/include
+  $(OBJPATH)/fortran.o: $(CUDA_HOME)/src/fortran.c
+	$(CC) -fPIC -DCUBLAS_GFORTRAN -O3 -c $< -o $@ -I$(CUDA_HOME)/include
 endif
 
 

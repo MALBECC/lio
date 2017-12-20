@@ -25,6 +25,10 @@
 ! In each step of the propagation the cartesian components of the sistems      !
 ! dipole are stored in files x.dip, y.dip, z.dip.                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+module time_dependent
+
+contains
+
 subroutine TD()
    use garcha_mod    , only: M, Md, NBCH, propagator, tdstep, idip, tdrestart, &
                              exists, RMM, NCO, nang, Iz, natomc, r, d, atmin,  &
@@ -36,7 +40,6 @@ subroutine TD()
    use ECP_mod       , only: ecpmode, term1e, VAAA, VAAB, VBAC
    use mathsubs
    use transport
-   use general_module, only: atmorb
    use faint_cpu77   , only: int1, intsol, int3mem, intfld, int3lu
    use fileio        , only: read_td_restart_verlet , read_td_restart_magnus , &
                              write_td_restart_verlet, write_td_restart_magnus
@@ -46,20 +49,19 @@ subroutine TD()
 
    implicit none
    real*8  :: dipxyz(3), q(natom)
-   real*8  :: dipole_norm, Qc, Qc2, zij, ti, tj, alf, rexp, E, En, E1, E2, E1s,&
+   real*8  :: dipole_norm, Qc2, zij, ti, tj, alf, rexp, E, En, E1, E2, E1s,&
               Es, Ens, Ex, g, factor, fxx, fyy, fzz, ff, t0, t, dt_magnus,     &
               dt_lpfrg, tiempo1000
-   integer :: MM, MMd, M2, M5, M13, M15, M11, Nel, unit1, unit2, WORK,         &
-              pert_steps, lpfrg_steps, chkpntF1a, chkpntF1b, ngroup, igpu,     &
+   integer :: MM, MMd, M2, M5, M13, M15, M11, unit1, unit2, LWORK,        &
+              pert_steps, lpfrg_steps, chkpntF1a, chkpntF1b, igpu,     &
               info, istep, i, j, k, n, ii, jj, kk
    logical :: ematalloct, dovv
    character(len=20) :: restart_filename
 
-   real*8 , allocatable, dimension(:)   :: factorial, WORK, Dvec
+   real*8 , allocatable, dimension(:)   :: factorial, Dvec, WORK
    real*8 , allocatable, dimension(:,:) :: Xnano2, Xmm, Xtrans, Ytrans, fock,  &
-                                           F1a, F1b, overlap, rhoscratch, elmu,&
+                                           F1a, F1b, overlap, elmu,&
                                            Ymat, Vmat
-   integer, allocatable, dimension(:)   :: group, qgr, orb_group, orb_selection
 
 ! Precision options.
 #ifdef TD_SIMPLE
@@ -87,88 +89,45 @@ subroutine TD()
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% TD INITIALIZATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-   call g2g_timer_start('TD')
-   call g2g_timer_start('inicio')
-   open(unit = 134, file = "dipole_moment_td")
-
-
-   ! Checks and performs allocations.
-   call td_allocate_all(M, NBCH, F1a, F1b, fock, rho, rho1, rhofirst, rhold,   &
-                        rhonew, sqsm, Vmat, Xmm, Xnano, Xnano2, Xtrans, Ymat,  &
-                        Ytrans, Dvec, factorial)
-#ifdef CUBLAS
-   call td_allocate_cublas(M, sizeof_real, devPtrX, devPtrY)
-#endif
-
-   ! Propagator-related parameters.
-   if (propagator.eq.2) then
-      dt_magnus    = tdstep
-      dt_lpfrg     = tdstep*0.10D0
-      factorial(1) = 1.0D0
-      do ii = 2, NBCH
-#ifdef CUBLAS
-         factorial(ii) = 1.0D0 / ii
-#else
-         factorial(ii) = factorial(ii-1) / ii
-#endif
-      enddo
-   endif
-   if (propagator.eq.1) then
-      dt_lpfrg = tdstep
-   endif
-
-   ! Initializations.
-   pert_steps  = 100   ; chkpntF1a = 185
-   lpfrg_steps = 200   ; chkpntF1b = 195
-   E           = 0.0D0 ; E1        = 0.0D0
-   En          = 0.0D0 ; E2        = 0.0D0
-   Im          = (0.0D0, 2.0D0)
-   Nel         = 2*NCO + Nunp
-
-   ! Total atomic charge.
-   Qc = 0.0D0
-   do i = 1, natom
-      Qc = Qc + Iz(i)
-   enddo
-   Qc  = Qc - Nel
-   Qc2 = Qc**2
-
-   ! Amount of basis variables.
-   MM  = M *(M+1) /2
-   MMd = Md*(Md+1)/2
-   M2  = 2*M
 
    ! RMM initializations
    ! M3 - Fold, M5 - S and then F, M7 - G, M9 - Gm, M11 - H
    ! M13 - W (matrix eigenvalues),  M15 - Aux vector for ESSL. M17 - Used
    ! in least squares, M18 - MO vectors (deprecated), M19 - weights (optional),
    ! M20 - 2e integrals if MEMO=t
-   M5  = 1 + 2*MM
-   M11 = M5 + MM + 2*MMd
-   M13 = M11 + MM
+   MM  = M *(M+1) /2     ; MMd = Md*(Md+1)/2
+   M2  = 2*M             ; M5  = 1 + 2*MM
+   M11 = M5 + MM + 2*MMd ; M13 = M11 + MM
    M15 = M13 + M
 
-   ! Things to eventually delete: dipole and lowdinpop
-   idip = 1
-   lpop = .false.
+   call g2g_timer_start('TD')
+   call g2g_timer_start('td-inicio')
+   open(unit = 134, file = "dipole_moment_td")
+
+   ! Checks and performs allocations.
+   call td_allocate_all(M, NBCH, propagator, F1a, F1b, fock, rho, rho1,        &
+                        rhofirst, rhold, rhonew, sqsm, Vmat, Xmm, Xnano,       &
+                        Xnano2, Xtrans, Ymat, Ytrans, Dvec, factorial)
+#ifdef CUBLAS
+   call td_allocate_cublas(M, sizeof_real, devPtrX, devPtrY)
+#endif
+
+   ! Initializations.
+   pert_steps  = 100   ; chkpntF1a = 185
+   lpfrg_steps = 200   ; chkpntF1b = 195
+   E           = 0.0D0 ; E1        = 0.0D0
+   En          = 0.0D0 ; E2        = 0.0D0
    Im   = (0.0D0,2.0D0)
 
+   ! Initialises propagator-related parameters.
+   call init_propagators(propagator, tdstep, NBCH, dt_lpfrg, dt_magnus, factorial)
+
+   ! Gets squared total atomic charge.
+   call get_atomic_charge(NCO, Nunp, natom, Iz, Qc2)
+
    ! Transport Initializations
-   if (transport_calc) then
-
-      ngroup = 0
-      allocate(group(natom))
-      call transport_read_groups(natom, group, ngroup)
-      allocate(mapmat(M,M))
-      allocate(qgr(ngroup))
-
-      call mat_map(group, mapmat, Nuc, M, natom)
-      if (.not.allocated(orb_group)) then
-         allocate(orb_group(M))
-         call atmorb(group, nuc, orb_group)
-      endif
-      if (.not.allocated(orb_selection)) allocate(orb_selection(M))
-   endif
+   if (transport_calc) call transport_init(M, natom, Nuc, ngroup, group, mapmat, &
+                                           GammaMagnus, GammaVerlet)
 
    ! TD restart reading.
    if (tdrestart) then
@@ -272,9 +231,8 @@ subroutine TD()
 
    ! Comment needed here.
    if( transport_calc )then
-      if (allocated(overlap))    deallocate(overlap)
-      if (allocated(rhoscratch)) deallocate(rhoscratch)
-      allocate(overlap(M,M), rhoscratch(M,M))
+      if (allocated(overlap)) deallocate(overlap)
+      allocate(overlap(M,M))
       call spunpack('L', M, RMM(M5), overlap)
    endif
 
@@ -365,14 +323,12 @@ subroutine TD()
    do j = 1, M
       Xmm(i,j)    = X(i,j)
       Xtrans(j,i) = X(i,j)
-      Ytrans(j,i) = Y(i,j)
+      Ytrans(j,i) = Ymat(i,j)
    enddo
    enddo
 
    ! Steps needed for transport.
-   if (transport_calc) then
-      call transport_generate_rho(M, rhofirst, rho, generate_rho0)
-   endif
+   if (transport_calc) call transport_generate_rho(M, rhofirst, rho, generate_rho0)
 
    ! Rho is transformed to the orthonormal basis with either matmul intrinsic
    ! or CUBLAS:
@@ -385,17 +341,6 @@ subroutine TD()
    rho = matmul(Ytrans, rho)
    rho = matmul(rho   , Ymat)
 #endif
-
-   ! Transport: Trace Writing and driving rate
-   if (transport_calc) then
-      do i = 1, M
-         traza0 = traza0 + real(rho(i,i))
-      enddo
-      write(*,*) 'traza0 =', traza0
-      GammaMagnus = driving_rate
-      GammaVerlet = GammaMagnus*0.1D0
-      write(*,*) 'Driving Rate =', GammaMagnus
-   endif
 
    ! Precalculate three-index (two in MO basis, one in density basis) matrix
    ! used in density fitting /Coulomb F element calculation here (t_i in Dunlap)
@@ -411,11 +356,12 @@ subroutine TD()
       call g2g_timer_stop('int3mem')
       call g2g_timer_sum_stop('Coulomb precalc')
    endif
+
 #ifdef CUBLAS
    if (.not.transport_calc) call CUBLAS_FREE(devPtrY)
 #endif
 
-   call g2g_timer_stop('inicio')
+   call g2g_timer_stop('td-inicio')
    ! End of TD initialization.
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -461,7 +407,7 @@ subroutine TD()
                fxx    = fx * exp(-0.2D0*(real(istep-50))**2)
                fyy    = fy * exp(-0.2D0*(real(istep-50))**2)
                fzz    = fz * exp(-0.2D0*(real(istep-50))**2)
-               write(*,*) "TD - External field x,y,z in a.u.: " fxx, fyy, fzz
+               write(*,*) "TD - External field x,y,z in a.u.: ", fxx, fyy, fzz
             else
                g  = 2.0D0 * (epsilon-1.0D0) / ((2.0D0*epsilon+1.0D0)*a0**3)
                Fx = dipxyz(1) / 2.54D0
@@ -549,22 +495,21 @@ subroutine TD()
             call g2g_timer_start('TRANSPORT - b Verlet -')
             if(istep.eq.1) then
                unit1 = 55555
-               if ( Pop_Drive == 1 ) then
+               if ( pop_drive == 1 ) then
                   open( unit = unit1, file = 'DriveMul')
-               elseif ( Pop_Drive == 2 ) then
+               elseif ( pop_drive == 2 ) then
                   open(unit = unit1, file = 'DriveLowd')
                endif
             endif
             if(istep.ge.3) then
                scratchgamma = GammaVerlet * exp(-0.0001D0*(dble(istep-1000))**2)
                call ELECTROSTAT(rho1, mapmat, overlap, rhofirst, scratchgamma,M)
-               if ( (Pop_Drive == 1) .or. (Pop_Drive == 2) ) then
+               if ( (pop_drive == 1) .or. (pop_drive == 2) ) then
                   if (mod(istep-1,save_charge_freq*10) == 0) then
-                     rhoscratch = REAL(rho1)
                      q = 0.0D0
-                     call Drive_Population(Pop_Drive, ngroup, rhoscratch,      &
-                                           overlap, group, sqsm, q, unit1)
-                  endif
+                     call drive_population(M, natom, Nuc, Iz, pop_drive, ngroup, &
+                                           rho1, overlap, group, sqsm)
+                     endif
                endif
             endif
 
@@ -614,12 +559,10 @@ subroutine TD()
                scratchgamma = GammaMagnus
             endif
             call ELECTROSTAT(rho1, mapmat, overlap, rhofirst, scratchgamma, M)
-            if (Pop_Drive == 1 .or. Pop_Drive == 2) then
+            if (pop_drive == 1 .or. pop_drive == 2) then
                if (mod(istep-1,save_charge_freq)==0) then
-                  rhoscratch = REAL(rho1)
-                  q(:) = 0.0D0
-                  call Drive_Population(Pop_Drive, ngroup, rhoscratch, overlap,&
-                                        group, sqsm, q, unit1)
+                  call drive_population(M, natom, Nuc, Iz, pop_drive, ngroup, &
+                                        rho1, overlap, group, sqsm)
                endif
             endif
 #ifdef CUBLAS
@@ -727,30 +670,11 @@ subroutine TD()
 
       ! Population analysis.
       if (transport_calc) then
-         if (istep .eq. 1) then
-            unit2 = 678
-            if ( Pop_Drive == 1 ) then
-               open( unit = unit2, file = "MullikenGroup")
-            elseif ( Pop_Drive == 2 ) then
-               open( unit = unit2, file = "LowdinGroup")
-            endif
-         endif
-         call g2g_timer_start("Mulliken Population")
-         if (Pop_Drive == 1 .or. Pop_Drive == 2) then
-            do n=1, natom
-               q(n)=Iz(n)
-            enddo
-            rhoscratch = REAL(rho1)
-            if ((propagator.eq.2) .and. (istep.lt.lpfrg_steps) .and. &
-            (.not.tdrestart)) then
-               if( mod((istep-1), save_charge_freq*10) == 0) then
-                  call Drive_Population(Pop_Drive, ngroup, rhoscratch, overlap,&
-                                        group, sqsm, q, unit2)
-               endif
-            elseif (mod((istep-1),save_charge_freq) == 0) then
-               call Drive_Population(Pop_Drive, ngroup, rhoscratch, overlap,   &
-                                     group, sqsm, q, unit2)
-            endif
+         if ( ((propagator.eq.2) .and. (istep.lt.lpfrg_steps) .and. (.not.tdrestart) .and.&
+         (mod((istep-1), save_charge_freq*10) == 0)) .or.                                 &
+         (mod((istep-1), save_charge_freq) == 0) ) then
+            call drive_population(M, natom, Nuc, Iz, pop_drive, ngroup, rho1, overlap,    &
+                                  group, sqsm)
          endif
       endif
 
@@ -831,23 +755,22 @@ subroutine TD()
  625  format(F14.7)
 end subroutine TD
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
-subroutine td_allocate_all(M, NBCH, F1a, F1b, fock, rho, rho1, rhofirst, rhold,&
-                           rhonew, sqsm, Vmat, Xmm, Xnano, Xnano2, Xtrans,     &
-                           Ymat, Ytrans, Dvec, factorial)
+! Checks and performs allocations.
+subroutine td_allocate_all(M, NBCH, propagator, F1a, F1b, fock, rho, rho1,     &
+                           rhofirst, rhold, rhonew, sqsm, Vmat, Xmm, Xnano,    &
+                           Xnano2, Xtrans, Ymat, Ytrans, Dvec, factorial)
    implicit none
-   integer, intent(in) :: M, NBCH
+   integer, intent(in) :: M, NBCH, propagator
    real*8, allocatable, intent(inout) :: F1a(:,:), F1b(:,:), fock(:,:),        &
-                                         rhofirst(:,:), sqsm(:,:), Vmat(:,:),  &
-                                         Xmm(:,:), Xnano2(:,:), Xtrans(:,:),   &
-                                         Ymat(:,:), Yrans(:,:), Dvec(:),       &
-                                         factorial(:)
+                                         sqsm(:,:), Vmat(:,:), Xmm(:,:),       &
+                                         Xnano2(:,:), Xtrans(:,:), Ymat(:,:),  &
+                                         Ytrans(:,:), Dvec(:), factorial(:)
 #ifdef TD_SIMPLE
-   complex*8 , allocatable, intent(inout) :: rho(:,:), rho1(:,:), rhold(:,:),  &
-                                             rhonew(:,:), Xnano(:,:)
+   complex*8 , allocatable, intent(inout) ::rho(:,:), rho1(:,:), rhofirst(:,:),&
+                                            rhold(:,:), rhonew(:,:), Xnano(:,:)
 #else
-   complex*16, allocatable, intent(inout) :: rho(:,:), rho1(:,:), rhold(:,:),  &
-                                             rhonew(:,:), Xnano(:,:)
+   complex*16, allocatable, intent(inout) ::rho(:,:), rho1(:,:), rhofirst(:,:),&
+                                            rhold(:,:), rhonew(:,:), Xnano(:,:)
 #endif
 
    if ( allocated(fock)     ) deallocate(fock)
@@ -868,8 +791,8 @@ subroutine td_allocate_all(M, NBCH, F1a, F1b, fock, rho, rho1, rhofirst, rhold,&
    if ( allocated(factorial)) deallocate(factorial)
    allocate(fock(M,M)  , rho(M,M) , rho1(M,M)  , rhofirst(M,M), rhold(M,M) ,   &
             rhonew(M,M), sqsm(M,M), Xmm(M,M)   , Xnano(M,M)   , Xnano2(M,M),   &
-            Xtrans(M,M), Ymat(M,M), Ytrans(M,M), Vmat(M,M)    , sqsm(M,M)  ,   &
-            Dvec(M), factorial(NBCH))
+            Xtrans(M,M), Ymat(M,M), Ytrans(M,M), Vmat(M,M)    , Dvec(M)    ,   &
+            factorial(NBCH))
    if (propagator.eq.2) then
       if ( allocated(F1a) ) deallocate(F1a)
       if ( allocated(F1b) ) deallocate(F1b)
@@ -879,7 +802,61 @@ subroutine td_allocate_all(M, NBCH, F1a, F1b, fock, rho, rho1, rhofirst, rhold,&
    return
 end subroutine td_allocate_all
 
+
+subroutine init_propagators(propagator, tdstep, NBCH, dt_lpfrg, dt_magnus, factorial)
+   implicit none
+   integer, intent(in)  :: propagator, NBCH
+   real*8 , intent(in)  :: tdstep
+   real*8 , intent(out) :: dt_lpfrg, dt_magnus, factorial(NBCH)
+
+   integer :: icount
+
+   ! Initialises propagator-related parameters.
+   select case (propagator)
+      case (1)
+         dt_lpfrg = tdstep
+      case (2)
+         dt_magnus    = tdstep
+         dt_lpfrg     = tdstep*0.10D0
+         factorial(1) = 1.0D0
+
+         do icount = 2, NBCH
+#ifdef CUBLAS
+            factorial(icount) = 1.0D0 / icount
+#else
+            factorial(icount) = factorial(icount - 1) / icount
+#endif
+         enddo
+      case default
+         write(*,*) "ERROR - TD: Wrong value for propagator (init_propagators)."
+         stop
+   end select
+
+   return
+end subroutine init_propagators
+
+subroutine get_atomic_charge(NCO, Nunp, natom, Iz, Qc2)
+   implicit none
+   integer, intent(in)  :: NCO, Nunp, natom, Iz(natom)
+   real*8 , intent(out) :: Qc2
+   integer :: Nel, i
+   real*8  :: Qc
+
+   Nel = 2*NCO + Nunp
+   Qc  = 0.0D0
+   Qc2 = 0.0D0
+
+   do i = 1, natom
+      Qc = Qc + Iz(i)
+   enddo
+   Qc2 = (Qc - Nel)**2
+
+   return
+end subroutine get_atomic_charge
+
+#ifdef CUBLAS
 subroutine td_allocate_cublas(M, sizeof_real, devPtrX, devPtrY)
+
    implicit none
    integer, intent(in)    :: M, sizeof_real
    integer, intent(inout) :: devPtrX, devPtrY
@@ -895,64 +872,9 @@ subroutine td_allocate_cublas(M, sizeof_real, devPtrX, devPtrY)
       call CUBLAS_SHUTDOWN
       stop
    endif
+
+   return
 end subroutine td_allocate_cublas
+#endif
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
-
-subroutine transport_read_groups(natom, group, ngroup)
-   implicit none
-   integer, intent(in)  :: natom
-   integer, intent(out) :: ngroup, group(natom)
-   integer :: icount, group_read
-   logical :: file_exists
-
-   inquire(file = 'atomgroup', exist = file_exists)
-   if (.not.file_exists) then
-      write(*,*) ' ERROR - Transport: Cannot find atomgroup file.'
-      stop
-   endif
-
-   open( unit = 678 , file = 'atomgroup')
-   do icount = 1 , natom
-      read(678, *) group_read
-      group(icount) = group_read
-      if (group_read.gt.ngroup) ngroup = group_read
-   enddo
-   close(unit=678)
-
-   if(ngroup.gt.3) write(*,*) 'WARNING - Transport: If the number of &
-   group is greater than 3, then group 1 should be the donor and 2 the &
-   acceptor.'
-
-   return
-end subroutine transport_read_groups
-
-subroutine transport_generate_rho(M, rhofirst, rho, gen_rho)
-   implicit none
-   integer, intent(in)  :: M
-   logical, intent(in)  :: do_rho
-   real*8 , intent(in)  :: rho(M,M)
-   real*8 , intent(out) :: rhofirst(M,M)
-   integer icount, jcount
-
-   open( unit = 100000, file = 'rhofirst')
-   if (gen_rho) then
-      do icount = 1, M
-      do jcount = 1, M
-         write(100000,*) rho(icount, jcount)
-      enddo
-      enddo
-      rhofirst = rho
-      write(*,*) 'RhoFirst has been written.'
-   else
-      do icount = 1, M
-      do jcount = 1, M
-         read(100000,*) rhofirst(icount, jcount)
-      enddo
-      enddo
-      write(*,*) 'RhoFirst has been read.'
-   endif
-
-   return
-end subroutine transport_generate_rho
+end module time_dependent

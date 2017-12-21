@@ -8,9 +8,10 @@ subroutine matdcmp_svd( Matrix, Umat, Gmat, Vtrp )
    real*8 , intent(out) :: Vtrp(:,:)
 
    logical              :: error_found
+   integer              :: nn, ii, jj
    integer              :: Msize1, Msize2
    real*8 , allocatable :: Xmat(:,:)
-   real*8 , allocatable :: Svec(:)
+   real*8 , allocatable :: Gvec(:)
 
    integer              :: lapack_LWORK
    real*8 , allocatable :: lapack_WORK(:)
@@ -18,7 +19,7 @@ subroutine matdcmp_svd( Matrix, Umat, Gmat, Vtrp )
    integer              :: lapack_INFO
 !
 !
-!  Check sizes
+!  Checks and initialization
 !------------------------------------------------------------------------------!
    Msize1 = size(Matrix,1)
    Msize2 = size(Matrix,2)
@@ -33,25 +34,24 @@ subroutine matdcmp_svd( Matrix, Umat, Gmat, Vtrp )
    if (error_found) then
       print*, 'ERROR INSIDE matdcmp_svd'
       print*, 'Wrong sizes of input/output'
+      print*,size(Matrix,1), size(Umat,1), size(Umat,2), size(Gmat,1)
+      print*,size(Matrix,2), size(Vtrp,1), size(Vtrp,2), size(Gmat,2)
       print*; stop
    endif
-!
-!
-!  Obtains Lmat using lapack
-!------------------------------------------------------------------------------!
+
    allocate( Xmat(Msize1,Msize2) )
    Xmat = Matrix
 
-   allocate( Svec( min(Msize1,Msize2) ) )
-   Svec = 0.0d0
+   allocate( Gvec( min(Msize1,Msize2) ) )
+   Gvec(:) = 0.0d0
 !
 !
-!  QUERY
+!  Query
 !------------------------------------------------------------------------------!
    lapack_LWORK = -1
    allocate( lapack_WORK(1) )
    allocate( lapack_IWORK( 8 * min(Msize1,Msize2) ) )
-   call dgesdd( 'A', Msize1, Msize2, Xmat, Msize1, Svec, Umat, Msize1, Vtrp,   &
+   call dgesdd( 'A', Msize1, Msize2, Xmat, Msize1, Gvec, Umat, Msize1, Vtrp,   &
               & Msize2, lapack_WORK, lapack_LWORK, lapack_IWORK, lapack_INFO )
 
    if (lapack_INFO /= 0) then
@@ -61,12 +61,12 @@ subroutine matdcmp_svd( Matrix, Umat, Gmat, Vtrp )
    endif
 !
 !
-!  CALCULATION
+!  Calculation
 !------------------------------------------------------------------------------!
    lapack_LWORK = NINT( lapack_WORK(1) )
    deallocate( lapack_WORK )
    allocate( lapack_WORK(lapack_LWORK) )
-   call dgesdd( 'A', Msize1, Msize2, Xmat, Msize1, Svec, Umat, Msize1, Vtrp,   &
+   call dgesdd( 'A', Msize1, Msize2, Xmat, Msize1, Gvec, Umat, Msize1, Vtrp,   &
               & Msize2, lapack_WORK, lapack_LWORK, lapack_IWORK, lapack_INFO )
 
    if (lapack_INFO /= 0) then
@@ -74,9 +74,15 @@ subroutine matdcmp_svd( Matrix, Umat, Gmat, Vtrp )
       print*, 'Problem in the call to dgesdd for calculations...'
       print*; stop
    endif
+!
+!
+!  Copy results and exit
+!------------------------------------------------------------------------------!
+   Gmat(:,:) = 0.0d0
+   do nn = 1, min(Msize1,Msize2)
+      Gmat(nn,nn) = Gvec(nn)
+   enddo
 
-!
-!
-   deallocate( Xmat, Svec, lapack_WORK, lapack_IWORK )
+   deallocate( Xmat, Gvec, lapack_WORK, lapack_IWORK )
 end subroutine matdcmp_svd
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

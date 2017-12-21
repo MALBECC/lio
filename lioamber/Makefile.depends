@@ -197,8 +197,19 @@ include liosubs_math/liosubs_math.mk
 SRCDIRS += liosubs_math
 OBJECTS += liosubs_math.o
 #
-modusrs :=
+modusrs := 
+modusrs += typedef_sop.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/liosubs_math.mod
+
+
+################################################################################
+include typedef_sop/typedef_sop.mk
+SRCDIRS += typedef_sop
+OBJECTS += typedef_sop.o
+#
+modusrs :=
+modusrs += SCF.o
+$(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/typedef_sop.mod
 
 
 ################################################################################

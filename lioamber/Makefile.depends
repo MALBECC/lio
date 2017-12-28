@@ -147,7 +147,7 @@ OBJECTS += atompot_subs.o
 $(OBJPATH)/atompot_subs.o: $(OBJPATH)/atompot_data.mod
 
 tmplist :=
-tmplist += 
+tmplist += SCF.f90
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/atompot_subs.mod
 
 ###############################################################################
@@ -314,7 +314,7 @@ OBJECTS += general_module.o
 SRCDIRS += general_module
 include general_module/general_module.mk
 
-tmplist := SCF.o cublasmath.o
+tmplist := SCF.o cublasmath.o atompot_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/general_module.mod
 
 

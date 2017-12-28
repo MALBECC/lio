@@ -17,7 +17,7 @@ subroutine SCF(E)
       igrid2, predcoef, nsol, r, pc, timedep, tdrestart, DIIS, told, Etold, Enucl,     &
       Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz, epsilon, nuc,                &
       doing_ehrenfest, first_step, RealRho, tdstep, total_time, field, Fx, Fy, Fz, a0, &
-      MO_coef_at
+      MO_coef_at, Smat
 !      use mathsubs
       use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
        FOCK_ECP_read,FOCK_ECP_write,IzECP
@@ -27,6 +27,8 @@ subroutine SCF(E)
       use dftb_subs, only : dftb_init, getXY_DFTB, find_neighbors, build_chimera,      &
                             extract_rhoDFT
 
+      use typedef_sop,  only: sop              ! Testing SOP
+      use atompot_subs, only: atompot_oldinit  ! Testing SOP
 
 !      use general_module 
 !#ifdef  CUBLAS
@@ -73,10 +75,14 @@ subroutine SCF(E)
        real*8, allocatable :: fockbias(:,:)
        real*8, allocatable :: Xmat(:,:)
        real*8, allocatable :: Ymat(:,:)
+       real*8, allocatable :: Dvec(:)
+       type(sop)           :: overop      ! Testing SOP
+       real*8, allocatable :: sqsmat(:,:) ! Testing SOP
 
 ! FFR - ehrenfest (temp)
 !----------------------------------------------------------!
-       real*8 :: dipxyz(3), dipole_norm
+       real*8 :: dipxyz(3)
+       real*8 :: dipole_norm
 
 !----------------------------------------------------------!
 
@@ -322,14 +328,51 @@ subroutine SCF(E)
       enddo
       call g2g_timer_sum_stop('1-e Fock')
 
-!#########################################################################################
-!#########################################################################################
-	allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
-! Diagonalization of S matrix, after this is not needed anymore
-	call overlap_diag(fockbias, dovv,Y,Ytrans,Xtrans)
-!#########################################################################################
-!#########################################################################################
-      
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! OVERLAP DIAGONALIZATION
+
+        if ( allocated(Xmat) ) deallocate(Xmat)
+        if ( allocated(Ymat) ) deallocate(Ymat)
+        allocate( Xmat(M,M), Ymat(M,M) )
+
+        if ( allocated(Y) )      deallocate(Y)
+        if ( allocated(Ytrans) ) deallocate(Ytrans)
+        if ( allocated(Xtrans) ) deallocate(Xtrans)
+        allocate( Y(M,M), Ytrans(M,M), Xtrans(M,M) )
+
+!        call overlap_diag( fockbias, dovv, Y, Ytrans, Xtrans )
+        call overop%Sets_smat( Smat )
+        call overop%Gets_orthog_4m( 1, 0.0d0, Xmat, Ymat, Xtrans, Ytrans )
+
+! TODO: initializations related to atompot should be dealt with differently
+        if (dovv) then
+           if ( allocated(fockbias) ) deallocate(fockbias)
+           if ( allocated(sqsmat) )   deallocate(sqsmat)
+           allocate( fockbias(M,M), sqsmat(M,M) )
+           call atompot_oldinit( natom, nuc, sqsmat, fockbias )
+        end if
+
+! TODO: replace X,Y,Xtrans,Ytrans with Xmat, Ymat, Xtrp, Ytrp
+        do ii=1,M
+        do jj=1,M
+           X(ii,jj)      = Xmat(ii,jj)
+           Y(ii,jj)      = Ymat(ii,jj)
+!          Xtrans(ii,jj) = Xtrp(ii,jj)
+!          Ytrans(ii,jj) = Ytrp(ii,jj)
+        end do
+        end do
+
+        if ( allocated(Dvec) ) deallocate(Dvec)
+        allocate( Dvec(M) )
+        call overop%Gets_eigens_v( 0.0d0, Dvec )
+        do kk = 1, M
+           RMM(M13+kk-1) = Dvec(kk)
+        end do
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+
+
 !carlosDFTB: allocation of X and Y matrix for TB calculations
 
        if (dftb_calc) then

@@ -17,7 +17,7 @@ subroutine SCF(E)
       igrid2, predcoef, nsol, r, pc, timedep, tdrestart, DIIS, told, Etold, Enucl,     &
       Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz, epsilon, nuc,                &
       doing_ehrenfest, first_step, RealRho, tdstep, total_time, field, Fx, Fy, Fz, a0, &
-      MO_coef_at, Smat
+      MO_coef_at, Smat, lowdin
 !      use mathsubs
       use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
        FOCK_ECP_read,FOCK_ECP_write,IzECP
@@ -340,9 +340,13 @@ subroutine SCF(E)
         if ( allocated(Xtrans) ) deallocate(Xtrans)
         allocate( Y(M,M), Ytrans(M,M), Xtrans(M,M) )
 
-!        call overlap_diag( fockbias, dovv, Y, Ytrans, Xtrans )
         call overop%Sets_smat( Smat )
-        call overop%Gets_orthog_4m( 1, 0.0d0, Xmat, Ymat, Xtrans, Ytrans )
+        if (lowdin) then
+!          TODO: LOWDIN CURRENTLY NOT WORKING (NOR CANONICAL)
+           call overop%Gets_orthog_4m( 2, 0.0d0, Xmat, Ymat, Xtrans, Ytrans )
+        else
+           call overop%Gets_orthog_4m( 1, 0.0d0, Xmat, Ymat, Xtrans, Ytrans )
+        end if
 
 ! TODO: initializations related to atompot should be dealt with differently
         if (dovv) then
@@ -933,105 +937,6 @@ subroutine SCF(E)
             nnpd(nuc(iikk))=iikk
           enddo
         END SUBROUTINE neighbor_list_2e
-
-
-
-	SUBROUTINE overlap_diag(fockbias, dovv,Y,Ytrans,Xtrans)
-	use garcha_mod, ONLY: lowdin,M,Md,RMM,Smat,X,sqsm, nuc, natom
-	USE general_module, ONLY :  sdcmp_cholesky, sdiag_canonical, vector_selection, read_list, atmorb
-	IMPLICIT NONE
-	LOGICAL :: docholesky
-	real*8,dimension(:),  allocatable :: Dvec
-	real*8,dimension(:,:),allocatable :: Vmat
-        real*8,dimension(:,:),allocatable :: Ymat, Xmat, Xtrp, Ytrp
-        real*8,dimension(M,M),intent(inout) :: Y,Ytrans,Xtrans
-	real*8,dimension(M,M),intent(inout) :: fockbias
-	logical, intent(in) :: dovv
-       integer,allocatable :: atom_group(:)
-       integer,allocatable :: orb_group(:)
-       integer,allocatable :: orb_selection(:)
-	real*8 :: weight
-	INTEGER :: M13, MM, MMd !temporal hasta que rompamos RMM
-	INTEGER :: iii, jjj, kk
-	allocate(Vmat(M,M),Dvec(M))
-        allocate(Ymat(M,M),Xmat(M,M),Xtrp(M,M),Ytrp(M,M))
-
-        MM=M*(M+1)/2
-        MMd=Md*(Md+1)/2
-	M13=1 + 4*MM + 2*MMd !temporal hasta que rompamos RMM
-
-       if (dovv.eqv..true.) then
-        if (.not.allocated(atom_group)) then
-          allocate(atom_group(natom))
-          call read_list('atomgroup',atom_group)
-        endif
-        if (.not.allocated(orb_group)) then
-          allocate(orb_group(M))
-          call atmorb(atom_group,nuc,orb_group)
-        endif
-        if (.not.allocated(orb_selection)) then
-          allocate(orb_selection(M))
-        endif
-       endif
-!
-! Diagonalization of S matrix, after this is not needed anymore
-! S = YY^T ; X = (Y^-1)^T
-! => (X^T)SX = 1
-!
-      docholesky=.true.
-      if (lowdin) docholesky=.false.
-      call g2g_timer_start('cholesky')
-      call g2g_timer_sum_start('Overlap decomposition')
-      IF (docholesky) THEN
-         call sdcmp_cholesky(Smat,Dvec,Vmat,Ymat,Xtrp,Ytrp,Xmat)
-         do iii=1,M
-         do jjj=1,M
-           X(iii,jjj)=Xmat(iii,jjj)
-         enddo
-         enddo
-         Y=Ymat
-         Xtrans=Xtrp
-         Ytrans=Ytrp
-         do kk=1,M
-           RMM(M13+kk-1)=0.0d0
-         enddo
-      ELSE
-
-! FFR: Canonical Diagonalization of Overlap
-!--------------------------------------------------------------------!
-! I am keeping Y,Ytrans and Xtrans but they should be replaced
-! by the much nicer Ymat,Ytrp,Xtrp (and X by Xmat). Also, copy
-! into RMM.
-!
-         call sdiag_canonical(Smat,Dvec,Vmat,Xmat,Xtrp,Ymat,Ytrp)
-         sqsm=matmul(Vmat,Ytrp)
-
-         if (dovv.eqv..true.) then
-          fockbias=0.0d0
-
-          weight=0.195d0
-          call vector_selection(1,orb_group,orb_selection)
-          call fterm_biaspot(M,sqsm,orb_selection,weight,fockbias)
-
-          weight=-weight
-          call vector_selection(2,orb_group,orb_selection)
-          call fterm_biaspot(M,sqsm,orb_selection,weight,fockbias)
-         endif
-
-         do iii=1,M
-         do jjj=1,M
-           X(iii,jjj)=Xmat(iii,jjj)
-         enddo
-         enddo
-         Y=Ymat
-         Xtrans=Xtrp
-         Ytrans=Ytrp
-         do kk=1,M
-           RMM(M13+kk-1)=Dvec(kk)
-         enddo
-      ENDIF
-      call g2g_timer_stop('cholesky')
-	END SUBROUTINE overlap_diag
 
 
 

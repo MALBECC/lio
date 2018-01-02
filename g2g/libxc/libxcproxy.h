@@ -44,6 +44,8 @@ public:
                 scalar_type& ec,
                 scalar_type& y2a);
 
+    void closeProxy ();
+
 };
 
 template <class scalar_type, int width>
@@ -87,6 +89,13 @@ LibxcProxy <scalar_type, width>::~LibxcProxy ()
 }
 
 template <class scalar_type, int width>
+void LibxcProxy <scalar_type, width>::closeProxy ()
+{
+    xc_func_end (&funcForExchange);
+    xc_func_end (&funcForCorrelation);
+}
+
+template <class scalar_type, int width>
 void LibxcProxy <scalar_type, width>::doGGA(scalar_type dens,
     const G2G::vec_type<scalar_type, width> &grad,
     const G2G::vec_type<scalar_type, width> &hess1,
@@ -108,6 +117,7 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type dens,
     scalar_type v2rhosigma[1];
     scalar_type v2sigma [1];
 
+    // The outputs for correlation
     scalar_type vrhoC [1];
     scalar_type vsigmaC [1];
     scalar_type v2rhoC [1];
@@ -153,12 +163,15 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type dens,
     // Merge the results for the derivatives.
     vrho[0] += vrhoC[0];
     vsigma[0] += vsigmaC[0];
+
     v2rho[0] += v2rhoC[0];
     v2rhosigma[0] += v2rhosigmaC[0];
-    v2sigma[0] += v2sigma[0];
+    v2sigma[0] += v2sigmaC[0];
 
     // Now, compute y2a value.
-    y2a = 0;
+    y2a = vrho[0] - (2 * sigma[0] * v2rhosigma[0]
+            + 2 * (hess1.x + hess1.y + hess1.z) * vsigma[0]
+            + 4 * v2sigma[0] * (grad.x * grad.x * hess1.x + grad.y * grad.y * hess1.y + grad.z * grad.z * hess1.z + 2 * grad.x * grad.y * hess2.x + 2 * grad.x * grad.z * hess2.y + 2 * grad.y * grad.z * hess2.z));
 
     return;
 }

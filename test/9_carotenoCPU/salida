@@ -1,59 +1,39 @@
- &LIO
- NATOM   =          92,
- NSOL    =           0,
- CHARGE  =           0,
- OPEN    = F,
- NMAX    =         300,
- NUNP    =           0,
- VCINP   = F,
- FRESTARTIN      = restart.in          ,
- GOLD    =   10.0000000000000     ,
- TOLD    =  1.000000000000000E-006,
- RMAX    =   16.0000000000000     ,
- RMAXS   =   5.00000000000000     ,
- PREDCOEF        = F,
- IDIP    =           1,
- WRITEXYZ        = T,
- INTSOLDOUBLE    = T,
- DIIS    = T,
- NDIIS   =          30,
- DGTRIG  =   100.000000000000     ,
- IEXCH   =           9,
- INTEG   = T,
- DENS    = T,
- IGRID   =           2,
- IGRID2  =           2,
- TIMEDEP =           0,
- TDSTEP  =  2.000000000000000E-003,
- NTDSTEP =           0,
- PROPAGATOR      =           1,
- NBCH    =          10,
- FIELD   = F,
- A0      =   1000.00000000000     ,
- EPSILON =   1.00000000000000     ,
- EXTER   = F,
- FX      =  5.000000074505806E-002,
- FY      =  5.000000074505806E-002,
- FZ      =  5.000000074505806E-002,
- TDRESTART       = F,
- WRITEDENS       = T
- /
-<====== Initializing G2G ======>Kernels: cpu
- NCO=         146
-          92          92        3680        3680          40          40
+<====== Initializing G2G ======>
+Kernels: cpu
+Using 12 CPU Threads and 0 GPU Threads
+ using the modified parser for libxc
  JOB STARTED NOW
-Wed Aug 13 15:23:51 ART 2014
+Tue Dec  5 00:15:13 ART 2017
+<======= GPU Code Initialization ========>
+atoms: 92
+max atoms: 92
+number of gaussians: 756
+do_forces: false
+s: 276 p: 80 d: 40
+m: 756 nco: 146
+ nco: 146
+Weights: 21s. 87652us.
+Particion 0: 4752323560
+Particion 1: 4752481040
+Particion 2: 4752473310
+Particion 3: 4752451450
+Particion 4: 4752476960
+Particion 5: 4752447420
+Particion 6: 4752399230
+Particion 7: 4752399550
+Particion 8: 4752408830
+Particion 9: 4752479240
+Particion 10: 4752477830
+Particion 11: 4752370330
+Relacion max / min = 1.000033
+--> Thread OMP: 12
+--> Thread CPU: 12
+--> Thread GPU: 0
+--> Correccion de cubos chicos: 250000
+--> Puntos de separacion: 200
+Timer functions: 84s. 20544us.
 basis set corresponding to Z  26 was not used
 basis set corresponding to Z   7 was not used
 basis set corresponding to Z  16 was not used
 basis set corresponding to Z   8 was not used
  en drive         756        1568         146
-<======= GPU Code Initialization ========>
-atoms: 92
-max atoms: 92
-number of gaussians: 3680
-do_forces: false
-s: 276 p: 80 d: 40
-m: 756 nco: 146
-<====== read_options ========>
-No "gpu_options" file: using defaults

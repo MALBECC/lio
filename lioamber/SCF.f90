@@ -1,15 +1,31 @@
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! SCF subroutine
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine SCF(E)
+!
+!------------------------------------------------------------------------------!
 ! DIRECT VERSION
 ! Calls all integrals generator subroutines : 1 el integrals,
 ! 2 el integrals, exchange fitting , so it gets S matrix, F matrix
-! and P matrix in lower storage mode ( symmetric matrices)
+! and P matrix in lower storage mode (symmetric matrices)
 !
-! Modified to f90, 2017
 ! Dario Estrin, 1992
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine SCF(E)
-!      use linear_algebra
+!
+!------------------------------------------------------------------------------!
+! Modified to f90
+!
+! Nick, 2017
+!
+!------------------------------------------------------------------------------!
+! Header with new format. Added comments on how to proceed with a cleanup of
+! of the subroutines. Other things to do:
+! TODO: change to 3 space indentation.
+! TODO: break at line 80.
+! TODO: change to lowercase (ex: implicit none)
+!
+! This log can be removed once all improvements have been made.
+!
+! FFR, 01/2018
+!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       use ehrensubs, only: ehrensetup
       use garcha_mod, only : M,Md, NCO,natom,Nang, number_restr, hybrid_converg, MEMO, &
       npas, verbose, RMM, X, SHFT, GRAD, npasw, igrid, energy_freq, converge,          &
@@ -18,7 +34,6 @@ subroutine SCF(E)
       Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz, epsilon, nuc,                &
       doing_ehrenfest, first_step, RealRho, tdstep, total_time, field, Fx, Fy, Fz, a0, &
       MO_coef_at, Smat, lowdin
-!      use mathsubs
       use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
        FOCK_ECP_read,FOCK_ECP_write,IzECP
       use transport, only : generate_rho0
@@ -32,10 +47,6 @@ subroutine SCF(E)
       use tmpaux_SCF,   only: neighbor_list_2e, starting_guess, obtain_new_P,&
                             & density
 
-!      use general_module 
-!#ifdef  CUBLAS
-!      use cublasmath 
-!#endif
 	IMPLICIT NONE
 	integer :: M1,M2,M3, M5, M7, M9, M11, M13, M15, M17, M18,M19, M20, MM,MM2,MMd,  &
         Md2 !temporales hasta q rompamos RMM
@@ -126,7 +137,8 @@ subroutine SCF(E)
 !------------------------------------------------------
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-        double precision :: Egood, Evieja !variables para criterio de co
+! variables para criterio de convergencia
+        double precision :: Egood, Evieja
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !------------------------------------------------------
@@ -154,7 +166,9 @@ subroutine SCF(E)
 !%%%%%%%%%%%%%%%    Effective Core Potential Fock    %%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! TODO: unnecessary detail here in SCF, maybe replace by a subroutine
-!       ecp_init() that has all of these?
+!       ecp_init() with all of these insides? Or even better, have
+!       ecp module realize if it has to initialize stuff or not and
+!       do it inside the sub that adds to fock.
         if (ecpmode) then
          if (FOCK_ECP_read) then
             call intECP(0) ! alocatea variables comunes y las lee del archivo ECP_restart
@@ -200,8 +214,8 @@ subroutine SCF(E)
 
 !------------------------------------------------------------------------------!
 ! TODO: RMM should no longer exist. As a first step, maybe we should
-!       put all these inside the maskrmm module instead of having
-!       them around all subroutines...
+!       put all these pointers inside the maskrmm module instead of
+!       having them around all subroutines...
       sq2=sqrt(2.D0)
       MM=M*(M+1)/2
       MM2=M**2
@@ -225,7 +239,7 @@ subroutine SCF(E)
 
 !------------------------------------------------------------------------------!
 ! TODO: This seem like it should go in a separated subroutine. Also, please lets
-!       not open timers outside contitionals and close them inside of them
+!       not open timers outside conditionals and close them inside of them
 !       (I know it is because of the "return" clause; even so this is not clear
 !       programming)
        if (cubegen_only.and.(cube_dens.or.cube_orb.or.cube_elec)) then
@@ -257,6 +271,9 @@ subroutine SCF(E)
 ! TODO: rmm5 and rmm15 probably will copy things of rmm(M5) and rmm(m15), fine,
 !       but it would still be better to have them named after what they actually
 !       are...
+! TODO: damp and gold should no longer be here??
+! TODO: Qc should probably be a separated subroutine? Apparently it is only
+!       used in dipole calculation so...it only adds noise to have it here.
 ! TODO: convergence criteria should be set at namelist/keywords setting
 
       Nel=2*NCO+Nunp
@@ -292,9 +309,11 @@ subroutine SCF(E)
 ! TODO: this whole part which calculates the non-electron depending terms of
 !       fock and the overlap matrix should probably be in a separated sub.
 !       (diagonalization of overlap, starting guess, the call to TD, should be taken out)
-! from here...
+!
+! Reformat from here...
 
 ! Para hacer lineal la integral de 2 electrones con lista de vecinos. Nano
+!
       call neighbor_list_2e()
 
 ! -Create integration grid for XC here
@@ -320,9 +339,11 @@ subroutine SCF(E)
       call g2g_timer_sum_start('Nuclear attraction')
       call int1(En)
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%    Effective Core Potential Add    %%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Effective Core Potential Add
+!
+! TODO: Maybe condense this in a single subroutine that receives only
+!       RMM and returns it modified as needed?
+!
       if (ecpmode ) then
           write(*,*) "Modifying Fock Matrix with ECP terms"
           do k=1,MM
@@ -330,9 +351,9 @@ subroutine SCF(E)
                RMM(M11+k-1)=RMM(M11+k-1)+VAAA(k)+VAAB(k)+VBAC(k) !add EC
           enddo
       end if
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+! Other terms
+!
       call g2g_timer_sum_stop('Nuclear attraction')
       if(nsol.gt.0.or.igpu.ge.4) then
           call g2g_timer_sum_start('QM/MM')
@@ -350,9 +371,9 @@ subroutine SCF(E)
       endif
 
 
-!----------------------------------------------------------!
 ! test
 ! TODO: remove or sistematize
+!
       E1=0.D0
       do k=1,MM
         E1=E1+RMM(k)*RMM(M11+k-1)
@@ -364,7 +385,7 @@ subroutine SCF(E)
 ! OVERLAP DIAGONALIZATION
 ! TODO: Simplify, this has too much stuff going on...
 ! (maybe trans mats are not even necessary?)
-
+!
         if ( allocated(Xmat) ) deallocate(Xmat)
         if ( allocated(Ymat) ) deallocate(Ymat)
         allocate( Xmat(M,M), Ymat(M,M) )
@@ -447,14 +468,16 @@ subroutine SCF(E)
       end if 
 
 
+! TODO: are these comments relevant?
+!
 !      MDFTB must be declared before
 !      call :
 !      agrandar y modificar las Xmat/Ymat
 !      modificar MDFTB
 
-!----------------------------------------------------------!
 ! CUBLAS
 ! TODO: these should be inside of the overlap type
+!
 #ifdef CUBLAS
             call CUBLAS_INIT()
             stat = CUBLAS_ALLOC(M_in*M_in, sizeof_real, devPtrX)
@@ -473,9 +496,9 @@ subroutine SCF(E)
             endif 
 #endif
 
-
-!----------------------------------------------------------!
-! TODO: remove from here
+!------------------------------------------------------------------------------!
+! TODO: remove from here...
+!
       call starting_guess(xnano)
 !
       if ((timedep.eq.1).and.(tdrestart)) then
@@ -520,9 +543,9 @@ subroutine SCF(E)
 !
 !
 ! TODO: ...to here
-
-
-
+!
+!
+!
 !------------------------------------------------------------------------------!
 ! TODO: the following comment is outdated? Also, hybrid_converg switch should
 !       be handled differently.
@@ -540,19 +563,20 @@ subroutine SCF(E)
 
 
 !------------------------------------------------------------------------------!
-! TODO: maybe evaluate conditions for loop continuance at the end of loop
+! TODO: Maybe evaluate conditions for loop continuance at the end of loop
 !       and condense in a single "keep_iterating" or something like that.
 
       do 999 while ((good.ge.told.or.Egood.ge.Etold).and.niter.le.NMAX)
 
-      if (verbose) call WRITE_CONV_STATUS(GOOD,TOLD,EGOOD,ETOLD)
-! Escribe los criterios de convergencia y el valor del paso de dinamica
+        if (verbose) call WRITE_CONV_STATUS(GOOD,TOLD,EGOOD,ETOLD)
+!       Escribe los criterios de convergencia y el valor del paso de dinamica
 
         call g2g_timer_start('Total iter')
         call g2g_timer_sum_start('Iteration')
         call g2g_timer_sum_start('Fock integrals')
         niter=niter+1
         E1=0.0D0
+
 
 !------------------------------------------------------------------------------!
 !       Fit density basis to current MO coeff and calculate Coulomb F elements

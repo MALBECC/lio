@@ -287,6 +287,7 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
 ################################################################################
 # TO-DO: Erradicate RMM from the face of earth.
 ################################################################################
+#
 include maskrmm/maskrmm.mk
 SRCDIRS += maskrmm
 OBJECTS += maskrmm.o
@@ -295,6 +296,12 @@ tmplist :=
 tmplist += ehrensubs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/maskrmm.mod
 
+#
+OBJECTS += tmpaux_SCF.o
+
+tmplist :=
+tmplist += SCF.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/tmpaux_SCF.mod
 
 ################################################################################
 # TO-DO: Unify the two general purpose modules.

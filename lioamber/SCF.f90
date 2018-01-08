@@ -43,10 +43,11 @@ subroutine SCF(E)
       use dftb_subs, only : dftb_init, getXY_DFTB, find_neighbors, build_chimera,      &
                             extract_rhoDFT
 
-      use typedef_sop,  only: sop              ! Testing SOP
+      use typedef_sop , only: sop              ! Testing SOP
       use atompot_subs, only: atompot_oldinit  ! Testing SOP
-      use tmpaux_SCF,   only: neighbor_list_2e, starting_guess, obtain_new_P,&
-                            & density
+      use tmpaux_SCF  , only: neighbor_list_2e, starting_guess, obtain_new_P
+      use liosubs_dens, only: builds_densmat, messup_densmat
+
 
 	IMPLICIT NONE
 	integer :: M1,M2,M3, M5, M7, M9, M11, M13, M15, M17, M18,M19, M20, MM,MM2,MMd,  &
@@ -73,6 +74,7 @@ subroutine SCF(E)
 !carlos: variable mas comoda para inputs
         integer :: M_in
         integer :: NCO_in
+        real*8, allocatable :: rho_test(:,:)
         real*8, allocatable :: rho_0(:,:)
         real*8, allocatable :: fock_0(:,:)
         real*8, allocatable :: rho(:,:)
@@ -501,6 +503,7 @@ subroutine SCF(E)
 !##############################################################################!
 ! FFR: Currently working here.
 !
+      write(666,*) "X on input...", size(X,1), size(X,2)
       do ii=1,size(X,1)
       do jj=1,size(X,2)
          if ((ii>M).or.(jj>M)) then
@@ -508,13 +511,15 @@ subroutine SCF(E)
          endif
       enddo
       enddo
+      write(666,*)
       call starting_guess(xnano)
+      write(666,*) "Xnano on output..."
       do ii=1,M
       do jj=1,M
          write(666,*) ii , jj , xnano(ii,jj)
       enddo
       enddo
-      stop
+!      stop
 !
 ! FFR: When finished, uncomment the following starting guess...
 !##############################################################################!
@@ -725,6 +730,8 @@ subroutine SCF(E)
 #       else
           call obtain_new_P( M_in, NCO_in, niter, DAMP, good, fock, rho, morb_energy, morb_coefat, Xmat, Ymat )
 #       endif
+        call builds_densmat( M_in, NCO_in, 2.0d0, morb_coefat, rho)
+        call messup_densmat( rho )
 
 
 !------------------------------------------------------------------------------!

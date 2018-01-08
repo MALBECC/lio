@@ -197,6 +197,16 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fileio.mod
 
 
 ################################################################################
+include liosubs_dens/liosubs_dens.mk
+SRCDIRS += liosubs_dens
+OBJECTS += liosubs_dens.o
+#
+#modusrs :=
+modusrs += tmpaux_SCF.o
+$(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/liosubs_dens.mod
+
+
+################################################################################
 include liosubs_math/liosubs_math.mk
 SRCDIRS += liosubs_math
 OBJECTS += liosubs_math.o

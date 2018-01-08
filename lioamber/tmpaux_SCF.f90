@@ -70,7 +70,7 @@ module tmpaux_SCF
       real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15
       integer :: M1,M2,M3, M5, M7, M9, M11, M13, M15, M17, M18, MM, MMd 
                ! temporales hasta q rompamos RMM
-      integer :: i,j,k,kk !auxiliares
+      integer :: ii,jj,i,j,k,kk !auxiliares
       real*8 :: ff
 
       call g2g_timer_start('initial guess')
@@ -92,6 +92,15 @@ module tmpaux_SCF
       M17=M15+MM! Least squares
       M18=M17+MMd! vectors of MO
 
+      write(666,*) "RMM en M11"
+      do ii=1,M
+         kk = (M2-ii)*(ii-1)/2
+         do jj=ii+1,M
+            write(666,*) RMM(M11+jj+kk-1)
+         enddo
+      enddo
+      write(666,*) 
+
 !     CASE OF NO STARTING GUESS PROVIDED, 1 E FOCK MATRIX USED
 !     FCe = SCe; (X^T)SX = 1
 !     F' = (X^T)FX
@@ -112,6 +121,7 @@ module tmpaux_SCF
             enddo
          enddo
          enddo
+
 
          kk=0
          do j=1,M
@@ -147,6 +157,8 @@ module tmpaux_SCF
          call dspev('V','L',M,RMM5,RMM(M13),Xnano,M,RMM15,info)
 #        endif
 
+         write(666,*) " INFO = ", info
+
          do i =1,M
          do j=1,M
             X(i,M+j)=xnano(i,j)
@@ -155,7 +167,7 @@ module tmpaux_SCF
 
 ! Recover C from (X^-1)*C
          do i=1,MM
-            RMM(M5+i-1)=rmm5(i)
+!            RMM(M5+i-1)=rmm5(i)
          enddo
 
          do i=1,M
@@ -168,6 +180,15 @@ module tmpaux_SCF
          enddo
 
          call g2g_timer_stop('initial guess')
+
+      write(666,*) "Coeficientes en base atomica"
+      do ii=1,M
+      do jj=1,M
+         write(666,*) ii, jj, X(ii,M2+jj)
+      enddo
+      enddo
+      write(666,*)
+
 
 ! Density Matrix
          kk=0
@@ -282,8 +303,6 @@ module tmpaux_SCF
       call g2g_timer_stop('SCF - MOC base change')
 
       if ( allocated(eigen_vecs) ) deallocate(eigen_vecs)
-
-      call density( M_in, NCO_in, morb_coefat, rho )
 
 end subroutine obtain_new_P
 

@@ -55,7 +55,7 @@ module tmpaux_SCF
 
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-   SUBROUTINE starting_guess(xnano)
+   SUBROUTINE starting_guess_old(xnano)
       use garcha_mod, ONLY: RMM, VCINP, primera, M, X, Md, NCO, MO_coef_at
       IMPLICIT NONE
       integer :: info
@@ -218,7 +218,7 @@ module tmpaux_SCF
       deallocate(rmm5,rmm15)
 
 !     End of Starting guess (No MO , AO known)-------------------------------
-   END SUBROUTINE starting_guess
+   END SUBROUTINE starting_guess_old
 
 
 

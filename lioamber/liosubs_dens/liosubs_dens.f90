@@ -4,6 +4,7 @@ module liosubs_dens
    contains
 #     include "builds_densmat.f90"
 #     include "messup_densmat.f90"
+#     include "starting_guess.f90"
 
 end module liosubs_dens
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

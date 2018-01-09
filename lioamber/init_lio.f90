@@ -147,8 +147,8 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
                            remove_zero_weights, min_points_per_cube,           &
                            max_function_exponent, sphere_radius, M,Fock_Hcore, &
                            Fock_Overlap, P_density, OPEN, timers, MO_coef_at,     &
-                           MO_coef_at_b
-                         
+                           MO_coef_at_b &
+                          ,RMM_save
     use ECP_mod,    only : Cnorm, ecpmode
 
     implicit none
@@ -184,6 +184,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
     ng2 = 5*ngDyn*(ngDyn+1)/2 + 3*ngdDyn*(ngdDyn+1)/2 + &
           ngDyn  + ngDyn*norbit + Ngrid
 
+    allocate( RMM_save(ng2) ) ! TODO: delete after use (FFR)
     allocate(RMM(ng2)    , d(natom, natom), c(ngDyn,nl)   , a(ngDyn,nl)     ,&
              Nuc(ngDyn)  , ncont(ngDyn)   , cx(ngdDyn,nl) , ax(ngdDyn,nl)   ,& 
              Nucx(ngdDyn), ncontx(ngdDyn) , cd(ngdDyn,nl) , ad(ngdDyn,nl)   ,&

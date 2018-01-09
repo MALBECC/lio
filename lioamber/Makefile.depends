@@ -204,8 +204,7 @@ include liosubs_dens/liosubs_dens.mk
 SRCDIRS += liosubs_dens
 OBJECTS += liosubs_dens.o
 #
-#modusrs :=
-modusrs += tmpaux_SCF.o
+modusrs := tmpaux_SCF.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/liosubs_dens.mod
 
 
@@ -232,9 +231,15 @@ $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/typedef_sop.mod
 ################################################################################
 OBJECTS += mask_ecp.o
 #
-#modusrs :=
-modusrs += SCF.o
+modusrs := SCF.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/mask_ecp.mod
+
+
+################################################################################
+OBJECTS += mask_cublas.o
+#
+modusrs := SCF.o
+$(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/mask_cublas.mod
 
 
 ################################################################################

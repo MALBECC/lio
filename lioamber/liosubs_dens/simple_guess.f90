@@ -1,5 +1,10 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine simple_guess( mocoef_at )
+subroutine simple_guess( atom_pos, dens_mat )
+!
+! Is a subroutine like this really necessary? Couldn't it be replaced by
+! enabling a 0 pass on the SCF cycle where only int1 is computed?
+!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    
    use garcha_mod, only: M, RMM, VCINP, primera, X, Md, NCO
    implicit none

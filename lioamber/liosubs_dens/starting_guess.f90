@@ -4,118 +4,75 @@
 !     F' = (X^T)FX
 !     => (X^-1*C)^-1 * F' * (X^-1*C) = e
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine starting_guess( Nmat, Nvec, hmat_vec, fockat_vec, eigval_vec,       &
-                         & eigvec_mat, densat_vec )
-   use garcha_mod, ONLY: RMM, M, X, Md, NCO, MO_coef_at
+subroutine starting_guess( Nmat, Nvec, hmat_vec, Xmat, densat_vec )
+   use garcha_mod, ONLY:  M, X, Md, NCO, MO_coef_at
+   use liosubs_math, only: transform
    implicit none
    integer, intent(in)    :: Nmat
    integer, intent(in)    :: Nvec
+   real*8 , intent(in)    :: Xmat(Nmat,Nmat)
    real*8 , intent(inout) :: hmat_vec(Nvec)
-   real*8 , intent(inout) :: fockat_vec(Nvec)
-   real*8 , intent(inout) :: eigval_vec(Nvec)
-   real*8 , intent(inout) :: eigvec_mat(Nmat,Nmat)
    real*8 , intent(inout) :: densat_vec(Nvec)
-
-
+   
+   real*8, allocatable   :: morb_coefat(:,:)
+   real*8, allocatable   :: morb_coefon(:,:)
    real*8, allocatable   :: rmm5(:), rmm15(:)
-   integer :: MM, MMd, M1, M2, M3, M5, M7, M9, M11, M13, M15
+   real*8, allocatable   :: hmat(:,:), fockon(:,:), fockon_vec(:)
+   real*8, allocatable   :: eigval_vec(:)
    integer :: ii,jj,i,j,k,kk
-   integer :: info
+   integer :: M1, M2, info
    real*8  :: ff
 
    call g2g_timer_start('initial guess')
    call g2g_timer_sum_start('initial guess')
 
 
-   MM  = M*(M+1)/2
-   MMd = Md*(Md+1)/2
-
-   M1  = 1         ! first P
-   M2  = 2*M
-   M3  = M1  + MM  ! now Pnew
-   M5  = M3  + MM  ! now S, F also uses the same position after S was used
-   M7  = M5  + MM  ! now G
-   M9  = M7  + MMd ! now Gm
-   M11 = M9  + MMd ! now H
-   M13 = M11 + MM  ! W ( eigenvalues ), also this space is used in least squares
-   M15 = M13 + M   ! aux ( vector for ESSl)
-
-   allocate(rmm5(MM),rmm15(mm))
-
+   allocate( rmm5(Nvec), rmm15(Nvec), fockon_vec(Nvec) )
+   allocate( eigval_vec(Nvec) )
+   allocate( morb_coefat(Nmat, Nmat), morb_coefon(Nmat, Nmat) )
 
 !  Calculate F' in RMM(M5)
-
-   do i=1,M
-   do j=1,M
-      X(i,M+j)=0.D0
-      do k=1,j
-         X(i,M+j)=X(i,M+j)+X(k,i)*hmat_vec(j+(M2-k)*(k-1)/2)
-      enddo
-      do k=j+1,M
-         X(i,M+j)=X(i,M+j)+X(k,i)*hmat_vec(k+(M2-j)*(j-1)/2)
-      enddo
-   enddo
-   enddo
-
-   kk=0
-   do j=1,M
-   do i=j,M
-      kk=kk+1
-      fockat_vec(kk)=0.D0
-      do k=1,j
-         fockat_vec(kk)=fockat_vec(kk)+X(i,M+k)*X(k,j)
-      enddo
-   enddo
-   enddo
+   allocate( hmat(Nmat,Nmat) )
+   allocate( fockon(Nmat, Nmat) )
+   call spunpack('L', Nmat, hmat_vec, hmat )
+   fockon = transform( hmat, Xmat )
+   call sprepack('L', Nmat, fockon_vec, fockon )
+ 
 
 ! F' diagonalization now
 ! xnano will contain (X^-1)*C
+! FFR: NO IT DOES NOT; it contains C...
    do i=1,M
-      RMM(M15+i-1)=0.D0
+      rmm15(i)=0.D0
       eigval_vec(i) = 0.0d0
    enddo
 
-   do i=1,MM
-      rmm5(i)=fockat_vec(i)
+   do i=1,Nvec
+      rmm5(i)=fockon_vec(i)
    enddo
-   rmm15=0
-   eigvec_mat=0
-   
-   call dspev('V','L',M,RMM5,eigval_vec,eigvec_mat,M,RMM15,info)
-   write(666,*) " INFO = ", info
 
-   do i =1,M
-   do j=1,M
-      X(i,M+j)=eigvec_mat(i,j)
-   enddo
-   enddo
+   morb_coefon(:,:) = 0.0d0
+
+!  Inputs and outputs are the same
+   call dspev( 'V', 'L', M, RMM5, eigval_vec, morb_coefon, M, RMM15, info )
+
 
 ! Recover C from (X^-1)*C
    do i=1,M
    do j=1,M
-      X(i,M2+j)=0.D0
+      morb_coefat(i,j) = 0.0d0
       do k=1,M
-         X(i,M2+j)=X(i,M2+j)+X(i,k)*X(k,M+j)
+         morb_coefat(i,j) = morb_coefat(i,j) + X(i,k) * morb_coefon(k,j)
       enddo
    enddo
    enddo
-
-   
-   write(666,*) "Coeficientes en base atomica"
-   do ii=1,M
-   do jj=1,M
-      write(666,*) ii, jj, X(ii,M2+jj)
-   enddo
-   enddo
-   write(666,*)
-
 
 ! Density Matrix
    kk=0
    do k=1,NCO
    do i=1,M
       kk=kk+1
-      MO_coef_at(kk)=X(i,M2+k)
+      MO_coef_at(kk)=morb_coefat(i,k)
    enddo
    enddo
 
@@ -136,12 +93,22 @@ subroutine starting_guess( Nmat, Nvec, hmat_vec, fockat_vec, eigval_vec,       &
       endif
 !
       do k=1,NCO
-         densat_vec(kk)=densat_vec(kk)+ff*X(i,M2+k)*X(j,M2+k)
+         densat_vec(kk)=densat_vec(kk)+ff*morb_coefat(i,k)*morb_coefat(j,k)
       enddo
       
    enddo
    enddo
-   
+ 
+   M1 = Nmat
+   M2 = 2*Nmat
+   do jj = 1, M
+   do ii = 1, M
+      X(ii,M1+jj)       = morb_coefon(ii,jj)
+      X(ii,M2+jj)       = morb_coefat(ii,jj)
+   enddo
+   enddo
+
+
    deallocate(rmm5,rmm15)
 
    call g2g_timer_stop('initial guess')

@@ -33,7 +33,7 @@ subroutine SCF(E)
    igrid2, predcoef, nsol, r, pc, timedep, tdrestart, DIIS, told, Etold, Enucl,     &
    Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz, epsilon, nuc,                &
    doing_ehrenfest, first_step, RealRho, tdstep, total_time, field, Fx, Fy, Fz, a0, &
-   MO_coef_at, Smat, lowdin, good_cut, ndiis, RMM_save
+   MO_coef_at, Smat, lowdin, good_cut, ndiis
 
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
    FOCK_ECP_read,FOCK_ECP_write,IzECP
@@ -48,7 +48,7 @@ subroutine SCF(E)
    use mask_ecp      , only: ECP_init, ECP_fock, ECP_energy
    use typedef_sop   , only: sop              ! Testing SOP
    use atompot_subs  , only: atompot_oldinit  ! Testing SOP
-   use tmpaux_SCF    , only: neighbor_list_2e, starting_guess_old
+   use tmpaux_SCF    , only: neighbor_list_2e
    use liosubs_math  , only: transform
    use liosubs_dens  , only: builds_densmat, messup_densmat, starting_guess    &
                           &, standard_coefs
@@ -60,18 +60,20 @@ subroutine SCF(E)
 #  endif
 
 
-
    implicit none
    integer :: Nel
    integer :: niter
    real*8  :: sq2
    real*8  :: good
    real*8  :: del
-   real*8  :: factor !estan en una parte del codigo q no se usa. consultar para sacarlas
-   integer :: IDAMP !estan en una parte del codigo q no se usa. consultar para sacarlas
    real*8  :: DAMP0
    real*8  :: DAMP
    integer :: igpu
+
+!  The following two variables are in a part of the code that is never
+!  used. Check if these must be taken out...
+   real*8  :: factor
+   integer :: IDAMP
 
    real*8, allocatable :: rho_test(:,:)
    real*8, allocatable :: rho_0(:,:)
@@ -85,7 +87,7 @@ subroutine SCF(E)
    integer             :: i0, ii, jj, kk, kkk
 
 !------------------------------------------------------------------------------!
-!carlos: variable mas comoda para inputs
+!  carlos: variables to use as input for some subroutines instead of M and NCO
    integer :: M_in
    integer :: NCO_in
 
@@ -104,7 +106,7 @@ subroutine SCF(E)
 ! FFR - ehrenfest (temp)
    real*8 :: dipxyz(3)
 
-!FIELD variables (maybe temporary)
+! FIELD variables (maybe temporary)
    real*8 :: Qc, Qc2, g
    integer :: ng2
 
@@ -152,7 +154,7 @@ subroutine SCF(E)
 
 
 !------------------------------------------------------------------------------!
-!carlos: init para TB
+!carlos: init for TB
    allocate (fock_0(M,M), rho_0(M,M))
 
    if (dftb_calc) then
@@ -268,7 +270,8 @@ subroutine SCF(E)
 !
 ! Reformat from here...
 
-! Para hacer lineal la integral de 2 electrones con lista de vecinos. Nano
+! Nano: calculating neighbour list helps to make 2 electrons integral scale
+! linearly with natoms/basis
 !
       call neighbor_list_2e()
 
@@ -317,7 +320,7 @@ subroutine SCF(E)
 
 
 ! test
-! TODO: remove or sistematize
+! TODO: test? remove or sistematize
 !
       E1=0.D0
       do kk=1,MM
@@ -341,13 +344,11 @@ subroutine SCF(E)
         allocate( Y(M,M), Ytrans(M,M), Xtrans(M,M) )
 
         call overop%Sets_smat( Smat )
-        write(*,*) "lowdin is enabled?", lowdin
         if (lowdin) then
-!          TODO: LOWDIN CURRENTLY NOT WORKING (NOR CANONICAL)
-           write(*,*) "DOING LOWDIN"
-           call overop%Gets_orthog_4m( 3, 0.0d0, Xmat, Ymat, Xtrans, Ytrans )
+!          TODO: inputs insuficient; there is also the canonical orthog using
+!                3 instead of 2 or 1. Use integer for onbasis_id
+           call overop%Gets_orthog_4m( 2, 0.0d0, Xmat, Ymat, Xtrans, Ytrans )
         else
-           write(*,*) "DOING CHOLESKY"
            call overop%Gets_orthog_4m( 1, 0.0d0, Xmat, Ymat, Xtrans, Ytrans )
         end if
 
@@ -421,43 +422,24 @@ subroutine SCF(E)
 !
 !      MDFTB must be declared before
 !      call :
-!      agrandar y modificar las Xmat/Ymat
-!      modificar MDFTB
+!      enlarge and modify Xmat/Ymat
+!      modify MDFTB
 
 ! CUBLAS
    call cublas_setmat( M_in, Xmat, dev_Xmat)
    call cublas_setmat( M_in, Ymat, dev_Ymat)
 
 
-!##############################################################################!
-! FFR: Currently working here.
+! Generates starting guess
 !
-      if ( (.not.VCINP) .and. primera ) then
+   if ( (.not.VCINP) .and. primera ) then
+      call starting_guess( M, MM, NCO, RMM(M11), Xmat, RMM(M1) )
+      primera = .false.
+   end if
 
-         RMM_save(:) = RMM(:)
-         call starting_guess_old( morb_coefat )
-         write(665,*) "DENSITY OLD"
-         do ii = 1, M
-            write(665,*) ii, RMM(ii)
-!            RMM_save(ii) = RMM(ii)
-         enddo
-
-         RMM(:) = RMM_save(:)
-         call starting_guess( M, MM, RMM(M11), X(1:M,1:M), RMM(M1) )
-         write(667,*) "DENSITY NEW"
-         do ii = 1, M
-            write(667,*) ii, RMM(ii)
-         enddo
-
-         primera = .false.
-      end if
-!
-! FFR: When finished, uncomment the following starting guess...
-!##############################################################################!
-!------------------------------------------------------------------------------!
+!##########################################################!
 ! TODO: remove from here...
-!
-!      call starting_guess( morb_coefat )
+!##########################################################!
 
       if ((timedep.eq.1).and.(tdrestart)) then
         call g2g_timer_sum_start('TD')
@@ -499,8 +481,9 @@ subroutine SCF(E)
          call g2g_timer_sum_stop('Coulomb precalc')
       endif
 !
-!
+!##########################################################!
 ! TODO: ...to here
+!##########################################################!
 !
 !
 !
@@ -598,7 +581,7 @@ subroutine SCF(E)
 
 
 !------------------------------------------------------------------------------!
-!carlos: extraemos rho y fock antes
+! carlos: we extract rho and fock before
 !
 ! TODO: extraction of fock an rho via subroutines from maskrmm as a first step,
 !       total removal once rmm is gone.
@@ -622,7 +605,7 @@ subroutine SCF(E)
 
 
 !------------------------------------------------------------------------------!
-!carlos: armamos la fock posta
+! carlos: we build the good fock
 !
 ! TODO: this should be wrapped inside a single dftb subroutine. Also, two
 !       consecutive dftb_calc switches? really?
@@ -651,11 +634,10 @@ subroutine SCF(E)
         else
           NCO_in = NCO
         end if
-
-
-!##############################################################################!
-! FFR: Currently working here.
 !
+!
+!------------------------------------------------------------------------------!
+!  Convergence accelerator processing
         call g2g_timer_sum_start('SCF acceleration')
         if (niter==1) then
            call converger_init( M_in, ndiis, DAMP, DIIS, hybrid_converg )
@@ -668,11 +650,7 @@ subroutine SCF(E)
         fockat = transform( fock, Ytrans )
         call g2g_timer_sum_pause('SCF acceleration')
 !
-! FFR: When finished, uncomment the following starting guess...
-!##############################################################################!
-
-
-
+!
 !------------------------------------------------------------------------------!
 !  Fock(ON) diagonalization
         if ( allocated(morb_coefon) ) deallocate(morb_coefon)
@@ -681,8 +659,8 @@ subroutine SCF(E)
         call g2g_timer_sum_start('SCF - Fock Diagonalization (sum)')
         call matrix_diagon( fock, morb_coefon, morb_energy )
         call g2g_timer_sum_pause('SCF - Fock Diagonalization (sum)')
-
-
+!
+!
 !------------------------------------------------------------------------------!
 !  Base change of coeficients ( (X^-1)*C ) and construction of new density
 !  matrix
@@ -732,7 +710,7 @@ subroutine SCF(E)
 
 
 !------------------------------------------------------------------------------!
-!carlos: agregado para separar de rho la parte DFT
+! carlos: added to separate from rho the DFT part
 !
 ! TODO: again, this should be handled differently...
 ! TODO: make xnano go away...only remains here
@@ -777,7 +755,8 @@ subroutine SCF(E)
         call g2g_timer_stop('otras cosas')
         call g2g_timer_sum_pause('new density')
 
-        if(verbose) call WRITE_E_STEP(niter, E+Ex) !escribe energia en cada paso
+!       write energy at every step
+        if (verbose) call WRITE_E_STEP(niter, E+Ex)
 
         Egood=abs(E+Ex-Evieja)
         Evieja=E+Ex

@@ -1,0 +1,53 @@
+The single top-level Makefile can be used to build SIESTA for different
+architectures and compilers, provided the following steps are taken:
+
+* Look for a .make file in this directory that might be appropriate for
+  your particular configuration. If there is none, write your own using
+  the existing files as guides.
+
+* Copy or link the file to the Src directory, renaming it as "arch.make".
+
+The macro SYS in the .make files refers to files holding
+machine-dependent routines, which are kept in the Src directory,
+according to the architecture and compiler/library capabilities.
+
+NetCDF hooks:
+
+If you have netcdf V3.5 installed, you can set the macros NETCDF_XXX
+(as in some of the example files) to use it.
+
+THINGS TO WATCH OUT FOR:
+
+* If you have trouble compiling alloc.F90, it might be that your compiler
+does not recognize the .F90 suffix as a "in need of preprocessing, free
+form, source file". Then you need to do the preprocessing *before* invoking
+the compiler. This happens, to our knowledge, on Suns and Alphas. A quick
+way to fix it is to redefine the .F90 rule in the arch.make file:
+
+#
+.F90.o:
+        $(CPP) $(DEFS) $< > $*.f90
+        $(FC) -c $(FFLAGS) $*.f90
+        @rm -f $*.f90
+#
+
+WARNING: Make sure that the "leading spaces" above are actually a single
+tab character.
+
+* Sometimes "make" gets confused while trying to generate "file.o" if
+"file.mod" already exists, and invokes the "m2c" compiler as:
+
+m2c -o alloc.o alloc.mod
+
+If this happens to you, just make sure you delete the "file.mod" file.
+If it gets really annoying, remove the built-in rule .mod--> .o
+by inserting the line
+
+%.o : %.mod
+
+in arch.make. This works at least with GNU make.
+
+* The Portland Group's pgf90 compiler (at least version 5.0-1) 
+produces bad code when compiling atom.f with optimization. A special
+rule for atom.o has been inserted in the pgf90-*.make files so that
+no optimization is used.

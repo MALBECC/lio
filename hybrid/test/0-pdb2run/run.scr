@@ -1,0 +1,6 @@
+#!/bin/bash
+../../bin/pdb2hyb pdb2hyb.in
+
+
+
+

@@ -1,0 +1,15 @@
+ INPUT file: pdb2hyb.in          VMD  
+ QM residues:            1 ALL            2 ALL 
+ End of Force Field read
+ Reading voidtest.pdb         in VMD format
+ number of atoms:            6
+ End of coordinates read
+ transformando VMD format to HYB format
+ Defining QM subsystem
+ QM atoms:
+ C1  CHC            1
+ H1  CHC            1
+ H2  CHC            1
+ H3  CHC            1
+ CL  CHC            1
+ CL  CLO            2

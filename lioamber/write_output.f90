@@ -6,6 +6,7 @@
 ! * write_fukui      (handles Fukui function printing to output)               !
 ! * write_orbitals   (prints orbitals and energies to output)                  !
 ! * write_population (handles population/charge printing to output)            !
+! * write_restart    (prints an orbital coefficient restart file)              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -92,6 +93,7 @@ subroutine write_dipole_td_header(time_step, fx, fy, fz, uid)
 end subroutine write_dipole_td_header
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% WRITE_FORCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -182,6 +184,7 @@ subroutine write_population(UID, N, q0, q, pop)
     write(UID,300)
     if (pop.eq.0) write(UID,301)
     if (pop.eq.1) write(UID,309)
+    if (pop.eq.2) write(UID,310)
     write(UID,302)
     write(UID,303)
     write(UID,304)
@@ -207,6 +210,8 @@ subroutine write_population(UID, N, q0, q, pop)
 307 FORMAT(8x,"         ║   TOTAL   ║",1x,F10.7,1x,"║")
 308 FORMAT(8x,"         ╚═══════════╩════════════╝")
 309 FORMAT(8x,"║    LÖWDIN POPULATION ANALYSIS   ║")
+310 FORMAT(8x,"║     SPIN POPULATION ANALYSIS    ║")
     return
 end subroutine write_population
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+

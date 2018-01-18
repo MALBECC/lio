@@ -1,0 +1,6 @@
+voidtest.pdb VMD  #corrdinates and format
+2                 #number of QM residues
+1 ALL             #QM(MM) residue number and QM part
+2 ALL
+numlink 0         #Number of H link atoms to add 
+

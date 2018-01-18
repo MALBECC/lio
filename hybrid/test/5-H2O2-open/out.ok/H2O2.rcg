@@ -1,0 +1,306 @@
+ATOM      1  O   STO A   1      -0.288  -0.417  -0.702
+ATOM      2  O   STO A   2      -0.216  -0.456   0.703
+ATOM      3  H   STO A   3       0.659  -0.314  -0.955
+ATOM      4  H   STO A   4      -0.602   0.415   0.954
+
+END  1
+ATOM      1  O   STO A   1      -0.289  -0.416  -0.707
+ATOM      2  O   STO A   2      -0.215  -0.457   0.707
+ATOM      3  H   STO A   3       0.659  -0.314  -0.955
+ATOM      4  H   STO A   4      -0.602   0.415   0.954
+
+END  2
+ATOM      1  O   STO A   1      -0.289  -0.416  -0.710
+ATOM      2  O   STO A   2      -0.214  -0.457   0.711
+ATOM      3  H   STO A   3       0.659  -0.314  -0.955
+ATOM      4  H   STO A   4      -0.603   0.415   0.954
+
+END  3
+ATOM      1  O   STO A   1      -0.290  -0.415  -0.715
+ATOM      2  O   STO A   2      -0.214  -0.457   0.715
+ATOM      3  H   STO A   3       0.660  -0.315  -0.955
+ATOM      4  H   STO A   4      -0.603   0.415   0.954
+
+END  4
+ATOM      1  O   STO A   1      -0.291  -0.415  -0.719
+ATOM      2  O   STO A   2      -0.213  -0.458   0.719
+ATOM      3  H   STO A   3       0.660  -0.315  -0.955
+ATOM      4  H   STO A   4      -0.604   0.415   0.954
+
+END  5
+ATOM      1  O   STO A   1      -0.291  -0.414  -0.724
+ATOM      2  O   STO A   2      -0.212  -0.458   0.724
+ATOM      3  H   STO A   3       0.661  -0.315  -0.955
+ATOM      4  H   STO A   4      -0.604   0.416   0.954
+
+END  6
+ATOM      1  O   STO A   1      -0.292  -0.413  -0.728
+ATOM      2  O   STO A   2      -0.211  -0.458   0.729
+ATOM      3  H   STO A   3       0.661  -0.316  -0.955
+ATOM      4  H   STO A   4      -0.605   0.416   0.954
+
+END  7
+ATOM      1  O   STO A   1      -0.293  -0.412  -0.733
+ATOM      2  O   STO A   2      -0.210  -0.458   0.733
+ATOM      3  H   STO A   3       0.662  -0.317  -0.955
+ATOM      4  H   STO A   4      -0.606   0.416   0.954
+
+END  8
+ATOM      1  O   STO A   1      -0.294  -0.411  -0.738
+ATOM      2  O   STO A   2      -0.209  -0.458   0.738
+ATOM      3  H   STO A   3       0.663  -0.318  -0.956
+ATOM      4  H   STO A   4      -0.607   0.416   0.955
+
+END  9
+ATOM      1  O   STO A   1      -0.294  -0.410  -0.743
+ATOM      2  O   STO A   2      -0.207  -0.458   0.743
+ATOM      3  H   STO A   3       0.663  -0.319  -0.956
+ATOM      4  H   STO A   4      -0.608   0.416   0.955
+
+END 10
+ATOM      1  O   STO A   1      -0.295  -0.409  -0.748
+ATOM      2  O   STO A   2      -0.206  -0.458   0.749
+ATOM      3  H   STO A   3       0.664  -0.320  -0.957
+ATOM      4  H   STO A   4      -0.610   0.416   0.956
+
+END 11
+ATOM      1  O   STO A   1      -0.295  -0.406  -0.753
+ATOM      2  O   STO A   2      -0.204  -0.457   0.754
+ATOM      3  H   STO A   3       0.664  -0.323  -0.958
+ATOM      4  H   STO A   4      -0.612   0.415   0.957
+
+END 12
+ATOM      1  O   STO A   1      -0.296  -0.405  -0.760
+ATOM      2  O   STO A   2      -0.202  -0.457   0.761
+ATOM      3  H   STO A   3       0.666  -0.324  -0.958
+ATOM      4  H   STO A   4      -0.614   0.416   0.958
+
+END 13
+ATOM      1  O   STO A   1      -0.294  -0.395  -0.765
+ATOM      2  O   STO A   2      -0.194  -0.451   0.766
+ATOM      3  H   STO A   3       0.668  -0.336  -0.963
+ATOM      4  H   STO A   4      -0.625   0.412   0.963
+
+END 14
+ATOM      1  O   STO A   1      -0.296  -0.393  -0.772
+ATOM      2  O   STO A   2      -0.192  -0.451   0.773
+ATOM      3  H   STO A   3       0.669  -0.337  -0.964
+ATOM      4  H   STO A   4      -0.627   0.412   0.964
+
+END 15
+ATOM      1  O   STO A   1      -0.297  -0.392  -0.779
+ATOM      2  O   STO A   2      -0.190  -0.451   0.780
+ATOM      3  H   STO A   3       0.670  -0.338  -0.964
+ATOM      4  H   STO A   4      -0.629   0.412   0.964
+
+END 16
+ATOM      1  O   STO A   1      -0.296  -0.389  -0.785
+ATOM      2  O   STO A   2      -0.188  -0.450   0.786
+ATOM      3  H   STO A   3       0.671  -0.341  -0.966
+ATOM      4  H   STO A   4      -0.631   0.411   0.966
+
+END 17
+ATOM      1  O   STO A   1      -0.297  -0.387  -0.794
+ATOM      2  O   STO A   2      -0.186  -0.450   0.795
+ATOM      3  H   STO A   3       0.672  -0.343  -0.967
+ATOM      4  H   STO A   4      -0.633   0.411   0.967
+
+END 18
+ATOM      1  O   STO A   1      -0.298  -0.385  -0.801
+ATOM      2  O   STO A   2      -0.184  -0.449   0.803
+ATOM      3  H   STO A   3       0.673  -0.345  -0.968
+ATOM      4  H   STO A   4      -0.636   0.411   0.968
+
+END 19
+ATOM      1  O   STO A   1      -0.297  -0.379  -0.809
+ATOM      2  O   STO A   2      -0.179  -0.445   0.810
+ATOM      3  H   STO A   3       0.675  -0.352  -0.972
+ATOM      4  H   STO A   4      -0.643   0.409   0.973
+
+END 20
+ATOM      1  O   STO A   1      -0.297  -0.375  -0.820
+ATOM      2  O   STO A   2      -0.176  -0.444   0.821
+ATOM      3  H   STO A   3       0.676  -0.355  -0.974
+ATOM      4  H   STO A   4      -0.647   0.408   0.975
+
+END 21
+ATOM      1  O   STO A   1      -0.289  -0.337  -0.829
+ATOM      2  O   STO A   2      -0.147  -0.420   0.830
+ATOM      3  H   STO A   3       0.682  -0.395  -0.986
+ATOM      4  H   STO A   4      -0.684   0.392   0.988
+
+END 22
+ATOM      1  O   STO A   1      -0.290  -0.336  -0.839
+ATOM      2  O   STO A   2      -0.147  -0.420   0.841
+ATOM      3  H   STO A   3       0.683  -0.396  -0.987
+ATOM      4  H   STO A   4      -0.685   0.393   0.989
+
+END 23
+ATOM      1  O   STO A   1      -0.291  -0.335  -0.850
+ATOM      2  O   STO A   2      -0.146  -0.421   0.851
+ATOM      3  H   STO A   3       0.684  -0.397  -0.988
+ATOM      4  H   STO A   4      -0.686   0.393   0.991
+
+END 24
+ATOM      1  O   STO A   1      -0.291  -0.334  -0.861
+ATOM      2  O   STO A   2      -0.145  -0.421   0.863
+ATOM      3  H   STO A   3       0.686  -0.398  -0.990
+ATOM      4  H   STO A   4      -0.688   0.394   0.993
+
+END 25
+ATOM      1  O   STO A   1      -0.292  -0.333  -0.876
+ATOM      2  O   STO A   2      -0.144  -0.421   0.877
+ATOM      3  H   STO A   3       0.687  -0.399  -0.992
+ATOM      4  H   STO A   4      -0.689   0.394   0.995
+
+END 26
+ATOM      1  O   STO A   1      -0.291  -0.332  -0.890
+ATOM      2  O   STO A   2      -0.143  -0.420   0.891
+ATOM      3  H   STO A   3       0.688  -0.401  -0.995
+ATOM      4  H   STO A   4      -0.692   0.395   0.998
+
+END 27
+ATOM      1  O   STO A   1      -0.291  -0.330  -0.905
+ATOM      2  O   STO A   2      -0.142  -0.419   0.906
+ATOM      3  H   STO A   3       0.690  -0.403  -0.999
+ATOM      4  H   STO A   4      -0.694   0.395   1.001
+
+END 28
+ATOM      1  O   STO A   1      -0.291  -0.328  -0.922
+ATOM      2  O   STO A   2      -0.141  -0.418   0.923
+ATOM      3  H   STO A   3       0.691  -0.405  -1.002
+ATOM      4  H   STO A   4      -0.697   0.395   1.004
+
+END 29
+ATOM      1  O   STO A   1      -0.290  -0.326  -0.940
+ATOM      2  O   STO A   2      -0.139  -0.417   0.941
+ATOM      3  H   STO A   3       0.693  -0.408  -1.006
+ATOM      4  H   STO A   4      -0.700   0.395   1.008
+
+END 30
+ATOM      1  O   STO A   1      -0.288  -0.324  -0.958
+ATOM      2  O   STO A   2      -0.138  -0.414   0.959
+ATOM      3  H   STO A   3       0.695  -0.412  -1.013
+ATOM      4  H   STO A   4      -0.704   0.395   1.015
+
+END 31
+ATOM      1  O   STO A   1      -0.206  -0.133  -1.049
+ATOM      2  O   STO A   2      -0.015  -0.252   1.049
+ATOM      3  H   STO A   3       0.655  -0.620  -1.069
+ATOM      4  H   STO A   4      -0.865   0.258   1.069
+
+END 32
+ATOM      1  O   STO A   1      -0.208  -0.131  -1.076
+ATOM      2  O   STO A   2      -0.014  -0.252   1.076
+ATOM      3  H   STO A   3       0.654  -0.620  -1.069
+ATOM      4  H   STO A   4      -0.864   0.257   1.070
+
+END 33
+ATOM      1  O   STO A   1      -0.208  -0.131  -1.102
+ATOM      2  O   STO A   2      -0.013  -0.252   1.103
+ATOM      3  H   STO A   3       0.653  -0.620  -1.071
+ATOM      4  H   STO A   4      -0.863   0.256   1.071
+
+END 34
+ATOM      1  O   STO A   1      -0.208  -0.130  -1.129
+ATOM      2  O   STO A   2      -0.012  -0.251   1.129
+ATOM      3  H   STO A   3       0.652  -0.620  -1.073
+ATOM      4  H   STO A   4      -0.863   0.255   1.073
+
+END 35
+ATOM      1  O   STO A   1      -0.208  -0.130  -1.155
+ATOM      2  O   STO A   2      -0.012  -0.251   1.155
+ATOM      3  H   STO A   3       0.651  -0.619  -1.075
+ATOM      4  H   STO A   4      -0.862   0.254   1.075
+
+END 36
+ATOM      1  O   STO A   1      -0.205  -0.131  -1.209
+ATOM      2  O   STO A   2      -0.014  -0.249   1.209
+ATOM      3  H   STO A   3       0.648  -0.619  -1.081
+ATOM      4  H   STO A   4      -0.860   0.252   1.081
+
+END 37
+ATOM      1  O   STO A   1      -0.203  -0.131  -1.240
+ATOM      2  O   STO A   2      -0.015  -0.248   1.241
+ATOM      3  H   STO A   3       0.647  -0.619  -1.085
+ATOM      4  H   STO A   4      -0.859   0.251   1.085
+
+END 38
+ATOM      1  O   STO A   1      -0.202  -0.132  -1.264
+ATOM      2  O   STO A   2      -0.017  -0.247   1.265
+ATOM      3  H   STO A   3       0.645  -0.618  -1.087
+ATOM      4  H   STO A   4      -0.857   0.250   1.088
+
+END 39
+ATOM      1  O   STO A   1      -0.200  -0.133  -1.290
+ATOM      2  O   STO A   2      -0.018  -0.245   1.291
+ATOM      3  H   STO A   3       0.643  -0.617  -1.089
+ATOM      4  H   STO A   4      -0.856   0.249   1.090
+
+END 40
+ATOM      1  O   STO A   1      -0.198  -0.134  -1.315
+ATOM      2  O   STO A   2      -0.020  -0.244   1.315
+ATOM      3  H   STO A   3       0.641  -0.615  -1.091
+ATOM      4  H   STO A   4      -0.853   0.247   1.092
+
+END 41
+ATOM      1  O   STO A   1      -0.196  -0.135  -1.339
+ATOM      2  O   STO A   2      -0.022  -0.243   1.339
+ATOM      3  H   STO A   3       0.638  -0.614  -1.093
+ATOM      4  H   STO A   4      -0.851   0.246   1.094
+
+END 42
+ATOM      1  O   STO A   1      -0.194  -0.136  -1.363
+ATOM      2  O   STO A   2      -0.024  -0.242   1.363
+ATOM      3  H   STO A   3       0.635  -0.612  -1.095
+ATOM      4  H   STO A   4      -0.848   0.244   1.096
+
+END 43
+ATOM      1  O   STO A   1      -0.192  -0.137  -1.387
+ATOM      2  O   STO A   2      -0.026  -0.240   1.387
+ATOM      3  H   STO A   3       0.632  -0.610  -1.096
+ATOM      4  H   STO A   4      -0.845   0.242   1.097
+
+END 44
+ATOM      1  O   STO A   1      -0.189  -0.138  -1.411
+ATOM      2  O   STO A   2      -0.028  -0.239   1.411
+ATOM      3  H   STO A   3       0.628  -0.608  -1.098
+ATOM      4  H   STO A   4      -0.841   0.239   1.099
+
+END 45
+ATOM      1  O   STO A   1      -0.187  -0.139  -1.434
+ATOM      2  O   STO A   2      -0.031  -0.238   1.434
+ATOM      3  H   STO A   3       0.624  -0.606  -1.100
+ATOM      4  H   STO A   4      -0.838   0.237   1.101
+
+END 46
+ATOM      1  O   STO A   1      -0.184  -0.141  -1.456
+ATOM      2  O   STO A   2      -0.033  -0.236   1.456
+ATOM      3  H   STO A   3       0.621  -0.604  -1.101
+ATOM      4  H   STO A   4      -0.834   0.235   1.102
+
+END 47
+ATOM      1  O   STO A   1      -0.182  -0.142  -1.477
+ATOM      2  O   STO A   2      -0.036  -0.234   1.477
+ATOM      3  H   STO A   3       0.617  -0.602  -1.103
+ATOM      4  H   STO A   4      -0.830   0.233   1.104
+
+END 48
+ATOM      1  O   STO A   1      -0.179  -0.144  -1.498
+ATOM      2  O   STO A   2      -0.038  -0.232   1.498
+ATOM      3  H   STO A   3       0.612  -0.600  -1.104
+ATOM      4  H   STO A   4      -0.826   0.230   1.105
+
+END 49
+ATOM      1  O   STO A   1      -0.176  -0.146  -1.518
+ATOM      2  O   STO A   2      -0.041  -0.231   1.518
+ATOM      3  H   STO A   3       0.608  -0.597  -1.105
+ATOM      4  H   STO A   4      -0.822   0.228   1.106
+
+END 50
+ATOM      1  O   STO A   1      -0.173  -0.148  -1.539
+ATOM      2  O   STO A   2      -0.044  -0.229   1.539
+ATOM      3  H   STO A   3       0.603  -0.595  -1.106
+ATOM      4  H   STO A   4      -0.817   0.225   1.107
+
+END 51

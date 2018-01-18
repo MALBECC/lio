@@ -14,15 +14,16 @@
  
 subroutine liomain(E, dipxyz)
     use garcha_mod, only : M, Smat, RealRho, OPEN, writeforces, energy_freq,   &
-                           restart_freq, npas, sqsm, mulliken, lowdin, dipole, &
-                           doing_ehrenfest, first_step,                        &
-                           Eorbs, fukui, print_coeffs, steep, idip
+                           restart_freq, npas, sqsm, mulliken, lowdin, spinpop,&
+                           dipole, doing_ehrenfest, first_step,                &
+                           Eorbs, fukui, print_coeffs, steep, idip, calc_propM
     use ecp_mod   , only : ecpmode, IzECP
     use ehrensubs,  only : ehrendyn
  
     implicit none
     REAL*8, intent(inout) :: dipxyz(3), E
     integer :: idip_scrach
+    logical :: calc_prop
 
     call g2g_timer_sum_start("Total")
 
@@ -56,10 +57,14 @@ subroutine liomain(E, dipxyz)
 
     if ((restart_freq.gt.0).and.(MOD(npas, restart_freq).eq.0)) call do_restart(88)
 
-    ! Perform Mulliken and Lowdin analysis, get fukui functions and dipole.
-    if (MOD(npas, energy_freq).eq.0) then
+    calc_prop=.false.
+    if (MOD(npas, energy_freq).eq.0) calc_prop=.true.
+    if (calc_propM) calc_prop=.true.
 
-        if (mulliken.or.lowdin) call do_population_analysis()
+    ! Perform Mulliken and Lowdin analysis, get fukui functions and dipole.
+    if (calc_prop) then
+
+        if (mulliken.or.lowdin.or.spinpop) call do_population_analysis()
 
         if (dipole) call do_dipole(dipxyz, 69)
   
@@ -147,12 +152,14 @@ end subroutine do_dipole
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_population_analysis()
    use garcha_mod, only : RMM, Smat, RealRho, M, Enucl, Nuc, Iz, natom, &
-                          mulliken, lowdin, sqsm
+                          mulliken, lowdin, spinpop, sqsm, OPEN,        &
+                          rhoalpha,rhobeta
    use ECP_mod   , only : ecpmode, IzECP
    use faint_cpu77, only: int1
 
    implicit none
    integer :: M1, M5, IzUsed(natom), kk
+   real*8, allocatable, dimension(:,:)  :: RealRho_alpha, RealRho_betha
    real*8  :: q(natom)
 
    ! Needed until we dispose of RMM.
@@ -189,6 +196,19 @@ subroutine do_population_analysis()
        call g2g_timer_stop('Lowdin')
    endif
 
+   if (spinpop) then
+       if (.not. OPEN) then
+         write(*,*) "cant perform a spin population analysis in a close shell calculation"
+         return
+       end if
+       allocate (RealRho_alpha(M,M), RealRho_betha(M,M))
+       call spunpack('L',M,rhoalpha(1),RealRho_alpha) !pasa vector a matriz
+       call spunpack('L',M,rhobeta(1),RealRho_betha) !pasa vector a matriz
+       q=0
+       call spin_pop_calc(natom, M, RealRho_alpha, RealRho_betha, Smat, Nuc, q)
+       call write_population(85, natom, Iz, q, 2)
+   end if
+
    return
 endsubroutine do_population_analysis
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -220,7 +240,7 @@ subroutine do_fukui()
     return
 end subroutine do_fukui
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
+ 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% DO_FUKUI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs Fukui function calls and printing.                                  !
@@ -263,3 +283,4 @@ subroutine do_restart(UID)
    return
 end subroutine do_restart
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+

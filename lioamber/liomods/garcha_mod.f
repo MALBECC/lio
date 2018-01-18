@@ -39,6 +39,7 @@
 
 
       dimension ighost(ntq), ighost1(ntq)
+
       real*8 e_(50,3),wang(50),e_2(116,3),wang2(116),e3(194,3), ! intg1 e intg2
      > wang3(194)                                               !
       integer Nr(0:54),Nr2(0:54)
@@ -129,7 +130,7 @@ c      parameter rmintsol=16.0D0
 !-Variables for outout format.
       logical :: style, allnml
 !-Variables for property calculations.
-      logical :: fukui, dipole, lowdin, mulliken, print_coeffs
+      logical :: fukui, dipole, lowdin, mulliken, spinpop, print_coeffs
 
 !     parameter (nng=100)
       integer :: nng, max_func
@@ -173,7 +174,8 @@ c      parameter rmintsol=16.0D0
       integer :: n_points ! number of points scaned for lineal search
       integer :: n_min_steeps !number of optimization steps
       logical :: lineal_search !enable lineal search
-
+!for properties calculation control
+      logical :: calc_propM
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       end module

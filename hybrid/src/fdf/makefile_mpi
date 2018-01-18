@@ -1,0 +1,25 @@
+#
+.SUFFIXES: .f .F .o .a  .f90 .F90
+include ../arch.make
+#
+OBJS=	sample_mpi.o io.o
+#
+sample_mpi: $(OBJS) libfdfmpi.a $(MPI_INTERFACE)
+	$(FC) $(LDFLAGS) -o sample_mpi $(OBJS) libfdfmpi.a $(MPI_INTERFACE)\
+              $(LIBS)
+sample_mpi.o: $(MPI_INTERFACE) fdf_mpi.o
+
+libmpi_f90.a: 
+	@(cd MPI ; $(MAKE) )
+#
+libfdfmpi.a:  fdf.o fdf_mpi.o parse.o
+	ar qv libfdfmpi.a fdf.o fdf_mpi.o parse.o
+fdf_mpi.o: parse.o
+#
+clean:
+	rm -f *.o libfdf.a *.mod fdf_mod.o io_sample.o sample io_sample
+
+
+
+
+

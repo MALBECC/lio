@@ -55,6 +55,8 @@ subroutine liomain(E, dipxyz)
        endif
     endif
 
+    if ((restart_freq.gt.0).and.(MOD(npas, restart_freq).eq.0)) call do_restart(88)
+
     calc_prop=.false.
     if (MOD(npas, energy_freq)) calc_prop=.true.
     if (calc_propM) calc_prop=.true.
@@ -75,8 +77,6 @@ subroutine liomain(E, dipxyz)
 
         if (print_coeffs) call write_orbitals(29)
     endif
-
-    if ((restart_freq.gt.0).and.(MOD(npas, restart_freq).eq.0)) call write_restart(88)
 
     return
 end subroutine liomain

@@ -20,7 +20,7 @@ subroutine write_dipole(dipxyz, u, uid, header)
     real*8 , intent(in) :: dipxyz(3), u
     integer, intent(in) :: uid
     logical, intent(in) :: header
-    
+
 
     open(unit = uid, file = "dipole_moment")
     if (style) then
@@ -69,25 +69,31 @@ end subroutine write_dipole
 !%% WRITE_DIPOLE_TD %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Sets variables up and calls dipole calculation.                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine write_dipole_td(dipxyz, time, uid, header)
-    use garcha_mod, only : style
-
+subroutine write_dipole_td(dipxyz, time, uid)
     implicit none
     real*8 , intent(in) :: dipxyz(3), time
     integer, intent(in) :: uid
-    logical, intent(in) :: header
 
-
-    open(unit = uid, file = "dipole_moment_td")
-    if (header) then
-       write(UID,*) '# TIME (fs), DIPX, DIPY, DIPZ (Debye)'
-    else
-       write(UID,*) time, dipxyz(1), dipxyz(2), dipxyz(3)
-    endif
-
+    write(UID,*) time, dipxyz(1), dipxyz(2), dipxyz(3)
     return
 end subroutine write_dipole_td
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% WRITE_DIPOLE_TD_HEADER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Sets variables up and calls dipole calculation.                              !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine write_dipole_td_header(time_step, fx, fy, fz, uid)
+    implicit none
+    real*8 , intent(in) :: time_step, fx, fy, fz
+    integer, intent(in) :: uid
+
+    write(UID,*) '#', time_step, fx, fy, fz
+    return
+end subroutine write_dipole_td_header
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% WRITE_FORCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -209,32 +215,3 @@ subroutine write_population(UID, N, q0, q, pop)
 end subroutine write_population
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% WRITE_RESTART %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Writes a coefficient restart file.                                           !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine write_restart(UID)
-    use garcha_mod, only : M, X, NCO, indexii
- 
-    implicit none
-    integer, intent(in) :: UID
-    integer             :: ll, nn
-
-    call g2g_timer_sum_start('restart write')
-    rewind UID
-    do ll = 1, M
-        do nn = 1, M
-            X(indexii(ll), M +nn) = X(ll, 2*M +nn)
-        enddo
-    enddo
-
-    do ll = 1, M
-         write(UID,400) (X(ll, M +nn), nn = 1, NCO)
-    enddo
-
-    call g2g_timer_sum_stop('restart write')
-
-400 format(4(E14.7E2, 2x))
-    return
-end subroutine write_restart
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

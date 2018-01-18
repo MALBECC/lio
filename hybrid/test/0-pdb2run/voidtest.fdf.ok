@@ -1,0 +1,57 @@
+SystemName     voidtest        
+SystemLabel    voidtest        
+CenterMolecule T    
+CG.Nick_center F    
+NumberOfAtoms         6
+NumberOfSpecies      3
+NetCharge 0.0       
+FixSpin  T          
+TotalSpin 0.0       
+MD.MaxForceTol    0.04 eV/Ang 
+NumberOfSolventAtoms       0
+%block ChemicalSpeciesLabel   
+       1   1  H 
+       2   6  C 
+       3  17  Cl
+%endblock ChemicalSpeciesLabel
+ 
+AtomicCoordinatesFormat  Ang  
+%block AtomicCoordinatesAndAtomicSpecies
+  35.68700  34.50600  35.99000         2
+  35.98000  34.12000  35.08700         1
+  36.08900  35.73700  36.24600         1
+  34.74800  34.44800  36.44800         1
+  33.49600  36.20600  33.44400         3
+  36.78400  33.67400  37.23300         3
+%endblock AtomicCoordinatesAndAtomicSpecies
+ 
+%block SoluteAtomTypes   
+  CT  C1    CHC 
+  HC  H1    CHC 
+  HC  H2    CHC 
+  HC  H3    CHC 
+  Cl  CL    CHC 
+  Cl  CL    CLO 
+%endblock SoluteAtomTypes
+ 
+ 
+DM.UseSaveDM   T          
+MD.USeSaveXV   T          
+MD.UseSaveCG   T          
+LongOutput    F           
+ 
+ OptimizationScheme 1
+MD.TypeOfRun    CG        
+MD.NumCGsteps   500       
+ 
+%block CutOffRadius       
+QM  0.2                   
+QMMM 10.0                 
+MM 8.0                    
+BLO 8.0                   
+MMBLO 8.0                 
+%endblock CutOffRadius    
+ 
+ 
+%block SolventInput   
+%endblock SolventInput

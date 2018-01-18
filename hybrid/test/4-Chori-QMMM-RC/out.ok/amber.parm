@@ -1,0 +1,6133 @@
+bonds
+164
+OW-HW  553.0    0.9572    ! TIP3P water             
+HW-HW  553.0    1.5136      TIP3P water             
+C -C   310.0    1.525       Junmei et al, 1999      
+C -CA  469.0    1.409       JCC,7,(1986),230; (not used any more in TYR)     
+C -CB  447.0    1.419       JCC,7,(1986),230; GUA   
+C -CM  410.0    1.444       JCC,7,(1986),230; THY,URA                        
+C -CT  317.0    1.522       JCC,7,(1986),230; AA    
+C -N   490.0    1.335       JCC,7,(1986),230; AA    
+C -N*  424.0    1.383       JCC,7,(1986),230; CYT,URA                        
+C -NA  418.0    1.388       JCC,7,(1986),230; GUA.URA                        
+C -NC  457.0    1.358       JCC,7,(1986),230; CYT   
+C -O   570.0    1.229       JCC,7,(1986),230; AA,CYT,GUA,THY,URA             
+CB-O   570.0    1.229       DHEhemo                 
+C -O2  656.0    1.250       JCC,7,(1986),230; GLU,ASP                        
+C -OH  450.0    1.364       JCC,7,(1986),230; (not used any more for TYR)    
+C -OS  450.0    1.323       Junmei et al, 1999      
+C -H4  367.0    1.080       Junmei et al, 1999      
+C -H5  367.0    1.080       Junmei et al, 1999      
+CA-CA  469.0    1.400       JCC,7,(1986),230; BENZENE,PHE,TRP,TYR            
+CA-CB  469.0    1.404       JCC,7,(1986),230; ADE,TRP                        
+CA-CM  427.0    1.433       JCC,7,(1986),230; CYT   
+CA-CN  469.0    1.400       JCC,7,(1986),230; TRP   
+CA-CT  317.0    1.510       JCC,7,(1986),230; PHE,TYR                        
+CA-HA  367.0    1.080       changed from 340. bsd on C6H6 nmodes; PHE,TRP,TYR
+CA-H4  367.0    1.080       changed from 340. bsd on C6H6 nmodes; no assigned
+CA-N2  481.0    1.340       JCC,7,(1986),230; ARG,CYT,GUA                    
+CA-NA  427.0    1.381       JCC,7,(1986),230; GUA   
+CA-NC  483.0    1.339       JCC,7,(1986),230; ADE,CYT,GUA                    
+CA-OH  450.0    1.364       substituted for C-OH in tyr                      
+CB-CB  520.0    1.370       JCC,7,(1986),230; ADE,GUA                        
+CB-N*  436.0    1.374       JCC,7,(1986),230; ADE,GUA                        
+CB-NB  414.0    1.391       JCC,7,(1986),230; ADE,GUA                        
+CB-NC  461.0    1.354       JCC,7,(1986),230; ADE,GUA                        
+CD-HA  367.0    1.080       Junmei et al, 1999      
+CD-CD  469.0    1.400       Junmei et al, 1999      
+CD-CM  549.0    1.350       Junmei et al, 1999      
+CD-CT  317.0    1.510       Junmei et al, 1999      
+CK-H5  367.0    1.080       changed from 340. bsd on C6H6 nmodes; ADE,GUA    
+CK-N*  440.0    1.371       JCC,7,(1986),230; ADE,GUA                        
+CK-NB  529.0    1.304       JCC,7,(1986),230; ADE,GUA                        
+CM-CM  549.0    1.350       JCC,7,(1986),230; CYT,THY,URA                    
+CM-CT  317.0    1.510       JCC,7,(1986),230; THY   
+CM-HA  367.0    1.080       changed from 340. bsd on C6H6 nmodes; CYT,URA    
+CM-H4  367.0    1.080       changed from 340. bsd on C6H6 nmodes; CYT,URA    
+CM-H5  367.0    1.080       changed from 340. bsd on C6H6 nmodes; not assigned             
+CM-N*  448.0    1.365       JCC,7,(1986),230; CYT,THY,URA                    
+CM-OS  480.0    1.240       Junmei et al, 1999      
+CQ-H5  367.0    1.080       changed from 340. bsd on C6H6 nmodes; ADE        
+CQ-NC  502.0    1.324       JCC,7,(1986),230; ADE   
+CT-CT  310.0    1.526       JCC,7,(1986),230; AA, SUGARS                     
+CT-HC  340.0    1.090       changed from 331 bsd on NMA nmodes; AA, SUGARS   
+CT-H1  340.0    1.090       changed from 331 bsd on NMA nmodes; AA, RIBOSE   
+CT-H2  340.0    1.090       changed from 331 bsd on NMA nmodes; SUGARS       
+CT-H3  340.0    1.090       changed from 331 bsd on NMA nmodes; not assigned 
+CT-HP  340.0    1.090       changed from 331; AA-lysine, methyl ammonium cation            
+CT-N*  337.0    1.475       JCC,7,(1986),230; ADE,CYT,GUA,THY,URA            
+CT-N2  337.0    1.463       JCC,7,(1986),230; ARG   
+CT-OH  320.0    1.410       JCC,7,(1986),230; SUGARS
+CT-OS  320.0    1.410       JCC,7,(1986),230; NUCLEIC ACIDS                  
+C*-HC  367.0    1.080       changed from 340. bsd on C6H6 nmodes, not needed AA            
+C*-CB  388.0    1.459       JCC,7,(1986),230; TRP   
+C*-CT  317.0    1.495       JCC,7,(1986),230; TRP   
+C*-CW  546.0    1.352       JCC,7,(1986),230; TRP   
+CB-CN  447.0    1.419       JCC,7,(1986),230; TRP   
+CC-CT  317.0    1.504       JCC,7,(1986),230; HIS   
+CC-CV  512.0    1.375       JCC,7,(1986),230; HIS(delta)                     
+CC-CW  518.0    1.371       JCC,7,(1986),230; HIS(epsilon)                   
+CC-NA  422.0    1.385       JCC,7,(1986),230; HIS   
+CC-NB  410.0    1.394       JCC,7,(1986),230; HIS   
+CN-NA  428.0    1.380       JCC,7,(1986),230; TRP   
+CR-H5  367.0    1.080       changed from 340. bsd on C6H6 nmodes;HIS         
+CR-NA  477.0    1.343       JCC,7,(1986),230; HIS   
+CR-NB  488.0    1.335       JCC,7,(1986),230; HIS   
+CT-N   337.0    1.449       JCC,7,(1986),230; AA    
+CT-N3  367.0    1.471       JCC,7,(1986),230; LYS   
+CT-NT  367.0    1.471       for neutral amines      
+CT-S   227.0    1.810       changed from 222.0 based on dimethylS nmodes     
+CT-SH  237.0    1.810       changed from 222.0 based on methanethiol nmodes  
+CT-CY  400.0    1.458       Howard et al JCC.16,243,1995                     
+CT-CZ  400.0    1.459       Howard et al JCC,16,243,1995                     
+CV-H4  367.0    1.080       changed from 340. bsd on C6H6 nmodes; HIS        
+CV-NB  410.0    1.394       JCC,7,(1986),230; HIS   
+CW-H4  367.0    1.080       changed from 340. bsd on C6H6 nmodes;HIS(epsilon,+)            
+CW-NA  427.0    1.381       JCC,7,(1986),230; HIS,TRP                        
+CY-NY  600.0    1.150       Howard et al JCC,16,243,1995                     
+CZ-CZ  600.0    1.206       Howard et al JCC,16,243,1995                     
+CZ-HZ  400.0    1.056       Howard et al JCC,16,243,1995                     
+O2-P   525.0    1.480       JCC,7,(1986),230; NA PHOSPHATES                  
+OH-P   230.0    1.610       JCC,7,(1986),230; NA PHOSPHATES                  
+OS-P   230.0    1.610       JCC,7,(1986),230; NA PHOSPHATES                  
+H -N2  434.0    1.010       JCC,7,(1986),230; ADE,CYT,GUA,ARG                
+H -N*  434.0    1.010       for plain unmethylated bases ADE,CYT,GUA,ARG     
+H -NA  434.0    1.010       JCC,7,(1986),230; GUA,URA,HIS                    
+H -N   434.0    1.010       JCC,7,(1986),230; AA    
+H -N3  434.0    1.010       JCC,7,(1986),230; LYS   
+H -NT  434.0    1.010       for neutral amines      
+HO-OH  553.0    0.960       JCC,7,(1986),230; SUGARS,SER,TYR                 
+HO-OS  553.0    0.960       JCC,7,(1986),230; NUCLEOTIDE ENDS                
+HS-SH  274.0    1.336       JCC,7,(1986),230; CYS   
+S -S   166.0    2.038       JCC,7,(1986),230; CYX   (SCHERAGA)               
+F -CT  367.0    1.380       JCC,13,(1992),963;CF4; R0=1.332 FOR CHF3         
+Cl-CT  232.0    1.766       6-31g* opt              
+Br-CT  159.0    1.944       Junmei et al,99         
+I -CT  148.0    2.166       Junmei et al,99         
+F -CA  386.0    1.359       Junmei et al,99         
+Cl-CA  193.0    1.727       Junmei et al,99         
+I -CA  171.0    2.075       Junmei et al,99         
+Br-CA  172.0    1.890       Junmei et al,99         
+LP-O   600.0    0.200       or 0.35                 
+LP-OH  600.0    0.200       or 0.35                 
+LP-OS  600.0    0.200       or 0.35                 
+LP-N3  600.0    0.200       or 0.35                 
+LP-NT  600.0    0.200       or 0.35                 
+LP-NB  600.0    0.200       or 0.35 histidines, nucleic acids                
+LP-NC  600.0    0.200       or 0.35 nucleic acids   
+LP-S   600.0    0.700       cys,cyx,met             
+LP-SH  600.0    0.700       cys,cyx                 
+FE-NP   50.0    2.010  
+FE-LO  200.0    1.780  
+FE-LC  200.0    1.750  
+LC-LO 1000.0    1.120  
+FE-NB   60.0    2.010  
+FE-NO   50.0    2.010  
+FE-S    60.0    2.300  
+NP-CC  316.0    1.384  
+NO-CC  316.0    1.384  
+CC-CB  273.0    1.444  
+CC-CF  273.0    1.560  
+CT-CF  310.0    1.526        dhe marce               
+CC-CD  391.0    1.391  
+CB-CB  418.0    1.357  
+CB-CF  418.0    1.590  
+CB-CT  297.0    1.501  
+CB-CY  297.0    1.501  
+CD-HC  338.0    1.090  
+CY-HC  340.0    1.080  
+CX-HC  340.0    1.080  
+CY-CX  570.0    1.340  
+LO-LO  848.0    1.250  
+NB-O   570.0    1.200  NO 
+FE-O1  200.0    1.760  O2 Marce O2 del HEO 
+O1-O2  848.0    1.290  O2 Marce O2 del HEO 
+FE-OX   60.0    1.82   peroxynitrito
+OX-OY  900.0    1.43   peroxynitrito
+OY-NX  900.0    1.5    peroxynitrito
+NX-OZ  900.0    1.2    peroxynitrito
+NB-O   570.0    1.229  marce no2
+CB-NA  428.0    1.36   biopterina
+CT-NA  428.0    1.47   biopterina
+N2-OH  570.0    1.2    n hidroxi arg
+Zn-SG   60.0    2.3    Zinc cys en NOS
+c -o     648.000   1.214
+ce-c2    560.500   1.339
+ce-c     363.800   1.474
+os-ce    370.600   1.375
+c3-os    301.500   1.439
+c2-c3    328.300   1.508
+ce-ce    390.500   1.451
+c3-c3    303.100   1.535
+oh-c3    314.100   1.426
+c2-ha    344.300   1.087
+c3-h1    335.900   1.093
+ce-ha    341.500   1.089
+oh-ho    369.600   0.974
+angles   
+375
+HW-OW-HW    100.      104.52    TIP3P water         
+HW-HW-OW      0.      127.74    (found in crystallographic water with 3 bonds)             
+C -C -O     80.0      120.00    Junmei et al, 1999 acrolein                  
+C -C -OH    80.0      120.00    Junmei et al, 1999  
+CA-C -CA    63.0      120.00    changed from 85.0  bsd on C6H6 nmodes; AA    
+CA-C -OH    70.0      120.00    AA (not used in tyr)
+CB-C -NA    70.0      111.30    NA                  
+CB-C -O     80.0      128.80                        
+CM-C -NA    70.0      114.10                        
+CM-C -O     80.0      125.30                        
+CT-C -O     80.0      120.40                        
+CT-C -O2    70.0      117.00                        
+CT-C -N     70.0      116.60    AA general          
+CT-C -CT    63.0      117.00    Junmei et al, 1999  
+CT-C -OS    80.0      115.00    Junmei et al, 1999  
+CT-C -OH    80.0      110.00    Junmei et al, 1999  
+N*-C -NA    70.0      115.40                        
+N*-C -NC    70.0      118.60                        
+N*-C -O     80.0      120.90                        
+NA-C -O     80.0      120.60                        
+NC-C -O     80.0      122.50                        
+N -C -O     80.0      122.90    AA general          
+O -C -O     80.0      126.00    AA COO- terminal residues                    
+O -C -OH    80.0      120.00    (check with Junmei for: theta0:120.0?)       
+O -C -OS    80.0      125.00    Junmei et al, 1999  
+O2-C -O2    80.0      126.00    AA GLU            (SCH JPC 79,2379)          
+H4-C -C     50.0      120.00    Junmei et al, 1999  
+H4-C -CM    50.0      115.00    Junmei et al, 1999  
+H4-C -CT    50.0      115.00    Junmei et al, 1999  
+H4-C -O     50.0      120.00    Junmei et al, 1999  
+H4-C -OH    50.0      120.00    Junmei et al, 1999  
+H5-C -N     50.0      120.00    Junmei et al, 1999  
+H5-C -O     50.0      119.00    Junmei et al, 1999  
+H5-C -OH    50.0      107.00    Junmei et al, 1999  
+H5-C -OS    50.0      107.00    Junmei et al, 1999  
+C -CA-CA    63.0      120.00    changed from 85.0  bsd on C6H6 nmodes        
+C -CA-HA    50.0      120.00    AA (not used in tyr)
+CA-CA-CA    63.0      120.00    changed from 85.0  bsd on C6H6 nmodes        
+CA-CA-CB    63.0      120.00    changed from 85.0  bsd on C6H6 nmodes        
+CA-CA-CT    70.0      120.00                        
+CA-CA-HA    50.0      120.00                        
+CA-CA-H4    50.0      120.00                        
+CA-CA-OH    70.0      120.00    replacement in tyr  
+CA-CA-CN    63.0      120.00    changed from 85.0  bsd on C6H6 nmodes; AA trp
+CB-CA-HA    50.0      120.00                        
+CB-CA-H4    50.0      120.00                        
+CB-CA-N2    70.0      123.50                        
+CB-CA-NC    70.0      117.30                        
+CM-CA-N2    70.0      120.10                        
+CM-CA-NC    70.0      121.50                        
+CN-CA-HA    50.0      120.00    AA trp              
+NA-CA-NC    70.0      123.30                        
+N2-CA-NA    70.0      116.00                        
+N2-CA-NC    70.0      119.30                        
+N2-CA-N2    70.0      120.00    AA arg              
+F -CA-CA    70.0      121.00    Junmei et al,99     
+Cl-CA-CA    70.0      118.80    Junmei et al,99     
+Br-CA-CA    70.0      118.80    Junmei et al,99     
+I -CA-CA    70.0      118.80    Junmei et al,99     
+C -CB-CB    63.0      119.20    changed from 85.0  bsd on C6H6 nmodes; NA gua
+C -CB-NB    70.0      130.00                        
+CA-CB-CB    63.0      117.30    changed from 85.0  bsd on C6H6 nmodes; NA ade
+CA-CB-NB    70.0      132.40                        
+CB-CB-N*    70.0      106.20                        
+CB-CB-NB    70.0      110.40                        
+CB-CB-NC    70.0      127.70                        
+C*-CB-CA    63.0      134.90    changed from 85.0  bsd on C6H6 nmodes; AA trp
+C*-CB-CN    63.0      108.80    changed from 85.0  bsd on C6H6 nmodes; AA trp
+CA-CB-CN    63.0      116.20    changed from 85.0  bsd on C6H6 nmodes; AA trp
+N*-CB-NC    70.0      126.20                        
+CD-CD-CM    63.0      120.00    Junmei et al, 1999  
+CD-CD-CT    70.0      120.00    Junmei et al, 1999  
+CM-CD-CT    70.0      120.00    Junmei et al, 1999  
+HA-CD-HA    35.0      119.00    Junmei et al, 1999  
+HA-CD-CD    50.0      120.00    Junmei et al, 1999  
+HA-CD-CM    50.0      120.00    Junmei et al, 1999  
+H5-CK-N*    50.0      123.05                        
+H5-CK-NB    50.0      123.05                        
+N*-CK-NB    70.0      113.90                        
+C -CM-CM    63.0      120.70    changed from 85.0  bsd on C6H6 nmodes; NA thy
+C -CM-CT    70.0      119.70                        
+C -CM-HA    50.0      119.70                        
+C -CM-H4    50.0      119.70                        
+CA-CM-CM    63.0      117.00    changed from 85.0  bsd on C6H6 nmodes; NA cyt
+CA-CM-HA    50.0      123.30                        
+CA-CM-H4    50.0      123.30                        
+CM-CM-CT    70.0      119.70                        
+CM-CM-HA    50.0      119.70                        
+CM-CM-H4    50.0      119.70                        
+CM-CM-N*    70.0      121.20                        
+CM-CM-OS    80.0      125.00    Junmei et al, 1999  
+H4-CM-N*    50.0      119.10                        
+H4-CM-OS    50.0      113.00    Junmei et al, 1999  
+HA-CM-HA    35.0      120.00    Junmei et al, 1999  
+HA-CM-CD    50.0      120.00    Junmei et al, 1999  
+HA-CM-CT    50.0      120.00    Junmei et al, 1999  
+NC-CQ-NC    70.0      129.10                        
+H5-CQ-NC    50.0      115.45                        
+CA-CT-OH    50.0      109.50    cor and pre angles
+CA-CT-H1    50.0      109.50    cor and pre angles
+H1-CT-H1    35.0      109.50                        
+H1-CT-N*    50.0      109.50    changed based on NMA nmodes                  
+H1-CT-OH    50.0      109.50    changed based on NMA nmodes                  
+H1-CT-OS    50.0      109.50    changed based on NMA nmodes                  
+H1-CT-CM    50.0      109.50    Junmei et al, 1999  
+H1-CT-CY    50.0      110.00    Junmei et al, 1999  
+H1-CT-CZ    50.0      110.00    Junmei et al, 1999  
+H1-CT-N     50.0      109.50    AA general  changed based on NMA nmodes      
+H1-CT-S     50.0      109.50    AA cys     changed based on NMA nmodes       
+H1-CT-SH    50.0      109.50    AA cyx     changed based on NMA nmodes       
+H1-CT-N2    50.0      109.50    AA arg     changed based on NMA nmodes       
+H1-CT-NT    50.0      109.50    neutral amines      
+H2-CT-H2    35.0      109.50    AA lys              
+H2-CT-N*    50.0      109.50    changed based on NMA nmodes                  
+H2-CT-OS    50.0      109.50    changed based on NMA nmodes                  
+HP-CT-HP    35.0      109.50    AA lys, ch3nh4+     
+HP-CT-N3    50.0      109.50    AA lys, ch3nh3+, changed based on NMA nmodes 
+HC-CT-HC    35.0      109.50                        
+HC-CT-CM    50.0      109.50    changed based on NMA nmodes                  
+HC-CT-CD    50.0      109.50    Junmei et al, 1999  
+HC-CT-CZ    50.0      110.00    Junmei et al, 1999  
+C -CT-H1    50.0      109.50    AA general  changed based on NMA nmodes      
+C -CT-HP    50.0      109.50    AA zwitterion  changed based on NMA nmodes   
+C -CT-HC    50.0      109.50    AA gln      changed based on NMA nmodes      
+C -CT-N     63.0      110.10    AA general          
+C -CT-N3    80.0      111.20    AA amino terminal residues                   
+C -CT-CT    63.0      111.10    AA general          
+C -CT-OS    60.0      109.50    Junmei et al, 1999  
+CA-CT-HC    50.0      109.50    AA tyr     changed based on NMA nmodes       
+CC-CT-CT    63.0      113.10    AA his              
+CC-CT-HC    50.0      109.50    AA his     changed based on NMA nmodes       
+CM-CT-CT    63.0      111.00    Junmei et al, 1999 (last change: Mar24,99)   
+CM-CT-OS    50.0      109.50    Junmei et al, 1999  
+CT-CT-CT    40.0      109.50                        
+CT-CT-HC    50.0      109.50    changed based on NMA nmodes                  
+CT-CT-H1    50.0      109.50    changed based on NMA nmodes                  
+CT-CT-H2    50.0      109.50    changed based on NMA nmodes                  
+CT-CT-HP    50.0      109.50    changed based on NMA nmodes                  
+CT-CT-N*    50.0      109.50                        
+CT-CT-OH    50.0      109.50                        
+CT-CT-OS    50.0      109.50                        
+CT-CT-S     50.0      114.70    AA cyx            (SCHERAGA  JPC 79,1428)    
+CT-CT-SH    50.0      108.60    AA cys              
+CT-CT-CA    63.0      114.00    AA phe tyr          (SCH JPC  79,2379)       
+CT-CT-N2    80.0      111.20    AA arg             (JCP 76, 1439)            
+CT-CT-N     80.0      109.70    AA ala, general    (JACS 94, 2657)           
+CT-CT-N3    80.0      111.20    AA lys             (JCP 76, 1439)            
+CT-CT-NT    80.0      111.20    neutral amines      
+CT-CT-CY    63.0      110.00    Junmei et al, 1999  
+CT-CT-CZ    63.0      110.00    Junmei et al, 1999  
+C*-CT-CT    63.0      115.60    AA trp              
+C*-CT-HC    50.0      109.50    AA trp    changed based on NMA nmodes        
+OS-CT-OS   160.0      101.00    Junmei et al, 1999  
+OS-CT-CY    50.0      110.00    Junmei et al, 1999  
+OS-CT-CZ    50.0      110.00    Junmei et al, 1999  
+OS-CT-CZ    50.0      110.00    Junmei et al, 1999  
+OS-CT-CY    50.0      110.00    Junmei et al, 1999  
+OS-CT-N*    50.0      109.50                        
+F -CT-F     77.0      109.10    JCC,13,(1992),963;  
+F -CT-H1    50.0      109.50    JCC,13,(1992),963;  
+F -CT-CT    50.0      109.00                        
+F -CT-H2    50.0      109.50                        
+Cl-CT-CT    50.0      108.50    (6-31g* opt value)  
+Cl-CT-H1    50.0      108.50    (6-31g* opt value)  
+Br-CT-CT    50.0      108.00    Junmei et al 99     
+Br-CT-H1    50.0      106.50    Junmei et al 99     
+I -CT-CT    50.0      106.00    Junmei et al,99     
+CT-CC-NA    70.0      120.00    AA his              
+CT-CC-CV    70.0      120.00    AA his              
+CT-CC-NB    70.0      120.00    AA his              
+CV-CC-NA    70.0      120.00    AA his              
+CW-CC-NA    70.0      120.00    AA his              
+CW-CC-NB    70.0      120.00    AA his              
+CT-CC-CW    70.0      120.00    AA his              
+H5-CR-NA    50.0      120.00    AA his              
+H5-CR-NB    50.0      120.00    AA his              
+NA-CR-NA    70.0      120.00    AA his              
+NA-CR-NB    70.0      120.00    AA his              
+CC-CV-H4    50.0      120.00    AA his              
+CC-CV-NB    70.0      120.00    AA his              
+H4-CV-NB    50.0      120.00    AA his              
+CC-CW-H4    50.0      120.00    AA his              
+CC-CW-NA    70.0      120.00    AA his              
+C*-CW-H4    50.0      120.00    AA trp              
+C*-CW-NA    70.0      108.70    AA trp              
+H4-CW-NA    50.0      120.00    AA his              
+CB-C*-CT    70.0      128.60    AA trp              
+CB-C*-CW    63.0      106.40    changed from 85.0  bsd on C6H6 nmodes; AA trp
+CT-C*-CW    70.0      125.00    AA trp              
+CA-CN-CB    63.0      122.70    changed from 85.0  bsd on C6H6 nmodes; AA trp
+CA-CN-NA    70.0      132.80    AA trp              
+CB-CN-NA    70.0      104.40    AA trp              
+CT-CY-NY    80.0      180.00    Junmei et al, 1999  
+CT-CZ-CZ    80.0      180.00    Junmei et al, 1999  
+CZ-CZ-HZ    50.0      180.00    Junmei et al, 1999  
+C -N -CT    50.0      121.90    AA general          
+C -N -H     50.0      120.00    AA general, gln, asn,changed based on NMA nmodes           
+CT-N -H     50.0      118.04    AA general,     changed based on NMA nmodes  
+CT-N -CT    50.0      118.00    AA pro             (DETAR JACS 99,1232)      
+H -N -H     35.0      120.00    ade,cyt,gua,gln,asn     **                   
+C -N*-CM    70.0      121.60                        
+C -N*-CT    70.0      117.60                        
+C -N*-H     50.0      119.20    changed based on NMA nmodes                  
+CB-N*-CK    70.0      105.40                        
+CB-N*-CT    70.0      125.80                        
+CB-N*-H     50.0      125.80    for unmethylated n.a. bases,chngd bsd NMA nmodes           
+CK-N*-CT    70.0      128.80                        
+CK-N*-H     50.0      128.80    for unmethylated n.a. bases,chngd bsd NMA nmodes           
+CM-N*-CT    70.0      121.20                        
+CM-N*-H     50.0      121.20    for unmethylated n.a. bases,chngd bsd NMA nmodes           
+CA-N2-H     50.0      120.00                        
+CA-N2-CT    50.0      123.20    AA arg              
+CT-N2-H     50.0      118.40    AA arg              
+H -N2-H     35.0      120.00                        
+CT-N3-H     50.0      109.50    AA lys,     changed based on NMA nmodes      
+CT-N3-CT    50.0      109.50    AA pro/nt           
+H -N3-H     35.0      109.50    AA lys, AA(end)     
+CT-NT-H     50.0      109.50    neutral amines      
+CT-NT-CT    50.0      109.50    neutral amines      
+H -NT-H     35.0      109.50    neutral amines      
+C -NA-C     70.0      126.40                        
+C -NA-CA    70.0      125.20                        
+C -NA-H     50.0      116.80    changed based on NMA nmodes                  
+CA-NA-H     50.0      118.00    changed based on NMA nmodes                  
+CC-NA-CR    70.0      120.00    AA his              
+CC-NA-H     50.0      120.00    AA his,    changed based on NMA nmodes       
+CR-NA-CW    70.0      120.00    AA his              
+CR-NA-H     50.0      120.00    AA his,    changed based on NMA nmodes       
+CW-NA-H     50.0      120.00    AA his,    changed based on NMA nmodes       
+CN-NA-CW    70.0      111.60    AA trp              
+CN-NA-H     50.0      123.10    AA trp,    changed based on NMA nmodes       
+CB-NB-CK    70.0      103.80                        
+CC-NB-CR    70.0      117.00    AA his              
+CR-NB-CV    70.0      117.00    AA his              
+C -NC-CA    70.0      120.50                        
+CA-NC-CB    70.0      112.20                        
+CA-NC-CQ    70.0      118.60                        
+CB-NC-CQ    70.0      111.00                        
+C -OH-HO    50.0      113.00    (not used in tyr anymore)                    
+CA-OH-HO    50.0      113.00    replacement in tyr  
+CT-OH-HO    55.0      108.50                        
+HO-OH-P     45.0      108.50                        
+C -OS-CT    60.0      117.00    Junmei et al, 1999  
+CM-OS-CT    60.0      117.00    Junmei et al, 1999  
+CT-OS-CT    60.0      109.50                        
+CT-OS-P    100.0      120.50                        
+P -OS-P    100.0      120.50                        
+O2-P -OH    45.0      108.23                        
+O2-P -O2   140.0      119.90                        
+O2-P -OS   100.0      108.23                        
+OH-P -OS    45.0      102.60                        
+OS-P -OS    45.0      102.60                        
+CT-S -CT    62.0       98.90    AA met              
+CT-S -S     68.0      103.70    AA cyx             (SCHERAGA  JPC 79,1428)   
+CT-SH-HS    43.0       96.00    changed from 44.0 based on methanethiol nmodes             
+HS-SH-HS    35.0       92.07    AA cys              
+CB-NB-LP   150.0       126.0    NA                  
+CC-NB-LP   150.0       126.0    his,NA              
+CK-NB-LP   150.0       126.0    NA                  
+CR-NB-LP   150.0       126.0    his,NA              
+CV-NB-LP   150.0       126.0    his,NA              
+C -NC-LP   150.0       120.0    NA                  
+CA-NC-LP   150.0       120.0    NA                  
+CB-NC-LP   150.0       120.0    NA                  
+CQ-NC-LP   150.0       120.0    NA                  
+CT-N3-LP   150.0       109.5    in neutral lysine   
+H -N3-LP   150.0       109.5    in neutral lysine   
+CT-NT-LP   150.0       109.5                        
+H -NT-LP   150.0       109.5                        
+C -O -LP   150.0       120.0                        
+LP-O -LP   150.0       120.0                        
+C -OH-LP   150.0       120.0                        
+CT-OH-LP   150.0       109.5                        
+HO-OH-LP   150.0       109.5                        
+LP-OH-LP   150.0       109.5                        
+C -OS-LP   150.0       109.5                        
+CM-OS-LP   150.0       109.5    methyl vinyl ether  
+CT-OS-LP   150.0       109.5                        
+LP-OS-LP   150.0       109.5                        
+CT-S -LP   150.0        90.0    cys,cyx,met         
+CT-SH-LP   150.0        90.0    cys,cyx,met         
+P -OS-LP   150.0       109.5    NA                  
+LP-S -LP   150.0       180.0    cys,cyx,met         
+LP-SH-LP   150.0       180.0    cys,cyx,met         
+HS-SH-LP   150.0        90.0    cys                 
+NB-FE-NP    50.0        90.0                        
+NB-FE-NO    50.0        90.0                        
+NB-FE-LC     0.0        90.0                        
+NB-FE-LO     0.0        90.0                        
+NP-FE-NP     0.0        90.0                        
+NO-FE-NO     0.0        90.0                        
+NO-FE-NP    50.0        90.0                        
+NO-FE-LC    45.0        90.0                        
+NO-FE-LO    45.0        90.0                        
+NP-FE-LC    45.0        90.0                        
+NP-FE-LO    45.0        90.0                        
+FE-NP-CC    30.0       127.4                        
+FE-NO-CC    30.0       127.4                        
+NO-CC-CB    70.0       110.3                        
+NP-CC-CB    70.0       110.3                        
+NO-CC-CD    70.0       125.5                        
+NP-CC-CD    70.0       125.5                        
+CC-NP-CC    70.0       105.4                        
+CC-NO-CC    70.0       105.4                        
+CC-CB-CB    70.0       107.0                        
+CC-CD-CC    70.0       124.1                        
+CB-CC-CD    70.0       125.4                        
+CC-CB-CT    70.0       124.9                        
+CB-CB-CT    70.0       128.2                        
+CC-CD-HC    30.0       118.0                        
+CR-NB-FE     0.0       110.0                        
+CV-NB-FE     0.0       110.0                        
+CB-CT-HC    35.0       109.5                        
+CB-CB-CY    70.0       128.2                        
+CB-CY-HC    35.0       120.0                        
+CB-CY-CX    70.0       120.0                        
+CY-CX-HC    35.0       120.0                        
+CC-CB-CY    70.0       124.9                        
+CX-CY-HC    35.0       120.0                        
+CB-CT-CT    63.0       114.0                        
+HC-CX-HC    35.0       120.0                        
+FE-LC-LO    35.0       180.0                        
+FE-LO-LO    35.0       135.0                        
+LP-SH-LP     6.0       160.0                        
+O -CB-CC    70.0       124.9                        
+O -CB-CF    70.0       128.2                        
+CC-CF-CB    70.0       102.0                        
+CB-CF-CT    63.0       113.10                       
+CC-CF-CT    63.0       113.10                       
+CC-CB-CF    70.0       104.0                        
+NO-CC-CF    70.0       115.3 
+NP-CC-CF    70.0       115.3                        
+CD-CC-CF    70.0       120.0
+CF-CT-HC    50.0       109.50
+CF-CT-C     63.0       111.10                       
+FE-NB-O     35.0       141.0  No2  u NO
+NB-FE-NB     0.0         0.0  no2  u NO
+O -NB-O     80.0       111.0  no2
+FE-OX-OY    35.0       115.0  peroxinitrito
+OX-OY-NX   100.0       106.9  peroxy
+OY-NX-OZ   100.0       108.0  peroxci
+Fe-O1-O2    35.0       121.0  Marce O2 del HEO           
+CB-NA-H     50.0       120.0  biopterina
+CT-NA-H     50.0       120.0  biopterina
+NA-C -O     70.0       120.0  biopterina
+CB-C -O     70.0       120.0  biopterina
+NA-CT-H1    50.0       109.5  biopterina
+NA-CB-C     70.0       120.0  biopterina
+NA-CB-NC    70.0       120.0  biopterina
+CB-NA-CT    70.0       118.0  biopterina
+SG-Zn-SG    70.0       109.5  ZN en NOS
+o -c -o      78.170  130.380
+c2-ce-c      65.820  120.420
+ce-c -o      69.270  122.920
+os-ce-c2     71.040  121.890
+os-ce-c      69.050  113.780
+c3-os-ce     62.850  115.700
+c2-c3-os     68.450  108.480
+ce-c2-c3     64.190  123.020
+ce-ce-c      63.460  120.890
+ce-ce-c2     65.730  123.080
+c2-c3-c3     63.530  111.440
+c3-c3-os     67.780  108.420
+oh-c3-c2     68.180  110.210
+oh-c3-c3     67.720  109.430
+ha-c2-ha     38.020  117.650
+ce-c2-ha     49.570  121.190
+h1-c3-os     50.840  108.820
+ha-c2-c3     45.660  117.300
+c2-c3-h1     47.030  110.460
+ha-ce-ce     47.500  115.900
+c2-ce-ha     49.560  121.100
+h1-c3-c3     46.360  110.070
+ho-oh-c3     47.090  108.160
+oh-c3-h1     50.970  109.880
+dihes    
+215
+X -X -X -X    1    0.00        180.0             0. 
+X -C -C -X    4   14.50        180.0             2.         Junmei et al, 1999             
+X -C -CA-X    4   14.50        180.0             2.         intrpol.bsd.on C6H6            
+X -C -CB-X    4   12.00        180.0             2.         intrpol.bsd.on C6H6            
+X -C -CM-X    4    8.70        180.0             2.         intrpol.bsd.on C6H6            
+X -C -CT-X    6    0.00          0.0             2.         JCC,7,(1986),230 
+X -C -N -X    4   10.00        180.0             2.         AA,NMA           
+X -C -N*-X    4    5.80        180.0             2.         JCC,7,(1986),230 
+X -C -NA-X    4    5.40        180.0             2.         JCC,7,(1986),230 
+X -C -NC-X    2    8.00        180.0             2.         JCC,7,(1986),230 
+X -C -O -X    4   11.20        180.0             2.         Junmei et al, 1999             
+X -C -OH-X    2    4.60        180.0             2.         Junmei et al, 1999             
+X -C -OS-X    2    5.40        180.0             2.         Junmei et al, 1999             
+X -CA-CA-X    4   14.50        180.0             2.         intrpol.bsd.on C6H6            
+X -CA-CB-X    4   14.00        180.0             2.         intrpol.bsd.on C6H6            
+X -CA-CM-X    4   10.20        180.0             2.         intrpol.bsd.on C6H6            
+X -CA-CN-X    4   14.50        180.0             2.         reinterpolated 93'             
+X -CA-CT-X    6    0.00          0.0             2.         JCC,7,(1986),230 
+X -CA-N2-X    4    9.60        180.0             2.         reinterpolated 93'             
+X -CA-NA-X    4    6.00        180.0             2.         JCC,7,(1986),230 
+X -CA-NC-X    2    9.60        180.0             2.         JCC,7,(1986),230 
+X -CA-OH-X    2    1.80        180.0             2.         Junmei et al, 99 
+X -CB-CB-X    4   21.80        180.0             2.         intrpol.bsd.on C6H6            
+X -CB-CN-X    4   12.00        180.0             2.         reinterpolated 93'             
+X -CB-N*-X    4    6.60        180.0             2.         JCC,7,(1986),230 
+X -CB-NB-X    2    5.10        180.0             2.         JCC,7,(1986),230 
+X -CB-NC-X    2    8.30        180.0             2.         JCC,7,(1986),230 
+X -CC-CT-X    6    0.00          0.0             2.         JCC,7,(1986),230 
+X -CC-CV-X    4   20.60        180.0             2.         intrpol.bsd.on C6H6            
+X -CC-CW-X    4   21.50        180.0             2.         intrpol.bsd.on C6H6            
+X -CC-NA-X    4    5.60        180.0             2.         JCC,7,(1986),230 
+X -CC-NB-X    2    4.80        180.0             2.         JCC,7,(1986),230 
+X -CD-CD-X    4    4.00        180.0             2.         Junmei et al, 1999             
+X -CD-CT-X    6    0.00          0.0             2.         Junmei et al, 1999             
+X -CD-CM-X    4   26.60        180.0             2.         Junmei et al, 1999             
+X -CK-N*-X    4    6.80        180.0             2.         JCC,7,(1986),230 
+X -CK-NB-X    2   20.00        180.0             2.         JCC,7,(1986),230 
+X -CM-CM-X    4   26.60        180.0             2.         intrpol.bsd.on C6H6            
+X -CM-CT-X    6    0.00          0.0             3.         JCC,7,(1986),230 
+X -CM-N*-X    4    7.40        180.0             2.         JCC,7,(1986),230 
+X -CM-OS-X    2    2.10        180.0             2.         Junmei et al, 1999             
+X -CN-NA-X    4    6.10        180.0             2.         reinterpolated 93'             
+X -CQ-NC-X    2   13.60        180.0             2.         JCC,7,(1986),230 
+X -CT-CT-X    9    1.40          0.0             3.         JCC,7,(1986),230 
+X -CT-CY-X    3    0.00          0.0             1.         Junmei et al, 1999             
+X -CT-CZ-X    3    0.00          0.0             1.         Junmei et al, 1999             
+X -CT-N -X    6    0.00          0.0             2.         JCC,7,(1986),230 
+X -CT-N*-X    6    0.00          0.0             2.         JCC,7,(1986),230 
+X -CT-N2-X    6    0.00          0.0             3.         JCC,7,(1986),230 
+X -CT-NT-X    6    1.80          0.0             3.         Junmei et al, 1999             
+X -CT-N3-X    9    1.40          0.0             3.         JCC,7,(1986),230 
+X -CT-OH-X    3    0.50          0.0             3.         JCC,7,(1986),230 
+X -CT-OS-X    3    1.15          0.0             3.         JCC,7,(1986),230 
+X -CT-S -X    3    1.00          0.0             3.         JCC,7,(1986),230 
+X -CT-SH-X    3    0.75          0.0             3.         JCC,7,(1986),230 
+X -C*-CB-X    4    6.70        180.0             2.         intrpol.bsd.onC6H6aa           
+X -C*-CT-X    6    0.00          0.0             2.         JCC,7,(1986),230 
+X -C*-CW-X    4   26.10        180.0             2.         intrpol.bsd.on C6H6            
+X -CR-NA-X    4    9.30        180.0             2.         JCC,7,(1986),230 
+X -CR-NB-X    2   10.00        180.0             2.         JCC,7,(1986),230 
+X -CV-NB-X    2    4.80        180.0             2.         JCC,7,(1986),230 
+X -CW-NA-X    4    6.00        180.0             2.         JCC,7,(1986),230 
+X -OH-P -X    3    0.75          0.0             3.         JCC,7,(1986),230 
+X -OS-P -X    3    0.75          0.0             3.         JCC,7,(1986),230 
+X -NB-FE-X    1    0.00          0.0             2.  dhe marce1
+X -NO-FE-X    1    0.00        180.0             2.  dhe marce2
+X -NP-FE-X    1    0.00        180.0             2.  dhe marce3
+X -NO-CC-X    4    5.70        180.0             2.  dhe marce4
+X -NP-CC-X    4    5.70        180.0             2.  dhe marce5
+X -CC-CB-X    4    3.15        180.0             2.  dhe marce6
+X -CB-CB-X    4   21.50        180.0             2.  dhe marce7
+X -CD-CC-X    4    7.90        180.0             2.  dhe marce8
+X -CB-CT-X    1    0.00        180.0             2.  dhe marce9
+X -CB-CY-X    4    0.00        180.0             2.  dhe marce10
+X -CY-CX-X    4   30.00        180.0             2.  dhe marce11
+X -FE-LO-X    1    0.0         180.0             2.  dhe marce12 
+X -CT-CF-X    9    1.40          0.0             3.  dhe marce13  
+X -CF-CB-X    2    0.0           0.0             1.  dhe marce13
+X -CF-CC-X    2    0.0           0.0             1.  dhe marce13
+N -CT-C -N    1    1.700       180.000          -1. 
+N -CT-C -N    1    2.000       180.000           2. 
+C -N -CT-C    1    0.850       180.000          -2. 
+C -N -CT-C    1    0.800         0.000           1. 
+CT-CT-N -C    1    0.50        180.0            -4.         phi,psi,parm94   
+CT-CT-N -C    1    0.15        180.0            -3.         phi,psi,parm94   
+CT-CT-N -C    1    0.53          0.0             1.         phi,psi,parm94   
+CT-CT-C -N    1    0.100         0.0            -4.         phi,psi,parm94   
+CT-CT-C -N    1    0.07          0.0             2.         phi,psi,parm94   
+H -N -C -O    1    2.50        180.0            -2.         JCC,7,(1986),230 
+H -N -C -O    1    2.00          0.0             1.         J.C.cistrans-NMA DE            
+CT-S -S -CT   1    3.50          0.0            -2.         JCC,7,(1986),230 
+CT-S -S -CT   1    0.60          0.0             3.         JCC,7,(1986),230 
+OH-P -OS-CT   1    0.25          0.0            -3.         JCC,7,(1986),230 
+OH-P -OS-CT   1    1.20          0.0             2.         gg&gt ene.631g*/mp2            
+OS-P -OS-CT   1    0.25          0.0            -3.         JCC,7,(1986),230 
+OS-P -OS-CT   1    1.20          0.0             2.         gg&gt ene.631g*/mp2            
+H1-CT-C -O    1    0.80          0.0            -1.         Junmei et al, 1999             
+H1-CT-C -O    1    0.08        180.0             3.         Junmei et al, 1999             
+HC-CT-C -O    1    0.80          0.0            -1.         Junmei et al, 1999             
+HC-CT-C -O    1    0.08        180.0             3.         Junmei et al, 1999             
+HC-CT-CT-HC   1    0.15          0.0             3.         Junmei et al, 1999             
+HC-CT-CT-CT   1    0.16          0.0             3.         Junmei et al, 1999             
+HC-CT-CM-CM   1    0.38        180.0            -3.         Junmei et al, 1999             
+HC-CT-CM-CM   1    1.15          0.0             1.         Junmei et al, 1999             
+HO-OH-CT-CT   1    0.16          0.0            -3.         Junmei et al, 1999             
+HO-OH-CT-CT   1    0.25          0.0             1.         Junmei et al, 1999             
+HO-OH-CT-CA   1    0.16          0.0            -3.         dihe for pre
+HO-OH-CT-CA   1    0.25          0.0             1.         dihe for pre
+HO-OH-C -O    1    2.30        180.0            -2.         Junmei et al, 1999             
+HO-OH-C -O    1    1.90          0.0             1.         Junmei et al, 1999             
+CM-CM-C -O    1    2.175       180.0            -2.         Junmei et al, 1999             
+CM-CM-C -O    1    0.30          0.0             3.         Junmei et al, 1999             
+CT-CM-CM-CT   1    6.65        180.0            -2.         Junmei et al, 1999             
+CT-CM-CM-CT   1    1.90        180.0             1.         Junmei et al, 1999             
+CT-CT-CT-CT   1    0.18          0.0            -3.         Junmei et al, 1999             
+CT-CT-CT-CT   1    0.25        180.0            -2.         Junmei et al, 1999             
+CT-CT-CT-CT   1    0.20        180.0             1.         Junmei et al, 1999             
+CT-CT-NT-CT   1    0.30          0.0            -3.         Junmei et al, 1999             
+CT-CT-NT-CT   1    0.48        180.0             2.         Junmei et al, 1999             
+CT-CT-OS-CT   1    0.383         0.0            -3. 
+CT-CT-OS-CT   1    0.1         180.0             2. 
+CT-CT-OS-C    1    0.383         0.0            -3.         Junmei et al, 1999             
+CT-CT-OS-C    1    0.80        180.0             1.         Junmei et al, 1999             
+CT-OS-CT-OS   1    0.10          0.0            -3.         Junmei et al, 1999             
+CT-OS-CT-OS   1    0.85        180.0            -2.         Junmei et al, 1999             
+CT-OS-CT-OS   1    1.35        180.0             1.         Junmei et al, 1999             
+CT-OS-CT-N*   1    0.383         0.0            -3.         parm98.dat, TC,PC,PAK          
+CT-OS-CT-N*   1    0.65          0.0             2.         Piotr et al.     
+CT-CZ-CZ-HZ   1    0.00          0.0             1.         Junmei et al, 1999             
+O -C -OS-CT   1    2.70        180.0            -2.         Junmei et al, 1999             
+O -C -OS-CT   1    1.40        180.0             1.         Junmei et al, 1999             
+OS-CT-N*-CK   1    0.00        000.0            -2.         parm98, TC,PC,PAK
+OS-CT-N*-CK   1    2.50          0.0             1.         parm98, TC,PC,PAK
+OS-CT-N*-CM   1    0.00        000.0            -2.         parm98, TC,PC,PAK
+OS-CT-N*-CM   1    2.50          0.0             1.         parm98, TC,PC,PAK
+OS-CT-CT-OS   1    0.144         0.0            -3.         parm98, TC,PC,PAK
+OS-CT-CT-OS   1    1.175         0.0             2.         Piotr et al.     
+OS-CT-CT-OH   1    0.144         0.0            -3.         parm98, TC,PC,PAK
+OS-CT-CT-OH   1    1.175         0.0             2.         parm98, TC,PC,PAK
+OH-CT-CT-OH   1    0.144         0.0            -3.         parm98, TC,PC,PAK
+OH-CT-CT-OH   1    1.175         0.0             2.         parm98, TC,PC,PAK
+F -CT-CT-F    1    1.20        180.0             1.         Junmei et al, 1999             
+Cl-CT-CT-Cl   1    0.45        180.0             1.         Junmei et al, 1999             
+Br-CT-CT-Br   1    0.00        180.0             1.         Junmei et al, 1999             
+H1-CT-CT-OS   1    0.25          0.0             1.         Junmei et al, 1999             
+H1-CT-CT-OH   1    0.25          0.0             1.         Junmei et al, 1999             
+H1-CT-CT-F    1    0.19          0.0             1.         Junmei et al, 1999             
+H1-CT-CT-Cl   1    0.25          0.0             1.         Junmei et al, 1999             
+H1-CT-CT-Br   1    0.55          0.0             1.         Junmei et al, 1999             
+HC-CT-CT-OS   1    0.25          0.0             1.         Junmei et al, 1999             
+HC-CT-CT-OH   1    0.25          0.0             1.         Junmei et al, 1999             
+HC-CT-CT-F    1    0.19          0.0             1.         Junmei et al, 1999             
+HC-CT-CT-Cl   1    0.25          0.0             1.         Junmei et al, 1999             
+HC-CT-CT-Br   1    0.55          0.0             1.         Junmei et al, 1999             
+H1-CT-NT-LP   1    0.000         0.000           3.000                       
+CT-CT-NT-LP   1    0.000         0.000           3.000                       
+CT-C -N -LP   1    0.000       180.000           2.000                       
+O -C -N -LP   1    0.000       180.000           2.000                       
+H1-CT-OH-LP   1    0.000         0.000           3.000                       
+CT-CT-OH-LP   1    0.000         0.000           3.000                       
+H1-CT-OS-LP   1    0.000         0.000           3.000                       
+H2-CT-OS-LP   1    0.000         0.000           3.000                       
+CT-CT-OS-LP   1    0.000         0.000           3.000                       
+CM-CM-OS-LP   1    0.000       180.000           2.000                       
+HA-CM-OS-LP   1    0.000       180.000           2.000                       
+H4-CM-OS-LP   1    0.000       180.000           2.000                       
+CD-CC-CF-CB   4    3.15        180.0             2.             DHE(marce)
+NP-CC-CF-CB   4    3.15        180.0             2.             DHE(marce)
+NO-CC-CF-CB   4    3.15        180.0             2.             DHE(marce)
+CC-CB-CF-CC   4    3.15        180.0             2.             DHE(marce)
+O -CB-CF-CC   4    3.15        180.0             2.             DHE(marce)
+OX-OY-NX-OZ   1    3.00        180.0             1.             peroxi     
+c2-ce-c -o    1    2.17500000  180.000           2.0    SCEE=1.2 SCNB=2.0
+os-ce-c -o    1    2.17500000  180.000           2.0    SCEE=1.2 SCNB=2.0
+c3-os-ce-c2   1    1.05000000  180.000           2.0    SCEE=1.2 SCNB=2.0
+c3-os-ce-c    1    1.05000000  180.000           2.0    SCEE=1.2 SCNB=2.0
+c2-c3-os-ce   1    0.38333333    0.000           3.0    SCEE=1.2 SCNB=2.0
+c -ce-c2-c3   1    6.65000000  180.000           2.0    SCEE=1.2 SCNB=2.0
+ce-c2-c3-os   1    0.00000000    0.000           2.0    SCEE=1.2 SCNB=2.0
+ce-c2-c3-c3   1    0.00000000    0.000           2.0    SCEE=1.2 SCNB=2.0
+ce-ce-c -o    1    2.17500000  180.000           2.0    SCEE=1.2 SCNB=2.0
+ce-ce-c2-c3   1    6.65000000  180.000           2.0    SCEE=1.2 SCNB=2.0
+c2-c3-c3-c2   1    0.15555556    0.000           3.0    SCEE=1.2 SCNB=2.0
+c2-c3-c3-os   1    0.15555556    0.000           3.0    SCEE=1.2 SCNB=2.0
+c2-ce-ce-c    1    1.00000000  180.000           2.0    SCEE=1.2 SCNB=2.0
+c2-ce-ce-c2   1    1.00000000  180.000           2.0    SCEE=1.2 SCNB=2.0
+c3-c3-os-ce   1    0.38333333    0.000           3.0    SCEE=1.2 SCNB=2.0
+oh-c3-c2-ce   1    0.00000000    0.000           2.0    SCEE=1.2 SCNB=2.0
+oh-c3-c3-c2   1    0.15555556    0.000           3.0    SCEE=1.2 SCNB=2.0
+oh-c3-c3-os   1    1.17500000    0.000          -2.0    SCEE=1.2 SCNB=2.0
+oh-c3-c3-os   1    0.14400000    0.000           3.0    SCEE=1.2 SCNB=2.0
+ha-c2-ce-c    1    6.65000000  180.000           2.0    SCEE=1.2 SCNB=2.0
+os-ce-c2-ha   1    6.65000000  180.000           2.0    SCEE=1.2 SCNB=2.0
+h1-c3-os-ce   1    0.38333333    0.000           3.0    SCEE=1.2 SCNB=2.0
+ha-c2-c3-h1   1    0.00000000    0.000           2.0    SCEE=1.2 SCNB=2.0
+ha-c2-c3-os   1    0.00000000    0.000           2.0    SCEE=1.2 SCNB=2.0
+ce-c2-c3-h1   1    0.00000000    0.000           2.0    SCEE=1.2 SCNB=2.0
+ha-ce-ce-c    1    1.00000000  180.000           2.0    SCEE=1.2 SCNB=2.0
+ha-ce-ce-c2   1    1.00000000  180.000           2.0    SCEE=1.2 SCNB=2.0
+ce-ce-c2-ha   1    6.65000000  180.000           2.0    SCEE=1.2 SCNB=2.0
+ha-c2-c3-c3   1    0.00000000    0.000           2.0    SCEE=1.2 SCNB=2.0
+ha-c2-ce-ha   1    6.65000000  180.000           2.0    SCEE=1.2 SCNB=2.0
+ha-c2-ce-ha   1    6.65000000  180.000           2.0    SCEE=1.2 SCNB=2.0
+c2-c3-c3-h1   1    0.15555556    0.000           3.0    SCEE=1.2 SCNB=2.0
+h1-c3-c3-h1   1    0.15555556    0.000           3.0    SCEE=1.2 SCNB=2.0
+h1-c3-c3-os   1    0.25000000    0.000          -1.0    SCEE=1.2 SCNB=2.0
+h1-c3-c3-os   1    0.00000000    0.000           3.0    SCEE=1.2 SCNB=2.0
+c3-c2-ce-ha   1    6.65000000  180.000           2.0    SCEE=1.2 SCNB=2.0
+ho-oh-c3-h1   1    0.16666667    0.000           3.0    SCEE=1.2 SCNB=2.0
+ho-oh-c3-c2   1    0.16666667    0.000           3.0    SCEE=1.2 SCNB=2.0
+ho-oh-c3-c3   1    0.25000000    0.000          -1.0    SCEE=1.2 SCNB=2.0
+ho-oh-c3-c3   1    0.16000000    0.000           3.0    SCEE=1.2 SCNB=2.0
+oh-c3-c2-ha   1    0.00000000    0.000           2.0    SCEE=1.2 SCNB=2.0
+oh-c3-c3-h1   1    0.25000000    0.000          -1.0    SCEE=1.2 SCNB=2.0
+oh-c3-c3-h1   1    0.00000000    0.000           3.0    SCEE=1.2 SCNB=2.0
+imps     
+53
+X -X -X -X    1    0.0           0.              0. 
+X -X -CC-X    1    1.0         180.              2. 
+X -X -CB-X    1    1.0         180.              2. 
+X -X -NP-X    1    1.0         180.              2. 
+X -X -NO-X    1    1.0         180.              2. 
+X -X -CF-X    1    1.0         180.              2. 
+X -X -C -O    1   10.5         180.              2.           JCC,7,(1986),230             
+X -O2-C -O2   1   10.5         180.              2.           JCC,7,(1986),230             
+X -X -N -H    1    1.0         180.              2.           JCC,7,(1986),230             
+X -X -N2-H    1    1.0         180.              2.           JCC,7,(1986),230             
+X -X -NA-H    1    1.0         180.              2.           JCC,7,(1986),230             
+X -N2-CA-N2   1   10.5         180.              2.           JCC,7,(1986),230             
+X -CT-N -CT   1    1.0         180.              2.           JCC,7,(1986),230             
+X -X -CA-HA   1    1.1         180.              2.           bsd.on C6H6 nmodes           
+X -X -CW-H4   1    1.1         180.              2. 
+X -X -CR-H5   1    1.1         180.              2. 
+X -X -CV-H4   1    1.1         180.              2. 
+X -X -CQ-H5   1    1.1         180.              2. 
+X -X -CK-H5   1    1.1         180.              2. 
+X -X -CM-H4   1    1.1         180.              2. 
+X -X -CM-HA   1    1.1         180.              2. 
+X -X -CA-H4   1    1.1         180.              2.           bsd.on C6H6 nmodes           
+X -X -CA-H5   1    1.1         180.              2.           bsd.on C6H6 nmodes           
+CA-CA-CA-C    1    1.0         180.              2.   
+CK-CB-N*-CT   1    1.0         180.              2. 
+CM-C -N*-CT   1    1.0         180.              2.           dac guess, 9/94
+CM-C -CM-CT   1    1.1         180.              2. 
+CT-O -C -OH   1   10.5         180.              2. 
+NA-CV-CC-CT   1    1.1         180.              2. 
+NB-CW-CC-CT   1    1.1         180.              2. 
+NA-CW-CC-CT   1    1.1         180.              2. 
+CW-CB-C*-CT   1    1.1         180.              2. 
+CA-CA-CA-CT   1    1.1         180.              2. 
+C -CM-CM-CT   1    1.1         180.              2.           dac guess, 9/94
+NC-CM-CA-N2   1    1.1         180.              2.           dac guess, 9/94
+CB-NC-CA-N2   1    1.1         180.              2.           dac, 10/94     
+NA-NC-CA-N2   1    1.1         180.              2.           dac, 10/94     
+CA-CA-C -OH   1    1.1         180.              2.           (not used in tyr!)           
+CA-CA-CA-OH   1    1.1         180.              2.           in tyr         
+H5-O -C -OH   1    1.1         180.              2.           Junmei et al.1999            
+H5-O -C -OS   1    1.1         180.              2. 
+CM-CT-CM-HA   1    1.1         180.              2.           Junmei et al.1999            
+CA-CA-CA-Br   1    1.1         180.              2.           Junmei et al.1999            
+CM-H4-C -O    1    1.1         180.              2.           Junmei et al.1999            
+C -CT-N -H    1    1.1         180.              2.           Junmei et al.1999            
+C -CT-N -O    1    1.1         180.              2.           Junmei et al.1999            
+NC-NA-CA-N2   1    1.1         180.              2.           biopterina          
+ce-o -c -o    1    1.10000000  180.000           2.0
+c -c2-ce-os   1    1.10000000  180.000           2.0
+c -c2-ce-ce   1    1.10000000  180.000           2.0
+ce-ha-c2-ha   1    1.10000000  180.000           2.0
+c3-ce-c2-ha   1    1.10000000  180.000           2.0
+c2-ce-ce-ha   1    1.10000000  180.000           2.0
+residues             
+101
+PRE 24
+ "O1" "oh" 0 1 131072 1 8 -0.627601
+ "H6" "ho" 0 1 131072 2 1 0.346091
+ "C4" "c3" 0 1 131072 3 6 0.229088
+ "H3" "h1" 0 1 131072 4 1 0.053110
+ "C3" "c2" 0 1 131072 5 6 -0.247175
+ "H2" "ha" 0 1 131072 6 1 0.111271
+ "C2" "ce" 0 1 131072 7 6 -0.182359
+ "H1" "ha" 0 1 131072 8 1 0.125304
+ "C1" "ce" 0 1 131072 9 6 0.029509
+ "C9" "c" 0 1 131072 10 6 0.781133
+ "O3" "o" 0 1 131072 11 8 -0.798424
+ "O4" "o" 0 1 131072 12 8 -0.798424
+ "C6" "c2" 0 1 131072 13 6 -0.276318
+ "H5" "ha" 0 1 131072 14 1 0.135174
+ "C5" "c3" 0 1 131072 15 6 0.129898
+ "H4" "h1" 0 1 131072 16 1 0.134544
+ "O2" "os" 0 1 131072 17 8 -0.296999
+ "C7" "ce" 0 1 131072 18 6 0.144803
+ "C8" "c2" 0 1 131072 19 6 -0.586079
+ "H7" "ha" 0 1 131072 20 1 0.156189
+ "H8" "ha" 0 1 131072 21 1 0.156189
+ "C10" "c" 0 1 131072 22 6 0.823105
+ "O6" "o" 0 1 131072 23 8 -0.771015
+ "O5" "o" 0 1 131072 24 8 -0.771015
+NMET 19 
+ "N" "N3" 0 1 131072 1 7 0.190200
+ "H1" "H" 0 1 131072 2 1 0.205600
+ "H2" "H" 0 1 131072 3 1 0.205600
+ "H3" "H" 0 1 131072 4 1 0.205600
+ "CA" "CT" 0 1 131072 5 6 -0.037700
+ "HA" "HP" 0 1 131072 6 1 0.051600
+ "CB" "CT" 0 1 131072 7 6 0.082800
+ "HB2" "HC" 0 1 131072 8 1 -0.006000
+ "HB3" "HC" 0 1 131072 9 1 -0.006000
+ "CG" "CT" 0 1 131072 10 6 -0.016200
+ "HG2" "H1" 0 1 131072 11 1 0.072200
+ "HG3" "H1" 0 1 131072 12 1 0.072200
+ "SD" "S" 0 1 131072 13 16 -0.238100
+ "CE" "CT" 0 1 131072 14 6 -0.058500
+ "HE1" "H1" 0 1 131072 15 1 0.058300
+ "HE2" "H1" 0 1 131072 16 1 0.058300
+ "HE3" "H1" 0 1 131072 17 1 0.058300
+ "C" "C" 0 1 131072 18 6 0.683700
+ "O" "O" 0 1 131072 19 8 -0.581900
+PERO 4
+ "OPE1" "OX" 0 1 131072 1  6  -0.65
+ "OPE2" "OY" 0 1 131072 2  6  -0.10
+ "NPE3" "NX" 0 1 131072 3  6  0.125
+ "OPE4" "OZ" 0 1 131072 4  6  -0.37
+SOD 1
+"Na"  "Na" 0 1 131072 1 6 1.0000000  
+POT 1
+"K"  "K" 0 1 131072 1 6 1.0000000
+IODO 1
+"I"  "I" 0 1 131072 1 6 -1.000000
+CLO 1
+"Cl"  "Cl" 0 1 131072 1 6 -1.000000     
+OXI 2
+"O21" "O1" 0 1 131072 1 6 -0.17000     
+"O22" "O2" 0 1 131072 2 6 -0.37000 
+HEO 73
+ "FE" "FE" 0 1 131072 1 6  0.372
+ "NA" "NP" 0 1 131072 2 6  0.257
+ "C1A" "CC" 0 1 131072 3 6  -0.0097
+ "C2A" "CB" 0 1 131072 4 6  -0.252
+ "C3A" "CB" 0 1 131072 5 6  -0.252
+ "C4A" "CC" 0 1 131072 6 6  -0.0097
+ "CHB" "CD" 0 1 131072 7 6  -0.2234
+ "HHB" "HC" 0 1 131072 8 6  0.1638
+ "CMA" "CT" 0 1 131072 9 6  -0.1016
+ "HMA1" "HC" 0 1 131072 10 6  0.095
+ "HMA2" "HC" 0 1 131072 11 6  0.095
+ "HMA3" "HC" 0 1 131072 12 6  0.095
+ "CAA" "CT" 0 1 131072 13 6   0.056
+ "HAA1" "HC" 0 1 131072 14 6  -0.0173
+ "HAA2" "HC" 0 1 131072 15 6  -0.0173
+ "CBA" "CT" 0 1 131072 16 6   0.0136
+ "HBA1" "HC" 0 1 131072 17 6  -0.0425
+ "HBA2" "HC" 0 1 131072 18 6  -0.0425
+ "CGA" "C" 0 1 131072 19 6  0.8054
+ "O1A" "O2" 0 1 131072 20 6  -0.786
+ "O2A" "O2" 0 1 131072 21 6  -0.786
+ "NB" "NO" 0 1 131072 22 6   0.257
+ "C1B" "CC" 0 1 131072 23 6  -0.0097
+ "C2B" "CB" 0 1 131072 24 6  0.0014
+ "C3B" "CB" 0 1 131072 25 6  0.0014
+ "C4B" "CC" 0 1 131072 26 6  -0.0097
+ "CHC" "CD" 0 1 131072 27 6  -0.2234
+ "HHC" "HC" 0 1 131072 28 6  0.1638
+ "CMB" "CT" 0 1 131072 29 6  -0.14
+ "HMB1" "HC" 0 1 131072 30 6  0.06
+ "HMB2" "HC" 0 1 131072 31 6  0.06
+ "HMB3" "HC" 0 1 131072 32 6  0.06
+ "CAB" "CY" 0 1 131072 33 6  -0.2
+ "HAB" "HC" 0 1 131072 34 6  0.16
+ "CBB" "CX" 0 1 131072 35 6  -0.5
+ "HBB1" "HC" 0 1 131072 36 6  0.18
+ "HBB2" "HC" 0 1 131072 37 6  0.18
+ "NC" "NP" 0 1 131072 38 6  0.257
+ "C1C" "CC" 0 1 131072 39 6 -0.0097
+ "C2C" "CB" 0 1 131072 40 6  0.0014
+ "C3C" "CB" 0 1 131072 41 6  0.0014
+ "C4C" "CC" 0 1 131072 42 6  -0.0097
+ "CHD" "CD" 0 1 131072 43 6  -0.2234
+ "HHD" "HC" 0 1 131072 44 6  0.1638
+ "CMC" "CT" 0 1 131072 45 6  -0.14
+ "HMC1" "HC" 0 1 131072 46 6  0.06
+ "HMC2" "HC" 0 1 131072 47 6  0.06
+ "HMC3" "HC" 0 1 131072 48 6  0.06
+ "CAC" "CY" 0 1 131072 49 6  -0.2
+ "HAC" "HC" 0 1 131072 50 6  0.16
+ "CBC" "CX" 0 1 131072 51 6  -0.5
+ "HBC1" "HC" 0 1 131072 52 6  0.180
+ "HBC2" "HC" 0 1 131072 53 6  0.180
+ "ND" "NO" 0 1 131072 54 6   0.257
+ "C1D" "CC" 0 1 131072 55 6  -0.0097
+ "C2D" "CB" 0 1 131072 56 6  -0.252
+ "C3D" "CB" 0 1 131072 57 6  -0.252
+ "C4D" "CC" 0 1 131072 58 6  -0.0097
+ "CHA" "CD" 0 1 131072 59 6  -0.2234
+ "HHA" "HC" 0 1 131072 60 6  0.1638
+ "CMD" "CT" 0 1 131072 61 6  -0.1016
+ "HMD1" "HC" 0 1 131072 62 6  0.095
+ "HMD2" "HC" 0 1 131072 63 6  0.095
+ "HMD3" "HC" 0 1 131072 64 6  0.095
+ "CAD" "CT" 0 1 131072 65 6   0.056
+ "HAD1" "HC" 0 1 131072 66 6  -0.0173
+ "HAD2" "HC" 0 1 131072 67 6  -0.0173
+ "CBD" "CT" 0 1 131072 68 6   0.0136
+ "HBD1" "HC" 0 1 131072 69 6  -0.0425
+ "HBD2" "HC" 0 1 131072 70 6  -0.0425
+ "CGD" "C" 0 1 131072 71 6    0.8054
+ "O1D" "O2" 0 1 131072 72 6  -0.786
+ "O2D" "O2" 0 1 131072 73 6  -0.786
+COR 24
+ "C1"  "CT" 0 1 131072 1 6 0.210605
+ "C2"  "CT" 0 1 131072 2 6 0.135588
+ "C3"  "CA" 0 1 131072 3 6 -0.16676225
+ "C4"  "CA" 0 1 131072 4 6 -0.16676225
+ "C5"  "CA" 0 1 131072 5 6 -0.16676225
+ "C6"  "CA" 0 1 131072 6 6 -0.16676225
+ "OH"  "OH" 0 1 131072 7 6 -0.704821
+ "H2"  "H1" 0 1 131072 8 6 0.073203
+ "OE"  "OS" 0 1 131072 9 6 -0.392869
+ "H3"  "HA" 0 1 131072 10 6 0.138536
+ "CA"  "C"  0 1 131072 11 6 0.706716
+ "H5"  "HA" 0 1 131072 12 6 0.104484
+ "H6"  "HA" 0 1 131072 13 6 0.127984
+ "HOH" "HO" 0 1 131072 14 6 0.393041
+ "H1"  "H1" 0 1 131072 15 6 0.236711
+ "OA1" "O2"  0 1 131072 16 6 -0.772613
+ "OA2" "O2"  0 1 131072 17 6 -0.772613
+ "CB"  "CM" 0 1 131072 18 6 0.143387
+ "CC"  "CM" 0 1 131072 19 6 -0.544331
+ "CD"  "C"  0 1 131072 20 6 0.814966
+ "OD1" "O2"  0 1 131072 21 6 -0.8030805
+ "OD2" "O2"  0 1 131072 22 6 -0.8030805
+ "HC1" "HA" 0 1 131072 23 6 0.187618
+ "HC2" "HA" 0 1 131072 24 6 0.187618
+NO 2
+"NNO" "NB" 0 1 131072 1 7  0.14  
+"ONO" "O" 0 1 131072 2 8  -0.14
+ALAL 9
+"N" "N" 0 1 131072 1 7 -0.493700
+ "H" "H" 0 1 131072 2 1 0.301800
+ "CA" "CT" 0 1 131072 3 6 0.044800
+ "HA" "H1" 0 1 131072 4 1 0.022800
+ "CB" "CT" 0 1 131072 5 6 -0.048400
+ "HB2" "HC" 0 1 131072 6 1 0.042500
+ "HB3" "HC" 0 1 131072 7 1 0.042500
+ "C" "C" 0 1 131072 8 6 0.673100
+ "O" "O" 0 1 131072 9 8 -0.585400
+NALA 12
+"N" "N3" 0 1 131072 1 7 0.190200
+ "H1" "H" 0 1 131072 2 1 0.205600
+ "H2" "H" 0 1 131072 3 1 0.205600
+ "H3" "H" 0 1 131072 4 1 0.205600
+ "CA" "CT" 0 1 131072 5 6 0.004000
+ "HA" "HP" 0 1 131072 6 1 0.043000
+ "CB" "CT" 0 1 131072 7 6 -0.096800
+ "HB1" "HC" 0 1 131072 8 1 0.047000
+ "HB2" "HC" 0 1 131072 9 1 0.047000
+ "HB3" "HC" 0 1 131072 10 1 0.047000
+ "C" "C" 0 1 131072 11 6 0.683700
+ "O" "O" 0 1 131072 12 8 -0.581900
+DHEL 46    
+ "CMA" "CT" 0 1 131072 1  6  -0.14745 
+ "HMA1" "HC" 0 1 131072 2  6  0.04915 
+ "HMA2" "HC" 0 1 131072 3 6  0.04915 
+ "HMA3" "HC" 0 1 131072 4 6  0.04915 
+ "CAA" "CT" 0 1 131072  5 6   -0.0052 
+ "HAA1" "HC" 0 1 131072 6  6  -0.0784 
+ "HAA2" "HC" 0 1 131072 7  6  -0.0784 
+ "CBA" "CT" 0 1 131072  8 6   0.0136 
+ "HBA1" "HC" 0 1 131072 9 6  -0.0425 
+ "HBA2" "HC" 0 1 131072 10 6  -0.0425 
+ "CGA" "C" 0 1 131072  11 6  0.8054 
+ "O1A" "O2" 0 1 131072 12 6  -0.786 
+ "O2A" "O2" 0 1 131072 13 6  -0.786 
+ "CGB" "CT" 0 1 131072 14  6  -0.2324 
+ "HGB1" "HC" 0 1 131072 15 6  0.0534 
+ "HGB2" "HC" 0 1 131072  16 6  0.0534 
+ "HGB3" "HC" 0 1 131072 17 6  0.0534 
+ "CAB" "CT" 0 1 131072  18 6  -0.066 
+ "HAB1" "HC" 0 1 131072 19  6  -0.0184 
+ "HAB2" "HC" 0 1 131072 20 6  -0.0184 
+ "CBB"  "C"  0 1 131072 21 6  0.751 
+ "O1B" "O2" 0 1 131072  22 6  -0.788  
+ "O2B" "O2" 0 1 131072 23 6  -0.788   
+ "CGC" "CT" 0 1 131072 24  6  -0.2324
+ "HGC1" "HC" 0 1 131072 25 6  0.0534 
+ "HGC2" "HC" 0 1 131072 26 6  0.0534 
+ "HGC3" "HC" 0 1 131072 27  6  0.0534 
+ "CAC" "CT" 0 1 131072  28 6  -0.066 
+ "HAC1" "HC" 0 1 131072 29  6  -0.0184 
+ "HAC2" "HC" 0 1 131072 30  6  -0.0184 
+ "CBC"  "C"  0 1 131072 31  6  0.751 
+ "O1C" "O2" 0 1 131072  32 6  -0.788 
+ "O2C" "O2" 0 1 131072  33 6  -0.788 
+ "CMD" "CT" 0 1 131072  34 6  -0.14745 
+ "HMD1" "HC" 0 1 131072  35 6  0.04915 
+ "HMD2" "HC" 0 1 131072 36 6  0.04915 
+ "HMD3" "HC" 0 1 131072 37 6  0.04915 
+ "CAD" "CT" 0 1 131072  38 6  -0.0052 
+ "HAD1" "HC" 0 1 131072 39 6  -0.0784 
+ "HAD2" "HC" 0 1 131072 40 6  -0.0784 
+ "CBD" "CT" 0 1 131072   41 6  0.0136 
+ "HBD1" "HC" 0 1 131072  42 6  -0.0425 
+ "HBD2" "HC" 0 1 131072  43 6  -0.0425 
+ "CGD" "C" 0 1 131072   44 6  0.8054 
+ "O1D" "O2" 0 1 131072  45 6  -0.788 
+ "O2D" "O2" 0 1 131072  46 6  -0.788 
+DHE 77   
+ "FE" "FE" 0 1 131072 1 6  0.2312                   
+ "NA" "NP" 0 1 131072 2 6  0.1584                   
+ "C1A" "CC" 0 1 131072 3 6  -0.0097                 
+ "C2A" "CB" 0 1 131072 4 6  -0.252                  
+ "C3A" "CB" 0 1 131072 5 6  -0.252                  
+ "C4A" "CC" 0 1 131072 6 6  -0.0097                 
+ "CHA" "CD" 0 1 131072 7 6  -0.2234                 
+ "HHA" "HC" 0 1 131072 8 6  0.1638                  
+ "CMA" "CT" 0 1 131072 9 6  -0.1016                 
+ "HMA1" "HC" 0 1 131072 10 6  0.095                 
+ "HMA2" "HC" 0 1 131072 11 6  0.095                 
+ "HMA3" "HC" 0 1 131072 12 6  0.095                 
+ "CAA" "CT" 0 1 131072 13 6   0.056                 
+ "HAA1" "HC" 0 1 131072 14 6  -0.0173               
+ "HAA2" "HC" 0 1 131072 15 6  -0.0173               
+ "CBA" "CT" 0 1 131072 16 6   0.0136                
+ "HBA1" "HC" 0 1 131072 17 6  -0.0425               
+ "HBA2" "HC" 0 1 131072 18 6  -0.0425               
+ "CGA" "C" 0 1 131072 19 6  0.8054                  
+ "O1A" "O2" 0 1 131072 20 6  -0.786                 
+ "O2A" "O2" 0 1 131072 21 6  -0.786                 
+ "NB" "NO" 0 1 131072 22 6    0.1584                
+ "C1B" "CC" 0 1 131072 23 6  -0.0097                
+ "C2B" "CB" 0 1 131072 24 6   0.4946                
+ "C3B" "CF" 0 1 131072 25 6  -0.1204                
+ "C4B" "CC" 0 1 131072 26 6  -0.0097                
+ "CHB" "CD" 0 1 131072 27 6   -0.2243               
+ "HHB" "HC" 0 1 131072 28 6  0.1638                 
+ "CGB" "CT" 0 1 131072 29 6  -0.24                  
+ "HGB1" "HC" 0 1 131072 30 6  0.0534                
+ "HGB2" "HC" 0 1 131072 31 6  0.0534                
+ "HGB3" "HC" 0 1 131072 32 6  0.0534                
+ "CAB" "CT" 0 1 131072 33 6  -0.066                 
+ "HAB1" "HC" 0 1 131072 34 6  -0.0184               
+ "HAB2" "HC" 0 1 131072 35 6  -0.0184               
+ "CBB"  "C"  0 1 131072 36 6  0.751                 
+ "O1B" "O2" 0 1 131072 37 6  -0.788                 
+ "O2B" "O2" 0 1 131072 38 6  -0.788                 
+ "OMB" "O"  0 1 131072 39 6  -0.5632                
+  "NC" "NP" 0 1 131072 40 6   0.1584                
+ "C1C" "CC" 0 1 131072  41 6  -0.0097               
+ "C2C" "CB" 0 1 131072  42 6  0.4946                
+ "C3C" "CF" 0 1 131072  43 6  -0.1204               
+ "C4C" "CC" 0 1 131072  44 6  -0.0097               
+ "CHC" "CD" 0 1 131072  45 6  -0.2234               
+ "HHC" "HC" 0 1 131072  46 6  0.1638                
+ "CGC" "CT" 0 1 131072  47 6  -0.24                 
+ "HGC1" "HC" 0 1 131072 48 6  0.0534                
+ "HGC2" "HC" 0 1 131072 49 6  0.0534                
+ "HGC3" "HC" 0 1 131072 50  6  0.0534               
+ "CAC" "CT" 0 1 131072  51 6  -0.066                
+ "HAC1" "HC" 0 1 131072  52 6  -0.0184              
+ "HAC2" "HC" 0 1 131072  53 6  -0.0184              
+ "CBC"  "C"  0 1 131072  54 6  0.751                
+ "O1C" "O2" 0 1 131072  55 6  -0.788                
+ "O2C" "O2" 0 1 131072  56 6  -0.788                
+ "OMC" "O"  0 1 131072  57 6  -0.5632               
+ "ND" "NO" 0 1 131072  58 6  0.1584                 
+ "C1D" "CC" 0 1 131072 59 6  -0.0097                
+ "C2D" "CB" 0 1 131072 60 6  -0.252                 
+ "C3D" "CB" 0 1 131072 61 6  -0.252                 
+ "C4D" "CC" 0 1 131072 62 6  -0.0097                
+ "CHD" "CD" 0 1 131072 63 6  -0.2234                
+ "HHD" "HC" 0 1 131072 64 6  0.1638                 
+ "CMD" "CT" 0 1 131072 65 6  -0.1016                
+ "HMD1" "HC" 0 1 131072 66 6  0.095                 
+ "HMD2" "HC" 0 1 131072 67 6  0.095                 
+ "HMD3" "HC" 0 1 131072 68 6  0.095                 
+ "CAD" "CT" 0 1 131072  69 6  0.056                 
+ "HAD1" "HC" 0 1 131072 70 6  -0.0173               
+ "HAD2" "HC" 0 1 131072 71 6  -0.0173               
+ "CBD" "CT" 0 1 131072  72 6  0.0136                
+ "HBD1" "HC" 0 1 131072  73 6  -0.0425              
+ "HBD2" "HC" 0 1 131072  74 6  -0.0425              
+ "CGD" "C" 0 1 131072  75 6  0.8054                 
+ "O1D" "O2" 0 1 131072 76 6  -0.788                 
+ "O2D" "O2" 0 1 131072 77 6  -0.788                 
+HEC 75   
+ "FE" "FE" 0 1 131072 1 6  0.2312                   
+ "NA" "NP" 0 1 131072 2 6  0.1584                   
+ "C1A" "CC" 0 1 131072 3 6  -0.0097                 
+ "C2A" "CB" 0 1 131072 4 6  -0.252                  
+ "C3A" "CB" 0 1 131072 5 6  -0.252                  
+ "C4A" "CC" 0 1 131072 6 6  -0.0097                 
+ "CHB" "CD" 0 1 131072 7 6  -0.2234                 
+ "HHB" "HC" 0 1 131072 8 6  0.1638                  
+ "CMA" "CT" 0 1 131072 9 6  -0.1016                 
+ "HMA1" "HC" 0 1 131072 10 6  0.095                 
+ "HMA2" "HC" 0 1 131072 11 6  0.095                 
+ "HMA3" "HC" 0 1 131072 12 6  0.095                 
+ "CAA" "CT" 0 1 131072 13 6   0.056                 
+ "HAA1" "HC" 0 1 131072 14 6  -0.0173               
+ "HAA2" "HC" 0 1 131072 15 6  -0.0173               
+ "CBA" "CT" 0 1 131072 16 6   0.0136                
+ "HBA1" "HC" 0 1 131072 17 6  -0.0425               
+ "HBA2" "HC" 0 1 131072 18 6  -0.0425               
+ "CGA" "C" 0 1 131072 19 6  0.8054                  
+ "O1A" "O2" 0 1 131072 20 6  -0.786                 
+ "O2A" "O2" 0 1 131072 21 6  -0.786                 
+ "NB" "NO" 0 1 131072 22 6   0.1584                 
+ "C1B" "CC" 0 1 131072 23 6  -0.0097                
+ "C2B" "CB" 0 1 131072 24 6  0.0014                 
+ "C3B" "CB" 0 1 131072 25 6  0.0014                 
+ "C4B" "CC" 0 1 131072 26 6  -0.0097                
+ "CHC" "CD" 0 1 131072 27 6  -0.2234                
+ "HHC" "HC" 0 1 131072 28 6  0.1638                 
+ "CMB" "CT" 0 1 131072 29 6  -0.14                  
+ "HMB1" "HC" 0 1 131072 30 6  0.06                  
+ "HMB2" "HC" 0 1 131072 31 6  0.06                  
+ "HMB3" "HC" 0 1 131072 32 6  0.06                  
+ "CAB" "CT" 0 1 131072 33 6  -0.05                  
+ "HAB" "H1" 0 1 131072 34 6  0.05                   
+ "CBB" "CT" 0 1 131072 35 6  -0.18                  
+ "HBB1" "HC" 0 1 131072 36 6  0.06                  
+ "HBB2" "HC" 0 1 131072 37 6  0.06                  
+ "NC" "NP" 0 1 131072 38 6  0.1584                  
+ "C1C" "CC" 0 1 131072 39 6 -0.0097                 
+ "C2C" "CB" 0 1 131072 40 6  0.0014                 
+ "C3C" "CB" 0 1 131072 41 6  0.0014                 
+ "C4C" "CC" 0 1 131072 42 6  -0.0097                
+ "CHD" "CD" 0 1 131072 43 6  -0.2234                
+ "HHD" "HC" 0 1 131072 44 6  0.1638                 
+ "CMC" "CT" 0 1 131072 45 6  -0.14                  
+ "HMC1" "HC" 0 1 131072 46 6  0.06                  
+ "HMC2" "HC" 0 1 131072 47 6  0.06                  
+ "HMC3" "HC" 0 1 131072 48 6  0.06                  
+ "CAC" "CT" 0 1 131072 49 6  -0.05                  
+ "HAC" "H1" 0 1 131072 50 6  0.05                   
+ "CBC" "CT" 0 1 131072 51 6  -0.18                  
+ "HBC1" "HC" 0 1 131072 52 6  0.06                  
+ "HBC2" "HC" 0 1 131072 53 6  0.06                  
+ "ND" "NO" 0 1 131072 54 6   0.1584                 
+ "C1D" "CC" 0 1 131072 55 6  -0.0097                
+ "C2D" "CB" 0 1 131072 56 6  -0.252                 
+ "C3D" "CB" 0 1 131072 57 6  -0.252                 
+ "C4D" "CC" 0 1 131072 58 6  -0.0097                
+ "CHA" "CD" 0 1 131072 59 6  -0.2234                
+ "HHA" "HC" 0 1 131072 60 6  0.1638                 
+ "CMD" "CT" 0 1 131072 61 6  -0.1016                
+ "HMD1" "HC" 0 1 131072 62 6  0.095                 
+ "HMD2" "HC" 0 1 131072 63 6  0.095                 
+ "HMD3" "HC" 0 1 131072 64 6  0.095                 
+ "CAD" "CT" 0 1 131072 65 6   0.056                 
+ "HAD1" "HC" 0 1 131072 66 6  -0.0173               
+ "HAD2" "HC" 0 1 131072 67 6  -0.0173               
+ "CBD" "CT" 0 1 131072 68 6   0.0136                
+ "HBD1" "HC" 0 1 131072 69 6  -0.0425               
+ "HBD2" "HC" 0 1 131072 70 6  -0.0425               
+ "CGD" "C" 0 1 131072 71 6    0.8054                
+ "O1D" "O2" 0 1 131072 72 6  -0.786                 
+ "O2D" "O2" 0 1 131072 73 6  -0.786                 
+ "HBB3" "HC" 0 1 131072 74 6  0.06                  
+ "HBC3" "HC" 0 1 131072 75 6  0.06 	                
+HECL 46 
+ "CMA" "CT" 0 1 131072 1 6  -0.285
+ "HMA1" "HC" 0 1 131072 2 6  0.095
+ "HMA2" "HC" 0 1 131072 3  6  0.095
+ "HMA3" "HC" 0 1 131072 4 6  0.095
+ "CAA" "CT" 0 1 131072  5 6   -0.1674 
+ "HAA1" "HC" 0 1 131072 6  6  -0.0173
+ "HAA2" "HC" 0 1 131072 7 6  -0.0173
+ "CBA" "CT" 0 1 131072  8 6   0.0136
+ "HBA1" "HC" 0 1 131072 9  6  -0.0425
+ "HBA2" "HC" 0 1 131072 10 6  -0.0425
+ "CGA" "C" 0 1 131072 11 6  0.8054
+ "O1A" "O2" 0 1 131072 12 6  -0.786
+ "O2A" "O2" 0 1 131072 13 6  -0.786
+ "CMB" "CT" 0 1 131072 14 6  -0.14
+ "HMB1" "HC" 0 1 131072 15  6  0.06
+ "HMB2" "HC" 0 1 131072 16 6  0.06
+ "HMB3" "HC" 0 1 131072 17  6  0.06
+ "CAB" "CT" 0 1 131072  18 6  -0.05
+ "HAB" "H1" 0 1 131072  19 6  0.05
+ "CBB" "CT" 0 1 131072  20 6  -0.18
+ "HBB1" "HC" 0 1 131072 21  6  0.06
+ "HBB2" "HC" 0 1 131072 22 6  0.06
+ "HBB3" "HC" 0 1 131072 23 6  0.06   
+ "CMC" "CT" 0 1 131072  24 6  -0.14
+ "HMC1" "HC" 0 1 131072  25 6  0.06
+ "HMC2" "HC" 0 1 131072  26 6  0.06
+ "HMC3" "HC" 0 1 131072  27 6   0.06
+ "CAC" "CT" 0 1 131072  28 6  -0.05
+ "HAC" "H1" 0 1 131072  29 6  0.05
+ "CBC" "CT" 0 1 131072  30 6  -0.18
+ "HBC1" "HC" 0 1 1310722 31 6  0.06
+ "HBC2" "HC" 0 1 131072  32 6  0.06
+ "HBC3" "HC" 0 1 131072  33  6  0.06     
+ "CMD" "CT" 0 1 131072  34 6  -0.285
+ "HMD1" "HC" 0 1 131072  35 6  0.095
+ "HMD2" "HC" 0 1 131072  36 6  0.095
+ "HMD3" "HC" 0 1 131072  37 6  0.095
+ "CAD" "CT" 0 1 131072 38 6   -0.1674 
+ "HAD1" "HC" 0 1 131072  39 6  -0.0173
+ "HAD2" "HC" 0 1 131072 40  6  -0.0173
+ "CBD" "CT" 0 1 131072 41 6   0.0136
+ "HBD1" "HC" 0 1 131072 42  6  -0.0425
+ "HBD2" "HC" 0 1 131072 43  6  -0.0425
+ "CGD" "C" 0 1 131072   44  6    0.8054
+ "O1D" "O2" 0 1 131072 45  6  -0.786
+ "O2D" "O2" 0 1 131072 46  6  -0.786
+HEM 73   
+ "FE" "FE" 0 1 131072 1 6  0.2312                   
+ "NA" "NP" 0 1 131072 2 6  0.1584                   
+ "C1A" "CC" 0 1 131072 3 6  -0.0097                 
+ "C2A" "CB" 0 1 131072 4 6  -0.252                  
+ "C3A" "CB" 0 1 131072 5 6  -0.252                  
+ "C4A" "CC" 0 1 131072 6 6  -0.0097                 
+ "CHB" "CD" 0 1 131072 7 6  -0.2234                 
+ "HHB" "HC" 0 1 131072 8 6  0.1638                  
+ "CMA" "CT" 0 1 131072 9 6  -0.1016                 
+ "HMA1" "HC" 0 1 131072 10 6  0.095                 
+ "HMA2" "HC" 0 1 131072 11 6  0.095                 
+ "HMA3" "HC" 0 1 131072 12 6  0.095                 
+ "CAA" "CT" 0 1 131072 13 6   0.056                 
+ "HAA1" "HC" 0 1 131072 14 6  -0.0173               
+ "HAA2" "HC" 0 1 131072 15 6  -0.0173               
+ "CBA" "CT" 0 1 131072 16 6   0.0136                
+ "HBA1" "HC" 0 1 131072 17 6  -0.0425               
+ "HBA2" "HC" 0 1 131072 18 6  -0.0425               
+ "CGA" "C" 0 1 131072 19 6  0.8054                  
+ "O1A" "O2" 0 1 131072 20 6  -0.786                 
+ "O2A" "O2" 0 1 131072 21 6  -0.786                 
+ "NB" "NO" 0 1 131072 22 6   0.1584                 
+ "C1B" "CC" 0 1 131072 23 6  -0.0097                
+ "C2B" "CB" 0 1 131072 24 6  0.0014                 
+ "C3B" "CB" 0 1 131072 25 6  0.0014                 
+ "C4B" "CC" 0 1 131072 26 6  -0.0097                
+ "CHC" "CD" 0 1 131072 27 6  -0.2234                
+ "HHC" "HC" 0 1 131072 28 6  0.1638                 
+ "CMB" "CT" 0 1 131072 29 6  -0.14                  
+ "HMB1" "HC" 0 1 131072 30 6  0.06                  
+ "HMB2" "HC" 0 1 131072 31 6  0.06                  
+ "HMB3" "HC" 0 1 131072 32 6  0.06                  
+ "CAB" "CY" 0 1 131072 33 6  -0.2                   
+ "HAB" "HC" 0 1 131072 34 6  0.16                   
+ "CBB" "CX" 0 1 131072 35 6  -0.5                   
+ "HBB1" "HC" 0 1 131072 36 6  0.18                  
+ "HBB2" "HC" 0 1 131072 37 6  0.18                  
+ "NC" "NP" 0 1 131072 38 6  0.1584                  
+ "C1C" "CC" 0 1 131072 39 6 -0.0097                 
+ "C2C" "CB" 0 1 131072 40 6  0.0014                 
+ "C3C" "CB" 0 1 131072 41 6  0.0014                 
+ "C4C" "CC" 0 1 131072 42 6  -0.0097                
+ "CHD" "CD" 0 1 131072 43 6  -0.2234                
+ "HHD" "HC" 0 1 131072 44 6  0.1638                 
+ "CMC" "CT" 0 1 131072 45 6  -0.14                  
+ "HMC1" "HC" 0 1 131072 46 6  0.06                  
+ "HMC2" "HC" 0 1 131072 47 6  0.06                  
+ "HMC3" "HC" 0 1 131072 48 6  0.06                  
+ "CAC" "CY" 0 1 131072 49 6  -0.2                   
+ "HAC" "HC" 0 1 131072 50 6  0.16                   
+ "CBC" "CX" 0 1 131072 51 6  -0.5                   
+ "HBC1" "HC" 0 1 131072 52 6  0.180                 
+ "HBC2" "HC" 0 1 131072 53 6  0.180                 
+ "ND" "NO" 0 1 131072 54 6   0.1584                 
+ "C1D" "CC" 0 1 131072 55 6  -0.0097                
+ "C2D" "CB" 0 1 131072 56 6  -0.252                 
+ "C3D" "CB" 0 1 131072 57 6  -0.252                 
+ "C4D" "CC" 0 1 131072 58 6  -0.0097                
+ "CHA" "CD" 0 1 131072 59 6  -0.2234                
+ "HHA" "HC" 0 1 131072 60 6  0.1638                 
+ "CMD" "CT" 0 1 131072 61 6  -0.1016                
+ "HMD1" "HC" 0 1 131072 62 6  0.095                 
+ "HMD2" "HC" 0 1 131072 63 6  0.095                 
+ "HMD3" "HC" 0 1 131072 64 6  0.095                 
+ "CAD" "CT" 0 1 131072 65 6   0.056                 
+ "HAD1" "HC" 0 1 131072 66 6  -0.0173               
+ "HAD2" "HC" 0 1 131072 67 6  -0.0173               
+ "CBD" "CT" 0 1 131072 68 6   0.0136                
+ "HBD1" "HC" 0 1 131072 69 6  -0.0425               
+ "HBD2" "HC" 0 1 131072 70 6  -0.0425               
+ "CGD" "C" 0 1 131072 71 6    0.8054                
+ "O1D" "O2" 0 1 131072 72 6  -0.786                 
+ "O2D" "O2" 0 1 131072 73 6  -0.786                 
+HEML 44   
+ "CMA" "CT" 0 1 131072 1 6  -0.185                 
+ "HMA1" "HC" 0 1 131072 2 6  0.095                 
+ "HMA2" "HC" 0 1 131072 3 6  0.095                 
+ "HMA3" "HC" 0 1 131072 4 6  0.095                 
+ "CAA" "CT" 0 1 131072 5 6   -0.0874              
+ "HAA1" "HC" 0 1 131072 6 6  -0.0173               
+ "HAA2" "HC" 0 1 131072 7 6  -0.0173               
+ "CBA" "CT" 0 1 131072  8 6   0.0136                
+ "HBA1" "HC" 0 1 131072 9 6  -0.0425               
+ "HBA2" "HC" 0 1 131072 10 6  -0.0425               
+ "CGA" "C" 0 1 131072  11 6  0.8054                  
+ "O1A" "O2" 0 1 131072  12 6  -0.786                 
+ "O2A" "O2" 0 1 131072  13 6  -0.786                 
+ "CMB" "CT" 0 1 131072  14 6  -0.14                  
+ "HMB1" "HC" 0 1 131072  15 6  0.06                  
+ "HMB2" "HC" 0 1 131072  16 6  0.06                  
+ "HMB3" "HC" 0 1 131072  17 6  0.06                  
+ "CAB" "CY" 0 1 131072  18 6  -0.2                   
+ "HAB" "HC" 0 1 131072  19 6  0.16                   
+ "CBB" "CX" 0 1 131072  20 6  -0.5                   
+ "HBB1" "HC" 0 1 131072  21 6  0.18                  
+ "HBB2" "HC" 0 1 131072  22 6  0.18                  
+ "CMC" "CT" 0 1 131072  23 6  -0.14                  
+ "HMC1" "HC" 0 1 131072  24 6  0.06                  
+ "HMC2" "HC" 0 1 131072  25 6  0.06                  
+ "HMC3" "HC" 0 1 131072  26 6  0.06                  
+ "CAC" "CY" 0 1 131072  27 6  -0.2                   
+ "HAC" "HC" 0 1 131072  28 6  0.16                   
+ "CBC" "CX" 0 1 131072  29 6  -0.5                   
+ "HBC1" "HC" 0 1 131072  30 6  0.180                 
+ "HBC2" "HC" 0 1 131072  31 6  0.180                 
+ "CMD" "CT" 0 1 131072  32 6  -0.185                
+ "HMD1" "HC" 0 1 131072  33 6  0.095                 
+ "HMD2" "HC" 0 1 131072  34 6  0.095                 
+ "HMD3" "HC" 0 1 131072  35 6  0.095                 
+ "CAD" "CT" 0 1 131072  36 6   -0.0874               
+ "HAD1" "HC" 0 1 131072  37 6  -0.0173               
+ "HAD2" "HC" 0 1 131072  38 6  -0.0173               
+ "CBD" "CT" 0 1 131072  39 6   0.0136                
+ "HBD1" "HC" 0 1 131072  40 6  -0.0425               
+ "HBD2" "HC" 0 1 131072  41 6  -0.0425               
+ "CGD" "C" 0 1 131072  42 6    0.8054                
+ "O1D" "O2" 0 1 131072  43 6  -0.786                 
+ "O2D" "O2" 0 1 131072  44 6  -0.786                 
+ACE 6    
+ "HH31" "HC" 0 1 131072 1 1 0.143700                
+ "CH3" "CT" 0 1 131072 2 6 -0.518800                
+ "HH32" "HC" 0 1 131072 3 1 0.143700                
+ "HH33" "HC" 0 1 131072 4 1 0.143700                
+ "C" "C" 0 1 131072 5 6 0.673100                    
+ "O" "O" 0 1 131072 6 8 -0.585400                   
+NME 6    
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CH3" "CT" 0 1 131072 3 6 -0.007600                
+ "HH31" "H1" 0 1 131072 4 1 0.066500                
+ "HH32" "H1" 0 1 131072 5 1 0.066500                
+ "HH33" "H1" 0 1 131072 6 1 0.066500                
+ALA 10   
+"N" "N" 0 1 131072 1 7 -0.493700                    
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 0.044800                  
+ "HA" "H1" 0 1 131072 4 1 0.022800                  
+ "CB" "CT" 0 1 131072 5 6 -0.090900                 
+ "HB1" "HC" 0 1 131072 6 1 0.042500                 
+ "HB2" "HC" 0 1 131072 7 1 0.042500                 
+ "HB3" "HC" 0 1 131072 8 1 0.042500                 
+ "C" "C" 0 1 131072 9 6 0.673100                    
+ "O" "O" 0 1 131072 10 8 -0.585400                  
+ARG 24   
+"N" "N" 0 1 131072 1 7 -0.493700                    
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 0.029900                  
+ "HA" "H1" 0 1 131072 4 1 0.047600                  
+ "CB" "CT" 0 1 131072 5 6 0.004000                  
+ "HB2" "HC" 0 1 131072 6 1 0.025700                 
+ "HB3" "HC" 0 1 131072 7 1 0.025700                 
+ "CG" "CT" 0 1 131072 8 6 -0.002700                 
+ "HG2" "HC" 0 1 131072 9 1 0.031400                 
+ "HG3" "HC" 0 1 131072 10 1 0.031400                
+ "CD" "CT" 0 1 131072 11 6 0.100800                 
+ "HD2" "H1" 0 1 131072 12 1 0.057500                
+ "HD3" "H1" 0 1 131072 13 1 0.057500                
+ "NE" "N2" 0 1 131072 14 7 -0.511100                
+ "HE" "H" 0 1 131072 15 1 0.323300                  
+ "CZ" "CA" 0 1 131072 16 6 0.870800                 
+ "NH1" "N2" 0 1 131072 17 7 -0.834800               
+ "HH11" "H" 0 1 131072 18 1 0.420500                
+ "HH12" "H" 0 1 131072 19 1 0.420500                
+ "NH2" "N2" 0 1 131072 20 7 -0.834800               
+ "HH21" "H" 0 1 131072 21 1 0.420500                
+ "HH22" "H" 0 1 131072 22 1 0.420500                
+ "C" "C" 0 1 131072 23 6 0.673100                   
+ "O" "O" 0 1 131072 24 8 -0.585400                  
+ASN 14   
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 0.055100                  
+ "HA" "H1" 0 1 131072 4 1 0.041000                  
+ "CB" "CT" 0 1 131072 5 6 -0.194400                 
+ "HB2" "HC" 0 1 131072 6 1 0.083300                 
+ "HB3" "HC" 0 1 131072 7 1 0.083300                 
+ "CG" "C" 0 1 131072 8 6 0.666500                   
+ "OD1" "O" 0 1 131072 9 8 -0.575400                 
+ "ND2" "N" 0 1 131072 10 7 -0.775000                
+ "HD21" "H" 0 1 131072 11 1 0.359900                
+ "HD22" "H" 0 1 131072 12 1 0.359900                
+ "C" "C" 0 1 131072 13 6 0.673100                   
+ "O" "O" 0 1 131072 14 8 -0.585400                  
+ASP 12   
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 -0.166700                 
+ "HA" "H1" 0 1 131072 4 1 0.065600                  
+ "CB" "CT" 0 1 131072 5 6 0.002100                  
+ "HB2" "HC" 0 1 131072 6 1 -0.021000                
+ "HB3" "HC" 0 1 131072 7 1 -0.021000                
+ "CG" "C" 0 1 131072 8 6 0.767200                   
+ "OD1" "O2" 0 1 131072 9 8 -0.761000                
+ "OD2" "O2" 0 1 131072 10 8 -0.761000               
+ "C" "C" 0 1 131072 11 6 0.673100                   
+ "O" "O" 0 1 131072 12 8 -0.585400                  
+ASH 13
+ "N" "N" 0 1 131072 1 7 -0.493700
+ "H" "H" 0 1 131072 2 1 0.301800
+ "CA" "CT" 0 1 131072 3 6 0.112000
+ "HA" "H1" 0 1 131072 4 1 0.010800
+ "CB" "CT" 0 1 131072 5 6 -0.041700
+ "HB2" "HC" 0 1 131072 6 1 0.045500
+ "HB3" "HC" 0 1 131072 7 1 0.045500
+ "CG" "C" 0 1 131072 8 6 0.606600
+ "OD1" "O" 0 1 131072 9 8 -0.544000
+ "OD2" "OH" 0 1 131072 10 8 -0.570200
+ "HD2" "HO" 0 1 131072 11 1 0.439700
+ "C" "C" 0 1 131072 12 6 0.673100
+ "O" "O" 0 1 131072 13 8 -0.585400
+CYS 11   
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 0.080500                  
+ "HA" "H1" 0 1 131072 4 1 0.026700                  
+ "CB" "CT" 0 1 131072 5 6 -0.005200                 
+ "HB2" "H1" 0 1 131072 6 1 0.044800                 
+ "HB3" "H1" 0 1 131072 7 1 0.044800                 
+ "SG" "SH" 0 1 131072 8 16 -0.242900                
+ "HG" "HS" 0 1 131072 9 1 0.155500                  
+ "C" "C" 0 1 131072 10 6 0.673100                   
+ "O" "O" 0 1 131072 11 8 -0.585400                  
+GLN 17   
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 -0.029900                 
+ "HA" "H1" 0 1 131072 4 1 0.038100                  
+ "CB" "CT" 0 1 131072 5 6 0.141100                  
+ "HB2" "HC" 0 1 131072 6 1 -0.002100                
+ "HB3" "HC" 0 1 131072 7 1 -0.002100                
+ "CG" "CT" 0 1 131072 8 6 -0.282000                 
+ "HG2" "HC" 0 1 131072 9 1 0.113600                 
+ "HG3" "HC" 0 1 131072 10 1 0.113600                
+ "CD" "C" 0 1 131072 11 6 0.704600                  
+ "OE1" "O" 0 1 131072 12 8 -0.616200                
+ "NE2" "N" 0 1 131072 13 7 -0.779500                
+ "HE21" "H" 0 1 131072 14 1 0.352500                
+ "HE22" "H" 0 1 131072 15 1 0.352500                
+ "C" "C" 0 1 131072 16 6 0.673100                   
+ "O" "O" 0 1 131072 17 8 -0.585400                  
+GLNC 15
+ "N" "N" 0 1 131072 1 7 -0.493700
+ "H" "H" 0 1 131072 2 1 0.301800
+ "CA" "CT" 0 1 131072 3 6 0.057800
+ "HA" "H1" 0 1 131072 4 1 0.038100
+ "CB" "CT" 0 1 131072 5 6 0.141100
+ "HB2" "HC" 0 1 131072 6 1 -0.002100
+ "HB3" "HC" 0 1 131072 7 1 -0.002100
+ "CG" "CT" 0 1 131072 8 6 -0.282000
+ "HG2" "HC" 0 1 131072 9 1 0.113600
+ "HG3" "HC" 0 1 131072 10 1 0.113600
+ "CD" "C" 0 1 131072 11 6 0.704600
+ "OE1" "O" 0 1 131072 12 8 -0.616200
+ "NE2" "N" 0 1 131072 13 7 -0.779500
+ "HE21" "H" 0 1 131072 14 1 0.352500
+ "HE22" "H" 0 1 131072 15 1 0.352500
+GLU 15   
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 -0.238400                 
+ "HA" "H1" 0 1 131072 4 1 0.093700                  
+ "CB" "CT" 0 1 131072 5 6 0.305300                  
+ "HB2" "HC" 0 1 131072 6 1 -0.070400                
+ "HB3" "HC" 0 1 131072 7 1 -0.070400                
+ "CG" "CT" 0 1 131072 8 6 -0.167100                 
+ "HG2" "HC" 0 1 131072 9 1 0.031300                 
+ "HG3" "HC" 0 1 131072 10 1 0.031300                
+ "CD" "C" 0 1 131072 11 6 0.661300                  
+ "OE1" "O2" 0 1 131072 12 8 -0.736200               
+ "OE2" "O2" 0 1 131072 13 8 -0.736200               
+ "C" "C" 0 1 131072 14 6 0.673100                   
+ "O" "O" 0 1 131072 15 8 -0.585400                  
+GLH 16
+"N" "N" 0 1 131072 1 7 -0.493700
+ "H" "H" 0 1 131072 2 1 0.301800
+ "CA" "CT" 0 1 131072 3 6 0.022700
+ "HA" "H1" 0 1 131072 4 1 0.038900
+ "CB" "CT" 0 1 131072 5 6 -0.001800
+ "HB2" "HC" 0 1 131072 6 1 0.027800
+ "HB3" "HC" 0 1 131072 7 1 0.027800
+ "CG" "CT" 0 1 131072 8 6 -0.105400
+ "HG2" "HC" 0 1 131072 9 1 0.078700
+ "HG3" "HC" 0 1 131072 10 1 0.078700
+ "CD" "C" 0 1 131072 11 6 0.669900
+ "OE1" "O" 0 1 131072 12 8 -0.572900
+ "OE2" "OH" 0 1 131072 13 8 -0.596400
+ "HE2" "HO" 0 1 131072 14 1 0.436200
+ "C" "C" 0 1 131072 15 6 0.673100
+ "O" "O" 0 1 131072 16 8 -0.585400
+ILE 19   
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 -0.025700                 
+ "HA" "H1" 0 1 131072 4 1 0.064000                  
+ "CB" "CT" 0 1 131072 5 6 0.059400                  
+ "HB" "HC" 0 1 131072 6 1 0.026300                  
+ "CG2" "CT" 0 1 131072 7 6 -0.303000                
+ "HG21" "HC" 0 1 131072 8 1 0.082400                
+ "HG22" "HC" 0 1 131072 9 1 0.082400                
+ "HG23" "HC" 0 1 131072 10 1 0.082400               
+ "CG1" "CT" 0 1 131072 11 6 -0.021400               
+ "HG12" "HC" 0 1 131072 12 1 0.028400               
+ "HG13" "HC" 0 1 131072 13 1 0.028400               
+ "CD1" "CT" 0 1 131072 14 6 -0.094200               
+ "HD11" "HC" 0 1 131072 15 1 0.031600               
+ "HD12" "HC" 0 1 131072 16 1 0.031600               
+ "HD13" "HC" 0 1 131072 17 1 0.031600               
+ "C" "C" 0 1 131072 18 6 0.673100                   
+ "O" "O" 0 1 131072 19 8 -0.585400                  
+LEU 19   
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 -0.009700                 
+ "HA" "H1" 0 1 131072 4 1 0.043200                  
+ "CB" "CT" 0 1 131072 5 6 -0.132200                 
+ "HB2" "HC" 0 1 131072 6 1 0.031700                 
+ "HB3" "HC" 0 1 131072 7 1 0.031700                 
+ "CG" "CT" 0 1 131072 8 6 0.442900                  
+ "HG" "HC" 0 1 131072 9 1 -0.066200                 
+ "CD1" "CT" 0 1 131072 10 6 -0.431200               
+ "HD11" "HC" 0 1 131072 11 1 0.104200               
+ "HD12" "HC" 0 1 131072 12 1 0.104200               
+ "HD13" "HC" 0 1 131072 13 1 0.104200               
+ "CD2" "CT" 0 1 131072 14 6 -0.431200               
+ "HD21" "HC" 0 1 131072 15 1 0.104200               
+ "HD22" "HC" 0 1 131072 16 1 0.104200               
+ "HD23" "HC" 0 1 131072 17 1 0.104200               
+ "C" "C" 0 1 131072 18 6 0.673100                   
+ "O" "O" 0 1 131072 19 8 -0.585400                  
+LYS 22   
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 0.034300                  
+ "HA" "H1" 0 1 131072 4 1 0.046400                  
+ "CB" "CT" 0 1 131072 5 6 -0.019600                 
+ "HB2" "HC" 0 1 131072 6 1 0.014300                 
+ "HB3" "HC" 0 1 131072 7 1 0.014300                 
+ "CG" "CT" 0 1 131072 8 6 -0.023300                 
+ "HG2" "HC" 0 1 131072 9 1 0.043300                 
+ "HG3" "HC" 0 1 131072 10 1 0.043300                
+ "CD" "CT" 0 1 131072 11 6 -0.057400                
+ "HD2" "HC" 0 1 131072 12 1 0.060200                
+ "HD3" "HC" 0 1 131072 13 1 0.060200                
+ "CE" "CT" 0 1 131072 14 6 0.146100                 
+ "HE2" "HP" 0 1 131072 15 1 0.047000                
+ "HE3" "HP" 0 1 131072 16 1 0.047000                
+ "NZ" "N3" 0 1 131072 17 7 -0.213500                
+ "HZ1" "H" 0 1 131072 18 1 0.287200                 
+ "HZ2" "H" 0 1 131072 19 1 0.287200                 
+ "HZ3" "H" 0 1 131072 20 1 0.287200                 
+ "C" "C" 0 1 131072 21 6 0.673100                   
+ "O" "O" 0 1 131072 22 8 -0.585400                  
+CLYS 23
+ "N" "N" 0 1 131072 1 7 -0.442000
+ "H" "H" 0 1 131072 2 1 0.295200
+ "CA" "CT" 0 1 131072 3 6 -0.088200
+ "HA" "H1" 0 1 131072 4 1 0.095200
+ "CB" "CT" 0 1 131072 5 6 -0.027700
+ "HB2" "HC" 0 1 131072 6 1 0.029300
+ "HB3" "HC" 0 1 131072 7 1 0.029300
+ "CG" "CT" 0 1 131072 8 6 -0.013400
+ "HG2" "HC" 0 1 131072 9 1 0.038700
+ "HG3" "HC" 0 1 131072 10 1 0.038700
+ "CD" "CT" 0 1 131072 11 6 -0.035900
+ "HD2" "HC" 0 1 131072 12 1 0.053900
+ "HD3" "HC" 0 1 131072 13 1 0.053900
+ "CE" "CT" 0 1 131072 14 6 0.142000
+ "HE2" "HP" 0 1 131072 15 1 0.046100
+ "HE3" "HP" 0 1 131072 16 1 0.046100
+ "NZ" "N3" 0 1 131072 17 7 -0.209900
+ "HZ1" "H" 0 1 131072 18 1 0.286000
+ "HZ2" "H" 0 1 131072 19 1 0.286000
+ "HZ3" "H" 0 1 131072 20 1 0.286000
+ "C" "C" 0 1 131072 21 6 0.577100
+ "O" "O2" 0 1 131072 22 8 -0.743200
+ "OXT" "O2" 0 1 131072 23 8 -0.743200
+MET 17   
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 0.011000                  
+ "HA" "H1" 0 1 131072 4 1 0.031600                  
+ "CB" "CT" 0 1 131072 5 6 0.094000                  
+ "HB2" "HC" 0 1 131072 6 1 -0.019000                
+ "HB3" "HC" 0 1 131072 7 1 -0.019000                
+ "CG" "CT" 0 1 131072 8 6 -0.013000                 
+ "HG2" "H1" 0 1 131072 9 1 0.069500                 
+ "HG3" "H1" 0 1 131072 10 1 0.069500                
+ "SD" "S" 0 1 131072 11 16 -0.239400                
+ "CE" "CT" 0 1 131072 12 6 -0.055000                
+ "HE1" "H1" 0 1 131072 13 1 0.058000                
+ "HE2" "H1" 0 1 131072 14 1 0.058000                
+ "HE3" "H1" 0 1 131072 15 1 0.058000                
+ "C" "C" 0 1 131072 16 6 0.673100                   
+ "O" "O" 0 1 131072 17 8 -0.585400                  
+PHE 20   
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 0.041600                  
+ "HA" "H1" 0 1 131072 4 1 0.018400                  
+ "CB" "CT" 0 1 131072 5 6 -0.002100                 
+ "HB2" "HC" 0 1 131072 6 1 0.024200                 
+ "HB3" "HC" 0 1 131072 7 1 0.024200                 
+ "CG" "CA" 0 1 131072 8 6 0.029300                  
+ "CD1" "CA" 0 1 131072 9 6 -0.105000                
+ "HD1" "HA" 0 1 131072 10 1 0.112300                
+ "CE1" "CA" 0 1 131072 11 6 -0.150600               
+ "HE1" "HA" 0 1 131072 12 1 0.116100                
+ "CZ" "CA" 0 1 131072 13 6 -0.077000                
+ "HZ" "HA" 0 1 131072 14 1 0.100000                 
+ "CE2" "CA" 0 1 131072 15 6 -0.150600               
+ "HE2" "HA" 0 1 131072 16 1 0.116100                
+ "CD2" "CA" 0 1 131072 17 6 -0.105000               
+ "HD2" "HA" 0 1 131072 18 1 0.112300                
+ "C" "C" 0 1 131072 19 6 0.673100                   
+ "O" "O" 0 1 131072 20 8 -0.585400                  
+MBZN 15  
+ "HB1" "HC" 0 1 131072 3 6 0.013980                 
+ "CB" "CT" 0 1 131072 5 6 -0.002100                 
+ "HB2" "HC" 0 1 131072 6 1 0.0139800                
+ "HB3" "HC" 0 1 131072 7 1 0.0139800                
+ "CG" "CA" 0 1 131072 8 6 0.029300                  
+ "CD1" "CA" 0 1 131072 9 6 -0.105000                
+ "HD1" "HA" 0 1 131072 10 1 0.112300                
+ "CE1" "CA" 0 1 131072 11 6 -0.150600               
+ "HE1" "HA" 0 1 131072 12 1 0.116100                
+ "CZ" "CA" 0 1 131072 13 6 -0.077000                
+ "HZ" "HA" 0 1 131072 14 1 0.100000                 
+ "CE2" "CA" 0 1 131072 15 6 -0.150600               
+ "HE2" "HA" 0 1 131072 16 1 0.116100                
+ "CD2" "CA" 0 1 131072 17 6 -0.105000               
+ "HD2" "HA" 0 1 131072 18 1 0.112300                
+PRO 14   
+ "N" "N" 0 1 131072 1 7 -0.275400                   
+ "CD" "CT" 0 1 131072 2 6 0.062800                  
+ "HD2" "H1" 0 1 131072 3 1 0.027300                 
+ "HD3" "H1" 0 1 131072 4 1 0.027300                 
+ "CG" "CT" 0 1 131072 5 6 0.063200                  
+ "HG2" "HC" 0 1 131072 6 1 0.006300                 
+ "HG3" "HC" 0 1 131072 7 1 0.006300                 
+ "CB" "CT" 0 1 131072 8 6 0.026200                  
+ "HB2" "HC" 0 1 131072 9 1 0.021400                 
+ "HB3" "HC" 0 1 131072 10 1 0.021400                
+ "CA" "CT" 0 1 131072 11 6 -0.150300                
+ "HA" "H1" 0 1 131072 12 1 0.075800                 
+ "C" "C" 0 1 131072 13 6 0.673100                   
+ "O" "O" 0 1 131072 14 8 -0.585400                  
+SER 11   
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 0.071700                  
+ "HA" "H1" 0 1 131072 4 1 0.016400                  
+ "CB" "CT" 0 1 131072 5 6 0.134500                  
+ "HB2" "H1" 0 1 131072 6 1 0.036100                 
+ "HB3" "H1" 0 1 131072 7 1 0.036100                 
+ "OG" "OH" 0 1 131072 8 8 -0.559300                 
+ "HG" "HO" 0 1 131072 9 1 0.368700                  
+ "C" "C" 0 1 131072 10 6 0.673100                   
+ "O" "O" 0 1 131072 11 8 -0.585400                  
+NSER 9
+ "CA" "CT" 0 1 131072 1 6 -0.1202
+ "HA" "H1" 0 1 131072 2 1 0.016400
+ "CB" "CT" 0 1 131072 3 6 0.134500
+ "HB2" "H1" 0 1 131072 4 1 0.036100
+ "HB3" "H1" 0 1 131072 5 1 0.036100
+ "OG" "OH" 0 1 131072 6 8 -0.559300
+ "HG" "HO" 0 1 131072 7 1 0.368700
+ "C" "C" 0 1 131072 8 6 0.673100
+ "O" "O" 0 1 131072 9 8 -0.585400
+THR 14   
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 0.070200                  
+ "HA" "H1" 0 1 131072 4 1 0.016400                  
+ "CB" "CT" 0 1 131072 5 6 0.403800                  
+ "HB" "H1" 0 1 131072 6 1 -0.090900                 
+ "CG2" "CT" 0 1 131072 7 6 -0.211700                
+ "HG21" "HC" 0 1 131072 8 1 0.049600                
+ "HG22" "HC" 0 1 131072 9 1 0.049600                
+ "HG23" "HC" 0 1 131072 10 1 0.049600               
+ "OG1" "OH" 0 1 131072 11 8 -0.637500               
+ "HG1" "HO" 0 1 131072 12 1 0.405100                
+ "C" "C" 0 1 131072 13 6 0.673100                   
+ "O" "O" 0 1 131072 14 8 -0.585400                  
+TRP 24   
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 0.023300                  
+ "HA" "H1" 0 1 131072 4 1 0.037600                  
+ "CB" "CT" 0 1 131072 5 6 -0.016800                 
+ "HB2" "HC" 0 1 131072 6 1 0.030700                 
+ "HB3" "HC" 0 1 131072 7 1 0.030700                 
+ "CG" "C*" 0 1 131072 8 6 -0.098800                 
+ "CD1" "CW" 0 1 131072 9 6 -0.080800                
+ "HD1" "H4" 0 1 131072 10 1 0.143400                
+ "NE1" "NA" 0 1 131072 11 7 -0.354200               
+ "HE1" "H" 0 1 131072 12 1 0.340300                 
+ "CE2" "CN" 0 1 131072 13 6 0.165600                
+ "CZ2" "CA" 0 1 131072 14 6 -0.227900               
+ "HZ2" "HA" 0 1 131072 15 1 0.138200                
+ "CH2" "CA" 0 1 131072 16 6 -0.111000               
+ "HH2" "HA" 0 1 131072 17 1 0.107600                
+ "CZ3" "CA" 0 1 131072 18 6 -0.149400               
+ "HZ3" "HA" 0 1 131072 19 1 0.108700                
+ "CE3" "CA" 0 1 131072 20 6 -0.215900               
+ "HE3" "HA" 0 1 131072 21 1 0.156100                
+ "CD2" "CB" 0 1 131072 22 6 0.076800                
+ "C" "C" 0 1 131072 23 6 0.673100                   
+ "O" "O" 0 1 131072 24 8 -0.585400                  
+TYR 21   
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 -0.001000                 
+ "HA" "H1" 0 1 131072 4 1 0.055600                  
+ "CB" "CT" 0 1 131072 5 6 0.021100                  
+ "HB2" "HC" 0 1 131072 6 1 0.022500                 
+ "HB3" "HC" 0 1 131072 7 1 0.022500                 
+ "CG" "CA" 0 1 131072 8 6 -0.001700                 
+ "CD1" "CA" 0 1 131072 9 6 -0.145900                
+ "HD1" "HA" 0 1 131072 10 1 0.119500                
+ "CE1" "CA" 0 1 131072 11 6 -0.184800               
+ "HE1" "HA" 0 1 131072 12 1 0.136700                
+ "CZ" "CA" 0 1 131072 13 6 0.251600                 
+ "OH" "OH" 0 1 131072 14 8 -0.475700                
+ "HH" "HO" 0 1 131072 15 1 0.358300                 
+ "CE2" "CA" 0 1 131072 16 6 -0.184800               
+ "HE2" "HA" 0 1 131072 17 1 0.136700                
+ "CD2" "CA" 0 1 131072 18 6 -0.145900               
+ "HD2" "HA" 0 1 131072 19 1 0.119500                
+ "C" "C" 0 1 131072 20 6 0.673100                   
+ "O" "O" 0 1 131072 21 8 -0.585400                  
+FNOL 16  
+ "HB1" "HC" 0 1 131072 3 1 0.022500                 
+ "CB" "CT" 0 1 131072 5 6 0.021100                  
+ "HB2" "HC" 0 1 131072 6 1 0.022500                 
+ "HB3" "HC" 0 1 131072 7 1 0.022500                 
+ "CG" "CA" 0 1 131072 8 6 -0.001700                 
+ "CD1" "CA" 0 1 131072 9 6 -0.145900                
+ "HD1" "HA" 0 1 131072 10 1 0.119500                
+ "CE1" "CA" 0 1 131072 11 6 -0.184800               
+ "HE1" "HA" 0 1 131072 12 1 0.136700                
+ "CZ" "CA" 0 1 131072 13 6 0.251600                 
+ "OH" "OH" 0 1 131072 14 8 -0.475700                
+ "HH" "HO" 0 1 131072 15 1 0.358300                 
+ "CE2" "CA" 0 1 131072 16 6 -0.184800               
+ "HE2" "HA" 0 1 131072 17 1 0.136700                
+ "CD2" "CA" 0 1 131072 18 6 -0.145900               
+ "HD2" "HA" 0 1 131072 19 1 0.119500                
+VAL 16   
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 -0.053000                 
+ "HA" "H1" 0 1 131072 4 1 0.039300                  
+ "CB" "CT" 0 1 131072 5 6 0.367400                  
+ "HB" "HC" 0 1 131072 6 1 -0.014500                 
+ "CG1" "CT" 0 1 131072 7 6 -0.358400                
+ "HG11" "HC" 0 1 131072 8 1 0.080300                
+ "HG12" "HC" 0 1 131072 9 1 0.080300                
+ "HG13" "HC" 0 1 131072 10 1 0.080300               
+ "CG2" "CT" 0 1 131072 11 6 -0.358400               
+ "HG21" "HC" 0 1 131072 12 1 0.080300               
+ "HG22" "HC" 0 1 131072 13 1 0.080300               
+ "HG23" "HC" 0 1 131072 14 1 0.080300               
+ "C" "C" 0 1 131072 15 6 0.673100                   
+ "O" "O" 0 1 131072 16 8 -0.585400                  
+GLYL 6
+ "N" "N" 0 1 131072 1 7 -0.493700
+ "H" "H" 0 1 131072 2 1 0.301800
+ "CA" "CT" 0 1 131072 3 6 -0.033200
+ "HA" "H1" 0 1 131072 4 1 0.068700
+ "C" "C" 0 1 131072 5 6 0.673100
+ "O" "O" 0 1 131072 6 8 -0.585400
+GLY 7    
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 -0.033200                 
+ "HA2" "H1" 0 1 131072 4 1 0.068700                 
+ "HA3" "H1" 0 1 131072 5 1 0.068700                 
+ "C" "C" 0 1 131072 6 6 0.673100                    
+ "O" "O" 0 1 131072 7 8 -0.585400                   
+CGLY 8   
+ "N" "N" 0 1 131072 1 7 -0.442000                   
+ "H" "H" 0 1 131072 2 1 0.295200                    
+ "CA" "CT" 0 1 131072 3 6 -0.150900                 
+ "HA2" "H1" 0 1 131072 4 1 0.103500                 
+ "HA3" "H1" 0 1 131072 5 1 0.103500                 
+ "C" "C" 0 1 131072 6 6 0.577100                    
+ "O" "O2" 0 1 131072 7 8 -0.743200                  
+ "OXT" "O2" 0 1 131072 8 8 -0.743200                
+NGLY 9   
+ "N" "N3" 0 1 131072 1 7 0.190200                   
+ "H1" "H" 0 1 131072 2 1 0.205600                   
+ "H2" "H" 0 1 131072 3 1 0.205600                   
+ "H3" "H" 0 1 131072 4 1 0.205600                   
+ "CA" "CT" 0 1 131072 5 6 -0.076600                 
+ "HA2" "HP" 0 1 131072 6 1 0.083900                 
+ "HA3" "HP" 0 1 131072 7 1 0.083900                 
+ "C" "C" 0 1 131072 8 6 0.683700                    
+ "O" "O" 0 1 131072 9 8 -0.581900                   
+HID 17   
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 0.086000                  
+ "HA" "H1" 0 1 131072 4 1 0.006800                  
+ "CB" "CT" 0 1 131072 5 6 -0.060200                 
+ "HB2" "HC" 0 1 131072 6 1 0.036700                 
+ "HB3" "HC" 0 1 131072 7 1 0.036700                 
+ "CG" "CC" 0 1 131072 8 6 0.058600                  
+ "ND1" "NA" 0 1 131072 9 7 -0.164700                
+ "HD1" "H" 0 1 131072 10 1 0.272100                 
+ "CE1" "CR" 0 1 131072 11 6 0.098500                
+ "HE1" "H5" 0 1 131072 12 1 0.101600                
+ "NE2" "NB" 0 1 131072 13 7 -0.471500               
+ "CD2" "CV" 0 1 131072 14 6 0.010300                
+ "HD2" "H4" 0 1 131072 15 1 0.093300                
+ "C" "C" 0 1 131072 16 6 0.673100                   
+ "O" "O" 0 1 131072 17 8 -0.585400                  
+HIE 17   
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 0.037600                  
+ "HA" "H1" 0 1 131072 4 1 0.021700                  
+ "CB" "CT" 0 1 131072 5 6 -0.041300                 
+ "HB2" "HC" 0 1 131072 6 1 0.047600                 
+ "HB3" "HC" 0 1 131072 7 1 0.047600                 
+ "CG" "CC" 0 1 131072 8 6 0.250200                  
+ "ND1" "NB" 0 1 131072 9 7 -0.566600                
+ "CE1" "CR" 0 1 131072 10 6 0.231100                
+ "HE1" "H5" 0 1 131072 11 1 0.067900                
+ "NE2" "NA" 0 1 131072 12 7 -0.211000               
+ "HE2" "H" 0 1 131072 13 1 0.290100                 
+ "CD2" "CW" 0 1 131072 14 6 -0.228100               
+ "HD2" "H4" 0 1 131072 15 1 0.157400                
+ "C" "C" 0 1 131072 16 6 0.673100                   
+ "O" "O" 0 1 131072 17 8 -0.585400                  
+HIP 18   
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 0.229100                  
+ "HA" "H1" 0 1 131072 4 1 -0.022300                 
+ "CB" "CT" 0 1 131072 5 6 -0.036200                 
+ "HB2" "HC" 0 1 131072 6 1 0.049000                 
+ "HB3" "HC" 0 1 131072 7 1 0.049000                 
+ "CG" "CC" 0 1 131072 8 6 0.088400                  
+ "ND1" "NA" 0 1 131072 9 7 -0.018800                
+ "HD1" "H" 0 1 131072 10 1 0.296100                 
+ "CE1" "CR" 0 1 131072 11 6 -0.073500               
+ "HE1" "H5" 0 1 131072 12 1 0.212400                
+ "NE2" "NA" 0 1 131072 13 7 -0.029200               
+ "HE2" "H" 0 1 131072 14 1 0.315100                 
+ "CD2" "CW" 0 1 131072 15 6 -0.145200               
+ "HD2" "H4" 0 1 131072 16 1 0.190300                
+ "C" "C" 0 1 131072 17 6 0.673100                   
+ "O" "O" 0 1 131072 18 8 -0.585400                  
+WAT 3    
+  "O" "OW" 0 1 131072 1 8 -0.83400                  
+  "H1" "HW" 0 1 131072 2 1 0.41700                  
+  "H2" "HW" 0 1 131072 3 1 0.41700                  
+CYM 10   
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "HN" "H" 0 1 131072 2 1 0.301800                   
+ "CA" "CT" 0 1 131072 3 6 -0.287000                 
+ "HA" "H1" 0 1 131072 4 1 0.120300                  
+ "CB" "CT" 0 1 131072 5 6 0.093500                  
+ "HB3" "H1" 0 1 131072 6 1 0.012500                 
+ "HB2" "H1" 0 1 131072 7 1 0.012500                 
+ "SG" "SH" 0 1 131072 8 16 -0.847600                
+ "C" "C" 0 1 131072 9 6 0.673100                    
+ "O" "O" 0 1 131072 10 8 -0.585400                  
+CYX 10   
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 0.059900                  
+ "HA" "H1" 0 1 131072 4 1 0.036300                  
+ "CB" "CT" 0 1 131072 5 6 0.002700                  
+ "HB2" "H1" 0 1 131072 6 1 0.047300                 
+ "HB3" "H1" 0 1 131072 7 1 0.047300                 
+ "SG" "S" 0 1 131072 8 16 -0.089300                 
+ "C" "C" 0 1 131072 9 6 0.673100                    
+ "O" "O" 0 1 131072 10 8 -0.585400                  
+CYH 10   
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 0.059900                  
+ "HA" "H1" 0 1 131072 4 1 0.036300                  
+ "CB" "CT" 0 1 131072 5 6 0.002700                  
+ "HB2" "H1" 0 1 131072 6 1 0.047300                 
+ "HB3" "H1" 0 1 131072 7 1 0.047300                 
+ "SG" "S" 0 1 131072 8 16 -0.269300                 
+ "C" "C" 0 1 131072 9 6 0.673100                    
+ "O" "O" 0 1 131072 10 8 -0.585400                  
+LYN 21   
+ "N" "N" 0 1 131072 1 7 -0.493700                   
+ "H" "H" 0 1 131072 2 1 0.301800                    
+ "CA" "CT" 0 1 131072 3 6 -0.027500                 
+ "HA" "H1" 0 1 131072 4 1 0.056600                  
+ "CB" "CT" 0 1 131072 5 6 0.008400                  
+ "HB2" "HC" 0 1 131072 6 1 -0.001100                
+ "HB3" "HC" 0 1 131072 7 1 -0.001100                
+ "CG" "CT" 0 1 131072 8 6 -0.028300                 
+ "HG2" "HC" 0 1 131072 9 1 0.028600                 
+ "HG3" "HC" 0 1 131072 10 1 0.028600                
+ "CD" "CT" 0 1 131072 11 6 -0.080000                
+ "HD2" "HC" 0 1 131072 12 1 0.051800                
+ "HD3" "HC" 0 1 131072 13 1 0.051800                
+ "CE" "CT" 0 1 131072 14 6 0.332900                 
+ "HE2" "H1" 0 1 131072 15 1 -0.040500               
+ "HE3" "H1" 0 1 131072 16 1 -0.040500               
+ "NZ" "NT" 0 1 131072 17 7 -0.896100                
+ "HZ2" "H" 0 1 131072 18 1 0.330300                 
+ "HZ3" "H" 0 1 131072 19 1 0.330300                 
+ "C" "C" 0 1 131072 20 6 0.673100                   
+ "O" "O" 0 1 131072 21 8 -0.585400                  
+ETLN 8   
+ "C1" "CT" 0 1 131072 1 6 -0.015428                 
+ "H11" "HC" 0 1 131072 2 1 0.005143                 
+ "H12" "HC" 0 1 131072 3 1 0.005143                 
+ "H13" "HC" 0 1 131072 4 1 0.005143                 
+ "C2" "CT" 0 1 131072 5 6 -0.015428                 
+ "H21" "HC" 0 1 131072 6 1 0.005143                 
+ "H22" "HC" 0 1 131072 7 1 0.005143                 
+ "H23" "HC" 0 1 131072 8 1 0.005143                 
+CH3L 4   
+ "C" "CT" 0 1 131072 1 6 -0.015428                 
+ "H1" "HC" 0 1 131072 2 1 0.005143                 
+ "H2" "HC" 0 1 131072 3 1 0.005143                 
+ "H3" "HC" 0 1 131072 4 1 0.005143                 
+DA 32
+ "P" "P" 0 1 131072 1 15 1.073500
+ "O1P" "O2" 0 1 131072 2 8 -0.754500
+ "O2P" "O2" 0 1 131072 3 8 -0.754500
+ "O5'" "OS" 0 1 131072 4 8 -0.412800
+ "C5'" "CT" 0 1 131072 5 6 -0.011100
+ "H5'1" "H1" 0 1 131072 6 1 0.066200
+ "H5'2" "H1" 0 1 131072 7 1 0.066200
+ "C4'" "CT" 0 1 131072 8 6 0.072100
+ "H4'" "H1" 0 1 131072 9 1 0.088700
+ "O4'" "OS" 0 1 131072 10 8 -0.312400
+ "C1'" "CT" 0 1 131072 11 6 0.168000
+ "H1'" "H2" 0 1 131072 12 1 0.102400
+ "N9" "N*" 0 1 131072 13 7 -0.169200
+ "C8" "CK" 0 1 131072 14 6 0.215300
+ "H8" "H5" 0 1 131072 15 1 0.145100
+ "N7" "NB" 0 1 131072 16 7 -0.543600
+ "C5" "CB" 0 1 131072 17 6 -0.047500
+ "C6" "CA" 0 1 131072 18 6 0.603800
+ "N6" "N2" 0 1 131072 19 7 -0.713600
+ "H61" "H" 0 1 131072 20 1 0.355800
+ "H62" "H" 0 1 131072 21 1 0.355800
+ "N1" "NC" 0 1 131072 22 7 -0.731300
+ "C2" "CQ" 0 1 131072 23 6 0.572600
+ "H2" "H5" 0 1 131072 24 1 0.011900
+ "N3" "NC" 0 1 131072 25 7 -0.764900
+ "C4" "CB" 0 1 131072 26 6 0.549900
+ "C3'" "CT" 0 1 131072 27 6 0.164500
+ "H3'" "H1" 0 1 131072 28 1 0.062300
+ "C2'" "CT" 0 1 131072 29 6 -0.056100
+ "H2'1" "HC" 0 1 131072 30 1 0.048600
+ "H2'2" "HC" 0 1 131072 31 1 0.048600
+ "O3'" "OS" 0 1 131072 32 8 -0.499800
+DA3 33
+ "P" "P" 0 1 131072 1 15 1.073500
+ "O1P" "O2" 0 1 131072 2 8 -0.754500
+ "O2P" "O2" 0 1 131072 3 8 -0.754500
+ "O5'" "OS" 0 1 131072 4 8 -0.412800
+ "C5'" "CT" 0 1 131072 5 6 -0.011100
+ "H5'1" "H1" 0 1 131072 6 1 0.066200
+ "H5'2" "H1" 0 1 131072 7 1 0.066200
+ "C4'" "CT" 0 1 131072 8 6 0.072100
+ "H4'" "H1" 0 1 131072 9 1 0.088700
+ "O4'" "OS" 0 1 131072 10 8 -0.312400
+ "C1'" "CT" 0 1 131072 11 6 0.168000
+ "H1'" "H2" 0 1 131072 12 1 0.102400
+ "N9" "N*" 0 1 131072 13 7 -0.169200
+ "C8" "CK" 0 1 131072 14 6 0.215300
+ "H8" "H5" 0 1 131072 15 1 0.145100
+ "N7" "NB" 0 1 131072 16 7 -0.543600
+ "C5" "CB" 0 1 131072 17 6 -0.047500
+ "C6" "CA" 0 1 131072 18 6 0.603800
+ "N6" "N2" 0 1 131072 19 7 -0.713600
+ "H61" "H" 0 1 131072 20 1 0.355800
+ "H62" "H" 0 1 131072 21 1 0.355800
+ "N1" "NC" 0 1 131072 22 7 -0.731300
+ "C2" "CQ" 0 1 131072 23 6 0.572600
+ "H2" "H5" 0 1 131072 24 1 0.011900
+ "N3" "NC" 0 1 131072 25 7 -0.764900
+ "C4" "CB" 0 1 131072 26 6 0.549900
+ "C3'" "CT" 0 1 131072 27 6 0.164500
+ "H3'" "H1" 0 1 131072 28 1 0.062300
+ "C2'" "CT" 0 1 131072 29 6 -0.056100
+ "H2'1" "HC" 0 1 131072 30 1 0.048600
+ "H2'2" "HC" 0 1 131072 31 1 0.048600
+ "O3'" "OH" 0 1 131072 32 8 -0.591800
+ "H3T" "HO" 0 1 131072 33 1 0.399900
+DA5 30
+ "H5T" "HO" 0 1 131072 1 1 0.410900
+ "O5'" "OH" 0 1 131072 2 8 -0.567100
+ "C5'" "CT" 0 1 131072 3 6 -0.011100
+ "H5'1" "H1" 0 1 131072 4 1 0.066200
+ "H5'2" "H1" 0 1 131072 5 1 0.066200
+ "C4'" "CT" 0 1 131072 6 6 0.072100
+ "H4'" "H1" 0 1 131072 7 1 0.088700
+ "O4'" "OS" 0 1 131072 8 8 -0.312400
+ "C1'" "CT" 0 1 131072 9 6 0.168000
+ "H1'" "H2" 0 1 131072 10 1 0.102400
+ "N9" "N*" 0 1 131072 11 7 -0.169200
+ "C8" "CK" 0 1 131072 12 6 0.215300
+ "H8" "H5" 0 1 131072 13 1 0.145100
+ "N7" "NB" 0 1 131072 14 7 -0.543600
+ "C5" "CB" 0 1 131072 15 6 -0.047500
+ "C6" "CA" 0 1 131072 16 6 0.603800
+ "N6" "N2" 0 1 131072 17 7 -0.713600
+ "H61" "H" 0 1 131072 18 1 0.355800
+ "H62" "H" 0 1 131072 19 1 0.355800
+ "N1" "NC" 0 1 131072 20 7 -0.731300
+ "C2" "CQ" 0 1 131072 21 6 0.572600
+ "H2" "H5" 0 1 131072 22 1 0.011900
+ "N3" "NC" 0 1 131072 23 7 -0.764900
+ "C4" "CB" 0 1 131072 24 6 0.549900
+ "C3'" "CT" 0 1 131072 25 6 0.164500
+ "H3'" "H1" 0 1 131072 26 1 0.062300
+ "C2'" "CT" 0 1 131072 27 6 -0.056100
+ "H2'1" "HC" 0 1 131072 28 1 0.048600
+ "H2'2" "HC" 0 1 131072 29 1 0.048600
+ "O3'" "OS" 0 1 131072 30 8 -0.499800
+DAN 31
+ "H5T" "HO" 0 1 131072 1 1 0.410900
+ "O5'" "OH" 0 1 131072 2 8 -0.567100
+ "C5'" "CT" 0 1 131072 3 6 -0.011100
+ "H5'1" "H1" 0 1 131072 4 1 0.066200
+ "H5'2" "H1" 0 1 131072 5 1 0.066200
+ "C4'" "CT" 0 1 131072 6 6 0.072100
+ "H4'" "H1" 0 1 131072 7 1 0.088700
+ "O4'" "OS" 0 1 131072 8 8 -0.312400
+ "C1'" "CT" 0 1 131072 9 6 0.168000
+ "H1'" "H2" 0 1 131072 10 1 0.102400
+ "N9" "N*" 0 1 131072 11 7 -0.169200
+ "C8" "CK" 0 1 131072 12 6 0.215300
+ "H8" "H5" 0 1 131072 13 1 0.145100
+ "N7" "NB" 0 1 131072 14 7 -0.543600
+ "C5" "CB" 0 1 131072 15 6 -0.047500
+ "C6" "CA" 0 1 131072 16 6 0.603800
+ "N6" "N2" 0 1 131072 17 7 -0.713600
+ "H61" "H" 0 1 131072 18 1 0.355800
+ "H62" "H" 0 1 131072 19 1 0.355800
+ "N1" "NC" 0 1 131072 20 7 -0.731300
+ "C2" "CQ" 0 1 131072 21 6 0.572600
+ "H2" "H5" 0 1 131072 22 1 0.011900
+ "N3" "NC" 0 1 131072 23 7 -0.764900
+ "C4" "CB" 0 1 131072 24 6 0.549900
+ "C3'" "CT" 0 1 131072 25 6 0.164500
+ "H3'" "H1" 0 1 131072 26 1 0.062300
+ "C2'" "CT" 0 1 131072 27 6 -0.056100
+ "H2'1" "HC" 0 1 131072 28 1 0.048600
+ "H2'2" "HC" 0 1 131072 29 1 0.048600
+ "O3'" "OH" 0 1 131072 30 8 -0.591800
+ "H3T" "HO" 0 1 131072 31 1 0.399900
+DC 30
+ "P" "P" 0 1 131072 1 15 1.073500
+ "O1P" "O2" 0 1 131072 2 8 -0.754500
+ "O2P" "O2" 0 1 131072 3 8 -0.754500
+ "O5'" "OS" 0 1 131072 4 8 -0.412800
+ "C5'" "CT" 0 1 131072 5 6 -0.011100
+ "H5'1" "H1" 0 1 131072 6 1 0.066200
+ "H5'2" "H1" 0 1 131072 7 1 0.066200
+ "C4'" "CT" 0 1 131072 8 6 0.072100
+ "H4'" "H1" 0 1 131072 9 1 0.088700
+ "O4'" "OS" 0 1 131072 10 8 -0.312400
+ "C1'" "CT" 0 1 131072 11 6 0.142100
+ "H1'" "H2" 0 1 131072 12 1 0.085100
+ "N1" "N*" 0 1 131072 13 7 -0.131800
+ "C6" "CM" 0 1 131072 14 6 -0.011500
+ "H6" "H4" 0 1 131072 15 1 0.209900
+ "C5" "CM" 0 1 131072 16 6 -0.469600
+ "H5" "HA" 0 1 131072 17 1 0.183300
+ "C4" "CA" 0 1 131072 18 6 0.701000
+ "N4" "N2" 0 1 131072 19 7 -0.741700
+ "H41" "H" 0 1 131072 20 1 0.352600
+ "H42" "H" 0 1 131072 21 1 0.352600
+ "N3" "NC" 0 1 131072 22 7 -0.755500
+ "C2" "C" 0 1 131072 23 6 0.846400
+ "O2" "O" 0 1 131072 24 8 -0.652400
+ "C3'" "CT" 0 1 131072 25 6 0.164500
+ "H3'" "H1" 0 1 131072 26 1 0.062300
+ "C2'" "CT" 0 1 131072 27 6 -0.056100
+ "H2'1" "HC" 0 1 131072 28 1 0.048600
+ "H2'2" "HC" 0 1 131072 29 1 0.048600
+ "O3'" "OS" 0 1 131072 30 8 -0.499800
+DC3 31
+ "P" "P" 0 1 131072 1 15 1.073500
+ "O1P" "O2" 0 1 131072 2 8 -0.754500
+ "O2P" "O2" 0 1 131072 3 8 -0.754500
+ "O5'" "OS" 0 1 131072 4 8 -0.412800
+ "C5'" "CT" 0 1 131072 5 6 -0.011100
+ "H5'1" "H1" 0 1 131072 6 1 0.066200
+ "H5'2" "H1" 0 1 131072 7 1 0.066200
+ "C4'" "CT" 0 1 131072 8 6 0.072100
+ "H4'" "H1" 0 1 131072 9 1 0.088700
+ "O4'" "OS" 0 1 131072 10 8 -0.312400
+ "C1'" "CT" 0 1 131072 11 6 0.142100
+ "H1'" "H2" 0 1 131072 12 1 0.085100
+ "N1" "N*" 0 1 131072 13 7 -0.131800
+ "C6" "CM" 0 1 131072 14 6 -0.011500
+ "H6" "H4" 0 1 131072 15 1 0.209900
+ "C5" "CM" 0 1 131072 16 6 -0.469600
+ "H5" "HA" 0 1 131072 17 1 0.183300
+ "C4" "CA" 0 1 131072 18 6 0.701000
+ "N4" "N2" 0 1 131072 19 7 -0.741700
+ "H41" "H" 0 1 131072 20 1 0.352600
+ "H42" "H" 0 1 131072 21 1 0.352600
+ "N3" "NC" 0 1 131072 22 7 -0.755500
+ "C2" "C" 0 1 131072 23 6 0.846400
+ "O2" "O" 0 1 131072 24 8 -0.652400
+ "C3'" "CT" 0 1 131072 25 6 0.164500
+ "H3'" "H1" 0 1 131072 26 1 0.062300
+ "C2'" "CT" 0 1 131072 27 6 -0.056100
+ "H2'1" "HC" 0 1 131072 28 1 0.048600
+ "H2'2" "HC" 0 1 131072 29 1 0.048600
+ "O3'" "OH" 0 1 131072 30 8 -0.591800
+ "H3T" "HO" 0 1 131072 31 1 0.399900
+DC5 28
+ "H5T" "HO" 0 1 131072 1 1 0.410900
+ "O5'" "OH" 0 1 131072 2 8 -0.567100
+ "C5'" "CT" 0 1 131072 3 6 -0.011100
+ "H5'1" "H1" 0 1 131072 4 1 0.066200
+ "H5'2" "H1" 0 1 131072 5 1 0.066200
+ "C4'" "CT" 0 1 131072 6 6 0.072100
+ "H4'" "H1" 0 1 131072 7 1 0.088700
+ "O4'" "OS" 0 1 131072 8 8 -0.312400
+ "C1'" "CT" 0 1 131072 9 6 0.142100
+ "H1'" "H2" 0 1 131072 10 1 0.085100
+ "N1" "N*" 0 1 131072 11 7 -0.131800
+ "C6" "CM" 0 1 131072 12 6 -0.011500
+ "H6" "H4" 0 1 131072 13 1 0.209900
+ "C5" "CM" 0 1 131072 14 6 -0.469600
+ "H5" "HA" 0 1 131072 15 1 0.183300
+ "C4" "CA" 0 1 131072 16 6 0.701000
+ "N4" "N2" 0 1 131072 17 7 -0.741700
+ "H41" "H" 0 1 131072 18 1 0.352600
+ "H42" "H" 0 1 131072 19 1 0.352600
+ "N3" "NC" 0 1 131072 20 7 -0.755500
+ "C2" "C" 0 1 131072 21 6 0.846400
+ "O2" "O" 0 1 131072 22 8 -0.652400
+ "C3'" "CT" 0 1 131072 23 6 0.164500
+ "H3'" "H1" 0 1 131072 24 1 0.062300
+ "C2'" "CT" 0 1 131072 25 6 -0.056100
+ "H2'1" "HC" 0 1 131072 26 1 0.048600
+ "H2'2" "HC" 0 1 131072 27 1 0.048600
+ "O3'" "OS" 0 1 131072 28 8 -0.499800
+DCN 29
+ "H5T" "HO" 0 1 131072 1 1 0.410900
+ "O5'" "OH" 0 1 131072 2 8 -0.567100
+ "C5'" "CT" 0 1 131072 3 6 -0.011100
+ "H5'1" "H1" 0 1 131072 4 1 0.066200
+ "H5'2" "H1" 0 1 131072 5 1 0.066200
+ "C4'" "CT" 0 1 131072 6 6 0.072100
+ "H4'" "H1" 0 1 131072 7 1 0.088700
+ "O4'" "OS" 0 1 131072 8 8 -0.312400
+ "C1'" "CT" 0 1 131072 9 6 0.142100
+ "H1'" "H2" 0 1 131072 10 1 0.085100
+ "N1" "N*" 0 1 131072 11 7 -0.131800
+ "C6" "CM" 0 1 131072 12 6 -0.011500
+ "H6" "H4" 0 1 131072 13 1 0.209900
+ "C5" "CM" 0 1 131072 14 6 -0.469600
+ "H5" "HA" 0 1 131072 15 1 0.183300
+ "C4" "CA" 0 1 131072 16 6 0.701000
+ "N4" "N2" 0 1 131072 17 7 -0.741700
+ "H41" "H" 0 1 131072 18 1 0.352600
+ "H42" "H" 0 1 131072 19 1 0.352600
+ "N3" "NC" 0 1 131072 20 7 -0.755500
+ "C2" "C" 0 1 131072 21 6 0.846400
+ "O2" "O" 0 1 131072 22 8 -0.652400
+ "C3'" "CT" 0 1 131072 23 6 0.164500
+ "H3'" "H1" 0 1 131072 24 1 0.062300
+ "C2'" "CT" 0 1 131072 25 6 -0.056100
+ "H2'1" "HC" 0 1 131072 26 1 0.048600
+ "H2'2" "HC" 0 1 131072 27 1 0.048600
+ "O3'" "OH" 0 1 131072 28 8 -0.591800
+ "H3T" "HO" 0 1 131072 29 1 0.399900
+DG 33
+ "P" "P" 0 1 131072 1 15 1.073500
+ "O1P" "O2" 0 1 131072 2 8 -0.754500
+ "O2P" "O2" 0 1 131072 3 8 -0.754500
+ "O5'" "OS" 0 1 131072 4 8 -0.412800
+ "C5'" "CT" 0 1 131072 5 6 -0.011100
+ "H5'1" "H1" 0 1 131072 6 1 0.066200
+ "H5'2" "H1" 0 1 131072 7 1 0.066200
+ "C4'" "CT" 0 1 131072 8 6 0.072100
+ "H4'" "H1" 0 1 131072 9 1 0.088700
+ "O4'" "OS" 0 1 131072 10 8 -0.312400
+ "C1'" "CT" 0 1 131072 11 6 0.155700
+ "H1'" "H2" 0 1 131072 12 1 0.088600
+ "N9" "N*" 0 1 131072 13 7 -0.037900
+ "C8" "CK" 0 1 131072 14 6 0.135300
+ "H8" "H5" 0 1 131072 15 1 0.150800
+ "N7" "NB" 0 1 131072 16 7 -0.513900
+ "C5" "CB" 0 1 131072 17 6 0.058500
+ "C6" "C" 0 1 131072 18 6 0.507100
+ "O6" "O" 0 1 131072 19 8 -0.530100
+ "N1" "NA" 0 1 131072 20 7 -0.540500
+ "H1" "H" 0 1 131072 21 1 0.375000
+ "C2" "CA" 0 1 131072 22 6 0.683400
+ "N2" "N2" 0 1 131072 23 7 -0.750800
+ "H21" "H" 0 1 131072 24 1 0.344300
+ "H22" "H" 0 1 131072 25 1 0.344300
+ "N3" "NC" 0 1 131072 26 7 -0.650200
+ "C4" "CB" 0 1 131072 27 6 0.290900
+ "C3'" "CT" 0 1 131072 28 6 0.164500
+ "H3'" "H1" 0 1 131072 29 1 0.062300
+ "C2'" "CT" 0 1 131072 30 6 -0.056100
+ "H2'1" "HC" 0 1 131072 31 1 0.048600
+ "H2'2" "HC" 0 1 131072 32 1 0.048600
+ "O3'" "OS" 0 1 131072 33 8 -0.499800
+DG3 34
+ "P" "P" 0 1 131072 1 15 1.073500
+ "O1P" "O2" 0 1 131072 2 8 -0.754500
+ "O2P" "O2" 0 1 131072 3 8 -0.754500
+ "O5'" "OS" 0 1 131072 4 8 -0.412800
+ "C5'" "CT" 0 1 131072 5 6 -0.011100
+ "H5'1" "H1" 0 1 131072 6 1 0.066200
+ "H5'2" "H1" 0 1 131072 7 1 0.066200
+ "C4'" "CT" 0 1 131072 8 6 0.072100
+ "H4'" "H1" 0 1 131072 9 1 0.088700
+ "O4'" "OS" 0 1 131072 10 8 -0.312400
+ "C1'" "CT" 0 1 131072 11 6 0.155700
+ "H1'" "H2" 0 1 131072 12 1 0.088600
+ "N9" "N*" 0 1 131072 13 7 -0.037900
+ "C8" "CK" 0 1 131072 14 6 0.135300
+ "H8" "H5" 0 1 131072 15 1 0.150800
+ "N7" "NB" 0 1 131072 16 7 -0.513900
+ "C5" "CB" 0 1 131072 17 6 0.058500
+ "C6" "C" 0 1 131072 18 6 0.507100
+ "O6" "O" 0 1 131072 19 8 -0.530100
+ "N1" "NA" 0 1 131072 20 7 -0.540500
+ "H1" "H" 0 1 131072 21 1 0.375000
+ "C2" "CA" 0 1 131072 22 6 0.683400
+ "N2" "N2" 0 1 131072 23 7 -0.750800
+ "H21" "H" 0 1 131072 24 1 0.344300
+ "H22" "H" 0 1 131072 25 1 0.344300
+ "N3" "NC" 0 1 131072 26 7 -0.650200
+ "C4" "CB" 0 1 131072 27 6 0.290900
+ "C3'" "CT" 0 1 131072 28 6 0.164500
+ "H3'" "H1" 0 1 131072 29 1 0.062300
+ "C2'" "CT" 0 1 131072 30 6 -0.056100
+ "H2'1" "HC" 0 1 131072 31 1 0.048600
+ "H2'2" "HC" 0 1 131072 32 1 0.048600
+ "O3'" "OH" 0 1 131072 33 8 -0.591800
+ "H3T" "HO" 0 1 131072 34 1 0.399900
+DG5 31
+ "H5T" "HO" 0 1 131072 1 1 0.410900
+ "O5'" "OH" 0 1 131072 2 8 -0.567100
+ "C5'" "CT" 0 1 131072 3 6 -0.011100
+ "H5'1" "H1" 0 1 131072 4 1 0.066200
+ "H5'2" "H1" 0 1 131072 5 1 0.066200
+ "C4'" "CT" 0 1 131072 6 6 0.072100
+ "H4'" "H1" 0 1 131072 7 1 0.088700
+ "O4'" "OS" 0 1 131072 8 8 -0.312400
+ "C1'" "CT" 0 1 131072 9 6 0.155700
+ "H1'" "H2" 0 1 131072 10 1 0.088600
+ "N9" "N*" 0 1 131072 11 7 -0.037900
+ "C8" "CK" 0 1 131072 12 6 0.135300
+ "H8" "H5" 0 1 131072 13 1 0.150800
+ "N7" "NB" 0 1 131072 14 7 -0.513900
+ "C5" "CB" 0 1 131072 15 6 0.058500
+ "C6" "C" 0 1 131072 16 6 0.507100
+ "O6" "O" 0 1 131072 17 8 -0.530100
+ "N1" "NA" 0 1 131072 18 7 -0.540500
+ "H1" "H" 0 1 131072 19 1 0.375000
+ "C2" "CA" 0 1 131072 20 6 0.683400
+ "N2" "N2" 0 1 131072 21 7 -0.750800
+ "H21" "H" 0 1 131072 22 1 0.344300
+ "H22" "H" 0 1 131072 23 1 0.344300
+ "N3" "NC" 0 1 131072 24 7 -0.650200
+ "C4" "CB" 0 1 131072 25 6 0.290900
+ "C3'" "CT" 0 1 131072 26 6 0.164500
+ "H3'" "H1" 0 1 131072 27 1 0.062300
+ "C2'" "CT" 0 1 131072 28 6 -0.056100
+ "H2'1" "HC" 0 1 131072 29 1 0.048600
+ "H2'2" "HC" 0 1 131072 30 1 0.048600
+ "O3'" "OS" 0 1 131072 31 8 -0.499800
+DGN 32
+ "H5T" "HO" 0 1 131072 1 1 0.410900
+ "O5'" "OH" 0 1 131072 2 8 -0.567100
+ "C5'" "CT" 0 1 131072 3 6 -0.011100
+ "H5'1" "H1" 0 1 131072 4 1 0.066200
+ "H5'2" "H1" 0 1 131072 5 1 0.066200
+ "C4'" "CT" 0 1 131072 6 6 0.072100
+ "H4'" "H1" 0 1 131072 7 1 0.088700
+ "O4'" "OS" 0 1 131072 8 8 -0.312400
+ "C1'" "CT" 0 1 131072 9 6 0.155700
+ "H1'" "H2" 0 1 131072 10 1 0.088600
+ "N9" "N*" 0 1 131072 11 7 -0.037900
+ "C8" "CK" 0 1 131072 12 6 0.135300
+ "H8" "H5" 0 1 131072 13 1 0.150800
+ "N7" "NB" 0 1 131072 14 7 -0.513900
+ "C5" "CB" 0 1 131072 15 6 0.058500
+ "C6" "C" 0 1 131072 16 6 0.507100
+ "O6" "O" 0 1 131072 17 8 -0.530100
+ "N1" "NA" 0 1 131072 18 7 -0.540500
+ "H1" "H" 0 1 131072 19 1 0.375000
+ "C2" "CA" 0 1 131072 20 6 0.683400
+ "N2" "N2" 0 1 131072 21 7 -0.750800
+ "H21" "H" 0 1 131072 22 1 0.344300
+ "H22" "H" 0 1 131072 23 1 0.344300
+ "N3" "NC" 0 1 131072 24 7 -0.650200
+ "C4" "CB" 0 1 131072 25 6 0.290900
+ "C3'" "CT" 0 1 131072 26 6 0.164500
+ "H3'" "H1" 0 1 131072 27 1 0.062300
+ "C2'" "CT" 0 1 131072 28 6 -0.056100
+ "H2'1" "HC" 0 1 131072 29 1 0.048600
+ "H2'2" "HC" 0 1 131072 30 1 0.048600
+ "O3'" "OH" 0 1 131072 31 8 -0.591800
+ "H3T" "HO" 0 1 131072 32 1 0.399900
+DT 32
+ "P" "P" 0 1 131072 1 15 1.073500
+ "O1P" "O2" 0 1 131072 2 8 -0.754500
+ "O2P" "O2" 0 1 131072 3 8 -0.754500
+ "O5'" "OS" 0 1 131072 4 8 -0.412800
+ "C5'" "CT" 0 1 131072 5 6 -0.011100
+ "H5'1" "H1" 0 1 131072 6 1 0.066200
+ "H5'2" "H1" 0 1 131072 7 1 0.066200
+ "C4'" "CT" 0 1 131072 8 6 0.072100
+ "H4'" "H1" 0 1 131072 9 1 0.088700
+ "O4'" "OS" 0 1 131072 10 8 -0.312400
+ "C1'" "CT" 0 1 131072 11 6 0.108200
+ "H1'" "H2" 0 1 131072 12 1 0.107400
+ "N1" "N*" 0 1 131072 13 7 -0.028200
+ "C6" "CM" 0 1 131072 14 6 -0.255200
+ "H6" "H4" 0 1 131072 15 1 0.279600
+ "C5" "CM" 0 1 131072 16 6 -0.038800
+ "C7" "CT" 0 1 131072 17 6 -0.132600
+ "H71" "HC" 0 1 131072 18 1 0.060600
+ "H72" "HC" 0 1 131072 19 1 0.060600
+ "H73" "HC" 0 1 131072 20 1 0.060600
+ "C4" "C" 0 1 131072 21 6 0.560800
+ "O4" "O" 0 1 131072 22 8 -0.545500
+ "N3" "NA" 0 1 131072 23 7 -0.482400
+ "H3" "H" 0 1 131072 24 1 0.354200
+ "C2" "C" 0 1 131072 25 6 0.589200
+ "O2" "O" 0 1 131072 26 8 -0.588000
+ "C3'" "CT" 0 1 131072 27 6 0.164500
+ "H3'" "H1" 0 1 131072 28 1 0.062300
+ "C2'" "CT" 0 1 131072 29 6 -0.056100
+ "H2'1" "HC" 0 1 131072 30 1 0.048600
+ "H2'2" "HC" 0 1 131072 31 1 0.048600
+ "O3'" "OS" 0 1 131072 32 8 -0.499800
+DT3 33
+ "P" "P" 0 1 131072 1 15 1.073500
+ "O1P" "O2" 0 1 131072 2 8 -0.754500
+ "O2P" "O2" 0 1 131072 3 8 -0.754500
+ "O5'" "OS" 0 1 131072 4 8 -0.412800
+ "C5'" "CT" 0 1 131072 5 6 -0.011100
+ "H5'1" "H1" 0 1 131072 6 1 0.066200
+ "H5'2" "H1" 0 1 131072 7 1 0.066200
+ "C4'" "CT" 0 1 131072 8 6 0.072100
+ "H4'" "H1" 0 1 131072 9 1 0.088700
+ "O4'" "OS" 0 1 131072 10 8 -0.312400
+ "C1'" "CT" 0 1 131072 11 6 0.108200
+ "H1'" "H2" 0 1 131072 12 1 0.107400
+ "N1" "N*" 0 1 131072 13 7 -0.028200
+ "C6" "CM" 0 1 131072 14 6 -0.255200
+ "H6" "H4" 0 1 131072 15 1 0.279600
+ "C5" "CM" 0 1 131072 16 6 -0.038800
+ "C7" "CT" 0 1 131072 17 6 -0.132600
+ "H71" "HC" 0 1 131072 18 1 0.060600
+ "H72" "HC" 0 1 131072 19 1 0.060600
+ "H73" "HC" 0 1 131072 20 1 0.060600
+ "C4" "C" 0 1 131072 21 6 0.560800
+ "O4" "O" 0 1 131072 22 8 -0.545500
+ "N3" "NA" 0 1 131072 23 7 -0.482400
+ "H3" "H" 0 1 131072 24 1 0.354200
+ "C2" "C" 0 1 131072 25 6 0.589200
+ "O2" "O" 0 1 131072 26 8 -0.588000
+ "C3'" "CT" 0 1 131072 27 6 0.164500
+ "H3'" "H1" 0 1 131072 28 1 0.062300
+ "C2'" "CT" 0 1 131072 29 6 -0.056100
+ "H2'1" "HC" 0 1 131072 30 1 0.048600
+ "H2'2" "HC" 0 1 131072 31 1 0.048600
+ "O3'" "OH" 0 1 131072 32 8 -0.591800
+ "H3T" "HO" 0 1 131072 33 1 0.399900
+DT5 30
+ "H5T" "HO" 0 1 131072 1 1 0.410900
+ "O5'" "OH" 0 1 131072 2 8 -0.567100
+ "C5'" "CT" 0 1 131072 3 6 -0.011100
+ "H5'1" "H1" 0 1 131072 4 1 0.066200
+ "H5'2" "H1" 0 1 131072 5 1 0.066200
+ "C4'" "CT" 0 1 131072 6 6 0.072100
+ "H4'" "H1" 0 1 131072 7 1 0.088700
+ "O4'" "OS" 0 1 131072 8 8 -0.312400
+ "C1'" "CT" 0 1 131072 9 6 0.108200
+ "H1'" "H2" 0 1 131072 10 1 0.107400
+ "N1" "N*" 0 1 131072 11 7 -0.028200
+ "C6" "CM" 0 1 131072 12 6 -0.255200
+ "H6" "H4" 0 1 131072 13 1 0.279600
+ "C5" "CM" 0 1 131072 14 6 -0.038800
+ "C7" "CT" 0 1 131072 15 6 -0.132600
+ "H71" "HC" 0 1 131072 16 1 0.060600
+ "H72" "HC" 0 1 131072 17 1 0.060600
+ "H73" "HC" 0 1 131072 18 1 0.060600
+ "C4" "C" 0 1 131072 19 6 0.560800
+ "O4" "O" 0 1 131072 20 8 -0.545500
+ "N3" "NA" 0 1 131072 21 7 -0.482400
+ "H3" "H" 0 1 131072 22 1 0.354200
+ "C2" "C" 0 1 131072 23 6 0.589200
+ "O2" "O" 0 1 131072 24 8 -0.588000
+ "C3'" "CT" 0 1 131072 25 6 0.164500
+ "H3'" "H1" 0 1 131072 26 1 0.062300
+ "C2'" "CT" 0 1 131072 27 6 -0.056100
+ "H2'1" "HC" 0 1 131072 28 1 0.048600
+ "H2'2" "HC" 0 1 131072 29 1 0.048600
+ "O3'" "OS" 0 1 131072 30 8 -0.499800
+DTN 31
+ "H5T" "HO" 0 1 131072 1 1 0.410900
+ "O5'" "OH" 0 1 131072 2 8 -0.567100
+ "C5'" "CT" 0 1 131072 3 6 -0.011100
+ "H5'1" "H1" 0 1 131072 4 1 0.066200
+ "H5'2" "H1" 0 1 131072 5 1 0.066200
+ "C4'" "CT" 0 1 131072 6 6 0.072100
+ "H4'" "H1" 0 1 131072 7 1 0.088700
+ "O4'" "OS" 0 1 131072 8 8 -0.312400
+ "C1'" "CT" 0 1 131072 9 6 0.108200
+ "H1'" "H2" 0 1 131072 10 1 0.107400
+ "N1" "N*" 0 1 131072 11 7 -0.028200
+ "C6" "CM" 0 1 131072 12 6 -0.255200
+ "H6" "H4" 0 1 131072 13 1 0.279600
+ "C5" "CM" 0 1 131072 14 6 -0.038800
+ "C7" "CT" 0 1 131072 15 6 -0.132600
+ "H71" "HC" 0 1 131072 16 1 0.060600
+ "H72" "HC" 0 1 131072 17 1 0.060600
+ "H73" "HC" 0 1 131072 18 1 0.060600
+ "C4" "C" 0 1 131072 19 6 0.560800
+ "O4" "O" 0 1 131072 20 8 -0.545500
+ "N3" "NA" 0 1 131072 21 7 -0.482400
+ "H3" "H" 0 1 131072 22 1 0.354200
+ "C2" "C" 0 1 131072 23 6 0.589200
+ "O2" "O" 0 1 131072 24 8 -0.588000
+ "C3'" "CT" 0 1 131072 25 6 0.164500
+ "H3'" "H1" 0 1 131072 26 1 0.062300
+ "C2'" "CT" 0 1 131072 27 6 -0.056100
+ "H2'1" "HC" 0 1 131072 28 1 0.048600
+ "H2'2" "HC" 0 1 131072 29 1 0.048600
+ "O3'" "OH" 0 1 131072 30 8 -0.591800
+ "H3T" "HO" 0 1 131072 31 1 0.399900
+RA 33
+ "P" "P" 0 1 131072 1 15 1.072000
+ "O1P" "O2" 0 1 131072 2 8 -0.755200
+ "O2P" "O2" 0 1 131072 3 8 -0.755200
+ "O5'" "OS" 0 1 131072 4 8 -0.408500
+ "C5'" "CT" 0 1 131072 5 6 0.055600
+ "H5'1" "H1" 0 1 131072 6 1 0.060200
+ "H5'2" "H1" 0 1 131072 7 1 0.060200
+ "C4'" "CT" 0 1 131072 8 6 0.021900
+ "H4'" "H1" 0 1 131072 9 1 0.105500
+ "O4'" "OS" 0 1 131072 10 8 -0.259900
+ "C1'" "CT" 0 1 131072 11 6 0.026400
+ "H1'" "H2" 0 1 131072 12 1 0.166000
+ "N9" "N*" 0 1 131072 13 7 -0.099400
+ "C8" "CK" 0 1 131072 14 6 0.228000
+ "H8" "H5" 0 1 131072 15 1 0.115400
+ "N7" "NB" 0 1 131072 16 7 -0.546200
+ "C5" "CB" 0 1 131072 17 6 -0.019600
+ "C6" "CA" 0 1 131072 18 6 0.584800
+ "N6" "N2" 0 1 131072 19 7 -0.692800
+ "H61" "H" 0 1 131072 20 1 0.347500
+ "H62" "H" 0 1 131072 21 1 0.347500
+ "N1" "NC" 0 1 131072 22 7 -0.718100
+ "C2" "CQ" 0 1 131072 23 6 0.580500
+ "H2" "H5" 0 1 131072 24 1 0.003100
+ "N3" "NC" 0 1 131072 25 7 -0.739000
+ "C4" "CB" 0 1 131072 26 6 0.439800
+ "C3'" "CT" 0 1 131072 27 6 0.252200
+ "H3'" "H1" 0 1 131072 28 1 0.019100
+ "C2'" "CT" 0 1 131072 29 6 0.004100
+ "H2'1" "H1" 0 1 131072 30 1 0.103300
+ "O2'" "OH" 0 1 131072 31 8 -0.496300
+ "HO'2" "HO" 0 1 131072 32 1 0.372000
+ "O3'" "OS" 0 1 131072 33 8 -0.474900
+RA3 34
+ "P" "P" 0 1 131072 1 15 1.072000
+ "O1P" "O2" 0 1 131072 2 8 -0.755200
+ "O2P" "O2" 0 1 131072 3 8 -0.755200
+ "O5'" "OS" 0 1 131072 4 8 -0.408500
+ "C5'" "CT" 0 1 131072 5 6 0.055600
+ "H5'1" "H1" 0 1 131072 6 1 0.060200
+ "H5'2" "H1" 0 1 131072 7 1 0.060200
+ "C4'" "CT" 0 1 131072 8 6 0.021900
+ "H4'" "H1" 0 1 131072 9 1 0.105500
+ "O4'" "OS" 0 1 131072 10 8 -0.259900
+ "C1'" "CT" 0 1 131072 11 6 0.026400
+ "H1'" "H2" 0 1 131072 12 1 0.166000
+ "N9" "N*" 0 1 131072 13 7 -0.099400
+ "C8" "CK" 0 1 131072 14 6 0.228000
+ "H8" "H5" 0 1 131072 15 1 0.115400
+ "N7" "NB" 0 1 131072 16 7 -0.546200
+ "C5" "CB" 0 1 131072 17 6 -0.019600
+ "C6" "CA" 0 1 131072 18 6 0.584800
+ "N6" "N2" 0 1 131072 19 7 -0.692800
+ "H61" "H" 0 1 131072 20 1 0.347500
+ "H62" "H" 0 1 131072 21 1 0.347500
+ "N1" "NC" 0 1 131072 22 7 -0.718100
+ "C2" "CQ" 0 1 131072 23 6 0.580500
+ "H2" "H5" 0 1 131072 24 1 0.003100
+ "N3" "NC" 0 1 131072 25 7 -0.739000
+ "C4" "CB" 0 1 131072 26 6 0.439800
+ "C3'" "CT" 0 1 131072 27 6 0.252200
+ "H3'" "H1" 0 1 131072 28 1 0.019100
+ "C2'" "CT" 0 1 131072 29 6 0.004100
+ "H2'1" "H1" 0 1 131072 30 1 0.103300
+ "O2'" "OH" 0 1 131072 31 8 -0.496300
+ "HO'2" "HO" 0 1 131072 32 1 0.372000
+ "O3'" "OH" 0 1 131072 33 8 -0.579800
+ "H3T" "HO" 0 1 131072 34 1 0.412800
+RA5 31
+ "H5T" "HO" 0 1 131072 1 1 0.408600
+ "O5'" "OH" 0 1 131072 2 8 -0.563400
+ "C5'" "CT" 0 1 131072 3 6 0.055600
+ "H5'1" "H1" 0 1 131072 4 1 0.060200
+ "H5'2" "H1" 0 1 131072 5 1 0.060200
+ "C4'" "CT" 0 1 131072 6 6 0.021900
+ "H4'" "H1" 0 1 131072 7 1 0.105500
+ "O4'" "OS" 0 1 131072 8 8 -0.259900
+ "C1'" "CT" 0 1 131072 9 6 0.026400
+ "H1'" "H2" 0 1 131072 10 1 0.166000
+ "N9" "N*" 0 1 131072 11 7 -0.099400
+ "C8" "CK" 0 1 131072 12 6 0.228000
+ "H8" "H5" 0 1 131072 13 1 0.115400
+ "N7" "NB" 0 1 131072 14 7 -0.546200
+ "C5" "CB" 0 1 131072 15 6 -0.019600
+ "C6" "CA" 0 1 131072 16 6 0.584800
+ "N6" "N2" 0 1 131072 17 7 -0.692800
+ "H61" "H" 0 1 131072 18 1 0.347500
+ "H62" "H" 0 1 131072 19 1 0.347500
+ "N1" "NC" 0 1 131072 20 7 -0.718100
+ "C2" "CQ" 0 1 131072 21 6 0.580500
+ "H2" "H5" 0 1 131072 22 1 0.003100
+ "N3" "NC" 0 1 131072 23 7 -0.739000
+ "C4" "CB" 0 1 131072 24 6 0.439800
+ "C3'" "CT" 0 1 131072 25 6 0.252200
+ "H3'" "H1" 0 1 131072 26 1 0.019100
+ "C2'" "CT" 0 1 131072 27 6 0.004100
+ "H2'1" "H1" 0 1 131072 28 1 0.103300
+ "O2'" "OH" 0 1 131072 29 8 -0.496300
+ "HO'2" "HO" 0 1 131072 30 1 0.372000
+ "O3'" "OS" 0 1 131072 31 8 -0.474900
+RAN 32
+ "H5T" "HO" 0 1 131072 1 1 0.408600
+ "O5'" "OH" 0 1 131072 2 8 -0.563400
+ "C5'" "CT" 0 1 131072 3 6 0.055600
+ "H5'1" "H1" 0 1 131072 4 1 0.060200
+ "H5'2" "H1" 0 1 131072 5 1 0.060200
+ "C4'" "CT" 0 1 131072 6 6 0.021900
+ "H4'" "H1" 0 1 131072 7 1 0.105500
+ "O4'" "OS" 0 1 131072 8 8 -0.259900
+ "C1'" "CT" 0 1 131072 9 6 0.026400
+ "H1'" "H2" 0 1 131072 10 1 0.166000
+ "N9" "N*" 0 1 131072 11 7 -0.099400
+ "C8" "CK" 0 1 131072 12 6 0.228000
+ "H8" "H5" 0 1 131072 13 1 0.115400
+ "N7" "NB" 0 1 131072 14 7 -0.546200
+ "C5" "CB" 0 1 131072 15 6 -0.019600
+ "C6" "CA" 0 1 131072 16 6 0.584800
+ "N6" "N2" 0 1 131072 17 7 -0.692800
+ "H61" "H" 0 1 131072 18 1 0.347500
+ "H62" "H" 0 1 131072 19 1 0.347500
+ "N1" "NC" 0 1 131072 20 7 -0.718100
+ "C2" "CQ" 0 1 131072 21 6 0.580500
+ "H2" "H5" 0 1 131072 22 1 0.003100
+ "N3" "NC" 0 1 131072 23 7 -0.739000
+ "C4" "CB" 0 1 131072 24 6 0.439800
+ "C3'" "CT" 0 1 131072 25 6 0.252200
+ "H3'" "H1" 0 1 131072 26 1 0.019100
+ "C2'" "CT" 0 1 131072 27 6 0.004100
+ "H2'1" "H1" 0 1 131072 28 1 0.103300
+ "O2'" "OH" 0 1 131072 29 8 -0.496300
+ "HO'2" "HO" 0 1 131072 30 1 0.372000
+ "O3'" "OH" 0 1 131072 31 8 -0.579800
+ "H3T" "HO" 0 1 131072 32 1 0.412800
+RC 31
+ "P" "P" 0 1 131072 1 15 1.072000
+ "O1P" "O2" 0 1 131072 2 8 -0.755200
+ "O2P" "O2" 0 1 131072 3 8 -0.755200
+ "O5'" "OS" 0 1 131072 4 8 -0.408500
+ "C5'" "CT" 0 1 131072 5 6 0.055600
+ "H5'1" "H1" 0 1 131072 6 1 0.060200
+ "H5'2" "H1" 0 1 131072 7 1 0.060200
+ "C4'" "CT" 0 1 131072 8 6 0.021900
+ "H4'" "H1" 0 1 131072 9 1 0.105500
+ "O4'" "OS" 0 1 131072 10 8 -0.259900
+ "C1'" "CT" 0 1 131072 11 6 0.017500
+ "H1'" "H2" 0 1 131072 12 1 0.142700
+ "N1" "N*" 0 1 131072 13 7 -0.082700
+ "C6" "CM" 0 1 131072 14 6 -0.040300
+ "H6" "H4" 0 1 131072 15 1 0.201700
+ "C5" "CM" 0 1 131072 16 6 -0.444900
+ "H5" "HA" 0 1 131072 17 1 0.175900
+ "C4" "CA" 0 1 131072 18 6 0.677000
+ "N4" "N2" 0 1 131072 19 7 -0.746000
+ "H41" "H" 0 1 131072 20 1 0.354200
+ "H42" "H" 0 1 131072 21 1 0.354200
+ "N3" "NC" 0 1 131072 22 7 -0.726400
+ "C2" "C" 0 1 131072 23 6 0.802100
+ "O2" "O" 0 1 131072 24 8 -0.661100
+ "C3'" "CT" 0 1 131072 25 6 0.252200
+ "H3'" "H1" 0 1 131072 26 1 0.019100
+ "C2'" "CT" 0 1 131072 27 6 0.004100
+ "H2'1" "H1" 0 1 131072 28 1 0.103300
+ "O2'" "OH" 0 1 131072 29 8 -0.496300
+ "HO'2" "HO" 0 1 131072 30 1 0.372000
+ "O3'" "OS" 0 1 131072 31 8 -0.474900
+RC3 32
+ "P" "P" 0 1 131072 1 15 1.072000
+ "O1P" "O2" 0 1 131072 2 8 -0.755200
+ "O2P" "O2" 0 1 131072 3 8 -0.755200
+ "O5'" "OS" 0 1 131072 4 8 -0.408500
+ "C5'" "CT" 0 1 131072 5 6 0.055600
+ "H5'1" "H1" 0 1 131072 6 1 0.060200
+ "H5'2" "H1" 0 1 131072 7 1 0.060200
+ "C4'" "CT" 0 1 131072 8 6 0.021900
+ "H4'" "H1" 0 1 131072 9 1 0.105500
+ "O4'" "OS" 0 1 131072 10 8 -0.259900
+ "C1'" "CT" 0 1 131072 11 6 0.017500
+ "H1'" "H2" 0 1 131072 12 1 0.142700
+ "N1" "N*" 0 1 131072 13 7 -0.082700
+ "C6" "CM" 0 1 131072 14 6 -0.040300
+ "H6" "H4" 0 1 131072 15 1 0.201700
+ "C5" "CM" 0 1 131072 16 6 -0.444900
+ "H5" "HA" 0 1 131072 17 1 0.175900
+ "C4" "CA" 0 1 131072 18 6 0.677000
+ "N4" "N2" 0 1 131072 19 7 -0.746000
+ "H41" "H" 0 1 131072 20 1 0.354200
+ "H42" "H" 0 1 131072 21 1 0.354200
+ "N3" "NC" 0 1 131072 22 7 -0.726400
+ "C2" "C" 0 1 131072 23 6 0.802100
+ "O2" "O" 0 1 131072 24 8 -0.661100
+ "C3'" "CT" 0 1 131072 25 6 0.252200
+ "H3'" "H1" 0 1 131072 26 1 0.019100
+ "C2'" "CT" 0 1 131072 27 6 0.004100
+ "H2'1" "H1" 0 1 131072 28 1 0.103300
+ "O2'" "OH" 0 1 131072 29 8 -0.496300
+ "HO'2" "HO" 0 1 131072 30 1 0.372000
+ "O3'" "OH" 0 1 131072 31 8 -0.579800
+ "H3T" "HO" 0 1 131072 32 1 0.412800
+RC5 29
+ "H5T" "HO" 0 1 131072 1 1 0.408600
+ "O5'" "OH" 0 1 131072 2 8 -0.563400
+ "C5'" "CT" 0 1 131072 3 6 0.055600
+ "H5'1" "H1" 0 1 131072 4 1 0.060200
+ "H5'2" "H1" 0 1 131072 5 1 0.060200
+ "C4'" "CT" 0 1 131072 6 6 0.021900
+ "H4'" "H1" 0 1 131072 7 1 0.105500
+ "O4'" "OS" 0 1 131072 8 8 -0.259900
+ "C1'" "CT" 0 1 131072 9 6 0.017500
+ "H1'" "H2" 0 1 131072 10 1 0.142700
+ "N1" "N*" 0 1 131072 11 7 -0.082700
+ "C6" "CM" 0 1 131072 12 6 -0.040300
+ "H6" "H4" 0 1 131072 13 1 0.201700
+ "C5" "CM" 0 1 131072 14 6 -0.444900
+ "H5" "HA" 0 1 131072 15 1 0.175900
+ "C4" "CA" 0 1 131072 16 6 0.677000
+ "N4" "N2" 0 1 131072 17 7 -0.746000
+ "H41" "H" 0 1 131072 18 1 0.354200
+ "H42" "H" 0 1 131072 19 1 0.354200
+ "N3" "NC" 0 1 131072 20 7 -0.726400
+ "C2" "C" 0 1 131072 21 6 0.802100
+ "O2" "O" 0 1 131072 22 8 -0.661100
+ "C3'" "CT" 0 1 131072 23 6 0.252200
+ "H3'" "H1" 0 1 131072 24 1 0.019100
+ "C2'" "CT" 0 1 131072 25 6 0.004100
+ "H2'1" "H1" 0 1 131072 26 1 0.103300
+ "O2'" "OH" 0 1 131072 27 8 -0.496300
+ "HO'2" "HO" 0 1 131072 28 1 0.372000
+ "O3'" "OS" 0 1 131072 29 8 -0.474900
+RCN 30
+ "H5T" "HO" 0 1 131072 1 1 0.408600
+ "O5'" "OH" 0 1 131072 2 8 -0.563400
+ "C5'" "CT" 0 1 131072 3 6 0.055600
+ "H5'1" "H1" 0 1 131072 4 1 0.060200
+ "H5'2" "H1" 0 1 131072 5 1 0.060200
+ "C4'" "CT" 0 1 131072 6 6 0.021900
+ "H4'" "H1" 0 1 131072 7 1 0.105500
+ "O4'" "OS" 0 1 131072 8 8 -0.259900
+ "C1'" "CT" 0 1 131072 9 6 0.017500
+ "H1'" "H2" 0 1 131072 10 1 0.142700
+ "N1" "N*" 0 1 131072 11 7 -0.082700
+ "C6" "CM" 0 1 131072 12 6 -0.040300
+ "H6" "H4" 0 1 131072 13 1 0.201700
+ "C5" "CM" 0 1 131072 14 6 -0.444900
+ "H5" "HA" 0 1 131072 15 1 0.175900
+ "C4" "CA" 0 1 131072 16 6 0.677000
+ "N4" "N2" 0 1 131072 17 7 -0.746000
+ "H41" "H" 0 1 131072 18 1 0.354200
+ "H42" "H" 0 1 131072 19 1 0.354200
+ "N3" "NC" 0 1 131072 20 7 -0.726400
+ "C2" "C" 0 1 131072 21 6 0.802100
+ "O2" "O" 0 1 131072 22 8 -0.661100
+ "C3'" "CT" 0 1 131072 23 6 0.252200
+ "H3'" "H1" 0 1 131072 24 1 0.019100
+ "C2'" "CT" 0 1 131072 25 6 0.004100
+ "H2'1" "H1" 0 1 131072 26 1 0.103300
+ "O2'" "OH" 0 1 131072 27 8 -0.496300
+ "HO'2" "HO" 0 1 131072 28 1 0.372000
+ "O3'" "OH" 0 1 131072 29 8 -0.579800
+ "H3T" "HO" 0 1 131072 30 1 0.412800
+RG 34
+ "P" "P" 0 1 131072 1 15 1.072000
+ "O1P" "O2" 0 1 131072 2 8 -0.755200
+ "O2P" "O2" 0 1 131072 3 8 -0.755200
+ "O5'" "OS" 0 1 131072 4 8 -0.408500
+ "C5'" "CT" 0 1 131072 5 6 0.055600
+ "H5'1" "H1" 0 1 131072 6 1 0.060200
+ "H5'2" "H1" 0 1 131072 7 1 0.060200
+ "C4'" "CT" 0 1 131072 8 6 0.021900
+ "H4'" "H1" 0 1 131072 9 1 0.105500
+ "O4'" "OS" 0 1 131072 10 8 -0.259900
+ "C1'" "CT" 0 1 131072 11 6 0.113200
+ "H1'" "H2" 0 1 131072 12 1 0.101900
+ "N9" "N*" 0 1 131072 13 7 -0.087100
+ "C8" "CK" 0 1 131072 14 6 0.196600
+ "H8" "H5" 0 1 131072 15 1 0.116800
+ "N7" "NB" 0 1 131072 16 7 -0.527900
+ "C5" "CB" 0 1 131072 17 6 0.082700
+ "C6" "C" 0 1 131072 18 6 0.464900
+ "O6" "O" 0 1 131072 19 8 -0.515000
+ "N1" "NA" 0 1 131072 20 7 -0.484800
+ "H1" "H" 0 1 131072 21 1 0.360100
+ "C2" "CA" 0 1 131072 22 6 0.642300
+ "N2" "N2" 0 1 131072 23 7 -0.750100
+ "H21" "H" 0 1 131072 24 1 0.348800
+ "H22" "H" 0 1 131072 25 1 0.348800
+ "N3" "NC" 0 1 131072 26 7 -0.631300
+ "C4" "CB" 0 1 131072 27 6 0.244000
+ "C3'" "CT" 0 1 131072 28 6 0.252200
+ "H3'" "H1" 0 1 131072 29 1 0.019100
+ "C2'" "CT" 0 1 131072 30 6 0.004100
+ "H2'1" "H1" 0 1 131072 31 1 0.103300
+ "O2'" "OH" 0 1 131072 32 8 -0.496300
+ "HO'2" "HO" 0 1 131072 33 1 0.372000
+ "O3'" "OS" 0 1 131072 34 8 -0.474900
+RG3 35
+ "P" "P" 0 1 131072 1 15 1.072000
+ "O1P" "O2" 0 1 131072 2 8 -0.755200
+ "O2P" "O2" 0 1 131072 3 8 -0.755200
+ "O5'" "OS" 0 1 131072 4 8 -0.408500
+ "C5'" "CT" 0 1 131072 5 6 0.055600
+ "H5'1" "H1" 0 1 131072 6 1 0.060200
+ "H5'2" "H1" 0 1 131072 7 1 0.060200
+ "C4'" "CT" 0 1 131072 8 6 0.021900
+ "H4'" "H1" 0 1 131072 9 1 0.105500
+ "O4'" "OS" 0 1 131072 10 8 -0.259900
+ "C1'" "CT" 0 1 131072 11 6 0.113200
+ "H1'" "H2" 0 1 131072 12 1 0.101900
+ "N9" "N*" 0 1 131072 13 7 -0.087100
+ "C8" "CK" 0 1 131072 14 6 0.196600
+ "H8" "H5" 0 1 131072 15 1 0.116800
+ "N7" "NB" 0 1 131072 16 7 -0.527900
+ "C5" "CB" 0 1 131072 17 6 0.082700
+ "C6" "C" 0 1 131072 18 6 0.464900
+ "O6" "O" 0 1 131072 19 8 -0.515000
+ "N1" "NA" 0 1 131072 20 7 -0.484800
+ "H1" "H" 0 1 131072 21 1 0.360100
+ "C2" "CA" 0 1 131072 22 6 0.642300
+ "N2" "N2" 0 1 131072 23 7 -0.750100
+ "H21" "H" 0 1 131072 24 1 0.348800
+ "H22" "H" 0 1 131072 25 1 0.348800
+ "N3" "NC" 0 1 131072 26 7 -0.631300
+ "C4" "CB" 0 1 131072 27 6 0.244000
+ "C3'" "CT" 0 1 131072 28 6 0.252200
+ "H3'" "H1" 0 1 131072 29 1 0.019100
+ "C2'" "CT" 0 1 131072 30 6 0.004100
+ "H2'1" "H1" 0 1 131072 31 1 0.103300
+ "O2'" "OH" 0 1 131072 32 8 -0.496300
+ "HO'2" "HO" 0 1 131072 33 1 0.372000
+ "O3'" "OH" 0 1 131072 34 8 -0.579800
+ "H3T" "HO" 0 1 131072 35 1 0.412800
+RG5 32
+ "H5T" "HO" 0 1 131072 1 1 0.408600
+ "O5'" "OH" 0 1 131072 2 8 -0.563400
+ "C5'" "CT" 0 1 131072 3 6 0.055600
+ "H5'1" "H1" 0 1 131072 4 1 0.060200
+ "H5'2" "H1" 0 1 131072 5 1 0.060200
+ "C4'" "CT" 0 1 131072 6 6 0.021900
+ "H4'" "H1" 0 1 131072 7 1 0.105500
+ "O4'" "OS" 0 1 131072 8 8 -0.259900
+ "C1'" "CT" 0 1 131072 9 6 0.113200
+ "H1'" "H2" 0 1 131072 10 1 0.101900
+ "N9" "N*" 0 1 131072 11 7 -0.087100
+ "C8" "CK" 0 1 131072 12 6 0.196600
+ "H8" "H5" 0 1 131072 13 1 0.116800
+ "N7" "NB" 0 1 131072 14 7 -0.527900
+ "C5" "CB" 0 1 131072 15 6 0.082700
+ "C6" "C" 0 1 131072 16 6 0.464900
+ "O6" "O" 0 1 131072 17 8 -0.515000
+ "N1" "NA" 0 1 131072 18 7 -0.484800
+ "H1" "H" 0 1 131072 19 1 0.360100
+ "C2" "CA" 0 1 131072 20 6 0.642300
+ "N2" "N2" 0 1 131072 21 7 -0.750100
+ "H21" "H" 0 1 131072 22 1 0.348800
+ "H22" "H" 0 1 131072 23 1 0.348800
+ "N3" "NC" 0 1 131072 24 7 -0.631300
+ "C4" "CB" 0 1 131072 25 6 0.244000
+ "C3'" "CT" 0 1 131072 26 6 0.252200
+ "H3'" "H1" 0 1 131072 27 1 0.019100
+ "C2'" "CT" 0 1 131072 28 6 0.004100
+ "H2'1" "H1" 0 1 131072 29 1 0.103300
+ "O2'" "OH" 0 1 131072 30 8 -0.496300
+ "HO'2" "HO" 0 1 131072 31 1 0.372000
+ "O3'" "OS" 0 1 131072 32 8 -0.474900
+RGN 33
+ "H5T" "HO" 0 1 131072 1 1 0.408600
+ "O5'" "OH" 0 1 131072 2 8 -0.563400
+ "C5'" "CT" 0 1 131072 3 6 0.055600
+ "H5'1" "H1" 0 1 131072 4 1 0.060200
+ "H5'2" "H1" 0 1 131072 5 1 0.060200
+ "C4'" "CT" 0 1 131072 6 6 0.021900
+ "H4'" "H1" 0 1 131072 7 1 0.105500
+ "O4'" "OS" 0 1 131072 8 8 -0.259900
+ "C1'" "CT" 0 1 131072 9 6 0.113200
+ "H1'" "H2" 0 1 131072 10 1 0.101900
+ "N9" "N*" 0 1 131072 11 7 -0.087100
+ "C8" "CK" 0 1 131072 12 6 0.196600
+ "H8" "H5" 0 1 131072 13 1 0.116800
+ "N7" "NB" 0 1 131072 14 7 -0.527900
+ "C5" "CB" 0 1 131072 15 6 0.082700
+ "C6" "C" 0 1 131072 16 6 0.464900
+ "O6" "O" 0 1 131072 17 8 -0.515000
+ "N1" "NA" 0 1 131072 18 7 -0.484800
+ "H1" "H" 0 1 131072 19 1 0.360100
+ "C2" "CA" 0 1 131072 20 6 0.642300
+ "N2" "N2" 0 1 131072 21 7 -0.750100
+ "H21" "H" 0 1 131072 22 1 0.348800
+ "H22" "H" 0 1 131072 23 1 0.348800
+ "N3" "NC" 0 1 131072 24 7 -0.631300
+ "C4" "CB" 0 1 131072 25 6 0.244000
+ "C3'" "CT" 0 1 131072 26 6 0.252200
+ "H3'" "H1" 0 1 131072 27 1 0.019100
+ "C2'" "CT" 0 1 131072 28 6 0.004100
+ "H2'1" "H1" 0 1 131072 29 1 0.103300
+ "O2'" "OH" 0 1 131072 30 8 -0.496300
+ "HO'2" "HO" 0 1 131072 31 1 0.372000
+ "O3'" "OH" 0 1 131072 32 8 -0.579800
+ "H3T" "HO" 0 1 131072 33 1 0.412800
+RU 30
+ "P" "P" 0 1 131072 1 15 1.072000
+ "O1P" "O2" 0 1 131072 2 8 -0.755200
+ "O2P" "O2" 0 1 131072 3 8 -0.755200
+ "O5'" "OS" 0 1 131072 4 8 -0.408500
+ "C5'" "CT" 0 1 131072 5 6 0.055600
+ "H5'1" "H1" 0 1 131072 6 1 0.060200
+ "H5'2" "H1" 0 1 131072 7 1 0.060200
+ "C4'" "CT" 0 1 131072 8 6 0.021900
+ "H4'" "H1" 0 1 131072 9 1 0.105500
+ "O4'" "OS" 0 1 131072 10 8 -0.259900
+ "C1'" "CT" 0 1 131072 11 6 0.083400
+ "H1'" "H2" 0 1 131072 12 1 0.115000
+ "N1" "N*" 0 1 131072 13 7 -0.011500
+ "C6" "CM" 0 1 131072 14 6 -0.120600
+ "H6" "H4" 0 1 131072 15 1 0.221100
+ "C5" "CM" 0 1 131072 16 6 -0.317100
+ "H5" "HA" 0 1 131072 17 1 0.164000
+ "C4" "C" 0 1 131072 18 6 0.572800
+ "O4" "O" 0 1 131072 19 8 -0.552800
+ "N3" "NA" 0 1 131072 20 7 -0.340900
+ "H3" "H" 0 1 131072 21 1 0.307700
+ "C2" "C" 0 1 131072 22 6 0.462500
+ "O2" "O" 0 1 131072 23 8 -0.559700
+ "C3'" "CT" 0 1 131072 24 6 0.252200
+ "H3'" "H1" 0 1 131072 25 1 0.019100
+ "C2'" "CT" 0 1 131072 26 6 0.004100
+ "H2'1" "H1" 0 1 131072 27 1 0.103300
+ "O2'" "OH" 0 1 131072 28 8 -0.496300
+ "HO'2" "HO" 0 1 131072 29 1 0.372000
+ "O3'" "OS" 0 1 131072 30 8 -0.474900
+RU3 31
+ "P" "P" 0 1 131072 1 15 1.072000
+ "O1P" "O2" 0 1 131072 2 8 -0.755200
+ "O2P" "O2" 0 1 131072 3 8 -0.755200
+ "O5'" "OS" 0 1 131072 4 8 -0.408500
+ "C5'" "CT" 0 1 131072 5 6 0.055600
+ "H5'1" "H1" 0 1 131072 6 1 0.060200
+ "H5'2" "H1" 0 1 131072 7 1 0.060200
+ "C4'" "CT" 0 1 131072 8 6 0.021900
+ "H4'" "H1" 0 1 131072 9 1 0.105500
+ "O4'" "OS" 0 1 131072 10 8 -0.259900
+ "C1'" "CT" 0 1 131072 11 6 0.083400
+ "H1'" "H2" 0 1 131072 12 1 0.115000
+ "N1" "N*" 0 1 131072 13 7 -0.011500
+ "C6" "CM" 0 1 131072 14 6 -0.120600
+ "H6" "H4" 0 1 131072 15 1 0.221100
+ "C5" "CM" 0 1 131072 16 6 -0.317100
+ "H5" "HA" 0 1 131072 17 1 0.164000
+ "C4" "C" 0 1 131072 18 6 0.572800
+ "O4" "O" 0 1 131072 19 8 -0.552800
+ "N3" "NA" 0 1 131072 20 7 -0.340900
+ "H3" "H" 0 1 131072 21 1 0.307700
+ "C2" "C" 0 1 131072 22 6 0.462500
+ "O2" "O" 0 1 131072 23 8 -0.559700
+ "C3'" "CT" 0 1 131072 24 6 0.252200
+ "H3'" "H1" 0 1 131072 25 1 0.019100
+ "C2'" "CT" 0 1 131072 26 6 0.004100
+ "H2'1" "H1" 0 1 131072 27 1 0.103300
+ "O2'" "OH" 0 1 131072 28 8 -0.496300
+ "HO'2" "HO" 0 1 131072 29 1 0.372000
+ "O3'" "OH" 0 1 131072 30 8 -0.579800
+ "H3T" "HO" 0 1 131072 31 1 0.412800
+RU5 28
+ "H5T" "HO" 0 1 131072 1 1 0.408600
+ "O5'" "OH" 0 1 131072 2 8 -0.563400
+ "C5'" "CT" 0 1 131072 3 6 0.055600
+ "H5'1" "H1" 0 1 131072 4 1 0.060200
+ "H5'2" "H1" 0 1 131072 5 1 0.060200
+ "C4'" "CT" 0 1 131072 6 6 0.021900
+ "H4'" "H1" 0 1 131072 7 1 0.105500
+ "O4'" "OS" 0 1 131072 8 8 -0.259900
+ "C1'" "CT" 0 1 131072 9 6 0.083400
+ "H1'" "H2" 0 1 131072 10 1 0.115000
+ "N1" "N*" 0 1 131072 11 7 -0.011500
+ "C6" "CM" 0 1 131072 12 6 -0.120600
+ "H6" "H4" 0 1 131072 13 1 0.221100
+ "C5" "CM" 0 1 131072 14 6 -0.317100
+ "H5" "HA" 0 1 131072 15 1 0.164000
+ "C4" "C" 0 1 131072 16 6 0.572800
+ "O4" "O" 0 1 131072 17 8 -0.552800
+ "N3" "NA" 0 1 131072 18 7 -0.340900
+ "H3" "H" 0 1 131072 19 1 0.307700
+ "C2" "C" 0 1 131072 20 6 0.462500
+ "O2" "O" 0 1 131072 21 8 -0.559700
+ "C3'" "CT" 0 1 131072 22 6 0.252200
+ "H3'" "H1" 0 1 131072 23 1 0.019100
+ "C2'" "CT" 0 1 131072 24 6 0.004100
+ "H2'1" "H1" 0 1 131072 25 1 0.103300
+ "O2'" "OH" 0 1 131072 26 8 -0.496300
+ "HO'2" "HO" 0 1 131072 27 1 0.372000
+ "O3'" "OS" 0 1 131072 28 8 -0.474900
+RUN 29
+ "H5T" "HO" 0 1 131072 1 1 0.408600
+ "O5'" "OH" 0 1 131072 2 8 -0.563400
+ "C5'" "CT" 0 1 131072 3 6 0.055600
+ "H5'1" "H1" 0 1 131072 4 1 0.060200
+ "H5'2" "H1" 0 1 131072 5 1 0.060200
+ "C4'" "CT" 0 1 131072 6 6 0.021900
+ "H4'" "H1" 0 1 131072 7 1 0.105500
+ "O4'" "OS" 0 1 131072 8 8 -0.259900
+ "C1'" "CT" 0 1 131072 9 6 0.083400
+ "H1'" "H2" 0 1 131072 10 1 0.115000
+ "N1" "N*" 0 1 131072 11 7 -0.011500
+ "C6" "CM" 0 1 131072 12 6 -0.120600
+ "H6" "H4" 0 1 131072 13 1 0.221100
+ "C5" "CM" 0 1 131072 14 6 -0.317100
+ "H5" "HA" 0 1 131072 15 1 0.164000
+ "C4" "C" 0 1 131072 16 6 0.572800
+ "O4" "O" 0 1 131072 17 8 -0.552800
+ "N3" "NA" 0 1 131072 18 7 -0.340900
+ "H3" "H" 0 1 131072 19 1 0.307700
+ "C2" "C" 0 1 131072 20 6 0.462500
+ "O2" "O" 0 1 131072 21 8 -0.559700
+ "C3'" "CT" 0 1 131072 22 6 0.252200
+ "H3'" "H1" 0 1 131072 23 1 0.019100
+ "C2'" "CT" 0 1 131072 24 6 0.004100
+ "H2'1" "H1" 0 1 131072 25 1 0.103300
+ "O2'" "OH" 0 1 131072 26 8 -0.496300
+ "HO'2" "HO" 0 1 131072 27 1 0.372000
+ "O3'" "OH" 0 1 131072 28 8 -0.579800
+ "H3T" "HO" 0 1 131072 29 1 0.412800
+DR 18
+ "P" "P" 0 1 131072 1 15 1.073500
+ "O1P" "O2" 0 1 131072 2 8 -0.754500
+ "O2P" "O2" 0 1 131072 3 8 -0.754500
+ "O5'" "OS" 0 1 131072 4 8 -0.412800
+ "C5'" "CT" 0 1 131072 5 6 -0.011100
+ "H5'1" "H1" 0 1 131072 6 1 0.066200
+ "H5'2" "H1" 0 1 131072 7 1 0.066200
+ "C4'" "CT" 0 1 131072 8 6 0.072100
+ "H4'" "H1" 0 1 131072 9 1 0.088700
+ "O4'" "OS" 0 1 131072 10 8 -0.312400
+ "C1'" "CT" 0 1 131072 11 6 0.142100
+ "H1'" "H2" 0 1 131072 12 1 0.085100
+ "C2'" "CT" 0 1 131072 13 6 -0.056100
+ "H2'1" "HC" 0 1 131072 14 1 0.048600
+ "H2'2" "HC" 0 1 131072 15 1 0.048600
+ "C3'" "CT" 0 1 131072 16 6 0.164500
+ "H3'" "H1" 0 1 131072 17 1 0.062300
+ "O3'" "OS" 0 1 131072 18 8 -0.499800
+CAM1 19
+"C1"  "CT" 0 1 131072 1 6 -0.285
+"C2"  "C"  0 1 131072 2 6  0.53
+"O"   "O"  0 1 131072 3 8 -0.545
+"C3"  "CT" 0 1 131072 4 6  0.0936
+"C7"  "CT" 0 1 131072 5 6  0.2575
+"C8"  "CT" 0 1 131072 6 6 -0.312
+"C9"  "CT" 0 1 131072 7 6 -0.312
+"C10" "CT" 0 1 131072 8 6 -0.286
+"H11" "HC" 0 1 131072 9 1   0.096
+"H12" "HC" 0 1 131072 10 1  0.096
+"H81" "HC" 0 1 131072 11 1  0.0778
+"H82" "HC" 0 1 131072 12 1  0.0778
+"H83" "HC" 0 1 131072 13 1 0.0778
+"H91" "HC" 0 1 131072 14 1 0.0778
+"H92" "HC" 0 1 131072 15 1 0.0778
+"H93" "HC" 0 1 131072 16 1 0.0778
+"H101" "HC" 0 1 131072 17 1 0.0715
+"H102" "HC" 0 1 131072 18 1 0.0715
+"H103" "HC" 0 1 131072 19 1 0.0715
+CAM2 16
+"C2"  "C"  0 1 131072 1 6  0.422
+"O"   "O"  0 1 131072 2 8 -0.545
+"C3"  "CT" 0 1 131072 3 6  0.0936
+"C7"  "CT" 0 1 131072 4 6  0.2575
+"C8"  "CT" 0 1 131072 5 6 -0.312
+"C9"  "CT" 0 1 131072 6 6 -0.312
+"C10" "CT" 0 1 131072 7 6 -0.286
+"H81" "HC" 0 1 131072 8  1  0.0778
+"H82" "HC" 0 1 131072 9  1  0.0778
+"H83" "HC" 0 1 131072 10 1 0.0778
+"H91" "HC" 0 1 131072 11 1 0.0778
+"H92" "HC" 0 1 131072 12 1 0.0778
+"H93" "HC" 0 1 131072 13 1 0.0778
+"H101" "HC" 0 1 131072 14 1 0.0715
+"H102" "HC" 0 1 131072 15 1 0.0715
+"H103" "HC" 0 1 131072 16 1 0.0715
+CVAL  17
+ "N" "N" 0 1 131072 1 7 -0.442000
+ "H" "H" 0 1 131072 2 1 0.295200
+ "CA" "CT" 0 1 131072 3 6 -0.153100
+ "HA" "H1" 0 1 131072 4 1 0.092000
+ "CB" "CT" 0 1 131072 5 6 0.289600
+ "HB" "HC" 0 1 131072 6 1 0.011400
+ "CG1" "CT" 0 1 131072 7 6 -0.290200
+ "HG11" "HC" 0 1 131072 8 1 0.066100
+ "HG12" "HC" 0 1 131072 9 1 0.066100
+ "HG13" "HC" 0 1 131072 10 1 0.066100
+ "CG2" "CT" 0 1 131072 11 6 -0.290200
+ "HG21" "HC" 0 1 131072 12 1 0.066100
+ "HG22" "HC" 0 1 131072 13 1 0.066100
+ "HG23" "HC" 0 1 131072 14 1 0.066100
+ "C" "C" 0 1 131072 15 6 0.577100
+ "O" "O2" 0 1 131072 16 8 -0.743200
+ "OXT" "O2" 0 1 131072 17 8 -0.743200
+NLEU  21
+ "N" "N3" 0 1 131072 1 7 0.190200
+ "H1" "H" 0 1 131072 2 1 0.205600
+ "H2" "H" 0 1 131072 3 1 0.205600
+ "H3" "H" 0 1 131072 4 1 0.205600
+ "CA" "CT" 0 1 131072 5 6 -0.052900
+ "HA" "HP" 0 1 131072 6 1 0.057400
+ "CB" "CT" 0 1 131072 7 6 -0.122100
+ "HB1" "HC" 0 1 131072 8 1 0.033500
+ "HB2" "HC" 0 1 131072 9 1 0.033500
+ "CG" "CT" 0 1 131072 10 6 0.449000
+ "HG" "HC" 0 1 131072 11 1 -0.066400
+ "CD1" "CT" 0 1 131072 12 6 -0.439900
+ "HD11" "HC" 0 1 131072 13 1 0.106500
+ "HD12" "HC" 0 1 131072 14 1 0.106500
+ "HD13" "HC" 0 1 131072 15 1 0.106500
+ "CD2" "CT" 0 1 131072 16 6 -0.439900
+ "HD21" "HC" 0 1 131072 17 1 0.106500
+ "HD22" "HC" 0 1 131072 18 1 0.106500
+ "HD23" "HC" 0 1 131072 19 1 0.106500
+ "C" "C" 0 1 131072 20 6 0.683700
+ "O" "O" 0 1 131072 21 8 -0.581900
+ZN 1
+"ZN" "Zn" 0 1 131072 1 10  2.0 
+ALAT 15 
+"NT" "N3" 0 1 131072 1 7 0.1893
+ "H1" "H" 0 1 131072 2 1 0.256
+ "H2" "H" 0 1 131072 3 1 0.256
+ "H3" "H" 0 1 131072 4  1  0.256
+ "CA" "CT" 0 1 131072 5 6 0.029900
+ "HA" "H1" 0 1 131072 6 1 0.047600
+ "CB" "CT" 0 1 131072 7 6 -0.1212
+ "HB2" "HC" 0 1 131072 8 6 1 0.025700
+ "HB3" "HC" 0 1 131072 9 1 0.025700
+ "CT" "C" 0 1 131072  10 6 0.577100
+ "O1" "O2" 0 1 131072 11  8 -0.743200
+ "O2" "O2" 0 1 131072 12  8 -0.743200 
+ "CG" "CT" 0 1 131072 13 6 -0.1212
+ "HG2" "HC" 0 1 131072 14 1 0.031400
+ "HG3" "HC" 0 1 131072 15 1 0.031400
+HAR 28
+"NT" "N3" 0 1 131072 1 7 0.1893 
+ "H1" "H" 0 1 131072 2 1 0.256 
+ "H2" "H" 0 1 131072 3 1 0.256   
+ "H3" "H" 0 1 131072 4  1  0.256  
+ "CA" "CT" 0 1 131072 5 6 0.029900
+ "HA" "H1" 0 1 131072 6 1 0.047600
+ "CB" "CT" 0 1 131072 7 6 0.004000
+ "HB2" "HC" 0 1 131072 8 6 1 0.025700
+ "HB3" "HC" 0 1 131072 9 1 0.025700
+ "CG" "CT" 0 1 131072 10 6 -0.002700
+ "HG2" "HC" 0 1 131072 11 1 0.031400
+ "HG3" "HC" 0 1 131072 12 1 0.031400
+ "CD" "CT" 0 1 131072  13 6 0.100800
+ "HD2" "H1" 0 1 131072 14 1 0.057500
+ "HD3" "H1" 0 1 131072 15 1 0.057500
+ "NE" "N2" 0 1 131072 16 7 -0.511100
+ "HE" "H" 0 1 131072 17 1 0.323300
+ "CZ" "CA" 0 1 131072 18 6 0.870800
+ "NH1" "N2" 0 1 131072 19 7 -0.834800
+ "HH11" "H" 0 1 131072 20 1 0.420500
+ "HH12" "H" 0 1 131072 21 1 0.420500
+ "NH2" "N2" 0 1 131072 22 7 0.0062 
+ "HH21" "H" 0 1 131072 23 1 0.25
+ "OH" "OH" 0 1 131072  24 8  -0.6   
+ "HOH" "HO" 0 1 131072 25 1 0.35 
+ "CT" "C" 0 1 131072  26 6 0.577100
+ "O1" "O2" 0 1 131072 27 8 -0.743200
+ "O2" "O2" 0 1 131072  28 8 -0.743200
+BH4 32
+    "CD2" "CB"  0 1 131072 1 6   -0.0143 
+    "NE2" "NA" 0 1 131072  2 7    -0.436
+    "CH2" "CT" 0 1 131072  3 6    0.0993
+    "CH1" "CT" 0 1 131072  4 6    -0.0277
+    "NE1" "NA" 0 1 131072  5 7    -0.436
+    "CD1" "CB" 0 1 131072  6 6    0.341
+    "CO"  "C" 0 1 131072   7 6    0.415
+    "NG2" "NA" 0 1 131072  8 7    -0.4192
+    "CB"  "CA" 0 1 131072  9 6    0.7607
+   "NG1" "NC" 0 1 131072  10 7     -0.7313
+   "NA" "N2" 0 1 131072   11 7   -0.9396  
+   "CZ1" "CT" 0 1 131072  12 6    0.153  
+   "OZ1" "OH" 0 1 131072  13 8    -0.6317
+   "O" "O" 0 1 131072     14 8    -0.5983
+   "CZ2" "CT" 0 1 131072  15 6    0.153
+   "OZ2" "OH" 0 1 131072  16 8     -0.6317
+   "CZ3" "CT" 0 1 131072  17 6    0.2092
+   "H1" "H" 0 1 131072    18 1    0.4304
+   "H2" "H" 0 1 131072    19 1     0.4304
+   "HG" "H" 0 1 131072    20 1    0.3253 
+   "HE1" "H" 0 1 131072   21 1    0.309
+   "HE2" "H" 0 1 131072   22 1   0.309
+   "HH11" "H1" 0 1 131072 23 1     0.0776
+   "HH12" "H1" 0 1 131072 24 1    0.0776 
+   "HH21" "H1" 0 1 131072 25 1     0.0578
+   "HCZ1" "H1" 0 1 131072 26 1     0.072
+   "HCZ2" "H1" 0 1 131072 27 1     0.072
+   "HOZ1" "HO" 0 1 131072 28 1     0.3968
+   "HOZ2" "HO" 0 1 131072 29 1     0.3968
+  "HZ31" "HC" 0 1 131072 30 1     0.0661
+   "HZ32" "HC" 0 1 131072 31 1     0.0661
+   "HZ33" "HC" 0 1 131072 32 1    0.0661
+ljs  
+65      
+  H           0.6000  0.0157            !Ferguson base pair geom.            
+  HO          0.0000  0.0000             OPLS Jorgensen, JACS,110,(1988),1657
+  HS          0.6000  0.0157             W. Cornell CH3SH --> CH3OH FEP      
+  HC          1.4870  0.0157             OPLS       
+  H1          1.3870  0.0157             Veenstra et al JCC,8,(1992),963     
+  H2          1.2870  0.0157             Veenstra et al JCC,8,(1992),963     
+  H3          1.1870  0.0157             Veenstra et al JCC,8,(1992),963     
+  HP          1.1000  0.0157             Veenstra et al JCC,8,(1992),963     
+  HA          1.4590  0.0150             Spellmeyer 
+  H4          1.4090  0.0150             Spellmeyer, one electrowithdr. neighbor           
+  H5          1.3590  0.0150             Spellmeyer, two electrowithdr. neighbor           
+  HW          0.0000  0.0000             TIP3P water model                   
+  HZ          1.4590  0.0150             H bonded to sp C (Howard et al JCC 16)            
+  O           1.6612  0.2100             OPLS       
+  O1          1.6612  0.2100             LJ xa el tipo O1 del OXI
+  O2          1.6612  0.2100             OPLS       
+  OW          1.7683  0.1520             TIP3P water model                   
+  OH          1.7210  0.2104             OPLS       
+  OS          1.6837  0.1700             OPLS ether 
+  C*          1.9080  0.0860             Spellmeyer 
+  CT          1.9080  0.1094             Spellmeyer 
+  C           1.9080  0.0860             OPLS       
+  N           1.8240  0.1700             OPLS       
+  NY          1.8240  0.1700             N in nitrile                        
+  N3          1.8750  0.1700                        
+  S           2.0000  0.2500             W. Cornell CH3SH and CH3SCH3 FEP's  
+  SH          2.0000  0.2500             W. Cornell CH3SH and CH3SCH3 FEP's  
+  P           2.1000  0.2000             JCC,7,(1986),230;                   
+  IM          2.47    0.1                Cl- Smith & Dang, JCP 1994,100:5,3757             
+  Li          1.1370  0.0183             Li+ Aqvist JPC 1990,94,8021. (adapted)            
+  IP          1.8680  0.00277            Na+ Aqvist JPC 1990,94,8021. (adapted)            
+  Na          1.8680  0.00277            Na+ Aqvist JPC 1990,94,8021. (adapted)            
+  K           2.6580  0.000328           K+  Aqvist JPC 1990,94,8021. (adapted)            
+  Rb          2.9560  0.00017            Rb+ Aqvist JPC 1990,94,8021. (adapted)            
+  Cs          3.3950  0.0000806          Cs+ Aqvist JPC 1990,94,8021. (adapted)            
+  MG          0.7926  0.8947             Mg2+ Aqvist JPC 1990,94,8021.(adapted)            
+  C0          1.7131  0.459789           Ca2+ Aqvist JPC 1990,94,8021.(adapted)            
+  Zn          1.10    0.0125             Zn2+, Merz,PAK, JACS,113,8262,(1991)
+  F           1.75    0.061              Gough et al. JCC 13,(1992),963.     
+  Cl          1.948   0.265              Fox, JPCB,102,8070,(98),flex.mdl CHCl3            
+  Br          2.22    0.320              Junmei(?)  
+  I           2.35    0.40               JCC,7,(1986),230;                   
+  IB          5.0     0.1                solvated ion for vacuum approximation             
+  LP          1.00    1.0000             lone pair   origina 0.00    0.0000 
+  FE          1.200   0.05000            del hemo                    
+  LO          1.600   0.20000            del hemo   
+  LC          1.85    0.12               del hemo   
+  CF          1.9080  0.1094             nuevo hemo en DHE  
+  K+          1.8700  0.0998
+  I-          2.0094  0.2623
+  Pt          2.88    0.4                LJ del Pt
+  OX          1.6837  0.1700           peroxy
+  OY          1.6837  0.1700           peroxy
+  NX          1.8240  0.1700           peroxy
+  OZ          1.6837  0.1700           peroxya
+  oh          1.7210  0.2104
+  ho          0.1000  0.1000            original 0.0000  0.0000
+  c3          1.9080  0.1094
+  h1          1.3870  0.0157
+  c2          1.9080  0.0860
+  ha          1.4590  0.0150
+  ce          1.9080  0.0860
+  c           1.9080  0.0860
+  o           1.6612  0.2100
+  os          1.6837  0.1700
+connectivity 
+96
+PRE 24
+ 1 3 
+ 1 2 
+ 3 5 
+ 3 15 
+ 3 4 
+ 5 7 
+ 5 6 
+ 7 9 
+ 7 8 
+ 9 10 
+ 9 13 
+ 10 11 
+ 10 12 
+ 13 15 
+ 13 14 
+ 15 17 
+ 15 16 
+ 17 18 
+ 18 19 
+ 18 22 
+ 19 20 
+ 19 21 
+ 22 23 
+ 22 24 
+NMET  18
+ 1 2 1
+ 1 3 1
+ 1 4 1
+ 1 5 1
+ 5 6 1
+ 5 7 1
+ 5 18 1
+ 7 8 1
+ 7 9 1
+ 7 10 1
+ 10 11 1
+ 10 12 1
+ 10 13 1
+ 13 14 1
+ 14 15 1
+ 14 16 1
+ 14 17 1
+ 18 19 1
+PERO 3
+1 2
+2 3
+3 4
+OXI 1
+1 2
+HEO 80   
+1 2      
+1 22     
+1 38     
+1 54     
+2 3      
+2 6      
+3 4      
+3 59     
+4 5      
+4 13     
+5 6      
+5 9      
+6 7      
+7 23     
+8 7      
+9 10     
+9 11     
+9 12     
+13 14    
+13 15    
+13 16    
+16 17    
+16 18    
+16 19    
+19 20    
+19 21    
+22 23    
+22 26    
+23 24    
+24 25    
+24 29    
+25 26    
+25 33    
+26 27    
+27 39    
+28 27    
+29 30    
+29 31    
+29 32    
+33 34    
+33 35    
+35 36    
+35 37    
+38 39    
+38 42    
+39 40    
+40 41    
+40 45    
+41 42    
+41 49    
+42 43    
+43 55    
+44 43    
+45 46    
+45 47    
+45 48    
+49 50    
+49 51    
+51 52    
+51 53    
+54 55    
+54 58    
+55 56    
+56 57    
+56 61    
+57 58    
+57 65    
+58 59    
+60 59    
+61 62    
+61 63    
+61 64    
+65 66    
+65 67    
+65 68    
+68 69    
+68 70    
+68 71    
+71 72    
+71 73    
+COR 24
+1 2
+1 6
+1 7
+1 15
+2 3
+2 9
+2 8
+3 4
+3 10
+4 5
+4 11
+5 6
+5 12
+6 13
+7 14
+9 18
+11 16
+11 17
+18 19
+18 20
+19 23
+19 24
+20 21
+20 22
+NO 1
+ 1 2    
+ALAL 8
+ 1 2
+ 1 3
+ 3 4
+ 3 5
+ 3 8
+ 5 6
+ 5 7
+ 8 9
+NALA 11
+1 2 1
+ 1 3 1
+ 1 4 1
+ 1 5 1
+ 5 6 1
+ 5 7 1
+ 5 11 1
+ 7 8 1
+ 7 9 1
+ 7 10 1
+ 11 12 1
+DHEL 38    
+1 2  
+1 3 
+1 4 
+5 6 
+5 7 
+5 8 
+8 9 
+8 10  
+8 11 
+11 12  
+11 13 
+14 15 
+14 16 
+14 17 
+18 19 
+18 20 
+18 21 
+21 22 
+21 23 
+24 25 
+24 26 
+24 27 
+28 29 
+28 30 
+28 31 
+31 32 
+31 33 
+34 35 
+34 36 
+34 37 
+38 39  
+38 40 
+38 41 
+41 42 
+41 43 
+41 44 
+44 45 
+44 46 
+DHE 84    
+1 2       
+2 3      
+2 6      
+3 4      
+4 5      
+5 6      
+5 9      
+9 10     
+9 11     
+9 12     
+4 13     
+13 14    
+13 15    
+13 16    
+16 17    
+16 18    
+16 19    
+19 20    
+19 21    
+3 7      
+7 8      
+6 27     
+27 28    
+1 22     
+22 23    
+23 24    
+24 25    
+25 26    
+22 26    
+23 27    
+24 39    
+25 29    
+25 33    
+33 34    
+33 35    
+33 36    
+36 37    
+36 38    
+29 30    
+29 31    
+29 32    
+1 40     
+40 41    
+41 42    
+42 43    
+43 44    
+44 40    
+41 45    
+45 46    
+26 45    
+42 57    
+43 51    
+43 47    
+47 48    
+47 49    
+47 50    
+51 52    
+51 53    
+51 54    
+54 55    
+54 56    
+44 63    
+63 64    
+63 59    
+1 58     
+58 59    
+58 62    
+62 7     
+59 60    
+60 61    
+61 62    
+60 65    
+65 66    
+65 67    
+65 68    
+61 69    
+69 70    
+69 71    
+69 72    
+72 73    
+72 74    
+72 75    
+75 76    
+75 77    
+HEC 82   
+1 2      
+1 22     
+1 38     
+1 54     
+2 3      
+2 6      
+3 4      
+3 59     
+4 5      
+4 13     
+5 6      
+5 9      
+6 7      
+7 23     
+8 7      
+9 10     
+9 11     
+9 12     
+13 14    
+13 15    
+13 16    
+16 17    
+16 18    
+16 19    
+19 20    
+19 21    
+22 23    
+22 26    
+23 24    
+24 25    
+24 29    
+25 26    
+25 33    
+26 27    
+27 39    
+28 27    
+29 30    
+29 31    
+29 32    
+33 34    
+33 35    
+35 36    
+35 37    
+38 39    
+38 42    
+39 40    
+40 41    
+40 45    
+41 42    
+41 49    
+42 43    
+43 55    
+44 43    
+45 46    
+45 47    
+45 48    
+49 50    
+49 51    
+51 52    
+51 53    
+54 55    
+54 58    
+55 56    
+56 57    
+56 61    
+57 58    
+57 65    
+58 59    
+60 59    
+61 62    
+61 63    
+61 64    
+65 66    
+65 67    
+65 68    
+68 69    
+68 70    
+68 71    
+71 72    
+71 73    
+35 74    
+51 75    
+HEM 80   
+1 2      
+1 22     
+1 38     
+1 54     
+2 3      
+2 6      
+3 4      
+3 59     
+4 5      
+4 13     
+5 6      
+5 9      
+6 7      
+7 23     
+8 7      
+9 10     
+9 11     
+9 12     
+13 14    
+13 15    
+13 16    
+16 17    
+16 18    
+16 19    
+19 20    
+19 21    
+22 23    
+22 26    
+23 24    
+24 25    
+24 29    
+25 26    
+25 33    
+26 27    
+27 39    
+28 27    
+29 30    
+29 31    
+29 32    
+33 34    
+33 35    
+35 36    
+35 37    
+38 39    
+38 42    
+39 40    
+40 41    
+40 45    
+41 42    
+41 49    
+42 43    
+43 55    
+44 43    
+45 46    
+45 47    
+45 48    
+49 50    
+49 51    
+51 52    
+51 53    
+54 55    
+54 58    
+55 56    
+56 57    
+56 61    
+57 58    
+57 65    
+58 59    
+60 59    
+61 62    
+61 63    
+61 64    
+65 66    
+65 67    
+65 68    
+68 69    
+68 70    
+68 71    
+71 72    
+71 73    
+HEML 36 
+1 2
+1 3
+1 4
+5 6
+5 7 
+5 8
+8 9
+8 10
+8 11
+11 12
+11 13
+14 15
+14 16
+14 17
+18 19
+18 20
+20 21
+20 22
+23 24
+23 25
+23 26
+27 28
+27 29
+29 30
+29 31
+32 33
+32 34
+32 35
+36 37
+36 38
+36 39
+39 40
+39 41
+39 42
+42 43 
+42 44
+CH3L 3   
+1 2      
+1 3      
+1 4      
+ETLN 7   
+1 2      
+1 3      
+1 4      
+1 5      
+5 6      
+5 7      
+5 8      
+ACE 5    
+1 2      
+2 3      
+2 4      
+2 5      
+5 6      
+NME 5    
+1 2      
+1 3      
+3 4      
+3 5      
+3 6      
+ALA 9    
+ 1 2     
+ 1 3     
+ 3 4     
+ 3 5     
+ 3 9     
+ 5 6     
+ 5 7     
+ 5 8     
+ 9 10    
+ARG 23   
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 23 1  
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 8 9 1   
+ 8 10 1  
+ 8 11 1  
+ 11 12 1 
+ 11 13 1 
+ 11 14 1 
+ 14 15 1 
+ 14 16 1 
+ 16 17 1 
+ 16 20 1 
+ 17 18 1 
+ 17 19 1 
+ 20 21 1 
+ 20 22 1 
+ 23 24 1 
+ASN 13   
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 13 1  
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 8 9 1   
+ 8 10 1  
+ 10 11 1 
+ 10 12 1 
+ 13 14 1 
+ASP 11   
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 11 1  
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 8 9 1   
+ 8 10 1  
+ 11 12 1 
+ASH 12
+ 1 2 1
+ 1 3 1
+ 3 4 1
+ 3 5 1
+ 3 12 1
+ 5 6 1
+ 5 7 1
+ 5 8 1
+ 8 9 1
+ 8 10 1
+ 10 11 1
+ 12 13 1
+CYM 9    
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 9 1   
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 9 10 1  
+CYS 10   
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 10 1  
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 8 9 1   
+ 10 11 1 
+CYX 9    
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 9 1   
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 9 10 1  
+CYH 9    
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 9 1   
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 9 10 1  
+GLN 16   
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 16 1  
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 8 9 1   
+ 8 10 1  
+ 8 11 1  
+ 11 12 1 
+ 11 13 1 
+ 13 14 1 
+ 13 15 1 
+ 16 17 1 
+GLNC 15
+ 1 2 1
+ 1 3 1
+ 3 4 1
+ 3 5 1
+ 3 16 1
+ 5 6 1
+ 5 7 1
+ 5 8 1
+ 8 9 1
+ 8 10 1
+ 8 11 1
+ 11 12 1
+ 11 13 1
+ 13 14 1
+ 13 15 1
+GLU 14   
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 14 1  
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 8 9 1   
+ 8 10 1  
+ 8 11 1  
+ 11 12 1 
+ 11 13 1 
+ 14 15 1 
+GLH 15
+ 1 2 1
+ 1 3 1
+ 3 4 1
+ 3 5 1
+ 3 15 1
+ 5 6 1
+ 5 7 1
+ 5 8 1
+ 8 9 1
+ 8 10 1
+ 8 11 1
+ 11 12 1
+ 11 13 1
+ 13 14 1
+ 15 16 1
+GLYL 5
+1 2
+1 3
+3 4
+3 5
+5 6
+CGLY 7   
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 6 1   
+ 6 7 1   
+ 6 8 1   
+NGLY 8   
+ 1 2 1   
+ 1 3 1   
+ 1 4 1   
+ 1 5 1   
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 8 9 1   
+GLY 6    
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 6 1   
+ 6 7 1   
+HID 17   
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 16 1  
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 8 9 1   
+ 8 14 1  
+ 9 10 1  
+ 9 11 1  
+ 11 12 1 
+ 11 13 1 
+ 13 14 1 
+ 14 15 1 
+ 16 17 1 
+HIE 17   
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 16 1  
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 8 9 1   
+ 8 14 1  
+ 9 10 1  
+ 10 11 1 
+ 10 12 1 
+ 12 13 1 
+ 12 14 1 
+ 14 15 1 
+ 16 17 1 
+HIP 18   
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 17 1  
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 8 9 1   
+ 8 15 1  
+ 9 10 1  
+ 9 11 1  
+ 11 12 1 
+ 11 13 1 
+ 13 14 1 
+ 13 15 1 
+ 15 16 1 
+ 17 18 1 
+ILE 18   
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 18 1  
+ 5 6 1   
+ 5 7 1   
+ 5 11 1  
+ 7 8 1   
+ 7 9 1   
+ 7 10 1  
+ 11 12 1 
+ 11 13 1 
+ 11 14 1 
+ 14 15 1 
+ 14 16 1 
+ 14 17 1 
+ 18 19 1 
+LEU 18   
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 18 1  
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 8 9 1   
+ 8 10 1  
+ 8 14 1  
+ 10 11 1 
+ 10 12 1 
+ 10 13 1 
+ 14 15 1 
+ 14 16 1 
+ 14 17 1 
+ 18 19 1 
+LYN 20   
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 20 1  
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 8 9 1   
+ 8 10 1  
+ 8 11 1  
+ 11 12 1 
+ 11 13 1 
+ 11 14 1 
+ 14 15 1 
+ 14 16 1 
+ 14 17 1 
+ 17 18 1 
+ 17 19 1 
+ 20 21 1 
+LYS 21   
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 21 1  
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 8 9 1   
+ 8 10 1  
+ 8 11 1  
+ 11 12 1 
+ 11 13 1 
+ 11 14 1 
+ 14 15 1 
+ 14 16 1 
+ 14 17 1 
+ 17 18 1 
+ 17 19 1 
+ 17 20 1 
+ 21 22 1 
+CLYS 22
+ 1 2 1
+ 1 3 1
+ 3 4 1
+ 3 5 1
+ 3 21 1
+ 5 6 1
+ 5 7 1
+ 5 8 1
+ 8 9 1
+ 8 10 1
+ 8 11 1
+ 11 12 1
+ 11 13 1
+ 11 14 1
+ 14 15 1
+ 14 16 1
+ 14 17 1
+ 17 18 1
+ 17 19 1
+ 17 20 1
+ 21 22 1
+ 21 23 1
+MET 16   
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 16 1  
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 8 9 1   
+ 8 10 1  
+ 8 11 1  
+ 11 12 1 
+ 12 13 1 
+ 12 14 1 
+ 12 15 1 
+ 16 17 1 
+PHE 20   
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 19 1  
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 8 9 1   
+ 8 17 1  
+ 9 10 1  
+ 9 11 1  
+ 11 12 1 
+ 11 13 1 
+ 13 14 1 
+ 13 15 1 
+ 15 16 1 
+ 15 17 1 
+ 17 18 1 
+ 19 20 1 
+MBZN 15  
+ 3 5 1   
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 8 9 1   
+ 8 17 1  
+ 9 10 1  
+ 9 11 1  
+ 11 12 1 
+ 11 13 1 
+ 13 14 1 
+ 13 15 1 
+ 15 16 1 
+ 15 17 1 
+ 17 18 1 
+PRO 14   
+ 1 2 1   
+ 1 11 1  
+ 2 3 1   
+ 2 4 1   
+ 2 5 1   
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 8 9 1   
+ 8 10 1  
+ 8 11 1  
+ 11 12 1 
+ 11 13 1 
+ 13 14 1 
+SER 10   
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 10 1  
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 8 9 1   
+ 10 11 1 
+NSER 8
+ 1 2 1
+ 1 3 1
+ 1 8 1
+ 3 4 1
+ 3 5 1
+ 3 6 1
+ 6 7 1
+ 8 9 1
+THR 13   
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 13 1  
+ 5 6 1   
+ 5 7 1   
+ 5 11 1  
+ 7 8 1   
+ 7 9 1   
+ 7 10 1  
+ 11 12 1 
+ 13 14 1 
+TRP 25   
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 23 1  
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 8 9 1   
+ 8 22 1  
+ 9 10 1  
+ 9 11 1  
+ 11 12 1 
+ 11 13 1 
+ 13 14 1 
+ 13 22 1 
+ 14 15 1 
+ 14 16 1 
+ 16 17 1 
+ 16 18 1 
+ 18 19 1 
+ 18 20 1 
+ 20 21 1 
+ 20 22 1 
+ 23 24 1 
+FNOL 16  
+ 3 5 1   
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 8 9 1   
+ 8 18 1  
+ 9 10 1  
+ 9 11 1  
+ 11 12 1 
+ 11 13 1 
+ 13 14 1 
+ 13 16 1 
+ 14 15 1 
+ 16 17 1 
+ 16 18 1 
+ 18 19 1 
+TYR 21   
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 20 1  
+ 5 6 1   
+ 5 7 1   
+ 5 8 1   
+ 8 9 1   
+ 8 18 1  
+ 9 10 1  
+ 9 11 1  
+ 11 12 1 
+ 11 13 1 
+ 13 14 1 
+ 13 16 1 
+ 14 15 1 
+ 16 17 1 
+ 16 18 1 
+ 18 19 1 
+ 20 21 1 
+VAL 15   
+ 1 2 1   
+ 1 3 1   
+ 3 4 1   
+ 3 5 1   
+ 3 15 1  
+ 5 6 1   
+ 5 7 1   
+ 5 11 1  
+ 7 8 1   
+ 7 9 1   
+ 7 10 1  
+ 11 12 1 
+ 11 13 1 
+ 11 14 1 
+ 15 16 1 
+WAT 2    
+1 2      
+1 3      
+HECL 38
+1 2
+1 3
+1 4
+5 6
+5 7 
+5 8
+8 9
+8 10
+8 11
+11 12
+11 13
+14 15
+14 16
+14 17
+18 19
+18 20
+20 21
+20 22
+20 23
+24 25
+24 26
+24 27
+28 29
+28 30
+30 31
+30 32
+30 33
+34 35
+34 36
+34 37
+38 39
+38 40
+38 41
+41 42
+41 43
+41 44
+44 45
+44 46
+DA 34
+ 1 2 1
+ 1 3 1
+ 1 4 1
+ 4 5 1
+ 5 6 1
+ 5 7 1
+ 5 8 1
+ 8 9 1
+ 8 10 1
+ 8 27 1
+ 10 11 1
+ 11 12 1
+ 11 13 1
+ 11 29 1
+ 13 14 1
+ 13 26 1
+ 14 15 1
+ 14 16 1
+ 16 17 1
+ 17 18 1
+ 17 26 1
+ 18 19 1
+ 18 22 1
+ 19 20 1
+ 19 21 1
+ 22 23 1
+ 23 24 1
+ 23 25 1
+ 25 26 1
+ 27 28 1
+ 27 29 1
+ 27 32 1
+ 29 30 1
+ 29 31 1
+DA3 35
+ 1 2 1
+ 1 3 1
+ 1 4 1
+ 4 5 1
+ 5 6 1
+ 5 7 1
+ 5 8 1
+ 8 9 1
+ 8 10 1
+ 8 27 1
+ 10 11 1
+ 11 12 1
+ 11 13 1
+ 11 29 1
+ 13 14 1
+ 13 26 1
+ 14 15 1
+ 14 16 1
+ 16 17 1
+ 17 18 1
+ 17 26 1
+ 18 19 1
+ 18 22 1
+ 19 20 1
+ 19 21 1
+ 22 23 1
+ 23 24 1
+ 23 25 1
+ 25 26 1
+ 27 28 1
+ 27 29 1
+ 27 32 1
+ 29 30 1
+ 29 31 1
+ 32 33 1
+DA5 32
+ 1 2 1
+ 2 3 1
+ 3 4 1
+ 3 5 1
+ 3 6 1
+ 6 7 1
+ 6 8 1
+ 6 25 1
+ 8 9 1
+ 9 10 1
+ 9 11 1
+ 9 27 1
+ 11 12 1
+ 11 24 1
+ 12 13 1
+ 12 14 1
+ 14 15 1
+ 15 16 1
+ 15 24 1
+ 16 17 1
+ 16 20 1
+ 17 18 1
+ 17 19 1
+ 20 21 1
+ 21 22 1
+ 21 23 1
+ 23 24 1
+ 25 26 1
+ 25 27 1
+ 25 30 1
+ 27 28 1
+ 27 29 1
+DAN 33
+ 1 2 1
+ 2 3 1
+ 3 4 1
+ 3 5 1
+ 3 6 1
+ 6 7 1
+ 6 8 1
+ 6 25 1
+ 8 9 1
+ 9 10 1
+ 9 11 1
+ 9 27 1
+ 11 12 1
+ 11 24 1
+ 12 13 1
+ 12 14 1
+ 14 15 1
+ 15 16 1
+ 15 24 1
+ 16 17 1
+ 16 20 1
+ 17 18 1
+ 17 19 1
+ 20 21 1
+ 21 22 1
+ 21 23 1
+ 23 24 1
+ 25 26 1
+ 25 27 1
+ 25 30 1
+ 27 28 1
+ 27 29 1
+ 30 31 1
+DC 31
+ 1 2 1
+ 1 3 1
+ 1 4 1
+ 4 5 1
+ 5 6 1
+ 5 7 1
+ 5 8 1
+ 8 9 1
+ 8 10 1
+ 8 25 1
+ 10 11 1
+ 11 12 1
+ 11 13 1
+ 11 27 1
+ 13 14 1
+ 13 23 1
+ 14 15 1
+ 14 16 1
+ 16 17 1
+ 16 18 1
+ 18 19 1
+ 18 22 1
+ 19 20 1
+ 19 21 1
+ 22 23 1
+ 23 24 1
+ 25 26 1
+ 25 27 1
+ 25 30 1
+ 27 28 1
+ 27 29 1
+DC3 32
+ 1 2 1
+ 1 3 1
+ 1 4 1
+ 4 5 1
+ 5 6 1
+ 5 7 1
+ 5 8 1
+ 8 9 1
+ 8 10 1
+ 8 25 1
+ 10 11 1
+ 11 12 1
+ 11 13 1
+ 11 27 1
+ 13 14 1
+ 13 23 1
+ 14 15 1
+ 14 16 1
+ 16 17 1
+ 16 18 1
+ 18 19 1
+ 18 22 1
+ 19 20 1
+ 19 21 1
+ 22 23 1
+ 23 24 1
+ 25 26 1
+ 25 27 1
+ 25 30 1
+ 27 28 1
+ 27 29 1
+ 30 31 1
+DC5 29
+ 1 2 1
+ 2 3 1
+ 3 4 1
+ 3 5 1
+ 3 6 1
+ 6 7 1
+ 6 8 1
+ 6 23 1
+ 8 9 1
+ 9 10 1
+ 9 11 1
+ 9 25 1
+ 11 12 1
+ 11 21 1
+ 12 13 1
+ 12 14 1
+ 14 15 1
+ 14 16 1
+ 16 17 1
+ 16 20 1
+ 17 18 1
+ 17 19 1
+ 20 21 1
+ 21 22 1
+ 23 24 1
+ 23 25 1
+ 23 28 1
+ 25 26 1
+ 25 27 1
+DCN 30
+ 1 2 1
+ 2 3 1
+ 3 4 1
+ 3 5 1
+ 3 6 1
+ 6 7 1
+ 6 8 1
+ 6 23 1
+ 8 9 1
+ 9 10 1
+ 9 11 1
+ 9 25 1
+ 11 12 1
+ 11 21 1
+ 12 13 1
+ 12 14 1
+ 14 15 1
+ 14 16 1
+ 16 17 1
+ 16 20 1
+ 17 18 1
+ 17 19 1
+ 20 21 1
+ 21 22 1
+ 23 24 1
+ 23 25 1
+ 23 28 1
+ 25 26 1
+ 25 27 1
+ 28 29 1
+DG 35
+ 1 2 1
+ 1 3 1
+ 1 4 1
+ 4 5 1
+ 5 6 1
+ 5 7 1
+ 5 8 1
+ 8 9 1
+ 8 10 1
+ 8 28 1
+ 10 11 1
+ 11 12 1
+ 11 13 1
+ 11 30 1
+ 13 14 1
+ 13 27 1
+ 14 15 1
+ 14 16 1
+ 16 17 1
+ 17 18 1
+ 17 27 1
+ 18 19 1
+ 18 20 1
+ 20 21 1
+ 20 22 1
+ 22 23 1
+ 22 26 1
+ 23 24 1
+ 23 25 1
+ 26 27 1
+ 28 29 1
+ 28 30 1
+ 28 33 1
+ 30 31 1
+ 30 32 1
+DG3 36
+ 1 2 1
+ 1 3 1
+ 1 4 1
+ 4 5 1
+ 5 6 1
+ 5 7 1
+ 5 8 1
+ 8 9 1
+ 8 10 1
+ 8 28 1
+ 10 11 1
+ 11 12 1
+ 11 13 1
+ 11 30 1
+ 13 14 1
+ 13 27 1
+ 14 15 1
+ 14 16 1
+ 16 17 1
+ 17 18 1
+ 17 27 1
+ 18 19 1
+ 18 20 1
+ 20 21 1
+ 20 22 1
+ 22 23 1
+ 22 26 1
+ 23 24 1
+ 23 25 1
+ 26 27 1
+ 28 29 1
+ 28 30 1
+ 28 33 1
+ 30 31 1
+ 30 32 1
+ 33 34 1
+DG5 33
+ 1 2 1
+ 2 3 1
+ 3 4 1
+ 3 5 1
+ 3 6 1
+ 6 7 1
+ 6 8 1
+ 6 26 1
+ 8 9 1
+ 9 10 1
+ 9 11 1
+ 9 28 1
+ 11 12 1
+ 11 25 1
+ 12 13 1
+ 12 14 1
+ 14 15 1
+ 15 16 1
+ 15 25 1
+ 16 17 1
+ 16 18 1
+ 18 19 1
+ 18 20 1
+ 20 21 1
+ 20 24 1
+ 21 22 1
+ 21 23 1
+ 24 25 1
+ 26 27 1
+ 26 28 1
+ 26 31 1
+ 28 29 1
+ 28 30 1
+DGN 34
+ 1 2 1
+ 2 3 1
+ 3 4 1
+ 3 5 1
+ 3 6 1
+ 6 7 1
+ 6 8 1
+ 6 26 1
+ 8 9 1
+ 9 10 1
+ 9 11 1
+ 9 28 1
+ 11 12 1
+ 11 25 1
+ 12 13 1
+ 12 14 1
+ 14 15 1
+ 15 16 1
+ 15 25 1
+ 16 17 1
+ 16 18 1
+ 18 19 1
+ 18 20 1
+ 20 21 1
+ 20 24 1
+ 21 22 1
+ 21 23 1
+ 24 25 1
+ 26 27 1
+ 26 28 1
+ 26 31 1
+ 28 29 1
+ 28 30 1
+ 31 32 1
+DT 33
+ 1 2 1
+ 1 3 1
+ 1 4 1
+ 4 5 1
+ 5 6 1
+ 5 7 1
+ 5 8 1
+ 8 9 1
+ 8 10 1
+ 8 27 1
+ 10 11 1
+ 11 12 1
+ 11 13 1
+ 11 29 1
+ 13 14 1
+ 13 25 1
+ 14 15 1
+ 14 16 1
+ 16 17 1
+ 16 21 1
+ 17 18 1
+ 17 19 1
+ 17 20 1
+ 21 22 1
+ 21 23 1
+ 23 24 1
+ 23 25 1
+ 25 26 1
+ 27 28 1
+ 27 29 1
+ 27 32 1
+ 29 30 1
+ 29 31 1
+DT3 34
+ 1 2 1
+ 1 3 1
+ 1 4 1
+ 4 5 1
+ 5 6 1
+ 5 7 1
+ 5 8 1
+ 8 9 1
+ 8 10 1
+ 8 27 1
+ 10 11 1
+ 11 12 1
+ 11 13 1
+ 11 29 1
+ 13 14 1
+ 13 25 1
+ 14 15 1
+ 14 16 1
+ 16 17 1
+ 16 21 1
+ 17 18 1
+ 17 19 1
+ 17 20 1
+ 21 22 1
+ 21 23 1
+ 23 24 1
+ 23 25 1
+ 25 26 1
+ 27 28 1
+ 27 29 1
+ 27 32 1
+ 29 30 1
+ 29 31 1
+ 32 33 1
+DT5 31
+ 1 2 1
+ 2 3 1
+ 3 4 1
+ 3 5 1
+ 3 6 1
+ 6 7 1
+ 6 8 1
+ 6 25 1
+ 8 9 1
+ 9 10 1
+ 9 11 1
+ 9 27 1
+ 11 12 1
+ 11 23 1
+ 12 13 1
+ 12 14 1
+ 14 15 1
+ 14 19 1
+ 15 16 1
+ 15 17 1
+ 15 18 1
+ 19 20 1
+ 19 21 1
+ 21 22 1
+ 21 23 1
+ 23 24 1
+ 25 26 1
+ 25 27 1
+ 25 30 1
+ 27 28 1
+ 27 29 1
+DTN 32
+ 1 2 1
+ 2 3 1
+ 3 4 1
+ 3 5 1
+ 3 6 1
+ 6 7 1
+ 6 8 1
+ 6 25 1
+ 8 9 1
+ 9 10 1
+ 9 11 1
+ 9 27 1
+ 11 12 1
+ 11 23 1
+ 12 13 1
+ 12 14 1
+ 14 15 1
+ 14 19 1
+ 15 16 1
+ 15 17 1
+ 15 18 1
+ 19 20 1
+ 19 21 1
+ 21 22 1
+ 21 23 1
+ 23 24 1
+ 25 26 1
+ 25 27 1
+ 25 30 1
+ 27 28 1
+ 27 29 1
+ 30 31 1
+RA 35
+ 1 2 1
+ 1 3 1
+ 1 4 1
+ 4 5 1
+ 5 6 1
+ 5 7 1
+ 5 8 1
+ 8 9 1
+ 8 10 1
+ 8 27 1
+ 10 11 1
+ 11 12 1
+ 11 13 1
+ 11 29 1
+ 13 14 1
+ 13 26 1
+ 14 15 1
+ 14 16 1
+ 16 17 1
+ 17 18 1
+ 17 26 1
+ 18 19 1
+ 18 22 1
+ 19 20 1
+ 19 21 1
+ 22 23 1
+ 23 24 1
+ 23 25 1
+ 25 26 1
+ 27 28 1
+ 27 29 1
+ 27 33 1
+ 29 30 1
+ 29 31 1
+ 31 32 1
+RA3 36
+ 1 2 1
+ 1 3 1
+ 1 4 1
+ 4 5 1
+ 5 6 1
+ 5 7 1
+ 5 8 1
+ 8 9 1
+ 8 10 1
+ 8 27 1
+ 10 11 1
+ 11 12 1
+ 11 13 1
+ 11 29 1
+ 13 14 1
+ 13 26 1
+ 14 15 1
+ 14 16 1
+ 16 17 1
+ 17 18 1
+ 17 26 1
+ 18 19 1
+ 18 22 1
+ 19 20 1
+ 19 21 1
+ 22 23 1
+ 23 24 1
+ 23 25 1
+ 25 26 1
+ 27 28 1
+ 27 29 1
+ 27 33 1
+ 29 30 1
+ 29 31 1
+ 31 32 1
+ 33 34 1
+RA5 33
+ 1 2 1
+ 2 3 1
+ 3 4 1
+ 3 5 1
+ 3 6 1
+ 6 7 1
+ 6 8 1
+ 6 25 1
+ 8 9 1
+ 9 10 1
+ 9 11 1
+ 9 27 1
+ 11 12 1
+ 11 24 1
+ 12 13 1
+ 12 14 1
+ 14 15 1
+ 15 16 1
+ 15 24 1
+ 16 17 1
+ 16 20 1
+ 17 18 1
+ 17 19 1
+ 20 21 1
+ 21 22 1
+ 21 23 1
+ 23 24 1
+ 25 26 1
+ 25 27 1
+ 25 31 1
+ 27 28 1
+ 27 29 1
+ 29 30 1
+RAN 34
+ 1 2 1
+ 2 3 1
+ 3 4 1
+ 3 5 1
+ 3 6 1
+ 6 7 1
+ 6 8 1
+ 6 25 1
+ 8 9 1
+ 9 10 1
+ 9 11 1
+ 9 27 1
+ 11 12 1
+ 11 24 1
+ 12 13 1
+ 12 14 1
+ 14 15 1
+ 15 16 1
+ 15 24 1
+ 16 17 1
+ 16 20 1
+ 17 18 1
+ 17 19 1
+ 20 21 1
+ 21 22 1
+ 21 23 1
+ 23 24 1
+ 25 26 1
+ 25 27 1
+ 25 31 1
+ 27 28 1
+ 27 29 1
+ 29 30 1
+ 31 32 1
+RC 32
+ 1 2 1
+ 1 3 1
+ 1 4 1
+ 4 5 1
+ 5 6 1
+ 5 7 1
+ 5 8 1
+ 8 9 1
+ 8 10 1
+ 8 25 1
+ 10 11 1
+ 11 12 1
+ 11 13 1
+ 11 27 1
+ 13 14 1
+ 13 23 1
+ 14 15 1
+ 14 16 1
+ 16 17 1
+ 16 18 1
+ 18 19 1
+ 18 22 1
+ 19 20 1
+ 19 21 1
+ 22 23 1
+ 23 24 1
+ 25 26 1
+ 25 27 1
+ 25 31 1
+ 27 28 1
+ 27 29 1
+ 29 30 1
+RC3 33
+ 1 2 1
+ 1 3 1
+ 1 4 1
+ 4 5 1
+ 5 6 1
+ 5 7 1
+ 5 8 1
+ 8 9 1
+ 8 10 1
+ 8 25 1
+ 10 11 1
+ 11 12 1
+ 11 13 1
+ 11 27 1
+ 13 14 1
+ 13 23 1
+ 14 15 1
+ 14 16 1
+ 16 17 1
+ 16 18 1
+ 18 19 1
+ 18 22 1
+ 19 20 1
+ 19 21 1
+ 22 23 1
+ 23 24 1
+ 25 26 1
+ 25 27 1
+ 25 31 1
+ 27 28 1
+ 27 29 1
+ 29 30 1
+ 31 32 1
+RC5 30
+ 1 2 1
+ 2 3 1
+ 3 4 1
+ 3 5 1
+ 3 6 1
+ 6 7 1
+ 6 8 1
+ 6 23 1
+ 8 9 1
+ 9 10 1
+ 9 11 1
+ 9 25 1
+ 11 12 1
+ 11 21 1
+ 12 13 1
+ 12 14 1
+ 14 15 1
+ 14 16 1
+ 16 17 1
+ 16 20 1
+ 17 18 1
+ 17 19 1
+ 20 21 1
+ 21 22 1
+ 23 24 1
+ 23 25 1
+ 23 29 1
+ 25 26 1
+ 25 27 1
+ 27 28 1
+RCN 31
+ 1 2 1
+ 2 3 1
+ 3 4 1
+ 3 5 1
+ 3 6 1
+ 6 7 1
+ 6 8 1
+ 6 23 1
+ 8 9 1
+ 9 10 1
+ 9 11 1
+ 9 25 1
+ 11 12 1
+ 11 21 1
+ 12 13 1
+ 12 14 1
+ 14 15 1
+ 14 16 1
+ 16 17 1
+ 16 20 1
+ 17 18 1
+ 17 19 1
+ 20 21 1
+ 21 22 1
+ 23 24 1
+ 23 25 1
+ 23 29 1
+ 25 26 1
+ 25 27 1
+ 27 28 1
+ 29 30 1
+RG 36
+ 1 2 1
+ 1 3 1
+ 1 4 1
+ 4 5 1
+ 5 6 1
+ 5 7 1
+ 5 8 1
+ 8 9 1
+ 8 10 1
+ 8 28 1
+ 10 11 1
+ 11 12 1
+ 11 13 1
+ 11 30 1
+ 13 14 1
+ 13 27 1
+ 14 15 1
+ 14 16 1
+ 16 17 1
+ 17 18 1
+ 17 27 1
+ 18 19 1
+ 18 20 1
+ 20 21 1
+ 20 22 1
+ 22 23 1
+ 22 26 1
+ 23 24 1
+ 23 25 1
+ 26 27 1
+ 28 29 1
+ 28 30 1
+ 28 34 1
+ 30 31 1
+ 30 32 1
+ 32 33 1
+RG3 37
+ 1 2 1
+ 1 3 1
+ 1 4 1
+ 4 5 1
+ 5 6 1
+ 5 7 1
+ 5 8 1
+ 8 9 1
+ 8 10 1
+ 8 28 1
+ 10 11 1
+ 11 12 1
+ 11 13 1
+ 11 30 1
+ 13 14 1
+ 13 27 1
+ 14 15 1
+ 14 16 1
+ 16 17 1
+ 17 18 1
+ 17 27 1
+ 18 19 1
+ 18 20 1
+ 20 21 1
+ 20 22 1
+ 22 23 1
+ 22 26 1
+ 23 24 1
+ 23 25 1
+ 26 27 1
+ 28 29 1
+ 28 30 1
+ 28 34 1
+ 30 31 1
+ 30 32 1
+ 32 33 1
+ 34 35 1
+RG5 34
+ 1 2 1
+ 2 3 1
+ 3 4 1
+ 3 5 1
+ 3 6 1
+ 6 7 1
+ 6 8 1
+ 6 26 1
+ 8 9 1
+ 9 10 1
+ 9 11 1
+ 9 28 1
+ 11 12 1
+ 11 25 1
+ 12 13 1
+ 12 14 1
+ 14 15 1
+ 15 16 1
+ 15 25 1
+ 16 17 1
+ 16 18 1
+ 18 19 1
+ 18 20 1
+ 20 21 1
+ 20 24 1
+ 21 22 1
+ 21 23 1
+ 24 25 1
+ 26 27 1
+ 26 28 1
+ 26 32 1
+ 28 29 1
+ 28 30 1
+ 30 31 1
+RGN 35
+ 1 2 1
+ 2 3 1
+ 3 4 1
+ 3 5 1
+ 3 6 1
+ 6 7 1
+ 6 8 1
+ 6 26 1
+ 8 9 1
+ 9 10 1
+ 9 11 1
+ 9 28 1
+ 11 12 1
+ 11 25 1
+ 12 13 1
+ 12 14 1
+ 14 15 1
+ 15 16 1
+ 15 25 1
+ 16 17 1
+ 16 18 1
+ 18 19 1
+ 18 20 1
+ 20 21 1
+ 20 24 1
+ 21 22 1
+ 21 23 1
+ 24 25 1
+ 26 27 1
+ 26 28 1
+ 26 32 1
+ 28 29 1
+ 28 30 1
+ 30 31 1
+ 32 33 1
+RU 31
+ 1 2 1
+ 1 3 1
+ 1 4 1
+ 4 5 1
+ 5 6 1
+ 5 7 1
+ 5 8 1
+ 8 9 1
+ 8 10 1
+ 8 24 1
+ 10 11 1
+ 11 12 1
+ 11 13 1
+ 11 26 1
+ 13 14 1
+ 13 22 1
+ 14 15 1
+ 14 16 1
+ 16 17 1
+ 16 18 1
+ 18 19 1
+ 18 20 1
+ 20 21 1
+ 20 22 1
+ 22 23 1
+ 24 25 1
+ 24 26 1
+ 24 30 1
+ 26 27 1
+ 26 28 1
+ 28 29 1
+RU3 32
+ 1 2 1
+ 1 3 1
+ 1 4 1
+ 4 5 1
+ 5 6 1
+ 5 7 1
+ 5 8 1
+ 8 9 1
+ 8 10 1
+ 8 24 1
+ 10 11 1
+ 11 12 1
+ 11 13 1
+ 11 26 1
+ 13 14 1
+ 13 22 1
+ 14 15 1
+ 14 16 1
+ 16 17 1
+ 16 18 1
+ 18 19 1
+ 18 20 1
+ 20 21 1
+ 20 22 1
+ 22 23 1
+ 24 25 1
+ 24 26 1
+ 24 30 1
+ 26 27 1
+ 26 28 1
+ 28 29 1
+ 30 31 1
+RU5 29
+ 1 2 1
+ 2 3 1
+ 3 4 1
+ 3 5 1
+ 3 6 1
+ 6 7 1
+ 6 8 1
+ 6 22 1
+ 8 9 1
+ 9 10 1
+ 9 11 1
+ 9 24 1
+ 11 12 1
+ 11 20 1
+ 12 13 1
+ 12 14 1
+ 14 15 1
+ 14 16 1
+ 16 17 1
+ 16 18 1
+ 18 19 1
+ 18 20 1
+ 20 21 1
+ 22 23 1
+ 22 24 1
+ 22 28 1
+ 24 25 1
+ 24 26 1
+ 26 27 1
+RUN 30
+ 1 2 1
+ 2 3 1
+ 3 4 1
+ 3 5 1
+ 3 6 1
+ 6 7 1
+ 6 8 1
+ 6 22 1
+ 8 9 1
+ 9 10 1
+ 9 11 1
+ 9 24 1
+ 11 12 1
+ 11 20 1
+ 12 13 1
+ 12 14 1
+ 14 15 1
+ 14 16 1
+ 16 17 1
+ 16 18 1
+ 18 19 1
+ 18 20 1
+ 20 21 1
+ 22 23 1
+ 22 24 1
+ 22 28 1
+ 24 25 1
+ 24 26 1
+ 26 27 1
+ 28 29 1
+DR 18
+ 1 2
+ 1 3
+ 1 4
+ 4 5
+ 5 6
+ 5 7
+ 5 8
+ 8 9
+ 8 10
+ 8 16
+ 10 11
+ 11 12
+ 11 13
+ 13 14
+ 13 15
+ 13 16
+ 16 17
+ 16 18
+CAM1 18
+1 2
+1 9
+1 10
+2 3
+2 4
+4 5
+4 8
+8 17
+8 18
+8 19
+5 6
+6 11
+6 12
+6 13
+5 7
+7 14
+7 15
+7 16
+CAM2 15        
+1 2
+1 3
+3 4
+3 7
+4 5
+4 6 
+5 8 
+5 9 
+5 10
+6 11
+6 12
+6 13
+7 14
+7 15
+7 16
+CVAL  16 
+ 1 2 1
+ 1 3 1
+ 3 4 1
+ 3 5 1
+ 3 15 1
+ 5 6 1
+ 5 7 1
+ 5 11 1
+ 7 8 1
+ 7 9 1
+ 7 10 1
+ 11 12 1
+ 11 13 1
+ 11 14 1
+ 15 16 1
+ 15 17 1
+NLEU 20
+ 1 2 1
+ 1 3 1
+ 1 4 1
+ 1 5 1
+ 5 6 1
+ 5 7 1
+ 5 20 1
+ 7 8 1
+ 7 9 1
+ 7 10 1
+ 10 11 1
+ 10 12 1
+ 10 16 1
+ 12 13 1
+ 12 14 1
+ 12 15 1
+ 16 17 1
+ 16 18 1
+ 16 19 1
+ 20 21 1
+ALAT 14
+1 2
+1 3
+1 4
+1 5
+5 6
+5 7
+5 10
+7 8 
+7 9
+10 11
+10 12
+7 13
+13 14
+13 15
+BH4 33
+1 2
+1 6
+1 7
+2 3
+2 22
+3 4
+4 5
+4 23
+4 24
+3 25
+3 12
+5 6
+5 21
+6 10
+7 8
+7 14
+8 9
+8 20
+9 10 
+9 11
+11 18
+11 19
+12 13
+13 28
+12 26
+12 15
+15 27
+15 16
+16 29
+15 17
+17 30
+17 31
+17 32
+HAR 27
+ 1 2
+ 1 3 
+ 1 4 
+ 1  5 
+ 5 6 1
+ 5 7 1
+ 5 26 
+ 26 27
+ 26 28
+ 7  8
+ 7  9 
+ 7  10 
+ 10 11 
+ 10 12
+ 10 13 
+ 13 14
+ 13 15
+ 13 16
+ 16 17
+ 16 18
+ 18 19
+ 19 20
+ 19 21
+ 18 22
+ 22 23
+ 22 24
+ 24 25
+impropers 
+83
+GLYL   2
+ -M   CA   N    H
+ CA   +M   C    O
+HEO 20
+ C1A  C4A  NA   FE
+ C1B  C4B  NB   FE
+ C1C  C4C  NC   FE
+ C1D  C4D  ND   FE
+ C2A  NA   C1A  CHA
+ C2B  NB   C1B  CHB
+ C2C  NC   C1C  CHC
+ C2D  ND   C1D  CHD
+ C3A  C1A  C2A  CAA
+ C3B  C1B  C2B  CMB
+ C3C  C1C  C2C  CMC
+ C3D  C1D  C2D  CMD
+ C4A  C2A  C3A  CMA
+ C4B  C2B  C3B  CAB
+ C4C  C2C  C3C  CAC
+ C4D  C2D  C3D  CAD
+ NA   C3A  C4A  CHB
+ NB   C3B  C4B  CHC
+ NC   C3C  C4C  CHD
+ ND   C3D  C4D  CHA
+COR 4
+C2 C4 C3 H3
+C3 C5 C4 CA
+C4 C6 C5 H5
+C1 C5 C6 H6
+ALAL  2
+ -M   CA   N    H
+ CA   +M   C    O
+DHE 18   
+ C1A  C4A  NA   FE     
+ C1B  C4B  NB   FE     
+ C1C  C4C  NC   FE     
+ C1D  C4D  ND   FE     
+ C2A  NA   C1A  CHA    
+ C2B  NB   C1B  CHB    
+ C2C  NC   C1C  CHC    
+ C2D  ND   C1D  CHD    
+ C3A  C1A  C2A  CAA    
+ C3B  C1B  C2B  OMB    
+ C3C  C1C  C2C  OMC    
+ C3D  C1D  C2D  CMD    
+ C4A  C2A  C3A  CMA    
+ C4D  C2D  C3D  CAD    
+ NA   C3A  C4A  CHB    
+ NB   C3B  C4B  CHC    
+ NC   C3C  C4C  CHD    
+ ND   C3D  C4D  CHA    
+HEM 20   
+ C1A  C4A  NA   FE     
+ C1B  C4B  NB   FE     
+ C1C  C4C  NC   FE     
+ C1D  C4D  ND   FE     
+ C2A  NA   C1A  CHA    
+ C2B  NB   C1B  CHB    
+ C2C  NC   C1C  CHC    
+ C2D  ND   C1D  CHD    
+ C3A  C1A  C2A  CAA    
+ C3B  C1B  C2B  CMB    
+ C3C  C1C  C2C  CMC    
+ C3D  C1D  C2D  CMD    
+ C4A  C2A  C3A  CMA    
+ C4B  C2B  C3B  CAB    
+ C4C  C2C  C3C  CAC    
+ C4D  C2D  C3D  CAD    
+ NA   C3A  C4A  CHB    
+ NB   C3B  C4B  CHC    
+ NC   C3C  C4C  CHD    
+ ND   C3D  C4D  CHA    
+HEC 20     
+ C1A  C4A  NA   FE
+ C1B  C4B  NB   FE
+ C1C  C4C  NC   FE
+ C1D  C4D  ND   FE
+ C2A  NA   C1A  CHA
+ C2B  NB   C1B  CHB
+ C2C  NC   C1C  CHC
+ C2D  ND   C1D  CHD
+ C3A  C1A  C2A  CAA
+ C3B  C1B  C2B  CMB
+ C3C  C1C  C2C  CMC
+ C3D  C1D  C2D  CMD
+ C4A  C2A  C3A  CMA
+ C4B  C2B  C3B  CAB
+ C4C  C2C  C3C  CAC
+ C4D  C2D  C3D  CAD
+ NA   C3A  C4A  CHB
+ NB   C3B  C4B  CHC
+ NC   C3C  C4C  CHD
+ ND   C3D  C4D  CHA
+NMET 1
+ CA   +M   C    O
+NGLY 1  ! nro 10  
+ CA   +M   C    O      
+CGLY 2   
+ -M   CA   N    H      
+ CA    O   C    OXT    
+ ALA  2  
+ -M   CA   N    H      
+ CA   +M   C    O      
+ NALA 2
+-M   CA   N    H
+ CA   +M   C    O
+GLY   2  
+ -M   CA   N    H      
+ CA   +M   C    O      
+ SER 2   
+ -M   CA   N    H      
+ CA   +M   C    O      
+ NSER 1
+ CA   +M   C    O
+ THR  2  
+ -M   CA   N    H      
+ CA   +M   C    O      
+ LEU  2  
+ -M   CA   N    H      
+ CA   +M   C    O      
+ ILE   2 
+ -M   CA   N    H      
+ CA   +M   C    O      
+ VAL   2                ! Nro 20
+ -M   CA   N    H      
+ CA   +M   C    O      
+ ASN    4
+ -M   CA   N    H      
+ CA   +M   C    O      
+ CB   ND2  CG   OD1    
+ CG   HD21 ND2  HD22   
+ GLN    4
+ -M   CA   N    H      
+ CA   +M   C    O      
+ CG   NE2  CD   OE1    
+ CD   HE21 NE2  HE22   
+ GLNC    3
+ -M   CA   N    H
+ CG   NE2  CD   OE1
+ CD   HE21 NE2  HE22
+ ARG     6             
+ -M   CA   N    H      
+ CA   +M   C    O      
+ NE   NH1  CZ   NH2    
+ CD   CZ   NE   HE     
+ CZ   HH11 NH1  HH12   
+ CZ   HH21 NH2  HH22   
+ HID     6             
+ -M   CA   N    H      
+ CA   +M   C    O      
+ CG   CE1  ND1  HD1    
+ CG   NE2  CD2  HD2    
+ ND1  NE2  CE1  HE1    
+ ND1  CD2  CG   CB     
+ HIE      6            
+ -M   CA   N    H      
+ CA   +M   C    O      
+ CE1  CD2  NE2  HE2    
+ CG   NE2  CD2  HD2    
+ ND1  NE2  CE1  HE1    
+ ND1  CD2  CG   CB     
+ HIP    7
+ -M   CA   N    H      
+ CA   +M   C    O      
+ CG   CE1  ND1  HD1    
+ CE1  CD2  NE2  HE2    
+ CG   NE2  CD2  HD2    
+ ND1  NE2  CE1  HE1    
+ ND1  CD2  CG   CB     
+ TRP   9 
+ -M   CA   N    H      
+ CA   +M   C    O      
+ CD1  CE2  NE1  HE1    
+ CE2  CH2  CZ2  HZ2    
+ CZ2  CZ3  CH2  HH2    
+ CH2  CE3  CZ3  HZ3    
+ CZ3  CD2  CE3  HE3    
+ CG   NE1  CD1  HD1    
+ CD1  CD2  CG   CB     
+ PHE  8  
+ -M   CA   N    H      
+ CA   +M   C    O      
+ CG   CE2  CD2  HD2    
+ CD2  CZ   CE2  HE2    
+ CE1  CE2  CZ   HZ     
+ CD1  CZ   CE1  HE1    
+ CG   CE1  CD1  HD1    
+ CD1  CD2  CG   CB     
+ MBZN 6                        ! nro 30
+ CG   CE2  CD2  HD2    
+ CD2  CZ   CE2  HE2    
+ CE1  CE2  CZ   HZ     
+ CD1  CZ   CE1  HE1    
+ CG   CE1  CD1  HD1    
+ CD1  CD2  CG   CB     
+TYR     8
+ -M   CA   N    H      
+ CA   +M   C    O      
+ CG   CE2  CD2  HD2    
+ CD2  CZ   CE2  HE2    
+ CD1  CZ   CE1  HE1    
+ CG   CE1  CD1  HD1    
+ CD1  CD2  CG   CB     
+ CE1  CE2  CZ   OH     
+FNOL     6             
+ CG   CE2  CD2  HD2    
+ CD2  CZ   CE2  HE2    
+ CD1  CZ   CE1  HE1    
+ CG   CE1  CD1  HD1    
+ CD1  CD2  CG   CB     
+ CE1  CE2  CZ   OH     
+ GLU    3
+ -M   CA   N    H      
+ CA   +M   C    O      
+ CG   OE1  CD   OE2    
+ ASP    3
+ -M   CA   N    H      
+ CA   +M   C    O      
+ CB   OD1  CG   OD2    
+ASH 3
+ -M   CA   N    H
+ CA   +M   C    O
+ CB   OD1  CG   OD2
+ LYS   2 
+ -M   CA   N    H      
+ CA   +M   C    O      
+ CLYS  3
+ -M   CA   N    H
+ CA   +M   C    O
+ CA    O   C    OXT
+ LYN    2
+ -M   CA   N    H      
+ CA   +M   C    O      
+ PRO   2 
+ CA   +M   C    O      
+ -M   CD   N    CA     
+ CYS   2 
+ -M   CA   N    H      
+ CA   +M   C    O      
+ CYM   2 
+ -M   CA   N    HN     
+ CA   +M   C    O      
+ CYX   2 
+ -M   CA   N    H      
+ CA   +M   C    O      
+ CYH  2  
+ -M   CA   N    H      
+ CA   +M   C    O      
+ MET   2 
+ -M   CA   N    H      
+ CA   +M   C    O      
+ ACE  1  
+ CH3  +M   C    O      
+ NME  1  
+ -M   CH3  N    H      
+ASH 3    
+ -M   CA   N    H      
+ CA   +M   C    O      
+ CB   OD1  CG   OD2    
+GLH 3   
+ -M   CA   N    H      
+ CA   +M   C    O      
+ CG   OE1  CD   OE2    
+DA 5
+ C8   C4   N9   C1'
+ C6   H61  N6   H62
+ N7   N9   C8   H8
+ N1   N3   C2   H2
+ C5   N1   C6   N6
+DA3 5
+ C8   C4   N9   C1'
+ C6   H61  N6   H62
+ N7   N9   C8   H8
+ N1   N3   C2   H2
+ C5   N1   C6   N6
+DA5 5
+ C8   C4   N9   C1'
+ C6   H61  N6   H62
+ N7   N9   C8   H8
+ N1   N3   C2   H2
+ C5   N1   C6   N6
+DAN 5
+ C8   C4   N9   C1'
+ C6   H61  N6   H62
+ N7   N9   C8   H8
+ N1   N3   C2   H2
+ C5   N1   C6   N6
+DC 6
+ C6   C2   N1   C1'
+ N1   N3   C2   O2
+ C4   H41  N4   H42
+ N1   C5   C6   H6
+ C6   C4   C5   H5
+ N3   C5   C4   N4
+DC3 6
+ C6   C2   N1   C1'
+ N1   N3   C2   O2
+ C4   H41  N4   H42
+ N1   C5   C6   H6
+ C6   C4   C5   H5
+ N3   C5   C4   N4
+DC5 6
+ C6   C2   N1   C1'
+ N1   N3   C2   O2
+ C4   H41  N4   H42
+ N1   C5   C6   H6
+ C6   C4   C5   H5
+ N3   C5   C4   N4
+DCN 6
+ C6   C2   N1   C1'
+ N1   N3   C2   O2
+ C4   H41  N4   H42
+ N1   C5   C6   H6
+ C6   C4   C5   H5
+ N3   C5   C4   N4
+DG 6
+ C8   C4   N9   C1'
+ C5   N1   C6   O6
+ C6   C2   N1   H1
+ C2   H21  N2   H22
+ N7   N9   C8   H8
+ N1   N3   C2   N2
+DG3 6
+ C8   C4   N9   C1'
+ C5   N1   C6   O6
+ C6   C2   N1   H1
+ C2   H21  N2   H22
+ N7   N9   C8   H8
+ N1   N3   C2   N2
+DG5 6
+ C8   C4   N9   C1'
+ C5   N1   C6   O6
+ C6   C2   N1   H1
+ C2   H21  N2   H22
+ N7   N9   C8   H8
+ N1   N3   C2   N2
+DGN 6
+ C8   C4   N9   C1'
+ C5   N1   C6   O6
+ C6   C2   N1   H1
+ C2   H21  N2   H22
+ N7   N9   C8   H8
+ N1   N3   C2   N2
+DT 6
+ C6   C2   N1   C1'
+ C4   C6   C5   C7
+ N1   N3   C2   O2
+ C5   N3   C4   O4
+ C2   C4   N3   H3
+ N1   C5   C6   H6
+DT3 6
+ C6   C2   N1   C1'
+ C4   C6   C5   C7
+ N1   N3   C2   O2
+ C5   N3   C4   O4
+ C2   C4   N3   H3
+ N1   C5   C6   H6
+DT5 6
+ C6   C2   N1   C1'
+ C4   C6   C5   C7
+ N1   N3   C2   O2
+ C5   N3   C4   O4
+ C2   C4   N3   H3
+ N1   C5   C6   H6
+DTN 6
+ C6   C2   N1   C1'
+ C4   C6   C5   C7
+ N1   N3   C2   O2
+ C5   N3   C4   O4
+ C2   C4   N3   H3
+ N1   C5   C6   H6
+RA 5
+ C8   C4   N9   C1'
+ C6   H61  N6   H62
+ N7   N9   C8   H8
+ N1   N3   C2   H2
+ C5   N1   C6   N6
+RA3 5
+ C8   C4   N9   C1'
+ C6   H61  N6   H62
+ N7   N9   C8   H8
+ N1   N3   C2   H2
+ C5   N1   C6   N6
+RA5 5
+ C8   C4   N9   C1'
+ C6   H61  N6   H62
+ N7   N9   C8   H8
+ N1   N3   C2   H2
+ C5   N1   C6   N6
+RAN 5
+ C8   C4   N9   C1'
+ C6   H61  N6   H62
+ N7   N9   C8   H8
+ N1   N3   C2   H2
+ C5   N1   C6   N6
+RC 6
+ C6   C2   N1   C1'
+ N1   N3   C2   O2
+ C4   H41  N4   H42
+ N1   C5   C6   H6
+ C6   C4   C5   H5
+ N3   C5   C4   N4
+RC3 6
+ C6   C2   N1   C1'
+ N1   N3   C2   O2
+ C4   H41  N4   H42
+ N1   C5   C6   H6
+ C6   C4   C5   H5
+ N3   C5   C4   N4
+RC5 6
+ C6   C2   N1   C1'
+ N1   N3   C2   O2
+ C4   H41  N4   H42
+ N1   C5   C6   H6
+ C6   C4   C5   H5
+ N3   C5   C4   N4
+RCN 6
+ C6   C2   N1   C1'
+ N1   N3   C2   O2
+ C4   H41  N4   H42
+ N1   C5   C6   H6
+ C6   C4   C5   H5
+ N3   C5   C4   N4
+RG 6
+ C8   C4   N9   C1'
+ C5   N1   C6   O6
+ C6   C2   N1   H1
+ C2   H21  N2   H22
+ N7   N9   C8   H8
+ N1   N3   C2   N2
+RG3 6
+ C8   C4   N9   C1'
+ C5   N1   C6   O6
+ C6   C2   N1   H1
+ C2   H21  N2   H22
+ N7   N9   C8   H8
+ N1   N3   C2   N2
+RG5 6
+ C8   C4   N9   C1'
+ C5   N1   C6   O6
+ C6   C2   N1   H1
+ C2   H21  N2   H22
+ N7   N9   C8   H8
+ N1   N3   C2   N2
+RGN 6
+ C8   C4   N9   C1'
+ C5   N1   C6   O6
+ C6   C2   N1   H1
+ C2   H21  N2   H22
+ N7   N9   C8   H8
+ N1   N3   C2   N2
+RU 6
+ C6   C2   N1   C1'
+ C4   C6   C5   H5
+ N1   N3   C2   O2
+ C5   N3   C4   O4
+ C2   C4   N3   H3
+ N1   C5   C6   H6
+RU3 6
+ C6   C2   N1   C1'
+ C4   C6   C5   H5
+ N1   N3   C2   O2
+ C5   N3   C4   O4
+ C2   C4   N3   H3
+ N1   C5   C6   H6
+RU5 6
+ C6   C2   N1   C1'
+ C4   C6   C5   H5
+ N1   N3   C2   O2
+ C5   N3   C4   O4
+ C2   C4   N3   H3
+ N1   C5   C6   H6
+RUN 6
+ C6   C2   N1   C1'
+ C4   C6   C5   H5
+ N1   N3   C2   O2
+ C5   N3   C4   O4
+ C2   C4   N3   H3
+ N1   C5   C6   H6
+BH4  9
+ NG1 NG2 CB NA
+ CB CO NG2 HG
+ NG2 CD2 CO O
+ CB H1 NA H2
+ CB H2 NA H1
+ CD2 CH2 NE2 HE2
+ CD1 CH1 NE1 HE1
+ NG1 CD2 CD1 NE1
+ CO CD1 CD2 NE2
+NLEU 1
+ CA   +M   C    O
+CVAL 2
+ -M   CA   N    H
+ CA    O   C    OXT
+ALAT  2
+ -M   CA   N    H
+ CA   +M   C    O
+DONE     

@@ -1,0 +1,8 @@
+
+* Beautify the output to fdf_out. Right now it looks very jagged.
+
+* Implement Label aliases.
+
+* Implement in-memory database of scalar Label-Value entries.
+
+* ...

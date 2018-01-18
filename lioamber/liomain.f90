@@ -14,15 +14,16 @@
  
 subroutine liomain(E, dipxyz)
     use garcha_mod, only : M, Smat, RealRho, OPEN, writeforces, energy_freq,   &
-                           restart_freq, npas, sqsm, mulliken, lowdin, dipole, &
-                           doing_ehrenfest, first_step,                        &
-                           Eorbs, fukui, print_coeffs, steep, idip
+                           restart_freq, npas, sqsm, mulliken, lowdin, spinpop,&
+                           dipole, doing_ehrenfest, first_step,                &
+                           Eorbs, fukui, print_coeffs, steep, idip, calc_propM
     use ecp_mod   , only : ecpmode, IzECP
     use ehrensubs,  only : ehrendyn
  
     implicit none
     REAL*8, intent(inout) :: dipxyz(3), E
     integer :: idip_scrach
+    logical :: calc_prop
 
     call g2g_timer_sum_start("Total")
 
@@ -54,12 +55,14 @@ subroutine liomain(E, dipxyz)
        endif
     endif
 
-    if ((restart_freq.gt.0).and.(MOD(npas, restart_freq).eq.0)) call do_restart(88)
+    calc_prop=.false.
+    if (MOD(npas, energy_freq)) calc_prop=.true.
+    if (calc_propM) calc_prop=.true.
 
     ! Perform Mulliken and Lowdin analysis, get fukui functions and dipole.
-    if (MOD(npas, energy_freq).eq.0) then
+    if (calc_prop) then
 
-        if (mulliken.or.lowdin) call do_population_analysis()
+        if (mulliken.or.lowdin.or.spinpop) call do_population_analysis()
 
         if (dipole) call do_dipole(dipxyz, 69)
   
@@ -72,6 +75,8 @@ subroutine liomain(E, dipxyz)
 
         if (print_coeffs) call write_orbitals(29)
     endif
+
+    if ((restart_freq.gt.0).and.(MOD(npas, restart_freq).eq.0)) call write_restart(88)
 
     return
 end subroutine liomain
@@ -147,12 +152,14 @@ end subroutine do_dipole
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_population_analysis()
    use garcha_mod, only : RMM, Smat, RealRho, M, Enucl, Nuc, Iz, natom, &
-                          mulliken, lowdin, sqsm
+                          mulliken, lowdin, spinpop, sqsm, OPEN,        &
+                          rhoalpha,rhobeta
    use ECP_mod   , only : ecpmode, IzECP
    use faint_cpu77, only: int1
 
    implicit none
    integer :: M1, M5, IzUsed(natom), kk
+   real*8, allocatable, dimension(:,:)  :: RealRho_alpha, RealRho_betha
    real*8  :: q(natom)
 
    ! Needed until we dispose of RMM.
@@ -189,6 +196,19 @@ subroutine do_population_analysis()
        call g2g_timer_stop('Lowdin')
    endif
 
+   if (spinpop) then
+       if (.not. OPEN) then
+         write(*,*) "cant perform a spin population analysis in a close shell calculation"
+         return
+       end if
+       allocate (RealRho_alpha(M,M), RealRho_betha(M,M))
+       call spunpack('L',M,rhoalpha(1),RealRho_alpha) !pasa vector a matriz
+       call spunpack('L',M,rhobeta(1),RealRho_betha) !pasa vector a matriz
+       q=0
+       call spin_pop_calc(natom, M, RealRho_alpha, RealRho_betha, Smat, Nuc, q)
+       call write_population(85, natom, Iz, q, 2)
+   end if
+
    return
 endsubroutine do_population_analysis
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -221,45 +241,3 @@ subroutine do_fukui()
 end subroutine do_fukui
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%% DO_FUKUI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Performs Fukui function calls and printing.                                  !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine do_restart(UID)
-   use garcha_mod, only : OPEN, NCO, NUNP, M, MO_coef_at, MO_coef_at_b, indexii
-   use fileio    , only : write_coef_restart
-   implicit none
-   integer, intent(in) :: UID
-   integer             :: NCOb, icount, jcount, coef_ind
-   real*8, allocatable :: coef(:,:), coef_b(:,:)
-
-   allocate(coef(M, NCO))
-   do icount=1, M
-   do jcount=1, NCO
-      coef_ind = icount + M*(jcount-1)
-      coef(indexii(icount), jcount) = MO_coef_at(coef_ind)
-   enddo
-   enddo
-
-
-   if (OPEN) then
-      NCOb = NCO + NUNP
-      allocate(coef_b(M, NCOb))
-
-      do icount=1, M
-      do jcount=1, NCOb
-         coef_ind = icount + M*(jcount-1)
-         coef_b(indexii(icount), jcount) = MO_coef_at_b(coef_ind)
-      enddo
-      enddo
-
-      call write_coef_restart(coef, coef_b, M, NCO, NCOb, UID)
-      deallocate(coef_b)
-   else
-      call write_coef_restart(coef, M, NCO, UID)
-   endif
-
-   deallocate(coef)
-   return
-end subroutine do_restart
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

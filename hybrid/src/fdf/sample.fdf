@@ -1,0 +1,20 @@
+fdf-debug 1
+
+new-style		# Just a label by itself
+
+NumberOfAtoms              3            # Set an integer parameter
+MeshCutoff                 500.0 eV     # Example of physical magnitude 
+factor-Value	3.14e10			# Alternate label appearance 
+nameOFfile	Some file	 	# A multiword string
+
+phonon-energy	344  cm**-1             # More units
+
+AtomicCoordinatesAndAtomicSpecies < coords.fdf        # Search in file
+
+%block Atomic-Info < "Coords.dat" %dump               # Read block from file
+
+debug		faLSE			# Case insensitive!!
+
+%include Otherfile
+
+

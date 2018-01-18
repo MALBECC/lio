@@ -1,0 +1,68 @@
+FDF Standard. Version 0.6.5, September 1998
+
+Input lines are parsed and a token list is created. A token is:
+
+	* Any number of characters enclosed in a matching pair 
+	  of quotes (",',`). Embedded strings are not considered tokens.
+	  The quotes are removed by the parsing routine.
+
+	* A string of characters from the set [A-Z,a-z,0-9] of
+	  alphanumeric characters plus $%&@_.-*/^+~ (and any adjacent
+          unmatched quotes, as in apostrophes)
+
+	* The character '<' by itself.
+
+Examples:
+	
+MeshCutoff <"File.fdf"		3 tokens: MeshCutoff, <, File.fdf
+System_Name  Devil's staircase   3 tokens: System_Name, Devil's, staircase
+%block Coordinates,AtomicCoordinates %dump < coords.dat  6 tokens
+
+The characters '#', ';', and '!' signal the beginning of a comment. Any
+remaining characters on the line are discarded.
+
+Labels and directives (%block, %include, %endblock) are case-insensitive.
+Labels are also punctuation-insensitive, by which it is understood that
+the characters '.', '_', and '-' are removed before any comparison is made.
+
+
+Label   [  Value ]
+
+	This line assigns an optional Value to Label. Value could be
+	a token or a sequence of tokens not including '<'. 
+	'Numerical' routines such as fdf_integer will only use the first 
+	token, but fdf_string will return the whole list. 
+
+%block Label 
+====
+=====
+====
+# Optional comments
+%endblock [ Label ]
+
+	This construct specifies a block of data that is to be read
+	by the calling program after a call to fdf_block. The contents
+	of the block are dumped to fdf_out. %block and %endblock must
+	be the first tokens in their respective lines.
+
+%block Label  < Filename  [ %dump ]
+
+	Opens Filename in order to read the block. If %dump appears
+	anywhere (except as the first token), the contents of Filename
+	are dumped to fdf_out.
+
+%include  Filename  # Comments
+
+	Opens Filename and continues reading from it.
+
+Label   < Filename   # Comments
+
+	Opens Filename and continues reading from it, ONLY if searching
+	for Label.
+
+	There is a maximum number of files that can be opened at the
+	same time for fdf processing.
+
+
+
+

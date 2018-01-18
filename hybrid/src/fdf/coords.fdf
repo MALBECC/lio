@@ -1,0 +1,15 @@
+#
+# File "searched" in sample.fdf
+#
+
+%block AtomicCoordinatesAndAtomicSpecies       # Beginning of Block
+ 0.000000  0.000000  0.000000  1         # Coordinates, species index
+ 1.431000  1.108000  0.000000  2
+-1.431000  1.108000  0.000000  2
+
+# This block contains coordinate information.
+# The program only reads the leading lines, and here we can safely put
+# some comments. Ideally, the program would read its input using some
+# kind of "readline" routine to filter comments...
+
+%endblock ATOMICCoordinatesAndAtomicSpecies       # End of Block

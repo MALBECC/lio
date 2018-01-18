@@ -19,11 +19,15 @@ liblio: g2g
 g2g:
 	$(MAKE) -C g2g
 
+.PHONY: hybrid
+hybrid:
+	$(MAKE) -C hybrid
 
 .PHONY: clean
 clean:
 	$(MAKE) clean -C liosolo
 	$(MAKE) clean -C lioamber
 	$(MAKE) clean -C g2g
+	$(MAKE) clean -C hybrid
 
 ################################################################################

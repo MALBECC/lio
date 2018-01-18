@@ -1,0 +1,8 @@
+#!/bin/bash
+
+../../bin/hybrid < H2O2.fdf >> H2O2.out
+
+
+
+
+

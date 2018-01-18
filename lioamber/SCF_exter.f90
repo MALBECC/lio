@@ -179,8 +179,8 @@ end subroutine ehren_in
 ! Performs SCF & forces calculation calls from hybrid                          !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_forces)
-    use garcha_mod, only : r,rqm,pc, Iz, natom, nsol, ntatom, v, Em, rm
+subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_forces, do_properties)
+    use garcha_mod, only : r,rqm,pc, Iz, natom, nsol, ntatom, v, Em, rm, calc_propM
     implicit none
     integer, intent(in) :: hyb_natom, mm_natom !number of QM and MM atoms
     double precision, intent(in) :: hyb_r(3,hyb_natom+mm_natom), Iz_cl(mm_natom) !positions and charge of MM atoms
@@ -190,12 +190,14 @@ subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_f
     integer :: dummy !auxiliar variable
     REAL*8 :: dipxyz(3) !dipole
     integer :: i,j !auxiliar
-    logical :: do_SCF, do_QM_forces !SCF & forces control variable
+    logical, intent(in) :: do_SCF, do_QM_forces !SCF & forces control variable
+    logical, intent(in) :: do_properties !properties control
+
+    calc_propM = do_properties
 
     nsol = mm_natom
     ntatom = nsol + natom 
 
-    write(*,*) "doing SCF_in"
     write(*,*) "atoms QM, MM, totals", natom, nsol, ntatom
     write(*,*) "doing SCF?", do_SCF
     write(*,*) "doing forces?", do_QM_forces
@@ -211,10 +213,10 @@ subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_f
     do i=1, ntatom
       do j=1, 3
         r(i,j)=hyb_r(j,i)
-        if (i .le. hyb_natom) rqm(i,j)=hyb_r(j,i) !posiciones qm
+        if (i .le. hyb_natom) rqm(i,j)=hyb_r(j,i) !positions on QM subsystem
       enddo
-        if (i .le. hyb_natom) pc(i)= Iz(i)
-        if (i .gt. hyb_natom) pc(i) = Iz_cl(i-hyb_natom) !cargas clasicas
+        if (i .le. hyb_natom) pc(i)= Iz(i) !nuclear charge
+        if (i .gt. hyb_natom) pc(i) = Iz_cl(i-hyb_natom) ! MM force-field charge
     end do
 
 ! Calls main procedures.
@@ -224,7 +226,6 @@ subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_f
     write(*,*) "Lio  E(eV)", E*27.211396132d0
     fa=0.d0
     fmm=0.d0
-
 
     if (do_QM_forces) then
       call  dft_get_qm_forces(fa)

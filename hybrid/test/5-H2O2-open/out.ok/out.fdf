@@ -1,0 +1,117 @@
+
+#FDF: Opened INPUT_TMP.1613164221 for input. Unit: 11
+
+fdf-debug              0     # Default value
+SystemName     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+NumberOfAtoms                        4
+NumberOfSolventAtoms                        0
+NumberOfSpecies                        2
+AtomicCoordinatesFormat     Ang                                                                                                                                 
+
+%block AtomicCoordinatesAndAtomicSpecies                                       
+   0.00000   0.00000   0.000000        1                                       
+   0.00000   0.00000   1.480000        1                                       
+   0.89567   0.00000  -0.316663        2                                       
+  -0.44783   0.77567   1.796667        2                                       
+%endblock AtomicCoordinatesAndAtomicSpecies                                    
+ 
+
+%block ChemicalSpeciesLabel                                                    
+       1   8  O                                                                
+       2   1  H                                                                
+%endblock ChemicalSpeciesLabel                                                 
+ 
+NetCharge          0.000000000    
+TotalSpin          0.000000000    
+LinkAtoms              0     # Default value
+OptimizationScheme              0     # Default value
+
+%block ConstrainedOpt                                                          
+nconstr 1                                                                      
+steps 50                                                                       
+type 2                                                                         
+kte 200                                                                        
+inicoord 1.200 fincoord  3.100                                                 
+atoms 1 2                                                                      
+%endblock ConstrainedOpt                                                       
+ 
+WriIniParLas              F     # Default value
+MD.TypeOfRun     CG                                                                                                                                  
+MD.UseSaveCG              F
+MD.UseSaveXV              F
+MD.NumCGsteps                      500
+MD.MaxCGDispl         0.2000000000     Bohr     # Default value
+MD.MaxForceTol         0.1555739508E-02    Ry/Bohr
+# Above item originally: MD.MaxForceTol         0.4000000000E-01 eV/Ang    
+CG.Nick_center              F     # Default value
+MD.LengthTimeStep         0.1000000015     fs     # Default value
+MD.Quench              F     # Default value
+WriteCoordinates              1     # Default value
+MD.MMxQMsteps              1     # Default value
+WriteForcesQMMM              1     # Default value
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+
+%block ConstrainedOpt                                                          
+nconstr 1                                                                      
+steps 50                                                                       
+type 2                                                                         
+kte 200                                                                        
+inicoord 1.200 fincoord  3.100                                                 
+atoms 1 2                                                                      
+%endblock ConstrainedOpt                                                       
+ 
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                
+SystemLabel     H2O2                                                                                                                                

@@ -1,0 +1,72 @@
+################################################################################
+# Makefile.options
+# 
+################################################################################
+
+################################################################################
+# Defaults
+#
+intel     ?= 2
+analytics ?= 0
+LFLAGS =
+LIBS =
+################################################################################
+
+#estructurta similar a lio para facilitar la compilacion conjunta en el futuro
+#intel 0 y 1 aun no estan implementadas correctamente
+
+ifeq ($(intel),0)
+  FC      = gfortran
+#  FFLAGS += -cpp -I$(OBJPATH) -J$(OBJPATH)
+  DEBUG01 = -g -Wtabs -fcheck=all
+  DEBUG02 = -g -Wall -Wextra -fcheck=all -fbacktrace -pedantic
+  $(error gfortan not tested yet mofify Makefile.arch and test it))
+else ifeq ($(intel),1)
+  FC      = ifort
+  FFLAGS=  -w -O2 -mp
+  DEBUG01 = -g -check bounds -traceback
+  DEBUG02 = -g -check bounds -traceback -check all -fp-stack-check
+  LFLAGS += -L/usr/lib
+  LIBS   += -llapack
+  LIBS   += -lpthread
+  $(error intel = $(intel) not tested yet, use intel = 2)
+else ifeq ($(intel),2)
+  FC      = ifort
+  FFLAGS=  -w -O2 -mp
+  DEBUG01 = -g -check bounds -traceback
+  DEBUG02 = -g -check bounds -traceback -check all -fp-stack-check
+  LFLAGS += -L$(MKLROOT)/lib/intel64 -I$(MKLROOT)/include
+  LIBS   += -lmkl_lapack95_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lmkl_sequential
+  LIBS   += -lpthread
+else
+  $(error Invalid value in option intel = $(intel))
+endif
+
+
+ifeq ($(analytics),0)
+else ifeq ($(analytics),1)
+  FFLAGS += -pg
+else ifeq ($(analytics),2)
+  FFLAGS += $(DEBUG01)
+else ifeq ($(analytics),3)
+  FFLAGS += $(DEBUG02)
+else
+  $(error Invalid value in option analytics = $(analytics))
+endif
+
+SYS=bsd
+RANLIB=ranlib
+
+################################################################################
+# Rulez
+#
+################################################################################
+
+.F.o:
+	$(FC) -c $(FFLAGS) $(DEFS) $<
+.f.o:
+	$(FC) -c $(FFLAGS) $<
+.f90.o:
+	$(FC) -c $(FFLAGS) $(FREE_F90) $<
+.F90.o:
+	$(FC) -c $(FFLAGS) $(DEFS) $(FREE_F90_CPP) $<

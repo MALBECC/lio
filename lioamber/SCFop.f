@@ -1313,7 +1313,7 @@ c
  625  format(F14.7)
  760  format(I3,9x,I3,6x,F10.4)
  770  format('ATOM #',4x,'ATOM TYPE',4x,'POPULATION')
- 300  format(I3,E14.6,2x,F14.7)
+ 300  format(I5,E14.6,2x,F14.7)
  850  format('MOLECULAR ORBITAL #',2x,I3,3x,'ORBITAL ENERGY ',F14.7)
  900  format(3(F10.4,2x),2x,F10.4)
 c---- DEBUGGINGS

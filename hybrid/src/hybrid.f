@@ -216,26 +216,26 @@
 
       integer :: linkat(15) !linkat(i) numero  de atomo QM del i-esimo link atom
       integer :: linkqm(15,4),linkmm(15,4) !linkXm(i,*) lista de atomos QM/MM vecinos al link atom i
-      integer :: linkmm2(15,4,3) !lista de segundos vecinos
+      integer :: linkmm2(15,4,3) !list of 2nd neighbors
       integer :: parametro(15,22,4) !parametro(i,*,*) posiciones en los arrays de constantes de enlace, angulos y diedros correspondientes a las interacciones del link atom i
-      character :: linkqmtype(15,4)*4 ! tipo de atomo en linkqm(i,j)
+      character :: linkqmtype(15,4)*4 ! atom type in linkqm(i,j)
       double precision :: Elink !Energy of link atoms
-      double precision :: distl(15) !distancia del link atom i al atomo QM mas cercano
+      double precision :: distl(15) !distance between link atom i and closer QM atom
       double precision :: pclinkmm(15,15),Emlink(15,4)
 
 
 ! ConstrOpt variables
-      logical :: constropt !activate restrain optimizaion
+      logical :: constropt !activate restrain optimization
       integer :: nconstr !number of constrains
-      integer :: nstepconstr !numero de pasos en los que barrera la coordenada de reaccion (limitado a 1-100 hay q cambiar esto, Nick)
-      integer :: typeconstr(20) !type of cosntrain (1 to 8)
+      integer :: nstepconstr !number of constrain steps (limited to 1-100)
+      integer :: typeconstr(20) !type of constrain (1 to 8)
       double precision :: kforce(20) !force constant of constrain i
       double precision :: rini,rfin  !initial and end value of reaction coordinate
       double precision :: ro(20) ! fixed value of constrain in case nconstr > 1 for contrains 2+
       double precision :: rt(20) ! value of reaction coordinate in constrain i
       double precision :: dr !change of reaction coordinate in each optimization dr=(rfin-rini)/nstepconstr
       double precision :: coef(20,10) !coeficients for typeconstr=8
-      integer :: atmsconstr(20,20), ndists(20) !atomos incluidos en la coordenada de reaccion
+      integer :: atmsconstr(20,20), ndists(20) !atoms incluided in reaction coordinate
       integer :: istepconstr !auxiliar
 
 ! Cut Off QM-MM variables
@@ -246,7 +246,7 @@
       double precision :: radblommbond !parche para omitir bonds en extremos terminales, no se computan bonds con distancias mayores a radblommbond
 
       integer, dimension(:), allocatable, save:: blocklist,blockqmmm, 
-     . listqmmm !listas para congelar atomos, hay q reveer estas subrutinas, por ahora estoy usando mis subrutinas, nick
+     . listqmmm !list for freeze atomos
 
 ! Lio
       logical :: do_SCF, do_QM_forces !control for make new calculation of rho, forces in actual step
@@ -261,16 +261,16 @@
 ! 2- only MM atoms
 ! 3- all
 
-! force integration
+! Force integration
       logical :: write_rF
 
-!variables para centrado del sistema, mejorar esto agregando el tensor de inercia, Nick
-      logical :: Nick_cent !activa centrado y conservacion de los ejes de inercia
-      integer :: firstcent ! marca el 1er paso
+! Variables for center system 
+      logical :: Nick_cent ! activa centrado y conservacion de los ejes de inercia
+      integer :: firstcent ! 1st step of CG
       double precision, dimension(9) :: Inivec !inertia tensor autovectors
 
 
-!variables para cuts
+! cutoff variables 
       double precision, allocatable, dimension(:,:) :: r_cut_QMMM,
      .  F_cut_QMMM
       double precision, allocatable, dimension(:) :: Iz_cut_QMMM
@@ -407,7 +407,7 @@
 
       allocate(r_cut_list_QMMM(nac)) ! referencia posiciones de atomos MM con los vectores cortados
 
-      nparm = 500 ! numero de tipos de bonds q tiene definido el amber.parm. NO DEBERIA ESTAR fijo, Nick
+      nparm = 500 ! number of max bond types in amber.parm. THIS SHOULD BE DINAMIC, Nick
 
       allocate(izs(natot), Em(natot), Rm(natot), pc(0:nac))
       allocate(rclas(3,natot), MM_freeze_list(natot), masst(natot))
@@ -478,7 +478,7 @@
 
 ! changing cutoff to atomic units
       rcorteqmmm=rcorteqmmm*Ang
-      rcorteqmmm=rcorteqmmm**2 !para comparar cuadrados
+      rcorteqmmm=rcorteqmmm**2 
 
       radbloqmmm=radbloqmmm*Ang
       radbloqmmm=radbloqmmm**2
@@ -643,7 +643,7 @@ C Read fixed atom constraints
 ! Calculate Energy and Forces using Lio as Subroutine
           if(qm) then 
 
-	  if (istep.eq.inicoor) then ! define lista de interacciones en el primer paso de cada valor del restrain
+	  if (istep.eq.inicoor) then ! define interaction list in 1st  step of each restrain value
 	    if (allocated(r_cut_QMMM)) deallocate(r_cut_QMMM)
 	    if (allocated(F_cut_QMMM)) deallocate(F_cut_QMMM)
 	    if (allocated(Iz_cut_QMMM)) deallocate(Iz_cut_QMMM)
@@ -678,7 +678,7 @@ C Read fixed atom constraints
 
 
 
-		if (istepconstr.eq.1) then !define lista de movimiento para la 1er foto
+		if (istepconstr.eq.1) then ! move list 
 	          if(r12 .lt. radbloqmmm .and. .not. done_freeze) then
 	             MM_freeze_list(i_mm+na_u)=.false.
 	             done_freeze=.true.
@@ -703,7 +703,7 @@ C Read fixed atom constraints
 
 
 !copy position and nuclear charges to cut-off arrays
-          do i=1,natot !barre todos los atomos
+          do i=1,natot !all atoms
             if (i.le.na_u) then !QM atoms
               r_cut_QMMM(1:3,i)= rclas(1:3,i)
             else if (r_cut_list_QMMM(i-na_u) .ne. 0) then !MM atoms inside cutoff
@@ -714,10 +714,10 @@ C Read fixed atom constraints
 
 	  call SCF_hyb(na_u, at_MM_cut_QMMM, r_cut_QMMM, Etot, 
      .     F_cut_QMMM,
-     .           Iz_cut_QMMM, do_SCF, do_QM_forces, do_properties) !fuerzas lio, Nick
+     .           Iz_cut_QMMM, do_SCF, do_QM_forces, do_properties) !LIO QM-MM force calculation
 
 
-c return forces to fullatom arrays
+! return forces to fullatom arrays
           do i=1, natot
 	    if (i.le.na_u) then !QM atoms
 	      fdummy(1:3,i)=F_cut_QMMM(1:3,i)
@@ -799,7 +799,7 @@ c return forces to fullatom arrays
             endif !qm & mm
 
 
-!	if (write_rF) then !falta un control aca
+!	if (write_rF) then
 !	   do itest=1, natot
 !	   write(969,423) itest, rclas(1,itest),rclas(2,itest),
 !     .   rclas(3,itest),fdummy(1,itest)*0.5d0,fdummy(2,itest)*0.5d0,
@@ -872,10 +872,10 @@ c return forces to fullatom arrays
           end if
         end do
 
-! write xyz, hay q ponerle un if para escribir solo cuando se necesita
+! write xyz, need to includ an IF for write every n steps
 	call write_xyz(natot, na_u, iza, pc, rclas)
 
-        if (write_rF) then !falta un control aca
+        if (write_rF) then 
            do itest=1, natot
            write(969,423) itest, rclas(1,itest),rclas(2,itest),
      .   rclas(3,itest),fdummy(1,itest)*0.5d0,fdummy(2,itest)*0.5d0,
@@ -924,7 +924,7 @@ c return forces to fullatom arrays
       endif
 
 !nick center
-          if (qm .and. .not. mm .and. Nick_cent) then !chekear, lio aveces crashea 
+          if (qm .and. .not. mm .and. Nick_cent) then !check this, lio crases some times 
             write(*,*) "Centrando Nick"
             firstcent=0
             if (istepconstr.eq.1 .and. istep.eq.inicoor ) firstcent=1
@@ -985,7 +985,7 @@ c return forces to fullatom arrays
      .  Elink/kcal, Etots/eV
 
       if(constropt) then
-       call subconstr3(ro(1),rt(1),dr,Etots)
+       call subconstr3(ro(1),rt(1),dr,Etots) 
 ! write .rce 
        call wrirtc(slabel,Etots,rt(1),istepconstr,na_u,nac,natot,
      .             rclas,atname,aaname,aanum,nesp,atsym,isa)

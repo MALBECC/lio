@@ -28,7 +28,7 @@
 	LWMAX=1000
 
 
-!calculo el centro de masa y centro al sistema
+!move system to mass center coords
         RCM=0.d0
         Tmass=0.d0
         do i=1, atoms
@@ -45,7 +45,7 @@
           end do
         end do
 
-!calcula el tensor de inercia inicial
+!inertia tensor calculation
         Ini=0.d0
         do j=1,3
           do j2=1,3
@@ -66,7 +66,7 @@
           end do
         end do
 
-!calculo autovectores del tensor de inercia
+!eigen vectors of inertia tensor calculation
         LWORK = -1
         LIWORK = -1
         call DSYEVD( 'V', 'U', 3, inivec2, 3, W, WORK, LWORK, IWORK, LIWORK, INFO )
@@ -86,7 +86,7 @@
 
         if (firstcet.eq.1) then
            in0vec=inivec
-        else !ordeno ejes para q conincidan con el tensor de inercia del paso anterior
+        else !switch autovectors to coincide with previus step
            proj0=0.d0
            do case12=1, 6
              do signcase=1, 8
@@ -104,7 +104,7 @@
           inivec=in0vec
 	end if
 
-!paso el sistema a la base que diagonaliza el tensor de inercia
+!change coords to eigenvectors basis
         do i=1, atoms
           rtemp=0.d0
           rtemp(1)=r(1,i)*inivec(1)+r(2,i)*inivec(2)+r(3,i)*inivec(3)

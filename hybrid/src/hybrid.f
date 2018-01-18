@@ -262,7 +262,7 @@
 ! 3- all
 
 ! force integration
-      logical : write_r&F
+      logical :: write_rF
 
 !variables para centrado del sistema, mejorar esto agregando el tensor de inercia, Nick
       logical :: Nick_cent !activa centrado y conservacion de los ejes de inercia
@@ -348,7 +348,7 @@
       radbloqmmm=0.d0
       do_properties=.false.
       Nick_cent=.false.
-      write_r&F=.true.
+      write_rF=.true.
 
 ! Initialize IOnode
       call io_setup   
@@ -799,7 +799,7 @@ c return forces to fullatom arrays
             endif !qm & mm
 
 
-!	if (write_r&F) then !falta un control aca
+!	if (write_rF) then !falta un control aca
 !	   do itest=1, natot
 !	   write(969,423) itest, rclas(1,itest),rclas(2,itest),
 !     .   rclas(3,itest),fdummy(1,itest)*0.5d0,fdummy(2,itest)*0.5d0,
@@ -875,7 +875,7 @@ c return forces to fullatom arrays
 ! write xyz, hay q ponerle un if para escribir solo cuando se necesita
 	call write_xyz(natot, na_u, iza, pc, rclas)
 
-        if (write_r&F) then !falta un control aca
+        if (write_rF) then !falta un control aca
            do itest=1, natot
            write(969,423) itest, rclas(1,itest),rclas(2,itest),
      .   rclas(3,itest),fdummy(1,itest)*0.5d0,fdummy(2,itest)*0.5d0,

@@ -4,8 +4,8 @@ c subroutine that read the constrained atom block
      .                    atname,aaname,aanum,wat)
 
         use precision
-        use fdf
         use sys
+        use fdf
 	implicit none
 	integer i,j,k,l,iunit,na_u,nac,natot,nroaa,aanum(nac),
      .  blocklist(natot)

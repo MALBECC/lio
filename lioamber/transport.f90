@@ -3,7 +3,8 @@ module transport
    implicit none
    logical   :: transport_calc = .false., generate_rho0 = .false.,             &
                 gate_field = .false.
-   integer   :: save_charge_freq = 0, Pop_Drive, ngroup, pop_uid = 678
+   integer   :: save_charge_freq = 0, pop_drive, ngroup, pop_uid = 678,        &
+                drive_uid = 5555
    complex*8 :: traza
    real*8    :: scratchgamma, driving_rate = 0.001, GammaMagnus, GammaVerlet,  &
                 re_traza
@@ -18,34 +19,45 @@ module transport
 contains
 
 subroutine transport_init(M, natom, Nuc, ngroup, group, mapmat, GammaMagnus, &
-                          GammaVerlet)
-   use general_module, only: atmorb
-
+                          GammaVerlet, RMM5, overlap, ntdstep)
    implicit none
    integer, intent(in)  :: M, natom, Nuc(M)
-   integer, intent(out) :: ngroup
+   real*8 , intent(in)  :: RMM5(M*(M+1)/2)
+   integer, intent(out) :: ngroup, ntdstep
+   real*8 , allocatable, intent(inout) :: overlap(:,:)
    integer, allocatable, intent(inout) :: group(:), mapmat(:,:)
-   integer :: orb_group(M)
+   integer :: orb_group(M), icount
    real*8  :: GammaMagnus, GammaVerlet
 
-   ngroup = 0
+   ngroup  = 0
+   ntdstep = 1
 
    allocate(group(natom), mapmat(M,M))
    call transport_read_groups(natom, group, ngroup)
    call mat_map(group, mapmat, Nuc, M, natom)
-   call atmorb(group, Nuc, orb_group)
+
+   do icount = 1, size(orb_group)
+      orb_group(icount) = group( Nuc(icount) )
+   enddo
 
    GammaMagnus = driving_rate
    GammaVerlet = driving_rate*0.1D0
 
-   select case (Pop_Drive)
+   select case (pop_drive)
       case (1)
-         open( unit = pop_uid, file = "MullikenGroup")
+         open( unit = pop_uid  , file = "MullikenGroup")
+         open( unit = drive_uid, file = 'DriveMul')
       case (2)
-         open( unit = pop_uid, file = "LowdinGroup")
+         open( unit = pop_uid  , file = "LowdinGroup")
+         open( unit = drive_uid, file = 'DriveLowd')
       case default
-         write(*,*) 'ERROR - Transport: Wrong value for Pop_Drive (transport_init)'
+         write(*,*) 'ERROR - Transport: Wrong value for pop_drive '//&
+                    '(transport_init)'
    end select
+
+   if (allocated(overlap)) deallocate(overlap)
+   allocate(overlap(M,M))
+   call spunpack('L', M, RMM5, overlap)
 
    return
 end subroutine transport_init
@@ -110,11 +122,89 @@ subroutine transport_generate_rho(M, rhofirst, rho, gen_rho)
    return
 end subroutine transport_generate_rho
 
+subroutine transport_propagate(M, natom, Nuc, Iz, ngroup, group, pop_drive,    &
+                               propagator, save_charge_freq, istep, gamma,     &
+                               overlap, sqsm, rho1, rhofirst)
+   implicit none
+   integer   , intent(in)    :: M, natom, Nuc(M), Iz(natom), ngroup,  &
+                                group(ngroup), pop_drive, propagator, &
+                                save_charge_freq, istep
+   real*8    , intent(in)    :: gamma
+   real*8    , intent(inout) :: overlap(M,M), sqsm(M,M)
+#ifdef TD_SIMPLE
+   complex*8 , intent(inout) :: rhofirst(M,M), rho1(M,M)
+#else
+   complex*16, intent(inout) :: rhofirst(M,M), rho1(M,M)
+#endif
+   real*8  :: scratchgamma
+   integer :: save_freq
 
+   save_freq = save_charge_freq
+   if (propagator.eq.1) save_freq = save_freq*10
 
+   call g2g_timer_start('Transport-propagation')
+   if ((propagator.eq.2) .and. (istep.gt.999)) Then
+      scratchgamma = gamma
+   else
+      scratchgamma = gamma * exp(-0.0001D0 * (dble(istep-1000))**2)
+   endif
 
+   call electrostat(rho1, mapmat, overlap, rhofirst, scratchgamma,M)
+   if (mod( istep-1 , save_freq) == 0) then
+      call drive_population(M, natom, Nuc, Iz, pop_drive, ngroup, rho1, &
+                            overlap, group, sqsm)
+   endif
 
+   call g2g_timer_stop('Transport-propagation')
 
+   return
+end subroutine transport_propagate
+
+#ifdef CUBLAS
+subroutine transport_propagate_cu(M, natom, Nuc, Iz, ngroup, group, pop_drive, &
+                               propagator, save_charge_freq, istep, gamma,     &
+                               overlap, sqsm, rho1, rhofirst, devPtrY)
+   use cublasmath, only : basechange_cublas
+   implicit none
+   integer   , intent(in)    :: M, natom, Nuc(M), Iz(natom), ngroup,  &
+                                group(ngroup), pop_drive, propagator, &
+                                save_charge_freq, istep
+   integer*8 , intent(in)    :: devPtrY
+   real*8    , intent(in)    :: gamma
+   real*8    , intent(inout) :: overlap(M,M), sqsm(M,M)
+#ifdef TD_SIMPLE
+   complex*8 , intent(inout) :: rhofirst(M,M), rho1(M,M)
+#else
+   complex*16, intent(inout) :: rhofirst(M,M), rho1(M,M)
+#endif
+   real*8  :: scratchgamma
+   integer :: save_freq
+
+   save_freq = save_charge_freq
+   if (propagator.eq.1) save_freq = save_freq*10
+
+   call g2g_timer_start('Transport-propagation')
+   if ((propagator.eq.2) .and. (istep.gt.999)) Then
+      scratchgamma = gamma
+   else
+      scratchgamma = gamma * exp(-0.0001D0 * (dble(istep-1000))**2)
+   endif
+
+   call electrostat(rho1, mapmat, overlap, rhofirst, scratchgamma,M)
+   if (mod( istep-1 , save_freq) == 0) then
+      call drive_population(M, natom, Nuc, Iz, pop_drive, ngroup, rho1, &
+                            overlap, group, sqsm)
+   endif
+
+   call g2g_timer_start('complex_rho_ao_to_on-cu')
+   rho1 = basechange_cublas(M, rho1, devPtrY, 'dir')
+   call g2g_timer_stop('complex_rho_ao_to_on-cu')
+
+   call g2g_timer_stop('Transport-propagation')
+
+   return
+end subroutine transport_propagate_cu
+#endif
 
 subroutine mat_map(group, mapmat, Nuc, M, natom)
    ! This subroutine classifies each index for the evolution of the density

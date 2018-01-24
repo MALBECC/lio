@@ -26,6 +26,9 @@
 ! dipole are stored in files x.dip, y.dip, z.dip.                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module time_dependent
+   implicit none
+
+   integer :: td_restart_freq = 500
 
 contains
 
@@ -40,7 +43,6 @@ subroutine TD()
    use ECP_mod       , only: ecpmode, term1e, VAAA, VAAB, VBAC
    use mathsubs
    use transport
-   use faint_cpu77   , only: int3lu
    use fileio        , only: read_td_restart_verlet , read_td_restart_magnus , &
                              write_td_restart_verlet, write_td_restart_magnus
 #ifdef CUBLAS
@@ -58,17 +60,16 @@ subroutine TD()
    logical :: ematalloct, dovv, is_lpfrg
    character(len=20) :: restart_filename
 
-   real*8 , allocatable, dimension(:)   :: factorial, Dvec, WORK
-   real*8 , allocatable, dimension(:,:) :: Xnano2, Xmm, Xtrans, Ytrans, fock,  &
-                                           F1a, F1b, overlap, elmu,&
-                                           Ymat, Vmat
+   real*8 , allocatable, dimension(:)   :: factorial, WORK
+   real*8 , allocatable, dimension(:,:) :: Xmm, Xtrans, Ytrans, fock, F1a, F1b,&
+                                           overlap, elmu, Ymat
 ! Precision options.
 #ifdef TD_SIMPLE
    complex*8  :: Im,Ix
-   complex*8 , allocatable, dimension(:,:) :: rho, rho_aux, rhonew, rhold, Xnano
+   complex*8 , allocatable, dimension(:,:) :: rho, rho_aux, rhonew, rhold
 #else
    complex*16 :: Im,Ix
-   complex*16, allocatable, dimension(:,:) :: rho, rho_aux, rhonew, rhold, Xnano
+   complex*16, allocatable, dimension(:,:) :: rho, rho_aux, rhonew, rhold
 #endif
 
 ! CUBLAS options.
@@ -104,9 +105,9 @@ subroutine TD()
    open(unit = 134, file = "dipole_moment_td")
 
    ! Checks and performs allocations.
-   call td_allocate_all(M, NBCH, propagator, F1a, F1b, fock, rho, rho_aux,     &
-                        rhofirst, rhold, rhonew, sqsm, Vmat, Xmm, Xnano,       &
-                        Xnano2, Xtrans, Ymat, Ytrans, Dvec, factorial)
+   call td_allocate_all(M, NBCH, propagator, F1a, F1b, fock, rho, rho_aux, &
+                        rhofirst, rhold, rhonew, sqsm, Xmm, Xtrans, Ymat,  &
+                        Ytrans, factorial)
 #ifdef CUBLAS
    call td_allocate_cublas(M, sizeof_real, devPtrX, devPtrY)
 #endif
@@ -124,15 +125,7 @@ subroutine TD()
       else
          call read_td_restart_verlet(rho, M, restart_filename)
       endif
-      do j = 1, M
-      do k = j, M
-         if(j.eq.k) then
-            RMM(k+(M2-j)*(j-1)/2) = real(rho(j,k))
-         else
-            RMM(k+(M2-j)*(j-1)/2) = (real(rho(j,k)))*2.0D0
-         endif
-      enddo
-      enddo
+      call sprepack_ctr('L', M, RMM, rho)
    else
       ! Read the density matrix stored in RMM(1,2,3,...,MM) into rho matrix.
       call spunpack_rtc('L', M, RMM, rho)
@@ -178,170 +171,71 @@ subroutine TD()
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% TD EVOLUTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-   write(*,*) 'TD- Starting propagation.'
    do 999 istep = 1, ntdstep
-      ! Checks if step is a leapfrog step.
-      is_lpfrg = ((propagator.eq.1) .or. (((propagator.eq.2) .and. &
-                 (istep.lt.lpfrg_steps)) .and. (.not.tdrestart)))
-      if ( (is_lpfrg).and.(istep.eq.1) ) write(*,*) 'TD - Verlet Propagation'
-
-
       call g2g_timer_start('TD step')
+      ! Checks if step is a leapfrog step.
+      call td_check_prop(is_lpfrg, propagator, istep, lpfrg_steps, tdrestart)
       call td_get_time(t, tdstep, istep, propagator, is_lpfrg)
 
-      if (is_lpfrg) then
-         call int3lu(E2)
-         call g2g_solve_groups(0,Ex,0)
-      endif
+      call td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM(M11), is_lpfrg, &
+                          transport_calc, field, exter, istep, pert_steps,    &
+                          dipxyz, fx, fy, fz, fxx, fyy, fzz, epsilon, g, a0,  &
+                          Qc2, sol)
 
-      ! ELECTRIC FIELD CASE - Perturbation type: Gaussian.
-      if ((.not.transport_calc).and.(field)) then
-         call td_calc_perturbation(istep, pert_steps, dipxyz, fx, fy, fz,   &
-                                   exter, epsilon, a0, Qc2, E1, field, fxx, &
-                                   fyy, fzz,g)
-      endif
+      ! Verlet or Magnus Propagation
+      ! In Verlet, we obtain the Fock matrix in the molecular orbital (MO)
+      ! basis, where U matrix with eigenvectors of S, and s is vector with
+      ! eigenvalues. In the first step of the propagation we extrapolate rho
+      ! back in time using Verlet algorithm to calculate rhold.
+      ! Both propagations include transport.
 
-      ! Add 1e contributions to E1.
-      do k = 1, MM
-         E1 = E1 + RMM(k)*RMM(M11+k-1)
-      enddo
-      E = E1 + E2 + En + Ex
-      if (sol) E = E + Es
-      write(*,*) 'TD - Step: ', istep, " Energy : ", E
+      ! After propagation, we transform the density to the atomic orbital basis
+      ! and take the real part of it. The imaginary part of the density can be
+      ! discarded since for a basis set of purely real functions the fock matrix
+      ! is real and symetric, and depends only on the real part of the complex
+      ! density matrix. (This will not be true in the case of hybrid
+      ! functionals)
 
-      ! Here we obtain the Fock matrix in the molecular orbital (MO) basis,
-      ! where U matrix with eigenvectors of S, and s is vector with eigenvalues.
-      if (is_lpfrg) then
-         call g2g_timer_start('fock')
-         call spunpack('L', M, RMM(M5), fock)
 #ifdef CUBLAS
-         Xnano2 = basechange_cublas(M, fock, devPtrX, 'dir')
-         fock   = Xnano2
-#else
-         Xnano2 = matmul(Xtrans, fock)
-         fock   = matmul(Xnano2, Xmm)
-#endif
-         call sprepack('L',M,RMM(M5),fock)
-         call g2g_timer_stop('fock')
-      endif
-
-      ! Stores F1a and F1b for Magnus propagation.
-      if ((propagator.eq.2) .and. (.not.tdrestart)) then
-         if (istep.eq.chkpntF1a) F1a = fock
-         if (istep.eq.chkpntF1b) F1b = fock
-      endif
-
       if (is_lpfrg) then
-         ! Verlet Propagation
-         ! In the first step of the propagation we extrapolate rho back in time
-         ! using Verlet algorithm to calculate rhold.
-         ! Transport: propagation.
-#ifdef CUBLAS
-         if(istep.eq.1) then
-            call g2g_timer_start('cuconmut')
-            rhold = commutator_cublas(fock,rho)
-            call g2g_timer_stop('cuconmut')
-            rhold = rho + dt_lpfrg*(Im*rhold)
+         call td_bc_fock_cu(M, MM, RMM(M5), fock, devPtrX)
+         call td_verlet_cu(M, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg,   &
+                           transport_calc, natom, Nuc, Iz, ngroup, group,      &
+                           pop_drive, save_charge_freq, GammaVerlet, overlap,  &
+                           sqsm, rho_aux, rhofirst, devPtrY)
+         if (propagator.eq.2) then
+            if (istep.eq.chkpntF1a) F1a = fock
+            if (istep.eq.chkpntF1b) F1b = fock
          endif
-
-         if ((transport_calc) .and. (istep.ge.3))then
-            call transport_propagate_cu(M, natom, Nuc, Iz, ngroup, group,      &
-            pop_drive, 1, save_charge_freq, istep, GammaVerlet, overlap, sqsm, &
-            rho_aux, rhofirst, devPtrY)
-         endif
-
-         call g2g_timer_start('commutator')
-         rhonew = commutator_cublas(fock, rho)
-         call  g2g_timer_stop('commutator')
-#else
-         if(istep.eq.1) then
-            call g2g_timer_start('conmutc')
-            rhold = commutator(fock,rho)
-            call g2g_timer_stop('conmutc')
-            rhold = rho + dt_lpfrg*(Im*rhold)
-         endif
-         if ((transport_calc) .and. (istep.ge.3))then
-            call transport_propagate(M, natom, Nuc, Iz, ngroup, group,         &
-            pop_drive, 1, save_charge_freq, istep, GammaVerlet, overlap, sqsm, &
-            rho_aux, rhofirst)
-         endif
-
-         call g2g_timer_start('commutator')
-         rhonew = commutator(fock, rho)
-         call  g2g_timer_stop('commutator')
-#endif
-         rhonew = rhold - dt_lpfrg*(Im*rhonew)
-
-         !Transport: Add the driving term to the propagation.
-         if ((istep.ge.3) .and. (transport_calc)) then
-            write(*,*) 'Transport: Adding driving term to the density.'
-            rhonew = rhonew - rho_aux
-         endif
-
-         ! Density update (rhold-->rho, rho-->rhonew)
-         do i = 1, M
-         do j = 1, M
-            rhold(i,j) = rho(i,j)
-            rho(i,j)   = rhonew(i,j)
-         enddo
-         enddo
-      ! End of Verlet propagation.
       else
-         ! Magnus Propagation.
-         write(*,*) 'TD - Magnus propagation.'
-
-         ! Transport propagation.
-         if (transport_calc) then
-#ifdef CUBLAS
-            call transport_propagate_cu(M, natom, Nuc, Iz, ngroup, group,      &
-            pop_drive, 2, save_charge_freq, istep, GammaMagnus, overlap, sqsm, &
-            rho_aux, rhofirst, devPtrY)
-#else
-            call transport_propagate(M, natom, Nuc, Iz, ngroup, group,         &
-            pop_drive, 2, save_charge_freq, istep, GammaMagnus, overlap, sqsm, &
-            rho_aux, rhofirst)
-#endif
-         endif
-
-#ifdef CUBLAS
-         call g2g_timer_start('cupredictor')
-         call cupredictor(F1a, F1b, fock, rho, devPtrX, factorial, fxx, fyy,   &
-                          fzz, g, devPtrXc)
-         call g2g_timer_stop('cupredictor')
-         call g2g_timer_start('cumagnus')
-         call cumagnusfac(fock, rho, rhonew, M, NBCH, dt_magnus, factorial)
-         call g2g_timer_stop('cumagnus')
-#else
-         call g2g_timer_start('predictor')
-         call predictor(F1a, F1b, fock, rho, factorial, fxx, fyy, fzz, g)
-         call g2g_timer_stop('predictor')
-         call g2g_timer_start('magnus')
-         call magnus(fock, rho, rhonew, M, NBCH, dt_magnus, factorial)
-         call g2g_timer_stop('magnus')
-#endif
-         !Transport: Add the driving term to the propagation.
-         if (transport_calc) then
-            write(*,*) 'Transport: Adding driving term to the density.'
-            rhonew = rhonew - rho_aux
-         endif
-
-         ! Density update and Fock storage.
-         F1a = F1b
-         F1b = fock
-         rho = rhonew
-      ! End of Magnus Propagation.
+         call td_magnus_cu(M, fock, F1a, F1b, rho, rhonew, devPtrX, devPtrXc,  &
+                           factorial, fxx, fyy, fzz, g, NBCH, dt_magnus, natom,&
+                           transport_calc, Nuc, Iz, ngroup, group, pop_drive,  &
+                           save_charge_freq, istep, GammaMagnus, overlap, sqsm,&
+                           rho_aux, rhofirst, devPtrY)
       endif
 
-      ! Here we transform the density to the atomic orbital basis and take the
-      ! real part of it. The imaginary part of the density can be descarted
-      ! since for a basis set of purely real functions the fock matrix is real
-      ! and symetric and depends only on the real part of the complex density
-      ! matrix. (This will not be true in the case of hybrid functionals)
-#ifdef CUBLAS
       call g2g_timer_start('complex_rho_on_to_ao-cu')
       rho_aux = basechange_cublas(M, rho, devPtrXc, 'inv')
       call g2g_timer_stop('complex_rho_on_to_ao-cu')
 #else
+      if (is_lpfrg) then
+         call td_bc_fock(M, MM, RMM(M5), fock, Xtrans, Xmm)
+         call td_verlet(M, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg,      &
+                        transport_calc, natom, Nuc, Iz, ngroup, group,         &
+                        pop_drive, save_charge_freq, GammaVerlet, overlap,     &
+                        sqsm, rho_aux, rhofirst)
+         if (propagator.eq.2) then
+            if (istep.eq.chkpntF1a) F1a = fock
+            if (istep.eq.chkpntF1b) F1b = fock
+         endif
+      else
+         call td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, fxx, fyy,   &
+                        fzz, g, NBCH, dt_magnus, natom, transport_calc, Nuc,   &
+                        Iz, ngroup, group, pop_drive, save_charge_freq, istep, &
+                        GammaMagnus, overlap, sqsm, rho_aux, rhofirst)
+      endif
+
       call g2g_timer_start('complex_rho_on_to_ao')
       rho_aux = matmul(x(1:M,1:M), rho)
       rho_aux = matmul(rho_aux, Xtrans)
@@ -349,18 +243,11 @@ subroutine TD()
 #endif
       ! The real part of the density matrix in the atomic orbital basis is
       ! copied in RMM(1,2,3,...,MM) to compute the corresponding Fock matrix.
-      do j = 1, M
-      do k = j, M
-         if (j.eq.k) then
-            RMM(k+(M2-j)*(j-1)/2) = real(rho_aux(j,k))
-         else
-            RMM(k+(M2-j)*(j-1)/2) = (real(rho_aux(j,k)))*2
-         endif
-      enddo
-      enddo
+      call sprepack_ctr('L', M, RMM, rho_aux)
 
       ! Stores the density matrix each 500 steps as a restart.
-      if ((writedens) .and. ((mod(istep,50) == 0) .or. (istep.eq.ntdstep))) then
+      if ((writedens) .and. ( (mod(istep, td_restart_freq) == 0) .or. &
+         (istep.eq.ntdstep) )) then
          restart_filename='td.restart'
          if (istep.eq.ntdstep) restart_filename='td_last.restart'
          if (propagator.eq.2) then
@@ -371,38 +258,18 @@ subroutine TD()
       endif
 
       ! Compute the trace of the density matrix for population analysis.
-      if (transport_calc) then
-         traza = dcmplx(0.0D0,0.0D0)
-         do i = 1, M
-            traza = traza + rho(i,i)
-         enddo
-         write(*,*) 'Trace = ', real(traza)
-      endif
+      if (transport_calc) call transport_rho_trace(M, rho)
 
       ! Dipole Moment calculation.
-      if(istep.eq.1) then
-         call write_dipole_td_header(tdstep, Fx, Fy, Fz, 134)
-      endif
-      if ((propagator.gt.1).and.(is_lpfrg)) then
-         if (mod ((istep-1),10) == 0) then
-            call g2g_timer_start('DIPOLE_TD')
-            call dip(dipxyz)
-            call g2g_timer_stop('DIPOLE_TD')
-            call write_dipole_td(dipxyz, t, 134)
-         endif
-      else
-         call g2g_timer_start('DIPOLE_TD')
-         call dip(dipxyz)
-         call g2g_timer_stop('DIPOLE_TD')
-         call write_dipole_td(dipxyz, t, 134)
-      endif
+      call td_dipole(dipxyz, t, tdstep, Fx, Fy, Fz, istep, propagator, &
+                     is_lpfrg, 134)
 
       ! Population analysis.
       if (transport_calc) then
-         if ( ((propagator.gt.1) .and. (is_lpfrg) .and.            &
-            (mod((istep-1), save_charge_freq*10) == 0)) .or.                   &
+         if ( ((propagator.gt.1) .and. (is_lpfrg) .and.       &
+            (mod((istep-1), save_charge_freq*10) == 0)) .or.  &
             (mod((istep-1), save_charge_freq) == 0) ) then
-            call drive_population(M, natom, Nuc, Iz, pop_drive, ngroup,     &
+            call drive_population(M, natom, Nuc, Iz, pop_drive, ngroup, &
                                   rho_aux, overlap, group, sqsm)
          endif
       endif
@@ -414,9 +281,6 @@ subroutine TD()
    ! Finalization.
    call WriteEnergies(E1, E2, En, Ens, 0, Ex, .false., 0)
 
-   deallocate(Xnano, Xnano2, fock, rhonew, rhold, rho, Xmm, Xtrans, Ymat, &
-              Ytrans, rho_aux, factorial)
-   if (propagator.eq.2) deallocate (F1a, F1b)
 #ifdef CUBLAS
    call td_finalise_cublas(devPtrX, devPtrY, devPtrXc)
 #endif
@@ -429,23 +293,23 @@ end subroutine TD
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Subroutines used in initialisation.
 
-subroutine td_allocate_all(M, NBCH, propagator, F1a, F1b, fock, rho, rho_aux,  &
-                           rhofirst, rhold, rhonew, sqsm, Vmat, Xmm, Xnano,    &
-                           Xnano2, Xtrans, Ymat, Ytrans, Dvec, factorial)
+subroutine td_allocate_all(M, NBCH, propagator, F1a, F1b, fock, rho, rho_aux, &
+                           rhofirst, rhold, rhonew, sqsm, Xmm, Xtrans, Ymat,  &
+                           Ytrans, factorial)
    implicit none
    integer, intent(in) :: M, NBCH, propagator
    real*8, allocatable, intent(inout) :: F1a(:,:), F1b(:,:), fock(:,:),        &
-                                         sqsm(:,:), Vmat(:,:), Xmm(:,:),       &
-                                         Xnano2(:,:), Xtrans(:,:), Ymat(:,:),  &
-                                         Ytrans(:,:), Dvec(:), factorial(:)
+                                         sqsm(:,:), Xmm(:,:),       &
+                                         Xtrans(:,:), Ymat(:,:), Ytrans(:,:),  &
+                                         factorial(:)
 #ifdef TD_SIMPLE
    complex*8 , allocatable, intent(inout) :: rho(:,:), rho_aux(:,:),    &
                                              rhofirst(:,:), rhold(:,:), &
-                                             rhonew(:,:), Xnano(:,:)
+                                             rhonew(:,:)
 #else
    complex*16, allocatable, intent(inout) :: rho(:,:), rho_aux(:,:),    &
                                              rhofirst(:,:), rhold(:,:), &
-                                             rhonew(:,:), Xnano(:,:)
+                                             rhonew(:,:)
 #endif
 
    if ( allocated(fock)     ) deallocate(fock)
@@ -455,19 +319,14 @@ subroutine td_allocate_all(M, NBCH, propagator, F1a, F1b, fock, rho, rho_aux,  &
    if ( allocated(rhold)    ) deallocate(rhold)
    if ( allocated(rhonew)   ) deallocate(rhonew)
    if ( allocated(sqsm)     ) deallocate(sqsm)
-   if ( allocated(Vmat)     ) deallocate(Vmat)
    if ( allocated(Xmm)      ) deallocate(Xmm)
-   if ( allocated(Xnano)    ) deallocate(Xnano)
-   if ( allocated(Xnano2)   ) deallocate(Xnano2)
    if ( allocated(Xtrans)   ) deallocate(Xtrans)
    if ( allocated(Ytrans)   ) deallocate(Ytrans)
    if ( allocated(Ymat)     ) deallocate(Ymat)
-   if ( allocated(Dvec)     ) deallocate(Dvec)
    if ( allocated(factorial)) deallocate(factorial)
-   allocate(fock(M,M)  , rho(M,M) , rho_aux(M,M) , rhofirst(M,M), rhold(M,M) , &
-            rhonew(M,M), sqsm(M,M), Xmm(M,M)     , Xnano(M,M)   , Xnano2(M,M), &
-            Xtrans(M,M), Ymat(M,M), Ytrans(M,M)  , Vmat(M,M)    , Dvec(M)    , &
-            factorial(NBCH))
+   allocate(fock(M,M)  , rho(M,M)   , rho_aux(M,M), rhofirst(M,M), rhold(M,M) ,&
+            rhonew(M,M), sqsm(M,M)  , Xmm(M,M)    , Xtrans(M,M),   Ymat(M,M)  ,&
+            Ytrans(M,M), factorial(NBCH))
    if (propagator.eq.2) then
       if ( allocated(F1a) ) deallocate(F1a)
       if ( allocated(F1b) ) deallocate(F1b)
@@ -476,6 +335,38 @@ subroutine td_allocate_all(M, NBCH, propagator, F1a, F1b, fock, rho, rho_aux,  &
 
    return
 end subroutine td_allocate_all
+
+subroutine td_deallocate_all(F1a, F1b, fock, rho, rho_aux, rhofirst, rhold, &
+                             rhonew, Xmm, Xtrans, Ymat, Ytrans,factorial)
+   implicit none
+   real*8, allocatable, intent(inout) :: F1a(:,:), F1b(:,:), fock(:,:),    &
+                                         Xmm(:,:), Xtrans(:,:), Ymat(:,:), &
+                                         Ytrans(:,:), factorial(:)
+#ifdef TD_SIMPLE
+   complex*8 , allocatable, intent(inout) :: rho(:,:), rho_aux(:,:),    &
+                                             rhofirst(:,:), rhold(:,:), &
+                                             rhonew(:,:)
+#else
+   complex*16, allocatable, intent(inout) :: rho(:,:), rho_aux(:,:),    &
+                                             rhofirst(:,:), rhold(:,:), &
+                                             rhonew(:,:)
+#endif
+   if ( allocated(fock)     ) deallocate(fock)
+   if ( allocated(rho)      ) deallocate(rho)
+   if ( allocated(rho_aux)  ) deallocate(rho_aux)
+   if ( allocated(rhofirst) ) deallocate(rhofirst)
+   if ( allocated(rhold)    ) deallocate(rhold)
+   if ( allocated(rhonew)   ) deallocate(rhonew)
+   if ( allocated(Xmm)      ) deallocate(Xmm)
+   if ( allocated(Xtrans)   ) deallocate(Xtrans)
+   if ( allocated(Ytrans)   ) deallocate(Ytrans)
+   if ( allocated(Ymat)     ) deallocate(Ymat)
+   if ( allocated(factorial)) deallocate(factorial)
+   if ( allocated(F1a)      ) deallocate(F1a)
+   if ( allocated(F1b)      ) deallocate(F1b)
+
+   return
+end subroutine td_deallocate_all
 
 subroutine td_initialise(propagator, tdstep, NBCH, dt_lpfrg, dt_magnus,        &
                          factorial, pert_steps, lpfrg_steps, Im, chkpntF1a,    &
@@ -698,7 +589,6 @@ subroutine td_coulomb_precalc(igpu, MEMO)
    return
 end subroutine td_coulomb_precalc
 
-
 ! Subroutines used in propagation.
 subroutine td_get_time(t, tdstep, istep, propagator, is_lpfrg)
    implicit none
@@ -725,6 +615,61 @@ subroutine td_get_time(t, tdstep, istep, propagator, is_lpfrg)
    return
 end subroutine td_get_time
 
+subroutine td_check_prop(is_lpfrg, propagator, istep, lpfrg_steps, tdrestart)
+   implicit none
+   integer, intent(in)  :: propagator, istep, lpfrg_steps
+   logical, intent(in)  :: tdrestart
+   logical, intent(out) :: is_lpfrg
+
+   is_lpfrg = ((propagator.eq.1) .or. (((propagator.eq.2) .and. &
+              (istep.lt.lpfrg_steps)) .and. (.not.tdrestart)))
+   if ( (is_lpfrg).and.(istep.eq.1) ) then
+      write(*,*) 'TD - Starting Verlet Propagation'
+   endif
+   if ( (.not.(is_lpfrg)).and.(((istep-1).eq.lpfrg_steps)) ) then
+      write(*,*) 'TD - Starting Magnus Propagation'
+   endif
+   return
+end subroutine td_check_prop
+
+subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
+                          transport_calc, field, exter, istep, pert_steps, &
+                          dipxyz, fx, fy, fz, fxx, fyy, fzz, epsilon, g,   &
+                          a0, Qc2, sol)
+   use faint_cpu77, only: int3lu
+   implicit none
+   integer, intent(in)    :: istep, pert_steps, MM
+   logical, intent(in)    :: is_lpfrg, transport_calc, sol
+   logical, intent(inout) :: field, exter
+   real*8 , intent(in)    :: epsilon, a0, Qc2
+   real*8 , intent(inout) :: E, E1, E2, En, Ex, Es, fx, fy, fz, fxx, fyy, fzz, &
+                             g, dipxyz(3), RMM(MM), RMM11(MM)
+   integer :: icount
+
+   E1 = 0.0D0; E = 0.0D0
+   if (is_lpfrg) then
+      call int3lu(E2)
+      call g2g_solve_groups(0,Ex,0)
+   endif
+
+   ! ELECTRIC FIELD CASE - Perturbation type: Gaussian.
+   if ((.not.transport_calc).and.(field)) then
+      call td_calc_perturbation(istep, pert_steps, dipxyz, fx, fy, fz,   &
+                                exter, epsilon, a0, Qc2, E1, field, fxx, &
+                                fyy, fzz, g)
+   endif
+
+   ! Add 1e contributions to E1.
+   do icount = 1, MM
+      E1 = E1 + RMM(icount)*RMM11(icount)
+   enddo
+   E = E1 + E2 + En + Ex
+   if (sol) E = E + Es
+   write(*,*) 'TD - Step: ', istep, " Energy : ", E
+
+   return
+end subroutine td_calc_energy
+
 subroutine td_calc_perturbation(step, pert_steps, dipxyz, fx, fy, fz, exter, &
                                 epsilon, a0, Qc2, E1, field, fxx, fyy, fzz, g)
    use faint_cpu77, only: intfld
@@ -735,7 +680,6 @@ subroutine td_calc_perturbation(step, pert_steps, dipxyz, fx, fy, fz, exter, &
    real*8 , intent(inout) :: dipxyz(3), E1, fx, fy, fz, fxx, fyy, fzz, g
    real*8 :: factor
 
-   E1  = 0.0D0
    fxx = 0.0D0
    fyy = 0.0D0
    fzz = 0.0D0
@@ -762,10 +706,158 @@ subroutine td_calc_perturbation(step, pert_steps, dipxyz, fx, fy, fz, exter, &
    else
       field = .false.
    endif
-
+   return
 end subroutine td_calc_perturbation
 
-! CUBLAs-dependent subroutines.
+subroutine td_bc_fock(M, MM, RMM5, fock, Xtrans, Xmm)
+   implicit none
+   integer, intent(in)    :: M, MM
+   real*8 , intent(inout) :: RMM5(MM), fock(M,M), Xtrans(M,M), Xmm(M,M)
+   real*8 :: Xtemp(M,M)
+
+   call g2g_timer_start('fock')
+   call spunpack('L', M, RMM5, fock)
+   Xtemp = matmul(Xtrans, fock)
+   fock  = matmul(Xtemp , Xmm)
+   call sprepack('L', M, RMM5, fock)
+   call g2g_timer_stop('fock')
+
+   return
+end subroutine td_bc_fock
+
+subroutine td_verlet(M, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg,         &
+                     transport_calc, natom, Nuc, Iz, ngroup, group, pop_drive, &
+                     save_charge_freq, GammaVerlet, overlap, sqsm, rho_aux,    &
+                     rhofirst)
+   use mathsubs , only : commutator
+   use transport, only : transport_propagate
+   implicit none
+   integer   , intent(in)    :: M, istep, natom, Nuc(M), Iz(natom), ngroup,    &
+                                group(ngroup), pop_drive, save_charge_freq
+   real*8    , intent(in)    :: GammaVerlet, dt_lpfrg
+   logical   , intent(in)    :: transport_calc
+   real*8    , intent(inout) :: overlap(M,M), sqsm(M,M), fock(M,M)
+#ifdef TD_SIMPLE
+   complex*8 , intent(inout) :: Im, rhofirst(M,M), rho_aux(M,M), rhold(M,M),   &
+                                rhonew(M,M), rho(M,M)
+#else
+   complex*16, intent(inout) :: Im, rhofirst(M,M), rho_aux(M,M), rhold(M,M),   &
+                                rhonew(M,M), rho(M,M)
+#endif
+   integer :: icount, jcount
+
+   if (istep.eq.1) then
+      call g2g_timer_start('conmutc')
+      rhold = commutator(fock,rho)
+      rhold = rho + dt_lpfrg*(Im*rhold)
+      call g2g_timer_stop('conmutc')
+   endif
+
+   if ((transport_calc) .and. (istep.ge.3))then
+      call transport_propagate(M, natom, Nuc, Iz, ngroup, group, pop_drive, 1, &
+                               save_charge_freq, istep, GammaVerlet, overlap,  &
+                               sqsm, rho_aux, rhofirst)
+   endif
+
+   call g2g_timer_start('commutator')
+   rhonew = commutator(fock, rho)
+   rhonew = rhold - dt_lpfrg*(Im*rhonew)
+   call  g2g_timer_stop('commutator')
+
+   !Transport: Add the driving term to the propagation.
+   if ((istep.ge.3) .and. (transport_calc)) then
+      write(*,*) 'Transport: Adding driving term to the density.'
+      rhonew = rhonew - rho_aux
+   endif
+
+   ! Density update (rhold-->rho, rho-->rhonew)
+   do icount = 1, M
+   do jcount = 1, M
+      rhold(icount, jcount) = rho(icount, jcount)
+      rho(icount, jcount)   = rhonew(icount, jcount)
+   enddo
+   enddo
+
+   return
+end subroutine td_verlet
+
+subroutine td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, fxx, fyy,   &
+                     fzz, g, NBCH, dt_magnus, natom, transport_calc, Nuc,   &
+                     Iz, ngroup, group, pop_drive, save_charge_freq, istep, &
+                     GammaMagnus, overlap, sqsm, rho_aux, rhofirst)
+   use transport, only: transport_propagate
+   implicit none
+   logical  , intent(in)     :: transport_calc
+   integer  , intent(in)     :: M, NBCH, istep, natom, ngroup, pop_drive, &
+                                save_charge_freq, Nuc(M), Iz(natom),      &
+                                group(ngroup)
+   real*8   , intent(in)     :: dt_magnus, fxx, fyy, fzz, g, GammaMagnus, &
+                                factorial(NBCH)
+   real*8   , intent(inout)  :: fock(M,M), F1a(M,M), F1b(M,M), overlap(M,M), &
+                                sqsm(M,M)
+#ifdef TD_SIMPLE
+   complex*8 , intent(inout) :: rhofirst(M,M), rho_aux(M,M), rhonew(M,M), &
+                                rho(M,M)
+#else
+   complex*16, intent(inout) :: rhofirst(M,M), rho_aux(M,M), rhonew(M,M), &
+                                rho(M,M)
+#endif
+
+   if (transport_calc) then
+      call transport_propagate(M, natom, Nuc, Iz, ngroup, group,         &
+      pop_drive, 2, save_charge_freq, istep, GammaMagnus, overlap, sqsm, &
+      rho_aux, rhofirst)
+   endif
+
+   call g2g_timer_start('predictor')
+   call predictor(F1a, F1b, fock, rho, factorial, fxx, fyy, fzz, g)
+   call g2g_timer_stop('predictor')
+   call g2g_timer_start('magnus')
+   call magnus(fock, rho, rhonew, M, NBCH, dt_magnus, factorial)
+   call g2g_timer_stop('magnus')
+
+   !Transport: Add the driving term to the propagation.
+   if (transport_calc) then
+      write(*,*) 'Transport: Adding driving term to the density.'
+      rhonew = rhonew - rho_aux
+   endif
+
+   ! Density update and Fock storage.
+   F1a = F1b
+   F1b = fock
+   rho = rhonew
+   return
+end subroutine td_magnus
+
+subroutine td_dipole(dipxyz, t, tdstep, Fx, Fy, Fz, istep, propagator, &
+                     is_lpfrg, uid)
+   implicit none
+   integer, intent(in)    :: istep, propagator, uid
+   logical, intent(in)    :: is_lpfrg
+   real*8 , intent(in)    :: Fx, Fy, Fz, t, tdstep
+   real*8 , intent(inout) :: dipxyz(3)
+
+   if(istep.eq.1) then
+      call write_dipole_td_header(tdstep, Fx, Fy, Fz, uid)
+   endif
+   if ((propagator.gt.1).and.(is_lpfrg)) then
+      if (mod ((istep-1),10) == 0) then
+         call g2g_timer_start('DIPOLE_TD')
+         call dip(dipxyz)
+         call g2g_timer_stop('DIPOLE_TD')
+         call write_dipole_td(dipxyz, t, uid)
+      endif
+   else
+      call g2g_timer_start('DIPOLE_TD')
+      call dip(dipxyz)
+      call g2g_timer_stop('DIPOLE_TD')
+      call write_dipole_td(dipxyz, t, uid)
+   endif
+
+   return
+end subroutine td_dipole
+
+! CUBLAS-dependent subroutines.
 #ifdef CUBLAS
 subroutine td_allocate_cublas(M, sizeof_real, devPtrX, devPtrY)
    implicit none
@@ -779,6 +871,16 @@ subroutine td_allocate_cublas(M, sizeof_real, devPtrX, devPtrY)
    call CUBLAS_INIT()
    return
 end subroutine td_allocate_cublas
+
+subroutine td_finalise_cublas(devPtrX, devPtrY, devPtrXc)
+   implicit none
+   external CUBLAS_SHUTDOWN, CUBLAS_FREE
+   integer*8 :: devPtrX, devPtrXc, devPtrY
+   call CUBLAS_FREE(devPtrX)
+   call CUBLAS_FREE(devPtrXc)
+   call CUBLAS_FREE(devPtrY)
+   call CUBLAS_SHUTDOWN()
+end subroutine td_finalise_cublas
 
 subroutine td_bc_rho_cu(M, sizeof_real, sizeof_complex, devPtrX, devPtrY,      &
                         devPtrXc, Xmat, Ymat, rho, rho_aux)
@@ -833,16 +935,130 @@ subroutine td_bc_rho_cu(M, sizeof_real, sizeof_complex, devPtrX, devPtrY,      &
    return
 end subroutine td_bc_rho_cu
 
-
-subroutine td_finalise_cublas(devPtrX, devPtrY, devPtrXc)
+subroutine td_bc_fock_cu(M, MM, RMM5, fock, devPtrX)
+   use cublasmath, only: basechange_cublas
    implicit none
-   external CUBLAS_SHUTDOWN, CUBLAS_FREE
-   integer*8 :: devPtrX, devPtrXc, devPtrY
-   call CUBLAS_FREE(devPtrX)
-   call CUBLAS_FREE(devPtrXc)
-   call CUBLAS_FREE(devPtrY)
-   call CUBLAS_SHUTDOWN()
-end subroutine td_finalise_cublas
+   integer  , intent(in)    :: M, MM
+   integer*8, intent(in)    :: devPtrX
+   real*8   , intent(inout) :: RMM5(MM), fock(M,M)
+   real*8 :: Xtemp(M,M)
+
+   call g2g_timer_start('fock')
+   call spunpack('L', M, RMM5, fock)
+   Xtemp = basechange_cublas(M, fock, devPtrX, 'dir')
+   fock  = Xtemp
+   call sprepack('L', M, RMM5, fock)
+   call g2g_timer_stop('fock')
+
+   return
+end subroutine td_bc_fock_cu
+
+subroutine td_verlet_cu(M, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg,      &
+                     transport_calc, natom, Nuc, Iz, ngroup, group, pop_drive, &
+                     save_charge_freq, GammaVerlet, overlap, sqsm, rho_aux,    &
+                     rhofirst, devPtrY)
+   use cublasmath, only : commutator_cublas
+   use transport , only : transport_propagate_cu
+   implicit none
+   integer   , intent(in)    :: M, istep, natom, Nuc(M), Iz(natom), ngroup,    &
+                                group(ngroup), pop_drive, save_charge_freq
+   integer*8 , intent(in)    :: devPtrY
+   real*8    , intent(in)    :: GammaVerlet, dt_lpfrg
+   logical   , intent(in)    :: transport_calc
+   real*8    , intent(inout) :: overlap(M,M), sqsm(M,M), fock(M,M)
+#ifdef TD_SIMPLE
+   complex*8 , intent(inout) :: Im, rhofirst(M,M), rho_aux(M,M), rhold(M,M),   &
+                                rhonew(M,M), rho(M,M)
+#else
+   complex*16, intent(inout) :: Im, rhofirst(M,M), rho_aux(M,M), rhold(M,M),   &
+                                rhonew(M,M), rho(M,M)
+#endif
+   integer :: icount, jcount
+
+   if(istep.eq.1) then
+      call g2g_timer_start('cuconmut')
+      rhold = commutator_cublas(fock, rho)
+      call g2g_timer_stop('cuconmut')
+      rhold = rho + dt_lpfrg*(Im*rhold)
+   endif
+
+   if ((transport_calc) .and. (istep.ge.3)) then
+      call transport_propagate_cu(M, natom, Nuc, Iz, ngroup, group, pop_drive, &
+                                  1, save_charge_freq, istep, GammaVerlet,     &
+                                  overlap, sqsm, rho_aux, rhofirst, devPtrY)
+   endif
+
+   call g2g_timer_start('commutator')
+   rhonew = commutator_cublas(fock, rho)
+   rhonew = rhold - dt_lpfrg*(Im*rhonew)
+   call  g2g_timer_stop('commutator')
+
+   !Transport: Add the driving term to the propagation.
+   if ((istep.ge.3) .and. (transport_calc)) then
+      write(*,*) 'Transport: Adding driving term to the density.'
+      rhonew = rhonew - rho_aux
+   endif
+
+   ! Density update (rhold-->rho, rho-->rhonew)
+   do icount = 1, M
+   do jcount = 1, M
+      rhold(icount, jcount) = rho(icount,jcount)
+      rho(icount,jcount)    = rhonew(icount,jcount)
+   enddo
+   enddo
+end subroutine td_verlet_cu
+
+subroutine td_magnus_cu(M, fock, F1a, F1b, rho, rhonew, devPtrX, devPtrXc,  &
+                        factorial, fxx, fyy, fzz, g, NBCH, dt_magnus, natom,&
+                        transport_calc, Nuc, Iz, ngroup, group, pop_drive,  &
+                        save_charge_freq, istep, GammaMagnus, overlap, sqsm,&
+                        rho_aux, rhofirst, devPtrY)
+   use cublasmath, only: cupredictor, cumagnusfac
+   use transport , only: transport_propagate_cu
+   implicit none
+   logical  , intent(in)     :: transport_calc
+   integer  , intent(in)     :: M, NBCH, istep, natom, ngroup, pop_drive, &
+                                save_charge_freq, Nuc(M), Iz(natom),      &
+                                group(ngroup)
+   integer*8, intent(in)     :: devPtrX, devPtrXc, devPtrY
+   real*8   , intent(in)     :: dt_magnus, fxx, fyy, fzz, g, GammaMagnus, &
+                                factorial(NBCH)
+   real*8   , intent(inout)  :: fock(M,M), F1a(M,M), F1b(M,M), overlap(M,M), &
+                                sqsm(M,M)
+#ifdef TD_SIMPLE
+   complex*8 , intent(inout) :: rhofirst(M,M), rho_aux(M,M), rhonew(M,M), &
+                                rho(M,M)
+#else
+   complex*16, intent(inout) :: rhofirst(M,M), rho_aux(M,M), rhonew(M,M), &
+                                rho(M,M)
+#endif
+
+   if (transport_calc) then
+      call transport_propagate_cu(M, natom, Nuc, Iz, ngroup, group,      &
+      pop_drive, 2, save_charge_freq, istep, GammaMagnus, overlap, sqsm, &
+      rho_aux, rhofirst, devPtrY)
+   endif
+   call g2g_timer_start('cupredictor')
+   call cupredictor(F1a, F1b, fock, rho, devPtrX, factorial, fxx, fyy,   &
+                    fzz, g, devPtrXc)
+   call g2g_timer_stop('cupredictor')
+   call g2g_timer_start('cumagnus')
+   call cumagnusfac(fock, rho, rhonew, M, NBCH, dt_magnus, factorial)
+   call g2g_timer_stop('cumagnus')
+
+   !Transport: Add the driving term to the propagation.
+   if (transport_calc) then
+      write(*,*) 'Transport: Adding driving term to the density.'
+      rhonew = rhonew - rho_aux
+   endif
+
+   ! Density update and Fock storage.
+   F1a = F1b
+   F1b = fock
+   rho = rhonew
+   return
+end subroutine td_magnus_cu
+
 #endif
 
 end module time_dependent

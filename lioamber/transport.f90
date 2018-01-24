@@ -122,6 +122,25 @@ subroutine transport_generate_rho(M, rhofirst, rho, gen_rho)
    return
 end subroutine transport_generate_rho
 
+subroutine transport_rho_trace(M, rho)
+   implicit none
+   integer, intent(in) :: M
+#ifdef TD_SIMPLE
+   complex*8 , intent(in) :: rho(M,M)
+#else
+   complex*16, intent(in) :: rho(M,M)
+#endif
+   integer :: icount
+
+   traza = dcmplx(0.0D0, 0.0D0)
+   do icount = 1, M
+      traza = traza + rho(icount, icount)
+   enddo
+   write(*,*) 'Transport - Rho Trace = ', real(traza)
+
+   return
+end subroutine transport_rho_trace
+
 subroutine transport_propagate(M, natom, Nuc, Iz, ngroup, group, pop_drive,    &
                                propagator, save_charge_freq, istep, gamma,     &
                                overlap, sqsm, rho1, rhofirst)

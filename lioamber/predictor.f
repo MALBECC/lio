@@ -37,6 +37,7 @@ c Initializations/Defaults
 ! Step2: F3 is used to propagate rho2 to rho4
        rho2t=rho2
        call magnus(F3,rho2,rho4,M,NBCH,tdstep1,factorial)
+       rho2t = basechange(M,Xmat,rho4,Xtrans)
 ! Paso3: Escribimos rho4 en el RMM para poder obtener F5 en el siguiente paso.
 ! Step3: rho4 is copied to RMM(1,2,3,...,MM)
       call sprepack_ctr('L',M,RMM,rho2t)

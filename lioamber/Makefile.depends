@@ -147,7 +147,7 @@ OBJECTS += atompot_subs.o
 $(OBJPATH)/atompot_subs.o: $(OBJPATH)/atompot_data.mod
 
 tmplist :=
-tmplist += 
+tmplist += SCF.f90
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/atompot_subs.mod
 
 ###############################################################################
@@ -166,7 +166,7 @@ include faint_cpu77/faint_cpu77.mk
 SRCDIRS += faint_cpu77
 OBJECTS += faint_cpu77.o
 #
-#modusrs :=
+modusrs :=
 modusrs += cublasmath.o ehrensubs.o liomain.o maskrmm.o
 modusrs += predictor.o SCF.o SCFop.o TD.o
 modusrs += dft_get_mm_forces.o dft_get_qm_forces.o
@@ -190,7 +190,27 @@ OBJECTS += fileio.o
 tmplist :=
 tmplist += drive.o liomain.o TD.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fileio.mod
+
+
 ################################################################################
+include liosubs_math/liosubs_math.mk
+SRCDIRS += liosubs_math
+OBJECTS += liosubs_math.o
+#
+modusrs := 
+modusrs += typedef_sop.o
+$(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/liosubs_math.mod
+
+
+################################################################################
+include typedef_sop/typedef_sop.mk
+SRCDIRS += typedef_sop
+OBJECTS += typedef_sop.o
+#
+modusrs :=
+modusrs += SCF.o
+$(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/typedef_sop.mod
+
 
 ################################################################################
 # TO-DO: reformulate the following modules so that there exists mathcpu,
@@ -294,7 +314,7 @@ OBJECTS += general_module.o
 SRCDIRS += general_module
 include general_module/general_module.mk
 
-tmplist := SCF.o cublasmath.o
+tmplist := SCF.o cublasmath.o atompot_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/general_module.mod
 
 

@@ -233,7 +233,8 @@ subroutine TD()
          call td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, fxx, fyy,   &
                         fzz, g, NBCH, dt_magnus, natom, transport_calc, Nuc,   &
                         Iz, ngroup, group, pop_drive, save_charge_freq, istep, &
-                        GammaMagnus, overlap, sqsm, rho_aux, rhofirst)
+                        GammaMagnus, overlap, sqsm, rho_aux, rhofirst, X,      &
+                        Xtrans)
       endif
 
       call g2g_timer_start('complex_rho_on_to_ao')
@@ -784,7 +785,8 @@ end subroutine td_verlet
 subroutine td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, fxx, fyy,   &
                      fzz, g, NBCH, dt_magnus, natom, transport_calc, Nuc,   &
                      Iz, ngroup, group, pop_drive, save_charge_freq, istep, &
-                     GammaMagnus, overlap, sqsm, rho_aux, rhofirst)
+                     GammaMagnus, overlap, sqsm, rho_aux, rhofirst, Xmat,   &
+                     Xtrans)
    use transport, only: transport_propagate
    implicit none
    logical  , intent(in)     :: transport_calc
@@ -792,9 +794,9 @@ subroutine td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, fxx, fyy,   &
                                 save_charge_freq, Nuc(M), Iz(natom),      &
                                 group(ngroup)
    real*8   , intent(in)     :: dt_magnus, fxx, fyy, fzz, g, GammaMagnus, &
-                                factorial(NBCH)
+                                factorial(NBCH), Xtrans(M,M)
    real*8   , intent(inout)  :: fock(M,M), F1a(M,M), F1b(M,M), overlap(M,M), &
-                                sqsm(M,M)
+                                sqsm(M,M), Xmat(M,M)
 #ifdef TD_SIMPLE
    complex*8 , intent(inout) :: rhofirst(M,M), rho_aux(M,M), rhonew(M,M), &
                                 rho(M,M)
@@ -810,7 +812,7 @@ subroutine td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, fxx, fyy,   &
    endif
 
    call g2g_timer_start('predictor')
-   call predictor(F1a, F1b, fock, rho, factorial, fxx, fyy, fzz, g)
+   call predictor(F1a, F1b, fock, rho, factorial, Xmat, Xtrans, fxx, fyy, fzz,g)
    call g2g_timer_stop('predictor')
    call g2g_timer_start('magnus')
    call magnus(fock, rho, rhonew, M, NBCH, dt_magnus, factorial)

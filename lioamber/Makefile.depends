@@ -53,7 +53,6 @@ OBJECTS += test_subs.o
 OBJECTS += esp_funct.o
 OBJECTS += readECP.o
 OBJECTS += intECP.o
-OBJECTS += density.o
 OBJECTS += extras.o
 OBJECTS += fterm_biaspot.o
 OBJECTS += elec.o
@@ -112,7 +111,7 @@ OBJECTS += converger_data.o
 OBJECTS += converger_subs.o
 
 tmplist :=
-tmplist += SCF.o
+tmplist += SCF.o tmpaux_SCF.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/converger_subs.mod
 
 tmplist := converger_subs.o
@@ -225,7 +224,7 @@ include linear_algebra/linear_algebra.mk
 SRCDIRS += linear_algebra
 OBJECTS += linear_algebra.o
 tmplist :=
-tmplist += SCF.o
+tmplist += SCF.o tmpaux_SCF.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/linear_algebra.mod
 
 include mathsubs/mathsubs.mk
@@ -233,6 +232,7 @@ SRCDIRS += mathsubs
 OBJECTS += mathsubs.o
 tmplist :=
 tmplist += SCF.o SCFop.o predictor.o converger_subs.o
+tmplist += tmpaux_SCF.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/mathsubs.mod
 
 
@@ -256,6 +256,7 @@ ifeq ($(use_cublas),1)
 
   tmplist :=
   tmplist += SCF.o SCFop.o TD.o converger_subs.o
+  tmplist += tmpaux_SCF.o
   $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/cublasmath.mod
 
   $(OBJPATH)/fortran.o: $(CUDA_HOME)/src/fortran.c
@@ -279,7 +280,7 @@ tmplist += dip.o dipmem.o drive.o grid.o init_amber.o init.o
 tmplist += jarz.o lio_finalize.o predictor.o
 tmplist += SCF.o SCF_in.o SCFop.o TD.o cubegen.o
 tmplist += maskrmm.o write_output.o SCF_exter.o
-tmplist += intECP.o elec.o func.o density.o
+tmplist += intECP.o elec.o func.o tmpaux_SCF.o
 tmplist += faint_cpu77.o steep.o transport.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
 

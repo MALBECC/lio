@@ -104,36 +104,36 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type dens,
 {
     //printf("LibxcProxy::doGGA () \n");
 
-    scalar_type rho[1] = {dens};
+    double rho[1] = {dens};
     // Libxc needs the 'contracted gradient'
-    scalar_type sigma[1] = {(grad.x * grad.x) + (grad.y * grad.y) + (grad.z * grad.z)};
-    scalar_type exchange[1];
-    scalar_type correlation[1];
+    double sigma[1] = {(grad.x * grad.x) + (grad.y * grad.y) + (grad.z * grad.z)};
+    double exchange[1];
+    double correlation[1];
 
     // The outputs for exchange
-    scalar_type vrho [1];
-    scalar_type vsigma [1];
-    scalar_type v2rho [1];
-    scalar_type v2rhosigma[1];
-    scalar_type v2sigma [1];
+    double vrho [1];
+    double vsigma [1];
+    double v2rho [1];
+    double v2rhosigma[1];
+    double v2sigma [1];
 
     // The outputs for correlation
-    scalar_type vrhoC [1];
-    scalar_type vsigmaC [1];
-    scalar_type v2rhoC [1];
-    scalar_type v2rhosigmaC [1];
-    scalar_type v2sigmaC [1];
+    double vrhoC [1];
+    double vsigmaC [1];
+    double v2rhoC [1];
+    double v2rhosigmaC [1];
+    double v2sigmaC [1];
 
     try {
         xc_gga (&funcForExchange, 1,
-                (double*)rho,
-                (double*)sigma,
-                (double*)exchange,
-                (double*)vrho,
-                (double*)vsigma,
-                (double*)v2rho,
-                (double*)v2rhosigma,
-                (double*)v2sigma,
+                rho,
+                sigma,
+                exchange,
+                vrho,
+                vsigma,
+                v2rho,
+                v2rhosigma,
+                v2sigma,
                 NULL, NULL, NULL, NULL);
     } catch (int exception) {
         //fprintf (stderr, "Exception ocurred calling xc_gga for Exchange '%d' \n", exception);
@@ -143,27 +143,29 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type dens,
     try {
         // Now the correlation value.
         xc_gga (&funcForCorrelation, 1,
-                (double*)rho,
-                (double*)sigma,
-                (double*)correlation,
-                (double*)vrhoC,
-                (double*)vsigmaC,
-                (double*)v2rhoC,
-                (double*)v2rhosigmaC,
-                (double*)v2sigmaC,
+                rho,
+                sigma,
+                correlation,
+                vrhoC,
+                vsigmaC,
+                v2rhoC,
+                v2rhosigmaC,
+                v2sigmaC,
                 NULL, NULL, NULL, NULL);
     } catch (int exception) {
         //fprintf (stderr, "Exception ocurred calling xc_gga for Correlation '%d' \n", exception);
         return;
     }
 
+    // TODO: tener el cuenta el tema del FULL_DOUBLE
+    // a la vuelta del calculo en libxc. Si FULL_DOUBLE=1 -> son doubles
+    // sino son floats y hay que castear antes de hacer las cuentas
+    // sino da todo cero.
     ex = exchange[0];
     ec = correlation[0];
-
     // Merge the results for the derivatives.
     vrho[0] += vrhoC[0];
     vsigma[0] += vsigmaC[0];
-
     v2rho[0] += v2rhoC[0];
     v2rhosigma[0] += v2rhosigmaC[0];
     v2sigma[0] += v2sigmaC[0];

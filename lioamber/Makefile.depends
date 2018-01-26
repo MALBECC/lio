@@ -201,6 +201,12 @@ tmplist :=
 tmplist += drive.o liomain.o TD.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fileio.mod
 
+################################################################################
+OBJECTS += field_data.o
+
+tmplist :=
+tmplist += field_subs.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/field_data.mod
 
 ################################################################################
 include liosubs_dens/liosubs_dens.mk

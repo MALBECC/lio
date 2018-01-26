@@ -143,7 +143,7 @@ subroutine TD()
    ! Comment needed here.
    if( transport_calc ) then
       call transport_init(M, natom, Nuc, ngroup, group, mapmat, GammaMagnus,   &
-                          GammaVerlet, RMM(M5), overlap, ntdstep)
+                          GammaVerlet, RMM(M5), overlap)
       call transport_generate_rho(M, rhofirst, rho, generate_rho0)
    endif
 

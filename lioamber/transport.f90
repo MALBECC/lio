@@ -19,18 +19,17 @@ module transport
 contains
 
 subroutine transport_init(M, natom, Nuc, ngroup, group, mapmat, GammaMagnus, &
-                          GammaVerlet, RMM5, overlap, ntdstep)
+                          GammaVerlet, RMM5, overlap)
    implicit none
    integer, intent(in)  :: M, natom, Nuc(M)
    real*8 , intent(in)  :: RMM5(M*(M+1)/2)
-   integer, intent(out) :: ngroup, ntdstep
+   integer, intent(out) :: ngroup
    real*8 , allocatable, intent(inout) :: overlap(:,:)
    integer, allocatable, intent(inout) :: group(:), mapmat(:,:)
    integer :: orb_group(M), icount
    real*8  :: GammaMagnus, GammaVerlet
 
    ngroup  = 0
-   ntdstep = 1
 
    allocate(group(natom), mapmat(M,M))
    call transport_read_groups(natom, group, ngroup)
@@ -364,8 +363,7 @@ subroutine drive_population(M, natom, Nuc, Iz, Pop, ngroup, rho1, overlap, &
       traza = traza + qgr(i)
    enddo
 
-   write(pop_uid,*) "Total trace =", traza
-   write(pop_uid,*) "----------------------------"
+   write(*,*) "Total trace =", traza
 
    return
 end subroutine drive_population

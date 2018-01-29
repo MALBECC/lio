@@ -59,6 +59,8 @@ OBJECTS += elec.o
 OBJECTS += properties.o
 OBJECTS += write_output.o
 OBJECTS += errlog.o
+OBJECTS += field_subs.o
+
 
 ################################################################################
 tmplist := SCF.o readECP.o drive.o intECP.o init.o init_lio.o
@@ -202,11 +204,11 @@ tmplist += drive.o liomain.o TD.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fileio.mod
 
 ################################################################################
-OBJECTS += field_data.o
+OBJECTS += shape_data.o
 
 tmplist :=
 tmplist += field_subs.o
-$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/field_data.mod
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/shape_data.mod
 
 ################################################################################
 include liosubs_dens/liosubs_dens.mk

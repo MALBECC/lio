@@ -44,7 +44,6 @@ subroutine lio_defaults()
                            local_nonlocal, ecp_debug, ecp_full_range_int,      &
                            verbose_ECP, Cnorm, FOCK_ECP_read, FOCK_ECP_write,  &
                            Fulltimer_ECP, cut2_0, cut3_0
-    use transport, only  : Pop_Drive
     implicit none
 
 !   Names of files used for input and output.
@@ -77,9 +76,6 @@ subroutine lio_defaults()
     ntdstep        = 1             ; tdrestart          = .false.       ;
     NBCH           = 10            ; exter              = .false.       ;
     field          = .false.       ;
-
-!   TD-DFT transport options
-    Pop_Drive = 1;
 
 !   Distance restrain options
     number_restr   = 0             ;

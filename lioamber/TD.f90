@@ -42,7 +42,9 @@ subroutine TD()
                              sqsm, Fx, Fy, Fz, Nunp, ntatom
    use ECP_mod       , only: ecpmode, term1e, VAAA, VAAB, VBAC
    use mathsubs
-   use transport
+   use transport_data, only: save_charge_freq, transport_calc
+   use transport_subs, only: transport_init, transport_generate_rho, &
+                             transport_rho_trace, drive_population
    use fileio        , only: read_td_restart_verlet , read_td_restart_magnus , &
                              write_td_restart_verlet, write_td_restart_magnus
 #ifdef CUBLAS
@@ -106,7 +108,7 @@ subroutine TD()
 
    ! Checks and performs allocations.
    call td_allocate_all(M, NBCH, propagator, F1a, F1b, fock, rho, rho_aux, &
-                        rhofirst, rhold, rhonew, sqsm, Xmm, Xtrans, Ymat,  &
+                        rhold, rhonew, sqsm, Xmm, Xtrans, Ymat,  &
                         Ytrans, factorial)
 #ifdef CUBLAS
    call td_allocate_cublas(M, sizeof_real, devPtrX, devPtrY)
@@ -142,9 +144,8 @@ subroutine TD()
 
    ! Comment needed here.
    if( transport_calc ) then
-      call transport_init(M, natom, Nuc, ngroup, group, mapmat, GammaMagnus,   &
-                          GammaVerlet, RMM(M5), overlap)
-      call transport_generate_rho(M, rhofirst, rho, generate_rho0)
+      call transport_init(M, natom, Nuc, RMM(M5), overlap)
+      call transport_generate_rho(M, rho)
    endif
 
    ! Diagonalizes Smat, stores transformation matrix Xmm and calculates the
@@ -199,10 +200,9 @@ subroutine TD()
 #ifdef CUBLAS
       if (is_lpfrg) then
          call td_bc_fock_cu(M, MM, RMM(M5), fock, devPtrX)
-         call td_verlet_cu(M, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg,   &
-                           transport_calc, natom, Nuc, Iz, ngroup, group,      &
-                           pop_drive, save_charge_freq, GammaVerlet, overlap,  &
-                           sqsm, rho_aux, rhofirst, devPtrY)
+         call td_verlet_cu(M, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg, &
+                           transport_calc, natom, Nuc, Iz, overlap, sqsm,    &
+                           rho_aux, devPtrY)
          if (propagator.eq.2) then
             if (istep.eq.chkpntF1a) F1a = fock
             if (istep.eq.chkpntF1b) F1b = fock
@@ -210,9 +210,8 @@ subroutine TD()
       else
          call td_magnus_cu(M, fock, F1a, F1b, rho, rhonew, devPtrX, devPtrXc,  &
                            factorial, fxx, fyy, fzz, g, NBCH, dt_magnus, natom,&
-                           transport_calc, Nuc, Iz, ngroup, group, pop_drive,  &
-                           save_charge_freq, istep, GammaMagnus, overlap, sqsm,&
-                           rho_aux, rhofirst, devPtrY)
+                           transport_calc, Nuc, Iz, istep, overlap, sqsm,      &
+                           rho_aux, devPtrY)
       endif
 
       call g2g_timer_start('complex_rho_on_to_ao-cu')
@@ -222,9 +221,7 @@ subroutine TD()
       if (is_lpfrg) then
          call td_bc_fock(M, MM, RMM(M5), fock, Xtrans, Xmm)
          call td_verlet(M, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg,      &
-                        transport_calc, natom, Nuc, Iz, ngroup, group,         &
-                        pop_drive, save_charge_freq, GammaVerlet, overlap,     &
-                        sqsm, rho_aux, rhofirst)
+                        transport_calc, natom, Nuc, Iz, overlap,sqsm, rho_aux)
          if (propagator.eq.2) then
             if (istep.eq.chkpntF1a) F1a = fock
             if (istep.eq.chkpntF1b) F1b = fock
@@ -232,9 +229,7 @@ subroutine TD()
       else
          call td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, fxx, fyy,   &
                         fzz, g, NBCH, dt_magnus, natom, transport_calc, Nuc,   &
-                        Iz, ngroup, group, pop_drive, save_charge_freq, istep, &
-                        GammaMagnus, overlap, sqsm, rho_aux, rhofirst, X,      &
-                        Xtrans)
+                        Iz, istep, overlap, sqsm, rho_aux, X, Xtrans)
       endif
 
       call g2g_timer_start('complex_rho_on_to_ao')
@@ -270,8 +265,7 @@ subroutine TD()
          if ( ((propagator.gt.1) .and. (is_lpfrg) .and.       &
             (mod((istep-1), save_charge_freq*10) == 0)) .or.  &
             (mod((istep-1), save_charge_freq) == 0) ) then
-            call drive_population(M, natom, Nuc, Iz, pop_drive, ngroup, &
-                                  rho_aux, overlap, group, sqsm, 2)
+            call drive_population(M, natom, Nuc, Iz, rho_aux, overlap, sqsm, 2)
          endif
       endif
 
@@ -295,8 +289,8 @@ end subroutine TD
 ! Subroutines used in initialisation.
 
 subroutine td_allocate_all(M, NBCH, propagator, F1a, F1b, fock, rho, rho_aux, &
-                           rhofirst, rhold, rhonew, sqsm, Xmm, Xtrans, Ymat,  &
-                           Ytrans, factorial)
+                           rhold, rhonew, sqsm, Xmm, Xtrans, Ymat,  Ytrans,   &
+                           factorial)
    implicit none
    integer, intent(in) :: M, NBCH, propagator
    real*8, allocatable, intent(inout) :: F1a(:,:), F1b(:,:), fock(:,:),        &
@@ -305,18 +299,15 @@ subroutine td_allocate_all(M, NBCH, propagator, F1a, F1b, fock, rho, rho_aux, &
                                          factorial(:)
 #ifdef TD_SIMPLE
    complex*8 , allocatable, intent(inout) :: rho(:,:), rho_aux(:,:),    &
-                                             rhofirst(:,:), rhold(:,:), &
-                                             rhonew(:,:)
+                                             rhold(:,:), rhonew(:,:)
 #else
    complex*16, allocatable, intent(inout) :: rho(:,:), rho_aux(:,:),    &
-                                             rhofirst(:,:), rhold(:,:), &
-                                             rhonew(:,:)
+                                             rhold(:,:), rhonew(:,:)
 #endif
 
    if ( allocated(fock)     ) deallocate(fock)
    if ( allocated(rho)      ) deallocate(rho)
    if ( allocated(rho_aux)  ) deallocate(rho_aux)
-   if ( allocated(rhofirst) ) deallocate(rhofirst)
    if ( allocated(rhold)    ) deallocate(rhold)
    if ( allocated(rhonew)   ) deallocate(rhonew)
    if ( allocated(sqsm)     ) deallocate(sqsm)
@@ -325,7 +316,7 @@ subroutine td_allocate_all(M, NBCH, propagator, F1a, F1b, fock, rho, rho_aux, &
    if ( allocated(Ytrans)   ) deallocate(Ytrans)
    if ( allocated(Ymat)     ) deallocate(Ymat)
    if ( allocated(factorial)) deallocate(factorial)
-   allocate(fock(M,M)  , rho(M,M)   , rho_aux(M,M), rhofirst(M,M), rhold(M,M) ,&
+   allocate(fock(M,M)  , rho(M,M)   , rho_aux(M,M), rhold(M,M) ,&
             rhonew(M,M), sqsm(M,M)  , Xmm(M,M)    , Xtrans(M,M),   Ymat(M,M)  ,&
             Ytrans(M,M), factorial(NBCH))
    if (propagator.eq.2) then
@@ -337,7 +328,7 @@ subroutine td_allocate_all(M, NBCH, propagator, F1a, F1b, fock, rho, rho_aux, &
    return
 end subroutine td_allocate_all
 
-subroutine td_deallocate_all(F1a, F1b, fock, rho, rho_aux, rhofirst, rhold, &
+subroutine td_deallocate_all(F1a, F1b, fock, rho, rho_aux, rhold, &
                              rhonew, Xmm, Xtrans, Ymat, Ytrans,factorial)
    implicit none
    real*8, allocatable, intent(inout) :: F1a(:,:), F1b(:,:), fock(:,:),    &
@@ -345,17 +336,14 @@ subroutine td_deallocate_all(F1a, F1b, fock, rho, rho_aux, rhofirst, rhold, &
                                          Ytrans(:,:), factorial(:)
 #ifdef TD_SIMPLE
    complex*8 , allocatable, intent(inout) :: rho(:,:), rho_aux(:,:),    &
-                                             rhofirst(:,:), rhold(:,:), &
-                                             rhonew(:,:)
+                                             rhold(:,:), rhonew(:,:)
 #else
    complex*16, allocatable, intent(inout) :: rho(:,:), rho_aux(:,:),    &
-                                             rhofirst(:,:), rhold(:,:), &
-                                             rhonew(:,:)
+                                             rhold(:,:), rhonew(:,:)
 #endif
    if ( allocated(fock)     ) deallocate(fock)
    if ( allocated(rho)      ) deallocate(rho)
    if ( allocated(rho_aux)  ) deallocate(rho_aux)
-   if ( allocated(rhofirst) ) deallocate(rhofirst)
    if ( allocated(rhold)    ) deallocate(rhold)
    if ( allocated(rhonew)   ) deallocate(rhonew)
    if ( allocated(Xmm)      ) deallocate(Xmm)
@@ -727,22 +715,19 @@ subroutine td_bc_fock(M, MM, RMM5, fock, Xtrans, Xmm)
 end subroutine td_bc_fock
 
 subroutine td_verlet(M, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg,         &
-                     transport_calc, natom, Nuc, Iz, ngroup, group, pop_drive, &
-                     save_charge_freq, GammaVerlet, overlap, sqsm, rho_aux,    &
-                     rhofirst)
-   use mathsubs , only : commutator
-   use transport, only : transport_propagate
+                     transport_calc, natom, Nuc, Iz, overlap, sqsm, rho_aux)
+   use mathsubs      , only : commutator
+   use transport_subs, only : transport_propagate
    implicit none
-   integer   , intent(in)    :: M, istep, natom, Nuc(M), Iz(natom), ngroup,    &
-                                group(ngroup), pop_drive, save_charge_freq
-   real*8    , intent(in)    :: GammaVerlet, dt_lpfrg
+   integer   , intent(in)    :: M, istep, natom, Nuc(M), Iz(natom)
+   real*8    , intent(in)    :: dt_lpfrg
    logical   , intent(in)    :: transport_calc
    real*8    , intent(inout) :: overlap(M,M), sqsm(M,M), fock(M,M)
 #ifdef TD_SIMPLE
-   complex*8 , intent(inout) :: Im, rhofirst(M,M), rho_aux(M,M), rhold(M,M),   &
+   complex*8 , intent(inout) :: Im, rho_aux(M,M), rhold(M,M),   &
                                 rhonew(M,M), rho(M,M)
 #else
-   complex*16, intent(inout) :: Im, rhofirst(M,M), rho_aux(M,M), rhold(M,M),   &
+   complex*16, intent(inout) :: Im, rho_aux(M,M), rhold(M,M),   &
                                 rhonew(M,M), rho(M,M)
 #endif
    integer :: icount, jcount
@@ -755,9 +740,8 @@ subroutine td_verlet(M, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg,         &
    endif
 
    if ((transport_calc) .and. (istep.ge.3))then
-      call transport_propagate(M, natom, Nuc, Iz, ngroup, group, pop_drive, 1, &
-                               save_charge_freq, istep, GammaVerlet, overlap,  &
-                               sqsm, rho_aux, rhofirst)
+      call transport_propagate(M, natom, Nuc, Iz, 1, istep, overlap, sqsm, &
+                               rho_aux)
    endif
 
    call g2g_timer_start('commutator')
@@ -784,31 +768,24 @@ end subroutine td_verlet
 
 subroutine td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, fxx, fyy,   &
                      fzz, g, NBCH, dt_magnus, natom, transport_calc, Nuc,   &
-                     Iz, ngroup, group, pop_drive, save_charge_freq, istep, &
-                     GammaMagnus, overlap, sqsm, rho_aux, rhofirst, Xmat,   &
-                     Xtrans)
-   use transport, only: transport_propagate
+                     Iz, istep, overlap, sqsm, rho_aux, Xmat, Xtrans)
+   use transport_subs, only: transport_propagate
    implicit none
    logical  , intent(in)     :: transport_calc
-   integer  , intent(in)     :: M, NBCH, istep, natom, ngroup, pop_drive, &
-                                save_charge_freq, Nuc(M), Iz(natom),      &
-                                group(ngroup)
-   real*8   , intent(in)     :: dt_magnus, fxx, fyy, fzz, g, GammaMagnus, &
-                                factorial(NBCH), Xtrans(M,M)
+   integer  , intent(in)     :: M, NBCH, istep, natom, Nuc(M), Iz(natom)
+   real*8   , intent(in)     :: dt_magnus, fxx, fyy, fzz, g, factorial(NBCH), &
+                                Xtrans(M,M)
    real*8   , intent(inout)  :: fock(M,M), F1a(M,M), F1b(M,M), overlap(M,M), &
                                 sqsm(M,M), Xmat(M,M)
 #ifdef TD_SIMPLE
-   complex*8 , intent(inout) :: rhofirst(M,M), rho_aux(M,M), rhonew(M,M), &
-                                rho(M,M)
+   complex*8 , intent(inout) :: rho_aux(M,M), rhonew(M,M), rho(M,M)
 #else
-   complex*16, intent(inout) :: rhofirst(M,M), rho_aux(M,M), rhonew(M,M), &
-                                rho(M,M)
+   complex*16, intent(inout) :: rho_aux(M,M), rhonew(M,M), rho(M,M)
 #endif
 
    if (transport_calc) then
-      call transport_propagate(M, natom, Nuc, Iz, ngroup, group,         &
-      pop_drive, 2, save_charge_freq, istep, GammaMagnus, overlap, sqsm, &
-      rho_aux, rhofirst)
+      call transport_propagate(M, natom, Nuc, Iz, 2, istep, overlap, sqsm, &
+                               rho_aux)
    endif
 
    call g2g_timer_start('predictor')
@@ -956,24 +933,22 @@ subroutine td_bc_fock_cu(M, MM, RMM5, fock, devPtrX)
 end subroutine td_bc_fock_cu
 
 subroutine td_verlet_cu(M, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg,      &
-                     transport_calc, natom, Nuc, Iz, ngroup, group, pop_drive, &
-                     save_charge_freq, GammaVerlet, overlap, sqsm, rho_aux,    &
-                     rhofirst, devPtrY)
-   use cublasmath, only : commutator_cublas
-   use transport , only : transport_propagate_cu
+                     transport_calc, natom, Nuc, Iz, overlap, sqsm, rho_aux,   &
+                     devPtrY)
+   use cublasmath    , only : commutator_cublas
+   use transport_subs, only : transport_propagate_cu
    implicit none
-   integer   , intent(in)    :: M, istep, natom, Nuc(M), Iz(natom), ngroup,    &
-                                group(ngroup), pop_drive, save_charge_freq
+   integer   , intent(in)    :: M, istep, natom, Nuc(M), Iz(natom)
    integer*8 , intent(in)    :: devPtrY
-   real*8    , intent(in)    :: GammaVerlet, dt_lpfrg
+   real*8    , intent(in)    :: dt_lpfrg
    logical   , intent(in)    :: transport_calc
    real*8    , intent(inout) :: overlap(M,M), sqsm(M,M), fock(M,M)
 #ifdef TD_SIMPLE
-   complex*8 , intent(inout) :: Im, rhofirst(M,M), rho_aux(M,M), rhold(M,M),   &
-                                rhonew(M,M), rho(M,M)
+   complex*8 , intent(inout) :: Im, rho_aux(M,M), rhold(M,M), rhonew(M,M), &
+                                rho(M,M)
 #else
-   complex*16, intent(inout) :: Im, rhofirst(M,M), rho_aux(M,M), rhold(M,M),   &
-                                rhonew(M,M), rho(M,M)
+   complex*16, intent(inout) :: Im, rho_aux(M,M), rhold(M,M), rhonew(M,M), &
+                                rho(M,M)
 #endif
    integer :: icount, jcount
 
@@ -985,9 +960,8 @@ subroutine td_verlet_cu(M, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg,      &
    endif
 
    if ((transport_calc) .and. (istep.ge.3)) then
-      call transport_propagate_cu(M, natom, Nuc, Iz, ngroup, group, pop_drive, &
-                                  1, save_charge_freq, istep, GammaVerlet,     &
-                                  overlap, sqsm, rho_aux, rhofirst, devPtrY)
+      call transport_propagate_cu(M, natom, Nuc, Iz, 1, istep, overlap, sqsm, &
+                                  rho_aux, devPtrY)
    endif
 
    call g2g_timer_start('commutator')
@@ -1012,33 +986,26 @@ end subroutine td_verlet_cu
 
 subroutine td_magnus_cu(M, fock, F1a, F1b, rho, rhonew, devPtrX, devPtrXc,  &
                         factorial, fxx, fyy, fzz, g, NBCH, dt_magnus, natom,&
-                        transport_calc, Nuc, Iz, ngroup, group, pop_drive,  &
-                        save_charge_freq, istep, GammaMagnus, overlap, sqsm,&
-                        rho_aux, rhofirst, devPtrY)
-   use cublasmath, only: cupredictor, cumagnusfac
-   use transport , only: transport_propagate_cu
+                        transport_calc, Nuc, Iz, istep, overlap, sqsm,&
+                        rho_aux, devPtrY)
+   use cublasmath    , only: cupredictor, cumagnusfac
+   use transport_subs, only: transport_propagate_cu
    implicit none
    logical  , intent(in)     :: transport_calc
-   integer  , intent(in)     :: M, NBCH, istep, natom, ngroup, pop_drive, &
-                                save_charge_freq, Nuc(M), Iz(natom),      &
-                                group(ngroup)
+   integer  , intent(in)     :: M, NBCH, istep, natom, Nuc(M), Iz(natom)
    integer*8, intent(in)     :: devPtrX, devPtrXc, devPtrY
-   real*8   , intent(in)     :: dt_magnus, fxx, fyy, fzz, g, GammaMagnus, &
-                                factorial(NBCH)
+   real*8   , intent(in)     :: dt_magnus, fxx, fyy, fzz, g, factorial(NBCH)
    real*8   , intent(inout)  :: fock(M,M), F1a(M,M), F1b(M,M), overlap(M,M), &
                                 sqsm(M,M)
 #ifdef TD_SIMPLE
-   complex*8 , intent(inout) :: rhofirst(M,M), rho_aux(M,M), rhonew(M,M), &
-                                rho(M,M)
+   complex*8 , intent(inout) :: rho_aux(M,M), rhonew(M,M), rho(M,M)
 #else
-   complex*16, intent(inout) :: rhofirst(M,M), rho_aux(M,M), rhonew(M,M), &
-                                rho(M,M)
+   complex*16, intent(inout) :: rho_aux(M,M), rhonew(M,M), rho(M,M)
 #endif
 
    if (transport_calc) then
-      call transport_propagate_cu(M, natom, Nuc, Iz, ngroup, group,      &
-      pop_drive, 2, save_charge_freq, istep, GammaMagnus, overlap, sqsm, &
-      rho_aux, rhofirst, devPtrY)
+      call transport_propagate_cu(M, natom, Nuc, Iz, 2, istep, overlap, sqsm, &
+                                  rho_aux, devPtrY)
    endif
    call g2g_timer_start('cupredictor')
    call cupredictor(F1a, F1b, fock, rho, devPtrX, factorial, fxx, fyy,   &

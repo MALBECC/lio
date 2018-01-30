@@ -35,8 +35,8 @@ subroutine read_options(inputFile, charge)
                            cut2_0, cut3_0
 
 
-    use transport ,only  : transport_calc, generate_rho0, gate_field,          &
-                           save_charge_freq, driving_rate, Pop_Drive
+    use transport_data, only  : transport_calc, generate_rho0, gate_field,     &
+                                save_charge_freq, driving_rate, Pop_Drive
     implicit none
     character(len=20), intent(in)  :: inputFile
     integer          , intent(out) :: charge

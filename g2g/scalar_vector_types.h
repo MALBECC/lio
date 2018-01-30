@@ -9,74 +9,79 @@ class vec_type {};
 
 #if !GPU_KERNELS
 
-template <>
-class vec_type<float, 2> : public float2 {
- public:
-  vec_type(void) {}
-  vec_type(float _x, float _y) {
-    this->x = _x;
-    this->y = _y;
-  }
-  // operator float2 () { return (float2)(*this); }
-};
+  template<> class vec_type<float, 2> : public float2 {
+    public:
+      vec_type(void) {}
+      vec_type(float _x, float _y) { this->x = _x; this->y = _y; }
+      //operator float2 () { return (float2)(*this); }
+  };
 
-template <>
-class vec_type<float, 3> {
- public:
-  float x, y, z;
+  template<> class vec_type<float, 3> {
+    public:
+  	  float x, y, z;
 
-  vec_type(void) {}
-  vec_type(const float3& other) : x(other.x), y(other.y), z(other.z) {}
-  vec_type(const double3& other) : x(other.x), y(other.y), z(other.z) {}
-  vec_type(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
+      vec_type(void) {}
+      vec_type(const float3& other) : x(other.x),y(other.y),z(other.z) { }
+      vec_type(const double3& other) : x(other.x),y(other.y),z(other.z) { }
+      vec_type(float _x, float _y, float _z) : x(_x), y(_y), z(_z) { }
 
-  inline float length2() const { return x * x + y * y + z * z; }
+      inline float length2() const { return x * x + y * y + z * z; }
 
-  friend vec_type operator*(const vec_type& lo, const vec_type& ro) {
-    return vec_type(lo.x * ro.x, lo.y * ro.y, lo.z * ro.z);
-  }
+      friend vec_type operator*(const vec_type & lo, const vec_type & ro) {
+      	return vec_type(lo.x * ro.x, lo.y * ro.y, lo.z * ro.z);
+      }
 
-  friend vec_type operator-(const vec_type& lo, const vec_type& ro) {
-    return vec_type(lo.x - ro.x, lo.y - ro.y, lo.z - ro.z);
-  }
+      friend vec_type operator-(const vec_type & lo, const vec_type & ro) {
+      	return vec_type(lo.x - ro.x, lo.y - ro.y, lo.z - ro.z);
+      }
 
-  friend vec_type operator+(const vec_type& lo, const vec_type& ro) {
-    return vec_type(lo.x + ro.x, lo.y + ro.y, lo.z + ro.z);
-  }
+      friend vec_type operator+(const vec_type & lo, const vec_type & ro) {
+      	return vec_type(lo.x + ro.x, lo.y + ro.y, lo.z + ro.z);
+      }
 
-  friend std::ostream& operator<<(std::ostream& o, const vec_type& v) {
-    o << v.x << " " << v.y << " " << v.z;
-    return o;
-  }
+      friend std::ostream& operator<<(std::ostream& o, const vec_type & v) {
+          o << v.x << " " << v.y << " " << v.z;
+          return o;
+      }
 
-  void operator+=(const vec_type& lo) { x += lo.x, y += lo.y, z += lo.z; }
+      void operator+=(const vec_type & lo){
+      	x += lo.x, y += lo.y, z += lo.z;
+      }
 
-  void operator-=(const vec_type& lo) { x -= lo.x, y -= lo.y, z -= lo.z; }
+      void operator-=(const vec_type & lo){
+      	x -= lo.x, y -= lo.y, z -= lo.z;
+      }
 
-  friend vec_type operator*(const vec_type& lo, float f) {
-    return vec_type(lo.x * f, lo.y * f, lo.z * f);
-  }
+      friend vec_type operator*(const vec_type & lo, float f) {
+      	return vec_type(lo.x*f,lo.y*f,lo.z*f);
+      }
 
-  friend vec_type operator-(const vec_type& lo, float f) {
-    return vec_type(lo.x - f, lo.y - f, lo.z - f);
-  }
-};
+      friend vec_type operator-(const vec_type & lo, float f) {
+      	return vec_type(lo.x-f,lo.y-f,lo.z-f);
+      }
+  };
 
-template <>
-class vec_type<float, 4> {
- private:
-  float x, y, z, _w;
+  template<> class vec_type<float, 4> {
+    private:
+      //float x, y, z, _w;
 
- public:
-  vec_type(void) {}
-  vec_type(float x_in, float y_in, float z_in, float w_in)
-      : x(x_in), y(y_in), z(z_in), _w(w_in) {}
+    public:
+      float x, y, z, _w;
 
-  friend std::ostream& operator<<(std::ostream& o, const vec_type& v) {
-    o << v.x << " " << v.y << " " << v.z << " " << v._w;
-    return o;
-  }
-};
+      vec_type(void) {}
+      vec_type(float x_in, float y_in, float z_in, float w_in) :
+               x(x_in), y(y_in), z(z_in), _w(w_in) { }
+
+      friend std::ostream& operator<<(std::ostream& o, const vec_type & v) {
+          o << v.x << " " << v.y << " " << v.z << " " << v._w;
+          return o;
+      }
+
+      void operator+=(const vec_type & lo){
+      	x += lo.x, y += lo.y, z += lo.z, _w += lo._w;
+      }
+
+  };
 #else
 
 template <>

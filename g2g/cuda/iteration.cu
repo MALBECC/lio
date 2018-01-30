@@ -21,6 +21,9 @@
 #include "../pointxc/calc_ggaOS.h"
 #include "../pointxc/calc_ldaCS.h"
 
+#if USE_LIBXC
+#include "../libxc/libxc_accumulate_point.h"
+#endif
 
 namespace G2G {
 #if FULL_DOUBLE
@@ -102,7 +105,9 @@ void PointGroupGPU<scalar_type>::solve_closed(
     Timers& timers,
     bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,
     double& energy,    HostMatrix<double>& fort_forces_ms,
-    int inner_threads, HostMatrix<double>& rmm_output_local ){
+    int inner_threads, HostMatrix<double>& rmm_output_local){
+
+  printf("solve_closed (compute_rmm:%i, lda:%i, compute_forces:%i, compute_energy:%i)\n", compute_rmm, lda, compute_forces, compute_energy);
 
   int device;
   cudaGetDevice(&device);
@@ -203,6 +208,13 @@ void PointGroupGPU<scalar_type>::solve_closed(
 
   rmm_input_gpu_tex.normalized = false;
 
+#if USE_LIBXC
+  const int nspin = XC_UNPOLARIZED;
+  const int functionalExchange = fortran_vars.ex_functional_id;
+  const int functionalCorrelation = fortran_vars.ec_functional_id;
+  LibxcProxy<scalar_type,4> libxcProxy(functionalExchange, functionalCorrelation, nspin);
+#endif
+
   if (compute_energy) {
     CudaMatrix<scalar_type> energy_gpu(this->number_of_points);
 
@@ -225,7 +237,18 @@ void PointGroupGPU<scalar_type>::solve_closed(
       else
       {
           gpu_compute_density<scalar_type, true, true, false><<<threadGrid, threadBlock>>>(compute_parameters);
+#if USE_LIBXC
+	    if (fortran_vars.use_libxc) {
+	      printf("Cpu_accumulate_point");
+	      cpu_accumulate_point<scalar_type, true, true, false>(&libxcProxy, accumulate_parameters);
+	    } else {
+	      printf("Gpu_accumulate_point 1 ");
+              gpu_accumulate_point<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
+	    }
+#else
+	  printf("Gpu_accumulate_point 2");
           gpu_accumulate_point<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
+#endif
       }
     }
     else {
@@ -237,7 +260,19 @@ void PointGroupGPU<scalar_type>::solve_closed(
       else
       {
           gpu_compute_density<scalar_type, true, false, false><<<threadGrid, threadBlock>>>(compute_parameters);
+	// TODO: aca tiene q ir el proxy a libxc.
+#if USE_LIBXC
+        if (fortran_vars.use_libxc) {
+	  printf("Cpu_accumulate_point");
+    	  cpu_accumulate_point<scalar_type, true, false, false>(&libxcProxy, accumulate_parameters);
+	} else {
+	  printf("Gpu_accumulate_point 1");
           gpu_accumulate_point<scalar_type, true, false, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
+        }
+#else
+	  printf("Gpu_accumulate_point 2");
+          gpu_accumulate_point<scalar_type, true, false, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
+#endif
       }
     }
     cudaAssertNoError("compute_density");
@@ -263,7 +298,18 @@ void PointGroupGPU<scalar_type>::solve_closed(
     else
     {
         gpu_compute_density<scalar_type, false, true, false><<<threadGrid, threadBlock>>>(compute_parameters);
+#if USE_LIBXC
+        if (fortran_vars.use_libxc) {
+	  printf("Cpu_accumulate_point");
+    	  cpu_accumulate_point<scalar_type, true, false, false>(&libxcProxy, accumulate_parameters);
+	} else {
+	  printf("Gpu_accumulate_point 1");
+    	  gpu_accumulate_point<scalar_type, false, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>>(accumulate_parameters);
+	}
+#else
+	printf("Gpu_accumulate_point 2");
         gpu_accumulate_point<scalar_type, false, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>>(accumulate_parameters);
+#endif
     }
     cudaAssertNoError("compute_density");
   }

@@ -44,7 +44,8 @@ ROOTDIR    ?= $(CUDA_HOME)/cuda
 ARCHFLAGS	 :=
 
 # Includes
-INCLUDES  += -I. -I$(CUDA_HOME)/include
+INCLUDES  += -I. -I$(CUDA_HOME)/include -I$(LIBXC_INCLUDES)
+
 
 # Libs
 CUDA_LDFLAGS    := -L$(CUDA_HOME)/lib64/stubs -L$(CUDA_HOME)/lib64 -L$(CUDA_HOME)/lib
@@ -165,6 +166,17 @@ NVCCFLAGS += $(GENCODE_FLAGS)
 
 ifneq ($(subscript_warn),1)
   NVCCFLAGS += -Xcudafe "--diag_suppress=subscript_out_of_range"
+endif
+
+################################################################################
+# Libxc flags
+################################################################################
+ifeq ($(libxc),1)
+    NVCCFLAGS += -DUSE_LIBXC=1
+    INCLUDES  += -I$(LIBXC_INCLUDES)
+    CUDA_LDFLAGS += -L$(LIBXC_LIBS) -lxc -lxc_cuda
+else
+    NVCCFLAGS += -DUSE_LIBXC=0
 endif
 
 ################################################################################

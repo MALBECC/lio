@@ -57,13 +57,13 @@ LibxcProxy <scalar_type, width>::LibxcProxy()
 }
 
 template <class scalar_type, int width>
-LibxcProxy <scalar_type, width>::LibxcProxy (int exchangeFunctionId, int correlationFuncionalId, int nspin)
+LibxcProxy <scalar_type, width>::LibxcProxy (int exchangeFunctionId, int correlationFuncionalId, int nSpin)
 {
-    //printf("LibxcProxy::LibxcProxy (%d,%d,%d) \n", exchangeFunctionId, correlationFuncionalId, nspin);
+    //printf("LibxcProxy::LibxcProxy (%i,%i,%i) \n", exchangeFunctionId, correlationFuncionalId, nspin);
 
     funcIdForExchange = exchangeFunctionId;
     funcIdForCorrelation = correlationFuncionalId;
-    nspin = nspin;
+    nspin = nSpin;
 
     //printf("LibxcProxy::initFunctional () \n");
     if (xc_func_init (&funcForExchange, funcIdForExchange, nspin) != 0) {
@@ -102,7 +102,9 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type dens,
     const G2G::vec_type<scalar_type, width> &hess2,
     scalar_type &ex, scalar_type &ec, scalar_type &y2a)
 {
-    //printf("LibxcProxy::doGGA () \n");
+#ifdef _DEBUG
+    printf("LibxcProxy::doGGA (...) \n");
+#endif
 
     double rho[1] = {dens};
     // Libxc needs the 'contracted gradient'
@@ -184,7 +186,5 @@ void LibxcProxy <scalar_type, width>::doLDA(scalar_type dens, const G2G::vec_typ
     //TODO: not implemented yet!
     return;
 }
-
-
 
 #endif // LIBXCPROXY_H

@@ -514,7 +514,7 @@ subroutine SCF(E)
          write(666,*) ii , jj , xnano(ii,jj)
       enddo
       enddo
-      stop
+!      stop
 !
 ! FFR: When finished, uncomment the following starting guess...
 !##############################################################################!

@@ -1,11 +1,15 @@
 ######################################################################
 # INTERNAL DEPENDENCIES
 INCLUDES :=
-INCLUDES += rmmput_dens_all.f90  rmmput_dens_h.f90
-INCLUDES += rmmget_dens_all.f90  rmmget_dens_h.f90
-INCLUDES += rmmput_fock_all.f90  rmmput_fock_h.f90
-INCLUDES += rmmget_fock_all.f90  rmmget_fock_h.f90
-INCLUDES += rmmcalc_fockmao.f90  rmmcalc_overlap.f90
+INCLUDES += rmmput_dens.f90
+INCLUDES += rmmget_dens.f90
+INCLUDES += rmmput_fock.f90
+INCLUDES += rmmget_fock.f90
+
+INCLUDES += rmmcalc0_init.f90
+INCLUDES += rmmcalc1_overlap.f90
+INCLUDES += rmmcalc2_focknuc.f90
+INCLUDES += rmmcalc3_fockele.f90
 
 $(OBJPATH)/maskrmm.o : $(INCLUDES) maskrmm.mk
 ######################################################################

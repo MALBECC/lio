@@ -8,6 +8,7 @@ if [ -n "$1" ]
     SALIDA=$1
 fi
 
-$LIOBIN -i agua.in -b basis -c agua.xyz -v > $SALIDA
+#$LIOBIN -i agua.in -b basis -c agua.xyz -v > $SALIDA
 
+$LIOBIN -i agua_mod.in -b basis -c agua.xyz -v > ${SALIDA}_mod
 

@@ -497,11 +497,32 @@ subroutine SCF(E)
             endif 
 #endif
 
+
+!##############################################################################!
+! FFR: Currently working here.
+!
+      do ii=1,size(X,1)
+      do jj=1,size(X,2)
+         if ((ii>M).or.(jj>M)) then
+            write(666,*) ii , jj , X(ii,jj)
+         endif
+      enddo
+      enddo
+      call starting_guess(xnano)
+      do ii=1,M
+      do jj=1,M
+         write(666,*) ii , jj , xnano(ii,jj)
+      enddo
+      enddo
+      stop
+!
+! FFR: When finished, uncomment the following starting guess...
+!##############################################################################!
 !------------------------------------------------------------------------------!
 ! TODO: remove from here...
 !
-      call starting_guess(xnano)
-!
+!      call starting_guess(xnano)
+
       if ((timedep.eq.1).and.(tdrestart)) then
         call g2g_timer_sum_start('TD')
         call TD()

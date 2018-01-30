@@ -73,7 +73,8 @@ subroutine write_dipole_td(dipxyz, time, uid)
     real*8 , intent(in) :: dipxyz(3), time
     integer, intent(in) :: uid
 
-    write(UID,*) time, dipxyz(1), dipxyz(2), dipxyz(3)
+    write(UID,100) time, dipxyz(1), dipxyz(2), dipxyz(3)
+100 format (e15.8,' ', e15.8,' ',e15.8,' ',e15.8)
     return
 end subroutine write_dipole_td
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -87,7 +88,8 @@ subroutine write_dipole_td_header(time_step, fx, fy, fz, uid)
     real*8 , intent(in) :: time_step, fx, fy, fz
     integer, intent(in) :: uid
 
-    write(UID,*) '#', time_step, fx, fy, fz
+    write(UID, 100) time_step, fx, fy, fz
+100 format ('# ',e12.5,' ', e12.5,' ',e12.5,' ',e12.5)
     return
 end subroutine write_dipole_td_header
 

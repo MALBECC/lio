@@ -12,7 +12,7 @@
        INTEGER                              :: ii,stat
        EXTERNAL CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
        EXTERNAL CUBLAS_SHUTDOWN, CUBLAS_ALLOC,CUBLAS_CGEMM, CUBLAS_ZCOPY
-       EXTERNAL CUBLAS_CAXPY 
+       EXTERNAL CUBLAS_CAXPY
        INTEGER CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
        INTEGER*8 devPOmega
        INTEGER*8 devPPrev
@@ -237,7 +237,7 @@
       stop
       endif
 !=======================================!
-         stat=CUBLAS_CAXPY(M*M,1.0E0,devPNext,1,
+         stat=CUBLAS_CAXPY(M*M,cmplx(1.0E0,0.0E0),devPNext,1,
      >   devPRho,1)
 !=======================================!
       if (stat.NE.0) then
@@ -269,4 +269,3 @@
       DEALLOCATE(Omega1)
       RETURN;END subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-

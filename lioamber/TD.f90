@@ -271,7 +271,7 @@ subroutine TD()
             (mod((istep-1), save_charge_freq*10) == 0)) .or.  &
             (mod((istep-1), save_charge_freq) == 0) ) then
             call drive_population(M, natom, Nuc, Iz, pop_drive, ngroup, &
-                                  rho_aux, overlap, group, sqsm)
+                                  rho_aux, overlap, group, sqsm, 2)
          endif
       endif
 

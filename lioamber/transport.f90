@@ -156,6 +156,8 @@ subroutine transport_propagate(M, natom, Nuc, Iz, ngroup, group, pop_drive,    &
 #endif
    real*8  :: scratchgamma
    integer :: save_freq
+!drive_population parameter:
+   integer   :: dvopt
 
    save_freq = save_charge_freq
    if (propagator.eq.1) save_freq = save_freq*10
@@ -169,8 +171,9 @@ subroutine transport_propagate(M, natom, Nuc, Iz, ngroup, group, pop_drive,    &
 
    call electrostat(rho1, mapmat, overlap, rhofirst, scratchgamma,M)
    if (mod( istep-1 , save_freq) == 0) then
+      dvopt=1
       call drive_population(M, natom, Nuc, Iz, pop_drive, ngroup, rho1, &
-                            overlap, group, sqsm)
+                            overlap, group, sqsm,dvopt)
    endif
 
    call g2g_timer_stop('Transport-propagation')
@@ -197,6 +200,8 @@ subroutine transport_propagate_cu(M, natom, Nuc, Iz, ngroup, group, pop_drive, &
 #endif
    real*8  :: scratchgamma
    integer :: save_freq
+!drive_population parameter:
+   integer   :: dvopt
 
    save_freq = save_charge_freq
    if (propagator.eq.1) save_freq = save_freq*10
@@ -210,8 +215,9 @@ subroutine transport_propagate_cu(M, natom, Nuc, Iz, ngroup, group, pop_drive, &
 
    call electrostat(rho1, mapmat, overlap, rhofirst, scratchgamma,M)
    if (mod( istep-1 , save_freq) == 0) then
+      dvopt=1
       call drive_population(M, natom, Nuc, Iz, pop_drive, ngroup, rho1, &
-                            overlap, group, sqsm)
+                            overlap, group, sqsm, dvopt)
    endif
 
    call g2g_timer_start('complex_rho_ao_to_on-cu')
@@ -324,10 +330,11 @@ subroutine electrostat(rho1, mapmat, overlap, rhofirst, Gamma0, M)
 end subroutine electrostat
 
 subroutine drive_population(M, natom, Nuc, Iz, Pop, ngroup, rho1, overlap, &
-                            group, smat)
+                            group, smat, dvopt)
    implicit none
    integer, intent(in) :: M, natom, Pop, ngroup, group(natom), Iz(natom), &
                           Nuc(natom)
+   integer, intent(in) :: dvopt
    real*8 , intent(in) :: overlap(M,M), smat(M,M)
 #ifdef TD_SIMPLE
       complex*8 , intent(in) :: rho1(M,M)
@@ -340,9 +347,15 @@ subroutine drive_population(M, natom, Nuc, Iz, Pop, ngroup, rho1, overlap, &
    qgr(:) = 0.0D0
    traza  = 0.0D0
 
-   do i = 1, natom
-      q(i) = Iz(i)
-   enddo
+
+   if (dvopt==1) then
+      q(:)=0.0d0
+   else if (dvopt==2) then
+      do i = 1, natom
+         q(i) = Iz(i)
+      enddo
+   end if
+
    rho = real(rho1)
 
    select case (Pop)
@@ -358,12 +371,21 @@ subroutine drive_population(M, natom, Nuc, Iz, Pop, ngroup, rho1, overlap, &
    do i = 1, natom
       qgr(group(i)) = qgr(group(i)) + q(i)
    enddo
-   do i = 1, ngroup
-      write(pop_uid,*) i, i, qgr(i)
-      traza = traza + qgr(i)
-   enddo
 
-   write(*,*) "Total trace =", traza
+   if(dvopt==1) then
+      do i = 1, ngroup
+         write(drive_uid,*) i, i, qgr(i)
+         traza = traza + qgr(i)
+      enddo
+      write(*,*) "Total trace =", traza
+   else if (dvopt==2) then
+      do i = 1, ngroup
+         write(pop_uid,*) i, i, qgr(i)
+         traza = traza + qgr(i)
+      enddo
+      write(pop_uid,*) "Total trace =", traza
+   end if
+
 
    return
 end subroutine drive_population

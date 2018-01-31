@@ -43,11 +43,10 @@ subroutine TD()
    use garcha_mod    , only: M, Md, NBCH, propagator, RMM, NCO, Iz, igrid2, r, &
                              Nuc, nsol, pc, X, Smat, MEMO, field, epsilon, a0, &
                              sol, natom, sqsm, Fx, Fy, Fz, Nunp, ntatom
-   use ECP_mod       , only: ecpmode, term1e, VAAA, VAAB, VBAC
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, writedens
-   use transport_data, only: save_charge_freq, transport_calc
+   use transport_data, only: transport_calc
    use transport_subs, only: transport_rho_trace, transport_generate_rho,      &
-                             transport_init, drive_population
+                             transport_init, transport_population
    use fileio        , only: write_td_restart_verlet, write_td_restart_magnus, &
                              read_td_restart_verlet , read_td_restart_magnus
 #ifdef CUBLAS
@@ -139,13 +138,10 @@ subroutine TD()
    ! and significant functions to groups, also calculating point weights.
    call td_integration_setup(igrid2, igpu)
    call td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM(M11), r, pc, &
-                       ntatom, ecpmode, VAAA, VAAB, VBAC, term1e)
+                       ntatom)
 
-   ! Comment needed here.
-   if( transport_calc ) then
-      call transport_init(M, natom, Nuc, RMM(M5), overlap)
-      call transport_generate_rho(M, rho)
-   endif
+   ! Initialises transport if required.
+   if (transport_calc) call transport_init(M, natom, Nuc, RMM(M5), overlap, rho)
 
    ! Diagonalizes Smat, stores transformation matrix Xmm and calculates the
    ! transposed matrices Xtrans and Ytrans
@@ -258,14 +254,9 @@ subroutine TD()
       call td_dipole(t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, 134)
 
       ! Population analysis.
-      if (transport_calc) then
-         if ( ((propagator.gt.1) .and. (is_lpfrg) .and.       &
-            (mod((istep-1), save_charge_freq*10) == 0)) .or.  &
-            (mod((istep-1), save_charge_freq) == 0) ) then
-            call drive_population(M, natom, Nuc, Iz, rho_aux, overlap, sqsm, 2)
-         endif
-      endif
-
+      if (transport_calc) call transport_population(M, natom, Nuc, Iz, rho_aux,&
+                                                    overlap, sqsm, propagator, &
+                                                    is_lpfrg, istep)
       ! TD step finalization.
       call g2g_timer_stop('TD step')
  999  continue
@@ -413,14 +404,13 @@ subroutine td_integration_setup(igrid2, igpu)
 end subroutine td_integration_setup
 
 subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM11, r, pc, &
-                       ntatom, ecpmode, VAAA, VAAB, VBAC, term1e)
+                          ntatom)
    use faint_cpu77, only: int1, intsol
+   use mask_ecp   , only: ECP_fock
    implicit none
    integer, intent(in)    :: MM, igpu, nsol, ntatom
-   logical, intent(in)    :: ecpmode
    real*8 , intent(in)    :: r(ntatom), pc(ntatom)
-   real*8 , allocatable, intent(in) :: VAAA(:), VAAB(:), VBAC(:)
-   real*8 , intent(inout) :: RMM(MM), RMM11(MM), E1, En, E1s, Ens, term1e(MM)
+   real*8 , intent(inout) :: RMM(MM), RMM11(MM), E1, En, E1s, Ens
    integer :: icount
 
    E1 = 0.0D0 ; En = 0.0D0
@@ -428,16 +418,7 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM11, r, pc, &
    call g2g_timer_sum_start('Nuclear attraction')
    call int1(En)
 
-   ! 1e terms - Pseudopotential terms.
-   if (ecpmode) then
-      write(*,*) "Adding Pseudopotential terms AAA, AAB, BAC to 1e integrals."
-      do icount = 1, MM
-         ! Copies 1e terms then adds them the ECP AAA.
-         term1e(icount) = RMM11(icount)
-         RMM11(icount)  = RMM11(icount) + VAAA(icount) + VAAB(icount) + &
-                          VBAC(icount)
-      enddo
-   end if
+   call ECP_fock(MM, RMM11)
    call g2g_timer_sum_stop('Nuclear attraction')
 
    ! 1e terms - QMMM terms.
@@ -983,7 +964,7 @@ subroutine td_magnus_cu(M, fock, F1a, F1b, rho, rhonew, devPtrX, devPtrXc,  &
    endif
    call g2g_timer_start('cupredictor')
    call cupredictor(F1a, F1b, fock, rho, devPtrX, factorial, fxx, fyy,   &
-                    fzz, g, devPtrXc)
+                    fzz, g, devPtrXc, dt_magnus)
    call g2g_timer_stop('cupredictor')
    call g2g_timer_start('cumagnus')
    call cumagnusfac(fock, rho, rhonew, M, NBCH, dt_magnus, factorial)

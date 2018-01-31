@@ -34,7 +34,8 @@ subroutine SCF(E)
                           predcoef, nsol, r, pc, DIIS, told, Etold, Enucl,     &
                           Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz,  &
                           epsilon, nuc, doing_ehrenfest, first_step, RealRho,  &
-                          total_time, field, Fx, Fy, Fz, a0,MO_coef_at, Smat
+                          total_time, field, Fx, Fy, Fz, a0,MO_coef_at, Smat,  &
+                          good_cut, ndiis
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
                        FOCK_ECP_read,FOCK_ECP_write,IzECP
    use td_data, only: timedep, tdrestart, tdstep

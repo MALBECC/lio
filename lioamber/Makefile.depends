@@ -231,7 +231,8 @@ $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/typedef_sop.mod
 ################################################################################
 OBJECTS += mask_ecp.o
 #
-modusrs := SCF.o
+#modusrs :=
+modusrs += SCF.o TD.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/mask_ecp.mod
 
 
@@ -292,7 +293,7 @@ ifeq ($(use_cublas),1)
   $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fortran.o
 
   tmplist :=
-  tmplist += SCF.o SCFop.o TD.o converger_subs.o
+  tmplist += SCF.o SCFop.o TD.o converger_subs.o transport.o
   tmplist += tmpaux_SCF.o
   $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/cublasmath.mod
 

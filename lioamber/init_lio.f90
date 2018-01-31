@@ -188,15 +188,15 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
 
     nqnuc = 0
     do i = 1, natom
-        nqnuc = nqnuc + Iz(i)
+       nqnuc = nqnuc + Iz(i)
     enddo
 
     electrons=nqnuc - charge
     if (.not. OPEN .and. (mod(electrons,2) .ne. 0)) then
-	write(*,*) "odd number of electrons in a close-shell calculation"
-	write(*,*) "check system charge"
-	STOP
-    end if
+	    write(*,*) "odd number of electrons in a close-shell calculation"
+	    write(*,*) "check system charge"
+	    stop
+    endif
 
     NCO = ((nqnuc - charge) - NUNP)/2
 
@@ -269,16 +269,14 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge, basis_i              &
     use garcha_mod, only : basis, output, fmulliken, fcoord, OPEN, NMAX,     &
                            basis_set, fitting_set, int_basis, DIIS, ndiis,   &
                            GOLD, told, Etold, hybrid_converg, good_cut,      &
-                           rmax, rmaxs, omit_bas, propagator,       &
-                           NBCH, Fx, Fy, Fz, field,         &
-                           exter, verbose, VCINP,      &
-                           restart_freq, writexyz, frestartin,               &
-                           frestart, predcoef, idip, intsoldouble, dgtrig,   &
+                           rmax, rmaxs, omit_bas, propagator, NBCH, Fx, Fy,  &
+                           Fz, field, verbose, VCINP, restart_freq, writexyz,&
+                           frestartin, frestart, predcoef, idip, dgtrig,     &
                            Iexch, integ, DENS, IGRID, IGRID2, a0, epsilon,   &
                            cubegen_only, cube_res, cube_dens, cube_orb,      &
                            cube_sel, cube_orb_file, cube_dens_file, NUNP,    &
                            energy_freq, style, allnml, cube_elec_file,       &
-                           cube_elec, cube_sqrt_orb
+                           cube_elec, cube_sqrt_orb, intsoldouble
     use td_data   , only : tdrestart, tdstep, ntdstep, timedep, writedens
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,     &
                            local_nonlocal, ecp_debug, ecp_full_range_int,    &
@@ -319,13 +317,12 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge, basis_i              &
     Iexch          = Iexch_i        ; integ         = integ_i        ;
     DENS           = DENS_i         ; IGRID         = IGRID_i        ;
     IGRID2         = IGRID2_i       ; timedep       = timedep_i      ;
-    field          = field_i        ; exter         = exter_i        ;
+    field          = field_i        ; tdrestart     = tdrestart_i    ;
     tdstep         = tdstep_i       ; ntdstep       = ntdstep_i      ;
     a0             = a0_i           ; epsilon       = epsilon_i      ;
     Fx             = Fx_i           ; Fy            = Fy_i           ;
     Fz             = Fz_i           ; NBCH          = NBCH_i         ;
     propagator     = propagator_i   ; writedens     = writedens_i    ;
-    tdrestart      = tdrestart_i
 
     ! Initializes LIO. The last argument indicates LIO is not being used alone.
     call init_lio_common(natomin, Izin, nclatom, charge, 1)

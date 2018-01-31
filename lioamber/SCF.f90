@@ -42,7 +42,7 @@ subroutine SCF(E)
    use time_dependent, only : TD
    use faint_cpu77, only: int1, int2, intsol, int3mem, int3lu, intfld
    use dftb_data, only : dftb_calc, MDFTB, MTB
-   use dftb_subs, only : dftb_init, getXY_DFTB, find_neighbors, build_chimera,      &
+   use dftb_subs, only : dftb_init, getXY_DFTB, find_neighbors, build_chimera, &
                          extract_rhoDFT
    use cubegen       , only: cubegen_vecin, cubegen_matin, cubegen_write
    use mask_ecp      , only: ECP_init, ECP_fock, ECP_energy

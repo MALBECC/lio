@@ -63,10 +63,10 @@ class vec_type {};
 
   template<> class vec_type<float, 4> {
     private:
-      //float x, y, z, _w;
+      //float x, y, z, _w; // Cambio porque libxc necesita acceder a las componentes del vector.
 
     public:
-      float x, y, z, _w;
+      float x, y, z, _w; // Esto antes de libxc estaba en la parte privada.
 
       vec_type(void) {}
       vec_type(float x_in, float y_in, float z_in, float w_in) :
@@ -78,7 +78,7 @@ class vec_type {};
       }
 
       void operator+=(const vec_type & lo){
-      	x += lo.x, y += lo.y, z += lo.z, _w += lo._w;
+      	x += lo.x, y += lo.y, z += lo.z; //, _w += lo._w;
       }
 
   };

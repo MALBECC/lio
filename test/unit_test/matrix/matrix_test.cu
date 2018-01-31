@@ -662,9 +662,9 @@ void matrix_test0004 ()
     }
 
     // Call the CUDA KERNEL
-    libxc_cpu_accumulate_point_local(NULL, energy_cpu, factor_cpu, point_weights_cpu, 
-	number_of_points, 1, partial_density_cpu,
-	dxyz_cpu, dd1_cpu, dd2_cpu);
+//    libxc_cpu_accumulate_point_local(NULL, energy_cpu, factor_cpu, point_weights_cpu, 
+//	number_of_points, 1, partial_density_cpu,
+//	dxyz_cpu, dd1_cpu, dd2_cpu);
 
     // TODO: now copy back the results to the gpu.
     
@@ -873,9 +873,9 @@ void matrix_test0005 ()
     LibxcProxy<float,4> libxcProxy(functionalExchange, functionalCorrelation, nspin);
 
     // Call the CUDA KERNEL
-    libxc_cpu_accumulate_point_local(&libxcProxy, energy_cpu, factor_cpu, point_weights_cpu, 
-	number_of_points, 1, partial_density_cpu,
-	dxyz_cpu, dd1_cpu, dd2_cpu);
+//    libxc_cpu_accumulate_point_local(&libxcProxy, energy_cpu, factor_cpu, point_weights_cpu, 
+//	number_of_points, 1, partial_density_cpu,
+//	dxyz_cpu, dd1_cpu, dd2_cpu);
 
     // TODO: now copy back the results to the gpu.
     
@@ -1089,10 +1089,10 @@ void matrix_test0006 ()
 //	dxyz_cpu, dd1_cpu, dd2_cpu);
 
 //    <float, true, true, false> 
-    libxc_cpu_accumulate_point<float, true, true, false>(&libxcProxy, energy_cpu, 
-	factor_cpu, point_weights_cpu,
-        number_of_points, 1, partial_density_cpu, 
-	dxyz_cpu, dd1_cpu, dd2_cpu);
+//    libxc_cpu_accumulate_point<float, true, true, false>(&libxcProxy, energy_cpu, 
+//	factor_cpu, point_weights_cpu,
+//        number_of_points, 1, partial_density_cpu, 
+//	dxyz_cpu, dd1_cpu, dd2_cpu);
 
     // TODO: now copy back the results to the gpu.
 
@@ -1308,10 +1308,10 @@ void matrix_test0007 ()
 //	dxyz_cpu, dd1_cpu, dd2_cpu);
 
 //    <double, true, true, false> 
-    libxc_cpu_accumulate_point<double, true, true, false>(&libxcProxy, energy_cpu, 
-	factor_cpu, point_weights_cpu,
-        number_of_points, 1, partial_density_cpu, 
-	dxyz_cpu, dd1_cpu, dd2_cpu);
+//    libxc_cpu_accumulate_point<double, true, true, false>(&libxcProxy, energy_cpu, 
+//	factor_cpu, point_weights_cpu,
+//        number_of_points, 1, partial_density_cpu, 
+//	dxyz_cpu, dd1_cpu, dd2_cpu);
 
     // TODO: now copy back the results to the gpu.
 

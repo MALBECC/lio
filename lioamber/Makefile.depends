@@ -7,7 +7,7 @@
 # modules (or rather their corresponding '.o' files).
 #
 # When adding new content, you should:
-# 
+#
 #  (1) Include in the list OBJECTS the object file to be included.
 #
 #  (2) Specify the dependencies related to this object, preferably adding
@@ -79,7 +79,7 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/esp_funct.mod
 
 ################################################################################
 OBJECTS += lionml_data.o
-OBJECTS += lionml_subs.o 
+OBJECTS += lionml_subs.o
 
 tmplist := init_lio.f90
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/lionml_subs.mod
@@ -146,7 +146,7 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/transport.mod
 OBJECTS += TD.o
 
 tmplist :=
-tmplist += SCF.o
+tmplist += SCF.o input_read.o init_lio.o ehrensubs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/TD.mod
 ################################################################################
 OBJECTS += atompot_data.o
@@ -213,7 +213,7 @@ include liosubs_math/liosubs_math.mk
 SRCDIRS += liosubs_math
 OBJECTS += liosubs_math.o
 #
-modusrs := 
+modusrs :=
 modusrs += typedef_sop.o liosubs_dens.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/liosubs_math.mod
 

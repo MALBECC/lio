@@ -4,7 +4,8 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! This routine recives: F1a,F1b,rho2
 ! And gives: F5 = F(t+(deltat/2))
-       use garcha_mod , only: M, RMM, NBCH, tdstep, field
+       use garcha_mod , only: M, RMM, NBCH, field
+       use td_data    , only: tdstep
        use mathsubs   , only: basechange
        use faint_cpu77, only: int3lu, intfld
        implicit none

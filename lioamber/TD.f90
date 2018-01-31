@@ -25,22 +25,30 @@
 ! In each step of the propagation the cartesian components of the sistems      !
 ! dipole are stored in files x.dip, y.dip, z.dip.                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+module td_data
+   implicit none
+   integer :: td_restart_freq = 500
+   integer :: timedep   = 0
+   integer :: ntdstep   = 0
+   real*8  :: tdstep    = 2.0D-3
+   logical :: tdrestart = .false.
+   logical :: writedens = .false.
+end module td_data
+
 module time_dependent
    implicit none
-
-   integer :: td_restart_freq = 500
-
 contains
 
 subroutine TD()
-   use garcha_mod    , only: M, Md, NBCH, propagator, tdstep, idip, tdrestart, &
-                             exists, RMM, NCO, nang, Iz, natomc, r, d, atmin,  &
-                             rmax, jatc, nshell, nnps, nnpp, nnpd, igrid2,     &
-                             Nuc, predcoef, npas, nsol, pc, X, Smat, MEMO,     &
-                             ntdstep, field, exter, epsilon, writedens, a0,    &
-                             sol, kkind, kkinds, cool, cools, GRAD, natom,     &
-                             sqsm, Fx, Fy, Fz, Nunp, ntatom
+   use garcha_mod    , only: M, Md, NBCH, propagator, idip, RMM, NCO, nang, Iz,&
+                             natomc, r, d, atmin,rmax, jatc, nshell, nnps,     &
+                             nnpp, nnpd, igrid2, Nuc, predcoef, npas, nsol, pc,&
+                             X, Smat, MEMO, field, epsilon, a0, sol, kkind,    &
+                             kkinds, cool, cools, GRAD, natom, sqsm, Fx, Fy,   &
+                             Fz, Nunp, ntatom
    use ECP_mod       , only: ecpmode, term1e, VAAA, VAAB, VBAC
+   use td_data       , only: td_restart_freq, tdstep, ntdstep, tdrestart,      &
+                             writedens
    use mathsubs
    use transport_data, only: save_charge_freq, transport_calc
    use transport_subs, only: transport_init, transport_generate_rho, &
@@ -52,7 +60,7 @@ subroutine TD()
 #endif
 
    implicit none
-   real*8  :: dipxyz(3), q(natom)
+   real*8  :: q(natom)
    real*8  :: dipole_norm, Qc2, zij, ti, tj, alf, rexp, E, En, E1, E2, E1s,&
               Es, Ens, Ex, ff, t0, t, dt_magnus, dt_lpfrg, tiempo1000, &
               fxx, fyy, fzz, g
@@ -178,10 +186,9 @@ subroutine TD()
       call td_check_prop(is_lpfrg, propagator, istep, lpfrg_steps, tdrestart)
       call td_get_time(t, tdstep, istep, propagator, is_lpfrg)
 
-      call td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM(M11), is_lpfrg, &
-                          transport_calc, field, exter, istep, pert_steps,    &
-                          dipxyz, fx, fy, fz, fxx, fyy, fzz, epsilon, g, a0,  &
-                          Qc2, sol)
+      call td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM(M11), is_lpfrg,  &
+                          transport_calc, field, istep, pert_steps, fx, fy, fz,&
+                          fxx, fyy, fzz, epsilon, g, a0, Qc2, sol)
 
       ! Verlet or Magnus Propagation
       ! In Verlet, we obtain the Fock matrix in the molecular orbital (MO)
@@ -257,8 +264,7 @@ subroutine TD()
       if (transport_calc) call transport_rho_trace(M, rho)
 
       ! Dipole Moment calculation.
-      call td_dipole(dipxyz, t, tdstep, Fx, Fy, Fz, istep, propagator, &
-                     is_lpfrg, 134)
+      call td_dipole(t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, 134)
 
       ! Population analysis.
       if (transport_calc) then
@@ -431,11 +437,11 @@ end subroutine td_integration_setup
 subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM11, r, pc, &
                        ntatom, ecpmode, VAAA, VAAB, VBAC, term1e)
    use faint_cpu77, only: int1, intsol
-
    implicit none
    integer, intent(in)    :: MM, igpu, nsol, ntatom
    logical, intent(in)    :: ecpmode
-   real*8 , intent(in)    :: VAAA(MM), VAAB(MM), VBAC(MM), r(ntatom), pc(ntatom)
+   real*8 , intent(in)    :: r(ntatom), pc(ntatom)
+   real*8 , allocatable, intent(in) :: VAAA(:), VAAB(:), VBAC(:)
    real*8 , intent(inout) :: RMM(MM), RMM11(MM), E1, En, E1s, Ens, term1e(MM)
    integer :: icount
 
@@ -622,17 +628,16 @@ subroutine td_check_prop(is_lpfrg, propagator, istep, lpfrg_steps, tdrestart)
 end subroutine td_check_prop
 
 subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
-                          transport_calc, field, exter, istep, pert_steps, &
-                          dipxyz, fx, fy, fz, fxx, fyy, fzz, epsilon, g,   &
-                          a0, Qc2, sol)
+                          transport_calc, field, istep, pert_steps, fx, fy, fz,&
+                          fxx, fyy, fzz, epsilon, g, a0, Qc2, sol)
    use faint_cpu77, only: int3lu
    implicit none
    integer, intent(in)    :: istep, pert_steps, MM
    logical, intent(in)    :: is_lpfrg, transport_calc, sol
-   logical, intent(inout) :: field, exter
+   logical, intent(inout) :: field
    real*8 , intent(in)    :: epsilon, a0, Qc2
    real*8 , intent(inout) :: E, E1, E2, En, Ex, Es, fx, fy, fz, fxx, fyy, fzz, &
-                             g, dipxyz(3), RMM(MM), RMM11(MM)
+                             g, RMM(MM), RMM11(MM)
    integer :: icount
 
    E1 = 0.0D0; E = 0.0D0
@@ -643,9 +648,8 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
 
    ! ELECTRIC FIELD CASE - Perturbation type: Gaussian.
    if ((.not.transport_calc).and.(field)) then
-      call td_calc_perturbation(istep, pert_steps, dipxyz, fx, fy, fz,   &
-                                exter, epsilon, a0, Qc2, E1, field, fxx, &
-                                fyy, fzz, g)
+      call td_calc_perturbation(istep, pert_steps, fx, fy, fz, epsilon, a0, &
+                                Qc2, E1, field, fxx, fyy, fzz, g)
    endif
 
    ! Add 1e contributions to E1.
@@ -659,36 +663,28 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
    return
 end subroutine td_calc_energy
 
-subroutine td_calc_perturbation(step, pert_steps, dipxyz, fx, fy, fz, exter, &
-                                epsilon, a0, Qc2, E1, field, fxx, fyy, fzz, g)
+subroutine td_calc_perturbation(step, pert_steps, fx, fy, fz, epsilon, a0, Qc2,&
+                                E1, field, fxx, fyy, fzz, g)
    use faint_cpu77, only: intfld
    implicit none
    integer, intent(in)    :: step, pert_steps
-   logical, intent(inout) :: exter, field
+   logical, intent(inout) :: field
    real*8 , intent(in)    :: epsilon, a0, Qc2
-   real*8 , intent(inout) :: dipxyz(3), E1, fx, fy, fz, fxx, fyy, fzz, g
-   real*8 :: factor
+   real*8 , intent(inout) :: E1, fx, fy, fz, fxx, fyy, fzz, g
+   real*8 :: factor, dipxyz(3)
 
    fxx = 0.0D0
    fyy = 0.0D0
    fzz = 0.0D0
    if (step.lt.pert_steps) then
       call dip(dipxyz)
-      if (exter) then
-         g      = 1.0D0
-         factor = 2.54D0
-         fxx    = fx * exp(-0.2D0*(real(step-50))**2)
-         fyy    = fy * exp(-0.2D0*(real(step-50))**2)
-         fzz    = fz * exp(-0.2D0*(real(step-50))**2)
-         write(*,*) "TD - External field x,y,z in a.u.:"
-         write(*,*) fxx, fyy, fzz
-      else
-         g      = 2.0D0*(epsilon - 1.0D0) / ((2.0D0*epsilon + 1.0D0)*a0**3)
-         factor = (2.54D0*2.00D0)
-         Fx     = dipxyz(1) / 2.54D0
-         Fy     = dipxyz(2) / 2.54D0
-         Fz     = dipxyz(3) / 2.54D0
-      endif
+      g      = 1.0D0
+      factor = 2.54D0
+      fxx    = fx * exp(-0.2D0*(real(step-50))**2)
+      fyy    = fy * exp(-0.2D0*(real(step-50))**2)
+      fzz    = fz * exp(-0.2D0*(real(step-50))**2)
+      write(*,*) "TD - External field x,y,z in a.u.:"
+      write(*,*) fxx, fyy, fzz
       call intfld(g, Fxx, Fyy, Fzz)
       E1=-1.00D0 * g * (Fx*dipxyz(1) + Fy*dipxyz(2) + Fz*dipxyz(3)) / factor - &
           0.50D0 * (1.0D0 - 1.0D0/epsilon) * Qc2/a0
@@ -808,13 +804,12 @@ subroutine td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, fxx, fyy,   &
    return
 end subroutine td_magnus
 
-subroutine td_dipole(dipxyz, t, tdstep, Fx, Fy, Fz, istep, propagator, &
-                     is_lpfrg, uid)
+subroutine td_dipole(t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, uid)
    implicit none
    integer, intent(in)    :: istep, propagator, uid
    logical, intent(in)    :: is_lpfrg
    real*8 , intent(in)    :: Fx, Fy, Fz, t, tdstep
-   real*8 , intent(inout) :: dipxyz(3)
+   real*8 :: dipxyz(3)
 
    if(istep.eq.1) then
       call write_dipole_td_header(tdstep, Fx, Fy, Fz, uid)

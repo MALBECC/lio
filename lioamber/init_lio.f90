@@ -18,11 +18,9 @@ subroutine lio_defaults()
 
     use garcha_mod, only : basis, output, fmulliken, fcoord, OPEN, NMAX,       &
                            basis_set, fitting_set, int_basis, DIIS, ndiis,     &
-                           GOLD, told, Etold, hybrid_converg, good_cut,        &
-                           rmax, rmaxs, omit_bas, timedep, propagator,         &
-                           tdstep, ntdstep, NBCH, Fx, Fy, Fz, field,           &
-                           tdrestart, exter, verbose, writedens, VCINP,        &
-                           restart_freq, writexyz, frestartin,                 &
+                           GOLD, told, Etold, hybrid_converg, good_cut, rmax,  &
+                           rmaxs, omit_bas, propagator, NBCH, Fx, Fy, Fz,      &
+                           field, verbose, VCINP, restart_freq, frestartin,    &
                            frestart, predcoef, idip, intsoldouble, dgtrig,     &
                            Iexch, integ, DENS, IGRID, IGRID2, a0, epsilon,     &
                            cubegen_only, cube_res, cube_dens, cube_orb,        &
@@ -36,9 +34,8 @@ subroutine lio_defaults()
                            energy_all_iterations, free_global_memory, dipole,  &
                            lowdin, mulliken, print_coeffs, number_restr, Dbug, &
                            steep, Force_cut, Energy_cut, minimzation_steep,    &
-                           n_min_steeps, lineal_search, n_points, timers
-
-
+                           n_min_steeps, lineal_search, n_points, timers,      &
+                           writexyz
 
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,       &
                            local_nonlocal, ecp_debug, ecp_full_range_int,      &
@@ -70,12 +67,9 @@ subroutine lio_defaults()
     cutECP         = .true.        ; ecp_full_range_int = .false.       ;
 
 !   TD-DFT options.
-    timedep        = 0             ; Fx                 = 0.00          ;
-    propagator     = 1             ; Fy                 = 0.00          ;
-    tdstep         = 2.D-3         ; Fz                 = 0.00          ;
-    ntdstep        = 1             ; tdrestart          = .false.       ;
-    NBCH           = 10            ; exter              = .false.       ;
-    field          = .false.       ;
+    propagator     = 1             ; Fx                 = 0.00          ;
+    NBCH           = 10            ; Fy                 = 0.00          ;
+    field          = .false.       ; Fz                 = 0.00          ;
 
 !   Distance restrain options
     number_restr   = 0             ;
@@ -91,12 +85,11 @@ subroutine lio_defaults()
 
 !   Write options and Restart options.
     verbose        = .false.       ; writexyz           = .true.        ;
-    writedens      = .false.       ; frestart           ='restart.out'  ;
+    print_coeffs   = .false.       ; frestart           ='restart.out'  ;
     VCINP          = .false.       ; frestartin         = 'restart.in'  ;
     restart_freq   = 0             ; writeforces        = .false.       ;
     fukui          = .false.       ; lowdin             = .false.       ;
     mulliken       = .false.       ; dipole             = .false.       ;
-    print_coeffs   = .false.       ;
 
 !   Old GPU_options
     max_function_exponent = 10     ; little_cube_size     = 8.0         ;
@@ -117,7 +110,7 @@ subroutine lio_defaults()
     a0             = 1000.0        ; style              = .false.       ;
     epsilon        = 1.D0          ; allnml             = .true.        ;
     NUNP           = 0             ; energy_freq        = 1             ;
-    cube_sqrt_orb  = .false.       ; MEMO               = .true.        ; 
+    cube_sqrt_orb  = .false.       ; MEMO               = .true.        ;
     SHFT           = .false.       ; GRAD               = .true.        ;
     BSSE           = .false.       ; sol                = .false.       ;
     primera        = .true.        ; watermod           = 0             ;
@@ -142,9 +135,8 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
                            assign_all_functions, energy_all_iterations,        &
                            remove_zero_weights, min_points_per_cube,           &
                            max_function_exponent, sphere_radius, M,Fock_Hcore, &
-                           Fock_Overlap, P_density, OPEN, timers, MO_coef_at,     &
-                           MO_coef_at_b &
-                          ,RMM_save
+                           Fock_Overlap, P_density, OPEN, timers, MO_coef_at,  &
+                           MO_coef_at_b, RMM_save
     use ECP_mod,    only : Cnorm, ecpmode
 
     implicit none
@@ -171,10 +163,10 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
     ! norbit: n° of molecular orbitals involved.                               !
     ! ngdDyn: n° of atoms times the n° of auxiliary functions.               !
     ! Ngrid : n° of grid points (LS-SCF part).                                 !
-    ! NOTES: Ngrid may be set to 0  in the case of Numerical Integration. For  ! 
+    ! NOTES: Ngrid may be set to 0  in the case of Numerical Integration. For  !
     ! large systems, ng2 may result in <0 due to overflow.                     !
 
-    ! Sets the dimensions for important arrays.                                
+    ! Sets the dimensions for important arrays.
     call DIMdrive(ngDyn,ngdDyn)
 
     ng2 = 5*ngDyn*(ngDyn+1)/2 + 3*ngdDyn*(ngdDyn+1)/2 + &
@@ -182,7 +174,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
 
     allocate( RMM_save(ng2) ) ! TODO: delete after use (FFR)
     allocate(RMM(ng2)    , d(natom, natom), c(ngDyn,nl)   , a(ngDyn,nl)     ,&
-             Nuc(ngDyn)  , ncont(ngDyn)   , cx(ngdDyn,nl) , ax(ngdDyn,nl)   ,& 
+             Nuc(ngDyn)  , ncont(ngDyn)   , cx(ngdDyn,nl) , ax(ngdDyn,nl)   ,&
              Nucx(ngdDyn), ncontx(ngdDyn) , cd(ngdDyn,nl) , ad(ngdDyn,nl)   ,&
              Nucd(ngdDyn), ncontd(ngdDyn) , indexii(ngDyn), indexiid(ngdDyn),&
              v(ntatom,3) , Em(ntatom)     , Rm(ntatom)    , af(ngdDyn)      ,&
@@ -190,7 +182,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
 
     ! Cnorm contains normalized coefficients of basis functions.
     ! Differentiate C for x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)
-    if (ecpmode) allocate (Cnorm(ngDyn,nl)) 
+    if (ecpmode) allocate (Cnorm(ngDyn,nl))
 
     call g2g_init()
 
@@ -203,7 +195,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
     if (.not. OPEN .and. (mod(electrons,2) .ne. 0)) then
 	write(*,*) "odd number of electrons in a close-shell calculation"
 	write(*,*) "check system charge"
-	STOP 
+	STOP
     end if
 
     NCO = ((nqnuc - charge) - NUNP)/2
@@ -212,7 +204,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
     if (OPEN) allocate(MO_coef_at_b(ngDyn*(NCO+NUNP)))
 
 
-    ! Prints LIO logo to output and options chosen for the run. 
+    ! Prints LIO logo to output and options chosen for the run.
     if (style) call LIO_LOGO()
     if (style) call NEW_WRITE_NML(charge)
 
@@ -224,7 +216,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
 
     call g2g_timer_stop('lio_init')
 
-    return 
+    return
 end subroutine init_lio_common
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -239,7 +231,7 @@ subroutine init_lio_gromacs(natomin, Izin, nclatom, chargein)
 
     implicit none
     integer,  intent(in) :: chargein, nclatom, natomin, Izin(natomin)
-    integer              :: dummy 
+    integer              :: dummy
     character(len=20)    :: inputFile
 
     ! Gives default values to runtime variables.
@@ -267,7 +259,7 @@ end subroutine init_lio_gromacs
 subroutine init_lio_amber(natomin, Izin, nclatom, charge, basis_i              &
            , output_i, fcoord_i, fmulliken_i, frestart_i, frestartin_i         &
            , verbose_i, OPEN_i, NMAX_i, NUNP_i, VCINP_i, GOLD_i, told_i        &
-           , rmax_i, rmaxs_i, predcoef_i, idip_i, writexyz_i                   & 
+           , rmax_i, rmaxs_i, predcoef_i, idip_i, writexyz_i                   &
            , intsoldouble_i, DIIS_i, ndiis_i, dgtrig_i, Iexch_i, integ_i       &
            , DENS_i , IGRID_i, IGRID2_i , timedep_i , tdstep_i                 &
            , ntdstep_i, field_i, exter_i, a0_i, epsilon_i, Fx_i, Fy_i          &
@@ -277,9 +269,9 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge, basis_i              &
     use garcha_mod, only : basis, output, fmulliken, fcoord, OPEN, NMAX,     &
                            basis_set, fitting_set, int_basis, DIIS, ndiis,   &
                            GOLD, told, Etold, hybrid_converg, good_cut,      &
-                           rmax, rmaxs, omit_bas, timedep, propagator,       &
-                           tdstep, ntdstep, NBCH, Fx, Fy, Fz, field,         &
-                           tdrestart, exter, verbose, writedens, VCINP,      &
+                           rmax, rmaxs, omit_bas, propagator,       &
+                           NBCH, Fx, Fy, Fz, field,         &
+                           exter, verbose, VCINP,      &
                            restart_freq, writexyz, frestartin,               &
                            frestart, predcoef, idip, intsoldouble, dgtrig,   &
                            Iexch, integ, DENS, IGRID, IGRID2, a0, epsilon,   &
@@ -287,6 +279,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge, basis_i              &
                            cube_sel, cube_orb_file, cube_dens_file, NUNP,    &
                            energy_freq, style, allnml, cube_elec_file,       &
                            cube_elec, cube_sqrt_orb
+    use td_data   , only : tdrestart, tdstep, ntdstep, timedep, writedens
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,     &
                            local_nonlocal, ecp_debug, ecp_full_range_int,    &
                            verbose_ECP, Cnorm, FOCK_ECP_read, FOCK_ECP_write,&
@@ -358,8 +351,9 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge, basis_i         &
            , Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i, dt_i        &
            )
 
-   use garcha_mod, only: M, timedep, first_step, doing_ehrenfest               &
-                      &, nshell, nuc, ncont, a, c, tdstep
+   use garcha_mod, only: M, first_step, doing_ehrenfest                        &
+                      &, nshell, nuc, ncont, a, c
+   use td_data, only: timedep, tdstep
 
    use ehrendata,  only: RhoSaveA, RhoSaveB
 
@@ -367,7 +361,7 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge, basis_i         &
 
    use lionml_data, only: ndyn_steps, edyn_steps
    use lionml_subs, only: lionml_Read
-      
+
    use liosubs,    only: catch_error
 
 
@@ -462,5 +456,3 @@ subroutine init_lio_hybrid(hyb_natom, mm_natom, charge, iza)
     return
 end subroutine init_lio_hybrid
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
-

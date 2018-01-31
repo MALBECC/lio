@@ -27,23 +27,23 @@ subroutine SCF(E)
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use ehrensubs, only: ehrensetup
-   use garcha_mod, only : M,Md, NCO,natom,Nang, number_restr, hybrid_converg, MEMO, &
-   npas, verbose, RMM, X, SHFT, GRAD, npasw, igrid, energy_freq, converge,          &
-   noconverge, cubegen_only, VCINP, primera, Nunp, GOLD,                            &
-   igrid2, predcoef, nsol, r, pc, timedep, tdrestart, DIIS, told, Etold, Enucl,     &
-   Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz, epsilon, nuc,                &
-   doing_ehrenfest, first_step, RealRho, tdstep, total_time, field, Fx, Fy, Fz, a0, &
-   MO_coef_at, Smat, lowdin, good_cut, ndiis, RMM_save
-
+   use garcha_mod, only : M,Md, NCO,natom,Nang, number_restr, hybrid_converg,  &
+                          MEMO, npas, verbose, RMM, X, SHFT, GRAD, npasw,      &
+                          igrid, energy_freq, converge, noconverge, lowdin,    &
+                          cubegen_only, VCINP, primera, Nunp, GOLD, igrid2,    &
+                          predcoef, nsol, r, pc, DIIS, told, Etold, Enucl,     &
+                          Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz,  &
+                          epsilon, nuc, doing_ehrenfest, first_step, RealRho,  &
+                          total_time, field, Fx, Fy, Fz, a0,MO_coef_at, Smat
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
-   FOCK_ECP_read,FOCK_ECP_write,IzECP
-   use transport, only : generate_rho0
+                       FOCK_ECP_read,FOCK_ECP_write,IzECP
+   use td_data, only: timedep, tdrestart, tdstep
+   use transport_data, only : generate_rho0
    use time_dependent, only : TD
    use faint_cpu77, only: int1, int2, intsol, int3mem, int3lu, intfld
    use dftb_data, only : dftb_calc, MDFTB, MTB
    use dftb_subs, only : dftb_init, getXY_DFTB, find_neighbors, build_chimera,      &
-                            extract_rhoDFT
-
+                         extract_rhoDFT
    use cubegen       , only: cubegen_vecin, cubegen_matin, cubegen_write
    use mask_ecp      , only: ECP_init, ECP_fock, ECP_energy
    use typedef_sop   , only: sop              ! Testing SOP
@@ -56,7 +56,7 @@ subroutine SCF(E)
    use converger_subs, only: converger_init, conver
    use mask_cublas   , only: cublas_setmat, cublas_release
 #  ifdef  CUBLAS
-      use cublasmath , only: cumxp_r                     
+      use cublasmath , only: cumxp_r
 #  endif
 
 
@@ -112,7 +112,7 @@ subroutine SCF(E)
 
 !------------------------------------------------------------------------------!
 ! Energy contributions and convergence
-   real*8, intent(inout) :: E ! Total SCF energy 
+   real*8, intent(inout) :: E ! Total SCF energy
 
    real*8 :: E1          ! kinetic + nuclear attraction + e-/MM charge
                          !    interaction + effective core potetial
@@ -395,13 +395,13 @@ subroutine SCF(E)
 
           if ( allocated(Ymat) ) deallocate(Ymat)
           allocate( Ymat(MDFTB,MDFTB) )
-       
+
           call getXY_DFTB(M,x,y,xmat,ymat)
-       
+
        else
 
           M_in=M
-          
+
           if ( allocated(Xmat) ) deallocate(Xmat)
           allocate( Xmat(M,M) )
 
@@ -414,8 +414,8 @@ subroutine SCF(E)
              Ymat(ii,jj) = y(ii,jj)
           enddo
           enddo
-       
-      end if 
+
+      end if
 
 
 ! TODO: are these comments relevant?
@@ -618,10 +618,10 @@ subroutine SCF(E)
             rho=0.0D0
             do ii=1, MTB
               rho(ii,ii)=1.0D0
-              rho(MTB+M+ii,MTB+M+ii)=1.0D0 
+              rho(MTB+M+ii,MTB+M+ii)=1.0D0
             end do
           end if
-    
+
           rho(MTB+1:MTB+M, MTB+1:MTB+M)=rho_0(:,:)
 
         else
@@ -810,7 +810,7 @@ subroutine SCF(E)
       if (GRAD) then
 
 !       Resolve with last density to get XC energy
-        call g2g_timer_sum_start('Exchange-correlation energy') 
+        call g2g_timer_sum_start('Exchange-correlation energy')
         call g2g_new_grid(igrid)
         call g2g_solve_groups(1, Exc, 0)
         call g2g_timer_sum_stop('Exchange-correlation energy')
@@ -828,7 +828,7 @@ subroutine SCF(E)
 
 !       NucleusQM-CHarges MM
         Es=Ens
-        
+
 !       One electron Kinetic (with aint >3) or Kinetic + Nuc-elec (aint >=3)
         call int1(En)
 

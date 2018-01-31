@@ -1,13 +1,13 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        subroutine cupredictor_DZ(F1a,F1b,FON,rho2,devPtrX,factorial,
-     > Fxx,Fyy,Fzz,g,devPtrXc)
+     > Fxx,Fyy,Fzz,g,devPtrXc, timestep)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !Predictor-Corrector Cheng, V.Vooris.PhysRevB.2006.74.155112
 ! Esta rutina recibe: F1a,F1b,rho2
-! Tira: F5 = F(t+(deltat/2))  
+! Tira: F5 = F(t+(deltat/2))
       use garcha_mod
       use mathsubs
-      use general_module    
+      use general_module
       use faint_cpu77, only: int3lu, intfld
        implicit real*8 (a-h,o-z)
 !       IMPLICIT REAL*8 (a-h,o-z)
@@ -20,7 +20,7 @@
        real*8 :: E2, tdstep1
       external CUBLAS_INIT, CUBLAS_SHUTDOWN
       integer CUBLAS_INIT
-      REAL*8,intent(in) :: factorial(NBCH)
+      REAL*8,intent(in) :: factorial(NBCH), timestep
       REAL*8,intent(in) :: g,Fxx,Fyy,Fzz
        COMPLEX*16, intent(in) :: rho2(M,M)
        COMPLEX*16,allocatable :: rho4(:,:),rho2t(:,:)
@@ -55,12 +55,12 @@ c
 * RAM storage of two-electron integrals (if MEMO=T)
       M20 = M19 + natom*50*Nang
 c Initializations/Defaults
-c xmm es la primer matriz de (M,M) en el 
+c xmm es la primer matriz de (M,M) en el
 !------------------------------------------------------------------------------!
 ! Codigo del predictor:
 !------------------------------------------------------------------------------!
 ! tdstep predictor es 0.5 tdstep magnum
-       tdstep1=tdstep*0.5
+       tdstep1=timestep*0.5
        write(*,*) 'TDSTEP =', tdstep1
 ! Paso1: Con las matrices pasadas F1a y F1b extrapolamos a F3----> Extrapolacion
        F3=(7.D0/4.D0)*F1b-(3.D0/4.D0)*F1a
@@ -141,11 +141,11 @@ c xmm es la primer matriz de (M,M) en el
        RETURN;END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        subroutine cupredictor_DC(F1a,F1b,FON,rho2,devPtrX,factorial,
-     > Fxx,Fyy,Fzz,g,devPtrXc)
+     > Fxx,Fyy,Fzz,g,devPtrXc, timestep)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !Predictor-Corrector Cheng, V.Vooris.PhysRevB.2006.74.155112
 ! Esta rutina recibe: F1a,F1b,rho2
-! Tira: F5 = F(t+(deltat/2))      
+! Tira: F5 = F(t+(deltat/2))
        use garcha_mod
        IMPLICIT REAL*8 (a-h,o-z)
        REAL*8,intent(inout) :: F1a(M,M),F1b(M,M),FON(M,M)
@@ -156,7 +156,7 @@ c xmm es la primer matriz de (M,M) en el
        real*8 :: E2, tdstep1
       external CUBLAS_INIT, CUBLAS_SHUTDOWN
       integer CUBLAS_INIT
-      REAL*8,intent(in) :: factorial(NBCH)
+      REAL*8,intent(in) :: factorial(NBCH), timestep
       REAL*8,intent(in) :: g,Fxx,Fyy,Fzz
        COMPLEX*8, intent(in) :: rho2(M,M)
        COMPLEX*8,allocatable :: rho4(:,:),rho2t(:,:)
@@ -191,12 +191,12 @@ c
 * RAM storage of two-electron integrals (if MEMO=T)
       M20 = M19 + natom*50*Nang
 c Initializations/Defaults
-c xmm es la primer matriz de (M,M) en el 
+c xmm es la primer matriz de (M,M) en el
 !------------------------------------------------------------------------------!
 ! Codigo del predictor:
 !------------------------------------------------------------------------------!
 ! tdstep predictor es 0.5 tdstep magnum
-       tdstep1=tdstep*0.5
+       tdstep1=timestep*0.5
 ! Paso1: Con las matrices pasadas F1a y F1b extrapolamos a F3----> Extrapolacion
        F3=(7.D0/4.D0)*F1b-(3.D0/4.D0)*F1a
 !       F3=1.750D0*F1b-0.750D0*F1a
@@ -251,4 +251,3 @@ c xmm es la primer matriz de (M,M) en el
        DEALLOCATE(rho4,rho2t,F3,FBA)
        RETURN;END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-

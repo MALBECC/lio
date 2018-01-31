@@ -27,7 +27,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module td_data
    implicit none
-   integer :: td_restart_freq = 500
+   integer :: td_rst_freq = 500
    integer :: timedep   = 0
    integer :: ntdstep   = 0
    real*8  :: tdstep    = 2.0D-3
@@ -40,54 +40,46 @@ module time_dependent
 contains
 
 subroutine TD()
-   use garcha_mod    , only: M, Md, NBCH, propagator, idip, RMM, NCO, nang, Iz,&
-                             natomc, r, d, atmin,rmax, jatc, nshell, nnps,     &
-                             nnpp, nnpd, igrid2, Nuc, predcoef, npas, nsol, pc,&
-                             X, Smat, MEMO, field, epsilon, a0, sol, kkind,    &
-                             kkinds, cool, cools, GRAD, natom, sqsm, Fx, Fy,   &
-                             Fz, Nunp, ntatom
+   use garcha_mod    , only: M, Md, NBCH, propagator, RMM, NCO, Iz, igrid2, r, &
+                             Nuc, nsol, pc, X, Smat, MEMO, field, epsilon, a0, &
+                             sol, natom, sqsm, Fx, Fy, Fz, Nunp, ntatom
    use ECP_mod       , only: ecpmode, term1e, VAAA, VAAB, VBAC
-   use td_data       , only: td_restart_freq, tdstep, ntdstep, tdrestart,      &
-                             writedens
-   use mathsubs
+   use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, writedens
    use transport_data, only: save_charge_freq, transport_calc
-   use transport_subs, only: transport_init, transport_generate_rho, &
-                             transport_rho_trace, drive_population
-   use fileio        , only: read_td_restart_verlet , read_td_restart_magnus , &
-                             write_td_restart_verlet, write_td_restart_magnus
+   use transport_subs, only: transport_rho_trace, transport_generate_rho,      &
+                             transport_init, drive_population
+   use fileio        , only: write_td_restart_verlet, write_td_restart_magnus, &
+                             read_td_restart_verlet , read_td_restart_magnus
 #ifdef CUBLAS
-   use cublasmath
+   use cublasmath    , only: basechange_cublas
 #endif
 
    implicit none
-   real*8  :: q(natom)
-   real*8  :: dipole_norm, Qc2, zij, ti, tj, alf, rexp, E, En, E1, E2, E1s,&
-              Es, Ens, Ex, ff, t0, t, dt_magnus, dt_lpfrg, tiempo1000, &
+   real*8  :: Qc2, E, En, E1, E2, E1s, Es, Ens, Ex, t, dt_magnus, dt_lpfrg,    &
               fxx, fyy, fzz, g
-   integer :: MM, MMd, M2, M5, M13, M15, M11, unit1, unit2, LWORK,        &
-              pert_steps, lpfrg_steps, chkpntF1a, chkpntF1b, igpu,     &
-              info, istep, i, j, k, n, ii, jj, kk, jcount, icount
-   logical :: ematalloct, dovv, is_lpfrg
+   integer :: MM, MMd, M2, M5, M13, M15, M11, LWORK, igpu, info, istep, icount,&
+              jcount
+   integer :: pert_steps  = 100, lpfrg_steps = 200, chkpntF1a = 185, &
+              chkpntF1b = 195
+   logical :: is_lpfrg
    character(len=20) :: restart_filename
 
    real*8 , allocatable, dimension(:)   :: factorial, WORK
    real*8 , allocatable, dimension(:,:) :: Xmm, Xtrans, Ytrans, fock, F1a, F1b,&
-                                           overlap, elmu, Ymat
+                                           overlap, Ymat
 ! Precision options.
 #ifdef TD_SIMPLE
-   complex*8  :: Im,Ix
+   complex*8  :: Im = (0.0E0,2.0E0)
    complex*8 , allocatable, dimension(:,:) :: rho, rho_aux, rhonew, rhold
 #else
-   complex*16 :: Im,Ix
+   complex*16 :: Im = (0.0D0,2.0D0)
    complex*16, allocatable, dimension(:,:) :: rho, rho_aux, rhonew, rhold
 #endif
 
 ! CUBLAS options.
 #ifdef CUBLAS
-   integer   :: sizeof_real, sizeof_complex, stat
+   integer   :: sizeof_real, sizeof_complex
    integer*8 :: devPtrX, devPtrY, devPtrXc
-   external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_SHUTDOWN, CUBLAS_ALLOC,    &
-            CUBLAS_GET_MATRIX, CUBLAS_FREE
    parameter(sizeof_real    = 8)
 #ifdef TD_SIMPLE
    parameter(sizeof_complex = 8)
@@ -116,16 +108,15 @@ subroutine TD()
 
    ! Checks and performs allocations.
    call td_allocate_all(M, NBCH, propagator, F1a, F1b, fock, rho, rho_aux, &
-                        rhold, rhonew, sqsm, Xmm, Xtrans, Ymat,  &
-                        Ytrans, factorial)
+                        rhold, rhonew, sqsm, Xmm, Xtrans, Ymat, Ytrans,    &
+                        factorial)
 #ifdef CUBLAS
    call td_allocate_cublas(M, sizeof_real, devPtrX, devPtrY)
 #endif
 
    ! Initialises propagator-related parameters and other variables.
    call td_initialise(propagator, tdstep, NBCH, dt_lpfrg, dt_magnus, factorial,&
-                      pert_steps, lpfrg_steps, Im, chkpntF1a, chkpntF1b, NCO,  &
-                      Nunp, natom, Iz, Qc2)
+                      NCO, Nunp, natom, Iz, Qc2)
 
    ! TD restart reading.
    if (tdrestart) then
@@ -249,7 +240,7 @@ subroutine TD()
       call sprepack_ctr('L', M, RMM, rho_aux)
 
       ! Stores the density matrix each 500 steps as a restart.
-      if ((writedens) .and. ( (mod(istep, td_restart_freq) == 0) .or. &
+      if ((writedens) .and. ( (mod(istep, td_rst_freq) == 0) .or. &
          (istep.eq.ntdstep) )) then
          restart_filename='td.restart'
          if (istep.eq.ntdstep) restart_filename='td_last.restart'
@@ -364,26 +355,13 @@ subroutine td_deallocate_all(F1a, F1b, fock, rho, rho_aux, rhold, &
 end subroutine td_deallocate_all
 
 subroutine td_initialise(propagator, tdstep, NBCH, dt_lpfrg, dt_magnus,        &
-                         factorial, pert_steps, lpfrg_steps, Im, chkpntF1a,    &
-                         chkpntF1b, NCO, Nunp, natom, Iz, Qc2)
+                         factorial, NCO, Nunp, natom, Iz, Qc2)
    implicit none
    integer, intent(in)  :: propagator, NBCH, NCO, Nunp, natom, Iz(natom)
    real*8 , intent(in)  :: tdstep
-   integer, intent(out) :: pert_steps, lpfrg_steps, chkpntF1a, chkpntF1b
    real*8 , intent(out) :: dt_lpfrg, dt_magnus, factorial(NBCH), Qc2
-#ifdef TD_SIMPLE
-   complex*8 , intent(out) :: Im
-#else
-   complex*16, intent(out) :: Im
-#endif
    integer :: icount, Nel
    real*8  :: Qc
-
-
-   ! Common initializations.
-   pert_steps  = 100   ; chkpntF1a = 185
-   lpfrg_steps = 200   ; chkpntF1b = 195
-   Im   = (0.0D0,2.0D0);
 
    select case (propagator)
    ! Initialises propagator-related parameters.
@@ -785,7 +763,8 @@ subroutine td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, fxx, fyy,   &
    endif
 
    call g2g_timer_start('predictor')
-   call predictor(F1a, F1b, fock, rho, factorial, Xmat, Xtrans, fxx, fyy, fzz,g)
+   call predictor(F1a, F1b, fock, rho, factorial, Xmat, Xtrans, fxx, fyy, fzz, &
+                  g, dt_magnus)
    call g2g_timer_stop('predictor')
    call g2g_timer_start('magnus')
    call magnus(fock, rho, rhonew, M, NBCH, dt_magnus, factorial)

@@ -26,8 +26,8 @@ subroutine read_options(inputFile, charge)
                            print_coeffs, number_restr, Dbug, steep, Force_cut, &
                            Energy_cut, minimzation_steep, n_min_steeps,        &
                            lineal_search, n_points, timers
-   use td_data    , only : tdrestart, writedens, td_restart_freq, tdstep,      &
-                           ntdstep, timedep
+   use td_data    , only : tdrestart, writedens, td_rst_freq, tdstep, ntdstep, &
+                           timedep
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, verbose_ECP,  &
                            cutECP, local_nonlocal, ecp_debug, FOCK_ECP_read,   &
                            FOCK_ECP_write, ecp_full_range_int, Fulltimer_ECP,  &
@@ -53,7 +53,7 @@ subroutine read_options(inputFile, charge)
                    restart_freq, print_coeffs,                                 &
                    ! DFT and TD-DFT Variables.
                    timedep, tdstep, ntdstep, propagator, NBCH, field, epsilon, &
-                   a0, Fx, Fy, Fz, tdrestart, writedens, td_restart_freq,      &
+                   a0, Fx, Fy, Fz, tdrestart, writedens, td_rst_freq,          &
                    ! Effective Core Potential Variables.
                    ecpmode, ecptypes, tipeECP, ZlistECP, cutECP, ecp_debug,    &
                    local_nonlocal, ecp_debug, ecp_full_range_int, verbose_ECP, &

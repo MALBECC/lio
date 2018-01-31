@@ -26,130 +26,132 @@ subroutine SCF(E)
 ! FFR, 01/2018
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-      use ehrensubs, only: ehrensetup
-      use garcha_mod, only : M,Md, NCO,natom,Nang, number_restr, hybrid_converg, MEMO, &
-      npas, verbose, RMM, X, SHFT, GRAD, npasw, igrid, energy_freq, converge,          &
-      noconverge, cubegen_only, cube_dens, cube_orb, cube_elec, VCINP, Nunp, GOLD,     &
-      igrid2, predcoef, nsol, r, pc, timedep, tdrestart, DIIS, told, Etold, Enucl,     &
-      Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz, epsilon, nuc,                &
-      doing_ehrenfest, first_step, RealRho, tdstep, total_time, field, Fx, Fy, Fz, a0, &
-      MO_coef_at, Smat, lowdin
-      use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
-       FOCK_ECP_read,FOCK_ECP_write,IzECP
-      use transport, only : generate_rho0
-      use time_dependent, only : TD
-      use faint_cpu77, only: int1, int2, intsol, int3mem, int3lu, intfld
-      use dftb_data, only : dftb_calc, MDFTB, MTB
-      use dftb_subs, only : dftb_init, getXY_DFTB, find_neighbors, build_chimera,      &
+   use ehrensubs, only: ehrensetup
+   use garcha_mod, only : M,Md, NCO,natom,Nang, number_restr, hybrid_converg, MEMO, &
+   npas, verbose, RMM, X, SHFT, GRAD, npasw, igrid, energy_freq, converge,          &
+   noconverge, cubegen_only, VCINP, Nunp, GOLD,                                     &
+   igrid2, predcoef, nsol, r, pc, timedep, tdrestart, DIIS, told, Etold, Enucl,     &
+   Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz, epsilon, nuc,                &
+   doing_ehrenfest, first_step, RealRho, tdstep, total_time, field, Fx, Fy, Fz, a0, &
+   MO_coef_at, Smat, lowdin, good_cut, ndiis
+   use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
+   FOCK_ECP_read,FOCK_ECP_write,IzECP
+   use transport, only : generate_rho0
+   use time_dependent, only : TD
+   use faint_cpu77, only: int1, int2, intsol, int3mem, int3lu, intfld
+   use dftb_data, only : dftb_calc, MDFTB, MTB
+   use dftb_subs, only : dftb_init, getXY_DFTB, find_neighbors, build_chimera,      &
                             extract_rhoDFT
 
-      use typedef_sop,  only: sop              ! Testing SOP
-      use atompot_subs, only: atompot_oldinit  ! Testing SOP
-      use tmpaux_SCF,   only: neighbor_list_2e, starting_guess, obtain_new_P,&
-                            & density
+   use cubegen       , only: cubegen_vecin, cubegen_matin, cubegen_write
+   use mask_ecp      , only: ECP_init, ECP_fock, ECP_energy
+   use typedef_sop   , only: sop              ! Testing SOP
+   use atompot_subs  , only: atompot_oldinit  ! Testing SOP
+   use tmpaux_SCF    , only: neighbor_list_2e, starting_guess
+   use liosubs_dens  , only: builds_densmat, messup_densmat
+   use linear_algebra, only: matrix_diagon
+   use converger_subs, only: converger_init, conver
 
-	IMPLICIT NONE
-	integer :: M1,M2,M3, M5, M7, M9, M11, M13, M15, M17, M18,M19, M20, MM,MM2,MMd,  &
-        Md2 !temporales hasta q rompamos RMM
-	integer :: i,j,k, kk !Auxiliares
-	integer :: Nel, niter
-	real*8 :: sq2, ff
-	REAL*8 :: good, del
-	REAL*8 :: D1, D2, E0, factor !estan en una parte del codigo q no se usa. consultar para sacarlas
-	INTEGER :: IDAMP !estan en una parte del codigo q no se usa. consultar para sacarlas
-	REAL*8 :: DAMP0, DAMP
-	INTEGER :: igpu
-      integer:: l
-       real*8, dimension (:,:), ALLOCATABLE::xnano,znano
-!       real*8, dimension (:,:), ALLOCATABLE::scratch1, scratch
-       real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15,rmm13
-      real*8, dimension (:,:), allocatable :: Y,Ytrans,Xtrans
-       logical  hagodiis, ematalloc
-        INTEGER :: ErrID,iii,jjj
-        LOGICAL :: docholesky
-        INTEGER            :: LWORK2
-        INTEGER, ALLOCATABLE :: IPIV(:)
-        logical :: just_int3n,ematalloct
+
+   implicit none
+   integer :: Nel
+   integer :: niter
+   real*8  :: sq2
+   real*8  :: good
+   real*8  :: del
+   real*8  :: factor !estan en una parte del codigo q no se usa. consultar para sacarlas
+   integer :: IDAMP !estan en una parte del codigo q no se usa. consultar para sacarlas
+   real*8  :: DAMP0
+   real*8  :: DAMP
+   integer :: igpu
+
+   real*8, allocatable :: rho_test(:,:)
+   real*8, allocatable :: rho_0(:,:)
+   real*8, allocatable :: fock_0(:,:)
+   real*8, allocatable :: rho(:,:)
+   real*8, allocatable :: fock(:,:)
+   real*8, allocatable :: morb_coefon(:,:)
+   real*8, allocatable :: morb_coefat(:,:)
+   real*8, allocatable :: morb_energy(:)
+   integer             :: i0, ii, jj, kk, kkk
+
+!------------------------------------------------------------------------------!
 !carlos: variable mas comoda para inputs
-        integer :: M_in
-        integer :: NCO_in
-        real*8, allocatable :: rho_0(:,:)
-        real*8, allocatable :: fock_0(:,:)
-        real*8, allocatable :: rho(:,:)
-        real*8, allocatable :: fock(:,:)
-        real*8, allocatable :: morb_coefat(:,:)
-        real*8, allocatable :: morb_energy(:)
-        integer             :: i0, ii, jj, kkk
+   integer :: M_in
+   integer :: NCO_in
 
 
+!------------------------------------------------------------------------------!
 ! FFR - vvterm
-!----------------------------------------------------------!
-       logical             :: dovv
-       real*8              :: weight, softness
-       real*8, allocatable :: fockbias(:,:)
-       real*8, allocatable :: Xmat(:,:)
-       real*8, allocatable :: Ymat(:,:)
-       real*8, allocatable :: Dvec(:)
-       type(sop)           :: overop      ! Testing SOP
-       real*8, allocatable :: sqsmat(:,:) ! Testing SOP
+   logical             :: dovv
+   real*8              :: weight
+   real*8, allocatable :: fockbias(:,:)
+   real*8, allocatable :: Xmat(:,:)
+   real*8, allocatable :: Ymat(:,:)
+   real*8, allocatable :: Dvec(:)
+   type(sop)           :: overop      ! Testing SOP
+   real*8, allocatable :: sqsmat(:,:) ! Testing SOP
 
 ! FFR - ehrenfest (temp)
-!----------------------------------------------------------!
-       real*8 :: dipxyz(3)
-       real*8 :: dipole_norm
-
-!----------------------------------------------------------!
+   real*8 :: dipxyz(3)
+   real*8 :: dipole_norm
 
 !FIELD variables (maybe temporary)
-
-       real*8 :: Qc, Qc2, g
-!----------------------------------------------------------!
-
-! Energy and contributions
-       real*8 :: E, E1, E1s, E2,Eecp, En, Ens, Es, E_restrain, Ex, Exc,Etrash
-        ! -------------------------------------------------
-        ! E = Total SCF energy 
-        ! E1 - kinetic + nuclear attraction + e-/MM charge interaction + effective core potetial
-        ! E1s - kinetic + nuclear attraction + effective core potetial 
-        ! E2 - Coulomb (e- - e-)
-        ! Eecp - Efective core potential
-        ! En - nuclear-nuclear repulsion
-        ! Ens - MM point charge-nuclear interaction
-        ! Es
-        ! E_restrain - distance restrain
-        ! Ex - exchange-correlation inside SCF loop
-        ! Exc - exchange-correlation
-        ! Etrash - auxiliar variable
-        ! ------------------------------------------------
+   real*8 :: Qc, Qc2, g
 
 
+!------------------------------------------------------------------------------!
+! Energy contributions and convergence
+   real*8, intent(inout) :: E ! Total SCF energy 
 
- 
+   real*8 :: E1          ! kinetic + nuclear attraction + e-/MM charge
+                         !    interaction + effective core potetial
+   real*8 :: E1s         ! kinetic + nuclear attraction + effective core
+                         !    potetial
+   real*8 :: E2          ! Coulomb (e- - e-)
+   real*8 :: Eecp        ! Efective core potential
+   real*8 :: En          ! nuclear-nuclear repulsion
+   real*8 :: Ens         ! MM point charge-nuclear interaction
+   real*8 :: Es          ! ???
+   real*8 :: E_restrain  ! distance restrain
+   real*8 :: Ex          ! exchange-correlation inside SCF loop
+   real*8 :: Exc         ! exchange-correlation
+   real*8 :: Etrash      ! auxiliar variable
+   real*8 :: Egood       !
+   real*8 :: Evieja      !
+
+
+! CUBLAS
+!------------------------------------------------------------------------------!
 #ifdef  CUBLAS
-        integer sizeof_real
-        parameter(sizeof_real=8)
-        integer stat
-        integer*8 devPtrX, devPtrY
-        external CUBLAS_INIT, CUBLAS_SET_MATRIX
-        external CUBLAS_SHUTDOWN, CUBLAS_ALLOC,CUBLAS_FREE
-        integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX 
+   integer sizeof_real
+   parameter(sizeof_real=8)
+   integer stat
+   integer*8 devPtrX, devPtrY
+   external CUBLAS_INIT, CUBLAS_SET_MATRIX
+   external CUBLAS_SHUTDOWN, CUBLAS_ALLOC,CUBLAS_FREE
+   integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX 
 #endif
 
-!------------------------------------------------------
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! variables para criterio de convergencia
-        double precision :: Egood, Evieja
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! TODO : Variables to eliminate...
+   real*8, allocatable :: xnano(:,:)
+   integer :: MM, MM2, MMd, Md2
+   integer :: M1, M2, M3, M5, M7, M9, M11, M13, M15, M17, M18, M19, M20
 
-!------------------------------------------------------
+   real*8, allocatable :: Y(:,:)
+   real*8, allocatable :: Ytrans(:,:)
+   real*8, allocatable :: Xtrans(:,:)
 
-      call g2g_timer_start('SCF_full')
-!--------------------------------------------------------------------!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+   call g2g_timer_start('SCF_full')
+
+
+!------------------------------------------------------------------------------!
 !carlos: init para TB
-
    allocate (fock_0(M,M), rho_0(M,M))
 
    if (dftb_calc) then
@@ -161,47 +163,32 @@ subroutine SCF(E)
       allocate(morb_energy(M), morb_coefat(M,M))
    end if
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+   M_in = M
+   if (dftb_calc) M_in=MDFTB
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%    Effective Core Potential Fock    %%%%%%%%%%%%%%%%!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! TODO: unnecessary detail here in SCF, maybe replace by a subroutine
-!       ecp_init() with all of these insides? Or even better, have
-!       ecp module realize if it has to initialize stuff or not and
-!       do it inside the sub that adds to fock.
-        if (ecpmode) then
-         if (FOCK_ECP_read) then
-            call intECP(0) ! alocatea variables comunes y las lee del archivo ECP_restart
-         else
-            call g2g_timer_start('ECP Routines')
-            call intECP(1) !alocatea variables, calcula variables comunes, y calcula terminos de 1 centro
-            call intECP(2) !calcula terminos de 2 centros
-            call intECP(3) !calcula terminos de 3 centros
-              call g2g_timer_stop('ECP Routines')
-         end if
-         if (FOCK_ECP_write) call WRITE_ECP()
-         call WRITE_POST(1)
-       end if
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+   if ( allocated(morb_coefon) ) deallocate(morb_coefon)
+   if ( allocated(morb_coefat) ) deallocate(morb_coefat)
+   if ( allocated(morb_energy) ) deallocate(morb_energy)
 
-      call g2g_timer_start('SCF')
-      call g2g_timer_sum_start('SCF')
-      call g2g_timer_sum_start('Initialize SCF')
-      ematalloc=.false.
-      hagodiis=.false.
+   allocate( morb_coefon(M_in,M_in), morb_coefat(M_in,M_in) )
+   allocate( morb_energy(M_in) )
 
-      allocate (znano(M,M),xnano(M,M)) ! TODO: make it go away...
 
-      npas=npas+1
-      E=0.0D0
-      E1=0.0D0
-      En=0.0D0
-      E2=0.0D0
-      Es=0.0D0
-      Eecp=0.d0
-      Ens=0.0D0
-      E_restrain=0.d0
+   call ECP_init()
+
+   call g2g_timer_start('SCF')
+   call g2g_timer_sum_start('SCF')
+   call g2g_timer_sum_start('Initialize SCF')
+
+   npas=npas+1
+   E=0.0D0
+   E1=0.0D0
+   En=0.0D0
+   E2=0.0D0
+   Es=0.0D0
+   Eecp=0.d0
+   Ens=0.0D0
+   E_restrain=0.d0
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%    Distance Restrain     %%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -239,71 +226,37 @@ subroutine SCF(E)
 
 
 !------------------------------------------------------------------------------!
-! TODO: This seem like it should go in a separated subroutine. Also, please lets
-!       not open timers outside conditionals and close them inside of them
-!       (I know it is because of the "return" clause; even so this is not clear
-!       programming)
-       if (cubegen_only.and.(cube_dens.or.cube_orb.or.cube_elec)) then
-          if (.not.VCINP) then
-             write(*,*) "cubegen_only CAN ONLY BE USED WITH VCINP"
-             stop
-          endif
-
-          kk=0
-          do k=1,NCO
-          do i=1,M
-             kk=kk+1
-             Xnano(k,i) = MO_coef_at(kk)
-          enddo
-          enddo
-
-          call g2g_timer_sum_start('cube gen')
-          call cubegen(M15,Xnano)
-          call g2g_timer_sum_stop('cube gen')
-
-          deallocate (znano,xnano)
+! TODO: I don't like ending timers inside a conditional...
+       if (cubegen_only) then
+          call cubegen_vecin( M, NCO, MO_coef_at )
           call g2g_timer_sum_stop('Initialize SCF')
           call g2g_timer_sum_stop('SCF')
           return
-       endif
+       end if
 
 
 !------------------------------------------------------------------------------!
-! TODO: rmm5 and rmm15 probably will copy things of rmm(M5) and rmm(m15), fine,
-!       but it would still be better to have them named after what they actually
-!       are...
 ! TODO: damp and gold should no longer be here??
 ! TODO: Qc should probably be a separated subroutine? Apparently it is only
 !       used in dipole calculation so...it only adds noise to have it here.
 ! TODO: convergence criteria should be set at namelist/keywords setting
 
       Nel=2*NCO+Nunp
-      allocate(rmm5(MM),rmm15(mm))
 !
       good=1.00D0
       Egood=1.00D0
       Evieja=0.d0
 
       niter=0
-      D1=1.D0
-      D2=1.D0
       DAMP0=GOLD
       DAMP=DAMP0
 
       Qc=0.0D0
-      do i=1,natom
-         Qc=Qc+Iz(i)
+      do ii=1,natom
+         Qc=Qc+Iz(ii)
       enddo
       Qc=Qc-Nel
       Qc2=Qc**2
-
-
-!------------------------------------------------------------------------------!
-! FFR - vvterm : Variable Allocation
-! TODO: this is not the proper way to do this, SCF should not have to handle
-!       the bias, it should be added directly into fock via a subroutine.
-       allocate(fockbias(M,M))
-       dovv=.false.
 
 
 !------------------------------------------------------------------------------!
@@ -340,18 +293,7 @@ subroutine SCF(E)
       call g2g_timer_sum_start('Nuclear attraction')
       call int1(En)
 
-! Effective Core Potential Add
-!
-! TODO: Maybe condense this in a single subroutine that receives only
-!       RMM and returns it modified as needed?
-!
-      if (ecpmode ) then
-          write(*,*) "Modifying Fock Matrix with ECP terms"
-          do k=1,MM
-               term1e(k)=RMM(M11+k-1) !backup of 1e terms
-               RMM(M11+k-1)=RMM(M11+k-1)+VAAA(k)+VAAB(k)+VBAC(k) !add EC
-          enddo
-      end if
+      call ECP_fock( MM, RMM(M11) )
 
 ! Other terms
 !
@@ -376,8 +318,8 @@ subroutine SCF(E)
 ! TODO: remove or sistematize
 !
       E1=0.D0
-      do k=1,MM
-        E1=E1+RMM(k)*RMM(M11+k-1)
+      do kk=1,MM
+        E1=E1+RMM(kk)*RMM(M11+kk-1)
       enddo
       call g2g_timer_sum_stop('1-e Fock')
 
@@ -405,12 +347,13 @@ subroutine SCF(E)
         end if
 
 ! TODO: initializations related to atompot should be dealt with differently
-        if (dovv) then
-           if ( allocated(fockbias) ) deallocate(fockbias)
-           if ( allocated(sqsmat) )   deallocate(sqsmat)
-           allocate( fockbias(M,M), sqsmat(M,M) )
-           call atompot_oldinit( natom, nuc, sqsmat, fockbias )
-        end if
+      dovv=.false.
+      if (dovv) then
+         if ( allocated(fockbias) ) deallocate(fockbias)
+         if ( allocated(sqsmat) )   deallocate(sqsmat)
+         allocate( fockbias(M,M), sqsmat(M,M) )
+         call atompot_oldinit( natom, nuc, sqsmat, fockbias )
+      end if
 
 ! TODO: replace X,Y,Xtrans,Ytrans with Xmat, Ymat, Xtrp, Ytrp
         do ii=1,M
@@ -459,10 +402,10 @@ subroutine SCF(E)
           if ( allocated(Ymat) ) deallocate(Ymat)
           allocate( Ymat(M,M) )
 
-          do j = 1, M
-          do i = 1, M
-             Xmat(i,j) = x(i,j)
-             Ymat(i,j) = y(i,j)
+          do jj = 1, M
+          do ii = 1, M
+             Xmat(ii,jj) = x(ii,jj)
+             Ymat(ii,jj) = y(ii,jj)
           enddo
           enddo
        
@@ -501,6 +444,7 @@ subroutine SCF(E)
 !##############################################################################!
 ! FFR: Currently working here.
 !
+      write(666,*) "X on input...", size(X,1), size(X,2)
       do ii=1,size(X,1)
       do jj=1,size(X,2)
          if ((ii>M).or.(jj>M)) then
@@ -508,10 +452,12 @@ subroutine SCF(E)
          endif
       enddo
       enddo
-      call starting_guess(xnano)
+      write(666,*)
+      call starting_guess( morb_coefat )
+      write(666,*) "morb_coefat on output..."
       do ii=1,M
       do jj=1,M
-         write(666,*) ii , jj , xnano(ii,jj)
+         write(666,*) ii , jj , morb_coefat(ii,jj)
       enddo
       enddo
 !      stop
@@ -521,7 +467,7 @@ subroutine SCF(E)
 !------------------------------------------------------------------------------!
 ! TODO: remove from here...
 !
-!      call starting_guess(xnano)
+!      call starting_guess( morb_coefat )
 
       if ((timedep.eq.1).and.(tdrestart)) then
         call g2g_timer_sum_start('TD')
@@ -646,14 +592,14 @@ subroutine SCF(E)
            E1=-1.00D0*g*(Fx*dipxyz(1)+Fy*dipxyz(2)+Fz*dipxyz(3))/factor- &
            0.50D0*(1.0D0-1.0D0/epsilon)*Qc2/a0
 
-           do k=1,MM
-               E1=E1+RMM(k)*RMM(M11+k-1)
+           do kk=1,MM
+               E1=E1+RMM(kk)*RMM(M11+kk-1)
            enddo
 
         else
 !          E1 includes solvent 1 electron contributions
-           do k=1,MM
-              E1=E1+RMM(k)*RMM(M11+k-1)
+           do kk=1,MM
+              E1=E1+RMM(kk)*RMM(M11+kk-1)
            enddo
 
         endif
@@ -718,13 +664,43 @@ subroutine SCF(E)
 
 
 !------------------------------------------------------------------------------!
-! TODO: obtain_new_P seems to be doing a lot of different things. Maybe divide
-!       into different subroutines?
+        call g2g_timer_sum_start('SCF acceleration')
+        if (niter==1) then
+           call converger_init( M_in, ndiis, DAMP, DIIS, hybrid_converg )
+        end if
 #       ifdef CUBLAS
-          call obtain_new_P( M_in, NCO_in, niter, DAMP, good, fock, rho, morb_energy, morb_coefat, devPtrX, devPtrY)
+           call conver(niter, good, good_cut, M_in, rho, fock, devPtrX, devPtrY)
 #       else
-          call obtain_new_P( M_in, NCO_in, niter, DAMP, good, fock, rho, morb_energy, morb_coefat, Xmat, Ymat )
+           call conver(niter, good, good_cut, M_in, rho, fock, Xmat, Ymat)
 #       endif
+        call g2g_timer_sum_pause('SCF acceleration')
+
+
+!------------------------------------------------------------------------------!
+!  Fock(ON) diagonalization
+        if ( allocated(morb_coefon) ) deallocate(morb_coefon)
+        allocate( morb_coefon(M_in,M_in) )
+
+        call g2g_timer_sum_start('SCF - Fock Diagonalization (sum)')
+        call matrix_diagon( fock, morb_coefon, morb_energy )
+        call g2g_timer_sum_pause('SCF - Fock Diagonalization (sum)')
+
+
+!------------------------------------------------------------------------------!
+!  Base change of coeficients ( (X^-1)*C ) and construction of new density
+!  matrix
+        call g2g_timer_sum_start('SCF - MOC base change (sum)')
+#       ifdef CUBLAS
+           call cumxp_r( morb_coefon, devPtrX, morb_coefat, M_in)
+#       else
+           morb_coefat = matmul( Xmat, morb_coefon )
+#       endif
+        call g2g_timer_sum_pause('SCF - MOC base change (sum)')
+
+        if ( allocated(morb_coefon) ) deallocate(morb_coefon)
+
+        call builds_densmat( M_in, NCO_in, 2.0d0, morb_coefat, rho)
+        call messup_densmat( rho )
 
 
 !------------------------------------------------------------------------------!
@@ -762,7 +738,10 @@ subroutine SCF(E)
 !carlos: agregado para separar de rho la parte DFT
 !
 ! TODO: again, this should be handled differently...
+! TODO: make xnano go away...only remains here
 !
+        allocate ( xnano(M,M) )
+
         if (dftb_calc) then
           call extract_rhoDFT(M, rho, xnano)
         else
@@ -773,15 +752,17 @@ subroutine SCF(E)
 !------------------------------------------------------------------------------!
 ! TODO: convergence criteria should be a separated subroutine...
         good = 0.0d0
-        do j=1,M
-        do k=j,M
-          del=xnano(j,k)-(RMM(k+(M2-j)*(j-1)/2))
+        do jj=1,M
+        do kk=jj,M
+          del=xnano(jj,kk)-(RMM(kk+(M2-jj)*(jj-1)/2))
           del=del*sq2
           good=good+del**2
-          RMM(k+(M2-j)*(j-1)/2)=xnano(j,k)
+          RMM(kk+(M2-jj)*(jj-1)/2)=xnano(jj,kk)
         enddo
         enddo
         good=sqrt(good)/float(M)
+        deallocate ( xnano )
+
 
 ! TODO: what is this doing here???
         call g2g_timer_stop('dens_GPU')
@@ -808,26 +789,27 @@ subroutine SCF(E)
         call g2g_timer_sum_pause('Iteration')
 
  999  continue
-
+      call g2g_timer_sum_start('Finalize SCF')
 
 
 !------------------------------------------------------------------------------!
-      call g2g_timer_sum_start('Finalize SCF')
-
+!     Checks of convergence
+!
       if (niter.ge.NMAX) then
-        write(6,*) 'NO CONVERGENCE AT ',NMAX,' ITERATIONS'
-        noconverge=noconverge + 1
-        converge=0
+         write(6,*) 'NO CONVERGENCE AT ',NMAX,' ITERATIONS'
+         noconverge=noconverge + 1
+         converge=0
       else
-        write(6,*) 'CONVERGED AT',niter,'ITERATIONS'
-        noconverge = 0
-        converge=converge+1
+         write(6,*) 'CONVERGED AT',niter,'ITERATIONS'
+         noconverge = 0
+         converge=converge+1
       endif
 
-      if(noconverge.gt.4) then
-        write(6,*)  'stop for not convergion 4 times'
-        stop
+      if (noconverge.gt.4) then
+         write(6,*)  'stop for not convergion 4 times'
+         stop
       endif
+
 
 !------------------------------------------------------------------------------!
 ! TODO: Comments about a comented sections? Shouldn't it all of this go away?
@@ -848,17 +830,25 @@ subroutine SCF(E)
 !     endif
 
 
-!------------------------------------------------------------------------------!
       if (MOD(npas,energy_freq).eq.0) then
       if (GRAD) then
-!       call g2g_timer_sum_start('exchnum')
-        call g2g_timer_sum_start('Exchange-correlation energy') 
+
 !       Resolve with last density to get XC energy
+        call g2g_timer_sum_start('Exchange-correlation energy') 
         call g2g_new_grid(igrid)
         call g2g_solve_groups(1, Exc, 0)
         call g2g_timer_sum_stop('Exchange-correlation energy')
 
-!----------- COmputing the QM/MM contribution to total energy
+!       COmputing the QM/MM contribution to total energy
+!       Total SCF energy =
+!       E1   - kinetic + nuclear attraction + QM/MM interaction + effective
+!              core potential
+!       E2   - Coulomb
+!       En   - nuclear-nuclear repulsion
+!       Ens  - MM point charge - nuclear interaction
+!       Exc  - exchange-correlation
+!       Eecp - Efective core potential
+!       E_restrain - distance restrain
 
 !       NucleusQM-CHarges MM
         Es=Ens
@@ -875,48 +865,29 @@ subroutine SCF(E)
 
 !       E1s (here) is the 1e-energy without the MM contribution
         E1s=0.D0
-        do k=1,MM
-          E1s=E1s+RMM(k)*RMM(M11+k-1)
+        do kk=1,MM
+          E1s=E1s+RMM(kk)*RMM(M11+kk-1)
         enddo
 
 !       Es is the QM/MM energy computated as total 1e - E1s + QMnuc-MMcharges
         Es=Es+E1-E1s
- 
-! -------------------------------------------------
-!       Total SCF energy =
-!       E1 - kinetic + nuclear attraction + QM/MM interaction + effective core potential
-!       E2 - Coulomb
-!       En - nuclear-nuclear repulsion
-!       Ens - MM point charge - nuclear interaction
-!       Exc - exchange-correlation
-!       Eecp - Efective core potential
-!       E_restrain - distance restrain
-! -------------------------------------------------
 
 !       Part of the QM/MM contrubution are in E1
         E=E1+E2+En+Ens+Exc+E_restrain
 
 
-!%%%%%%%%%%%%%%   Write Energy Contributions   %%%%%%%%%%%%%%
+
+!       Write Energy Contributions
         if (npas.eq.1) npasw = 0
 
-        if (npas.gt.npasw) then  
-          if (ecpmode) then
-            Eecp=0.d0
-            do k=1,MM
-              Eecp=Eecp+RMM(k)*(VAAA(k)+VAAB(k)+VBAC(k))
-            enddo
-            Es=Es-Eecp  ! 
-          end if
-          call WriteEnergies(E1,E2,En,Ens,Eecp,Exc,ecpmode,E_restrain)
-          npasw=npas+10
-        endif
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        if (npas.gt.npasw) then
+           call ECP_energy( MM, RMM(M1), Eecp, Es )
+           call WriteEnergies(E1,E2,En,Ens,Eecp,Exc,ecpmode,E_restrain)
+           npasw=npas+10
+        end if
 
       endif ! GRAD
       endif ! npas
-
-
 
 
 !------------------------------------------------------------------------------!
@@ -925,103 +896,64 @@ subroutine SCF(E)
 ! TODO: this should be a separated subroutine...
 !
       call g2g_timer_sum_start('energy-weighted density')
-      kk=0
-      do j=1,M
-        do i=j,M
-          kk=kk+1
-          RMM(M15+kk-1)=0.D0
+      kkk=0
+      do jj=1,M
+      do ii=jj,M
+         kkk=kkk+1
+         RMM(M15+kkk-1)=0.D0
 !
-          if(i.eq.j) then
-            ff=2.D0
-          else
-            ff=4.D0
-          endif
-          do k=1,NCO
-            RMM(M15+kk-1)= &
-            RMM(M15+kk-1)-RMM(M13+k-1)*ff*X(i,M2+k)*X(j,M2+k)
-          enddo
-        enddo
+         if (ii.eq.jj) then
+            factor=2.D0
+         else
+            factor=4.D0
+         endif
+
+         do kk=1,NCO
+            RMM(M15+kkk-1)= &
+            RMM(M15+kkk-1)-RMM(M13+kk-1)*factor*X(ii,M2+kk)*X(jj,M2+kk)
+         enddo
+      enddo
       enddo
 
       call g2g_timer_sum_stop('energy-weighted density')
 
 !     Variables needed for further calculations (Populations, Dip, etc).
       Enucl = En
-      do kk=1, M
-          Eorbs(kk) = RMM(M13+kk-1)
+      do kkk=1, M
+          Eorbs(kkk) = RMM(M13+kkk-1)
       enddo
+
+      call cubegen_matin( M, X )
 
 
 !------------------------------------------------------------------------------!
-! FFR - Ehrenfest
-
 ! TODO: have ehrendyn call SCF and have SCF always save the resulting rho in
-!       a module so that ehrendyn can retrieve it afterwards. Remove all this.
+!       a module so that ehrendyn can retrieve it afterwards.
+!       Remove all of this.
+!
       if (doing_ehrenfest) then
          call spunpack('L',M,RMM(M1),RealRho)
          call fixrho(M,RealRho)
          call ehrensetup(natom, M, RealRho)
       endif
 
-! TODO: have a separate module handle the dipole moment
-       if (idip .eq. 1) then
-           if (first_step) then
-             call write_dipole(dipxyz, 0, 134, .true.)
-             total_time=0.0d0
-           endif
-           dipxyz(:)=0.0D0
-           call dip(dipxyz)
-           dipole_norm = sqrt(dipxyz(1)**2 + dipxyz(2)**2 + dipxyz(3)**2)
-           call write_dipole(dipxyz, dipole_norm, 134, .false.)
-       
-           print*,''
-           print*,' Timer: ',total_time
-           print*,''
-           total_time=total_time+tdstep*0.0241888
-       endif
-
- 901  format(F15.9,2x,F15.9)
-
-
-!------------------------------------------------------------------------------!
-! Performs orbital/density plots.
-!
-! TODO: this should be a separated subroutine...
-!
-        if (cube_dens.or.cube_orb.or.cube_elec) then
-          call g2g_timer_sum_start('cube gen')
-          kk=0
-
-          do k=1,M
-            do i=1,M
-              kk=kk+1
-              xnano(k,i)  = X(i,M2+k)
-            enddo
-          enddo
-
-          call cubegen(M15,Xnano)
-          call g2g_timer_sum_stop('cube gen')
-        endif
-
 
 !------------------------------------------------------------------------------!
 ! TODO: Deallocation of variables that should be removed
 ! TODO: MEMO should be handled differently...
 !
-      deallocate (Y)
-      deallocate (Ytrans, Xtrans, znano)
-      deallocate (xnano, rmm5, rmm15)
-
-
+      deallocate(Y, Ytrans, Xtrans )
       if (MEMO) then
-        deallocate (kkind,kkinds)
+        deallocate(kkind,kkinds)
         deallocate(cool,cools)
       endif
 
+
 !------------------------------------------------------------------------------!
-! TODO: Why is TD being called again?? remove from here
+! TODO: Why is TD being called again?? In any case have TD call SCF as a first
+!       step to obtain the first density...
 !
-      if(timedep.eq.1) then
+      if (timedep.eq.1) then
         call g2g_timer_sum_start('TD')
         call TD()
         call g2g_timer_sum_stop('TD')
@@ -1040,11 +972,12 @@ subroutine SCF(E)
 #endif
 
 
-!--------------------------------------------------------------------!
+!------------------------------------------------------------------------------!
       call g2g_timer_stop('SCF')
       call g2g_timer_sum_stop('Finalize SCF')
       call g2g_timer_sum_stop('SCF')
       call g2g_timer_stop('SCF_full')
       end subroutine SCF
+
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

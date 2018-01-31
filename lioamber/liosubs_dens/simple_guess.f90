@@ -1,67 +1,19 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-module tmpaux_SCF
+subroutine simple_guess( atom_pos, dens_mat )
+!
+! Is a subroutine like this really necessary? Couldn't it be replaced by
+! enabling a 0 pass on the SCF cycle where only int1 is computed?
+!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+   
+   use garcha_mod, only: M, RMM, VCINP, primera, X, Md, NCO
    implicit none
-   contains
-!
-! TODO:
-!
-!  neighbor_list_2e: Find out what this is about.
-!
-!  starting_guess: Generates density starting guess. Find out how it build
-!                  and add a better description.
-!
-!  COPY_VEC: this should go inside of maskrmm, or replaced by a subroutine
-!            there,
-!
-!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-   SUBROUTINE neighbor_list_2e()
-! Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
-      USE garcha_mod, ONLY : natom, natomc, r, d, jatc, rmax, nshell, atmin,   &
-                           & nnps, nnpp, nnpd, M, nuc
-      IMPLICIT NONE
-      INTEGER :: i,j, iij, iik, iikk
-      REAL*8  :: zij, ti, tj, alf, rexp
-      
-      do i=1,natom
-         natomc(i)=0
-         do j=1,natom
-            d(i,j)=(r(i,1)-r(j,1))**2+(r(i,2)-r(j,2))**2+(r(i,3)-r(j,3))**2
-            zij=atmin(i)+atmin(j)
-            ti=atmin(i)/zij
-            tj=atmin(j)/zij
-            alf=atmin(i)*tj
-            rexp=alf*d(i,j)
-            if (rexp.lt.rmax) then
-               natomc(i)=natomc(i)+1
-               jatc(natomc(i),i)=j
-            endif
-         enddo
-      enddo
+   real*8, intent(out) :: mocoef_at(M,M)
 
-      do iij=nshell(0),1,-1
-        nnps(nuc(iij))=iij
-      enddo
-
-      do iik=nshell(0)+nshell(1),nshell(0)+1,-1
-        nnpp(nuc(iik))=iik
-      enddo
-
-      do iikk=M,nshell(0)+nshell(1)+1,-1
-        nnpd(nuc(iikk))=iikk
-      enddo
-   END SUBROUTINE neighbor_list_2e
-
-
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-   SUBROUTINE starting_guess(xnano)
-      use garcha_mod, ONLY: RMM, VCINP, primera, M, X, Md, NCO, MO_coef_at
-      IMPLICIT NONE
-      integer :: info
-      real*8, dimension (M,M), intent(inout)::xnano
-      real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15
-      integer :: M1,M2,M3, M5, M7, M9, M11, M13, M15, M17, M18, MM, MMd 
+   integer :: info
+   real*8, intent(out) ::xnano
+   real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15
+   integer :: M1,M2,M3, M5, M7, M9, M11, M13, M15, M17, M18, MM, MMd 
                ! temporales hasta q rompamos RMM
       integer :: ii,jj,i,j,k,kk !auxiliares
       real*8 :: ff
@@ -218,29 +170,7 @@ module tmpaux_SCF
       deallocate(rmm5,rmm15)
 
 !     End of Starting guess (No MO , AO known)-------------------------------
-   END SUBROUTINE starting_guess
 
 
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-   SUBROUTINE COPY_VEC(VEC,DIM_VEC,POINTER_RMM)
-!     subrutina temporal para empezar a romper RMM
-!     copia el vector VEC a RMM posicion POINTER_RMM
-
-      use garcha_mod, ONLY: RMM
-      IMPLICIT NONE
-      integer, intent(in) :: DIM_VEC,POINTER_RMM
-      real*8, dimension(DIM_VEC), intent(in) :: VEC
-      integer :: i
-
-      do i=1, DIM_VEC
-         RMM(POINTER_RMM+i-1)=VEC(i)
-      end do
-
-   END SUBROUTINE COPY_VEC
-
-
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-end module tmpaux_SCF
+end subroutine simple_guess
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

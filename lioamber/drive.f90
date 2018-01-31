@@ -1211,6 +1211,8 @@
 
         int_basis_file=trim(liohome)//"/dat/basis/"//basis_set
         fit_basis_file=trim(liohome)//"/dat/basis/fitting/"//fitting_set
+        !write(*,*) "INTERNAL BASIS FILE: ",trim(int_basis_file)
+        !write(*,*) "INTERNAL FIT BASIS FILE: ",trim(fit_basis_file)
 
         INQUIRE(FILE=int_basis_file,EXIST=exists)
         IF (.NOT.exists) THEN

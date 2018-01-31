@@ -28,7 +28,7 @@ OBJECTS += SCF.o
 OBJECTS += SCFop.o
 OBJECTS += SCF_exter.o
 OBJECTS += steep.o
-OBJECTS += TD.o cubegen.o
+OBJECTS += TD.o
 OBJECTS += liomain.o
 OBJECTS += dip.o
 OBJECTS += jarz.o
@@ -63,12 +63,15 @@ OBJECTS += errlog.o
 ################################################################################
 tmplist := SCF.o readECP.o drive.o intECP.o init.o init_lio.o
 tmplist += extras.o input_read.o liomain.o properties.o
+tmplist += mask_ecp.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ECP_mod.mod
 
 tmplist := SCF.o
+tmplist += mask_ecp.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/intECP.o
 
 tmplist := drive.o
+tmplist += mask_ecp.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/readECP.o
 
 tmplist := intECP.o ECP_mod.mod
@@ -197,6 +200,16 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fileio.mod
 
 
 ################################################################################
+include liosubs_dens/liosubs_dens.mk
+SRCDIRS += liosubs_dens
+OBJECTS += liosubs_dens.o
+#
+#modusrs :=
+modusrs += tmpaux_SCF.o
+$(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/liosubs_dens.mod
+
+
+################################################################################
 include liosubs_math/liosubs_math.mk
 SRCDIRS += liosubs_math
 OBJECTS += liosubs_math.o
@@ -214,6 +227,20 @@ OBJECTS += typedef_sop.o
 modusrs :=
 modusrs += SCF.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/typedef_sop.mod
+
+
+################################################################################
+OBJECTS += mask_ecp.o
+#
+#modusrs :=
+modusrs += SCF.o
+$(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/mask_ecp.mod
+
+
+################################################################################
+OBJECTS += cubegen.o
+modusrs := SCF.o
+$(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/cubegen.mod
 
 
 ################################################################################

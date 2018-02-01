@@ -42,7 +42,6 @@ __global__ void gpu_accumulate_point_for_libxc(scalar_type* const point_weights,
 
 }
 
-
 template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
 __global__ void gpu_accumulate_energy_and_forces_from_libxc (scalar_type* const energy, 
 		    scalar_type* const factor, 
@@ -154,7 +153,7 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
 
     err = cudaMemcpy(accumulated_density_cpu, accumulated_density_gpu, array_size, cudaMemcpyDeviceToHost);
     if (err != cudaSuccess) {
-	    printf("Failed to copy vector accumulated_density_gpu to host!\n");
+	printf("Failed to copy vector accumulated_density_gpu to host!\n");
     }
 
     /////////////////////
@@ -166,8 +165,14 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
 	    // TODO: try to modify libxProxy to use the 
 	    //full array instead of having a cycle.
     	    libxcProxy->doGGA (accumulated_density_cpu[i], dxyz_cpu[i], dd1_cpu[i], dd2_cpu[i], exc_x, exc_c, y2a);
-	    energy_cpu[i] = exc_x + exc_c;
-	    factor_cpu[i] = y2a;
+	    if (compute_energy) 
+	    {
+		energy_cpu[i] = exc_x + exc_c;
+	    }
+	    if (compute_factor)
+	    {
+		factor_cpu[i] = y2a;
+	    }
 	}
     }
 
@@ -191,8 +196,12 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
     }
 
     // Free memory.
-    free(energy_cpu);
-    free(factor_cpu);
+    if (compute_energy) {
+        free(energy_cpu);
+    }
+    if (compute_factor) {
+	free(factor_cpu);
+    }
     free(accumulated_density_cpu);
 
     free(dd1_cpu);

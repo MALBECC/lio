@@ -151,6 +151,19 @@ void PointGroupGPU<scalar_type>::solve_closed(
   dd1_gpu.resize(COALESCED_DIMENSION(this->number_of_points),block_height );
   dd2_gpu.resize(COALESCED_DIMENSION(this->number_of_points),block_height );
 
+  // To accumulate results.
+#if USE_LIBXC
+  CudaMatrix<scalar_type> accumulated_densities_gpu;
+  CudaMatrix< vec_type<scalar_type,4> > dxyz_accum_gpu;
+  CudaMatrix< vec_type<scalar_type,4> > dd1_accum_gpu;
+  CudaMatrix< vec_type<scalar_type,4> > dd2_accum_gpu;
+
+  accumulated_densities_gpu.resize(COALESCED_DIMENSION(this->number_of_points), block_height);
+  dxyz_accum_gpu.resize(COALESCED_DIMENSION(this->number_of_points),block_height);
+  dd1_accum_gpu.resize(COALESCED_DIMENSION(this->number_of_points),block_height );
+  dd2_accum_gpu.resize(COALESCED_DIMENSION(this->number_of_points),block_height );
+#endif
+
   const dim3 threadGrid_accumulate(divUp(this->number_of_points,DENSITY_ACCUM_BLOCK_SIZE),1,1);
   const dim3 threadBlock_accumulate(DENSITY_ACCUM_BLOCK_SIZE,1,1);
 
@@ -209,6 +222,8 @@ void PointGroupGPU<scalar_type>::solve_closed(
   rmm_input_gpu_tex.normalized = false;
 
 #if USE_LIBXC
+  // Que el Proxy ya este configurado antes
+  // de llegar a esta funcion.
   const int nspin = XC_UNPOLARIZED;
   const int functionalExchange = fortran_vars.ex_functional_id;
   const int functionalCorrelation = fortran_vars.ec_functional_id;
@@ -239,8 +254,23 @@ void PointGroupGPU<scalar_type>::solve_closed(
           gpu_compute_density<scalar_type, true, true, false><<<threadGrid, threadBlock>>>(compute_parameters);
 #if USE_LIBXC
 	    if (fortran_vars.use_libxc) {
-	      printf("Cpu_accumulate_point");
-	      cpu_accumulate_point<scalar_type, true, true, false>(&libxcProxy, accumulate_parameters);
+	      printf("gpu_accumulate_point_for_libxc<true, true, false>(...)");
+
+	      // Accumulate the data.
+	      gpu_accumulate_point_for_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (point_weights_gpu.data,
+                this->number_of_points, block_height, 
+		partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data,
+		accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
+
+	      // Compute exc_corr and y2a with libxc.
+	      libxc_exchange_correlation_cpu<scalar_type, true, true, false> (&libxcProxy,
+		energy_gpu.data, factors_gpu.data, this->number_of_points,
+		accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
+
+	      // Merge the results.
+	      gpu_accumulate_energy_and_forces_from_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (energy_gpu.data,
+		factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
+
 	    } else {
 	      printf("Gpu_accumulate_point 1 ");
               gpu_accumulate_point<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
@@ -263,8 +293,22 @@ void PointGroupGPU<scalar_type>::solve_closed(
 	// TODO: aca tiene q ir el proxy a libxc.
 #if USE_LIBXC
         if (fortran_vars.use_libxc) {
-	  printf("Cpu_accumulate_point");
-    	  cpu_accumulate_point<scalar_type, true, false, false>(&libxcProxy, accumulate_parameters);
+	  printf("gpu_accumulate_point_for_libxc<true false false>(...)");
+	  // Accumulate the data.
+	  gpu_accumulate_point_for_libxc<scalar_type, true, false, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (point_weights_gpu.data,
+            this->number_of_points, block_height, 
+	    partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data,
+	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
+
+	  // Compute exc_corr and y2a with libxc.
+	  libxc_exchange_correlation_cpu<scalar_type, true, false, false> (&libxcProxy,
+	    energy_gpu.data, factors_gpu.data, this->number_of_points,
+	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
+
+	  // Merge the results.
+	  gpu_accumulate_energy_and_forces_from_libxc<scalar_type, true, false, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (energy_gpu.data,
+	    factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
+
 	} else {
 	  printf("Gpu_accumulate_point 1");
           gpu_accumulate_point<scalar_type, true, false, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
@@ -300,8 +344,22 @@ void PointGroupGPU<scalar_type>::solve_closed(
         gpu_compute_density<scalar_type, false, true, false><<<threadGrid, threadBlock>>>(compute_parameters);
 #if USE_LIBXC
         if (fortran_vars.use_libxc) {
-	  printf("Cpu_accumulate_point");
-    	  cpu_accumulate_point<scalar_type, true, false, false>(&libxcProxy, accumulate_parameters);
+	  printf("gpu_accumulate_point_for_libxc<false,true,false>(...)");
+	  // Accumulate the data.
+	  gpu_accumulate_point_for_libxc<scalar_type, false, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (point_weights_gpu.data,
+            this->number_of_points, block_height, 
+	    partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data,
+	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
+
+	  // Compute exc_corr and y2a with libxc.
+	  libxc_exchange_correlation_cpu<scalar_type, false, true, false> (&libxcProxy,
+	    NULL, factors_gpu.data, this->number_of_points,
+	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
+
+	  // Merge the results.
+	  gpu_accumulate_energy_and_forces_from_libxc<scalar_type, false, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
+	    NULL,factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
+
 	} else {
 	  printf("Gpu_accumulate_point 1");
     	  gpu_accumulate_point<scalar_type, false, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>>(accumulate_parameters);

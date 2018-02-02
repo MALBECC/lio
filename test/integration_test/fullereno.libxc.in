@@ -9,7 +9,7 @@
  sphere_radius=0.6
  energy_all_iterations=t
  free_global_memory=0.4
- use_libxc=f
+ use_libxc=t
  ex_functional_id=101
  ec_functional_id=130
  timers=2

@@ -107,7 +107,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
     double& energy,    HostMatrix<double>& fort_forces_ms,
     int inner_threads, HostMatrix<double>& rmm_output_local){
 
-  printf("solve_closed (compute_rmm:%i, lda:%i, compute_forces:%i, compute_energy:%i)\n", compute_rmm, lda, compute_forces, compute_energy);
+//  printf("solve_closed (compute_rmm:%i, lda:%i, compute_forces:%i, compute_energy:%i)\n", compute_rmm, lda, compute_forces, compute_energy);
 
   int device;
   cudaGetDevice(&device);
@@ -254,7 +254,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
           gpu_compute_density<scalar_type, true, true, false><<<threadGrid, threadBlock>>>(compute_parameters);
 #if USE_LIBXC
 	    if (fortran_vars.use_libxc) {
-	      printf("gpu_accumulate_point_for_libxc<true, true, false>(...)");
+	      //printf("gpu_accumulate_point_for_libxc<true, true, false>(...)");
 
 	      // Accumulate the data.
 	      gpu_accumulate_point_for_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (point_weights_gpu.data,
@@ -272,11 +272,11 @@ void PointGroupGPU<scalar_type>::solve_closed(
 		factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
 
 	    } else {
-	      printf("Gpu_accumulate_point 1 ");
+	      //printf("Gpu_accumulate_point 1 ");
               gpu_accumulate_point<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
 	    }
 #else
-	  printf("Gpu_accumulate_point 2");
+	  //printf("Gpu_accumulate_point 2");
           gpu_accumulate_point<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
 #endif
       }
@@ -293,7 +293,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
 	// TODO: aca tiene q ir el proxy a libxc.
 #if USE_LIBXC
         if (fortran_vars.use_libxc) {
-	  printf("gpu_accumulate_point_for_libxc<true false false>(...)");
+	  //printf("gpu_accumulate_point_for_libxc<true false false>(...)");
 	  // Accumulate the data.
 	  gpu_accumulate_point_for_libxc<scalar_type, true, false, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (point_weights_gpu.data,
             this->number_of_points, block_height, 
@@ -310,11 +310,11 @@ void PointGroupGPU<scalar_type>::solve_closed(
 	    factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
 
 	} else {
-	  printf("Gpu_accumulate_point 1");
+	  //printf("Gpu_accumulate_point 1");
           gpu_accumulate_point<scalar_type, true, false, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
         }
 #else
-	  printf("Gpu_accumulate_point 2");
+	  //printf("Gpu_accumulate_point 2");
           gpu_accumulate_point<scalar_type, true, false, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
 #endif
       }
@@ -344,7 +344,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
         gpu_compute_density<scalar_type, false, true, false><<<threadGrid, threadBlock>>>(compute_parameters);
 #if USE_LIBXC
         if (fortran_vars.use_libxc) {
-	  printf("gpu_accumulate_point_for_libxc<false,true,false>(...)");
+	  //printf("gpu_accumulate_point_for_libxc<false,true,false>(...)");
 	  // Accumulate the data.
 	  gpu_accumulate_point_for_libxc<scalar_type, false, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (point_weights_gpu.data,
             this->number_of_points, block_height, 
@@ -361,11 +361,11 @@ void PointGroupGPU<scalar_type>::solve_closed(
 	    NULL,factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
 
 	} else {
-	  printf("Gpu_accumulate_point 1");
+	  //printf("Gpu_accumulate_point 1");
     	  gpu_accumulate_point<scalar_type, false, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>>(accumulate_parameters);
 	}
 #else
-	printf("Gpu_accumulate_point 2");
+	//printf("Gpu_accumulate_point 2");
         gpu_accumulate_point<scalar_type, false, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>>(accumulate_parameters);
 #endif
     }

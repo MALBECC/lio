@@ -75,7 +75,7 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
         G2G::vec_type<scalar_type,WIDTH>* dd1_gpu_accum,
 	G2G::vec_type<scalar_type,WIDTH>* dd2_gpu_accum)
 {
-    printf("libxc_exchage_correlation_cpu (...) \n");
+    //printf("libxc_exchage_correlation_cpu (...) \n");
 
     cudaError_t err = cudaSuccess;
 
@@ -95,21 +95,21 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
     err = cudaMemcpy(dxyz_cpu, dxyz_gpu_accum, size, cudaMemcpyDeviceToHost);
     if (err != cudaSuccess)
     {
-        printf("Failed to copy vector dxyz_gpu from device to host!\n");
+        //printf("Failed to copy vector dxyz_gpu from device to host!\n");
         exit(EXIT_FAILURE);
     }
 
     err = cudaMemcpy(dd1_cpu, dd1_gpu_accum, size, cudaMemcpyDeviceToHost);
     if (err != cudaSuccess)
     {
-        printf("Failed to copy vector dd1_gpu from device to host!\n");
+        //printf("Failed to copy vector dd1_gpu from device to host!\n");
         exit(EXIT_FAILURE);
     }
 
     err = cudaMemcpy(dd2_cpu, dd2_gpu_accum, size, cudaMemcpyDeviceToHost);
     if (err != cudaSuccess)
     {
-        printf("Failed to copy vector dd2_gpu from device to host!\n");
+        //printf("Failed to copy vector dd2_gpu from device to host!\n");
         exit(EXIT_FAILURE);
     }
 
@@ -136,7 +136,7 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
 	err = cudaMemcpy(energy_cpu, energy_gpu, array_size, cudaMemcpyDeviceToHost);
         if (err != cudaSuccess)
 	{
-    	    printf("Failed to copy vector energy_gpu from device to host!\n");
+    	    //printf("Failed to copy vector energy_gpu from device to host!\n");
     	    exit(EXIT_FAILURE);
 	}
     }
@@ -146,14 +146,14 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
 	err = cudaMemcpy(factor_cpu, factor_gpu, array_size, cudaMemcpyDeviceToHost);
 	if (err != cudaSuccess)
 	{
-    	    printf("Failed to copy vector factor_gpu from device to host!\n");
+    	    //printf("Failed to copy vector factor_gpu from device to host!\n");
     	    exit(EXIT_FAILURE);
 	}
     }
 
     err = cudaMemcpy(accumulated_density_cpu, accumulated_density_gpu, array_size, cudaMemcpyDeviceToHost);
     if (err != cudaSuccess) {
-	printf("Failed to copy vector accumulated_density_gpu to host!\n");
+	//printf("Failed to copy vector accumulated_density_gpu to host!\n");
     }
 
     /////////////////////
@@ -181,7 +181,7 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
 	err = cudaMemcpy(energy_gpu, energy_cpu, array_size, cudaMemcpyHostToDevice);
 	if (err != cudaSuccess)
 	{
-    	    printf("Failed to copy vector energy_gpu from host to device!\n");
+    	    //printf("Failed to copy vector energy_gpu from host to device!\n");
     	    exit(EXIT_FAILURE);
 	}
     }
@@ -190,7 +190,7 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
 	err = cudaMemcpy(factor_gpu, factor_cpu, array_size, cudaMemcpyHostToDevice);
 	if (err != cudaSuccess)
 	{
-    	    printf("Failed to copy vector factor_cpu from host to device!\n");
+    	    //printf("Failed to copy vector factor_cpu from host to device!\n");
     	    exit(EXIT_FAILURE);
 	}
     }

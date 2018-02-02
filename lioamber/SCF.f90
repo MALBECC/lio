@@ -51,6 +51,11 @@ subroutine SCF(E)
    use liosubs_dens  , only: builds_densmat, messup_densmat
    use linear_algebra, only: matrix_diagon
    use converger_subs, only: converger_init, conver
+   use mask_cublas   , only: cublas_setmat, cublas_release
+#  ifdef  CUBLAS
+      use cublasmath , only: cumxp_r                     
+#  endif
+
 
 
    implicit none
@@ -123,15 +128,8 @@ subroutine SCF(E)
 
 ! CUBLAS
 !------------------------------------------------------------------------------!
-#ifdef  CUBLAS
-   integer sizeof_real
-   parameter(sizeof_real=8)
-   integer stat
-   integer*8 devPtrX, devPtrY
-   external CUBLAS_INIT, CUBLAS_SET_MATRIX
-   external CUBLAS_SHUTDOWN, CUBLAS_ALLOC,CUBLAS_FREE
-   integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX 
-#endif
+   integer*8          :: dev_Xmat, dev_Ymat
+
 
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -420,25 +418,8 @@ subroutine SCF(E)
 !      modificar MDFTB
 
 ! CUBLAS
-! TODO: these should be inside of the overlap type
-!
-#ifdef CUBLAS
-            call CUBLAS_INIT()
-            stat = CUBLAS_ALLOC(M_in*M_in, sizeof_real, devPtrX)
-            stat = CUBLAS_ALLOC(M_in*M_in, sizeof_real, devPtrY)
-            if (stat.NE.0) then
-              write(*,*) "X and/or Y memory allocation failed"
-              call CUBLAS_SHUTDOWN
-              stop
-            endif
-            stat = CUBLAS_SET_MATRIX(M_in,M_in,sizeof_real,Xmat,M_in,devPtrX,M_in)
-            stat = CUBLAS_SET_MATRIX(M_in,M_in,sizeof_real,Ymat,M_in,devPtrY,M_in)
-            if (stat.NE.0) then
-              write(*,*) "X and/or Y setting failed"
-              call CUBLAS_SHUTDOWN
-              stop
-            endif 
-#endif
+   call cublas_setmat( M_in, Xmat, dev_Xmat)
+   call cublas_setmat( M_in, Ymat, dev_Ymat)
 
 
 !##############################################################################!
@@ -669,7 +650,7 @@ subroutine SCF(E)
            call converger_init( M_in, ndiis, DAMP, DIIS, hybrid_converg )
         end if
 #       ifdef CUBLAS
-           call conver(niter, good, good_cut, M_in, rho, fock, devPtrX, devPtrY)
+           call conver(niter, good, good_cut, M_in, rho, fock, dev_Xmat, dev_Ymat)
 #       else
            call conver(niter, good, good_cut, M_in, rho, fock, Xmat, Ymat)
 #       endif
@@ -691,7 +672,7 @@ subroutine SCF(E)
 !  matrix
         call g2g_timer_sum_start('SCF - MOC base change (sum)')
 #       ifdef CUBLAS
-           call cumxp_r( morb_coefon, devPtrX, morb_coefat, M_in)
+           call cumxp_r( morb_coefon, dev_Xmat, morb_coefat, M_in)
 #       else
            morb_coefat = matmul( Xmat, morb_coefon )
 #       endif
@@ -965,14 +946,10 @@ subroutine SCF(E)
 !       interface or general endstep call that takes care of cublas_shutdown
 !       and all other similar stuff.
 !
-#ifdef  CUBLAS
-      call CUBLAS_FREE(devPtrX)
-      call CUBLAS_FREE(devPtrY)
-      call CUBLAS_SHUTDOWN 
-#endif
+      call cublas_release( dev_Xmat )
+      call cublas_release( dev_Ymat )
+      call cublas_release( )
 
-
-!------------------------------------------------------------------------------!
       call g2g_timer_stop('SCF')
       call g2g_timer_sum_stop('Finalize SCF')
       call g2g_timer_sum_stop('SCF')

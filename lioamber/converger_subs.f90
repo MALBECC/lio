@@ -51,7 +51,7 @@ end subroutine converger_init
    subroutine conver ( niter, good, good_cut, M_in, rho, fock, devPtrX, devPtrY )
    use cublasmath, only : cumfx, cumxtf, cu_calc_fock_commuts
 #else
-   subroutine conver ( niter, good, good_cut, M_in, rho, fock, X, Y)
+   subroutine conver ( niter, good, good_cut, M_in, rho, fock, Xmat, Ymat)
    use mathsubs, only : basechange_gemm
 #endif 
    use converger_data, only: damping_factor, hagodiis, fockm, FP_PFm, ndiis,  &
@@ -68,8 +68,8 @@ end subroutine converger_init
    integer*8, intent(in) :: devPtrX
    integer*8, intent(in) :: devPtrY
 #else
-   real*8,  intent(in) :: X(M_in,M_in)
-   real*8,  intent(in) :: Y(M_in,M_in)
+   real*8,  intent(in) :: Xmat(M_in,M_in)
+   real*8,  intent(in) :: Ymat(M_in,M_in)
 #endif
 
    real*8              :: damp
@@ -140,10 +140,11 @@ end subroutine converger_init
 ! now, scratch1 = A = F' * P'; scratch2 = A^T
 ! [F',P'] = A - A^T
 !-----------------------------------------------------------------------------------------
-         call calc_fock_commuts(fock,rho,X,Y,scratch1,scratch2,M_in)
+         call calc_fock_commuts(fock,rho,Xmat,Ymat,scratch1,scratch2,M_in)
          FP_PFm(:,:,ndiis) = scratch1(:,:) - scratch2(:,:)
 
 #     endif
+
 
     fockm(:,:,ndiis) = fock(:,:)
 
@@ -195,12 +196,6 @@ end subroutine converger_init
 !------------------------------------------------------------------------------!
     if (.not.hagodiis) then
    
- !  do ii=1,M_in
- !  do jj=1,M_in
- !     write(668,*) ii,jj,fock(ii,jj)
- !  enddo
- !  enddo
-       
        fock=fock00
 
        if (niter > 1) then
@@ -214,7 +209,7 @@ end subroutine converger_init
           call cumxtf(fock,devPtrX,fock,M_in)
           call cumfx(fock,DevPtrX,fock,M_in)
 #      else
-          fock = basechange_gemm(M_in,fock,x)
+          fock = basechange_gemm(M_in,fock,Xmat)
 #      endif
 
     endif

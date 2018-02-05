@@ -29,11 +29,12 @@ subroutine SCF(E)
    use ehrensubs, only: ehrensetup
    use garcha_mod, only : M,Md, NCO,natom,Nang, number_restr, hybrid_converg, MEMO, &
    npas, verbose, RMM, X, SHFT, GRAD, npasw, igrid, energy_freq, converge,          &
-   noconverge, cubegen_only, VCINP, Nunp, GOLD,                                     &
+   noconverge, cubegen_only, VCINP, primera, Nunp, GOLD,                            &
    igrid2, predcoef, nsol, r, pc, timedep, tdrestart, DIIS, told, Etold, Enucl,     &
    Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz, epsilon, nuc,                &
    doing_ehrenfest, first_step, RealRho, tdstep, total_time, field, Fx, Fy, Fz, a0, &
-   MO_coef_at, Smat, lowdin, good_cut, ndiis
+   MO_coef_at, Smat, lowdin, good_cut, ndiis, RMM_save
+
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
    FOCK_ECP_read,FOCK_ECP_write,IzECP
    use transport, only : generate_rho0
@@ -47,8 +48,10 @@ subroutine SCF(E)
    use mask_ecp      , only: ECP_init, ECP_fock, ECP_energy
    use typedef_sop   , only: sop              ! Testing SOP
    use atompot_subs  , only: atompot_oldinit  ! Testing SOP
-   use tmpaux_SCF    , only: neighbor_list_2e, starting_guess
-   use liosubs_dens  , only: builds_densmat, messup_densmat
+   use tmpaux_SCF    , only: neighbor_list_2e
+   use liosubs_math  , only: transform
+   use liosubs_dens  , only: builds_densmat, messup_densmat, starting_guess    &
+                          &, standard_coefs
    use linear_algebra, only: matrix_diagon
    use converger_subs, only: converger_init, conver
    use mask_cublas   , only: cublas_setmat, cublas_release
@@ -57,31 +60,34 @@ subroutine SCF(E)
 #  endif
 
 
-
    implicit none
    integer :: Nel
    integer :: niter
    real*8  :: sq2
    real*8  :: good
    real*8  :: del
-   real*8  :: factor !estan en una parte del codigo q no se usa. consultar para sacarlas
-   integer :: IDAMP !estan en una parte del codigo q no se usa. consultar para sacarlas
    real*8  :: DAMP0
    real*8  :: DAMP
    integer :: igpu
+
+!  The following two variables are in a part of the code that is never
+!  used. Check if these must be taken out...
+   real*8  :: factor
+   integer :: IDAMP
 
    real*8, allocatable :: rho_test(:,:)
    real*8, allocatable :: rho_0(:,:)
    real*8, allocatable :: fock_0(:,:)
    real*8, allocatable :: rho(:,:)
    real*8, allocatable :: fock(:,:)
+   real*8, allocatable :: fockat(:,:)
    real*8, allocatable :: morb_coefon(:,:)
    real*8, allocatable :: morb_coefat(:,:)
    real*8, allocatable :: morb_energy(:)
    integer             :: i0, ii, jj, kk, kkk
 
 !------------------------------------------------------------------------------!
-!carlos: variable mas comoda para inputs
+!  carlos: variables to use as input for some subroutines instead of M and NCO
    integer :: M_in
    integer :: NCO_in
 
@@ -99,11 +105,10 @@ subroutine SCF(E)
 
 ! FFR - ehrenfest (temp)
    real*8 :: dipxyz(3)
-   real*8 :: dipole_norm
 
-!FIELD variables (maybe temporary)
+! FIELD variables (maybe temporary)
    real*8 :: Qc, Qc2, g
-
+   integer :: ng2
 
 !------------------------------------------------------------------------------!
 ! Energy contributions and convergence
@@ -149,12 +154,13 @@ subroutine SCF(E)
 
 
 !------------------------------------------------------------------------------!
-!carlos: init para TB
+!carlos: init for TB
    allocate (fock_0(M,M), rho_0(M,M))
 
    if (dftb_calc) then
       call dftb_init(M)
       allocate(fock(MDFTB,MDFTB), rho(MDFTB,MDFTB))
+      allocate(fockat(MDFTB,MDFTB))
       allocate(morb_energy(MDFTB), morb_coefat(MDFTB,MDFTB))
    else
       allocate(fock(M,M), rho(M,M))
@@ -264,7 +270,8 @@ subroutine SCF(E)
 !
 ! Reformat from here...
 
-! Para hacer lineal la integral de 2 electrones con lista de vecinos. Nano
+! Nano: calculating neighbour list helps to make 2 electrons integral scale
+! linearly with natoms/basis
 !
       call neighbor_list_2e()
 
@@ -313,7 +320,7 @@ subroutine SCF(E)
 
 
 ! test
-! TODO: remove or sistematize
+! TODO: test? remove or sistematize
 !
       E1=0.D0
       do kk=1,MM
@@ -338,7 +345,8 @@ subroutine SCF(E)
 
         call overop%Sets_smat( Smat )
         if (lowdin) then
-!          TODO: LOWDIN CURRENTLY NOT WORKING (NOR CANONICAL)
+!          TODO: inputs insuficient; there is also the symetric orthog using
+!                3 instead of 2 or 1. Use integer for onbasis_id
            call overop%Gets_orthog_4m( 2, 0.0d0, Xmat, Ymat, Xtrans, Ytrans )
         else
            call overop%Gets_orthog_4m( 1, 0.0d0, Xmat, Ymat, Xtrans, Ytrans )
@@ -414,41 +422,24 @@ subroutine SCF(E)
 !
 !      MDFTB must be declared before
 !      call :
-!      agrandar y modificar las Xmat/Ymat
-!      modificar MDFTB
+!      enlarge and modify Xmat/Ymat
+!      modify MDFTB
 
 ! CUBLAS
    call cublas_setmat( M_in, Xmat, dev_Xmat)
    call cublas_setmat( M_in, Ymat, dev_Ymat)
 
 
-!##############################################################################!
-! FFR: Currently working here.
+! Generates starting guess
 !
-      write(666,*) "X on input...", size(X,1), size(X,2)
-      do ii=1,size(X,1)
-      do jj=1,size(X,2)
-         if ((ii>M).or.(jj>M)) then
-            write(666,*) ii , jj , X(ii,jj)
-         endif
-      enddo
-      enddo
-      write(666,*)
-      call starting_guess( morb_coefat )
-      write(666,*) "morb_coefat on output..."
-      do ii=1,M
-      do jj=1,M
-         write(666,*) ii , jj , morb_coefat(ii,jj)
-      enddo
-      enddo
-!      stop
-!
-! FFR: When finished, uncomment the following starting guess...
-!##############################################################################!
-!------------------------------------------------------------------------------!
+   if ( (.not.VCINP) .and. primera ) then
+      call starting_guess( M, MM, NCO, RMM(M11), Xmat, RMM(M1) )
+      primera = .false.
+   end if
+
+!##########################################################!
 ! TODO: remove from here...
-!
-!      call starting_guess( morb_coefat )
+!##########################################################!
 
       if ((timedep.eq.1).and.(tdrestart)) then
         call g2g_timer_sum_start('TD')
@@ -490,8 +481,9 @@ subroutine SCF(E)
          call g2g_timer_sum_stop('Coulomb precalc')
       endif
 !
-!
+!##########################################################!
 ! TODO: ...to here
+!##########################################################!
 !
 !
 !
@@ -589,7 +581,7 @@ subroutine SCF(E)
 
 
 !------------------------------------------------------------------------------!
-!carlos: extraemos rho y fock antes
+! carlos: we extract rho and fock before
 !
 ! TODO: extraction of fock an rho via subroutines from maskrmm as a first step,
 !       total removal once rmm is gone.
@@ -613,7 +605,7 @@ subroutine SCF(E)
 
 
 !------------------------------------------------------------------------------!
-!carlos: armamos la fock posta
+! carlos: we build the good fock
 !
 ! TODO: this should be wrapped inside a single dftb subroutine. Also, two
 !       consecutive dftb_calc switches? really?
@@ -642,9 +634,10 @@ subroutine SCF(E)
         else
           NCO_in = NCO
         end if
-
-
+!
+!
 !------------------------------------------------------------------------------!
+!  Convergence accelerator processing
         call g2g_timer_sum_start('SCF acceleration')
         if (niter==1) then
            call converger_init( M_in, ndiis, DAMP, DIIS, hybrid_converg )
@@ -654,9 +647,10 @@ subroutine SCF(E)
 #       else
            call conver(niter, good, good_cut, M_in, rho, fock, Xmat, Ymat)
 #       endif
+        fockat = transform( fock, Ytrans )
         call g2g_timer_sum_pause('SCF acceleration')
-
-
+!
+!
 !------------------------------------------------------------------------------!
 !  Fock(ON) diagonalization
         if ( allocated(morb_coefon) ) deallocate(morb_coefon)
@@ -665,8 +659,8 @@ subroutine SCF(E)
         call g2g_timer_sum_start('SCF - Fock Diagonalization (sum)')
         call matrix_diagon( fock, morb_coefon, morb_energy )
         call g2g_timer_sum_pause('SCF - Fock Diagonalization (sum)')
-
-
+!
+!
 !------------------------------------------------------------------------------!
 !  Base change of coeficients ( (X^-1)*C ) and construction of new density
 !  matrix
@@ -676,13 +670,13 @@ subroutine SCF(E)
 #       else
            morb_coefat = matmul( Xmat, morb_coefon )
 #       endif
+        call standard_coefs( morb_coefat )
         call g2g_timer_sum_pause('SCF - MOC base change (sum)')
 
         if ( allocated(morb_coefon) ) deallocate(morb_coefon)
 
         call builds_densmat( M_in, NCO_in, 2.0d0, morb_coefat, rho)
         call messup_densmat( rho )
-
 
 !------------------------------------------------------------------------------!
 !  We are not sure how to translate the sumation over molecular orbitals
@@ -716,7 +710,7 @@ subroutine SCF(E)
 
 
 !------------------------------------------------------------------------------!
-!carlos: agregado para separar de rho la parte DFT
+! carlos: added to separate from rho the DFT part
 !
 ! TODO: again, this should be handled differently...
 ! TODO: make xnano go away...only remains here
@@ -761,7 +755,8 @@ subroutine SCF(E)
         call g2g_timer_stop('otras cosas')
         call g2g_timer_sum_pause('new density')
 
-        if(verbose) call WRITE_E_STEP(niter, E+Ex) !escribe energia en cada paso
+!       write energy at every step
+        if (verbose) call WRITE_E_STEP(niter, E+Ex)
 
         Egood=abs(E+Ex-Evieja)
         Evieja=E+Ex

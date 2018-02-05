@@ -214,7 +214,7 @@ SRCDIRS += liosubs_math
 OBJECTS += liosubs_math.o
 #
 modusrs := 
-modusrs += typedef_sop.o
+modusrs += typedef_sop.o liosubs_dens.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/liosubs_math.mod
 
 

@@ -345,7 +345,7 @@ subroutine SCF(E)
         if (lowdin) then
 !          TODO: LOWDIN CURRENTLY NOT WORKING (NOR CANONICAL)
            write(*,*) "DOING LOWDIN"
-           call overop%Gets_orthog_4m( 2, 0.0d0, Xmat, Ymat, Xtrans, Ytrans )
+           call overop%Gets_orthog_4m( 3, 0.0d0, Xmat, Ymat, Xtrans, Ytrans )
         else
            write(*,*) "DOING CHOLESKY"
            call overop%Gets_orthog_4m( 1, 0.0d0, Xmat, Ymat, Xtrans, Ytrans )
@@ -436,18 +436,17 @@ subroutine SCF(E)
 
          RMM_save(:) = RMM(:)
          call starting_guess_old( morb_coefat )
-         write(665,*) "DENSITY IS ALL THAT MATTERS..."
+         write(665,*) "DENSITY OLD"
          do ii = 1, M
             write(665,*) ii, RMM(ii)
-            RMM_save(ii) = RMM(ii)
+!            RMM_save(ii) = RMM(ii)
          enddo
 
          RMM(:) = RMM_save(:)
          call starting_guess( M, MM, RMM(M11), X(1:M,1:M), RMM(M1) )
-         write(667,*) "DENSITY IS ALL THAT MATTERS..."
+         write(667,*) "DENSITY NEW"
          do ii = 1, M
             write(667,*) ii, RMM(ii)
-!            RMM(ii) = RMM_save(ii)
          enddo
 
          primera = .false.
@@ -661,24 +660,12 @@ subroutine SCF(E)
         if (niter==1) then
            call converger_init( M_in, ndiis, DAMP, DIIS, hybrid_converg )
         end if
-        write(667,*) "NOW CHECKING PRES...", niter
-        do ii = 1, M
-        do jj = 1, M
-           write(667,*) ii, jj, fock(ii,jj)
-        enddo
-        enddo
 #       ifdef CUBLAS
            call conver(niter, good, good_cut, M_in, rho, fock, dev_Xmat, dev_Ymat)
 #       else
            call conver(niter, good, good_cut, M_in, rho, fock, Xmat, Ymat)
 #       endif
         fockat = transform( fock, Ytrans )
-        write(667,*) "NOW CHECKING POST...", niter
-        do ii = 1, M
-        do jj = 1, M
-           write(667,*) ii, jj, fockat(ii,jj)
-        enddo
-        enddo
         call g2g_timer_sum_pause('SCF acceleration')
 !
 ! FFR: When finished, uncomment the following starting guess...

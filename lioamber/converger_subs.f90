@@ -145,13 +145,6 @@ end subroutine converger_init
 
 #     endif
 
-     write(668,*) "After..."
-     do ii = 1, M_in
-     do jj = 1, M_in
-        write(668,*) ii, jj, FP_PFm(ii,jj,ndiis)
-     enddo
-     enddo
-
 
     fockm(:,:,ndiis) = fock(:,:)
 
@@ -203,12 +196,6 @@ end subroutine converger_init
 !------------------------------------------------------------------------------!
     if (.not.hagodiis) then
    
- !  do ii=1,M_in
- !  do jj=1,M_in
- !     write(668,*) ii,jj,fock(ii,jj)
- !  enddo
- !  enddo
-       
        fock=fock00
 
        if (niter > 1) then

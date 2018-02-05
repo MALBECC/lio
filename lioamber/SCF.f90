@@ -29,11 +29,12 @@ subroutine SCF(E)
    use ehrensubs, only: ehrensetup
    use garcha_mod, only : M,Md, NCO,natom,Nang, number_restr, hybrid_converg, MEMO, &
    npas, verbose, RMM, X, SHFT, GRAD, npasw, igrid, energy_freq, converge,          &
-   noconverge, cubegen_only, VCINP, Nunp, GOLD,                                     &
+   noconverge, cubegen_only, VCINP, primera, Nunp, GOLD,                            &
    igrid2, predcoef, nsol, r, pc, timedep, tdrestart, DIIS, told, Etold, Enucl,     &
    Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz, epsilon, nuc,                &
    doing_ehrenfest, first_step, RealRho, tdstep, total_time, field, Fx, Fy, Fz, a0, &
-   MO_coef_at, Smat, lowdin, good_cut, ndiis
+   MO_coef_at, Smat, lowdin, good_cut, ndiis, RMM_save
+
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
    FOCK_ECP_read,FOCK_ECP_write,IzECP
    use transport, only : generate_rho0
@@ -47,8 +48,8 @@ subroutine SCF(E)
    use mask_ecp      , only: ECP_init, ECP_fock, ECP_energy
    use typedef_sop   , only: sop              ! Testing SOP
    use atompot_subs  , only: atompot_oldinit  ! Testing SOP
-   use tmpaux_SCF    , only: neighbor_list_2e, starting_guess
-   use liosubs_dens  , only: builds_densmat, messup_densmat
+   use tmpaux_SCF    , only: neighbor_list_2e, starting_guess_old
+   use liosubs_dens  , only: builds_densmat, messup_densmat, starting_guess
    use linear_algebra, only: matrix_diagon
    use converger_subs, only: converger_init, conver
    use mask_cublas   , only: cublas_setmat, cublas_release
@@ -99,11 +100,10 @@ subroutine SCF(E)
 
 ! FFR - ehrenfest (temp)
    real*8 :: dipxyz(3)
-   real*8 :: dipole_norm
 
 !FIELD variables (maybe temporary)
    real*8 :: Qc, Qc2, g
-
+   integer :: ng2
 
 !------------------------------------------------------------------------------!
 ! Energy contributions and convergence
@@ -425,23 +425,39 @@ subroutine SCF(E)
 !##############################################################################!
 ! FFR: Currently working here.
 !
-      write(666,*) "X on input...", size(X,1), size(X,2)
-      do ii=1,size(X,1)
-      do jj=1,size(X,2)
-         if ((ii>M).or.(jj>M)) then
-            write(666,*) ii , jj , X(ii,jj)
-         endif
-      enddo
-      enddo
-      write(666,*)
-      call starting_guess( morb_coefat )
-      write(666,*) "morb_coefat on output..."
-      do ii=1,M
-      do jj=1,M
-         write(666,*) ii , jj , morb_coefat(ii,jj)
-      enddo
-      enddo
-!      stop
+      if ( (.not.VCINP) .and. primera ) then
+
+         write(666,*) "X on input...", size(X,1), size(X,2)
+         do ii=1,size(X,1)
+         do jj=1,size(X,2)
+            if ((ii>M).or.(jj>M)) then
+               write(666,*) ii , jj , X(ii,jj)
+            endif
+         enddo
+         enddo
+         write(666,*)
+
+         RMM_save(:) = RMM(:)
+         call starting_guess_old( morb_coefat )
+         write(665,*) "morb_coefat one ..."
+         do ii=1,M
+         do jj=1,M
+            write(665,*) ii , jj , morb_coefat(ii,jj)
+         enddo
+         enddo
+
+         RMM(:) = RMM_save(:)
+         call starting_guess( M, MM, RMM(M11), RMM(M5), RMM(M13), morb_coefat, RMM(M1) )
+          write(667,*) "morb_coefat two..."
+         do ii=1,M
+         do jj=1,M
+            write(667,*) ii , jj , morb_coefat(ii,jj)
+         enddo
+         enddo
+
+         stop
+         primera = .false.
+      end if
 !
 ! FFR: When finished, uncomment the following starting guess...
 !##############################################################################!

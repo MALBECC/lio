@@ -85,15 +85,6 @@ module tmpaux_SCF
       M17=M15+MM! Least squares
       M18=M17+MMd! vectors of MO
 
-      write(666,*) "RMM en M11"
-      do ii=1,M
-         kk = (M2-ii)*(ii-1)/2
-         do jj=ii+1,M
-            write(666,*) RMM(M11+jj+kk-1)
-         enddo
-      enddo
-      write(666,*) 
-
 !     CASE OF NO STARTING GUESS PROVIDED, 1 E FOCK MATRIX USED
 !     FCe = SCe; (X^T)SX = 1
 !     F' = (X^T)FX
@@ -129,6 +120,7 @@ module tmpaux_SCF
 
 ! F' diagonalization now
 ! xnano will contain (X^-1)*C
+! FFR: NO IT DOES NOT; it contains C....
          do i=1,M
             RMM(M15+i-1)=0.D0
             RMM(M13+i-1)=0.D0
@@ -140,6 +132,7 @@ module tmpaux_SCF
          rmm15=0
          xnano=0
 
+
 !        ESSL OPTION
 #        ifdef  essl
          call DSPEV(1,RMM(M5),RMM(M13),X(1,M+1),M,M,RMM(M15),M2)
@@ -149,8 +142,6 @@ module tmpaux_SCF
 #        ifdef pack
          call dspev('V','L',M,RMM5,RMM(M13),Xnano,M,RMM15,info)
 #        endif
-
-         write(666,*) " INFO = ", info
 
          do i =1,M
          do j=1,M
@@ -173,14 +164,6 @@ module tmpaux_SCF
          enddo
 
          call g2g_timer_stop('initial guess')
-
-      write(666,*) "Coeficientes en base atomica"
-      do ii=1,M
-      do jj=1,M
-         write(666,*) ii, jj, X(ii,M2+jj)
-      enddo
-      enddo
-      write(666,*)
 
 
 ! Density Matrix
@@ -219,6 +202,54 @@ module tmpaux_SCF
 
 !     End of Starting guess (No MO , AO known)-------------------------------
    END SUBROUTINE starting_guess_old
+
+
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+   subroutine xPut( xMat, nCol, rMat )
+   real*8 , intent(inout) :: xMat(:,:)
+   integer, intent(in)    :: nCol
+   real*8 , intent(in)    :: rMat(:,:)
+   integer                :: ii, jj
+ 
+   if ( size(xMat,1) /= size(rMat,1) ) then
+      print*, "ERROR IN xPut - wrong number of rows"; stop
+   end if
+
+   if ( size(xMat,2) > (nCol + size(rMat,2)) ) then
+      print*, "ERROR IN xPut - wrong number of cols"; stop
+   end if
+   
+   do jj = nCol, size(rMat,2)
+   do ii = 1, size(rMat,1)
+      xMat(ii,jj) = rMat(ii,jj)
+   end do
+   end do
+
+   end subroutine xPut
+
+!------------------------------------------------------------------------------!
+   subroutine xGet( xMat, nCol, rMat )
+   real*8 , intent(in)    :: xMat(:,:)
+   integer, intent(in)    :: nCol
+   real*8 , intent(inout) :: rMat(:,:)
+   integer                :: ii, jj
+
+   if ( size(xMat,1) /= size(rMat,1) ) then
+      print*, "ERROR IN xGet - wrong number of rows"; stop
+   end if
+
+   if ( size(xMat,2) < (nCol + size(rMat,2)) ) then
+      print*, "ERROR IN xGet - wrong number of cols"; stop
+   end if
+
+   do jj = nCol, size(rMat,2)
+   do ii = 1, size(rMat,1)
+      rMat(ii,jj) = xMat(ii,jj)
+   end do
+   end do
+   
+   end subroutine xGet
 
 
 

@@ -49,7 +49,9 @@ subroutine SCF(E)
    use typedef_sop   , only: sop              ! Testing SOP
    use atompot_subs  , only: atompot_oldinit  ! Testing SOP
    use tmpaux_SCF    , only: neighbor_list_2e, starting_guess_old
-   use liosubs_dens  , only: builds_densmat, messup_densmat, starting_guess
+   use liosubs_math  , only: transform
+   use liosubs_dens  , only: builds_densmat, messup_densmat, starting_guess    &
+                          &, standard_coefs
    use linear_algebra, only: matrix_diagon
    use converger_subs, only: converger_init, conver
    use mask_cublas   , only: cublas_setmat, cublas_release
@@ -76,6 +78,7 @@ subroutine SCF(E)
    real*8, allocatable :: fock_0(:,:)
    real*8, allocatable :: rho(:,:)
    real*8, allocatable :: fock(:,:)
+   real*8, allocatable :: fockat(:,:)
    real*8, allocatable :: morb_coefon(:,:)
    real*8, allocatable :: morb_coefat(:,:)
    real*8, allocatable :: morb_energy(:)
@@ -155,6 +158,7 @@ subroutine SCF(E)
    if (dftb_calc) then
       call dftb_init(M)
       allocate(fock(MDFTB,MDFTB), rho(MDFTB,MDFTB))
+      allocate(fockat(MDFTB,MDFTB))
       allocate(morb_energy(MDFTB), morb_coefat(MDFTB,MDFTB))
    else
       allocate(fock(M,M), rho(M,M))
@@ -337,10 +341,13 @@ subroutine SCF(E)
         allocate( Y(M,M), Ytrans(M,M), Xtrans(M,M) )
 
         call overop%Sets_smat( Smat )
+        write(*,*) "lowdin is enabled?", lowdin
         if (lowdin) then
 !          TODO: LOWDIN CURRENTLY NOT WORKING (NOR CANONICAL)
+           write(*,*) "DOING LOWDIN"
            call overop%Gets_orthog_4m( 2, 0.0d0, Xmat, Ymat, Xtrans, Ytrans )
         else
+           write(*,*) "DOING CHOLESKY"
            call overop%Gets_orthog_4m( 1, 0.0d0, Xmat, Ymat, Xtrans, Ytrans )
         end if
 
@@ -427,35 +434,22 @@ subroutine SCF(E)
 !
       if ( (.not.VCINP) .and. primera ) then
 
-         write(666,*) "X on input...", size(X,1), size(X,2)
-         do ii=1,size(X,1)
-         do jj=1,size(X,2)
-            if ((ii>M).or.(jj>M)) then
-               write(666,*) ii , jj , X(ii,jj)
-            endif
-         enddo
-         enddo
-         write(666,*)
-
          RMM_save(:) = RMM(:)
          call starting_guess_old( morb_coefat )
-         write(665,*) "morb_coefat one ..."
-         do ii=1,M
-         do jj=1,M
-            write(665,*) ii , jj , morb_coefat(ii,jj)
-         enddo
+         write(665,*) "DENSITY IS ALL THAT MATTERS..."
+         do ii = 1, M
+            write(665,*) ii, RMM(ii)
+            RMM_save(ii) = RMM(ii)
          enddo
 
          RMM(:) = RMM_save(:)
-         call starting_guess( M, MM, RMM(M11), RMM(M5), RMM(M13), morb_coefat, RMM(M1) )
-          write(667,*) "morb_coefat two..."
-         do ii=1,M
-         do jj=1,M
-            write(667,*) ii , jj , morb_coefat(ii,jj)
-         enddo
+         call starting_guess( M, MM, RMM(M11), X(1:M,1:M), RMM(M1) )
+         write(667,*) "DENSITY IS ALL THAT MATTERS..."
+         do ii = 1, M
+            write(667,*) ii, RMM(ii)
+!            RMM(ii) = RMM_save(ii)
          enddo
 
-         stop
          primera = .false.
       end if
 !
@@ -660,17 +654,36 @@ subroutine SCF(E)
         end if
 
 
-!------------------------------------------------------------------------------!
+!##############################################################################!
+! FFR: Currently working here.
+!
         call g2g_timer_sum_start('SCF acceleration')
         if (niter==1) then
            call converger_init( M_in, ndiis, DAMP, DIIS, hybrid_converg )
         end if
+        write(667,*) "NOW CHECKING PRES...", niter
+        do ii = 1, M
+        do jj = 1, M
+           write(667,*) ii, jj, fock(ii,jj)
+        enddo
+        enddo
 #       ifdef CUBLAS
            call conver(niter, good, good_cut, M_in, rho, fock, dev_Xmat, dev_Ymat)
 #       else
            call conver(niter, good, good_cut, M_in, rho, fock, Xmat, Ymat)
 #       endif
+        fockat = transform( fock, Ytrans )
+        write(667,*) "NOW CHECKING POST...", niter
+        do ii = 1, M
+        do jj = 1, M
+           write(667,*) ii, jj, fockat(ii,jj)
+        enddo
+        enddo
         call g2g_timer_sum_pause('SCF acceleration')
+!
+! FFR: When finished, uncomment the following starting guess...
+!##############################################################################!
+
 
 
 !------------------------------------------------------------------------------!
@@ -692,13 +705,13 @@ subroutine SCF(E)
 #       else
            morb_coefat = matmul( Xmat, morb_coefon )
 #       endif
+        call standard_coefs( morb_coefat )
         call g2g_timer_sum_pause('SCF - MOC base change (sum)')
 
         if ( allocated(morb_coefon) ) deallocate(morb_coefon)
 
         call builds_densmat( M_in, NCO_in, 2.0d0, morb_coefat, rho)
         call messup_densmat( rho )
-
 
 !------------------------------------------------------------------------------!
 !  We are not sure how to translate the sumation over molecular orbitals

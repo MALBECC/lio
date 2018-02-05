@@ -1,4 +1,4 @@
-subroutine atompot_oldinit( Natom, nucoforb, sqsmat, fockbias )
+subroutine fockbias_oldinit( Natom, nucoforb, sqsmat, fockbias )
    use general_module, only: vector_selection, read_list, atmorb
 
    implicit none
@@ -40,4 +40,4 @@ subroutine atompot_oldinit( Natom, nucoforb, sqsmat, fockbias )
    call vector_selection( 2, orb_group, orb_selection )
    call fterm_biaspot( Msize, sqsmat, orb_selection, weight, fockbias )
 
-end subroutine atompot_oldinit
+end subroutine fockbias_oldinit

@@ -154,13 +154,13 @@ tmplist :=
 tmplist += SCF.o input_read.o init_lio.o ehrensubs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/TD.mod
 ################################################################################
-OBJECTS += atompot_data.o
-OBJECTS += atompot_subs.o
-$(OBJPATH)/atompot_subs.o: $(OBJPATH)/atompot_data.mod
+OBJECTS += fockbias_data.o
+OBJECTS += fockbias_subs.o
+$(OBJPATH)/fockbias_subs.o: $(OBJPATH)/fockbias_data.mod
 
 tmplist :=
 tmplist += SCF.f90
-$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/atompot_subs.mod
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fockbias_subs.mod
 
 ###############################################################################
 TD.o : properties.o
@@ -369,7 +369,7 @@ include liosubs/liosubs.mk
 
 tmplist :=
 tmplist += SCF.o init_lio.o
-tmplist += lionml_subs.o atompot_subs.o
+tmplist += lionml_subs.o fockbias_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/liosubs.mod
 
 
@@ -377,7 +377,7 @@ OBJECTS += general_module.o
 SRCDIRS += general_module
 include general_module/general_module.mk
 
-tmplist := SCF.o cublasmath.o atompot_subs.o
+tmplist := SCF.o cublasmath.o fockbias_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/general_module.mod
 
 

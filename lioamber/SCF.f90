@@ -51,7 +51,7 @@ subroutine SCF(E)
    use cubegen       , only: cubegen_vecin, cubegen_matin, cubegen_write
    use mask_ecp      , only: ECP_init, ECP_fock, ECP_energy
    use typedef_sop   , only: sop              ! Testing SOP
-   use atompot_subs  , only: atompot_oldinit  ! Testing SOP
+   use fockbias_subs  , only: fockbias_oldinit  ! Testing SOP
    use tmpaux_SCF    , only: neighbor_list_2e
    use liosubs_math  , only: transform
    use liosubs_dens  , only: builds_densmat, messup_densmat, starting_guess    &
@@ -358,13 +358,13 @@ subroutine SCF(E)
            call overop%Gets_orthog_4m( 1, 0.0d0, X_min, Y_min, X_min_trans, Y_min_trans)
         end if
 
-! TODO: initializations related to atompot should be dealt with differently
+! TODO: initializations related to fockbias should be dealt with differently
       dovv=.false.
       if (dovv) then
          if ( allocated(fockbias) ) deallocate(fockbias)
          if ( allocated(sqsmat) )   deallocate(sqsmat)
          allocate( fockbias(M,M), sqsmat(M,M) )
-         call atompot_oldinit( natom, nuc, sqsmat, fockbias )
+         call fockbias_oldinit( natom, nuc, sqsmat, fockbias )
       end if
 
 ! TODO: replace X,Y,Xtrans,Ytrans with Xmat, Ymat, Xtrp, Ytrp

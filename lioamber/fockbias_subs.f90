@@ -3,157 +3,289 @@ module fockbias_subs
 !------------------------------------------------------------------------------!
 !
 !    This module controls the aplication of charge biases that are directly
-! applied through the fock matrix.
+! applied through the fock matrix. It is implementation specific and consists
+! of the following subroutines:
 !
-! REFERENCE: Physical Review B 74, 155112 ͑2006͒
+! fockbias_setup0: This subroutine sets up the shape of the bias.
 !
-! fockbias_check_ready: internal subroutine to check if setup was performed.
-! fockbias_check_msize: internal subroutine to check if size is consistent.
-! fockbias_setup_basics: setups the size and the application of the potential.
-! fockbias_setup_shaper: setups the parameters of the shaper.
-! fockbias_reads_charges: reads the charges to apply from given file.
-! fockbias_fockadd: adds the potential to a fiven fock matrix, provided the
-!                  shape 
+! fockbias_setorb: This subroutine sets up the atomic charges.
+!
+! fockbias_setmat: This subroutine sets up the bias matrix (full amplitude).
+!                ( changes if atomic positions change )
+!
+! fockbias_loads: subroutine that reads the atomic biases as input list.
+!               ( and calls setorb )
+!
+! fockbias_apply: Takes the fock matrix and adds the fockbias term (with the
+!                 corresponding time shape).
+!
+! REFERENCE: Physical Review B 74, 155112, 2006
 !
 !------------------------------------------------------------------------------!
    implicit none
+
+   interface fockbias_apply
+      module procedure fockbias_apply_d
+      module procedure fockbias_apply_c
+      module procedure fockbias_apply_z
+   end interface fockbias_apply
+
    contains
-#  include "fockbias_oldinit.f90"
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine fockbias_check_ready()
-   use fockbias_data, only: fockbias_apply, fockbias_ready
-   implicit none
-   if (.not.fockbias_ready) then
-      print*,'FATAL ERROR:'
-      print*,'  A module subroutine is being used without proper setup.'
-      stop
-   endif
-end subroutine fockbias_check_ready
-!
-!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine fockbias_check_msize( msize_inp )
-   use fockbias_data, only: fockbias_apply, fockbias_msize
-   implicit none
-   integer, intent(in) :: msize_inp
-   if (msize_inp.ne.fockbias_msize) then
-      print*,'FATAL ERROR:'
-      print*,'  Wrong setup of fockbias, inconsistent sizes.'
-      print*,'  * msize_inp (input):   ', msize_inp
-      print*,'  * fockbias_msize (mod): ', fockbias_msize
-      stop
-   endif
-end subroutine fockbias_check_msize
-!
-!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine fockbias_setup_basics( activate, msize )
+subroutine fockbias_setup0( activate, do_shape, grow_start, fall_start, setamp )
 
-   use fockbias_data, &
-   &   only: fockbias_apply, fockbias_ready, fockbias_msize, qweight_of_orb
+   use fockbias_data, only: fockbias_is_active, fockbias_is_shaped &
+                         &, fockbias_timegrow , fockbias_timefall  &
+                         &, fockbias_timeamp0
 
-   implicit none
    logical, intent(in) :: activate
-   integer, intent(in) :: msize
-   integer             :: ii, jj
+   logical, intent(in) :: do_shape
+   real*8 , intent(in) :: grow_start
+   real*8 , intent(in) :: fall_start
+   real*8 , intent(in) :: setamp
 
-   fockbias_apply = activate
-   fockbias_msize = msize
-   fockbias_ready = .true.
-   if ( allocated(qweight_of_orb) ) deallocate(qweight_of_orb)
-   allocate( qweight_of_orb(msize) )
-   qweight_of_orb(:) = 0.0d0
+   fockbias_is_active = activate
+   fockbias_is_shaped = do_shape
+   fockbias_timegrow  = grow_start
+   fockbias_timefall  = fall_start
+   fockbias_timeamp0  = setamp
 
-end subroutine fockbias_setup_basics
+end subroutine fockbias_setup0
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine fockbias_setup_shaper( timegrow, timefall, timepos0, timeamp1 )
-   
-   use fockbias_data, only: fockbias_timegrow, fockbias_timefall &
-                        &, fockbias_timepos0, fockbias_timeamp1
+subroutine fockbias_setorb( qweight_of_atom, atom_of_orb )
 
-   implicit none
-   logical, intent(in) :: timegrow
-   logical, intent(in) :: timefall
-   real*8 , intent(in) :: timepos0
-   real*8 , intent(in) :: timeamp1
+   use fockbias_data, only: fockbias_is_active, fockbias_orbqw
 
-   fockbias_timegrow = timegrow
-   fockbias_timefall = timefall
-   fockbias_timepos0 = timepos0
-   fockbias_timeamp1 = timeamp1
+   real*8 , intent(in) :: qweight_of_atom(:)
+   integer, intent(in) :: atom_of_orb(:)
+   integer             :: Nbasis
+   integer             :: nn
 
-end subroutine fockbias_setup_shaper
+   if ( .not. fockbias_is_active ) return
+
+   Nbasis = size(atom_of_orb)
+   if ( allocated(fockbias_orbqw) ) deallocate(fockbias_orbqw)
+   allocate( fockbias_orbqw(Nbasis) )
+
+   do nn = 1, Nbasis
+      fockbias_orbqw(nn) = qweight_of_atom( atom_of_orb(nn) )
+   end do
+
+end subroutine fockbias_setorb
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine fockbias_reads_charges( nsize, msize, atom_of_orb, source_fname )
+subroutine fockbias_setmat( sqsmat )
+   use fockbias_data, only: fockbias_is_active, fockbias_orbqw, fockbias_matrix
 
-   use liosubs       , only: read_list, atmvec_to_orbvec
-   use fockbias_data  , only: fockbias_apply, qweight_of_orb
+   real*8 , intent(in) :: sqsmat(:,:)
+   real*8              :: newterm
+   integer             :: Nbasis
+   integer             :: ii, jj, kk
 
-   implicit none
-   integer          , intent(in) :: nsize
-   integer          , intent(in) :: msize
-   integer          , intent(in) :: atom_of_orb(msize)
-   character(len=80), intent(in) :: source_fname
+   if (.not.fockbias_is_active) return
 
-   real*8, allocatable :: qweight_of_atom(:)
+   if (.not.allocated(fockbias_orbqw)) then
+      print*, "Error inside fockbias_setmat: setorb never performed."
+      print*; stop
+   end if
 
-   if (.not.fockbias_apply) return
-   call fockbias_check_ready()
-   call fockbias_check_msize( msize )
+   Nbasis = size( fockbias_orbqw )
+   if (( Nbasis /= size(sqsmat,1) ).or.( Nbasis /= size(sqsmat,2) )) then
+      print*, "Error inside fockbias_setmat: bad sqsmat input size."
+      print*, "   Nbasis    = ", Nbasis
+      print*, "   sqsmat(1) = ", size(sqsmat,1)
+      print*, "   sqsmat(2) = ", size(sqsmat,2)
+      print*; stop
+   end if
 
-   allocate( qweight_of_atom(nsize) )
-   call read_list( source_fname, qweight_of_atom )
-   call atmvec_to_orbvec( qweight_of_atom, atom_of_orb, qweight_of_orb )
-   deallocate( qweight_of_atom )
-   
-end subroutine fockbias_reads_charges
+   if ( allocated(fockbias_matrix) ) deallocate(fockbias_matrix)
+   allocate( fockbias_matrix(Nbasis,Nbasis) )
+   do jj = 1, Nbasis
+   do ii = 1, Nbasis
+      fockbias_matrix(ii,jj) = 0.0d0
+      do kk = 1, Nbasis
+         newterm = fockbias_orbqw(kk) * sqsmat(ii,kk) * sqsmat(kk,jj)
+         fockbias_matrix(ii,jj) = fockbias_matrix(ii,jj) + newterm
+      end do
+   end do
+   end do
+
+end subroutine fockbias_setmat
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine fockbias_fockadd( msize, timepos, sqsmat, fockao )
+subroutine fockbias_loads( Natom, atom_of_orb, file_unit_in, file_name_in )
+   use fockbias_data, only: fockbias_is_active, fockbias_readfile
 
-   use liosubs     , only: gaussian_shaper
-   use fockbias_data, only: fockbias_apply,    qweight_of_orb   &
-                        &, fockbias_timegrow, fockbias_timefall &
-                        &, fockbias_timepos0, fockbias_timeamp1
+   integer         , intent(in)           :: Natom
+   integer         , intent(in)           :: atom_of_orb(:)
+   integer         , intent(in), optional :: file_unit_in
+   character(len=*), intent(in), optional :: file_name_in
+   integer                                :: file_unit
+   real*8          , allocatable          :: qweight_of_atom(:)
+   integer                                :: nn, ios
+
+   if ( .not. fockbias_is_active ) return
+
+   if ( .not. present(file_unit_in) ) then
+   if ( .not. present(file_name_in) ) then
+   if ( fockbias_readfile == "" )     then
+      print*, "Error inside fockbias_loads: without a file_name or a file_unit"
+      print*, "I can't do anything..."
+      print*; stop
+   end if
+   end if
+   end if
+
+!  If there is input filename, save it so as to know the source.
+   if ( present(file_name_in) ) fockbias_readfile = file_name_in
+
+!  If there is input fileunit, we will read from there directly.
+!  Else, we will open the file in unit=2427 (BIAS)
+   if ( present(file_unit_in) ) then
+      file_unit = file_unit_in
+
+   else
+      file_unit = 2427
+
+      open( file=fockbias_readfile, unit=file_unit, iostat=ios )
+      if ( ios /= 0 ) then
+         print*, "Error inside fockbias_loads while opening input."
+         print*, "  file_name = ", fockbias_readfile
+         print*, "  file_unit = ", file_unit
+         print*, "  iostatus  = ", ios
+         print*; stop
+      end if
+
+   end if
+
+!  Now read all atomic weights and set it up.
+   allocate( qweight_of_atom(Natom) )
+   do nn = 1, Natom
+      read( unit=file_unit, fmt=*, iostat=ios ) qweight_of_atom(nn)
+      if ( ios /= 0 ) then
+         print*, "Error inside fockbias_loads while reading input."
+         print*, "  file_name = ", fockbias_readfile
+         print*, "  file_unit = ", file_unit
+         print*, "  iostatus  = ", ios
+         print*; stop
+      end if
+   end do
+   call fockbias_setorb( qweight_of_atom, atom_of_orb )
+
+!  If there was no input unit, we had to open the file. Now we close it.
+   if ( .not. present(file_unit_in) ) then
+      close( unit=file_unit, iostat=ios )
+      if ( ios /= 0 ) then
+         print*, "Error inside fockbias_loads while closing input."
+         print*, "  file_name = ", fockbias_readfile
+         print*, "  file_unit = ", file_unit
+         print*, "  iostatus  = ", ios
+         print*; stop
+      end if
+   end if
+
+end subroutine fockbias_loads
+!
+!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine fockbias_apply_d( timepos, fockmat )
+   use fockbias_data, only: fockbias_is_active, fockbias_is_shaped &
+                         &, fockbias_timegrow , fockbias_timefall  &
+                         &, fockbias_timeamp0 , fockbias_matrix
 
    implicit none
-   integer, intent(in)    :: msize
    real*8 , intent(in)    :: timepos
-   real*8 , intent(in)    :: sqsmat( msize, msize )
-   real*8 , intent(inout) :: fockao( msize, msize )
+   real*8 , intent(inout) :: fockmat(:,:)
 
-   real*8  :: newterm
-   real*8  :: shape_factor
-   integer :: ii, jj, kk
+   real*8  :: time_shape, exparg
+   integer :: Nbasis
+   integer :: ii, jj
 
-   if (.not.fockbias_apply) return
-   call fockbias_check_ready()
-   call fockbias_check_msize( msize )
+   if (.not.fockbias_is_active) return
 
-   shape_factor = 1.0d0
-   call gaussian_shaper( fockbias_timegrow, fockbias_timefall, timepos &
-                      &, fockbias_timepos0, fockbias_timeamp1, shape_factor )
+   if (.not.allocated(fockbias_matrix)) then
+      print*, "Error inside fockbias_apply: setmat never performed."
+      print*; stop
+   end if
 
-   do ii = 1, msize
-   do jj = 1, msize
-      do kk = 1, msize
-         newterm       = shape_factor * qweight_of_orb(kk)
-         newterm       = newterm * sqsmat(ii,kk) * sqsmat(kk,jj)
-         fockao(ii,jj) = fockao(ii,jj) + newterm
-      enddo
+   Nbasis = size( fockbias_matrix )
+   if (( Nbasis /= size(fockmat,1) ).or.( Nbasis /= size(fockmat,2) )) then
+      print*, "Error inside fockbias_apply: bad fockmat input size."
+      print*, "   Nbasis     = ", Nbasis
+      print*, "   fockmat(1) = ", size(fockmat,1)
+      print*, "   fockmat(2) = ", size(fockmat,2)
+      print*; stop
+   end if
+
+   time_shape = 1.0d0
+
+   if ( fockbias_is_shaped ) then
+
+      if ( timepos <= fockbias_timegrow ) then
+         exparg = (timepos - fockbias_timegrow) / fockbias_timeamp0
+         exparg = (-1.0d0) * exparg * exparg
+         time_shape = time_shape * dexp( exparg )
+      end if
+
+      if ( timepos >= fockbias_timefall ) then
+         exparg = (timepos - fockbias_timefall) / fockbias_timeamp0
+         exparg = (-1.0d0) * exparg * exparg
+         time_shape = time_shape * dexp( exparg )
+      end if
+
+   end if
+
+   do jj = 1, Nbasis
+   do ii = 1, Nbasis
+      fockmat(ii,jj) = fockmat(ii,jj) + time_shape * fockbias_matrix(ii,jj)
    enddo
    enddo
 
-end subroutine fockbias_fockadd
+end subroutine fockbias_apply_d
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine fockbias_apply_c( timepos, fockmat )
+   implicit none
+   real*8    , intent(in)    :: timepos
+   complex*8 , intent(inout) :: fockmat(:,:)
+   real*8    , allocatable   :: fockmat_r(:,:)
+   integer                   :: N1, N2
+
+   N1 = size(fockmat,1)
+   N2 = size(fockmat,2)
+   allocate( fockmat_r( N1, N2 ) )
+   call fockbias_apply_d( timepos, fockmat_r )
+   fockmat(:,:) = fockmat(:,:) + CMPLX( fockmat_r(:,:), 0.0d0 )
+   deallocate( fockmat_r )
+
+end subroutine fockbias_apply_c
+!
+!
+!------------------------------------------------------------------------------!
+subroutine fockbias_apply_z( timepos, fockmat )
+   implicit none
+   real*8    , intent(in)    :: timepos
+   complex*16, intent(inout) :: fockmat(:,:)
+   real*8    , allocatable   :: fockmat_r(:,:)
+   integer                   :: N1, N2
+
+   N1 = size(fockmat,1)
+   N2 = size(fockmat,2)
+   allocate( fockmat_r( N1, N2 ) )
+   call fockbias_apply_d( timepos, fockmat_r )
+   fockmat(:,:) = fockmat(:,:) + DCMPLX( fockmat_r(:,:), 0.0d0 )
+   deallocate( fockmat_r )
+
+end subroutine fockbias_apply_z
+!
+!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end module fockbias_subs
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

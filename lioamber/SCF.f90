@@ -51,7 +51,7 @@ subroutine SCF(E)
    use cubegen       , only: cubegen_vecin, cubegen_matin, cubegen_write
    use mask_ecp      , only: ECP_init, ECP_fock, ECP_energy
    use typedef_sop   , only: sop              ! Testing SOP
-   use fockbias_subs  , only: fockbias_oldinit  ! Testing SOP
+   use fockbias_subs , only: fockbias_loads, fockbias_setmat, fockbias_apply
    use tmpaux_SCF    , only: neighbor_list_2e
    use liosubs_math  , only: transform
    use liosubs_dens  , only: builds_densmat, messup_densmat, starting_guess    &
@@ -84,11 +84,10 @@ subroutine SCF(E)
    real*8, allocatable :: morb_coefon(:,:)
 
 !------------------------------------------------------------------------------!
-!  DFTB: M_in and NCO_in are modifications of NCO and M for DFTB calculations.
-!        The arrays are necessary to play with the dimensions requiered to
-!        DFTB
+!  carlos: variables to use as input for some subroutines instead of M and NCO
    integer :: M_in
    integer :: NCO_in
+
    real*8, allocatable :: rho_0(:,:)
    real*8, allocatable :: fock_0(:,:)
    real*8, allocatable :: rho(:,:)
@@ -102,21 +101,18 @@ subroutine SCF(E)
    integer             :: i0, ii, jj, kk, kkk
 
 !------------------------------------------------------------------------------!
-! FFR - vvterm
-   logical             :: dovv
-   real*8              :: weight
-   real*8, allocatable :: fockbias(:,:)
+! FFR variables
+   type(sop)           :: overop
    real*8, allocatable :: Xmat(:,:)
    real*8, allocatable :: Ymat(:,:)
    real*8, allocatable :: Dvec(:)
-   type(sop)           :: overop      ! Testing SOP
-   real*8, allocatable :: sqsmat(:,:) ! Testing SOP
+   real*8, allocatable :: sqsmat(:,:)
+   real*8, allocatable :: tmpmat(:,:)
 
-! FFR - ehrenfest (temp)
-   real*8 :: dipxyz(3)
+   real*8              :: dipxyz(3)
 
 ! FIELD variables (maybe temporary)
-   real*8 :: Qc, Qc2, g
+   real*8  :: Qc, Qc2, g
    integer :: ng2
 
 !------------------------------------------------------------------------------!
@@ -358,15 +354,6 @@ subroutine SCF(E)
            call overop%Gets_orthog_4m( 1, 0.0d0, X_min, Y_min, X_min_trans, Y_min_trans)
         end if
 
-! TODO: initializations related to fockbias should be dealt with differently
-      dovv=.false.
-      if (dovv) then
-         if ( allocated(fockbias) ) deallocate(fockbias)
-         if ( allocated(sqsmat) )   deallocate(sqsmat)
-         allocate( fockbias(M,M), sqsmat(M,M) )
-         call fockbias_oldinit( natom, nuc, sqsmat, fockbias )
-      end if
-
 ! TODO: replace X,Y,Xtrans,Ytrans with Xmat, Ymat, Xtrp, Ytrp
 !        do ii=1,M
 !        do jj=1,M
@@ -385,6 +372,17 @@ subroutine SCF(E)
         end do
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!
+!
+!  Fockbias setup
+        if ( allocated(sqsmat) ) deallocate(sqsmat)
+        if ( allocated(tmpmat) ) deallocate(tmpmat)
+        allocate( sqsmat(M,M), tmpmat(M,M) )
+        call overop%Gets_orthog_2m( 3, 0.0d0, tmpmat, sqsmat )
+        call fockbias_loads( natom, nuc )
+        call fockbias_setmat( tmpmat )
+        deallocate( sqsmat, tmpmat )
+
 
 !DFTB: Dimensions of Xmat and Ymat are modified for DFTB.
 !
@@ -602,6 +600,7 @@ subroutine SCF(E)
 
         enddo
 
+        call fockbias_apply( 0.0d0, fock_0 )
 
 !------------------------------------------------------------------------------!
 ! DFTB: Fock and Rho for DFTB are builded.

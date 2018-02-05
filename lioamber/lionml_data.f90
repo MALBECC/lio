@@ -1,5 +1,13 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module lionml_data
+!
+!
+!  Fockbias 
+!------------------------------------------------------------------------------!
+   use fockbias_data, only: fockbias_is_active, fockbias_is_shaped             &
+                         &, fockbias_timegrow , fockbias_timefall              &
+                         &, fockbias_timeamp0 , fockbias_readfile
+
    implicit none
 !
 !
@@ -64,7 +72,10 @@ module lionml_data
    &, rsti_loads, rsti_fname, rsto_saves, rsto_nfreq, rsto_fname               &
 !
    &, eefld_on, eefld_ampx, eefld_ampy, eefld_ampz, eefld_wavelen              &
-   &, eefld_timegih, eefld_timegfh, eefld_timepos, eefld_timeamp
+   &, eefld_timegih, eefld_timegfh, eefld_timepos, eefld_timeamp               &
+!
+   &, fockbias_is_active, fockbias_is_shaped, fockbias_readfile                &
+   &, fockbias_timegrow , fockbias_timefall , fockbias_timeamp0
 
 end module lionml_data
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

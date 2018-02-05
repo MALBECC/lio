@@ -369,7 +369,7 @@ include liosubs/liosubs.mk
 
 tmplist :=
 tmplist += SCF.o init_lio.o
-tmplist += lionml_subs.o fockbias_subs.o
+tmplist += fockbias_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/liosubs.mod
 
 

@@ -214,7 +214,7 @@ subroutine fockbias_apply_d( timepos, fockmat )
       print*; stop
    end if
 
-   Nbasis = size( fockbias_matrix )
+   Nbasis = size( fockbias_matrix, 1 )
    if (( Nbasis /= size(fockmat,1) ).or.( Nbasis /= size(fockmat,2) )) then
       print*, "Error inside fockbias_apply: bad fockmat input size."
       print*, "   Nbasis     = ", Nbasis

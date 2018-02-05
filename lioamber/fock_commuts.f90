@@ -20,7 +20,7 @@ subroutine calc_fock_commuts(fock, rho, X, Y, scratch, scratch1, M)
     scratch = 0
     do i = 1, M
     do j = 1, M
-    do k = 1, i ! X is upper triangular.
+    do k = 1, M
         scratch(j,i) = scratch(j,i) + X(k,i)*fock(k,j)
     enddo
     enddo
@@ -30,7 +30,7 @@ subroutine calc_fock_commuts(fock, rho, X, Y, scratch, scratch1, M)
     fock=0
     do i = 1, M
     do j = 1, M
-    do k = 1, j ! X is upper triangular
+    do k = 1, M
         fock(i,j) = fock(i,j) + scratch(k,i)*X(k,j) 
     enddo
     enddo
@@ -50,13 +50,17 @@ subroutine calc_fock_commuts(fock, rho, X, Y, scratch, scratch1, M)
     scratch=0
     do i = 1, M
     do j = 1, M
-        do k = j, M ! Y is lower triangular.
-            scratch(i,j) = scratch(i,j) + scratch1(k,i)*Y(k,j)
-        enddo
-        ! The next k loop will only use values of scratch1(first index) > j, 
-        ! so at this point we can overwrite anything behind that and just  
-        ! reuse scratch1 as the transpose.
-        scratch1(j,i) = scratch(i,j)
+    do k = 1, M
+       scratch(i,j) = scratch(i,j) + scratch1(k,i)*Y(k,j)
     enddo
     enddo
+    enddo
+
+    scratch1=0
+    do i = 1, M
+    do j = 1, M
+       scratch1(j,i) = scratch(i,j)
+    enddo
+    enddo
+
 end subroutine calc_fock_commuts

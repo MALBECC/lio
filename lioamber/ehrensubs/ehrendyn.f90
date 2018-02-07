@@ -6,8 +6,11 @@ subroutine ehrendyn( energy_o, dipmom_o )
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use garcha_mod, &
-   &  only: M, natom, tdstep, total_time, first_step, atom_mass                &
+   &  only: M, natom, total_time, first_step, atom_mass                &
    &      , nucpos, nucvel, qm_forces_ds, qm_forces_total
+
+   use td_data, &
+   &  only: tdstep
 
    use lionml_data, &
    &  only: ndyn_steps, edyn_steps &
@@ -142,7 +145,7 @@ subroutine ehrendyn( energy_o, dipmom_o )
       total_time = 0.0d0
    else
       dipmom_norm = sqrt( dipmom(1)**2 + dipmom(2)**2 + dipmom(3)**2 )
-      call write_dipole( dipmom, dipmom_norm, 134, .false.)  
+      call write_dipole( dipmom, dipmom_norm, 134, .false.)
       total_time = total_time + dtn * 0.0241888d0
    endif
 !

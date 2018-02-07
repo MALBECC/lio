@@ -8,13 +8,20 @@ subroutine magnus(fock, rhoOld, rhoNew, M, N, dt, factorial)
     implicit none
     integer  , intent(in)  :: M, N
     real*8   , intent(in)  :: Fock(M,M), dt, factorial(N)
-    complex*8, intent(in)  :: RhoOld(M,M)
-    complex*8, intent(out) :: RhoNew(M,M)
-
-    complex*8, allocatable :: Scratch(:,:), ConmPrev(:,:), ConmNext(:,:), &
-                              Omega1(:,:)
+#ifdef TD_SIMPLE
+    complex*8 , intent(in)  :: RhoOld(M,M)
+    complex*8 , intent(out) :: RhoNew(M,M)
+    complex*8 , parameter   :: icmplx=CMPLX(0.0D0,1.0D0)
+    complex*8 , allocatable :: Scratch(:,:), ConmPrev(:,:), ConmNext(:,:), &
+                               Omega1(:,:)
+#else
+    complex*16, intent(in)  :: RhoOld(M,M)
+    complex*16, intent(out) :: RhoNew(M,M)
+    complex*16, parameter   :: icmplx=CMPLX(0.0D0,1.0D0)
+    complex*16, allocatable :: Scratch(:,:), ConmPrev(:,:), ConmNext(:,:), &
+                               Omega1(:,:)
+#endif
     integer                :: ii
-    complex*8, parameter   :: icmplx=CMPLX(0.0D0,1.0D0)
 
     ! Variable initializations.
     allocate(ConmPrev(M,M), ConmNext(M,M), Omega1(M,M), Scratch(M,M))

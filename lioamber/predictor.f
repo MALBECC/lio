@@ -1,16 +1,15 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat,
-     >                      Xtrans, fxx, fyy, fzz,g)
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! This routine recives: F1a,F1b,rho2
-! And gives: F5 = F(t+(deltat/2))
-       use garcha_mod , only: M, RMM, NBCH, tdstep, field
+     >                      Xtrans, fxx, fyy, fzz, g, timestep)
+      ! This routine recives: F1a,F1b,rho2
+      ! And gives: F5 = F(t+(deltat/2))
+       use garcha_mod , only: M, RMM, NBCH, field
        use mathsubs   , only: basechange
        use faint_cpu77, only: int3lu, intfld
        implicit none
        REAL*8,intent(inout) :: F1a(M,M),F1b(M,M),FON(M,M), Xmat(M,M)
-       REAL*8,intent(in) :: Xtrans(M,M), fxx, fyy, fzz,g
-       REAL*8, intent(in) :: factorial(NBCH)
+       REAL*8,intent(in) :: Xtrans(M,M), fxx, fyy, fzz, g, timestep
+       REAL*8,intent(in) :: factorial(NBCH)
        REAL*8,allocatable :: F3(:,:),FBA(:,:)
 #ifdef TD_SIMPLE
        COMPLEX*8, intent(in) :: rho2(M,M)
@@ -24,14 +23,13 @@
 !------------------------------------------------------------------------------!
        ALLOCATE(rho4(M,M),rho2t(M,M),F3(M,M),FBA(M,M))
 c
-       M2=2*M
-       MM=M*(M+1)/2
-c now S, F also uses the same position after S was used
-       M5=1 + 2*MM
+       M2 = 2*M
+       MM = M*(M+1)/2
+       M5 = 1 + 2*MM
 
 c Initializations/Defaults
 ! tdstep predictor is 0.5*tdstep magnus
-       tdstep1=tdstep*0.50D0
+       tdstep1=timestep*0.50D0
 ! Step 1: Matrix F1a and F1b are used to extrapolate F3
        F3=(7.D0/4.D0)*F1b-(3.D0/4.D0)*F1a
 ! Step2: F3 is used to propagate rho2 to rho4

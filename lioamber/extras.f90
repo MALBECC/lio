@@ -146,9 +146,6 @@
       ,cutECP,local_nonlocal, ecp_debug,ecp_full_range_int &
       ,verbose_ECP,Cnorm,FOCK_ECP_read, FOCK_ECP_write,Fulltimer_ECP &
       ,cut2_0,cut3_0
-#ifdef CUBLAS
-      use cublasmath
-#endif
 
       integer, intent(in) :: charge
 !LIO

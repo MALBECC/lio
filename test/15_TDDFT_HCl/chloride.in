@@ -12,6 +12,5 @@
  idip       = 0
  dipole     = f
  field      = t
- exter      = t
  Fz         = 0.05
 &end

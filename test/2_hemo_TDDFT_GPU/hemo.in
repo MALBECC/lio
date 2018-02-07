@@ -14,7 +14,6 @@
  tdstep=0.001
  NBCH=10
  field=.false.
- exter=.false.
  writedens=t
  restart_freq=0
  VCINP=t

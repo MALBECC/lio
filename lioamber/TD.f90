@@ -259,9 +259,15 @@ subroutine TD()
             if (istep.eq.chkpntF1b) F1b = fock
          endif
       else
+<<<<<<< 2963d3f48819170fe7a01c9425e69b3796215130
          call td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, dt_magnus, &
                         natom, transport_calc, Nuc, Iz, istep, overlap, sqsm, &
                         rho_aux, X, Xtrans, t/0.024190D0, M_in, nshell, ncont)
+=======
+         call td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, NBCH,  &
+                        dt_magnus, natom, transport_calc, Nuc, Iz, istep, &
+                        overlap, sqsm, rho_aux, X, Xtrans, t/0.024190D0)
+>>>>>>> Created field input subroutines.
       endif
 
       call g2g_timer_start('complex_rho_on_to_ao')

@@ -3,6 +3,9 @@
 ! 0 - Constant, 1 - Gaussian    , 2 - Half Gaussian Up, 3 - Half Gaussian Down
 ! 4 - Sine    , 5 - Shifted Sine, 6 - Cosine          , 7 - Shifted Cosine
 ! In both sine and cosine "decay" means "period" and "center" means "phase".
+! Field ISO functions share the same f(t) in x, y and z coordinates (i.e
+! x=A*f(t), y=B*g(t), z=C*h(t)), while ANISO functions are for example
+! x=A*f(t), y=B*g(t), z=C*h(t).
 module field_data
    use shape_data, only: shape_iso, shape_aniso
    implicit none
@@ -23,6 +26,8 @@ module field_data
    real*8  :: fx            = 0.0D0
    real*8  :: fy            = 0.0D0
    real*8  :: fz            = 0.0D0
+   character*20 :: field_iso_file   = "field.in"
+   character*20 :: field_aniso_file = "fieldaniso.in"
    type(field_aniso), allocatable :: fields_aniso(:)
    type(field_iso)  , allocatable :: fields_iso(:)
 end module field_data
@@ -34,6 +39,10 @@ module field_subs
    interface field_calc
       module procedure field_calc
    end interface field_calc
+
+   interface read_fields
+      module procedure read_fields
+   end interface read_fields
 
    interface field_setup_iso
       module procedure field_setup_iso_full
@@ -50,14 +59,14 @@ contains
    ! relations for some of the shape parameters. Both subroutines are mutually
    ! exclusive. In easy, the decay is applied arbtirarily.
    subroutine field_setup_iso_full(nfields_i, fld_shape, periodic, time_decay, &
-                                   time_start, time_end, center, coord, g_in)
+                                   time_start, time_end, center, coord)
       use field_data, only: nfields_iso, fields_iso
       implicit none
       integer, intent(in) :: nfields_i, fld_shape(nfields_i)
       logical, intent(in) :: periodic(nfields_i)
       real*8 , intent(in) :: time_decay(nfields_i), time_start(nfields_i), &
                              time_end(nfields_i), center(nfields_i),       &
-                             coord(nfields_i,3), g_in(nfields_i)
+                             coord(nfields_i,3)
       integer :: icount
 
       nfields_iso = nfields_i
@@ -72,7 +81,7 @@ contains
          fields_iso(icount)%time_end   = time_end(icount)
          fields_iso(icount)%center     = center(icount)
          fields_iso(icount)%coord(1:3) = coord(icount,1:3)
-         fields_iso(icount)%field_g    = g_in(icount)
+         fields_iso(icount)%field_g    = 1.0D0
       enddo
       return
    end subroutine field_setup_iso_full
@@ -130,14 +139,14 @@ contains
    end subroutine field_setup_iso_easy
 
    subroutine field_setup_aniso_full(nfields_i, fld_shape, period, time_decay, &
-                                     time_start, time_end, center,  coord, g_in)
+                                     time_start, time_end, center,  coord)
       use field_data, only: nfields_aniso, fields_aniso
       implicit none
       integer, intent(in) :: nfields_i, fld_shape(nfields_i,3)
       logical, intent(in) :: period(nfields_i,3)
       real*8 , intent(in) :: time_decay(nfields_i,3), time_start(nfields_i,3), &
                              time_end(nfields_i,3), center(nfields_i,3),       &
-                             coord(nfields_i,3), g_in(nfields_i)
+                             coord(nfields_i,3)
       integer :: icount
 
       nfields_aniso = nfields_i
@@ -152,7 +161,7 @@ contains
          fields_aniso(icount)%time_end(1:3)   = time_end(icount,1:3)
          fields_aniso(icount)%center(1:3)     = center(icount,1:3)
          fields_aniso(icount)%coord(1:3)      = coord(icount,1:3)
-         fields_aniso(icount)%field_g         = g_in(icount)
+         fields_aniso(icount)%field_g         = 1.0D0
       enddo
       return
    end subroutine field_setup_aniso_full
@@ -291,6 +300,87 @@ contains
       return
    end subroutine field_calc
 
+   ! Reads field from input files.
+   subroutine read_iso_fields()
+      use field_data, only: nfields_iso, field_iso_file
+      implicit none
+      integer, allocatable :: fld_shape(:)
+      logical, allocatable :: periodic(:)
+      real*8 , allocatable :: time_decay(:), time_start(:), time_end(:),  &
+                              center(:), coord(:,:)
+      logical :: file_exists
+      integer :: icount, ios
+
+      if (nfields_iso.lt.1) return
+      allocate (fld_shape(nfields_iso) , periodic(nfields_iso)  , &
+                time_start(nfields_iso), time_decay(nfields_iso), &
+                time_end(nfields_iso)  , center(nfields_iso)    , &
+                coord(nfields_iso, 3))
+
+      inquire(file = field_iso_file, exist = file_exists)
+      if (.not.file_exists) then
+         stop "ERROR - field_iso file not found, but nfields_iso > 0."
+      endif
+
+      open(unit=314, file=field_iso_file, iostat=ios)
+      do icount = 1, nfields_iso
+         read(314,*) fld_shape(icount), periodic(icount)  , time_start(icount),&
+                     time_end(icount) , time_decay(icount), center(icount)    ,&
+                     coord(icount,1)  , coord(icount,2)   , coord(icount,3)
+      enddo
+      close(314)
+      call field_setup_iso_full(nfields_iso, fld_shape, periodic, time_decay,  &
+                                time_start , time_end , center  ,  coord)
+      deallocate (fld_shape, periodic, time_start, time_decay, time_end, &
+                  center, coord)
+      return
+   end subroutine read_iso_fields
+
+   subroutine read_aniso_fields()
+      use field_data, only: nfields_aniso, field_aniso_file
+      implicit none
+      integer, allocatable :: fld_shape(:,:)
+      logical, allocatable :: periodic(:,:)
+      real*8 , allocatable :: time_decay(:,:), time_start(:,:), time_end(:,:), &
+                              center(:,:), coord(:,:)
+      logical :: file_exists
+      integer :: icount, jcount, ios
+
+      if (nfields_aniso.lt.1) return
+      allocate (fld_shape(nfields_aniso,3) , periodic(nfields_aniso,3)  , &
+                time_start(nfields_aniso,3), time_decay(nfields_aniso,3), &
+                time_end(nfields_aniso,3)  , center(nfields_aniso,3)    , &
+                coord(nfields_aniso, 3))
+
+      inquire(file = field_aniso_file, exist = file_exists)
+      if (.not.file_exists) then
+         stop "ERROR - field_iso file not found, but nfields_iso > 0."
+      endif
+
+      open(unit=314, file=field_aniso_file, iostat=ios)
+      do icount = 1, nfields_aniso
+      do jcount = 1, 3
+         read(314,*) fld_shape(icount,jcount) , periodic(icount,jcount), &
+                     time_start(icount,jcount), time_end(icount,jcount), &
+                     time_decay(icount,jcount), center(icount,jcount)  , &
+                     coord(icount,jcount)
+      enddo
+      enddo
+      close(314)
+      call field_setup_aniso_full(nfields_aniso, fld_shape, periodic, &
+                                  time_decay, time_start , time_end , center, &
+                                  coord)
+      deallocate (fld_shape, periodic, time_start, time_decay, time_end, &
+                  center, coord)
+      return
+   end subroutine read_aniso_fields
+
+   subroutine read_fields()
+      call read_iso_fields()
+      call read_aniso_fields()
+   end subroutine read_fields
+
+   ! Deallocates field arrays.
    subroutine field_finalize()
       use field_data, only: fields_iso, fields_aniso
       implicit none

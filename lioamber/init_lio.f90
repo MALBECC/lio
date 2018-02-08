@@ -133,6 +133,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
                            Fock_Overlap, P_density, OPEN, timers, MO_coef_at,  &
                            MO_coef_at_b, RMM_save
     use ECP_mod,    only : Cnorm, ecpmode
+    use field_data, only : chrg_sq
 
     implicit none
     integer , intent(in) :: charge, nclatom, natomin, Izin(natomin), callfrom
@@ -146,6 +147,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
 
     call g2g_timer_start('lio_init')
 
+    chrg_sq = charge**2
     if (callfrom.eq.1) then
         natom  = natomin
         if (.not.(allocated(Iz))) allocate(Iz(natom))

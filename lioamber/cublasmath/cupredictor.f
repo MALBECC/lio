@@ -1,15 +1,16 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        subroutine cupredictor_DZ(F1a,F1b,FON,rho2,devPtrX,factorial,
-     > Fxx,Fyy,Fzz,g,devPtrXc, timestep,M_in,MTB)
+     > devPtrXc, timestep, time, M_in, MTB)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !Predictor-Corrector Cheng, V.Vooris.PhysRevB.2006.74.155112
 ! Esta rutina recibe: F1a,F1b,rho2
 ! Tira: F5 = F(t+(deltat/2))
       use garcha_mod
       use field_data, only: field
+      use field_subs, only: field_calc
       use mathsubs
       use general_module
-      use faint_cpu77, only: int3lu, intfld
+      use faint_cpu77, only: int3lu
        implicit real*8 (a-h,o-z)
 !       IMPLICIT REAL*8 (a-h,o-z)
        REAL*8,intent(inout) :: F1a(M_in,M_in),F1b(M_in,M_in)
@@ -21,11 +22,10 @@
 !       integer :: M19,M20,M3,M18
        integer :: i,j,k,kk,stat
        REAL*8,allocatable :: F3(:,:),FBA(:,:)
-       real*8 :: E2, tdstep1
+       real*8 :: E1, E2, tdstep1
       external CUBLAS_INIT, CUBLAS_SHUTDOWN
       integer CUBLAS_INIT
-      REAL*8,intent(in) :: factorial(NBCH), timestep
-      REAL*8,intent(in) :: g,Fxx,Fyy,Fzz
+      REAL*8,intent(in) :: factorial(NBCH), timestep, time
        COMPLEX*16, intent(in) :: rho2(M_in,M_in)
        COMPLEX*16,allocatable :: rho4(:,:),rho2t(:,:)
 !-----------------------------------------------------------------------------n
@@ -100,16 +100,11 @@ c xmm es la primer matriz de (M,M) en el
           ENDDO
        ENDDO
 ! Paso4: La matriz densidad 4 es usada para calcular F5------> Corrector
-      write(*,*) 'ANTES'
       call g2g_timer_start('int3lu + g2g_solve')
       call int3lu(E2)
       call g2g_solve_groups(0,Ex,0)
       call g2g_timer_stop('int3lu + g2g_solve')
-      write(*,*) 'DESPUES'
-      if (field) then
-         write(*,*) 'FIELD PREDICTOR'
-         call intfld(g,Fxx,Fyy,Fzz)
-      endif
+      call field_calc(E1, time)
 !------------------------------------------------------------------------------!
 ! Escritura de fock cuadrada
 !------------------------------------------------------------------------------!
@@ -152,14 +147,14 @@ c xmm es la primer matriz de (M,M) en el
        RETURN;END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        subroutine cupredictor_DC(F1a,F1b,FON,rho2,devPtrX,factorial,
-     >                           Fxx,Fyy,Fzz,g,devPtrXc, timestep,
-     >                           M_in,MTB)
+     > devPtrXc, timestep, time, M_in, MTB)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !Predictor-Corrector Cheng, V.Vooris.PhysRevB.2006.74.155112
 ! Esta rutina recibe: F1a,F1b,rho2
 ! Tira: F5 = F(t+(deltat/2))
        use garcha_mod
        use field_data, only: field
+       use field_subs, only: field_calc
        IMPLICIT REAL*8 (a-h,o-z)
        REAL*8,intent(inout) :: F1a(M_in,M_in),F1b(M_in,M_in)
        REAL*8,intent(inout) :: FON(M_in,M_in)
@@ -169,11 +164,10 @@ c xmm es la primer matriz de (M,M) en el
        REAL*8,allocatable :: F3(:,:),FBA(:,:)
        integer :: i,j,k,kk,stat,M1,M2,MM,M5,M7,M9,MMD,M11,M13,M15,M17
        integer :: M19,M20,M3,M18
-       real*8 :: E2, tdstep1
+       real*8 :: E2, tdstep1, E1
       external CUBLAS_INIT, CUBLAS_SHUTDOWN
       integer CUBLAS_INIT
-      REAL*8,intent(in) :: factorial(NBCH), timestep
-      REAL*8,intent(in) :: g,Fxx,Fyy,Fzz
+      REAL*8,intent(in) :: factorial(NBCH), timestep, time
        COMPLEX*8, intent(in) :: rho2(M_in,M_in)
        COMPLEX*8,allocatable :: rho4(:,:),rho2t(:,:)
 !-----------------------------------------------------------------------------n
@@ -240,10 +234,7 @@ c xmm es la primer matriz de (M,M) en el
 ! Paso4: La matriz densidad 4 es usada para calcular F5------> Corrector
       call int3lu(E2)
       call g2g_solve_groups(0,Ex,0)
-      if (field) then
-         write(*,*) 'FIELD PREDICTOR'
-         call intfld(g,Fxx,Fyy,Fzz)
-      endif
+      call field_calc(E1, time)
 !------------------------------------------------------------------------------!
 ! Escritura de fock cuadrada
 !------------------------------------------------------------------------------!

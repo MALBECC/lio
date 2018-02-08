@@ -18,8 +18,8 @@ module field_data
    integer :: nfields_iso   = 0
    integer :: nfields_aniso = 0
    real*8  :: chrg_sq       = 0.0D0
-   real*8  :: epsilon       = 0.0D0
-   real*8  :: a0            = 0.0D0
+   real*8  :: epsilon       = 1.0D0
+   real*8  :: a0            = 1000.0D0
    real*8  :: fx            = 0.0D0
    real*8  :: fy            = 0.0D0
    real*8  :: fz            = 0.0D0

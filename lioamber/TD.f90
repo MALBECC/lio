@@ -33,6 +33,7 @@ module td_data
    real*8  :: tdstep    = 2.0D-3
    logical :: tdrestart = .false.
    logical :: writedens = .false.
+   real*8  :: pert_time = 2.0D-1
 end module td_data
 
 module time_dependent

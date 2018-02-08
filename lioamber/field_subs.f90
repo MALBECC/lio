@@ -14,8 +14,15 @@ module field_data
       real*8 :: field_g = 0.0D0
    end type field_aniso
 
-   logical :: field = .false.
-   integer :: nfields_iso = 0, nfields_aniso = 0
+   logical :: field         = .false.
+   integer :: nfields_iso   = 0
+   integer :: nfields_aniso = 0
+   real*8  :: chrg_sq       = 0.0D0
+   real*8  :: epsilon       = 0.0D0
+   real*8  :: a0            = 0.0D0
+   real*8  :: fx            = 0.0D0
+   real*8  :: fy            = 0.0D0
+   real*8  :: fz            = 0.0D0
    type(field_aniso), allocatable :: fields_aniso(:)
    type(field_iso)  , allocatable :: fields_iso(:)
 end module field_data
@@ -23,6 +30,10 @@ end module field_data
 module field_subs
    use field_data, only: field_iso, field_aniso
    implicit none
+
+   interface field_calc
+      module procedure field_calc
+   end interface field_calc
 
    interface field_setup_iso
       module procedure field_setup_iso_full
@@ -257,6 +268,28 @@ contains
 
       return
    end subroutine field_calc_all
+
+   subroutine field_calc(energ, time)
+      use faint_cpu77, only: intfld
+      use field_data , only: chrg_sq, epsilon, a0
+      implicit none
+      real*8, intent(in)    :: time
+      real*8, intent(inout) :: energ
+      real*8 :: dipxyz(3), g, factor, Fx, Fy, Fz, tol
+
+      Fx     = 0.0D0  ; Fy     = 0.0D0
+      Fz     = 0.0D0  ; energ  = 0.0D0
+      dipxyz = 0.0D0  ; g      = 1.00D0
+      factor = 2.54D0 ; tol    = 1.00D-16
+
+      call dip(dipxyz)
+      call field_calc_all(Fx, Fy, Fz, time)
+      if ( (Fx.lt.tol) .and. (Fy.lt.tol) .and. (Fz.lt.tol) ) return
+      call intfld(g, Fx, Fy, Fz)
+      energ = - g * (Fx*dipxyz(1) + Fy*dipxyz(2) + Fz*dipxyz(3)) / factor -   &
+                0.50D0 * (1.0D0 - 1.0D0/epsilon) * chrg_sq/a0
+      return
+   end subroutine field_calc
 
    subroutine field_finalize()
       use field_data, only: fields_iso, fields_aniso

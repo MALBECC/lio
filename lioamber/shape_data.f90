@@ -14,6 +14,8 @@ module shape_data
       real*8  :: coord(3)   = 0.0D0
       contains
          procedure, nopass :: calc_g
+         procedure, nopass :: calc_c
+         procedure, nopass :: calc_s
          procedure, pass   :: calculate => calc_iso
    end type shape_iso
 
@@ -27,11 +29,14 @@ module shape_data
       real*8  :: coord(3)      = 0.0D0
       contains
          procedure, nopass :: calc_g
+         procedure, nopass :: calc_c
+         procedure, nopass :: calc_s
          procedure, pass   :: calculate => calc_aniso
    end type shape_aniso
 contains
 
    ! Calculates the shape in one coordinate.
+   ! Calculates a gaussian.
    function calc_g(in_time, f_coord, decay, center) result(shape_mag)
       implicit none
       real*8 , intent(in) :: in_time, f_coord, decay, center
@@ -45,6 +50,36 @@ contains
 
       return
    end function calc_g
+
+   ! Calculates a sine.
+   function calc_s(in_time, f_coord, period, phase) result(shape_mag)
+      implicit none
+      real*8, intent(in) :: in_time, f_coord, period, phase
+      real*8 :: shape_mag, argument
+
+      shape_mag = 0.0D0
+      argument  = 0.0D0
+
+      argument  = (in_time - phase) / period
+      shape_mag = sin(argument)
+
+      return
+   end function calc_s
+
+   ! Calculates a cosine.
+   function calc_c(in_time, f_coord, period, phase) result(shape_mag)
+      implicit none
+      real*8, intent(in) :: in_time, f_coord, period, phase
+      real*8 :: shape_mag, argument
+
+      shape_mag = 0.0D0
+      argument  = 0.0D0
+
+      argument  = (in_time - phase) / period
+      shape_mag = cos(argument)
+
+      return
+   end function calc_c
 
    subroutine calc_iso(this, time, shape_mag)
       implicit none
@@ -70,6 +105,16 @@ contains
          case (1, 2, 3)
             do icount = 1, 3
                shape_mag(icount) = this%calc_g(in_time, this%coord(icount), &
+                                                this%time_decay, this%center)
+            enddo
+         case (4, 5)
+            do icount = 1, 3
+               shape_mag(icount) = this%calc_s(in_time, this%coord(icount), &
+                                                this%time_decay, this%center)
+            enddo
+         case (6, 7)
+            do icount = 1, 3
+               shape_mag(icount) = this%calc_c(in_time, this%coord(icount), &
                                                 this%time_decay, this%center)
             enddo
          case default
@@ -98,20 +143,26 @@ contains
             in_time(icount) = time
          endif
 
-         select case (this%shape_type(icount))
-         case (0)
-            if (time.le.this%time_end(icount)) then
+         if (time.le.this%time_end(icount)) then
+            select case (this%shape_type(icount))
+            case (0)
                shape_mag(icount) = this%coord(icount)
-            endif
-         case (1, 2, 3)
-            if (time.le.this%time_end(icount)) then
+            case (1, 2, 3)
                shape_mag(icount) = this%calc_g(in_time(icount), &
                                    this%coord(icount), this%time_decay(icount),&
                                    this%center(icount))
-            endif
-         case default
-            write(*,*) "ERROR - shape. Wrong shape shape (calc_coord)."
-         end select
+            case (4, 5)
+               shape_mag(icount) = this%calc_s(in_time(icount), &
+                                   this%coord(icount), this%time_decay(icount),&
+                                   this%center(icount))
+            case (6,7)
+               shape_mag(icount) = this%calc_c(in_time(icount), &
+                                   this%coord(icount), this%time_decay(icount),&
+                                   this%center(icount))
+            case default
+               write(*,*) "ERROR - shape. Wrong shape shape (calc_coord)."
+            end select
+         endif
       enddo
 
       return

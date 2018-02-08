@@ -1,6 +1,8 @@
 ! This module contains routines for Field setups and calculations.
 ! Field shapes are as follows:
-! 0 - Constant, 1 - Gaussian, 2 - Half Gaussian Up, 3 - Half Gaussian Down
+! 0 - Constant, 1 - Gaussian    , 2 - Half Gaussian Up, 3 - Half Gaussian Down
+! 4 - Sine    , 5 - Shifted Sine, 6 - Cosine          , 7 - Shifted Cosine
+! In both sine and cosine "decay" means "period" and "center" means "phase".
 module field_data
    use shape_data, only: shape_iso, shape_aniso
    implicit none
@@ -96,6 +98,18 @@ contains
          case (3)
             fields_iso(icount)%time_decay = time_end(icount) /25.0D0
             fields_iso(icount)%center     = 0.0D0
+         case (4)
+            fields_iso(icount)%time_decay = time_end(icount)
+            fields_iso(icount)%center     = 0.0D0
+         case (5)
+            fields_iso(icount)%time_decay = time_end(icount)
+            fields_iso(icount)%center     = time_end(icount) / 4.0D0
+         case (6)
+            fields_iso(icount)%time_decay = time_end(icount)
+            fields_iso(icount)%center     = 0.0D0
+         case (7)
+            fields_iso(icount)%time_decay = time_end(icount)
+            fields_iso(icount)%center     = time_end(icount) / 4.0D0
          case default
             write(*,*) "ERROR - Field: Wrong shape type for field ", icount, "."
             stop
@@ -165,6 +179,19 @@ contains
             case (3)
                fields_aniso(icount)%time_decay(crd) = tm_end(icount,crd) /25.0D0
                fields_aniso(icount)%center(crd)     = 0.0D0
+            case (4)
+               fields_aniso(icount)%time_decay(crd) = tm_end(icount,crd)
+               fields_aniso(icount)%center(crd)     = 0.0D0
+            case (5)
+               fields_aniso(icount)%time_decay(crd) = tm_end(icount,crd)
+               fields_aniso(icount)%center(crd)     = tm_end(icount,crd) / 4.0D0
+            case (6)
+               fields_aniso(icount)%time_decay(crd) = tm_end(icount,crd)
+               fields_aniso(icount)%center(crd)     = 0.0D0
+            case (7)
+               fields_aniso(icount)%time_decay(crd) = tm_end(icount,crd)
+               fields_aniso(icount)%center(crd)     = tm_end(icount,crd) / 4.0D0
+
             case default
                write(*,*) "ERROR - Field: Wrong shape type for field ", icount,&
                           "."
@@ -176,9 +203,30 @@ contains
       return
    end subroutine field_setup_aniso_easy
 
+   ! Intended to use as default or retrocompatibility with old way of
+   ! setting fields.
+   subroutine field_setup_old(pert_time, fld_shape, fld_x, fld_y, fld_z)
+      use field_data, only: nfields_iso, nfields_aniso
+      implicit none
+      integer, intent(in) :: fld_shape
+      real*8 , intent(in) :: fld_x, fld_y, fld_z, pert_time
+      real*8  :: coord(3) , time_end(1)
+      integer :: nfields_i, shape_i(1)
+
+      nfields_i   = 1
+      shape_i(1)  = fld_shape
+      time_end(1) = pert_time
+      coord(1)    = fld_x
+      coord(2)    = fld_y
+      coord(3)    = fld_z
+      call field_setup_iso_easy(nfields_i, shape_i, time_end, coord)
+
+      return
+   end subroutine field_setup_old
+
    ! Performs field calculation adding all field magnitudes to x, y and z
    ! coordinates.
-   subroutine field_calc(fx, fy, fz, time)
+   subroutine field_calc_all(fx, fy, fz, time)
       use field_data, only: nfields_iso, nfields_aniso, fields_iso, fields_aniso
       real*8, intent(in)  :: time
       real*8, intent(out) :: fx, fy, fz
@@ -208,7 +256,7 @@ contains
       endif
 
       return
-   end subroutine field_calc
+   end subroutine field_calc_all
 
    subroutine field_finalize()
       use field_data, only: fields_iso, fields_aniso

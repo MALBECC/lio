@@ -42,10 +42,10 @@ contains
 
 subroutine TD()
    use garcha_mod    , only: M, Md, NBCH, propagator, RMM, NCO, Iz, igrid2, r, &
-                             Nuc, nsol, pc, X, Smat, MEMO, field, epsilon, a0, &
-                             sol, natom, sqsm, Fx, Fy, Fz, Nunp, ntatom, ncont,&
-                             nshell
+                             Nuc, nsol, pc, X, Smat, MEMO, sol, natom, sqsm,   &
+                             Nunp, ntatom, ncont, nshell
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, writedens
+   use field_data    , only: field, fx, fy, fz, epsilon, a0
    use transport_data, only: transport_calc
    use transport_subs, only: transport_rho_trace, transport_generate_rho,      &
                              transport_init, transport_population

@@ -19,10 +19,9 @@ subroutine lio_defaults()
     use garcha_mod, only : basis, output, fmulliken, fcoord, OPEN, NMAX,       &
                            basis_set, fitting_set, int_basis, DIIS, ndiis,     &
                            GOLD, told, Etold, hybrid_converg, good_cut, rmax,  &
-                           rmaxs, omit_bas, propagator, NBCH, Fx, Fy, Fz,      &
-                           field, verbose, VCINP, restart_freq, frestartin,    &
+                           rmaxs, omit_bas, propagator, NBCH, verbose, VCINP,  &
+                           restart_freq, frestartin, Iexch, integ, DENS, IGRID,&
                            frestart, predcoef, idip, intsoldouble, dgtrig,     &
-                           Iexch, integ, DENS, IGRID, IGRID2, a0, epsilon,     &
                            cubegen_only, cube_res, cube_dens, cube_orb,        &
                            cube_sel, cube_orb_file, cube_dens_file, NUNP,      &
                            energy_freq, style, allnml, writeforces,            &
@@ -35,7 +34,7 @@ subroutine lio_defaults()
                            lowdin, mulliken, print_coeffs, number_restr, Dbug, &
                            steep, Force_cut, Energy_cut, minimzation_steep,    &
                            n_min_steeps, lineal_search, n_points, timers,      &
-                           writexyz
+                           writexyz, IGRID2
 
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,       &
                            local_nonlocal, ecp_debug, ecp_full_range_int,      &
@@ -67,9 +66,7 @@ subroutine lio_defaults()
     cutECP         = .true.        ; ecp_full_range_int = .false.       ;
 
 !   TD-DFT options.
-    propagator     = 1             ; Fx                 = 0.00          ;
-    NBCH           = 10            ; Fy                 = 0.00          ;
-    field          = .false.       ; Fz                 = 0.00          ;
+    propagator     = 1             ; NBCH               = 10            ;
 
 !   Distance restrain options
     number_restr   = 0             ;
@@ -107,15 +104,13 @@ subroutine lio_defaults()
     DENS           = .true.        ; cube_dens_file     = 'dens.cube'   ;
     IGRID          = 2             ; cube_elec          = .false.       ;
     IGRID2         = 2             ; cube_elec_file     = 'field.cube'  ;
-    a0             = 1000.0        ; style              = .false.       ;
-    epsilon        = 1.D0          ; allnml             = .true.        ;
+    timers         = 0             ; style              = .false.       ;
+    NORM           = .true.        ; allnml             = .true.        ;
     NUNP           = 0             ; energy_freq        = 1             ;
     cube_sqrt_orb  = .false.       ; MEMO               = .true.        ;
     SHFT           = .false.       ; GRAD               = .true.        ;
     BSSE           = .false.       ; sol                = .false.       ;
     primera        = .true.        ; watermod           = 0             ;
-    timers         = 0             ;
-    NORM           = .true.        ;
 
     return
 end subroutine lio_defaults
@@ -269,15 +264,16 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge, basis_i              &
     use garcha_mod, only : basis, output, fmulliken, fcoord, OPEN, NMAX,     &
                            basis_set, fitting_set, int_basis, DIIS, ndiis,   &
                            GOLD, told, Etold, hybrid_converg, good_cut,      &
-                           rmax, rmaxs, omit_bas, propagator, NBCH, Fx, Fy,  &
-                           Fz, field, verbose, VCINP, restart_freq, writexyz,&
-                           frestartin, frestart, predcoef, idip, dgtrig,     &
-                           Iexch, integ, DENS, IGRID, IGRID2, a0, epsilon,   &
+                           rmax, rmaxs, omit_bas, propagator, NBCH, verbose, &
+                           VCINP, restart_freq, writexyz, frestartin,        &
+                           frestart, predcoef, idip, dgtrig, Iexch, integ,   &
                            cubegen_only, cube_res, cube_dens, cube_orb,      &
                            cube_sel, cube_orb_file, cube_dens_file, NUNP,    &
                            energy_freq, style, allnml, cube_elec_file,       &
-                           cube_elec, cube_sqrt_orb, intsoldouble
+                           cube_elec, cube_sqrt_orb, intsoldouble, DENS,     &
+                           IGRID, IGRID2
     use td_data   , only : tdrestart, tdstep, ntdstep, timedep, writedens
+    use field_data, only : field, a0, epsilon, Fx, Fy, Fz
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,     &
                            local_nonlocal, ecp_debug, ecp_full_range_int,    &
                            verbose_ECP, Cnorm, FOCK_ECP_read, FOCK_ECP_write,&

@@ -22,13 +22,13 @@
       logical exists,MEMO,predcoef
       logical done(ntq),used,NORM,OPEN,DIRECT,VCINP,SHFT,DIIS
       logical done_fit(ntq)
-      logical dens,EXTR,SVD,field1
+      logical dens,EXTR,SVD
 !write1
       logical Coul,GRAD,BSSE,integ,SVD1,sol,tipe
 !Prop,GRAD,BSSE,integ,SVD1,sol,tipe
       logical exter,exter1,resp1,primera,writexyz,intsoldouble
       logical OPEN1
-      logical dens1,integ1,sol1,free,free1, field
+      logical dens1,integ1,sol1,free,free1
 
       logical writeforces
 
@@ -41,7 +41,6 @@
       real*8 e_(50,3),wang(50),e_2(116,3),wang2(116),e3(194,3), ! intg1 e intg2
      > wang3(194)                                               !
       integer Nr(0:54),Nr2(0:54)
-      real*8 Fx, Fy, Fz, epsilon, a0
 
       real*8, dimension (:,:), ALLOCATABLE :: r,v,rqm,d
       real*8, dimension (:), ALLOCATABLE ::  Em, Rm, pc

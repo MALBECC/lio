@@ -6,6 +6,7 @@
 ! Esta rutina recibe: F1a,F1b,rho2
 ! Tira: F5 = F(t+(deltat/2))
       use garcha_mod
+      use field_data, only: field
       use mathsubs
       use general_module
       use faint_cpu77, only: int3lu, intfld
@@ -158,6 +159,7 @@ c xmm es la primer matriz de (M,M) en el
 ! Esta rutina recibe: F1a,F1b,rho2
 ! Tira: F5 = F(t+(deltat/2))
        use garcha_mod
+       use field_data, only: field
        IMPLICIT REAL*8 (a-h,o-z)
        REAL*8,intent(inout) :: F1a(M_in,M_in),F1b(M_in,M_in)
        REAL*8,intent(inout) :: FON(M_in,M_in)

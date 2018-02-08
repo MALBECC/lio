@@ -211,6 +211,12 @@ tmplist += field_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/shape_data.mod
 
 ################################################################################
+
+tmplist :=
+tmplist += SCF.o TD.o init_lio.o cublasmath.o predictor.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/field_subs.o
+
+################################################################################
 include liosubs_dens/liosubs_dens.mk
 SRCDIRS += liosubs_dens
 OBJECTS += liosubs_dens.o

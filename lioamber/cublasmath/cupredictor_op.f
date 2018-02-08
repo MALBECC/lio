@@ -3,8 +3,9 @@
      > rho2_a,rho2_b,factorial,devPtrX,Fxx,Fyy,Fzz,g,devPtrXc)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! This routine recives: F1a,F1b,rho2
-! And gives: F5 = F(t+(deltat/2))      
+! And gives: F5 = F(t+(deltat/2))
        use garcha_mod
+       use field_data, only: field
        use faint_cpu77, only: int3lu, intfld
        REAL*8,intent(inout) :: F1a_a(M,M),F1b_a(M,M),
      > F1a_b(M,M),F1b_b(M,M),FON_a(M,M),FON_b(M,M)
@@ -81,8 +82,9 @@ c now G
      > rho2_a,rho2_b,factorial,devPtrX,Fxx,Fyy,Fzz,g,devPtrXc)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! This routine recives: F1a,F1b,rho2
-! And gives: F5 = F(t+(deltat/2))      
+! And gives: F5 = F(t+(deltat/2))
        use garcha_mod
+       use field_data, only: field
        REAL*8,intent(inout) :: F1a_a(M,M),F1b_a(M,M),
      > F1a_b(M,M),F1b_b(M,M),FON_a(M,M),FON_b(M,M)
        integer*8,intent(in) :: devPtrX,devPtrXc
@@ -154,4 +156,3 @@ c now G
        DEALLOCATE(rho4,rho2t,F3,FBA)
        RETURN;END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-

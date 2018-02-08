@@ -3,7 +3,8 @@
      >                      Xtrans, fxx, fyy, fzz, g, timestep,M_in,MTB)
       ! This routine recives: F1a,F1b,rho2
       ! And gives: F5 = F(t+(deltat/2))
-       use garcha_mod , only: M, RMM, NBCH, field
+       use garcha_mod , only: M, RMM, NBCH
+       use field_data , only: field
        use mathsubs   , only: basechange
        use faint_cpu77, only: int3lu, intfld
        implicit none

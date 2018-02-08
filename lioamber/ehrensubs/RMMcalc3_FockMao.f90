@@ -8,7 +8,9 @@ subroutine RMMcalc3_FockMao( DensMao, FockMao, DipMom, Energy )
 
    use faint_cpu77, only: int3lu, intfld
 
-   use garcha_mod,  only: M, epsilon, a0, natom, Iz, NCO, Nunp, total_time
+   use garcha_mod,  only: M, natom, Iz, NCO, Nunp, total_time
+
+   use field_data,  only: epsilon, a0
 
    use lionml_data, &
    &only: eefld_on, eefld_ampx, eefld_ampy, eefld_ampz, eefld_wavelen          &
@@ -23,7 +25,7 @@ subroutine RMMcalc3_FockMao( DensMao, FockMao, DipMom, Energy )
    real*8   :: Energy_Coulomb
    real*8   :: Energy_Exchange
    real*8   :: Energy_Efield
-   integer  :: kk 
+   integer  :: kk
 
 !  For electric field application
    real*8   :: FieldNow(3)

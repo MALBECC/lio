@@ -6,7 +6,8 @@ subroutine rmmcalc3_fockele( dens_mao, elec_field, uses_field,                 &
 !  Time is in ps?fs?
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-   use garcha_mod  , only: M, RMM, epsilon, a0, natom, Iz, NCO, Nunp
+   use garcha_mod  , only: M, RMM, natom, Iz, NCO, Nunp
+   use field_data  , only: a0, epsilon
    use faint_cpu77 , only: int3lu, intfld
    use ECP_mod     , only: ecpmode, VAAA, VAAB, VBAC
 
@@ -21,7 +22,7 @@ subroutine rmmcalc3_fockele( dens_mao, elec_field, uses_field,                 &
    real*8    , intent(inout) :: energy_field
    real*8    , intent(inout) :: energy_ecp
 
-   integer :: MM, kk 
+   integer :: MM, kk
    real*8  :: factor, g, Qc
    real*8  :: dip_times_field, strange_term
 !

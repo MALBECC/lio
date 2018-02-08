@@ -33,11 +33,12 @@ subroutine SCF(E)
                           cubegen_only, VCINP, primera, Nunp, GOLD, igrid2,    &
                           predcoef, nsol, r, pc, DIIS, told, Etold, Enucl,     &
                           Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz,  &
-                          epsilon, nuc, doing_ehrenfest, first_step, RealRho,  &
-                          total_time, field, Fx, Fy, Fz, a0,MO_coef_at, Smat,  &
-                          good_cut, ndiis, nshell, ncont
+                          nuc, doing_ehrenfest, first_step, RealRho,           &
+                          total_time, MO_coef_at, Smat, good_cut, ndiis, ncont,&
+                          nshell
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
                        FOCK_ECP_read,FOCK_ECP_write,IzECP
+   use field_data, only: field, Fx, Fy, Fz, a0, epsilon
    use td_data, only: timedep, tdrestart, tdstep
    use transport_data, only : generate_rho0
    use time_dependent, only : TD

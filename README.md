@@ -13,6 +13,7 @@ REQUIREMENTS
 * GNU or INTEL C++ and Fortran Compiler.
 * NVIDIA CUDA (for the GPU kernels).
 * GNU Make.
+* Libxc for LIO (optional).
 
 COMPILATION
 ------------
@@ -36,6 +37,8 @@ When using Intel's ICC/MKL or NVIDIA's CUDA libraries, add them to LD\_LIBRARY\_
 
 * _precision_: When precision = 1, compile everything in double precision (default = 0, hybrid precision).
 
+* _libxc_: compile the application to use libxc library. Requires libxc for lio installed.
+
 INSTALLATION
 ------------
 
@@ -49,7 +52,7 @@ Then set LIOHOME environment variable, pointing to LIO location.
 INSTALLATION WITH AMBER
 -----------------------
 
-  1. Compile LIO as indicated above. 
+  1. Compile LIO as indicated above.
   2. Be sure to check (or edit if needed) the /src/configure2 file in AMBER so that liolibs variable correctly points to LIO library folders.
   3. Configure and compile AMBER with the -lio option (see Amber installation instructions).
   4. Done!
@@ -64,6 +67,33 @@ NOTE: GROMACS is not yet officially supported on the other side, but we have our
 cmake -DGMX_GPU=0 -DGMX_THREAD_MPI=0 -DGMX_QMMM_PROGRAM="lio" -DLIO_LINK_FLAGS="-L/usr/lib -L/usr/lib64 -L/PATHTOLIOLIBRARIES -lg2g -llio-g2g"
 ```
   3. Done!
+
+INSTALLATION WITH LIBXC
+-----------------------
+
+  1. Download the libxc library for lio from gitlab (account needed) ([here](https://gitlab.com/eduarditoperez/libxc.git)).
+  2. Compile and Install the library (follow the Readme.me instructions).
+  3. In order for lio to compile with libxc, you'll need to create two variables in LD_LIBRARY_PATH
+```
+LIBXC_LIBXS=points to the path where the libxc libaries where installed in the file system.
+LIBXC_INCLUDES=points to the path where the libxc include files where installed in the file system.
+```
+  4. Now compile lio with the following command:
+```
+make cuda=1 libxc=1
+```
+  5. To run the simulations using the functionals from libxc you'll have to add the following variables to the *****.in files:
+```
+...
+use_libxc=t
+ex_functional_id=XXX
+ec_functional_id=XXX
+...
+```
+where ex_functional_id is the id for the energy-exchange functional from libxc and ec_funcional_id is the id
+for the energy-correlation functional from libxc. You can see the list of available functionals ([here](https://gitlab.com/libxc/libxc/wikis/Functional-list-4.0.4))
+or in see the funcs_key.c file in the src folder of libxc. Bare in mind that only the GGA functional's family are supported in
+this version of libxc for lio.
 
 TESTS
 -----

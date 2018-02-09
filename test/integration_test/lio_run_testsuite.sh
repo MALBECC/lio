@@ -97,14 +97,36 @@ $LIOBIN -i ${inputfile}.in -b ${currenttest}.basis -c ${currenttest}.xyz -v > ${
 echo -e "========================================================================="
 echo -e "========================================================================="
 
+##TODO AGREGAR: caroteno, hemo que son los que puedo comparar timers.
+## CAFFEINE
+## LIO
+currenttest="caffeine"
+inputfile="${currenttest}"
+outputfile=salida.lio
+outputdir="${destdir}${runningmode}/${now}/${currenttest}/"
 
-##TODO AGREGAR: caffeine, caroteno, hemo que son los que puedo comparar timers.
+echo -e "Creating dir ${outputdir} if not exists"
+mkdir -p ${outputdir}
 
+echo -e "${CYAN}Test name - ${currenttest}${NC}"
+#Show the command
+echo -e "${GREEN}Running LIO ${NC} $LIOBIN -i ${inputfile}.in -b ${currentest}.basis -c ${currenttest}.xyz -v  > ${outputdir}${outputfile}"
+#Run the test
+#$LIOBIN -i ${inputfile}.in -b ${inputfile}.basis -c ${inputfile}.xyz -v > ${outputdir}${outputfile};
+
+## LIBXC
+inputfile="${currenttest}.libxc"
+outputfile=salida.libxc
+
+#Show the command
+echo -e "${GREEN}Running LIBXC ${NC} $LIOBIN -i ${inputfile}.in -b ${currenttest}.basis -c ${currenttest}.xyz -v  > ${outputdir}${outputfile}"
+#Run the test
+#$LIOBIN -i ${inputfile}.in -b ${currenttest}.basis -c ${currenttest}.xyz -v > ${outputdir}${outputfile};
 
 echo -e "========================================================================="
 echo -e "========================================================================="
 
-
+##TODO AGREGAR: caroteno, hemo que son los que puedo comparar timers.
 #$LIOBIN -i fullereno.in -b DZVP  -c fullereno.xyz -v > $SALIDA
 
 

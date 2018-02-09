@@ -255,14 +255,13 @@ void PointGroupGPU<scalar_type>::solve_closed(
 #if USE_LIBXC
 	    if (fortran_vars.use_libxc) {
 	      //printf("gpu_accumulate_point_for_libxc<true, true, false>(...)");
-
 	      // Accumulate the data.
 	      gpu_accumulate_point_for_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (point_weights_gpu.data,
                 this->number_of_points, block_height, 
 		partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data,
 		accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
 
-	      // Compute exc_corr and y2a with libxc.
+	      // Compute exc_corr and y2a with libxc cpu version.
 	      libxc_exchange_correlation_cpu<scalar_type, true, true, false> (&libxcProxy,
 		energy_gpu.data, factors_gpu.data, this->number_of_points,
 		accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
@@ -270,7 +269,6 @@ void PointGroupGPU<scalar_type>::solve_closed(
 	      // Merge the results.
 	      gpu_accumulate_energy_and_forces_from_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (energy_gpu.data,
 		factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
-
 	    } else {
 	      //printf("Gpu_accumulate_point 1 ");
               gpu_accumulate_point<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);

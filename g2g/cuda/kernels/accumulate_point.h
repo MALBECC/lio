@@ -95,5 +95,7 @@ __global__ void gpu_accumulate_point(scalar_type* const energy, scalar_type* con
   if (compute_energy && valid_thread)
     energy[point] = (_partial_density * point_weight) * exc_corr;
 
-  if (compute_factor && valid_thread) factor[point] = point_weight * y2a;
+  if (compute_factor && valid_thread)
+    factor[point] = point_weight * y2a;
+
 }

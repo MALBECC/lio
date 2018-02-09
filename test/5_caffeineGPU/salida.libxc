@@ -5,7 +5,7 @@ Kernels: cpu
 Using 3 CPU Threads and 1 GPU Threads
  using the modified parser for libxc
  JOB STARTED NOW
-jue feb  1 20:00:30 ART 2018
+mié feb  7 22:41:17 ART 2018
 <======= GPU Code Initialization ========>
 atoms: 24
 max atoms: 24
@@ -17,7 +17,7 @@ m: 230 nco: 51
 density basis: s: 138 p: 42 d: 42
 density basis: m: 516
 Using device 0 for analytic integral calculations
-Weights: 61397us.
+Weights: 67517us.
 Particion 0: 877100
 Particion 1: 826040
 Particion 2: 859690
@@ -27,7 +27,7 @@ Relacion max / min = 1.061813
 --> Thread GPU: 1
 --> Correccion de cubos chicos: 250000
 --> Puntos de separacion: 200
-Timer functions: 358us.
+Timer functions: 378us.
 MM point charges: 0
 XC energy: 0
 Error: not the current timer: (new density)
@@ -329,35 +329,35 @@ XC energy: -90.8532
                    LIO TIMING INFORMATION:
 -------------------------------------------------------------------------------------------
 
-Total time: 22.7483s
-Total                                 22.748281s (100.00% of Total)
-  Forces                                 1.242215s (  5.46% of Total)
-    Coulomb+Exchange-correlation           1.215142s ( 97.82% of Forces)
-      Coulomb gradients                      0.251726s ( 20.72% of Coulomb+Exchange-correlation)
-      Exchange-correlation gradients         0.954094s ( 78.52% of Coulomb+Exchange-correlation)
-    Nuclear attraction gradients           0.017887s (  1.44% of Forces)
-    Overlap gradients                      0.009151s (  0.74% of Forces)
-  SCF                                   21.505985s ( 94.54% of Total)
-    Finalize SCF                           0.594621s (  2.76% of SCF)
-      Exchange-correlation energy            0.583786s ( 98.18% of Finalize SCF)
-      energy-weighted density                0.003756s (  0.63% of Finalize SCF)
-    Initialize SCF                         0.393260s (  1.83% of SCF)
-      1-e Fock                               0.017631s (  4.48% of Initialize SCF)
-        Nuclear attraction                     0.005623s ( 31.89% of 1-e Fock)
-        QM/MM                                  0.011970s ( 67.89% of 1-e Fock)
-      Coulomb G matrix                       0.209234s ( 53.21% of Initialize SCF)
-        G condition                            0.159746s ( 76.35% of Coulomb G matrix)
-        G invert                               0.044288s ( 21.17% of Coulomb G matrix)
-      Exchange-correlation grid setup        0.079875s ( 20.31% of Initialize SCF)
-      Overlap decomposition                  0.004827s (  1.23% of Initialize SCF)
-      initial guess                          0.076936s ( 19.56% of Initialize SCF)
-    Iteration                             20.517094s ( 95.40% of SCF)
-      Fock integrals                        17.679338s ( 86.17% of Iteration)
-        Coulomb fit + Fock                     1.800572s ( 10.18% of Fock integrals)
-        Exchange-correlation Fock             15.877672s ( 89.81% of Fock integrals)
-      SCF - Fock Diagonalization (sum)       1.030425s (  5.02% of Iteration)
-      SCF - MOC base change (sum)            0.150846s (  0.74% of Iteration)
-      SCF acceleration                       1.568267s (  7.64% of Iteration)
+Total time: 21.5918s
+Total                                 21.591848s (100.00% of Total)
+  Forces                                 1.215331s (  5.63% of Total)
+    Coulomb+Exchange-correlation           1.189889s ( 97.91% of Forces)
+      Coulomb gradients                      0.250648s ( 21.06% of Coulomb+Exchange-correlation)
+      Exchange-correlation gradients         0.930471s ( 78.20% of Coulomb+Exchange-correlation)
+    Nuclear attraction gradients           0.016848s (  1.39% of Forces)
+    Overlap gradients                      0.008561s (  0.70% of Forces)
+  SCF                                   20.376436s ( 94.37% of Total)
+    Finalize SCF                           0.544031s (  2.67% of SCF)
+      Exchange-correlation energy            0.531073s ( 97.62% of Finalize SCF)
+      energy-weighted density                0.003681s (  0.68% of Finalize SCF)
+    Initialize SCF                         0.401889s (  1.97% of SCF)
+      1-e Fock                               0.017951s (  4.47% of Initialize SCF)
+        Nuclear attraction                     0.005910s ( 32.92% of 1-e Fock)
+        QM/MM                                  0.012000s ( 66.85% of 1-e Fock)
+      Coulomb G matrix                       0.209375s ( 52.10% of Initialize SCF)
+        G condition                            0.159832s ( 76.34% of Coulomb G matrix)
+        G invert                               0.044350s ( 21.18% of Coulomb G matrix)
+      Exchange-correlation grid setup        0.087582s ( 21.79% of Initialize SCF)
+      Overlap decomposition                  0.005145s (  1.28% of Initialize SCF)
+      initial guess                          0.077544s ( 19.29% of Initialize SCF)
+    Iteration                             19.429491s ( 95.35% of SCF)
+      Fock integrals                        16.637638s ( 85.63% of Iteration)
+        Coulomb fit + Fock                     1.803230s ( 10.84% of Fock integrals)
+        Exchange-correlation Fock             14.833318s ( 89.16% of Fock integrals)
+      SCF - Fock Diagonalization (sum)       1.022058s (  5.26% of Iteration)
+      SCF - MOC base change (sum)            0.149846s (  0.77% of Iteration)
+      SCF acceleration                       1.532112s (  7.89% of Iteration)
 -------------------------------------------------------------------------------------------
 <====== Deinitializing G2G ======>
     ║   ONE ELECTRON   ║     -2744.4665561       ║

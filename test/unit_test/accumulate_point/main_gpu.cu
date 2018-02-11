@@ -1017,6 +1017,199 @@ void accumulate_data_for_libxc_test0005()
     uint number_of_points = n+m;
 
     // Input
+    G2G::CudaMatrix< G2G::vec_type<double,4> > dxyz_gpu;
+    G2G::CudaMatrix< G2G::vec_type<double,4> > dd1_gpu;
+    G2G::CudaMatrix< G2G::vec_type<double,4> > dd2_gpu;
+
+    // Accumulate
+    G2G::CudaMatrix< G2G::vec_type<double,4> > dxyz_gpu_accum;
+    G2G::CudaMatrix< G2G::vec_type<double,4> > dd1_gpu_accum;
+    G2G::CudaMatrix< G2G::vec_type<double,4> > dd2_gpu_accum;
+
+    dxyz_gpu.resize(COALESCED_DIMENSION(number_of_points),m);
+    dd1_gpu.resize(COALESCED_DIMENSION(number_of_points),m);
+    dd2_gpu.resize(COALESCED_DIMENSION(number_of_points),m);
+
+    dxyz_gpu_accum.resize(COALESCED_DIMENSION(number_of_points),m);
+    dd1_gpu_accum.resize(COALESCED_DIMENSION(number_of_points),m);
+    dd2_gpu_accum.resize(COALESCED_DIMENSION(number_of_points),m);
+
+    // Now the arrays for energy, factors, point_weight and partial_density
+    double *point_weights_gpu = NULL;
+    double *partial_density_gpu = NULL;
+    // Accum
+    double *accumulated_density_gpu = NULL;
+
+    // Now the arrays for energy, factors, point_weight and partial_density
+    double *energy_gpu = NULL;
+    double *factor_gpu = NULL;
+
+    // Create the arrays in CUDA memory.
+    uint size = number_of_points * sizeof(double);
+
+    err = cudaMalloc((void**)&energy_gpu, size);
+    if (err != cudaSuccess)
+    {
+	printf("Failed to allocate vector energy_gpu!\n");
+    }
+
+    err = cudaMalloc((void**)&factor_gpu, size);
+    if (err != cudaSuccess)
+    {
+	printf("Failed to allocate vector factor_gpu!\n");
+    }
+
+    err = cudaMalloc((void**)&point_weights_gpu, size);
+    if (err != cudaSuccess)
+    {
+	printf("Failed to allocate vector point_weights_gpu!\n");
+    }
+
+    err = cudaMalloc((void**)&partial_density_gpu, size);
+    if (err != cudaSuccess)
+    {
+	printf("Failed to allocate vector partial_density_gpu!\n");
+    }
+
+    err = cudaMalloc((void**)&accumulated_density_gpu, size);
+    if (err != cudaSuccess)
+    {
+	printf("Failed to allocate vector partial_density_gpu_accum!\n");
+    }
+
+    // Set the cuda array values to a default value.
+    cudaMemset(energy_gpu, 0, size);
+    cudaMemset(factor_gpu, 0, size);
+    cudaMemset(point_weights_gpu, 1, size);
+    cudaMemset(partial_density_gpu, 1, size);
+    cudaMemset(accumulated_density_gpu, 1, size);
+
+    // Create the libxcproxy
+    const int nspin = 1;
+    const int functionalExchange = 1101;
+    const int functionalCorrelation = 1130;
+    LibxcProxy<double,4> libxcProxy(functionalExchange, functionalCorrelation, nspin);
+
+    ///////////////////////////////////////////////////
+    // Calculate exc_corr and y2a using LIBXC GPU
+    libxc_exchange_correlation_gpu<double, true, true, false> (&libxcProxy,
+	energy_gpu,
+	factor_gpu,
+	number_of_points,
+	accumulated_density_gpu,
+	dxyz_gpu_accum.data,
+        dd1_gpu_accum.data,
+	dd2_gpu_accum.data);
+
+    ///////////////////////////////////////////////////
+    // Check and print the results.
+    // Copy back the results before print.
+    // Allocate the host input vectors
+    double *energy_cpu = (double *)malloc(size);
+    double *factor_cpu = (double *)malloc(size);
+    double *point_weights_cpu = (double *)malloc(size);
+    double *partial_density_cpu = (double *)malloc(size);
+
+    // Copy the vectors from gpu to cpu
+    // Be aware that energy_gpu can be NULL.
+    err = cudaMemcpy(energy_cpu, energy_gpu, size, cudaMemcpyDeviceToHost);
+    if (err != cudaSuccess)
+    {
+        printf("Failed to copy vector energy_gpu from device to host!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    err = cudaMemcpy(factor_cpu, factor_gpu, size, cudaMemcpyDeviceToHost);
+    if (err != cudaSuccess)
+    {
+        printf("Failed to copy vector factor_gpu from device to host!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    err = cudaMemcpy(point_weights_cpu, point_weights_gpu, size, cudaMemcpyDeviceToHost);
+    if (err != cudaSuccess)
+    {
+        printf("Failed to copy vector point_weights_gpu from device to host!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    err = cudaMemcpy(partial_density_cpu, partial_density_gpu, size, cudaMemcpyDeviceToHost);
+    if (err != cudaSuccess)
+    {
+        printf("Failed to copy vector partial_density_gpu from device to host!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Before print the results, get the data from cuda
+    G2G::vec_type<double,4>* dxyz_cpu;
+    G2G::vec_type<double,4>* dd1_cpu;
+    G2G::vec_type<double,4>* dd2_cpu;
+
+    // Alloc memory in the host for the gpu data
+    uint cpu_vecs_size = number_of_points * sizeof(G2G::vec_type<double,4>);
+    dxyz_cpu = (G2G::vec_type<double,4> *)malloc(cpu_vecs_size);
+    dd1_cpu = (G2G::vec_type<double,4> *)malloc(cpu_vecs_size);
+    dd2_cpu = (G2G::vec_type<double,4> *)malloc(cpu_vecs_size);
+
+    // Copy data from device to host.
+    err = cudaMemcpy(dxyz_cpu, dxyz_gpu.data, cpu_vecs_size, cudaMemcpyDeviceToHost);
+    if (err != cudaSuccess)
+    {
+        printf("Failed to copy vector dxyz_gpu from device to host!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    err = cudaMemcpy(dd1_cpu, dd1_gpu.data, cpu_vecs_size, cudaMemcpyDeviceToHost);
+    if (err != cudaSuccess)
+    {
+        printf("Failed to copy vector dd1_gpu from device to host!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    err = cudaMemcpy(dd2_cpu, dd2_gpu.data, cpu_vecs_size, cudaMemcpyDeviceToHost);
+    if (err != cudaSuccess)
+    {
+        printf("Failed to copy vector dd2_gpu from device to host!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    print_accumulate_point_data (dxyz_cpu, dd1_cpu, dd2_cpu, energy_cpu, 
+	factor_cpu, NULL, NULL, number_of_points);
+
+    free(energy_cpu);
+    free(factor_cpu);
+    free(point_weights_cpu);
+    free(partial_density_cpu);
+
+    free(dxyz_cpu);
+    free(dd1_cpu);
+    free(dd2_cpu);
+
+    cudaFree(energy_gpu);
+    cudaFree(factor_gpu);
+    cudaFree(point_weights_gpu);
+    cudaFree(partial_density_gpu);
+
+
+    // Free memory
+    cudaFree(energy_gpu);
+    cudaFree(factor_gpu);
+    cudaFree(point_weights_gpu);
+    cudaFree(partial_density_gpu);
+    cudaFree(accumulated_density_gpu);
+
+}
+
+void accumulate_data_for_libxc_test0006()
+{
+    printf("** accumulate_data_for_libxc_test0006() **\n");
+
+    cudaError_t err = cudaSuccess;
+    uint n = 5;
+    uint m = 5;
+    uint number_of_points = n+m;
+
+    // Input
     G2G::CudaMatrix< G2G::vec_type<double,4> > dxyz_gpu_in;
     G2G::CudaMatrix< G2G::vec_type<double,4> > dd1_gpu_in;
     G2G::CudaMatrix< G2G::vec_type<double,4> > dd2_gpu_in;
@@ -1090,13 +1283,23 @@ void accumulate_data_for_libxc_test0005()
     int blocksPerGrid = (numElements + threadsPerBlock - 1) / threadsPerBlock;
     uint block_height = 1;
 
+    printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
+
+    //////////////////////////////////////////////
+    // Call the CUDA KERNEL for accumulate point
+    gpu_accumulate_point_for_libxc<double,true,true,false><<<blocksPerGrid, threadsPerBlock>>> (point_weights_gpu_in,
+	number_of_points, block_height,
+	partial_density_gpu_in, dxyz_gpu_in.data, dd1_gpu_in.data, dd2_gpu_in.data,
+	accumulated_density_gpu, dxyz_gpu_accum.data, dd1_gpu_accum.data, dd2_gpu_accum.data);
+
     // Create the libxcproxy
     const int nspin = 1;
-    const int functionalExchange = 101;
-    const int functionalCorrelation = 130;
+    const int functionalExchange = 1101;
+    const int functionalCorrelation = 1130;
     LibxcProxy<double,4> libxcProxy(functionalExchange, functionalCorrelation, nspin);
 
-    // Calculate exc_corr and y2a
+    //////////////////////////////////////////////////
+    // Calculate exc_corr and y2a in GPU with LIBXC
     libxc_exchange_correlation_gpu<double, true, true, false> (&libxcProxy,
 	energy_gpu_in,
 	factor_gpu_in,
@@ -1106,9 +1309,103 @@ void accumulate_data_for_libxc_test0005()
         dd1_gpu_accum.data,
 	dd2_gpu_accum.data);
 
-    // Check and print the results.
 
-    // Free memory
+    ////////////////////////////////
+    // Join the results for LIO
+    gpu_accumulate_energy_and_forces_from_libxc<double, true, true, false><<<blocksPerGrid, threadsPerBlock>>> (
+	energy_gpu_in,
+	factor_gpu_in,
+	point_weights_gpu_in,
+	number_of_points,
+	accumulated_density_gpu);
+
+    ///////////////////////////////////////
+    // Check and print the results.
+    // Copy back the results before print.
+    // Allocate the host input vectors
+    double *energy_cpu = (double *)malloc(size);
+    double *factor_cpu = (double *)malloc(size);
+    double *point_weights_cpu = (double *)malloc(size);
+    double *partial_density_cpu = (double *)malloc(size);
+
+    // Copy the vectors from gpu to cpu
+    // Be aware that energy_gpu can be NULL.
+    err = cudaMemcpy(energy_cpu, energy_gpu_in, size, cudaMemcpyDeviceToHost);
+    if (err != cudaSuccess)
+    {
+        printf("Failed to copy vector energy_gpu from device to host!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    err = cudaMemcpy(factor_cpu, factor_gpu_in, size, cudaMemcpyDeviceToHost);
+    if (err != cudaSuccess)
+    {
+        printf("Failed to copy vector factor_gpu from device to host!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    err = cudaMemcpy(point_weights_cpu, point_weights_gpu_in, size, cudaMemcpyDeviceToHost);
+    if (err != cudaSuccess)
+    {
+        printf("Failed to copy vector point_weights_gpu from device to host!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    err = cudaMemcpy(partial_density_cpu, partial_density_gpu_in, size, cudaMemcpyDeviceToHost);
+    if (err != cudaSuccess)
+    {
+        printf("Failed to copy vector partial_density_gpu from device to host!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Before print the results, get the data from cuda
+    G2G::vec_type<double,4>* dxyz_cpu;
+    G2G::vec_type<double,4>* dd1_cpu;
+    G2G::vec_type<double,4>* dd2_cpu;
+
+    // Alloc memory in the host for the gpu data
+    uint cpu_vecs_size = number_of_points * sizeof(G2G::vec_type<double,4>);
+    dxyz_cpu = (G2G::vec_type<double,4> *)malloc(cpu_vecs_size);
+    dd1_cpu = (G2G::vec_type<double,4> *)malloc(cpu_vecs_size);
+    dd2_cpu = (G2G::vec_type<double,4> *)malloc(cpu_vecs_size);
+
+    // Copy data from device to host.
+    err = cudaMemcpy(dxyz_cpu, dxyz_gpu_in.data, cpu_vecs_size, cudaMemcpyDeviceToHost);
+    if (err != cudaSuccess)
+    {
+        printf("Failed to copy vector dxyz_gpu from device to host!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    err = cudaMemcpy(dd1_cpu, dd1_gpu_in.data, cpu_vecs_size, cudaMemcpyDeviceToHost);
+    if (err != cudaSuccess)
+    {
+        printf("Failed to copy vector dd1_gpu from device to host!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    err = cudaMemcpy(dd2_cpu, dd2_gpu_in.data, cpu_vecs_size, cudaMemcpyDeviceToHost);
+    if (err != cudaSuccess)
+    {
+        printf("Failed to copy vector dd2_gpu from device to host!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    print_accumulate_point_data (dxyz_cpu, dd1_cpu, dd2_cpu, energy_cpu, 
+	factor_cpu, point_weights_cpu, 
+	partial_density_cpu, number_of_points);
+
+    ////////////////////////////
+    // Free Memory
+    free(energy_cpu);
+    free(factor_cpu);
+    free(point_weights_cpu);
+    free(partial_density_cpu);
+
+    free(dxyz_cpu);
+    free(dd1_cpu);
+    free(dd2_cpu);
+
     cudaFree(energy_gpu_in);
     cudaFree(factor_gpu_in);
     cudaFree(point_weights_gpu_in);
@@ -1117,100 +1414,234 @@ void accumulate_data_for_libxc_test0005()
 
 }
 
-
-void cpu_accumulate_point_test0002()
-{
-    printf("** cpu_accumulate_point_test0002 **\n");
+void accumulate_data_for_libxc_test0007() {
+    printf("accumulate_data_for_libxc_test0007()\n");
     cudaError_t err = cudaSuccess;
     uint n = 5;
     uint m = 5;
     uint number_of_points = n+m;
 
-    G2G::CudaMatrix< G2G::vec_type<double,4> > dxyz_gpu;
-    G2G::CudaMatrix< G2G::vec_type<double,4> > dd1_gpu;
-    G2G::CudaMatrix< G2G::vec_type<double,4> > dd2_gpu;
+    // Input
+    G2G::CudaMatrix< G2G::vec_type<double,4> > dxyz_gpu_in;
+    G2G::CudaMatrix< G2G::vec_type<double,4> > dd1_gpu_in;
+    G2G::CudaMatrix< G2G::vec_type<double,4> > dd2_gpu_in;
 
-    dxyz_gpu.resize(COALESCED_DIMENSION(number_of_points),m);
-    dd1_gpu.resize(COALESCED_DIMENSION(number_of_points),m);
-    dd2_gpu.resize(COALESCED_DIMENSION(number_of_points),m);
+    // Accumulate
+    G2G::CudaMatrix< G2G::vec_type<double,4> > dxyz_gpu_accum;
+    G2G::CudaMatrix< G2G::vec_type<double,4> > dd1_gpu_accum;
+    G2G::CudaMatrix< G2G::vec_type<double,4> > dd2_gpu_accum;
 
-    dxyz_gpu.zero();
-    dd1_gpu.zero();
-    dd2_gpu.zero();
+    dxyz_gpu_in.resize(COALESCED_DIMENSION(number_of_points),m);
+    dd1_gpu_in.resize(COALESCED_DIMENSION(number_of_points),m);
+    dd2_gpu_in.resize(COALESCED_DIMENSION(number_of_points),m);
 
-    G2G::vec_type<double,4>* dxyz_cpu;
-    G2G::vec_type<double,4>* dd1_cpu;
-    G2G::vec_type<double,4>* dd2_cpu;
+    dxyz_gpu_accum.resize(COALESCED_DIMENSION(number_of_points),m);
+    dd1_gpu_accum.resize(COALESCED_DIMENSION(number_of_points),m);
+    dd2_gpu_accum.resize(COALESCED_DIMENSION(number_of_points),m);
 
-    // Alloc memory in the host for the gpu data
-    uint size = (n+m) * sizeof(G2G::vec_type<double,4>);
-    dxyz_cpu = (G2G::vec_type<double,4> *)malloc(size);
-    dd1_cpu = (G2G::vec_type<double,4> *)malloc(size);
-    dd2_cpu = (G2G::vec_type<double,4> *)malloc(size);
+    // Now the arrays for energy, factors, point_weight and partial_density
+    double *point_weights_gpu_in = NULL;
+    double *partial_density_gpu_in = NULL;
+    // Accum
+    double *partial_density_gpu_accum = NULL;
 
-    // Copy data from device to host.
-    err = cudaMemcpy(dxyz_cpu, dxyz_gpu.data, size, cudaMemcpyDeviceToHost);
+    // Create the arrays in CUDA memory.
+    uint size = number_of_points * sizeof(double);
+    err = cudaMalloc((void**)&point_weights_gpu_in, size);
     if (err != cudaSuccess)
     {
-        printf("Failed to copy vector dxyz_gpu from device to host!\n");
-        exit(EXIT_FAILURE);
+	printf("Failed to allocate vector point_weights_gpu_in!\n");
     }
 
-    err = cudaMemcpy(dd1_cpu, dd1_gpu.data, size, cudaMemcpyDeviceToHost);
+    err = cudaMalloc((void**)&partial_density_gpu_in, size);
     if (err != cudaSuccess)
     {
-        printf("Failed to copy vector dd1_gpu from device to host!\n");
-        exit(EXIT_FAILURE);
+	printf("Failed to allocate vector partial_density_gpu_in!\n");
     }
 
-    err = cudaMemcpy(dd2_cpu, dd2_gpu.data, size, cudaMemcpyDeviceToHost);
+    err = cudaMalloc((void**)&partial_density_gpu_accum, size);
     if (err != cudaSuccess)
     {
-        printf("Failed to copy vector dd2_gpu from device to host!\n");
-        exit(EXIT_FAILURE);
+	printf("Failed to allocate vector partial_density_gpu_accum!\n");
     }
 
+    // Now the arrays for energy, factors
+    double *energy_gpu_in = NULL;
+    double *factor_gpu_in = NULL;
+    err = cudaMalloc((void**)&energy_gpu_in, size);
+    if (err != cudaSuccess)
+    {
+	printf("Failed to allocate vector energy_gpu!\n");
+    }
+
+    err = cudaMalloc((void**)&factor_gpu_in, size);
+    if (err != cudaSuccess)
+    {
+	printf("Failed to allocate vector factor_gpu!\n");
+    }
+
+    // Launch the CUDA Kernel
+    int numElements = n+m;
+    int threadsPerBlock = 32;
+    int blocksPerGrid = (numElements + threadsPerBlock - 1) / threadsPerBlock;
+    uint block_height = 1;
+
+    ///////////////////////
+    // Set random data
+    double input[number_of_points];
+    for (int i=0; i<number_of_points; i++) {
+	input[i]=0.001*i;
+    }
+    cudaMemcpy(energy_gpu_in, input, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(factor_gpu_in, input, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(point_weights_gpu_in, input, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(partial_density_gpu_in, input, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(dxyz_gpu_in.data, input, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(dd1_gpu_in.data, input, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(dd2_gpu_in.data, input, size, cudaMemcpyHostToDevice);
+
+    // Create the libxcproxy
+    const int nspin = 1;
+    const int functionalExchange = 1101;
+    const int functionalCorrelation = 1130;
+    LibxcProxy<double,4> libxcProxy(functionalExchange, functionalCorrelation, nspin);
+
+    /////////////////////////////////
+    // LIBXC VERSION
+    printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
+    gpu_accumulate_point_for_libxc<double,true,true,false><<<blocksPerGrid,threadsPerBlock>>> (point_weights_gpu_in,
+	number_of_points, block_height,
+	partial_density_gpu_in, dxyz_gpu_in.data, dd1_gpu_in.data, dd2_gpu_in.data,
+	partial_density_gpu_accum, dxyz_gpu_accum.data, dd1_gpu_accum.data, dd2_gpu_accum.data);
+
+    // Calculate exc_corr and y2a
+/*
+    libxc_exchange_correlation_gpu<double, true, true, false> (&libxcProxy,
+	energy_gpu_in,
+	factor_gpu_in,
+	number_of_points,
+	partial_density_gpu_accum,
+	dxyz_gpu_accum.data,
+        dd1_gpu_accum.data,
+	dd2_gpu_accum.data);
+*/
+    // Join the results.
+    gpu_accumulate_energy_and_forces_from_libxc<double, true, true, false><<<blocksPerGrid, threadsPerBlock>>> (
+	energy_gpu_in,
+	factor_gpu_in,
+	point_weights_gpu_in,
+	number_of_points,
+	partial_density_gpu_accum);
+
+    ///////////////////////////
+    // Print libxc results
     // Allocate the host input vectors
-    // This parameters are the ones with the data
-    // in the simulation.
     double *energy_cpu = (double *)malloc(size);
     double *factor_cpu = (double *)malloc(size);
-    double *point_weights_cpu = (double *)malloc(size);
-    double *partial_density_cpu = (double *)malloc(size);
 
-    memset(energy_cpu, 0, size);
-    memset(factor_cpu, 0, size);
-    memset(point_weights_cpu, 0, size);
-    memset(partial_density_cpu, 0, size);
+    // Copy the vectors from gpu to cpu
+    // Be aware that energy_gpu can be NULL.
+    err = cudaMemcpy(energy_cpu, energy_gpu_in, size, cudaMemcpyDeviceToHost);
+    if (err != cudaSuccess)
+    {
+        printf("Failed to copy vector energy_gpu_in from device to host!\n");
+        exit(EXIT_FAILURE);
+    }
 
-    set_array_values (energy_cpu, 0, number_of_points);
-    set_array_values (factor_cpu, 0, number_of_points);
-    set_array_values (point_weights_cpu, 1, number_of_points);
-    set_array_values (partial_density_cpu, 1, number_of_points);
+    err = cudaMemcpy(factor_cpu, factor_gpu_in, size, cudaMemcpyDeviceToHost);
+    if (err != cudaSuccess)
+    {
+        printf("Failed to copy vector factor_gpu_in from device to host!\n");
+        exit(EXIT_FAILURE);
+    }
 
+    print_accumulate_point_data (NULL, NULL, NULL, energy_cpu,
+	factor_cpu, NULL, NULL, number_of_points);
 
+    ////////////////////////////////////////
+    // LIO VERSION
+    // Now the arrays for energy, factors
+    double *energy_gpu_in2 = NULL;
+    double *factor_gpu_in2 = NULL;
+    err = cudaMalloc((void**)&energy_gpu_in2, size);
+    if (err != cudaSuccess)
+    {
+	printf("Failed to allocate vector energy_gpu_in2!\n");
+    }
 
-    // CALL CPU ACCUMULATE POINT
-//    libxc_cpu_accumulate_point<double, true, true, false>(&libxcProxy, energy_cpu,
-//	factor_cpu, point_weights_cpu,
-//        number_of_points, 1, partial_density_cpu, 
-//	dxyz_cpu, dd1_cpu, dd2_cpu);
+    err = cudaMalloc((void**)&factor_gpu_in2, size);
+    if (err != cudaSuccess)
+    {
+	printf("Failed to allocate vector factor_gpu_in2!\n");
+    }
 
+    ///////////////////////
+    // Set random data
+    //double input[number_of_points];
+    //for (int i=0; i<number_of_points; i++) {
+//	input[i]=0.001*i;
+    //}
+    cudaMemcpy(energy_gpu_in2, input, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(factor_gpu_in2, input, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(point_weights_gpu_in, input, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(partial_density_gpu_in, input, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(dxyz_gpu_in.data, input, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(dd1_gpu_in.data, input, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(dd2_gpu_in.data, input, size, cudaMemcpyHostToDevice);
 
+    gpu_accumulate_point<double, true, true, false><<<blocksPerGrid,threadsPerBlock>>> (
+	energy_gpu_in2, 
+	factor_gpu_in2,
+	point_weights_gpu_in,
+	number_of_points,
+	block_height,
+	partial_density_gpu_in,
+	dxyz_gpu_in.data,
+	dd1_gpu_in.data,
+	dd2_gpu_in.data);
 
-    print_accumulate_point_data (dxyz_cpu, dd1_cpu, dd2_cpu, energy_cpu, 
-	factor_cpu, point_weights_cpu, 
-	partial_density_cpu, number_of_points);
+    ///////////////////////////////////////
+    // Print LIO results.
+    // Copy back the results before print.
+    // Allocate the host input vectors
+    double *energy_cpu2 = (double *)malloc(size);
+    double *factor_cpu2 = (double *)malloc(size);
 
-    // Free jack :)
+    // Copy the vectors from gpu to cpu
+    // Be aware that energy_gpu can be NULL.
+    err = cudaMemcpy(energy_cpu2, energy_gpu_in2, size, cudaMemcpyDeviceToHost);
+    if (err != cudaSuccess)
+    {
+        printf("Failed to copy vector energy_gpu_in2 from device to host!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    err = cudaMemcpy(factor_cpu2, factor_gpu_in2, size, cudaMemcpyDeviceToHost);
+    if (err != cudaSuccess)
+    {
+        printf("Failed to copy vector factor_gpu_in2 from device to host!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    print_accumulate_point_data (NULL, NULL, NULL, energy_cpu2,
+	factor_cpu2, NULL, NULL, number_of_points);
+
+    ////////////////////////////
+    // Free Memory CPU
     free(energy_cpu);
     free(factor_cpu);
-    free(point_weights_cpu);
-    free(partial_density_cpu);
+    free(energy_cpu2);
+    free(factor_cpu2);
 
-    free(dd1_cpu);
-    free(dd2_cpu);
-    free(dxyz_cpu);
+    ///////////////////////////
+    // Free memory GPU
+    cudaFree (point_weights_gpu_in);
+    cudaFree (partial_density_gpu_in);
+    cudaFree (partial_density_gpu_accum);
+    cudaFree (energy_gpu_in);
+    cudaFree (factor_gpu_in);
+    cudaFree (energy_gpu_in2);
+    cudaFree (factor_gpu_in2);
 
 }
 
@@ -1220,17 +1651,19 @@ void cpu_accumulate_point_test0002()
 
 int main(int argc, char **argv)
 {
-    printf("****************************\n");
-    printf("** Accumulate Point test  **\n");
-    printf("****************************\n");
+    printf("********************************\n");
+    printf("** Accumulate Point GPU test  **\n");
+    printf("********************************\n");
 
     //gpu_accumulate_point_test0001();
     //cpu_accumulate_point_test0001();
-    accumulate_data_for_libxc_test0001();
-    accumulate_data_for_libxc_test0002();
-    accumulate_data_for_libxc_test0003();
-    accumulate_data_for_libxc_test0004();
+    //accumulate_data_for_libxc_test0001();
+    //accumulate_data_for_libxc_test0002();
+    //accumulate_data_for_libxc_test0003();
+    //accumulate_data_for_libxc_test0004();
     //accumulate_data_for_libxc_test0005();
+    //accumulate_data_for_libxc_test0006();
+    accumulate_data_for_libxc_test0007();
 
     printf("*************************\n");
     printf("**      Test End       **\n");

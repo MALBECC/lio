@@ -6,7 +6,7 @@ NVCC=nvcc
 CFLAGS_GPU=-I. -I${HOME}/workspace/common/includes -I../../common/inc -I../../../g2g -I$(LIBXC_INCLUDES) -DGPU_KERNELS=1 
 CLIBS_GPU=-L${HOME}/workspace/common/libs -lxc_cuda -lm -L../../../g2g -lg2g
 
-all: main_gpu
+all:  main_gpu
 
 main_cpu: main_cpu.cpp 
 	nvcc -G -g -o main_cpu main_cpu.cpp $(CFLAGS) $(CLIBS) -DCPU_KERNELS

@@ -9,7 +9,6 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-
 #include "../../../g2g/common.h"
 #include "../../../g2g/init.h"
 #include "../../../g2g/cuda/cuda_extra.h"
@@ -18,16 +17,6 @@
 #include "../../../g2g/partition.h"
 #include "../../../g2g/scalar_vector_types.h"
 #include "../../../g2g/global_memory_pool.h"
-
-//#include "../../../g2g/pointxc/calc_ggaCS.h"
-//#include "../../../g2g/pointxc/calc_ggaOS.h"
-//#include "../../../g2g/pointxc/calc_ldaCS.h"
-
-//#if USE_LIBXC
-#include "../../../g2g/libxc/libxc_accumulate_point.h"
-//#else
-//#include "../../../g2g/cuda/kernels/accumulate_point.h"
-//#endif
 
 #include "../../../g2g/libxc/libxcproxy.h"
 
@@ -1382,6 +1371,41 @@ void matrix_test0007 ()
 
 }
 
+void matrix_test0008()
+{
+  printf("matrix_test0008()\n");
+  G2G::CudaMatrix<double> point_weights_gpu;
+  G2G::HostMatrix<double> point_weights_cpu(5, 1);
+
+  for (int i=0; i<5; i++){
+    point_weights_cpu(i) = 0.001*i;
+  }
+
+  point_weights_gpu = point_weights_cpu;
+}
+
+void matrix_test0009()
+{
+  printf("matrix_test0009()\n");
+  //typedef vec_type<scalar_type,2> vec_type2;
+  //typedef vec_type<scalar_type,3> vec_type3;
+  typedef G2G::vec_type<float,4> vec_type4;
+  //G2G::CudaMatrix<scalar_type> function_values;
+  //G2G::CudaMatrix<vec_type4> gradient_values;
+  //G2G::CudaMatrix<vec_type4> hessian_values_transposed;
+
+  G2G::CudaMatrix<vec_type4> point_weights_gpu;
+  G2G::HostMatrix<vec_type4> point_weights_cpu(5, 1);
+
+  G2G::vec_type<float,4> one(1,1,1,1);
+
+  for (int i=0; i<5; i++){
+    point_weights_cpu(i).x = one.x;
+  }
+
+  point_weights_gpu = point_weights_cpu;
+}
+
 
 /////////////////////////////////////
 //// MAIN
@@ -1399,6 +1423,7 @@ int main(int argc, char **argv)
     matrix_test0005();
     matrix_test0006();
     matrix_test0007();
+    matrix_test0008();
 
     printf("*************************\n");
     printf("**      Test End       **\n");

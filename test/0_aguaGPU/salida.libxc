@@ -5,7 +5,7 @@ Kernels: cpu
 Using 3 CPU Threads and 1 GPU Threads
  using the modified parser for libxc
  JOB STARTED NOW
-mié feb  7 22:40:24 ART 2018
+dom feb 11 15:23:45 ART 2018
 <======= GPU Code Initialization ========>
 atoms: 3
 max atoms: 3
@@ -17,7 +17,7 @@ m: 19 nco: 5
 density basis: s: 15 p: 3 d: 3
 density basis: m: 42
 Using device 0 for analytic integral calculations
-Weights: 17058us.
+Weights: 16893us.
 Particion 0: 405040
 Relacion max / min = 1.000000
 --> Thread OMP: 4
@@ -25,17 +25,137 @@ Relacion max / min = 1.000000
 --> Thread GPU: 1
 --> Correccion de cubos chicos: 250000
 --> Puntos de separacion: 200
-Timer functions: 230us.
+Timer functions: 233us.
 MM point charges: 0
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
 XC energy: -11.7832
 XC energy: -11.7832
 Error: not the current timer: (new density)
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
 XC energy: -7.26857
 XC energy: -7.26857
 Error: not the current timer: (new density)
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
 XC energy: -7.25312
 XC energy: -7.25312
 Error: not the current timer: (new density)
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
 XC energy: -9.81183
 XC energy: -9.81183
 Error: not the current timer: (new density)
@@ -80,18 +200,168 @@ Error: not the current timer: (new density)
                ║    Value   ║ Conv. Crit. ║
     ╔══════════╬════════════╬═════════════╣
     ║ Good     ║  0.211E+00 ║  0.100E-05  ║
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
 XC energy: -8.66132
 XC energy: -8.66132
 Error: not the current timer: (new density)
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
 XC energy: -8.66949
 XC energy: -8.66949
 Error: not the current timer: (new density)
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
 XC energy: -8.56873
 XC energy: -8.56873
 Error: not the current timer: (new density)
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
 XC energy: -8.77582
 XC energy: -8.77582
 Error: not the current timer: (new density)
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
 XC energy: -8.80279
 XC energy: -8.80279
 Error: not the current timer: (new density)
@@ -134,15 +404,135 @@ Error: not the current timer: (new density)
     ║ En. Good ║  0.127E+00 ║  0.100E+01  ║
     ╚══════════╩════════════╩═════════════╝
     ╔════════╦═════════════╦═══════════╦══════════════════════╗
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
 XC energy: -8.82497
 XC energy: -8.82497
 Error: not the current timer: (new density)
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
 XC energy: -8.82748
 XC energy: -8.82748
 Error: not the current timer: (new density)
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
 XC energy: -8.82993
 XC energy: -8.82993
 Error: not the current timer: (new density)
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
 XC energy: -8.83026
 XC energy: -8.83026
 Error: not the current timer: (new density)
@@ -164,88 +554,71 @@ Error: not the current timer: (new density)
     ║ En. Good ║  0.151E-02 ║  0.100E+01  ║
     ╚══════════╩════════════╩═════════════╝
     ╔════════╦═════════════╦═══════════╦══════════════════════╗
-    ║ iter # ║          11 ║ QM Energy ║       -76.0668217    ║
+    ║ iter # ║          11 ║ QM Energy ║       -76.0668216    ║
     ╚════════╩═════════════╩═══════════╩══════════════════════╝
                ╔════════════╦═════════════╗
                ║    Value   ║ Conv. Crit. ║
     ╔══════════╬════════════╬═════════════╣
     ║ Good     ║  0.467E-03 ║  0.100E-05  ║
-    ║ En. Good ║  0.364E-04 ║  0.100E+01  ║
+    ║ En. Good ║  0.363E-04 ║  0.100E+01  ║
     ╚══════════╩════════════╩═════════════╝
     ╔════════╦═════════════╦═══════════╦══════════════════════╗
-    ║ iter # ║          12 ║ QM Energy ║       -76.0668333    ║
+    ║ iter # ║          12 ║ QM Energy ║       -76.0668334    ║
     ╚════════╩═════════════╩═══════════╩══════════════════════╝
                ╔════════════╦═════════════╗
                ║    Value   ║ Conv. Crit. ║
     ╔══════════╬════════════╬═════════════╣
     ║ Good     ║  0.650E-04 ║  0.100E-05  ║
-    ║ En. Good ║  0.116E-04 ║  0.100E+01  ║
+    ║ En. Good ║  0.117E-04 ║  0.100E+01  ║
     ╚══════════╩════════════╩═════════════╝
     ╔════════╦═════════════╦═══════════╦══════════════════════╗
-    ║ iter # ║          13 ║ QM Energy ║       -76.0668335    ║
+    ║ iter # ║          13 ║ QM Energy ║       -76.0668337    ║
     ╚════════╩═════════════╩═══════════╩══════════════════════╝
                ╔════════════╦═════════════╗
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
 XC energy: -8.83025
 XC energy: -8.83025
 Error: not the current timer: (new density)
-XC energy: -8.83025
-XC energy: -8.83025
--------------------------------------------------------------------------------------------
-                   LIO TIMING INFORMATION:
--------------------------------------------------------------------------------------------
-
-Total time: 0.895478s
-Total                                  0.895478s (100.00% of Total)
-  Forces                                 0.072567s (  8.10% of Total)
-    Coulomb+Exchange-correlation           0.071880s ( 99.05% of Forces)
-      Coulomb gradients                      0.020162s ( 28.05% of Coulomb+Exchange-correlation)
-      Exchange-correlation gradients         0.051525s ( 71.68% of Coulomb+Exchange-correlation)
-    Nuclear attraction gradients           0.000603s (  0.83% of Forces)
-    Overlap gradients                      0.000062s (  0.09% of Forces)
-  SCF                                    0.822860s ( 91.89% of Total)
-    Finalize SCF                           0.044605s (  5.42% of SCF)
-      Exchange-correlation energy            0.044467s ( 99.69% of Finalize SCF)
-      energy-weighted density                0.000003s (  0.01% of Finalize SCF)
-    Initialize SCF                         0.023500s (  2.86% of SCF)
-      1-e Fock                               0.001145s (  4.87% of Initialize SCF)
-        Nuclear attraction                     0.000093s (  8.12% of 1-e Fock)
-        QM/MM                                  0.001033s ( 90.22% of 1-e Fock)
-      Coulomb G matrix                       0.000446s (  1.90% of Initialize SCF)
-        G condition                            0.000310s ( 69.51% of Coulomb G matrix)
-        G invert                               0.000073s ( 16.37% of Coulomb G matrix)
-      Exchange-correlation grid setup        0.019783s ( 84.18% of Initialize SCF)
-      Overlap decomposition                  0.000096s (  0.41% of Initialize SCF)
-      initial guess                          0.000253s (  1.08% of Initialize SCF)
-    Iteration                              0.754294s ( 91.67% of SCF)
-      Fock integrals                         0.750634s ( 99.51% of Iteration)
-        Coulomb fit + Fock                     0.074699s (  9.95% of Fock integrals)
-        Exchange-correlation Fock              0.675759s ( 90.03% of Fock integrals)
-      SCF - Fock Diagonalization (sum)       0.002056s (  0.27% of Iteration)
-      SCF - MOC base change (sum)            0.000082s (  0.01% of Iteration)
-      SCF acceleration                       0.000802s (  0.11% of Iteration)
--------------------------------------------------------------------------------------------
-<====== Deinitializing G2G ======>
+solve_closed (compute_rmm:0, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
+LibxcProxy::doGGA cpu multiple (...) 
+solve_closed (compute_rmm:0, lda:0, compute_forces:0, compute_energy:1)
+libxc_exchage_correlation_cpu (...) 
                ║    Value   ║ Conv. Crit. ║
     ╔══════════╬════════════╬═════════════╣
-    ║ Good     ║  0.215E-05 ║  0.100E-05  ║
-    ║ En. Good ║  0.189E-06 ║  0.100E+01  ║
+    ║ Good     ║  0.210E-05 ║  0.100E-05  ║
+    ║ En. Good ║  0.306E-06 ║  0.100E+01  ║
     ╚══════════╩════════════╩═════════════╝
     ╔════════╦═════════════╦═══════════╦══════════════════════╗
-    ║ iter # ║          14 ║ QM Energy ║       -76.0668336    ║
+    ║ iter # ║          14 ║ QM Energy ║       -76.0668337    ║
     ╚════════╩═════════════╩═══════════╩══════════════════════╝
  CONVERGED AT          14 ITERATIONS
-
-    ╔════════════════════════════════════════════╗
-    ║        ENERGY CONTRIBUTIONS IN A.U.        ║
-    ╠══════════════════╦═════════════════════════╣
-    ║   ONE ELECTRON   ║      -114.4061257       ║
-    ╠══════════════════╬═════════════════════════╣
-    ║   COULOMB        ║        42.3965795       ║
-    ╠══════════════════╬═════════════════════════╣
-    ║   NUCLEAR        ║         4.7729671       ║
-    ╠══════════════════╬═════════════════════════╣
-    ║   EXC. - CORR.   ║        -8.8302528       ║
-    ╠══════════════════╬═════════════════════════╣
-    ║   TOTAL          ║       -76.0668319       ║
-    ╚══════════════════╩═════════════════════════╝
-

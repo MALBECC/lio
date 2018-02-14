@@ -25,19 +25,23 @@ __global__ void gpu_accumulate_point_for_libxc(scalar_type* const point_weights,
   if (valid_thread) {
     for(int j =0 ; j<block_height; j++) {
       const int this_row = j*points+point;
-
       _partial_density += partial_density_in[this_row];
       _dxyz += dxyz_in[this_row];
       _dd1 += dd1_in[this_row];
       _dd2 += dd2_in[this_row];
-     }
+    }
 
     // Accumulate the data for libxc.
     accumulated_density[point] = _partial_density;
+    /*printf("point:%i %lf %lf %lf %lf %lf %lf %lf %lf %lf \n", point,
+	_dxyz.x, _dxyz.y, _dxyz.z,
+	_dd1.x, _dd1.y, _dd1.z,
+	_dd2.x, _dd2.y, _dd2.z);*/
+    
     dxyz_accum[point] = _dxyz;
     dd1_accum[point] = _dd1;
     dd2_accum[point] = _dd2;
-
+    
   }
 
 }
@@ -54,14 +58,17 @@ __global__ void gpu_accumulate_energy_and_forces_from_libxc (scalar_type* const 
   scalar_type point_weight = 0.0f;
 
   bool valid_thread = (point < points);
-  if (valid_thread)
+  if (valid_thread) {
     point_weight = point_weights[point];
+  }
 
-  if (compute_energy && valid_thread)
+  if (compute_energy && valid_thread) {
     energy[point] *= (accumulated_density[point] * point_weight);
+  }
 
-  if (compute_factor && valid_thread)
+  if (compute_factor && valid_thread) {
     factor[point] *= point_weight;
+  }
 
 }
 
@@ -75,7 +82,7 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
         G2G::vec_type<scalar_type,WIDTH>* dd1_gpu_accum,
 	G2G::vec_type<scalar_type,WIDTH>* dd2_gpu_accum)
 {
-    //printf("libxc_exchage_correlation_cpu (...) \n");
+    printf("libxc_exchage_correlation_cpu (...) \n");
 
     cudaError_t err = cudaSuccess;
 
@@ -175,6 +182,7 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
 	}
     }
     */
+
     // Parameters
     scalar_type* exc;
     scalar_type* corr;
@@ -199,6 +207,7 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
 	    }
 	}
     }
+    
 
     // Now copy back the results to the gpu.
     if (compute_energy) {
@@ -238,13 +247,13 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
 }
 
 template<class scalar_type>
-__global__ void calculateContractedGradient(G2G::vec_type<scalar_type,WIDTH>* grad, scalar_type* sigma, int numElements)
+__global__ void calculateContractedGradient(G2G::vec_type<scalar_type,WIDTH>* grad, scalar_type* contracted_grad, int numElements)
 {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
 
     if (i < numElements)
     {
-        sigma[i] = (grad[i].x * grad[i].x) + (grad[i].y * grad[i].y) + (grad[i].z * grad[i].z);
+        contracted_grad[i] = (grad[i].x * grad[i].x) + (grad[i].y * grad[i].y) + (grad[i].z * grad[i].z);
     }
 }
 
@@ -258,7 +267,6 @@ __global__ void vectorAdd(const scalar_type* A, const scalar_type* B, scalar_typ
         C[i] = A[i] + B[i];
     }
 }
-
 
 template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
     void libxc_exchange_correlation_gpu (LibxcProxy<scalar_type, WIDTH>* libxcProxy,
@@ -306,26 +314,34 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
         exit(EXIT_FAILURE);
     }
 
+    err = cudaMalloc((void**)&contracted_gradient, sizeof(scalar_type)*points);
+    if (err != cudaSuccess)
+    {
+        fprintf(stderr, "Failed to allocate device contracted_gradient!\n");
+	exit(EXIT_FAILURE);
+    }
+
+    cudaMemset(exc_gpu,0,array_size);
+    cudaMemset(corr_gpu,0,array_size);
+    cudaMemset(y2a_gpu,0,array_size);
+    cudaMemset(contracted_gradient,0,array_size);
+
     // Variables for the Kernels
     int threadsPerBlock = 256;
     int blocksPerGrid = (points + threadsPerBlock - 1) / threadsPerBlock;
 
     if (libxcProxy != NULL) {
-        //printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
-	err = cudaMalloc((void**)&contracted_gradient, sizeof(scalar_type)*points);
-	
-	if (err != cudaSuccess)
-	{
-	    fprintf(stderr, "Failed to allocate device contracted_gradient!\n");
-	    exit(EXIT_FAILURE);
-	}
+        printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
 
 	// Call the Kernel to compute the contracted gradient
+        printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
 	calculateContractedGradient<<<blocksPerGrid, threadsPerBlock>>>(dxyz_gpu, contracted_gradient, points);
 
-        //libxcProxy->doGGA (accumulated_density_gpu, points, dxyz_gpu, dd1_gpu, dd2_gpu, exc_gpu, corr_gpu, y2a_gpu);
-	libxcProxy->doGGA (accumulated_density_gpu, points, 
-	    contracted_gradient, dxyz_gpu, 
+	// Compute exc_corr using LIBXC GPU.
+	libxcProxy->doGGA (accumulated_density_gpu,
+	    points, 
+	    contracted_gradient, 
+	    dxyz_gpu, 
 	    dd1_gpu, 
 	    dd2_gpu, 
 	    exc_gpu, 

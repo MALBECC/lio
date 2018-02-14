@@ -172,11 +172,20 @@ endif
 # Libxc flags
 ################################################################################
 ifeq ($(libxc),1)
-    NVCCFLAGS += -DUSE_LIBXC=1
+    #LIBXC CPU MODE
+    NVCCFLAGS += -DUSE_LIBXC=1 -DLIBXC_CPU=1
     INCLUDES  += -I$(LIBXC_INCLUDES)
-    CUDA_LDFLAGS += -L$(LIBXC_LIBS) -lxc -lxc_cuda
+    CUDA_LDFLAGS += -L$(LIBXC_LIBS) -lxc
 else
-    NVCCFLAGS += -DUSE_LIBXC=0
+    ifeq ($(libxc),2)
+	#LIBXC GPU MODE
+        NVCCFLAGS += -DUSE_LIBXC=1 -DLIBXC_CPU=0
+	INCLUDES  += -I$(LIBXC_INCLUDES)
+	CUDA_LDFLAGS += -L$(LIBXC_LIBS) -lxc_cuda
+    else
+	#NO LIBXC
+        NVCCFLAGS += -DUSE_LIBXC=0 -DLIBXC_CPU=1
+    endif
 endif
 
 ################################################################################

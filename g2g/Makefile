@@ -33,7 +33,13 @@ ifneq ($(cuda),0)
 endif
 
 ifeq ($(libxc),1)
-  LIBXC_LIBRARIES := -L$(LIBXC_LIBS) -lxc -lxc_cuda
+  LIBXC_LIBRARIES := -L$(LIBXC_LIBS) -lxc
+else
+    ifeq ($(libxc),2)
+	LIBXC_LIBRARIES := -L$(LIBXC_LIBS) -lxc_cuda
+    else
+	LIBXC_LIBRARIES := -L$(LIBXC_LIBS) -lxc
+    endif
 endif
 
 ifneq ($(aint_gpu_level),)

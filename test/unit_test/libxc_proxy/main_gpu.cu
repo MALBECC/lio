@@ -30,8 +30,8 @@ void accumulate_data_for_libxc_test0001()
     printf("** accumulate_data_for_libxc_test0001 **\n");
 
     cudaError_t err = cudaSuccess;
-    uint n = 5;
-    uint m = 5;
+    uint n = 1000;
+    uint m = 1000;
     uint number_of_points = n+m;
 
     // Input
@@ -44,13 +44,21 @@ void accumulate_data_for_libxc_test0001()
     G2G::CudaMatrix< G2G::vec_type<double,4> > dd1_gpu_accum;
     G2G::CudaMatrix< G2G::vec_type<double,4> > dd2_gpu_accum;
 
-    dxyz_gpu_in.resize(COALESCED_DIMENSION(number_of_points),m);
-    dd1_gpu_in.resize(COALESCED_DIMENSION(number_of_points),m);
-    dd2_gpu_in.resize(COALESCED_DIMENSION(number_of_points),m);
+    dxyz_gpu_in.resize(COALESCED_DIMENSION(number_of_points),1);
+    dd1_gpu_in.resize(COALESCED_DIMENSION(number_of_points),1);
+    dd2_gpu_in.resize(COALESCED_DIMENSION(number_of_points),1);
 
-    dxyz_gpu_accum.resize(COALESCED_DIMENSION(number_of_points),m);
-    dd1_gpu_accum.resize(COALESCED_DIMENSION(number_of_points),m);
-    dd2_gpu_accum.resize(COALESCED_DIMENSION(number_of_points),m);
+    dxyz_gpu_in.zero();
+    dd1_gpu_in.zero();
+    dd2_gpu_in.zero();
+
+    dxyz_gpu_accum.resize(COALESCED_DIMENSION(number_of_points),1);
+    dd1_gpu_accum.resize(COALESCED_DIMENSION(number_of_points),1);
+    dd2_gpu_accum.resize(COALESCED_DIMENSION(number_of_points),1);
+
+    dxyz_gpu_accum.zero();
+    dd1_gpu_accum.zero();
+    dd2_gpu_accum.zero();
 
     // Now the arrays for energy, factors, point_weight and partial_density
     double *point_weights_gpu_in = NULL;
@@ -98,9 +106,9 @@ void accumulate_data_for_libxc_test0001()
     // Set the cuda array values to a default value.
     cudaMemset(energy_gpu_in, 0, size);
     cudaMemset(factor_gpu_in, 0, size);
-    cudaMemset(point_weights_gpu_in, 1, size);
-    cudaMemset(partial_density_gpu_in, 1, size);
-    cudaMemset(accumulated_density_gpu, 1, size);
+    cudaMemset(point_weights_gpu_in, 0, size);
+    cudaMemset(partial_density_gpu_in, 0, size);
+    cudaMemset(accumulated_density_gpu, 0, size);
 
     // Launch the CUDA Kernel
     //int numElements = number_of_points;
@@ -434,7 +442,7 @@ void joinResultsTest0001() {
 int main()
 {
     cout << "Test: Libxc Proxy GPU - BEGIN" << endl;
-    //accumulate_data_for_libxc_test0001();
+    accumulate_data_for_libxc_test0001();
     joinResultsTest0001();
     cout << "Test: Libxc Proxy GPU - END" << endl;
     return 0;

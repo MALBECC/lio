@@ -6,8 +6,9 @@
 #include <iostream>
 #include <xc.h>
 #include <vector>
-//#include <scalar_vector_types.h>
 #include "../scalar_vector_types.h"
+#include "print_utils.h"
+#include <cuda_runtime.h>
 
 template <class scalar_type, int width>
 class LibxcProxy
@@ -120,9 +121,9 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type dens,
     const G2G::vec_type<scalar_type, width> &hess2,
     scalar_type &ex, scalar_type &ec, scalar_type &y2a)
 {
-#ifdef _DEBUG
-    printf("LibxcProxy::doGGA (...) \n");
-#endif
+//#ifdef _DEBUG
+    printf("LibxcProxy::doGGA cpu simple(...) \n");
+//#endif
 
     double rho[1] = {dens};
     // Libxc needs the 'contracted gradient'
@@ -199,26 +200,156 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type dens,
 }
 
 template <class scalar_type, int width>
-__global__ void joinResults(scalar_type* ex, scalar_type* exchange,
-		    scalar_type* ec, scalar_type* correlation,
-		    scalar_type* vrho, scalar_type* vrhoC,
-		    scalar_type* vsigma, scalar_type* vsigmaC,
-		    scalar_type* v2rho, scalar_type* v2rhoC,
-		    scalar_type* v2rhosigma, scalar_type* v2rhosigmaC,
-		    scalar_type* v2sigma, scalar_type* v2sigmaC,
-		    scalar_type* y2a,
-		    const scalar_type* sigma,
-		    const G2G::vec_type<scalar_type, width>* grad,
-		    const G2G::vec_type<scalar_type, width>* hess1,
-		    const G2G::vec_type<scalar_type, width>* hess2,
+void LibxcProxy <scalar_type, width>::doGGA(scalar_type* dens,
+    const int number_of_points,
+    const G2G::vec_type<scalar_type, width>* grad,
+    const G2G::vec_type<scalar_type, width>* hess1,
+    const G2G::vec_type<scalar_type, width>* hess2,
+    scalar_type* ex,
+    scalar_type* ec,
+    scalar_type* y2a)
+{
+//#ifdef _DEBUG
+    printf("LibxcProxy::doGGA cpu multiple (...) \n");
+//#endif
+
+    int array_size = sizeof(double)*number_of_points;
+    double* rho = (double*)malloc(array_size);
+    for (int i=0; i<number_of_points; i++) {
+	rho[i] = dens[i];
+    }
+
+    // Libxc needs the 'contracted gradient'
+    double* sigma = (double*)malloc(array_size);
+    for (int i=0; i< number_of_points; i++) {
+	sigma[i] = (grad[i].x * grad[i].x) + (grad[i].y * grad[i].y) + (grad[i].z * grad[i].z);
+    }
+    double* exchange = (double*)malloc(array_size);
+    double* correlation = (double*)malloc(array_size);
+
+    // The outputs for exchange
+    double* vrho = (double*)malloc(array_size);
+    double* vsigma = (double*)malloc(array_size);
+    double* v2rho = (double*)malloc(array_size);
+    double* v2rhosigma = (double*)malloc(array_size);
+    double* v2sigma = (double*)malloc(array_size);
+
+    // The outputs for correlation
+    double* vrhoC = (double*)malloc(array_size);
+    double* vsigmaC = (double*)malloc(array_size);
+    double* v2rhoC = (double*)malloc(array_size);
+    double* v2rhosigmaC = (double*)malloc(array_size);
+    double* v2sigmaC = (double*)malloc(array_size);
+
+    try {
+        xc_gga (&funcForExchange, number_of_points,
+                rho,
+                sigma,
+                exchange,
+                vrho,
+                vsigma,
+                v2rho,
+                v2rhosigma,
+                v2sigma,
+                NULL, NULL, NULL, NULL);
+    } catch (int exception) {
+        //fprintf (stderr, "Exception ocurred calling xc_gga for Exchange '%d' \n", exception);
+        return;
+    }
+
+    try {
+        // Now the correlation value.
+        xc_gga (&funcForCorrelation, number_of_points,
+                rho,
+                sigma,
+                correlation,
+                vrhoC,
+                vsigmaC,
+                v2rhoC,
+                v2rhosigmaC,
+                v2sigmaC,
+                NULL, NULL, NULL, NULL);
+    } catch (int exception) {
+        //fprintf (stderr, "Exception ocurred calling xc_gga for Correlation '%d' \n", exception);
+        return;
+    }
+
+    // TODO: tener el cuenta el tema del FULL_DOUBLE
+    // a la vuelta del calculo en libxc. Si FULL_DOUBLE=1 -> son doubles
+    // sino son floats y hay que castear antes de hacer las cuentas
+    // sino da todo cero.
+    for (int i=0; i<number_of_points; i++) {
+	ex[i] = exchange[i];
+        ec[i] = correlation[i];
+        // Merge the results for the derivatives.
+        vrho[i] += vrhoC[i];
+        vsigma[i] += vsigmaC[i];
+        v2rho[i] += v2rhoC[i];
+        v2rhosigma[i] += v2rhosigmaC[i];
+        v2sigma[i] += v2sigmaC[i];
+
+	// Now, compute y2a value.
+        y2a[i] = vrho[i] - (2 * sigma[i] * v2rhosigma[i]
+	        + 2 * (hess1[i].x + hess1[i].y + hess1[i].z) * vsigma[i]
+    		+ 4 * v2sigma[i] * (grad[i].x * grad[i].x * hess1[i].x + 
+				    grad[i].y * grad[i].y * hess1[i].y + 
+				    grad[i].z * grad[i].z * hess1[i].z + 
+				    2 * grad[i].x * grad[i].y * hess2[i].x + 
+				    2 * grad[i].x * grad[i].z * hess2[i].y + 
+				    2 * grad[i].y * grad[i].z * hess2[i].z));
+    }
+
+    // Free memory.
+    free(rho);
+    free(sigma);
+    free(exchange);
+    free(correlation);
+
+    // The outputs for exchange
+    free(vrho);
+    free(vsigma);
+    free(v2rho);
+    free(v2rhosigma);
+    free(v2sigma);
+
+    // The outputs for correlation
+    free(vrhoC);
+    free(vsigmaC);
+    free(v2rhoC);
+    free(v2rhosigmaC);
+    free(v2sigmaC);
+
+    return;
+}
+
+template <class scalar_type, int width>
+__global__ void joinResults(
+		    double* ex, double* exchange,
+		    double* ec, double* correlation,
+		    double* vrho, double* vrhoC,
+		    double* vsigma, double* vsigmaC,
+		    double* v2rho, double* v2rhoC,
+		    double* v2rhosigma, double* v2rhosigmaC,
+		    double* v2sigma, double* v2sigmaC,
+		    double* y2a,
+		    const double* sigma,
+		    const G2G::vec_type<double, width>* grad,
+		    const G2G::vec_type<double, width>* hess1,
+		    const G2G::vec_type<double, width>* hess2,
 		    int numElements)
 {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
 
     if (i < numElements)
     {
+/*	printf("%i %lf %lf %lf %lf %lf %lf %lf %lf %lf\n",i,
+	    hess1[i].x, hess1[i].y, hess1[i].z,
+	    hess2[i].x, hess2[i].y, hess2[i].z,
+	    grad[i].x, grad[i].y, grad[i].z);*/
+
 	ex[i] = exchange[i];
 	ec[i] = correlation[i];
+
 	// Merge the results for the derivatives.
 	vrho[i] += vrhoC[i];
         vsigma[i] += vsigmaC[i];
@@ -228,7 +359,13 @@ __global__ void joinResults(scalar_type* ex, scalar_type* exchange,
         // Now, compute y2a value.
 	y2a[i] = vrho[i] - (2 * sigma[i] * v2rhosigma[i]
             + 2 * (hess1[i].x + hess1[i].y + hess1[i].z) * vsigma[i]
-            + 4 * v2sigma[i] * (grad[i].x * grad[i].x * hess1[i].x + grad[i].y * grad[i].y * hess1[i].y + grad[i].z * grad[i].z * hess1[i].z + 2 * grad[i].x * grad[i].y * hess2[i].x + 2 * grad[i].x * grad[i].z * hess2[i].y + 2 * grad[i].y * grad[i].z * hess2[i].z));
+            + 4 * v2sigma[i] * (grad[i].x * grad[i].x * hess1[i].x + 
+					    grad[i].y * grad[i].y * hess1[i].y + 
+					    grad[i].z * grad[i].z * hess1[i].z + 
+					    2 * grad[i].x * grad[i].y * hess2[i].x + 
+					    2 * grad[i].x * grad[i].z * hess2[i].y + 
+					    2 * grad[i].y * grad[i].z * hess2[i].z));
+
     }
 }
 
@@ -244,11 +381,11 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type* dens,
     scalar_type* ec,
     scalar_type* y2a)
 {
-
     printf("LibxcProxy::doGGA cuda (...) \n");
+    //print_proxy_input<scalar_type> (dens, number_of_points, contracted_grad, grad, hess1, hess2);
 
-    double* rho = dens;
-    const double* sigma = contracted_grad;
+    double* rho = (double*)dens;
+    const double* sigma = (double*)contracted_grad;
 
     cudaError_t err = cudaSuccess;
 
@@ -268,6 +405,9 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type* dens,
         fprintf(stderr, "Failed to allocate device correlation!\n");
         exit(EXIT_FAILURE);
     }
+    // Clean arrays
+    cudaMemset(exchange, 0, array_size);
+    cudaMemset(correlation, 0, array_size);
 
     // The outputs for exchange
     double* vrho = NULL;
@@ -310,6 +450,12 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type* dens,
         fprintf(stderr, "Failed to allocate device v2sigma!\n");
         exit(EXIT_FAILURE);
     }
+    // Clear arrays
+    cudaMemset(vrho, 0, array_size);
+    cudaMemset(vsigma, 0, array_size);
+    cudaMemset(v2rho, 0, array_size);
+    cudaMemset(v2rhosigma, 0, array_size);
+    cudaMemset(v2sigma, 0, array_size);
 
     // The outputs for correlation
     double* vrhoC = NULL;
@@ -352,6 +498,12 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type* dens,
         fprintf(stderr, "Failed to allocate device v2sigmaC!\n");
         exit(EXIT_FAILURE);
     }
+    // Clear arrays
+    cudaMemset(vrhoC, 0, array_size);
+    cudaMemset(vsigmaC, 0, array_size);
+    cudaMemset(v2rhoC, 0, array_size);
+    cudaMemset(v2rhosigmaC, 0, array_size);
+    cudaMemset(v2sigmaC, 0, array_size);
 
     try {
         xc_gga (&funcForExchange, number_of_points,
@@ -390,18 +542,20 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type* dens,
     // Variables for the Kernels
     int threadsPerBlock = 256;
     int blocksPerGrid = (number_of_points + threadsPerBlock - 1) / threadsPerBlock;
-    joinResults<scalar_type, width><<<blocksPerGrid, threadsPerBlock>>>(ex, exchange,
-	ec, correlation,
+
+    joinResults<scalar_type, width><<<blocksPerGrid, threadsPerBlock>>>(
+	(double*)ex, exchange,
+	(double*)ec, correlation,
 	vrho, vrhoC,
 	vsigma, vsigmaC,
 	v2rho, v2rhoC,
 	v2rhosigma, v2rhosigmaC,
 	v2sigma, v2sigmaC,
-	y2a,
+	(double*)y2a,
 	sigma,
-	grad,
-	hess1,
-	hess2, 
+	(const G2G::vec_type<double,width>*)grad,
+	(const G2G::vec_type<double,width>*)hess1,
+	(const G2G::vec_type<double,width>*)hess2,
 	number_of_points);
 
     // Free device memory.

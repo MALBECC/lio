@@ -1,0 +1,929 @@
+********************************
+** Accumulate Point GPU test  **
+********************************
+gga_x_pbe_init()
+gga_c_pbe_init() 
+libxc_exchage_correlation_gpu (...) 
+CUDA kernel launch with 1 blocks of 256 threads
+CUDA kernel launch with 1 blocks of 256 threads
+LibxcProxy::doGGA cuda (...) 
+========= CUDA-MEMCHECK
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (255,0,0) in block (0,0,0)
+=========     Address 0x702f037f8 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (254,0,0) in block (0,0,0)
+=========     Address 0x702f037f0 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (253,0,0) in block (0,0,0)
+=========     Address 0x702f037e8 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (252,0,0) in block (0,0,0)
+=========     Address 0x702f037e0 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (251,0,0) in block (0,0,0)
+=========     Address 0x702f037d8 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (250,0,0) in block (0,0,0)
+=========     Address 0x702f037d0 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (249,0,0) in block (0,0,0)
+=========     Address 0x702f037c8 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (248,0,0) in block (0,0,0)
+=========     Address 0x702f037c0 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (247,0,0) in block (0,0,0)
+=========     Address 0x702f037b8 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (246,0,0) in block (0,0,0)
+=========     Address 0x702f037b0 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (245,0,0) in block (0,0,0)
+=========     Address 0x702f037a8 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (244,0,0) in block (0,0,0)
+=========     Address 0x702f037a0 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (243,0,0) in block (0,0,0)
+=========     Address 0x702f03798 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (242,0,0) in block (0,0,0)
+=========     Address 0x702f03790 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (241,0,0) in block (0,0,0)
+=========     Address 0x702f03788 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (240,0,0) in block (0,0,0)
+=========     Address 0x702f03780 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (239,0,0) in block (0,0,0)
+=========     Address 0x702f03778 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (238,0,0) in block (0,0,0)
+=========     Address 0x702f03770 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (237,0,0) in block (0,0,0)
+=========     Address 0x702f03768 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (236,0,0) in block (0,0,0)
+=========     Address 0x702f03760 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (235,0,0) in block (0,0,0)
+=========     Address 0x702f03758 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (234,0,0) in block (0,0,0)
+=========     Address 0x702f03750 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (233,0,0) in block (0,0,0)
+=========     Address 0x702f03748 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (232,0,0) in block (0,0,0)
+=========     Address 0x702f03740 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (231,0,0) in block (0,0,0)
+=========     Address 0x702f03738 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (230,0,0) in block (0,0,0)
+=========     Address 0x702f03730 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (229,0,0) in block (0,0,0)
+=========     Address 0x702f03728 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (228,0,0) in block (0,0,0)
+=========     Address 0x702f03720 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (227,0,0) in block (0,0,0)
+=========     Address 0x702f03718 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (226,0,0) in block (0,0,0)
+=========     Address 0x702f03710 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (225,0,0) in block (0,0,0)
+=========     Address 0x702f03708 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (224,0,0) in block (0,0,0)
+=========     Address 0x702f03700 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (223,0,0) in block (0,0,0)
+=========     Address 0x702f036f8 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (222,0,0) in block (0,0,0)
+=========     Address 0x702f036f0 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Invalid __global__ read of size 8
+=========     at 0x00000138 in /home/eperez/workspace/lio/test/unit_test/accumulate_point/../../../g2g/libxc/libxc_accumulate_point.h:278:void copy<double>(double const *, double*, int)
+=========     by thread (221,0,0) in block (0,0,0)
+=========     Address 0x702f036e8 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:./main_gpu [0x28ee1]
+=========     Host Frame:./main_gpu [0x46a83]
+=========     Host Frame:./main_gpu [0x11432]
+=========     Host Frame:./main_gpu [0x11210]
+=========     Host Frame:./main_gpu [0x1124e]
+=========     Host Frame:./main_gpu [0x1215b]
+=========     Host Frame:./main_gpu [0x11f3f]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:./main_gpu [0x51166]
+=========     Host Frame:./main_gpu [0x11f54]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:./main_gpu [0x51166]
+=========     Host Frame:./main_gpu [0x11f69]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:./main_gpu [0x51166]
+=========     Host Frame:./main_gpu [0x11f7e]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:./main_gpu [0x51166]
+=========     Host Frame:./main_gpu [0x11f93]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:./main_gpu [0x51166]
+=========     Host Frame:./main_gpu [0x104c5]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:.gga_x_pbe_end() 
+/main_gpu [0x51166]
+=========     Host Frame:./main_gpu [0x104d4]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:./main_gpu [0x51166]
+=========     Host Frame:./main_gpu [0x104e3]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:./main_gpu [0x51166]
+=========     Host Frame:./main_gpu [0x104f2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:./main_gpu [0x51166]
+=========     Host Frame:./main_gpu [0x10501]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:./main_gpu [0x51166]
+=========     Host Frame:./main_gpu [0x10510]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:./main_gpu [0x51166]
+=========     Host Frame:./main_gpu [0x1051f]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so [0x726ee6]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so [0x310ae3]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so (xc_func_end + 0x62) [0x2ac55]
+=========     Host Frame:./main_gpu [0x11768]
+=========     Host Frame:./main_gpu [0x1052e]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Leaked 144 bytes at 0x703100600
+=========     Saved host backtrace up to driver entry point at cudaMalloc time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuMemAlloc_v2 + 0x17f) [0x1e85ff]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so [0x717023]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so [0x6f9a6e]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so [0x72762f]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so [0x1b3abb]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so (xc_gga + 0x1c3) [0x2b108]
+=========     Host Frame:./main_gpu [0x13208]
+=========     Host Frame:./main_gpu [0x11e5a]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Leaked 144 bytes at 0x703100400
+=========     Saved host backtrace up to driver entry point at cudaMalloc time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuMemAlloc_v2 + 0x17f) [0x1e85ff]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so [0x717023]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so [0x6f9a6e]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so [0x72762f]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so [0x310bb2]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so (xc_gga + 0x1c3) [0x2b108]
+=========     Host Frame:./main_gpu [0x131a6]
+=========     Host Frame:./main_gpu [0x11e5a]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Leaked 24 bytes at 0x703100200
+=========     Saved host backtrace up to driver entry point at cudaMalloc time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuMemAlloc_v2 + 0x17f) [0x1e85ff]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so [0x717023]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so [0x6f9a6e]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so [0x72762f]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so [0x1b38d3]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so (xc_func_init + 0x496) [0x2ab99]
+=========     Host Frame:./main_gpu [0x11717]
+=========     Host Frame:./main_gpu [0x1046d]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Leaked 24 bytes at 0x703100000
+=========     Saved host backtrace up to driver entry point at cudaMalloc time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuMemAlloc_v2 + 0x17f) [0x1e85ff]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so [0x717023]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so [0x6f9a6e]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so [0x72762f]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so [0x310a3c]
+=========     Host Frame:/home/eperez/workspace/common/libs/libxc_cuda.so (xc_func_init + 0x496) [0x2ab99]
+=========     Host Frame:./main_gpu [0x116b8]
+=========     Host Frame:./main_gpu [0x1046d]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Leaked 7072 bytes at 0x703003800
+=========     Saved host backtrace up to driver entry point at cudaMalloc time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuMemAlloc_v2 + 0x17f) [0x1e85ff]
+=========     Host Frame:./main_gpu [0x412a3]
+=========     Host Frame:./main_gpu [0x23cee]
+=========     Host Frame:./main_gpu [0x518af]
+=========     Host Frame:./main_gpu [0x102cd]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Leaked 7072 bytes at 0x703001c00
+=========     Saved host backtrace up to driver entry point at cudaMalloc time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuMemAlloc_v2 + 0x17f) [0x1e85ff]
+=========     Host Frame:./main_gpu [0x412a3]
+=========     Host Frame:./main_gpu [0x23cee]
+=========     Host Frame:./main_gpu [0x518af]
+=========     Host Frame:./main_gpu [0x102a1]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Leaked 7072 bytes at 0x703000000
+=========     Saved host backtrace up to driver entry point at cudaMalloc time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuMemAlloc_v2 + 0x17f) [0x1e85ff]
+=========     Host Frame:./main_gpu [0x412a3]
+=========     Host Frame:./main_gpu [0x23cee]
+=========     Host Frame:./main_gpu [0x518af]
+=========     Host Frame:./main_gpu [0x10275]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Leaked 1768 bytes at 0x702f03000
+=========     Saved host backtrace up to driver entry point at cudaMalloc time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuMemAlloc_v2 + 0x17f) [0x1e85ff]
+=========     Host Frame:./main_gpu [0x412a3]
+=========     Host Frame:./main_gpu [0x23cee]
+=========     Host Frame:./main_gpu [0x518af]
+=========     Host Frame:./main_gpu [0x11c72]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Leaked 1768 bytes at 0x702f02800
+=========     Saved host backtrace up to driver entry point at cudaMalloc time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuMemAlloc_v2 + 0x17f) [0x1e85ff]
+=========     Host Frame:./main_gpu [0x412a3]
+=========     Host Frame:./main_gpu [0x23cee]
+=========     Host Frame:./main_gpu [0x518af]
+=========     Host Frame:./main_gpu [0x11c2c]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Leaked 1768 bytes at 0x702f02000
+=========     Saved host backtrace up to driver entry point at cudaMalloc time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuMemAlloc_v2 + 0x17f) [0x1e85ff]
+=========     Host Frame:./main_gpu [0x412a3]
+=========     Host Frame:./main_gpu [0x23cee]
+=========     Host Frame:./main_gpu [0x518af]
+=========     Host Frame:./main_gpu [0x11be6]
+=========     Host Frame:./main_gpu [0x104b2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Leaked 1768 bytes at 0x702f01800
+=========     Saved host backtrace up to driver entry point at cudaMalloc time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuMemAlloc_v2 + 0x17f) [0x1e85ff]
+=========     Host Frame:./main_gpu [0x412a3]
+=========     Host Frame:./main_gpu [0x23cee]
+=========     Host Frame:./main_gpu [0x518af]
+=========     Host Frame:./main_gpu [0x10249]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Leaked 1768 bytes at 0x702f01000
+=========     Saved host backtrace up to driver entry point at cudaMalloc time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuMemAlloc_v2 + 0x17f) [0x1e85ff]
+=========     Host Frame:./main_gpu [0x412a3]
+=========     Host Frame:./main_gpu [0x23cee]
+=========     Host Frame:./main_gpu [0x518af]
+=========     Host Frame:./main_gpu [0x1021c]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Leaked 1768 bytes at 0x702f00800
+=========     Saved host backtrace up to driver entry point at cudaMalloc time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuMemAlloc_v2 + 0x17f) [0x1e85ff]
+=========     Host Frame:./main_gpu [0x412a3]
+=========     Host Frame:./main_gpu [0x23cee]
+=========     Host Frame:./main_gpu [0x518af]
+=========     Host Frame:./main_gpu [0x101ef]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= Leaked 1768 bytes at 0x702f00000
+=========     Saved host backtrace up to driver entry point at cudaMalloc time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuMemAlloc_v2 + 0x17f) [0x1e85ff]
+=========     Host Frame:./main_gpu [0x412a3]
+=========     Host Frame:./main_gpu [0x23cee]
+=========     Host Frame:./main_gpu [0x518af]
+=========     Host Frame:./main_gpu [0x101c2]
+=========     Host Frame:./main_gpu [0x1059a]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (__libc_start_main + 0xf0) [0x20830]
+=========     Host Frame:./main_gpu [0x3569]
+=========
+========= LEAK SUMMARY: 33928 bytes leaked in 14 allocations
+========= ERROR SUMMARY: 47 errors

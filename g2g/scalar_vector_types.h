@@ -78,7 +78,7 @@ class vec_type {};
       }
 
       void operator+=(const vec_type & lo){
-      	x += lo.x, y += lo.y, z += lo.z; //, _w += lo._w;
+      	x += lo.x, y += lo.y, z += lo.z,  _w += lo._w;
       }
 
   };

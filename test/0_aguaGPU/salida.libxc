@@ -5,7 +5,7 @@ Kernels: cpu
 Using 3 CPU Threads and 1 GPU Threads
  using the modified parser for libxc
  JOB STARTED NOW
-dom feb 11 15:23:45 ART 2018
+mié feb 14 16:26:55 ART 2018
 <======= GPU Code Initialization ========>
 atoms: 3
 max atoms: 3
@@ -17,7 +17,7 @@ m: 19 nco: 5
 density basis: s: 15 p: 3 d: 3
 density basis: m: 42
 Using device 0 for analytic integral calculations
-Weights: 16893us.
+Weights: 15354us.
 Particion 0: 405040
 Relacion max / min = 1.000000
 --> Thread OMP: 4
@@ -25,7 +25,7 @@ Relacion max / min = 1.000000
 --> Thread GPU: 1
 --> Correccion de cubos chicos: 250000
 --> Puntos de separacion: 200
-Timer functions: 233us.
+Timer functions: 220us.
 MM point charges: 0
 solve_closed (compute_rmm:1, lda:0, compute_forces:0, compute_energy:1)
 libxc_exchage_correlation_cpu (...) 

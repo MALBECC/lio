@@ -53,3 +53,12 @@ lioamber/liosubs/utests/*.x
 lioamber/liosubs/utests/Output-*
 #
 ###########################################################
+# Unit test
+###########################################################
+test/unit_test/accumulate_point/main_gpu
+test/unit_test/accumulate_point/main_cpu
+test/unit_test/accumulate_point/output/*
+test/unit_test/libxc_proxy/main_gpu
+test/unit_test/libxc_proxy/output/*
+test/unit_test/matrix/matrix_test
+test/*/output/*

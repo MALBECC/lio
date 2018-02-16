@@ -25,7 +25,7 @@ void print_vec_type (G2G::vec_type<scalar_type,4>* data, int size)
 	printf("empty");
     } else {
 	for (int i=0; i<size; i++) {
-	    printf("(%f,%f,%f),", data[i].x, data[i].y, data[i].z);
+	    printf("(%e,%e,%e),", data[i].x, data[i].y, data[i].z);
 	}
     }
     printf("]\n");

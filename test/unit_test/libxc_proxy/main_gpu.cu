@@ -19,6 +19,7 @@
 #include "../../../g2g/libxc/libxcproxy.h"
 #include "../../../g2g/libxc/libxc_accumulate_point.h"
 #include "test_input.h"
+#include <typeinfo>
 
 using namespace std;
 
@@ -685,15 +686,14 @@ void proxyTest0002()
 
     ////////////////////////////////
     // PARAMS SETUP
+    int number_of_points[9] = {221,227,256,537,1796,4007,2910,2910,3492};
+    float* dens_cpu[9] = {dens_221_f,dens_227_f,dens_256_f,dens_537_f,dens_1796_f,dens_4007_f,dens_2910_1_f,dens_2910_2_f,dens_3492_f};
+    float* contracted_gradients_cpu[9] = {contracted_grad_221_f,contracted_grad_227_f,contracted_grad_256_f,contracted_grad_537_f,contracted_grad_1796_f,contracted_grad_4007_f,contracted_grad_2910_1_f,contracted_grad_2910_2_f,contracted_grad_3492_f};
+    G2G::vec_type<float,4>* grads[9]  = {grad_221_f,grad_227_f,grad_256_f,grad_537_f,grad_1796_f,grad_4007_f,grad_2910_1_f,grad_2910_2_f,grad_3492_f};
+    G2G::vec_type<float,4>* hess1s[9] = {hess1_221_f,hess1_227_f,hess1_256_f,hess1_537_f,hess1_1796_f,hess1_4007_f,hess1_2910_1_f,hess1_2910_2_f,hess1_3492_f};
+    G2G::vec_type<float,4>* hess2s[9] = {hess2_221_f,hess2_227_f,hess2_256_f,hess2_537_f,hess2_1796_f,hess2_4007_f,hess2_2910_1_f,hess2_2910_2_f,hess2_3492_f};
 
-    int number_of_points[1] = {221};
-    float* dens_cpu[1] = {dens_221_f};
-    float* contracted_gradients_cpu[1] = {contracted_grad_221_f};
-    G2G::vec_type<float,4>* grads[1]  = {grad_221_f};
-    G2G::vec_type<float,4>* hess1s[1] = {hess1_221_f};
-    G2G::vec_type<float,4>* hess2s[1] = {hess2_221_f};
-
-    for (int i=0; i<1; i++) {
+    for (int i=0; i<9; i++) {
         doGGA_gpu_float (number_of_points[i], 
 	    dens_cpu[i], 
 	    contracted_gradients_cpu[i],
@@ -703,6 +703,8 @@ void proxyTest0002()
     }
 }
 
+//////////////////////////////////
+// Conversion KERNELS
 __global__ void floatToDouble(float* input, double* output, int numElements)
 {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
@@ -721,8 +723,34 @@ __global__ void doubleToFloat(double* input, float* output, int numElements)
     }
 }
 
-//////////////////////////////
-// Convertion double to float
+__global__ void floatToDouble(const G2G::vec_type<float,4>* input, G2G::vec_type<double,4>* output, int numElements)
+{
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+    if (i < numElements)
+    {
+	//float x, y, z, _w;
+	output[i].x = (double)(input[i].x);
+	output[i].y = (double)(input[i].y);
+	output[i].z = (double)(input[i].z);
+	//output[i].w = (double)input[i]._w;
+    }
+}
+
+__global__ void doubleToFloat(const G2G::vec_type<double,4>* input, G2G::vec_type<float,4>* output, int numElements)
+{
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+    if (i < numElements)
+    {
+	//float x, y, z, _w;
+	output[i].x = (float)(input[i].x);
+	output[i].y = (float)(input[i].y);
+	output[i].z = (float)(input[i].z);
+	//output[i].w = (float)input[i]._w;
+    }
+}
+
+////////////////////////////////////////
+// Convertion from double to float TEST
 void conversionTest0001(int array_size) 
 {
     printf("convertionTest0001(%i)\n", array_size);
@@ -765,8 +793,8 @@ void conversionTest0001(int array_size)
     free(output);
 }
 
-//////////////////////////////
-// Convertion float to double
+//////////////////////////////////////////
+// Convertion from float to double TEST
 void conversionTest0002(int array_size) 
 {
     printf("convertionTest0002(%i)\n", array_size);
@@ -809,19 +837,140 @@ void conversionTest0002(int array_size)
     free(output);
 }
 
+///////////////////////////////////////////////////////
+// Convertion from float to double for vec_type TEST
+void conversionTest0003(int array_size) 
+{
+    printf("convertionTest0003(%i)\n", array_size);
+    G2G::vec_type<double,4>* output = (G2G::vec_type<double,4>*)malloc(sizeof(G2G::vec_type<double,4>)*array_size);
+    G2G::vec_type<float,4>* input = (G2G::vec_type<float,4>*)malloc(sizeof(G2G::vec_type<float,4>)*array_size);
+
+    for (int i=0; i<array_size; i++) {
+	input[i].x  = 0.000000001*i;
+	input[i].y  = 0.000000002*i;
+	input[i].z  = 0.000000004*i;
+	input[i].w = 0.000000008*i;
+    	output[i].x = 0;
+	output[i].y = 0;
+	output[i].z = 0;
+	output[i].w = 0;
+    }
+
+    // CUDA ALLOC
+    G2G::vec_type<float,4>* input_gpu = NULL;
+    G2G::vec_type<double,4>* output_gpu = NULL;
+
+    cudaMalloc((void**)&input_gpu, sizeof(G2G::vec_type<float,4>)*array_size);
+    cudaMalloc((void**)&output_gpu, sizeof(G2G::vec_type<double,4>)*array_size);
+
+    // CUDASET ARRAYS VALUES
+    cudaMemset(input_gpu, 0, sizeof(G2G::vec_type<float,4>)*array_size);
+    cudaMemset(output_gpu, 0, sizeof(G2G::vec_type<double,4>)*array_size);
+    cudaMemcpy(input_gpu, input, sizeof(G2G::vec_type<float,4>)*array_size, cudaMemcpyHostToDevice);
+
+    // KERNEL CALL
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (array_size + threadsPerBlock - 1) / threadsPerBlock;
+
+    printf("float->double\n");
+    floatToDouble <<<blocksPerGrid, threadsPerBlock>>>(input_gpu, output_gpu, array_size);
+
+    // Show the results
+    cudaMemcpy (output, output_gpu, sizeof(G2G::vec_type<double,4>)*array_size, cudaMemcpyDeviceToHost);
+
+    print_vec_type (output, array_size);
+
+    // Free memory
+    cudaFree((void*)input_gpu);
+    cudaFree((void*)output_gpu);
+    free((void*)input);
+    free((void*)output);
+}
+
+///////////////////////////////////////////////////////
+// Convertion from double to float for vec_type TEST
+void conversionTest0004(int array_size) 
+{
+    printf("convertionTest0004(%i)\n", array_size);
+    G2G::vec_type<double,4>* input = (G2G::vec_type<double,4>*)malloc(sizeof(G2G::vec_type<double,4>)*array_size);
+    G2G::vec_type<float,4>* output = (G2G::vec_type<float,4>*)malloc(sizeof(G2G::vec_type<float,4>)*array_size);
+
+    for (int i=0; i<array_size; i++) {
+	input[i].x  = 0.000000001*i;
+	input[i].y  = 0.000000002*i;
+	input[i].z  = 0.000000004*i;
+	input[i].w = 0.000000008*i;
+    	output[i].x = 0;
+	output[i].y = 0;
+	output[i].z = 0;
+	output[i].w = 0;
+    }
+
+    // CUDA ALLOC
+    G2G::vec_type<double,4>* input_gpu = NULL;
+    G2G::vec_type<float,4>* output_gpu = NULL;
+
+    cudaMalloc((void**)&output_gpu, sizeof(G2G::vec_type<float,4>)*array_size);
+    cudaMalloc((void**)&input_gpu, sizeof(G2G::vec_type<double,4>)*array_size);
+
+    // CUDASET ARRAYS VALUES
+    cudaMemset(output_gpu, 0, sizeof(G2G::vec_type<float,4>)*array_size);
+    cudaMemset(input_gpu, 0, sizeof(G2G::vec_type<double,4>)*array_size);
+    cudaMemcpy(input_gpu, input, sizeof(G2G::vec_type<double,4>)*array_size, cudaMemcpyHostToDevice);
+
+    // KERNEL CALL
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (array_size + threadsPerBlock - 1) / threadsPerBlock;
+
+    printf("double->float\n");
+    doubleToFloat <<<blocksPerGrid, threadsPerBlock>>>(input_gpu, output_gpu, array_size);
+
+    // Show the results
+    cudaMemcpy (output, output_gpu, sizeof(G2G::vec_type<float,4>)*array_size, cudaMemcpyDeviceToHost);
+
+    print_vec_type (output, array_size);
+
+    // Free memory
+    cudaFree((void*)input_gpu);
+    cudaFree((void*)output_gpu);
+    free((void*)input);
+    free((void*)output);
+}
+
+void data_type_test003()
+{
+    printf("=== test 003 ===\n");
+    float f_value = 1;
+    double d_value = 2;
+    int i_value = 3;
+    //const std::type_info& float_type = typeid(f_value);
+    //const std::type_info& double_type = typeid(d_value);
+
+    printf("%s\n", typeid(f_value).name());
+    printf("%s\n", typeid(d_value).name());
+    printf("%s\n", typeid(i_value).name());
+    printf("%i\n", sizeof(f_value));
+    printf("%i\n", sizeof(d_value));
+    printf("%i\n", sizeof(i_value));
+
+    if (typeid(f_value).name() == "f") {
+	printf("Soy un float \n");
+    }
+}
+
 
 int main()
 {
     cout << "Test: Libxc Proxy GPU - BEGIN" << endl;
     //accumulate_data_for_libxc_test0001();
     //joinResultsTest0001();
-#if FULL_DOUBLE
     proxyTest0001();
-#else
     proxyTest0002();
-#endif
     //conversionTest0001(100);
     //conversionTest0002(100);
+    //conversionTest0003(10);
+    //conversionTest0004(10);
+    //data_type_test003();
     cout << "Test: Libxc Proxy GPU - END" << endl;
     return 0;
 }

@@ -369,6 +369,8 @@ __global__ void joinResults(
     }
 }
 
+/////////////////////////
+// Conversion KERNELS
 __global__ void convertFloatToDouble(const float* input, double* output, int numElements)
 {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
@@ -387,6 +389,34 @@ __global__ void convertDoubleToFloat(const double* input, float* output, int num
     }
 }
 
+__global__ void convertFloatToDouble(const G2G::vec_type<float,4>* input, G2G::vec_type<double,4>* output, int numElements)
+{
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+    if (i < numElements)
+    {
+	//float x, y, z, _w;
+	output[i].x = (double)(input[i].x);
+	output[i].y = (double)(input[i].y);
+	output[i].z = (double)(input[i].z);
+	//output[i].w = (double)input[i]._w;
+    }
+}
+
+__global__ void convertDoubleToFloat(const G2G::vec_type<double,4>* input, G2G::vec_type<float,4>* output, int numElements)
+{
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+    if (i < numElements)
+    {
+	//float x, y, z, _w;
+	output[i].x = (float)(input[i].x);
+	output[i].y = (float)(input[i].y);
+	output[i].z = (float)(input[i].z);
+	//output[i].w = (float)input[i]._w;
+    }
+}
+
+//
+////////////////////////////////
 
 template <class scalar_type, int width>
 void LibxcProxy <scalar_type, width>::doGGA(scalar_type* dens,
@@ -402,6 +432,8 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type* dens,
     printf("LibxcProxy::doGGA cuda (...) \n");
     print_proxy_input<scalar_type> (dens, number_of_points, contracted_grad, grad, hess1, hess2);
 
+    bool full_double = (sizeof(scalar_type) == 8);
+
     // Variables for the Kernels
     int threadsPerBlock = 256;
     int blocksPerGrid = (number_of_points + threadsPerBlock - 1) / threadsPerBlock;
@@ -410,9 +442,17 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type* dens,
 
     // All the arrays for libxc must be of double*
     int array_size = sizeof(double) * number_of_points;
+    int vec_size = sizeof(G2G::vec_type<double,width>) * number_of_points;
 
     double* rho = NULL;
     double* sigma = NULL;
+
+    double* ex_double = NULL;
+    double* ec_double = NULL;
+    double* y2a_double = NULL;
+    G2G::vec_type<double, width>* grad_double = NULL;
+    G2G::vec_type<double, width>* hess1_double = NULL;
+    G2G::vec_type<double, width>* hess2_double = NULL;
 
     err = cudaMalloc((void**)&rho, array_size);
     if (err != cudaSuccess)
@@ -428,11 +468,57 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type* dens,
 	exit(EXIT_FAILURE);
     }
 
-    // Copy inputs for libxc
-    // TODO: tener en cuenta si scalar_type es float, no sirve esto,
-    // hay que transformar los float a double. Esto solo se hace
-    // cuando FULL_DOUBLE=0, sino se copian de una.
-#if FULL_DOUBLE
+    // Si el tipo de datos es float, creamos los arrays para copiar
+    // los inputs y convertirlos a floats.
+if (!full_double) {
+    err = cudaMalloc((void**)&ex_double, array_size);
+    if (err != cudaSuccess)
+    {
+        fprintf(stderr, "Failed to allocate device ex_double!\n");
+        exit(EXIT_FAILURE);
+    }
+    cudaMemset(ex_double,0,array_size);
+
+    err = cudaMalloc((void**)&ec_double, array_size);
+    if (err != cudaSuccess)
+    {
+        fprintf(stderr, "Failed to allocate device ec_double!\n");
+	exit(EXIT_FAILURE);
+    }
+    cudaMemset(ec_double,0,array_size);
+
+    err = cudaMalloc((void**)&y2a_double, array_size);
+    if (err != cudaSuccess)
+    {
+	fprintf(stderr, "Failed to allocate device y2a_double!\n");
+	exit(EXIT_FAILURE);
+    }
+    cudaMemset(y2a_double,0,array_size);
+
+    err = cudaMalloc((void**)&grad_double, vec_size);
+    if (err != cudaSuccess) 
+    {
+	fprintf(stderr, "Failed to allocate device grad_double!\n");
+	exit(EXIT_FAILURE);
+    }
+
+    err = cudaMalloc((void**)&hess1_double, vec_size);
+    if (err != cudaSuccess) 
+    {
+	fprintf(stderr, "Failed to allocate device hess1_double!\n");
+	exit(EXIT_FAILURE);
+    }
+
+    err = cudaMalloc((void**)&hess2_double, vec_size);
+    if (err != cudaSuccess) 
+    {
+	fprintf(stderr, "Failed to allocate device hess2_double!\n");
+	exit(EXIT_FAILURE);
+    }
+}
+
+    // Preparamos los datos.
+if (full_double) {
     err = cudaMemcpy(rho, dens, array_size, cudaMemcpyDeviceToDevice);
     if (err != cudaSuccess)
     {
@@ -444,11 +530,25 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type* dens,
     {
 	fprintf(stderr, "Failed to copy data from contracted_grad->sigma\n");
     }
-#else
-    convertFloatToDouble<<<blocksPerGrid, threadsPerBlock>>>(dens, rho, number_of_points);
-    convertFloatToDouble<<<blocksPerGrid, threadsPerBlock>>>(contracted_grad, sigma, number_of_points);
-#endif
 
+    // Usamos los datos como vienen ya que son todos doubles.
+    ex_double = (double*)ex;
+    ec_double = (double*)ec;
+    y2a_double = (double*)y2a;
+    grad_double = (G2G::vec_type<double,4>*)grad;
+    hess1_double = (G2G::vec_type<double,4>*)hess1;
+    hess2_double = (G2G::vec_type<double,4>*)hess2;
+
+} else {
+    // Como los inputs son float, los convertimos para libxc
+    convertFloatToDouble<<<blocksPerGrid, threadsPerBlock>>>((float*)dens, rho, number_of_points);
+    convertFloatToDouble<<<blocksPerGrid, threadsPerBlock>>>((float*)contracted_grad, sigma, number_of_points);
+    convertFloatToDouble<<<blocksPerGrid, threadsPerBlock>>>((G2G::vec_type<float,4>*)grad, grad_double, number_of_points);
+    convertFloatToDouble<<<blocksPerGrid, threadsPerBlock>>>((G2G::vec_type<float,4>*)hess1, hess1_double, number_of_points);
+    convertFloatToDouble<<<blocksPerGrid, threadsPerBlock>>>((G2G::vec_type<float,4>*)hess2, hess2_double, number_of_points);
+}
+
+    // Preparamos los arrays de salida.
     double* exchange = NULL;
     err = cudaMalloc((void **)&exchange, array_size);
     if (err != cudaSuccess)
@@ -465,11 +565,8 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type* dens,
         exit(EXIT_FAILURE);
     }
 
-    // Clean arrays
-    //cudaMemset(rho, 0, array_size);
-    //cudaMemset(sigma, 0, array_size);
-    cudaMemset(exchange, 0, array_size);
-    cudaMemset(correlation, 0, array_size);
+    cudaMemset(exchange,0,array_size);
+    cudaMemset(correlation,0,array_size);
 
     // The outputs for exchange
     double* vrho = NULL;
@@ -561,13 +658,16 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type* dens,
         fprintf(stderr, "Failed to allocate device v2sigmaC!\n");
         exit(EXIT_FAILURE);
     }
-    // Clear arrays
+    ///////////////////////////////////
+    // Clear arrays for correlation
     cudaMemset(vrhoC, 0, array_size);
     cudaMemset(vsigmaC, 0, array_size);
     cudaMemset(v2rhoC, 0, array_size);
     cudaMemset(v2rhosigmaC, 0, array_size);
     cudaMemset(v2sigmaC, 0, array_size);
 
+    /////////////////////////////
+    // Call LIBXC for exchange
     try {
         xc_gga (&funcForExchange, number_of_points,
                 rho,
@@ -584,6 +684,8 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type* dens,
         return;
     }
 
+    ////////////////////////////////
+    // Call LIBXC for correlation
     try {
         // Now the correlation value.
         xc_gga (&funcForCorrelation, number_of_points,
@@ -601,23 +703,48 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type* dens,
         return;
     }
 
-    // Gather the results.
+    ////////////////////////
+    // Gather the results
     /*joinResults<scalar_type, width><<<blocksPerGrid, threadsPerBlock>>>(
-	(double*)ex, exchange,
-	(double*)ec, correlation,
+	ex, exchange,
+	ec, correlation,
 	vrho, vrhoC,
 	vsigma, vsigmaC,
 	v2rho, v2rhoC,
 	v2rhosigma, v2rhosigmaC,
 	v2sigma, v2sigmaC,
-	(double*)y2a,
+	y2a,
 	sigma,
-	(const G2G::vec_type<double,width>*)grad,
-	(const G2G::vec_type<double,width>*)hess1,
-	(const G2G::vec_type<double,width>*)hess2,
+	grad,
+	hess1,
+	hess2,
 	number_of_points);*/
 
-    // Free device memory.
+    joinResults<scalar_type, width><<<blocksPerGrid, threadsPerBlock>>>(
+	ex_double, exchange,
+	ec_double, correlation,
+	vrho, vrhoC,
+	vsigma, vsigmaC,
+	v2rho, v2rhoC,
+	v2rhosigma, v2rhosigmaC,
+	v2sigma, v2sigmaC,
+	y2a_double,
+	sigma,
+	grad_double,
+	hess1_double,
+	hess2_double,
+	number_of_points);
+
+    //////////////////////////
+    // Convert if necessary
+    if (!full_double) {
+    convertDoubleToFloat<<<blocksPerGrid, threadsPerBlock>>> (ex_double, (float*)ex, number_of_points);
+    convertDoubleToFloat<<<blocksPerGrid, threadsPerBlock>>> (ec_double, (float*)ec, number_of_points);
+    convertDoubleToFloat<<<blocksPerGrid, threadsPerBlock>>> (y2a_double, (float*)y2a, number_of_points);
+    }
+
+    /////////////////////////
+    // Free device memory
     if (rho != NULL) {
 	cudaFree(rho);
     }
@@ -660,6 +787,27 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type* dens,
     if (v2sigmaC != NULL) {
 	cudaFree(v2sigmaC);
     }
+
+if (!full_double) {
+    if (ex_double != NULL) {
+        cudaFree(ex_double);
+    }
+    if (ec_double != NULL) {
+        cudaFree(ec_double);
+    }
+    if (y2a_double != NULL) {
+        cudaFree(y2a_double);
+    }
+    if (grad_double != NULL) {
+        cudaFree((void*)grad_double);
+    }
+    if (hess1_double != NULL) {
+        cudaFree((void*)hess1_double);
+    }
+    if (hess2_double != NULL) {
+        cudaFree((void*)hess2_double);
+    }
+}
 
     return;
 }

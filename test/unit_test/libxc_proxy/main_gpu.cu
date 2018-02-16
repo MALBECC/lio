@@ -18,7 +18,7 @@
 
 #include "../../../g2g/libxc/libxcproxy.h"
 #include "../../../g2g/libxc/libxc_accumulate_point.h"
-
+#include "test_input.h"
 
 using namespace std;
 
@@ -27,6 +27,7 @@ using std::endl;
 
 void accumulate_data_for_libxc_test0001()
 {
+#if FULL_DOUBLE
     printf("** accumulate_data_for_libxc_test0001 **\n");
 
     cudaError_t err = cudaSuccess;
@@ -140,7 +141,7 @@ void accumulate_data_for_libxc_test0001()
     cudaFree(point_weights_gpu_in);
     cudaFree(partial_density_gpu_in);
     cudaFree(accumulated_density_gpu);
-
+#endif
 }
 
 template <class scalar_type, int width>
@@ -439,11 +440,388 @@ void joinResultsTest0001() {
     free(y2a_cpu);
 }
 
+#if FULL_DOUBLE
+void doGGA_gpu (int number_of_points,
+    double *dens_cpu,
+    double *contracted_gradient_cpu,
+    G2G::vec_type<double,4>* grad,
+    G2G::vec_type<double,4>* hess1,
+    G2G::vec_type<double,4>* hess2) {
+
+    printf("doGAA_gpu(%i)\n", number_of_points);
+
+    /////////////////////////////
+    // CUDA ARRAYS
+    double* accumulated_density_gpu = NULL;
+    cudaMalloc ((void**)&accumulated_density_gpu, sizeof(double)*number_of_points);
+
+    double* contracted_gradient_gpu = NULL;
+    cudaMalloc ((void**)&contracted_gradient_gpu, sizeof(double)*number_of_points);
+
+    G2G::vec_type<double,WIDTH>* dxyz_gpu = NULL;
+    cudaMalloc((void**)&dxyz_gpu, sizeof(G2G::vec_type<double,4>)*number_of_points);
+
+    G2G::vec_type<double,WIDTH>* dd1_gpu = NULL;
+    cudaMalloc((void**)&dd1_gpu, sizeof(G2G::vec_type<double,4>)*number_of_points);
+
+    G2G::vec_type<double,WIDTH>* dd2_gpu = NULL;
+    cudaMalloc((void**)&dd2_gpu, sizeof(G2G::vec_type<double,4>)*number_of_points);
+
+    double* ex_gpu = NULL;
+    cudaMalloc ((void**)&ex_gpu, sizeof(double)*number_of_points);
+
+    double* ec_gpu = NULL;
+    cudaMalloc ((void**)&ec_gpu, sizeof(double)*number_of_points);
+
+    double* y2a_gpu = NULL;
+    cudaMalloc ((void**)&y2a_gpu, sizeof(double)*number_of_points);
+
+    //////////////////////////////
+    // SET CUDA ARRAYS VALUES
+    cudaMemset(accumulated_density_gpu, 0, sizeof(double)*number_of_points);
+    cudaMemset(contracted_gradient_gpu, 0, sizeof(double)*number_of_points);
+    cudaMemset(ex_gpu, 0, sizeof(double)*number_of_points);
+    cudaMemset(ex_gpu, 0, sizeof(double)*number_of_points);
+    cudaMemset(y2a_gpu, 0, sizeof(double)*number_of_points);
+
+    cudaMemcpy(accumulated_density_gpu, dens_cpu, sizeof(double)*number_of_points, cudaMemcpyHostToDevice);
+    cudaMemcpy(contracted_gradient_gpu, contracted_gradient_cpu, sizeof(double)*number_of_points, cudaMemcpyHostToDevice);
+
+    cudaMemcpy(dxyz_gpu, grad, sizeof(G2G::vec_type<double,4>)*number_of_points, cudaMemcpyHostToDevice);
+    cudaMemcpy(dd1_gpu, hess1, sizeof(G2G::vec_type<double,4>)*number_of_points, cudaMemcpyHostToDevice);
+    cudaMemcpy(dd2_gpu, hess2, sizeof(G2G::vec_type<double,4>)*number_of_points, cudaMemcpyHostToDevice);
+
+    //////////////////////////////
+    // CREATE THE PROXY
+    const int nspin = 1;
+    const int functionalExchange = 1101;
+    const int functionalCorrelation = 1130;
+    LibxcProxy<double,4> libxcProxy(functionalExchange, functionalCorrelation, nspin);
+
+    //////////////////////////////
+    // MAKE THE CALLS
+    libxcProxy.doGGA(
+	accumulated_density_gpu,
+	number_of_points,
+	contracted_gradient_gpu,
+	dxyz_gpu,
+	dd1_gpu,
+	dd2_gpu,
+	ex_gpu,
+	ec_gpu,
+	y2a_gpu);
+
+    /////////////////////////////
+    // PRINT THE RESULTS
+    double* energy_cpu = (double*)malloc(sizeof(double)*number_of_points);
+    double* y2a_cpu = (double*)malloc(sizeof(double)*number_of_points);
+    double* ex_cpu = (double*)malloc(sizeof(double)*number_of_points);
+    double* ec_cpu = (double*)malloc(sizeof(double)*number_of_points);
+
+    memset(ec_cpu,0,sizeof(double)*number_of_points);
+    memset(ex_cpu,0,sizeof(double)*number_of_points);
+    memset(y2a_cpu,0,sizeof(double)*number_of_points);
+
+    cudaMemcpy(ec_cpu, ec_gpu, sizeof(double)*number_of_points, cudaMemcpyDeviceToHost);
+    cudaMemcpy(ex_cpu, ex_gpu, sizeof(double)*number_of_points, cudaMemcpyDeviceToHost);
+    cudaMemcpy(y2a_cpu, y2a_gpu, sizeof(double)*number_of_points, cudaMemcpyDeviceToHost);
+
+    print_accumulate_point_data (NULL, NULL, NULL, ex_cpu, y2a_cpu, NULL, NULL, number_of_points);
+
+    /////////////////////////////
+    // FREE MEMORY
+    cudaFree(ec_gpu);
+    cudaFree(ex_gpu);
+    cudaFree(y2a_gpu);
+    cudaFree(accumulated_density_gpu);
+    cudaFree(contracted_gradient_gpu);
+    cudaFree(dxyz_gpu);
+    cudaFree(dd1_gpu);
+    cudaFree(dd2_gpu);
+
+    free(ec_cpu);
+    free(ex_cpu);
+    free(y2a_cpu);
+}
+#endif
+
+void doGGA_gpu_float (const int number_of_points,
+    float *dens_cpu,
+    float *contracted_gradient_cpu,
+    G2G::vec_type<float,4>* grad,
+    G2G::vec_type<float,4>* hess1,
+    G2G::vec_type<float,4>* hess2) {
+
+    printf("doGAA_gpu(%i)\n", number_of_points);
+
+    /////////////////////////////
+    // CUDA ARRAYS
+    float* accumulated_density_gpu = NULL;
+    cudaMalloc ((void**)&accumulated_density_gpu, sizeof(float)*number_of_points);
+
+    float* contracted_gradient_gpu = NULL;
+    cudaMalloc ((void**)&contracted_gradient_gpu, sizeof(float)*number_of_points);
+
+    G2G::vec_type<float,WIDTH>* dxyz_gpu = NULL;
+    cudaMalloc((void**)&dxyz_gpu, sizeof(G2G::vec_type<float,4>)*number_of_points);
+
+    G2G::vec_type<float,WIDTH>* dd1_gpu = NULL;
+    cudaMalloc((void**)&dd1_gpu, sizeof(G2G::vec_type<float,4>)*number_of_points);
+
+    G2G::vec_type<float,WIDTH>* dd2_gpu = NULL;
+    cudaMalloc((void**)&dd2_gpu, sizeof(G2G::vec_type<float,4>)*number_of_points);
+
+    float* ex_gpu = NULL;
+    cudaMalloc ((void**)&ex_gpu, sizeof(float)*number_of_points);
+
+    float* ec_gpu = NULL;
+    cudaMalloc ((void**)&ec_gpu, sizeof(float)*number_of_points);
+
+    float* y2a_gpu = NULL;
+    cudaMalloc ((void**)&y2a_gpu, sizeof(float)*number_of_points);
+
+    //////////////////////////////
+    // SET CUDA ARRAYS VALUES
+    cudaMemset(accumulated_density_gpu, 0, sizeof(float)*number_of_points);
+    cudaMemset(contracted_gradient_gpu, 0, sizeof(float)*number_of_points);
+    cudaMemset(ex_gpu, 0, sizeof(float)*number_of_points);
+    cudaMemset(ex_gpu, 0, sizeof(float)*number_of_points);
+    cudaMemset(y2a_gpu, 0, sizeof(float)*number_of_points);
+
+    cudaMemcpy(accumulated_density_gpu, dens_cpu, sizeof(float)*number_of_points, cudaMemcpyHostToDevice);
+    cudaMemcpy(contracted_gradient_gpu, contracted_gradient_cpu, sizeof(float)*number_of_points, cudaMemcpyHostToDevice);
+
+    cudaMemcpy(dxyz_gpu, grad, sizeof(G2G::vec_type<float,4>)*number_of_points, cudaMemcpyHostToDevice);
+    cudaMemcpy(dd1_gpu, hess1, sizeof(G2G::vec_type<float,4>)*number_of_points, cudaMemcpyHostToDevice);
+    cudaMemcpy(dd2_gpu, hess2, sizeof(G2G::vec_type<float,4>)*number_of_points, cudaMemcpyHostToDevice);
+
+    //////////////////////////////
+    // CREATE THE PROXY
+    const int nspin = 1;
+    const int functionalExchange = 1101;
+    const int functionalCorrelation = 1130;
+    LibxcProxy<float,4> libxcProxy(functionalExchange, functionalCorrelation, nspin);
+
+    //////////////////////////////
+    // MAKE THE CALLS
+    libxcProxy.doGGA(
+	accumulated_density_gpu,
+	number_of_points,
+	contracted_gradient_gpu,
+	dxyz_gpu,
+	dd1_gpu,
+	dd2_gpu,
+	ex_gpu,
+	ec_gpu,
+	y2a_gpu);
+
+    /////////////////////////////
+    // PRINT THE RESULTS
+    float* energy_cpu = (float*)malloc(sizeof(float)*number_of_points);
+    float* y2a_cpu = (float*)malloc(sizeof(float)*number_of_points);
+    float* ex_cpu = (float*)malloc(sizeof(float)*number_of_points);
+    float* ec_cpu = (float*)malloc(sizeof(float)*number_of_points);
+
+    memset(ec_cpu,0,sizeof(float)*number_of_points);
+    memset(ex_cpu,0,sizeof(float)*number_of_points);
+    memset(y2a_cpu,0,sizeof(float)*number_of_points);
+
+    cudaMemcpy(ec_cpu, ec_gpu, sizeof(float)*number_of_points, cudaMemcpyDeviceToHost);
+    cudaMemcpy(ex_cpu, ex_gpu, sizeof(float)*number_of_points, cudaMemcpyDeviceToHost);
+    cudaMemcpy(y2a_cpu, y2a_gpu, sizeof(float)*number_of_points, cudaMemcpyDeviceToHost);
+
+    //print_accumulate_point_data (NULL, NULL, NULL, ex_cpu, y2a_cpu, NULL, NULL, number_of_points);
+
+    /////////////////////////////
+    // FREE MEMORY
+    cudaFree(ec_gpu);
+    cudaFree(ex_gpu);
+    cudaFree(y2a_gpu);
+    cudaFree(accumulated_density_gpu);
+    cudaFree(contracted_gradient_gpu);
+    cudaFree(dxyz_gpu);
+    cudaFree(dd1_gpu);
+    cudaFree(dd2_gpu);
+
+    free(ec_cpu);
+    free(ex_cpu);
+    free(y2a_cpu);
+}
+
+
+/////////////////////////////
+// Test for DOUBLE values
+void proxyTest0001()
+{
+#if FULL_DOUBLE
+    printf("proxyTest0001() - DOUBLES VERSION\n");
+
+    ////////////////////////////////
+    // PARAMS SETUP
+
+    int number_of_points[9] = {221,227,256,537,1796,4007,2910,2910,3492};
+    double* dens_cpu[9] = {dens_221,dens_227,dens_256,dens_537,dens_1796,dens_4007,dens_2910_1,dens_2910_2,dens_3492};
+    double* contracted_gradients_cpu[9] = {contracted_grad_221,contracted_grad_227,contracted_grad_256,contracted_grad_537,contracted_grad_1796,contracted_grad_4007,contracted_grad_2910_1,contracted_grad_2910_2,contracted_grad_3492};
+    G2G::vec_type<double,4>* grads[9] = {grad_221,grad_227,grad_256,grad_537,grad_1796,grad_4007,grad_2910_1,grad_2910_2,grad_3492};
+    G2G::vec_type<double,4>* hess1s[9] = {hess1_221,hess1_227,hess1_256,hess1_537,hess1_1796,hess1_4007,hess1_2910_1,hess1_2910_2,hess1_3492};
+    G2G::vec_type<double,4>* hess2s[9] = {hess2_221,hess2_227,hess2_256,hess2_537,hess2_1796,hess2_4007,hess2_2910_1,hess2_2910_2,hess2_3492};
+
+    for (int i=0; i<1; i++) {
+        doGGA_gpu (number_of_points[i], 
+	    dens_cpu[i], 
+	    contracted_gradients_cpu[i],
+	    grads[i],
+	    hess1s[i],
+	    hess2s[i]);
+    }
+#endif
+}
+
+//////////////////////////////
+// Test for FLOATS values
+void proxyTest0002()
+{
+    printf("proxyTest0002() - FLOATS VERSION\n");
+
+    ////////////////////////////////
+    // PARAMS SETUP
+
+    int number_of_points[1] = {221};
+    float* dens_cpu[1] = {dens_221_f};
+    float* contracted_gradients_cpu[1] = {contracted_grad_221_f};
+    G2G::vec_type<float,4>* grads[1]  = {grad_221_f};
+    G2G::vec_type<float,4>* hess1s[1] = {hess1_221_f};
+    G2G::vec_type<float,4>* hess2s[1] = {hess2_221_f};
+
+    for (int i=0; i<1; i++) {
+        doGGA_gpu_float (number_of_points[i], 
+	    dens_cpu[i], 
+	    contracted_gradients_cpu[i],
+	    grads[i],
+	    hess1s[i],
+	    hess2s[i]);
+    }
+}
+
+__global__ void floatToDouble(float* input, double* output, int numElements)
+{
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+    if (i < numElements)
+    {
+	output[i] = (double)input[i];
+    }
+}
+
+__global__ void doubleToFloat(double* input, float* output, int numElements)
+{
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+    if (i < numElements)
+    {
+	output[i] = (float)input[i];
+    }
+}
+
+//////////////////////////////
+// Convertion double to float
+void conversionTest0001(int array_size) 
+{
+    printf("convertionTest0001(%i)\n", array_size);
+    double* input = (double*)malloc(sizeof(double)*array_size);
+    float* output = (float*)malloc(sizeof(float)*array_size);
+
+    for (int i=0; i<array_size; i++) {
+	input[i] = 0.000000001*i;
+	output[i] = 0;
+    }
+
+    // CUDA ALLOC
+    double* input_gpu = NULL;
+    float* output_gpu = NULL;
+
+    cudaMalloc((void**)&input_gpu, sizeof(double)*array_size);
+    cudaMalloc((void**)&output_gpu, sizeof(float)*array_size);
+
+    // CUDASET ARRAYS VALUEs
+    cudaMemset(input_gpu, 0, sizeof(double)*array_size);
+    cudaMemset(output_gpu, 0, sizeof(float)*array_size);
+    cudaMemcpy(input_gpu, input, sizeof(double)*array_size, cudaMemcpyHostToDevice);
+
+    // KERNEL CALL
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (array_size + threadsPerBlock - 1) / threadsPerBlock;
+
+    printf("double->float\n");
+    doubleToFloat <<<blocksPerGrid, threadsPerBlock>>>(input_gpu, output_gpu, array_size);
+
+    // Show the results
+    cudaMemcpy (output, output_gpu, sizeof(float)*array_size, cudaMemcpyDeviceToHost);
+
+    print_array (output, array_size);
+
+    // Free memory
+    cudaFree(input_gpu);
+    cudaFree(output_gpu);
+    free(input);
+    free(output);
+}
+
+//////////////////////////////
+// Convertion float to double
+void conversionTest0002(int array_size) 
+{
+    printf("convertionTest0002(%i)\n", array_size);
+    double* output = (double*)malloc(sizeof(double)*array_size);
+    float* input = (float*)malloc(sizeof(float)*array_size);
+
+    for (int i=0; i<array_size; i++) {
+	input[i] = 0.000000001*i;
+	output[i] = 0;
+    }
+
+    // CUDA ALLOC
+    float* input_gpu = NULL;
+    double* output_gpu = NULL;
+
+    cudaMalloc((void**)&input_gpu, sizeof(float)*array_size);
+    cudaMalloc((void**)&output_gpu, sizeof(double)*array_size);
+
+    // CUDASET ARRAYS VALUES
+    cudaMemset(input_gpu, 0, sizeof(float)*array_size);
+    cudaMemset(output_gpu, 0, sizeof(double)*array_size);
+    cudaMemcpy(input_gpu, input, sizeof(float)*array_size, cudaMemcpyHostToDevice);
+
+    // KERNEL CALL
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (array_size + threadsPerBlock - 1) / threadsPerBlock;
+
+    printf("float->double\n");
+    floatToDouble <<<blocksPerGrid, threadsPerBlock>>>(input_gpu, output_gpu, array_size);
+
+    // Show the results
+    cudaMemcpy (output, output_gpu, sizeof(double)*array_size, cudaMemcpyDeviceToHost);
+
+    print_array (output, array_size);
+
+    // Free memory
+    cudaFree(input_gpu);
+    cudaFree(output_gpu);
+    free(input);
+    free(output);
+}
+
+
 int main()
 {
     cout << "Test: Libxc Proxy GPU - BEGIN" << endl;
-    accumulate_data_for_libxc_test0001();
-    joinResultsTest0001();
+    //accumulate_data_for_libxc_test0001();
+    //joinResultsTest0001();
+#if FULL_DOUBLE
+    proxyTest0001();
+#else
+    proxyTest0002();
+#endif
+    //conversionTest0001(100);
+    //conversionTest0002(100);
     cout << "Test: Libxc Proxy GPU - END" << endl;
     return 0;
 }

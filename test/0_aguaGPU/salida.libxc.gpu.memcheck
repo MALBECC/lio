@@ -1,0 +1,744 @@
+../../liosolo/liosolo -i agua.libxc.gpu.in -b basis -c agua.xyz -v
+========= CUDA-MEMCHECK
+========= Invalid __global__ read of size 16
+=========     at 0x000002c0 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (175,0,0) in block (0,0,0)
+=========     Address 0x703309de0 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ read of size 16
+=========     at 0x000002c0 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (174,0,0) in block (0,0,0)
+=========     Address 0x703309dc0 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ read of size 16
+=========     at 0x000002c0 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (173,0,0) in block (0,0,0)
+=========     Address 0x703309da0 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ read of size 16
+=========     at 0x000002c0 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (172,0,0) in block (0,0,0)
+=========     Address 0x703309d80 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ read of size 16
+=========     at 0x000002c0 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (171,0,0) in block (0,0,0)
+=========     Address 0x703309d60 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ read of size 16
+=========     at 0x000002c0 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (170,0,0) in block (0,0,0)
+=========     Address 0x703309d40 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ read of size 16
+=========     at 0x000002c0 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (169,0,0) in block (0,0,0)
+=========     Address 0x703309d20 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ read of size 16
+=========     at 0x000002c0 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (168,0,0) in block (0,0,0)
+=========     Address 0x703309d00 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ write of size 8
+=========     at 0x000000a8 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (127,0,0) in block (0,0,0)
+=========     Address 0x7031027f8 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ write of size 8
+=========     at 0x000000a8 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (126,0,0) in block (0,0,0)
+=========     Address 0x7031027f0 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ write of size 8
+=========     at 0x000000a8 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (125,0,0) in block (0,0,0)
+=========     Address 0x7031027e8 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ write of size 8
+=========     at 0x000000a8 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (124,0,0) in block (0,0,0)
+=========     Address 0x7031027e0 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ write of size 8
+=========     at 0x000000a8 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (123,0,0) in block (0,0,0)
+=========     Address 0x7031027d8 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ write of size 8
+=========     at 0x000000a8 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (122,0,0) in block (0,0,0)
+=========     Address 0x7031027d0 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ write of size 8
+=========     at 0x000000a8 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (121,0,0) in block (0,0,0)
+=========     Address 0x7031027c8 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ write of size 8
+=========     at 0x000000a8 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (120,0,0) in block (0,0,0)
+=========     Address 0x7031027c0 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ write of size 8
+=========     at 0x000000a8 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (119,0,0) in block (0,0,0)
+=========     Address 0x7031027b8 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ write of size 8
+=========     at 0x000000a8 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (118,0,0) in block (0,0,0)
+=========     Address 0x7031027b0 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ write of size 8
+=========     at 0x000000a8 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (117,0,0) in block (0,0,0)
+=========     Address 0x7031027a8 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ write of size 8
+=========     at 0x000000a8 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (116,0,0) in block (0,0,0)
+=========     Address 0x7031027a0 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ write of size 8
+=========     at 0x000000a8 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (115,0,0) in block (0,0,0)
+=========     Address 0x703102798 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ write of size 8
+=========     at 0x000000a8 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (114,0,0) in block (0,0,0)
+=========     Address 0x703102790 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ write of size 8
+=========     at 0x000000a8 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (113,0,0) in block (0,0,0)
+=========     Address 0x703102788 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ write of size 8
+=========     at 0x000000a8 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (112,0,0) in block (0,0,0)
+=========     Address 0x703102780 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Invalid __global__ write of size 8
+=========     at 0x000000a8 in void joinResults<float, int=4>(double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double*, double const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, G2G::vec_type<double, int=4> const *, int)
+=========     by thread (111,0,0) in block (0,0,0)
+=========     Address 0x703102778 is out of bounds
+=========     Saved host backtrace up to driver entry point at kernel launch time
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 (cuLaunchKernel + 0x2c5) [0x204235]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 [0xd23d]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x143) [0x33783]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x790fc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x5ac) [0x80bfc]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaFree + 0x186) [0x3de66]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x445) [0x80a95]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaFree + 0x186) [0x3de66]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x456) [0x80aa6]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaFree + 0x186) [0x3de66]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x467) [0x80ab7]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaFree + 0x186) [0x3de66]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x478) [0x80ac8]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaFree + 0x186) [0x3de66]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x489) [0x80ad9]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaFree + 0x186) [0x3de66]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x49a) [0x80aea]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaFree + 0x186) [0x3de66]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x4ab) [0x80afb]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaFree + 0x186) [0x3de66]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x4bc) [0x80b0c]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaFree + 0x186) [0x3de66]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x4cd) [0x80b1d]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaFree + 0x186) [0x3de66]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x4de) [0x80b2e]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaFree + 0x186) [0x3de66]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x4ec) [0x80b3c]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaFree + 0x186) [0x3de66]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x4fa) [0x80b4a]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaFree + 0x186) [0x3de66]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x508) [0x80b58]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaFree + 0x186) [0x3de66]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN10LibxcProxyIfLi4EE5doGGAEPfiPKfPKN3G2G8vec_typeIfLj4EEES8_S8_S1_S1_S1_ + 0x516) [0x80b66]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x205) [0x810e5]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaLaunch. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x17e) [0x337be]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x38b) [0x8126b]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaMemcpy. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaMemcpy + 0x1df) [0x35c8f]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x288) [0x81168]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaFree + 0x186) [0x3de66]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x297) [0x81177]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaFree + 0x186) [0x3de66]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x2a6) [0x81186]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaFree + 0x186) [0x3de66]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x2b5) [0x81195]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaFree + 0x186) [0x3de66]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_Z30libxc_exchange_correlation_gpuIfLb1ELb1ELb0EEvP10LibxcProxyIT_Li4EEPS1_S4_jS4_PN3G2G8vec_typeIS1_Lj4EEES8_S8_ + 0x2c4) [0x811a4]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x2391) [0x8d191]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaLaunch. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x17e) [0x337be]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x7a49c]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x23e6) [0x8d1e6]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaMemcpy. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaMemcpy + 0x1df) [0x35c8f]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G10HostMatrixIfE14copy_submatrixERKNS_10CudaMatrixIfEEj + 0x4a) [0x3444a]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G10HostMatrixIfEaSERKNS_10CudaMatrixIfEE + 0x56) [0x34d86]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G10HostMatrixIfEC2ERKNS_10CudaMatrixIfEE + 0x2e) [0x34dee]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x121c) [0x8c01c]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaFree. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaFree + 0x186) [0x3de66]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G10CudaMatrixIfE10deallocateEv + 0x12) [0x2ad22]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G10CudaMatrixIfED2Ev + 0x1c) [0x2b03c]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x12a0) [0x8c0a0]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaThreadSynchronize. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaThreadSynchronize + 0x166) [0x31706]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G5Timer14pause_and_syncEv + 0x9) [0x39469]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0xa9d) [0x8b89d]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaThreadSynchronize. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaThreadSynchronize + 0x166) [0x31706]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G5Timer14start_and_syncEv + 0x9) [0x39429]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0xf3b) [0x8bd3b]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaMalloc. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaMalloc + 0x1a9) [0x3e5e9]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G10CudaMatrixIfE6resizeEjj + 0x42) [0x37a02]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G10CudaMatrixIfEC2Ejj + 0x2c) [0x37a6c]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0xfb8) [0x8bdb8]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= Program hit cudaErrorLaunchFailure (error 4) due to "unspecified launch failure" on CUDA API call to cudaLaunch. 
+=========     Saved host backtrace up to driver entry point at error
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libcuda.so.1 [0x2ef503]
+=========     Host Frame:/usr/local/cuda/lib64/libcudart.so.8.0 (cudaLaunch + 0x17e) [0x337be]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x78b87]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so (_ZN3G2G13PointGroupGPUIfE12solve_closedERNS_6TimersEbbbbRdRNS_10HostMatrixIdEEiS7_ + 0x19c8) [0x8c7c8]
+=========     Host Frame:/home/eperez/workspace/lio/lioamber/../g2g/libg2g.so [0x478ee]
+=========     Host Frame:/usr/lib/x86_64-linux-gnu/libgomp.so.1 [0xf43e]
+=========     Host Frame:/lib/x86_64-linux-gnu/libpthread.so.0 [0x76ba]
+=========     Host Frame:/lib/x86_64-linux-gnu/libc.so.6 (clone + 0x6d) [0x1073dd]
+=========
+========= LEAK SUMMARY: 0 bytes leaked in 0 allocations
+========= ERROR SUMMARY: 52 errors

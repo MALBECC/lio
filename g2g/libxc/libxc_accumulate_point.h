@@ -15,6 +15,7 @@ __global__ void gpu_accumulate_point_for_libxc(scalar_type* const point_weights,
 		G2G::vec_type<scalar_type,WIDTH>* dd2_accum) {
 
   uint point = blockIdx.x * DENSITY_ACCUM_BLOCK_SIZE + threadIdx.x;
+  //uint point = blockIdx.x * blockDim.x + threadIdx.x;
 
   scalar_type _partial_density(0.0f);
   G2G::vec_type<scalar_type,WIDTH> _dxyz, _dd1, _dd2;
@@ -54,6 +55,7 @@ __global__ void gpu_accumulate_energy_and_forces_from_libxc (scalar_type* const 
 		    scalar_type* accumulated_density)
 {
   uint point = blockIdx.x * DENSITY_ACCUM_BLOCK_SIZE + threadIdx.x;
+  //uint point = blockIdx.x * blockDim.x + threadIdx.x;
 
   scalar_type point_weight = 0.0f;
 
@@ -62,11 +64,11 @@ __global__ void gpu_accumulate_energy_and_forces_from_libxc (scalar_type* const 
     point_weight = point_weights[point];
   }
 
-  if (compute_energy && valid_thread) {
-    energy[point] *= (accumulated_density[point] * point_weight);
+  if (compute_energy && valid_thread && energy != NULL) {
+        energy[point] *= (accumulated_density[point] * point_weight);
   }
 
-  if (compute_factor && valid_thread) {
+  if (compute_factor && valid_thread && factor != NULL) {
     factor[point] *= point_weight;
   }
 
@@ -82,21 +84,21 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
         G2G::vec_type<scalar_type,WIDTH>* dd1_gpu_accum,
 	G2G::vec_type<scalar_type,WIDTH>* dd2_gpu_accum)
 {
-    printf("libxc_exchage_correlation_cpu (...) \n");
+    //printf("libxc_exchage_correlation_cpu (...) \n");
 
     cudaError_t err = cudaSuccess;
 
     // Copy to host the matrix data in gpu memory and
     // call the new libxcProxy.
-    G2G::vec_type<scalar_type,4>* dxyz_cpu;
-    G2G::vec_type<scalar_type,4>* dd1_cpu;
-    G2G::vec_type<scalar_type,4>* dd2_cpu;
+    G2G::vec_type<scalar_type,WIDTH>* dxyz_cpu;
+    G2G::vec_type<scalar_type,WIDTH>* dd1_cpu;
+    G2G::vec_type<scalar_type,WIDTH>* dd2_cpu;
 
     // Alloc memory in the host for the gpu data
-    uint size = points * sizeof(G2G::vec_type<scalar_type,4>);
-    dxyz_cpu = (G2G::vec_type<scalar_type,4> *)malloc(size);
-    dd1_cpu = (G2G::vec_type<scalar_type,4> *)malloc(size);
-    dd2_cpu = (G2G::vec_type<scalar_type,4> *)malloc(size);
+    uint size = points * sizeof(G2G::vec_type<scalar_type,WIDTH>);
+    dxyz_cpu = (G2G::vec_type<scalar_type,WIDTH> *)malloc(size);
+    dd1_cpu = (G2G::vec_type<scalar_type,WIDTH> *)malloc(size);
+    dd2_cpu = (G2G::vec_type<scalar_type,WIDTH> *)malloc(size);
 
     // Copy data from device to host.
     err = cudaMemcpy(dxyz_cpu, dxyz_gpu_accum, size, cudaMemcpyDeviceToHost);
@@ -121,7 +123,7 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
     }
 
     // Allocate the host input vectors
-    uint array_size = points * sizeof(scalar_type);
+    uint array_size = sizeof(scalar_type)*points;
     scalar_type *energy_cpu = NULL;
     if (compute_energy) 
     { 
@@ -189,14 +191,18 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
     scalar_type* y2a;
 
     // Now alloc memory for the data
-    exc  = (scalar_type*)malloc(sizeof(scalar_type)*points);
-    corr = (scalar_type*)malloc(sizeof(scalar_type)*points);
-    y2a  = (scalar_type*)malloc(sizeof(scalar_type)*points);
+    //exc  = (scalar_type*)malloc(sizeof(scalar_type)*points);
+    //corr = (scalar_type*)malloc(sizeof(scalar_type)*points);
+    //y2a  = (scalar_type*)malloc(sizeof(scalar_type)*points);
+
+    exc  = (scalar_type*)malloc(array_size);
+    corr = (scalar_type*)malloc(array_size);
+    y2a  = (scalar_type*)malloc(array_size);
 
     if (libxcProxy != NULL) {
         libxcProxy->doGGA (accumulated_density_cpu, points, dxyz_cpu, dd1_cpu, dd2_cpu, exc, corr, y2a);
 	// Join the results.
-	for (int i=0; i<points; i++) {
+	for (unsigned int i=0; i<points; i++) {
 	    if (compute_energy) 
 	    {
 		energy_cpu[i] = exc[i] + corr[i];
@@ -207,7 +213,6 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
 	    }
 	}
     }
-    
 
     // Now copy back the results to the gpu.
     if (compute_energy) {
@@ -278,7 +283,7 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
         G2G::vec_type<scalar_type,WIDTH>* dd1_gpu,
 	G2G::vec_type<scalar_type,WIDTH>* dd2_gpu)
 {
-    printf("libxc_exchage_correlation_gpu (...) \n");
+    //printf("libxc_exchage_correlation_gpu (...) \n");
 
     cudaError_t err = cudaSuccess;
 
@@ -290,7 +295,7 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
     scalar_type* corr_gpu = NULL;
     scalar_type* y2a_gpu = NULL;
     scalar_type* contracted_gradient = NULL;
-    int array_size = sizeof(scalar_type)*points;
+    int array_size = sizeof(scalar_type) * points;
 
     // Alloc memory for cuda variables.
     err = cudaMalloc((void **)&exc_gpu, array_size);
@@ -331,10 +336,10 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
     int blocksPerGrid = (points + threadsPerBlock - 1) / threadsPerBlock;
 
     if (libxcProxy != NULL) {
-        printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
+        //printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
 
 	// Call the Kernel to compute the contracted gradient
-        printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
+        //printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
 	calculateContractedGradient<<<blocksPerGrid, threadsPerBlock>>>(dxyz_gpu, contracted_gradient, points);
 
 	// Compute exc_corr using LIBXC GPU.
@@ -349,15 +354,17 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
 	    y2a_gpu);
 
 	// Join the results.
-    	if (compute_energy) 
+    	if (compute_energy && energy_gpu != NULL)
 	{
-	    //energy_cpu[i] = exc[i] + corr[i];
 	    vectorAdd<<<blocksPerGrid, threadsPerBlock>>>(exc_gpu, corr_gpu, energy_gpu, points);
 	}
-	if (compute_factor)
+	if (compute_factor && factor_gpu != NULL)
 	{
-	    //factor_cpu[i] = y2a[i];
-	    cudaMemcpy(factor_gpu, y2a_gpu, array_size, cudaMemcpyDeviceToDevice);
+	    err = cudaMemcpy(factor_gpu, y2a_gpu, array_size, cudaMemcpyDeviceToDevice);
+	    if (err != cudaSuccess)
+	    {
+    		fprintf(stderr, "Failed to copy y2a_gpu to factor_gpu from DeviceToDevice for array of %i !\n", array_size);
+	    }
 	}
     }
 

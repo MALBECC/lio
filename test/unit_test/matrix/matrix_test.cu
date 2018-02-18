@@ -1406,6 +1406,29 @@ void matrix_test0009()
   point_weights_gpu = point_weights_cpu;
 }
 
+void matrix_test0010()
+{
+    printf("matrix_test0010()\n");
+
+    G2G::CudaMatrix< G2G::vec_type<float,4> > point_weights_gpu;
+    G2G::HostMatrix< G2G::vec_type<float,4> > point_weights_cpu(5, 1);
+
+    G2G::vec_type<float,4> one(1,1,1,1);
+
+    for (int i=0; i<5; i++){
+	point_weights_cpu(i).x = one.x;
+    }
+
+    point_weights_gpu = point_weights_cpu;
+
+    //int vec_size = point_weights_cpu.elements() * sizeof (G2G::vec_type<float,4>);
+    //unsigned int vec_size = point_weights_cpu.bytes();
+    G2G::vec_type<float,4>* vectors = (G2G::vec_type<float,4>*)malloc(vec_size);
+
+    for (int i=0; i<5; i++) {
+	vectors[i].x = 2;
+    }
+}
 
 /////////////////////////////////////
 //// MAIN

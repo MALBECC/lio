@@ -61,4 +61,6 @@ test/unit_test/accumulate_point/output/*
 test/unit_test/libxc_proxy/main_gpu
 test/unit_test/libxc_proxy/output/*
 test/unit_test/matrix/matrix_test
+test/unit_test/iteration/main_gpu
+test/unit_test/iteration/output/*
 test/*/output/*

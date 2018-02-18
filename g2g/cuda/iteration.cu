@@ -107,7 +107,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
     double& energy,    HostMatrix<double>& fort_forces_ms,
     int inner_threads, HostMatrix<double>& rmm_output_local){
 
-  printf("solve_closed (compute_rmm:%i, lda:%i, compute_forces:%i, compute_energy:%i)\n", compute_rmm, lda, compute_forces, compute_energy);
+  //printf("solve_closed (compute_rmm:%i, lda:%i, compute_forces:%i, compute_energy:%i)\n", compute_rmm, lda, compute_forces, compute_energy);
 
   int device;
   cudaGetDevice(&device);
@@ -152,7 +152,6 @@ void PointGroupGPU<scalar_type>::solve_closed(
   dd1_gpu.resize(COALESCED_DIMENSION(this->number_of_points),block_height );
   dd2_gpu.resize(COALESCED_DIMENSION(this->number_of_points),block_height );
 
-  // To accumulate results.
 #if USE_LIBXC
   CudaMatrix<scalar_type> accumulated_densities_gpu;
   CudaMatrix< vec_type<scalar_type,4> > dxyz_accum_gpu;
@@ -163,15 +162,9 @@ void PointGroupGPU<scalar_type>::solve_closed(
   dxyz_accum_gpu.resize(COALESCED_DIMENSION(this->number_of_points),block_height);
   dd1_accum_gpu.resize(COALESCED_DIMENSION(this->number_of_points),block_height );
   dd2_accum_gpu.resize(COALESCED_DIMENSION(this->number_of_points),block_height );
-
-    #if !LIBXC_CPU
-	accumulated_densities_gpu.zero();
-	dxyz_accum_gpu.zero();
-	dd1_accum_gpu.zero();
-	dd2_accum_gpu.zero();
-    #endif
 #endif
 
+  //TODO: que libxc_gpu reciba estos datos para los kernels, asi todos usan lo mismo.
   const dim3 threadGrid_accumulate(divUp(this->number_of_points,DENSITY_ACCUM_BLOCK_SIZE),1,1);
   const dim3 threadBlock_accumulate(DENSITY_ACCUM_BLOCK_SIZE,1,1);
 
@@ -264,10 +257,11 @@ void PointGroupGPU<scalar_type>::solve_closed(
 #if USE_LIBXC
 	    if (fortran_vars.use_libxc) {
 	      // Accumulate the data for libxc
-	      gpu_accumulate_point_for_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (point_weights_gpu.data,
-                this->number_of_points, block_height, 
+	      gpu_accumulate_point_for_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
+		point_weights_gpu.data, this->number_of_points, block_height, 
 		partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data,
 		accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
+
 	#if LIBXC_CPU
 	      // Compute exc_corr and y2a with libxc CPU version.
 	      libxc_exchange_correlation_cpu<scalar_type, true, true, false> (&libxcProxy,
@@ -279,9 +273,11 @@ void PointGroupGPU<scalar_type>::solve_closed(
 		energy_gpu.data, factors_gpu.data, this->number_of_points,
 		accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
 	#endif
+
 	      // Merge the results.
-	      gpu_accumulate_energy_and_forces_from_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (energy_gpu.data,
-		factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
+	      gpu_accumulate_energy_and_forces_from_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
+		energy_gpu.data, factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
+
 	    } else {
               gpu_accumulate_point<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
 	    }
@@ -308,6 +304,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
             this->number_of_points, block_height, 
 	    partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data,
 	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
+
     #if LIBXC_CPU
 	  // Compute exc_corr and y2a with CPU libxc.
 	  libxc_exchange_correlation_cpu<scalar_type, true, false, false> (&libxcProxy,
@@ -319,9 +316,10 @@ void PointGroupGPU<scalar_type>::solve_closed(
 	    energy_gpu.data, factors_gpu.data, this->number_of_points,
 	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
     #endif
+
 	  // Merge the results.
-	  gpu_accumulate_energy_and_forces_from_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (energy_gpu.data,
-	    factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
+	  gpu_accumulate_energy_and_forces_from_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
+	    energy_gpu.data, factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
 
 	} else {
           gpu_accumulate_point<scalar_type, true, false, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
@@ -474,6 +472,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
   //Deshago el bind de textura de rmm
   cudaUnbindTexture(rmm_input_gpu_tex); //Enroque el Unbind con el Free, asi parece mas logico. Nano
   cudaFreeArray(cuArray);
+
 }
 
 //======================

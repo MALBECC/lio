@@ -91,6 +91,20 @@ void print_array (double* data, int size)
     printf("]\n");
 }
 
+void print_array (float* data, int size) 
+{
+    printf ("[");
+    if (data == NULL) {
+	printf("empty");
+    } else {
+	for (int i=0; i<size; i++) {
+	    printf("%e,", data[i]);
+	}
+    }
+    printf("]\n");
+}
+
+
 void print_vec_type (G2G::vec_type<double,4>* data, int size) 
 {
     printf ("[");
@@ -98,7 +112,20 @@ void print_vec_type (G2G::vec_type<double,4>* data, int size)
 	printf("empty");
     } else {
 	for (int i=0; i<size; i++) {
-	    printf("(%f,%f,%f),", data[i].x, data[i].y, data[i].z);
+	    printf("(%e,%e,%e),", data[i].x, data[i].y, data[i].z);
+	}
+    }
+    printf("]\n");
+}
+
+void print_vec_type (G2G::vec_type<float,4>* data, int size) 
+{
+    printf ("[");
+    if (data == NULL) {
+	printf("empty");
+    } else {
+	for (int i=0; i<size; i++) {
+	    printf("(%e,%e,%e),", data[i].x, data[i].y, data[i].z);
 	}
     }
     printf("]\n");
@@ -122,6 +149,25 @@ void print_accumulate_point_data (G2G::vec_type<double,4>* dxyz, G2G::vec_type<d
     printf("=========\n");
 
 }
+
+void print_accumulate_point_data (G2G::vec_type<float,4>* dxyz, G2G::vec_type<float,4>* dd1, 
+    G2G::vec_type<float,4>* dd2, float* energy, float* factor, float* point_weights,
+    float* partial_density, int number_of_points)
+{
+    printf("=========\n");
+    printf("= Data  =\n");
+    printf("=========\n");
+    printf("dxyz:"); print_vec_type(dxyz, number_of_points);
+    printf("dd1:"); print_vec_type(dd1, number_of_points);
+    printf("dd2:"); print_vec_type(dd2, number_of_points);
+    printf("energy:"); print_array(energy, number_of_points);
+    printf("factor:"); print_array(factor, number_of_points);
+    printf("point_weights:"); print_array(point_weights, number_of_points);
+    printf("partial_density:"); print_array(partial_density, number_of_points);
+    printf("=========\n");
+
+}
+
 
 
 //////////////////////////////////////
@@ -2009,6 +2055,9 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
 
 }
 
+////////////////////////////////////////////////////////////////
+// Exchange correlation for DOUBLES
+
 void do_libxc_exchange_correlation_gpu (int number_of_points,
     double *dens_cpu,
     double *contracted_gradient_cpu,
@@ -2104,7 +2153,8 @@ void do_libxc_exchange_correlation_gpu (int number_of_points,
     free(factor_cpu);
 }
 
-
+//////////////////////////////////////////////
+// Accumulate test for doubles
 void accumulate_data_for_libxc_test0010()
 {
     printf("accumulate_data_for_libxc_test0010()\n");
@@ -2119,8 +2169,130 @@ void accumulate_data_for_libxc_test0010()
     G2G::vec_type<double,4>* hess1s[9] = {hess1_221,hess1_227,hess1_256,hess1_537,hess1_1796,hess1_4007,hess1_2910_1,hess1_2910_2,hess1_3492};
     G2G::vec_type<double,4>* hess2s[9] = {hess2_221,hess2_227,hess2_256,hess2_537,hess2_1796,hess2_4007,hess2_2910_1,hess2_2910_2,hess2_3492};
 
-    for (int i=0; i<9; i++) {
+    for (int i=0; i<1; i++) {
         do_libxc_exchange_correlation_gpu (number_of_points[i], 
+	    dens_cpu[i], 
+	    contracted_gradients_cpu[i],
+	    grads[i],
+	    hess1s[i],
+	    hess2s[i]);
+    }
+}
+
+//////////////////////////////////////////////////////////////////
+// Exchange correlation for FLOATS
+
+void do_libxc_exchange_correlation_gpu_float (int number_of_points,
+    float *dens_cpu,
+    float *contracted_gradient_cpu,
+    G2G::vec_type<float,4>* grad,
+    G2G::vec_type<float,4>* hess1,
+    G2G::vec_type<float,4>* hess2) {
+
+    printf("do_libxc_exchange_correlation_gpu_float(%i)\n", number_of_points);
+
+    /////////////////////////////
+    // CUDA ARRAYS
+    float* energy_gpu = NULL;
+    cudaMalloc((void**)&energy_gpu, sizeof(float)*number_of_points);
+
+    float* factor_gpu = NULL;
+    cudaMalloc ((void**)&factor_gpu, sizeof(float)*number_of_points);
+
+    float* accumulated_density_gpu = NULL;
+    cudaMalloc ((void**)&accumulated_density_gpu, sizeof(float)*number_of_points);
+
+    float* contracted_gradient_gpu = NULL;
+    cudaMalloc ((void**)&contracted_gradient_gpu, sizeof(float)*number_of_points);
+
+    G2G::vec_type<float,WIDTH>* dxyz_gpu = NULL;
+    cudaMalloc((void**)&dxyz_gpu, sizeof(G2G::vec_type<float,4>)*number_of_points);
+
+    G2G::vec_type<float,WIDTH>* dd1_gpu = NULL;
+    cudaMalloc((void**)&dd1_gpu, sizeof(G2G::vec_type<float,4>)*number_of_points);
+
+    G2G::vec_type<float,WIDTH>* dd2_gpu = NULL;
+    cudaMalloc((void**)&dd2_gpu, sizeof(G2G::vec_type<float,4>)*number_of_points);
+
+    //////////////////////////////
+    // SET CUDA ARRAYS VALUES
+    cudaMemset(energy_gpu, 0, sizeof(float)*number_of_points);
+    cudaMemset(factor_gpu, 0, sizeof(float)*number_of_points);
+    cudaMemset(accumulated_density_gpu, 0, sizeof(float)*number_of_points);
+    cudaMemset(contracted_gradient_gpu, 0, sizeof(float)*number_of_points);
+
+    cudaMemcpy(accumulated_density_gpu, dens_cpu, sizeof(float)*number_of_points, cudaMemcpyHostToDevice);
+    cudaMemcpy(contracted_gradient_gpu, contracted_gradient_cpu, sizeof(float)*number_of_points, cudaMemcpyHostToDevice);
+
+    cudaMemcpy(dxyz_gpu, grad, sizeof(G2G::vec_type<float,4>)*number_of_points, cudaMemcpyHostToDevice);
+    cudaMemcpy(dd1_gpu, hess1, sizeof(G2G::vec_type<float,4>)*number_of_points, cudaMemcpyHostToDevice);
+    cudaMemcpy(dd2_gpu, hess2, sizeof(G2G::vec_type<float,4>)*number_of_points, cudaMemcpyHostToDevice);
+
+    //////////////////////////////
+    // CREATE THE PROXY
+    const int nspin = 1;
+    const int functionalExchange = 1101;
+    const int functionalCorrelation = 1130;
+    LibxcProxy<float,4> libxcProxy(functionalExchange, functionalCorrelation, nspin);
+
+    //////////////////////////////
+    // MAKE THE CALLS
+    libxc_exchange_correlation_gpu<float, true, true, false> (
+	&libxcProxy,
+	energy_gpu,
+	factor_gpu,
+	number_of_points,
+	accumulated_density_gpu,
+	dxyz_gpu,
+        dd1_gpu,
+	dd2_gpu);
+
+    /////////////////////////////
+    // PRINT THE RESULTS
+    float* energy_cpu = (float*)malloc(sizeof(float)*number_of_points);
+    float* factor_cpu = (float*)malloc(sizeof(float)*number_of_points);
+
+    memset(energy_cpu,0,sizeof(float)*number_of_points);
+    memset(factor_cpu,0,sizeof(float)*number_of_points);
+
+    cudaMemcpy(energy_cpu, energy_gpu, sizeof(float)*number_of_points, cudaMemcpyDeviceToHost);
+    cudaMemcpy(factor_cpu, factor_gpu, sizeof(float)*number_of_points, cudaMemcpyDeviceToHost);
+
+    print_accumulate_point_data (NULL, NULL, NULL, energy_cpu, factor_cpu, NULL, NULL, number_of_points);
+
+    /////////////////////////////
+    // FREE MEMORY
+    cudaFree(energy_gpu);
+    cudaFree(factor_gpu);
+    cudaFree(accumulated_density_gpu);
+    cudaFree(contracted_gradient_gpu);
+    cudaFree(dxyz_gpu);
+    cudaFree(dd1_gpu);
+    cudaFree(dd2_gpu);
+
+    free(energy_cpu);
+    free(factor_cpu);
+}
+
+
+////////////////////////////////////////////////
+// Accumulate data test for floats
+void accumulate_data_for_libxc_test0011()
+{
+    printf("accumulate_data_for_libxc_test0011()\n");
+
+    ////////////////////////////////
+    // PARAMS SETUP
+
+    int number_of_points[9] = {221,227,256,537,1796,4007,2910,2910,3492};
+    float* dens_cpu[9] = {dens_221_f,dens_227_f,dens_256_f,dens_537_f,dens_1796_f,dens_4007_f,dens_2910_1_f,dens_2910_2_f,dens_3492_f};
+    float* contracted_gradients_cpu[9] = {contracted_grad_221_f,contracted_grad_227_f,contracted_grad_256_f,contracted_grad_537_f,contracted_grad_1796_f,contracted_grad_4007_f,contracted_grad_2910_1_f,contracted_grad_2910_2_f,contracted_grad_3492_f};
+    G2G::vec_type<float,4>* grads[9] = {grad_221_f,grad_227_f,grad_256_f,grad_537_f,grad_1796_f,grad_4007_f,grad_2910_1_f,grad_2910_2_f,grad_3492_f};
+    G2G::vec_type<float,4>* hess1s[9] = {hess1_221_f,hess1_227_f,hess1_256_f,hess1_537_f,hess1_1796_f,hess1_4007_f,hess1_2910_1_f,hess1_2910_2_f,hess1_3492_f};
+    G2G::vec_type<float,4>* hess2s[9] = {hess2_221_f,hess2_227_f,hess2_256_f,hess2_537_f,hess2_1796_f,hess2_4007_f,hess2_2910_1_f,hess2_2910_2_f,hess2_3492_f};
+
+    for (int i=0; i<9; i++) {
+        do_libxc_exchange_correlation_gpu_float (number_of_points[i], 
 	    dens_cpu[i], 
 	    contracted_gradients_cpu[i],
 	    grads[i],
@@ -2150,7 +2322,8 @@ int main(int argc, char **argv)
     //accumulate_data_for_libxc_test0007();
     //accumulate_data_for_libxc_test0008(100);
     //accumulate_data_for_libxc_test0009();
-    accumulate_data_for_libxc_test0010();
+    //accumulate_data_for_libxc_test0010();
+    accumulate_data_for_libxc_test0011();
 
     printf("*************************\n");
     printf("**      Test End       **\n");

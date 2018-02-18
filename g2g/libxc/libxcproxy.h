@@ -83,7 +83,6 @@ LibxcProxy <scalar_type, width>::LibxcProxy (int exchangeFunctionalId, int corre
     printf("LibxcProxy::LibxcProxy (%i,%i,%i) \n", exchangeFunctionalId, correlationFuncionalId, nSpin);
 #endif
 
-
     funcIdForExchange = exchangeFunctionalId;
     funcIdForCorrelation = correlationFuncionalId;
     nspin = nSpin;
@@ -122,7 +121,7 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type dens,
     scalar_type &ex, scalar_type &ec, scalar_type &y2a)
 {
 //#ifdef _DEBUG
-    printf("LibxcProxy::doGGA cpu simple(...) \n");
+//    printf("LibxcProxy::doGGA cpu simple(...) \n");
 //#endif
 
     double rho[1] = {dens};
@@ -210,7 +209,7 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type* dens,
     scalar_type* y2a)
 {
 //#ifdef _DEBUG
-    printf("LibxcProxy::doGGA cpu multiple (...) \n");
+//    printf("LibxcProxy::doGGA cpu multiple (...) \n");
 //#endif
 
     int array_size = sizeof(double)*number_of_points;
@@ -398,9 +397,31 @@ __global__ void convertFloatToDouble(const G2G::vec_type<float,4>* input, G2G::v
 	output[i].x = (double)(input[i].x);
 	output[i].y = (double)(input[i].y);
 	output[i].z = (double)(input[i].z);
-	//output[i].w = (double)input[i]._w;
+	output[i].w = (double)(input[i].w);
     }
 }
+
+// Esto es para engañar al compilador pq el FLAG FULL_DOUBLE
+// a veces permite que scalar_type sea double y se rompe todo.
+__global__ void convertDoubleToFloat(const double* input, double* output, int numElements)
+{
+    return;
+}
+
+// Esto es para engañar al compilador pq el FLAG FULL_DOUBLE
+// a veces permite que scalar_type sea double y se rompe todo.
+__global__ void convertFloatToDouble(const double* input, double* output, int numElements)
+{
+    return;
+}
+
+// Esto es para engañar al compilador pq el FLAG FULL_DOUBLE
+// a veces permite que scalar_type sea double y se rompe todo.
+__global__ void convertFloatToDouble(const G2G::vec_type<double,4>* input, G2G::vec_type<double,4>* output, int numElements)
+{
+    return;
+}
+
 
 __global__ void convertDoubleToFloat(const G2G::vec_type<double,4>* input, G2G::vec_type<float,4>* output, int numElements)
 {
@@ -411,7 +432,7 @@ __global__ void convertDoubleToFloat(const G2G::vec_type<double,4>* input, G2G::
 	output[i].x = (float)(input[i].x);
 	output[i].y = (float)(input[i].y);
 	output[i].z = (float)(input[i].z);
-	//output[i].w = (float)input[i]._w;
+	output[i].w = (float)(input[i].w);
     }
 }
 
@@ -429,8 +450,8 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type* dens,
     scalar_type* ec,
     scalar_type* y2a)
 {
-    printf("LibxcProxy::doGGA cuda (...) \n");
-    print_proxy_input<scalar_type> (dens, number_of_points, contracted_grad, grad, hess1, hess2);
+    //printf("LibxcProxy::doGGA cuda (...) \n");
+    //print_proxy_input<scalar_type> (dens, number_of_points, contracted_grad, grad, hess1, hess2);
 
     bool full_double = (sizeof(scalar_type) == 8);
 
@@ -470,83 +491,83 @@ void LibxcProxy <scalar_type, width>::doGGA(scalar_type* dens,
 
     // Si el tipo de datos es float, creamos los arrays para copiar
     // los inputs y convertirlos a floats.
-if (!full_double) {
-    err = cudaMalloc((void**)&ex_double, array_size);
-    if (err != cudaSuccess)
-    {
-        fprintf(stderr, "Failed to allocate device ex_double!\n");
-        exit(EXIT_FAILURE);
-    }
-    cudaMemset(ex_double,0,array_size);
+    if (!full_double) {
+	err = cudaMalloc((void**)&ex_double, array_size);
+        if (err != cudaSuccess)
+        {
+	    fprintf(stderr, "Failed to allocate device ex_double!\n");
+    	    exit(EXIT_FAILURE);
+        }
+	cudaMemset(ex_double,0,array_size);
 
-    err = cudaMalloc((void**)&ec_double, array_size);
-    if (err != cudaSuccess)
-    {
-        fprintf(stderr, "Failed to allocate device ec_double!\n");
-	exit(EXIT_FAILURE);
-    }
-    cudaMemset(ec_double,0,array_size);
+        err = cudaMalloc((void**)&ec_double, array_size);
+	if (err != cudaSuccess)
+        {
+	    fprintf(stderr, "Failed to allocate device ec_double!\n");
+	    exit(EXIT_FAILURE);
+        }
+	cudaMemset(ec_double,0,array_size);
 
-    err = cudaMalloc((void**)&y2a_double, array_size);
-    if (err != cudaSuccess)
-    {
-	fprintf(stderr, "Failed to allocate device y2a_double!\n");
-	exit(EXIT_FAILURE);
-    }
-    cudaMemset(y2a_double,0,array_size);
+        err = cudaMalloc((void**)&y2a_double, array_size);
+	if (err != cudaSuccess)
+        {
+    	    fprintf(stderr, "Failed to allocate device y2a_double!\n");
+	    exit(EXIT_FAILURE);
+        }
+	cudaMemset(y2a_double,0,array_size);
 
-    err = cudaMalloc((void**)&grad_double, vec_size);
-    if (err != cudaSuccess) 
-    {
-	fprintf(stderr, "Failed to allocate device grad_double!\n");
-	exit(EXIT_FAILURE);
-    }
+        err = cudaMalloc((void**)&grad_double, vec_size);
+	if (err != cudaSuccess) 
+	{
+	    fprintf(stderr, "Failed to allocate device grad_double!\n");
+    	    exit(EXIT_FAILURE);
+        }
 
-    err = cudaMalloc((void**)&hess1_double, vec_size);
-    if (err != cudaSuccess) 
-    {
-	fprintf(stderr, "Failed to allocate device hess1_double!\n");
-	exit(EXIT_FAILURE);
-    }
+	err = cudaMalloc((void**)&hess1_double, vec_size);
+        if (err != cudaSuccess) 
+	{
+	    fprintf(stderr, "Failed to allocate device hess1_double!\n");
+	    exit(EXIT_FAILURE);
+        }
 
-    err = cudaMalloc((void**)&hess2_double, vec_size);
-    if (err != cudaSuccess) 
-    {
-	fprintf(stderr, "Failed to allocate device hess2_double!\n");
-	exit(EXIT_FAILURE);
+	err = cudaMalloc((void**)&hess2_double, vec_size);
+        if (err != cudaSuccess) 
+	{
+	    fprintf(stderr, "Failed to allocate device hess2_double!\n");
+	    exit(EXIT_FAILURE);
+        }
     }
-}
 
     // Preparamos los datos.
-if (full_double) {
-    err = cudaMemcpy(rho, dens, array_size, cudaMemcpyDeviceToDevice);
-    if (err != cudaSuccess)
-    {
-	fprintf(stderr, "Failed to copy data from dens->rho\n");
+    if (full_double) {
+	err = cudaMemcpy(rho, dens, array_size, cudaMemcpyDeviceToDevice);
+        if (err != cudaSuccess)
+	{
+	    fprintf(stderr, "Failed to copy data from dens->rho\n");
+        }
+
+	err = cudaMemcpy(sigma, contracted_grad, array_size, cudaMemcpyDeviceToDevice);
+        if (err != cudaSuccess)
+	{
+	    fprintf(stderr, "Failed to copy data from contracted_grad->sigma\n");
+	}
+
+        // Usamos los datos como vienen ya que son todos doubles.
+	ex_double = (double*)ex;
+	ec_double = (double*)ec;
+        y2a_double = (double*)y2a;
+	grad_double = (G2G::vec_type<double,4>*)grad;
+        hess1_double = (G2G::vec_type<double,4>*)hess1;
+        hess2_double = (G2G::vec_type<double,4>*)hess2;
+
+    } else {
+	// Como los inputs son float, los convertimos para libxc
+	convertFloatToDouble<<<blocksPerGrid, threadsPerBlock>>>(dens, rho, number_of_points);
+	convertFloatToDouble<<<blocksPerGrid, threadsPerBlock>>>(contracted_grad, sigma, number_of_points);
+        convertFloatToDouble<<<blocksPerGrid, threadsPerBlock>>>(grad, grad_double, number_of_points);
+	convertFloatToDouble<<<blocksPerGrid, threadsPerBlock>>>(hess1, hess1_double, number_of_points);
+        convertFloatToDouble<<<blocksPerGrid, threadsPerBlock>>>(hess2, hess2_double, number_of_points);
     }
-
-    err = cudaMemcpy(sigma, contracted_grad, array_size, cudaMemcpyDeviceToDevice);
-    if (err != cudaSuccess)
-    {
-	fprintf(stderr, "Failed to copy data from contracted_grad->sigma\n");
-    }
-
-    // Usamos los datos como vienen ya que son todos doubles.
-    ex_double = (double*)ex;
-    ec_double = (double*)ec;
-    y2a_double = (double*)y2a;
-    grad_double = (G2G::vec_type<double,4>*)grad;
-    hess1_double = (G2G::vec_type<double,4>*)hess1;
-    hess2_double = (G2G::vec_type<double,4>*)hess2;
-
-} else {
-    // Como los inputs son float, los convertimos para libxc
-    convertFloatToDouble<<<blocksPerGrid, threadsPerBlock>>>((float*)dens, rho, number_of_points);
-    convertFloatToDouble<<<blocksPerGrid, threadsPerBlock>>>((float*)contracted_grad, sigma, number_of_points);
-    convertFloatToDouble<<<blocksPerGrid, threadsPerBlock>>>((G2G::vec_type<float,4>*)grad, grad_double, number_of_points);
-    convertFloatToDouble<<<blocksPerGrid, threadsPerBlock>>>((G2G::vec_type<float,4>*)hess1, hess1_double, number_of_points);
-    convertFloatToDouble<<<blocksPerGrid, threadsPerBlock>>>((G2G::vec_type<float,4>*)hess2, hess2_double, number_of_points);
-}
 
     // Preparamos los arrays de salida.
     double* exchange = NULL;
@@ -705,21 +726,6 @@ if (full_double) {
 
     ////////////////////////
     // Gather the results
-    /*joinResults<scalar_type, width><<<blocksPerGrid, threadsPerBlock>>>(
-	ex, exchange,
-	ec, correlation,
-	vrho, vrhoC,
-	vsigma, vsigmaC,
-	v2rho, v2rhoC,
-	v2rhosigma, v2rhosigmaC,
-	v2sigma, v2sigmaC,
-	y2a,
-	sigma,
-	grad,
-	hess1,
-	hess2,
-	number_of_points);*/
-
     joinResults<scalar_type, width><<<blocksPerGrid, threadsPerBlock>>>(
 	ex_double, exchange,
 	ec_double, correlation,
@@ -738,9 +744,9 @@ if (full_double) {
     //////////////////////////
     // Convert if necessary
     if (!full_double) {
-    convertDoubleToFloat<<<blocksPerGrid, threadsPerBlock>>> (ex_double, (float*)ex, number_of_points);
-    convertDoubleToFloat<<<blocksPerGrid, threadsPerBlock>>> (ec_double, (float*)ec, number_of_points);
-    convertDoubleToFloat<<<blocksPerGrid, threadsPerBlock>>> (y2a_double, (float*)y2a, number_of_points);
+	convertDoubleToFloat<<<blocksPerGrid, threadsPerBlock>>> (ex_double, ex, number_of_points);
+	convertDoubleToFloat<<<blocksPerGrid, threadsPerBlock>>> (ec_double, ec, number_of_points);
+        convertDoubleToFloat<<<blocksPerGrid, threadsPerBlock>>> (y2a_double, y2a, number_of_points);
     }
 
     /////////////////////////
@@ -788,26 +794,26 @@ if (full_double) {
 	cudaFree(v2sigmaC);
     }
 
-if (!full_double) {
-    if (ex_double != NULL) {
-        cudaFree(ex_double);
-    }
-    if (ec_double != NULL) {
-        cudaFree(ec_double);
-    }
-    if (y2a_double != NULL) {
+    if (!full_double) {
+        if (ex_double != NULL) {
+            cudaFree(ex_double);
+        }
+        if (ec_double != NULL) {
+            cudaFree(ec_double);
+        }
+        if (y2a_double != NULL) {
         cudaFree(y2a_double);
-    }
-    if (grad_double != NULL) {
-        cudaFree((void*)grad_double);
-    }
-    if (hess1_double != NULL) {
+        }
+        if (grad_double != NULL) {
+            cudaFree((void*)grad_double);
+    	}
+    	if (hess1_double != NULL) {
         cudaFree((void*)hess1_double);
+    	}
+        if (hess2_double != NULL) {
+    	    cudaFree((void*)hess2_double);
+        }
     }
-    if (hess2_double != NULL) {
-        cudaFree((void*)hess2_double);
-    }
-}
 
     return;
 }

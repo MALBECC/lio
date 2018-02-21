@@ -15,7 +15,6 @@ all:  main_gpu
 main_cpu: main_cpu.cpp 
 	nvcc -G -g -o main_cpu main_cpu.cpp $(CFLAGS) $(CLIBS) -DCPU_KERNELS
 
-
 main_gpu: main_gpu.cu
 	nvcc -G -g -o main_gpu main_gpu.cu $(CFLAGS_GPU) $(CLIBS_GPU) $(EXTRAS)
 

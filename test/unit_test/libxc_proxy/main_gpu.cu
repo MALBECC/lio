@@ -1,4 +1,13 @@
 #include <iostream>
+#include <cassert>
+#include <fstream>
+#include <iostream>
+#include <limits>
+#include <map>
+#include <math_constants.h>
+#include <float.h>
+#include <string>
+#include <vector>
 #include <cuda.h>
 #include <cuda_runtime.h>
 
@@ -10,11 +19,6 @@
 #include "../../../g2g/partition.h"
 #include "../../../g2g/scalar_vector_types.h"
 #include "../../../g2g/global_memory_pool.h"
-
-//#include "../../../g2g/pointxc/calc_ggaCS.h"
-//#include "../../../g2g/pointxc/calc_ggaOS.h"
-
-//#include "../../../g2g/cuda/kernels/accumulate_point.h"
 
 #include "../../../g2g/libxc/libxcproxy.h"
 #include "../../../g2g/libxc/libxc_accumulate_point.h"
@@ -145,20 +149,20 @@ void accumulate_data_for_libxc_test0001()
 #endif
 }
 
-template <class scalar_type, int width>
+template <class T, int width>
 __global__ void funcionDeMierda(
-		    double* ex, double* exchange,
-		    double* ec, double* correlation,
-		    double* vrho, double* vrhoC,
-		    double* vsigma, double* vsigmaC,
-		    double* v2rho, double* v2rhoC,
-		    double* v2rhosigma, double* v2rhosigmaC,
-		    double* v2sigma, double* v2sigmaC,
-		    double* y2a,
-		    double* sigma,
-		    G2G::vec_type<double, width>* grad,
-		    G2G::vec_type<double, width>* hess1,
-		    G2G::vec_type<double, width>* hess2,
+		    T* ex, double* exchange,
+		    T* ec, double* correlation,
+		    T* vrho, double* vrhoC,
+		    T* vsigma, double* vsigmaC,
+		    T* v2rho, double* v2rhoC,
+		    T* v2rhosigma, double* v2rhosigmaC,
+		    T* v2sigma, double* v2sigmaC,
+		    T* y2a,
+		    T* sigma,
+		    G2G::vec_type<T, width>* grad,
+		    G2G::vec_type<T, width>* hess1,
+		    G2G::vec_type<T, width>* hess2,
 		    int numElements)
 {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
@@ -651,23 +655,33 @@ void doGGA_gpu_float (const int number_of_points,
 
 
 /////////////////////////////
-// Test for DOUBLE values
-void proxyTest0001()
+// Proxy test
+template <class T>
+void proxyTest0001d()
 {
 #if FULL_DOUBLE
-    printf("proxyTest0001() - DOUBLES VERSION\n");
+    printf("proxyTest0001() \n");
 
     ////////////////////////////////
     // PARAMS SETUP
-
+    
     int number_of_points[9] = {221,227,256,537,1796,4007,2910,2910,3492};
-    double* dens_cpu[9] = {dens_221,dens_227,dens_256,dens_537,dens_1796,dens_4007,dens_2910_1,dens_2910_2,dens_3492};
-    double* contracted_gradients_cpu[9] = {contracted_grad_221,contracted_grad_227,contracted_grad_256,contracted_grad_537,contracted_grad_1796,contracted_grad_4007,contracted_grad_2910_1,contracted_grad_2910_2,contracted_grad_3492};
-    G2G::vec_type<double,4>* grads[9] = {grad_221,grad_227,grad_256,grad_537,grad_1796,grad_4007,grad_2910_1,grad_2910_2,grad_3492};
-    G2G::vec_type<double,4>* hess1s[9] = {hess1_221,hess1_227,hess1_256,hess1_537,hess1_1796,hess1_4007,hess1_2910_1,hess1_2910_2,hess1_3492};
-    G2G::vec_type<double,4>* hess2s[9] = {hess2_221,hess2_227,hess2_256,hess2_537,hess2_1796,hess2_4007,hess2_2910_1,hess2_2910_2,hess2_3492};
+    T* dens_cpu[9] = {dens_221,dens_227,dens_256,dens_537,dens_1796,dens_4007,dens_2910_1,dens_2910_2,dens_3492};
+    T* contracted_gradients_cpu[9] = {contracted_grad_221,contracted_grad_227,contracted_grad_256,contracted_grad_537,contracted_grad_1796,contracted_grad_4007,contracted_grad_2910_1,contracted_grad_2910_2,contracted_grad_3492};
+    G2G::vec_type<T,4>* grads[9] = {grad_221,grad_227,grad_256,grad_537,grad_1796,grad_4007,grad_2910_1,grad_2910_2,grad_3492};
+    G2G::vec_type<T,4>* hess1s[9] = {hess1_221,hess1_227,hess1_256,hess1_537,hess1_1796,hess1_4007,hess1_2910_1,hess1_2910_2,hess1_3492};
+    G2G::vec_type<T,4>* hess2s[9] = {hess2_221,hess2_227,hess2_256,hess2_537,hess2_1796,hess2_4007,hess2_2910_1,hess2_2910_2,hess2_3492};
+    
+    /*
+    int number_of_points[1] = {10};
+    T* dens_cpu[1] = {dens_10};
+    T* contracted_gradients_cpu[1] = {contracted_grad_10};
+    G2G::vec_type<T,4>* grads[1] = {grad_10};,grad_10};
+    G2G::vec_type<T,4>* hess1s[1] = {hess1_10};
+    G2G::vec_type<T,4>* hess2s[1] = {hess2_10};
+    */
 
-    for (int i=0; i<1; i++) {
+    for (int i=0; i<9; i++) {
         doGGA_gpu (number_of_points[i], 
 	    dens_cpu[i], 
 	    contracted_gradients_cpu[i],
@@ -677,6 +691,32 @@ void proxyTest0001()
     }
 #endif
 }
+
+template <class T>
+void proxyTest0001f()
+{
+    printf("proxyTest0001() \n");
+
+    ////////////////////////////////
+    // PARAMS SETUP
+
+    int number_of_points[9] = {221,227,256,537,1796,4007,2910,2910,3492};
+    T* dens_cpu[9] = {dens_221_f,dens_227_f,dens_256_f,dens_537_f,dens_1796_f,dens_4007_f,dens_2910_1_f,dens_2910_2_f,dens_3492_f};
+    T* contracted_gradients_cpu[9] = {contracted_grad_221_f,contracted_grad_227_f,contracted_grad_256_f,contracted_grad_537_f,contracted_grad_1796_f,contracted_grad_4007_f,contracted_grad_2910_1_f,contracted_grad_2910_2_f,contracted_grad_3492_f};
+    G2G::vec_type<T,4>* grads[9] = {grad_221_f,grad_227_f,grad_256_f,grad_537_f,grad_1796_f,grad_4007_f,grad_2910_1_f,grad_2910_2_f,grad_3492_f};
+    G2G::vec_type<T,4>* hess1s[9] = {hess1_221_f,hess1_227_f,hess1_256_f,hess1_537_f,hess1_1796_f,hess1_4007_f,hess1_2910_1_f,hess1_2910_2_f,hess1_3492_f};
+    G2G::vec_type<T,4>* hess2s[9] = {hess2_221_f,hess2_227_f,hess2_256_f,hess2_537_f,hess2_1796_f,hess2_4007_f,hess2_2910_1_f,hess2_2910_2_f,hess2_3492_f};
+
+    for (int i=0; i<9; i++) {
+        doGGA_gpu_float (number_of_points[i], 
+	    dens_cpu[i], 
+	    contracted_gradients_cpu[i],
+	    grads[i],
+	    hess1s[i],
+	    hess2s[i]);
+    }
+}
+
 
 //////////////////////////////
 // Test for FLOATS values
@@ -964,8 +1004,9 @@ int main()
     cout << "Test: Libxc Proxy GPU - BEGIN" << endl;
     //accumulate_data_for_libxc_test0001();
     //joinResultsTest0001();
-    proxyTest0001();
-    proxyTest0002();
+    proxyTest0001d<double>();
+    //proxyTest0001f<float>();
+    //proxyTest0002();
     //conversionTest0001(100);
     //conversionTest0002(100);
     //conversionTest0003(10);

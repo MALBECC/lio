@@ -10,7 +10,7 @@
  sphere_radius=0.6
  free_global_memory=0.2
  use_libxc=t
- ex_functional_id=101
- ec_functional_id=130
+ ex_functional_id=1101
+ ec_functional_id=1130
  timers=2
 &end

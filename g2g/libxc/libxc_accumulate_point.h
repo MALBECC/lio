@@ -2,24 +2,24 @@
 
 #include "libxcproxy.h"
 
-template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
-__global__ void gpu_accumulate_point_for_libxc(scalar_type* const point_weights,
+template<class T, bool compute_energy, bool compute_factor, bool lda>
+__global__ void gpu_accumulate_point_for_libxc(T* const point_weights,
                 uint points, int block_height, 
-		scalar_type* partial_density_in,
-		G2G::vec_type<scalar_type,WIDTH>* dxyz_in,
-                G2G::vec_type<scalar_type,WIDTH>* dd1_in,
-		G2G::vec_type<scalar_type,WIDTH>* dd2_in,
-		scalar_type* accumulated_density,
-		G2G::vec_type<scalar_type,WIDTH>* dxyz_accum,
-                G2G::vec_type<scalar_type,WIDTH>* dd1_accum,
-		G2G::vec_type<scalar_type,WIDTH>* dd2_accum) {
+		T* partial_density_in,
+		G2G::vec_type<T,WIDTH>* dxyz_in,
+                G2G::vec_type<T,WIDTH>* dd1_in,
+		G2G::vec_type<T,WIDTH>* dd2_in,
+		T* accumulated_density,
+		G2G::vec_type<T,WIDTH>* dxyz_accum,
+                G2G::vec_type<T,WIDTH>* dd1_accum,
+		G2G::vec_type<T,WIDTH>* dd2_accum) {
 
   uint point = blockIdx.x * DENSITY_ACCUM_BLOCK_SIZE + threadIdx.x;
   //uint point = blockIdx.x * blockDim.x + threadIdx.x;
 
-  scalar_type _partial_density(0.0f);
-  G2G::vec_type<scalar_type,WIDTH> _dxyz, _dd1, _dd2;
-  _dxyz = _dd1 = _dd2 = G2G::vec_type<scalar_type,WIDTH>(0.0f,0.0f,0.0f,0.0f);
+  T _partial_density(0.0f);
+  G2G::vec_type<T,WIDTH> _dxyz, _dd1, _dd2;
+  _dxyz = _dd1 = _dd2 = G2G::vec_type<T,WIDTH>(0.0f,0.0f,0.0f,0.0f);
 
   bool valid_thread = (point < points);
 
@@ -47,17 +47,17 @@ __global__ void gpu_accumulate_point_for_libxc(scalar_type* const point_weights,
 
 }
 
-template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
-__global__ void gpu_accumulate_energy_and_forces_from_libxc (scalar_type* const energy, 
-		    scalar_type* const factor, 
-		    scalar_type* const point_weights, 
+template<class T, bool compute_energy, bool compute_factor, bool lda>
+__global__ void gpu_accumulate_energy_and_forces_from_libxc (T* const energy, 
+		    T* const factor, 
+		    T* const point_weights, 
 		    uint points, 
-		    scalar_type* accumulated_density)
+		    T* accumulated_density)
 {
   uint point = blockIdx.x * DENSITY_ACCUM_BLOCK_SIZE + threadIdx.x;
   //uint point = blockIdx.x * blockDim.x + threadIdx.x;
 
-  scalar_type point_weight = 0.0f;
+  T point_weight = 0.0f;
 
   bool valid_thread = (point < points);
   if (valid_thread) {
@@ -74,15 +74,15 @@ __global__ void gpu_accumulate_energy_and_forces_from_libxc (scalar_type* const 
 
 }
 
-template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
-    void libxc_exchange_correlation_cpu (LibxcProxy<scalar_type, WIDTH>* libxcProxy,
-	scalar_type* energy_gpu,
-	scalar_type* factor_gpu,
+template<class T, bool compute_energy, bool compute_factor, bool lda>
+    void libxc_exchange_correlation_cpu (LibxcProxy<T, WIDTH>* libxcProxy,
+	T* energy_gpu,
+	T* factor_gpu,
 	uint points,
-	scalar_type* accumulated_density_gpu,
-	G2G::vec_type<scalar_type,WIDTH>* dxyz_gpu_accum,
-        G2G::vec_type<scalar_type,WIDTH>* dd1_gpu_accum,
-	G2G::vec_type<scalar_type,WIDTH>* dd2_gpu_accum)
+	T* accumulated_density_gpu,
+	G2G::vec_type<T,WIDTH>* dxyz_gpu_accum,
+        G2G::vec_type<T,WIDTH>* dd1_gpu_accum,
+	G2G::vec_type<T,WIDTH>* dd2_gpu_accum)
 {
     //printf("libxc_exchage_correlation_cpu (...) \n");
 
@@ -90,15 +90,15 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
 
     // Copy to host the matrix data in gpu memory and
     // call the new libxcProxy.
-    G2G::vec_type<scalar_type,WIDTH>* dxyz_cpu;
-    G2G::vec_type<scalar_type,WIDTH>* dd1_cpu;
-    G2G::vec_type<scalar_type,WIDTH>* dd2_cpu;
+    G2G::vec_type<T,WIDTH>* dxyz_cpu;
+    G2G::vec_type<T,WIDTH>* dd1_cpu;
+    G2G::vec_type<T,WIDTH>* dd2_cpu;
 
     // Alloc memory in the host for the gpu data
-    uint size = points * sizeof(G2G::vec_type<scalar_type,WIDTH>);
-    dxyz_cpu = (G2G::vec_type<scalar_type,WIDTH> *)malloc(size);
-    dd1_cpu = (G2G::vec_type<scalar_type,WIDTH> *)malloc(size);
-    dd2_cpu = (G2G::vec_type<scalar_type,WIDTH> *)malloc(size);
+    uint size = points * sizeof(G2G::vec_type<T,WIDTH>);
+    dxyz_cpu = (G2G::vec_type<T,WIDTH> *)malloc(size);
+    dd1_cpu = (G2G::vec_type<T,WIDTH> *)malloc(size);
+    dd2_cpu = (G2G::vec_type<T,WIDTH> *)malloc(size);
 
     // Copy data from device to host.
     err = cudaMemcpy(dxyz_cpu, dxyz_gpu_accum, size, cudaMemcpyDeviceToHost);
@@ -123,20 +123,20 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
     }
 
     // Allocate the host input vectors
-    uint array_size = sizeof(scalar_type)*points;
-    scalar_type *energy_cpu = NULL;
+    uint array_size = sizeof(T)*points;
+    T *energy_cpu = NULL;
     if (compute_energy) 
     { 
-	energy_cpu = (scalar_type *)malloc(array_size);
+	energy_cpu = (T *)malloc(array_size);
     }
     
-    scalar_type *factor_cpu = NULL;
+    T *factor_cpu = NULL;
     if (compute_factor) 
     {
-	factor_cpu = (scalar_type *)malloc(array_size);
+	factor_cpu = (T *)malloc(array_size);
     }
 
-    scalar_type *accumulated_density_cpu = (scalar_type*)malloc(array_size);
+    T *accumulated_density_cpu = (T*)malloc(array_size);
 
     // Copy the vectors from gpu to cpu
     // Be aware that energy_gpu can be NULL.
@@ -169,7 +169,7 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
     // Libxc proxy
     /////////////////////
     /* This is old. Remove later. 08/02/2018
-    scalar_type y2a, exc_x, exc_c = 0;
+    T y2a, exc_x, exc_c = 0;
     if (libxcProxy != NULL) {
 	for (int i=0; i<points; i++) {
     	    libxcProxy->doGGA (accumulated_density_cpu[i], dxyz_cpu[i], dd1_cpu[i], dd2_cpu[i], exc_x, exc_c, y2a);
@@ -186,18 +186,18 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
     */
 
     // Parameters
-    scalar_type* exc;
-    scalar_type* corr;
-    scalar_type* y2a;
+    T* exc;
+    T* corr;
+    T* y2a;
 
     // Now alloc memory for the data
-    //exc  = (scalar_type*)malloc(sizeof(scalar_type)*points);
-    //corr = (scalar_type*)malloc(sizeof(scalar_type)*points);
-    //y2a  = (scalar_type*)malloc(sizeof(scalar_type)*points);
+    //exc  = (T*)malloc(sizeof(T)*points);
+    //corr = (T*)malloc(sizeof(T)*points);
+    //y2a  = (T*)malloc(sizeof(T)*points);
 
-    exc  = (scalar_type*)malloc(array_size);
-    corr = (scalar_type*)malloc(array_size);
-    y2a  = (scalar_type*)malloc(array_size);
+    exc  = (T*)malloc(array_size);
+    corr = (T*)malloc(array_size);
+    y2a  = (T*)malloc(array_size);
 
     if (libxcProxy != NULL) {
         libxcProxy->doGGA (accumulated_density_cpu, points, dxyz_cpu, dd1_cpu, dd2_cpu, exc, corr, y2a);
@@ -251,8 +251,8 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
     free(dxyz_cpu);
 }
 
-template<class scalar_type>
-__global__ void calculateContractedGradient(G2G::vec_type<scalar_type,WIDTH>* grad, scalar_type* contracted_grad, int numElements)
+template<class T>
+__global__ void calculateContractedGradient(G2G::vec_type<T,WIDTH>* grad, T* contracted_grad, int numElements)
 {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
 
@@ -262,8 +262,8 @@ __global__ void calculateContractedGradient(G2G::vec_type<scalar_type,WIDTH>* gr
     }
 }
 
-template<class scalar_type>
-__global__ void vectorAdd(const scalar_type* A, const scalar_type* B, scalar_type* C, int numElements)
+template<class T>
+__global__ void vectorAdd(const T* A, const T* B, T* C, int numElements)
 {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
 
@@ -273,17 +273,17 @@ __global__ void vectorAdd(const scalar_type* A, const scalar_type* B, scalar_typ
     }
 }
 
-template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
-    void libxc_exchange_correlation_gpu (LibxcProxy<scalar_type, WIDTH>* libxcProxy,
-	scalar_type* energy_gpu,
-	scalar_type* factor_gpu,
+template<class T, bool compute_energy, bool compute_factor, bool lda>
+    void libxc_exchange_correlation_gpu (LibxcProxy<T, WIDTH>* libxcProxy,
+	T* energy_gpu,
+	T* factor_gpu,
 	uint points,
-	scalar_type* accumulated_density_gpu,
-	G2G::vec_type<scalar_type,WIDTH>* dxyz_gpu,
-        G2G::vec_type<scalar_type,WIDTH>* dd1_gpu,
-	G2G::vec_type<scalar_type,WIDTH>* dd2_gpu)
+	T* accumulated_density_gpu,
+	G2G::vec_type<T,WIDTH>* dxyz_gpu,
+        G2G::vec_type<T,WIDTH>* dd1_gpu,
+	G2G::vec_type<T,WIDTH>* dd2_gpu)
 {
-    //printf("libxc_exchage_correlation_gpu (...) \n");
+    printf("libxc_exchage_correlation_gpu (...) \n");
 
     cudaError_t err = cudaSuccess;
 
@@ -291,11 +291,11 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
     // Libxc proxy
     /////////////////////
     // Parameters
-    scalar_type* exc_gpu = NULL;
-    scalar_type* corr_gpu = NULL;
-    scalar_type* y2a_gpu = NULL;
-    scalar_type* contracted_gradient = NULL;
-    int array_size = sizeof(scalar_type) * points;
+    T* exc_gpu = NULL;
+    T* corr_gpu = NULL;
+    T* y2a_gpu = NULL;
+    T* contracted_gradient = NULL;
+    int array_size = sizeof(T) * points;
 
     // Alloc memory for cuda variables.
     err = cudaMalloc((void **)&exc_gpu, array_size);
@@ -319,7 +319,7 @@ template<class scalar_type, bool compute_energy, bool compute_factor, bool lda>
         exit(EXIT_FAILURE);
     }
 
-    err = cudaMalloc((void**)&contracted_gradient, sizeof(scalar_type)*points);
+    err = cudaMalloc((void**)&contracted_gradient, sizeof(T)*points);
     if (err != cudaSuccess)
     {
         fprintf(stderr, "Failed to allocate device contracted_gradient!\n");

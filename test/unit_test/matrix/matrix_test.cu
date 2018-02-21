@@ -1422,6 +1422,7 @@ void matrix_test0010()
     point_weights_gpu = point_weights_cpu;
 
     //int vec_size = point_weights_cpu.elements() * sizeof (G2G::vec_type<float,4>);
+    int vec_size = 10;
     //unsigned int vec_size = point_weights_cpu.bytes();
     G2G::vec_type<float,4>* vectors = (G2G::vec_type<float,4>*)malloc(vec_size);
 

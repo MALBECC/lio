@@ -1,6 +1,11 @@
 #define WIDTH 4
 
 #include "libxcproxy.h"
+#include "../timer.h"
+
+extern "C" void g2g_timer_sum_start_(const char* timer_name, unsigned int length_arg);
+extern "C" void g2g_timer_sum_stop_(const char* timer_name, unsigned int length_arg);
+extern "C" void g2g_timer_sum_pause_(const char* timer_name, unsigned int length_arg);
 
 template<class T, bool compute_energy, bool compute_factor, bool lda>
 __global__ void gpu_accumulate_point_for_libxc(T* const point_weights,
@@ -283,7 +288,7 @@ template<class T, bool compute_energy, bool compute_factor, bool lda>
         G2G::vec_type<T,WIDTH>* dd1_gpu,
 	G2G::vec_type<T,WIDTH>* dd2_gpu)
 {
-    printf("libxc_exchage_correlation_gpu (...) \n");
+    //printf("libxc_exchage_correlation_gpu (...) \n");
 
     cudaError_t err = cudaSuccess;
 
@@ -296,6 +301,8 @@ template<class T, bool compute_energy, bool compute_factor, bool lda>
     T* y2a_gpu = NULL;
     T* contracted_gradient = NULL;
     int array_size = sizeof(T) * points;
+
+    g2g_timer_sum_start_("libxc_exchange_correlation_gpu_preparing_data",45);
 
     // Alloc memory for cuda variables.
     err = cudaMalloc((void **)&exc_gpu, array_size);
@@ -342,6 +349,9 @@ template<class T, bool compute_energy, bool compute_factor, bool lda>
         //printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
 	calculateContractedGradient<<<blocksPerGrid, threadsPerBlock>>>(dxyz_gpu, contracted_gradient, points);
 
+	g2g_timer_sum_pause_("libxc_exchange_correlation_gpu_preparing_data",45);
+
+	/////////////////////////////////////////
 	// Compute exc_corr using LIBXC GPU.
 	libxcProxy->doGGA (accumulated_density_gpu,
 	    points, 
@@ -353,7 +363,10 @@ template<class T, bool compute_energy, bool compute_factor, bool lda>
 	    corr_gpu, 
 	    y2a_gpu);
 
+	///////////////////////
 	// Join the results.
+	g2g_timer_sum_start_("libxc_exchange_correlation_gpu_joining_data",43);
+
     	if (compute_energy && energy_gpu != NULL)
 	{
 	    vectorAdd<<<blocksPerGrid, threadsPerBlock>>>(exc_gpu, corr_gpu, energy_gpu, points);
@@ -366,6 +379,7 @@ template<class T, bool compute_energy, bool compute_factor, bool lda>
     		fprintf(stderr, "Failed to copy y2a_gpu to factor_gpu from DeviceToDevice for array of %i !\n", array_size);
 	    }
 	}
+	g2g_timer_sum_pause_("libxc_exchange_correlation_gpu_joining_data",43);
     }
 
     // Free memory.

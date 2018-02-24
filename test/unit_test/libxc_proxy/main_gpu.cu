@@ -998,13 +998,20 @@ void data_type_test003()
     }
 }
 
+void pointer_proxy_test0001()
+{
+    printf("pointer_proxy_test0001()\n");
+    LibxcProxy<double,4>* proxy_pointer = NULL;
+    proxy_pointer = new LibxcProxy<double,4> (1,1,1);
+    free(proxy_pointer);
+}
 
 int main()
 {
     cout << "Test: Libxc Proxy GPU - BEGIN" << endl;
     //accumulate_data_for_libxc_test0001();
     //joinResultsTest0001();
-    proxyTest0001d<double>();
+    //proxyTest0001d<double>();
     //proxyTest0001f<float>();
     //proxyTest0002();
     //conversionTest0001(100);
@@ -1012,6 +1019,7 @@ int main()
     //conversionTest0003(10);
     //conversionTest0004(10);
     //data_type_test003();
+    pointer_proxy_test0001();
     cout << "Test: Libxc Proxy GPU - END" << endl;
     return 0;
 }

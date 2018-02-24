@@ -35,30 +35,30 @@
 
 //////////////////////////////////////
 //// CALC_GGA
-#define POT_ALPHA     ((scalar_type)-0.738558766382022447)
-#define POT_GL        ((scalar_type)0.620350490899400087)
+#define POT_ALPHA     ((double)-0.738558766382022447)
+#define POT_GL        ((double)0.620350490899400087)
 
-#define POT_VOSKO_A1  ((scalar_type)0.03109205)
-#define POT_VOSKO_B1  ((scalar_type)3.72744)
-#define POT_VOSKO_C1  ((scalar_type)12.9352)
-#define POT_VOSKO_X0  ((scalar_type)-0.10498)
-#define POT_VOSKO_Q   ((scalar_type)6.15199066246304849)
-#define POT_VOSKO_A16 ((scalar_type)0.005182008333)
-#define POT_VOSKO_Q2  ((scalar_type)4.7309269)
+#define POT_VOSKO_A1  ((double)0.03109205)
+#define POT_VOSKO_B1  ((double)3.72744)
+#define POT_VOSKO_C1  ((double)12.9352)
+#define POT_VOSKO_X0  ((double)-0.10498)
+#define POT_VOSKO_Q   ((double)6.15199066246304849)
+#define POT_VOSKO_A16 ((double)0.005182008333)
+#define POT_VOSKO_Q2  ((double)4.7309269)
 
-#define POT_ALYP  ((scalar_type)0.04918)
-#define POT_BLYP  ((scalar_type)0.132)
-#define POT_CLYP  ((scalar_type)0.2533)
-#define POT_CLYP3 ((scalar_type)0.0844333333)
-#define POT_DLYP  ((scalar_type)0.349)
-#define POT_DLYP3 ((scalar_type)0.116333333)
-#define POT_CF    ((scalar_type)2.87123400018819)
-#define POT_BETA  ((scalar_type)0.0042)
+#define POT_ALYP  ((double)0.04918)
+#define POT_BLYP  ((double)0.132)
+#define POT_CLYP  ((double)0.2533)
+#define POT_CLYP3 ((double)0.0844333333)
+#define POT_DLYP  ((double)0.349)
+#define POT_DLYP3 ((double)0.116333333)
+#define POT_CF    ((double)2.87123400018819)
+#define POT_BETA  ((double)0.0042)
 
-#define POT_ALF ((scalar_type)0.023266)
-#define POT_BET ((scalar_type)7.389)
-#define POT_GAM ((scalar_type)8.723)
-#define POT_DEL ((scalar_type)0.472)
+#define POT_ALF ((double)0.023266)
+#define POT_BET ((double)7.389)
+#define POT_GAM ((double)8.723)
+#define POT_DEL ((double)0.472)
 
 //////////////////////////////////////
 //// UTILS

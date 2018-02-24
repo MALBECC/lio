@@ -9,6 +9,11 @@
 #include "../scalar_vector_types.h"
 #include "print_utils.h"
 #include <cuda_runtime.h>
+#include "../timer.h"
+
+extern "C" void g2g_timer_sum_start_(const char* timer_name, unsigned int length_arg);
+extern "C" void g2g_timer_sum_stop_(const char* timer_name, unsigned int length_arg);
+extern "C" void g2g_timer_sum_pause_(const char* timer_name, unsigned int length_arg);
 
 template <class T, int width>
 class LibxcProxy
@@ -484,6 +489,10 @@ void LibxcProxy <T, width>::doGGA(T* dens,
     //printf("LibxcProxy::doGGA cuda (...) \n");
     //print_proxy_input<T> (dens, number_of_points, contracted_grad, grad, hess1, hess2);
 
+    /////////////////////////////////////
+    // TIMER START
+    g2g_timer_sum_start_("libxc_proxy_doGGA_preparing_data", 32);
+
     bool full_double = (sizeof(T) == 8);
 
     // Variables for the Kernels
@@ -710,6 +719,7 @@ void LibxcProxy <T, width>::doGGA(T* dens,
         fprintf(stderr, "Failed to allocate device v2sigmaC!\n");
         exit(EXIT_FAILURE);
     }
+
     ///////////////////////////////////
     // Clear arrays for correlation
     cudaMemset(vrhoC, 0, array_size);
@@ -718,9 +728,17 @@ void LibxcProxy <T, width>::doGGA(T* dens,
     cudaMemset(v2rhosigmaC, 0, array_size);
     cudaMemset(v2sigmaC, 0, array_size);
 
+    //////////////////////////////////////
+    // TIMER PAUSE
+    g2g_timer_sum_pause_("libxc_proxy_doGGA_preparing_data", 32);
+
     /////////////////////////////
     // Call LIBXC for exchange
     try {
+        /////////////////////////////
+	// TIMER START
+        g2g_timer_sum_start_("libxc_proxy_functional_for_exchange", 35);
+
         xc_gga (&funcForExchange, number_of_points,
                 rho,
                 sigma,
@@ -731,6 +749,11 @@ void LibxcProxy <T, width>::doGGA(T* dens,
                 v2rhosigma,
                 v2sigma,
                 NULL, NULL, NULL, NULL);
+
+        /////////////////////////////
+	// TIMER PAUSE
+        g2g_timer_sum_pause_("libxc_proxy_functional_for_exchange", 35);
+
     } catch (int exception) {
         fprintf (stderr, "Exception ocurred calling xc_gga for Exchange '%d' \n", exception);
         return;
@@ -740,6 +763,10 @@ void LibxcProxy <T, width>::doGGA(T* dens,
     // Call LIBXC for correlation
     try {
         // Now the correlation value.
+        /////////////////////////////
+	// TIMER START
+        g2g_timer_sum_start_("libxc_proxy_functional_for_correlation", 38);
+
         xc_gga (&funcForCorrelation, number_of_points,
                 rho,
                 sigma,
@@ -750,6 +777,11 @@ void LibxcProxy <T, width>::doGGA(T* dens,
                 v2rhosigmaC,
                 v2sigmaC,
                 NULL, NULL, NULL, NULL);
+
+        /////////////////////////////
+	// TIMER PAUSE
+        g2g_timer_sum_pause_("libxc_proxy_functional_for_correlation", 38);
+
     } catch (int exception) {
         fprintf (stderr, "Exception ocurred calling xc_gga for Correlation '%d' \n", exception);
         return;
@@ -757,6 +789,11 @@ void LibxcProxy <T, width>::doGGA(T* dens,
 
     ////////////////////////
     // Gather the results
+
+    /////////////////////////////
+    // TIMER START
+    g2g_timer_sum_start_("libxc_proxy_doGGA_joining_data", 30);
+
     joinResults<T, width><<<blocksPerGrid, threadsPerBlock>>>(
 	ex_double, exchange,
 	ec_double, correlation,
@@ -779,6 +816,10 @@ void LibxcProxy <T, width>::doGGA(T* dens,
 	convertDoubleToFloat<<<blocksPerGrid, threadsPerBlock>>> (ec_double, ec, number_of_points);
         convertDoubleToFloat<<<blocksPerGrid, threadsPerBlock>>> (y2a_double, y2a, number_of_points);
     }
+
+    /////////////////////////
+    // TIMER PAUSE
+    g2g_timer_sum_pause_("libxc_proxy_doGGA_joining_data", 30);
 
     /////////////////////////
     // Free device memory
@@ -862,7 +903,7 @@ void LibxcProxy <T, width>::doGGA(T* dens,
     T* ec,
     T* y2a)
 {
-    printf("LibxcProxy::doGGA cuda template version (...) \n");
+    //printf("LibxcProxy::doGGA cuda template version (...) \n");
     print_proxy_input<T> (dens, number_of_points, contracted_grad, grad, hess1, hess2);
 
     // The size of scalar type.

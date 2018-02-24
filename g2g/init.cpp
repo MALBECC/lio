@@ -195,9 +195,11 @@ extern "C" void g2g_parameter_init_(const unsigned int& norm, const unsigned int
   fortran_vars.nearest_neighbor_dists = HostMatrix<double>(fortran_vars.atoms);
 
   // Variables para configurar libxc
-  fortran_vars.use_libxc = use_libxc;
-  fortran_vars.ex_functional_id = ex_functional_id;
-  fortran_vars.ec_functional_id = ec_functional_id;
+#if USE_LIBXC
+    fortran_vars.use_libxc = use_libxc;
+    fortran_vars.ex_functional_id = ex_functional_id;
+    fortran_vars.ec_functional_id = ec_functional_id;
+#endif
 
 #if GPU_KERNELS
   G2G::gpu_set_variables();

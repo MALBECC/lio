@@ -60,6 +60,10 @@
 #define POT_GAM ((scalar_type)8.723)
 #define POT_DEL ((scalar_type)0.472)
 
+extern "C" void g2g_timer_sum_start_(const char* timer_name, unsigned int length_arg);
+extern "C" void g2g_timer_sum_stop_(const char* timer_name, unsigned int length_arg);
+extern "C" void g2g_timer_sum_pause_(const char* timer_name, unsigned int length_arg);
+
 ///////////////////////////////////////////////////
 // Cuda Matrix Helpers
 G2G::HostMatrix< G2G::vec_type<double,4> > createMatrixD(int size)

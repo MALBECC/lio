@@ -9,8 +9,8 @@
        use mathsubs   , only: basechange
        use faint_cpu77, only: int3lu
        implicit none
-       REAL*8,intent(inout) :: F1a(M_in,M_in),F1b(M_in,M_in), FON(M_in,M_in), &
-                               Xmat(M_in,M_in)
+       REAL*8,intent(inout) :: F1a(M_in,M_in),F1b(M_in,M_in),
+     >                         FON(M_in,M_in), Xmat(M_in,M_in)
        REAL*8,intent(in)  :: Xtrans(M_in,M_in), timestep
        REAL*8,intent(in)  :: factorial(NBCH), time
        REAL*8,allocatable :: F3(:,:), FBA(:,:)

@@ -491,7 +491,7 @@ void LibxcProxy <T, width>::doGGA(T* dens,
 
     /////////////////////////////////////
     // TIMER START
-    g2g_timer_sum_start_("libxc_proxy_doGGA_preparing_data", 32);
+    //g2g_timer_sum_start_("libxc_proxy_doGGA_preparing_data", 32);
 
     bool full_double = (sizeof(T) == 8);
 
@@ -730,14 +730,14 @@ void LibxcProxy <T, width>::doGGA(T* dens,
 
     //////////////////////////////////////
     // TIMER PAUSE
-    g2g_timer_sum_pause_("libxc_proxy_doGGA_preparing_data", 32);
+    //g2g_timer_sum_pause_("libxc_proxy_doGGA_preparing_data", 32);
 
     /////////////////////////////
     // Call LIBXC for exchange
     try {
         /////////////////////////////
 	// TIMER START
-        g2g_timer_sum_start_("libxc_proxy_functional_for_exchange", 35);
+        //g2g_timer_sum_start_("libxc_proxy_functional_for_exchange", 35);
 
         xc_gga (&funcForExchange, number_of_points,
                 rho,
@@ -752,7 +752,7 @@ void LibxcProxy <T, width>::doGGA(T* dens,
 
         /////////////////////////////
 	// TIMER PAUSE
-        g2g_timer_sum_pause_("libxc_proxy_functional_for_exchange", 35);
+        //g2g_timer_sum_pause_("libxc_proxy_functional_for_exchange", 35);
 
     } catch (int exception) {
         fprintf (stderr, "Exception ocurred calling xc_gga for Exchange '%d' \n", exception);
@@ -765,7 +765,7 @@ void LibxcProxy <T, width>::doGGA(T* dens,
         // Now the correlation value.
         /////////////////////////////
 	// TIMER START
-        g2g_timer_sum_start_("libxc_proxy_functional_for_correlation", 38);
+        //g2g_timer_sum_start_("libxc_proxy_functional_for_correlation", 38);
 
         xc_gga (&funcForCorrelation, number_of_points,
                 rho,
@@ -780,7 +780,7 @@ void LibxcProxy <T, width>::doGGA(T* dens,
 
         /////////////////////////////
 	// TIMER PAUSE
-        g2g_timer_sum_pause_("libxc_proxy_functional_for_correlation", 38);
+        //g2g_timer_sum_pause_("libxc_proxy_functional_for_correlation", 38);
 
     } catch (int exception) {
         fprintf (stderr, "Exception ocurred calling xc_gga for Correlation '%d' \n", exception);
@@ -792,7 +792,7 @@ void LibxcProxy <T, width>::doGGA(T* dens,
 
     /////////////////////////////
     // TIMER START
-    g2g_timer_sum_start_("libxc_proxy_doGGA_joining_data", 30);
+    //g2g_timer_sum_start_("libxc_proxy_doGGA_joining_data", 30);
 
     joinResults<T, width><<<blocksPerGrid, threadsPerBlock>>>(
 	ex_double, exchange,
@@ -819,7 +819,7 @@ void LibxcProxy <T, width>::doGGA(T* dens,
 
     /////////////////////////
     // TIMER PAUSE
-    g2g_timer_sum_pause_("libxc_proxy_doGGA_joining_data", 30);
+    //g2g_timer_sum_pause_("libxc_proxy_doGGA_joining_data", 30);
 
     /////////////////////////
     // Free device memory

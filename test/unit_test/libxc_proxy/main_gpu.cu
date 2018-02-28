@@ -30,6 +30,8 @@ using namespace std;
 using std::cout;
 using std::endl;
 
+__constant__ double TWO = 2;
+
 void accumulate_data_for_libxc_test0001()
 {
 #if FULL_DOUBLE
@@ -172,6 +174,7 @@ __global__ void funcionDeMierda(
 
 	ex[i] = exchange[i];
 	ec[i] = correlation[i];
+
 	// Merge the results for the derivatives.
 	vrho[i] += vrhoC[i];
         vsigma[i] += vsigmaC[i];
@@ -179,6 +182,7 @@ __global__ void funcionDeMierda(
         v2rhosigma[i] += v2rhosigmaC[i];
         v2sigma[i] += v2sigmaC[i];
         // Now, compute y2a value.
+
 	y2a[i] = vrho[i] - (2 * sigma[i] * v2rhosigma[i]
             + 2 * (hess1[i].x + hess1[i].y + hess1[i].z) * vsigma[i]
             + 4 * v2sigma[i] * (grad[i].x * grad[i].x * hess1[i].x + 
@@ -187,9 +191,9 @@ __global__ void funcionDeMierda(
 				2 * grad[i].x * grad[i].y * hess2[i].x + 
 				2 * grad[i].x * grad[i].z * hess2[i].y + 
 				2 * grad[i].y * grad[i].z * hess2[i].z));
+
     }
 }
-
 
 void joinResultsTest0001() {
     printf("joinResultsTest0001()\n");
@@ -381,6 +385,7 @@ void joinResultsTest0001() {
 	hess1.data,
 	hess2.data,
 	number_of_points);
+
 
     // Print the fucking results
     double* ex_cpu = (double*)malloc(array_size);
@@ -1008,19 +1013,22 @@ void pointer_proxy_test0001()
 
 int main()
 {
-    cout << "Test: Libxc Proxy GPU - BEGIN" << endl;
+    printf("Test: Libxc Proxy GPU - BEGIN\n");
     //accumulate_data_for_libxc_test0001();
     //joinResultsTest0001();
-    //proxyTest0001d<double>();
-    //proxyTest0001f<float>();
+#if FULL_DOUBLE
+    proxyTest0001d<double>();
+#else
+    proxyTest0001f<float>();
+#endif
     //proxyTest0002();
     //conversionTest0001(100);
     //conversionTest0002(100);
     //conversionTest0003(10);
     //conversionTest0004(10);
     //data_type_test003();
-    pointer_proxy_test0001();
-    cout << "Test: Libxc Proxy GPU - END" << endl;
+    //pointer_proxy_test0001();
+    printf("Test: Libxc Proxy GPU - END\n");
     return 0;
 }
 

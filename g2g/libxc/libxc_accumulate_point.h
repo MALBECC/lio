@@ -302,7 +302,7 @@ template<class T, bool compute_energy, bool compute_factor, bool lda>
     T* contracted_gradient = NULL;
     int array_size = sizeof(T) * points;
 
-    g2g_timer_sum_start_("libxc_exchange_correlation_gpu_preparing_data",45);
+    //g2g_timer_sum_start_("libxc_exchange_correlation_gpu_preparing_data",45);
 
     // Alloc memory for cuda variables.
     err = cudaMalloc((void **)&exc_gpu, array_size);
@@ -349,7 +349,7 @@ template<class T, bool compute_energy, bool compute_factor, bool lda>
         //printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
 	calculateContractedGradient<<<blocksPerGrid, threadsPerBlock>>>(dxyz_gpu, contracted_gradient, points);
 
-	g2g_timer_sum_pause_("libxc_exchange_correlation_gpu_preparing_data",45);
+	//g2g_timer_sum_pause_("libxc_exchange_correlation_gpu_preparing_data",45);
 
 	/////////////////////////////////////////
 	// Compute exc_corr using LIBXC GPU.
@@ -365,7 +365,7 @@ template<class T, bool compute_energy, bool compute_factor, bool lda>
 
 	///////////////////////
 	// Join the results.
-	g2g_timer_sum_start_("libxc_exchange_correlation_gpu_joining_data",43);
+	//g2g_timer_sum_start_("libxc_exchange_correlation_gpu_joining_data",43);
 
     	if (compute_energy && energy_gpu != NULL)
 	{
@@ -379,7 +379,7 @@ template<class T, bool compute_energy, bool compute_factor, bool lda>
     		fprintf(stderr, "Failed to copy y2a_gpu to factor_gpu from DeviceToDevice for array of %i !\n", array_size);
 	    }
 	}
-	g2g_timer_sum_pause_("libxc_exchange_correlation_gpu_joining_data",43);
+	//g2g_timer_sum_pause_("libxc_exchange_correlation_gpu_joining_data",43);
     }
 
     // Free memory.

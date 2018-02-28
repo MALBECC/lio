@@ -42,7 +42,7 @@ do
     echo "=================" >> $SALIDA
     echo "= Test $counter        =" >> $SALIDA
     echo "=================" >> $SALIDA
-    $LIOBIN -i carotenox.in -b DZVP  -c caroteno.xyz -v > $SALIDA
+    $LIOBIN -i carotenox.in -b DZVP  -c caroteno.xyz -v >> $SALIDA
     ((counter++))
 done
 

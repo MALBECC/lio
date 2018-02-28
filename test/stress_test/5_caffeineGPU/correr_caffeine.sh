@@ -45,13 +45,12 @@ echo "STRESS TEST: caffeine_GPU" >> $SALIDA
 counter=1
 while [ $counter -le $iteraciones ]
 do
-    echo "================="
-    echo "= Test $counter/$iteraciones        ="
-    echo $LIOBIN -i caffeine.in -b basis -c caffeine.xyz -v
+#    echo "================="
+#    echo "= Test $counter/$iteraciones        ="
+#    echo $LIOBIN -i caffeine.in -b basis -c caffeine.xyz -v
     echo "=================" >> $SALIDA
     echo "= Test $counter        =" >> $SALIDA
     echo "=================" >> $SALIDA
-    ##$LIOBIN -i caffeine.in -b basis -c caffeine.xyz -v >> $SALIDA
     $LIOBIN -i caff.in -b DZVP  -c caff.xyz -v >> $SALIDA
     ((counter++))
 done

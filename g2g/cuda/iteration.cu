@@ -256,13 +256,13 @@ void PointGroupGPU<scalar_type>::solve_closed(
 #if USE_LIBXC
 	    if (fortran_vars.use_libxc) {
 	      // Tomamos el tiempo de esta operacion
-	      g2g_timer_sum_start_("accumulate_point_for_libxc", 26);
+	      //g2g_timer_sum_start_("accumulate_point_for_libxc", 26);
 	      // Accumulate the data for libxc
 	      gpu_accumulate_point_for_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
 		point_weights_gpu.data, this->number_of_points, block_height, 
 		partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data,
 		accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
-	      g2g_timer_sum_pause_("accumulate_point_for_libxc", 26);
+	      //g2g_timer_sum_pause_("accumulate_point_for_libxc", 26);
 	#if LIBXC_CPU
 	      // Compute exc_corr and y2a with libxc CPU version.
 	      libxc_exchange_correlation_cpu<scalar_type, true, true, false> (&libxcProxy,
@@ -270,17 +270,17 @@ void PointGroupGPU<scalar_type>::solve_closed(
 		accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
 	#else
 	      // Compute exc_corr and y2a with libxc GPU version.
-	      g2g_timer_sum_start_("libxc_exchange_correlation_gpu", 30);
+	      //g2g_timer_sum_start_("libxc_exchange_correlation_gpu", 30);
 	      libxc_exchange_correlation_gpu<scalar_type, true, true, false> (&libxcProxy,
 		energy_gpu.data, factors_gpu.data, this->number_of_points,
 		accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
-	      g2g_timer_sum_pause_("libxc_exchange_correlation_gpu", 30);
+	      //g2g_timer_sum_pause_("libxc_exchange_correlation_gpu", 30);
 	#endif
 	      // Merge the results.
-	      g2g_timer_sum_start_("accumulate_energy_and_forces_from_libxc", 39);
+	      //g2g_timer_sum_start_("accumulate_energy_and_forces_from_libxc", 39);
 	      gpu_accumulate_energy_and_forces_from_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
 		energy_gpu.data, factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
-	      g2g_timer_sum_pause_("accumulate_energy_and_forces_from_libxc", 39);
+	      //g2g_timer_sum_pause_("accumulate_energy_and_forces_from_libxc", 39);
 	    } else {
               gpu_accumulate_point<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
 	    }
@@ -303,7 +303,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
 #if USE_LIBXC
         if (fortran_vars.use_libxc) {
 	  // TIMER
-	  g2g_timer_sum_start_("accumulate_point_for_libxc", 26);
+	  //g2g_timer_sum_start_("accumulate_point_for_libxc", 26);
 
 	  // Accumulate the data.
 	  gpu_accumulate_point_for_libxc<scalar_type, true, false, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (point_weights_gpu.data,
@@ -312,7 +312,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
 	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
 
 	  // TIMER
-	  g2g_timer_sum_pause_("accumulate_point_for_libxc", 26);
+	  //g2g_timer_sum_pause_("accumulate_point_for_libxc", 26);
 
     #if LIBXC_CPU
 	  // Compute exc_corr and y2a with CPU libxc.
@@ -321,7 +321,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
 	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
     #else
 	  // TIMER
-	  g2g_timer_sum_start_("libxc_exchange_correlation_gpu", 30);
+	  //g2g_timer_sum_start_("libxc_exchange_correlation_gpu", 30);
 
 	  // Compute exc_corr and y2a with libxc GPU version.
 	  libxc_exchange_correlation_gpu<scalar_type, true, true, false> (&libxcProxy,
@@ -329,17 +329,17 @@ void PointGroupGPU<scalar_type>::solve_closed(
 	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
 
 	  // TIMER
-	  g2g_timer_sum_pause_("libxc_exchange_correlation_gpu", 30);
+	  //g2g_timer_sum_pause_("libxc_exchange_correlation_gpu", 30);
     #endif
 	  // TIMER
-	  g2g_timer_sum_start_("accumulate_energy_and_forces_from_libxc", 39);
+	  //g2g_timer_sum_start_("accumulate_energy_and_forces_from_libxc", 39);
 
 	  // Merge the results.
 	  gpu_accumulate_energy_and_forces_from_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
 	    energy_gpu.data, factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
 
 	  // TIMER
-	  g2g_timer_sum_pause_("accumulate_energy_and_forces_from_libxc", 39);
+	  //g2g_timer_sum_pause_("accumulate_energy_and_forces_from_libxc", 39);
 
 	} else {
           gpu_accumulate_point<scalar_type, true, false, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
@@ -375,7 +375,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
 #if USE_LIBXC
         if (fortran_vars.use_libxc) {
 	  // TIMER
-	  g2g_timer_sum_start_("accumulate_point_for_libxc", 26);
+	  //g2g_timer_sum_start_("accumulate_point_for_libxc", 26);
 	    
 	  // Accumulate the data.
 	  gpu_accumulate_point_for_libxc<scalar_type, false, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (point_weights_gpu.data,
@@ -384,7 +384,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
 	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
 
 	  // TIMER
-	  g2g_timer_sum_pause_("accumulate_point_for_libxc", 26);
+	  //g2g_timer_sum_pause_("accumulate_point_for_libxc", 26);
 
     #if LIBXC_CPU
 	  // Compute exc_corr and y2a with libxc CPU.
@@ -393,7 +393,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
 	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
     #else
 	  //TIMER
-	  g2g_timer_sum_start_("libxc_exchange_correlation_gpu", 30);
+	  //g2g_timer_sum_start_("libxc_exchange_correlation_gpu", 30);
 
 	  // Compute exc_corr and y2a with libxc GPU version.
 	  libxc_exchange_correlation_gpu<scalar_type, false, true, false> (&libxcProxy,
@@ -401,18 +401,18 @@ void PointGroupGPU<scalar_type>::solve_closed(
 	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
 
 	  // TIMER
-	  g2g_timer_sum_pause_("libxc_exchange_correlation_gpu", 30);
+	  //g2g_timer_sum_pause_("libxc_exchange_correlation_gpu", 30);
 
     #endif
 	  // TIMER
-	  g2g_timer_sum_start_("accumulate_energy_and_forces_from_libxc", 39);
+	  //g2g_timer_sum_start_("accumulate_energy_and_forces_from_libxc", 39);
 
 	  // Merge the results.
 	  gpu_accumulate_energy_and_forces_from_libxc<scalar_type, false, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
 	    NULL,factors_gpu.data, point_weights_gpu.data, this->number_of_points, accumulated_densities_gpu.data);
 
 	  // TIMER
-    	  g2g_timer_sum_pause_("accumulate_energy_and_forces_from_libxc", 39);
+    	  //g2g_timer_sum_pause_("accumulate_energy_and_forces_from_libxc", 39);
 
 	} else {
     	  gpu_accumulate_point<scalar_type, false, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>>(accumulate_parameters);

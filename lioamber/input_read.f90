@@ -36,6 +36,8 @@ subroutine read_options(inputFile, charge)
 
     use transport_data, only  : transport_calc, generate_rho0, gate_field,     &
                                 save_charge_freq, driving_rate, Pop_Drive
+    use dftb_data ,only: dftb_calc, MTB, alfaTB, betaTB, gammaTB, Vbias,      &
+                         end_basis, start_tdtb, end_tdtb, TBsave, TBload
     implicit none
     character(len=20), intent(in)  :: inputFile
     integer          , intent(out) :: charge
@@ -78,7 +80,10 @@ subroutine read_options(inputFile, charge)
                    natom, nsol, charge,                                        &
                    ! Variables for Transport
                    transport_calc, generate_rho0, gate_field,                  &
-                   save_charge_freq, driving_rate, Pop_Drive
+                   save_charge_freq, driving_rate, Pop_Drive,                  &
+                   !Variables for DFTB
+                   dftb_calc, MTB, alfaTB, betaTB, gammaTB, Vbias, end_basis,  &
+                   start_tdtb, end_tdtb, TBsave, TBload
 
     inquire(file = inputFile, exist = fileExists)
     if(fileExists) then

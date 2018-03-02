@@ -1,5 +1,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module lionml_data
+   use dftb_data ,only: dftb_calc, MTB, alfaTB, betaTB, gammaTB, Vbias,      &
+                        end_basis, start_tdtb, end_tdtb, TBsave, TBload
    implicit none
 !
 !
@@ -64,8 +66,7 @@ module lionml_data
    &, rsti_loads, rsti_fname, rsto_saves, rsto_nfreq, rsto_fname               &
 !
    &, eefld_on, eefld_ampx, eefld_ampy, eefld_ampz, eefld_wavelen              &
-   &, eefld_timegih, eefld_timegfh, eefld_timepos, eefld_timeamp
-
+   &, eefld_timegih, eefld_timegfh, eefld_timepos, eefld_timeamp               
 
 end module lionml_data
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -44,8 +44,8 @@ subroutine SCF(E)
    use faint_cpu77, only: int1, int2, intsol, int3mem, int3lu, intfld
    use dftb_data, only : dftb_calc, MDFTB, MTB, chargeA_TB, chargeB_TB,        &
                          rho_DFTB, TBsave, TBload
-      use dftb_subs, only : dftb_init, getXY_DFTB, find_neighbors,             &
-                            build_chimera, extract_rhoDFT  
+      use dftb_subs, only : dftb_init, getXY_DFTB, find_TB_neighbors,             &
+                            build_chimera_DFTB, extract_rhoDFT
    use cubegen       , only: cubegen_vecin, cubegen_matin, cubegen_write
    use mask_ecp      , only: ECP_init, ECP_fock, ECP_energy
    use typedef_sop   , only: sop              ! Testing SOP
@@ -332,7 +332,7 @@ subroutine SCF(E)
 ! TODO: Simplify, this has too much stuff going on...
 ! (maybe trans mats are not even necessary?)
 !
-        if (allocated(X_min)) deallocate(X_min)     
+        if (allocated(X_min)) deallocate(X_min)
         if (allocated(Y_min)) deallocate(Y_min)
         if (allocated(X_min_trans)) deallocate(X_min_trans)
         if (allocated(Y_min_trans)) deallocate(Y_min_trans)
@@ -614,8 +614,8 @@ subroutine SCF(E)
 !       consecutive dftb_calc switches? really?
 !
       if (dftb_calc) then
-         if (niter==1) call find_neighbors(M,Nuc,natom)
-         call build_chimera (M, fock_0, fock, natom, nshell, ncont)
+         if (niter==1) call find_TB_neighbors(M,Nuc,natom)
+         call build_chimera_DFTB (M, fock_0, fock, natom, nshell, ncont)
 
          if (niter==1) then
             if (TBload) then

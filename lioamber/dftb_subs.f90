@@ -8,21 +8,21 @@ contains
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 subroutine dftb_init(M)
 
-   use dftb_data, only: MTB, MDFTB, end_basis, Iend, rho_DFTB
+   use dftb_data, only: MTB, MDFTB, end_bTB, Iend_TB, rho_DFTB
 
    implicit none
 
    integer, intent(in) :: M
 
    MDFTB=2*MTB+M
-   allocate(Iend(2,2*end_basis), rho_DFTB(MDFTB,MDFTB))
-   
+   allocate(Iend_TB(2,2*end_bTB), rho_DFTB(MDFTB,MDFTB))
+
 end subroutine dftb_init
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 subroutine dftb_td_init (M,rho, rho_0, overlap, RMM5)
 
-   use dftb_data, only: MTB, MDFTB, rho_DFTB, rhold_AO, rhonew_AO
+   use dftb_data, only: MTB, MDFTB, rho_DFTB, rhold_AOTB, rhonew_AOTB
    implicit none
    integer, intent(in)       :: M
    real*8, allocatable, intent(inout) :: overlap(:,:)
@@ -37,10 +37,10 @@ subroutine dftb_td_init (M,rho, rho_0, overlap, RMM5)
    integer  :: ii,jj
 
    if (allocated(overlap)) deallocate(overlap)
-   allocate(overlap(M,M), rhold_AO(MDFTB,MDFTB), rhonew_AO(MDFTB,MDFTB))
-   
-   rhold_AO=0.0d0
-   rhonew_AO=0.0d0
+   allocate(overlap(M,M), rhold_AOTB(MDFTB,MDFTB), rhonew_AOTB(MDFTB,MDFTB))
+
+   rhold_AOTB=0.0d0
+   rhonew_AOTB=0.0d0
 
    call spunpack('L', M, RMM5, overlap)
 
@@ -86,7 +86,7 @@ subroutine getXY_DFTB(M_in,x_in,y_in,xmat,ymat)
 
       ymat(ii,ii)=1.0d0
       ymat(MTB+M_in+ii,MTB+M_in+ii)=1.0d0
-   end do   
+   end do
 
    do jj=1, M_in
    do ii=1, M_in
@@ -97,39 +97,39 @@ subroutine getXY_DFTB(M_in,x_in,y_in,xmat,ymat)
 end subroutine
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-subroutine find_neighbors(M_in,Nuc,natom)
+subroutine find_TB_neighbors(M_in,Nuc,natom)
 
-   use dftb_data, only:Iend
-  
+   use dftb_data, only:Iend_TB
+
    implicit none
-   
+
    integer              ::  ii, jj
    integer, intent(in)  ::  M_in, natom
    integer, intent(in)  ::  Nuc(M_in)
 
-   
+
    jj=0
    do ii=1, M_in
       if (Nuc(ii)==1.or.Nuc(ii)==natom) then
          jj=jj+1
-         Iend(1,jj) = Nuc(ii)
-         Iend(2,jj) = ii
+         Iend_TB(1,jj) = Nuc(ii)
+         Iend_TB(2,jj) = ii
       end if
-   end do   
+   end do
 
-end subroutine find_neighbors
+end subroutine find_TB_neighbors
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-subroutine build_chimera (M_in,fock_in, chimerafock, natom, nshell, ncont)
+subroutine build_chimera_DFTB (M_in,fock_in, fock_DFTB, natom, nshell, ncont)
 
-   use dftb_data, only:MDFTB, MTB, Iend, end_basis, alfaTB, betaTB, gammaTB,Vbias
+   use dftb_data, only:MDFTB, MTB, Iend_TB, end_bTB, alfaTB, betaTB, gammaTB,Vbias_TB
 
    integer, intent(in)  :: M_in
    integer, intent(in)  :: natom
    integer, intent(in)  :: nshell (0:4)
    integer, intent(in)  :: ncont(M_in)
    real*8, intent(in)   :: fock_in (M_in, M_in)
-   real*8, intent(out)  :: chimerafock (MDFTB, MDFTB)
+   real*8, intent(out)  :: fock_DFTB (MDFTB, MDFTB)
    integer              :: ii, jj, kk, ns, np, l1, l2
 
    l1=0
@@ -139,113 +139,113 @@ subroutine build_chimera (M_in,fock_in, chimerafock, natom, nshell, ncont)
    ns=nshell(0)
    np=nshell(1)
 
-   chimerafock(:,:) = 0.0D0
+   fock_DFTB(:,:) = 0.0D0
 
-   do ii=1, 2*end_basis
+   do ii=1, 2*end_bTB
 
-      if (Iend(1, ii) == 1) then
+      if (Iend_TB(1, ii) == 1) then
 
-!         if ((ncont(Iend(2,ii))==1).or.(ncont(Iend(2,ii))==2)) then
+!         if ((ncont(Iend_TB(2,ii))==1).or.(ncont(Iend_TB(2,ii))==2)) then
 
-            if (Iend(2, ii)>ns.and.Iend(2, ii)<=ns+np) then
+            if (Iend_TB(2, ii)>ns.and.Iend_TB(2, ii)<=ns+np) then
                jj=jj+1
                if (jj==1) then
-                  chimerafock(Iend(2,ii)+MTB,MTB-l1)  =0.0d0 !-gammaTB
-                  chimerafock(MTB-l1, Iend(2,ii)+MTB) =0.0d0 !-gammaTB
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB-l1)  =0.0d0 !-gammaTB
+                  fock_DFTB(MTB-l1, Iend_TB(2,ii)+MTB) =0.0d0 !-gammaTB
                else if(jj==2) then
-                  chimerafock(Iend(2,ii)+MTB,MTB-l1)  = 0.0D0 !gammaTB !0.0d0
-                  chimerafock(MTB-l1, Iend(2,ii)+MTB) = 0.0D0 !gammaTB !0.0d0
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB-l1)  = 0.0D0 !gammaTB !0.0d0
+                  fock_DFTB(MTB-l1, Iend_TB(2,ii)+MTB) = 0.0D0 !gammaTB !0.0d0
                else if(jj==3) then
-                  chimerafock(Iend(2,ii)+MTB,MTB-l1)  = 0.0D0 !gammaTB !0.0d0
-                  chimerafock(MTB-l1, Iend(2,ii)+MTB) = 0.0D0 !gammaTB !0.0d0
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB-l1)  = 0.0D0 !gammaTB !0.0d0
+                  fock_DFTB(MTB-l1, Iend_TB(2,ii)+MTB) = 0.0D0 !gammaTB !0.0d0
                   jj=0
                end if
 
-            else if (Iend(2, ii)>ns+np) then
+            else if (Iend_TB(2, ii)>ns+np) then
                kk=kk+1
                if (kk==1) then
-                  chimerafock(Iend(2,ii)+MTB,MTB-l1)  =gammaTB
-                  chimerafock(MTB-l1, Iend(2,ii)+MTB) =gammaTB
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB-l1)  =gammaTB
+                  fock_DFTB(MTB-l1, Iend_TB(2,ii)+MTB) =gammaTB
                else if (kk==2) then
-                  chimerafock(Iend(2,ii)+MTB,MTB-l1)  =gammaTB !0.0d0
-                  chimerafock(MTB-l1, Iend(2,ii)+MTB) =gammaTB !0.0d0
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB-l1)  =gammaTB !0.0d0
+                  fock_DFTB(MTB-l1, Iend_TB(2,ii)+MTB) =gammaTB !0.0d0
                else if (kk==3) then
-                  chimerafock(Iend(2,ii)+MTB,MTB-l1)  =gammaTB
-                  chimerafock(MTB-l1, Iend(2,ii)+MTB) =gammaTB
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB-l1)  =gammaTB
+                  fock_DFTB(MTB-l1, Iend_TB(2,ii)+MTB) =gammaTB
                else if (kk==4) then
-                  chimerafock(Iend(2,ii)+MTB,MTB-l1)  =gammaTB !0.0d0
-                  chimerafock(MTB-l1, Iend(2,ii)+MTB) =gammaTB !0.0d0
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB-l1)  =gammaTB !0.0d0
+                  fock_DFTB(MTB-l1, Iend_TB(2,ii)+MTB) =gammaTB !0.0d0
                else if (kk==5) then
-                  chimerafock(Iend(2,ii)+MTB,MTB-l1)  =gammaTB !0.0d0
-                  chimerafock(MTB-l1, Iend(2,ii)+MTB) =gammaTB !0.0d0
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB-l1)  =gammaTB !0.0d0
+                  fock_DFTB(MTB-l1, Iend_TB(2,ii)+MTB) =gammaTB !0.0d0
                else if (kk==6) then
-                  chimerafock(Iend(2,ii)+MTB,MTB-l1)  =gammaTB
-                  chimerafock(MTB-l1, Iend(2,ii)+MTB) =gammaTB
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB-l1)  =gammaTB
+                  fock_DFTB(MTB-l1, Iend_TB(2,ii)+MTB) =gammaTB
                   kk=0
                endif
             else
-               chimerafock(Iend(2,ii)+MTB,MTB-l1)  = gammaTB
-               chimerafock(MTB-l1, Iend(2,ii)+MTB) = gammaTB
+               fock_DFTB(Iend_TB(2,ii)+MTB,MTB-l1)  = gammaTB
+               fock_DFTB(MTB-l1, Iend_TB(2,ii)+MTB) = gammaTB
 
             end if
 !            l1=l1+1
 
 !         else
 
-!            chimerafock(Iend(2,ii)+MTB,MTB) = 0.0D0
-!            chimerafock(MTB, Iend(2,ii)+MTB) = 0.0D0
+!            fock_DFTB(Iend_TB(2,ii)+MTB,MTB) = 0.0D0
+!            fock_DFTB(MTB, Iend_TB(2,ii)+MTB) = 0.0D0
 
-!         end if         
+!         end if
 
-      else if (Iend(1, ii) == natom) then
-            if (Iend(2, ii)>ns.and.Iend(2, ii)<=ns+np) then
+      else if (Iend_TB(1, ii) == natom) then
+            if (Iend_TB(2, ii)>ns.and.Iend_TB(2, ii)<=ns+np) then
                jj=jj+1
                if (jj==1) then
-                  chimerafock(Iend(2,ii)+MTB,MTB+M_in+1+l2)  =0.0d0 !gammaTB
-                  chimerafock(MTB+M_in+1+l2, Iend(2,ii)+MTB) =0.0d0 !gammaTB
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1+l2)  =0.0d0 !gammaTB
+                  fock_DFTB(MTB+M_in+1+l2, Iend_TB(2,ii)+MTB) =0.0d0 !gammaTB
                else if(jj==2) then
-                  chimerafock(Iend(2,ii)+MTB,MTB+M_in+1+l2)  =0.0D0 !gammaTB ! 0.0d0
-                  chimerafock(MTB+M_in+1+l2, Iend(2,ii)+MTB) =0.0D0 !gammaTB !0.0d0
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1+l2)  =0.0D0 !gammaTB ! 0.0d0
+                  fock_DFTB(MTB+M_in+1+l2, Iend_TB(2,ii)+MTB) =0.0D0 !gammaTB !0.0d0
                else if(jj==3) then
-                  chimerafock(Iend(2,ii)+MTB,MTB+M_in+1+l2)  =0.0D0 !gammaTB !0.0d0
-                  chimerafock(MTB+M_in+1+l2, Iend(2,ii)+MTB) =0.0D0 !gammaTB !0.0d0
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1+l2)  =0.0D0 !gammaTB !0.0d0
+                  fock_DFTB(MTB+M_in+1+l2, Iend_TB(2,ii)+MTB) =0.0D0 !gammaTB !0.0d0
                   jj=0
-               end if 
-            else if (Iend(2, ii)>ns+np) then
+               end if
+            else if (Iend_TB(2, ii)>ns+np) then
                kk=kk+1
                if (kk==1) then
-                  chimerafock(Iend(2,ii)+MTB,MTB+M_in+1+l2)  = gammaTB
-                  chimerafock(MTB+M_in+1+l2, Iend(2,ii)+MTB) = gammaTB
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1+l2)  = gammaTB
+                  fock_DFTB(MTB+M_in+1+l2, Iend_TB(2,ii)+MTB) = gammaTB
                else if (kk==2) then
-                  chimerafock(Iend(2,ii)+MTB,MTB+M_in+1+l2)  = gammaTB !0.0d0
-                  chimerafock(MTB+M_in+1+l2, Iend(2,ii)+MTB) = gammaTB !0.0d0
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1+l2)  = gammaTB !0.0d0
+                  fock_DFTB(MTB+M_in+1+l2, Iend_TB(2,ii)+MTB) = gammaTB !0.0d0
                else if (kk==3) then
-                  chimerafock(Iend(2,ii)+MTB,MTB+M_in+1+l2)  = gammaTB
-                  chimerafock(MTB+M_in+1+l2, Iend(2,ii)+MTB) = gammaTB
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1+l2)  = gammaTB
+                  fock_DFTB(MTB+M_in+1+l2, Iend_TB(2,ii)+MTB) = gammaTB
                else if (kk==4) then
-                  chimerafock(Iend(2,ii)+MTB,MTB+M_in+1+l2)  = gammaTB !0.0d0
-                  chimerafock(MTB+M_in+1+l2, Iend(2,ii)+MTB) = gammaTB !0.0d0 
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1+l2)  = gammaTB !0.0d0
+                  fock_DFTB(MTB+M_in+1+l2, Iend_TB(2,ii)+MTB) = gammaTB !0.0d0
                else if (kk==5) then
-                  chimerafock(Iend(2,ii)+MTB,MTB+M_in+1+l2)  = gammaTB !0.0d0 
-                  chimerafock(MTB+M_in+1+l2, Iend(2,ii)+MTB) = gammaTB !0.0d0 
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1+l2)  = gammaTB !0.0d0
+                  fock_DFTB(MTB+M_in+1+l2, Iend_TB(2,ii)+MTB) = gammaTB !0.0d0
                else if (kk==6) then
-                  chimerafock(Iend(2,ii)+MTB,MTB+M_in+1+l2)  = gammaTB
-                  chimerafock(MTB+M_in+1+l2, Iend(2,ii)+MTB) = gammaTB
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1+l2)  = gammaTB
+                  fock_DFTB(MTB+M_in+1+l2, Iend_TB(2,ii)+MTB) = gammaTB
                   kk=0
                endif
             else
-               chimerafock(Iend(2,ii)+MTB,MTB+M_in+1+l2)  = gammaTB
-               chimerafock(MTB+M_in+1+l2, Iend(2,ii)+MTB) = gammaTB
+               fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1+l2)  = gammaTB
+               fock_DFTB(MTB+M_in+1+l2, Iend_TB(2,ii)+MTB) = gammaTB
 
             end if
 !            l2=l2+1
-!         if ((ncont(Iend(2,ii))==1) .or. (ncont(Iend(2,ii))==2)) then
+!         if ((ncont(Iend_TB(2,ii))==1) .or. (ncont(Iend_TB(2,ii))==2)) then
 
-!            chimerafock(Iend(2,ii)+MTB,MTB+M_in+1)  = gammaTB
-!            chimerafock(MTB+M_in+1, Iend(2,ii)+MTB) = gammaTB
+!            fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1)  = gammaTB
+!            fock_DFTB(MTB+M_in+1, Iend_TB(2,ii)+MTB) = gammaTB
 !         else
-!            chimerafock(Iend(2,ii)+MTB,MTB+M_in+1)  = gammaTB
-!            chimerafock(MTB+M_in+1, Iend(2,ii)+MTB) = gammaTB
+!            fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1)  = gammaTB
+!            fock_DFTB(MTB+M_in+1, Iend_TB(2,ii)+MTB) = gammaTB
 !         end if
 
       end if
@@ -253,32 +253,32 @@ subroutine build_chimera (M_in,fock_in, chimerafock, natom, nshell, ncont)
    end do
 
    do ii=1,MTB
-      chimerafock(ii,ii) = alfaTB-Vbias/2.0d0
-      chimerafock(MTB+M_in+ii, MTB+M_in+ii)= alfaTB+Vbias/2.0d0
+      fock_DFTB(ii,ii) = alfaTB-Vbias_TB/2.0d0
+      fock_DFTB(MTB+M_in+ii, MTB+M_in+ii)= alfaTB+Vbias_TB/2.0d0
 
-      if (ii<MTB) then !-end_basis) then
+      if (ii<MTB) then !-end_bTB) then
 
-         chimerafock(ii,ii+1) = betaTB
-         chimerafock(ii+1,ii) = betaTB
-         chimerafock(2*MTB+M_in-ii, 2*MTB+M_in-ii+1)= betaTB
-         chimerafock(2*MTB+M_in-ii+1, 2*MTB+M_in-ii)= betaTB
+         fock_DFTB(ii,ii+1) = betaTB
+         fock_DFTB(ii+1,ii) = betaTB
+         fock_DFTB(2*MTB+M_in-ii, 2*MTB+M_in-ii+1)= betaTB
+         fock_DFTB(2*MTB+M_in-ii+1, 2*MTB+M_in-ii)= betaTB
 
       end if
    end do
 
-!   do ii=1, end_basis
+!   do ii=1, end_bTB
 
-!      chimerafock(MTB-end_basis, MTB-end_basis+ii)=betaTB
-!      chimerafock(MTB-end_basis+ii, MTB-end_basis)=betaTB
-!      chimerafock(MTB+M_in+end_basis+1, MTB+M_in+end_basis+1-ii)=betaTB
-!      chimerafock(MTB+M_in+end_basis+1-ii,MTB+M_in+end_basis+1)=betaTB
+!      fock_DFTB(MTB-end_bTB, MTB-end_bTB+ii)=betaTB
+!      fock_DFTB(MTB-end_bTB+ii, MTB-end_bTB)=betaTB
+!      fock_DFTB(MTB+M_in+end_bTB+1, MTB+M_in+end_bTB+1-ii)=betaTB
+!      fock_DFTB(MTB+M_in+end_bTB+1-ii,MTB+M_in+end_bTB+1)=betaTB
 
 !   end do
 
-   chimerafock(MTB+1:MTB+M_in, MTB+1:MTB+M_in) = fock_in(:,:)
+   fock_DFTB(MTB+1:MTB+M_in, MTB+1:MTB+M_in) = fock_in(:,:)
 
 
-end subroutine build_chimera
+end subroutine build_chimera_DFTB
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -303,10 +303,10 @@ subroutine extract_rhoDFT (M_in, rho_in, rho_out)
 end subroutine extract_rhoDFT
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-subroutine chimera_evol(M_in,fock_in, chimerafock, natom, nshell,ncont, istep)
+subroutine chimeraDFTB_evol(M_in,fock_in, fock_DFTB, natom, nshell,ncont, istep)
 
-   use dftb_data, only:MDFTB, MTB, Iend, end_basis, alfaTB, betaTB, gammaTB,   &
-                       Vbias, start_tdtb, end_tdtb
+   use dftb_data, only:MDFTB, MTB, Iend_TB, end_bTB, alfaTB, betaTB, gammaTB,   &
+                       Vbias_TB, start_tdtb, end_tdtb
 
    integer, intent(in)  :: M_in
    integer, intent(in)  :: natom
@@ -314,7 +314,7 @@ subroutine chimera_evol(M_in,fock_in, chimerafock, natom, nshell,ncont, istep)
    integer, intent(in)  :: istep
    integer, intent(in)  :: nshell (0:4)
    real*8, intent(in)   :: fock_in (M_in, M_in)
-   real*8, intent(out)  :: chimerafock (MDFTB, MDFTB) !temporal dimensions
+   real*8, intent(out)  :: fock_DFTB (MDFTB, MDFTB) !temporal dimensions
    real*8               :: pi=4.0D0*atan(1.0D0)
    real*8               :: lambda, t_step, f_t
    integer              :: ii, jj, kk, ns, np, l1, l2
@@ -342,109 +342,109 @@ subroutine chimera_evol(M_in,fock_in, chimerafock, natom, nshell,ncont, istep)
 
    print*, "factor V", f_t
 
-   chimerafock(:,:) = 0.0D0
+   fock_DFTB(:,:) = 0.0D0
 
-   do ii=1, 2*end_basis
-      if (Iend(1, ii) == 1) then
-!         if ((ncont(Iend(2,ii))==1) .or. (ncont(Iend(2,ii))==2)) then
+   do ii=1, 2*end_bTB
+      if (Iend_TB(1, ii) == 1) then
+!         if ((ncont(Iend_TB(2,ii))==1) .or. (ncont(Iend_TB(2,ii))==2)) then
 
-            if (Iend(2, ii)>ns.and.Iend(2, ii)<=ns+np) then
+            if (Iend_TB(2, ii)>ns.and.Iend_TB(2, ii)<=ns+np) then
                jj=jj+1
                if (jj==1) then
-                  chimerafock(Iend(2,ii)+MTB,MTB-l1)  =0.0d0  !-gammaTB
-                  chimerafock(MTB-l1, Iend(2,ii)+MTB) =0.0d0 !-gammaTB
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB-l1)  =0.0d0  !-gammaTB
+                  fock_DFTB(MTB-l1, Iend_TB(2,ii)+MTB) =0.0d0 !-gammaTB
                else if(jj==2) then
-                  chimerafock(Iend(2,ii)+MTB,MTB-l1)  =0.0D0 !gammaTB !0.0d0
-                  chimerafock(MTB-l1, Iend(2,ii)+MTB) =0.0D0 !gammaTB ! 0.0d0
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB-l1)  =0.0D0 !gammaTB !0.0d0
+                  fock_DFTB(MTB-l1, Iend_TB(2,ii)+MTB) =0.0D0 !gammaTB ! 0.0d0
                else if(jj==3) then
-                  chimerafock(Iend(2,ii)+MTB,MTB-l1)  =0.0D0 !gammaTB ! 0.0d0
-                  chimerafock(MTB-l1, Iend(2,ii)+MTB) =0.0D0 !gammaTB ! 0.0d0
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB-l1)  =0.0D0 !gammaTB ! 0.0d0
+                  fock_DFTB(MTB-l1, Iend_TB(2,ii)+MTB) =0.0D0 !gammaTB ! 0.0d0
                   jj=0
                end if
-            else if (Iend(2, ii)>ns+np) then
+            else if (Iend_TB(2, ii)>ns+np) then
                kk=kk+1
                if (kk==1) then
-                  chimerafock(Iend(2,ii)+MTB,MTB-l1)  = gammaTB
-                  chimerafock(MTB-l1, Iend(2,ii)+MTB) = gammaTB
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB-l1)  = gammaTB
+                  fock_DFTB(MTB-l1, Iend_TB(2,ii)+MTB) = gammaTB
                else if (kk==2) then
-                  chimerafock(Iend(2,ii)+MTB,MTB-l1)  =gammaTB ! 0.0d0
-                  chimerafock(MTB-l1, Iend(2,ii)+MTB) =gammaTB ! 0.0d0
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB-l1)  =gammaTB ! 0.0d0
+                  fock_DFTB(MTB-l1, Iend_TB(2,ii)+MTB) =gammaTB ! 0.0d0
                else if (kk==3) then
-                  chimerafock(Iend(2,ii)+MTB,MTB-l1)  = gammaTB
-                  chimerafock(MTB-l1, Iend(2,ii)+MTB) = gammaTB
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB-l1)  = gammaTB
+                  fock_DFTB(MTB-l1, Iend_TB(2,ii)+MTB) = gammaTB
                else if (kk==4) then
-                  chimerafock(Iend(2,ii)+MTB,MTB-l1)  =gammaTB ! 0.0d0
-                  chimerafock(MTB-l1, Iend(2,ii)+MTB) =gammaTB ! 0.0d0
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB-l1)  =gammaTB ! 0.0d0
+                  fock_DFTB(MTB-l1, Iend_TB(2,ii)+MTB) =gammaTB ! 0.0d0
                else if (kk==5) then
-                  chimerafock(Iend(2,ii)+MTB,MTB-l1)  =gammaTB ! 0.0d0
-                  chimerafock(MTB-l1, Iend(2,ii)+MTB) =gammaTB ! 0.0d0
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB-l1)  =gammaTB ! 0.0d0
+                  fock_DFTB(MTB-l1, Iend_TB(2,ii)+MTB) =gammaTB ! 0.0d0
                else if (kk==6) then
-                  chimerafock(Iend(2,ii)+MTB,MTB-l1)  = gammaTB
-                  chimerafock(MTB-l1, Iend(2,ii)+MTB) = gammaTB
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB-l1)  = gammaTB
+                  fock_DFTB(MTB-l1, Iend_TB(2,ii)+MTB) = gammaTB
                   kk=0
                endif
             else
-               chimerafock(Iend(2,ii)+MTB,MTB-l1)  = gammaTB
-               chimerafock(MTB-l1, Iend(2,ii)+MTB) = gammaTB
+               fock_DFTB(Iend_TB(2,ii)+MTB,MTB-l1)  = gammaTB
+               fock_DFTB(MTB-l1, Iend_TB(2,ii)+MTB) = gammaTB
 
             end if
 !            l1=l1+1
 !         else
 
-!            chimerafock(Iend(2,ii)+MTB,MTB) = 0.0D0
-!            chimerafock(MTB, Iend(2,ii)+MTB) = 0.0D0
+!            fock_DFTB(Iend_TB(2,ii)+MTB,MTB) = 0.0D0
+!            fock_DFTB(MTB, Iend_TB(2,ii)+MTB) = 0.0D0
 !         end if
 
 
-      else if (Iend(1, ii) == natom) then
-            if (Iend(2, ii)>ns.and.Iend(2, ii)<=ns+np) then
+      else if (Iend_TB(1, ii) == natom) then
+            if (Iend_TB(2, ii)>ns.and.Iend_TB(2, ii)<=ns+np) then
                jj=jj+1
                if (jj==1) then
-                  chimerafock(Iend(2,ii)+MTB,MTB+M_in+1+l2)  =0.0d0 !gammaTB
-                  chimerafock(MTB+M_in+1+l2, Iend(2,ii)+MTB) =0.0d0 !gammaTB
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1+l2)  =0.0d0 !gammaTB
+                  fock_DFTB(MTB+M_in+1+l2, Iend_TB(2,ii)+MTB) =0.0d0 !gammaTB
                else if(jj==2) then
-                  chimerafock(Iend(2,ii)+MTB,MTB+M_in+1+l2)  =0.0D0 !gammaTB ! 0.0d0
-                  chimerafock(MTB+M_in+1+l2, Iend(2,ii)+MTB) =0.0D0 !gammaTB ! 0.0d0
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1+l2)  =0.0D0 !gammaTB ! 0.0d0
+                  fock_DFTB(MTB+M_in+1+l2, Iend_TB(2,ii)+MTB) =0.0D0 !gammaTB ! 0.0d0
                else if(jj==3) then
-                  chimerafock(Iend(2,ii)+MTB,MTB+M_in+1+l2)  =0.0D0 !gammaTB ! 0.0d0
-                  chimerafock(MTB+M_in+1+l2, Iend(2,ii)+MTB) =0.0D0 !gammaTB ! 0.0d0
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1+l2)  =0.0D0 !gammaTB ! 0.0d0
+                  fock_DFTB(MTB+M_in+1+l2, Iend_TB(2,ii)+MTB) =0.0D0 !gammaTB ! 0.0d0
                   jj=0
                end if
 
-            else if (Iend(2, ii)>ns+np) then
+            else if (Iend_TB(2, ii)>ns+np) then
                kk=kk+1
                if (kk==1) then
-                  chimerafock(Iend(2,ii)+MTB,MTB+M_in+1+l2)  = gammaTB
-                  chimerafock(MTB+M_in+1+l2, Iend(2,ii)+MTB) = gammaTB
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1+l2)  = gammaTB
+                  fock_DFTB(MTB+M_in+1+l2, Iend_TB(2,ii)+MTB) = gammaTB
                else if (kk==2) then
-                  chimerafock(Iend(2,ii)+MTB,MTB+M_in+1+l2)  =gammaTB ! 0.0d0
-                  chimerafock(MTB+M_in+1+l2, Iend(2,ii)+MTB) =gammaTB ! 0.0d0
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1+l2)  =gammaTB ! 0.0d0
+                  fock_DFTB(MTB+M_in+1+l2, Iend_TB(2,ii)+MTB) =gammaTB ! 0.0d0
                else if (kk==3) then
-                  chimerafock(Iend(2,ii)+MTB,MTB+M_in+1+l2)  = gammaTB
-                  chimerafock(MTB+M_in+1+l2, Iend(2,ii)+MTB) = gammaTB
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1+l2)  = gammaTB
+                  fock_DFTB(MTB+M_in+1+l2, Iend_TB(2,ii)+MTB) = gammaTB
                else if (kk==4) then
-                  chimerafock(Iend(2,ii)+MTB,MTB+M_in+1+l2)  =gammaTB ! 0.0d0
-                  chimerafock(MTB+M_in+1+l2, Iend(2,ii)+MTB) =gammaTB ! 0.0d0
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1+l2)  =gammaTB ! 0.0d0
+                  fock_DFTB(MTB+M_in+1+l2, Iend_TB(2,ii)+MTB) =gammaTB ! 0.0d0
                else if (kk==5) then
-                  chimerafock(Iend(2,ii)+MTB,MTB+M_in+1+l2)  =gammaTB ! 0.0d0
-                  chimerafock(MTB+M_in+1+l2, Iend(2,ii)+MTB) =gammaTB ! 0.0d0
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1+l2)  =gammaTB ! 0.0d0
+                  fock_DFTB(MTB+M_in+1+l2, Iend_TB(2,ii)+MTB) =gammaTB ! 0.0d0
                else if (kk==6) then
-                  chimerafock(Iend(2,ii)+MTB,MTB+M_in+1+l2)  = gammaTB
-                  chimerafock(MTB+M_in+1+l2, Iend(2,ii)+MTB) = gammaTB
+                  fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1+l2)  = gammaTB
+                  fock_DFTB(MTB+M_in+1+l2, Iend_TB(2,ii)+MTB) = gammaTB
                   kk=0
                endif
             else
-               chimerafock(Iend(2,ii)+MTB,MTB+M_in+1+l2)  = gammaTB
-               chimerafock(MTB+M_in+1+l2, Iend(2,ii)+MTB) = gammaTB
+               fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1+l2)  = gammaTB
+               fock_DFTB(MTB+M_in+1+l2, Iend_TB(2,ii)+MTB) = gammaTB
 
             end if
 !            l2=l2+1
-!         if ((ncont(Iend(2,ii))==1).or.(ncont(Iend(2,ii))==2)) then
-!            chimerafock(Iend(2,ii)+MTB,MTB+M_in+1)  = gammaTB
-!            chimerafock(MTB+M_in+1,Iend(2,ii)+MTB) = gammaTB
+!         if ((ncont(Iend_TB(2,ii))==1).or.(ncont(Iend_TB(2,ii))==2)) then
+!            fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1)  = gammaTB
+!            fock_DFTB(MTB+M_in+1,Iend_TB(2,ii)+MTB) = gammaTB
 !         else
-!            chimerafock(Iend(2,ii)+MTB,MTB+M_in+1)  = gammaTB
-!            chimerafock(MTB+M_in+1, Iend(2,ii)+MTB) = gammaTB
+!            fock_DFTB(Iend_TB(2,ii)+MTB,MTB+M_in+1)  = gammaTB
+!            fock_DFTB(MTB+M_in+1, Iend_TB(2,ii)+MTB) = gammaTB
 !         end if
 
       end if
@@ -453,31 +453,31 @@ subroutine chimera_evol(M_in,fock_in, chimerafock, natom, nshell,ncont, istep)
 
 
    do ii=1,MTB
-      chimerafock(ii,ii) = alfaTB-(Vbias/2.0d0)*f_t
-      chimerafock(MTB+M_in+ii, MTB+M_in+ii)= alfaTB+(Vbias/2.0d0)*f_t
+      fock_DFTB(ii,ii) = alfaTB-(Vbias_TB/2.0d0)*f_t
+      fock_DFTB(MTB+M_in+ii, MTB+M_in+ii)= alfaTB+(Vbias_TB/2.0d0)*f_t
 
-      if (ii<MTB) then ! -end_basis) then
-         chimerafock(ii,ii+1) = betaTB
-         chimerafock(ii+1,ii) = betaTB
-         chimerafock(2*MTB+M_in-ii, 2*MTB+M_in-ii+1)= betaTB
-         chimerafock(2*MTB+M_in-ii+1, 2*MTB+M_in-ii)= betaTB
+      if (ii<MTB) then ! -end_bTB) then
+         fock_DFTB(ii,ii+1) = betaTB
+         fock_DFTB(ii+1,ii) = betaTB
+         fock_DFTB(2*MTB+M_in-ii, 2*MTB+M_in-ii+1)= betaTB
+         fock_DFTB(2*MTB+M_in-ii+1, 2*MTB+M_in-ii)= betaTB
 
       end if
    end do
 
-!   do ii=1, end_basis
+!   do ii=1, end_bTB
 
-!      chimerafock(MTB-end_basis, MTB-end_basis+ii)=betaTB
-!      chimerafock(MTB-end_basis+ii, MTB-end_basis)=betaTB
-!      chimerafock(MTB+M_in+end_basis+1, MTB+M_in+end_basis+1-ii)=betaTB
-!      chimerafock(MTB+M_in+end_basis+1-ii,MTB+M_in+end_basis+1)=betaTB
+!      fock_DFTB(MTB-end_bTB, MTB-end_bTB+ii)=betaTB
+!      fock_DFTB(MTB-end_bTB+ii, MTB-end_bTB)=betaTB
+!      fock_DFTB(MTB+M_in+end_bTB+1, MTB+M_in+end_bTB+1-ii)=betaTB
+!      fock_DFTB(MTB+M_in+end_bTB+1-ii,MTB+M_in+end_bTB+1)=betaTB
 
 !   end do
 
-   chimerafock(MTB+1:MTB+M_in, MTB+1:MTB+M_in) = fock_in(:,:)
+   fock_DFTB(MTB+1:MTB+M_in, MTB+1:MTB+M_in) = fock_in(:,:)
 
 
-end subroutine chimera_evol
+end subroutine chimeraDFTB_evol
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 subroutine TB_current (M_in,rhold,rhonew, overlap, TB_A, TB_B, TB_M)
@@ -528,7 +528,7 @@ end subroutine TB_current
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 subroutine dftb_output(M, rho_aux, overlap, istep, Iz, natom, Nuc)
-   use dftb_data, only: rhold_AO, rhonew_AO, MTB, MDFTB
+   use dftb_data, only: rhold_AOTB, rhonew_AOTB, MTB, MDFTB
    implicit none
    integer, intent(in) :: M, istep
    integer, intent(in) :: natom
@@ -545,7 +545,7 @@ subroutine dftb_output(M, rho_aux, overlap, istep, Iz, natom, Nuc)
    real*8   :: chargeA_TB, chargeB_TB, chargeM_TB
    real*8   :: orb_charge, tot_orb_charge
    real*8   :: qe(natom)
-   real*8   :: rhoscratch(M,M) 
+   real*8   :: rhoscratch(M,M)
 
    if (istep==1) then
 
@@ -554,7 +554,7 @@ subroutine dftb_output(M, rho_aux, overlap, istep, Iz, natom, Nuc)
 
    else
 
-      call TB_current(M,rhold_AO,rhonew_AO, overlap, I_TB_A, I_TB_B, I_TB_M)
+      call TB_current(M,rhold_AOTB,rhonew_AOTB, overlap, I_TB_A, I_TB_B, I_TB_M)
 
       write(10101,*) "A", I_TB_A
       write(10101,*) "B", I_TB_B

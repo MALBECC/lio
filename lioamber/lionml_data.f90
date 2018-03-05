@@ -1,7 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module lionml_data
-   use dftb_data ,only: dftb_calc, MTB, alfaTB, betaTB, gammaTB, Vbias,      &
-                        end_basis, start_tdtb, end_tdtb, TBsave, TBload
    implicit none
 !
 !
@@ -40,7 +38,7 @@ module lionml_data
 !     If (eefld_on), an external field will be applied to the system. The
 !  amplitude in each direction is given by the (eefld_amp) variables. It
 !  can have an oscilating time modulation of a specific (eefld_wavelen) and
-!  also a gaussian envelop centered in (eefld_timepos), with width given by 
+!  also a gaussian envelop centered in (eefld_timepos), with width given by
 !  (eefld_timeamp). Both (eefld_timegih) and (eefld_timegfh) must be true for
 !  a full gaussian, activating the modulation before and after the center
 !  respectively.
@@ -66,7 +64,7 @@ module lionml_data
    &, rsti_loads, rsti_fname, rsto_saves, rsto_nfreq, rsto_fname               &
 !
    &, eefld_on, eefld_ampx, eefld_ampy, eefld_ampz, eefld_wavelen              &
-   &, eefld_timegih, eefld_timegfh, eefld_timepos, eefld_timeamp               
+   &, eefld_timegih, eefld_timegfh, eefld_timepos, eefld_timeamp
 
 end module lionml_data
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

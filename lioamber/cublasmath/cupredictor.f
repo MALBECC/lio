@@ -141,8 +141,7 @@ c xmm es la primer matriz de (M,M) en el
 !       call cumfx(FON,DevPtrX,FON,M)
 !       call g2g_timer_stop('cumatmul2_predictor')
 !       call fock_ao_to_on(FBA,devPtrX,FON,M)
-       FON=basechange_cublas(M_in,FBA(MTB+1:MTB+M,MTB+1:MTB+M),devPtrX,
-     >                       'dir')
+       FON=basechange_cublas(M_in, FBA, devPtrX, 'dir')
        DO i=1,M
           DO j=1,M
              if(FON(i,j).ne.FON(i,j)) stop 'NAN en FON -predictor'
@@ -152,7 +151,7 @@ c xmm es la primer matriz de (M,M) en el
        RETURN;END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        subroutine cupredictor_DC(F1a,F1b,FON,rho2,devPtrX,factorial,
-     >                           Fxx,Fyy,Fzz,g,devPtrXc, timestep, 
+     >                           Fxx,Fyy,Fzz,g,devPtrXc, timestep,
      >                           M_in,MTB)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !Predictor-Corrector Cheng, V.Vooris.PhysRevB.2006.74.155112
@@ -266,7 +265,7 @@ c xmm es la primer matriz de (M,M) en el
 !       call cumfx(FON,DevPtrX,FON,M)
 !       call g2g_timer_stop('cumatmul2_predictor')
 !       call fock_ao_to_on(FBA,devPtrX,FON,M)
-       FON=basechange_cublas(M_in,FBA,devPtrX,'dir')
+       FON=basechange_cublas(M_in, FBA, devPtrX, 'dir')
        DEALLOCATE(rho4,rho2t,F3,FBA)
        RETURN;END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

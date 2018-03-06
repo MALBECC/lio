@@ -105,9 +105,12 @@ tmplist += SCF.o TD.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/dftb_subs.mod
 
 tmplist :=
-tmplist += SCF.o dftb_subs.o
+tmplist += SCF.o dftb_subs.o input_read.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/dftb_data.mod
 
+tmplist :=
+tmplist += dftb_subs.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/properties.mod
 
 ################################################################################
 OBJECTS += converger_data.o

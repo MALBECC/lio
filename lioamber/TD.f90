@@ -42,11 +42,14 @@ contains
 subroutine TD()
    use garcha_mod    , only: M, Md, NBCH, propagator, RMM, NCO, Iz, igrid2, r, &
                              Nuc, nsol, pc, X, Smat, MEMO, field, epsilon, a0, &
-                             sol, natom, sqsm, Fx, Fy, Fz, Nunp, ntatom
+                             sol, natom, sqsm, Fx, Fy, Fz, Nunp, ntatom, ncont,&
+                             nshell
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, writedens
    use transport_data, only: transport_calc
    use transport_subs, only: transport_rho_trace, transport_generate_rho,      &
                              transport_init, transport_population
+   use dftb_data     , only: dftb_calc, MDFTB, MTB
+   use dftb_subs      , only: dftb_td_init, dftb_output
    use fileio        , only: write_td_restart_verlet, write_td_restart_magnus, &
                              read_td_restart_verlet , read_td_restart_magnus
 #ifdef CUBLAS
@@ -64,8 +67,15 @@ subroutine TD()
    character(len=20) :: restart_filename
 
    real*8 , allocatable, dimension(:)   :: factorial, WORK
-   real*8 , allocatable, dimension(:,:) :: Xmm, Xtrans, Ytrans, fock, F1a, F1b,&
-                                           overlap, Ymat
+   real*8 , allocatable, dimension(:,:) :: Xmm, Xmat,Xtrans, Ytrans, fock, F1a,&
+                                           F1b, overlap, Ymat
+   real*8 , allocatable, dimension(:,:) :: fock_0
+
+#ifdef TD_SIMPLE
+   complex*8, allocatable, dimension(:,:) :: rho_0
+#else
+   complex*16, allocatable, dimension(:,:) :: rho_0
+#endif
 ! Precision options.
 #ifdef TD_SIMPLE
    complex*8  :: Im = (0.0E0,2.0E0)
@@ -86,6 +96,9 @@ subroutine TD()
    parameter(sizeof_complex = 16)
 #endif
 #endif
+!DFTB: M_in controls de size of the bigest matrices for DFTB, ii and jj are only
+!counters, and traza is for the control of the trace of density matrix
+   integer :: M_in, ii,jj
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% TD INITIALIZATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -105,12 +118,22 @@ subroutine TD()
    call g2g_timer_start('td-inicio')
    open(unit = 134, file = "dipole_moment_td")
 
+!------------------------------------------------------------------------------!
+!DFTB: defining DFTB matrix size
+
+      if (dftb_calc) then
+         M_in=MDFTB
+      else
+         M_in=M
+      end if
+!------------------------------------------------------------------------------!
+
    ! Checks and performs allocations.
-   call td_allocate_all(M, NBCH, propagator, F1a, F1b, fock, rho, rho_aux, &
-                        rhold, rhonew, sqsm, Xmm, Xtrans, Ymat, Ytrans,    &
-                        factorial)
+   call td_allocate_all(M_in, M, NBCH, propagator, F1a, F1b, fock, rho, rho_aux, &
+                        rhold, rhonew, rho_0, fock_0, sqsm, Xmm, Xmat, Xtrans,   &
+                        Ymat, Ytrans, factorial)
 #ifdef CUBLAS
-   call td_allocate_cublas(M, sizeof_real, devPtrX, devPtrY)
+   call td_allocate_cublas(M_in, sizeof_real, devPtrX, devPtrY)
 #endif
 
    ! Initialises propagator-related parameters and other variables.
@@ -121,42 +144,48 @@ subroutine TD()
    if (tdrestart) then
       restart_filename = 'td_in.restart'
       if (propagator.eq.2) then
-         call read_td_restart_magnus(rho, F1a, F1b, M, restart_filename)
+         call read_td_restart_magnus(rho, F1a, F1b, M_in, restart_filename)
       else
-         call read_td_restart_verlet(rho, M, restart_filename)
+         call read_td_restart_verlet(rho, M_in, restart_filename)
       endif
-      call sprepack_ctr('L', M, RMM, rho)
+      call sprepack_ctr('L', M, RMM, rho_0)
    else
       ! Read the density matrix stored in RMM(1,2,3,...,MM) into rho matrix.
-      call spunpack_rtc('L', M, RMM, rho)
+      call spunpack_rtc('L', M, RMM, rho_0)
    endif
+
+!------------------------------------------------------------------------------!
+! DFTB: Initialize DFTB variables for TD
+   if (dftb_calc) then
+      call dftb_td_init (M , rho, rho_0, overlap, RMM(M5))
+   else
+      rho=rho_0
+   end if
+!------------------------------------------------------------------------------!
 
    ! Proper TD calculation start.
    write(*,*) 'Starting TD calculation...'
-
    ! Create integration grid for XC, assigning points to groups (spheres/cubes)
    ! and significant functions to groups, also calculating point weights.
    call td_integration_setup(igrid2, igpu)
    call td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM(M11), r, pc, &
                        ntatom)
-
    ! Initialises transport if required.
    if (transport_calc) call transport_init(M, natom, Nuc, RMM(M5), overlap, rho)
 
    ! Diagonalizes Smat, stores transformation matrix Xmm and calculates the
    ! transposed matrices Xtrans and Ytrans
-   call td_overlap_diag(M, Smat, RMM(M13), X, Xtrans, Ymat, Ytrans, Xmm)
-
+   call td_overlap_diag(M_in, M, Smat, RMM(M13), X, Xmat ,Xtrans, Ymat, Ytrans,&
+                        Xmm)
    ! Here rho_aux is used as an auxiliar matrix for CUBLAS. Then we need to
    ! restore its original value. Rho is then transformed to the orthonormal
    ! basis with either matmul intrinsic or CUBLAS.
 #ifdef CUBLAS
-   call td_bc_rho_cu(M, sizeof_real, sizeof_complex, devPtrX, devPtrY, &
-                     devPtrXc, X, Ymat, rho, rho_aux)
+   call td_bc_rho_cu(M_in, sizeof_real, sizeof_complex, devPtrX, devPtrY, &
+                     devPtrXc, Xmat, Ymat, rho, rho_aux)
 #else
-   call td_bc_rho(M, rho, Ymat, Ytrans)
+   call td_bc_rho(M_in, rho, Ymat, Ytrans)
 #endif
-
    ! Precalculate three-index (two in MO basis, one in density basis) matrix
    ! used in density fitting /Coulomb F element calculation here (t_i in Dunlap)
    call td_coulomb_precalc(igpu, MEMO)
@@ -193,48 +222,60 @@ subroutine TD()
 
 #ifdef CUBLAS
       if (is_lpfrg) then
-         call td_bc_fock_cu(M, MM, RMM(M5), fock, devPtrX)
-         call td_verlet_cu(M, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg, &
+         call td_bc_fock_cu(M_in,M, MM, RMM(M5), fock, devPtrX,natom, nshell,ncont, istep)
+
+         call td_verlet_cu(M, M_in, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg, &
                            transport_calc, natom, Nuc, Iz, overlap, sqsm,    &
-                           rho_aux, devPtrY)
+                           rho_aux, devPtrY,devPtrXc)
+
+
          if (propagator.eq.2) then
             if (istep.eq.chkpntF1a) F1a = fock
             if (istep.eq.chkpntF1b) F1b = fock
          endif
       else
+
+
          call td_magnus_cu(M, fock, F1a, F1b, rho, rhonew, devPtrX, devPtrXc,  &
                            factorial, fxx, fyy, fzz, g, NBCH, dt_magnus, natom,&
                            transport_calc, Nuc, Iz, istep, overlap, sqsm,      &
-                           rho_aux, devPtrY)
+                           rho_aux, devPtrY, M_in, nshell, ncont)
       endif
 
       call g2g_timer_start('complex_rho_on_to_ao-cu')
-      rho_aux = basechange_cublas(M, rho, devPtrXc, 'inv')
+      rho_aux = basechange_cublas(M_in, rho, devPtrXc, 'inv')
       call g2g_timer_stop('complex_rho_on_to_ao-cu')
+
 #else
       if (is_lpfrg) then
-         call td_bc_fock(M, MM, RMM(M5), fock, Xtrans, Xmm)
-         call td_verlet(M, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg,      &
-                        transport_calc, natom, Nuc, Iz, overlap,sqsm, rho_aux)
+         call td_bc_fock(M_in,M, MM, RMM(M5), fock, Xtrans, Xmm, natom, nshell,ncont, istep)
+         call td_verlet(M, M_in, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg,   &
+                        transport_calc, natom, Nuc, Iz, overlap,sqsm, rho_aux,    &
+                        Xmat, Xtrans)
          if (propagator.eq.2) then
             if (istep.eq.chkpntF1a) F1a = fock
             if (istep.eq.chkpntF1b) F1b = fock
          endif
       else
+
+!DFTB: Xmat has now the dimension necessary for DFTB
          call td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, fxx, fyy,   &
                         fzz, g, NBCH, dt_magnus, natom, transport_calc, Nuc,   &
-                        Iz, istep, overlap, sqsm, rho_aux, X, Xtrans)
+                        Iz, istep, overlap, sqsm, rho_aux, Xmat, Xtrans, M_in, &
+                        nshell,ncont)
       endif
 
       call g2g_timer_start('complex_rho_on_to_ao')
-      rho_aux = matmul(x(1:M,1:M), rho)
+      rho_aux = matmul(Xmat, rho)
       rho_aux = matmul(rho_aux, Xtrans)
       call g2g_timer_stop('complex_rho_on_to_ao')
 #endif
+
       ! The real part of the density matrix in the atomic orbital basis is
       ! copied in RMM(1,2,3,...,MM) to compute the corresponding Fock matrix.
-      call sprepack_ctr('L', M, RMM, rho_aux)
+      call sprepack_ctr('L', M, RMM, rho_aux(MTB+1:MTB+M,MTB+1:MTB+M))
 
+!DFTB: temporary DFTB don't store restarts
       ! Stores the density matrix each 500 steps as a restart.
       if ((writedens) .and. ( (mod(istep, td_rst_freq) == 0) .or. &
          (istep.eq.ntdstep) )) then
@@ -259,6 +300,8 @@ subroutine TD()
                                                     is_lpfrg, istep)
       ! TD step finalization.
       call g2g_timer_stop('TD step')
+   if (dftb_calc) call dftb_output(M, rho_aux, overlap, istep, Iz, natom, Nuc)
+
  999  continue
 
    ! Finalization.
@@ -276,21 +319,21 @@ end subroutine TD
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Subroutines used in initialisation.
 
-subroutine td_allocate_all(M, NBCH, propagator, F1a, F1b, fock, rho, rho_aux, &
-                           rhold, rhonew, sqsm, Xmm, Xtrans, Ymat,  Ytrans,   &
-                           factorial)
+subroutine td_allocate_all(M_in,M, NBCH, propagator, F1a, F1b, fock, rho, rho_aux, &
+                           rhold, rhonew, rho_0, fock_0,sqsm, Xmm, Xmat, Xtrans,   &
+                           Ymat, Ytrans, factorial)
    implicit none
-   integer, intent(in) :: M, NBCH, propagator
+   integer, intent(in) :: M, NBCH, propagator, M_in
    real*8, allocatable, intent(inout) :: F1a(:,:), F1b(:,:), fock(:,:),        &
-                                         sqsm(:,:), Xmm(:,:),       &
+                                         sqsm(:,:), Xmm(:,:), Xmat(:,:),      &
                                          Xtrans(:,:), Ymat(:,:), Ytrans(:,:),  &
-                                         factorial(:)
+                                         factorial(:), fock_0(:,:)
 #ifdef TD_SIMPLE
    complex*8 , allocatable, intent(inout) :: rho(:,:), rho_aux(:,:),    &
-                                             rhold(:,:), rhonew(:,:)
+                                             rhold(:,:), rhonew(:,:),rho_0(:,:)
 #else
    complex*16, allocatable, intent(inout) :: rho(:,:), rho_aux(:,:),    &
-                                             rhold(:,:), rhonew(:,:)
+                                             rhold(:,:), rhonew(:,:),rho_0(:,:)
 #endif
 
    if ( allocated(fock)     ) deallocate(fock)
@@ -300,17 +343,22 @@ subroutine td_allocate_all(M, NBCH, propagator, F1a, F1b, fock, rho, rho_aux, &
    if ( allocated(rhonew)   ) deallocate(rhonew)
    if ( allocated(sqsm)     ) deallocate(sqsm)
    if ( allocated(Xmm)      ) deallocate(Xmm)
+   if ( allocated(Xmat)     ) deallocate(Xmat)
    if ( allocated(Xtrans)   ) deallocate(Xtrans)
    if ( allocated(Ytrans)   ) deallocate(Ytrans)
    if ( allocated(Ymat)     ) deallocate(Ymat)
    if ( allocated(factorial)) deallocate(factorial)
-   allocate(fock(M,M)  , rho(M,M)   , rho_aux(M,M), rhold(M,M) ,&
-            rhonew(M,M), sqsm(M,M)  , Xmm(M,M)    , Xtrans(M,M),   Ymat(M,M)  ,&
-            Ytrans(M,M), factorial(NBCH))
+   if ( allocated(fock_0)   ) deallocate(fock_0)
+   if ( allocated(rho_0)    ) deallocate(rho_0)
+
+   allocate(fock(M_in,M_in)  , rho(M_in,M_in)   , rho_aux(M_in,M_in),          &
+            rhold(M_in,M_in), rhonew(M_in,M_in), sqsm(M,M), Xmm(M_in,M_in),    &
+            Xtrans(M_in,M_in), Xmat(M_in,M_in), Ymat(M_in,M_in),               &
+            Ytrans(M_in,M_in), factorial(NBCH), fock_0(M,M),rho_0(M,M))
    if (propagator.eq.2) then
       if ( allocated(F1a) ) deallocate(F1a)
       if ( allocated(F1b) ) deallocate(F1b)
-      allocate (F1a(M,M), F1b(M,M))
+      allocate (F1a(M_in,M_in), F1b(M_in,M_in))
    endif
 
    return
@@ -445,13 +493,21 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM11, r, pc, &
    return
 end subroutine td_integral_1e
 
-subroutine td_overlap_diag(M, Smat, eigenvalues, Xmat, Xtrans, Ymat, Ytrans, Xmm)
+subroutine td_overlap_diag(M_in, M, Smat, eigenvalues, X_min, Xmat, Xtrans, Ymat, &
+                           Ytrans, Xmm)
+
+   use dftb_data, only:dftb_calc, MTB
+   use dftb_subs, only:getXY_DFTB
+
    implicit none
+   integer, intent(in)    :: M_in
    integer, intent(in)    :: M
    real*8 , intent(in)    :: Smat(M,M)
-   real*8 , intent(out)   :: Ymat(M,M), Xtrans(M,M), Ytrans(M,M), Xmm(M,M),    &
-                             eigenvalues(M)
-   real*8 , intent(inout) :: Xmat(M,M)
+   real*8 , intent(inout) :: X_min(M,M)
+   real*8 , intent(out)   :: Xtrans(M_in,M_in), Ytrans(M_in,M_in), &
+                             Xmm(M_in,M_in),eigenvalues(M)
+   real*8 , intent(inout) :: Xmat(M_in,M_in), Ymat(M_in,M_in)
+   real*8                 :: Y_min(M,M)
 
    integer :: icount, jcount, LWORK, info
    real*8, allocatable :: WORK(:)
@@ -460,18 +516,19 @@ subroutine td_overlap_diag(M, Smat, eigenvalues, Xmat, Xtrans, Ymat, Ytrans, Xmm
    ! The S matrix is stored in RMM(M13, M13+1, ..., M13+MM).
    do icount = 1, M
    do jcount = 1, M
-      Xmat(icount, jcount) = Smat(icount, jcount)
+      X_min(icount, jcount) = Smat(icount, jcount)
    enddo
    enddo
 
    if (allocated(WORK)) deallocate(WORK)
    allocate(WORK(1))
-   call dsyev('V', 'L', M, Xmat, M, eigenvalues, WORK, -1, info)
+   call dsyev('V', 'L', M, X_min, M, eigenvalues, WORK, -1, info)
 
    LWORK = int(WORK(1))
    deallocate(WORK)
    allocate(WORK(LWORK))
-   call dsyev('V', 'L', M, Xmat, M, eigenvalues, WORK, LWORK, info)
+   call dsyev('V', 'L', M, X_min, M, eigenvalues, WORK, LWORK, info)
+
 
    ! Here we obtain the transformation matrices X and Y for converting from the
    ! atomic orbital basis to the molecular orbital basis (truncated during
@@ -485,20 +542,32 @@ subroutine td_overlap_diag(M, Smat, eigenvalues, Xmat, Xtrans, Ymat, Ytrans, Xmm
       if (eigenvalues(jcount).lt.1.0D-06) then
          write(*,*) 'WARNING - TD: Linear dependency detected in S matrix.'
          do icount = 1, M
-            Xmat(icount, jcount) = 0.0D0
-            Ymat(icount, jcount) = 0.0D0
+            X_min(icount, jcount) = 0.0D0
+            Y_min(icount, jcount) = 0.0D0
          enddo
       else
          do icount = 1, M
-            Ymat(icount,jcount) = Xmat(icount,jcount) *sqrt(eigenvalues(jcount))
-            Xmat(icount,jcount) = Xmat(icount,jcount) /sqrt(eigenvalues(jcount))
+            Y_min(icount,jcount) = X_min(icount,jcount) *sqrt(eigenvalues(jcount))
+            X_min(icount,jcount) = X_min(icount,jcount) /sqrt(eigenvalues(jcount))
          enddo
       endif
    enddo
 
+!------------------------------------------------------------------------------!
+!DFTB: Xmat and Ymat are adapted for DFTB
+      if (dftb_calc) then
+         call getXY_DFTB(M,X_min,Y_min,Xmat,Ymat)
+      else
+
+         xmat=x_min(1:M,1:M)
+         ymat=y_min
+
+      end if
+
+!------------------------------------------------------------------------------!
    ! Stores transformation matrix Xmm and transposed matrices.
-   do icount = 1, M
-   do jcount = 1, M
+   do icount = 1, M_in
+   do jcount = 1, M_in
       Xmm(icount, jcount)    = Xmat(icount, jcount)
       Xtrans(jcount, icount) = Xmat(icount, jcount)
       Ytrans(jcount, icount) = Ymat(icount, jcount)
@@ -653,37 +722,59 @@ subroutine td_calc_perturbation(step, pert_steps, fx, fy, fz, epsilon, a0, Qc2,&
    return
 end subroutine td_calc_perturbation
 
-subroutine td_bc_fock(M, MM, RMM5, fock, Xtrans, Xmm)
+subroutine td_bc_fock(M_in, M, MM, RMM5, fock, Xtrans, Xmm, natom, nshell,ncont, istep)
+
+   use dftb_data, only:dftb_calc,MTB
+   use dftb_subs, only:chimeraDFTB_evol
+
    implicit none
-   integer, intent(in)    :: M, MM
-   real*8 , intent(inout) :: RMM5(MM), fock(M,M), Xtrans(M,M), Xmm(M,M)
-   real*8 :: Xtemp(M,M)
+   integer, intent(in)    :: M, MM, M_in
+   real*8 , intent(inout) :: RMM5(MM), Xtrans(M_in,M_in), Xmm(M_in,M_in)
+   real*8, intent(out)    :: fock(M_in, M_in)
+   real*8                 :: Xtemp(M_in,M_in)
+   real*8                 :: fock_0(M,M)
+   integer, intent(in)  :: natom
+   integer, intent(in)  :: ncont(M)
+   integer, intent(in)  :: istep
+   integer, intent(in)  :: nshell (0:4)
 
    call g2g_timer_start('fock')
-   call spunpack('L', M, RMM5, fock)
+   call spunpack('L', M, RMM5, fock_0)
+
+   if (dftb_calc) then
+      call chimeraDFTB_evol(M,fock_0, fock, natom, nshell,ncont, istep)
+   else
+
+      fock=fock_0
+
+   end if
+
    Xtemp = matmul(Xtrans, fock)
    fock  = matmul(Xtemp , Xmm)
-   call sprepack('L', M, RMM5, fock)
+   call sprepack('L', M, RMM5, fock(MTB+1:MTB+M,MTB+1:MTB+M))
    call g2g_timer_stop('fock')
 
    return
 end subroutine td_bc_fock
 
-subroutine td_verlet(M, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg,         &
-                     transport_calc, natom, Nuc, Iz, overlap, sqsm, rho_aux)
+subroutine td_verlet(M, M_in, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg,         &
+                     transport_calc, natom, Nuc, Iz, overlap, sqsm, rho_aux,         &
+                     Xmat, Xtrans)
    use mathsubs      , only : commutator
    use transport_subs, only : transport_propagate
+   use dftb_data     , only : dftb_calc, rhold_AOTB, rhonew_AOTB
    implicit none
-   integer   , intent(in)    :: M, istep, natom, Nuc(M), Iz(natom)
+   integer   , intent(in)    :: M, M_in, istep, natom, Nuc(M), Iz(natom)
    real*8    , intent(in)    :: dt_lpfrg
+   real*8    , intent(in)    :: Xmat(M_in, M_in), Xtrans(M_in, M_in)
    logical   , intent(in)    :: transport_calc
-   real*8    , intent(inout) :: overlap(M,M), sqsm(M,M), fock(M,M)
+   real*8    , intent(inout) :: overlap(M,M), sqsm(M,M), fock(M_in,M_in)
 #ifdef TD_SIMPLE
-   complex*8 , intent(inout) :: Im, rho_aux(M,M), rhold(M,M),   &
-                                rhonew(M,M), rho(M,M)
+   complex*8 , intent(inout) :: Im, rho_aux(M,M), rhold(M_in,M_in),   &
+                                rhonew(M_in,M_in), rho(M_in,M_in)
 #else
-   complex*16, intent(inout) :: Im, rho_aux(M,M), rhold(M,M),   &
-                                rhonew(M,M), rho(M,M)
+   complex*16, intent(inout) :: Im, rho_aux(M_in,M_in), rhold(M_in,M_in),   &
+                                rhonew(M_in,M_in), rho(M_in,M_in)
 #endif
    integer :: icount, jcount
 
@@ -711,44 +802,73 @@ subroutine td_verlet(M, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg,         &
    endif
 
    ! Density update (rhold-->rho, rho-->rhonew)
-   do icount = 1, M
-   do jcount = 1, M
+   do icount = 1, M_in
+   do jcount = 1, M_in
       rhold(icount, jcount) = rho(icount, jcount)
       rho(icount, jcount)   = rhonew(icount, jcount)
    enddo
    enddo
+
+!DFTB: rhonew and rhold in AO is store for charge calculations of DFTB
+   if (dftb_calc) then
+
+      rhold_AOTB=matmul(xmat,rhold)
+      rhold_AOTB=matmul(rhold_AOTB,xtrans)
+
+      rhonew_AOTB=matmul(xmat,rhonew)
+      rhonew_AOTB=matmul(rhonew_AOTB,xtrans)
+
+   end if
 
    return
 end subroutine td_verlet
 
 subroutine td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, fxx, fyy,   &
                      fzz, g, NBCH, dt_magnus, natom, transport_calc, Nuc,   &
-                     Iz, istep, overlap, sqsm, rho_aux, Xmat, Xtrans)
+                     Iz, istep, overlap, sqsm, rho_aux, Xmat, Xtrans, M_in, &
+                     nshell, ncont)
    use transport_subs, only: transport_propagate
+   use dftb_data,      only:dftb_calc,MTB, rhold_AOTB, rhonew_AOTB
+   use dftb_subs,      only:chimeraDFTB_evol
    implicit none
    logical  , intent(in)     :: transport_calc
-   integer  , intent(in)     :: M, NBCH, istep, natom, Nuc(M), Iz(natom)
+   integer  , intent(in)     :: M, NBCH, istep, natom, Nuc(M), Iz(natom), M_in
    real*8   , intent(in)     :: dt_magnus, fxx, fyy, fzz, g, factorial(NBCH), &
-                                Xtrans(M,M)
-   real*8   , intent(inout)  :: fock(M,M), F1a(M,M), F1b(M,M), overlap(M,M), &
-                                sqsm(M,M), Xmat(M,M)
+                                Xtrans(M_in,M_in)
+   real*8   , intent(inout)  :: fock(M_in,M_in), F1a(M_in,M_in), F1b(M_in,M_in),&
+                                overlap(M,M), sqsm(M,M), Xmat(M_in,M_in)
+   integer, intent(in)       :: nshell (0:4)
+   integer, intent(in)       :: ncont(M)
 #ifdef TD_SIMPLE
-   complex*8 , intent(inout) :: rho_aux(M,M), rhonew(M,M), rho(M,M)
+   complex*8 , intent(inout) :: rho_aux(M_in,M_in), rhonew(M_in,M_in), rho(M_in,M_in)
 #else
-   complex*16, intent(inout) :: rho_aux(M,M), rhonew(M,M), rho(M,M)
+   complex*16, intent(inout) :: rho_aux(M_in,M_in), rhonew(M_in,M_in), rho(M_in,M_in)
 #endif
+   real*8                    :: fock_aux(M_in,M_in)
 
    if (transport_calc) then
-      call transport_propagate(M, natom, Nuc, Iz, 2, istep, overlap, sqsm, &
+      call transport_propagate(M, natom, Nuc, Iz, 2, istep, overlap, sqsm,     &
                                rho_aux)
    endif
 
+! DFTB: this if is temporary, it is to conserve the atomic part of dftb in
+! predictor.
+   if (dftb_calc) then
+      call chimeraDFTB_evol(M,fock(MTB+1:MTB+M,MTB+1:MTB+M), fock_aux, natom,      &
+                        nshell,ncont, istep)
+      fock=fock_aux
+
+!DFTB: rhold in AO is store for charge calculations of DFTB
+      rhold_AOTB=matmul(xmat,rho)
+      rhold_AOTB=matmul(rhold_AOTB,xtrans)
+   end if
+
    call g2g_timer_start('predictor')
    call predictor(F1a, F1b, fock, rho, factorial, Xmat, Xtrans, fxx, fyy, fzz, &
-                  g, dt_magnus)
+                  g, dt_magnus, sqsm, rho_aux, M_in, MTB)
    call g2g_timer_stop('predictor')
    call g2g_timer_start('magnus')
-   call magnus(fock, rho, rhonew, M, NBCH, dt_magnus, factorial)
+   call magnus(fock, rho, rhonew, M_in, NBCH, dt_magnus, factorial)
    call g2g_timer_stop('magnus')
 
    !Transport: Add the driving term to the propagation.
@@ -756,6 +876,11 @@ subroutine td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, fxx, fyy,   &
       write(*,*) 'Transport: Adding driving term to the density.'
       rhonew = rhonew - rho_aux
    endif
+!DFTB: rhonew in AO is store for charge calculations of DFTB
+   if (dftb_calc) then
+      rhonew_AOTB=matmul(xmat,rhonew)
+      rhonew_AOTB=matmul(rhonew_AOTB,xtrans)
+   end if
 
    ! Density update and Fock storage.
    F1a = F1b
@@ -854,6 +979,7 @@ subroutine td_bc_rho_cu(M, sizeof_real, sizeof_complex, devPtrX, devPtrY,      &
    enddo
    enddo
 
+
    call CUBLAS_SET_MATRIX(M, M, sizeof_complex, rho_aux, M, devPtrY, M)
    if (stat.NE.0) then
       write(*,*) "ERROR - TD : X and/or Y CUBLAS setting failed."
@@ -869,41 +995,57 @@ subroutine td_bc_rho_cu(M, sizeof_real, sizeof_complex, devPtrX, devPtrY,      &
    return
 end subroutine td_bc_rho_cu
 
-subroutine td_bc_fock_cu(M, MM, RMM5, fock, devPtrX)
+subroutine td_bc_fock_cu(M_in,M, MM, RMM5, fock, devPtrX, natom, nshell, ncont, istep)
+   use dftb_data, only:dftb_calc, MTB
+   use dftb_subs, only:chimeraDFTB_evol
    use cublasmath, only: basechange_cublas
    implicit none
-   integer  , intent(in)    :: M, MM
+   integer  , intent(in)    :: M, MM, M_in
    integer*8, intent(in)    :: devPtrX
-   real*8   , intent(inout) :: RMM5(MM), fock(M,M)
-   real*8 :: Xtemp(M,M)
+   real*8   , intent(inout) :: RMM5(MM)
+   real*8   , intent(out)   :: fock(M_in,M_in)
+   real*8 :: fock_0(M,M)
+   real*8 :: Xtemp(M_in,M_in)
+   integer, intent(in)  :: natom
+   integer, intent(in)  :: ncont(M)
+   integer, intent(in)  :: istep
+   integer, intent(in)  :: nshell (0:4)
 
    call g2g_timer_start('fock')
-   call spunpack('L', M, RMM5, fock)
-   Xtemp = basechange_cublas(M, fock, devPtrX, 'dir')
+   call spunpack('L', M, RMM5, fock_0)
+
+   if (dftb_calc) then
+      call chimeraDFTB_evol(M,fock_0, fock, natom, nshell,ncont, istep)
+   else
+      fock=fock_0
+   end if
+
+   Xtemp = basechange_cublas(M_in, fock, devPtrX, 'dir')
    fock  = Xtemp
-   call sprepack('L', M, RMM5, fock)
+   call sprepack('L', M, RMM5, fock(MTB+1:MTB+M,MTB+1:MTB+M))
    call g2g_timer_stop('fock')
 
    return
 end subroutine td_bc_fock_cu
 
-subroutine td_verlet_cu(M, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg,      &
+subroutine td_verlet_cu(M, M_in, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg,      &
                      transport_calc, natom, Nuc, Iz, overlap, sqsm, rho_aux,   &
-                     devPtrY)
-   use cublasmath    , only : commutator_cublas
+                     devPtrY, devPtrXc)
+   use cublasmath    , only : commutator_cublas,basechange_cublas
    use transport_subs, only : transport_propagate_cu
+   use dftb_data     , only : dftb_calc, rhold_AOTB, rhonew_AOTB
    implicit none
-   integer   , intent(in)    :: M, istep, natom, Nuc(M), Iz(natom)
-   integer*8 , intent(in)    :: devPtrY
+   integer   , intent(in)    :: M,M_in, istep, natom, Nuc(M), Iz(natom)
+   integer*8 , intent(in)    :: devPtrY, devPtrXc
    real*8    , intent(in)    :: dt_lpfrg
    logical   , intent(in)    :: transport_calc
-   real*8    , intent(inout) :: overlap(M,M), sqsm(M,M), fock(M,M)
+   real*8    , intent(inout) :: overlap(M,M), sqsm(M,M), fock(M_in,M_in)
 #ifdef TD_SIMPLE
-   complex*8 , intent(inout) :: Im, rho_aux(M,M), rhold(M,M), rhonew(M,M), &
-                                rho(M,M)
+   complex*8 , intent(inout) :: Im, rho_aux(M,M), rhold(M_in,M_in), rhonew(M_in,M_in), &
+                                rho(M_in,M_in)
 #else
-   complex*16, intent(inout) :: Im, rho_aux(M,M), rhold(M,M), rhonew(M,M), &
-                                rho(M,M)
+   complex*16, intent(inout) :: Im, rho_aux(M_in,M_in), rhold(M_in,M_in), rhonew(M_in,M_in), &
+                                rho(M_in,M_in)
 #endif
    integer :: icount, jcount
 
@@ -931,43 +1073,68 @@ subroutine td_verlet_cu(M, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg,      &
    endif
 
    ! Density update (rhold-->rho, rho-->rhonew)
-   do icount = 1, M
-   do jcount = 1, M
+   do icount = 1, M_in
+   do jcount = 1, M_in
       rhold(icount, jcount) = rho(icount,jcount)
       rho(icount,jcount)    = rhonew(icount,jcount)
    enddo
    enddo
+
+!DFTB: rhonew and rhold in AO is store for charge calculations of DFTB
+   if (dftb_calc) then
+      rhold_AOTB=basechange_cublas(M_in,rhold,devPtrXc,'inv')
+      rhonew_AOTB=basechange_cublas(M_in,rhonew,devPtrXc,'inv')
+   end if
+
+
 end subroutine td_verlet_cu
 
 subroutine td_magnus_cu(M, fock, F1a, F1b, rho, rhonew, devPtrX, devPtrXc,  &
                         factorial, fxx, fyy, fzz, g, NBCH, dt_magnus, natom,&
                         transport_calc, Nuc, Iz, istep, overlap, sqsm,&
-                        rho_aux, devPtrY)
-   use cublasmath    , only: cupredictor, cumagnusfac
+                        rho_aux, devPtrY, M_in , nshell,ncont)
+   use cublasmath    , only: cupredictor, cumagnusfac, basechange_cublas
    use transport_subs, only: transport_propagate_cu
+   use dftb_data,      only:dftb_calc,MTB, rhold_AOTB, rhonew_AOTB
+   use dftb_subs,      only:chimeraDFTB_evol
    implicit none
    logical  , intent(in)     :: transport_calc
    integer  , intent(in)     :: M, NBCH, istep, natom, Nuc(M), Iz(natom)
+   integer  , intent(in)     :: M_in
    integer*8, intent(in)     :: devPtrX, devPtrXc, devPtrY
    real*8   , intent(in)     :: dt_magnus, fxx, fyy, fzz, g, factorial(NBCH)
-   real*8   , intent(inout)  :: fock(M,M), F1a(M,M), F1b(M,M), overlap(M,M), &
+   integer, intent(in)       :: nshell (0:4)
+   integer, intent(in)       :: ncont(M)
+   real*8   , intent(inout)  :: fock(M_in,M_in), F1a(M_in,M_in), F1b(M_in,M_in), overlap(M,M), &
                                 sqsm(M,M)
 #ifdef TD_SIMPLE
-   complex*8 , intent(inout) :: rho_aux(M,M), rhonew(M,M), rho(M,M)
+   complex*8 , intent(inout) :: rho_aux(M_in,M_in), rhonew(M_in,M_in), rho(M_in,M_in)
 #else
-   complex*16, intent(inout) :: rho_aux(M,M), rhonew(M,M), rho(M,M)
+   complex*16, intent(inout) :: rho_aux(M_in,M_in), rhonew(M_in,M_in), rho(M_in,M_in)
 #endif
+   real*8   :: fock_aux(M_in, M_in)
 
    if (transport_calc) then
       call transport_propagate_cu(M, natom, Nuc, Iz, 2, istep, overlap, sqsm, &
                                   rho_aux, devPtrY)
    endif
+
+! DFTB: this if is temporary, it is to conserve the atomic part of dftb in
+! predictor.
+   if (dftb_calc) then
+      call chimeraDFTB_evol(M,fock(MTB+1:MTB+M,MTB+1:MTB+M), fock_aux, natom,      &
+                        nshell,ncont, istep)
+      fock=fock_aux
+      !DFTB: rhold in AO is store for charge calculations of DFTB
+      rhold_AOTB=basechange_cublas(M_in,rho,devPtrXc,'inv')
+   end if
+
    call g2g_timer_start('cupredictor')
    call cupredictor(F1a, F1b, fock, rho, devPtrX, factorial, fxx, fyy,   &
-                    fzz, g, devPtrXc, dt_magnus)
+                    fzz, g, devPtrXc, dt_magnus, M_in, MTB)
    call g2g_timer_stop('cupredictor')
    call g2g_timer_start('cumagnus')
-   call cumagnusfac(fock, rho, rhonew, M, NBCH, dt_magnus, factorial)
+   call cumagnusfac(fock, rho, rhonew, M_in, NBCH, dt_magnus, factorial)
    call g2g_timer_stop('cumagnus')
 
    !Transport: Add the driving term to the propagation.
@@ -975,6 +1142,11 @@ subroutine td_magnus_cu(M, fock, F1a, F1b, rho, rhonew, devPtrX, devPtrXc,  &
       write(*,*) 'Transport: Adding driving term to the density.'
       rhonew = rhonew - rho_aux
    endif
+
+!DFTB: rhonew in AO is store for charge calculations of DFTB
+   if (dftb_calc) then
+      rhonew_AOTB=basechange_cublas(M_in,rhonew,devPtrXc,'inv')
+   end if
 
    ! Density update and Fock storage.
    F1a = F1b

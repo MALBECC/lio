@@ -35,16 +35,17 @@ subroutine SCF(E)
                           Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz,  &
                           epsilon, nuc, doing_ehrenfest, first_step, RealRho,  &
                           total_time, field, Fx, Fy, Fz, a0,MO_coef_at, Smat,  &
-                          good_cut, ndiis
+                          good_cut, ndiis, nshell, ncont
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
                        FOCK_ECP_read,FOCK_ECP_write,IzECP
    use td_data, only: timedep, tdrestart, tdstep
    use transport_data, only : generate_rho0
    use time_dependent, only : TD
    use faint_cpu77, only: int1, int2, intsol, int3mem, int3lu, intfld
-   use dftb_data, only : dftb_calc, MDFTB, MTB
-   use dftb_subs, only : dftb_init, getXY_DFTB, find_neighbors, build_chimera, &
-                         extract_rhoDFT
+   use dftb_data, only : dftb_calc, MDFTB, MTB, chargeA_TB, chargeB_TB,        &
+                         rho_DFTB, TBsave, TBload
+      use dftb_subs, only : dftb_init, getXY_DFTB, find_TB_neighbors,             &
+                            build_chimera_DFTB, extract_rhoDFT
    use cubegen       , only: cubegen_vecin, cubegen_matin, cubegen_write
    use mask_ecp      , only: ECP_init, ECP_fock, ECP_energy
    use typedef_sop   , only: sop              ! Testing SOP
@@ -77,21 +78,26 @@ subroutine SCF(E)
    integer :: IDAMP
 
    real*8, allocatable :: rho_test(:,:)
+   real*8, allocatable :: fockat(:,:)
+   real*8, allocatable :: morb_coefon(:,:)
+
+!------------------------------------------------------------------------------!
+!  DFTB: M_in and NCO_in are modifications of NCO and M for DFTB calculations.
+!        The arrays are necessary to play with the dimensions requiered to
+!        DFTB
+   integer :: M_in
+   integer :: NCO_in
    real*8, allocatable :: rho_0(:,:)
    real*8, allocatable :: fock_0(:,:)
    real*8, allocatable :: rho(:,:)
    real*8, allocatable :: fock(:,:)
-   real*8, allocatable :: fockat(:,:)
-   real*8, allocatable :: morb_coefon(:,:)
    real*8, allocatable :: morb_coefat(:,:)
+   real*8, allocatable :: X_min(:,:)
+   real*8, allocatable :: Y_min(:,:)
+   real*8, allocatable :: X_min_trans(:,:)
+   real*8, allocatable :: Y_min_trans(:,:)
    real*8, allocatable :: morb_energy(:)
    integer             :: i0, ii, jj, kk, kkk
-
-!------------------------------------------------------------------------------!
-!  carlos: variables to use as input for some subroutines instead of M and NCO
-   integer :: M_in
-   integer :: NCO_in
-
 
 !------------------------------------------------------------------------------!
 ! FFR - vvterm
@@ -155,13 +161,12 @@ subroutine SCF(E)
 
 
 !------------------------------------------------------------------------------!
-!carlos: init for TB
+!DFTB: initialisation of DFTB variables
    allocate (fock_0(M,M), rho_0(M,M))
 
    if (dftb_calc) then
       call dftb_init(M)
       allocate(fock(MDFTB,MDFTB), rho(MDFTB,MDFTB))
-      allocate(fockat(MDFTB,MDFTB))
       allocate(morb_energy(MDFTB), morb_coefat(MDFTB,MDFTB))
    else
       allocate(fock(M,M), rho(M,M))
@@ -170,15 +175,7 @@ subroutine SCF(E)
 
    M_in = M
    if (dftb_calc) M_in=MDFTB
-
-   if ( allocated(morb_coefon) ) deallocate(morb_coefon)
-   if ( allocated(morb_coefat) ) deallocate(morb_coefat)
-   if ( allocated(morb_energy) ) deallocate(morb_energy)
-
-   allocate( morb_coefon(M_in,M_in), morb_coefat(M_in,M_in) )
-   allocate( morb_energy(M_in) )
-
-
+!------------------------------------------------------------------------------!
    call ECP_init()
 
    call g2g_timer_start('SCF')
@@ -335,22 +332,28 @@ subroutine SCF(E)
 ! TODO: Simplify, this has too much stuff going on...
 ! (maybe trans mats are not even necessary?)
 !
+        if (allocated(X_min)) deallocate(X_min)
+        if (allocated(Y_min)) deallocate(Y_min)
+        if (allocated(X_min_trans)) deallocate(X_min_trans)
+        if (allocated(Y_min_trans)) deallocate(Y_min_trans)
+
+        allocate(X_min(M,M), Y_min(M,M), X_min_trans(M,M), Y_min_trans(M,M))
+
         if ( allocated(Xmat) ) deallocate(Xmat)
         if ( allocated(Ymat) ) deallocate(Ymat)
-        allocate( Xmat(M,M), Ymat(M,M) )
-
-        if ( allocated(Y) )      deallocate(Y)
-        if ( allocated(Ytrans) ) deallocate(Ytrans)
-        if ( allocated(Xtrans) ) deallocate(Xtrans)
-        allocate( Y(M,M), Ytrans(M,M), Xtrans(M,M) )
+        allocate(Xmat(M_in,M_in), Ymat(M_in,M_in))
+!charly: I commented the next part to test its necessity
+!        if ( allocated(Ytrans) ) deallocate(Ytrans)
+!        if ( allocated(Xtrans) ) deallocate(Xtrans)
+!        allocate( Ytrans(M_in,M_in), Xtrans(M_in,M_in) )
 
         call overop%Sets_smat( Smat )
         if (lowdin) then
 !          TODO: inputs insuficient; there is also the symetric orthog using
 !                3 instead of 2 or 1. Use integer for onbasis_id
-           call overop%Gets_orthog_4m( 2, 0.0d0, Xmat, Ymat, Xtrans, Ytrans )
+           call overop%Gets_orthog_4m( 2, 0.0d0, X_min, Y_min, X_min_trans, Y_min_trans)
         else
-           call overop%Gets_orthog_4m( 1, 0.0d0, Xmat, Ymat, Xtrans, Ytrans )
+           call overop%Gets_orthog_4m( 1, 0.0d0, X_min, Y_min, X_min_trans, Y_min_trans)
         end if
 
 ! TODO: initializations related to atompot should be dealt with differently
@@ -363,14 +366,14 @@ subroutine SCF(E)
       end if
 
 ! TODO: replace X,Y,Xtrans,Ytrans with Xmat, Ymat, Xtrp, Ytrp
-        do ii=1,M
-        do jj=1,M
-           X(ii,jj)      = Xmat(ii,jj)
-           Y(ii,jj)      = Ymat(ii,jj)
+!        do ii=1,M
+!        do jj=1,M
+!           X(ii,jj)      = Xmat(ii,jj)
+!           Y(ii,jj)      = Ymat(ii,jj)
 !          Xtrans(ii,jj) = Xtrp(ii,jj)
 !          Ytrans(ii,jj) = Ytrp(ii,jj)
-        end do
-        end do
+!        end do
+!        end do
 
         if ( allocated(Dvec) ) deallocate(Dvec)
         allocate( Dvec(M) )
@@ -381,7 +384,7 @@ subroutine SCF(E)
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!carlosDFTB: allocation of X and Y matrix for TB calculations
+!DFTB: Dimensions of Xmat and Ymat are modified for DFTB.
 !
 ! TODO: this is nasty, a temporary solution would be to have a Msize variable
 !       be assigned M (or, even better, "basis_size") or MDFTB
@@ -389,42 +392,19 @@ subroutine SCF(E)
 
        if (dftb_calc) then
 
-          M_in=MDFTB
-
-          if ( allocated(Xmat) ) deallocate(Xmat)
-          allocate( Xmat(MDFTB,MDFTB) )
-
-          if ( allocated(Ymat) ) deallocate(Ymat)
-          allocate( Ymat(MDFTB,MDFTB) )
-
-          call getXY_DFTB(M,x,y,xmat,ymat)
+          call getXY_DFTB(M,X_min,Y_min,Xmat,Ymat)
 
        else
 
-          M_in=M
-
-          if ( allocated(Xmat) ) deallocate(Xmat)
-          allocate( Xmat(M,M) )
-
-          if ( allocated(Ymat) ) deallocate(Ymat)
-          allocate( Ymat(M,M) )
-
           do jj = 1, M
           do ii = 1, M
-             Xmat(ii,jj) = x(ii,jj)
-             Ymat(ii,jj) = y(ii,jj)
+             Xmat(ii,jj) = X_min(ii,jj)
+             Ymat(ii,jj) = Y_min(ii,jj)
           enddo
           enddo
 
       end if
 
-
-! TODO: are these comments relevant?
-!
-!      MDFTB must be declared before
-!      call :
-!      enlarge and modify Xmat/Ymat
-!      modify MDFTB
 
 ! CUBLAS
    call cublas_setmat( M_in, Xmat, dev_Xmat)
@@ -434,7 +414,7 @@ subroutine SCF(E)
 ! Generates starting guess
 !
    if ( (.not.VCINP) .and. primera ) then
-      call starting_guess( M, MM, NCO, RMM(M11), Xmat, RMM(M1) )
+      call starting_guess( M, MM, NCO, RMM(M11), Xmat(MTB+1:MTB+M,MTB+1:MTB+M), RMM(M1) )
       primera = .false.
    end if
 
@@ -502,7 +482,29 @@ subroutine SCF(E)
 
       if (hybrid_converg) DIIS=.true. ! cambio para convergencia damping-diis
       call g2g_timer_sum_stop('Initialize SCF')
+!------------------------------------------------------------------------------!
 
+!DFTB: the density for DFTB is readed from an external file.
+
+   if (dftb_calc.and.TBload) then
+
+         open(unit=1070,file='rhoTB.in')
+
+         DO ii=1,M_in
+         DO jj=1,M_in
+            read(1070,*) rho(ii,jj)
+         ENDDO
+         ENDDO
+
+         do jj=1,M
+         do kk=jj,M
+               RMM(kk+(M2-jj)*(jj-1)/2)=rho(jj+MTB,kk+MTB)
+         enddo
+         enddo
+
+         write(*,*) 'RHOTB readed'
+
+   end if
 
 !------------------------------------------------------------------------------!
 ! TODO: Maybe evaluate conditions for loop continuance at the end of loop
@@ -582,7 +584,7 @@ subroutine SCF(E)
 
 
 !------------------------------------------------------------------------------!
-! carlos: we extract rho and fock before
+! DFTB: we extract rho and fock before conver routine
 !
 ! TODO: extraction of fock an rho via subroutines from maskrmm as a first step,
 !       total removal once rmm is gone.
@@ -606,35 +608,45 @@ subroutine SCF(E)
 
 
 !------------------------------------------------------------------------------!
-! carlos: we build the good fock
+! DFTB: Fock and Rho for DFTB are builded.
 !
 ! TODO: this should be wrapped inside a single dftb subroutine. Also, two
 !       consecutive dftb_calc switches? really?
 !
-        if (dftb_calc) then
-          call find_neighbors(M_in,Nuc,natom)
-          call build_chimera (M, fock_0, fock, natom)
+      if (dftb_calc) then
+         if (niter==1) call find_TB_neighbors(M,Nuc,natom)
+         call build_chimera_DFTB (M, fock_0, fock, natom, nshell, ncont)
 
-          if (niter==1) then
-            rho=0.0D0
-            do ii=1, MTB
-              rho(ii,ii)=1.0D0
-              rho(MTB+M+ii,MTB+M+ii)=1.0D0
-            end do
-          end if
+         if (niter==1) then
+            if (TBload) then
 
-          rho(MTB+1:MTB+M, MTB+1:MTB+M)=rho_0(:,:)
+               do ii=1,M_in
+               do jj=ii+1,M_in
+                  rho(ii,jj)=rho(ii,jj)/2
+                  rho(jj,ii)=rho(ii,jj)
+               end do
+               end do
 
-        else
-          fock = fock_0
-          rho  = rho_0
-        endif
+            else
+               rho=0.0D0
+               do ii=1, MTB
+                  rho(ii,ii)=1.0D0
+                  rho(MTB+M+ii,MTB+M+ii)=1.0D0
+               end do
+               rho(MTB+1:MTB+M, MTB+1:MTB+M)=rho_0(:,:)
+            end if
+         end if
 
-        if (dftb_calc) then
-          NCO_in = NCO+MTB
-        else
-          NCO_in = NCO
-        end if
+      else
+         fock=fock_0
+         rho=rho_0
+      endif
+
+      if (dftb_calc) then
+         NCO_in = NCO+MTB
+      else
+         NCO_in = NCO
+      end if
 !
 !
 !------------------------------------------------------------------------------!
@@ -648,7 +660,8 @@ subroutine SCF(E)
 #       else
            call conver(niter, good, good_cut, M_in, rho, fock, Xmat, Ymat)
 #       endif
-        fockat = transform( fock, Ytrans )
+!carlos: fockat is necesary?
+!        fockat = transform( fock, Ytrans )
         call g2g_timer_sum_pause('SCF acceleration')
 !
 !
@@ -786,7 +799,44 @@ subroutine SCF(E)
          write(6,*)  'stop for not convergion 4 times'
          stop
       endif
+!------------------------------------------------------------------------------!
 
+!DFTB: Mulliken analysis of TB part
+
+  if (dftb_calc) then
+
+  !DFTB: We store rho in rho_DFTB for TD
+
+    rho_DFTB=rho
+
+    chargeA_TB=MTB
+    chargeB_TB=MTB
+    do ii=1, MTB
+       chargeA_TB=chargeA_TB-rho(ii,ii)
+       chargeB_TB=chargeB_TB-rho(MTB+M+ii,MTB+M+ii)
+    end do
+
+    open(unit=6800,file='TB_Mulliken')
+
+    write(6800,*) "Mulliken charge of part A", chargeA_TB
+    write(6800,*) "Mulliken charge of part B", chargeB_TB
+
+  end if
+
+!DFTB: The last rho is stored in an output as a restart.
+   if (dftb_calc.and.TBsave) then
+
+      open(unit=1070,file='rhoTB.out')
+
+      DO ii=1,M_in
+      DO jj=1,M_in
+         write(1070,*) rho(ii,jj)
+      ENDDO
+      ENDDO
+
+      write(*,*) 'RHOTB wrtted'
+
+   end if
 
 !------------------------------------------------------------------------------!
 ! TODO: Comments about a comented sections? Shouldn't it all of this go away?
@@ -918,8 +968,8 @@ subroutine SCF(E)
 !------------------------------------------------------------------------------!
 ! TODO: Deallocation of variables that should be removed
 ! TODO: MEMO should be handled differently...
-!
-      deallocate(Y, Ytrans, Xtrans )
+!charly: saque a y y a ytrans
+!      deallocate(Xtrans )
       if (MEMO) then
         deallocate(kkind,kkinds)
         deallocate(cool,cools)

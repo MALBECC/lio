@@ -1,6 +1,6 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        subroutine cupredictor_DZ(F1a,F1b,FON,rho2,devPtrX,factorial,
-     > Fxx,Fyy,Fzz,g,devPtrXc, timestep)
+     > Fxx,Fyy,Fzz,g,devPtrXc, timestep,M_in,MTB)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !Predictor-Corrector Cheng, V.Vooris.PhysRevB.2006.74.155112
 ! Esta rutina recibe: F1a,F1b,rho2
@@ -11,8 +11,11 @@
       use faint_cpu77, only: int3lu, intfld
        implicit real*8 (a-h,o-z)
 !       IMPLICIT REAL*8 (a-h,o-z)
-       REAL*8,intent(inout) :: F1a(M,M),F1b(M,M),FON(M,M)
+       REAL*8,intent(inout) :: F1a(M_in,M_in),F1b(M_in,M_in)
+       REAL*8,intent(inout) :: FON(M_in,M_in)
        integer*8,intent(in) :: devPtrX,devPtrXc
+       integer, intent(in)    :: M_in
+       integer, intent(in)    :: MTB
 !       integer :: i,j,k,kk,stat,M1,M2,MM,M5,M7,M9,MMD,M11,M13,M15,M17
 !       integer :: M19,M20,M3,M18
        integer :: i,j,k,kk,stat
@@ -22,10 +25,11 @@
       integer CUBLAS_INIT
       REAL*8,intent(in) :: factorial(NBCH), timestep
       REAL*8,intent(in) :: g,Fxx,Fyy,Fzz
-       COMPLEX*16, intent(in) :: rho2(M,M)
+       COMPLEX*16, intent(in) :: rho2(M_in,M_in)
        COMPLEX*16,allocatable :: rho4(:,:),rho2t(:,:)
 !-----------------------------------------------------------------------------n
-      ALLOCATE(rho4(M,M),rho2t(M,M),F3(M,M),FBA(M,M))
+      ALLOCATE(rho4(M_in,M_in),rho2t(M_in,M_in),F3(M_in,M_in),
+     >         FBA(M_in,M_in))
       write(*,*) 'PREDICTOR DZ'
       M2=2*M
       MM=M*(M+1)/2
@@ -68,14 +72,14 @@ c xmm es la primer matriz de (M,M) en el
 ! Paso2: Usando H3, la matriz densidad rho2 es propagada a rho4----> Prediccion
        rho2t=rho2
        call g2g_timer_start('magnus ins predictor')
-       call cumagnusfac(F3,rho2,rho4,M,NBCH,tdstep1,factorial)
+       call cumagnusfac(F3,rho2,rho4,M_in,NBCH,tdstep1,factorial)
        call g2g_timer_stop('magnus ins predictor')
 ! Paso3: Escribimos rho4 en el RMM para poder obtener F5 en el siguiente paso.
 !       call g2g_timer_start('cumatmul_predictor')
 !       call cumxp(rho4,devPtrX,rho2t,M)
 !       call cumpxt(rho2t,devPtrX,rho2t,M)
        call g2g_timer_start('basechange ins predictor')
-        rho2t=basechange_cublas(M,rho4,devPtrXc,'inv')
+        rho2t=basechange_cublas(M_in,rho4,devPtrXc,'inv')
        call g2g_timer_stop('basechange ins predictor')
 !       call g2g_timer_stop('cumatmul_predictor')
 !       call complex_rho_on_to_ao(rho4,devPtrXc,rho2t,M)
@@ -88,7 +92,7 @@ c xmm es la primer matriz de (M,M) en el
 !         endif
 !       enddo
 !       enddo
-      call sprepack_ctr('L',M,RMM,rho2t)
+      call sprepack_ctr('L',M,RMM,rho2t(MTB+1:MTB+M,MTB+1:MTB+M))
        DO i=1,M
           DO j=1,M
              if(rho2t(i,j).ne.rho2t(i,j)) stop 'NAN en FBA -predictor'
@@ -118,8 +122,14 @@ c xmm es la primer matriz de (M,M) en el
 !           FBA(j,k)=RMM(M5+k+(M2-j)*(j-1)/2-1)
 !         enddo
 !       enddo
+
+!DFTB: We copy FON inside FBA before this is overwritten to conserve TB terms.
+!      This last step is unnecessary if there is not a DFTB calc.
+
+       FBA=FON
+
        write(*,*) 'FBA escrita'
-       call spunpack('L',M,RMM(M5),FBA)
+       call spunpack('L',M,RMM(M5),FBA(MTB+1:MTB+M,MTB+1:MTB+M))
        DO i=1,M
           DO j=1,M
              if(FBA(i,j).ne.FBA(i,j)) stop 'NAN en FBA -predictor'
@@ -131,7 +141,8 @@ c xmm es la primer matriz de (M,M) en el
 !       call cumfx(FON,DevPtrX,FON,M)
 !       call g2g_timer_stop('cumatmul2_predictor')
 !       call fock_ao_to_on(FBA,devPtrX,FON,M)
-       FON=basechange_cublas(M,FBA,devPtrX,'dir')
+       FON=basechange_cublas(M_in,FBA(MTB+1:MTB+M,MTB+1:MTB+M),devPtrX,
+     >                       'dir')
        DO i=1,M
           DO j=1,M
              if(FON(i,j).ne.FON(i,j)) stop 'NAN en FON -predictor'
@@ -141,15 +152,19 @@ c xmm es la primer matriz de (M,M) en el
        RETURN;END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        subroutine cupredictor_DC(F1a,F1b,FON,rho2,devPtrX,factorial,
-     > Fxx,Fyy,Fzz,g,devPtrXc, timestep)
+     >                           Fxx,Fyy,Fzz,g,devPtrXc, timestep, 
+     >                           M_in,MTB)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !Predictor-Corrector Cheng, V.Vooris.PhysRevB.2006.74.155112
 ! Esta rutina recibe: F1a,F1b,rho2
 ! Tira: F5 = F(t+(deltat/2))
        use garcha_mod
        IMPLICIT REAL*8 (a-h,o-z)
-       REAL*8,intent(inout) :: F1a(M,M),F1b(M,M),FON(M,M)
+       REAL*8,intent(inout) :: F1a(M_in,M_in),F1b(M_in,M_in)
+       REAL*8,intent(inout) :: FON(M_in,M_in)
        integer*8,intent(in) :: devPtrX,devPtrXc
+      integer, intent(in)    :: M_in
+      integer, intent(in)    :: MTB
        REAL*8,allocatable :: F3(:,:),FBA(:,:)
        integer :: i,j,k,kk,stat,M1,M2,MM,M5,M7,M9,MMD,M11,M13,M15,M17
        integer :: M19,M20,M3,M18
@@ -158,10 +173,11 @@ c xmm es la primer matriz de (M,M) en el
       integer CUBLAS_INIT
       REAL*8,intent(in) :: factorial(NBCH), timestep
       REAL*8,intent(in) :: g,Fxx,Fyy,Fzz
-       COMPLEX*8, intent(in) :: rho2(M,M)
+       COMPLEX*8, intent(in) :: rho2(M_in,M_in)
        COMPLEX*8,allocatable :: rho4(:,:),rho2t(:,:)
 !-----------------------------------------------------------------------------n
-      ALLOCATE(rho4(M,M),rho2t(M,M),F3(M,M),FBA(M,M))
+      ALLOCATE(rho4(M_in,M_in),rho2t(M_in,M_in),
+     >         F3(M_in,M_in),FBA(M_in,M_in))
       M2=2*M
       MM=M*(M+1)/2
       write(*,*) 'PREDICTOR DC'
@@ -202,14 +218,14 @@ c xmm es la primer matriz de (M,M) en el
 !       F3=1.750D0*F1b-0.750D0*F1a
 ! Paso2: Usando H3, la matriz densidad rho2 es propagada a rho4----> Prediccion
        rho2t=rho2
-       call cumagnusfac(F3,rho2,rho4,M,NBCH,tdstep1,factorial)
+       call cumagnusfac(F3,rho2,rho4,M_in,NBCH,tdstep1,factorial)
 ! Paso3: Escribimos rho4 en el RMM para poder obtener F5 en el siguiente paso.
 !       call g2g_timer_start('cumatmul_predictor')
 !       call cumxp(rho4,devPtrX,rho2t,M)
 !       call cumpxt(rho2t,devPtrX,rho2t,M)
 !       call g2g_timer_stop('cumatmul_predictor')
 !       call complex_rho_on_to_ao(rho4,devPtrXc,rho2t,M)
-        rho2t=basechange_cublas(M,rho4,devPtrXc,'inv')
+        rho2t=basechange_cublas(M_in,rho4,devPtrXc,'inv')
 !       do j=1,M
 !       do k=j,M
 !         if(j.eq.k) then
@@ -219,7 +235,7 @@ c xmm es la primer matriz de (M,M) en el
 !         endif
 !       enddo
 !       enddo
-      call sprepack_ctr('L',M,RMM,rho2t)
+      call sprepack_ctr('L',M,RMM,rho2t(MTB+1:MTB+M,MTB+1:MTB+M))
 ! Paso4: La matriz densidad 4 es usada para calcular F5------> Corrector
       call int3lu(E2)
       call g2g_solve_groups(0,Ex,0)
@@ -240,14 +256,17 @@ c xmm es la primer matriz de (M,M) en el
 !           FBA(j,k)=RMM(M5+k+(M2-j)*(j-1)/2-1)
 !         enddo
 !       enddo
-       call spunpack('L',M,RMM(M5),FBA)
+
+       FBA=FON
+
+       call spunpack('L',M,RMM(M5),FBA(MTB+1:MTB+M,MTB+1:MTB+M))
 ! Ahora tenemos F5 transformada en base de ON y en su forma cuadrada
 !       call g2g_timer_start('cumatmul2_predictor')
 !       call cumxtf(FBA,devPtrX,FON,M)
 !       call cumfx(FON,DevPtrX,FON,M)
 !       call g2g_timer_stop('cumatmul2_predictor')
 !       call fock_ao_to_on(FBA,devPtrX,FON,M)
-       FON=basechange_cublas(M,FBA,devPtrX,'dir')
+       FON=basechange_cublas(M_in,FBA,devPtrX,'dir')
        DEALLOCATE(rho4,rho2t,F3,FBA)
        RETURN;END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

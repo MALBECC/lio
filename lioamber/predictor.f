@@ -1,16 +1,18 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat,
-     >                      Xtrans, fxx, fyy, fzz, g, timestep)
+     >                      Xtrans, fxx, fyy, fzz, g, timestep,M_in,MTB)
       ! This routine recives: F1a,F1b,rho2
       ! And gives: F5 = F(t+(deltat/2))
        use garcha_mod , only: M, RMM, NBCH, field
        use mathsubs   , only: basechange
        use faint_cpu77, only: int3lu, intfld
        implicit none
-       REAL*8,intent(inout) :: F1a(M,M),F1b(M,M),FON(M,M), Xmat(M,M)
-       REAL*8,intent(in) :: Xtrans(M,M), fxx, fyy, fzz, g, timestep
-       REAL*8,intent(in) :: factorial(NBCH)
-       REAL*8,allocatable :: F3(:,:),FBA(:,:)
+       REAL*8,intent(inout) :: F1a(M_in,M_in),F1b(M_in,M_in)
+       REAL*8,intent(inout) :: FON(M_in,M_in), Xmat(M_in,M_in)
+       REAL*8,intent(in)    :: Xtrans(M_in,M_in)
+       REAL*8,intent(in)    :: fxx, fyy, fzz, g, timestep
+       REAL*8,intent(in)    :: factorial(NBCH)
+       REAL*8,allocatable   :: F3(:,:),FBA(:,:)
 #ifdef TD_SIMPLE
        COMPLEX*8, intent(in) :: rho2(M,M)
        complex*8,allocatable :: rho4(:,:),rho2t(:,:)
@@ -18,10 +20,15 @@
       COMPLEX*16, intent(in) :: rho2(M,M)
       complex*16,allocatable :: rho4(:,:),rho2t(:,:)
 #endif
+       integer, intent(in)   :: M_in
        integer :: i,j,k,kk, M2, M5, MM
        real*8 :: E2, tdstep1, Ex
+!DFTB: MTB variable is used for DFTB calculations otherwise equal to 0
+       integer, intent(in)   :: MTB
+
 !------------------------------------------------------------------------------!
-       ALLOCATE(rho4(M,M),rho2t(M,M),F3(M,M),FBA(M,M))
+       ALLOCATE(rho4(M_in,M_in),rho2t(M_in,M_in),F3(M_in,M_in),
+     >          FBA(M_in,M_in))
 c
        M2 = 2*M
        MM = M*(M+1)/2
@@ -34,17 +41,18 @@ c Initializations/Defaults
        F3=(7.D0/4.D0)*F1b-(3.D0/4.D0)*F1a
 ! Step2: F3 is used to propagate rho2 to rho4
        rho2t=rho2
-       call magnus(F3,rho2,rho4,M,NBCH,tdstep1,factorial)
-       rho2t = basechange(M,Xmat,rho4,Xtrans)
+       call magnus(F3,rho2,rho4,M_in,NBCH,tdstep1,factorial)
+       rho2t = basechange(M_in,Xmat,rho4,Xtrans)
 ! Paso3: Escribimos rho4 en el RMM para poder obtener F5 en el siguiente paso.
 ! Step3: rho4 is copied to RMM(1,2,3,...,MM)
-      call sprepack_ctr('L',M,RMM,rho2t)
+      call sprepack_ctr('L',M,RMM,rho2t(MTB+1:MTB+M,MTB+1:MTB+M))
 ! Step4: Density matrix 4 is used to calculate F5
+
        call int3lu(E2)
        call g2g_solve_groups(0,Ex,0)
        if (field) call intfld(g,Fxx,Fyy,Fzz)
-       call spunpack('L',M,RMM(M5),FBA)
-       FON=basechange(M,Xtrans,FBA,Xmat)
+       call spunpack('L',M,RMM(M5),FBA(MTB+1:MTB+M,MTB+1:MTB+M))
+       FON=basechange(M_in,Xtrans,FBA,Xmat)
        DEALLOCATE(rho4,rho2t,F3,FBA)
        RETURN;END
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

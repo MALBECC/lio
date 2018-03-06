@@ -67,7 +67,9 @@ void OSIntegral<scalar_type>::new_cutoff(void) {
   this->dens_offsets[0] = 0;
   uint tmp_dens_ind = 0;
 
-  if (d_start == m) {
+  if (p_start == m) {         // When there are only s functions.
+    NUM_TERM_TYPES = 1;
+  } else if (d_start == m) {  // When there are only s and p functions.
     NUM_TERM_TYPES = 3;
   } else {
     NUM_TERM_TYPES = 6;

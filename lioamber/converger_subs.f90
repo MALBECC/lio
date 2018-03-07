@@ -10,7 +10,7 @@ subroutine converger_init( M_in, ndiis_in, factor_in, do_diis, do_hybrid )
 
    use converger_data, only: fockm, FP_PFm, conver_criter, fock_damped   &
                           &, hagodiis, damping_factor, bcoef, ndiis
-         
+
    implicit none
    integer, intent(in) :: M_in
    integer, intent(in) :: ndiis_in
@@ -48,21 +48,20 @@ end subroutine converger_init
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #ifdef CUBLAS
-   subroutine conver ( niter, good, good_cut, M_in, rho, fock, devPtrX, devPtrY )
-   use cublasmath, only : cumfx, cumxtf, cu_calc_fock_commuts
+   subroutine conver ( niter, good, good_cut, M_in, rho_op, fock_op, devPtrX,  &
+                       devPtrY )
 #else
-   subroutine conver ( niter, good, good_cut, M_in, rho, fock, Xmat, Ymat)
-   use mathsubs, only : basechange_gemm
-#endif 
+   subroutine conver ( niter, good, good_cut, M_in, rho_op, fock_op, Xmat, Ymat)
+#endif
    use converger_data, only: damping_factor, hagodiis, fockm, FP_PFm, ndiis,  &
                           &  fock_damped, bcoef, emat2, conver_criter
-
+   use typedef_operator, only: operator
    implicit none
-   integer, intent(in)    :: niter
-   real*8 , intent(in)    :: good, good_cut
-   integer, intent(in)    :: M_in
-   real*8 , intent(in)    :: rho(M_in, M_in)
-   real*8 , intent(inout) :: fock(M_in, M_in)
+   integer, intent(in)            :: niter
+   real*8 , intent(in)            :: good, good_cut
+   integer, intent(in)            :: M_in
+   type(operator) , intent(in)    :: rho_op
+   type(operator) , intent(inout) :: fock_op
 #ifdef  CUBLAS
 !  ver intent pointers...
    integer*8, intent(in) :: devPtrX
@@ -75,12 +74,13 @@ end subroutine converger_init
    real*8              :: damp
    integer             :: ndiist
    integer             :: ii, jj, kk, kknew
-   real*8, allocatable :: fock00(:,:) 
+   real*8, allocatable :: fock00(:,:)
    real*8, allocatable :: EMAT(:,:)
    real*8, allocatable :: diag1(:,:)
    real*8, allocatable :: suma(:,:)
    real*8, allocatable :: scratch1(:,:)
    real*8, allocatable :: scratch2(:,:)
+   real*8, allocatable :: fock(:,:), rho(:,:)
 
 
    integer                 :: info, lwork
@@ -107,10 +107,12 @@ end subroutine converger_init
 !  Choosing convergence acceleration method for current step
 !
 !------------------------------------------------------------------------------!
-   allocate(fock00(M_in,M_in))
+   allocate(fock00(M_in,M_in), fock(M_in,M_in), rho(M_in,M_in))
 
-!Saving input fock
-   fock00=fock
+   call rho_op%Gets_data_AO(rho)
+
+!Saving first fock AO
+   call fock_op%Gets_data_AO(fock00)
 !!!!!!!!!!!!!!!!!!
 
    ndiist = min( niter, ndiis )
@@ -132,21 +134,17 @@ end subroutine converger_init
 
 
 #     ifdef  CUBLAS
-         call cu_calc_fock_commuts(fock,rho,devPtrX,devPtrY,scratch1,M_in)
-         FP_PFm(:,:,ndiis) = scratch1(:,:)
-
+         call fock_op%Commut_data(rho,devPtrX,devPtrY,scratch1,M_in)
 #     else
 !-----------------------------------------------------------------------------------------
 ! now, scratch1 = A = F' * P'; scratch2 = A^T
 ! [F',P'] = A - A^T
 !-----------------------------------------------------------------------------------------
-         call calc_fock_commuts(fock,rho,Xmat,Ymat,scratch1,scratch2,M_in)
-         FP_PFm(:,:,ndiis) = scratch1(:,:) - scratch2(:,:)
-
+         call fock_op%Commut_data(rho,Xmat,Ymat,scratch1,M_in)
 #     endif
 
-
-    fockm(:,:,ndiis) = fock(:,:)
+    FP_PFm(:,:,ndiis) = scratch1(:,:)
+    call fock_op%Gets_data_ON( fockm(:,:,ndiis) )
 
    endif
 
@@ -195,7 +193,7 @@ end subroutine converger_init
 !
 !------------------------------------------------------------------------------!
     if (.not.hagodiis) then
-   
+
        fock=fock00
 
        if (niter > 1) then
@@ -204,12 +202,12 @@ end subroutine converger_init
 
        fock_damped = fock
 
+       call fock_op%Sets_data_AO(fock)
 
 #      ifdef  CUBLAS
-          call cumxtf(fock,devPtrX,fock,M_in)
-          call cumfx(fock,DevPtrX,fock,M_in)
+          call fock_op%BChange_AOtoON(devPtrX,M_in)
 #      else
-          fock = basechange_gemm(M_in,fock,Xmat)
+          call fock_op%BChange_AOtoON(Xmat,M_in)
 #      endif
 
     endif
@@ -318,9 +316,11 @@ end subroutine converger_init
             enddo
             enddo
          enddo
-          
+
          fock = suma
-           
+
+         call fock_op%Sets_data_ON(fock)
+
       endif
 
    endif

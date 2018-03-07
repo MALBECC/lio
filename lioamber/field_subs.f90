@@ -1,3 +1,5 @@
+! FIELD_SUBS - FIELD_DATA
+!
 ! This module contains routines for Field setups and calculations.
 ! Field shapes are as follows:
 ! 0 - Constant, 1 - Gaussian    , 2 - Half Gaussian Up, 3 - Half Gaussian Down
@@ -6,6 +8,22 @@
 ! Field ISO functions share the same f(t) in x, y and z coordinates (i.e
 ! x=A*f(t), y=B*g(t), z=C*h(t)), while ANISO functions are for example
 ! x=A*f(t), y=B*g(t), z=C*h(t).
+!
+! Input file reading when nfields > 0:
+! For ISO fields, the input file should be an ASCII file with information
+! pertaining each field in a separate line, containing (in this order) shape,
+! periodic, time start, time end, decay/period, center/phase,  magnitude in x,
+! magnitude in y, magnitude in z. For example:
+!
+! 1 f 0.0D0 0.2D0 4.0D-3 0.1D0 0.0D0 0.0D0 0.05
+! This produces the standart TD gaussian perturbation in a Z axis.
+!
+! For ANISO fields, each line should contain the data for each coordinate of a
+! field, meaning there are 3*n_fields number of lines (even if a default is
+! desired, it should be manually set). Similar to the previous case, the line
+! should contain shape, periodic, time start, time end, decay/period,
+! center/phase and magnitude.
+
 module field_data
    use shape_data, only: shape_iso, shape_aniso
    implicit none

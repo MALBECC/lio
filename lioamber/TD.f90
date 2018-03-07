@@ -1054,7 +1054,7 @@ subroutine td_magnus_cu(M, fock, F1a, F1b, rho, rhonew, devPtrX, devPtrXc,     &
                         factorial, NBCH, dt_magnus, natom, transport_calc, Nuc,&
                         Iz, istep, overlap, sqsm, rho_aux, devPtrY, time, M_in,&
                         nshell,ncont)
-   use cublasmath    , only: cupredictor, cumagnusfac
+   use cublasmath    , only: cupredictor, cumagnusfac, basechange_cublas
    use transport_subs, only: transport_propagate_cu
    use dftb_data,      only:dftb_calc,MTB, rhold_AOTB, rhonew_AOTB
    use dftb_subs,      only:chimeraDFTB_evol

@@ -865,7 +865,7 @@ subroutine td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, fxx, fyy,   &
 
    call g2g_timer_start('predictor')
    call predictor(F1a, F1b, fock, rho, factorial, Xmat, Xtrans, fxx, fyy, fzz, &
-                  g, dt_magnus, sqsm, rho_aux, M_in, MTB)
+                  g, dt_magnus, M_in, MTB)
    call g2g_timer_stop('predictor')
    call g2g_timer_start('magnus')
    call magnus(fock, rho, rhonew, M_in, NBCH, dt_magnus, factorial)

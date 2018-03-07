@@ -14,10 +14,10 @@
        REAL*8,intent(in)    :: factorial(NBCH)
        REAL*8,allocatable   :: F3(:,:),FBA(:,:)
 #ifdef TD_SIMPLE
-       COMPLEX*8, intent(in) :: rho2(M,M)
+       COMPLEX*8, intent(in) :: rho2(M_in,M_in)
        complex*8,allocatable :: rho4(:,:),rho2t(:,:)
 #else
-      COMPLEX*16, intent(in) :: rho2(M,M)
+      COMPLEX*16, intent(in) :: rho2(M_in,M_in)
       complex*16,allocatable :: rho4(:,:),rho2t(:,:)
 #endif
        integer, intent(in)   :: M_in
@@ -51,6 +51,8 @@ c Initializations/Defaults
        call int3lu(E2)
        call g2g_solve_groups(0,Ex,0)
        if (field) call intfld(g,Fxx,Fyy,Fzz)
+
+       FBA=FON
        call spunpack('L',M,RMM(M5),FBA(MTB+1:MTB+M,MTB+1:MTB+M))
        FON=basechange(M_in,Xtrans,FBA,Xmat)
        DEALLOCATE(rho4,rho2t,F3,FBA)

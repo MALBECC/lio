@@ -11,11 +11,10 @@ subroutine read_options(inputFile, charge)
     use garcha_mod, only : natom, nsol, basis, output, fmulliken, fcoord, OPEN,&
                            NMAX, basis_set, fitting_set, int_basis, DIIS,      &
                            ndiis, GOLD, told, Etold, hybrid_converg, good_cut, &
-                           rmax, rmaxs, omit_bas, propagator, NBCH, Fx, Fy, Fz,&
-                           field, verbose, VCINP, restart_freq, writexyz,      &
+                           rmax, rmaxs, omit_bas, propagator, NBCH, verbose,   &
+                           VCINP, restart_freq, writexyz, dgtrig, Iexch, integ,&
                            frestartin, frestart, predcoef, idip, intsoldouble, &
-                           dgtrig, Iexch, integ, DENS, IGRID, IGRID2, epsilon, &
-                           a0, cubegen_only, cube_res, cube_dens, cube_orb,    &
+                           cubegen_only, cube_res, cube_dens, cube_orb, DENS,  &
                            cube_sel, cube_orb_file, cube_dens_file, cube_elec, &
                            cube_elec_file, energy_freq, NUNP, style, allnml,   &
                            writeforces, cube_sqrt_orb, fukui, little_cube_size,&
@@ -25,8 +24,11 @@ subroutine read_options(inputFile, charge)
                            sphere_radius, dipole, lowdin, mulliken,            &
                            print_coeffs, number_restr, Dbug, steep, Force_cut, &
                            Energy_cut, minimzation_steep, n_min_steeps,        &
-                           lineal_search, n_points, timers
-   use td_data    , only : tdrestart, writedens, td_rst_freq, tdstep, ntdstep, &
+                           lineal_search, n_points, timers, IGRID, IGRID2
+    use field_data, only : field, a0, epsilon, Fx, Fy, Fz, field_iso_file,     &
+                           field_aniso_file, nfields_iso, nfields_aniso
+    use field_subs, only : read_fields
+    use td_data   , only : tdrestart, writedens, td_rst_freq, tdstep, ntdstep, &
                            timedep
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, verbose_ECP,  &
                            cutECP, local_nonlocal, ecp_debug, FOCK_ECP_read,   &
@@ -54,8 +56,11 @@ subroutine read_options(inputFile, charge)
                    mulliken, writeforces, int_basis, fitting_set, basis_set,   &
                    restart_freq, print_coeffs,                                 &
                    ! DFT and TD-DFT Variables.
-                   timedep, tdstep, ntdstep, propagator, NBCH, field, epsilon, &
-                   a0, Fx, Fy, Fz, tdrestart, writedens, td_rst_freq,          &
+                   timedep, tdstep, ntdstep, propagator, NBCH, tdrestart,      &
+                   writedens, td_rst_freq,                                     &
+                   ! Field Variables
+                   field, epsilon, a0, Fx, Fy, Fz, nfields_iso, nfields_aniso, &
+                   field_aniso_file, field_iso_file,                           &
                    ! Effective Core Potential Variables.
                    ecpmode, ecptypes, tipeECP, ZlistECP, cutECP, ecp_debug,    &
                    local_nonlocal, ecp_debug, ecp_full_range_int, verbose_ECP, &
@@ -94,6 +99,8 @@ subroutine read_options(inputFile, charge)
     else
         write(*,*) 'File ', adjustl(inputFile), ' not found. Using defaults.'
     endif
+
+    call read_fields()
 
     return
 end subroutine read_options

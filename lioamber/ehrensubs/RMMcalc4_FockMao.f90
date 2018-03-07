@@ -7,8 +7,10 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
    use maskrmm
    use faint_cpu77, only: intsol, int2, int3mem, int3lu, intfld
 
+   use field_data , only: epsilon, a0
+
    use garcha_mod, &
-   &only: M, Md, RMM, kkind, kkinds, cool, cools, igrid2, epsilon, a0          &
+   &only: M, Md, RMM, kkind, kkinds, cool, cools, igrid2                       &
        &, natom, Iz, NCO, Nunp, total_time
 
    use lionml_data, &

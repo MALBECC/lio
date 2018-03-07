@@ -33,6 +33,7 @@ module td_data
    real*8  :: tdstep    = 2.0D-3
    logical :: tdrestart = .false.
    logical :: writedens = .false.
+   real*8  :: pert_time = 2.0D-1
 end module td_data
 
 module time_dependent
@@ -41,15 +42,17 @@ contains
 
 subroutine TD()
    use garcha_mod    , only: M, Md, NBCH, propagator, RMM, NCO, Iz, igrid2, r, &
-                             Nuc, nsol, pc, X, Smat, MEMO, field, epsilon, a0, &
-                             sol, natom, sqsm, Fx, Fy, Fz, Nunp, ntatom, ncont,&
-                             nshell
-   use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, writedens
+                             Nuc, nsol, pc, X, Smat, MEMO, sol, natom, sqsm,   &
+                             Nunp, ntatom, ncont, nshell
+   use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, &
+                             writedens, pert_time
+   use field_data    , only: field, fx, fy, fz
+   use field_subs    , only: field_setup_old, field_finalize
    use transport_data, only: transport_calc
    use transport_subs, only: transport_rho_trace, transport_generate_rho,      &
                              transport_init, transport_population
    use dftb_data     , only: dftb_calc, MDFTB, MTB
-   use dftb_subs      , only: dftb_td_init, dftb_output
+   use dftb_subs     , only: dftb_td_init, dftb_output
    use fileio        , only: write_td_restart_verlet, write_td_restart_magnus, &
                              read_td_restart_verlet , read_td_restart_magnus
 #ifdef CUBLAS
@@ -57,12 +60,10 @@ subroutine TD()
 #endif
 
    implicit none
-   real*8  :: Qc2, E, En, E1, E2, E1s, Es, Ens, Ex, t, dt_magnus, dt_lpfrg,    &
-              fxx, fyy, fzz, g
+   real*8  :: E, En, E1, E2, E1s, Es, Ens, Ex, t, dt_magnus, dt_lpfrg
    integer :: MM, MMd, M2, M5, M13, M15, M11, LWORK, igpu, info, istep, icount,&
               jcount
-   integer :: pert_steps  = 100, lpfrg_steps = 200, chkpntF1a = 185, &
-              chkpntF1b = 195
+   integer :: lpfrg_steps = 200, chkpntF1a = 185, chkpntF1b = 195
    logical :: is_lpfrg
    character(len=20) :: restart_filename
 
@@ -138,7 +139,7 @@ subroutine TD()
 
    ! Initialises propagator-related parameters and other variables.
    call td_initialise(propagator, tdstep, NBCH, dt_lpfrg, dt_magnus, factorial,&
-                      NCO, Nunp, natom, Iz, Qc2)
+                      NCO, Nunp, natom, Iz)
 
    ! TD restart reading.
    if (tdrestart) then
@@ -167,6 +168,7 @@ subroutine TD()
    write(*,*) 'Starting TD calculation...'
    ! Create integration grid for XC, assigning points to groups (spheres/cubes)
    ! and significant functions to groups, also calculating point weights.
+   if (field) call field_setup_old(pert_time, 1, fx, fy, fz)
    call td_integration_setup(igrid2, igpu)
    call td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM(M11), r, pc, &
                        ntatom)
@@ -203,8 +205,8 @@ subroutine TD()
       call td_get_time(t, tdstep, istep, propagator, is_lpfrg)
 
       call td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM(M11), is_lpfrg,  &
-                          transport_calc, field, istep, pert_steps, fx, fy, fz,&
-                          fxx, fyy, fzz, epsilon, g, a0, Qc2, sol)
+                          transport_calc, sol, t/0.024190D0)
+      write(*,*) 'TD - Step: ', istep, " Energy : ", E
 
       ! Verlet or Magnus Propagation
       ! In Verlet, we obtain the Fock matrix in the molecular orbital (MO)
@@ -237,9 +239,9 @@ subroutine TD()
 
 
          call td_magnus_cu(M, fock, F1a, F1b, rho, rhonew, devPtrX, devPtrXc,  &
-                           factorial, fxx, fyy, fzz, g, NBCH, dt_magnus, natom,&
-                           transport_calc, Nuc, Iz, istep, overlap, sqsm,      &
-                           rho_aux, devPtrY, M_in, nshell, ncont)
+                           factorial, NBCH, dt_magnus, natom, transport_calc,  &
+                           Nuc, Iz, istep, overlap, sqsm, rho_aux, devPtrY,    &
+                           t/0.024190D0, M_in, nshell, ncont)
       endif
 
       call g2g_timer_start('complex_rho_on_to_ao-cu')
@@ -257,12 +259,10 @@ subroutine TD()
             if (istep.eq.chkpntF1b) F1b = fock
          endif
       else
-
-!DFTB: Xmat has now the dimension necessary for DFTB
-         call td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, fxx, fyy,   &
-                        fzz, g, NBCH, dt_magnus, natom, transport_calc, Nuc,   &
-                        Iz, istep, overlap, sqsm, rho_aux, Xmat, Xtrans, M_in, &
-                        nshell,ncont)
+         call td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, NBCH,  &
+                        dt_magnus, natom, transport_calc, Nuc, Iz, istep, &
+                        overlap, sqsm, rho_aux, X, Xtrans, t/0.024190D0, M_in,&
+                        nshell, ncont)
       endif
 
       call g2g_timer_start('complex_rho_on_to_ao')
@@ -310,6 +310,7 @@ subroutine TD()
 #ifdef CUBLAS
    call td_finalise_cublas(devPtrX, devPtrY, devPtrXc)
 #endif
+   call field_finalize()
 
    close(134)
    call g2g_timer_stop('TD')
@@ -394,11 +395,11 @@ subroutine td_deallocate_all(F1a, F1b, fock, rho, rho_aux, rhold, &
 end subroutine td_deallocate_all
 
 subroutine td_initialise(propagator, tdstep, NBCH, dt_lpfrg, dt_magnus,        &
-                         factorial, NCO, Nunp, natom, Iz, Qc2)
+                         factorial, NCO, Nunp, natom, Iz)
    implicit none
    integer, intent(in)  :: propagator, NBCH, NCO, Nunp, natom, Iz(natom)
    real*8 , intent(in)  :: tdstep
-   real*8 , intent(out) :: dt_lpfrg, dt_magnus, factorial(NBCH), Qc2
+   real*8 , intent(out) :: dt_lpfrg, dt_magnus, factorial(NBCH)
    integer :: icount, Nel
    real*8  :: Qc
 
@@ -426,12 +427,10 @@ subroutine td_initialise(propagator, tdstep, NBCH, dt_lpfrg, dt_magnus,        &
    ! Calculate total atomic charge.
    Nel = 2*NCO + Nunp
    Qc  = 0.0D0
-   Qc2 = 0.0D0
 
    do icount = 1, natom
       Qc = Qc + Iz(icount)
    enddo
-   Qc2 = (Qc - Nel)**2
 
    return
 end subroutine td_initialise
@@ -656,16 +655,14 @@ subroutine td_check_prop(is_lpfrg, propagator, istep, lpfrg_steps, tdrestart)
 end subroutine td_check_prop
 
 subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
-                          transport_calc, field, istep, pert_steps, fx, fy, fz,&
-                          fxx, fyy, fzz, epsilon, g, a0, Qc2, sol)
+                          transport_calc, sol, time)
    use faint_cpu77, only: int3lu
+   use field_subs , only: field_calc
    implicit none
-   integer, intent(in)    :: istep, pert_steps, MM
+   integer, intent(in)    :: MM
    logical, intent(in)    :: is_lpfrg, transport_calc, sol
-   logical, intent(inout) :: field
-   real*8 , intent(in)    :: epsilon, a0, Qc2
-   real*8 , intent(inout) :: E, E1, E2, En, Ex, Es, fx, fy, fz, fxx, fyy, fzz, &
-                             g, RMM(MM), RMM11(MM)
+   real*8 , intent(in)    :: time
+   real*8 , intent(inout) :: E, E1, E2, En, Ex, Es, RMM(MM), RMM11(MM)
    integer :: icount
 
    E1 = 0.0D0; E = 0.0D0
@@ -675,10 +672,7 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
    endif
 
    ! ELECTRIC FIELD CASE - Perturbation type: Gaussian.
-   if ((.not.transport_calc).and.(field)) then
-      call td_calc_perturbation(istep, pert_steps, fx, fy, fz, epsilon, a0, &
-                                Qc2, E1, field, fxx, fyy, fzz, g)
-   endif
+   if (.not.transport_calc) call field_calc(E1, time)
 
    ! Add 1e contributions to E1.
    do icount = 1, MM
@@ -686,47 +680,14 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
    enddo
    E = E1 + E2 + En + Ex
    if (sol) E = E + Es
-   write(*,*) 'TD - Step: ', istep, " Energy : ", E
 
    return
 end subroutine td_calc_energy
-
-subroutine td_calc_perturbation(step, pert_steps, fx, fy, fz, epsilon, a0, Qc2,&
-                                E1, field, fxx, fyy, fzz, g)
-   use faint_cpu77, only: intfld
-   implicit none
-   integer, intent(in)    :: step, pert_steps
-   logical, intent(inout) :: field
-   real*8 , intent(in)    :: epsilon, a0, Qc2
-   real*8 , intent(inout) :: E1, fx, fy, fz, fxx, fyy, fzz, g
-   real*8 :: factor, dipxyz(3)
-
-   fxx = 0.0D0
-   fyy = 0.0D0
-   fzz = 0.0D0
-   if (step.lt.pert_steps) then
-      call dip(dipxyz)
-      g      = 1.0D0
-      factor = 2.54D0
-      fxx    = fx * exp(-0.2D0*(real(step-50))**2)
-      fyy    = fy * exp(-0.2D0*(real(step-50))**2)
-      fzz    = fz * exp(-0.2D0*(real(step-50))**2)
-      write(*,*) "TD - External field x,y,z in a.u.:"
-      write(*,*) fxx, fyy, fzz
-      call intfld(g, Fxx, Fyy, Fzz)
-      E1=-1.00D0 * g * (Fx*dipxyz(1) + Fy*dipxyz(2) + Fz*dipxyz(3)) / factor - &
-          0.50D0 * (1.0D0 - 1.0D0/epsilon) * Qc2/a0
-   else
-      field = .false.
-   endif
-   return
-end subroutine td_calc_perturbation
 
 subroutine td_bc_fock(M_in, M, MM, RMM5, fock, Xtrans, Xmm, natom, nshell,ncont, istep)
 
    use dftb_data, only:dftb_calc,MTB
    use dftb_subs, only:chimeraDFTB_evol
-
    implicit none
    integer, intent(in)    :: M, MM, M_in
    real*8 , intent(inout) :: RMM5(MM), Xtrans(M_in,M_in), Xmm(M_in,M_in)
@@ -823,9 +784,9 @@ subroutine td_verlet(M, M_in, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg,    
    return
 end subroutine td_verlet
 
-subroutine td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, fxx, fyy,   &
-                     fzz, g, NBCH, dt_magnus, natom, transport_calc, Nuc,   &
-                     Iz, istep, overlap, sqsm, rho_aux, Xmat, Xtrans, M_in, &
+subroutine td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, NBCH,  &
+                     dt_magnus, natom, transport_calc, Nuc, Iz, istep, &
+                     overlap, sqsm, rho_aux, Xmat, Xtrans, time, M_in, &
                      nshell, ncont)
    use transport_subs, only: transport_propagate
    use dftb_data,      only:dftb_calc,MTB, rhold_AOTB, rhonew_AOTB
@@ -833,10 +794,10 @@ subroutine td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, fxx, fyy,   &
    implicit none
    logical  , intent(in)     :: transport_calc
    integer  , intent(in)     :: M, NBCH, istep, natom, Nuc(M), Iz(natom), M_in
-   real*8   , intent(in)     :: dt_magnus, fxx, fyy, fzz, g, factorial(NBCH), &
-                                Xtrans(M_in,M_in)
-   real*8   , intent(inout)  :: fock(M_in,M_in), F1a(M_in,M_in), F1b(M_in,M_in),&
-                                overlap(M,M), sqsm(M,M), Xmat(M_in,M_in)
+   real*8   , intent(in)     :: dt_magnus, factorial(NBCH), Xtrans(M,M), time
+   real*8   , intent(inout)  :: fock(M_in,M_in), F1a(M_in,M_in), &
+                                F1b(M_in,M_in), overlap(M,M), sqsm(M,M), &
+                                Xmat(M,M)
    integer, intent(in)       :: nshell (0:4)
    integer, intent(in)       :: ncont(M)
 #ifdef TD_SIMPLE
@@ -864,8 +825,8 @@ subroutine td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, fxx, fyy,   &
    end if
 
    call g2g_timer_start('predictor')
-   call predictor(F1a, F1b, fock, rho, factorial, Xmat, Xtrans, fxx, fyy, fzz, &
-                  g, dt_magnus, M_in, MTB)
+   call predictor(F1a, F1b, fock, rho, factorial, Xmat, Xtrans, dt_magnus, &
+                  time, M_in, MTB)
    call g2g_timer_stop('predictor')
    call g2g_timer_start('magnus')
    call magnus(fock, rho, rhonew, M_in, NBCH, dt_magnus, factorial)
@@ -1089,10 +1050,10 @@ subroutine td_verlet_cu(M, M_in, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg, 
 
 end subroutine td_verlet_cu
 
-subroutine td_magnus_cu(M, fock, F1a, F1b, rho, rhonew, devPtrX, devPtrXc,  &
-                        factorial, fxx, fyy, fzz, g, NBCH, dt_magnus, natom,&
-                        transport_calc, Nuc, Iz, istep, overlap, sqsm,&
-                        rho_aux, devPtrY, M_in , nshell,ncont)
+subroutine td_magnus_cu(M, fock, F1a, F1b, rho, rhonew, devPtrX, devPtrXc,     &
+                        factorial, NBCH, dt_magnus, natom, transport_calc, Nuc,&
+                        Iz, istep, overlap, sqsm, rho_aux, devPtrY, time, M_in,&
+                        nshell,ncont)
    use cublasmath    , only: cupredictor, cumagnusfac, basechange_cublas
    use transport_subs, only: transport_propagate_cu
    use dftb_data,      only:dftb_calc,MTB, rhold_AOTB, rhonew_AOTB
@@ -1102,11 +1063,10 @@ subroutine td_magnus_cu(M, fock, F1a, F1b, rho, rhonew, devPtrX, devPtrXc,  &
    integer  , intent(in)     :: M, NBCH, istep, natom, Nuc(M), Iz(natom)
    integer  , intent(in)     :: M_in
    integer*8, intent(in)     :: devPtrX, devPtrXc, devPtrY
-   real*8   , intent(in)     :: dt_magnus, fxx, fyy, fzz, g, factorial(NBCH)
-   integer, intent(in)       :: nshell (0:4)
-   integer, intent(in)       :: ncont(M)
-   real*8   , intent(inout)  :: fock(M_in,M_in), F1a(M_in,M_in), F1b(M_in,M_in), overlap(M,M), &
-                                sqsm(M,M)
+   real*8   , intent(in)     :: dt_magnus, factorial(NBCH), time
+   integer  , intent(in)     :: nshell (0:4), ncont(M)
+   real*8   , intent(inout)  :: fock(M_in,M_in), F1a(M_in,M_in), &
+                                F1b(M_in,M_in), overlap(M,M), sqsm(M,M)
 #ifdef TD_SIMPLE
    complex*8 , intent(inout) :: rho_aux(M_in,M_in), rhonew(M_in,M_in), rho(M_in,M_in)
 #else
@@ -1130,8 +1090,8 @@ subroutine td_magnus_cu(M, fock, F1a, F1b, rho, rhonew, devPtrX, devPtrXc,  &
    end if
 
    call g2g_timer_start('cupredictor')
-   call cupredictor(F1a, F1b, fock, rho, devPtrX, factorial, fxx, fyy,   &
-                    fzz, g, devPtrXc, dt_magnus, M_in, MTB)
+   call cupredictor(F1a, F1b, fock, rho, devPtrX, factorial, devPtrXc, &
+                    dt_magnus, time, M_in, MTB)
    call g2g_timer_stop('cupredictor')
    call g2g_timer_start('cumagnus')
    call cumagnusfac(fock, rho, rhonew, M_in, NBCH, dt_magnus, factorial)

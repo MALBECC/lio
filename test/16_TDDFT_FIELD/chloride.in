@@ -1,0 +1,16 @@
+&lio
+ nsol       = 0
+ natom      = 2
+ charge     = 0
+ int_basis  = t
+ VCINP      = t
+ timedep    = 1
+ writexyz   = f
+ ntdstep    = 100000
+ tdstep     = 0.002
+ propagator = 1
+ idip       = 0
+ dipole     = f
+ nfields_iso = 1
+ field_iso_file = 'inputfield.fld'
+&end

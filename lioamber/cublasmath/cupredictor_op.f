@@ -1,19 +1,20 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        subroutine cupredictor_op_DZ(F1a_a,F1b_a,F1a_b,F1b_b,FON_a,FON_b,
-     > rho2_a,rho2_b,factorial,devPtrX,Fxx,Fyy,Fzz,g,devPtrXc)
+     > rho2_a,rho2_b,factorial,devPtrX,devPtrXc, time)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! This routine recives: F1a,F1b,rho2
-! And gives: F5 = F(t+(deltat/2))      
+! And gives: F5 = F(t+(deltat/2))
        use garcha_mod
-       use faint_cpu77, only: int3lu, intfld
+       use field_data, only: field
+       use field_subs, only: field_calc
+       use faint_cpu77, only: int3lu
        REAL*8,intent(inout) :: F1a_a(M,M),F1b_a(M,M),
      > F1a_b(M,M),F1b_b(M,M),FON_a(M,M),FON_b(M,M)
        integer*8,intent(in) :: devPtrX,devPtrXc
-       REAL*8,intent(in) :: g,Fxx,Fyy,Fzz
-       REAL*8, intent(in) :: factorial(NBCH)
+       REAL*8, intent(in) :: factorial(NBCH), time
        REAL*8,allocatable :: F3(:,:),FBA(:,:)
        integer :: i,j,k,kk,stat
-       real*8 :: E2, tdstep1
+       real*8 :: E2, tdstep1, E1
        COMPLEX*16, intent(in) :: rho2_a(M,M),rho2_b(M,M)
        COMPLEX*16,allocatable :: rho4(:,:),rho2t(:,:)
        integer*8 devPtrScratch1
@@ -61,10 +62,7 @@ c now G
 ! Step4: Density matrix 4 is used to calculate F5
        call int3lu(E2)
        call g2g_solve_groups(0,Ex,0)
-      if (field) then
-         write(*,*) 'FIELD PREDICTOR'
-         call intfld(g,Fxx,Fyy,Fzz)
-      endif
+       call field_calc(E1, time)
 !
        call spunpack('L',M,RMM(M5),FBA)
 !       call matmulnano(FBA,X,FON_a,M)
@@ -78,19 +76,20 @@ c now G
        RETURN;END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        subroutine cupredictor_op_DC(F1a_a,F1b_a,F1a_b,F1b_b,FON_a,FON_b,
-     > rho2_a,rho2_b,factorial,devPtrX,Fxx,Fyy,Fzz,g,devPtrXc)
+     > rho2_a,rho2_b,factorial,devPtrX,devPtrXc, time)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! This routine recives: F1a,F1b,rho2
-! And gives: F5 = F(t+(deltat/2))      
+! And gives: F5 = F(t+(deltat/2))
        use garcha_mod
+       use field_data, only: field
+       use field_subs, only: field_calc
        REAL*8,intent(inout) :: F1a_a(M,M),F1b_a(M,M),
      > F1a_b(M,M),F1b_b(M,M),FON_a(M,M),FON_b(M,M)
        integer*8,intent(in) :: devPtrX,devPtrXc
-       REAL*8,intent(in) :: g,Fxx,Fyy,Fzz
-       REAL*8, intent(in) :: factorial(NBCH)
+       REAL*8, intent(in) :: factorial(NBCH), time
        REAL*8,allocatable :: F3(:,:),FBA(:,:)
        integer :: i,j,k,kk,stat
-       real*8 :: E2, tdstep1
+       real*8 :: E2, tdstep1, E1
        COMPLEX*8, intent(in) :: rho2_a(M,M),rho2_b(M,M)
        COMPLEX*8,allocatable :: rho4(:,:),rho2t(:,:)
        integer*8 devPtrScratch1
@@ -138,10 +137,7 @@ c now G
 ! Step4: Density matrix 4 is used to calculate F5
        call int3lu(E2)
        call g2g_solve_groups(0,Ex,0)
-      if (field) then
-         write(*,*) 'FIELD PREDICTOR'
-         call intfld(g,Fxx,Fyy,Fzz)
-      endif
+       call field_calc(E1, time)
 !
        call spunpack('L',M,RMM(M5),FBA)
 !       call matmulnano(FBA,X,FON_a,M)
@@ -154,4 +150,3 @@ c now G
        DEALLOCATE(rho4,rho2t,F3,FBA)
        RETURN;END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-

@@ -59,6 +59,8 @@ OBJECTS += elec.o
 OBJECTS += properties.o
 OBJECTS += write_output.o
 OBJECTS += errlog.o
+OBJECTS += field_subs.o
+
 
 ################################################################################
 tmplist := SCF.o readECP.o drive.o intECP.o init.o init_lio.o
@@ -178,7 +180,7 @@ OBJECTS += faint_cpu77.o
 #
 modusrs :=
 modusrs += cublasmath.o ehrensubs.o liomain.o maskrmm.o
-modusrs += predictor.o SCF.o SCFop.o TD.o
+modusrs += predictor.o SCF.o SCFop.o TD.o field_subs.o
 modusrs += dft_get_mm_forces.o dft_get_qm_forces.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/faint_cpu77.mod
 
@@ -201,6 +203,18 @@ tmplist :=
 tmplist += drive.o liomain.o TD.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fileio.mod
 
+################################################################################
+OBJECTS += shape_data.o
+
+tmplist :=
+tmplist += field_subs.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/shape_data.mod
+
+################################################################################
+
+tmplist :=
+tmplist += SCF.o TD.o init_lio.o cublasmath.o predictor.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/field_subs.o
 
 ################################################################################
 include liosubs_dens/liosubs_dens.mk

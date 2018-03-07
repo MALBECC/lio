@@ -33,15 +33,17 @@ subroutine SCF(E)
                           cubegen_only, VCINP, primera, Nunp, GOLD, igrid2,    &
                           predcoef, nsol, r, pc, DIIS, told, Etold, Enucl,     &
                           Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz,  &
-                          epsilon, nuc, doing_ehrenfest, first_step, RealRho,  &
-                          total_time, field, Fx, Fy, Fz, a0,MO_coef_at, Smat,  &
-                          good_cut, ndiis, nshell, ncont
+                          nuc, doing_ehrenfest, first_step, RealRho,           &
+                          total_time, MO_coef_at, Smat, good_cut, ndiis, ncont,&
+                          nshell
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
                        FOCK_ECP_read,FOCK_ECP_write,IzECP
+   use field_data, only: field, fx, fy, fz
+   use field_subs, only: field_calc, field_setup_old
    use td_data, only: timedep, tdrestart, tdstep
    use transport_data, only : generate_rho0
    use time_dependent, only : TD
-   use faint_cpu77, only: int1, int2, intsol, int3mem, int3lu, intfld
+   use faint_cpu77, only: int1, int2, intsol, int3mem, int3lu
    use dftb_data, only : dftb_calc, MDFTB, MTB, chargeA_TB, chargeB_TB,        &
                          rho_DFTB, TBsave, TBload
       use dftb_subs, only : dftb_init, getXY_DFTB, find_TB_neighbors,             &
@@ -559,19 +561,13 @@ subroutine SCF(E)
 !       module and only appear here as a subroutine, or be included in the
 !       separated fock calculation subroutine...
 !
-        if ( field .and. generate_rho0 ) then
-           dipxyz(:)=0.0D0
-           call dip(dipxyz)
-           g=1.0D0
-           factor=2.54D0
-           call intfld(g,Fx,Fy,Fz)
-           E1=-1.00D0*g*(Fx*dipxyz(1)+Fy*dipxyz(2)+Fz*dipxyz(3))/factor- &
-           0.50D0*(1.0D0-1.0D0/epsilon)*Qc2/a0
+        if ( generate_rho0 ) then
+           if (field) call field_setup_old(1.0D0, 0, fx, fy, fz)
+           call field_calc(E1, 0.0D0)
 
            do kk=1,MM
                E1=E1+RMM(kk)*RMM(M11+kk-1)
            enddo
-
         else
 !          E1 includes solvent 1 electron contributions
            do kk=1,MM

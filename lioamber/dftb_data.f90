@@ -23,7 +23,9 @@ module dftb_data
    real*8               :: chargeA_TB
    real*8               :: chargeB_TB
    real*8               :: chargeM_TB
-   real*8, allocatable  :: rho_DFTB(:,:)      ! Matrix to store rho DFTB for TD
+   real*8, allocatable  :: rho_aDFTB(:,:)     ! Matrix to store rho DFTB for TD
+   real*8, allocatable  :: rho_bDFTB(:,:)     ! Matrix to store rho DFTB for TD
+
    real*8,allocatable   :: chimerafock (:, :) ! Allocated in the central code
 #ifdef TD_SIMPLE
    complex*8, allocatable  :: rhold_AOTB(:,:)     ! rho in AO to calculate charges

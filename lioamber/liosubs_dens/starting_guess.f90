@@ -4,7 +4,7 @@
 !     F' = (X^T)FX
 !     => (X^-1*C)^-1 * F' * (X^-1*C) = e
 !
-! This subroutine takes the Hmat as a vector, transforms it into a matrix, 
+! This subroutine takes the Hmat as a vector, transforms it into a matrix,
 ! diagonalizes it, and builds the density from the resulting orbitals.
 !
 ! TODO:
@@ -19,17 +19,18 @@
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine starting_guess( Nmat, Nvec, NCO, hmat_vec, Xmat, densat_vec )
+subroutine starting_guess( Nmat, Nvec, NCO, ocupF, hmat_vec, Xmat, densat_vec )
    use liosubs_math  , only: transform
 
    implicit none
    integer, intent(in)    :: Nmat
    integer, intent(in)    :: Nvec
    integer, intent(in)    :: NCO
+   real*8 , intent(in)    :: ocupF
    real*8 , intent(in)    :: Xmat(Nmat,Nmat)
    real*8 , intent(inout) :: hmat_vec(Nvec)
    real*8 , intent(inout) :: densat_vec(Nvec)
-   
+
    real*8, allocatable   :: morb_energy(:)
    real*8, allocatable   :: morb_coefon(:,:)
    real*8, allocatable   :: morb_coefat(:,:)
@@ -66,10 +67,10 @@ subroutine starting_guess( Nmat, Nvec, NCO, hmat_vec, Xmat, densat_vec )
 
    morb_coefat = matmul( Xmat, morb_coefon )
    morb_coefoc(1:Nmat,1:NCO) = morb_coefat(1:Nmat,1:NCO)
-   dens_mao = (2.0d0) * matmul( morb_coefoc, transpose(morb_coefoc) )
+   dens_mao = ocupF * matmul( morb_coefoc, transpose(morb_coefoc) )
    call messup_densmat( dens_mao )
    call sprepack( 'L', Nmat, densat_vec, dens_mao)
-   
+
    call g2g_timer_stop('initial guess')
    call g2g_timer_sum_stop('initial guess')
 end subroutine starting_guess

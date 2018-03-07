@@ -6,16 +6,17 @@ contains
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-subroutine converger_init( M_in, ndiis_in, factor_in, do_diis, do_hybrid )
+subroutine converger_init( M_in, ndiis_in, factor_in, do_diis, do_hybrid, OPshell )
 
    use converger_data, only: fockm, FP_PFm, conver_criter, fock_damped   &
-                          &, hagodiis, damping_factor, bcoef, ndiis
+                          &, hagodiis, damping_factor, bcoef, ndiis, EMAT2
 
    implicit none
    integer, intent(in) :: M_in
    integer, intent(in) :: ndiis_in
    real*8 , intent(in) :: factor_in
    logical, intent(in) :: do_diis, do_hybrid
+   logical, intent(in) :: OPshell
 
 
    hagodiis = .false.
@@ -31,14 +32,26 @@ subroutine converger_init( M_in, ndiis_in, factor_in, do_diis, do_hybrid )
    endif
 
    if (conver_criter /= 1) then ! agregado para cambio de damping a diis, Nick
-      if (.not. allocated(fockm) )  allocate( fockm (M_in, M_in, ndiis) )
-      if (.not. allocated(FP_PFm) ) allocate( FP_PFm(M_in, M_in, ndiis) )
-      if (.not. allocated(bcoef) )  allocate( bcoef (ndiis+1) )
+      if(OPshell) then
+         if (.not. allocated(fockm) )  allocate( fockm (M_in, M_in, ndiis, 2) )
+         if (.not. allocated(FP_PFm) ) allocate( FP_PFm(M_in, M_in, ndiis, 2) )
+         if (.not. allocated(bcoef) )  allocate( bcoef (ndiis+1, 2) )
+         if (.not.allocated(EMAT2) )   allocate(EMAT2(ndiis+1,ndiis+1,2))
+      else
+         if (.not. allocated(fockm) )  allocate( fockm (M_in, M_in, ndiis, 1) )
+         if (.not. allocated(FP_PFm) ) allocate( FP_PFm(M_in, M_in, ndiis, 1) )
+         if (.not. allocated(bcoef) )  allocate( bcoef (ndiis+1, 1) )
+         if (.not.allocated(EMAT2) )   allocate(EMAT2(ndiis+1,ndiis+1,1))
+      end if
    endif
 
 
-   if (.not. allocated(fock_damped) ) allocate(fock_damped(M_in, M_in))
-   fock_damped(:,:) = 0.0d0
+   if(OPshell) then
+      if (.not. allocated(fock_damped) ) allocate(fock_damped(M_in, M_in, 2))
+   else
+      if (.not. allocated(fock_damped) ) allocate(fock_damped(M_in, M_in, 1))
+   end if
+   fock_damped(:,:,:) = 0.0d0
    if (conver_criter /= 2) then
 !      if (.not. allocated(fock_damped) ) allocate(fock_damped(M_in, M_in))
    endif
@@ -49,21 +62,23 @@ end subroutine converger_init
 
 #ifdef CUBLAS
    subroutine conver ( niter, good, good_cut, M_in, rho_op, fock_op, devPtrX,  &
-                       devPtrY )
+                       devPtrY, spin )
 #else
-   subroutine conver ( niter, good, good_cut, M_in, rho_op, fock_op, Xmat, Ymat)
+   subroutine conver ( niter, good, good_cut, M_in, rho_op, fock_op, Xmat,     &
+                       Ymat, spin)
 #endif
    use converger_data, only: damping_factor, hagodiis, fockm, FP_PFm, ndiis,  &
-                          &  fock_damped, bcoef, emat2, conver_criter
+                          &  fock_damped, bcoef, EMAT2, conver_criter
    use typedef_operator, only: operator
    implicit none
    integer, intent(in)            :: niter
    real*8 , intent(in)            :: good, good_cut
    integer, intent(in)            :: M_in
+!carlos:spin allows to store correctly alpha or beta information.
+   integer, intent(in)            :: spin
    type(operator) , intent(in)    :: rho_op
    type(operator) , intent(inout) :: fock_op
 #ifdef  CUBLAS
-!  ver intent pointers...
    integer*8, intent(in) :: devPtrX
    integer*8, intent(in) :: devPtrY
 #else
@@ -128,8 +143,8 @@ end subroutine converger_init
 !-----------------------------------------------------------------------------------------
 
       do jj = ndiis-(ndiist-1), ndiis-1
-         fockm(:,:,jj)  = fockm(:,:,jj+1)
-         FP_PFm(:,:,jj) = FP_PFm(:,:,jj+1)
+         fockm(:,:,jj,spin)  = fockm(:,:,jj+1,spin)
+         FP_PFm(:,:,jj,spin) = FP_PFm(:,:,jj+1,spin)
       enddo
 
 
@@ -143,8 +158,8 @@ end subroutine converger_init
          call fock_op%Commut_data(rho,Xmat,Ymat,scratch1,M_in)
 #     endif
 
-    FP_PFm(:,:,ndiis) = scratch1(:,:)
-    call fock_op%Gets_data_ON( fockm(:,:,ndiis) )
+    FP_PFm(:,:,ndiis,spin) = scratch1(:,:)
+    call fock_op%Gets_data_ON( fockm(:,:,ndiis,spin) )
 
    endif
 
@@ -197,10 +212,10 @@ end subroutine converger_init
        fock=fock00
 
        if (niter > 1) then
-          fock = (fock+damping_factor*fock_damped)/(1.0d0+damping_factor)
+          fock = (fock+damping_factor*fock_damped(:,:,spin))/(1.0d0+damping_factor)
        endif
 
-       fock_damped = fock
+       fock_damped(:,:,spin) = fock
 
        call fock_op%Sets_data_AO(fock)
 
@@ -229,26 +244,25 @@ end subroutine converger_init
          EMAT=0
          do jj = 1, ndiist-1
          do ii = 1, ndiist-1
-            EMAT(ii,jj) = EMAT2(ii,jj)
+            EMAT(ii,jj) = EMAT2(ii,jj,spin)
          enddo
          enddo
-         deallocate (EMAT2)
+
 
 !     After ndiis iterations, we start shifting out the oldest iteration stored
       else if (niter.gt.ndiis) then
          do jj = 1, ndiist-1
          do ii = 1, ndiist-1
-            EMAT(ii,jj) = EMAT2(ii+1,jj+1)
+            EMAT(ii,jj) = EMAT2(ii+1,jj+1,spin)
          enddo
          enddo
-         deallocate (EMAT2)
       endif
 
 !     Escribimos en scratch1 y scratch2 dos conmutadores de distintas iteraciones------
       do kk=1,ndiist
          kknew = kk + (ndiis-ndiist)
-         scratch1(:,:) = FP_PFm(:,:,ndiis)
-         scratch2(:,:) = FP_PFm(:,:,kknew)
+         scratch1(:,:) = FP_PFm(:,:,ndiis,spin)
+         scratch2(:,:) = FP_PFm(:,:,kknew,spin)
 
          call matmuldiag( scratch1, scratch2, diag1, M_in )
 
@@ -268,8 +282,7 @@ end subroutine converger_init
       enddo
       EMAT(ndiist+1, ndiist+1)= 0.0d0
 
-      if (.not. allocated(EMAT2)) allocate(EMAT2(ndiist+1,ndiist+1))
-      EMAT2=EMAT
+      EMAT2(1:ndiist+1,1:ndiist+1,spin)=EMAT
 
 !------------------------------------------------------------------------------!
 !
@@ -291,19 +304,19 @@ end subroutine converger_init
 
       if (hagodiis) then
          do ii= 1, ndiist
-            bcoef(ii) = 0.0d0
+            bcoef(ii,spin) = 0.0d0
          enddo
-         bcoef(ndiist+1) = -1.0d0
+         bcoef(ndiist+1,spin) = -1.0d0
 
 !        Cálculo de parámetro optimo para DGELS; luego Resuelve la ecuación
 !        A*X = B. (EMAT*ci=bcoef). La solución la escribe en bcoef.
          LWORK = -1
          CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT, &
-                     ndiist+1, bcoef, ndiist+1, WORK, LWORK, INFO )
+                     ndiist+1, bcoef(:,spin), ndiist+1, WORK, LWORK, INFO )
 
          LWORK = MIN( 1000, INT( WORK( 1 ) ) )
          CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT, &
-                     ndiist+1, bcoef, ndiist+1, WORK, LWORK, INFO )
+                     ndiist+1, bcoef(:,spin), ndiist+1, WORK, LWORK, INFO )
 
 !        Construccion de la "nueva" matriz de fock como cl de las anteriores
 !        Eventualmente se puede probar con la matriz densidad
@@ -312,7 +325,7 @@ end subroutine converger_init
             kknew = kk + (ndiis-ndiist)
             do ii = 1, M_in
             do jj = 1, M_in
-               suma(ii,jj) = suma(ii,jj) + bcoef(kk)*fockm(ii,jj,kknew)
+               suma(ii,jj) = suma(ii,jj)+bcoef(kk,spin)*fockm(ii,jj,kknew,spin)
             enddo
             enddo
          enddo
@@ -325,7 +338,6 @@ end subroutine converger_init
 
    endif
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
 
 end subroutine conver
 

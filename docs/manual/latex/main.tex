@@ -9,13 +9,20 @@
 \usepackage{graphics,dcolumn}
 \usepackage{graphicx}
 \usepackage{chemfig}
-\usepackage[version=3]{mhchem}
+\usepackage{amsmath}
+%\usepackage[version=3]{mhchem}
 \usepackage{float}
 \usepackage{comment}
 \usepackage{soul}
 \usepackage[flushleft]{threeparttable}
 \usepackage{multirow}
 \renewcommand{\baselinestretch}{2}
+
+\usepackage{titlesec}
+
+\titlespacing\section{0pt}{16pt}{4pt}
+\titlespacing\subsection{0pt}{12pt}{0pt}
+\titlespacing\subsubsection{0pt}{12pt}{0pt}
 
 %flechas y diagramas
 \usepackage{tikz}
@@ -48,6 +55,8 @@ Pab. II, Buenos Aires (C1428EHA) Argentina}
 \tikzstyle{no} = [circle, minimum size=1cm, text centered, draw=black, fill=red!30]
 \tikzstyle{arrow} = [thick,->,>=stealth]
 
+\setlength{\textfloatsep}{1pt}
+\setlength{\intextsep}{0.1pt}
 
 
 
@@ -60,25 +69,26 @@ proyecto de manual de lio, hay q ponerle el formato adecuado
 %\maketitle
 
 \newpage
-\section{Quick Reference}
+\section{LIO - Quick Reference}
 This section provides a quick reference for LIO input variables, also providing the default values.
 
     \subsection{File I/O}
+    
     \begin{table}  [H]
       \begin{center}
       \begin{tabular}{ l c c l}
-         Variable & Type & Default & Description \\
-         basis    & char*20 & 'basis' & Filename for the basis set file (if a custom basis set is used).   \\
-         output & char*20 & 'output' & Output file. \\
-         fCoord & char*20 & 'qm.xyz' & xyz file (without the header) containing the QM System \\
-            & & & coordinates. \\
-         writexyz & logical & false & Writes an xyz file containing the QM system coordinates, \\
-            & & & useful when using LIO in tandem with AMBER/GROMACS. \\
-         verbose & integer & 1 & Verbose level. \\
-         VCInp & logical & false & \\
-         restart\_freq & integer & 1 & \\
-         frestart & char*20 & 'restart.out' & Output restart file. \\
-         frestartin & char*20 & 'restart.in' & Input restart file. \\
+         Variable      & Type    & Default  & Description \\
+         basis         & char*20 & 'basis'  & Filename for the basis set file (for custom basis sets). \\
+         output        & char*20 & 'output' & Output file. \\
+         fCoord        & char*20 & 'qm.xyz' & xyz file (without the header) containing the QM System \\
+         & &                                & coordinates. \\
+         writexyz      & logical & false 	& Writes an xyz file containing the QM system coordinates, \\
+         & & 	                            & useful when using LIO in tandem with AMBER/GROMACS. \\
+         verbose       & integer & 1        & Verbose level. \\
+         VCInp         & logical & false    & Reads a MO coefficient restart.\\
+         restart\_freq & integer & 1        & Writes a MO coefficient restart every restart\_freq iterations.\\
+         frestart      & char*20 & 'restart.out' & Output restart file. \\
+         frestartin    & char*20 & 'restart.in'  & Input restart file. \\
        \end{tabular}
        \end{center}
       \label{lio.fileio.var}
@@ -88,14 +98,14 @@ This section provides a quick reference for LIO input variables, also providing 
     \begin{table}  [H]
       \begin{center}
       \begin{tabular}{ l c c l}
-         Variable & Type & Default & Description \\
-         writeDens & logical & false & Writes electronic density to an output file after calculation. \\
-         writeForces & logical & false & Writes final forces to output. \\
-         print\_coeffs & logical & false & Prints MO coefficients in AO basis. \\
-         mulliken & logical & false & Performs a Mulliken Population Analysis. \\
-         lowdin & logical & false & Performs a Lowdin Population Analysis. \\
-         fukui & logical & false & Calculates condensed-to-atoms Fukui function (Spin Polarized \\
-            & & & Fukui in open-shell systems).
+         Variable      & Type    & Default & Description \\
+         writeDens     & logical & false   & Writes electronic density to an output file after calculation. \\
+         writeForces   & logical & false   & Writes final forces to output. \\
+         print\_coeffs & logical & false   & Prints MO coefficients in AO basis. \\
+         mulliken      & logical & false   & Performs a Mulliken Population Analysis. \\
+         lowdin        & logical & false   & Performs a Lowdin Population Analysis. \\
+         fukui         & logical & false   & Calculates condensed-to-atoms Fukui function (Spin Polarized \\
+         & &                               & Fukui in open-shell systems).
        \end{tabular}
        \end{center}
       \label{lio.properties.var}
@@ -112,13 +122,13 @@ This section provides a quick reference for LIO input variables, also providing 
             & & & AMBER/GROMACS). \\
          charge & integer & 0 & QM system total charge. \\
          open & logical & false & Perform an open-shell calculation. \\
-         nUnp & integer & 0 & Number of unpaired electrons. \\
-         int\_basis & logical & true & If set to false, an external basis file must be \\ 
-            & & & provided. \\
-         basis\_set & char*20 & 'DZVP' & Name of the basis set used in the calculation. \\
-            & & & Ignored if int\_basis is set to false. \\
-         fitting\_set & char*40 & 'DZVP Coulomb Fitting' & Name of the fitting set used in the calculation. \\
-            & & & Ignored if int\_basis is set to false. \\
+         nunp & integer & 0 & Number of unpaired electrons. \\
+         int\_basis & logical & true & If set to false, an external basis file \\ 
+            & & & must be provided. \\
+         basis\_set & char*20 & 'DZVP' & Name of the basis set used in the \\
+            & & & calculation (if int\_basis is set to true). \\
+         fitting\_set & char*40 & 'DZVP Coulomb Fitting' & Name of the fitting set used in the \\
+            & & & calculation (if int\_basis is set to true). \\
          nMax & integer & 100 & Maximum number of SCF steps. \\
          number\_restr & integer & 0 & Amount of distance restraints used. \\
       \end{tabular}
@@ -126,77 +136,65 @@ This section provides a quick reference for LIO input variables, also providing 
       \label{lio.theory.var}
     \end{table}  
     
-    \subsection{Theory Level Advanced Options}
+    \subsection{Theory Level Options - Advanced}
     \begin{table}  [H]
       \begin{center}
       \begin{tabular}{ l c c l}
-         Variable & Type & Default & Description \\
-         DIIS & logical & true & Use DIIS convergence. \\
-         nDIIS & integer & 30 & \\
-         hybrid\_converg & logical & false & Use Hybrid convergence. \\
-         gold & real*8 & 10 & \\
-         told & real*8 & 1.0D-6 & \\
-         ETold & real*8 & 1.0D0 & \\
-         good\_cut & real*8 & 1.0D-5 & \\
-         rmax & real*8 & 16 & \\
-         rmaxs & real*8 & 5 & \\
-         omit\_bas & logical & false & \\
-         predCoef & logical & false & \\
-         dgTrig & integer & 100 & \\
-         iExch & integer & 9 & \\
-         integ & logical & true & \\
-         intSolDouble & logical & true & \\
-         dens & logical & true & \\
-         iGrid & integer & 2 & \\
-         iGrid2 & integer & 2 & \\         
+         Variable        & Type    & Default & Description \\
+         DIIS            & logical & true    & Use DIIS convergence. \\
+         nDIIS           & integer & 30      & Number of DIIS convergence iterations. \\
+         hybrid\_converg & logical & false   & Use Hybrid convergence. \\
+         told            & double  & 1.0D-6  & Tolerance threshold for density matrix convergence.\\
+         ETold           & double  & 1.0D0   & Tolerance threshold for energy convergence.\\
+         good\_cut       & double  & 1.0D-5  & Tolerance threshold for damped convergence, switch \\
+         & &                                 & to DIIS afterwards.\\
+         rmax            & double  & 16      & Maximum exponent in 3-center integrals. If exponent \\
+         & &                                 & is greater than rmax, the current term is ignored.\\
+         rmaxs           & double  & 5       & If the exponent in 3-center integral is within rmax and \\
+         & &                                 & rmaxs, calculation is performed in single precision \\
+         & &                                 & (ignored when using AINT module).\\
+         iGrid           & integer & 2       & Grid type when iterating through SCF.\\
+         iGrid2          & integer & 2       & Grid type for final energy calculation in SCF.\\         
        \end{tabular}
        \end{center}
       \label{lio.theorya.var}
     \end{table}    
     
-    \subsection{TD-DFT Options}
+    \subsection{RT-TD-DFT Options}
     \begin{table}  [H]
       \begin{center}
       \begin{tabular}{ l c c l}
-         Variable & Type & Default & Description \\
-         timeDep & integer & 0 & Use TDDFT (when =1). \\
-         tdStep & real*8 & 2.D-5 & Timestep for TD-DFT (in atomic units). \\
-         ntdStep & integer & 0 & Maximum number of TD-DFT steps. \\
-         propagator & integer & 1 & \\
-         NBCH & integer & 10 & \\
-         field & logical & false & \\
-         epsilon & real*8 & 1.D0 & \\
-         a0 & real*8 & 1000 & \\
-         exter & logical & false & Apply an external electric field. \\
-         Fx, Fy, Fz & real*8 & 0.05 &  The strength of the external electric field. \\
-         tdrestart & logical & false & \\
+         Variable      & Type    & Default & Description \\
+         timeDep       & integer & 0       & Use RT-TD-DFT when timeDep = 1. \\
+         tdStep        & double  & 2.D-5   & Timestep for TD-DFT (in atomic units). \\
+         ntdStep       & integer & 0       & Maximum number of TD-DFT steps. \\
+         propagator    & integer & 1       & RT-TD-DFT propagator (1 = Verlet, 2 = Magnus) \\
+         NBCH          & integer & 10      & Number of [$\rho$. Fock\textsuperscript{n}] commutators in Magnus.\\
+         tdrestart     & logical & false   & Reads an input restart for TD ( named td\_in.restart ) .\\
+         writedens     & logical & false   & Writes and output restart for TD during current run.\\
+         td\_rst\_freq & integer & 500     & Write the TD restart every td\_rst\_freq steps.\\
+        \end{tabular}
+       \end{center}
+      \label{lio.tddft.var}
+    \end{table}
+    
+    \subsection{External Field Options}
+    \begin{table}  [H]
+      \begin{center}
+      \begin{tabular}{ l c c l}
+         Variable       & Type    & Default & Description \\
+         field          & logical & false   & Use an external field (perturbation in TD). \\
+         epsilon        & double  & 1.D0    & Relative permitivity of the medium. \\
+         Fx, Fy, Fz     & double  & 0.05D0  & The strength of the external electric field. \\
+         nfields\_iso   & integer & 0       & Number of shape-isotropic fields. If nfields\_iso $>$ 0, \\
+         &&                                 & the above inputs are ignored.\\
+         nfields\_aniso & integer & 0       & Number of shape-anisotropic fields. If nfields\_aniso $>$ 0, \\
+         &&                                 & the inputs above nfields\_iso are ignored.\\
+         field\_iso\_file   & char*20 & 'field.in'      & Isotropic fields input file. \\
+         field\_aniso\_file & char*20 & 'fieldaniso.in' & Anisotropic fields input file. \\
        \end{tabular}
        \end{center}
       \label{lio.tddft.var}
-    \end{table}    
-
-    \subsection{Effective Core Potential Options}
-    \begin{table}  [H]
-      \begin{center}
-      \begin{tabular}{ l c c l}
-         Variable & Type & Default & Description \\
-         ECPMode & logical & false & Activate the ECP mode. \\
-         ECPTypes & integer & 0 & \\
-         tipeECP & char*20 & 'NOT-DEFINED' & \\
-         ZListECP & integer & 0 & \\
-         cutECP & logical & true & \\
-         ECP\_debug &  logical & false & \\
-         local\_nonlocal & integer & 0 & \\
-         ECP\_full\_range\_int & logical & false & \\
-         verbose\_ECP & integer & 0 & \\
-         fock\_ECP\_read & logical & false & \\
-         fock\_ECP\_write & logical & false & \\
-         fullTimer\_ECP & logical & false & \\
-         cut2\_0 & real*8 & 15.D0 & \\
-         cut3\_0 & real*8 & 12.D0 & \\
-       \end{tabular}
-       \end{center}
-      \label{lio.ecp.var}
     \end{table}    
 
     \subsection{Geometry Optimizations}
@@ -204,55 +202,97 @@ This section provides a quick reference for LIO input variables, also providing 
       \begin{center}
       \begin{tabular}{ l c c l}
          Variable & Type & Default & Description \\
-         steep & logical & false & Activate steepest descend algorithm \\
-         Force\_cut & real*8 & $5 * 10^{-4}$ & convergence criteria in forces (Hartree/bohr)\\
-         Energy\_cut & real*8 & $1 * 10^{-4}$& convergence criteria in energy (Hartree)\\
-         minimzation\_steep & real*8 & 0.05 & initial distance steep (bohr)\\
-         n\_points & integer & 5 & number of points scaned for lineal search \\
-         n\_min\_steeps  &  integer & 500 & number of optimization steps\\
-         lineal\_search & logical & true & enable lineal search\\
+         steep & logical & false & Activate steepest descent algorithm. \\
+         Force\_cut & real*8 & $5 * 10^{-4}$ & Convergence criteria in forces (Hartree/bohr). \\
+         Energy\_cut & real*8 & $1 * 10^{-4}$& Convergence criteria in energy (Hartree). \\
+         minimzation\_steep & real*8 & 0.05 & Initial distance steep (bohr).\\
+         n\_min\_steeps  &  integer & 500 & Maximum number of optimization steps.\\
+         lineal\_search & logical & true & Enable lineal search algorithm.\\
+         n\_points & integer & 5 & Number of points scaned for lineal search.\\
        \end{tabular}
        \end{center}
       \label{geom.optim}
     \end{table} 
     
-    \subsection{Others}
+    \subsection{Effective Core Potential Options}
+    \begin{table}  [H]
+      \begin{center}
+      \begin{tabular}{ l c c l}
+         Variable              & Type    & Default & Description \\
+         ECPMode               & logical & false         & Activate the ECP mode.  \\
+         ECPTypes              & integer & 0             & Amount of atoms with ECP.\\
+         tipeECP               & char*30 & 'NOT-DEFINED' & Type of ECP used.\\
+         ZListECP              & integer & 0             & Z of atoms with ECP enabled.\\
+         cutECP                & logical & true          & Enables cuts for ECP integrals.\\
+         cut2\_0               & double  & 15.D0         & Cut value for 2-center ECP integrals. \\
+         cut3\_0               & double  & 12.D0         & Cut value for 3-center ECP integrals.\\
+         ECP\_debug            & logical & false         & Enables ECP debug mode.\\
+         local\_nonlocal       & integer & 0             & Calculates only local terms (when = 1) or \\
+         &&                                              & non-local terms (when = 2). \\
+         ECP\_full\_range\_int & logical & false         & Enables full-range integral calculations.\\
+         verbose\_ECP          & integer & 0             & Controls ECP verbose levels. \\
+         fock\_ECP\_read       & logical & false         & Enables restart read in ECP.\\
+         fock\_ECP\_write      & logical & false         & Enables restart write in ECP.\\
+         fullTimer\_ECP        & logical & false         & Enables full timers in ECP.\\
+       \end{tabular}
+       \end{center}
+      \label{lio.ecp.var}
+    \end{table}        
+    
+    \subsection{CubeGen Options}
     \begin{table}  [H]
       \begin{center}
       \begin{tabular}{ l c c l}
          Variable & Type & Default & Description \\
-         cubeGen\_only & logical & false & \\
-         cube\_res & integer & 40 & \\
-         cube\_sel & integer & 0 & \\
+         cubeGen\_only & logical & false & Avoid running SCF, only do cubeGen from a restart.\\
+         cube\_res & integer & 40 & Number of voxels per dimension (resolution).\\
+         cube\_sel & integer & 0  & Select only a particular orbital for printing (0 = all). \\
          cube\_dens & logical & false & Prints the electronic density.  \\
          cube\_dens\_file & char*20 & 'dens.cube' & File containing the electronic density. \\
          cube\_orb & logical & false & Prints orbital shapes. \\
          cube\_orb\_file & char*20 & 'orb.cube' & File containing the orbital shapes. \\
          cube\_elec & logical & false & Prints the electric field. \\
          cube\_elec\_file & char*20 & 'field.cube' & File containing the electric field. \\
-         cube\_sqrt\_orb & logical & false & \\
+         cube\_sqrt\_orb & logical & false & Prints the orbitals' square root.\\
        \end{tabular}
        \end{center}
       \label{lio.ecp.var.1}
     \end{table}    
     
-    \subsection{GPU Options}
+    \subsection{GPU Options -  Exchange-Correlation only}
     \begin{table}  [H]
       \begin{center}
       \begin{tabular}{ l c c l}
          Variable & Type & Default & Description \\
-         max\_function\_exponent & integer & 10 & \\
-         little\_cube\_size & real*8 & 8.0 & \\
-         min\_points\_per\_cube & integer & 1 & \\
-         assign\_all\_functions & logical & false & \\
-         sphere\_radius & real*8 & 0.6 & \\
-         remove\_zero\_weights & logical & true & \\
-         energy\_all\_iterations & logical & false & \\
-         free\_global\_memory & real*8 & 0.0 & \\
+         max\_function\_exponent & integer & 10    & Ignore functions with \\
+         &&                                        & $\lvert exponent \rvert >$  max\_function\_exponent \\
+         little\_cube\_size      & double  & 8.0   & Small cube-type point group size.\\
+         min\_points\_per\_cube  & integer & 1     & Minimum number of grid points in a cube. \\
+         assign\_all\_functions  & logical & false & Calculate all functions (ignores \\
+         &&                                        & max\_function\_exponent).\\
+         sphere\_radius          & double  & 0.6   & Radius of the sphere-type point groups. 0 means\\
+         &&                                        &  there are no sphere-type groups, 1 means all  \\
+         &&                                        &points are contained in sphere-type groups.\\
+         remove\_zero\_weights   & logical & true  & Discard functions for those whose weight is zero. \\
+         energy\_all\_iterations & logical & false & Calculate Exc energy in all SCF iterations. \\
+         free\_global\_memory    & double  & 0.0   & Percentage (1 means 100\%) of GPU memory \\
+         &&                                        & available for storage.\\
        \end{tabular}
        \end{center}
       \label{lio.ecp.var.2}
-    \end{table}    
+    \end{table}
+
+\newpage
+\section{What is LIO?}
+
+\newpage
+\section{LIO Installation}
+
+\newpage
+\section{Single-point and MD calculations}
+
+\newpage
+\section{RT-TD-DFT calculations}
 
 \newpage
 \section{Geometry optimizations}
@@ -261,16 +301,16 @@ Geometry optimizations or energy minimization is the process of finding an atomi
 
     \subsection{Implemenation}
     
-    Lio have a simple steepest-descend algorithm. The idea is just move the system in the force direction a $\lambda$ value.
+    LIO has a simple steepest-descent algorithm. The idea is to move the system in the force direction, at a $\lambda$ step value.
     
     \begin{equation}
       \vec{r}^i_{new}=\vec{r}^i + \lambda  \vec{F}^i  
       \label{new_force}
     \end{equation}
     
-    In NO lineal search algorithm $\lambda$ is obtained as $\frac{steep\_ size}{|\vec{F}_{max}|}$. If energy decrease with the movement the step is accepted but if energy increase with the steep the steep is rejected and $\lambda$ is reduced. Each accepted movement increase steep size a 20\% and each rejected move decrease steep size a 50\%.
+    Without a linear search algorithm $\lambda$ is obtained as $\frac{steep\_ size}{|\vec{F}_{max}|}$. If the energy decreases with the movement, the step is accepted; but if the energy increases with the step, the steep is rejected and $\lambda$ is reduced. Each accepted move increases step size a 20\% and each rejected move decreases step size a 50\%.
     
-    In lineal search algorithm the system scan energy as function of $\lambda$ and predict the best value of $\lambda$ for move system in force direction.
+    In a linear search algorithm the system scans the energy as function of $\lambda$ and predicts the best value of $\lambda$ to move the system in the gradient direction.
     
     \begin{table}  [H]
       \begin{center}
@@ -340,16 +380,15 @@ Geometry optimizations or energy minimization is the process of finding an atomi
       \label{steep-algorithm}
     \end{table}   
     
-Best $\lambda$ in lineal search algorithm is obtained by a quadratic function ajust using minimun energy of the scan and previus and next points.
+Best $\lambda$ in lineal search algorithm is obtained by a quadratic function ajusted using minimum energy of the scan and previous and next points.
 
     \subsection{Using geometry optimizations}
     
-    Adding steep=t in lio input enables geometry optimization (steepest descend, lineal search by default).
-    Cutoff criteria are sets by Force\_cut and Energy\_cut (5E-4 Hartree/bohr and 1E-4 Hartree by Default).
-    Number of minimization steeps is set by n\_min\_steeps (500 by default) and initial distance steep is set by minimzation\_steep (by default 0.05 bohr)\\
-    It is recomendable to compile lio in double precision for minimice error in exchange-correlation forces (full\_double=1).
-    
-    Outputs of geometry optimizations are traj.xyz (atoms coordinates in each steepes descend movement) and optimization.out (steep, energy and others). If verbose=true optimization.out include energy of each lineal search point.
+    Adding steep=t in LIO input enables geometry optimization (steepest descent, lineal search by default).
+    Convergence criteria are set by Force\_cut and Energy\_cut (5E-4 Hartree/bohr and 1E-4 Hartree by Default).
+    The number of minimization steeps is set by n\_min\_steps (500 by default) and initial distance steep is set by minimzation\_steep (by default 0.05 bohr)\\
+    It is highly advisable to compile LIO in double precision in order to minimise the error in exchange-correlation forces (precision=1).
+        Outputs of geometry optimizations are traj.xyz (atoms coordinates in each steepes descent movement) and optimization.out (steep, energy and others). If verbose=true optimization.out includes the energy of each linear search point.
     
     \subsection{Examples}
     
@@ -386,9 +425,9 @@ LIO may add an extra potential term to the Hamiltonian in order to restrain the 
     \begin{equation*}
       \eta_{ijl} =
        \begin{cases}
-         1 & \text{if $l=i$}\\
+          1 & \text{if $l=i$}\\
          -1 & \text{if $l=j$}\\
-         0 & \text{in other case}
+          0 & \text{in other case}
        \end{cases}
        \label{eta}
     \end{equation*}
@@ -493,6 +532,22 @@ Columns $a_i$ and $a_j$ contain the atom numbers in the QM system to be restrain
       \label{Ex3}
     \end{equation}
 
+\newpage
+\section{Effective Core Potentials}
 
+\newpage
+\section{Using external fields}
+
+\newpage
+\section{Ehrenfest Dynamics}
+
+\newpage
+\section{Doing electron transport calculations}
+
+\newpage
+\section{Using CubeGen for orbital and density printing}
+
+\newpage
+\section{Tips and tricks - Optimizing your runs}
 
 \end{document}

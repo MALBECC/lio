@@ -3,9 +3,9 @@
 !---------------------------------------------------------------------
 program liosolo
 
-    use garcha_mod, only : natom, nsol, Iz, basis, basis_set, fitting_set, &
+    use garcha_mod , only : natom, nsol, Iz, basis, basis_set, fitting_set, &
                              int_basis, omit_bas, verbose, writeforces
-    use ECP_mod   , only : ecpmode
+    use ECP_mod    , only : ecpmode
 #ifdef CUBLAS
     use cublasmath
 #endif
@@ -44,6 +44,7 @@ program liosolo
 
     ! Reads options and coordinates files.
     call read_options(inpfile, charge)
+
     call read_coords(inpcoords)
      
     ! Initializes LIO. The last argument indicates LIO is being used alone.

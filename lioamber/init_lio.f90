@@ -355,7 +355,6 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge, basis_i         &
    use basis_data, only: basis_data_set
 
    use lionml_data, only: ndyn_steps, edyn_steps
-   use lionml_subs, only: lionml_Read
 
    use liosubs,    only: catch_error
 
@@ -376,8 +375,6 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge, basis_i         &
    real*8  :: GOLD_i, told_i, rmax_i, rmaxs_i, dgtrig_i, tdstep_i, a0_i        &
            &, epsilon_i, Fx_i, Fy_i, Fz_i, dt_i
 
-   integer :: mystat
-
 
    call init_lio_amber(natomin, Izin, nclatom, charge, basis_i                 &
            , output_i, fcoord_i, fmulliken_i, frestart_i, frestartin_i         &
@@ -388,19 +385,6 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge, basis_i         &
            , ntdstep_i, field_i, exter_i, a0_i, epsilon_i, Fx_i, Fy_i          &
            , Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i              &
            )
-
-   inputFile = 'lio.in'
-   mystat = 0
-   call lionml_Read( inputFile, mystat )
-   if ( mystat == 1 ) then
-      print*, "No lio.in file to read."
-   else if ( mystat == 3 ) then
-      print*, "No lionml namelist in file lio.in"
-   else if ( mystat /= 0 ) then
-      print*, "A problem occurred while trying to read namelist lionml."
-      print*, "stat = ", mystat
-      stop
-   end if
 
    if (allocated(RhoSaveA)) deallocate(RhoSaveA)
    if (allocated(RhoSaveB)) deallocate(RhoSaveB)
@@ -430,6 +414,7 @@ end subroutine init_lioamber_ehren
 ! Hybrid software package, in order to conduct a hybrid QM/MM calculation.     !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine init_lio_hybrid(hyb_natom, mm_natom, charge, iza)
+
     implicit none
     integer, intent(in) :: hyb_natom !number of total atoms
     integer, intent(in) :: mm_natom  !number of MM atoms

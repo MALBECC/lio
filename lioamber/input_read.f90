@@ -38,8 +38,12 @@ subroutine read_options(inputFile, charge)
 
     use transport_data, only  : transport_calc, generate_rho0, gate_field,     &
                                 save_charge_freq, driving_rate, Pop_Drive
+
     use dftb_data ,only: dftb_calc, MTB, alfaTB, betaTB, gammaTB, Vbias_TB,    &
                          end_bTB, start_tdtb, end_tdtb, TBsave, TBload
+
+    use lionml_subs , only: lionml_Reads
+
     implicit none
     character(len=20), intent(in)  :: inputFile
     integer          , intent(out) :: charge
@@ -95,6 +99,7 @@ subroutine read_options(inputFile, charge)
         open(unit = 100, file = inputFile, iostat = ios)
         read(100, nml = lio, iostat = iErr)
         if(ierr.gt.0) stop 'Input error in LIO namelist.'
+        call lionml_Reads( 100 )
         close(unit = 100)
     else
         write(*,*) 'File ', adjustl(inputFile), ' not found. Using defaults.'

@@ -96,8 +96,11 @@ else
 endif
 
 # Debug/release configuration
+NVCCDBGFLAGS  :=
+NVCCAINTFLAGS :=
 ifeq ($(dbg),1)
-  NVCCFLAGS   += -O1 --debug --device-debug --generate-line-info
+  NVCCDBGFLAGS  += -O1 --debug --device-debug --generate-line-info
+  NVCCAINTFLAGS += -O3 --compiler-options -fno-strict-aliasing
 else
   NVCCFLAGS   += -O3 --compiler-options -fno-strict-aliasing
 endif
@@ -190,7 +193,7 @@ pointxc/%.o:pointxc/%.cpp
 	nvcc $(NVCCFLAGS) -o $@ -dc $<
 
 cuda/%.o:cuda/%.cu
-	nvcc $(NVCCFLAGS) -o $@ -dc $<
+	nvcc $(NVCCFLAGS) $(NVCCDBGFLAGS) -o $@ -dc $<
 
 analytic_integral/cuda/%.o:analytic_integral/cuda/%.cu
-	nvcc $(NVCCFLAGS) -o $@ -dc $<
+	nvcc $(NVCCFLAGS) $(NVCCAINTFLAGS) -o $@ -dc $<

@@ -200,12 +200,15 @@ subroutine TD()
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    do 999 istep = 1, ntdstep
       call g2g_timer_start('TD step')
+      call g2g_timer_sum_start("TD - TD Step")
       ! Checks if step is a leapfrog step.
       call td_check_prop(is_lpfrg, propagator, istep, lpfrg_steps, tdrestart)
       call td_get_time(t, tdstep, istep, propagator, is_lpfrg)
 
+      call g2g_timer_sum_start("TD - TD Step Energy")
       call td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM(M11), is_lpfrg,  &
                           transport_calc, sol, t/0.024190D0)
+      call g2g_timer_sum_pause("TD - TD Step Energy")
       write(*,*) 'TD - Step: ', istep, " Energy : ", E
 
       ! Verlet or Magnus Propagation
@@ -222,6 +225,7 @@ subroutine TD()
       ! density matrix. (This will not be true in the case of hybrid
       ! functionals)
 
+      call g2g_timer_sum_start("TD - Propagation")
 #ifdef CUBLAS
       if (is_lpfrg) then
          call td_bc_fock_cu(M_in,M, MM, RMM(M5), fock, devPtrX,natom, nshell,ncont, istep)
@@ -270,6 +274,7 @@ subroutine TD()
       rho_aux = matmul(rho_aux, Xtrans)
       call g2g_timer_stop('complex_rho_on_to_ao')
 #endif
+      call g2g_timer_sum_pause("TD - Propagation")
 
       ! The real part of the density matrix in the atomic orbital basis is
       ! copied in RMM(1,2,3,...,MM) to compute the corresponding Fock matrix.
@@ -299,8 +304,11 @@ subroutine TD()
                                                     overlap, sqsm, propagator, &
                                                     is_lpfrg, istep)
       ! TD step finalization.
+
+      if (dftb_calc) call dftb_output(M, rho_aux, overlap, istep, Iz, natom, Nuc)
+
       call g2g_timer_stop('TD step')
-   if (dftb_calc) call dftb_output(M, rho_aux, overlap, istep, Iz, natom, Nuc)
+      call g2g_timer_sum_pause("TD - TD Step")
 
  999  continue
 
@@ -440,9 +448,9 @@ subroutine td_integration_setup(igrid2, igpu)
    integer, intent(in)  :: igrid2
    integer, intent(out) :: igpu
 
-   call g2g_timer_sum_start('Exchange-correlation grid setup')
+   call g2g_timer_sum_start('TD - Exchange-correlation grid setup')
    call g2g_reload_atom_positions(igrid2)
-   call g2g_timer_sum_stop('Exchange-correlation grid setup')
+   call g2g_timer_sum_stop('TD - Exchange-correlation grid setup')
 
    call aint_query_gpu_level(igpu)
    if (igpu.gt.1) call aint_new_step()
@@ -461,16 +469,16 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM11, r, pc, &
    integer :: icount
 
    E1 = 0.0D0 ; En = 0.0D0
-   call g2g_timer_sum_start('1-e Fock')
-   call g2g_timer_sum_start('Nuclear attraction')
+   call g2g_timer_sum_start('TD - 1-e Fock')
+   call g2g_timer_sum_start('TD - Nuclear attraction')
    call int1(En)
 
    call ECP_fock(MM, RMM11)
-   call g2g_timer_sum_stop('Nuclear attraction')
+   call g2g_timer_sum_stop('TD - Nuclear attraction')
 
    ! 1e terms - QMMM terms.
    if ((nsol.gt.0) .or. (igpu.ge.4)) then
-      call g2g_timer_sum_start('QM/MM')
+      call g2g_timer_sum_start('TD - QM/MM')
       if (igpu.le.1) then
          call g2g_timer_start('intsol')
          call intsol(E1s, Ens, .true.)
@@ -481,14 +489,14 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM11, r, pc, &
          call aint_qmmm_fock(E1s, Ens)
          call g2g_timer_stop('aint_qmmm_fock')
       endif
-         call g2g_timer_sum_stop('QM/MM')
+         call g2g_timer_sum_stop('TD - QM/MM')
    endif
 
    E1=0.D0
    do icount = 1, MM
       E1 = E1 + RMM(icount) * RMM11(icount)
    enddo
-   call g2g_timer_sum_stop('1-e Fock')
+   call g2g_timer_sum_stop('TD - 1-e Fock')
    return
 end subroutine td_integral_1e
 
@@ -598,8 +606,8 @@ subroutine td_coulomb_precalc(igpu, MEMO)
    integer, intent(in)    :: igpu
    logical, intent(inout) :: MEMO
 
-   call g2g_timer_start('Coulomb - precalc')
    if (igpu.gt.2) then
+      call g2g_timer_start('Coulomb - precalc')
       call aint_coulomb_init()
       if (igpu.eq.5) MEMO = .false.
    endif
@@ -667,8 +675,12 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
 
    E1 = 0.0D0; E = 0.0D0
    if (is_lpfrg) then
+      call g2g_timer_sum_start("TD - Coulomb")
       call int3lu(E2)
+      call g2g_timer_sum_pause("TD - Coulomb")
+      call g2g_timer_sum_start("TD - Exc")
       call g2g_solve_groups(0,Ex,0)
+      call g2g_timer_sum_pause("TD - Exc")
    endif
 
    ! ELECTRIC FIELD CASE - Perturbation type: Gaussian.
@@ -729,7 +741,7 @@ subroutine td_verlet(M, M_in, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg,    
    real*8    , intent(in)    :: dt_lpfrg
    real*8    , intent(in)    :: Xmat(M_in, M_in), Xtrans(M_in, M_in)
    logical   , intent(in)    :: transport_calc
-   real*8    , intent(inout) :: overlap(M,M), sqsm(M,M), fock(M_in,M_in)
+   real*8    , intent(inout) :: overlap(:,:), sqsm(M,M), fock(M_in,M_in)
 #ifdef TD_SIMPLE
    complex*8 , intent(inout) :: Im, rho_aux(M,M), rhold(M_in,M_in),   &
                                 rhonew(M_in,M_in), rho(M_in,M_in)
@@ -796,7 +808,7 @@ subroutine td_magnus(M, fock, F1a, F1b, rho, rhonew, factorial, NBCH,  &
    integer  , intent(in)     :: M, NBCH, istep, natom, Nuc(M), Iz(natom), M_in
    real*8   , intent(in)     :: dt_magnus, factorial(NBCH), Xtrans(M,M), time
    real*8   , intent(inout)  :: fock(M_in,M_in), F1a(M_in,M_in), &
-                                F1b(M_in,M_in), overlap(M,M), sqsm(M,M), &
+                                F1b(M_in,M_in), overlap(:,:), sqsm(M,M), &
                                 Xmat(M,M)
    integer, intent(in)       :: nshell (0:4)
    integer, intent(in)       :: ncont(M)
@@ -1000,7 +1012,7 @@ subroutine td_verlet_cu(M, M_in, fock, rhold, rho, rhonew, istep, Im, dt_lpfrg, 
    integer*8 , intent(in)    :: devPtrY, devPtrXc
    real*8    , intent(in)    :: dt_lpfrg
    logical   , intent(in)    :: transport_calc
-   real*8    , intent(inout) :: overlap(M,M), sqsm(M,M), fock(M_in,M_in)
+   real*8    , intent(inout) :: overlap(:,:), sqsm(M,M), fock(M_in,M_in)
 #ifdef TD_SIMPLE
    complex*8 , intent(inout) :: Im, rho_aux(M,M), rhold(M_in,M_in), rhonew(M_in,M_in), &
                                 rho(M_in,M_in)
@@ -1066,7 +1078,7 @@ subroutine td_magnus_cu(M, fock, F1a, F1b, rho, rhonew, devPtrX, devPtrXc,     &
    real*8   , intent(in)     :: dt_magnus, factorial(NBCH), time
    integer  , intent(in)     :: nshell (0:4), ncont(M)
    real*8   , intent(inout)  :: fock(M_in,M_in), F1a(M_in,M_in), &
-                                F1b(M_in,M_in), overlap(M,M), sqsm(M,M)
+                                F1b(M_in,M_in), overlap(:,:), sqsm(M,M)
 #ifdef TD_SIMPLE
    complex*8 , intent(inout) :: rho_aux(M_in,M_in), rhonew(M_in,M_in), rho(M_in,M_in)
 #else

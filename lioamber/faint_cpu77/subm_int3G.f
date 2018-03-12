@@ -24,18 +24,101 @@ c F also updated with exchange correlation part, also energy
 c is updated
 c this subroutine calls the fitting for exchange-correlation
 c-----------------------------------------------------------------
-      module subm_int3G; contains
-      subroutine int3G(f,calc_energy)
-          use garcha_mod
-          use subm_int2G
+       module subm_int3G; contains
+       subroutine int3G(f,calc_energy)
 
+       use subm_int2G, only: int2G
+       use liotemp   , only: FUNCT
+       use garcha_mod, only: RMM, ll, a, b, c, d, r, nuc, nucd
+     >                     , ad, af, cd, ncont, ncontd, nshell
+     >                     , nshelld, natom, ng, ngd, M, Md
+     >                     , NORM, pi52, rmax
 c
 
-      implicit real*8 (a-h,o-z)
+      implicit none
 c
-      logical calc_energy
-      dimension Q(3),W(3),af2(ngd),ftot(3)
-      dimension Jx(ng),f(natom,3)
+      logical, intent(in) :: calc_energy
+      real*8  :: f(natom,3)
+
+      real*8  :: Q(3), W(3), Jx(ng), af2(ngd), ftot(3)
+      real*8  :: Exc, alf, cc, ccoef, rexp, ro, roz, sq3
+      real*8  :: term, u
+
+      real*8  :: d0d, d0p, d0pk, d0pkd, d0pkp, d0pl, d0pld
+      real*8  :: d0plp, d0s, d1d, d1p, d1pk, d1pkd, d1pkp
+      real*8  :: d1pl, d1pld, d1plp, d1pp, d1s, d1spm
+      real*8  :: d2d, d2p, dds, ddp, ddi, ddf, ddd
+      real*8  :: dij2plp, dij2pkp, dfs, dfp, dp0p, dp, dijplp
+      real*8  :: dfd, dd2p, dijpkp, dp0pm, dp1d, dp1p, dp1pm
+      real*8  :: dp1s, dp2p, dpc, dpd, dpf, dpk, dpp, dps, ds
+      real*8  :: ds0p, ds1d, ds1p, dsp, dsf, dsd, ds2pl, ds2p
+      real*8  :: ds1s, f3, f2, f1, dss, dspl, fpp, fpd, fds
+      real*8  :: fdp, fdd, fss, fsp, fsd, fps
+      real*8  :: p0pk, p1pk, p1s, p2s, p3s, p4s, p5s, p6s
+      real*8  :: pi0dd, pi0d, pds, pdp, pdd, pi0sd, pi0pp
+      real*8  :: pi0p, pi0dp, pi0dkl, pi1dp, pi1dkl, pi1dd
+      real*8  :: pi0spj, pi1pl, pi1pkpm, pi1pk, pi1d, pi1spl
+      real*8  :: pi1sd, pi1pp, pi1plpm, pi1p, pi2pkpl, pi2pk
+      real*8  :: pi2p, pi2dklp, pi2dkl, pi2spk, pi2spj, pi2pl
+      real*8  :: pi2pkpm, pi3pk, pi3p, pi3dkl, pi2spl, pi2plpm
+      real*8  :: pij1s, pidklp, pidkl, pi4pk, pi3pl, pip0d, pip
+      real*8  :: pijs, pij3s, pij2s, pis2pk, pis1pk, pipkpl, pipk
+      real*8  :: pip1d, pj0dkl, pj0dd, pj0d, pispk, pispj, pj0sd
+      real*8  :: pj0s, pj0pp, pj0p, pj0dp, pjs, pjp0d, pj1p, pj1dp
+      real*8  :: pj1d, pj1dkl, pj4pk, pjpk, pjp1d, pjp
+      real*8  :: pj1dd, pj1plpm, pj1pl, pj1pkpm, pj1pk, pj1spl
+      real*8  :: pj1sd, pj1s, pj1pp, pj2pk, pj2p, pj2dklp, pj2pl
+      real*8  :: pj2pkpm, pj2pkpl, pj2dkl, pj3dkl, pj2spl, pj2s
+      real*8  :: pj2plpm, pj3s, pj3pl, pj3p, pj5s, pj4s, pj3pk
+      real*8  :: pjdklp, pjdkl, pjpkpl
+      real*8  :: pjs1pk, pp0p, pp0d, pjs2pk, pp1p
+      real*8  :: pp1d, pp0pl, pp2p, pp1s, pp1pl, ppp, ppf, ppd
+      real*8  :: ps0d, ps, pps, psp, spf, psd, ps1d, dd1s
+      real*8  :: dd1pn, s0pk, pss, psf, s2dpm, s2dkl, s1pkpl
+      real*8  :: s1pk, s1ds, s1dpm, s2pl, s2pks, s2pkpl, s2pk
+      real*8  :: s2pjpk, s4pk, s3pl, s3pks, s3pk, s3dkl, s2ds
+      real*8  :: sks, sp0d, sp0js, sp1d, sp1s, sp2js, sp3js
+      real*8  :: spd, spjpk, spjs, spk, spp, sps, ss0d, ss0p
+      real*8  :: ss0pj, ss1d, ss1p, ss1pj, ss1pk, ss1s, ss2p
+      real*8  :: ss2pj, ss2pk, ss2s, ss3s, ss4s, ss5s, ss6s
+      real*8  :: ss7s, ssd, ssf, ssp, sspj, sspk, sss
+      real*8  :: dd1p, dd1d, dd0pn, dd0p, dd, d5s, d4s, d3s
+      real*8  :: d3pl, d3pk, d3p, d4pk, d3d, d2spm, d2s
+      real*8  :: d2pl, d2pk
+
+      real*8  :: ta, tb, ti, tj
+      real*8  :: te, tee, tw, twe, tx, ty, tye, tz, tze
+      real*8  :: t0, t1, t2, t2a, t2b, t3, t3a, t3b, t4, t4b
+      real*8  :: t5, t5a, t5b, t5x, t5y, t6, t6a, t6b, t6c, t6d
+      real*8  :: t7, t7a, t7b, t7c, t7d, t8, t8a, t8b, t9, t9b
+      real*8  :: t10, t10a, t10b, t11, t11a, t11b, t12, t12a, t12b
+      real*8  :: t13, t13b, t14, t14b, t15, t15a, t15b, t15p
+      real*8  :: t16, t16a, t16b, t17, t17a, t17b, t18, t18a, t18b
+      real*8  :: t20, t20b, t21, t21b, t22, t22a, t22b, t22c, t22p
+      real*8  :: t23, t23b, t24, t24b, t25, t25b, t26, t26b
+      real*8  :: t27, t27b, t28, t28b, t29, t29b, t30, t30a, t30b
+      real*8  :: t31, t31b, t32, t32b, t33, t33b, t34, t34b
+      real*8  :: t35, t35b, t36, t37, t38, t39, t40, t40a, t40b
+      real*8  :: t41, t41b, t50, t50b, t51, t51b, t60, t60b
+      real*8  :: t61, t61b, t70, t70b, t80, t80a, t80b
+
+      real*8  :: y1, y1b, y2, y2b, y3, y3b, y4, y4b, y5, y5b
+      real*8  :: y6, y6b, y7, y7b, y8, y8b, y9, y9b
+      real*8  :: z2, z2a, zc, zij
+
+      real*8  :: y10, y10b, y12, y12b, y13, y13b, y14, y14b
+      real*8  :: y15, y15b, y16, y16b, y17, y17b, y18, y18b
+      real*8  :: y19, y19b, y20, y21, y22, y23, y24, y25, y26, y27
+      real*8  :: y28, y29, y30, y31
+
+      integer :: igpu, MM, MMd, Md2
+      integer :: M1, M2, M3, M5, M7, M9, M11, M13, M15, M17, M18
+      integer :: i, ii, j, jj, k, kk, ni, nj, nk, kn, k1
+      integer :: ns, nsd, nd, ndd, np, npd
+      integer :: l, lk, l1, l2, l3, l4, l5, l6, l7
+      integer :: lij, l12, l23, l34, l45, l56
+
+
 c scratch space
 c
 c auxiliars

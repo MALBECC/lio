@@ -22,28 +22,68 @@ c F also updated with exchange correlation part, also energy
 c is updated
 c this subroutine calls the fitting for exchange-correlation
 c-----------------------------------------------------------------
-      module subm_int3mem; contains
-      subroutine int3mem()
-        use garcha_mod
-c
-c
-      implicit real*8 (a-h,o-z)
-c
-      dimension Q(3),W(3)
-C,Rc(ngd),FF(ngd),P(ngd)
-C      dimension d(ntq,ntq),Jx(ng)
-c      real*8, dimension (:), ALLOCATABLE :: Jx ! deviera ser integer???!!! 
-       integer, dimension (:), ALLOCATABLE :: Jx !! 
+       module subm_int3mem; contains
+       subroutine int3mem()
 
-*****
-*****
-c scratch space
+       use liotemp   , only: FUNCT
+       use garcha_mod, only: RMM, ll, cool, cools, kkind, kkinds
+     >                     , nuc, nucd, a, c, d, r, ad, cd, natomc
+     >                     , nns, nnp, nnd, nnps, nnpp, nnpd, jatc
+     >                     , ncont, ncontd, nshell, nshelld, M, Md
+     >                     , rmax, rmaxs, pi52, Nunp, NORM, NCO
+     >                     , kknums, kknumd
 c
+c
+       implicit none
+c
+       real*8  :: Q(3), W(3)
+       integer, dimension(:), allocatable :: Jx
+c scratch space
+
+! Eliminating implicits:
+       real*8  :: alf, cc, ccoef, f1, f2, f3
+       real*8  :: rexp, ro, roz, sq3, term, u, ddij
+       real*8  :: tii, tjj, NCOb, NCOa
+       real*8  :: z2, z2a, zc, zij
+
+       real*8  :: d1s, d1p, d1d, d1pk, d1pl
+       real*8  :: d2s, d2p, d2d, d2pl, d2pk
+       real*8  :: d3s, d3pk, d4s
+       real*8  :: ds, ds1p, dspl, dp, dpc, dpk, dp1p
+       real*8  :: dd, ddp, dijplp, dijpkp
+
+       real*8  :: ps, pp, pp1p, p1s, p2s, p3s, p4s, p5s
+       real*8  :: pi1p, pi1pk, pi2p, pi2pk, pi2pl, pi3pk
+       real*8  :: pijs, pij1s, pij2s, pispj, pispk, pis1pk
+       real*8  :: pip, pipk, pipkpl, pidkl, pidklp
+       real*8  :: pjs, pjs1pk
+       real*8  :: pj1s, pj1p, pj1pk, pj2s, pj2p, pj2pk, pj2pl
+       real*8  :: pj3s, pj3pk, pj4s
+       real*8  :: pjp, pjpk, pjpkpl, pjdklp,pjdkl
+
+       real*8  :: sss, sks, spk, spjs, sspj, spjpk, sp2js
+       real*8  :: ss1s, ss2s, ss3s, ss4s, ss5s, ss6s
+       real*8  :: ss1p, s1pk, s2pk, s3pk, spks, spj, sdkl
+
+       real*8  :: ta, ti, tj
+       real*8  :: t0, t1, t2, t3, t4, t5, t6, t6b, t7, t8, t9
+       real*8  :: t10, t11, t12, t13, t14, t15, t16, t17, t18
+       real*8  :: t20, t21, t22, t22a, t23, t24, t25, t26
+       real*8  :: t27, t28, t29, t30, t31
+       real*8  :: t40, t41, t50, t51, t60, t61, t70, t80
+
+       integer :: MM, MMd, Md2
+       integer :: M1, M2, M3, M5, M7, M9, M11, M13, M15, M17, M18
+       integer :: i, ii, j, jj, k, kk, ni, nj, nk, kn, k1
+       integer :: id, iki, jki, ix, kknan, knan, kknumsmax
+       integer :: ns, nsd, nd, ndd, np, npd
+       integer :: l, lk, l1, l2, l3, l4, l5, l6
+       integer :: lij, l12, l23, l34, l45, l56
+
+
 c auxiliars
-c      dimension aux(ngd)
-       logical fato
-       logical fato2
-        allocate (Jx(M))
+       logical :: fato, fato2
+       allocate (Jx(M))
 c
 c------------------------------------------------------------------
 c now 16 loops for all combinations, first 2 correspond to 

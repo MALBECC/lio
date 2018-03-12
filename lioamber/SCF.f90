@@ -60,7 +60,7 @@ subroutine SCF(E)
    use converger_subs, only: converger_init, conver
    use mask_cublas   , only: cublas_setmat, cublas_release
    use typedef_operator, only: operator !Testing operator
-   use trad_Data, only: trad, rho_exc, traduction
+   use trans_Data, only: gaussian_convert, rho_exc, translation
 
 #  ifdef  CUBLAS
       use cublasmath , only: cumxp_r
@@ -959,9 +959,9 @@ subroutine SCF(E)
 
 !------------------------------------------------------------------------------!
 ! TRADUCTION
-   if (trad) then
+   if (gaussian_convert) then
       allocate(rho_exc(M,M))
-      call traduction(M,rho_exc) ! solo la acomoda al formato LIO
+      call translation(M,rho_exc) ! solo la acomoda al formato LIO
       do ii=1,M      ! Multiplicacion por 2 los elementos no diagonales
       do jj=1,ii-1
          rho_exc(ii,jj) = 2.0D0 * rho_exc(ii,jj)

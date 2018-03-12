@@ -43,7 +43,7 @@ subroutine read_options(inputFile, charge)
                          end_bTB, start_tdtb, end_tdtb, TBsave, TBload
 
     use lionml_subs , only: lionml_Reads
-    use trad_Data, only: trad
+    use trans_Data, only: gaussian_convert
 
     implicit none
     character(len=20), intent(in)  :: inputFile
@@ -94,8 +94,8 @@ subroutine read_options(inputFile, charge)
                    !Variables for DFTB
                    dftb_calc, MTB, alfaTB, betaTB, gammaTB, Vbias_TB, end_bTB, &
                    start_tdtb, end_tdtb, TBsave, TBload,                       &
-                   ! Variables for traduction
-                   trad
+                   ! Variables for translation
+                   gaussian_convert
     inquire(file = inputFile, exist = fileExists)
     if(fileExists) then
         open(unit = 100, file = inputFile, iostat = ios)

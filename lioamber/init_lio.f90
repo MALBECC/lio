@@ -40,6 +40,8 @@ subroutine lio_defaults()
                            local_nonlocal, ecp_debug, ecp_full_range_int,      &
                            verbose_ECP, Cnorm, FOCK_ECP_read, FOCK_ECP_write,  &
                            Fulltimer_ECP, cut2_0, cut3_0
+    use trad_Data, only : trad
+
     implicit none
 
 !   Names of files used for input and output.
@@ -111,6 +113,9 @@ subroutine lio_defaults()
     SHFT           = .false.       ; GRAD               = .true.        ;
     BSSE           = .false.       ; sol                = .false.       ;
     primera        = .true.        ; watermod           = 0             ;
+
+! Traduction of matrix density
+   trad            = .false. 
 
     return
 end subroutine lio_defaults

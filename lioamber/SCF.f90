@@ -60,6 +60,8 @@ subroutine SCF(E)
    use converger_subs, only: converger_init, conver
    use mask_cublas   , only: cublas_setmat, cublas_release
    use typedef_operator, only: operator !Testing operator
+   use trad_Data, only: trad, rho_exc, traduction
+
 #  ifdef  CUBLAS
       use cublasmath , only: cumxp_r
 #  endif
@@ -954,6 +956,33 @@ subroutine SCF(E)
       enddo
 
       call cubegen_matin( M, X )
+
+!------------------------------------------------------------------------------!
+! TRADUCTION
+   if (trad) then
+      allocate(rho_exc(M,M))
+      call traduction(M,rho_exc) ! solo la acomoda al formato LIO
+      do ii=1,M      ! Multiplicacion por 2 los elementos no diagonales
+      do jj=1,ii-1
+         rho_exc(ii,jj) = 2.0D0 * rho_exc(ii,jj)
+      enddo
+      do jj=ii+1,M
+         rho_exc(ii,jj) = 2.0D0 * rho_exc(ii,jj)
+      enddo
+      enddo
+      do jj=1,M    ! Se guarda en RMM
+      do kk=jj,M
+        if(jj.eq.kk) then
+          RMM(kk+(M2-jj)*(jj-1)/2) = rho_exc(jj,kk)
+        else
+          RMM(kk+(M2-jj)*(jj-1)/2) = rho_exc(jj,kk)
+        endif
+      enddo
+      enddo
+      deallocate(rho_exc)
+   endif ! end of traduction
+
+!------------------------------------------------------------------------------!
 
 
 !------------------------------------------------------------------------------!

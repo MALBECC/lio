@@ -24,16 +24,27 @@ c Output:  dipole moment components
 c-----------------------------------------------------------------
       module subm_intfld; contains
       subroutine intfld(g,ux,uy,uz)
-      use garcha_mod
-      implicit real*8 (a-h,o-z)
-
-      
+      use garcha_mod, only: RMM, a, c, d, r, nuc, ncont, nshell
+     >                    , Iz, OPEN, NORM, M, Md, natom, pi32
 c
 c
+      implicit none
+      real*8, intent(in) :: g
+      real*8, intent(in) :: ux, uy, uz
 c aux . things
-      dimension aux(3),aux1(3),aux2(3),aux3(3),aux4(3),aux5(3)
-      dimension aux6(3)
-      dimension Q(3)
+      real*8  :: aux(3) , aux1(3), aux2(3), aux3(3), aux4(3)
+      real*8  :: aux5(3), aux6(3), Q(3)
+
+! Implicits:
+      integer :: MM, MM2, MMd, Md2
+      integer :: M1, M2, M3, M5
+      integer :: l1, l2, l3, l4, l12, l34
+      integer :: ns, np, nd, ni, nj, i, j, k, ii, jj
+
+      real*8  :: sq3, term, alf, ccoef, cc, f1, f2
+      real*8  :: ss, ps, pp, pis, pjs, dp, dd, dijs
+      real*8  :: sxs, sys, szs, uxa, uya, uza
+      real*8  :: t0, t1, ti, tj, z2, zij
 c
 c
 c pointers

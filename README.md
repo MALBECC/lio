@@ -9,11 +9,10 @@ The most computationally intensive calculations are ported to use graphical proc
 REQUIREMENTS
 ------------
 
-* Intel MKL (Math Kernel Library).
-* Intel C++ and Fortran Compiler (can be obtained with a non-commercial license).
-* NVIDIA CUDA (for compiling GPU version).
+* LAPACK or INTEL MKL.
+* GNU or INTEL C++ and Fortran Compiler.
+* NVIDIA CUDA (for the GPU kernels).
 * GNU Make.
-* Python 2.7 (for test scripts)
 
 COMPILATION
 ------------
@@ -27,19 +26,15 @@ make cuda=1 cpu=0
 
 When using Intel's ICC/MKL or NVIDIA's CUDA libraries, add them to LD\_LIBRARY\_PATH environment variable before compilation. Available options for compilation include:
 
-* _cpu_: compile CPU version.
+* _cpu_: compile CPU kernels (default = 0).
 
-* _cuda_: compile GPU version. Requires CUDA Toolkit.
+* _cuda_: compile GPU kernels (when = 1) and CUBLAS subroutines (when = 2). Used by default (=1).
 
-* _dbg_: enable debugging information. It also enables several asserts which degrade performance.
+* _intel_: use INTEL compilers (when = 1) and INTEL MKL (when = 2). Not used by default (= 0).
 
-* _time_: enables the timers to obtain detailed timing information from different parts of the program.
+* _analytics_: Enables diferent levels of debug information and profiling (default = 0, max = 3).
 
-* _profile_: enabling gprof profiling information.
-
-* *cpu_recompute*: recomputes=0 mantains in memory the value of the functions for each point (more memory is used but execution time goes down by around 10%). Only used for the CPU kernels.
-
-* *full_double*: generate the application using full double precision instead of mixed precision (which is the default).
+* _precision_: When precision = 1, compile everything in double precision (default = 0, hybrid precision).
 
 INSTALLATION
 ------------
@@ -73,36 +68,13 @@ cmake -DGMX_GPU=0 -DGMX_THREAD_MPI=0 -DGMX_QMMM_PROGRAM="lio" -DLIO_LINK_FLAGS="
 TESTS
 -----
 
-To run the test suite, you need to install python 2. It is already present in most Linux distributions.
+The test suite can be ran from the tests directory, each subfolder contains a "correr.sh" script which performs the test.
 
-The test suite can be ran from the tests directory and running
-
-```
-  ./run_tests.py
-```
-
-The first argument to the run\_tests.py program is a regular expression ([Python Documentation](https://docs.python.org/2/howto/regex.html)) which matches the folder names in the test
-directory. For example, running from the tests directory:
-
-```
-  ./run_tests.py --filter_rx GPU
-```
-
-runs only the tests for GPU. For more options run
-
-```
-  ./run_tests.py --help
-```
 
 CONTRIBUTING
 ------------
 
-Before contributing, make sure you have set up the git hooks for the project. That
-can be done either by running a clean compile with make, or by executing
-
-```
-  make hooks
-```
+Before contributing, make sure you have set up the git hooks for the project, and do read the wiki and workflow of the project.
 
 PUBLICATIONS
 ------------

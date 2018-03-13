@@ -4,7 +4,7 @@ INCLUDES += subm_int1.o subm_int1G.o
 INCLUDES += subm_int2.o subm_int2G.o
 INCLUDES += subm_int3lu.o subm_int3mem.o subm_int3G.o
 INCLUDES += subm_intSG.o subm_intfld.o
-INCLUDES += subm_intsol.o subm_intsolG.o subm_intsolGs.o
+INCLUDES += subm_intsol.o subm_intsolG.o
 
 OBJECTS += $(INCLUDES)
 $(OBJPATH)/subm_int3G.o  : $(OBJPATH)/subm_int2G.o
@@ -23,7 +23,6 @@ $(OBJPATH)/faint_cpu77.o : $(INCLUDES:%.o=$(OBJPATH)/%.o) faint_cpu77.mk
 #$(OBJPATH)/intfld.o   : private_flag := -O1
 #$(OBJPATH)/intsol.o   : private_flag := -O1
 #$(OBJPATH)/intsolG.o  : private_flag := -O1
-#$(OBJPATH)/intsolGs.o : private_flag := -O1
 
 #$(OBJPATH)/int3lu.o   : private_flag := -O3 $(OPTIMP)
 

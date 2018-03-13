@@ -23,13 +23,33 @@ c      Input : basis function information
 c      Output: F matrix, and S matrix
 c
 !------------------------------------------------------------------------------!
-       use garcha_mod
-       implicit real*8 (a-h,o-z)
-       integer,allocatable,dimension(:) :: Iaux
+       use liotemp   , only: FUNCT
+       use garcha_mod, only: RMM, Smat, Nuc, a, c, d, r, Iz, ncont
+     >                     , nshell, pi, pi32, NORM, natom, M, Md
+       implicit none
 
 c-----auxiliar quantities
-       dimension :: Q(3)
-       real*8,allocatable,dimension(:)  :: s0s,s1s,s2s,s3s,s4s
+       real*8, intent(inout) :: En
+
+       integer :: natomold, igpu
+       integer :: n, i, j, k, ii, jj, ni, nj, iin
+       integer :: l1, l2, l3, l4, l12, l34
+       integer :: MM, MMd, ns, np, nd
+       integer :: M1, M2, M3, M5, M7, M9, M11
+
+       real*8  :: E1, ovlap
+       real*8  :: Q(3), term, temp, sq3, alf, alf2, cc, ccoef
+       real*8  :: f1, f2, tn, tna, u, z2, zij
+       real*8  :: ss, ps, dd, p0s, p1s, p2s, p3s
+       real*8  :: pi0p, pi1p, piks, pikpk, pipk, pis
+       real*8  :: pj0s, pj1s, pj2s, pj0p, pj1p, pjkpk
+       real*8  :: pjks, pjpk, pjs, pks, sks
+       real*8  :: dijs, dijpk, dijks, dijkpk
+       real*8  :: d0s, d0p, d1p, d1s, d2s
+       real*8  :: t0, t1, t2
+
+       integer, allocatable, dimension(:) :: Iaux
+       real*8 , allocatable, dimension(:) :: s0s, s1s, s2s, s3s, s4s
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !

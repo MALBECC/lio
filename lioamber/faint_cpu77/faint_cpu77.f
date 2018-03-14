@@ -13,7 +13,6 @@
           use subm_int2G
           use subm_int3G
           use subm_intsolG
-          use subm_intsolGs
 
        end module faint_cpu77
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

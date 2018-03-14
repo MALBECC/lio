@@ -16,17 +16,30 @@ c-------------------------------------------------------------------
       module subm_intsol; contains
       subroutine intsol(E1s,Ens,elec)
 
-       use garcha_mod
+      use liotemp   , only: FUNCT
+      use garcha_mod, only: RMM, ll, a, c, d, r, pc, nuc, ncont
+     >                    , nsol, natom, pi, pi32, rmax, nshell
+     >                    , Iz, M, NORM, Md, ntatom
 c
-      implicit real*8 (a-h,o-z)
-      logical elec
-      dimension xi(3)
+      implicit none
+      logical :: elec
+      real*8  :: Q(3), xi(3)
+
+! Implicits:
+      integer :: ns, np, nd
+      integer :: i, j, k, ii, jj, ni, nj, j1, j2
+      integer :: l, lk, lij, l1, l2, l3, l4, l12, l34
+      integer :: MM, MMd, M1, M2, M3, M7, M9, M11
+
+      real*8  :: E1s, Ens, Ese
+      real*8  :: sq3, alf, rexp, ccoef, term, temp, tna, tna1, cc
+      real*8  :: z2, zij, u, tx, ty, tz
+      real*8  :: ss, dd, t1, t2, f1, f2
+      real*8  :: dd2, d1s, d2s, d1p, d0s, d0p 
+      real*8  :: pj2s, pj1s, pj1p, pj0s, pj0p, pi1p, pi0p
+      real*8  :: p3s, p2s, p1s, p0s
 c
-c      real*8, dimension (:,:), ALLOCATABLE :: d
       real*8, dimension (:), ALLOCATABLE :: s0s,s1s,s2s,s3s,s4s
-      dimension Q(3)
-C,d(natom,natom),s0s(ntatom),s1s(ntatom),
-c     > s2s(ntatom),s3s(ntatom),s4s(ntatom)
 c distance between pairs of centers
 c
 c

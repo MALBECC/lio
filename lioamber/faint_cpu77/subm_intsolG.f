@@ -25,26 +25,56 @@ c Dario Estrin
 c-------------------------------------------------------------------
       module subm_intsolG; contains
       subroutine intsolG(f,ff)
-          use garcha_mod
+
+      use liotemp   , only: FUNCT
+      use garcha_mod, only: RMM, ll, a, c, d, r, pc, Iz, Nuc, Ncont
+     >                    , nshell, watermod, rmax, pi, pi32, NORM
+     >                    , natom, ntatom, M, Md, nsol
 c
-      implicit real*8 (a-h,o-z)
-      dimension f(natom,3),fcampo(natom,3)
-      dimension ff(ntatom,3),rr(3)
-      logical, dimension (:), allocatable :: qmmmdo
-c
+      implicit none
+      real*8  :: f(natom,3), fcampo(natom,3), ff(ntatom,3), rr(3)
+
 c auxiliar quantities
-c
-      dimension Q(3)
-c      real*8, dimension (:,:), ALLOCATABLE :: d
-      real*8, dimension (:), ALLOCATABLE :: s0s,s1s,s2s,s3s,s4s
-     > , s5s,s6s
-      dimension dn(3),dn1(3),dn2(3)
-      dimension dn3(3),dn4(3),dn5(3),dn6(3),dn7(3),dn8(3),dn9(3),dn10(3)
-      dimension dn2b(3),dn4b(3),dn5b(3),dn7b(3),dn8b(3),dn9b(3)
-      dimension dn11(3),dn12(3)
-      real*8, dimension (:,:), ALLOCATABLE :: x0x,x1x,x2x,x3x,x4x,x5x
-c      dimension x3x(nt,3),x4x(nt,3),x5x(nt,3)
-c      dimension Ll(3)
+      real*8  :: dn(3),  dn1(3), dn2(3), dn3(3), dn4(3), dn5(3)
+      real*8  :: dn6(3), dn7(3), dn8(3), dn9(3), dn10(3)
+      real*8  :: dn2b(3), dn4b(3), dn5b(3), dn7b(3), dn8b(3)
+      real*8  :: dn9b(3), dn11(3),dn12(3)
+      real*8  :: Q(3)
+
+      logical, dimension(:),   allocatable :: qmmmdo
+      real*8,  dimension(:),   allocatable :: s0s, s1s, s2s, s3s
+      real*8,  dimension(:),   allocatable :: s4s, s5s, s6s
+      real*8,  dimension(:,:), allocatable :: x0x, x1x, x2x
+      real*8,  dimension(:,:), allocatable :: x3x, x4x, x5x
+
+! Implicits:
+      integer :: i, j, k, n, ni, nj, ii, jj, j1, j2
+      integer :: ncerca, nvecin, ns, np, nd
+      integer :: l, lk, lij, l1, l2, l3, l4, l5, l12, l34
+      integer :: MM, MMd
+      integer :: M1, M2, M3, M5, M7, M9, M11
+
+      real*8  :: f1, f2, te, et, q1, q2, q3, rexp, sq3
+      real*8  :: term, temp, temp0, zij, z2, u
+      real*8  :: distint, distx, disty, distz
+      real*8  :: tx, ty, tz, tx1, ty1, tz1, ti, tj, tna, tn1a
+      real*8  :: ss, t1, dd2, dd, alf, cc, ccoef
+      real*8  :: dNs, dNp, dNd, dNf, dN1s
+      real*8  :: fNs, fNp, fNd, piNs, sNpi
+      real*8  :: pNp, pNd, pN1p
+      real*8  :: s0p, s1p, s2p
+      real*8  :: p0s, p1s, p2s, p3s, p4s
+      real*8  :: pi0p, pi0d, pi1p, pi1d, pi2p
+      real*8  :: pj0s, pj0p, pj0d, pj1s, pj1p, pj1d, pj2s, pj2p, pj3s
+      real*8  :: d0s, d0p, d1s, d1p, d2s, d3s, d2p, d0pl, d1pl
+      real*8  :: t2, t3, t4, t5, t7, t8, t9, t15
+      real*8  :: t25, t26, t27, t28, t29, t30, t31, t32, t33, t34
+      real*8  :: t50, t51, t52, t53, t54, t55, t56, t57, t58, t59
+      real*8  :: t60, t61, t62, t63, t64, t65, t66, t67, t68, t69
+      real*8  :: t70, t71, t72, t73, t74, t81, t81b, t82, t82b
+      real*8  :: t83, t83b, t84, t84b, t85, t85b, t86, t86b
+      real*8  :: t90, t91, t92, t93, t94, t95, t96, t97, t98
+
 c
 c -----------------------------
 c

@@ -22,14 +22,41 @@ c Output: forces on nuclei
 c G matrix should be inverted, 
 c later on, for evaluating  Coulomb terms
 c-----------------------------------------------------------------
-      module subm_int2G; contains
-      subroutine int2G(f)
-            use garcha_mod
-c
-      implicit real*8 (a-h,o-z)
-c aux . things
-       dimension Q(3)
-       dimension f(natom,3)
+       module subm_int2G; contains
+       subroutine int2G(f)
+
+       use liotemp   , only: FUNCT
+       use garcha_mod, only: RMM, ll, natom, M, Md, NORM, pi5, r
+     >                     , af, nshelld, ad, nucd, ncontd, d, cd
+!
+       implicit none
+! aux . things
+       real*8  :: Q(3), f(natom,3)
+       real*8  :: ti, tj, t0, t1, t2, t10, t11, t12, t12b
+       real*8  :: t13, t13a, t13b, t14, t14a, t14b, t15, t15a, t15b
+       real*8  :: t16, t16b, t17, t17b, t18, t18b, t20, t21, t22
+       real*8  :: t23, t24, t25, t26, t27, t27a, t30, t31, t32, t33
+       real*8  :: t40, t41, t42, t43
+
+       real*8  :: z2, zij, z2a, zc, zc2
+       real*8  :: f1, f2, fs, fp, fd
+       real*8  :: cc, cc1, cc2, cci, ccj
+       real*8  :: ccoef, factor, roz, roz2, sq3, alf, u
+
+       real*8  :: sp, spj, sp1j, s1pk, s2pk
+       real*8  :: s0s, s1s, s2s, s3s, s4s, s5s
+       real*8  :: ps, pp, pd, pis, pip, pid, pjs, pjp, pjd
+       real*8  :: pi0s, pi0p, pi0d, pj0s, pj0p, pj0d
+       real*8  :: p1p, pi2s, pi2p, pi3s, pi4s, pj2s, pj2p, pj3s
+       real*8  :: ds, dp, dpl, dsd
+       real*8  :: d0p, d0pl, d1d, d1p, d1s, d2s, d3s, dd, df
+
+       integer :: MM, MMd, Md2, M1, M3, M5, M7
+       integer :: i, ii, j, jj, ni, nj, nsd, npd, ndd
+       integer :: l, lk, lij, l1, l2, l3, l4, l5, l12, l34
+
+
+
 c
 c------------------------------------------
 c

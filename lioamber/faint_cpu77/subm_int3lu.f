@@ -26,15 +26,31 @@ c this subroutine calls the fitting for exchange-correlation
 c-----------------------------------------------------------------
       module subm_int3lu; contains
       subroutine int3lu(E2)
-       use garcha_mod
-       implicit real*8 (a-h,o-z)
-c
-      dimension Q(3),W(3),Rc(Md),FF(Md),P(Md)
-      dimension Jx(M)
-      real*8 E2
 
-c auxiliars
-      dimension aux(ngd)
+      use garcha_mod, only: RMM, ll, af, X, B, ngd, md, integ, M
+     >                    , kknumd, kknums, MEMO, Nang, natom, NCO
+     >                    , NORM, Nunp, OPEN, pi32, nshell, nshelld
+     >                    , SVD, cool, cools, kkind, kkinds, ncontd
+     >                    , ad, cd
+      implicit none
+c
+      real*8, intent(inout) :: E2
+      real*8 :: Q(3), W(3), Rc(Md), FF(Md), P(Md), Jx(M)
+      real*8 :: aux(ngd)
+
+      integer :: M1, M2, M3, M5, M7, M9
+      integer :: M10, M11, M12, M13, M15, M17, M18, M18b, M19
+      integer :: M20, M21, M22, M23
+      integer :: MM, MMd, MMp, Md2, Md3, Md5
+      integer :: NCOa, NCOb, Ndens, Nel, iconst, irank, info
+      integer :: nd, ndd, nk, np, npd, ns, nsd
+      integer :: l, l1, l2, i, j, k, k1, kk, kkk
+      integer :: iikk
+
+      real*8  :: sq3, r0, r1, rcond, rr, bda
+      real*8  :: t0, ss9, Ex, Ea, Eb
+
+
 c
 c------------------------------------------------------------------
 c now 16 loops for all combinations, first 2 correspond to
@@ -125,7 +141,7 @@ c end ------------------------------------------------
         do 6 k=1,Md
  6        Rc(k)=0.D0
 
-        do kk=1,kknumd!ns*(ns+1)/2+1,ns*(ns+1)/2+ns*np!kknumd
+        do kk=1,kknumd !ns*(ns+1)/2+1,ns*(ns+1)/2+ns*np!kknumd
           iikk=(kk-1)*Md
           do k=1,Md
             Rc(k)=Rc(k)+RMM(kkind(kk))*cool(iikk+k)

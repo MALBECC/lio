@@ -53,47 +53,6 @@ c
       END            
   
 
-      FUNCTION FUNCTS(M,T)
-      IMPLICIT REAL*4 (A-H,O-Z)
-      COMMON /TABLES/ STRS(880,0:21),FACS(0:16)
-C
-      if (T.lt.0.0E0) then
-       write(*,*) 'Problems',T
-       T=abs(T)
-      endif
-C                                                                       
-      IF (T.LE.43.975E0)   THEN
-       IT = 20.0E0 * (T + 0.025E0)                                        
-       TI = FLOAT(IT)                                                   
-       IT=IT + 1                                                         
-       DELT = T - 0.05E0 * TI                                             
-       DELT3 = DELT * 0.3333333333E0                                
-       DELT4 = 0.25E0 * DELT                                             
-       DELT2 = DELT4 + DELT4                                             
-       DELT5 = 0.20E0 * DELT                                             
-c
-c
-c
-       TF0 = STRS(IT,M)                                                    
-       TF1 = STRS(IT,M+1)                                                    
-       TF2 = STRS(IT,M+2)                                                    
-       TF3 = STRS(IT,M+3)                                                    
-       TF4 = STRS(IT,M+4)                                                    
-       TF5 = STRS(IT,M+5)                                                    
-c
-       FCAP=TF0-DELT*( TF1-DELT2*(TF2-DELT3*(TF3-DELT4*
-     >    (TF4-DELT5*TF5))))
-       FUNCTS = FCAP
-       RETURN                                                            
-C                                                                       
-
-       ELSE
-      FUNCTS=FACS(M)*1.E0/(T**M*sqrt(T))
-      ENDIF
-c
-      END
-
-                                                   
 C ----------------------------------------------                        
 c subroutine for generating tables, used later on in the Taylor expansion
 c for the incomplete Gamma functions

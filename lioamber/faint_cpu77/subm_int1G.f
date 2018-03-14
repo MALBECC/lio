@@ -1,4 +1,7 @@
-c-------------------------------------------------------------------
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+       module subm_int1G; contains
+       subroutine int1G(ff)
+!------------------------------------------------------------------------------!
 c GRADIENT VERSION
 c calculates 1 e part and all gradients, to be used with MD.f
 c
@@ -22,24 +25,67 @@ c Output: F matrix, and S matrix and forces on nuclei
 c all gradients, up to d functions
 c debugged ( or supposed to) 28-7-92
 c Dario Estrin
-c-------------------------------------------------------------------
-      module subm_int1G; contains
-      subroutine int1G(ff)
-        use garcha_mod
-c
-      implicit real*8 (a-h,o-z)
-      dimension ff(natom,3)
-c
-      dimension Q(3),s0s(ntq),s1s(ntq),
-     >            s2s(ntq),s3s(ntq),s4s(ntq)
-      dimension s5s(ntq),s6s(ntq)
-      dimension x0x(ntq,3),x1x(ntq,3),x2x(ntq,3),dn(3),dn1(3),dn2(3)
-      dimension dn3(3),dn4(3),dn5(3),dn6(3),dn7(3),dn8(3),dn9(3),dn10(3)
-      dimension dn2b(3),dn4b(3),dn5b(3),dn7b(3),dn8b(3),dn9b(3)
-      dimension dn11(3),dn12(3)
-      dimension x3x(ntq,3),x4x(ntq,3),x5x(ntq,3)
-c      dimension Ll(3)
+!------------------------------------------------------------------------------!
+       use liotemp   , only: FUNCT
+!       use garcha_mod
+       use garcha_mod, only: RMM, Nuc, a, c, d, r, Iz, ncont
+     >                     , nshell, pi, pi32, NORM, natom, M, Md 
+     >                     , ll, ntq
+       implicit none
+
+c-----auxiliar quantities
+       real*8, intent(inout) :: ff(natom,3)
+
+       integer :: natomold, igpu
+       integer :: n, i, j, k, ii, jj, ni, nj
+       integer :: l1, l2, l3, l4, l12, l34
+       integer :: MM, MMd, ns, np, nd
+       integer :: M1, M2, M3, M5, M7, M9, M11
+
+       real*8  :: En, ovlap, alf, alf2, alf3, alf4
+       real*8  :: Q(3), term, temp, sq3, cc, ccoef
+       real*8  :: f1, f2, tn, tna, u, z2, zij
+       real*8  :: ss, ps, dd, p0s, p1s, p2s, p3s
+       real*8  :: pi0p, pi1p, piks, pikpk, pipk, pis
+       real*8  :: pj0s, pj1s, pj2s, pj0p, pj1p, pjkpk
+       real*8  :: pjks, pjpk, pjs, pks, sks
+       real*8  :: dijs, dijpk, dijks, dijkpk
+       real*8  :: d0s, d0p, d1p, d1s, d2s
+       real*8  :: t0, t1, t2
+
+       integer :: l, lij, lk, l5
+       real*8  :: temp0, pp, pd, ds, dp, df, fs, fp, fd, q1, q2, q3
+       real*8  :: p4s, d0pl, d1pl, d2p, d3s, dijkpl, dijpl
+       real*8  :: dkd, dkf, dkp, dks, dsd, fkd, fkp, fks
+       real*8  :: dN1s, dNs, dNp, dNd, dNf, fNd, fNp
+       real*8  :: pNd, pN1p, pkp, pkd, pjkdkl, pjdkl, pj3s, pj2p
+       real*8  :: pj1d, pj0d, piNs, pikdkl, pidkl, pi2p, pi1d, pi0d
+       real*8  :: spk, spj, sNpi, skpk, skpj, skpi, s2p, s1p, s0p
+       real*8  :: pNp, fNs
+       real*8  :: tt, tx, ty, te, ti, tj, tn1a
+       real*8  :: t3, t4, t5, t7, t8, t9
+       real*8  :: t10, t11, t12, t13, t14, t15, t16, t17, t18, t19
+       real*8  :: t20, t21, t22, t23, t24, t25, t26, t27, t28, t29
+       real*8  :: t30, t31, t32, t33, t34, t35, t36, t37, t38, t39
+       real*8  :: t40, t41
+       real*8  :: t50, t51, t52, t53, t54, t55, t56, t57, t58, t59
+       real*8  :: t60, t61, t62, t63, t64, t65, t66, t67, t68, t69
+       real*8  :: t70, t71, t72, t73, t74
+       real*8  :: t81, t82, t83, t84, t85, t86
+       real*8  :: t81b, t82b, t83b, t84b, t85b, t86b
+       real*8  :: t90, t91, t92, t93, t94, t95, t96, t97, t98
+
+       real*8  :: s0s(ntq), s1s(ntq), s2s(ntq), s3s(ntq)
+       real*8  :: s4s(ntq), s5s(ntq), s6s(ntq)
+       real*8  :: x0x(ntq,3), x1x(ntq,3), x2x(ntq,3)
+       real*8  :: x3x(ntq,3), x4x(ntq,3)
+       real*8  :: dn1(3), dn2(3), dn3(3), dn4(3), dn5(3)
+       real*8  :: dn6(3), dn7(3), dn8(3), dn9(3), dn(3)
+       real*8  :: dn10(3)
+       real*8  :: dn2b(3), dn4b(3), dn5b(3), dn7b(3), dn8b(3), dn9b(3)
 c distance between pairs of centers
+!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 c
 c
       if (NORM) then

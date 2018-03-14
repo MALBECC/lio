@@ -23,16 +23,36 @@ c later on, for evaluating  Coulomb terms
 c-----------------------------------------------------------------
       module subm_int2; contains
       subroutine int2()
-       use garcha_mod
-c
-      implicit real*8 (a-h,o-z)
-       real*8, dimension(:), allocatable :: dgelss_temp
-       real*8, dimension(Md) :: inv_work
-       integer XXX(8*Md)
-c
-c aux . things
-      dimension Q(3),aux(ngd),Det(2)
-      real, dimension (:), ALLOCATABLE :: trabajo
+      use liotemp   , only: FUNCT
+      use garcha_mod, only: RMM, XX, ngd, M, Md, ad, nucd, ncontd,
+     >                      r, d, cd, SVD, NORM, pi5, nshelld
+
+!
+!     implicit real*8 (a-h,o-z)
+      implicit none
+      real*8, dimension(:), allocatable :: dgelss_temp
+      real*8, dimension(Md)             :: inv_work
+      integer                           :: XXX(8*Md)
+!
+!     Aux . things
+      real*8, dimension(:), allocatable :: trabajo
+      real*8                            :: Q(3), aux(ngd), Det(2)
+!
+!     Ex Implicits
+      real*8  :: t0, t1, t2, t3, t4, t5
+      real*8  :: ss, s0s, s1s, s2s, s3s, s4s
+      real*8  :: ps, pjs, pjp, pj2s, pis, pip, pi2s, pi3s
+      real*8  :: alf, cc, ccoef, d1s, d2s, dd, dp, ds
+      real*8  :: roz, rcond, f1, f2, sq3
+      real*8  :: u, tmp, tn, tj, ti, t6, z2, za, zc, zij
+
+      integer :: igpu, info
+      integer :: i, j, ii, jj, iii, jjj, k, kk, kkk
+      integer :: nsd, npd, ndd, ni, nj
+      integer :: lll, l12, l34, l1, l2, l3, l4, lij, lk
+      integer :: MM, MMp, MMd, Md2, Md3, Md5
+      integer :: M1, M2, M3, M5, M7, M9, M10, M11, M12, M13, M15
+
 c
       if (NORM) then
       sq3=sqrt(3.D0)

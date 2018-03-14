@@ -24,13 +24,28 @@ c Dario Estrin
 c-------------------------------------------------------------------
       module subm_intSG; contains
       subroutine intSG(ff)
-        use garcha_mod
+      use garcha_mod, only: RMM, ll, a, c, d, r, nuc, ncont, nshell
+     >                    , pi32, natom, M, Md, NORM
 c
-      implicit real*8 (a-h,o-z)
-      dimension ff(natom,3)
-c
-c
-      dimension Q(3)
+      implicit none
+      real*8, intent(inout) :: ff(natom,3)
+      real*8                :: Q(3)
+
+      integer :: i, j, k, ii, jj, ni, nj
+      integer :: l, lk, lij, l1, l2, l3, l4, l5, l12, l34
+      integer :: MM, MMd, ns, np, nd
+      integer :: M1, M2, M3, M5, M7, M9, M11, M13, M15, M17
+
+      real*8  :: ovlap, fsp, sq3, alf, cc, ccoef, con
+      real*8  :: zij, z2, fs, fd, f1, f2
+      real*8  :: ti, tj, tx, ty, te, t0, t1, t2, t4, t5
+      real*8  :: t10, t11, t12, t13, t14, t15, t16, t17
+      real*8  :: ss, spi, spj, spk
+      real*8  :: ps, pp, pd, pidkl, pipk, pis, pjdkl, pjpk, pjs
+      real*8  :: ds, dp, dd, df, dsd, dijpk, dijpl, dijs
+
+! Implicits:
+
 c distance between pairs of centers
 c
 c

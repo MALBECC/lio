@@ -27,7 +27,11 @@ subroutine Gets_eigens_v( this, maxval_ld, eigenvals, eigenvecs )
 !  Calculations
 !------------------------------------------------------------------------------!
    allocate( eigenvals_m( this%Nbasis, this%Nbasis ) )
-   call Gets_eigens_m( this, maxval_ld, eigenvals_m, eigenvecs )
+   if ( present(eigenvecs) ) then
+      call Gets_eigens_m( this, maxval_ld, eigenvals_m, eigenvecs )
+   else
+      call Gets_eigens_m( this, maxval_ld, eigenvals_m )
+   end if
    do nn = 1, this%Nbasis
       eigenvals(nn) = eigenvals_m(nn,nn)
    end do

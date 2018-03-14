@@ -15,8 +15,10 @@ subroutine Drop_ldvals( maxval_ld, eigen_valsq, eigen_invsq )
    Msize = size( eigen_valsq, 1 )
    error_found = .false.
    error_found = (error_found) .or. ( Msize /= size(eigen_valsq,2) )
-   error_found = (error_found) .or. ( Msize /= size(eigen_invsq,1) )
-   error_found = (error_found) .or. ( Msize /= size(eigen_invsq,2) )
+   if ( present(eigen_invsq) ) then
+      error_found = (error_found) .or. ( Msize /= size(eigen_invsq,1) )
+      error_found = (error_found) .or. ( Msize /= size(eigen_invsq,2) )
+   end if
 
    do nn = 1, Msize
       if ( eigen_valsq(nn,nn)*eigen_valsq(nn,nn) < maxval_ld ) then

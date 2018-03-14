@@ -1,16 +1,19 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! this small program is taken from old version of gdfmol
-! it is the implementation of the Obara-Saika method for
-! the evaluation of F(m,T), using a 2 branch calculation
-! DEBUGGING VERSION, this is the attempt to generalize
-! and improve previous version ( up to F16 )
-! Ref: JCP 84 3963 (1986)
-! it seems to work
-! This is the version that should be included in definitive
-! program
-! 11 March 1992
+!
+!  This small program is taken from old version of gdfmol
+!  it is the implementation of the Obara-Saika method for
+!  the evaluation of F(m,T), using a 2 branch calculation
+!  DEBUGGING VERSION, this is the attempt to generalize
+!  and improve previous version ( up to F16 ).
+!  Ref: JCP 84 3963 (1986)
+!  it seems to work
+!
+!  This is the version that should be included in definitive
+!  program
+!  11 March 1992
+!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-      FUNCTION FUNCT(N,T)                                               
+      FUNCTION FUNCT(N,T)
       USE garcha_mod
       IMPLICIT REAL*8 (A-H,O-Z)
       integer, intent(in)    :: N
@@ -21,7 +24,7 @@
        write(*,*) 'Problems',T
        T=abs(T)
       endif
-!                                                                       
+!
       IF (T.LE.43.975D0) THEN
        IT = 20.0D0 * (T + 0.025D0)
        TI = DFLOAT(IT)
@@ -42,13 +45,12 @@
        FCAP=TF0-DELT*(TF1-DELT2*(TF2-DELT3*(TF3-DELT4*(TF4-DELT5*TF5))))
        FUNCT = FCAP
        RETURN
-!                                                                       
-       
+!
       ELSE
          FUNCT=FAC(N)*1.D0/(T**N*dsqrt(T))
 
       ENDIF
 !
-      END            
-  
+      END FUNCTION FUNCT
+
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

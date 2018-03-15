@@ -213,7 +213,7 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/shape_data.mod
 ################################################################################
 
 tmplist :=
-tmplist += SCF.o TD.o init_lio.o cublasmath.o predictor.o
+tmplist += SCF.o TD.o init_lio.o cublasmath.o predictor.o maskrmm.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/field_subs.o
 
 ################################################################################

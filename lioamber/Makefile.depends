@@ -231,7 +231,7 @@ include liosubs_dens/liosubs_dens.mk
 SRCDIRS += liosubs_dens
 OBJECTS += liosubs_dens.o
 #
-modusrs := tmpaux_SCF.o
+modusrs := tmpaux_SCF.o typedef_operator.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/liosubs_dens.mod
 
 
@@ -253,8 +253,14 @@ OBJECTS += typedef_sop.o
 modusrs :=
 modusrs += SCF.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/typedef_sop.mod
-
-
+################################################################################
+include typedef_operator/typedef_operator.mk
+SRCDIRS += typedef_operator
+OBJECTS += typedef_operator.o
+#
+modusrs :=
+modusrs += SCF.o converger_subs.o
+$(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/typedef_operator.mod
 ################################################################################
 OBJECTS += mask_ecp.o
 #
@@ -289,14 +295,14 @@ include linear_algebra/linear_algebra.mk
 SRCDIRS += linear_algebra
 OBJECTS += linear_algebra.o
 tmplist :=
-tmplist += SCF.o tmpaux_SCF.o
+tmplist += SCF.o tmpaux_SCF.o typedef_operator.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/linear_algebra.mod
 
 include mathsubs/mathsubs.mk
 SRCDIRS += mathsubs
 OBJECTS += mathsubs.o
 tmplist :=
-tmplist += SCF.o SCFop.o predictor.o converger_subs.o
+tmplist += SCF.o SCFop.o predictor.o typedef_operator.o
 tmplist += tmpaux_SCF.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/mathsubs.mod
 
@@ -320,7 +326,7 @@ ifeq ($(use_cublas),1)
   $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fortran.o
 
   tmplist :=
-  tmplist += SCF.o SCFop.o TD.o converger_subs.o transport.o
+  tmplist += SCF.o SCFop.o TD.o typedef_operator.o transport.o
   tmplist += tmpaux_SCF.o
   $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/cublasmath.mod
 

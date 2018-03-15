@@ -59,6 +59,7 @@ subroutine SCF(E)
    use linear_algebra, only: matrix_diagon
    use converger_subs, only: converger_init, conver
    use mask_cublas   , only: cublas_setmat, cublas_release
+   use typedef_operator, only: operator !Testing operator
 #  ifdef  CUBLAS
       use cublasmath , only: cumxp_r
 #  endif
@@ -153,7 +154,9 @@ subroutine SCF(E)
    real*8, allocatable :: Xtrans(:,:)
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
+!carlos: Testing operator
+   type(operator)      :: rho_op, fock_op
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
    call g2g_timer_start('SCF_full')
 
@@ -643,7 +646,10 @@ subroutine SCF(E)
          NCO_in = NCO
       end if
 !
-!
+!carlos: storing rho in type
+
+   call rho_op%Sets_data_AO(rho)
+   call fock_op%Sets_data_AO(fock)
 !------------------------------------------------------------------------------!
 !  Convergence accelerator processing
         call g2g_timer_sum_start('SCF acceleration')
@@ -651,22 +657,23 @@ subroutine SCF(E)
            call converger_init( M_in, ndiis, DAMP, DIIS, hybrid_converg )
         end if
 #       ifdef CUBLAS
-           call conver(niter, good, good_cut, M_in, rho, fock, dev_Xmat, dev_Ymat)
+           call conver(niter, good, good_cut, M_in, rho_op, fock_op, dev_Xmat, &
+                       dev_Ymat)
 #       else
-           call conver(niter, good, good_cut, M_in, rho, fock, Xmat, Ymat)
+           call conver(niter, good, good_cut, M_in, rho_op, fock_op, Xmat, Ymat)
 #       endif
 !carlos: fockat is necesary?
 !        fockat = transform( fock, Ytrans )
         call g2g_timer_sum_pause('SCF acceleration')
-!
-!
+
 !------------------------------------------------------------------------------!
 !  Fock(ON) diagonalization
         if ( allocated(morb_coefon) ) deallocate(morb_coefon)
         allocate( morb_coefon(M_in,M_in) )
 
         call g2g_timer_sum_start('SCF - Fock Diagonalization (sum)')
-        call matrix_diagon( fock, morb_coefon, morb_energy )
+!carlos: using types
+        call fock_op%Diagon_datamat( morb_coefon, morb_energy )
         call g2g_timer_sum_pause('SCF - Fock Diagonalization (sum)')
 !
 !
@@ -683,8 +690,9 @@ subroutine SCF(E)
         call g2g_timer_sum_pause('SCF - MOC base change (sum)')
 
         if ( allocated(morb_coefon) ) deallocate(morb_coefon)
-
-        call builds_densmat( M_in, NCO_in, 2.0d0, morb_coefat, rho)
+!carlos: using types
+        call rho_op%Dens_build(M_in, NCO_in, 2.0d0, morb_coefat)
+        call rho_op%Gets_data_AO(rho)
         call messup_densmat( rho )
 
 !------------------------------------------------------------------------------!

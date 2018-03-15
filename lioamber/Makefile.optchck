@@ -18,7 +18,7 @@
 # .git/refs/heads/master.
 #
 
-cuda      ?= 1
+cuda      ?= 2
 intel     ?= 0
 parallel  ?= 0
 precision ?= 0

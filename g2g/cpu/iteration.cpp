@@ -39,7 +39,7 @@ void PointGroupCPU<scalar_type>::solve_closed(
   const uint group_m = this->total_functions();
   const int npoints = this->points.size();
 
-#if CPU_RECOMPUTE
+#if CPU_RECOMPUTE or !GPU_KERNELS
   /** Compute functions **/
   timers.functions.start();
   compute_functions(compute_forces, !lda);
@@ -101,7 +101,7 @@ void PointGroupCPU<scalar_type>::solve_closed(
     reduction(+ : localenergy) schedule(static)
     for (int point = 0; point < npoints; point++) {
       scalar_type pd, tdx, tdy, tdz, tdd1x, tdd1y, tdd1z, tdd2x, tdd2y, tdd2z;
-      pd = tdx = tdy = tdz = tdd1x = tdd1y = tdd1z = tdd2x = tdd2y = tdd2z = 0;
+      pd = tdx = tdy = tdz = tdd1x = tdd1y = tdd1z = tdd2x = tdd2y = tdd2z =0.0;
 
       const scalar_type* fv = function_values.row(point);
       const scalar_type* gxv = gX.row(point);
@@ -263,7 +263,7 @@ void PointGroupCPU<scalar_type>::solve_closed(
 
   energy += localenergy;
 
-#if CPU_RECOMPUTE
+#if CPU_RECOMPUTE or !GPU_KERNELS
   /* clear functions */
   gX.deallocate();
   gY.deallocate();
@@ -290,7 +290,7 @@ void PointGroupCPU<scalar_type>::solve_opened(
   const uint group_m = this->total_functions();
   const int npoints = this->points.size();
 
-#if CPU_RECOMPUTE
+#if CPU_RECOMPUTE or !GPU_KERNELS
   /** Compute functions **/
   timers.functions.start();
   compute_functions(compute_forces, !lda);
@@ -367,9 +367,9 @@ void PointGroupCPU<scalar_type>::solve_opened(
         scalar_type ww1x_a, ww1y_a, ww1z_a, ww1x_b, ww1y_b, ww1z_b;
         scalar_type ww2x_a, ww2y_a, ww2z_a, ww2x_b, ww2y_b, ww2z_b;
         w_a = w3x_a = w3y_a = w3z_a = ww1x_a = ww1y_a = ww1z_a = ww2x_a =
-            ww2y_a = ww2z_a = 0;
+            ww2y_a = ww2z_a = 0.0;
         w_b = w3x_b = w3y_b = w3z_b = ww1x_b = ww1y_b = ww1z_b = ww2x_b =
-            ww2y_b = ww2z_b = 0;
+            ww2y_b = ww2z_b = 0.0;
 
         const scalar_type* rmm_a = rmm_input_a.row(i);
         const scalar_type* rmm_b = rmm_input_b.row(i);
@@ -576,7 +576,7 @@ void PointGroupCPU<scalar_type>::solve_opened(
 
   energy += localenergy;
 
-#if CPU_RECOMPUTE
+#if CPU_RECOMPUTE or !GPU_KERNELS
   /* clear functions */
   gX.deallocate();
   gY.deallocate();

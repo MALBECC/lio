@@ -73,6 +73,8 @@ subroutine liomain(E, dipxyz)
         if (print_coeffs) call write_orbitals(29)
     endif
 
+    call g2g_timer_sum_pause("Total")
+
     return
 end subroutine liomain
 

@@ -36,7 +36,7 @@ c       real*8 ftot(3)
          do j=1,3
            dxyzcl(j,jj)=ffcl(natom+jj,j)*factor!+dxyzcl(j,jj)
          enddo
-         enddo         
+         enddo
        else
          ! The GPU version of the QM/MM gradients only uses space for the MM
          ! forces in the MM force array
@@ -53,7 +53,7 @@ c       real*8 ftot(3)
          do j=1,3
            dxyzcl(j,jj)=ffcl(jj,j)*factor!+dxyzcl(j,jj)
          enddo
-         enddo         
+         enddo
        endif
 
        !mx = 0
@@ -82,7 +82,7 @@ c       real*8 ftot(3)
        !write(*,*) "RMS DIFF QM: ",rms
        !write(*,*) "RMS DIFF MM: ",rmscl
 
-       do i=1,natom 
+       do i=1,natom
        do j=1,3
          dxyzqm(j,i)=ff(i,j)*factor+dxyzqm(j,i)
        enddo
@@ -90,15 +90,12 @@ c       real*8 ftot(3)
 
        call g2g_timer_sum_stop('QM/MM gradients')
        call g2g_timer_sum_stop('Forces')
-       call g2g_timer_sum_stop("Total")
-       call g2g_timer_summary()
-       call g2g_timer_clear()
-
+      
 !
 !
-!--------------------------------------------------------------------!       
-       deallocate (ff,ffcl)!,g2gff,g2gffcl) 
-c       deallocate (ffs,ffcls) 
+!--------------------------------------------------------------------!
+       deallocate (ff,ffcl)!,g2gff,g2gffcl)
+c       deallocate (ffs,ffcls)
 897    format (F17.11)
        return;end subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

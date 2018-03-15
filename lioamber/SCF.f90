@@ -121,7 +121,7 @@ subroutine SCF(E)
 
    real*8 :: E1          ! kinetic + nuclear attraction + e-/MM charge
                          !    interaction + effective core potetial
-   real*8 :: E1s         ! kinetic + nuclear attraction + effective core
+   real*8 :: E1s = 0.0D0 ! kinetic + nuclear attraction + effective core
                          !    potetial
    real*8 :: E2          ! Coulomb (e- - e-)
    real*8 :: Eecp        ! Efective core potential

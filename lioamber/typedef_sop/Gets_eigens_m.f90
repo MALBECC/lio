@@ -22,8 +22,10 @@ subroutine Gets_eigens_m( this, maxval_ld, eigenvals, eigenvecs )
    error_found = .false.
    error_found = (error_found).or.( this%Nbasis /= size(eigenvals,1) )
    error_found = (error_found).or.( this%Nbasis /= size(eigenvals,2) )
-   error_found = (error_found).or.( this%Nbasis /= size(eigenvecs,1) )
-   error_found = (error_found).or.( this%Nbasis /= size(eigenvecs,2) )
+   if ( present(eigenvecs) ) then
+      error_found = (error_found).or.( this%Nbasis /= size(eigenvecs,1) )
+      error_found = (error_found).or.( this%Nbasis /= size(eigenvecs,2) )
+   end if
 
 
 !  Calculations

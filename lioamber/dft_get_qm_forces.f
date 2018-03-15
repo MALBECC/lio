@@ -116,7 +116,7 @@ c       factor=627.509391D0/0.5291772108D0
          write(fileunit,*)
 
          do kk=1,natom
-           write(fileunit,200) 
+           write(fileunit,200)
      >       'FF1G',kk,ff1G(kk,1),ff1G(kk,2),ff1G(kk,3)
            write(fileunit,200)
      >       'FFSG',kk,ffSG(kk,1),ffSG(kk,2),ffSG(kk,3)
@@ -131,9 +131,6 @@ c       factor=627.509391D0/0.5291772108D0
 
        if (nsol.le.0) then
          call g2g_timer_sum_stop('Forces')
-         call g2g_timer_sum_stop("Total")
-         call g2g_timer_summary()
-         call g2g_timer_clear()
        endif
 
 ! FFR: No other place for this to go right now.

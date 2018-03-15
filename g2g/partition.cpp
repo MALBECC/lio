@@ -493,7 +493,7 @@ void Partition::solve(Timers& timers, bool compute_rmm, bool lda,
         }
       }
 
-#if GPU_KERNEL
+#if GPU_KERNELS
       if (gpu_thread) {
         cudaDeviceSynchronize();
       }

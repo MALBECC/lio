@@ -60,7 +60,7 @@ subroutine TD()
 #endif
 
    implicit none
-   real*8  :: E, En, E1, E2, E1s, Es, Ens, Ex, t, dt_magnus, dt_lpfrg
+   real*8  :: E, En, E1, E2, E1s, Es, Ens = 0.0D0, Ex, t, dt_magnus, dt_lpfrg
    integer :: MM, MMd, M2, M5, M13, M15, M11, LWORK, igpu, info, istep, icount,&
               jcount
    integer :: lpfrg_steps = 200, chkpntF1a = 185, chkpntF1b = 195

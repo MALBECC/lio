@@ -13,7 +13,7 @@ namespace G2G {
 
 template <class scalar_type>
 void PointGroupCPU<scalar_type>::compute_functions(bool forces, bool gga) {
-#if !CPU_RECOMPUTE
+#if !CPU_RECOMPUTE && GPU_KERNELS
   if (this->inGlobal) return;
   this->inGlobal = true;
   forces = gga = true;  // Vamos a cachear asi que guardemos todo y listo

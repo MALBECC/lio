@@ -150,7 +150,7 @@ subroutine SCF(E)
 ! TODO : Variables to eliminate...
    real*8, allocatable :: xnano(:,:)
    integer :: MM, MM2, MMd, Md2
-   integer :: M1, M2, M3, M5, M7, M9, M11, M13, M15, M17, M18, M19, M20
+   integer :: M1, M2, M3, M5, M7, M9, M11, M13, M15, M17, M18, M19, M20, M22
 
    real*8, allocatable :: Y(:,:)
    real*8, allocatable :: Ytrans(:,:)
@@ -251,6 +251,7 @@ subroutine SCF(E)
       M18=M17+MMd! vectors of MO
       M19=M18+M*NCO! weights (in case of using option )
       M20 = M19 + natom*50*Nang ! RAM storage of two-electron integrals (if MEMO=T)
+      M22 = M20 +2*MM !W ( beta eigenvalues )
 
 
 !------------------------------------------------------------------------------!
@@ -699,6 +700,12 @@ subroutine SCF(E)
         call rho_aop%Gets_data_AO(rho_a)
         call messup_densmat( rho_a )
 
+!carlos: Alpha Energy (or Close Shell) storage in RMM
+
+        do kk=1,M
+          RMM(M13+kk-1) = morb_energy(kk)
+        end do
+
     if (OPEN) then
 !%%%%%%%%%%%%%%%%%%%%
 !OPEN SHELL OPTION  |
@@ -740,6 +747,11 @@ subroutine SCF(E)
         call rho_bop%Gets_data_AO(rho_b)
         call messup_densmat( rho_b )
 
+!carlos: Beta Energy storage in RMM
+        do kk=1,M
+          RMM(M22+kk-1) = morb_energy(kk)
+        end do
+
     end if!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !------------------------------------------------------------------------------!
 !carlos: storing matrices
@@ -749,14 +761,10 @@ subroutine SCF(E)
 !  may be broken due to this.
 !  This should not be affecting normal DFT calculations.
 
-!carlos: this is not working with openshell. morb_energy is not depending of
+!carlos: this is not working with openshell. morb_coefat is not depending of
 !        the spin factor.
         i0 = 0
         if (dftb_calc) i0=MTB
-
-        do kk=1,M
-          RMM(M13+kk-1) = morb_energy(kk)
-        end do
 
         kkk = 0
         do kk=1,NCOa

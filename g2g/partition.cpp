@@ -572,12 +572,12 @@ void Partition::solve(Timers& timers, bool compute_rmm, bool lda,
     }
   }
 
-  if (OPEN && compute_energy) {
+/*  if (OPEN && compute_energy) {
     std::cout << " Ei:  " << cubes_energy_i + spheres_energy_i << std::endl;
     std::cout << " Ec:  " << cubes_energy_c + spheres_energy_c << std::endl;
     std::cout << " Ec1: " << cubes_energy_c1 + spheres_energy_c1 << std::endl;
     std::cout << " Ec2: " << cubes_energy_c2 + spheres_energy_c2 << std::endl;
-  }
+  }*/
 
   *fort_energy_ptr = energy;
   if (*fort_energy_ptr != *fort_energy_ptr) {

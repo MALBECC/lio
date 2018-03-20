@@ -1,5 +1,9 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-  subroutine calc_kenergy(Npart,mass,vels,Kenergy)
+subroutine ehrenaux_calckyn( Npart, mass, vels, Kenergy )
+!------------------------------------------------------------------------------!
+!
+! DESCRIPTION
+!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   implicit none
   integer,intent(in)     :: Npart
@@ -16,5 +20,5 @@
   enddo
   Kenergy=Kenergy*(0.0005485799d0)
 
-  return;end subroutine
+end subroutine ehrenaux_calckyn
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

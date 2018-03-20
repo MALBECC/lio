@@ -350,8 +350,6 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge, basis_i         &
                       &, nshell, nuc, ncont, a, c
    use td_data, only: timedep, tdstep
 
-   use ehrendata,  only: RhoSaveA, RhoSaveB
-
    use basis_data, only: basis_data_set
 
    use lionml_data, only: ndyn_steps, edyn_steps
@@ -386,10 +384,6 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge, basis_i         &
            , Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i              &
            )
 
-   if (allocated(RhoSaveA)) deallocate(RhoSaveA)
-   if (allocated(RhoSaveB)) deallocate(RhoSaveB)
-   allocate(RhoSaveA(M,M))
-   allocate(RhoSaveB(M,M))
 
    first_step=.true.
 

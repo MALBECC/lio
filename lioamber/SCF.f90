@@ -26,7 +26,7 @@ subroutine SCF(E)
 ! FFR, 01/2018
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-   use ehrensubs, only: ehrensetup
+   use ehrensubs , only: ehrendyn_init
    use garcha_mod, only : M,Md, NCO,natom,Nang, number_restr, hybrid_converg,  &
                           MEMO, npas, verbose, RMM, X, SHFT, GRAD, npasw,      &
                           igrid, energy_freq, converge, noconverge, lowdin,    &
@@ -66,6 +66,7 @@ subroutine SCF(E)
       use cublasmath , only: cumxp_r
 #  endif
 
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
    implicit none
    integer :: Nel
@@ -993,7 +994,7 @@ subroutine SCF(E)
       if (doing_ehrenfest) then
          call spunpack('L',M,RMM(M1),RealRho)
          call fixrho(M,RealRho)
-         call ehrensetup(natom, M, RealRho)
+         call ehrendyn_init(natom, M, RealRho)
       endif
 
 

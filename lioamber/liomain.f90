@@ -18,7 +18,7 @@ subroutine liomain(E, dipxyz)
                            doing_ehrenfest, first_step,                        &
                            Eorbs, fukui, print_coeffs, steep, idip
     use ecp_mod   , only : ecpmode, IzECP
-    use ehrensubs,  only : ehrendyn
+    use ehrensubs,  only : ehrendyn_main
  
     implicit none
     REAL*8, intent(inout) :: dipxyz(3), E
@@ -44,7 +44,7 @@ subroutine liomain(E, dipxyz)
 ! FFR - Option to do ehrenfest
     if ( doing_ehrenfest ) then
        if ( first_step ) call SCF( E, dipxyz )
-       call ehrendyn( E, dipxyz )
+       call ehrendyn_main( E, dipxyz )
     else
        if(OPEN) then
           if (ecpmode) stop "ECP is unavailable for Open Shell systems."

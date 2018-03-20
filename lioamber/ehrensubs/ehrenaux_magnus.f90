@@ -1,7 +1,10 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine ehren_magnus( Nsize, Norder, dt, Fmat, Rold, Rmid, Rnew )
+subroutine ehrenaux_magnus( Nsize, Norder, dt, Fmat, Rold, Rmid, Rnew )
+!------------------------------------------------------------------------------!
 !
+! DESCRIPTION
 ! Fmat,Rold,Rnew => All in the ON basis
+!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   implicit none
   integer,intent(in)     :: Nsize,Norder
@@ -43,5 +46,5 @@ subroutine ehren_magnus( Nsize, Norder, dt, Fmat, Rold, Rmid, Rnew )
   enddo
 
   deallocate( Omega1, ConmutAcum, TermPos, TermNeg )
-end subroutine ehren_magnus
+end subroutine ehrenaux_magnus
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

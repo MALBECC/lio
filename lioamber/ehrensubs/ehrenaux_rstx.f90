@@ -3,7 +3,7 @@
 ! Save the forces and density matrix of the last position for restart purposes
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine ehrenrsto_save( rsto_fname, rsto_funit, rsto_nfreq, ndyn_steps,     &
+subroutine ehrenaux_rsto( rsto_fname, rsto_funit, rsto_nfreq, ndyn_steps,     &
                          & step_number, Natom, forces, nucvel, &
                          & Nbasis, densA, densB )
    implicit none
@@ -51,9 +51,9 @@ subroutine ehrenrsto_save( rsto_fname, rsto_funit, rsto_nfreq, ndyn_steps,     &
    endif
 
 101 format(2x,I3,2x,I3,4(2x,ES20.12))
-end subroutine
+end subroutine ehrenaux_rsto
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine ehrenrsti_load( rsti_fname, rsti_funit, Natom, forces, nucvel,      &
+subroutine ehrenaux_rsti( rsti_fname, rsti_funit, Natom, forces, nucvel,      &
                          & Nbasis, densA, densB )
    implicit none
    character(len=*) , intent(in)    :: rsti_fname
@@ -85,5 +85,5 @@ subroutine ehrenrsti_load( rsti_fname, rsti_funit, Natom, forces, nucvel,      &
    close( unit=rsti_funit )
 
 102 format(2x,I3,2x,I3,4(2x,ES20.12))
-end subroutine ehrenrsti_load
+end subroutine ehrenaux_rsti
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

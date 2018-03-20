@@ -22,24 +22,28 @@ subroutine dftb_init(M, OPEN)
 end subroutine dftb_init
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-subroutine dftb_td_init (M,rho, rho_0, overlap, RMM5)
+subroutine dftb_td_init (M,rho, rho_0, overlap, RMM5, dim3)
 
-   use dftb_data, only: MTB, MDFTB, rho_aDFTB, rhold_AOTB, rhonew_AOTB
+   use dftb_data, only: MTB, MDFTB, rho_aDFTB, rho_bDFTB, rhold_AOTB,          &
+                        rhonew_AOTB
    implicit none
    integer, intent(in)       :: M
+!carlos: dim3 is to declare the 3th dimension of matrices
+   integer, intent(in)       :: dim3
    real*8, allocatable, intent(inout) :: overlap(:,:)
    real*8 , intent(in)  :: RMM5(M*(M+1)/2)
 #ifdef TD_SIMPLE
-   complex*8, intent(in)     :: rho_0(M,M)
-   complex*8, intent(out)  :: rho(MDFTB,MDFTB)
+   complex*8, intent(in)     :: rho_0(M,M,dim3)
+   complex*8, intent(out)  :: rho(MDFTB,MDFTB,dim3)
 #else
-   complex*16, intent(in)    :: rho_0(M,M)
-   complex*16, intent(out) :: rho(MDFTB,MDFTB)
+   complex*16, intent(in)    :: rho_0(M,M,dim3)
+   complex*16, intent(out) :: rho(MDFTB,MDFTB,dim3)
 #endif
    integer  :: ii,jj
 
    if (allocated(overlap)) deallocate(overlap)
-   allocate(overlap(M,M), rhold_AOTB(MDFTB,MDFTB), rhonew_AOTB(MDFTB,MDFTB))
+   allocate(overlap(M,M), rhold_AOTB(MDFTB,MDFTB,dim3),                       &
+            rhonew_AOTB(MDFTB,MDFTB,dim3))
 
    rhold_AOTB=0.0d0
    rhonew_AOTB=0.0d0
@@ -49,18 +53,31 @@ subroutine dftb_td_init (M,rho, rho_0, overlap, RMM5)
       do jj=1, MDFTB
       do ii=1, MDFTB
          if (ii==jj) then
-            rho(ii,jj)=cmplx(rho_aDFTB(ii,jj), 0.0D0)
+            rho(ii,jj,1)=cmplx(rho_aDFTB(ii,jj), 0.0D0)
          else
-            rho(ii,jj)=cmplx(rho_aDFTB(ii,jj)/2.0d0, 0.0D0)
+            rho(ii,jj,1)=cmplx(rho_aDFTB(ii,jj)/2.0d0, 0.0D0)
          end if
       end do
       end do
 
-      do jj= 1, M
-      do ii= 1, M
-         rho(ii+MTB,jj+MTB)=rho_0(ii,jj)
+!carlos:Open shell option
+   if(dim3==2) then
+      do jj=1, MDFTB
+      do ii=1, MDFTB
+         if (ii==jj) then
+            rho(ii,jj,2)=cmplx(rho_bDFTB(ii,jj), 0.0D0)
+         else
+            rho(ii,jj,2)=cmplx(rho_bDFTB(ii,jj)/2.0d0, 0.0D0)
+         end if
       end do
       end do
+   end if
+
+   do jj= 1, M
+   do ii= 1, M
+      rho(ii+MTB,jj+MTB,:)=rho_0(ii,jj,:)
+   end do
+   end do
 
 end subroutine dftb_td_init
 
@@ -644,21 +661,23 @@ end subroutine write_rhoDFTB
 
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-subroutine dftb_output(M, rho_aux, overlap, istep, Iz, natom, Nuc)
+subroutine dftb_output(M, dim3, rho_aux, overlap, istep, Iz, natom, Nuc, OPEN)
    use dftb_data, only: rhold_AOTB, rhonew_AOTB, MTB, MDFTB
    implicit none
-   integer, intent(in) :: M, istep
+
+   logical, intent(in) :: OPEN
+   integer, intent(in) :: M, istep, dim3
    integer, intent(in) :: natom
    integer, intent(in) :: Nuc(M)
    integer, intent(in) :: Iz(natom)
    real*8, intent(in)  :: overlap(M,M)
 #ifdef TD_SIMPLE
-   complex*8, intent(in)  :: rho_aux(MDFTB, MDFTB)
+   complex*8, intent(in)  :: rho_aux(MDFTB, MDFTB,dim3)
 #else
-   complex*16, intent(in) :: rho_aux(MDFTB, MDFTB)
+   complex*16, intent(in) :: rho_aux(MDFTB, MDFTB,dim3)
 #endif
    integer  :: n, ii, jj
-   real*8   :: I_TB_A, I_TB_B, I_TB_M
+   real*8   :: I_TB_A(dim3), I_TB_B(dim3), I_TB_M(dim3)
    real*8   :: chargeA_TB, chargeB_TB, chargeM_TB
    real*8   :: orb_charge, tot_orb_charge
    real*8   :: qe(natom)
@@ -671,31 +690,61 @@ subroutine dftb_output(M, rho_aux, overlap, istep, Iz, natom, Nuc)
 
    else
 
-      call TB_current(M,rhold_AOTB,rhonew_AOTB, overlap, I_TB_A, I_TB_B, I_TB_M)
+      if (OPEN) then
+         call TB_current(M,rhold_AOTB(:,:,1),rhonew_AOTB(:,:,1), overlap,      &
+                         I_TB_A(1), I_TB_B(1), I_TB_M(1))
+         call TB_current(M,rhold_AOTB(:,:,2),rhonew_AOTB(:,:,2), overlap,      &
+                         I_TB_A(2), I_TB_B(2), I_TB_M(2))
 
-      write(10101,*) "A", I_TB_A
-      write(10101,*) "B", I_TB_B
-      write(10101,*) "M", I_TB_M
+         write(10101,*) "A", I_TB_A(1) + I_TB_A(2)
+         write(10101,*) "B", I_TB_B(1) + I_TB_B(2)
+         write(10101,*) "M", I_TB_M(1) + I_TB_M(2)
+      else
+         call TB_current(M,rhold_AOTB(:,:,1),rhonew_AOTB(:,:,1), overlap,      &
+                         I_TB_A(1), I_TB_B(1), I_TB_M(1))
+
+         write(10101,*) "A", I_TB_A(1)
+         write(10101,*) "B", I_TB_B(1)
+         write(10101,*) "M", I_TB_M(1)
+      end if
+
 
       chargeA_TB=MTB
       chargeB_TB=MTB
       do ii=1, MTB
-         chargeA_TB=chargeA_TB-rho_aux(ii,ii)
-         chargeB_TB=chargeB_TB-rho_aux(MTB+M+ii,MTB+M+ii)
+         chargeA_TB=chargeA_TB-rho_aux(ii,ii,1)
+         chargeB_TB=chargeB_TB-rho_aux(MTB+M+ii,MTB+M+ii,1)
       end do
+
+      if (OPEN) then
+         do ii=1, MTB
+            chargeA_TB=chargeA_TB-rho_aux(ii,ii,2)
+            chargeB_TB=chargeB_TB-rho_aux(MTB+M+ii,MTB+M+ii,2)
+         end do
+      end if
 
       chargeM_TB=0.0D0
       do n=1,natom
          qe(n)=Iz(n)
       enddo
 
-      rhoscratch=real(rho_aux(MTB+1:MTB+M,MTB+1:MTB+M))
+      rhoscratch=real(rho_aux(MTB+1:MTB+M,MTB+1:MTB+M,1))
 
       call mulliken_calc(natom, M, rhoscratch, overlap, Nuc, qe)
 
       do n=1,natom
          chargeM_TB= chargeM_TB - qe(n)
       enddo
+
+      if(OPEN) then
+         rhoscratch=real(rho_aux(MTB+1:MTB+M,MTB+1:MTB+M,2))
+
+         call mulliken_calc(natom, M, rhoscratch, overlap, Nuc, qe)
+
+         do n=1,natom
+            chargeM_TB= chargeM_TB - qe(n)
+         enddo
+      end if
 
       write(20202,*) "A", chargeA_TB
       write(20202,*) "B", chargeB_TB

@@ -26,7 +26,7 @@
 !  | 8  9  3 |                                                                 !
 !                                                                              !
 ! For more information, visit:                                                 !
-!   (*) http://www.netlib.org/lapack/lug/node123.html                          ! 
+!   (*) http://www.netlib.org/lapack/lug/node123.html                          !
 !   (*) http://www.netlib.org/lapack/lug/node24.html                           !
 ! 04/2014 || F.F.R                                                             !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -59,7 +59,7 @@ subroutine spunpack(UPLO, NM, Vector, Matrix)
     else
         write(*,*) 'spunpack: Wrong value in UPLO.'
     endif
-    
+
     return
 end subroutine spunpack
 
@@ -94,7 +94,7 @@ subroutine spunpack_rho(UPLO, NM, Vector, Matrix)
     else
         write(*,*) 'spunpack_rho: Wrong value in UPLO.'
     endif
-    
+
     return
 end subroutine spunpack_rho
 
@@ -121,10 +121,10 @@ subroutine sprepack(UPLO, NM, Vector, Matrix)
         enddo
         enddo
     else
-         write(*,*) 'sprepack: Wrong value in UPLO.'    
+         write(*,*) 'sprepack: Wrong value in UPLO.'
     endif
 
-    return 
+    return
 end subroutine sprepack
 
 subroutine spunpack_rtc(UPLO, NM, Vector, Matrix)
@@ -156,7 +156,7 @@ subroutine spunpack_rtc(UPLO, NM, Vector, Matrix)
                 idx = ii + (2*NM-jj)*(jj-1)/2
                 Matrix(ii,jj) = cmplx(Vector(idx),0.0D0)
                 Matrix(ii,jj) = Matrix(ii,jj)*0.50D0
-            enddo     
+            enddo
             Matrix(ii,ii) = Vector(ii+(2*NM-ii)*(ii-1)/2)
             do jj = ii + 1, NM
                 idx = jj + (2*NM-ii)*(ii-1)/2
@@ -214,4 +214,3 @@ subroutine sprepack_ctr(UPLO,NM,Vector,Matrix)
     return
 end subroutine sprepack_ctr
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-

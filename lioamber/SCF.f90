@@ -456,7 +456,8 @@ subroutine SCF(E)
 
       if ((timedep.eq.1).and.(tdrestart)) then
         call g2g_timer_sum_start('TD')
-        call TD()
+        call TD(fock_aop, rho_aop)
+        if(OPEN) call TD(fock_aop, rho_aop, fock_bop, rho_bop)
         call g2g_timer_sum_stop('TD')
         return
       endif
@@ -1061,7 +1062,11 @@ subroutine SCF(E)
 !
       if (timedep.eq.1) then
         call g2g_timer_sum_start('TD')
-        call TD()
+        if (OPEN) then
+           call TD(fock_aop, rho_aop, fock_bop, rho_bop)
+        else
+           call TD(fock_aop, rho_bop)
+        end if
         call g2g_timer_sum_stop('TD')
       endif
 

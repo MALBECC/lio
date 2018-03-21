@@ -136,7 +136,7 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
 !
 !  Finalizations
 !------------------------------------------------------------------------------!
-   call ehrenaux_writedip(nustep_count, wdip_nfreq, stored_time, dipmom, wdip_nfile)
+   call ehrenaux_writedip(nustep_count, wdip_nfreq, stored_time, dipmom, wdip_fname)
 
    if (rsto_saves) call ehrenaux_rsto( rsto_fname, rsto_nfreq, &
    &  ndyn_steps, nustep_count, natom, qm_forces_total, nucvel, &

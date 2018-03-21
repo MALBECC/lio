@@ -1,5 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine ehrenaux_magnus( Nsize, Norder, dt, Fmat, Rold, Rmid, Rnew )
+subroutine ehrenaux_magnus( Nsize, Norder, dt, Fmat, Rold, Rnew )
 !------------------------------------------------------------------------------!
 !
 ! DESCRIPTION
@@ -11,7 +11,6 @@ subroutine ehrenaux_magnus( Nsize, Norder, dt, Fmat, Rold, Rmid, Rnew )
   real*8,intent(in)      :: dt
   complex*16,intent(in)  :: Fmat(Nsize,Nsize)
   complex*16,intent(in)  :: Rold(Nsize,Nsize)
-  complex*16,intent(in)  :: Rmid(Nsize,Nsize)
   complex*16,intent(out) :: Rnew(Nsize,Nsize)
 
   integer :: kk, ii, jj
@@ -29,7 +28,7 @@ subroutine ehrenaux_magnus( Nsize, Norder, dt, Fmat, Rold, Rmid, Rnew )
 
   Rnew = Rold
   ConmutAcum = Rold
-  Omega1 = DCMPLX(0.0d0,-2.0d0) * (Fmat) * (dt)
+  Omega1 = DCMPLX(0.0d0,-1.0d0) * (Fmat) * (dt)
 !  factinv = 1.0d0
 !
 !

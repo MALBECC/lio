@@ -450,7 +450,6 @@ c
       
         allocate(cool(kknumd*Md),kkind(kknumd))
         allocate(cools(kknums*Md),kkinds(kknums))
-        write(*,*) 'kknum y kknums',kknumd,kknums
 
          kknumsmax=kknums
         cool=0

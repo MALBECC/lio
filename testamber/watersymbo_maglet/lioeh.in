@@ -9,7 +9,7 @@
 &end
 
 &lionml
-   ndyn_steps = 1000,
+   ndyn_steps = 10000,
    edyn_steps = 1,
    propagator = 2,
 &end

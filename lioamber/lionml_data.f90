@@ -70,8 +70,8 @@ module lionml_data
 
    logical :: eefld_timegih = .false. ! time gaussian initial half
    logical :: eefld_timegfh = .false. ! time gaussian final half
-   real*8  :: eefld_timepos = 50.0d0  ! in ps (currently fs!)
-   real*8  :: eefld_timeamp = 25.0d0  ! in ps (currently fs!)
+   real*8  :: eefld_timepos =  1.0d0  ! in ps (currently fs!)
+   real*8  :: eefld_timeamp =  0.2d0  ! in ps (currently fs!)
    real*8  :: eefld_wavelen =  0.0d0  ! in nm
 !
 !

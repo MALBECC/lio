@@ -46,6 +46,7 @@ subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
 !------------------------------------------------------------------------------!
    call g2g_timer_start('RMMcalc3-field')
    call dip( DipMom(1), DipMom(2), DipMom(3) )
+   write(666,*) eefld_on
    if (eefld_on) then
       g = 1.0d0
       factor = 2.54d0
@@ -54,17 +55,22 @@ subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
          Qc = Qc + Iz(kk)
       end do
 
-     call intfld( g, ElecField(1), ElecField(2), ElecField(3) )
+      call intfld( g, ElecField(1), ElecField(2), ElecField(3) )
 
-     dip_times_field = 0.0d0
-     dip_times_field = dip_times_field + ElecField(1) * DipMom(1)
-     dip_times_field = dip_times_field + ElecField(2) * DipMom(2)
-     dip_times_field = dip_times_field + ElecField(3) * DipMom(3)
-     strange_term = (0.5d0) * (1.0d0 - 1.0d0/epsilon) * Qc**2 / a0
+      dip_times_field = 0.0d0
+      dip_times_field = dip_times_field + ElecField(1) * DipMom(1)
+      dip_times_field = dip_times_field + ElecField(2) * DipMom(2)
+      dip_times_field = dip_times_field + ElecField(3) * DipMom(3)
+      strange_term = (0.5d0) * (1.0d0 - 1.0d0/epsilon) * Qc**2 / a0
 
-     Energy_Efield = 0.0d0
-     Energy_Efield = Energy_Efield - g * dip_times_field / factor
-     Energy_Efield = Energy_Efield - strange_term
+      Energy_Efield = 0.0d0
+      Energy_Efield = Energy_Efield - g * dip_times_field / factor
+      Energy_Efield = Energy_Efield - strange_term
+
+      write(666,*)
+      write(666,*) DipMom(1), DipMom(2), DipMom(3)
+      write(666,*) ElecField(1), ElecField(2), ElecField(3)
+      write(666,*) Energy_Efield
 
    end if
    call g2g_timer_stop('RMMcalc3-field')

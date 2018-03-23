@@ -150,7 +150,7 @@ subroutine SCF(E)
 ! TODO : Variables to eliminate...
    real*8, allocatable :: xnano(:,:)
    integer :: MM, MM2, MMd, Md2
-   integer :: M1, M2, M3, M5, M7, M9, M11, M13, M15, M17, M18, M19, M20, M22
+   integer :: M1, M2, M3, M5, M7, M9, M11, M13, M15, M17,M18,M18b, M19, M20, M22
 
    real*8, allocatable :: Y(:,:)
    real*8, allocatable :: Ytrans(:,:)
@@ -251,8 +251,13 @@ subroutine SCF(E)
       M18=M17+MMd! vectors of MO
       M19=M18+M*NCO! weights (in case of using option )
       M20 = M19 + natom*50*Nang ! RAM storage of two-electron integrals (if MEMO=T)
-      M22 = M20 +2*MM !W ( beta eigenvalues )
 
+   if (OPEN) then
+      M18b=M18+M*NCOa
+      M19=M18b+M*NCOb
+      M20 = M19 + natom*50*Nang
+      M22 = M20 +2*MM !W ( beta eigenvalues )
+   end if
 
 !------------------------------------------------------------------------------!
 ! TODO: I don't like ending timers inside a conditional...

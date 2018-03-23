@@ -34,8 +34,8 @@ subroutine SCF(E)
                           predcoef, nsol, r, pc, DIIS, told, Etold, Enucl,     &
                           Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz,  &
                           nuc, doing_ehrenfest, first_step, RealRho,           &
-                          total_time, MO_coef_at, Smat, good_cut, ndiis, ncont,&
-                          nshell, rhoalpha, rhobeta, OPEN
+                          total_time, MO_coef_at, MO_coef_at_b, Smat, good_cut,&
+                          ndiis, ncont, nshell, rhoalpha, rhobeta, OPEN
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
                        FOCK_ECP_read,FOCK_ECP_write,IzECP
    use field_data, only: field, fx, fy, fz
@@ -711,6 +711,17 @@ subroutine SCF(E)
           RMM(M13+kk-1) = morb_energy(kk)
         end do
 
+        i0 = 0
+        if (dftb_calc) i0=MTB
+
+        kkk = 0
+        do kk=1,NCOa
+        do ii=1,M
+          kkk = kkk+1
+          MO_coef_at(kkk) = morb_coefat( i0+ii, kk )
+        enddo
+        enddo
+
     if (OPEN) then
 !%%%%%%%%%%%%%%%%%%%%
 !OPEN SHELL OPTION  |
@@ -756,6 +767,17 @@ subroutine SCF(E)
         do kk=1,M
           RMM(M22+kk-1) = morb_energy(kk)
         end do
+!carlos: Storing autovectors to create the restart
+        i0 = 0
+        if (dftb_calc) i0=MTB
+
+        kkk = 0
+        do kk=1,NCOb
+        do ii=1,M
+          kkk = kkk+1
+          MO_coef_at_b(kkk) = morb_coefat( i0+ii, kk )
+        enddo
+        enddo
 
     end if!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !------------------------------------------------------------------------------!
@@ -768,17 +790,6 @@ subroutine SCF(E)
 
 !carlos: this is not working with openshell. morb_coefat is not depending of
 !        the spin factor.
-        i0 = 0
-        if (dftb_calc) i0=MTB
-
-        kkk = 0
-        do kk=1,NCOa
-        do ii=1,M
-          kkk = kkk+1
-          MO_coef_at(kkk) = morb_coefat( i0+ii, kk )
-        enddo
-        enddo
-
         do ii=1,M
 !         do jj=1,NCO
           do jj=1,M

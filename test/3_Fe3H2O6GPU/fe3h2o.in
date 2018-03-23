@@ -7,7 +7,7 @@
  open=t
  nunp=1
  diis=f
- gold=30
+ gold=50
 ! told=1.0D-7
  hybrid_converg=t
  good_cut=1d-3
@@ -16,5 +16,5 @@
  min_points_per_cube=1
  sphere_radius=0.5
  energy_all_iterations=t
- restart_freq=1
+! restart_freq=1
 &end

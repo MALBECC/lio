@@ -251,7 +251,6 @@ subroutine SCF(E)
       M18=M17+MMd! vectors of MO
       M19=M18+M*NCO! weights (in case of using option )
       M20 = M19 + natom*50*Nang ! RAM storage of two-electron integrals (if MEMO=T)
-      M22 = M20 +2*MM !W ( beta eigenvalues )
 
    if (OPEN) then
       M18b=M18+M*NCOa

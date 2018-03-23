@@ -1028,9 +1028,13 @@
          do j=1, M
          do i=j, M
             k = k + 1
-            RMM(k) = restart_dens(indexii(i), indexii(j))
+            RMM(k)      = restart_dens(indexii(i), indexii(j))
+            rhoalpha(k) = restart_adens(indexii(i), indexii(j))
+            rhobeta(k)  = restart_bdens(indexii(i), indexii(j))
             if (i.ne.j) then
-               RMM(k) = RMM(k)*2.D0
+               RMM(k)      = RMM(k)*2.D0
+               rhoalpha(k) = rhoalpha(k)*2.0D0
+               rhobeta(k)  = rhobeta(k)*2.0D0
             endif
          enddo
          enddo
@@ -1048,7 +1052,7 @@
             endif
          enddo
          enddo
-         endif        
+         endif
 
          deallocate(restart_dens, restart_coef)
          close(89)

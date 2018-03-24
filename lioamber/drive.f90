@@ -968,6 +968,16 @@
 !        pause
       endif
 
+      ! Allocates and initialises rhoalpha and rhobeta
+      if(OPEN) then
+        allocate(rhoalpha(M*(M+1)/2),rhobeta(M*(M+1)/2))
+      else
+        allocate(rhoalpha(1),rhobeta(1))
+      endif
+      rhoalpha(:) = 0.0d0
+      rhobeta(:)  = 0.0d0
+
+
       ! Reads coefficient restart and builds density matrix. The MO
       ! coefficients are read in the same order as basis sets.
       ! Then vectors are put in dynamical allocation (to be used later)
@@ -991,9 +1001,6 @@
             NCOb = NCO + Nunp
             allocate(restart_coef_b(M, NCOb), restart_adens(M,M),              &
                      restart_bdens(M,M))
-            allocate(rhoalpha(M*(M+1)/2),rhobeta(M*(M+1)/2))
-            rhoalpha = 0.0d0
-            rhobeta  = 0.0d0
 
             call read_coef_restart(restart_coef, restart_coef_b, restart_dens, &
                                    restart_adens, restart_bdens, M, NCOa,      &
@@ -1021,16 +1028,27 @@
          do j=1, M
          do i=j, M
             k = k + 1
-            RMM(k)      = restart_dens(indexii(i), indexii(j))
+            RMM(k) = restart_dens(indexii(i), indexii(j))
+            if (i.ne.j) then
+               RMM(k) = RMM(k)*2.D0
+            endif
+         enddo
+         enddo
+
+         if (OPEN) then
+         k = 0
+         do j=1, M
+         do i=j, M
+            k = k + 1
             rhoalpha(k) = restart_adens(indexii(i), indexii(j))
             rhobeta(k)  = restart_bdens(indexii(i), indexii(j))
             if (i.ne.j) then
-               RMM(k)      = RMM(k)*2.D0
                rhoalpha(k) = rhoalpha(k)*2.0D0
                rhobeta(k)  = rhobeta(k)*2.0D0
             endif
          enddo
          enddo
+         endif        
 
          deallocate(restart_dens, restart_coef)
          close(89)
@@ -1040,16 +1058,6 @@
 
 !c------- G2G Initialization ---------------------
 !c
-      if(OPEN.and.(.not.VCINP)) then
-        allocate(rhoalpha(M*(M+1)/2),rhobeta(M*(M+1)/2))
-        rhoalpha = 0.0d0
-        rhobeta  = 0.0d0
-      else if (.not.OPEN) then
-        allocate(rhoalpha(1),rhobeta(1))
-        rhoalpha = 0.0d0
-        rhobeta  = 0.0d0
-      endif
-
       call g2g_parameter_init(NORM,natom,natom,ngDyn, &
                              rqm,Rm2,Iz,Nr,Nr2,Nuc, &
                              M,ncont,nshell,c,a, &

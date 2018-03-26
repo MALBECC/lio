@@ -25,7 +25,6 @@
 #
 ################################################################################
 OBJECTS += SCF.o
-OBJECTS += SCFop.o
 OBJECTS += SCF_exter.o
 OBJECTS += steep.o
 OBJECTS += TD.o
@@ -195,7 +194,7 @@ OBJECTS += faint_cpu77.o
 #
 modusrs :=
 modusrs += cublasmath.o ehrensubs.o liomain.o maskrmm.o
-modusrs += predictor.o SCF.o SCFop.o TD.o field_subs.o
+modusrs += predictor.o SCF.o TD.o field_subs.o
 modusrs += dft_get_mm_forces.o dft_get_qm_forces.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/faint_cpu77.mod
 
@@ -317,7 +316,7 @@ include mathsubs/mathsubs.mk
 SRCDIRS += mathsubs
 OBJECTS += mathsubs.o
 tmplist :=
-tmplist += SCF.o SCFop.o predictor.o typedef_operator.o
+tmplist += SCF.o predictor.o typedef_operator.o
 tmplist += tmpaux_SCF.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/mathsubs.mod
 
@@ -341,7 +340,7 @@ ifeq ($(use_cublas),1)
   $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fortran.o
 
   tmplist :=
-  tmplist += SCF.o SCFop.o TD.o typedef_operator.o transport.o
+  tmplist += SCF.o TD.o typedef_operator.o transport.o
   tmplist += tmpaux_SCF.o
   $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/cublasmath.mod
 
@@ -364,7 +363,7 @@ tmplist := dft_get_mm_forces.o dft_get_qm_forces.o
 tmplist += get_restrain_energy_forces.o
 tmplist += dip.o dipmem.o drive.o grid.o init_amber.o init.o
 tmplist += jarz.o lio_finalize.o predictor.o
-tmplist += SCF.o SCF_in.o SCFop.o TD.o cubegen.o
+tmplist += SCF.o SCF_in.o TD.o cubegen.o
 tmplist += maskrmm.o write_output.o SCF_exter.o
 tmplist += intECP.o elec.o func.o tmpaux_SCF.o
 tmplist += faint_cpu77.o steep.o transport.o

@@ -34,8 +34,8 @@ subroutine SCF(E)
                           predcoef, nsol, r, pc, DIIS, told, Etold, Enucl,     &
                           Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz,  &
                           nuc, doing_ehrenfest, first_step, RealRho,           &
-                          total_time, MO_coef_at, Smat, good_cut, ndiis, ncont,&
-                          nshell
+                          total_time, MO_coef_at, MO_coef_at_b, Smat, good_cut,&
+                          ndiis, ncont, nshell, rhoalpha, rhobeta, OPEN
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
                        FOCK_ECP_read,FOCK_ECP_write,IzECP
    use field_data, only: field, fx, fy, fz
@@ -45,9 +45,10 @@ subroutine SCF(E)
    use time_dependent, only : TD
    use faint_cpu77, only: int1, int2, intsol, int3mem, int3lu
    use dftb_data, only : dftb_calc, MDFTB, MTB, chargeA_TB, chargeB_TB,        &
-                         rho_DFTB, TBsave, TBload
-      use dftb_subs, only : dftb_init, getXY_DFTB, find_TB_neighbors,             &
-                            build_chimera_DFTB, extract_rhoDFT
+                         rho_aDFTB, rho_bDFTB, TBsave, TBload
+   use dftb_subs, only : dftb_init, getXY_DFTB, find_TB_neighbors,             &
+                         build_chimera_DFTB, extract_rhoDFT, read_rhoDFTB,     &
+                         write_rhoDFTB, construct_rhoDFTB
    use cubegen       , only: cubegen_vecin, cubegen_matin, cubegen_write
    use mask_ecp      , only: ECP_init, ECP_fock, ECP_energy
    use typedef_sop   , only: sop              ! Testing SOP
@@ -60,8 +61,6 @@ subroutine SCF(E)
    use converger_subs, only: converger_init, conver
    use mask_cublas   , only: cublas_setmat, cublas_release
    use typedef_operator, only: operator !Testing operator
-   use trans_Data, only: gaussian_convert, rho_exc, translation
-
 #  ifdef  CUBLAS
       use cublasmath , only: cumxp_r
 #  endif
@@ -90,12 +89,13 @@ subroutine SCF(E)
 !------------------------------------------------------------------------------!
 !  carlos: variables to use as input for some subroutines instead of M and NCO
    integer :: M_in
-   integer :: NCO_in
+   integer :: NCOa_in
+   integer :: NCOb_in
 
-   real*8, allocatable :: rho_0(:,:)
-   real*8, allocatable :: fock_0(:,:)
-   real*8, allocatable :: rho(:,:)
-   real*8, allocatable :: fock(:,:)
+   real*8, allocatable :: rho_a0(:,:), rho_b0(:,:)
+   real*8, allocatable :: fock_a0(:,:), fock_b0(:,:)
+   real*8, allocatable :: rho_a(:,:), rho_b(:,:)
+   real*8, allocatable :: fock_a(:,:), fock_b(:,:)
    real*8, allocatable :: morb_coefat(:,:)
    real*8, allocatable :: X_min(:,:)
    real*8, allocatable :: Y_min(:,:)
@@ -150,31 +150,42 @@ subroutine SCF(E)
 ! TODO : Variables to eliminate...
    real*8, allocatable :: xnano(:,:)
    integer :: MM, MM2, MMd, Md2
-   integer :: M1, M2, M3, M5, M7, M9, M11, M13, M15, M17, M18, M19, M20
+   integer :: M1, M2, M3, M5, M7, M9, M11, M13, M15, M17,M18,M18b, M19, M20, M22
 
    real*8, allocatable :: Y(:,:)
    real*8, allocatable :: Ytrans(:,:)
    real*8, allocatable :: Xtrans(:,:)
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!carlos: Testing operator
-   type(operator)      :: rho_op, fock_op
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!carlos: Operators for matrices with alpha and beta spins.
+   type(operator)      :: rho_aop, fock_aop
+   type(operator)      :: rho_bop, fock_bop
 
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!carlos: Open shell, variables.
+   real*8              :: ocupF
+   integer             :: NCOa, NCOb
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    call g2g_timer_start('SCF_full')
 
 
 !------------------------------------------------------------------------------!
 !DFTB: initialisation of DFTB variables
-   allocate (fock_0(M,M), rho_0(M,M))
+   allocate (fock_a0(M,M), rho_a0(M,M))
 
    if (dftb_calc) then
-      call dftb_init(M)
-      allocate(fock(MDFTB,MDFTB), rho(MDFTB,MDFTB))
+      call dftb_init(M, OPEN)
+      allocate(fock_a(MDFTB,MDFTB), rho_a(MDFTB,MDFTB))
       allocate(morb_energy(MDFTB), morb_coefat(MDFTB,MDFTB))
+      if (OPEN) then
+         allocate(fock_b(MDFTB,MDFTB), rho_b(MDFTB,MDFTB))
+      end if
    else
-      allocate(fock(M,M), rho(M,M))
+      allocate(fock_a(M,M), rho_a(M,M))
       allocate(morb_energy(M), morb_coefat(M,M))
+      if (OPEN) then
+        allocate(fock_b(M,M), rho_b(M,M))
+      end if
    end if
 
    M_in = M
@@ -217,6 +228,17 @@ subroutine SCF(E)
       Md2=2*Md
       M2=2*M
 
+!carlos: ocupation factor
+      ocupF = 2.0d0
+!carlos:NCOa works in open shell and close shell
+      NCOa=NCO
+      if (OPEN) then
+!Number of OM down
+         NCOb=NCO+Nunp
+         ocupF=1.0d0
+         allocate(rho_b0(M,M),fock_b0(M,M))
+      end if
+
       M1=1 ! first P
       M3=M1+MM ! now Pnew
       M5=M3+MM! now S, F also uses the same position after S was used
@@ -230,6 +252,12 @@ subroutine SCF(E)
       M19=M18+M*NCO! weights (in case of using option )
       M20 = M19 + natom*50*Nang ! RAM storage of two-electron integrals (if MEMO=T)
 
+   if (OPEN) then
+      M18b=M18+M*NCOa
+      M19=M18b+M*NCOb
+      M20 = M19 + natom*50*Nang
+      M22 = M20 +2*MM !W ( beta eigenvalues )
+   end if
 
 !------------------------------------------------------------------------------!
 ! TODO: I don't like ending timers inside a conditional...
@@ -346,10 +374,6 @@ subroutine SCF(E)
         if ( allocated(Xmat) ) deallocate(Xmat)
         if ( allocated(Ymat) ) deallocate(Ymat)
         allocate(Xmat(M_in,M_in), Ymat(M_in,M_in))
-!charly: I commented the next part to test its necessity
-!        if ( allocated(Ytrans) ) deallocate(Ytrans)
-!        if ( allocated(Xtrans) ) deallocate(Xtrans)
-!        allocate( Ytrans(M_in,M_in), Xtrans(M_in,M_in) )
 
         call overop%Sets_smat( Smat )
         if (lowdin) then
@@ -420,7 +444,14 @@ subroutine SCF(E)
 ! Generates starting guess
 !
    if ( (.not.VCINP) .and. primera ) then
-      call starting_guess( M, MM, NCO, RMM(M11), Xmat(MTB+1:MTB+M,MTB+1:MTB+M), RMM(M1) )
+      call starting_guess( M, MM, NCOa, ocupF,                                 &
+                           RMM(M11), Xmat(MTB+1:MTB+M,MTB+1:MTB+M),RMM(M1) )
+      if (OPEN) then
+          call starting_guess( M, MM, NCOb , ocupF, RMM(M11),                  &
+                               Xmat(MTB+1:MTB+M,MTB+1:MTB+M),rhobeta )
+          rhoalpha=RMM(M1:MM)
+          RMM(M1:MM) = rhoalpha + rhobeta
+      end if
       primera = .false.
    end if
 
@@ -491,26 +522,8 @@ subroutine SCF(E)
 !------------------------------------------------------------------------------!
 
 !DFTB: the density for DFTB is readed from an external file.
-
-   if (dftb_calc.and.TBload) then
-
-         open(unit=1070,file='rhoTB.in')
-
-         DO ii=1,M_in
-         DO jj=1,M_in
-            read(1070,*) rho(ii,jj)
-         ENDDO
-         ENDDO
-
-         do jj=1,M
-         do kk=jj,M
-               RMM(kk+(M2-jj)*(jj-1)/2)=rho(jj+MTB,kk+MTB)
-         enddo
-         enddo
-
-         write(*,*) 'RHOTB readed'
-
-   end if
+   if (dftb_calc.and.TBload) call read_rhoDFTB(M, MM, RMM(M1), rhoalpha, rhobeta, &
+                                               OPEN)
 
 !------------------------------------------------------------------------------!
 ! TODO: Maybe evaluate conditions for loop continuance at the end of loop
@@ -589,24 +602,18 @@ subroutine SCF(E)
 ! TODO: extraction of fock an rho via subroutines from maskrmm as a first step,
 !       total removal once rmm is gone.
 
-        do jj=1,M
+!carlos: extractions for Open Shell and Close Shell.
+        if (OPEN) then
+           call spunpack_rho('L',M,rhoalpha,rho_a0)
+           call spunpack('L', M, RMM(M5), fock_a0)
+           call spunpack_rho('L',M,rhobeta,rho_b0)
+           call spunpack('L', M, RMM(M3), fock_b0)
+        else
+           call spunpack_rho('L',M,RMM(M1),rho_a0)
+           call spunpack('L', M, RMM(M5), fock_a0)
+        end if
 
-          do kk=1,jj-1
-            fock_0(jj,kk) = RMM(M5+jj+(M2-kk)*(kk-1)/2-1)
-            rho_0(jj,kk)  = (RMM(jj+(M2-kk)*(kk-1)/2))/2
-          enddo
-
-          fock_0(jj,jj) = RMM(M5+jj+(M2-jj)*(jj-1)/2-1)
-          rho_0(jj,jj)  = RMM(jj+(M2-jj)*(jj-1)/2)
-
-          do kk=jj+1,M
-            fock_0(jj,kk) = RMM(M5+kk+(M2-jj)*(jj-1)/2-1)
-            rho_0(jj,kk)  = RMM(kk+(M2-jj)*(jj-1)/2)/2
-          enddo
-
-        enddo
-
-        call fockbias_apply( 0.0d0, fock_0 )
+        call fockbias_apply( 0.0d0, fock_a0 )
 
 !------------------------------------------------------------------------------!
 ! DFTB: Fock and Rho for DFTB are builded.
@@ -615,58 +622,60 @@ subroutine SCF(E)
 !       consecutive dftb_calc switches? really?
 !
       if (dftb_calc) then
+
+         NCOa_in = NCOa + MTB
          if (niter==1) call find_TB_neighbors(M,Nuc,natom)
-         call build_chimera_DFTB (M, fock_0, fock, natom, nshell, ncont)
+         call build_chimera_DFTB (M, fock_a0, fock_a, natom, nshell, ncont)
+         call construct_rhoDFTB(M, rho_a, rho_a0 ,rho_aDFTB, TBload, niter)
 
-         if (niter==1) then
-            if (TBload) then
-
-               do ii=1,M_in
-               do jj=ii+1,M_in
-                  rho(ii,jj)=rho(ii,jj)/2
-                  rho(jj,ii)=rho(ii,jj)
-               end do
-               end do
-
-            else
-               rho=0.0D0
-               do ii=1, MTB
-                  rho(ii,ii)=1.0D0
-                  rho(MTB+M+ii,MTB+M+ii)=1.0D0
-               end do
-               rho(MTB+1:MTB+M, MTB+1:MTB+M)=rho_0(:,:)
-            end if
+         if (OPEN) then
+            NCOb_in = NCOb + MTB
+            call build_chimera_DFTB (M, fock_b0, fock_b, natom, nshell, ncont)
+            call construct_rhoDFTB(M, rho_b, rho_b0 ,rho_bDFTB, TBload, niter)
          end if
 
       else
-         fock=fock_0
-         rho=rho_0
+         NCOa_in = NCOa
+         fock_a=fock_a0
+         rho_a=rho_a0
+
+         if (OPEN) then
+            NCOb_in = NCOb
+            fock_b=fock_b0
+            rho_b=rho_b0
+         end if
+
       endif
 
-      if (dftb_calc) then
-         NCO_in = NCO+MTB
-      else
-         NCO_in = NCO
-      end if
-!
-!carlos: storing rho in type
+!carlos: storing rho and fock in operator.
 
-   call rho_op%Sets_data_AO(rho)
-   call fock_op%Sets_data_AO(fock)
+   call rho_aop%Sets_data_AO(rho_a)
+   call fock_aop%Sets_data_AO(fock_a)
+
+   if (OPEN) then
+      call rho_bop%Sets_data_AO(rho_b)
+      call fock_bop%Sets_data_AO(fock_b)
+   end if
 !------------------------------------------------------------------------------!
 !  Convergence accelerator processing
         call g2g_timer_sum_start('SCF acceleration')
         if (niter==1) then
-           call converger_init( M_in, ndiis, DAMP, DIIS, hybrid_converg )
+           call converger_init( M_in, ndiis, DAMP, DIIS, hybrid_converg, OPEN )
         end if
+
+!carlos: this is repeted twice for open shell
+
+!%%%%%%%%%%%%%%%%%%%%
+!CLOSE SHELL OPTION |
+!%%%%%%%%%%%%%%%%%%%%
 #       ifdef CUBLAS
-           call conver(niter, good, good_cut, M_in, rho_op, fock_op, dev_Xmat, &
-                       dev_Ymat)
+           call conver(niter, good, good_cut, M_in, rho_aop, fock_aop,         &
+                       dev_Xmat, dev_Ymat, 1)
 #       else
-           call conver(niter, good, good_cut, M_in, rho_op, fock_op, Xmat, Ymat)
+           call conver(niter, good, good_cut, M_in, rho_aop, fock_aop, Xmat,   &
+                       Ymat, 1)
 #       endif
-!carlos: fockat is necesary?
-!        fockat = transform( fock, Ytrans )
+
         call g2g_timer_sum_pause('SCF acceleration')
 
 !------------------------------------------------------------------------------!
@@ -675,8 +684,7 @@ subroutine SCF(E)
         allocate( morb_coefon(M_in,M_in) )
 
         call g2g_timer_sum_start('SCF - Fock Diagonalization (sum)')
-!carlos: using types
-        call fock_op%Diagon_datamat( morb_coefon, morb_energy )
+        call fock_aop%Diagon_datamat( morb_coefon, morb_energy )
         call g2g_timer_sum_pause('SCF - Fock Diagonalization (sum)')
 !
 !
@@ -693,31 +701,95 @@ subroutine SCF(E)
         call g2g_timer_sum_pause('SCF - MOC base change (sum)')
 
         if ( allocated(morb_coefon) ) deallocate(morb_coefon)
-!carlos: using types
-        call rho_op%Dens_build(M_in, NCO_in, 2.0d0, morb_coefat)
-        call rho_op%Gets_data_AO(rho)
-        call messup_densmat( rho )
+        call rho_aop%Dens_build(M_in, NCOa_in, ocupF, morb_coefat)
+        call rho_aop%Gets_data_AO(rho_a)
+        call messup_densmat( rho_a )
 
-!------------------------------------------------------------------------------!
-!  We are not sure how to translate the sumation over molecular orbitals
-!  and energies when changing from DFTB system to DFT subsystem. Forces
-!  may be broken due to this.
-!  This should not be affecting normal DFT calculations.
-        i0 = 0
-        if (dftb_calc) i0=MTB
+!carlos: Alpha Energy (or Close Shell) storage in RMM
 
         do kk=1,M
           RMM(M13+kk-1) = morb_energy(kk)
         end do
 
+        i0 = 0
+        if (dftb_calc) i0=MTB
+
         kkk = 0
-        do kk=1,NCO
+        do kk=1,NCOa
         do ii=1,M
           kkk = kkk+1
           MO_coef_at(kkk) = morb_coefat( i0+ii, kk )
         enddo
         enddo
 
+    if (OPEN) then
+!%%%%%%%%%%%%%%%%%%%%
+!OPEN SHELL OPTION  |
+!%%%%%%%%%%%%%%%%%%%%
+#       ifdef CUBLAS
+           call conver(niter, good, good_cut, M_in, rho_bop, fock_bop,         &
+                       dev_Xmat, dev_Ymat, 2)
+#       else
+           call conver(niter, good, good_cut, M_in, rho_bop, fock_bop, Xmat,     &
+                       Ymat, 2)
+#       endif
+
+        call g2g_timer_sum_pause('SCF acceleration')
+
+!------------------------------------------------------------------------------!
+!  Fock(ON) diagonalization
+        if ( allocated(morb_coefon) ) deallocate(morb_coefon)
+        allocate( morb_coefon(M_in,M_in) )
+
+        call g2g_timer_sum_start('SCF - Fock Diagonalization (sum)')
+        call fock_bop%Diagon_datamat( morb_coefon, morb_energy )
+        call g2g_timer_sum_pause('SCF - Fock Diagonalization (sum)')
+!
+!
+!------------------------------------------------------------------------------!
+!  Base change of coeficients ( (X^-1)*C ) and construction of new density
+!  matrix
+        call g2g_timer_sum_start('SCF - MOC base change (sum)')
+#       ifdef CUBLAS
+           call cumxp_r( morb_coefon, dev_Xmat, morb_coefat, M_in)
+#       else
+           morb_coefat = matmul( Xmat, morb_coefon )
+#       endif
+        call standard_coefs( morb_coefat )
+        call g2g_timer_sum_pause('SCF - MOC base change (sum)')
+
+        if ( allocated(morb_coefon) ) deallocate(morb_coefon)
+        call rho_bop%Dens_build(M_in, NCOb_in, ocupF, morb_coefat)
+        call rho_bop%Gets_data_AO(rho_b)
+        call messup_densmat( rho_b )
+
+!carlos: Beta Energy storage in RMM
+        do kk=1,M
+          RMM(M22+kk-1) = morb_energy(kk)
+        end do
+!carlos: Storing autovectors to create the restart
+        i0 = 0
+        if (dftb_calc) i0=MTB
+
+        kkk = 0
+        do kk=1,NCOb
+        do ii=1,M
+          kkk = kkk+1
+          MO_coef_at_b(kkk) = morb_coefat( i0+ii, kk )
+        enddo
+        enddo
+
+    end if!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!------------------------------------------------------------------------------!
+!carlos: storing matrices
+!------------------------------------------------------------------------------!
+!  We are not sure how to translate the sumation over molecular orbitals
+!  and energies when changing from DFTB system to DFT subsystem. Forces
+!  may be broken due to this.
+!  This should not be affecting normal DFT calculations.
+
+!carlos: this is not working with openshell. morb_coefat is not depending of
+!        the spin factor.
         do ii=1,M
 !         do jj=1,NCO
           do jj=1,M
@@ -738,11 +810,29 @@ subroutine SCF(E)
         allocate ( xnano(M,M) )
 
         if (dftb_calc) then
-          call extract_rhoDFT(M, rho, xnano)
-        else
-          xnano=rho
-        end if
+          rho_aDFTB = rho_a
+          call extract_rhoDFT(M, rho_a, rho_a0)
 
+          if (OPEN) then
+              rho_bDFTB = rho_b
+              call extract_rhoDFT(M, rho_b, rho_b0)
+              call sprepack('L',M,rhoalpha,rho_a0)
+              call sprepack('L',M,rhobeta,rho_b0)
+              xnano=rho_a0+rho_b0
+          else
+              xnano=rho_a0
+          end if
+
+        else
+
+          if (OPEN) then
+             call sprepack('L',M,rhoalpha,rho_a)
+             call sprepack('L',M,rhobeta,rho_b)
+             xnano=rho_a+rho_b
+          else
+              xnano=rho_a
+          end if
+        end if
 
 !------------------------------------------------------------------------------!
 ! TODO: convergence criteria should be a separated subroutine...
@@ -787,7 +877,6 @@ subroutine SCF(E)
  999  continue
       call g2g_timer_sum_start('Finalize SCF')
 
-
 !------------------------------------------------------------------------------!
 !     Checks of convergence
 !
@@ -811,16 +900,19 @@ subroutine SCF(E)
 
   if (dftb_calc) then
 
-  !DFTB: We store rho in rho_DFTB for TD
-
-    rho_DFTB=rho
-
     chargeA_TB=MTB
     chargeB_TB=MTB
     do ii=1, MTB
-       chargeA_TB=chargeA_TB-rho(ii,ii)
-       chargeB_TB=chargeB_TB-rho(MTB+M+ii,MTB+M+ii)
+       chargeA_TB=chargeA_TB-rho_a(ii,ii)
+       chargeB_TB=chargeB_TB-rho_a(MTB+M+ii,MTB+M+ii)
     end do
+
+    if (OPEN) then
+       do ii=1,MTB
+          chargeA_TB=chargeA_TB-rho_b(ii,ii)
+          chargeB_TB=chargeB_TB-rho_b(MTB+M+ii,MTB+M+ii)
+       end do
+    end if
 
     open(unit=6800,file='TB_Mulliken')
 
@@ -830,19 +922,7 @@ subroutine SCF(E)
   end if
 
 !DFTB: The last rho is stored in an output as a restart.
-   if (dftb_calc.and.TBsave) then
-
-      open(unit=1070,file='rhoTB.out')
-
-      DO ii=1,M_in
-      DO jj=1,M_in
-         write(1070,*) rho(ii,jj)
-      ENDDO
-      ENDDO
-
-      write(*,*) 'RHOTB wrtted'
-
-   end if
+   if (dftb_calc.and.TBsave) call write_rhoDFTB(M_in, OPEN)
 
 !------------------------------------------------------------------------------!
 ! TODO: Comments about a comented sections? Shouldn't it all of this go away?
@@ -958,33 +1038,6 @@ subroutine SCF(E)
 
       call cubegen_matin( M, X )
 
-!------------------------------------------------------------------------------!
-! TRADUCTION
-   if (gaussian_convert) then
-      allocate(rho_exc(M,M))
-      call translation(M,rho_exc) ! solo la acomoda al formato LIO
-      do ii=1,M      ! Multiplicacion por 2 los elementos no diagonales
-      do jj=1,ii-1
-         rho_exc(ii,jj) = 2.0D0 * rho_exc(ii,jj)
-      enddo
-      do jj=ii+1,M
-         rho_exc(ii,jj) = 2.0D0 * rho_exc(ii,jj)
-      enddo
-      enddo
-      do jj=1,M    ! Se guarda en RMM
-      do kk=jj,M
-        if(jj.eq.kk) then
-          RMM(kk+(M2-jj)*(jj-1)/2) = rho_exc(jj,kk)
-        else
-          RMM(kk+(M2-jj)*(jj-1)/2) = rho_exc(jj,kk)
-        endif
-      enddo
-      enddo
-      deallocate(rho_exc)
-   endif ! end of traduction
-
-!------------------------------------------------------------------------------!
-
 
 !------------------------------------------------------------------------------!
 ! TODO: have ehrendyn call SCF and have SCF always save the resulting rho in
@@ -1001,8 +1054,7 @@ subroutine SCF(E)
 !------------------------------------------------------------------------------!
 ! TODO: Deallocation of variables that should be removed
 ! TODO: MEMO should be handled differently...
-!charly: saque a y y a ytrans
-!      deallocate(Xtrans )
+
       if (MEMO) then
         deallocate(kkind,kkinds)
         deallocate(cool,cools)

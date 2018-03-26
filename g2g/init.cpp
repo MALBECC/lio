@@ -344,7 +344,6 @@ extern "C" void g2g_solve_groups_(const uint& computation_type,
       else {
         g2g_iteration<true, false, false>(compute_energy, fort_energy_ptr,
                                           fort_forces_ptr);
-        cout << "XC energy: " << *fort_energy_ptr << endl;
       }
     }
   } else {
@@ -364,7 +363,7 @@ extern "C" void g2g_solve_groups_(const uint& computation_type,
                                            fort_forces_ptr);
     }
   }
-  if (compute_energy) cout << "XC energy: " << *fort_energy_ptr << endl;
+/*  if (compute_energy) cout << "XC energy: " << *fort_energy_ptr << endl;*/
 }
 //================================================================================================================
 /* general options */

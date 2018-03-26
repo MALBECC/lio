@@ -6,23 +6,25 @@ contains
 
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-subroutine dftb_init(M)
+subroutine dftb_init(M, OPEN)
 
-   use dftb_data, only: MTB, MDFTB, end_bTB, Iend_TB, rho_DFTB
+   use dftb_data, only: MTB, MDFTB, end_bTB, Iend_TB, rho_aDFTB, rho_bDFTB
 
    implicit none
 
    integer, intent(in) :: M
+   logical, intent(in) :: OPEN
 
    MDFTB=2*MTB+M
-   allocate(Iend_TB(2,2*end_bTB), rho_DFTB(MDFTB,MDFTB))
+   allocate(Iend_TB(2,2*end_bTB), rho_aDFTB(MDFTB,MDFTB))
+   if (OPEN) allocate (rho_bDFTB(MDFTB,MDFTB))
 
 end subroutine dftb_init
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 subroutine dftb_td_init (M,rho, rho_0, overlap, RMM5)
 
-   use dftb_data, only: MTB, MDFTB, rho_DFTB, rhold_AOTB, rhonew_AOTB
+   use dftb_data, only: MTB, MDFTB, rho_aDFTB, rhold_AOTB, rhonew_AOTB
    implicit none
    integer, intent(in)       :: M
    real*8, allocatable, intent(inout) :: overlap(:,:)
@@ -47,9 +49,9 @@ subroutine dftb_td_init (M,rho, rho_0, overlap, RMM5)
       do jj=1, MDFTB
       do ii=1, MDFTB
          if (ii==jj) then
-            rho(ii,jj)=cmplx(rho_DFTB(ii,jj), 0.0D0)
+            rho(ii,jj)=cmplx(rho_aDFTB(ii,jj), 0.0D0)
          else
-            rho(ii,jj)=cmplx(rho_DFTB(ii,jj)/2.0d0, 0.0D0)
+            rho(ii,jj)=cmplx(rho_aDFTB(ii,jj)/2.0d0, 0.0D0)
          end if
       end do
       end do
@@ -96,6 +98,90 @@ subroutine getXY_DFTB(M_in,x_in,y_in,xmat,ymat)
    end do
 end subroutine
 
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+subroutine read_rhoDFTB(M, MM, RMM1, rhoalpha, rhobeta, OPEN)
+   use dftb_data, only: MTB, MDFTB, rho_aDFTB, rho_bDFTB
+
+   implicit none
+   integer, intent(in)    :: M, MM
+   real*8, intent(inout)  :: RMM1(MM)
+   real*8, intent(inout)  :: rhoalpha(MM), rhobeta(MM)
+   logical, intent(in)    :: OPEN
+   integer                :: ii, jj, kk
+
+
+  open(unit=1070,file='rhoTB.in')
+
+   if (.not.OPEN) then
+      do ii=1,MDFTB
+      do jj=1,MDFTB
+         read(1070,*) rho_aDFTB(ii,jj)
+      end do
+      end do
+
+      do jj=1,M
+      do kk=jj,M
+               RMM1(kk+(2*M-jj)*(jj-1)/2)=rho_aDFTB(jj+MTB,kk+MTB)
+      enddo
+      enddo
+
+   else if(OPEN) then
+
+      do ii=1,MDFTB
+      do jj=1,MDFTB
+         read(1070,*) rho_aDFTB(ii,jj), rho_bDFTB(ii,jj)
+      end do
+      end do
+
+      do jj=1,M
+      do kk=jj,M
+               rhoalpha(kk+(2*M-jj)*(jj-1)/2)=rho_aDFTB(jj+MTB,kk+MTB)
+               rhobeta(kk+(2*M-jj)*(jj-1)/2)=rho_aDFTB(jj+MTB,kk+MTB)
+      enddo
+      enddo
+
+      RMM1 = rhoalpha+rhobeta
+
+      write(*,*) 'RHOTB readed'
+
+   end if
+
+    close(1070)
+end subroutine read_rhoDFTB
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+subroutine construct_rhoDFTB(M, rho, rho_0 ,rho_DFTB, TBload, niter)
+
+   use dftb_data , only: MTB, MDFTB
+
+   implicit none
+   integer, intent(in) :: M
+   integer, intent(in) :: niter
+   real*8, intent(in)  :: rho_0(M,M)
+   real*8, intent(in)  :: rho_DFTB(MDFTB,MDFTB)
+   logical, intent(in) :: TBload
+   real*8, intent(out) :: rho(MDFTB,MDFTB)
+   integer :: ii, jj
+
+   if ((TBload.and.niter==1).or.(niter/=1)) then
+
+      do ii=1,MDFTB
+      do jj=ii+1,MDFTB
+         rho(ii,jj)=rho_DFTB(ii,jj)/2
+         rho(jj,ii)=rho(ii,jj)
+      end do
+      end do
+
+   else if(.not.TBload.and.(niter==1)) then
+
+      rho=0.0D0
+      do ii=1, MTB
+         rho(ii,ii)=1.0D0
+         rho(MTB+M+ii,MTB+M+ii)=1.0D0
+      end do
+         rho(MTB+1:MTB+M, MTB+1:MTB+M)=rho_0
+   end if
+
+end subroutine construct_rhoDFTB
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 subroutine find_TB_neighbors(M_in,Nuc,natom)
 
@@ -526,7 +612,38 @@ subroutine TB_current (M_in,rhold,rhonew, overlap, TB_A, TB_B, TB_M)
 end subroutine TB_current
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+subroutine write_rhoDFTB(M_in, OPEN)
+   use dftb_data , only: rho_aDFTB, rho_bDFTB
 
+   implicit none
+   integer, intent(in) :: M_in
+   logical, intent(in) :: OPEN
+   integer :: ii, jj
+
+   open(unit=1070,file='rhoTB.out')
+
+   if (OPEN) then
+      do ii=1,M_in
+      do jj=1,M_in
+         write(1070,*) rho_aDFTB(ii,jj), rho_bDFTB(ii,jj)
+      end do
+      end do
+   else
+      do ii=1,M_in
+      do jj=1,M_in
+         write(1070,*) rho_aDFTB(ii,jj)
+      end do
+      end do
+   end if
+
+   close(1070)
+
+   write(*,*) 'RHOTB wrtted'
+
+end subroutine write_rhoDFTB
+
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 subroutine dftb_output(M, rho_aux, overlap, istep, Iz, natom, Nuc)
    use dftb_data, only: rhold_AOTB, rhonew_AOTB, MTB, MDFTB
    implicit none

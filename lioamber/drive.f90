@@ -36,7 +36,8 @@
       REAL*8 :: atmint, iprob
       REAL*8 :: xnorm
       REAL*8, ALLOCATABLE, DIMENSION(:,:) :: restart_coef, restart_coef_b, &
-                                             restart_dens
+                                             restart_dens, restart_adens,  &
+                                             restart_bdens
       INTEGER :: NCOa, NCOb, ncon, nraw
       INTEGER :: is,ip,id, index
       INTEGER :: igpu, ios, NBAS, iatom
@@ -44,7 +45,7 @@
       INTEGER :: Nd, Ndim, nopt
       INTEGER :: i,ikk,j,k,k1,kk,kl,kkk,l,l1,l2,n,NN, No !auxiliars
 !------------------------------------------------------------------------------!
-! parameters for 2 basis sets, normal, density 
+! parameters for 2 basis sets, normal, density
 ! ng maximum # of contracted functions , nl maximum # of primitives in
 ! a contraction
 ! c, cd ce , linear coefficients
@@ -82,7 +83,7 @@
 !-----------------------------------------------------------------------
 
 ! reads input file
-      
+
       if (.not.int_basis) then
       inquire(file=basis,exist=exists)
       if (.not.exists) then
@@ -121,7 +122,7 @@
 !c
 !c Basis set for MO expansion
 !c
-!c reads whatis: Gaussian for the time being, 
+!c reads whatis: Gaussian for the time being,
 !c      later stdbas will be included
 !c reads iatom, atomic number , nraw number of primitive gaussians
 !c , counting 3 p 6 d .., and ncon number of contractions counted in the
@@ -147,9 +148,9 @@
       allocate(natomc(natom),nnps(natom),nnpp(natom),nnp(natom))
       allocate(nnpd(natom),nns(natom),nnd(natom),atmin(natom))
       allocate(jatc(natom,natom))
-      
+
       do i=1,natom
-        natomc(i)=0 
+        natomc(i)=0
       enddo
 !c-------------------------------------------------------------------------
 !c  BASIS SETS ------------------------------------------------------------
@@ -191,7 +192,7 @@
 
             nns(j)=0
             nnp(j)=0
-            nnd(j)=0        
+            nnd(j)=0
 
             do kkk=1,ncon
               if (lt(kkk).eq.0) nns(j)=nns(j)+Num(lt(kkk))
@@ -218,13 +219,13 @@
 !c
                 if (NORM) then
                   do l=1,ncf(k)
-!c 
+!c
                     index=index+1
 
                     if(lt(k).eq.0) then
 !c
                       xnorm=sqrt((2.D0*at(index)/pi)**3)
-                      xnorm=sqrt(xnorm)   
+                      xnorm=sqrt(xnorm)
                       c(No,l)=ct(index)*xnorm
                       a(No,l)=at(index)
                     elseif(lt(k).eq.1) then
@@ -262,7 +263,7 @@
             enddo
           endif
         enddo
-!c     
+!c
         if (.not.used) then
           write(*,200) iatom
         endif
@@ -275,7 +276,7 @@
         read(1,*) iatom,nraw,ncon
 !c
 !c reads contraction scheme. The value for p,d ,f should not be repeated
-!c 3 ,6 , 10 .....   times. Reads also angular type , 
+!c 3 ,6 , 10 .....   times. Reads also angular type ,
 !c 0 for s , 1 for p etc
         read(1,*) (ncf(i),i=1,ncon)
         read(1,*) (lt(i),i=1,ncon)
@@ -367,7 +368,7 @@
       call getenv("LIOHOME",liohome)
       if (liohome == "") then
         write(*,*) "LIOHOME is not set! Cannot use basis set keywords"
-        write(*,*) "Either set LIOHOME to your lio installation", & 
+        write(*,*) "Either set LIOHOME to your lio installation", &
        " location or specify a basis set file"
         stop
       endif
@@ -462,7 +463,7 @@
 
             nns(j)=0
             nnp(j)=0
-            nnd(j)=0        
+            nnd(j)=0
 
             do kkk=1,ncon
               if (lt(kkk).eq.0) nns(j)=nns(j)+Num(lt(kkk))
@@ -486,13 +487,13 @@
 !c
                 if (NORM) then
                   do l=1,ncf(k)
-!c 
+!c
                     index=index+1
 
                     if(lt(k).eq.0) then
 !c
                       xnorm=sqrt((2.D0*at(index)/pi)**3)
-                      xnorm=sqrt(xnorm)   
+                      xnorm=sqrt(xnorm)
                       c(No,l)=ct(index)*xnorm
                       a(No,l)=at(index)
                     elseif(lt(k).eq.1) then
@@ -537,7 +538,7 @@
             enddo
           endif
         enddo
-!c     
+!c
         if (.not.used.and.VERBOSE.and. .not.omit_bas) then
           write(*,200) iatom
         endif
@@ -583,7 +584,7 @@
 !c        write(2,*) iatom,nraw,ncon
 !c
 !c reads contraction scheme. The value for p,d ,f should not be repeated
-!c 3 ,6 , 10 .....   times. Reads also angular type , 
+!c 3 ,6 , 10 .....   times. Reads also angular type ,
 !c 0 for s , 1 for p etc
         read(1,*) (ncf(i),i=1,ncon)
         read(1,*) (lt(i),i=1,ncon)
@@ -617,7 +618,7 @@
                   goto (72,82,92) lt(k)+1
                 write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
                       write(*,*) "The basis set ",trim(fitting_set), &
-      " contains f (or higher) functions, and lio does not currently", & 
+      " contains f (or higher) functions, and lio does not currently", &
       " support them.  Choose another basis set"
                 write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
                   stop
@@ -757,26 +758,26 @@
 !c
 !c s case
   11    continue
-!c   
+!c
         Nucx(is)=Nuc(i)
         indexii(is)=i
         ncontx(is)=ncont(i)
-!c  
+!c
         do j=1,ncontx(is)
           cx(is,j)=c(i,j)
           ax(is,j)=a(i,j)
         enddo
 !c
         is=is+1
-        goto 44   
+        goto 44
 !c
 !c p case
   22    continue
-!c   
+!c
         Nucx(ip)=Nuc(i)
         indexii(ip)=i
         ncontx(ip)=ncont(i)
-!c  
+!c
         do j=1,ncontx(ip)
           cx(ip,j)=c(i,j)
           ax(ip,j)=a(i,j)
@@ -787,12 +788,12 @@
 !c
 !c d case
   33    continue
-!c   
+!c
         Nucx(id)=Nuc(i)
         indexii(id)=i
 
         ncontx(id)=ncont(i)
-!c  
+!c
         do j=1,ncontx(id)
 !c
           cx(id,j)=c(i,j)
@@ -836,26 +837,26 @@
 !c
 !c s case
  111    continue
-!c   
+!c
         Nucx(is)=Nucd(i)
         indexiid(is)=i
         ncontx(is)=ncontd(i)
-!c  
+!c
         do j=1,ncontx(is)
           cx(is,j)=cd(i,j)
           ax(is,j)=ad(i,j)
         enddo
 !c
         is=is+1
-        goto 444   
+        goto 444
 !c
 !c p case
  222    continue
-!c   
+!c
         Nucx(ip)=Nucd(i)
         indexiid(ip)=i
         ncontx(ip)=ncontd(i)
-!c  
+!c
         do j=1,ncontx(ip)
           cx(ip,j)=cd(i,j)
           ax(ip,j)=ad(i,j)
@@ -866,11 +867,11 @@
 !c
 !c d case
  333    continue
-!c   
+!c
         Nucx(id)=Nucd(i)
         indexiid(id)=i
         ncontx(id)=ncontd(i)
-!c  
+!c
         do j=1,ncontx(id)
           cx(id,j)=cd(i,j)
           ax(id,j)=ad(i,j)
@@ -930,7 +931,7 @@
 !c
 !c variables defined in namelist cannot be in common ?
       OPEN1=OPEN
-       
+
       if ((Iexch.ge.4).and.(.not.(integ)).and.(.not.(dens))) then
         write(*,*) 'OPTION SELECTED NOT AVAILABLE'
 !c      pause
@@ -967,6 +968,16 @@
 !        pause
       endif
 
+      ! Allocates and initialises rhoalpha and rhobeta
+      if(OPEN) then
+        allocate(rhoalpha(M*(M+1)/2),rhobeta(M*(M+1)/2))
+      else
+        allocate(rhoalpha(1),rhobeta(1))
+      endif
+      rhoalpha(:) = 0.0d0
+      rhobeta(:)  = 0.0d0
+
+
       ! Reads coefficient restart and builds density matrix. The MO
       ! coefficients are read in the same order as basis sets.
       ! Then vectors are put in dynamical allocation (to be used later)
@@ -988,10 +999,12 @@
          else
             NCOa = NCO
             NCOb = NCO + Nunp
-            allocate(restart_coef_b(M, NCOb))
+            allocate(restart_coef_b(M, NCOb), restart_adens(M,M),              &
+                     restart_bdens(M,M))
 
             call read_coef_restart(restart_coef, restart_coef_b, restart_dens, &
-                                   M, NCOa, NCOb, 89)
+                                   restart_adens, restart_bdens, M, NCOa,      &
+                                   NCOb, 89)
             kk = 0
             do k=1, NCOa
             do i=1, M
@@ -999,7 +1012,7 @@
                MO_coef_at(kk) = restart_coef(indexii(i), k)
             enddo
             enddo
-             
+
             kk = 0
             do k=1, NCOb
             do i=1, M
@@ -1022,6 +1035,21 @@
          enddo
          enddo
 
+         if (OPEN) then
+         k = 0
+         do j=1, M
+         do i=j, M
+            k = k + 1
+            rhoalpha(k) = restart_adens(indexii(i), indexii(j))
+            rhobeta(k)  = restart_bdens(indexii(i), indexii(j))
+            if (i.ne.j) then
+               rhoalpha(k) = rhoalpha(k)*2.0D0
+               rhobeta(k)  = rhobeta(k)*2.0D0
+            endif
+         enddo
+         enddo
+         endif        
+
          deallocate(restart_dens, restart_coef)
          close(89)
          call g2g_timer_stop('restart_read')
@@ -1030,14 +1058,6 @@
 
 !c------- G2G Initialization ---------------------
 !c
-      if(OPEN) then
-        allocate(rhoalpha(M*(M+1)/2),rhobeta(M*(M+1)/2))
-      else
-        allocate(rhoalpha(1),rhobeta(1))
-      endif
-      rhoalpha=0.0D0
-      rhobeta =0.0D0
-
       call g2g_parameter_init(NORM,natom,natom,ngDyn, &
                              rqm,Rm2,Iz,Nr,Nr2,Nuc, &
                              M,ncont,nshell,c,a, &
@@ -1056,7 +1076,7 @@
 !--------------------------------------------------------------------------------------
       IF (number_restr.GT.0) THEN
 ! Distance Restrain parameters read
-       ALLOCATE( restr_pairs(2,number_restr), restr_index(number_restr)& 
+       ALLOCATE( restr_pairs(2,number_restr), restr_index(number_restr)&
        ,restr_k(number_restr), restr_w(number_restr),&
        restr_r0(number_restr))
         call read_restrain_params()
@@ -1131,7 +1151,7 @@
 ! -------------------------------------------------------------
 ! Basis set for MO expansion
 !
-! reads whatis: Gaussian for the time being, 
+! reads whatis: Gaussian for the time being,
 ! reads iatom, atomic number , nraw number of primitive gaussians
 ! , counting 3 p 6 d .., and ncon number of contractions counted in the
 ! same way
@@ -1157,7 +1177,7 @@
           READ(1,*) (lt(i),i=1,ncon) !l of function i
 
           DO i=1,nraw
-            READ(1,*) 
+            READ(1,*)
           END DO
 
           DO j=1,natom
@@ -1179,7 +1199,7 @@
           READ(1,*) (lt(i),i=1,ncon)
 ! loop over all primitives, repeating p, d
           DO i=1,nraw
-            READ(1,*) 
+            READ(1,*)
           END DO
 !
           DO j=1,natom
@@ -1204,7 +1224,7 @@
         CALL getenv("LIOHOME",liohome)
         IF (liohome == "") THEN
           WRITE(*,*) "LIOHOME is not set! Cannot use basis set keywords"
-          WRITE(*,*) "Either set LIOHOME to your lio installation", & 
+          WRITE(*,*) "Either set LIOHOME to your lio installation", &
           " location or specify a basis set file"
           STOP
         END IF
@@ -1244,13 +1264,13 @@
 !
         DO 26 WHILE (whatis.NE.'endbasis')
           READ(1,*) iatom,nraw,ncon
- 
+
           IF (max_func .LT. nraw) max_func=nraw
           IF (ncon .GE. nng) call reallocate_ncf_lt(ncon) !agregada para variables dinamicas
 
           READ(1,*) (ncf(i),i=1,ncon)
           READ(1,*) (lt(i),i=1,ncon)
- 
+
           DO i=1,nraw
             READ(1,*) !at(i),ct(i)
           END DO
@@ -1352,7 +1372,7 @@
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       ngnu=M
       ngdnu=Md
-      ALLOCATE (at(max_func), ct(max_func)) 
+      ALLOCATE (at(max_func), ct(max_func))
 
  100  FORMAT (A8)
       RETURN
@@ -1367,4 +1387,3 @@
        DEALLOCATE (ncf, lt)
        ALLOCATE (ncf(nng), lt(nng))
       ENDSUBROUTINE reallocate_ncf_lt
-

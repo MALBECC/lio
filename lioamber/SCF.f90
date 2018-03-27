@@ -64,6 +64,7 @@ subroutine SCF(E)
 #  ifdef  CUBLAS
       use cublasmath , only: cumxp_r
 #  endif
+   use initial_guess_subs, only: initial_guess_aufbau
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -444,14 +445,16 @@ subroutine SCF(E)
 ! Generates starting guess
 !
    if ( (.not.VCINP) .and. primera ) then
-      call starting_guess( M, MM, NCOa, ocupF,                                 &
-                           RMM(M11), Xmat(MTB+1:MTB+M,MTB+1:MTB+M),RMM(M1) )
-      if (OPEN) then
-          call starting_guess( M, MM, NCOb , ocupF, RMM(M11),                  &
-                               Xmat(MTB+1:MTB+M,MTB+1:MTB+M),rhobeta )
-          rhoalpha=RMM(M1:MM)
-          RMM(M1:MM) = rhoalpha + rhobeta
-      end if
+!      call starting_guess( M, MM, NCOa, ocupF,                                 &
+!                           RMM(M11), Xmat(MTB+1:MTB+M,MTB+1:MTB+M),RMM(M1) )
+!      if (OPEN) then
+!          call starting_guess( M, MM, NCOb , ocupF, RMM(M11),                  &
+!                               Xmat(MTB+1:MTB+M,MTB+1:MTB+M),rhobeta )
+!          rhoalpha=RMM(M1:MM)
+!          RMM(M1:MM) = rhoalpha + rhobeta
+!      end if
+      call initial_guess_aufbau(M, MM, RMM(M1), rhoalpha, rhobeta, natom, NCOa,&
+                                NCOb, Iz, nshell, Nuc, OPEN)
       primera = .false.
    end if
 
@@ -870,6 +873,7 @@ subroutine SCF(E)
 
         Egood=abs(E+Ex-Evieja)
         Evieja=E+Ex
+        print*, "Good y egood", good, Egood
 !
         call g2g_timer_stop('Total iter')
         call g2g_timer_sum_pause('Iteration')
@@ -1086,91 +1090,4 @@ subroutine SCF(E)
       call g2g_timer_sum_stop('SCF')
       call g2g_timer_stop('SCF_full')
       end subroutine SCF
-
-subroutine starting_guess_wacho(M, MM, RMM)
-   use garcha_mod, only: Iz, Nuc, natom, nshell, NCO
-   implicit none
-   integer, intent(in) :: M, MM
-   double precision, intent(out) :: RMM(MM)
-
-   double precision :: start_dens(M,M)
-   integer :: icount, charge, index, jcount
-   integer :: n_elecs(natom,3), atom_id, atomic_ce(54, 3)
-
-   atomic_ce(:,:) = 0
-   start_dens(:,:) = 0.0D0
-
-   atomic_ce(1,1) = 1;
-   atomic_ce(6,1) = 4;
-   atomic_ce(6,2) = 2;
-   atomic_ce(7,1) = 4;
-   atomic_ce(7,2) = 3;
-   atomic_ce(8,1) = 4;
-   atomic_ce(8,2) = 4;
-   atomic_ce(26,1) = 8;
-   atomic_ce(26,2) = 12;
-   atomic_ce(26,3) = 6;
-
-   charge = 0
-   do icount = 1, natom
-      n_elecs(icount, :) = atomic_ce(Iz(icount), :)
-      charge = charge + Iz(icount)
-   enddo
-
-   do icount = 1, nshell(0)
-      atom_id = Nuc(icount)
-      if (n_elecs(atom_id,1) >= 2) then
-         start_dens(icount,icount) = 2.0D0
-         n_elecs(atom_id,1) = n_elecs(atom_id,1) - 2
-      else if (n_elecs(atom_id,1) > 0) then
-         start_dens(icount,icount) = 1.0D0
-         n_elecs(atom_id,1) = 0
-      endif
-   enddo
-
-   do icount = nshell(0), nshell(1)+nshell(0), 3
-      atom_id = Nuc(icount)
-      if (n_elecs(atom_id,2) >= 6) then
-         start_dens(icount  ,icount  ) = 2.0D0
-         start_dens(icount+1,icount+1) = 2.0D0
-         start_dens(icount+2,icount+2) = 2.0D0
-         n_elecs(atom_id,2) = n_elecs(atom_id,2) - 6
-      else if (n_elecs(atom_id,2) > 0) then
-         start_dens(icount, icount)     = dble(n_elecs(atom_id,2)) / 3.0D0
-         start_dens(icount+1, icount+1) = dble(n_elecs(atom_id,2)) / 3.0D0
-         start_dens(icount+2, icount+2) = dble(n_elecs(atom_id,2)) / 3.0D0
-         n_elecs(atom_id,2) = 0
-      endif
-   enddo
-
-   do icount = nshell(1)+nshell(0), nshell(2)+nshell(0)+nshell(1), 6
-      atom_id = Nuc(icount)
-      if (n_elecs(atom_id,3) >= 10) then
-         start_dens(icount, icount)     = 5.0D0/3.0D0
-         start_dens(icount+1, icount+1) = 5.0D0/3.0D0
-         start_dens(icount+2, icount+2) = 5.0D0/3.0D0
-         start_dens(icount+3, icount+3) = 5.0D0/3.0D0
-         start_dens(icount+4, icount+4) = 5.0D0/3.0D0
-         start_dens(icount+5, icount+5) = 5.0D0/3.0D0
-         n_elecs(atom_id,3) = n_elecs(atom_id,3) - 10
-      else if (n_elecs(atom_id,3) > 0) then
-         start_dens(icount, icount)     = dble(n_elecs(atom_id,3)) / 6.0D0
-         start_dens(icount+1, icount+1) = dble(n_elecs(atom_id,3)) / 6.0D0
-         start_dens(icount+2, icount+2) = dble(n_elecs(atom_id,3)) / 6.0D0
-         start_dens(icount+3, icount+3) = dble(n_elecs(atom_id,3)) / 6.0D0
-         start_dens(icount+4, icount+4) = dble(n_elecs(atom_id,3)) / 6.0D0
-         start_dens(icount+5, icount+5) = dble(n_elecs(atom_id,3)) / 6.0D0
-         n_elecs(atom_id,3) = 0
-      endif
-   enddo
-
-   if (charge .ne. NCO*2) then
-      start_dens(:,:) = start_dens(:,:) * dble(NCO*2) / dble(charge)
-   endif
-
-   call sprepack('L', M, RMM, start_dens)
-
-end subroutine
-
-
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

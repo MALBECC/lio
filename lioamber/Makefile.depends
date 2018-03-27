@@ -235,6 +235,13 @@ tmplist += field_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/shape_data.mod
 
 ################################################################################
+OBJECTS += initial_guess.o
+
+tmplist :=
+tmplist += SCF.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/initial_guess.o
+
+################################################################################
 
 tmplist :=
 tmplist += SCF.o TD.o init_lio.o cublasmath.o predictor.o maskrmm.o

@@ -19,6 +19,7 @@
 #include "pbeOS_corr.h"
 #include "pbeOS_exch.h"
 #include "../fix_compile.h"
+#include <limits>
 
 namespace G2G {
 #define EASYPBE_PI ((scalar_type)3.141592653589793238462643383279f)
@@ -54,8 +55,10 @@ __host__ __device__ void pbeOS_main(
   // Density Up
   scalar_type twodens = (scalar_type)2.0f * dens_a;
   scalar_type twodens2 = twodens * twodens;
+  scalar_type twodens5 = twodens2 * twodens2 * twodens;
 
-  if (twodens > ((scalar_type)1e-18f)) {
+  scalar_type flt_minimum = 100 * std::numeric_limits<float>::min();
+  if (twodens5 > flt_minimum) {
     scalar_type rho13 = cbrt(twodens);
     scalar_type fk1 = cbrt((scalar_type)EASYPBE_PI32);
     scalar_type fk = fk1 * rho13;
@@ -68,6 +71,10 @@ __host__ __device__ void pbeOS_main(
     scalar_type v = ((scalar_type)2.0f * rlap_a) / (twodens * twofk2);
     scalar_type u = ((scalar_type)4.0f * delgrad_a) / (twodens2 * twofk3);
 
+    if (u != u) {
+      printf("A Twodens %12.10f, twofk3 %12.10f \n", twodens2, twofk3);
+    }
+
     pbeOS_exch(twodens, s, u, v, expbe_a, vxpbe_a);
   } else {
     expbe_a = (scalar_type)0.0f;
@@ -78,7 +85,7 @@ __host__ __device__ void pbeOS_main(
   twodens = (scalar_type)2.0f * dens_b;
   twodens2 = twodens * twodens;
 
-  if (twodens > ((scalar_type)1e-18f)) {
+  if (twodens5 > flt_minimum) {
     scalar_type rho13 = cbrt((scalar_type)twodens);
     scalar_type fk1 = cbrt((scalar_type)EASYPBE_PI32);
     scalar_type fk = fk1 * rho13;

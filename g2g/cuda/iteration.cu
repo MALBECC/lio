@@ -637,18 +637,8 @@ void PointGroupGPU<scalar_type>::solve_opened(
     }
     cudaAssertNoError("update_rmm");
     /*** Contribute this RMM to the total RMM ***/
-    HostMatrix<scalar_type> factors_a_cpu(factors_a_gpu);
-    HostMatrix<scalar_type> factors_b_cpu(factors_b_gpu);
     HostMatrix<scalar_type> rmm_output_a_cpu(rmm_output_a_gpu);
     HostMatrix<scalar_type> rmm_output_b_cpu(rmm_output_b_gpu);
-    for (int i = 0; i < COALESCED_DIMENSION(group_m); i++){
-      if ( factors_a_cpu(i) != factors_a_cpu(i) ) printf("NaN in output A \n");
-      if ( factors_b_cpu(i) != factors_b_cpu(i) ) printf("NaN in output B \n");
-      for (int j = 0; j < group_m; j++){
-        if ( rmm_output_a_cpu(i,j) != rmm_output_a_cpu(i,j) ) printf("NaN in output A \n");
-        if ( rmm_output_b_cpu(i,j) != rmm_output_b_cpu(i,j) ) printf("NaN in output B \n");
-      }
-    }
     this->add_rmm_output(rmm_output_a_cpu, rmm_output_local_a);
     this->add_rmm_output(rmm_output_b_cpu, rmm_output_local_b);
   }

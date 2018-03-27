@@ -364,7 +364,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
 
 template<class scalar_type>
 void PointGroupGPU<scalar_type>::solve_opened(
-    Timers& timers, bool compute_rmm, bool lda, bool compute_forces, 
+    Timers& timers, bool compute_rmm, bool lda, bool compute_forces,
     bool compute_energy, double& energy, double& energy_i,
     double& energy_c, double& energy_c1, double& energy_c2,
     HostMatrix<double>& fort_forces_ms,
@@ -455,7 +455,7 @@ void PointGroupGPU<scalar_type>::solve_opened(
   HostMatrix<scalar_type> rmm_input_a_cpu(COALESCED_DIMENSION(group_m), group_m+DENSITY_BLOCK_SIZE);
   HostMatrix<scalar_type> rmm_input_b_cpu(COALESCED_DIMENSION(group_m), group_m+DENSITY_BLOCK_SIZE);
    //Reduces density matrixes (Up,Down) to the reduced group version
-  get_rmm_input(rmm_input_a_cpu, rmm_input_b_cpu); 
+  get_rmm_input(rmm_input_a_cpu, rmm_input_b_cpu);
 
   for (uint i=0; i<(group_m+DENSITY_BLOCK_SIZE); i++) {
     for(uint j=0; j<COALESCED_DIMENSION(group_m); j++) {
@@ -550,14 +550,14 @@ void PointGroupGPU<scalar_type>::solve_opened(
 
   /* compute forces */
   if (compute_forces) {
- 
+
     // Repongo los valores que puse a cero antes, para las fuerzas son necesarios (o por lo menos utiles)
     for (uint i=0; i<(group_m); i++) {
     for (uint j=0; j<(group_m); j++) {
       if((i>=group_m) || (j>=group_m) || (j > i)){
-        rmm_input_a_cpu.data[COALESCED_DIMENSION(group_m)*i+j] = 
+        rmm_input_a_cpu.data[COALESCED_DIMENSION(group_m)*i+j] =
                         rmm_input_a_cpu.data[COALESCED_DIMENSION(group_m)*j+i] ;
-        rmm_input_b_cpu.data[COALESCED_DIMENSION(group_m)*i+j] = 
+        rmm_input_b_cpu.data[COALESCED_DIMENSION(group_m)*i+j] =
                         rmm_input_b_cpu.data[COALESCED_DIMENSION(group_m)*j+i] ;
       }
     }
@@ -624,6 +624,9 @@ void PointGroupGPU<scalar_type>::solve_opened(
 
     CudaMatrix<scalar_type> rmm_output_a_gpu(COALESCED_DIMENSION(group_m), group_m);
     CudaMatrix<scalar_type> rmm_output_b_gpu(COALESCED_DIMENSION(group_m), group_m);
+
+
+    HostMatrix<scalar_type> func_vals_cpu(function_values);
     // For calls with a single block (pretty common with cubes) don't bother doing the arithmetic to get block position in the matrix
     if (blocksPerRow > 1) {
         gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_a_gpu.data, this->number_of_points, rmm_output_a_gpu.data, function_values.data, group_m);
@@ -634,8 +637,18 @@ void PointGroupGPU<scalar_type>::solve_opened(
     }
     cudaAssertNoError("update_rmm");
     /*** Contribute this RMM to the total RMM ***/
+    HostMatrix<scalar_type> factors_a_cpu(factors_a_gpu);
+    HostMatrix<scalar_type> factors_b_cpu(factors_b_gpu);
     HostMatrix<scalar_type> rmm_output_a_cpu(rmm_output_a_gpu);
     HostMatrix<scalar_type> rmm_output_b_cpu(rmm_output_b_gpu);
+    for (int i = 0; i < COALESCED_DIMENSION(group_m); i++){
+      if ( factors_a_cpu(i) != factors_a_cpu(i) ) printf("NaN in output A \n");
+      if ( factors_b_cpu(i) != factors_b_cpu(i) ) printf("NaN in output B \n");
+      for (int j = 0; j < group_m; j++){
+        if ( rmm_output_a_cpu(i,j) != rmm_output_a_cpu(i,j) ) printf("NaN in output A \n");
+        if ( rmm_output_b_cpu(i,j) != rmm_output_b_cpu(i,j) ) printf("NaN in output B \n");
+      }
+    }
     this->add_rmm_output(rmm_output_a_cpu, rmm_output_local_a);
     this->add_rmm_output(rmm_output_b_cpu, rmm_output_local_b);
   }

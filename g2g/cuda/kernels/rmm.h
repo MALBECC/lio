@@ -117,7 +117,6 @@ __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors,
   }
 
   if (valid_thread) {
-     if (rmm_local != rmm_local) printf("I'm a NaN! \n");
      rmm[COALESCED_DIMENSION(m) * j + i] = rmm_local;
   }
 }

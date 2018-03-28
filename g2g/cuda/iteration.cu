@@ -332,6 +332,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
     threadGrid = dim3(blocksPerRow*(blocksPerRow+1)/2);
 
     CudaMatrix<scalar_type> rmm_output_gpu(COALESCED_DIMENSION(group_m), group_m);
+    rmm_output_gpu.zero();
     // For calls with a single block (pretty common with cubes) don't bother doing the arithmetic to get block position in the matrix
     if (blocksPerRow > 1) {
         gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_gpu.data, this->number_of_points, rmm_output_gpu.data, function_values.data, group_m);
@@ -343,7 +344,6 @@ void PointGroupGPU<scalar_type>::solve_closed(
     /*** Contribute this RMM to the total RMM ***/
     HostMatrix<scalar_type> rmm_output_cpu(rmm_output_gpu);
     this->add_rmm_output(rmm_output_cpu, rmm_output_local);
-
   }
   timers.rmm.pause_and_sync();
 
@@ -624,9 +624,8 @@ void PointGroupGPU<scalar_type>::solve_opened(
 
     CudaMatrix<scalar_type> rmm_output_a_gpu(COALESCED_DIMENSION(group_m), group_m);
     CudaMatrix<scalar_type> rmm_output_b_gpu(COALESCED_DIMENSION(group_m), group_m);
-
-
-    HostMatrix<scalar_type> func_vals_cpu(function_values);
+    rmm_output_a_gpu.zero();
+    rmm_output_b_gpu.zero();
     // For calls with a single block (pretty common with cubes) don't bother doing the arithmetic to get block position in the matrix
     if (blocksPerRow > 1) {
         gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_a_gpu.data, this->number_of_points, rmm_output_a_gpu.data, function_values.data, group_m);

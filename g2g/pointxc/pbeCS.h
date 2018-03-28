@@ -32,8 +32,15 @@ __host__ __device__ void pbeCS(scalar_type rho, scalar_type agrad,
                                scalar_type delgrad, scalar_type rlap,
                                scalar_type& expbe, scalar_type& vxpbe,
                                scalar_type& ecpbe, scalar_type& vcpbe) {
-  if (rho < ((scalar_type)2e-18f)) {
-    expbe = vxpbe = ecpbe = vcpbe = 0.0f;
+
+  scalar_type rho2 = rho * rho;
+  scalar_type rho5 = rho2*rho2*rho;
+  scalar_type flt_minimum = 100.0 * (scalar_type)FLT_MIN;
+  if (rho5 < flt_minimum) {
+    expbe = (scalar_type)0.0f;
+    vxpbe = (scalar_type)0.0f;
+    ecpbe = (scalar_type)0.0f;
+    vcpbe = (scalar_type)0.0f;
     return;
   }
   /*----------------------------------//
@@ -50,7 +57,6 @@ __host__ __device__ void pbeCS(scalar_type rho, scalar_type agrad,
   // v = rlap    /(rho   * (2*fk)^2)
   //---------------------------------*/
 
-  scalar_type rho2 = rho * rho;
   scalar_type rho13 = cbrt(rho);
   scalar_type fk1 = cbrt((scalar_type)CLOSEDPBE_PI32);
   scalar_type fk = fk1 * rho13;

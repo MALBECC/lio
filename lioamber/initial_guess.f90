@@ -35,6 +35,9 @@ subroutine get_initial_guess(M, MM, NCO, NCOb, Xmat, Hvec, Rhovec, rhoalpha, &
                                       rhobeta(:)
    double precision :: ocupF
 
+   call g2g_timer_start('initial guess')
+   call g2g_timer_sum_start('initial guess')
+
    select case (initial_guess)
    case (0)
       if (.not. openshell) then
@@ -53,6 +56,10 @@ subroutine get_initial_guess(M, MM, NCO, NCOb, Xmat, Hvec, Rhovec, rhoalpha, &
       write(*,*) "ERROR - Initial guess: Wrong value for input initial_guess."
    end select
 
+   call g2g_timer_stop('initial guess')
+   call g2g_timer_sum_stop('initial guess')
+
+   return
 end subroutine get_initial_guess
 
 
@@ -140,19 +147,12 @@ subroutine initial_guess_aufbau(M, MM, RMM, rhoalpha, rhobeta, natom, NCO, &
       start_dens(:,:)       = start_dens_alpha(:,:) + start_dens_beta(:,:)
       call sprepack('L', M, rhoalpha, start_dens_alpha)
       call sprepack('L', M, rhobeta , start_dens_beta)
-      print*, "Initial guess Alpha"
-      do icount = 1, M
-         print*, start_dens_alpha(icount, icount)
-      enddo
-      print*, "Initial guess Beta"
-      do icount = 1, M
-         print*, start_dens_beta(icount, icount)
-      enddo
    else
       start_dens(:,:) = start_dens(:,:) * dble(NCO*2) / dble(total_iz)
    endif
 
    call sprepack('L', M, RMM, start_dens)
+   return
 end subroutine initial_guess_aufbau
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -188,9 +188,6 @@ subroutine initial_guess_1e(Nmat, Nvec, NCO, ocupF, hmat_vec, Xmat, densat_vec)
    double precision, allocatable   :: WORK(:)
    integer                         :: LWORK, info
 
-   call g2g_timer_start('initial guess')
-   call g2g_timer_sum_start('initial guess')
-
    allocate( morb_coefon(Nmat, Nmat), morb_energy(Nvec), dens_mao(Nmat, Nmat) )
    allocate( morb_coefat(Nmat, Nmat), morb_coefoc(Nmat, NCO), hmat(Nmat,Nmat) )
 
@@ -214,8 +211,7 @@ subroutine initial_guess_1e(Nmat, Nvec, NCO, ocupF, hmat_vec, Xmat, densat_vec)
    call messup_densmat( dens_mao )
    call sprepack( 'L', Nmat, densat_vec, dens_mao)
 
-   call g2g_timer_stop('initial guess')
-   call g2g_timer_sum_stop('initial guess')
+   return
 end subroutine initial_guess_1e
 
 end module initial_guess_subs

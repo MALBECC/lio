@@ -858,14 +858,12 @@ subroutine SCF(E)
 !        E=E+Es
 !
         call g2g_timer_stop('otras cosas')
-        call g2g_timer_sum_pause('new density')
 
 !       write energy at every step
         if (verbose) call WRITE_E_STEP(niter, E+Ex)
 
         Egood=abs(E+Ex-Evieja)
         Evieja=E+Ex
-        print*, "Good y egood", good, Egood
 !
         call g2g_timer_stop('Total iter')
         call g2g_timer_sum_pause('Iteration')

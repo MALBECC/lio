@@ -41,7 +41,7 @@ subroutine read_options(inputFile, charge)
 
     use dftb_data ,only: dftb_calc, MTB, alfaTB, betaTB, gammaTB, Vbias_TB,    &
                          end_bTB, start_tdtb, end_tdtb, TBsave, TBload
-
+    use initial_guess_data, only: initial_guess
     use lionml_subs , only: lionml_Reads
     use trans_Data, only: gaussian_convert
 
@@ -56,6 +56,7 @@ subroutine read_options(inputFile, charge)
     namelist /lio/ OPEN, NMAX, Nunp, VCINP, GOLD, told, Etold, rmax, rmaxs,    &
                    predcoef, idip, writexyz, intsoldouble, DIIS, ndiis, dgtrig,&
                    Iexch, integ, dens, igrid, igrid2, good_cut, hybrid_converg,&
+                   initial_guess,                                              &
                    ! File Input/Output.
                    frestartin, style, allnml, frestart, fukui, dipole, lowdin, &
                    mulliken, writeforces, int_basis, fitting_set, basis_set,   &

@@ -55,8 +55,7 @@ subroutine SCF(E)
    use fockbias_subs , only: fockbias_loads, fockbias_setmat, fockbias_apply
    use tmpaux_SCF    , only: neighbor_list_2e
    use liosubs_math  , only: transform
-   use liosubs_dens  , only: builds_densmat, messup_densmat, starting_guess    &
-                          &, standard_coefs
+   use liosubs_dens  , only: builds_densmat, messup_densmat, standard_coefs
    use linear_algebra, only: matrix_diagon
    use converger_subs, only: converger_init, conver
    use mask_cublas   , only: cublas_setmat, cublas_release
@@ -64,7 +63,7 @@ subroutine SCF(E)
 #  ifdef  CUBLAS
       use cublasmath , only: cumxp_r
 #  endif
-   use initial_guess_subs, only: initial_guess_aufbau
+   use initial_guess_subs, only: initial_guess_aufbau, initial_guess_1e
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -445,16 +444,16 @@ subroutine SCF(E)
 ! Generates starting guess
 !
    if ( (.not.VCINP) .and. primera ) then
-      call starting_guess( M, MM, NCOa, ocupF,                                 &
-                           RMM(M11), Xmat(MTB+1:MTB+M,MTB+1:MTB+M),RMM(M1) )
-      if (OPEN) then
-          call starting_guess( M, MM, NCOb , ocupF, RMM(M11),                  &
-                               Xmat(MTB+1:MTB+M,MTB+1:MTB+M),rhobeta )
-          rhoalpha=RMM(M1:MM)
-          RMM(M1:MM) = rhoalpha + rhobeta
-      end if
-      !call initial_guess_aufbau(M, MM, RMM(M1), rhoalpha, rhobeta, natom, NCOa,&
-      !                          NCOb, Iz, nshell, Nuc, OPEN)
+      !call initial_guess_1e( M, MM, NCOa, ocupF,                              &
+      !                     RMM(M11), Xmat(MTB+1:MTB+M,MTB+1:MTB+M),RMM(M1) )
+      !if (OPEN) then
+      !    call initial_guess_1e( M, MM, NCOb , ocupF, RMM(M11),               &
+       !                        Xmat(MTB+1:MTB+M,MTB+1:MTB+M),rhobeta )
+        !  rhoalpha=RMM(M1:MM)
+         ! RMM(M1:MM) = rhoalpha + rhobeta
+      !end if
+      call initial_guess_aufbau(M, MM, RMM(M1), rhoalpha, rhobeta, natom, NCOa,&
+                                NCOb, Iz, nshell, Nuc, OPEN)
       primera = .false.
    end if
 

@@ -63,7 +63,7 @@ subroutine SCF(E)
 #  ifdef  CUBLAS
       use cublasmath , only: cumxp_r
 #  endif
-   use initial_guess_subs, only: initial_guess_aufbau, initial_guess_1e
+   use initial_guess_subs, only: get_initial_guess
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -444,16 +444,9 @@ subroutine SCF(E)
 ! Generates starting guess
 !
    if ( (.not.VCINP) .and. primera ) then
-      !call initial_guess_1e( M, MM, NCOa, ocupF,                              &
-      !                     RMM(M11), Xmat(MTB+1:MTB+M,MTB+1:MTB+M),RMM(M1) )
-      !if (OPEN) then
-      !    call initial_guess_1e( M, MM, NCOb , ocupF, RMM(M11),               &
-       !                        Xmat(MTB+1:MTB+M,MTB+1:MTB+M),rhobeta )
-        !  rhoalpha=RMM(M1:MM)
-         ! RMM(M1:MM) = rhoalpha + rhobeta
-      !end if
-      call initial_guess_aufbau(M, MM, RMM(M1), rhoalpha, rhobeta, natom, NCOa,&
-                                NCOb, Iz, nshell, Nuc, OPEN)
+      call get_initial_guess(M, MM, NCO, NCOb, Xmat(MTB+1:MTB+M,MTB+1:MTB+M),  &
+                             RMM(M11:MM), RMM(M1:MM), rhoalpha, rhobeta, OPEN, &
+                             natom, Iz, nshell, Nuc)
       primera = .false.
    end if
 

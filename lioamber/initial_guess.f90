@@ -21,7 +21,42 @@ end module initial_guess_data
 module initial_guess_subs
 
 contains
+subroutine get_initial_guess(M, MM, NCO, NCOb, Xmat, Hvec, Rhovec, rhoalpha, &
+                             rhobeta, openshell, natom, Iz, nshell, Nuc)
+   use initial_guess_data, only: initial_guess
 
+   implicit none
+   double precision, intent(in) :: Xmat(:,:)
+   logical         , intent(in) :: openshell
+   integer         , intent(in) :: M, MM, NCO, NCOb, natom, Iz(natom), Nuc(M), &
+                                   nshell(0:2)
+
+   double precision, intent(inout) :: Hvec(:), Rhovec(:), rhoalpha(:), &
+                                      rhobeta(:)
+   double precision :: ocupF
+
+   select case (initial_guess)
+   case (0)
+      if (.not. openshell) then
+         ocupF = 2.0D0
+         call initial_guess_1e(M, MM, NCO, ocupF, Hvec, Xmat, Rhovec )
+      else
+         ocupF = 1.0D0
+         call initial_guess_1e(M, MM, NCO , ocupF, Hvec, Xmat, rhoalpha)
+         call initial_guess_1e(M, MM, NCOb, ocupF, Hvec, Xmat, rhobeta)
+         Rhovec   = rhoalpha + rhobeta
+      end if
+   case (1)
+      call initial_guess_aufbau(M, MM, Rhovec, rhoalpha, rhobeta, natom, NCO,&
+                                NCOb, Iz, nshell, Nuc, openshell)
+   case default
+      write(*,*) "ERROR - Initial guess: Wrong value for input initial_guess."
+   end select
+
+end subroutine get_initial_guess
+
+
+! Perfoms the initial guess using a modified aufbau principle.
 subroutine initial_guess_aufbau(M, MM, RMM, rhoalpha, rhobeta, natom, NCO, &
                                 NCOb, Iz, nshell, Nuc, openshell)
    use initial_guess_data, only: atomic_ce, initialise_ce

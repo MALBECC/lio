@@ -2,5 +2,7 @@
 INCLUDES :=
 INCLUDES += subm_int1.o
 
-$(OBJPATH)/faint_cpu.o : $(INCLUDES) faint_cpu.mk
+OBJECTS += $(INCLUDES)
+#$(OBJPATH)/faint_cpu.o : $(INCLUDES) faint_cpu.mk
+$(OBJPATH)/faint_cpu.o : $(INCLUDES:%.o=$(OBJPATH)/%.o) faint_cpu.mk
 ################################################################################

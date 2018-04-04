@@ -1,12 +1,7 @@
 
-/*
- * Funcion llamada para cada (i,j) en RMM, para calcular RMM(i,j) -> un thread
- * por cada punto
- */
-
-// TODO: esto desperdicia la mitad de los threads -> quizas se puede armar una
-// grilla sin los bloques que no hagan nada
-
+// This function is called for each (i,j) in RMM, using a thread for each point.
+// TODO: This wastes half the threads, may be we can build a grid without
+// ignored blocks.
 template <class scalar_type, bool check_pos>
 __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors,
                                int points, scalar_type* rmm,
@@ -34,15 +29,16 @@ __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors,
   } else {
     uint3 pos = index(blockDim, blockIdx, threadIdx);
 
-    i = pos.x;  // columna
-    j = pos.y;  // fila
+    i = pos.x;  // Column
+    j = pos.y;  // Row
     first_fi = blockIdx.x * blockDim.x;
     first_fj = blockIdx.y * blockDim.y;
   }
 
-  bool valid_thread = (i < m && j < m && i <= j);
-  // quiero triangulo inferior solamente
-  // calculate this rmm
+  // Keep only the lower triangle.
+  bool valid_thread = ( (i < m) && (j < m) && (i <= j) );
+
+  // This stores the RMM section to be calculated.
   scalar_type rmm_local = 0.0f;
 
   __shared__ scalar_type // Fi[point][i]

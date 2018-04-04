@@ -1,12 +1,7 @@
 
-/*
- * Funcion llamada para cada (i,j) en RMM, para calcular RMM(i,j) -> un thread
- * por cada punto
- */
-
-// TODO: esto desperdicia la mitad de los threads -> quizas se puede armar una
-// grilla sin los bloques que no hagan nada
-
+// This function is called for each (i,j) in RMM, using a thread for each point.
+// TODO: This wastes half the threads, may be we can build a grid without
+// ignored blocks.
 template <class scalar_type, bool check_pos>
 __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors,
                                int points, scalar_type* rmm,
@@ -34,34 +29,28 @@ __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors,
   } else {
     uint3 pos = index(blockDim, blockIdx, threadIdx);
 
-    i = pos.x;  // columna
-    j = pos.y;  // fila
+    i = pos.x;  // Column
+    j = pos.y;  // Row
     first_fi = blockIdx.x * blockDim.x;
     first_fj = blockIdx.y * blockDim.y;
   }
 
-  bool valid_thread =
-      (i < m && j < m &&
-       i <= j);  // quiero triangulo inferior solamente TODO: sacar esto
+  // Keep only the lower triangle.
+  bool valid_thread = ( (i < m) && (j < m) && (i <= j) );
 
-  // calculate this rmm
+  // This stores the RMM section to be calculated.
   scalar_type rmm_local = 0.0f;
 
-  __shared__ scalar_type
-      functions_i_local[RMM_BLOCK_SIZE_XY]
-                       [RMM_BLOCK_SIZE_XY + 1];  // Fi[point][i]
-  __shared__ scalar_type
-      functions_j_local[RMM_BLOCK_SIZE_XY]
-                       [RMM_BLOCK_SIZE_XY + 1];  // Fj[point][j]
-  __shared__ scalar_type
-      factor_local[RMM_BLOCK_SIZE_XY * RMM_BLOCK_SIZE_XY];  // factor[point]
-                                                            // // TODO: esto
-                                                            // seguramente tiene
-                                                            // bank conflicts
+  __shared__ scalar_type // Fi[point][i]
+      functions_i_local[RMM_BLOCK_SIZE_XY][RMM_BLOCK_SIZE_XY + 1];
+  __shared__ scalar_type // Fj[point][j]
+      functions_j_local[RMM_BLOCK_SIZE_XY][RMM_BLOCK_SIZE_XY + 1];
+  __shared__ scalar_type // factor[point] May have shared bank conflics
+      factor_local[RMM_BLOCK_SIZE_XY * RMM_BLOCK_SIZE_XY];
 
   int inc = RMM_BLOCK_SIZE_XY * RMM_BLOCK_SIZE_XY;
-  int abs_threadIdx =
-      threadIdx.y * blockDim.x + threadIdx.x;  // absolute threadId inside block
+  // absolute threadId inside block
+  int abs_threadIdx = threadIdx.y * blockDim.x + threadIdx.x;
   bool valid_fi_thread = (first_fi + threadIdx.y) < m;
   bool valid_fj_thread = (first_fj + threadIdx.y) < m;
   for (int point_base = 0; point_base < points; point_base += inc) {
@@ -72,7 +61,8 @@ __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors,
       factor_local[abs_threadIdx] = factors[point_base + abs_threadIdx];
 
     int last_point = point_base + inc;
-#pragma unroll 16
+
+    #pragma unroll 16
     for (int point = point_base; point < last_point;
          point += RMM_BLOCK_SIZE_XY) {
       if (point < points) {
@@ -98,22 +88,31 @@ __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors,
          * multiply by 0 or 1 if needed.
          * We also do it on the array subindeces to avoid segfaulting.
          */
-        scalar_type fi_times_factor =
-            function_values[validFi * function_values_fi_index] *
-            factor_local[validFi * factor_local_fi_index];
+        if (validFi) {
+           scalar_type fi_times_factor =
+               function_values[function_values_fi_index] *
+               factor_local[factor_local_fi_index];
 
-        functions_i_local[threadIdx.x][threadIdx.y] = validFi * fi_times_factor;
+           functions_i_local[threadIdx.x][threadIdx.y] = fi_times_factor;
+        }
+
+        if (validFj) {
         functions_j_local[threadIdx.x][threadIdx.y] =
-            validFj * function_values[validFj * function_values_fj_index];
+            function_values[function_values_fj_index];
+        }
 
         __syncthreads();
+        if (validFj && validFi) {
         for (int point_sub = 0; point_sub < RMM_BLOCK_SIZE_XY; point_sub++) {
           rmm_local += functions_i_local[point_sub][threadIdx.x] *
                        functions_j_local[point_sub][threadIdx.y];
+        }
         }
       }
     }
   }
 
-  if (valid_thread) rmm[COALESCED_DIMENSION(m) * j + i] = rmm_local;
+  if (valid_thread) {
+     rmm[COALESCED_DIMENSION(m) * j + i] = rmm_local;
+  }
 }

@@ -55,8 +55,7 @@ subroutine SCF(E)
    use fockbias_subs , only: fockbias_loads, fockbias_setmat, fockbias_apply
    use tmpaux_SCF    , only: neighbor_list_2e
    use liosubs_math  , only: transform
-   use liosubs_dens  , only: builds_densmat, messup_densmat, starting_guess    &
-                          &, standard_coefs
+   use liosubs_dens  , only: builds_densmat, messup_densmat, standard_coefs
    use linear_algebra, only: matrix_diagon
    use converger_subs, only: converger_init, conver
    use mask_cublas   , only: cublas_setmat, cublas_release
@@ -64,6 +63,7 @@ subroutine SCF(E)
 #  ifdef  CUBLAS
       use cublasmath , only: cumxp_r
 #  endif
+   use initial_guess_subs, only: get_initial_guess
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -444,14 +444,9 @@ subroutine SCF(E)
 ! Generates starting guess
 !
    if ( (.not.VCINP) .and. primera ) then
-      call starting_guess( M, MM, NCOa, ocupF,                                 &
-                           RMM(M11), Xmat(MTB+1:MTB+M,MTB+1:MTB+M),RMM(M1) )
-      if (OPEN) then
-          call starting_guess( M, MM, NCOb , ocupF, RMM(M11),                  &
-                               Xmat(MTB+1:MTB+M,MTB+1:MTB+M),rhobeta )
-          rhoalpha=RMM(M1:MM)
-          RMM(M1:MM) = rhoalpha + rhobeta
-      end if
+      call get_initial_guess(M, MM, NCO, NCOb, Xmat(MTB+1:MTB+M,MTB+1:MTB+M),  &
+                             RMM(M11:MM), RMM(M1:MM), rhoalpha, rhobeta, OPEN, &
+                             natom, Iz, nshell, Nuc)
       primera = .false.
    end if
 
@@ -863,7 +858,6 @@ subroutine SCF(E)
 !        E=E+Es
 !
         call g2g_timer_stop('otras cosas')
-        call g2g_timer_sum_pause('new density')
 
 !       write energy at every step
         if (verbose) call WRITE_E_STEP(niter, E+Ex)
@@ -1086,6 +1080,4 @@ subroutine SCF(E)
       call g2g_timer_sum_stop('SCF')
       call g2g_timer_stop('SCF_full')
       end subroutine SCF
-
-
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

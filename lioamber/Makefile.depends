@@ -235,6 +235,13 @@ tmplist += field_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/shape_data.mod
 
 ################################################################################
+OBJECTS += initial_guess.o
+
+tmplist :=
+tmplist += SCF.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/initial_guess.o
+
+################################################################################
 
 tmplist :=
 tmplist += SCF.o TD.o init_lio.o cublasmath.o predictor.o maskrmm.o
@@ -245,7 +252,7 @@ include liosubs_dens/liosubs_dens.mk
 SRCDIRS += liosubs_dens
 OBJECTS += liosubs_dens.o
 #
-modusrs := tmpaux_SCF.o typedef_operator.o
+modusrs := tmpaux_SCF.o typedef_operator.o initial_guess.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/liosubs_dens.mod
 
 
@@ -255,7 +262,7 @@ SRCDIRS += liosubs_math
 OBJECTS += liosubs_math.o
 #
 modusrs :=
-modusrs += typedef_sop.o liosubs_dens.o
+modusrs += typedef_sop.o liosubs_dens.o initial_guess.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/liosubs_math.mod
 
 

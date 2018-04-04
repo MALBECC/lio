@@ -19,6 +19,7 @@
 #include "pbeOS_corr.h"
 #include "pbeOS_exch.h"
 #include "../fix_compile.h"
+#include <float.h>
 
 namespace G2G {
 #define EASYPBE_PI ((scalar_type)3.141592653589793238462643383279f)
@@ -49,57 +50,60 @@ __host__ __device__ void pbeOS_main(
   // u = delgrad/(rho^2*(2*fk)**3) where (rho=2*up)
   // v = Laplacian/(rho*(2*fk)**2) where (rho=2*up)
   //-----------------------------------------------------*/
-  scalar_type expbe_a, expbe_b;
+   scalar_type expbe_a, expbe_b;
 
-  // Density Up
-  scalar_type twodens = (scalar_type)2.0f * dens_a;
-  scalar_type twodens2 = twodens * twodens;
+   // Density Up
+   scalar_type twodens = (scalar_type)2.0f * dens_a;
+   scalar_type twodens2 = twodens * twodens;
+   scalar_type twodens5 = twodens2 * twodens2 * twodens;
 
-  if (twodens > ((scalar_type)1e-18f)) {
-    scalar_type rho13 = cbrt(twodens);
-    scalar_type fk1 = cbrt((scalar_type)EASYPBE_PI32);
-    scalar_type fk = fk1 * rho13;
+   scalar_type flt_minimum = 100.0 * (scalar_type) FLT_MIN;
+   if (twodens5 < flt_minimum) {
+     expbe_a = (scalar_type)0.0f;
+     vxpbe_a = (scalar_type)0.0f;
+     expbe_b = (scalar_type)0.0f;
+     vxpbe_b = (scalar_type)0.0f;
+     ecpbe   = (scalar_type)0.0f;
+     vcpbe_a = (scalar_type)0.0f;
+     vcpbe_b = (scalar_type)0.0f;
+     return;
+   }
 
-    scalar_type twofk = (scalar_type)2.0f * fk;
-    scalar_type twofk2 = twofk * twofk;
-    scalar_type twofk3 = twofk * twofk2;
+   scalar_type rho13 = cbrt(twodens);
+   scalar_type fk1 = cbrt((scalar_type)EASYPBE_PI32);
+   scalar_type fk = fk1 * rho13;
 
-    scalar_type s = ((scalar_type)2.0f * dgrad_a) / (twodens * twofk);
-    scalar_type v = ((scalar_type)2.0f * rlap_a) / (twodens * twofk2);
-    scalar_type u = ((scalar_type)4.0f * delgrad_a) / (twodens2 * twofk3);
+   scalar_type twofk = (scalar_type)2.0f * fk;
+   scalar_type twofk2 = twofk * twofk;
+   scalar_type twofk3 = twofk * twofk2;
 
-    pbeOS_exch(twodens, s, u, v, expbe_a, vxpbe_a);
-  } else {
-    expbe_a = (scalar_type)0.0f;
-    vxpbe_a = (scalar_type)0.0f;
-  }
+   scalar_type s = ((scalar_type)2.0f * dgrad_a)   / (twodens * twofk);
+   scalar_type v = ((scalar_type)2.0f * rlap_a)    / (twodens * twofk2);
+   scalar_type u = ((scalar_type)4.0f * delgrad_a) / (twodens2 * twofk3);
 
-  // Density Down
-  twodens = (scalar_type)2.0f * dens_b;
-  twodens2 = twodens * twodens;
+   pbeOS_exch(twodens, s, u, v, expbe_a, vxpbe_a);
 
-  if (twodens > ((scalar_type)1e-18f)) {
-    scalar_type rho13 = cbrt((scalar_type)twodens);
-    scalar_type fk1 = cbrt((scalar_type)EASYPBE_PI32);
-    scalar_type fk = fk1 * rho13;
+   // Density Down
+   twodens = (scalar_type)2.0f * dens_b;
+   twodens2 = twodens * twodens;
 
-    scalar_type twofk = (scalar_type)2.0f * fk;
-    scalar_type twofk2 = twofk * twofk;
-    scalar_type twofk3 = twofk * twofk2;
+   rho13 = cbrt((scalar_type)twodens);
+   fk1 = cbrt((scalar_type)EASYPBE_PI32);
+   fk = fk1 * rho13;
 
-    scalar_type s = ((scalar_type)2.0f * dgrad_b) / (twodens * twofk);
-    scalar_type v = ((scalar_type)2.0f * rlap_b) / (twodens * twofk2);
-    scalar_type u = ((scalar_type)4.0f * delgrad_b) / (twodens2 * twofk3);
+   twofk = (scalar_type)2.0f * fk;
+   twofk2 = twofk * twofk;
+   twofk3 = twofk * twofk2;
 
-    pbeOS_exch(twodens, s, u, v, expbe_b, vxpbe_b);
-  } else {
-    expbe_b = (scalar_type)0.0f;
-    vxpbe_b = (scalar_type)0.0f;
-  }
+   s = ((scalar_type)2.0f * dgrad_b)   / (twodens * twofk);
+   v = ((scalar_type)2.0f * rlap_b)    / (twodens * twofk2);
+   u = ((scalar_type)4.0f * delgrad_b) / (twodens2 * twofk3);
 
-  // Construct total density and contribution to Ex
-  scalar_type rho = dens_a + dens_b;
-  expbe = (expbe_a * dens_a + expbe_b * dens_b) / rho;
+   pbeOS_exch(twodens, s, u, v, expbe_b, vxpbe_b);
+
+   // Construct total density and contribution to Ex
+   scalar_type rho = dens_a + dens_b;
+   expbe = (expbe_a * dens_a + expbe_b * dens_b) / rho;
 
   /*-------------------------------------------------------------//
   // PBE correlation
@@ -127,13 +131,6 @@ __host__ __device__ void pbeOS_main(
   // dvcdn = Gradient correction to down correlation potential
   //--------------------------------------------------------------*/
 
-  if (rho < ((scalar_type)1e-18f)) {
-    ecpbe = (scalar_type)0.0f;    // ec + h
-    vcpbe_a = (scalar_type)0.0f;  // vc_a + dvc_a
-    vcpbe_b = (scalar_type)0.0f;  // vc_b + dvc_b
-    return;
-  }
-
   scalar_type zet = (dens_a - dens_b) / rho;
   scalar_type g1 = (scalar_type)1.0f + zet;
   scalar_type g1_23 = cbrt(g1 * g1);
@@ -141,9 +138,9 @@ __host__ __device__ void pbeOS_main(
   scalar_type g2_23 = cbrt(g2 * g2);
   scalar_type g = (g1_23 + g2_23) / (scalar_type)2.0f;
 
-  scalar_type rho13 = cbrt(rho);
-  scalar_type fk1 = cbrt(EASYPBE_PI32);
-  scalar_type fk = fk1 * rho13;
+  rho13 = cbrt(rho);
+  fk1 = cbrt(EASYPBE_PI32);
+  fk = fk1 * rho13;
 
   scalar_type alpha =
       ((scalar_type)9.0f * (scalar_type)EASYPBE_PI) / (scalar_type)4.0f;

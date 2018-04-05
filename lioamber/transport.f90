@@ -26,10 +26,11 @@ module transport_subs
    implicit none
 contains
 
-subroutine transport_init(M, dim3, natom, Nuc, RMM5, overlap, rho)
+subroutine transport_init(M, dim3, natom, Nuc, RMM5, overlap, rho, OPEN)
    use transport_data, only: GammaMagnus, GammaVerlet, ngroup, group, rhofirst,&
                              driving_rate, pop_drive, pop_uid, drive_uid, mapmat
    implicit none
+   logical, intent(in)  :: OPEN
    integer, intent(in)  :: M, natom, Nuc(M), dim3
    real*8 , intent(in)  :: RMM5(M*(M+1)/2)
    real*8 , allocatable, intent(inout) :: overlap(:,:)
@@ -69,7 +70,7 @@ subroutine transport_init(M, dim3, natom, Nuc, RMM5, overlap, rho)
    if (allocated(overlap)) deallocate(overlap)
    allocate(overlap(M,M))
    call spunpack('L', M, RMM5, overlap)
-   call transport_generate_rho(M, rho)
+   call transport_generate_rho(M, rho, OPEN)
 
    return
 end subroutine transport_init
@@ -102,9 +103,10 @@ subroutine transport_read_groups(natom)
    return
 end subroutine transport_read_groups
 
-subroutine transport_generate_rho(M, rho)
+subroutine transport_generate_rho(M, rho, OPEN)
    use transport_data, only: generate_rho0, rhofirst
    implicit none
+   logical, intent(in)  :: OPEN
    integer, intent(in)  :: M
 #ifdef TD_SIMPLE
    complex*8 , allocatable, intent(inout) :: rho(:,:,:)
@@ -114,22 +116,42 @@ subroutine transport_generate_rho(M, rho)
    integer   :: icount, jcount
 
    open( unit = 100000, file = 'rhofirst')
-   if (generate_rho0) then
-      do icount = 1, M
-      do jcount = 1, M
-         write(100000,*) rho(icount, jcount,:)
-      enddo
-      enddo
-      rhofirst = rho
-      write(*,*) 'RhoFirst has been written.'
+
+   if (OPEN) then
+      if (generate_rho0) then
+         do icount = 1, M
+         do jcount = 1, M
+            write(100000,*) rho(icount, jcount,1),rho(icount, jcount,2)
+         enddo
+         enddo
+         rhofirst = rho
+         write(*,*) 'RhoFirst has been written.'
+      else
+         do icount = 1, M
+         do jcount = 1, M
+            read(100000,*) rhofirst(icount, jcount,1),rhofirst(icount, jcount,2)
+         enddo
+         enddo
+         write(*,*) 'RhoFirst has been read.'
+      endif
    else
-      do icount = 1, M
-      do jcount = 1, M
-         read(100000,*) rhofirst(icount, jcount,:)
-      enddo
-      enddo
-      write(*,*) 'RhoFirst has been read.'
-   endif
+      if (generate_rho0) then
+         do icount = 1, M
+         do jcount = 1, M
+            write(100000,*) rho(icount, jcount,1)
+         enddo
+         enddo
+         rhofirst = rho
+         write(*,*) 'RhoFirst has been written.'
+      else
+         do icount = 1, M
+         do jcount = 1, M
+            read(100000,*) rhofirst(icount, jcount,1)
+         enddo
+         enddo
+         write(*,*) 'RhoFirst has been read.'
+      endif
+   end if
 
    return
 end subroutine transport_generate_rho

@@ -232,7 +232,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
                        ntatom)
    ! Initialises transport if required.
    if (transport_calc) call transport_init(M, dim3, natom, Nuc, RMM(M5),       &
-                                           overlap, rho)
+                                           overlap, rho,OPEN)
 
    ! Diagonalizes Smat, stores transformation matrix Xmm and calculates the
    ! transposed matrices Xtrans and Ytrans
@@ -1091,8 +1091,8 @@ subroutine td_magnus_cu(M, dim3, OPEN,fock_aop, F1a, F1b, rho_aop, rhonew,     &
    call rho_aop%Gets_dataC_ON(rho(:,:,1))
 
    if (OPEN) then
-      call fock_aop%Gets_data_ON(fock(:,:,2))
-      call rho_aop%Gets_dataC_ON(rho(:,:,2))
+      call fock_bop%Gets_data_ON(fock(:,:,2))
+      call rho_bop%Gets_dataC_ON(rho(:,:,2))
    end if
 
    if (transport_calc) then

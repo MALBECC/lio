@@ -43,7 +43,8 @@ subroutine SCF(E)
    use td_data, only: timedep, tdrestart, tdstep
    use transport_data, only : generate_rho0
    use time_dependent, only : TD
-   use faint_cpu77, only: int1, int2, intsol, int3mem, int3lu
+   use faint_cpu, only: int1
+   use faint_cpu77, only: int2, intsol, int3mem, int3lu
    use dftb_data, only : dftb_calc, MDFTB, MTB, chargeA_TB, chargeB_TB,        &
                          rho_DFTB, TBsave, TBload
       use dftb_subs, only : dftb_init, getXY_DFTB, find_TB_neighbors,             &

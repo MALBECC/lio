@@ -460,7 +460,8 @@ end subroutine td_integration_setup
 
 subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM11, r, pc, &
                           ntatom)
-   use faint_cpu77, only: int1, intsol
+   use faint_cpu77, only: intsol
+   use faint_cpu, only: int1
    use mask_ecp   , only: ECP_fock
    implicit none
    integer, intent(in)    :: MM, igpu, nsol, ntatom

@@ -1,4 +1,4 @@
-!carlos: these subroutines allows the base changes of the matrix stored in
+!carlos: these subroutines allow the base changes of the matrix stored in
 !        operator
 #ifdef CUBLAS
    subroutine BChange_AOtoON(this,devPtrX,Nsize,mode)

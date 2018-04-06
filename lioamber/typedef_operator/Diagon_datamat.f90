@@ -1,4 +1,4 @@
-!carlos: this subroutine diagonalize the matrix stored in this.
+!carlos: this subroutine diagonalises the matrix stored in this.
 subroutine Diagon_datamat (this, eigen_vecs, eigen_vals)
    use linear_algebra, only: matrix_diagon
 

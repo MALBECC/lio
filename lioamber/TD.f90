@@ -85,18 +85,15 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    real*8 , allocatable, dimension(:,:,:) :: fock, F1a, F1b
    real*8 , allocatable, dimension(:,:,:) :: fock_0
 
-#ifdef TD_SIMPLE
-   complex*8, allocatable, dimension(:,:,:) :: rho_0
-#else
-   complex*16, allocatable, dimension(:,:,:) :: rho_0
-#endif
 ! Precision options.
 #ifdef TD_SIMPLE
    complex*8  :: Im = (0.0E0,2.0E0)
    complex*8 , allocatable, dimension(:,:,:) :: rho, rho_aux, rhonew, rhold
+   complex*8, allocatable, dimension(:,:,:) :: rho_0
 #else
    complex*16 :: Im = (0.0D0,2.0D0)
    complex*16, allocatable, dimension(:,:,:) :: rho, rho_aux, rhonew, rhold
+   complex*16, allocatable, dimension(:,:,:) :: rho_0
 #endif
 
 ! CUBLAS options.

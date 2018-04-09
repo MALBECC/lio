@@ -20,7 +20,7 @@
        complex*8,allocatable :: rho4(:,:,:),rho2t(:,:,:)
 #else
       COMPLEX*16, intent(in) :: rho2(M_in,M_in,dim3)
-      complex*16,allocatable :: rho4(:,:,:),rho2t(:,:)
+      complex*16,allocatable :: rho4(:,:,:),rho2t(:,:,:)
 #endif
        integer :: i,j,k,kk, M2, M3, M5, MM
        real*8 :: E2, tdstep1, Ex, E1

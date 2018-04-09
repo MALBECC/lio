@@ -146,7 +146,7 @@ subroutine do_population_analysis()
    use garcha_mod, only : RMM, Smat, RealRho, M, Enucl, Nuc, Iz, natom, &
                           mulliken, lowdin, sqsm
    use ECP_mod   , only : ecpmode, IzECP
-   use faint_cpu77, only: int1
+   use faint_cpu, only: int1
 
    implicit none
    integer :: M1, M5, IzUsed(natom), kk

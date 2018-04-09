@@ -11,9 +11,10 @@ c---------------------------------------------------
       subroutine SCFOP(E,dipxyz)
       use garcha_mod
       use mathsubs
-      use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, 
+      use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC,
      >     FOCK_ECP_read,FOCK_ECP_write,IzECP
-      use faint_cpu77, only: int1, int2, intsol, int3mem, int3lu
+      use faint_cpu, only: int1
+      use faint_cpu77, only: int2, intsol, int3mem, int3lu
 
       REAL*8:: E2,En,E,Es,Ex,Exc,E1s,Ens
       dimension work(1000)
@@ -45,7 +46,7 @@ c
 c Pointers
 c
 c first P
-      MM=M*(M+1)/2 
+      MM=M*(M+1)/2
       MM2=M**2
       MMd=Md*(Md+1)/2
       Md2=2*Md
@@ -90,7 +91,7 @@ c new Fock matrix beta
 c eigenvalues (beta spin in open shell case)
       M22=M21+MM
 c
-      M23 = M22 +  M  
+      M23 = M22 +  M
 
 c------------------------------------------------
 c Initializations/Defaults
@@ -111,7 +112,7 @@ c      just_int3n = .false.
 
 c      Ndens=1
 c      npas=npas+1
-c  QUE ES ngeo ?????      
+c  QUE ES ngeo ?????
       ngeo=ngeo+1
 c Number of electrons
       Nel=2*NCO+Nunp
@@ -132,7 +133,7 @@ c      Qc2=Qc**2
 C----------------------------------------
 c Para hacer lineal la integral de 2 electrone con lista de vecinos. Nano
 c        write(*,*) 'que pasa?'
-  
+
       do i=1,natom
         natomc(i)=0
         do j=1,natom
@@ -146,7 +147,7 @@ c        write(*,*) 'que pasa?'
           if (rexp.lt.rmax) then
             natomc(i)=natomc(i)+1
             jatc(natomc(i),i)=j
-          endif 
+          endif
         enddo
       enddo
 
@@ -160,7 +161,7 @@ c        write(*,*) 'que pasa?'
        do iikk=M,nshell(0)+nshell(1)+1,-1
          nnpd(nuc(iikk))=iikk
        enddo
- 
+
        call g2g_reload_atom_positions(igrid2)
 
 
@@ -169,7 +170,7 @@ c        write(*,*) 'que pasa?'
 c
 c
 c-------------------------------------------------------
-c H CORE - 1 electron matrix elements and solvent 
+c H CORE - 1 electron matrix elements and solvent
 c
       call int1(En)
 
@@ -250,7 +251,7 @@ c LAPACK OPTION -----------------------------------------
         call dsyev('V','L',M,X,M,RMM(M13),WORK2,LWORK2,info)
 #endif
 c-----------------------------------------------------------
-c 
+c
 c X transformation matrix , canonical orthogonalization
 c LINEAR DEPENDENCY ELIMINATION
         allocate (Y(M,M),Ytrans(M,M),Xtrans(M,M))
@@ -277,7 +278,7 @@ c QUE ES ESTO ????
             Xtrans(i,j)=X(j,i)
           enddo
         enddo
-c      ENDIF  
+c      ENDIF
 c
 c ======>>>>>> CASE OF NO STARTING GUESS PROVIDED,  <<<<<=========
 c   1 E FOCK MATRIX USED
@@ -311,7 +312,7 @@ c Start use of RMM(M5) as Fock matrix (F')
             enddo
           enddo
         enddo
-        
+
 c
 c diagonalization now
 c
@@ -336,7 +337,7 @@ c-----------------------------------------------------------
           do j=1,M
             X(i,M2+j)=0.D0
             do k=1,M
-c calculando  C=XC'   
+c calculando  C=XC'
               X(i,M2+j)=X(i,M2+j) + X(i,k)*X(k,M+j)
             enddo
           enddo
@@ -395,8 +396,8 @@ c------ IMPRIMIENDO DENSIDADES ---------------------------------
       kk=0
       do i=1,M
         do j=i,M
-          kk=kk+1 
-          write(*,'(I4,X,I4,X,I4,X,F8.5,X,F8.5,X,F8.5)') 
+          kk=kk+1
+          write(*,'(I4,X,I4,X,I4,X,F8.5,X,F8.5,X,F8.5)')
      <          kk,i,j,RMM(kk),rhoalpha(kk),rhobeta(kk)
         enddo
       enddo
@@ -438,7 +439,7 @@ c End of Starting guess (No MO , AO known)-------------------------------
 !
 !------------------------------------------------------------------------------!
 c
-c-------------------------------------------------------------------      
+c-------------------------------------------------------------------
       if (DIIS.and.alloqueo) then
         alloqueo=.false.
 
@@ -457,7 +458,7 @@ c      write(*,*) 'empiezo el loop=========>>>>>>',NMAX
       do 999 while (good.ge.told.and.niter.le.NMAX)
         call g2g_timer_start('Total iter')
         niter=niter+1
-       
+
         if(niter.le.ndiis) then
           ndiist=niter
         else
@@ -486,12 +487,12 @@ c      DAMP=gold
           DAMP=0.0D0
         endif
 
-c        write(*,*)"ENTRANDO A DIIS: ",DIIS 
+c        write(*,*)"ENTRANDO A DIIS: ",DIIS
         if (DIIS) then
 c
 c----  Pasamos matriz de densidad a base ON, antes copio la matriz densidad en la matriz rho  ------
 c aca vamos a tener que dividir por dos los terminos no diagonales
-c 
+c
           do j=1,M
             do k=1,j
               if (j.eq.k) then
@@ -637,7 +638,7 @@ c
           enddo
 c now F contains transformed F
         endif
- 
+
         if(DIIS) then
           call g2g_timer_start('diis')
           deallocate(EMATa)
@@ -727,7 +728,7 @@ c----------Cálculo de parámetro optimo para DGELS-------------------
 *
 *
             LWORK = -1
-c            write(*,*) 'work,lwork,ndiist,antes',work(1),lwork,ndiist 
+c            write(*,*) 'work,lwork,ndiist,antes',work(1),lwork,ndiist
             CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMATa,
      >                 ndiist+1, bcoef_a, ndiist+1, WORK, LWORK, INFO )
             LWORK = MIN( 1000, INT( WORK( 1 ) ) )
@@ -740,7 +741,7 @@ c-----Resuelve la ecuación A*X = B. (EMAT*ci=bcoef). La solución la escribe en
 c--------Construccion de la "nueva" matriz de fock como cl de las anteriores--------------
 c--------Eventualmente se puede probar con la matriz densidad-----------------------------
             suma=0
-c       
+c
             do j=1,ndiist
               jnuevo=j+(ndiis-ndiist)
               do i=1,MM
@@ -775,7 +776,7 @@ c               RMM(M5+ii-1)=RMM(M5+ii-1)+shi
 c             enddo
 c           endif
 c         endif
-                 
+
 c ESSL OPTION ------------------------------------------------
         call g2g_timer_start('dspev')
 #ifdef essl
@@ -786,7 +787,7 @@ c LAPACK OPTION -----------------------------------------
 #ifdef pack
         call dspev('V','L',M,RMM(M5),RMM(M13),X(1,M+1),M,RMM(M15),info)
 #endif
-c  
+c
         call g2g_timer_stop('dspev')
 c-----------------------------------------------------------
 c
@@ -982,7 +983,7 @@ c----------Cálculo de parámetro optimo para DGELS-------------------
             LWORK = -1
             CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMATb,
      >                 ndiist+1, bcoef_b, ndiist+1, WORK, LWORK, INFO )
-            
+
             LWORK = MIN( 1000, INT( WORK( 1 ) ) )
 c           write(*,*) 'work y lwork',work(1),LWORK
 c-----Resuelve la ecuación A*X = B. (EMAT*ci=bcoef). La solución la escribe en bcoef------
@@ -993,7 +994,7 @@ c-----Resuelve la ecuación A*X = B. (EMAT*ci=bcoef). La solución la escribe en
 c--------Construccion de la "nueva" matriz de fock como cl de las anteriores--------------
 c--------Eventualmente se puede probar con la matriz densidad-----------------------------
             suma=0
-c       
+c
             do j=1,ndiist
               jnuevo=j+(ndiis-ndiist)
               do i=1,MM
@@ -1086,13 +1087,13 @@ c     if (niter.ge.2) then
 c Level Shifting
 c          do i=1,M
 c            do j=1,M
-c              X(i,M2a+j)=X(i,M2+j) 
+c              X(i,M2a+j)=X(i,M2+j)
 c            enddo
 c          enddo
 c        endif
 c     endif
 
-c      call g2g_timer_stop('coeff') 
+c      call g2g_timer_stop('coeff')
 c<<<<<========================================
 c<<<<<========================================
 c
@@ -1141,7 +1142,7 @@ c
 c
        good=sqrt(good)/float(M)
 c
-c--- Damping factor update - 
+c--- Damping factor update -
        DAMP=DAMP0
 c      IDAMP=0
 c      if (IDAMP.EQ.1) then
@@ -1202,7 +1203,7 @@ c       goto 995
 
 
 !------------------------------------------------------------------------------!
-! Calculation of final energy 
+! Calculation of final energy
 
        Es=Ens   ! NucleusQM-CHarges MM
 
@@ -1214,11 +1215,11 @@ c       goto 995
        endif
        E1s=0.D0
        do k=1,MM
-          E1s=E1s+RMM(k)*RMM(M11+k-1)  ! E1s (here) is the 1e-energy without the MM contribution 
+          E1s=E1s+RMM(k)*RMM(M11+k-1)  ! E1s (here) is the 1e-energy without the MM contribution
        enddo
 
        Es=Es+E1-E1s ! Es is the QM/MM energy computated as total 1e - E1s + QMnuc-MMcharge
- 
+
 
 
        E=E1+E2+En+Ens+Exc
@@ -1236,7 +1237,7 @@ c       goto 995
                do k=1,MM
                  Eecp=Eecp+RMM(k)*(VAAA(k)+VAAB(k)+VBAC(k))
                enddo
-          Es=Es-Eecp  ! 
+          Es=Es-Eecp  !
           end if
            call WriteEnergies(E1,E2,En,Eecp,Exc,Es,ecpmode,E_restrain)
           npasw=npas+10
@@ -1260,7 +1261,7 @@ c       goto 995
                 k0 = M*(k-1)
                 ki = k0 + i
                 kj = k0 + j
-                RMM(kk) = RMM(kk) - 
+                RMM(kk) = RMM(kk) -
      >                    MO_coef_at(ki)*MO_coef_at(kj)*RMM(M13+k-1)
              end do
 c
@@ -1268,7 +1269,7 @@ c
                 k0 = M*(k-1)
                 ki = k0 + i
                 kj = k0 + j
-                RMM(kk)=RMM(kk) - 
+                RMM(kk)=RMM(kk) -
      >                  MO_coef_at_b(ki)*MO_coef_at_b(kj)*RMM(M22+k-1)
              end do
 c
@@ -1323,4 +1324,4 @@ c
       call g2g_timer_stop('SCF')
        return
        end
-C  -------------------------                                            
+C  -------------------------

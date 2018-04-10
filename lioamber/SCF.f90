@@ -62,6 +62,7 @@ subroutine SCF(E)
    use converger_subs, only: converger_init, conver
    use mask_cublas   , only: cublas_setmat, cublas_release
    use typedef_operator, only: operator !Testing operator
+   use trans_Data    , only: gaussian_convert, rho_exc, translation
 #  ifdef  CUBLAS
       use cublasmath , only: cumxp_r
 #  endif
@@ -1037,6 +1038,20 @@ subroutine SCF(E)
       enddo
 
       call cubegen_matin( M, X )
+
+   if (gaussian_convert) then       ! Density matrix translation from Gaussian09
+      allocate(rho_exc(M,M))
+      call translation(M,rho_exc)   ! Reorganizes Rho to LIO format.
+
+      do jj=1,M                     ! Stores matrix in RMM
+         RMM(jj + (M2-jj)*(jj-1)/2) = rho_exc(jj,jj)
+         do kk = jj+1, M
+            RMM( kk + (M2-jj)*(jj-1)/2) = rho_exc(jj,kk) * 2.0D0
+         enddo
+      enddo
+
+      deallocate(rho_exc)
+   endif                            ! End of translation
 
 
 !------------------------------------------------------------------------------!

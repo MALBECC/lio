@@ -987,11 +987,11 @@ subroutine td_verlet_cu(M, M_in, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
 #ifdef TD_SIMPLE
    complex*8 , intent(inout)  :: Im, rhold(M_in,M_in, dim3),                   &
                                  rhonew(M_in,M_in, dim3)
-   complex*8, allocatable     :: rho(:,:,:), rho_aux(:,:,:)
+   complex*8,  allocatable    :: rho(:,:,:), rho_aux(:,:,:)
 #else
    complex*16, intent(inout)  :: Im, rhold(M_in,M_in,dim3),                    &
                                  rhonew(M_in,M_in,dim3)
-   complex*16                 :: rho(:,:,:), rho_aux(:,:,:)
+   complex*16, allocatable    :: rho(:,:,:), rho_aux(:,:,:)
 #endif
    integer :: icount, jcount
 

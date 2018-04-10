@@ -19,7 +19,7 @@
 #include "pbeOS_corr.h"
 #include "pbeOS_exch.h"
 #include "../fix_compile.h"
-#include <float.h>
+#include "../common.h"
 
 namespace G2G {
 #define EASYPBE_PI ((scalar_type)3.141592653589793238462643383279f)
@@ -57,7 +57,7 @@ __host__ __device__ void pbeOS_main(
    scalar_type twodens2 = twodens * twodens;
    scalar_type twodens5 = twodens2 * twodens2 * twodens;
 
-   scalar_type flt_minimum = 100.0 * (scalar_type) FLT_MIN;
+   scalar_type flt_minimum = (scalar_type) (100.0 * MIN_PRECISION);
    if (twodens5 < flt_minimum) {
      expbe_a = (scalar_type)0.0f;
      vxpbe_a = (scalar_type)0.0f;

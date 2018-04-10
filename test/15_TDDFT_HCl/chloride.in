@@ -1,14 +1,17 @@
 &lio
+ OPEN       = t
+ nunp       = 0
  nsol       = 0
  natom      = 2
  charge     = 0
  int_basis  = t
- VCINP      = t
+ VCINP      = f
+ restart_freq = 1 
  timedep    = 1
  writexyz   = f
- ntdstep    = 100000
- tdstep     = 0.002
- propagator = 1
+ ntdstep    = 50000
+ tdstep     = 0.004
+ propagator = 2
  idip       = 0
  dipole     = f
  field      = t

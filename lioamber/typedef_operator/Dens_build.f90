@@ -1,3 +1,4 @@
+!carlos: this subroutine builds the density matrix.
 subroutine Dens_build(this,Msize, Nocup,Focup,coef_mat)
    use liosubs_dens  , only: builds_densmat
 

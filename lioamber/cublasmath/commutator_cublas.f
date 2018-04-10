@@ -1,6 +1,6 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !  CONMUTATOR - gemm version -
-! 
+!
 !  CONMUTATOR(MA,MB)=MC=[MA*MB-MB*MA]
 !====================================================================!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -75,13 +75,13 @@
        endif
        beta=(-1.00000000000,0.00000000000)
       stat=CUBLAS_DGEMM ('N','N',nn,nn,nn,alpha,devPtrB
-     > ,nn ,devPtrA,nn, beta, devPtrC,nn)  
+     > ,nn ,devPtrA,nn, beta, devPtrC,nn)
       if (stat.NE.0) then
          call CUBLAS_FREE( devPtrC )
          write(*,*) "DGEMM - 2 - failed -commutator_dd"
          call CUBLAS_SHUTDOWN
          stop
-      endif    
+      endif
       stat = CUBLAS_GET_MATRIX(nn, nn, sizeof_real, devPtrC, nn, MC, nn)
       if (stat.NE.0) then
       write(*,*) "data download failed -cuconmutc_r"
@@ -425,7 +425,7 @@
        external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
        external CUBLAS_SHUTDOWN, CUBLAS_ALLOC,CUBLAS_CGEMM
        integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
-       integer CUBLAS_INIT, CUBLAS_CGEMM 
+       integer CUBLAS_INIT, CUBLAS_CGEMM
        COMPLEX*8, dimension (:,:), ALLOCATABLE :: scratch
        parameter(sizeof_complex=8)
 !

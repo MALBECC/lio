@@ -280,7 +280,7 @@ SRCDIRS += typedef_operator
 OBJECTS += typedef_operator.o
 #
 modusrs :=
-modusrs += SCF.o converger_subs.o
+modusrs += SCF.o converger_subs.o TD.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/typedef_operator.mod
 ################################################################################
 OBJECTS += mask_ecp.o
@@ -323,7 +323,7 @@ include mathsubs/mathsubs.mk
 SRCDIRS += mathsubs
 OBJECTS += mathsubs.o
 tmplist :=
-tmplist += SCF.o predictor.o typedef_operator.o
+tmplist += SCF.o predictor.o typedef_operator.o transport.o
 tmplist += tmpaux_SCF.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/mathsubs.mod
 

@@ -76,7 +76,7 @@ end subroutine converger_init
    integer, intent(in)            :: M_in
 !carlos:spin allows to store correctly alpha or beta information.
    integer, intent(in)            :: spin
-   type(operator) , intent(in)    :: rho_op
+   type(operator) , intent(inout) :: rho_op
    type(operator) , intent(inout) :: fock_op
 #ifdef  CUBLAS
    integer*8, intent(in) :: devPtrX
@@ -147,16 +147,16 @@ end subroutine converger_init
          FP_PFm(:,:,jj,spin) = FP_PFm(:,:,jj+1,spin)
       enddo
 
+#ifdef CUBLAS
+    call rho_op%BChange_AOtoON(devPtrY, M_in, 'r')
+    call fock_op%BChange_AOtoON(devPtrX, M_in, 'r')
+#else
+    call rho_op%BChange_AOtoON(Ymat, M_in, 'r')
+    call fock_op%BChange_AOtoON(Xmat,M_in, 'r')
+#endif
 
-#     ifdef  CUBLAS
-         call fock_op%Commut_data(rho,devPtrX,devPtrY,scratch1,M_in)
-#     else
-!-----------------------------------------------------------------------------------------
-! now, scratch1 = A = F' * P'; scratch2 = A^T
-! [F',P'] = A - A^T
-!-----------------------------------------------------------------------------------------
-         call fock_op%Commut_data(rho,Xmat,Ymat,scratch1,M_in)
-#     endif
+    call rho_op%Gets_data_ON(rho)
+    call fock_op%Commut_data_r(rho, scratch1, M_in)
 
     FP_PFm(:,:,ndiis,spin) = scratch1(:,:)
     call fock_op%Gets_data_ON( fockm(:,:,ndiis,spin) )
@@ -220,9 +220,9 @@ end subroutine converger_init
        call fock_op%Sets_data_AO(fock)
 
 #      ifdef  CUBLAS
-          call fock_op%BChange_AOtoON(devPtrX,M_in)
+          call fock_op%BChange_AOtoON(devPtrX,M_in,'r')
 #      else
-          call fock_op%BChange_AOtoON(Xmat,M_in)
+          call fock_op%BChange_AOtoON(Xmat,M_in,'r')
 #      endif
 
     endif

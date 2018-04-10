@@ -1,3 +1,4 @@
+!carlos: this subroutine diagonalises the matrix stored in this.
 subroutine Diagon_datamat (this, eigen_vecs, eigen_vals)
    use linear_algebra, only: matrix_diagon
 
@@ -12,7 +13,7 @@ subroutine Diagon_datamat (this, eigen_vecs, eigen_vals)
 
    allocate(Dmat(Nbasis,Nbasis))
 
-   Dmat=  this%data_ON 
+   Dmat=  this%data_ON
 
    call matrix_diagon( Dmat, eigen_vecs, eigen_vals )
 

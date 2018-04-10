@@ -1,37 +1,38 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat,
-     >                      Xtrans, timestep, time, M_in, MTB)
+     >                      Xtrans, timestep, time, M_in, MTB, dim3)
       ! This routine recives: F1a,F1b,rho2
       ! And gives: F5 = F(t+(deltat/2))
-       use garcha_mod , only: M, RMM, NBCH
+       use garcha_mod , only: M, RMM, NBCH, rhoalpha, rhobeta, OPEN
        use field_data , only: field
        use field_subs , only: field_calc
        use mathsubs   , only: basechange
        use faint_cpu77, only: int3lu
        implicit none
-       REAL*8,intent(inout) :: F1a(M_in,M_in),F1b(M_in,M_in),
-     >                         FON(M_in,M_in), Xmat(M_in,M_in)
+       integer, intent(in)   :: M_in, dim3
+       REAL*8,intent(inout) :: F1a(M_in,M_in,dim3),F1b(M_in,M_in,dim3),
+     >                         FON(M_in,M_in,dim3), Xmat(M_in,M_in)
        REAL*8,intent(in)  :: Xtrans(M_in,M_in), timestep
        REAL*8,intent(in)  :: factorial(NBCH), time
-       REAL*8,allocatable :: F3(:,:), FBA(:,:)
+       REAL*8,allocatable :: F3(:,:,:), FBA(:,:,:)
 #ifdef TD_SIMPLE
-       COMPLEX*8, intent(in) :: rho2(M_in,M_in)
-       complex*8,allocatable :: rho4(:,:),rho2t(:,:)
+       COMPLEX*8, intent(in) :: rho2(M_in,M_in,dim3)
+       complex*8,allocatable :: rho4(:,:,:),rho2t(:,:,:)
 #else
-      COMPLEX*16, intent(in) :: rho2(M_in,M_in)
-      complex*16,allocatable :: rho4(:,:),rho2t(:,:)
+      COMPLEX*16, intent(in) :: rho2(M_in,M_in,dim3)
+      complex*16,allocatable :: rho4(:,:,:),rho2t(:,:,:)
 #endif
-       integer, intent(in)   :: M_in
-       integer :: i,j,k,kk, M2, M5, MM
+       integer :: i,j,k,kk, M2, M3, M5, MM
        real*8 :: E2, tdstep1, Ex, E1
        !DFTB: MTB variable is used for DFTB calculations otherwise equal to 0
        integer, intent(in)   :: MTB
 !------------------------------------------------------------------------------!
-       ALLOCATE(rho4(M_in,M_in),rho2t(M_in,M_in),F3(M_in,M_in),
-     >          FBA(M_in,M_in))
+       ALLOCATE(rho4(M_in,M_in,dim3),rho2t(M_in,M_in,dim3),
+     >          F3(M_in,M_in,dim3), FBA(M_in,M_in,dim3))
 c
        M2 = 2*M
        MM = M*(M+1)/2
+       M3 = 1+MM
        M5 = 1 + 2*MM
 
 c Initializations/Defaults
@@ -41,19 +42,42 @@ c Initializations/Defaults
        F3=(7.D0/4.D0)*F1b-(3.D0/4.D0)*F1a
 ! Step2: F3 is used to propagate rho2 to rho4
        rho2t=rho2
-       call magnus(F3,rho2,rho4,M_in,NBCH,tdstep1,factorial)
-       rho2t = basechange(M_in,Xmat,rho4,Xtrans)
+       call magnus(F3(:,:,1),rho2(:,:,1),rho4(:,:,1),M_in,NBCH,tdstep1,
+     >             factorial)
+
+       if (OPEN) then
+         call magnus(F3(:,:,2),rho2(:,:,2),rho4(:,:,2),M_in,NBCH,
+     >               tdstep1,factorial)
+         rho2t(:,:,1) = basechange(M_in,Xmat,rho4(:,:,1),Xtrans)
+         rho2t(:,:,2) = basechange(M_in,Xmat,rho4(:,:,2),Xtrans)
+! Paso3open: Escribimos rho4 en rhoalpha y rhobeta para poder obtener
+!            F5 en el siguiente paso.
+           call sprepack_ctr('L',M,rhoalpha,
+     >                       rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
+           call sprepack_ctr('L',M,rhobeta,
+     >                       rho2t(MTB+1:MTB+M,MTB+1:MTB+M,2))
+           RMM(1:MM) = rhoalpha + rhobeta
+       else
+           rho2t(:,:,1) = basechange(M_in,Xmat,rho4(:,:,1),Xtrans)
 ! Paso3: Escribimos rho4 en el RMM para poder obtener F5 en el siguiente paso.
 ! Step3: rho4 is copied to RMM(1,2,3,...,MM)
-      call sprepack_ctr('L',M,RMM,rho2t(MTB+1:MTB+M,MTB+1:MTB+M))
+           call sprepack_ctr('L',M,RMM,
+     >                       rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
+       end if
 ! Step4: Density matrix 4 is used to calculate F5
 
        call int3lu(E2)
        call g2g_solve_groups(0,Ex,0)
        call field_calc(E1, time)
        FBA=FON
-       call spunpack('L',M,RMM(M5),FBA(MTB+1:MTB+M,MTB+1:MTB+M))
-       FON=basechange(M_in,Xtrans,FBA,Xmat)
+       call spunpack('L',M,RMM(M5),FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
+       FON(:,:,1)=basechange(M_in,Xtrans,FBA(:,:,1),Xmat)
+
+       if (OPEN) then
+          call spunpack('L',M,RMM(M3),FBA(MTB+1:MTB+M,MTB+1:MTB+M,2))
+          FON(:,:,2)=basechange(M_in,Xtrans,FBA(:,:,2),Xmat)
+       end if
+
        DEALLOCATE(rho4,rho2t,F3,FBA)
        RETURN;END
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

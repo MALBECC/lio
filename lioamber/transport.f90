@@ -16,9 +16,9 @@ module transport_data
 
    integer   , allocatable :: mapmat(:,:), group(:)
 #ifdef TD_SIMPLE
-   complex*8 , allocatable :: rhofirst(:,:)
+   complex*8 , allocatable :: rhofirst(:,:,:)
 #else
-   complex*16, allocatable :: rhofirst(:,:)
+   complex*16, allocatable :: rhofirst(:,:,:)
 #endif
 end module transport_data
 
@@ -26,22 +26,24 @@ module transport_subs
    implicit none
 contains
 
-subroutine transport_init(M, natom, Nuc, RMM5, overlap, rho)
+subroutine transport_init(M, dim3, natom, Nuc, RMM5, overlap, rho, OPEN)
    use transport_data, only: GammaMagnus, GammaVerlet, ngroup, group, rhofirst,&
                              driving_rate, pop_drive, pop_uid, drive_uid, mapmat
    implicit none
-   integer, intent(in)  :: M, natom, Nuc(M)
+   logical, intent(in)  :: OPEN
+   integer, intent(in)  :: M, natom, Nuc(M), dim3
    real*8 , intent(in)  :: RMM5(M*(M+1)/2)
    real*8 , allocatable, intent(inout) :: overlap(:,:)
 #ifdef TD_SIMPLE
-   complex*8 , allocatable, intent(inout) :: rho(:,:)
+   complex*8 , allocatable, intent(inout) :: rho(:,:,:)
 #else
-   complex*16, allocatable, intent(inout) :: rho(:,:)
+   complex*16, allocatable, intent(inout) :: rho(:,:,:)
 #endif
    integer :: orb_group(M), icount
 
    ngroup  = 0
-   allocate(rhofirst(M,M))
+      allocate(rhofirst(M,M,dim3))
+
    allocate(group(natom), mapmat(M,M))
    call transport_read_groups(natom)
    call mat_map(Nuc, M, natom)
@@ -68,7 +70,7 @@ subroutine transport_init(M, natom, Nuc, RMM5, overlap, rho)
    if (allocated(overlap)) deallocate(overlap)
    allocate(overlap(M,M))
    call spunpack('L', M, RMM5, overlap)
-   call transport_generate_rho(M, rho)
+   call transport_generate_rho(M, rho, OPEN)
 
    return
 end subroutine transport_init
@@ -101,69 +103,104 @@ subroutine transport_read_groups(natom)
    return
 end subroutine transport_read_groups
 
-subroutine transport_generate_rho(M, rho)
+subroutine transport_generate_rho(M, rho, OPEN)
    use transport_data, only: generate_rho0, rhofirst
    implicit none
+   logical, intent(in)  :: OPEN
    integer, intent(in)  :: M
 #ifdef TD_SIMPLE
-   complex*8 , allocatable, intent(inout) :: rho(:,:)
+   complex*8 , allocatable, intent(inout) :: rho(:,:,:)
 #else
-   complex*16, allocatable, intent(inout) :: rho(:,:)
+   complex*16, allocatable, intent(inout) :: rho(:,:,:)
 #endif
    integer   :: icount, jcount
 
    open( unit = 100000, file = 'rhofirst')
-   if (generate_rho0) then
-      do icount = 1, M
-      do jcount = 1, M
-         write(100000,*) rho(icount, jcount)
-      enddo
-      enddo
-      rhofirst = rho
-      write(*,*) 'RhoFirst has been written.'
+
+   if (OPEN) then
+      if (generate_rho0) then
+         do icount = 1, M
+         do jcount = 1, M
+            write(100000,*) rho(icount, jcount,1),rho(icount, jcount,2)
+         enddo
+         enddo
+         rhofirst = rho
+         write(*,*) 'RhoFirst has been written.'
+      else
+         do icount = 1, M
+         do jcount = 1, M
+            read(100000,*) rhofirst(icount, jcount,1),rhofirst(icount, jcount,2)
+         enddo
+         enddo
+         write(*,*) 'RhoFirst has been read.'
+      endif
    else
-      do icount = 1, M
-      do jcount = 1, M
-         read(100000,*) rhofirst(icount, jcount)
-      enddo
-      enddo
-      write(*,*) 'RhoFirst has been read.'
-   endif
+      if (generate_rho0) then
+         do icount = 1, M
+         do jcount = 1, M
+            write(100000,*) rho(icount, jcount,1)
+         enddo
+         enddo
+         rhofirst = rho
+         write(*,*) 'RhoFirst has been written.'
+      else
+         do icount = 1, M
+         do jcount = 1, M
+            read(100000,*) rhofirst(icount, jcount,1)
+         enddo
+         enddo
+         write(*,*) 'RhoFirst has been read.'
+      endif
+   end if
 
    return
 end subroutine transport_generate_rho
 
-subroutine transport_rho_trace(M, rho)
+subroutine transport_rho_trace(M, dim3, rho)
    implicit none
-   integer, intent(in) :: M
+   integer, intent(in) :: M, dim3
 #ifdef TD_SIMPLE
-   complex*8 , intent(in) :: rho(M,M)
+   complex*8 , intent(in) :: rho(M,M,dim3)
 #else
-   complex*16, intent(in) :: rho(M,M)
+   complex*16, intent(in) :: rho(M,M,dim3)
 #endif
    integer   :: icount
    complex*8 :: traza
 
    traza = dcmplx(0.0D0, 0.0D0)
    do icount = 1, M
-      traza = traza + rho(icount, icount)
+      traza = traza + rho(icount, icount,1)
    enddo
-   write(*,*) 'Transport - Rho Trace = ', real(traza)
+
+   if (dim3==2) then
+      write(*,*) 'Transport - Alpha Rho Trace = ', real(traza)
+      traza = dcmplx(0.0D0, 0.0D0)
+      do icount = 1, M
+         traza = traza + rho(icount, icount,2)
+      enddo
+      write(*,*) 'Transport - Beta Rho Trace = ', real(traza)
+   else
+      write(*,*) 'Transport - Rho Trace = ', real(traza)
+   end if
 
    return
 end subroutine transport_rho_trace
 
-subroutine transport_propagate(M, natom, Nuc, Iz, propagator, istep, &
-                               overlap, sqsm, rho1)
+subroutine transport_propagate(M, dim3, natom, Nuc, Iz, propagator, istep, &
+                               overlap, sqsm, rho1, Ymat ,OPEN)
    use transport_data, only: save_charge_freq, pop_drive, GammaMagnus, &
                              GammaVerlet, ngroup, group
+   use mathsubs,       only: basechange_gemm
    implicit none
+   logical   , intent(in)    :: OPEN
+   integer   , intent(in)    :: dim3
    integer   , intent(in)    :: M, natom, Nuc(M), Iz(natom), propagator, istep
+   real*8    , intent(in)    :: Ymat(M,M)
    real*8    , intent(inout) :: overlap(M,M), sqsm(M,M)
 #ifdef TD_SIMPLE
-   complex*8 , intent(inout) :: rho1(M,M)
+   complex*8 , intent(inout) :: rho1(M,M,dim3)
 #else
-   complex*16, intent(inout) :: rho1(M,M)
+   complex*16, intent(inout) :: rho1(M,M,dim3)
 #endif
    real*8  :: scratchgamma, gamma
    integer :: save_freq
@@ -184,29 +221,36 @@ subroutine transport_propagate(M, natom, Nuc, Iz, propagator, istep, &
       scratchgamma = gamma * exp(-0.0001D0 * (dble(istep-1000))**2)
    endif
 
-   call electrostat(rho1, overlap, scratchgamma, M)
+   call electrostat(rho1(:,:,1), overlap, scratchgamma, M, 1)
+   if (OPEN) call electrostat(rho1(:,:,2), overlap, scratchgamma, M, 2)
    if (mod( istep-1 , save_freq) == 0) then
-      call drive_population(M, natom, Nuc, Iz, rho1, overlap, sqsm, 1)
+      call drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, sqsm, 1,   &
+                            OPEN)
    endif
+
+   rho1(:,:,1)=basechange_gemm(M,rho1(:,:,1),Ymat)
+   if (OPEN) rho1(:,:,2) = basechange_gemm(M,rho1(:,:,2),Ymat)
 
    call g2g_timer_stop('Transport-propagation')
    return
 end subroutine transport_propagate
 
 #ifdef CUBLAS
-subroutine transport_propagate_cu(M, natom, Nuc, Iz, propagator, istep, &
-                                  overlap, sqsm, rho1, devPtrY)
+subroutine transport_propagate_cu(M, dim3, natom, Nuc, Iz, propagator, istep, &
+                                  overlap, sqsm, rho1, devPtrY, OPEN)
    use cublasmath    , only: basechange_cublas
    use transport_data, only: ngroup, group, save_charge_freq, GammaMagnus, &
                              GammaVerlet
    implicit none
+   logical, intent(in)       :: OPEN
+   integer, intent(in)       :: dim3
    integer   , intent(in)    :: M, natom, Nuc(M), Iz(natom), propagator, istep
    integer*8 , intent(in)    :: devPtrY
    real*8    , intent(inout) :: overlap(M,M), sqsm(M,M)
 #ifdef TD_SIMPLE
-   complex*8 , intent(inout) :: rho1(M,M)
+   complex*8 , intent(inout) :: rho1(M,M,dim3)
 #else
-   complex*16, intent(inout) :: rho1(M,M)
+   complex*16, intent(inout) :: rho1(M,M,dim3)
 #endif
    real*8  :: scratchgamma, gamma
    integer :: save_freq
@@ -227,13 +271,17 @@ subroutine transport_propagate_cu(M, natom, Nuc, Iz, propagator, istep, &
       scratchgamma = gamma * exp(-0.0001D0 * (dble(istep-1000))**2)
    endif
 
-   call electrostat(rho1, overlap, scratchgamma, M)
+   call electrostat(rho1(:,:,1), overlap, scratchgamma, M, 1)
+   if (OPEN) call electrostat(rho1(:,:,2), overlap, scratchgamma, M, 2)
+
    if (mod( istep-1 , save_freq) == 0) then
-      call drive_population(M, natom, Nuc, Iz, rho1, overlap, sqsm, 1)
+      call drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, sqsm, 1,   &
+                            OPEN)
    endif
 
    call g2g_timer_start('complex_rho_ao_to_on-cu')
-   rho1 = basechange_cublas(M, rho1, devPtrY, 'dir')
+   rho1(:,:,1) = basechange_cublas(M, rho1(:,:,1), devPtrY, 'dir')
+   if (OPEN) rho1(:,:,2) = basechange_cublas(M, rho1(:,:,2), devPtrY, 'dir')
    call g2g_timer_stop('complex_rho_ao_to_on-cu')
 
    call g2g_timer_stop('Transport-propagation')
@@ -242,23 +290,26 @@ subroutine transport_propagate_cu(M, natom, Nuc, Iz, propagator, istep, &
 end subroutine transport_propagate_cu
 #endif
 
-subroutine transport_population(M, natom, Nuc, Iz, rho1, overlap, smat, &
-                                propagator, is_lpfrg, istep)
+subroutine transport_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat, &
+                                propagator, is_lpfrg, istep, OPEN)
    use transport_data, only: save_charge_freq
    implicit none
+   logical, intent(in) :: OPEN
+   integer, intent(in) :: dim3
    integer, intent(in) :: M, natom, Iz(natom), Nuc(natom), istep, propagator
    logical, intent(in) :: is_lpfrg
    real*8 , intent(in) :: overlap(M,M), smat(M,M)
 #ifdef TD_SIMPLE
-      complex*8 , intent(in) :: rho1(M,M)
+      complex*8 , intent(in) :: rho1(M,M,dim3)
 #else
-      complex*16, intent(in) :: rho1(M,M)
+      complex*16, intent(in) :: rho1(M,M,dim3)
 #endif
 
    if ( ((propagator.gt.1) .and. (is_lpfrg) .and.       &
       (mod((istep-1), save_charge_freq*10) == 0)) .or.  &
       (mod((istep-1), save_charge_freq) == 0) ) then
-      call drive_population(M, natom, Nuc, Iz, rho1, overlap, smat, 2)
+      call drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat, 2,   &
+                            OPEN)
    endif
 
    return
@@ -303,12 +354,12 @@ subroutine mat_map(Nuc, M, natom)
 end subroutine mat_map
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-subroutine electrostat(rho1, overlap, Gamma0, M)
+subroutine electrostat(rho1, overlap, Gamma0, M, spin)
    ! This subroutine modifies the density matrix according to the group
    ! containing the basis function indexes.
    use transport_data, only: mapmat, rhofirst
    implicit none
-   integer, intent(in) :: M
+   integer, intent(in) :: M, spin
    real*8,  intent(in) :: overlap(M,M), Gamma0
    integer :: i, j
    real*8  :: GammaIny, GammaAbs
@@ -333,10 +384,10 @@ subroutine electrostat(rho1, overlap, Gamma0, M)
             rho_scratch(i,j,2) = dcmplx(0.0D0,0.0D0)
          case (1, 2, 4, 5)
             rho_scratch(i,j,1) = rho1(i,j)
-            rho_scratch(i,j,2) = rhofirst(i,j)
+            rho_scratch(i,j,2) = rhofirst(i,j,spin)
          case (3, 6, 7, 8)
             rho_scratch(i,j,1) = 0.50D0*rho1(i,j)
-            rho_scratch(i,j,2) = 0.50D0*rhofirst(i,j)
+            rho_scratch(i,j,2) = 0.50D0*rhofirst(i,j,spin)
       end select
    enddo
    enddo
@@ -361,18 +412,21 @@ subroutine electrostat(rho1, overlap, Gamma0, M)
    return
 end subroutine electrostat
 
-subroutine drive_population(M, natom, Nuc, Iz, rho1, overlap, smat, dvopt)
+subroutine drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat,      &
+                            dvopt, OPEN)
    use transport_data, only: pop_uid, drive_uid, ngroup, group, pop_drive
    implicit none
+   logical, intent(in) :: OPEN
+   integer, intent(in) :: dim3
    integer, intent(in) :: M, natom, Iz(natom), Nuc(natom)
    integer, intent(in) :: dvopt
    real*8 , intent(in) :: overlap(M,M), smat(M,M)
 #ifdef TD_SIMPLE
-      complex*8 , intent(in) :: rho1(M,M)
+      complex*8 , intent(in) :: rho1(M,M, dim3)
 #else
-      complex*16, intent(in) :: rho1(M,M)
+      complex*16, intent(in) :: rho1(M,M, dim3)
 #endif
-   real*8  :: qgr(ngroup), traza, q(natom), rho(M,M)
+   real*8  :: qgr(ngroup), traza, q(natom), rho(M,M,dim3)
    integer :: i
 
    qgr(:) = 0.0D0
@@ -389,9 +443,12 @@ subroutine drive_population(M, natom, Nuc, Iz, rho1, overlap, smat, dvopt)
    rho = real(rho1)
    select case (pop_drive)
       case (1)
-         call mulliken_calc(natom, M, rho, overlap, Nuc, q)
+         call mulliken_calc(natom, M, rho(:,:,1), overlap, Nuc, q)
+         if (OPEN) call mulliken_calc(natom, M, rho(:,:,2), overlap, Nuc,      &
+                                      q)
       case (2)
-         call lowdin_calc(M, natom, rho, smat, Nuc, q)
+         call lowdin_calc(M, natom, rho(:,:,1), smat, Nuc, q)
+         if (OPEN) call lowdin_calc(M, natom, rho(:,:,2), smat, Nuc, q)
       case default
          write(*,*) "ERROR - Transport: Wrong value for Pop (drive_population)."
          stop

@@ -1,8 +1,9 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       module subm_int1; contains
-       subroutine int1(En)
-!       subroutine int1(RMM, Smat, Nuc, a, c, d, r, Iz, ncont, nshell, pi,&
-!                             & pi32, NORM, natom, M, Md)
+!       subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM,&
+!                       & natom, M, Md)
+       subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM,&
+                       & natom, M, Md )
 !------------------------------------------------------------------------------!
 !
 !      Integrals subroutine
@@ -26,9 +27,25 @@
 !
 !------------------------------------------------------------------------------!
        use liotemp   , only: FUNCT
-       use garcha_mod, only: RMM, Smat, Nuc, a, c, d, r, Iz, ncont, nshell, pi,&
-                             & pi32, NORM, natom, M, Md
+       use garcha_mod, only: nshell
+       use constants_mod, only: pi, pi32
        implicit none
+
+!      Input quantities (ex-garchamod variables)
+        DOUBLE PRECISION, allocatable, intent(inout) :: RMM(:)
+        DOUBLE PRECISION, allocatable, intent(inout) :: Smat(:,:)
+        DOUBLE PRECISION, allocatable, intent(in) :: d(:,:)
+        DOUBLE PRECISION, allocatable, intent(in) :: r(:,:)
+        DOUBLE PRECISION, allocatable, intent(in) :: a(:,:)
+        DOUBLE PRECISION, allocatable, intent(in) :: c(:,:)
+!        INTEGER, allocatable, intent(in) :: nshell(0:4)
+        INTEGER, allocatable, intent(in) :: Nuc(:)
+        INTEGER, allocatable, intent(in) :: Iz(:)
+        INTEGER, allocatable, intent(in) :: ncont(:)
+        INTEGER, intent(inout) :: natom
+        INTEGER, intent(in) :: M
+        INTEGER, intent(in) :: Md
+        LOGICAL, intent(in) :: NORM
 
 !      Auxiliary quantities
        DOUBLE PRECISION, intent(inout) :: En

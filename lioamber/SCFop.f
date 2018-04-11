@@ -172,7 +172,7 @@ c
 c-------------------------------------------------------
 c H CORE - 1 electron matrix elements and solvent
 c
-      call int1(En)
+      call int1(En,RMM,Smat,Nuc,a,c,d,r,Iz,ncont,NORM,natom,M,Md )
 
       if(nsol.gt.0.or.igpu.ge.4) then
           call g2g_timer_sum_start('QM/MM')
@@ -1207,7 +1207,8 @@ c       goto 995
 
        Es=Ens   ! NucleusQM-CHarges MM
 
-       call int1(En) ! One electron Kinetic (with aint >3) or Kinetic + Nuc-elec (aint >=3)
+       ! One electron Kinetic (with aint >3) or Kinetic + Nuc-elec (aint >=3)
+       call int1(En,RMM,Smat,Nuc,a,c,d,r,Iz,ncont,NORM,natom,M,Md )
 
        if(nsol.gt.0.and.igpu.ge.1) then ! Computing the E1-fock without the MM atoms
           call aint_qmmm_init(0,r,pc)

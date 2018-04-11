@@ -35,7 +35,7 @@ subroutine SCF(E)
                           Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz,  &
                           nuc, doing_ehrenfest, first_step, RealRho,           &
                           total_time, MO_coef_at, Smat, good_cut, ndiis, ncont,&
-                          nshell
+                          nshell, Nuc, a, c, d, NORM
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
                        FOCK_ECP_read,FOCK_ECP_write,IzECP
    use field_data, only: field, fx, fy, fz
@@ -298,7 +298,7 @@ subroutine SCF(E)
 !
       call g2g_timer_sum_start('1-e Fock')
       call g2g_timer_sum_start('Nuclear attraction')
-      call int1(En)
+      call int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md)
 
       call ECP_fock( MM, RMM(M11) )
 
@@ -887,7 +887,7 @@ subroutine SCF(E)
         Es=Ens
 
 !       One electron Kinetic (with aint >3) or Kinetic + Nuc-elec (aint >=3)
-        call int1(En)
+        call int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md)
 
 !       Computing the E1-fock without the MM atoms
         if (nsol.gt.0.and.igpu.ge.1) then

@@ -3,11 +3,11 @@
        subroutine int1(En)
 !------------------------------------------------------------------------------!
 c
-c      Integrals subroutine 
+c      Integrals subroutine
 c      1 e integrals
 c      using the Obara-Saika recursive method.
 c
-c 
+c
 c      loop over all basis functions
 c      now the basis is supposed to be ordered according to the type,
 c      all s, then all p, then all d, .....
@@ -163,7 +163,7 @@ c
       RMM(M5+k-1)=RMM(M5+k-1)+ccoef*ovlap
       Smat(i,j)=Smat(i,j)+ccoef*ovlap
       Smat(j,i)=Smat(j,i)+ccoef*ovlap
-c 
+c
 c loop over nuclei, nuclear attraction matrix elements
 c tna: accumulates nuc. attraction over all nuclei
 c
@@ -242,10 +242,10 @@ c loop over nuclei, specific part
  305    continue
 c
 
- 300  continue       
+ 300  continue
 
 c-------------------------------------------------------------------
-c 
+c
 c (p|p) case
 c
       do 400 i=ns+1,ns+np,3
@@ -343,7 +343,7 @@ c ---------------
 c-------------------------------------------------------------------
 c (d|s) case
 c
-      do 500 i=ns+np+1,M,6   
+      do 500 i=ns+np+1,M,6
       do 500 j=1,ns
 c
       dd=d(Nuc(i),Nuc(j))
@@ -408,7 +408,7 @@ c
        Smat(j,iin)=Smat(j,iin)+ovlap*cc
        RMM(M11+k-1)=RMM(M11+k-1)+term
  505  continue
-cc nuclear attraction part 
+cc nuclear attraction part
 c
       do 503 n=1,natom
 c
@@ -422,7 +422,7 @@ c
 c
        t1=Q(l2)-r(Nuc(i),l2)
        t2=Q(l2)-r(n,l2)
-       tna=t1*p0s-t2*p1s 
+       tna=t1*p0s-t2*p1s
 c
        f1=1.D0
        if (l1.eq.l2) then
@@ -447,7 +447,7 @@ c end nuclear attr. part ----------
  500  continue
 c-----------------------------------------------------------------
 c
-c (d|p) case 
+c (d|p) case
 c
       do 600 i=ns+np+1,M,6
       do 600 j=ns+1,ns+np,3
@@ -505,7 +505,7 @@ c
       do 605 l3=1,3
 c
        t1=Q(l3)-r(Nuc(j),l3)
-       ovlap=t1*dijs 
+       ovlap=t1*dijs
        tn=t1*dijks
 c
        if (l1.eq.l3) then
@@ -519,7 +519,7 @@ c
        endif
 c
        tn=tn+alf2*ovlap
-       
+
 c
        l12=l1*(l1-1)/2+l2
        iin=i+l12-1
@@ -680,7 +680,7 @@ c
        pikpk=pikpk+alf2*pipk
        pjkpk=pjkpk+alf2*pjpk
        dijkpk=dijkpk+alf2*dijpk
-c 
+c
        do 705 l4=1,l3
 c
        f2=1.D0
@@ -865,7 +865,7 @@ c     pause
       enddo
 
       deallocate(s0s,s1s,s2s,s3s,s4s)
-c      deallocate(Iaux) 
+c      deallocate(Iaux)
 
 
       if (igpu.gt.3) natom = natomold

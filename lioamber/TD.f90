@@ -43,8 +43,12 @@ contains
 subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    use garcha_mod    , only: M, Md, NBCH, propagator, RMM, NCO, Iz, igrid2, r, &
                              Nuc, nsol, pc, X, Smat, MEMO, sol, natom, sqsm,   &
+<<<<<<< 97a04cb7f26a7069ef6b4c298f4d5ff4ab717d5a
                              Nunp, ntatom, ncont, nshell, OPEN, rhoalpha,      &
                              rhobeta
+=======
+                             Nunp, ntatom, ncont, nshell, a, c, d, NORM
+>>>>>>> Modified a number of subroutines across the code that called int1 so they pass all the necesary arguments that the modified int1 function requires now. Also eliminated rmmcalc_overlap.f90, as it not only did not do anything else appart from calling int1 and extracting Smat from RMM but it is not called by any other function.
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, &
                              writedens, pert_time
    use field_data    , only: field, fx, fy, fz
@@ -226,7 +230,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    if (field) call field_setup_old(pert_time, 1, fx, fy, fz)
    call td_integration_setup(igrid2, igpu)
    call td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM(M11), r, pc, &
-                       ntatom)
+                       ntatom,natom,Smat,Nuc,a,c,d,Iz,ncont,NORM,M,Md)
    ! Initialises transport if required.
    if (transport_calc) call transport_init(M, dim3, natom, Nuc, RMM(M5),       &
                                            overlap, rho,OPEN)
@@ -617,20 +621,35 @@ subroutine td_integration_setup(igrid2, igpu)
 end subroutine td_integration_setup
 
 subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM11, r, pc, &
-                          ntatom)
-   use faint_cpu77, only: intsol
-   use faint_cpu, only: int1
-   use mask_ecp   , only: ECP_fock
-   implicit none
-   integer, intent(in)    :: MM, igpu, nsol, ntatom
-   real*8 , intent(in)    :: r(ntatom), pc(ntatom)
-   real*8 , intent(inout) :: RMM(MM), RMM11(MM), E1, En, E1s, Ens
-   integer :: icount
+                          ntatom,natom,Smat,Nuc,a,c,d,Iz,ncont,NORM,M,Md)
+    use faint_cpu77, only: intsol
+    use faint_cpu, only: int1
+    use mask_ecp   , only: ECP_fock
+    implicit none
+
+    integer, intent(in)             :: MM, igpu, nsol, ntatom
+!    double precision, allocatable, intent(in)    :: r(ntatom,3), pc(ntatom)
+    double precision, allocatable, intent(in)    :: r(:,:)
+    double precision, intent(in)                 :: pc(ntatom)
+    double precision, intent(inout) :: RMM11(MM), E1, En, E1s, Ens
+    DOUBLE PRECISION, allocatable, intent(inout) :: RMM(:)
+    DOUBLE PRECISION, allocatable, intent(inout) :: Smat(:,:)
+    DOUBLE PRECISION, allocatable, intent(in) :: d(:,:)
+    DOUBLE PRECISION, allocatable, intent(in) :: a(:,:)
+    DOUBLE PRECISION, allocatable, intent(in) :: c(:,:)
+    INTEGER, allocatable, intent(in) :: Nuc(:)
+    INTEGER, allocatable, intent(in) :: Iz(:)
+    INTEGER, allocatable, intent(in) :: ncont(:)
+    INTEGER, intent(inout) :: natom
+    INTEGER, intent(in) :: M
+    INTEGER, intent(in) :: Md
+    LOGICAL, intent(in) :: NORM
+    integer :: icount
 
    E1 = 0.0D0 ; En = 0.0D0
    call g2g_timer_sum_start('TD - 1-e Fock')
    call g2g_timer_sum_start('TD - Nuclear attraction')
-   call int1(En)
+   call int1(En,RMM,Smat,Nuc,a,c,d,r,Iz,ncont,NORM,natom,M,Md)
 
    call ECP_fock(MM, RMM11)
    call g2g_timer_sum_stop('TD - Nuclear attraction')

@@ -444,3 +444,11 @@ tmplist :=
 tmplist += SCF.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/translation.mod
 ###############################################################################
+
+################################################################################
+# Numerical constants
+################################################################################
+OBJECTS += constants_mod.o
+#
+modusrs := subm_int1.o
+$(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/constants_mod.mod

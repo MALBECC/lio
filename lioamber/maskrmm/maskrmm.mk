@@ -7,7 +7,6 @@ INCLUDES += rmmput_fock.f90
 INCLUDES += rmmget_fock.f90
 
 INCLUDES += rmmcalc0_init.f90
-INCLUDES += rmmcalc1_overlap.f90
 INCLUDES += rmmcalc2_focknuc.f90
 INCLUDES += rmmcalc3_fockele.f90
 

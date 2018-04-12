@@ -43,12 +43,8 @@ contains
 subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    use garcha_mod    , only: M, Md, NBCH, propagator, RMM, NCO, Iz, igrid2, r, &
                              Nuc, nsol, pc, X, Smat, MEMO, sol, natom, sqsm,   &
-<<<<<<< 97a04cb7f26a7069ef6b4c298f4d5ff4ab717d5a
-                             Nunp, ntatom, ncont, nshell, OPEN, rhoalpha,      &
-                             rhobeta
-=======
-                             Nunp, ntatom, ncont, nshell, a, c, d, NORM
->>>>>>> Modified a number of subroutines across the code that called int1 so they pass all the necesary arguments that the modified int1 function requires now. Also eliminated rmmcalc_overlap.f90, as it not only did not do anything else appart from calling int1 and extracting Smat from RMM but it is not called by any other function.
+                             Nunp, ntatom, ncont, nshell, a, c, d, NORM,OPEN, &
+                             rhoalpha, rhobeta
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, &
                              writedens, pert_time
    use field_data    , only: field, fx, fy, fz

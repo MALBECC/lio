@@ -1,7 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       module subm_int1; contains
-!       subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM,&
-!                       & natom, M, Md)
        subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM,&
                        & natom, M, Md )
 !------------------------------------------------------------------------------!

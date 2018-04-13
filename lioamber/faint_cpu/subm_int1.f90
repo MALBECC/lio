@@ -39,7 +39,6 @@
         double precision, allocatable, intent(in) :: r(:,:)
         double precision, allocatable, intent(in) :: a(:,:)
         double precision, allocatable, intent(in) :: c(:,:)
-!        INTEGER, allocatable, intent(in) :: nshell(0:4)
         integer, allocatable, intent(in) :: Nuc(:)
         integer, allocatable, intent(in) :: Iz(:)
         integer, allocatable, intent(in) :: ncont(:)

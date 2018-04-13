@@ -53,19 +53,19 @@
        integer :: MM, MMd, ns, np, nd
        integer :: M1, M2, M3, M5, M7, M9, M11
 
-       DOUBLE PRECISION  :: E1, ovlap
-       DOUBLE PRECISION  :: Q(3), term, temp, sq3, alf, alf2, cc, ccoef
-       DOUBLE PRECISION  :: f1, f2, tn, tna, u, z2, zij
-       DOUBLE PRECISION  :: ss, ps, dd, p0s, p1s, p2s, p3s
-       DOUBLE PRECISION  :: pi0p, pi1p, piks, pikpk, pipk, pis
-       DOUBLE PRECISION  :: pj0s, pj1s, pj2s, pj0p, pj1p, pjkpk
-       DOUBLE PRECISION  :: pjks, pjpk, pjs, pks, sks
-       DOUBLE PRECISION  :: dijs, dijpk, dijks, dijkpk
-       DOUBLE PRECISION  :: d0s, d0p, d1p, d1s, d2s
-       DOUBLE PRECISION  :: t0, t1, t2
+       double precision  :: E1, ovlap
+       double precision  :: Q(3), term, temp, sq3, alf, alf2, cc, ccoef
+       double precision  :: f1, f2, tn, tna, u, z2, zij
+       double precision  :: ss, ps, dd, p0s, p1s, p2s, p3s
+       double precision  :: pi0p, pi1p, piks, pikpk, pipk, pis
+       double precision  :: pj0s, pj1s, pj2s, pj0p, pj1p, pjkpk
+       double precision  :: pjks, pjpk, pjs, pks, sks
+       double precision  :: dijs, dijpk, dijks, dijkpk
+       double precision  :: d0s, d0p, d1p, d1s, d2s
+       double precision  :: t0, t1, t2
 
        integer, allocatable, dimension(:) :: Iaux
-       DOUBLE PRECISION , allocatable, dimension(:) :: s0s, s1s, s2s, s3s, s4s
+       double precision , allocatable, dimension(:) :: s0s, s1s, s2s, s3s, s4s
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !

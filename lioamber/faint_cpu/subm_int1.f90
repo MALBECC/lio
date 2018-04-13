@@ -30,23 +30,23 @@
        implicit none
 
 !      Input quantities (ex-garchamod variables)
-        DOUBLE PRECISION, allocatable, intent(inout) :: RMM(:)
-        DOUBLE PRECISION, allocatable, intent(inout) :: Smat(:,:)
-        DOUBLE PRECISION, allocatable, intent(in) :: d(:,:)
-        DOUBLE PRECISION, allocatable, intent(in) :: r(:,:)
-        DOUBLE PRECISION, allocatable, intent(in) :: a(:,:)
-        DOUBLE PRECISION, allocatable, intent(in) :: c(:,:)
-!        INTEGER, allocatable, intent(in) :: nshell(0:4)
-        INTEGER, allocatable, intent(in) :: Nuc(:)
-        INTEGER, allocatable, intent(in) :: Iz(:)
-        INTEGER, allocatable, intent(in) :: ncont(:)
-        INTEGER, intent(inout) :: natom
-        INTEGER, intent(in) :: M
-        INTEGER, intent(in) :: Md
-        LOGICAL, intent(in) :: NORM
+        double precision, allocatable, intent(inout) :: RMM(:)
+        double precision, allocatable, intent(inout) :: Smat(:,:)
+        double precision,              intent(inout) :: En
+        integer,                       intent(inout) :: natom
 
-!      Auxiliary quantities
-       DOUBLE PRECISION, intent(inout) :: En
+        double precision, allocatable, intent(in) :: d(:,:)
+        double precision, allocatable, intent(in) :: r(:,:)
+        double precision, allocatable, intent(in) :: a(:,:)
+        double precision, allocatable, intent(in) :: c(:,:)
+!        INTEGER, allocatable, intent(in) :: nshell(0:4)
+        integer, allocatable, intent(in) :: Nuc(:)
+        integer, allocatable, intent(in) :: Iz(:)
+        integer, allocatable, intent(in) :: ncont(:)
+        integer, intent(in) :: M
+        integer, intent(in) :: Md
+        logical, intent(in) :: NORM
+
 
        integer :: natomold, igpu
        integer :: n, i, j, k, ii, jj, ni, nj, iin

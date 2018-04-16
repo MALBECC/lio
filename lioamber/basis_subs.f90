@@ -121,26 +121,26 @@ subroutine basis_data_set(ns,np,nd,orba,orbc,ge,gc)
 
 end subroutine
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine basis_data_norm( Nsize, Ncont, gcoefs )
+subroutine basis_data_norm( Isize, Icont, gcoefs )
 !------------------------------------------------------------------------------!
    use maskrmm,     only: rmmget_fock
-   use faint_cpu77, only: int1
+   use faint_cpu,   only: int1
    use basis_data,  only: gauss_coef
+   use garcha_mod,  only: RMM,Nuc,a,c,d,r,Iz,NORM,natom,M,Md,ncont
 
    implicit none
-   integer, intent(in)    :: Nsize
-   integer, intent(in)    :: Ncont
-   real*8 , intent(inout) :: gcoefs(Nsize, Ncont)
+   integer, intent(in)              :: Isize
+   integer, intent(in)              :: Icont
+   double precision , intent(inout) :: gcoefs(Isize, Icont)
 
-   integer                :: kk
-   real*8                 :: scratch_energy
-   real*8, allocatable    :: Smat(:,:)
+   integer                          :: kk
+   double precision                 :: scratch_energy
+   double precision, allocatable    :: Smat(:,:)
 
 !   call g2g_timer_start('RMMcalc1')
-   allocate( Smat(Nsize, Nsize) )
-   call int1( scratch_energy )
-   call rmmget_fock( Smat )
-   do kk = 1, Nsize
+   allocate( Smat(isize, isize) )
+   call int1(scratch_energy,RMM,Smat,Nuc,a,c,d,r,Iz,ncont,NORM,natom,M,Md)
+   do kk = 1, isize
       gcoefs(kk,:) = gcoefs(kk,:) / sqrt( Smat(kk,kk) )
       gauss_coef(:,kk) = gauss_coef(:,kk) / sqrt( Smat(kk,kk) )
    enddo

@@ -1,7 +1,6 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module faint_cpu
+   use subm_int1, only: int1
    implicit none
-   contains
-!#  include "nuthin"
 end module faint_cpu
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

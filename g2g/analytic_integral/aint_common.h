@@ -6,6 +6,6 @@
 
 #define MAX_TERM_TYPES 6
 
-#define AINT_DEFAULT_GPU_LEVEL 5
+#define AINT_DEFAULT_GPU_LEVEL 4
 
 #endif

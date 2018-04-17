@@ -625,8 +625,10 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM11, r, pc, &
     implicit none
 
     double precision, intent(in) :: pc(ntatom), r(ntatom,3)
-    integer         , intent(in) :: M, Md, NORM, MM, igpu, nsol, ntatom, &
-                                    Nuc(M), Iz(natom), natom
+    integer         , intent(in) :: M, Md, MM, igpu, nsol, ntatom, &
+                                    Nuc(M), Iz(natom)
+    logical         , intent(in) :: NORM
+    integer         , intent(inout) :: natom
     double precision, intent(inout) :: RMM11(MM), E1, En, E1s, Ens
 
     double precision, allocatable, intent(in)    :: a(:,:), c(:,:), d(:,:)
@@ -638,7 +640,7 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM11, r, pc, &
    E1 = 0.0D0 ; En = 0.0D0
    call g2g_timer_sum_start('TD - 1-e Fock')
    call g2g_timer_sum_start('TD - Nuclear attraction')
-   call int1(En,RMM,Smat,Nuc,a,c,d,r,Iz,ncont,NORM,natom,M,Md)
+   call int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md)
 
    call ECP_fock(MM, RMM11)
    call g2g_timer_sum_stop('TD - Nuclear attraction')

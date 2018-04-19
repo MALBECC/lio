@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 #include <sys/types.h>
+#include <float.h>
 
 #ifdef _DEBUG
 #define _DBG(x) x
@@ -35,5 +36,10 @@
 #define COMPUTE_ENERGY_ONLY 1
 #define COMPUTE_ENERGY_FORCE 2
 #define COMPUTE_FORCE_ONLY 3
+#endif
 
+#if FULL_DOUBLE
+   #define MIN_PRECISION DBL_MIN
+#else
+   #define MIN_PRECISION FLT_MIN
 #endif

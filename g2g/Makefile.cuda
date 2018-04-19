@@ -78,7 +78,7 @@ ifeq ($(intel),0)
 endif
 
 # Common flags
-NVCCFLAGS += $(INCLUDES) -DUNIX
+NVCCFLAGS += $(INCLUDES) -DUNIX -D_FORCE_INLINES
 CXXFLAGS  += $(INCLUDES) -DUNIX
 
 ifeq ($(profile),1)

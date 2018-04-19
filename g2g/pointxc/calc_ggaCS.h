@@ -1,8 +1,8 @@
 #include <cassert>
-#include <float.h>
 #include <math.h>
 
 #include "pbeCS.h"
+#include "../common.h"
 #include "../fix_compile.h"
 #include "../scalar_vector_types.h"
 
@@ -48,7 +48,7 @@ __host__ __device__ void calc_ggaCS(scalar_type dens,
 
   scalar_type y = cbrt((scalar_type)dens);  // rho^(1/3)
   scalar_type grad2 = grad.x * grad.x + grad.y * grad.y + grad.z * grad.z;
-  if (grad2 == 0) grad2 = (scalar_type)FLT_MIN;
+  if (grad2 == 0) grad2 = (scalar_type)MIN_PRECISION;
   scalar_type dgrad = sqrt(grad2);
 
   scalar_type d0 = hess1.x + hess1.y + hess1.z;

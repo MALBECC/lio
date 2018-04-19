@@ -1,4 +1,4 @@
-#include <float.h>
+#include "../common.h"
 
 #include "pbeOS_main.h"
 #include "../fix_compile.h"
@@ -56,7 +56,7 @@ __host__ __device__ void calc_ggaOS(scalar_type dens_a, scalar_type dens_b,
       } else {
         scalar_type grad2_a =
             pow(grad_a.x, 2) + pow(grad_a.y, 2) + pow(grad_a.z, 2);
-        if (grad2_a == (scalar_type)0.0f) grad2_a = FLT_MIN;
+        if (grad2_a == (scalar_type)0.0f) grad2_a = MIN_PRECISION;
         dgrad_a = sqrt(grad2_a);
         rlap_a = hess1_a.x + hess1_a.y + hess1_a.z;  // Laplacian Up
 
@@ -77,7 +77,7 @@ __host__ __device__ void calc_ggaOS(scalar_type dens_a, scalar_type dens_b,
       } else {
         scalar_type grad2_b =
             pow(grad_b.x, 2) + pow(grad_b.y, 2) + pow(grad_b.z, 2);
-        if (grad2_b == (scalar_type)0.0f) grad2_b = FLT_MIN;
+        if (grad2_b == (scalar_type)0.0f) grad2_b = MIN_PRECISION;
         dgrad_b = sqrt(grad2_b);
         rlap_b = hess1_b.x + hess1_b.y + hess1_b.z;
 
@@ -92,7 +92,7 @@ __host__ __device__ void calc_ggaOS(scalar_type dens_a, scalar_type dens_b,
 
       // Up + Down densities
       scalar_type grad2 = pow(grad.x, 2) + pow(grad.y, 2) + pow(grad.z, 2);
-      if (grad2 == (scalar_type)0.0f) grad2 = FLT_MIN;
+      if (grad2 == (scalar_type)0.0f) grad2 = MIN_PRECISION;
       scalar_type dgrad = sqrt(grad2);
       scalar_type delgrad =
           (pow(grad.x, 2) * hess1.x + pow(grad.y, 2) * hess1.y +

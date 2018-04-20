@@ -1085,7 +1085,7 @@ subroutine SCF(E)
         if (OPEN) then
            call TD(fock_aop, rho_aop, fock_bop, rho_bop)
         else
-           call TD(fock_aop, rho_bop)
+           call TD(fock_aop, rho_aop)
         end if
         call g2g_timer_sum_stop('TD')
       endif

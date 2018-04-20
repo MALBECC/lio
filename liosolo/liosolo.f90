@@ -36,7 +36,7 @@ program liosolo
             case("-c")
                 call get_command_argument(i+1,inpcoords)
             case("-v")
-                verbose = 1
+                verbose = 4
             case default
         endselect
     enddo

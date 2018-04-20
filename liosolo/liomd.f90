@@ -42,7 +42,7 @@ program liomd
             case("-c")
                 call get_command_argument(ii + 1, inpcoords)
             case("-v")
-                verbose = 1
+                verbose = 4
            case default
         endselect
     enddo

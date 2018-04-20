@@ -57,6 +57,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    use fileio        , only: write_td_restart_verlet, write_td_restart_magnus, &
                              read_td_restart_verlet , read_td_restart_magnus,  &
                              write_energies
+   use fileio_data   , only: verbose
    use typedef_operator, only: operator
 
 #ifdef CUBLAS
@@ -221,7 +222,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 !------------------------------------------------------------------------------!
 
    ! Proper TD calculation start.
-   write(*,*) 'Starting TD calculation...'
+   if (verbose .gt. 2) write(*,'(A)') 'Starting TD calculation.'
    ! Create integration grid for XC, assigning points to groups (spheres/cubes)
    ! and significant functions to groups, also calculating point weights.
    if (field) call field_setup_old(pert_time, 1, fx, fy, fz)
@@ -245,6 +246,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 #ifdef CUBLAS
    call td_allocate_cublas(M_in, sizeof_real, sizeof_complex, devPtrX, devPtrY,&
                           devPtrXc, Xmat, Ymat, rho_aux(:,:,1))
+   if (verbose .gt. 3) write(*,'(A)') "  TD - Using CUBLAS"
 #endif
 
 !carlos: now the base changes is inside the operatros
@@ -270,7 +272,8 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
       call g2g_timer_start('TD step')
       call g2g_timer_sum_start("TD - TD Step")
       ! Checks if step is a leapfrog step.
-      call td_check_prop(is_lpfrg, propagator, istep, lpfrg_steps, tdrestart)
+      call td_check_prop(is_lpfrg, propagator, istep, lpfrg_steps, tdrestart, &
+                         verbose)
       call td_get_time(t, tdstep, istep, propagator, is_lpfrg)
 
       call g2g_timer_sum_start("TD - TD Step Energy")
@@ -278,7 +281,9 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
       call td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM(M11), is_lpfrg,  &
                           transport_calc, sol, t/0.024190D0)
       call g2g_timer_sum_pause("TD - TD Step Energy")
-      write(*,*) 'TD - Step: ', istep, " Energy : ", E
+      if (verbose .gt. 1) write(*,'(A,I6,A,F12.6,A,F12.6,A)') "  TD Step: ", &
+                                istep, " - Time: ", t, " fs - Energy : ", E, &
+                                " A.U."
 
       ! Verlet or Magnus Propagation
       ! In Verlet, we obtain the Fock matrix in the molecular orbital (MO)
@@ -795,23 +800,23 @@ subroutine td_get_time(t, tdstep, istep, propagator, is_lpfrg)
    end select
 
    t = t * 0.024190D0
-   write(*,*) 'TD - Time (fs)  =', t
    return
 end subroutine td_get_time
 
-subroutine td_check_prop(is_lpfrg, propagator, istep, lpfrg_steps, tdrestart)
+subroutine td_check_prop(is_lpfrg, propagator, istep, lpfrg_steps, tdrestart,&
+                         verbose)
    implicit none
-   integer, intent(in)  :: propagator, istep, lpfrg_steps
+   integer, intent(in)  :: propagator, istep, lpfrg_steps, verbose
    logical, intent(in)  :: tdrestart
    logical, intent(out) :: is_lpfrg
 
    is_lpfrg = ((propagator.eq.1) .or. (((propagator.eq.2) .and. &
               (istep.lt.lpfrg_steps)) .and. (.not.tdrestart)))
    if ( (is_lpfrg).and.(istep.eq.1) ) then
-      write(*,*) 'TD - Starting Verlet Propagation'
+      if (verbose .gt. 2) write(*,'(A)') '  TD - Starting Verlet Propagation'
    endif
    if ( (.not.(is_lpfrg)).and.(((istep-1).eq.lpfrg_steps)) ) then
-      write(*,*) 'TD - Starting Magnus Propagation'
+      if (verbose .gt. 2) write(*,'(A)') '  TD - Starting Magnus Propagation'
    endif
    return
 end subroutine td_check_prop
@@ -895,7 +900,6 @@ subroutine td_allocate_cublas(M, sizeof_real, sizeof_complex, devPtrX, devPtrY,&
    integer :: stat, icount, jcount
    stat = 0
 
-   write(*,*) 'TD: Using CUBLAS.'
    call CUBLAS_INIT()
 
 

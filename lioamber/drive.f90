@@ -262,7 +262,7 @@
           endif
         enddo
 !c
-        if (.not.used) then
+        if ( (.not.used) .and. (verbose.gt.3) ) then
           write(*,200) iatom
         endif
 !c
@@ -537,7 +537,7 @@
           endif
         enddo
 !c
-        if (.not.used.and.(verbose.gt.0).and. .not.omit_bas) then
+        if (.not.used.and.(verbose.gt.3).and. .not.omit_bas) then
           write(*,200) iatom
         endif
 
@@ -1084,15 +1084,7 @@
 
 
  100  format (A8)
- 200  format ('basis set corresponding to Z ', I3,' was not used')
- 400  format ('not implemented for open shell yet')
- 401  format(4(E14.7E2,2x))
- 500  format (i3,3x,F11.6,2x,F11.6,2x,F11.6)
- 501  format (i3,3x,F11.6,2x,F11.6,2x,F11.6, ' CLASSICAL')
- 600  format (3(i2,2x))
- 650  format ('Electric response calculation F =',F7.4)
- 700  format (F15.7,3x,F9.6)
- 320  format (' Cavity Size (a.u)',F9.3,'     Dielectric Constant',F7.2)
+ 200  format ('  Basis set corresponding to Z = ', I3,' was not used.')
       return
       END SUBROUTINE drive
 

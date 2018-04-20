@@ -55,7 +55,8 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    use dftb_data     , only: dftb_calc, MDFTB, MTB
    use dftb_subs     , only: dftb_td_init, dftb_output
    use fileio        , only: write_td_restart_verlet, write_td_restart_magnus, &
-                             read_td_restart_verlet , read_td_restart_magnus
+                             read_td_restart_verlet , read_td_restart_magnus,  &
+                             write_energies
    use typedef_operator, only: operator
 
 #ifdef CUBLAS
@@ -463,7 +464,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
  999  continue
 
    ! Finalization.
-   call WriteEnergies(E1, E2, En, Ens, 0, Ex, .false., 0)
+   call write_energies(E1, E2, En, Ens, 0.0D0, Ex, .false., 0.0D0, 0, nsol)
 
 #ifdef CUBLAS
    call td_finalise_cublas(devPtrX, devPtrY, devPtrXc)

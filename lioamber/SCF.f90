@@ -67,6 +67,7 @@ subroutine SCF(E)
       use cublasmath , only: cumxp_r
 #  endif
    use initial_guess_subs, only: get_initial_guess
+   use fileio       , only: write_energies, write_energy_convergence
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -532,10 +533,6 @@ subroutine SCF(E)
 !       and condense in a single "keep_iterating" or something like that.
 
       do 999 while ((good.ge.told.or.Egood.ge.Etold).and.niter.le.NMAX)
-
-        if (verbose) call WRITE_CONV_STATUS(GOOD,TOLD,EGOOD,ETOLD)
-!       Escribe los criterios de convergencia y el valor del paso de dinamica
-
         call g2g_timer_start('Total iter')
         call g2g_timer_sum_start('Iteration')
         call g2g_timer_sum_start('Fock integrals')
@@ -862,16 +859,15 @@ subroutine SCF(E)
         DAMP=DAMP0
 
         E=E1+E2+En
-!        E=E+Es
-!
         call g2g_timer_stop('otras cosas')
-
-!       write energy at every step
-        if (verbose) call WRITE_E_STEP(niter, E+Ex)
 
         Egood=abs(E+Ex-Evieja)
         Evieja=E+Ex
-!
+
+        ! Write energy at every step
+        if (verbose) call write_energy_convergence(niter, Evieja, good, told, &
+                                                   egood, etold)
+
         call g2g_timer_stop('Total iter')
         call g2g_timer_sum_pause('Iteration')
 
@@ -996,7 +992,8 @@ subroutine SCF(E)
 
         if (npas.gt.npasw) then
            call ECP_energy( MM, RMM(M1), Eecp, Es )
-           call WriteEnergies(E1,E2,En,Ens,Eecp,Exc,ecpmode,E_restrain)
+           call write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain,&
+                               number_restr, nsol)
            npasw=npas+10
         end if
 

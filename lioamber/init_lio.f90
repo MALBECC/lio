@@ -132,8 +132,9 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
                            max_function_exponent, sphere_radius, M,Fock_Hcore, &
                            Fock_Overlap, P_density, OPEN, timers, MO_coef_at,  &
                            MO_coef_at_b, RMM_save
-    use ECP_mod,    only : Cnorm, ecpmode
+    use ECP_mod   , only : Cnorm, ecpmode
     use field_data, only : chrg_sq
+    use fileio    , only : lio_logo
 
     implicit none
     integer , intent(in) :: charge, nclatom, natomin, Izin(natomin), callfrom
@@ -202,7 +203,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
 
 
     ! Prints LIO logo to output and options chosen for the run.
-    if (style) call LIO_LOGO()
+    if (style) call lio_logo()
     if (style) call NEW_WRITE_NML(charge)
 
     call drive(ng2, ngDyn, ngdDyn)

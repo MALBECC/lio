@@ -123,9 +123,9 @@ void Partition::compute_work_partition() {
     }
     if (minp > total) minp = total;
     if (maxp < total) maxp = total;
-    printf("Particion %d: %lld\n", i, total);
+    if (verbose > 3) printf("Particion %d: %lld\n", i, total);
   }
-  printf("Relacion max / min = %lf\n", maxp / minp);
+  if (verbose > 3) printf("Relacion max / min = %lf\n", maxp / minp);
 }
 
 int getintenv(const char* str, int default_value) {
@@ -470,7 +470,7 @@ void Partition::regenerate(void) {
   // If it is CPU, then this doesn't matter
   GlobalMemoryPool::init(G2G::free_global_memory);
 
-  cout << "Weights: " << tweights << endl;
+  if (timer_single) cout << "  Weights: " << tweights << endl;
 
   for (uint i = 0; i < cubes.size(); i++) {
     cubes[i]->compute_indexes();
@@ -519,5 +519,5 @@ void Partition::regenerate(void) {
       work[G2G::cpu_threads + current_gpu].push_back(i + cubes.size());
       current_gpu = (current_gpu + 1) % G2G::gpu_threads;
     }
-  diagnostic();
+  if (verbose > 3) diagnostic();
 }

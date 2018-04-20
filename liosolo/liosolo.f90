@@ -7,6 +7,7 @@ program liosolo
                              int_basis, omit_bas, writeforces
     use ECP_mod    , only : ecpmode
     use fileio_data, only : verbose
+    use fileio     , only : lio_logo
 
     implicit none
     character(len=20) :: argument, inpfile, inpbasis, inpcoords
@@ -40,9 +41,11 @@ program liosolo
         endselect
     enddo
 
+    ! Prints LIO welcome message.
+    call lio_logo()
+
     ! Reads options and coordinates files.
     call read_options(inpfile, charge)
-
     call read_coords(inpcoords)
 
     ! Initializes LIO. The last argument indicates LIO is being used alone.

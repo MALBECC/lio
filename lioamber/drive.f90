@@ -13,7 +13,7 @@
       nnpp, nnpd, nns, nnp, nnd, atmin, jatc, ncf, lt, at, ct, nnat, nshell,   &
       nuc, ncont, nlb, nshelld, cd, ad, Nucd, ncontd, nld, Nucx, indexii,      &
       ncontx, cx, ax, indexiid, X, XX, RMM, rhoalpha,rhobeta, af,              &
-      date, basis_set, fitting_set, dens, e_, e_2, e3, exists, NORM, fcoord,   &
+      basis_set, fitting_set, dens, e_, e_2, e3, exists, NORM, fcoord,   &
       fmulliken, natom, frestart, M, FAC, Iexch, int_basis, max_func, integ,   &
       frestartin, Md, NCO, nng, npas, Nr, used, STR, omit_bas, Nr2,   &
       wang, wang2, wang3, VCINP, OPEN, OPEN1, whatis, Num, Iz, pi,             &
@@ -110,9 +110,6 @@
       if (restart_freq.gt.0) open(unit=88,file=frestart)
 
 !-------------------------------------------------------
-      date='date'
-      write(*,*) 'JOB STARTED NOW'
-      call system(date)
       do i=1,natom
         done(i)=.false.
         done_fit(i)=.false.

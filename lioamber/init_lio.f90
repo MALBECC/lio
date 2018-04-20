@@ -130,21 +130,21 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
                            remove_zero_weights, min_points_per_cube,           &
                            max_function_exponent, sphere_radius, M,Fock_Hcore, &
                            Fock_Overlap, P_density, OPEN, timers, MO_coef_at,  &
-                           MO_coef_at_b, RMM_save
+                           MO_coef_at_b, RMM_save, date
     use ECP_mod   , only : Cnorm, ecpmode
     use field_data, only : chrg_sq
     use fileio    , only : lio_logo
-    use fileio_data, only: style
+    use fileio_data, only: style, verbose
 
     implicit none
     integer , intent(in) :: charge, nclatom, natomin, Izin(natomin), callfrom
     integer              :: i, ng2, ngdDyn, ngDyn, nqnuc, ierr, ios, MM,      &
                             electrons
-
+    date='date'; call system(date)
     call g2g_set_options(free_global_memory, little_cube_size, sphere_radius, &
                          assign_all_functions, energy_all_iterations,         &
                          remove_zero_weights, min_points_per_cube,            &
-                         max_function_exponent, timers)
+                         max_function_exponent, timers, verbose)
 
     call g2g_timer_start('lio_init')
 
@@ -201,9 +201,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
     allocate(MO_coef_at(ngDyn*NCO))
     if (OPEN) allocate(MO_coef_at_b(ngDyn*(NCO+NUNP)))
 
-
-    ! Prints LIO logo to output and options chosen for the run.
-    call lio_logo()
+    ! Prints chosen options to output.
     if (style) call NEW_WRITE_NML(charge)
 
     call drive(ng2, ngDyn, ngdDyn)

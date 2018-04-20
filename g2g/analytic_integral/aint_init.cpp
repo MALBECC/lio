@@ -50,16 +50,19 @@ extern "C" void aint_parameter_init_(const unsigned int& Md,
   integral_vars.s_funcs_dens = nshelld[0];
   integral_vars.p_funcs_dens = nshelld[1] / 3;
   integral_vars.d_funcs_dens = nshelld[2] / 6;
-  cout << "density basis: s: " << integral_vars.s_funcs_dens
-       << " p: " << integral_vars.p_funcs_dens
-       << " d: " << integral_vars.d_funcs_dens << endl;
-  integral_vars.spd_funcs_dens = integral_vars.s_funcs_dens +
-                                 integral_vars.p_funcs_dens +
-                                 integral_vars.d_funcs_dens;
   // Md =	# of contractions
   integral_vars.m_dens = Md;
-  cout << "density basis: m: " << integral_vars.m_dens << endl;
-  /* DENSITY BASIS SET */
+
+  if (G2G::verbose > 3) {
+     cout << "AINT initialisation." << endl;
+     cout << "  Density basis - s: " << integral_vars.s_funcs_dens
+          << " p: " << integral_vars.p_funcs_dens
+          << " d: " << integral_vars.d_funcs_dens
+          << " - Total (w/contractions): " << integral_vars.m_dens << endl;
+  }
+  integral_vars.spd_funcs_dens = integral_vars.s_funcs_dens +
+                                 integral_vars.p_funcs_dens +
+                                 integral_vars.d_funcs_dens;  /* DENSITY BASIS SET */
   integral_vars.nucleii_dens =
       G2G::FortranMatrix<uint>(Nucd, integral_vars.m_dens, 1, 1);
   integral_vars.contractions_dens =
@@ -162,7 +165,6 @@ extern "C" void aint_new_step_(void) {
 extern "C" void aint_qmmm_init_(const unsigned int& nclatom, double* r_all,
                                 double* pc) {
   integral_vars.clatoms = nclatom;
-  cout << "MM point charges: " << integral_vars.clatoms << endl;
   if (integral_vars.clatoms > 0) {
     integral_vars.clatom_positions_pointer = G2G::FortranMatrix<double>(
         r_all + G2G::fortran_vars.atoms, integral_vars.clatoms, 3,

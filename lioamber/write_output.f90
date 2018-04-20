@@ -13,7 +13,7 @@
 ! Sets variables up and calls dipole calculation.                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine write_dipole(dipxyz, u, uid, header)
-    use garcha_mod, only : style
+    use fileio, only : style
 
     implicit none
     real*8 , intent(in) :: dipxyz(3), u

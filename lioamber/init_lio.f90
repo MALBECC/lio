@@ -24,7 +24,7 @@ subroutine lio_defaults()
                            frestart, predcoef, idip, intsoldouble, dgtrig,     &
                            cubegen_only, cube_res, cube_dens, cube_orb,        &
                            cube_sel, cube_orb_file, cube_dens_file, NUNP,      &
-                           energy_freq, style, allnml, writeforces,            &
+                           energy_freq, writeforces,                           &
                            cube_elec, cube_elec_file, cube_sqrt_orb, MEMO,     &
                            NORM, SHFT, GRAD, BSSE, sol, primera,               &
                            watermod, fukui, little_cube_size, sphere_radius,   &
@@ -104,8 +104,7 @@ subroutine lio_defaults()
     DENS           = .true.        ; cube_dens_file     = 'dens.cube'   ;
     IGRID          = 2             ; cube_elec          = .false.       ;
     IGRID2         = 2             ; cube_elec_file     = 'field.cube'  ;
-    timers         = 0             ; style              = .false.       ;
-    NORM           = .true.        ; allnml             = .true.        ;
+    timers         = 0             ; NORM               = .true.        ;
     NUNP           = 0             ; energy_freq        = 1             ;
     cube_sqrt_orb  = .false.       ; MEMO               = .true.        ;
     SHFT           = .false.       ; GRAD               = .true.        ;
@@ -126,7 +125,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
                            ax, Nucx, ncontx, cd, ad, Nucd, ncontd, indexii,    &
                            indexiid, r, v, rqm, Em, Rm, pc, nnat, af, B, Iz,   &
                            natom, nco, ng0, ngd0, ngrid, nl, norbit, ntatom,   &
-                           allnml, style, free_global_memory, little_cube_size,&
+                           free_global_memory, little_cube_size,&
                            assign_all_functions, energy_all_iterations,        &
                            remove_zero_weights, min_points_per_cube,           &
                            max_function_exponent, sphere_radius, M,Fock_Hcore, &
@@ -134,7 +133,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
                            MO_coef_at_b, RMM_save
     use ECP_mod   , only : Cnorm, ecpmode
     use field_data, only : chrg_sq
-    use fileio    , only : lio_logo
+    use fileio    , only : lio_logo, style
 
     implicit none
     integer , intent(in) :: charge, nclatom, natomin, Izin(natomin), callfrom
@@ -272,7 +271,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge, basis_i              &
                            frestart, predcoef, idip, dgtrig, Iexch, integ,   &
                            cubegen_only, cube_res, cube_dens, cube_orb,      &
                            cube_sel, cube_orb_file, cube_dens_file, NUNP,    &
-                           energy_freq, style, allnml, cube_elec_file,       &
+                           energy_freq, cube_elec_file,       &
                            cube_elec, cube_sqrt_orb, intsoldouble, DENS,     &
                            IGRID, IGRID2
     use td_data   , only : tdrestart, tdstep, ntdstep, timedep, writedens

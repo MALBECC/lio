@@ -16,7 +16,7 @@ subroutine read_options(inputFile, charge)
                            frestartin, frestart, predcoef, idip, intsoldouble, &
                            cubegen_only, cube_res, cube_dens, cube_orb, DENS,  &
                            cube_sel, cube_orb_file, cube_dens_file, cube_elec, &
-                           cube_elec_file, energy_freq, NUNP, style, allnml,   &
+                           cube_elec_file, energy_freq, NUNP,                  &
                            writeforces, cube_sqrt_orb, fukui, little_cube_size,&
                            max_function_exponent, min_points_per_cube,         &
                            assign_all_functions, remove_zero_weights,          &
@@ -44,6 +44,7 @@ subroutine read_options(inputFile, charge)
     use initial_guess_data, only: initial_guess
     use lionml_subs , only: lionml_Reads
     use trans_Data, only: gaussian_convert
+    use fileio, only: style
 
     implicit none
     character(len=20), intent(in)  :: inputFile
@@ -58,7 +59,7 @@ subroutine read_options(inputFile, charge)
                    Iexch, integ, dens, igrid, igrid2, good_cut, hybrid_converg,&
                    initial_guess,                                              &
                    ! File Input/Output.
-                   frestartin, style, allnml, frestart, fukui, dipole, lowdin, &
+                   frestartin, style, frestart, fukui, dipole, lowdin,         &
                    mulliken, writeforces, int_basis, fitting_set, basis_set,   &
                    restart_freq, print_coeffs,                                 &
                    ! DFT and TD-DFT Variables.

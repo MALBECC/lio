@@ -6,7 +6,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        use garcha_mod
        use ECP_mod, only : ecpmode
-       use fileio , only : style
+       use fileio_data, only : style
        implicit none
        if ((idip.eq.1) .or. (dipole) )then
         if (style) write(69,8703)

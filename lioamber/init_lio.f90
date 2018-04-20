@@ -19,7 +19,7 @@ subroutine lio_defaults()
     use garcha_mod, only : basis, output, fmulliken, fcoord, OPEN, NMAX,       &
                            basis_set, fitting_set, int_basis, DIIS, ndiis,     &
                            GOLD, told, Etold, hybrid_converg, good_cut, rmax,  &
-                           rmaxs, omit_bas, propagator, NBCH, verbose, VCINP,  &
+                           rmaxs, omit_bas, propagator, NBCH, VCINP,           &
                            restart_freq, frestartin, Iexch, integ, DENS, IGRID,&
                            frestart, predcoef, idip, intsoldouble, dgtrig,     &
                            cubegen_only, cube_res, cube_dens, cube_orb,        &
@@ -81,7 +81,7 @@ subroutine lio_defaults()
     Dbug = .false.                 ;
 
 !   Write options and Restart options.
-    verbose        = .false.       ; writexyz           = .true.        ;
+    writexyz       = .true.        ;
     print_coeffs   = .false.       ; frestart           ='restart.out'  ;
     VCINP          = .false.       ; frestartin         = 'restart.in'  ;
     restart_freq   = 0             ; writeforces        = .false.       ;
@@ -133,7 +133,8 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
                            MO_coef_at_b, RMM_save
     use ECP_mod   , only : Cnorm, ecpmode
     use field_data, only : chrg_sq
-    use fileio    , only : lio_logo, style
+    use fileio    , only : lio_logo
+    use fileio_data, only: style
 
     implicit none
     integer , intent(in) :: charge, nclatom, natomin, Izin(natomin), callfrom
@@ -202,7 +203,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
 
 
     ! Prints LIO logo to output and options chosen for the run.
-    if (style) call lio_logo()
+    call lio_logo()
     if (style) call NEW_WRITE_NML(charge)
 
     call drive(ng2, ngDyn, ngdDyn)
@@ -266,7 +267,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge, basis_i              &
     use garcha_mod, only : basis, output, fmulliken, fcoord, OPEN, NMAX,     &
                            basis_set, fitting_set, int_basis, DIIS, ndiis,   &
                            GOLD, told, Etold, hybrid_converg, good_cut,      &
-                           rmax, rmaxs, omit_bas, propagator, NBCH, verbose, &
+                           rmax, rmaxs, omit_bas, propagator, NBCH,          &
                            VCINP, restart_freq, writexyz, frestartin,        &
                            frestart, predcoef, idip, dgtrig, Iexch, integ,   &
                            cubegen_only, cube_res, cube_dens, cube_orb,      &
@@ -276,6 +277,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge, basis_i              &
                            IGRID, IGRID2
     use td_data   , only : tdrestart, tdstep, ntdstep, timedep, writedens
     use field_data, only : field, a0, epsilon, Fx, Fy, Fz
+    use fileio_data, only: verbose
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,     &
                            local_nonlocal, ecp_debug, ecp_full_range_int,    &
                            verbose_ECP, Cnorm, FOCK_ECP_read, FOCK_ECP_write,&
@@ -304,7 +306,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge, basis_i              &
     basis          = basis_i        ; output        = output_i       ;
     fcoord         = fcoord_i       ; fmulliken     = fmulliken_i    ;
     frestart       = frestart_i     ; frestartin    = frestartin_i   ;
-    verbose        = verbose_i      ; OPEN          = OPEN_i         ;
+    OPEN           = OPEN_i         ;
     NMAX           = NMAX_i         ; NUNP          = NUNP_i         ;
     VCINP          = VCINP_i        ; GOLD          = GOLD_i         ;
     told           = told_i         ; rmax          = rmax_i         ;
@@ -322,6 +324,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge, basis_i              &
     Fz             = Fz_i           ; NBCH          = NBCH_i         ;
     propagator     = propagator_i   ; writedens     = writedens_i    ;
 
+    if (verbose_i) verbose = 1
     ! Initializes LIO. The last argument indicates LIO is not being used alone.
     call init_lio_common(natomin, Izin, nclatom, charge, 1)
 

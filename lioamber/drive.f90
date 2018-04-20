@@ -15,7 +15,7 @@
       ncontx, cx, ax, indexiid, X, XX, RMM, rhoalpha,rhobeta, af,              &
       date, basis_set, fitting_set, dens, e_, e_2, e3, exists, NORM, fcoord,   &
       fmulliken, natom, frestart, M, FAC, Iexch, int_basis, max_func, integ,   &
-      frestartin, Md, NCO, nng, npas, Nr, used, STR, verbose, omit_bas, Nr2,   &
+      frestartin, Md, NCO, nng, npas, Nr, used, STR, omit_bas, Nr2,   &
       wang, wang2, wang3, VCINP, OPEN, OPEN1, whatis, Num, Iz, pi,             &
       Rm2, rqm, rmax, Nunp, nl, nt, ng, ngd, restart_freq,             &
       writexyz, number_restr, restr_pairs,restr_index,restr_k,restr_w,restr_r0,&
@@ -23,6 +23,7 @@
 
       USE ECP_mod, ONLY : ecpmode, asignacion
       USE fileio , ONLY : read_coef_restart
+      use fileio_data, only: verbose
 
       IMPLICIT NONE
       LOGICAL :: basis_check
@@ -539,7 +540,7 @@
           endif
         enddo
 !c
-        if (.not.used.and.VERBOSE.and. .not.omit_bas) then
+        if (.not.used.and.(verbose.gt.0).and. .not.omit_bas) then
           write(*,200) iatom
         endif
 
@@ -957,7 +958,6 @@
 !c DIMENSION TESTS -----------------------------------------------
 !c
       Ndim=5*M*(M+1)/2+3*Md*(Md+1)/2+M+M*NCO!+M*Ngrid
-      if(verbose) write(*,*) 'en drive', M,Md,NCO
       if (Ndim.gt.ng2) then
         write(*,*) 'DIMENSION PROBLEMS WITH DYNAMICAL VECTOR NG2',Ndim,ng2
         iprob=1

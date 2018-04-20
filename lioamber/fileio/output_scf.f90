@@ -1,5 +1,7 @@
 subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
                           number_restr, nsol)
+   use fileio_data, only: style
+
    implicit none
    double precision, intent(in) :: E1, E2, En, Ens, Eecp, Exc, E_restrain
    integer         , intent(in) :: number_restr, nsol
@@ -63,10 +65,13 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
 end subroutine write_energies
 
 subroutine write_energy_convergence(step, energy, good, told, egood, etold)
+   use fileio_data, only: style, verbose
+
    implicit none
    integer         , intent(in) :: step
    double precision, intent(in) :: energy, good, told, egood, etold
 
+   if (verbose .eq. 0) return
    if (style) then
       write(*, 8500)
       write(*, 8501) step, energy

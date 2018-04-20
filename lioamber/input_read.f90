@@ -11,7 +11,7 @@ subroutine read_options(inputFile, charge)
     use garcha_mod, only : natom, nsol, basis, output, fmulliken, fcoord, OPEN,&
                            NMAX, basis_set, fitting_set, int_basis, DIIS,      &
                            ndiis, GOLD, told, Etold, hybrid_converg, good_cut, &
-                           rmax, rmaxs, omit_bas, propagator, NBCH, verbose,   &
+                           rmax, rmaxs, omit_bas, propagator, NBCH, &
                            VCINP, restart_freq, writexyz, dgtrig, Iexch, integ,&
                            frestartin, frestart, predcoef, idip, intsoldouble, &
                            cubegen_only, cube_res, cube_dens, cube_orb, DENS,  &
@@ -44,7 +44,7 @@ subroutine read_options(inputFile, charge)
     use initial_guess_data, only: initial_guess
     use lionml_subs , only: lionml_Reads
     use trans_Data, only: gaussian_convert
-    use fileio, only: style
+    use fileio_data, only: style, verbose
 
     implicit none
     character(len=20), intent(in)  :: inputFile

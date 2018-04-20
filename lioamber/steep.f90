@@ -16,7 +16,7 @@
 	double precision :: lambda !optimal displacement for minimice energy
 	logical :: require_forces ! control force calculations in NO lineal search case
 	double precision, dimension(natom, 3) :: r_scrach !positions scratch
-	double precision, dimension(3, natom) :: gradient 
+	double precision, dimension(3, natom) :: gradient
 	logical :: stop_cicle, converged !for stop geometry optimization cicle
 
 	gradient=0.d0
@@ -25,7 +25,7 @@
 	if ( .not. lineal_search ) write(*,*) "starting Steepest Descend without linear search"
 
 	open (unit=12, file='traj.xyz') ! trajectory file
-	open (unit=13, file='optimization.out') ! 
+	open (unit=13, file='optimization.out') !
 	write(13,4800)
 
 	n=0
@@ -71,7 +71,7 @@
 	    if (lambda .gt. (dble(n_points)-0.1d0) * step_size) then
 	      step_size=step_size*1.5
 	      require_forces=.false.
-	    else 
+	    else
 	      require_forces=.true.
 	    end if
 	  else
@@ -133,13 +133,14 @@
 
 	subroutine make_E_array(gradient, n_points,Energy, step_size, E, Fmax)
 !generate E(i) moving system r_new=r_old - i*step_size*gradient
-	use garcha_mod, only : r, natom, rqm, verbose
+	use garcha_mod, only : r, natom, rqm
+   use fileio_data, only: verbose
 	implicit none
 	double precision, intent(in) :: gradient(3,natom), step_size, Fmax
         double precision, intent(inout) :: E
 	integer, intent(in) :: n_points
 	double precision, intent(out) :: Energy(n_points)
-	double precision, dimension(natom, 3) :: r_ini 
+	double precision, dimension(natom, 3) :: r_ini
 	double precision :: a
 	double precision :: max_move
 	integer :: i,j,k
@@ -161,7 +162,7 @@
 	  Energy(i)=E
 	end do
 
-	if(verbose) then !ponerle luego un nivel alto de verbose
+	if(verbose .gt. 1) then !ponerle luego un nivel alto de verbose
 	  do i=1, n_points
 	    write(13,5008) Energy(i)
 	  end do
@@ -197,7 +198,7 @@
         do i=2, n_points
            if (Energy(i) .lt. Energy(min_Energy_position)) min_Energy_position=i
         end do
-        
+
         if (min_Energy_position .eq. 1) then
           lambda=0.d0
           return

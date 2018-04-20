@@ -28,7 +28,7 @@ subroutine SCF(E)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use ehrensubs , only: ehrendyn_init
    use garcha_mod, only : M,Md, NCO,natom,Nang, number_restr, hybrid_converg,  &
-                          MEMO, npas, verbose, RMM, X, SHFT, GRAD, npasw,      &
+                          MEMO, npas, RMM, X, SHFT, GRAD, npasw,               &
                           igrid, energy_freq, converge, noconverge, lowdin,    &
                           cubegen_only, VCINP, primera, Nunp, GOLD, igrid2,    &
                           predcoef, nsol, r, pc, DIIS, told, Etold, Enucl,     &
@@ -865,8 +865,7 @@ subroutine SCF(E)
         Evieja=E+Ex
 
         ! Write energy at every step
-        if (verbose) call write_energy_convergence(niter, Evieja, good, told, &
-                                                   egood, etold)
+        call write_energy_convergence(niter, Evieja, good, told, egood, etold)
 
         call g2g_timer_stop('Total iter')
         call g2g_timer_sum_pause('Iteration')

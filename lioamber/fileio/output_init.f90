@@ -1,4 +1,5 @@
 subroutine lio_logo()
+   use fileio_data, only: style
    implicit none
 
    if (style) then

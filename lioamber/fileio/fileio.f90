@@ -1,6 +1,11 @@
+module fileio_data
+   implicit none
+   logical :: style   = .false.
+   integer :: verbose = 0
+end module fileio_data
+
 module fileio
    implicit none
-   logical :: style = .false.
    include 'restart_commons_h.f90'
    include 'restart_coef_h.f90'
    include 'restart_fock_h.f90'

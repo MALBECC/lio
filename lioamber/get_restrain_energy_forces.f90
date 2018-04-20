@@ -5,7 +5,8 @@
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        use garcha_mod,only:natom,r, number_index, number_restr,         &
-       restr_index, restr_pairs, restr_k, restr_r0, restr_w, verbose
+       restr_index, restr_pairs, restr_k, restr_r0, restr_w
+       use fileio_data, only: verbose
        implicit none
        integer :: i,j, k, l !auxiliar
        real*8, dimension(natom,natom) :: distx,disty,distz
@@ -25,7 +26,7 @@
           END DO
         END DO
 
-	IF ( verbose) THEN
+	IF ( verbose.gt.0) THEN
          open(unit=1001,file="lio.restrain.out")
          write(1001,*) "  index        Coord. Value               Force"
         END IF
@@ -48,7 +49,7 @@
 
 	  f_r=-k_force*(W_distance-r_eq)
 
-        IF ( verbose) THEN
+        IF ( verbose.gt.0) THEN
          write(1001,5500) l, W_distance, f_r
         END IF
 
@@ -63,7 +64,7 @@
 
 	      IF (distance .eq. 0) STOP "Distance is 0 for 2 atoms"
 
-	      Fx=f_r*restr_w(k)*distx(ai,aj)/distance 
+	      Fx=f_r*restr_w(k)*distx(ai,aj)/distance
 	      Fy=f_r*restr_w(k)*disty(ai,aj)/distance
 	      Fz=f_r*restr_w(k)*distz(ai,aj)/distance
 
@@ -83,7 +84,7 @@
           END DO
         END DO
 
-        IF ( verbose) THEN
+        IF ( verbose.gt.0) THEN
          close (1001)
         END IF
 
@@ -152,7 +153,7 @@
 	READ(25,*) restr_pairs(1,i), restr_pairs(2,i), restr_index(i), restr_k(i), restr_w(i), restr_r0(i)
 	END DO
 	CLOSE(25)
-	
+
 	!calcula cuantos index hay
 	number_index=0
 	DO j=0, 10

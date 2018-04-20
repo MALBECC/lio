@@ -236,7 +236,9 @@ SRCDIRS += fileio
 OBJECTS += fileio.o
 
 tmplist :=
-tmplist += drive.o liomain.o TD.o
+tmplist += converger_subs.o drive.o extras.o init_lio.o
+tmplist += get_restrain_energy_forces.o lio_finalize.o liomain.o lionml_subs.o
+tmplist += steep.o TD.o write_output.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fileio.mod
 
 ################################################################################

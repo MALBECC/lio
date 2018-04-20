@@ -51,7 +51,7 @@ extern "C" void g2g_init_(void) {
     throw runtime_error(
         "  ERROR: Either a gpu or a cpu thread is needed to run G2G");
   if (verbose > 2) cout << "  Using " << G2G::cpu_threads << " CPU Threads and "
-       << G2G::gpu_threads << " GPU Threads" << endl;
+       << G2G::gpu_threads << " GPU Threads." << endl;
 
 }
 //==========================================================================================

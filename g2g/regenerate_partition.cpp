@@ -123,9 +123,9 @@ void Partition::compute_work_partition() {
     }
     if (minp > total) minp = total;
     if (maxp < total) maxp = total;
-    if (verbose > 3) printf("Particion %d: %lld\n", i, total);
+    if (verbose > 4) printf("  Partition %d: %lld\n", i, total);
   }
-  if (verbose > 3) printf("Relacion max / min = %lf\n", maxp / minp);
+  if (verbose > 4) printf("  MAX/MIN ratio: %lf\n", maxp / minp);
 }
 
 int getintenv(const char* str, int default_value) {
@@ -136,11 +136,10 @@ int getintenv(const char* str, int default_value) {
 }
 
 void diagnostic() {
-  printf("--> Thread OMP: %d\n", omp_get_max_threads());
-  printf("--> Thread CPU: %d\n", G2G::cpu_threads);
-  printf("--> Thread GPU: %d\n", G2G::gpu_threads);
-  printf("--> Correccion de cubos chicos: %d\n", MINCOST);
-  printf("--> Puntos de separacion: %d\n", SPLITPOINTS);
+  printf("  Threads OMP: %d - Threads CPU: %d - Threads GPU: %d\n",
+         omp_get_max_threads(), G2G::cpu_threads, G2G::gpu_threads);
+  printf("  Small cube correction: %d - Separation points: %d\n",
+         MINCOST, SPLITPOINTS);
 }
 
 template <class T>
@@ -519,5 +518,5 @@ void Partition::regenerate(void) {
       work[G2G::cpu_threads + current_gpu].push_back(i + cubes.size());
       current_gpu = (current_gpu + 1) % G2G::gpu_threads;
     }
-  if (verbose > 3) diagnostic();
+  if (verbose > 4) diagnostic();
 }

@@ -58,7 +58,7 @@ void OSIntegral<scalar_type>::load_params(void)
       }
     }
 
-    if (G2G::verbose > 3) cout << "  Using device " << devnum << " for analytic integral calculations" << endl;
+    if (G2G::verbose > 3) cout << "  Using device " << devnum << " for analytic integral calculations." << endl;
     this->my_device = devnum;
     int previous_device; cudaGetDevice(&previous_device);
     if(cudaSetDevice(devnum) != cudaSuccess) std::cout << "Error: can't set the device " << devnum << std::endl;

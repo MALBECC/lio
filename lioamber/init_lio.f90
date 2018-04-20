@@ -130,7 +130,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
                            remove_zero_weights, min_points_per_cube,           &
                            max_function_exponent, sphere_radius, M,Fock_Hcore, &
                            Fock_Overlap, P_density, OPEN, timers, MO_coef_at,  &
-                           MO_coef_at_b, RMM_save, date
+                           MO_coef_at_b, RMM_save
     use ECP_mod   , only : Cnorm, ecpmode
     use field_data, only : chrg_sq
     use fileio    , only : lio_logo
@@ -140,7 +140,6 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
     integer , intent(in) :: charge, nclatom, natomin, Izin(natomin), callfrom
     integer              :: i, ng2, ngdDyn, ngDyn, nqnuc, ierr, ios, MM,      &
                             electrons
-    date='date'; call system(date)
     call g2g_set_options(free_global_memory, little_cube_size, sphere_radius, &
                          assign_all_functions, energy_all_iterations,         &
                          remove_zero_weights, min_points_per_cube,            &

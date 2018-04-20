@@ -281,7 +281,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
       call td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM(M11), is_lpfrg,  &
                           transport_calc, sol, t/0.024190D0)
       call g2g_timer_sum_pause("TD - TD Step Energy")
-      if (verbose .gt. 1) write(*,'(A,I6,A,F12.6,A,F12.6,A)') "  TD Step: ", &
+      if (verbose .gt. 2) write(*,'(A,I6,A,F12.6,A,F12.6,A)') "  TD Step: ", &
                                 istep, " - Time: ", t, " fs - Energy : ", E, &
                                 " A.U."
 

@@ -67,7 +67,9 @@ subroutine SCF(E)
       use cublasmath , only: cumxp_r
 #  endif
    use initial_guess_subs, only: get_initial_guess
-   use fileio       , only: write_energies, write_energy_convergence
+   use fileio       , only: write_energies, write_energy_convergence, &
+                            write_final_convergence
+   use fileio_data  , only: verbose
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -172,6 +174,10 @@ subroutine SCF(E)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    call g2g_timer_start('SCF_full')
 
+   if (verbose > 1) then
+      write(*,*)
+      write(*,'(A)') "Starting SCF cycles."
+   endif
 
 !------------------------------------------------------------------------------!
 !DFTB: initialisation of DFTB variables
@@ -877,17 +883,17 @@ subroutine SCF(E)
 !     Checks of convergence
 !
       if (niter.ge.NMAX) then
-         write(6,*) 'NO CONVERGENCE AT ',NMAX,' ITERATIONS'
-         noconverge=noconverge + 1
-         converge=0
+         call write_final_convergence(.false., NMAX, Evieja)
+         noconverge = noconverge + 1
+         converge   = 0
       else
-         write(6,*) 'CONVERGED AT',niter,'ITERATIONS'
+         call write_final_convergence(.true., niter, Evieja)
          noconverge = 0
-         converge=converge+1
+         converge   = converge + 1
       endif
 
       if (noconverge.gt.4) then
-         write(6,*)  'stop for not convergion 4 times'
+         write(6,'(A)')  'FATAL ERROR - No convergence achieved 4 times.'
          stop
       endif
 !------------------------------------------------------------------------------!

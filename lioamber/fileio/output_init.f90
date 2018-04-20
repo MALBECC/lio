@@ -11,7 +11,7 @@ subroutine lio_logo()
       write(*,1719); write(*,1720); write(*,1722); write(*,1721)
       write(*,*)
    else
-      write(*,*) "WELCOME TO LIO"
+      write(*,'(A)') "WELCOME TO LIO"
    endif
    call system('date')
 

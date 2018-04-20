@@ -1,12 +1,36 @@
+subroutine write_final_convergence(converged, iterations, energy)
+   use fileio_data, only: verbose
+
+   implicit none
+   logical         , intent(in) :: converged
+   integer         , intent(in) :: iterations
+   double precision, intent(in) :: energy
+
+   if (verbose .lt. 1) return;
+   if (converged) then
+      write(*,7000) iterations, energy
+   else
+      write(*,7001) iterations, energy
+   endif
+
+   return;
+
+7000 FORMAT("  Convergence achieved in ", I6, " iterations. Final energy ", &
+            F14.7, " A.U.")
+7001 FORMAT("  No convergence achieved in ", I6, " iterations. Final energy ", &
+            F14.7, " A.U.")
+end subroutine write_final_convergence
+
 subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
                           number_restr, nsol)
-   use fileio_data, only: style
+   use fileio_data, only: style, verbose
 
    implicit none
    double precision, intent(in) :: E1, E2, En, Ens, Eecp, Exc, E_restrain
    integer         , intent(in) :: number_restr, nsol
    logical         , intent(in) :: ecpmode
 
+   if (verbose .lt. 3) return;
    if (style) then
       write(*,*)
       write(*,7000); write(*,7004); write(*,7001)
@@ -34,12 +58,18 @@ subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
       write(*,7003)
       write(*,*)
    else
-      write(*,*) "Final Energy Contributions in A.U."
-      write(*,*) "One electron = ", E1 - Eecp
-      write(*,*) "Coulomb      = ", E2
-      write(*,*) "Nuclear      = ", En
-      if (ecpmode) write(*,*) "Eff. Core. Pot. = ", Eecp
-
+      write(*,*)
+      write(*,'(A)') "Final Energy Contributions in A.U."
+      write(*,'(A,F12.6)') "  Total energy = ", E1 + E2 + En + Ens + Exc
+      write(*,'(A,F12.6)') "  One electron = ", E1 - Eecp
+      write(*,'(A,F12.6)') "  Coulomb      = ", E2
+      write(*,'(A,F12.6)') "  Nuclear      = ", En
+      write(*,'(A,F12.6)') "  Exch. Corr.  = ", Exc
+      if (nsol .gt. 0) write(*,'(A,F12.6)') "  QM-MM energy = ", Ens
+      if (ecpmode)     write(*,'(A,F12.6)') "  ECP energy   = ", Eecp
+      if (number_restr .gt. 0) &
+                       write(*,'(A,F12.6)') "  Restraints   = ", E_restrain
+      write(*,*)
    endif
 
    return
@@ -71,7 +101,7 @@ subroutine write_energy_convergence(step, energy, good, told, egood, etold)
    integer         , intent(in) :: step
    double precision, intent(in) :: energy, good, told, egood, etold
 
-   if (verbose .eq. 0) return
+   if (verbose .lt. 2) return;
    if (style) then
       write(*, 8500)
       write(*, 8501) step, energy
@@ -83,7 +113,7 @@ subroutine write_energy_convergence(step, energy, good, told, egood, etold)
       write(*, 8605) egood, etold
       write(*, 8606)
    else
-      write(*, 8503) step, energy, good, egood, told, etold
+      write(*, 8503) step, energy, good, told, egood, etold
    endif
 
    return;

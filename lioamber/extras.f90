@@ -6,8 +6,12 @@
       ,cutECP,local_nonlocal, ecp_debug,ecp_full_range_int &
       ,verbose_ECP,Cnorm,FOCK_ECP_read, FOCK_ECP_write,Fulltimer_ECP &
       ,cut2_0,cut3_0
+      use fileio_data, only: verbose
 
       integer, intent(in) :: charge
+
+      return;
+      if (verbose .lt. 4) return
 !LIO
 	write(*,8000)
 	write(*,8100)

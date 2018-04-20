@@ -145,6 +145,10 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
                          remove_zero_weights, min_points_per_cube,            &
                          max_function_exponent, timers, verbose)
 
+    if (verbose .gt. 2) then
+      write(*,*)
+      write(*,'(A)') "LIO initialisation."
+    endif
     call g2g_timer_start('lio_init')
 
     chrg_sq = charge**2
@@ -201,7 +205,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
     if (OPEN) allocate(MO_coef_at_b(ngDyn*(NCO+NUNP)))
 
     ! Prints chosen options to output.
-    if (style) call NEW_WRITE_NML(charge)
+    call NEW_WRITE_NML(charge)
 
     call drive(ng2, ngDyn, ngdDyn)
 

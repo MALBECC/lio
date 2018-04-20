@@ -1,7 +1,7 @@
 module fileio_data
    implicit none
    logical :: style   = .false.
-   integer :: verbose = 0
+   integer :: verbose = 3
 end module fileio_data
 
 module fileio

@@ -78,7 +78,7 @@ subroutine write_energy_convergence(step, energy, good, told, egood, etold)
       write(*, 8605) egood, etold
       write(*, 8606)
    else
-      write(*,*) step, energy, good, egood, told, etold
+      write(*, 8503) step, energy, good, egood, told, etold
    endif
 
    return;
@@ -96,7 +96,7 @@ subroutine write_energy_convergence(step, energy, good, told, egood, etold)
 8606 FORMAT(4x,"╚══════════╩════════════╩═════════", &
 "════╝")
 
-8503 FORMAT(2x,"Iteration Step = ",I10,1x,"QM Energy = ",F14.7,1x,    &
-            "Rho Squared differences (criteria) = ",E10.3," (",E10.3, &
-            ") Energy differences (criteria) = ",E10.3," (",E10.3,")")
+8503 FORMAT(2x, "Step = ", I6, 1x, " - QM Energy = ", F10.3, 1x,        &
+            "- Rho squared differences (criteria) = ", E8.2, " (",E8.2, &
+            ") - Energy differences (criteria) = ", E8.2, " (",E8.2,")")
 end subroutine write_energy_convergence

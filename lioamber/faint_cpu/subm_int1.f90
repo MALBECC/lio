@@ -24,27 +24,28 @@
 !      Output: F matrix, and S matrix
 !
 !------------------------------------------------------------------------------!
-       use liotemp   , only: FUNCT
-       use garcha_mod, only: nshell
+       use liotemp      , only: FUNCT
+       use garcha_mod   , only: nshell
        use constants_mod, only: pi, pi32
        implicit none
 
 !      Input quantities (ex-garchamod variables)
-        double precision, allocatable, intent(inout) :: RMM(:)
         double precision, allocatable, intent(inout) :: Smat(:,:)
-        double precision,              intent(inout) :: En
-        integer,                       intent(inout) :: natom
 
-        double precision, allocatable, intent(in) :: d(:,:)
-        double precision, intent(in) :: r(natom,3)
-        double precision, allocatable, intent(in) :: a(:,:)
-        double precision, allocatable, intent(in) :: c(:,:)
-        integer, intent(in) :: Nuc(M)
-        integer, intent(in) :: Iz(natom)
-        integer, allocatable, intent(in) :: ncont(:)
-        integer, intent(in) :: M
-        integer, intent(in) :: Md
-        logical, intent(in) :: NORM
+        double precision, intent(inout)              :: RMM(:)
+        double precision, intent(inout)              :: En
+        integer,          intent(inout)              :: natom
+
+        double precision, intent(in)                 :: d(:,:)
+        double precision, intent(in)                 :: r(natom,3)
+        double precision, intent(in)                 :: a(:,:)
+        double precision, intent(in)                 :: c(:,:)
+        integer,          intent(in)                 :: Nuc(M)
+        integer,          intent(in)                 :: Iz(natom)
+        integer,          intent(in)                 :: ncont(:)
+        integer,          intent(in)                 :: M
+        integer,          intent(in)                 :: Md
+        logical,          intent(in)                 :: NORM
 
 
        integer :: natomold, igpu
@@ -70,26 +71,11 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !
        allocate(s0s(natom),s1s(natom),s2s(natom))
-!       allocate(s3s(natom),s4s(natom),Iaux(natom))
        allocate(s3s(natom))
        allocate(s4s(natom))
 !       allocate(Iaux(natom))
        if (.not.allocated(Smat)) allocate(Smat(M,M))
 
-!-------------------------------------------------------------------------------
-!      Distance between pairs of centers
-!      BSSE
-!-------------------------------------------------------------------------------
-!      Sets to 0 atomic charges, but since they are used to
-!      construct the grids, they are stored in an auxiliary array
-!
-!      if (BSSE) then
-!      do i=1,natom
-!       Iaux(i)=Iz(i)
-!       Iz(i)=Iz(i)*ighost(i)
-!      enddo
-!      endif
-!-------------------------------------------------------------------------------
 
       if (NORM) then
         sq3=sqrt(3.D0)
@@ -132,13 +118,7 @@
          RMM(M5+i-1)=0.D0
          RMM(M11+i-1)=0.D0
        enddo
-!
-!     do 50 i=1,natom
-!       do 50 j=1,natom
-!         d(i,j)=(r(i,1)-r(j,1))**2+(r(i,2)-r(j,2))**2+(r(i,3)-r(j,3))**2
-!       end do
-!     end do
-!
+
 ! Nuclear Repulsion part ------------------------------------------
       En=0.D0
       do i=1,natom
@@ -841,13 +821,6 @@
       end do ! ni
 
 !*******************************************************************************
-!--- Debugging and tests -----------------------------------------------
-!
-!     do 1 k=1,M*(M+1)/2
-!      write(*,*) k,RMM(M5+k-1),RMM(M11+k-1)
-! gradient debuggings
-!
-!*******************************************************************************
 
       E1=0.D0
       do k=1,MM
@@ -855,37 +828,12 @@
       end do
 
 !*******************************************************************************
-!
-!      write(*,*) 'E1+En =',E1+En
-!
-! BSSE ------------
-!      if (BSSE) then
-!        do i=1,natom
-!         Iz(i)=Iaux(i)
-!        enddo
-!      endif
-!
-!-- prueba ----------------
-!      En=En+0.0D0*(d(1,2)-2.89D0)**2
-!--------------------------
-!
-!     write(*,*) 'matriz overlap'
-!     do i=1,MM
-!      write(*,*) i,RMM(M5+i-1)
-!     enddo
-!     do i=1,natom
-!      write(*,*) i,r(i,1),r(i,2),r(i,3)
-!     enddo
-!     pause
-!*******************************************************************************
-
 !     Avoid double-counting diagonal elements.
       do i=1,M
         Smat(i,i)=Smat(i,i)/2
       enddo
 
       deallocate(s0s,s1s,s2s,s3s,s4s)
-!      deallocate(Iaux)
 
       if (igpu.gt.3) natom = natomold
       return;end subroutine

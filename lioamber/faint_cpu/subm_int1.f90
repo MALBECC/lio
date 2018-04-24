@@ -48,9 +48,9 @@
 
 
        integer :: natomold, igpu
-       integer :: n, i, j, k, ii, jj, ni, nj, iin
+       integer :: n, i, j, k, jj, ni, nj, iin
        integer :: l1, l2, l3, l4, l12, l34
-       integer :: MM, MMd, ns, np, nd
+       integer :: MM, MMd, ns, np
        integer :: M1, M2, M3, M5, M7, M9, M11
 
        double precision  :: E1, ovlap
@@ -64,7 +64,6 @@
        double precision  :: d0s, d0p, d1p, d1s, d2s
        double precision  :: t0, t1, t2
 
-       integer, allocatable, dimension(:) :: Iaux
        double precision , allocatable, dimension(:) :: s0s, s1s, s2s, s3s, s4s
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -72,7 +71,6 @@
        allocate(s0s(natom),s1s(natom),s2s(natom))
        allocate(s3s(natom))
        allocate(s4s(natom))
-!       allocate(Iaux(natom))
        if (.not.allocated(Smat)) allocate(Smat(M,M))
 
 
@@ -84,7 +82,6 @@
 
       ns=nshell(0)
       np=nshell(1)
-      nd=nshell(2)
       MM=M*(M+1)/2
       MMd=Md*(Md+1)/2
       M2=2*M
@@ -218,7 +215,6 @@
               ovlap=t1*ss
               tn=t1*sks+alf2*ovlap
               iin=i+l2-1
-!            ii index , taking into account different components of the shell
 !
               k=iin+((M2-j)*(j-1))/2
               RMM(M5+k-1)=RMM(M5+k-1)+ovlap*ccoef
@@ -834,7 +830,6 @@
       enddo
 
       deallocate(s0s,s1s,s2s,s3s,s4s)
-!      deallocate(Iaux)
 
       if (igpu.gt.3) natom = natomold
       return;end subroutine

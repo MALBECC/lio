@@ -23,7 +23,30 @@
 !      Input : basis function information
 !      Output: F matrix, and S matrix
 !
-!------------------------------------------------------------------------------!
+!-------------------------------------------------------------------------------
+!      INPUT AND OUTPUT VARIABLES
+!-------------------------------------------------------------------------------
+!
+!        Smat ............. Overlap matrix
+!        RMM .............. Vector containing many matrices. Only Fock and
+!                           overlap are used here.
+!        En ............... Electron-nucleus interaction.
+!        natom ............ Number of atoms
+!        d ................ Interatomic distances.
+!        r ................ Nuclear positions.
+!        a ................ Basis exponents.
+!        c ................ Basis coefficients.
+!        nshell ........... Number of basis functions per shell.
+!        Nuc(i) ........... Nucleus corresponding to basis function i.
+!        Iz(i) ............ Atomic number Z of nucleus i.
+!        ncount(i) ........ Number of contractions of bais function i.
+!        M ................ Number of basis functions.
+!        Md ............... Number of basis functions + auxiliary basis
+!                           functions.
+!        NORM ............. Deprecated. Boolean indicating normalization.
+!
+!-------------------------------------------------------------------------------
+
        use liotemp      , only: FUNCT
        use constants_mod, only: pi, pi32
        implicit none

@@ -1,7 +1,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       module subm_int1; contains
        subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM,&
-                       & natom, M, Md )
+                       & natom, M, Md, nshell )
 !------------------------------------------------------------------------------!
 !
 !      Integrals subroutine
@@ -25,13 +25,11 @@
 !
 !------------------------------------------------------------------------------!
        use liotemp      , only: FUNCT
-       use garcha_mod   , only: nshell
        use constants_mod, only: pi, pi32
        implicit none
 
 !      Input quantities (ex-garchamod variables)
         double precision, allocatable, intent(inout) :: Smat(:,:)
-
         double precision, intent(inout)              :: RMM(:)
         double precision, intent(inout)              :: En
         integer,          intent(inout)              :: natom
@@ -40,6 +38,7 @@
         double precision, intent(in)                 :: r(natom,3)
         double precision, intent(in)                 :: a(:,:)
         double precision, intent(in)                 :: c(:,:)
+        integer,          intent(in)                 :: nshell(0:4)
         integer,          intent(in)                 :: Nuc(M)
         integer,          intent(in)                 :: Iz(natom)
         integer,          intent(in)                 :: ncont(:)
@@ -828,12 +827,14 @@
       end do
 
 !*******************************************************************************
+
 !     Avoid double-counting diagonal elements.
       do i=1,M
         Smat(i,i)=Smat(i,i)/2
       enddo
 
       deallocate(s0s,s1s,s2s,s3s,s4s)
+!      deallocate(Iaux)
 
       if (igpu.gt.3) natom = natomold
       return;end subroutine

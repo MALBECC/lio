@@ -145,7 +145,7 @@ end subroutine do_dipole
 subroutine do_population_analysis()
    use garcha_mod, only : RMM, Smat, RealRho, M, Enucl, Nuc, Iz, natom, &
                           mulliken, lowdin, sqsm, a, c, d, r, Iz, ncont, NORM,&
-                          M, Md
+                          M, Md, nshell
    use ECP_mod   , only : ecpmode, IzECP
    use faint_cpu, only: int1
 
@@ -162,7 +162,7 @@ subroutine do_population_analysis()
 
    ! Decompresses and fixes S and RealRho matrixes, which are needed for
    ! population analysis.
-   call int1(Enucl,RMM,Smat,Nuc,a,c,d,r,Iz,ncont,NORM,natom,M,Md)
+   call int1(Enucl,RMM,Smat,Nuc,a,c,d,r,Iz,ncont,NORM,natom,M,Md,nshell)
    call spunpack('L',M,RMM(M5),Smat)
    call spunpack('L',M,RMM(M1),RealRho)
    call fixrho(M,RealRho)

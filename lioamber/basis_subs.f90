@@ -139,7 +139,7 @@ subroutine basis_data_norm( Isize, Icont, gcoefs )
 
 !   call g2g_timer_start('RMMcalc1')
    allocate( Smat(isize, isize) )
-   call int1(scratch_energy,RMM,Smat,Nuc,a,c,d,r,Iz,ncont,NORM,natom,M,Md,nshell)
+   call int1(scratch_energy,RMM,Smat,Nuc,a,c,d,r,Iz,ncont,NORM,natom,M,Md,nshell,ntatom)
    do kk = 1, isize
       gcoefs(kk,:) = gcoefs(kk,:) / sqrt( Smat(kk,kk) )
       gauss_coef(:,kk) = gauss_coef(:,kk) / sqrt( Smat(kk,kk) )

@@ -640,7 +640,7 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM11, r, pc, &
    E1 = 0.0D0 ; En = 0.0D0
    call g2g_timer_sum_start('TD - 1-e Fock')
    call g2g_timer_sum_start('TD - Nuclear attraction')
-   call int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md, nshell)
+   call int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md, nshell,ntatom)
 
    call ECP_fock(MM, RMM11)
    call g2g_timer_sum_stop('TD - Nuclear attraction')

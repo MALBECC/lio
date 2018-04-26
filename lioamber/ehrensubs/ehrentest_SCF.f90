@@ -272,7 +272,7 @@ c in intsol)
 c
       call g2g_timer_sum_start('1-e Fock')
       call g2g_timer_sum_start('Nuclear attraction')
-      call int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md, nshell)
+      call int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md, nshell,ntatom)
       call g2g_timer_sum_stop('Nuclear attraction')
       if(nsol.gt.0.or.igpu.ge.4) then
           call g2g_timer_sum_start('QM/MM')
@@ -1354,7 +1354,7 @@ c
        call g2g_timer_sum_start('Mulliken')
 ! MULLIKEN POPULATION ANALYSIS (FFR - Simplified)
 !--------------------------------------------------------------------!
-       call int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md, nshell)
+       call int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md, nshell,ntatom)
        call spunpack('L',M,RMM(M5),Smat)
        call spunpack('L',M,RMM(M1),RealRho)
        call fixrho(M,RealRho)

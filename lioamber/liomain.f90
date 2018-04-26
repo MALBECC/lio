@@ -145,7 +145,7 @@ end subroutine do_dipole
 subroutine do_population_analysis()
    use garcha_mod, only : RMM, Smat, RealRho, M, Enucl, Nuc, Iz, natom, &
                           mulliken, lowdin, sqsm, a, c, d, r, Iz, ncont, NORM,&
-                          M, Md, nshell
+                          M, Md, nshell,ntatom
    use ECP_mod   , only : ecpmode, IzECP
    use faint_cpu, only: int1
 

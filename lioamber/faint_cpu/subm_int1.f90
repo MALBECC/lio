@@ -1,7 +1,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       module subm_int1; contains
        subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM,&
-                       & natom, M, Md, nshell )
+                       & natom, M, Md, nshell,ntatom )
 !------------------------------------------------------------------------------!
 !
 !      Integrals subroutine
@@ -58,9 +58,10 @@
         integer,          intent(inout)              :: natom
 
         double precision, intent(in)                 :: d(:,:)
-        double precision, intent(in)                 :: r(natom,3)
+        double precision, intent(in)                 :: r(ntatom,3)
         double precision, intent(in)                 :: a(:,:)
         double precision, intent(in)                 :: c(:,:)
+        integer,          intent(in)                 :: ntatom
         integer,          intent(in)                 :: nshell(0:4)
         integer,          intent(in)                 :: Nuc(M)
         integer,          intent(in)                 :: Iz(natom)

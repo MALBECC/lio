@@ -5,7 +5,7 @@ subroutine RMMcalc1_Overlap(Ovlap,Energy)
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   use maskrmm     , only: rmmget_fock
-  use garcha_mod  , only: RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md, nshell
+  use garcha_mod  , only: RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md, nshell, ntatom
   use faint_cpu   , only: int1
   implicit none
   real*8,intent(out) :: Ovlap(M,M)

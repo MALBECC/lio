@@ -126,7 +126,7 @@ subroutine basis_data_norm( Isize, Icont, gcoefs )
    use maskrmm,     only: rmmget_fock
    use faint_cpu,   only: int1
    use basis_data,  only: gauss_coef
-   use garcha_mod,  only: RMM,Nuc,a,c,d,r,Iz,NORM,natom,M,Md,ncont,nshell
+   use garcha_mod,  only: RMM,Nuc,a,c,d,r,Iz,NORM,natom,M,Md,ncont,nshell,ntatom
 
    implicit none
    integer, intent(in)              :: Isize

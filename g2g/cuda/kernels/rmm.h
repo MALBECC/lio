@@ -88,25 +88,19 @@ __global__ void gpu_update_rmm(const scalar_type* __restrict__ factors,
          * multiply by 0 or 1 if needed.
          * We also do it on the array subindeces to avoid segfaulting.
          */
-        if (validFi) {
-           scalar_type fi_times_factor =
-               function_values[function_values_fi_index] *
-               factor_local[factor_local_fi_index];
+        scalar_type fi_times_factor = 
+          function_values[validFi*function_values_fi_index] *
+          factor_local[validFi*factor_local_fi_index];
 
-           functions_i_local[threadIdx.x][threadIdx.y] = fi_times_factor;
-        }
+        functions_i_local[threadIdx.x][threadIdx.y] = validFi*fi_times_factor;
 
-        if (validFj) {
         functions_j_local[threadIdx.x][threadIdx.y] =
-            function_values[function_values_fj_index];
-        }
+            validFj*function_values[validFj*function_values_fj_index];
 
         __syncthreads();
-        if (validFj && validFi) {
         for (int point_sub = 0; point_sub < RMM_BLOCK_SIZE_XY; point_sub++) {
           rmm_local += functions_i_local[point_sub][threadIdx.x] *
                        functions_j_local[point_sub][threadIdx.y];
-        }
         }
       }
     }

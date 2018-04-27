@@ -1,5 +1,5 @@
 
-	SUBROUTINE NEW_WRITE_NML(charge)
+	SUBROUTINE NEW_WRITE_NML()
 
       use garcha_mod
       use ECP_mod, only : ecpmode, ecptypes, tipeECP, ZlistECP &

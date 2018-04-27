@@ -23,17 +23,37 @@ module lionml_subs
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine lionml_Reads( file_unit, extern_stat )
 
-   use lionml_data, only: lionml
+   use lionml_data, only: lionml, lio
    use fileio_data, only: verbose
    implicit none
    integer, intent(in)            :: file_unit
    integer, intent(out), optional :: extern_stat
    integer                        :: intern_stat
 
+   ! Old lio namelist.
    intern_stat = 0
    rewind( unit = file_unit, iostat = intern_stat )
    if ( intern_stat /= 0 ) then
-      write(*,'(A)') "Cannot rewind lionml file. Using lionml defaults."
+      write(*,'(A)') "Cannot rewind LIO input file. Using defaults for namelist lio."
+      if (verbose .gt. 3) write(*,'(A,I4)') "iostat = ", intern_stat
+      if ( present(extern_stat) ) extern_stat = 1
+      return
+   end if
+
+   intern_stat = 0
+   read( unit = file_unit, nml = lio, iostat = intern_stat )
+   if ( intern_stat /= 0 ) then
+      write(*,'(A)') "Cannot find lio namelist. Using defaults for namelist lio."
+      if (verbose .gt. 3) write(*,'(A,I4)') "iostat = ", intern_stat
+      if ( present(extern_stat) ) extern_stat = 2
+      return
+   end if
+
+   ! New lionml namelist.
+   intern_stat = 0
+   rewind( unit = file_unit, iostat = intern_stat )
+   if ( intern_stat /= 0 ) then
+      write(*,'(A)') "Cannot rewind LIO input file. Using defaults for namelist lionml."
       if (verbose .gt. 3) write(*,'(A,I4)') "iostat = ", intern_stat
       if ( present(extern_stat) ) extern_stat = 1
       return
@@ -42,7 +62,7 @@ subroutine lionml_Reads( file_unit, extern_stat )
    intern_stat = 0
    read( unit = file_unit, nml = lionml, iostat = intern_stat )
    if ( intern_stat /= 0 ) then
-      write(*,'(A)') "Cannot find lionml namelist. Using lionml defaults."
+      write(*,'(A)') "Cannot find lionml namelist. Using defaults for namelist lionml."
       if (verbose .gt. 3) write(*,'(A,I4)') "iostat = ", intern_stat
       if ( present(extern_stat) ) extern_stat = 2
       return

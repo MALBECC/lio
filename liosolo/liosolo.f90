@@ -11,7 +11,7 @@ program liosolo
 
     implicit none
     character(len=20) :: argument, inpfile, inpbasis, inpcoords
-    integer           :: charge, ifind, ierr, i, k, narg, ios
+    integer           :: ifind, ierr, i, k, narg, ios
     real*8            :: dipxyz(3), escf
 
     ! Calls default values for variables.
@@ -45,11 +45,12 @@ program liosolo
     call lio_logo()
 
     ! Reads options and coordinates files.
-    call read_options(inpfile, charge)
+    call read_options(inpfile)
+
     call read_coords(inpcoords)
 
     ! Initializes LIO. The last argument indicates LIO is being used alone.
-    call init_lio_common(natom, Iz, nsol, charge, 0)
+    call init_lio_common(natom, Iz, nsol, 0)
 
     ! Calls main procedures.
     call liomain(escf, dipxyz)

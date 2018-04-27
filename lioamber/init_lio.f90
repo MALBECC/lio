@@ -24,7 +24,7 @@ subroutine lio_defaults()
                            frestart, predcoef, idip, intsoldouble, dgtrig,     &
                            cubegen_only, cube_res, cube_dens, cube_orb,        &
                            cube_sel, cube_orb_file, cube_dens_file, NUNP,      &
-                           energy_freq, writeforces,                           &
+                           energy_freq, writeforces, charge,                   &
                            cube_elec, cube_elec_file, cube_sqrt_orb, MEMO,     &
                            NORM, SHFT, GRAD, BSSE, sol, primera,               &
                            watermod, fukui, little_cube_size, sphere_radius,   &
@@ -54,6 +54,7 @@ subroutine lio_defaults()
     DIIS           = .true.        ; rmax               = 16            ;
     ndiis          = 30            ; rmaxs              = 5             ;
     GOLD           = 10.           ; omit_bas           = .false.       ;
+    charge         = 0             ;
     fitting_set    = "DZVP Coulomb Fitting" ;
 
 !   Effective Core Potential options.
@@ -119,7 +120,7 @@ end subroutine lio_defaults
 !%% INIT_LIO_COMMON %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs LIO variable initialization.                                        !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
+subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
 
     use garcha_mod, only : idip, nunp, RMM, d, c, a, Nuc, ncont, cx,           &
                            ax, Nucx, ncontx, cd, ad, Nucd, ncontd, indexii,    &
@@ -130,14 +131,14 @@ subroutine init_lio_common(natomin, Izin, nclatom, charge, callfrom)
                            remove_zero_weights, min_points_per_cube,           &
                            max_function_exponent, sphere_radius, M,Fock_Hcore, &
                            Fock_Overlap, P_density, OPEN, timers, MO_coef_at,  &
-                           MO_coef_at_b, RMM_save
-    use ECP_mod   , only : Cnorm, ecpmode
+                           MO_coef_at_b, RMM_save, charge
+    use ECP_mod,    only : Cnorm, ecpmode
     use field_data, only : chrg_sq
     use fileio    , only : lio_logo
     use fileio_data, only: style, verbose
 
     implicit none
-    integer , intent(in) :: charge, nclatom, natomin, Izin(natomin), callfrom
+    integer , intent(in) :: nclatom, natomin, Izin(natomin), callfrom
     integer              :: i, ng2, ngdDyn, ngDyn, nqnuc, ierr, ios, MM,      &
                             electrons
     call g2g_set_options(free_global_memory, little_cube_size, sphere_radius, &
@@ -227,6 +228,7 @@ end subroutine init_lio_common
 ! options are read from a file named "lio.in" in the current workspace.        !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine init_lio_gromacs(natomin, Izin, nclatom, chargein)
+    use garcha_mod, only: charge
 
     implicit none
     integer,  intent(in) :: chargein, nclatom, natomin, Izin(natomin)
@@ -235,13 +237,14 @@ subroutine init_lio_gromacs(natomin, Izin, nclatom, chargein)
 
     ! Gives default values to runtime variables.
     call lio_defaults()
+    charge = chargein
 
     ! Checks if input file exists and writes data to namelist variables.
     inputFile = 'lio.in'
-    call read_options(inputFile, dummy)
+    call read_options(inputFile)
 
     ! Initializes LIO. The last argument indicates LIO is not being used alone.
-    call init_lio_common(natomin, Izin, nclatom, chargein, 1)
+    call init_lio_common(natomin, Izin, nclatom, 1)
 
     return
 end subroutine init_lio_gromacs
@@ -255,7 +258,7 @@ end subroutine init_lio_gromacs
 ! AMBER directly passes options to LIO, but since the interface has not been   !
 ! officialy updated on the AMBER side, only some variables are received.       !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine init_lio_amber(natomin, Izin, nclatom, charge, basis_i              &
+subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
            , output_i, fcoord_i, fmulliken_i, frestart_i, frestartin_i         &
            , verbose_i, OPEN_i, NMAX_i, NUNP_i, VCINP_i, GOLD_i, told_i        &
            , rmax_i, rmaxs_i, predcoef_i, idip_i, writexyz_i                   &
@@ -275,7 +278,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge, basis_i              &
                            cube_sel, cube_orb_file, cube_dens_file, NUNP,    &
                            energy_freq, cube_elec_file,       &
                            cube_elec, cube_sqrt_orb, intsoldouble, DENS,     &
-                           IGRID, IGRID2
+                           IGRID, IGRID2, charge
     use td_data   , only : tdrestart, tdstep, ntdstep, timedep, writedens
     use field_data, only : field, a0, epsilon, Fx, Fy, Fz
     use fileio_data, only: verbose
@@ -285,7 +288,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge, basis_i              &
                            Fulltimer_ECP, cut2_0, cut3_0
 
     implicit none
-    integer , intent(in) :: charge, nclatom, natomin, Izin(natomin)
+    integer , intent(in) :: charge_i, nclatom, natomin, Izin(natomin)
     character(len=20) :: basis_i, output_i, fcoord_i, fmulliken_i, frestart_i, &
                          frestartin_i, inputFile
     logical           :: verbose_i, OPEN_i, VCINP_i, predcoef_i, writexyz_i,   &
@@ -302,7 +305,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge, basis_i              &
 
     ! Checks if input file exists and writes data to namelist variables.
     inputFile = 'lio.in'
-    call read_options(inputFile, dummy)
+    call read_options(inputFile)
 
     basis          = basis_i        ; output        = output_i       ;
     fcoord         = fcoord_i       ; fmulliken     = fmulliken_i    ;
@@ -324,10 +327,11 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge, basis_i              &
     Fx             = Fx_i           ; Fy            = Fy_i           ;
     Fz             = Fz_i           ; NBCH          = NBCH_i         ;
     propagator     = propagator_i   ; writedens     = writedens_i    ;
+    charge         = charge_i       ;
 
     if (verbose_i) verbose = 1
     ! Initializes LIO. The last argument indicates LIO is not being used alone.
-    call init_lio_common(natomin, Izin, nclatom, charge, 1)
+    call init_lio_common(natomin, Izin, nclatom, 1)
 
     return
 end subroutine init_lio_amber
@@ -340,7 +344,7 @@ end subroutine init_lio_amber
 !%% INIT_LIOAMBER_EHREN %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs LIO variable initialization.                                        !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge, basis_i         &
+subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge_i, basis_i       &
            , output_i, fcoord_i, fmulliken_i, frestart_i, frestartin_i         &
            , verbose_i, OPEN_i, NMAX_i, NUNP_i, VCINP_i, GOLD_i, told_i        &
            , rmax_i, rmaxs_i, predcoef_i, idip_i, writexyz_i                   &
@@ -351,7 +355,7 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge, basis_i         &
            )
 
    use garcha_mod, only: M, first_step, doing_ehrenfest                        &
-                      &, nshell, nuc, ncont, a, c
+                      &, nshell, nuc, ncont, a, c, charge
    use td_data, only: timedep, tdstep
 
    use basis_subs, only: basis_data_set, basis_data_norm
@@ -362,7 +366,7 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge, basis_i         &
 
 
    implicit none
-   integer, intent(in) :: charge, nclatom, natomin, Izin(natomin)
+   integer, intent(in) :: charge_i, nclatom, natomin, Izin(natomin)
 
    character(len=20) :: basis_i, output_i, fcoord_i, fmulliken_i, frestart_i   &
                      &, frestartin_i, inputFile
@@ -378,7 +382,7 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge, basis_i         &
            &, epsilon_i, Fx_i, Fy_i, Fz_i, dt_i
 
 
-   call init_lio_amber(natomin, Izin, nclatom, charge, basis_i                 &
+   call init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i               &
            , output_i, fcoord_i, fmulliken_i, frestart_i, frestartin_i         &
            , verbose_i, OPEN_i, NMAX_i, NUNP_i, VCINP_i, GOLD_i, told_i        &
            , rmax_i, rmaxs_i, predcoef_i, idip_i, writexyz_i                   &
@@ -412,25 +416,27 @@ end subroutine init_lioamber_ehren
 ! Subroutine init_lio_hybrid performs Lio initialization when called from      !
 ! Hybrid software package, in order to conduct a hybrid QM/MM calculation.     !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine init_lio_hybrid(hyb_natom, mm_natom, charge, iza)
+subroutine init_lio_hybrid(hyb_natom, mm_natom, chargein, iza)
+    use garcha_mod, only: charge
 
     implicit none
     integer, intent(in) :: hyb_natom !number of total atoms
     integer, intent(in) :: mm_natom  !number of MM atoms
     integer             :: dummy
     character(len=20)   :: inputFile
-    integer, intent(in) :: charge   !total charge of QM system
+    integer, intent(in) :: chargein   !total charge of QM system
     integer, dimension(hyb_natom), intent(in) :: iza  !array of charges of all QM/MM atoms
 
     ! Gives default values to runtime variables.
     call lio_defaults()
+    charge = chargein
 
     ! Checks if input file exists and writes data to namelist variables.
     inputFile = 'lio.in'
-    call read_options(inputFile, dummy)
+    call read_options(inputFile)
 
     ! Initializes LIO. The last argument indicates LIO is not being used alone.
-    call init_lio_common(hyb_natom, Iza, mm_natom, charge, 1)
+    call init_lio_common(hyb_natom, Iza, mm_natom, 1)
 
     return
 end subroutine init_lio_hybrid

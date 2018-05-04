@@ -1,7 +1,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       module subm_int1; contains
        subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM,&
-                       & natom, M, Md )
+                       & natom, M, Md, nshell,ntatom )
 !------------------------------------------------------------------------------!
 !
 !      Integrals subroutine
@@ -23,34 +23,58 @@
 !      Input : basis function information
 !      Output: F matrix, and S matrix
 !
-!------------------------------------------------------------------------------!
-       use liotemp   , only: FUNCT
-       use garcha_mod, only: nshell
+!-------------------------------------------------------------------------------
+!      INPUT AND OUTPUT VARIABLES
+!-------------------------------------------------------------------------------
+!
+!        Smat ............. Overlap matrix
+!        RMM .............. Vector containing many matrices. Only Fock and
+!                           overlap are used here.
+!        En ............... Electron-nucleus interaction.
+!        natom ............ Number of atoms
+!        d ................ Interatomic distances.
+!        r ................ Nuclear positions.
+!        a ................ Basis exponents.
+!        c ................ Basis coefficients.
+!        nshell ........... Number of basis functions per shell.
+!        Nuc(i) ........... Nucleus corresponding to basis function i.
+!        Iz(i) ............ Atomic number Z of nucleus i.
+!        ncount(i) ........ Number of contractions of bais function i.
+!        M ................ Number of basis functions.
+!        Md ............... Number of basis functions + auxiliary basis
+!                           functions.
+!        NORM ............. Deprecated. Boolean indicating normalization.
+!
+!-------------------------------------------------------------------------------
+
+       use liotemp      , only: FUNCT
        use constants_mod, only: pi, pi32
        implicit none
 
 !      Input quantities (ex-garchamod variables)
-        double precision, allocatable, intent(inout) :: RMM(:)
         double precision, allocatable, intent(inout) :: Smat(:,:)
-        double precision,              intent(inout) :: En
-        integer,                       intent(inout) :: natom
+        double precision, intent(inout)              :: RMM(:)
+        double precision, intent(inout)              :: En
+        integer,          intent(inout)              :: natom
 
-        double precision, allocatable, intent(in) :: d(:,:)
-        double precision, intent(in) :: r(natom,3)
-        double precision, allocatable, intent(in) :: a(:,:)
-        double precision, allocatable, intent(in) :: c(:,:)
-        integer, intent(in) :: Nuc(M)
-        integer, intent(in) :: Iz(natom)
-        integer, allocatable, intent(in) :: ncont(:)
-        integer, intent(in) :: M
-        integer, intent(in) :: Md
-        logical, intent(in) :: NORM
+        double precision, intent(in)                 :: d(:,:)
+        double precision, intent(in)                 :: r(ntatom,3)
+        double precision, intent(in)                 :: a(:,:)
+        double precision, intent(in)                 :: c(:,:)
+        integer,          intent(in)                 :: ntatom
+        integer,          intent(in)                 :: nshell(0:4)
+        integer,          intent(in)                 :: Nuc(M)
+        integer,          intent(in)                 :: Iz(natom)
+        integer,          intent(in)                 :: ncont(:)
+        integer,          intent(in)                 :: M
+        integer,          intent(in)                 :: Md
+        logical,          intent(in)                 :: NORM
 
 
        integer :: natomold, igpu
-       integer :: n, i, j, k, ii, jj, ni, nj, iin
+       integer :: n, i, j, k, jj, ni, nj, iin
        integer :: l1, l2, l3, l4, l12, l34
-       integer :: MM, MMd, ns, np, nd
+       integer :: MM, MMd, ns, np
        integer :: M1, M2, M3, M5, M7, M9, M11
 
        double precision  :: E1, ovlap
@@ -64,32 +88,15 @@
        double precision  :: d0s, d0p, d1p, d1s, d2s
        double precision  :: t0, t1, t2
 
-       integer, allocatable, dimension(:) :: Iaux
        double precision , allocatable, dimension(:) :: s0s, s1s, s2s, s3s, s4s
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !
        allocate(s0s(natom),s1s(natom),s2s(natom))
-!       allocate(s3s(natom),s4s(natom),Iaux(natom))
        allocate(s3s(natom))
        allocate(s4s(natom))
-!       allocate(Iaux(natom))
        if (.not.allocated(Smat)) allocate(Smat(M,M))
 
-!-------------------------------------------------------------------------------
-!      Distance between pairs of centers
-!      BSSE
-!-------------------------------------------------------------------------------
-!      Sets to 0 atomic charges, but since they are used to
-!      construct the grids, they are stored in an auxiliary array
-!
-!      if (BSSE) then
-!      do i=1,natom
-!       Iaux(i)=Iz(i)
-!       Iz(i)=Iz(i)*ighost(i)
-!      enddo
-!      endif
-!-------------------------------------------------------------------------------
 
       if (NORM) then
         sq3=sqrt(3.D0)
@@ -99,7 +106,6 @@
 
       ns=nshell(0)
       np=nshell(1)
-      nd=nshell(2)
       MM=M*(M+1)/2
       MMd=Md*(Md+1)/2
       M2=2*M
@@ -132,13 +138,7 @@
          RMM(M5+i-1)=0.D0
          RMM(M11+i-1)=0.D0
        enddo
-!
-!     do 50 i=1,natom
-!       do 50 j=1,natom
-!         d(i,j)=(r(i,1)-r(j,1))**2+(r(i,2)-r(j,2))**2+(r(i,3)-r(j,3))**2
-!       end do
-!     end do
-!
+
 ! Nuclear Repulsion part ------------------------------------------
       En=0.D0
       do i=1,natom
@@ -239,7 +239,6 @@
               ovlap=t1*ss
               tn=t1*sks+alf2*ovlap
               iin=i+l2-1
-!            ii index , taking into account different components of the shell
 !
               k=iin+((M2-j)*(j-1))/2
               RMM(M5+k-1)=RMM(M5+k-1)+ovlap*ccoef
@@ -841,42 +840,12 @@
       end do ! ni
 
 !*******************************************************************************
-!--- Debugging and tests -----------------------------------------------
-!
-!     do 1 k=1,M*(M+1)/2
-!      write(*,*) k,RMM(M5+k-1),RMM(M11+k-1)
-! gradient debuggings
-!
-!*******************************************************************************
 
       E1=0.D0
       do k=1,MM
         E1=E1+RMM(k)*RMM(M11+k-1)
       end do
 
-!*******************************************************************************
-!
-!      write(*,*) 'E1+En =',E1+En
-!
-! BSSE ------------
-!      if (BSSE) then
-!        do i=1,natom
-!         Iz(i)=Iaux(i)
-!        enddo
-!      endif
-!
-!-- prueba ----------------
-!      En=En+0.0D0*(d(1,2)-2.89D0)**2
-!--------------------------
-!
-!     write(*,*) 'matriz overlap'
-!     do i=1,MM
-!      write(*,*) i,RMM(M5+i-1)
-!     enddo
-!     do i=1,natom
-!      write(*,*) i,r(i,1),r(i,2),r(i,3)
-!     enddo
-!     pause
 !*******************************************************************************
 
 !     Avoid double-counting diagonal elements.
@@ -885,7 +854,6 @@
       enddo
 
       deallocate(s0s,s1s,s2s,s3s,s4s)
-!      deallocate(Iaux)
 
       if (igpu.gt.3) natom = natomold
       return;end subroutine

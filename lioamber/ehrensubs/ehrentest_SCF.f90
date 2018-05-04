@@ -12,7 +12,8 @@ c Dario Estrin, 1992
       use garcha_mod
       use mathsubs
       use general_module
-      use faint_cpu77, only: int1, int2, intsol, int3mem, int3lu
+      use faint_cpu77, only: int2, intsol, int3mem, int3lu
+      use faint_cpu, only: int1
 #ifdef CUBLAS
       use cublasmath
 #endif
@@ -22,9 +23,9 @@ c
       integer:: l
        dimension q(natom),work(1000),IWORK(1000)
        REAL*8 , intent(inout)  :: dipxyz(3)
-       real*8, dimension (:,:), ALLOCATABLE::xnano,znano,scratch
-       real*8, dimension (:,:), ALLOCATABLE::scratch1
-       real*8, dimension (:), ALLOCATABLE :: rmm5,rmm15,rmm13,
+       real*8, dimension (:,:), allocatable::xnano,znano,scratch
+       real*8, dimension (:,:), allocatable::scratch1
+       real*8, dimension (:), allocatable :: rmm5,rmm15,rmm13,
      >   bcoef, suma
       real*8, dimension (:,:), allocatable :: fock,fockm,rho,!,FP_PF,
      >   FP_PFm,EMAT,Y,Ytrans,Xtrans,rho1,EMAT2,Xcpy
@@ -264,14 +265,14 @@ c            RMM(i)=(3*old1(i))-(3*old2(i))+(old3(i))
 c          enddo
 c         endif
        endif
-        
+
 c
 c Calculate 1e part of F here (kinetic/nuc in int1, MM point charges
 c in intsol)
 c
       call g2g_timer_sum_start('1-e Fock')
       call g2g_timer_sum_start('Nuclear attraction')
-      call int1(En)
+      call int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md, nshell,ntatom)
       call g2g_timer_sum_stop('Nuclear attraction')
       if(nsol.gt.0.or.igpu.ge.4) then
           call g2g_timer_sum_start('QM/MM')
@@ -540,7 +541,7 @@ c
         call g2g_timer_sum_stop('TD')
         return
       endif
-c 
+c
 c Precalculate two-index (density basis) "G" matrix used in density fitting
 c here (S_ij in Dunlap, et al JCP 71(8) 1979) into RMM(M7)
 c Also, pre-calculate G^-1 if G is not ill-conditioned into RMM(M9)
@@ -567,7 +568,7 @@ c
 c Large elements of t_i put into double-precision cool here
 c Size criteria based on size of pre-factor in Gaussian Product Theorem
 c (applied to MO basis indices)
-         call int3mem() 
+         call int3mem()
 c Small elements of t_i put into single-precision cools here
          call g2g_timer_stop('int3mem')
          call g2g_timer_sum_stop('Coulomb precalc')
@@ -771,7 +772,7 @@ c-------------------------------------------------------------------------------
 c If we are not doing diis this iteration, apply damping to F, save this
 c F in RMM(M3) for next iteration's damping and put F' = X^T * F * X in RMM(M5)
 c-----------------------------------------------------------------------------------------
-        if(.not.hagodiis) then 
+        if(.not.hagodiis) then
           call g2g_timer_start('Fock damping')
           if(niter.ge.2) then
             do k=1,MM
@@ -858,7 +859,7 @@ c
             call cumfx(fock,DevPtrX,fock,M)
 #else
             fock=basechange_gemm(M,fock,x)
-#endif     
+#endif
           do j=1,M
              do k=1,j
                 RMM(M5+j+(M2-k)*(k-1)/2-1)=fock(j,k)
@@ -1275,7 +1276,7 @@ c       write(*,*) 'g2g-Exc',Exc
 #endif
         call g2g_timer_sum_stop('Exchange-correlation energy')
         ! -------------------------------------------------
-        ! Total SCF energy = 
+        ! Total SCF energy =
         ! E1 - kinetic+nuclear attraction+QM/MM interaction
         ! E2 - Coulomb
         ! En - nuclear-nuclear repulsion
@@ -1353,7 +1354,7 @@ c
        call g2g_timer_sum_start('Mulliken')
 ! MULLIKEN POPULATION ANALYSIS (FFR - Simplified)
 !--------------------------------------------------------------------!
-       call int1(En)
+       call int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md, nshell,ntatom)
        call spunpack('L',M,RMM(M5),Smat)
        call spunpack('L',M,RMM(M1),RealRho)
        call fixrho(M,RealRho)

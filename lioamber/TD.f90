@@ -226,7 +226,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    if (field) call field_setup_old(pert_time, 1, fx, fy, fz)
    call td_integration_setup(igrid2, igpu)
    call td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM(M11), r, pc, &
-                       ntatom,natom,Smat,Nuc,a,c,d,Iz,ncont,NORM,M,Md)
+                       ntatom,natom,Smat,Nuc,a,c,d,Iz,ncont,NORM,M,Md,nshell)
    ! Initialises transport if required.
    if (transport_calc) call transport_init(M, dim3, natom, Nuc, RMM(M5),       &
                                            overlap, rho,OPEN)
@@ -618,7 +618,7 @@ end subroutine td_integration_setup
 
 subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM11, r, pc, &
                           ntatom, natom, Smat, Nuc, a, c, d, Iz, ncont, NORM,  &
-                          M, Md)
+                          M, Md, nshell)
     use faint_cpu77, only: intsol
     use faint_cpu  , only: int1
     use mask_ecp   , only: ECP_fock
@@ -626,7 +626,7 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM11, r, pc, &
 
     double precision, intent(in) :: pc(ntatom), r(ntatom,3)
     integer         , intent(in) :: M, Md, MM, igpu, nsol, ntatom, &
-                                    Nuc(M), Iz(natom)
+                                    Nuc(M), Iz(natom),nshell(0:4)
     logical         , intent(in) :: NORM
     integer         , intent(inout) :: natom
     double precision, intent(inout) :: RMM11(MM), E1, En, E1s, Ens
@@ -640,7 +640,7 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM11, r, pc, &
    E1 = 0.0D0 ; En = 0.0D0
    call g2g_timer_sum_start('TD - 1-e Fock')
    call g2g_timer_sum_start('TD - Nuclear attraction')
-   call int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md)
+   call int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md, nshell,ntatom)
 
    call ECP_fock(MM, RMM11)
    call g2g_timer_sum_stop('TD - Nuclear attraction')

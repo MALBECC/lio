@@ -11,12 +11,12 @@ subroutine read_options(inputFile, charge)
     use garcha_mod, only : natom, nsol, basis, output, fmulliken, fcoord, OPEN,&
                            NMAX, basis_set, fitting_set, int_basis, DIIS,      &
                            ndiis, GOLD, told, Etold, hybrid_converg, good_cut, &
-                           rmax, rmaxs, omit_bas, propagator, NBCH, verbose,   &
+                           rmax, rmaxs, omit_bas, propagator, NBCH, &
                            VCINP, restart_freq, writexyz, dgtrig, Iexch, integ,&
                            frestartin, frestart, predcoef, idip, intsoldouble, &
                            cubegen_only, cube_res, cube_dens, cube_orb, DENS,  &
                            cube_sel, cube_orb_file, cube_dens_file, cube_elec, &
-                           cube_elec_file, energy_freq, NUNP, style, allnml,   &
+                           cube_elec_file, energy_freq, NUNP,                  &
                            writeforces, cube_sqrt_orb, fukui, little_cube_size,&
                            max_function_exponent, min_points_per_cube,         &
                            assign_all_functions, remove_zero_weights,          &
@@ -44,6 +44,7 @@ subroutine read_options(inputFile, charge)
     use initial_guess_data, only: initial_guess
     use lionml_subs , only: lionml_Reads
     use trans_Data, only: gaussian_convert
+    use fileio_data, only: style, verbose
 
     implicit none
     character(len=20), intent(in)  :: inputFile
@@ -58,7 +59,7 @@ subroutine read_options(inputFile, charge)
                    Iexch, integ, dens, igrid, igrid2, good_cut, hybrid_converg,&
                    initial_guess,                                              &
                    ! File Input/Output.
-                   frestartin, style, allnml, frestart, fukui, dipole, lowdin, &
+                   frestartin, style, frestart, fukui, dipole, lowdin,         &
                    mulliken, writeforces, int_basis, fitting_set, basis_set,   &
                    restart_freq, print_coeffs,                                 &
                    ! DFT and TD-DFT Variables.

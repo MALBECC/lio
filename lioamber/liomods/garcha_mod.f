@@ -4,7 +4,6 @@
        implicit real*8 (a-h,o-z)
 
       INCLUDE 'param.f'
-      logical verbose
       integer M,Md,natom,ntatom,NMAX,NCO,NUNP,igrid,igrid2
      >  ,Iexch,nsol,npas,npasw,idip,watermod,noconverge,
      > converge,ndiis,nang,propagator,NBCH
@@ -15,7 +14,6 @@
       character*20 basis,whatis,stdbas
       character*40 basis_set, fitting_set
       logical int_basis
-      character*4 date
       character*20 output,fcoord,fmulliken,frestart,frestartin,solv,
      > solv2
       character*4 ctype
@@ -125,8 +123,6 @@ c      parameter rmintsol=16.0D0
 
 !-Variables for library reading.
       logical :: omit_bas
-!-Variables for outout format.
-      logical :: style, allnml
 !-Variables for property calculations.
       logical :: fukui, dipole, lowdin, mulliken, print_coeffs
 

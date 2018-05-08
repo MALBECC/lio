@@ -6,8 +6,8 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        use garcha_mod
        use ECP_mod, only : ecpmode
+       use fileio_data, only : style
        implicit none
- 	logical :: test
        if ((idip.eq.1) .or. (dipole) )then
         if (style) write(69,8703)
         CLOSE(69)

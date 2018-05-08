@@ -4,14 +4,11 @@ program liomd
 ! Make an NVE ensamble MD.
 
     use garcha_mod, only : basis, basis_set, fitting_set, natom, ntatom, nsol, &
-                           Iz, r, rqm, int_basis, omit_bas, verbose
+                           Iz, r, rqm, int_basis, omit_bas
     use liosubs   , only : write_energy, write_geom, set_masses, nuclear_verlet
+    use fileio_data, only: verbose
     use ehrensubs
     use basis_data
-
-#ifdef CUBLAS
-    use cublasmath
-#endif
 
     implicit none
     real*8  :: escf, dipxyz(3), timeStep, Kenergy, Uenergy
@@ -45,7 +42,7 @@ program liomd
             case("-c")
                 call get_command_argument(ii + 1, inpcoords)
             case("-v")
-                verbose = .true.
+                verbose = 4
            case default
         endselect
     enddo

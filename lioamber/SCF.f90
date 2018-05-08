@@ -28,7 +28,7 @@ subroutine SCF(E)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use ehrensubs , only: ehrendyn_init
    use garcha_mod, only : M,Md, NCO,natom,Nang, number_restr, hybrid_converg,  &
-                          MEMO, npas, verbose, RMM, X, SHFT, GRAD, npasw,      &
+                          MEMO, npas, RMM, X, SHFT, GRAD, npasw,               &
                           igrid, energy_freq, converge, noconverge, lowdin,    &
                           cubegen_only, VCINP, primera, Nunp, GOLD, igrid2,    &
                           predcoef, nsol, r, pc, DIIS, told, Etold, Enucl,     &
@@ -67,6 +67,9 @@ subroutine SCF(E)
       use cublasmath , only: cumxp_r
 #  endif
    use initial_guess_subs, only: get_initial_guess
+   use fileio       , only: write_energies, write_energy_convergence, &
+                            write_final_convergence
+   use fileio_data  , only: verbose
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -171,6 +174,10 @@ subroutine SCF(E)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    call g2g_timer_start('SCF_full')
 
+   if (verbose > 1) then
+      write(*,*)
+      write(*,'(A)') "Starting SCF cycles."
+   endif
 
 !------------------------------------------------------------------------------!
 !DFTB: initialisation of DFTB variables
@@ -532,10 +539,6 @@ subroutine SCF(E)
 !       and condense in a single "keep_iterating" or something like that.
 
       do 999 while ((good.ge.told.or.Egood.ge.Etold).and.niter.le.NMAX)
-
-        if (verbose) call WRITE_CONV_STATUS(GOOD,TOLD,EGOOD,ETOLD)
-!       Escribe los criterios de convergencia y el valor del paso de dinamica
-
         call g2g_timer_start('Total iter')
         call g2g_timer_sum_start('Iteration')
         call g2g_timer_sum_start('Fock integrals')
@@ -862,16 +865,14 @@ subroutine SCF(E)
         DAMP=DAMP0
 
         E=E1+E2+En
-!        E=E+Es
-!
         call g2g_timer_stop('otras cosas')
-
-!       write energy at every step
-        if (verbose) call WRITE_E_STEP(niter, E+Ex)
 
         Egood=abs(E+Ex-Evieja)
         Evieja=E+Ex
-!
+
+        ! Write energy at every step
+        call write_energy_convergence(niter, Evieja, good, told, egood, etold)
+
         call g2g_timer_stop('Total iter')
         call g2g_timer_sum_pause('Iteration')
 
@@ -882,17 +883,17 @@ subroutine SCF(E)
 !     Checks of convergence
 !
       if (niter.ge.NMAX) then
-         write(6,*) 'NO CONVERGENCE AT ',NMAX,' ITERATIONS'
-         noconverge=noconverge + 1
-         converge=0
+         call write_final_convergence(.false., NMAX, Evieja)
+         noconverge = noconverge + 1
+         converge   = 0
       else
-         write(6,*) 'CONVERGED AT',niter,'ITERATIONS'
+         call write_final_convergence(.true., niter, Evieja)
          noconverge = 0
-         converge=converge+1
+         converge   = converge + 1
       endif
 
       if (noconverge.gt.4) then
-         write(6,*)  'stop for not convergion 4 times'
+         write(6,'(A)')  'FATAL ERROR - No convergence achieved 4 times.'
          stop
       endif
 !------------------------------------------------------------------------------!
@@ -996,7 +997,8 @@ subroutine SCF(E)
 
         if (npas.gt.npasw) then
            call ECP_energy( MM, RMM(M1), Eecp, Es )
-           call WriteEnergies(E1,E2,En,Ens,Eecp,Exc,ecpmode,E_restrain)
+           call write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain,&
+                               number_restr, nsol)
            npasw=npas+10
         end if
 

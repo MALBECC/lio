@@ -60,6 +60,7 @@ extern double free_global_memory;
 
 extern bool timer_sum;
 extern bool timer_single;
+extern uint verbose;
 }
 
 #endif

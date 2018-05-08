@@ -31,8 +31,8 @@ int gpu_threads = 0;
 /* methods */
 //===========================================================================================
 extern "C" void g2g_init_(void) {
-  cout << "<====== Initializing G2G ======>" << endl;
 #if GPU_KERNELS
+  if (verbose > 3) cout << "G2G initialisation." << endl;
   cuInit(0);
   int devcount = cudaGetGPUCount();
   int devnum = -1;
@@ -40,22 +40,19 @@ extern "C" void g2g_init_(void) {
   for (int i = 0; i < devcount; i++) {
     if (cudaGetDeviceProperties(&devprop, i) != cudaSuccess)
       throw runtime_error("Could not get device propierties!");
-    cout << "GPU Device used: " << devprop.name << endl;
+    if (verbose > 2) cout << "  GPU Device used: " << devprop.name << endl;
   }
   G2G::gpu_threads = devcount;
-  cout << "Kernels: gpu" << endl;
 #endif
 #if CPU_KERNELS
   G2G::cpu_threads = omp_get_max_threads() - G2G::gpu_threads;
-  cout << "Kernels: cpu" << endl;
 #endif
   if (gpu_threads == 0 && cpu_threads == 0)
     throw runtime_error(
-        "Error: Either a gpu or a cpu thread is needed to run G2G");
-  cout << "Using " << G2G::cpu_threads << " CPU Threads and "
-       << G2G::gpu_threads << " GPU Threads" << endl;
+        "  ERROR: Either a gpu or a cpu thread is needed to run G2G");
+  if (verbose > 2) cout << "  Using " << G2G::cpu_threads << " CPU Threads and "
+       << G2G::gpu_threads << " GPU Threads." << endl;
 
-  //  cout.precision(10);
 }
 //==========================================================================================
 namespace G2G {
@@ -75,19 +72,12 @@ extern "C" void g2g_parameter_init_(
     const unsigned int& M3, double* rhoalpha, double* rhobeta,
     const unsigned int& nco, bool& OPEN, const unsigned int& nunp,
     const unsigned int& nopt, const unsigned int& Iexch, double* e, double* e2,
-    double* e3, double* wang, double* wang2, double* wang3) {
-  printf("<======= GPU Code Initialization ========>\n");
+    double* e3, double* wang, double* wang2, double* wang3){
   fortran_vars.atoms = natom;
   fortran_vars.max_atoms = max_atoms;
   fortran_vars.gaussians = ngaussians;
 
-  cout << "atoms: " << fortran_vars.atoms << endl;
-  cout << "max atoms: " << fortran_vars.max_atoms << endl;
-  cout << "number of gaussians: " << fortran_vars.gaussians << endl;
-
   fortran_vars.do_forces = (nopt == 2);
-  cout << "do_forces: " << boolalpha << fortran_vars.do_forces << endl;
-
   fortran_vars.normalize = norm;
   fortran_vars.normalization_factor =
       (fortran_vars.normalize ? (1.0 / sqrt(3)) : 1.0);
@@ -104,19 +94,14 @@ extern "C" void g2g_parameter_init_(
   fortran_vars.s_funcs = nshell[0];
   fortran_vars.p_funcs = nshell[1] / 3;
   fortran_vars.d_funcs = nshell[2] / 6;
-  cout << "s: " << fortran_vars.s_funcs << " p: " << fortran_vars.p_funcs
-       << " d: " << fortran_vars.d_funcs << endl;
   fortran_vars.spd_funcs =
       fortran_vars.s_funcs + fortran_vars.p_funcs + fortran_vars.d_funcs;
   // M =	# of contractions
   fortran_vars.m = M;
-
   fortran_vars.nco = nco;
-  cout << "m: " << fortran_vars.m << " nco: " << fortran_vars.nco << endl;
-
   fortran_vars.iexch = Iexch;
   if (Iexch == 4 || Iexch == 5)
-    cout << "***** WARNING ***** : Iexch 4 y 5 no andan bien todavia" << endl;
+    cout << "WARNING: Iexch=4,5 not working properly." << endl;
   fortran_vars.lda = (Iexch <= 3);
   fortran_vars.gga = !fortran_vars.lda;
   assert(0 < Iexch && Iexch <= 9);
@@ -157,15 +142,21 @@ extern "C" void g2g_parameter_init_(
 
   // nco = number of Molecular orbitals ocupped
   fortran_vars.nco = nco;
-
   fortran_vars.OPEN = OPEN;
+
+  if (verbose > 2) {
+     cout << "  QM atoms: " << fortran_vars.atoms;
+     cout << " - MM atoms: " << fortran_vars.max_atoms - fortran_vars.atoms << endl;
+     cout << "  Total number of basis: " << fortran_vars.gaussians;
+     cout << " (s: " << fortran_vars.s_funcs << " p: " << fortran_vars.p_funcs
+          << " d: "<< fortran_vars.d_funcs << ")" << endl;
+  }
 
   if (fortran_vars.OPEN) {
     fortran_vars.nunp = nunp;
-    cout << "LIOAMBER OPEN SHELL DFT :) " << endl;
-    cout << "Number of MO(UP): " << fortran_vars.nco << endl;
-    cout << "Number of MO(DOWN): " << fortran_vars.nco + fortran_vars.nunp
-         << endl;
+    if (verbose > 2) cout << "  Open shell calculation - Occupied MO(UP): "
+         << fortran_vars.nco << " - Occupied MO(DOWN): "
+         << fortran_vars.nco + fortran_vars.nunp << endl;
 
     fortran_vars.rmm_dens_a = FortranMatrix<double>(
         rhoalpha, fortran_vars.m, fortran_vars.m, fortran_vars.m);
@@ -180,7 +171,8 @@ extern "C" void g2g_parameter_init_(
     fortran_vars.rmm_output_b = FortranMatrix<double>(
         RMM + (M3 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
   } else {
-    cout << " nco: " << fortran_vars.nco << endl;
+    if (verbose > 2) cout << "  Closed shell calculation - Occupied MO: "
+         << fortran_vars.nco << endl;
     // matriz densidad
     fortran_vars.rmm_input_ndens1 = FortranMatrix<double>(
         RMM, fortran_vars.m, fortran_vars.m, fortran_vars.m);
@@ -211,7 +203,7 @@ extern "C" void g2g_parameter_init_(
 }
 //============================================================================================================
 extern "C" void g2g_deinit_(void) {
-  cout << "<====== Deinitializing G2G ======>" << endl;
+  if (verbose > 3) cout << "G2G Deinitialisation." << endl;
   partition.clear();
 }
 //============================================================================================================
@@ -247,7 +239,6 @@ void compute_new_grid(const unsigned int grid_type) {
   t_grilla.start_and_sync();
   partition.regenerate();
   t_grilla.stop_and_sync();
-// cout << "timer grilla: " << t_grilla << endl;
 
 #if CPU_KERNELS && !CPU_RECOMPUTE
   /** compute functions **/
@@ -363,7 +354,6 @@ extern "C" void g2g_solve_groups_(const uint& computation_type,
                                            fort_forces_ptr);
     }
   }
-/*  if (compute_energy) cout << "XC energy: " << *fort_energy_ptr << endl;*/
 }
 //================================================================================================================
 /* general options */
@@ -378,6 +368,7 @@ bool energy_all_iterations = false;
 double free_global_memory = 0.0;
 bool timer_single = false;
 bool timer_sum = false;
+uint verbose = 0;
 }
 
 //=================================================================================================================
@@ -385,7 +376,7 @@ extern "C" void g2g_set_options_(double* fort_fgm, double* fort_lcs,
                                  double* fort_sr, bool* fort_aaf,
                                  bool* fort_eai, bool* fort_rzw,
                                  uint& fort_mppc, uint& fort_mfe,
-                                 uint& fort_time) {
+                                 uint& fort_time, uint& fort_verbose) {
   uint timer_level = 0;
 
   free_global_memory = *fort_fgm;
@@ -397,6 +388,7 @@ extern "C" void g2g_set_options_(double* fort_fgm, double* fort_lcs,
   min_points_per_cube = fort_mppc;
   max_function_exponent = fort_mfe;
   timer_level = fort_time;
+  verbose = fort_verbose;
 
   if (timer_level > 1) {
     timer_sum = true;

@@ -24,6 +24,7 @@ module lionml_subs
 subroutine lionml_Reads( file_unit, extern_stat )
 
    use lionml_data, only: lionml
+   use fileio_data, only: verbose
    implicit none
    integer, intent(in)            :: file_unit
    integer, intent(out), optional :: extern_stat
@@ -32,8 +33,8 @@ subroutine lionml_Reads( file_unit, extern_stat )
    intern_stat = 0
    rewind( unit = file_unit, iostat = intern_stat )
    if ( intern_stat /= 0 ) then
-      print*,"Can't rewind lionml file. Using lionml defaults."
-      print*,"iostat = ", intern_stat
+      write(*,'(A)') "Cannot rewind lionml file. Using lionml defaults."
+      if (verbose .gt. 3) write(*,'(A,I4)') "iostat = ", intern_stat
       if ( present(extern_stat) ) extern_stat = 1
       return
    end if
@@ -41,8 +42,8 @@ subroutine lionml_Reads( file_unit, extern_stat )
    intern_stat = 0
    read( unit = file_unit, nml = lionml, iostat = intern_stat )
    if ( intern_stat /= 0 ) then
-      print*,"Can't find lionml namelist. Using lionml defaults"
-      print*,"iostat = ", intern_stat
+      write(*,'(A)') "Cannot find lionml namelist. Using lionml defaults."
+      if (verbose .gt. 3) write(*,'(A,I4)') "iostat = ", intern_stat
       if ( present(extern_stat) ) extern_stat = 2
       return
    end if
@@ -94,7 +95,7 @@ end subroutine lionml_Write
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine lionml_Check( extern_stat )
- 
+
    implicit none
    integer, intent(out), optional :: extern_stat
    integer                        :: intern_stat

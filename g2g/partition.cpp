@@ -340,7 +340,7 @@ void Partition::compute_functions(bool forces, bool gga) {
   }
 
   t1.stop_and_sync();
-  cout << "Timer functions: " << t1 << endl;
+  if (timer_single) cout << "Functions: " << t1 << endl;
 }
 
 void Partition::clear() {

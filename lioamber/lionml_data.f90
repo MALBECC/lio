@@ -1,4 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!
 module lionml_data
 
    use garcha_mod        , only: natom, nsol, basis, output, fmulliken, fcoord,&
@@ -137,14 +138,126 @@ module lionml_data
                           remove_zero_weights
       ! Transport and DFTB
       double precision :: alfaTB, betaTB, driving_rate, gammaTB, Vbias_TB
-      logical          :: dftb_calc, gate_field, generate_rho0, transport_calc
+      logical          :: dftb_calc, gate_field, generate_rho0, TBload, TBsave,&
+                          transport_calc
       integer          :: end_bTB, end_tdtb, MTB, pop_drive, save_charge_freq, &
-                          start_tdtb, TBload, TBsave
+                          start_tdtb
    end type lio_input_data
 
    type lionml_input_data
-
+      ! Ehrenfest
+      character*80     :: rsti_fname, rsto_fname, wdip_fname
+      double precision :: eefld_ampx, eefld_ampy, eefld_ampz, eefld_timeamp,   &
+                          eefld_timepos, eefld_wavelen
+      integer          :: edyn_steps, ndyn_steps, propagator, rsto_nfreq,      &
+                          wdip_nfreq
+      logical          :: eefld_on, eefld_timegih, eefld_timegfh,              &
+                          nullify_forces, rsti_loads, rsto_saves
+      ! Fock Bias Potential
+      character*80     :: fockbias_readfile
+      double precision :: fockbias_timeamp0, fockbias_timefall,fockbias_timegrow
+      logical          :: fockbias_is_active, fockbias_is_shaped
    end type lionml_input_data
 contains
+
+subroutine get_namelists(lio_in, lionml_in)
+   implicit none
+   type(lio_input_data)   , intent(out) :: lio_in
+   type(lionml_input_data), intent(out) :: lionml_in
+
+   ! General
+   lio_in%etold          = etold         ; lio_in%gold   = gold
+   lio_in%good_cut       = good_cut      ; lio_in%rmax   = rmax
+   lio_in%rmaxs          = rmaxs         ; lio_in%told   = told
+   lio_in%charge         = charge        ; lio_in%iexch  = iexch
+   lio_in%igrid          = igrid         ; lio_in%igrid2 = igrid2
+   lio_in%initial_guess  = initial_guess ; lio_in%natom  = natom
+   lio_in%ndiis          = ndiis         ; lio_in%nmax   = nmax
+   lio_in%nsol           = nsol          ; lio_in%nunp   = nunp
+   lio_in%dens           = dens          ; lio_in%diis   = diis
+   lio_in%hybrid_converg = hybrid_converg; lio_in%integ  = integ
+   lio_in%intsoldouble   = intsoldouble  ; lio_in%open   = open
+   lio_in%predcoef       = predcoef
+   ! Fileio
+   lio_in%vcinp            = vcinp           ; lio_in%writexyz    = writexyz
+   lio_in%frestartin       = frestartin      ; lio_in%frestart    = frestart
+   lio_in%basis_set        = basis_set       ; lio_in%fitting_set = fitting_set
+   lio_in%restart_freq     = restart_freq    ; lio_in%timers      = timers
+   lio_in%dbug             = dbug            ; lio_in%dipole      = dipole
+   lio_in%gaussian_convert = gaussian_convert; lio_in%fukui       = fukui
+   lio_in%int_basis        = int_basis       ; lio_in%lowdin      = lowdin
+   lio_in%mulliken         = mulliken        ; lio_in%style       = style
+   lio_in%print_coeffs     = print_coeffs    ; lio_in%writeforces = writeforces
+   ! TDDFT - Fields
+   lio_in%field_aniso_file = field_aniso_file; lio_in%a0         = a0
+   lio_in%field_iso_file   = field_iso_file  ; lio_in%epsilon    = epsilon
+   lio_in%nfields_aniso    = nfields_aniso   ; lio_in%Fx         = Fx
+   lio_in%nfields_iso      = nfields_iso     ; lio_in%Fy         = Fy
+   lio_in%td_rst_freq      = td_rst_freq     ; lio_in%Fz         = Fz
+   lio_in%tdstep           = tdstep          ; lio_in%NBCH       = NBCH
+   lio_in%ntdstep          = ntdstep         ; lio_in%propagator = propagator
+   lio_in%timedep          = timedep         ; lio_in%tdrestart  = tdrestart
+   lio_in%writedens        = writedens       ; lio_in%field      = field
+   ! ECP
+   lio_in%ecp_full_range_int = ecp_full_range_int; lio_in%cut2_0    = cut2_0
+   lio_in%verbose_ECP        = verbose_ECP       ; lio_in%cut3_0    = cut3_0
+   lio_in%local_nonlocal     = local_nonlocal    ; lio_in%ecptypes  = ecptypes
+   lio_in%ZlistECP           = ZlistECP          ; lio_in%cutECP    = cutECP
+   lio_in%Fulltimer_ECP      = Fulltimer_ECP     ; lio_in%ecp_debug = ecp_debug
+   lio_in%FOCK_ECP_write     = FOCK_ECP_write    ; lio_in%ecpmode   = ecpmode
+   lio_in%FOCK_ECP_read      = FOCK_ECP_read     ; lio_in%tipeECP   = tipeECP
+   ! Minimization - Restraints
+   lio_in%lineal_search     = lineal_search    ; lio_in%Energy_cut = Energy_cut
+   lio_in%minimzation_steep = minimzation_steep; lio_in%steep      = steep
+   lio_in%n_min_steeps      = n_min_steeps     ; lio_in%n_points   = n_points
+   lio_in%number_restr      = number_restr     ; lio_in%Force_cut  = Force_cut
+   ! CubeGen
+   lio_in%cube_dens_file = cube_dens_file ; lio_in%cube_res  = cube_res
+   lio_in%cube_elec_file = cube_elec_file ; lio_in%cube_sel  = cube_sel
+   lio_in%cube_orb_file  = cube_orb_file  ; lio_in%cube_dens = cube_dens
+   lio_in%cubegen_only   = cubegen_only   ; lio_in%cube_elec = cube_elec
+   lio_in%cube_sqrt_orb  = cube_sqrt_orb  ; lio_in%cube_orb  = cube_orb
+   ! GPU Options
+   lio_in%free_global_memory    = free_global_memory
+   lio_in%little_cube_size      = little_cube_size
+   lio_in%sphere_radius         = sphere_radius
+   lio_in%min_points_per_cube   = min_points_per_cube
+   lio_in%max_function_exponent = max_function_exponent
+   lio_in%assign_all_functions  = assign_all_functions
+   lio_in%energy_all_iterations = energy_all_iterations
+   lio_in%remove_zero_weights   = remove_zero_weights
+   ! Transport and DFTB
+   lio_in%driving_rate     = driving_rate    ; lio_in%alfaTB    = alfaTB
+   lio_in%dftb_calc        = dftb_calc       ; lio_in%betaTB    = betaTB
+   lio_in%gate_field       = gate_field      ; lio_in%gammaTB   = gammaTB
+   lio_in%generate_rho0    = generate_rho0   ; lio_in%Vbias_TB  = Vbias_TB
+   lio_in%transport_calc   = transport_calc  ; lio_in%end_bTB   = end_bTB
+   lio_in%end_tdtb         = end_tdtb        ; lio_in%pop_drive = pop_drive
+   lio_in%save_charge_freq = save_charge_freq; lio_in%MTB       = MTB
+   lio_in%start_tdtb       = start_tdtb      ; lio_in%TBload    = TBload
+   lio_in%TBsave           = TBsave
+
+   ! Ehrenfest
+   lionml_in%rsti_fname = rsti_fname; lionml_in%eefld_timeamp  = eefld_timeamp
+   lionml_in%rsto_fname = rsto_fname; lionml_in%eefld_timepos  = eefld_timepos
+   lionml_in%wdip_fname = wdip_fname; lionml_in%eefld_wavelen  = eefld_wavelen
+   lionml_in%eefld_ampx = eefld_ampx; lionml_in%eefld_timegih  = eefld_timegih
+   lionml_in%eefld_ampy = eefld_ampy; lionml_in%eefld_timegfh  = eefld_timegfh
+   lionml_in%eefld_ampz = eefld_ampz; lionml_in%nullify_forces = nullify_forces
+   lionml_in%edyn_steps = edyn_steps; lionml_in%ndyn_steps     = ndyn_steps
+   lionml_in%propagator = propagator; lionml_in%rsto_nfreq     = rsto_nfreq
+   lionml_in%wdip_nfreq = wdip_nfreq; lionml_in%eefld_on       = eefld_on
+   lionml_in%rsti_loads = rsti_loads; lionml_in%rsto_saves     = rsto_saves
+   ! Fock Bias Potential
+   lionml_in%fockbias_readfile  = fockbias_readfile
+   lionml_in%fockbias_timeamp0  = fockbias_timeamp0
+   lionml_in%fockbias_timefall  = fockbias_timefall
+   lionml_in%fockbias_timegrow  = fockbias_timegrow
+   lionml_in%fockbias_is_active = fockbias_is_active
+   lionml_in%fockbias_is_shaped = fockbias_is_shaped
+
+   return
+end subroutine get_namelists
+
 end module lionml_data
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

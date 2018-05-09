@@ -13,7 +13,7 @@ subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
 
    use field_data,  only: epsilon, a0
 
-   use lionml_data, only: eefld_on
+   use ehrendata, only: eefld_on
 
    implicit none
    complex*16,intent(in) :: DensMao(M,M)

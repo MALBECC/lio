@@ -8,8 +8,6 @@
       ,cut2_0,cut3_0
       use fileio_data, only: verbose
 
-      integer, intent(in) :: charge
-
       return;
       if (verbose .lt. 4) return
 !LIO

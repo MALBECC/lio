@@ -120,7 +120,7 @@ module lionml_data
       double precision :: cut2_0, cut3_0
       integer          :: ecptypes, local_nonlocal, verbose_ECP, ZlistECP(128)
       logical          :: cutECP, ecp_debug, ecp_full_range_int, ecpmode,      &
-                          ecptypes, FOCK_ECP_read, FOCK_ECP_write, Fulltimer_ECP
+                          FOCK_ECP_read, FOCK_ECP_write, Fulltimer_ECP
       ! Minimizations and restraints
       double precision :: Force_cut, Energy_cut, minimzation_steep
       integer          :: n_min_steeps, n_points, number_restr

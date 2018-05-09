@@ -138,7 +138,7 @@ tmplist :=
 tmplist += SCF.o SCF_exter.o liomain.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ehrensubs.mod
 
-tmplist := ehrensubs.o init_lio.o
+tmplist := ehrensubs.o init_lio.o lionml_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ehrendata.mod
 
 

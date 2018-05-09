@@ -2,25 +2,23 @@
 subroutine ehrendyn_main( energy_o, dipmom_o )
 !------------------------------------------------------------------------------!
 !
-!  stored_densM1 and stored_densM2 are stored in ON basis, except for the 
+!  stored_densM1 and stored_densM2 are stored in ON basis, except for the
 !  first step
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use garcha_mod, &
    &  only: M, natom, atom_mass, nucpos, nucvel, qm_forces_ds, qm_forces_total &
-   &      , first_step
+   &      , first_step, propagator
 
    use td_data, &
    &  only: tdstep
 
-   use lionml_data, &
-   &  only: ndyn_steps, edyn_steps, propagator, wdip_nfreq, wdip_fname         &
-   &      , rsti_loads, rsti_fname, rsto_saves, rsto_nfreq, rsto_fname
-
    use ehrendata, &
    &  only: stored_time, stored_energy, stored_dipmom                          &
    &      , stored_densM1, stored_densM2                                       &
-   &      , rsti_funit, rsto_funit, nustep_count, elstep_count
+   &      , rsti_funit, rsto_funit, nustep_count, elstep_count                 &
+   &       , ndyn_steps, edyn_steps, wdip_nfreq, wdip_fname                    &
+   &      , rsti_loads, rsti_fname, rsto_saves, rsto_nfreq, rsto_fname
 
    implicit none
    real*8,intent(inout) :: dipmom_o(3), energy_o

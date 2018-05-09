@@ -107,7 +107,7 @@ module lionml_data
       ! FILE IO
       character*20     :: frestartin, frestart
       character*40     :: basis_set, fitting_set
-      integer          :: restart_freq, timers
+      integer          :: restart_freq, timers, verbose
       logical          :: dbug, dipole, fukui, gaussian_convert, int_basis,    &
                           lowdin, mulliken, print_coeffs, style, writeforces
       ! TD-DFT and FIELD
@@ -142,28 +142,23 @@ module lionml_data
                           transport_calc
       integer          :: end_bTB, end_tdtb, MTB, pop_drive, save_charge_freq, &
                           start_tdtb
-   end type lio_input_data
-
-   type lionml_input_data
       ! Ehrenfest
       character*80     :: rsti_fname, rsto_fname, wdip_fname
       double precision :: eefld_ampx, eefld_ampy, eefld_ampz, eefld_timeamp,   &
                           eefld_timepos, eefld_wavelen
-      integer          :: edyn_steps, ndyn_steps, propagator, rsto_nfreq,      &
-                          wdip_nfreq
+      integer          :: edyn_steps, ndyn_steps, rsto_nfreq, wdip_nfreq
       logical          :: eefld_on, eefld_timegih, eefld_timegfh,              &
                           nullify_forces, rsti_loads, rsto_saves
       ! Fock Bias Potential
       character*80     :: fockbias_readfile
       double precision :: fockbias_timeamp0, fockbias_timefall,fockbias_timegrow
       logical          :: fockbias_is_active, fockbias_is_shaped
-   end type lionml_input_data
+   end type lio_input_data
 contains
 
-subroutine get_namelists(lio_in, lionml_in)
+subroutine get_namelist(lio_in)
    implicit none
-   type(lio_input_data)   , intent(out) :: lio_in
-   type(lionml_input_data), intent(out) :: lionml_in
+   type(lio_input_data), intent(out) :: lio_in
 
    ! General
    lio_in%etold          = etold         ; lio_in%gold   = gold
@@ -188,6 +183,7 @@ subroutine get_namelists(lio_in, lionml_in)
    lio_in%int_basis        = int_basis       ; lio_in%lowdin      = lowdin
    lio_in%mulliken         = mulliken        ; lio_in%style       = style
    lio_in%print_coeffs     = print_coeffs    ; lio_in%writeforces = writeforces
+   lio_in%verbose          = verbose         ;
    ! TDDFT - Fields
    lio_in%field_aniso_file = field_aniso_file; lio_in%a0         = a0
    lio_in%field_iso_file   = field_iso_file  ; lio_in%epsilon    = epsilon
@@ -238,26 +234,26 @@ subroutine get_namelists(lio_in, lionml_in)
    lio_in%TBsave           = TBsave
 
    ! Ehrenfest
-   lionml_in%rsti_fname = rsti_fname; lionml_in%eefld_timeamp  = eefld_timeamp
-   lionml_in%rsto_fname = rsto_fname; lionml_in%eefld_timepos  = eefld_timepos
-   lionml_in%wdip_fname = wdip_fname; lionml_in%eefld_wavelen  = eefld_wavelen
-   lionml_in%eefld_ampx = eefld_ampx; lionml_in%eefld_timegih  = eefld_timegih
-   lionml_in%eefld_ampy = eefld_ampy; lionml_in%eefld_timegfh  = eefld_timegfh
-   lionml_in%eefld_ampz = eefld_ampz; lionml_in%nullify_forces = nullify_forces
-   lionml_in%edyn_steps = edyn_steps; lionml_in%ndyn_steps     = ndyn_steps
-   lionml_in%propagator = propagator; lionml_in%rsto_nfreq     = rsto_nfreq
-   lionml_in%wdip_nfreq = wdip_nfreq; lionml_in%eefld_on       = eefld_on
-   lionml_in%rsti_loads = rsti_loads; lionml_in%rsto_saves     = rsto_saves
+   lio_in%rsti_fname = rsti_fname; lio_in%eefld_timeamp  = eefld_timeamp
+   lio_in%rsto_fname = rsto_fname; lio_in%eefld_timepos  = eefld_timepos
+   lio_in%wdip_fname = wdip_fname; lio_in%eefld_wavelen  = eefld_wavelen
+   lio_in%eefld_ampx = eefld_ampx; lio_in%eefld_timegih  = eefld_timegih
+   lio_in%eefld_ampy = eefld_ampy; lio_in%eefld_timegfh  = eefld_timegfh
+   lio_in%eefld_ampz = eefld_ampz; lio_in%nullify_forces = nullify_forces
+   lio_in%edyn_steps = edyn_steps; lio_in%ndyn_steps     = ndyn_steps
+   lio_in%rsto_nfreq = rsto_nfreq; lio_in%rsto_saves     = rsto_saves
+   lio_in%wdip_nfreq = wdip_nfreq; lio_in%eefld_on       = eefld_on
+   lio_in%rsti_loads = rsti_loads;
    ! Fock Bias Potential
-   lionml_in%fockbias_readfile  = fockbias_readfile
-   lionml_in%fockbias_timeamp0  = fockbias_timeamp0
-   lionml_in%fockbias_timefall  = fockbias_timefall
-   lionml_in%fockbias_timegrow  = fockbias_timegrow
-   lionml_in%fockbias_is_active = fockbias_is_active
-   lionml_in%fockbias_is_shaped = fockbias_is_shaped
+   lio_in%fockbias_readfile  = fockbias_readfile
+   lio_in%fockbias_timeamp0  = fockbias_timeamp0
+   lio_in%fockbias_timefall  = fockbias_timefall
+   lio_in%fockbias_timegrow  = fockbias_timegrow
+   lio_in%fockbias_is_active = fockbias_is_active
+   lio_in%fockbias_is_shaped = fockbias_is_shaped
 
    return
-end subroutine get_namelists
+end subroutine get_namelist
 
 end module lionml_data
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

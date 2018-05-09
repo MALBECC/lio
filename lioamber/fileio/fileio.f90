@@ -2,6 +2,14 @@ module fileio_data
    implicit none
    logical :: style   = .false.
    integer :: verbose = 3
+contains
+   subroutine get_style(style_o)
+      implicit none
+      logical, intent(out) :: style_o
+
+      style_o = style
+      return
+   end subroutine get_style
 end module fileio_data
 
 module fileio

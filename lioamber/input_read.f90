@@ -8,7 +8,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine read_options(inputFile)
     use field_subs , only: read_fields
-    use lionml_subs, only: lionml_read
+    use lionml_subs, only: lionml_read, lionml_write
 
     implicit none
     character(len=20), intent(in)  :: inputFile
@@ -21,6 +21,7 @@ subroutine read_options(inputFile)
        open(unit = 100, file = inputFile, iostat = ios)
        call lionml_read( 100 )
        close(unit = 100)
+       call lionml_write
     else
        write(*,*) 'File ', adjustl(inputFile), ' not found. Using defaults.'
     endif

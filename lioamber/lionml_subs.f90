@@ -107,7 +107,166 @@ subroutine lionml_write_dull()
    type(lio_input_data) :: inputs
 
    call get_namelist(inputs)
+   if (inputs%verbose .lt. 1) return
 
+   write(*,*)
+   write(*,9000) "LIO input variables"
+   write(*,9000) " ! -- General and theory level: -- !"
+   write(*,8000) inputs%natom, inputs%nsol, inputs%charge, inputs%Nunp, &
+                 inputs%open
+   write(*,8001) inputs%nmax, inputs%int_basis, inputs%basis_set
+   write(*,8002) inputs%fitting_set, inputs%diis, inputs%ndiis
+   write(*,8003) inputs%hybrid_converg, inputs%gold, inputs%told
+   write(*,8004) inputs%Etold, inputs%good_cut, inputs%Rmax
+   write(*,8005) inputs%RmaxS, inputs%Iexch, inputs%Igrid, inputs%Igrid2
+   write(*,8006) inputs%PredCoef, inputs%initial_guess, inputs%dbug
+   write(*,9000) " ! -- Input and output options: -- !"
+   write(*,8020) inputs%verbose, inputs%style, inputs%timers, inputs%writexyz, &
+                 inputs%WriteForces
+   write(*,8021) inputs%dipole, inputs%mulliken, inputs%lowdin, inputs%fukui,  &
+                 inputs%print_coeffs
+   write(*,8022) inputs%vcinp, inputs%Frestartin, inputs%restart_freq
+   write(*,8023) inputs%frestart, inputs%Tdrestart, inputs%writedens
+   write(*,8024) inputs%td_rst_freq, inputs%gaussian_convert
+   write(*,9000) " ! -- TD-DFT and external field: -- !"
+   write(*,8040) inputs%timedep, inputs%ntdstep, inputs%tdstep,inputs%propagator
+   write(*,8041) inputs%NBCH, inputs%field, inputs%a0, inputs%epsilon
+   write(*,8042) inputs%Fx, inputs%Fy, inputs%Fz, inputs%nfields_iso
+   write(*,8043) inputs%nfields_aniso, inputs%field_iso_file
+   write(*,8044) inputs%field_aniso_file
+   write(*,9000) " ! -- Effective Core Potentials: -- !"
+   write(*,8060) inputs%Ecpmode, inputs%Ecptypes, inputs%TipeECP
+   write(*,8061) inputs%Fock_ECP_read, inputs%Fock_ECP_write, inputs%cutECP, &
+                 inputs%cut2_0
+   write(*,8062) inputs%cut3_0, inputs%Verbose_ECP, inputs%ECP_debug, &
+                 inputs%fulltimer_ECP
+   write(*,8063) inputs%local_nonlocal, inputs%ECP_full_range_int
+   call write_Zlist_ECP_dull(inputs%ZlistECP, inputs%Ecptypes)
+   write(*,9000) " ! -- Minimizations and restraints: -- !"
+   write(*,8080) inputs%steep, inputs%minimzation_steep, inputs%Energy_cut
+   write(*,8081) inputs%Force_cut, inputs%n_min_steeps, inputs%lineal_search
+   write(*,8082) inputs%n_points, inputs%number_restr
+   write(*,9000) " ! -- CubeGen: -- !"
+   write(*,8100) inputs%Cubegen_only, inputs%Cube_Res, inputs%Cube_Sel, &
+                 inputs%Cube_Dens
+   write(*,8101) inputs%Cube_Orb, inputs%Cube_Elec, inputs%Cube_Dens_file
+   write(*,8102) inputs%cube_orb_file, inputs%cube_dens_file
+   write(*,9000) " ! -- GPU Options: -- !"
+   write(*,8120) inputs%energy_all_iterations, inputs%assign_all_functions, &
+                 inputs%remove_zero_weights
+   write(*,8121) inputs%max_function_exponent, inputs%free_global_memory
+   write(*,8122) inputs%sphere_radius, inputs%little_cube_size
+   write(*,8123) inputs%min_points_per_cube
+   write(*,9000) " ! -- Transport and DFTB: -- !"
+   write(*,8140) inputs%transport_calc, inputs%generate_rho0, &
+                 inputs%driving_rate
+   write(*,8141) inputs%gate_field, inputs%pop_drive, inputs%save_charge_freq, &
+                 inputs%dftb_calc
+   write(*,8142) inputs%MTB, inputs%alfaTB, inputs%betaTB
+   write(*,8143) inputs%gammaTB, inputs%Vbias_TB, inputs%start_tdtb
+   write(*,8144) inputs%end_tdtb, inputs%end_bTB, inputs%TBload, inputs%TBsave
+   write(*,9000) " ! -- Ehrenfest: -- !"
+   write(*,8160) inputs%ndyn_steps, inputs%edyn_steps, inputs%nullify_forces
+   write(*,8161) inputs%wdip_nfreq, inputs%wdip_fname, inputs%rsti_loads
+   write(*,8162) inputs%rsto_saves, inputs%rsto_nfreq, inputs%rsti_fname
+   write(*,8163) inputs%rsto_fname, inputs%eefld_on, inputs%eefld_ampx
+   write(*,8164) inputs%eefld_ampy, inputs%eefld_ampz
+   write(*,8165) inputs%eefld_timeamp, inputs%eefld_timepos
+   write(*,8166) inputs%eefld_timegfh, inputs%eefld_timegih, &
+                 inputs%eefld_wavelen
+   write(*,9000) " ! -- Fock Bias Potentials: -- !"
+   write(*,8180) inputs%fockbias_is_active, inputs%fockbias_is_shaped, &
+                 inputs%fockbias_timeamp0
+   write(*,8181) inputs%fockbias_timegrow, inputs%fockbias_timefall
+   write(*,8182) inputs%fockbias_readfile
+
+! General
+9000 FORMAT(A)
+8000 FORMAT(2x, "Natom = ", I6, ", Nsol = ", I8, ", charge = ", I5, &
+            ", Nunp = ", I5, ", open = ", L2, ",")
+8001 FORMAT(2x, "Nmax = ", I5, ", int_basis = ", L2, ", basis_set = ", A25, ",")
+8002 FORMAT(2x, "fitting_set = ", A25, ", DIIS = ", L2, ", NDIIS = ", I3, ",")
+8003 FORMAT(2x, "hybrid_converg = ", L2, ", Gold = ", F14.8, ", Told = ", &
+            F14.8, ",")
+8004 FORMAT(2x,"Etold = ", F14.8, ", good_cut = ", F14.8, ", Rmax = ", F14.8, &
+            ",")
+8005 FORMAT(2x,"RmaxS = ", F14.8, ", IExch = ", I5, ", IGrid = ", I3, &
+            ", IGrid2 = ", I3, ",")
+8006 FORMAT(2x, "PredCoef = ", L2, ", initial_guess = ", I3, ", DBug = ", L2)
+! I/O Control
+8020 FORMAT(2x, "verbose = ", I3, ", style = ", L2, ", timers = ", I3, &
+            ", writeXYZ = ", L2, ", writeForces = ", L2, ",")
+8021 FORMAT(2x, "dipole = ", L2, ", mulliken = ", L2, ", lowdin = ", L2, &
+            ", fukui = ", L2, ", print_coeffs = ", L2, ",")
+8022 FORMAT(2x, "VCInp = ", L2, ", FRestartIn = ", A25, ", restart_freq = ", &
+            I5, ",")
+8023 FORMAT(2x, "FRestart = ", A25, ", TDRestart = ", L2, ", writeDens = ", L2,&
+            ",")
+8024 FORMAT(2x, "TD_rst_freq = ", I6, ", gaussian_convert = ", L2)
+! TDDFT and Fields
+8040 FORMAT(2x, "timeDep = ", I2, ", NTDStep = ", i10, ", TDStep = ", F14.8, &
+           ", propagator = ", I2, ",")
+8041 FORMAT(2x, "NBCH = ", I4, ", field = ", L2, ", a0 = ", F14.8, &
+            ", epsilon = ", F14.8, ",")
+8042 FORMAT(2x, "Fx = ", F14.8, ", Fy = ", F14.8, ", Fz = ", F14.8, &
+            ", n_fields_iso = ", I5, ",")
+8043 FORMAT(2x,"n_fields_aniso = ", I5, ", field_iso_file = ", A25, ",")
+8044 FORMAT(2x,"field_aniso_file = ", A25)
+! ECP
+8060 FORMAT(2x, "ECPMode = ", L2, ", ECPTypes = ", I3, ", TipeECP = ", A25, ",")
+8061 FORMAT(2x, "Fock_ECP_read = ", L2, ", Fock_ECP_write = ", L2, &
+            ", cutECP = ", L2, ", cut2_0 = ", F14.8,",")
+8062 FORMAT(2x, "cut3_0 = ", F14.8, ", verbose_ECP = ", I2, ", ECP_debug = ", &
+            L2, ", fullTimer_ECP = ", L2, ",")
+8063 FORMAT(2x, "local_nonlocal = ", I2, ", ECP_full_range_int = ", L2)
+! Minimizations and restraints
+8080 FORMAT(2x, "steep = ", L2, ", minimzation_steep = ", F14.8, &
+            ", energy_cut = ", F14.8, ",")
+8081 FORMAT(2x, "force_cut = ", F14.8, ", n_min_steeps = ", I5, &
+            ", lineal_search = ", L2, ",")
+8082 FORMAT(2x, "n_points = ", I5, ", number_restr = ", I5)
+! CubeGen
+8100 FORMAT(2x, "CubeGen_only = ", L2, ", cube_res = ", I5, ", cube_sel = ",   &
+            I5, ", cube_dens = ", L2, ",")
+8101 FORMAT(2x, "cube_orb = ", L2, ", cube_elec = ", L2, ", cube_dens_file = ",&
+            A25, ",")
+8102 FORMAT(2x, "cube_orb_file = ", A25, ", cube_elec_file = ", A25)
+! GPU Options
+8120 FORMAT(2x, "energy_all_iterations = ", L2, ", assign_all_functions = ", &
+            L2, ", remove_zero_weights = ", L2, ",")
+8121 FORMAT(2x, "max_function_exponent = ", I5, ", free_global_memory = ", &
+            F14.8, ",")
+8122 FORMAT(2x, "sphere_radius = ", F14.8, ", little_cube_size = ", F14.8, ",")
+8123 FORMAT(2x, "min_points_per_cube = ", I5)
+! Transport and DFTB
+8140 FORMAT(2x, "transport_calc = ", L2, ", generate_rho0 = ", L2, &
+            ", driving_rate = ", F14.8, ",")
+8141 FORMAT(2x, "gate_field = ", L2, ", pop_drive = ", I3, &
+            ", save_charge_freq = ", I5, ", DFTB_calc = ", L2, ",")
+8142 FORMAT(2x, "MTB = ", I5, ", alfaTB = ", F14.8, ", betaTB = ", F14.8, ",")
+8143 FORMAT(2x, "gammaTB = ", F14.8, ", VBias_TB = ", F14.8, ", start_TDTB = ",&
+            I5, ",")
+8144 FORMAT(2x, "end_TDTB = ", I5, ", end_BTB = ", I5, ", TBLoad = ", L2, &
+            ", TBSave = ", L2)
+! Ehrenfest
+8160 FORMAT(2x, "ndyn_steps = ", I6, ", edyn_steps = ", I6, &
+            ", nullify_forces = ", L2, ",")
+8161 FORMAT(2x, "wdip_nfreq = ", I5, ", wdip_fname = ", A25, ", rsti_loads = ",&
+            L2, ",")
+8162 FORMAT(2x, "rsto_saves = ", L2, ", rsto_nfreq = ", L2, ", rsti_fname = ", &
+            A25, ",")
+8163 FORMAT(2x, "rsto_fname = ", A25, ", eefld_on = ", L2, ", eefld_ampx =", &
+            F14.8, ",")
+8164 FORMAT(2x, "eefld_ampy = ", F14.8, ", eefld_ampz = ", F14.8, ",")
+8165 FORMAT(2x, "eefld_timeamp = ", F14.8, ", eefld_timepos = ", F14.8, ",")
+8166 FORMAT(2x, "eefld_timegfh = ", L2, ", eefld_timegih = ", L2, &
+            ", eefld_wavelen = ", F14.8)
+! Fock Bias
+8180 FORMAT(2x, "fockbias_is_active = ", L2, ", fockbias_is_shaped = ", L2, &
+            ", fockbias_timeamp0 = ", F14.8, ",")
+8181 FORMAT(2x, "fockbias_timegrow = ", F14.8, ", fockbias_timefall = ", F14.8,&
+            ",")
+8182 FORMAT(2x, "fockbias_readfile = ", A25)
    return
 end subroutine lionml_write_dull
 
@@ -117,7 +276,7 @@ subroutine lionml_write_style()
    type(lio_input_data) :: inputs
 
    call get_namelist(inputs)
-   if (inputs%verbose .lt. 3) return
+   if (inputs%verbose .lt. 1) return
 
    ! LIO Header
    write(*,8000); write(*,8100); write(*,8001)
@@ -167,7 +326,7 @@ subroutine lionml_write_style()
    write(*,8000); write(*,8104); write(*,8002)
    write(*,8350) inputs%Ecpmode       ; write(*,8351) inputs%Ecptypes
    write(*,8352) inputs%TipeECP
-   call write_Zlist_ECP(inputs%ZlistECP, inputs%Ecptypes)
+   call write_Zlist_ECP_style(inputs%ZlistECP, inputs%Ecptypes)
    write(*,8354) inputs%Fock_ECP_read ; write(*,8355) inputs%Fock_ECP_write
    write(*,8356) inputs%cutECP        ; write(*,8357) inputs%cut2_0
    write(*,8358) inputs%cut3_0        ; write(*,8359) inputs%Verbose_ECP
@@ -241,6 +400,7 @@ subroutine lionml_write_style()
    write(*,8555) inputs%fockbias_readfile
    write(*,8003)
 
+   return;
 8000 FORMAT(4x,"╔═════════════════════════════════", &
 "═════════════════╗")
 8001 FORMAT(4x,"╚═════════════════════════════════", &
@@ -262,194 +422,247 @@ subroutine lionml_write_style()
 8110 FORMAT(4x,"║               Fock Bias Potentials               ║")
 
 !System and Theory Level
-8200 FORMAT(4x,"║  Natom               ║  ",17x,i6,2x,"║")
-8201 FORMAT(4x,"║  Nsol                ║  ",15x,i8,2x,"║")
-8202 FORMAT(4x,"║  Charge              ║  ",18x,i5,2x,"║")
-8203 FORMAT(4x,"║  Nunp                ║  ",18x,i5,2x,"║")
-8204 FORMAT(4x,"║  Open                ║  ",21x,l2,2x,"║")
-8205 FORMAT(4x,"║  Nmax                ║  ",18x,i5,2x,"║")
-8206 FORMAT(4x,"║  Int_Basis           ║  ",21x,l2,2x,"║")
-8207 FORMAT(4x,"║  Basis_Set           ║  ",a25,"║")
-8208 FORMAT(4x,"║  Fitting_Set         ║  ",a25,"║")
-8209 FORMAT(4x,"║  Diis                ║  ",21x,l2,2x,"║")
-8210 FORMAT(4x,"║  Ndiis               ║  ",20x,i3,2x,"║")
-8211 FORMAT(4x,"║  Gold                ║  ",9x,f14.8,2x,"║")
-8212 FORMAT(4x,"║  Told                ║  ",9x,f14.8,2x,"║")
-8213 FORMAT(4x,"║  Etold               ║  ",9x,f14.8,2x,"║")
-8214 FORMAT(4x,"║  Hybrid_converg      ║  ",21x,l2,2x,"║")
-8215 FORMAT(4x,"║  Good_cut            ║  ",9x,f14.8,2x,"║")
-8216 FORMAT(4x,"║  Rmax                ║  ",9x,f14.8,2x,"║")
-8217 FORMAT(4x,"║  RmaxS               ║  ",9x,f14.8,2x,"║")
-8218 FORMAT(4x,"║  Iexch               ║  ",18x,i5,2x,"║")
-8219 FORMAT(4x,"║  Igrid               ║  ",20x,i3,2x,"║")
-8220 FORMAT(4x,"║  Igrid2              ║  ",20x,i3,2x,"║")
-8221 FORMAT(4x,"║  PredCoef            ║  ",21x,l2,2x,"║")
-8222 FORMAT(4x,"║  Initial_guess       ║  ",18x,i5,2x,"║")
-8223 FORMAT(4x,"║  Dbug                ║  ",21x,l2,2x,"║")
+8200 FORMAT(4x,"║  Natom               ║  ",17x,I6,2x,"║")
+8201 FORMAT(4x,"║  Nsol                ║  ",15x,I8,2x,"║")
+8202 FORMAT(4x,"║  Charge              ║  ",18x,I5,2x,"║")
+8203 FORMAT(4x,"║  Nunp                ║  ",18x,I5,2x,"║")
+8204 FORMAT(4x,"║  Open                ║  ",21x,L2,2x,"║")
+8205 FORMAT(4x,"║  Nmax                ║  ",18x,I5,2x,"║")
+8206 FORMAT(4x,"║  Int_Basis           ║  ",21x,L2,2x,"║")
+8207 FORMAT(4x,"║  Basis_Set           ║  ",A25,"║")
+8208 FORMAT(4x,"║  Fitting_Set         ║  ",A25,"║")
+8209 FORMAT(4x,"║  Diis                ║  ",21x,L2,2x,"║")
+8210 FORMAT(4x,"║  Ndiis               ║  ",20x,I3,2x,"║")
+8211 FORMAT(4x,"║  Gold                ║  ",9x,F14.8,2x,"║")
+8212 FORMAT(4x,"║  Told                ║  ",9x,F14.8,2x,"║")
+8213 FORMAT(4x,"║  Etold               ║  ",9x,F14.8,2x,"║")
+8214 FORMAT(4x,"║  Hybrid_converg      ║  ",21x,L2,2x,"║")
+8215 FORMAT(4x,"║  Good_cut            ║  ",9x,F14.8,2x,"║")
+8216 FORMAT(4x,"║  Rmax                ║  ",9x,F14.8,2x,"║")
+8217 FORMAT(4x,"║  RmaxS               ║  ",9x,F14.8,2x,"║")
+8218 FORMAT(4x,"║  Iexch               ║  ",18x,I5,2x,"║")
+8219 FORMAT(4x,"║  Igrid               ║  ",20x,I3,2x,"║")
+8220 FORMAT(4x,"║  Igrid2              ║  ",20x,I3,2x,"║")
+8221 FORMAT(4x,"║  PredCoef            ║  ",21x,L2,2x,"║")
+8222 FORMAT(4x,"║  Initial_guess       ║  ",18x,I5,2x,"║")
+8223 FORMAT(4x,"║  Dbug                ║  ",21x,L2,2x,"║")
 !IO Control
-8250 FORMAT(4x,"║  Verbose             ║  ",20x,i3,2x,"║")
-8251 FORMAT(4x,"║  Style               ║  ",21x,l2,2x,"║")
-8252 FORMAT(4x,"║  Timers              ║  ",20x,i3,2x,"║")
-8253 FORMAT(4x,"║  WriteXYZ            ║  ",21x,l2,2x,"║")
-8254 FORMAT(4x,"║  WriteForces         ║  ",21x,l2,2x,"║")
-8255 FORMAT(4x,"║  Dipole              ║  ",21x,l2,2x,"║")
-8256 FORMAT(4x,"║  Mulliken            ║  ",21x,l2,2x,"║")
-8257 FORMAT(4x,"║  Lowdin              ║  ",21x,l2,2x,"║")
-8258 FORMAT(4x,"║  Fukui               ║  ",21x,l2,2x,"║")
-8259 FORMAT(4x,"║  print_coeffs        ║  ",21x,l2,2x,"║")
-8260 FORMAT(4x,"║  restart_freq        ║  ",17x,i6,2x,"║")
-8261 FORMAT(4x,"║  Frestart            ║  ",a25,"║")
-8262 FORMAT(4x,"║  WriteDens           ║  ",21x,l2,2x,"║")
-8263 FORMAT(4x,"║  td_rst_freq         ║  ",17x,i6,2x,"║")
-8264 FORMAT(4x,"║  VCinp               ║  ",21x,l2,2x,"║")
-8265 FORMAT(4x,"║  Frestartin          ║  ",a25,"║")
-8266 FORMAT(4x,"║  Tdrestart           ║  ",21x,l2,2x,"║")
-8267 FORMAT(4x,"║  gaussian_convert    ║  ",21x,l2,2x,"║")
+8250 FORMAT(4x,"║  Verbose             ║  ",20x,I3,2x,"║")
+8251 FORMAT(4x,"║  Style               ║  ",21x,L2,2x,"║")
+8252 FORMAT(4x,"║  Timers              ║  ",20x,I3,2x,"║")
+8253 FORMAT(4x,"║  WriteXYZ            ║  ",21x,L2,2x,"║")
+8254 FORMAT(4x,"║  WriteForces         ║  ",21x,L2,2x,"║")
+8255 FORMAT(4x,"║  Dipole              ║  ",21x,L2,2x,"║")
+8256 FORMAT(4x,"║  Mulliken            ║  ",21x,L2,2x,"║")
+8257 FORMAT(4x,"║  Lowdin              ║  ",21x,L2,2x,"║")
+8258 FORMAT(4x,"║  Fukui               ║  ",21x,L2,2x,"║")
+8259 FORMAT(4x,"║  print_coeffs        ║  ",21x,L2,2x,"║")
+8260 FORMAT(4x,"║  restart_freq        ║  ",17x,I6,2x,"║")
+8261 FORMAT(4x,"║  Frestart            ║  ",A25,"║")
+8262 FORMAT(4x,"║  WriteDens           ║  ",21x,L2,2x,"║")
+8263 FORMAT(4x,"║  td_rst_freq         ║  ",17x,I6,2x,"║")
+8264 FORMAT(4x,"║  VCinp               ║  ",21x,L2,2x,"║")
+8265 FORMAT(4x,"║  Frestartin          ║  ",A25,"║")
+8266 FORMAT(4x,"║  Tdrestart           ║  ",21x,L2,2x,"║")
+8267 FORMAT(4x,"║  gaussian_convert    ║  ",21x,L2,2x,"║")
 ! TD and Field options
-8300 FORMAT(4x,"║  Timedep             ║  ",21x,i2,2x,"║")
+8300 FORMAT(4x,"║  Timedep             ║  ",21x,I2,2x,"║")
 8301 FORMAT(4x,"║  NTDstep             ║  ",13x,i10,2x,"║")
-8302 FORMAT(4x,"║  TDstep              ║  ",9x,f14.8,2x,"║")
-8303 FORMAT(4x,"║  Propagator          ║  ",21x,i2,2x,"║")
-8304 FORMAT(4x,"║  NBCH                ║  ",19x,i4,2x,"║")
-8305 FORMAT(4x,"║  Field               ║  ",21x,l2,2x,"║")
-8306 FORMAT(4x,"║  A0                  ║  ",9x,f14.8,2x,"║")
-8307 FORMAT(4x,"║  Epsilon             ║  ",9x,f14.8,2x,"║")
-8308 FORMAT(4x,"║  Fx                  ║  ",9x,f14.8,2x,"║")
-8309 FORMAT(4x,"║  Fy                  ║  ",9x,f14.8,2x,"║")
-8310 FORMAT(4x,"║  Fz                  ║  ",9x,f14.8,2x,"║")
-8311 FORMAT(4x,"║  n_fields_iso        ║  ",18x,i5,2x,"║")
-8312 FORMAT(4x,"║  n_fields_aniso      ║  ",18x,i5,2x,"║")
-8313 FORMAT(4x,"║  field_iso_file      ║  ",a25,"║")
-8314 FORMAT(4x,"║  field_aniso_file    ║  ",a25,"║")
+8302 FORMAT(4x,"║  TDstep              ║  ",9x,F14.8,2x,"║")
+8303 FORMAT(4x,"║  Propagator          ║  ",21x,I2,2x,"║")
+8304 FORMAT(4x,"║  NBCH                ║  ",19x,I4,2x,"║")
+8305 FORMAT(4x,"║  Field               ║  ",21x,L2,2x,"║")
+8306 FORMAT(4x,"║  A0                  ║  ",9x,F14.8,2x,"║")
+8307 FORMAT(4x,"║  Epsilon             ║  ",9x,F14.8,2x,"║")
+8308 FORMAT(4x,"║  Fx                  ║  ",9x,F14.8,2x,"║")
+8309 FORMAT(4x,"║  Fy                  ║  ",9x,F14.8,2x,"║")
+8310 FORMAT(4x,"║  Fz                  ║  ",9x,F14.8,2x,"║")
+8311 FORMAT(4x,"║  n_fields_iso        ║  ",18x,I5,2x,"║")
+8312 FORMAT(4x,"║  n_fields_aniso      ║  ",18x,I5,2x,"║")
+8313 FORMAT(4x,"║  field_iso_file      ║  ",A25,"║")
+8314 FORMAT(4x,"║  field_aniso_file    ║  ",A25,"║")
 !Effective Core Potential
-8350 FORMAT(4x,"║  Ecpmode             ║  ",21x,l2,2x,"║")
-8351 FORMAT(4x,"║  Ecptypes            ║  ",20x,i3,2x,"║")
-8352 FORMAT(4x,"║  TipeECP             ║  ",a25,"║")
-8354 FORMAT(4x,"║  Fock_ECP_read       ║  ",21x,l2,2x,"║")
-8355 FORMAT(4x,"║  Fock_ECP_write      ║  ",21x,l2,2x,"║")
-8356 FORMAT(4x,"║  cutECP              ║  ",21x,l2,2x,"║")
-8357 FORMAT(4x,"║  cut2_0              ║  ",9x,f14.8,2x,"║")
-8358 FORMAT(4x,"║  cut3_0              ║  ",9x,f14.8,2x,"║")
-8359 FORMAT(4x,"║  Verbose_ECP         ║  ",21x,i2,2x,"║")
-8360 FORMAT(4x,"║  ECP_debug           ║  ",21x,l2,2x,"║")
-8361 FORMAT(4x,"║  fulltimer_ECP       ║  ",21x,l2,2x,"║")
-8362 FORMAT(4x,"║  local_nonlocal      ║  ",21x,i2,2x,"║")
-8363 FORMAT(4x,"║  ECP_full_range_int  ║  ",21x,l2,2x,"║")
+8350 FORMAT(4x,"║  Ecpmode             ║  ",21x,L2,2x,"║")
+8351 FORMAT(4x,"║  Ecptypes            ║  ",20x,I3,2x,"║")
+8352 FORMAT(4x,"║  TipeECP             ║  ",A25,"║")
+8354 FORMAT(4x,"║  Fock_ECP_read       ║  ",21x,L2,2x,"║")
+8355 FORMAT(4x,"║  Fock_ECP_write      ║  ",21x,L2,2x,"║")
+8356 FORMAT(4x,"║  cutECP              ║  ",21x,L2,2x,"║")
+8357 FORMAT(4x,"║  cut2_0              ║  ",9x,F14.8,2x,"║")
+8358 FORMAT(4x,"║  cut3_0              ║  ",9x,F14.8,2x,"║")
+8359 FORMAT(4x,"║  Verbose_ECP         ║  ",21x,I2,2x,"║")
+8360 FORMAT(4x,"║  ECP_debug           ║  ",21x,L2,2x,"║")
+8361 FORMAT(4x,"║  fulltimer_ECP       ║  ",21x,L2,2x,"║")
+8362 FORMAT(4x,"║  local_nonlocal      ║  ",21x,I2,2x,"║")
+8363 FORMAT(4x,"║  ECP_full_range_int  ║  ",21x,L2,2x,"║")
 ! Minimization and restraints
-8370 FORMAT(4x,"║  Steep               ║  ",21x,l2,2x,"║")
-8371 FORMAT(4x,"║  minimzation_steep   ║  ",9x,f14.8,2x,"║")
-8372 FORMAT(4x,"║  Energy_cut          ║  ",9x,f14.8,2x,"║")
-8373 FORMAT(4x,"║  Force_cut           ║  ",9x,f14.8,2x,"║")
-8374 FORMAT(4x,"║  n_min_steeps        ║  ",18x,i5,2x,"║")
-8375 FORMAT(4x,"║  lineal_search       ║  ",21x,l2,2x,"║")
-8376 FORMAT(4x,"║  n_points            ║  ",18x,i5,2x,"║")
-8377 FORMAT(4x,"║  number_restr        ║  ",18x,i5,2x,"║")
+8370 FORMAT(4x,"║  Steep               ║  ",21x,L2,2x,"║")
+8371 FORMAT(4x,"║  minimzation_steep   ║  ",9x,F14.8,2x,"║")
+8372 FORMAT(4x,"║  Energy_cut          ║  ",9x,F14.8,2x,"║")
+8373 FORMAT(4x,"║  Force_cut           ║  ",9x,F14.8,2x,"║")
+8374 FORMAT(4x,"║  n_min_steeps        ║  ",18x,I5,2x,"║")
+8375 FORMAT(4x,"║  lineal_search       ║  ",21x,L2,2x,"║")
+8376 FORMAT(4x,"║  n_points            ║  ",18x,I5,2x,"║")
+8377 FORMAT(4x,"║  number_restr        ║  ",18x,I5,2x,"║")
 ! Cubegen
-8400 FORMAT(4x,"║  Cubegen_only        ║  ",21x,l2,2x,"║")
-8401 FORMAT(4x,"║  Cube_Res            ║  ",18x,i5,2x,"║")
-8402 FORMAT(4x,"║  Cube_Dens           ║  ",21x,l2,2x,"║")
-8403 FORMAT(4x,"║  Cube_Dens_file      ║  ",a25,"║")
-8404 FORMAT(4x,"║  Cube_Orb            ║  ",21x,l2,2x,"║")
-8405 FORMAT(4x,"║  Cube_Sel            ║  ",18x,i5,2x,"║")
-8406 FORMAT(4x,"║  Cube_Orb_File       ║  ",a25,"║")
-8407 FORMAT(4x,"║  Cube_Elec           ║  ",21x,l2,2x,"║")
-8408 FORMAT(4x,"║  Cube_Elec_File      ║  ",a25,"║")
+8400 FORMAT(4x,"║  Cubegen_only        ║  ",21x,L2,2x,"║")
+8401 FORMAT(4x,"║  Cube_Res            ║  ",18x,I5,2x,"║")
+8402 FORMAT(4x,"║  Cube_Dens           ║  ",21x,L2,2x,"║")
+8403 FORMAT(4x,"║  Cube_Dens_file      ║  ",A25,"║")
+8404 FORMAT(4x,"║  Cube_Orb            ║  ",21x,L2,2x,"║")
+8405 FORMAT(4x,"║  Cube_Sel            ║  ",18x,I5,2x,"║")
+8406 FORMAT(4x,"║  Cube_Orb_File       ║  ",A25,"║")
+8407 FORMAT(4x,"║  Cube_Elec           ║  ",21x,L2,2x,"║")
+8408 FORMAT(4x,"║  Cube_Elec_File      ║  ",A25,"║")
 ! GPU options
-8420 FORMAT(4x,"║  assign_all_functions║  ",21x,l2,2x,"║")
-8421 FORMAT(4x,"║  energy_all_iteration║  ",21x,l2,2x,"║")
-8422 FORMAT(4x,"║  remove_zero_weights ║  ",21x,l2,2x,"║")
-8423 FORMAT(4x,"║  max_function_exponen║  ",18x,i5,2x,"║")
-8424 FORMAT(4x,"║  min_points_per_cube ║  ",18x,i5,2x,"║")
-8425 FORMAT(4x,"║  little_cube_size    ║  ",9x,f14.8,2x,"║")
-8426 FORMAT(4x,"║  free_global_memory  ║  ",9x,f14.8,2x,"║")
-8427 FORMAT(4x,"║  sphere_radius       ║  ",9x,f14.8,2x,"║")
+8420 FORMAT(4x,"║  assign_all_functions║  ",21x,L2,2x,"║")
+8421 FORMAT(4x,"║  energy_all_iteration║  ",21x,L2,2x,"║")
+8422 FORMAT(4x,"║  remove_zero_weights ║  ",21x,L2,2x,"║")
+8423 FORMAT(4x,"║  max_function_exponen║  ",18x,I5,2x,"║")
+8424 FORMAT(4x,"║  min_points_per_cube ║  ",18x,I5,2x,"║")
+8425 FORMAT(4x,"║  little_cube_size    ║  ",9x,F14.8,2x,"║")
+8426 FORMAT(4x,"║  free_global_memory  ║  ",9x,F14.8,2x,"║")
+8427 FORMAT(4x,"║  sphere_radius       ║  ",9x,F14.8,2x,"║")
 ! Transport and DFTB
-8450 FORMAT(4x,"║  transport_calc      ║  ",21x,l2,2x,"║")
-8451 FORMAT(4x,"║  generate_rho0       ║  ",21x,l2,2x,"║")
-8452 FORMAT(4x,"║  driving_rate        ║  ",9x,f14.8,2x,"║")
-8453 FORMAT(4x,"║  gate_field          ║  ",21x,l2,2x,"║")
-8454 FORMAT(4x,"║  pop_drive           ║  ",20x,i3,2x,"║")
-8455 FORMAT(4x,"║  save_charge_freq    ║  ",18x,i5,2x,"║")
-8456 FORMAT(4x,"║  dftb_calc           ║  ",21x,l2,2x,"║")
-8457 FORMAT(4x,"║  MTB                 ║  ",18x,i5,2x,"║")
-8458 FORMAT(4x,"║  alfaTB              ║  ",9x,f14.8,2x,"║")
-8459 FORMAT(4x,"║  betaTB              ║  ",9x,f14.8,2x,"║")
-8460 FORMAT(4x,"║  gammaTB             ║  ",9x,f14.8,2x,"║")
-8461 FORMAT(4x,"║  Vbias_TB            ║  ",9x,f14.8,2x,"║")
-8462 FORMAT(4x,"║  start_tdtb          ║  ",18x,i5,2x,"║")
-8463 FORMAT(4x,"║  end_tdtb            ║  ",18x,i5,2x,"║")
-8464 FORMAT(4x,"║  end_bTB             ║  ",18x,i5,2x,"║")
-8465 FORMAT(4x,"║  TBload              ║  ",21x,l2,2x,"║")
-8466 FORMAT(4x,"║  TBsave              ║  ",21x,l2,2x,"║")
+8450 FORMAT(4x,"║  transport_calc      ║  ",21x,L2,2x,"║")
+8451 FORMAT(4x,"║  generate_rho0       ║  ",21x,L2,2x,"║")
+8452 FORMAT(4x,"║  driving_rate        ║  ",9x,F14.8,2x,"║")
+8453 FORMAT(4x,"║  gate_field          ║  ",21x,L2,2x,"║")
+8454 FORMAT(4x,"║  pop_drive           ║  ",20x,I3,2x,"║")
+8455 FORMAT(4x,"║  save_charge_freq    ║  ",18x,I5,2x,"║")
+8456 FORMAT(4x,"║  dftb_calc           ║  ",21x,L2,2x,"║")
+8457 FORMAT(4x,"║  MTB                 ║  ",18x,I5,2x,"║")
+8458 FORMAT(4x,"║  alfaTB              ║  ",9x,F14.8,2x,"║")
+8459 FORMAT(4x,"║  betaTB              ║  ",9x,F14.8,2x,"║")
+8460 FORMAT(4x,"║  gammaTB             ║  ",9x,F14.8,2x,"║")
+8461 FORMAT(4x,"║  Vbias_TB            ║  ",9x,F14.8,2x,"║")
+8462 FORMAT(4x,"║  start_tdtb          ║  ",18x,I5,2x,"║")
+8463 FORMAT(4x,"║  end_tdtb            ║  ",18x,I5,2x,"║")
+8464 FORMAT(4x,"║  end_bTB             ║  ",18x,I5,2x,"║")
+8465 FORMAT(4x,"║  TBload              ║  ",21x,L2,2x,"║")
+8466 FORMAT(4x,"║  TBsave              ║  ",21x,L2,2x,"║")
 ! Ehrenfest
-8500 FORMAT(4x,"║  ndyn_steps          ║  ",17x,i6,2x,"║")
-8501 FORMAT(4x,"║  edyn_steps          ║  ",17x,i6,2x,"║")
-8502 FORMAT(4x,"║  nullify_forces      ║  ",21x,l2,2x,"║")
-8503 FORMAT(4x,"║  wdip_nfreq          ║  ",18x,i5,2x,"║")
-8504 FORMAT(4x,"║  wdip_fname          ║  ",a25,"║")
-8505 FORMAT(4x,"║  rsti_loads          ║  ",21x,l2,2x,"║")
-8506 FORMAT(4x,"║  rsto_saves          ║  ",21x,l2,2x,"║")
-8507 FORMAT(4x,"║  rsto_nfreq          ║  ",21x,l2,2x,"║")
-8508 FORMAT(4x,"║  rsti_fname          ║  ",a25,"║")
-8509 FORMAT(4x,"║  rsto_fname          ║  ",a25,"║")
-8510 FORMAT(4x,"║  eefld_on            ║  ",21x,l2,2x,"║")
-8511 FORMAT(4x,"║  eefld_ampx          ║  ",9x,f14.8,2x,"║")
-8512 FORMAT(4x,"║  eefld_ampy          ║  ",9x,f14.8,2x,"║")
-8513 FORMAT(4x,"║  eefld_ampz          ║  ",9x,f14.8,2x,"║")
-8514 FORMAT(4x,"║  eefld_timeamp       ║  ",9x,f14.8,2x,"║")
-8515 FORMAT(4x,"║  eefld_timepos       ║  ",9x,f14.8,2x,"║")
-8516 FORMAT(4x,"║  eefld_timegfh       ║  ",21x,l2,2x,"║")
-8517 FORMAT(4x,"║  eefld_timegih       ║  ",21x,l2,2x,"║")
-8518 FORMAT(4x,"║  eefld_wavelen       ║  ",9x,f14.8,2x,"║")
+8500 FORMAT(4x,"║  ndyn_steps          ║  ",17x,I6,2x,"║")
+8501 FORMAT(4x,"║  edyn_steps          ║  ",17x,I6,2x,"║")
+8502 FORMAT(4x,"║  nullify_forces      ║  ",21x,L2,2x,"║")
+8503 FORMAT(4x,"║  wdip_nfreq          ║  ",18x,I5,2x,"║")
+8504 FORMAT(4x,"║  wdip_fname          ║  ",A25,"║")
+8505 FORMAT(4x,"║  rsti_loads          ║  ",21x,L2,2x,"║")
+8506 FORMAT(4x,"║  rsto_saves          ║  ",21x,L2,2x,"║")
+8507 FORMAT(4x,"║  rsto_nfreq          ║  ",21x,L2,2x,"║")
+8508 FORMAT(4x,"║  rsti_fname          ║  ",A25,"║")
+8509 FORMAT(4x,"║  rsto_fname          ║  ",A25,"║")
+8510 FORMAT(4x,"║  eefld_on            ║  ",21x,L2,2x,"║")
+8511 FORMAT(4x,"║  eefld_ampx          ║  ",9x,F14.8,2x,"║")
+8512 FORMAT(4x,"║  eefld_ampy          ║  ",9x,F14.8,2x,"║")
+8513 FORMAT(4x,"║  eefld_ampz          ║  ",9x,F14.8,2x,"║")
+8514 FORMAT(4x,"║  eefld_timeamp       ║  ",9x,F14.8,2x,"║")
+8515 FORMAT(4x,"║  eefld_timepos       ║  ",9x,F14.8,2x,"║")
+8516 FORMAT(4x,"║  eefld_timegfh       ║  ",21x,L2,2x,"║")
+8517 FORMAT(4x,"║  eefld_timegih       ║  ",21x,L2,2x,"║")
+8518 FORMAT(4x,"║  eefld_wavelen       ║  ",9x,F14.8,2x,"║")
 ! Fock Bias Potentials
-8550 FORMAT(4x,"║  fockbias_is_active  ║  ",21x,l2,2x,"║")
-8551 FORMAT(4x,"║  fockbias_is_shaped  ║  ",21x,l2,2x,"║")
-8552 FORMAT(4x,"║  fockbias_timeamp0   ║  ",9x,f14.8,2x,"║")
-8553 FORMAT(4x,"║  fockbias_timegrow   ║  ",9x,f14.8,2x,"║")
-8554 FORMAT(4x,"║  fockbias_timefall   ║  ",9x,f14.8,2x,"║")
-8555 FORMAT(4x,"║  fockbias_readfile   ║  ",a25,"║")
+8550 FORMAT(4x,"║  fockbias_is_active  ║  ",21x,L2,2x,"║")
+8551 FORMAT(4x,"║  fockbias_is_shaped  ║  ",21x,L2,2x,"║")
+8552 FORMAT(4x,"║  fockbias_timeamp0   ║  ",9x,F14.8,2x,"║")
+8553 FORMAT(4x,"║  fockbias_timegrow   ║  ",9x,F14.8,2x,"║")
+8554 FORMAT(4x,"║  fockbias_timefall   ║  ",9x,F14.8,2x,"║")
+8555 FORMAT(4x,"║  fockbias_readfile   ║  ",A25,"║")
 end subroutine lionml_write_style
 
-subroutine write_Zlist_ECP(ZlistECP, D)
+subroutine write_Zlist_ECP_dull(ZlistECP, D)
+   implicit none
+   integer, intent(in) :: ZlistECP(128)
+   integer, intent(in) :: D
+   integer :: icount, kcount, lines, index
+
+   write(*, 9000, advance='no') "  ZListECP = "
+   if (D .lt. 1) then
+      write(*,*)
+      return;
+   else
+      if (D .lt. 21) then
+         do icount = 1, D-1
+            write(*, 9002, advance='no') ZlistECP(icount)
+         enddo
+      else
+         do icount = 1, 19
+            write(*, 9002, advance='no') ZlistECP(icount)
+         enddo
+         write(*, 9002) ZlistECP(20)
+         write(*, 9001, advance='no') "  "
+         if (D .lt. 46) then
+            do icount = 21, D-1
+               write(*, 9002, advance='no') ZlistECP(icount)
+            enddo
+         else
+            write(*, 9001, advance='no') "  "
+            lines = (D - 20) / 25
+            do icount=1, lines - 1
+               do kcount=1, 24
+                  index = 20 + kcount*icount
+                  write(*, 9002, advance='no') ZlistECP(index)
+               enddo
+               index = 20 + 25*icount
+               write(*, 9002) ZlistECP(index)
+               write(*, 9001, advance='no') "  "
+            enddo
+            do kcount = D - (20 + 25*(lines - 1)), D-1
+               index = 20 + kcount*lines
+               write(*, 9002, advance='no') ZlistECP(index)
+            enddo
+         endif
+      endif
+   endif
+   write(*,9002) ZlistECP(D)
+
+   return;
+
+9000 FORMAT(A)
+9001 FORMAT(A2)
+9002 FORMAT(I3)
+end subroutine write_Zlist_ECP_dull
+
+subroutine write_Zlist_ECP_style(ZlistECP, D)
    implicit none
    integer, intent(in) :: ZlistECP(128)
    integer, intent(in) :: D
    integer :: icount, kcount, lines, rest
 
    if (D .lt. 6) then
-     if (D .eq. 1) write(*,8538) ZlistECP(1)
-     if (D .eq. 2) write(*,8539) ZlistECP(1:2)
-     if (D .eq. 3) write(*,8540) ZlistECP(1:3)
-     if (D .eq. 4) write(*,8541) ZlistECP(1:4)
-     if (D .eq. 5) write(*,8542) ZlistECP(1:5)
+     if (D .eq. 1) write(*,9538) ZlistECP(1)
+     if (D .eq. 2) write(*,9539) ZlistECP(1:2)
+     if (D .eq. 3) write(*,9540) ZlistECP(1:3)
+     if (D .eq. 4) write(*,9541) ZlistECP(1:4)
+     if (D .eq. 5) write(*,9542) ZlistECP(1:5)
    else
       lines = D / 6
       rest  = mod(D, 6)
-      write(*,8543) ZlistECP(1:6)
+      write(*,9543) ZlistECP(1:6)
       do icount = 1, lines-1
          kcount = 6*icount + 1
-         write(*,8544) ZlistECP(kcount:kcount+5)
+         write(*,9544) ZlistECP(kcount:kcount+5)
       enddo
-      if (rest .eq. 1) write(*,8545) ZlistECP(6*lines+1:D)
-      if (rest .eq. 2) write(*,8546) ZlistECP(6*lines+1:D)
-      if (rest .eq. 3) write(*,8547) ZlistECP(6*lines+1:D)
-      if (rest .eq. 4) write(*,8548) ZlistECP(6*lines+1:D)
-      if (rest .eq. 5) write(*,8549) ZlistECP(6*lines+1:D)
+      if (rest .eq. 1) write(*,9545) ZlistECP(6*lines+1:D)
+      if (rest .eq. 2) write(*,9546) ZlistECP(6*lines+1:D)
+      if (rest .eq. 3) write(*,9547) ZlistECP(6*lines+1:D)
+      if (rest .eq. 4) write(*,9548) ZlistECP(6*lines+1:D)
+      if (rest .eq. 5) write(*,9549) ZlistECP(6*lines+1:D)
    endif
 
-8538 FORMAT(4x,"║  Zlistecp            ║ ",i3,"                       ║")
-8539 FORMAT(4x,"║  Zlistecp            ║ ",i3,i3,"                    ║")
-8540 FORMAT(4x,"║  Zlistecp            ║ ",i3,i3,i3,"                 ║")
-8541 FORMAT(4x,"║  Zlistecp            ║ ",i3,i3,i3,i3,"              ║")
-8542 FORMAT(4x,"║  Zlistecp            ║ ",i3,i3,i3,i3,i3,"           ║")
-8543 FORMAT(4x,"║  Zlistecp            ║ ",i3,i3,i3,i3,i3,i3,"        ║")
-8544 FORMAT(4x,"║                      ║ ",i3,i3,i3,i3,i3,i3,"        ║")
-8545 FORMAT(4x,"║                      ║ ",i3"                        ║")
-8546 FORMAT(4x,"║                      ║ ",i3,i3,"                    ║")
-8547 FORMAT(4x,"║                      ║ ",i3,i3,i3,"                 ║")
-8548 FORMAT(4x,"║                      ║ ",i3,i3,i3,i3"               ║")
-8549 FORMAT(4x,"║                      ║ ",i3,i3,i3,i3,i3"            ║")
-end subroutine write_Zlist_ECP
-
+   return;
+9538 FORMAT(4x,"║  Zlistecp            ║ ",I3,"                       ║")
+9539 FORMAT(4x,"║  Zlistecp            ║ ",I3,I3,"                    ║")
+9540 FORMAT(4x,"║  Zlistecp            ║ ",I3,I3,I3,"                 ║")
+9541 FORMAT(4x,"║  Zlistecp            ║ ",I3,I3,I3,I3,"              ║")
+9542 FORMAT(4x,"║  Zlistecp            ║ ",I3,I3,I3,I3,I3,"           ║")
+9543 FORMAT(4x,"║  Zlistecp            ║ ",I3,I3,I3,I3,I3,I3,"        ║")
+9544 FORMAT(4x,"║                      ║ ",I3,I3,I3,I3,I3,I3,"        ║")
+9545 FORMAT(4x,"║                      ║ ",I3"                        ║")
+9546 FORMAT(4x,"║                      ║ ",I3,I3,"                    ║")
+9547 FORMAT(4x,"║                      ║ ",I3,I3,I3,"                 ║")
+9548 FORMAT(4x,"║                      ║ ",I3,I3,I3,I3"               ║")
+9549 FORMAT(4x,"║                      ║ ",I3,I3,I3,I3,I3"            ║")
+end subroutine write_Zlist_ECP_style
 end module
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

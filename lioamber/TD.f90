@@ -842,8 +842,8 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
       call g2g_timer_sum_pause("TD - Exc")
    endif
 
-   ! ELECTRIC FIELD CASE - Perturbation type: Gaussian.
-   if (.not.transport_calc) call field_calc(E1, time)
+   ! ELECTRIC FIELD CASE - Perturbation type: Gaussian (default).
+   call field_calc(E1, time)
 
    ! Add 1e contributions to E1.
    do icount = 1, MM

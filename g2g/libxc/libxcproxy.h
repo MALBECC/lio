@@ -69,6 +69,7 @@ public:
                 T& ec,
                 T& y2a);
 
+    void init (int exId, int xcId, int nspin);
     void closeProxy ();
 
 };
@@ -85,7 +86,7 @@ template <class T, int width>
 LibxcProxy <T, width>::LibxcProxy (int exchangeFunctionalId, int correlationFuncionalId, int nSpin)
 {
 #ifdef _DEBUG
-    printf("LibxcProxy::LibxcProxy (%i,%i,%i) \n", exchangeFunctionalId, correlationFuncionalId, nSpin);
+    printf("LibxcProxy::LibxcProxy (%u, %u, %u) \n", exchangeFunctionalId, correlationFuncionalId, nSpin);
 #endif
 
     funcIdForExchange = exchangeFunctionalId;
@@ -105,6 +106,26 @@ LibxcProxy <T, width>::LibxcProxy (int exchangeFunctionalId, int correlationFunc
 }
 
 template <class T, int width>
+void LibxcProxy<T, width>::init (int exchangeFunctionalId, int correlationFunctionalId, int nSpin)
+{
+    printf("LibxcProxy::init(%u, %u, %u)\n", exchangeFunctionalId, correlationFunctionalId, nSpin);
+
+    funcIdForExchange = exchangeFunctionalId;
+    funcIdForCorrelation = correlationFunctionalId;
+    nspin = nSpin;
+
+    if (xc_func_init (&funcForExchange, funcIdForExchange, nspin) != 0) {
+        fprintf (stderr, "Functional '%d' not found\n", funcIdForExchange);
+	exit(-1);
+    }
+
+    if (xc_func_init (&funcForCorrelation, funcIdForCorrelation, nspin) != 0){
+	fprintf (stderr, "Functional '%d' not found\n", funcIdForCorrelation);
+	exit(-1);
+    }
+}
+
+template <class T, int width>
 LibxcProxy <T, width>::~LibxcProxy ()
 {
     xc_func_end (&funcForExchange);
@@ -114,6 +135,7 @@ LibxcProxy <T, width>::~LibxcProxy ()
 template <class T, int width>
 void LibxcProxy <T, width>::closeProxy ()
 {
+    printf("LibxcProxy::closeProxy()\n");
     xc_func_end (&funcForExchange);
     xc_func_end (&funcForCorrelation);
 }
@@ -203,6 +225,19 @@ void LibxcProxy <T, width>::doGGA(T dens,
     return;
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// LibxcProxy::doGGA
+// Calls the xc_gga function from libxc for multiple points.
+// dens: pointer for the density array
+// number_of_points: the size of all the input arrays
+// grad: 
+// hess1:
+// hess2:
+// ex: here goes the results after calling xc_gga from libxc for the exchange functional
+// ec: here goes the results after calling xc_gga from libxc for the correlation functional
+// y2a:
+//
 template <class T, int width>
 void LibxcProxy <T, width>::doGGA(T* dens,
     const int number_of_points,
@@ -217,33 +252,33 @@ void LibxcProxy <T, width>::doGGA(T* dens,
 //    printf("LibxcProxy::doGGA cpu multiple (...) \n");
 //#endif
 
-    int array_size = sizeof(T)*number_of_points;
-    T* rho = (T*)malloc(array_size);
+    int array_size = sizeof(double)*number_of_points;
+    double* rho = (double*)malloc(array_size);
     for (int i=0; i<number_of_points; i++) {
-	rho[i] = dens[i];
+	rho[i] = (double)dens[i];
     }
 
     // Libxc needs the 'contracted gradient'
-    T* sigma = (T*)malloc(array_size);
+    double* sigma = (double*)malloc(array_size);
     for (int i=0; i< number_of_points; i++) {
-	sigma[i] = (grad[i].x * grad[i].x) + (grad[i].y * grad[i].y) + (grad[i].z * grad[i].z);
+	sigma[i] = (double)((grad[i].x * grad[i].x) + (grad[i].y * grad[i].y) + (grad[i].z * grad[i].z));
     }
-    T* exchange = (T*)malloc(array_size);
-    T* correlation = (T*)malloc(array_size);
+    double* exchange = (double*)malloc(array_size);
+    double* correlation = (double*)malloc(array_size);
 
     // The outputs for exchange
-    T* vrho = (T*)malloc(array_size);
-    T* vsigma = (T*)malloc(array_size);
-    T* v2rho = (T*)malloc(array_size);
-    T* v2rhosigma = (T*)malloc(array_size);
-    T* v2sigma = (T*)malloc(array_size);
+    double* vrho = (double*)malloc(array_size);
+    double* vsigma = (double*)malloc(array_size);
+    double* v2rho = (double*)malloc(array_size);
+    double* v2rhosigma = (double*)malloc(array_size);
+    double* v2sigma = (double*)malloc(array_size);
 
     // The outputs for correlation
-    T* vrhoC = (T*)malloc(array_size);
-    T* vsigmaC = (T*)malloc(array_size);
-    T* v2rhoC = (T*)malloc(array_size);
-    T* v2rhosigmaC = (T*)malloc(array_size);
-    T* v2sigmaC = (T*)malloc(array_size);
+    double* vrhoC = (double*)malloc(array_size);
+    double* vsigmaC = (double*)malloc(array_size);
+    double* v2rhoC = (double*)malloc(array_size);
+    double* v2rhosigmaC = (double*)malloc(array_size);
+    double* v2sigmaC = (double*)malloc(array_size);
 
     try {
         xc_gga (&funcForExchange, number_of_points,

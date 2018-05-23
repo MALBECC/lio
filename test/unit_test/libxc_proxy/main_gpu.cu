@@ -1011,6 +1011,20 @@ void pointer_proxy_test0001()
     free(proxy_pointer);
 }
 
+void init_proxy_test0001()
+{
+    printf("init_proxy_test0001()\n");
+    LibxcProxy<float,4> proxy;
+
+    // Create the libxcproxy
+    const int nspin = 1;
+    const int functionalExchange = 1101;
+    const int functionalCorrelation = 1130;
+
+    proxy.init(functionalExchange, functionalCorrelation, nspin);
+    //proxy.closeProxy();
+}
+
 int main()
 {
     printf("Test: Libxc Proxy GPU - BEGIN\n");
@@ -1028,6 +1042,7 @@ int main()
     //conversionTest0004(10);
     //data_type_test003();
     //pointer_proxy_test0001();
+    init_proxy_test0001 ();
     printf("Test: Libxc Proxy GPU - END\n");
     return 0;
 }

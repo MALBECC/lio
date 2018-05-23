@@ -324,6 +324,24 @@ void testProxy06 ()
     printf ("=================================== \n");
 }
 
+void testProxy07 ()
+{
+    printf ("=================================== \n");
+    printf ("testProxy07 \n");
+    printf ("Test del init del proxy hacia libxc \n");
+    printf ("=================================== \n");
+
+    int nspin = XC_UNPOLARIZED;
+    int functionalExchange = XC_GGA_X_PBE;
+    int functionalCorrelation = XC_GGA_C_PBE;
+
+    LibxcProxy<double,0> aProxy;
+    aProxy.init (functionalExchange, functionalCorrelation, nspin);
+
+    aProxy.close ();
+
+    printf ("=================================== \n");
+}
 
 
 }

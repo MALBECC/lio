@@ -13,7 +13,8 @@ void runAllProxyCPUTests () {
 //    libxcProxyTest::testProxy03<double> (true);
 //    libxcProxyTest::testProxy05<double> ();
 //    libxcProxyTest::testProxy05<float> ();
-    libxcProxyTest::testProxy06 ();
+//    libxcProxyTest::testProxy06 ();
+    libxcProxyTest::testProxy07 ();
 }
 
 void runAllProxyGPUTest () {

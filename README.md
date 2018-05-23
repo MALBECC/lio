@@ -81,12 +81,12 @@ LIBXC_INCLUDES=points to the path where the libxc include files where installed 
   4. Libxc has 3 compilation options for lio, these are
 ```
 libxc=0 - No libxc (for backwards compatibility with lio)
-libxc=1 - Use libxc in GPU mode
-libxc=2 - Use libxc in CPU mode
+libxc=1 - Use libxc in CPU mode
+libxc=2 - Use libxc in GPU mode
 ```
   5.If you want to compile lio with libxc in GPU mode, type the following command
 ```
-make cuda=1 libxc=1
+make cuda=1 libxc=2
 ```
   6. To run the simulations using the functionals from libxc you'll have to add the following variables in the *****.in files:
 ```

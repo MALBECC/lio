@@ -10,7 +10,7 @@ ifeq ($(full_double),1)
     EXTRAS += -DFULL_DOUBLE=1
 endif
 
-all:  main_gpu
+all: main_gpu
 
 main_cpu: main_cpu.cpp 
 	nvcc -G -g -o main_cpu main_cpu.cpp $(CFLAGS) $(CLIBS) -DCPU_KERNELS

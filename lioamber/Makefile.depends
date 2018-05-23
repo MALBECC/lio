@@ -85,7 +85,7 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/esp_funct.mod
 OBJECTS += lionml_data.o
 OBJECTS += lionml_subs.o
 
-tmplist := init_lio.f90
+tmplist := init_lio.o input_read.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/lionml_subs.mod
 
 tmplist := lionml_subs.o
@@ -138,7 +138,7 @@ tmplist :=
 tmplist += SCF.o SCF_exter.o liomain.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ehrensubs.mod
 
-tmplist := ehrensubs.o init_lio.o lionml_data.o
+tmplist := ehrensubs.o init_lio.o lionml_data.o dft_get_qm_forces.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ehrendata.mod
 
 

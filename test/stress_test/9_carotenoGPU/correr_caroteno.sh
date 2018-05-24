@@ -36,13 +36,13 @@ echo "STRESS TEST: caroteno_GPU" >> $SALIDA
 counter=1
 while [ $counter -le $iteraciones ]
 do
-    echo "================="
-    echo "= Test $counter/$iteraciones        ="
-    echo $LIOBIN -i caroteno.in -b basis -c caroteno.xyz -v
+#    echo "================="
+#    echo "= Test $counter/$iteraciones        ="
+#    echo $LIOBIN -i caroteno.in -b basis -c caroteno.xyz -v
     echo "=================" >> $SALIDA
     echo "= Test $counter        =" >> $SALIDA
     echo "=================" >> $SALIDA
-    $LIOBIN -i carotenox.in -b DZVP  -c caroteno.xyz -v >> $SALIDA
+    $LIOBIN -i carotenox.in -b DZVP -c caroteno.xyz -v >> $SALIDA
     ((counter++))
 done
 

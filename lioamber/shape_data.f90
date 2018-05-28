@@ -89,14 +89,15 @@ contains
       real*8  :: in_time, period
       integer :: icount, calc_coord_g
 
-      if ( (time.gt.this%time_end).and.(.not.(this%periodic)) ) then
-         shape_mag = 0.0D0
-         return
-      elseif (this%periodic) then
+      if (.not.(this%periodic)) then
+         if ((time.gt.this%time_end).or.(time.lt.this%time_start)) then
+            shape_mag = 0.0D0
+            return
+         endif
+         in_time = time
+      else
          period  = this%time_end - this%time_start
          in_time = time  - floor(time/period) * period
-      else
-         in_time = time
       endif
 
       select case (this%shape_type)

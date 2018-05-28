@@ -2241,9 +2241,21 @@ void do_libxc_exchange_correlation_gpu_float (int number_of_points,
 
     //////////////////////////////
     // MAKE THE CALLS
+/*
     libxc_exchange_correlation_gpu<float, true, true, false> (
 	&libxcProxy,
 	energy_gpu,
+	factor_gpu,
+	number_of_points,
+	accumulated_density_gpu,
+	dxyz_gpu,
+        dd1_gpu,
+	dd2_gpu);
+*/
+
+    libxc_exchange_correlation_gpu<float, false, true, false> (
+	&libxcProxy,
+	NULL,
 	factor_gpu,
 	number_of_points,
 	accumulated_density_gpu,

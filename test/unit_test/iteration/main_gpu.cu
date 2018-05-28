@@ -601,6 +601,179 @@ void iteration_test0009() {
 }
 
 
+//////////////////////////////////////////////////////////////////
+// ITERATION TEST0010 - Simulamos una iteracion del core de lio
+// para el caso Float, false, true, false del template
+void iteration_test0010() {
+    printf("accumulate_data_for_libxc_test0010() FLOATS\n");
+    cudaError_t err = cudaSuccess;
+
+    uint number_of_points = 221;
+    uint vec_size = sizeof(G2G::vec_type<float,4>)*number_of_points;
+
+    // Input
+    G2G::vec_type<float,4>* dxyz_gpu_in = NULL;
+    G2G::vec_type<float,4>* dd1_gpu_in = NULL;
+    G2G::vec_type<float,4>* dd2_gpu_in = NULL;
+
+    // Accumulate
+    G2G::vec_type<float,4>* dxyz_gpu_accum = NULL;
+    G2G::vec_type<float,4>* dd1_gpu_accum = NULL;
+    G2G::vec_type<float,4>* dd2_gpu_accum = NULL;
+
+    // Alloc memory for the arrays.
+    cudaMalloc ((void**)&dxyz_gpu_in, vec_size);
+    cudaMalloc ((void**)&dd1_gpu_in, vec_size);
+    cudaMalloc ((void**)&dd2_gpu_in, vec_size);
+
+    cudaMalloc ((void**)&dxyz_gpu_accum, vec_size);
+    cudaMalloc ((void**)&dd1_gpu_accum, vec_size);
+    cudaMalloc ((void**)&dd2_gpu_accum, vec_size);
+
+    // Now the arrays for energy, factors, point_weight and partial_density
+    float *point_weights_gpu_in = NULL;
+    float *partial_density_gpu_in = NULL;
+    float *partial_density_gpu_accum = NULL;
+
+    // Create the arrays in CUDA memory.
+    uint size = number_of_points * sizeof(float);
+    err = cudaMalloc((void**)&point_weights_gpu_in, size);
+    if (err != cudaSuccess)
+    {
+	printf("Failed to allocate vector point_weights_gpu_in!\n");
+    }
+
+    err = cudaMalloc((void**)&partial_density_gpu_in, size);
+    if (err != cudaSuccess)
+    {
+	printf("Failed to allocate vector partial_density_gpu_in!\n");
+    }
+
+    err = cudaMalloc((void**)&partial_density_gpu_accum, size);
+    if (err != cudaSuccess)
+    {
+	printf("Failed to allocate vector partial_density_gpu_accum!\n");
+    }
+
+    // Now the arrays for energy, factors
+    float *energy_gpu_in = NULL;
+    float *factor_gpu_in = NULL;
+    err = cudaMalloc((void**)&energy_gpu_in, size);
+    if (err != cudaSuccess)
+    {
+	printf("Failed to allocate vector energy_gpu!\n");
+    }
+
+    err = cudaMalloc((void**)&factor_gpu_in, size);
+    if (err != cudaSuccess)
+    {
+	printf("Failed to allocate vector factor_gpu!\n");
+    }
+
+    // Launch the CUDA Kernel
+    int numElements = 221;
+    int threadsPerBlock = 32;
+    int blocksPerGrid = (numElements + threadsPerBlock - 1) / threadsPerBlock;
+    uint block_height = 1;
+
+    ///////////////////////
+    // Set data
+    float* partial_densities_cpu = dens_221_f;
+    float* point_weights_cpu = dens_221_f;
+
+    cudaMemset(energy_gpu_in, 0, size);
+    cudaMemset(factor_gpu_in, 0, size);
+    cudaMemcpy(point_weights_gpu_in, point_weights_cpu, size, cudaMemcpyHostToDevice);
+    cudaMemcpy(partial_density_gpu_in, partial_densities_cpu, size, cudaMemcpyHostToDevice);
+
+    cudaMemcpy(dxyz_gpu_in, grad_221_f, vec_size, cudaMemcpyHostToDevice);
+    cudaMemcpy(dd1_gpu_in, hess1_221_f, vec_size, cudaMemcpyHostToDevice);
+    cudaMemcpy(dd2_gpu_in, hess2_221_f, vec_size, cudaMemcpyHostToDevice);
+
+    cudaMemset(dxyz_gpu_accum,0,vec_size);
+    cudaMemset(dd1_gpu_accum,0,vec_size);
+    cudaMemset(dd2_gpu_accum,0,vec_size);
+
+    // Create the libxcproxy
+    const int nspin = 1;
+    const int functionalExchange = 1101;
+    const int functionalCorrelation = 1130;
+    LibxcProxy<float,4> libxcProxy(functionalExchange, functionalCorrelation, nspin);
+
+    /////////////////////////////////
+    // LIBXC VERSION
+    printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
+    // ACCUMULATE DATA
+    gpu_accumulate_point_for_libxc<float,false,true,false><<<blocksPerGrid,threadsPerBlock>>> (point_weights_gpu_in,
+	number_of_points, block_height,
+	partial_density_gpu_in, dxyz_gpu_in, dd1_gpu_in, dd2_gpu_in,
+	partial_density_gpu_accum, dxyz_gpu_accum, dd1_gpu_accum, dd2_gpu_accum);
+
+    // EXCHANGE_CORRELATION WITH LIBXC_CUDA
+    // Calculate exc_corr and y2a
+    libxc_exchange_correlation_gpu<float, false, true, false> (&libxcProxy,
+	NULL,
+	factor_gpu_in,
+	number_of_points,
+	partial_density_gpu_accum,
+	dxyz_gpu_accum,
+        dd1_gpu_accum,
+	dd2_gpu_accum);
+
+    // MERGE RESULTS.
+    // Join the results.
+    gpu_accumulate_energy_and_forces_from_libxc<float, false, true, false><<<blocksPerGrid, threadsPerBlock>>> (
+	NULL,
+	factor_gpu_in,
+	point_weights_gpu_in,
+	number_of_points,
+	partial_density_gpu_accum);
+
+    ///////////////////////////
+    // Print libxc results
+    // Allocate the host input vectors
+    float *energy_cpu = (float *)malloc(size);
+    float *factor_cpu = (float *)malloc(size);
+
+    // Copy the vectors from gpu to cpu
+    // Be aware that energy_gpu can be NULL.
+    //err = cudaMemcpy(energy_cpu, energy_gpu_in, size, cudaMemcpyDeviceToHost);
+    //if (err != cudaSuccess)
+    //{
+    //    printf("Failed to copy vector energy_gpu_in from device to host!\n");
+    //    exit(EXIT_FAILURE);
+    //}
+
+    err = cudaMemcpy(factor_cpu, factor_gpu_in, size, cudaMemcpyDeviceToHost);
+    if (err != cudaSuccess)
+    {
+        printf("Failed to copy vector factor_gpu_in from device to host!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    print_accumulate_point_data (NULL, NULL, NULL, energy_cpu, factor_cpu, NULL, NULL, number_of_points);
+
+    ////////////////////////////
+    // Free Memory CPU
+    free(energy_cpu);
+    free(factor_cpu);
+
+    ///////////////////////////
+    // Free memory GPU
+    cudaFree (point_weights_gpu_in);
+    cudaFree (partial_density_gpu_in);
+    cudaFree (partial_density_gpu_accum);
+    cudaFree (energy_gpu_in);
+    cudaFree (factor_gpu_in);
+    cudaFree (dxyz_gpu_in);
+    cudaFree (dd1_gpu_in);
+    cudaFree (dd2_gpu_in);
+    cudaFree (dxyz_gpu_accum);
+    cudaFree (dd1_gpu_accum);
+    cudaFree (dd2_gpu_accum);
+}
+
+
 ////////////////////////////////////////////////////////////////
 // Exchange correlation for DOUBLES
 
@@ -859,9 +1032,10 @@ int main(int argc, char **argv)
 
     //iteration_test0007();
     //iteration_test0008();
-    for (int i=0; i<100; i++) {
-        iteration_test0009();
-    }
+    //for (int i=0; i<100; i++) {
+    //    iteration_test0009();
+    //}
+    iteration_test0010();
 
     printf("*************************\n");
     printf("**      Test End       **\n");

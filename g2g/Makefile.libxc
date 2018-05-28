@@ -25,5 +25,3 @@ ifeq ($(full_double),1)
 else
     CXXFLAGS += -DFULL_DOUBLE=0
 endif
-
-

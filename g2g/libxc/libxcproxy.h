@@ -231,7 +231,7 @@ void LibxcProxy <T, width>::doGGA(T dens,
 // Calls the xc_gga function from libxc for multiple points.
 // dens: pointer for the density array
 // number_of_points: the size of all the input arrays
-// grad: 
+// grad:
 // hess1:
 // hess2:
 // ex: here goes the results after calling xc_gga from libxc for the exchange functional
@@ -330,11 +330,11 @@ void LibxcProxy <T, width>::doGGA(T* dens,
 	// Now, compute y2a value.
         y2a[i] = vrho[i] - (2 * sigma[i] * v2rhosigma[i]
 	        + 2 * (hess1[i].x + hess1[i].y + hess1[i].z) * vsigma[i]
-    		+ 4 * v2sigma[i] * (grad[i].x * grad[i].x * hess1[i].x + 
-				    grad[i].y * grad[i].y * hess1[i].y + 
-				    grad[i].z * grad[i].z * hess1[i].z + 
-				    2 * grad[i].x * grad[i].y * hess2[i].x + 
-				    2 * grad[i].x * grad[i].z * hess2[i].y + 
+    		+ 4 * v2sigma[i] * (grad[i].x * grad[i].x * hess1[i].x +
+				    grad[i].y * grad[i].y * hess1[i].y +
+				    grad[i].z * grad[i].z * hess1[i].z +
+				    2 * grad[i].x * grad[i].y * hess2[i].x +
+				    2 * grad[i].x * grad[i].z * hess2[i].y +
 				    2 * grad[i].y * grad[i].z * hess2[i].z));
     }
 
@@ -397,7 +397,7 @@ __global__ void joinResults(
 
     if (i < numElements)
     {
-/*	
+/*
 	printf("%i %lf %lf %lf %lf %lf %lf %lf %lf %lf\n",i,
 	    hess1[i].x, hess1[i].y, hess1[i].z,
 	    hess2[i].x, hess2[i].y, hess2[i].z,
@@ -415,11 +415,11 @@ __global__ void joinResults(
         // Now, compute y2a value.
 	y2a[i] = vrho[i] - (2 * sigma[i] * v2rhosigma[i]
             + 2 * (hess1[i].x + hess1[i].y + hess1[i].z) * vsigma[i]
-            + 4 * v2sigma[i] * (grad[i].x * grad[i].x * hess1[i].x + 
-					    grad[i].y * grad[i].y * hess1[i].y + 
-					    grad[i].z * grad[i].z * hess1[i].z + 
-					    2 * grad[i].x * grad[i].y * hess2[i].x + 
-					    2 * grad[i].x * grad[i].z * hess2[i].y + 
+            + 4 * v2sigma[i] * (grad[i].x * grad[i].x * hess1[i].x +
+					    grad[i].y * grad[i].y * hess1[i].y +
+					    grad[i].z * grad[i].z * hess1[i].z +
+					    2 * grad[i].x * grad[i].y * hess2[i].x +
+					    2 * grad[i].x * grad[i].z * hess2[i].y +
 					    2 * grad[i].y * grad[i].z * hess2[i].z));
     }
 }
@@ -502,7 +502,7 @@ __global__ void convertDoubleToFloat(const G2G::vec_type<double,4>* input, G2G::
 // dens: pointer for the density array
 // number_of_points: the size of all the input arrays
 // contracted_grad: the contracted grad for libxc
-// grad: 
+// grad:
 // hess1:
 // hess2:
 // ex: here goes the results after calling xc_gga from libxc for the exchange functional
@@ -521,13 +521,13 @@ void LibxcProxy <T, width>::doGGA(T* dens,
     T* ec,
     T* y2a)
 {
-    //printf("LibxcProxy::doGGA cuda (...) \n");
-    //print_proxy_input<T> (dens, number_of_points, contracted_grad, grad, hess1, hess2);
+#ifdef __CUDACC__
+    //printf("doGGA - GPU \n");
+    //printf("Number of points: %u\n", number_of_points);
 
-    /////////////////////////////////////
-    // TIMER START
-    //g2g_timer_sum_start_("libxc_proxy_doGGA_preparing_data", 32);
-
+    // Este flag esta asi ya que a veces lio utiliza precision mixta
+    // y solo en tiempo de ejecucion podemos saber que tipos
+    // de datos esta utilizando.
     bool full_double = (sizeof(T) == 8);
 
     // Variables for the Kernels
@@ -592,21 +592,21 @@ void LibxcProxy <T, width>::doGGA(T* dens,
 	cudaMemset(y2a_double,0,array_size);
 
         err = cudaMalloc((void**)&grad_double, vec_size);
-	if (err != cudaSuccess) 
+	if (err != cudaSuccess)
 	{
 	    fprintf(stderr, "Failed to allocate device grad_double!\n");
     	    exit(EXIT_FAILURE);
         }
 
 	err = cudaMalloc((void**)&hess1_double, vec_size);
-        if (err != cudaSuccess) 
+        if (err != cudaSuccess)
 	{
 	    fprintf(stderr, "Failed to allocate device hess1_double!\n");
 	    exit(EXIT_FAILURE);
         }
 
 	err = cudaMalloc((void**)&hess2_double, vec_size);
-        if (err != cudaSuccess) 
+        if (err != cudaSuccess)
 	{
 	    fprintf(stderr, "Failed to allocate device hess2_double!\n");
 	    exit(EXIT_FAILURE);
@@ -763,17 +763,9 @@ void LibxcProxy <T, width>::doGGA(T* dens,
     cudaMemset(v2rhosigmaC, 0, array_size);
     cudaMemset(v2sigmaC, 0, array_size);
 
-    //////////////////////////////////////
-    // TIMER PAUSE
-    //g2g_timer_sum_pause_("libxc_proxy_doGGA_preparing_data", 32);
-
     /////////////////////////////
     // Call LIBXC for exchange
     try {
-        /////////////////////////////
-	// TIMER START
-        //g2g_timer_sum_start_("libxc_proxy_functional_for_exchange", 35);
-
         xc_gga (&funcForExchange, number_of_points,
                 rho,
                 sigma,
@@ -784,11 +776,6 @@ void LibxcProxy <T, width>::doGGA(T* dens,
                 v2rhosigma,
                 v2sigma,
                 NULL, NULL, NULL, NULL);
-
-        /////////////////////////////
-	// TIMER PAUSE
-        //g2g_timer_sum_pause_("libxc_proxy_functional_for_exchange", 35);
-
     } catch (int exception) {
         fprintf (stderr, "Exception ocurred calling xc_gga for Exchange '%d' \n", exception);
         return;
@@ -798,10 +785,6 @@ void LibxcProxy <T, width>::doGGA(T* dens,
     // Call LIBXC for correlation
     try {
         // Now the correlation value.
-        /////////////////////////////
-	// TIMER START
-        //g2g_timer_sum_start_("libxc_proxy_functional_for_correlation", 38);
-
         xc_gga (&funcForCorrelation, number_of_points,
                 rho,
                 sigma,
@@ -812,11 +795,6 @@ void LibxcProxy <T, width>::doGGA(T* dens,
                 v2rhosigmaC,
                 v2sigmaC,
                 NULL, NULL, NULL, NULL);
-
-        /////////////////////////////
-	// TIMER PAUSE
-        //g2g_timer_sum_pause_("libxc_proxy_functional_for_correlation", 38);
-
     } catch (int exception) {
         fprintf (stderr, "Exception ocurred calling xc_gga for Correlation '%d' \n", exception);
         return;
@@ -824,11 +802,6 @@ void LibxcProxy <T, width>::doGGA(T* dens,
 
     ////////////////////////
     // Gather the results
-
-    /////////////////////////////
-    // TIMER START
-    //g2g_timer_sum_start_("libxc_proxy_doGGA_joining_data", 30);
-
     joinResults<T, width><<<blocksPerGrid, threadsPerBlock>>>(
 	ex_double, exchange,
 	ec_double, correlation,
@@ -851,10 +824,6 @@ void LibxcProxy <T, width>::doGGA(T* dens,
 	convertDoubleToFloat<<<blocksPerGrid, threadsPerBlock>>> (ec_double, ec, number_of_points);
         convertDoubleToFloat<<<blocksPerGrid, threadsPerBlock>>> (y2a_double, y2a, number_of_points);
     }
-
-    /////////////////////////
-    // TIMER PAUSE
-    //g2g_timer_sum_pause_("libxc_proxy_doGGA_joining_data", 30);
 
     /////////////////////////
     // Free device memory
@@ -1014,21 +983,21 @@ void LibxcProxy <T, width>::doGGA(T* dens,
 	cudaMemset(y2a_double,0,array_size);
 
         err = cudaMalloc((void**)&grad_double, vec_size);
-	if (err != cudaSuccess) 
+	if (err != cudaSuccess)
 	{
 	    fprintf(stderr, "Failed to allocate device grad_double!\n");
     	    exit(EXIT_FAILURE);
         }
 
 	err = cudaMalloc((void**)&hess1_double, vec_size);
-        if (err != cudaSuccess) 
+        if (err != cudaSuccess)
 	{
 	    fprintf(stderr, "Failed to allocate device hess1_double!\n");
 	    exit(EXIT_FAILURE);
         }
 
 	err = cudaMalloc((void**)&hess2_double, vec_size);
-        if (err != cudaSuccess) 
+        if (err != cudaSuccess)
 	{
 	    fprintf(stderr, "Failed to allocate device hess2_double!\n");
 	    exit(EXIT_FAILURE);

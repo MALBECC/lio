@@ -13,7 +13,7 @@ __global__ void gpu_accumulate_point_open(scalar_type* const energy, scalar_type
   uint point = blockIdx.x * DENSITY_ACCUM_BLOCK_SIZE + threadIdx.x;
 
   scalar_type point_weight = 0.0f;
-  scalar_type exc_corr, v_a, v_b, exc, corr, corr1, corr2;
+  scalar_type exc_corr,v_a, v_b, exc, corr, corr1, corr2;
   exc_corr = v_a = v_b = exc = corr = corr1 = corr2 = 0.0f;
 
   scalar_type _partial_density_a(0.0f), _partial_density_b(0.0f);
@@ -24,36 +24,30 @@ __global__ void gpu_accumulate_point_open(scalar_type* const energy, scalar_type
   if (valid_thread) point_weight = point_weights[point];
 
   if (valid_thread) {
-    for (int j = 0; j < block_height; j++) {
-      const int this_row = j * points + point;
-      _partial_density_a += partial_density_a[this_row];
-      _partial_density_b += partial_density_b[this_row];
-      _dxyz_a += dxyz_a[this_row];
-      _dxyz_b += dxyz_b[this_row];
-      _dd1_a += dd1_a[this_row];
-      _dd1_b += dd1_b[this_row];
-      _dd2_a += dd2_a[this_row];
-      _dd2_b += dd2_b[this_row];
-    }
+     for(int j =0 ; j<block_height; j++) {
+         const int this_row=j*points+point;
+         _partial_density_a += partial_density_a[this_row];
+         _partial_density_b += partial_density_b[this_row];
+         _dxyz_a += dxyz_a[this_row];
+         _dxyz_b += dxyz_b[this_row];
+         _dd1_a += dd1_a[this_row];
+         _dd1_b += dd1_b[this_row];
+         _dd2_a += dd2_a[this_row];
+         _dd2_b += dd2_b[this_row];
+     }
   }
-  calc_ggaOS<scalar_type, WIDTH>(
-      _partial_density_a, _partial_density_b, _dxyz_a, _dxyz_b, _dd1_a, _dd1_b,
-      _dd2_a, _dd2_b, exc_corr, exc, corr, corr1, corr2, v_a, v_b, 9);
+  calc_ggaOS<scalar_type, WIDTH>(_partial_density_a, _partial_density_b, _dxyz_a, _dxyz_b, _dd1_a, _dd1_b, _dd2_a, _dd2_b,
+      exc_corr, exc, corr, corr1, corr2, v_a, v_b, 9);
 
-  if (compute_energy && valid_thread) {
-    energy[point] =
-        ((_partial_density_a + _partial_density_b) * point_weight) * exc_corr;
-    energy_i[point] =
-        ((_partial_density_a + _partial_density_b) * point_weight) * exc;
-    energy_c[point] =
-        ((_partial_density_a + _partial_density_b) * point_weight) * corr;
-    energy_c1[point] =
-        ((_partial_density_a + _partial_density_b) * point_weight) * corr1;
-    energy_c2[point] =
-        ((_partial_density_a + _partial_density_b) * point_weight) * corr2;
+  if (compute_energy && valid_thread){
+    energy[point]   = ((_partial_density_a + _partial_density_b) * point_weight) * exc_corr;
+    energy_i[point] = ((_partial_density_a + _partial_density_b) * point_weight) * exc;
+    energy_c[point] = ((_partial_density_a + _partial_density_b) * point_weight) * corr;
+    energy_c1[point] = ((_partial_density_a + _partial_density_b) * point_weight) * corr1;
+    energy_c2[point] = ((_partial_density_a + _partial_density_b) * point_weight) * corr2;
   }
 
-  if (compute_factor && valid_thread) {
+  if (compute_factor && valid_thread){
     factor_a[point] = point_weight * v_a;
     factor_b[point] = point_weight * v_b;
   }
@@ -80,14 +74,14 @@ __global__ void gpu_accumulate_point(scalar_type* const energy, scalar_type* con
     point_weight = point_weights[point];
 
   if (valid_thread) {
-    for (int j = 0; j < block_height; j++) {
-      const int this_row = j * points + point;
+    for(int j =0 ; j<block_height; j++) {
+      const int this_row = j*points+point;
 
       _partial_density += partial_density[this_row];
       _dxyz += dxyz[this_row];
       _dd1 += dd1[this_row];
       _dd2 += dd2[this_row];
-    }
+     }
   }
 
   calc_ggaCS_in<scalar_type, 4>(_partial_density, _dxyz, _dd1, _dd2, exc_x,

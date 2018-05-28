@@ -1,5 +1,6 @@
 #define WIDTH 4
 
+#include "print_utils.h"
 #include "libxcproxy.h"
 #include "../timer.h"
 
@@ -278,6 +279,21 @@ __global__ void vectorAdd(const T* A, const T* B, T* C, int numElements)
     }
 }
 
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// libxc_exchange_correlation_gpu
+// Use libxc to compute the exchange-correlation values.
+// energy_gpu:
+// factor_gpu:
+// points: the size of all the input arrays
+// accumulated_density_gpu: the contracted grad for libxc
+// dxyz_gpu:
+// dd1_gpu:
+// dd2_gpu:
+//
+// Note: all the pointer data are pointers in CUDA memory.
+//
 template<class T, bool compute_energy, bool compute_factor, bool lda>
     void libxc_exchange_correlation_gpu (LibxcProxy<T, WIDTH>* libxcProxy,
 	T* energy_gpu,
@@ -288,7 +304,8 @@ template<class T, bool compute_energy, bool compute_factor, bool lda>
         G2G::vec_type<T,WIDTH>* dd1_gpu,
 	G2G::vec_type<T,WIDTH>* dd2_gpu)
 {
-    //printf("libxc_exchage_correlation_gpu (...) \n");
+    //printf("libxc_exchage_correlation_gpu<%u,%d,%d,%d>(%u) \n", sizeof(T), compute_energy, compute_factor, lda, points);
+    //print_libxc_exchange_correlation_gpu_input (energy_gpu, factor_gpu, points, accumulated_density_gpu, dxyz_gpu, dd1_gpu, dd2_gpu);
 
     cudaError_t err = cudaSuccess;
 
@@ -301,14 +318,13 @@ template<class T, bool compute_energy, bool compute_factor, bool lda>
     T* y2a_gpu = NULL;
     T* contracted_gradient = NULL;
     int array_size = sizeof(T) * points;
-
-    //g2g_timer_sum_start_("libxc_exchange_correlation_gpu_preparing_data",45);
+    //printf ("array_size: %u \n", array_size);
 
     // Alloc memory for cuda variables.
     err = cudaMalloc((void **)&exc_gpu, array_size);
     if (err != cudaSuccess)
     {
-        fprintf(stderr, "Failed to allocate device exc_gpu!\n");
+        fprintf(stderr, "Failed to allocate device exc_gpu! %u \n", err);
         exit(EXIT_FAILURE);
     }
 
@@ -326,7 +342,8 @@ template<class T, bool compute_energy, bool compute_factor, bool lda>
         exit(EXIT_FAILURE);
     }
 
-    err = cudaMalloc((void**)&contracted_gradient, sizeof(T)*points);
+    //err = cudaMalloc((void**)&contracted_gradient, sizeof(T)*points);
+    err = cudaMalloc((void**)&contracted_gradient, array_size);
     if (err != cudaSuccess)
     {
         fprintf(stderr, "Failed to allocate device contracted_gradient!\n");
@@ -343,16 +360,15 @@ template<class T, bool compute_energy, bool compute_factor, bool lda>
     int blocksPerGrid = (points + threadsPerBlock - 1) / threadsPerBlock;
 
     if (libxcProxy != NULL) {
-        //printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
-
+        //printf("Calling calculateContractedGradient() \n");
 	// Call the Kernel to compute the contracted gradient
         //printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
 	calculateContractedGradient<<<blocksPerGrid, threadsPerBlock>>>(dxyz_gpu, contracted_gradient, points);
 
-	//g2g_timer_sum_pause_("libxc_exchange_correlation_gpu_preparing_data",45);
-
 	/////////////////////////////////////////
 	// Compute exc_corr using LIBXC GPU.
+        //printf("Calling libxcProxy->doGGA() \n");
+
 	libxcProxy->doGGA (accumulated_density_gpu,
 	    points, 
 	    contracted_gradient, 
@@ -365,8 +381,6 @@ template<class T, bool compute_energy, bool compute_factor, bool lda>
 
 	///////////////////////
 	// Join the results.
-	//g2g_timer_sum_start_("libxc_exchange_correlation_gpu_joining_data",43);
-
     	if (compute_energy && energy_gpu != NULL)
 	{
 	    vectorAdd<<<blocksPerGrid, threadsPerBlock>>>(exc_gpu, corr_gpu, energy_gpu, points);
@@ -379,7 +393,6 @@ template<class T, bool compute_energy, bool compute_factor, bool lda>
     		fprintf(stderr, "Failed to copy y2a_gpu to factor_gpu from DeviceToDevice for array of %i !\n", array_size);
 	    }
 	}
-	//g2g_timer_sum_pause_("libxc_exchange_correlation_gpu_joining_data",43);
     }
 
     // Free memory.

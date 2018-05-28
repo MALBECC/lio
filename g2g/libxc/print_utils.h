@@ -1,3 +1,6 @@
+#ifndef __LIBXCPROXY_H_PRINT_UTILS__
+#define __LIBXCPROXY_H_PRINT_UTILS__
+
 #include "../scalar_vector_types.h"
 
 //////////////////////////////////////
@@ -159,3 +162,70 @@ void print_proxy_input (
     free(hess1_cpu);
     free(grad_cpu);
 }
+
+template <class T> 
+void print_libxc_exchange_correlation_gpu_input (
+    T* energy_gpu,
+    T* factor_gpu,
+    int points,
+    T* accumulated_density_gpu,
+    G2G::vec_type<T, 4>* dxyz_gpu,
+    G2G::vec_type<T, 4>* dd1_gpu,
+    G2G::vec_type<T, 4>* dd2_gpu)
+{
+    // Bajar la info a CPU y luego imprimirla.
+    // Copy to host the matrix data in gpu memory and
+    // call the new libxcProxy.
+    T* energy_cpu;
+    T* factor_cpu;
+    T* accumulated_density_cpu;
+    G2G::vec_type<T,4>* dxyz_cpu;
+    G2G::vec_type<T,4>* dd1_cpu;
+    G2G::vec_type<T,4>* dd2_cpu;
+
+    // Alloc memory in the host for the gpu data
+    uint size = points * sizeof(G2G::vec_type<T,4>);
+    uint array_size = points * sizeof(T);
+    energy_cpu = (T*)malloc(size);
+    factor_cpu = (T*)malloc(size);
+    accumulated_density_cpu = (T*)malloc(size);
+    dxyz_cpu = (G2G::vec_type<T,4> *)malloc(size);
+    dd1_cpu = (G2G::vec_type<T,4> *)malloc(size);
+    dd2_cpu = (G2G::vec_type<T,4> *)malloc(size);
+
+    // Copy data from device to host.
+    if (energy_gpu != NULL)
+        cudaMemcpy(energy_cpu, energy_gpu, size, cudaMemcpyDeviceToHost);
+    if (factor_gpu != NULL)
+        cudaMemcpy(factor_cpu, factor_gpu, size, cudaMemcpyDeviceToHost);
+    if (dxyz_gpu != NULL)
+	cudaMemcpy(dxyz_cpu, dxyz_gpu, size, cudaMemcpyDeviceToHost);
+    if (dd1_gpu != NULL)
+	cudaMemcpy(dd1_cpu, dd1_gpu, size, cudaMemcpyDeviceToHost);
+    if (dd2_gpu != NULL)
+        cudaMemcpy(dd2_cpu, dd2_gpu, size, cudaMemcpyDeviceToHost);
+    if (accumulated_density_gpu != NULL)
+	cudaMemcpy(accumulated_density_cpu, accumulated_density_gpu, array_size, cudaMemcpyDeviceToHost);
+
+    printf("=============================================\n");
+    printf("= input for libxc_exchange_correlation_gpu  =\n");
+    printf("=============================================\n");
+    printf("points:%i\n", points);
+    printf("dxyz:"); print_vec_type(dxyz_cpu, points);
+    printf("dd1:"); print_vec_type(dd1_cpu, points);
+    printf("dd2:"); print_vec_type(dd2_cpu, points);
+    printf("energy:"); print_array(energy_cpu, points);
+    printf("factor:"); print_array(factor_cpu, points);
+    printf("accumulated_density:"); print_array(accumulated_density_cpu, points);
+    printf("==============================\n");
+
+    // Free memory.
+    free(energy_cpu);
+    free(factor_cpu);
+    free(accumulated_density_cpu);
+    free(dd2_cpu);
+    free(dd1_cpu);
+    free(dxyz_cpu);
+}
+
+#endif

@@ -36,7 +36,7 @@ subroutine SCF(E)
                           nuc, doing_ehrenfest, first_step, RealRho,           &
                           total_time, MO_coef_at, MO_coef_at_b, Smat, good_cut,&
                           ndiis, ncont, nshell, rhoalpha, rhobeta, OPEN, nshell, &
-                          Nuc, a, c, d, NORM, ntatom
+                          Nuc, a, c, d, NORM, ntatom, Eorbs_b
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
                        FOCK_ECP_read,FOCK_ECP_write,IzECP
    use field_data, only: field, fx, fy, fz

@@ -13,13 +13,14 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 subroutine liomain(E, dipxyz)
-    use garcha_mod, only : M, Smat, RealRho, OPEN, writeforces, energy_freq,   &
-                           restart_freq, npas, sqsm, mulliken, lowdin, dipole, &
-                           doing_ehrenfest, first_step, Eorbs, Eorbs_b, fukui, &
-                           print_coeffs, steep, idip, MO_coef_at, MO_coef_at_b,&
-                           NUnp
-    use ecp_mod   , only : ecpmode, IzECP
-    use ehrensubs,  only : ehrendyn_main
+    use garcha_mod, only: M, Smat, RealRho, OPEN, writeforces, energy_freq,   &
+                          restart_freq, npas, sqsm, mulliken, lowdin, dipole, &
+                          doing_ehrenfest, first_step, Eorbs, Eorbs_b, fukui, &
+                          print_coeffs, steep, idip, MO_coef_at, MO_coef_at_b,&
+                          NUnp, NCO
+    use ecp_mod   , only: ecpmode, IzECP
+    use ehrensubs , only: ehrendyn_main
+    use fileio    , only: write_orbitals, write_orbitals_op
 
     implicit none
     REAL*8, intent(inout) :: dipxyz(3), E
@@ -63,7 +64,7 @@ subroutine liomain(E, dipxyz)
         if (print_coeffs) then
            if (open) then
              call write_orbitals_op(M, NCO, NUnp, Eorbs, Eorbs_b, MO_coef_at,  &
-                                    MO_coefat_b, 29)
+                                    MO_coef_at_b, 29)
           else
              call write_orbitals(M, NCO, Eorbs, MO_coef_at, 29)
           endif
@@ -75,14 +76,12 @@ subroutine liomain(E, dipxyz)
     return
 end subroutine liomain
 
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% DO_FORCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Calculates forces for QM and MM regions and writes them to output.           !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_forces(uid)
-
-    use garcha_mod, only : natom, nsol
+    use garcha_mod, only: natom, nsol
+    use fileio    , only: write_forces
 
     implicit none
     integer, intent(in) :: uid
@@ -103,10 +102,7 @@ subroutine do_forces(uid)
     endif
 
     call write_forces(dxyzqm, natom, 0, uid)
-
     deallocate (dxyzqm)
-
-
 
     if(nsol.gt.0) then
         call write_forces(dxyzcl, nsol, 0, uid)
@@ -118,11 +114,11 @@ subroutine do_forces(uid)
 end subroutine do_forces
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% DO_DIPOLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Sets variables up and calls dipole calculation.                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_dipole(dipxyz, uid)
+    use fileio, only: write_dipole
     implicit none
     integer, intent(in)    :: uid
     real*8 , intent(inout) :: dipxyz(3)
@@ -140,16 +136,16 @@ subroutine do_dipole(dipxyz, uid)
 end subroutine do_dipole
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% DO_POPULATION_ANALYSIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs the different population analyisis available.                       !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_population_analysis()
-   use garcha_mod, only : RMM, Smat, RealRho, M, Enucl, Nuc, Iz, natom, &
-                          mulliken, lowdin, sqsm, a, c, d, r, Iz, ncont, NORM,&
-                          M, Md, nshell,ntatom
-   use ECP_mod   , only : ecpmode, IzECP
-   use faint_cpu, only: int1
+   use garcha_mod, only: RMM, Smat, RealRho, M, Enucl, Nuc, Iz, natom, &
+                         mulliken, lowdin, sqsm, a, c, d, r, Iz, ncont, NORM,&
+                         M, Md, nshell,ntatom
+   use ECP_mod   , only: ecpmode, IzECP
+   use faint_cpu , only: int1
+   use fileio    , only: write_population
 
    implicit none
    integer :: M1, M5, IzUsed(natom), kk
@@ -193,13 +189,12 @@ subroutine do_population_analysis()
 endsubroutine do_population_analysis
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% DO_FUKUI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs Fukui function calls and printing.                                  !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_fukui()
-    use garcha_mod, only : X, NCO, M, natom, Nuc, Smat, Eorbs, Iz, OPEN
-
+    use garcha_mod, only: X, NCO, M, natom, Nuc, Smat, Eorbs, Iz, OPEN
+    use fileio    , only: write_fukui
     implicit none
     real*8  :: fukuim(natom), fukuin(natom), fukuip(natom), softness
 
@@ -221,13 +216,12 @@ subroutine do_fukui()
 end subroutine do_fukui
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% DO_FUKUI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs Fukui function calls and printing.                                  !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_restart(UID)
-   use garcha_mod, only : OPEN, NCO, NUNP, M, MO_coef_at, MO_coef_at_b, indexii
-   use fileio    , only : write_coef_restart
+   use garcha_mod, only: OPEN, NCO, NUNP, M, MO_coef_at, MO_coef_at_b, indexii
+   use fileio    , only: write_coef_restart
    implicit none
    integer, intent(in) :: UID
    integer             :: NCOb, icount, jcount, coef_ind

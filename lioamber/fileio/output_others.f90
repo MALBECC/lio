@@ -147,8 +147,8 @@ end subroutine write_fukui
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine write_orbitals(M, NCO, E_orbs, MO_coeff, uid)
    implicit none
-   integer, intent(in)          :: M, NCO, uid, E_orbs(M)
-   double precision, intent(in) :: MO_coeff(M*M)
+   integer, intent(in)          :: M, NCO, uid
+   double precision, intent(in) :: E_orbs(M), MO_coeff(M*M)
    integer                      :: icount, jcount
 
    write(uid,*) 'ORBITAL COEFFICIENTS AND ENERGIES, CLOSED SHELL'
@@ -174,8 +174,9 @@ end subroutine write_orbitals
 subroutine write_orbitals_op(M, NCO, NUnp, E_orbs, E_orbs_b, MO_coeff, &
                                MO_coeff_b, uid)
    implicit none
-   integer, intent(in)          :: M, NCO, NUnp, uid, E_orbs(M), E_orbs_b(M)
-   double precision, intent(in) :: MO_coeff(M*M), MO_coeff_b(M*M)
+   integer, intent(in)          :: M, NCO, NUnp, uid
+   double precision, intent(in) :: E_orbs(M), E_orbs_b(M), MO_coeff(M*M), &
+                                   MO_coeff_b(M*M)
    integer                      :: icount, jcount
 
    write(uid,*) 'ORBITAL COEFFICIENTS AND ENERGIES, OPEN SHELL ALPHA'
@@ -241,9 +242,9 @@ subroutine write_population(N, q0, q, pop, UID)
       write(UID,307) qtotal
       write(UID,308)
    else
-      if (pop.eq.0) write(UID,A) "# Mulliken Population Analysis"
-      if (pop.eq.1) write(UID,A) "# Löwdin Population Analysis"
-      write(UID,A) "# Atom   Type   Population"
+      if (pop.eq.0) write(UID,402) "# Mulliken Population Analysis"
+      if (pop.eq.1) write(UID,402) "# Löwdin Population Analysis"
+      write(UID,402) "# Atom   Type   Population"
       do icount = 1, N
          qtotal = qtotal + q(icount)
          write(UID,400) icount, q0(icount), q(icount)
@@ -266,5 +267,6 @@ subroutine write_population(N, q0, q, pop, UID)
 309 FORMAT(8x,"║    LÖWDIN POPULATION ANALYSIS   ║")
 400 FORMAT(2x,i3,4x,i3,5x,F10.7)
 401 FORMAT(2x,"Total Charge = ", F10.7)
+402 FORMAT(A)
 end subroutine write_population
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

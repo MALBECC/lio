@@ -853,20 +853,13 @@ subroutine SCF(E)
         good=sqrt(good)/float(M)
         deallocate ( xnano )
 
-
-! TODO: what is this doing here???
-        call g2g_timer_stop('dens_GPU')
-
 !------------------------------------------------------------------------------!
 ! TODO: finalization of the loop is a little bit messy. Also: "999 continue"??
 !       I think it is time we regularized this loop...
 
-! Damping factor update
+        ! Damping factor update
         DAMP=DAMP0
-
         E=E1+E2+En
-        call g2g_timer_stop('otras cosas')
-
         Egood=abs(E+Ex-Evieja)
         Evieja=E+Ex
 

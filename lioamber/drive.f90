@@ -262,7 +262,7 @@
           endif
         enddo
 !c
-        if ( (.not.used) .and. (verbose.gt.3) ) then
+        if ( (.not.used) .and. (verbose.gt.4) ) then
           write(*,200) iatom
         endif
 !c
@@ -537,7 +537,7 @@
           endif
         enddo
 !c
-        if (.not.used.and.(verbose.gt.3).and. .not.omit_bas) then
+        if (.not.used.and.(verbose.gt.4).and. .not.omit_bas) then
           write(*,200) iatom
         endif
 

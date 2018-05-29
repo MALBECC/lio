@@ -10,10 +10,14 @@ ifeq ($(full_double),1)
     EXTRAS += -DFULL_DOUBLE=1
 endif
 
-all: main_gpu
+ifeq ($(debug),1)
+    EXTRAS += -D_DEBUG
+endif
+
+all: main_gpu main_cpu
 
 main_cpu: main_cpu.cpp 
-	nvcc -G -g -o main_cpu main_cpu.cpp $(CFLAGS) $(CLIBS) -DCPU_KERNELS
+	g++ -g -o main_cpu main_cpu.cpp $(CFLAGS) $(CLIBS) -DCPU_KERNELS=1 $(EXTRAS)  -DUSE_LIBXC=1 -DLIBXC_CPU=1
 
 main_gpu: main_gpu.cu
 	nvcc -G -g -o main_gpu main_gpu.cu $(CFLAGS_GPU) $(CLIBS_GPU) $(EXTRAS)

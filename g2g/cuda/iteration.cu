@@ -228,7 +228,10 @@ void PointGroupGPU<scalar_type>::solve_closed(
   const int nspin = XC_UNPOLARIZED;
   const int functionalExchange = fortran_vars.ex_functional_id;
   const int functionalCorrelation = fortran_vars.ec_functional_id;
-  LibxcProxy<scalar_type,4> libxcProxy(functionalExchange, functionalCorrelation, nspin);
+  LibxcProxy<scalar_type,4> libxcProxy;
+  if (fortran_vars.use_libxc) {
+    libxcProxy.init (functionalExchange, functionalCorrelation, nspin);
+  }
 #endif
 
   if (compute_energy) {

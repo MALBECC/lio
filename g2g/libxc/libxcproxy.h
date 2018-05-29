@@ -20,14 +20,17 @@ class LibxcProxy
 {
 private:
 
-    // La clase que contiene los funcionales.
+    // The libxc components
     xc_func_type funcForExchange;
     xc_func_type funcForCorrelation;
 
-    // El id del funcional.
+    // Functional ids
     int funcIdForExchange;
     int funcIdForCorrelation;
     int nspin;
+
+    // Is inited
+    bool inited;
 
 public:
     LibxcProxy ();
@@ -80,15 +83,14 @@ LibxcProxy <T, width>::LibxcProxy()
     funcIdForExchange = 0;
     funcIdForCorrelation = 0;
     nspin = 0;
+    inited = false;
 }
 
 template <class T, int width>
 LibxcProxy <T, width>::LibxcProxy (int exchangeFunctionalId, int correlationFuncionalId, int nSpin)
 {
-#ifdef _DEBUG
-    printf("LibxcProxy::LibxcProxy (%u, %u, %u) \n", exchangeFunctionalId, correlationFuncionalId, nSpin);
-#endif
-
+//    printf("LibxcProxy::LibxcProxy (%u, %u, %u) \n", exchangeFunctionalId, correlationFuncionalId, nSpin);
+/*
     funcIdForExchange = exchangeFunctionalId;
     funcIdForCorrelation = correlationFuncionalId;
     nspin = nSpin;
@@ -102,13 +104,14 @@ LibxcProxy <T, width>::LibxcProxy (int exchangeFunctionalId, int correlationFunc
 	fprintf (stderr, "Functional '%d' not found\n", funcIdForCorrelation);
 	exit(-1);
     }
-
+*/
+    init (exchangeFunctionalId, correlationFuncionalId, nSpin);
 }
 
 template <class T, int width>
 void LibxcProxy<T, width>::init (int exchangeFunctionalId, int correlationFunctionalId, int nSpin)
 {
-    printf("LibxcProxy::init(%u, %u, %u)\n", exchangeFunctionalId, correlationFunctionalId, nSpin);
+//    printf("LibxcProxy::init(%u, %u, %u)\n", exchangeFunctionalId, correlationFunctionalId, nSpin);
 
     funcIdForExchange = exchangeFunctionalId;
     funcIdForCorrelation = correlationFunctionalId;
@@ -123,21 +126,28 @@ void LibxcProxy<T, width>::init (int exchangeFunctionalId, int correlationFuncti
 	fprintf (stderr, "Functional '%d' not found\n", funcIdForCorrelation);
 	exit(-1);
     }
+
+    inited = true;
 }
 
 template <class T, int width>
 LibxcProxy <T, width>::~LibxcProxy ()
 {
-    xc_func_end (&funcForExchange);
-    xc_func_end (&funcForCorrelation);
+    //xc_func_end (&funcForExchange);
+    //xc_func_end (&funcForCorrelation);
+//    printf("LibxcProxy::~LibxcProxy()\n");
+    closeProxy ();
 }
 
 template <class T, int width>
 void LibxcProxy <T, width>::closeProxy ()
 {
-    printf("LibxcProxy::closeProxy()\n");
-    xc_func_end (&funcForExchange);
-    xc_func_end (&funcForCorrelation);
+//    printf("LibxcProxy::closeProxy()\n");
+    if (inited) {
+	xc_func_end (&funcForExchange);
+        xc_func_end (&funcForCorrelation);
+	inited = false;
+    }
 }
 
 template <class T, int width>
@@ -147,9 +157,7 @@ void LibxcProxy <T, width>::doGGA(T dens,
     const G2G::vec_type<T, width> &hess2,
     T &ex, T &ec, T &y2a)
 {
-//#ifdef _DEBUG
-//    printf("LibxcProxy::doGGA cpu simple(...) \n");
-//#endif
+    printf("LibxcProxy::doGGA cpu simple(...) \n");
 
     T rho[1] = {dens};
     // Libxc needs the 'contracted gradient'
@@ -171,8 +179,8 @@ void LibxcProxy <T, width>::doGGA(T dens,
     T v2rhosigmaC [1];
     T v2sigmaC [1];
 
-    try {
-        xc_gga (&funcForExchange, 1,
+    // The exchange values
+    xc_gga (&funcForExchange, 1,
                 rho,
                 sigma,
                 exchange,
@@ -182,14 +190,9 @@ void LibxcProxy <T, width>::doGGA(T dens,
                 v2rhosigma,
                 v2sigma,
                 NULL, NULL, NULL, NULL);
-    } catch (int exception) {
-        //fprintf (stderr, "Exception ocurred calling xc_gga for Exchange '%d' \n", exception);
-        return;
-    }
 
-    try {
-        // Now the correlation value.
-        xc_gga (&funcForCorrelation, 1,
+    // Now the correlation value.
+    xc_gga (&funcForCorrelation, 1,
                 rho,
                 sigma,
                 correlation,
@@ -199,10 +202,6 @@ void LibxcProxy <T, width>::doGGA(T dens,
                 v2rhosigmaC,
                 v2sigmaC,
                 NULL, NULL, NULL, NULL);
-    } catch (int exception) {
-        //fprintf (stderr, "Exception ocurred calling xc_gga for Correlation '%d' \n", exception);
-        return;
-    }
 
     // TODO: tener el cuenta el tema del FULL_DOUBLE
     // a la vuelta del calculo en libxc. Si FULL_DOUBLE=1 -> son doubles
@@ -280,8 +279,8 @@ void LibxcProxy <T, width>::doGGA(T* dens,
     double* v2rhosigmaC = (double*)malloc(array_size);
     double* v2sigmaC = (double*)malloc(array_size);
 
-    try {
-        xc_gga (&funcForExchange, number_of_points,
+    // Exchange values
+    xc_gga (&funcForExchange, number_of_points,
                 rho,
                 sigma,
                 exchange,
@@ -291,14 +290,9 @@ void LibxcProxy <T, width>::doGGA(T* dens,
                 v2rhosigma,
                 v2sigma,
                 NULL, NULL, NULL, NULL);
-    } catch (int exception) {
-        //fprintf (stderr, "Exception ocurred calling xc_gga for Exchange '%d' \n", exception);
-        return;
-    }
 
-    try {
-        // Now the correlation value.
-        xc_gga (&funcForCorrelation, number_of_points,
+    // Now the correlation value.
+    xc_gga (&funcForCorrelation, number_of_points,
                 rho,
                 sigma,
                 correlation,
@@ -308,10 +302,6 @@ void LibxcProxy <T, width>::doGGA(T* dens,
                 v2rhosigmaC,
                 v2sigmaC,
                 NULL, NULL, NULL, NULL);
-    } catch (int exception) {
-        //fprintf (stderr, "Exception ocurred calling xc_gga for Correlation '%d' \n", exception);
-        return;
-    }
 
     // TODO: tener el cuenta el tema del FULL_DOUBLE
     // a la vuelta del calculo en libxc. Si FULL_DOUBLE=1 -> son doubles
@@ -360,7 +350,13 @@ void LibxcProxy <T, width>::doGGA(T* dens,
 
     return;
 }
-
+#ifdef __CUDACC__
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// LibxcProxy::joinResults
+// Kernel for join the partial results that we obtain from
+// calling Libxc.
+//
 template <class T, int width>
 __global__ void joinResults(
 		    double* ex, double* exchange,
@@ -424,8 +420,11 @@ __global__ void joinResults(
     }
 }
 
-/////////////////////////
+/////////////////////////////////////
 // Conversion KERNELS
+//
+//#ifdef __CUDACC__
+// Utils for data type conversion from lio to libxc
 __global__ void convertFloatToDouble(const float* input, double* output, int numElements)
 {
     int i = blockDim.x * blockIdx.x + threadIdx.x;

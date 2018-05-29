@@ -10,6 +10,12 @@
 namespace libxcProxyTest
 {
 #define PEPITO
+
+///////////////////////////////////////////
+// TestProxy01
+// Simple constructor test
+//
+//
 void testProxy01 ()
 {
     printf ("=================================== \n");
@@ -18,8 +24,8 @@ void testProxy01 ()
     printf ("=================================== \n");
 
     int nspin = XC_UNPOLARIZED;
-    int functionalExchange = XC_GGA_X_PBE;
-    int functionalCorrelation = XC_GGA_C_PBE;
+    int functionalExchange = 101;
+    int functionalCorrelation = 130;
 
     LibxcProxy<double,0> aProxy();
     LibxcProxy<double,0> aProxy2(functionalExchange,
@@ -29,6 +35,11 @@ void testProxy01 ()
     printf ("=================================== \n");
 }
 
+///////////////////////////////////////////
+// TestProxy02
+// This test simulates a call to Libxc
+// like if we where inside the iteration.cpp class
+//
 template<class scalar_type>
 void testProxy02 ()
 {
@@ -40,8 +51,8 @@ void testProxy02 ()
     // Con este parametro determinamos si es capa
     // abierta o capa cerrada (OS, CS).
     int nspin = XC_UNPOLARIZED;
-    int functionalExchange = XC_GGA_X_PBE;
-    int functionalCorrelation = XC_GGA_C_PBE;
+    int functionalExchange = 101;
+    int functionalCorrelation = 130;
 
     LibxcProxy<scalar_type,3> aProxy2(functionalExchange,
                                  functionalCorrelation,
@@ -54,19 +65,17 @@ void testProxy02 ()
     const G2G::vec_type <scalar_type, 3> dd2(0,0,0);
     scalar_type densidad = 0.1;
 
-    try {
-        aProxy2.doGGA(densidad, dxyz, dd1, dd2, exc, corr, y2a);
-    } catch (int exception) {
-        fprintf (stderr, "Exception ocurred calling doGGA '%d' \n", exception);
-    }
+    aProxy2.doGGA(densidad, dxyz, dd1, dd2, exc, corr, y2a);
 
-//    aProxy2.closeProxy();
-
-    // Ahora veamos los resultados.
     fprintf (stdout, "Termino el test \n");
     printf ("=================================== \n");
 }
 
+///////////////////////////////////////////
+// TestProxy03
+// Test the Proxy to libxc with the
+// input in the Lio-like format
+//
 template<class scalar_type>
 void testProxy03 (bool overrideForLio)
 {
@@ -78,8 +87,8 @@ void testProxy03 (bool overrideForLio)
     // Con este parametro determinamos si es capa
     // abierta o capa cerrada (OS, CS).
     int nspin = XC_UNPOLARIZED;
-    int functionalExchange = XC_GGA_X_PBE;
-    int functionalCorrelation = XC_GGA_C_PBE;
+    int functionalExchange = 101;
+    int functionalCorrelation = 130;
 
     LibxcProxy<scalar_type,3> aProxy2(functionalExchange,
                                  functionalCorrelation,
@@ -91,7 +100,7 @@ void testProxy03 (bool overrideForLio)
     const G2G::vec_type <scalar_type, 3> dd1(0,0,0);
     const G2G::vec_type <scalar_type, 3> dd2(0,0,0);
     scalar_type densidad = 0.1;
-     int iexch = 9;
+    int iexch = 9;
 
 #if !USE_LIBXC
     if (overrideForLio) {
@@ -106,7 +115,6 @@ void testProxy03 (bool overrideForLio)
         }
     }
 #else
-    // TODO: aca van las llamadas a lio normalmente.
     fprintf (stdout, "Usa LIO \n");
     G2G::calc_ggaCS_in<double, 3>(densidad, dxyz, dd1, dd2, exc, corr, y2a, iexch);
 #endif
@@ -115,14 +123,15 @@ void testProxy03 (bool overrideForLio)
     fprintf (stdout, "Exchange '%lf' \n", exc);
     fprintf (stdout, "Correlation '%lf' \n", corr);
     fprintf (stdout, "Y2A '%lf' \n", y2a);
-
-    // Ahora veamos los resultados.
-//    aProxy2.closeProxy();
-
     fprintf (stdout, "Termino el test \n");
     printf ("=================================== \n");
 }
 
+///////////////////////////////////////////
+// TestProxy04
+// This test simulates a call to Libxc
+// like if we where inside the iteration.cpp class
+//
 template<class scalar_type>
 void testProxy04 (bool overrideForLio)
 {
@@ -134,8 +143,8 @@ void testProxy04 (bool overrideForLio)
     // Con este parametro determinamos si es capa
     // abierta o capa cerrada (OS, CS).
     int nspin = XC_UNPOLARIZED;
-    int functionalExchange = XC_GGA_X_PBE;
-    int functionalCorrelation = XC_GGA_C_PBE;
+    int functionalExchange = 101;
+    int functionalCorrelation = 130;
 
     LibxcProxy<float,3> aProxy2(functionalExchange,
                                  functionalCorrelation,
@@ -147,8 +156,9 @@ void testProxy04 (bool overrideForLio)
     const G2G::vec_type <float, 3> dd1(0,0,0);
     const G2G::vec_type <float, 3> dd2(0,0,0);
     float densidad = 0.1;
-     int iexch = 9;
+    int iexch = 9;
 
+    // This is how is gonna to be implemented in iteration.cpp
 #if !USE_LIBXC
     if (overrideForLio) {
         fprintf (stdout, "LIBXC configurado, pero usa LIO \n");
@@ -162,7 +172,6 @@ void testProxy04 (bool overrideForLio)
         }
     }
 #else
-    // TODO: aca van las llamadas a lio normalmente.
     fprintf (stdout, "Usa LIO \n");
     G2G::calc_ggaCS_in<float, 3>(densidad, dxyz, dd1, dd2, exc, corr, y2a, iexch);
 #endif
@@ -172,14 +181,16 @@ void testProxy04 (bool overrideForLio)
     fprintf (stdout, "Correlation '%lf' \n", corr);
     fprintf (stdout, "Y2A '%lf' \n", y2a);
 
-//    aProxy2.closeProxy();
-
     // Ahora veamos los resultados.
     fprintf (stdout, "Termino el test \n");
     printf ("=================================== \n");
 }
 
-
+////////////////////////////////////
+// Test Proxy 05
+// Several call to the functionals
+// through the Proxy
+//
 template<class scalar_type>
 void testProxy05 ()
 {
@@ -192,8 +203,8 @@ void testProxy05 ()
     // Con este parametro determinamos si es capa
     // abierta o capa cerrada (OS, CS).
     int nspin = XC_UNPOLARIZED;
-    int functionalExchange = XC_GGA_X_PBE;
-    int functionalCorrelation = XC_GGA_C_PBE;
+    int functionalExchange = 101;
+    int functionalCorrelation = 130;
 
     LibxcProxy<scalar_type,3> aProxy2(functionalExchange,
                                  functionalCorrelation,
@@ -239,7 +250,10 @@ double getRandomNumber (int numberCount) {
     return number;
 }
 
-
+//////////////////////////////////////////
+// TestProxy06
+// Simple call to libxc though the Proxy
+//
 void testProxy06 ()
 {
     printf ("=================================== \n");
@@ -288,6 +302,7 @@ void testProxy06 ()
 	dd2[i] = G2G::vec_type<double,3>(0,0,0);
     }
 
+    // Make the call to the proxy.
     aProxy2.doGGA (densidad, number_of_points, dxyz, dd1, dd2, exc, corr, y2a);
     for (int i=0; i<number_of_points; i++) {
         printf ("Point '%i' \n", i);
@@ -297,19 +312,6 @@ void testProxy06 ()
         printf ("Y2A '%lf' \n", y2a[i]);
         printf  ("-------------------- \n");
     }
-
-    // Make the call to the proxy.
-    //int calls = 10;
-    //for (int i=0; i<calls; i++) {
-    //    aProxy2.doGGA(densidad, dxyz, dd1, dd2, exc, corr, y2a);
-    //    printf ("Call '%i' \n", i);
-    //    printf ("Density '%lf' \n", densidad);
-    //    printf ("Exchange '%lf' \n", exc);
-    //    printf ("Correlation '%lf' \n", corr);
-    //    printf ("Y2A '%lf' \n", y2a);
-    //    printf  ("-------------------- \n");
-    //    densidad += 0.01;
-    //}
 
     // Free the memory.
     free(exc);
@@ -324,6 +326,10 @@ void testProxy06 ()
     printf ("=================================== \n");
 }
 
+/////////////////////////////
+// TestProxy07
+// Constructor test
+//
 void testProxy07 ()
 {
     printf ("=================================== \n");
@@ -332,13 +338,37 @@ void testProxy07 ()
     printf ("=================================== \n");
 
     int nspin = XC_UNPOLARIZED;
-    int functionalExchange = XC_GGA_X_PBE;
-    int functionalCorrelation = XC_GGA_C_PBE;
+    int functionalExchange = 101;
+    int functionalCorrelation = 130;
+
+    LibxcProxy<float,3> aProxy;
+    LibxcProxy<float,3> anotherProxy (functionalExchange, functionalCorrelation, nspin);
+
+    aProxy.closeProxy ();
+    anotherProxy.closeProxy ();
+
+    printf ("=================================== \n");
+}
+
+/////////////////////////////
+// TestProxy08
+// Constructor test
+//
+void testProxy08 ()
+{
+    printf ("=================================== \n");
+    printf ("testProxy08 \n");
+    printf ("Test del init del proxy hacia libxc \n");
+    printf ("=================================== \n");
+
+    int nspin = XC_UNPOLARIZED;
+    int functionalExchange = 101;
+    int functionalCorrelation = 130;
 
     LibxcProxy<double,0> aProxy;
     aProxy.init (functionalExchange, functionalCorrelation, nspin);
 
-    aProxy.close ();
+    aProxy.closeProxy ();
 
     printf ("=================================== \n");
 }

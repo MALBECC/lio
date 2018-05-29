@@ -45,6 +45,7 @@ void print_accumulate_parameters (
     G2G::vec_type<T,4>* dd1_gpu,
     G2G::vec_type<T,4>* dd2_gpu)
 {
+#ifdef __CUDACC__
     // Bajar la info a CPU y luego imprimirla.
     // Copy to host the matrix data in gpu memory and
     // call the new libxcProxy.
@@ -102,7 +103,7 @@ void print_accumulate_parameters (
     free(dd1_cpu);
     free(dd2_cpu);
     free(dxyz_cpu);
-
+#endif
 }
 
 template <class T> 
@@ -114,6 +115,7 @@ void print_proxy_input (
     const G2G::vec_type<T, 4>* hess1,
     const G2G::vec_type<T, 4>* hess2)
 {
+#ifdef __CUDACC__
     // Bajar la info a CPU y luego imprimirla.
     // Copy to host the matrix data in gpu memory and
     // call the new libxcProxy.
@@ -161,6 +163,7 @@ void print_proxy_input (
     free(hess2_cpu);
     free(hess1_cpu);
     free(grad_cpu);
+#endif
 }
 
 template <class T> 
@@ -173,6 +176,7 @@ void print_libxc_exchange_correlation_gpu_input (
     G2G::vec_type<T, 4>* dd1_gpu,
     G2G::vec_type<T, 4>* dd2_gpu)
 {
+#ifdef __CUDACC__
     // Bajar la info a CPU y luego imprimirla.
     // Copy to host the matrix data in gpu memory and
     // call the new libxcProxy.
@@ -226,6 +230,7 @@ void print_libxc_exchange_correlation_gpu_input (
     free(dd2_cpu);
     free(dd1_cpu);
     free(dxyz_cpu);
+#endif
 }
 
 #endif

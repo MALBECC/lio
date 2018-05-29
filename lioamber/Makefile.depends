@@ -67,7 +67,7 @@ TD.o : properties.o
 ################################################################################
 tmplist := SCF.o readECP.o drive.o intECP.o init.o init_lio.o
 tmplist += extras.o input_read.o liomain.o properties.o
-tmplist += mask_ecp.o
+tmplist += mask_ecp.o, lionml_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ECP_mod.mod
 
 tmplist := SCF.o
@@ -85,7 +85,7 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/esp_funct.mod
 OBJECTS += lionml_data.o
 OBJECTS += lionml_subs.o
 
-tmplist := init_lio.f90
+tmplist := init_lio.o input_read.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/lionml_subs.mod
 
 tmplist := lionml_subs.o
@@ -109,7 +109,7 @@ tmplist += SCF.o TD.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/dftb_subs.mod
 
 tmplist :=
-tmplist += SCF.o dftb_subs.o input_read.o
+tmplist += SCF.o dftb_subs.o input_read.o lionml_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/dftb_data.mod
 
 tmplist :=
@@ -138,7 +138,7 @@ tmplist :=
 tmplist += SCF.o SCF_exter.o liomain.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ehrensubs.mod
 
-tmplist := ehrensubs.o init_lio.o
+tmplist := ehrensubs.o init_lio.o lionml_data.o dft_get_qm_forces.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ehrendata.mod
 
 
@@ -146,14 +146,14 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ehrendata.mod
 OBJECTS += transport.o
 
 tmplist :=
-tmplist += TD.o SCF.o input_read.o
+tmplist += TD.o SCF.o input_read.o lionml_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/transport.mod
 
 ################################################################################
 OBJECTS += TD.o
 
 tmplist :=
-tmplist += SCF.o input_read.o init_lio.o ehrensubs.o
+tmplist += SCF.o input_read.o init_lio.o ehrensubs.o lionml_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/TD.mod
 ################################################################################
 OBJECTS += fockbias_data.o
@@ -252,13 +252,14 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/shape_data.mod
 OBJECTS += initial_guess.o
 
 tmplist :=
-tmplist += SCF.o
+tmplist += SCF.o lionml_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/initial_guess.o
 
 ################################################################################
 
 tmplist :=
 tmplist += SCF.o TD.o init_lio.o cublasmath.o predictor.o maskrmm.o
+tmplist += lionml_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/field_subs.o
 
 ################################################################################
@@ -388,7 +389,7 @@ tmplist += SCF.o SCF_in.o TD.o cubegen.o
 tmplist += maskrmm.o write_output.o SCF_exter.o
 tmplist += intECP.o elec.o func.o tmpaux_SCF.o
 tmplist += faint_cpu77.o steep.o transport.o
-tmplist += liotemp.o
+tmplist += liotemp.o lionml_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
 
 
@@ -442,7 +443,7 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/general_module.mod
 OBJECTS += translation.o
 
 tmplist :=
-tmplist += SCF.o
+tmplist += SCF.o lionml_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/translation.mod
 ###############################################################################
 

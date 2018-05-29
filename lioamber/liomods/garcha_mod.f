@@ -167,6 +167,7 @@ c      parameter rmintsol=16.0D0
       real*8 :: Force_cut, Energy_cut, minimzation_steep !energy and force convergence crit and initial steep
       integer :: n_points ! number of points scaned for lineal search
       integer :: n_min_steeps !number of optimization steps
+      integer :: charge
       logical :: lineal_search !enable lineal search
 
 

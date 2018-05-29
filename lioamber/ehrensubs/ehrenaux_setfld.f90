@@ -6,7 +6,7 @@ subroutine ehrenaux_setfld( current_time, elec_field )
 ! Time is in ps?fs?
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-   use lionml_data, &
+   use ehrendata, &
    &only: eefld_ampx, eefld_ampy, eefld_ampz, eefld_wavelen                    &
        &, eefld_timegih, eefld_timegfh, eefld_timepos, eefld_timeamp
 

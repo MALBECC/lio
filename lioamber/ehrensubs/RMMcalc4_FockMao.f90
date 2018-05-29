@@ -14,7 +14,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
    &only: M, Md, RMM, kkind, kkinds, cool, cools, igrid2                       &
        &, natom, Iz, NCO, Nunp, total_time
 
-   use lionml_data, &
+   use ehrendata, &
    &only: eefld_on, eefld_ampx, eefld_ampy, eefld_ampz, eefld_wavelen          &
        &, eefld_timegih, eefld_timegfh, eefld_timepos, eefld_timeamp
 

@@ -6,107 +6,24 @@
 !%% READ_OPTIONS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Reads LIO options from an input file.                                        !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine read_options(inputFile, charge)
-
-    use garcha_mod, only : natom, nsol, basis, output, fmulliken, fcoord, OPEN,&
-                           NMAX, basis_set, fitting_set, int_basis, DIIS,      &
-                           ndiis, GOLD, told, Etold, hybrid_converg, good_cut, &
-                           rmax, rmaxs, omit_bas, propagator, NBCH, &
-                           VCINP, restart_freq, writexyz, dgtrig, Iexch, integ,&
-                           frestartin, frestart, predcoef, idip, intsoldouble, &
-                           cubegen_only, cube_res, cube_dens, cube_orb, DENS,  &
-                           cube_sel, cube_orb_file, cube_dens_file, cube_elec, &
-                           cube_elec_file, energy_freq, NUNP,                  &
-                           writeforces, cube_sqrt_orb, fukui, little_cube_size,&
-                           max_function_exponent, min_points_per_cube,         &
-                           assign_all_functions, remove_zero_weights,          &
-                           energy_all_iterations, free_global_memory,          &
-                           sphere_radius, dipole, lowdin, mulliken,            &
-                           print_coeffs, number_restr, Dbug, steep, Force_cut, &
-                           Energy_cut, minimzation_steep, n_min_steeps,        &
-                           lineal_search, n_points, timers, IGRID, IGRID2
-    use field_data, only : field, a0, epsilon, Fx, Fy, Fz, field_iso_file,     &
-                           field_aniso_file, nfields_iso, nfields_aniso
-    use field_subs, only : read_fields
-    use td_data   , only : tdrestart, writedens, td_rst_freq, tdstep, ntdstep, &
-                           timedep
-    use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, verbose_ECP,  &
-                           cutECP, local_nonlocal, ecp_debug, FOCK_ECP_read,   &
-                           FOCK_ECP_write, ecp_full_range_int, Fulltimer_ECP,  &
-                           cut2_0, cut3_0
-
-
-    use transport_data, only  : transport_calc, generate_rho0, gate_field,     &
-                                save_charge_freq, driving_rate, Pop_Drive
-
-    use dftb_data ,only: dftb_calc, MTB, alfaTB, betaTB, gammaTB, Vbias_TB,    &
-                         end_bTB, start_tdtb, end_tdtb, TBsave, TBload
-    use initial_guess_data, only: initial_guess
-    use lionml_subs , only: lionml_Reads
-    use trans_Data, only: gaussian_convert
-    use fileio_data, only: style, verbose
+subroutine read_options(inputFile)
+    use field_subs , only: read_fields
+    use lionml_subs, only: lionml_read, lionml_write
 
     implicit none
     character(len=20), intent(in)  :: inputFile
-    integer          , intent(out) :: charge
 
-    integer :: ios, iErr
+    integer :: ios
     logical :: fileExists
 
-                   ! Common LIO variables.
-    namelist /lio/ OPEN, NMAX, Nunp, VCINP, GOLD, told, Etold, rmax, rmaxs,    &
-                   predcoef, idip, writexyz, intsoldouble, DIIS, ndiis, dgtrig,&
-                   Iexch, integ, dens, igrid, igrid2, good_cut, hybrid_converg,&
-                   initial_guess,                                              &
-                   ! File Input/Output.
-                   frestartin, style, frestart, fukui, dipole, lowdin,         &
-                   mulliken, writeforces, int_basis, fitting_set, basis_set,   &
-                   restart_freq, print_coeffs,                                 &
-                   ! DFT and TD-DFT Variables.
-                   timedep, tdstep, ntdstep, propagator, NBCH, tdrestart,      &
-                   writedens, td_rst_freq,                                     &
-                   ! Field Variables
-                   field, epsilon, a0, Fx, Fy, Fz, nfields_iso, nfields_aniso, &
-                   field_aniso_file, field_iso_file,                           &
-                   ! Effective Core Potential Variables.
-                   ecpmode, ecptypes, tipeECP, ZlistECP, cutECP, ecp_debug,    &
-                   local_nonlocal, ecp_debug, ecp_full_range_int, verbose_ECP, &
-                   verbose, FOCK_ECP_read, FOCK_ECP_write, Fulltimer_ECP,      &
-                   cut2_0, cut3_0,                                             &
-                   ! Distance Restrain
-                   number_restr,                                               &
-                   ! Debug variables
-                   Dbug, timers,                                               &
-                   ! Geometry optimizations
-                   steep, Force_cut, Energy_cut, minimzation_steep,            &
-                   n_min_steeps,lineal_search,n_points,                        &
-                   ! Variables for orbital printing.
-                   cubegen_only, cube_res, cube_sel, cube_dens, cube_dens_file,&
-                   cube_orb, cube_orb_file, cube_elec, cube_elec_file,         &
-                   cube_sqrt_orb,                                              &
-                   ! Variables for GPU options.
-                   little_cube_size, max_function_exponent, free_global_memory,&
-                   min_points_per_cube, assign_all_functions, sphere_radius,   &
-                   remove_zero_weights, energy_all_iterations,                 &
-                   ! Variables when LIO is used alone.
-                   natom, nsol, charge,                                        &
-                   ! Variables for Transport
-                   transport_calc, generate_rho0, gate_field,                  &
-                   save_charge_freq, driving_rate, Pop_Drive,                  &
-                   !Variables for DFTB
-                   dftb_calc, MTB, alfaTB, betaTB, gammaTB, Vbias_TB, end_bTB, &
-                   start_tdtb, end_tdtb, TBsave, TBload,                       &
-                   ! Variables for translation
-                   gaussian_convert
     inquire(file = inputFile, exist = fileExists)
     if(fileExists) then
-        open(unit = 100, file = inputFile, iostat = ios)
-        read(100, nml = lio, iostat = iErr)
-        if(ierr.gt.0) stop 'Input error in LIO namelist.'
-        call lionml_Reads( 100 )
-        close(unit = 100)
+       open(unit = 100, file = inputFile, iostat = ios)
+       call lionml_read( 100 )
+       close(unit = 100)
+       call lionml_write
     else
-        write(*,*) 'File ', adjustl(inputFile), ' not found. Using defaults.'
+       write(*,*) 'File ', adjustl(inputFile), ' not found. Using defaults.'
     endif
 
     call read_fields()

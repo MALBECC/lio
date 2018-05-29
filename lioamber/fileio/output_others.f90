@@ -6,6 +6,7 @@
 ! * write_forces     (handles grandient printing to output)                    !
 ! * write_fukui      (handles Fukui function printing to output)               !
 ! * write_orbitals   (prints orbitals and energies to output)                  !
+! * write_orbitals_op(prints orbitals and energies to output, open shell)      !
 ! * write_population (handles population/charge printing to output)            !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -139,28 +140,28 @@ subroutine write_fukui(fukuiNeg, fukuiPos, fukuiRad, N, Iz, soft)
 end subroutine write_fukui
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!%% WRITE_ORBITALS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% WRITE_ORBITALS / WRITE_ORBITALS_OPEN %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Prints orbital energies and coefficients. M is the total number of basis,    !
-! NCO is the number of occupied orbitals, Eorbs is the energy of each MO, X is !
-! the MO coefficient matrix, and uid is the output file UID.                   !
+! NCO is the number of occupied orbitals, Eorbs is the energy of each MO,      !
+! MO_coeff is the MO coefficient matrix, and uid is the output file UID.       !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine write_orbitals(M, NCO, Eorbs, X, uid)
+subroutine write_orbitals(M, NCO, E_orbs, MO_coeff, uid)
    implicit none
-   integer, intent(in)          :: M, NCO, uid, Eorbs(M)
-   double precision, intent(in) :: X(M, 3*M)
+   integer, intent(in)          :: M, NCO, uid, E_orbs(M)
+   double precision, intent(in) :: MO_coeff(M*M)
    integer                      :: icount, jcount
 
    write(uid,*) 'ORBITAL COEFFICIENTS AND ENERGIES, CLOSED SHELL'
    do icount = 1, NCO
-      write(UID, 850) icount, Eorbs(icount)
+      write(UID, 850) icount, E_orbs(icount)
       do jcount = 1, M
-         write(UID, 400) X(jcount, 2*M +icount)
+         write(UID, 400) MO_coeff(jcount + icount)
       enddo
    enddo
    do icount = NCO+1, M
-      write(uid, 851) icount, Eorbs(icount)
+      write(uid, 851) icount, E_orbs(icount)
       do jcount = 1, M
-         write(uid, 400) X(jcount, 2*M +icount)
+         write(uid, 400) MO_coeff(jcount + icount)
       enddo
    enddo
 
@@ -169,6 +170,47 @@ subroutine write_orbitals(M, NCO, Eorbs, X, uid)
 850 format('MOLECULAR ORBITAL #',2x,I3,3x,'ORBITAL ENERGY ',F14.7)
 851 format('MOLECULAR ORBITAL #',2x,I3,3x,'ORBITAL ENERGY ',F14.7, '(NON OCC.)')
 end subroutine write_orbitals
+
+subroutine write_orbitals_op(M, NCO, NUnp, E_orbs, E_orbs_b, MO_coeff, &
+                               MO_coeff_b, uid)
+   implicit none
+   integer, intent(in)          :: M, NCO, NUnp, uid, E_orbs(M), E_orbs_b(M)
+   double precision, intent(in) :: MO_coeff(M*M), MO_coeff_b(M*M)
+   integer                      :: icount, jcount
+
+   write(uid,*) 'ORBITAL COEFFICIENTS AND ENERGIES, OPEN SHELL ALPHA'
+   do icount = 1, NCO
+      write(UID, 850) icount, E_orbs(icount)
+      do jcount = 1, M
+         write(UID, 400) MO_coeff(jcount + icount)
+      enddo
+   enddo
+   do icount = NCO+1, M
+      write(uid, 851) icount, E_orbs(icount)
+      do jcount = 1, M
+         write(uid, 400) MO_coeff(jcount + icount)
+      enddo
+   enddo
+
+   write(uid,*) 'ORBITAL COEFFICIENTS AND ENERGIES, OPEN SHELL BETA'
+   do icount = 1, NCO+NUnp
+      write(UID, 850) icount, E_orbs_b(icount)
+      do jcount = 1, M
+         write(UID, 400) MO_coeff_b(jcount + icount)
+      enddo
+   enddo
+   do icount = NCO+NUnp+1, M
+      write(uid, 851) icount, E_orbs(icount)
+      do jcount = 1, M
+         write(uid, 400) MO_coeff_b(jcount + icount)
+      enddo
+   enddo
+
+   return
+400 format(4(E14.7E2, 2x))
+850 format('MOLECULAR ORBITAL #',2x,I3,3x,'ORBITAL ENERGY ',F14.7)
+851 format('MOLECULAR ORBITAL #',2x,I3,3x,'ORBITAL ENERGY ',F14.7, '(NON OCC.)')
+end subroutine write_orbitals_op
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%% WRITE_POPULATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

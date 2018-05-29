@@ -49,23 +49,27 @@ subroutine liomain(E, dipxyz)
        call SCF(E)
     endif
 
-    if ((restart_freq.gt.0).and.(MOD(npas, restart_freq).eq.0)) call do_restart(88)
+    if ( (restart_freq.gt.0) .and. (MOD(npas, restart_freq).eq.0) ) &
+       call do_restart(88)
 
     ! Perform Mulliken and Lowdin analysis, get fukui functions and dipole.
     if (MOD(npas, energy_freq).eq.0) then
-
         if (mulliken.or.lowdin) call do_population_analysis()
-
         if (dipole) call do_dipole(dipxyz, 69)
-
         if (fukui) call do_fukui()
 
         if (writeforces) then
             if (ecpmode) stop "ECP does not feature forces calculation."
             call do_forces(123)
         endif
-
-        if (print_coeffs) call write_orbitals(29)
+        if (print_coeffs) then
+           if (open) then
+             call write_orbitals_op(M, NCO, NUnp, Eorbs, Eorbs_b, MO_coef_at,  &
+                                    MO_coefat_b, 29)
+          else
+             call write_orbitals(M, NCO, Eorbs, MO_coef_at, 29)
+          endif
+        endif
     endif
 
     call g2g_timer_sum_pause("Total")
@@ -175,7 +179,7 @@ subroutine do_population_analysis()
    if (mulliken) then
        call g2g_timer_start('Mulliken')
        call mulliken_calc(natom, M, RealRho, Smat, Nuc, q)
-       call write_population(85, natom, Iz, q, 0)
+       call write_population(natom, Iz, q, 0, 85)
        call g2g_timer_stop('Mulliken')
    endif
 
@@ -183,7 +187,7 @@ subroutine do_population_analysis()
    if (lowdin) then
        call g2g_timer_start('Lowdin')
        call lowdin_calc(M, natom, RealRho, sqsm, Nuc, q)
-       call write_population(85, natom, Iz, q, 1)
+       call write_population(natom, Iz, q, 1, 85)
        call g2g_timer_stop('Lowdin')
    endif
 

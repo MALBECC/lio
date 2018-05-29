@@ -86,7 +86,7 @@ c auxiliars
        allocate (Jx(M))
 c
 c------------------------------------------------------------------
-c now 16 loops for all combinations, first 2 correspond to 
+c now 16 loops for all combinations, first 2 correspond to
 c wavefunction basis, the third correspond to the density fit
 c Rc(k) is constructed adding t(i,j,k)*P(i,j)
 c cf(k) , variationally obtained fitting coefficient, is
@@ -309,10 +309,10 @@ c
 
 
        endif
-       endif     
+       endif
 330    continue
         endif
-3333   continue   
+3333   continue
       do 340 i=ns+np+1,M,6
          do 340 knan=1,natomc(nuc(i))
          j=nnps(jatc(knan,nuc(i)))-1
@@ -447,11 +447,14 @@ c
          endif
 3666    continue
 
-      
-        allocate(cool(kknumd*Md),kkind(kknumd))
-        allocate(cools(kknums*Md),kkinds(kknums))
+        if (allocated(cool))   deallocate(cool)
+        if (allocated(kkind))  deallocate(kkind)
+        if (allocated(cools))  deallocate(cools)
+        if (allocated(kkinds)) deallocate(kkinds)
+        allocate(cool(kknumd*Md), cools(kknums*Md))
+        allocate(kkind(kknumd)  , kkinds(kknums))
 
-         kknumsmax=kknums
+        kknumsmax=kknums
         cool=0
         cools=0
         kknumd=0
@@ -468,7 +471,7 @@ c
           do 114 kknan=1,nns(jatc(knan,nuc(i)))
             j=j+1
             if(j.le.i) then
-           
+
           kk=i+Jx(j)
           dd=d(Nuc(i),Nuc(j))
 c
@@ -488,11 +491,11 @@ c
             if (fato) then
               kknumd = kknumd+1
               kkind(kknumd)=kk
-              fato=.false. 
+              fato=.false.
             endif
           else
             if (fato2) then
-               kknums = kknums+1 
+               kknums = kknums+1
               if(kknumsmax.lt.kknums) stop '1'
                kkinds(kknums)=kk
               fato2=.false.
@@ -569,8 +572,8 @@ c
       else
        id = (kknums-1)*Md+kn
       cools(id) = cools(id) + real(term)
-      endif 
-  
+      endif
+
        ix=ix+1
  75   continue
  71   continue
@@ -675,8 +678,8 @@ c
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.lt.rmax) then   
-       if (rexp.lt.rmaxs) then   
+       if (rexp.lt.rmax) then
+       if (rexp.lt.rmaxs) then
        if (fato) then
         do iki=1,3
         kknumd=kknumd+1
@@ -881,7 +884,7 @@ c
       l23=l2*(l2-1)/2+l3
 c      ii=i+l1-1
       kk=k+l23-1
-c     
+c
       cc=ccoef/f1
       term=term*cc
 c
@@ -926,8 +929,8 @@ c (pp|s)
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.lt.rmax) then   
-       if (rexp.lt.rmaxs) then   
+       if (rexp.lt.rmax) then
+       if (rexp.lt.rmaxs) then
        if (fato) then
           if(i.eq.j) then
             do iki=1,3
@@ -935,8 +938,8 @@ c (pp|s)
               kknumd=kknumd+1
                kkind(kknumd)=i+iki-1+Jx(j+jki-1)
             enddo
-           enddo       
-          else 
+           enddo
+          else
             do iki=1,3
             do  jki=1,3
              kknumd=kknumd+1
@@ -979,7 +982,7 @@ c
 c
       do 31 k=1,nsd
 c
-         
+
       dpc=(Q(1)-r(Nucd(k),1))**2+(Q(2)-r(Nucd(k),2))**2+
      >    (Q(3)-r(Nucd(k),3))**2
 c
@@ -1034,11 +1037,11 @@ c
       ii=ii+1
 c
 c      kk=ii+Jx(jj)
-      if (rexp.lt.rmaxs) then   
+      if (rexp.lt.rmaxs) then
       if(i.eq.j) then
       kk=ii+kknumd-6
       else
-      kk=ii+kknumd-9      
+      kk=ii+kknumd-9
       endif
       id = (kk-1)*Md+k
       cool(id) = cool(id) + term
@@ -1117,7 +1120,7 @@ c
       do 95 l3=1,3
       t1=W(l3)-r(Nucd(k),l3)
        term=t1*pp
-  
+
 c
       if (l1.eq.l3) then
        term=term+t4
@@ -1134,11 +1137,11 @@ c
       term=term*ccoef
 c
 c     kn=ii+Jx(jj)
-      if (rexp.lt.rmaxs) then   
+      if (rexp.lt.rmaxs) then
       if(i.eq.j) then
       kn=ii+kknumd-6
       else
-      kn=ii+kknumd-9      
+      kn=ii+kknumd-9
       endif
       id = (kn-1)*Md+kk
       cool(id) = cool(id) + term
@@ -1283,7 +1286,7 @@ c      kn=ii+Jx(jji)
       if(i.eq.j) then
       kn=ii+kknumd-6
       else
-      kn=ii+kknumd-9      
+      kn=ii+kknumd-9
       endif
       id = (kn-1)*Md+kk
 
@@ -1330,8 +1333,8 @@ c (ds|s)
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.lt.rmax) then   
-       if (rexp.lt.rmaxs) then   
+       if (rexp.lt.rmax) then
+       if (rexp.lt.rmaxs) then
        if (fato) then
         do iki=1,6
              kknumd=kknumd+1
@@ -1410,7 +1413,7 @@ c
 c      ii=i+l12-1
 c
 c      kk=ii+k1
-       if (rexp.lt.rmaxs) then   
+       if (rexp.lt.rmaxs) then
       kk=l12-1+kknumd-5
       id = (kk-1)*Md+k
       cool(id) = cool(id) + term
@@ -1491,7 +1494,7 @@ c
       l12=Ll(l1)+l2
 c      ii=i+l12-1
       kk=k+l3-1
-c 
+c
       cc=ccoef/f1
       term=term*cc
 c
@@ -1658,8 +1661,8 @@ c (dp|s)
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*dd
-       if (rexp.lt.rmax) then   
-       if (rexp.lt.rmaxs) then   
+       if (rexp.lt.rmax) then
+       if (rexp.lt.rmaxs) then
        if (fato) then
         do iki=1,6
           do  jki=1,3
@@ -1772,7 +1775,7 @@ c
       term=term*cc
 c
 c      kk=ii+Jx(jj)
-       if (rexp.lt.rmaxs) then   
+       if (rexp.lt.rmaxs) then
        kk=ii+kknumd-18
       id =(kk-1)*Md+k
       cool(id) = cool(id) + term
@@ -1852,7 +1855,7 @@ c
       d1p=t1*d1s+t2*d2s
       pi1p=t1*p1s+t2*p2s
       pj1p=t1*pj1s+t2*pj2s
-c   
+c
       if (l1.eq.l3) then
        d1p=d1p+t6
        pi1p=pi1p+t3
@@ -1882,7 +1885,7 @@ c
       if (l3.eq.l4) then
        term=term+t9
       endif
-c     
+c
       l12=Ll(l1)+l2
 c      ii=i+l12-1
 c      jj=j+l3-1
@@ -1892,7 +1895,7 @@ c
       term=term*cc
 c
 c      kn=ii+Jx(jj)
-       if (rexp.lt.rmaxs) then   
+       if (rexp.lt.rmaxs) then
        kn=ii+kknumd-18
       id =(kn-1)*Md+kk
       cool(id) = cool(id) + term
@@ -2056,7 +2059,7 @@ c
 c
 c
 c      kn=ii+Jx(jj)
-       if (rexp.lt.rmaxs) then   
+       if (rexp.lt.rmaxs) then
        kn=ii+kknumd-18
       id =(kn-1)*Md+kk
       cool(id) = cool(id) + term
@@ -2092,8 +2095,8 @@ c (dd|s)
        tj=a(j,nj)/zij
        alf=a(i,ni)*tj
        rexp=alf*ddij
-       if (rexp.lt.rmax) then   
-       if (rexp.lt.rmaxs) then   
+       if (rexp.lt.rmax) then
+       if (rexp.lt.rmaxs) then
        if (fato) then
          fato=.false.
           if(i.eq.j) then
@@ -2282,7 +2285,7 @@ c
       term=term*cc
 c
 c      kk=ii+Jx(jj)
-       if (rexp.lt.rmaxs) then   
+       if (rexp.lt.rmaxs) then
        if(j.eq.i) then
        kk=ii+kknumd-21
        else
@@ -2420,7 +2423,7 @@ c
       if (i.eq.j) then
        lk=min(l3,Ll(l1)-Ll(l3)+l2)
       endif
-c      write(*,*) lk,l3,Ll(l1),ll(l3),l1,l2 
+c      write(*,*) lk,l3,Ll(l1),ll(l3),l1,l2
 c
       t16=(pj1pk-roz*pj2pk)/z2
       t17=(pi1pk-roz*pi2pk)/z2
@@ -2429,7 +2432,7 @@ c
       t1=Q(l4)-r(Nuc(j),l4)
       t2=W(l4)-Q(l4)
       d1d=t1*d1pk+t2*d2pk
-c     
+c
       pjdkl=t1*pj1pk+t2*pj2pk
       pidkl=t1*pi1pk+t2*pi2pk
       d1pl=t1*d1s+t2*d2s
@@ -2485,13 +2488,13 @@ c      l34=Ll(l3)+l4
 c      ii=i+l12-1
 c      jj=j+l34-1
       kk=k+l5-1
-     
+
 c
       cc=ccoef/(f1*f2)
       term=term*cc
 c
 c      kn=ii+Jx(jj)
-       if (rexp.lt.rmaxs) then   
+       if (rexp.lt.rmaxs) then
        if(j.eq.i) then
        kn=ii+kknumd-21
        else
@@ -2510,7 +2513,7 @@ c      kn=ii+Jx(jj)
 
       cools(id) = cools(id) + real(term)
       endif
- 
+
       ix=ix+1
  125   continue
  121   continue

@@ -18,6 +18,7 @@
        if (allocated(RealRho))   deallocate(RealRho)
        if (allocated(sqsm))      deallocate(sqsm)
        if (allocated(Eorbs))     deallocate(Eorbs)
+       if (allocated(Eorbs_b))      deallocate(Eorbs_b)
        if (allocated(MO_coef_at))   deallocate(MO_coef_at)
        if (allocated(MO_coef_at_b)) deallocate(MO_coef_at_b)
 

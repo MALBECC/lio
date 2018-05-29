@@ -15,8 +15,9 @@
 subroutine liomain(E, dipxyz)
     use garcha_mod, only : M, Smat, RealRho, OPEN, writeforces, energy_freq,   &
                            restart_freq, npas, sqsm, mulliken, lowdin, dipole, &
-                           doing_ehrenfest, first_step,                        &
-                           Eorbs, fukui, print_coeffs, steep, idip
+                           doing_ehrenfest, first_step, Eorbs, Eorbs_b, fukui, &
+                           print_coeffs, steep, idip, MO_coef_at, MO_coef_at_b,&
+                           NUnp
     use ecp_mod   , only : ecpmode, IzECP
     use ehrensubs,  only : ehrendyn_main
 
@@ -26,11 +27,11 @@ subroutine liomain(E, dipxyz)
 
     call g2g_timer_sum_start("Total")
 
-    if (.not.allocated(Smat))    allocate(Smat(M,M))
-    if (.not.allocated(RealRho)) allocate(RealRho(M,M))
-    if (.not.allocated(sqsm))    allocate(sqsm(M,M))
-    if (.not.allocated(Eorbs))   allocate(Eorbs(M))
-
+    if (.not.allocated(Smat))      allocate(Smat(M,M))
+    if (.not.allocated(RealRho))   allocate(RealRho(M,M))
+    if (.not.allocated(sqsm))      allocate(sqsm(M,M))
+    if (.not.allocated(Eorbs))     allocate(Eorbs(M))
+    if (.not.allocated(Eorbs_b))   allocate(Eorbs_b(M))
 
     if (steep) then
       idip_scrach=idip
@@ -39,9 +40,6 @@ subroutine liomain(E, dipxyz)
       idip=idip_scrach
     end if
 
-
-!------------------------------------------------------------------------------!
-! FFR - Option to do ehrenfest
     if ( doing_ehrenfest ) then
        if ( first_step ) call SCF( E, dipxyz )
        call ehrendyn_main( E, dipxyz )

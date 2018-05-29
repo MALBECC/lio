@@ -720,7 +720,7 @@ subroutine SCF(E)
         if (dftb_calc) i0=MTB
 
         kkk = 0
-        do kk=1,NCOa
+        do kk=1,M
         do ii=1,M
           kkk = kkk+1
           MO_coef_at(kkk) = morb_coefat( i0+ii, kk )
@@ -777,7 +777,7 @@ subroutine SCF(E)
         if (dftb_calc) i0=MTB
 
         kkk = 0
-        do kk=1,NCOb
+        do kk=1,M
         do ii=1,M
           kkk = kkk+1
           MO_coef_at_b(kkk) = morb_coefat( i0+ii, kk )
@@ -1037,6 +1037,7 @@ subroutine SCF(E)
       Enucl = En
       do kkk=1, M
           Eorbs(kkk) = RMM(M13+kkk-1)
+          if (open) Eorbs_b(kkk) = RMM(M22+kkk-1)
       enddo
 
       call cubegen_matin( M, X )

@@ -420,7 +420,7 @@ subroutine SCF(E)
         allocate( sqsmat(M,M), tmpmat(M,M) )
         call overop%Gets_orthog_2m( 2, 0.0d0, tmpmat, sqsmat )
         call fockbias_setup0(.true.,.false.,0.0D0,0.0D0,0.0D0)
-        call fockbias_loads( natom, nuc,4333,'./atombias')
+        call fockbias_loads( natom, nuc,4000,"atombias")
         call fockbias_setmat( tmpmat )
         deallocate( sqsmat, tmpmat )
 

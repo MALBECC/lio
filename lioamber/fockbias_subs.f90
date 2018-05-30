@@ -35,7 +35,6 @@ module fockbias_subs
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine fockbias_setup0( activate, do_shape, grow_start, fall_start, setamp )
-
    use fockbias_data, only: fockbias_is_active, fockbias_is_shaped &
                          &, fockbias_timegrow , fockbias_timefall  &
                          &, fockbias_timeamp0
@@ -46,12 +45,17 @@ subroutine fockbias_setup0( activate, do_shape, grow_start, fall_start, setamp )
    real*8 , intent(in) :: fall_start
    real*8 , intent(in) :: setamp
 
-   fockbias_is_active = activate
-   fockbias_is_shaped = do_shape
-   fockbias_timegrow  = grow_start
-   fockbias_timefall  = fall_start
-   fockbias_timeamp0  = setamp
+!   fockbias_is_active = activate
+!   fockbias_is_shaped = do_shape
+!   fockbias_timegrow  = grow_start
+!   fockbias_timefall  = fall_start
+!   fockbias_timeamp0  = setamp
 
+   fockbias_is_active = .true.
+   fockbias_is_shaped = .false.
+   fockbias_timegrow  = 0
+   fockbias_timefall  = 0
+   fockbias_timeamp0  = 0
 end subroutine fockbias_setup0
 !
 !
@@ -143,6 +147,7 @@ subroutine fockbias_loads( Natom, atom_of_orb, file_unit_in, file_name_in )
    end if
 
 !  If there is input filename, save it so as to know the source.
+
    if ( present(file_name_in) ) fockbias_readfile = file_name_in
 
 !  If there is input fileunit, we will read from there directly.
@@ -153,7 +158,7 @@ subroutine fockbias_loads( Natom, atom_of_orb, file_unit_in, file_name_in )
    else
       file_unit = 2427
 
-      open( file=fockbias_readfile, unit=file_unit, iostat=ios )
+      open( unit=file_unit, file="./atombias", iostat=ios, status="old")
       if ( ios /= 0 ) then
          print*, "Error inside fockbias_loads while opening input."
          print*, "  file_name = ", fockbias_readfile
@@ -166,16 +171,20 @@ subroutine fockbias_loads( Natom, atom_of_orb, file_unit_in, file_name_in )
 
 !  Now read all atomic weights and set it up.
    allocate( qweight_of_atom(Natom) )
-   do nn = 1, Natom
-      read( unit=file_unit, fmt=*, iostat=ios ) qweight_of_atom(nn)
-      if ( ios /= 0 ) then
-         print*, "Error inside fockbias_loads while reading input."
-         print*, "  file_name = ", fockbias_readfile
-         print*, "  file_unit = ", file_unit
-         print*, "  iostatus  = ", ios
-         print*; stop
-      end if
-   end do
+   qweight_of_atom(1) = 1.0
+   qweight_of_atom(2) = 2.0
+   qweight_of_atom(3) = 1.0
+  ! do nn = 1, Natom
+  !    read( unit=file_unit, fmt=*, iostat=ios ) qweight_of_atom(nn)
+  !    write(*,*) qweight_of_atom(1)
+  !    if ( ios /= 0 ) then
+  !       print*, "Error inside fockbias_loads while reading input."
+  !       print*, "  file_name = ", fockbias_readfile
+  !       print*, "  file_unit = ", file_unit
+  !       print*, "  iostatus  = ", ios
+  !       print*; stop
+  !    end if
+  ! end do
    call fockbias_setorb( qweight_of_atom, atom_of_orb )
 
 !  If there was no input unit, we had to open the file. Now we close it.
@@ -264,7 +273,6 @@ subroutine fockbias_apply_c( timepos, fockmat )
    call fockbias_apply_d( timepos, fockmat_r )
    fockmat(:,:) = fockmat(:,:) + CMPLX( fockmat_r(:,:), 0.0d0 )
    deallocate( fockmat_r )
-
 end subroutine fockbias_apply_c
 !
 !
@@ -282,7 +290,6 @@ subroutine fockbias_apply_z( timepos, fockmat )
    call fockbias_apply_d( timepos, fockmat_r )
    fockmat(:,:) = fockmat(:,:) + DCMPLX( fockmat_r(:,:), 0.0d0 )
    deallocate( fockmat_r )
-
 end subroutine fockbias_apply_z
 !
 !

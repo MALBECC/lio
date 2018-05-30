@@ -157,7 +157,7 @@ void LibxcProxy <T, width>::doGGA(T dens,
     const G2G::vec_type<T, width> &hess2,
     T &ex, T &ec, T &y2a)
 {
-    printf("LibxcProxy::doGGA cpu simple(...) \n");
+    //printf("LibxcProxy::doGGA cpu simple(...) \n");
 
     T rho[1] = {dens};
     // Libxc needs the 'contracted gradient'
@@ -247,9 +247,7 @@ void LibxcProxy <T, width>::doGGA(T* dens,
     T* ec,
     T* y2a)
 {
-//#ifdef _DEBUG
-//    printf("LibxcProxy::doGGA cpu multiple (...) \n");
-//#endif
+    //printf("LibxcProxy::doGGA cpu multiple (...) \n");
 
     int array_size = sizeof(double)*number_of_points;
     double* rho = (double*)malloc(array_size);

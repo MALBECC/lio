@@ -1,4 +1,51 @@
+!------------------------------------------------------------------------------!
+!
+!    This file contains modules transport_data, and transport_subs, which contains subroutines called
+!by the TD module in order to do electron transport dynamics. transport_subs contains the following subroutines:
+!
+! transport_init: This subroutine allocates the group vector and the mapmat, overlap and rhofirst matrices,
+!                  creates the output files of lowdin and mulliken charges, sets the value for 
+!                  gamma and fills the overlap matrix.
+!
+! transport_read_groups: Reads the atomgroups file to define the Source,
+!                        Drain and Molecule groups necessary for the calculations
+!
+! transport_generate_rho: This subroutine either sets rho:=rhofirst and prints that to a file,
+!                         or reads rhofirst from a file.
+!
+! transport_rho_trace: subroutine that prints the trace of rho_alpha and rho_beta to stdout.
+!                        currently called by TD for debugging purposes
+!
+! transport_propagate: This is the propagation subroutine used if CUBLAS is not defined. This subroutine 
+!                      propagates the density in time for timestep "istep". It first defines scratchgamma and
+!                      then calls electrostat, which propagates the density. 
+!                      It calls drive_population(opt=1) afterwards, under certain circumstances
+!                      , and finally changes the basis of rho1
+!               
+! transport_propagate_cu: This is the propagation subroutine used if CUBLAS is defined
+!
+! transport_population: Calls drive_population(dvopt=2) under certain circumstances
+!
+! drive_population: takes 2 options: dvopt=1 or dvopt=2 , the first option outputs current, the second one charges
+!
+! electrostat: Takes the fock matrix and adds the fockbias term (with the
+!
+! mat_map: Fills the mat_map matrix, which has the same dimension as rho and stores a number from 1-9 that indicates how the
+! corresponding rho entry should be time-propagated. Also calculates the number of basis functions for each group
+!
+!
+!------------------------------------------------------------------------------!
+
+
 module transport_data
+    !this module contains variables shared by the transport subroutines. 
+    !pop_drive: toggles between mulliken (1) and lowdin (2) charges
+    !group: stores for each atom the group number (1=Source, 2=Drain, 3=Molecule)
+    !ngroup: stores the maximum group number
+    !mapmat: this matrix is the same dimension as rho and stores a number that indicates 
+    !        how the corresponding rho entry should be time-propagated
+    !Nuc: is used externally by transport, it is an array of size M (total number of closed shell basis functions)
+    !     that spits the atom id of the corresponding basis function.
    implicit none
    logical   :: transport_calc   = .false.
    logical   :: generate_rho0    = .false.
@@ -27,6 +74,10 @@ module transport_subs
 contains
 
 subroutine transport_init(M, dim3, natom, Nuc, RMM5, overlap, rho, OPEN)
+   !this subroutine initializes transport calculations. 
+   !Nacho: The dim3 variable is redundant, it is 1 for
+   !closed shell calculations and 2 for open shell calculations, (where one dimension of the matrices is used for alpha and the
+   !other for beta electrons) but that could be inferred from the OPEN variable.
    use transport_data, only: GammaMagnus, GammaVerlet, ngroup, group, rhofirst,&
                              driving_rate, pop_drive, pop_uid, drive_uid, mapmat
    implicit none
@@ -42,8 +93,6 @@ subroutine transport_init(M, dim3, natom, Nuc, RMM5, overlap, rho, OPEN)
    integer :: orb_group(M), icount
 
    ngroup  = 0
-      allocate(rhofirst(M,M,dim3))
-
    allocate(group(natom), mapmat(M,M))
    call transport_read_groups(natom)
    call mat_map(Nuc, M, natom)
@@ -55,6 +104,8 @@ subroutine transport_init(M, dim3, natom, Nuc, RMM5, overlap, rho, OPEN)
    GammaMagnus = driving_rate
    GammaVerlet = driving_rate*0.1D0
 
+   !Here the files ---Group and Drive--- are generated for the mulliken or lowdin case. These are the files where 
+   !the group charges and current are output respectively
    select case (pop_drive)
       case (1)
          open( unit = pop_uid  , file = "MullikenGroup")
@@ -67,11 +118,15 @@ subroutine transport_init(M, dim3, natom, Nuc, RMM5, overlap, rho, OPEN)
                     '(transport_init)'
    end select
 
+   !This unpacks the data stored in RMM5 as a vector into the overlap matrix, 
+   !so it effectively fills the overlap matrix
    if (allocated(overlap)) deallocate(overlap)
    allocate(overlap(M,M))
    call spunpack('L', M, RMM5, overlap)
-   call transport_generate_rho(M, rho, OPEN)
 
+   !This creates the rhofirst matrix 
+   allocate(rhofirst(M,M,dim3))
+   call transport_generate_rho(M, rho, OPEN)
    return
 end subroutine transport_init
 
@@ -157,6 +212,7 @@ subroutine transport_generate_rho(M, rho, OPEN)
 end subroutine transport_generate_rho
 
 subroutine transport_rho_trace(M, dim3, rho)
+   !Nacho: This subroutine prints rho_trace to stdout, once again the dim3 variable could be changed to OPEN
    implicit none
    integer, intent(in) :: M, dim3
 #ifdef TD_SIMPLE
@@ -206,6 +262,8 @@ subroutine transport_propagate(M, dim3, natom, Nuc, Iz, propagator, istep, &
    integer :: save_freq
 
    save_freq = save_charge_freq
+
+   !sets up scratchgamma
    select case (propagator)
    case (1)
       save_freq = save_freq*10
@@ -213,7 +271,6 @@ subroutine transport_propagate(M, dim3, natom, Nuc, Iz, propagator, istep, &
    case (2)
       gamma     = GammaMagnus
    end select
-
    call g2g_timer_start('Transport-propagation')
    if ((propagator.eq.2) .and. (istep.gt.999)) Then
       scratchgamma = gamma
@@ -221,13 +278,17 @@ subroutine transport_propagate(M, dim3, natom, Nuc, Iz, propagator, istep, &
       scratchgamma = gamma * exp(-0.0001D0 * (dble(istep-1000))**2)
    endif
 
+   !calls electrostat 
    call electrostat(rho1(:,:,1), overlap, scratchgamma, M, 1)
    if (OPEN) call electrostat(rho1(:,:,2), overlap, scratchgamma, M, 2)
+
+   !calls drive_population dvopt=1
    if (mod( istep-1 , save_freq) == 0) then
       call drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, sqsm, 1,   &
                             OPEN)
    endif
 
+   !performs a change of basis
    rho1(:,:,1)=basechange_gemm(M,rho1(:,:,1),Ymat)
    if (OPEN) rho1(:,:,2) = basechange_gemm(M,rho1(:,:,2),Ymat)
 
@@ -292,6 +353,8 @@ end subroutine transport_propagate_cu
 
 subroutine transport_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat, &
                                 propagator, is_lpfrg, istep, OPEN)
+   !Nacho: This calls drive_population dvopt=2 under certain circumstances,
+   ! once again dim3 is redundant.
    use transport_data, only: save_charge_freq
    implicit none
    logical, intent(in) :: OPEN
@@ -308,10 +371,8 @@ subroutine transport_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat, &
    if ( ((propagator.gt.1) .and. (is_lpfrg) .and.       &
       (mod((istep-1), save_charge_freq*10) == 0)) .or.  &
       (mod((istep-1), save_charge_freq) == 0) ) then
-      call drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat, 2,   &
-                            OPEN)
+      call drive_population(M,dim3,natom,Nuc,Iz,rho1,overlap,smat,2,OPEN)
    endif
-
    return
 end subroutine transport_population
 
@@ -337,7 +398,6 @@ subroutine mat_map(Nuc, M, natom)
       if ((group(nuc(i)).eq.3).and.(group(nuc(j)).eq.3)) mapmat(i,j)=9
    end do
    end do
-
    ! Counting the number of basis functions for each section of transport.
    group_1 = 0 ; group_2 = 0 ; group_3 = 0
    do i=1,M
@@ -357,6 +417,7 @@ end subroutine mat_map
 subroutine electrostat(rho1, overlap, Gamma0, M, spin)
    ! This subroutine modifies the density matrix according to the group
    ! containing the basis function indexes.
+   ! Nacho: the spin variable is actually dim3, it can be either 1 or 2
    use transport_data, only: mapmat, rhofirst
    implicit none
    integer, intent(in) :: M, spin
@@ -379,12 +440,15 @@ subroutine electrostat(rho1, overlap, Gamma0, M, spin)
    do i = 1, M
    do j = 1, M
       select case (mapmat(i,j))
+         !in these cases the matrix is filled with 0s
          case (0, 9)
             rho_scratch(i,j,1) = dcmplx(0.0D0,0.0D0)
             rho_scratch(i,j,2) = dcmplx(0.0D0,0.0D0)
+         !in these cases the matrix is filled with either rho1 or rhofirst
          case (1, 2, 4, 5)
             rho_scratch(i,j,1) = rho1(i,j)
             rho_scratch(i,j,2) = rhofirst(i,j,spin)
+         !in these cases the matrix is filled with either rho1 or rhofirst
          case (3, 6, 7, 8)
             rho_scratch(i,j,1) = 0.50D0*rho1(i,j)
             rho_scratch(i,j,2) = 0.50D0*rhofirst(i,j,spin)
@@ -399,7 +463,7 @@ subroutine electrostat(rho1, overlap, Gamma0, M, spin)
    do i = 1, M
    do j = 1, M
       rho1(i,j)= GammaAbs*rho_scratch(i,j,1) - GammaIny*rho_scratch(i,j,2)
-      ! Checks NaNs.
+      ! Checks NaNs, which are not equal to themselves.
       if (rho1(i,j).ne.rho1(i,j)) then
          stop 'Houston, we have a problem - NaN found in Rho1.'
       end if
@@ -432,6 +496,9 @@ subroutine drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat,      &
    qgr(:) = 0.0D0
    traza  = 0.0D0
 
+   ! if you want to write the current this sets q = 0
+   ! if you want to write the charges it sets q(i) = charge of the ith nuclei,
+   ! this last thing is what is usually expected for mulliken or lowdin charges
    if (dvopt==1) then
       q(:)=0.0d0
    else if (dvopt==2) then
@@ -439,13 +506,13 @@ subroutine drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat,      &
          q(i) = Iz(i)
       enddo
    end if
-
+   
+   !a standard mulliken/lowdin population analysis is performed
    rho = real(rho1)
    select case (pop_drive)
       case (1)
          call mulliken_calc(natom, M, rho(:,:,1), overlap, Nuc, q)
-         if (OPEN) call mulliken_calc(natom, M, rho(:,:,2), overlap, Nuc,      &
-                                      q)
+         if (OPEN) call mulliken_calc(natom, M, rho(:,:,2),overlap,Nuc,q)
       case (2)
          call lowdin_calc(M, natom, rho(:,:,1), smat, Nuc, q)
          if (OPEN) call lowdin_calc(M, natom, rho(:,:,2), smat, Nuc, q)
@@ -453,18 +520,24 @@ subroutine drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat,      &
          write(*,*) "ERROR - Transport: Wrong value for Pop (drive_population)."
          stop
    end select
+   !after this is calculated q changes to the mulliken/lowdin charges
 
+   ! qgr is the total charge of the group, given by 
+   ! the sum of the charges of all its atoms.
    do i = 1, natom
       qgr(group(i)) = qgr(group(i)) + q(i)
    enddo
 
-   if(dvopt==1) then
+   if (dvopt==1) then
+      !dvopt==1 writes the current and 
+      !outputs "trace" (sum of all the charges), why is this a trace?
       do i = 1, ngroup
          write(drive_uid,*) i, i, qgr(i)
          traza = traza + qgr(i)
       enddo
       write(*,*) "Total trace =", traza
    else if (dvopt==2) then
+      !dvopt==2 writes the charges and outputs trace
       do i = 1, ngroup
          write(pop_uid,*) i, i, qgr(i)
          traza = traza + qgr(i)

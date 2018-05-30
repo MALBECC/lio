@@ -25,6 +25,34 @@
 ! In each step of the propagation the cartesian components of the sistems      !
 ! dipole are stored in files x.dip, y.dip, z.dip.                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!Subroutines independent of CUBLAS in this module are:
+
+!TD (main subroutine)
+
+!td_allocate_all
+!td_deallocate_all
+!td_initialise
+!td_integration_setup
+!td_integral_1e
+!td_overlap_diag
+!td_coulomb_precalc
+!td_get_time
+!td_check_prop
+!td_calc_energy
+!td_dipole
+
+!Subroutines dependent on CUBLAS in this module are:
+
+!td_allocate_cublas
+!td_finalize_cublas
+!td_bc_fock_cu
+!td_bc_fock
+!td_verlet_cu
+!td_verlet
+!td_magnus_cu
+!td_magnus
+
 module td_data
    implicit none
    integer :: td_rst_freq = 500

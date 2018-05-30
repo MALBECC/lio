@@ -54,7 +54,7 @@ subroutine SCF(E)
    use cubegen       , only: cubegen_vecin, cubegen_matin, cubegen_write
    use mask_ecp      , only: ECP_init, ECP_fock, ECP_energy
    use typedef_sop   , only: sop              ! Testing SOP
-   use fockbias_subs , only: fockbias_loads, fockbias_setmat, fockbias_apply
+   use fockbias_subs , only: fockbias_loads, fockbias_setmat, fockbias_apply, fockbias_setup0
    use tmpaux_SCF    , only: neighbor_list_2e
    use liosubs_math  , only: transform
    use liosubs_dens  , only: builds_densmat, messup_densmat, standard_coefs
@@ -418,8 +418,9 @@ subroutine SCF(E)
         if ( allocated(sqsmat) ) deallocate(sqsmat)
         if ( allocated(tmpmat) ) deallocate(tmpmat)
         allocate( sqsmat(M,M), tmpmat(M,M) )
-        call overop%Gets_orthog_2m( 3, 0.0d0, tmpmat, sqsmat )
-        call fockbias_loads( natom, nuc )
+        call overop%Gets_orthog_2m( 2, 0.0d0, tmpmat, sqsmat )
+        call fockbias_setup0(.true.,.false.,0.0D0,0.0D0,0.0D0)
+        call fockbias_loads( natom, nuc,4000,"atombias")
         call fockbias_setmat( tmpmat )
         deallocate( sqsmat, tmpmat )
 

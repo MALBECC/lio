@@ -35,7 +35,6 @@ module fockbias_subs
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine fockbias_setup0( activate, do_shape, grow_start, fall_start, setamp )
-
    use fockbias_data, only: fockbias_is_active, fockbias_is_shaped &
                          &, fockbias_timegrow , fockbias_timefall  &
                          &, fockbias_timeamp0
@@ -46,12 +45,17 @@ subroutine fockbias_setup0( activate, do_shape, grow_start, fall_start, setamp )
    real*8 , intent(in) :: fall_start
    real*8 , intent(in) :: setamp
 
+!   fockbias_is_active = activate
+!   fockbias_is_shaped = do_shape
+!   fockbias_timegrow  = grow_start
+!   fockbias_timefall  = fall_start
+!   fockbias_timeamp0  = setamp
+
    fockbias_is_active = activate
    fockbias_is_shaped = do_shape
    fockbias_timegrow  = grow_start
    fockbias_timefall  = fall_start
    fockbias_timeamp0  = setamp
-
 end subroutine fockbias_setup0
 !
 !
@@ -121,6 +125,8 @@ end subroutine fockbias_setmat
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine fockbias_loads( Natom, atom_of_orb, file_unit_in, file_name_in )
    use fockbias_data, only: fockbias_is_active, fockbias_readfile
+   !This subroutine just reads the weights to be applied to each atom from an external file
+   !into qweight_of_attom and then calls setorb. It is a bit verbose.
 
    integer         , intent(in)           :: Natom
    integer         , intent(in)           :: atom_of_orb(:)
@@ -131,7 +137,6 @@ subroutine fockbias_loads( Natom, atom_of_orb, file_unit_in, file_name_in )
    integer                                :: nn, ios
 
    if ( .not. fockbias_is_active ) return
-
    if ( .not. present(file_unit_in) ) then
    if ( .not. present(file_name_in) ) then
    if ( fockbias_readfile == "" )     then
@@ -143,25 +148,25 @@ subroutine fockbias_loads( Natom, atom_of_orb, file_unit_in, file_name_in )
    end if
 
 !  If there is input filename, save it so as to know the source.
+
    if ( present(file_name_in) ) fockbias_readfile = file_name_in
 
-!  If there is input fileunit, we will read from there directly.
+!If there is input fileunit, we will read from there directly.
 !  Else, we will open the file in unit=2427 (BIAS)
    if ( present(file_unit_in) ) then
       file_unit = file_unit_in
 
    else
       file_unit = 2427
+   end if
 
-      open( file=fockbias_readfile, unit=file_unit, iostat=ios )
-      if ( ios /= 0 ) then
-         print*, "Error inside fockbias_loads while opening input."
-         print*, "  file_name = ", fockbias_readfile
-         print*, "  file_unit = ", file_unit
-         print*, "  iostatus  = ", ios
-         print*; stop
-      end if
-
+   open( unit=file_unit, file=fockbias_readfile, iostat=ios)
+   if ( ios /= 0 ) then
+      print*, "Error inside fockbias_loads while opening input."
+      print*, "  file_name = ", fockbias_readfile
+      print*, "  file_unit = ", file_unit
+      print*, "  iostatus  = ", ios
+      print*; stop
    end if
 
 !  Now read all atomic weights and set it up.
@@ -264,7 +269,6 @@ subroutine fockbias_apply_c( timepos, fockmat )
    call fockbias_apply_d( timepos, fockmat_r )
    fockmat(:,:) = fockmat(:,:) + CMPLX( fockmat_r(:,:), 0.0d0 )
    deallocate( fockmat_r )
-
 end subroutine fockbias_apply_c
 !
 !
@@ -282,7 +286,6 @@ subroutine fockbias_apply_z( timepos, fockmat )
    call fockbias_apply_d( timepos, fockmat_r )
    fockmat(:,:) = fockmat(:,:) + DCMPLX( fockmat_r(:,:), 0.0d0 )
    deallocate( fockmat_r )
-
 end subroutine fockbias_apply_z
 !
 !

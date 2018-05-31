@@ -71,7 +71,7 @@ cmake -DGMX_GPU=0 -DGMX_THREAD_MPI=0 -DGMX_QMMM_PROGRAM="lio" -DLIO_LINK_FLAGS="
 INSTALLATION WITH LIBXC
 -----------------------
 
-  1. Download the libxc library for lio from gitlab (account needed) ([here](https://gitlab.com/eduarditoperez/libxc.git)).
+  1. Download the libxc library  for lio from gitlab (account needed) ([here](https://gitlab.com/eduarditoperez/libxc/tree/cuda-integration)).
   2. Compile and Install the library (follow the Readme.me instructions).
   3. In order for lio to compile with libxc, you'll need to create two variables in LD_LIBRARY_PATH
 ```
@@ -97,9 +97,9 @@ ec_functional_id=XXX
 ...
 ```
 where ex_functional_id is the id for the energy-exchange functional from libxc and ec_funcional_id is the id
-for the energy-correlation functional from libxc. You can see the list of available functionals ([here](https://gitlab.com/libxc/libxc/wikis/Functional-list-4.0.4))
-or in see the funcs_key.c file in the src folder of libxc. Bare in mind that only the GGA functional's family are supported in
-this version of libxc for lio.
+for the energy-correlation functional from libxc. You can see the list of available functionals for GPU ([here](https://github.com/eduarditoperez/lio/wiki#funcionales-disponibles-en-gpu))
+and the list of available functionals for CPU ([here](http://www.tddft.org/programs/libxc/manual/previous/libxc-4.0.x/)). If you want to see the ids you have to take a look at the funcs_key.c file in the libxc src folder.
+Bare in mind that only the GGA functional's family are supported in this version of libxc for lio.
 
 TESTS
 -----

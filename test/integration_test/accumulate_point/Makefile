@@ -1,3 +1,12 @@
+# Test for Libxc in the library folder
+LIBXC = ${LIBXC_LIBS}
+ifeq ("$(LIBXC)","")
+    $(info >>> WARNING - Libxc not found in library folder. Please install Libxc before run the tests. <<<)
+    HAS_LIBXC_INSTALLED := false
+else
+    HAS_LIBXC_INSTALLED := true
+endif
+
 CFLAGS=-I. -I${HOME}/workspace/common/includes -I../../common/inc -I../../../g2g -I$(LIBXC_INCLUDES) -DGPU_KERNERLS=0
 CLIBS=-L${HOME}/workspace/common/libs -lxc -lm -L../../../g2g -lg2g
 

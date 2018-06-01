@@ -3,23 +3,15 @@
 ################################################################################
 
 # Test for Libxc in the library folder
-LIBXC ?= $(shell ldconfig -p | grep -e libxc*.so)
+LIBXC = ${LIBXC_LIBS}
 ifeq ("$(LIBXC)","")
-    $(info >>> WARNING - Libxc not found in library folder. Please install the library to run the tests. <<<)
+    $(info >>> WARNING - Libxc not found in library folder. Please install Libxc before run the tests. <<<)
+    HAS_LIBXC_INSTALLED := false
+else
+    HAS_LIBXC_INSTALLED := true
 endif
 
-
 all: libxc_proxy matrix timers
-
-.PHONY: accumulate_point
-accumulate_point:
-	$(MAKE) -C accumulate_point
-
-
-.PHONY: iteration
-iteration:
-	$(MAKE) -C iteration
-
 
 .PHONY: libxc_proxy
 libxc_proxy:
@@ -41,6 +33,10 @@ test: test_gpu test_cpu
 .PHONY: test_gpu
 test_gpu:
 	$(EXEC) libxc_proxy/main_gpu > /dev/null
+	$(EXEC) echo $$?
+	$(EXEC) matrix/matrix_test > /dev/null
+	$(EXEC) echo $$?
+	$(EXEC) timers/timers_test > /dev/null
 	$(EXEC) echo $$?
 
 

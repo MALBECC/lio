@@ -22,7 +22,7 @@
 
 #include "../../../g2g/libxc/libxcproxy.h"
 #include "../../../g2g/libxc/libxc_accumulate_point.h"
-#include "test_input.h"
+#include "../commons/test_input.h"
 #include <typeinfo>
 
 using namespace std;

@@ -857,8 +857,8 @@ void matrix_test0005 ()
     }
 
     const int nspin = 1;
-    const int functionalExchange = 101;
-    const int functionalCorrelation = 130;
+    const int functionalExchange = 1101;
+    const int functionalCorrelation = 1130;
     LibxcProxy<float,4> libxcProxy(functionalExchange, functionalCorrelation, nspin);
 
     // Call the CUDA KERNEL
@@ -1068,8 +1068,8 @@ void matrix_test0006 ()
     }
 
     const int nspin = 1;
-    const int functionalExchange = 101;
-    const int functionalCorrelation = 130;
+    const int functionalExchange = 1101;
+    const int functionalCorrelation = 1130;
     LibxcProxy<float,4> libxcProxy(functionalExchange, functionalCorrelation, nspin);
 
     // Call the CUDA KERNEL
@@ -1287,8 +1287,8 @@ void matrix_test0007 ()
     }
 
     const int nspin = 1;
-    const int functionalExchange = 101;
-    const int functionalCorrelation = 130;
+    const int functionalExchange = 1101;
+    const int functionalCorrelation = 1130;
     LibxcProxy<double,4> libxcProxy(functionalExchange, functionalCorrelation, nspin);
 
     // Call the CUDA KERNEL

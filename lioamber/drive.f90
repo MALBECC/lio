@@ -1081,7 +1081,7 @@
                              RMM,M5,M3,rhoalpha,rhobeta, &
                              NCO,OPEN,Nunp,nopt,Iexch, &
                              e_, e_2, e3, wang, wang2, wang3, &
-                             use_libxc, ex_functional_id, ec_functional_id)
+			     use_libxc, ex_functional_id, ec_functional_id)
 
       call aint_query_gpu_level(igpu)
       if (igpu.gt.1) then

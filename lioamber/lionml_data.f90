@@ -20,7 +20,8 @@ module lionml_data
                                  lowdin, mulliken, print_coeffs, number_restr, &
                                  Dbug, steep, Force_cut, Energy_cut, charge,   &
                                  minimzation_steep, n_min_steeps, n_points,    &
-                                 lineal_search, timers, IGRID, IGRID2
+                                 lineal_search, timers, IGRID, IGRID2,         &
+                                 use_libxc, ex_functional_id, ec_functional_id
    use dftb_data         , only: dftb_calc, MTB, alfaTB, betaTB, gammaTB,      &
                                  Vbias_TB, end_bTB, start_tdtb, end_tdtb,      &
                                  TBsave, TBload
@@ -96,7 +97,9 @@ module lionml_data
                   save_charge_freq, driving_rate, Pop_Drive,                   &
                   ! Variables for DFTB
                   dftb_calc, MTB, alfaTB, betaTB, gammaTB, Vbias_TB, end_bTB,  &
-                  start_tdtb, end_tdtb, TBsave, TBload
+                  start_tdtb, end_tdtb, TBsave, TBload,                        &
+                   ! Libxc variables
+                  use_libxc, ex_functional_id, ec_functional_id
 
    type lio_input_data
       ! COMMON

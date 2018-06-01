@@ -1,5 +1,5 @@
 WELCOME TO LIO
-mar may 29 16:31:23 -03 2018
+vie jun  1 18:57:38 -03 2018
 G2G initialisation.
   GPU Device used: Tesla C2070
   Using 3 CPU Threads and 1 GPU Threads.
@@ -9,8 +9,67 @@ G2G initialisation.
 AINT initialisation.
   Density basis - s: 138 p: 42 d: 42 - Total (w/contractions): 516
   Using device 0 for analytic integral calculations.
-Cannot find lionml namelist. Using lionml defaults.
+Cannot find lionml namelist. Using defaults for namelist lionml.
 iostat =   -1
+
+LIO input variables
+ ! -- General and theory level: -- !
+  Natom =     24, Nsol =        0, charge =     0, Nunp =     0, open =  F,
+  Nmax =   100, int_basis =  F, basis_set = DZVP                     ,
+  fitting_set = DZVP Coulomb Fitting     , DIIS =  T, NDIIS =  30,
+  hybrid_converg =  F, Gold =    10.00000000, Told =     0.00000100,
+  Etold =     1.00000000, good_cut =     0.00001000, Rmax =    16.00000000,
+  RmaxS =     5.00000000, IExch =     9, IGrid =   2, IGrid2 =   2,
+  PredCoef =  F, initial_guess =   0, DBug =  F
+ ! -- Input and output options: -- !
+  verbose =   4, style =  F, timers =   2, writeXYZ =  T, writeForces =  T,
+  dipole =  F, mulliken =  F, lowdin =  F, fukui =  F, print_coeffs =  F,
+  VCInp =  F, FRestartIn =      restart.in          , restart_freq =     0,
+  FRestart =      restart.out         , TDRestart =  F, writeDens =  F,
+  TD_rst_freq =    500, gaussian_convert =  F
+ ! -- TD-DFT and external field: -- !
+  timeDep =  0, NTDStep =          0, TDStep =     0.00200000, propagator =  1,
+  NBCH =   10, field =  F, a0 =  1000.00000000, epsilon =     1.00000000,
+  Fx =     0.00000000, Fy =     0.00000000, Fz =     0.00000000, n_fields_iso =     0,
+  n_fields_aniso =     0, field_iso_file =      field.in            ,
+  field_aniso_file =      fieldaniso.in       
+ ! -- Effective Core Potentials: -- !
+  ECPMode =  F, ECPTypes =   0, TipeECP = NOT-DEFINED              ,
+  Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    15.00000000,
+  cut3_0 =    12.00000000, verbose_ECP =  0, ECP_debug =  F, fullTimer_ECP =  F,
+  local_nonlocal =  0, ECP_full_range_int =  F
+  ZListECP = 
+ ! -- Minimizations and restraints: -- !
+  steep =  F, minimzation_steep =     0.05000000, energy_cut =     0.00010000,
+  force_cut =     0.00001000, n_min_steeps =   500, lineal_search =  T,
+  n_points =     5, number_restr =     0
+ ! -- CubeGen: -- !
+  CubeGen_only =  F, cube_res =    40, cube_sel =     0, cube_dens =  F,
+  cube_orb =  F, cube_elec =  F, cube_dens_file =      dens.cube           ,
+  cube_orb_file =      orb.cube            , cube_elec_file =      dens.cube           
+ ! -- GPU Options: -- !
+  energy_all_iterations =  F, assign_all_functions =  F, remove_zero_weights =  T,
+  max_function_exponent =     8, free_global_memory =     0.70000000,
+  sphere_radius =     0.60000000, little_cube_size =    14.00000000,
+  min_points_per_cube =     1
+ ! -- Transport and DFTB: -- !
+  transport_calc =  F, generate_rho0 =  F, driving_rate =     0.00100000,
+  gate_field =  F, pop_drive =   1, save_charge_freq =     0, DFTB_calc =  F,
+  MTB =     0, alfaTB =     0.00000000, betaTB =     0.00000000,
+  gammaTB =     0.00000000, VBias_TB =     0.00000000, start_TDTB =     0,
+  end_TDTB =     0, end_BTB =     0, TBLoad =  F, TBSave =  F
+ ! -- Ehrenfest: -- !
+  ndyn_steps =      0, edyn_steps =      0, nullify_forces =  F,
+  wdip_nfreq =     0, wdip_fname = liorun.dip               , rsti_loads =  F,
+  rsto_saves =  F, rsto_nfreq =  F, rsti_fname = liorun.rsti              ,
+  rsto_fname = liorun.rsto              , eefld_on =  F, eefld_ampx =    0.00000000,
+  eefld_ampy =     0.00000000, eefld_ampz =     0.00000000,
+  eefld_timeamp =     0.20000000, eefld_timepos =     1.00000000,
+  eefld_timegfh =  F, eefld_timegih =  F, eefld_wavelen =     0.00000000
+ ! -- Fock Bias Potentials: -- !
+  fockbias_is_active =  F, fockbias_is_shaped =  F, fockbias_timeamp0 =     0.00000000,
+  fockbias_timegrow =     0.00000000, fockbias_timefall =     0.00000000,
+  fockbias_readfile =                          
 
 LIO initialisation.
   Basis set corresponding to Z =  26 was not used.
@@ -20,6 +79,41 @@ Starting SCF cycles.
   Step =      1  - QM Energy =   -380.618 - Rho squared differences (criteria) = 0.12E+01 (0.10E-05) - Energy differences (criteria) = 0.38E+03 (0.10E+01)
   Step =      2  - QM Energy =   -379.859 - Rho squared differences (criteria) = 0.62E+00 (0.10E-05) - Energy differences (criteria) = 0.76E+00 (0.10E+01)
   Step =      3  - QM Energy =   -438.574 - Rho squared differences (criteria) = 0.99E+00 (0.10E-05) - Energy differences (criteria) = 0.59E+02 (0.10E+01)
+-------------------------------------------------------------------------------------------
+                   LIO TIMING INFORMATION:
+-------------------------------------------------------------------------------------------
+
+Total time: 18.1521s
+Total                                 18.152098s (100.00% of Total)
+  Forces                                 0.999985s (  5.51% of Total)
+    Coulomb+Exchange-correlation           0.968851s ( 96.89% of Forces)
+      Coulomb gradients                      0.251657s ( 25.97% of Coulomb+Exchange-correlation)
+      Exchange-correlation gradients         0.708197s ( 73.10% of Coulomb+Exchange-correlation)
+    Nuclear attraction gradients           0.022257s (  2.23% of Forces)
+    Overlap gradients                      0.008840s (  0.88% of Forces)
+  SCF                                   17.151730s ( 94.49% of Total)
+    Finalize SCF                           0.329870s (  1.92% of SCF)
+      Exchange-correlation energy            0.316890s ( 96.07% of Finalize SCF)
+      energy-weighted density                0.003770s (  1.14% of Finalize SCF)
+    Initialize SCF                         3.780418s ( 22.04% of SCF)
+      1-e Fock                               0.017953s (  0.47% of Initialize SCF)
+        Nuclear attraction                     0.005905s ( 32.89% of 1-e Fock)
+        QM/MM                                  0.012005s ( 66.87% of 1-e Fock)
+      Coulomb G matrix                       0.205755s (  5.44% of Initialize SCF)
+        G condition                            0.159508s ( 77.52% of Coulomb G matrix)
+        G invert                               0.042727s ( 20.77% of Coulomb G matrix)
+      Coulomb precalc                        0.409019s ( 10.82% of Initialize SCF)
+      Exchange-correlation grid setup        0.088007s (  2.33% of Initialize SCF)
+      initial guess                          2.970429s ( 78.57% of Initialize SCF)
+    Iteration                             13.041305s ( 76.03% of SCF)
+      Fock integrals                         9.654441s ( 74.03% of Iteration)
+        Coulomb fit + Fock                     0.541126s (  5.60% of Fock integrals)
+        Exchange-correlation Fock              9.112141s ( 94.38% of Fock integrals)
+      SCF - Fock Diagonalization (sum)       0.928054s (  7.12% of Iteration)
+      SCF - MOC base change (sum)            0.138650s (  1.06% of Iteration)
+      SCF acceleration                       2.239588s ( 17.17% of Iteration)
+-------------------------------------------------------------------------------------------
+G2G Deinitialisation.
   Step =      4  - QM Energy =   -489.774 - Rho squared differences (criteria) = 0.38E+00 (0.10E-05) - Energy differences (criteria) = 0.51E+02 (0.10E+01)
   Step =      5  - QM Energy =   -514.864 - Rho squared differences (criteria) = 0.45E+00 (0.10E-05) - Energy differences (criteria) = 0.25E+02 (0.10E+01)
   Step =      6  - QM Energy =   -510.486 - Rho squared differences (criteria) = 0.38E+00 (0.10E-05) - Energy differences (criteria) = 0.44E+01 (0.10E+01)
@@ -43,41 +137,6 @@ Starting SCF cycles.
   Step =     24  - QM Energy =   -588.859 - Rho squared differences (criteria) = 0.21E-05 (0.10E-05) - Energy differences (criteria) = 0.59E-04 (0.10E+01)
   Step =     25  - QM Energy =   -588.859 - Rho squared differences (criteria) = 0.12E-05 (0.10E-05) - Energy differences (criteria) = 0.20E-04 (0.10E+01)
   Step =     26  - QM Energy =   -588.859 - Rho squared differences (criteria) = 0.60E-06 (0.10E-05) - Energy differences (criteria) = 0.50E-05 (0.10E+01)
--------------------------------------------------------------------------------------------
-                   LIO TIMING INFORMATION:
--------------------------------------------------------------------------------------------
-
-Total time: 18.2405s
-Total                                 18.240480s (100.00% of Total)
-  Forces                                 1.002163s (  5.49% of Total)
-    Coulomb+Exchange-correlation           0.970731s ( 96.86% of Forces)
-      Coulomb gradients                      0.251053s ( 25.86% of Coulomb+Exchange-correlation)
-      Exchange-correlation gradients         0.710603s ( 73.20% of Coulomb+Exchange-correlation)
-    Nuclear attraction gradients           0.022492s (  2.24% of Forces)
-    Overlap gradients                      0.008903s (  0.89% of Forces)
-  SCF                                   17.237934s ( 94.50% of Total)
-    Finalize SCF                           0.330232s (  1.92% of SCF)
-      Exchange-correlation energy            0.317243s ( 96.07% of Finalize SCF)
-      energy-weighted density                0.003780s (  1.14% of Finalize SCF)
-    Initialize SCF                         3.772897s ( 21.89% of SCF)
-      1-e Fock                               0.017790s (  0.47% of Initialize SCF)
-        Nuclear attraction                     0.005743s ( 32.28% of 1-e Fock)
-        QM/MM                                  0.012005s ( 67.48% of 1-e Fock)
-      Coulomb G matrix                       0.205634s (  5.45% of Initialize SCF)
-        G condition                            0.159405s ( 77.52% of Coulomb G matrix)
-        G invert                               0.042698s ( 20.76% of Coulomb G matrix)
-      Coulomb precalc                        0.408866s ( 10.84% of Initialize SCF)
-      Exchange-correlation grid setup        0.085490s (  2.27% of Initialize SCF)
-      initial guess                          2.966297s ( 78.62% of Initialize SCF)
-    Iteration                             13.134673s ( 76.20% of SCF)
-      Fock integrals                         9.698242s ( 73.84% of Iteration)
-        Coulomb fit + Fock                     0.541796s (  5.59% of Fock integrals)
-        Exchange-correlation Fock              9.155279s ( 94.40% of Fock integrals)
-      SCF - Fock Diagonalization (sum)       0.936227s (  7.13% of Iteration)
-      SCF - MOC base change (sum)            0.138474s (  1.05% of Iteration)
-      SCF acceleration                       2.280539s ( 17.36% of Iteration)
--------------------------------------------------------------------------------------------
-G2G Deinitialisation.
   Convergence achieved in     26 iterations. Final energy   -588.8593145 A.U.
 
 Final Energy Contributions in A.U.

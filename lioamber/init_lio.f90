@@ -206,8 +206,6 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     if (OPEN) allocate(MO_coef_at_b(ngDyn*ngDyn))
 
     ! Prints chosen options to output.
-    call NEW_WRITE_NML(charge)
-
     call drive(ng2, ngDyn, ngdDyn)
 
     ! reemplazos de RMM

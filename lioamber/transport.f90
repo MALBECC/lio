@@ -447,8 +447,8 @@ subroutine drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat,      &
          if (OPEN) call mulliken_calc(natom, M, rho(:,:,2), overlap, Nuc,      &
                                       q)
       case (2)
-         call lowdin_calc(M, natom, rho(:,:,1), smat, Nuc, q)
-         if (OPEN) call lowdin_calc(M, natom, rho(:,:,2), smat, Nuc, q)
+         call lowdin_calc(natom, M, rho(:,:,1), smat, Nuc, q)
+         if (OPEN) call lowdin_calc(natom, M, rho(:,:,2), smat, Nuc, q)
       case default
          write(*,*) "ERROR - Transport: Wrong value for Pop (drive_population)."
          stop

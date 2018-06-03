@@ -180,8 +180,8 @@ subroutine do_population_analysis()
    ! Performs Löwdin Population Analysis if required.
    if (lowdin) then
        call g2g_timer_start('Lowdin')
-       call lowdin_calc(M, natom, RealRho, sqsm, Nuc, q)
        call write_population(natom, Iz, q, 1, 85)
+       call lowdin_calc(natom, M, RealRho, sqsm, Nuc, q)
        call g2g_timer_stop('Lowdin')
    endif
 

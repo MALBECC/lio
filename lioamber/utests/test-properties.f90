@@ -164,7 +164,7 @@ subroutine test_lowdin()
     outVec(:)  = 0.0d0
     testResult = "FAILED"
 
-    call lowdin_calc(1, 2, Rho, SQS, atomOrb, outVec)
+    call lowdin_calc(2, 1, Rho, SQS, atomOrb, outVec)
     testCond = (abs(outVec(1)+8) < criteria).and.(abs(outVec(2)) < criteria) 
     if (testCond) testResult = "PASSED"
     write(*,*) testResult, ' - Usage of a single orbital.'

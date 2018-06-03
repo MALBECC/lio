@@ -74,23 +74,23 @@ end subroutine get_degeneration
 !%% MULLIKEN_CALC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs a Mulliken Population Analysis and outputs atomic charges.          !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine mulliken_calc(N, M, RealRho, Smat, NofM, q)
+subroutine mulliken_calc(N, M, rhomat, smat, atm_of_bfunc, partial_q)
 
     ! RealRho         : Rho written in atomic orbitals.                !
-    ! q               : Starting and final Mulliken charges.           !
-    ! M, N, NofM, Smat: N° of basis functions, atoms, Nuclei belonging !
+    ! partial_q       : Starting and final Mulliken charges.           !
+    ! M, N, atm_of_bfunc, Smat: N° of basis functions, atoms, Nuclei belonging !
     !                   to each function M, overlap matrix.            !
     implicit none
-    integer, intent(in)  :: N, M, NofM(M)
-    real*8 , intent(in)  :: RealRho(M,M), Smat(M,M)
-    real*8 , intent(inout) :: q(N)
+    integer, intent(in)  :: N, M, atm_of_bfunc(M)
+    real*8 , intent(in)  :: rhomat(M,M), smat(M,M)
+    real*8 , intent(inout) :: partial_q(N)
 
     integer :: i, j, k
-    real*8  :: qe
+    real*8  :: bfunc_pop
     do i=1,M
         do j=1,M
-             qe = RealRho(i, j) * Smat(i, j)
-             q(NofM(i)) = q(NofM(i)) - qe
+             bfunc_pop = rhomat(i, j) * smat(i, j)
+             partial_q(atm_of_bfunc(i)) = partial_q(atm_of_bfunc(i)) - bfunc_pop
         enddo
     enddo
     return
@@ -100,23 +100,21 @@ end subroutine mulliken_calc
 !%% LOWDIN_CALC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs a Löwdin Population Analysis and outputs atomic charges.            !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine lowdin_calc(M, N, rhomat, sqsmat, atomorb, atomicq)
+subroutine lowdin_calc(N, M, rhomat, sqsmat, atm_of_bfunc, partial_q)
  
     implicit none
-    integer,intent(in)   :: M, N, atomorb(M)
+    integer,intent(in)   :: N, M, atm_of_bfunc(M)
     real*8,intent(in)    :: rhomat(M,M), sqsmat(M,M)
-    real*8,intent(inout) :: atomicq(N)
+    real*8,intent(inout) :: partial_q(N)
 
-    real*8  :: newterm
-    integer :: natom
+    real*8  :: bfunc_pop
     integer :: i, j, k
 
     do k=1, M
-        natom=atomorb(k)
         do i=1, M
             do j=1, M
-                newterm = sqsmat(k, i) * rhomat(i, j) * sqsmat(j, k)
-                atomicq(natom) = atomicq(natom) - newterm
+                bfunc_pop = sqsmat(k, i) * rhomat(i, j) * sqsmat(j, k)
+                partial_q(atm_of_bfunc(k)) = partial_q(atm_of_bfunc(k)) - bfunc_pop
             enddo
         enddo
     enddo

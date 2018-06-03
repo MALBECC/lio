@@ -1,5 +1,8 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine Gets_orthog_2m( this, method_id, maxval_ld, Xmat, Ymat )
+!This subroutine decomposes a matrix into TWO matrices using three different 
+!possible methods given by method_id. Cholesky decomposition, 
+!symetric orthogonalization and canonical orthogonalization are supported.
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
    use liosubs_math, only: purge_zeros_m, matmul3

@@ -113,6 +113,8 @@ subroutine lowdin_calc(N, M, rhomat, sqsmat, atm_of_bfunc, partial_q)
     do k=1, M
         do i=1, M
             do j=1, M
+            write(*,*) "rhomat is", rhomat
+            write(*,*) "sqsmat is", sqsmat
                 bfunc_pop = sqsmat(k, i) * rhomat(i, j) * sqsmat(j, k)
                 partial_q(atm_of_bfunc(k)) = partial_q(atm_of_bfunc(k)) - bfunc_pop
             enddo

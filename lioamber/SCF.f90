@@ -418,9 +418,12 @@ subroutine SCF(E)
         if ( allocated(sqsmat) ) deallocate(sqsmat)
         if ( allocated(tmpmat) ) deallocate(tmpmat)
         allocate( sqsmat(M,M), tmpmat(M,M) )
-        call overop%Gets_orthog_2m( 3, 0.0d0, tmpmat, sqsmat )
+        !tmpmat and sqsmat should probably be equal on output
+        call overop%Gets_orthog_2m( 2, 0.0d0, tmpmat, sqsmat )
+        write(*,*) "tmpmat is", tmpmat
+        write(*,*) "sqsmat is", sqsmat
         call fockbias_loads( natom, nuc )
-        call fockbias_setmat( tmpmat )
+        call fockbias_setmat( sqsmat )
         deallocate( sqsmat, tmpmat )
 
 

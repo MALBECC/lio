@@ -188,6 +188,10 @@ subroutine do_population_analysis()
        call g2g_timer_start('Lowdin')
        call write_population(natom, Iz, q, 1, 85)
        call lowdin_calc(natom, M, RealRho, sqsm, Nuc, q)
+<<<<<<< HEAD
+=======
+       call write_population(85, natom, Iz, q, 1)
+>>>>>>> while trying to fix lowdin charges came across the routine Get_orthog_2m and commented some stuff on it to make somewhat clearer what it does at a glance
        call g2g_timer_stop('Lowdin')
        q=0.0
    endif

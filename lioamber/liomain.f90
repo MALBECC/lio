@@ -150,6 +150,9 @@ subroutine do_population_analysis()
    implicit none
    integer :: M1, M5, IzUsed(natom), kk
    real*8  :: q(natom)
+   !initializes q to 0, after performing each analysis q is reset to 0
+   !to prevent side effects
+   q=0.0
 
    ! Needed until we dispose of RMM.
    M1=1 ; M5=1+M*(M+1)
@@ -165,24 +168,28 @@ subroutine do_population_analysis()
    call spunpack('L',M,RMM(M1),RealRho)
    call fixrho(M,RealRho)
 
-   do kk=1,natom
-       q(kk) = real(IzUsed(kk))
-   enddo
-
    ! Performs Mulliken Population Analysis if required.
    if (mulliken) then
+       do kk=1,natom
+           q(kk) = real(IzUsed(kk))
+       enddo
        call g2g_timer_start('Mulliken')
        call mulliken_calc(natom, M, RealRho, Smat, Nuc, q)
        call write_population(natom, Iz, q, 0, 85)
        call g2g_timer_stop('Mulliken')
+       q=0.0
    endif
 
    ! Performs Löwdin Population Analysis if required.
    if (lowdin) then
+       do kk=1,natom
+           q(kk) = real(IzUsed(kk))
+       enddo
        call g2g_timer_start('Lowdin')
        call write_population(natom, Iz, q, 1, 85)
        call lowdin_calc(natom, M, RealRho, sqsm, Nuc, q)
        call g2g_timer_stop('Lowdin')
+       q=0.0
    endif
 
    return

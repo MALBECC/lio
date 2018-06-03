@@ -8,6 +8,22 @@ extern "C" void g2g_timer_sum_start_(const char* timer_name, unsigned int length
 extern "C" void g2g_timer_sum_stop_(const char* timer_name, unsigned int length_arg);
 extern "C" void g2g_timer_sum_pause_(const char* timer_name, unsigned int length_arg);
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// gpu_accumulate_point_for_libx
+//
+// point_weights:
+// points: the size of the arrays.
+// block_height:
+// partial_density_in:
+// dxyz_in:
+// dd1_in:
+// dd2_in:
+// accumulated_density:
+// dxyz_accum:
+// dd1_accum:
+// dd2_accum:
+// 
 template<class T, bool compute_energy, bool compute_factor, bool lda>
 __global__ void gpu_accumulate_point_for_libxc(T* const point_weights,
                 uint points, int block_height, 
@@ -53,6 +69,17 @@ __global__ void gpu_accumulate_point_for_libxc(T* const point_weights,
 
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// gpu_accumulate_energy_and_forces_from_libxc
+// 
+// energy: array of energy points,
+// factor: 
+// point_weights:
+// points: the size of the arrays.
+// accumulated_density:
+//
+//
 template<class T, bool compute_energy, bool compute_factor, bool lda>
 __global__ void gpu_accumulate_energy_and_forces_from_libxc (T* const energy, 
 		    T* const factor, 
@@ -79,6 +106,22 @@ __global__ void gpu_accumulate_energy_and_forces_from_libxc (T* const energy,
   }
 
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// libxc_exchange_correlation_cpu
+// Use the libxc cpu version to compute the exchange-correlation values 
+//
+// energy_gpu: array of energy points,
+// factor_gpu: array of factors points.
+// points: the size of all the input arrays.
+// accumulated_density_gpu: the contracted grad for libxc
+// dxyz_gpu:
+// dd1_gpu:
+// dd2_gpu:
+//
+// Note: all the pointer data are pointers in CUDA memory.
+//
 
 template<class T, bool compute_energy, bool compute_factor, bool lda>
     void libxc_exchange_correlation_cpu (LibxcProxy<T, WIDTH>* libxcProxy,
@@ -174,33 +217,12 @@ template<class T, bool compute_energy, bool compute_factor, bool lda>
     /////////////////////
     // Libxc proxy
     /////////////////////
-    /* This is old. Remove later. 08/02/2018
-    T y2a, exc_x, exc_c = 0;
-    if (libxcProxy != NULL) {
-	for (int i=0; i<points; i++) {
-    	    libxcProxy->doGGA (accumulated_density_cpu[i], dxyz_cpu[i], dd1_cpu[i], dd2_cpu[i], exc_x, exc_c, y2a);
-	    if (compute_energy) 
-	    {
-		energy_cpu[i] = exc_x + exc_c;
-	    }
-	    if (compute_factor)
-	    {
-		factor_cpu[i] = y2a;
-	    }
-	}
-    }
-    */
-
     // Parameters
     T* exc;
     T* corr;
     T* y2a;
 
     // Now alloc memory for the data
-    //exc  = (T*)malloc(sizeof(T)*points);
-    //corr = (T*)malloc(sizeof(T)*points);
-    //y2a  = (T*)malloc(sizeof(T)*points);
-
     exc  = (T*)malloc(array_size);
     corr = (T*)malloc(array_size);
     y2a  = (T*)malloc(array_size);
@@ -257,6 +279,18 @@ template<class T, bool compute_energy, bool compute_factor, bool lda>
     free(dxyz_cpu);
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// calculateContractedGradient
+// Calculate a contracted gradient for a given gradient.
+// grad: array of vec_type.
+// contracted_grad: the contracted gradient as a result of 
+//                  contract the variable grad.
+// numElements: the size of the arrays.
+//
+// Note: all the pointer data are pointers in CUDA memory.
+//
+
 template<class T>
 __global__ void calculateContractedGradient(G2G::vec_type<T,WIDTH>* grad, T* contracted_grad, int numElements)
 {
@@ -268,6 +302,18 @@ __global__ void calculateContractedGradient(G2G::vec_type<T,WIDTH>* grad, T* con
     }
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// vectorAdd
+// Adds two arrays and puts the result in a third array.
+// A simple array addition.
+// T* A: array of T
+// T* B: array of T
+// T* C: the result of adding the arrays A+B.
+// numElements: the size of the arrays.
+//
+// Note: all the pointer data are pointers in CUDA memory.
+//
 template<class T>
 __global__ void vectorAdd(const T* A, const T* B, T* C, int numElements)
 {
@@ -283,10 +329,10 @@ __global__ void vectorAdd(const T* A, const T* B, T* C, int numElements)
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 // libxc_exchange_correlation_gpu
-// Use libxc to compute the exchange-correlation values.
-// energy_gpu:
-// factor_gpu:
-// points: the size of all the input arrays
+// Use the libxc gpu version to compute the exchange-correlation values.
+// energy_gpu: array of energy points,
+// factor_gpu: array of factors points.
+// points: the size of all the input arrays.
 // accumulated_density_gpu: the contracted grad for libxc
 // dxyz_gpu:
 // dd1_gpu:

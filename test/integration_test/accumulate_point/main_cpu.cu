@@ -52,7 +52,10 @@
 
 //////////////////////////////////////
 //// CALC_GGACS
-
+//
+// Esta funciona la utilizamos para simular llamadas
+// a Lio y comparar con los resultados que obtenemos
+// desde Libxc.
 template<class T, int iexch, unsigned int width>  __device__
 void calc_ggaCS( T dens, 
                  const G2G::vec_type<T,width>& grad,
@@ -276,7 +279,8 @@ void calc_ggaCS_in( T dens,
 
 
 //////////////////////////////////////
-//// KERNEL FOR ACCUMULATE_POINT
+// KERNEL FOR ACCUMULATE_POINT
+//
 template<class T, bool compute_energy, bool compute_factor, bool lda>
 __global__ void gpu_accumulate_point (T* const energy, T* const factor, 
 		    const T* const point_weights,
@@ -334,6 +338,9 @@ __global__ void gpu_accumulate_point (T* const energy, T* const factor,
 //////////////////////////////////////
 //// TESTS
 
+/////////////////////////////////////////////////////
+// Test: accumulate_data_for_libxc_test0001
+//
 void gpu_accumulate_point_test0001()
 {
     printf("** gpu_accumulate_point_test0001 **\n");
@@ -493,6 +500,9 @@ void gpu_accumulate_point_test0001()
 
 }
 
+/////////////////////////////////////////////////////
+// Test: accumulate_data_for_libxc_test0001
+//
 void accumulate_data_for_libxc_test0001()
 {
     printf("** accumulate_data_for_libxc_test0001 **\n");
@@ -572,6 +582,9 @@ void accumulate_data_for_libxc_test0001()
 
 }
 
+/////////////////////////////////////////////////////
+// Test: accumulate_data_for_libxc_test0002
+//
 void accumulate_data_for_libxc_test0002()
 {
     printf("** accumulate_data_for_libxc_test0002 **\n");
@@ -692,7 +705,9 @@ void accumulate_data_for_libxc_test0002()
 
 }
 
-
+/////////////////////////////////////////////////////
+// Test: accumulate_data_for_libxc_test0003
+//
 void accumulate_data_for_libxc_test0003()
 {
     printf("** accumulate_data_for_libxc_test0003 **\n");
@@ -813,6 +828,9 @@ void accumulate_data_for_libxc_test0003()
 }
 
 
+/////////////////////////////////////////////////////
+// Test: accumulate_data_for_libxc_test0004
+//
 void accumulate_data_for_libxc_test0004()
 {
     printf("** accumulate_data_for_libxc_test0004 **\n");
@@ -937,6 +955,9 @@ void accumulate_data_for_libxc_test0004()
 #endif
 }
 
+/////////////////////////////////////////////////////
+// Test: accumulate_data_for_libxc_test0005
+//
 void accumulate_data_for_libxc_test0005()
 {
     printf("** accumulate_data_for_libxc_test0005 **\n");
@@ -1127,6 +1148,9 @@ void accumulate_data_for_libxc_test0005()
 #endif
 }
 
+/////////////////////////////////////////////////////
+// Test: accumulate_data_for_libxc_test0006
+//
 void accumulate_data_for_libxc_test0006()
 {
     printf("** accumulate_data_for_libxc_test0006() **\n");
@@ -1343,8 +1367,7 @@ void accumulate_data_for_libxc_test0006()
 
 ///////////////////////////////////////////////////
 // Cuda Matrix Helpers
-//typedef G2G::vec_type<float,4> vec_type4;
-//template <T>
+//
 G2G::HostMatrix< G2G::vec_type<double,4> > createMatrix(int size)
 {
     printf("matrix_test0009()\n");
@@ -1371,7 +1394,7 @@ G2G::HostMatrix< G2G::vec_type<double,4> > createMatrix(int size)
 
 
 /////////////////////////////////////////////////////
-// accumulate_data_for_libxc_test0007
+// Test: accumulate_data_for_libxc_test0007
 //
 void accumulate_data_for_libxc_test0007() {
     printf("accumulate_data_for_libxc_test0007()\n");
@@ -1725,15 +1748,20 @@ int main(int argc, char **argv)
     printf("** Accumulate Point CPU test  **\n");
     printf("****************************\n");
 
-    gpu_accumulate_point_test0001();
-    accumulate_data_for_libxc_test0001();
-    accumulate_data_for_libxc_test0002();
-    accumulate_data_for_libxc_test0003();
-    accumulate_data_for_libxc_test0004();
-    accumulate_data_for_libxc_test0005();
-    accumulate_data_for_libxc_test0006();
-    accumulate_data_for_libxc_test0007();
-    accumulate_data_for_libxc_test0008();
+    try {
+	gpu_accumulate_point_test0001();
+	accumulate_data_for_libxc_test0001();
+	accumulate_data_for_libxc_test0002();
+	accumulate_data_for_libxc_test0003();
+	accumulate_data_for_libxc_test0004();
+	accumulate_data_for_libxc_test0005();
+	accumulate_data_for_libxc_test0006();
+	accumulate_data_for_libxc_test0007();
+	accumulate_data_for_libxc_test0008();
+    } catch (int e) {
+	printf("An exception occurred. Exception Nr. %u \n");
+	exit (EXIT_FAILURE);
+    }
 
     printf("*************************\n");
     printf("**      Test End       **\n");

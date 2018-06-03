@@ -61,6 +61,7 @@ extern "C" void g2g_timer_sum_pause_(const char* timer_name, unsigned int length
 
 ///////////////////////////////////////////////////
 // Cuda Matrix Helpers
+//
 G2G::HostMatrix< G2G::vec_type<double,4> > createMatrixD(int size)
 {
     G2G::HostMatrix< G2G::vec_type<double,4> > aHostMatrix(size, 1);
@@ -94,7 +95,13 @@ G2G::HostMatrix< G2G::vec_type<float,4> > createMatrixF(int size)
 //// TESTS
 
 //////////////////////////////////////////////////////////////////
-// ITERATION TEST0007 - Simulamos una iteracion del core de lio
+// Test: iteration_test0007()
+//
+// Simulamos una iteracion del core de lio
+// para el caso el tipo de datos Float y
+// el template con los valores
+// <true, true, false>
+//
 void iteration_test0007() {
     printf("accumulate_data_for_libxc_test0007() DOUBLES\n");
     cudaError_t err = cudaSuccess;
@@ -256,7 +263,13 @@ void iteration_test0007() {
 
 
 //////////////////////////////////////////////////////////////////
-// ITERATION TEST0008 - Simulamos una iteracion del core de lio
+// Test: iteration_test0008()
+//
+// Simulamos una iteracion del core de lio
+// para el caso el tipo de datos Float y
+// el template con los valores
+// <true, true, false>
+//
 void iteration_test0008() {
     printf("accumulate_data_for_libxc_test0008() FLOATS\n");
     cudaError_t err = cudaSuccess;
@@ -417,7 +430,13 @@ void iteration_test0008() {
 
 
 //////////////////////////////////////////////////////////////////
-// ITERATION TEST0009 - Simulamos una iteracion del core de lio
+// Test: iteration_test0009()
+//
+// Simulamos una iteracion del core de lio
+// para el caso el tipo de datos Float y
+// el template con los valores
+// <true, true, false>
+//
 void iteration_test0009() {
     printf("accumulate_data_for_libxc_test0008() FLOATS\n");
     cudaError_t err = cudaSuccess;
@@ -597,8 +616,13 @@ void iteration_test0009() {
 
 
 //////////////////////////////////////////////////////////////////
-// ITERATION TEST0010 - Simulamos una iteracion del core de lio
-// para el caso Float, false, true, false del template
+// Test: iteration_test0010()
+//
+// Simulamos una iteracion del core de lio
+// para el caso el tipo de datos Float y
+// el template con los valores
+// <false, true, false>
+//
 void iteration_test0010() {
     printf("accumulate_data_for_libxc_test0010() FLOATS\n");
     cudaError_t err = cudaSuccess;
@@ -772,6 +796,13 @@ void iteration_test0010() {
 ////////////////////////////////////////////////////////////////
 // Exchange correlation for DOUBLES
 
+//////////////////////////////////////////////////////////////////
+// do_libxc_exchange_correlation_gpu
+//
+// Simulate a run that compute the exchange correlation functional
+// using the GPU version of the LibxcProxy component.
+//
+
 void do_libxc_exchange_correlation_gpu (int number_of_points,
     double *dens_cpu,
     double *contracted_gradient_cpu,
@@ -867,8 +898,12 @@ void do_libxc_exchange_correlation_gpu (int number_of_points,
     free(factor_cpu);
 }
 
-//////////////////////////////////////////////
-// Accumulate test for doubles
+//////////////////////////////////////////////////////////////////
+// Test: accumulate_data_for_libxc_test0010
+//
+// Runs a exchange correlation simulation using the
+// GPU version of the LibxcProxy component.
+//
 void accumulate_data_for_libxc_test0010()
 {
     printf("accumulate_data_for_libxc_test0010()\n");
@@ -894,8 +929,11 @@ void accumulate_data_for_libxc_test0010()
 }
 
 //////////////////////////////////////////////////////////////////
-// Exchange correlation for FLOATS
-
+// do_libxc_exchange_correlation_gpu_floa
+//
+// Helper function to simulate the Exchange Correlation
+// calculations for Floats
+//
 void do_libxc_exchange_correlation_gpu_float (int number_of_points,
     float *dens_cpu,
     float *contracted_gradient_cpu,
@@ -990,7 +1028,10 @@ void do_libxc_exchange_correlation_gpu_float (int number_of_points,
 
 
 ////////////////////////////////////////////////
+// Test: accumulate_data_for_libxc_test0011
+//
 // Accumulate data test for floats
+//
 void accumulate_data_for_libxc_test0011()
 {
     printf("accumulate_data_for_libxc_test0011()\n");
@@ -1025,12 +1066,12 @@ int main(int argc, char **argv)
     printf("** Iteration test  **\n");
     printf("*********************\n");
 
-    //iteration_test0007();
-    //iteration_test0008();
-    //for (int i=0; i<100; i++) {
-    //    iteration_test0009();
-    //}
-    iteration_test0010();
+    try {
+        iteration_test0010();
+    } catch (int e) {
+	printf("An exception occurred. Exception Nr. %u \n", e);
+	exit (EXIT_FAILURE);
+    }
 
     printf("*************************\n");
     printf("**      Test End       **\n");

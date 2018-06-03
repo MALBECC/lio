@@ -2121,21 +2121,26 @@ int main(int argc, char **argv)
     printf("** Accumulate Point GPU test  **\n");
     printf("********************************\n");
 
-    gpu_accumulate_point_test0001();
-    accumulate_data_for_libxc_test0001();
-    accumulate_data_for_libxc_test0002();
-    accumulate_data_for_libxc_test0003();
-    accumulate_data_for_libxc_test0004();
-    accumulate_data_for_libxc_test0005();
-    accumulate_data_for_libxc_test0006();
-    accumulate_data_for_libxc_test0007();
-    accumulate_data_for_libxc_test0008(100);
-    accumulate_data_for_libxc_test0009();
+    try {
+        gpu_accumulate_point_test0001();
+        accumulate_data_for_libxc_test0001();
+        accumulate_data_for_libxc_test0002();
+        accumulate_data_for_libxc_test0003();
+        accumulate_data_for_libxc_test0004();
+        accumulate_data_for_libxc_test0005();
+        accumulate_data_for_libxc_test0006();
+        accumulate_data_for_libxc_test0007();
+        accumulate_data_for_libxc_test0008(100);
+        accumulate_data_for_libxc_test0009();
 #if FULL_DOUBLE
-    accumulate_data_for_libxc_test0010();
+        accumulate_data_for_libxc_test0010();
 #else
-    accumulate_data_for_libxc_test0011();
+        accumulate_data_for_libxc_test0011();
 #endif
+    } catch (int e) {
+	printf("An exception occurred. Exception Nr. %u \n");
+	exit (EXIT_FAILURE);
+    }
 
     printf("*************************\n");
     printf("**      Test End       **\n");

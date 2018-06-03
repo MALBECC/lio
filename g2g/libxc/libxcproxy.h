@@ -55,6 +55,13 @@ public:
                 T* y2a);
 
     void doGGA (T* dens,
+		T* sigma,
+                const int number_of_points,
+		T *v2rho2,
+		T *v2rhosigma,
+		T *v2sigma2);
+
+    void doGGA (T* dens,
                 const int number_of_points,
 		const T* contracted_grad,
 		const G2G::vec_type<T,width>* grad,
@@ -150,6 +157,18 @@ void LibxcProxy <T, width>::closeProxy ()
     }
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// LibxcProxy::doGGA - CPU Version 1
+// Calls the XC_GGA function from libxc for multiple points.
+// dens: pointer for the density array
+// grad:.
+// hess1:
+// hess2:
+// ex: here goes the results after calling xc_gga from libxc for the exchange functional
+// ec: here goes the results after calling xc_gga from libxc for the correlation functional
+// y2a:
+//
 template <class T, int width>
 void LibxcProxy <T, width>::doGGA(T dens,
     const G2G::vec_type<T, width> &grad,
@@ -226,11 +245,11 @@ void LibxcProxy <T, width>::doGGA(T dens,
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-// LibxcProxy::doGGA
-// Calls the xc_gga function from libxc for multiple points.
+// LibxcProxy::doGGA - CPU Version 2
+// Calls the XC_GGA function from libxc for multiple points.
 // dens: pointer for the density array
 // number_of_points: the size of all the input arrays
-// grad:
+// grad: gradient value in each point
 // hess1:
 // hess2:
 // ex: here goes the results after calling xc_gga from libxc for the exchange functional
@@ -348,7 +367,78 @@ void LibxcProxy <T, width>::doGGA(T* dens,
 
     return;
 }
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// LibxcProxy::doGGA - CPU Version 3
+// Calls the XC_GGA_FXC function from libxc for multiple points.
+// rho: pointer for the density array.
+// sigma: contracted gradient array.
+// number_of_points: the size of all the input arrays.
+// v2rho2: second partial derivative of the energy per unit volume in terms of the density.
+// v2rhosigma: second partial derivative of the energy per unit volume in terms of the density and sigma.
+// v2sigma2: second partial derivative of the energy per unit volume in terms of sigma.
+//
+template <class T, int width>
+void LibxcProxy <T, width>::doGGA (T* rho,
+    T* sigma,
+    const int number_of_points,
+    T* v2rho2,
+    T* v2rhosigma,
+    T* v2sigma2)
+{
+    int array_size = sizeof(double)*number_of_points;
+
+    // The outputs for exchange
+    double* v2rho2X = (double*)malloc(array_size);
+    double* v2rhosigmaX = (double*)malloc(array_size);
+    double* v2sigma2X = (double*)malloc(array_size);
+
+    // The outputs for correlation
+    double* v2rho2C = (double*)malloc(array_size);
+    double* v2rhosigmaC = (double*)malloc(array_size);
+    double* v2sigma2C = (double*)malloc(array_size);
+
+    // Exchange values
+    xc_gga_fxc (&funcForExchange, number_of_points,
+                rho,
+                sigma,
+                v2rho2X,
+                v2rhosigmaX,
+                v2sigma2X);
+
+    // Now the correlation value.
+    xc_gga_fxc (&funcForCorrelation, number_of_points,
+                rho,
+                sigma,
+                v2rho2C,
+                v2rhosigmaC,
+                v2sigma2C);
+
+    for (int i=0; i<number_of_points; i++) {
+        // Merge the results for the derivatives.
+        v2rho2[i] = v2rho2X[i] + v2rho2C[i];
+        v2rhosigma[i] = v2rhosigmaX[i] + v2rhosigmaC[i];
+        v2sigma2[i] += v2sigma2X[i] + v2sigma2C[i];
+    }
+
+    // Free memory
+    // The outputs for exchange
+    free(v2rho2X);
+    free(v2rhosigmaX);
+    free(v2sigma2X);
+
+    // The outputs for correlation
+    free(v2rho2C);
+    free(v2rhosigmaC);
+    free(v2sigma2C);
+
+    return;
+}
+
+
 #ifdef __CUDACC__
+
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 // LibxcProxy::joinResults
@@ -421,7 +511,6 @@ __global__ void joinResults(
 /////////////////////////////////////
 // Conversion KERNELS
 //
-//#ifdef __CUDACC__
 // Utils for data type conversion from lio to libxc
 __global__ void convertFloatToDouble(const float* input, double* output, int numElements)
 {
@@ -491,6 +580,8 @@ __global__ void convertDoubleToFloat(const G2G::vec_type<double,4>* input, G2G::
 
 //
 ////////////////////////////////
+
+#endif
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -1283,6 +1374,22 @@ void LibxcProxy <T, width>::doGGA(T* dens,
 }
 */
 
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+// LibxcProxy::doLDA - GPU version
+// Calls the xc_lda function from libxc
+// dens: pointer for the density array
+// number_of_points: the size of all the input arrays
+// contracted_grad: the contracted grad for libxc
+// grad:.
+// hess1:
+// hess2:
+// ex: here goes the results after calling xc_gga from libxc for the exchange functional
+// ec: here goes the results after calling xc_gga from libxc for the correlation functional
+//
+// Note: all the pointer data are pointers in CUDA memory.
+//
 
 template <class T, int width>
 void LibxcProxy <T, width>::doLDA(T dens, const G2G::vec_type<T, width> &grad, const G2G::vec_type<T, width> &hess1, const G2G::vec_type<T, width> &hess2, T &ex, T &ec, T &y2a)

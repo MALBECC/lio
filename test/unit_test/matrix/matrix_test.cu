@@ -20,280 +20,18 @@
 
 #include "../../../g2g/libxc/libxcproxy.h"
 
+////////////////////////
+// Dummy solve_closed
+//
 void solve_closed( bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,
     double& energy,    G2G::HostMatrix<double>& fort_forces_ms,
     int inner_threads, G2G::HostMatrix<double>& rmm_output_local) 
 {
-
-//  int device;
-//  cudaGetDevice(&device);
-//  current_device = device;
-
-  /*** Computo sobre cada cubo ****/
-//  CudaMatrix<float> point_weights_gpu;
-
-  /** Compute this group's functions **/
-//  timers.functions.start_and_sync();
-//  compute_functions(compute_forces, !lda);
-//  timers.functions.pause_and_sync();
-
-//  uint group_m = this->total_functions();
-//  unit group_m = 10;
-//  int number_of_points = 10;
-
-//  timers.density.start_and_sync();
-  /** Load points from group **/
-//  HostMatrix<float> point_weights_cpu(number_of_points, 1);
-//  HostMatrix<float> point_weights_cpu(number_of_points, 1);
-
-
-//  uint i = 0;
-//  for (vector<Point>::const_iterator p = this->points.begin(); p != this->points.end(); ++p, ++i) {
-//    point_weights_cpu(i) = p->weight;
-//  }
-//  point_weights_gpu = point_weights_cpu;
-
-//  dim3 threadBlock, threadGrid;
-  /* compute density/factors */
-
-//  const int block_height= divUp(group_m, 2*DENSITY_BLOCK_SIZE);
-
-//  threadBlock = dim3(DENSITY_BLOCK_SIZE,1,1); // Hay que asegurarse que la cantidad de funciones este en rango
-//  threadGrid = dim3(number_of_points,block_height,1);
-
-//  CudaMatrix<float> partial_densities_gpu;
-//  CudaMatrix< vec_type<float,4> > dxyz_gpu;
-//  CudaMatrix< vec_type<float,4> > dd1_gpu;
-//  CudaMatrix< vec_type<float,4> > dd2_gpu;
-
-//  partial_densities_gpu.resize(COALESCED_DIMENSION(this->number_of_points), block_height);
-//  dxyz_gpu.resize(COALESCED_DIMENSION(number_of_points),block_height);
-//  dd1_gpu.resize(COALESCED_DIMENSION(number_of_points),block_height );
-//  dd2_gpu.resize(COALESCED_DIMENSION(number_of_points),block_height );
-
-//  const dim3 threadGrid_accumulate(divUp(number_of_points,DENSITY_ACCUM_BLOCK_SIZE),1,1);
-//  const dim3 threadBlock_accumulate(DENSITY_ACCUM_BLOCK_SIZE,1,1);
-
-//  CudaMatrix<float> factors_gpu;
-//  if (compute_rmm || compute_forces)
-//    factors_gpu.resize(number_of_points);
-
-//  int transposed_width = COALESCED_DIMENSION(number_of_points);
-  #define BLOCK_DIM 16
-//  dim3 transpose_grid(transposed_width / BLOCK_DIM, divUp((group_m),BLOCK_DIM), 1);
-//  dim3 transpose_threads(BLOCK_DIM, BLOCK_DIM, 1);
-
-//  CudaMatrix<float> function_values_transposed;
-//  CudaMatrix<vec_type<float,4> > gradient_values_transposed;
-
-  // Probar si esta intercalado al pedo.
-//  function_values_transposed.resize(group_m, COALESCED_DIMENSION(this->number_of_points));
-
-//  if (fortran_vars.do_forces || fortran_vars.gga)
-//      gradient_values_transposed.resize( group_m,COALESCED_DIMENSION(this->number_of_points));
-
-//  transpose<<<transpose_grid, transpose_threads>>> (function_values_transposed.data,
-//      function_values.data, COALESCED_DIMENSION(this->number_of_points), group_m);
-
-//  if (fortran_vars.do_forces || fortran_vars.gga)
-//    transpose<<<transpose_grid, transpose_threads>>> (gradient_values_transposed.data,
-//        gradient_values.data, COALESCED_DIMENSION(this->number_of_points), group_m );
-  // fin intercalado al pedo
-
-//  HostMatrix<float> rmm_input_cpu(COALESCED_DIMENSION(group_m), group_m+DENSITY_BLOCK_SIZE);
-//  get_rmm_input(rmm_input_cpu); //Achica la matriz densidad a la version reducida del grupo
-
-//  for (uint i=0; i<(group_m+DENSITY_BLOCK_SIZE); i++)
-//  {
-//    for(uint j=0; j<COALESCED_DIMENSION(group_m); j++)
-//    {
-//      if((i>=group_m) || (j>=group_m) || (j > i))
-//      {
-//        rmm_input_cpu.data[COALESCED_DIMENSION(group_m)*i+j]=0.0f;
-//      }
-//    }
-//  }
-
-
-  /*
-   **********************************************************************
-   * Pasando RDM (rmm) a texturas
-   **********************************************************************
-   */
-//  cudaArray* cuArray;
-//  cudaMallocArray(&cuArray, &rmm_input_gpu_tex.channelDesc, rmm_input_cpu.width, rmm_input_cpu.height);
-//  cudaMemcpyToArray(cuArray, 0, 0, rmm_input_cpu.data, sizeof(float)*rmm_input_cpu.width*rmm_input_cpu.height, cudaMemcpyHostToDevice);
-//  cudaBindTextureToArray(rmm_input_gpu_tex, cuArray);
-
-//  rmm_input_gpu_tex.normalized = false;
-
-//#if USE_LIBXC
-//  const int nspin = XC_UNPOLARIZED;
-//  const int functionalExchange = fortran_vars.ex_functional_id;
-//  const int functionalCorrelation = fortran_vars.ec_functional_id;
-//  LibxcProxy<float,3> libxcProxy(functionalExchange, functionalCorrelation, nspin);
-//#endif
-
-
-//  if (compute_energy) {
-//    CudaMatrix<float> energy_gpu(number_of_points);
-
-//#define compute_parameters \
-//        energy_gpu.data, factors_gpu.data, point_weights_gpu.data, number_of_points, function_values_transposed.data, \
-//        gradient_values_transposed.data, hessian_values_transposed.data, group_m, partial_densities_gpu.data, dxyz_gpu.data, \
-//        dd1_gpu.data,dd2_gpu.data
-
-//#define accumulate_parameters \
-//        energy_gpu.data, factors_gpu.data, point_weights_gpu.data, number_of_points, block_height, \
-//        partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data
-
-// VER QUE PASA SI SACAMOS COMPUTE_FACTOR Y COMPUTE ENERGY DE gpu_compute_density
-//    if (compute_forces || compute_rmm) {
-//      if (lda)
-//      {
-//          gpu_compute_density<float, true, true, true><<<threadGrid, threadBlock>>>(compute_parameters);
-//          gpu_accumulate_point<float, true, true, true><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
-//      }
-//      else
-//      {
-//          gpu_compute_density<float, true, true, false><<<threadGrid, threadBlock>>>(compute_parameters);
-//	  // TODO: aca tiene que ir el proxy a libxc.
-//          gpu_accumulate_point<float, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
-//      }
-//    }
-//    else {
-//      if (lda)
-//      {
-//          gpu_compute_density<float, true, false, true><<<threadGrid, threadBlock>>>(compute_parameters);
-//          gpu_accumulate_point<float, true, false, true><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
-//      }
-//      else
-//      {
-//          gpu_compute_density<float, true, false, false><<<threadGrid, threadBlock>>>(compute_parameters);
-//	// TODO: aca tiene q ir el proxy a libxc.
-//          gpu_accumulate_point<float, true, false, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (accumulate_parameters);
-//      }
-//    }
-//    cudaAssertNoError("compute_density");
-
-//    HostMatrix<float> energy_cpu(energy_gpu);
-//    for (uint i = 0; i < number_of_points; i++) {
-//      energy += energy_cpu(i);
-//    }
-//  }
-//  else {
-//#undef compute_parameters
-//#undef accumulate_parameters
-
-//#define compute_parameters \
-//    NULL,factors_gpu.data,point_weights_gpu.data,number_of_points,function_values_transposed.data,gradient_values_transposed.data,hessian_values_transposed.data,group_m,partial_densities_gpu.data,dxyz_gpu.data,dd1_gpu.data,dd2_gpu.data
-//#define accumulate_parameters \
-//    NULL,factors_gpu.data,point_weights_gpu.data,number_of_points,block_height,partial_densities_gpu.data,dxyz_gpu.data,dd1_gpu.data,dd2_gpu.data
-//    if (lda)
-//    {
-//        gpu_compute_density<float, false, true, true><<<threadGrid, threadBlock>>>(compute_parameters);
-//        gpu_accumulate_point<float, false, true, true><<<threadGrid_accumulate, threadBlock_accumulate>>>(accumulate_parameters);
-//    }
-//    else
-//    {
-//        gpu_compute_density<float, false, true, false><<<threadGrid, threadBlock>>>(compute_parameters);
-//        gpu_accumulate_point<float, false, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>>(accumulate_parameters);
-//    }
-//    cudaAssertNoError("compute_density");
-//  }
-//#undef compute_parameters
-//#undef accumulate_parameters
-
-//  timers.density.pause_and_sync();
-  /* compute forces */
-//  if (compute_forces) {
-    //************ Repongo los valores que puse a cero antes, para las fuerzas son necesarios (o por lo mens utiles)
-//    for (uint i=0; i<(group_m); i++) {
-//      for(uint j=0; j<(group_m); j++) {
-//        if((i>=group_m) || (j>=group_m) || (j > i))
-//        {
-//          rmm_input_cpu.data[COALESCED_DIMENSION(group_m)*i+j]=rmm_input_cpu.data[COALESCED_DIMENSION(group_m)*j+i] ;
-//        }
-//      }
-//    }
-
-//    timers.density_derivs.start_and_sync();
-//    cudaMemcpyToArray(cuArray, 0, 0,rmm_input_cpu.data,
-//      sizeof(float)*rmm_input_cpu.width*rmm_input_cpu.height, cudaMemcpyHostToDevice);
-
-//    timers.density_derivs.start_and_sync();
-//    dim3 threads = dim3(number_of_points);
-//    threadBlock = dim3(DENSITY_DERIV_BLOCK_SIZE);
-//    threadGrid = divUp(threads, threadBlock);
-
-//    CudaMatrix<vec_type4> dd_gpu(COALESCED_DIMENSION(number_of_points), total_nucleii); dd_gpu.zero();
-//    CudaMatrixUInt nuc_gpu(func2local_nuc);  // TODO: esto en realidad se podria guardar una sola vez durante su construccion
-
-//    gpu_compute_density_derivs<<<threadGrid, threadBlock>>>(
-//        function_values.data, gradient_values.data, nuc_gpu.data, dd_gpu.data, number_of_points, group_m, total_nucleii());
-//    cudaAssertNoError("density_derivs");
-//    timers.density_derivs.pause_and_sync();
-
-//    timers.forces.start_and_sync();
-//    CudaMatrix<vec_type4> forces_gpu(total_nucleii());
-
-//    threads = dim3(total_nucleii());
-//    threadBlock = dim3(FORCE_BLOCK_SIZE);
-//    threadGrid = divUp(threads, threadBlock);
-//    gpu_compute_forces<<<threadGrid, threadBlock>>>(
-//        number_of_points, factors_gpu.data, dd_gpu.data, forces_gpu.data, total_nucleii());
-//    cudaAssertNoError("forces");
-
-//    HostMatrix<vec_type4> forces_cpu(forces_gpu);
-
-//    for (uint i = 0; i < total_nucleii(); ++i) {
-//      vec_type4 atom_force = forces_cpu(i);
-//      uint global_nuc = local2global_nuc[i];
-//      fort_forces_ms(global_nuc, 0) += atom_force.x;
-//      fort_forces_ms(global_nuc, 1) += atom_force.y;
-//      fort_forces_ms(global_nuc, 2) += atom_force.z;
-
-//    }
-//    timers.forces.pause_and_sync();
-//  }
-
-//  timers.rmm.start_and_sync();
-  /* compute RMM */
-//  if (compute_rmm) {
-//    threadBlock = dim3(RMM_BLOCK_SIZE_XY, RMM_BLOCK_SIZE_XY);
-//    uint blocksPerRow = divUp(group_m, RMM_BLOCK_SIZE_XY);
-    // Only use enough blocks for lower triangle
-//    threadGrid = dim3(blocksPerRow*(blocksPerRow+1)/2);
-
-//    CudaMatrix<float> rmm_output_gpu(COALESCED_DIMENSION(group_m), group_m);
-    // For calls with a single block (pretty common with cubes) don't bother doing the arithmetic to get block position in the matrix
-//    if (blocksPerRow > 1) {
-//        gpu_update_rmm<float,true><<<threadGrid, threadBlock>>>(factors_gpu.data, number_of_points, rmm_output_gpu.data, function_values.data, group_m);
-//    } else {
-//        gpu_update_rmm<float,false><<<threadGrid, threadBlock>>>(factors_gpu.data, number_of_points, rmm_output_gpu.data, function_values.data, group_m);
-//    }
-//    cudaAssertNoError("update_rmm");
-
-    /*** Contribute this  RMM to the total RMM ***/
-//    HostMatrix<float> rmm_output_cpu(rmm_output_gpu);
-//    add_rmm_output(rmm_output_cpu, rmm_output_local);
-
-//  }
-//  timers.rmm.pause_and_sync();
-
-  /* clear functions */
-//  if(!(inGlobal)) {
-//    function_values.deallocate();
-//    gradient_values.deallocate();
-//    hessian_values_transposed.deallocate();
-//  }
-  //Deshago el bind de textura de rmm
-//  cudaUnbindTexture(rmm_input_gpu_tex); //Enroque el Unbind con el Free, asi parece mas logico. Nano
-//  cudaFreeArray(cuArray);
+    // This is used to simulate a call inside the tests
 }
 
 //////////////////////////////////////
-//// KERNELS
+//// KERNEL UTILS
 __global__ void kernel_matrix_test0002 (float* const theMatrix, int n, int m)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -327,6 +65,11 @@ __global__ void kernel_matrix_test0004 (G2G::vec_type<double,4>* dxyz,
 //////////////////////////////////////
 //// TESTS
 
+/////////////////////////////////////////////
+// Test: matrix_test0001
+//
+// We test the CudaMatrix constructor
+//
 void matrix_test0001 () 
 {
     printf("**  matrix_test0001  **\n");
@@ -337,6 +80,11 @@ void matrix_test0001 ()
 
 }
 
+/////////////////////////////////////////////
+// Test: matrix_test0002
+//
+// We test the CudaMatrix 'resize' function
+//
 void matrix_test0002 () 
 {
     printf("**  matrix_test0002  **\n");
@@ -365,6 +113,13 @@ void matrix_test0002 ()
 
 }
 
+/////////////////////////////////////////////
+// Test: matrix_test0003
+//
+// We test the copy of a single CudaMatrix
+// into a kernel.
+//
+//
 
 void matrix_test0003 ()
 {
@@ -470,6 +225,13 @@ void matrix_test0003 ()
     free(h_A);
 }
 
+/////////////////////////////////////////////
+// Test: libxc_cpu_accumulate_point_local
+//
+// Test to simulate the accumulate point
+// function before we call the CPU version
+// of the LibxcProxy component.
+//
 
 void libxc_cpu_accumulate_point_local(LibxcProxy<float, 4>* libxcProxy, 
     float* const energy, float* const factor, const float* const point_weights,
@@ -516,7 +278,14 @@ void libxc_cpu_accumulate_point_local(LibxcProxy<float, 4>* libxcProxy,
 
 }
 
-
+/////////////////////////////////////////////
+// Test: matrix_test0004
+//
+// We test the use of the CudaMatrix class with
+// with the LibxcProxy component. We only test
+// the alloc and free of the parameters
+// needed by the LibxcProxy component.
+//
 void matrix_test0004 ()
 {
     printf("**  matrix_test0004  **\n");
@@ -722,7 +491,14 @@ void matrix_test0004 ()
 
 }
 
-
+/////////////////////////////////////////////
+// Test: matrix_test0005
+//
+// We test the use of the CudaMatrix class with
+// with the LibxcProxy component.
+// We set all the parameters needed by the.
+// LibxcProxy component.
+//
 void matrix_test0005 ()
 {
     printf("**  matrix_test0005 - con libxcProxy  **\n");
@@ -933,7 +709,12 @@ void matrix_test0005 ()
 
 }
 
-
+/////////////////////////////////////////////
+// Test: matrix_test0006
+//
+// We test the use of the CudaMatrix class with
+// with the LibxcProxy component.
+//
 void matrix_test0006 ()
 {
     printf("**  matrix_test0006 - con libxcProxy 2  **\n");
@@ -1152,7 +933,12 @@ void matrix_test0006 ()
 
 }
 
-
+/////////////////////////////////////////////
+// Test: matrix_test0007
+//
+// We test the use of the CudaMatrix class with
+// with the LibxcProxy component.
+//
 void matrix_test0007 ()
 {
     printf("**  matrix_test0007 - con libxcProxy 3  **\n");
@@ -1371,6 +1157,12 @@ void matrix_test0007 ()
 
 }
 
+/////////////////////////////////////////////
+// Test: matrix_test00008
+//
+// Simple matrix test to check how the matrix
+// is copied to cuda device.
+//
 void matrix_test0008()
 {
   printf("matrix_test0008()\n");
@@ -1384,6 +1176,12 @@ void matrix_test0008()
   point_weights_gpu = point_weights_cpu;
 }
 
+/////////////////////////////////////////////
+// Test: matrix_test00009
+//
+// Simple matrix test to check how the matrix
+// is copied to cuda device.
+//
 void matrix_test0009()
 {
   printf("matrix_test0009()\n");
@@ -1406,6 +1204,12 @@ void matrix_test0009()
   point_weights_gpu = point_weights_cpu;
 }
 
+/////////////////////////////////////////////
+// Test: matrix_test00010
+//
+// Simple matrix test to check how the matrix
+// is copied to cuda device.
+//
 void matrix_test0010()
 {
     printf("matrix_test0010()\n");
@@ -1439,16 +1243,19 @@ int main(int argc, char **argv)
     printf("**  Matrix Unit Tests  **\n");
     printf("*************************\n");
 
-    //solve_closed(false, false, false, true, 0, NULL, 1,NULL);
-    matrix_test0001();
-    matrix_test0002();
-    matrix_test0003();
-    matrix_test0004();
-    matrix_test0005();
-    matrix_test0006();
-    matrix_test0007();
-    matrix_test0008();
-
+    try {
+	matrix_test0001();
+	matrix_test0002();
+	matrix_test0003();
+	matrix_test0004();
+	matrix_test0005();
+	matrix_test0006();
+        matrix_test0007();
+	matrix_test0008();
+    } catch (int e) {
+	printf("An exception ocurred: %u \n", e);
+	exit (EXIT_FAILURE);
+    }
     printf("*************************\n");
     printf("**      Test End       **\n");
     printf("*************************\n");

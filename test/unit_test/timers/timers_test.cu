@@ -27,7 +27,7 @@ extern "C" void g2g_timer_sum_pause_(const char* timer_name, unsigned int length
 extern "C" void g2g_timer_summary_(void);
 
 //////////////////////////////////////
-//// KERNELS
+//// KERNELS UTILS
 __global__ void kernel_matrix_test0002 (double* const theMatrix, int n, int m)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -61,6 +61,11 @@ __global__ void kernel_matrix_test0004 (G2G::vec_type<double,4>* dxyz,
 //////////////////////////////////////
 //// TESTS
 
+/////////////////////////////////////////////
+// Test: matrix_test0001
+//
+// We test the CudaMatrix constructor
+//
 void matrix_test0001 () 
 {
     printf("**  matrix_test0001  **\n");
@@ -71,6 +76,13 @@ void matrix_test0001 ()
 
 }
 
+/////////////////////////////////////////////
+// Test: matrix_test0002
+//
+// We test the copy of a single CudaMatrix
+// into a kernel.
+//
+//
 void matrix_test0002 () 
 {
     printf("**  matrix_test0002  **\n");
@@ -91,7 +103,13 @@ void matrix_test0002 ()
 
 }
 
-
+/////////////////////////////////////////////
+// Test: matrix_test0003
+//
+// We test the copy of a single CudaMatrix
+// into a kernel.
+//
+//
 void matrix_test0003 ()
 {
     printf("**  matrix_test0003  **\n");
@@ -197,6 +215,13 @@ void matrix_test0003 ()
 }
 
 
+/////////////////////////////////////////////
+// Test: libxc_cpu_accumulate_point_local
+//
+// Test to simulate the accumulate point
+// function before we call the CPU version
+// of the LibxcProxy component.
+//
 void libxc_cpu_accumulate_point_local(LibxcProxy<double, 4>* libxcProxy, 
     double* const energy, double* const factor, const double* const point_weights,
     uint points, int block_height, double* partial_density, 
@@ -242,7 +267,14 @@ void libxc_cpu_accumulate_point_local(LibxcProxy<double, 4>* libxcProxy,
 
 }
 
-
+/////////////////////////////////////////////
+// Test: matrix_test0004
+//
+// We test the use of the CudaMatrix class with
+// with the LibxcProxy component. We only test
+// the alloc and free of the parameters
+// needed by the LibxcProxy component.
+//
 void matrix_test0004 ()
 {
     printf("**  matrix_test0004  **\n");
@@ -376,13 +408,7 @@ void matrix_test0004 ()
         exit(EXIT_FAILURE);
     }
 
-    // Call the CUDA KERNEL
-//    libxc_cpu_accumulate_point_local(NULL, energy_cpu, factor_cpu, point_weights_cpu, 
-//	number_of_points, 1, partial_density_cpu,
-//	dxyz_cpu, dd1_cpu, dd2_cpu);
-
     // TODO: now copy back the results to the gpu.
-    
     err = cudaMemcpy(energy_gpu, energy_cpu, size, cudaMemcpyHostToDevice);
     if (err != cudaSuccess)
     {
@@ -448,7 +474,14 @@ void matrix_test0004 ()
 
 }
 
-
+/////////////////////////////////////////////
+// Test: matrix_test0005
+//
+// We test the use of the CudaMatrix class with
+// with the LibxcProxy component.
+// We set all the parameters needed by the 
+// LibxcProxy component.
+//
 void matrix_test0005 ()
 {
     printf("**  matrix_test0005 - con libxcProxy  **\n");
@@ -587,13 +620,7 @@ void matrix_test0005 ()
     const int functionalCorrelation = 1130;
     LibxcProxy<double,4> libxcProxy(functionalExchange, functionalCorrelation, nspin);
 
-    // Call the CUDA KERNEL
-//    libxc_cpu_accumulate_point_local(&libxcProxy, energy_cpu, factor_cpu, point_weights_cpu, 
-//	number_of_points, 1, partial_density_cpu,
-//	dxyz_cpu, dd1_cpu, dd2_cpu);
-
     // TODO: now copy back the results to the gpu.
-    
     err = cudaMemcpy(energy_gpu, energy_cpu, size, cudaMemcpyHostToDevice);
     if (err != cudaSuccess)
     {
@@ -607,7 +634,7 @@ void matrix_test0005 ()
         printf("Failed to copy vector factor_cpu from host to device!\n");
         exit(EXIT_FAILURE);
     }
-    
+
     err = cudaMemcpy(point_weights_gpu, point_weights_cpu, size, cudaMemcpyHostToDevice);
     if (err != cudaSuccess)
     {
@@ -659,7 +686,12 @@ void matrix_test0005 ()
 
 }
 
-
+/////////////////////////////////////////////
+// Test: matrix_test0006
+//
+// We test the use of the CudaMatrix class with
+// with the LibxcProxy component.
+//
 void matrix_test0006 ()
 {
     printf("**  matrix_test0006 - con libxcProxy 2  **\n");
@@ -798,19 +830,7 @@ void matrix_test0006 ()
     const int functionalCorrelation = 1130;
     LibxcProxy<double,4> libxcProxy(functionalExchange, functionalCorrelation, nspin);
 
-    // Call the CUDA KERNEL
-//    libxc_cpu_accumulate_point(&libxcProxy, energy_cpu, factor_cpu, point_weights_cpu, 
-//	number_of_points, 1, partial_density_cpu,
-//	dxyz_cpu, dd1_cpu, dd2_cpu);
-
-//    <double, true, true, false> 
-//    libxc_cpu_accumulate_point<double, true, true, false>(&libxcProxy, energy_cpu, 
-//	factor_cpu, point_weights_cpu,
-//        number_of_points, 1, partial_density_cpu, 
-//	dxyz_cpu, dd1_cpu, dd2_cpu);
-
     // TODO: now copy back the results to the gpu.
-
     err = cudaMemcpy(energy_gpu, energy_cpu, size, cudaMemcpyHostToDevice);
     if (err != cudaSuccess)
     {
@@ -878,10 +898,15 @@ void matrix_test0006 ()
 
 }
 
-
+/////////////////////////////////////////////
+// Test: matrix_test0007
+//
+// We test the use of the CudaMatrix class with
+// with the LibxcProxy component.
+//
 void matrix_test0007 ()
 {
-    printf("**  matrix_test0007 - con libxcProxy 3  **\n");
+    printf("**  matrix_test0007 - con libxcProxy 3 **\n");
     cudaError_t err = cudaSuccess;
     uint n = 5;
     uint m = 5;
@@ -1017,19 +1042,7 @@ void matrix_test0007 ()
     const int functionalCorrelation = 1130;
     LibxcProxy<double,4> libxcProxy(functionalExchange, functionalCorrelation, nspin);
 
-    // Call the CUDA KERNEL
-//    libxc_cpu_accumulate_point(&libxcProxy, energy_cpu, factor_cpu, point_weights_cpu, 
-//	number_of_points, 1, partial_density_cpu,
-//	dxyz_cpu, dd1_cpu, dd2_cpu);
-
-//    <double, true, true, false> 
-//    libxc_cpu_accumulate_point<double, true, true, false>(&libxcProxy, energy_cpu, 
-//	factor_cpu, point_weights_cpu,
-//        number_of_points, 1, partial_density_cpu, 
-//	dxyz_cpu, dd1_cpu, dd2_cpu);
-
     // TODO: now copy back the results to the gpu.
-
     err = cudaMemcpy(energy_gpu, energy_cpu, size, cudaMemcpyHostToDevice);
     if (err != cudaSuccess)
     {
@@ -1097,6 +1110,12 @@ void matrix_test0007 ()
 
 }
 
+/////////////////////////////////////////////
+// Test: matrix_test00008
+//
+// Simple matrix test to check how the matrix
+// is copied to cuda device.
+//
 void matrix_test0008()
 {
   printf("matrix_test0008()\n");
@@ -1110,6 +1129,12 @@ void matrix_test0008()
   point_weights_gpu = point_weights_cpu;
 }
 
+/////////////////////////////////////////////
+// Test: matrix_test00009
+//
+// Simple matrix test to check how the matrix
+// is copied to cuda device.
+//
 void matrix_test0009()
 {
   printf("matrix_test0009()\n");
@@ -1127,6 +1152,12 @@ void matrix_test0009()
   point_weights_gpu = point_weights_cpu;
 }
 
+/////////////////////////////////////////////
+// Test: matrix_test00010
+//
+// Simple matrix test to check how the matrix
+// is copied to cuda device.
+//
 void matrix_test0010()
 {
     printf("matrix_test0010()\n");
@@ -1159,33 +1190,34 @@ int main(int argc, char **argv)
     printf("*************************\n");
     printf("**  Timers Unit Tests  **\n");
     printf("*************************\n");
+    try {
+	G2G::Timer t1;
+	t1.start_and_sync();
 
-    G2G::Timer t1;
-    t1.start_and_sync();
+	G2G::Timer t2;
+	g2g_timer_sum_start_("eduardito", 9);
 
-    G2G::Timer t2;
-    g2g_timer_sum_start_("eduardito", 9);
+	matrix_test0001();
+	matrix_test0002();
+	matrix_test0003();
+	matrix_test0004();
+	matrix_test0005();
+	matrix_test0006();
+	matrix_test0007();
+	matrix_test0008();
 
-    matrix_test0001();
-    matrix_test0002();
-    matrix_test0003();
-    matrix_test0004();
-    matrix_test0005();
-    matrix_test0006();
-    matrix_test0007();
-    matrix_test0008();
+	t1.stop_and_sync();
+	g2g_timer_sum_stop_("eduardito", 9);
 
+	printf("Total time t1: %lu\n", t1.getMicrosec());
+	printf("Total time t2: %lu\n", t2.getMicrosec());
+    } catch (int e) {
+	printf("An exception ocurred: %u \n", e);
+	exit (EXIT_FAILURE);
+    }
     printf("*************************\n");
     printf("**      Test End       **\n");
     printf("*************************\n");
-
-    t1.stop_and_sync();
-    g2g_timer_sum_stop_("eduardito", 9);
-
-    printf("Total time t1: %lu\n", t1.getMicrosec());
-    printf("Total time t2: %lu\n", t2.getMicrosec());
-
-    //g2g_timer_summary_();
 
     return 0;
 }

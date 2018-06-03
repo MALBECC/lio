@@ -1028,21 +1028,26 @@ void init_proxy_test0001()
 int main()
 {
     printf("Test: Libxc Proxy GPU - BEGIN\n");
-    //accumulate_data_for_libxc_test0001();
-    //joinResultsTest0001();
+    try {
+        accumulate_data_for_libxc_test0001();
+	joinResultsTest0001();
 #if FULL_DOUBLE
-    proxyTest0001d<double>();
+        proxyTest0001d<double>();
 #else
-    proxyTest0001f<float>();
+	proxyTest0001f<float>();
 #endif
-    //proxyTest0002();
-    //conversionTest0001(100);
-    //conversionTest0002(100);
-    //conversionTest0003(10);
-    //conversionTest0004(10);
-    //data_type_test003();
-    //pointer_proxy_test0001();
-    init_proxy_test0001 ();
+        proxyTest0002();
+        conversionTest0001(100);
+        conversionTest0002(100);
+        conversionTest0003(10);
+        conversionTest0004(10);
+        data_type_test003();
+	pointer_proxy_test0001();
+        init_proxy_test0001 ();
+    } catch (int e) {
+	printf("An exception occurred: %u \n", e);
+	exit (EXIT_FAILURE);
+    }
     printf("Test: Libxc Proxy GPU - END\n");
     return 0;
 }

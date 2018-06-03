@@ -373,6 +373,73 @@ void testProxy08 ()
     printf ("=================================== \n");
 }
 
+/////////////////////////////
+// TestProxy09
+// Calling xc_gga_xfc test
+//
+void testProxy09 ()
+{
+    printf ("=================================== \n");
+    printf ("testProxy09 \n");
+    printf (" \n");
+    printf ("=================================== \n");
+
+    int nspin = 1;
+    int functionalExchange = 101;
+    int functionalCorrelation = 130;
+    int number_of_points = 10;
+
+    LibxcProxy<double,3> aProxy;
+    aProxy.init (functionalExchange, functionalCorrelation, nspin);
+
+    // Parameters
+    double* rho;
+    double* sigma;
+    double* v2rho2;
+    double* v2rhosigma;
+    double* v2sigma2;
+
+    // Now alloc memory for the data
+    rho = (double*)malloc(sizeof(double)*number_of_points);
+    sigma = (double*)malloc(sizeof(double)*number_of_points);
+    v2rho2 = (double*)malloc(sizeof(double)*number_of_points);
+    v2rhosigma = (double*)malloc(sizeof(double)*number_of_points);
+    v2sigma2 = (double*)malloc(sizeof(double)*number_of_points);
+
+
+    // Fill the input parameters.
+    for (int i=0; i<number_of_points; i++) {
+	rho[i] = 0.1*i;
+	sigma[i] = 0.1;
+	v2rho2[i] = 0;
+	v2rhosigma[i] = 0;
+	v2sigma2[i] = 0;
+    }
+
+    // Make the call to the proxy.
+    aProxy.doGGA (rho, sigma, number_of_points, v2rho2, v2rhosigma, v2sigma2);
+
+    for (int i=0; i<number_of_points; i++) {
+        printf ("Point '%i' \n", i);
+        printf ("Density '%lf' \n", sigma[i]);
+        printf ("v2rho '%lf' \n", v2rho2[i]);
+        printf ("v2rhosigma '%lf' \n", v2rhosigma[i]);
+        printf ("v2sigma2 '%lf' \n", v2sigma2[i]);
+        printf  ("-------------------- \n");
+    }
+
+    // Free the memory.
+    free(rho);
+    free(sigma);
+    free(v2rho2);
+    free(v2rhosigma);
+    free(v2sigma2);
+
+    aProxy.closeProxy ();
+
+    printf ("=================================== \n");
+}
+
 
 }
 

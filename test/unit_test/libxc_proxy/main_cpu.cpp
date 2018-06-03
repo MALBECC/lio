@@ -8,6 +8,7 @@ using std::endl;
 
 
 void runAllProxyCPUTests () {
+/*
     libxcProxyTest::testProxy02<double> ();
     libxcProxyTest::testProxy03<double> (false);
     libxcProxyTest::testProxy03<double> (true);
@@ -16,6 +17,8 @@ void runAllProxyCPUTests () {
     libxcProxyTest::testProxy06 ();
     libxcProxyTest::testProxy07 ();
     libxcProxyTest::testProxy08 ();
+*/
+    libxcProxyTest::testProxy09 ();
 }
 
 void runAllProxyGPUTest () {
@@ -40,7 +43,12 @@ void runRandomGeneratorTest (int numberCount) {
 int main()
 {
     cout << "Test: Lio met Libxc - BEGIN" << endl;
-    runAllProxyCPUTests();
+    try {
+        runAllProxyCPUTests();
+    } catch (int e) {
+	cout << "An exception occurred. Exception Nr. " << e << endl;
+	exit (EXIT_FAILURE);
+    }
     cout << "Test: Lio mets Libxc - END" << endl;
     return 0;
 }

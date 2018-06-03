@@ -16,7 +16,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine lio_defaults()
 
-    use garcha_mod, only : basis, output, fmulliken, fcoord, OPEN, NMAX,       &
+    use garcha_mod, only : basis, output, fpopulation, fcoord, OPEN, NMAX,       &
                            basis_set, fitting_set, int_basis, DIIS, ndiis,     &
                            GOLD, told, Etold, hybrid_converg, good_cut, rmax,  &
                            rmaxs, omit_bas, propagator, NBCH, VCINP,           &
@@ -44,7 +44,7 @@ subroutine lio_defaults()
 
 !   Names of files used for input and output.
     basis          = 'basis'       ; output             = 'output'      ;
-    fmulliken      = 'mulliken'    ; fcoord             = 'qm.xyz'      ;
+    fpopulation      = 'population_analysis'    ; fcoord             = 'qm.xyz'      ;
 
 !   Theory level options.
     OPEN           = .false.       ; told               = 1.0D-6        ;
@@ -131,7 +131,8 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
                            remove_zero_weights, min_points_per_cube,           &
                            max_function_exponent, sphere_radius, M,Fock_Hcore, &
                            Fock_Overlap, P_density, OPEN, timers, MO_coef_at,  &
-                           MO_coef_at_b, RMM_save, charge
+                           MO_coef_at_b, RMM_save, charge, mulliken, lowdin,   &
+                           fpopulation
     use ECP_mod,    only : Cnorm, ecpmode
     use field_data, only : chrg_sq
     use fileio    , only : lio_logo
@@ -207,6 +208,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
 
     ! Prints chosen options to output.
     call drive(ng2, ngDyn, ngdDyn)
+    if (mulliken .or. lowdin) open(unit=85,file=fpopulation)
 
     ! reemplazos de RMM
     MM=M*(M+1)/2
@@ -257,7 +259,7 @@ end subroutine init_lio_gromacs
 ! officialy updated on the AMBER side, only some variables are received.       !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
-           , output_i, fcoord_i, fmulliken_i, frestart_i, frestartin_i         &
+           , output_i, fcoord_i, fpopulation_i, frestart_i, frestartin_i         &
            , verbose_i, OPEN_i, NMAX_i, NUNP_i, VCINP_i, GOLD_i, told_i        &
            , rmax_i, rmaxs_i, predcoef_i, idip_i, writexyz_i                   &
            , intsoldouble_i, DIIS_i, ndiis_i, dgtrig_i, Iexch_i, integ_i       &
@@ -266,7 +268,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
            , Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i              &
            )
 
-    use garcha_mod, only : basis, output, fmulliken, fcoord, OPEN, NMAX,     &
+    use garcha_mod, only : basis, output, fpopulation, fcoord, OPEN, NMAX,     &
                            basis_set, fitting_set, int_basis, DIIS, ndiis,   &
                            GOLD, told, Etold, hybrid_converg, good_cut,      &
                            rmax, rmaxs, omit_bas, propagator, NBCH,          &
@@ -287,7 +289,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
 
     implicit none
     integer , intent(in) :: charge_i, nclatom, natomin, Izin(natomin)
-    character(len=20) :: basis_i, output_i, fcoord_i, fmulliken_i, frestart_i, &
+    character(len=20) :: basis_i, output_i, fcoord_i, fpopulation_i, frestart_i, &
                          frestartin_i, inputFile
     logical           :: verbose_i, OPEN_i, VCINP_i, predcoef_i, writexyz_i,   &
                          intsoldouble_i, DIIS_i, integ_i, DENS_i, field_i,     &
@@ -306,7 +308,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
     call read_options(inputFile)
 
     basis          = basis_i        ; output        = output_i       ;
-    fcoord         = fcoord_i       ; fmulliken     = fmulliken_i    ;
+    fcoord         = fcoord_i       ; fpopulation     = fpopulation_i    ;
     frestart       = frestart_i     ; frestartin    = frestartin_i   ;
     OPEN           = OPEN_i         ;
     NMAX           = NMAX_i         ; NUNP          = NUNP_i         ;
@@ -343,7 +345,7 @@ end subroutine init_lio_amber
 ! Performs LIO variable initialization.                                        !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge_i, basis_i       &
-           , output_i, fcoord_i, fmulliken_i, frestart_i, frestartin_i         &
+           , output_i, fcoord_i, fpopulation_i, frestart_i, frestartin_i         &
            , verbose_i, OPEN_i, NMAX_i, NUNP_i, VCINP_i, GOLD_i, told_i        &
            , rmax_i, rmaxs_i, predcoef_i, idip_i, writexyz_i                   &
            , intsoldouble_i, DIIS_i, ndiis_i, dgtrig_i, Iexch_i, integ_i       &
@@ -366,7 +368,7 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge_i, basis_i       &
    implicit none
    integer, intent(in) :: charge_i, nclatom, natomin, Izin(natomin)
 
-   character(len=20) :: basis_i, output_i, fcoord_i, fmulliken_i, frestart_i   &
+   character(len=20) :: basis_i, output_i, fcoord_i, fpopulation_i, frestart_i   &
                      &, frestartin_i, inputFile
 
    logical :: verbose_i, OPEN_i, VCINP_i, predcoef_i, writexyz_i, DIIS_i       &
@@ -381,7 +383,7 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge_i, basis_i       &
 
 
    call init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i               &
-           , output_i, fcoord_i, fmulliken_i, frestart_i, frestartin_i         &
+           , output_i, fcoord_i, fpopulation_i, frestart_i, frestartin_i         &
            , verbose_i, OPEN_i, NMAX_i, NUNP_i, VCINP_i, GOLD_i, told_i        &
            , rmax_i, rmaxs_i, predcoef_i, idip_i, writexyz_i                   &
            , intsoldouble_i, DIIS_i, ndiis_i, dgtrig_i, Iexch_i, integ_i       &

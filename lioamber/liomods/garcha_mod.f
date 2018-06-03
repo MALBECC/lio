@@ -14,7 +14,7 @@
       character*20 basis,whatis,stdbas
       character*40 basis_set, fitting_set
       logical int_basis
-      character*20 output,fcoord,fmulliken,frestart,frestartin,solv,
+      character*20 output,fcoord,fpopulation,frestart,frestartin,solv,
      > solv2
       character*4 ctype
       logical exists,MEMO,predcoef

@@ -2,7 +2,7 @@
 !
 module lionml_data
 
-   use garcha_mod        , only: natom, nsol, basis, output, fmulliken, fcoord,&
+   use garcha_mod        , only: natom, nsol, basis, output, fpopulation, fcoord,&
                                  OPEN, NMAX, basis_set, fitting_set, int_basis,&
                                  DIIS, ndiis, GOLD, told, Etold, good_cut,     &
                                  hybrid_converg, rmax, rmaxs, omit_bas, NBCH,  &

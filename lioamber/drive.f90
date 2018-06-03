@@ -14,12 +14,12 @@
       nuc, ncont, nlb, nshelld, cd, ad, Nucd, ncontd, nld, Nucx, indexii,      &
       ncontx, cx, ax, indexiid, X, XX, RMM, rhoalpha,rhobeta, af,              &
       basis_set, fitting_set, dens, e_, e_2, e3, exists, NORM, fcoord,   &
-      fmulliken, natom, frestart, M, FAC, Iexch, int_basis, max_func, integ,   &
+      natom, frestart, M, FAC, Iexch, int_basis, max_func, integ,   &
       frestartin, Md, NCO, nng, npas, Nr, used, STR, omit_bas, Nr2,   &
       wang, wang2, wang3, VCINP, OPEN, OPEN1, whatis, Num, Iz, pi,             &
       Rm2, rqm, rmax, Nunp, nl, nt, ng, ngd, restart_freq,             &
       writexyz, number_restr, restr_pairs,restr_index,restr_k,restr_w,restr_r0,&
-      mulliken, MO_coef_at, MO_coef_at_b
+      MO_coef_at, MO_coef_at_b
 
       USE ECP_mod, ONLY : ecpmode, asignacion
       USE fileio , ONLY : read_coef_restart
@@ -106,7 +106,6 @@
       endif
 
       if (writexyz) open(unit=18,file=fcoord)
-      if (mulliken) open(unit=85,file=fmulliken)
       if (restart_freq.gt.0) open(unit=88,file=frestart)
 
 !-------------------------------------------------------

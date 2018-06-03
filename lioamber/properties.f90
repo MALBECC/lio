@@ -87,6 +87,7 @@ subroutine mulliken_calc(N, M, rhomat, smat, atm_of_bfunc, partial_q)
 
     integer :: i, j, k
     real*8  :: bfunc_pop
+    bfunc_pop=0
     do i=1,M
         do j=1,M
              bfunc_pop = rhomat(i, j) * smat(i, j)
@@ -100,27 +101,34 @@ end subroutine mulliken_calc
 !%% LOWDIN_CALC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs a Löwdin Population Analysis and outputs atomic charges.            !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine lowdin_calc(N, M, rhomat, sqsmat, atm_of_bfunc, partial_q)
- 
+subroutine lowdin_calc(N, M, rhomat, smat, atm_of_bfunc, partial_q)
+    !sqsmat is built directly inside lowdin_calc since sqsmat is not really built anywhere
+    !in the program. 
+    use typedef_sop, only: sop 
     implicit none
     integer,intent(in)   :: N, M, atm_of_bfunc(M)
-    real*8,intent(in)    :: rhomat(M,M), sqsmat(M,M)
+    real*8,intent(in)    :: rhomat(M,M), smat(M,M)
     real*8,intent(inout) :: partial_q(N)
-
+    
     real*8  :: bfunc_pop
     integer :: i, j, k
+    type(sop) :: overop
+    real*8 :: tmpmat(M,M), sqsmat(M,M)
+
+    bfunc_pop=0
+    tmpmat=0
+    sqsmat=0
+    call overop%Sets_smat(smat)
+    call overop%Gets_orthog_2m( 2, 0.0d0, tmpmat, sqsmat )
 
     do k=1, M
         do i=1, M
             do j=1, M
-            write(*,*) "rhomat is", rhomat
-            write(*,*) "sqsmat is", sqsmat
                 bfunc_pop = sqsmat(k, i) * rhomat(i, j) * sqsmat(j, k)
                 partial_q(atm_of_bfunc(k)) = partial_q(atm_of_bfunc(k)) - bfunc_pop
             enddo
         enddo
     enddo
-
     return
 end subroutine lowdin_calc
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

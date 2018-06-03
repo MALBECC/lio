@@ -1442,6 +1442,9 @@ c
 !       do kk=1,natom
 !         q(kk)=real(Iz(kk))
 !       enddo
+!       smat is not in this subroutine, but if this ever gets
+!       commented out then smat should be fed to lowdin_calc
+!       instead of sqsm
 !       call lowdin_calc(natom,M,RealRho,sqsm,Nuc,q)
 !       call mulliken_write(85,natom,Iz,q)
        endif

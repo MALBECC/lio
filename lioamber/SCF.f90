@@ -411,19 +411,18 @@ subroutine SCF(E)
            RMM(M13+kk-1) = Dvec(kk)
         end do
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%tmp!
 !
 !
 !  Fockbias setup
         if ( allocated(sqsmat) ) deallocate(sqsmat)
         if ( allocated(tmpmat) ) deallocate(tmpmat)
         allocate( sqsmat(M,M), tmpmat(M,M) )
-        !tmpmat and sqsmat should probably be equal on output
+        !tmpmat and sqsmat should probably be equal on output, 
+        !but for some reason they are not...?
         call overop%Gets_orthog_2m( 2, 0.0d0, tmpmat, sqsmat )
-        write(*,*) "tmpmat is", tmpmat
-        write(*,*) "sqsmat is", sqsmat
         call fockbias_loads( natom, nuc )
-        call fockbias_setmat( sqsmat )
+        call fockbias_setmat( sqsmat  )
         deallocate( sqsmat, tmpmat )
 
 

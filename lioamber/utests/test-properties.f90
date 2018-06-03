@@ -97,6 +97,7 @@ subroutine test_mulliken()
 end subroutine test_mulliken
 
 subroutine test_lowdin()
+    !this test should be redone and smat should be fed to lowdin charges
     implicit none
     real*8       :: Rho(2,2),SQS(2,2), outVec(2), criteria
     character*20 :: testResult

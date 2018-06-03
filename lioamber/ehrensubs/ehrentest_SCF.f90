@@ -1442,7 +1442,7 @@ c
 !       do kk=1,natom
 !         q(kk)=real(Iz(kk))
 !       enddo
-!       call lowdinpop(M,natom,RealRho,sqsm,Nuc,q)
+!       call lowdin_calc(M,natom,RealRho,sqsm,Nuc,q)
 !       call mulliken_write(85,natom,Iz,q)
        endif
 

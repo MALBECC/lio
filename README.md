@@ -107,7 +107,7 @@ gpu integration-test03:  0
 Running cpu test...
 cpu integration-test:  0
 ```
-  7. To run the simulations using the functionals from libxc you'll have to add the following variables in the `*****.in` files:
+  9. To run the simulations using the functionals from libxc you'll have to add the following variables in the `*****.in` files:
 ```
 file: agua.in
 

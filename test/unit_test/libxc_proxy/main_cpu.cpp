@@ -8,7 +8,6 @@ using std::endl;
 
 
 void runAllProxyCPUTests () {
-/*
     libxcProxyTest::testProxy02<double> ();
     libxcProxyTest::testProxy03<double> (false);
     libxcProxyTest::testProxy03<double> (true);
@@ -17,8 +16,8 @@ void runAllProxyCPUTests () {
     libxcProxyTest::testProxy06 ();
     libxcProxyTest::testProxy07 ();
     libxcProxyTest::testProxy08 ();
-*/
     libxcProxyTest::testProxy09 ();
+    libxcProxyTest::testProxy10 ();
 }
 
 void runAllProxyGPUTest () {

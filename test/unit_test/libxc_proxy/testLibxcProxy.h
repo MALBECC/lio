@@ -374,9 +374,12 @@ void testProxy08 ()
 }
 
 /////////////////////////////
-// TestProxy09
-// Calling xc_gga_xfc test
+// Test: TestProxy09
 //
+// Calling xc_gga_xfc test 01
+// We use the cpu version LibxcProxy component to make calls
+// to the Libxc xc_gga_fxc function.
+
 void testProxy09 ()
 {
     printf ("=================================== \n");
@@ -421,7 +424,8 @@ void testProxy09 ()
 
     for (int i=0; i<number_of_points; i++) {
         printf ("Point '%i' \n", i);
-        printf ("Density '%lf' \n", sigma[i]);
+        printf ("rho '%lf' \n", rho[i]);
+        printf ("sigma '%lf' \n", sigma[i]);
         printf ("v2rho '%lf' \n", v2rho2[i]);
         printf ("v2rhosigma '%lf' \n", v2rhosigma[i]);
         printf ("v2sigma2 '%lf' \n", v2sigma2[i]);
@@ -434,6 +438,58 @@ void testProxy09 ()
     free(v2rho2);
     free(v2rhosigma);
     free(v2sigma2);
+
+    aProxy.closeProxy ();
+
+    printf ("=================================== \n");
+}
+
+
+/////////////////////////////
+// Test: TestProxy10
+//
+// Calling xc_gga_xfc test 02
+// We use the cpu version LibxcProxy component to make calls
+// to the Libxc xc_gga_fxc function.
+//
+void testProxy10 ()
+{
+    printf ("=================================== \n");
+    printf ("testProxy10 \n");
+    printf (" \n");
+    printf ("=================================== \n");
+
+    int nspin = 1;
+    int functionalExchange = 101;
+    int functionalCorrelation = 130;
+
+    LibxcProxy<double,3> aProxy;
+    aProxy.init (functionalExchange, functionalCorrelation, nspin);
+
+    // Parameters
+    double rho;
+    double sigma;
+    double v2rho2;
+    double v2rhosigma;
+    double v2sigma2;
+
+    // Set the data value
+    rho = 0.1;
+    sigma = 0.1;
+    v2rho2 = 0;
+    v2rhosigma = 0;
+    v2sigma2 = 0;
+
+
+    // Make the call to the proxy.
+    aProxy.doGGA (&rho, &sigma, 1, &v2rho2, &v2rhosigma, &v2sigma2);
+
+    printf ("rho '%lf' \n", rho);
+    printf ("sigma '%lf' \n", sigma);
+    printf ("v2rho '%lf' \n", v2rho2);
+    printf ("v2rhosigma '%lf' \n", v2rhosigma);
+    printf ("v2sigma2 '%lf' \n", v2sigma2);
+    printf  ("-------------------- \n");
 
     aProxy.closeProxy ();
 

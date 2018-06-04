@@ -88,7 +88,17 @@ libxc=2 - Use libxc in GPU mode
 ```
 make cuda=1 libxc=2
 ```
-  6. To run the simulations using the functionals from libxc you'll have to add the following variables in the *****.in files:
+  6. To validate the instalation, go to the `integration-test` folder located in `lio/test/` and run the command `make`, this will
+compile and execute the integration test and the end the output should be,
+```
+Running gpu test...
+gpu integration-test01:  0
+gpu integration-test02:  0
+gpu integration-test03:  0
+Running cpu test...
+cpu integration-test:  0
+```
+  7. To run the simulations using the functionals from libxc you'll have to add the following variables in the *****.in files:
 ```
 ...
 use_libxc=t
@@ -100,6 +110,7 @@ where ex_functional_id is the id for the energy-exchange functional from libxc a
 for the energy-correlation functional from libxc. You can see the list of available functionals for GPU ([here](https://github.com/eduarditoperez/lio/wiki#funcionales-disponibles-en-gpu))
 and the list of available functionals for CPU ([here](http://www.tddft.org/programs/libxc/manual/previous/libxc-4.0.x/)). If you want to see the ids you have to take a look at the funcs_key.c file in the libxc src folder.
 Bare in mind that only the GGA functional's family are supported in this version of libxc for lio.
+
 
 TESTS
 -----

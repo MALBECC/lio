@@ -93,7 +93,7 @@ libxc=0 - No libxc (DEFAULT - for backwards compatibility with lio)
 libxc=1 - Use libxc in CPU mode
 libxc=2 - Use libxc in GPU mode
 ```
-  7.If you want to compile lio with libxc in GPU mode, type the following command
+  7. If you want to compile lio with libxc in GPU mode, type the following command
 ```
 make cuda=1 libxc=2
 ```
@@ -118,7 +118,7 @@ ec_functional_id=XXX
 ...
 ```
 where `ex_functional_id` is the id for the exchange functional from libxc and `ec_funcional_id` is the id
-for the energy-correlation functional from libxc. You can see the list of available functionals for [gpu](https://github.com/MALBECC/lio/wiki/Libxc-available-functionals-for-GPU-version#functionals-for-gpu-version)
+for the correlation functional from libxc. You can see the list of available functionals for [gpu](https://github.com/MALBECC/lio/wiki/Libxc-available-functionals-for-GPU-version#functionals-for-gpu-version)
 and the list of available functionals for [cpu](https://github.com/MALBECC/lio/wiki/Libxc-available-functionals-for-CPU#functionals-for-cpu-version).
 Bare in mind that only the GGA functional's family are supported in this version of libxc for lio.
 

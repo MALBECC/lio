@@ -386,13 +386,7 @@ subroutine SCF(E)
         allocate(Xmat(M_in,M_in), Ymat(M_in,M_in))
 
         call overop%Sets_smat( Smat )
-        if (lowdin) then
-!          TODO: inputs insuficient; there is also the symetric orthog using
-!                3 instead of 2 or 1. Use integer for onbasis_id
-           call overop%Gets_orthog_4m( 2, 0.0d0, X_min, Y_min, X_min_trans, Y_min_trans)
-        else
-           call overop%Gets_orthog_4m( 1, 0.0d0, X_min, Y_min, X_min_trans, Y_min_trans)
-        end if
+        call overop%Gets_orthog_4m( 1, 0.0d0, X_min, Y_min, X_min_trans, Y_min_trans)
 
 ! TODO: replace X,Y,Xtrans,Ytrans with Xmat, Ymat, Xtrp, Ytrp
 !        do ii=1,M

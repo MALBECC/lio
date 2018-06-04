@@ -285,7 +285,7 @@ SRCDIRS += typedef_sop
 OBJECTS += typedef_sop.o
 #
 modusrs :=
-modusrs += SCF.o
+modusrs += SCF.o properties.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/typedef_sop.mod
 ################################################################################
 include typedef_operator/typedef_operator.mk

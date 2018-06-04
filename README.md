@@ -71,15 +71,16 @@ cmake -DGMX_GPU=0 -DGMX_THREAD_MPI=0 -DGMX_QMMM_PROGRAM="lio" -DLIO_LINK_FLAGS="
 INSTALLATION WITH LIBXC
 -----------------------
 Currently there are two different implementations of the __Libxc__ library, the original version ([here](http://www.tddft.org/programs/libxc/download/)) who
-runs all the functionals in ##CPU## and the modified version ([here](https://gitlab.com/eduarditoperez/libxc/tree/cuda-integration)) who
-runs some functionals in ##GPU##. This version of Lio has support for both libraries depending on wich one you'll choose to use at runtime.
+runs all the functionals in __gpu___ and the modified version ([here](https://gitlab.com/eduarditoperez/libxc/tree/cuda-integration)) who
+runs some functionals in __gpu__. 
+This version of Lio has support for both libraries depending on wich one you'll choose to use at runtime.
 You can use this version of Lio with both, one of none of the __Libxc__ libraries. We'll recommend to have both installed.
 
-  1. Download the libxc ([cpu](http://www.tddft.org/programs/libxc/download/)) library.
+  1. Download the libxc [cpu](http://www.tddft.org/programs/libxc/download/) library.
   2. Compile and Install the ##cpu## library (follow Libxc install instructions).
-  3. Download the libxc ([gpu](https://gitlab.com/eduarditoperez/libxc/tree/cuda-integration)) library.
-  4. Compile and Install the library (follow Libxc install instructions). Both the ##gpu## and ##cpu## libraries had to be installed in the same folder.
-  5. In order for lio to compile with libxc, you'll need to create and export two environment variables in LD_LIBRARY_PATH
+  3. Download the libxc [gpu](https://gitlab.com/eduarditoperez/libxc/tree/cuda-integration) library.
+  4. Compile and Install the library (follow Libxc install instructions). Both the __gpu__ and __cpu__ libraries had to be installed in the same folder.
+  5. In order for lio to compile with libxc, you'll need to create and export two environment variables in `LD_LIBRARY_PATH`
 ```
 LIBXC_LIBXS=points to the path where the libxc libaries where installed in the file system.
 LIBXC_INCLUDES=points to the path where the libxc include files where installed in the file system.
@@ -95,7 +96,7 @@ libxc=2 - Use libxc in GPU mode
 make cuda=1 libxc=2
 ```
   6. To validate the instalation, go to the `integration-test` folder located in `lio/test/` and run the command `make`, this will
-compile and execute the integration test and the end the output should be,
+compile and execute the integration test. After the execution of the test phase, you should see in the console:
 ```
 Running gpu test...
 gpu integration-test01:  0
@@ -104,17 +105,19 @@ gpu integration-test03:  0
 Running cpu test...
 cpu integration-test:  0
 ```
-  7. To run the simulations using the functionals from libxc you'll have to add the following variables in the *****.in files:
+  7. To run the simulations using the functionals from libxc you'll have to add the following variables in the `*****.in` files:
 ```
+file: agua.in
+
 ...
 use_libxc=t
 ex_functional_id=XXX
 ec_functional_id=XXX
 ...
 ```
-where ex_functional_id is the id for the energy-exchange functional from libxc and ec_funcional_id is the id
-for the energy-correlation functional from libxc. You can see the list of available functionals for GPU ([here](https://github.com/eduarditoperez/lio/wiki#funcionales-disponibles-en-gpu))
-and the list of available functionals for CPU ([here](http://www.tddft.org/programs/libxc/manual/previous/libxc-4.0.x/)). If you want to see the ids you have to take a look at the funcs_key.c file in the libxc src folder.
+where `ex_functional_id` is the id for the exchange functional from libxc and `ec_funcional_id` is the id
+for the energy-correlation functional from libxc. You can see the list of available functionals for [gpu](https://github.com/MALBECC/lio/wiki/Libxc-available-functionals-for-GPU-version#functionals-for-gpu-version)
+and the list of available functionals for [cpu](https://github.com/MALBECC/lio/wiki/Libxc-available-functionals-for-CPU#functionals-for-cpu-version).
 Bare in mind that only the GGA functional's family are supported in this version of libxc for lio.
 
 

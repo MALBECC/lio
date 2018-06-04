@@ -71,31 +71,33 @@ cmake -DGMX_GPU=0 -DGMX_THREAD_MPI=0 -DGMX_QMMM_PROGRAM="lio" -DLIO_LINK_FLAGS="
 INSTALLATION WITH LIBXC
 -----------------------
 Currently there are two different implementations of the __Libxc__ library, the original version ([here](http://www.tddft.org/programs/libxc/download/)) who
-runs all the functionals in __gpu___ and the modified version ([here](https://gitlab.com/eduarditoperez/libxc/tree/cuda-integration)) who
-runs some functionals in __gpu__. 
+runs all the functionals in __cpu__ and the modified version ([here](https://gitlab.com/eduarditoperez/libxc/tree/cuda-integration)) who
+runs some functionals in __gpu__.
 This version of Lio has support for both libraries depending on wich one you'll choose to use at runtime.
 You can use this version of Lio with both, one of none of the __Libxc__ libraries. We'll recommend to have both installed.
 
+In order to compile lio with libxc, follow the steps detailed below:
+
   1. Download the libxc [cpu](http://www.tddft.org/programs/libxc/download/) library.
-  2. Compile and Install the ##cpu## library (follow Libxc install instructions).
+  2. Compile and Install the __cpu__ library (follow Libxc install instructions).
   3. Download the libxc [gpu](https://gitlab.com/eduarditoperez/libxc/tree/cuda-integration) library.
   4. Compile and Install the library (follow Libxc install instructions). Both the __gpu__ and __cpu__ libraries had to be installed in the same folder.
   5. In order for lio to compile with libxc, you'll need to create and export two environment variables in `LD_LIBRARY_PATH`
 ```
-LIBXC_LIBXS=points to the path where the libxc libaries where installed in the file system.
+LIBXC_LIBS=points to the path where the libxc libaries where installed in the file system.
 LIBXC_INCLUDES=points to the path where the libxc include files where installed in the file system.
 ```
-  6. Libxc has 3 compilation options for lio, these are
+  6. Libxc has 3 compilation options for lio, those are
 ```
 libxc=0 - No libxc (DEFAULT - for backwards compatibility with lio)
 libxc=1 - Use libxc in CPU mode
 libxc=2 - Use libxc in GPU mode
 ```
-  5.If you want to compile lio with libxc in GPU mode, type the following command
+  7.If you want to compile lio with libxc in GPU mode, type the following command
 ```
 make cuda=1 libxc=2
 ```
-  6. To validate the instalation, go to the `integration-test` folder located in `lio/test/` and run the command `make`, this will
+  8. To validate the instalation, go to the `integration-test` folder located in `lio/test/` and run the command `make`, this will
 compile and execute the integration test. After the execution of the test phase, you should see in the console:
 ```
 Running gpu test...

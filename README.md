@@ -81,23 +81,30 @@ In order to compile lio with libxc, follow the steps detailed below:
   1. Download the libxc [cpu](http://www.tddft.org/programs/libxc/download/) library.
   2. Compile and Install the __cpu__ library (follow Libxc install instructions).
   3. Download the libxc [gpu](https://gitlab.com/eduarditoperez/libxc/tree/cuda-integration) library.
-  4. Compile and Install the library (follow Libxc install instructions). Both the __gpu__ and __cpu__ libraries had to be installed in the same folder.
+  4. Compile and Install the library (follow the Libxc-gpu install [instructions](https://github.com/MALBECC/lio/wiki/Libxc-with-CUDA-support-installation-guide#instalation-guide)). Both the __gpu__ and __cpu__ libraries had to be installed in the same folder.
   5. In order for lio to compile with libxc, you'll need to create and export two environment variables in `LD_LIBRARY_PATH`
 ```
 LIBXC_LIBS=points to the path where the libxc libaries where installed in the file system.
 LIBXC_INCLUDES=points to the path where the libxc include files where installed in the file system.
 ```
-  6. Libxc has 3 compilation options for lio, those are
+  6. Go to the `Libxc` (gpu or cpu) installation folder and Copy the next files into the `LIBXC_INCLUDES` folder defined in the step 5.
+```
+src/xc.h
+src/xc_funcs.h
+src/xc_funcs_removed.h
+xc_version.h
+```
+  7. Libxc has 3 compilation options for lio, those are
 ```
 libxc=0 - No libxc (DEFAULT - for backwards compatibility with lio)
 libxc=1 - Use libxc in CPU mode
 libxc=2 - Use libxc in GPU mode
 ```
-  7. If you want to compile lio with libxc in GPU mode, type the following command
+  8. If you want to compile lio with libxc in GPU mode, type the following command
 ```
 make cuda=1 libxc=2
 ```
-  8. To validate the instalation, go to the `integration-test` folder located in `lio/test/` and run the command `make`, this will
+  9. To validate the instalation, go to the `integration-test` folder located in `lio/test/` and run the command `make`, this will
 compile and execute the integration test. After the execution of the test phase, you should see in the console:
 ```
 Running gpu test...
@@ -107,6 +114,8 @@ gpu integration-test03:  0
 Running cpu test...
 cpu integration-test:  0
 ```
+The `0` after each test means that the test ran without errors.
+
   9. To run the simulations using the functionals from libxc you'll have to add the following variables in the `*****.in` files:
 ```
 file: agua.in

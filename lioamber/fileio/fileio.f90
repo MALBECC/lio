@@ -26,5 +26,6 @@ contains
    include 'restart_rho.f90'
    include 'restart_td.f90'
    include 'output_init.f90'
+   include 'output_others.f90'
    include 'output_scf.f90'
 end module fileio

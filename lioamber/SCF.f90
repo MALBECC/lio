@@ -36,7 +36,7 @@ subroutine SCF(E)
                           nuc, doing_ehrenfest, first_step, RealRho,           &
                           total_time, MO_coef_at, MO_coef_at_b, Smat, good_cut,&
                           ndiis, ncont, nshell, rhoalpha, rhobeta, OPEN, nshell, &
-                          Nuc, a, c, d, NORM, ntatom
+                          Nuc, a, c, d, NORM, ntatom, Eorbs_b
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
                        FOCK_ECP_read,FOCK_ECP_write,IzECP
    use field_data, only: field, fx, fy, fz
@@ -720,7 +720,7 @@ subroutine SCF(E)
         if (dftb_calc) i0=MTB
 
         kkk = 0
-        do kk=1,NCOa
+        do kk=1,M
         do ii=1,M
           kkk = kkk+1
           MO_coef_at(kkk) = morb_coefat( i0+ii, kk )
@@ -777,7 +777,7 @@ subroutine SCF(E)
         if (dftb_calc) i0=MTB
 
         kkk = 0
-        do kk=1,NCOb
+        do kk=1,M
         do ii=1,M
           kkk = kkk+1
           MO_coef_at_b(kkk) = morb_coefat( i0+ii, kk )
@@ -853,20 +853,13 @@ subroutine SCF(E)
         good=sqrt(good)/float(M)
         deallocate ( xnano )
 
-
-! TODO: what is this doing here???
-        call g2g_timer_stop('dens_GPU')
-
 !------------------------------------------------------------------------------!
 ! TODO: finalization of the loop is a little bit messy. Also: "999 continue"??
 !       I think it is time we regularized this loop...
 
-! Damping factor update
+        ! Damping factor update
         DAMP=DAMP0
-
         E=E1+E2+En
-        call g2g_timer_stop('otras cosas')
-
         Egood=abs(E+Ex-Evieja)
         Evieja=E+Ex
 
@@ -1037,6 +1030,7 @@ subroutine SCF(E)
       Enucl = En
       do kkk=1, M
           Eorbs(kkk) = RMM(M13+kkk-1)
+          if (open) Eorbs_b(kkk) = RMM(M22+kkk-1)
       enddo
 
       call cubegen_matin( M, X )

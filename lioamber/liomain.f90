@@ -13,12 +13,14 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 subroutine liomain(E, dipxyz)
-    use garcha_mod, only : M, Smat, RealRho, OPEN, writeforces, energy_freq,   &
-                           restart_freq, npas, sqsm, mulliken, lowdin, dipole, &
-                           doing_ehrenfest, first_step,                        &
-                           Eorbs, fukui, print_coeffs, steep, idip
-    use ecp_mod   , only : ecpmode, IzECP
-    use ehrensubs,  only : ehrendyn_main
+    use garcha_mod, only: M, Smat, RealRho, OPEN, writeforces, energy_freq,   &
+                          restart_freq, npas, sqsm, mulliken, lowdin, dipole, &
+                          doing_ehrenfest, first_step, Eorbs, Eorbs_b, fukui, &
+                          print_coeffs, steep, idip, MO_coef_at, MO_coef_at_b,&
+                          NUnp, NCO
+    use ecp_mod   , only: ecpmode, IzECP
+    use ehrensubs , only: ehrendyn_main
+    use fileio    , only: write_orbitals, write_orbitals_op
 
     implicit none
     REAL*8, intent(inout) :: dipxyz(3), E
@@ -26,11 +28,11 @@ subroutine liomain(E, dipxyz)
 
     call g2g_timer_sum_start("Total")
 
-    if (.not.allocated(Smat))    allocate(Smat(M,M))
-    if (.not.allocated(RealRho)) allocate(RealRho(M,M))
-    if (.not.allocated(sqsm))    allocate(sqsm(M,M))
-    if (.not.allocated(Eorbs))   allocate(Eorbs(M))
-
+    if (.not.allocated(Smat))      allocate(Smat(M,M))
+    if (.not.allocated(RealRho))   allocate(RealRho(M,M))
+    if (.not.allocated(sqsm))      allocate(sqsm(M,M))
+    if (.not.allocated(Eorbs))     allocate(Eorbs(M))
+    if (.not.allocated(Eorbs_b))   allocate(Eorbs_b(M))
 
     if (steep) then
       idip_scrach=idip
@@ -39,9 +41,6 @@ subroutine liomain(E, dipxyz)
       idip=idip_scrach
     end if
 
-
-!------------------------------------------------------------------------------!
-! FFR - Option to do ehrenfest
     if ( doing_ehrenfest ) then
        if ( first_step ) call SCF( E, dipxyz )
        call ehrendyn_main( E, dipxyz )
@@ -49,23 +48,27 @@ subroutine liomain(E, dipxyz)
        call SCF(E)
     endif
 
-    if ((restart_freq.gt.0).and.(MOD(npas, restart_freq).eq.0)) call do_restart(88)
+    if ( (restart_freq.gt.0) .and. (MOD(npas, restart_freq).eq.0) ) &
+       call do_restart(88)
 
     ! Perform Mulliken and Lowdin analysis, get fukui functions and dipole.
     if (MOD(npas, energy_freq).eq.0) then
-
         if (mulliken.or.lowdin) call do_population_analysis()
-
         if (dipole) call do_dipole(dipxyz, 69)
-
         if (fukui) call do_fukui()
 
         if (writeforces) then
             if (ecpmode) stop "ECP does not feature forces calculation."
             call do_forces(123)
         endif
-
-        if (print_coeffs) call write_orbitals(29)
+        if (print_coeffs) then
+           if (open) then
+             call write_orbitals_op(M, NCO, NUnp, Eorbs, Eorbs_b, MO_coef_at,  &
+                                    MO_coef_at_b, 29)
+          else
+             call write_orbitals(M, NCO, Eorbs, MO_coef_at, 29)
+          endif
+        endif
     endif
 
     call g2g_timer_sum_pause("Total")
@@ -73,14 +76,12 @@ subroutine liomain(E, dipxyz)
     return
 end subroutine liomain
 
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% DO_FORCES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Calculates forces for QM and MM regions and writes them to output.           !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_forces(uid)
-
-    use garcha_mod, only : natom, nsol
+    use garcha_mod, only: natom, nsol
+    use fileio    , only: write_forces
 
     implicit none
     integer, intent(in) :: uid
@@ -101,10 +102,7 @@ subroutine do_forces(uid)
     endif
 
     call write_forces(dxyzqm, natom, 0, uid)
-
     deallocate (dxyzqm)
-
-
 
     if(nsol.gt.0) then
         call write_forces(dxyzcl, nsol, 0, uid)
@@ -116,11 +114,11 @@ subroutine do_forces(uid)
 end subroutine do_forces
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% DO_DIPOLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Sets variables up and calls dipole calculation.                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_dipole(dipxyz, uid)
+    use fileio, only: write_dipole
     implicit none
     integer, intent(in)    :: uid
     real*8 , intent(inout) :: dipxyz(3)
@@ -138,16 +136,16 @@ subroutine do_dipole(dipxyz, uid)
 end subroutine do_dipole
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% DO_POPULATION_ANALYSIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs the different population analyisis available.                       !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_population_analysis()
-   use garcha_mod, only : RMM, Smat, RealRho, M, Enucl, Nuc, Iz, natom, &
-                          mulliken, lowdin, sqsm, a, c, d, r, Iz, ncont, NORM,&
-                          M, Md, nshell,ntatom
-   use ECP_mod   , only : ecpmode, IzECP
-   use faint_cpu, only: int1
+   use garcha_mod, only: RMM, Smat, RealRho, M, Enucl, Nuc, Iz, natom, &
+                         mulliken, lowdin, sqsm, a, c, d, r, Iz, ncont, NORM,&
+                         M, Md, nshell,ntatom
+   use ECP_mod   , only: ecpmode, IzECP
+   use faint_cpu , only: int1
+   use fileio    , only: write_population
 
    implicit none
    integer :: M1, M5, IzUsed(natom), kk
@@ -175,7 +173,7 @@ subroutine do_population_analysis()
    if (mulliken) then
        call g2g_timer_start('Mulliken')
        call mulliken_calc(natom, M, RealRho, Smat, Nuc, q)
-       call write_population(85, natom, Iz, q, 0)
+       call write_population(natom, Iz, q, 0, 85)
        call g2g_timer_stop('Mulliken')
    endif
 
@@ -183,7 +181,7 @@ subroutine do_population_analysis()
    if (lowdin) then
        call g2g_timer_start('Lowdin')
        call lowdin_calc(M, natom, RealRho, sqsm, Nuc, q)
-       call write_population(85, natom, Iz, q, 1)
+       call write_population(natom, Iz, q, 1, 85)
        call g2g_timer_stop('Lowdin')
    endif
 
@@ -191,13 +189,12 @@ subroutine do_population_analysis()
 endsubroutine do_population_analysis
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% DO_FUKUI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs Fukui function calls and printing.                                  !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_fukui()
-    use garcha_mod, only : X, NCO, M, natom, Nuc, Smat, Eorbs, Iz, OPEN
-
+    use garcha_mod, only: X, NCO, M, natom, Nuc, Smat, Eorbs, Iz, OPEN
+    use fileio    , only: write_fukui
     implicit none
     real*8  :: fukuim(natom), fukuin(natom), fukuip(natom), softness
 
@@ -219,13 +216,12 @@ subroutine do_fukui()
 end subroutine do_fukui
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% DO_FUKUI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs Fukui function calls and printing.                                  !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_restart(UID)
-   use garcha_mod, only : OPEN, NCO, NUNP, M, MO_coef_at, MO_coef_at_b, indexii
-   use fileio    , only : write_coef_restart
+   use garcha_mod, only: OPEN, NCO, NUNP, M, MO_coef_at, MO_coef_at_b, indexii
+   use fileio    , only: write_coef_restart
    implicit none
    integer, intent(in) :: UID
    integer             :: NCOb, icount, jcount, coef_ind

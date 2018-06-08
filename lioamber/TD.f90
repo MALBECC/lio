@@ -856,6 +856,7 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
 end subroutine td_calc_energy
 
 subroutine td_dipole(t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, uid)
+   use fileio, only: write_dipole_td, write_dipole_td_header
    implicit none
    integer, intent(in)    :: istep, propagator, uid
    logical, intent(in)    :: is_lpfrg

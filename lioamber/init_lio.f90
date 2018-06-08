@@ -202,12 +202,10 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
 
     NCO = ((nqnuc - charge) - NUNP)/2
 
-    allocate(MO_coef_at(ngDyn*NCO))
-    if (OPEN) allocate(MO_coef_at_b(ngDyn*(NCO+NUNP)))
+    allocate(MO_coef_at(ngDyn*ngDyn))
+    if (OPEN) allocate(MO_coef_at_b(ngDyn*ngDyn))
 
     ! Prints chosen options to output.
-    call NEW_WRITE_NML(charge)
-
     call drive(ng2, ngDyn, ngdDyn)
 
     ! reemplazos de RMM

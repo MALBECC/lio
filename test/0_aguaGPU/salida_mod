@@ -32,13 +32,13 @@ LIO input variables
   NBCH =   10, field =  F, a0 =  1000.00000000, epsilon =     1.00000000,
   Fx =     0.00000000, Fy =     0.00000000, Fz =     0.00000000, n_fields_iso =     0,
   n_fields_aniso =     0, field_iso_file =      field.in            ,
-  field_aniso_file =      fieldaniso.in       
+  field_aniso_file =      fieldaniso.in
  ! -- Effective Core Potentials: -- !
   ECPMode =  F, ECPTypes =   0, TipeECP = NOT-DEFINED              ,
   Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    15.00000000,
   cut3_0 =    12.00000000, verbose_ECP =  0, ECP_debug =  F, fullTimer_ECP =  F,
   local_nonlocal =  0, ECP_full_range_int =  F
-  ZListECP = 
+  ZListECP =
  ! -- Minimizations and restraints: -- !
   steep =  F, minimzation_steep =     0.05000000, energy_cut =     0.00010000,
   force_cut =     0.00001000, n_min_steeps =   500, lineal_search =  T,
@@ -46,7 +46,7 @@ LIO input variables
  ! -- CubeGen: -- !
   CubeGen_only =  F, cube_res =    40, cube_sel =     0, cube_dens =  F,
   cube_orb =  F, cube_elec =  F, cube_dens_file =      dens.cube           ,
-  cube_orb_file =      orb.cube            , cube_elec_file =      dens.cube           
+  cube_orb_file =      orb.cube            , cube_elec_file =      dens.cube
  ! -- GPU Options: -- !
   energy_all_iterations =  T, assign_all_functions =  F, remove_zero_weights =  T,
   max_function_exponent =    10, free_global_memory =     0.60000000,
@@ -69,7 +69,7 @@ LIO input variables
  ! -- Fock Bias Potentials: -- !
   fockbias_is_active =  F, fockbias_is_shaped =  F, fockbias_timeamp0 =     0.00000000,
   fockbias_timegrow =     0.00000000, fockbias_timefall =     0.00000000,
-  fockbias_readfile =                          
+  fockbias_readfile =
 
 LIO initialisation.
 
@@ -97,4 +97,3 @@ Final Energy Contributions in A.U.
   Coulomb      =    42.397873
   Nuclear      =     4.772967
   Exch. Corr.  =    -8.830185
-

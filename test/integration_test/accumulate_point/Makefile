@@ -7,11 +7,12 @@ else
     HAS_LIBXC_INSTALLED := true
 endif
 
-CFLAGS=-I. -I${HOME}/workspace/common/includes -I../../common/inc -I../../../g2g -I$(LIBXC_INCLUDES) -DGPU_KERNERLS=0
-CLIBS=-L${HOME}/workspace/common/libs -lxc -lm -L../../../g2g -lg2g
+CFLAGS=-I${LIBXC_INCLUDES} -I../commons -DGPU_KERNERLS=0
+CLIBS=-L${LIBXC_LIBS} -lxc -lm -L../../../g2g -lg2g
 
-CFLAGS_GPU=-I. -I${HOME}/workspace/common/includes -I../../common/inc -I../../../g2g -I$(LIBXC_INCLUDES) -DGPU_KERNELS=1 --ptxas-options=-v
-CLIBS_GPU=-L${HOME}/workspace/common/libs -lxc_cuda -lm -L../../../g2g -lg2g
+CFLAGS_GPU=-I${LIBXC_INCLUDES} -I../commons -I../../../g2g -DGPU_KERNELS=1 --ptxas-options=-v
+CLIBS_GPU=-L${LIBXC_LIBS} -lxc_cuda -lm -L../../../g2g -lg2g
+
 
 ifeq ($(full_double),1)
     EXTRAS += -DFULL_DOUBLE=1

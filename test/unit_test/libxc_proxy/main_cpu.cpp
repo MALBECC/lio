@@ -1,7 +1,7 @@
 #include <iostream>
 using namespace std;
 
-#include <testLibxcProxy.h>
+#include "testLibxcProxy.h"
 
 using std::cout;
 using std::endl;

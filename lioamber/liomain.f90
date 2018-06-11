@@ -186,8 +186,8 @@ subroutine do_population_analysis()
            q(kk) = real(IzUsed(kk))
        enddo
        call g2g_timer_start('Lowdin')
-       call write_population(natom, Iz, q, 1, 85)
        call lowdin_calc(natom, M, RealRho, smat, Nuc, q)
+       call write_population(natom, Iz, q, 1, 85)
        call g2g_timer_stop('Lowdin')
        q=0.0
    endif

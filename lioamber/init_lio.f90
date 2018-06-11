@@ -43,8 +43,8 @@ subroutine lio_defaults()
     implicit none
 
 !   Names of files used for input and output.
-    basis          = 'basis'       ; output             = 'output'      ;
-    fpopulation      = 'population_analysis'    ; fcoord             = 'qm.xyz'      ;
+    basis          = 'basis'                ; output        = 'output'      ;
+    fpopulation    = 'population_analysis'  ; fcoord        = 'qm.xyz'      ;
 
 !   Theory level options.
     OPEN           = .false.       ; told               = 1.0D-6        ;

@@ -22,8 +22,8 @@
       mulliken, MO_coef_at, MO_coef_at_b
 
       USE ECP_mod, ONLY : ecpmode, asignacion
-      USE fileio , ONLY : read_coef_restart
-      use fileio_data, only: verbose
+      USE fileio , ONLY : read_coef_restart, read_rho_restart
+      use fileio_data, only: verbose, rst_dens
 
       IMPLICIT NONE
       LOGICAL :: basis_check
@@ -980,74 +980,92 @@
       ! Then vectors are put in dynamical allocation (to be used later)
       if (VCINP) then
          call g2g_timer_start('restart_read')
-         allocate(restart_dens(M, M), restart_coef(M, NCO))
+
          open(unit=89, file=frestartin)
-
-         if (.not.OPEN) then
-            call read_coef_restart(restart_coef, restart_dens, M, NCO, 89)
-
-            kk = 0
-            do k=1, NCO
-            do i=1, M
-               kk = kk + 1
-               MO_coef_at(kk) = restart_coef(indexii(i), k)
-            enddo
-            enddo
+         if (rst_dens .gt. 0) then
+            allocate(restart_dens(M, M))
+            if (.not. OPEN) then
+               call read_rho_restart(restart_dens, M, 89)
+               call sprepack('L', M, RMM(1), restart_dens)
+            else
+               allocate(restart_adens(M,M), restart_bdens(M,M))
+               call read_rho_restart(restart_adens, restart_bdens, M, 89)
+               restart_dens = restart_adens + restart_bdens
+               call sprepack('L', M, RMM(1)  , restart_dens)
+               call sprepack('L', M, rhoalpha, restart_adens)
+               call sprepack('L', M, rhobeta , restart_bdens)
+               deallocate(restart_adens, restart_bdens)
+            endif
+            deallocate(restart_dens)
          else
-            NCOa = NCO
-            NCOb = NCO + Nunp
-            allocate(restart_coef_b(M, NCOb), restart_adens(M,M),              &
-                     restart_bdens(M,M))
+            allocate(restart_dens(M, M), restart_coef(M, NCO))
+            if (.not.OPEN) then
+               call read_coef_restart(restart_coef, restart_dens, M, NCO, 89)
 
-            call read_coef_restart(restart_coef, restart_coef_b, restart_dens, &
-                                   restart_adens, restart_bdens, M, NCOa,      &
-                                   NCOb, 89)
-            kk = 0
-            do k=1, NCOa
-            do i=1, M
-               kk = kk + 1
-               MO_coef_at(kk) = restart_coef(indexii(i), k)
+               kk = 0
+               do k=1, NCO
+               do i=1, M
+                  kk = kk + 1
+                  MO_coef_at(kk) = restart_coef(indexii(i), k)
+               enddo
+               enddo
+            else
+               NCOa = NCO
+               NCOb = NCO + Nunp
+               allocate(restart_coef_b(M, NCOb), restart_adens(M,M), &
+                        restart_bdens(M,M))
+
+               call read_coef_restart(restart_coef, restart_coef_b, &
+                                      restart_dens, restart_adens,  &
+                                      restart_bdens, M, NCOa, NCOb, 89)
+               kk = 0
+               do k=1, NCOa
+               do i=1, M
+                  kk = kk + 1
+                  MO_coef_at(kk) = restart_coef(indexii(i), k)
+               enddo
+               enddo
+
+               kk = 0
+               do k=1, NCOb
+               do i=1, M
+                  kk = kk + 1
+                  MO_coef_at_b(kk) = restart_coef_b(indexii(i), k)
+               enddo
+               enddo
+               deallocate(restart_coef_b)
+            endif
+
+            ! Reorders by s, p, d.
+            k = 0
+            do j=1, M
+            do i=j, M
+               k = k + 1
+               RMM(k)      = restart_dens(indexii(i), indexii(j))
+               if (i.ne.j) then
+                  RMM(k)      = RMM(k)*2.D0
+               endif
             enddo
             enddo
 
-            kk = 0
-            do k=1, NCOb
-            do i=1, M
-               kk = kk + 1
-               MO_coef_at_b(kk) = restart_coef_b(indexii(i), k)
-            enddo
-            enddo
-            deallocate(restart_coef_b)
+            if (OPEN) then
+               k = 0
+               do j=1, M
+               do i=j, M
+                  k = k + 1
+                  rhoalpha(k) = restart_adens(indexii(i), indexii(j))
+                  rhobeta(k)  = restart_bdens(indexii(i), indexii(j))
+                  if (i.ne.j) then
+                     rhoalpha(k) = rhoalpha(k)*2.0D0
+                     rhobeta(k)  = rhobeta(k)*2.0D0
+                  endif
+               enddo
+               enddo
+               deallocate(restart_adens, restart_bdens)
+            endif
+            deallocate(restart_dens, restart_coef)
          endif
 
-         ! Reorders by s, p, d.
-         k = 0
-         do j=1, M
-         do i=j, M
-            k = k + 1
-            RMM(k)      = restart_dens(indexii(i), indexii(j))
-            if (i.ne.j) then
-               RMM(k)      = RMM(k)*2.D0
-            endif
-         enddo
-         enddo
-
-         if (OPEN) then
-         k = 0
-         do j=1, M
-         do i=j, M
-            k = k + 1
-            rhoalpha(k) = restart_adens(indexii(i), indexii(j))
-            rhobeta(k)  = restart_bdens(indexii(i), indexii(j))
-            if (i.ne.j) then
-               rhoalpha(k) = rhoalpha(k)*2.0D0
-               rhobeta(k)  = rhobeta(k)*2.0D0
-            endif
-         enddo
-         enddo
-         endif
-
-         deallocate(restart_dens, restart_coef)
          close(89)
          call g2g_timer_stop('restart_read')
       endif

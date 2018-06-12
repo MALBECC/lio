@@ -220,40 +220,56 @@ end subroutine do_fukui
 ! Performs Fukui function calls and printing.                                  !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_restart(UID)
-   use garcha_mod, only: OPEN, NCO, NUNP, M, MO_coef_at, MO_coef_at_b, indexii
-   use fileio    , only: write_coef_restart
+   use garcha_mod , only: RMM, OPEN, NCO, NUNP, M, MO_coef_at, MO_coef_at_b, &
+                          indexii, rhoalpha, rhobeta
+   use fileio_data, only: rst_dens
+   use fileio     , only: write_coef_restart, write_rho_restart
    implicit none
    integer, intent(in) :: UID
    integer             :: NCOb, icount, jcount, coef_ind
-   real*8, allocatable :: coef(:,:), coef_b(:,:)
+   real*8, allocatable :: coef(:,:), coef_b(:,:), tmp_rho(:,:), tmp_rho_b(:,:)
 
-   allocate(coef(M, NCO))
-   do icount=1, M
-   do jcount=1, NCO
-      coef_ind = icount + M*(jcount-1)
-      coef(indexii(icount), jcount) = MO_coef_at(coef_ind)
-   enddo
-   enddo
-
-
-   if (OPEN) then
-      NCOb = NCO + NUNP
-      allocate(coef_b(M, NCOb))
-
-      do icount=1, M
-      do jcount=1, NCOb
-         coef_ind = icount + M*(jcount-1)
-         coef_b(indexii(icount), jcount) = MO_coef_at_b(coef_ind)
-      enddo
-      enddo
-
-      call write_coef_restart(coef, coef_b, M, NCO, NCOb, UID)
-      deallocate(coef_b)
+   if ( rst_dens .eq. 2 ) then
+      allocate(tmp_rho(M,M))
+      if (.not. OPEN) then
+         call spunpack('L', M, RMM(1), tmp_rho)
+         call write_rho_restart(tmp_rho, M, uid)
+      else
+         allocate(tmp_rho_b(M,M))
+         call spunpack('L', M, rhoalpha, tmp_rho)
+         call spunpack('L', M, rhobeta , tmp_rho_b)
+         call write_rho_restart(tmp_rho, tmp_rho_b, M, uid)
+         deallocate(tmp_rho_b)
+      endif
+      deallocate(tmp_rho)
    else
-      call write_coef_restart(coef, M, NCO, UID)
+      allocate(coef(M, NCO))
+      do icount=1, M
+      do jcount=1, NCO
+         coef_ind = icount + M*(jcount-1)
+         coef(indexii(icount), jcount) = MO_coef_at(coef_ind)
+      enddo
+      enddo
+
+      if (OPEN) then
+         NCOb = NCO + NUNP
+         allocate(coef_b(M, NCOb))
+
+         do icount=1, M
+         do jcount=1, NCOb
+            coef_ind = icount + M*(jcount-1)
+            coef_b(indexii(icount), jcount) = MO_coef_at_b(coef_ind)
+         enddo
+         enddo
+
+         call write_coef_restart(coef, coef_b, M, NCO, NCOb, UID)
+         deallocate(coef_b)
+      else
+         call write_coef_restart(coef, M, NCO, UID)
+      endif
+      deallocate(coef)
    endif
 
-   deallocate(coef)
    return
 end subroutine do_restart
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

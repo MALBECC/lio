@@ -38,7 +38,7 @@ module lionml_data
    use field_data        , only: field, a0, epsilon, Fx, Fy, Fz,               &
                                  field_iso_file, field_aniso_file,             &
                                  nfields_iso, nfields_aniso
-   use fileio_data       , only: verbose, style
+   use fileio_data       , only: verbose, style, rst_dens
    use fockbias_data     , only: fockbias_is_active, fockbias_is_shaped,       &
                                  fockbias_timegrow , fockbias_timefall,        &
                                  fockbias_timeamp0 , fockbias_readfile
@@ -107,7 +107,7 @@ module lionml_data
       ! FILE IO
       character*20     :: frestartin, frestart
       character*40     :: basis_set, fitting_set
-      integer          :: restart_freq, timers, verbose
+      integer          :: restart_freq, timers, verbose, rst_dens
       logical          :: dbug, dipole, fukui, gaussian_convert, int_basis,    &
                           lowdin, mulliken, print_coeffs, style, writeforces
       ! TD-DFT and FIELD
@@ -183,7 +183,7 @@ subroutine get_namelist(lio_in)
    lio_in%int_basis        = int_basis       ; lio_in%lowdin      = lowdin
    lio_in%mulliken         = mulliken        ; lio_in%style       = style
    lio_in%print_coeffs     = print_coeffs    ; lio_in%writeforces = writeforces
-   lio_in%verbose          = verbose         ;
+   lio_in%verbose          = verbose         ; lio_in%rst_dens    = rst_dens
    ! TDDFT - Fields
    lio_in%field_aniso_file = field_aniso_file; lio_in%a0         = a0
    lio_in%field_iso_file   = field_iso_file  ; lio_in%epsilon    = epsilon

@@ -44,6 +44,8 @@ void PointGroupCPU<scalar_type>::solve_closed(
   const uint group_m = this->total_functions();
   const int npoints = this->points.size();
 
+  //printf("solve_closed(...)\n");
+
 #if CPU_RECOMPUTE or !GPU_KERNELS
   /** Compute functions **/
   timers.functions.start();
@@ -55,8 +57,8 @@ void PointGroupCPU<scalar_type>::solve_closed(
 #if LIBXC_CPU
   /** Libxc CPU - version **/
   const int nspin = XC_UNPOLARIZED;
-  const int functionalExchange = fortran_vars.ex_functional_id;
-  const int functionalCorrelation = fortran_vars.ec_functional_id;
+  const int functionalExchange = 101; //fortran_vars.ex_functional_id;
+  const int functionalCorrelation = 130; //fortran_vars.ec_functional_id;
   LibxcProxy<scalar_type,3> libxcProxy(functionalExchange, functionalCorrelation, nspin);
 #endif
 #endif
@@ -180,13 +182,16 @@ void PointGroupCPU<scalar_type>::solve_closed(
       const vec_type3 dd2(tdd2x, tdd2y, tdd2z);
 
 #if USE_LIBXC
-#if LIBXC_CPU
     /** Libxc CPU - version **/
-    if (fortran_vars.use_libxc) {
-<------>libxcProxy.doGGA(pd, dxyz, dd1, dd2, exc, corr, y2a);
+#if LIBXC_CPU
+    //if (fortran_vars.use_libxc) {
+    if (true) {
+	libxcProxy.doGGA(pd, dxyz, dd1, dd2, exc, corr, y2a);
     } else {
-<------>calc_ggaCS_in<scalar_type, 3>(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch);
+	calc_ggaCS_in<scalar_type, 3>(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch);
     }
+#else
+    calc_ggaCS_in<scalar_type, 3>(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch);
 #endif
 #else
       calc_ggaCS_in<scalar_type, 3>(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch);

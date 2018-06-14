@@ -49,9 +49,9 @@ using std::cout;
 using std::vector;
 using std::endl;
 
-extern "C" void g2g_timer_sum_start_(const char* timer_name, unsigned int length_arg);
-extern "C" void g2g_timer_sum_stop_(const char* timer_name, unsigned int length_arg);
-extern "C" void g2g_timer_sum_pause_(const char* timer_name, unsigned int length_arg);
+//extern "C" void g2g_timer_sum_start_(const char* timer_name, unsigned int length_arg);
+//extern "C" void g2g_timer_sum_stop_(const char* timer_name, unsigned int length_arg);
+//extern "C" void g2g_timer_sum_pause_(const char* timer_name, unsigned int length_arg);
 
 void gpu_set_variables(void) {
   int previous_device; cudaGetDevice(&previous_device);
@@ -109,7 +109,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
     Timers& timers,
     bool compute_rmm, bool lda, bool compute_forces, bool compute_energy,
     double& energy,    HostMatrix<double>& fort_forces_ms,
-    int inner_threads, HostMatrix<double>& rmm_output_local){
+    int inner_threads, HostMatrix<double>& rmm_output_local ){
 
   int device;
   cudaGetDevice(&device);
@@ -226,8 +226,8 @@ void PointGroupGPU<scalar_type>::solve_closed(
 
 #if USE_LIBXC
   const int nspin = XC_UNPOLARIZED;
-  const int functionalExchange = fortran_vars.ex_functional_id;
-  const int functionalCorrelation = fortran_vars.ec_functional_id;
+  const int functionalExchange = fortran_vars.ex_functional_id; // 1101;
+  const int functionalCorrelation = fortran_vars.ec_functional_id; // 1130;
   LibxcProxy<scalar_type,4> libxcProxy;
   if (fortran_vars.use_libxc) {
     libxcProxy.init (functionalExchange, functionalCorrelation, nspin);
@@ -446,7 +446,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
     threadGrid = dim3(blocksPerRow*(blocksPerRow+1)/2);
 
     CudaMatrix<scalar_type> rmm_output_gpu(COALESCED_DIMENSION(group_m), group_m);
-    //rmm_output_gpu.zero();
+    rmm_output_gpu.zero();
     // For calls with a single block (pretty common with cubes) don't bother doing the arithmetic to get block position in the matrix
     if (blocksPerRow > 1) {
         gpu_update_rmm<scalar_type,true><<<threadGrid, threadBlock>>>(factors_gpu.data, this->number_of_points, rmm_output_gpu.data, function_values.data, group_m);

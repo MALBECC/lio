@@ -1,6 +1,6 @@
 &lio
 nsol=0
-natom=10
+natom=24
 charge=0
 writeforces=t
 little_cube_size=12

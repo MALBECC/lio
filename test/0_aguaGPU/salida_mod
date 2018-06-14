@@ -1,5 +1,5 @@
 WELCOME TO LIO
-vie jun  8 20:20:30 -03 2018
+jue jun 14 13:24:59 -03 2018
 G2G initialisation.
   GPU Device used: Tesla C2070
   Using 3 CPU Threads and 1 GPU Threads.
@@ -74,26 +74,26 @@ LIO input variables
 LIO initialisation.
 
 Starting SCF cycles.
-  Step =      1  - QM Energy =    -69.780 - Rho squared differences (criteria) = 0.14E+01 (0.10E-05) - Energy differences (criteria) = 0.70E+02 (0.10E+01)
-  Step =      2  - QM Energy =    -68.525 - Rho squared differences (criteria) = 0.68E+00 (0.10E-05) - Energy differences (criteria) = 0.13E+01 (0.10E+01)
-  Step =      3  - QM Energy =    -70.656 - Rho squared differences (criteria) = 0.65E+00 (0.10E-05) - Energy differences (criteria) = 0.21E+01 (0.10E+01)
+  Step =      1  - QM Energy =    -69.78044 - Rho diff (crit) = 1.35E+00 (1.00E-06) - Energy diff (crit) = 6.98E+01 (1.00E+00)
+  Step =      2  - QM Energy =    -68.52423 - Rho diff (crit) = 6.81E-01 (1.00E-06) - Energy diff (crit) = 1.26E+00 (1.00E+00)
+  Step =      3  - QM Energy =    -70.65690 - Rho diff (crit) = 6.51E-01 (1.00E-06) - Energy diff (crit) = 2.13E+00 (1.00E+00)
+  Step =      4  - QM Energy =    -75.06120 - Rho diff (crit) = 2.11E-01 (1.00E-06) - Energy diff (crit) = 4.40E+00 (1.00E+00)
 G2G Deinitialisation.
-  Step =      4  - QM Energy =    -75.061 - Rho squared differences (criteria) = 0.21E+00 (0.10E-05) - Energy differences (criteria) = 0.44E+01 (0.10E+01)
-  Step =      5  - QM Energy =    -76.034 - Rho squared differences (criteria) = 0.17E-01 (0.10E-05) - Energy differences (criteria) = 0.97E+00 (0.10E+01)
-  Step =      6  - QM Energy =    -76.023 - Rho squared differences (criteria) = 0.24E-01 (0.10E-05) - Energy differences (criteria) = 0.11E-01 (0.10E+01)
-  Step =      7  - QM Energy =    -75.931 - Rho squared differences (criteria) = 0.44E-01 (0.10E-05) - Energy differences (criteria) = 0.92E-01 (0.10E+01)
-  Step =      8  - QM Energy =    -76.061 - Rho squared differences (criteria) = 0.11E-01 (0.10E-05) - Energy differences (criteria) = 0.13E+00 (0.10E+01)
-  Step =      9  - QM Energy =    -76.065 - Rho squared differences (criteria) = 0.70E-02 (0.10E-05) - Energy differences (criteria) = 0.42E-02 (0.10E+01)
-  Step =     10  - QM Energy =    -76.067 - Rho squared differences (criteria) = 0.90E-03 (0.10E-05) - Energy differences (criteria) = 0.18E-02 (0.10E+01)
-  Step =     11  - QM Energy =    -76.067 - Rho squared differences (criteria) = 0.49E-03 (0.10E-05) - Energy differences (criteria) = 0.38E-04 (0.10E+01)
-  Step =     12  - QM Energy =    -76.067 - Rho squared differences (criteria) = 0.67E-04 (0.10E-05) - Energy differences (criteria) = 0.13E-04 (0.10E+01)
-  Step =     13  - QM Energy =    -76.067 - Rho squared differences (criteria) = 0.29E-05 (0.10E-05) - Energy differences (criteria) = 0.53E-06 (0.10E+01)
-  Step =     14  - QM Energy =    -76.067 - Rho squared differences (criteria) = 0.67E-06 (0.10E-05) - Energy differences (criteria) = 0.14E-06 (0.10E+01)
-  Convergence achieved in     14 iterations. Final energy    -76.0665852 A.U.
+  Step =      5  - QM Energy =    -76.03340 - Rho diff (crit) = 1.70E-02 (1.00E-06) - Energy diff (crit) = 9.72E-01 (1.00E+00)
+  Step =      6  - QM Energy =    -76.02385 - Rho diff (crit) = 2.42E-02 (1.00E-06) - Energy diff (crit) = 9.55E-03 (1.00E+00)
+  Step =      7  - QM Energy =    -75.93336 - Rho diff (crit) = 4.33E-02 (1.00E-06) - Energy diff (crit) = 9.05E-02 (1.00E+00)
+  Step =      8  - QM Energy =    -76.06097 - Rho diff (crit) = 1.08E-02 (1.00E-06) - Energy diff (crit) = 1.28E-01 (1.00E+00)
+  Step =      9  - QM Energy =    -76.06527 - Rho diff (crit) = 6.58E-03 (1.00E-06) - Energy diff (crit) = 4.30E-03 (1.00E+00)
+  Step =     10  - QM Energy =    -76.06677 - Rho diff (crit) = 9.04E-04 (1.00E-06) - Energy diff (crit) = 1.50E-03 (1.00E+00)
+  Step =     11  - QM Energy =    -76.06681 - Rho diff (crit) = 4.70E-04 (1.00E-06) - Energy diff (crit) = 3.67E-05 (1.00E+00)
+  Step =     12  - QM Energy =    -76.06682 - Rho diff (crit) = 6.42E-05 (1.00E-06) - Energy diff (crit) = 1.24E-05 (1.00E+00)
+  Step =     13  - QM Energy =    -76.06682 - Rho diff (crit) = 2.08E-06 (1.00E-06) - Energy diff (crit) = 2.11E-07 (1.00E+00)
+  Step =     14  - QM Energy =    -76.06682 - Rho diff (crit) = 5.39E-07 (1.00E-06) - Energy diff (crit) = 6.52E-08 (1.00E+00)
+  Convergence achieved in     14 iterations. Final energy    -76.0668215 A.U.
 
 Final Energy Contributions in A.U.
-  Total energy =   -76.066584
-  One electron =  -114.407239
-  Coulomb      =    42.397873
+  Total energy =   -76.066819
+  One electron =  -114.406134
+  Coulomb      =    42.396601
   Nuclear      =     4.772967
-  Exch. Corr.  =    -8.830185
+  Exch. Corr.  =    -8.830253

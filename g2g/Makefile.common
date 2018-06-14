@@ -6,7 +6,7 @@ OPTIMIZECPU :=
 ifeq ($(intel),0)
   CXX          := g++
   OPTIMIZECPU  := -O3
-  CXXFLAGS     := $(CXXFLAGS) -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare -Wnoexcept -Warray-bounds
+  CXXFLAGS     := $(CXXFLAGS) -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare
 else
   CXX          := icc
   OPTIMIZECPU  := -Ofast -xHost -no-prec-div -ipo

@@ -1,5 +1,5 @@
 WELCOME TO LIO
-vie jun  8 00:59:45 -03 2018
+jue jun 14 16:52:13 -03 2018
 G2G initialisation.
   GPU Device used: Tesla C2070
   Using 3 CPU Threads and 1 GPU Threads.
@@ -76,73 +76,73 @@ LIO initialisation.
   Basis set corresponding to Z =  16 was not used.
 
 Starting SCF cycles.
-  Step =      1  - QM Energy =   -380.618 - Rho squared differences (criteria) = 0.12E+01 (0.10E-05) - Energy differences (criteria) = 0.38E+03 (0.10E+01)
-  Step =      2  - QM Energy =   -379.859 - Rho squared differences (criteria) = 0.62E+00 (0.10E-05) - Energy differences (criteria) = 0.76E+00 (0.10E+01)
-  Step =      3  - QM Energy =   -438.574 - Rho squared differences (criteria) = 0.99E+00 (0.10E-05) - Energy differences (criteria) = 0.59E+02 (0.10E+01)
+  Step =      1  - QM Energy =   -380.61812 - Rho diff (crit) = 1.21E+00 (1.00E-06) - Energy diff (crit) = 3.81E+02 (1.00E+00)
+  Step =      2  - QM Energy =   -379.85897 - Rho diff (crit) = 6.15E-01 (1.00E-06) - Energy diff (crit) = 7.59E-01 (1.00E+00)
+  Step =      3  - QM Energy =   -438.57446 - Rho diff (crit) = 9.93E-01 (1.00E-06) - Energy diff (crit) = 5.87E+01 (1.00E+00)
 -------------------------------------------------------------------------------------------
                    LIO TIMING INFORMATION:
 -------------------------------------------------------------------------------------------
 
-Total time: 18.1622s
-Total                                 18.162167s (100.00% of Total)
-  Forces                                 1.001119s (  5.51% of Total)
-    Coulomb+Exchange-correlation           0.970135s ( 96.91% of Forces)
-      Coulomb gradients                      0.251829s ( 25.96% of Coulomb+Exchange-correlation)
-      Exchange-correlation gradients         0.709397s ( 73.12% of Coulomb+Exchange-correlation)
-    Nuclear attraction gradients           0.022166s (  2.21% of Forces)
-    Overlap gradients                      0.008781s (  0.88% of Forces)
-  SCF                                   17.152634s ( 94.44% of Total)
-    Finalize SCF                           0.329782s (  1.92% of SCF)
-      Exchange-correlation energy            0.316773s ( 96.06% of Finalize SCF)
-      energy-weighted density                0.003774s (  1.14% of Finalize SCF)
-    Initialize SCF                         3.779203s ( 22.03% of SCF)
-      1-e Fock                               0.017599s (  0.47% of Initialize SCF)
-        Nuclear attraction                     0.005594s ( 31.79% of 1-e Fock)
-        QM/MM                                  0.011966s ( 67.99% of 1-e Fock)
-      Coulomb G matrix                       0.208330s (  5.51% of Initialize SCF)
-        G condition                            0.159597s ( 76.61% of Coulomb G matrix)
-        G invert                               0.043930s ( 21.09% of Coulomb G matrix)
-      Coulomb precalc                        0.409386s ( 10.83% of Initialize SCF)
-      Exchange-correlation grid setup        0.085141s (  2.25% of Initialize SCF)
-      initial guess                          2.969930s ( 78.59% of Initialize SCF)
-    Iteration                             13.043516s ( 76.04% of SCF)
-      Fock integrals                         9.615139s ( 73.72% of Iteration)
-        Coulomb fit + Fock                     0.544107s (  5.66% of Fock integrals)
-        Exchange-correlation Fock              9.069860s ( 94.33% of Fock integrals)
-      SCF - Fock Diagonalization (sum)       0.932432s (  7.15% of Iteration)
-      SCF - MOC base change (sum)            0.139402s (  1.07% of Iteration)
-      SCF acceleration                       2.275487s ( 17.45% of Iteration)
+Total time: 18.2605s
+Total                                 18.260469s (100.00% of Total)
+  Forces                                 0.998868s (  5.47% of Total)
+    Coulomb+Exchange-correlation           0.967492s ( 96.86% of Forces)
+      Coulomb gradients                      0.251082s ( 25.95% of Coulomb+Exchange-correlation)
+      Exchange-correlation gradients         0.707393s ( 73.12% of Coulomb+Exchange-correlation)
+    Nuclear attraction gradients           0.022469s (  2.25% of Forces)
+    Overlap gradients                      0.008871s (  0.89% of Forces)
+  SCF                                   17.261232s ( 94.53% of Total)
+    Finalize SCF                           0.328140s (  1.90% of SCF)
+      Exchange-correlation energy            0.315136s ( 96.04% of Finalize SCF)
+      energy-weighted density                0.003771s (  1.15% of Finalize SCF)
+    Initialize SCF                         3.797677s ( 22.00% of SCF)
+      1-e Fock                               0.018128s (  0.48% of Initialize SCF)
+        Nuclear attraction                     0.006101s ( 33.66% of 1-e Fock)
+        QM/MM                                  0.011984s ( 66.11% of 1-e Fock)
+      Coulomb G matrix                       0.208421s (  5.49% of Initialize SCF)
+        G condition                            0.159239s ( 76.40% of Coulomb G matrix)
+        G invert                               0.043798s ( 21.01% of Coulomb G matrix)
+      Coulomb precalc                        0.416115s ( 10.96% of Initialize SCF)
+      Exchange-correlation grid setup        0.094220s (  2.48% of Initialize SCF)
+      initial guess                          2.969935s ( 78.20% of Initialize SCF)
+    Iteration                             13.135280s ( 76.10% of SCF)
+      Fock integrals                         9.656699s ( 73.52% of Iteration)
+        Coulomb fit + Fock                     0.546286s (  5.66% of Fock integrals)
+        Exchange-correlation Fock              9.109269s ( 94.33% of Fock integrals)
+      SCF - Fock Diagonalization (sum)       0.941521s (  7.17% of Iteration)
+      SCF - MOC base change (sum)            0.139504s (  1.06% of Iteration)
+      SCF acceleration                       2.315170s ( 17.63% of Iteration)
 -------------------------------------------------------------------------------------------
 G2G Deinitialisation.
-  Step =      4  - QM Energy =   -489.774 - Rho squared differences (criteria) = 0.38E+00 (0.10E-05) - Energy differences (criteria) = 0.51E+02 (0.10E+01)
-  Step =      5  - QM Energy =   -514.864 - Rho squared differences (criteria) = 0.45E+00 (0.10E-05) - Energy differences (criteria) = 0.25E+02 (0.10E+01)
-  Step =      6  - QM Energy =   -510.486 - Rho squared differences (criteria) = 0.38E+00 (0.10E-05) - Energy differences (criteria) = 0.44E+01 (0.10E+01)
-  Step =      7  - QM Energy =   -554.589 - Rho squared differences (criteria) = 0.26E+00 (0.10E-05) - Energy differences (criteria) = 0.44E+02 (0.10E+01)
-  Step =      8  - QM Energy =   -569.175 - Rho squared differences (criteria) = 0.15E+00 (0.10E-05) - Energy differences (criteria) = 0.15E+02 (0.10E+01)
-  Step =      9  - QM Energy =   -587.850 - Rho squared differences (criteria) = 0.57E-01 (0.10E-05) - Energy differences (criteria) = 0.19E+02 (0.10E+01)
-  Step =     10  - QM Energy =   -582.694 - Rho squared differences (criteria) = 0.54E-01 (0.10E-05) - Energy differences (criteria) = 0.52E+01 (0.10E+01)
-  Step =     11  - QM Energy =   -588.281 - Rho squared differences (criteria) = 0.23E-01 (0.10E-05) - Energy differences (criteria) = 0.56E+01 (0.10E+01)
-  Step =     12  - QM Energy =   -588.786 - Rho squared differences (criteria) = 0.11E-01 (0.10E-05) - Energy differences (criteria) = 0.50E+00 (0.10E+01)
-  Step =     13  - QM Energy =   -588.786 - Rho squared differences (criteria) = 0.50E-02 (0.10E-05) - Energy differences (criteria) = 0.32E-03 (0.10E+01)
-  Step =     14  - QM Energy =   -588.849 - Rho squared differences (criteria) = 0.26E-02 (0.10E-05) - Energy differences (criteria) = 0.63E-01 (0.10E+01)
-  Step =     15  - QM Energy =   -588.822 - Rho squared differences (criteria) = 0.17E-02 (0.10E-05) - Energy differences (criteria) = 0.27E-01 (0.10E+01)
-  Step =     16  - QM Energy =   -588.862 - Rho squared differences (criteria) = 0.12E-02 (0.10E-05) - Energy differences (criteria) = 0.40E-01 (0.10E+01)
-  Step =     17  - QM Energy =   -588.856 - Rho squared differences (criteria) = 0.56E-03 (0.10E-05) - Energy differences (criteria) = 0.59E-02 (0.10E+01)
-  Step =     18  - QM Energy =   -588.857 - Rho squared differences (criteria) = 0.29E-03 (0.10E-05) - Energy differences (criteria) = 0.87E-03 (0.10E+01)
-  Step =     19  - QM Energy =   -588.857 - Rho squared differences (criteria) = 0.17E-03 (0.10E-05) - Energy differences (criteria) = 0.17E-03 (0.10E+01)
-  Step =     20  - QM Energy =   -588.859 - Rho squared differences (criteria) = 0.83E-04 (0.10E-05) - Energy differences (criteria) = 0.25E-02 (0.10E+01)
-  Step =     21  - QM Energy =   -588.860 - Rho squared differences (criteria) = 0.30E-04 (0.10E-05) - Energy differences (criteria) = 0.46E-03 (0.10E+01)
-  Step =     22  - QM Energy =   -588.859 - Rho squared differences (criteria) = 0.71E-05 (0.10E-05) - Energy differences (criteria) = 0.72E-03 (0.10E+01)
-  Step =     23  - QM Energy =   -588.859 - Rho squared differences (criteria) = 0.34E-05 (0.10E-05) - Energy differences (criteria) = 0.21E-03 (0.10E+01)
-  Step =     24  - QM Energy =   -588.859 - Rho squared differences (criteria) = 0.21E-05 (0.10E-05) - Energy differences (criteria) = 0.59E-04 (0.10E+01)
-  Step =     25  - QM Energy =   -588.859 - Rho squared differences (criteria) = 0.12E-05 (0.10E-05) - Energy differences (criteria) = 0.20E-04 (0.10E+01)
-  Step =     26  - QM Energy =   -588.859 - Rho squared differences (criteria) = 0.60E-06 (0.10E-05) - Energy differences (criteria) = 0.50E-05 (0.10E+01)
-  Convergence achieved in     26 iterations. Final energy   -588.8593145 A.U.
+  Step =      4  - QM Energy =   -489.77443 - Rho diff (crit) = 3.79E-01 (1.00E-06) - Energy diff (crit) = 5.12E+01 (1.00E+00)
+  Step =      5  - QM Energy =   -514.86168 - Rho diff (crit) = 4.49E-01 (1.00E-06) - Energy diff (crit) = 2.51E+01 (1.00E+00)
+  Step =      6  - QM Energy =   -510.49420 - Rho diff (crit) = 3.79E-01 (1.00E-06) - Energy diff (crit) = 4.37E+00 (1.00E+00)
+  Step =      7  - QM Energy =   -554.59268 - Rho diff (crit) = 2.59E-01 (1.00E-06) - Energy diff (crit) = 4.41E+01 (1.00E+00)
+  Step =      8  - QM Energy =   -569.15942 - Rho diff (crit) = 1.55E-01 (1.00E-06) - Energy diff (crit) = 1.46E+01 (1.00E+00)
+  Step =      9  - QM Energy =   -587.85021 - Rho diff (crit) = 5.68E-02 (1.00E-06) - Energy diff (crit) = 1.87E+01 (1.00E+00)
+  Step =     10  - QM Energy =   -582.70158 - Rho diff (crit) = 5.39E-02 (1.00E-06) - Energy diff (crit) = 5.15E+00 (1.00E+00)
+  Step =     11  - QM Energy =   -588.28138 - Rho diff (crit) = 2.31E-02 (1.00E-06) - Energy diff (crit) = 5.58E+00 (1.00E+00)
+  Step =     12  - QM Energy =   -588.78611 - Rho diff (crit) = 1.12E-02 (1.00E-06) - Energy diff (crit) = 5.05E-01 (1.00E+00)
+  Step =     13  - QM Energy =   -588.78654 - Rho diff (crit) = 5.04E-03 (1.00E-06) - Energy diff (crit) = 4.31E-04 (1.00E+00)
+  Step =     14  - QM Energy =   -588.84897 - Rho diff (crit) = 2.60E-03 (1.00E-06) - Energy diff (crit) = 6.24E-02 (1.00E+00)
+  Step =     15  - QM Energy =   -588.82172 - Rho diff (crit) = 1.65E-03 (1.00E-06) - Energy diff (crit) = 2.72E-02 (1.00E+00)
+  Step =     16  - QM Energy =   -588.86177 - Rho diff (crit) = 1.20E-03 (1.00E-06) - Energy diff (crit) = 4.01E-02 (1.00E+00)
+  Step =     17  - QM Energy =   -588.85589 - Rho diff (crit) = 5.57E-04 (1.00E-06) - Energy diff (crit) = 5.88E-03 (1.00E+00)
+  Step =     18  - QM Energy =   -588.85675 - Rho diff (crit) = 2.91E-04 (1.00E-06) - Energy diff (crit) = 8.57E-04 (1.00E+00)
+  Step =     19  - QM Energy =   -588.85692 - Rho diff (crit) = 1.70E-04 (1.00E-06) - Energy diff (crit) = 1.70E-04 (1.00E+00)
+  Step =     20  - QM Energy =   -588.85944 - Rho diff (crit) = 8.29E-05 (1.00E-06) - Energy diff (crit) = 2.52E-03 (1.00E+00)
+  Step =     21  - QM Energy =   -588.85990 - Rho diff (crit) = 3.03E-05 (1.00E-06) - Energy diff (crit) = 4.58E-04 (1.00E+00)
+  Step =     22  - QM Energy =   -588.85918 - Rho diff (crit) = 7.08E-06 (1.00E-06) - Energy diff (crit) = 7.18E-04 (1.00E+00)
+  Step =     23  - QM Energy =   -588.85939 - Rho diff (crit) = 3.36E-06 (1.00E-06) - Energy diff (crit) = 2.11E-04 (1.00E+00)
+  Step =     24  - QM Energy =   -588.85933 - Rho diff (crit) = 2.03E-06 (1.00E-06) - Energy diff (crit) = 5.86E-05 (1.00E+00)
+  Step =     25  - QM Energy =   -588.85931 - Rho diff (crit) = 1.24E-06 (1.00E-06) - Energy diff (crit) = 2.05E-05 (1.00E+00)
+  Step =     26  - QM Energy =   -588.85932 - Rho diff (crit) = 6.00E-07 (1.00E-06) - Energy diff (crit) = 4.93E-06 (1.00E+00)
+  Convergence achieved in     26 iterations. Final energy   -588.8593167 A.U.
 
 Final Energy Contributions in A.U.
-  Total energy =  -679.712506
-  One electron = -2744.466557
-  Coulomb      =  1238.539226
+  Total energy =  -679.712507
+  One electron = -2744.466522
+  Coulomb      =  1238.539189
   Nuclear      =   917.068016
-  Exch. Corr.  =   -90.853192
+  Exch. Corr.  =   -90.853191
 

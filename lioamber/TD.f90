@@ -1424,4 +1424,49 @@ end subroutine td_magnus
 
 #endif
 
+subroutine calc_trace(matrix, msize, message)
+
+   implicit none
+   integer         , intent(in) :: msize
+   character(len=*), intent(in) :: message
+   double precision, intent(in) :: matrix(msize, msize)
+
+   integer          :: icount
+   double precision :: trace
+
+   trace = 0.0D0
+
+   do icount = 1, msize
+      trace = trace + matrix(icount, icount)
+   enddo
+
+   write(*,*) "Trace of ", message, " equals to ", trace
+   return
+end subroutine calc_trace
+
+subroutine calc_trace_c(matrix, msize, message)
+
+   implicit none
+   integer         , intent(in) :: msize
+   character(len=*), intent(in) :: message
+   integer          :: icount
+
+#ifdef TD_SIMPLE
+   complex*8, intent(in) :: matrix(msize, msize)
+   complex*8 :: trace
+   trace = (0.0E0, 0.0E0)
+#else
+   complex*16, intent(in) :: matrix(msize, msize)
+   complex*16 :: trace
+   trace = (0.0D0, 0.0D0)
+#endif
+
+   do icount = 1, msize
+      trace = trace + matrix(icount, icount)
+   enddo
+
+   write(*,*) "Trace of ", message, " equals to ", trace
+   return
+end subroutine calc_trace_c
+
 end module time_dependent

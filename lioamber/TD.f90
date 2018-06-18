@@ -30,6 +30,7 @@ module td_data
    integer :: td_rst_freq = 500
    integer :: timedep   = 0
    integer :: ntdstep   = 0
+   integer :: td_do_pop = 0
    real*8  :: tdstep    = 2.0D-3
    logical :: tdrestart = .false.
    logical :: writedens = .false.
@@ -79,7 +80,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
    real*8 , allocatable, dimension(:)   :: factorial, WORK
    real*8 , allocatable, dimension(:,:) :: Xmm, Xmat,Xtrans, Ytrans, overlap,  &
-                                           Ymat
+                                           Ymat, Smat_initial
 !carlos: the next variables have 3 dimensions, the 3th one is asociated with the
 !        spin number. This one will have the value of 1 for Close Shell and 2
 !        for Open shell. Spin=1 will always be reffered to alpha and spin=2,
@@ -160,7 +161,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    ! Checks and performs allocations.
    call td_allocate_all(M_in, M, dim3, NBCH, propagator, F1a, F1b, fock, rho,  &
                         rho_aux, rhold, rhonew, rho_0, fock_0, sqsm, Xmm, Xmat,&
-                        Xtrans, Ymat, Ytrans, factorial)
+                        Xtrans, Ymat, Ytrans, factorial, Smat_initial)
 
    ! Initialises propagator-related parameters and other variables.
    call td_initialise(propagator, tdstep, NBCH, dt_lpfrg, dt_magnus, factorial,&
@@ -227,7 +228,9 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    if (field) call field_setup_old(pert_time, 1, fx, fy, fz)
    call td_integration_setup(igrid2, igpu)
    call td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM(M11), r, pc, &
-                       ntatom,natom,Smat,Nuc,a,c,d,Iz,ncont,NORM,M,Md,nshell)
+                       ntatom, natom, Smat, Nuc, a, c, d, Iz, ncont, NORM, M,  &
+                       Md, nshell)
+   call spunpack('L', M, RMM(M5), Smat_initial)
 
    ! Initialises transport if required.
    if (transport_calc) call transport_init(M, dim3, natom, Nuc, RMM(M5),       &
@@ -237,6 +240,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    ! transposed matrices Xtrans and Ytrans
    call td_overlap_diag(M_in, M, Smat, RMM(M13), X, Xmat ,Xtrans, Ymat, Ytrans,&
                         Xmm)
+
    ! Here rho_aux is used as an auxiliar matrix for CUBLAS. Then we need to
    ! restore its original value. Rho is then transformed to the orthonormal
    ! basis with either matmul intrinsic or CUBLAS.
@@ -455,6 +459,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
       ! Dipole Moment calculation.
       call td_dipole(t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, 134)
+      call td_population(M, natom, rho_aux, Smat_initial, sqsm, Nuc, Iz, OPEN)
 
       ! Population analysis.
       if (transport_calc) call transport_population(M, dim3, natom, Nuc, Iz,   &
@@ -477,7 +482,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    call td_finalise_cublas(devPtrX, devPtrY, devPtrXc)
 #endif
    call td_deallocate_all(F1a, F1b, fock, rho, rho_aux, rhold, rhonew, Xmm, &
-                          Xtrans, Ymat, Ytrans, factorial)
+                          Xtrans, Ymat, Ytrans, factorial, Smat_initial)
    call field_finalize()
 
    close(134)
@@ -490,13 +495,15 @@ end subroutine TD
 
 subroutine td_allocate_all(M_in,M, dim3, NBCH, propagator, F1a, F1b, fock,     &
                            rho, rho_aux, rhold, rhonew, rho_0, fock_0,sqsm,    &
-                           Xmm, Xmat, Xtrans, Ymat, Ytrans, factorial)
+                           Xmm, Xmat, Xtrans, Ymat, Ytrans, factorial,         &
+                           Smat_initial)
    implicit none
    integer, intent(in) :: M, NBCH, propagator, M_in, dim3
    real*8, allocatable, intent(inout) :: F1a(:,:,:), F1b(:,:,:), fock(:,:,:),  &
                                          sqsm(:,:), Xmm(:,:), Xmat(:,:),       &
                                          Xtrans(:,:), Ymat(:,:), Ytrans(:,:),  &
-                                         factorial(:), fock_0(:,:,:)
+                                         factorial(:), fock_0(:,:,:),          &
+                                         Smat_initial(:,:)
 #ifdef TD_SIMPLE
    complex*8 , allocatable, intent(inout) :: rho(:,:,:), rho_aux(:,:,:),       &
                                              rhold(:,:,:), rhonew(:,:,:),      &
@@ -508,23 +515,25 @@ subroutine td_allocate_all(M_in,M, dim3, NBCH, propagator, F1a, F1b, fock,     &
 #endif
 
 
-   if ( allocated(fock)     ) deallocate(fock)
-   if ( allocated(rho)      ) deallocate(rho)
-   if ( allocated(rho_aux)  ) deallocate(rho_aux)
-   if ( allocated(rhold)    ) deallocate(rhold)
-   if ( allocated(rhonew)   ) deallocate(rhonew)
-   if ( allocated(sqsm)     ) deallocate(sqsm)
-   if ( allocated(Xmm)      ) deallocate(Xmm)
-   if ( allocated(Xmat)     ) deallocate(Xmat)
-   if ( allocated(Xtrans)   ) deallocate(Xtrans)
-   if ( allocated(Ytrans)   ) deallocate(Ytrans)
-   if ( allocated(Ymat)     ) deallocate(Ymat)
-   if ( allocated(factorial)) deallocate(factorial)
-   if ( allocated(fock_0)   ) deallocate(fock_0)
-   if ( allocated(rho_0)    ) deallocate(rho_0)
+   if ( allocated(fock)        ) deallocate(fock)
+   if ( allocated(rho)         ) deallocate(rho)
+   if ( allocated(rho_aux)     ) deallocate(rho_aux)
+   if ( allocated(rhold)       ) deallocate(rhold)
+   if ( allocated(rhonew)      ) deallocate(rhonew)
+   if ( allocated(sqsm)        ) deallocate(sqsm)
+   if ( allocated(Xmm)         ) deallocate(Xmm)
+   if ( allocated(Xmat)        ) deallocate(Xmat)
+   if ( allocated(Xtrans)      ) deallocate(Xtrans)
+   if ( allocated(Ytrans)      ) deallocate(Ytrans)
+   if ( allocated(Ymat)        ) deallocate(Ymat)
+   if ( allocated(factorial)   ) deallocate(factorial)
+   if ( allocated(fock_0)      ) deallocate(fock_0)
+   if ( allocated(rho_0)       ) deallocate(rho_0)
+   if ( allocated(Smat_initial)) deallocate(Smat_initial)
 
    allocate(sqsm(M,M), Xmm(M_in,M_in),Xtrans(M_in,M_in), Xmat(M_in,M_in), &
-            Ymat(M_in,M_in),Ytrans(M_in,M_in), factorial(NBCH))
+            Ymat(M_in,M_in),Ytrans(M_in,M_in), factorial(NBCH), &
+            Smat_initial(M,M))
 
    allocate(fock(M_in,M_in,dim3), rho(M_in,M_in,dim3), rho_aux(M_in,M_in,dim3),&
             rhold(M_in,M_in,dim3), rhonew(M_in,M_in,dim3), fock_0(M,M,dim3),   &
@@ -533,19 +542,19 @@ subroutine td_allocate_all(M_in,M, dim3, NBCH, propagator, F1a, F1b, fock,     &
    if (propagator.eq.2) then
       if ( allocated(F1a) ) deallocate(F1a)
       if ( allocated(F1b) ) deallocate(F1b)
-
-         allocate (F1a(M_in,M_in,dim3), F1b(M_in,M_in,dim3))
+      allocate (F1a(M_in,M_in,dim3), F1b(M_in,M_in,dim3))
    endif
 
    return
 end subroutine td_allocate_all
 
 subroutine td_deallocate_all(F1a, F1b, fock, rho, rho_aux, rhold, rhonew, Xmm, &
-                             Xtrans, Ymat, Ytrans, factorial)
+                             Xtrans, Ymat, Ytrans, factorial, Smat_initial)
    implicit none
    real*8, allocatable, intent(inout) :: F1a(:,:,:), F1b(:,:,:), fock(:,:,:), &
                                          Xmm(:,:), Xtrans(:,:), Ymat(:,:),    &
-                                         Ytrans(:,:), factorial(:)
+                                         Ytrans(:,:), factorial(:),           &
+                                         Smat_initial(:,:)
 #ifdef TD_SIMPLE
    complex*8 , allocatable, intent(inout) :: rho(:,:,:), rho_aux(:,:,:),    &
                                              rhold(:,:,:), rhonew(:,:,:)
@@ -553,18 +562,19 @@ subroutine td_deallocate_all(F1a, F1b, fock, rho, rho_aux, rhold, rhonew, Xmm, &
    complex*16, allocatable, intent(inout) :: rho(:,:,:), rho_aux(:,:,:),    &
                                              rhold(:,:,:), rhonew(:,:,:)
 #endif
-   if ( allocated(fock)     ) deallocate(fock)
-   if ( allocated(rho)      ) deallocate(rho)
-   if ( allocated(rho_aux)  ) deallocate(rho_aux)
-   if ( allocated(rhold)    ) deallocate(rhold)
-   if ( allocated(rhonew)   ) deallocate(rhonew)
-   if ( allocated(Xmm)      ) deallocate(Xmm)
-   if ( allocated(Xtrans)   ) deallocate(Xtrans)
-   if ( allocated(Ytrans)   ) deallocate(Ytrans)
-   if ( allocated(Ymat)     ) deallocate(Ymat)
-   if ( allocated(factorial)) deallocate(factorial)
-   if ( allocated(F1a)      ) deallocate(F1a)
-   if ( allocated(F1b)      ) deallocate(F1b)
+   if ( allocated(fock)        ) deallocate(fock)
+   if ( allocated(rho)         ) deallocate(rho)
+   if ( allocated(rho_aux)     ) deallocate(rho_aux)
+   if ( allocated(rhold)       ) deallocate(rhold)
+   if ( allocated(rhonew)      ) deallocate(rhonew)
+   if ( allocated(Xmm)         ) deallocate(Xmm)
+   if ( allocated(Xtrans)      ) deallocate(Xtrans)
+   if ( allocated(Ytrans)      ) deallocate(Ytrans)
+   if ( allocated(Ymat)        ) deallocate(Ymat)
+   if ( allocated(factorial)   ) deallocate(factorial)
+   if ( allocated(F1a)         ) deallocate(F1a)
+   if ( allocated(F1b)         ) deallocate(F1b)
+   if ( allocated(Smat_initial)) deallocate(Smat_initial)
 
    return
 end subroutine td_deallocate_all
@@ -885,6 +895,43 @@ subroutine td_dipole(t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, uid)
 
    return
 end subroutine td_dipole
+
+subroutine td_population(M, natom, rho, Smat_init, sqsm, Nuc, Iz, open_shell)
+   use td_data, only: td_do_pop
+   use fileio , only: write_population
+   implicit none
+   integer         , intent(in) :: M, natom, Nuc(M), Iz(natom)
+   logical         , intent(in) :: open_shell
+   double precision, intent(in) :: Smat_init(M,M), sqsm(M,M)
+#ifdef TD_SIMPLE
+   complex*8       , intent(in) :: rho(:,:,:)
+#else
+   complex*16      , intent(in) :: rho(:,:,:)
+#endif
+   double precision :: real_rho(M,M), q(natom)
+   integer          :: icount, jcount
+
+   q = Iz
+   if (open_shell) then
+      do icount = 1, M
+      do jcount = 1, M
+         real_rho(icount, jcount) = real(rho(icount, jcount, 1)) + &
+                                    real(rho(icount, jcount, 2))
+      enddo
+      enddo
+   else
+      do icount = 1, M
+      do jcount = 1, M
+         real_rho(icount, jcount) = real(rho(icount, jcount, 1))
+      enddo
+      enddo
+   endif
+
+   call mulliken_calc(natom, M, real_rho, Smat_init, Nuc, q)
+   call write_population(natom, Iz, q, 0, 85)
+
+   return
+end subroutine td_population
 
 ! CUBLAS-dependent subroutines.
 #ifdef CUBLAS

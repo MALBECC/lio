@@ -69,6 +69,7 @@ module lionml_data
                   frestartin, style, frestart, fukui, dipole, lowdin, verbose, &
                   mulliken, writeforces, int_basis, fitting_set, basis_set,    &
                   restart_freq, print_coeffs, Dbug, timers, gaussian_convert,  &
+                  rst_dens,                                                    &
                   ! DFT and TD-DFT Variables.
                   timedep, tdstep, ntdstep, propagator, NBCH, tdrestart,       &
                   writedens, td_rst_freq, td_do_pop,                           &

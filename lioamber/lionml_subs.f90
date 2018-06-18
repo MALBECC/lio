@@ -54,7 +54,7 @@ subroutine lionml_read(file_unit, extern_stat )
    read( unit = file_unit, nml = lio, iostat = intern_stat )
    if ( intern_stat /= 0 ) then
       write(*,'(A)') &
-         "Cannot find lio namelist. Using defaults for namelist lio."
+         "Error found in lio namelist. Using defaults for namelist lio."
       if (verbose .gt. 3) write(*,'(A,I4)') "iostat = ", intern_stat
       if ( present(extern_stat) ) extern_stat = 2
    end if
@@ -74,7 +74,7 @@ subroutine lionml_read(file_unit, extern_stat )
    read( unit = file_unit, nml = lionml, iostat = intern_stat )
    if ( intern_stat /= 0 ) then
       write(*,'(A)') &
-         "Cannot find lionml namelist. Using defaults for namelist lionml."
+         "Error found in lionml namelist. Using defaults for namelist lionml."
       if (verbose .gt. 3) write(*,'(A,I4)') "iostat = ", intern_stat
       if ( present(extern_stat) ) extern_stat = 2
       return

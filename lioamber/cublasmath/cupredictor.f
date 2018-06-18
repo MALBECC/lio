@@ -32,7 +32,6 @@
 !-----------------------------------------------------------------------------n
       ALLOCATE(rho4(M_in,M_in,dim3),rho2t(M_in,M_in,dim3),
      >         F3(M_in,M_in,dim3),FBA(M_in,M_in,dim3))
-      write(*,*) 'PREDICTOR DZ'
       M2=2*M
       MM=M*(M+1)/2
 c first i
@@ -199,7 +198,6 @@ c xmm es la primer matriz de (M,M) en el
      >         F3(M_in,M_in,dim3),FBA(M_in,M_in,dim3))
       M2=2*M
       MM=M*(M+1)/2
-      write(*,*) 'PREDICTOR DC'
 c first i
       M1=1
 c now Fold

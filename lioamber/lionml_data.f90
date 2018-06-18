@@ -44,7 +44,7 @@ module lionml_data
                                  fockbias_timeamp0 , fockbias_readfile
    use initial_guess_data, only: initial_guess
    use td_data           , only: tdrestart, writedens, td_rst_freq, tdstep,    &
-                                 ntdstep, timedep
+                                 ntdstep, timedep, td_do_pop
    use trans_Data        , only: gaussian_convert
    use transport_data    , only: transport_calc, generate_rho0, gate_field,    &
                                  save_charge_freq, driving_rate, Pop_Drive
@@ -66,12 +66,12 @@ module lionml_data
                   Iexch, integ, dens, igrid, igrid2, good_cut, hybrid_converg, &
                   initial_guess, natom, nsol, charge,                          &
                   ! File Input/Output.
-                  frestartin, style, frestart, fukui, dipole, lowdin,          &
+                  frestartin, style, frestart, fukui, dipole, lowdin, verbose, &
                   mulliken, writeforces, int_basis, fitting_set, basis_set,    &
                   restart_freq, print_coeffs, Dbug, timers, gaussian_convert,  &
                   ! DFT and TD-DFT Variables.
                   timedep, tdstep, ntdstep, propagator, NBCH, tdrestart,       &
-                  writedens, td_rst_freq,                                      &
+                  writedens, td_rst_freq, td_do_pop,                           &
                   ! Field Variables
                   field, epsilon, a0, Fx, Fy, Fz, nfields_iso, nfields_aniso,  &
                   field_aniso_file, field_iso_file,                            &
@@ -114,7 +114,7 @@ module lionml_data
       character*20     :: field_aniso_file, field_iso_file
       double precision :: a0, epsilon, Fx, Fy, Fz, tdstep
       integer          :: NBCH, nfields_aniso, nfields_iso, ntdstep,           &
-                          propagator, td_rst_freq, timedep
+                          propagator, td_rst_freq, timedep, td_do_pop
       logical          :: tdrestart, writedens, field
       ! ECP
       character*30     :: tipeECP
@@ -194,6 +194,7 @@ subroutine get_namelist(lio_in)
    lio_in%ntdstep          = ntdstep         ; lio_in%propagator = propagator
    lio_in%timedep          = timedep         ; lio_in%tdrestart  = tdrestart
    lio_in%writedens        = writedens       ; lio_in%field      = field
+   lio_in%td_do_pop        = td_do_pop       ;
    ! ECP
    lio_in%ecp_full_range_int = ecp_full_range_int; lio_in%cut2_0    = cut2_0
    lio_in%verbose_ECP        = verbose_ECP       ; lio_in%cut3_0    = cut3_0

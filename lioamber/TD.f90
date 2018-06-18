@@ -459,7 +459,8 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
       ! Dipole Moment calculation.
       call td_dipole(t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, 134)
-      call td_population(M, natom, rho_aux, Smat_initial, sqsm, Nuc, Iz, OPEN)
+      call td_population(M, natom, rho_aux, Smat_initial, sqsm, Nuc, Iz, OPEN, &
+                         istep)
 
       ! Population analysis.
       if (transport_calc) call transport_population(M, dim3, natom, Nuc, Iz,   &
@@ -896,11 +897,12 @@ subroutine td_dipole(t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, uid)
    return
 end subroutine td_dipole
 
-subroutine td_population(M, natom, rho, Smat_init, sqsm, Nuc, Iz, open_shell)
+subroutine td_population(M, natom, rho, Smat_init, sqsm, Nuc, Iz, open_shell, &
+                         nstep)
    use td_data, only: td_do_pop
    use fileio , only: write_population
    implicit none
-   integer         , intent(in) :: M, natom, Nuc(M), Iz(natom)
+   integer         , intent(in) :: M, natom, Nuc(M), Iz(natom), nstep
    logical         , intent(in) :: open_shell
    double precision, intent(in) :: Smat_init(M,M), sqsm(M,M)
 #ifdef TD_SIMPLE
@@ -911,6 +913,8 @@ subroutine td_population(M, natom, rho, Smat_init, sqsm, Nuc, Iz, open_shell)
    double precision :: real_rho(M,M), q(natom)
    integer          :: icount, jcount
 
+   if (td_do_pop .eq. 0) return
+   if (.not. (mod(nstep, td_do_pop) .eq. 0)) return
    q = Iz
    if (open_shell) then
       do icount = 1, M

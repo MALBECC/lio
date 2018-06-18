@@ -133,7 +133,7 @@ subroutine lionml_write_dull()
    write(*,8041) inputs%NBCH, inputs%field, inputs%a0, inputs%epsilon
    write(*,8042) inputs%Fx, inputs%Fy, inputs%Fz, inputs%nfields_iso
    write(*,8043) inputs%nfields_aniso, inputs%field_iso_file
-   write(*,8044) inputs%field_aniso_file
+   write(*,8044) inputs%field_aniso_file, inputs%td_do_pop
    write(*,9000) " ! -- Effective Core Potentials: -- !"
    write(*,8060) inputs%Ecpmode, inputs%Ecptypes, inputs%TipeECP
    write(*,8061) inputs%Fock_ECP_read, inputs%Fock_ECP_write, inputs%cutECP, &
@@ -212,7 +212,7 @@ subroutine lionml_write_dull()
 8042 FORMAT(2x, "Fx = ", F14.8, ", Fy = ", F14.8, ", Fz = ", F14.8, &
             ", n_fields_iso = ", I5, ",")
 8043 FORMAT(2x,"n_fields_aniso = ", I5, ", field_iso_file = ", A25, ",")
-8044 FORMAT(2x,"field_aniso_file = ", A25)
+8044 FORMAT(2x,"field_aniso_file = ", A25, ", td_do_pop = ", I5)
 ! ECP
 8060 FORMAT(2x, "ECPMode = ", L2, ", ECPTypes = ", I3, ", TipeECP = ", A25, ",")
 8061 FORMAT(2x, "Fock_ECP_read = ", L2, ", Fock_ECP_write = ", L2, &
@@ -322,6 +322,7 @@ subroutine lionml_write_style()
    write(*,8310) inputs%Fz           ; write(*,8311) inputs%nfields_iso
    write(*,8312) inputs%nfields_aniso; write(*,8313) inputs%field_iso_file
    write(*,8314) inputs%field_aniso_file
+   write(*,8315) inputs%td_do_pop
    write(*,8003)
 
    ! Effective Core Potential
@@ -484,6 +485,7 @@ subroutine lionml_write_style()
 8312 FORMAT(4x,"║  n_fields_aniso      ║  ",18x,I5,2x,"║")
 8313 FORMAT(4x,"║  field_iso_file      ║  ",A25,"║")
 8314 FORMAT(4x,"║  field_aniso_file    ║  ",A25,"║")
+8315 FORMAT(4x,"║  td_do_pop           ║  ",18x,I5,2x,"║")
 !Effective Core Potential
 8350 FORMAT(4x,"║  Ecpmode             ║  ",21x,L2,2x,"║")
 8351 FORMAT(4x,"║  Ecptypes            ║  ",20x,I3,2x,"║")

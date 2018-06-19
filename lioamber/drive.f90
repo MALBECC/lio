@@ -23,6 +23,7 @@
 
       USE ECP_mod, ONLY : ecpmode, asignacion
       USE fileio , ONLY : read_coef_restart, read_rho_restart
+      use td_data    , only: td_do_pop
       use fileio_data, only: verbose, rst_dens
 
       IMPLICIT NONE
@@ -106,7 +107,7 @@
       endif
 
       if (writexyz) open(unit=18,file=fcoord)
-      if (mulliken) open(unit=85,file=fmulliken)
+      if ((mulliken).or.(td_do_pop.gt.0)) open(unit=85,file=fmulliken)
       if (restart_freq.gt.0) open(unit=88,file=frestart)
 
 !-------------------------------------------------------

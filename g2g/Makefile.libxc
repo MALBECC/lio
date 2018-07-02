@@ -7,18 +7,18 @@ INCLUDES += -I$(LIBXC_INCLUDES)
 libxcproxy.o: /libxc/libxcproxy.h
 
 #Common flags
-ifeq ($(libxc),1)
-    #LIBXC CPU MODE
-    CXXFLAGS += -fPIC -DUSE_LIBXC=1 $(INCLUDES)
-else
-    ifeq ($(libxc),2)
-	#LIBXC GPU MODE
-        CXXFLAGS += -fPIC -DUSE_LIBXC=1 $(INCLUDES)
-    else
-	#NO LIBXC
-	CXXFLAGS += -DUSE_LIBXC=0 $(INCLUDES)
-    endif
-endif
+#ifeq ($(libxc),1)
+#    #LIBXC CPU MODE
+#    CXXFLAGS += -fPIC -DUSE_LIBXC=1 $(INCLUDES)
+#else
+#    ifeq ($(libxc),2)
+#	#LIBXC GPU MODE
+#        CXXFLAGS += -fPIC -DUSE_LIBXC=1 $(INCLUDES)
+#    else
+#	#NO LIBXC
+#	CXXFLAGS += -DUSE_LIBXC=0 $(INCLUDES)
+#    endif
+#endif
 
 ifeq ($(full_double),1)
     CXXFLAGS += -DFULL_DOUBLE=1

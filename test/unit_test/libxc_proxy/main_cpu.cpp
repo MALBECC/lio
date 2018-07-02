@@ -18,6 +18,7 @@ void runAllProxyCPUTests () {
     libxcProxyTest::testProxy08 ();
     libxcProxyTest::testProxy09 ();
     libxcProxyTest::testProxy10 ();
+    libxcProxyTest::printFunctionalsInformationTest ();
 }
 
 void runAllProxyGPUTest () {

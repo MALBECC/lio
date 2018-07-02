@@ -34,12 +34,18 @@ endif
 
 ifeq ($(libxc),1)
   LIBXC_LIBRARIES := -L$(LIBXC_LIBS) -lxc
+#LIBXC CPU MODE
+  CXXFLAGS += -DUSE_LIBXC=1 -DLIBXC_CPU=1
 else
-    ifeq ($(libxc),2)
-	LIBXC_LIBRARIES := -L$(LIBXC_LIBS) -lxc_cuda
-    else
-	LIBXC_LIBRARIES := -L$(LIBXC_LIBS) -lxc
-    endif
+ifeq ($(libxc),2)
+#LIBXC GPU MODE
+    LIBXC_LIBRARIES := -L$(LIBXC_LIBS) -lxc_cuda
+    CXXFLAGS += -DUSE_LIBXC=1 -DLIBXC_CPU=0
+else
+#NO LIBXC
+    LIBXC_LIBRARIES := -L$(LIBXC_LIBS) -lxc
+    CXXFLAGS += -DUSE_LIBXC=0 -DLIBXC_CPU=1
+endif
 endif
 
 ifneq ($(aint_gpu_level),)

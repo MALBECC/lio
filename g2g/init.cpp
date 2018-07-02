@@ -10,6 +10,11 @@
 #include "timer.h"
 #include "partition.h"
 #include "matrix.h"
+
+#if USE_LIBXC
+#include "libxc/libxcproxy.h"
+#endif
+
 //#include "qmmm_forces.h"
 using std::cout;
 using std::endl;
@@ -203,6 +208,9 @@ extern "C" void g2g_parameter_init_(
     fortran_vars.use_libxc = use_libxc;
     fortran_vars.ex_functional_id = ex_functional_id;
     fortran_vars.ec_functional_id = ec_functional_id;
+    if (fortran_vars.use_libxc) {
+        cout << "*Using Libxc" << endl;
+    }
 #endif
 
 #if GPU_KERNELS
@@ -212,6 +220,18 @@ extern "C" void g2g_parameter_init_(
 //============================================================================================================
 extern "C" void g2g_deinit_(void) {
   if (verbose > 3) cout << "G2G Deinitialisation." << endl;
+#if USE_LIBXC
+  if (fortran_vars.use_libxc) {
+      if (verbose > 3) {
+         cout << "=========================================================== " << endl;
+         cout << " The simulation used the functionals from the Libxc Library " << endl;
+         cout << " The functionals used are listed below " << endl;
+         LibxcProxy<double,3> aProxy;
+         aProxy.printFunctionalsInformation (fortran_vars.ex_functional_id, fortran_vars.ec_functional_id);
+         cout << "=========================================================== " << endl;
+      }
+  }
+#endif
   partition.clear();
 }
 //============================================================================================================

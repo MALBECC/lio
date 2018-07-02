@@ -1,11 +1,12 @@
 WELCOME TO LIO
-jue jun 14 16:55:53 -03 2018
+dom jul  1 21:28:18 -03 2018
 G2G initialisation.
   GPU Device used: Tesla C2070
   Using 3 CPU Threads and 1 GPU Threads.
   QM atoms: 3 - MM atoms: 0
   Total number of basis: 19 (s: 7 p: 2 d: 1)
   Closed shell calculation - Occupied MO: 5
+*Using Libxc
 AINT initialisation.
   Density basis - s: 15 p: 3 d: 3 - Total (w/contractions): 42
   Using device 0 for analytic integral calculations.
@@ -82,37 +83,47 @@ Starting SCF cycles.
                    LIO TIMING INFORMATION:
 -------------------------------------------------------------------------------------------
 
-Total time: 0.412736s
-Total                                  0.412736s (100.00% of Total)
-  Forces                                 0.047630s ( 11.54% of Total)
-    Coulomb+Exchange-correlation           0.045884s ( 96.33% of Forces)
-      Coulomb gradients                      0.018860s ( 41.10% of Coulomb+Exchange-correlation)
-      Exchange-correlation gradients         0.026943s ( 58.72% of Coulomb+Exchange-correlation)
-    Nuclear attraction gradients           0.001664s (  3.49% of Forces)
+Total time: 0.41849s
+Total                                  0.418490s (100.00% of Total)
+  Forces                                 0.047586s ( 11.37% of Total)
+    Coulomb+Exchange-correlation           0.045832s ( 96.31% of Forces)
+      Coulomb gradients                      0.018776s ( 40.97% of Coulomb+Exchange-correlation)
+      Exchange-correlation gradients         0.026985s ( 58.88% of Coulomb+Exchange-correlation)
+    Nuclear attraction gradients           0.001673s (  3.52% of Forces)
     Overlap gradients                      0.000062s (  0.13% of Forces)
-  SCF                                    0.364990s ( 88.43% of Total)
-    Finalize SCF                           0.020086s (  5.50% of SCF)
-      Exchange-correlation energy            0.019972s ( 99.43% of Finalize SCF)
+  SCF                                    0.370784s ( 88.60% of Total)
+    Finalize SCF                           0.020107s (  5.42% of SCF)
+      Exchange-correlation energy            0.019993s ( 99.43% of Finalize SCF)
       energy-weighted density                0.000003s (  0.01% of Finalize SCF)
-    Initialize SCF                         0.020632s (  5.65% of SCF)
-      1-e Fock                               0.001045s (  5.06% of Initialize SCF)
-        Nuclear attraction                     0.000066s (  6.32% of 1-e Fock)
-        QM/MM                                  0.000965s ( 92.34% of 1-e Fock)
-      Coulomb G matrix                       0.000336s (  1.63% of Initialize SCF)
-        G condition                            0.000238s ( 70.83% of Coulomb G matrix)
-        G invert                               0.000051s ( 15.18% of Coulomb G matrix)
-      Coulomb precalc                        0.000652s (  3.16% of Initialize SCF)
-      Exchange-correlation grid setup        0.016386s ( 79.42% of Initialize SCF)
-      initial guess                          0.000322s (  1.56% of Initialize SCF)
-    Iteration                              0.324217s ( 88.83% of SCF)
-      Fock integrals                         0.320248s ( 98.78% of Iteration)
-        Coulomb fit + Fock                     0.000356s (  0.11% of Fock integrals)
-        Exchange-correlation Fock              0.319760s ( 99.85% of Fock integrals)
-      SCF - Fock Diagonalization (sum)       0.002063s (  0.64% of Iteration)
-      SCF - MOC base change (sum)            0.000086s (  0.03% of Iteration)
-      SCF acceleration                       0.001145s (  0.35% of Iteration)
+    Initialize SCF                         0.021613s (  5.83% of SCF)
+      1-e Fock                               0.001089s (  5.04% of Initialize SCF)
+        Nuclear attraction                     0.000079s (  7.25% of 1-e Fock)
+        QM/MM                                  0.000994s ( 91.28% of 1-e Fock)
+      Coulomb G matrix                       0.000380s (  1.76% of Initialize SCF)
+        G condition                            0.000267s ( 70.26% of Coulomb G matrix)
+        G invert                               0.000057s ( 15.00% of Coulomb G matrix)
+      Coulomb precalc                        0.000733s (  3.39% of Initialize SCF)
+      Exchange-correlation grid setup        0.016877s ( 78.09% of Initialize SCF)
+      initial guess                          0.000367s (  1.70% of Initialize SCF)
+    Iteration                              0.329010s ( 88.73% of SCF)
+      Fock integrals                         0.325010s ( 98.78% of Iteration)
+        Coulomb fit + Fock                     0.000364s (  0.11% of Fock integrals)
+        Exchange-correlation Fock              0.324520s ( 99.85% of Fock integrals)
+      SCF - Fock Diagonalization (sum)       0.002073s (  0.63% of Iteration)
+      SCF - MOC base change (sum)            0.000088s (  0.03% of Iteration)
+      SCF acceleration                       0.001165s (  0.35% of Iteration)
 -------------------------------------------------------------------------------------------
 G2G Deinitialisation.
+=========================================================== 
+ The simulation used the functionals from the Libxc Library 
+ The functionals used are listed below 
+The functional 'Perdew, Burke & Ernzerhof' is an exchange functional, it belongs to the 'GGA' family and is defined in the reference(s):
+[1] J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 77, 3865 (1996)
+[2] J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 78, 1396 (1997)
+The functional 'Perdew, Burke & Ernzerhof' is a correlation functional, it belongs to the 'GGA' family and is defined in the reference(s):
+[1] J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 77, 3865 (1996)
+[2] J. P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett. 78, 1396 (1997)
+=========================================================== 
   Step =      5  - QM Energy =    -76.03338 - Rho diff (crit) = 1.69E-02 (1.00E-06) - Energy diff (crit) = 9.72E-01 (1.00E+00)
   Step =      6  - QM Energy =    -76.02388 - Rho diff (crit) = 2.42E-02 (1.00E-06) - Energy diff (crit) = 9.49E-03 (1.00E+00)
   Step =      7  - QM Energy =    -75.93359 - Rho diff (crit) = 4.33E-02 (1.00E-06) - Energy diff (crit) = 9.03E-02 (1.00E+00)

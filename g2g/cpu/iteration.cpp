@@ -184,8 +184,7 @@ void PointGroupCPU<scalar_type>::solve_closed(
 #if USE_LIBXC
     /** Libxc CPU - version **/
 #if LIBXC_CPU
-    //if (fortran_vars.use_libxc) {
-    if (true) {
+    if (fortran_vars.use_libxc) {
 	libxcProxy.doGGA(pd, dxyz, dd1, dd2, exc, corr, y2a);
     } else {
 	calc_ggaCS_in<scalar_type, 3>(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch);

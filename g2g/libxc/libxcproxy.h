@@ -32,6 +32,8 @@ private:
     // Is inited
     bool inited;
 
+    void printFunctionalInformation (xc_func_type* func);
+
 public:
     LibxcProxy ();
     LibxcProxy (int exchangeFunctionId, int correlationFuncionalId, int nspin);
@@ -81,7 +83,7 @@ public:
 
     void init (int exId, int xcId, int nspin);
     void closeProxy ();
-
+    void printFunctionalsInformation (int exchangeFunctionalId, int correlationFunctionalId);
 };
 
 template <class T, int width>
@@ -96,7 +98,7 @@ LibxcProxy <T, width>::LibxcProxy()
 template <class T, int width>
 LibxcProxy <T, width>::LibxcProxy (int exchangeFunctionalId, int correlationFuncionalId, int nSpin)
 {
-//    printf("LibxcProxy::LibxcProxy (%u, %u, %u) \n", exchangeFunctionalId, correlationFuncionalId, nSpin);
+    //printf("LibxcProxy::LibxcProxy (%u, %u, %u) \n", exchangeFunctionalId, correlationFuncionalId, nSpin);
 /*
     funcIdForExchange = exchangeFunctionalId;
     funcIdForCorrelation = correlationFuncionalId;
@@ -119,7 +121,6 @@ template <class T, int width>
 void LibxcProxy<T, width>::init (int exchangeFunctionalId, int correlationFunctionalId, int nSpin)
 {
 //    printf("LibxcProxy::init(%u, %u, %u)\n", exchangeFunctionalId, correlationFunctionalId, nSpin);
-
     funcIdForExchange = exchangeFunctionalId;
     funcIdForCorrelation = correlationFunctionalId;
     nspin = nSpin;
@@ -155,6 +156,74 @@ void LibxcProxy <T, width>::closeProxy ()
         xc_func_end (&funcForCorrelation);
 	inited = false;
     }
+}
+
+template <class T, int width>
+void LibxcProxy<T, width>::printFunctionalsInformation (int exchangeFunctionalId, int correlationFunctionalId) 
+{
+    if (!inited) 
+    {
+	init (exchangeFunctionalId, correlationFunctionalId, 1);
+    }
+
+    printFunctionalInformation (&funcForExchange);
+    printFunctionalInformation (&funcForCorrelation);
+
+    if (inited) 
+    {
+	closeProxy ();
+    }
+}
+
+template <class T, int width>
+void LibxcProxy<T, width>::printFunctionalInformation (xc_func_type* func)
+{
+    printf("The functional '%s' is ", func->info->name);
+    switch (func->info->kind) {
+	case (XC_EXCHANGE):
+	    printf("an exchange functional");
+	break;
+	case (XC_CORRELATION):
+	    printf("a correlation functional");
+	break;
+	case (XC_EXCHANGE_CORRELATION):
+	    printf("an exchange-correlation functional");
+	break;
+	case (XC_KINETIC):
+	    printf("a kinetic energy functional");
+	break;
+	default:
+	    printf("of unknown kind");
+	break;
+    }
+
+    printf(", it belongs to the '", func->info->name);
+    switch (func->info->family) {
+	case (XC_FAMILY_LDA):
+	    printf("LDA");
+        break;
+	case (XC_FAMILY_GGA):
+	    printf("GGA");
+        break;
+	case (XC_FAMILY_HYB_GGA):
+	    printf("Hybrid GGA");
+	break;
+	case (XC_FAMILY_MGGA):
+	    printf("MGGA");
+        break;
+	case (XC_FAMILY_HYB_MGGA):
+	    printf("Hybrid MGGA");
+        break;
+	default:
+	    printf("unknown");
+        break;
+    }
+    printf("' family and is defined in the reference(s):\n");
+
+    for (int ii = 0; func->info->refs[ii] != NULL; ii++) {
+	printf ("[%d] %s\n", ii+1, func->info->refs[ii]->ref);
+    }
+
 }
 
 //////////////////////////////////////////////////////////////

@@ -1022,8 +1022,35 @@ void init_proxy_test0001()
     const int functionalCorrelation = 1130;
 
     proxy.init(functionalExchange, functionalCorrelation, nspin);
+
+    proxy.printFunctionalsInformation (functionalExchange, functionalCorrelation);
     //proxy.closeProxy();
 }
+
+void printFunctionalsInformationTest001 () 
+{
+    int nspin = 1;
+    int functionalExchange = 1101;
+    int functionalCorrelation = 1130;
+
+    LibxcProxy<double,3> aProxy;
+
+    aProxy.printFunctionalsInformation (functionalExchange, functionalCorrelation);
+
+}
+
+void printFunctionalsInformationTest002 () 
+{
+    int nspin = 1;
+    int functionalExchange = 101;
+    int functionalCorrelation = 130;
+
+    LibxcProxy<double,3> aProxy;
+
+    aProxy.printFunctionalsInformation (functionalExchange, functionalCorrelation);
+
+}
+
 
 int main()
 {
@@ -1044,6 +1071,8 @@ int main()
         data_type_test003();
 	pointer_proxy_test0001();
         init_proxy_test0001 ();
+	//printFunctionalsInformationTest001 ();
+	//printFunctionalsInformationTest002 ();
     } catch (int e) {
 	printf("An exception occurred: %u \n", e);
 	exit (EXIT_FAILURE);

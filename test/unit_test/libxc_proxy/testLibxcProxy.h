@@ -496,6 +496,18 @@ void testProxy10 ()
     printf ("=================================== \n");
 }
 
+void printFunctionalsInformationTest () 
+{
+    int nspin = 1;
+    int functionalExchange = 101;
+    int functionalCorrelation = 130;
+
+    LibxcProxy<double,3> aProxy;
+
+    aProxy.printFunctionalsInformation (functionalExchange, functionalCorrelation);
+
+}
+
 
 }
 

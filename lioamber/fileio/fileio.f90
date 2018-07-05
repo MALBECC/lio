@@ -1,7 +1,8 @@
 module fileio_data
    implicit none
-   logical :: style   = .false.
-   integer :: verbose = 3
+   logical :: style    = .false.
+   integer :: verbose  = 3
+   integer :: rst_dens = 0
 contains
    subroutine get_style(style_o)
       implicit none

@@ -54,10 +54,9 @@ subroutine lionml_read(file_unit, extern_stat )
    read( unit = file_unit, nml = lio, iostat = intern_stat )
    if ( intern_stat /= 0 ) then
       write(*,'(A)') &
-         "Cannot find lio namelist. Using defaults for namelist lio."
+         "Error found in lio namelist. Using defaults for namelist lio."
       if (verbose .gt. 3) write(*,'(A,I4)') "iostat = ", intern_stat
       if ( present(extern_stat) ) extern_stat = 2
-      return
    end if
 
    ! New lionml namelist.
@@ -75,7 +74,7 @@ subroutine lionml_read(file_unit, extern_stat )
    read( unit = file_unit, nml = lionml, iostat = intern_stat )
    if ( intern_stat /= 0 ) then
       write(*,'(A)') &
-         "Cannot find lionml namelist. Using defaults for namelist lionml."
+         "Error found in lionml namelist. Using defaults for namelist lionml."
       if (verbose .gt. 3) write(*,'(A,I4)') "iostat = ", intern_stat
       if ( present(extern_stat) ) extern_stat = 2
       return
@@ -128,12 +127,13 @@ subroutine lionml_write_dull()
    write(*,8022) inputs%vcinp, inputs%Frestartin, inputs%restart_freq
    write(*,8023) inputs%frestart, inputs%Tdrestart, inputs%writedens
    write(*,8024) inputs%td_rst_freq, inputs%gaussian_convert
+   write(*,8025) inputs%rst_dens
    write(*,9000) " ! -- TD-DFT and external field: -- !"
    write(*,8040) inputs%timedep, inputs%ntdstep, inputs%tdstep,inputs%propagator
    write(*,8041) inputs%NBCH, inputs%field, inputs%a0, inputs%epsilon
    write(*,8042) inputs%Fx, inputs%Fy, inputs%Fz, inputs%nfields_iso
    write(*,8043) inputs%nfields_aniso, inputs%field_iso_file
-   write(*,8044) inputs%field_aniso_file
+   write(*,8044) inputs%field_aniso_file, inputs%td_do_pop
    write(*,9000) " ! -- Effective Core Potentials: -- !"
    write(*,8060) inputs%Ecpmode, inputs%Ecptypes, inputs%TipeECP
    write(*,8061) inputs%Fock_ECP_read, inputs%Fock_ECP_write, inputs%cutECP, &
@@ -202,7 +202,8 @@ subroutine lionml_write_dull()
             I5, ",")
 8023 FORMAT(2x, "FRestart = ", A25, ", TDRestart = ", L2, ", writeDens = ", L2,&
             ",")
-8024 FORMAT(2x, "TD_rst_freq = ", I6, ", gaussian_convert = ", L2)
+8024 FORMAT(2x, "TD_rst_freq = ", I6, ", gaussian_convert = ", L2,",")
+8025 FORMAT(2x, "rst_dens = ", I3)
 ! TDDFT and Fields
 8040 FORMAT(2x, "timeDep = ", I2, ", NTDStep = ", i10, ", TDStep = ", F14.8, &
            ", propagator = ", I2, ",")
@@ -211,7 +212,7 @@ subroutine lionml_write_dull()
 8042 FORMAT(2x, "Fx = ", F14.8, ", Fy = ", F14.8, ", Fz = ", F14.8, &
             ", n_fields_iso = ", I5, ",")
 8043 FORMAT(2x,"n_fields_aniso = ", I5, ", field_iso_file = ", A25, ",")
-8044 FORMAT(2x,"field_aniso_file = ", A25)
+8044 FORMAT(2x,"field_aniso_file = ", A25, ", td_do_pop = ", I5)
 ! ECP
 8060 FORMAT(2x, "ECPMode = ", L2, ", ECPTypes = ", I3, ", TipeECP = ", A25, ",")
 8061 FORMAT(2x, "Fock_ECP_read = ", L2, ", Fock_ECP_write = ", L2, &
@@ -308,6 +309,7 @@ subroutine lionml_write_style()
    write(*,8262) inputs%writedens   ; write(*,8263) inputs%td_rst_freq
    write(*,8264) inputs%vcinp       ; write(*,8265) inputs%Frestartin
    write(*,8266) inputs%Tdrestart   ; write(*,8267) inputs%gaussian_convert
+   write(*,8268) inputs%rst_dens
    write(*,8003)
 
    ! TD-DFT and Fields
@@ -320,6 +322,7 @@ subroutine lionml_write_style()
    write(*,8310) inputs%Fz           ; write(*,8311) inputs%nfields_iso
    write(*,8312) inputs%nfields_aniso; write(*,8313) inputs%field_iso_file
    write(*,8314) inputs%field_aniso_file
+   write(*,8315) inputs%td_do_pop
    write(*,8003)
 
    ! Effective Core Potential
@@ -465,6 +468,7 @@ subroutine lionml_write_style()
 8265 FORMAT(4x,"║  Frestartin          ║  ",A25,"║")
 8266 FORMAT(4x,"║  Tdrestart           ║  ",21x,L2,2x,"║")
 8267 FORMAT(4x,"║  gaussian_convert    ║  ",21x,L2,2x,"║")
+8268 FORMAT(4x,"║  rst_dens            ║  ",20x,I3,2x,"║")
 ! TD and Field options
 8300 FORMAT(4x,"║  Timedep             ║  ",21x,I2,2x,"║")
 8301 FORMAT(4x,"║  NTDstep             ║  ",13x,i10,2x,"║")
@@ -481,6 +485,7 @@ subroutine lionml_write_style()
 8312 FORMAT(4x,"║  n_fields_aniso      ║  ",18x,I5,2x,"║")
 8313 FORMAT(4x,"║  field_iso_file      ║  ",A25,"║")
 8314 FORMAT(4x,"║  field_aniso_file    ║  ",A25,"║")
+8315 FORMAT(4x,"║  td_do_pop           ║  ",18x,I5,2x,"║")
 !Effective Core Potential
 8350 FORMAT(4x,"║  Ecpmode             ║  ",21x,L2,2x,"║")
 8351 FORMAT(4x,"║  Ecptypes            ║  ",20x,I3,2x,"║")

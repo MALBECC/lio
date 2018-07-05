@@ -315,6 +315,19 @@ subroutine SCF(E)
 !
       call neighbor_list_2e()
 
+! Goes straight to TD if a restart is used.
+      if ((timedep.eq.1).and.(tdrestart)) then
+        call g2g_timer_sum_stop('Initialize SCF')
+        call g2g_timer_sum_start('TD')
+        if(OPEN) then
+           call TD(fock_aop, rho_aop, fock_bop, rho_bop)
+        else
+           call TD(fock_aop, rho_aop)
+        endif
+        call g2g_timer_sum_stop('TD')
+        return
+      endif
+!
 ! -Create integration grid for XC here
 ! -Assign points to groups (spheres/cubes)
 ! -Assign significant functions to groups
@@ -326,10 +339,6 @@ subroutine SCF(E)
 
       call aint_query_gpu_level(igpu)
       if (igpu.gt.1) call aint_new_step()
-
-      if (predcoef.and.npas.gt.3) then
-        write(*,*) 'no devería estar aca!'
-      endif
 
 ! Calculate 1e part of F here (kinetic/nuc in int1, MM point charges
 ! in intsol)
@@ -460,22 +469,6 @@ subroutine SCF(E)
       primera = .false.
    end if
 
-!##########################################################!
-! TODO: remove from here...
-!##########################################################!
-
-      if ((timedep.eq.1).and.(tdrestart)) then
-        call g2g_timer_sum_start('TD')
-        if(OPEN) then
-           call TD(fock_aop, rho_aop, fock_bop, rho_bop)
-        else
-           call TD(fock_aop, rho_aop)
-        endif
-        call g2g_timer_sum_stop('TD')
-        return
-      endif
-
-
 !----------------------------------------------------------!
 ! Precalculate two-index (density basis) "G" matrix used in density fitting
 ! here (S_ij in Dunlap, et al JCP 71(8) 1979) into RMM(M7)
@@ -484,7 +477,7 @@ subroutine SCF(E)
       call g2g_timer_sum_start('Coulomb G matrix')
       call int2()
       call g2g_timer_sum_stop('Coulomb G matrix')
-!
+
 ! Precalculate three-index (two in MO basis, one in density basis) matrix
 ! used in density fitting / Coulomb F element calculation here
 ! (t_i in Dunlap)
@@ -507,6 +500,9 @@ subroutine SCF(E)
          call g2g_timer_stop('int3mem')
          call g2g_timer_sum_stop('Coulomb precalc')
       endif
+
+
+
 !
 !##########################################################!
 ! TODO: ...to here

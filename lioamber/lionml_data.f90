@@ -38,13 +38,13 @@ module lionml_data
    use field_data        , only: field, a0, epsilon, Fx, Fy, Fz,               &
                                  field_iso_file, field_aniso_file,             &
                                  nfields_iso, nfields_aniso
-   use fileio_data       , only: verbose, style
+   use fileio_data       , only: verbose, style, rst_dens
    use fockbias_data     , only: fockbias_is_active, fockbias_is_shaped,       &
                                  fockbias_timegrow , fockbias_timefall,        &
                                  fockbias_timeamp0 , fockbias_readfile
    use initial_guess_data, only: initial_guess
    use td_data           , only: tdrestart, writedens, td_rst_freq, tdstep,    &
-                                 ntdstep, timedep
+                                 ntdstep, timedep, td_do_pop
    use trans_Data        , only: gaussian_convert
    use transport_data    , only: transport_calc, generate_rho0, gate_field,    &
                                  save_charge_freq, driving_rate, Pop_Drive
@@ -66,12 +66,13 @@ module lionml_data
                   Iexch, integ, dens, igrid, igrid2, good_cut, hybrid_converg, &
                   initial_guess, natom, nsol, charge,                          &
                   ! File Input/Output.
-                  frestartin, style, frestart, fukui, dipole, lowdin,          &
+                  frestartin, style, frestart, fukui, dipole, lowdin, verbose, &
                   mulliken, writeforces, int_basis, fitting_set, basis_set,    &
                   restart_freq, print_coeffs, Dbug, timers, gaussian_convert,  &
+                  rst_dens,                                                    &
                   ! DFT and TD-DFT Variables.
                   timedep, tdstep, ntdstep, propagator, NBCH, tdrestart,       &
-                  writedens, td_rst_freq,                                      &
+                  writedens, td_rst_freq, td_do_pop,                           &
                   ! Field Variables
                   field, epsilon, a0, Fx, Fy, Fz, nfields_iso, nfields_aniso,  &
                   field_aniso_file, field_iso_file,                            &
@@ -107,14 +108,14 @@ module lionml_data
       ! FILE IO
       character*20     :: frestartin, frestart
       character*40     :: basis_set, fitting_set
-      integer          :: restart_freq, timers, verbose
+      integer          :: restart_freq, timers, verbose, rst_dens
       logical          :: dbug, dipole, fukui, gaussian_convert, int_basis,    &
                           lowdin, mulliken, print_coeffs, style, writeforces
       ! TD-DFT and FIELD
       character*20     :: field_aniso_file, field_iso_file
       double precision :: a0, epsilon, Fx, Fy, Fz, tdstep
       integer          :: NBCH, nfields_aniso, nfields_iso, ntdstep,           &
-                          propagator, td_rst_freq, timedep
+                          propagator, td_rst_freq, timedep, td_do_pop
       logical          :: tdrestart, writedens, field
       ! ECP
       character*30     :: tipeECP
@@ -183,7 +184,7 @@ subroutine get_namelist(lio_in)
    lio_in%int_basis        = int_basis       ; lio_in%lowdin      = lowdin
    lio_in%mulliken         = mulliken        ; lio_in%style       = style
    lio_in%print_coeffs     = print_coeffs    ; lio_in%writeforces = writeforces
-   lio_in%verbose          = verbose         ;
+   lio_in%verbose          = verbose         ; lio_in%rst_dens    = rst_dens
    ! TDDFT - Fields
    lio_in%field_aniso_file = field_aniso_file; lio_in%a0         = a0
    lio_in%field_iso_file   = field_iso_file  ; lio_in%epsilon    = epsilon
@@ -194,6 +195,7 @@ subroutine get_namelist(lio_in)
    lio_in%ntdstep          = ntdstep         ; lio_in%propagator = propagator
    lio_in%timedep          = timedep         ; lio_in%tdrestart  = tdrestart
    lio_in%writedens        = writedens       ; lio_in%field      = field
+   lio_in%td_do_pop        = td_do_pop       ;
    ! ECP
    lio_in%ecp_full_range_int = ecp_full_range_int; lio_in%cut2_0    = cut2_0
    lio_in%verbose_ECP        = verbose_ECP       ; lio_in%cut3_0    = cut3_0

@@ -20,5 +20,6 @@ extern __device__ __constant__ uint TERM_TYPE_GAUSSIANS[6];  // How many
                                                              // (s-s,etc) is
                                                              // calculating
 extern __device__ __constant__ uint gpu_atom_types[MAX_ATOMS];
+extern __device__ __constant__ uint gpu_atom_Z[MAX_ATOMS];
 
 #endif

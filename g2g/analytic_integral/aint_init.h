@@ -11,6 +11,7 @@ struct FortranVars {
   /* ---DENSITY BASIS--- */
   uint gaussians_dens, s_gaussians_dens, p_gaussians_dens;
   uint s_funcs_dens, p_funcs_dens, d_funcs_dens, spd_funcs_dens, m_dens;
+  G2G::FortranMatrix<uint> atom_Z;
   G2G::FortranMatrix<uint> nucleii_dens, contractions_dens;
   G2G::FortranMatrix<double> a_values_dens, c_values_dens;
   G2G::FortranMatrix<double> af_input_ndens1;

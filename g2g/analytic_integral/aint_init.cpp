@@ -45,7 +45,7 @@ extern "C" void aint_parameter_init_(const unsigned int& Md,
                                      double* ad, unsigned int* Nucd, double* af,
                                      double* RMM, const unsigned int& M9,
                                      const unsigned int& M11, double* str,
-                                     double* fac, double& rmax) {
+                                     double* fac, double& rmax, uint* atomZ_i) {
   /* DENSITY BASIS SET */
   integral_vars.s_funcs_dens = nshelld[0];
   integral_vars.p_funcs_dens = nshelld[1] / 3;
@@ -115,6 +115,11 @@ extern "C" void aint_parameter_init_(const unsigned int& Md,
   // Maximum Gaussian argument used as basis function overlap cut-off (Coulomb
   // and QM/MM)
   integral_vars.rmax = rmax;
+  // Atomic number for each atom. It is NOT the atom type, since Ghost Atoms
+  // (basis placed but Z=0) may be used.
+
+  integral_vars.atom_Z =
+      G2G::FortranMatrix<uint>(atomZ_i, G2G::fortran_vars.atoms, 1, 1);
 
 #if GPU_KERNELS
   os_integral.load_params();

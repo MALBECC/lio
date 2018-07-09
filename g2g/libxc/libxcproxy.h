@@ -98,7 +98,7 @@ LibxcProxy <T, width>::LibxcProxy()
 template <class T, int width>
 LibxcProxy <T, width>::LibxcProxy (int exchangeFunctionalId, int correlationFuncionalId, int nSpin)
 {
-    //printf("LibxcProxy::LibxcProxy (%u, %u, %u) \n", exchangeFunctionalId, correlationFuncionalId, nSpin);
+//    printf("LibxcProxy::LibxcProxy (%u, %u, %u) \n", exchangeFunctionalId, correlationFuncionalId, nSpin);
 /*
     funcIdForExchange = exchangeFunctionalId;
     funcIdForCorrelation = correlationFuncionalId;
@@ -1047,7 +1047,7 @@ void LibxcProxy <T, width>::doGGA(T* dens,
     	    cudaFree((void*)hess2_double);
         }
     }
-
+#endif
     return;
 }
 

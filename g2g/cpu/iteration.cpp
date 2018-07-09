@@ -57,8 +57,8 @@ void PointGroupCPU<scalar_type>::solve_closed(
 #if LIBXC_CPU
   /** Libxc CPU - version **/
   const int nspin = XC_UNPOLARIZED;
-  const int functionalExchange = 101; //fortran_vars.ex_functional_id;
-  const int functionalCorrelation = 130; //fortran_vars.ec_functional_id;
+  const int functionalExchange = fortran_vars.ex_functional_id; //101;
+  const int functionalCorrelation = fortran_vars.ec_functional_id; // 130;
   LibxcProxy<scalar_type,3> libxcProxy(functionalExchange, functionalCorrelation, nspin);
 #endif
 #endif

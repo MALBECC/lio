@@ -119,6 +119,7 @@ subroutine lionml_write_dull()
    write(*,8004) inputs%Etold, inputs%good_cut, inputs%Rmax
    write(*,8005) inputs%RmaxS, inputs%Iexch, inputs%Igrid, inputs%Igrid2
    write(*,8006) inputs%PredCoef, inputs%initial_guess, inputs%dbug
+   write(*,8007) inputs%n_ghosts
    write(*,9000) " ! -- Input and output options: -- !"
    write(*,8020) inputs%verbose, inputs%style, inputs%timers, inputs%writexyz, &
                  inputs%WriteForces
@@ -192,7 +193,9 @@ subroutine lionml_write_dull()
             ",")
 8005 FORMAT(2x,"RmaxS = ", F14.8, ", IExch = ", I5, ", IGrid = ", I3, &
             ", IGrid2 = ", I3, ",")
-8006 FORMAT(2x, "PredCoef = ", L2, ", initial_guess = ", I3, ", DBug = ", L2)
+8006 FORMAT(2x, "PredCoef = ", L2, ", initial_guess = ", I3, ", DBug = ", L2, &
+            ",")
+8007 FORMAT(2x, "n_ghosts = ", I5)
 ! I/O Control
 8020 FORMAT(2x, "verbose = ", I3, ", style = ", L2, ", timers = ", I3, &
             ", writeXYZ = ", L2, ", writeForces = ", L2, ",")
@@ -296,6 +299,7 @@ subroutine lionml_write_style()
    write(*,8218) inputs%Iexch         ; write(*,8219) inputs%Igrid
    write(*,8220) inputs%Igrid2        ; write(*,8221) inputs%PredCoef
    write(*,8222) inputs%initial_guess ; write(*,8223) inputs%dbug
+   write(*,8224) inputs%n_ghosts
    write(*,8003)
 
    ! File IO and Property calculations
@@ -449,6 +453,7 @@ subroutine lionml_write_style()
 8221 FORMAT(4x,"║  PredCoef            ║  ",21x,L2,2x,"║")
 8222 FORMAT(4x,"║  Initial_guess       ║  ",18x,I5,2x,"║")
 8223 FORMAT(4x,"║  Dbug                ║  ",21x,L2,2x,"║")
+8224 FORMAT(4x,"║  n_ghosts            ║  ",18x,I5,2x,"║")
 !IO Control
 8250 FORMAT(4x,"║  Verbose             ║  ",20x,I3,2x,"║")
 8251 FORMAT(4x,"║  Style               ║  ",21x,L2,2x,"║")

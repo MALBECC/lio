@@ -17,15 +17,20 @@ end module ghost_atoms_data
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module ghost_atoms_subs
 contains
-   subroutine summon_ghosts(Iz, natom)
+   subroutine summon_ghosts(Iz, natom, verbose)
       use ghost_atoms_data, only: ghost_atoms, n_ghosts
 
       implicit none
-      integer, intent(in)    :: natom
+      integer, intent(in)    :: natom, verbose
       integer, intent(inout) :: Iz(natom)
       integer :: icount
 
       if (n_ghosts .lt. 1) return;
+      if (verbose.gt.3) then
+         write(*,'(A)', advance = 'no') "  Ghost atom indexes = "
+         write(*,*) ghost_atoms
+      endif
+
       do icount=1, n_ghosts
          if (ghost_atoms(icount) .lt. 1) then
             write(*,'(A)') " ERROR - SUMMON_GHOSTS: Ghost_atoms(x) cannot be"&

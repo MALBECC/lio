@@ -1083,7 +1083,7 @@
                              NCO,OPEN,Nunp,nopt,Iexch, &
                              e_, e_2, e3, wang, wang2, wang3, &
 			                    use_libxc, ex_functional_id, ec_functional_id)
-              call summon_ghosts(Iz, natom)
+              call summon_ghosts(Iz, natom, verbose)
 
       call aint_query_gpu_level(igpu)
       if (igpu.gt.1) then

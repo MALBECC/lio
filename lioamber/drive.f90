@@ -26,6 +26,7 @@
       USE fileio , ONLY : read_coef_restart, read_rho_restart
       use td_data    , only: td_do_pop
       use fileio_data, only: verbose, rst_dens
+      use ghost_atoms_subs, only: summon_ghosts
 
       IMPLICIT NONE
       LOGICAL :: basis_check
@@ -1081,7 +1082,8 @@
                              RMM,M5,M3,rhoalpha,rhobeta, &
                              NCO,OPEN,Nunp,nopt,Iexch, &
                              e_, e_2, e3, wang, wang2, wang3, &
-			     use_libxc, ex_functional_id, ec_functional_id)
+			                    use_libxc, ex_functional_id, ec_functional_id)
+              call summon_ghosts(Iz, natom)
 
       call aint_query_gpu_level(igpu)
       if (igpu.gt.1) then

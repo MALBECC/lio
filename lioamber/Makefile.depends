@@ -97,6 +97,12 @@ tmplist :=
 tmplist += liomain.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/build_info.mod
 
+################################################################################
+SRCDIRS +=
+OBJECTS += ghost_atoms.o
+tmplist :=
+tmplist += drive.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ghost_atoms.mod
 
 ################################################################################
 OBJECTS += dftb_subs.o

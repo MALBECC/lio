@@ -4,8 +4,13 @@
 ! summon_ghosts which sets the desired atomic nuclei (atom_Z) to 0.            !
 ! n_ghost is the number of ghost_atoms in the system, while ghost_atoms()      !
 ! contains the index of each ghost.                                            !
+! To use this module, set n_ghosts > 1 and ghost_atoms=x,y,z,..,n where x,y,z  !
+! and n indicate the index for each ghost atom (in the order that are placed in!
+! the coordinates file).                                                       !
+!                                                                              !
 ! WARNING: The following module assumes the maximum amount of QM atoms is 300. !
 !          While this is not optimal, a similar cap is set in module G2G.      !
+! F. Pedron - July 2018                                                        !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module ghost_atoms_data
    implicit none

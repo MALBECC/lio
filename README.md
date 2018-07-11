@@ -78,7 +78,7 @@ You can use this version of Lio with both, one of none of the __Libxc__ librarie
 
 In order to compile lio with libxc, follow the steps detailed below:
 
-  1. Download the libxc [cpu](http://www.tddft.org/programs/libxc/download/) library.
+  1. Download the libxc [cpu](http://www.tddft.org/programs/libxc/download/) library. We recomend you to use libxc-4.0.4 version.
   2. Compile and Install the __cpu__ library (follow Libxc install instructions).
   3. Download the libxc [gpu](https://gitlab.com/eduarditoperez/libxc/tree/cuda-integration) library.
   4. Compile and Install the library (follow the Libxc-gpu install [instructions](https://github.com/MALBECC/lio/wiki/Libxc-with-CUDA-support-installation-guide#instalation-guide)). Both the __gpu__ and __cpu__ libraries had to be installed in the same folder.

@@ -1,5 +1,5 @@
 WELCOME TO LIO
-dom jul  1 19:53:51 -03 2018
+mié jul 11 18:36:12 -03 2018
 G2G initialisation.
   GPU Device used: Tesla C2070
   Using 3 CPU Threads and 1 GPU Threads.
@@ -9,7 +9,11 @@ G2G initialisation.
 AINT initialisation.
   Density basis - s: 15 p: 3 d: 3 - Total (w/contractions): 42
   Using device 0 for analytic integral calculations.
-Cannot find lionml namelist. Using defaults for namelist lionml.
+  Partition 0: 405040
+  MAX/MIN ratio: 1.000000
+  Threads OMP: 4 - Threads CPU: 3 - Threads GPU: 1
+  Small cube correction: 250000 - Separation points: 200
+Error found in lionml namelist. Using defaults for namelist lionml.
 iostat =   -1
 
 LIO input variables
@@ -22,23 +26,24 @@ LIO input variables
   RmaxS =     5.00000000, IExch =     9, IGrid =   2, IGrid2 =   2,
   PredCoef =  F, initial_guess =   0, DBug =  F
  ! -- Input and output options: -- !
-  verbose =   4, style =  F, timers =   0, writeXYZ =  T, writeForces =  F,
+  verbose =   5, style =  F, timers =   2, writeXYZ =  T, writeForces =  F,
   dipole =  F, mulliken =  F, lowdin =  F, fukui =  F, print_coeffs =  F,
   VCInp =  F, FRestartIn =      restart.in          , restart_freq =     0,
   FRestart =      restart.out         , TDRestart =  F, writeDens =  F,
-  TD_rst_freq =    500, gaussian_convert =  F
+  TD_rst_freq =    500, gaussian_convert =  F,
+  rst_dens =   0
  ! -- TD-DFT and external field: -- !
   timeDep =  0, NTDStep =       1000, TDStep =     0.00200000, propagator =  1,
   NBCH =   10, field =  F, a0 =  1000.00000000, epsilon =     1.00000000,
   Fx =     0.00000000, Fy =     0.00000000, Fz =     0.00000000, n_fields_iso =     0,
   n_fields_aniso =     0, field_iso_file =      field.in            ,
-  field_aniso_file =      fieldaniso.in
+  field_aniso_file =      fieldaniso.in       , td_do_pop =     0
  ! -- Effective Core Potentials: -- !
   ECPMode =  F, ECPTypes =   0, TipeECP = NOT-DEFINED              ,
   Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    15.00000000,
   cut3_0 =    12.00000000, verbose_ECP =  0, ECP_debug =  F, fullTimer_ECP =  F,
   local_nonlocal =  0, ECP_full_range_int =  F
-  ZListECP =
+  ZListECP = 
  ! -- Minimizations and restraints: -- !
   steep =  F, minimzation_steep =     0.05000000, energy_cut =     0.00010000,
   force_cut =     0.00001000, n_min_steeps =   500, lineal_search =  T,
@@ -46,7 +51,7 @@ LIO input variables
  ! -- CubeGen: -- !
   CubeGen_only =  F, cube_res =    40, cube_sel =     0, cube_dens =  F,
   cube_orb =  F, cube_elec =  F, cube_dens_file =      dens.cube           ,
-  cube_orb_file =      orb.cube            , cube_elec_file =      dens.cube
+  cube_orb_file =      orb.cube            , cube_elec_file =      dens.cube           
  ! -- GPU Options: -- !
   energy_all_iterations =  T, assign_all_functions =  F, remove_zero_weights =  T,
   max_function_exponent =    10, free_global_memory =     0.60000000,
@@ -69,7 +74,7 @@ LIO input variables
  ! -- Fock Bias Potentials: -- !
   fockbias_is_active =  F, fockbias_is_shaped =  F, fockbias_timeamp0 =     0.00000000,
   fockbias_timegrow =     0.00000000, fockbias_timefall =     0.00000000,
-  fockbias_readfile =
+  fockbias_readfile =                          
 
 LIO initialisation.
 
@@ -77,8 +82,36 @@ Starting SCF cycles.
   Step =      1  - QM Energy =    -69.78044 - Rho diff (crit) = 1.35E+00 (1.00E-06) - Energy diff (crit) = 6.98E+01 (1.00E+00)
   Step =      2  - QM Energy =    -68.52423 - Rho diff (crit) = 6.81E-01 (1.00E-06) - Energy diff (crit) = 1.26E+00 (1.00E+00)
   Step =      3  - QM Energy =    -70.65690 - Rho diff (crit) = 6.51E-01 (1.00E-06) - Energy diff (crit) = 2.13E+00 (1.00E+00)
-  Step =      4  - QM Energy =    -75.06120 - Rho diff (crit) = 2.11E-01 (1.00E-06) - Energy diff (crit) = 4.40E+00 (1.00E+00)
+-------------------------------------------------------------------------------------------
+                   LIO TIMING INFORMATION:
+-------------------------------------------------------------------------------------------
+
+Total time: 0.296263s
+Total                                  0.296263s (100.00% of Total)
+  SCF                                    0.296226s ( 99.99% of Total)
+    Finalize SCF                           0.015415s (  5.20% of SCF)
+      Exchange-correlation energy            0.015302s ( 99.27% of Finalize SCF)
+      energy-weighted density                0.000003s (  0.02% of Finalize SCF)
+    Initialize SCF                         0.019275s (  6.51% of SCF)
+      1-e Fock                               0.001061s (  5.50% of Initialize SCF)
+        Nuclear attraction                     0.000071s (  6.69% of 1-e Fock)
+        QM/MM                                  0.000975s ( 91.89% of 1-e Fock)
+      Coulomb G matrix                       0.000341s (  1.77% of Initialize SCF)
+        G condition                            0.000237s ( 69.50% of Coulomb G matrix)
+        G invert                               0.000051s ( 14.96% of Coulomb G matrix)
+      Coulomb precalc                        0.000664s (  3.44% of Initialize SCF)
+      Exchange-correlation grid setup        0.014914s ( 77.37% of Initialize SCF)
+      initial guess                          0.000323s (  1.68% of Initialize SCF)
+    Iteration                              0.261481s ( 88.27% of SCF)
+      Fock integrals                         0.257443s ( 98.46% of Iteration)
+        Coulomb fit + Fock                     0.000373s (  0.14% of Fock integrals)
+        Exchange-correlation Fock              0.256936s ( 99.80% of Fock integrals)
+      SCF - Fock Diagonalization (sum)       0.002093s (  0.80% of Iteration)
+      SCF - MOC base change (sum)            0.000093s (  0.04% of Iteration)
+      SCF acceleration                       0.001137s (  0.43% of Iteration)
+-------------------------------------------------------------------------------------------
 G2G Deinitialisation.
+  Step =      4  - QM Energy =    -75.06120 - Rho diff (crit) = 2.11E-01 (1.00E-06) - Energy diff (crit) = 4.40E+00 (1.00E+00)
   Step =      5  - QM Energy =    -76.03340 - Rho diff (crit) = 1.70E-02 (1.00E-06) - Energy diff (crit) = 9.72E-01 (1.00E+00)
   Step =      6  - QM Energy =    -76.02385 - Rho diff (crit) = 2.42E-02 (1.00E-06) - Energy diff (crit) = 9.55E-03 (1.00E+00)
   Step =      7  - QM Energy =    -75.93336 - Rho diff (crit) = 4.33E-02 (1.00E-06) - Energy diff (crit) = 9.05E-02 (1.00E+00)
@@ -97,3 +130,4 @@ Final Energy Contributions in A.U.
   Coulomb      =    42.396601
   Nuclear      =     4.772967
   Exch. Corr.  =    -8.830253
+

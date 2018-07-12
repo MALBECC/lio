@@ -22,12 +22,28 @@ end module ghost_atoms_data
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module ghost_atoms_subs
 contains
-   subroutine summon_ghosts(Iz, natom, verbose)
+   subroutine adjust_ghost_charge(atom_Z, n_atoms, nuc_charge)
+      use ghost_atoms_data, only: ghost_atoms, n_ghosts
+      implicit none
+      integer, intent(in)    :: n_atoms, atom_Z(n_atoms)
+      integer, intent(inout) :: nuc_charge
+      integer :: icount
+
+      if (n_ghosts .lt. 1) return;
+
+      do icount = 1, n_ghosts
+         nuc_charge = nuc_charge - atom_Z(ghost_atoms(icount))
+      enddo
+
+      return
+   end subroutine adjust_ghost_charge
+
+   subroutine summon_ghosts(atom_Z, n_atoms, verbose)
       use ghost_atoms_data, only: ghost_atoms, n_ghosts
 
       implicit none
-      integer, intent(in)    :: natom, verbose
-      integer, intent(inout) :: Iz(natom)
+      integer, intent(in)    :: n_atoms, verbose
+      integer, intent(inout) :: atom_Z(n_atoms)
       integer :: icount
 
       if (n_ghosts .lt. 1) return;
@@ -41,7 +57,7 @@ contains
             write(*,'(A)') " ERROR - SUMMON_GHOSTS: Ghost_atoms(x) cannot be"&
                  &" less than 1."
          endif
-         Iz(ghost_atoms(icount)) = 0
+         atom_Z(ghost_atoms(icount)) = 0
       enddo
 
       return

@@ -1,0 +1,4 @@
+# Esta carpeta con tiene test para probar la funcionalidad de Lio con Libxc
+
+- accumulate_point: test para simular las llamadas a Libxc desde el ciclo principal de accmulate_point.cu
+- iteration: test para simular las llamadas a Libxc desde el ciclo principal de iteration.cpp

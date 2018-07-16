@@ -18,6 +18,11 @@
 #include "../pointxc/calc_ggaOS.h"
 #include "../pointxc/calc_ldaCS.h"
 
+#if USE_LIBXC
+#include <xc.h>
+#include "../libxc/libxcproxy.h"
+#endif
+
 using std::cout;
 using std::endl;
 using std::vector;
@@ -39,11 +44,23 @@ void PointGroupCPU<scalar_type>::solve_closed(
   const uint group_m = this->total_functions();
   const int npoints = this->points.size();
 
+  //printf("solve_closed(...)\n");
+
 #if CPU_RECOMPUTE or !GPU_KERNELS
   /** Compute functions **/
   timers.functions.start();
   compute_functions(compute_forces, !lda);
   timers.functions.pause();
+#endif
+
+#if USE_LIBXC
+#if LIBXC_CPU
+  /** Libxc CPU - version **/
+  const int nspin = XC_UNPOLARIZED;
+  const int functionalExchange = fortran_vars.ex_functional_id; //101;
+  const int functionalCorrelation = fortran_vars.ec_functional_id; // 130;
+  LibxcProxy<scalar_type,3> libxcProxy(functionalExchange, functionalCorrelation, nspin);
+#endif
 #endif
 
   double localenergy = 0.0;
@@ -164,7 +181,20 @@ void PointGroupCPU<scalar_type>::solve_closed(
       const vec_type3 dd1(tdd1x, tdd1y, tdd1z);
       const vec_type3 dd2(tdd2x, tdd2y, tdd2z);
 
+#if USE_LIBXC
+    /** Libxc CPU - version **/
+#if LIBXC_CPU
+    if (fortran_vars.use_libxc) {
+	libxcProxy.doGGA(pd, dxyz, dd1, dd2, exc, corr, y2a);
+    } else {
+	calc_ggaCS_in<scalar_type, 3>(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch);
+    }
+#else
+    calc_ggaCS_in<scalar_type, 3>(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch);
+#endif
+#else
       calc_ggaCS_in<scalar_type, 3>(pd, dxyz, dd1, dd2, exc, corr, y2a, iexch);
+#endif
 
       const scalar_type wp = this->points[point].weight;
 

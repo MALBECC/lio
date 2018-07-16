@@ -65,9 +65,12 @@ class vec_type<float, 3> {
 template <>
 class vec_type<float, 4> {
  private:
-  float x, y, z, _w;
+  //float x, y, z, _w;
 
  public:
+  /** La integracion a Libxc necesita acceder a estos componentes **/
+  float x, y, z, _w;
+
   vec_type(void) {}
   vec_type(float x_in, float y_in, float z_in, float w_in)
       : x(x_in), y(y_in), z(z_in), _w(w_in) {}

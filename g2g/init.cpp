@@ -10,6 +10,11 @@
 #include "timer.h"
 #include "partition.h"
 #include "matrix.h"
+
+#if USE_LIBXC
+#include "libxc/libxcproxy.h"
+#endif
+
 //#include "qmmm_forces.h"
 using std::cout;
 using std::endl;
@@ -23,9 +28,9 @@ Partition partition;
 
 /* global variables */
 namespace G2G {
-FortranVars fortran_vars;
-int cpu_threads = 0;
-int gpu_threads = 0;
+  FortranVars fortran_vars;
+  int cpu_threads=0;
+  int gpu_threads=0;
 }
 
 /* methods */
@@ -72,7 +77,8 @@ extern "C" void g2g_parameter_init_(
     const unsigned int& M3, double* rhoalpha, double* rhobeta,
     const unsigned int& nco, bool& OPEN, const unsigned int& nunp,
     const unsigned int& nopt, const unsigned int& Iexch, double* e, double* e2,
-    double* e3, double* wang, double* wang2, double* wang3){
+    double* e3, double* wang, double* wang2, double* wang3,
+    bool& use_libxc, const unsigned int& ex_functional_id, const unsigned int& ec_functional_id){
   fortran_vars.atoms = natom;
   fortran_vars.max_atoms = max_atoms;
   fortran_vars.gaussians = ngaussians;
@@ -197,6 +203,16 @@ extern "C" void g2g_parameter_init_(
       HostMatrix<double>(fortran_vars.atoms, fortran_vars.atoms);
   fortran_vars.nearest_neighbor_dists = HostMatrix<double>(fortran_vars.atoms);
 
+/** Variables para configurar libxc **/
+#if USE_LIBXC
+    fortran_vars.use_libxc = use_libxc;
+    fortran_vars.ex_functional_id = ex_functional_id;
+    fortran_vars.ec_functional_id = ec_functional_id;
+    if (fortran_vars.use_libxc) {
+        cout << "*Using Libxc" << endl;
+    }
+#endif
+
 #if GPU_KERNELS
   G2G::gpu_set_variables();
 #endif
@@ -204,6 +220,18 @@ extern "C" void g2g_parameter_init_(
 //============================================================================================================
 extern "C" void g2g_deinit_(void) {
   if (verbose > 3) cout << "G2G Deinitialisation." << endl;
+#if USE_LIBXC
+  if (fortran_vars.use_libxc) {
+      if (verbose > 3) {
+         cout << "=========================================================== " << endl;
+         cout << " The simulation used the functionals from the Libxc Library " << endl;
+         cout << " The functionals used are listed below " << endl;
+         LibxcProxy<double,3> aProxy;
+         aProxy.printFunctionalsInformation (fortran_vars.ex_functional_id, fortran_vars.ec_functional_id);
+         cout << "=========================================================== " << endl;
+      }
+  }
+#endif
   partition.clear();
 }
 //============================================================================================================

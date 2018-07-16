@@ -53,3 +53,34 @@ lioamber/liosubs/utests/*.x
 lioamber/liosubs/utests/Output-*
 #
 ###########################################################
+# Unit test
+###########################################################
+test/unit_test/accumulate_point/main_gpu
+test/unit_test/accumulate_point/main_cpu
+test/unit_test/accumulate_point/output/*
+test/unit_test/libxc_proxy/main_gpu
+test/unit_test/libxc_proxy/output/*
+test/unit_test/matrix/matrix_test
+test/unit_test/timers/timers_test
+test/unit_test/iteration/main_gpu
+test/unit_test/iteration/output/*
+test/unit_test/libxc_proxy/main_cpu
+test/unit_test/libxc_proxy/main_gpu
+test/*/output/*
+###########################################################
+# Integration test
+###########################################################
+test/integration_test/accumulate_point/main_cpu
+test/integration_test/accumulate_point/main_gpu
+test/integration_test/iteration/main_gpu
+###########################################################
+# Stress test
+###########################################################
+test/stress_test/0_aguaGPU/*
+test/stress_tess/2_hemoGPU/*
+test/stress_test/5_caffeineGPU/*
+tess/stress_test/9_carotenoGPU/*
+###########################################################
+# Profiling
+###########################################################
+test/profiling/*

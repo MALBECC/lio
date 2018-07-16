@@ -19,7 +19,8 @@
       wang, wang2, wang3, VCINP, OPEN, OPEN1, whatis, Num, Iz, pi,             &
       Rm2, rqm, rmax, Nunp, nl, nt, ng, ngd, restart_freq,             &
       writexyz, number_restr, restr_pairs,restr_index,restr_k,restr_w,restr_r0,&
-      mulliken, MO_coef_at, MO_coef_at_b
+      mulliken, MO_coef_at, MO_coef_at_b, use_libxc, ex_functional_id, &
+      ec_functional_id
 
       USE ECP_mod, ONLY : ecpmode, asignacion
       USE fileio , ONLY : read_coef_restart, read_rho_restart
@@ -1079,7 +1080,8 @@
                              M,ncont,nshell,c,a, &
                              RMM,M5,M3,rhoalpha,rhobeta, &
                              NCO,OPEN,Nunp,nopt,Iexch, &
-                             e_, e_2, e3, wang, wang2, wang3)
+                             e_, e_2, e3, wang, wang2, wang3, &
+			     use_libxc, ex_functional_id, ec_functional_id)
 
       call aint_query_gpu_level(igpu)
       if (igpu.gt.1) then

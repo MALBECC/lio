@@ -20,7 +20,8 @@ module lionml_data
                                  lowdin, mulliken, print_coeffs, number_restr, &
                                  Dbug, steep, Force_cut, Energy_cut, charge,   &
                                  minimzation_steep, n_min_steeps, n_points,    &
-                                 lineal_search, timers, IGRID, IGRID2
+                                 lineal_search, timers, IGRID, IGRID2,         &
+                                 use_libxc, ex_functional_id, ec_functional_id
    use dftb_data         , only: dftb_calc, MTB, alfaTB, betaTB, gammaTB,      &
                                  Vbias_TB, end_bTB, start_tdtb, end_tdtb,      &
                                  TBsave, TBload
@@ -59,7 +60,8 @@ module lionml_data
                      eefld_wavelen, eefld_timegih, eefld_timegfh,              &
                      eefld_timepos, eefld_timeamp,                             &
                      fockbias_is_active, fockbias_is_shaped, fockbias_readfile,&
-                     fockbias_timegrow , fockbias_timefall , fockbias_timeamp0
+                     fockbias_timegrow , fockbias_timefall , fockbias_timeamp0,&
+		     use_libxc, ex_functional_id, ec_functional_id
 
    namelist /lio/ OPEN, NMAX, Nunp, VCINP, GOLD, told, Etold, rmax, rmaxs,     &
                   predcoef, idip, writexyz, intsoldouble, DIIS, ndiis, dgtrig, &
@@ -96,7 +98,9 @@ module lionml_data
                   save_charge_freq, driving_rate, Pop_Drive,                   &
                   ! Variables for DFTB
                   dftb_calc, MTB, alfaTB, betaTB, gammaTB, Vbias_TB, end_bTB,  &
-                  start_tdtb, end_tdtb, TBsave, TBload
+                  start_tdtb, end_tdtb, TBsave, TBload,                        &
+                   ! Libxc variables
+                  use_libxc, ex_functional_id, ec_functional_id
 
    type lio_input_data
       ! COMMON
@@ -154,6 +158,11 @@ module lionml_data
       character*80     :: fockbias_readfile
       double precision :: fockbias_timeamp0, fockbias_timefall,fockbias_timegrow
       logical          :: fockbias_is_active, fockbias_is_shaped
+
+      ! Libxc configuration
+      integer          :: ex_functional_id, ec_functional_id
+      logical          :: use_libxc
+
    end type lio_input_data
 contains
 
@@ -253,6 +262,11 @@ subroutine get_namelist(lio_in)
    lio_in%fockbias_timegrow  = fockbias_timegrow
    lio_in%fockbias_is_active = fockbias_is_active
    lio_in%fockbias_is_shaped = fockbias_is_shaped
+
+   ! Libxc configuration
+   !lio_in%ex_functional_id = ex_functional_id
+   !lio_in%ec_functional_id = ec_functional_id
+   !lio_in%use_libxc = use_libxc
 
    return
 end subroutine get_namelist

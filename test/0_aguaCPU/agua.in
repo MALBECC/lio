@@ -11,4 +11,8 @@ max_function_exponent=10
 min_points_per_cube=1 
 sphere_radius=0.5 
 energy_all_iterations=t
+verbose=3
+use_libxc=f
+ex_functional_id=101
+ec_functional_id=130
 &end

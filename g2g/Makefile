@@ -32,6 +32,22 @@ ifneq ($(cuda),0)
   LIBRARIES    := $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
 endif
 
+ifeq ($(libxc),1)
+  LIBXC_LIBRARIES := -L$(LIBXC_LIBS) -lxc
+#LIBXC CPU MODE
+  CXXFLAGS += -DUSE_LIBXC=1 -DLIBXC_CPU=1 -I$(LIBXC_INCLUDES)
+else
+ifeq ($(libxc),2)
+#LIBXC GPU MODE
+    LIBXC_LIBRARIES := -L$(LIBXC_LIBS) -lxc_cuda
+    CXXFLAGS += -DUSE_LIBXC=1 -DLIBXC_CPU=0 -I$(LIBXC_INCLUDES)
+else
+#NO LIBXC
+    LIBXC_LIBRARIES := -L$(LIBXC_LIBS) -lxc
+    CXXFLAGS += -DUSE_LIBXC=0 -DLIBXC_CPU=1 -I$(LIBXC_INCLUDES)
+endif
+endif
+
 ifneq ($(aint_gpu_level),)
   CXXFLAGS     += -DAINT_GPU_LEVEL=$(aint_gpu_level)
   NVCCFLAGS    += -DAINT_GPU_LEVEL=$(aint_gpu_level)
@@ -66,7 +82,7 @@ else
 endif
 
 ## Define libraries
-LIBRARIES := $(CUDA_LDFLAGS) $(CUDA_LIBS) -lrt
+LIBRARIES := $(CUDA_LDFLAGS) $(CUDA_LIBS) $(LIBXC_LIBRARIES) -lrt
 ifeq ($(intel),0)
   LIBRARIES += -L$(PACK_LIB_DIR) -lcblas
   CXXFLAGS += -DINTEL_COMP=0

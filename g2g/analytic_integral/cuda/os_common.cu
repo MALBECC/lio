@@ -41,6 +41,7 @@ __device__ __constant__ float gpu_fac[17];
 
 __device__ __constant__ uint TERM_TYPE_GAUSSIANS[6] = { 1, 3, 9, 6, 18, 36 };
 __device__ __constant__ uint gpu_atom_types[MAX_ATOMS];
+__device__ __constant__ uint gpu_atom_Z[MAX_ATOMS];
 
 template<class scalar_type>
 void OSIntegral<scalar_type>::load_params(void)
@@ -65,7 +66,7 @@ void OSIntegral<scalar_type>::load_params(void)
 
     cudaMemcpyToSymbol(gpu_m, &G2G::fortran_vars.m, sizeof(G2G::fortran_vars.m), 0, cudaMemcpyHostToDevice);
     cudaMemcpyToSymbol(gpu_atom_types, G2G::fortran_vars.atom_types.data, G2G::fortran_vars.atom_types.bytes(), 0, cudaMemcpyHostToDevice);
-
+    cudaMemcpyToSymbol(gpu_atom_Z, integral_vars.atom_Z.data, integral_vars.atom_Z.bytes(), 0, cudaMemcpyHostToDevice);
     //
     // Set up arrays needed for F(m,U) calculation in QM/MM kernels (STR and FAC) and send them to device
     // FAC is small so it's put into constant memory

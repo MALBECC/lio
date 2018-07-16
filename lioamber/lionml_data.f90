@@ -49,6 +49,7 @@ module lionml_data
    use trans_Data        , only: gaussian_convert
    use transport_data    , only: transport_calc, generate_rho0, gate_field,    &
                                  save_charge_freq, driving_rate, Pop_Drive
+   use ghost_atoms_data  , only: n_ghosts, ghost_atoms
    implicit none
 
 !  Namelist definition
@@ -100,7 +101,9 @@ module lionml_data
                   dftb_calc, MTB, alfaTB, betaTB, gammaTB, Vbias_TB, end_bTB,  &
                   start_tdtb, end_tdtb, TBsave, TBload,                        &
                    ! Libxc variables
-                  use_libxc, ex_functional_id, ec_functional_id
+                  use_libxc, ex_functional_id, ec_functional_id,               &
+                  ! Variables for Ghost atoms:
+                  n_ghosts, ghost_atoms
 
    type lio_input_data
       ! COMMON
@@ -162,7 +165,8 @@ module lionml_data
       ! Libxc configuration
       integer          :: ex_functional_id, ec_functional_id
       logical          :: use_libxc
-
+      ! Ghost atoms
+      integer          :: n_ghosts, ghost_atoms(300)
    end type lio_input_data
 contains
 
@@ -243,6 +247,8 @@ subroutine get_namelist(lio_in)
    lio_in%save_charge_freq = save_charge_freq; lio_in%MTB       = MTB
    lio_in%start_tdtb       = start_tdtb      ; lio_in%TBload    = TBload
    lio_in%TBsave           = TBsave
+   ! Ghost atoms
+   lio_in%n_ghosts = n_ghosts ; lio_in%ghost_atoms = ghost_atoms
 
    ! Ehrenfest
    lio_in%rsti_fname = rsti_fname; lio_in%eefld_timeamp  = eefld_timeamp

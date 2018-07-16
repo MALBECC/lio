@@ -125,7 +125,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     use garcha_mod, only : idip, nunp, RMM, d, c, a, Nuc, ncont, cx,           &
                            ax, Nucx, ncontx, cd, ad, Nucd, ncontd, indexii,    &
                            indexiid, r, v, rqm, Em, Rm, pc, nnat, af, B, Iz,   &
-                           natom, nco, ng0, ngd0, ngrid, nl, norbit, ntatom,   &
+                           natom, ng0, ngd0, ngrid, nl, norbit, ntatom,        &
                            free_global_memory, little_cube_size,&
                            assign_all_functions, energy_all_iterations,        &
                            remove_zero_weights, min_points_per_cube,           &
@@ -139,18 +139,17 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
 
     implicit none
     integer , intent(in) :: nclatom, natomin, Izin(natomin), callfrom
-    integer              :: i, ng2, ngdDyn, ngDyn, nqnuc, ierr, ios, MM,      &
-                            electrons
-    call g2g_set_options(free_global_memory, little_cube_size, sphere_radius, &
-                         assign_all_functions, energy_all_iterations,         &
-                         remove_zero_weights, min_points_per_cube,            &
-                         max_function_exponent, timers, verbose)
+    integer              :: ng2, ngdDyn, ngDyn, ierr, ios, MM
 
     if (verbose .gt. 2) then
       write(*,*)
       write(*,'(A)') "LIO initialisation."
     endif
     call g2g_timer_start('lio_init')
+    call g2g_set_options(free_global_memory, little_cube_size, sphere_radius, &
+                         assign_all_functions, energy_all_iterations,         &
+                         remove_zero_weights, min_points_per_cube,            &
+                         max_function_exponent, timers, verbose)
 
     chrg_sq = charge**2
     if (callfrom.eq.1) then
@@ -187,21 +186,6 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     if (ecpmode) allocate (Cnorm(ngDyn,nl))
 
     call g2g_init()
-
-    nqnuc = 0
-    do i = 1, natom
-       nqnuc = nqnuc + Iz(i)
-    enddo
-
-    electrons=nqnuc - charge
-    if (.not. OPEN .and. (mod(electrons,2) .ne. 0)) then
-	    write(*,*) "odd number of electrons in a close-shell calculation"
-	    write(*,*) "check system charge"
-	    stop
-    endif
-
-    NCO = ((nqnuc - charge) - NUNP)/2
-
     allocate(MO_coef_at(ngDyn*ngDyn))
     if (OPEN) allocate(MO_coef_at_b(ngDyn*ngDyn))
 
@@ -211,7 +195,6 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     ! reemplazos de RMM
     MM=M*(M+1)/2
     allocate(Fock_Hcore(MM), Fock_Overlap(MM), P_density(MM))
-
     call g2g_timer_stop('lio_init')
 
     return

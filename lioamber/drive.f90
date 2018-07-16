@@ -12,7 +12,7 @@
       USE garcha_mod, ONLY : a,c, isotop, basis, done, done_fit, natomc, nnps, &
       nnpp, nnpd, nns, nnp, nnd, atmin, jatc, ncf, lt, at, ct, nnat, nshell,   &
       nuc, ncont, nlb, nshelld, cd, ad, Nucd, ncontd, nld, Nucx, indexii,      &
-      ncontx, cx, ax, indexiid, X, XX, RMM, rhoalpha,rhobeta, af,              &
+      ncontx, cx, ax, indexiid, X, XX, RMM, rhoalpha,rhobeta, af, charge,      &
       basis_set, fitting_set, dens, e_, e_2, e3, exists, NORM, fcoord,   &
       fmulliken, natom, frestart, M, FAC, Iexch, int_basis, max_func, integ,   &
       frestartin, Md, NCO, nng, npas, Nr, used, STR, omit_bas, Nr2,   &
@@ -26,6 +26,7 @@
       USE fileio , ONLY : read_coef_restart, read_rho_restart
       use td_data    , only: td_do_pop
       use fileio_data, only: verbose, rst_dens
+      use ghost_atoms_subs, only: summon_ghosts
 
       IMPLICIT NONE
       LOGICAL :: basis_check
@@ -967,6 +968,10 @@
 !        pause
       endif
 
+      ! Gets the number of occupied orbitals in a closed shell system (or
+      ! Spin Up in an open shell system).
+      call get_nco(Iz, natom, nco, charge, NUNP, OPEN)
+
       ! Allocates and initialises rhoalpha and rhobeta
       if(OPEN) then
         allocate(rhoalpha(M*(M+1)/2),rhobeta(M*(M+1)/2))
@@ -1081,12 +1086,13 @@
                              RMM,M5,M3,rhoalpha,rhobeta, &
                              NCO,OPEN,Nunp,nopt,Iexch, &
                              e_, e_2, e3, wang, wang2, wang3, &
-			     use_libxc, ex_functional_id, ec_functional_id)
+			                    use_libxc, ex_functional_id, ec_functional_id)
+              call summon_ghosts(Iz, natom, verbose)
 
       call aint_query_gpu_level(igpu)
       if (igpu.gt.1) then
       call aint_parameter_init(Md, ncontd, nshelld, cd, ad, Nucd, &
-      af, RMM, M9, M11, STR, FAC, rmax)
+      af, RMM, M9, M11, STR, FAC, rmax, Iz)
       endif
       allocate(X(M,4*M),XX(Md,Md))
 
@@ -1397,3 +1403,31 @@
        DEALLOCATE (ncf, lt)
        ALLOCATE (ncf(nng), lt(nng))
       ENDSUBROUTINE reallocate_ncf_lt
+
+subroutine get_nco(atom_Z, n_atoms, n_orbitals, n_unpaired, charge, open_shell)
+   use ghost_atoms_subs, only: adjust_ghost_charge
+   implicit none
+   integer, intent(in)  :: n_atoms, n_unpaired, charge, atom_Z(n_atoms)
+   logical, intent(in)  :: open_shell
+   integer, intent(out) :: n_orbitals
+
+   integer :: icount, nuc_charge, electrons
+
+   nuc_charge = 0
+   do icount = 1, n_atoms
+      nuc_charge = nuc_charge + atom_Z(icount)
+   enddo
+   call adjust_ghost_charge(atom_Z, n_atoms, nuc_charge)
+
+   electrons = nuc_charge - charge
+   if ((.not.open_shell) .and. (mod(electrons,2).ne.0)) then
+      write(*,'(A)') "  ERROR - DRIVE: Odd number of electrons in a "&
+                     &"closed-shell calculation."
+      write(*,'(A)') "  Please check system charge."
+      stop
+   endif
+
+   n_orbitals = ((nuc_charge - charge) - n_unpaired)/2
+
+   return
+end subroutine get_nco

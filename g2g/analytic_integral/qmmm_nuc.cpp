@@ -29,7 +29,7 @@ void QMMMIntegral<scalar_type>::calc_nuc_gradient(double* qm_forces,
       dist = sqrt(dist);
 
       double prefactor = -integral_vars.clatom_charges(j) *
-                         (G2G::fortran_vars.atom_types(i) + 1) / pow(dist, 3.0);
+                          integral_vars.atom_Z(i) / pow(dist, 3.0);
       qm_forces[i + 0 * G2G::fortran_vars.atoms] += prefactor * diff.x;
       qm_forces[i + 1 * G2G::fortran_vars.atoms] += prefactor * diff.y;
       qm_forces[i + 2 * G2G::fortran_vars.atoms] += prefactor * diff.z;
@@ -52,7 +52,7 @@ void QMMMIntegral<scalar_type>::calc_nuc_energy(double& Ens) {
       dist = sqrt(dist);
 
       double E = integral_vars.clatom_charges(j) *
-                 (G2G::fortran_vars.atom_types(i) + 1) / dist;
+                 integral_vars.atom_Z(i) / dist;
       Ens += E;
     }
   }

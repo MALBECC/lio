@@ -8,6 +8,7 @@
       use garcha_mod
       use field_data, only: field
       use field_subs, only: field_calc
+      use fockbias_subs , only: fockbias_apply
       use mathsubs
       use general_module
       use faint_cpu77, only: int3lu
@@ -132,6 +133,9 @@ c xmm es la primer matriz de (M,M) en el
 
        write(*,*) 'FBA escrita'
        call spunpack('L',M,RMM(M5),FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
+!Fockbias:
+       call fockbias_apply(time, FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
+
        DO i=1,M
        DO j=1,M
           if(FBA(i,j,1).ne.FBA(i,j,1)) stop 'NAN en FBA -predictor'
@@ -140,6 +144,10 @@ c xmm es la primer matriz de (M,M) en el
 
        if (OPEN) then
           call spunpack('L',M,RMM(M3),FBA(MTB+1:MTB+M,MTB+1:MTB+M,2))
+
+!Fockbias:
+          call fockbias_apply(time, FBA(MTB+1:MTB+M,MTB+1:MTB+M,2))
+
           DO i=1,M
           DO j=1,M
              if(FBA(i,j,2).ne.FBA(i,j,2)) stop 'NAN en FBA -predictor'
@@ -177,6 +185,7 @@ c xmm es la primer matriz de (M,M) en el
        use garcha_mod
        use field_data, only: field
        use field_subs, only: field_calc
+       use fockbias_subs , only: fockbias_apply
        IMPLICIT REAL*8 (a-h,o-z)
        integer, intent(in)  :: dim3
        REAL*8,intent(inout) :: F1a(M_in,M_in,dim3),F1b(M_in,M_in,dim3)
@@ -269,10 +278,14 @@ c xmm es la primer matriz de (M,M) en el
        FBA=FON
 
        call spunpack('L',M,RMM(M5),FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
+!Fockbias:
+       call fockbias_apply(time, FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
        FON(:,:,1)=basechange_cublas(M_in, FBA(:,:,1), devPtrX, 'dir')
 
        if (OPEN) then
           call spunpack('L',M,RMM(M3),FBA(MTB+1:MTB+M,MTB+1:MTB+M,2))
+!Fockbias:
+          call fockbias_apply(time, FBA(MTB+1:MTB+M,MTB+1:MTB+M,2))
           FON(:,:,2)=basechange_cublas(M_in, FBA(:,:,2), devPtrX,
      >                                 'dir')
        end if

@@ -165,7 +165,7 @@ OBJECTS += fockbias_subs.o
 $(OBJPATH)/fockbias_subs.o: $(OBJPATH)/fockbias_data.mod
 
 tmplist :=
-tmplist += SCF.f90
+tmplist += SCF.f90 TD.f90 cublasmath.o predictor.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fockbias_subs.mod
 
 ###############################################################################

@@ -8,6 +8,7 @@
        use field_subs , only: field_calc
        use mathsubs   , only: basechange
        use faint_cpu77, only: int3lu
+       use fockbias_subs , only: fockbias_apply
        implicit none
        integer, intent(in)   :: M_in, dim3
        REAL*8,intent(inout) :: F1a(M_in,M_in,dim3),F1b(M_in,M_in,dim3),
@@ -71,10 +72,17 @@ c Initializations/Defaults
        call field_calc(E1, time)
        FBA=FON
        call spunpack('L',M,RMM(M5),FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
+
+!Fockbias:
+       call fockbias_apply(time, FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
+
        FON(:,:,1)=basechange(M_in,Xtrans,FBA(:,:,1),Xmat)
 
        if (OPEN) then
           call spunpack('L',M,RMM(M3),FBA(MTB+1:MTB+M,MTB+1:MTB+M,2))
+!Fockbias:
+          call fockbias_apply(time, FBA(MTB+1:MTB+M,MTB+1:MTB+M,2))
+
           FON(:,:,2)=basechange(M_in,Xtrans,FBA(:,:,2),Xmat)
        end if
 

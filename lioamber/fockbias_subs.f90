@@ -34,25 +34,40 @@ module fockbias_subs
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine fockbias_setup0( activate, do_shape, grow_start, fall_start, setamp )
+!carlos:
+!fockbias_setup0 is not neccesary for the moment because the values of the
+!variables are set in the input.
+!subroutine fockbias_setup0() !activate, do_shape, grow_start, fall_start, setamp )
 
-   use fockbias_data, only: fockbias_is_active, fockbias_is_shaped &
-                         &, fockbias_timegrow , fockbias_timefall  &
-                         &, fockbias_timeamp0
+!   use fockbias_data, only: fockbias_is_active, fockbias_is_shaped &
+!                         &, fockbias_timegrow , fockbias_timefall  &
+!                         &, fockbias_timeamp0
 
-   logical, intent(in) :: activate
-   logical, intent(in) :: do_shape
-   real*8 , intent(in) :: grow_start
-   real*8 , intent(in) :: fall_start
-   real*8 , intent(in) :: setamp
+!   logical, intent(in) :: activate
+!   logical, intent(in) :: do_shape
+!   real*8 , intent(in) :: grow_start
+!   real*8 , intent(in) :: fall_start
+!   real*8 , intent(in) :: setamp
+!   logical :: activate
+!   logical :: do_shape
+!   real*8  :: grow_start
+!   real*8  :: fall_start
+!   real*8  :: setamp
 
-   fockbias_is_active = activate
-   fockbias_is_shaped = do_shape
-   fockbias_timegrow  = grow_start
-   fockbias_timefall  = fall_start
-   fockbias_timeamp0  = setamp
+!charly
+!   activate=.true.
+!   do_shape=.false.
+!   grow_start=0.00
+!   fall_start=0.00
+!   setamp=0.00
 
-end subroutine fockbias_setup0
+!   fockbias_is_active = activate
+!   fockbias_is_shaped = do_shape
+!   fockbias_timegrow  = grow_start
+!   fockbias_timefall  = fall_start
+!   fockbias_timeamp0  = setamp
+
+!end subroutine fockbias_setup0
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -143,7 +158,10 @@ subroutine fockbias_loads( Natom, atom_of_orb, file_unit_in, file_name_in )
    end if
 
 !  If there is input filename, save it so as to know the source.
-   if ( present(file_name_in) ) fockbias_readfile = file_name_in
+
+!charly: comente esto temporalmente
+!   if ( present(file_name_in) ) fockbias_readfile = file_name_in
+
 
 !  If there is input fileunit, we will read from there directly.
 !  Else, we will open the file in unit=2427 (BIAS)
@@ -194,7 +212,7 @@ end subroutine fockbias_loads
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine fockbias_apply_d( timepos, fockmat )
+subroutine fockbias_apply_d( timepos, fockmat)
    use fockbias_data, only: fockbias_is_active, fockbias_is_shaped &
                          &, fockbias_timegrow , fockbias_timefall  &
                          &, fockbias_timeamp0 , fockbias_matrix
@@ -225,7 +243,7 @@ subroutine fockbias_apply_d( timepos, fockmat )
 
    time_shape = 1.0d0
 
-   if ( fockbias_is_shaped ) then
+   if ( fockbias_is_shaped) then
 
       if ( timepos <= fockbias_timegrow ) then
          exparg = (timepos - fockbias_timegrow) / fockbias_timeamp0
@@ -241,6 +259,10 @@ subroutine fockbias_apply_d( timepos, fockmat )
 
    end if
 
+   if (time_shape < 1.00d-16) time_shape = 0.0d0
+
+   print*, "bias", time_shape
+
    do jj = 1, Nbasis
    do ii = 1, Nbasis
       fockmat(ii,jj) = fockmat(ii,jj) + time_shape * fockbias_matrix(ii,jj)
@@ -251,7 +273,7 @@ end subroutine fockbias_apply_d
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine fockbias_apply_c( timepos, fockmat )
+subroutine fockbias_apply_c( timepos, fockmat)
    implicit none
    real*8    , intent(in)    :: timepos
    complex*8 , intent(inout) :: fockmat(:,:)
@@ -261,7 +283,7 @@ subroutine fockbias_apply_c( timepos, fockmat )
    N1 = size(fockmat,1)
    N2 = size(fockmat,2)
    allocate( fockmat_r( N1, N2 ) )
-   call fockbias_apply_d( timepos, fockmat_r )
+   call fockbias_apply_d( timepos, fockmat_r)
    fockmat(:,:) = fockmat(:,:) + CMPLX( fockmat_r(:,:), 0.0d0 )
    deallocate( fockmat_r )
 
@@ -269,7 +291,7 @@ end subroutine fockbias_apply_c
 !
 !
 !------------------------------------------------------------------------------!
-subroutine fockbias_apply_z( timepos, fockmat )
+subroutine fockbias_apply_z( timepos, fockmat)
    implicit none
    real*8    , intent(in)    :: timepos
    complex*16, intent(inout) :: fockmat(:,:)
@@ -279,7 +301,7 @@ subroutine fockbias_apply_z( timepos, fockmat )
    N1 = size(fockmat,1)
    N2 = size(fockmat,2)
    allocate( fockmat_r( N1, N2 ) )
-   call fockbias_apply_d( timepos, fockmat_r )
+   call fockbias_apply_d( timepos, fockmat_r)
    fockmat(:,:) = fockmat(:,:) + DCMPLX( fockmat_r(:,:), 0.0d0 )
    deallocate( fockmat_r )
 

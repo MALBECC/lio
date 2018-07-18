@@ -177,15 +177,15 @@ ifeq ($(libxc),1)
     INCLUDES  += -I$(LIBXC_INCLUDES)
     CUDA_LDFLAGS += -L$(LIBXC_LIBS) -lxc
 else
-    ifeq ($(libxc),2)
-	#LIBXC GPU MODE
-        NVCCFLAGS += -DUSE_LIBXC=1 -DLIBXC_CPU=0
-	INCLUDES  += -I$(LIBXC_INCLUDES)
-	CUDA_LDFLAGS += -L$(LIBXC_LIBS) -lxc_cuda
-    else
-	#NO LIBXC
-        NVCCFLAGS += -DUSE_LIBXC=0 -DLIBXC_CPU=1
-    endif
+ifeq ($(libxc),2)
+#LIBXC GPU MODE
+    NVCCFLAGS += -DUSE_LIBXC=1 -DLIBXC_CPU=0
+    INCLUDES  += -I$(LIBXC_INCLUDES)
+    CUDA_LDFLAGS += -L$(LIBXC_LIBS) -lxc_cuda
+else
+#NO LIBXC
+    NVCCFLAGS += -DUSE_LIBXC=0 -DLIBXC_CPU=1
+endif
 endif
 
 ################################################################################

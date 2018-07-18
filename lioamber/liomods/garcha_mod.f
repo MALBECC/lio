@@ -18,9 +18,9 @@
       logical exists,MEMO,predcoef
       logical done(ntq),used,NORM,OPEN,DIRECT,VCINP,DIIS
       logical done_fit(ntq)
-      logical EXTR,SVD
-      logical Coul,SVD1,sol,tipe
-      logical exter,exter1,resp1,primera,writexyz
+      logical SVD
+      logical sol
+      logical primera,writexyz
       logical OPEN1
       logical sol1,free,free1
 

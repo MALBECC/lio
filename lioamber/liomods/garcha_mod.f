@@ -63,8 +63,6 @@ c ncf, lt,at,ct parameters for atomic basis sets
 c Angular momenta : up to f functions ( could be easily extended if
 c necessary)
       Data Num /1,3,6,10/
-      integer ndis
-      real*8 kjar,xini,xfinal
 
       integer, dimension(:), ALLOCATABLE :: natomc,nnps,nnpp,nnpd,nns
       integer, dimension(:), ALLOCATABLE :: nnd,nnp
@@ -75,9 +73,7 @@ c necessary)
       real*8     rmax, rmaxs
       real*8, dimension (:), ALLOCATABLE :: cool
       real*4, dimension (:), ALLOCATABLE :: cools
-c      parameter rmintsol=16.0D0
-!
-!
+
 ! FFR - My global variables
 !------------------------------------------------------------------------------!
        real*8,allocatable,dimension(:,:) :: Smat
@@ -102,7 +98,6 @@ c      parameter rmintsol=16.0D0
 !-Variables for property calculations.
       logical :: fukui, dipole, lowdin, mulliken, print_coeffs
 
-!     parameter (nng=100)
       integer :: nng, max_func
       integer, allocatable, dimension(:) :: ncf, lt
       real*8, allocatable, dimension(:) :: at, ct
@@ -131,8 +126,6 @@ c      parameter rmintsol=16.0D0
       Logical :: Dbug
       integer :: timers
 
-!-Temporal variable for the transition of change RMM array int smaller arrays
-	logical :: break_rmm
 !-Arrays that going to reemplaze RMM
       real*8, dimension (:), ALLOCATABLE :: Fock_Hcore !contains core-Hamiltonian matrix, reemplaze RMM(M11)
       real*8, dimension (:), ALLOCATABLE :: Fock_Overlap ! reemplaze RMM(M5)

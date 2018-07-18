@@ -100,7 +100,7 @@ subroutine transport_read_groups(natom)
       write(*,*) ' ERROR - Transport: Cannot find transport.dat file.'
       stop
    endif
-   open( unit = 678 , file = 'transport.dat')
+   open( unit = 678 , file = 'transport.in')
 
    read(678,*) timestep_init
    do icount = 1 , natom

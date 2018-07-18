@@ -102,7 +102,7 @@ module lionml_data
                   start_tdtb, end_tdtb, TBsave, TBload,                        &
                   !Fockbias
                   fockbias_is_active, fockbias_is_shaped, fockbias_readfile,   &
-                  fockbias_timegrow , fockbias_timefall , fockbias_timeamp0,   &                        &
+                  fockbias_timegrow , fockbias_timefall , fockbias_timeamp0,   &
                    ! Libxc variables
                   use_libxc, ex_functional_id, ec_functional_id,               &
                   ! Variables for Ghost atoms:

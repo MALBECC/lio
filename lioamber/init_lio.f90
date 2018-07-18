@@ -19,9 +19,8 @@ subroutine lio_defaults()
     use garcha_mod, only : basis, output, fmulliken, fcoord, OPEN, NMAX,       &
                            basis_set, fitting_set, int_basis, DIIS, ndiis,     &
                            GOLD, told, Etold, hybrid_converg, good_cut, rmax,  &
-                           rmaxs, omit_bas, propagator, NBCH, VCINP,           &
-                           restart_freq, frestartin, Iexch, integ, IGRID,      &
-                           frestart, predcoef,                                 &
+                           rmaxs, omit_bas, propagator, NBCH, VCINP, Iexch,    &
+                           restart_freq, frestartin, IGRID, frestart, predcoef,&
                            cubegen_only, cube_res, cube_dens, cube_orb,        &
                            cube_sel, cube_orb_file, cube_dens_file, NUNP,      &
                            energy_freq, writeforces, charge,                   &
@@ -100,8 +99,7 @@ subroutine lio_defaults()
     cube_res       = 40            ;
     cube_dens      = .false.       ; cube_orb           = .false.       ;
     Iexch          = 9             ; cube_sel           = 0             ;
-    integ          = .true.        ; cube_orb_file      = "orb.cube"    ;
-    cube_dens_file = 'dens.cube'   ;
+    cube_orb_file  = "orb.cube"    ; cube_dens_file     = 'dens.cube'   ;
     IGRID          = 2             ; cube_elec          = .false.       ;
     IGRID2         = 2             ; cube_elec_file     = 'field.cube'  ;
     timers         = 0             ; NORM               = .true.        ;
@@ -253,7 +251,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
                            GOLD, told, Etold, hybrid_converg, good_cut,      &
                            rmax, rmaxs, omit_bas, propagator, NBCH,          &
                            VCINP, restart_freq, writexyz, frestartin,        &
-                           frestart, predcoef, Iexch, integ,                 &
+                           frestart, predcoef, Iexch,                        &
                            cubegen_only, cube_res, cube_dens, cube_orb,      &
                            cube_sel, cube_orb_file, cube_dens_file, NUNP,    &
                            energy_freq, cube_elec_file,       &
@@ -271,15 +269,14 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
     character(len=20) :: basis_i, output_i, fcoord_i, fmulliken_i, frestart_i, &
                          frestartin_i, inputFile
     logical           :: verbose_i, OPEN_i, VCINP_i, predcoef_i, writexyz_i,   &
-                         DIIS_i, integ_i, field_i, exter_i, writedens_i,       &
-                         tdrestart_i
+                         DIIS_i, field_i, exter_i, writedens_i, tdrestart_i
     integer           :: NMAX_i, NUNP_i, ndiis_i, Iexch_i, IGRID_i, IGRID2_i,  &
                          timedep_i, ntdstep_i, NBCH_i, propagator_i, dummy
     real*8            :: GOLD_i, told_i, rmax_i, rmaxs_i, tdstep_i,  &
                          a0_i, epsilon_i, Fx_i, Fy_i, Fz_i
     ! Deprecated or removed variables
     integer           :: idip_i
-    logical           :: intsoldouble_i, dens_i
+    logical           :: intsoldouble_i, dens_i, integ_i
     double precision  :: dgtrig_i
 
     ! Gives default values to variables.
@@ -299,7 +296,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
     rmaxs          = rmaxs_i        ; predcoef      = predcoef_i     ;
     writexyz       = writexyz_i     ;
     DIIS           = DIIS_i         ; ndiis         = ndiis_i        ;
-    Iexch          = Iexch_i        ; integ         = integ_i        ;
+    Iexch          = Iexch_i        ;
     IGRID          = IGRID_i        ;
     IGRID2         = IGRID2_i       ; timedep       = timedep_i      ;
     field          = field_i        ; tdrestart     = tdrestart_i    ;

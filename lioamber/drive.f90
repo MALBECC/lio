@@ -14,7 +14,7 @@
       nuc, ncont, nlb, nshelld, cd, ad, Nucd, ncontd, nld, Nucx, indexii,      &
       ncontx, cx, ax, indexiid, X, XX, RMM, rhoalpha,rhobeta, af, charge,      &
       basis_set, fitting_set, e_, e_2, e3, exists, NORM, fcoord,               &
-      fmulliken, natom, frestart, M, FAC, Iexch, int_basis, max_func, integ,   &
+      fmulliken, natom, frestart, M, FAC, Iexch, int_basis, max_func, &
       frestartin, Md, NCO, nng, npas, Nr, used, STR, omit_bas, Nr2,   &
       wang, wang2, wang3, VCINP, OPEN, OPEN1, whatis, Num, Iz, pi,             &
       Rm2, rqm, rmax, Nunp, nl, nt, ng, ngd, restart_freq,             &
@@ -932,16 +932,6 @@
 !c
 !c variables defined in namelist cannot be in common ?
       OPEN1=OPEN
-
-      if ((Iexch.ge.4).and.(.not.(integ))) then
-        write(*,*) 'OPTION SELECTED NOT AVAILABLE'
-!c      pause
-      endif
-!c
-      if ((Iexch.eq.2).and.(OPEN)) then
-       write(*,*) 'OPTION SELECTED NOT AVAILABLE YET'
-!c      pause
-      endif
 !c
 !c
 

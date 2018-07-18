@@ -27,7 +27,7 @@ c-----------------------------------------------------------------
       module subm_int3lu; contains
       subroutine int3lu(E2)
 
-      use garcha_mod, only: RMM, ll, af, X, B, ngd, md, integ, M
+      use garcha_mod, only: RMM, ll, af, X, B, ngd, md, M
      >                    , kknumd, kknums, MEMO, Nang, natom, NCO
      >                    , NORM, Nunp, OPEN, pi32, nshell, nshelld
      >                    , SVD, cool, cools, kkind, kkinds, ncontd
@@ -154,7 +154,7 @@ c end ------------------------------------------------
             Rc(k)=Rc(k)+RMM(kkinds(kk))*cools(iikk+k)
           enddo
         enddo
-                
+
 c------------------------------------------------
 c calculation of variational coefficients
 c calculation of fitting coefficients
@@ -290,15 +290,12 @@ c the density using the Density Matrix or the vectors
 c Since Damping is applied on Density Matrix, at the beggining
 c of the SCF it is more convenient to use the D.M.
 c call fit for exchange correlation routine
-        if (integ) then
-          do i=1,Md
+
+        do i=1,Md
             B(i,1)=0.0D0
             B(i,2)=0.0D0
             B(i,3)=0.0D0
-          enddo
-        else
-          stop
-        endif
+        enddo
 
         Ex=0.D0
         Ea=0.D0
@@ -386,7 +383,7 @@ c the fit were generated
  6101      continue
       endif
 
- 
+
 c Numerical integration for obtaining the exchange-correlation part
 c of Fock matrix and also for the exchange-correlation energy
 
@@ -394,11 +391,9 @@ c of Fock matrix and also for the exchange-correlation energy
         af(k)=af(k)-B(k,2)
   317 end do
 
-      if (integ) then
-        NCOa=NCO
-        NCOb=NCO+Nunp
-        Ndens=Ndens+1
-      endif
+      NCOa=NCO
+      NCOb=NCO+Nunp
+      Ndens=Ndens+1
       E2=Ea-Eb/2.D0
 
       return

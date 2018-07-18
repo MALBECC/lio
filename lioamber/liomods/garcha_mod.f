@@ -23,12 +23,10 @@
       logical done(ntq),used,NORM,OPEN,DIRECT,VCINP,SHFT,DIIS
       logical done_fit(ntq)
       logical EXTR,SVD
-!write1
-      logical Coul,GRAD,BSSE,integ,SVD1,sol,tipe
-!Prop,GRAD,BSSE,integ,SVD1,sol,tipe
+      logical Coul,GRAD,BSSE,SVD1,sol,tipe
       logical exter,exter1,resp1,primera,writexyz
       logical OPEN1
-      logical integ1,sol1,free,free1
+      logical sol1,free,free1
 
       logical writeforces
 
@@ -82,7 +80,7 @@ c
 c Angular momenta : up to f functions ( could be easily extended if
 c necessary)
 c
-c      common /fit/ Nang,dens1,integ1,Iexch1,igridc,igrid2c
+c      common /fit/ Nang,Iexch1,igridc,igrid2c
 c      common /cav/ a01,epsilon1,field1,exter1,Fx1,Fy1,Fz1
 c
 c      common /index/ ii,iid

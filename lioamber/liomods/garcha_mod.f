@@ -10,7 +10,7 @@
       integer ex_functional_id, ec_functional_id
       logical use_libxc
       integer restart_freq, energy_freq
-      real*8 GOLD, TOLD, qmmmcut, dgtrig
+      real*8 GOLD, TOLD, qmmmcut
 !      parameter (nng=100)
       character*65 title
       character*20 basis,whatis,stdbas

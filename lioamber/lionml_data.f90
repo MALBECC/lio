@@ -7,7 +7,7 @@ module lionml_data
                                  DIIS, ndiis, GOLD, told, Etold, good_cut,     &
                                  hybrid_converg, rmax, rmaxs, omit_bas, NBCH,  &
                                  propagator, VCINP, restart_freq,              &
-                                 writexyz, dgtrig, Iexch, integ, frestartin,   &
+                                 writexyz, Iexch, integ, frestartin,           &
                                  frestart, predcoef, idip, intsoldouble,       &
                                  cubegen_only, cube_res, cube_dens, cube_orb,  &
                                  DENS, cube_sel, cube_orb_file, cube_dens_file,&
@@ -65,7 +65,7 @@ module lionml_data
 		     use_libxc, ex_functional_id, ec_functional_id
 
    namelist /lio/ OPEN, NMAX, Nunp, VCINP, GOLD, told, Etold, rmax, rmaxs,     &
-                  predcoef, idip, writexyz, intsoldouble, DIIS, ndiis, dgtrig, &
+                  predcoef, idip, writexyz, intsoldouble, DIIS, ndiis,         &
                   Iexch, integ, dens, igrid, igrid2, good_cut, hybrid_converg, &
                   initial_guess, natom, nsol, charge,                          &
                   ! File Input/Output.

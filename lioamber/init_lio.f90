@@ -21,7 +21,7 @@ subroutine lio_defaults()
                            GOLD, told, Etold, hybrid_converg, good_cut, rmax,  &
                            rmaxs, omit_bas, propagator, NBCH, VCINP,           &
                            restart_freq, frestartin, Iexch, integ, DENS, IGRID,&
-                           frestart, predcoef, idip, intsoldouble, dgtrig,     &
+                           frestart, predcoef, idip, intsoldouble,             &
                            cubegen_only, cube_res, cube_dens, cube_orb,        &
                            cube_sel, cube_orb_file, cube_dens_file, NUNP,      &
                            energy_freq, writeforces, charge,                   &
@@ -99,7 +99,7 @@ subroutine lio_defaults()
     predcoef       = .false.       ; cubegen_only       = .false.       ;
     idip           = 0             ; cube_res           = 40            ;
     intsoldouble   = .true.        ; cube_dens          = .false.       ;
-    dgtrig         = 100.          ; cube_orb           = .false.       ;
+    cube_orb       = .false.       ;
     Iexch          = 9             ; cube_sel           = 0             ;
     integ          = .true.        ; cube_orb_file      = "orb.cube"    ;
     DENS           = .true.        ; cube_dens_file     = 'dens.cube'   ;
@@ -254,7 +254,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
                            GOLD, told, Etold, hybrid_converg, good_cut,      &
                            rmax, rmaxs, omit_bas, propagator, NBCH,          &
                            VCINP, restart_freq, writexyz, frestartin,        &
-                           frestart, predcoef, idip, dgtrig, Iexch, integ,   &
+                           frestart, predcoef, idip, Iexch, integ,           &
                            cubegen_only, cube_res, cube_dens, cube_orb,      &
                            cube_sel, cube_orb_file, cube_dens_file, NUNP,    &
                            energy_freq, cube_elec_file,       &
@@ -278,8 +278,10 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
     integer           :: NMAX_i, NUNP_i, idip_i, ndiis_i, Iexch_i, IGRID_i,    &
                          IGRID2_i, timedep_i, ntdstep_i, NBCH_i, propagator_i, &
                          dummy
-    real*8            :: GOLD_i, told_i, rmax_i, rmaxs_i, dgtrig_i, tdstep_i,  &
+    real*8            :: GOLD_i, told_i, rmax_i, rmaxs_i, tdstep_i,  &
                          a0_i, epsilon_i, Fx_i, Fy_i, Fz_i
+    ! Deprecated or removed variables
+    double precision  :: dgtrig_i
 
     ! Gives default values to variables.
     call lio_defaults()
@@ -298,7 +300,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
     rmaxs          = rmaxs_i        ; predcoef      = predcoef_i     ;
     idip           = idip_i         ; writexyz      = writexyz_i     ;
     intsoldouble   = intsoldouble_i ; DIIS          = DIIS_i         ;
-    ndiis          = ndiis_i        ; dgtrig        = dgtrig_i       ;
+    ndiis          = ndiis_i        ; 
     Iexch          = Iexch_i        ; integ         = integ_i        ;
     DENS           = DENS_i         ; IGRID         = IGRID_i        ;
     IGRID2         = IGRID2_i       ; timedep       = timedep_i      ;

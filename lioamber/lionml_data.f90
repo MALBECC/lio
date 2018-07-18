@@ -8,7 +8,7 @@ module lionml_data
                                  hybrid_converg, rmax, rmaxs, omit_bas, NBCH,  &
                                  propagator, VCINP, restart_freq,              &
                                  writexyz, Iexch, integ, frestartin,           &
-                                 frestart, predcoef, idip, intsoldouble,       &
+                                 frestart, predcoef, idip,                     &
                                  cubegen_only, cube_res, cube_dens, cube_orb,  &
                                  DENS, cube_sel, cube_orb_file, cube_dens_file,&
                                  cube_elec, cube_elec_file, energy_freq, NUNP, &
@@ -65,7 +65,7 @@ module lionml_data
 		     use_libxc, ex_functional_id, ec_functional_id
 
    namelist /lio/ OPEN, NMAX, Nunp, VCINP, GOLD, told, Etold, rmax, rmaxs,     &
-                  predcoef, idip, writexyz, intsoldouble, DIIS, ndiis,         &
+                  predcoef, idip, writexyz, DIIS, ndiis,                       &
                   Iexch, integ, dens, igrid, igrid2, good_cut, hybrid_converg, &
                   initial_guess, natom, nsol, charge,                          &
                   ! File Input/Output.
@@ -113,8 +113,8 @@ module lionml_data
       double precision :: etold, gold, good_cut, rmax, rmaxs, told
       integer          :: charge, iexch, igrid, igrid2, initial_guess, natom,  &
                           ndiis, nmax, nsol, nunp
-      logical          :: dens, diis, hybrid_converg, integ, intsoldouble,     &
-                          open, predcoef, vcinp, writexyz
+      logical          :: dens, diis, hybrid_converg, integ, open, predcoef,   &
+                          vcinp, writexyz
       ! FILE IO
       character*20     :: frestartin, frestart
       character*40     :: basis_set, fitting_set
@@ -188,8 +188,8 @@ subroutine get_namelist(lio_in)
    lio_in%nsol           = nsol          ; lio_in%nunp   = nunp
    lio_in%dens           = dens          ; lio_in%diis   = diis
    lio_in%hybrid_converg = hybrid_converg; lio_in%integ  = integ
-   lio_in%intsoldouble   = intsoldouble  ; lio_in%open   = open
-   lio_in%predcoef       = predcoef
+   lio_in%predcoef       = predcoef      ; lio_in%open   = open
+
    ! Fileio
    lio_in%vcinp            = vcinp           ; lio_in%writexyz    = writexyz
    lio_in%frestartin       = frestartin      ; lio_in%frestart    = frestart

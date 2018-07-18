@@ -26,7 +26,7 @@
 !write1
       logical Coul,GRAD,BSSE,integ,SVD1,sol,tipe
 !Prop,GRAD,BSSE,integ,SVD1,sol,tipe
-      logical exter,exter1,resp1,primera,writexyz,intsoldouble
+      logical exter,exter1,resp1,primera,writexyz
       logical OPEN1
       logical dens1,integ1,sol1,free,free1
 

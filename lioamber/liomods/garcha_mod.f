@@ -36,13 +36,11 @@
       integer, dimension (:), ALLOCATABLE :: Iz, nnat
 
       dimension Rm2(0:54), STR(880,0:21), FAC(0:16)
-      dimension alpha(nss)
 c Everything is dimensioned for 2 basis, normal and density
 c ncf, lt,at,ct parameters for atomic basis sets
       dimension nshell(0:4)
       dimension Num(0:3),nlb(ng),nld(ngd),nshelld(0:4)
-       integer iconst1,ipop1,ispin1,
-     > icharge1,Nsol1,natsol1,Ll(3)
+       integer Ll(3)
 
        real*8, dimension (:), ALLOCATABLE :: af
        real*8, dimension (:,:), ALLOCATABLE :: c,a,cx,ax,cd,ad,B

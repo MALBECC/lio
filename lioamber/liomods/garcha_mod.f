@@ -5,7 +5,7 @@
 
       INCLUDE 'param.f'
       integer M,Md,natom,ntatom,NMAX,NCO,NUNP,igrid,igrid2
-     >  ,Iexch,nsol,npas,npasw,idip,watermod,noconverge,
+     >  ,Iexch,nsol,npas,npasw,watermod,noconverge,
      > converge,ndiis,nang,propagator,NBCH
       integer ex_functional_id, ec_functional_id
       logical use_libxc
@@ -53,7 +53,7 @@ c Everything is dimensioned for 2 basis, normal and density
 c ncf, lt,at,ct parameters for atomic basis sets
       dimension nshell(0:4)
       dimension Num(0:3),nlb(ng),nld(ngd),nshelld(0:4)
-       integer iconst1,idip1,ipop1,ispin1,
+       integer iconst1,ipop1,ispin1,
      > icharge1,Nsol1,natsol1,Ll(3)
 
        real*8, dimension (:), ALLOCATABLE :: af

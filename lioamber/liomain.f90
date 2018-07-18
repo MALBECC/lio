@@ -16,7 +16,7 @@ subroutine liomain(E, dipxyz)
     use garcha_mod, only: M, Smat, RealRho, OPEN, writeforces, energy_freq,   &
                           restart_freq, npas, sqsm, mulliken, lowdin, dipole, &
                           doing_ehrenfest, first_step, Eorbs, Eorbs_b, fukui, &
-                          print_coeffs, steep, idip, MO_coef_at, MO_coef_at_b,&
+                          print_coeffs, steep,       MO_coef_at, MO_coef_at_b,&
                           NUnp, NCO
     use ecp_mod   , only: ecpmode, IzECP
     use ehrensubs , only: ehrendyn_main
@@ -24,7 +24,6 @@ subroutine liomain(E, dipxyz)
 
     implicit none
     REAL*8, intent(inout) :: dipxyz(3), E
-    integer :: idip_scrach
 
     call g2g_timer_sum_start("Total")
 
@@ -35,10 +34,7 @@ subroutine liomain(E, dipxyz)
     if (.not.allocated(Eorbs_b))   allocate(Eorbs_b(M))
 
     if (steep) then
-      idip_scrach=idip
-      idip=0 !skip dipole calculation in geometry optimization
       call do_steep(E)
-      idip=idip_scrach
     end if
 
     if ( doing_ehrenfest ) then

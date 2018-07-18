@@ -25,7 +25,7 @@ subroutine lio_defaults()
                            cube_sel, cube_orb_file, cube_dens_file, NUNP,      &
                            energy_freq, writeforces, charge,                   &
                            cube_elec, cube_elec_file, cube_sqrt_orb, MEMO,     &
-                           NORM, SHFT, GRAD, BSSE, sol, primera,               &
+                           NORM, sol, primera,               &
                            watermod, fukui, little_cube_size, sphere_radius,   &
                            max_function_exponent, min_points_per_cube,         &
                            assign_all_functions, remove_zero_weights,          &
@@ -105,8 +105,7 @@ subroutine lio_defaults()
     timers         = 0             ; NORM               = .true.        ;
     NUNP           = 0             ; energy_freq        = 1             ;
     cube_sqrt_orb  = .false.       ; MEMO               = .true.        ;
-    SHFT           = .false.       ; GRAD               = .true.        ;
-    BSSE           = .false.       ; sol                = .false.       ;
+    sol            = .false.       ;
     primera        = .true.        ; watermod           = 0             ;
 
     return

@@ -20,10 +20,10 @@
      > solv2
       character*4 ctype
       logical exists,MEMO,predcoef
-      logical done(ntq),used,NORM,OPEN,DIRECT,VCINP,SHFT,DIIS
+      logical done(ntq),used,NORM,OPEN,DIRECT,VCINP,DIIS
       logical done_fit(ntq)
       logical EXTR,SVD
-      logical Coul,GRAD,BSSE,SVD1,sol,tipe
+      logical Coul,SVD1,sol,tipe
       logical exter,exter1,resp1,primera,writexyz
       logical OPEN1
       logical sol1,free,free1

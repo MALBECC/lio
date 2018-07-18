@@ -16,7 +16,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine lio_defaults()
 
-    use garcha_mod, only : basis, output, fmulliken, fcoord, OPEN, NMAX,       &
+    use garcha_mod, only : basis, fmulliken, fcoord, OPEN, NMAX,               &
                            basis_set, fitting_set, int_basis, DIIS, ndiis,     &
                            GOLD, told, Etold, hybrid_converg, good_cut, rmax,  &
                            rmaxs, omit_bas, propagator, NBCH, VCINP, Iexch,    &
@@ -42,8 +42,8 @@ subroutine lio_defaults()
     implicit none
 
 !   Names of files used for input and output.
-    basis          = 'basis'       ; output             = 'output'      ;
-    fmulliken      = 'mulliken'    ; fcoord             = 'qm.xyz'      ;
+    basis          = 'basis'       ; fmulliken      = 'mulliken'    ;
+    fcoord         = 'qm.xyz'      ;
 
 !   Theory level options.
     OPEN           = .false.       ; told               = 1.0D-6        ;
@@ -245,7 +245,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
            , Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i              &
            )
 
-    use garcha_mod, only : basis, output, fmulliken, fcoord, OPEN, NMAX,     &
+    use garcha_mod, only : basis, fmulliken, fcoord, OPEN, NMAX,             &
                            basis_set, fitting_set, int_basis, DIIS, ndiis,   &
                            GOLD, told, Etold, hybrid_converg, good_cut,      &
                            rmax, rmaxs, omit_bas, propagator, NBCH,          &
@@ -265,7 +265,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
 
     implicit none
     integer , intent(in) :: charge_i, nclatom, natomin, Izin(natomin)
-    character(len=20) :: basis_i, output_i, fcoord_i, fmulliken_i, frestart_i, &
+    character(len=20) :: basis_i, fcoord_i, fmulliken_i, frestart_i, &
                          frestartin_i, inputFile
     logical           :: verbose_i, OPEN_i, VCINP_i, predcoef_i, writexyz_i,   &
                          DIIS_i, field_i, exter_i, writedens_i, tdrestart_i
@@ -274,6 +274,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
     real*8            :: GOLD_i, told_i, rmax_i, rmaxs_i, tdstep_i,  &
                          a0_i, epsilon_i, Fx_i, Fy_i, Fz_i
     ! Deprecated or removed variables
+    character(len=20) :: output_i
     integer           :: idip_i
     logical           :: intsoldouble_i, dens_i, integ_i
     double precision  :: dgtrig_i
@@ -285,7 +286,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
     inputFile = 'lio.in'
     call read_options(inputFile)
 
-    basis          = basis_i        ; output        = output_i       ;
+    basis          = basis_i        ;
     fcoord         = fcoord_i       ; fmulliken     = fmulliken_i    ;
     frestart       = frestart_i     ; frestartin    = frestartin_i   ;
     OPEN           = OPEN_i         ;

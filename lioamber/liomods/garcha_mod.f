@@ -10,15 +10,11 @@
       integer ex_functional_id, ec_functional_id
       logical use_libxc
       integer restart_freq, energy_freq
-      real*8 GOLD, TOLD, qmmmcut
-!      parameter (nng=100)
-      character*65 title
-      character*20 basis,whatis,stdbas
+      real*8 GOLD, TOLD
+      character*20 basis,whatis
       character*40 basis_set, fitting_set
       logical int_basis
-      character*20 output,fcoord,fmulliken,frestart,frestartin,solv,
-     > solv2
-      character*4 ctype
+      character*20 fcoord,fmulliken,frestart,frestartin,solv,solv2
       logical exists,MEMO,predcoef
       logical done(ntq),used,NORM,OPEN,DIRECT,VCINP,DIIS
       logical done_fit(ntq)

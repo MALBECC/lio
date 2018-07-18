@@ -10,7 +10,7 @@ module lionml_data
                                  writexyz, Iexch, integ, frestartin,           &
                                  frestart, predcoef,                           &
                                  cubegen_only, cube_res, cube_dens, cube_orb,  &
-                                 DENS, cube_sel, cube_orb_file, cube_dens_file,&
+                                 cube_sel, cube_orb_file, cube_dens_file,      &
                                  cube_elec, cube_elec_file, energy_freq, NUNP, &
                                  writeforces, cube_sqrt_orb,    &
                                  fukui, little_cube_size, min_points_per_cube, &
@@ -66,7 +66,7 @@ module lionml_data
 
    namelist /lio/ OPEN, NMAX, Nunp, VCINP, GOLD, told, Etold, rmax, rmaxs,     &
                   predcoef, writexyz, DIIS, ndiis,                             &
-                  Iexch, integ, dens, igrid, igrid2, good_cut, hybrid_converg, &
+                  Iexch, integ, igrid, igrid2, good_cut, hybrid_converg,       &
                   initial_guess, natom, nsol, charge,                          &
                   ! File Input/Output.
                   frestartin, style, frestart, fukui, dipole, lowdin, verbose, &
@@ -113,8 +113,8 @@ module lionml_data
       double precision :: etold, gold, good_cut, rmax, rmaxs, told
       integer          :: charge, iexch, igrid, igrid2, initial_guess, natom,  &
                           ndiis, nmax, nsol, nunp
-      logical          :: dens, diis, hybrid_converg, integ, open, predcoef,   &
-                          vcinp, writexyz
+      logical          :: diis, hybrid_converg, integ, open, predcoef, vcinp,  &
+                          writexyz
       ! FILE IO
       character*20     :: frestartin, frestart
       character*40     :: basis_set, fitting_set
@@ -186,7 +186,7 @@ subroutine get_namelist(lio_in)
    lio_in%initial_guess  = initial_guess ; lio_in%natom  = natom
    lio_in%ndiis          = ndiis         ; lio_in%nmax   = nmax
    lio_in%nsol           = nsol          ; lio_in%nunp   = nunp
-   lio_in%dens           = dens          ; lio_in%diis   = diis
+   lio_in%diis           = diis
    lio_in%hybrid_converg = hybrid_converg; lio_in%integ  = integ
    lio_in%predcoef       = predcoef      ; lio_in%open   = open
 

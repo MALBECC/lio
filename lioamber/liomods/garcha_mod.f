@@ -48,15 +48,10 @@ c ncf, lt,at,ct parameters for atomic basis sets
      >  ,ncontd
         integer, dimension (:), ALLOCATABLE :: indexii, indexiid
 
-c
-
-       real*8, dimension (:), ALLOCATABLE :: RMM,RMM1,RMM2,RMM3
-       real*8, dimension (:), ALLOCATABLE :: RMM_save ! TODO: delete after use (FFR)
+       real*8, dimension (:), ALLOCATABLE :: RMM
        real*8, dimension (:), ALLOCATABLE :: rhoalpha,rhobeta
        real*8, dimension (:,:), ALLOCATABLE :: X, XX
-       real*8, dimension (:), ALLOCATABLE :: old1,old2,old3
 
-c
       parameter(pi32=5.56832799683170698D0,pi=3.14159265358979312D0,
      >          rpi=1.77245385090551588D0, pi5=34.9868366552497108D0,
      >    pi52=34.9868366552497108D0)
@@ -67,14 +62,7 @@ c
 
 c Angular momenta : up to f functions ( could be easily extended if
 c necessary)
-c
-c      common /fit/ Nang,Iexch1,igridc,igrid2c
-c      common /cav/ a01,epsilon1,field1,exter1,Fx1,Fy1,Fz1
-c
-c      common /index/ ii,iid
-c
       Data Num /1,3,6,10/
-      dimension jatom(2,100),coef(100),dist(100,3),distt(100)
       integer ndis
       real*8 kjar,xini,xfinal
 

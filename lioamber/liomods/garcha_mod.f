@@ -1,8 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        module garcha_mod
-!------------------------------------------------------------------------------!
-       implicit real*8 (a-h,o-z)
-
       INCLUDE 'param.f'
       integer M,Md,natom,ntatom,NMAX,NCO,NUNP,igrid,igrid2
      >  ,Iexch,nsol,npas,npasw,watermod,noconverge,

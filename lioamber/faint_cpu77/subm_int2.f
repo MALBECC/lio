@@ -16,16 +16,16 @@ c np ... marker for end of p
 c nd ... marker for end of d
 c
 c r(Nuc(i),j) j component of position of nucleus i , j=1,3
-c Input :  density basis 
-c Output: G matrix  
-c G matrix should be inverted, 
+c Input :  density basis
+c Output: G matrix
+c G matrix should be inverted,
 c later on, for evaluating  Coulomb terms
 c-----------------------------------------------------------------
       module subm_int2; contains
       subroutine int2()
       use liotemp   , only: FUNCT
       use garcha_mod, only: RMM, XX, ngd, M, Md, ad, nucd, ncontd,
-     >                      r, d, cd, SVD, NORM, pi5, nshelld
+     >                      r, d, cd, NORM, pi5, nshelld
 
 !
 !     implicit real*8 (a-h,o-z)
@@ -116,7 +116,7 @@ c (0|0) calculation
       t0=ad(i,ni)*ad(j,nj)
       alf=t0/zij
       t1=sqrt(zij)*t0
-      
+
       u=alf*dd
       ccoef=cd(i,ni)*cd(j,nj)
 c
@@ -561,32 +561,9 @@ c      deallocate(dgelss_temp)
 
 c
 #endif
-c	write (*,*) ss, "criterio ajuste base auxiliar, Nick"
-       if (ss.gt.1.D14) then
-        SVD=.true.
-	stop "trata de usar SVD"
-       endif
-
       call g2g_timer_sum_stop('G condition')
-c
 c------------------------------
 c inversion of G matrix , kept in Gm
-c
-      if (SVD) then
-       write(*,900) ss
-       call aint_query_gpu_level(igpu)
-       if (igpu.eq.5) then
-         write(*,*) "G IS ILL-CONDITIONED"
-         write(*,*) "THE SVD AUXILIARY DENSITY FIT IS NOT SUPPORTED"
-         write(*,*) "IN THE GPU VERSION OF LIO"
-         stop
-       endif
-       
-      else
-c
-c
-c
-c
 c LINPACK OPTION
 #ifdef pack
 c
@@ -647,12 +624,7 @@ c
 
       call g2g_timer_sum_stop('G invert')
 #endif
-c
-      endif
- 900  format('SWITCHING TO SVD rcond=',D10.3)
-c
 c-------------------------------------------------------------------
       return
       end subroutine
       end module subm_int2
-

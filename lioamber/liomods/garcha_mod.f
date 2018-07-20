@@ -18,7 +18,6 @@
       logical exists,MEMO,predcoef
       logical done(ntq),used,NORM,OPEN,DIRECT,VCINP,DIIS
       logical done_fit(ntq)
-      logical SVD
       logical sol
       logical primera,writexyz
       logical writeforces

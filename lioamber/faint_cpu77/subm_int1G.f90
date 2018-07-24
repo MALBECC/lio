@@ -1,13 +1,14 @@
 module subm_int1G
 contains
-subroutine int1G(ff)
+subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
+                 natom, M, ll, ntq, ntatom)
 !------------------------------------------------------------------------------!
 ! Calculates 1e gradients, to be used with MD, using the Obara-Saika recursive !
 ! method.                                                                      !
 ! Loops over all basis functions, ordered according to the type (all s, then   !
 ! all p, then all d). Inside each type, they are ordered in shells.            !
-! Inputs : basis function information.                                         !
-! Outputs: F matrix, and S matrix and forces (gradients) on nuclei.            !
+! Inputs : basis function and system information.                              !
+! Outputs: forces (gradients) on nuclei.                                       !
 !                                                                              !
 ! Relevant internal variables:                                                 !
 ! ns: marker for end of s functions.                                           !
@@ -17,11 +18,19 @@ subroutine int1G(ff)
 ! Original and debugged (or supposed to) by Dario Estrin on 28/07/1992         !
 ! Refactored by Federico Pedron on /07/2018                                    !
 !------------------------------------------------------------------------------!
-   use liotemp   , only: FUNCT
-   use garcha_mod, only: RMM, Nuc, a, c, d, r, Iz, ncont, nshell, pi, pi32,    &
-                         NORM, natom, M, ll, ntq
+   use liotemp      , only: FUNCT
+   use constants_mod, only: pi, pi32
+
    implicit none
-   double precision, intent(inout) :: ff(natom,3)
+   ! Inputs and Outputs
+   integer         , intent(in) :: M, ntq, ntatom, Nuc(:), ncont(:), Iz(:), &
+                                   nshell(0:4)
+   double precision, intent(in) :: a(:,:), c(:,:), d(:,:), r(ntatom,3), RMM(:)
+   logical         , intent(in) :: NORM
+
+   integer         , intent(out)   :: Ll(3)
+   double precision, intent(out)   :: ff(natom,3)
+   integer         , intent(inout) :: natom
 
    ! Auxiliary variables
    integer :: natom_old, igpu, ns, np, nd, M2

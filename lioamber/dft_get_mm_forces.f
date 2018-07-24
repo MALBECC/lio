@@ -44,7 +44,9 @@ c       real*8 ftot(3)
          ffcl=0
          ff=0
 
-         if (igpu.gt.3) call int1G(ff)
+         if (igpu.gt.3) call int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont,
+     &                             nshell, NORM, natom, M, ll, ntq,
+     &                             ntatom)
          call g2g_timer_start('aint_qmmm_forces')
          call aint_qmmm_forces(ff,ffcl)
          call g2g_timer_stop('aint_qmmm_forces')
@@ -90,7 +92,7 @@ c       real*8 ftot(3)
 
        call g2g_timer_sum_stop('QM/MM gradients')
        call g2g_timer_sum_stop('Forces')
-      
+
 !
 !
 !--------------------------------------------------------------------!

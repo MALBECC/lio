@@ -2,7 +2,8 @@
        subroutine dft_get_mm_forces(dxyzcl,dxyzqm)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        use garcha_mod
-       use faint_cpu77, only: int1G, intsolG
+       use faint_cpu, only: int1G
+       use faint_cpu77, only: intsolG
        implicit real*8 (a-h,o-z)
        REAL*8 , intent(inout) :: dxyzqm(3,natom)
        REAL*8 , intent(inout) :: dxyzcl(3,nsol)

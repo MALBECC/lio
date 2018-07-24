@@ -8,7 +8,6 @@
           use subm_intsol
 
           use subm_intSG
-          use subm_int1G
           use subm_int2G
           use subm_int3G
           use subm_intsolG

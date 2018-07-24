@@ -176,6 +176,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
       enddo
    enddo
    enddo
+   !print*, "s|s", ff
 
    ! Second loop - (p|s)
    do ifunct = ns+1, ns+np, 3
@@ -300,6 +301,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
       enddo
    enddo
    enddo
+   !print*, "p|s", ff
 
    ! Third loop - (p|p)
    do ifunct = ns+1, ns+np , 3
@@ -367,11 +369,10 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
             if (ifunct .eq. jfunct) then
                lij = l1
             endif
-
             do l2 = 1, lij
                t1   = Q(l2) - r(Nuc(ifunct),l2)
                t2   = Q(l2) - r(Nuc(jfunct),l2)
-               spj  = t2
+               spj  = t2 * ss
                skpj = sks * t2 + alf2 * spj
                t13  = spj  / Z2
                t15  = skpj / Z2
@@ -513,6 +514,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
       enddo
    enddo
    enddo
+   !print*, "p|p", ff
 
    ! Fourth loop - (d|s)
    do ifunct = ns+np+1, M, 6
@@ -724,6 +726,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
       enddo
    enddo
    enddo
+   !print*, "d|s", ff
 
    ! Fifth loop - (d|p)
    do ifunct = ns+np+1, M, 6
@@ -1066,6 +1069,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
       enddo
    enddo
    enddo
+   !print*, "d|p", ff
 
    ! Sixth and final loop - (d|d)
    do ifunct = ns+np+1, M, 6
@@ -1675,6 +1679,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
       enddo
    enddo
    enddo
+   !print*, "d|d", ff
 
    return
 end subroutine int1G

@@ -528,12 +528,12 @@ subroutine int1G(ff)
                  a(jfunct,ncj) * r(Nuc(jfunct),3)) / Zij
          alf  = a(ifunct,nci) * a(jfunct,ncj) / Zij
          alf2 = 2.D0 * alf
-         alf3 = alf / a(ifunct,nci) !VER SI ES NECESARIO
+         alf3 = alf / a(ifunct,nci)
 
          ss  = pi32 * exp(-alf*dd) / (Zij*sqrt(Zij))
          sks = alf * (3.D0 - alf2*dd) * ss
          t10 = ss / Z2
-         t11 = sks / Z2 - alf3
+         t11 = sks / Z2 - alf3 * ss
          ccoef = c(ifunct,nci) * c(jfunct,ncj)
 
          ! Loop over nuclei, common for all shells
@@ -584,7 +584,7 @@ subroutine int1G(ff)
                t15  = pjks / Z2
                t16  = t15 - alf3 * pjs
                tn   = t1 * pks
-               ovlap =  t1 * ps
+               ovlap= t1 * ps
 
                f1 = 1.D0
                if (l1 .eq. l2) then
@@ -593,20 +593,22 @@ subroutine int1G(ff)
                   f1    = sq3
                endif
                tn  = tn + alf2 * ovlap
-               l12 = l1 * (l1-1) / 2 + l2
 
                ! Gradients
-               te = ccoef * RMM(ifunct+l12-1+((M2-jfunct)*(jfunct-1))/2) / f1
-               t5 = te * 2.D0 * a(jfunct,ncj)
+               l12   = l1 * (l1-1) / 2 + l2
+               k_ind = ifunct + l12-1 + ((M2-jfunct)*(jfunct-1))/2
+
+               te = ccoef * RMM(k_ind) / f1
                t4 = te * 2.D0 * a(ifunct,nci)
+               t5 = te * 2.D0 * a(jfunct,ncj)
 
                do l3 = 1, 3
                   t1  = Q(l3) - r(Nuc(jfunct),l3)
                   t2  = Q(l3) - r(Nuc(ifunct),l3)
+
                   dp  = t1 * ovlap
                   dkp = t1 * tn
                   fks = t2 * tn
-
                   if (l1.eq.l3) then
                      dp  = dp  + t14
                      dkp = dkp + t15
@@ -619,10 +621,10 @@ subroutine int1G(ff)
                      fks = fks + t17
                      ff(Nuc(ifunct),l2) = ff(Nuc(ifunct),l2) - te * pks
                   endif
-
                   dkp = dkp + alf2 * dp
                   fks = fks + alf2 * (dp - (r(Nuc(ifunct),l3) - &
                                             r(Nuc(jfunct),l3)) * ovlap)
+
                   ff(Nuc(ifunct),l3) = ff(Nuc(ifunct),l3) + t4 * fks
                   ff(Nuc(jfunct),l3) = ff(Nuc(jfunct),l3) + t5 * dkp
                enddo
@@ -672,7 +674,7 @@ subroutine int1G(ff)
 
                   f1 = 1.D0
                   if (l1 .eq. l2) then
-                     tna    = tna + t7
+                     tna    = tna  + t7
                      tn1a   = tn1a + t8
                      f1     = sq3
                      dn2(1) = dn2(1) + t26
@@ -685,7 +687,8 @@ subroutine int1G(ff)
                   ! The ordering of the d shell goes like: xx,yx,yy,zx,zy,zz
                   ! ( 11, 21, 22, 31, 32, 33 )
                   ! Gradients
-                  k_ind = ifunct + l1*(l1-1)/2 +l2-1+ ((M2-jfunct)*(jfunct-1))/2
+                  l12   = l1 * (l1-1)/2 +l2
+                  k_ind = ifunct + l12-1 + ((M2-jfunct)*(jfunct-1))/2
                   te    = ccoef * RMM(k_ind) / f1
                   t4    = te * 2.D0 * a(ifunct,nci)
                   t5    = te * 2.D0 * a(jfunct,ncj)
@@ -745,7 +748,7 @@ subroutine int1G(ff)
          sks = alf * (3.D0 - alf2*dd) * ss
          t10 = ss  / Z2
          t30 = sks / Z2
-         t11 = t30 - alf3
+         t11 = t30 - alf3 * ss
 
          ! Loops over nuclei, common for all shells
          temp0 = 2.D0 * sqrt(Zij/pi) * ss
@@ -1086,7 +1089,7 @@ subroutine int1G(ff)
          sks = alf * (3.D0 - alf2*dd) * ss
          t0  = ss  / Z2
          t12 = sks / Z2
-         t10 = t12 - alf3
+         t10 = t12 - alf3 * ss
 
          ! Loops over nuclei, common for all shells
          temp0 = 2.D0 * sqrt(Zij/pi) * ss

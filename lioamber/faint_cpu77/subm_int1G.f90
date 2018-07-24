@@ -193,18 +193,18 @@ subroutine int1G(ff)
          ccoef = c(ifunct,nci) * c(jfunct,ncj)
 
          ss   = pi32 * exp(-alf*dd) / (Zij*sqrt(Zij))
-         sks  = alf  * (3.D0 - alf2*dd)
+         sks  = alf  * (3.D0 - alf2*dd) * ss
          t10 = ss  / Z2
          t15 = sks / Z2
          t20 = t15 - alf * ss / a(ifunct,nci)
 
          ! Loop over nuclei, common for all shells
-         temp0 = 2.D0 * sqrt(Zij/pi)
+         temp0 = 2.D0 * sqrt(Zij/pi) * ss
          do iatom = 1, natom
             q1 = Q(1) - r(iatom,1)
             q2 = Q(2) - r(iatom,2)
             q3 = Q(3) - r(iatom,3)
-            uf = (q1*q1 + q2*q2 +q3*q3)*Zij
+            uf = (q1*q1 + q2*q2 +q3*q3) * Zij
 
             temp = - temp0 * Iz(iatom)
             s0s(iatom) = temp * FUNCT(0,uf)
@@ -228,14 +228,16 @@ subroutine int1G(ff)
             pks = sks *t1 + alf2 * ps
 
             te = ccoef * RMM(ifunct + l1 - 1 + ((M2-jfunct)*(jfunct-1))/2)
-            t5 = te * 2.D0 * a(jfunct,ncj)
             t4 = te * 2.D0 * a(ifunct,nci)
+            t5 = te * 2.D0 * a(jfunct,ncj)
 
             do l2 = 1, 3
-               ds  = (Q(l2) - r(Nuc(ifunct),l2)) * ps
-               dks = (Q(l2) - r(Nuc(ifunct),l2)) * pks
-               pp  = (Q(l2) - r(Nuc(jfunct),l2)) * ps
-               pkp = (Q(l2) - r(Nuc(jfunct),l2)) * pks
+               t1  = Q(l2) - r(Nuc(ifunct),l2)
+               t2  = Q(l2) - r(Nuc(jfunct),l2)
+               ds  = t1 * ps
+               dks = t1 * pks
+               pp  = t2 * ps
+               pkp = t2 * pks
 
                if (l1 .eq. l2) then
                   ff(Nuc(ifunct),l2) = ff(Nuc(ifunct),l2) - te * sks
@@ -270,7 +272,10 @@ subroutine int1G(ff)
                dn(l1) = dn(l1) + s1s(iatom)
 
                te = RMM(ifunct + l1 - 1 + ((M2-jfunct) * (jfunct-1)) /2) * ccoef
-               do l2=1,3
+               t4 = te * 2.D0 * a(ifunct,nci)
+               t5 = te * 2.D0 * a(jfunct,ncj)
+
+               do l2 = 1, 3
                   dNs = (Q(l2) - r(Nuc(ifunct),l2)) * p0s - &
                         (Q(l2) - r(iatom,l2)      ) * p1s
 
@@ -280,9 +285,6 @@ subroutine int1G(ff)
                   endif
 
                   pNp = dNs + (r(Nuc(ifunct),l2) - r(Nuc(jfunct),l2))*p0s
-                  t5  = te * 2.D0 * a(jfunct,ncj)
-                  t4  = te * 2.D0 * a(ifunct,nci)
-
                   ff(Nuc(ifunct),l2) = ff(Nuc(ifunct),l2) + t4 * dNs
                   ff(Nuc(jfunct),l2) = ff(Nuc(jfunct),l2) + t5 * pNp
                   ff(iatom,l2)       = ff(iatom,l2)       + te * dn(l2)
@@ -310,17 +312,17 @@ subroutine int1G(ff)
          Q(2) = ti * r(Nuc(ifunct),2) + tj * r(Nuc(jfunct),2)
          Q(3) = ti * r(Nuc(ifunct),3) + tj * r(Nuc(jfunct),3)
 
-         alf   = ti * a(jfunct,ncj)
+         alf   = ti   * a(jfunct,ncj)
          alf2  = 2.D0 * alf
          ccoef = c(ifunct,nci) * c(jfunct,ncj)
 
          ss  = pi32 * exp(-alf*dd) / (Zij*sqrt(Zij))
-         sks = alf  * (3.D0 - alf2*dd)
+         sks = alf  * (3.D0 - alf2*dd) * ss
          t10 = ss  / Z2
          t20 = sks / Z2
 
          ! Loops over nuclei, common for all shells
-         temp0 = 2.D0 * sqrt(Zij/pi)
+         temp0 = 2.D0 * sqrt(Zij/pi) * ss
          do iatom = 1, natom
             q1 = Q(1) - r(iatom,1)
             q2 = Q(2) - r(iatom,2)
@@ -529,13 +531,13 @@ subroutine int1G(ff)
          alf3 = alf / a(ifunct,nci) !VER SI ES NECESARIO
 
          ss  = pi32 * exp(-alf*dd) / (Zij*sqrt(Zij))
-         sks = alf * (3.D0 - alf2*dd)
+         sks = alf * (3.D0 - alf2*dd) * ss
          t10 = ss / Z2
          t11 = sks / Z2 - alf3
          ccoef = c(ifunct,nci) * c(jfunct,ncj)
 
          ! Loop over nuclei, common for all shells
-         temp0 = 2.D0 * sqrt(Zij/pi)
+         temp0 = 2.D0 * sqrt(Zij/pi) * ss
          do iatom = 1, natom
             q1 = Q(1) - r(iatom,1)
             q2 = Q(2) - r(iatom,2)
@@ -740,13 +742,13 @@ subroutine int1G(ff)
          ccoef = c(ifunct,nci) * c(jfunct,ncj)
 
          ss  = pi32 * exp(-alf*dd) / (Zij*sqrt(Zij))
-         sks = alf * (3.D0 - alf2*dd)
+         sks = alf * (3.D0 - alf2*dd) * ss
          t10 = ss  / Z2
          t30 = sks / Z2
          t11 = t30 - alf3
 
          ! Loops over nuclei, common for all shells
-         temp0 = 2.D0 * sqrt(Zij/pi)
+         temp0 = 2.D0 * sqrt(Zij/pi) * ss
          do iatom = 1, natom
             q1 = Q(1) - r(iatom,1)
             q2 = Q(2) - r(iatom,2)
@@ -1081,13 +1083,13 @@ subroutine int1G(ff)
          ccoef = c(ifunct,nci) * c(jfunct,ncj)
 
          ss  = pi32 * exp(-alf*dd) / (Zij*sqrt(Zij))
-         sks = alf * (3.D0 - alf2*dd)
+         sks = alf * (3.D0 - alf2*dd) * ss
          t0  = ss  / Z2
          t12 = sks / Z2
          t10 = t12 - alf3
 
          ! Loops over nuclei, common for all shells
-         temp0 = 2.D0 * sqrt(Zij/pi)
+         temp0 = 2.D0 * sqrt(Zij/pi) * ss
          do iatom = 1, natom
             q1 = Q(1) - r(iatom,1)
             q2 = Q(2) - r(iatom,2)

@@ -19,59 +19,47 @@ subroutine int1G(ff)
 !------------------------------------------------------------------------------!
    use liotemp   , only: FUNCT
    use garcha_mod, only: RMM, Nuc, a, c, d, r, Iz, ncont, nshell, pi, pi32,    &
-                         NORM, natom, M, Md, ll, ntq
+                         NORM, natom, M, ll, ntq
    implicit none
    double precision, intent(inout) :: ff(natom,3)
 
    ! Auxiliary variables
-   integer :: natomold, igpu
-   integer :: l1, l2, l3, l4, l12, l34
-   integer :: M2, MM, MMd, ns, np, nd, k_ind
-   integer :: lij, lk, l5
-   integer :: icount, jcount, kcount, lcount, ncount, nci, ncj
-   integer :: ifunct, jfunct, iatom, jatom
+   integer :: natom_old, igpu, ns, np, nd, M2
+   integer :: l1, l2, l3, l4, l5, l12, l34, lk, lij, k_ind, nci, ncj, ifunct, &
+              jfunct, iatom, jatom
 
-   double precision :: En, ovlap, alf, alf2, alf3, alf4
-   double precision :: Q(3), term, temp, sq3, cc, ccoef
-   double precision :: f1, f2, tn, tna, u, Z2, Zij
-   double precision :: ss, ps, dd, p0s, p1s, p2s, p3s
-   double precision :: pi0p, pi1p, piks, pikpk, pipk, pis
-   double precision :: pj0s, pj1s, pj2s, pj0p, pj1p, pjkpk
-   double precision :: pjks, pjpk, pjs, pks, sks
-   double precision :: dijs, dijpk, dijks, dijkpk
-   double precision :: d0s, d0p, d1p, d1s, d2s
-   double precision :: t0, t1, t2, uf
+   double precision :: Q(3), ovlap, alf, alf2, alf3, alf4, temp, temp0, sq3, &
+                       ccoef, f1, f2, tn, tna, tn1a, Z2, Zij, q1, q2, q3, uf,&
+                       tt, tx, te, ti, tj
 
-   double precision :: temp0, pp, pd, ds, dp, df, fs, fp, fd, q1, q2, q3
-   double precision :: p4s, d0pl, d1pl, d2p, d3s, dijkpl, dijpl
-   double precision :: dkd, dkf, dkp, dks, dsd, fkd, fkp, fks
-   double precision :: dN1s, dNs, dNp, dNd, dNf, fNd, fNp
-   double precision :: pNd, pN1p, pkp, pkd, pjkdkl, pjdkl, pj3s, pj2p
-   double precision :: pj1d, pj0d, piNs, pikdkl, pidkl, pi2p, pi1d, pi0d
-   double precision :: spk, spj, sNpi, skpk, skpj, skpi, s2p, s1p, s0p
-   double precision :: pNp, fNs
-   double precision :: tt, tx, ty, te, ti, tj, tn1a
-   double precision :: t3, t4, t5, t7, t8, t9
-   double precision :: t10, t11, t12, t13, t14, t15, t16, t17, t18, t19
-   double precision :: t20, t21, t22, t23, t24, t25, t26, t27, t28, t29
-   double precision :: t30, t31, t32, t33, t34, t35, t36, t37, t38, t39
-   double precision :: t40, t41
-   double precision :: t50, t51, t52, t53, t54, t55, t56, t57, t58, t59
-   double precision :: t60, t61, t62, t63, t64, t65, t66, t67, t68, t69
-   double precision :: t70, t71, t72, t73, t74
-   double precision :: t81, t82, t83, t84, t85, t86
-   double precision :: t81b, t82b, t83b, t84b, t85b, t86b
-   double precision :: t90, t91, t92, t93, t94, t95, t96, t97, t98
+   double precision :: ss, sks, spk, spj, skpj, s1p, s0p, &
+                       ps, pp, p0s, p1s, p2s, p3s, p4s, pi0p, pi1p, pi2p, pi0d,&
+                       pi1d, piks, pikpk, pipk, pis, piNs, pikdkl, pidkl, pj0s,&
+                       pj1s, pj2s, pj3s, pj0p, pj1p, pj2p, pj0d, pj1d, pjkpk,  &
+                       pjks, pjpk, pjs, pjkdkl, pjdkl, pks, pkp, pkd, pNd, pNp,&
+                       pN1p, &
+                       ds, dp, dd, d0s, d1s, d2s, d3s, d0p, d1p, d2p, d0pl,  &
+                       d1pl, dijs, dijpk, dijks, dijkpk, dijkpl, dijpl, dks, &
+                       dkp, dkd, dkf, dN1s, dNs, dNp, dNd, dNf, dsd, &
+                       fNs, fNd, fNp, fkd, fkp, fks, fd
 
-   double precision :: s0s(ntq), s1s(ntq), s2s(ntq), s3s(ntq)
-   double precision :: s4s(ntq), s5s(ntq), s6s(ntq)
-   double precision :: x0x(ntq,3), x1x(ntq,3), x2x(ntq,3)
-   double precision :: x3x(ntq,3), x4x(ntq,3)
-   double precision :: dn1(3), dn2(3), dn3(3), dn4(3), dn5(3)
-   double precision :: dn6(3), dn7(3), dn8(3), dn9(3), dn(3)
-   double precision :: dn10(3)
-   double precision :: dn2b(3), dn4b(3), dn5b(3), dn7b(3), dn8b(3), dn9b(3)
+   double precision :: t0, t1, t2, t3, t4, t5, t7, t8, t9, t40, t41, &
+                       t10, t11, t12, t13, t14, t15, t16, t17, t18, t19, &
+                       t20, t21, t22, t23, t24, t25, t26, t27, t28, t29, &
+                       t30, t31, t32, t33, t34, t35, t36, t37, t38, t39, &
+                       t50, t51, t52, t53, t54, t55, t56, t57, t58, t59, &
+                       t60, t61, t62, t63, t64, t65, t66, t67, t68, t69, &
+                       t70, t71, t72, t73, t74, t81, t82, t83, t84, t85, &
+                       t86, t81b, t82b, t83b, t84b, t85b, t86b, &
+                       t90, t91, t92, t93, t94, t95, t96, t97, t98
 
+   double precision :: s0s(ntq)  , s1s(ntq)  , s2s(ntq)  , s3s(ntq)  , &
+                       s4s(ntq)  , s5s(ntq)  , s6s(ntq)  , &
+                       x0x(ntq,3), x1x(ntq,3), x2x(ntq,3), x3x(ntq,3), &
+                       x4x(ntq,3), &
+                       dn(3)  , dn1(3) , dn2(3) , dn3(3) , dn4(3) , dn5(3),  &
+                       dn6(3) , dn7(3) , dn8(3) , dn9(3) , dn10(3), dn2b(3), &
+                       dn4b(3), dn5b(3), dn7b(3), dn8b(3), dn9b(3)
 
    ! Checks basis set normalization.
    if (NORM) then
@@ -80,25 +68,15 @@ subroutine int1G(ff)
       sq3 = 1.D0
    endif
 
-   ns = nshell(0) ; np  = nshell(1)   ; nd = nshell(2)
-   MM = M*(M+1)/2 ; MMd = Md*(Md+1)/2 ; M2 = 2*M
+   ns = nshell(0); np  = nshell(1)   ; nd = nshell(2); M2 = 2*M
 
-   do lcount = 1,3
-      Ll(lcount) = lcount*(lcount-1)/2
+   do l1 = 1,3
+      Ll(l1) = l1*(l1-1)/2
    enddo
 
    ! Overlap ,Kinetic energy and Nuclear Attraction matrix elements evaluation.
    ! Overlap matrix will be kept, while kinetic energy and nuclear attraction
    ! are directly stored in Fock and Energy matrices.
-
-   ! Nuclear Repulsion part
-   En = 0.D0
-   do iatom = 1, natom
-   do jatom = 1, iatom-1
-      En = En + Iz(iatom)*Iz(jatom) / sqrt(d(iatom,jatom))
-   enddo
-   enddo
-
    ff = 0.0D0
    do iatom = 1, natom
       do jatom = 1, iatom-1
@@ -119,7 +97,7 @@ subroutine int1G(ff)
    ! Checks if the 1e integrals are done in GPU, doing only the KE terms if so.
    call aint_query_gpu_level(igpu)
    if (igpu.gt.3) then
-      natomold = natom
+      natom_old = natom
       natom    = 0
    endif
 
@@ -149,19 +127,18 @@ subroutine int1G(ff)
          ! Loops over nuclei, nuclear attraction matrix elements.
          ! tna accumulates nuclear attraction over all nuclei.
          tna   = 0.D0
-         temp0 = 2.D0 * sqrt(Zij/pi)
-
+         temp0 = 2.D0 * sqrt(Zij/pi) * ss
          do iatom = 1, natom
             q1 = Q(1) - r(iatom,1)
             q2 = Q(2) - r(iatom,2)
             q3 = Q(3) - r(iatom,3)
-            uf = (q1*q1 + q2*q2 + q3*q3)*Zij
+            uf = (q1*q1 + q2*q2 + q3*q3) * Zij
 
-            temp       = - Iz(iatom) * temp0
-            s0s(iatom) = temp  * FUNCT(0,uf)
-            s1s(iatom) = temp  * FUNCT(1,uf)
-            temp       = 2.0D0 * Zij * s1s(iatom)
+            temp = - Iz(iatom) * temp0
+            s0s(iatom) = temp * FUNCT(0,uf)
+            s1s(iatom) = temp * FUNCT(1,uf)
 
+            temp = 2.0D0 * Zij * s1s(iatom)
             x0x(iatom,1) = temp * q1
             x0x(iatom,2) = temp * q2
             x0x(iatom,3) = temp * q3
@@ -169,29 +146,26 @@ subroutine int1G(ff)
          enddo
 
          ! L2: different p in the p shell.
-         t3 = alf2
+         t3 = alf2 * ss
          te = ccoef * RMM(ifunct + ((M2-jfunct)*(jfunct-1))/2)
          t4 = te * 2.D0 * a(ifunct, nci)
          t5 = te * 2.D0 * a(jfunct, ncj)
 
          do l2 = 1, 3
             t1   = Q(l2) - r(Nuc(ifunct),l2)
-            pis  = t1
-            piks = t1 * sks + alf2 * pis
+            piks = t1 * (sks + alf2 * ss)
             tx   = r(Nuc(ifunct),l2) - r(Nuc(jfunct),l2)
-            skpi = piks + tx*(sks + t3)
 
-            ff(Nuc(ifunct),l2) = ff(Nuc(ifunct),l2) + t4*piks
-            ff(Nuc(jfunct),l2) = ff(Nuc(jfunct),l2) + t5*skpi
+            ff(Nuc(ifunct),l2) = ff(Nuc(ifunct),l2) + t4 * piks
+            ff(Nuc(jfunct),l2) = ff(Nuc(jfunct),l2) + t5 *(piks + tx*(sks + t3))
 
             ! Loop over nuclei, specific part
             do iatom = 1,natom
                piNs  = t1 * s0s(iatom) - (Q(l2)-r(iatom,l2)) * s1s(iatom)
-               sNpi  = piNs + tx*s0s(iatom)
-
                ff(Nuc(ifunct),l2) = ff(Nuc(ifunct),l2) + t4 * piNs
-               ff(Nuc(jfunct),l2) = ff(Nuc(jfunct),l2) + t5 * sNpi
-               ff(iatom,l2)       = ff(iatom,l2)       + te * x0x(iatom,l2)
+               ff(Nuc(jfunct),l2) = ff(Nuc(jfunct),l2) + &
+                                    t5 * (piNs + tx * s0s(iatom))
+               ff(iatom,l2)       = ff(iatom,l2) + te * x0x(iatom,l2)
             enddo
          enddo
       enddo
@@ -254,9 +228,8 @@ subroutine int1G(ff)
             pks = sks *t1 + alf2 * ps
 
             te = ccoef * RMM(ifunct + l1 - 1 + ((M2-jfunct)*(jfunct-1))/2)
-            ty = te * 2.D0
-            t5 = ty * a(jfunct,ncj)
-            t4 = ty * a(ifunct,nci)
+            t5 = te * 2.D0 * a(jfunct,ncj)
+            t4 = te * 2.D0 * a(ifunct,nci)
 
             do l2 = 1, 3
                ds  = (Q(l2) - r(Nuc(ifunct),l2)) * ps
@@ -349,16 +322,16 @@ subroutine int1G(ff)
          ! Loops over nuclei, common for all shells
          temp0 = 2.D0 * sqrt(Zij/pi)
          do iatom = 1, natom
-            q1 = Q(1)-r(iatom,1)
-            q2 = Q(2)-r(iatom,2)
-            q3 = Q(3)-r(iatom,3)
+            q1 = Q(1) - r(iatom,1)
+            q2 = Q(2) - r(iatom,2)
+            q3 = Q(3) - r(iatom,3)
             uf = (q1*q1 + q2*q2 + q3*q3) * Zij
 
             temp = -temp0 * Iz(iatom)
             s0s(iatom) = temp * FUNCT(0,uf)
             s1s(iatom) = temp * FUNCT(1,uf)
             s2s(iatom) = temp * FUNCT(2,uf)
-            s3s(iatom) = temp * FUNCT(4,uf)
+            s3s(iatom) = temp * FUNCT(3,uf)
 
             temp = Z2 * s1s(iatom)
             x0x(iatom,1) = temp * q1
@@ -413,8 +386,7 @@ subroutine int1G(ff)
 
                do l3 = 1, 3
                   t1 = Q(l3) - r(Nuc(ifunct),l3)
-                  t2 = Q(l3)-r(Nuc(jfunct),l3)
-                  tx = r(Nuc(ifunct),l3) - r(Nuc(jfunct),l3)
+                  t2 = Q(l3) - r(Nuc(jfunct),l3)
 
                   dp  = t1 * pp
                   dkp = t1 * pkp
@@ -434,10 +406,9 @@ subroutine int1G(ff)
 
                      ff(Nuc(jfunct),l3) = ff(Nuc(jfunct),l3) - te * piks
                   endif
-                  pd  = dp  + tx   * pp
                   dkp = dkp + alf2 * dp
-                  pkd = pkd + alf2 * pd
-
+                  pkd = pkd + alf2 * (dp + (r(Nuc(ifunct),l3) -&
+                                            r(Nuc(jfunct),l3)) * pp)
                   ff(Nuc(ifunct),l3) = ff(Nuc(ifunct),l3) + t4 * dkp
                   ff(Nuc(jfunct),l3) = ff(Nuc(jfunct),l3) + t5 * pkd
                enddo
@@ -569,13 +540,13 @@ subroutine int1G(ff)
             q1 = Q(1) - r(iatom,1)
             q2 = Q(2) - r(iatom,2)
             q3 = Q(3) - r(iatom,3)
-            uf = (q1*q1 + q2*q2 + q3*q3)*Zij
+            uf = (q1*q1 + q2*q2 + q3*q3) * Zij
 
             temp = -temp0 * Iz(iatom)
             s0s(iatom) = temp * FUNCT(0,uf)
             s1s(iatom) = temp * FUNCT(1,uf)
             s2s(iatom) = temp * FUNCT(2,uf)
-            s3s(iatom) = temp * FUNCT(4,uf)
+            s3s(iatom) = temp * FUNCT(3,uf)
 
             temp = Z2 * s1s(iatom)
             x0x(iatom,1) = temp * q1
@@ -630,7 +601,6 @@ subroutine int1G(ff)
                do l3 = 1, 3
                   t1  = Q(l3) - r(Nuc(jfunct),l3)
                   t2  = Q(l3) - r(Nuc(ifunct),l3)
-                  tx  = r(Nuc(ifunct),l3) - r(Nuc(jfunct),l3)
                   dp  = t1 * ovlap
                   dkp = t1 * tn
                   fks = t2 * tn
@@ -648,9 +618,9 @@ subroutine int1G(ff)
                      ff(Nuc(ifunct),l2) = ff(Nuc(ifunct),l2) - te * pks
                   endif
 
-                  fs  = dp - tx * ovlap
                   dkp = dkp + alf2 * dp
-                  fks = fks + alf2 * fs
+                  fks = fks + alf2 * (dp - (r(Nuc(ifunct),l3) - &
+                                            r(Nuc(jfunct),l3)) * ovlap)
                   ff(Nuc(ifunct),l3) = ff(Nuc(ifunct),l3) + t4 * fks
                   ff(Nuc(jfunct),l3) = ff(Nuc(jfunct),l3) + t5 * dkp
                enddo
@@ -721,7 +691,6 @@ subroutine int1G(ff)
                   do l3 = 1, 3
                      t1 = Q(l3) - r(Nuc(jfunct),l3)
                      t2 = Q(l3) - r(iatom,l3)
-                     tx = r(Nuc(ifunct),l3) - r(Nuc(jfunct),l3)
 
                      dNp = t1 * dNs - t2 * dN1s
                      if (l1.eq.l3) then
@@ -732,7 +701,7 @@ subroutine int1G(ff)
                         dNp = dNp + t30
                         ff(Nuc(ifunct),l3) = ff(Nuc(ifunct),l3) - te * p0s
                      endif
-                     fNs = dNp - tx * dNs
+                     fNs = dNp - (r(Nuc(ifunct),l3) - r(Nuc(jfunct),l3)) * dNs
 
                      ff(Nuc(ifunct),l3) = ff(Nuc(ifunct),l3) + t4 * fNs
                      ff(Nuc(jfunct),l3) = ff(Nuc(jfunct),l3) + t5 * dNp
@@ -782,14 +751,14 @@ subroutine int1G(ff)
             q1 = Q(1) - r(iatom,1)
             q2 = Q(2) - r(iatom,2)
             q3 = Q(3) - r(iatom,3)
-            uf = (q1*q1 + q2*q2 + q3*q3)*Zij
+            uf = (q1*q1 + q2*q2 + q3*q3) * Zij
 
             temp = -temp0 * Iz(iatom)
             s0s(iatom) = temp * FUNCT(0,uf)
             s1s(iatom) = temp * FUNCT(1,uf)
             s2s(iatom) = temp * FUNCT(2,uf)
-            s3s(iatom) = temp * FUNCT(4,uf)
-            s4s(iatom)=temp*FUNCT(4,u)
+            s3s(iatom) = temp * FUNCT(3,uf)
+            s4s(iatom) = temp * FUNCT(4,uf)
 
             temp = Z2 * s1s(iatom)
             x0x(iatom,1) = temp * q1
@@ -885,36 +854,31 @@ subroutine int1G(ff)
                   do l4 = 1, 3
                      t1 = Q(l4) - r(Nuc(jfunct),l4)
                      t2 = Q(l4) - r(Nuc(ifunct),l4)
-                     tx = r(Nuc(ifunct),l4) - r(Nuc(jfunct),l4)
 
                      dsd = t1 * ovlap
                      dkd = t1 * tn
                      fkp = t2 * tn
-
                      if (l1.eq.l4) then
                         dsd = dsd + t16
                         dkd = dkd + t17
                         fkp = fkp + t18
                         ff(Nuc(ifunct),l4) = ff(Nuc(ifunct),l4) - te * pjkpk
                      endif
-
                      if (l2.eq.l4) then
                         dsd = dsd + t19
                         dkd = dkd + t20
                         fkp = fkp + t21
                         ff(Nuc(ifunct),l4) = ff(Nuc(ifunct),l4) - te * pikpk
                      endif
-
                      if (l3.eq.l4) then
                         dsd = dsd + t22
                         dkd = dkd + t24
                         fkp = fkp + t23
                         ff(Nuc(jfunct),l4) = ff(Nuc(jfunct),l4) - te * dijks
                      endif
-
-                     fp  = dsd - tx * ovlap
                      dkd = dkd + alf2 * dsd
-                     fkp = fkp + alf2 * fp
+                     fkp = fkp + alf2 * (dsd - (r(Nuc(ifunct),l4) - &
+                                                r(Nuc(jfunct),l4)) * ovlap)
                      ff(Nuc(ifunct),l4) = ff(Nuc(ifunct),l4) + t4 * fkp
                      ff(Nuc(jfunct),l4) = ff(Nuc(jfunct),l4) + t5 * dkd
                   enddo
@@ -1062,7 +1026,6 @@ subroutine int1G(ff)
                      do l4 = 1, 3
                         t1 = Q(l4) - r(Nuc(jfunct),l4)
                         t2 = Q(l4) - r(iatom,l4)
-                        tx = r(Nuc(ifunct),l4) - r(Nuc(jfunct),l4)
 
                         dNd = t1 * tna - t2 * tn1a
                         if (l1 .eq. l4) then
@@ -1079,7 +1042,7 @@ subroutine int1G(ff)
                            ff(Nuc(jfunct),l4) = ff(Nuc(jfunct),l4) - te * d0s
                            dNd = dNd + (d0s - d1s) / Z2
                         endif
-                        fNp = dNd - tx * tna
+                        fNp = dNd - (r(Nuc(ifunct),l4) - r(Nuc(jfunct),l4)) *tna
 
                         ff(Nuc(ifunct),l4) = ff(Nuc(ifunct),l4) + t4 * fNp
                         ff(Nuc(jfunct),l4) = ff(Nuc(jfunct),l4) + t5 * dNd
@@ -1129,13 +1092,13 @@ subroutine int1G(ff)
             q1 = Q(1) - r(iatom,1)
             q2 = Q(2) - r(iatom,2)
             q3 = Q(3) - r(iatom,3)
-            uf = (q1*q1 + q2*q2 + q3*q3)*Zij
+            uf = (q1*q1 + q2*q2 + q3*q3) * Zij
 
             temp = -temp0 * Iz(iatom)
             s0s(iatom) = temp * FUNCT(0,uf)
             s1s(iatom) = temp * FUNCT(1,uf)
             s2s(iatom) = temp * FUNCT(2,uf)
-            s3s(iatom) = temp * FUNCT(4,uf)
+            s3s(iatom) = temp * FUNCT(3,uf)
             s4s(iatom) = temp * FUNCT(4,uf)
             s5s(iatom) = temp * FUNCT(5,uf)
             s6s(iatom) = temp * FUNCT(6,uf)
@@ -1204,9 +1167,8 @@ subroutine int1G(ff)
                do l3 = 1, lij
                   t2   = Q(l3)-r(Nuc(jfunct),l3)
                   spk  = t2 * ss
-                  skpk = t2 * sks + alf2 * spk
                   t22  = spk  / Z2
-                  t23  = skpk / Z2
+                  t23  = (t2 * sks + alf2 * spk) / Z2
 
                   pipk   = t2 * pis
                   pjpk   = t2 * pjs
@@ -1310,7 +1272,6 @@ subroutine int1G(ff)
                      do l5 = 1, 3
                         t1 = Q(l5) - r(Nuc(ifunct),l5)
                         t2 = Q(l5) - r(Nuc(jfunct),l5)
-                        tx = r(Nuc(ifunct),l5) - r(Nuc(jfunct),l5)
 
                         fd  = t1 * ovlap
                         fkd = t1 * tn
@@ -1339,9 +1300,9 @@ subroutine int1G(ff)
                            dkf = dkf + t41
                            ff(Nuc(jfunct),l5)=ff(Nuc(jfunct),l5) - te * dijkpk
                         endif
-                        df  = fd  + tx   * ovlap
                         fkd = fkd + alf2 * fd
-                        dkf = dkf + alf2 * df
+                        dkf = dkf + alf2 * (fd + (r(Nuc(ifunct),l5) - &
+                                                  r(Nuc(jfunct),l5)) * ovlap)
                         ff(Nuc(ifunct),l5) = ff(Nuc(ifunct),l5) + t4 * fkd
                         ff(Nuc(jfunct),l5) = ff(Nuc(jfunct),l5) + t5 * dkf
                      enddo
@@ -1498,9 +1459,8 @@ subroutine int1G(ff)
 
                      s0p = t1 * s0s(iatom) - t2 * s1s(iatom)
                      s1p = t1 * s1s(iatom) - t2 * s2s(iatom)
-                     s2p = t1 * s2s(iatom) - t2 * s3s(iatom)
                      t70 = (s0p - s1p) / Z2
-                     t71 = (s1p - s2p) / Z2
+                     t71 = (s1p - (t1 * s2s(iatom) - t2 * s3s(iatom))) / Z2
 
                      d0p = t1 * d0s - t2 * d1s
                      d1p = t1 * d1s - t2 * d2s
@@ -1672,7 +1632,6 @@ subroutine int1G(ff)
                         do l5 = 1, 3
                            t1 = Q(l5) - r(Nuc(ifunct),l5)
                            t2 = Q(l5) - r(iatom,l5)
-                           tx = r(Nuc(ifunct),l5) - r(Nuc(jfunct),l5)
 
                            fNd = t1 * tna - t2 * tn1a
                            if (l1.eq.l5) then
@@ -1691,7 +1650,8 @@ subroutine int1G(ff)
                               fNd = fNd + t64
                               ff(Nuc(jfunct),l5) = ff(Nuc(jfunct),l5) - te * d0p
                            endif
-                           dNf = fNd + tx * tna
+                           dNf = (r(Nuc(ifunct),l5) - r(Nuc(jfunct),l5)) *tna +&
+                                 fNd
                            ff(Nuc(ifunct),l5) = ff(Nuc(ifunct),l5) + t4 * fNd
                            ff(Nuc(jfunct),l5) = ff(Nuc(jfunct),l5) + t5 * dNf
                            ff(iatom,l5)       = ff(iatom,l5) + te * dn10(l5)
@@ -1707,7 +1667,7 @@ subroutine int1G(ff)
    enddo
    enddo
 
-   if (igpu.gt.3) natom = natomold
+   if (igpu.gt.3) natom = natom_old
    return
 end subroutine int1G
 end module subm_int1G

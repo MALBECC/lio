@@ -45,8 +45,7 @@ c       real*8 ftot(3)
          ff=0
 
          if (igpu.gt.3) call int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont,
-     &                             nshell, NORM, natom, M, ll, ntq,
-     &                             ntatom)
+     &                             nshell, NORM, natom, M, ntatom)
          call g2g_timer_start('aint_qmmm_forces')
          call aint_qmmm_forces(ff,ffcl)
          call g2g_timer_stop('aint_qmmm_forces')

@@ -1,7 +1,7 @@
 module subm_int1G
 contains
 subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
-                 natom, M, ll, ntq, ntatom)
+                 natom, M, ntatom)
 !------------------------------------------------------------------------------!
 ! Calculates 1e gradients, to be used with MD, using the Obara-Saika recursive !
 ! method.                                                                      !
@@ -23,19 +23,16 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
 
    implicit none
    ! Inputs and Outputs
-   integer         , intent(in) :: M, ntq, ntatom, Nuc(:), ncont(:), Iz(:), &
-                                   nshell(0:4)
-   double precision, intent(in) :: a(:,:), c(:,:), d(:,:), r(ntatom,3), RMM(:)
-   logical         , intent(in) :: NORM
-
-   integer         , intent(out)   :: Ll(3)
-   double precision, intent(out)   :: ff(natom,3)
-   integer         , intent(inout) :: natom
+   integer         , intent(in)  :: M, natom, ntatom, Nuc(:), ncont(:), Iz(:), &
+                                    nshell(0:4)
+   double precision, intent(in)  :: a(:,:), c(:,:), d(:,:), r(ntatom,3), RMM(:)
+   logical         , intent(in)  :: NORM
+   double precision, intent(out) :: ff(natom,3)
 
    ! Auxiliary variables
-   integer :: natom_old, igpu, ns, np, nd, M2
+   integer :: my_natom, igpu, ns, np, nd, M2
    integer :: l1, l2, l3, l4, l5, l12, l34, lk, lij, k_ind, nci, ncj, ifunct, &
-              jfunct, iatom, jatom
+              jfunct, iatom, jatom, ll(3)
 
    double precision :: Q(3), ovlap, alf, alf2, alf3, alf4, temp, temp0, sq3, &
                        ccoef, f1, f2, tn, tna, tn1a, Z2, Zij, q1, q2, q3, uf,&
@@ -62,10 +59,10 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
                        t86, t81b, t82b, t83b, t84b, t85b, t86b, &
                        t90, t91, t92, t93, t94, t95, t96, t97, t98
 
-   double precision :: s0s(ntq)  , s1s(ntq)  , s2s(ntq)  , s3s(ntq)  , &
-                       s4s(ntq)  , s5s(ntq)  , s6s(ntq)  , &
-                       x0x(ntq,3), x1x(ntq,3), x2x(ntq,3), x3x(ntq,3), &
-                       x4x(ntq,3), &
+   double precision :: s0s(natom)  , s1s(natom)  , s2s(natom)  , s3s(natom)  , &
+                       s4s(natom)  , s5s(natom)  , s6s(natom)  , &
+                       x0x(natom,3), x1x(natom,3), x2x(natom,3), x3x(natom,3), &
+                       x4x(natom,3), &
                        dn(3)  , dn1(3) , dn2(3) , dn3(3) , dn4(3) , dn5(3),  &
                        dn6(3) , dn7(3) , dn8(3) , dn9(3) , dn10(3), dn2b(3), &
                        dn4b(3), dn5b(3), dn7b(3), dn8b(3), dn9b(3)
@@ -105,10 +102,8 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
 
    ! Checks if the 1e integrals are done in GPU, doing only the KE terms if so.
    call aint_query_gpu_level(igpu)
-   if (igpu.gt.3) then
-      natom_old = natom
-      natom    = 0
-   endif
+   my_natom = natom
+   if (igpu.gt.3) my_natom = 0
 
    ! First loop - (s|s)
    do ifunct = 1, ns
@@ -137,7 +132,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
          ! tna accumulates nuclear attraction over all nuclei.
          tna   = 0.D0
          temp0 = 2.D0 * sqrt(Zij/pi) * ss
-         do iatom = 1, natom
+         do iatom = 1, my_natom
             q1 = Q(1) - r(iatom,1)
             q2 = Q(2) - r(iatom,2)
             q3 = Q(3) - r(iatom,3)
@@ -169,7 +164,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
             ff(Nuc(jfunct),l2) = ff(Nuc(jfunct),l2) + t5 *(piks + tx*(sks + t3))
 
             ! Loop over nuclei, specific part
-            do iatom = 1,natom
+            do iatom = 1, my_natom
                piNs  = t1 * s0s(iatom) - (Q(l2)-r(iatom,l2)) * s1s(iatom)
                ff(Nuc(ifunct),l2) = ff(Nuc(ifunct),l2) + t4 * piNs
                ff(Nuc(jfunct),l2) = ff(Nuc(jfunct),l2) + &
@@ -209,7 +204,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
 
          ! Loop over nuclei, common for all shells
          temp0 = 2.D0 * sqrt(Zij/pi) * ss
-         do iatom = 1, natom
+         do iatom = 1, my_natom
             q1 = Q(1) - r(iatom,1)
             q2 = Q(2) - r(iatom,2)
             q3 = Q(3) - r(iatom,3)
@@ -266,7 +261,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
          enddo
 
          ! Nuclear attraction part
-         do iatom = 1, natom
+         do iatom = 1, my_natom
             t50 = (s0s(iatom) - s1s(iatom)) / Z2
 
             do  l1 = 1, 3
@@ -332,7 +327,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
 
          ! Loops over nuclei, common for all shells
          temp0 = 2.D0 * sqrt(Zij/pi) * ss
-         do iatom = 1, natom
+         do iatom = 1, my_natom
             q1 = Q(1) - r(iatom,1)
             q2 = Q(2) - r(iatom,2)
             q3 = Q(3) - r(iatom,3)
@@ -427,7 +422,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
          enddo
 
          ! Nuclear attraction part
-         do iatom = 1, natom
+         do iatom = 1, my_natom
             t15 = (s0s(iatom)   - s1s(iatom))   / Z2
             t25 = (s1s(iatom)   - s2s(iatom))   / Z2
             t26 = (x0x(iatom,1) - x1x(iatom,1)) / Z2
@@ -547,7 +542,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
 
          ! Loop over nuclei, common for all shells
          temp0 = 2.D0 * sqrt(Zij/pi) * ss
-         do iatom = 1, natom
+         do iatom = 1, my_natom
             q1 = Q(1) - r(iatom,1)
             q2 = Q(2) - r(iatom,2)
             q3 = Q(3) - r(iatom,3)
@@ -641,7 +636,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
          enddo
 
          ! Nuclear attraction part
-         do iatom = 1, natom
+         do iatom = 1, my_natom
             t7  = (s0s(iatom) - s1s(iatom)) / Z2
             t8  = (s1s(iatom) - s2s(iatom)) / Z2
             t26 = (x0x(iatom,1) - x1x(iatom,1)) / Z2
@@ -761,7 +756,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
 
          ! Loops over nuclei, common for all shells
          temp0 = 2.D0 * sqrt(Zij/pi) * ss
-         do iatom = 1, natom
+         do iatom = 1, my_natom
             q1 = Q(1) - r(iatom,1)
             q2 = Q(2) - r(iatom,2)
             q3 = Q(3) - r(iatom,3)
@@ -901,7 +896,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
          enddo
 
          ! Nuclear attraction
-         do iatom = 1, natom
+         do iatom = 1, my_natom
             t7  = (s0s(iatom) - s1s(iatom)) / Z2
             t8  = (s1s(iatom) - s2s(iatom)) / Z2
             t9  = (s2s(iatom) - s3s(iatom)) / Z2
@@ -1102,7 +1097,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
 
          ! Loops over nuclei, common for all shells
          temp0 = 2.D0 * sqrt(Zij/pi) * ss
-         do iatom = 1, natom
+         do iatom = 1, my_natom
             q1 = Q(1) - r(iatom,1)
             q2 = Q(2) - r(iatom,2)
             q3 = Q(3) - r(iatom,3)
@@ -1326,7 +1321,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
          enddo
 
          ! Nuclear attraction
-         do iatom = 1, natom
+         do iatom = 1, my_natom
             t50 = (s0s(iatom) - s1s(iatom)) / Z2
             t51 = (s1s(iatom) - s2s(iatom)) / Z2
             t52 = (s2s(iatom) - s3s(iatom)) / Z2
@@ -1681,7 +1676,6 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
    enddo
    enddo
 
-   if (igpu.gt.3) natom = natom_old
    return
 end subroutine int1G
 end module subm_int1G

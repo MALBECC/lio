@@ -345,8 +345,8 @@ subroutine SCF(E)
 !
       call g2g_timer_sum_start('1-e Fock')
       call g2g_timer_sum_start('Nuclear attraction')
-      call int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md, nshell,ntatom)
-
+      call int1(En, RMM(M5:M5+MM), RMM(M11:M11+MM), Smat, Nuc, a, c, d, r, &
+                Iz, ncont, NORM, natom, M, nshell, ntatom)
       call ECP_fock( MM, RMM(M11) )
 
 ! Other terms
@@ -956,7 +956,8 @@ subroutine SCF(E)
         Es=Ens
 
 !       One electron Kinetic (with aint >3) or Kinetic + Nuc-elec (aint >=3)
-        call int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md, nshell,ntatom)
+        call int1(En, RMM(M5:M5+MM), RMM(M11:M11+MM), Smat, Nuc, a, c, d, r,&
+                  Iz, ncont, NORM, natom, M, nshell, ntatom)
 
 !       Computing the E1-fock without the MM atoms
         if (nsol.gt.0.and.igpu.ge.1) then

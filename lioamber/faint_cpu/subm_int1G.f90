@@ -1,6 +1,6 @@
 module subm_int1G
 contains
-subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
+subroutine int1G(ff, rho, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
                  natom, M, ntatom)
 !------------------------------------------------------------------------------!
 ! Calculates 1e gradients, to be used with MD, using the Obara-Saika recursive !
@@ -25,7 +25,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
    ! Inputs and Outputs
    integer         , intent(in)  :: M, natom, ntatom, Nuc(:), ncont(:), Iz(:), &
                                     nshell(0:4)
-   double precision, intent(in)  :: a(:,:), c(:,:), d(:,:), r(ntatom,3), RMM(:)
+   double precision, intent(in)  :: a(:,:), c(:,:), d(:,:), r(ntatom,3), rho(:)
    logical         , intent(in)  :: NORM
    double precision, intent(out) :: ff(natom,3)
 
@@ -77,7 +77,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
       sq3 = 1.D0
    endif
 
-   ns = nshell(0); np  = nshell(1)   ; nd = nshell(2); M2 = 2*M
+   ns = nshell(0); np  = nshell(1); nd = nshell(2); M2 = 2*M
 
    do l1 = 1,3
       Ll(l1) = l1*(l1-1)/2
@@ -154,7 +154,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
 
          ! L2: different p in the p shell.
          t3 = alf2 * ss
-         te = ccoef * RMM(ifunct + ((M2-jfunct)*(jfunct-1))/2)
+         te = ccoef * rho(ifunct + ((M2-jfunct)*(jfunct-1))/2)
          t4 = te * 2.D0 * a(ifunct, nci)
          t5 = te * 2.D0 * a(jfunct, ncj)
 
@@ -235,7 +235,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
             ps  = ss  * t1
             pks = sks *t1 + alf2 * ps
 
-            te = ccoef * RMM(ifunct + l1 - 1 + ((M2-jfunct)*(jfunct-1))/2)
+            te = ccoef * rho(ifunct + l1 - 1 + ((M2-jfunct)*(jfunct-1))/2)
             t4 = te * 2.D0 * a(ifunct,nci)
             t5 = te * 2.D0 * a(jfunct,ncj)
 
@@ -279,7 +279,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
                dn(3)  = t1 * x0x(iatom,3) - t2 * x1x(iatom,3)
                dn(l1) = dn(l1) + s1s(iatom)
 
-               te = RMM(ifunct + l1 - 1 + ((M2-jfunct) * (jfunct-1)) /2) * ccoef
+               te = rho(ifunct + l1 - 1 + ((M2-jfunct) * (jfunct-1)) /2) * ccoef
                t4 = te * 2.D0 * a(ifunct,nci)
                t5 = te * 2.D0 * a(jfunct,ncj)
 
@@ -390,7 +390,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
                pkp = pkp + alf2*pp
 
                k_ind = ifunct+l1-1 + ((M2-(jfunct+l2-1))*(jfunct+l2-2))/2
-               te = ccoef*RMM(k_ind)
+               te = ccoef*rho(k_ind)
                t5 = te * 2.D0 * a(jfunct,ncj)
                t4 = te * 2.D0 * a(ifunct,nci)
 
@@ -484,7 +484,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
                   endif
 
                   k_ind = ifunct + l1-1 + ((M2-(jfunct+l2-1))*(jfunct+l2-2))/2
-                  te = ccoef * RMM(k_ind)
+                  te = ccoef * rho(k_ind)
                   t4 = te * 2.D0 * a(ifunct,nci)
                   t5 = te * 2.D0 * a(jfunct,ncj)
 
@@ -607,7 +607,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
                l12   = l1 * (l1-1) / 2 + l2
                k_ind = ifunct + l12-1 + ((M2-jfunct)*(jfunct-1))/2
 
-               te = ccoef * RMM(k_ind) / f1
+               te = ccoef * rho(k_ind) / f1
                t4 = te * 2.D0 * a(ifunct,nci)
                t5 = te * 2.D0 * a(jfunct,ncj)
 
@@ -698,7 +698,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
                   ! Gradients
                   l12   = l1 * (l1-1)/2 +l2
                   k_ind = ifunct + l12-1 + ((M2-jfunct)*(jfunct-1))/2
-                  te    = ccoef * RMM(k_ind) / f1
+                  te    = ccoef * rho(k_ind) / f1
                   t4    = te * 2.D0 * a(ifunct,nci)
                   t5    = te * 2.D0 * a(jfunct,ncj)
 
@@ -862,7 +862,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
                   l12   = l1 * (l1-1) / 2 + l2
                   k_ind = ifunct + l12-1 + ((M2-(jfunct+l3-1))*(jfunct+l3-2))/2
 
-                  te = RMM(k_ind) * ccoef / f1
+                  te = rho(k_ind) * ccoef / f1
                   t4 = te * 2.D0 * a(ifunct,nci)
                   t5 = te * 2.D0 * a(jfunct,ncj)
 
@@ -1033,7 +1033,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
                      l12   = l1 * (l1-1) / 2 + l2
                      k_ind = ifunct +l12-1+ ((M2-(jfunct+l3-1))*(jfunct+l3-2))/2
 
-                     te = RMM(k_ind) * ccoef / f1
+                     te = rho(k_ind) * ccoef / f1
                      t4 = te * 2.D0 * a(ifunct,nci)
                      t5 = te * 2.D0 * a(jfunct,ncj)
 
@@ -1075,7 +1075,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
    !print*, "d|p", ff
 
    ! Sixth and final loop - (d|d)
-   do ifunct = ns+np+1, M, 6
+   do ifunct = ns+np+1, M     , 6
    do jfunct = ns+np+1, ifunct, 6
       dd = d(Nuc(ifunct),Nuc(jfunct))
 
@@ -1270,7 +1270,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
                      l34 = Ll(l3)+l4
                      k_ind = ifunct+l12-1+((M2-(jfunct+l34-1))*(jfunct+l34-2))/2
 
-                     te = RMM(k_ind) * ccoef / (f1 * f2)
+                     te = rho(k_ind) * ccoef / (f1 * f2)
                      t5 = te * 2.D0 * a(jfunct,ncj)
                      t4 = te * 2.D0 * a(ifunct,nci)
                      tn = tn + alf2 * ovlap
@@ -1641,7 +1641,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
                         k_ind = ifunct + l12-1 + &
                                 ((M2-(jfunct+l34-1))*(jfunct+l34-2))/2
 
-                        te = RMM(k_ind) * ccoef / (f1 * f2)
+                        te = rho(k_ind)* ccoef / (f1 * f2)
                         t4 = te * 2.D0 * a(ifunct,nci)
                         t5 = te * 2.D0 * a(jfunct,ncj)
 

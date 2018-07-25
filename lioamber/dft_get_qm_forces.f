@@ -18,13 +18,13 @@
        real*8,intent(out) :: dxyzqm(3,natom)
        real*8,allocatable :: ff1G(:,:),ffSG(:,:),ff3G(:,:)
        real*8             :: factor
-       integer            :: fileunit,kk,ii,igpu
+       integer            :: fileunit,kk,ii,igpu, MM
        logical            :: print_forces
 !variables for restrain calculations
        real*8 :: f_r
        integer :: i
 
-
+       MM = M*(M+1)/2
 !--------------------------------------------------------------------!
        if(cubegen_only) return
        call g2g_timer_sum_start('Forces')
@@ -35,12 +35,12 @@
        call aint_query_gpu_level(igpu)
        if (igpu.lt.4) then
          call g2g_timer_sum_start('Nuclear attraction gradients')
-         call int1G(ff1G, RMM, Nuc, a, c, d, r, Iz, ncont, nshell,
+         call int1G(ff1G, RMM(1:MM), Nuc, a, c, d, r, Iz, ncont, nshell,
      &              NORM, natom, M, ntatom)
          call g2g_timer_sum_stop('Nuclear attraction gradients')
        elseif (nsol.le.0) then
          call g2g_timer_sum_start('Nuclear attraction gradients')
-         call int1G(ff1G, RMM, Nuc, a, c, d, r, Iz, ncont, nshell,
+         call int1G(ff1G, RMM(1:MM), Nuc, a, c, d, r, Iz, ncont, nshell,
      &              NORM, natom, M, ntatom)
          call aint_qmmm_forces(ff1G,0)
          call g2g_timer_sum_stop('Nuclear attraction gradients')

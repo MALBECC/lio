@@ -133,13 +133,15 @@ subroutine basis_data_norm( Isize, Icont, gcoefs )
    integer, intent(in)              :: Icont
    double precision , intent(inout) :: gcoefs(Isize, Icont)
 
-   integer                          :: kk
+   integer                          :: kk, MM, M5, M11
    double precision                 :: scratch_energy
    double precision, allocatable    :: Smat(:,:)
 
 !   call g2g_timer_start('RMMcalc1')
    allocate( Smat(isize, isize) )
-   call int1(scratch_energy,RMM,Smat,Nuc,a,c,d,r,Iz,ncont,NORM,natom,M,Md,nshell,ntatom)
+   MM = M*(M+1)/2 ; M5 = 1 + MM*2; M11 = M5+MM+Md*(Md+1)
+   call int1(scratch_energy,RMM(M5:M5+MM),RMM(M11:M11+MM),Smat,Nuc,a,c,d,r,Iz,&
+             ncont,NORM,natom,M,nshell,ntatom)
    do kk = 1, isize
       gcoefs(kk,:) = gcoefs(kk,:) / sqrt( Smat(kk,kk) )
       gauss_coef(:,kk) = gauss_coef(:,kk) / sqrt( Smat(kk,kk) )

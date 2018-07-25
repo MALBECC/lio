@@ -8,6 +8,7 @@
        REAL*8 , intent(inout) :: dxyzqm(3,natom)
        REAL*8 , intent(inout) :: dxyzcl(3,nsol)
        real*8, dimension (:,:), ALLOCATABLE :: ff,ffcl!,g2gff,g2gffcl
+       integer :: MM
        !real*8 diff,rms,rmscl,mx,mxcl,s
 c       real*8, dimension (:,:), ALLOCATABLE :: ffs,ffcls
 !
@@ -17,6 +18,7 @@ c       real*8, dimension (:,:), ALLOCATABLE :: ffs,ffcls
        !allocate(g2gff(natom,3), g2gffcl(ntatom,3))
 c       allocate(ffs(natom,3), ffcls(ntatom,3))
 c       real*8 ftot(3)
+       MM = M*(M+1)/2
        if (nsol.le.0.or.cubegen_only) return
        factor=1.D0
 
@@ -45,8 +47,8 @@ c       real*8 ftot(3)
          ffcl=0
          ff=0
 
-         if (igpu.gt.3) call int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont,
-     &                             nshell, NORM, natom, M, ntatom)
+         if (igpu.gt.3) call int1G(ff, RMM(1:MM), Nuc, a,c,d,r,Iz,
+     &                             ncont, nshell, NORM,natom,M,ntatom)
          call g2g_timer_start('aint_qmmm_forces')
          call aint_qmmm_forces(ff,ffcl)
          call g2g_timer_stop('aint_qmmm_forces')

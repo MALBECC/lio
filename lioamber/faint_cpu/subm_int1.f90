@@ -1,8 +1,8 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module subm_int1
 contains
-subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md,&
-                nshell,ntatom )
+subroutine int1(En, Fmat, Hmat, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, &
+                M, nshell, ntatom )
 !------------------------------------------------------------------------------!
 ! Calculates 1e integrals using the Obara-Saika recursive method. (See         !
 ! Helgaker, "Molecular Electronic Structure Theory" (2000). pg 339)            !
@@ -13,8 +13,8 @@ subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md,&
 !      INPUT AND OUTPUT VARIABLES
 !-------------------------------------------------------------------------------
 !        Smat ............. Overlap matrix
-!        RMM .............. Vector containing many matrices. Only Fock and
-!                           overlap are used here.
+!        Fmat ............. Only Fock/overlap are used here.
+!        Hmat ............. 1e matrix elements
 !        En ............... Electron-nucleus interaction.
 !        natom ............ Number of atoms
 !        d ................ Interatomic distances.
@@ -26,8 +26,6 @@ subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md,&
 !        Iz(i) ............ Atomic number Z of nucleus i.
 !        ncount(i) ........ Number of contractions of bais function i.
 !        M ................ Number of basis functions.
-!        Md ............... Number of basis functions + auxiliary basis
-!                           functions.
 !        NORM ............. Deprecated. Boolean indicating normalization.
 !-------------------------------------------------------------------------------
    use liotemp      , only: FUNCT
@@ -35,17 +33,17 @@ subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md,&
    implicit none
 
    double precision, allocatable, intent(inout) :: Smat(:,:)
-   double precision, intent(inout)              :: RMM(:), En
+   double precision, intent(inout)              :: Fmat(:), Hmat(:), En
    integer,          intent(inout)              :: natom
 
    double precision, intent(in) :: d(:,:), a(:,:), c(:,:), r(ntatom,3)
    integer,          intent(in) :: ntatom, nshell(0:4), Nuc(M), Iz(natom), &
-                                   ncont(:), M, Md
+                                   ncont(:), M
    logical,          intent(in) :: NORM
 
    integer           :: my_natom, igpu, i_ind, j_ind, k_ind, ifunct, jfunct, &
                         iatom, jatom, nci, ncj, l1, l2, l3, l4, l12, l34,    &
-                        MM, MMd, ns, np, M2, M5, M11
+                        MM, ns, np, M2, M5, M11
    double precision  :: ovlap, uf, cc_f, Q(3), temp, sq3, alf, alf2, ccoef,    &
                         t0, t1, t2, f1, f2, tn, tna, Z2, Zij, ss, ps, dd, sks, &
                         p0s, p1s, p2s, p3s, pi0p, pi1p, piks, pikpk, pipk,     &
@@ -63,11 +61,7 @@ subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md,&
 
    ns  = nshell(0); np = nshell(1)
    MM  = M*(M+1)/2
-   MMd = Md*(Md+1)/2
    M2  = 2*M
-
-   M5  = 1 + MM*2        ! S, F also uses the same position after S was used
-   M11 = M5 + MM + MMd*2 ! H
 
 !-------------------------------------------------------------------------------
 ! Overlap ,Kinetic energy and Nuclear Attraction matrix elements evaluation
@@ -79,8 +73,8 @@ subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md,&
 
    Smat = 0.0D0
    do ifunct = 1, MM
-      RMM(M5  + ifunct -1)  = 0.D0
-      RMM(M11 + ifunct -1) = 0.D0
+      Fmat(ifunct) = 0.D0
+      Hmat(ifunct) = 0.D0
    enddo
 
    ! Nuclear repulsion
@@ -119,7 +113,7 @@ subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md,&
          tn    = alf * (3.D0 - alf2*dd) * ovlap
 
          k_ind = ifunct + ((M2-jfunct)*(jfunct-1))/2
-         RMM(M5 + k_ind - 1) = RMM(M5 + k_ind - 1) + ccoef * ovlap
+         Fmat(k_ind) = Fmat(k_ind) + ccoef * ovlap
          Smat(ifunct,jfunct) = Smat(ifunct,jfunct) + ccoef * ovlap
          Smat(jfunct,ifunct) = Smat(jfunct,ifunct) + ccoef * ovlap
 
@@ -133,7 +127,7 @@ subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md,&
             s0s(iatom) = Iz(iatom) * 2.0D0 * sqrt(Zij/pi) * ss * FUNCT(0,uf)
             tna = tna - s0s(iatom)
          enddo
-         RMM(M11 + k_ind - 1) = RMM(M11 + k_ind - 1) + ccoef * (tn + tna)
+         Hmat(k_ind) = Hmat(k_ind) + ccoef * (tn + tna)
 
       enddo
       enddo
@@ -180,7 +174,7 @@ subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md,&
 
             i_ind = ifunct + l2 -1
             k_ind = i_ind  + ((M2-jfunct)*(jfunct-1))/2
-            RMM(M5 + k_ind - 1) = RMM(M5 + k_ind - 1) + ovlap * ccoef
+            Fmat(k_ind) = Fmat(k_ind) + ovlap * ccoef
             Smat(i_ind ,jfunct) = Smat(i_ind ,jfunct) + ovlap * ccoef
             Smat(jfunct, i_ind) = Smat(jfunct, i_ind) + ovlap * ccoef
 
@@ -190,7 +184,7 @@ subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md,&
                tna = tna - &
                      Iz(iatom)*(t1*s0s(iatom) - (Q(l2)-r(iatom,l2))*s1s(iatom))
             enddo
-            RMM(M11 + k_ind - 1) = RMM(M11 + k_ind - 1) + ccoef * (tn + tna)
+            Hmat(k_ind) = Hmat(k_ind) + ccoef * (tn + tna)
          enddo
       enddo
       enddo
@@ -250,10 +244,10 @@ subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md,&
                j_ind = jfunct + l2 -1
                if (i_ind .ge. j_ind) then
                  k_ind = i_ind + ((M2-j_ind)*(j_ind-1))/2
-                 RMM(M5 + k_ind - 1)  = RMM(M5 + k_ind - 1)  + ovlap * ccoef
-                 Smat(i_ind,j_ind)    = Smat(i_ind,j_ind)    + ovlap * ccoef
-                 Smat(j_ind,i_ind)    = Smat(j_ind,i_ind)    + ovlap * ccoef
-                 RMM(M11 + k_ind - 1) = RMM(M11 + k_ind - 1) + tn    * ccoef
+                 Smat(i_ind,j_ind) = Smat(i_ind,j_ind) + ovlap * ccoef
+                 Smat(j_ind,i_ind) = Smat(j_ind,i_ind) + ovlap * ccoef
+                 Fmat(k_ind) = Fmat(k_ind) + ovlap * ccoef
+                 Hmat(k_ind) = Hmat(k_ind) + tn    * ccoef
                endif
             enddo
          enddo
@@ -279,8 +273,7 @@ subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md,&
                   j_ind = jfunct + l2 -1
                   if (i_ind .ge. j_ind) then
                      k_ind = i_ind + ((M2-j_ind)*(j_ind-1))/2
-                     RMM(M11 + k_ind -1) = RMM(M11 + k_ind -1) - &
-                                           tna * ccoef * Iz(iatom)
+                     Hmat(k_ind) = Hmat(k_ind) - tna * ccoef * Iz(iatom)
                   endif
                enddo
             enddo
@@ -349,10 +342,10 @@ subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md,&
                k_ind = i_ind  + ((M2-jfunct)*(jfunct-1))/2
 
                cc_f = ccoef / f1
-               RMM(M5 + k_ind -1)  = RMM(M5 + k_ind -1)  + ovlap * cc_f
-               Smat(i_ind,jfunct)  = Smat(i_ind,jfunct)  + ovlap * cc_f
-               Smat(jfunct,i_ind)  = Smat(jfunct,i_ind)  + ovlap * cc_f
-               RMM(M11 + k_ind -1) = RMM(M11 + k_ind -1) + tn    * cc_f
+               Smat(i_ind,jfunct) = Smat(i_ind,jfunct)  + ovlap * cc_f
+               Smat(jfunct,i_ind) = Smat(jfunct,i_ind)  + ovlap * cc_f
+               Fmat(k_ind) = Fmat(k_ind) + ovlap * cc_f
+               Hmat(k_ind) = Hmat(k_ind) + tn    * cc_f
             enddo
          enddo
 
@@ -379,7 +372,7 @@ subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md,&
                l12   = l1 * (l1-1)/2 + l2
                i_ind = ifunct + l12 -1
                k_ind = i_ind  + ((M2-jfunct)*(jfunct-1))/2
-               RMM(M11 + k_ind -1) = RMM(M11 + k_ind -1) - &
+               Hmat(k_ind) = Hmat(k_ind) - &
                                      ccoef * tna * Iz(iatom) / f1
             enddo
          enddo
@@ -467,10 +460,10 @@ subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md,&
                   j_ind = jfunct + l3  -1
                   k_ind = i_ind + ((M2-j_ind)*(j_ind-1))/2
 
-                  RMM(M5 + k_ind -1)  = RMM(M5 + k_ind -1)  + cc_f * ovlap
-                  Smat(i_ind,j_ind)   = Smat(i_ind,j_ind)   + cc_f * ovlap
-                  Smat(j_ind,i_ind)   = Smat(j_ind,i_ind)   + cc_f * ovlap
-                  RMM(M11 + k_ind -1) = RMM(M11 + k_ind -1) + cc_f * tn
+                  Smat(i_ind,j_ind) = Smat(i_ind,j_ind) + cc_f * ovlap
+                  Smat(j_ind,i_ind) = Smat(j_ind,i_ind) + cc_f * ovlap
+                  Fmat(k_ind) = Fmat(k_ind) + cc_f * ovlap
+                  Hmat(k_ind) = Hmat(k_ind) + cc_f * tn
                enddo
             enddo
          enddo
@@ -515,7 +508,7 @@ subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md,&
                   i_ind = ifunct + l12 -1
                   j_ind = jfunct + l3 -1
                   k_ind = i_ind  + ((M2-j_ind)*(j_ind-1))/2
-                  RMM(M11 + k_ind -1) = RMM(M11 + k_ind -1) - &
+                  Hmat(k_ind) = Hmat(k_ind) - &
                                         ccoef * tna * Iz(iatom) / f1
                enddo
             enddo
@@ -640,10 +633,11 @@ subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md,&
                         k_ind = i_ind + ((M2-j_ind)*(j_ind-1))/2
                         tn    = tn + alf2 * ovlap
                         cc_f  = ccoef / (f1 * f2)
-                        RMM(M5 + k_ind -1) = RMM(M5 + k_ind -1)  + ovlap * cc_f
-                        Smat(i_ind,j_ind)  = Smat(i_ind,j_ind)   + ovlap * cc_f
-                        Smat(j_ind,i_ind)  = Smat(j_ind,i_ind)   + ovlap * cc_f
-                        RMM(M11 + k_ind -1)= RMM(M11 + k_ind -1) + tn    * cc_f
+
+                        Smat(i_ind,j_ind) = Smat(i_ind,j_ind) + ovlap * cc_f
+                        Smat(j_ind,i_ind) = Smat(j_ind,i_ind) + ovlap * cc_f
+                        Fmat(k_ind) = Fmat(k_ind) + ovlap * cc_f
+                        Hmat(k_ind) = Hmat(k_ind) + tn    * cc_f
                      endif
                   enddo
                enddo
@@ -724,7 +718,7 @@ subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md,&
                      j_ind = jfunct + l34 -1
                      if (i_ind .ge. j_ind) then
                         k_ind = i_ind + ((M2-j_ind)*(j_ind-1))/2
-                        RMM(M11 + k_ind -1) = RMM(M11 + k_ind -1) - &
+                        Hmat(k_ind) = Hmat(k_ind) - &
                                               ccoef * Iz(iatom) * tna / (f1*f2)
                      endif
                   enddo

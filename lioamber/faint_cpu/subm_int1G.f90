@@ -14,9 +14,9 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
 ! ns: marker for end of s functions.                                           !
 ! np: marker for end of p functions.                                           !
 ! nd: marker for end of d functions.                                           !
-! r(Nuc(ifunct),j): j component of position of nucleus for basis i (j=1,2,3).       !
+! r(Nuc(ifunct),j): j component of position of nucleus for basis i (j=1,2,3).  !
 ! Original and debugged (or supposed to) by Dario Estrin on 28/07/1992         !
-! Refactored by Federico Pedron on /07/2018                                    !
+! Refactored by Federico Pedron on 25/07/2018                                  !
 !------------------------------------------------------------------------------!
    use liotemp      , only: FUNCT
    use constants_mod, only: pi, pi32
@@ -59,13 +59,16 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
                        t86, t81b, t82b, t83b, t84b, t85b, t86b, &
                        t90, t91, t92, t93, t94, t95, t96, t97, t98
 
-   double precision :: s0s(natom)  , s1s(natom)  , s2s(natom)  , s3s(natom)  , &
-                       s4s(natom)  , s5s(natom)  , s6s(natom)  , &
-                       x0x(natom,3), x1x(natom,3), x2x(natom,3), x3x(natom,3), &
-                       x4x(natom,3), &
-                       dn(3)  , dn1(3) , dn2(3) , dn3(3) , dn4(3) , dn5(3),  &
-                       dn6(3) , dn7(3) , dn8(3) , dn9(3) , dn10(3), dn2b(3), &
-                       dn4b(3), dn5b(3), dn7b(3), dn8b(3), dn9b(3)
+   double precision, dimension(3) :: dn, dn1, dn2, dn3, dn4, dn5, dn6, dn7,  &
+                                     dn8, dn9, dn10, dn2b, dn4b, dn5b, dn7b, &
+                                     dn8b, dn9b
+   double precision, allocatable  :: s0s(:)  , s1s(:)  , s2s(:)  , s3s(:)  , &
+                                     s4s(:)  , s5s(:)  , s6s(:)  , x0x(:,:), &
+                                     x1x(:,:), x2x(:,:), x3x(:,:), x4x(:,:)
+
+   allocate(s0s(natom)  , s1s(natom)  , s2s(natom)  , s3s(natom)  , s4s(natom),&
+            s5s(natom)  , s6s(natom)  , x0x(natom,3), x1x(natom,3),            &
+            x2x(natom,3), x3x(natom,3), x4x(natom,3))
 
    ! Checks basis set normalization.
    if (NORM) then
@@ -1681,6 +1684,7 @@ subroutine int1G(ff, RMM, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
    enddo
    !print*, "d|d", ff
 
+   deallocate(s0s, s1s, s2s, s3s, s4s, s5s, s6s, x0x, x1x, x2x, x3x, x4x)
    return
 end subroutine int1G
 end module subm_int1G

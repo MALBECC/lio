@@ -43,24 +43,15 @@ subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md,&
                                    ncont(:), M, Md
    logical,          intent(in) :: NORM
 
-   integer :: my_natom, igpu
-   integer :: ifunct, jfunct, iatom, jatom, nci, ncj
-   integer :: i_ind, j_ind, k_ind
-   integer :: l1, l2, l3, l4, l12, l34
-   integer :: MM, MMd, ns, np
-   integer :: M2, M5, M11
-
-   double precision  :: E1, ovlap, uf, cc_f
-   double precision  :: Q(3), temp, sq3, alf, alf2, cc, ccoef
-   double precision  :: f1, f2, tn, tna, Z2, Zij
-   double precision  :: ss, ps, dd, p0s, p1s, p2s, p3s
-   double precision  :: pi0p, pi1p, piks, pikpk, pipk, pis
-   double precision  :: pj0s, pj1s, pj2s, pj0p, pj1p, pjkpk
-   double precision  :: pjks, pjpk, pjs, pks, sks
-   double precision  :: dijs, dijpk, dijks, dijkpk
-   double precision  :: d0s, d0p, d1p, d1s, d2s
-   double precision  :: t0, t1, t2
-
+   integer           :: my_natom, igpu, i_ind, j_ind, k_ind, ifunct, jfunct, &
+                        iatom, jatom, nci, ncj, l1, l2, l3, l4, l12, l34,    &
+                        MM, MMd, ns, np, M2, M5, M11
+   double precision  :: ovlap, uf, cc_f, Q(3), temp, sq3, alf, alf2, ccoef,    &
+                        t0, t1, t2, f1, f2, tn, tna, Z2, Zij, ss, ps, dd, sks, &
+                        p0s, p1s, p2s, p3s, pi0p, pi1p, piks, pikpk, pipk,     &
+                        pis, pj0s, pj1s, pj2s, pj0p, pj1p, pjkpk, pjks, pjpk,  &
+                        pjs, pks, dijs, dijpk, dijks, dijkpk, d0s, d0p, d1p,   &
+                        d1s, d2s
    double precision, allocatable, dimension(:) :: s0s, s1s, s2s, s3s, s4s
 
    ! Allocates internal variables.
@@ -747,11 +738,7 @@ subroutine int1(En, RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md,&
    enddo
    enddo
 
-   E1=0.D0
-   do k_ind = 1, MM
-      E1 = E1 + RMM(k_ind) * RMM(M11 + k_ind -1)
-   enddo
-  ! Avoids double-counting diagonal elements.
+   ! Avoids double-counting diagonal elements.
    do ifunct = 1, M
       Smat(ifunct,ifunct) = Smat(ifunct,ifunct) / 2.0D0
    enddo

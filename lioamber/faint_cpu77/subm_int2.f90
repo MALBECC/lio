@@ -11,12 +11,18 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module subm_int2
 contains
-subroutine int2()
-   use liotemp   , only: FUNCT
-   use garcha_mod, only: RMM, ngd, M, Md, ad, nucd, ncontd, r, d, cd, &
-                         NORM, pi5, nshelld
+subroutine int2(RMM, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, ntatom)
+   use liotemp      , only: FUNCT
+   use constants_mod, only: pi5
 
    implicit none
+   integer         , intent(in) :: M, Md, ntatom, nucd(:), ncontd(:),&
+                                   nshelld(0:4)
+   logical         , intent(in) :: NORM
+   double precision, intent(in) :: ad(:,:), cd(:,:), d(:,:), r(ntatom,3)
+   double precision, intent(inout) :: RMM(:)
+
+   ! Internal variables
    double precision, allocatable :: aux_mat(:,:)
    double precision :: Q(3), ccoef, f1, f2, sq3, uf, Z2, za, zc, Zij, t0, t1,  &
                        t2, t3, t4, t5, t6, ti, tj, tn, s0s, s1s, s2s, s3s, s4s,&
@@ -25,7 +31,6 @@ subroutine int2()
    integer          :: i_ind, j_ind, k_ind, ifunct, jfunct, nci, ncj, nsd, npd,&
                        ndd, lll, l12, l34, l1, l2, l3, l4, lij, lk, MM, MMd,   &
                        Md2, M2, M7, M9
-
    ! Variables for Lapack
    integer :: LA_WORK_SIZE, LA_INFO
    integer         , allocatable :: LA_IWORK(:)
@@ -33,7 +38,6 @@ subroutine int2()
 
    sq3 = 1.D0
    if (NORM) sq3 = sqrt(3.D0)
-
    nsd = nshelld(0); npd = nshelld(1); ndd = nshelld(2)
    Md2 = 2*Md; M2 = 2*M; MM = M*(M+1)/2; MMd = Md*(Md+1)/2
 

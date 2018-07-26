@@ -12,7 +12,8 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
 
    use garcha_mod, &
    &only: M, Md, RMM, kkind, kkinds, cool, cools, igrid2                       &
-       &, natom, Iz, NCO, Nunp, total_time
+       &, natom, Iz, NCO, Nunp, total_time, ad, cd, d, ncontd, nshelld, norm,  &
+          ntatom, nucd, r
 
    use ehrendata, &
    &only: eefld_on, eefld_ampx, eefld_ampy, eefld_ampz, eefld_wavelen          &
@@ -60,7 +61,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
       call aint_qmmm_fock(Energy_SolvF,Energy_SolvT)
    endif
 
-   call int2()
+   call int2(RMM, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, ntatom)
    if (igpu.gt.2) call aint_coulomb_init()
    if (igpu.eq.5) MEMO = .false.
    call g2g_timer_stop('RMMcalc4-start')

@@ -13,7 +13,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
    use garcha_mod, &
    &only: M, Md, RMM, kkind, kkinds, cool, cools, igrid2                       &
        &, natom, Iz, NCO, Nunp, total_time, ad, cd, d, ncontd, nshelld, norm,  &
-          ntatom, nucd, r
+          ntatom, nucd, r, kknumd, kknums, af, B, open
 
    use ehrendata, &
    &only: eefld_on, eefld_ampx, eefld_ampy, eefld_ampz, eefld_wavelen          &
@@ -69,6 +69,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
    call int2(RMM(M7:M7+MMd), RMM(M9:M9+MMd), M, Md, nshelld, ncontd, ad, cd, &
              NORM, r, d, nucd, ntatom)
    if (igpu.gt.2) call aint_coulomb_init()
+   MEMO = .true.
    if (igpu.eq.5) MEMO = .false.
    call g2g_timer_stop('RMMcalc4-start')
    if (MEMO) then
@@ -82,7 +83,8 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
 !------------------------------------------------------------------------------!
    call g2g_timer_start('RMMcalc4-solve3lu')
    call rmmput_dens(DensMao)
-   call int3lu(Energy_Coulomb)
+   call int3lu(Energy_Coulomb, RMM, M, Md, cool, cools, kkind, kkinds, kknumd, &
+               kknums, af, B, memo, open)
    call g2g_solve_groups(0,Energy_Exchange,0)
    call g2g_timer_stop('RMMcalc4-solve3lu')
 

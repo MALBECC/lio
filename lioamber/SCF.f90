@@ -37,7 +37,7 @@ subroutine SCF(E)
                           total_time, MO_coef_at, MO_coef_at_b, Smat, good_cut,&
                           ndiis, ncont, nshell, rhoalpha, rhobeta, OPEN,nshell,&
                           Nuc, a, c, d, NORM, ntatom, Eorbs_b, ad, cd, ncontd, &
-                          nucd, nshelld
+                          nucd, nshelld, af, b, kknumd, kknums
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
                        FOCK_ECP_read,FOCK_ECP_write,IzECP
    use field_data, only: field, fx, fy, fz
@@ -557,7 +557,8 @@ subroutine SCF(E)
 
 !       Computes Coulomb part of Fock, and energy on E2
         call g2g_timer_sum_start('Coulomb fit + Fock')
-        call int3lu(E2)
+        call int3lu(E2, RMM, M, Md, cool, cools, kkind, kkinds, kknumd, kknums,&
+                    af, B, memo, open)
         call g2g_timer_sum_pause('Coulomb fit + Fock')
 
 !       Test for NaN

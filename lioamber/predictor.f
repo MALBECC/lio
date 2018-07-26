@@ -3,7 +3,9 @@
      >                      Xtrans, timestep, time, M_in, MTB, dim3)
       ! This routine recives: F1a,F1b,rho2
       ! And gives: F5 = F(t+(deltat/2))
-       use garcha_mod , only: M, RMM, NBCH, rhoalpha, rhobeta, OPEN
+       use garcha_mod , only: M, RMM, NBCH, rhoalpha, rhobeta, OPEN,
+     >                        Md, cool, cools, kkind, kkinds, kknums,
+     >                        kknumd, af, b, memo
        use field_data , only: field
        use field_subs , only: field_calc
        use mathsubs   , only: basechange
@@ -67,7 +69,8 @@ c Initializations/Defaults
        end if
 ! Step4: Density matrix 4 is used to calculate F5
 
-       call int3lu(E2)
+       call int3lu(E2, RMM, M, Md, cool, cools, kkind, kkinds, kknumd,
+     >     kknums, af, B, memo, open)
        call g2g_solve_groups(0,Ex,0)
        call field_calc(E1, time)
        FBA=FON

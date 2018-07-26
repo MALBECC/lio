@@ -9,7 +9,9 @@ subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
 
    use faint_cpu77, only: int3lu, intfld
 
-   use garcha_mod,  only: M, natom, Iz, NCO, Nunp, total_time
+   use garcha_mod,  only: M, natom, Iz, NCO, Nunp, total_time, RMM, Md, cool, &
+                          cools, kkind, kkinds, kknumd, kknums, af, B, memo, &
+                          open
 
    use field_data,  only: epsilon, a0
 
@@ -37,7 +39,8 @@ subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
    call g2g_timer_start('RMMcalc3-solve3lu')
    call rmmput_fock( FockMao )
    call rmmput_dens( DensMao )
-   call int3lu( Energy_Coulomb )
+   call int3lu(Energy_Coulomb, RMM, M, Md, cool, cools, kkind, kkinds, kknumd, &
+               kknums, af, B, memo, open)
    call g2g_solve_groups( 0, Energy_Exchange, 0 )
    call g2g_timer_stop('RMMcalc3-solve3lu')
 !

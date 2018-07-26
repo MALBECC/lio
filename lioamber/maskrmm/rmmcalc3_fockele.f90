@@ -6,7 +6,8 @@ subroutine rmmcalc3_fockele( dens_mao, elec_field, uses_field,                 &
 !  Time is in ps?fs?
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-   use garcha_mod  , only: M, RMM, natom, Iz, NCO, Nunp
+   use garcha_mod  , only: M, RMM, natom, Iz, NCO, Nunp, Md, cool, cools, &
+                           kkind, kkinds, kknumd, kknums, af, B, memo, open
    use field_data  , only: a0, epsilon
    use faint_cpu77 , only: int3lu, intfld
    use ECP_mod     , only: ecpmode, VAAA, VAAB, VBAC
@@ -32,7 +33,8 @@ subroutine rmmcalc3_fockele( dens_mao, elec_field, uses_field,                 &
    call g2g_timer_start('rmmcalc3-solve3lu')
    call rmmput_fock( fock_mao)
    call rmmput_dens( dens_mao )
-   call int3lu( energy_coul )
+   call int3lu( energy_coul, RMM, M, Md, cool, cools, kkind, kkinds, kknumd, &
+               kknums, af, B, memo, open)
    call g2g_solve_groups( 0, energy_xc, 0 )
    call g2g_timer_stop('rmmcalc3-solve3lu')
 !

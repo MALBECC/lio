@@ -1,6 +1,7 @@
 module subm_int3lu
 contains
-subroutine int3lu(E2)
+subroutine int3lu(E2, RMM, M, Md, cool, cools, kkind, kkinds, kknumd, kknums,&
+                  af, B, memo, open_shell)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Integrals subroutines - 2e integrals, 3 index                                !
 ! Wavefunction and density fitting functions are calculated using the          !
@@ -10,10 +11,12 @@ subroutine int3lu(E2)
 ! storing the integrals separately.                                            !
 ! Output: F updated with Coulomb part, also Coulomb energy.                    !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-   use garcha_mod, only: RMM, af, B, M, Md, kknumd, kknums, &
-                         MEMO, OPEN, cool, cools, kkind, kkinds
    implicit none
-   double precision, intent(inout) :: E2
+   integer         , intent(in) :: M, Md, kknumd, kknums, kkind(:), kkinds(:)
+   logical         , intent(in) :: open_shell, memo
+   real            , intent(in) :: cools(:)
+   double precision, intent(in) :: cool(:)
+   double precision, intent(inout) :: E2, RMM(:), af(:), B(:,:)
 
    double precision :: Rc(Md), aux(md)
    double precision :: Ea, Eb, term
@@ -81,7 +84,7 @@ subroutine int3lu(E2)
       do k_ind = 1, MM
          RMM(M5-1 + k_ind) = RMM(M11-1 + k_ind)
       enddo
-      if (OPEN) then
+      if (open_shell) then
       do k_ind = 1, MM
          RMM(M3-1 + k_ind) = RMM(M11-1 + k_ind)
       enddo
@@ -101,7 +104,7 @@ subroutine int3lu(E2)
 
       ! Calculation of all integrals again, in order to build the Fock matrix.
       aux = 0.0D0
-      if (OPEN) then
+      if (open_shell) then
          do k_ind = 1, Md
             aux(k_ind) = af(k_ind)
          enddo
@@ -109,7 +112,7 @@ subroutine int3lu(E2)
 
       call g2g_timer_stop('int3lu - start')
       call g2g_timer_start('int3lu')
-      if (open) then
+      if (open_shell) then
          do kk_ind = 1, kknumd
             iikk = (kk_ind - 1) * Md
             do k_ind = 1, Md
@@ -150,7 +153,7 @@ subroutine int3lu(E2)
    else
       do k_ind = 1, MM
          RMM(M5-1 + k_ind) = RMM(M11-1 + k_ind)
-         if (OPEN) RMM(M3-1 + k_ind) = RMM(M11-1 + k_ind)
+         if (open_shell) RMM(M3-1 + k_ind) = RMM(M11-1 + k_ind)
       enddo
 
       call aint_coulomb_fock(Ea)

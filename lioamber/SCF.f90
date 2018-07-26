@@ -609,13 +609,11 @@ subroutine SCF(E)
            call spunpack('L', M, RMM(M5), fock_a0)
            call spunpack_rho('L',M,rhobeta,rho_b0)
            call spunpack('L', M, RMM(M3), fock_b0)
-           !Fockbias is applied:
            call fockbias_apply( 0.0d0, fock_a0)
            call fockbias_apply( 0.0d0, fock_b0)
         else
            call spunpack_rho('L',M,RMM(M1),rho_a0)
            call spunpack('L', M, RMM(M5), fock_a0)
-           !Fockbias is applied:
            call fockbias_apply( 0.0d0, fock_a0 )
         end if
 
@@ -768,12 +766,7 @@ subroutine SCF(E)
         call rho_bop%Gets_data_AO(rho_b)
         call messup_densmat( rho_b )
 
-!carlos: Beta Energy stored
          Eorbs_b=morb_energy
-!charly: The storage in RMM it seems that is not necessary anymore
-!        do kk=1,M
-!          RMM(M22+kk-1) = morb_energy(kk)
-!        end do
 
 !carlos: Storing autovectors to create the restart
         i0 = 0

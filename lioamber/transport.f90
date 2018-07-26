@@ -50,7 +50,6 @@ subroutine transport_init(M, dim3, natom, Nuc, RMM5, overlap, rho, OPEN)
    call transport_read_groups(natom)
    call mat_map(Nuc, M, natom)
 
-!charly: is this necessary?
    do icount = 1, size(orb_group)
       orb_group(icount) = group( Nuc(icount) )
    enddo

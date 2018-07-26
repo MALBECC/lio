@@ -6,8 +6,6 @@ module fockbias_subs
 ! applied through the fock matrix. It is implementation specific and consists
 ! of the following subroutines:
 !
-! fockbias_setup0: This subroutine sets up the shape of the bias.
-!
 ! fockbias_setorb: This subroutine sets up the atomic charges.
 !
 ! fockbias_setmat: This subroutine sets up the bias matrix (full amplitude).
@@ -31,43 +29,6 @@ module fockbias_subs
    end interface fockbias_apply
 
    contains
-!
-!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-!carlos:
-!fockbias_setup0 is not neccesary for the moment because the values of the
-!variables are set in the input.
-!subroutine fockbias_setup0() !activate, do_shape, grow_start, fall_start, setamp )
-
-!   use fockbias_data, only: fockbias_is_active, fockbias_is_shaped &
-!                         &, fockbias_timegrow , fockbias_timefall  &
-!                         &, fockbias_timeamp0
-
-!   logical, intent(in) :: activate
-!   logical, intent(in) :: do_shape
-!   real*8 , intent(in) :: grow_start
-!   real*8 , intent(in) :: fall_start
-!   real*8 , intent(in) :: setamp
-!   logical :: activate
-!   logical :: do_shape
-!   real*8  :: grow_start
-!   real*8  :: fall_start
-!   real*8  :: setamp
-
-!charly
-!   activate=.true.
-!   do_shape=.false.
-!   grow_start=0.00
-!   fall_start=0.00
-!   setamp=0.00
-
-!   fockbias_is_active = activate
-!   fockbias_is_shaped = do_shape
-!   fockbias_timegrow  = grow_start
-!   fockbias_timefall  = fall_start
-!   fockbias_timeamp0  = setamp
-
-!end subroutine fockbias_setup0
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -156,12 +117,6 @@ subroutine fockbias_loads( Natom, atom_of_orb, file_unit_in, file_name_in )
    end if
    end if
    end if
-
-!  If there is input filename, save it so as to know the source.
-
-!charly: comente esto temporalmente
-!   if ( present(file_name_in) ) fockbias_readfile = file_name_in
-
 
 !  If there is input fileunit, we will read from there directly.
 !  Else, we will open the file in unit=2427 (BIAS)
@@ -260,8 +215,6 @@ subroutine fockbias_apply_d( timepos, fockmat)
    end if
 
    if (time_shape < 1.00d-16) time_shape = 0.0d0
-
-   print*, "bias", time_shape
 
    do jj = 1, Nbasis
    do ii = 1, Nbasis

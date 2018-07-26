@@ -1029,7 +1029,6 @@ subroutine td_bc_fock_cu(M_in,M, MM, RMM5, fock_op, devPtrX, natom, nshell,    &
       fock=fock_0
    end if
 
-!Fockbias is applied
    call fockbias_apply(time,fock)
 
    call fock_op%Sets_data_AO(fock)
@@ -1265,7 +1264,6 @@ subroutine td_bc_fock(M_in, M, MM, RMM5, fock_op, Xmm, natom, nshell,ncont,    &
       fock=fock_0
    end if
 
-!Fockbias is applied
    call fockbias_apply(time,fock)
 
    call fock_op%Sets_data_AO(fock)

@@ -9,7 +9,6 @@
 ! Output: G matrix, which should be inverted when evaluating Coulomb terms.    !
 ! Refactored in 2018 by F. Pedron                                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! SACAR XX, solo se usa aca
 module subm_int2
 contains
 subroutine int2()
@@ -18,28 +17,19 @@ subroutine int2()
                          NORM, pi5, nshelld
 
    implicit none
-   double precision, allocatable :: dgelss_temp(:), inv_work(:), trabajo(:)
-   integer, allocatable :: XXX(:), aux(:), XX(:,:)
+   double precision, allocatable :: aux_mat(:,:)
+   double precision :: Q(3), ccoef, f1, f2, sq3, uf, Z2, za, zc, Zij, t0, t1,  &
+                       t2, t3, t4, t5, t6, ti, tj, tn, s0s, s1s, s2s, s3s, s4s,&
+                       ps, pjs, pjp, pj2s, pis, pip, pi2s, pi3s, d1s, d2s, dd, &
+                       dp, ds
+   integer          :: i_ind, j_ind, k_ind, ifunct, jfunct, nci, ncj, nsd, npd,&
+                       ndd, lll, l12, l34, l1, l2, l3, l4, lij, lk, MM, MMd,   &
+                       Md2, M2, M7, M9
 
-   double precision :: Q(3)
-
-   ! Ex Implicits
-   double precision  :: t0, t1, t2, t3, t4, t5
-   double precision  :: ss, s0s, s1s, s2s, s3s, s4s
-   double precision  :: ps, pjs, pjp, pj2s, pis, pip, pi2s, pi3s
-   double precision  :: alf, cc, ccoef, d1s, d2s, dd, dp, ds
-   double precision  :: roz, rcond, f1, f2, sq3
-   double precision  :: uf, tmp, tn, tj, ti, t6, Z2, za, zc, Zij
-
-   integer :: igpu, info
-   integer :: j_ind, i_ind, k_ind
-   integer :: ifunct, jfunct, nci, ncj
-   integer :: nsd, npd, ndd
-   integer :: lll, l12, l34, l1, l2, l3, l4, lij, lk
-   integer :: MM, MMp, MMd, Md2, Md3, Md5
-   integer :: M2, M7, M9, M10, M12, M15
-
-   allocate(inv_work(Md), XXX(8*Md), aux(ngd), XX(Md, Md))
+   ! Variables for Lapack
+   integer :: LA_WORK_SIZE, LA_INFO
+   integer         , allocatable :: LA_IWORK(:)
+   double precision, allocatable :: LA_WORK(:)
 
    sq3 = 1.D0
    if (NORM) sq3 = sqrt(3.D0)
@@ -47,9 +37,8 @@ subroutine int2()
    nsd = nshelld(0); npd = nshelld(1); ndd = nshelld(2)
    Md2 = 2*Md; M2 = 2*M; MM = M*(M+1)/2; MMd = Md*(Md+1)/2
 
-   M7  = 1 + 3*MM ! G
-   M9  = M7 + MMd !  Gm
-   M15 = M9+MMd+MM+M ! Auxiliars
+   M7  = 1 + 3*MM ! G matrix
+   M9  = M7 + MMd ! G inverted
 
    do ifunct = 1, MMd
        RMM(M7+ifunct-1) = 0.D0
@@ -66,9 +55,8 @@ subroutine int2()
          Zij = ad(ifunct,nci) + ad(jfunct,ncj)
          t0  = ad(ifunct,nci) * ad(jfunct,ncj)
          t1  = sqrt(Zij) * t0
-         alf = t0 / Zij
 
-         uf    = alf * dd
+         uf    = t0 * dd / Zij
          ccoef = cd(ifunct,nci) * cd(jfunct,ncj)
          s0s   = pi5 / t1 * FUNCT(0,uf)
 
@@ -88,7 +76,6 @@ subroutine int2()
       do ncj = 1, ncontd(jfunct)
          Zij = ad(ifunct,nci) + ad(jfunct,ncj)
          t0  = ad(ifunct,nci) * ad(jfunct,ncj)
-         alf = t0 / Zij
          t1  = sqrt(Zij) * t0
          t2  = pi5 / t1
 
@@ -99,7 +86,7 @@ subroutine int2()
          Q(3) = (ad(ifunct,nci) * r(Nucd(ifunct),3) + &
                  ad(jfunct,ncj) * r(Nucd(jfunct),3)) / Zij
 
-         uf    = alf * dd
+         uf    = t0 * dd / Zij
          s1s   = t2 * FUNCT(1,uf)
          ccoef = cd(ifunct,nci) * cd(jfunct,ncj)
 
@@ -127,7 +114,6 @@ subroutine int2()
          Zij = ad(ifunct,nci) + ad(jfunct,ncj)
          Z2  = 2.D0 * Zij
          t0  = ad(ifunct,nci) * ad(jfunct,ncj)
-         alf = t0 / Zij
          t1  = sqrt(Zij) * t0
          t2  = pi5 / t1
 
@@ -138,7 +124,7 @@ subroutine int2()
          Q(3) = (ad(ifunct,nci) * r(Nucd(ifunct),3) + &
                  ad(jfunct,ncj) * r(Nucd(jfunct),3)) / Zij
 
-         uf    = alf * dd
+         uf    = t0 * dd / Zij
          s1s   = t2 * FUNCT(1,uf)
          s2s   = t2 * FUNCT(2,uf)
          ccoef = cd(ifunct,nci) * cd(jfunct,ncj)
@@ -176,8 +162,6 @@ subroutine int2()
       do ncj = 1, ncontd(jfunct)
          Zij = ad(ifunct,nci) + ad(jfunct,ncj)
          t0  = ad(ifunct,nci) * ad(jfunct,ncj)
-         alf = t0 / Zij
-         roz = ad(jfunct,ncj) / Zij
          t1  = sqrt(Zij) * t0
          t2  = pi5 / t1
 
@@ -188,9 +172,9 @@ subroutine int2()
          Q(3) = (ad(ifunct,nci) * r(Nucd(ifunct),3) + &
                  ad(jfunct,ncj) * r(Nucd(jfunct),3)) / Zij
 
-         uf    = alf * dd
+         uf    = t0 * dd / Zij
          s0s   = t2 * FUNCT(0,uf)
-         s1s   = t2 * FUNCT(1,uf)
+         s1s   = t2 * FUNCT(1,uf) * ad(jfunct,ncj) / Zij
          s2s   = t2 * FUNCT(2,uf)
          ccoef = cd(ifunct,nci) * cd(jfunct,ncj)
 
@@ -203,7 +187,7 @@ subroutine int2()
                tn = t1 * ps
                f1 = 1.0D0
                if (l1 .eq. l2) then
-                  tn = tn + (s0s - roz*s1s) / (2.D0 * ad(ifunct,nci))
+                  tn = tn + (s0s - s1s) / (2.D0 * ad(ifunct,nci))
                   f1 = sq3
                endif
 
@@ -228,9 +212,9 @@ subroutine int2()
          Zij = ad(ifunct,nci) + ad(jfunct,ncj)
          Z2  = 2.D0 * Zij
          t0  = ad(ifunct,nci) * ad(jfunct,ncj)
-         alf = t0 / Zij
          t1  = sqrt(Zij) * t0
          t2  = pi5 / t1
+         t3  = t0  / Zij
 
          Q(1) = (ad(ifunct,nci) * r(Nucd(ifunct),1) + &
                  ad(jfunct,ncj) * r(Nucd(jfunct),1)) / Zij
@@ -239,7 +223,7 @@ subroutine int2()
          Q(3) = (ad(ifunct,nci) * r(Nucd(ifunct),3) + &
                  ad(jfunct,ncj) * r(Nucd(jfunct),3)) / Zij
 
-         uf    = alf * dd
+         uf    = t0 * dd / Zij
          s1s   = t2 * FUNCT(1,uf)
          s2s   = t2 * FUNCT(2,uf)
          s3s   = t2 * FUNCT(3,uf)
@@ -258,7 +242,7 @@ subroutine int2()
 
                if (l1 .eq. l2) then
                   f1 = sq3
-                  ds = ds + (s1s - alf * s2s/ ad(ifunct,nci)) / &
+                  ds = ds + (s1s - t3 * s2s / ad(ifunct,nci)) / &
                             (2.D0 * ad(ifunct,nci))
                endif
                ! Index of p
@@ -298,7 +282,6 @@ subroutine int2()
          za  = 2.D0 * ad(ifunct,nci)
          zc  = 2.D0 * ad(jfunct,ncj)
          t0  = ad(ifunct,nci) * ad(jfunct,ncj)
-         alf = t0 / Zij
          t1  = sqrt(Zij) * t0
          t2  = pi5 / t1
          ti  = ad(ifunct,nci) / Zij
@@ -308,7 +291,7 @@ subroutine int2()
          Q(2) = ti * r(Nucd(ifunct),2) + tj * r(Nucd(jfunct),2)
          Q(3) = ti * r(Nucd(ifunct),3) + tj * r(Nucd(jfunct),3)
 
-         uf  = alf * dd
+         uf  = t0 * dd / Zij
          s0s = t2 * FUNCT(0,uf)
          s1s = t2 * FUNCT(1,uf)
          s2s = t2 * FUNCT(2,uf)
@@ -327,7 +310,6 @@ subroutine int2()
 
             do l2 = 1, l1
                t1   = Q(l2) - r(Nucd(ifunct),l2)
-               pjs  = t1 * s2s
                pj2s = t1 * s3s
                ds   = t1 * pis
                d1s  = t1 * pi2s
@@ -398,15 +380,13 @@ subroutine int2()
    enddo
    enddo
 
+   ! Stores and transposes G matrix
+   allocate(aux_mat(Md, Md))
    do ifunct = 1, Md
-   do jfunct = 1, Md
-      if (ifunct .ge. jfunct) then
-         k_ind = ifunct + (Md*2-jfunct)*(jfunct-1)/2
-      else
-         k_ind = jfunct + (Md*2-ifunct)*(ifunct-1)/2
-      endif
-
-      XX(ifunct ,jfunct) = RMM(M7+k_ind-1)
+   do jfunct = 1, ifunct
+      k_ind = ifunct + (Md*2-jfunct) * (jfunct-1) / 2
+      aux_mat(ifunct,jfunct) = RMM(M7+k_ind-1)
+      aux_mat(jfunct,ifunct) = aux_mat(ifunct,jfunct)
    enddo
    enddo
 
@@ -414,62 +394,50 @@ subroutine int2()
    do jfunct = 1     , Md
    do ifunct = jfunct, Md
       k_ind = k_ind +1
-      RMM(M7+k_ind-1) = XX(ifunct,jfunct)
+      RMM(M7+k_ind-1) = aux_mat(ifunct,jfunct)
    enddo
    enddo
 
-   MMp = Md * (Md+1) / 2
-   do k_ind = 1, MMp
+   do k_ind = 1, MMd
       RMM(M9+k_ind-1) = 0.0D0
    enddo
 
-   M10 = M9  + MMd + MM+1
-   M12 = M10 + Md
-   Md3 = 3 * Md
-
-   aux   = 0.0D0
-   Md5   = 5*Md
-   rcond = 1.0D-07
-
+   allocate(LA_IWORK(8*Md))
    call g2g_timer_sum_start('G condition')
-   call dgesdd('N',Md,Md,XX,Md,RMM(M9),0,1,0,1, RMM(M10),-1,XXX,info)
-   Md5 = RMM(M10)
-   allocate(dgelss_temp(Md5))
-   call dgesdd('N',Md,Md,XX,Md,RMM(M9),0,1,0,1,dgelss_temp,Md5,XXX,info)
-   deallocate(dgelss_temp)
-   ss = RMM(M9) / RMM(M9+Md-1)
+   call dgesdd('N', Md, Md, aux_mat, Md, RMM(M9), 0, 1, 0, 1, t0, -1, &
+               LA_IWORK, LA_INFO)
+   LA_WORK_SIZE = int(t0); allocate(LA_WORK(LA_WORK_SIZE))
+   call dgesdd('N', Md, Md, aux_mat, Md, RMM(M9), 0, 1, 0, 1, LA_WORK, &
+               LA_WORK_SIZE, LA_IWORK, LA_INFO)
+   deallocate(LA_WORK)
    call g2g_timer_sum_stop('G condition')
 
    ! Inversion of G matrix, kept in Gm
    call g2g_timer_sum_start('G invert')
-
    do ifunct = 1, Md
-   do jfunct = 1, Md
-      if (ifunct .ge. jfunct) then
-         k_ind = ifunct + (Md*2-jfunct)*(jfunct-1)/2
-      else
-         k_ind = jfunct + (Md*2-ifunct)*(ifunct-1)/2
-      endif
-      XX(ifunct,jfunct) = RMM(M7+k_ind-1)
+   do jfunct = 1, ifunct
+      k_ind = ifunct + (Md*2-jfunct)*(jfunct-1)/2
+      aux_mat(ifunct,jfunct) = RMM(M7+k_ind-1)
+      aux_mat(jfunct,ifunct) = aux_mat(ifunct,jfunct)
    enddo
    enddo
 
-   call dsytrf('U',Md,XX,Md,XXX,RMM(M10),-1,info)
-   Md5 = RMM(M10)
-   allocate(dgelss_temp(Md5))
-   call dsytrf('U',Md,XX,Md,XXX,dgelss_temp,Md5,info)
-   deallocate(dgelss_temp)
-   call dsytri('U',Md,XX,Md,XXX,inv_work,info)
+   call dsytrf('U', Md, aux_mat, Md, LA_IWORK, t0, -1, LA_INFO)
+   LA_WORK_SIZE = int(t0); allocate(LA_WORK(LA_WORK_SIZE))
+   call dsytrf('U', Md, aux_mat, Md, LA_IWORK, LA_WORK, LA_WORK_SIZE, LA_INFO)
+   deallocate(LA_WORK); allocate(LA_WORK(Md));
+   call dsytri('U', Md, aux_mat, Md, LA_IWORK, LA_WORK, LA_INFO)
+   deallocate(LA_WORK)
 
    do ifunct = 1, Md
    do jfunct = 1, ifunct
       k_ind = ifunct + (Md*2-jfunct)*(jfunct-1)/2
-      RMM(M9+k_ind-1) = XX(jfunct,ifunct)
+      RMM(M9+k_ind-1) = aux_mat(jfunct, ifunct)
    enddo
    enddo
 
    call g2g_timer_sum_stop('G invert')
-   deallocate(inv_work, XXX, aux, xx)
+   deallocate(aux_mat, LA_IWORK)
    return
 end subroutine
 end module subm_int2

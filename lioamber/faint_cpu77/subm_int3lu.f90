@@ -10,24 +10,15 @@ subroutine int3lu(E2)
 ! storing the integrals separately.                                            !
 ! Output: F updated with Coulomb part, also Coulomb energy.                    !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-   use garcha_mod, only: RMM, af, X, B, ngd, md, M, kknumd, kknums, &
-                         MEMO, Nang, natom, NCO, NORM, Nunp, OPEN, pi32, &
-                         nshell, nshelld, SVD, cool, cools, kkind, kkinds, &
-                         ncontd, ad, cd
+   use garcha_mod, only: RMM, af, B, M, Md, kknumd, kknums, &
+                         MEMO, OPEN, cool, cools, kkind, kkinds
    implicit none
    double precision, intent(inout) :: E2
 
-   double precision :: Q(3), W(3), Rc(Md), FF(Md), P(Md), Jx(M), aux(ngd)
-   double precision  :: sq3, r0, r1, rcond, bda
-   double precision  :: t0, ss9, Ex, Ea, Eb, term
-
-   integer :: M1, M2, M3, M5, M7, M9
-   integer :: M10, M11
-   integer :: MM, MMd, MMp, Md2, Md3, Md5
-   integer :: Nel, iconst, irank, info
-   integer :: nd, ndd, nk, np, npd, ns, nsd
-   integer :: l1, l2, i, j, k1, ll(3)
-   integer :: iikk, k_ind, kk_ind, m_ind
+   double precision :: Rc(Md), aux(md)
+   double precision :: Ea, Eb, term
+   integer          :: M3, M5, M7, M9, M11, MM, MMd, ll(3), iikk, k_ind, &
+                       kk_ind, m_ind
 
    ! 16 loops for all combinations - 1-2: for wavefunction basis, 3 for the
    ! density fitting.
@@ -36,25 +27,16 @@ subroutine int3lu(E2)
    ! if t(i,j,k) is not stored, they should be calculated again in order to
    ! evaluate the corresponding part of the Fock matrix.
    ! V(i,j) is obtained by adding af(k_ind) * t(i,j,k).
-   ns  = nshell(0) ; np  = nshell(1) ; nd  = nshell(2)
-   nsd = nshelld(0); npd = nshelld(1); ndd = nshelld(2)
+   Ea = 0.D0 ; Eb = 0.D0
 
-   Ex = 0.D0 ; Ea = 0.D0 ; Eb = 0.D0
-
-   M2=2*M
-   Md2=2*Md
    MM=M*(M+1)/2
    MMd=Md*(Md+1)/2
 
-   M1=1 !first P
-   M3=M1+MM ! Pew
+   M3=1+MM ! Pew
    M5=M3+MM ! now S, also F later
    M7=M5+MM ! G matrix
    M9=M7+MMd ! G inverted
    M11=M9+MMd ! Hmat
-
-   sq3 = 1.D0
-   if (NORM) sq3 = sqrt(3.D0)
 
    if (MEMO) then
       B = 0.0D0

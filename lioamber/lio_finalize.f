@@ -26,7 +26,7 @@
        deallocate(r,v,rqm, Em, Rm)
        deallocate(pc, Iz, cx, ax, cd, ad, c, a)
       deallocate(Nuc,ncont,Nucx,ncontx,Nucd
-     > ,ncontd, indexii, indexiid, RMM, X, XX)
+     > ,ncontd, indexii, indexiid, RMM, X)
        deallocate(nnat, B, af)
        deallocate(natomc,nnps,nnpp,nnpd,nns)
        deallocate(nnd,nnp,atmin,jatc,d)

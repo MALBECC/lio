@@ -14,14 +14,14 @@ module subm_int2
 contains
 subroutine int2()
    use liotemp   , only: FUNCT
-   use garcha_mod, only: RMM, XX, ngd, M, Md, ad, nucd, ncontd, r, d, cd, &
+   use garcha_mod, only: RMM, ngd, M, Md, ad, nucd, ncontd, r, d, cd, &
                          NORM, pi5, nshelld
 
    implicit none
    double precision, allocatable :: dgelss_temp(:), inv_work(:), trabajo(:)
-   integer, allocatable :: XXX(:)
+   integer, allocatable :: XXX(:), aux(:), XX(:,:)
 
-   double precision :: Q(3), Det(2)
+   double precision :: Q(3)
 
    ! Ex Implicits
    double precision  :: t0, t1, t2, t3, t4, t5
@@ -29,17 +29,17 @@ subroutine int2()
    double precision  :: ps, pjs, pjp, pj2s, pis, pip, pi2s, pi3s
    double precision  :: alf, cc, ccoef, d1s, d2s, dd, dp, ds
    double precision  :: roz, rcond, f1, f2, sq3
-   double precision  :: u, tmp, tn, tj, ti, t6, Z2, za, zc, Zij
+   double precision  :: uf, tmp, tn, tj, ti, t6, Z2, za, zc, Zij
 
    integer :: igpu, info
-   integer :: i, j, ii, j_ind, i_ind, j_indj, k, kk, kkk
+   integer :: j_ind, i_ind, k_ind
    integer :: ifunct, jfunct, nci, ncj
-   integer :: nsd, npd, ndd, ni, nj
+   integer :: nsd, npd, ndd
    integer :: lll, l12, l34, l1, l2, l3, l4, lij, lk
    integer :: MM, MMp, MMd, Md2, Md3, Md5
    integer :: M2, M7, M9, M10, M12, M15
 
-   allocate(inv_work(Md), XXX(8*Md), aux(ngd))
+   allocate(inv_work(Md), XXX(8*Md), aux(ngd), XX(Md, Md))
 
    sq3 = 1.D0
    if (NORM) sq3 = sqrt(3.D0)
@@ -469,7 +469,7 @@ subroutine int2()
    enddo
 
    call g2g_timer_sum_stop('G invert')
-   deallocate(inv_work, XXX, aux)
+   deallocate(inv_work, XXX, aux, xx)
    return
 end subroutine
 end module subm_int2

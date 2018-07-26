@@ -1069,7 +1069,7 @@
       call aint_parameter_init(Md, ncontd, nshelld, cd, ad, Nucd, &
       af, RMM, M9, M11, STR, FAC, rmax, Iz)
       endif
-      allocate(X(M,4*M),XX(Md,Md))
+      allocate(X(M,4*M))
 
 
 !--------------------------------------------------------------------------------------

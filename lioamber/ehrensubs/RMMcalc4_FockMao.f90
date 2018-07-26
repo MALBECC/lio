@@ -32,7 +32,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
    real*8   :: Energy_Efield
 
    integer  :: kk, idx0
-   integer  :: MM, MMd, igpu
+   integer  :: MM, MMd, igpu, M7, M9
    logical  :: MEMO
 
 !  For electric field application
@@ -40,6 +40,11 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
    real*8   :: factor, g, Qc
    real*8   :: dip_times_field, strange_term
    real*8   :: field_shape, time_fact, time_dist, laser_freq
+
+   MM=M*(M+1)/2
+   MMd=Md*(Md+1)/2
+   M7  = 1 + 3*MM
+   M9  = M7 + MMd
 !
 !
 ! Calculate fixed-parts of fock
@@ -61,7 +66,8 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
       call aint_qmmm_fock(Energy_SolvF,Energy_SolvT)
    endif
 
-   call int2(RMM, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, ntatom)
+   call int2(RMM(M7:M7+MMd), RMM(M9:M9+MMd), M, Md, nshelld, ncontd, ad, cd, &
+             NORM, r, d, nucd, ntatom)
    if (igpu.gt.2) call aint_coulomb_init()
    if (igpu.eq.5) MEMO = .false.
    call g2g_timer_stop('RMMcalc4-start')
@@ -133,8 +139,6 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
 ! Calculate Energy
 !------------------------------------------------------------------------------!
    call g2g_timer_start('RMMcalc4-exit')
-   MM=M*(M+1)/2
-   MMd=Md*(Md+1)/2
    idx0=3*MM+2*MMd
    Energy_1e=0.0d0
    do kk=1,MM

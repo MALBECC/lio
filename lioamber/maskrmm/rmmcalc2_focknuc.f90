@@ -14,7 +14,7 @@ subroutine rmmcalc2_focknuc( fock_mao, energy_1e, energy_solvT )
 
    real*8  :: energy_solvF
    integer :: kk, idx0
-   integer :: MM, MMd, igpu
+   integer :: MM, MMd, igpu, M9, M7
 !
 !
 !  Initializations
@@ -26,6 +26,8 @@ subroutine rmmcalc2_focknuc( fock_mao, energy_1e, energy_solvT )
    MM   = M  * (M+1)  / 2
    MMd  = Md * (Md+1) / 2
    idx0 = 3*MM + 2*MMd
+   M7  = 1 + 3*MM
+   M9  = M7 + MMd
 
    if (allocated(kkind))  deallocate(kkind)
    if (allocated(kkinds)) deallocate(kkinds)
@@ -47,7 +49,8 @@ subroutine rmmcalc2_focknuc( fock_mao, energy_1e, energy_solvT )
       call aint_qmmm_fock( energy_solvF, energy_solvT )
    endif
 
-   call int2(RMM, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, ntatom)
+   call int2(RMM(M7:M7+MMd), RMM(M9:M9+MMd), M, Md, nshelld, ncontd, ad, cd, &
+             NORM, r, d, nucd, ntatom)
    if (igpu.gt.2) call aint_coulomb_init()
    if (igpu.eq.5) MEMO = .false.
    call g2g_timer_stop('rmmcalc2-sol2coul')

@@ -1,3 +1,7 @@
+module subm_int2
+contains
+subroutine int2(Gmat, Ginv, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, &
+                ntatom)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Integrals subroutines - Int2                                                 !
 ! 2e integrals subroutine, 2 indexes: density fitting functions. All of them   !
@@ -9,9 +13,6 @@
 ! Output: G matrix, which should be inverted when evaluating Coulomb terms.    !
 ! Refactored in 2018 by F. Pedron                                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-module subm_int2
-contains
-subroutine int2(RMM, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, ntatom)
    use liotemp      , only: FUNCT
    use constants_mod, only: pi5
 
@@ -20,7 +21,7 @@ subroutine int2(RMM, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, ntatom)
                                    nshelld(0:4)
    logical         , intent(in) :: NORM
    double precision, intent(in) :: ad(:,:), cd(:,:), d(:,:), r(ntatom,3)
-   double precision, intent(inout) :: RMM(:)
+   double precision, intent(inout) :: Gmat(:), Ginv(:)
 
    ! Internal variables
    double precision, allocatable :: aux_mat(:,:)
@@ -29,8 +30,7 @@ subroutine int2(RMM, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, ntatom)
                        ps, pjs, pjp, pj2s, pis, pip, pi2s, pi3s, d1s, d2s, dd, &
                        dp, ds
    integer          :: i_ind, j_ind, k_ind, ifunct, jfunct, nci, ncj, nsd, npd,&
-                       ndd, lll, l12, l34, l1, l2, l3, l4, lij, lk, MM, MMd,   &
-                       Md2, M2, M7, M9
+                       ndd, lll, l12, l34, l1, l2, l3, l4, lij, lk, Md2
    ! Variables for Lapack
    integer :: LA_WORK_SIZE, LA_INFO
    integer         , allocatable :: LA_IWORK(:)
@@ -39,13 +39,11 @@ subroutine int2(RMM, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, ntatom)
    sq3 = 1.D0
    if (NORM) sq3 = sqrt(3.D0)
    nsd = nshelld(0); npd = nshelld(1); ndd = nshelld(2)
-   Md2 = 2*Md; M2 = 2*M; MM = M*(M+1)/2; MMd = Md*(Md+1)/2
+   Md2 = 2*Md
 
-   M7  = 1 + 3*MM ! G matrix
-   M9  = M7 + MMd ! G inverted
-
-   do ifunct = 1, MMd
-       RMM(M7+ifunct-1) = 0.D0
+   do k_ind =1, Md*(Md+1)/2
+      Gmat(k_ind) = 0.0D0
+      Ginv(k_ind) = 0.0D0
    enddo
 
    ! 2 index electron repulsion for density basis set
@@ -65,7 +63,7 @@ subroutine int2(RMM, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, ntatom)
          s0s   = pi5 / t1 * FUNCT(0,uf)
 
          k_ind = ifunct +((Md2-jfunct)*(jfunct-1))/2
-         RMM(M7+k_ind-1) = RMM(M7+k_ind-1) + ccoef * s0s
+         Gmat(k_ind) = Gmat(k_ind) + ccoef * s0s
       enddo
       enddo
    enddo
@@ -101,7 +99,7 @@ subroutine int2(RMM, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, ntatom)
 
             i_ind = ifunct + l1 -1
             k_ind = i_ind  + ((Md2-jfunct)*(jfunct-1))/2
-            RMM(M7+k_ind-1) = RMM(M7+k_ind-1) + tn * ccoef
+            Gmat(k_ind) = Gmat(k_ind) + tn * ccoef
          enddo
       enddo
       enddo
@@ -148,7 +146,7 @@ subroutine int2(RMM, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, ntatom)
                j_ind = jfunct + l2 -1
                if (i_ind .ge. j_ind) then
                   k_ind = i_ind + ((Md2-j_ind)*(j_ind-1))/2
-                  RMM(M7+k_ind-1) = RMM(M7+k_ind-1) + tn * ccoef
+                  Gmat(k_ind) = Gmat(k_ind) + tn * ccoef
                endif
             enddo
          enddo
@@ -198,7 +196,7 @@ subroutine int2(RMM, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, ntatom)
                l12   = l1 * (l1-1)/2 + l2
                i_ind = ifunct + l12 -1
                k_ind = i_ind + ((Md2-jfunct)*(jfunct-1))/2
-               RMM(M7+k_ind-1) = RMM(M7+k_ind-1) + tn * ccoef / f1
+               Gmat(k_ind) = Gmat(k_ind) + tn * ccoef / f1
             enddo
          enddo
       enddo
@@ -265,7 +263,7 @@ subroutine int2(RMM, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, ntatom)
                   j_ind = jfunct + l3  -1
 
                   k_ind = i_ind + ((Md2-j_ind)*(j_ind-1))/2
-                  RMM(M7+k_ind-1) = RMM(M7+k_ind-1) + tn * ccoef / f1
+                  Gmat(k_ind) = Gmat(k_ind) + tn * ccoef / f1
                enddo
             enddo
          enddo
@@ -374,7 +372,7 @@ subroutine int2(RMM, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, ntatom)
                      i_ind = ifunct + l12 -1
                      j_ind = jfunct + l34 -1
                      k_ind = i_ind  + (Md2-j_ind)*(j_ind-1)/2
-                     RMM(M7+k_ind-1) = RMM(M7+k_ind-1) + tn * ccoef / (f1 * f2)
+                     Gmat(k_ind) = Gmat(k_ind) + tn * ccoef / (f1 * f2)
                   enddo
                enddo
             enddo
@@ -389,7 +387,7 @@ subroutine int2(RMM, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, ntatom)
    do ifunct = 1, Md
    do jfunct = 1, ifunct
       k_ind = ifunct + (Md*2-jfunct) * (jfunct-1) / 2
-      aux_mat(ifunct,jfunct) = RMM(M7+k_ind-1)
+      aux_mat(ifunct,jfunct) = Gmat(k_ind)
       aux_mat(jfunct,ifunct) = aux_mat(ifunct,jfunct)
    enddo
    enddo
@@ -398,20 +396,16 @@ subroutine int2(RMM, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, ntatom)
    do jfunct = 1     , Md
    do ifunct = jfunct, Md
       k_ind = k_ind +1
-      RMM(M7+k_ind-1) = aux_mat(ifunct,jfunct)
+      Gmat(k_ind) = aux_mat(ifunct,jfunct)
    enddo
-   enddo
-
-   do k_ind = 1, MMd
-      RMM(M9+k_ind-1) = 0.0D0
    enddo
 
    allocate(LA_IWORK(8*Md))
    call g2g_timer_sum_start('G condition')
-   call dgesdd('N', Md, Md, aux_mat, Md, RMM(M9), 0, 1, 0, 1, t0, -1, &
+   call dgesdd('N', Md, Md, aux_mat, Md, Ginv, 0, 1, 0, 1, t0, -1, &
                LA_IWORK, LA_INFO)
    LA_WORK_SIZE = int(t0); allocate(LA_WORK(LA_WORK_SIZE))
-   call dgesdd('N', Md, Md, aux_mat, Md, RMM(M9), 0, 1, 0, 1, LA_WORK, &
+   call dgesdd('N', Md, Md, aux_mat, Md, Ginv, 0, 1, 0, 1, LA_WORK, &
                LA_WORK_SIZE, LA_IWORK, LA_INFO)
    deallocate(LA_WORK)
    call g2g_timer_sum_stop('G condition')
@@ -421,7 +415,7 @@ subroutine int2(RMM, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, ntatom)
    do ifunct = 1, Md
    do jfunct = 1, ifunct
       k_ind = ifunct + (Md*2-jfunct)*(jfunct-1)/2
-      aux_mat(ifunct,jfunct) = RMM(M7+k_ind-1)
+      aux_mat(ifunct,jfunct) = Gmat(k_ind)
       aux_mat(jfunct,ifunct) = aux_mat(ifunct,jfunct)
    enddo
    enddo
@@ -436,7 +430,7 @@ subroutine int2(RMM, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, ntatom)
    do ifunct = 1, Md
    do jfunct = 1, ifunct
       k_ind = ifunct + (Md*2-jfunct)*(jfunct-1)/2
-      RMM(M9+k_ind-1) = aux_mat(jfunct, ifunct)
+      Ginv(k_ind) = aux_mat(jfunct, ifunct)
    enddo
    enddo
 

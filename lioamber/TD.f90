@@ -73,7 +73,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
    real*8  :: E, En, E1, E2, E1s, Es, Ens = 0.0D0, Ex, t, dt_magnus, dt_lpfrg
    integer :: MM, MMd, M2, M3 ,M5, M13, M15, M11, LWORK, igpu, info, istep,    &
-              icount,jcount
+              icount,jcount, M9, M7
    integer :: lpfrg_steps = 200, chkpntF1a = 185, chkpntF1b = 195
    logical :: is_lpfrg
    character(len=20) :: restart_filename
@@ -127,11 +127,11 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    ! M13 - W (matrix eigenvalues),  M15 - Aux vector for ESSL. M17 - Used
    ! in least squares, M18 - MO vectors (deprecated), M19 - weights (optional),
    ! M20 - 2e integrals if MEMO=t
-   MM  = M *(M+1) /2     ; MMd = Md*(Md+1)/2
-   M2  = 2*M             ; M5  = 1 + 2*MM
-   M3  = 1+MM
-   M11 = M5 + MM + 2*MMd ; M13 = M11 + MM
-   M15 = M13 + M
+   MM  = M *(M+1) /2 ; MMd = Md*(Md+1)/2
+   M2  = 2*M         ; M5  = 1 + 2*MM
+   M3  = 1+MM        ; M7  = 1 + 3*MM
+   M9  = M7 + MMd    ; M11 = M5 + MM + 2*MMd
+   M13 = M11 + MM    ; M15 = M13 + M
 
    call g2g_timer_start('TD')
    call g2g_timer_start('td-inicio')
@@ -265,7 +265,8 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 #endif
    ! Precalculate three-index (two in MO basis, one in density basis) matrix
    ! used in density fitting /Coulomb F element calculation here (t_i in Dunlap)
-   call int2(RMM, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, ntatom)
+   call int2(RMM(M7:M7+MMd), RMM(M9:M9+MMd), M, Md, nshelld, ncontd, ad, cd, &
+             NORM, r, d, nucd, ntatom)
    call td_coulomb_precalc(igpu, MEMO)
 
    call g2g_timer_stop('td-inicio')

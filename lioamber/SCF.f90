@@ -476,7 +476,8 @@ subroutine SCF(E)
 ! Also, pre-calculate G^-1 if G is not ill-conditioned into RMM(M9)
 !
       call g2g_timer_sum_start('Coulomb G matrix')
-      call int2(RMM, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, ntatom)
+      call int2(RMM(M7:M7+MMd), RMM(M9:M9+MMd), M, Md, nshelld, ncontd, ad, cd,&
+                NORM, r, d, nucd, ntatom)
       call g2g_timer_sum_stop('Coulomb G matrix')
 
 ! Precalculate three-index (two in MO basis, one in density basis) matrix

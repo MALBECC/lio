@@ -856,13 +856,21 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
    logical         , intent(in) :: open_shell, memo
    real            , intent(in) :: cools(:)
    double precision, intent(in) :: cool(:)
-   integer :: icount
+   integer :: icount, MMd, M3, M5, M7, M9, M11
+
+   MMd=Md*(Md+1)/2
+   M3=1+MM ! Pew
+   M5=M3+MM ! now S, also F later
+   M7=M5+MM ! G matrix
+   M9=M7+MMd ! G inverted
+   M11=M9+MMd ! Hmat
 
    E1 = 0.0D0; E = 0.0D0
    if (is_lpfrg) then
       call g2g_timer_sum_start("TD - Coulomb")
-      call int3lu(E2, RMM, M, Md, cool, cools, kkind, kkinds, kknumd, kknums,&
-                  af, B, memo, open_shell)
+      call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), RMM(M7:M7+MMd), &
+                  RMM(M9:M9+MMd), RMM(M11:M11+MMd), M, Md, cool, cools, kkind, &
+                  kkinds, kknumd, kknums, af, B, memo, open_shell)
       call g2g_timer_sum_pause("TD - Coulomb")
       call g2g_timer_sum_start("TD - Exc")
       call g2g_solve_groups(0,Ex,0)

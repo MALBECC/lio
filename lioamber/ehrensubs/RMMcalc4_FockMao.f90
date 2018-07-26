@@ -32,7 +32,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
    real*8   :: Energy_Efield
 
    integer  :: kk, idx0
-   integer  :: MM, MMd, igpu, M7, M9
+   integer  :: MM, MMd, igpu, M7, M9, M3, M5, M11
    logical  :: MEMO
 
 !  For electric field application
@@ -43,8 +43,11 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
 
    MM=M*(M+1)/2
    MMd=Md*(Md+1)/2
+   M3=1+MM ! Pew
+   M5=M3+MM ! now S, also F later
    M7  = 1 + 3*MM
    M9  = M7 + MMd
+   M11=M9+MMd ! Hmat
 !
 !
 ! Calculate fixed-parts of fock
@@ -83,8 +86,9 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
 !------------------------------------------------------------------------------!
    call g2g_timer_start('RMMcalc4-solve3lu')
    call rmmput_dens(DensMao)
-   call int3lu(Energy_Coulomb, RMM, M, Md, cool, cools, kkind, kkinds, kknumd, &
-               kknums, af, B, memo, open)
+   call int3lu(Energy_Coulomb, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM),        &
+               RMM(M7:M7+MMd), RMM(M9:M9+MMd), RMM(M11:M11+MMd), M, Md, cool,  &
+               cools, kkind, kkinds, kknumd, kknums, af, B, memo, open)
    call g2g_solve_groups(0,Energy_Exchange,0)
    call g2g_timer_stop('RMMcalc4-solve3lu')
 

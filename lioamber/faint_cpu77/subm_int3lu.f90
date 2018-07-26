@@ -1,7 +1,7 @@
 module subm_int3lu
 contains
-subroutine int3lu(E2, RMM, M, Md, cool, cools, kkind, kkinds, kknumd, kknums,&
-                  af, B, memo, open_shell)
+subroutine int3lu(E2, rho, Fmat_b, Fmat, Gmat, Ginv, Hmat, M, Md, cool, cools,&
+                  kkind, kkinds, kknumd, kknums, af, B, memo, open_shell)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Integrals subroutines - 2e integrals, 3 index                                !
 ! Wavefunction and density fitting functions are calculated using the          !
@@ -15,10 +15,10 @@ subroutine int3lu(E2, RMM, M, Md, cool, cools, kkind, kkinds, kknumd, kknums,&
    integer         , intent(in) :: M, Md, kknumd, kknums, kkind(:), kkinds(:)
    logical         , intent(in) :: open_shell, memo
    real            , intent(in) :: cools(:)
-   double precision, intent(in) :: cool(:)
-   double precision, intent(inout) :: E2, RMM(:), af(:), B(:,:)
+   double precision, intent(in) :: cool(:), rho(:), Gmat(:), Ginv(:), Hmat(:)
+   double precision, intent(inout) :: E2, af(:), B(:,:), Fmat_b(:), Fmat(:)
 
-   double precision :: Rc(Md), aux(md)
+   double precision, allocatable :: Rc(:), aux(:)
    double precision :: Ea, Eb, term
    integer          :: M3, M5, M7, M9, M11, MM, MMd, ll(3), iikk, k_ind, &
                        kk_ind, m_ind
@@ -30,6 +30,7 @@ subroutine int3lu(E2, RMM, M, Md, cool, cools, kkind, kkinds, kknumd, kknums,&
    ! if t(i,j,k) is not stored, they should be calculated again in order to
    ! evaluate the corresponding part of the Fock matrix.
    ! V(i,j) is obtained by adding af(k_ind) * t(i,j,k).
+   allocate(Rc(Md), aux(md))
    Ea = 0.D0 ; Eb = 0.D0
 
    MM=M*(M+1)/2
@@ -56,14 +57,14 @@ subroutine int3lu(E2, RMM, M, Md, cool, cools, kkind, kkinds, kknumd, kknums,&
       do kk_ind = 1, kknumd
          iikk = (kk_ind - 1) * Md
          do k_ind = 1, Md
-            Rc(k_ind) = Rc(k_ind) + RMM(kkind(kk_ind)) * cool(iikk + k_ind)
+            Rc(k_ind) = Rc(k_ind) + rho(kkind(kk_ind)) * cool(iikk + k_ind)
          enddo
       enddo
 
       do kk_ind = 1, kknums
          iikk = (kk_ind - 1) * Md
          do k_ind = 1, Md
-            Rc(k_ind) = Rc(k_ind) + RMM(kkinds(kk_ind)) * cools(iikk + k_ind)
+            Rc(k_ind) = Rc(k_ind) + rho(kkinds(kk_ind)) * cools(iikk + k_ind)
          enddo
       enddo
 
@@ -72,21 +73,21 @@ subroutine int3lu(E2, RMM, M, Md, cool, cools, kkind, kkinds, kknumd, kknums,&
          af(m_ind) = 0.0D0
          do k_ind = 1, m_ind-1
             af(m_ind) = af(m_ind) + &
-                        Rc(k_ind) * RMM(M9-1 + m_ind + (2*Md-k_ind)*(k_ind-1)/2)
+                        Rc(k_ind) * Ginv(m_ind + (2*Md-k_ind)*(k_ind-1)/2)
          enddo
          do k_ind = m_ind, Md
             af(m_ind) = af(m_ind) + &
-                        Rc(k_ind) * RMM(M9-1 + k_ind + (2*Md-m_ind)*(m_ind-1)/2)
+                        Rc(k_ind) * Ginv(k_ind + (2*Md-m_ind)*(m_ind-1)/2)
          enddo
       enddo
 
       ! Initialization of Fock matrix elements
       do k_ind = 1, MM
-         RMM(M5-1 + k_ind) = RMM(M11-1 + k_ind)
+         Fmat(k_ind) = Hmat(k_ind)
       enddo
       if (open_shell) then
       do k_ind = 1, MM
-         RMM(M3-1 + k_ind) = RMM(M11-1 + k_ind)
+         Fmat_b(k_ind) = Hmat(k_ind)
       enddo
       endif
 
@@ -94,11 +95,11 @@ subroutine int3lu(E2, RMM, M, Md, cool, cools, kkind, kkinds, kknumd, kknums,&
          Ea = Ea + af(m_ind)  * Rc(m_ind)
          do k_ind = 1, m_ind
             Eb = Eb + af(k_ind) * af(m_ind) * &
-                      RMM(M7-1 + m_ind + (2*Md-k_ind)*(k_ind-1)/2)
+                      Gmat(m_ind + (2*Md-k_ind)*(k_ind-1)/2)
          enddo
          do k_ind = m_ind+1, Md
             Eb = Eb + af(k_ind) * af(m_ind) * &
-                      RMM(M7-1 + k_ind + (2*Md-m_ind)*(m_ind-1)/2)
+                      Gmat(k_ind + (2*Md-m_ind)*(m_ind-1)/2)
          enddo
       enddo
 
@@ -116,19 +117,19 @@ subroutine int3lu(E2, RMM, M, Md, cool, cools, kkind, kkinds, kknumd, kknums,&
          do kk_ind = 1, kknumd
             iikk = (kk_ind - 1) * Md
             do k_ind = 1, Md
-               RMM(M5-1 + kkind(kk_ind)) = RMM(M5-1 + kkind(kk_ind)) + &
-                                           af(k_ind)  * cool(iikk + k_ind)
-               RMM(M3-1 + kkind(kk_ind)) = RMM(M3-1 + kkind(kk_ind)) + &
-                                           aux(k_ind) * cool(iikk + k_ind)
+               Fmat(kkind(kk_ind)) = Fmat(kkind(kk_ind)) + &
+                                     af(k_ind)  * cool(iikk + k_ind)
+               Fmat_b(kkind(kk_ind)) = Fmat_b(kkind(kk_ind)) + &
+                                       aux(k_ind) * cool(iikk + k_ind)
             enddo
          enddo
          do kk_ind = 1, kknums
             iikk = (kk_ind - 1) * Md
             do k_ind = 1, Md
-               RMM(M5-1 + kkinds(kk_ind)) = RMM(M5-1 + kkinds(kk_ind)) + &
-                                             af(k_ind)  * cools(iikk + k_ind)
-               RMM(M3-1 + kkinds(kk_ind)) = RMM(M3-1 + kkinds(kk_ind)) + &
-                                             aux(k_ind) * cools(iikk + k_ind)
+               Fmat(kkinds(kk_ind)) = Fmat(kkinds(kk_ind)) + &
+                                      af(k_ind)  * cools(iikk + k_ind)
+               Fmat_b(kkinds(kk_ind)) = Fmat_b(kkinds(kk_ind)) + &
+                                        aux(k_ind) * cools(iikk + k_ind)
             enddo
          enddo
       else
@@ -138,7 +139,7 @@ subroutine int3lu(E2, RMM, M, Md, cool, cools, kkind, kkinds, kknumd, kknums,&
             do k_ind = 1, Md
               term = term + af(k_ind) * cool(iikk + k_ind)
             enddo
-            RMM(M5-1 + kkind(kk_ind)) = RMM(M5-1 + kkind(kk_ind)) + term
+            Fmat(+ kkind(kk_ind)) = Fmat(+ kkind(kk_ind)) + term
          enddo
          do kk_ind = 1, kknums
             iikk = (kk_ind - 1) * Md
@@ -146,30 +147,31 @@ subroutine int3lu(E2, RMM, M, Md, cool, cools, kkind, kkinds, kknumd, kknums,&
             do k_ind = 1, Md
               term = term + af(k_ind) * cools(iikk + k_ind)
             enddo
-            RMM(M5-1 + kkinds(kk_ind) -1) = RMM(M5-1 + kkinds(kk_ind)) + term
+            Fmat(kkinds(kk_ind) -1) = Fmat(kkinds(kk_ind)) + term
          enddo
       endif
       call g2g_timer_stop('int3lu')
    else
       do k_ind = 1, MM
-         RMM(M5-1 + k_ind) = RMM(M11-1 + k_ind)
-         if (open_shell) RMM(M3-1 + k_ind) = RMM(M11-1 + k_ind)
+         Fmat(k_ind) = Hmat(k_ind)
+         if (open_shell) Fmat_b(k_ind) = Hmat(k_ind)
       enddo
 
       call aint_coulomb_fock(Ea)
       do m_ind = 1, Md
          do k_ind = 1, m_ind
             Eb = Eb + af(k_ind) * af(m_ind) * &
-                      RMM(M7-1 + m_ind + (2*Md-k_ind)*(k_ind-1)/2)
+                      Gmat(m_ind + (2*Md-k_ind)*(k_ind-1)/2)
          enddo
          do k_ind = m_ind+1, Md
             Eb = Eb + af(k_ind) * af(m_ind) * &
-                      RMM(M7-1 + k_ind + (2*Md-m_ind)*(m_ind-1)/2)
+                      Gmat(k_ind + (2*Md-m_ind)*(m_ind-1)/2)
          enddo
       enddo
    endif
 
    E2 = Ea - Eb / 2.D0
+   deallocate(Rc, aux)
    return
 end subroutine int3lu
 end module subm_int3lu

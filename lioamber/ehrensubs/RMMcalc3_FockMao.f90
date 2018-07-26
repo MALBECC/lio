@@ -27,7 +27,7 @@ subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
    real*8   :: Energy_Coulomb
    real*8   :: Energy_Exchange
    real*8   :: Energy_Efield
-   integer  :: kk
+   integer  :: kk, MM, MMd, M3, M5, M7, M9, M11
 
 !  For electric field
    real*8   :: factor, g, Qc
@@ -36,11 +36,20 @@ subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
 !
 !  Calculate unfixed Fock in RMM - int3lu and solve_groups
 !------------------------------------------------------------------------------!
+   MM =M *(M+1)/2
+   MMd=Md*(Md+1)/2
+   M3=1+MM ! Pew
+   M5=M3+MM ! now S, also F later
+   M7=M5+MM ! G matrix
+   M9=M7+MMd ! G inverted
+   M11=M9+MMd ! Hmat
+
    call g2g_timer_start('RMMcalc3-solve3lu')
    call rmmput_fock( FockMao )
    call rmmput_dens( DensMao )
-   call int3lu(Energy_Coulomb, RMM, M, Md, cool, cools, kkind, kkinds, kknumd, &
-               kknums, af, B, memo, open)
+   call int3lu(Energy_Coulomb, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM),        &
+               RMM(M7:M7+MMd), RMM(M9:M9+MMd), RMM(M11:M11+MMd), M, Md, cool,  &
+               cools, kkind, kkinds, kknumd, kknums, af, B, memo, open)
    call g2g_solve_groups( 0, Energy_Exchange, 0 )
    call g2g_timer_stop('RMMcalc3-solve3lu')
 !

@@ -23,18 +23,28 @@ subroutine rmmcalc3_fockele( dens_mao, elec_field, uses_field,                 &
    real*8    , intent(inout) :: energy_field
    real*8    , intent(inout) :: energy_ecp
 
-   integer :: MM, kk
+   integer :: MM, kk, MMd, M3, M5, M7, M9, M11
    real*8  :: factor, g, Qc
    real*8  :: dip_times_field, strange_term
 !
 !
 !  Calculate unfixed Fock in RMM - int3lu and solve_groups
 !------------------------------------------------------------------------------!
+   MM=M*(M+1)/2
+   MMd=Md*(Md+1)/2
+   M3=1+MM ! Pew
+   M5=M3+MM ! now S, also F later
+   M7=M5+MM ! G matrix
+   M9=M7+MMd ! G inverted
+   M11=M9+MMd ! Hmat
+
    call g2g_timer_start('rmmcalc3-solve3lu')
    call rmmput_fock( fock_mao)
    call rmmput_dens( dens_mao )
-   call int3lu( energy_coul, RMM, M, Md, cool, cools, kkind, kkinds, kknumd, &
-               kknums, af, B, memo, open)
+   call int3lu( energy_coul, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), &
+                RMM(M7:M7+MMd), RMM(M9:M9+MMd), RMM(M11:M11+MMd),     &
+                M, Md, cool, cools, kkind, kkinds, kknumd, &
+                kknums, af, B, memo, open)
    call g2g_solve_groups( 0, energy_xc, 0 )
    call g2g_timer_stop('rmmcalc3-solve3lu')
 !

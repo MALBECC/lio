@@ -218,7 +218,7 @@ __global__ void gpu_qmmm_forces(
           clatom_position_sh[tid].x = G2G::gpu_atom_positions[i + tid].x;
           clatom_position_sh[tid].y = G2G::gpu_atom_positions[i + tid].y;
           clatom_position_sh[tid].z = G2G::gpu_atom_positions[i + tid].z;
-          clatom_charge_sh[tid] = (scalar_type)(gpu_atom_types[i + tid]);
+          clatom_charge_sh[tid] = (scalar_type)(gpu_atom_Z[i + tid]);
         }
         __syncthreads();
         //

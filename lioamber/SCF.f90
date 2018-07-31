@@ -709,10 +709,10 @@ subroutine SCF(E)
 
 !carlos: Alpha Energy (or Close Shell) is stored.
         Eorbs = morb_energy
-!charly: The storage in RMM it seems that is not necessary anymore
-!        do kk=1,M
-!          RMM(M13+kk-1) = morb_energy(kk)
-!        end do
+!charly: RMM is storing only alpha energy when we are working with open shell
+        do kk=1,M
+          RMM(M13+kk-1) = morb_energy(kk)
+        end do
 
         i0 = 0
         if (dftb_calc) i0=MTB

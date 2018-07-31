@@ -79,7 +79,7 @@ end subroutine transport_init
 
 
 subroutine transport_read_groups(natom)
-!This subroutine read the transport.dat file, the file must have in the first
+!This subroutine read the transport.in file, the file must have in the first
 !line the time step where we want to start the dinamic in each electrode:
 !   timestep_init(1), timestep_init(2), .... , timestep_init(n)
 !At least two electrodes with oposite polarisation must have the same
@@ -94,9 +94,9 @@ subroutine transport_read_groups(natom)
    integer :: icount, group_read
    logical :: file_exists
 
-   inquire(file = 'transport.dat', exist = file_exists)
+   inquire(file = 'transport.in', exist = file_exists)
    if (.not.file_exists) then
-      write(*,*) ' ERROR - Transport: Cannot find transport.dat file.'
+      write(*,*) ' ERROR - Transport: Cannot find transport.in file.'
       stop
    endif
    open( unit = 678 , file = 'transport.in')
@@ -107,7 +107,7 @@ subroutine transport_read_groups(natom)
       group(icount) = group_read
       if (group_read.gt.nbias) then
          write(*,*) "ERROR - A value greater than nbias declared has been found&
-                     in transport.dat file"
+                     in transport.in file"
          stop
       end if
    enddo

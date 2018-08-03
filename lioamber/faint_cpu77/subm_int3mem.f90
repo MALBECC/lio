@@ -10,10 +10,10 @@ subroutine int3mem()
 ! Output: F updated with Coulomb part and Coulomb energy is calculated.        !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use liotemp   , only: FUNCT
-   use garcha_mod, only: RMM, cool, cools, kkind, kkinds, nuc, nucd, a, c, &
+   use garcha_mod, only: cool, cools, kkind, kkinds, Nuc, Nucd, a, c, &
                          d, r, ad, cd, natomc, nns, nnp, nnd, nnps, nnpp, nnpd,&
                          jatc, ncont, ncontd, nshell, nshelld, M, Md, rmax,    &
-                         rmaxs, pi52, Nunp, NORM, NCO, kknums, kknumd
+                         rmaxs, pi52, NORM, kknums, kknumd
    implicit none
    double precision  :: Q(3), W(3)
    integer, dimension(:), allocatable :: Jx
@@ -21,8 +21,8 @@ subroutine int3mem()
    ! Eliminating implicits:
    double precision  :: alf, cc, ccoef, f1, f2, f3
    double precision  :: rexp, ro, roz, sq3, term, u, ddij
-   double precision  :: tii, tjj, NCOb, NCOa
-   double precision  :: z2, z2a, zc, zij
+   double precision  :: tii, tjj
+   double precision  :: z2, z2a, zc, Zij
 
    double precision  :: d1s, d1p, d1d, d1pk, d1pl
    double precision  :: d2s, d2p, d2d, d2pl, d2pk
@@ -50,8 +50,7 @@ subroutine int3mem()
    double precision  :: t27, t28, t29, t30, t31
    double precision  :: t40, t41, t50, t51, t60, t61, t70, t80
 
-   integer :: MM, MMd, Md2, Ll(3)
-   integer :: M1, M2, M3, M5, M7, M9, M11, M13, M15, M17, M18
+   integer :: M2, Ll(3)
    integer :: i, ii, j, jj, k, kk, ni, nj, nk, kn, k1
    integer :: id, iki, jki, ix, kknan, knan, kknumsmax
    integer :: ns, nsd, nd, ndd, np, npd
@@ -61,91 +60,55 @@ subroutine int3mem()
    logical :: fato, fato2
 
    allocate (Jx(M))
-   ns=nshell(0)
-   np=nshell(1)
-   nd=nshell(2)
-   M2=2*M
+   ns  = nshell(0) ; np  = nshell(1) ; nd  = nshell(2)
+   nsd = nshelld(0); npd = nshelld(1); ndd = nshelld(2)
 
-   nsd=nshelld(0)
-   npd=nshelld(1)
-   ndd=nshelld(2)
+   M2=2*M
    Md2=2*Md
 
-   MM=M*(M+1)/2
-   MMd=Md*(Md+1)/2
+   sq3=1.D0
+   if (NORM) sq3 = dsqrt(3.D0)
 
-   ! first P
-   M1=1
-   ! now Pnew
-   M3=M1+MM
-   ! now S, also F later
-   M5=M3+MM
-   ! now G
-   M7=M5+MM
-   ! now Gm
-   M9=M7+MMd
-   ! now H
-   M11=M9+MMd
-   ! W ( eigenvalues ), also space used in least-squares
-   M13=M11+MM
-   ! aux ( vector for ESSl)
-   M15=M13+M
-   ! least squares
-   M17=M15+MM
-   ! vectors of MO
-   M18=M17+MMd
-
-   NCOa=NCO
-   NCOb=NCO+Nunp
-
-   if (NORM) then
-      sq3=dsqrt(3.D0)
-   else
-      sq3=1.D0
-   endif
-
-   do l=1,3
-      Ll(l)=l*(l-1)/2
+   do l1 = 1, 3
+      Ll(l1) = l1 * (l1-1) / 2
+   enddo
+   do ifunct = 1, M
+      Jx(ifunct) = (M2-ifunct) * (ifunct-1) / 2
    enddo
 
-   do i=1,M
-      Jx(i)=(M2-i)*(i-1)/2
-   enddo
-   ix=0
-   kknumd=0
-   kknums=0
-   ! para dimencionar cool
-   do i=1,ns
-   do knan=1,natomc(nuc(i))
-      j=nnps(jatc(knan,nuc(i)))-1
-      do kknan=1,nns(jatc(knan,nuc(i)))
-         j=j+1
-         if(j.le.i) then
+   ix     = 0
+   kknumd = 0
+   kknums = 0
 
-            kk=i+Jx(j)
-            dd=d(Nuc(i),Nuc(j))
+   ! Search for the dimensions of cool/cools.
+   do ifunct = 1, ns
+   do knan   = 1, natomc(Nuc(ifunct))
+      jfunct = nnps(jatc(knan, Nuc(ifunct))) -1
 
-            fato=.true.
-            fato2=.true.
+      do kknan = 1, nns(jatc(knan, Nuc(ifunct)))
+         jfunct = jfunct +1
+         if (jfunct .le. ifunct) then
 
-            do ni=1,ncont(i)
-            do nj=1,ncont(j)
+            kk = ifunct + Jx(jfunct)
+            dd = d(Nuc(ifunct),Nuc(jfunct))
+            fato  = .true.
+            fato2 = .true.
 
-               zij=a(i,ni)+a(j,nj)
-               ti=a(i,ni)/zij
-               tj=a(j,nj)/zij
-               alf=a(i,ni)*tj
-               rexp=alf*dd
+            do nci = 1, ncont(ifunct)
+            do ncj = 1, ncont(jfunct)
+               rexp = a(ifunct,nci) * a(jfunct,ncj) * dd / &
+                      (a(ifunct,nci) + a(jfunct,ncj))
+
                if (rexp.lt.rmax) then
                if (rexp.lt.rmaxs) then
                   if (fato) then
-                     kknumd = kknumd+1
-                     fato=.false.
+                     kknumd = kknumd +1
+                     fato   = .false.
                   endif
                else
                   if (fato2) then
-                     kknums = kknums+1
-                     fato2=.false.
+                     kknums = kknums +1
+                     fato2  = .false.
                   endif
                endif
                endif
@@ -156,40 +119,35 @@ subroutine int3mem()
    enddo
    enddo
 
-   do i=ns+1,ns+np,3
-   do knan=1,natomc(nuc(i))
-      j=nnps(jatc(knan,nuc(i)))-1
+   do ifunct = ns+1, ns+np, 3
+   do knan = 1, natomc(Nuc(ifunct))
+      jfunct = nnps(jatc(knan, Nuc(ifunct))) -1
 
-      do kknan=1,nns(jatc(knan,nuc(i)))
-         j=j+1
+      do kknan = 1, nns(jatc(knan, Nuc(ifunct)))
+         jfunct = jfunct +1
+         fato  = .true.
+         fato2 = .true.
 
-         dd=d(Nuc(i),Nuc(j))
-         k1=Jx(j)
-         fato=.true.
-         fato2=.true.
+         do nci = 1, ncont(ifunct)
+         do ncj = 1, ncont(jfunct)
+            Zij  = a(ifunct,nci) + a(jfunct,ncj)
+            tj   = a(jfunct,ncj) / Zij
+            rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))
 
-         do ni=1,ncont(i)
-         do nj=1,ncont(j)
-
-            zij=a(i,ni)+a(j,nj)
-            ti=a(i,ni)/zij
-            tj=a(j,nj)/zij
-            alf=a(i,ni)*tj
-            rexp=alf*dd
             if (rexp.lt.rmax) then
             if (rexp.lt.rmaxs) then
                if (fato) then
                   do iki=1,3
                      kknumd=kknumd+1
                   enddo
-                  fato=.false.
+                  fato   = .false.
                endif
             else
                if (fato2) then
                   do iki=1,3
                      kknums=kknums+1
                   enddo
-                  fato2=.false.
+                  fato2  = .false.
                endif
             endif
             endif
@@ -199,23 +157,23 @@ subroutine int3mem()
    enddo
    enddo
 
-   do i=ns+1,ns+np,3
-   do knan=1,natomc(nuc(i))
-      j=nnpp(jatc(knan,nuc(i)))-3
-      do kknan=1,nnp(jatc(knan,nuc(i))),3
+   do ifunct = ns+1, ns+np, 3
+   do knan = 1, natomc(Nuc(ifunct))
+      j=nnpp(jatc(knan,Nuc(i)))-3
+      do kknan=1,nnp(jatc(knan,Nuc(i))),3
          j=j+3
-         if(j.le.i) then
+         if (jfunct .le. ifunct) then
             fato=.true.
             fato2=.true.
-            dd=d(Nuc(i),Nuc(j))
-            do ni=1,ncont(i)
-            do nj=1,ncont(j)
-               zij=a(i,ni)+a(j,nj)
-               z2=2.D0*zij
-               ti=a(i,ni)/zij
-               tj=a(j,nj)/zij
-               alf=a(i,ni)*tj
-               rexp=alf*dd
+            dd = d(Nuc(ifunct),Nuc(jfunct))
+            do nci = 1, ncont(ifunct)
+            do ncj = 1, ncont(jfunct)
+               Zij = a(ifunct,nci) + a(jfunct,ncj)
+               z2=2.D0*Zij
+               ti = a(ifunct,nci) / Zij
+               tj = a(jfunct,ncj) / Zij
+               alf = a(ifunct,nci) * tj
+               rexp = alf * dd
                if (rexp.lt.rmax) then
                if (rexp.lt.rmaxs) then
                   if (fato) then
@@ -232,7 +190,7 @@ subroutine int3mem()
                      enddo
                      enddo
                   endif
-                     fato=.false.
+                     fato   = .false.
                   endif
                else
                   if (fato2) then
@@ -249,7 +207,7 @@ subroutine int3mem()
                      enddo
                      enddo
                   endif
-                     fato2=.false.
+                     fato2  = .false.
                   endif
                endif
                endif
@@ -261,36 +219,36 @@ subroutine int3mem()
    enddo
 
    do i=ns+np+1,M,6
-   do knan=1,natomc(nuc(i))
-      j=nnps(jatc(knan,nuc(i)))-1
-      do kknan=1,nns(jatc(knan,nuc(i)))
-         j=j+1
+   do knan = 1, natomc(Nuc(ifunct))
+      jfunct = nnps(jatc(knan, Nuc(ifunct))) -1
+      do kknan = 1, nns(jatc(knan, Nuc(ifunct)))
+         jfunct = jfunct +1
          fato=.true.
          fato2=.true.
-         k1=Jx(j)
-         dd=d(Nuc(i),Nuc(j))
-         do ni=1,ncont(i)
-         do nj=1,ncont(j)
-            zij=a(i,ni)+a(j,nj)
-            z2=2.D0*zij
-            ti=a(i,ni)/zij
-            tj=a(j,nj)/zij
-            alf=a(i,ni)*tj
-            rexp=alf*dd
+         k1=Jx(jfunct)
+         dd = d(Nuc(ifunct),Nuc(jfunct))
+         do nci = 1, ncont(ifunct)
+         do ncj = 1, ncont(jfunct)
+            Zij = a(ifunct,nci) + a(jfunct,ncj)
+            z2=2.D0*Zij
+            ti = a(ifunct,nci) / Zij
+            tj = a(jfunct,ncj) / Zij
+            alf = a(ifunct,nci) * tj
+            rexp = alf * dd
             if (rexp.lt.rmax) then
             if (rexp.lt.rmaxs) then
                if (fato) then
                   do iki=1,6
                      kknumd=kknumd+1
                   enddo
-                  fato=.false.
+                  fato   = .false.
                endif
             else
                if (fato2) then
                   do iki=1,6
                      kknums=kknums+1
                   enddo
-                  fato2=.false.
+                  fato2  = .false.
                endif
             endif
             endif
@@ -301,21 +259,21 @@ subroutine int3mem()
    enddo
 
    do i=ns+np+1,M,6
-   do knan=1,natomc(nuc(i))
-      j=nnpp(jatc(knan,nuc(i)))-3
-      do kknan=1,nnp(jatc(knan,nuc(i))),3
+   do knan = 1, natomc(Nuc(ifunct))
+      j=nnpp(jatc(knan,Nuc(i)))-3
+      do kknan=1,nnp(jatc(knan,Nuc(i))),3
          j=j+3
          fato=.true.
          fato2=.true.
-         dd=d(Nuc(i),Nuc(j))
-         do ni=1,ncont(i)
-         do nj=1,ncont(j)
-            zij=a(i,ni)+a(j,nj)
-            z2=2.D0*zij
-            ti=a(i,ni)/zij
-            tj=a(j,nj)/zij
-            alf=a(i,ni)*tj
-            rexp=alf*dd
+         dd = d(Nuc(ifunct),Nuc(jfunct))
+         do nci = 1, ncont(ifunct)
+         do ncj = 1, ncont(jfunct)
+            Zij = a(ifunct,nci) + a(jfunct,ncj)
+            z2=2.D0*Zij
+            ti = a(ifunct,nci) / Zij
+            tj = a(jfunct,ncj) / Zij
+            alf = a(ifunct,nci) * tj
+            rexp = alf * dd
             if (rexp.lt.rmax) then
             if (rexp.lt.rmaxs) then
                if (fato) then
@@ -324,7 +282,7 @@ subroutine int3mem()
                      kknumd=kknumd+1
                   enddo
                   enddo
-                  fato=.false.
+                  fato   = .false.
                endif
             else
                if (fato2) then
@@ -333,7 +291,7 @@ subroutine int3mem()
                      kknums=kknums+1
                   enddo
                   enddo
-                  fato2=.false.
+                  fato2  = .false.
                endif
             endif
             endif
@@ -344,26 +302,26 @@ subroutine int3mem()
    enddo
 
    do i=ns+np+1,M,6
-   do knan=1,natomc(nuc(i))
-      j=nnpd(jatc(knan,nuc(i)))-6
-      do kknan=1,nnd(jatc(knan,nuc(i))),6
+   do knan = 1, natomc(Nuc(ifunct))
+      j=nnpd(jatc(knan,Nuc(i)))-6
+      do kknan=1,nnd(jatc(knan,Nuc(i))),6
          j=j+6
-         if(j.le.i) then
+         if (jfunct .le. ifunct) then
             fato=.true.
             fato2=.true.
-            dd=d(Nuc(i),Nuc(j))
-            do ni=1,ncont(i)
-            do nj=1,ncont(j)
-               zij=a(i,ni)+a(j,nj)
-               z2=2.D0*zij
-               ti=a(i,ni)/zij
-               tj=a(j,nj)/zij
-               alf=a(i,ni)*tj
-               rexp=alf*dd
+            dd = d(Nuc(ifunct),Nuc(jfunct))
+            do nci = 1, ncont(ifunct)
+            do ncj = 1, ncont(jfunct)
+               Zij = a(ifunct,nci) + a(jfunct,ncj)
+               z2=2.D0*Zij
+               ti = a(ifunct,nci) / Zij
+               tj = a(jfunct,ncj) / Zij
+               alf = a(ifunct,nci) * tj
+               rexp = alf * dd
                if (rexp.lt.rmax) then
                if (rexp.lt.rmaxs) then
                   if (fato) then
-                     fato=.false.
+                     fato   = .false.
                      if(i.eq.j) then
                         do iki=1,6
                         do jki=1,iki
@@ -380,7 +338,7 @@ subroutine int3mem()
                   endif
                else
                   if (fato2) then
-                     fato2=.false.
+                     fato2  = .false.
                      if(i.eq.j) then
                         do iki=1,6
                         do jki=1,iki
@@ -410,6 +368,7 @@ subroutine int3mem()
    if (allocated(kkinds)) deallocate(kkinds)
    allocate(cool(kknumd*Md), cools(kknums*Md))
    allocate(kkind(kknumd)  , kkinds(kknums))
+   ! End of cool dimensions
 
    kknumsmax=kknums
    cool=0
@@ -417,41 +376,42 @@ subroutine int3mem()
    kknumd=0
    kknums=0
 
+   ! Start of integrals.
    ! (ss|s)
-   do i=1,ns
-   do knan=1,natomc(nuc(i))
-      j=nnps(jatc(knan,nuc(i)))-1
+   do ifunct = 1, ns
+   do knan = 1, natomc(Nuc(ifunct))
+      jfunct = nnps(jatc(knan, Nuc(ifunct))) -1
 
-      do kknan=1,nns(jatc(knan,nuc(i)))
-         j=j+1
-         if(j.le.i) then
+      do kknan = 1, nns(jatc(knan, Nuc(ifunct)))
+         jfunct = jfunct +1
+         if (jfunct .le. ifunct) then
 
-            kk=i+Jx(j)
-            dd=d(Nuc(i),Nuc(j))
+            kk=i+Jx(jfunct)
+            dd = d(Nuc(ifunct),Nuc(jfunct))
 
             fato=.true.
             fato2=.true.
 
-            do ni=1,ncont(i)
-            do nj=1,ncont(j)
-               zij=a(i,ni)+a(j,nj)
-               ti=a(i,ni)/zij
-               tj=a(j,nj)/zij
-               alf=a(i,ni)*tj
-               rexp=alf*dd
+            do nci = 1, ncont(ifunct)
+            do ncj = 1, ncont(jfunct)
+               Zij = a(ifunct,nci) + a(jfunct,ncj)
+               ti = a(ifunct,nci) / Zij
+               tj = a(jfunct,ncj) / Zij
+               alf = a(ifunct,nci) * tj
+               rexp = alf * dd
                if (rexp.lt.rmax) then
                   if (rexp.lt.rmaxs) then
                      if (fato) then
                         kknumd = kknumd+1
                         kkind(kknumd)=kk
-                        fato=.false.
+                        fato   = .false.
                      endif
                   else
                      if (fato2) then
                         kknums = kknums+1
                         if(kknumsmax.lt.kknums) stop '1'
                         kkinds(kknums)=kk
-                        fato2=.false.
+                        fato2  = .false.
                      endif
                   endif
 
@@ -459,7 +419,7 @@ subroutine int3mem()
                   Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
                   Q(3)=ti*r(Nuc(i),3)+tj*r(Nuc(j),3)
 
-                  sks=pi52*exp(-rexp)/zij
+                  sks=pi52*exp(-rexp)/Zij
 
                   do k=1,nsd
                      dpc=(Q(1)-r(Nucd(k),1))**2+(Q(2)-r(Nucd(k),2))**2+&
@@ -467,8 +427,8 @@ subroutine int3mem()
 
                      do nk=1,ncontd(k)
                         ccoef=c(i,ni)*c(j,nj)*cd(k,nk)
-                        t0=ad(k,nk)+zij
-                        u=ad(k,nk)*zij/t0*dpc
+                        t0=ad(k,nk)+Zij
+                        u=ad(k,nk)*Zij/t0*dpc
                         t1=ad(k,nk)*dsqrt(t0)
                         term=sks/t1*FUNCT(0,u)
                         term=term*ccoef
@@ -492,9 +452,9 @@ subroutine int3mem()
 
                      do nk=1,ncontd(k)
                         ccoef=c(i,ni)*c(j,nj)*cd(k,nk)
-                        t0=ad(k,nk)+zij
+                        t0=ad(k,nk)+Zij
 
-                        tii=zij/t0
+                        tii=Zij/t0
                         tjj=ad(k,nk)/t0
                         W(1)=tii*Q(1)+tjj*r(Nucd(k),1)
                         W(2)=tii*Q(2)+tjj*r(Nucd(k),2)
@@ -531,8 +491,8 @@ subroutine int3mem()
 
                      do nk=1,ncontd(k)
                         ccoef=c(i,ni)*c(j,nj)*cd(k,nk)
-                        t0=ad(k,nk)+zij
-                        tii=zij/t0
+                        t0=ad(k,nk)+Zij
+                        tii=Zij/t0
                         tjj=ad(k,nk)/t0
                         W(1)=tii*Q(1)+tjj*r(Nucd(k),1)
                         W(2)=tii*Q(2)+tjj*r(Nucd(k),2)
@@ -592,24 +552,24 @@ subroutine int3mem()
    enddo
 
    ! (ps|s)
-   do i=ns+1,ns+np,3
-   do knan=1,natomc(nuc(i))
-      j=nnps(jatc(knan,nuc(i)))-1
+   do ifunct = ns+1, ns+np, 3
+   do knan = 1, natomc(Nuc(ifunct))
+      jfunct = nnps(jatc(knan, Nuc(ifunct))) -1
 
-      do kknan=1,nns(jatc(knan,nuc(i)))
-         j=j+1
-         dd=d(Nuc(i),Nuc(j))
-         k1=Jx(j)
+      do kknan = 1, nns(jatc(knan, Nuc(ifunct)))
+         jfunct = jfunct +1
+         dd = d(Nuc(ifunct),Nuc(jfunct))
+         k1=Jx(jfunct)
          fato=.true.
          fato2=.true.
 
-         do ni=1,ncont(i)
-         do nj=1,ncont(j)
-            zij=a(i,ni)+a(j,nj)
-            ti=a(i,ni)/zij
-            tj=a(j,nj)/zij
-            alf=a(i,ni)*tj
-            rexp=alf*dd
+         do nci = 1, ncont(ifunct)
+         do ncj = 1, ncont(jfunct)
+            Zij = a(ifunct,nci) + a(jfunct,ncj)
+            ti = a(ifunct,nci) / Zij
+            tj = a(jfunct,ncj) / Zij
+            alf = a(ifunct,nci) * tj
+            rexp = alf * dd
             if (rexp.lt.rmax) then
                if (rexp.lt.rmaxs) then
                   if (fato) then
@@ -617,7 +577,7 @@ subroutine int3mem()
                         kknumd=kknumd+1
                         kkind(kknumd)=i+k1+iki-1
                      enddo
-                     fato=.false.
+                     fato   = .false.
                   endif
                else
                   if (fato2) then
@@ -626,7 +586,7 @@ subroutine int3mem()
                         if(kknumsmax.lt.kknums) stop '2'
                         kkinds(kknums)=i+k1+iki-1
                      enddo
-                     fato2=.false.
+                     fato2  = .false.
                   endif
                endif
 
@@ -634,7 +594,7 @@ subroutine int3mem()
                Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
                Q(3)=ti*r(Nuc(i),3)+tj*r(Nuc(j),3)
 
-               sks=pi52*exp(-rexp)/zij
+               sks=pi52*exp(-rexp)/Zij
 
                do k=1,nsd
                   dpc=(Q(1)-r(Nucd(k),1))**2+(Q(2)-r(Nucd(k),2))**2+&
@@ -642,9 +602,9 @@ subroutine int3mem()
 
                   do nk=1,ncontd(k)
                      ccoef=c(i,ni)*c(j,nj)*cd(k,nk)
-                     t0=ad(k,nk)+zij
+                     t0=ad(k,nk)+Zij
 
-                     tii=zij/t0
+                     tii=Zij/t0
                      tjj=ad(k,nk)/t0
                      W(1)=tii*Q(1)+tjj*r(Nucd(k),1)
                      W(2)=tii*Q(2)+tjj*r(Nucd(k),2)
@@ -683,10 +643,10 @@ subroutine int3mem()
 
                   do nk=1,ncontd(k)
                      ccoef=c(i,ni)*c(j,nj)*cd(k,nk)
-                     t0=ad(k,nk)+zij
+                     t0=ad(k,nk)+Zij
                      z2a=2.*t0
 
-                     tii=zij/t0
+                     tii=Zij/t0
                      tjj=ad(k,nk)/t0
                      W(1)=tii*Q(1)+tjj*r(Nucd(k),1)
                      W(2)=tii*Q(2)+tjj*r(Nucd(k),2)
@@ -737,11 +697,11 @@ subroutine int3mem()
 
                   do nk=1,ncontd(k)
                      ccoef=c(i,ni)*c(j,nj)*cd(k,nk)
-                     t0=ad(k,nk)+zij
+                     t0=ad(k,nk)+Zij
                      zc=2.D0*ad(k,nk)
                      z2a=2.D0*t0
 
-                     ti=zij/t0
+                     ti=Zij/t0
                      tj=ad(k,nk)/t0
                      W(1)=ti*Q(1)+tj*r(Nucd(k),1)
                      W(2)=ti*Q(2)+tj*r(Nucd(k),2)
@@ -820,25 +780,25 @@ subroutine int3mem()
    enddo
 
    ! (pp|s)
-   do i=ns+1,ns+np,3
-   do knan=1,natomc(nuc(i))
-      j=nnpp(jatc(knan,nuc(i)))-3
+   do ifunct = ns+1, ns+np, 3
+   do knan = 1, natomc(Nuc(ifunct))
+      j=nnpp(jatc(knan,Nuc(i)))-3
 
-      do kknan=1,nnp(jatc(knan,nuc(i))),3
+      do kknan=1,nnp(jatc(knan,Nuc(i))),3
          j=j+3
 
-         if(j.le.i) then
+         if (jfunct .le. ifunct) then
             fato=.true.
             fato2=.true.
-            dd=d(Nuc(i),Nuc(j))
-            do ni=1,ncont(i)
-            do nj=1,ncont(j)
-               zij=a(i,ni)+a(j,nj)
-               z2=2.D0*zij
-               ti=a(i,ni)/zij
-               tj=a(j,nj)/zij
-               alf=a(i,ni)*tj
-               rexp=alf*dd
+            dd = d(Nuc(ifunct),Nuc(jfunct))
+            do nci = 1, ncont(ifunct)
+            do ncj = 1, ncont(jfunct)
+               Zij = a(ifunct,nci) + a(jfunct,ncj)
+               z2=2.D0*Zij
+               ti = a(ifunct,nci) / Zij
+               tj = a(jfunct,ncj) / Zij
+               alf = a(ifunct,nci) * tj
+               rexp = alf * dd
                if (rexp.lt.rmax) then
                   if (rexp.lt.rmaxs) then
                      if (fato) then
@@ -857,7 +817,7 @@ subroutine int3mem()
                            enddo
                            enddo
                         endif
-                        fato=.false.
+                        fato   = .false.
                      endif
                   else
                      if (fato2) then
@@ -878,14 +838,14 @@ subroutine int3mem()
                            enddo
                            enddo
                         endif
-                        fato2=.false.
+                        fato2  = .false.
                      endif
                   endif
 
                   Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
                   Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
                   Q(3)=ti*r(Nuc(i),3)+tj*r(Nuc(j),3)
-                  sks=pi52*exp(-rexp)/zij
+                  sks=pi52*exp(-rexp)/Zij
 
                   do k=1,nsd
                      dpc=(Q(1)-r(Nucd(k),1))**2+(Q(2)-r(Nucd(k),2))**2+&
@@ -893,9 +853,9 @@ subroutine int3mem()
 
                      do nk=1,ncontd(k)
                         ccoef=c(i,ni)*c(j,nj)*cd(k,nk)
-                        t0=ad(k,nk)+zij
+                        t0=ad(k,nk)+Zij
 
-                        ti=zij/t0
+                        ti=Zij/t0
                         tj=ad(k,nk)/t0
                         W(1)=ti*Q(1)+tj*r(Nucd(k),1)
                         W(2)=ti*Q(2)+tj*r(Nucd(k),2)
@@ -963,17 +923,17 @@ subroutine int3mem()
 
                      do nk=1,ncontd(k)
                         ccoef=c(i,ni)*c(j,nj)*cd(k,nk)
-                        t0=ad(k,nk)+zij
+                        t0=ad(k,nk)+Zij
                         z2a=2.*t0
 
-                        ti=zij/t0
+                        ti=Zij/t0
                         tj=ad(k,nk)/t0
                         W(1)=ti*Q(1)+tj*r(Nucd(k),1)
                         W(2)=ti*Q(2)+tj*r(Nucd(k),2)
                         W(3)=ti*Q(3)+tj*r(Nucd(k),3)
 
                         roz=tj
-                        ro=roz*zij
+                        ro=roz*Zij
                         u=ro*dpc
                         t1=ad(k,nk)*dsqrt(t0)
                         t2=sks/t1
@@ -1056,10 +1016,10 @@ subroutine int3mem()
 
                      do nk=1,ncontd(k)
                         ccoef=c(i,ni)*c(j,nj)*cd(k,nk)
-                        t0=ad(k,nk)+zij
+                        t0=ad(k,nk)+Zij
                         z2a=2.*t0
 
-                        ti=zij/t0
+                        ti=Zij/t0
                         tj=ad(k,nk)/t0
                         W(1)=ti*Q(1)+tj*r(Nucd(k),1)
                         W(2)=ti*Q(2)+tj*r(Nucd(k),2)
@@ -1067,7 +1027,7 @@ subroutine int3mem()
 
                         roz=tj
 
-                        ro=roz*zij
+                        ro=roz*Zij
                         zc=2.D0*ad(k,nk)
                         u=ro*dpc
                         t1=ad(k,nk)*dsqrt(t0)
@@ -1196,23 +1156,23 @@ subroutine int3mem()
 
    ! (ds|s)
    do i=ns+np+1,M,6
-   do knan=1,natomc(nuc(i))
-      j=nnps(jatc(knan,nuc(i)))-1
+   do knan = 1, natomc(Nuc(ifunct))
+      jfunct = nnps(jatc(knan, Nuc(ifunct))) -1
 
-      do kknan=1,nns(jatc(knan,nuc(i)))
-         j=j+1
+      do kknan = 1, nns(jatc(knan, Nuc(ifunct)))
+         jfunct = jfunct +1
          fato=.true.
          fato2=.true.
-         k1=Jx(j)
-         dd=d(Nuc(i),Nuc(j))
-         do ni=1,ncont(i)
-         do nj=1,ncont(j)
-            zij=a(i,ni)+a(j,nj)
-            z2=2.D0*zij
-            ti=a(i,ni)/zij
-            tj=a(j,nj)/zij
-            alf=a(i,ni)*tj
-            rexp=alf*dd
+         k1=Jx(jfunct)
+         dd = d(Nuc(ifunct),Nuc(jfunct))
+         do nci = 1, ncont(ifunct)
+         do ncj = 1, ncont(jfunct)
+            Zij = a(ifunct,nci) + a(jfunct,ncj)
+            z2=2.D0*Zij
+            ti = a(ifunct,nci) / Zij
+            tj = a(jfunct,ncj) / Zij
+            alf = a(ifunct,nci) * tj
+            rexp = alf * dd
             if (rexp.lt.rmax) then
                if (rexp.lt.rmaxs) then
                   if (fato) then
@@ -1220,7 +1180,7 @@ subroutine int3mem()
                         kknumd=kknumd+1
                         kkind(kknumd)=i+iki-1+k1
                      enddo
-                     fato=.false.
+                     fato   = .false.
                   endif
                else
 
@@ -1230,7 +1190,7 @@ subroutine int3mem()
                         if(kknumsmax.lt.kknums) stop '5'
                         kkinds(kknums)=i+iki-1+k1
                      enddo
-                     fato2=.false.
+                     fato2  = .false.
                   endif
                endif
 
@@ -1238,7 +1198,7 @@ subroutine int3mem()
                Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
                Q(3)=ti*r(Nuc(i),3)+tj*r(Nuc(j),3)
 
-               sks=pi52*exp(-rexp)/zij
+               sks=pi52*exp(-rexp)/Zij
 
                do k=1,nsd
                   dpc=(Q(1)-r(Nucd(k),1))**2+(Q(2)-r(Nucd(k),2))**2+&
@@ -1246,16 +1206,16 @@ subroutine int3mem()
 
                   do nk=1,ncontd(k)
                      ccoef=c(i,ni)*c(j,nj)*cd(k,nk)
-                     t0=ad(k,nk)+zij
+                     t0=ad(k,nk)+Zij
 
-                     ti=zij/t0
+                     ti=Zij/t0
                      tj=ad(k,nk)/t0
                      W(1)=ti*Q(1)+tj*r(Nucd(k),1)
                      W(2)=ti*Q(2)+tj*r(Nucd(k),2)
                      W(3)=ti*Q(3)+tj*r(Nucd(k),3)
 
                      roz=tj
-                     ro=roz*zij
+                     ro=roz*Zij
                      u=ro*dpc
                      t1=ad(k,nk)*dsqrt(t0)
                      t2=sks/t1
@@ -1307,17 +1267,17 @@ subroutine int3mem()
 
                   do nk=1,ncontd(k)
                      ccoef=c(i,ni)*c(j,nj)*cd(k,nk)
-                     t0=ad(k,nk)+zij
+                     t0=ad(k,nk)+Zij
                      z2a=2.*t0
 
-                     ti=zij/t0
+                     ti=Zij/t0
                      tj=ad(k,nk)/t0
                      W(1)=ti*Q(1)+tj*r(Nucd(k),1)
                      W(2)=ti*Q(2)+tj*r(Nucd(k),2)
                      W(3)=ti*Q(3)+tj*r(Nucd(k),3)
 
                      roz=tj
-                     ro=roz*zij
+                     ro=roz*Zij
                      u=ro*dpc
                      t1=ad(k,nk)*dsqrt(t0)
                      t2=sks/t1
@@ -1387,11 +1347,11 @@ subroutine int3mem()
 
                   do nk=1,ncontd(k)
                      ccoef=c(i,ni)*c(j,nj)*cd(k,nk)
-                     t0=ad(k,nk)+zij
+                     t0=ad(k,nk)+Zij
                      z2a=2.D0*t0
                      zc=2.D0*ad(k,nk)
 
-                     ti=zij/t0
+                     ti=Zij/t0
                      tj=ad(k,nk)/t0
                      W(1)=ti*Q(1)+tj*r(Nucd(k),1)
                      W(2)=ti*Q(2)+tj*r(Nucd(k),2)
@@ -1399,7 +1359,7 @@ subroutine int3mem()
 
                      roz=tj
 
-                     ro=roz*zij
+                     ro=roz*Zij
                      u=ro*dpc
                      t1=ad(k,nk)*dsqrt(t0)
                      t2=sks/t1
@@ -1511,21 +1471,21 @@ subroutine int3mem()
 
    ! (dp|s)
    do i=ns+np+1,M,6
-   do knan=1,natomc(nuc(i))
-      j=nnpp(jatc(knan,nuc(i)))-3
-      do kknan=1,nnp(jatc(knan,nuc(i))),3
+   do knan = 1, natomc(Nuc(ifunct))
+      j=nnpp(jatc(knan,Nuc(i)))-3
+      do kknan=1,nnp(jatc(knan,Nuc(i))),3
          j=j+3
          fato=.true.
          fato2=.true.
-         dd=d(Nuc(i),Nuc(j))
-         do ni=1,ncont(i)
-         do nj=1,ncont(j)
-            zij=a(i,ni)+a(j,nj)
-            z2=2.D0*zij
-            ti=a(i,ni)/zij
-            tj=a(j,nj)/zij
-            alf=a(i,ni)*tj
-            rexp=alf*dd
+         dd = d(Nuc(ifunct),Nuc(jfunct))
+         do nci = 1, ncont(ifunct)
+         do ncj = 1, ncont(jfunct)
+            Zij = a(ifunct,nci) + a(jfunct,ncj)
+            z2=2.D0*Zij
+            ti = a(ifunct,nci) / Zij
+            tj = a(jfunct,ncj) / Zij
+            alf = a(ifunct,nci) * tj
+            rexp = alf * dd
             if (rexp.lt.rmax) then
                if (rexp.lt.rmaxs) then
                   if (fato) then
@@ -1536,7 +1496,7 @@ subroutine int3mem()
 
                         enddo
                      enddo
-                     fato=.false.
+                     fato   = .false.
                   endif
                else
                   if (fato2) then
@@ -1547,7 +1507,7 @@ subroutine int3mem()
                            kkinds(kknums)=i+iki-1+Jx(j+jki-1)
                         enddo
                      enddo
-                     fato2=.false.
+                     fato2  = .false.
                   endif
                endif
 
@@ -1555,7 +1515,7 @@ subroutine int3mem()
                Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
                Q(3)=ti*r(Nuc(i),3)+tj*r(Nuc(j),3)
 
-               sks=pi52*exp(-rexp)/zij
+               sks=pi52*exp(-rexp)/Zij
 
                do k=1,nsd
                   dpc=(Q(1)-r(Nucd(k),1))**2+(Q(2)-r(Nucd(k),2))**2+&
@@ -1563,16 +1523,16 @@ subroutine int3mem()
 
                   do nk=1,ncontd(k)
                      ccoef=c(i,ni)*c(j,nj)*cd(k,nk)
-                     t0=ad(k,nk)+zij
+                     t0=ad(k,nk)+Zij
 
-                     ti=zij/t0
+                     ti=Zij/t0
                      tj=ad(k,nk)/t0
                      W(1)=ti*Q(1)+tj*r(Nucd(k),1)
                      W(2)=ti*Q(2)+tj*r(Nucd(k),2)
                      W(3)=ti*Q(3)+tj*r(Nucd(k),3)
 
                      roz=tj
-                     ro=roz*zij
+                     ro=roz*Zij
                      u=ro*dpc
                      t1=ad(k,nk)*dsqrt(t0)
                      t2=sks/t1
@@ -1649,10 +1609,10 @@ subroutine int3mem()
 
                   do nk=1,ncontd(k)
                      ccoef=c(i,ni)*c(j,nj)*cd(k,nk)
-                     t0=ad(k,nk)+zij
+                     t0=ad(k,nk)+Zij
                      z2a=2.*t0
 
-                     ti=zij/t0
+                     ti=Zij/t0
                      tj=ad(k,nk)/t0
                      W(1)=ti*Q(1)+tj*r(Nucd(k),1)
                      W(2)=ti*Q(2)+tj*r(Nucd(k),2)
@@ -1660,7 +1620,7 @@ subroutine int3mem()
 
                      roz=tj
 
-                     ro=roz*zij
+                     ro=roz*Zij
                      u=ro*dpc
                      t1=ad(k,nk)*dsqrt(t0)
                      t2=sks/t1
@@ -1765,11 +1725,11 @@ subroutine int3mem()
 
                   do nk=1,ncontd(k)
                      ccoef=c(i,ni)*c(j,nj)*cd(k,nk)
-                     t0=ad(k,nk)+zij
+                     t0=ad(k,nk)+Zij
                      z2a=2.D0*t0
                      zc=2.D0*ad(k,nk)
 
-                     ti=zij/t0
+                     ti=Zij/t0
                      tj=ad(k,nk)/t0
                      W(1)=ti*Q(1)+tj*r(Nucd(k),1)
                      W(2)=ti*Q(2)+tj*r(Nucd(k),2)
@@ -1777,7 +1737,7 @@ subroutine int3mem()
 
                      roz=tj
 
-                     ro=roz*zij
+                     ro=roz*Zij
                      u=ro*dpc
                      t1=ad(k,nk)*dsqrt(t0)
                      t2=sks/t1
@@ -1928,28 +1888,28 @@ subroutine int3mem()
 
    ! (dd|s)
    do i=ns+np+1,M,6
-   do knan=1,natomc(nuc(i))
-      j=nnpd(jatc(knan,nuc(i)))-6
+   do knan = 1, natomc(Nuc(ifunct))
+      j=nnpd(jatc(knan,Nuc(i)))-6
 
-      do kknan=1,nnd(jatc(knan,nuc(i))),6
+      do kknan=1,nnd(jatc(knan,Nuc(i))),6
          j=j+6
 
-         if(j.le.i) then
+         if (jfunct .le. ifunct) then
             fato=.true.
             fato2=.true.
             ddij=d(Nuc(i),Nuc(j))
-            do ni=1,ncont(i)
-            do nj=1,ncont(j)
-               zij=a(i,ni)+a(j,nj)
-               z2=2.D0*zij
-               ti=a(i,ni)/zij
-               tj=a(j,nj)/zij
-               alf=a(i,ni)*tj
-               rexp=alf*ddij
+            do nci = 1, ncont(ifunct)
+            do ncj = 1, ncont(jfunct)
+               Zij = a(ifunct,nci) + a(jfunct,ncj)
+               z2=2.D0*Zij
+               ti = a(ifunct,nci) / Zij
+               tj = a(jfunct,ncj) / Zij
+               alf = a(ifunct,nci) * tj
+               rexp = alf * ddij
                if (rexp.lt.rmax) then
                   if (rexp.lt.rmaxs) then
                      if (fato) then
-                        fato=.false.
+                        fato   = .false.
                         if(i.eq.j) then
                            do iki=1,6
                            do jki=1,iki
@@ -1970,7 +1930,7 @@ subroutine int3mem()
                      endif
                   else
                      if (fato2) then
-                        fato2=.false.
+                        fato2  = .false.
                         if(i.eq.j) then
                            do iki=1,6
                            do jki=1,iki
@@ -1997,7 +1957,7 @@ subroutine int3mem()
                   Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
                   Q(3)=ti*r(Nuc(i),3)+tj*r(Nuc(j),3)
 
-                  sks=pi52*exp(-rexp)/zij
+                  sks=pi52*exp(-rexp)/Zij
 
                   do k=1,nsd
                      dpc=(Q(1)-r(Nucd(k),1))**2+(Q(2)-r(Nucd(k),2))**2+ &
@@ -2005,9 +1965,9 @@ subroutine int3mem()
 
                      do nk=1,ncontd(k)
                         ccoef=c(i,ni)*c(j,nj)*cd(k,nk)
-                        t0=ad(k,nk)+zij
+                        t0=ad(k,nk)+Zij
 
-                        ti=zij/t0
+                        ti=Zij/t0
                         tj=ad(k,nk)/t0
                         W(1)=ti*Q(1)+tj*r(Nucd(k),1)
                         W(2)=ti*Q(2)+tj*r(Nucd(k),2)
@@ -2015,7 +1975,7 @@ subroutine int3mem()
 
                         roz=tj
 
-                        ro=roz*zij
+                        ro=roz*Zij
                         u=ro*dpc
                         t1=ad(k,nk)*dsqrt(t0)
                         t2=sks/t1
@@ -2158,10 +2118,10 @@ subroutine int3mem()
 
                      do nk=1,ncontd(k)
                         ccoef=c(i,ni)*c(j,nj)*cd(k,nk)
-                        t0=ad(k,nk)+zij
+                        t0=ad(k,nk)+Zij
                         z2a=2.*t0
 
-                        ti=zij/t0
+                        ti=Zij/t0
                         tj=ad(k,nk)/t0
                         W(1)=ti*Q(1)+tj*r(Nucd(k),1)
                         W(2)=ti*Q(2)+tj*r(Nucd(k),2)
@@ -2169,7 +2129,7 @@ subroutine int3mem()
 
                         roz=tj
 
-                        ro=roz*zij
+                        ro=roz*Zij
                         u=ro*dpc
                         t1=ad(k,nk)*dsqrt(t0)
                         t2=sks/t1
@@ -2357,18 +2317,18 @@ subroutine int3mem()
 
                      do nk=1,ncontd(k)
                         ccoef=c(i,ni)*c(j,nj)*cd(k,nk)
-                        t0=ad(k,nk)+zij
+                        t0=ad(k,nk)+Zij
                         z2a=2.D0*t0
                         zc=2.D0*ad(k,nk)
 
-                        ti=zij/t0
+                        ti=Zij/t0
                         tj=ad(k,nk)/t0
                         W(1)=ti*Q(1)+tj*r(Nucd(k),1)
                         W(2)=ti*Q(2)+tj*r(Nucd(k),2)
                         W(3)=ti*Q(3)+tj*r(Nucd(k),3)
 
                         roz=tj
-                        ro=roz*zij
+                        ro=roz*Zij
                         u=ro*dpc
                         t1=ad(k,nk)*dsqrt(t0)
                         t2=sks/t1

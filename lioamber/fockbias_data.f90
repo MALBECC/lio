@@ -13,7 +13,7 @@ module fockbias_data
    real*8              :: fockbias_timegrow  = 0.0d0
    real*8              :: fockbias_timefall  = 0.0d0
    real*8              :: fockbias_timeamp0  = 0.0d0
-   character(len=80)   :: fockbias_readfile  = ""
+   character(len=80)   :: fockbias_readfile  = "atombias.in"
 
 !  Variables that are configured during setorb (only once)
    real*8, allocatable :: fockbias_orbqw(:)

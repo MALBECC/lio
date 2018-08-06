@@ -427,9 +427,9 @@ subroutine SCF(E)
         if ( allocated(sqsmat) ) deallocate(sqsmat)
         if ( allocated(tmpmat) ) deallocate(tmpmat)
         allocate( sqsmat(M,M), tmpmat(M,M) )
-        call overop%Gets_orthog_2m( 3, 0.0d0, tmpmat, sqsmat )
+        call overop%Gets_orthog_2m( 2, 0.0d0, tmpmat, sqsmat )
         call fockbias_loads( natom, nuc )
-        call fockbias_setmat( tmpmat )
+        call fockbias_setmat( sqsmat )
         deallocate( sqsmat, tmpmat )
 
 
@@ -609,12 +609,13 @@ subroutine SCF(E)
            call spunpack('L', M, RMM(M5), fock_a0)
            call spunpack_rho('L',M,rhobeta,rho_b0)
            call spunpack('L', M, RMM(M3), fock_b0)
+           call fockbias_apply( 0.0d0, fock_a0)
+           call fockbias_apply( 0.0d0, fock_b0)
         else
            call spunpack_rho('L',M,RMM(M1),rho_a0)
            call spunpack('L', M, RMM(M5), fock_a0)
+           call fockbias_apply( 0.0d0, fock_a0 )
         end if
-
-        call fockbias_apply( 0.0d0, fock_a0 )
 
 !------------------------------------------------------------------------------!
 ! DFTB: Fock and Rho for DFTB are builded.
@@ -706,8 +707,9 @@ subroutine SCF(E)
         call rho_aop%Gets_data_AO(rho_a)
         call messup_densmat( rho_a )
 
-!carlos: Alpha Energy (or Close Shell) storage in RMM
-
+!carlos: Alpha Energy (or Close Shell) is stored.
+        Eorbs = morb_energy
+!charly: RMM is storing only alpha energy when we are working with open shell
         do kk=1,M
           RMM(M13+kk-1) = morb_energy(kk)
         end do
@@ -764,10 +766,8 @@ subroutine SCF(E)
         call rho_bop%Gets_data_AO(rho_b)
         call messup_densmat( rho_b )
 
-!carlos: Beta Energy storage in RMM
-        do kk=1,M
-          RMM(M22+kk-1) = morb_energy(kk)
-        end do
+         Eorbs_b=morb_energy
+
 !carlos: Storing autovectors to create the restart
         i0 = 0
         if (dftb_calc) i0=MTB
@@ -1012,7 +1012,7 @@ subroutine SCF(E)
          else
             factor=4.D0
          endif
-
+!charly: as M13 doesn't store energy any more, this could be not working
          do kk=1,NCO
             RMM(M15+kkk-1)= &
             RMM(M15+kkk-1)-RMM(M13+kk-1)*factor*X(ii,M2+kk)*X(jj,M2+kk)
@@ -1021,13 +1021,6 @@ subroutine SCF(E)
       enddo
 
       call g2g_timer_sum_stop('energy-weighted density')
-
-!     Variables needed for further calculations (Populations, Dip, etc).
-      Enucl = En
-      do kkk=1, M
-          Eorbs(kkk) = RMM(M13+kkk-1)
-          if (open) Eorbs_b(kkk) = RMM(M22+kkk-1)
-      enddo
 
       call cubegen_matin( M, X )
 

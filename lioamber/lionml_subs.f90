@@ -166,6 +166,7 @@ subroutine lionml_write_dull()
    write(*,8142) inputs%MTB, inputs%alfaTB, inputs%betaTB
    write(*,8143) inputs%gammaTB, inputs%Vbias_TB, inputs%start_tdtb
    write(*,8144) inputs%end_tdtb, inputs%end_bTB, inputs%TBload, inputs%TBsave
+   write(*,8145) inputs%nbias
    write(*,9000) " ! -- Ehrenfest: -- !"
    write(*,8160) inputs%ndyn_steps, inputs%edyn_steps, inputs%nullify_forces
    write(*,8161) inputs%wdip_nfreq, inputs%wdip_fname, inputs%rsti_loads
@@ -252,6 +253,7 @@ subroutine lionml_write_dull()
             I5, ",")
 8144 FORMAT(2x, "end_TDTB = ", I5, ", end_BTB = ", I5, ", TBLoad = ", L2, &
             ", TBSave = ", L2)
+8145 FORMAT(2x, "nbias=",I5)
 ! Ehrenfest
 8160 FORMAT(2x, "ndyn_steps = ", I6, ", edyn_steps = ", I6, &
             ", nullify_forces = ", L2, ",")

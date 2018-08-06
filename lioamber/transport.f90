@@ -1,18 +1,20 @@
 module transport_data
    implicit none
-   logical   :: transport_calc   = .false.
-   logical   :: generate_rho0    = .false.
+   logical   :: transport_calc   = .false.   !Active transport options
+   logical   :: generate_rho0    = .false.   !Option to
    logical   :: gate_field       = .false.
-   integer   :: save_charge_freq = 0
+   integer   :: save_charge_freq = 1
    integer   :: pop_drive        = 1
-   integer   :: ngroup           = 0
+   integer   :: nbias            = 0         !Number of electrodes present
    integer   :: pop_uid          = 678
    integer   :: drive_uid        = 5555
-   real*8    :: scratchgamma     = 0.0D0
    real*8    :: driving_rate     = 0.001
    real*8    :: GammaMagnus      = 0.0D0
    real*8    :: GammaVerlet      = 0.0D0
    real*8    :: re_traza         = 0.0D0
+!charly:
+   integer, allocatable :: timestep_init(:)
+
 
    integer   , allocatable :: mapmat(:,:), group(:)
 #ifdef TD_SIMPLE
@@ -27,8 +29,9 @@ module transport_subs
 contains
 
 subroutine transport_init(M, dim3, natom, Nuc, RMM5, overlap, rho, OPEN)
-   use transport_data, only: GammaMagnus, GammaVerlet, ngroup, group, rhofirst,&
-                             driving_rate, pop_drive, pop_uid, drive_uid, mapmat
+   use transport_data, only: GammaMagnus, GammaVerlet, nbias, group, rhofirst,&
+                             driving_rate, pop_drive, pop_uid, drive_uid,     &
+                             mapmat, timestep_init
    implicit none
    logical, intent(in)  :: OPEN
    integer, intent(in)  :: M, natom, Nuc(M), dim3
@@ -41,8 +44,7 @@ subroutine transport_init(M, dim3, natom, Nuc, RMM5, overlap, rho, OPEN)
 #endif
    integer :: orb_group(M), icount
 
-   ngroup  = 0
-      allocate(rhofirst(M,M,dim3))
+   allocate(rhofirst(M,M,dim3),timestep_init(nbias))
 
    allocate(group(natom), mapmat(M,M))
    call transport_read_groups(natom)
@@ -57,10 +59,10 @@ subroutine transport_init(M, dim3, natom, Nuc, RMM5, overlap, rho, OPEN)
 
    select case (pop_drive)
       case (1)
-         open( unit = pop_uid  , file = "MullikenGroup")
+         open( unit = pop_uid  , file = "Mullikenbias")
          open( unit = drive_uid, file = 'DriveMul')
       case (2)
-         open( unit = pop_uid  , file = "LowdinGroup")
+         open( unit = pop_uid  , file = "Lowdinbias")
          open( unit = drive_uid, file = 'DriveLowd')
       case default
          write(*,*) 'ERROR - Transport: Wrong value for pop_drive '//&
@@ -75,30 +77,41 @@ subroutine transport_init(M, dim3, natom, Nuc, RMM5, overlap, rho, OPEN)
    return
 end subroutine transport_init
 
+
 subroutine transport_read_groups(natom)
-   use transport_data, only: group, ngroup
+!This subroutine read the transport.in file, the file must have in the first
+!line the time step where we want to start the dinamic in each electrode:
+!   timestep_init(1), timestep_init(2), .... , timestep_init(n)
+!At least two electrodes with oposite polarisation must have the same
+!timestep_init.
+!Then, there must be a list in the same order than the atoms in the xyz file,
+!where it's assign the group which each atom belong:
+!     0 - Correspond to the device
+!   i>0 - Correspond to the i electrode
+   use transport_data, only: group, nbias, timestep_init
    implicit none
    integer, intent(in)  :: natom
    integer :: icount, group_read
    logical :: file_exists
 
-   inquire(file = 'atomgroup', exist = file_exists)
+   inquire(file = 'transport.in', exist = file_exists)
    if (.not.file_exists) then
-      write(*,*) ' ERROR - Transport: Cannot find atomgroup file.'
+      write(*,*) ' ERROR - Transport: Cannot find transport.in file.'
       stop
    endif
+   open( unit = 678 , file = 'transport.in')
 
-   open( unit = 678 , file = 'atomgroup')
+   read(678,*) timestep_init
    do icount = 1 , natom
       read(678, *) group_read
       group(icount) = group_read
-      if (group_read.gt.ngroup) ngroup = group_read
+      if (group_read.gt.nbias) then
+         write(*,*) "ERROR - A value greater than nbias declared has been found&
+                     in transport.in file"
+         stop
+      end if
    enddo
    close(unit=678)
-
-   if(ngroup.gt.3) write(*,*) 'WARNING - Transport: If the number of &
-   group is greater than 3, then group 1 should be the donor and 2 the &
-   acceptor.'
 
    return
 end subroutine transport_read_groups
@@ -189,7 +202,7 @@ end subroutine transport_rho_trace
 subroutine transport_propagate(M, dim3, natom, Nuc, Iz, propagator, istep, &
                                overlap, sqsm, rho1, Ymat ,OPEN)
    use transport_data, only: save_charge_freq, pop_drive, GammaMagnus, &
-                             GammaVerlet, ngroup, group
+                             GammaVerlet, nbias, group, timestep_init, nbias
    use mathsubs,       only: basechange_gemm
    implicit none
    logical   , intent(in)    :: OPEN
@@ -202,8 +215,10 @@ subroutine transport_propagate(M, dim3, natom, Nuc, Iz, propagator, istep, &
 #else
    complex*16, intent(inout) :: rho1(M,M,dim3)
 #endif
-   real*8  :: scratchgamma, gamma
+   real*8  :: gamma
+   real*8  :: scratchgamma(nbias)
    integer :: save_freq
+   integer :: ii
 
    save_freq = save_charge_freq
    select case (propagator)
@@ -215,14 +230,23 @@ subroutine transport_propagate(M, dim3, natom, Nuc, Iz, propagator, istep, &
    end select
 
    call g2g_timer_start('Transport-propagation')
-   if ((propagator.eq.2) .and. (istep.gt.999)) Then
-      scratchgamma = gamma
-   else
-      scratchgamma = gamma * exp(-0.0001D0 * (dble(istep-1000))**2)
-   endif
 
-   call electrostat(rho1(:,:,1), overlap, scratchgamma, M, 1)
-   if (OPEN) call electrostat(rho1(:,:,2), overlap, scratchgamma, M, 2)
+!charly: for the momment we can made transport just with magnus
+   do ii=1,nbias
+      if ((propagator.eq.2) .and. (istep.gt.(timestep_init(ii)+999))) Then
+         scratchgamma(ii) = gamma
+      else if ((istep>=timestep_init(ii)).and.                                 &
+               (istep<=(timestep_init(ii)+999)))then
+         scratchgamma(ii) = gamma * exp(-0.0001D0 *                            &
+                            (dble(istep-(1000+timestep_init(ii)))**2))
+      else if (istep <= timestep_init(ii)) then
+         scratchgamma(ii) = 0.0d0
+      endif
+   end do
+
+
+   call electrostat(rho1(:,:,1), overlap, scratchgamma, M,Nuc, 1)
+   if (OPEN) call electrostat(rho1(:,:,2), overlap, scratchgamma, M, Nuc, 2)
    if (mod( istep-1 , save_freq) == 0) then
       call drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, sqsm, 1,   &
                             OPEN)
@@ -239,8 +263,8 @@ end subroutine transport_propagate
 subroutine transport_propagate_cu(M, dim3, natom, Nuc, Iz, propagator, istep, &
                                   overlap, sqsm, rho1, devPtrY, OPEN)
    use cublasmath    , only: basechange_cublas
-   use transport_data, only: ngroup, group, save_charge_freq, GammaMagnus, &
-                             GammaVerlet
+   use transport_data, only: nbias, group, save_charge_freq, GammaMagnus, &
+                             GammaVerlet, timestep_init
    implicit none
    logical, intent(in)       :: OPEN
    integer, intent(in)       :: dim3
@@ -252,8 +276,10 @@ subroutine transport_propagate_cu(M, dim3, natom, Nuc, Iz, propagator, istep, &
 #else
    complex*16, intent(inout) :: rho1(M,M,dim3)
 #endif
-   real*8  :: scratchgamma, gamma
+   real*8  :: gamma
+   real*8  :: scratchgamma(nbias)
    integer :: save_freq
+   integer :: ii
 
    save_freq = save_charge_freq
    select case (propagator)
@@ -265,14 +291,22 @@ subroutine transport_propagate_cu(M, dim3, natom, Nuc, Iz, propagator, istep, &
    end select
 
    call g2g_timer_start('Transport-propagation')
-   if ((propagator.eq.2) .and. (istep.gt.999)) Then
-      scratchgamma = gamma
-   else
-      scratchgamma = gamma * exp(-0.0001D0 * (dble(istep-1000))**2)
-   endif
 
-   call electrostat(rho1(:,:,1), overlap, scratchgamma, M, 1)
-   if (OPEN) call electrostat(rho1(:,:,2), overlap, scratchgamma, M, 2)
+!charly: for the momment we can made transport just with magnus
+   do ii=1,nbias
+      if ((propagator.eq.2) .and. (istep.gt.(timestep_init(ii)+999))) Then
+         scratchgamma(ii) = gamma
+      else if ((istep>=timestep_init(ii)).and.                                 &
+               (istep<=(timestep_init(ii)+999)))then
+         scratchgamma(ii) = gamma * exp(-0.0001D0 *                            &
+                            (dble(istep-(1000+timestep_init(ii)))**2))
+      else if (istep <= timestep_init(ii)) then
+         scratchgamma(ii) = 0.0d0
+      endif
+   end do
+
+   call electrostat(rho1(:,:,1), overlap, scratchgamma, M,Nuc, 1)
+   if (OPEN) call electrostat(rho1(:,:,2), overlap, scratchgamma, M,Nuc, 2)
 
    if (mod( istep-1 , save_freq) == 0) then
       call drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, sqsm, 1,   &
@@ -315,54 +349,53 @@ subroutine transport_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat, &
    return
 end subroutine transport_population
 
+
 subroutine mat_map(Nuc, M, natom)
-   ! This subroutine classifies each index for the evolution of the density
-   ! matrix during propagation.
-   use transport_data, only: group, mapmat
+! This subroutine classify each element of the matrix density in three cases
+! whichs correspond to the three cases present in the driving term of Drive
+! Liouville von Neuman, this cases will be use in electrostat. The cases are:
+!         1) if i and j  = 0
+!         2) if i or j   = 0
+!         3) if i and j /= 0
+   use transport_data, only: group, nbias ,mapmat
    implicit none
    integer, intent(in)   :: M, natom, Nuc(M)
-   integer               :: i, j, group_1, group_2, group_3
+   integer               :: i, j, group_n(nbias+1)
 
    mapmat = 0
    do i=1,M
    do j=1,M
-      if ((group(nuc(i)).eq.1).and.(group(nuc(j)).eq.1)) mapmat(i,j)=1
-      if ((group(nuc(i)).eq.1).and.(group(nuc(j)).eq.2)) mapmat(i,j)=2
-      if ((group(nuc(i)).eq.1).and.(group(nuc(j)).eq.3)) mapmat(i,j)=3
-      if ((group(nuc(i)).eq.2).and.(group(nuc(j)).eq.1)) mapmat(i,j)=4
-      if ((group(nuc(i)).eq.2).and.(group(nuc(j)).eq.2)) mapmat(i,j)=5
-      if ((group(nuc(i)).eq.2).and.(group(nuc(j)).eq.3)) mapmat(i,j)=6
-      if ((group(nuc(i)).eq.3).and.(group(nuc(j)).eq.1)) mapmat(i,j)=7
-      if ((group(nuc(i)).eq.3).and.(group(nuc(j)).eq.2)) mapmat(i,j)=8
-      if ((group(nuc(i)).eq.3).and.(group(nuc(j)).eq.3)) mapmat(i,j)=9
+      if ((group(nuc(i)).eq.0).and.(group(nuc(j)).eq.0)) mapmat(i,j)=1
+      if ((group(nuc(i)).eq.0).and.(group(nuc(j)).ne.0)) mapmat(i,j)=2
+      if ((group(nuc(i)).ne.0).and.(group(nuc(j)).eq.0)) mapmat(i,j)=2
+      if ((group(nuc(i)).ne.0).and.(group(nuc(j)).ne.0)) mapmat(i,j)=3
    end do
    end do
 
    ! Counting the number of basis functions for each section of transport.
-   group_1 = 0 ; group_2 = 0 ; group_3 = 0
+   group_n = 0
    do i=1,M
-      if (mapmat(i,i).eq.1) group_1 = group_1 + 1
-      if (mapmat(i,i).eq.5) group_2 = group_2 + 1
-      if (mapmat(i,i).eq.9) group_3 = group_3 + 1
+      group_n(group(nuc(i))+1) = group_n(group(nuc(i))+1)+1
    end do
 
-    write(*,*) 'Transport - Basis functions from group 1 =', group_1
-    write(*,*) 'Transport - Basis functions from group 2 =', group_2
-    write(*,*) 'Transport - Basis functions from group 3 =', group_3
+   do i=1,nbias+1
+      write(*,*) "Transport - Basis functions from group",i-1,"=", group_n(i)
+   end do
 
     return
 end subroutine mat_map
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-subroutine electrostat(rho1, overlap, Gamma0, M, spin)
+subroutine electrostat(rho1, overlap, Gamma0, M,Nuc, spin)
    ! This subroutine modifies the density matrix according to the group
    ! containing the basis function indexes.
-   use transport_data, only: mapmat, rhofirst
+   use transport_data, only: mapmat, rhofirst, nbias, group
    implicit none
    integer, intent(in) :: M, spin
-   real*8,  intent(in) :: overlap(M,M), Gamma0
+   integer, intent(in) :: Nuc(M)
+   real*8,  intent(in) :: overlap(M,M), Gamma0(nbias)
    integer :: i, j
-   real*8  :: GammaIny, GammaAbs
+   real*8  :: GammaIny, GammaAbs, tempgamma, tempgamma2
 
 #ifdef TD_SIMPLE
    complex*8 , intent(inout) :: rho1(M,M)
@@ -375,26 +408,43 @@ subroutine electrostat(rho1, overlap, Gamma0, M, spin)
    call g2g_timer_start('electrostat')
    allocate(rho_scratch(M,M,2))
 
+   tempgamma   = 0.0D0
+   tempgamma2  = 0.0D0
    rho_scratch = 0.0D0
-   do i = 1, M
-   do j = 1, M
-      select case (mapmat(i,j))
-         case (0, 9)
+
+   do i=1,M
+   do j=1,M
+
+      if (group(nuc(i))/=0.and.group(nuc(j))==0) then
+         tempgamma = Gamma0(group(nuc(i)))
+      else if (group(nuc(i))==0.and.group(nuc(j))/=0) then
+         tempgamma = Gamma0(group(nuc(j)))
+      else if (group(nuc(i))/=0.and.group(nuc(j))/=0) then
+         tempgamma = min(Gamma0(group(nuc(i))),                                &
+                         Gamma0(group(nuc(j))))
+         tempgamma2 = max(Gamma0(group(nuc(i))),                               &
+                          Gamma0(group(nuc(j))))
+      end if
+
+      select case(mapmat(i,j))
+         case (1)
             rho_scratch(i,j,1) = dcmplx(0.0D0,0.0D0)
             rho_scratch(i,j,2) = dcmplx(0.0D0,0.0D0)
-         case (1, 2, 4, 5)
-            rho_scratch(i,j,1) = rho1(i,j)
-            rho_scratch(i,j,2) = rhofirst(i,j,spin)
-         case (3, 6, 7, 8)
-            rho_scratch(i,j,1) = 0.50D0*rho1(i,j)
-            rho_scratch(i,j,2) = 0.50D0*rhofirst(i,j,spin)
+         case (2)
+            rho_scratch(i,j,1) = tempgamma*0.50D0*rho1(i,j)
+            rho_scratch(i,j,2) = tempgamma*0.50D0*rhofirst(i,j,spin)
+         case (3)
+            rho_scratch(i,j,1) = tempgamma*0.50D0*rho1(i,j) +                  &
+                                 tempgamma2*0.50D0*rho1(i,j)
+            rho_scratch(i,j,2) = tempgamma*0.50D0*rhofirst(i,j,spin) +         &
+                                 tempgamma2*0.50D0*rhofirst(i,j,spin)
       end select
-   enddo
-   enddo
+   end do
+   end do
 
-   GammaIny = Gamma0*0.5D0
+   GammaIny = 0.5D0
    GammaAbs = GammaIny
-   write(*,*) 'Transport - GammaAbs, GammaIny =', GammaAbs, GammaIny
+   write(*,*) 'Transport - Gammas =', (Gamma0(i),i=1,nbias)
 
    do i = 1, M
    do j = 1, M
@@ -414,7 +464,7 @@ end subroutine electrostat
 
 subroutine drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat,      &
                             dvopt, OPEN)
-   use transport_data, only: pop_uid, drive_uid, ngroup, group, pop_drive
+   use transport_data, only: pop_uid, drive_uid, nbias, group, pop_drive
    implicit none
    logical, intent(in) :: OPEN
    integer, intent(in) :: dim3
@@ -426,7 +476,7 @@ subroutine drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat,      &
 #else
       complex*16, intent(in) :: rho1(M,M, dim3)
 #endif
-   real*8  :: qgr(ngroup), traza, q(natom), rho(M,M,dim3)
+   real*8  :: qgr(nbias+1), traza, q(natom), rho(M,M,dim3)
    integer :: i
 
    qgr(:) = 0.0D0
@@ -455,18 +505,18 @@ subroutine drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat,      &
    end select
 
    do i = 1, natom
-      qgr(group(i)) = qgr(group(i)) + q(i)
+      qgr(group(i)+1) = qgr(group(i)+1) + q(i)
    enddo
 
    if(dvopt==1) then
-      do i = 1, ngroup
-         write(drive_uid,*) i, i, qgr(i)
+      do i = 1, nbias+1
+         write(drive_uid,*) i-1, i-1, qgr(i)
          traza = traza + qgr(i)
       enddo
       write(*,*) "Total trace =", traza
    else if (dvopt==2) then
-      do i = 1, ngroup
-         write(pop_uid,*) i, i, qgr(i)
+      do i = 1, nbias+1
+         write(pop_uid,*) i-1, i-1, qgr(i)
          traza = traza + qgr(i)
       enddo
       write(pop_uid,*) "Total trace =", traza

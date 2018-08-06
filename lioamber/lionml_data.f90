@@ -47,7 +47,7 @@ module lionml_data
    use td_data           , only: tdrestart, writedens, td_rst_freq, tdstep,    &
                                  ntdstep, timedep, td_do_pop
    use trans_Data        , only: gaussian_convert
-   use transport_data    , only: transport_calc, generate_rho0, gate_field,    &
+   use transport_data    , only: transport_calc, generate_rho0, nbias,         &
                                  save_charge_freq, driving_rate, Pop_Drive
    use ghost_atoms_data  , only: n_ghosts, ghost_atoms
    implicit none
@@ -95,11 +95,14 @@ module lionml_data
                   min_points_per_cube, assign_all_functions, sphere_radius,    &
                   remove_zero_weights, energy_all_iterations,                  &
                   ! Variables for Transport
-                  transport_calc, generate_rho0, gate_field,                   &
+                  transport_calc, generate_rho0, nbias,                        &
                   save_charge_freq, driving_rate, Pop_Drive,                   &
                   ! Variables for DFTB
                   dftb_calc, MTB, alfaTB, betaTB, gammaTB, Vbias_TB, end_bTB,  &
                   start_tdtb, end_tdtb, TBsave, TBload,                        &
+                  !Fockbias
+                  fockbias_is_active, fockbias_is_shaped, fockbias_readfile,   &
+                  fockbias_timegrow , fockbias_timefall , fockbias_timeamp0,   &
                    ! Libxc variables
                   use_libxc, ex_functional_id, ec_functional_id,               &
                   ! Variables for Ghost atoms:
@@ -149,7 +152,7 @@ module lionml_data
       logical          :: dftb_calc, gate_field, generate_rho0, TBload, TBsave,&
                           transport_calc
       integer          :: end_bTB, end_tdtb, MTB, pop_drive, save_charge_freq, &
-                          start_tdtb
+                          start_tdtb, nbias
       ! Ehrenfest
       character*80     :: rsti_fname, rsto_fname, wdip_fname
       double precision :: eefld_ampx, eefld_ampy, eefld_ampz, eefld_timeamp,   &
@@ -240,7 +243,7 @@ subroutine get_namelist(lio_in)
    ! Transport and DFTB
    lio_in%driving_rate     = driving_rate    ; lio_in%alfaTB    = alfaTB
    lio_in%dftb_calc        = dftb_calc       ; lio_in%betaTB    = betaTB
-   lio_in%gate_field       = gate_field      ; lio_in%gammaTB   = gammaTB
+   lio_in%nbias            = nbias           ; lio_in%gammaTB   = gammaTB
    lio_in%generate_rho0    = generate_rho0   ; lio_in%Vbias_TB  = Vbias_TB
    lio_in%transport_calc   = transport_calc  ; lio_in%end_bTB   = end_bTB
    lio_in%end_tdtb         = end_tdtb        ; lio_in%pop_drive = pop_drive

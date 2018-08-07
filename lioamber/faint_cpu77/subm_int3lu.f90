@@ -139,7 +139,7 @@ subroutine int3lu(E2, rho, Fmat_b, Fmat, Gmat, Ginv, Hmat, M, Md, cool, cools,&
             do k_ind = 1, Md
               term = term + af(k_ind) * cool(iikk + k_ind)
             enddo
-            Fmat(+ kkind(kk_ind)) = Fmat(+ kkind(kk_ind)) + term
+            Fmat(kkind(kk_ind)) = Fmat(kkind(kk_ind)) + term
          enddo
          do kk_ind = 1, kknums
             iikk = (kk_ind - 1) * Md
@@ -147,7 +147,7 @@ subroutine int3lu(E2, rho, Fmat_b, Fmat, Gmat, Ginv, Hmat, M, Md, cool, cools,&
             do k_ind = 1, Md
               term = term + af(k_ind) * cools(iikk + k_ind)
             enddo
-            Fmat(kkinds(kk_ind) -1) = Fmat(kkinds(kk_ind)) + term
+            Fmat(kkinds(kk_ind)) = Fmat(kkinds(kk_ind)) + term
          enddo
       endif
       call g2g_timer_stop('int3lu')

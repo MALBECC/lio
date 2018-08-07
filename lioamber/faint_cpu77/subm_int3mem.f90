@@ -25,8 +25,8 @@ subroutine int3mem()
    integer, dimension(:), allocatable :: Jx
 
    ! Eliminating implicits:
-   double precision  :: alf, cc, ccoef, f1, f2, f3
-   double precision  :: rexp, ro, roz, sq3, term, u, ddij
+   double precision  :: ccoef, f1, f2, f3
+   double precision  :: rexp, sq3, term, uf
    double precision  :: ti, tj
    double precision  :: Z2, Z2a, Zc, Zij
 
@@ -34,7 +34,7 @@ subroutine int3mem()
    double precision  :: d2s, d2p, d2d, d2pl, d2pk
    double precision  :: d3s, d3pk, d4s
    double precision  :: ds, ds1p, dspl, dp, dpc, dpk, dp1p
-   double precision  :: dd, ddp, dijplp, dijpkp
+   double precision  :: ddp, dijplp, dijpkp
 
    double precision  :: ps, pp, pp1p, p1s, p2s, p3s, p4s, p5s
    double precision  :: pi1p, pi1pk, pi2p, pi2pk, pi2pl, pi3pk
@@ -102,7 +102,7 @@ subroutine int3mem()
                       (a(ifunct,nci) + a(jfunct,ncj))
 
                if (rexp.lt.rmax) then
-               if (rexp.lt.rmaxs) then
+               if (rexp .lt. rmaxs) then
                   if (fato) then
                      kknumd = kknumd +1
                      fato   = .false.
@@ -136,7 +136,7 @@ subroutine int3mem()
                    (a(ifunct,nci) + a(jfunct,ncj))
 
             if (rexp.lt.rmax) then
-            if (rexp.lt.rmaxs) then
+            if (rexp .lt. rmaxs) then
                if (fato) then
                   do l1 = 1, 3
                      kknumd = kknumd +1
@@ -175,7 +175,7 @@ subroutine int3mem()
                       (a(ifunct,nci) + a(jfunct,ncj))
 
                if (rexp.lt.rmax) then
-               if (rexp.lt.rmaxs) then
+               if (rexp .lt. rmaxs) then
                   if (fato) then
                   if (ifunct .eq. jfunct) then
                      do l1 = 1, 3
@@ -232,7 +232,7 @@ subroutine int3mem()
                    (a(ifunct,nci) + a(jfunct,ncj))
 
             if (rexp.lt.rmax) then
-            if (rexp.lt.rmaxs) then
+            if (rexp .lt. rmaxs) then
                if (fato) then
                   do l1 = 1, 6
                      kknumd = kknumd +1
@@ -269,7 +269,7 @@ subroutine int3mem()
                    (a(ifunct,nci) + a(jfunct,ncj))
 
             if (rexp.lt.rmax) then
-            if (rexp.lt.rmaxs) then
+            if (rexp .lt. rmaxs) then
                if (fato) then
                   do l1 = 1, 6
                   do l2 = 1, 3
@@ -312,7 +312,7 @@ subroutine int3mem()
                       (a(ifunct,nci) + a(jfunct,ncj))
 
                if (rexp.lt.rmax) then
-               if (rexp.lt.rmaxs) then
+               if (rexp .lt. rmaxs) then
                   if (fato) then
                      fato = .false.
                      if (ifunct .eq. jfunct) then
@@ -389,7 +389,7 @@ subroutine int3mem()
                rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))
 
                if (rexp.lt.rmax) then
-                  if (rexp.lt.rmaxs) then
+                  if (rexp .lt. rmaxs) then
                      if (fato) then
                         kknumd        = kknumd +1
                         kkind(kknumd) = kk_ind
@@ -420,7 +420,7 @@ subroutine int3mem()
                         term = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck) *&
                                sks * FUNCT(0,uf) / (ad(kfunct,nck) * dsqrt(t0))
 
-                        if (rexp.lt.rmaxs) then
+                        if (rexp .lt. rmaxs) then
                            cool_ind = (kknumd -1) * Md + kfunct
                            cool(cool_ind) = cool(cool_ind) + term
                         else
@@ -454,7 +454,7 @@ subroutine int3mem()
                         do l1 = 1, 3
                            term = (W(l1) - r(Nucd(kfunct),l1)) * ss1s
 
-                           if (rexp.lt.rmaxs) then
+                           if (rexp .lt. rmaxs) then
                               cool_ind = (kknumd -1) * Md + kfunct + l1 -1
                               cool(cool_ind) = cool(cool_ind) + term
                            else
@@ -493,16 +493,15 @@ subroutine int3mem()
 
                            do l2 = 1, l1
                               term = (W(l2) - r(Nucd(kfunct),l2)) * ss1p
-
-                              f1 = 1.D0
+                              f1   = 1.D0
                               if (l1 .eq. l2) then
                                  term = term + ta
                                  f1   = sq3
                               endif
-
                               term = term * ccoef / f1
+                              
                               l12  = Ll(l1) + l2
-                              if (rexp.lt.rmaxs) then
+                              if (rexp .lt. rmaxs) then
                                  cool_ind = (kknumd -1) * Md + kfunct + l12 -1
                                  cool(cool_ind) = cool(cool_ind) + term
                               else
@@ -540,7 +539,7 @@ subroutine int3mem()
             rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))
 
             if (rexp.lt.rmax) then
-               if (rexp.lt.rmaxs) then
+               if (rexp .lt. rmaxs) then
                   if (fato) then
                      do l1 = 1, 3
                         kknumd = kknumd +1
@@ -588,7 +587,7 @@ subroutine int3mem()
                         term = ccoef * ((Q(l1) - r(Nuc(ifunct),l1)) * sss + &
                                         (W(l1) - Q(l1)            ) * ss1s)
 
-                        if (rexp.lt.rmaxs) then
+                        if (rexp .lt. rmaxs) then
                            cool_ind = (l1 + kknumd -4) * Md + kfunct
                            cool(cool_ind) = cool(cool_ind) + term
                         else
@@ -633,7 +632,7 @@ subroutine int3mem()
                            endif
                            term = term * ccoef
 
-                           if(rexp.lt.rmaxs) then
+                           if(rexp .lt. rmaxs) then
                               cool_ind = (l1 + kknumd-4) * Md + kfunct + l2 -1
                               cools(cool_ind) = cools(cool_ind) + term
                            else
@@ -704,8 +703,8 @@ subroutine int3mem()
                               endif
                               term = term * ccoef / f1
 
-                              l23 = l2 * (l2 -1) / 2 + l3
-                              if(rexp.lt.rmaxs) then
+                              l23 = Ll(l2) + l3
+                              if(rexp .lt. rmaxs) then
                                  kn=l1+kknumd-3
                                  cool_ind = (l1 + kknumd -4)*Md + kfunct + l23-1
                                  cools(cool_ind) = cools(cool_ind) + term
@@ -746,7 +745,7 @@ subroutine int3mem()
                rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))
 
                if (rexp.lt.rmax) then
-                  if (rexp.lt.rmaxs) then
+                  if (rexp .lt. rmaxs) then
                      if (fato) then
                         if (ifunct .eq. jfunct) then
                            do l1 = 1, 3
@@ -916,7 +915,7 @@ subroutine int3mem()
                                  endif
                                  term = term * ccoef
 
-                                 if (rexp.lt.rmaxs) then
+                                 if (rexp .lt. rmaxs) then
                                     if (ifunct .eq. jfunct) then
                                        cool_ind = (lcount + kknumd -7)  * Md + &
                                                   kfunct + l3 -1
@@ -1038,8 +1037,8 @@ subroutine int3mem()
                                     endif
                                     term = term * ccoef / f1
 
-                                    l34 = l3 * (l3-1) / 2 + l4
-                                    if (rexp.lt.rmaxs) then
+                                    l34 = Ll(l3) + l4
+                                    if (rexp .lt. rmaxs) then
                                        if (ifunct .eq. jfunct) then
                                           cool_ind = (lcount + kknumd -7 )*Md +&
                                                      kfunct + l34 -1
@@ -1092,7 +1091,7 @@ subroutine int3mem()
             rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))
 
             if (rexp.lt.rmax) then
-               if (rexp.lt.rmaxs) then
+               if (rexp .lt. rmaxs) then
                   if (fato) then
                      do l1 = 1, 6
                         kknumd = kknumd +1
@@ -1155,7 +1154,7 @@ subroutine int3mem()
                            term = term * ccoef / f1
 
                            l12 = Ll(l1) + l2
-                           if (rexp.lt.rmaxs) then
+                           if (rexp .lt. rmaxs) then
                               cool_ind = (l12 + kknumd -7) * Md + kfunct
                               cools(cool_ind) = cools(cool_ind) + term
                            else
@@ -1223,7 +1222,7 @@ subroutine int3mem()
                               term = term * ccoef / f1
 
                               l12 = Ll(l1) + l2
-                              if (rexp.lt.rmaxs) then
+                              if (rexp .lt. rmaxs) then
                                  cool_ind = (l12 + kknumd -7)*Md + kfunct + l3-1
                                  cools(cool_ind) = cools(cool_ind) + term
                               else
@@ -1330,7 +1329,7 @@ subroutine int3mem()
                                  l12 = Ll(l1) + l2
                                  l34 = Ll(l3) + l4
 
-                                 if (rexp.lt.rmaxs) then
+                                 if (rexp .lt. rmaxs) then
                                     cool_ind = (l12 + kknumd -7) * Md + kfunct &
                                              + l34 -1
                                     cools(cool_ind) = cools(cool_ind) + term
@@ -1372,7 +1371,7 @@ subroutine int3mem()
             rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))
 
             if (rexp.lt.rmax) then
-               if (rexp.lt.rmaxs) then
+               if (rexp .lt. rmaxs) then
                   if (fato) then
                      do l1 = 1, 6
                      do l2 = 1, 3
@@ -1462,7 +1461,7 @@ subroutine int3mem()
 
                               l12    = Ll(l1) + l2
                               lcount = lcount +1
-                              if (rexp.lt.rmaxs) then
+                              if (rexp .lt. rmaxs) then
                                  cool_ind = (lcount + kknumd -19) * Md + kfunct
                                  cools(cool_ind) = cools(cool_ind) + term
                               else
@@ -1562,7 +1561,7 @@ subroutine int3mem()
                                  term = term * ccoef / f1
 
                                  l12=Ll(l1)+l2
-                                 if (rexp.lt.rmaxs) then
+                                 if (rexp .lt. rmaxs) then
                                     cool_ind = (lcount + kknumd -19) * Md + &
                                                kfunct + l4 -1
                                     cools(cool_ind) = cools(cool_ind) + term
@@ -1706,7 +1705,7 @@ subroutine int3mem()
                                     term = term * ccoef / (f1 * f2)
 
                                     l45 = Ll(l4) + l5
-                                    if (rexp.lt.rmaxs) then
+                                    if (rexp .lt. rmaxs) then
                                        cool_ind = (lcount + kknumd -19) * Md + &
                                                   kfunct + l45 -1
                                        cools(cool_ind) = cools(cool_ind) + term
@@ -1732,222 +1731,199 @@ subroutine int3mem()
 
    ! (dd|s)
    do ifunct = ns+np+1, M, 6
-   do knan = 1, natomc(Nuc(ifunct))
+   do knan   = 1, natomc(Nuc(ifunct))
       jfunct = nnpd(jatc(knan,Nuc(ifunct))) -6
 
       do kknan=1, nnd(jatc(knan,Nuc(ifunct))), 6
          jfunct = jfunct +6
 
          if (jfunct .le. ifunct) then
-            fato = .true.
+            fato  = .true.
             fato2 = .true.
-            ddij=d(Nuc(ifunct),Nuc(jfunct))
+
             do nci = 1, ncont(ifunct)
             do ncj = 1, ncont(jfunct)
-               Zij = a(ifunct,nci) + a(jfunct,ncj)
-               Z2 = 2.D0 * Zij
-               ti = a(ifunct,nci) / Zij
-               tj = a(jfunct,ncj) / Zij
-               alf = a(ifunct,nci) * tj
-               rexp = alf * ddij
+               Zij  = a(ifunct,nci) + a(jfunct,ncj)
+               Z2   = 2.D0 * Zij
+               ti   = a(ifunct,nci) / Zij
+               tj   = a(jfunct,ncj) / Zij
+               rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))
+
                if (rexp.lt.rmax) then
-                  if (rexp.lt.rmaxs) then
+                  if (rexp .lt. rmaxs) then
                      if (fato) then
-                        fato   = .false.
+                        fato = .false.
                         if (ifunct .eq. jfunct) then
-                           do iki=1,6
-                           do jki=1,iki
+                           do l1 = 1, 6
+                           do l2 = 1, l1
                               kknumd = kknumd +1
-                              ii=i+iki-1
-                              jj=j+jki-1
-                              kkind(kknumd)=ii+Jx(jj)
+                              kkind(kknumd) = ifunct + l1-1 + Jx(jfunct + l2-1)
                            enddo
                            enddo
                         else
-                           do iki=1,6
-                           do jki=1,6
+                           do l1 = 1, 6
+                           do l2 = 1, 6
                               kknumd = kknumd +1
-                              kkind(kknumd)=i+iki-1+Jx(j+jki-1)
+                              kkind(kknumd) = ifunct + l1-1 + Jx(jfunct + l2-1)
                            enddo
                            enddo
                         endif
                      endif
                   else
                      if (fato2) then
-                        fato2  = .false.
+                        fato2 = .false.
                         if (ifunct .eq. jfunct) then
-                           do iki=1,6
-                           do jki=1,iki
+                           do l1 = 1, 6
+                           do l2 = 1, l1
                               kknums = kknums +1
-                              if(kknumsmax.lt.kknums) stop 'a'
-                              ii=i+iki-1
-                              jj=j+jki-1
-                              kkinds(kknums)=ii+Jx(jj)
+                              kkinds(kknums) = ifunct + l1-1 + Jx(jfunct + l2-1)
                            enddo
                            enddo
                         else
-                           do iki=1,6
-                           do jki=1,6
+                           do l1 = 1, 6
+                           do l2 = 1, 6
                               kknums = kknums +1
-                              if(kknumsmax.lt.kknums) stop 'b'
-                              kkinds(kknums)=i+iki-1+Jx(j+jki-1)
+                              kkinds(kknums) = ifunct + l1-1 + Jx(jfunct + l2-1)
                            enddo
                            enddo
                         endif
                      endif
-
                   endif
+
                   Q(1) = ti * r(Nuc(ifunct),1) + tj * r(Nuc(jfunct),1)
                   Q(2) = ti * r(Nuc(ifunct),2) + tj * r(Nuc(jfunct),2)
                   Q(3) = ti * r(Nuc(ifunct),3) + tj * r(Nuc(jfunct),3)
-
                   sks  = pi52 * exp(-rexp) / Zij
 
                   do kfunct = 1, nsd
-                     dpc=(Q(1) - r(Nucd(kfunct),1))*(Q(1) - r(Nucd(kfunct),1))+(Q(2) -r(Nucd(kfunct),2))*(Q(2) -r(Nucd(kfunct),2))+ &
-                     (Q(3) -r(Nucd(kfunct),3))*(Q(3) -r(Nucd(kfunct),3))
+                     dpc = (Q(1) -r(Nucd(kfunct),1))*(Q(1) -r(Nucd(kfunct),1)) &
+                         + (Q(2) -r(Nucd(kfunct),2))*(Q(2) -r(Nucd(kfunct),2)) &
+                         + (Q(3) -r(Nucd(kfunct),3))*(Q(3) -r(Nucd(kfunct),3))
 
                      do nck = 1, ncontd(kfunct)
                         ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
-                        t0 = ad(kfunct,nck) + Zij
+                        t0    = ad(kfunct,nck) + Zij
+                        ti    = Zij / t0
+                        tj    = ad(kfunct,nck) / t0
 
-                        ti = Zij / t0
-                        tj = ad(kfunct,nck) / t0
                         W(1) = ti * Q(1) + tj * r(Nucd(kfunct),1)
                         W(2) = ti * Q(2) + tj * r(Nucd(kfunct),2)
                         W(3) = ti * Q(3) + tj * r(Nucd(kfunct),3)
 
-                        roz=tj
-
-                        ro=roz*Zij
-                        u=ro*dpc
-                        t1=ad(kfunct,nck)*dsqrt(t0)
-                        t2=sks/t1
-                        sss = t2 * FUNCT(0,uf)
-                        ss1s= t2 * FUNCT(1,uf)
-                        ss2s= t2 * FUNCT(2,uf)
-                        ss3s= t2 * FUNCT(3,uf)
+                        t2   = sks / (ad(kfunct,nck) * dsqrt(t0))
+                        uf   = tj * Zij * dpc
+                        sss  = t2 * FUNCT(0,uf)
+                        ss1s = t2 * FUNCT(1,uf)
+                        ss2s = t2 * FUNCT(2,uf)
+                        ss3s = t2 * FUNCT(3,uf)
                         ss4s = t2 * FUNCT(4,uf)
-                        t3=(sss- tj * ss1s) / Z2
-                        t4=(ss1s- tj * ss2s) / Z2
-                        t5=(ss2s- tj * ss3s) / Z2
-                        ii=0
+                        t3   = (sss  - tj * ss1s) / Z2
+                        t4   = (ss1s - tj * ss2s) / Z2
+                        t5   = (ss2s - tj * ss3s) / Z2
 
+                        lcount = 0
                         do  l1=1,3
-                           t1 = Q(l1) - r(Nuc(ifunct),l1)
-                           t2 = W(l1) - Q(l1)
-                           ps = t1 * sss + t2 * ss1s
+                           t1  = Q(l1) - r(Nuc(ifunct),l1)
+                           t2  = W(l1) - Q(l1)
+                           ps  = t1 * sss + t2 * ss1s
                            p1s = t1 * ss1s + t2 * ss2s
                            p2s = t1 * ss2s + t2 * ss3s
                            p3s = t1 * ss3s + t2 * ss4s
-                           t6=(ps- tj * p1s) / Z2
-                           t7=(p1s- tj * p2s) / Z2
+                           t6  = (ps  - tj * p1s) / Z2
+                           t7  = (p1s - tj * p2s) / Z2
 
                            do  l2=1,l1
-                              t1 = Q(l2) - r(Nuc(ifunct),l2)
-                              t2 = W(l2) - Q(l2)
-                              pjs  = t1 * sss + t2 * ss1s
+                              t1   = Q(l2) - r(Nuc(ifunct),l2)
+                              t2   = W(l2) - Q(l2)
+                              pjs  = t1 * sss  + t2 * ss1s
                               pj1s = t1 * ss1s + t2 * ss2s
                               pj2s = t1 * ss2s + t2 * ss3s
-                              t8=(pjs- tj * pj1s) / Z2
-                              t9=(pj1s- tj * pj2s) / Z2
-                              ds = t1 * ps + t2 * p1s
-                              d1s = t1 * p1s + t2 * p2s
-                              d2s = t1 * p2s + t2 * p3s
+                              ds   = t1 * ps   + t2 * p1s
+                              d1s  = t1 * p1s  + t2 * p2s
+                              d2s  = t1 * p2s  + t2 * p3s
+                              t8   = (pjs  - tj * pj1s) / Z2
+                              t9   = (pj1s - tj * pj2s) / Z2
 
-                              f1=1.D0
+                              f1 = 1.D0
                               if (l1 .eq. l2) then
-                                 ds=ds+t3
-                                 d1s=d1s+t4
-                                 d2s=d2s+t5
-                                 f1=sq3
+                                 ds  = ds  + t3
+                                 d1s = d1s + t4
+                                 d2s = d2s + t5
+                                 f1  = sq3
                               endif
+                              t12 = (ds - tj * d1s) / Z2
 
-                              t12=(ds- tj * d1s) / Z2
-
-                              lij=3
+                              lij = 3
                               if (ifunct .eq. jfunct) then
-                                 lij=l1
+                                 lij = l1
                               endif
-
-                              do  l3=1,lij
-                                 t1 = Q(l3) - r(Nuc(jfunct),l3)
-                                 t2 = W(l3) - Q(l3)
-                                 pip = t1 * ps + t2 * p1s
-                                 pi1p = t1 * p1s + t2 * p2s
-                                 pjp = t1 * pjs + t2 * pj1s
+                              do  l3 = 1, lij
+                                 t1   = Q(l3) - r(Nuc(jfunct),l3)
+                                 t2   = W(l3) - Q(l3)
+                                 pip  = t1 * ps   + t2 * p1s
+                                 pi1p = t1 * p1s  + t2 * p2s
+                                 pjp  = t1 * pjs  + t2 * pj1s
                                  pj1p = t1 * pj1s + t2 * pj2s
-                                 dp   = t1 * ds + t2 * d1s
-                                 d1p  = t1 * d1s + t2 * d2s
+                                 dp   = t1 * ds   + t2 * d1s
+                                 d1p  = t1 * d1s  + t2 * d2s
 
                                  if (l1 .eq. l3) then
-                                    pip=pip+t3
+                                    pip  = pip  + t3
                                     pi1p = pi1p + t4
-                                    dp = dp +t8
-                                    d1p = d1p +t9
+                                    dp   = dp   + t8
+                                    d1p  = d1p  + t9
                                  endif
-
                                  if (l2 .eq. l3) then
-                                    pjp=pjp+t3
-                                    pj1p=pj1p+t4
-                                    dp = dp +t6
-                                    d1p = d1p +t7
+                                    pjp  = pjp  + t3
+                                    pj1p = pj1p + t4
+                                    dp   = dp   + t6
+                                    d1p  = d1p  + t7
                                  endif
+                                 t10 = (pjp - tj * pj1p) / Z2
+                                 t11 = (pip - tj * pi1p) / Z2
 
-                                 t10=(pjp- tj * pj1p) / Z2
-                                 t11=(pip- tj * pi1p) / Z2
-
-                                 lk=l3
+                                 lk = l3
                                  if (ifunct .eq. jfunct) then
-                                    lk=min(l3,Ll(l1)-Ll(l3)+l2)
+                                    lk = min(l3, Ll(l1)-Ll(l3)+l2)
                                  endif
-
-                                 do  l4=1,lk
-                                    t1=Q(l4)-r(Nuc(jfunct),l4)
-                                    t2=W(l4)-Q(l4)
-                                    term = t1 * dp + t2 * d1p
+                                 do l4 = 1, lk
+                                    term = (Q(l4) - r(Nuc(jfunct),l4)) * dp &
+                                         + (W(l4) - Q(l4)            ) * d1p
+                                    f2   = 1.D0
 
                                     if (l1 .eq. l4) then
                                        term = term +t10
                                     endif
-
                                     if (l2 .eq. l4) then
                                        term = term +t11
                                     endif
-
-                                    f2=1.D0
                                     if (l3 .eq. l4) then
                                        term = term +t12
-                                       f2=sq3
+                                       f2   = sq3
                                     endif
+                                    term = term * ccoef / (f1 * f2)
 
-                                    l12=Ll(l1)+l2
-                                    l34=Ll(l3)+l4
-                                    ii=ii+1
-                                    cc=ccoef/(f1*f2)
-                                    term = term *cc
-
-                                    if (rexp.lt.rmaxs) then
-                                       if(j.eq.i) then
-                                          kk=ii+kknumd-21
+                                    lcount = lcount +1
+                                    if (rexp .lt. rmaxs) then
+                                       if (jfunct .eq. ifunct) then
+                                          cool_ind = (lcount + kknumd -22) *Md &
+                                                   + kfunct
                                        else
-                                          kk=ii+kknumd-36
+                                          cool_ind = (lcount + kknumd -37) *Md &
+                                                   + kfunct
                                        endif
-                                       id = (kk-1)*Md+k
-
                                        cools(cool_ind) = cools(cool_ind) + term
                                     else
-                                       if(j.eq.i) then
-                                          kk=ii+kknums-21
+                                       if (jfunct .eq. ifunct) then
+                                          cool_ind = (lcount + kknums -22) *Md &
+                                                   + kfunct
                                        else
-                                          kk=ii+kknums-36
+                                          cool_ind = (lcount + kknums -37) *Md &
+                                                   + kfunct
                                        endif
-                                       id = (kk-1)*Md+k
-
-                                       cools(cool_ind) = cools(cool_ind) + real(term)
-
+                                       cools(cool_ind) = cools(cool_ind) &
+                                                       + real(term)
                                     endif
-
                                  enddo
                               enddo
                            enddo
@@ -1957,194 +1933,177 @@ subroutine int3mem()
 
                   !----(dd|p)
                   do kfunct = nsd+1, nsd+npd, 3
-                     dpc=(Q(1) - r(Nucd(kfunct),1))*(Q(1) - r(Nucd(kfunct),1))+(Q(2) -r(Nucd(kfunct),2))*(Q(2) -r(Nucd(kfunct),2))+&
-                     (Q(3) -r(Nucd(kfunct),3))*(Q(3) -r(Nucd(kfunct),3))
+                     dpc = (Q(1) -r(Nucd(kfunct),1))*(Q(1) -r(Nucd(kfunct),1)) &
+                         + (Q(2) -r(Nucd(kfunct),2))*(Q(2) -r(Nucd(kfunct),2)) &
+                         + (Q(3) -r(Nucd(kfunct),3))*(Q(3) -r(Nucd(kfunct),3))
 
                      do nck = 1, ncontd(kfunct)
                         ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
-                        t0 = ad(kfunct,nck) + Zij
-                        Z2a = 2.0D0 * t0
+                        t0    = ad(kfunct,nck) + Zij
+                        Z2a   = 2.0D0 * t0
+                        ti    = Zij / t0
+                        tj    = ad(kfunct,nck) / t0
 
-                        ti = Zij / t0
-                        tj = ad(kfunct,nck) / t0
                         W(1) = ti * Q(1) + tj * r(Nucd(kfunct),1)
                         W(2) = ti * Q(2) + tj * r(Nucd(kfunct),2)
                         W(3) = ti * Q(3) + tj * r(Nucd(kfunct),3)
 
-                        roz=tj
-
-                        ro=roz*Zij
-                        u=ro*dpc
-                        t1=ad(kfunct,nck)*dsqrt(t0)
-                        t2=sks/t1
-                        sss = t2 * FUNCT(0,uf)
-                        ss1s= t2 * FUNCT(1,uf)
-                        ss2s= t2 * FUNCT(2,uf)
-                        ss3s= t2 * FUNCT(3,uf)
+                        t2   = sks / (ad(kfunct,nck) * dsqrt(t0))
+                        uf   = tj * Zij * dpc
+                        sss  = t2 * FUNCT(0,uf)
+                        ss1s = t2 * FUNCT(1,uf)
+                        ss2s = t2 * FUNCT(2,uf)
+                        ss3s = t2 * FUNCT(3,uf)
                         ss4s = t2 * FUNCT(4,uf)
                         ss5s = t2 * FUNCT(5,uf)
-                        ta=(sss- tj * ss1s) / Z2
-                        t3=(ss1s- tj * ss2s) / Z2
-                        t4=(ss2s- tj * ss3s) / Z2
-                        t5=(ss3s- tj * ss4s) / Z2
-                        ii=0
+                        ta   = (sss  - tj * ss1s) / Z2
+                        t3   = (ss1s - tj * ss2s) / Z2
+                        t4   = (ss2s - tj * ss3s) / Z2
+                        t5   = (ss3s - tj * ss4s) / Z2
 
+                        lcount = 0
                         do l1 = 1, 3
-                           t1 = Q(l1) - r(Nuc(ifunct),l1)
-                           t2 = W(l1) - Q(l1)
-                           ps = t1 * sss + t2 * ss1s
+                           t1  = Q(l1) - r(Nuc(ifunct),l1)
+                           t2  = W(l1) - Q(l1)
+                           ps  = t1 * sss  + t2 * ss1s
                            p1s = t1 * ss1s + t2 * ss2s
                            p2s = t1 * ss2s + t2 * ss3s
                            p3s = t1 * ss3s + t2 * ss4s
                            p4s = t1 * ss4s + t2 * ss5s
-                           t6=(p1s- tj * p2s) / Z2
-                           t7=(p2s- tj * p3s) / Z2
+                           t6  = (p1s - tj * p2s) / Z2
+                           t7  = (p2s - tj * p3s) / Z2
 
                            do l2 = 1, l1
-                              t1 = Q(l2) - r(Nuc(ifunct),l2)
-                              t2 = W(l2) - Q(l2)
-                              pjs  = t1 * sss + t2 * ss1s
+                              t1   = Q(l2) - r(Nuc(ifunct),l2)
+                              t2   = W(l2) - Q(l2)
+                              pjs  = t1 * sss  + t2 * ss1s
                               pj1s = t1 * ss1s + t2 * ss2s
                               pj2s = t1 * ss2s + t2 * ss3s
                               pj3s = t1 * ss3s + t2 * ss4s
-                              t8=(pj1s- tj * pj2s) / Z2
-                              t9=(pj2s- tj * pj3s) / Z2
-
-                              d1s = t1 * p1s + t2 * p2s
-                              d2s = t1 * p2s + t2 * p3s
+                              d1s  = t1 * p1s + t2 * p2s
+                              d2s  = t1 * p2s + t2 * p3s
                               d3s  = t1 * p3s + t2 * p4s
-                              f1=1.D0
+                              t8   = (pj1s - tj * pj2s) / Z2
+                              t9   = (pj2s - tj * pj3s) / Z2
+
+                              f1 = 1.D0
                               if (l1 .eq. l2) then
-                                 d1s=d1s+t3
-                                 d2s=d2s+t4
-                                 d3s=d3s+t5
-                                 f1=sq3
+                                 d1s = d1s + t3
+                                 d2s = d2s + t4
+                                 d3s = d3s + t5
+                                 f1  = sq3
                               endif
+                              t18 = (d1s - tj * d2s) / Z2
 
-                              t18=(d1s- tj * d2s) / Z2
-
-                              lij=3
+                              lij = 3
                               if (ifunct .eq. jfunct) then
-                                 lij=l1
+                                 lij = l1
                               endif
-
-                              do l3=1,lij
-                                 t1 = Q(l3) - r(Nuc(jfunct),l3)
-                                 t2 = W(l3) - Q(l3)
-                                 d1pk = t1 * d1s + t2 * d2s
-                                 d2pk = t1 * d2s + t2 * d3s
-                                 pjpk = t1 * pjs + t2 * pj1s
+                              do l3 = 1, lij
+                                 t1    = Q(l3) - r(Nuc(jfunct),l3)
+                                 t2    = W(l3) - Q(l3)
+                                 d1pk  = t1 * d1s  + t2 * d2s
+                                 d2pk  = t1 * d2s  + t2 * d3s
+                                 pjpk  = t1 * pjs  + t2 * pj1s
                                  pj1pk = t1 * pj1s + t2 * pj2s
                                  pj2pk = t1 * pj2s + t2 * pj3s
-                                 pipk = t1 * ps + t2 * p1s
-                                 pi1pk = t1 * p1s + t2 * p2s
-                                 pi2pk = t1 * p2s + t2 * p3s
-                                 spk = t1 * sss + t2 * ss1s
-                                 s1pk = t1 * ss1s + t2 * ss2s
-                                 s2pk = t1 * ss2s + t2 * ss3s
-                                 t10=(s1pk- tj * s2pk) / Z2
+                                 pipk  = t1 * ps   + t2 * p1s
+                                 pi1pk = t1 * p1s  + t2 * p2s
+                                 pi2pk = t1 * p2s  + t2 * p3s
+                                 spk   = t1 * sss  + t2 * ss1s
+                                 s1pk  = t1 * ss1s + t2 * ss2s
+                                 s2pk  = t1 * ss2s + t2 * ss3s
+                                 t10   = (s1pk - tj * s2pk) / Z2
 
                                  if (l1 .eq. l3) then
-                                    d1pk=d1pk+t8
-                                    d2pk=d2pk+t9
-                                    pipk=pipk+ta
-                                    pi1pk=pi1pk+t3
-                                    pi2pk=pi2pk+t4
+                                    d1pk  = d1pk  + t8
+                                    d2pk  = d2pk  + t9
+                                    pipk  = pipk  + ta
+                                    pi1pk = pi1pk + t3
+                                    pi2pk = pi2pk + t4
                                  endif
-
                                  if (l2 .eq. l3) then
-                                    d1pk=d1pk+t6
-                                    d2pk=d2pk+t7
-                                    pjpk=pjpk+ta
-                                    pj1pk=pj1pk+t3
-                                    pj2pk=pj2pk+t4
+                                    d1pk  = d1pk  + t6
+                                    d2pk  = d2pk  + t7
+                                    pjpk  = pjpk  + ta
+                                    pj1pk = pj1pk + t3
+                                    pj2pk = pj2pk + t4
                                  endif
+                                 t16 = (pj1pk - tj * pj2pk) / Z2
+                                 t17 = (pi1pk - tj * pi2pk) / Z2
 
-                                 lk=l3
+                                 lk = l3
                                  if (ifunct .eq. jfunct) then
-                                    lk=min(l3,Ll(l1)-Ll(l3)+l2)
+                                    lk = min(l3, Ll(l1) - Ll(l3) + l2)
                                  endif
-                                 t16=(pj1pk- tj * pj2pk) / Z2
-                                 t17=(pi1pk- tj * pi2pk) / Z2
-
-                                 do l4=1,lk
-                                    t1=Q(l4)-r(Nuc(jfunct),l4)
-                                    t2=W(l4)-Q(l4)
-                                    d1d = t1 * d1pk + t2 * d2pk
-
+                                 do l4 = 1, lk
+                                    t1    = Q(l4) - r(Nuc(jfunct),l4)
+                                    t2    = W(l4) - Q(l4)
+                                    d1d   = t1 * d1pk + t2 * d2pk
                                     pjdkl = t1 * pj1pk + t2 * pj2pk
                                     pidkl = t1 * pi1pk + t2 * pi2pk
-                                    d1pl = t1 * d1s + t2 * d2s
+                                    d1pl  = t1 * d1s + t2 * d2s
+                                    f2    = 1.D0
 
                                     if (l1 .eq. l4) then
-                                       d1d=d1d+t16
-                                       pidkl=pidkl+t10
-                                       d1pl=d1pl+t8
+                                       d1d   = d1d   + t16
+                                       pidkl = pidkl + t10
+                                       d1pl  = d1pl  + t8
                                     endif
-
                                     if (l2 .eq. l4) then
-                                       d1d=d1d+t17
-                                       pjdkl=pjdkl+t10
-                                       d1pl=d1pl+t6
+                                       d1d   = d1d   + t17
+                                       pjdkl = pjdkl + t10
+                                       d1pl  = d1pl  + t6
                                     endif
-
-                                    f2=1.D0
                                     if (l3 .eq. l4) then
-                                       d1d=d1d+t18
-                                       pjdkl=pjdkl+t8
-                                       pidkl=pidkl+t6
-                                       f2=sq3
+                                       d1d   = d1d   + t18
+                                       pjdkl = pjdkl + t8
+                                       pidkl = pidkl + t6
+                                       f2    = sq3
                                     endif
+                                    t11 = pjdkl / Z2a
+                                    t12 = pidkl / Z2a
+                                    t13 = d1pl  / Z2a
+                                    t14 = d1pk  / Z2a
 
-                                    t11=pjdkl / Z2a
-                                    t12=pidkl / Z2a
-                                    t13=d1pl / Z2a
-                                    t14=d1pk / Z2a
-                                    ii=ii+1
+                                    lcount = lcount +1
                                     do l5 = 1, 3
-
-                                       t1=W(l5)-r(Nucd(kfunct),l5)
-                                       term = t1 * d1d
+                                       term = (W(l5) - r(Nucd(kfunct),l5)) * d1d
 
                                        if (l1 .eq. l5) then
                                           term = term +t11
                                        endif
-
                                        if (l2 .eq. l5) then
                                           term = term +t12
                                        endif
                                        if (l3 .eq. l5) then
                                           term = term +t13
                                        endif
-
                                        if (l4 .eq. l5) then
                                           term = term +t14
                                        endif
-                                       kk=k+l5-1
+                                       term = term * ccoef / (f1 * f2)
 
-                                       cc=ccoef/(f1*f2)
-                                       term = term *cc
-                                       if (rexp.lt.rmaxs) then
-                                          if(j.eq.i) then
-                                             kn=ii+kknumd-21
+                                       if (rexp .lt. rmaxs) then
+                                          if (jfunct .eq. ifunct) then
+                                             cool_ind = (lcount + kknumd-22) * &
+                                                        Md + kfunct + l5-1
                                           else
-                                             kn=ii+kknumd-36
+                                             cool_ind = (lcount + kknumd-37) * &
+                                                        Md + kfunct + l5-1
                                           endif
-                                          id = (kn-1)*Md+kk
-
-                                          cools(cool_ind) = cools(cool_ind) + term
+                                          cools(cool_ind)=cools(cool_ind) + term
                                        else
-                                          if(j.eq.i) then
-                                             kn=ii+kknums-21
+                                          if (jfunct .eq. ifunct) then
+                                             cool_ind = (lcount + kknums-22) * &
+                                                        Md + kfunct + l5-1
                                           else
-                                             kn=ii+kknums-36
+                                             cool_ind = (lcount + kknums-37) * &
+                                                        Md + kfunct + l5-1
                                           endif
-                                          id = (kn-1)*Md+kk
-
-                                          cools(cool_ind) = cools(cool_ind) + real(term)
+                                          cools(cool_ind) = cools(cool_ind) + &
+                                                            real(term)
                                        endif
-
-
                                     enddo
                                  enddo
                               enddo
@@ -2153,307 +2112,280 @@ subroutine int3mem()
                      enddo
                   enddo
 
-                  !-----(dd|d)
-
+                  ! (dd|d)
                   do kfunct = nsd+npd+1, Md, 6
-                     dpc=(Q(1) - r(Nucd(kfunct),1))*(Q(1) - r(Nucd(kfunct),1))+(Q(2) -r(Nucd(kfunct),2))*(Q(2) -r(Nucd(kfunct),2))+&
-                     (Q(3) -r(Nucd(kfunct),3))*(Q(3) -r(Nucd(kfunct),3))
+                     dpc = (Q(1) -r(Nucd(kfunct),1))*(Q(1) -r(Nucd(kfunct),1)) &
+                         + (Q(2) -r(Nucd(kfunct),2))*(Q(2) -r(Nucd(kfunct),2)) &
+                         + (Q(3) -r(Nucd(kfunct),3))*(Q(3) -r(Nucd(kfunct),3))
 
                      do nck = 1, ncontd(kfunct)
                         ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
-                        t0 = ad(kfunct,nck) + Zij
-                        Z2a=2.D0*t0
-                        Zc = 2.D0 * ad(kfunct,nck)
+                        t0    = ad(kfunct,nck) + Zij
+                        Z2a   = 2.D0 * t0
+                        Zc    = 2.D0 * ad(kfunct,nck)
+                        ti    = Zij / t0
+                        tj    = ad(kfunct,nck) / t0
 
-                        ti = Zij / t0
-                        tj = ad(kfunct,nck) / t0
                         W(1) = ti * Q(1) + tj * r(Nucd(kfunct),1)
                         W(2) = ti * Q(2) + tj * r(Nucd(kfunct),2)
                         W(3) = ti * Q(3) + tj * r(Nucd(kfunct),3)
 
-                        roz=tj
-                        ro=roz*Zij
-                        u=ro*dpc
-                        t1=ad(kfunct,nck)*dsqrt(t0)
-                        t2=sks/t1
-                        sss = t2 * FUNCT(0,uf)
-                        ss1s= t2 * FUNCT(1,uf)
-                        ss2s= t2 * FUNCT(2,uf)
-                        ss3s= t2 * FUNCT(3,uf)
+                        t2   = sks / (ad(kfunct,nck) * dsqrt(t0))
+                        uf   = tj * Zij*dpc
+                        sss  = t2 * FUNCT(0,uf)
+                        ss1s = t2 * FUNCT(1,uf)
+                        ss2s = t2 * FUNCT(2,uf)
+                        ss3s = t2 * FUNCT(3,uf)
                         ss4s = t2 * FUNCT(4,uf)
                         ss5s = t2 * FUNCT(5,uf)
-                        ss6s=t2*FUNCT(6,u)
-                        t3=(sss- tj * ss1s) / Z2
-                        t4=(ss1s- tj * ss2s) / Z2
-                        t5=(ss2s- tj * ss3s) / Z2
-                        t6=(ss3s- tj * ss4s) / Z2
-                        t6b=(ss4s- tj * ss5s) / Z2
-                        ii=0
+                        ss6s = t2 * FUNCT(6,uf)
+                        t3   = (sss  - tj * ss1s) / Z2
+                        t4   = (ss1s - tj * ss2s) / Z2
+                        t5   = (ss2s - tj * ss3s) / Z2
+                        t6   = (ss3s - tj * ss4s) / Z2
+                        t6b  = (ss4s - tj * ss5s) / Z2
 
+                        lcount = 0
                         do l1 = 1, 3
-                           t1 = Q(l1) - r(Nuc(ifunct),l1)
-                           t2 = W(l1) - Q(l1)
-                           ps = t1 * sss + t2 * ss1s
+                           t1  = Q(l1) - r(Nuc(ifunct),l1)
+                           t2  = W(l1) - Q(l1)
+                           ps  = t1 * sss  + t2 * ss1s
                            p1s = t1 * ss1s + t2 * ss2s
                            p2s = t1 * ss2s + t2 * ss3s
                            p3s = t1 * ss3s + t2 * ss4s
                            p4s = t1 * ss4s + t2 * ss5s
                            p5s = t1 * ss5s + t2 * ss6s
+                           t7  = (ps  - tj * p1s) / Z2
+                           t8  = (p1s - tj * p2s) / Z2
+                           t9  = (p2s - tj * p3s) / Z2
+                           t10 = (p3s - tj * p4s) / Z2
 
-                           t7=(ps- tj * p1s) / Z2
-                           t8=(p1s- tj * p2s) / Z2
-                           t9=(p2s- tj * p3s) / Z2
-                           t10=(p3s- tj * p4s) / Z2
                            do l2 = 1, l1
-                              t1 = Q(l2) - r(Nuc(ifunct),l2)
-                              t2 = W(l2) - Q(l2)
-                              pjs  = t1 * sss + t2 * ss1s
+                              t1   = Q(l2) - r(Nuc(ifunct),l2)
+                              t2   = W(l2) - Q(l2)
+                              pjs  = t1 * sss  + t2 * ss1s
                               pj1s = t1 * ss1s + t2 * ss2s
                               pj2s = t1 * ss2s + t2 * ss3s
                               pj3s = t1 * ss3s + t2 * ss4s
                               pj4s = t1 * ss4s + t2 * ss5s
-                              ds = t1 * ps + t2 * p1s
-                              d1s = t1 * p1s + t2 * p2s
-                              d2s = t1 * p2s + t2 * p3s
-                              d3s  = t1 * p3s + t2 * p4s
-                              d4s = t1 * p4s + t2 * p5s
+                              ds   = t1 * ps   + t2 * p1s
+                              d1s  = t1 * p1s  + t2 * p2s
+                              d2s  = t1 * p2s  + t2 * p3s
+                              d3s  = t1 * p3s  + t2 * p4s
+                              d4s  = t1 * p4s  + t2 * p5s
+                              t11  = (pjs  - tj * pj1s) / Z2
+                              t12  = (pj1s - tj * pj2s) / Z2
+                              t13  = (pj2s - tj * pj3s) / Z2
+                              t14  = (pj3s - tj * pj4s) / Z2
 
-                              t11=(pjs- tj * pj1s) / Z2
-                              t12=(pj1s- tj * pj2s) / Z2
-                              t13=(pj2s- tj * pj3s) / Z2
-                              t14=(pj3s- tj * pj4s) / Z2
-
-                              f1=1.D0
+                              f1 = 1.D0
                               if (l1 .eq. l2) then
-                                 ds=ds+t3
-                                 d1s=d1s+t4
-                                 d2s=d2s+t5
-                                 d3s=d3s+t6
-                                 d4s=d4s+t6b
-                                 f1=sq3
+                                 ds  = ds  + t3
+                                 d1s = d1s + t4
+                                 d2s = d2s + t5
+                                 d3s = d3s + t6
+                                 d4s = d4s + t6b
+                                 f1  = sq3
                               endif
+                              t16  = (ds  - tj * d1s) / Z2
+                              t17  = (d1s - tj * d2s) / Z2
+                              t18  = (d2s - tj * d3s) / Z2
+                              t22a = d2s / Z2a
 
-                              t16=(ds- tj * d1s) / Z2
-                              t17=(d1s- tj * d2s) / Z2
-                              t18=(d2s- tj * d3s) / Z2
-                              t22a=d2s / Z2a
-
-                              lij=3
+                              lij = 3
                               if (ifunct .eq. jfunct) then
-                                 lij=l1
+                                 lij = l1
                               endif
-
-                              do l3=1,lij
-                                 t1 = Q(l3) - r(Nuc(jfunct),l3)
-                                 t2 = W(l3) - Q(l3)
-                                 dpk = t1 * ds + t2 * d1s
-                                 d1pk = t1 * d1s + t2 * d2s
-                                 d2pk = t1 * d2s + t2 * d3s
-                                 d3pk = t1 * d3s + t2 * d4s
-                                 pjpk = t1 * pjs + t2 * pj1s
+                              do l3 = 1, lij
+                                 t1    = Q(l3) - r(Nuc(jfunct),l3)
+                                 t2    = W(l3) - Q(l3)
+                                 dpk   = t1 * ds   + t2 * d1s
+                                 d1pk  = t1 * d1s  + t2 * d2s
+                                 d2pk  = t1 * d2s  + t2 * d3s
+                                 d3pk  = t1 * d3s  + t2 * d4s
+                                 pjpk  = t1 * pjs  + t2 * pj1s
                                  pj1pk = t1 * pj1s + t2 * pj2s
                                  pj2pk = t1 * pj2s + t2 * pj3s
                                  pj3pk = t1 * pj3s + t2 * pj4s
-                                 pipk = t1 * ps + t2 * p1s
-                                 pi1pk = t1 * p1s + t2 * p2s
-                                 pi2pk = t1 * p2s + t2 * p3s
-                                 pi3pk = t1 * p3s + t2 * p4s
-                                 spk = t1 * sss + t2 * ss1s
-                                 s1pk = t1 * ss1s + t2 * ss2s
-                                 s2pk = t1 * ss2s + t2 * ss3s
-                                 s3pk = t1 * ss3s + t2 * ss4s
+                                 pipk  = t1 * ps   + t2 * p1s
+                                 pi1pk = t1 * p1s  + t2 * p2s
+                                 pi2pk = t1 * p2s  + t2 * p3s
+                                 pi3pk = t1 * p3s  + t2 * p4s
+                                 spk   = t1 * sss  + t2 * ss1s
+                                 s1pk  = t1 * ss1s + t2 * ss2s
+                                 s2pk  = t1 * ss2s + t2 * ss3s
+                                 s3pk  = t1 * ss3s + t2 * ss4s
+                                 t15   = (s2pk - tj * s3pk) / Z2
 
-                                 t15=(s2pk- tj * s3pk) / Z2
                                  if (l1 .eq. l3) then
-                                    dpk=dpk+t11
-                                    d1pk=d1pk+t12
-                                    d2pk=d2pk+t13
-                                    d3pk=d3pk+t14
-                                    pipk=pipk+t3
-                                    pi1pk=pi1pk+t4
-                                    pi2pk=pi2pk+t5
-                                    pi3pk=pi3pk+t6
+                                    dpk   = dpk   + t11
+                                    d1pk  = d1pk  + t12
+                                    d2pk  = d2pk  + t13
+                                    d3pk  = d3pk  + t14
+                                    pipk  = pipk  + t3
+                                    pi1pk = pi1pk + t4
+                                    pi2pk = pi2pk + t5
+                                    pi3pk = pi3pk + t6
                                  endif
-
                                  if (l2 .eq. l3) then
-                                    dpk=dpk+t7
-                                    d1pk=d1pk+t8
-                                    d2pk=d2pk+t9
-                                    d3pk=d3pk+t10
-                                    pjpk=pjpk+t3
-                                    pj1pk=pj1pk+t4
-                                    pj2pk=pj2pk+t5
-                                    pj3pk=pj3pk+t6
+                                    dpk   = dpk   + t7
+                                    d1pk  = d1pk  + t8
+                                    d2pk  = d2pk  + t9
+                                    d3pk  = d3pk  + t10
+                                    pjpk  = pjpk  + t3
+                                    pj1pk = pj1pk + t4
+                                    pj2pk = pj2pk + t5
+                                    pj3pk = pj3pk + t6
                                  endif
+                                 t20 = pj2pk / Z2a
+                                 t21 = pi2pk / Z2a
+                                 t22 = d2pk  / Z2a
+                                 t24 = (pjpk  - tj * pj1pk) / Z2
+                                 t25 = (pj1pk - tj * pj2pk) / Z2
+                                 t26 = (pj2pk - tj * pj3pk) / Z2
+                                 t27 = (pipk  - tj * pi1pk) / Z2
+                                 t28 = (pi1pk - tj * pi2pk) / Z2
+                                 t29 = (pi2pk - tj * pi3pk) / Z2
 
-                                 lk=l3
+                                 lk = l3
                                  if (ifunct .eq. jfunct) then
-                                    lk=min(l3,Ll(l1)-Ll(l3)+l2)
+                                    lk = min(l3, Ll(l1) - Ll(l3) + l2)
                                  endif
-
-                                 t20=pj2pk / Z2a
-                                 t21=pi2pk / Z2a
-                                 t22=d2pk / Z2a
-
-                                 t24=(pjpk- tj * pj1pk) / Z2
-                                 t25=(pj1pk- tj * pj2pk) / Z2
-                                 t26=(pj2pk- tj * pj3pk) / Z2
-                                 t27=(pipk- tj * pi1pk) / Z2
-                                 t28=(pi1pk- tj * pi2pk) / Z2
-                                 t29=(pi2pk- tj * pi3pk) / Z2
-
-                                 do l4=1,lk
-                                    ii=ii+1
-                                    t1=Q(l4)-r(Nuc(jfunct),l4)
-                                    t2=W(l4)-Q(l4)
-                                    dd = t1 * dpk + t2 * d1pk
-                                    d1d = t1 * d1pk + t2 * d2pk
-                                    d2d = t1 * d2pk + t2 * d3pk
-
+                                 do l4 = 1, lk
+                                    t1  = Q(l4) - r(Nuc(jfunct),l4)
+                                    t2  = W(l4) - Q(l4)
+                                    d0d   = t1 * dpk   + t2 * d1pk
+                                    d1d   = t1 * d1pk  + t2 * d2pk
+                                    d2d   = t1 * d2pk  + t2 * d3pk
                                     pjdkl = t1 * pj2pk + t2 * pj3pk
                                     pidkl = t1 * pi2pk + t2 * pi3pk
-                                    d2pl = t1 * d2s + t2 * d3s
+                                    d2pl  = t1 * d2s   + t2 * d3s
+                                    sdkl  = t1 * s2pk  + t2 * s3pk
+                                    pj2pl = t1 * pj2s  + t2 * pj3s
+                                    pi2pl = t1 * p2s   + t2 * p3s
 
-                                    sdkl = t1 * s2pk + t2 * s3pk
-                                    pj2pl = t1 * pj2s + t2 * pj3s
-                                    pi2pl = t1 * p2s + t2 * p3s
-
+                                    f2 = 1.D0
                                     if (l1 .eq. l4) then
-                                       dd=dd+t24
-                                       d1d=d1d+t25
-                                       d2d=d2d+t26
-                                       pidkl=pidkl+t15
-                                       d2pl=d2pl+t13
-                                       pi2pl=pi2pl+t5
+                                       d0d   = d0d   + t24
+                                       d1d   = d1d   + t25
+                                       d2d   = d2d   + t26
+                                       pidkl = pidkl + t15
+                                       d2pl  = d2pl  + t13
+                                       pi2pl = pi2pl + t5
                                     endif
-
                                     if (l2 .eq. l4) then
-                                       dd=dd+t27
-                                       d1d=d1d+t28
-                                       d2d=d2d+t29
-                                       pjdkl=pjdkl+t15
-                                       d2pl=d2pl+t9
-                                       pj2pl=pj2pl+t5
+                                       d0d   = d0d   + t27
+                                       d1d   = d1d   + t28
+                                       d2d   = d2d   + t29
+                                       pjdkl = pjdkl + t15
+                                       d2pl  = d2pl  + t9
+                                       pj2pl = pj2pl + t5
                                     endif
-
-                                    f2=1.D0
                                     if (l3 .eq. l4) then
-                                       sdkl=sdkl+t5
-                                       dd=dd+t16
-                                       d1d=d1d+t17
-                                       d2d=d2d+t18
-                                       pjdkl=pjdkl+t13
-                                       pidkl=pidkl+t9
-                                       f2=sq3
+                                       sdkl  = sdkl  + t5
+                                       d0d   = d0d   + t16
+                                       d1d   = d1d   + t17
+                                       d2d   = d2d   + t18
+                                       pjdkl = pjdkl + t13
+                                       pidkl = pidkl + t9
+                                       f2    = sq3
                                     endif
-                                    t30=pjdkl / Z2a
-                                    t40=pidkl / Z2a
-                                    t50=sdkl / Z2a
-                                    t60=pj2pl / Z2a
-                                    t70=pi2pl / Z2a
-                                    t80=d2pl / Z2a
-                                    t23=(dd-ti*d1d)/Zc
+                                    t30 = pjdkl / Z2a
+                                    t40 = pidkl / Z2a
+                                    t50 = sdkl  / Z2a
+                                    t60 = pj2pl / Z2a
+                                    t70 = pi2pl / Z2a
+                                    t80 = d2pl  / Z2a
+                                    t23 = (d0d - ti * d1d) / Zc
 
+                                    lcount = lcount +1
                                     do l5 = 1, 3
-
-                                       t1=W(l5)-r(Nucd(kfunct),l5)
-                                       ddp = t1 * d2d
+                                       t1     = W(l5) - r(Nucd(kfunct),l5)
+                                       ddp    = t1 * d2d
                                        pjdklp = t1 * pjdkl
                                        pidklp = t1 * pidkl
                                        dijplp = t1 * d2pl
                                        dijpkp = t1 * d2pk
 
                                        if (l1 .eq. l5) then
-                                          ddp=ddp+t30
-                                          pidklp=pidklp+t50
-                                          dijplp=dijplp+t60
-                                          dijpkp=dijpkp+t20
+                                          ddp    = ddp    + t30
+                                          pidklp = pidklp + t50
+                                          dijplp = dijplp + t60
+                                          dijpkp = dijpkp + t20
                                        endif
-
                                        if (l2 .eq. l5) then
-                                          ddp=ddp+t40
-                                          pjdklp=pjdklp+t50
-                                          dijplp=dijplp+t70
-                                          dijpkp=dijpkp+t21
+                                          ddp    = ddp    + t40
+                                          pjdklp = pjdklp + t50
+                                          dijplp = dijplp + t70
+                                          dijpkp = dijpkp + t21
                                        endif
-
                                        if (l3 .eq. l5) then
-                                          ddp=ddp+t80
-                                          pjdklp=pjdklp+t60
-                                          pidklp=pidklp+t70
-                                          dijpkp=dijpkp+t22a
+                                          ddp    = ddp    + t80
+                                          pjdklp = pjdklp + t60
+                                          pidklp = pidklp + t70
+                                          dijpkp = dijpkp + t22a
                                        endif
-
                                        if (l4 .eq. l5) then
-                                          ddp=ddp+t22
-                                          pjdklp=pjdklp+t20
-                                          pidklp=pidklp+t21
-                                          dijplp=dijplp+t22a
+                                          ddp    = ddp    + t22
+                                          pjdklp = pjdklp + t20
+                                          pidklp = pidklp + t21
+                                          dijplp = dijplp + t22a
                                        endif
+                                       t31 = pjdklp / Z2a
+                                       t41 = pidklp / Z2a
+                                       t51 = dijplp / Z2a
+                                       t61 = dijpkp / Z2a
 
-                                       t31=pjdklp / Z2a
-                                       t41=pidklp / Z2a
-                                       t51=dijplp / Z2a
-                                       t61=dijpkp / Z2a
+                                       do l6 = 1, l5
+                                          term = (W(l6)-r(Nucd(kfunct),l6)) *ddp
 
-                                       do l6=1,l5
-
-                                          t1=W(l6)-r(Nucd(kfunct),l6)
-                                          term = t1 * ddp
-
-                                          if (l1.eq.l6) then
-                                             term = term +t31
+                                          f3 = 1.D0
+                                          if (l1 .eq. l6) then
+                                             term = term + t31
                                           endif
-
-                                          if (l2.eq.l6) then
-                                             term = term +t41
+                                          if (l2 .eq. l6) then
+                                             term = term + t41
                                           endif
-
-                                          if (l3.eq.l6) then
-                                             term = term +t51
+                                          if (l3 .eq. l6) then
+                                             term = term + t51
                                           endif
-
-                                          if (l4.eq.l6) then
-                                             term = term +t61
+                                          if (l4 .eq. l6) then
+                                             term = term + t61
                                           endif
-
-                                          f3=1.D0
-                                          if (l5.eq.l6) then
-                                             term = term +t23
-                                             f3=sq3
+                                          if (l5 .eq. l6) then
+                                             term = term + t23
+                                             f3   = sq3
                                           endif
-                                          cc=ccoef/(f1*f2*f3)
-                                          term = term *cc
-                                          l56=Ll(l5)+l6
-                                          kk=k+l56-1
-                                          if (rexp.lt.rmaxs) then
-                                             if(j.eq.i) then
-                                                kn=ii+kknumd-21
+                                          term = term * ccoef / (f1 * f2 * f3)
+
+                                          l56 = Ll(l5) + l6
+                                          if (rexp .lt. rmaxs) then
+                                             if (jfunct .eq. ifunct) then
+                                                cool_ind = (lcount + kknumd-22)&
+                                                         * Md + kfunct + l56-1
                                              else
-                                                kn=ii+kknumd-36
+                                                cool_ind = (lcount + kknumd-37)&
+                                                         * Md + kfunct + l56-1
                                              endif
-                                             id = (kn-1)*Md+kk
-                                             cools(cool_ind) = cools(cool_ind) + term
-
+                                             cools(cool_ind) = cools(cool_ind) &
+                                                             + term
                                           else
-                                             if(j.eq.i) then
-                                                kn=ii+kknums-21
+                                             if (jfunct .eq. ifunct) then
+                                                cool_ind = (lcount + kknums-22)&
+                                                         * Md + kfunct + l56-1
                                              else
-                                                kn=ii+kknums-36
+                                                cool_ind = (lcount + kknums-37)&
+                                                         * Md + kfunct + l56-1
                                              endif
-                                             id = (kn-1)*Md+kk
-                                             cools(cool_ind) = cools(cool_ind) + real(term)
-
-
+                                             cools(cool_ind) = cools(cool_ind) &
+                                                             + real(term)
                                           endif
-
                                        enddo
                                     enddo
                                  enddo
                               enddo
                            enddo
                         enddo
-
                      enddo
                   enddo
                endif
@@ -2463,6 +2395,7 @@ subroutine int3mem()
       enddo
    enddo
    enddo
+
    deallocate (Jx)
    return
 end subroutine int3mem

@@ -1,5 +1,6 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        module garcha_mod
+      implicit none
       INCLUDE 'param.f'
       integer M,Md,natom,ntatom,NMAX,NCO,NUNP,igrid,igrid2
      >  ,Iexch,nsol,npas,npasw,watermod,noconverge,
@@ -31,11 +32,11 @@
       real*8, dimension (:), ALLOCATABLE ::  Em, Rm, pc
       integer, dimension (:), ALLOCATABLE :: Iz, nnat
 
-      dimension Rm2(0:54), STR(880,0:21), FAC(0:16)
+      real*8 :: Rm2(0:54), STR(880,0:21), FAC(0:16)
 c Everything is dimensioned for 2 basis, normal and density
 c ncf, lt,at,ct parameters for atomic basis sets
-      dimension nshell(0:4)
-      dimension Num(0:3),nlb(ng),nld(ngd),nshelld(0:4)
+      integer :: nshell(0:4)
+      integer :: Num(0:3),nlb(ng),nld(ngd),nshelld(0:4)
        integer Ll(3)
 
        real*8, dimension (:), ALLOCATABLE :: af
@@ -48,10 +49,12 @@ c ncf, lt,at,ct parameters for atomic basis sets
        real*8, dimension (:), ALLOCATABLE :: rhoalpha,rhobeta
        real*8, dimension (:,:), ALLOCATABLE :: X, XX
 
-      parameter(pi32=5.56832799683170698D0,pi=3.14159265358979312D0,
+       real*8 :: pi, pi32, rpi, pi5, pi52
+       real*8 :: piss, pis32, rpis, pis5, pis52
+       parameter(pi32=5.56832799683170698D0,pi=3.14159265358979312D0,
      >          rpi=1.77245385090551588D0, pi5=34.9868366552497108D0,
      >    pi52=34.9868366552497108D0)
-      parameter(pis32=5.56832799683170698E0,piss=3.14159265358979312E0,
+       parameter(pis32=5.56832799683170698E0,piss=3.14159265358979312E0,
      >          rpis=1.77245385090551588E0, pis5=34.9868366552497108E0,
      >    pis52=34.9868366552497108E0)
 

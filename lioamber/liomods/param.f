@@ -16,7 +16,8 @@ c nl : number of primitives in a given contraction
 c
 
 
-
+      integer ntq, ntc, nss, nt, ng0, ng, nl
+      integer ngd0, ngd, ntqss, norbit, ngrid
       parameter (ntq=200,ntc=0,nss=1)
       parameter (nt=ntq+nss*ntc)
       parameter (ng0=100,ng=ntq*ng0,nl=13)
@@ -30,5 +31,3 @@ c FORTRAN_MAX_ATOMS = nt
 c FORTRAN_NG = ng
 c FORTRAN_NL = nl
 c !!!!!!!!
-
-

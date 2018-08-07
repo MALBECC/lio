@@ -21,8 +21,8 @@ subroutine intfld(g, ux, uy, uz)
    double precision :: aux(3) , aux1(3), aux2(3), aux3(3), aux4(3), aux5(3), &
                        aux6(3), Q(3)
 
-   integer          :: MM, M2, M3, M5, l1, l2, l3, l4, l12, l34, Ll(3), ns, np,&
-                       nd, ifunct, jfunct, nci, ncj, i_ind, j_ind, fock_ind
+   integer          :: MM, M2, M3, M5, l1, l2, l3, l4, Ll(3), ns, np, nd, &
+                       ifunct, jfunct, nci, ncj, i_ind, j_ind, fock_ind
 
    double precision :: ss, ps, pp, pis, pjs, dp, dijs, sxs, sys, szs, t1, ti, &
                        tj, Z2, Zij
@@ -211,8 +211,7 @@ subroutine intfld(g, ux, uy, uz)
                aux1(l2) = aux1(l2) + ps / Z2
                term     = g * ccoef * (aux1(1)*ux + aux1(2)*uy + aux1(3)*uz) /f1
 
-               l12      = Ll(l1) + l2
-               fock_ind = ifunct + l12-1 + ((M2 - jfunct) * (jfunct -1)) / 2
+               fock_ind = ifunct + Ll(l1) + l2 -1 + ((M2-jfunct)*(jfunct -1)) /2
                RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + term
                if (OPEN) RMM(M3-1 + fock_ind) = RMM(M3-1 + fock_ind) + term
             enddo
@@ -291,8 +290,8 @@ subroutine intfld(g, ux, uy, uz)
                   aux3(l3) = aux3(l3) + dijs / Z2
                   term     = g*ccoef * (aux3(1)*ux + aux3(2)*uy + aux3(3)*uz)/f1
 
-                  l12 = Ll(l1) + l2
-                  fock_ind = ifunct + l12-1 + ((M2-jfunct+l3-1)*(jfunct+l3-2))/2
+                  fock_ind = ifunct + Ll(l1) + l2 -1 + &
+                             ((M2 - jfunct + l3 -1) * (jfunct + l3 -2)) / 2
                   RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + term
                   if (OPEN) RMM(M3-1 + fock_ind) = RMM(M3-1 + fock_ind) + term
                enddo
@@ -415,11 +414,8 @@ subroutine intfld(g, ux, uy, uz)
                      endif
                      aux6(l4) = aux6(l4) + dp / Z2
 
-                     l12 = Ll(l1) + l2
-                     l34 = Ll(l3) + l4
-                     i_ind = ifunct + l12 -1
-                     j_ind = jfunct + l34 -1
-
+                     i_ind = ifunct + Ll(l1) + l2 -1
+                     j_ind = jfunct + Ll(l3) + l4 -1
                      if (i_ind .ge. j_ind) then
                         fock_ind = i_ind + ((M2-j_ind)*(j_ind-1))/2
                         term     = (aux6(1) * ux + aux6(2) * uy + aux6(3) * uz)&

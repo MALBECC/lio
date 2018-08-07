@@ -4,10 +4,8 @@ subroutine int3mem()
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Integrals subroutine - 2e integrals with 3 indexes : wavefunction and density!
 ! fitting functions, calculated using the Obara-Saika recursive method.        !
-! Input : G ,F,  standard basis and density basis                              !
-! F has already the 1e terms, and here the Coulomb part is added without       !
-! storing the integrals separately.                                            !
-! Output: F updated with Coulomb part and Coulomb energy is calculated.        !
+! Input :  Standard basis and density basis                                    !
+! Output: Cool and Cools, terms used for Coulomb terms.                        !
 !                                                                              !
 ! Precalculates integral terms and indexes for double (rmax) and single        !
 ! precision (rmaxs). If a term has a high value (r < rmaxs) it is calculated   !
@@ -671,7 +669,7 @@ subroutine int3mem()
                               pispj=pispj+t3
                            endif
 
-                           do l3=1,l2
+                           do l3 = 1, l2
                               f1   = 1.D0
                               term = (W(l3) - r(Nucd(kfunct),l3)) * pispj
                               if (l1 .eq. l3) then
@@ -1307,7 +1305,6 @@ subroutine int3mem()
 
                                  l12 = Ll(l1) + l2
                                  l34 = Ll(l3) + l4
-
                                  if (rexp .lt. rmaxs) then
                                     cool_ind = (l12 + kknumd -7) * Md + kfunct &
                                              + l34 -1
@@ -1406,7 +1403,7 @@ subroutine int3mem()
                      do l1 = 1, 3
                         t1  = Q(l1) - r(Nuc(ifunct),l1)
                         t2  = W(l1) - Q(l1)
-                        ps  = t1 * sss + t2 * ss1s
+                        ps  = t1 * sss  + t2 * ss1s
                         p1s = t1 * ss1s + t2 * ss2s
                         p2s = t1 * ss2s + t2 * ss3s
                         t5  = (ps - tj * p1s) / Z2

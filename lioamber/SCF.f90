@@ -28,11 +28,11 @@ subroutine SCF(E)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use ehrensubs , only: ehrendyn_init
    use garcha_mod, only : M,Md, NCO,natom,Nang, number_restr, hybrid_converg,  &
-                          MEMO, npas, RMM, X, SHFT, GRAD, npasw,               &
+                          MEMO, npas, RMM, X, npasw,                           &
                           igrid, energy_freq, converge, noconverge, lowdin,    &
                           cubegen_only, VCINP, primera, Nunp, GOLD, igrid2,    &
                           predcoef, nsol, r, pc, DIIS, told, Etold, Enucl,     &
-                          Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, idip, Iz,  &
+                          Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, Iz,        &
                           nuc, doing_ehrenfest, first_step, RealRho,           &
                           total_time, MO_coef_at, MO_coef_at_b, Smat, good_cut,&
                           ndiis, ncont, nshell, rhoalpha, rhobeta, OPEN, nshell, &
@@ -935,8 +935,6 @@ subroutine SCF(E)
 
 
       if (MOD(npas,energy_freq).eq.0) then
-      if (GRAD) then
-
 !       Resolve with last density to get XC energy
         call g2g_timer_sum_start('Exchange-correlation energy')
         call g2g_new_grid(igrid)
@@ -990,8 +988,6 @@ subroutine SCF(E)
                                number_restr, nsol)
            npasw=npas+10
         end if
-
-      endif ! GRAD
       endif ! npas
 
 

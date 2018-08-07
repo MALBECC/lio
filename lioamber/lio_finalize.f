@@ -8,7 +8,7 @@
        use ECP_mod, only : ecpmode
        use fileio_data, only : style
        implicit none
-       if ((idip.eq.1) .or. (dipole) )then
+       if (dipole) then
         if (style) write(69,8703)
         CLOSE(69)
        end if

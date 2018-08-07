@@ -27,10 +27,10 @@ c-----------------------------------------------------------------
       module subm_int3lu; contains
       subroutine int3lu(E2)
 
-      use garcha_mod, only: RMM, ll, af, X, B, ngd, md, integ, M
+      use garcha_mod, only: RMM, ll, af, X, B, ngd, md, M
      >                    , kknumd, kknums, MEMO, Nang, natom, NCO
      >                    , NORM, Nunp, OPEN, pi32, nshell, nshelld
-     >                    , SVD, cool, cools, kkind, kkinds, ncontd
+     >                    , cool, cools, kkind, kkinds, ncontd
      >                    , ad, cd
       implicit none
 c
@@ -154,59 +154,12 @@ c end ------------------------------------------------
             Rc(k)=Rc(k)+RMM(kkinds(kk))*cools(iikk+k)
           enddo
         enddo
-                
+
 c------------------------------------------------
 c calculation of variational coefficients
 c calculation of fitting coefficients
 c Constraint that integrated fitted density = N electrons
 c------------------------------------------------
-c       SVD Part
-        if (SVD) then
-          MMp=Md*(Md+1)/2
-          do 199 k=1,MMp
- 199        RMM(M9+k-1)=0.0D0
-          do 208 k=1,Md
-            af(k)=0.0D0
- 208      RMM(M9+k-1)=Rc(k)
-
-          k1=0
-          do 116 j=1,Md
-          do 116 i=j,Md
-            k1=k1+1
-            X(i,j)=RMM(M7+k1-1)
-            X(j,i)=X(i,j)
- 116      continue
-
-          M10=M9+Md
-          M12=M10+Md
-          Md3=3*Md
-          call g2g_timer_start('dgelss')
-
-c        ESSL OPTION
-#ifdef essl
-          CALL DGESVF(2,X,Md,RMM(M9),Md,1,RMM(M10),Md,Md,RMM(M12),Md3)
-          imax=idamax(Md,RMM(M10),1)
-          ss=RMM(M10+imax-1)
-          tau=0.1192D-14*Md*ss
-          CALL DGESVS(X,Md,RMM(M9),Md,1,RMM(M10),af,Md,Md,Md,tau)
-#endif
-c         LAPACK OPTION
-#ifdef pack
-          do i=1,Md
-            af(i)=Rc(i)
-          enddo
-          Md5=5*Md
-          rcond=1.0D-06
-          call dgelss(Md,Md,1,X,Md,af,Md,RMM(M9),rcond,irank,RMM(M10),
-     >                Md5,info)
-#endif
-          call g2g_timer_stop('dgelss')
-!         END SVD
-
-!     if SVD.eq.false, then goes to Normal equation method, with or without constraint
-        else
-
-!       NORMAL EQUATION PART
           if (iconst.eq.1) then ! Constrain applied
 
 !           P : integrals of fitting functions
@@ -271,7 +224,6 @@ c--------------------------------------
  1202          af(m1)=af(m1)+Rc(k)*RMM(M9+k+(2*Md-m1)*(m1-1)/2-1)
  1200       continue
           endif
-        endif
 
 
 c-------------------------------------------------------
@@ -290,15 +242,12 @@ c the density using the Density Matrix or the vectors
 c Since Damping is applied on Density Matrix, at the beggining
 c of the SCF it is more convenient to use the D.M.
 c call fit for exchange correlation routine
-        if (integ) then
-          do i=1,Md
+
+        do i=1,Md
             B(i,1)=0.0D0
             B(i,2)=0.0D0
             B(i,3)=0.0D0
-          enddo
-        else
-          stop
-        endif
+        enddo
 
         Ex=0.D0
         Ea=0.D0
@@ -386,7 +335,7 @@ c the fit were generated
  6101      continue
       endif
 
- 
+
 c Numerical integration for obtaining the exchange-correlation part
 c of Fock matrix and also for the exchange-correlation energy
 
@@ -394,11 +343,9 @@ c of Fock matrix and also for the exchange-correlation energy
         af(k)=af(k)-B(k,2)
   317 end do
 
-      if (integ) then
-        NCOa=NCO
-        NCOb=NCO+Nunp
-        Ndens=Ndens+1
-      endif
+      NCOa=NCO
+      NCOb=NCO+Nunp
+      Ndens=Ndens+1
       E2=Ea-Eb/2.D0
 
       return

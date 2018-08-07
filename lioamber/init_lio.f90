@@ -16,17 +16,16 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine lio_defaults()
 
-    use garcha_mod, only : basis, output, fmulliken, fcoord, OPEN, NMAX,       &
+    use garcha_mod, only : basis, fmulliken, fcoord, OPEN, NMAX,               &
                            basis_set, fitting_set, int_basis, DIIS, ndiis,     &
                            GOLD, told, Etold, hybrid_converg, good_cut, rmax,  &
-                           rmaxs, omit_bas, propagator, NBCH, VCINP,           &
-                           restart_freq, frestartin, Iexch, integ, DENS, IGRID,&
-                           frestart, predcoef, idip, intsoldouble, dgtrig,     &
+                           rmaxs, omit_bas, propagator, NBCH, VCINP, Iexch,    &
+                           restart_freq, frestartin, IGRID, frestart, predcoef,&
                            cubegen_only, cube_res, cube_dens, cube_orb,        &
                            cube_sel, cube_orb_file, cube_dens_file, NUNP,      &
                            energy_freq, writeforces, charge,                   &
                            cube_elec, cube_elec_file, cube_sqrt_orb, MEMO,     &
-                           NORM, SHFT, GRAD, BSSE, sol, primera,               &
+                           NORM, sol, primera,               &
                            watermod, fukui, little_cube_size, sphere_radius,   &
                            max_function_exponent, min_points_per_cube,         &
                            assign_all_functions, remove_zero_weights,          &
@@ -43,8 +42,8 @@ subroutine lio_defaults()
     implicit none
 
 !   Names of files used for input and output.
-    basis          = 'basis'       ; output             = 'output'      ;
-    fmulliken      = 'mulliken'    ; fcoord             = 'qm.xyz'      ;
+    basis          = 'basis'       ; fmulliken      = 'mulliken'    ;
+    fcoord         = 'qm.xyz'      ;
 
 !   Theory level options.
     OPEN           = .false.       ; told               = 1.0D-6        ;
@@ -97,19 +96,16 @@ subroutine lio_defaults()
 
 !   Cube, grid and other options.
     predcoef       = .false.       ; cubegen_only       = .false.       ;
-    idip           = 0             ; cube_res           = 40            ;
-    intsoldouble   = .true.        ; cube_dens          = .false.       ;
-    dgtrig         = 100.          ; cube_orb           = .false.       ;
+    cube_res       = 40            ;
+    cube_dens      = .false.       ; cube_orb           = .false.       ;
     Iexch          = 9             ; cube_sel           = 0             ;
-    integ          = .true.        ; cube_orb_file      = "orb.cube"    ;
-    DENS           = .true.        ; cube_dens_file     = 'dens.cube'   ;
+    cube_orb_file  = "orb.cube"    ; cube_dens_file     = 'dens.cube'   ;
     IGRID          = 2             ; cube_elec          = .false.       ;
     IGRID2         = 2             ; cube_elec_file     = 'field.cube'  ;
     timers         = 0             ; NORM               = .true.        ;
     NUNP           = 0             ; energy_freq        = 1             ;
     cube_sqrt_orb  = .false.       ; MEMO               = .true.        ;
-    SHFT           = .false.       ; GRAD               = .true.        ;
-    BSSE           = .false.       ; sol                = .false.       ;
+    sol            = .false.       ;
     primera        = .true.        ; watermod           = 0             ;
 
     return
@@ -122,7 +118,7 @@ end subroutine lio_defaults
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
 
-    use garcha_mod, only : idip, nunp, RMM, d, c, a, Nuc, ncont, cx,           &
+    use garcha_mod, only : nunp, RMM, d, c, a, Nuc, ncont, cx,                 &
                            ax, Nucx, ncontx, cd, ad, Nucd, ncontd, indexii,    &
                            indexiid, r, v, rqm, Em, Rm, pc, nnat, af, B, Iz,   &
                            natom, ng0, ngd0, ngrid, nl, norbit, ntatom,        &
@@ -131,7 +127,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
                            remove_zero_weights, min_points_per_cube,           &
                            max_function_exponent, sphere_radius, M,Fock_Hcore, &
                            Fock_Overlap, P_density, OPEN, timers, MO_coef_at,  &
-                           MO_coef_at_b, RMM_save, charge
+                           MO_coef_at_b, charge
     use ECP_mod,    only : Cnorm, ecpmode
     use field_data, only : chrg_sq
     use fileio    , only : lio_logo
@@ -173,7 +169,6 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     ng2 = 5*ngDyn*(ngDyn+1)/2 + 3*ngdDyn*(ngdDyn+1)/2 + &
           ngDyn  + ngDyn*norbit + Ngrid
 
-    allocate( RMM_save(ng2) ) ! TODO: delete after use (FFR)
     allocate(RMM(ng2)    , d(natom, natom), c(ngDyn,nl)   , a(ngDyn,nl)     ,&
              Nuc(ngDyn)  , ncont(ngDyn)   , cx(ngdDyn,nl) , ax(ngdDyn,nl)   ,&
              Nucx(ngdDyn), ncontx(ngdDyn) , cd(ngdDyn,nl) , ad(ngdDyn,nl)   ,&
@@ -249,17 +244,16 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
            , Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i              &
            )
 
-    use garcha_mod, only : basis, output, fmulliken, fcoord, OPEN, NMAX,     &
+    use garcha_mod, only : basis, fmulliken, fcoord, OPEN, NMAX,             &
                            basis_set, fitting_set, int_basis, DIIS, ndiis,   &
                            GOLD, told, Etold, hybrid_converg, good_cut,      &
                            rmax, rmaxs, omit_bas, propagator, NBCH,          &
                            VCINP, restart_freq, writexyz, frestartin,        &
-                           frestart, predcoef, idip, dgtrig, Iexch, integ,   &
+                           frestart, predcoef, Iexch,                        &
                            cubegen_only, cube_res, cube_dens, cube_orb,      &
                            cube_sel, cube_orb_file, cube_dens_file, NUNP,    &
                            energy_freq, cube_elec_file,       &
-                           cube_elec, cube_sqrt_orb, intsoldouble, DENS,     &
-                           IGRID, IGRID2, charge
+                           cube_elec, cube_sqrt_orb, IGRID, IGRID2, charge
     use td_data   , only : tdrestart, tdstep, ntdstep, timedep, writedens
     use field_data, only : field, a0, epsilon, Fx, Fy, Fz
     use fileio_data, only: verbose
@@ -270,16 +264,19 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
 
     implicit none
     integer , intent(in) :: charge_i, nclatom, natomin, Izin(natomin)
-    character(len=20) :: basis_i, output_i, fcoord_i, fmulliken_i, frestart_i, &
+    character(len=20) :: basis_i, fcoord_i, fmulliken_i, frestart_i, &
                          frestartin_i, inputFile
     logical           :: verbose_i, OPEN_i, VCINP_i, predcoef_i, writexyz_i,   &
-                         intsoldouble_i, DIIS_i, integ_i, DENS_i, field_i,     &
-                         exter_i, writedens_i, tdrestart_i
-    integer           :: NMAX_i, NUNP_i, idip_i, ndiis_i, Iexch_i, IGRID_i,    &
-                         IGRID2_i, timedep_i, ntdstep_i, NBCH_i, propagator_i, &
-                         dummy
-    real*8            :: GOLD_i, told_i, rmax_i, rmaxs_i, dgtrig_i, tdstep_i,  &
+                         DIIS_i, field_i, exter_i, writedens_i, tdrestart_i
+    integer           :: NMAX_i, NUNP_i, ndiis_i, Iexch_i, IGRID_i, IGRID2_i,  &
+                         timedep_i, ntdstep_i, NBCH_i, propagator_i, dummy
+    real*8            :: GOLD_i, told_i, rmax_i, rmaxs_i, tdstep_i,  &
                          a0_i, epsilon_i, Fx_i, Fy_i, Fz_i
+    ! Deprecated or removed variables
+    character(len=20) :: output_i
+    integer           :: idip_i
+    logical           :: intsoldouble_i, dens_i, integ_i
+    double precision  :: dgtrig_i
 
     ! Gives default values to variables.
     call lio_defaults()
@@ -288,7 +285,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
     inputFile = 'lio.in'
     call read_options(inputFile)
 
-    basis          = basis_i        ; output        = output_i       ;
+    basis          = basis_i        ;
     fcoord         = fcoord_i       ; fmulliken     = fmulliken_i    ;
     frestart       = frestart_i     ; frestartin    = frestartin_i   ;
     OPEN           = OPEN_i         ;
@@ -296,11 +293,10 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
     VCINP          = VCINP_i        ; GOLD          = GOLD_i         ;
     told           = told_i         ; rmax          = rmax_i         ;
     rmaxs          = rmaxs_i        ; predcoef      = predcoef_i     ;
-    idip           = idip_i         ; writexyz      = writexyz_i     ;
-    intsoldouble   = intsoldouble_i ; DIIS          = DIIS_i         ;
-    ndiis          = ndiis_i        ; dgtrig        = dgtrig_i       ;
-    Iexch          = Iexch_i        ; integ         = integ_i        ;
-    DENS           = DENS_i         ; IGRID         = IGRID_i        ;
+    writexyz       = writexyz_i     ;
+    DIIS           = DIIS_i         ; ndiis         = ndiis_i        ;
+    Iexch          = Iexch_i        ;
+    IGRID          = IGRID_i        ;
     IGRID2         = IGRID2_i       ; timedep       = timedep_i      ;
     field          = field_i        ; tdrestart     = tdrestart_i    ;
     tdstep         = tdstep_i       ; ntdstep       = ntdstep_i      ;

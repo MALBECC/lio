@@ -9,14 +9,14 @@
 !------------------------------------------------------------------------------!
 
       SUBROUTINE drive(ng2,ngDyn,ngdDyn)
-      USE garcha_mod, ONLY : a,c, isotop, basis, done, done_fit, natomc, nnps, &
+      USE garcha_mod, ONLY : a,c, basis, done, done_fit, natomc, nnps,         &
       nnpp, nnpd, nns, nnp, nnd, atmin, jatc, ncf, lt, at, ct, nnat, nshell,   &
       nuc, ncont, nlb, nshelld, cd, ad, Nucd, ncontd, nld, Nucx, indexii,      &
       ncontx, cx, ax, indexiid, X, XX, RMM, rhoalpha,rhobeta, af, charge,      &
-      basis_set, fitting_set, dens, e_, e_2, e3, exists, NORM, fcoord,   &
-      fmulliken, natom, frestart, M, FAC, Iexch, int_basis, max_func, integ,   &
+      basis_set, fitting_set, e_, e_2, e3, exists, NORM, fcoord,               &
+      fmulliken, natom, frestart, M, FAC, Iexch, int_basis, max_func, &
       frestartin, Md, NCO, nng, npas, Nr, used, STR, omit_bas, Nr2,   &
-      wang, wang2, wang3, VCINP, OPEN, OPEN1, whatis, Num, Iz, pi,             &
+      wang, wang2, wang3, VCINP, OPEN, whatis, Num, Iz, pi,             &
       Rm2, rqm, rmax, Nunp, nl, nt, ng, ngd, restart_freq,             &
       writexyz, number_restr, restr_pairs,restr_index,restr_k,restr_w,restr_r0,&
       mulliken, MO_coef_at, MO_coef_at_b, use_libxc, ex_functional_id, &
@@ -69,13 +69,6 @@
 !
 ! NORM true , expansion in normalized gaussians, so normalization factor
 ! included in coefficients
-! default most stable isotopes, for mass asignation
-
-
-      do i = 1,54
-        isotop(i) = 1
-      enddo
-
       nopt=0
 !
 ! calls generator of table for incomplete gamma functions
@@ -929,24 +922,6 @@
 !c vectors of MO beta
 !c
 !c Density matrix  construction - For closed shell only <<<<=========
-!c
-!c variables defined in namelist cannot be in common ?
-      OPEN1=OPEN
-
-      if ((Iexch.ge.4).and.(.not.(integ)).and.(.not.(dens))) then
-        write(*,*) 'OPTION SELECTED NOT AVAILABLE'
-!c      pause
-      endif
-!c
-      if ((Iexch.eq.2).and.(OPEN)) then
-       write(*,*) 'OPTION SELECTED NOT AVAILABLE YET'
-!c      pause
-      endif
-!c
-!c
-
-
-
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         if (ecpmode) then !agregadas por Nick para lectura de ECP
            call lecturaECP()   !lee parametros

@@ -1,7 +1,5 @@
 ################################################################################
 INCLUDES :=
-#INCLUDES += subm_int1.o subm_int1G.o
-INCLUDES += subm_int1G.o
 INCLUDES += subm_int2.o subm_int2G.o
 INCLUDES += subm_int3lu.o subm_int3mem.o subm_int3G.o
 INCLUDES += subm_intSG.o subm_intfld.o

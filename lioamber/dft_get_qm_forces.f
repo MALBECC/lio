@@ -5,23 +5,26 @@
 !
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       use garcha_mod, only: natom,nsol,cubegen_only,r,number_restr
-     &                     , first_step, doing_ehrenfest
-     &                     , qm_forces_ds, qm_forces_total
+       use garcha_mod, only: natom, nsol, cubegen_only, number_restr,
+     &                       first_step, doing_ehrenfest, r,
+     &                       qm_forces_ds, qm_forces_total,
+     &                       RMM, Nuc, a, c, d, Iz, ncont, nshell,
+     &                       NORM, natom, M, ntatom
 
        use ehrendata, only: nullify_forces
-       use faint_cpu77, only: int1G, intSG, int3G
+       use faint_cpu, only: int1G
+       use faint_cpu77, only: intSG, int3G
        implicit none
        real*8,intent(out) :: dxyzqm(3,natom)
        real*8,allocatable :: ff1G(:,:),ffSG(:,:),ff3G(:,:)
        real*8             :: factor
-       integer            :: fileunit,kk,ii,igpu
+       integer            :: fileunit,kk,ii,igpu, MM
        logical            :: print_forces
 !variables for restrain calculations
        real*8 :: f_r
        integer :: i
 
-
+       MM = M*(M+1)/2
 !--------------------------------------------------------------------!
        if(cubegen_only) return
        call g2g_timer_sum_start('Forces')
@@ -32,11 +35,13 @@
        call aint_query_gpu_level(igpu)
        if (igpu.lt.4) then
          call g2g_timer_sum_start('Nuclear attraction gradients')
-         call int1G(ff1G)
+         call int1G(ff1G, RMM(1:MM), Nuc, a, c, d, r, Iz, ncont, nshell,
+     &              NORM, natom, M, ntatom)
          call g2g_timer_sum_stop('Nuclear attraction gradients')
        elseif (nsol.le.0) then
          call g2g_timer_sum_start('Nuclear attraction gradients')
-         call int1G(ff1G)
+         call int1G(ff1G, RMM(1:MM), Nuc, a, c, d, r, Iz, ncont, nshell,
+     &              NORM, natom, M, ntatom)
          call aint_qmmm_forces(ff1G,0)
          call g2g_timer_sum_stop('Nuclear attraction gradients')
        endif

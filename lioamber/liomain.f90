@@ -144,11 +144,11 @@ subroutine do_population_analysis()
    use fileio    , only: write_population
 
    implicit none
-   integer :: M1, M5, IzUsed(natom), kk
-   real*8  :: q(natom)
+   integer :: MM, M11, M5, IzUsed(natom), kk
+   real*8  :: q(natom), En
 
    ! Needed until we dispose of RMM.
-   M1=1 ; M5=1+M*(M+1)
+   MM = M*(M+1)/2 ; M5 = 1 + MM*2; M11 = M5+MM+Md*(Md+1)
 
    ! Iz used to write the population file.
    IzUsed = Iz
@@ -156,9 +156,10 @@ subroutine do_population_analysis()
 
    ! Decompresses and fixes S and RealRho matrixes, which are needed for
    ! population analysis.
-   call int1(Enucl,RMM,Smat,Nuc,a,c,d,r,Iz,ncont,NORM,natom,M,Md,nshell,ntatom)
+   call int1(En, RMM(M5:M5+MM), RMM(M11:M11+MM), Smat, Nuc, a, c, d, r,&
+             Iz, ncont, NORM, natom, M, nshell, ntatom)
    call spunpack('L',M,RMM(M5),Smat)
-   call spunpack('L',M,RMM(M1),RealRho)
+   call spunpack('L',M,RMM(1),RealRho)
    call fixrho(M,RealRho)
 
    do kk=1,natom

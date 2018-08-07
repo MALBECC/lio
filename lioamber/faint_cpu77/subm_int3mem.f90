@@ -166,7 +166,7 @@ subroutine int3mem()
                      enddo
                   else
                      do l1 = 1, 3
-                     do l2 = 1, l1
+                     do l2 = 1, 3
                         kknumd = kknumd +1
                      enddo
                      enddo
@@ -183,7 +183,7 @@ subroutine int3mem()
                      enddo
                   else
                      do l1 = 1, 3
-                     do l2 = 1, l1
+                     do l2 = 1, 3
                         kknums = kknums +1
                      enddo
                      enddo
@@ -304,7 +304,7 @@ subroutine int3mem()
                         enddo
                      else
                         do l1 = 1, 6
-                        do l2 = 1, l1
+                        do l2 = 1, 6
                            kknumd = kknumd +1
                         enddo
                         enddo
@@ -321,7 +321,7 @@ subroutine int3mem()
                         enddo
                      else
                         do l1 = 1, 6
-                        do l2 = 1, l1
+                        do l2 = 1, 6
                            kknums = kknums +1
                         enddo
                         enddo

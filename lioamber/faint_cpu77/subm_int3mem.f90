@@ -19,8 +19,9 @@ subroutine int3mem()
    use garcha_mod, only: cool, cools, kkind, kkinds, Nuc, Nucd, a, c,          &
                          d, r, ad, cd, natomc, nns, nnp, nnd, nnps, nnpp, nnpd,&
                          jatc, ncont, ncontd, nshell, nshelld, M, Md, rmax,    &
-                         rmaxs, pi52, NORM, kknums, kknumd
-   implicit none|
+                         rmaxs, NORM, kknums, kknumd
+   use constants_mod, only: pi52
+   implicit none
    integer, dimension(:), allocatable :: Jx
    double precision  :: Q(3), W(3)
    double precision  :: ccoef, f1, f2, f3, rexp, sq3, term, uf, Z2, Z2a, Zc, Zij
@@ -37,13 +38,14 @@ subroutine int3mem()
                         pispk, pis1pk, pip, pipk, pipkpl, pidkl, pidklp, pjs,  &
                         pjs1pk, pj1s, pj1p, pj1pk, pj2s, pj2p, pj2pk, pj2pl,   &
                         pj3s, pj3pk, pj4s, pjp, pjpk, pjpkpl, pjdklp,pjdkl
-   double precision  :: d1s, d1p, d1d, d1pk, d1pl, d2s, d2p, d2d, d2pl, d2pk,  &
-                        d3s, d3pk, d4s, ds, ds1p, dspl, dp, dpc, dpk, dp1p,    &
-                        ddp, dijplp, dijpkp
+   double precision  :: d0d, d1s, d1p, d1d, d1pk, d1pl, d2s, d2p, d2d, d2pl,   &
+                        d2pk, d3s, d3pk, d4s, ds, ds1p, dspl, dp, dpc, dpk,    &
+                        dp1p, ddp, dijplp, dijpkp
 
    integer           :: ns, nsd, nd, ndd, np, npd, kknan, knan, kknumsmax, lk, &
                         lij, l1, l2, l3, l4, l5, l6, l12, l23, l34, l45, l56,  &
-                        lcount, Ll(3)
+                        ifunct, jfunct, kfunct, nci, ncj, nck, lcount,         &
+                        cool_ind, Ll(3)
    logical           :: done_sp, done_dp
 
    allocate (Jx(M))
@@ -356,7 +358,6 @@ subroutine int3mem()
          jfunct = jfunct +1
 
          if (jfunct .le. ifunct) then
-            kk_ind = ifunct + Jx(jfunct)
             done_sp = .true.
             done_dp = .true.
 
@@ -371,13 +372,13 @@ subroutine int3mem()
                   if (rexp .lt. rmaxs) then
                      if (done_sp) then
                         kknumd        = kknumd +1
-                        kkind(kknumd) = kk_ind
+                        kkind(kknumd) = ifunct + Jx(jfunct)
                         done_sp       = .false.
                      endif
                   else
                      if (done_dp) then
                         kknums         = kknums +1
-                        kkinds(kknums) = kk_ind
+                        kkinds(kknums) = ifunct + Jx(jfunct)
                         done_dp        = .false.
                      endif
                   endif
@@ -613,7 +614,7 @@ subroutine int3mem()
 
                            if(rexp .lt. rmaxs) then
                               cool_ind = (l1 + kknumd-4) * Md + kfunct + l2 -1
-                              cools(cool_ind) = cools(cool_ind) + term
+                              cool(cool_ind) = cool(cool_ind) + term
                            else
                               cool_ind = (l1 + kknums-4) * Md + kfunct + l2 -1
                               cools(cool_ind) = cools(cool_ind) + real(term)
@@ -684,9 +685,8 @@ subroutine int3mem()
 
                               l23 = Ll(l2) + l3
                               if(rexp .lt. rmaxs) then
-                                 kn=l1+kknumd-3
                                  cool_ind = (l1 + kknumd -4)*Md + kfunct + l23-1
-                                 cools(cool_ind) = cools(cool_ind) + term
+                                 cool(cool_ind) = cool(cool_ind) + term
                               else
                                  cool_ind = (l1 + kknums -4)*Md + kfunct + l23-1
                                  cools(cool_ind) = cools(cool_ind) + real(term)
@@ -818,7 +818,7 @@ subroutine int3mem()
                                  else
                                     cool_ind = (lcount + kknumd -10)*Md + kfunct
                                  endif
-                                 cools(cool_ind) = cools(cool_ind) + term
+                                 cool(cool_ind) = cool(cool_ind) + term
                               else
                                  if (ifunct .eq. jfunct) then
                                     cool_ind = (lcount + kknums -7) *Md + kfunct
@@ -833,7 +833,7 @@ subroutine int3mem()
                   enddo
 
                   ! (pp|p)
-                  do k = nsd+1, nsd+npd, 3
+                  do kfunct = nsd+1, nsd+npd, 3
                      dpc = (Q(1) -r(Nucd(kfunct),1))*(Q(1) -r(Nucd(kfunct),1)) &
                          + (Q(2) -r(Nucd(kfunct),2))*(Q(2) -r(Nucd(kfunct),2)) &
                          + (Q(3) -r(Nucd(kfunct),3))*(Q(3) -r(Nucd(kfunct),3))
@@ -902,7 +902,7 @@ subroutine int3mem()
                                        cool_ind = (lcount + kknumd -10) * Md + &
                                                   kfunct + l3 -1
                                     endif
-                                    cools(cool_ind) = cools(cool_ind) + term
+                                    cool(cool_ind) = cool(cool_ind) + term
 
                                  else
                                     if (ifunct .eq. jfunct) then
@@ -1025,7 +1025,7 @@ subroutine int3mem()
                                           cool_ind = (lcount + kknumd -10)*Md +&
                                                      kfunct + l34 -1
                                        endif
-                                       cools(cool_ind) = cools(cool_ind) + term
+                                       cool(cool_ind) = cool(cool_ind) + term
                                     else
                                        if (ifunct .eq. jfunct) then
                                           cool_ind = (lcount + kknums -7 )*Md +&
@@ -1135,7 +1135,7 @@ subroutine int3mem()
                            l12 = Ll(l1) + l2
                            if (rexp .lt. rmaxs) then
                               cool_ind = (l12 + kknumd -7) * Md + kfunct
-                              cools(cool_ind) = cools(cool_ind) + term
+                              cool(cool_ind) = cool(cool_ind) + term
                            else
                               cool_ind = (l12 + kknums -7) * Md + kfunct
                               cools(cool_ind) = cools(cool_ind) + real(term)
@@ -1203,7 +1203,7 @@ subroutine int3mem()
                               l12 = Ll(l1) + l2
                               if (rexp .lt. rmaxs) then
                                  cool_ind = (l12 + kknumd -7)*Md + kfunct + l3-1
-                                 cools(cool_ind) = cools(cool_ind) + term
+                                 cool(cool_ind) = cool(cool_ind) + term
                               else
                                  cool_ind = (l12 + kknums -7)*Md + kfunct + l3-1
                                  cools(cool_ind) = cools(cool_ind) + real(term)
@@ -1311,7 +1311,7 @@ subroutine int3mem()
                                  if (rexp .lt. rmaxs) then
                                     cool_ind = (l12 + kknumd -7) * Md + kfunct &
                                              + l34 -1
-                                    cools(cool_ind) = cools(cool_ind) + term
+                                    cool(cool_ind) = cool(cool_ind) + term
                                  else
                                     cool_ind = (l12 + kknums -7) * Md + kfunct &
                                              + l34 -1
@@ -1442,7 +1442,7 @@ subroutine int3mem()
                               lcount = lcount +1
                               if (rexp .lt. rmaxs) then
                                  cool_ind = (lcount + kknumd -19) * Md + kfunct
-                                 cools(cool_ind) = cools(cool_ind) + term
+                                 cool(cool_ind) = cool(cool_ind) + term
                               else
                                  cool_ind = (lcount + kknums -19) * Md + kfunct
                                  cools(cool_ind) = cools(cool_ind) + real(term)
@@ -1543,7 +1543,7 @@ subroutine int3mem()
                                  if (rexp .lt. rmaxs) then
                                     cool_ind = (lcount + kknumd -19) * Md + &
                                                kfunct + l4 -1
-                                    cools(cool_ind) = cools(cool_ind) + term
+                                    cool(cool_ind) = cool(cool_ind) + term
                                  else
                                     cool_ind = (lcount + kknums -19) * Md + &
                                                kfunct + l4 -1
@@ -1687,7 +1687,7 @@ subroutine int3mem()
                                     if (rexp .lt. rmaxs) then
                                        cool_ind = (lcount + kknumd -19) * Md + &
                                                   kfunct + l45 -1
-                                       cools(cool_ind) = cools(cool_ind) + term
+                                       cool(cool_ind) = cool(cool_ind) + term
                                     else
                                        cool_ind = (lcount + kknums -19) * Md + &
                                                    kfunct + l45 -1
@@ -1891,7 +1891,7 @@ subroutine int3mem()
                                           cool_ind = (lcount + kknumd -37) *Md &
                                                    + kfunct
                                        endif
-                                       cools(cool_ind) = cools(cool_ind) + term
+                                       cool(cool_ind) = cool(cool_ind) + term
                                     else
                                        if (jfunct .eq. ifunct) then
                                           cool_ind = (lcount + kknums -22) *Md &
@@ -2071,7 +2071,7 @@ subroutine int3mem()
                                              cool_ind = (lcount + kknumd-37) * &
                                                         Md + kfunct + l5-1
                                           endif
-                                          cools(cool_ind)=cools(cool_ind) + term
+                                          cool(cool_ind)=cool(cool_ind) + term
                                        else
                                           if (jfunct .eq. ifunct) then
                                              cool_ind = (lcount + kknums-22) * &
@@ -2346,7 +2346,7 @@ subroutine int3mem()
                                                 cool_ind = (lcount + kknumd-37)&
                                                          * Md + kfunct + l56-1
                                              endif
-                                             cools(cool_ind) = cools(cool_ind) &
+                                             cool(cool_ind) = cool(cool_ind)   &
                                                              + term
                                           else
                                              if (jfunct .eq. ifunct) then

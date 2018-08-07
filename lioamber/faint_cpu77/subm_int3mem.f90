@@ -16,54 +16,35 @@ subroutine int3mem()
 ! not calculated at all.                                                       !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use liotemp   , only: FUNCT
-   use garcha_mod, only: cool, cools, kkind, kkinds, Nuc, Nucd, a, c, &
+   use garcha_mod, only: cool, cools, kkind, kkinds, Nuc, Nucd, a, c,          &
                          d, r, ad, cd, natomc, nns, nnp, nnd, nnps, nnpp, nnpd,&
                          jatc, ncont, ncontd, nshell, nshelld, M, Md, rmax,    &
                          rmaxs, pi52, NORM, kknums, kknumd
-   implicit none
-   double precision  :: Q(3), W(3)
+   implicit none|
    integer, dimension(:), allocatable :: Jx
+   double precision  :: Q(3), W(3)
+   double precision  :: ccoef, f1, f2, f3, rexp, sq3, term, uf, Z2, Z2a, Zc, Zij
 
-   ! Eliminating implicits:
-   double precision  :: ccoef, f1, f2, f3
-   double precision  :: rexp, sq3, term, uf
-   double precision  :: ti, tj
-   double precision  :: Z2, Z2a, Zc, Zij
+   double precision  :: ta, ti, tj, t0, t1, t2, t3, t4, t5, t6, t6b, t7, t8,   &
+                        t9, t10, t11, t12, t13, t14, t15, t16, t17, t18, t20,  &
+                        t21, t22, t22a, t23, t24, t25, t26, t27, t28, t29, t30,&
+                        t31, t40, t41, t50, t51, t60, t61, t70, t80
+   double precision  :: sss, sks, spk, spjs, sspj, spjpk, sp2js, ss1s, ss2s,   &
+                        ss3s, ss4s, ss5s, ss6s, ss1p, s1pk, s2pk, s3pk, spks,  &
+                        spj, sdkl
+   double precision  :: ps, pp, pp1p, p1s, p2s, p3s, p4s, p5s, pi1p, pi1pk,    &
+                        pi2p, pi2pk, pi2pl, pi3pk, pijs, pij1s, pij2s, pispj,  &
+                        pispk, pis1pk, pip, pipk, pipkpl, pidkl, pidklp, pjs,  &
+                        pjs1pk, pj1s, pj1p, pj1pk, pj2s, pj2p, pj2pk, pj2pl,   &
+                        pj3s, pj3pk, pj4s, pjp, pjpk, pjpkpl, pjdklp,pjdkl
+   double precision  :: d1s, d1p, d1d, d1pk, d1pl, d2s, d2p, d2d, d2pl, d2pk,  &
+                        d3s, d3pk, d4s, ds, ds1p, dspl, dp, dpc, dpk, dp1p,    &
+                        ddp, dijplp, dijpkp
 
-   double precision  :: d1s, d1p, d1d, d1pk, d1pl
-   double precision  :: d2s, d2p, d2d, d2pl, d2pk
-   double precision  :: d3s, d3pk, d4s
-   double precision  :: ds, ds1p, dspl, dp, dpc, dpk, dp1p
-   double precision  :: ddp, dijplp, dijpkp
-
-   double precision  :: ps, pp, pp1p, p1s, p2s, p3s, p4s, p5s
-   double precision  :: pi1p, pi1pk, pi2p, pi2pk, pi2pl, pi3pk
-   double precision  :: pijs, pij1s, pij2s, pispj, pispk, pis1pk
-   double precision  :: pip, pipk, pipkpl, pidkl, pidklp
-   double precision  :: pjs, pjs1pk
-   double precision  :: pj1s, pj1p, pj1pk, pj2s, pj2p, pj2pk, pj2pl
-   double precision  :: pj3s, pj3pk, pj4s
-   double precision  :: pjp, pjpk, pjpkpl, pjdklp,pjdkl
-
-   double precision  :: sss, sks, spk, spjs, sspj, spjpk, sp2js
-   double precision  :: ss1s, ss2s, ss3s, ss4s, ss5s, ss6s
-   double precision  :: ss1p, s1pk, s2pk, s3pk, spks, spj, sdkl
-
-   double precision  :: ta, ti, tj
-   double precision  :: t0, t1, t2, t3, t4, t5, t6, t6b, t7, t8, t9
-   double precision  :: t10, t11, t12, t13, t14, t15, t16, t17, t18
-   double precision  :: t20, t21, t22, t22a, t23, t24, t25, t26
-   double precision  :: t27, t28, t29, t30, t31
-   double precision  :: t40, t41, t50, t51, t60, t61, t70, t80
-
-   integer :: M2, Ll(3)
-   integer :: i, ii, j, jj, k, kk
-   integer :: id, iki, jki, kknan, knan, kknumsmax
-   integer :: ns, nsd, nd, ndd, np, npd
-   integer :: l, lk, l1, l2, l3, l4, l5, l6
-   integer :: lij, l12, l23, l34, l45, l56
-
-   logical :: fato, fato2
+   integer           :: ns, nsd, nd, ndd, np, npd, kknan, knan, kknumsmax, lk, &
+                        lij, l1, l2, l3, l4, l5, l6, l12, l23, l34, l45, l56,  &
+                        lcount, Ll(3)
+   logical           :: done_sp, done_dp
 
    allocate (Jx(M))
    ns  = nshell(0) ; np  = nshell(1) ; nd  = nshell(2)
@@ -90,27 +71,25 @@ subroutine int3mem()
       do kknan = 1, nns(jatc(knan, Nuc(ifunct)))
          jfunct = jfunct +1
          if (jfunct .le. ifunct) then
-
-            kk = ifunct + Jx(jfunct)
-            dd = d(Nuc(ifunct),Nuc(jfunct))
-            fato  = .true.
-            fato2 = .true.
+            done_sp = .true.
+            done_dp = .true.
 
             do nci = 1, ncont(ifunct)
             do ncj = 1, ncont(jfunct)
-               rexp = a(ifunct,nci) * a(jfunct,ncj) * dd / &
+               rexp = a(ifunct,nci) * a(jfunct,ncj) * &
+                      d(Nuc(ifunct),Nuc(jfunct))    / &
                       (a(ifunct,nci) + a(jfunct,ncj))
 
-               if (rexp.lt.rmax) then
+               if (rexp .lt. rmax) then
                if (rexp .lt. rmaxs) then
-                  if (fato) then
-                     kknumd = kknumd +1
-                     fato   = .false.
+                  if (done_sp) then
+                     kknumd  = kknumd +1
+                     done_sp = .false.
                   endif
                else
-                  if (fato2) then
-                     kknums = kknums +1
-                     fato2  = .false.
+                  if (done_dp) then
+                     kknums  = kknums +1
+                     done_dp = .false.
                   endif
                endif
                endif
@@ -127,28 +106,28 @@ subroutine int3mem()
 
       do kknan = 1, nns(jatc(knan, Nuc(ifunct)))
          jfunct = jfunct +1
-         fato  = .true.
-         fato2 = .true.
+         done_sp = .true.
+         done_dp = .true.
 
          do nci = 1, ncont(ifunct)
          do ncj = 1, ncont(jfunct)
             rexp = a(ifunct,nci) * a(jfunct,ncj) * d(Nuc(ifunct),Nuc(jfunct)) /&
                    (a(ifunct,nci) + a(jfunct,ncj))
 
-            if (rexp.lt.rmax) then
+            if (rexp .lt. rmax) then
             if (rexp .lt. rmaxs) then
-               if (fato) then
+               if (done_sp) then
                   do l1 = 1, 3
                      kknumd = kknumd +1
                   enddo
-                  fato = .false.
+                  done_sp = .false.
                endif
             else
-               if (fato2) then
+               if (done_dp) then
                   do l1 = 1, 3
                      kknums = kknums +1
                   enddo
-                  fato2 = .false.
+                  done_dp = .false.
                endif
             endif
             endif
@@ -165,8 +144,8 @@ subroutine int3mem()
       do kknan = 1, nnp(jatc(knan,Nuc(ifunct))), 3
          jfunct = jfunct +3
          if (jfunct .le. ifunct) then
-            fato  = .true.
-            fato2 = .true.
+            done_sp = .true.
+            done_dp = .true.
 
             do nci = 1, ncont(ifunct)
             do ncj = 1, ncont(jfunct)
@@ -174,9 +153,9 @@ subroutine int3mem()
                       d(Nuc(ifunct),Nuc(jfunct)) /    &
                       (a(ifunct,nci) + a(jfunct,ncj))
 
-               if (rexp.lt.rmax) then
+               if (rexp .lt. rmax) then
                if (rexp .lt. rmaxs) then
-                  if (fato) then
+                  if (done_sp) then
                   if (ifunct .eq. jfunct) then
                      do l1 = 1, 3
                      do l2 = 1, l1
@@ -190,10 +169,10 @@ subroutine int3mem()
                      enddo
                      enddo
                   endif
-                     fato = .false.
+                     done_sp = .false.
                   endif
                else
-                  if (fato2) then
+                  if (done_dp) then
                   if (ifunct .eq. jfunct) then
                      do l1 = 1, 3
                      do l2 = 1, l1
@@ -207,7 +186,7 @@ subroutine int3mem()
                      enddo
                      enddo
                   endif
-                     fato2 = .false.
+                     done_dp = .false.
                   endif
                endif
                endif
@@ -223,28 +202,28 @@ subroutine int3mem()
       jfunct = nnps(jatc(knan, Nuc(ifunct))) -1
       do kknan = 1, nns(jatc(knan, Nuc(ifunct)))
          jfunct = jfunct +1
-         fato  = .true.
-         fato2 = .true.
+         done_sp = .true.
+         done_dp = .true.
 
          do nci = 1, ncont(ifunct)
          do ncj = 1, ncont(jfunct)
             rexp = a(ifunct,nci) * a(jfunct,ncj) * d(Nuc(ifunct),Nuc(jfunct)) /&
                    (a(ifunct,nci) + a(jfunct,ncj))
 
-            if (rexp.lt.rmax) then
+            if (rexp .lt. rmax) then
             if (rexp .lt. rmaxs) then
-               if (fato) then
+               if (done_sp) then
                   do l1 = 1, 6
                      kknumd = kknumd +1
                   enddo
-                  fato = .false.
+                  done_sp = .false.
                endif
             else
-               if (fato2) then
+               if (done_dp) then
                   do l1 = 1, 6
                      kknums = kknums +1
                   enddo
-                  fato2 = .false.
+                  done_dp = .false.
                endif
             endif
             endif
@@ -260,32 +239,32 @@ subroutine int3mem()
 
       do kknan = 1, nnp(jatc(knan,Nuc(ifunct))), 3
          jfunct = jfunct +3
-         fato   = .true.
-         fato2  = .true.
+         done_sp   = .true.
+         done_dp  = .true.
 
          do nci = 1, ncont(ifunct)
          do ncj = 1, ncont(jfunct)
             rexp = a(ifunct,nci) * a(jfunct,ncj) * d(Nuc(ifunct),Nuc(jfunct)) /&
                    (a(ifunct,nci) + a(jfunct,ncj))
 
-            if (rexp.lt.rmax) then
+            if (rexp .lt. rmax) then
             if (rexp .lt. rmaxs) then
-               if (fato) then
+               if (done_sp) then
                   do l1 = 1, 6
                   do l2 = 1, 3
                      kknumd = kknumd +1
                   enddo
                   enddo
-                  fato = .false.
+                  done_sp = .false.
                endif
             else
-               if (fato2) then
+               if (done_dp) then
                   do l1 = 1, 6
                   do l2 = 1, 3
                      kknums = kknums +1
                   enddo
                   enddo
-                  fato2 = .false.
+                  done_dp = .false.
                endif
             endif
             endif
@@ -302,8 +281,8 @@ subroutine int3mem()
       do kknan=1, nnd(jatc(knan,Nuc(ifunct))), 6
          jfunct = jfunct +6
          if (jfunct .le. ifunct) then
-            fato  = .true.
-            fato2 = .true.
+            done_sp = .true.
+            done_dp = .true.
 
             do nci = 1, ncont(ifunct)
             do ncj = 1, ncont(jfunct)
@@ -311,10 +290,10 @@ subroutine int3mem()
                       d(Nuc(ifunct),Nuc(jfunct))    / &
                       (a(ifunct,nci) + a(jfunct,ncj))
 
-               if (rexp.lt.rmax) then
+               if (rexp .lt. rmax) then
                if (rexp .lt. rmaxs) then
-                  if (fato) then
-                     fato = .false.
+                  if (done_sp) then
+                     done_sp = .false.
                      if (ifunct .eq. jfunct) then
                         do l1 = 1, 6
                         do l2 = 1, l1
@@ -330,8 +309,8 @@ subroutine int3mem()
                      endif
                   endif
                else
-                  if (fato2) then
-                     fato2 = .false.
+                  if (done_dp) then
+                     done_dp = .false.
                      if (ifunct .eq. jfunct) then
                         do l1 = 1, 6
                         do l2 = 1, l1
@@ -378,8 +357,8 @@ subroutine int3mem()
 
          if (jfunct .le. ifunct) then
             kk_ind = ifunct + Jx(jfunct)
-            fato   = .true.
-            fato2  = .true.
+            done_sp = .true.
+            done_dp = .true.
 
             do nci = 1, ncont(ifunct)
             do ncj = 1, ncont(jfunct)
@@ -388,18 +367,18 @@ subroutine int3mem()
                tj   = a(jfunct,ncj) / Zij
                rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))
 
-               if (rexp.lt.rmax) then
+               if (rexp .lt. rmax) then
                   if (rexp .lt. rmaxs) then
-                     if (fato) then
+                     if (done_sp) then
                         kknumd        = kknumd +1
                         kkind(kknumd) = kk_ind
-                        fato          = .false.
+                        done_sp       = .false.
                      endif
                   else
-                     if (fato2) then
+                     if (done_dp) then
                         kknums         = kknums +1
                         kkinds(kknums) = kk_ind
-                        fato2          = .false.
+                        done_dp        = .false.
                      endif
                   endif
 
@@ -499,7 +478,7 @@ subroutine int3mem()
                                  f1   = sq3
                               endif
                               term = term * ccoef / f1
-                              
+
                               l12  = Ll(l1) + l2
                               if (rexp .lt. rmaxs) then
                                  cool_ind = (kknumd -1) * Md + kfunct + l12 -1
@@ -528,8 +507,8 @@ subroutine int3mem()
 
       do kknan = 1, nns(jatc(knan, Nuc(ifunct)))
          jfunct = jfunct +1
-         fato   = .true.
-         fato2  = .true.
+         done_sp = .true.
+         done_dp = .true.
 
          do nci = 1, ncont(ifunct)
          do ncj = 1, ncont(jfunct)
@@ -538,22 +517,22 @@ subroutine int3mem()
             tj   = a(jfunct,ncj) / Zij
             rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))
 
-            if (rexp.lt.rmax) then
+            if (rexp .lt. rmax) then
                if (rexp .lt. rmaxs) then
-                  if (fato) then
+                  if (done_sp) then
                      do l1 = 1, 3
                         kknumd = kknumd +1
                         kkind(kknumd) = ifunct + Jx(jfunct) + l1 -1
                      enddo
-                     fato   = .false.
+                     done_sp = .false.
                   endif
                else
-                  if (fato2) then
+                  if (done_dp) then
                      do l1 = 1, 3
                         kknums = kknums +1
                         kkinds(kknums) = ifunct + Jx(jfunct) + l1 -1
                      enddo
-                     fato2  = .false.
+                     done_dp = .false.
                   endif
                endif
 
@@ -733,8 +712,8 @@ subroutine int3mem()
          jfunct = jfunct +3
 
          if (jfunct .le. ifunct) then
-            fato  = .true.
-            fato2 = .true.
+            done_sp = .true.
+            done_dp = .true.
 
             do nci = 1, ncont(ifunct)
             do ncj = 1, ncont(jfunct)
@@ -744,9 +723,9 @@ subroutine int3mem()
                tj   = a(jfunct,ncj) / Zij
                rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))
 
-               if (rexp.lt.rmax) then
+               if (rexp .lt. rmax) then
                   if (rexp .lt. rmaxs) then
-                     if (fato) then
+                     if (done_sp) then
                         if (ifunct .eq. jfunct) then
                            do l1 = 1, 3
                            do l2 = 1, l1
@@ -762,10 +741,10 @@ subroutine int3mem()
                            enddo
                            enddo
                         endif
-                        fato = .false.
+                        done_sp = .false.
                      endif
                   else
-                     if (fato2) then
+                     if (done_dp) then
                         if (ifunct .eq. jfunct) then
                            do l1 = 1, 3
                            do l2 = 1, l2
@@ -781,7 +760,7 @@ subroutine int3mem()
                            enddo
                            enddo
                         endif
-                        fato2  = .false.
+                        done_dp = .false.
                      endif
                   endif
 
@@ -1079,8 +1058,8 @@ subroutine int3mem()
 
       do kknan = 1, nns(jatc(knan, Nuc(ifunct)))
          jfunct = jfunct +1
-         fato   = .true.
-         fato2  = .true.
+         done_sp = .true.
+         done_dp = .true.
 
          do nci = 1, ncont(ifunct)
          do ncj = 1, ncont(jfunct)
@@ -1090,22 +1069,22 @@ subroutine int3mem()
             tj   = a(jfunct,ncj) / Zij
             rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))
 
-            if (rexp.lt.rmax) then
+            if (rexp .lt. rmax) then
                if (rexp .lt. rmaxs) then
-                  if (fato) then
+                  if (done_sp) then
                      do l1 = 1, 6
                         kknumd = kknumd +1
                         kkind(kknumd) = ifunct + l1 -1 + Jx(jfunct)
                      enddo
-                     fato   = .false.
+                     done_sp = .false.
                   endif
                else
-                  if (fato2) then
+                  if (done_dp) then
                      do l1 = 1, 6
                         kknums = kknums +1
                         kkinds(kknums) = ifunct + l1 -1 +Jx(jfunct)
                      enddo
-                     fato2  = .false.
+                     done_dp = .false.
                   endif
                endif
 
@@ -1359,8 +1338,8 @@ subroutine int3mem()
 
       do kknan = 1, nnp(jatc(knan,Nuc(ifunct))), 3
          jfunct = jfunct +3
-         fato   = .true.
-         fato2  = .true.
+         done_sp = .true.
+         done_dp = .true.
 
          do nci = 1, ncont(ifunct)
          do ncj = 1, ncont(jfunct)
@@ -1370,26 +1349,26 @@ subroutine int3mem()
             tj   = a(jfunct,ncj) / Zij
             rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))
 
-            if (rexp.lt.rmax) then
+            if (rexp .lt. rmax) then
                if (rexp .lt. rmaxs) then
-                  if (fato) then
+                  if (done_sp) then
                      do l1 = 1, 6
                      do l2 = 1, 3
                         kknumd = kknumd +1
                         kkind(kknumd) = ifunct + l1 -1 + Jx(jfunct + l2 -1)
                      enddo
                      enddo
-                     fato   = .false.
+                     done_sp = .false.
                   endif
                else
-                  if (fato2) then
+                  if (done_dp) then
                      do l1 = 1, 6
                      do l2 = 1, 3
                         kknums = kknums +1
                         kkinds(kknums) = ifunct + l1 -1 + Jx(jfunct + l2 -1)
                      enddo
                      enddo
-                     fato2  = .false.
+                     done_dp = .false.
                   endif
                endif
 
@@ -1738,8 +1717,8 @@ subroutine int3mem()
          jfunct = jfunct +6
 
          if (jfunct .le. ifunct) then
-            fato  = .true.
-            fato2 = .true.
+            done_sp = .true.
+            done_dp = .true.
 
             do nci = 1, ncont(ifunct)
             do ncj = 1, ncont(jfunct)
@@ -1749,10 +1728,10 @@ subroutine int3mem()
                tj   = a(jfunct,ncj) / Zij
                rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))
 
-               if (rexp.lt.rmax) then
+               if (rexp .lt. rmax) then
                   if (rexp .lt. rmaxs) then
-                     if (fato) then
-                        fato = .false.
+                     if (done_sp) then
+                        done_sp = .false.
                         if (ifunct .eq. jfunct) then
                            do l1 = 1, 6
                            do l2 = 1, l1
@@ -1770,8 +1749,8 @@ subroutine int3mem()
                         endif
                      endif
                   else
-                     if (fato2) then
-                        fato2 = .false.
+                     if (done_dp) then
+                        done_dp = .false.
                         if (ifunct .eq. jfunct) then
                            do l1 = 1, 6
                            do l2 = 1, l1

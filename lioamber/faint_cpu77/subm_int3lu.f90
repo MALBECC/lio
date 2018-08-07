@@ -36,11 +36,11 @@ subroutine int3lu(E2, rho, Fmat_b, Fmat, Gmat, Ginv, Hmat, M, Md, cool, cools,&
    MM=M*(M+1)/2
    MMd=Md*(Md+1)/2
 
-   M3=1+MM ! Pew
-   M5=M3+MM ! now S, also F later
-   M7=M5+MM ! G matrix
-   M9=M7+MMd ! G inverted
-   M11=M9+MMd ! Hmat
+   M3  = 1  + MM ! Pew
+   M5  = M3 + MM ! now S, also F later
+   M7  = M5 + MM ! G matrix
+   M9  = M7 + MMd ! G inverted
+   M11 = M9 + MMd ! Hmat
 
    if (MEMO) then
       B = 0.0D0

@@ -6,7 +6,8 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use maskrmm
-   use faint_cpu77, only: intsol, int2, int3mem, int3lu, intfld
+   use faint_cpu77, only: intsol, intfld
+   use faint_cpu  , only: int2, int3mem, int3lu
 
    use field_data , only: epsilon, a0
 

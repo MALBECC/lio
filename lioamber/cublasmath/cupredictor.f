@@ -11,7 +11,7 @@
       use fockbias_subs , only: fockbias_apply
       use mathsubs
       use general_module
-      use faint_cpu77, only: int3lu
+      use faint_cpu, only: int3lu
        implicit real*8 (a-h,o-z)
 !       IMPLICIT REAL*8 (a-h,o-z)
        integer, intent(in)    :: dim3

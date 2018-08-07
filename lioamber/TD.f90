@@ -62,7 +62,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
                              write_energies
    use fileio_data     , only: verbose
    use typedef_operator, only: operator
-   use faint_cpu77     , only: int2
+   use faint_cpu       , only: int2
 
 #ifdef CUBLAS
    use cublasmath      , only: basechange_cublas
@@ -779,7 +779,7 @@ subroutine td_overlap_diag(M_in, M, Smat, eigenvalues, X_min, Xmat, Xtrans, Ymat
 end subroutine td_overlap_diag
 
 subroutine td_coulomb_precalc(igpu, MEMO)
-   use faint_cpu77, only: int3mem
+   use faint_cpu, only: int3mem
    implicit none
    integer, intent(in)    :: igpu
    logical, intent(inout) :: MEMO
@@ -844,8 +844,8 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
                           transport_calc, sol, time, M, Md, cool, cools,   &
                           kkind, kkinds, kknumd, kknums, af, B, memo,      &
                           open_shell)
-   use faint_cpu77, only: int3lu
-   use field_subs , only: field_calc
+   use faint_cpu , only: int3lu
+   use field_subs, only: field_calc
    implicit none
    integer, intent(in)    :: MM
    logical, intent(in)    :: is_lpfrg, transport_calc, sol

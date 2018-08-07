@@ -7,7 +7,7 @@
        use garcha_mod
        use field_data, only: field
        use field_subs, only: field_calc
-       use faint_cpu77, only: int3lu
+       use faint_cpu , only: int3lu
        REAL*8,intent(inout) :: F1a_a(M,M),F1b_a(M,M),
      > F1a_b(M,M),F1b_b(M,M),FON_a(M,M),FON_b(M,M)
        integer*8,intent(in) :: devPtrX,devPtrXc

@@ -9,7 +9,7 @@
        use field_data , only: field
        use field_subs , only: field_calc
        use mathsubs   , only: basechange
-       use faint_cpu77, only: int3lu
+       use faint_cpu  , only: int3lu
        use fockbias_subs , only: fockbias_apply
        implicit none
        integer, intent(in)   :: M_in, dim3

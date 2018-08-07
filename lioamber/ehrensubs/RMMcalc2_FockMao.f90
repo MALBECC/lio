@@ -7,7 +7,8 @@ subroutine RMMcalc2_FockMao( FockMao, Energy )
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use maskrmm,     only: rmmput_fock, rmmget_fock
 
-   use faint_cpu77, only: intsol, int2, int3mem
+   use faint_cpu77, only: intsol
+   use faint_cpu  , only: int2, int3mem
 
    use garcha_mod,  only: M, Md, RMM, kkind, kkinds, cool, cools, igrid2, MEMO,&
                           nucd, nshelld, r, ad, cd, d, ntatom, norm, ncontd

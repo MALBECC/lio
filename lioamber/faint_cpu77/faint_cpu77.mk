@@ -2,8 +2,7 @@
 INCLUDES :=
 INCLUDES += subm_int2G.o
 INCLUDES += subm_int3G.o
-INCLUDES += subm_intSG.o subm_intfld.o
-INCLUDES += subm_intsol.o subm_intsolG.o
+INCLUDES += subm_intSG.o subm_intsolG.o
 
 OBJECTS += $(INCLUDES)
 $(OBJPATH)/subm_int3G.o  : $(OBJPATH)/subm_int2G.o

@@ -9,8 +9,7 @@ subroutine rmmcalc3_fockele( dens_mao, elec_field, uses_field,                 &
    use garcha_mod  , only: M, RMM, natom, Iz, NCO, Nunp, Md, cool, cools, &
                            kkind, kkinds, kknumd, kknums, af, B, memo, open
    use field_data  , only: a0, epsilon
-   use faint_cpu77 , only: intfld
-   use faint_cpu   , only: int3lu
+   use faint_cpu   , only: int3lu, intfld
    use ECP_mod     , only: ecpmode, VAAA, VAAB, VBAC
 
    implicit none

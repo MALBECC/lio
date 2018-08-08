@@ -7,8 +7,7 @@ subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use maskrmm,     only: rmmput_dens, rmmput_fock, rmmget_fock
 
-   use faint_cpu77, only: intfld
-   use faint_cpu  , only: int3lu
+   use faint_cpu  , only: intfld, int3lu
 
    use garcha_mod,  only: M, natom, Iz, NCO, Nunp, total_time, RMM, Md, cool, &
                           cools, kkind, kkinds, kknumd, kknums, af, B, memo, &

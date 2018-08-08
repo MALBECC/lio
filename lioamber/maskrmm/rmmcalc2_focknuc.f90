@@ -1,8 +1,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine rmmcalc2_focknuc( fock_mao, energy_1e, energy_solvT )
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-   use faint_cpu  , only: int2, int3mem
-   use faint_cpu77, only: intsol
+   use faint_cpu  , only: int2, int3mem, intsol
    use garcha_mod , only: M, Md, RMM, kkind, kkinds, cool, cools, igrid2, MEMO,&
                           ad, cd, d, ncontd, nucd, r, norm, nshelld, ntatom
    use ECP_mod    , only: ecpmode, term1e, VAAA, VAAB, VBAC, &

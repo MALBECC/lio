@@ -297,8 +297,8 @@ contains
    end subroutine field_calc_all
 
    subroutine field_calc(energ, time)
-      use faint_cpu77, only: intfld
-      use field_data , only: chrg_sq, epsilon, a0
+      use faint_cpu , only: intfld
+      use field_data, only: chrg_sq, epsilon, a0
       implicit none
       real*8, intent(in)    :: time
       real*8, intent(inout) :: energ

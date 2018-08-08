@@ -18,7 +18,7 @@ subroutine intsol(E1s, Ens, elec)
    double precision, intent(out) :: E1s, Ens
 
    integer           :: M11, ns, np, nd, iatom, jatom, ifunct, jfunct, nci, &
-                        ncj, Ll(3), lk, lij, l1, l2, l3, l4
+                        ncj, Ll(3), lk, lij, l1, l2, l3, l4, M2, Hmat_ind
    double precision  :: sq3, rexp, ccoef, term, tna, uf, Z2, Zij, t1, t2, f1, &
                         f2, p3s, p2s, p1s, p0s, pj2s, pj1s, pj1p, pj0s, pj0p, &
                         pi1p, pi0p, dd2, d1s, d2s, d1p, d0s, d0p, Q(3)
@@ -135,8 +135,6 @@ subroutine intsol(E1s, Ens, elec)
    ! (p|p)
    do ifunct = ns+1, ns+np , 3
    do jfunct = ns+1, ifunct, 3
-      dd=d(Nuc(ifunct),Nuc(jfunct))
-
       do nci = 1, ncont(ifunct)
       do ncj = 1, ncont(jfunct)
          Zij  = a(ifunct,nci) + a(jfunct,ncj)

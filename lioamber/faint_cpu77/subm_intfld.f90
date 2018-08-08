@@ -107,8 +107,8 @@ subroutine intfld(g, ux, uy, uz)
    enddo
 
    ! (p|p)
-   do ifunct = ns+1,ns+np,3
-   do jfunct = ns+1,i,3
+   do ifunct = ns+1, ns+np , 3
+   do jfunct = ns+1, ifunct, 3
       do nci = 1, ncont(ifunct)
       do ncj = 1, ncont(jfunct)
          ccoef = c(ifunct,nci) * c(jfunct,ncj)

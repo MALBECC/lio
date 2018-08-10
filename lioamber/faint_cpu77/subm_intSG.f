@@ -1,32 +1,19 @@
-c-------------------------------------------------------------------
-c GRADIENT VERSION
-c calculates gradients of overlap , to be used with
-c geometry optimization subroutines
-c
-c using the Obara-Saika recursive method.
-c
-c 
-c loop over all basis functions
-c now the basis is supposed to be ordered according to the type,
-c all s, then all p, then all d, .....
-c inside each type, are ordered in shells
-c px,py,pz , dx2,dxy,dyy,dzx,dzy,dzz, .....
-c
-c ns ... marker for end of s
-c np ... marker for end of p
-c nd ... marker for end of d
-c
-c r(Nuc(i),j) j component of position of nucleus i , j=1,3
-c Input : basis function information
-c Output, derivative part coming from overlap
-c debugged ( or supposed to) 29-7-92
-c Dario Estrin
-c-------------------------------------------------------------------
-      module subm_intSG; contains
-      subroutine intSG(ff)
-      use garcha_mod, only: RMM, ll, a, c, d, r, nuc, ncont, nshell
-     >                    , pi32, natom, M, Md, NORM
-c
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Calculates the gradients of overlap using the Obara-Saika recursive method.  !
+! This is used in forces calculation.                                          !
+!                                                                              !
+! Input : basis function information, energy weighted density matrix.          !
+! Output: gradients from overlap                                               !
+!                                                                              !
+! Debugged (or supposed to) 29-7-92 by Dario Estrin.                           !
+! Refactored by Federico Pedron 08/2018                                        !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+module subm_intSG
+contains
+subroutine intSG(ff)
+use garcha_mod, only: RMM, ll, a, c, d, r, nuc, ncont, nshell, pi32, natom, M,&
+                      Md, NORM
+
       implicit none
       real*8, intent(inout) :: ff(natom,3)
       real*8                :: Q(3)
@@ -83,7 +70,7 @@ c now H
 c W ( eigenvalues ), also space used in least-squares
       M13=M11+MM
 c aux ( vector for ESSl)
-c and also energy weighted density matrix 
+c and also energy weighted density matrix
       M15=M13+M
 c Least squares
       M17=M15+MM
@@ -129,7 +116,7 @@ c
       ss=pi32*exp(-alf*dd)/(zij*sqrt(zij))
 c
       k=i+((M2-j)*(j-1))/2
-c 
+c
 c l2: different p in the p shell GRADIENT PART ----------
 c
       te=RMM(M15+k-1)*ccoef
@@ -350,7 +337,7 @@ c gradient part
 c
        t1=Q(l3)-r(Nuc(j),l3)
        tx=r(Nuc(i),l3)-r(Nuc(j),l3)
-       dp=t1*dijs 
+       dp=t1*dijs
 c
        if (l1.eq.l3) then
         ff(Nuc(i),l3)=ff(Nuc(i),l3)-te*pjs

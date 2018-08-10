@@ -11,307 +11,221 @@
 module subm_intSG
 contains
 subroutine intSG(ff)
-use garcha_mod, only: RMM, ll, a, c, d, r, nuc, ncont, nshell, pi32, natom, M,&
-                      Md, NORM
+   use garcha_mod, only: RMM, ll, a, c, d, r, nuc, ncont, nshell, pi32, natom, &
+                         M, Md, NORM
+   implicit none
+   double precision, intent(inout) :: ff(natom,3)
+   double precision                :: Q(3)
 
-      implicit none
-      real*8, intent(inout) :: ff(natom,3)
-      real*8                :: Q(3)
+   integer :: i, j, k, ii, jj, ni, nj
+   integer :: l, lk, lij, l1, l2, l3, l4, l5, l12, l34
+   integer :: ns, np, nd
+   integer :: M15
 
-      integer :: i, j, k, ii, jj, ni, nj
-      integer :: l, lk, lij, l1, l2, l3, l4, l5, l12, l34
-      integer :: MM, MMd, ns, np, nd
-      integer :: M1, M2, M3, M5, M7, M9, M11, M13, M15, M17
+   double precision  :: ovlap, fsp, sq3, alf, cc, ccoef
+   double precision  :: Zij, Z2, fs, fd, f1, f2
+   double precision  :: ti, tj, tx, ty, te, t0, t1, t2, t4, t5
+   double precision  :: t10, t11, t12, t13, t14, t15, t16, t17
+   double precision  :: ss, spi, spj, spk
+   double precision  :: ps, pp, pd, pidkl, pipk, pis, pjdkl, pjpk, pjs
+   double precision  :: ds, dp, dd, df, dsd, dijpk, dijpl, dijs
 
-      real*8  :: ovlap, fsp, sq3, alf, cc, ccoef, con
-      real*8  :: zij, z2, fs, fd, f1, f2
-      real*8  :: ti, tj, tx, ty, te, t0, t1, t2, t4, t5
-      real*8  :: t10, t11, t12, t13, t14, t15, t16, t17
-      real*8  :: ss, spi, spj, spk
-      real*8  :: ps, pp, pd, pidkl, pipk, pis, pjdkl, pjpk, pjs
-      real*8  :: ds, dp, dd, df, dsd, dijpk, dijpl, dijs
+   sq3 = 1.D0
+   if (NORM) sq3 = sqrt(3.D0)
 
-! Implicits:
+   ns = nshell(0); np = nshell(1); nd = nshell(2)
 
-c distance between pairs of centers
-c
-c
-      if (NORM) then
-      sq3=sqrt(3.D0)
-      else
-      sq3=1.D0
-      endif
-c
-      ns=nshell(0)
-      np=nshell(1)
-      nd=nshell(2)
-      MM=M*(M+1)/2
-      MMd=Md*(Md+1)/2
-      M2=2*M
-c
-      con=0.D0
-      do 181 l=1,3
- 181   Ll(l)=l*(l-1)/2
-c
-c
-c Pointers
-c first P
-      M1=1
-c now  S
-      M3=M1+MM
-c now F also uses the same position after S was used
-      M5=M3+MM
-c now G
-      M7=M5+MM
-c now Gm
-      M9=M7+MMd
-c now H
-      M11=M9+MMd
-c W ( eigenvalues ), also space used in least-squares
-      M13=M11+MM
-c aux ( vector for ESSl)
-c and also energy weighted density matrix
-      M15=M13+M
-c Least squares
-      M17=M15+MM
-c
-c
-c---- Overlap ,Kinetic energy and Nuclear Attraction
-c      matrix elements evaluation
-c Overlap matrix will be kept, kinetic energy and nuclear attraction
-c matrix elements no,
-c they're stored in Fock matrix and in the Energy directly
-c in order to reduce the memory requirements
-c
-c
-c      do 50 i=1,natom
-c      do 50 j=1,natom
-c       d(i,j)=(r(i,1)-r(j,1))**2+(r(i,2)-r(j,2))**2+
-c     >        (r(i,3)-r(j,3))**2
-c      ff(i,1)=0.D0
-c      ff(i,2)=0.D0
-c      ff(i,3)=0.D0
-c 50   continue
-c
-c first loop (s|s) case -------------------------------------------
-c
-      do 200 i=1,ns
-      do 200 j=1,i
-c
-      dd=d(Nuc(i),Nuc(j))
-c
-      do 200 ni=1,ncont(i)
-      do 200 nj=1,ncont(j)
-c
-c (0|0) calculation
-      zij=a(i,ni)+a(j,nj)
-      alf=a(i,ni)*a(j,nj)/zij
-      ti=a(i,ni)/zij
-      tj=a(j,nj)/zij
-      Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
-      Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
-      Q(3)=ti*r(Nuc(i),3)+tj*r(Nuc(j),3)
-      ccoef=c(i,ni)*c(j,nj)
-c
-      ss=pi32*exp(-alf*dd)/(zij*sqrt(zij))
-c
-      k=i+((M2-j)*(j-1))/2
-c
-c l2: different p in the p shell GRADIENT PART ----------
-c
-      te=RMM(M15+k-1)*ccoef
-      ty=te*2.D0
-      t5=ty*a(j,nj)
-      t4=ty*a(i,ni)
-      con=con+te*ss
-c
-      do 205 l2=1,3
-        t1=Q(l2)-r(Nuc(i),l2)
-        pis=t1*ss
-        tx=r(Nuc(i),l2)-r(Nuc(j),l2)
-        spi=pis+ tx*ss
-c
-        ff(Nuc(i),l2)=ff(Nuc(i),l2)+t4*pis
-        ff(Nuc(j),l2)=ff(Nuc(j),l2)+t5*spi
- 205  continue
-c
- 200  continue
-c
-c------------------------------------------------------------------
-c (p|s) case  and gradients
-c
-      do 300 i=ns+1,ns+np,3
-      do 300 j=1,ns
-c
-      dd=d(Nuc(i),Nuc(j))
-c
-      do 300 ni=1,ncont(i)
-      do 300 nj=1,ncont(j)
-c
-      zij=a(i,ni)+a(j,nj)
-      z2=2.D0*zij
-      ti=a(i,ni)/zij
-      tj=a(j,nj)/zij
-      Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
-      Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
-      Q(3)=ti*r(Nuc(i),3)+tj*r(Nuc(j),3)
-      alf=ti*a(j,nj)
-      ss=pi32*exp(-alf*dd)/(zij*sqrt(zij))
-c
-c
-      ccoef=c(i,ni)*c(j,nj)
-       t10=ss/z2
-c
-      do 305 l1=1,3
-       t1=Q(l1)-r(Nuc(i),l1)
-       ps=ss*t1
-c
-        ii=i+l1-1
-c ii index , taking into account different components of the shell
-c
-        k=ii+((M2-j)*(j-1))/2
-c
-        te=RMM(M15+k-1)*ccoef
-        ty=te*2.D0
-        t5=ty*a(j,nj)
-        t4=ty*a(i,ni)
-c
-        con=con+te*ps
-      do 307 l2=1,3
-c
-       t1=Q(l2)-r(Nuc(i),l2)
-       t2=Q(l2)-r(Nuc(j),l2)
-       ds=t1*ps
-       pp=t2*ps
-c
-       if (l1.eq.l2) then
-        ff(Nuc(i),l2)=ff(Nuc(i),l2)-te*ss
-        ds=ds+t10
-        pp=pp+t10
-       endif
-c
-c
-        ff(Nuc(i),l2)=ff(Nuc(i),l2)+t4*ds
-        ff(Nuc(j),l2)=ff(Nuc(j),l2)+t5*pp
-c
- 307  continue
- 305  continue
- 300  continue
-c-----------------------------------------------------------------
-c (p|p) case and gradients
-      do 400 i=ns+1,ns+np,3
-      do 400 j=ns+1,i,3
-c
-      dd=d(Nuc(i),Nuc(j))
-c
-      do 400 ni=1,ncont(i)
-      do 400 nj=1,ncont(j)
-c
-      zij=a(i,ni)+a(j,nj)
-      z2=2.D0*zij
-      ti=a(i,ni)/zij
-      tj=a(j,nj)/zij
-      Q(1)=ti*r(Nuc(i),1)+tj*r(Nuc(j),1)
-      Q(2)=ti*r(Nuc(i),2)+tj*r(Nuc(j),2)
-      Q(3)=ti*r(Nuc(i),3)+tj*r(Nuc(j),3)
-      alf=ti*a(j,nj)
-      ss=pi32*exp(-alf*dd)/(zij*sqrt(zij))
-c
-c
-      t10=ss/z2
-c
-      ccoef=c(i,ni)*c(j,nj)
-c
-      do 405 l1=1,3
-       t1=Q(l1)-r(Nuc(i),l1)
+   do l1 = 1, 3
+      Ll(l1) = l1 * (l1 -1) / 2
+   enddo
+
+   M2 = 2 * M
+   ! Energy weighted density matrix
+   M15 = 1 + 2 * (M * (M +1)) + Md * (Md +1) + M
+
+   ! (s|s)
+   do ifunct = 1, ns
+   do jfunct = 1, ifunct
+      do nci = 1, ncont(ifunct)
+      do ncj = 1, ncont(jfunct)
+         ccoef = c(ifunct,nci) * c(jfunct,ncj)
+         Zij   = a(ifunct,nci) + a(jfunct,ncj)
+         ti    = a(ifunct,nci) / Zij
+         tj    = a(jfunct,ncj) / Zij
+
+         Q(1)  = ti * r(Nuc(ifunct),1) + tj * r(Nuc(jfunct),1)
+         Q(2)  = ti * r(Nuc(ifunct),2) + tj * r(Nuc(jfunct),2)
+         Q(3)  = ti * r(Nuc(ifunct),3) + tj * r(Nuc(jfunct),3)
+         rexp  = d(Nuc(ifunct),Nuc(jfunct)) * a(ifunct,nci) * a(jfunct,ncj) /Zij
+         ss    = pi32 * exp(-rexp) / (Zij * sqrt(Zij))
+
+         en_wgt_ind = ifunct + ((M2 - jfunct) * (jfunct -1)) / 2
+         te = RMM(M15-1 + en_wgt_ind) * ccoef * 2.0D0 * ss
+         t4 = te * a(ifunct,nci)
+         t5 = te * a(jfunct,ncj)
+
+         do l1 = 1, 3
+            t1 = Q(l1)             - r(Nuc(ifunct),l1)
+            tx = r(Nuc(ifunct),l1) - r(Nuc(jfunct),l1)
+
+            ff(Nuc(ifunct),l1) = ff(Nuc(ifunct),l1) + t4 * t1
+            ff(Nuc(jfunct),l1) = ff(Nuc(jfunct),l1) + t5 * (t1 + tx)
+         enddo
+      enddo
+      enddo
+   enddo
+   enddo
+
+   ! (p|s)
+   do ifunct = ns+1, ns+np, 3
+   do jfunct = 1   , ns
+      dd=d(Nuc(ifunct),Nuc(jfunct))
+      do 300 nci = 1, ncont(ifunct)
+      do 300 ncj = 1, ncont(jfunct)
+         ccoef = c(ifunct,nci) * c(jfunct,ncj)
+         Zij   = a(ifunct,nci) + a(jfunct,ncj)
+         Z2    = 2.0D0 * Zij
+         ti    = a(ifunct,nci) / Zij
+         tj    = a(jfunct,ncj) / Zij
+
+         Q(1)  = ti * r(Nuc(ifunct),1) + tj * r(Nuc(jfunct),1)
+         Q(2)  = ti * r(Nuc(ifunct),2) + tj * r(Nuc(jfunct),2)
+         Q(3)  = ti * r(Nuc(ifunct),3) + tj * r(Nuc(jfunct),3)
+         rexp  = d(Nuc(ifunct),Nuc(jfunct)) * a(ifunct,nci) * a(jfunct,ncj) /Zij
+         ss    = pi32 * exp(-rexp) / (Zij * sqrt(Zij))
+         t10   = ss / Z2
+
+         do l1 = 1, 3
+            en_wgt_ind = ifunct + l1 -1 + ((M2 - jfunct) * (jfunct -1)) / 2
+            t1 = (Q(l1) - r(Nuc(ifunct),l1))
+            te = RMM(M15-1 + en_wgt_ind) * ccoef  * ss
+            t4 = 2.D0 * te * a(ifunct,nci)
+            t5 = 2.D0 * te * a(jfunct,ncj)
+
+            do l2 = 1, 3
+               ds = (Q(l2) - r(Nuc(ifunct),l2)) * t1
+               pp = (Q(l2) - r(Nuc(jfunct),l2)) * t1
+               if (l1 .eq. l2) then
+                  ff(Nuc(ifunct),l2) = ff(Nuc(ifunct),l2) - te
+                  ds = ds + 1 / Z2
+                  pp = pp + 1 / Z2
+               endif
+               ff(Nuc(ifunct),l2) = ff(Nuc(ifunct),l2) + t4 * ds
+               ff(Nuc(jfunct),l2) = ff(Nuc(jfunct),l2) + t5 * pp
+            enddo
+         enddo
+      enddo
+      enddo
+   enddo
+   enddo
+
+   ! (p|p)
+   do ifunct = ns+1 , ns+np , 3
+   do jfunct = ns+1 , ifunct, 3
+      do nci = 1, ncont(ifunct)
+      do ncj = 1, ncont(jfunct)
+         ccoef = c(ifunct,nci) * c(jfunct,ncj)
+      Zij = a(ifunct,nci) + a(jfunct,ncj)
+      Z2 = 2.0D0 * Zij
+      ti = a(ifunct,nci) / Zij
+      tj = a(jfunct,ncj) / Zij
+      Q(1)  = ti * r(Nuc(ifunct),1) + tj * r(Nuc(jfunct),1)
+      Q(2)  = ti * r(Nuc(ifunct),2) + tj * r(Nuc(jfunct),2)
+      Q(3)  = ti * r(Nuc(ifunct),3) + tj * r(Nuc(jfunct),3)
+      rexp  = d(Nuc(ifunct),Nuc(jfunct)) * a(ifunct,nci) * a(jfunct,ncj) /Zij
+      ss    = pi32 * exp(-rexp) / (Zij * sqrt(Zij))
+      t10=ss / Z2
+
+      do l1 = 1, 3
+       t1=Q(l1)-r(Nuc(ifunct),l1)
        pis=ss*t1
-       t11=pis/z2
-c
+       t11=pis / Z2
+
       lij=3
       if (i.eq.j) then
        lij=l1
       endif
-c
-      do 405 l2=1,lij
-       t1=Q(l2)-r(Nuc(i),l2)
-       t2=Q(l2)-r(Nuc(j),l2)
+
+      do l2 = 1, lij
+       t1 = Q(l2) - r(Nuc(ifunct),l2)
+       t2 = Q(l2) - r(Nuc(jfunct),l2)
        spj=t2*ss
-       t13=spj/z2
-c
+       t13=spj / Z2
+
        pp=t2*pis
-c
+
        if (l1.eq.l2) then
         pp=pp+t10
        endif
-c
-c
+
+
       ii=i+l1-1
       jj=j+l2-1
       k=ii+((M2-jj)*(jj-1))/2
-c
-        te=RMM(M15+k-1)*ccoef
+
+        te=RMM(M15-1 + en_wgt_ind)*ccoef
         ty=te*2.D0
-        t5=ty*a(j,nj)
-        t4=ty*a(i,ni)
-c
-        con=con+te*pp
-      do 405 l3=1,3
-c
-       t1=Q(l3)-r(Nuc(i),l3)
-       t2=Q(l3)-r(Nuc(j),l3)
-       tx=r(Nuc(i),l3)-r(Nuc(j),l3)
+        t5=ty*a(jfunct,ncj)
+        t4=ty*a(ifunct,nci)
+
+      do l3 = 1, 3
+
+       t1=Q(l3)-r(Nuc(ifunct),l3)
+       t2=Q(l3)-r(Nuc(jfunct),l3)
+       tx=r(Nuc(ifunct),l3)-r(Nuc(jfunct),l3)
        dp=t1*pp
-c
+
        if (l1.eq.l3) then
         dp=dp+t13
-        ff(Nuc(i),l3)=ff(Nuc(i),l3)-te*spj
+        ff(Nuc(ifunct),l3)=ff(Nuc(ifunct),l3)-te*spj
        endif
-c
+
        if (l2.eq.l3) then
         dp=dp+t11
-        ff(Nuc(j),l3)=ff(Nuc(j),l3)-te*pis
+        ff(Nuc(jfunct),l3)=ff(Nuc(jfunct),l3)-te*pis
        endif
-c
+
        pd=dp+tx*pp
-c
-        ff(Nuc(i),l3)=ff(Nuc(i),l3)+t4*dp
-        ff(Nuc(j),l3)=ff(Nuc(j),l3)+t5*pd
-c
- 405  continue
-c
-c
- 400  continue
-c
-c-------------------------------------------------------------------
+
+        ff(Nuc(ifunct),l3)=ff(Nuc(ifunct),l3)+t4*dp
+        ff(Nuc(jfunct),l3)=ff(Nuc(jfunct),l3)+t5*pd
+enddo
+enddo
+enddo
+enddo
+enddo
+enddo
+enddo
+
 c (d|s)  gradients
 c
       do 500 i=ns+np+1,M,6
-      do 500 j=1,ns
+      do 500 jfunct = 1, ns
 c
-      dd=d(Nuc(i),Nuc(j))
+      dd=d(Nuc(ifunct),Nuc(jfunct))
 c
-      do 500 ni=1,ncont(i)
-      do 500 nj=1,ncont(j)
+      do 500 nci = 1, ncont(ifunct)
+      do 500 ncj = 1, ncont(jfunct)
 c
-      zij=a(i,ni)+a(j,nj)
-      z2=2.D0*zij
-      Q(1)=(a(i,ni)*r(Nuc(i),1)+a(j,nj)*r(Nuc(j),1))/zij
-      Q(2)=(a(i,ni)*r(Nuc(i),2)+a(j,nj)*r(Nuc(j),2))/zij
-      Q(3)=(a(i,ni)*r(Nuc(i),3)+a(j,nj)*r(Nuc(j),3))/zij
-      alf=a(i,ni)*a(j,nj)/zij
-      ss=pi32*exp(-alf*dd)/(zij*sqrt(zij))
+      Zij = a(ifunct,nci) + a(jfunct,ncj)
+      Z2 = 2.0D0 * Zij
+      Q(1)=(a(ifunct,nci)*r(Nuc(ifunct),1)+a(jfunct,ncj)*r(Nuc(jfunct),1)) / Zij
+      Q(2)=(a(ifunct,nci)*r(Nuc(ifunct),2)+a(jfunct,ncj)*r(Nuc(jfunct),2)) / Zij
+      Q(3)=(a(ifunct,nci)*r(Nuc(ifunct),3)+a(jfunct,ncj)*r(Nuc(jfunct),3)) / Zij
+      alf = a(ifunct,nci)*a(jfunct,ncj) / Zij
+      ss    = pi32 * exp(-rexp) / (Zij * sqrt(Zij))
 c
-      t10=ss/z2
-      ccoef=c(i,ni)*c(j,nj)
+      t10=ss / Z2
+      ccoef = c(ifunct,nci) * c(jfunct,ncj)
 c
-      do 505 l1=1,3
-       t1=Q(l1)-r(Nuc(i),l1)
+      do 505 l1 = 1, 3
+       t1=Q(l1)-r(Nuc(ifunct),l1)
        pis=ss*t1
-       t12=pis/z2
-      do 505 l2=1,l1
-       t1=Q(l2)-r(Nuc(i),l2)
+       t12=pis / Z2
+      do 505 l2 = 1, l1
+       t1 = Q(l2) - r(Nuc(ifunct),l2)
        pjs=ss*t1
-       t11=pjs/z2
+       t11=pjs / Z2
 c
        dijs=t1*pis
        f1=1.D0
@@ -326,33 +240,32 @@ c
        k=ii+((M2-j)*(j-1))/2
        cc=ccoef/f1
 c
-        te=RMM(M15+k-1)*cc
+        te=RMM(M15-1 + en_wgt_ind)*cc
         ty=te*2.D0
-        t5=ty*a(j,nj)
-        t4=ty*a(i,ni)
-c
-        con=con+te*dijs
+        t5=ty*a(jfunct,ncj)
+        t4=ty*a(ifunct,nci)
+
 c gradient part
-      do 505 l3=1,3
+      do 505 l3 = 1, 3
 c
-       t1=Q(l3)-r(Nuc(j),l3)
-       tx=r(Nuc(i),l3)-r(Nuc(j),l3)
+       t1=Q(l3)-r(Nuc(jfunct),l3)
+       tx=r(Nuc(ifunct),l3)-r(Nuc(jfunct),l3)
        dp=t1*dijs
 c
        if (l1.eq.l3) then
-        ff(Nuc(i),l3)=ff(Nuc(i),l3)-te*pjs
+        ff(Nuc(ifunct),l3)=ff(Nuc(ifunct),l3)-te*pjs
         dp=dp+t11
        endif
 c
        if (l2.eq.l3) then
-        ff(Nuc(i),l3)=ff(Nuc(i),l3)-te*pis
+        ff(Nuc(ifunct),l3)=ff(Nuc(ifunct),l3)-te*pis
         dp=dp+t12
        endif
 c
        fs=dp-tx*dijs
 c
-        ff(Nuc(i),l3)=ff(Nuc(i),l3)+t4*fs
-        ff(Nuc(j),l3)=ff(Nuc(j),l3)+t5*dp
+        ff(Nuc(ifunct),l3)=ff(Nuc(ifunct),l3)+t4*fs
+        ff(Nuc(jfunct),l3)=ff(Nuc(jfunct),l3)+t5*dp
 c
  505  continue
 c
@@ -364,32 +277,32 @@ c
       do 600 i=ns+np+1,M,6
       do 600 j=ns+1,ns+np,3
 c
-      dd=d(Nuc(i),Nuc(j))
+      dd=d(Nuc(ifunct),Nuc(jfunct))
 c
-      do 600 ni=1,ncont(i)
-      do 600 nj=1,ncont(j)
+      do 600 nci = 1, ncont(ifunct)
+      do 600 ncj = 1, ncont(jfunct)
 c
-      zij=a(i,ni)+a(j,nj)
-      z2=2.D0*zij
-      Q(1)=(a(i,ni)*r(Nuc(i),1)+a(j,nj)*r(Nuc(j),1))/zij
-      Q(2)=(a(i,ni)*r(Nuc(i),2)+a(j,nj)*r(Nuc(j),2))/zij
-      Q(3)=(a(i,ni)*r(Nuc(i),3)+a(j,nj)*r(Nuc(j),3))/zij
-      alf=a(i,ni)*a(j,nj)/zij
-      ss=pi32*exp(-alf*dd)/(zij*sqrt(zij))
+      Zij = a(ifunct,nci) + a(jfunct,ncj)
+      Z2 = 2.0D0 * Zij
+      Q(1)=(a(ifunct,nci)*r(Nuc(ifunct),1)+a(jfunct,ncj)*r(Nuc(jfunct),1)) / Zij
+      Q(2)=(a(ifunct,nci)*r(Nuc(ifunct),2)+a(jfunct,ncj)*r(Nuc(jfunct),2)) / Zij
+      Q(3)=(a(ifunct,nci)*r(Nuc(ifunct),3)+a(jfunct,ncj)*r(Nuc(jfunct),3)) / Zij
+      alf = a(ifunct,nci)*a(jfunct,ncj) / Zij
+      ss    = pi32 * exp(-rexp) / (Zij * sqrt(Zij))
 c
-      ccoef=c(i,ni)*c(j,nj)
+      ccoef = c(ifunct,nci) * c(jfunct,ncj)
 c
-      t0=ss/z2
+      t0=ss / Z2
 c
-      do 605 l1=1,3
+      do 605 l1 = 1, 3
 c
-       t1=Q(l1)-r(Nuc(i),l1)
+       t1=Q(l1)-r(Nuc(ifunct),l1)
        pis=ss*t1
-       t11=pis/z2
-      do 605 l2=1,l1
-       t1=Q(l2)-r(Nuc(i),l2)
+       t11=pis / Z2
+      do 605 l2 = 1, l1
+       t1 = Q(l2) - r(Nuc(ifunct),l2)
        pjs=ss*t1
-       t12=pjs/z2
+       t12=pjs / Z2
 c
        f1=1.D0
        dijs=t1*pis
@@ -399,10 +312,10 @@ c
         dijs=dijs+t0
        endif
 c
-        t13=dijs/z2
-       do 605 l3=1,3
+        t13=dijs / Z2
+       do 605 l3 = 1, 3
 c
-       t2=Q(l3)-r(Nuc(j),l3)
+       t2=Q(l3)-r(Nuc(jfunct),l3)
        pipk=t2*pis
        pjpk=t2*pjs
        dijpk=t2*dijs
@@ -424,40 +337,39 @@ c
        k=ii+((M2-jj)*(jj-1))/2
 c
         cc=ccoef/f1
-        te=RMM(M15+k-1)*cc
+        te=RMM(M15-1 + en_wgt_ind)*cc
         ty=te*2.D0
-        t5=ty*a(j,nj)
-        t4=ty*a(i,ni)
-c
-        con=con+te*dijpk
-        t14=pipk/z2
-        t15=pjpk/z2
+        t5=ty*a(jfunct,ncj)
+        t4=ty*a(ifunct,nci)
+
+        t14=pipk / Z2
+        t15=pjpk / Z2
 c gradients
        do 605 l4=1,3
 c
-       t1=Q(l4)-r(Nuc(j),l4)
-       tx=r(Nuc(i),l4)-r(Nuc(j),l4)
+       t1=Q(l4)-r(Nuc(jfunct),l4)
+       tx=r(Nuc(ifunct),l4)-r(Nuc(jfunct),l4)
        dsd=t1*dijpk
 c
        if (l1.eq.l4) then
         dsd=dsd+t15
-        ff(Nuc(i),l4)=ff(Nuc(i),l4)-te*pjpk
+        ff(Nuc(ifunct),l4)=ff(Nuc(ifunct),l4)-te*pjpk
        endif
 c
        if (l2.eq.l4) then
         dsd=dsd+t14
-       ff(Nuc(i),l4)=ff(Nuc(i),l4)-te*pipk
+       ff(Nuc(ifunct),l4)=ff(Nuc(ifunct),l4)-te*pipk
        endif
 c
        if (l3.eq.l4) then
         dsd=dsd+t13
-       ff(Nuc(j),l4)=ff(Nuc(j),l4)-te*dijs
+       ff(Nuc(jfunct),l4)=ff(Nuc(jfunct),l4)-te*dijs
        endif
 c
        fsp=dsd-tx*dijpk
 c
-        ff(Nuc(i),l4)=ff(Nuc(i),l4)+t4*fsp
-        ff(Nuc(j),l4)=ff(Nuc(j),l4)+t5*dsd
+        ff(Nuc(ifunct),l4)=ff(Nuc(ifunct),l4)+t4*fsp
+        ff(Nuc(jfunct),l4)=ff(Nuc(jfunct),l4)+t5*dsd
 c
  605  continue
 c
@@ -468,32 +380,32 @@ c
       do 700 i=ns+np+1,M,6
       do 700 j=ns+np+1,i,6
 c
-      dd=d(Nuc(i),Nuc(j))
+      dd=d(Nuc(ifunct),Nuc(jfunct))
 c
-      do 700 ni=1,ncont(i)
-      do 700 nj=1,ncont(j)
+      do 700 nci = 1, ncont(ifunct)
+      do 700 ncj = 1, ncont(jfunct)
 c
-      zij=a(i,ni)+a(j,nj)
-      z2=2.D0*zij
-      Q(1)=(a(i,ni)*r(Nuc(i),1)+a(j,nj)*r(Nuc(j),1))/zij
-      Q(2)=(a(i,ni)*r(Nuc(i),2)+a(j,nj)*r(Nuc(j),2))/zij
-      Q(3)=(a(i,ni)*r(Nuc(i),3)+a(j,nj)*r(Nuc(j),3))/zij
-      alf=a(i,ni)*a(j,nj)/zij
-      ss=pi32*exp(-alf*dd)/(zij*sqrt(zij))
+      Zij = a(ifunct,nci) + a(jfunct,ncj)
+      Z2 = 2.0D0 * Zij
+      Q(1)=(a(ifunct,nci)*r(Nuc(ifunct),1)+a(jfunct,ncj)*r(Nuc(jfunct),1)) / Zij
+      Q(2)=(a(ifunct,nci)*r(Nuc(ifunct),2)+a(jfunct,ncj)*r(Nuc(jfunct),2)) / Zij
+      Q(3)=(a(ifunct,nci)*r(Nuc(ifunct),3)+a(jfunct,ncj)*r(Nuc(jfunct),3)) / Zij
+      alf = a(ifunct,nci)*a(jfunct,ncj) / Zij
+      ss    = pi32 * exp(-rexp) / (Zij * sqrt(Zij))
 c
-      ccoef=c(i,ni)*c(j,nj)
+      ccoef = c(ifunct,nci) * c(jfunct,ncj)
 c
-      t0=ss/z2
+      t0=ss / Z2
 c
-      do 705 l1=1,3
+      do 705 l1 = 1, 3
 c
-       t1=Q(l1)-r(Nuc(i),l1)
+       t1=Q(l1)-r(Nuc(ifunct),l1)
        pis=ss*t1
-       t17=pis/z2
-      do 705 l2=1,l1
-       t1=Q(l2)-r(Nuc(i),l2)
+       t17=pis / Z2
+      do 705 l2 = 1, l1
+       t1 = Q(l2) - r(Nuc(ifunct),l2)
        pjs=ss*t1
-       t16=pjs/z2
+       t16=pjs / Z2
 c
        f1=1.D0
        dijs=t1*pis
@@ -508,11 +420,11 @@ c
        lij=l1
       endif
 c
-       do 705 l3=1,lij
+       do 705 l3 = 1, lij
 c
-       t2=Q(l3)-r(Nuc(j),l3)
+       t2=Q(l3)-r(Nuc(jfunct),l3)
        spk=t2*ss
-       t15=spk/z2
+       t15=spk / Z2
        pipk=t2*pis
        pjpk=t2*pjs
        dijpk=t2*dijs
@@ -527,7 +439,7 @@ c
         dijpk=dijpk+t17
        endif
 c
-      t13=dijpk/z2
+      t13=dijpk / Z2
 c
       lk=l3
       if (i.eq.j) then
@@ -537,7 +449,7 @@ c
        do 705 l4=1,lk
 c
        f2=1.D0
-       t1=Q(l4)-r(Nuc(j),l4)
+       t1=Q(l4)-r(Nuc(jfunct),l4)
        ovlap=t1*dijpk
        pjdkl=t1*pjpk
        pidkl=t1*pipk
@@ -546,25 +458,25 @@ c
        if (l1.eq.l4) then
         pidkl=pidkl+t15
         dijpl=dijpl+t16
-        ovlap=ovlap+pjpk/z2
+        ovlap=ovlap+pjpk / Z2
        endif
 c
        if (l2.eq.l4) then
         pjdkl=pjdkl+t15
         dijpl=dijpl+t17
-        ovlap=ovlap+pipk/z2
+        ovlap=ovlap+pipk / Z2
        endif
 c
        if (l3.eq.l4) then
         pjdkl=pjdkl+t16
         pidkl=pidkl+t17
-        ovlap=ovlap+dijs/z2
+        ovlap=ovlap+dijs / Z2
         f2=sq3
        endif
 c
-       t10=pjdkl/z2
-       t11=pidkl/z2
-       t12=dijpl/z2
+       t10=pjdkl / Z2
+       t11=pidkl / Z2
+       t12=dijpl / Z2
 c
        l12=l1*(l1-1)/2+l2
        l34=l3*(l3-1)/2+l4
@@ -574,77 +486,46 @@ c
        k=ii+((M2-jj)*(jj-1))/2
 c
        cc=ccoef/(f1*f2)
-        te=RMM(M15+k-1)*cc
+        te=RMM(M15-1 + en_wgt_ind)*cc
         ty=te*2.D0
-        t5=ty*a(j,nj)
-        t4=ty*a(i,ni)
-c
-       con=con+te*ovlap
+        t5=ty*a(jfunct,ncj)
+        t4=ty*a(ifunct,nci)
+
 c gradients
         do 705 l5=1,3
-        t1=Q(l5)-r(Nuc(i),l5)
-        tx=r(Nuc(i),l5)-r(Nuc(j),l5)
+        t1=Q(l5)-r(Nuc(ifunct),l5)
+        tx=r(Nuc(ifunct),l5)-r(Nuc(jfunct),l5)
 c
         fd=t1*ovlap
 c
         if (l1.eq.l5) then
         fd=fd+t10
-        ff(Nuc(i),l5)=ff(Nuc(i),l5)-te*pjdkl
+        ff(Nuc(ifunct),l5)=ff(Nuc(ifunct),l5)-te*pjdkl
         endif
 c
         if (l2.eq.l5) then
         fd=fd+t11
-        ff(Nuc(i),l5)=ff(Nuc(i),l5)-te*pidkl
+        ff(Nuc(ifunct),l5)=ff(Nuc(ifunct),l5)-te*pidkl
         endif
 c
         if (l3.eq.l5) then
         fd=fd+t12
-        ff(Nuc(j),l5)=ff(Nuc(j),l5)-te*dijpl
+        ff(Nuc(jfunct),l5)=ff(Nuc(jfunct),l5)-te*dijpl
         endif
 c
         if (l4.eq.l5) then
         fd=fd+t13
-        ff(Nuc(j),l5)=ff(Nuc(j),l5)-te*dijpk
+        ff(Nuc(jfunct),l5)=ff(Nuc(jfunct),l5)-te*dijpk
         endif
 c
         df=fd+tx*ovlap
 c
-        ff(Nuc(i),l5)=ff(Nuc(i),l5)+t4*fd
-        ff(Nuc(j),l5)=ff(Nuc(j),l5)+t5*df
+        ff(Nuc(ifunct),l5)=ff(Nuc(ifunct),l5)+t4*fd
+        ff(Nuc(jfunct),l5)=ff(Nuc(jfunct),l5)+t5*df
 c
  705  continue
 c
  700  continue
-c-------------------------------------------------------------
-c
-c     write(*,*) 'con =',con
-c     do i=1,natom
-c      write(*,*) i,ff(i,1),ff(i,2),ff(i,3)
-c     enddo
-c
-c Trick used in order to eliminate motion of center of mass
-c due to the errors in exchange-correlation forces
-c
-c      fx=0.0
-c      fy=0.0
-c      fz=0.0
-c      Pp=0.0
-c      do i=1,natom
-c       fx=fx+ff(i,1)
-c       fy=fy+ff(i,2)
-c       fz=fz+ff(i,3)
-cc       Pp=Pp+Pm(i)
-c      enddo
-c
-c     write(*,*) 'en intSG'
-c     do i=1,natom
-c      ff(i,1)=ff(i,1)-Pm(i)*fx/Pp
-c      ff(i,2)=ff(i,2)-Pm(i)*fy/Pp
-c      ff(i,3)=ff(i,3)-Pm(i)*fz/Pp
-c      write(*,*) i,ff(i,1),ff(i,2),ff(i,3)
-c     enddo
-c     pause
-c
       return
       end subroutine
       end module subm_intSG

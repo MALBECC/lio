@@ -199,7 +199,7 @@ __host__ __device__ void pbeOS_corr(scalar_type rho, scalar_type rs,
   //      FACT1 = Q5*Q9+Q4*Q9*Q9
 
   scalar_type hB =
-      -EASYPBE_BETA * G3 * B * T6 * ((scalar_type)2.0f + B * T2) / Q8;
+      -EASYPBE_BETA * G3 * B * (T6 / Q8) * ((scalar_type)2.0f + B * T2);
   scalar_type hRS = -rsthrd * hB * BEC * ECRS;
   scalar_type FACT0 = (scalar_type)2.0f * EASYPBE_DELTA - (scalar_type)6.0f * B;
   scalar_type FACT1 = Q5 * Q9 + Q4 * Q9 * Q9;
@@ -228,12 +228,14 @@ __host__ __device__ void pbeOS_corr(scalar_type rho, scalar_type rs,
   scalar_type FACT2 = Q4 * Q5 + B * T2 * (Q4 * Q9 + Q5);
   scalar_type FACT3 = (scalar_type)2.0f * B * Q5 * Q9 + EASYPBE_DELTA * FACT2;
   scalar_type hTT = (scalar_type)4.0f * EASYPBE_BETA * G3 * t *
-                    (2.0f * B / Q8 - (Q9 * FACT3 / Q8) / Q8);
+                    (2.0f * B / Q8 - ((Q9 / Q8) * FACT3) / Q8);
   COMM = h + hRS + hRST + T2 * hT / (scalar_type)6.0f +
          (scalar_type)7.0f * T2 * t * hTT / (scalar_type)6.0f;
   scalar_type PREF = hz - GZ * T2 * hT / G;
   scalar_type FACT5 = GZ * ((scalar_type)2.0f * hT + t * hTT) / G;
   COMM = COMM - PREF * zet - uu * hTT - vv * hT - ww * (hZT - FACT5);
+//  if ( COMM != COMM ) { printf("NaN in COMM2 - hRS %E hRST %E T2 %E hT %E hTT %E \n",
+// hRS, hRST, T2, hT, hTT); };
   dvc_a = COMM + PREF;
   dvc_b = COMM - PREF;
   // PBE POTENTIAL DONE !!!!!

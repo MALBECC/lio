@@ -38,13 +38,13 @@
 !##############################################################################!
 module initial_guess_data
   integer :: initial_guess = 0
-  integer :: atomic_eec(54,3)
+  integer :: atomic_eec(0:54,3)
 
 contains
    subroutine initialise_eec()
       implicit none
 
-      atomic_eec(:,:)  = 0
+      atomic_eec(0:54,:) = 0
       atomic_eec(1,1)  = 1 ;                                               ! H
       atomic_eec(2,1)  = 2 ;                                               ! He
       atomic_eec(3,1)  = 3 ;                                               ! Li
@@ -166,6 +166,7 @@ subroutine initial_guess_aufbau(M, MM, RMM, rhoalpha, rhobeta, natom, NCO, &
 
    call initialise_eec()
    start_dens(:,:) = 0.0D0
+   n_elecs = 0
 
    total_iz = 0
    do icount = 1, natom

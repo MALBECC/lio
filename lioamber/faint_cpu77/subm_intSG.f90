@@ -11,28 +11,23 @@
 module subm_intSG
 contains
 subroutine intSG(ff)
-   use garcha_mod, only: RMM, ll, a, c, d, r, nuc, ncont, nshell, pi32, natom, &
+   use garcha_mod, only: RMM, a, c, d, r, nuc, ncont, nshell, pi32, natom, &
                          M, Md, NORM
    implicit none
    double precision, intent(inout) :: ff(natom,3)
    double precision                :: Q(3)
 
-   integer :: i, j, k, ii, jj, ni, nj
-   integer :: l, lk, lij, l1, l2, l3, l4, l5, l12, l34
-   integer :: ns, np, nd
-   integer :: M15
+   integer           :: ifunct, jfunct, en_wgt_ind, nci, ncj, lk, lij, l1, l2, &
+                        l3, l4, l5, l12, l34, ns, np, nd, M2, M15, ll(3)
 
-   double precision  :: ovlap, fsp, sq3, alf, cc, ccoef
-   double precision  :: Zij, Z2, fs, fd, f1, f2
-   double precision  :: ti, tj, tx, ty, te, t0, t1, t2, t4, t5
-   double precision  :: t10, t11, t12, t13, t14, t15, t16, t17
-   double precision  :: ss, spi, spj, spk
-   double precision  :: ps, pp, pd, pidkl, pipk, pis, pjdkl, pjpk, pjs
-   double precision  :: ds, dp, dd, df, dsd, dijpk, dijpl, dijs
+   double precision  :: ovlap, fsp, sq3, ccoef, rexp, Zij, Z2, fs, fd, f1, f2, &
+                        ti, tj, te, t0, t1, t2, t4, t5, t10, t11, t12, t13,    &
+                        t14, t15, t16, t17, ss, spi, spj, spk, ps, pp, pd,     &
+                        pidkl, pipk, pis, pjdkl, pjpk, pjs, ds, dp, dd, df,    &
+                        dsd, dijpk, dijpl, dijs
 
    sq3 = 1.D0
    if (NORM) sq3 = sqrt(3.D0)
-
    ns = nshell(0); np = nshell(1); nd = nshell(2)
 
    do l1 = 1, 3
@@ -66,10 +61,10 @@ subroutine intSG(ff)
 
          do l1 = 1, 3
             t1 = Q(l1)             - r(Nuc(ifunct),l1)
-            tx = r(Nuc(ifunct),l1) - r(Nuc(jfunct),l1)
 
             ff(Nuc(ifunct),l1) = ff(Nuc(ifunct),l1) + t4 * t1
-            ff(Nuc(jfunct),l1) = ff(Nuc(jfunct),l1) + t5 * (t1 + tx)
+            ff(Nuc(jfunct),l1) = ff(Nuc(jfunct),l1) + t5 * (t1 + &
+                                  (r(Nuc(ifunct),l1) - r(Nuc(jfunct),l1)))
          enddo
       enddo
       enddo
@@ -79,9 +74,8 @@ subroutine intSG(ff)
    ! (p|s)
    do ifunct = ns+1, ns+np, 3
    do jfunct = 1   , ns
-      dd=d(Nuc(ifunct),Nuc(jfunct))
-      do 300 nci = 1, ncont(ifunct)
-      do 300 ncj = 1, ncont(jfunct)
+      do nci = 1, ncont(ifunct)
+      do ncj = 1, ncont(jfunct)
          ccoef = c(ifunct,nci) * c(jfunct,ncj)
          Zij   = a(ifunct,nci) + a(jfunct,ncj)
          Z2    = 2.0D0 * Zij
@@ -225,7 +219,6 @@ subroutine intSG(ff)
                t4 = te * 2.D0 * a(ifunct,nci)
                t5 = te * 2.D0 * a(jfunct,ncj)
                do l3 = 1, 3
-                  tx = r(Nuc(ifunct),l3) - r(Nuc(jfunct),l3)
                   dp = (Q(l3) - r(Nuc(jfunct),l3)) * dijs
 
                   if (l1 .eq. l3) then
@@ -236,7 +229,7 @@ subroutine intSG(ff)
                      ff(Nuc(ifunct),l3) = ff(Nuc(ifunct),l3) - te * pis
                      dp = dp + t12
                   endif
-                  fs = dp - tx * dijs
+                  fs = dp - (r(Nuc(ifunct),l3) - r(Nuc(jfunct),l3)) * dijs
                   ff(Nuc(ifunct),l3) = ff(Nuc(ifunct),l3) + t4 * fs
                   ff(Nuc(jfunct),l3) = ff(Nuc(jfunct),l3) + t5 * dp
                enddo
@@ -425,7 +418,6 @@ subroutine intSG(ff)
                      t5 = te * 2.D0 * a(jfunct,ncj)
 
                      do l5 = 1, 3
-                        tx= r(Nuc(ifunct),l5) - r(Nuc(jfunct),l5)
                         fd = (Q(l5)-r(Nuc(ifunct),l5)) * ovlap
 
                         if (l1 .eq. l5) then
@@ -444,7 +436,7 @@ subroutine intSG(ff)
                            fd = fd + t13
                            ff(Nuc(jfunct),l5) = ff(Nuc(jfunct),l5) - te * dijpk
                         endif
-                        df = fd + tx * ovlap
+                        df = fd + (r(Nuc(ifunct),l5) - r(Nuc(jfunct),l5)) *ovlap
                         ff(Nuc(ifunct),l5) = ff(Nuc(ifunct),l5) + t4 * fd
                         ff(Nuc(jfunct),l5) = ff(Nuc(jfunct),l5) + t5 * df
                      enddo

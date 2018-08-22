@@ -8,17 +8,21 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module subm_intsol
 contains
-subroutine intsol(E1s, Ens, elec)
+subroutine intsol(Rho, Hmat, Iz, pc, natom, ntatom, E1s, Ens, elec)
 
-   use liotemp   , only: FUNCT
-   use garcha_mod, only: RMM, a, c, d, r, pc, nuc, ncont, nsol, natom, pi,&
-                         pi, rmax, nshell, Iz, M, NORM, Md, ntatom
+   use liotemp      , only: FUNCT
+   use garcha_mod   , only: a, c, d, r, nuc, ncont, rmax, nshell, M, NORM, Md
+   use constants_mod, only: pi
+
    implicit none
-   logical         , intent(in)  :: elec
-   double precision, intent(out) :: E1s, Ens
+   integer         , intent(in)    :: natom, ntatom, Iz(natom)
+   logical         , intent(in)    :: elec
+   double precision, intent(in)    :: pc(:)
+   double precision, intent(out)   :: E1s, Ens
+   double precision, intent(inout) :: Rho(:), Hmat(:)
 
    integer           :: M11, ns, np, nd, iatom, jatom, ifunct, jfunct, nci, &
-                        ncj, Ll(3), lk, lij, l1, l2, l3, l4, M2, Hmat_ind
+                        ncj, Ll(3), lk, lij, l1, l2, l3, l4, M2, vecmat_ind
    double precision  :: sq3, rexp, ccoef, term, tna, uf, Z2, Zij, t1, t2, f1, &
                         f2, p3s, p2s, p1s, p0s, pj2s, pj1s, pj1p, pj0s, pj0p, &
                         pi1p, pi0p, dd2, d1s, d2s, d1p, d0s, d0p, Q(3)
@@ -78,9 +82,9 @@ subroutine intsol(E1s, Ens, elec)
             enddo
 
             term = ccoef * tna
-            Hmat_ind = ifunct + ((M2 - jfunct) * (jfunct -1)) / 2
-            RMM(M11-1 + Hmat_ind) = RMM(M11-1 + Hmat_ind) + term
-            E1s = E1s + RMM(Hmat_ind) * term
+            vecmat_ind = ifunct + ((M2 - jfunct) * (jfunct -1)) / 2
+            Hmat(vecmat_ind) = Hmat(vecmat_ind) + term
+            E1s = E1s + Rho(vecmat_ind) * term
          endif
       enddo
       enddo
@@ -122,9 +126,9 @@ subroutine intsol(E1s, Ens, elec)
                enddo
                term = ccoef * tna
 
-               Hmat_ind = ifunct + l1 -1 + ((M2 - jfunct) * (jfunct -1)) / 2
-               RMM(M11-1 + Hmat_ind) = RMM(M11-1 + Hmat_ind) + term
-               E1s = E1s + RMM(Hmat_ind) * term
+               vecmat_ind = ifunct + l1 -1 + ((M2 - jfunct) * (jfunct -1)) / 2
+               Hmat(vecmat_ind) = Hmat(vecmat_ind) + term
+               E1s = E1s + Rho(vecmat_ind) * term
             enddo
          endif
       enddo
@@ -176,11 +180,11 @@ subroutine intsol(E1s, Ens, elec)
                      if (l1 .eq. l2) tna = tna + (s0s(iatom) - s1s(iatom)) / Z2
                      tna = tna * pc(iatom)
 
-                     Hmat_ind = ifunct + l1-1 + &
+                     vecmat_ind = ifunct + l1-1 + &
                                 ((M2 - (jfunct + l2 -1)) * (jfunct + l2 -2)) / 2
                      term     = - tna * ccoef
-                     RMM(M11-1 + Hmat_ind) = RMM(M11-1 + Hmat_ind) + term
-                     E1s = E1s + RMM(Hmat_ind) * term
+                     Hmat(vecmat_ind) = Hmat(vecmat_ind) + term
+                     E1s = E1s + Rho(vecmat_ind) * term
                   enddo
                enddo
             enddo
@@ -236,10 +240,10 @@ subroutine intsol(E1s, Ens, elec)
                      endif
                      term = - tna * pc(iatom) * ccoef / f1
 
-                     Hmat_ind = ifunct + Ll(l1) + l2 -1 + &
+                     vecmat_ind = ifunct + Ll(l1) + l2 -1 + &
                                 ((M2 - jfunct) * (jfunct -1)) / 2
-                     RMM(M11-1 + Hmat_ind) = RMM(M11-1 + Hmat_ind) + term
-                     E1s = E1s + RMM(Hmat_ind) * term
+                     Hmat(vecmat_ind) = Hmat(vecmat_ind) + term
+                     E1s = E1s + Rho(vecmat_ind) * term
                   enddo
                enddo
             enddo
@@ -309,10 +313,10 @@ subroutine intsol(E1s, Ens, elec)
                         if (l2 .eq. l3) tna = tna + (p0s  - p1s ) / Z2
                         term = - tna * pc(iatom) * ccoef / f1
 
-                        Hmat_ind = ifunct + Ll(l1) + l2 -1 + &
+                        vecmat_ind = ifunct + Ll(l1) + l2 -1 + &
                                    ((M2 - (jfunct + l3-1)) * (jfunct + l3 -2))/2
-                        RMM(M11-1 + Hmat_ind) = RMM(M11-1 + Hmat_ind) + term
-                        E1s = E1s + RMM(Hmat_ind) * term
+                        Hmat(vecmat_ind) = Hmat(vecmat_ind) + term
+                        E1s = E1s + Rho(vecmat_ind) * term
                      enddo
                   enddo
                enddo
@@ -421,11 +425,11 @@ subroutine intsol(E1s, Ens, elec)
                            endif
                            term = - pc(iatom) * tna * ccoef / (f1 * f2)
 
-                           Hmat_ind = ifunct + Ll(l1) + l2 -1 + &
+                           vecmat_ind = ifunct + Ll(l1) + l2 -1 + &
                                        ((M2 - (jfunct + Ll(l3) + l4-1)) * &
                                        (jfunct + Ll(l3) + l4 -2)) / 2
-                           RMM(M11-1 + Hmat_ind) = RMM(M11-1 + Hmat_ind) + term
-                           E1s = E1s + RMM(Hmat_ind) * term
+                           Hmat(vecmat_ind) = Hmat(vecmat_ind) + term
+                           E1s = E1s + Rho(vecmat_ind) * term
                         enddo
                      enddo
                   enddo

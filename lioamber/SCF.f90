@@ -356,7 +356,8 @@ subroutine SCF(E)
           call g2g_timer_sum_start('QM/MM')
        if (igpu.le.1) then
           call g2g_timer_start('intsol')
-          call intsol(E1s,Ens,.true.)
+          call intsol(RMM(1:MM), RMM(M11:M11+MM), Iz, pc, natom, ntatom, &
+                      E1s, Ens, .true.)
           call g2g_timer_stop('intsol')
         else
           call aint_qmmm_init(nsol,r,pc)
@@ -918,27 +919,7 @@ subroutine SCF(E)
 
 !DFTB: The last rho is stored in an output as a restart.
    if (dftb_calc.and.TBsave) call write_rhoDFTB(M_in, OPEN)
-
-!------------------------------------------------------------------------------!
-! TODO: Comments about a comented sections? Shouldn't it all of this go away?
-!
-!    CH - Why call intsol again here? with the .false. parameter,
-!    E1s is not recalculated, which would be the only reason to do
-!    this again; Ens isn't changed from before...
-! -- SOLVENT CASE --------------------------------------
-!      if (sol) then
-!      call g2g_timer_sum_start('intsol 2')
-!      if(nsol.gt.0) then
-!        call intsol(E1s,Ens,.false.)
-!        write(*,*) 'cosillas',E1s,Ens
-!        call g2g_timer_sum_stop('intsol 2')
-!      endif
-!      call mmsol(natom,Nsol,natsol,Iz,pc,r,Em,Rm,Es)
-      Es=Es+E1s+Ens
-!     endif
-
-
-      if (MOD(npas,energy_freq).eq.0) then
+   if (MOD(npas,energy_freq).eq.0) then
 !       Resolve with last density to get XC energy
         call g2g_timer_sum_start('Exchange-correlation energy')
         call g2g_new_grid(igrid)

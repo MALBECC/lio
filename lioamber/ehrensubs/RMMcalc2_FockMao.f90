@@ -11,7 +11,8 @@ subroutine RMMcalc2_FockMao( FockMao, Energy )
    use faint_cpu  , only: int2, int3mem, intsol
 
    use garcha_mod,  only: M, Md, RMM, kkind, kkinds, cool, cools, igrid2, MEMO,&
-                          nucd, nshelld, r, ad, cd, d, ntatom, norm, ncontd
+                          nucd, nshelld, r, ad, cd, d, ntatom, norm, ncontd,   &
+                          Iz, pc
 
    implicit none
    real*8,intent(out)    :: FockMao(M,M)
@@ -48,8 +49,12 @@ subroutine RMMcalc2_FockMao( FockMao, Energy )
 ! Calculate fixed-parts of fock
 !------------------------------------------------------------------------------!
    call g2g_timer_start('RMMcalc2-sol2coul')
+   MM=M*(M+1)/2
+   MMd=Md*(Md+1)/2
+   idx0=3*MM+2*MMd
    if (igpu.le.1) then
-      call intsol(Energy_SolvF,Energy_SolvT,.true.)
+      call intsol(RMM(1:MM), RMM(idx0+1:idx0+MM+1), Iz, pc, natom, ntatom, &
+                  Energy_SolvF, Energy_SolvT, .true.)
    else
       call aint_qmmm_fock(Energy_SolvF,Energy_SolvT)
    endif

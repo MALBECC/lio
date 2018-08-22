@@ -71,9 +71,9 @@ subroutine intsol(E1s, Ens, elec)
                     a(jfunct,ncj) * r(Nuc(jfunct),3)) / Zij
 
             do iatom = natom+1, ntatom
-               uf  = (Q(1) - r(iatom,1)) * (Q(1) - r(iatom,1)) + &
-                     (Q(2) - r(iatom,2)) * (Q(2) - r(iatom,2)) + &
-                     (Q(3) - r(iatom,3)) * (Q(3) - r(iatom,3)) * Zij
+               uf  = ((Q(1) - r(iatom,1)) * (Q(1) - r(iatom,1)) + &
+                      (Q(2) - r(iatom,2)) * (Q(2) - r(iatom,2)) + &
+                      (Q(3) - r(iatom,3)) * (Q(3) - r(iatom,3))) * Zij
                tna = tna - pc(iatom) * term * FUNCT(0,uf)
             enddo
 
@@ -106,9 +106,9 @@ subroutine intsol(E1s, Ens, elec)
                     a(jfunct,ncj) * r(Nuc(jfunct),3)) / Zij
 
             do iatom = natom+1, ntatom
-               uf  = (Q(1) - r(iatom,1)) * (Q(1) - r(iatom,1)) + &
-                     (Q(2) - r(iatom,2)) * (Q(2) - r(iatom,2)) + &
-                     (Q(3) - r(iatom,3)) * (Q(3) - r(iatom,3)) * Zij
+               uf  = ((Q(1) - r(iatom,1)) * (Q(1) - r(iatom,1)) + &
+                      (Q(2) - r(iatom,2)) * (Q(2) - r(iatom,2)) + &
+                      (Q(3) - r(iatom,3)) * (Q(3) - r(iatom,3))) * Zij
                s1s(iatom) = term * FUNCT(1,uf)
                s0s(iatom) = term * FUNCT(0,uf)
             enddo
@@ -152,9 +152,9 @@ subroutine intsol(E1s, Ens, elec)
                     a(jfunct,ncj) * r(Nuc(jfunct),3)) / Zij
 
             do iatom = natom+1, ntatom
-               uf  = (Q(1) - r(iatom,1)) * (Q(1) - r(iatom,1)) + &
-                     (Q(2) - r(iatom,2)) * (Q(2) - r(iatom,2)) + &
-                     (Q(3) - r(iatom,3)) * (Q(3) - r(iatom,3)) * Zij
+               uf  = ((Q(1) - r(iatom,1)) * (Q(1) - r(iatom,1)) + &
+                      (Q(2) - r(iatom,2)) * (Q(2) - r(iatom,2)) + &
+                      (Q(3) - r(iatom,3)) * (Q(3) - r(iatom,3))) * Zij
                s1s(iatom) = term * FUNCT(1,uf)
                s0s(iatom) = term * FUNCT(0,uf)
                s2s(iatom) = term * FUNCT(2,uf)
@@ -210,9 +210,9 @@ subroutine intsol(E1s, Ens, elec)
                     a(jfunct,ncj) * r(Nuc(jfunct),3)) / Zij
 
             do iatom = natom+1, ntatom
-               uf  = (Q(1) - r(iatom,1)) * (Q(1) - r(iatom,1)) + &
-                     (Q(2) - r(iatom,2)) * (Q(2) - r(iatom,2)) + &
-                     (Q(3) - r(iatom,3)) * (Q(3) - r(iatom,3)) * Zij
+               uf  = ((Q(1) - r(iatom,1)) * (Q(1) - r(iatom,1)) + &
+                      (Q(2) - r(iatom,2)) * (Q(2) - r(iatom,2)) + &
+                      (Q(3) - r(iatom,3)) * (Q(3) - r(iatom,3))) * Zij
                s1s(iatom) = term * FUNCT(1,uf)
                s0s(iatom) = term * FUNCT(0,uf)
                s2s(iatom) = term * FUNCT(2,uf)
@@ -269,9 +269,9 @@ subroutine intsol(E1s, Ens, elec)
                     a(jfunct,ncj) * r(Nuc(jfunct),3)) / Zij
 
             do iatom = natom+1, ntatom
-               uf  = (Q(1) - r(iatom,1)) * (Q(1) - r(iatom,1)) + &
-                     (Q(2) - r(iatom,2)) * (Q(2) - r(iatom,2)) + &
-                     (Q(3) - r(iatom,3)) * (Q(3) - r(iatom,3)) * Zij
+               uf  = ((Q(1) - r(iatom,1)) * (Q(1) - r(iatom,1)) + &
+                      (Q(2) - r(iatom,2)) * (Q(2) - r(iatom,2)) + &
+                      (Q(3) - r(iatom,3)) * (Q(3) - r(iatom,3))) * Zij
                s1s(iatom) = term * FUNCT(1,uf)
                s0s(iatom) = term * FUNCT(0,uf)
                s2s(iatom) = term * FUNCT(2,uf)
@@ -343,9 +343,9 @@ subroutine intsol(E1s, Ens, elec)
                     a(jfunct,ncj) * r(Nuc(jfunct),3)) / Zij
 
             do iatom = natom+1, ntatom
-               uf  = (Q(1) - r(iatom,1)) * (Q(1) - r(iatom,1)) + &
-                     (Q(2) - r(iatom,2)) * (Q(2) - r(iatom,2)) + &
-                     (Q(3) - r(iatom,3)) * (Q(3) - r(iatom,3)) * Zij
+               uf  = ((Q(1) - r(iatom,1)) * (Q(1) - r(iatom,1)) + &
+                      (Q(2) - r(iatom,2)) * (Q(2) - r(iatom,2)) + &
+                      (Q(3) - r(iatom,3)) * (Q(3) - r(iatom,3))) * Zij
                s1s(iatom) = term * FUNCT(1,uf)
                s0s(iatom) = term * FUNCT(0,uf)
                s2s(iatom) = term * FUNCT(2,uf)

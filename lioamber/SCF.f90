@@ -35,8 +35,9 @@ subroutine SCF(E)
                           Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, Iz,        &
                           nuc, doing_ehrenfest, first_step, RealRho,           &
                           total_time, MO_coef_at, MO_coef_at_b, Smat, good_cut,&
-                          ndiis, ncont, nshell, rhoalpha, rhobeta, OPEN, nshell, &
-                          Nuc, a, c, d, NORM, ntatom, Eorbs_b
+                          ndiis, ncont, nshell, rhoalpha, rhobeta, OPEN,nshell,&
+                          Nuc, a, c, d, NORM, ntatom, Eorbs_b, ad, cd, ncontd, &
+                          nucd, nshelld, af, b, kknumd, kknums
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
                        FOCK_ECP_read,FOCK_ECP_write,IzECP
    use field_data, only: field, fx, fy, fz
@@ -44,8 +45,8 @@ subroutine SCF(E)
    use td_data, only: timedep, tdrestart, tdstep
    use transport_data, only : generate_rho0
    use time_dependent, only : TD
-   use faint_cpu, only: int1
-   use faint_cpu77, only: int2, intsol, int3mem, int3lu
+   use faint_cpu, only: int1, int2, int3mem, int3lu
+   use faint_cpu77, only: intsol
    use dftb_data, only : dftb_calc, MDFTB, MTB, chargeA_TB, chargeB_TB,        &
                          rho_aDFTB, rho_bDFTB, TBsave, TBload
    use dftb_subs, only : dftb_init, getXY_DFTB, find_TB_neighbors,             &
@@ -475,7 +476,8 @@ subroutine SCF(E)
 ! Also, pre-calculate G^-1 if G is not ill-conditioned into RMM(M9)
 !
       call g2g_timer_sum_start('Coulomb G matrix')
-      call int2()
+      call int2(RMM(M7:M7+MMd), RMM(M9:M9+MMd), M, Md, nshelld, ncontd, ad, cd,&
+                NORM, r, d, nucd, ntatom)
       call g2g_timer_sum_stop('Coulomb G matrix')
 
 ! Precalculate three-index (two in MO basis, one in density basis) matrix
@@ -555,7 +557,10 @@ subroutine SCF(E)
 
 !       Computes Coulomb part of Fock, and energy on E2
         call g2g_timer_sum_start('Coulomb fit + Fock')
-        call int3lu(E2)
+        call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), &
+                    RMM(M7:M7+MMd), RMM(M9:M9+MMd), RMM(M11:M11+MMd), M, Md, &
+                    cool, cools, kkind, kkinds, kknumd, kknums, af, B, memo, &
+                    open)
         call g2g_timer_sum_pause('Coulomb fit + Fock')
 
 !       Test for NaN

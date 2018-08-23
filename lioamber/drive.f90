@@ -12,7 +12,7 @@
       USE garcha_mod, ONLY : a,c, basis, done, done_fit, natomc, nnps,         &
       nnpp, nnpd, nns, nnp, nnd, atmin, jatc, ncf, lt, at, ct, nnat, nshell,   &
       nuc, ncont, nlb, nshelld, cd, ad, Nucd, ncontd, nld, Nucx, indexii,      &
-      ncontx, cx, ax, indexiid, X, XX, RMM, rhoalpha,rhobeta, af, charge,      &
+      ncontx, cx, ax, indexiid, X, RMM, rhoalpha,rhobeta, af, charge,          &
       basis_set, fitting_set, e_, e_2, e3, exists, NORM, fcoord,               &
       fmulliken, natom, frestart, M, FAC, Iexch, int_basis, max_func, &
       frestartin, Md, NCO, nng, npas, Nr, used, STR, omit_bas, Nr2,   &
@@ -1069,7 +1069,7 @@
       call aint_parameter_init(Md, ncontd, nshelld, cd, ad, Nucd, &
       af, RMM, M9, M11, STR, FAC, rmax, Iz)
       endif
-      allocate(X(M,4*M),XX(Md,Md))
+      allocate(X(M,4*M))
 
 
 !--------------------------------------------------------------------------------------

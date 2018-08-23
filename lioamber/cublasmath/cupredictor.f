@@ -5,26 +5,26 @@
 !Predictor-Corrector Cheng, V.Vooris.PhysRevB.2006.74.155112
 ! Esta rutina recibe: F1a,F1b,rho2
 ! Tira: F5 = F(t+(deltat/2))
-      use garcha_mod
+      use garcha_mod, only: M, Md, cool, cools, kkind, kkinds, kknumd,
+     >                      kknums,af, B, memo, open, RMM, nbch,
+     >                      nang, natom, nco, rhoalpha, rhobeta
       use field_data, only: field
       use field_subs, only: field_calc
       use fockbias_subs , only: fockbias_apply
       use mathsubs
       use general_module
-      use faint_cpu77, only: int3lu
-       implicit real*8 (a-h,o-z)
-!       IMPLICIT REAL*8 (a-h,o-z)
+      use faint_cpu, only: int3lu
+      implicit none
        integer, intent(in)    :: dim3
        REAL*8,intent(inout)   :: F1a(M_in,M_in,dim3),F1b(M_in,M_in,dim3)
        REAL*8,intent(inout)   :: FON(M_in,M_in,dim3)
        integer*8,intent(in)   :: devPtrX,devPtrXc
        integer, intent(in)    :: M_in
        integer, intent(in)    :: MTB
-!       integer :: i,j,k,kk,stat,M1,M2,MM,M5,M7,M9,MMD,M11,M13,M15,M17
-!       integer :: M19,M20,M3,M18
-       integer :: i,j,k,kk,stat
+       integer :: i,j,k,kk,stat, M1,M2,MM,M5,M7,M9,MMD,M11,M13,M15,M17,
+     > m18, m19, m20, m3
        REAL*8,allocatable :: F3(:,:,:),FBA(:,:,:)
-       real*8 :: E1, E2, tdstep1
+       real*8 :: E1, E2, tdstep1, ex
       external CUBLAS_INIT, CUBLAS_SHUTDOWN
       integer CUBLAS_INIT
       REAL*8,intent(in) :: factorial(NBCH), timestep, time
@@ -121,7 +121,10 @@ c xmm es la primer matriz de (M,M) en el
 
 ! Paso4: La matriz densidad 4 es usada para calcular F5------> Corrector
       call g2g_timer_start('int3lu + g2g_solve')
-      call int3lu(E2)
+      call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM),
+     >             RMM(M7:M7+MMd), RMM(M9:M9+MMd), RMM(M11:M11+MM),
+     >             M, Md, cool, cools, kkind, kkinds, kknumd,
+     >             kknums, af, B, memo, open)
       call g2g_solve_groups(0,Ex,0)
       call g2g_timer_stop('int3lu + g2g_solve')
       call field_calc(E1, time)
@@ -182,11 +185,14 @@ c xmm es la primer matriz de (M,M) en el
 !Predictor-Corrector Cheng, V.Vooris.PhysRevB.2006.74.155112
 ! Esta rutina recibe: F1a,F1b,rho2
 ! Tira: F5 = F(t+(deltat/2))
-       use garcha_mod
+       use garcha_mod, only: M, Md, cool, cools, kkind, kkinds, kknumd,
+     > kknums, af, B, memo, open, RMM, nbch, nang, natom, nco,
+     > rhoalpha, rhobeta
        use field_data, only: field
+       use faint_cpu, only: int3lu
        use field_subs, only: field_calc
        use fockbias_subs , only: fockbias_apply
-       IMPLICIT REAL*8 (a-h,o-z)
+       implicit none
        integer, intent(in)  :: dim3
        REAL*8,intent(inout) :: F1a(M_in,M_in,dim3),F1b(M_in,M_in,dim3)
        REAL*8,intent(inout) :: FON(M_in,M_in,dim3)
@@ -196,7 +202,7 @@ c xmm es la primer matriz de (M,M) en el
        REAL*8,allocatable :: F3(:,:,:),FBA(:,:,:)
        integer :: i,j,k,kk,stat,M1,M2,MM,M5,M7,M9,MMD,M11,M13,M15,M17
        integer :: M19,M20,M3,M18
-       real*8 :: E2, tdstep1, E1
+       real*8 :: E2, tdstep1, E1, ex
       external CUBLAS_INIT, CUBLAS_SHUTDOWN
       integer CUBLAS_INIT
       REAL*8,intent(in) :: factorial(NBCH), timestep, time
@@ -207,6 +213,7 @@ c xmm es la primer matriz de (M,M) en el
      >         F3(M_in,M_in,dim3),FBA(M_in,M_in,dim3))
       M2=2*M
       MM=M*(M+1)/2
+      MMd=Md*(Md+1)/2
 c first i
       M1=1
 c now Fold
@@ -272,7 +279,10 @@ c xmm es la primer matriz de (M,M) en el
          call sprepack_ctr('L',M,RMM,rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
        end if
 ! Paso4: La matriz densidad 4 es usada para calcular F5------> Corrector
-      call int3lu(E2)
+      call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM),
+     >             RMM(M7:M7+MMd), RMM(M9:M9+MMd), RMM(M11:M11+MM),
+     >             M, Md, cool, cools, kkind, kkinds, kknumd,
+     >             kknums, af, B, memo, open)
       call g2g_solve_groups(0,Ex,0)
       call field_calc(E1, time)
        FBA=FON

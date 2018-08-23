@@ -4,7 +4,7 @@
 ! INCLUDE FILES WITH HEADERS:
 !--------------------------------------------------------------------!
 c       implicit none
-       use faint_cpu77, only: int3lu
+       use faint_cpu, only: int3lu
        include 'cuconmut_h.f'
        include 'cumagnusfac_h.f'
        include 'cumpx_h.f'
@@ -12,7 +12,6 @@ c       implicit none
        include 'cumxp_h.f'
        include 'cumxtp_h.f'
        include 'cupredictor_h.f'
-       include 'cupredictor_op_h.f'
        include 'basechange_cublas_h.f'
        include 'commutator_cublas_h.f'
        include 'magnus_cublas_h.f'
@@ -35,7 +34,6 @@ c       implicit none
        include 'cumxp_r.f'
        include 'cumxtp.f'
        include 'cupredictor.f'
-       include 'cupredictor_op.f'
        include 'basechange_cublas.f'
        include 'commutator_cublas.f'
        include 'magnus_cublas.f'

@@ -9,7 +9,8 @@ subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
 
    use faint_cpu  , only: intfld, int3lu
 
-   use garcha_mod,  only: M, natom, Iz, NCO, Nunp, total_time, RMM, Md, open
+   use garcha_mod,  only: M, natom, Iz, NCO, Nunp, total_time, RMM, Md, open, &
+                          r, d, ntatom
 
    use field_data,  only: epsilon, a0
 
@@ -64,7 +65,8 @@ subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
          Qc = Qc + Iz(kk)
       end do
 
-      call intfld( g, ElecField(1), ElecField(2), ElecField(3) )
+      call intfld(RMM(M3:M3+MM), RMM(M5:M5+MM), r, d, Iz, natom, ntatom, open, &
+                  g, ElecField(1), ElecField(2), ElecField(3) )
 
       dip_times_field = 0.0d0
       dip_times_field = dip_times_field + ElecField(1) * DipMom(1)

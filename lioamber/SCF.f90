@@ -583,7 +583,8 @@ subroutine SCF(E)
 !
         if ( generate_rho0 ) then
            if (field) call field_setup_old(1.0D0, 0, fx, fy, fz)
-           call field_calc(E1, 0.0D0)
+           call field_calc(E1, 0.0D0, RMM(M3:M3+MM), RMM(M5:M5+MM), r, d, Iz, &
+                           natom, ntatom, open)
 
            do kk=1,MM
                E1=E1+RMM(kk)*RMM(M11+kk-1)

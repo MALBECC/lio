@@ -284,7 +284,8 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
       call g2g_timer_sum_start("TD - TD Step Energy")
 
       call td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM(M11:MM),is_lpfrg,&
-                          transport_calc, sol, t/0.024190D0, M, Md, open)
+                          transport_calc, sol, t/0.024190D0, M, Md, open, r, d,&
+                          Iz, natom, ntatom)
 
       call g2g_timer_sum_pause("TD - TD Step Energy")
       if (verbose .gt. 2) write(*,'(A,I6,A,F12.6,A,F12.6,A)') "  TD Step: ", &
@@ -828,13 +829,14 @@ subroutine td_check_prop(is_lpfrg, propagator, istep, lpfrg_steps, tdrestart,&
 end subroutine td_check_prop
 
 subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
-                          transport_calc, sol, time, M, Md, open_shell)
+                          transport_calc, sol, time, M, Md, open_shell, r, d, &
+                          Iz, natom, ntatom)
    use faint_cpu , only: int3lu
    use field_subs, only: field_calc
    implicit none
-   integer, intent(in)    :: MM
+   integer, intent(in)    :: MM, natom, ntatom, Iz(natom)
    logical, intent(in)    :: is_lpfrg, transport_calc, sol
-   real*8 , intent(in)    :: time
+   real*8 , intent(in)    :: time, r(ntatom,3), d(natom,natom)
    real*8 , intent(inout) :: E, E1, E2, En, Ex, Es, RMM(:), RMM11(:)
    integer         , intent(in) :: M, Md
    logical         , intent(in) :: open_shell
@@ -859,7 +861,8 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
    endif
 
    ! ELECTRIC FIELD CASE - Perturbation type: Gaussian (default).
-   call field_calc(E1, time)
+   call field_calc(E1, time, RMM(M3:M3+MM), RMM(M5:M5+MM), r, d, Iz, natom, &
+                   ntatom, open_shell)
 
    ! Add 1e contributions to E1.
    do icount = 1, MM

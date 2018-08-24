@@ -6,7 +6,7 @@
 ! Esta rutina recibe: F1a,F1b,rho2
 ! Tira: F5 = F(t+(deltat/2))
       use garcha_mod, only: M, Md, open, RMM, nbch, nang, natom, nco,
-     > rhoalpha, rhobeta
+     > rhoalpha, rhobeta, r, d, Iz, ntatom
       use field_data, only: field
       use field_subs, only: field_calc
       use fockbias_subs , only: fockbias_apply
@@ -125,7 +125,8 @@ c xmm es la primer matriz de (M,M) en el
      >            open)
       call g2g_solve_groups(0,Ex,0)
       call g2g_timer_stop('int3lu + g2g_solve')
-      call field_calc(E1, time)
+      call field_calc(E1, time, RMM(M3:M3+MM), RMM(M5:M5+MM), r, d,
+     > Iz, natom, ntatom, open)
 
 !DFTB: We copy FON inside FBA before this is overwritten to conserve TB terms.
 !      This last step is unnecessary if there is not a DFTB calc.
@@ -184,7 +185,7 @@ c xmm es la primer matriz de (M,M) en el
 ! Esta rutina recibe: F1a,F1b,rho2
 ! Tira: F5 = F(t+(deltat/2))
        use garcha_mod, only: M, Md, open, RMM, nbch, nang, natom, nco,
-     > rhoalpha, rhobeta
+     > rhoalpha, rhobeta, r, d, Iz, ntatom
        use field_data, only: field
        use faint_cpu, only: int3lu
        use field_subs, only: field_calc
@@ -280,7 +281,8 @@ c xmm es la primer matriz de (M,M) en el
      >            RMM(M7:M7+MMd), RMM(M9:M9+MMd), RMM(M11:M11+MM),
      >            open)
       call g2g_solve_groups(0,Ex,0)
-      call field_calc(E1, time)
+      call field_calc(E1, time, RMM(M3:M3+MM), RMM(M5:M5+MM), r, d,
+     > Iz, natom, ntatom, open)
        FBA=FON
 
        call spunpack('L',M,RMM(M5),FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))

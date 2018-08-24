@@ -126,7 +126,8 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
      FieldNow(2) = eefld_ampy * field_shape
      FieldNow(3) = eefld_ampz * field_shape
      call dip( DipMom(1), DipMom(2), DipMom(3) )
-     call intfld( g, FieldNow(1), FieldNow(2), FieldNow(3) )
+     call intfld(RMM(M3:M3+MM), RMM(M5:M5+MM), r, d, Iz, natom, ntatom, open, &
+                 g, FieldNow(1), FieldNow(2), FieldNow(3))
 
      dip_times_field = 0.0d0
      dip_times_field = dip_times_field + FieldNow(1) * DipMom(1)

@@ -11,19 +11,22 @@
 !------------------------------------------------------------------------------!
 module subm_intfld
 contains
-subroutine intfld(g, ux, uy, uz)
-   use garcha_mod, only: RMM, a, c, d, r, nuc, ncont, nshell, Iz, OPEN, NORM, &
-                         M, Md
+subroutine intfld(Fmat, Fmat_b, r, d, Iz, natom, ntatom, open_shell, g, ux, uy,&
+                  uz)
+   use garcha_mod, only: a, c, nuc, ncont, nshell, NORM, M, Md
    use constants_mod, only: pi32
    implicit none
-   double precision, intent(in) :: g, ux, uy, uz
+   integer         , intent(in)    :: natom, ntatom, Iz(natom)
+   logical         , intent(in)    :: open_shell
+   double precision, intent(in)    :: g, ux, uy, uz, r(ntatom,3), d(natom,natom)
+   double precision, intent(inout) :: Fmat(:), Fmat_b(:)
 
    double precision :: sq3, term, ccoef, f1, f2
    double precision :: aux(3) , aux1(3), aux2(3), aux3(3), aux4(3), aux5(3), &
                        aux6(3), Q(3)
 
-   integer          :: MM, M2, M3, M5, l1, l2, l3, l4, Ll(3), ns, np, nd, &
-                       ifunct, jfunct, nci, ncj, i_ind, j_ind, fock_ind
+   integer          :: MM, M2, l1, l2, l3, l4, Ll(3), ns, np, nd, ifunct, &
+                       jfunct, nci, ncj, i_ind, j_ind, fock_ind
 
    double precision :: ss, ps, pp, pis, pjs, dp, dijs, sxs, sys, szs, t1, ti, &
                        tj, Z2, Zij
@@ -36,7 +39,7 @@ subroutine intfld(g, ux, uy, uz)
    enddo
 
    ! M3 is Fock alpha, M5 is Fock beta
-   M2 = 2 * M    ; M3 = 1 + M * (M +1) / 2; M5 = 1 + M * (M +1)
+   M2 = 2 * M    ;
    ns = nshell(0); np = nshell(1)         ; nd = nshell(2)
 
    ! (s|s)
@@ -61,8 +64,8 @@ subroutine intfld(g, ux, uy, uz)
 
          term     = g * ccoef * (sxs * ux + sys * uy + szs * uz)
          fock_ind = ifunct + ((M2 - jfunct) * (jfunct -1)) / 2
-         RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + term
-         if (OPEN) RMM(M3-1 + fock_ind) = RMM(M3-1 + fock_ind) + term
+         Fmat(fock_ind) = Fmat(fock_ind) + term
+         if (open_shell) Fmat_b(fock_ind) = Fmat_b(fock_ind) + term
       enddo
       enddo
    enddo
@@ -99,8 +102,8 @@ subroutine intfld(g, ux, uy, uz)
 
             term     = g * ccoef * (aux(1)*ux + aux(2)*uy + aux(3)*uz)
             fock_ind = ifunct + l1-1 + ((M2 - jfunct) * (jfunct -1)) / 2
-            RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + term
-            if (OPEN) RMM(M3-1 + fock_ind) = RMM(M3-1 + fock_ind) + term
+            Fmat(fock_ind) = Fmat(fock_ind) + term
+            if (open_shell) Fmat_b(fock_ind) = Fmat_b(fock_ind) + term
          enddo
       enddo
       enddo
@@ -157,8 +160,8 @@ subroutine intfld(g, ux, uy, uz)
                   fock_ind = i_ind + ((M2 - j_ind) * (j_ind -1)) / 2
                   term     = g * ccoef * (aux1(1)*ux + aux1(2)*uy + aux1(3)*uz)
 
-                  RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + term
-                  if (OPEN) RMM(M3-1 + fock_ind) = RMM(M3-1 + fock_ind) + term
+                  Fmat(fock_ind) = Fmat(fock_ind) + term
+                  if (open_shell) Fmat_b(fock_ind) = Fmat_b(fock_ind) + term
                endif
             enddo
          enddo
@@ -213,8 +216,8 @@ subroutine intfld(g, ux, uy, uz)
                term     = g * ccoef * (aux1(1)*ux + aux1(2)*uy + aux1(3)*uz) /f1
 
                fock_ind = ifunct + Ll(l1) + l2 -1 + ((M2-jfunct)*(jfunct -1)) /2
-               RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + term
-               if (OPEN) RMM(M3-1 + fock_ind) = RMM(M3-1 + fock_ind) + term
+               Fmat(fock_ind) = Fmat(fock_ind) + term
+               if (open_shell) Fmat_b(fock_ind) = Fmat_b(fock_ind) + term
             enddo
          enddo
       enddo
@@ -293,8 +296,8 @@ subroutine intfld(g, ux, uy, uz)
 
                   fock_ind = ifunct + Ll(l1) + l2 -1 + &
                              ((M2 - jfunct + l3 -1) * (jfunct + l3 -2)) / 2
-                  RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + term
-                  if (OPEN) RMM(M3-1 + fock_ind) = RMM(M3-1 + fock_ind) + term
+                  Fmat(fock_ind) = Fmat(fock_ind) + term
+                  if (open_shell) Fmat_b(fock_ind) = Fmat_b(fock_ind) + term
                enddo
             enddo
          enddo
@@ -422,8 +425,8 @@ subroutine intfld(g, ux, uy, uz)
                         term     = (aux6(1) * ux + aux6(2) * uy + aux6(3) * uz)&
                                  * g* ccoef / (f1 * f2)
 
-                        RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + term
-                        if (OPEN) RMM(M3-1 + fock_ind) = RMM(M3-1 + fock_ind) &
+                        Fmat(fock_ind) = Fmat(fock_ind) + term
+                        if (open_shell) Fmat_b(fock_ind) = Fmat_b(fock_ind) &
                                                        + term
                      endif
                   enddo

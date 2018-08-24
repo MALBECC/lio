@@ -6,7 +6,7 @@ subroutine rmmcalc3_fockele( dens_mao, elec_field, uses_field,                 &
 !  Time is in ps?fs?
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-   use garcha_mod  , only: M, RMM, natom, Iz, NCO, Nunp, Md, open
+   use garcha_mod  , only: M, RMM, natom, Iz, NCO, Nunp, Md, open, r, d, ntatom
    use field_data  , only: a0, epsilon
    use faint_cpu   , only: int3lu, intfld
    use ECP_mod     , only: ecpmode, VAAA, VAAB, VBAC
@@ -62,7 +62,8 @@ subroutine rmmcalc3_fockele( dens_mao, elec_field, uses_field,                 &
          Qc = Qc + Iz(kk)
       end do
 
-      call intfld( g, elec_field(1), elec_field(2), elec_field(3) )
+      call intfld(RMM(M3:M3+MM), RMM(M5:M5+MM), r, d, Iz, natom, ntatom, open, &
+                  g, elec_field(1), elec_field(2), elec_field(3))
 
       dip_times_field = 0.0d0
       dip_times_field = dip_times_field + elec_field(1) * dipole(1)

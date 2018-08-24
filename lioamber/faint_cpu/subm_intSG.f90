@@ -10,12 +10,14 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module subm_intSG
 contains
-subroutine intSG(ff)
-   use garcha_mod, only: RMM, a, c, d, r, nuc, ncont, nshell, pi32, natom, &
-                         M, Md, NORM
+subroutine intSG(ff, wgt_rho, r, d, natom, ntatom)
+   use garcha_mod   , only: a, c, Nuc, ncont, nshell, M, Md, NORM
+   use constants_mod, only: pi32
    implicit none
+
+   integer         , intent(in)    :: natom, ntatom
+   double precision, intent(in)    :: r(ntatom,3), d(natom,natom), wgt_rho(:)
    double precision, intent(inout) :: ff(natom,3)
-   double precision                :: Q(3)
 
    integer           :: ifunct, jfunct, en_wgt_ind, nci, ncj, lk, lij, l1, l2, &
                         l3, l4, l5, l12, l34, ns, np, nd, M2, M15, ll(3)
@@ -24,7 +26,7 @@ subroutine intSG(ff)
                         ti, tj, te, t0, t1, t2, t4, t5, t10, t11, t12, t13,    &
                         t14, t15, t16, t17, ss, spi, spj, spk, ps, pp, pd,     &
                         pidkl, pipk, pis, pjdkl, pjpk, pjs, ds, dp, dd, df,    &
-                        dsd, dijpk, dijpl, dijs
+                        dsd, dijpk, dijpl, dijs, Q(3)
 
    sq3 = 1.D0
    if (NORM) sq3 = sqrt(3.D0)
@@ -55,7 +57,7 @@ subroutine intSG(ff)
          ss    = pi32 * exp(-rexp) / (Zij * sqrt(Zij))
 
          en_wgt_ind = ifunct + ((M2 - jfunct) * (jfunct -1)) / 2
-         te = RMM(M15-1 + en_wgt_ind) * ccoef * 2.0D0 * ss
+         te = wgt_rho(en_wgt_ind) * ccoef * 2.0D0 * ss
          t4 = te * a(ifunct,nci)
          t5 = te * a(jfunct,ncj)
 
@@ -92,7 +94,7 @@ subroutine intSG(ff)
          do l1 = 1, 3
             en_wgt_ind = ifunct + l1 -1 + ((M2 - jfunct) * (jfunct -1)) / 2
             t1 = (Q(l1) - r(Nuc(ifunct),l1))
-            te = RMM(M15-1 + en_wgt_ind) * ccoef  * ss
+            te = wgt_rho(en_wgt_ind) * ccoef  * ss
             t4 = 2.D0 * te * a(ifunct,nci)
             t5 = 2.D0 * te * a(jfunct,ncj)
 
@@ -151,7 +153,7 @@ subroutine intSG(ff)
 
                en_wgt_ind = ifunct + l1-1 + ((M2 - (jfunct + l2-1)) * &
                             (jfunct + l2-2)) / 2
-               te = RMM(M15-1 + en_wgt_ind) * ccoef
+               te = wgt_rho(en_wgt_ind) * ccoef
                t5 = te * 2.D0 * a(jfunct,ncj)
                t4 = te * 2.D0 * a(ifunct,nci)
 
@@ -215,7 +217,7 @@ subroutine intSG(ff)
                l12 = l1 * (l1-1) / 2 + l2
                en_wgt_ind = ifunct + l12-1 + ((M2 - jfunct) * (jfunct-1)) / 2
 
-               te = RMM(M15-1 + en_wgt_ind) * ccoef / f1
+               te = wgt_rho(en_wgt_ind) * ccoef / f1
                t4 = te * 2.D0 * a(ifunct,nci)
                t5 = te * 2.D0 * a(jfunct,ncj)
                do l3 = 1, 3
@@ -293,7 +295,7 @@ subroutine intSG(ff)
                   l12 = l1 * (l1-1) / 2 + l2
                   en_wgt_ind = ifunct + l12-1 + ((M2 - (jfunct + l3-1)) * &
                                                 (jfunct + l3-2)) / 2
-                  te  = RMM(M15-1 + en_wgt_ind) * ccoef / f1
+                  te  = wgt_rho(en_wgt_ind) * ccoef / f1
                   t4  = te * 2.D0 * a(ifunct,nci)
                   t5  = te * 2.D0 * a(jfunct,ncj)
                   t14 = pipk / Z2
@@ -413,7 +415,7 @@ subroutine intSG(ff)
                      l34 = l3 * (l3-1) / 2 + l4
                      en_wgt_ind = ifunct + l12-1 + ((M2 - (jfunct + l34-1)) * &
                                                     (jfunct + l34 -2)) / 2
-                     te = RMM(M15-1 + en_wgt_ind) * ccoef / (f1 * f2)
+                     te = wgt_rho(en_wgt_ind) * ccoef / (f1 * f2)
                      t4 = te * 2.D0 * a(ifunct,nci)
                      t5 = te * 2.D0 * a(jfunct,ncj)
 

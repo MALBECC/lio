@@ -228,8 +228,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    if (field) call field_setup_old(pert_time, 1, fx, fy, fz)
    call td_integration_setup(igrid2, igpu)
    call td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM(M5), &
-                       RMM(M11), r, pc, ntatom, natom, Smat, Nuc, a, c, d, Iz, &
-                       ncont, NORM, M, nshell)
+                       RMM(M11), r, pc, ntatom, natom, Smat, d, Iz, M)
    call spunpack('L', M, RMM(M5), Smat_initial)
 
    ! Initialises transport if required.
@@ -637,20 +636,15 @@ subroutine td_integration_setup(igrid2, igpu)
 end subroutine td_integration_setup
 
 subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM5, RMM11,  &
-                          r, pc, ntatom, natom, Smat, Nuc, a, c, d, Iz, ncont, &
-                          NORM, M, nshell)
+                          r, pc, ntatom, natom, Smat, d, Iz, M)
    use faint_cpu, only: int1, intsol
    use mask_ecp , only: ECP_fock
    implicit none
 
    double precision, intent(in) :: pc(ntatom), r(ntatom,3)
-   integer         , intent(in) :: M, MM, igpu, nsol, ntatom, &
-                                   Nuc(M), Iz(natom),nshell(0:4)
-   logical         , intent(in) :: NORM
-   integer         , intent(inout) :: natom
+   integer         , intent(in) :: M, MM, igpu, nsol, natom, ntatom, Iz(natom)
    double precision, intent(inout) :: RMM5(MM), RMM11(MM), E1, En, E1s, Ens
-   double precision, allocatable, intent(in)    :: a(:,:), c(:,:), d(:,:)
-   integer         , allocatable, intent(in)    :: ncont(:)
+   double precision, allocatable, intent(in)    :: d(:,:)
    double precision, allocatable, intent(inout) :: RMM(:), Smat(:,:)
 
    integer :: icount
@@ -658,8 +652,7 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM5, RMM11,  &
    E1 = 0.0D0 ; En = 0.0D0
    call g2g_timer_sum_start('TD - 1-e Fock')
    call g2g_timer_sum_start('TD - Nuclear attraction')
-   call int1(En, RMM5, RMM11, Smat, Nuc, a, c, d, r, &
-             Iz, ncont, NORM, natom, M, nshell, ntatom)
+   call int1(En, RMM5, RMM11, Smat, d, r, Iz, natom, ntatom)
 
    call ECP_fock(MM, RMM11)
    call g2g_timer_sum_stop('TD - Nuclear attraction')

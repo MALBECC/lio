@@ -5,132 +5,92 @@
 ! debugged ( or supposed to) 28-7-92
 ! Dario Estrin
 
-      module subm_intsolG; contains
-      subroutine intsolG(f,ff)
+module subm_intsolG; contains
+subroutine intsolG(frc_qm, frc_mm)
 
-      use liotemp   , only: FUNCT
-      use garcha_mod, only: RMM, ll, a, c, d, r, pc, Iz, Nuc, Ncont, &
-                           nshell, watermod, rmax, pi, pi32, NORM, &
-                           natom, ntatom, M, Md, nsol
+   use garcha_mod   , only: M, Md, a, c, Nuc, Ncont, nshell, rmax, NORM, &
+                            natom, ntatom, nsol, RMM, d, r, pc, Iz
+   use liotemp      , only: FUNCT
+   use constants_mod, only: pi, pi32
 
-      implicit none
-      double precision  :: f(natom,3), fcampo(natom,3), ff(ntatom,3), rr(3)
+   implicit none
+   double precision  :: frc_qm(natom,3), frc_mm(ntatom,3)
 
-      double precision  :: dn(3),  dn1(3), dn2(3), dn3(3), dn4(3), dn5(3)
-      double precision  :: dn6(3), dn7(3), dn8(3), dn9(3), dn10(3)
-      double precision  :: dn2b(3), dn4b(3), dn5b(3), dn7b(3), dn8b(3)
-      double precision  :: dn9b(3), dn11(3),dn12(3)
-      double precision  :: Q(3)
+   double precision  :: dn(3),  dn1(3), dn2(3), dn3(3), dn4(3), dn5(3)
+   double precision  :: dn6(3), dn7(3), dn8(3), dn9(3), dn10(3)
+   double precision  :: dn2b(3), dn4b(3), dn5b(3), dn7b(3), dn8b(3)
+   double precision  :: dn9b(3), dn11(3),dn12(3)
+   double precision  :: Q(3), rr(3), ll(3)
+   double precision,  dimension(:),   allocatable :: s0s, s1s, s2s, s3s
+   double precision,  dimension(:),   allocatable :: s4s, s5s, s6s
+   double precision,  dimension(:,:), allocatable :: x0x, x1x, x2x
+   double precision,  dimension(:,:), allocatable :: x3x, x4x, x5x
 
-      logical, dimension(:),   allocatable :: qmmmdo
-      double precision,  dimension(:),   allocatable :: s0s, s1s, s2s, s3s
-      double precision,  dimension(:),   allocatable :: s4s, s5s, s6s
-      double precision,  dimension(:,:), allocatable :: x0x, x1x, x2x
-      double precision,  dimension(:,:), allocatable :: x3x, x4x, x5x
+   ! Implicits:
+   integer :: i, j, k, n, ni, nj, ii, jj, j1, j2
+   integer :: ns, np, nd
+   integer :: l, lk, lij, l1, l2, l3, l4, l5, l12, l34
+   integer :: MM, MMd
+   integer :: M1, M2, M3, M5, M7, M9, M11
 
-! Implicits:
-      integer :: i, j, k, n, ni, nj, ii, jj, j1, j2
-      integer :: ncerca, nvecin, ns, np, nd
-      integer :: l, lk, lij, l1, l2, l3, l4, l5, l12, l34
-      integer :: MM, MMd
-      integer :: M1, M2, M3, M5, M7, M9, M11
-
-      double precision  :: f1, f2, te, et, q1, q2, q3, rexp, sq3
-      double precision  :: term, temp, temp0, zij, z2, u
-      double precision  :: distint, distx, disty, distz
-      double precision  :: tx, ty, tz, tx1, ty1, tz1, ti, tj, tna, tn1a
-      double precision  :: ss, t1, dd2, dd, alf, cc, ccoef
-      double precision  :: dNs, dNp, dNd, dNf, dN1s
-      double precision  :: fNs, fNp, fNd, piNs, sNpi
-      double precision  :: pNp, pNd, pN1p
-      double precision  :: s0p, s1p, s2p
-      double precision  :: p0s, p1s, p2s, p3s, p4s
-      double precision  :: pi0p, pi0d, pi1p, pi1d, pi2p
-      double precision  :: pj0s, pj0p, pj0d, pj1s, pj1p, pj1d, pj2s, pj2p, pj3s
-      double precision  :: d0s, d0p, d1s, d1p, d2s, d3s, d2p, d0pl, d1pl
-      double precision  :: t2, t3, t4, t5, t7, t8, t9, t15
-      double precision  :: t25, t26, t27, t28, t29, t30, t31, t32, t33, t34
-      double precision  :: t50, t51, t52, t53, t54, t55, t56, t57, t58, t59
-      double precision  :: t60, t61, t62, t63, t64, t65, t66, t67, t68, t69
-      double precision  :: t70, t71, t72, t73, t74, t81, t81b, t82, t82b
-      double precision  :: t83, t83b, t84, t84b, t85, t85b, t86, t86b
-      double precision  :: t90, t91, t92, t93, t94, t95, t96, t97, t98
-
-      allocate (qmmmdo(natom+nsol))
-      allocate(s0s(ntatom),s1s(ntatom),s2s(ntatom),s3s(ntatom), &
-      s4s(ntatom),s5s(ntatom),s6s(ntatom))
-
-      allocate(x0x(ntatom,3),x1x(ntatom,3),x2x(ntatom,3),x3x(ntatom,3), &
-      x4x(ntatom,3),x5x(ntatom,3))
+   double precision  :: f1, f2, te, et, q1, q2, q3, rexp, sq3
+   double precision  :: term, temp, temp0, zij, z2, u
+   double precision  :: distint, distx, disty, distz
+   double precision  :: tx, ty, tz, tx1, ty1, tz1, ti, tj, tna, tn1a
+   double precision  :: ss, t1, dd2, dd, alf, cc, ccoef
+   double precision  :: dNs, dNp, dNd, dNf, dN1s
+   double precision  :: fNs, fNp, fNd, piNs, sNpi
+   double precision  :: pNp, pNd, pN1p
+   double precision  :: s0p, s1p, s2p
+   double precision  :: p0s, p1s, p2s, p3s, p4s
+   double precision  :: pi0p, pi0d, pi1p, pi1d, pi2p
+   double precision  :: pj0s, pj0p, pj0d, pj1s, pj1p, pj1d, pj2s, pj2p, pj3s
+   double precision  :: d0s, d0p, d1s, d1p, d2s, d3s, d2p, d0pl, d1pl
+   double precision  :: t2, t3, t4, t5, t7, t8, t9, t15
+   double precision  :: t25, t26, t27, t28, t29, t30, t31, t32, t33, t34
+   double precision  :: t50, t51, t52, t53, t54, t55, t56, t57, t58, t59
+   double precision  :: t60, t61, t62, t63, t64, t65, t66, t67, t68, t69
+   double precision  :: t70, t71, t72, t73, t74, t81, t81b, t82, t82b
+   double precision  :: t83, t83b, t84, t84b, t85, t85b, t86, t86b
+   double precision  :: t90, t91, t92, t93, t94, t95, t96, t97, t98
 
 
-      if (NORM) then
-      sq3=sqrt(3.D0)
-      else
-      sq3=1.D0
-      endif
+   allocate(s0s(ntatom),s1s(ntatom),s2s(ntatom),s3s(ntatom), &
+            s4s(ntatom),s5s(ntatom),s6s(ntatom))
+   allocate(x0x(ntatom,3),x1x(ntatom,3),x2x(ntatom,3),x3x(ntatom,3), &
+            x4x(ntatom,3),x5x(ntatom,3))
 
-      ns=nshell(0)
-      np=nshell(1)
-      nd=nshell(2)
-      MM=M*(M+1)/2
-      MMd=Md*(Md+1)/2
-      M2=2*M
+   sq3 = 1.D0
+   if (NORM) sq3 = sqrt(3.D0)
 
-      do l=1,3
-      Ll(l)=l*(l-1)/2
-     enddo
+   ns = nshell(0); np = nshell(1); nd = nshell(2)
+   MM  = M * (M +1) / 2
+   M2  = 2 * M
 
-       qmmmdo=.true.
-        if(watermod.eq.1) nvecin=2 !tre sites
-        if(watermod.eq.2) nvecin=3 !four sites
-        if(watermod.eq.1.or.watermod.eq.2) then
-        qmmmdo=.false.
+   do l1 = 1, 3
+      Ll(l1) = l1 * (l -1) / 2
+   enddo
 
-       do i=natom+1,natom+nsol
-          ncerca=0
-          if(pc(i).gt.1.-6D0) qmmmdo(i)=.true. ! eliminate the sites without charge
+   ! Nuclear repulsion
+   do iatom = 1, natom
+   do jatom = natom+1, ntatom
+      t1   = r(iatom,1) - r(jatom,1)
+      t2   = r(iatom,2) - r(jatom,2)
+      t3   = r(iatom,3) - r(jatom,3)
+      term = t1 * t1 + t2 * t2 + t3 * t3
+      term = - Iz(iatom) * pc(jatom) / (term * dsqrt(term))
 
-        do j=natom+1,natom+nsol
+      frc_qm(iatom,1) = frc_qm(iatom,1) + term * t1
+      frc_qm(iatom,2) = frc_qm(iatom,2) + term * t2
+      frc_qm(iatom,3) = frc_qm(iatom,3) + term * t3
 
+      frc_mm(jatom,1) = frc_mm(jatom,1) - term * t1
+      frc_mm(jatom,2) = frc_mm(jatom,2) - term * t2
+      frc_mm(jatom,3) = frc_mm(jatom,3) - term * t3
+   enddo
+   enddo
 
-          distx=(r(i,1)-r(j,1))**2
-          disty=(r(i,2)-r(j,2))**2
-          distz=(r(i,3)-r(j,3))**2
-          distint=distx+disty+distz
-          if (distint.lt.8.45D0) then
-            ncerca=ncerca+1
-          endif
-
-         enddo
-          if(ncerca.le.nvecin) qmmmdo(i)=.false. ! eliminate the broken waters
-         enddo
-          endif
-
-       fcampo=0
-       do j1=1,natom
-       do j2=natom+1,natom+nsol
-
-       tx1=r(j1,1)-r(j2,1)
-       ty1=r(j1,2)-r(j2,2)
-       tz1=r(j1,3)-r(j2,3)
-       dd2=tx1**2+ty1**2+tz1**2
-        if(qmmmdo(j2)) then
-       dd2=sqrt(dd2)
-       et = -Iz(j1)*pc(j2)/dd2**3
-       f(j1,1)=f(j1,1) + et*tx1
-       f(j1,2)=f(j1,2) + et*ty1
-       f(j1,3)=f(j1,3) + et*tz1
-
-       ff(j2,1)=ff(j2,1) - et*tx1
-       ff(j2,2)=ff(j2,2) - et*ty1
-       ff(j2,3)=ff(j2,3) - et*tz1
-
-       endif
-    enddo
-enddo
-
-! first ioop (s|s) case
+   ! (s|s)
       do i=1,ns
       do j=1,i
      dd=d(Nuc(i),Nuc(j))
@@ -157,7 +117,7 @@ enddo
        temp0=2.D0*sqrt(zij/pi)*ss
 
       do n=natom+1,natom+nsol
-       if (qmmmdo(n)) then
+
 
        q1=Q(1)-r(n,1)
        q2=Q(2)-r(n,2)
@@ -174,7 +134,7 @@ enddo
        x0x(n,2)=temp*q2
        x0x(n,3)=temp*q3
        tna=tna+s0s(n)
-       endif
+
     enddo
       te=RMM(k)*ccoef
       ty=te*2.D0
@@ -186,15 +146,15 @@ enddo
         tx=r(Nuc(i),l2)-r(Nuc(j),l2)
 
       do n=natom+1,natom+nsol
-       if(qmmmdo(n)) then
+
 
        piNs=t1*s0s(n)-(Q(l2)-r(n,l2))*s1s(n)
        sNpi=piNs+tx*s0s(n)
-       f(Nuc(i),l2)=f(Nuc(i),l2)+t4*piNs
-       f(Nuc(j),l2)=f(Nuc(j),l2)+t5*sNpi
+       frc_qm(Nuc(i),l2)=frc_qm(Nuc(i),l2)+t4*piNs
+       frc_qm(Nuc(j),l2)=frc_qm(Nuc(j),l2)+t5*sNpi
 
-        ff(n,l2)=ff(n,l2)+te*x0x(n,l2)
-        endif
+        frc_mm(n,l2)=frc_mm(n,l2)+te*x0x(n,l2)
+
 enddo
 enddo
         endif
@@ -227,7 +187,6 @@ enddo
       temp0=2.D0*sqrt(zij/pi)*ss
 
       do n=natom+1,natom+nsol
-       if (qmmmdo(n)) then
 
        q1=Q(1)-r(n,1)
        q2=Q(2)-r(n,2)
@@ -249,12 +208,12 @@ enddo
        x1x(n,1)=temp*q1
        x1x(n,2)=temp*q2
        x1x(n,3)=temp*q3
-       endif
+
  enddo
 
       ccoef=c(i,ni)*c(j,nj)
       do n=natom+1,natom+nsol
-       if(qmmmdo(n)) then
+
       t50=(s0s(n)-s1s(n))/z2
 
       do l1=1,3
@@ -278,7 +237,7 @@ enddo
        dNs=t1*p0s-t2*p1s
        if (l1.eq.l2) then
         dNs=dNs+t50
-        f(Nuc(i),l2)=f(Nuc(i),l2)-te*s0s(n)
+        frc_qm(Nuc(i),l2)=frc_qm(Nuc(i),l2)-te*s0s(n)
        endif
 
       tx=r(Nuc(i),l2)-r(Nuc(j),l2)
@@ -287,13 +246,13 @@ enddo
         ty=te*2.D0
         t5=ty*a(j,nj)
         t4=ty*a(i,ni)
-      f(Nuc(i),l2)=f(Nuc(i),l2)+t4*dNs
-      f(Nuc(j),l2)=f(Nuc(j),l2)+t5*pNp
+      frc_qm(Nuc(i),l2)=frc_qm(Nuc(i),l2)+t4*dNs
+      frc_qm(Nuc(j),l2)=frc_qm(Nuc(j),l2)+t5*pNp
 
-         ff(n,l2)=ff(n,l2)+te*dn(l2)
+         frc_mm(n,l2)=frc_mm(n,l2)+te*dn(l2)
       enddo
       enddo
-       endif
+
     enddo
            endif
 
@@ -326,7 +285,7 @@ enddo
 
       do n=natom+1,natom+nsol
 
-       if (qmmmdo(n)) then
+
 
        q1=Q(1)-r(n,1)
        q2=Q(2)-r(n,2)
@@ -353,12 +312,11 @@ enddo
        x2x(n,2)=temp*q2
        x2x(n,3)=temp*q3
 
-        endif
+
      enddo
 
       ccoef=c(i,ni)*c(j,nj)
       do n=natom+1,natom+nsol
-       if(qmmmdo(n)) then
 
       t15=(s0s(n)-s1s(n))/z2
       t25=(s1s(n)-s2s(n))/z2
@@ -433,26 +391,25 @@ enddo
 
        if (l1.eq.l3) then
         dNp=dNp+t29
-        f(Nuc(i),l3)=f(Nuc(i),l3)-te*s0p
+        frc_qm(Nuc(i),l3)=frc_qm(Nuc(i),l3)-te*s0p
        endif
 
        if (l2.eq.l3) then
         dNp=dNp+t30
-       f(Nuc(j),l3)=f(Nuc(j),l3)-te*p0s
+       frc_qm(Nuc(j),l3)=frc_qm(Nuc(j),l3)-te*p0s
        endif
 
        tx=r(Nuc(i),l3)-r(Nuc(j),l3)
        pNd=dNp+tx*pNp
 
-        f(Nuc(i),l3)=f(Nuc(i),l3)+t4*dNp
-        f(Nuc(j),l3)=f(Nuc(j),l3)+t5*pNd
+        frc_qm(Nuc(i),l3)=frc_qm(Nuc(i),l3)+t4*dNp
+        frc_qm(Nuc(j),l3)=frc_qm(Nuc(j),l3)+t5*pNd
 
-         ff(n,l3)=ff(n,l3)+te*dn2(l3)
+         frc_mm(n,l3)=frc_mm(n,l3)+te*dn2(l3)
 
       enddo
    enddo
    enddo
-       endif
     enddo
       endif
    enddo
@@ -482,7 +439,7 @@ enddo
       temp0=2.D0*sqrt(zij/pi)*ss
 
       do n=natom+1,natom+nsol
-       if (qmmmdo(n)) then
+
 
        q1=Q(1)-r(n,1)
        q2=Q(2)-r(n,2)
@@ -508,13 +465,11 @@ enddo
        x2x(n,1)=temp*q1
        x2x(n,2)=temp*q2
        x2x(n,3)=temp*q3
-       endif
     enddo
 
       ccoef=c(i,ni)*c(j,nj)
 
       do n=natom+1,natom+nsol
-       if(qmmmdo(n)) then
 
       t7=(s0s(n)-s1s(n))/z2
       t8=(s1s(n)-s2s(n))/z2
@@ -589,24 +544,23 @@ enddo
 
        if (l1.eq.l3) then
         dNp=dNp+t29
-        f(Nuc(i),l3)=f(Nuc(i),l3)-te*pj0s
+        frc_qm(Nuc(i),l3)=frc_qm(Nuc(i),l3)-te*pj0s
        endif
 
        if (l2.eq.l3) then
         dNp=dNp+t30
-       f(Nuc(i),l3)=f(Nuc(i),l3)-te*p0s
+       frc_qm(Nuc(i),l3)=frc_qm(Nuc(i),l3)-te*p0s
        endif
 
         fNs=dNp-tx*dNs
 
-        f(Nuc(i),l3)=f(Nuc(i),l3)+t4*fNs
-        f(Nuc(j),l3)=f(Nuc(j),l3)+t5*dNp
+        frc_qm(Nuc(i),l3)=frc_qm(Nuc(i),l3)+t4*fNs
+        frc_qm(Nuc(j),l3)=frc_qm(Nuc(j),l3)+t5*dNp
 
-         ff(n,l3)=ff(n,l3)+te*dn2(l3)
+         frc_mm(n,l3)=frc_mm(n,l3)+te*dn2(l3)
       enddo
       enddo
    enddo
-       endif
     enddo
 
        endif
@@ -637,7 +591,6 @@ enddo
       temp0=2.D0*sqrt(zij/pi)*ss
 
       do n=natom+1,natom+nsol
-       if (qmmmdo(n)) then
        q1=Q(1)-r(n,1)
        q2=Q(2)-r(n,2)
        q3=Q(3)-r(n,3)
@@ -668,13 +621,10 @@ enddo
        x3x(n,1)=temp*q1
        x3x(n,2)=temp*q2
        x3x(n,3)=temp*q3
-       endif
     enddo
       ccoef=c(i,ni)*c(j,nj)
       do n=natom+1,natom+nsol
-       if(qmmmdo(n)) then
-
-      t7=(s0s(n)-s1s(n))/z2
+       t7=(s0s(n)-s1s(n))/z2
       t8=(s1s(n)-s2s(n))/z2
       t9=(s2s(n)-s3s(n))/z2
       t26=(x0x(n,1)-x1x(n,1))/z2
@@ -820,33 +770,33 @@ enddo
 
         dNd=t1*tna-t2*tn1a
 
-       if(l1.eq.l4) then
-         f(Nuc(i),l4)=f(Nuc(i),l4)-te*pj0p
+       ifrc_qm(l1.eq.l4) then
+         frc_qm(Nuc(i),l4)=frc_qm(Nuc(i),l4)-te*pj0p
          dNd=dNd+(pj0p-pj1p)/z2
         endif
 
-        if(l2.eq.l4) then
-         f(Nuc(i),l4)=f(Nuc(i),l4)-te*pi0p
+        ifrc_qm(l2.eq.l4) then
+         frc_qm(Nuc(i),l4)=frc_qm(Nuc(i),l4)-te*pi0p
          dNd=dNd+(pi0p-pi1p)/z2
         endif
 
-        if(l3.eq.l4) then
-         f(Nuc(j),l4)=f(Nuc(j),l4)-te*d0s
+        ifrc_qm(l3.eq.l4) then
+         frc_qm(Nuc(j),l4)=frc_qm(Nuc(j),l4)-te*d0s
          dNd=dNd+(d0s-d1s)/z2
         endif
 
         fNp=dNd-tx*tna
-        f(Nuc(i),l4)=f(Nuc(i),l4)+t4*fNp
-        f(Nuc(j),l4)=f(Nuc(j),l4)+t5*dNd
+        frc_qm(Nuc(i),l4)=frc_qm(Nuc(i),l4)+t4*fNp
+        frc_qm(Nuc(j),l4)=frc_qm(Nuc(j),l4)+t5*dNd
 
-         ff(n,l4)=ff(n,l4)+te*dn5(l4)
+         frc_mm(n,l4)=frc_mm(n,l4)+te*dn5(l4)
 
         fNp=dNd-tx*tna
      enddo
      enddo
   enddo
   enddo
-      endif
+
    enddo
       endif
    enddo
@@ -876,7 +826,6 @@ enddo
 
       ! loop over nuclei, part common for all shell
       do  n=natom+1,natom+nsol
-       if (qmmmdo(n)) then
 
        q1=Q(1)-r(n,1)
        q2=Q(2)-r(n,2)
@@ -912,12 +861,12 @@ enddo
        x4x(n,1)=temp*q1
        x4x(n,2)=temp*q2
        x4x(n,3)=temp*q3
-       endif
+
     enddo
 
       ccoef=c(i,ni)*c(j,nj)
       do n=natom+1,natom+nsol
-       if(qmmmdo(n)) then
+
       t50=(s0s(n)-s1s(n))/z2
       t51=(s1s(n)-s2s(n))/z2
       t52=(s2s(n)-s3s(n))/z2
@@ -1259,42 +1208,40 @@ enddo
 
        if (l1.eq.l5) then
         fNd=fNd+t72
-        f(Nuc(i),l5)=f(Nuc(i),l5)-te*pj0d
+        frc_qm(Nuc(i),l5)=frc_qm(Nuc(i),l5)-te*pj0d
        endif
 
        if (l2.eq.l5) then
         fNd=fNd+t73
-        f(Nuc(i),l5)=f(Nuc(i),l5)-te*pi0d
+        frc_qm(Nuc(i),l5)=frc_qm(Nuc(i),l5)-te*pi0d
        endif
 
        if (l3.eq.l5) then
         fNd=fNd+t74
-        f(Nuc(j),l5)=f(Nuc(j),l5)-te*d0pl
+        frc_qm(Nuc(j),l5)=frc_qm(Nuc(j),l5)-te*d0pl
        endif
 
        if (l4.eq.l5) then
         fNd=fNd+t64
-        f(Nuc(j),l5)=f(Nuc(j),l5)-te*d0p
+        frc_qm(Nuc(j),l5)=frc_qm(Nuc(j),l5)-te*d0p
        endif
 
         dNf=fNd+tx*tna
-        f(Nuc(i),l5)=f(Nuc(i),l5)+t4*fNd
-        f(Nuc(j),l5)=f(Nuc(j),l5)+t5*dNf
+        frc_qm(Nuc(i),l5)=frc_qm(Nuc(i),l5)+t4*fNd
+        frc_qm(Nuc(j),l5)=frc_qm(Nuc(j),l5)+t5*dNf
 
-         ff(n,l5)=ff(n,l5)+te*dn10(l5)
+         frc_mm(n,l5)=frc_mm(n,l5)+te*dn10(l5)
       enddo
       enddo
    enddo
       enddo
       enddo
-       endif
     enddo
        endif
     enddo
     enddo
 enddo
 enddo
-      deallocate (qmmmdo)
       deallocate(s0s,s1s,s2s,s3s, &
       s4s,s5s,s6s,x0x,x1x,x2x,x3x, &
       x4x,x5x)

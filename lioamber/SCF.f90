@@ -356,7 +356,7 @@ subroutine SCF(E)
           call g2g_timer_sum_start('QM/MM')
        if (igpu.le.1) then
           call g2g_timer_start('intsol')
-          call intsol(RMM(1:MM), RMM(M11:M11+MM), Iz, pc, natom, ntatom, &
+          call intsol(RMM(1:MM), RMM(M11:M11+MM), Iz, pc, r, d, natom, ntatom, &
                       E1s, Ens, .true.)
           call g2g_timer_stop('intsol')
         else

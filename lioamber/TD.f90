@@ -674,7 +674,7 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM5, RMM11,  &
       call g2g_timer_sum_start('TD - QM/MM')
       if (igpu.le.1) then
          call g2g_timer_start('intsol')
-         call intsol(RMM, RMM11, Iz, pc, natom, ntatom, E1s, Ens, .true.)
+         call intsol(RMM, RMM11, Iz, pc, r, d, natom, ntatom, E1s, Ens, .true.)
          call g2g_timer_stop('intsol')
       else
          call aint_qmmm_init(nsol, r, pc)

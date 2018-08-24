@@ -13,7 +13,8 @@ module subm_intfld
 contains
 subroutine intfld(g, ux, uy, uz)
    use garcha_mod, only: RMM, a, c, d, r, nuc, ncont, nshell, Iz, OPEN, NORM, &
-                         M, Md, pi32
+                         M, Md
+   use constants_mod, only: pi32
    implicit none
    double precision, intent(in) :: g, ux, uy, uz
 

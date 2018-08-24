@@ -8,16 +8,16 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module subm_intsol
 contains
-subroutine intsol(Rho, Hmat, Iz, pc, natom, ntatom, E1s, Ens, elec)
+subroutine intsol(Rho, Hmat, Iz, pc, r, d, natom, ntatom, E1s, Ens, elec)
 
    use liotemp      , only: FUNCT
-   use garcha_mod   , only: a, c, d, r, nuc, ncont, rmax, nshell, M, NORM, Md
+   use garcha_mod   , only: a, c, nuc, ncont, rmax, nshell, M, NORM, Md
    use constants_mod, only: pi
 
    implicit none
    integer         , intent(in)    :: natom, ntatom, Iz(natom)
    logical         , intent(in)    :: elec
-   double precision, intent(in)    :: pc(:)
+   double precision, intent(in)    :: pc(ntatom), r(ntatom,3), d(natom,natom)
    double precision, intent(out)   :: E1s, Ens
    double precision, intent(inout) :: Rho(:), Hmat(:)
 

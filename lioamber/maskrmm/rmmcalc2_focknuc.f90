@@ -45,7 +45,7 @@ subroutine rmmcalc2_focknuc( fock_mao, energy_1e, energy_solvT )
 !------------------------------------------------------------------------------!
    call g2g_timer_start('rmmcalc2-sol2coul')
    if (igpu.le.1) then
-      call intsol(RMM(1:MM), RMM(idx0:idx0+MM), Iz, pc, natom, ntatom, &
+      call intsol(RMM(1:MM), RMM(idx0:idx0+MM), Iz, pc, r, d, natom, ntatom, &
                   energy_solvF, energy_solvT, .true.)
    else
       call aint_qmmm_fock( energy_solvF, energy_solvT )

@@ -11,8 +11,7 @@ subroutine RMMcalc2_FockMao( FockMao, Energy )
    use faint_cpu  , only: int2, int3mem, intsol
 
    use garcha_mod,  only: M, Md, RMM, kkind, kkinds, cool, cools, igrid2, MEMO,&
-                          nucd, nshelld, r, ad, cd, d, ntatom, norm, ncontd,   &
-                          Iz, pc, natom
+                          nshelld, r, d, ntatom, Iz, pc, natom
 
    implicit none
    real*8,intent(out)    :: FockMao(M,M)
@@ -59,8 +58,7 @@ subroutine RMMcalc2_FockMao( FockMao, Energy )
       call aint_qmmm_fock(Energy_SolvF,Energy_SolvT)
    endif
 
-   call int2(RMM(M7:M7+MMd), RMM(M9:M9+MMd), M, Md, nshelld, ncontd, ad, cd, &
-             NORM, r, d, nucd, ntatom)
+   call int2(RMM(M7:M7+MMd), RMM(M9:M9+MMd), r, d, ntatom)
    if (igpu.gt.2) call aint_coulomb_init()
    if (igpu.eq.5) MEMO = .false.
    call g2g_timer_stop('RMMcalc2-sol2coul')

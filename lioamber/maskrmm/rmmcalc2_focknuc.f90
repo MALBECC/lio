@@ -3,8 +3,7 @@ subroutine rmmcalc2_focknuc( fock_mao, energy_1e, energy_solvT )
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use faint_cpu  , only: int2, int3mem, intsol
    use garcha_mod , only: M, Md, RMM, kkind, kkinds, cool, cools, igrid2, MEMO,&
-                          ad, cd, d, ncontd, nucd, r, norm, nshelld, ntatom,   &
-                          Iz, pc, natom
+                          d, r, ntatom, Iz, pc, natom
    use ECP_mod    , only: ecpmode, term1e, VAAA, VAAB, VBAC, &
                         & FOCK_ECP_read, FOCK_ECP_write
 
@@ -51,8 +50,7 @@ subroutine rmmcalc2_focknuc( fock_mao, energy_1e, energy_solvT )
       call aint_qmmm_fock( energy_solvF, energy_solvT )
    endif
 
-   call int2(RMM(M7:M7+MMd), RMM(M9:M9+MMd), M, Md, nshelld, ncontd, ad, cd, &
-             NORM, r, d, nucd, ntatom)
+   call int2(RMM(M7:M7+MMd), RMM(M9:M9+MMd), r, d, ntatom)
    if (igpu.gt.2) call aint_coulomb_init()
    if (igpu.eq.5) MEMO = .false.
    call g2g_timer_stop('rmmcalc2-sol2coul')

@@ -1,7 +1,6 @@
 module subm_int3lu
 contains
-subroutine int3lu(E2, rho, Fmat_b, Fmat, Gmat, Ginv, Hmat, M, Md, cool, cools,&
-                  kkind, kkinds, kknumd, kknums, af, B, memo, open_shell)
+subroutine int3lu(E2, rho, Fmat_b, Fmat, Gmat, Ginv, Hmat, open_shell)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Integrals subroutines - 2e integrals, 3 index                                !
 ! Wavefunction and density fitting functions are calculated using the          !
@@ -11,12 +10,12 @@ subroutine int3lu(E2, rho, Fmat_b, Fmat, Gmat, Ginv, Hmat, M, Md, cool, cools,&
 ! storing the integrals separately.                                            !
 ! Output: F updated with Coulomb part, also Coulomb energy.                    !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+   use garcha_mod, only: M, Md, cool, cools, kkind, kkinds, kknumd, kknums, af,&
+                         B, MEMO
    implicit none
-   integer         , intent(in) :: M, Md, kknumd, kknums, kkind(:), kkinds(:)
-   logical         , intent(in) :: open_shell, memo
-   real            , intent(in) :: cools(:)
-   double precision, intent(in) :: cool(:), rho(:), Gmat(:), Ginv(:), Hmat(:)
-   double precision, intent(inout) :: E2, af(:), B(:,:), Fmat_b(:), Fmat(:)
+   logical         , intent(in) :: open_shell
+   double precision, intent(in) :: rho(:), Gmat(:), Ginv(:), Hmat(:)
+   double precision, intent(inout) :: E2, Fmat_b(:), Fmat(:)
 
    double precision, allocatable :: Rc(:), aux(:)
    double precision :: Ea, Eb, term

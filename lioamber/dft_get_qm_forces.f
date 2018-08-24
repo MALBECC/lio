@@ -8,8 +8,7 @@
        use garcha_mod, only: natom, nsol, cubegen_only, number_restr,
      &                       first_step, doing_ehrenfest, r,
      &                       qm_forces_ds, qm_forces_total,
-     &                       RMM, Nuc, a, c, d, Iz, ncont, nshell,
-     &                       NORM, natom, M, ntatom
+     &                       RMM, d, Iz, natom, ntatom, M
 
        use ehrendata, only: nullify_forces
        use faint_cpu, only: int1G
@@ -35,13 +34,11 @@
        call aint_query_gpu_level(igpu)
        if (igpu.lt.4) then
          call g2g_timer_sum_start('Nuclear attraction gradients')
-         call int1G(ff1G, RMM(1:MM), Nuc, a, c, d, r, Iz, ncont, nshell,
-     &              NORM, natom, M, ntatom)
+         call int1G(ff1G, RMM(1:MM), d, r, Iz, natom, ntatom)
          call g2g_timer_sum_stop('Nuclear attraction gradients')
        elseif (nsol.le.0) then
          call g2g_timer_sum_start('Nuclear attraction gradients')
-         call int1G(ff1G, RMM(1:MM), Nuc, a, c, d, r, Iz, ncont, nshell,
-     &              NORM, natom, M, ntatom)
+         call int1G(ff1G, RMM(1:MM), d, r, Iz, natom, ntatom)
          call aint_qmmm_forces(ff1G,0)
          call g2g_timer_sum_stop('Nuclear attraction gradients')
        endif

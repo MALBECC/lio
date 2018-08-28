@@ -6,26 +6,22 @@
 ! Dario Estrin
 
 module subm_intsolG; contains
-subroutine intsolG(frc_qm, frc_mm)
+subroutine intsolG(frc_qm, frc_mm, natom, ntatom, RMM, d, r, pc, Iz)
 
-   use garcha_mod   , only: M, Md, a, c, Nuc, Ncont, nshell, rmax, NORM, &
-                            natom, ntatom, nsol, RMM, d, r, pc, Iz, pi, pi32
+   use garcha_mod   , only: M, Md, a, c, Nuc, Ncont, nshell, rmax, NORM
    use liotemp      , only: FUNCT
-   !use constants_mod, only: pi, pi32
+   use constants_mod, only: pi, pi32
 
    implicit none
-   double precision  :: frc_qm(natom,3), frc_mm(ntatom,3)
+   integer         , intent(in)    :: natom, ntatom, Iz(natom)
+   double precision, intent(in)    :: RMM(:), r(ntatom,3), d(natom,natom), &
+                                      pc(ntatom)
+   double precision, intent(inout) :: frc_qm(natom,3), frc_mm(ntatom,3)
 
-   double precision,  dimension(:),   allocatable :: s0s, s1s, s2s, s3s
-   double precision,  dimension(:),   allocatable :: s4s, s5s, s6s
-   double precision,  dimension(:,:), allocatable :: x0x, x1x, x2x
-   double precision,  dimension(:,:), allocatable :: x3x, x4x
-
-   ! Implicits
    integer          :: ns, np, nd, iatom, jatom, ifunct, jfunct, nci, ncj, MM, &
                        M2, rho_ind, lk, lij, l1, l2, l3, l4, l5, l12, l34, Ll(3)
    double precision :: SQ3, f1, f2, Q(3), q1, q2, q3, rexp, term0, term, Zij,  &
-                       Z2, uf, ccoef
+                       Z2, uf, ccoef, te
    double precision :: s0p, s1p, s2p, sNpi
    double precision :: p0s, p1s, p2s, p3s, p4s, pi0p, pi0d, pi1p, pi1d, pi2p,  &
                        pj0s, pj0p, pj0d, pj1s, pj1p, pj1d, pj2s, pj2p, pj3s,   &
@@ -43,6 +39,9 @@ subroutine intsolG(frc_qm, frc_mm)
                        dn6(3) , dn7(3) , dn8(3) , dn9(3) , dn10(3), dn2b(3), &
                        dn4b(3), dn5b(3), dn7b(3), dn8b(3), dn9b(3), dn11(3), &
                        dn12(3)
+   double precision, allocatable :: s0s(:), s1s(:), s2s(:), s3s(:), s4s(:), &
+                                    s5s(:), s6s(:), x0x(:,:), x1x(:,:),     &
+                                    x2x(:,:), x3x(:,:), x4x(:,:)
 
    allocate(s0s(ntatom), s1s(ntatom), s2s(ntatom), s3s(ntatom), s4s(ntatom), &
             s5s(ntatom), s6s(ntatom))
@@ -182,7 +181,7 @@ subroutine intsolG(frc_qm, frc_mm)
                x1x(iatom,3) = term * q3
             enddo
 
-            do iatom = natom+1, natom+nsol
+            do iatom = natom+1, ntatom
                t50 = (s0s(iatom) - s1s(iatom)) / Z2
 
                do l1 = 1, 3
@@ -497,8 +496,8 @@ subroutine intsolG(frc_qm, frc_mm)
       enddo
    enddo
    enddo
-   print*, "ds", frc_qm
-   print*, "ds", frc_mm
+   !print*, "ds", frc_qm
+   !print*, "ds", frc_mm
 
    ! (d|p)
    do ifunct = ns+np+1, M     , 6
@@ -681,8 +680,8 @@ subroutine intsolG(frc_qm, frc_mm)
                         endif
 
                         l12 = Ll(l1) + l2
-                        rho_ind = ifunct + l12 -1 + ((M2 - jfunct - l3 +1)) * &
-                                                    (jfunct + l3 -2)) / 2
+                        rho_ind = ifunct + l12 -1 + (M2 - jfunct - l3 +1) * &
+                                                    (jfunct + l3 -2) / 2
                         te = RMM(rho_ind) * ccoef / f1
                         t4 = 2.0D0 * te * a(ifunct,nci)
                         t5 = 2.0D0 * te * a(jfunct,ncj)
@@ -725,8 +724,8 @@ subroutine intsolG(frc_qm, frc_mm)
       enddo
    enddo
    enddo
-   print*, "dp", frc_qm
-   print*, "dp", frc_mm
+   !print*, "dp", frc_qm
+   !print*, "dp", frc_mm
 
    ! (d|d)
    do ifunct = ns+np+1, M     , 6
@@ -788,7 +787,7 @@ subroutine intsolG(frc_qm, frc_mm)
                x4x(iatom,3) = term * q3
             enddo
 
-            do iatom = natom +1, natom + nsol
+            do iatom = natom +1, ntatom
                t50 = (s0s(iatom) - s1s(iatom)) / Z2
                t51 = (s1s(iatom) - s2s(iatom)) / Z2
                t52 = (s2s(iatom) - s3s(iatom)) / Z2
@@ -1099,8 +1098,8 @@ subroutine intsolG(frc_qm, frc_mm)
 
                            l12 = Ll(l1) + l2
                            l34 = Ll(l3) + l4
-                           rho_ind = ((M2 - jfunct - l34 +1)) * &
-                                      (jfunct + l34 -2)) / 2 + ifunct + l12 -1
+                           rho_ind = (M2 - jfunct - l34 +1) * &
+                                      (jfunct + l34 -2) / 2 + ifunct + l12 -1
 
                            te = RMM(rho_ind) * ccoef / (f1 * f2)
                            t4 = 2.0D0 * te * a(ifunct,nci)
@@ -1150,8 +1149,8 @@ subroutine intsolG(frc_qm, frc_mm)
       enddo
    enddo
    enddo
-   print*, "dd", frc_qm
-   print*, "dd", frc_mm
+   !print*, "dd", frc_qm
+   !print*, "dd", frc_mm
 
    deallocate(s0s, s1s, s2s, s3s, s4s, s5s, s6s, x0x, x1x, x2x, x3x, x4x)
    return

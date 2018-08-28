@@ -31,7 +31,7 @@ c       real*8 ftot(3)
          ff=0
 
          call g2g_timer_start('intsolG')
-         call intsolG(ff,ffcl)
+         call intsolG(ff,ffcl,natom, ntatom, RMM(1:MM), d, r, pc, Iz)
          call g2g_timer_stop('intsolG')
 
          do jj=1,nsol

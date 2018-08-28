@@ -38,7 +38,7 @@ subroutine intsolG(frc_qm, frc_mm)
    double precision  :: distint, distx, disty, distz
    double precision  :: tx, ty, tz, tx1, ty1, tz1, ti, tj, tna, tn1a
    double precision  :: ss, t1, dd2, dd, alf, cc, ccoef
-   double precision  :: dNs, dNp, dNd, dNf, dN1s
+   double precision  :: dNs, dNp, dNd, dNf, dN1s, dN1p
    double precision  :: fNs, fNp, fNd, piNs, sNpi
    double precision  :: pNp, pNd, pN1p
    double precision  :: s0p, s1p, s2p
@@ -512,240 +512,234 @@ subroutine intsolG(frc_qm, frc_mm)
    print*, "ds", frc_mm
 
    ! (d|p)
-      do i=ns+np+1,M,6
-      do j=ns+1,ns+np,3
+   do ifunct = ns+np+1, M     , 6
+   do jfunct = ns+1   , ns+np , 3
+      do nci = 1, ncont(ifunct)
+      do ncj = 1, ncont(jfunct)
+         Zij  = a(ifunct,nci) + a(jfunct,ncj)
+         rexp = a(ifunct,nci) * a(jfunct,ncj) * d(Nuc(ifunct),Nuc(jfunct)) / Zij
 
-      dd=d(Nuc(i),Nuc(j))
+         if (rexp .lt. rmax) then
+            ccoef = c(ifunct,nci) * c(jfunct,ncj)
+            Z2    = 2.D0 * Zij
+            term0 = 2.D0 * PI * exp(-rexp) / Zij
+            Q(1) = (a(ifunct,nci) * r(Nuc(ifunct),1) + &
+                    a(jfunct,ncj) * r(Nuc(jfunct),1)) / Zij
+            Q(2) = (a(ifunct,nci) * r(Nuc(ifunct),2) + &
+                    a(jfunct,ncj) * r(Nuc(jfunct),2)) / Zij
+            Q(3) = (a(ifunct,nci) * r(Nuc(ifunct),3) + &
+                    a(jfunct,ncj) * r(Nuc(jfunct),3)) / Zij
 
-      do ni=1,ncont(i)
-      do nj=1,ncont(j)
+            do iatom = natom+1, ntatom
+               q1   = Q(1) - r(iatom,1)
+               q2   = Q(2) - r(iatom,2)
+               q3   = Q(3) - r(iatom,3)
+               uf   = (q1 * q1 + q2 * q2 + q3 * q3) * Zij
 
-      zij=a(i,ni)+a(j,nj)
-      z2=2.D0*zij
-      Q(1)=(a(i,ni)*r(Nuc(i),1)+a(j,nj)*r(Nuc(j),1))/zij
-      Q(2)=(a(i,ni)*r(Nuc(i),2)+a(j,nj)*r(Nuc(j),2))/zij
-      Q(3)=(a(i,ni)*r(Nuc(i),3)+a(j,nj)*r(Nuc(j),3))/zij
-      alf=a(i,ni)*a(j,nj)/zij
-      rexp=alf*dd
-      if (rexp.lt.rmax) then
-      ss=pi32*exp(-rexp)/(zij*sqrt(zij))
-      temp0=2.D0*sqrt(zij/pi)*ss
+               term = - pc(iatom) * term0
+               s0s(iatom) = term * FUNCT(0,uf)
+               s1s(iatom) = term * FUNCT(1,uf)
+               s2s(iatom) = term * FUNCT(2,uf)
+               s3s(iatom) = term * FUNCT(3,uf)
+               s4s(iatom) = term * FUNCT(4,uf)
 
-      do n=natom+1,natom+nsol
-       q1=Q(1)-r(n,1)
-       q2=Q(2)-r(n,2)
-       q3=Q(3)-r(n,3)
-       u=q1**2+q2**2+q3**2
+               term = Z2 * s1s(iatom)
+               x0x(iatom,1) = term * q1
+               x0x(iatom,2) = term * q2
+               x0x(iatom,3) = term * q3
 
+               term = Z2 * s2s(iatom)
+               x1x(iatom,1) = term * q1
+               x1x(iatom,2) = term * q2
+               x1x(iatom,3) = term * q3
 
-       u=u*zij
-       temp=-temp0*pc(n)
+               term = Z2 * s3s(iatom)
+               x2x(iatom,1) = term * q1
+               x2x(iatom,2) = term * q2
+               x2x(iatom,3) = term * q3
 
-       s0s(n)=temp*FUNCT(0,u)
-       s1s(n)=temp*FUNCT(1,u)
-       s2s(n)=temp*FUNCT(2,u)
-       s3s(n)=temp*FUNCT(3,u)
-       s4s(n)=temp*FUNCT(4,u)
-        temp=z2*s1s(n)
-       x0x(n,1)=temp*q1
-       x0x(n,2)=temp*q2
-       x0x(n,3)=temp*q3
-        temp=z2*s2s(n)
-       x1x(n,1)=temp*q1
-       x1x(n,2)=temp*q2
-       x1x(n,3)=temp*q3
-        temp=z2*s3s(n)
-       x2x(n,1)=temp*q1
-       x2x(n,2)=temp*q2
-       x2x(n,3)=temp*q3
-        temp=z2*s4s(n)
-       x3x(n,1)=temp*q1
-       x3x(n,2)=temp*q2
-       x3x(n,3)=temp*q3
-    enddo
-      ccoef=c(i,ni)*c(j,nj)
-      do n=natom+1,natom+nsol
-       t7=(s0s(n)-s1s(n)) / Z2
-      t8=(s1s(n)-s2s(n)) / Z2
-      t9=(s2s(n)-s3s(n)) / Z2
-      t26=(x0x(n,1)-x1x(n,1)) / Z2
-      t27=(x0x(n,2)-x1x(n,2)) / Z2
-      t28=(x0x(n,3)-x1x(n,3)) / Z2
-      t29=(x1x(n,1)-x2x(n,1)) / Z2
-      t30=(x1x(n,2)-x2x(n,2)) / Z2
-      t31=(x1x(n,3)-x2x(n,3)) / Z2
+               term = Z2 * s4s(iatom)
+               x3x(iatom,1) = term * q1
+               x3x(iatom,2) = term * q2
+               x3x(iatom,3) = term * q3
+            enddo
 
-      do l1 = 1, 3
-       t1=Q(l1)-r(Nuc(i),l1)
-       t2=Q(l1)-r(n,l1)
-       p0s = t1 * s0s(n) - t2 * s1s(n)
-       p1s = t1 * s1s(n) - t2 * s2s(n)
-       p2s = t1 * s2s(n) - t2 * s3s(n)
-       p3s = t1 * s3s(n) - t2 * s4s(n)
+            do iatom = natom+1, ntatom
+               t7  = (s0s(iatom)   - s1s(iatom)  ) / Z2
+               t8  = (s1s(iatom)   - s2s(iatom)  ) / Z2
+               t9  = (s2s(iatom)   - s3s(iatom)  ) / Z2
+               t26 = (x0x(iatom,1) - x1x(iatom,1)) / Z2
+               t27 = (x0x(iatom,2) - x1x(iatom,2)) / Z2
+               t28 = (x0x(iatom,3) - x1x(iatom,3)) / Z2
+               t29 = (x1x(iatom,1) - x2x(iatom,1)) / Z2
+               t30 = (x1x(iatom,2) - x2x(iatom,2)) / Z2
+               t31 = (x1x(iatom,3) - x2x(iatom,3)) / Z2
 
-   ! dn(u) (pi|Au|s)
-      dn(1) = t1 * x0x(n,1) - t2 * x1x(n,1)
-      dn(2) = t1 * x0x(n,2) - t2 * x1x(n,2)
-      dn(3) = t1 * x0x(n,3) - t2 * x1x(n,3)
-      dn(l1) = dn(l1) + s1s(n)
+               do l1 = 1, 3
+                  t1  = Q(l1) - r(Nuc(ifunct),l1)
+                  t2  = Q(l1) - r(iatom,l1)
+                  p0s = t1 * s0s(iatom) - t2 * s1s(iatom)
+                  p1s = t1 * s1s(iatom) - t2 * s2s(iatom)
+                  p2s = t1 * s2s(iatom) - t2 * s3s(iatom)
+                  p3s = t1 * s3s(iatom) - t2 * s4s(iatom)
 
-      dn1(1) = t1 * x1x(n,1) - t2 * x2x(n,1)
-      dn1(2) = t1 * x1x(n,2) - t2 * x2x(n,2)
-      dn1(3) = t1 * x1x(n,3) - t2 * x2x(n,3)
-      dn1(l1) = dn1(l1) + s2s(n)
+                  ! dn(u) (pi|Au|s)
+                  dn(1)  = t1 * x0x(iatom,1) - t2 * x1x(iatom,1)
+                  dn(2)  = t1 * x0x(iatom,2) - t2 * x1x(iatom,2)
+                  dn(3)  = t1 * x0x(iatom,3) - t2 * x1x(iatom,3)
+                  dn(l1) = dn(l1) + s1s(iatom)
 
-       t51=(dn(1)-dn1(1)) / Z2
-       t52=(dn(2)-dn1(2)) / Z2
-       t53=(dn(3)-dn1(3)) / Z2
+                  dn1(1)  = t1 * x1x(iatom,1) - t2 * x2x(iatom,1)
+                  dn1(2)  = t1 * x1x(iatom,2) - t2 * x2x(iatom,2)
+                  dn1(3)  = t1 * x1x(iatom,3) - t2 * x2x(iatom,3)
+                  dn1(l1) = dn1(l1) + s2s(iatom)
 
-      dn2(1) = t1 * x2x(n,1) - t2 * x3x(n,1)
-      dn2(2) = t1 * x2x(n,2) - t2 * x3x(n,2)
-      dn2(3) = t1 * x2x(n,3) - t2 * x3x(n,3)
-      dn2(l1) = dn2(l1)+s3s(n)
+                  dn2(1)  = t1 * x2x(iatom,1) - t2 * x3x(iatom,1)
+                  dn2(2)  = t1 * x2x(iatom,2) - t2 * x3x(iatom,2)
+                  dn2(3)  = t1 * x2x(iatom,3) - t2 * x3x(iatom,3)
+                  dn2(l1) = dn2(l1) + s3s(iatom)
 
-      do l2 = 1, l1
-       t1 = Q(l2) - r(Nuc(i),l2)
-       t2 = Q(l2) - r(n,l2)
-       pj0s = t1 * s0s(n) - t2 * s1s(n)
-       pj1s = t1 * s1s(n) - t2 * s2s(n)
-       pj2s = t1 * s2s(n) - t2 * s3s(n)
+                  t51 = (dn(1) - dn1(1)) / Z2
+                  t52 = (dn(2) - dn1(2)) / Z2
+                  t53 = (dn(3) - dn1(3)) / Z2
 
-       ! dn3 (dij || s) order 0
-       dn3(1) = t1 * dn(1) - t2 * dn1(1)
-       dn3(2) = t1 * dn(2) - t2 * dn1(2)
-       dn3(3) = t1 * dn(3) - t2 * dn1(3)
-       dn3(l2)=dn3(l2)+p1s
+                  do l2 = 1, l1
+                     t1 = Q(l2) - r(Nuc(ifunct),l2)
+                     t2 = Q(l2) - r(iatom,l2)
+                     pj0s = t1 * s0s(iatom) - t2 * s1s(iatom)
+                     pj1s = t1 * s1s(iatom) - t2 * s2s(iatom)
+                     pj2s = t1 * s2s(iatom) - t2 * s3s(iatom)
 
-       ! dn4 (dij || s) order 1
-       dn4(1) = t1 * dn1(1) - t2 * dn2(1)
-       dn4(2) = t1 * dn1(2) - t2 * dn2(2)
-       dn4(3) = t1 * dn1(3) - t2 * dn2(3)
-       dn4(l2)=dn4(l2)+p2s
+                     ! dn3 (dij || s) order 0
+                     dn3(1)  = t1 * dn(1) - t2 * dn1(1)
+                     dn3(2)  = t1 * dn(2) - t2 * dn1(2)
+                     dn3(3)  = t1 * dn(3) - t2 * dn1(3)
+                     dn3(l2) = dn3(l2) + p1s
 
-       ! dn6 and dn7 used for (pj | s) order 0 and 1
-      dn6(1) = t1 * x0x(n,1) - t2 * x1x(n,1)
-      dn6(2) = t1 * x0x(n,2) - t2 * x1x(n,2)
-      dn6(3) = t1 * x0x(n,3) - t2 * x1x(n,3)
-      dn6(l2)=dn6(l2) + s1s(n)
+                     ! dn4 (dij || s) order 1
+                     dn4(1)  = t1 * dn1(1) - t2 * dn2(1)
+                     dn4(2)  = t1 * dn1(2) - t2 * dn2(2)
+                     dn4(3)  = t1 * dn1(3) - t2 * dn2(3)
+                     dn4(l2) = dn4(l2) + p2s
 
-      dn7(1) = t1 * x1x(n,1) - t2 * x2x(n,1)
-      dn7(2) = t1 * x1x(n,2) - t2 * x2x(n,2)
-      dn7(3) = t1 * x1x(n,3) - t2 * x2x(n,3)
-      dn7(l2)=dn7(l2) + s2s(n)
+                     ! dn6 (pj || s) order 0
+                     dn6(1)  = t1 * x0x(iatom,1) - t2 * x1x(iatom,1)
+                     dn6(2)  = t1 * x0x(iatom,2) - t2 * x1x(iatom,2)
+                     dn6(3)  = t1 * x0x(iatom,3) - t2 * x1x(iatom,3)
+                     dn6(l2) = dn6(l2) + s1s(iatom)
 
-       t54=(dn6(1)-dn7(1)) / Z2
-       t55=(dn6(2)-dn7(2)) / Z2
-       t56=(dn6(3)-dn7(3)) / Z2
+                     ! dn7 (pj || s) order 1
+                     dn7(1)  = t1 * x1x(iatom,1) - t2 * x2x(iatom,1)
+                     dn7(2)  = t1 * x1x(iatom,2) - t2 * x2x(iatom,2)
+                     dn7(3)  = t1 * x1x(iatom,3) - t2 * x2x(iatom,3)
+                     dn7(l2) = dn7(l2) + s2s(iatom)
 
-       f1=1.D0
-       d0s = t1 * p0s - t2 * p1s
-       d1s = t1 * p1s - t2 * p2s
-       d2s = t1 * p2s - t2 * p3s
+                     t54 = (dn6(1) - dn7(1)) / Z2
+                     t55 = (dn6(2) - dn7(2)) / Z2
+                     t56 = (dn6(3) - dn7(3)) / Z2
 
-       if (l1 .eq. l2) then
-        f1=sq3
-        d0s=d0s+t7
-        d1s=d1s+t8
-        d2s=d2s+t9
-        dn3(1)=dn3(1)+t26
-        dn3(2)=dn3(2)+t27
-        dn3(3)=dn3(3)+t28
-        dn4(1)=dn4(1)+t29
-        dn4(2)=dn4(2)+t30
-        dn4(3)=dn4(3)+t31
-       endif
+                     f1  = 1.D0
+                     d0s = t1 * p0s - t2 * p1s
+                     d1s = t1 * p1s - t2 * p2s
+                     d2s = t1 * p2s - t2 * p3s
+                     if (l1 .eq. l2) then
+                        f1  = sq3
+                        d0s = d0s + t7
+                        d1s = d1s + t8
+                        d2s = d2s + t9
+                        dn3(1) = dn3(1) + t26
+                        dn3(2) = dn3(2) + t27
+                        dn3(3) = dn3(3) + t28
+                        dn4(1) = dn4(1) + t29
+                        dn4(2) = dn4(2) + t30
+                        dn4(3) = dn4(3) + t31
+                     endif
 
-      do l3 = 1, 3
-         ! dn5 (dij || Pk ) order 0, the one needed for derivatives
-       t1=Q(l3)-r(Nuc(j),l3)
-       t2=Q(l3)-r(n,l3)
-       tna = t1 * d0s - t2 * d1s
-       tn1a = t1 * d1s - t2 * d2s
+                     do l3 = 1, 3
+                        t1 = Q(l3) - r(Nuc(jfunct),l3)
+                        t2 = Q(l3) - r(iatom,l3)
+                        dNp  = t1 * d0s - t2 * d1s
+                        dN1p = t1 * d1s - t2 * d2s
 
-       pi0p = t1 * p0s - t2 * p1s
-       pi1p = t1 * p1s - t2 * p2s
-       pj0p = t1 * pj0s - t2 * pj1s
-       pj1p = t1 * pj1s - t2 * pj2s
+                        pi0p = t1 * p0s - t2 * p1s
+                        pi1p = t1 * p1s - t2 * p2s
+                        pj0p = t1 * pj0s - t2 * pj1s
+                        pj1p = t1 * pj1s - t2 * pj2s
 
-       dn5(1) = t1 * dn3(1) - t2 * dn4(1)
-       dn5(2) = t1 * dn3(2) - t2 * dn4(2)
-       dn5(3) = t1 * dn3(3) - t2 * dn4(3)
-       dn5(l3)=dn5(l3)+d1s
+                        ! dn5 (dij || Pk ) order 0
+                        dn5(1)  = t1 * dn3(1) - t2 * dn4(1)
+                        dn5(2)  = t1 * dn3(2) - t2 * dn4(2)
+                        dn5(3)  = t1 * dn3(3) - t2 * dn4(3)
+                        dn5(l3) = dn5(l3) + d1s
 
-       if (l1 .eq. l3) then
-        tna=tna+(pj0s-pj1s) / Z2
-        tn1a=tn1a+(pj1s-pj2s) / Z2
-       pi0p=pi0p+t7
-       pi1p=pi1p+t8
-       dn5(1)=dn5(1)+t54
-       dn5(2)=dn5(2)+t55
-       dn5(3)=dn5(3)+t56
-       endif
+                        if (l1 .eq. l3) then
+                           dNp    = dNp  + (pj0s - pj1s) / Z2
+                           dN1p   = dN1p + (pj1s - pj2s) / Z2
+                           pi0p   = pi0p + t7
+                           pi1p   = pi1p + t8
+                           dn5(1) = dn5(1) + t54
+                           dn5(2) = dn5(2) + t55
+                           dn5(3) = dn5(3) + t56
+                        endif
+                        if (l2 .eq. l3) then
+                           dNp    = dNp  + (p0s - p1s) / Z2
+                           dN1p   = dN1p + (p1s - p2s) / Z2
+                           pj0p   = pj0p + t7
+                           pj1p   = pj1p + t8
+                           dn5(1) = dn5(1) + t51
+                           dn5(2) = dn5(2) + t52
+                           dn5(3) = dn5(3) + t53
+                        endif
 
-       if (l2 .eq. l3) then
-        tna=tna+(p0s-p1s) / Z2
-        tn1a=tn1a+(p1s-p2s) / Z2
-       pj0p=pj0p+t7
-       pj1p=pj1p+t8
-       dn5(1)=dn5(1)+t51
-       dn5(2)=dn5(2)+t52
-       dn5(3)=dn5(3)+t53
-       endif
+                        l12 = l1 * (l1 -1) / 2 + l2
+                        rho_ind = ifunct + l12-1 + ((M2 - (jfunct + l3 -1)) * &
+                                                    (jfunct + l3 -2)) / 2
+                        te = RMM(rho_ind) * ccoef / f1
+                        t4 = 2.0D0 * te * a(ifunct,nci)
+                        t5 = 2.0D0 * te * a(jfunct,ncj)
 
-       l12=l1*(l1-1)/2+l2
-       ii=i+l12-1
-       jj=j+l3-1
+                        do l4 = 1, 3
+                           dNd = (Q(l4) - r(Nuc(jfunct),l4)) * dNp - &
+                                 (Q(l4) - r(iatom,l4)      ) * dN1p
 
-      k=ii+((M2-jj)*(jj-1))/2
-       cc=ccoef/f1
-       term=cc*tna
+                           if (l1 .eq. l4) then
+                              frc_qm(Nuc(ifunct),l4) = frc_qm(Nuc(ifunct),l4) &
+                                                     - te * pj0p
+                              dNd = dNd + (pj0p - pj1p) / Z2
+                           endif
+                           if (l2 .eq. l4) then
+                              frc_qm(Nuc(ifunct),l4) = frc_qm(Nuc(ifunct),l4) &
+                                                     - te * pi0p
+                              dNd = dNd + (pi0p - pi1p) / Z2
+                           endif
+                           if (l3.eq.l4) then
+                              frc_qm(Nuc(jfunct),l4) = frc_qm(Nuc(jfunct),l4) &
+                                                     - te * d0s
+                              dNd = dNd + (d0s - d1s) / Z2
+                           endif
+                           fNp = dNd - dNp * &
+                                       (r(Nuc(ifunct),l4) - r(Nuc(jfunct),l4))
 
-        te=RMM(k)*cc
-        ty=te*2.D0
-        t5 = 2.0D0 * te * a(j,nj)
-        t4 = 2.0D0 * te * a(i,ni)
-      do l4=1,3
-        t1=Q(l4)-r(Nuc(j),l4)
-        t2=Q(l4)-r(n,l4)
-        tx=r(Nuc(i),l4)-r(Nuc(j),l4)
-
-        dNd = t1 * tna - t2 * tn1a
-
-       if (l1 .eq. l4) then
-         frc_qm(Nuc(i),l4)=frc_qm(Nuc(i),l4)-te*pj0p
-         dNd=dNd+(pj0p-pj1p) / Z2
-        endif
-
-        if (l2 .eq. l4) then
-         frc_qm(Nuc(i),l4)=frc_qm(Nuc(i),l4)-te*pi0p
-         dNd=dNd+(pi0p-pi1p) / Z2
-        endif
-
-        if (l3.eq.l4) then
-         frc_qm(Nuc(j),l4)=frc_qm(Nuc(j),l4)-te*d0s
-         dNd=dNd+(d0s-d1s) / Z2
-        endif
-
-        fNp=dNd-tx*tna
-        frc_qm(Nuc(i),l4)=frc_qm(Nuc(i),l4)+t4*fNp
-        frc_qm(Nuc(j),l4)=frc_qm(Nuc(j),l4)+t5*dNd
-
-         frc_mm(n,l4)=frc_mm(n,l4)+te*dn5(l4)
-
-        fNp=dNd-tx*tna
-     enddo
-     enddo
-  enddo
-  enddo
-
-   enddo
-      endif
+                           frc_qm(Nuc(ifunct),l4) = frc_qm(Nuc(ifunct),l4) + &
+                                                    t4 * fNp
+                           frc_qm(Nuc(jfunct),l4) = frc_qm(Nuc(jfunct),l4) + &
+                                                    t5 * dNd
+                           frc_mm(iatom,l4)       = frc_mm(iatom,l4)       + &
+                                                    te * dn5(l4)
+                        enddo
+                     enddo
+                  enddo
+               enddo
+            enddo
+         endif
+      enddo
+      enddo
    enddo
    enddo
-enddo
-enddo
+   print*, "dp", frc_qm
+   print*, "dp", frc_mm
 
-! (d|d) case
+   ! (d|d)
       do i=ns+np+1,M,6
       do j=ns+np+1,i,6
 

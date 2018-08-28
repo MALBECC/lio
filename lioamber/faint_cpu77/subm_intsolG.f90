@@ -16,52 +16,41 @@ subroutine intsolG(frc_qm, frc_mm)
    implicit none
    double precision  :: frc_qm(natom,3), frc_mm(ntatom,3)
 
-   double precision  :: dn(3),  dn1(3), dn2(3), dn3(3), dn4(3), dn5(3)
-   double precision  :: dn6(3), dn7(3), dn8(3), dn9(3), dn10(3)
-   double precision  :: dn2b(3), dn4b(3), dn5b(3), dn7b(3), dn8b(3)
-   double precision  :: dn9b(3), dn11(3),dn12(3)
-   double precision  :: Q(3), rr(3)
    double precision,  dimension(:),   allocatable :: s0s, s1s, s2s, s3s
    double precision,  dimension(:),   allocatable :: s4s, s5s, s6s
    double precision,  dimension(:,:), allocatable :: x0x, x1x, x2x
    double precision,  dimension(:,:), allocatable :: x3x, x4x
 
-   ! Implicits:
-   integer :: i, j, k, n, ni, nj, ii, jj, j1, j2, ll(3)
-   integer :: ns, np, nd, iatom, jatom, ifunct, jfunct, nci, ncj, rho_ind
-   integer :: l, lk, lij, l1, l2, l3, l4, l5, l12, l34
-   integer :: MM, MMd
-   integer :: M1, M2, M3, M5, M7, M9, M11
-
-   double precision  :: f1, f2, te, et, q1, q2, q3, rexp, sq3, term0
-   double precision  :: term, temp, temp0, zij, z2, uf, u
-   double precision  :: distint, distx, disty, distz
-   double precision  :: tx, ty, tz, tx1, ty1, tz1, ti, tj
-   double precision  :: ss, t1, dd2, dd, alf, cc, ccoef
-   double precision  :: dNs, dNp, dNd, dNf, dN1s, dN1p
-   double precision  :: fNs, fNp, fNd, piNs, sNpi
-   double precision  :: pNp, pNd, pN1p
-   double precision  :: s0p, s1p, s2p
-   double precision  :: p0s, p1s, p2s, p3s, p4s
-   double precision  :: pi0p, pi0d, pi1p, pi1d, pi2p
-   double precision  :: pj0s, pj0p, pj0d, pj1s, pj1p, pj1d, pj2s, pj2p, pj3s
-   double precision  :: d0s, d0p, d1s, d1p, d2s, d3s, d2p, d0pl, d1pl
-   double precision  :: t2, t3, t4, t5, t7, t8, t9, t15
-   double precision  :: t25, t26, t27, t28, t29, t30, t31, t32, t33, t34
-   double precision  :: t50, t51, t52, t53, t54, t55, t56, t57, t58, t59
-   double precision  :: t60, t61, t62, t63, t64, t65, t66, t67, t68, t69
-   double precision  :: t70, t71, t72, t73, t74, t81, t81b, t82, t82b
-   double precision  :: t83, t83b, t84, t84b, t85, t85b, t86, t86b
-   double precision  :: t90, t91, t92, t93, t94, t95, t96, t97, t98
-
+   ! Implicits
+   integer          :: ns, np, nd, iatom, jatom, ifunct, jfunct, nci, ncj, MM, &
+                       M2, rho_ind, lk, lij, l1, l2, l3, l4, l5, l12, l34, Ll(3)
+   double precision :: SQ3, f1, f2, Q(3), q1, q2, q3, rexp, term0, term, Zij,  &
+                       Z2, uf, ccoef
+   double precision :: s0p, s1p, s2p, sNpi
+   double precision :: p0s, p1s, p2s, p3s, p4s, pi0p, pi0d, pi1p, pi1d, pi2p,  &
+                       pj0s, pj0p, pj0d, pj1s, pj1p, pj1d, pj2s, pj2p, pj3s,   &
+                       pNp, pNd, pN1p, piNs
+   double precision :: d0s, d0p, d1s, d1p, d2s, d3s, d2p, d0pl, d1pl, dNs, dNp,&
+                       dNd, dNf, dN1s, dN1p
+   double precision :: fNs, fNp, fNd
+   double precision :: t1, t2, t3, t4, t5, t7, t8, t9, t15, t25, t26, t27, t28,&
+                       t29, t30, t31, t32, t33, t34, t50, t51, t52, t53, t54,  &
+                       t55, t56, t57, t58, t59, t60, t61, t62, t63, t64, t65,  &
+                       t66, t67, t68, t69, t70, t71, t72, t73, t74, t81, t81b, &
+                       t82, t82b, t83, t83b, t84, t84b, t85, t85b, t86, t86b,  &
+                       t90, t91, t92, t93, t94, t95, t96, t97, t98
+   double precision :: dn(3)  , dn1(3) , dn2(3) , dn3(3) , dn4(3) , dn5(3) , &
+                       dn6(3) , dn7(3) , dn8(3) , dn9(3) , dn10(3), dn2b(3), &
+                       dn4b(3), dn5b(3), dn7b(3), dn8b(3), dn9b(3), dn11(3), &
+                       dn12(3)
 
    allocate(s0s(ntatom), s1s(ntatom), s2s(ntatom), s3s(ntatom), s4s(ntatom), &
             s5s(ntatom), s6s(ntatom))
    allocate(x0x(ntatom,3), x1x(ntatom,3), x2x(ntatom,3), x3x(ntatom,3), &
             x4x(ntatom,3))
 
-   sq3 = 1.D0
-   if (NORM) sq3 = sqrt(3.D0)
+   SQ3 = 1.D0
+   if (NORM) SQ3 = sqrt(3.D0)
 
    ns = nshell(0); np = nshell(1); nd = nshell(2)
    MM  = M * (M +1) / 2
@@ -134,11 +123,11 @@ subroutine intsolG(frc_qm, frc_mm)
 
             do l2 = 1, 3
                t1 = Q(l2) - r(Nuc(ifunct),l2)
-               tx = r(Nuc(ifunct),l2) - r(Nuc(jfunct),l2)
+               t2 = r(Nuc(ifunct),l2) - r(Nuc(jfunct),l2)
 
                do iatom = natom+1, ntatom
                   piNs = t1 * s0s(iatom) - (Q(l2) - r(iatom,l2)) * s1s(iatom)
-                  sNpi = piNs + tx * s0s(iatom)
+                  sNpi = piNs + t2 * s0s(iatom)
                   frc_qm(Nuc(ifunct),l2) = frc_qm(Nuc(ifunct),l2) + t4 * piNs
                   frc_qm(Nuc(jfunct),l2) = frc_qm(Nuc(jfunct),l2) + t5 * sNpi
                   frc_mm(iatom,l2)       = frc_mm(iatom,l2) + te * x0x(iatom,l2)
@@ -468,13 +457,13 @@ subroutine intsolG(frc_qm, frc_mm)
                      if (l1 .eq. l2) then
                         dNs    = dNs  + t7
                         dN1s   = dN1s + t8
-                        f1     = sq3
+                        f1     = SQ3
                         dn2(1) = dn2(1) + t26
                         dn2(2) = dn2(2) + t27
                         dn2(3) = dn2(3) + t28
                      endif
 
-                     l12 = l1 * (l1 -1) / 2 + l2
+                     l12 = Ll(l1) + l2
                      rho_ind = ifunct + l12 -1 + ((M2 - jfunct) * (jfunct -1))/2
 
                      te = RMM(rho_ind)* ccoef / f1
@@ -643,7 +632,7 @@ subroutine intsolG(frc_qm, frc_mm)
                      d1s = t1 * p1s - t2 * p2s
                      d2s = t1 * p2s - t2 * p3s
                      if (l1 .eq. l2) then
-                        f1  = sq3
+                        f1  = SQ3
                         d0s = d0s + t7
                         d1s = d1s + t8
                         d2s = d2s + t9
@@ -691,8 +680,8 @@ subroutine intsolG(frc_qm, frc_mm)
                            dn5(3) = dn5(3) + t53
                         endif
 
-                        l12 = l1 * (l1 -1) / 2 + l2
-                        rho_ind = ifunct + l12-1 + ((M2 - (jfunct + l3 -1)) * &
+                        l12 = Ll(l1) + l2
+                        rho_ind = ifunct + l12 -1 + ((M2 - jfunct - l3 +1)) * &
                                                     (jfunct + l3 -2)) / 2
                         te = RMM(rho_ind) * ccoef / f1
                         t4 = 2.0D0 * te * a(ifunct,nci)
@@ -916,7 +905,7 @@ subroutine intsolG(frc_qm, frc_mm)
                      d3s = t1 * p3s - t2 * p4s
 
                      if (l1 .eq. l2) then
-                        f1  = sq3
+                        f1  = SQ3
                         d0s     = d0s + t50
                         d1s     = d1s + t51
                         d2s     = d2s + t52
@@ -1092,7 +1081,7 @@ subroutine intsolG(frc_qm, frc_mm)
                               dn10(3) = dn10(3) + t95
                            endif
                            if (l4 .eq. l3) then
-                              f2 = sq3
+                              f2 = SQ3
                               dNp  = dNp  + t61
                               dN1p = dN1p + t62
                               pj0d = pj0d + t58
@@ -1110,7 +1099,7 @@ subroutine intsolG(frc_qm, frc_mm)
 
                            l12 = Ll(l1) + l2
                            l34 = Ll(l3) + l4
-                           rho_ind = ((M2 - (jfunct + l34 -1)) * &
+                           rho_ind = ((M2 - jfunct - l34 +1)) * &
                                       (jfunct + l34 -2)) / 2 + ifunct + l12 -1
 
                            te = RMM(rho_ind) * ccoef / (f1 * f2)

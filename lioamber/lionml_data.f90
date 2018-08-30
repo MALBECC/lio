@@ -49,6 +49,8 @@ module lionml_data
    use transport_data    , only: transport_calc, generate_rho0, nbias,         &
                                  save_charge_freq, driving_rate, Pop_Drive
    use ghost_atoms_data  , only: n_ghosts, ghost_atoms
+   use lr_data           , only: lresponse, nstates, root
+
    implicit none
 
 !  Namelist definition
@@ -104,7 +106,9 @@ module lionml_data
                    ! Libxc variables
                   use_libxc, ex_functional_id, ec_functional_id,               &
                   ! Variables for Ghost atoms:
-                  n_ghosts, ghost_atoms
+                  n_ghosts, ghost_atoms,                                       &
+                  ! Variables for Linear Response
+                  lresponse, nstates, root
 
    type lio_input_data
       ! COMMON

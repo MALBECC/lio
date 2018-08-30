@@ -1,7 +1,7 @@
 module lr_data
 !Nvirt = number of virtual molecular orbitals
 !dim = dimension of matrix Linear Response (Nvirt x NCO)
-!cbas,cbasx = Needed for libint (Temporary)
+!cbas = Needed for libint (Temporary)
 !nstates = number of excited states to calculate
 !root = excited state chosen for optimization
    implicit none
@@ -11,10 +11,10 @@ module lr_data
    integer :: nstates = 3
    integer :: root = 0
 #ifdef TD_SIMPLE
-   real, dimension(:,:), allocatable :: eigenvec, cbas, cbasx
+   real, dimension(:,:), allocatable :: eigenvec
    real, dimension(:), allocatable :: eigenval
 #else
-   real*8, dimension(:,:), allocatable :: eigenvec, cbas, cbasx
+   real*8, dimension(:,:), allocatable :: eigenvec
    real*8, dimension(:), allocatable :: eigenval
 #endif
 end module lr_data
@@ -29,6 +29,7 @@ contains
    use lr_data, only: Nvirt,dim,nstates,eigenval,&
                       eigenvec,cbas,root
    use garcha_mod, only: NCO, M, c, a
+   use basis_data, only: c_raw, max_c_per_atom
 
    implicit none
 #ifdef TD_SIMPLE
@@ -42,7 +43,19 @@ contains
    real*8, dimension(:,:) allocatable :: Kfxc, Kc, A_mat
    real*8, dimension(:,:,:,:), allocatable :: Kc_Int, Kxc_Int
 #endif
-   
+   integer :: ifunct, icont
+
+   if (.not. allocated(cbas)) allocate(cbas(M, max_c_per_atom))
+   cbas = 0.0D0
+   do ifunct = 1, M
+   do jcont  = 1, max_c_per_atom
+#ifdef TD_SIMPLE
+      cbas(ifunct,jcont) = float(c_raw(ifunct,jcont))
+#else
+      cbas(ifunct,jcont) = dble(c_raw(ifunct,jcont))
+#endif
+   enddo
+   enddo
    call g2g_timer_start('LINEAR RESPONSE')
 
    Nvirt = M - NCO

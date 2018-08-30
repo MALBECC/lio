@@ -69,6 +69,8 @@ subroutine SCF(E)
    use fileio_data  , only: verbose
    use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, ncont, a, &
                             c, M, Md
+   use lr_data, only: lresponse
+   use lrtddft, only: linear_response
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -912,6 +914,13 @@ subroutine SCF(E)
       deallocate(rho_exc)
    endif                            ! End of translation
 
+   if (lresponse) then
+     if (OPEN) then
+       print*, "LINEAR RESPONSE ONLY WORKS WITH CLOSED SHELL"
+     else
+       call linear_response(morb_coefat,morb_energy)
+     endif
+   endif
 
 !------------------------------------------------------------------------------!
 ! TODO: have ehrendyn call SCF and have SCF always save the resulting rho in

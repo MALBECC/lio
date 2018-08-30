@@ -69,7 +69,7 @@ subroutine SCF(E)
    use fileio_data  , only: verbose
    use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, ncont, a, &
                             c, M, Md
-   use lr_data, only: lresponse
+   use lr_data, only: lresp
    use lrtddft, only: linear_response
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -914,7 +914,7 @@ subroutine SCF(E)
       deallocate(rho_exc)
    endif                            ! End of translation
 
-   if (lresponse) then
+   if (lresp) then
      if (OPEN) then
        print*, "LINEAR RESPONSE ONLY WORKS WITH CLOSED SHELL"
      else

@@ -1,0 +1,33 @@
+
+ifeq ($(libint),1)
+#WITH LIBINT
+    LIBS_LIBINT = -L/$(LIBINT_HOME)/lib -lint2
+    INCS_LIBINT = -I/$(LIBINT_HOME)/include -I/$(LIBINT_HOME)/include/libint2 -I/$(EIGEN_HOME)
+    LIBRARIES  += $(LIBS_LIBINT)
+endif
+
+
+#This is temporary
+DO_lrtddft = 0
+ifeq ($(cuda),0)
+ifeq ($(libint),1)
+ifeq ($(libxc),1)
+    DO_lrtddft = 1
+endif
+ifeq ($(libxc),2)
+    DO_lrtddft = 0
+endif
+endif
+endif
+
+ifeq ($(DO_lrtddft),1)
+    eri_src=lrtddft/eri.cpp
+    SRCS         += lrtddft/couplingform.cpp lrtddft/eri.cpp lrtddft/lrkernel.cpp
+    OBJ          += lrtddft/eri.o lrtddft/lrkernel.o lrtddft/couplingform.o
+lrtddft/eri.o: $(eri_src)
+	$(CXX) -std=c++11 $(CXXFLAGS) $(INCS_LIBINT) -c $< -o $@
+else
+    fake=lrtddft/lrkernel_fake
+    SRCS         += $(fake).cpp
+    OBJ          += $(fake).o
+endif

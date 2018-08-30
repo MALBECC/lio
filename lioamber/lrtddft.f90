@@ -7,16 +7,18 @@ module lr_data
    implicit none
 
    logical :: lresp = .false.
-   integer :: Nvirt, dim
+   integer :: Nvirt, dim, NCOlr, Mlr
    integer :: nstates = 3
    integer :: root = 0
-#ifdef TD_SIMPLE
-   real, dimension(:,:), allocatable :: eigenvec
-   real, dimension(:), allocatable :: eigenval
-#else
-   real*8, dimension(:,:), allocatable :: eigenvec
+   real*8, dimension(:,:), allocatable :: eigenvec, cbas
    real*8, dimension(:), allocatable :: eigenval
-#endif
+! Use Frozen Core Approximation
+! nfo = number of molecular orbitals occupied with lowest energy deleted
+! nfv = number of molecular orbiatls virtual with higher energy deleted
+   logical :: FCA = .false.
+   integer :: nfo = 3
+   integer :: nfv = 3
+   
 end module lr_data
 
 module lrtddft
@@ -27,47 +29,58 @@ contains
 
    subroutine linear_response(MatCoef,VecEne)
    use lr_data, only: Nvirt,dim,nstates,eigenval,&
-                      eigenvec,cbas,root
+                      eigenvec,cbas,root,FCA,nfo,nfv,&
+                      NCOlr, Mlr
    use garcha_mod, only: NCO, M, c, a
    use basis_data, only: c_raw, max_c_per_atom
 
    implicit none
-#ifdef TD_SIMPLE
-   real, intent(in) :: MatCoef(M,M)
-   real, intent(in) :: VecEne(M)
-   real, dimension(:,:) allocatable :: Kfxc, Kc, A_mat
-   real, dimension(:,:,:,:), allocatable :: Kc_Int, Kxc_Int
-#else
+
    real*8, intent(in) :: MatCoef(M,M)
    real*8, intent(in) :: VecEne(M)
-   real*8, dimension(:,:) allocatable :: Kfxc, Kc, A_mat
-   real*8, dimension(:,:,:,:), allocatable :: Kc_Int, Kxc_Int
-#endif
-   integer :: ifunct, icont
 
-   if (.not. allocated(cbas)) allocate(cbas(M, max_c_per_atom))
-   cbas = 0.0D0
-   do ifunct = 1, M
-   do jcont  = 1, max_c_per_atom
-#ifdef TD_SIMPLE
-      cbas(ifunct,jcont) = float(c_raw(ifunct,jcont))
-#else
-      cbas(ifunct,jcont) = dble(c_raw(ifunct,jcont))
-#endif
-   enddo
-   enddo
+   integer :: i
+   real*8, dimension(:), allocatable :: Ene_LR
+   real*8, dimension(:,:), allocatable :: KMO, A_mat, Coef_LR
+   real*8, dimension(:,:,:,:), allocatable :: KAO
+
    call g2g_timer_start('LINEAR RESPONSE')
+   if (.not. allocated(cbas)) allocate(cbas(M, max_c_per_atom))
+   cbas = c_raw
 
-   Nvirt = M - NCO
-   dim = Nvirt * NCO
+! Initialization of variables
+   if (FCA .eqv. .true.) then
+   print*,"Using Frozen Core Approximation"
+   print*,"nfo, nfv", nfo, nfv
+      Nvirt = M - NCO - nfv
+      NCOlr = NCO - nfo
+      Mlr = M - nfo - nfv
+      dim = Nvirt * NCOlr
+      allocate(Coef_LR(M,Mlr),Ene_LR(Mlr))
+      do i=1, NCOlr
+        Coef_LR(:,i) = MatCoef(:,i+nfo)
+        Ene_LR(i) = VecEne(i+nfo)
+      enddo
+      do i=1, Nvirt
+         Coef_LR(:,NCOlr+i) = MatCoef(:,i+NCO)
+         Ene_LR(NCOlr+i) = VecEne(i+NCO)
+      enddo
+   else
+      nfo = 0
+      Mlr = M
+      NCOlr = NCO
+      Nvirt = M - NCO
+      dim = Nvirt * NCO
+      allocate(Coef_LR(M,M),Ene_LR(M))
+      Coef_LR = MatCoef
+      Ene_LR = VecEne
+   endif
 
-   allocate(Kc(dim,dim),Kfxc(dim,dim),A_mat(dim,dim))
-   allocate(Kxc_Int(M,M,M,M),Kc_Int(M,M,M,M))
+   allocate(KMO(dim,dim),A_mat(dim,dim))
+   allocate(KAO(M,M,M,M))
 
-   Kfxc = 0.0D0
-   Kc = 0.0D0
-   Kxc_Int = 0.0D0
-   Kc_Int = 0.0D0
+   KAO = 0.0D0
+   KMO = 0.0D0
 
    print*, ""
    print*,"#######################################"
@@ -76,14 +89,14 @@ contains
    print*, ""
 
    call g2g_timer_start('g2g_LinearResponse')
-   call g2g_linear_response(MatCoef,Kfxc,Kc,Kxc_Int,Kc_Int,cbas,dim)
+   call g2g_linear_response(Coef_LR,KMO,KAO,cbas,dim,NCOlr,Nvirt)
    call g2g_timer_stop('g2g_LinearResponse')
-   deallocate(Kxc_Int,Kc_Int)
+   deallocate(KAO)
 
    call g2g_timer_start('ObtainMatrix')
-   call ObtainAmatrix(A_mat,Kc,Kfxc,VecEne,dim,M,NCO)
+   call ObtainAmatrix(A_mat,KMO,Ene_LR,dim,Mlr,NCOlr)
    call g2g_timer_stop('ObtainMatrix')
-   deallocate(Kc,Kfxc)
+   deallocate(KMO)
 
    call g2g_timer_start('Davidson')
    call davidson(A_mat,dim,eigenval,eigenvec,nstates)
@@ -93,31 +106,27 @@ contains
    call PrintResults(eigenvec,eigenval,dim,nstates)
 
    if(root > 0) then
-     call UnDensExc(eigenvec(:,root),MatCoef,dim)
+     call UnDensExc(eigenvec(:,root),Coef_LR,dim)
    endif
    deallocate(eigenvec,eigenval)
+   deallocate(Coef_LR,Ene_LR)
 
    call g2g_timer_stop('LINEAR RESPONSE')
    end subroutine linear_response
 
-   subroutine ObtainAmatrix(A,Kcou,Kxc,VecE,N,M,NCO)
+   subroutine ObtainAmatrix(A,Kcou,VecE,N,M,NCO)
    implicit none
 
    integer, intent(in) :: N, M, NCO
-#ifdef TD_SIMPLE
-   real, intent(in) :: Kcou(N,N),Kxc(N,N),VecE(M)
-   real, intent(out) :: A(N,N)
-#else
-   real*8, intent(in) :: Kcou(N,N),Kxc(N,N),VecE(M)
+   real*8, intent(in) :: Kcou(N,N),VecE(M)
    real*8, intent(out) :: A(N,N)
-#endif
 
    integer :: k,l,i,j !counters
 
    k = NCO
    l = NCO + 1
    do i=1,N
-     A(i,i) = Kcou(i,i) + Kxc(i,i) + VecE(l) - VecE(k)
+     A(i,i) = Kcou(i,i) + VecE(l) - VecE(k)
      l = l + 1
      if (l > M) then
        l = NCO + 1
@@ -125,9 +134,9 @@ contains
      endif
    enddo
    do i=1,N
-     do j=i+1,N
-         A(i,j) = Kcou(i,j) + Kxc(i,j)
-         A(j,i) = A(i,j)
+     do j=1,i-1
+         A(j,i) = Kcou(i,j)
+         A(i,j) = A(j,i)
      enddo
    enddo
    end subroutine ObtainAmatrix
@@ -139,29 +148,16 @@ contains
    implicit none
 
    integer, intent(in) :: N, Nstat
-#ifdef TD_SIMPLE
-   real, intent(inout) :: A(N,N)
-   real, dimension(:,:), allocatable, intent(out) :: eigvec
-   real, dimension(:), allocatable, intent(out) :: eigval
-#else
    real*8, intent(inout) :: A(N,N)
    real*8, dimension(:,:), allocatable, intent(out) :: eigvec
    real*8, dimension(:), allocatable, intent(out) :: eigval
-#endif
 
    integer :: IL, IU, num, LWORK, LIWORK, info
    integer, dimension(:), allocatable :: IWORK, ISUPPZ
-#ifdef TD_SIMPLE
-   real :: VL = 1.0 !NOT REFERENCE
-   real :: VU = 20.0 !NOT REFERENCE
-   real :: ABSTOL = 1.0E-10
-   real, dimension(:), allocatable :: WORK
-#else
    real*8 :: VL = 1.0 !NOT REFERENCE
    real*8 :: VU = 20.0 !NOT REFERENCE
    real*8 :: ABSTOL = 1.0E-10
    real*8, dimension(:), allocatable :: WORK
-#endif
 
    IL = 1
    IU = Nstat
@@ -194,36 +190,33 @@ contains
    end subroutine davidson
   
    subroutine PrintResults(vec,val,N,nstat)
-   use garcha_mod, only: M,NCO
+   use lr_data, only: Mlr, NCOlr, nfo
+!   use garcha_mod, only: M,NCO
    implicit none
 
    integer, intent(in) :: N, nstat
-#ifdef TD_SIMPLE
-   real, intent(in) :: vec(N,nstat),val(nstat)
-#else
    real*8, intent(in) :: vec(N,nstat),val(nstat)
-#endif
 
    integer :: i,j,from,to
 
-   from = NCO
-   to = NCO + 1
+   from = NCOlr
+   to = NCOlr + 1
 
    do j=1, nstat
    write(*,100) j,val(j)
    do i=1, N
       if ( abs(vec(i,j)) > 0.1D0 ) then
-         write(*,101) from, to, vec(i,j)
+         write(*,101) from+nfo, to+nfo, vec(i,j)
       endif
       to = to + 1
-      if ( to == M+1 ) then
+      if ( to == Mlr+1 ) then
           from = from - 1
-          to = NCO + 1
+          to = NCOlr + 1
       endif
    enddo
       print*, " "
-      from = NCO
-      to = NCO + 1
+      from = NCOlr
+      to = NCOlr + 1
    enddo
 
    100 FORMAT(1X,"STATE",I2,3X,"ENERGY=",F14.7," Hartree")
@@ -236,84 +229,62 @@ contains
 !PEat = excited state density matrix in AO basis
 !PFat = ground state density matrix in AO basis
 !dPat = diference density matrix in AO basis
-   use garcha_mod, only: M, NCO, RMM
+   use lr_data, only: Mlr, NCOlr, Nvirt
+   use garcha_mod, only: M, RMM
    implicit none
 
    integer, intent(in) :: N
-#ifdef TD_SIMPLE
-   real, intent(in) :: vec(N),Coef(M,M)
-   real, dimension(:,:), allocatable :: Pij, Pab, dPat, X, PEat, PFat
-   real :: temp
-#else
-   real*8, intent(in) :: vec(N),Coef(M,M)
-   real*8, dimension(:,:), allocatable :: Pij, Pab, dPat, X, PEat, PFat
-   real*8 :: temp
-#endif
+   real*8, intent(in) :: vec(N),Coef(M,Mlr)
 
-   integer :: i,j,a,b,row,col,NCOc,Nij,Nab,Nvirt,M2
+   real*8, dimension(:,:), allocatable :: Pij, Pab, dPat, X, PEat, PFat,&
+                                          Xtrans, Cocc, Cnvirt, CTocc,&
+                                          CTnvirt
 
-   Nvirt = M - NCO
-   allocate(Pij(NCO,NCO),Pab(Nvirt,Nvirt),X(NCO,Nvirt))
+   integer :: i,j,a,b,row,col,NCOc,Nij,Nab,M2
+
+   allocate(Pij(NCOlr,NCOlr),Pab(Nvirt,Nvirt),X(NCOlr,Nvirt),Xtrans(Nvirt,NCOlr))
    Pij = 0.0D0
    Pab = 0.0D0
    X = 0.0D0
 
-   do row=0,NCO-1
+   do row=0,NCOlr-1
    do col=1,Nvirt
      X(row+1,col) = vec(row*Nvirt+col)
+     Xtrans(col,row+1) = vec(row*Nvirt+col)
    enddo
    enddo
 
 !Form block Diference Density Matrix occ-occ in MO basis
-   temp = 0.0D0
-   do i=1,NCO
-   do j=1,NCO
-     do a=1,Nvirt
-       temp = temp + X(i,a)*X(j,a)
-     enddo
-     Pij(i,j) = temp * (-1.0D0)
-     temp = 0.0D0
-   enddo
-   enddo
-   
-!Form block Diference Density Matrix nvirt-nvirt in MO basis
-   temp = 0.0D0
-   do a=1,Nvirt
-   do b=1,Nvirt
-     do i=1,NCO
-       temp = temp + X(i,a)*X(i,b)
-     enddo
-     Pab(a,b) = temp
-     temp = 0.0D0
-   enddo
-   enddo
+   Pij = -1.0D0*matmul(X,Xtrans)
 
-   deallocate(X)
-   allocate(dPat(M,M))
+!Form block Diference Density Matrix nvirt-nvirt in MO basis
+   Pab = matmul(Xtrans,X)
+
+   deallocate(X,Xtrans)
+   allocate(dPat(M,M),Cocc(M,NCOlr),Cnvirt(M,Nvirt))
+   allocate(CTocc(NCOlr,M),CTnvirt(Nvirt,M))
 
 !Form All Diference Density Matrix in AO basis
-   temp = 0.0D0
-   NCOc = NCO + 1
-   do row=1,M
-   do col=1,M
-     do i=1,NCO
-     do j=1,NCO
-       temp = temp + Pij(i,j)*Coef(row,NCOc-i)*Coef(col,NCOc-j)
-     enddo
-     enddo
-     do a=1,Nvirt
-     do b=1,Nvirt
-       temp = temp + Pab(a,b)*Coef(row,a+NCO)*Coef(col,b+NCO)
-     enddo
-     enddo
-     dPat(row,col) = temp
-     temp = 0.0D0
+   ! Form block occ - occ
+   NCOc = NCOlr + 1
+   do i=1,NCOlr
+      Cocc(:,i) = Coef(:,NCOc-i)
+      CTocc(i,:) = Coef(:,NCOc-i)
    enddo
-   enddo
+   dPat=matmul(Cocc,matmul(Pij,CTocc))
+   deallocate(Cocc,CTocc)
 
+   ! Form block virt - virt 
+   do i=1,Nvirt
+      Cnvirt(:,i) = Coef(:,NCOlr+i)
+      CTnvirt(i,:) = Coef(:,NCOlr+i)
+   enddo
+   dPat = dPat + matmul(Cnvirt,matmul(Pab,CTnvirt))
+   deallocate(Cnvirt,CTnvirt)
    deallocate(Pij,Pab)
-   allocate(PFat(M,M)PEat(M,M))
 
+! Extract Rho of ground state
+   allocate(PFat(M,M),PEat(M,M))
    call spunpack_rho('L',M,RMM,PFat)
 
 !Form Unrelaxed Excited State Density Matrix in AO basis
@@ -322,5 +293,6 @@ contains
      PEat(i,j) = PFat(i,j) + dPat(i,j)
    enddo
    enddo
+   deallocate(PFat,PEat,dPat)
    end subroutine UnDensExc
 end module lrtddft

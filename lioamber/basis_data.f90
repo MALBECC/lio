@@ -108,11 +108,13 @@ module basis_data
    double precision, allocatable :: cool(:)
    real            , allocatable :: cools(:)
 
-
    ! Temporary for EHRENFEST
    double precision, allocatable :: a_ehren(:,:)
    double precision, allocatable :: c_ehren(:,:)
    integer         , allocatable :: ang_mom_ehren(:,:)
+
+   ! Temporary for Linear Response
+   double precision, allocatable :: c_raw(:,:)
 
    ! GLOBAL PARAMETERS
    ! Degeneracy for each angular momentum
@@ -131,7 +133,7 @@ subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
                          cd, atmin, nns, nnp, nnd, nshell, nshelld, norm, af,  &
                          indexii, indexiid, natomc, jatc, nnps, nnpp, nnpd,    &
                          ang_mom, ang_momd, max_f_per_atom, max_c_per_atom, MM,&
-                         MMd
+                         MMd, c_raw
    implicit none
    ! Inputs:
    !   n_atoms        : the number of atoms in the QM system.
@@ -176,7 +178,8 @@ subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
 
    allocate(c(M, max_c_per_atom), a(M, max_c_per_atom), cd(Md, max_c_per_atom),&
             ad(Md, max_c_per_atom), nCont(M), nContd(Md), ang_mom(M),          &
-            ang_momd(Md), Nuc(M), Nucd(Md), indexii(M), indexiid(Md), af(Md))
+            ang_momd(Md), Nuc(M), Nucd(Md), indexii(M), indexiid(Md), af(Md),  &
+            c_raw(M, max_c_per_atom))
    allocate(atmin(n_atoms), nns(n_atoms), nnp(n_atoms), nnd(n_atoms),     &
             nnps(n_atoms), nnpp(n_atoms), nnpd(n_atoms), natomc(n_atoms), &
             jatc(n_atoms,n_atoms))
@@ -191,15 +194,15 @@ subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
 
    if (int_basis) then
       call read_basis_internal(basis_name, fitting_name, M, Md, n_atoms, norm, &
-                               max_f_per_atom, max_c_per_atom, atom_Z, c, a,   &
-                               cd, ad, nCont, nContd, ang_mom, ang_momd, Nuc,  &
-                               Nucd, atmin, nns, nnp, nnd, nShell, nShelld,    &
-                               iostat)
+                               max_f_per_atom, max_c_per_atom, atom_Z, c_raw,  &
+                               c, a, cd, ad, nCont, nContd, ang_mom, ang_momd, &
+                               Nuc, Nucd, atmin, nns, nnp, nnd, nShell,        &
+                               nShelld, iostat)
    else
       call read_basis_external(basis_name, M,Md, n_atoms, norm, max_f_per_atom,&
-                               max_c_per_atom, atom_Z, c, a, cd, ad, nCont,    &
-                               nContd, ang_mom, ang_momd, Nuc, Nucd, atmin,    &
-                               nns, nnp, nnd, nShell, nShelld, iostat)
+                               max_c_per_atom, atom_Z, c_raw, c, a, cd, ad,    &
+                               nCont, nContd, ang_mom, ang_momd, Nuc, Nucd,    &
+                               atmin, nns, nnp, nnd, nShell, nShelld, iostat)
    endif
    if (iostat .gt. 0) then
       out_stat = 3
@@ -208,7 +211,7 @@ subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
 
    ! Reorders basis: first all s, then all p, then all d.
    call reorder_basis(a,  c,  Nuc,  nCont,  indexii,  M,  max_c_per_atom, &
-                      ang_mom,  nShell)
+                      ang_mom,  nShell, c_raw)
    call reorder_basis(ad, cd, Nucd, nContd, indexiid, Md, max_c_per_atom, &
                       ang_momd, nShelld)
 
@@ -219,10 +222,9 @@ subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
 end subroutine basis_init
 
 subroutine basis_deinit()
-   !use basis_data, only: Nuc, Nucd, nCont, nContd, a, c, ad, cd, atmin, nns, &
    use basis_data, only: Nuc, Nucd, nCont, nContd, a, c, ad, cd, atmin, nns, &
                          nnp, nnd, af, indexii, indexiid, natomc, jatc, nnps,&
-                         nnpp, nnpd
+                         nnpp, nnpd, c_raw
 
    implicit none
 
@@ -249,6 +251,10 @@ subroutine basis_deinit()
    if (allocated(nnps))   deallocate(nnps)
    if (allocated(nnpp))   deallocate(nnpp)
    if (allocated(nnpd))   deallocate(nnpd)
+
+
+   ! Ehrenfest and LR-TDDFT
+   if (allocated(c_raw)) deallocate(c_raw)
 
 end subroutine basis_deinit
 
@@ -544,7 +550,7 @@ end subroutine check_basis
 
 subroutine read_basis_external(basis_file, n_funcs, n_fits, n_atoms, normalize,&
                                max_fun_per_atom, max_con_per_atom, atom_Z,     &
-                               coef, expo, coefd, expod, n_cont, n_contd,      &
+                               craw, coef, expo, coefd, expod, n_cont, n_contd,&
                                ang_mom_f, ang_mom_fd, atm_of_func,             &
                                atm_of_funcd, min_atm_exp, nns, nnp, nnd,       &
                                nShell, nShelld, iostatus)
@@ -561,6 +567,7 @@ subroutine read_basis_external(basis_file, n_funcs, n_fits, n_atoms, normalize,&
                                     ang_mom_f(n_funcs),  ang_mom_fd(n_fits),   &
                                     nShell(0:3), nShelld(0:3)
    double precision, intent(out) :: coef(n_funcs,max_con_per_atom), &
+                                    craw(n_funcs,max_con_per_atom), &
                                     expo(n_funcs,max_con_per_atom), &
                                     coefd(n_fits,max_con_per_atom), &
                                     expod(n_fits,max_con_per_atom), &
@@ -637,17 +644,20 @@ subroutine read_basis_external(basis_file, n_funcs, n_fits, n_atoms, normalize,&
                         index = index +1
                         select case (ang_mom(icont))
                         case (0)
+                           craw(n_orig, icount) = coef(n_orig, icount)
                            coef(n_orig, icount) = dsqrt( dsqrt(8.0D0 * &
                                                   (expo_temp(index)) ** 3 ) / &
                                                   PI32) * coef_temp(index)
                            expo(n_orig, icount) = expo_temp(index)
                         case (1)
+                           craw(n_orig, icount) = coef(n_orig, icount)
                            coef(n_orig, icount) = dsqrt( dsqrt(8.0D0 * &
                                                   (expo_temp(index)) ** 3 ) * &
                                                   4.0D0 * expo_temp(index) /  &
                                                   PI32) * coef_temp(index)
                            expo(n_orig, icount) = expo_temp(index)
                         case (2)
+                           craw(n_orig, icount) = coef(n_orig, icount)
                            coef(n_orig, icount) = dsqrt( dsqrt(8.0D0 * &
                                                   (expo_temp(index)) ** 3 ) *  &
                                                   16.0D0 * expo_temp(index)**2/&
@@ -755,10 +765,11 @@ end subroutine read_basis_external
 
 subroutine read_basis_internal(basis_file, fitting_file, n_funcs, n_fits,     &
                                n_atoms, normalize, max_fun_per_atom,          &
-                               max_con_per_atom, atom_Z, coef, expo, coefd,   &
-                               expod, n_cont, n_contd, ang_mom_f, ang_mom_fd, &
-                               atm_of_func, atm_of_funcd, min_atm_exp, nns,   &
-                               nnp, nnd, nShell, nShelld, iostatus)
+                               max_con_per_atom, atom_Z, craw, coef, expo,    &
+                               coefd, expod, n_cont, n_contd, ang_mom_f,      &
+                               ang_mom_fd, atm_of_func, atm_of_funcd,         &
+                               min_atm_exp, nns, nnp, nnd, nShell, nShelld,   &
+                               iostatus)
    use basis_data   , only: ANG_DEG
    use constants_mod, only: PI32
    implicit none
@@ -772,6 +783,7 @@ subroutine read_basis_internal(basis_file, fitting_file, n_funcs, n_fits,     &
                                     ang_mom_f(n_funcs),  ang_mom_fd(n_fits),   &
                                     nShell(0:3), nShelld(0:3)
    double precision, intent(out) :: coef(n_funcs,max_con_per_atom), &
+                                    craw(n_funcs,max_con_per_atom), &
                                     expo(n_funcs,max_con_per_atom), &
                                     coefd(n_fits,max_con_per_atom), &
                                     expod(n_fits,max_con_per_atom), &
@@ -857,17 +869,20 @@ subroutine read_basis_internal(basis_file, fitting_file, n_funcs, n_fits,     &
                         index = index +1
                         select case (ang_mom(icont))
                         case (0)
+                           craw(n_orig, icount) = coef(n_orig, icount)
                            coef(n_orig, icount) = dsqrt( dsqrt(8.0D0 * &
                                                   (expo_temp(index)) ** 3 ) / &
                                                   PI32) * coef_temp(index)
                            expo(n_orig, icount) = expo_temp(index)
                         case (1)
+                           craw(n_orig, icount) = coef(n_orig, icount)
                            coef(n_orig, icount) = dsqrt( dsqrt(8.0D0 * &
                                                   (expo_temp(index)) ** 3 ) * &
                                                   4.0D0 * expo_temp(index) /  &
                                                   PI32) * coef_temp(index)
                            expo(n_orig, icount) = expo_temp(index)
                         case (2)
+                           craw(n_orig, icount) = coef(n_orig, icount)
                            coef(n_orig, icount) = dsqrt( dsqrt(8.0D0 * &
                                                   (expo_temp(index)) ** 3 ) *  &
                                                   16.0D0 * expo_temp(index)**2/&
@@ -1005,7 +1020,7 @@ subroutine read_basis_internal(basis_file, fitting_file, n_funcs, n_fits,     &
 end subroutine read_basis_internal
 
 subroutine reorder_basis(expon, coeff, atom_of_funct, n_cont, mixed_index, &
-                         basis_size, max_cont, l_of_funct, n_shell)
+                         basis_size, max_cont, l_of_funct, n_shell, craw)
    implicit none
    integer         , intent(in)    :: basis_size, max_cont, n_shell(0:3), &
                                       l_of_funct(basis_size)
@@ -1014,13 +1029,15 @@ subroutine reorder_basis(expon, coeff, atom_of_funct, n_cont, mixed_index, &
                                       mixed_index(basis_size)
    double precision, intent(inout) :: expon(basis_size, max_cont), &
                                       coeff(basis_size, max_cont)
+   double precision, intent(inout), optional :: craw(basis_size, max_cont)
 
-   double precision, allocatable :: expo_t(:,:), coef_t(:,:)
+   double precision, allocatable :: expo_t(:,:), coef_t(:,:), craw_t(:,:)
    integer         , allocatable :: atom_of_funct_t(:), n_cont_t(:)
    integer :: ifunct, s_index, p_index, d_index
 
    allocate(expo_t(basis_size, max_cont), coef_t(basis_size, max_cont), &
-            atom_of_funct_t(basis_size) , n_cont_t(basis_size))
+            atom_of_funct_t(basis_size) , n_cont_t(basis_size)        , &
+            craw_t(basis_size, max_cont) )
 
    s_index = 1
    p_index = 1 + n_shell(0)
@@ -1034,6 +1051,7 @@ subroutine reorder_basis(expon, coeff, atom_of_funct, n_cont, mixed_index, &
          n_cont_t(s_index)        = n_cont(ifunct)
          expo_t(s_index,:)        = expon(ifunct,:)
          coef_t(s_index,:)        = coeff(ifunct,:)
+         if (present(craw)) craw_t(s_index,:) = craw(ifunct,:)
 
          s_index = s_index +1
       case (1) ! p functions
@@ -1042,6 +1060,7 @@ subroutine reorder_basis(expon, coeff, atom_of_funct, n_cont, mixed_index, &
          n_cont_t(p_index)        = n_cont(ifunct)
          expo_t(p_index,:)        = expon(ifunct,:)
          coef_t(p_index,:)        = coeff(ifunct,:)
+         if (present(craw)) craw_t(p_index,:) = craw(ifunct,:)
 
          p_index = p_index +1
       case (2) ! d functions
@@ -1050,6 +1069,7 @@ subroutine reorder_basis(expon, coeff, atom_of_funct, n_cont, mixed_index, &
          n_cont_t(d_index)        = n_cont(ifunct)
          expo_t(d_index,:)        = expon(ifunct,:)
          coef_t(d_index,:)        = coeff(ifunct,:)
+         if (present(craw)) craw_t(d_index,:) = craw(ifunct,:)
 
          d_index = d_index +1
       case default
@@ -1060,7 +1080,8 @@ subroutine reorder_basis(expon, coeff, atom_of_funct, n_cont, mixed_index, &
    atom_of_funct = atom_of_funct_t
    expon         = expo_t
    coeff         = coef_t
-   deallocate(expo_t, coef_t, atom_of_funct_t, n_cont_t)
+   if (present(craw)) craw = craw_t
+   deallocate(expo_t, coef_t, atom_of_funct_t, n_cont_t, craw_t)
 end subroutine reorder_basis
 end module basis_subs
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

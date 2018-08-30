@@ -187,7 +187,7 @@ tmplist += dft_get_mm_forces.o dft_get_qm_forces.o dip.o liomain.o
 tmplist += ehrensubs.o init_lio.o lio_finalize.o propagators.o
 tmplist += subm_int1.o  subm_int1G.o  subm_int2.o  subm_int2G.o  subm_int3G.o
 tmplist += subm_int3lu.o  subm_int3mem.o  subm_intfld.o  subm_intSG.o
-tmplist += subm_intsol.o  subm_intsolG.o  intECP.o
+tmplist += subm_intsol.o  subm_intsolG.o  intECP.o lrtddft.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/basis_data.mod
 
 ################################################################################
@@ -283,6 +283,14 @@ $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/mask_cublas.mod
 OBJECTS += cubegen.o
 modusrs := SCF.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/cubegen.mod
+
+
+################################################################################
+OBJECTS += lrtddft.o
+
+tmplist :=
+tmplist += SCF.o lionml_data.o init_lio.o drive.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/lrtddft.mod
 
 
 ################################################################################

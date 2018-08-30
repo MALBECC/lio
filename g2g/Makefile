@@ -92,6 +92,7 @@ LIBRARY=libg2g.so
 all: $(LIBRARY)
 
 include Makefile.depends
+include Makefile.lrtddft
 
 depend:
 	@touch Makefile.depends
@@ -103,6 +104,7 @@ libg2g.so: $(OBJ)
 	$(CXX) -fopenmp -shared $(LDFLAGS) -o libg2g.so $(OBJ) $(LIBRARIES)
 
 clean:
-	@echo "Removing objects"; rm -f *.o libg2g.so *.a cpu/*.o cuda/*.o pointxc/*.o
+	@echo "Removing objects"; rm -f *.o* libg2g.so *.a cpu/*.o* cuda/*.o* pointxc/*.o*
 	@rm -f cuda/*.cu_o cuda/*.cudafe* cuda/*.ptx cuda/*.hash cuda/*.cubin cuda/*.i cuda/*.ii cuda/*.fatbin.* cuda/*.cu.c
-	@rm -f analytic_integral/*.o analytic_integral/cuda/*.o
+	@rm -f analytic_integral/*.o* analytic_integral/cuda/*.o*
+	@rm -f lrtddft/*.o*

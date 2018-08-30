@@ -898,7 +898,7 @@ subroutine SCF(E)
       deallocate(rho_exc)
    endif                            ! End of translation
 
-   if (lresponse) then
+   if (lresp) then
      if (OPEN) then
        print*, "LINEAR RESPONSE ONLY WORKS WITH CLOSED SHELL"
      else

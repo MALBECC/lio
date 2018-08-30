@@ -1,11 +1,5 @@
-#ifndef _COUPLINGFORM_H
-#define _COUPLINGFORM_H
- #if FULL_DOUBLE
- void CouplingForm(FortranMatrix<double>&,FortranMatrix<double>&,
-                   double*,double*)
- #else
- void CouplingForm(FortranMatrix<float>&,FortranMatrix<float>&,
-                   float*,float*)
- #endif
+#ifndef __COUPLINGFORM_H
+#define __COUPLINGFORM_H
+void CouplingForm(double*,double*,int&,int&,int&,double*);
 #endif
  

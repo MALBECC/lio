@@ -2,89 +2,73 @@
 #include <xc.h>
 #include <omp.h>
 
+#include <stdio.h>
+
 #include "../common.h"
 #include "../init.h"
 #include "../partition.h"
-#include "../matrix.h"
 
-#include "lrkernel.h"
 #include "eri.h"
 #include "couplingform.h"
+#include "../libxc/libxcproxy.h"
+
+#define DENSMIN 1e-5
 
 using namespace G2G;
 extern Partition partition;
 
 //######################################################################
 //######################################################################
-#if FULL_DOUBLE
-extern "C" g2g_linear_response_(double* MatCoef,double* Kfxc,double* KcMat,
-                                double* Kxc_int,double* Kc_int,double* Cbas,
-                                int& dim)
-#else
-extern "C" g2g_linear_response_(float* MatCoef,float* Kfxc,float* KcMat,
-                                float* Kxc_int,float* Kc_int,float* Cbas,
-                                int& dim)
-#endif
+extern "C" void g2g_linear_response_(double* MatCoef,double* KMat,
+                                     double* K_int,double* Cbas,int& dim,
+                                     int& NCOlr, int& Nvirt)
 {
    int M = fortran_vars.m;
    int nco = fortran_vars.nco;
-   fortran_vars.dim = dim;
    int s_func = fortran_vars.s_funcs;
    int p_func = fortran_vars.p_funcs;
    int d_func = fortran_vars.d_funcs;
-#if FULL_DOUBLE
-   fortran_vars.MatCoef = FortranMatrix<double>(MatCoef,M,M,M);
-   FortranMatrix<double> Kxc=FortranMatrix<double>(Kfxc,dim,dim,dim,dim);
-   FortranMatrix<double> Kc=FortranMatrix<double>(KcMat,dim,dim,dim,dim);
    double* aContr = &fortran_vars.a_values(0,0);
    double* pos = &fortran_vars.atom_positions_pointer(0,0);
-#else
-   fortran_vars.MatCoef = FortranMatrix<float>(MatCoef,M,M,M);
-   FortranMatrix<float> Kxc=FortranMatrix<float>(Kfxc,dim,dim,dim,dim);
-   FortranMatrix<float> Kc=FortranMatrix<float>(KcMat,dim,dim,dim,dim);
-   float* aContr = &fortran_vars.a_values(0,0);
-   float* pos = &fortran_vars.atom_positions_pointer(0,0);
-#endif
    double timeI, timeF;
 
+   fortran_vars.dim = dim;
+   fortran_vars.nvirt = Nvirt;
+   fortran_vars.ncolr = NCOlr;
+
+   uint* ncont = &fortran_vars.contractions(0);
+   uint* nuc = &fortran_vars.nucleii(0);
+
    timeI = omp_get_wtime();
-   eri(Kc_int,M,nco,dim,fortran_vars.atoms,ncont,Cbas,aContr,pos,nuc,
+   eri(K_int,M,fortran_vars.atoms,ncont,Cbas,aContr,pos,nuc,
        s_func,p_func,d_func);
    timeF = omp_get_wtime();
+
    printf("ERI SUBROUTINE %f\n",timeF-timeI);
    timeI = timeF = 0.0;
 
    timeI = omp_get_wtime();
-   partition.solve_lr(Kxc,Kc,Kxc_int,Kc_int);
+   partition.solve_lr(KMat,K_int,MatCoef);
    timeF = omp_get_wtime();
    printf("SOLVE_LR SUBROUTINE %f\n",timeF-timeI);
 
    fflush(stdout); // NOT BUFFERED
+
 }
 //######################################################################
 //######################################################################
 
 //######################################################################
 //######################################################################
+
 namespace G2G {
-#if FULL_DOUBLE
-void Partition::solve_lr(FortranMatrix<double>& Kxc,FortranMatrix<double>& Kc,
-                         double* calcKfxc,double* calcKc)
-#else
-void Partition::solve_lr(FortranMatrix<float>& Kxc,FortranMatrix<float>& Kc,
-                         float* calcKfxc,float* calcKc)
-#endif
+
+void Partition::solve_lr(double* K,double* calcK,double* Coef)
 {
-   xc_func_type funcx, funcc;
-   switch (fortran_vars.iexch) {
-      case 9: {
-             xc_func_init(&funcx,XC_GGA_X_PBE,XC_UNPOLARIZED);
-             xc_func_init(&funcc,XC_GGA_X_PBE,XC_UNPOLARIZED);
-      } break;
-      default: {
-             std::cout << "LINEAR RESPONSE ONLY WORKS WITH PBE" << std::endl;
-      } break;
-   }
+
+   int M = fortran_vars.m;
+   int NCO = fortran_vars.ncolr;
+   int Nvirt = fortran_vars.nvirt;
    double timeI, timeF;
    timeI = omp_get_wtime();
 #pragma omp parallel for schedule(static)
@@ -92,32 +76,31 @@ void Partition::solve_lr(FortranMatrix<float>& Kxc,FortranMatrix<float>& Kc,
       for(uint j=0;j<work[i].size();j++) {
          int ind = work[i][j];
          if(ind >= cubes.size()) {
-           spheres[ind-cubes.size()]->solve_closed_lr(funcx,funcc,calcKfxc);
+           spheres[ind-cubes.size()]->solve_closed_lr(calcK);
          } else {
-           cubes[ind]->solve_closed_lr(funcx,funcc,calcKfxc);
+           cubes[ind]->solve_closed_lr(calcK);
          }
       }
    }
    timeF = omp_get_wtime();
    printf("SOLVE_CLOSED_LR SUBROUTINE %f\n",timeF-timeI);
-   xc_func_end(&funcx);
-   xc_func_end(&funcc);
 
-   CouplingForm(Kxc,Kc,calcKfxc,calcKc);
+   timeI = omp_get_wtime();
+   CouplingForm(K,calcK,M,NCO,Nvirt,Coef);
+   timeF = omp_get_wtime();
+   printf("COUPLINGFORM SUBROUTINE %f\n",timeF-timeI);
+
 }
 //######################################################################
 //######################################################################
 
 //######################################################################
 //######################################################################
-#if FULL_DOUBLE
+
 template<class scalar_type> void PointGroupCPU<scalar_type>::
-       solve_closed_lr(xc_func_type funcx,xc_func_type funcc, double* gIntKfxc)
-#else
-template<class scalar_type> void PointGroupCPU<scalar_type>::
-       solve_closed_lr(xc_func_type funcx,xc_func_type funcc, float* gIntKfxc)
-#endif
+               solve_closed_lr(double* gIntK)
 {
+
    const uint group_m = this->total_functions();
    const int npoints = this->points.size();
    const int iexch = fortran_vars.iexch;
@@ -134,15 +117,17 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
    M3 = M2*M;
    get_rmm_input(rmm_input);
    get_coef_input(rmm_input,numeros);
-#if FULL_DOUBLE
-   double fxc, fx, fc, dens, trans1, trans2, scratch;
-#else
-   float fxc, fx, fc, dens, trans1, trans2, scratch;
-#endif
-   fxc = fx = fc = dens = trans1 = trans2 = scratch = 0.0;
+   double trans1, trans2, scratch;
+   trans1 = trans2 = scratch = 0.0;
+
+//LIBXC INITIALIZATION
+   const int nspin = XC_UNPOLARIZED;
+   const int functionalExchange = fortran_vars.ex_functional_id; //101;
+   const int functionalCorrelation = fortran_vars.ec_functional_id; // 130;
+   LibxcProxy<scalar_type,3> libxcProxy(functionalExchange, functionalCorrelation, nspin);
    
    for(int point=0;point<npoints;point++) {
-      scalar_type pd, tdx, tdy, tdz; pd = tdx = tdy = tdz = 0.0;
+      scalar_type pd, fxc, tdx, tdy, tdz; pd = fxc = tdx = tdy = tdz = 0.0;
       const scalar_type* fv = function_values.row(point);
       const scalar_type* gxv = gX.row(point);
       const scalar_type* gyv = gY.row(point);
@@ -164,22 +149,14 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
          tdy += gy * w + w3yc * Fi;
          tdz += gz * w + w3zc * Fi;
       }
-      if(fabs(pd) < 1e-5) {
+      if(fabs(pd) < DENSMIN) {
         const vec_type3 dxyz(tdx, tdy, tdz);
-#if FULL_DOUBLE
         double grad = dxyz.x * dxyz.x + dxyz.y * dxyz.y + dxyz.z * dxyz.z;
-        double sigma = sqrt(grad);
-        double v2rhosigma,v2sigma2;
-#else
-        float grad = dxyz.x * dxyz.x + dxyz.y * dxyz.y + dxyz.z * dxyz.z;
-        float sigma = sqrt(grad);
-        float v2rhosigma,v2sigma2;
-#endif
+        scalar_type sigma = sqrt(grad);
+        scalar_type v2rhosigma,v2sigma2; v2rhosigma = v2sigma2 = 0.0;
+
         if(grad < MIN_PRECISION) grad = (scalar_type)MIN_PRECISION;
-        dens = pd;
-        xc_gga_fxc(&funcx,1,&dens,&sigma,&fx,&v2rhosigma,&v2sigma2);
-        xc_gga_fxc(&funcc,1,&dens,&sigma,&fc,&v2rhosigma,&v2sigma2);
-        fxc = fx + fc;
+        libxcProxy.doGGA(pd,sigma,&fxc,v2rhosigma,v2sigma2);
         const scalar_type wp = this->points[point].weight;
         int row1, col1, row2, col2;
         for(int ic=0;ic<group_m;ic++) {
@@ -193,11 +170,11 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
                     for(int lc=0;lc<=kc;lc++) {
                        col2 = numeros[lc];
                        trans2 = trans1*fv[kc]*fv[lc];
-                       gIntKfxc[row1*M3+col1*M2+row2*M+col2] += trans2;
-                       scratch=gIntKfxc[row1*M3+col1*M2+row2*M+col2];
-                       gIntKfxc[row1*M3+col1*M2+col2*M+row2] = scratch;
-                       gIntKfxc[col1*M3+row1*M2+row2*M+col2] = scratch;
-                       gIntKfxc[col1*M3+row1*M2+col2*M+row2] = scratch;
+                       gIntK[row1*M3+col1*M2+row2*M+col2] += trans2;
+                       scratch=gIntK[row1*M3+col1*M2+row2*M+col2];
+                       gIntK[row1*M3+col1*M2+col2*M+row2] = scratch;
+                       gIntK[col1*M3+row1*M2+row2*M+col2] = scratch;
+                       gIntK[col1*M3+row1*M2+col2*M+row2] = scratch;
                     }
                  }
               } // END IF TRANS1
@@ -206,7 +183,7 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
       } // END IF DENSITY
    }  // END points loop
 
-   delete numeros;
+   delete[] numeros;
 }
 //######################################################################
 //######################################################################
@@ -214,13 +191,8 @@ template<class scalar_type> void PointGroupCPU<scalar_type>::
 //######################################################################
 //######################################################################
 template<class scalar_type>
-#if FULL_DOUBLE
 void PointGroupCPU<scalar_type>::get_coef_input(HostMatrix<scalar_type>&
-               rmm_input,int* vecnum, FortranMatrix<double>& Coef) const
-#else
-void PointGroupCPU<scalar_type>::get_coef_input(HostMatrix<scalar_type>&
-               rmm_input,int* vecnum, FortranMatrix<float>& Coef) const
-#endif
+               rmm_input,int* vecnum) const
 {
    const int indexes = this->rmm_bigs.size();
    std::vector<int> row;
@@ -258,19 +230,11 @@ void PointGroupCPU<scalar_type>::get_coef_input(HostMatrix<scalar_type>&
 //######################################################################
 //######################################################################
 
-//######################################################################
-//######################################################################
-template<class scalar_type>
-void PointGroupCPU<scalar_type>::get_coef_input
-          (HostMatrix<scalar_type>& rmm_input,int* nume) const
-{
-  get_coef_input(rmm_input, nume, fortran_vars.MatCoef);
-}
-//######################################################################
-//######################################################################
-
+#if FULL_DOUBLE
 template class PointGroup<double>;
-template class PointGroup<float>;
 template class PointGroupCPU<double>;
+#else
+template class PointGroup<float>;
 template class PointGroupCPU<float>;
+#endif
 }

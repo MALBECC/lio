@@ -11,11 +11,11 @@ module lr_data
    integer :: nstates = 3
    integer :: root = 0
 #ifdef TD_SIMPLE
-   real, dimension(:,:), allocatable :: MatCoef, eigenvec, cbas, cbasx
-   real, dimension(:), allocatable :: VecEne, eigenval
+   real, dimension(:,:), allocatable :: eigenvec, cbas, cbasx
+   real, dimension(:), allocatable :: eigenval
 #else
-   real*8, dimension(:,:), allocatable :: MatCoef, eigenvec, cbas, cbasx
-   real*8, dimension(:), allocatable :: VecEne, eigenval
+   real*8, dimension(:,:), allocatable :: eigenvec, cbas, cbasx
+   real*8, dimension(:), allocatable :: eigenval
 #endif
 end module lr_data
 
@@ -25,16 +25,20 @@ module lrtddft
 
 contains
 
-   subroutine linear_response()
-   use lr_data, only: MatCoef,VecEne,Nvirt,dim,nstates,eigenval,&
+   subroutine linear_response(MatCoef,VecEne)
+   use lr_data, only: Nvirt,dim,nstates,eigenval,&
                       eigenvec,cbas,root
    use garcha_mod, only: NCO, M, c, a
 
    implicit none
 #ifdef TD_SIMPLE
+   real, intent(in) :: MatCoef(M,M)
+   real, intent(in) :: VecEne(M)
    real, dimension(:,:) allocatable :: Kfxc, Kc, A_mat
    real, dimension(:,:,:,:), allocatable :: Kc_Int, Kxc_Int
 #else
+   real*8, intent(in) :: MatCoef(M,M)
+   real*8, intent(in) :: VecEne(M)
    real*8, dimension(:,:) allocatable :: Kfxc, Kc, A_mat
    real*8, dimension(:,:,:,:), allocatable :: Kc_Int, Kxc_Int
 #endif

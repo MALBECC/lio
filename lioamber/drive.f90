@@ -785,7 +785,7 @@
         do j=1,ncontx(ip)
           cx(ip,j)=c(i,j)
           ax(ip,j)=a(i,j)
-          cbasx(is,j)=cbas(i,j)
+          cbasx(ip,j)=cbas(i,j)
         enddo
 !c
         ip=ip+1
@@ -803,7 +803,7 @@
 !c
           cx(id,j)=c(i,j)
           ax(id,j)=a(i,j)
-          cbasx(is,j)=cbas(i,j)
+          cbasx(id,j)=cbas(i,j)
         enddo
 !c
         id=id+1

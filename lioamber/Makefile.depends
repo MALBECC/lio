@@ -312,6 +312,14 @@ $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/cubegen.mod
 
 
 ################################################################################
+OBJECTS += lrtddft.o
+
+tmplist :=
+tmplist += SCF.o lionml_data.o init_lio.o drive.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/lrtddft.mod
+
+
+################################################################################
 # TO-DO: reformulate the following modules so that there exists mathcpu,
 #        mathcublas. Perhaps also a mathlio, which could be an interface
 #        that would load either mathcpu or mathcublas accordingly).

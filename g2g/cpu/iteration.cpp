@@ -621,8 +621,11 @@ void PointGroupCPU<scalar_type>::solve_opened(
 #endif
 }
 
+#if FULL_DOUBLE
 template class PointGroup<double>;
-template class PointGroup<float>;
 template class PointGroupCPU<double>;
+#else
+template class PointGroup<float>;
 template class PointGroupCPU<float>;
+#endif
 }

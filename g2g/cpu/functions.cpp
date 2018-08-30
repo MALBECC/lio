@@ -353,6 +353,9 @@ void PointGroupCPU<scalar_type>::compute_functions(bool forces, bool gga) {
   function_values.transpose(function_values_transposed);
 }
 
+#if FULL_DOUBLE
 template class PointGroupCPU<double>;
+#else
 template class PointGroupCPU<float>;
+#endif
 }

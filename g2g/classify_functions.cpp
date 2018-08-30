@@ -140,5 +140,8 @@ void PointGroup<scalar_type>::assign_functions_as_sphere(
   compute_nucleii_maps();
 }
 
+#if FULL_DOUBLE
 template class PointGroup<double>;
+#else
 template class PointGroup<float>;
+#endif

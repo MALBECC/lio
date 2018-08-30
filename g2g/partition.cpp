@@ -590,12 +590,17 @@ void Partition::solve(Timers& timers, bool compute_rmm, bool lda,
   }
 }
 
+#if FULL_DOUBLE
 template class PointGroup<double>;
-template class PointGroup<float>;
 template class PointGroupCPU<double>;
-template class PointGroupCPU<float>;
 #if GPU_KERNELS
 template class PointGroupGPU<double>;
+#endif
+#else
+template class PointGroup<float>;
+template class PointGroupCPU<float>;
+#if GPU_KERNELS
 template class PointGroupGPU<float>;
+#endif
 #endif
 }

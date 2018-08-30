@@ -132,6 +132,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     use field_data, only : chrg_sq
     use fileio    , only : lio_logo
     use fileio_data, only: style, verbose
+    use lr_data, only: cbas, cbasx
 
     implicit none
     integer , intent(in) :: nclatom, natomin, Izin(natomin), callfrom
@@ -174,7 +175,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
              Nucx(ngdDyn), ncontx(ngdDyn) , cd(ngdDyn,nl) , ad(ngdDyn,nl)   ,&
              Nucd(ngdDyn), ncontd(ngdDyn) , indexii(ngDyn), indexiid(ngdDyn),&
              v(ntatom,3) , Em(ntatom)     , Rm(ntatom)    , af(ngdDyn)      ,&
-             nnat(200)   , B(ngdDyn,3))
+             nnat(200)   , B(ngdDyn,3)    , cbas(ngDyn,nl), cbasx(ngdDyn,nl))
 
     ! Cnorm contains normalized coefficients of basis functions.
     ! Differentiate C for x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)

@@ -260,7 +260,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
 	    if (fortran_vars.use_libxc) {
 	      // Accumulate the data for libxc
 	      gpu_accumulate_point_for_libxc<scalar_type, true, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (
-		point_weights_gpu.data, this->number_of_points, block_height, 
+		point_weights_gpu.data, this->number_of_points, block_height,
 		partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data,
 		accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
 	#if LIBXC_CPU
@@ -300,7 +300,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
 
 	  // Accumulate the data.
 	  gpu_accumulate_point_for_libxc<scalar_type, true, false, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (point_weights_gpu.data,
-            this->number_of_points, block_height, 
+            this->number_of_points, block_height,
 	    partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data,
 	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
 
@@ -354,7 +354,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
         if (fortran_vars.use_libxc) {
 	  // Accumulate the data.
 	  gpu_accumulate_point_for_libxc<scalar_type, false, true, false><<<threadGrid_accumulate, threadBlock_accumulate>>> (point_weights_gpu.data,
-            this->number_of_points, block_height, 
+            this->number_of_points, block_height,
 	    partial_densities_gpu.data, dxyz_gpu.data, dd1_gpu.data, dd2_gpu.data,
 	    accumulated_densities_gpu.data, dxyz_accum_gpu.data, dd1_accum_gpu.data, dd2_accum_gpu.data);
 
@@ -915,9 +915,12 @@ void PointGroupGPU<scalar_type>::compute_weights(void)
     }
 }
 
+#if FULL_DOUBLE
 template class PointGroup<double>;
-template class PointGroup<float>;
 template class PointGroupGPU<double>;
+#else
+template class PointGroup<float>;
 template class PointGroupGPU<float>;
+#endif
 
 }

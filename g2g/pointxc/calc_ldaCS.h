@@ -98,7 +98,6 @@ __host__ __device__ void calc_ldaCS(scalar_type dens, scalar_type& ex,
     } break;
     default:
       throw std::runtime_error("Error, invalid iexch");
-      break;
   }
 }
 

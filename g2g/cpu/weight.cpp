@@ -110,9 +110,11 @@ void PointGroupCPU<scalar_type>::compute_weights(void) {
     this->number_of_points = this->points.size();
   }
 }
-
-template class PointGroup<float>;
+#if FULL_DOUBLE
 template class PointGroup<double>;
 template class PointGroupCPU<double>;
+#else
+template class PointGroup<float>;
 template class PointGroupCPU<float>;
+#endif
 }

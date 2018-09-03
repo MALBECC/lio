@@ -130,28 +130,27 @@ ifeq ($(verbose),1)
   NVCCFLAGS += --verbose
 endif
 
+# Fermi, requires CUDA <= 8
 GENCODE_SM20    := -gencode arch=compute_20,code=compute_20
 GENCODE_SM20    += -gencode arch=compute_20,code=sm_20
-#GENCODE_SM20    += -gencode arch=compute_20,code=sm_21
+# Kepler, requires CUDA >= 5
 GENCODE_SM30    := -gencode arch=compute_30,code=sm_30
-GENCODE_SM35    := -gencode arch=compute_35,code=compute_35
 GENCODE_SM35    := -gencode arch=compute_35,code=sm_35
-# Eventually for Maxwell, requires at least CUDA 6.5
-#GENCODE_SM50    := -gencode arch=compute_50,code=sm_50
-#GENCODE_SM52    := -gencode arch=compute_52,code=sm_52
-#GENCODE_FLAGS   ?= $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM52)
+# Maxwell, requires CUDA >= 6.5
+GENCODE_SM50    := -gencode arch=compute_50,code=sm_50
+GENCODE_SM52    := -gencode arch=compute_52,code=sm_52
+# Pascal, requires CUDA >= 8
+GENCODE_SM60    := -gencode arch=compute_60,code=sm_60
+GENCODE_SM61    := -gencode arch=compute_61,code=sm_61
 
-# If SM20 or SM35 is active, then compile specifically for that.
+# If specific architecture is active, then compile for that.
 ifeq ($(sm20),1)
-#  NVCCFLAGS += $(GENCODE_SM20)
   GENCODE_FLAGS   += $(GENCODE_SM20)
 endif
 ifeq ($(sm30),1)
-#  NVCCFLAGS += $(GENCODE_SM30)
   GENCODE_FLAGS   += $(GENCODE_SM30)
 endif
 ifeq ($(sm35),1)
-#  NVCCFLAGS += $(GENCODE_SM35)
   GENCODE_FLAGS   += $(GENCODE_SM35)
 endif
 ifeq ($(sm50),1)
@@ -160,8 +159,14 @@ endif
 ifeq ($(sm52),1)
   GENCODE_FLAGS   += $(GENCODE_SM52)
 endif
+ifeq ($(sm60),1)
+  GENCODE_FLAGS   += $(GENCODE_SM60)
+endif
+ifeq ($(sm61),1)
+  GENCODE_FLAGS   += $(GENCODE_SM61)
+endif
 
-GENCODE_FLAGS   ?= $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35) $(GENCODE_SM50) $(GENCODE_SM52)
+GENCODE_FLAGS   ?= $(GENCODE_SM20) $(GENCODE_SM30) $(GENCODE_SM35)
 NVCCFLAGS += $(GENCODE_FLAGS)
 
 ifneq ($(subscript_warn),1)

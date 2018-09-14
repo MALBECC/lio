@@ -6,11 +6,9 @@ subroutine rmmcalc3_fockele( dens_mao, elec_field, uses_field,                 &
 !  Time is in ps?fs?
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-   use garcha_mod  , only: M, RMM, natom, Iz, NCO, Nunp, Md, cool, cools, &
-                           kkind, kkinds, kknumd, kknums, af, B, memo, open
+   use garcha_mod  , only: M, RMM, natom, Iz, NCO, Nunp, Md, open, r, d, ntatom
    use field_data  , only: a0, epsilon
-   use faint_cpu77 , only: intfld
-   use faint_cpu   , only: int3lu
+   use faint_cpu   , only: int3lu, intfld
    use ECP_mod     , only: ecpmode, VAAA, VAAB, VBAC
 
    implicit none
@@ -43,9 +41,7 @@ subroutine rmmcalc3_fockele( dens_mao, elec_field, uses_field,                 &
    call rmmput_fock( fock_mao)
    call rmmput_dens( dens_mao )
    call int3lu( energy_coul, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), &
-                RMM(M7:M7+MMd), RMM(M9:M9+MMd), RMM(M11:M11+MMd),     &
-                M, Md, cool, cools, kkind, kkinds, kknumd, &
-                kknums, af, B, memo, open)
+                RMM(M7:M7+MMd), RMM(M9:M9+MMd), RMM(M11:M11+MMd), open)
    call g2g_solve_groups( 0, energy_xc, 0 )
    call g2g_timer_stop('rmmcalc3-solve3lu')
 !
@@ -66,7 +62,8 @@ subroutine rmmcalc3_fockele( dens_mao, elec_field, uses_field,                 &
          Qc = Qc + Iz(kk)
       end do
 
-      call intfld( g, elec_field(1), elec_field(2), elec_field(3) )
+      call intfld(RMM(M3:M3+MM), RMM(M5:M5+MM), r, d, Iz, natom, ntatom, open, &
+                  g, elec_field(1), elec_field(2), elec_field(3))
 
       dip_times_field = 0.0d0
       dip_times_field = dip_times_field + elec_field(1) * dipole(1)

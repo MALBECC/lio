@@ -6,15 +6,14 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use maskrmm
-   use faint_cpu77, only: intsol, intfld
-   use faint_cpu  , only: int2, int3mem, int3lu
+
+   use faint_cpu  , only: int2, int3mem, int3lu, intsol, intfld
 
    use field_data , only: epsilon, a0
 
    use garcha_mod, &
    &only: M, Md, RMM, kkind, kkinds, cool, cools, igrid2                       &
-       &, natom, Iz, NCO, Nunp, total_time, ad, cd, d, ncontd, nshelld, norm,  &
-          ntatom, nucd, r, kknumd, kknums, af, B, open
+       &, natom, Iz, NCO, Nunp, total_time, d, ntatom, r, open, pc
 
    use ehrendata, &
    &only: eefld_on, eefld_ampx, eefld_ampy, eefld_ampz, eefld_wavelen          &
@@ -64,14 +63,15 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
    call aint_query_gpu_level(igpu)
    if (igpu.gt.1) call aint_new_step()
 
+   idx0=3*MM+2*MMd
    if (igpu.le.1) then
-      call intsol(Energy_SolvF,Energy_SolvT,.true.)
+      call intsol(RMM(1:MM), RMM(idx0+1:idx0+MM+1), Iz, pc, r, d, natom, &
+                  ntatom, Energy_SolvF, Energy_SolvT, .true.)
    else
       call aint_qmmm_fock(Energy_SolvF,Energy_SolvT)
    endif
 
-   call int2(RMM(M7:M7+MMd), RMM(M9:M9+MMd), M, Md, nshelld, ncontd, ad, cd, &
-             NORM, r, d, nucd, ntatom)
+   call int2(RMM(M7:M7+MMd), RMM(M9:M9+MMd), r, d, ntatom)
    if (igpu.gt.2) call aint_coulomb_init()
    MEMO = .true.
    if (igpu.eq.5) MEMO = .false.
@@ -88,8 +88,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
    call g2g_timer_start('RMMcalc4-solve3lu')
    call rmmput_dens(DensMao)
    call int3lu(Energy_Coulomb, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM),        &
-               RMM(M7:M7+MMd), RMM(M9:M9+MMd), RMM(M11:M11+MMd), M, Md, cool,  &
-               cools, kkind, kkinds, kknumd, kknums, af, B, memo, open)
+               RMM(M7:M7+MMd), RMM(M9:M9+MMd), RMM(M11:M11+MMd), open)
    call g2g_solve_groups(0,Energy_Exchange,0)
    call g2g_timer_stop('RMMcalc4-solve3lu')
 
@@ -127,7 +126,8 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
      FieldNow(2) = eefld_ampy * field_shape
      FieldNow(3) = eefld_ampz * field_shape
      call dip( DipMom(1), DipMom(2), DipMom(3) )
-     call intfld( g, FieldNow(1), FieldNow(2), FieldNow(3) )
+     call intfld(RMM(M3:M3+MM), RMM(M5:M5+MM), r, d, Iz, natom, ntatom, open, &
+                 g, FieldNow(1), FieldNow(2), FieldNow(3))
 
      dip_times_field = 0.0d0
      dip_times_field = dip_times_field + FieldNow(1) * DipMom(1)

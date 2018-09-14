@@ -17,8 +17,8 @@ subroutine RMMcalc1_Overlap(Ovlap,Energy)
   call g2g_timer_start('RMMcalc1')
   call aint_query_gpu_level(igpu)
   if (igpu.gt.1) call aint_new_step()
-  call int1(Energy,RMM(M5:M5+MM),RMM(M11:M11+MM),Smat,Nuc,a,c,d,r,Iz,ncont,&
-            NORM,natom,M,nshell,ntatom)
+  call int1(Energy,RMM(M5:M5+MM), RMM(M11:M11+MM), Smat, d, r, Iz, natom, &
+            ntatom)
   call rmmget_fock(Ovlap)
   call g2g_timer_stop('RMMcalc1')
 

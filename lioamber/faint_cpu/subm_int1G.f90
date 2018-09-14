@@ -1,7 +1,6 @@
 module subm_int1G
 contains
-subroutine int1G(ff, rho, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
-                 natom, M, ntatom)
+subroutine int1G(ff, rho, d, r, Iz, natom, ntatom)
 !------------------------------------------------------------------------------!
 ! Calculates 1e gradients, to be used with MD, using the Obara-Saika recursive !
 ! method.                                                                      !
@@ -18,15 +17,14 @@ subroutine int1G(ff, rho, Nuc, a, c, d, r, Iz, ncont, nshell, NORM, &
 ! Original and debugged (or supposed to) by Dario Estrin on 28/07/1992         !
 ! Refactored by Federico Pedron on 25/07/2018                                  !
 !------------------------------------------------------------------------------!
+   use garcha_mod   , only: a, c, Nuc, ncont, nshell, NORM, M
    use liotemp      , only: FUNCT
    use constants_mod, only: pi, pi32
 
    implicit none
    ! Inputs and Outputs
-   integer         , intent(in)  :: M, natom, ntatom, Nuc(:), ncont(:), Iz(:), &
-                                    nshell(0:4)
-   double precision, intent(in)  :: a(:,:), c(:,:), d(:,:), r(ntatom,3), rho(:)
-   logical         , intent(in)  :: NORM
+   integer         , intent(in)  :: natom, ntatom, Iz(natom)
+   double precision, intent(in)  :: d(natom,natom), r(ntatom,3), rho(:)
    double precision, intent(out) :: ff(natom,3)
 
    ! Auxiliary variables

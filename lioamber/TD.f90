@@ -45,9 +45,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    use garcha_mod    , only: M, Md, NBCH, propagator, RMM, NCO, Iz, igrid2, r, &
                              Nuc, nsol, pc, X, Smat, MEMO, sol, natom, sqsm,   &
                              Nunp, ntatom, ncont, nshell, a, c, d, NORM,OPEN, &
-                             rhoalpha, rhobeta, ad, cd, ncontd, nucd, nshelld, &
-                             kknumd, kknums, cools, cool, kkinds, kkind, af, b,&
-                             memo
+                             rhoalpha, rhobeta, ad, cd, ncontd, nucd, nshelld
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, &
                              writedens, pert_time
    use field_data    , only: field, fx, fy, fz
@@ -230,8 +228,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    if (field) call field_setup_old(pert_time, 1, fx, fy, fz)
    call td_integration_setup(igrid2, igpu)
    call td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM(M5), &
-                       RMM(M11), r, pc, ntatom, natom, Smat, Nuc, a, c, d, Iz, &
-                       ncont, NORM, M, nshell)
+                       RMM(M11), r, pc, ntatom, natom, Smat, d, Iz, M)
    call spunpack('L', M, RMM(M5), Smat_initial)
 
    ! Initialises transport if required.
@@ -267,8 +264,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 #endif
    ! Precalculate three-index (two in MO basis, one in density basis) matrix
    ! used in density fitting /Coulomb F element calculation here (t_i in Dunlap)
-   call int2(RMM(M7:M7+MMd), RMM(M9:M9+MMd), M, Md, nshelld, ncontd, ad, cd, &
-             NORM, r, d, nucd, ntatom)
+   call int2(RMM(M7:M7+MMd), RMM(M9:M9+MMd), r, d, ntatom)
    call td_coulomb_precalc(igpu, MEMO)
 
    call g2g_timer_stop('td-inicio')
@@ -288,9 +284,8 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
       call g2g_timer_sum_start("TD - TD Step Energy")
 
       call td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM(M11:MM),is_lpfrg,&
-                          transport_calc, sol, t/0.024190D0, M, Md, cool, &
-                          cools, kkind, kkinds, kknumd, kknums, af, B, memo, &
-                          open)
+                          transport_calc, sol, t/0.024190D0, M, Md, open, r, d,&
+                          Iz, natom, ntatom)
 
       call g2g_timer_sum_pause("TD - TD Step Energy")
       if (verbose .gt. 2) write(*,'(A,I6,A,F12.6,A,F12.6,A)') "  TD Step: ", &
@@ -642,21 +637,15 @@ subroutine td_integration_setup(igrid2, igpu)
 end subroutine td_integration_setup
 
 subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM5, RMM11,  &
-                          r, pc, ntatom, natom, Smat, Nuc, a, c, d, Iz, ncont, &
-                          NORM, M, nshell)
-   use faint_cpu77, only: intsol
-   use faint_cpu  , only: int1
-   use mask_ecp   , only: ECP_fock
+                          r, pc, ntatom, natom, Smat, d, Iz, M)
+   use faint_cpu, only: int1, intsol
+   use mask_ecp , only: ECP_fock
    implicit none
 
    double precision, intent(in) :: pc(ntatom), r(ntatom,3)
-   integer         , intent(in) :: M, MM, igpu, nsol, ntatom, &
-                                   Nuc(M), Iz(natom),nshell(0:4)
-   logical         , intent(in) :: NORM
-   integer         , intent(inout) :: natom
+   integer         , intent(in) :: M, MM, igpu, nsol, natom, ntatom, Iz(natom)
    double precision, intent(inout) :: RMM5(MM), RMM11(MM), E1, En, E1s, Ens
-   double precision, allocatable, intent(in)    :: a(:,:), c(:,:), d(:,:)
-   integer         , allocatable, intent(in)    :: ncont(:)
+   double precision, allocatable, intent(in)    :: d(:,:)
    double precision, allocatable, intent(inout) :: RMM(:), Smat(:,:)
 
    integer :: icount
@@ -664,8 +653,7 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM5, RMM11,  &
    E1 = 0.0D0 ; En = 0.0D0
    call g2g_timer_sum_start('TD - 1-e Fock')
    call g2g_timer_sum_start('TD - Nuclear attraction')
-   call int1(En, RMM5, RMM11, Smat, Nuc, a, c, d, r, &
-             Iz, ncont, NORM, natom, M, nshell, ntatom)
+   call int1(En, RMM5, RMM11, Smat, d, r, Iz, natom, ntatom)
 
    call ECP_fock(MM, RMM11)
    call g2g_timer_sum_stop('TD - Nuclear attraction')
@@ -675,7 +663,7 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM5, RMM11,  &
       call g2g_timer_sum_start('TD - QM/MM')
       if (igpu.le.1) then
          call g2g_timer_start('intsol')
-         call intsol(E1s, Ens, .true.)
+         call intsol(RMM, RMM11, Iz, pc, r, d, natom, ntatom, E1s, Ens, .true.)
          call g2g_timer_stop('intsol')
       else
          call aint_qmmm_init(nsol, r, pc)
@@ -841,21 +829,17 @@ subroutine td_check_prop(is_lpfrg, propagator, istep, lpfrg_steps, tdrestart,&
 end subroutine td_check_prop
 
 subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
-                          transport_calc, sol, time, M, Md, cool, cools,   &
-                          kkind, kkinds, kknumd, kknums, af, B, memo,      &
-                          open_shell)
+                          transport_calc, sol, time, M, Md, open_shell, r, d, &
+                          Iz, natom, ntatom)
    use faint_cpu , only: int3lu
    use field_subs, only: field_calc
    implicit none
-   integer, intent(in)    :: MM
+   integer, intent(in)    :: MM, natom, ntatom, Iz(natom)
    logical, intent(in)    :: is_lpfrg, transport_calc, sol
-   real*8 , intent(in)    :: time
-   real*8 , intent(inout) :: E, E1, E2, En, Ex, Es, RMM(:), RMM11(:), &
-                             af(:), B(:,:)
-   integer         , intent(in) :: M, Md, kknumd, kknums, kkind(:), kkinds(:)
-   logical         , intent(in) :: open_shell, memo
-   real            , intent(in) :: cools(:)
-   double precision, intent(in) :: cool(:)
+   real*8 , intent(in)    :: time, r(ntatom,3), d(natom,natom)
+   real*8 , intent(inout) :: E, E1, E2, En, Ex, Es, RMM(:), RMM11(:)
+   integer         , intent(in) :: M, Md
+   logical         , intent(in) :: open_shell
    integer :: icount, MMd, M3, M5, M7, M9, M11
 
    MMd=Md*(Md+1)/2
@@ -869,8 +853,7 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
    if (is_lpfrg) then
       call g2g_timer_sum_start("TD - Coulomb")
       call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), RMM(M7:M7+MMd), &
-                  RMM(M9:M9+MMd), RMM(M11:M11+MMd), M, Md, cool, cools, kkind, &
-                  kkinds, kknumd, kknums, af, B, memo, open_shell)
+                  RMM(M9:M9+MMd), RMM(M11:M11+MMd), open_shell)
       call g2g_timer_sum_pause("TD - Coulomb")
       call g2g_timer_sum_start("TD - Exc")
       call g2g_solve_groups(0,Ex,0)
@@ -878,7 +861,8 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
    endif
 
    ! ELECTRIC FIELD CASE - Perturbation type: Gaussian (default).
-   call field_calc(E1, time)
+   call field_calc(E1, time, RMM(M3:M3+MM), RMM(M5:M5+MM), r, d, Iz, natom, &
+                   ntatom, open_shell)
 
    ! Add 1e contributions to E1.
    do icount = 1, MM

@@ -2,8 +2,7 @@
        subroutine dft_get_mm_forces(dxyzcl,dxyzqm)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        use garcha_mod
-       use faint_cpu, only: int1G
-       use faint_cpu77, only: intsolG
+       use faint_cpu, only: int1G, intsolG
        implicit real*8 (a-h,o-z)
        REAL*8 , intent(inout) :: dxyzqm(3,natom)
        REAL*8 , intent(inout) :: dxyzcl(3,nsol)
@@ -32,7 +31,7 @@ c       real*8 ftot(3)
          ff=0
 
          call g2g_timer_start('intsolG')
-         call intsolG(ff,ffcl)
+         call intsolG(ff,ffcl,natom, ntatom, RMM(1:MM), d, r, pc, Iz)
          call g2g_timer_stop('intsolG')
 
          do jj=1,nsol
@@ -47,8 +46,8 @@ c       real*8 ftot(3)
          ffcl=0
          ff=0
 
-         if (igpu.gt.3) call int1G(ff, RMM(1:MM), Nuc, a,c,d,r,Iz,
-     &                             ncont, nshell, NORM,natom,M,ntatom)
+         if (igpu.gt.3) call int1G(ff, RMM(1:MM), d, r, Iz, natom,
+     >    ntatom)
          call g2g_timer_start('aint_qmmm_forces')
          call aint_qmmm_forces(ff,ffcl)
          call g2g_timer_stop('aint_qmmm_forces')

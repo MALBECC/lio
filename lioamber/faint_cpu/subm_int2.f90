@@ -1,7 +1,6 @@
 module subm_int2
 contains
-subroutine int2(Gmat, Ginv, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, &
-                ntatom)
+subroutine int2(Gmat, Ginv, r, d, ntatom)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Integrals subroutines - Int2                                                 !
 ! 2e integrals subroutine, 2 indexes: density fitting functions. All of them   !
@@ -13,14 +12,13 @@ subroutine int2(Gmat, Ginv, M, Md, nshelld, ncontd, ad, cd, NORM, r, d, nucd, &
 ! Output: G matrix, which should be inverted when evaluating Coulomb terms.    !
 ! Refactored in 2018 by F. Pedron                                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+   use garcha_mod   , only: M, Md, nshelld, ncontd, ad, cd, norm, Nucd
    use liotemp      , only: FUNCT
    use constants_mod, only: pi5
 
    implicit none
-   integer         , intent(in) :: M, Md, ntatom, nucd(:), ncontd(:),&
-                                   nshelld(0:4)
-   logical         , intent(in) :: NORM
-   double precision, intent(in) :: ad(:,:), cd(:,:), d(:,:), r(ntatom,3)
+   integer         , intent(in) :: ntatom
+   double precision, intent(in) :: d(:,:), r(ntatom,3)
    double precision, intent(inout) :: Gmat(:), Ginv(:)
 
    ! Internal variables

@@ -1,8 +1,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module subm_int1
 contains
-subroutine int1(En, Fmat, Hmat, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, &
-                M, nshell, ntatom )
+subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
 !------------------------------------------------------------------------------!
 ! Calculates 1e integrals using the Obara-Saika recursive method. (See         !
 ! Helgaker, "Molecular Electronic Structure Theory" (2000). pg 339)            !
@@ -28,18 +27,16 @@ subroutine int1(En, Fmat, Hmat, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, &
 !        M ................ Number of basis functions.
 !        NORM ............. Deprecated. Boolean indicating normalization.
 !-------------------------------------------------------------------------------
+   use garcha_mod   , only: Nuc, a, c, ncont, NORM, M, nshell
    use liotemp      , only: FUNCT
    use constants_mod, only: pi, pi32
    implicit none
 
    double precision, allocatable, intent(inout) :: Smat(:,:)
    double precision, intent(inout)              :: Fmat(:), Hmat(:), En
-   integer,          intent(inout)              :: natom
 
-   double precision, intent(in) :: d(:,:), a(:,:), c(:,:), r(ntatom,3)
-   integer,          intent(in) :: ntatom, nshell(0:4), Nuc(M), Iz(natom), &
-                                   ncont(:), M
-   logical,          intent(in) :: NORM
+   integer,          intent(in) :: natom, ntatom, Iz(natom)
+   double precision, intent(in) :: d(natom,natom), r(ntatom,3)
 
    integer           :: my_natom, igpu, i_ind, j_ind, k_ind, ifunct, jfunct, &
                         iatom, jatom, nci, ncj, l1, l2, l3, l4, l12, l34,    &

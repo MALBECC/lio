@@ -8,23 +8,24 @@
        use garcha_mod, only: natom, nsol, cubegen_only, number_restr,
      &                       first_step, doing_ehrenfest, r,
      &                       qm_forces_ds, qm_forces_total,
-     &                       RMM, Nuc, a, c, d, Iz, ncont, nshell,
-     &                       NORM, natom, M, ntatom
+     &                       RMM, d, Iz, natom, ntatom, M, Md
 
        use ehrendata, only: nullify_forces
-       use faint_cpu, only: int1G
-       use faint_cpu77, only: intSG, int3G
+       use faint_cpu, only: int1G, intSG
+       use faint_cpu77, only: int3G
        implicit none
        real*8,intent(out) :: dxyzqm(3,natom)
        real*8,allocatable :: ff1G(:,:),ffSG(:,:),ff3G(:,:)
        real*8             :: factor
-       integer            :: fileunit,kk,ii,igpu, MM
+       integer            :: fileunit,kk,ii,igpu, MM, M15, MMd
        logical            :: print_forces
 !variables for restrain calculations
        real*8 :: f_r
        integer :: i
 
-       MM = M*(M+1)/2
+       MM  = M  * (M  +1) / 2
+       MMd = Md * (Md +1) / 2
+       M15 = 1 + M + 4*MM + 2*MMd
 !--------------------------------------------------------------------!
        if(cubegen_only) return
        call g2g_timer_sum_start('Forces')
@@ -35,13 +36,11 @@
        call aint_query_gpu_level(igpu)
        if (igpu.lt.4) then
          call g2g_timer_sum_start('Nuclear attraction gradients')
-         call int1G(ff1G, RMM(1:MM), Nuc, a, c, d, r, Iz, ncont, nshell,
-     &              NORM, natom, M, ntatom)
+         call int1G(ff1G, RMM(1:MM), d, r, Iz, natom, ntatom)
          call g2g_timer_sum_stop('Nuclear attraction gradients')
        elseif (nsol.le.0) then
          call g2g_timer_sum_start('Nuclear attraction gradients')
-         call int1G(ff1G, RMM(1:MM), Nuc, a, c, d, r, Iz, ncont, nshell,
-     &              NORM, natom, M, ntatom)
+         call int1G(ff1G, RMM(1:MM), d, r, Iz, natom, ntatom)
          call aint_qmmm_forces(ff1G,0)
          call g2g_timer_sum_stop('Nuclear attraction gradients')
        endif
@@ -54,7 +53,7 @@
        if (doing_ehrenfest) then
           ffSG=-transpose(qm_forces_ds)
        else
-          call intSG(ffSG)
+          call intSG(ffSG, RMM(M15:M15+MM), r, d, natom, ntatom)
        endif
        call g2g_timer_stop('intSG')
        call g2g_timer_sum_stop('Overlap gradients')

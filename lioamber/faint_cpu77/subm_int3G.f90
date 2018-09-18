@@ -84,7 +84,7 @@ subroutine int3G(frc, calc_energy)
 
    double precision :: y1, y1b, y2, y2b, y3, y3b, y4, y4b, y5, y5b
    double precision :: y6, y6b, y7, y7b, y8, y8b, y9, y9b
-   double precision :: Z2, Z2a, zc, Zij
+   double precision :: Z2, Z2a, Zc, Zij
 
    double precision :: y10, y10b, y12, y12b, y13, y13b, y14, y14b
    double precision :: y15, y15b, y16, y16b, y17, y17b, y18, y18b
@@ -132,9 +132,9 @@ subroutine int3G(frc, calc_energy)
    call int2G(f)
    call g2g_timer_sum_start('Exchange-correlation gradients')
    if (calc_energy) then
-      call g2g_solve_groups(2, Exc, f)
+      call g2g_solve_groups(2, Exc, frc)
    else
-      call g2g_solve_groups(3, Exc, f)
+      call g2g_solve_groups(3, Exc, frc)
    endif
    call g2g_timer_sum_stop('Exchange-correlation gradients')
 
@@ -142,13 +142,13 @@ subroutine int3G(frc, calc_energy)
    call g2g_timer_sum_start('Coulomb gradients')
    call aint_query_gpu_level(igpu)
    if (igpu.gt.2) then
-      call aint_coulomb_forces(f)
+      call aint_coulomb_forces(frc)
       call g2g_timer_sum_stop('Coulomb gradients')
       return
    endif
 
    do kfunct = 1, MM
-      RMM(M5+k-1) = RMM(M11+k-1)
+      RMM(M5-1 + kfunct) = RMM(M11-1 + kfunct)
    enddo
 
    ! (ss|s)
@@ -238,7 +238,7 @@ subroutine int3G(frc, calc_energy)
                do nck = 1, ncontd(kfunct)
                   ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
                   t0    = ad(kfunct,nck) + Zij
-                  Z2a   = 2.D0 * t0
+                  Z2a   = 2.0D0 * t0
                   ti    = Zij / t0
                   tj    = ad(kfunct,nck) / t0
                   W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
@@ -318,7 +318,7 @@ subroutine int3G(frc, calc_energy)
                do nck = 1, ncontd(kfunct)
                   ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
                   t0    = ad(kfunct,nck) + Zij
-                  Z2a   = 2.D0 * t0
+                  Z2a   = 2.0D0 * t0
                   ti    = Zij / t0
                   tj    = ad(kfunct,nck) / t0
                   W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
@@ -426,7 +426,7 @@ subroutine int3G(frc, calc_energy)
                do nck = 1, ncontd(kfunct)
                   ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
                   t0    = ad(kfunct,nck) + Zij
-                  Z2a   = 2.D0 * t0
+                  Z2a   = 2.0D0 * t0
                   ti    = Zij  / t0
                   tj    = ad(kfunct,nck) / t0
                   W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
@@ -530,7 +530,7 @@ subroutine int3G(frc, calc_energy)
                do nck = 1, ncontd(kfunct)
                   ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
                   t0    = ad(kfunct,nck) + Zij
-                  Z2a   = 2.D0 * t0
+                  Z2a   = 2.0D0 * t0
                   ti    = Zij  / t0
                   tj    = ad(kfunct,nck) / t0
                   W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
@@ -679,7 +679,7 @@ subroutine int3G(frc, calc_energy)
                do nck = 1, ncontd(kfunct)
                   ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
                   t0    = ad(kfunct,nck) + Zij
-                  Z2a   = 2.D0 * t0
+                  Z2a   = 2.0D0 * t0
                   ti    = Zij  / t0
                   tj    = ad(kfunct,nck) / t0
                   W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
@@ -884,339 +884,335 @@ subroutine int3G(frc, calc_energy)
    enddo
    enddo
 
-   ! (ss|p)  and gradients
+   ! (ss|p)
    do ifunct = 1, ns
-      do jfunct = 1,i
+   do jfunct = 1, ifunct
+      do nci = 1, ncont(ifunct)
+      do ncj = 1, ncont(jfunct)
+         Zij  = a(ifunct,nci) + a(jfunct,ncj)
+         tj   = a(jfunct,ncj) / Zij
+         rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))
 
-         kn=i+Jx(j)
-         do nci = 1, ncont(ifunct)
-            do ncj = 1, ncont(jfunct)
-               Zij  = a(ifunct,nci) + a(jfunct,ncj)
-               Z2   = 2.D0 * Zij
-               ti   = a(ifunct,nci) / Zij
-               tj   = a(jfunct,ncj) / Zij
+         if (rexp .lt. rmax) then
+            Z2   = 2.D0 * Zij
+            ti   = a(ifunct,nci) / Zij
+            Q(1) = ti * r(Nuc(ifunct),1) + tj * r(Nuc(jfunct),1)
+            Q(2) = ti * r(Nuc(ifunct),2) + tj * r(Nuc(jfunct),2)
+            Q(3) = ti * r(Nuc(ifunct),3) + tj * r(Nuc(jfunct),3)
+            sks  = pi52 * exp(-rexp) / Zij
 
-               rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))
-               if (rexp .lt. rmax) then
-                  Q(1) = ti * r(Nuc(ifunct),1) + tj * r(Nuc(jfunct),1)
-                  Q(2) = ti * r(Nuc(ifunct),2) + tj * r(Nuc(jfunct),2)
-                  Q(3) = ti * r(Nuc(ifunct),3) + tj * r(Nuc(jfunct),3)
-                  sks  = pi52 * exp(-rexp) / Zij
-                  do kfunct = nsd+1,nsd+npd,3
-                     dpc = (Q(1) - r(Nucd(kfunct),1)) * (Q(1) - r(Nucd(kfunct),1)) + &
-                           (Q(2) - r(Nucd(kfunct),2)) * (Q(2) - r(Nucd(kfunct),2)) + &
-                           (Q(3) - r(Nucd(kfunct),3)) * (Q(3) - r(Nucd(kfunct),3))
-                     do nck = 1, ncontd(kfunct)
-                        ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
-                        t0    = ad(kfunct,nck) + Zij
-                        Z2a   = 2.D0 * t0
-                        ti    = Zij / t0
-                        tj    = ad(kfunct,nck) / t0
-                        W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
-                        W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
-                        W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
-                        roz=ti
-                        zc=2.D0*ad(kfunct,nck)
-                        ro=roz*ad(kfunct,nck)
-                        uf = ro * dp
-                        t1=ad(kfunct,nck)*sqrt(t0)
-                        t2=sks/t1
-                        sss= t2 * FUNCT(0,uf)
-                        ss1s= t2 * FUNCT(1,uf)
-                        ss2s = t2 * FUNCT(2,uf)
-                        ta = (sss - roz * ss1s)/zc
-                        tb=ss1s / Z2a
-                        do l1 = 1, 3
-                           t1=W(l1)-r(Nucd(kfunct),l1)
-                           ssp = t1 * ss1s
-                           ss1p = t1 * ss2s
-                           fock_ind=k+l1-1
-                           term=ssp*ccoef
-                           RMM(M5+kn-1)=RMM(M5+kn-1)+af(fock_ind)*term
-                           t1=ccoef*RMM(kn)
-                           te = t1 * af(fock_ind)
-                           ty=2.D0*te
-                           tw=2.D0*t1*B(fock_ind,2)
-                           ! gradients
-                           do l2 = 1, 3
-                              t1=W(l2)-r(Nucd(kfunct),l2)
-                              t2=Q(l2)-r(Nuc(ifunct),l2)
-                              t3 = W(l2)-Q(l2)
-                              tx=r(Nuc(ifunct),l2)-r(Nuc(jfunct),l2)
-                              ssd = t1 * ss1p
-                              psp= t2 * ssp + t3*ss1p
-                              if (l1 .eq. l2) then
-                                 ssd=ssd + ta
-                                 psp = psp + tb
-                                 frc(Nucd(kfunct),l2) = frc(Nucd(kfunct),l2) - te * sss
-                              endif
-                              spp = psp+tx*ssp
-                              frc(Nuc(ifunct),l2) = frc(Nuc(ifunct),l2)+a(ifunct,nci)*(ty+tw)*psp
-                              frc(Nuc(jfunct),l2) = frc(Nuc(jfunct),l2)+a(jfunct,ncj)*(ty+tw)*spp
-                              frc(Nucd(kfunct),l2) = frc(Nucd(kfunct),l2)+ad(kfunct,nck) * ty * ssd
-                           enddo
-                        enddo
+            do kfunct = nsd+1, nsd+npd, 3
+               dpc = (Q(1) - r(Nucd(kfunct),1)) * (Q(1) - r(Nucd(kfunct),1)) + &
+                     (Q(2) - r(Nucd(kfunct),2)) * (Q(2) - r(Nucd(kfunct),2)) + &
+                     (Q(3) - r(Nucd(kfunct),3)) * (Q(3) - r(Nucd(kfunct),3))
+               do nck = 1, ncontd(kfunct)
+                  ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
+                  t0    = ad(kfunct,nck) + Zij
+                  Z2a   = 2.0D0 * t0
+                  Zc    = 2.0D0 * ad(kfunct,nck)
+                  ti    = Zij / t0
+                  tj    = ad(kfunct,nck) / t0
+                  W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
+                  W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
+                  W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
+
+                  uf   = ti * ad(kfunct,nck) * dp
+                  t2   = sks / (ad(kfunct,nck) * sqrt(t0))
+                  sss  = t2 * FUNCT(0,uf)
+                  ss1s = t2 * FUNCT(1,uf)
+                  ss2s = t2 * FUNCT(2,uf)
+                  ta   = (sss - ti * ss1s)/Zc
+                  tb   = ss1s / Z2a
+                  do l1 = 1, 3
+                     t1   = W(l1) - r(Nucd(kfunct),l1)
+                     ssp  = t1 * ss1s
+                     ss1p = t1 * ss2s
+
+                     af_ind   = kfunct + l1-1
+                     fock_ind = ifunct + Jx(jfunct)
+                     RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + &
+                                            af(af_ind) * ssp * ccoef
+                     te = ccoef * RMM(fock_ind) * af(af_ind)
+                     ty = 2.D0*te
+                     do l2 = 1, 3
+                        ssd = (W(l2) - r(Nucd(kfunct),l2)) * ss1p
+                        psp = (Q(l2) - r(Nuc(ifunct),l2) ) * ssp + &
+                              (W(l2) - Q(l2))              * ss1p
+                        if (l1 .eq. l2) then
+                           ssd = ssd + ta
+                           psp = psp + tb
+                           frc(Nucd(kfunct),l2) = frc(Nucd(kfunct),l2) - te *sss
+                        endif
+                        spp = psp + (r(Nuc(ifunct),l2) - r(Nuc(jfunct),l2)) *ssp
+
+                        frc(Nuc(ifunct),l2)  = frc(Nuc(ifunct),l2) +&
+                                               a(ifunct,nci)  * ty * psp
+                        frc(Nuc(jfunct),l2)  = frc(Nuc(jfunct),l2) +&
+                                               a(jfunct,ncj)  * ty * spp
+                        frc(Nucd(kfunct),l2) = frc(Nucd(kfunct),l2) +&
+                                               ad(kfunct,nck) * ty * ssd
                      enddo
                   enddo
-               endif
+               enddo
             enddo
-         enddo
+         endif
+      enddo
       enddo
    enddo
-   !-------------------------------------------------------------
-   ! (ps|p) and gradients
-   do i=ns+1,ns+np,3
-      do jfunct = 1,ns
-
-         k1=Jx(j)
-         do nci = 1, ncont(ifunct)
-            do ncj = 1, ncont(jfunct)
-               Zij  = a(ifunct,nci) + a(jfunct,ncj)
-               Z2   = 2.D0 * Zij
-               ti   = a(ifunct,nci) / Zij
-               tj   = a(jfunct,ncj) / Zij
-
-               rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))
-               if (rexp .lt. rmax) then
-                  Q(1) = ti * r(Nuc(ifunct),1) + tj * r(Nuc(jfunct),1)
-                  Q(2) = ti * r(Nuc(ifunct),2) + tj * r(Nuc(jfunct),2)
-                  Q(3) = ti * r(Nuc(ifunct),3) + tj * r(Nuc(jfunct),3)
-                  sks  = pi52 * exp(-rexp) / Zij
-                  do kfunct = nsd+1,nsd+npd,3
-                     dpc = (Q(1) - r(Nucd(kfunct),1)) * (Q(1) - r(Nucd(kfunct),1)) + &
-                           (Q(2) - r(Nucd(kfunct),2)) * (Q(2) - r(Nucd(kfunct),2)) + &
-                           (Q(3) - r(Nucd(kfunct),3)) * (Q(3) - r(Nucd(kfunct),3))
-                     do nck = 1, ncontd(kfunct)
-                        ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
-                        t0    = ad(kfunct,nck) + Zij
-                        zc=2.D0*ad(kfunct,nck)
-                        Z2a   = 2.D0 * t0
-                        ti    = Zij / t0
-                        tj    = ad(kfunct,nck) / t0
-                        W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
-                        W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
-                        W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
-                        roz=ti
-                        ro=roz*ad(kfunct,nck)
-                        uf = ro * dp
-                        t1=ad(kfunct,nck)*sqrt(t0)
-                        t2=sks/t1
-                        sss= t2 * FUNCT(0,uf)
-                        ss1s= t2 * FUNCT(1,uf)
-                        ss2s = t2 * FUNCT(2,uf)
-                        t3 = ss2s / Z2a
-                        t3a=ss1s / Z2a
-                        ss3s = t2 * FUNCT(3,uf)
-                        do l1 = 1, 3
-                           t1  = Q(l1) - r(Nuc(ifunct),l1)
-                           t2  = W(l1) - Q(l1)
-                           ps= t1 * sss + t2 * ss1s
-                           p1s = t1 * ss1s + t2 * ss2s
-                           t9=p1s / Z2a
-                           p2s = t1 * ss2s + t2 * ss3s
-                           t5=(ps-roz*p1s)/zc
-                           do l2 = 1, 3
-                              t1=W(l2)-r(Nucd(kfunct),l2)
-                              ss0pj = t1 * ss1s
-                              sspj = t1 * ss2s
-                              t10 = (ss0pj- tj *sspj) / Z2
-                              pispj = t1 * p2s
-                              pi0spj = t1 * p1s
-                              if (l1 .eq. l2) then
-                                 pi0spj=pi0spj + t3a
-                                 pispj=pispj + t3
-                              endif
-                              ! Fock matrix
-                              ii=i+l1-1
-                              fock_ind=k+l2-1
-                              term=pi0spj*ccoef
-                              kn=ii+k1
-                              RMM(M5+kn-1)=RMM(M5+kn-1)+af(fock_ind)*term
-                              t1=ccoef*RMM(kn)
-                              te = t1 * af(fock_ind)
-                              ty=2.D0*te
-                              t4 = sspj / Z2a
-                              do l3 = 1, 3
-                                 t1=W(l3)-r(Nucd(kfunct),l3)
-                                 t2=Q(l3)-r(Nuc(ifunct),l3)
-                                 t2a=W(l3)-Q(l3)
-                                 tx=r(Nuc(ifunct),l3)-r(Nuc(jfunct),l3)
-                                 psd = t1 * pispj
-                                 dsp= t2 * pi0spj+t2a*pispj
-                                 if (l1 .eq. l3) then
-                                    psd = psd + t4
-                                    dsp = dsp + t10
-                                    frc(Nuc(ifunct),l3) = frc(Nuc(ifunct),l3) - te * ss0pj
-                                 endif
-                                 if (l2 .eq. l3) then
-                                    psd = psd + t5
-                                    dsp = dsp+t9
-                                    frc(Nucd(kfunct),l3) = frc(Nucd(kfunct),l3) - te * ps
-                                 endif
-                                 ppp = dsp+tx*pi0spj
-                                 frc(Nuc(ifunct),l3) = frc(Nuc(ifunct),l3)+a(ifunct,nci) * ty * dsp
-                                 frc(Nuc(jfunct),l3) = frc(Nuc(jfunct),l3)+a(jfunct,ncj) * ty * ppp
-                                 frc(Nucd(kfunct),l3) = frc(Nucd(kfunct),l3)+ad(kfunct,nck) * ty * psd
-                              enddo
-                           enddo
-                        enddo
-                     enddo
-                  enddo
-               endif
-            enddo
-         enddo
-      enddo
    enddo
-   !-------------------------------------------------------------
-   ! (pp|p) and gradients
-   do i=ns+1,ns+np,3
-      do jfunct = ns+1,i,3
 
-         do nci = 1, ncont(ifunct)
-            do ncj = 1, ncont(jfunct)
-               Zij  = a(ifunct,nci) + a(jfunct,ncj)
-               Z2   = 2.D0 * Zij
-               ti   = a(ifunct,nci) / Zij
-               tj   = a(jfunct,ncj) / Zij
+   ! (ps|p)
+   do ifunct = ns+1, ns+np, 3
+   do jfunct = 1   , ns
+      do nci = 1, ncont(ifunct)
+      do ncj = 1, ncont(jfunct)
+         Zij  = a(ifunct,nci) + a(jfunct,ncj)
+         tj   = a(jfunct,ncj) / Zij
+         rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))
 
-               rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))
-               if (rexp .lt. rmax) then
-                  Q(1) = ti * r(Nuc(ifunct),1) + tj * r(Nuc(jfunct),1)
-                  Q(2) = ti * r(Nuc(ifunct),2) + tj * r(Nuc(jfunct),2)
-                  Q(3) = ti * r(Nuc(ifunct),3) + tj * r(Nuc(jfunct),3)
-                  sks  = pi52 * exp(-rexp) / Zij
-                  do kfunct = nsd+1,nsd+npd,3
-                     dpc = (Q(1) - r(Nucd(kfunct),1)) * (Q(1) - r(Nucd(kfunct),1)) + &
-                           (Q(2) - r(Nucd(kfunct),2)) * (Q(2) - r(Nucd(kfunct),2)) + &
-                           (Q(3) - r(Nucd(kfunct),3)) * (Q(3) - r(Nucd(kfunct),3))
-                     do nck = 1, ncontd(kfunct)
-                        ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
-                        t0    = ad(kfunct,nck) + Zij
-                        Z2a   = 2.D0 * t0
-                        ti    = Zij / t0
-                        tj    = ad(kfunct,nck) / t0
-                        W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
-                        W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
-                        W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
-                        roz=tj
-                        ro=roz*Zij
-                        zc=2.D0*ad(kfunct,nck)
-                        uf = ro * dp
-                        t1=ad(kfunct,nck)*sqrt(t0)
-                        t2=sks/t1
-                        sss= t2 * FUNCT(0,uf)
-                        ss1s= t2 * FUNCT(1,uf)
-                        ss2s = t2 * FUNCT(2,uf)
-                        ss3s = t2 * FUNCT(3,uf)
-                        ss4s= t2 * FUNCT(4,uf)
-                        t3 = (sss-roz*ss1s) / Z2
-                        t4 = (ss1s-roz*ss2s) / Z2
-                        t5=(ss2s-roz*ss3s) / Z2
-                        t6a=ss1s / Z2a
-                        t6=ss2s / Z2a
-                        do l1 = 1, 3
-                           t1  = Q(l1) - r(Nuc(ifunct),l1)
-                           t2  = W(l1) - Q(l1)
-                           ps= t1 * sss + t2 * ss1s
-                           p1s = t1 * ss1s + t2 * ss2s
-                           p2s = t1 * ss2s + t2 * ss3s
-                           p3s = t1 * ss3s + t2 * ss4s
-                           t8a=p1s / Z2a
-                           t8=p2s / Z2a
-                           lij=3
-                           if (ifunct .eq. jfunct) then
-                              lij=l1
+         if (rexp .lt. rmax) then
+            Z2   = 2.D0 * Zij
+            ti   = a(ifunct,nci) / Zij
+            Q(1) = ti * r(Nuc(ifunct),1) + tj * r(Nuc(jfunct),1)
+            Q(2) = ti * r(Nuc(ifunct),2) + tj * r(Nuc(jfunct),2)
+            Q(3) = ti * r(Nuc(ifunct),3) + tj * r(Nuc(jfunct),3)
+            sks  = pi52 * exp(-rexp) / Zij
+
+            do kfunct = nsd+1,nsd+npd,3
+               dpc = (Q(1) - r(Nucd(kfunct),1)) * (Q(1) - r(Nucd(kfunct),1)) + &
+                     (Q(2) - r(Nucd(kfunct),2)) * (Q(2) - r(Nucd(kfunct),2)) + &
+                     (Q(3) - r(Nucd(kfunct),3)) * (Q(3) - r(Nucd(kfunct),3))
+               do nck = 1, ncontd(kfunct)
+                  ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
+                  t0    = ad(kfunct,nck) + Zij
+                  Zc    = 2.0D0 * ad(kfunct,nck)
+                  Z2a   = 2.0D0 * t0
+                  ti    = Zij / t0
+                  tj    = ad(kfunct,nck) / t0
+                  W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
+                  W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
+                  W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
+
+                  uf   = ad(kfunct,nck) * dp * ti
+                  t2   = sks / (ad(kfunct,nck) * sqrt(t0))
+                  sss  = t2 * FUNCT(0,uf)
+                  ss1s = t2 * FUNCT(1,uf)
+                  ss2s = t2 * FUNCT(2,uf)
+                  ss3s = t2 * FUNCT(3,uf)
+                  t3   = ss2s / Z2a
+                  t3a  = ss1s / Z2a
+                  do l1 = 1, 3
+                     t1  = Q(l1) - r(Nuc(ifunct),l1)
+                     t2  = W(l1) - Q(l1)
+                     ps  = t1 * sss + t2 * ss1s
+                     p1s = t1 * ss1s + t2 * ss2s
+                     p2s = t1 * ss2s + t2 * ss3s
+                     t5  = (ps - ti * p1s) / Zc
+                     t9  = p1s / Z2a
+
+                     do l2 = 1, 3
+                        t1     = W(l2) - r(Nucd(kfunct),l2)
+                        ss0pj  = t1 * ss1s
+                        sspj   = t1 * ss2s
+                        pispj  = t1 * p2s
+                        pi0spj = t1 * p1s
+                        t4     = sspj / Z2a
+                        t10    = (ss0pj - tj * sspj) / Z2
+                        if (l1 .eq. l2) then
+                           pi0spj = pi0spj + t3a
+                           pispj  = pispj  + t3
+                        endif
+
+                        af_ind=kfunct+l2-1
+                        af_ind   = kfunct + l2 -1
+                        fock_ind = ifunct + l1 -1 + Jx(jfunct)
+                        RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + &
+                                               af(af_ind) * pi0spj * ccoef
+                        te = ccoef * RMM(fock_ind) * af(af_ind)
+                        ty = 2.0D0 * te
+                        do l3 = 1, 3
+                           psd = (W(l3) - r(Nucd(kfunct),l3)) * pispj
+                           dsp = (Q(l3) - r(Nuc(ifunct),l3))  * pi0spj +&
+                                 (W(l3) - Q(l3))              * pispj
+                           if (l1 .eq. l3) then
+                              psd = psd + t4
+                              dsp = dsp + t10
+                              frc(Nuc(ifunct),l3) = frc(Nuc(ifunct),l3) - &
+                                                    te * ss0pj
                            endif
-                           do l2 = 1, lij
-                              t1=Q(l2)-r(Nuc(jfunct),l2)
-                              t2  = W(l2) - Q(l2)
-                              pijs = t1 * ps + t2 * p1s
-                              pij1s = t1 * p1s + t2 * p2s
-                              pij2s = t1 * p2s + t2 * p3s
-                              spjs = t1 * ss1s + t2 * ss2s
-                              sp2js = t1 * ss2s + t2 * ss3s
-                              t7=sp2js / Z2a
-                              t7a=spjs / Z2a
-                              if (l1 .eq. l2) then
-                                 pijs=pijs + t3
-                                 pij1s=pij1s + t4
-                                 pij2s=pij2s + t5
+                           if (l2 .eq. l3) then
+                              psd = psd + t5
+                              dsp = dsp+t9
+                              frc(Nucd(kfunct),l3) = frc(Nucd(kfunct),l3) - &
+                                                     te * ps
+                           endif
+                           ppp = dsp + (r(Nuc(ifunct),l3) - r(Nuc(jfunct),l3)) &
+                                 * pi0spj
+                           frc(Nuc(ifunct),l3)  = frc(Nuc(ifunct),l3)  + &
+                                                  a(ifunct,nci)  * ty * dsp
+                           frc(Nuc(jfunct),l3)  = frc(Nuc(jfunct),l3)  + &
+                                                  a(jfunct,ncj)  * ty * ppp
+                           frc(Nucd(kfunct),l3) = frc(Nucd(kfunct),l3) + &
+                                                  ad(kfunct,nck) * ty * psd
+                        enddo
+                     enddo
+                  enddo
+               enddo
+            enddo
+         endif
+      enddo
+      enddo
+   enddo
+   enddo
+
+   ! (pp|p)
+   do ifunct = ns+1, ns+np , 3
+   do jfunct = ns+1, ifunct, 3
+      do nci = 1, ncont(ifunct)
+      do ncj = 1, ncont(jfunct)
+         Zij  = a(ifunct,nci) + a(jfunct,ncj)
+         tj   = a(jfunct,ncj) / Zij
+         rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))
+
+         if (rexp .lt. rmax) then
+            Z2   = 2.D0 * Zij
+            ti   = a(ifunct,nci) / Zij
+            Q(1) = ti * r(Nuc(ifunct),1) + tj * r(Nuc(jfunct),1)
+            Q(2) = ti * r(Nuc(ifunct),2) + tj * r(Nuc(jfunct),2)
+            Q(3) = ti * r(Nuc(ifunct),3) + tj * r(Nuc(jfunct),3)
+            sks  = pi52 * exp(-rexp) / Zij
+            do kfunct = nsd+1,nsd+npd,3
+               dpc = (Q(1) - r(Nucd(kfunct),1)) * (Q(1) - r(Nucd(kfunct),1)) + &
+                     (Q(2) - r(Nucd(kfunct),2)) * (Q(2) - r(Nucd(kfunct),2)) + &
+                     (Q(3) - r(Nucd(kfunct),3)) * (Q(3) - r(Nucd(kfunct),3))
+               do nck = 1, ncontd(kfunct)
+                  ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
+                  t0    = ad(kfunct,nck) + Zij
+                  Z2a   = 2.0D0 * t0
+                  Zc    = 2.0D0 * ad(kfunct,nck)
+                  ti    = Zij / t0
+                  tj    = ad(kfunct,nck) / t0
+                  W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
+                  W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
+                  W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
+
+                  uf   = tj * Zij * dp
+                  t2   = sks / (ad(kfunct,nck) * sqrt(t0))
+                  sss  = t2 * FUNCT(0,uf)
+                  ss1s = t2 * FUNCT(1,uf)
+                  ss2s = t2 * FUNCT(2,uf)
+                  ss3s = t2 * FUNCT(3,uf)
+                  ss4s = t2 * FUNCT(4,uf)
+                  t3   = (sss  - tj * ss1s) / Z2
+                  t4   = (ss1s - tj * ss2s) / Z2
+                  t5   = (ss2s - tj * ss3s) / Z2
+                  t6a  = ss1s / Z2a
+                  t6   = ss2s / Z2a
+
+                  do l1 = 1, 3
+                     t1  = Q(l1) - r(Nuc(ifunct),l1)
+                     t2  = W(l1) - Q(l1)
+                     ps  = t1 * sss  + t2 * ss1s
+                     p1s = t1 * ss1s + t2 * ss2s
+                     p2s = t1 * ss2s + t2 * ss3s
+                     p3s = t1 * ss3s + t2 * ss4s
+                     t8a = p1s / Z2a
+                     t8  = p2s / Z2a
+
+                     lij = 3
+                     if (ifunct .eq. jfunct) lij = l1
+                     do l2 = 1, lij
+                        t1    = Q(l2) - r(Nuc(jfunct),l2)
+                        t2    = W(l2) - Q(l2)
+                        pijs  = t1 * ps   + t2 * p1s
+                        pij1s = t1 * p1s  + t2 * p2s
+                        pij2s = t1 * p2s  + t2 * p3s
+                        spjs  = t1 * ss1s + t2 * ss2s
+                        sp2js = t1 * ss2s + t2 * ss3s
+                        t7    = sp2js / Z2a
+                        t7a   = spjs  / Z2a
+                        if (l1 .eq. l2) then
+                           pijs  = pijs  + t3
+                           pij1s = pij1s + t4
+                           pij2s = pij2s + t5
+                        endif
+                        t11 = (pijs - ti * pij1s) / Zc
+                        t12 = pij1s / Z2a
+
+                        do l3 = 1, 3
+                           t1    = W(l3) - r(Nucd(kfunct),l3)
+                           ppp   = t1 * pij1s
+                           spp   = t1 * spjs
+                           psp   = t1 * p1s
+                           pp1p  = t1 * pij2s
+                           spjpk = t1 * sp2js
+                           pispk = t1 * p2s
+                           if (l1 .eq. l3) then
+                              psp   = psp   + t6a
+                              ppp   = ppp   + t7a
+                              pp1p  = pp1p  + t7
+                              pispk = pispk + t6
+                           endif
+                           if (l2 .eq. l3) then
+                              spp   = spp   + t6a
+                              ppp   = ppp   + t8a
+                              pp1p  = pp1p  + t8
+                              spjpk = spjpk + t6
+                           endif
+                           t9  = spjpk / Z2a
+                           t10 = pispk / Z2a
+                           t14 = (psp - tj * pispk) / Z2
+                           t15 = (spp - tj * spjpk) / Z2
+
+                           af_ind   = kfunct + l3 -1
+                           fock_ind = ifunct + l1 -1 + Jx(jfunct + l2 -1)
+                           RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + &
+                                                  af(af_ind) * ccoef * ppp
+                           te = ccoef * RMM(fock_ind) * af(af_ind)
+                           ty = 2.0D0 * te
+                           do l4 = 1, 3
+                              ppd = (W(l4) - r(Nucd(kfunct),l4)) * pp1p
+                              dpp = (Q(l4) - r(Nuc(ifunct),l4) ) * ppp + &
+                                    (W(l4) - Q(l4))              * pp1p
+                              if (l1 .eq. l4) then
+                                 ppd = ppd + t9
+                                 dpp = dpp + t15
+                                 frc(Nuc(ifunct),l4) = frc(Nuc(ifunct),l4) - &
+                                                       te * spp
                               endif
-                              t11 = (pijs-ti*pij1s)/zc
-                              t12 = pij1s / Z2a
-                              do l3 = 1, 3
-                                 t1=W(l3)-r(Nucd(kfunct),l3)
-                                 ppp = t1 * pij1s
-                                 spp = t1 * spjs
-                                 psp = t1 * p1s
-                                 pp1p = t1 * pij2s
-                                 spjpk = t1 * sp2js
-                                 pispk = t1 * p2s
-                                 if (l1 .eq. l3) then
-                                    ppp = ppp + t7a
-                                    pp1p = pp1p + t7
-                                    pispk=pispk + t6
-                                    psp = psp + t6a
-                                 endif
-                                 if (l2 .eq. l3) then
-                                    ppp = ppp + t8a
-                                    pp1p = pp1p + t8
-                                    spjpk=spjpk + t6
-                                    spp=spp + t6a
-                                 endif
-                                 ! Fock matrix construction
-                                 ii=i+l1-1
-                                 jj=j+l2-1
-                                 fock_ind=k+l3-1
-                                 term=ccoef*ppp
-                                 kn=ii+Jx(jj)
-                                 RMM(M5+kn-1)=RMM(M5+kn-1)+af(fock_ind)*term
-                                 t1=ccoef*RMM(kn)
-                                 te = t1 * af(fock_ind)
-                                 ty=2.D0*te
-                                 t9=spjpk / Z2a
-                                 t10 = pispk / Z2a
-                                 t14=(psp-roz*pispk) / Z2
-                                 t15=(spp-roz*spjpk) / Z2
-                                 ! gradients ----------------
-                                 do l4 = 1, 3
-                                    t1= W(l4) - r(Nucd(kfunct),l4)
-                                    ppd = t1 * pp1p
-                                    t20 = Q(l4)-r(Nuc(ifunct),l4)
-                                    t30= W(l4) - Q(l4)
-                                    tx= r(Nuc(ifunct),l4) - r(Nuc(jfunct),l4)
-                                    dpp=t20*ppp + t30*pp1p
-                                    if (l1 .eq. l4) then
-                                       ppd = ppd+t9
-                                       dpp = dpp + t15
-                                       frc(Nuc(ifunct),l4) = frc(Nuc(ifunct),l4) - te * spp
-                                    endif
-                                    if (l2 .eq. l4) then
-                                       ppd = ppd + t10
-                                       dpp = dpp + t14
-                                       frc(Nuc(jfunct),l4) = frc(Nuc(jfunct),l4) - te * psp
-                                    endif
-                                    if (l3 .eq. l4) then
-                                       ppd = ppd + t11
-                                       dpp = dpp + t12
-                                       frc(Nucd(kfunct),l4) = frc(Nucd(kfunct),l4) - te * pijs
-                                    endif
-                                    pdp = dpp+tx*ppp
-                                    frc(Nuc(ifunct),l4) = frc(Nuc(ifunct),l4)+a(ifunct,nci) * ty * dpp
-                                    frc(Nuc(jfunct),l4) = frc(Nuc(jfunct),l4)+a(jfunct,ncj) * ty * pdp
-                                    frc(Nucd(kfunct),l4) = frc(Nucd(kfunct),l4)+ad(kfunct,nck) * ty * ppd
-                                 enddo
-                              enddo
+                              if (l2 .eq. l4) then
+                                 ppd = ppd + t10
+                                 dpp = dpp + t14
+                                 frc(Nuc(jfunct),l4) = frc(Nuc(jfunct),l4) - &
+                                                       te * psp
+                              endif
+                              if (l3 .eq. l4) then
+                                 ppd = ppd + t11
+                                 dpp = dpp + t12
+                                 frc(Nucd(kfunct),l4) = frc(Nucd(kfunct),l4) - &
+                                                        te * pijs
+                              endif
+                              pdp = dpp + &
+                                    (r(Nuc(ifunct),l4) - r(Nuc(jfunct),l4)) *ppp
+
+                              frc(Nuc(ifunct),l4)  = frc(Nuc(ifunct),l4)  +&
+                                                     a(ifunct,nci)  * ty * dpp
+                              frc(Nuc(jfunct),l4)  = frc(Nuc(jfunct),l4)  +&
+                                                     a(jfunct,ncj)  * ty * pdp
+                              frc(Nucd(kfunct),l4) = frc(Nucd(kfunct),l4) +&
+                                                     ad(kfunct,nck) * ty * ppd
                            enddo
                         enddo
                      enddo
                   enddo
-               endif
+               enddo
             enddo
-         enddo
+         endif
+      enddo
       enddo
    enddo
-   !-------------------------------------------------------------
+   enddo
+
    ! (ds|p)
    do i=ns+np+1,M,6
       do jfunct = 1,ns
@@ -1242,8 +1238,8 @@ subroutine int3G(frc, calc_energy)
                      do nck = 1, ncontd(kfunct)
                         ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
                         t0    = ad(kfunct,nck) + Zij
-                        Z2a   = 2.D0 * t0
-                        zc=2.D0*ad(kfunct,nck)
+                        Z2a   = 2.0D0 * t0
+                        Zc    = 2.0D0 * ad(kfunct,nck)
                         ti    = Zij / t0
                         tj    = ad(kfunct,nck) / t0
                         W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
@@ -1253,12 +1249,12 @@ subroutine int3G(frc, calc_energy)
                         ro=roz*Zij
                         uf = ro * dp
                         t1=ad(kfunct,nck)*sqrt(t0)
-                        t2=sks/t1
-                        sss= t2 * FUNCT(0,uf)
-                        ss1s= t2 * FUNCT(1,uf)
+                        t2 = sks / (ad(kfunct,nck) * sqrt(t0))
+                        sss = t2 * FUNCT(0,uf)
+                        ss1s = t2 * FUNCT(1,uf)
                         ss2s = t2 * FUNCT(2,uf)
                         ss3s = t2 * FUNCT(3,uf)
-                        ss4s= t2 * FUNCT(4,uf)
+                        ss4s = t2 * FUNCT(4,uf)
                         t3a=(sss-roz*ss1s) / Z2
                         t3 = (ss1s-roz*ss2s) / Z2
                         t3b=(ss2s-roz*ss3s) / Z2
@@ -1267,7 +1263,7 @@ subroutine int3G(frc, calc_energy)
                         do l1 = 1, 3
                            t1  = Q(l1) - r(Nuc(ifunct),l1)
                            t2  = W(l1) - Q(l1)
-                           ps= t1 * sss + t2 * ss1s
+                           ps = t1 * sss + t2 * ss1s
                            p1s = t1 * ss1s + t2 * ss2s
                            t5=p1s / Z2a
                            p2s = t1 * ss2s + t2 * ss3s
@@ -1291,9 +1287,9 @@ subroutine int3G(frc, calc_energy)
                                  f1=sq3
                               endif
                               t14=ds / Z2a
-                              t15=(d0s-ti*ds)/zc
+                              t15=(d0s-ti*ds)/Zc
                               do l3 = 1, 3
-                                 t1=W(l3)-r(Nucd(kfunct),l3)
+                                 t1=W(l3) - r(Nucd(kfunct),l3)
                                  dsp = t1 * ds
                                  ds1p = t1 * d2s
                                  pi0p = t1 * p1s
@@ -1322,10 +1318,10 @@ subroutine int3G(frc, calc_energy)
                                  cc=ccoef/f1
                                  term=dsp*cc
                                  kn=ii+k1
-                                 RMM(M5+kn-1)=RMM(M5+kn-1)+af(fock_ind)*term
+                                 RMM(M5-1 + fock_ind)=RMM(M5-1 + fock_ind)+af(af_ind)*term
                                  ! gradients
-                                 t1=cc*RMM(kn)
-                                 te = t1 * af(fock_ind)
+                                 t1=cc*RMM(fock_ind)
+                                 te = t1 * af(af_ind)
                                  ty=2.D0*te
                                  do l4 = 1, 3
                                     t1= Q(l4) - r(Nuc(jfunct),l4)
@@ -1389,8 +1385,8 @@ subroutine int3G(frc, calc_energy)
                      do nck = 1, ncontd(kfunct)
                         ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
                         t0    = ad(kfunct,nck) + Zij
-                        Z2a   = 2.D0 * t0
-                        zc=2.D0*ad(kfunct,nck)
+                        Z2a   = 2.0D0 * t0
+                        Zc    = 2.0D0 * ad(kfunct,nck)
                         ti    = Zij / t0
                         tj    = ad(kfunct,nck) / t0
                         W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
@@ -1400,13 +1396,13 @@ subroutine int3G(frc, calc_energy)
                         ro=roz*Zij
                         uf = ro * dp
                         t1=ad(kfunct,nck)*sqrt(t0)
-                        t2=sks/t1
-                        sss= t2 * FUNCT(0,uf)
-                        ss1s= t2 * FUNCT(1,uf)
+                        t2 = sks / (ad(kfunct,nck) * sqrt(t0))
+                        sss = t2 * FUNCT(0,uf)
+                        ss1s = t2 * FUNCT(1,uf)
                         ss2s = t2 * FUNCT(2,uf)
                         ss3s = t2 * FUNCT(3,uf)
-                        ss4s= t2 * FUNCT(4,uf)
-                        ss5s= t2 * FUNCT(5,uf)
+                        ss4s = t2 * FUNCT(4,uf)
+                        ss5s = t2 * FUNCT(5,uf)
                         t3a=(sss-roz*ss1s) / Z2
                         t3 = (ss1s-roz*ss2s) / Z2
                         t4 = (ss2s-roz*ss3s) / Z2
@@ -1414,7 +1410,7 @@ subroutine int3G(frc, calc_energy)
                         do l1 = 1, 3
                            t1  = Q(l1) - r(Nuc(ifunct),l1)
                            t2  = W(l1) - Q(l1)
-                           ps= t1 * sss + t2 * ss1s
+                           ps = t1 * sss + t2 * ss1s
                            p1s = t1 * ss1s + t2 * ss2s
                            p2s = t1 * ss2s + t2 * ss3s
                            t5a=(ps-roz*p1s) / Z2
@@ -1431,7 +1427,7 @@ subroutine int3G(frc, calc_energy)
                               d1s = t1 * p1s + t2 * p2s
                               d2s = t1 * p2s + t2 * p3s
                               d3s = t1 * p3s + t2 * p4s
-                              pjs= t1 * sss + t2 * ss1s
+                              pjs = t1 * sss + t2 * ss1s
                               pj1s = t1 * ss1s + t2 * ss2s
                               pj2s = t1 * ss2s + t2 * ss3s
                               pj3s = t1 * ss3s + t2 * ss4s
@@ -1452,7 +1448,7 @@ subroutine int3G(frc, calc_energy)
                               t9b=d2s / Z2a
                               do l3 = 1, 3
                                  t1=Q(l3)-r(Nuc(jfunct),l3)
-                                 t2=W(l3)-Q(l3)
+                                 t2=W(l3) - Q(l3)
                                  s1pk = t1 * ss1s + t2 * ss2s
                                  s2pk = t1 * ss2s + t2 * ss3s
                                  d0p = t1 * ds + t2 * d1s
@@ -1483,7 +1479,7 @@ subroutine int3G(frc, calc_energy)
                                  t8=pj1p / Z2a
                                  t8b=pj2p / Z2a
                                  t26=d1p / Z2a
-                                 t27=(d0p-ti*d1p)/zc
+                                 t27=(d0p-ti*d1p)/Zc
                                  do l4 = 1, 3
                                     t1= W(l4) - r(Nucd(kfunct),l4)
                                     dpp = t1 * d1p
@@ -1531,10 +1527,10 @@ subroutine int3G(frc, calc_energy)
                                     cc=ccoef/f1
                                     term=dpp*cc
                                     kn=ii+Jx(jj)
-                                    RMM(M5+kn-1)=RMM(M5+kn-1)+af(fock_ind)*term
+                                    RMM(M5-1 + fock_ind)=RMM(M5-1 + fock_ind)+af(af_ind)*term
                                     ! gradients
-                                    t1=cc*RMM(kn)
-                                    te = t1 * af(fock_ind)
+                                    t1=cc*RMM(fock_ind)
+                                    te = t1 * af(af_ind)
                                     ty=2.D0*te
                                     do l5 = 1, 3
                                        t1=Q(l5)-r(Nuc(jfunct),l5)
@@ -1604,8 +1600,8 @@ subroutine int3G(frc, calc_energy)
                      do nck = 1, ncontd(kfunct)
                         ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
                         t0    = ad(kfunct,nck) + Zij
-                        Z2a   = 2.D0 * t0
-                        zc=2.D0*ad(kfunct,nck)
+                        Z2a   = 2.0D0 * t0
+                        Zc    = 2.0D0 * ad(kfunct,nck)
                         ti    = Zij / t0
                         tj    = ad(kfunct,nck) / t0
                         W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
@@ -1615,14 +1611,14 @@ subroutine int3G(frc, calc_energy)
                         ro=roz*Zij
                         uf = ro * dp
                         t1=ad(kfunct,nck)*sqrt(t0)
-                        t2=sks/t1
-                        sss= t2 * FUNCT(0,uf)
-                        ss1s= t2 * FUNCT(1,uf)
+                        t2 = sks / (ad(kfunct,nck) * sqrt(t0))
+                        sss = t2 * FUNCT(0,uf)
+                        ss1s = t2 * FUNCT(1,uf)
                         ss2s = t2 * FUNCT(2,uf)
                         ss3s = t2 * FUNCT(3,uf)
-                        ss4s= t2 * FUNCT(4,uf)
-                        ss5s= t2 * FUNCT(5,uf)
-                        ss6s= t2 * FUNCT(6,uf)
+                        ss4s = t2 * FUNCT(4,uf)
+                        ss5s = t2 * FUNCT(5,uf)
+                        ss6s = t2 * FUNCT(6,uf)
                         ta = (sss - roz * ss1s) / Z2
                         t3 = (ss1s-roz*ss2s) / Z2
                         t4 = (ss2s-roz*ss3s) / Z2
@@ -1631,7 +1627,7 @@ subroutine int3G(frc, calc_energy)
                         do l1 = 1, 3
                            t1  = Q(l1) - r(Nuc(ifunct),l1)
                            t2  = W(l1) - Q(l1)
-                           ps= t1 * sss + t2 * ss1s
+                           ps = t1 * sss + t2 * ss1s
                            p1s = t1 * ss1s + t2 * ss2s
                            p2s = t1 * ss2s + t2 * ss3s
                            p3s = t1 * ss3s + t2 * ss4s
@@ -1644,7 +1640,7 @@ subroutine int3G(frc, calc_energy)
                            do l2 = 1, l1
                               t1  = Q(l2) - r(Nuc(ifunct),l2)
                               t2  = W(l2) - Q(l2)
-                              pjs= t1 * sss + t2 * ss1s
+                              pjs = t1 * sss + t2 * ss1s
                               pj1s = t1 * ss1s + t2 * ss2s
                               pj2s = t1 * ss2s + t2 * ss3s
                               pj3s = t1 * ss3s + t2 * ss4s
@@ -1678,7 +1674,7 @@ subroutine int3G(frc, calc_energy)
                               endif
                               do l3 = 1, lij
                                  t1=Q(l3)-r(Nuc(jfunct),l3)
-                                 t2=W(l3)-Q(l3)
+                                 t2=W(l3) - Q(l3)
                                  d0pk = t1 * ds + t2 * d1s
                                  d1pk = t1 * d1s + t2 * d2s
                                  d2pk = t1 * d2s + t2 * d3s
@@ -1781,8 +1777,8 @@ subroutine int3G(frc, calc_energy)
                                        pj2dkl=pj2dkl+t9
                                        pidkl=pidkl + t6
                                        pi2dkl=pi2dkl + t7
-                                       s1ds=s1ds + t3
-                                       s2ds=s2ds + t4
+                                       s1ds =s1ds + t3
+                                       s2ds =s2ds + t4
                                        f2=sq3
                                     endif
                                     t11 = pjdkl / Z2a
@@ -1800,7 +1796,7 @@ subroutine int3G(frc, calc_energy)
                                     t34=s1ds / Z2a
                                     t34b=s2ds / Z2a
                                     t28=d1d / Z2a
-                                    t29=(d0d-ti*d1d)/zc
+                                    t29=(d0d-ti*d1d)/Zc
                                     do l5 = 1, 3
                                        t1=W(l5)-r(Nucd(kfunct),l5)
                                        ddp = t1 * d1d
@@ -1869,10 +1865,10 @@ subroutine int3G(frc, calc_energy)
                                        cc=ccoef/(f1*f2)
                                        term=ddp*cc
                                        kn=ii+Jx(jj)
-                                       RMM(M5+kn-1)=RMM(M5+kn-1)+af(fock_ind)*term
+                                       RMM(M5-1 + fock_ind)=RMM(M5-1 + fock_ind)+af(af_ind)*term
                                        ! gradients
-                                       t1=cc*RMM(kn)
-                                       te = t1 * af(fock_ind)
+                                       t1=cc*RMM(fock_ind)
+                                       te = t1 * af(af_ind)
                                        ty=2.D0*te
                                        do l6=1,3
                                           t1=Q(l6)-r(Nuc(ifunct),l6)
@@ -1955,30 +1951,30 @@ subroutine int3G(frc, calc_energy)
                         W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
                         W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
                         roz=ti
-                        zc=2.D0*ad(kfunct,nck)
+                        Zc    = 2.0D0 * ad(kfunct,nck)
                         ro=roz*ad(kfunct,nck)
                         uf = ro * dp
                         t1=ad(kfunct,nck)*sqrt(t0)
-                        t2=sks/t1
-                        sss= t2 * FUNCT(0,uf)
-                        ss1s= t2 * FUNCT(1,uf)
+                        t2 = sks / (ad(kfunct,nck) * sqrt(t0))
+                        sss = t2 * FUNCT(0,uf)
+                        ss1s = t2 * FUNCT(1,uf)
                         ss2s = t2 * FUNCT(2,uf)
                         ss3s = t2 * FUNCT(3,uf)
-                        ta = (sss - roz * ss1s)/zc
-                        tb = (ss1s - roz * ss2s)/zc
+                        ta = (sss - roz * ss1s)/Zc
+                        tb = (ss1s - roz * ss2s)/Zc
                         do l1 = 1, 3
                            t1=W(l1)-r(Nucd(kfunct),l1)
                            ss0p = t1 * ss1s
                            ss1p = t1 * ss2s
                            t13 = ss1p / Z2
-                           t11 = (ss0p-roz*ss1p)/zc
+                           t11 = (ss0p-roz*ss1p)/Zc
                            ss2p = t1 * ss3s
                            do l2 = 1, l1
-                              t1=W(l2)-r(Nucd(kfunct),l2)
+                              t1 = W(l2) - r(Nucd(kfunct),l2)
                               ss0pj = t1 * ss1s
                               ss1pj = t1 * ss2s
                               t12 = ss1pj / Z2
-                              t10 = (ss0pj-roz*ss1pj)/zc
+                              t10 = (ss0pj-roz*ss1pj)/Zc
                               ss0d = t1 * ss1p
                               ss1d = t1 * ss2p
                               f1=1.D0
@@ -1991,16 +1987,16 @@ subroutine int3G(frc, calc_energy)
                               term=ss0d*cc
                               l12=Ll(l1)+l2
                               fock_ind=k+l12-1
-                              RMM(M5+kn-1)=RMM(M5+kn-1)+af(fock_ind)*term
-                              t1=cc*RMM(kn)
-                              te = t1 * af(fock_ind)
+                              RMM(M5-1 + fock_ind)=RMM(M5-1 + fock_ind)+af(af_ind)*term
+                              t1=cc*RMM(fock_ind)
+                              te = t1 * af(af_ind)
                               ty=2.D0*te
                               do l3 = 1, 3
-                                 t1=Q(l3)-r(Nuc(ifunct),l3)
-                                 t2=W(l3)-Q(l3)
-                                 t3 = W(l3)-r(Nucd(kfunct),l3)
+                                 t1=Q(l3) - r(Nuc(ifunct),l3)
+                                 t2=W(l3) - Q(l3)
+                                 t3 = W(l3) - r(Nucd(kfunct),l3)
 
-                                 tx=r(Nuc(ifunct),l3)-r(Nuc(jfunct),l3)
+                                 tx=r(Nuc(ifunct),l3) - r(Nuc(jfunct),l3)
                                  ssf=t3*ss1d
                                  psd = t1 * ss0d + t2 * ss1d
                                  if (l1 .eq. l3) then
@@ -2054,8 +2050,8 @@ subroutine int3G(frc, calc_energy)
                      do nck = 1, ncontd(kfunct)
                         ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
                         t0    = ad(kfunct,nck) + Zij
-                        zc=2.D0*ad(kfunct,nck)
-                        Z2a   = 2.D0 * t0
+                        Zc    = 2.0D0 * ad(kfunct,nck)
+                        Z2a   = 2.0D0 * t0
                         ti    = Zij / t0
                         tj    = ad(kfunct,nck) / t0
                         W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
@@ -2065,28 +2061,28 @@ subroutine int3G(frc, calc_energy)
                         ro=roz*ad(kfunct,nck)
                         uf = ro * dp
                         t1=ad(kfunct,nck)*sqrt(t0)
-                        t2=sks/t1
-                        sss= t2 * FUNCT(0,uf)
-                        ss1s= t2 * FUNCT(1,uf)
+                        t2 = sks / (ad(kfunct,nck) * sqrt(t0))
+                        sss = t2 * FUNCT(0,uf)
+                        ss1s = t2 * FUNCT(1,uf)
                         ss2s = t2 * FUNCT(2,uf)
                         ss3s = t2 * FUNCT(3,uf)
-                        ss4s= t2 * FUNCT(4,uf)
+                        ss4s = t2 * FUNCT(4,uf)
                         t3a=ss1s / Z2a
                         t3 = ss2s / Z2a
                         t3b=ss3s / Z2a
-                        t7=(sss-roz*ss1s)/zc
-                        t7b=(ss1s-roz*ss2s)/zc
+                        t7=(sss-roz*ss1s)/Zc
+                        t7b=(ss1s-roz*ss2s)/Zc
                         do l1 = 1, 3
                            t1  = Q(l1) - r(Nuc(ifunct),l1)
                            t2  = W(l1) - Q(l1)
-                           ps= t1 * sss + t2 * ss1s
+                           ps = t1 * sss + t2 * ss1s
                            p1s = t1 * ss1s + t2 * ss2s
                            p2s = t1 * ss2s + t2 * ss3s
                            p3s = t1 * ss3s + t2 * ss4s
-                           t5=(ps-roz*p1s)/zc
-                           t5b=(p1s-roz*p2s)/zc
+                           t5=(ps-roz*p1s)/Zc
+                           t5b=(p1s-roz*p2s)/Zc
                            do l2 = 1, 3
-                              t1=W(l2)-r(Nucd(kfunct),l2)
+                              t1 = W(l2) - r(Nucd(kfunct),l2)
                               sspj = t1 * ss2s
                               ss2pj = t1 * ss3s
                               pi0spj = t1 * p1s
@@ -2100,9 +2096,9 @@ subroutine int3G(frc, calc_energy)
                               t4 = sspj / Z2a
                               t4b = ss2pj / Z2a
                               t14=pispj / Z2a
-                              t15=(pi0spj-roz*pispj)/zc
+                              t15=(pi0spj-roz*pispj)/Zc
                               do l3 = 1, l2
-                                 t1=W(l3)-r(Nucd(kfunct),l3)
+                                 t1=W(l3) - r(Nucd(kfunct),l3)
                                  ss0d = t1 * sspj
                                  ss1d = t1 * ss2pj
                                  ps0d = t1 * pispj
@@ -2126,16 +2122,16 @@ subroutine int3G(frc, calc_energy)
                                  t10 = (ss0d- tj *ss1d) / Z2
                                  t11 = ss1d / Z2a
                                  t12 = p1pk / Z2a
-                                 t13 = (p0pk-roz*p1pk)/zc
+                                 t13 = (p0pk-roz*p1pk)/Zc
                                  l23=l2*(l2-1)/2+l3
                                  ii=i+l1-1
                                  fock_ind=k+l23-1
                                  cc=ccoef/f1
                                  term=ps0d*cc
                                  kn=ii+k1
-                                 RMM(M5+kn-1)=RMM(M5+kn-1)+af(fock_ind)*term
-                                 t1=cc*RMM(kn)
-                                 te = t1 * af(fock_ind)
+                                 RMM(M5-1 + fock_ind)=RMM(M5-1 + fock_ind)+af(af_ind)*term
+                                 t1=cc*RMM(fock_ind)
+                                 te = t1 * af(af_ind)
                                  ty=2.D0*te
                                  do l4 = 1, 3
                                     t1=Q(l4)-r(Nuc(ifunct),l4)
@@ -2199,7 +2195,7 @@ subroutine int3G(frc, calc_energy)
                      do nck = 1, ncontd(kfunct)
                         ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
                         t0    = ad(kfunct,nck) + Zij
-                        Z2a   = 2.D0 * t0
+                        Z2a   = 2.0D0 * t0
                         ti    = Zij / t0
                         tj    = ad(kfunct,nck) / t0
                         W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
@@ -2207,16 +2203,16 @@ subroutine int3G(frc, calc_energy)
                         W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
                         roz=tj
                         ro=roz*Zij
-                        zc=2.D0*ad(kfunct,nck)
+                        Zc    = 2.0D0 * ad(kfunct,nck)
                         uf = ro * dp
                         t1=ad(kfunct,nck)*sqrt(t0)
-                        t2=sks/t1
-                        sss= t2 * FUNCT(0,uf)
-                        ss1s= t2 * FUNCT(1,uf)
+                        t2 = sks / (ad(kfunct,nck) * sqrt(t0))
+                        sss = t2 * FUNCT(0,uf)
+                        ss1s = t2 * FUNCT(1,uf)
                         ss2s = t2 * FUNCT(2,uf)
                         ss3s = t2 * FUNCT(3,uf)
-                        ss4s= t2 * FUNCT(4,uf)
-                        ss5s= t2 * FUNCT(5,uf)
+                        ss4s = t2 * FUNCT(4,uf)
+                        ss5s = t2 * FUNCT(5,uf)
                         t3 = (sss-roz*ss1s) / Z2
                         t4 = (ss1s-roz*ss2s) / Z2
                         t5=(ss2s-roz*ss3s) / Z2
@@ -2226,7 +2222,7 @@ subroutine int3G(frc, calc_energy)
                         do l1 = 1, 3
                            t1  = Q(l1) - r(Nuc(ifunct),l1)
                            t2  = W(l1) - Q(l1)
-                           ps= t1 * sss + t2 * ss1s
+                           ps = t1 * sss + t2 * ss1s
                            p1s = t1 * ss1s + t2 * ss2s
                            p2s = t1 * ss2s + t2 * ss3s
                            p3s = t1 * ss3s + t2 * ss4s
@@ -2234,20 +2230,20 @@ subroutine int3G(frc, calc_energy)
                            t8a=p1s / Z2a
                            t8=p2s / Z2a
                            t8b=p3s / Z2a
-                           t33=(ps-ti*p1s)/zc
-                           t33b=(p1s-ti*p2s)/zc
+                           t33=(ps-ti*p1s)/Zc
+                           t33b=(p1s-ti*p2s)/Zc
                            lij=3
                            if (ifunct .eq. jfunct) then
                               lij=l1
                            endif
                            do l2 = 1, lij
-                              t1=Q(l2)-r(Nuc(jfunct),l2)
+                              t1= Q(l2) - r(Nuc(jfunct),l2)
                               t2  = W(l2) - Q(l2)
                               pijs = t1 * ps + t2 * p1s
                               pij1s = t1 * p1s + t2 * p2s
                               pij2s = t1 * p2s + t2 * p3s
                               pij3s = t1 * p3s + t2 * p4s
-                              sp0js= t1 * sss + t2 * ss1s
+                              sp0js = t1 * sss + t2 * ss1s
                               spjs = t1 * ss1s + t2 * ss2s
                               sp2js = t1 * ss2s + t2 * ss3s
                               sp3js = t1 * ss3s + t2 * ss4s
@@ -2255,17 +2251,17 @@ subroutine int3G(frc, calc_energy)
                               t7=sp2js / Z2a
                               t7b=sp3js / Z2a
                               if (l1 .eq. l2) then
-                                 pijs=pijs + t3
-                                 pij1s=pij1s + t4
-                                 pij2s=pij2s + t5
-                                 pij3s=pij3s + t5b
+                                 pijs =pijs + t3
+                                 pij1s =pij1s + t4
+                                 pij2s =pij2s + t5
+                                 pij3s =pij3s + t5b
                               endif
-                              t11 = (pijs-ti*pij1s)/zc
-                              t11b=(pij1s-ti*pij2s)/zc
-                              t31=(sp0js-ti*spjs)/zc
-                              t31b=(spjs-ti*sp2js)/zc
+                              t11 = (pijs-ti*pij1s)/Zc
+                              t11b=(pij1s-ti*pij2s)/Zc
+                              t31=(sp0js-ti*spjs)/Zc
+                              t31b=(spjs-ti*sp2js)/Zc
                               do l3 = 1, 3
-                                 t1=W(l3)-r(Nucd(kfunct),l3)
+                                 t1=W(l3) - r(Nucd(kfunct),l3)
                                  pp0p = t1 * pij1s
                                  pp1p = t1 * pij2s
                                  pp2p = t1 * pij3s
@@ -2296,7 +2292,7 @@ subroutine int3G(frc, calc_energy)
                                  t10 = pispk / Z2a
                                  t10b=pi2spk / Z2a
                                  t26=pp1p / Z2a
-                                 t27=(pp0p-ti*pp1p)/zc
+                                 t27=(pp0p-ti*pp1p)/Zc
                                  do l4 = 1, l3
                                     t1= W(l4) - r(Nucd(kfunct),l4)
                                     pp0d = t1 * pp1p
@@ -2340,16 +2336,16 @@ subroutine int3G(frc, calc_energy)
                                     cc=ccoef/f1
                                     term=pp0d*cc
                                     kn=ii+Jx(jj)
-                                    RMM(M5+kn-1)=RMM(M5+kn-1)+af(fock_ind)*term
+                                    RMM(M5-1 + fock_ind)=RMM(M5-1 + fock_ind)+af(af_ind)*term
                                     t20 = (sp0d-sp1d*roz) / Z2
                                     t21 = sp1d / Z2a
                                     t22 = (ps0d-roz*ps1d) / Z2
                                     t23 = ps1d / Z2a
                                     t24 = pp1pl / Z2a
-                                    t25 = (pp0pl-ti*pp1pl)/zc
+                                    t25 = (pp0pl-ti*pp1pl)/Zc
                                     ! gradients
-                                    t1=cc*RMM(kn)
-                                    te = t1 * af(fock_ind)
+                                    t1=cc*RMM(fock_ind)
+                                    te = t1 * af(af_ind)
                                     ty=2.D0*te
                                     do l5 = 1, 3
                                        t1=Q(l5)-r(Nuc(ifunct),l5)
@@ -2420,8 +2416,8 @@ subroutine int3G(frc, calc_energy)
                      do nck = 1, ncontd(kfunct)
                         ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
                         t0    = ad(kfunct,nck) + Zij
-                        Z2a   = 2.D0 * t0
-                        zc=2.D0*ad(kfunct,nck)
+                        Z2a   = 2.0D0 * t0
+                        Zc    = 2.0D0 * ad(kfunct,nck)
                         ti    = Zij / t0
                         tj    = ad(kfunct,nck) / t0
                         W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
@@ -2431,13 +2427,13 @@ subroutine int3G(frc, calc_energy)
                         ro=roz*Zij
                         uf = ro * dp
                         t1=ad(kfunct,nck)*sqrt(t0)
-                        t2=sks/t1
-                        sss= t2 * FUNCT(0,uf)
-                        ss1s= t2 * FUNCT(1,uf)
+                        t2 = sks / (ad(kfunct,nck) * sqrt(t0))
+                        sss = t2 * FUNCT(0,uf)
+                        ss1s = t2 * FUNCT(1,uf)
                         ss2s = t2 * FUNCT(2,uf)
                         ss3s = t2 * FUNCT(3,uf)
-                        ss4s= t2 * FUNCT(4,uf)
-                        ss5s= t2 * FUNCT(5,uf)
+                        ss4s = t2 * FUNCT(4,uf)
+                        ss5s = t2 * FUNCT(5,uf)
                         t3 = (sss-roz*ss1s) / Z2
                         t4 = (ss1s-roz*ss2s) / Z2
                         t5=(ss2s-roz*ss3s) / Z2
@@ -2447,7 +2443,7 @@ subroutine int3G(frc, calc_energy)
                         do l1 = 1, 3
                            t1  = Q(l1) - r(Nuc(ifunct),l1)
                            t2  = W(l1) - Q(l1)
-                           ps= t1 * sss + t2 * ss1s
+                           ps = t1 * sss + t2 * ss1s
                            p1s = t1 * ss1s + t2 * ss2s
                            p2s = t1 * ss2s + t2 * ss3s
                            p3s = t1 * ss3s + t2 * ss4s
@@ -2455,12 +2451,12 @@ subroutine int3G(frc, calc_energy)
                            t7a=p1s / Z2a
                            t7=p2s / Z2a
                            t7b=p3s / Z2a
-                           t16=(ps-ti*p1s)/zc
-                           t16b=(p1s-ti*p2s)/zc
+                           t16=(ps-ti*p1s)/Zc
+                           t16b=(p1s-ti*p2s)/Zc
                            do l2 = 1, l1
                               t1  = Q(l2) - r(Nuc(ifunct),l2)
                               t2  = W(l2) - Q(l2)
-                              pjs= t1 * sss + t2 * ss1s
+                              pjs = t1 * sss + t2 * ss1s
                               pj1s = t1 * ss1s + t2 * ss2s
                               pj2s = t1 * ss2s + t2 * ss3s
                               pj3s = t1 * ss3s + t2 * ss4s
@@ -2471,8 +2467,8 @@ subroutine int3G(frc, calc_energy)
                               t8a=pj1s / Z2a
                               t8=pj2s / Z2a
                               t8b=pj3s / Z2a
-                              t15=(pjs-ti*pj1s)/zc
-                              t15b=(pj1s-ti*pj2s)/zc
+                              t15=(pjs-ti*pj1s)/Zc
+                              t15b=(pj1s-ti*pj2s)/Zc
                               f1=1.D0
                               if (l1 .eq. l2) then
                                  ds = ds + t3
@@ -2481,10 +2477,10 @@ subroutine int3G(frc, calc_energy)
                                  d3s = d3s + t5b
                                  f1=sq3
                               endif
-                              t11 = (ds-ti*d1s)/zc
-                              t11b=(d1s-ti*d2s)/zc
+                              t11 = (ds-ti*d1s)/Zc
+                              t11b=(d1s-ti*d2s)/Zc
                               do l3 = 1, 3
-                                 t1=W(l3)-r(Nucd(kfunct),l3)
+                                 t1=W(l3) - r(Nucd(kfunct),l3)
                                  ds0p = t1 * d1s
                                  ds1p = t1 * d2s
                                  ds2p = t1 * d3s
@@ -2515,7 +2511,7 @@ subroutine int3G(frc, calc_energy)
                                  t10 = pis1pk / Z2a
                                  t10b=pis2pk / Z2a
                                  t26=ds1p / Z2a
-                                 t27=(ds0p-ti*ds1p)/zc
+                                 t27=(ds0p-ti*ds1p)/Zc
                                  do l4 = 1, l3
                                     t1= W(l4) - r(Nucd(kfunct),l4)
                                     dsd = t1 * ds1p
@@ -2557,7 +2553,7 @@ subroutine int3G(frc, calc_energy)
                                     t22 = (pi0sd-roz*pi1sd) / Z2
                                     t23 = pi1sd / Z2a
                                     t24 = d1pl / Z2a
-                                    t25 = (d0pl-ti*d1pl)/zc
+                                    t25 = (d0pl-ti*d1pl)/Zc
                                     l12=Ll(l1)+l2
                                     l34=Ll(l3)+l4
                                     ii=i+l12-1
@@ -2565,10 +2561,10 @@ subroutine int3G(frc, calc_energy)
                                     cc=ccoef/(f1*f2)
                                     term=dsd*cc
                                     kn=ii+k1
-                                    RMM(M5+kn-1)=RMM(M5+kn-1)+af(fock_ind)*term
+                                    RMM(M5-1 + fock_ind)=RMM(M5-1 + fock_ind)+af(af_ind)*term
                                     ! gradients
-                                    t1=cc*RMM(kn)
-                                    te = t1 * af(fock_ind)
+                                    t1=cc*RMM(fock_ind)
+                                    te = t1 * af(af_ind)
                                     ty=2.D0*te
                                     do l5 = 1, 3
                                        t1=Q(l5)-r(Nuc(jfunct),l5)
@@ -2638,8 +2634,8 @@ subroutine int3G(frc, calc_energy)
                      do nck = 1, ncontd(kfunct)
                         ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
                         t0    = ad(kfunct,nck) + Zij
-                        Z2a   = 2.D0 * t0
-                        zc=2.D0*ad(kfunct,nck)
+                        Z2a   = 2.0D0 * t0
+                        Zc    = 2.0D0 * ad(kfunct,nck)
                         ti    = Zij / t0
                         tj    = ad(kfunct,nck) / t0
                         W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
@@ -2649,14 +2645,14 @@ subroutine int3G(frc, calc_energy)
                         ro=roz*Zij
                         uf = ro * dp
                         t1=ad(kfunct,nck)*sqrt(t0)
-                        t2=sks/t1
-                        sss= t2 * FUNCT(0,uf)
-                        ss1s= t2 * FUNCT(1,uf)
+                        t2 = sks / (ad(kfunct,nck) * sqrt(t0))
+                        sss = t2 * FUNCT(0,uf)
+                        ss1s = t2 * FUNCT(1,uf)
                         ss2s = t2 * FUNCT(2,uf)
                         ss3s = t2 * FUNCT(3,uf)
-                        ss4s= t2 * FUNCT(4,uf)
-                        ss5s= t2 * FUNCT(5,uf)
-                        ss6s= t2 * FUNCT(6,uf)
+                        ss4s = t2 * FUNCT(4,uf)
+                        ss5s = t2 * FUNCT(5,uf)
+                        ss6s = t2 * FUNCT(6,uf)
                         ta = (sss - roz * ss1s) / Z2
                         t3 = (ss1s-roz*ss2s) / Z2
                         t4 = (ss2s-roz*ss3s) / Z2
@@ -2667,7 +2663,7 @@ subroutine int3G(frc, calc_energy)
                         do l1 = 1, 3
                            t1  = Q(l1) - r(Nuc(ifunct),l1)
                            t2  = W(l1) - Q(l1)
-                           ps= t1 * sss + t2 * ss1s
+                           ps = t1 * sss + t2 * ss1s
                            p1s = t1 * ss1s + t2 * ss2s
                            p2s = t1 * ss2s + t2 * ss3s
                            p3s = t1 * ss3s + t2 * ss4s
@@ -2687,7 +2683,7 @@ subroutine int3G(frc, calc_energy)
                               d2s = t1 * p2s + t2 * p3s
                               d3s = t1 * p3s + t2 * p4s
                               d4s = t1 * p4s + t2 * p5s
-                              pjs= t1 * sss + t2 * ss1s
+                              pjs = t1 * sss + t2 * ss1s
                               pj1s = t1 * ss1s + t2 * ss2s
                               pj2s = t1 * ss2s + t2 * ss3s
                               pj3s = t1 * ss3s + t2 * ss4s
@@ -2710,13 +2706,13 @@ subroutine int3G(frc, calc_energy)
                               t10a=d1s / Z2a
                               t10 = d2s / Z2a
                               t10b=d3s / Z2a
-                              t24 = (ds-ti*d1s)/zc
-                              t24b=(d1s-ti*d2s)/zc
+                              t24 = (ds-ti*d1s)/Zc
+                              t24b=(d1s-ti*d2s)/Zc
                               t28=d1s / Z2a
                               t28b=d2s / Z2a
                               do l3 = 1, 3
                                  t1=Q(l3)-r(Nuc(jfunct),l3)
-                                 t2=W(l3)-Q(l3)
+                                 t2=W(l3) - Q(l3)
                                  s2pks = t1 * ss2s + t2 * ss3s
                                  s3pks = t1 * ss3s + t2 * ss4s
                                  dp = t1 * ds + t2 * d1s
@@ -2759,12 +2755,12 @@ subroutine int3G(frc, calc_energy)
                                  t12b=pj3p / Z2a
                                  t13 = s2pks / Z2a
                                  t13b=s3pks / Z2a
-                                 t22 = (pj0p-ti*pj1p)/zc
-                                 t22b=(pj1p-ti*pj2p)/zc
+                                 t22 = (pj0p-ti*pj1p)/Zc
+                                 t22b=(pj1p-ti*pj2p)/Zc
                                  t26=pj1p / Z2a
                                  t26b=pj2p / Z2a
-                                 t25 = (pi0p-ti*pi1p)/zc
-                                 t25b=(pi1p-ti*pi2p)/zc
+                                 t25 = (pi0p-ti*pi1p)/Zc
+                                 t25b=(pi1p-ti*pi2p)/Zc
                                  t27=pi1p / Z2a
                                  t27b=pi2p / Z2a
                                  do l4 = 1, 3
@@ -2823,8 +2819,8 @@ subroutine int3G(frc, calc_energy)
                                     t15b=pi2pkpl / Z2a
                                     t16=dspl / Z2a
                                     t16b=ds2pl / Z2a
-                                    t17=(dp-ti*d1p)/zc
-                                    t17b=(d1p-ti*d2p)/zc
+                                    t17=(dp-ti*d1p)/Zc
+                                    t17b=(d1p-ti*d2p)/Zc
                                     t20 = s1pkpl / Z2a
                                     t20b=s2pkpl / Z2a
                                     t21 = pj1spl / Z2a
@@ -2832,7 +2828,7 @@ subroutine int3G(frc, calc_energy)
                                     t23 = pi1spl / Z2a
                                     t23b=pi2spl / Z2a
                                     t38=dp1p / Z2a
-                                    t39=(dp0p-ti*dp1p)/zc
+                                    t39=(dp0p-ti*dp1p)/Zc
                                     do l5 = 1, l4
                                        t1=W(l5)-r(Nucd(kfunct),l5)
                                        dpd = t1 * dp1p
@@ -2895,7 +2891,7 @@ subroutine int3G(frc, calc_energy)
                                        t34=(d0d-roz*d1d) / Z2
                                        t35=d1d / Z2a
                                        t36=dp1pm / Z2a
-                                       t37=(dp0pm-ti*dp1pm)/zc
+                                       t37=(dp0pm-ti*dp1pm)/Zc
                                        l12=Ll(l1)+l2
                                        ii=i+l12-1
                                        jj=j+l3-1
@@ -2904,10 +2900,10 @@ subroutine int3G(frc, calc_energy)
                                        cc=ccoef/(f1*f2)
                                        term=dpd*cc
                                        kn=ii+Jx(jj)
-                                       RMM(M5+kn-1)=RMM(M5+kn-1)+af(fock_ind)*term
+                                       RMM(M5-1 + fock_ind)=RMM(M5-1 + fock_ind)+af(af_ind)*term
                                        ! gradients
-                                       t1=cc*RMM(kn)
-                                       te = t1 * af(fock_ind)
+                                       t1=cc*RMM(fock_ind)
+                                       te = t1 * af(af_ind)
                                        ty=2.D0*te
                                        do l6=1,3
                                           t1=Q(l6)-r(Nuc(jfunct),l6)
@@ -2983,8 +2979,8 @@ subroutine int3G(frc, calc_energy)
                      do nck = 1, ncontd(kfunct)
                         ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
                         t0    = ad(kfunct,nck) + Zij
-                        Z2a   = 2.D0 * t0
-                        zc=2.D0*ad(kfunct,nck)
+                        Z2a   = 2.0D0 * t0
+                        Zc    = 2.0D0 * ad(kfunct,nck)
                         ti    = Zij / t0
                         tj    = ad(kfunct,nck) / t0
                         W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
@@ -2994,15 +2990,15 @@ subroutine int3G(frc, calc_energy)
                         ro=roz*Zij
                         uf = ro * dp
                         t1=ad(kfunct,nck)*sqrt(t0)
-                        t2=sks/t1
-                        sss= t2 * FUNCT(0,uf)
-                        ss1s= t2 * FUNCT(1,uf)
+                        t2 = sks / (ad(kfunct,nck) * sqrt(t0))
+                        sss = t2 * FUNCT(0,uf)
+                        ss1s = t2 * FUNCT(1,uf)
                         ss2s = t2 * FUNCT(2,uf)
                         ss3s = t2 * FUNCT(3,uf)
-                        ss4s= t2 * FUNCT(4,uf)
-                        ss5s= t2 * FUNCT(5,uf)
-                        ss6s= t2 * FUNCT(6,uf)
-                        ss7s= t2 * FUNCT(7,uf)
+                        ss4s = t2 * FUNCT(4,uf)
+                        ss5s = t2 * FUNCT(5,uf)
+                        ss6s = t2 * FUNCT(6,uf)
+                        ss7s = t2 * FUNCT(7,uf)
                         t3 = (sss-roz*ss1s) / Z2
                         t4 = (ss1s-roz*ss2s) / Z2
                         t5=(ss2s-roz*ss3s) / Z2
@@ -3012,7 +3008,7 @@ subroutine int3G(frc, calc_energy)
                         do l1 = 1, 3
                            t1  = Q(l1) - r(Nuc(ifunct),l1)
                            t2  = W(l1) - Q(l1)
-                           ps= t1 * sss + t2 * ss1s
+                           ps = t1 * sss + t2 * ss1s
                            p1s = t1 * ss1s + t2 * ss2s
                            p2s = t1 * ss2s + t2 * ss3s
                            p3s = t1 * ss3s + t2 * ss4s
@@ -3029,7 +3025,7 @@ subroutine int3G(frc, calc_energy)
                            do l2 = 1, l1
                               t1  = Q(l2) - r(Nuc(ifunct),l2)
                               t2  = W(l2) - Q(l2)
-                              pjs= t1 * sss + t2 * ss1s
+                              pjs = t1 * sss + t2 * ss1s
                               pj1s = t1 * ss1s + t2 * ss2s
                               pj2s = t1 * ss2s + t2 * ss3s
                               pj3s = t1 * ss3s + t2 * ss4s
@@ -3070,7 +3066,7 @@ subroutine int3G(frc, calc_energy)
                               endif
                               do l3 = 1, lij
                                  t1=Q(l3)-r(Nuc(jfunct),l3)
-                                 t2=W(l3)-Q(l3)
+                                 t2=W(l3) - Q(l3)
                                  dpk = t1 * ds + t2 * d1s
                                  d1pk = t1 * d1s + t2 * d2s
                                  d2pk = t1 * d2s + t2 * d3s
@@ -3142,8 +3138,8 @@ subroutine int3G(frc, calc_energy)
                                  t29b=(pi3pk-roz*pi4pk) / Z2
                                  y10=t22p
                                  y10b=t22
-                                 y14=(dpk-ti*d1pk)/zc
-                                 y14b=(d1pk-ti*d2pk)/zc
+                                 y14=(dpk-ti*d1pk)/Zc
+                                 y14b=(d1pk-ti*d2pk)/Zc
                                  do l4 = 1, lk
                                     t1= Q(l4) - r(Nuc(jfunct),l4)
                                     t2= W(l4) - Q(l4)
@@ -3238,20 +3234,20 @@ subroutine int3G(frc, calc_energy)
                                     t80a=d1pl / Z2a
                                     t80=d2pl / Z2a
                                     t80b=d3pl / Z2a
-                                    t23 = (dd-ti*d1d)/zc
-                                    t23b=(d1d-ti*d2d)/zc
+                                    t23 = (dd-ti*d1d)/Zc
+                                    t23b=(d1d-ti*d2d)/Zc
                                     y1=t30a
                                     y1b=t30
                                     y5=t40a
                                     y5b=t40
                                     y8=t80a
                                     y8b=t80
-                                    y12=(pi0dkl-ti*pi1dkl)/zc
-                                    y12b=(pi1dkl-ti*pi2dkl)/zc
-                                    y13=(d0pl-ti*d1pl)/zc
-                                    y13b=(d1pl-ti*d2pl)/zc
-                                    y15=(pj0dkl-ti*pj1dkl)/zc
-                                    y15b=(pj1dkl-ti*pj2dkl)/zc
+                                    y12=(pi0dkl-ti*pi1dkl)/Zc
+                                    y12b=(pi1dkl-ti*pi2dkl)/Zc
+                                    y13=(d0pl-ti*d1pl)/Zc
+                                    y13b=(d1pl-ti*d2pl)/Zc
+                                    y15=(pj0dkl-ti*pj1dkl)/Zc
+                                    y15b=(pj1dkl-ti*pj2dkl)/Zc
                                     do l5 = 1, 3
                                        t1=W(l5)-r(Nucd(kfunct),l5)
                                        dd0p = t1 * d1d
@@ -3354,7 +3350,7 @@ subroutine int3G(frc, calc_energy)
                                        t61=dijpkp / Z2a
                                        t61b=dij2pkp / Z2a
                                        y30=ddp / Z2a
-                                       y31=(dd0p-ti*ddp)/zc
+                                       y31=(dd0p-ti*ddp)/Zc
                                        y2=s1dpm / Z2a
                                        y2b=s2dpm / Z2a
                                        y3=pj1plpm / Z2a
@@ -3462,12 +3458,12 @@ subroutine int3G(frc, calc_energy)
                                           y26=(d0pkd-roz*d1pkd) / Z2
                                           y27=d1pkd / Z2a
                                           y28=dd1pn / Z2a
-                                          y29=(dd0pn-ti*dd1pn)/zc
+                                          y29=(dd0pn-ti*dd1pn)/Zc
                                           kn=ii+Jx(jj)
-                                          RMM(M5+kn-1)=RMM(M5+kn-1)+af(fock_ind)*term
+                                          RMM(M5-1 + fock_ind)=RMM(M5-1 + fock_ind)+af(af_ind)*term
                                           ! gradients
-                                          t1=cc*RMM(kn)
-                                          te = t1 * af(fock_ind)
+                                          t1=cc*RMM(fock_ind)
+                                          te = t1 * af(af_ind)
                                           ty=2.D0*te
                                           do l7=1,3
                                              t1=Q(l7)-r(Nuc(ifunct),l7)

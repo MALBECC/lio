@@ -10,24 +10,22 @@ subroutine int3G(frc, calc_energy)
 
    use subm_int2G, only: int2G
    use liotemp   , only: FUNCT
-   use garcha_mod, only: RMM, ll, a, c, d, r, nuc, nucd, &
-   ad, af, cd, ncont, ncontd, nshell, &
-   nshelld, natom, ng, ngd, M, Md   , &
-   NORM, pi52, rmax
+   use garcha_mod, only: RMM, ll, a, c, d, r, nuc, nucd, ad, af, cd, ncont, &
+                         ncontd, nshell, nshelld, natom, ng, ngd, M, Md   , &
+                         NORM, pi52, rmax
 
    implicit none
 
-   logical, intent(in) :: calc_energy
-   double precision :: frc(natom,3)
+   logical         , intent(in)    :: calc_energy
+   double precision, intent(inout) :: frc(natom,3)
 
-   double precision :: Q(3), W(3), Jx(ng), af(ngd), ftot(3)
-   double precision :: Exc, ccoef, rexp, ro, roz, SQ3
-   double precision :: term, uf
+   double precision :: Q(3), W(3), Jx(ng)
+   double precision :: Exc, ccoef, rexp, SQ3, uf, dpc
 
    double precision :: d0d, d0p, d0pk, d0pkd, d0pkp, d0pl, d0pld
    double precision :: d0plp, d0s, d1d, d1p, d1pk, d1pkd, d1pkp
    double precision :: d1pl, d1pld, d1plp, d1pp, d1s, d1spm
-   double precision :: d2d, d2p, dds, ddp, ddi, ddf, ddd
+   double precision :: d2d, d2p, dds, ddp, ddf, ddd
    double precision :: dij2plp, dij2pkp, dfs, dfp, dp0p, dp, dijplp
    double precision :: dfd, dd2p, dijpkp, dp0pm, dp1d, dp1p, dp1pm
    double precision :: dp1s, dp2p, dpd, dpf, dpk, dpp, dps, ds
@@ -82,8 +80,8 @@ subroutine int3G(frc, calc_energy)
    double precision :: t41, t41b, t50, t50b, t51, t51b, t60, t60b
    double precision :: t61, t61b, t70, t70b, t80, t80a, t80b
 
-   double precision :: y1, y1b, y2, y2b, y3, y3b, y4, y4b, y5, y5b
-   double precision :: y6, y6b, y7, y7b, y8, y8b, y9, y9b
+   double precision :: y2, y2b, y3, y3b, y4, y4b
+   double precision :: y6, y6b, y7, y7b, y9, y9b
    double precision :: Z2, Z2a, Zc, Zij
 
    double precision :: y10, y10b, y12, y12b, y13, y13b, y14, y14b
@@ -93,10 +91,9 @@ subroutine int3G(frc, calc_energy)
 
    integer :: ifunct, jfunct, kfunct, nci, ncj, nck
    integer :: M2, Md2, M5, M11, igpu
-   integer :: ii, jj, fock_ind, ni, nj, nk, kn, k1
+   integer :: fock_ind, af_ind
    integer :: ns, nsd, nd, ndd, np, npd
-   integer :: lk, l1, l2, l3, l4, l5, l6, l7
-   integer :: lij, l12, l23, l34, l45, l56
+   integer :: lk, lij, l1, l2, l3, l4, l5, l6, l7
 
 
    ! scratch space
@@ -129,7 +126,7 @@ subroutine int3G(frc, calc_energy)
       Jx(ifunct) = (M2 - ifunct) * (ifunct -1) / 2
    enddo
 
-   call int2G(f)
+   call int2G(frc)
    call g2g_timer_sum_start('Exchange-correlation gradients')
    if (calc_energy) then
       call g2g_solve_groups(2, Exc, frc)
@@ -147,7 +144,7 @@ subroutine int3G(frc, calc_energy)
       return
    endif
 
-   do kfunct = 1, MM
+   do kfunct = 1, M * (M +1) / 2
       RMM(M5-1 + kfunct) = RMM(M11-1 + kfunct)
    enddo
 
@@ -3009,561 +3006,566 @@ subroutine int3G(frc, calc_energy)
       enddo
    enddo
    enddo
-   
+
    ! (dd|d) and gradients
-   do i=ns+np+1,M,6
-      do jfunct = ns+np+1,i,6
-         ddi=d(Nuc(ifunct),Nuc(jfunct))
-         do nci = 1, ncont(ifunct)
-            do ncj = 1, ncont(jfunct)
-               Zij  = a(ifunct,nci) + a(jfunct,ncj)
-               Z2   = 2.D0 * Zij
-               ti   = a(ifunct,nci) / Zij
-               tj   = a(jfunct,ncj) / Zij
+   do ifunct = ns+np+1, M     , 6
+   do jfunct = ns+np+1, ifunct, 6
+      do nci = 1, ncont(ifunct)
+      do ncj = 1, ncont(jfunct)
+         Zij  = a(ifunct,nci) + a(jfunct,ncj)
+         tj   = a(jfunct,ncj) / Zij
+         rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))
 
-               rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))i
-               if (rexp .lt. rmax) then
-                  Q(1) = ti * r(Nuc(ifunct),1) + tj * r(Nuc(jfunct),1)
-                  Q(2) = ti * r(Nuc(ifunct),2) + tj * r(Nuc(jfunct),2)
-                  Q(3) = ti * r(Nuc(ifunct),3) + tj * r(Nuc(jfunct),3)
-                  sks  = pi52 * exp(-rexp) / Zij
-                  do kfunct = nsd+npd+1,Md,6
-                     dpc = (Q(1) - r(Nucd(kfunct),1)) * (Q(1) - r(Nucd(kfunct),1)) + &
-                           (Q(2) - r(Nucd(kfunct),2)) * (Q(2) - r(Nucd(kfunct),2)) + &
-                           (Q(3) - r(Nucd(kfunct),3)) * (Q(3) - r(Nucd(kfunct),3))
-                     do nck = 1, ncontd(kfunct)
-                        ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
-                        t0    = ad(kfunct,nck) + Zij
-                        Z2a   = 2.0D0 * t0
-                        Zc    = 2.0D0 * ad(kfunct,nck)
-                        ti    = Zij / t0
-                        tj    = ad(kfunct,nck) / t0
-                        W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
-                        W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
-                        W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
-                        roz=tj
-                        ro=roz*Zij
-                        uf = ro * dp
-                        t1 =ad(kfunct,nck)*sqrt(t0)
-                        t2 = sks / (ad(kfunct,nck) * sqrt(t0))
-                        sss = t2 * FUNCT(0,uf)
-                        ss1s = t2 * FUNCT(1,uf)
-                        ss2s = t2 * FUNCT(2,uf)
-                        ss3s = t2 * FUNCT(3,uf)
-                        ss4s = t2 * FUNCT(4,uf)
-                        ss5s = t2 * FUNCT(5,uf)
-                        ss6s = t2 * FUNCT(6,uf)
-                        ss7s = t2 * FUNCT(7,uf)
-                        t3 = (sss-roz*ss1s) / Z2
-                        t4 = (ss1s-roz*ss2s) / Z2
-                        t5=(ss2s-roz*ss3s) / Z2
-                        t6=(ss3s-roz*ss4s) / Z2
-                        t6b=(ss4s-roz*ss5s) / Z2
-                        t6c=(ss5s-roz*ss6s) / Z2
-                        do l1 = 1, 3
-                           t1  = Q(l1) - r(Nuc(ifunct),l1)
-                           t2  = W(l1) - Q(l1)
-                           ps = t1 * sss + t2 * ss1s
-                           p1s = t1 * ss1s + t2 * ss2s
-                           p2s = t1 * ss2s + t2 * ss3s
-                           p3s = t1 * ss3s + t2 * ss4s
-                           p4s = t1 * ss4s + t2 * ss5s
-                           p5s = t1 * ss5s + t2 * ss6s
-                           p6s = t1 * ss6s + t2 * ss7s
-                           t7=(ps-roz*p1s) / Z2
-                           t8=(p1s-roz*p2s) / Z2
-                           t9=(p2s-roz*p3s) / Z2
-                           t10 = (p3s-roz*p4s) / Z2
-                           t10b=(p4s-roz*p5s) / Z2
-                           y16=p2s / Z2a
-                           y16b=p3s / Z2a
-                           do l2 = 1, l1
-                              t1  = Q(l2) - r(Nuc(ifunct),l2)
-                              t2  = W(l2) - Q(l2)
-                              pjs = t1 * sss + t2 * ss1s
-                              pj1s = t1 * ss1s + t2 * ss2s
-                              pj2s = t1 * ss2s + t2 * ss3s
-                              pj3s = t1 * ss3s + t2 * ss4s
-                              pj4s = t1 * ss4s + t2 * ss5s
-                              pj5s = t1 * ss5s + t2 * ss6s
-                              ds = t1 * ps + t2 * p1s
-                              d1s = t1 * p1s + t2 * p2s
-                              d2s = t1 * p2s + t2 * p3s
-                              d3s = t1 * p3s + t2 * p4s
-                              d4s = t1 * p4s + t2 * p5s
-                              d5s = t1 * p5s + t2 * p6s
-                              t11 = (pjs-roz*pj1s) / Z2
-                              t12 = (pj1s-roz*pj2s) / Z2
-                              t13 = (pj2s-roz*pj3s) / Z2
-                              t14=(pj3s-roz*pj4s) / Z2
-                              t14b=(pj4s-roz*pj5s) / Z2
-                              y19=pj2s / Z2a
-                              y19b=pj3s / Z2a
-                              f1=1.D0
-                              if (l1 .eq. l2) then
-                                 ds = ds + t3
-                                 d1s = d1s + t4
-                                 d2s = d2s + t5
-                                 d3s = d3s + t6
-                                 d4s = d4s + t6b
-                                 d5s = d5s + t6
-                                 f1=SQ3
+         if (rexp .lt. rmax) then
+            Z2   = 2.D0 * Zij
+            ti   = a(ifunct,nci) / Zij
+            Q(1) = ti * r(Nuc(ifunct),1) + tj * r(Nuc(jfunct),1)
+            Q(2) = ti * r(Nuc(ifunct),2) + tj * r(Nuc(jfunct),2)
+            Q(3) = ti * r(Nuc(ifunct),3) + tj * r(Nuc(jfunct),3)
+            sks  = pi52 * exp(-rexp) / Zij
+
+            do kfunct = nsd+npd+1,Md,6
+               dpc = (Q(1) - r(Nucd(kfunct),1)) * (Q(1) - r(Nucd(kfunct),1)) + &
+                     (Q(2) - r(Nucd(kfunct),2)) * (Q(2) - r(Nucd(kfunct),2)) + &
+                     (Q(3) - r(Nucd(kfunct),3)) * (Q(3) - r(Nucd(kfunct),3))
+               do nck = 1, ncontd(kfunct)
+                  ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
+                  t0    = ad(kfunct,nck) + Zij
+                  Z2a   = 2.0D0 * t0
+                  Zc    = 2.0D0 * ad(kfunct,nck)
+                  ti    = Zij / t0
+                  tj    = ad(kfunct,nck) / t0
+                  W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
+                  W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
+                  W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
+
+                  uf   = tj * Zij * dp
+                  t2   = sks / (ad(kfunct,nck) * sqrt(t0))
+                  sss  = t2 * FUNCT(0,uf)
+                  ss1s = t2 * FUNCT(1,uf)
+                  ss2s = t2 * FUNCT(2,uf)
+                  ss3s = t2 * FUNCT(3,uf)
+                  ss4s = t2 * FUNCT(4,uf)
+                  ss5s = t2 * FUNCT(5,uf)
+                  ss6s = t2 * FUNCT(6,uf)
+                  ss7s = t2 * FUNCT(7,uf)
+                  t3  = (sss  - tj * ss1s) / Z2
+                  t4  = (ss1s - tj * ss2s) / Z2
+                  t5  = (ss2s - tj * ss3s) / Z2
+                  t6  = (ss3s - tj * ss4s) / Z2
+                  t6b = (ss4s - tj * ss5s) / Z2
+                  t6c = (ss5s - tj * ss6s) / Z2
+
+                  do l1 = 1, 3
+                     t1   = Q(l1) - r(Nuc(ifunct),l1)
+                     t2   = W(l1) - Q(l1)
+                     ps   = t1 * sss  + t2 * ss1s
+                     p1s  = t1 * ss1s + t2 * ss2s
+                     p2s  = t1 * ss2s + t2 * ss3s
+                     p3s  = t1 * ss3s + t2 * ss4s
+                     p4s  = t1 * ss4s + t2 * ss5s
+                     p5s  = t1 * ss5s + t2 * ss6s
+                     p6s  = t1 * ss6s + t2 * ss7s
+                     t7   = (ps  - tj * p1s) / Z2
+                     t8   = (p1s - tj * p2s) / Z2
+                     t9   = (p2s - tj * p3s) / Z2
+                     t10  = (p3s - tj * p4s) / Z2
+                     t10b = (p4s - tj * p5s) / Z2
+                     y16  = p2s / Z2a
+                     y16b = p3s / Z2a
+
+                     do l2 = 1, l1
+                        t1   = Q(l2) - r(Nuc(ifunct),l2)
+                        t2   = W(l2) - Q(l2)
+                        pjs  = t1 * sss  + t2 * ss1s
+                        pj1s = t1 * ss1s + t2 * ss2s
+                        pj2s = t1 * ss2s + t2 * ss3s
+                        pj3s = t1 * ss3s + t2 * ss4s
+                        pj4s = t1 * ss4s + t2 * ss5s
+                        pj5s = t1 * ss5s + t2 * ss6s
+                        ds   = t1 * ps   + t2 * p1s
+                        d1s  = t1 * p1s  + t2 * p2s
+                        d2s  = t1 * p2s  + t2 * p3s
+                        d3s  = t1 * p3s  + t2 * p4s
+                        d4s  = t1 * p4s  + t2 * p5s
+                        d5s  = t1 * p5s  + t2 * p6s
+                        t11  = (pjs  - tj * pj1s) / Z2
+                        t12  = (pj1s - tj * pj2s) / Z2
+                        t13  = (pj2s - tj * pj3s) / Z2
+                        t14  = (pj3s - tj * pj4s) / Z2
+                        t14b = (pj4s - tj * pj5s) / Z2
+                        y19  = pj2s / Z2a
+                        y19b = pj3s / Z2a
+                        f1   = 1.0D0
+
+                        if (l1 .eq. l2) then
+                           ds  = ds  + t3
+                           d1s = d1s + t4
+                           d2s = d2s + t5
+                           d3s = d3s + t6
+                           d4s = d4s + t6b
+                           d5s = d5s + t6
+                           f1  = SQ3
+                        endif
+                        t16  = (ds  - tj * d1s) / Z2
+                        t17  = (d1s - tj * d2s) / Z2
+                        t18  = (d2s - tj * d3s) / Z2
+                        t18b = (d3s - tj * d4s) / Z2
+                        t22a = d2s / Z2a
+                        t22c = d3s / Z2a
+
+                        lij = 3
+                        if (ifunct .eq. jfunct) lij = l1
+                        do l3 = 1, lij
+                           t1    = Q(l3) - r(Nuc(jfunct),l3)
+                           t2    = W(l3) - Q(l3)
+                           dpk   = t1 * ds   + t2 * d1s
+                           d1pk  = t1 * d1s  + t2 * d2s
+                           d2pk  = t1 * d2s  + t2 * d3s
+                           d3pk  = t1 * d3s  + t2 * d4s
+                           d4pk  = t1 * d4s  + t2 * d5s
+                           pjpk  = t1 * pjs  + t2 * pj1s
+                           pj1pk = t1 * pj1s + t2 * pj2s
+                           pj2pk = t1 * pj2s + t2 * pj3s
+                           pj3pk = t1 * pj3s + t2 * pj4s
+                           pj4pk = t1 * pj4s + t2 * pj5s
+                           pipk  = t1 * ps   + t2 * p1s
+                           pi1pk = t1 * p1s  + t2 * p2s
+                           pi2pk = t1 * p2s  + t2 * p3s
+                           pi3pk = t1 * p3s  + t2 * p4s
+                           pi4pk = t1 * p4s  + t2 * p5s
+                           spk   = t1 * sss  + t2 * ss1s
+                           s1pk  = t1 * ss1s + t2 * ss2s
+                           s2pk  = t1 * ss2s + t2 * ss3s
+                           s3pk  = t1 * ss3s + t2 * ss4s
+                           s4pk  = t1 * ss4s + t2 * ss5s
+                           t15p  = (spk  - tj * s1pk) / Z2
+                           t15a  = (s1pk - tj * s2pk) / Z2
+                           t15   = (s2pk - tj * s3pk) / Z2
+                           t15b  = (s3pk - tj * s4pk) / Z2
+                           y18   = s2pk / Z2a
+                           y18b  = s3pk / Z2a
+
+                           if (l1 .eq. l3) then
+                              dpk   = dpk   + t11
+                              d1pk  = d1pk  + t12
+                              d2pk  = d2pk  + t13
+                              d3pk  = d3pk  + t14
+                              d4pk  = d4pk  + t14b
+                              pipk  = pipk  + t3
+                              pi1pk = pi1pk + t4
+                              pi2pk = pi2pk + t5
+                              pi3pk = pi3pk + t6
+                              pi4pk = pi4pk + t6b
+                           endif
+                           if (l2 .eq. l3) then
+                              dpk   = dpk   + t7
+                              d1pk  = d1pk  + t8
+                              d2pk  = d2pk  + t9
+                              d3pk  = d3pk  + t10
+                              d4pk  = d4pk  + t10b
+                              pjpk  = pjpk  + t3
+                              pj1pk = pj1pk + t4
+                              pj2pk = pj2pk + t5
+                              pj3pk = pj3pk + t6
+                              pj4pk = pj4pk + t6b
+                           endif
+                           t20  = pj2pk / Z2a
+                           t20b = pj3pk / Z2a
+                           t21  = pi2pk / Z2a
+                           t21b = pi3pk / Z2a
+                           t22p = d1pk  / Z2a
+                           t22  = d2pk  / Z2a
+                           t22b = d3pk  / Z2a
+                           t24  = (pjpk  - tj * pj1pk) / Z2
+                           t25  = (pj1pk - tj * pj2pk) / Z2
+                           t26  = (pj2pk - tj * pj3pk) / Z2
+                           t26b = (pj3pk - tj * pj4pk) / Z2
+                           t27  = (pipk  - tj * pi1pk) / Z2
+                           t28  = (pi1pk - tj * pi2pk) / Z2
+                           t29  = (pi2pk - tj * pi3pk) / Z2
+                           t29b = (pi3pk - tj * pi4pk) / Z2
+                           y10  = t22p
+                           y10b = t22
+                           y14  = (dpk  - ti * d1pk) / Zc
+                           y14b = (d1pk - ti * d2pk) / Zc
+
+                           lk = l3
+                           if (ifunct .eq. jfunct) lk = min(l3,Ll(l1)-Ll(l3)+l2)
+                           do l4 = 1, lk
+                              t1 = Q(l4) - r(Nuc(jfunct),l4)
+                              t2 = W(l4) - Q(l4)
+                              dd     = t1 * dpk   + t2 * d1pk
+                              d1d    = t1 * d1pk  + t2 * d2pk
+                              d2d    = t1 * d2pk  + t2 * d3pk
+                              d3d    = t1 * d3pk  + t2 * d4pk
+                              pj0dkl = t1 * pjpk  + t2 * pj1pk
+                              pj1dkl = t1 * pj1pk + t2 * pj2pk
+                              pj2dkl = t1 * pj2pk + t2 * pj3pk
+                              pj3dkl = t1 * pj3pk + t2 * pj4pk
+                              pi0dkl = t1 * pipk  + t2 * pi1pk
+                              pi1dkl = t1 * pi1pk + t2 * pi2pk
+                              pi2dkl = t1 * pi2pk + t2 * pi3pk
+                              pi3dkl = t1 * pi3pk + t2 * pi4pk
+                              d0pl   = t1 * ds    + t2 * d1s
+                              d1pl   = t1 * d1s   + t2 * d2s
+                              d2pl   = t1 * d2s   + t2 * d3s
+                              d3pl   = t1 * d3s   + t2 * d4s
+                              s2pl   = t1 * ss2s  + t2 * ss3s
+                              s3pl   = t1 * ss3s  + t2 * ss4s
+                              s2dkl  = t1 * s2pk  + t2 * s3pk
+                              s3dkl  = t1 * s3pk  + t2 * s4pk
+                              pj2pl  = t1 * pj2s  + t2 * pj3s
+                              pj3pl  = t1 * pj3s  + t2 * pj4s
+                              pi2pl  = t1 * p2s   + t2 * p3s
+                              pi3pl  = t1 * p3s   + t2 * p4s
+                              y17    = s2pl / Z2a
+                              y17b   = s3pl / Z2a
+                              f2     = 1.0D0
+
+                              if (l1 .eq. l4) then
+                                 dd     = dd     + t24
+                                 d1d    = d1d    + t25
+                                 d2d    = d2d    + t26
+                                 d3d    = d3d    + t26b
+                                 pi0dkl = pi0dkl + t15p
+                                 pi1dkl = pi1dkl + t15a
+                                 pi2dkl = pi2dkl + t15
+                                 pi3dkl = pi3dkl + t15b
+                                 d0pl   = d0pl   + t11
+                                 d1pl   = d1pl   + t12
+                                 d2pl   = d2pl   + t13
+                                 d3pl   = d3pl   + t14
+                                 pi2pl  = pi2pl  + t5
+                                 pi3pl  = pi3pl  + t6
                               endif
-                              t16 = (ds-roz*d1s) / Z2
-                              t17 = (d1s-roz*d2s) / Z2
-                              t18=(d2s-roz*d3s) / Z2
-                              t18b=(d3s-roz*d4s) / Z2
-                              t22a=d2s / Z2a
-                              t22c=d3s / Z2a
-                              lij=3
-                              if (ifunct .eq. jfunct) then
-                                 lij=l1
+                              if (l2 .eq. l4) then
+                                 dd     = dd     + t27
+                                 d1d    = d1d    + t28
+                                 d2d    = d2d    + t29
+                                 d3d    = d3d    + t29b
+                                 pj0dkl = pj0dkl + t15p
+                                 pj1dkl = pj1dkl + t15a
+                                 pj2dkl = pj2dkl + t15
+                                 pj3dkl = pj3dkl + t15b
+                                 d0pl   = d0pl   + t7
+                                 d1pl   = d1pl   + t8
+                                 d2pl   = d2pl   + t9
+                                 d3pl   = d3pl   + t10
+                                 pj2pl  = pj2pl  + t5
+                                 pj3pl  = pj3pl  + t6
                               endif
-                              do l3 = 1, lij
-                                 t1 = Q(l3) - r(Nuc(jfunct),l3)
-                                 t2 =W(l3) - Q(l3)
-                                 dpk = t1 * ds + t2 * d1s
-                                 d1pk = t1 * d1s + t2 * d2s
-                                 d2pk = t1 * d2s + t2 * d3s
-                                 d3pk = t1 * d3s + t2 * d4s
-                                 d4pk = t1 * d4s + t2 * d5s
-                                 pjpk = t1 * pjs + t2 * pj1s
-                                 pj1pk = t1 * pj1s + t2 * pj2s
-                                 pj2pk = t1 * pj2s + t2 * pj3s
-                                 pj3pk = t1 * pj3s + t2 * pj4s
-                                 pj4pk = t1 * pj4s + t2 * pj5s
-                                 pipk = t1 * ps + t2 * p1s
-                                 pi1pk = t1 * p1s + t2 * p2s
-                                 pi2pk = t1 * p2s + t2 * p3s
-                                 pi3pk = t1 * p3s + t2 * p4s
-                                 pi4pk = t1 * p4s + t2 * p5s
-                                 spk= t1 * sss + t2 * ss1s
-                                 s1pk = t1 * ss1s + t2 * ss2s
-                                 s2pk = t1 * ss2s + t2 * ss3s
-                                 s3pk = t1 * ss3s + t2 * ss4s
-                                 s4pk = t1 * ss4s + t2 * ss5s
-                                 t15p=(spk-roz*s1pk) / Z2
-                                 t15a=(s1pk-roz*s2pk) / Z2
-                                 t15=(s2pk-roz*s3pk) / Z2
-                                 t15b=(s3pk-roz*s4pk) / Z2
-                                 y18=s2pk / Z2a
-                                 y18b=s3pk / Z2a
-                                 if (l1 .eq. l3) then
-                                    dpk = dpk + t11
-                                    d1pk = d1pk + t12
-                                    d2pk = d2pk + t13
-                                    d3pk = d3pk + t14
-                                    d4pk = d4pk + t14b
-                                    pipk = pipk + t3
-                                    pi1pk = pi1pk + t4
-                                    pi2pk = pi2pk + t5
-                                    pi3pk = pi3pk + t6
-                                    pi4pk = pi4pk + t6b
-                                 endif
-                                 if (l2 .eq. l3) then
-                                    dpk = dpk + t7
-                                    d1pk = d1pk + t8
-                                    d2pk = d2pk + t9
-                                    d3pk = d3pk + t10
-                                    d4pk = d4pk + t10b
-                                    pjpk = pjpk + t3
-                                    pj1pk = pj1pk + t4
-                                    pj2pk = pj2pk + t5
-                                    pj3pk = pj3pk + t6
-                                    pj4pk = pj4pk + t6b
-                                 endif
-                                 lk=l3
-                                 if (ifunct .eq. jfunct) then
-                                    lk=min(l3,Ll(l1)-Ll(l3)+l2)
-                                 endif
-                                 t20 = pj2pk / Z2a
-                                 t20b=pj3pk / Z2a
-                                 t21 = pi2pk / Z2a
-                                 t21b=pi3pk / Z2a
-                                 t22p = d1pk / Z2a
-                                 t22 = d2pk / Z2a
-                                 t22b=d3pk / Z2a
-                                 t24 = (pjpk-roz*pj1pk) / Z2
-                                 t25 = (pj1pk-roz*pj2pk) / Z2
-                                 t26=(pj2pk-roz*pj3pk) / Z2
-                                 t26b=(pj3pk-roz*pj4pk) / Z2
-                                 t27=(pipk-roz*pi1pk) / Z2
-                                 t28=(pi1pk-roz*pi2pk) / Z2
-                                 t29=(pi2pk-roz*pi3pk) / Z2
-                                 t29b=(pi3pk-roz*pi4pk) / Z2
-                                 y10=t22p
-                                 y10b=t22
-                                 y14=(dpk - ti * d1pk) / Zc
-                                 y14b=(d1pk - ti * d2pk) / Zc
-                                 do l4 = 1, lk
-                                    t1 = Q(l4) - r(Nuc(jfunct),l4)
-                                    t2 = W(l4) - Q(l4)
-                                    dd = t1 * dpk + t2 * d1pk
-                                    d1d = t1 * d1pk + t2 * d2pk
-                                    d2d = t1 * d2pk + t2 * d3pk
-                                    d3d = t1 * d3pk + t2 * d4pk
-                                    pj0dkl = t1 * pjpk + t2 * pj1pk
-                                    pj1dkl = t1 * pj1pk + t2 * pj2pk
-                                    pj2dkl = t1 * pj2pk + t2 * pj3pk
-                                    pj3dkl = t1 * pj3pk + t2 * pj4pk
-                                    pi0dkl = t1 * pipk + t2 * pi1pk
-                                    pi1dkl = t1 * pi1pk + t2 * pi2pk
-                                    pi2dkl = t1 * pi2pk + t2 * pi3pk
-                                    pi3dkl = t1 * pi3pk + t2 * pi4pk
-                                    d0pl = t1 * ds + t2 * d1s
-                                    d1pl = t1 * d1s + t2 * d2s
-                                    d2pl = t1 * d2s + t2 * d3s
-                                    d3pl = t1 * d3s + t2 * d4s
-                                    s2pl = t1 * ss2s + t2 * ss3s
-                                    s3pl = t1 * ss3s + t2 * ss4s
-                                    y17=s2pl / Z2a
-                                    y17b=s3pl / Z2a
-                                    s2dkl = t1 * s2pk + t2 * s3pk
-                                    s3dkl = t1 * s3pk + t2 * s4pk
-                                    pj2pl = t1 * pj2s + t2 * pj3s
-                                    pj3pl = t1 * pj3s + t2 * pj4s
-                                    pi2pl = t1 * p2s + t2 * p3s
-                                    pi3pl = t1 * p3s + t2 * p4s
-                                    if (l1 .eq. l4) then
-                                       dd = dd + t24
-                                       d1d = d1d + t25
-                                       d2d = d2d + t26
-                                       d3d = d3d + t26b
-                                       pi0dkl = pi0dkl + t15p
-                                       pi1dkl = pi1dkl + t15a
-                                       pi2dkl = pi2dkl + t15
-                                       pi3dkl = pi3dkl + t15b
-                                       d0pl = d0pl + t11
-                                       d1pl = d1pl + t12
-                                       d2pl = d2pl + t13
-                                       d3pl = d3pl + t14
-                                       pi2pl = pi2pl + t5
-                                       pi3pl = pi3pl + t6
-                                    endif
-                                    if (l2 .eq. l4) then
-                                       dd = dd + t27
-                                       d1d = d1d + t28
-                                       d2d = d2d + t29
-                                       d3d = d3d + t29b
-                                       pj0dkl = pj0dkl + t15p
-                                       pj1dkl = pj1dkl + t15a
-                                       pj2dkl = pj2dkl + t15
-                                       pj3dkl = pj3dkl + t15b
-                                       d0pl = d0pl + t7
-                                       d1pl = d1pl + t8
-                                       d2pl = d2pl + t9
-                                       d3pl = d3pl + t10
-                                       pj2pl = pj2pl + t5
-                                       pj3pl = pj3pl + t6
-                                    endif
-                                    f2=1.D0
-                                    if (l3 .eq. l4) then
-                                       s2dkl=s2dkl + t5
-                                       s3dkl=s3dkl + t6
-                                       dd = dd + t16
-                                       d1d = d1d + t17
-                                       d2d = d2d + t18
-                                       d3d = d3d + t18b
-                                       pj0dkl = pj0dkl + t11
-                                       pj2dkl = pj2dkl + t13
-                                       pj1dkl = pj1dkl + t12
-                                       pj3dkl = pj3dkl + t14
-                                       pi2dkl = pi2dkl + t9
-                                       pi1dkl = pi1dkl + t8
-                                       pi3dkl = pi3dkl + t10
-                                       pi0dkl = pi0dkl + t7
-                                       f2=SQ3
-                                    endif
-                                    t30a=pj1dkl / Z2a
-                                    t30 = pj2dkl / Z2a
-                                    t30b = pj3dkl / Z2a
-                                    t40a=pi1dkl / Z2a
-                                    t40=pi2dkl / Z2a
-                                    t40b=pi3dkl / Z2a
-                                    t50=s2dkl / Z2a
-                                    t50b=s3dkl / Z2a
-                                    t60=pj2pl / Z2a
-                                    t60b=pj3pl / Z2a
-                                    t70=pi2pl / Z2a
-                                    t70b=pi3pl / Z2a
-                                    t80a=d1pl / Z2a
-                                    t80=d2pl / Z2a
-                                    t80b=d3pl / Z2a
-                                    t23 = (dd - ti * d1d) / Zc
-                                    t23b=(d1d - ti * d2d) / Zc
-                                    y1=t30a
-                                    y1b=t30
-                                    y5=t40a
-                                    y5b=t40
-                                    y8=t80a
-                                    y8b=t80
-                                    y12=(pi0dkl - ti * pi1dkl) / Zc
-                                    y12b=(pi1dkl - ti * pi2dkl) / Zc
-                                    y13=(d0pl - ti * d1pl) / Zc
-                                    y13b=(d1pl - ti * d2pl) / Zc
-                                    y15=(pj0dkl - ti * pj1dkl) / Zc
-                                    y15b=(pj1dkl - ti * pj2dkl) / Zc
-                                    do l5 = 1, 3
-                                       t1 =W(l5) - r(Nucd(kfunct),l5)
-                                       dd0p = t1 * d1d
-                                       ddp = t1 * d2d
-                                       dd2p = t1 * d3d
-                                       pjdklp = t1 * pj2dkl
-                                       pj2dklp = t1 * pj3dkl
-                                       pidklp = t1 * pi2dkl
-                                       pi2dklp = t1 * pi3dkl
-                                       dijplp = t1 * d2pl
-                                       dij2plp = t1 * d3pl
-                                       dijpkp = t1 * d2pk
-                                       dij2pkp = t1 * d3pk
-                                       s1dpm = t1 * s2dkl
-                                       s2dpm = t1 * s3dkl
-                                       pj1plpm = t1 * pj2pl
-                                       pj2plpm = t1 * pj3pl
-                                       pj1pkpm = t1 * pj2pk
-                                       pj2pkpm = t1 * pj3pk
-                                       pi1plpm = t1 * pi2pl
-                                       pi2plpm = t1 * pi3pl
-                                       pi1pkpm = t1 * pi2pk
-                                       pi2pkpm = t1 * pi3pk
-                                       d1spm = t1 * d2s
-                                       d2spm = t1 * d3s
-                                       if (l1 .eq. l5) then
-                                          dd0p = dd0p + t30a
-                                          ddp = ddp + t30
-                                          dd2p = dd2p + t30b
-                                          pidklp = pidklp + t50
-                                          pi2dklp = pi2dklp + t50b
-                                          dijplp = dijplp + t60
-                                          dij2plp = dij2plp + t60b
-                                          dijpkp = dijpkp + t20
-                                          dij2pkp = dij2pkp + t20b
-                                          pi1plpm=pi1plpm+y17
-                                          pi2plpm=pi2plpm+y17b
-                                          pi1pkpm=pi1pkpm+y18
-                                          pi2pkpm=pi2pkpm+y18b
-                                          d1spm=d1spm+y19
-                                          d2spm=d2spm+y19b
-                                       endif
-                                       if (l2 .eq. l5) then
-                                          dd0p = dd0p + t40a
-                                          ddp = ddp + t40
-                                          dd2p = dd2p + t40b
-                                          pjdklp = pjdklp + t50
-                                          pj2dklp = pj2dklp + t50b
-                                          dijplp = dijplp + t70
-                                          dij2plp = dij2plp + t70b
-                                          dijpkp = dijpkp + t21
-                                          dij2pkp = dij2pkp + t21b
-                                          pj1plpm=pj1plpm+y17
-                                          pj2plpm=pj2plpm+y17b
-                                          pj1pkpm=pj1pkpm+y18
-                                          pj2pkpm=pj2pkpm+y18b
-                                          d1spm=d1spm+y16
-                                          d2spm=d2spm+y16b
-                                       endif
-                                       if (l3 .eq. l5) then
-                                          dd0p = dd0p + t80a
-                                          ddp = ddp + t80
-                                          dd2p = dd2p + t80b
-                                          pjdklp = pjdklp + t60
-                                          pj2dklp = pj2dklp + t60b
-                                          pidklp = pidklp + t70
-                                          pi2dklp = pi2dklp + t70b
-                                          dijpkp = dijpkp + t22a
-                                          dij2pkp = dij2pkp + t22
-                                          s1dpm=s1dpm+y17
-                                          s2dpm=s2dpm+y17b
-                                          pj1pkpm=pj1pkpm+y19
-                                          pj2pkpm=pj2pkpm+y19b
-                                          pi1pkpm=pi1pkpm+y16
-                                          pi2pkpm=pi2pkpm+y16b
-                                       endif
-                                       if (l4 .eq. l5) then
-                                          dd0p = dd0p + t22p
-                                          ddp = ddp + t22
-                                          dd2p = dd2p + t22b
-                                          pjdklp = pjdklp + t20
-                                          pj2dklp = pj2dklp + t20b
-                                          pidklp = pidklp + t21
-                                          pi2dklp = pi2dklp + t21b
-                                          dijplp = dijplp + t22a
-                                          dij2plp = dij2plp + t22
-                                          s1dpm=s1dpm+y18
-                                          s2dpm=s2dpm+y18b
-                                          pj1plpm=pj1plpm+y19
-                                          pj2plpm=pj2plpm+y19b
-                                          pi1plpm=pi1plpm+y16
-                                          pi2plpm=pi2plpm+y16b
-                                       endif
-                                       t31 = pjdklp / Z2a
-                                       t31b = pj2dklp / Z2a
-                                       t41=pidklp / Z2a
-                                       t41b=pi2dklp / Z2a
-                                       t51=dijplp / Z2a
-                                       t51b=dij2plp / Z2a
-                                       t61=dijpkp / Z2a
-                                       t61b=dij2pkp / Z2a
-                                       y30=ddp / Z2a
-                                       y31=(dd0p - ti * ddp) / Zc
-                                       y2=s1dpm / Z2a
-                                       y2b=s2dpm / Z2a
-                                       y3=pj1plpm / Z2a
-                                       y3b=pj2plpm / Z2a
-                                       y4=pj1pkpm / Z2a
-                                       y4b=pj2pkpm / Z2a
-                                       y6=pi1plpm / Z2a
-                                       y6b=pi2plpm / Z2a
-                                       y7=pi1pkpm / Z2a
-                                       y7b=pi2pkpm / Z2a
-                                       y9=d1spm / Z2a
-                                       y9b=d2spm / Z2a
-                                       do l6 = 1, l5
+                              if (l3 .eq. l4) then
+                                 s2dkl  = s2dkl  + t5
+                                 s3dkl  = s3dkl  + t6
+                                 dd     = dd     + t16
+                                 d1d    = d1d    + t17
+                                 d2d    = d2d    + t18
+                                 d3d    = d3d    + t18b
+                                 pj0dkl = pj0dkl + t11
+                                 pj2dkl = pj2dkl + t13
+                                 pj1dkl = pj1dkl + t12
+                                 pj3dkl = pj3dkl + t14
+                                 pi2dkl = pi2dkl + t9
+                                 pi1dkl = pi1dkl + t8
+                                 pi0dkl = pi0dkl + t7
+                                 f2     = SQ3
+                              endif
+                              t30a   = pj1dkl / Z2a
+                              t30    = pj2dkl / Z2a
+                              t30b   = pj3dkl / Z2a
+                              pi3dkl = pi3dkl + t10
+                              t40a   = pi1dkl / Z2a
+                              t40    = pi2dkl / Z2a
+                              t40b   = pi3dkl / Z2a
+                              t50    = s2dkl  / Z2a
+                              t50b   = s3dkl  / Z2a
+                              t60    = pj2pl  / Z2a
+                              t60b   = pj3pl  / Z2a
+                              t70    = pi2pl  / Z2a
+                              t70b   = pi3pl  / Z2a
+                              t80a   = d1pl   / Z2a
+                              t80    = d2pl   / Z2a
+                              t80b   = d3pl   / Z2a
+                              t23    = (dd  - ti * d1d) / Zc
+                              t23b   = (d1d - ti * d2d) / Zc
 
-                                          t1 =W(l6)-r(Nucd(kfunct),l6)
+                              y12  = (pi0dkl - ti * pi1dkl) / Zc
+                              y12b = (pi1dkl - ti * pi2dkl) / Zc
+                              y13  = (d0pl   - ti * d1pl)   / Zc
+                              y13b = (d1pl   - ti * d2pl)   / Zc
+                              y15  = (pj0dkl - ti * pj1dkl) / Zc
+                              y15b = (pj1dkl - ti * pj2dkl) / Zc
 
-                                          ddd = t1 * ddp
-                                          dd1d = t1 * dd2p
-                                          dd0pn = t1 * d1d
-                                          dd1pn = t1 * d2d
-                                          pj0dd = t1 * pjdklp
-                                          pj1dd = t1 * pj2dklp
-                                          pi0dd = t1 * pidklp
-                                          pi1dd = t1 * pi2dklp
-                                          d0pld = t1 * dijplp
-                                          d1pld = t1 * dij2plp
-                                          d0pkd = t1 * dijpkp
-                                          d1pkd = t1 * dij2pkp
-                                          if (l1 .eq. l6) then
-                                             ddd = ddd + t31
-                                             dd1d = dd1d + t31b
-                                             dd0pn=dd0pn+y1
-                                             dd1pn=dd1pn+y1b
-                                             pi0dd = pi0dd+y2
-                                             pi1dd = pi1dd+y2b
-                                             d0pld = d0pld+y3
-                                             d1pld = d1pld+y3b
-                                             d0pkd = d0pkd+y4
-                                             d1pkd = d1pkd+y4b
-                                          endif
-                                          if (l2 .eq. l6) then
-                                             ddd = ddd + t41
-                                             dd1d = dd1d + t41b
-                                             dd0pn=dd0pn+y5
-                                             dd1pn=dd1pn+y5b
-                                             d0pld = d0pld+y6
-                                             d1pld = d1pld+y6b
-                                             d0pkd = d0pkd+y7
-                                             d1pkd = d1pkd+y7b
-                                             pj0dd = pj0dd+y2
-                                             pj1dd = pj1dd+y2b
-                                          endif
-                                          if (l3 .eq. l6) then
-                                             ddd = ddd + t51
-                                             dd1d = dd1d + t51b
-                                             dd0pn=dd0pn+y8
-                                             dd1pn=dd1pn+y8b
-                                             pj0dd = pj0dd+y3
-                                             pj1dd = pj1dd+y3b
-                                             d0pkd = d0pkd+y9
-                                             d1pkd = d1pkd+y9b
-                                             pi0dd = pi0dd+y6
-                                             pi1dd = pi1dd+y6b
-                                          endif
-                                          if (l4 .eq. l6) then
-                                             ddd = ddd + t61
-                                             dd1d = dd1d + t61b
-                                             pi0dd = pi0dd+y7
-                                             pi1dd = pi1dd+y7b
-                                             d0pld = d0pld+y9
-                                             d1pld = d1pld+y9b
-                                             dd0pn=dd0pn+y10
-                                             dd1pn=dd1pn+y10b
-                                             pj0dd = pj0dd+y4
-                                             pj1dd = pj1dd+y4b
-                                          endif
-                                          f3=1.D0
-                                          if (l5 .eq. l6) then
-                                             ddd = ddd + t23
-                                             dd1d = dd1d + t23b
-                                             pi0dd = pi0dd+y12
-                                             pi1dd = pi1dd+y12b
-                                             d0pld = d0pld+y13
-                                             d1pld = d1pld+y13b
-                                             d0pkd = d0pkd+y14
-                                             d1pkd = d1pkd+y14b
-                                             pj0dd = pj0dd+y15
-                                             pj1dd = pj1dd+y15b
-                                             f3=SQ3
-                                          endif
-                                          cc=ccoef/(f1*f2*f3)
-                                          term=ddd*cc
-                                          l12=Ll(l1)+l2
-                                          l34=Ll(l3)+l4
-                                          l56=Ll(l5)+l6
-                                          ii=i+l12-1
-                                          jj=j+l34-1
-                                          fock_ind=k+l56-1
-                                          y20=(pj0dd-roz*pj1dd) / Z2
-                                          y21=pj1dd / Z2a
-                                          y22=(pi0dd-roz*pi1dd) / Z2
-                                          y23=pi1dd / Z2a
-                                          y24=(d0pld-roz*d1pld) / Z2
-                                          y25=d1pld / Z2a
-                                          y26=(d0pkd-roz*d1pkd) / Z2
-                                          y27=d1pkd / Z2a
-                                          y28=dd1pn / Z2a
-                                          y29=(dd0pn - ti * dd1pn) / Zc
-                                          kn=ii+Jx(jj)
-                                          RMM(M5-1 + fock_ind)=RMM(M5-1 + fock_ind)+af(af_ind)*term
-                                          ! gradients
-                                          t1 =cc*RMM(fock_ind)
-                                          te = t1 * af(af_ind)
-                                          ty=2.D0*te
-                                          do l7=1,3
-                                             t1 =Q(l7)-r(Nuc(ifunct),l7)
-                                             t2 =W(l7)-Q(l7)
-                                             t2b=W(l7)-r(Nucd(kfunct),l7)
-                                             tx=r(Nuc(ifunct),l7)-r(Nuc(jfunct),l7)
-                                             fdd = t1 * ddd + t2 * dd1d
-                                             ddf=t2b*dd1d
-                                             if (l1 .eq. l7) then
-                                                fdd=fdd+y20
-                                                ddf=ddf+y21
-                                                frc(Nuc(ifunct),l7) = frc(Nuc(ifunct),l7) - te * pj0dd
-                                             endif
-                                             if (l2 .eq. l7) then
-                                                fdd=fdd+y22
-                                                ddf=ddf+y23
-                                                frc(Nuc(ifunct),l7) = frc(Nuc(ifunct),l7) - te * pi0dd
-                                             endif
-                                             if (l3 .eq. l7) then
-                                                fdd=fdd+y24
-                                                ddf=ddf+y25
-                                                frc(Nuc(jfunct),l7) = frc(Nuc(jfunct),l7) - te * d0pld
-                                             endif
-                                             if (l4 .eq. l7) then
-                                                fdd=fdd+y26
-                                                ddf=ddf+y27
-                                                frc(Nuc(jfunct),l7) = frc(Nuc(jfunct),l7) - te * d0pkd
-                                             endif
-                                             if (l5 .eq. l7) then
-                                                fdd=fdd+y28
-                                                ddf=ddf+y29
-                                                frc(Nucd(kfunct),l7) = frc(Nucd(kfunct),l7) - te * dd0pn
-                                             endif
-                                             if (l6 .eq. l7) then
-                                                fdd=fdd+y30
-                                                ddf=ddf+y31
-                                                frc(Nucd(kfunct),l7) = frc(Nucd(kfunct),l7) - te * dd0p
-                                             endif
-                                             dfd=fdd+tx*ddd
-                                             frc(Nuc(ifunct),l7) = frc(Nuc(ifunct),l7)+a(ifunct,nci) * ty * fdd
-                                             frc(Nuc(jfunct),l7) = frc(Nuc(jfunct),l7)+a(jfunct,ncj) * ty * dfd
-                                             frc(Nucd(kfunct),l7) = frc(Nucd(kfunct),l7)+ad(kfunct,nck) * ty * ddf
+                              do l5 = 1, 3
+                                 t1 = W(l5) - r(Nucd(kfunct),l5)
+                                 dd0p    = t1 * d1d
+                                 ddp     = t1 * d2d
+                                 dd2p    = t1 * d3d
+                                 pjdklp  = t1 * pj2dkl
+                                 pj2dklp = t1 * pj3dkl
+                                 pidklp  = t1 * pi2dkl
+                                 pi2dklp = t1 * pi3dkl
+                                 dijplp  = t1 * d2pl
+                                 dij2plp = t1 * d3pl
+                                 dijpkp  = t1 * d2pk
+                                 dij2pkp = t1 * d3pk
+                                 s1dpm   = t1 * s2dkl
+                                 s2dpm   = t1 * s3dkl
+                                 pj1plpm = t1 * pj2pl
+                                 pj2plpm = t1 * pj3pl
+                                 pj1pkpm = t1 * pj2pk
+                                 pj2pkpm = t1 * pj3pk
+                                 pi1plpm = t1 * pi2pl
+                                 pi2plpm = t1 * pi3pl
+                                 pi1pkpm = t1 * pi2pk
+                                 pi2pkpm = t1 * pi3pk
+                                 d1spm   = t1 * d2s
+                                 d2spm   = t1 * d3s
 
-                                          enddo
-                                       enddo
+                                 if (l1 .eq. l5) then
+                                    dd0p    = dd0p    + t30a
+                                    ddp     = ddp     + t30
+                                    dd2p    = dd2p    + t30b
+                                    pidklp  = pidklp  + t50
+                                    pi2dklp = pi2dklp + t50b
+                                    dijplp  = dijplp  + t60
+                                    dij2plp = dij2plp + t60b
+                                    dijpkp  = dijpkp  + t20
+                                    dij2pkp = dij2pkp + t20b
+                                    pi1plpm = pi1plpm + y17
+                                    pi2plpm = pi2plpm + y17b
+                                    pi1pkpm = pi1pkpm + y18
+                                    pi2pkpm = pi2pkpm + y18b
+                                    d1spm   = d1spm   + y19
+                                    d2spm   = d2spm   + y19b
+                                 endif
+                                 if (l2 .eq. l5) then
+                                    dd0p    = dd0p    + t40a
+                                    ddp     = ddp     + t40
+                                    dd2p    = dd2p    + t40b
+                                    pjdklp  = pjdklp  + t50
+                                    pj2dklp = pj2dklp + t50b
+                                    dijplp  = dijplp  + t70
+                                    dij2plp = dij2plp + t70b
+                                    dijpkp  = dijpkp  + t21
+                                    dij2pkp = dij2pkp + t21b
+                                    pj1plpm = pj1plpm + y17
+                                    pj2plpm = pj2plpm + y17b
+                                    pj1pkpm = pj1pkpm + y18
+                                    pj2pkpm = pj2pkpm + y18b
+                                    d1spm   = d1spm   + y16
+                                    d2spm   = d2spm   + y16b
+                                 endif
+                                 if (l3 .eq. l5) then
+                                    dd0p    = dd0p    + t80a
+                                    ddp     = ddp     + t80
+                                    dd2p    = dd2p    + t80b
+                                    pjdklp  = pjdklp  + t60
+                                    pj2dklp = pj2dklp + t60b
+                                    pidklp  = pidklp  + t70
+                                    pi2dklp = pi2dklp + t70b
+                                    dijpkp  = dijpkp  + t22a
+                                    dij2pkp = dij2pkp + t22
+                                    s1dpm   = s1dpm   + y17
+                                    s2dpm   = s2dpm   + y17b
+                                    pj1pkpm = pj1pkpm + y19
+                                    pj2pkpm = pj2pkpm + y19b
+                                    pi1pkpm = pi1pkpm + y16
+                                    pi2pkpm = pi2pkpm + y16b
+                                 endif
+                                 if (l4 .eq. l5) then
+                                    dd0p    = dd0p    + t22p
+                                    ddp     = ddp     + t22
+                                    dd2p    = dd2p    + t22b
+                                    pjdklp  = pjdklp  + t20
+                                    pj2dklp = pj2dklp + t20b
+                                    pidklp  = pidklp  + t21
+                                    pi2dklp = pi2dklp + t21b
+                                    dijplp  = dijplp  + t22a
+                                    dij2plp = dij2plp + t22
+                                    s1dpm   = s1dpm   + y18
+                                    s2dpm   = s2dpm   + y18b
+                                    pj1plpm = pj1plpm + y19
+                                    pj2plpm = pj2plpm + y19b
+                                    pi1plpm = pi1plpm + y16
+                                    pi2plpm = pi2plpm + y16b
+                                 endif
+                                 t31  = pjdklp  / Z2a
+                                 t31b = pj2dklp / Z2a
+                                 t41  = pidklp  / Z2a
+                                 t41b = pi2dklp / Z2a
+                                 t51  = dijplp  / Z2a
+                                 t51b = dij2plp / Z2a
+                                 t61  = dijpkp  / Z2a
+                                 t61b = dij2pkp / Z2a
+                                 y30  = ddp     / Z2a
+                                 y31  = (dd0p - ti * ddp) / Zc
+                                 y2   = s1dpm   / Z2a
+                                 y2b  = s2dpm   / Z2a
+                                 y3   = pj1plpm / Z2a
+                                 y3b  = pj2plpm / Z2a
+                                 y4   = pj1pkpm / Z2a
+                                 y4b  = pj2pkpm / Z2a
+                                 y6   = pi1plpm / Z2a
+                                 y6b  = pi2plpm / Z2a
+                                 y7   = pi1pkpm / Z2a
+                                 y7b  = pi2pkpm / Z2a
+                                 y9   = d1spm   / Z2a
+                                 y9b  = d2spm   / Z2a
+
+                                 do l6 = 1, l5
+                                    t1 = W(l6) - r(Nucd(kfunct),l6)
+                                    ddd   = t1 * ddp
+                                    dd1d  = t1 * dd2p
+                                    dd0pn = t1 * d1d
+                                    dd1pn = t1 * d2d
+                                    pj0dd = t1 * pjdklp
+                                    pj1dd = t1 * pj2dklp
+                                    pi0dd = t1 * pidklp
+                                    pi1dd = t1 * pi2dklp
+                                    d0pld = t1 * dijplp
+                                    d1pld = t1 * dij2plp
+                                    d0pkd = t1 * dijpkp
+                                    d1pkd = t1 * dij2pkp
+                                    f3    = 1.0D0
+
+                                    if (l1 .eq. l6) then
+                                       ddd   = ddd   + t31
+                                       dd1d  = dd1d  + t31b
+                                       dd0pn = dd0pn + t30a
+                                       dd1pn = dd1pn + t30
+                                       pi0dd = pi0dd + y2
+                                       pi1dd = pi1dd + y2b
+                                       d0pld = d0pld + y3
+                                       d1pld = d1pld + y3b
+                                       d0pkd = d0pkd + y4
+                                       d1pkd = d1pkd + y4b
+                                    endif
+                                    if (l2 .eq. l6) then
+                                       ddd   = ddd   + t41
+                                       dd1d  = dd1d  + t41b
+                                       dd0pn = dd0pn + t40a
+                                       dd1pn = dd1pn + t40
+                                       d0pld = d0pld + y6
+                                       d1pld = d1pld + y6b
+                                       d0pkd = d0pkd + y7
+                                       d1pkd = d1pkd + y7b
+                                       pj0dd = pj0dd + y2
+                                       pj1dd = pj1dd + y2b
+                                    endif
+                                    if (l3 .eq. l6) then
+                                       ddd   = ddd   + t51
+                                       dd1d  = dd1d  + t51b
+                                       dd0pn = dd0pn + t80a
+                                       dd1pn = dd1pn + t80
+                                       pj0dd = pj0dd + y3
+                                       pj1dd = pj1dd + y3b
+                                       d0pkd = d0pkd + y9
+                                       d1pkd = d1pkd + y9b
+                                       pi0dd = pi0dd + y6
+                                       pi1dd = pi1dd + y6b
+                                    endif
+                                    if (l4 .eq. l6) then
+                                       ddd   = ddd   + t61
+                                       dd1d  = dd1d  + t61b
+                                       pi0dd = pi0dd + y7
+                                       pi1dd = pi1dd + y7b
+                                       d0pld = d0pld + y9
+                                       d1pld = d1pld + y9b
+                                       dd0pn = dd0pn + y10
+                                       dd1pn = dd1pn + y10b
+                                       pj0dd = pj0dd + y4
+                                       pj1dd = pj1dd + y4b
+                                    endif
+                                    if (l5 .eq. l6) then
+                                       ddd   = ddd   + t23
+                                       dd1d  = dd1d  + t23b
+                                       pi0dd = pi0dd + y12
+                                       pi1dd = pi1dd + y12b
+                                       d0pld = d0pld + y13
+                                       d1pld = d1pld + y13b
+                                       d0pkd = d0pkd + y14
+                                       d1pkd = d1pkd + y14b
+                                       pj0dd = pj0dd + y15
+                                       pj1dd = pj1dd + y15b
+                                       f3    = SQ3
+                                    endif
+                                    y20 = (pj0dd - tj * pj1dd) / Z2
+                                    y21 = pj1dd / Z2a
+                                    y22 = (pi0dd - tj * pi1dd) / Z2
+                                    y23 = pi1dd / Z2a
+                                    y24 = (d0pld - tj * d1pld) / Z2
+                                    y25 = d1pld / Z2a
+                                    y26 = (d0pkd - tj * d1pkd) / Z2
+                                    y27 = d1pkd / Z2a
+                                    y28 = dd1pn / Z2a
+                                    y29 = (dd0pn - ti * dd1pn) / Zc
+
+                                    af_ind   = kfunct + Ll(l5) + l6 -1
+                                    fock_ind = ifunct + Ll(l1) + l2 -1 + &
+                                               Jx(jfunct + Ll(l3) + l4 -1)
+                                    RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind)&
+                                                         + af(af_ind) * ddd    &
+                                                         * ccoef / (f1 * f2 *f3)
+
+                                    te = t1 * af(af_ind) *RMM(fock_ind) * &
+                                         ccoef / (f1 * f2 * f3)
+                                    ty = 2.0D0 * te
+
+                                    do l7 = 1, 3
+                                       fdd = (Q(l7) - r(Nuc(ifunct),l7))  *ddd &
+                                           + (W(l7) - Q(l7))              *dd1d
+                                       ddf = (W(l7) - r(Nucd(kfunct),l7)) *dd1d
+
+                                       if (l1 .eq. l7) then
+                                          fdd = fdd + y20
+                                          ddf = ddf + y21
+                                          frc(Nuc(ifunct),l7) = &
+                                                frc(Nuc(ifunct),l7) - te * pj0dd
+                                       endif
+                                       if (l2 .eq. l7) then
+                                          fdd = fdd + y22
+                                          ddf = ddf + y23
+                                          frc(Nuc(ifunct),l7) = &
+                                                frc(Nuc(ifunct),l7) - te * pi0dd
+                                       endif
+                                       if (l3 .eq. l7) then
+                                          fdd = fdd + y24
+                                          ddf = ddf + y25
+                                          frc(Nuc(jfunct),l7) = &
+                                                frc(Nuc(jfunct),l7) - te * d0pld
+                                       endif
+                                       if (l4 .eq. l7) then
+                                          fdd = fdd + y26
+                                          ddf = ddf + y27
+                                          frc(Nuc(jfunct),l7) = &
+                                                frc(Nuc(jfunct),l7) - te * d0pkd
+                                       endif
+                                       if (l5 .eq. l7) then
+                                          fdd = fdd + y28
+                                          ddf = ddf + y29
+                                          frc(Nucd(kfunct),l7) = &
+                                               frc(Nucd(kfunct),l7) - te * dd0pn
+                                       endif
+                                       if (l6 .eq. l7) then
+                                          fdd = fdd + y30
+                                          ddf = ddf + y31
+                                          frc(Nucd(kfunct),l7) = &
+                                                frc(Nucd(kfunct),l7) - te * dd0p
+                                       endif
+                                       dfd = fdd + ddd * &
+                                           (r(Nuc(ifunct),l7)-r(Nuc(jfunct),l7))
+
+                                       frc(Nuc(ifunct),l7)  = &
+                                                         frc(Nuc(ifunct),l7)  +&
+                                                         a(ifunct,nci) * ty *fdd
+                                       frc(Nuc(jfunct),l7)  = &
+                                                         frc(Nuc(jfunct),l7)  +&
+                                                         a(jfunct,ncj) * ty *dfd
+                                       frc(Nucd(kfunct),l7) = &
+                                                         frc(Nucd(kfunct),l7) +&
+                                                         ad(kfunct,nck)* ty *ddf
                                     enddo
                                  enddo
                               enddo
@@ -3571,10 +3573,12 @@ subroutine int3G(frc, calc_energy)
                         enddo
                      enddo
                   enddo
-               endif
+               enddo
             enddo
-         enddo
+         endif
       enddo
+      enddo
+   enddo
    enddo
 
    call g2g_timer_stop('CoulG')

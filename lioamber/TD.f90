@@ -75,7 +75,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    integer :: MM, MMd, M2, M3 ,M5, M13, M15, M11, LWORK, igpu, info, istep,    &
               icount,jcount, M9, M7
    integer :: lpfrg_steps = 200, chkpntF1a = 185, chkpntF1b = 195
-   logical :: is_lpfrg
+   logical :: is_lpfrg, fock_restart
    character(len=20) :: restart_filename
 
    real*8 , allocatable, dimension(:)   :: factorial, WORK
@@ -173,14 +173,14 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
          restart_filename = 'td_a_in.restart'
          if (propagator.eq.2) then
             call read_td_restart_magnus(rho_0(:,:,1), F1a(:,:,1), F1b(:,:,1),  &
-                                        M_in, restart_filename)
+                                        M_in, restart_filename, fock_restart)
          else
             call read_td_restart_verlet(rho_0(:,:,1), M_in, restart_filename)
          endif
          restart_filename = 'td_b_in.restart'
          if (propagator.eq.2) then
             call read_td_restart_magnus(rho_0(:,:,2), F1a(:,:,2), F1b(:,:,2),  &
-                                        M_in, restart_filename)
+                                        M_in, restart_filename, fock_restart)
          else
             call read_td_restart_verlet(rho_0(:,:,2), M_in, restart_filename)
          endif
@@ -191,7 +191,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
          restart_filename = 'td_in.restart'
          if (propagator.eq.2) then
             call read_td_restart_magnus(rho_0(:,:,1), F1a(:,:,1), F1b(:,:,1),  &
-                                        M_in, restart_filename)
+                                        M_in, restart_filename, fock_restart)
          else
             call read_td_restart_verlet(rho_0(:,:,1), M_in, restart_filename)
          endif
@@ -277,8 +277,8 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
       call g2g_timer_start('TD step')
       call g2g_timer_sum_start("TD - TD Step")
       ! Checks if step is a leapfrog step.
-      call td_check_prop(is_lpfrg, propagator, istep, lpfrg_steps, tdrestart, &
-                         verbose)
+      call td_check_prop(is_lpfrg, propagator, istep, lpfrg_steps, &
+                         fock_restart, verbose)
       call td_get_time(t, tdstep, istep, propagator, is_lpfrg)
 
       call g2g_timer_sum_start("TD - TD Step Energy")
@@ -460,7 +460,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
       ! Dipole Moment calculation.
       call td_dipole(t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, 134)
       call td_population(M, natom, rho_aux, Smat_initial, sqsm, Nuc, Iz, OPEN, &
-                         istep)
+                         istep, propagator, is_lpfrg)
 
       ! Population analysis.
       if (transport_calc) call transport_population(M, dim3, natom, Nuc, Iz,   &
@@ -810,15 +810,15 @@ subroutine td_get_time(t, tdstep, istep, propagator, is_lpfrg)
    return
 end subroutine td_get_time
 
-subroutine td_check_prop(is_lpfrg, propagator, istep, lpfrg_steps, tdrestart,&
+subroutine td_check_prop(is_lpfrg, propagator, istep, lpfrg_steps, fock_rst,&
                          verbose)
    implicit none
    integer, intent(in)  :: propagator, istep, lpfrg_steps, verbose
-   logical, intent(in)  :: tdrestart
+   logical, intent(in)  :: fock_rst
    logical, intent(out) :: is_lpfrg
 
    is_lpfrg = ((propagator.eq.1) .or. (((propagator.eq.2) .and. &
-              (istep.lt.lpfrg_steps)) .and. (.not.tdrestart)))
+              (istep.lt.lpfrg_steps)) .and. (.not.fock_rst)))
    if ( (is_lpfrg).and.(istep.eq.1) ) then
       if (verbose .gt. 2) write(*,'(A)') '  TD - Starting Verlet Propagation'
    endif
@@ -903,12 +903,13 @@ subroutine td_dipole(t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, uid)
 end subroutine td_dipole
 
 subroutine td_population(M, natom, rho, Smat_init, sqsm, Nuc, Iz, open_shell, &
-                         nstep)
+                         nstep, propagator, is_lpfrg)
    use td_data, only: td_do_pop
    use fileio , only: write_population
    implicit none
-   integer         , intent(in) :: M, natom, Nuc(M), Iz(natom), nstep
-   logical         , intent(in) :: open_shell
+   integer         , intent(in) :: M, natom, Nuc(M), Iz(natom), nstep, &
+                                   propagator
+   logical         , intent(in) :: open_shell, is_lpfrg
    double precision, intent(in) :: Smat_init(M,M), sqsm(M,M)
 #ifdef TD_SIMPLE
    complex*8       , intent(in) :: rho(:,:,:)
@@ -920,6 +921,8 @@ subroutine td_population(M, natom, rho, Smat_init, sqsm, Nuc, Iz, open_shell, &
 
    if (td_do_pop .eq. 0) return
    if (.not. (mod(nstep, td_do_pop) .eq. 0)) return
+   if ((.not. (mod(nstep, td_do_pop*10) .eq. 0)) .and. (propagator .gt. 1) &
+       .and. (is_lpfrg)) return
    q = Iz
    if (open_shell) then
       do icount = 1, M

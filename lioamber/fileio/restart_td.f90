@@ -68,7 +68,7 @@ subroutine read_td_restart_verlet_s(rho, M, file_name)
    return
 end subroutine read_td_restart_verlet_s
 
-subroutine read_td_restart_magnus_d(rho, fock_a, fock_b, M, file_name)
+subroutine read_td_restart_magnus_d(rho, fock_a, fock_b, M, file_name, is_fock)
    ! rho       : Complex density matrix.
    ! M         : Density matrix size.
    ! file_name : Name of the restart file.
@@ -79,9 +79,10 @@ subroutine read_td_restart_magnus_d(rho, fock_a, fock_b, M, file_name)
    character(len=20), intent(in)  :: file_name
    integer          , intent(in)  :: M
    complex*16       , intent(out) :: rho(M,M)
+   logical          , intent(out) :: is_fock
    real*8           , intent(out) :: fock_a(M,M), fock_b(M,M)
    logical                        :: exists
-   integer                        :: UID
+   integer                        :: UID, file_stat
    UID = 1550
 
    inquire(file = file_name,  exist = exists)
@@ -94,14 +95,23 @@ subroutine read_td_restart_magnus_d(rho, fock_a, fock_b, M, file_name)
    open(unit = UID, file = file_name, status = 'old')
    rewind(UID)
    call read_sqmatrix(rho, M, UID)
-   call read_sqmatrix(fock_a, M, UID)
-   call read_sqmatrix(fock_b, M, UID)
+   read(UID,*,iostat=file_stat)
+   if (file_stat .eq. 0) then
+      call read_sqmatrix(fock_a, M, UID)
+      call read_sqmatrix(fock_b, M, UID)
+      is_fock = .true.
+   else
+      if (IS_IOSTAT_END(file_stat)) then
+         write(*,*) '  Fock not found in TD Magnus restart. Making leapfrog.'
+         is_fock = .false.
+      endif
+   endif
    close(UID)
 
    return
 end subroutine read_td_restart_magnus_d
 
-subroutine read_td_restart_magnus_s(rho, fock_a, fock_b, M, file_name)
+subroutine read_td_restart_magnus_s(rho, fock_a, fock_b, M, file_name, is_fock)
    ! rho       : Complex density matrix.
    ! M         : Density matrix size.
    ! file_name : Name of the restart file.
@@ -111,10 +121,11 @@ subroutine read_td_restart_magnus_s(rho, fock_a, fock_b, M, file_name)
    implicit none
    character(len=20), intent(in)  :: file_name
    integer          , intent(in)  :: M
+   logical          , intent(out) :: is_fock
    complex*8        , intent(out) :: rho(M,M)
    real*8           , intent(out) :: fock_a(M,M), fock_b(M,M)
    logical                        :: exists
-   integer                        :: UID
+   integer                        :: UID, file_stat
    UID = 1550
 
    inquire(file = file_name,  exist = exists)
@@ -127,8 +138,17 @@ subroutine read_td_restart_magnus_s(rho, fock_a, fock_b, M, file_name)
    open(unit = UID, file = file_name, status = 'old')
    rewind(UID)
    call read_sqmatrix(rho, M, UID)
-   call read_sqmatrix(fock_a, M, UID)
-   call read_sqmatrix(fock_b, M, UID)
+   read(UID,*,iostat=file_stat)
+   if (file_stat .eq. 0) then
+      call read_sqmatrix(fock_a, M, UID)
+      call read_sqmatrix(fock_b, M, UID)
+      is_fock = .true.
+   else
+      if (IS_IOSTAT_END(file_stat)) then
+         write(*,*) '  Fock not found in TD Magnus restart. Making leapfrog.'
+         is_fock = .false.
+      endif
+   endif
    close(UID)
 
    return

@@ -2425,224 +2425,232 @@ subroutine int3G(frc, calc_energy)
    enddo
 
    ! (ds|d)
-   do i=ns+np+1,M,6
-      do jfunct = 1,ns
+   do ifunct = ns+np+1, M , 6
+   do jfunct = 1      , ns
+      do nci = 1, ncont(ifunct)
+      do ncj = 1, ncont(jfunct)
+         Zij  = a(ifunct,nci) + a(jfunct,ncj)
+         tj   = a(jfunct,ncj) / Zij
+         rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))
 
-         k1=Jx(j)
-         do nci = 1, ncont(ifunct)
-            do ncj = 1, ncont(jfunct)
-               Zij  = a(ifunct,nci) + a(jfunct,ncj)
-               Z2   = 2.D0 * Zij
-               ti   = a(ifunct,nci) / Zij
-               tj   = a(jfunct,ncj) / Zij
+         if (rexp .lt. rmax) then
+            Z2   = 2.D0 * Zij
+            ti   = a(ifunct,nci) / Zij
+            Q(1) = ti * r(Nuc(ifunct),1) + tj * r(Nuc(jfunct),1)
+            Q(2) = ti * r(Nuc(ifunct),2) + tj * r(Nuc(jfunct),2)
+            Q(3) = ti * r(Nuc(ifunct),3) + tj * r(Nuc(jfunct),3)
+            sks  = pi52 * exp(-rexp) / Zij
 
-               rexp = a(ifunct,nci) * tj * d(Nuc(ifunct),Nuc(jfunct))
-               if (rexp .lt. rmax) then
-                  Q(1) = ti * r(Nuc(ifunct),1) + tj * r(Nuc(jfunct),1)
-                  Q(2) = ti * r(Nuc(ifunct),2) + tj * r(Nuc(jfunct),2)
-                  Q(3) = ti * r(Nuc(ifunct),3) + tj * r(Nuc(jfunct),3)
-                  sks  = pi52 * exp(-rexp) / Zij
-                  do kfunct = nsd+npd+1,Md,6
-                     dpc = (Q(1) - r(Nucd(kfunct),1)) * (Q(1) - r(Nucd(kfunct),1)) + &
-                           (Q(2) - r(Nucd(kfunct),2)) * (Q(2) - r(Nucd(kfunct),2)) + &
-                           (Q(3) - r(Nucd(kfunct),3)) * (Q(3) - r(Nucd(kfunct),3))
-                     do nck = 1, ncontd(kfunct)
-                        ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
-                        t0    = ad(kfunct,nck) + Zij
-                        Z2a   = 2.0D0 * t0
-                        Zc    = 2.0D0 * ad(kfunct,nck)
-                        ti    = Zij / t0
-                        tj    = ad(kfunct,nck) / t0
-                        W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
-                        W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
-                        W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
-                        roz=tj
-                        ro=roz*Zij
-                        uf = ro * dp
-                        t1 =ad(kfunct,nck)*sqrt(t0)
-                        t2 = sks / (ad(kfunct,nck) * sqrt(t0))
-                        sss = t2 * FUNCT(0,uf)
-                        ss1s = t2 * FUNCT(1,uf)
-                        ss2s = t2 * FUNCT(2,uf)
-                        ss3s = t2 * FUNCT(3,uf)
-                        ss4s = t2 * FUNCT(4,uf)
-                        ss5s = t2 * FUNCT(5,uf)
-                        t3 = (sss-roz*ss1s) / Z2
-                        t4 = (ss1s-roz*ss2s) / Z2
-                        t5=(ss2s-roz*ss3s) / Z2
-                        t5b=(ss3s-roz*ss4s) / Z2
-                        t6=ss2s / Z2a
-                        t6b=ss3s / Z2a
-                        do l1 = 1, 3
-                           t1  = Q(l1) - r(Nuc(ifunct),l1)
-                           t2  = W(l1) - Q(l1)
-                           ps = t1 * sss + t2 * ss1s
-                           p1s = t1 * ss1s + t2 * ss2s
-                           p2s = t1 * ss2s + t2 * ss3s
-                           p3s = t1 * ss3s + t2 * ss4s
-                           p4s = t1 * ss4s + t2 * ss5s
-                           t7a=p1s / Z2a
-                           t7=p2s / Z2a
-                           t7b=p3s / Z2a
-                           t16 = (ps - ti * p1s) / Zc
-                           t16b = (p1s - ti * p2s) / Zc
-                           do l2 = 1, l1
-                              t1  = Q(l2) - r(Nuc(ifunct),l2)
-                              t2  = W(l2) - Q(l2)
-                              pjs = t1 * sss + t2 * ss1s
-                              pj1s = t1 * ss1s + t2 * ss2s
-                              pj2s = t1 * ss2s + t2 * ss3s
-                              pj3s = t1 * ss3s + t2 * ss4s
-                              ds = t1 * ps + t2 * p1s
-                              d1s = t1 * p1s + t2 * p2s
-                              d2s = t1 * p2s + t2 * p3s
-                              d3s = t1 * p3s + t2 * p4s
-                              t8a=pj1s / Z2a
-                              t8=pj2s / Z2a
-                              t8b=pj3s / Z2a
-                              t15=(pjs - ti * pj1s) / Zc
-                              t15b=(pj1s - ti * pj2s) / Zc
-                              f1=1.D0
-                              if (l1 .eq. l2) then
-                                 ds = ds + t3
-                                 d1s = d1s + t4
-                                 d2s = d2s + t5
-                                 d3s = d3s + t5b
-                                 f1=SQ3
+            do kfunct = nsd+npd+1, Md, 6
+               dpc = (Q(1) - r(Nucd(kfunct),1)) * (Q(1) - r(Nucd(kfunct),1)) + &
+                     (Q(2) - r(Nucd(kfunct),2)) * (Q(2) - r(Nucd(kfunct),2)) + &
+                     (Q(3) - r(Nucd(kfunct),3)) * (Q(3) - r(Nucd(kfunct),3))
+               do nck = 1, ncontd(kfunct)
+                  ccoef = c(ifunct,nci) * c(jfunct,ncj) * cd(kfunct,nck)
+                  t0    = ad(kfunct,nck) + Zij
+                  Z2a   = 2.0D0 * t0
+                  Zc    = 2.0D0 * ad(kfunct,nck)
+                  ti    = Zij / t0
+                  tj    = ad(kfunct,nck) / t0
+                  W(1)  = ti * Q(1) + tj * r(Nucd(kfunct),1)
+                  W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
+                  W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
+
+                  uf   = tj * Zij * dp
+                  t2   = sks / (ad(kfunct,nck) * sqrt(t0))
+                  sss  = t2 * FUNCT(0,uf)
+                  ss1s = t2 * FUNCT(1,uf)
+                  ss2s = t2 * FUNCT(2,uf)
+                  ss3s = t2 * FUNCT(3,uf)
+                  ss4s = t2 * FUNCT(4,uf)
+                  ss5s = t2 * FUNCT(5,uf)
+                  t3   = (sss  - tj * ss1s) / Z2
+                  t4   = (ss1s - tj * ss2s) / Z2
+                  t5   = (ss2s - tj * ss3s) / Z2
+                  t5b  = (ss3s - tj * ss4s) / Z2
+                  t6   = ss2s / Z2a
+                  t6b  = ss3s / Z2a
+
+                  do l1 = 1, 3
+                     t1   = Q(l1) - r(Nuc(ifunct),l1)
+                     t2   = W(l1) - Q(l1)
+                     ps   = t1 * sss  + t2 * ss1s
+                     p1s  = t1 * ss1s + t2 * ss2s
+                     p2s  = t1 * ss2s + t2 * ss3s
+                     p3s  = t1 * ss3s + t2 * ss4s
+                     p4s  = t1 * ss4s + t2 * ss5s
+                     t7a  = p1s / Z2a
+                     t7   = p2s / Z2a
+                     t7b  = p3s / Z2a
+                     t16  = (ps  - ti * p1s) / Zc
+                     t16b = (p1s - ti * p2s) / Zc
+
+                     do l2 = 1, l1
+                        t1   = Q(l2) - r(Nuc(ifunct),l2)
+                        t2   = W(l2) - Q(l2)
+                        pjs  = t1 * sss  + t2 * ss1s
+                        pj1s = t1 * ss1s + t2 * ss2s
+                        pj2s = t1 * ss2s + t2 * ss3s
+                        pj3s = t1 * ss3s + t2 * ss4s
+                        ds   = t1 * ps   + t2 * p1s
+                        d1s  = t1 * p1s  + t2 * p2s
+                        d2s  = t1 * p2s  + t2 * p3s
+                        d3s  = t1 * p3s  + t2 * p4s
+                        t8a  = pj1s / Z2a
+                        t8   = pj2s / Z2a
+                        t8b  = pj3s / Z2a
+                        t15  = (pjs  - ti * pj1s) / Zc
+                        t15b = (pj1s - ti * pj2s) / Zc
+                        f1   = 1.0D0
+
+                        if (l1 .eq. l2) then
+                           ds  = ds + t3
+                           d1s = d1s + t4
+                           d2s = d2s + t5
+                           d3s = d3s + t5b
+                           f1  = SQ3
+                        endif
+                        t11  = (ds  - ti * d1s) / Zc
+                        t11b = (d1s - ti * d2s) / Zc
+
+                        do l3 = 1, 3
+                           t1     = W(l3) - r(Nucd(kfunct),l3)
+                           ds0p   = t1 * d1s
+                           ds1p   = t1 * d2s
+                           ds2p   = t1 * d3s
+                           pis1pk = t1 * p2s
+                           pis2pk = t1 * p3s
+                           pjs1pk = t1 * pj2s
+                           pjs2pk = t1 * pj3s
+                           ss1pk  = t1 * ss2s
+                           ss2pk  = t1 * ss3s
+                           t12    = ss1pk / Z2a
+                           t12b   = ss2pk / Z2a
+
+                           if (l1 .eq. l3) then
+                              ds0p   = ds0p   + t8a
+                              ds1p   = ds1p   + t8
+                              ds2p   = ds2p   + t8b
+                              pis1pk = pis1pk + t6
+                              pis2pk = pis2pk + t6b
+                           endif
+                           if (l2 .eq. l3) then
+                              ds0p   = ds0p   + t7a
+                              ds1p   = ds1p   + t7
+                              ds2p   = ds2p   + t7b
+                              pjs1pk = pjs1pk + t6
+                              pjs2pk = pjs2pk + t6b
+                           endif
+                           t9   = pjs1pk / Z2a
+                           t9b  = pjs2pk / Z2a
+                           t10  = pis1pk / Z2a
+                           t10b = pis2pk / Z2a
+                           t26  = ds1p   / Z2a
+                           t27  = (ds0p - ti * ds1p) / Zc
+
+                           do l4 = 1, l3
+                              t1    = W(l4) - r(Nucd(kfunct),l4)
+                              dsd   = t1 * ds1p
+                              ds1d  = t1 * ds2p
+                              pj0sd = t1 * pjs1pk
+                              pj1sd = t1 * pjs2pk
+                              pi0sd = t1 * pis1pk
+                              pi1sd = t1 * pis2pk
+                              d0pl  = t1 * d1s
+                              d1pl  = t1 * d2s
+                              f2    = 1.0D0
+
+                              if (l1 .eq. l4) then
+                                 dsd   = dsd   + t9
+                                 ds1d  = ds1d  + t9b
+                                 pi0sd = pi0sd + t12
+                                 pi1sd = pi1sd + t12b
+                                 d0pl  = d0pl  + t8a
+                                 d1pl  = d1pl  + t8
                               endif
-                              t11 = (ds - ti * d1s) / Zc
-                              t11b=(d1s - ti * d2s) / Zc
-                              do l3 = 1, 3
-                                 t1 =W(l3) - r(Nucd(kfunct),l3)
-                                 ds0p = t1 * d1s
-                                 ds1p = t1 * d2s
-                                 ds2p = t1 * d3s
-                                 pis1pk = t1 * p2s
-                                 pis2pk = t1 * p3s
-                                 pjs1pk = t1 * pj2s
-                                 pjs2pk = t1 * pj3s
-                                 ss1pk = t1 * ss2s
-                                 ss2pk = t1 * ss3s
-                                 t12 = ss1pk / Z2a
-                                 t12b=ss2pk / Z2a
-                                 if (l1 .eq. l3) then
-                                    ds0p = ds0p + t8a
-                                    ds1p = ds1p + t8
-                                    ds2p = ds2p + t8b
-                                    pis1pk = pis1pk + t6
-                                    pis2pk = pis2pk + t6b
+                              if (l2 .eq. l4) then
+                                 dsd   = dsd   + t10
+                                 ds1d  = ds1d  + t10b
+                                 pj0sd = pj0sd + t12
+                                 pj1sd = pj1sd + t12b
+                                 d0pl  = d0pl  + t7a
+                                 d1pl  = d1pl  + t7
+                              endif
+                              if (l3 .eq. l4) then
+                                 dsd   = dsd   + t11
+                                 ds1d  = ds1d  + t11b
+                                 pj0sd = pj0sd + t15
+                                 pj1sd = pj1sd + t15b
+                                 pi0sd = pi0sd + t16
+                                 pi1sd = pi1sd + t16b
+                                 f2    = SQ3
+                              endif
+                              t20 = (pj0sd - tj * pj1sd) / Z2
+                              t21 = pj1sd / Z2a
+                              t22 = (pi0sd - tj * pi1sd) / Z2
+                              t23 = pi1sd / Z2a
+                              t24 = d1pl / Z2a
+                              t25 = (d0pl  - ti * d1pl) / Zc
+
+                              af_ind   = kfunct + Ll(l3) + l4 -1
+                              fock_ind = ifunct + Ll(l1) + l2 -1 + Jx(jfunct)
+                              RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + &
+                                                     af(af_ind) * dsd * ccoef /&
+                                                     (f1 * f2)
+                              te = af(af_ind) * RMM(fock_ind) * ccoef / (f1 *f2)
+                              ty = 2.0D0 * te
+
+                              do l5 = 1, 3
+                                 dpd = (Q(l5) - r(Nuc(jfunct),l5))  * dsd + &
+                                       (W(l5) - Q(l5))              * ds1d
+                                 dsf = (W(l5) - r(Nucd(kfunct),l5)) * ds1d
+
+                                 if (l1 .eq. l5) then
+                                    dpd = dpd + t20
+                                    dsf = dsf + t21
+                                    frc(Nuc(ifunct),l5) = frc(Nuc(ifunct),l5)  &
+                                                        - te * pj0sd
                                  endif
-                                 if (l2 .eq. l3) then
-                                    ds0p = ds0p + t7a
-                                    ds1p = ds1p + t7
-                                    ds2p = ds2p + t7b
-                                    pjs1pk = pjs1pk + t6
-                                    pjs2pk = pjs2pk + t6b
+                                 if (l2 .eq. l5) then
+                                    dpd = dpd + t22
+                                    dsf = dsf + t23
+                                    frc(Nuc(ifunct),l5) = frc(Nuc(ifunct),l5)  &
+                                                        - te * pi0sd
                                  endif
-                                 t9=pjs1pk / Z2a
-                                 t9b=pjs2pk / Z2a
-                                 t10 = pis1pk / Z2a
-                                 t10b=pis2pk / Z2a
-                                 t26=ds1p / Z2a
-                                 t27=(ds0p - ti * ds1p) / Zc
-                                 do l4 = 1, l3
-                                    t1 = W(l4) - r(Nucd(kfunct),l4)
-                                    dsd = t1 * ds1p
-                                    ds1d = t1 * ds2p
-                                    pj0sd = t1 * pjs1pk
-                                    pj1sd = t1 * pjs2pk
-                                    pi0sd = t1 * pis1pk
-                                    pi1sd = t1 * pis2pk
-                                    d0pl = t1 * d1s
-                                    d1pl = t1 * d2s
-                                    if (l1 .eq. l4) then
-                                       dsd = dsd + t9
-                                       ds1d = ds1d + t9b
-                                       pi0sd = pi0sd + t12
-                                       pi1sd = pi1sd + t12b
-                                       d0pl = d0pl + t8a
-                                       d1pl = d1pl + t8
-                                    endif
-                                    if (l2 .eq. l4) then
-                                       dsd = dsd + t10
-                                       ds1d = ds1d + t10b
-                                       pj0sd = pj0sd + t12
-                                       pj1sd = pj1sd + t12b
-                                       d0pl = d0pl + t7a
-                                       d1pl = d1pl + t7
-                                    endif
-                                    f2=1.D0
-                                    if (l3 .eq. l4) then
-                                       dsd = dsd + t11
-                                       ds1d = ds1d + t11b
-                                       pj0sd = pj0sd + t15
-                                       pj1sd = pj1sd + t15b
-                                       pi0sd = pi0sd + t16
-                                       pi1sd = pi1sd + t16b
-                                       f2=SQ3
-                                    endif
-                                    t20 = (pj0sd-roz*pj1sd) / Z2
-                                    t21 = pj1sd / Z2a
-                                    t22 = (pi0sd-roz*pi1sd) / Z2
-                                    t23 = pi1sd / Z2a
-                                    t24 = d1pl / Z2a
-                                    t25 = (d0pl - ti * d1pl) / Zc
-                                    l12=Ll(l1)+l2
-                                    l34=Ll(l3)+l4
-                                    ii=i+l12-1
-                                    fock_ind=k+l34-1
-                                    cc=ccoef/(f1*f2)
-                                    term=dsd*cc
-                                    kn=ii+k1
-                                    RMM(M5-1 + fock_ind)=RMM(M5-1 + fock_ind)+af(af_ind)*term
-                                    ! gradients
-                                    t1 =cc*RMM(fock_ind)
-                                    te = t1 * af(af_ind)
-                                    ty=2.D0*te
-                                    do l5 = 1, 3
-                                       t1 =Q(l5) - r(Nuc(jfunct),l5)
-                                       t2 =W(l5) - Q(l5)
-                                       t2b=W(l5) - r(Nucd(kfunct),l5)
-                                       tx=r(Nuc(ifunct),l5) - r(Nuc(jfunct),l5)
-                                       dpd = t1 * dsd + t2 * ds1d
-                                       dsf=t2b*ds1d
-                                       if (l1 .eq. l5) then
-                                          dpd = dpd + t20
-                                          dsf=dsf + t21
-                                          frc(Nuc(ifunct),l5) = frc(Nuc(ifunct),l5) - te * pj0sd
-                                       endif
-                                       if (l2 .eq. l5) then
-                                          dpd = dpd + t22
-                                          dsf=dsf + t23
-                                          frc(Nuc(ifunct),l5) = frc(Nuc(ifunct),l5) - te * pi0sd
-                                       endif
-                                       if (l3 .eq. l5) then
-                                          dpd = dpd + t24
-                                          dsf=dsf + t25
-                                          frc(Nucd(kfunct),l5) = frc(Nucd(kfunct),l5) - te * d0pl
-                                       endif
-                                       if (l4 .eq. l5) then
-                                          dpd = dpd + t26
-                                          dsf=dsf + t27
-                                          frc(Nucd(kfunct),l5) = frc(Nucd(kfunct),l5) - te * ds0p
-                                       endif
-                                       fsd = dpd-tx*dsd
-                                       frc(Nuc(ifunct),l5) = frc(Nuc(ifunct),l5)+a(ifunct,nci) * ty * fsd
-                                       frc(Nuc(jfunct),l5) = frc(Nuc(jfunct),l5)+a(jfunct,ncj) * ty * dpd
-                                       frc(Nucd(kfunct),l5) = frc(Nucd(kfunct),l5)+ad(kfunct,nck) * ty * dsf
-                                    enddo
-                                 enddo
+                                 if (l3 .eq. l5) then
+                                    dpd = dpd + t24
+                                    dsf = dsf + t25
+                                    frc(Nucd(kfunct),l5) = frc(Nucd(kfunct),l5)&
+                                                         - te * d0pl
+                                 endif
+                                 if (l4 .eq. l5) then
+                                    dpd = dpd + t26
+                                    dsf = dsf + t27
+                                    frc(Nucd(kfunct),l5) = frc(Nucd(kfunct),l5)&
+                                                         - te * ds0p
+                                 endif
+                                 fsd = dpd - dsd * &
+                                       (r(Nuc(ifunct),l5) - r(Nuc(jfunct),l5))
+
+                                 frc(Nuc(ifunct),l5)  = frc(Nuc(ifunct),l5)  +&
+                                                        a(ifunct,nci)  * ty *fsd
+                                 frc(Nuc(jfunct),l5)  = frc(Nuc(jfunct),l5)  +&
+                                                        a(jfunct,ncj)  * ty *dpd
+                                 frc(Nucd(kfunct),l5) = frc(Nucd(kfunct),l5) +&
+                                                        ad(kfunct,nck) * ty *dsf
                               enddo
                            enddo
                         enddo
                      enddo
                   enddo
-               endif
+               enddo
             enddo
-         enddo
+         endif
+      enddo
       enddo
    enddo
-   !-------------------------------------------------------------
+   enddo
+
    ! (dp|d) and gradients
    do i=ns+np+1,M,6
       do jfunct = ns+1,ns+np,3

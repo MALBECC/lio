@@ -10,16 +10,17 @@ subroutine int3G(frc, calc_energy)
 
    use subm_int2G, only: int2G
    use liotemp   , only: FUNCT
-   use garcha_mod, only: RMM, ll, a, c, d, r, nuc, nucd, ad, af, cd, ncont, &
-                         ncontd, nshell, nshelld, natom, ng, ngd, M, Md   , &
-                         NORM, pi52, rmax
+   use garcha_mod, only: RMM, a, c, d, r, nuc, nucd, ad, af, cd, ncont, &
+                         ncontd, nshell, nshelld, natom, M, Md, NORM, pi52, rmax
 
    implicit none
 
    logical         , intent(in)    :: calc_energy
    double precision, intent(inout) :: frc(natom,3)
 
-   double precision :: Q(3), W(3), Jx(ng)
+   double precision :: Q(3), W(3)
+   integer          :: Ll(3)
+   integer, allocatable :: Jx(:)
    double precision :: Exc, ccoef, rexp, SQ3, uf, dpc
 
    double precision :: d0d, d0p, d0pk, d0pkd, d0pkp, d0pl, d0pld
@@ -84,7 +85,7 @@ subroutine int3G(frc, calc_energy)
    double precision :: y6, y6b, y7, y7b, y9, y9b
    double precision :: Z2, Z2a, Zc, Zij
 
-   double precision :: y10, y10b, y12, y12b, y13, y13b, y14, y14b
+   double precision :: y12, y12b, y13, y13b, y14, y14b
    double precision :: y15, y15b, y16, y16b, y17, y17b, y18, y18b
    double precision :: y19, y19b, y20, y21, y22, y23, y24, y25, y26, y27
    double precision :: y28, y29, y30, y31
@@ -122,6 +123,7 @@ subroutine int3G(frc, calc_energy)
    do l1 = 1, 3
       Ll(l1) = l1 * (l1 -1) /2
    enddo
+   allocate(Jx(M))
    do ifunct = 1,  M
       Jx(ifunct) = (M2 - ifunct) * (ifunct -1) / 2
    enddo
@@ -210,6 +212,7 @@ subroutine int3G(frc, calc_energy)
       enddo
    enddo
    enddo
+   !print*, "ss|s", frc
 
    ! (ps|s)
    do ifunct = ns+1, ns+np, 3
@@ -242,7 +245,7 @@ subroutine int3G(frc, calc_energy)
                   W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
                   W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
 
-                  uf   = tj * Zij * dp
+                  uf   = tj * Zij * dpc
                   t2   = sks / (ad(kfunct,nck) * sqrt(t0))
                   sss  = t2 * FUNCT(0,uf)
                   ss1s = t2 * FUNCT(1,uf)
@@ -290,6 +293,7 @@ subroutine int3G(frc, calc_energy)
       enddo
    enddo
    enddo
+   !print*, "ps|s", frc
 
    ! (pp|s) and grad ients
    do ifunct = ns+1, ns+np , 3
@@ -322,7 +326,7 @@ subroutine int3G(frc, calc_energy)
                   W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
                   W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
 
-                  uf   = tj * Zij * dp
+                  uf   = tj * Zij * dpc
                   t2   = sks / (ad(kfunct,nck)*sqrt(t0))
                   sss  = t2 * FUNCT(0,uf)
                   ss1s = t2 * FUNCT(1,uf)
@@ -398,6 +402,7 @@ subroutine int3G(frc, calc_energy)
       enddo
    enddo
    enddo
+   !print*, "pp|s", frc
 
    ! (ds|s) and gradients
    do ifunct = ns+np+1, M , 6
@@ -430,7 +435,7 @@ subroutine int3G(frc, calc_energy)
                   W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
                   W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
 
-                  uf   = tj * Zij * dp
+                  uf   = tj * Zij * dpc
                   t2   = sks / (ad(kfunct,nck) * sqrt(t0))
                   sss  = t2 * FUNCT(0,uf)
                   ss1s = t2 * FUNCT(1,uf)
@@ -502,6 +507,7 @@ subroutine int3G(frc, calc_energy)
       enddo
    enddo
    enddo
+   !print*, "ds|s", frc
 
    ! (dp|s)
    do ifunct = ns+np+1, M    , 6
@@ -534,7 +540,7 @@ subroutine int3G(frc, calc_energy)
                   W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
                   W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
 
-                  uf = tj * Zij * dp
+                  uf = tj * Zij * dpc
                   t2 = sks / (ad(kfunct,nck) * sqrt(t0))
                   sss  = t2 * FUNCT(0,uf)
                   ss1s = t2 * FUNCT(1,uf)
@@ -651,6 +657,7 @@ subroutine int3G(frc, calc_energy)
       enddo
    enddo
    enddo
+   !print*, "dp|s", frc
 
    ! (dd|s)
    do ifunct = ns+np+1, M     , 6
@@ -683,7 +690,7 @@ subroutine int3G(frc, calc_energy)
                   W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
                   W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
 
-                  uf   = tj * Zij * dp
+                  uf   = tj * Zij * dpc
                   t2   = sks / (ad(kfunct,nck) * sqrt(t0))
                   sss  = t2 * FUNCT(0,uf)
                   ss1s = t2 * FUNCT(1,uf)
@@ -880,6 +887,7 @@ subroutine int3G(frc, calc_energy)
       enddo
    enddo
    enddo
+   !print*, "dd|s", frc
 
    ! (ss|p)
    do ifunct = 1, ns
@@ -913,7 +921,7 @@ subroutine int3G(frc, calc_energy)
                   W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
                   W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
 
-                  uf   = ti * ad(kfunct,nck) * dp
+                  uf   = ti * ad(kfunct,nck) * dpc
                   t2   = sks / (ad(kfunct,nck) * sqrt(t0))
                   sss  = t2 * FUNCT(0,uf)
                   ss1s = t2 * FUNCT(1,uf)
@@ -957,6 +965,7 @@ subroutine int3G(frc, calc_energy)
       enddo
    enddo
    enddo
+   !print*, "ss|p", frc
 
    ! (ps|p)
    do ifunct = ns+1, ns+np, 3
@@ -990,7 +999,7 @@ subroutine int3G(frc, calc_energy)
                   W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
                   W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
 
-                  uf   = ad(kfunct,nck) * dp * ti
+                  uf   = ad(kfunct,nck) * dpc * ti
                   t2   = sks / (ad(kfunct,nck) * sqrt(t0))
                   sss  = t2 * FUNCT(0,uf)
                   ss1s = t2 * FUNCT(1,uf)
@@ -1061,6 +1070,7 @@ subroutine int3G(frc, calc_energy)
       enddo
    enddo
    enddo
+   !print*, "ps|p", frc
 
    ! (pp|p)
    do ifunct = ns+1, ns+np , 3
@@ -1093,7 +1103,7 @@ subroutine int3G(frc, calc_energy)
                   W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
                   W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
 
-                  uf   = tj * Zij * dp
+                  uf   = tj * Zij * dpc
                   t2   = sks / (ad(kfunct,nck) * sqrt(t0))
                   sss  = t2 * FUNCT(0,uf)
                   ss1s = t2 * FUNCT(1,uf)
@@ -1209,6 +1219,7 @@ subroutine int3G(frc, calc_energy)
       enddo
    enddo
    enddo
+   !print*, "pp|p", frc
 
    ! (ds|p)
    do ifunct = ns+np+1, M , 6
@@ -1242,7 +1253,7 @@ subroutine int3G(frc, calc_energy)
                   W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
                   W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
 
-                  uf   = tj * Zij * dp
+                  uf   = tj * Zij * dpc
                   t2   = sks / (ad(kfunct,nck) * sqrt(t0))
                   sss  = t2 * FUNCT(0,uf)
                   ss1s = t2 * FUNCT(1,uf)
@@ -1362,6 +1373,7 @@ subroutine int3G(frc, calc_energy)
       enddo
    enddo
    enddo
+   !print*, "ds|p", frc
 
    ! (dp|p)
    do ifunct = ns+np+1, M    , 6
@@ -1395,7 +1407,7 @@ subroutine int3G(frc, calc_energy)
                   W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
                   W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
 
-                  uf   = tj * Zij * dp
+                  uf   = tj * Zij * dpc
                   t2   = sks / (ad(kfunct,nck) * sqrt(t0))
                   sss  = t2 * FUNCT(0,uf)
                   ss1s = t2 * FUNCT(1,uf)
@@ -1586,6 +1598,7 @@ subroutine int3G(frc, calc_energy)
       enddo
    enddo
    enddo
+   !print*, "dp|p", frc
 
    ! (dd|p)
    do ifunct = ns+np+1, M     , 6
@@ -1619,7 +1632,7 @@ subroutine int3G(frc, calc_energy)
                   W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
                   W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
 
-                  uf   = tj * Zij * dp
+                  uf   = tj * Zij * dpc
                   t2   = sks / (ad(kfunct,nck) * sqrt(t0))
                   sss  = t2 * FUNCT(0,uf)
                   ss1s = t2 * FUNCT(1,uf)
@@ -1938,6 +1951,7 @@ subroutine int3G(frc, calc_energy)
       enddo
    enddo
    enddo
+   !print*, "dd|p", frc
 
    ! (ss|d)
    do ifunct = 1, ns
@@ -1970,7 +1984,7 @@ subroutine int3G(frc, calc_energy)
                   W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
                   W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
 
-                  uf   = ti * ad(kfunct,nck) * dp
+                  uf   = ti * ad(kfunct,nck) * dpc
                   t2   = sks / (ad(kfunct,nck) * sqrt(t0))
                   sss  = t2 * FUNCT(0,uf)
                   ss1s = t2 * FUNCT(1,uf)
@@ -2045,6 +2059,7 @@ subroutine int3G(frc, calc_energy)
       enddo
    enddo
    enddo
+   !print*, "ss|d", frc
 
    ! (ps|d)
    do ifunct = ns+1, ns+np, 3
@@ -2078,7 +2093,7 @@ subroutine int3G(frc, calc_energy)
                   W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
                   W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
 
-                  uf   = dp * ti * ad(kfunct,nck)
+                  uf   = dpc * ti * ad(kfunct,nck)
                   t2   = sks / (ad(kfunct,nck) * sqrt(t0))
                   sss  = t2 * FUNCT(0,uf)
                   ss1s = t2 * FUNCT(1,uf)
@@ -2194,6 +2209,7 @@ subroutine int3G(frc, calc_energy)
       enddo
    enddo
    enddo
+   !print*, "ps|d", frc
 
    ! (pp|d)
    do ifunct = ns+1, ns+np  , 3
@@ -2227,7 +2243,7 @@ subroutine int3G(frc, calc_energy)
                   W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
                   W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
 
-                  uf   = tj * Zij * dp
+                  uf   = tj * Zij * dpc
                   t2   = sks / (ad(kfunct,nck) * sqrt(t0))
                   sss  = t2 * FUNCT(0,uf)
                   ss1s = t2 * FUNCT(1,uf)
@@ -2420,6 +2436,7 @@ subroutine int3G(frc, calc_energy)
       enddo
    enddo
    enddo
+   !print*, "pp|d", frc
 
    ! (ds|d)
    do ifunct = ns+np+1, M , 6
@@ -2453,7 +2470,7 @@ subroutine int3G(frc, calc_energy)
                   W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
                   W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
 
-                  uf   = tj * Zij * dp
+                  uf   = tj * Zij * dpc
                   t2   = sks / (ad(kfunct,nck) * sqrt(t0))
                   sss  = t2 * FUNCT(0,uf)
                   ss1s = t2 * FUNCT(1,uf)
@@ -2647,6 +2664,7 @@ subroutine int3G(frc, calc_energy)
       enddo
    enddo
    enddo
+   !print*, "ds|d", frc
 
    ! (dp|d) and gradients
    do ifunct = ns+np+1, M    , 6
@@ -2664,7 +2682,7 @@ subroutine int3G(frc, calc_energy)
             Q(2) = ti * r(Nuc(ifunct),2) + tj * r(Nuc(jfunct),2)
             Q(3) = ti * r(Nuc(ifunct),3) + tj * r(Nuc(jfunct),3)
             sks  = pi52 * exp(-rexp) / Zij
-            do kfunct = nsd+npd+1,Md,6
+            do kfunct = nsd+npd+1, Md, 6
                dpc = (Q(1) - r(Nucd(kfunct),1)) * (Q(1) - r(Nucd(kfunct),1)) + &
                      (Q(2) - r(Nucd(kfunct),2)) * (Q(2) - r(Nucd(kfunct),2)) + &
                      (Q(3) - r(Nucd(kfunct),3)) * (Q(3) - r(Nucd(kfunct),3))
@@ -2679,7 +2697,7 @@ subroutine int3G(frc, calc_energy)
                   W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
                   W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
 
-                  uf   = tj * Zij * dp
+                  uf   = tj * Zij * dpc
                   t2   = sks / (ad(kfunct,nck) * sqrt(t0))
                   sss  = t2 * FUNCT(0,uf)
                   ss1s = t2 * FUNCT(1,uf)
@@ -2688,6 +2706,7 @@ subroutine int3G(frc, calc_energy)
                   ss4s = t2 * FUNCT(4,uf)
                   ss5s = t2 * FUNCT(5,uf)
                   ss6s = t2 * FUNCT(6,uf)
+
                   ta  = (sss  - tj * ss1s) / Z2
                   t3  = (ss1s - tj * ss2s) / Z2
                   t4  = (ss2s - tj * ss3s) / Z2
@@ -2698,7 +2717,7 @@ subroutine int3G(frc, calc_energy)
                   do l1 = 1, 3
                      t1  = Q(l1) - r(Nuc(ifunct),l1)
                      t2  = W(l1) - Q(l1)
-                     ps  = t1 * sss + t2 * ss1s
+                     ps  = t1 * sss  + t2 * ss1s
                      p1s = t1 * ss1s + t2 * ss2s
                      p2s = t1 * ss2s + t2 * ss3s
                      p3s = t1 * ss3s + t2 * ss4s
@@ -2712,14 +2731,14 @@ subroutine int3G(frc, calc_energy)
                      t9b = p3s / Z2a
 
                      do l2 = 1, l1
-                        t1  = Q(l2) - r(Nuc(ifunct),l2)
-                        t2  = W(l2) - Q(l2)
-                        ds   = t1 * ps + t2 * p1s
-                        d1s  = t1 * p1s + t2 * p2s
-                        d2s  = t1 * p2s + t2 * p3s
-                        d3s  = t1 * p3s + t2 * p4s
-                        d4s  = t1 * p4s + t2 * p5s
-                        pjs  = t1 * sss + t2 * ss1s
+                        t1   = Q(l2) - r(Nuc(ifunct),l2)
+                        t2   = W(l2) - Q(l2)
+                        ds   = t1 * ps   + t2 * p1s
+                        d1s  = t1 * p1s  + t2 * p2s
+                        d2s  = t1 * p2s  + t2 * p3s
+                        d3s  = t1 * p3s  + t2 * p4s
+                        d4s  = t1 * p4s  + t2 * p5s
+                        pjs  = t1 * sss  + t2 * ss1s
                         pj1s = t1 * ss1s + t2 * ss2s
                         pj2s = t1 * ss2s + t2 * ss3s
                         pj3s = t1 * ss3s + t2 * ss4s
@@ -2767,44 +2786,44 @@ subroutine int3G(frc, calc_energy)
                            pj3p  = t1 * pj3s + t2 * pj4s
 
                            if (l1 .eq. l3) then
-                              dp   = dp + t7a
-                              d1p  = d1p + t7b
-                              d2p  = d2p + t7
-                              d3p  = d3p + t7d
+                              dp   = dp   + t7a
+                              d1p  = d1p  + t7b
+                              d2p  = d2p  + t7c
+                              d3p  = d3p  + t7d
                               pi0p = pi0p + ta
                               pi1p = pi1p + t3
                               pi2p = pi2p + t4
                               pi3p = pi3p + t5
                            endif
                            if (l2 .eq. l3) then
-                              dp   = dp + t6a
-                              d1p  = d1p + t6b
-                              d2p  = d2p + t6
-                              d3p  = d3p + t6d
+                              dp   = dp   + t6a
+                              d1p  = d1p  + t6b
+                              d2p  = d2p  + t6c
+                              d3p  = d3p  + t6d
                               pj0p = pj0p + ta
                               pj1p = pj1p + t3
                               pj2p = pj2p + t4
                               pj3p = pj3p + t5
                            endif
-                           t11a = pi1p / Z2a
-                           t11  = pi2p / Z2a
-                           t11b = pi3p / Z2a
-                           t12a = pj1p / Z2a
-                           t12  = pj2p / Z2a
-                           t12b = pj3p / Z2a
+                           t11a = pi1p  / Z2a
+                           t11  = pi2p  / Z2a
+                           t11b = pi3p  / Z2a
+                           t12a = pj1p  / Z2a
+                           t12  = pj2p  / Z2a
+                           t12b = pj3p  / Z2a
                            t13  = s2pks / Z2a
                            t13b = s3pks / Z2a
                            t22  = (pj0p - ti * pj1p) / Zc
                            t22b = (pj1p - ti * pj2p) / Zc
-                           t26  = pj1p / Z2a
-                           t26b = pj2p / Z2a
+                           t26  = pj1p  / Z2a
+                           t26b = pj2p  / Z2a
                            t25  = (pi0p - ti * pi1p) / Zc
                            t25b = (pi1p - ti * pi2p) / Zc
-                           t27  = pi1p / Z2a
-                           t27b = pi2p / Z2a
+                           t27  = pi1p  / Z2a
+                           t27b = pi2p  / Z2a
 
                            do l4 = 1, 3
-                              t1 = W(l4) - r(Nucd(kfunct),l4)
+                              t1      = W(l4) - r(Nucd(kfunct),l4)
                               dp0p    = t1 * d1p
                               dp1p    = t1 * d2p
                               dp2p    = t1 * d3p
@@ -2860,7 +2879,7 @@ subroutine int3G(frc, calc_energy)
                               t15b = pi2pkpl / Z2a
                               t16  = dspl    / Z2a
                               t16b = ds2pl   / Z2a
-                              t17  = (dp - ti * d1p)  / Zc
+                              t17  = (dp  - ti * d1p)  / Zc
                               t17b = (d1p - ti * d2p) / Zc
                               t20  = s1pkpl / Z2a
                               t20b = s2pkpl / Z2a
@@ -2930,7 +2949,7 @@ subroutine int3G(frc, calc_energy)
                                  t31 = pjp1d / Z2a
                                  t32 = (pip0d - tj * pip1d) / Z2
                                  t33 = pip1d / Z2a
-                                 t34 = (d0d - tj * d1d) / Z2
+                                 t34 = (d0d   - tj * d1d)   / Z2
                                  t35 = d1d   / Z2a
                                  t36 = dp1pm / Z2a
                                  t37 = (dp0pm - ti * dp1pm) / Zc
@@ -3006,6 +3025,7 @@ subroutine int3G(frc, calc_energy)
       enddo
    enddo
    enddo
+   !print*, "dp|d", frc
 
    ! (dd|d) and gradients
    do ifunct = ns+np+1, M     , 6
@@ -3024,7 +3044,7 @@ subroutine int3G(frc, calc_energy)
             Q(3) = ti * r(Nuc(ifunct),3) + tj * r(Nuc(jfunct),3)
             sks  = pi52 * exp(-rexp) / Zij
 
-            do kfunct = nsd+npd+1,Md,6
+            do kfunct = nsd+npd+1, Md, 6
                dpc = (Q(1) - r(Nucd(kfunct),1)) * (Q(1) - r(Nucd(kfunct),1)) + &
                      (Q(2) - r(Nucd(kfunct),2)) * (Q(2) - r(Nucd(kfunct),2)) + &
                      (Q(3) - r(Nucd(kfunct),3)) * (Q(3) - r(Nucd(kfunct),3))
@@ -3039,7 +3059,7 @@ subroutine int3G(frc, calc_energy)
                   W(2)  = ti * Q(2) + tj * r(Nucd(kfunct),2)
                   W(3)  = ti * Q(3) + tj * r(Nucd(kfunct),3)
 
-                  uf   = tj * Zij * dp
+                  uf   = tj * Zij * dpc
                   t2   = sks / (ad(kfunct,nck) * sqrt(t0))
                   sss  = t2 * FUNCT(0,uf)
                   ss1s = t2 * FUNCT(1,uf)
@@ -3049,12 +3069,12 @@ subroutine int3G(frc, calc_energy)
                   ss5s = t2 * FUNCT(5,uf)
                   ss6s = t2 * FUNCT(6,uf)
                   ss7s = t2 * FUNCT(7,uf)
-                  t3  = (sss  - tj * ss1s) / Z2
-                  t4  = (ss1s - tj * ss2s) / Z2
-                  t5  = (ss2s - tj * ss3s) / Z2
-                  t6  = (ss3s - tj * ss4s) / Z2
-                  t6b = (ss4s - tj * ss5s) / Z2
-                  t6c = (ss5s - tj * ss6s) / Z2
+                  t3   = (sss  - tj * ss1s) / Z2
+                  t4   = (ss1s - tj * ss2s) / Z2
+                  t5   = (ss2s - tj * ss3s) / Z2
+                  t6   = (ss3s - tj * ss4s) / Z2
+                  t6b  = (ss4s - tj * ss5s) / Z2
+                  t6c  = (ss5s - tj * ss6s) / Z2
 
                   do l1 = 1, 3
                      t1   = Q(l1) - r(Nuc(ifunct),l1)
@@ -3104,7 +3124,7 @@ subroutine int3G(frc, calc_energy)
                            d2s = d2s + t5
                            d3s = d3s + t6
                            d4s = d4s + t6b
-                           d5s = d5s + t6
+                           d5s = d5s + t6c
                            f1  = SQ3
                         endif
                         t16  = (ds  - tj * d1s) / Z2
@@ -3185,8 +3205,6 @@ subroutine int3G(frc, calc_energy)
                            t28  = (pi1pk - tj * pi2pk) / Z2
                            t29  = (pi2pk - tj * pi3pk) / Z2
                            t29b = (pi3pk - tj * pi4pk) / Z2
-                           y10  = t22p
-                           y10b = t22
                            y14  = (dpk  - ti * d1pk) / Zc
                            y14b = (d1pk - ti * d2pk) / Zc
 
@@ -3266,6 +3284,7 @@ subroutine int3G(frc, calc_energy)
                                  pj2dkl = pj2dkl + t13
                                  pj1dkl = pj1dkl + t12
                                  pj3dkl = pj3dkl + t14
+                                 pi3dkl = pi3dkl + t10
                                  pi2dkl = pi2dkl + t9
                                  pi1dkl = pi1dkl + t8
                                  pi0dkl = pi0dkl + t7
@@ -3274,7 +3293,6 @@ subroutine int3G(frc, calc_energy)
                               t30a   = pj1dkl / Z2a
                               t30    = pj2dkl / Z2a
                               t30b   = pj3dkl / Z2a
-                              pi3dkl = pi3dkl + t10
                               t40a   = pi1dkl / Z2a
                               t40    = pi2dkl / Z2a
                               t40b   = pi3dkl / Z2a
@@ -3366,7 +3384,7 @@ subroutine int3G(frc, calc_energy)
                                     pidklp  = pidklp  + t70
                                     pi2dklp = pi2dklp + t70b
                                     dijpkp  = dijpkp  + t22a
-                                    dij2pkp = dij2pkp + t22
+                                    dij2pkp = dij2pkp + t22c
                                     s1dpm   = s1dpm   + y17
                                     s2dpm   = s2dpm   + y17b
                                     pj1pkpm = pj1pkpm + y19
@@ -3383,7 +3401,7 @@ subroutine int3G(frc, calc_energy)
                                     pidklp  = pidklp  + t21
                                     pi2dklp = pi2dklp + t21b
                                     dijplp  = dijplp  + t22a
-                                    dij2plp = dij2plp + t22
+                                    dij2plp = dij2plp + t22c
                                     s1dpm   = s1dpm   + y18
                                     s2dpm   = s2dpm   + y18b
                                     pj1plpm = pj1plpm + y19
@@ -3473,8 +3491,8 @@ subroutine int3G(frc, calc_energy)
                                        pi1dd = pi1dd + y7b
                                        d0pld = d0pld + y9
                                        d1pld = d1pld + y9b
-                                       dd0pn = dd0pn + y10
-                                       dd1pn = dd1pn + y10b
+                                       dd0pn = dd0pn + t22p
+                                       dd1pn = dd1pn + t22
                                        pj0dd = pj0dd + y4
                                        pj1dd = pj1dd + y4b
                                     endif
@@ -3509,8 +3527,8 @@ subroutine int3G(frc, calc_energy)
                                                          + af(af_ind) * ddd    &
                                                          * ccoef / (f1 * f2 *f3)
 
-                                    te = t1 * af(af_ind) *RMM(fock_ind) * &
-                                         ccoef / (f1 * f2 * f3)
+                                    te = af(af_ind) * RMM(fock_ind) * ccoef / &
+                                         (f1 * f2 * f3)
                                     ty = 2.0D0 * te
 
                                     do l7 = 1, 3
@@ -3580,7 +3598,9 @@ subroutine int3G(frc, calc_energy)
       enddo
    enddo
    enddo
+   !print*, "dd|d", frc
 
+   deallocate(Jx)
    call g2g_timer_stop('CoulG')
    call g2g_timer_sum_stop('Coulomb gradients')
    return

@@ -107,7 +107,7 @@ subroutine int3G(frc, calc_energy, rho_mat, r, d, natom, ntatom)
       Jx(ifunct) = (2*M - ifunct) * (ifunct -1) / 2
    enddo
 
-   call int2G(frc)
+   call int2G(frc, natom, ntatom, r, d)
    call g2g_timer_sum_start('Exchange-correlation gradients')
    if (calc_energy) then
       call g2g_solve_groups(2, t1, frc)

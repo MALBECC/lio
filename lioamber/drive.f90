@@ -945,7 +945,7 @@
 
       ! Gets the number of occupied orbitals in a closed shell system (or
       ! Spin Up in an open shell system).
-      call get_nco(Iz, natom, nco, charge, NUNP, OPEN)
+      call get_nco(Iz, natom, nco, NUNP, charge, OPEN)
 
       ! Allocates and initialises rhoalpha and rhobeta
       if(OPEN) then

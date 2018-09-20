@@ -65,7 +65,7 @@ contains
       atomic_eec(18,1) = 6 ; atomic_eec(18,2) = 12;                        ! Ar
       atomic_eec(19,1) = 7 ; atomic_eec(19,2) = 12;                        ! K
       atomic_eec(20,1) = 8 ; atomic_eec(20,2) = 12;                        ! Ca
-      atomic_eec(21,1) = 8 ; atomic_eec(21,2) = 12; atomic_eec(21,3) = 1 ; ! Sc 
+      atomic_eec(21,1) = 8 ; atomic_eec(21,2) = 12; atomic_eec(21,3) = 1 ; ! Sc
       atomic_eec(22,1) = 8 ; atomic_eec(22,2) = 12; atomic_eec(22,3) = 2 ; ! Ti
       atomic_eec(23,1) = 8 ; atomic_eec(23,2) = 12; atomic_eec(23,3) = 3 ; ! V
       atomic_eec(24,1) = 7 ; atomic_eec(24,2) = 12; atomic_eec(24,3) = 5 ; ! Cr
@@ -159,10 +159,13 @@ subroutine initial_guess_aufbau(M, MM, RMM, rhoalpha, rhobeta, natom, NCO, &
    logical         , intent(in)  :: openshell
    double precision, intent(out) :: RMM(MM), rhoalpha(MM), rhobeta(MM)
 
-   double precision :: start_dens(M,M), start_dens_alpha(M,M), &
-                       start_dens_beta(M,M)
-   integer          :: icount, total_iz
-   integer          :: n_elecs(natom,3), atom_id
+   double precision, allocatable :: start_dens(:,:), start_dens_alpha(:,:), &
+                                    start_dens_beta(:,:)
+   integer         , allocatable :: n_elecs(:,:)
+   integer                       :: icount, total_iz, atom_id
+
+   allocate(start_dens(M,M), start_dens_alpha(M,M), start_dens_beta(M,M), &
+            n_elecs(natom,3))
 
    call initialise_eec()
    start_dens(:,:) = 0.0D0
@@ -232,6 +235,7 @@ subroutine initial_guess_aufbau(M, MM, RMM, rhoalpha, rhobeta, natom, NCO, &
    endif
 
    call sprepack('L', M, RMM, start_dens)
+   deallocate(start_dens, start_dens_alpha, start_dens_beta, n_elecs)
    return
 end subroutine initial_guess_aufbau
 

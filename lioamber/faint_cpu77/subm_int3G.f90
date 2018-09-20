@@ -1,4 +1,3 @@
-!------------------------------------------------------------------
 ! Integrals subroutine -Third part gradients
 ! 2 e integrals, 3 index : wavefunction and density fitting functions
 ! All of them are calculated
@@ -6,116 +5,97 @@
 
 module subm_int3G
 contains
-subroutine int3G(frc, calc_energy)
+subroutine int3G(frc, calc_energy, rho_mat, r, d, natom, ntatom)
 
    use subm_int2G, only: int2G
    use liotemp   , only: FUNCT
-   use garcha_mod, only: RMM, a, c, d, r, nuc, nucd, ad, af, cd, ncont, &
-                         ncontd, nshell, nshelld, natom, M, Md, NORM, pi52, rmax
+   use garcha_mod, only: a, c, nuc, nucd, ad, af, cd, ncont, ncontd, nshell, &
+                         nshelld, M, Md, NORM, pi52, rmax
 
    implicit none
 
    logical         , intent(in)    :: calc_energy
+   integer         , intent(in)    :: natom, ntatom
+   double precision, intent(in)    :: rho_mat(:), r(ntatom,3), d(natom,natom)
    double precision, intent(inout) :: frc(natom,3)
 
-   double precision :: Q(3), W(3)
-   integer          :: Ll(3)
-   integer, allocatable :: Jx(:)
-   double precision :: Exc, ccoef, rexp, SQ3, uf, dpc
+   integer         , allocatable :: Jx(:), Ll(:)
+   double precision, allocatable :: Q(:), W(:)
 
-   double precision :: d0d, d0p, d0pk, d0pkd, d0pkp, d0pl, d0pld
-   double precision :: d0plp, d0s, d1d, d1p, d1pk, d1pkd, d1pkp
-   double precision :: d1pl, d1pld, d1plp, d1pp, d1s, d1spm
-   double precision :: d2d, d2p, dds, ddp, ddf, ddd
-   double precision :: dij2plp, dij2pkp, dfs, dfp, dp0p, dp, dijplp
-   double precision :: dfd, dd2p, dijpkp, dp0pm, dp1d, dp1p, dp1pm
-   double precision :: dp1s, dp2p, dpd, dpf, dpk, dpp, dps, ds
-   double precision :: ds0p, ds1d, ds1p, dsp, dsf, dsd, ds2pl, ds2p
-   double precision :: ds1s, f3, f2, f1, dss, dspl, fpp, fpd, fds
-   double precision :: fdp, fdd, fss, fsp, fsd, fps
-   double precision :: p0pk, p1pk, p1s, p2s, p3s, p4s, p5s, p6s
-   double precision :: pi0dd, pi0d, pds, pdp, pdd, pi0sd, pi0pp
-   double precision :: pi0p, pi0dp, pi0dkl, pi1dp, pi1dkl, pi1dd
-   double precision :: pi0spj, pi1pl, pi1pkpm, pi1pk, pi1d, pi1spl
-   double precision :: pi1sd, pi1pp, pi1plpm, pi1p, pi2pkpl, pi2pk
-   double precision :: pi2p, pi2dklp, pi2dkl, pi2spk, pi2spj, pi2pl
-   double precision :: pi2pkpm, pi3pk, pi3p, pi3dkl, pi2spl, pi2plpm
-   double precision :: pij1s, pidklp, pidkl, pi4pk, pi3pl, pip0d, pip
-   double precision :: pijs, pij3s, pij2s, pis2pk, pis1pk, pipkpl, pipk
-   double precision :: pip1d, pj0dkl, pj0dd, pj0d, pispk, pispj, pj0sd
-   double precision :: pj0s, pj0pp, pj0p, pj0dp, pjs, pjp0d, pj1p, pj1dp
-   double precision :: pj1d, pj1dkl, pj4pk, pjpk, pjp1d, pjp
-   double precision :: pj1dd, pj1plpm, pj1pl, pj1pkpm, pj1pk, pj1spl
-   double precision :: pj1sd, pj1s, pj1pp, pj2pk, pj2p, pj2dklp, pj2pl
-   double precision :: pj2pkpm, pj2pkpl, pj2dkl, pj3dkl, pj2spl, pj2s
-   double precision :: pj2plpm, pj3s, pj3pl, pj3p, pj5s, pj4s, pj3pk
-   double precision :: pjdklp, pjdkl, pjpkpl
-   double precision :: pjs1pk, pp0p, pp0d, pjs2pk, pp1p
-   double precision :: pp1d, pp0pl, pp2p, pp1s, pp1pl, ppp, ppf, ppd
-   double precision :: ps0d, ps, pps, psp, spf, psd, ps1d, dd1s
-   double precision :: dd1pn, s0pk, pss, psf, s2dpm, s2dkl, s1pkpl
-   double precision :: s1pk, s1ds, s1dpm, s2pl, s2pks, s2pkpl, s2pk
-   double precision :: s2pjpk, s4pk, s3pl, s3pks, s3pk, s3dkl, s2ds
-   double precision :: sks, sp0d, sp0js, sp1d, sp1s, sp2js, sp3js
-   double precision :: spd, spjpk, spjs, spk, spp, sps, ss0d, ss0p
-   double precision :: ss0pj, ss1d, ss1p, ss1pj, ss1pk, ss1s, ss2p
-   double precision :: ss2pj, ss2pk, ss2s, ss3s, ss4s, ss5s, ss6s
-   double precision :: ss7s, ssd, ssf, ssp, sspj, sspk, sss
-   double precision :: dd1p, dd1d, dd0pn, dd0p, dd, d5s, d4s, d3s
-   double precision :: d3pl, d3pk, d3p, d4pk, d3d, d2spm, d2s
-   double precision :: d2pl, d2pk
+   ! ccoef is the coefficient product between function, Ci*Cj*Ck.
+   ! f1, f2 and f3 are the normalization coefficients for d-type functions.
+   ! rexp is the function exponent in distance units, while dpc stores distances
+   ! between atoms.
+   ! uf is the parameter used for Boys Function.
+   double precision :: ccoef, rexp, SQ3, uf, dpc, f1, f2, f3
 
-   double precision :: ta, tb, ti, tj
-   double precision :: te, tw, tx, ty, tz
-   double precision :: t0, t1, t2, t2a, t2b, t3, t3a, t3b, t4, t4b
-   double precision :: t5, t5a, t5b, t5x, t5y, t6, t6a, t6b, t6c, t6d
-   double precision :: t7, t7a, t7b, t7c, t7d, t8, t8a, t8b, t9, t9b
-   double precision :: t10, t10a, t10b, t11, t11a, t11b, t12, t12a, t12b
-   double precision :: t13, t13b, t14, t14b, t15, t15a, t15b, t15p
-   double precision :: t16, t16a, t16b, t17, t17a, t17b, t18, t18a, t18b
-   double precision :: t20, t20b, t21, t21b, t22, t22a, t22b, t22c, t22p
-   double precision :: t23, t23b, t24, t24b, t25, t25b, t26, t26b
-   double precision :: t27, t27b, t28, t28b, t29, t29b, t30, t30a, t30b
-   double precision :: t31, t31b, t32, t32b, t33, t33b, t34, t34b
-   double precision :: t35, t35b, t36, t37, t38, t39, t40, t40a, t40b
-   double precision :: t41, t41b, t50, t50b, t51, t51b, t60, t60b
-   double precision :: t61, t61b, t70, t70b, t80, t80a, t80b
+   ! ns, np and nd are the number of basis functions in each shell, while
+   ! nsd, npd and ndd are used for the auxiliary basis.
+   ! igpu checks whether the gradients are done in GPU or CPU.
+   ! rho_ind and af_ind are vector-matrix indeces.
+   integer :: ns, nsd, np, npd, nd, ndd, rho_ind, af_ind, igpu
 
-   double precision :: y2, y2b, y3, y3b, y4, y4b
-   double precision :: y6, y6b, y7, y7b, y9, y9b
+   ! The following thousand variables store temporary results.
+   double precision :: s0pk, pss, psf, s2dpm, s2dkl, s1pkpl, s1pk, s1ds, s1dpm,&
+                       s2pl, s2pks, s2pkpl, s2pk, s2pjpk, s4pk, s3pl, s3pks,   &
+                       s3pk, s3dkl, s2ds, sks, sp0d, sp0js, sp1d, sp1s, sp2js, &
+                       sp3js, spd, spjpk, spjs, spk, spp, sps, ss0d, ss0p,     &
+                       ss0pj, ss1d, ss1p, ss1pj, ss1pk, ss1s, ss2p, ss2pj,     &
+                       ss2pk, ss2s, ss3s, ss4s, ss5s, ss6s, ss7s, ssd, ssf,    &
+                       ssp, sspj, sspk, sss, spf
+   double precision :: p1s, p2s, p3s, p4s, p5s, p6s, p0pk, p1pk, pi0dd, pi0d,  &
+                       pds, pdp, pdd, pi0sd, pi0pp, pi0p, pi0dp, pi0dkl, pi1dp,&
+                       pi1dkl, pi1dd, pi0spj, pi1pl, pi1pkpm, pi1pk, pi1d,     &
+                       pi1spl, pi1sd, pi1pp, pi1plpm, pi1p, pi2pkpl, pi2pk,    &
+                       pi2p, pi2dklp, pi2dkl, pi2spk, pi2spj, pi2pl, pi2pkpm,  &
+                       pi3pk, pi3p, pi3dkl, pi2spl, pi2plpm, pij1s, pidklp,    &
+                       pidkl, pi4pk, pi3pl, pip0d, pip, pijs, pij3s, pij2s,    &
+                       pis2pk, pis1pk, pipkpl, pipk, pip1d, pj0dkl, pj0dd,     &
+                       pj0d, pispk, pispj, pj0sd, pj0s, pj0pp, pj0p, pj0dp,    &
+                       pjs, pjp0d, pj1p, pj1dp, pj1d, pj1dkl, pj4pk, pjpk,     &
+                       pjp1d, pjp, pj1dd, pj1plpm, pj1pl, pj1pkpm, pj1pk,      &
+                       pj1spl, pj1sd, pj1s, pj1pp, pj2pk, pj2p, pj2dklp, pj2pl,&
+                       pj2pkpm, pj2pkpl, pj2dkl, pj3dkl, pj2spl, pj2s, pj2plpm,&
+                       pj3s, pj3pl, pj3p, pj5s, pj4s, pj3pk, pjdklp, pjdkl,    &
+                       pjpkpl, pjs1pk, pp0p, pp0d, pjs2pk, pp1p, psd, ps1d,    &
+                       pp1s, pp0pl, pp2p, ppd, ppp, ppf, pps, ps, psp, ps0d,   &
+                       pp1d, pp1pl
+   double precision :: d0d, d0p, d0pk, d0pkd, d0pkp, d0pl, d0pld, d0plp, d0s,  &
+                       d1d, d1p, d1pk, d1pkd, d1pkp, d1pl, d1pld, d1plp, d1pp, &
+                       d1s, d1spm, d2d, d2p, dds, ddp, ddf, ddd, dij2plp,      &
+                       dij2pkp, dfs, dfp, dp0p, dp, dijplp, dfd, dd2p, dijpkp, &
+                       dp0pm, dp1d, dp1p, dp1pm, dp1s, dp2p, dpd, dpf, dpk,    &
+                       dpp, dps, ds, ds0p, ds1d, ds1p, dsp, dsf, dsd, ds2pl,   &
+                       ds2p, ds1s, dss, dspl, dd1pn, dd1s, dd1p, dd1d, dd0pn,  &
+                       dd0p, dd, d5s, d4s, d3s, d3pl, d3pk, d3p, d4pk, d3d,    &
+                       d2spm, d2s, d2pl, d2pk
+   double precision :: fdp, fdd, fss, fsp, fsd, fps, fpp, fpd, fds
+
+   double precision :: ta, tb, ti, tj, te, ty, t0, t1, t2, t2a, t2b, t3, t3a,  &
+                       t3b, t4, t4b,  t5, t5a, t5b, t5x, t5y, t6, t6a, t6b,    &
+                       t6c, t6d, t7, t7a, t7b, t7c, t7d, t8, t8a, t8b, t9, t9b,&
+                       t10, t10a, t10b, t11, t11a, t11b, t12, t12a, t12b, t13, &
+                       t13b, t14, t14b, t15, t15a, t15b, t15p, t16, t16a, t16b,&
+                       t17, t17a, t17b, t18, t18a, t18b, t20, t20b, t21, t21b, &
+                       t22, t22a, t22b, t22c, t22p, t23, t23b, t24, t24b, t25, &
+                       t25b, t26, t26b, t27, t27b, t28, t28b, t29, t29b, t30,  &
+                       t30a, t30b, t31, t31b, t32, t32b, t33, t33b, t34, t34b, &
+                       t35, t35b, t36, t37, t38, t39, t40, t40a, t40b, t41,    &
+                       t41b, t50, t50b, t51, t51b, t60, t60b, t61, t61b, t70,  &
+                       t70b, t80, t80a, t80b
+   double precision :: y2, y2b, y3, y3b, y4, y4b, y6, y6b, y7, y7b, y9, y9b,   &
+                       y12, y12b, y13, y13b, y14, y14b, y15, y15b, y16, y16b,  &
+                       y17, y17b, y18, y18b, y19, y19b, y20, y21, y22, y23,    &
+                       y24, y25, y26, y27, y28, y29, y30, y31
    double precision :: Z2, Z2a, Zc, Zij
 
-   double precision :: y12, y12b, y13, y13b, y14, y14b
-   double precision :: y15, y15b, y16, y16b, y17, y17b, y18, y18b
-   double precision :: y19, y19b, y20, y21, y22, y23, y24, y25, y26, y27
-   double precision :: y28, y29, y30, y31
-
-   integer :: ifunct, jfunct, kfunct, nci, ncj, nck
-   integer :: M2, Md2, M5, M11, igpu
-   integer :: fock_ind, af_ind
-   integer :: ns, nsd, nd, ndd, np, npd
-   integer :: lk, lij, l1, l2, l3, l4, l5, l6, l7
-
-
-   ! scratch space
-   ! auxiliars
-   !------------------------------------------------------------------
-   ! now 16 loops for all combinations, first 2 correspond to
-   ! wavefunction basis, the third correspond to the density fit
-   ! Rc(k) is constructed adding t(i,j,k)*P(i,j)
-   ! cf(k) , variationally obtained fitting coefficient, is
-   ! obtained by adding R(i)*G-1(i,k)
-   ! if the t(i,j,k) were not stored, then in order to evaluate
-   ! the corresponding part of the Fock matrix, they should be
-   ! calculated again.
-   ! V(i,j) obtained by adding af(kfunct) * t(i,j,k)
-   !------------------------------------------------------------------
-
+   ! Counters for loops.
+   integer :: ifunct, jfunct, kfunct, nci, ncj, nck, lk, lij, l1, l2, l3, l4, &
+              l5, l6, l7
+   allocate(Jx(M), Ll(3), Q(3), W(3))
 
    ns  = nshell(0)  ; np  = nshell(1) ; nd  = nshell(2)
    nsd = nshelld(0) ; npd = nshelld(1); ndd = nshelld(2)
-   M2  = 2*M        ; Md2 = 2*Md
-   M5  = 1 + M*(M+1); M11 = 1 + 3 * M * (M +1) / 2 + Md * (Md +1)
 
    SQ3 = 1.0D0
    if (NORM) SQ3 = sqrt(3.D0)
@@ -123,17 +103,16 @@ subroutine int3G(frc, calc_energy)
    do l1 = 1, 3
       Ll(l1) = l1 * (l1 -1) /2
    enddo
-   allocate(Jx(M))
    do ifunct = 1,  M
-      Jx(ifunct) = (M2 - ifunct) * (ifunct -1) / 2
+      Jx(ifunct) = (2*M - ifunct) * (ifunct -1) / 2
    enddo
 
    call int2G(frc)
    call g2g_timer_sum_start('Exchange-correlation gradients')
    if (calc_energy) then
-      call g2g_solve_groups(2, Exc, frc)
+      call g2g_solve_groups(2, t1, frc)
    else
-      call g2g_solve_groups(3, Exc, frc)
+      call g2g_solve_groups(3, t1, frc)
    endif
    call g2g_timer_sum_stop('Exchange-correlation gradients')
 
@@ -146,14 +125,10 @@ subroutine int3G(frc, calc_energy)
       return
    endif
 
-   do kfunct = 1, M * (M +1) / 2
-      RMM(M5-1 + kfunct) = RMM(M11-1 + kfunct)
-   enddo
-
    ! (ss|s)
    do ifunct = 1, ns
    do jfunct = 1, ifunct
-      fock_ind = ifunct + Jx(jfunct)
+      rho_ind = ifunct + Jx(jfunct)
 
       do nci = 1, ncont(ifunct)
       do ncj = 1, ncont(jfunct)
@@ -188,10 +163,7 @@ subroutine int3G(frc, calc_energy)
                   sss  = t2 * FUNCT(0,uf)
                   ss1s = t2 * FUNCT(1,uf)
 
-                  ! construction of Fock matrix part
-                  RMM(M5 -1 + fock_ind) = RMM(M5 -1 + fock_ind) + af(kfunct) * &
-                                          sss * ccoef
-                  te = ccoef * RMM(fock_ind) * af(kfunct)
+                  te = ccoef * rho_mat(rho_ind) * af(kfunct)
                   ty = 2.D0  * te
                   do l1 = 1, 3
                      pss = (Q(l1) - r(Nuc(ifunct),l1)) * sss + &
@@ -259,11 +231,9 @@ subroutine int3G(frc, calc_energy)
                      ps  = t1 * sss  + t2 * ss1s
                      p1s = t1 * ss1s + t2 * ss2s
 
-                     fock_ind = ifunct + l1 -1 + Jx(jfunct)
-                     RMM(M5 -1 + fock_ind) = RMM(M5 -1 + fock_ind) + &
-                                             af(kfunct) * ccoef * ps
-                     ty = ccoef * RMM(fock_ind) * af(kfunct)
-                     tw = 2.D0  * ty
+                     rho_ind = ifunct + l1 -1 + Jx(jfunct)
+                     ty = ccoef * rho_mat(rho_ind) * af(kfunct)
+                     te = 2.D0  * ty
                      do l2 = 1, 3
                         t1  = Q(l2) - r(Nuc(ifunct),l2)
                         t2  = W(l2) - Q(l2)
@@ -279,11 +249,11 @@ subroutine int3G(frc, calc_energy)
                         pps = dss + (r(Nuc(ifunct),l2) - r(Nuc(jfunct),l2)) * ps
 
                         frc(Nuc(ifunct),l2)  = frc(Nuc(ifunct),l2) + &
-                                                 tw * a(ifunct,nci) * dss
+                                                 te * a(ifunct,nci) * dss
                         frc(Nuc(jfunct),l2)  = frc(Nuc(jfunct),l2) + &
-                                                 tw * a(jfunct,ncj) * pps
+                                                 te * a(jfunct,ncj) * pps
                         frc(Nucd(kfunct),l2) = frc(Nucd(kfunct),l2)+ &
-                                                 tw * ad(kfunct,nck) * psp
+                                                 te * ad(kfunct,nck) * psp
                      enddo
                   enddo
                enddo
@@ -360,11 +330,9 @@ subroutine int3G(frc, calc_energy)
                            pp1s = pp1s + t4
                         endif
 
-                        fock_ind = ifunct + l1 -1 + Jx(jfunct + l2 -1)
-                        RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + &
-                                               af(kfunct) * pps * ccoef
-                        ty = ccoef * RMM(fock_ind) * af(kfunct)
-                        tw = ty    * 2.0D0
+                        rho_ind = ifunct + l1 -1 + Jx(jfunct + l2 -1)
+                        ty = ccoef * rho_mat(rho_ind) * af(kfunct)
+                        te = ty    * 2.0D0
 
                         do l3 = 1, 3
                            dps = (Q(l3) - r(Nuc(ifunct),l3))  * pps + &
@@ -387,11 +355,11 @@ subroutine int3G(frc, calc_energy)
                                  pps + dps
 
                            frc(Nuc(ifunct),l3)  = frc(Nuc(ifunct),l3)  + &
-                                                    tw * a(ifunct,nci)  * dps
+                                                    te * a(ifunct,nci)  * dps
                            frc(Nuc(jfunct),l3)  = frc(Nuc(jfunct),l3)  + &
-                                                    tw * a(jfunct,ncj)  * pds
+                                                    te * a(jfunct,ncj)  * pds
                            frc(Nucd(kfunct),l3) = frc(Nucd(kfunct),l3) + &
-                                                    tw * ad(kfunct,nck) * ppp
+                                                    te * ad(kfunct,nck) * ppp
                         enddo
                      enddo
                   enddo
@@ -466,11 +434,8 @@ subroutine int3G(frc, calc_energy)
                            ds1s = ds1s + tb
                            f1   = SQ3
                         endif
-                        fock_ind = ifunct + Ll(l1) + l2-1 + Jx(jfunct)
-                        RMM(M5 -1 + fock_ind) = RMM(M5 -1 + fock_ind) + &
-                                                af(kfunct) * dss * ccoef / f1
-
-                        te = RMM(fock_ind) * af(kfunct) * ccoef / f1
+                        rho_ind = ifunct + Ll(l1) + l2-1 + Jx(jfunct)
+                        te = rho_mat(rho_ind) * af(kfunct) * ccoef / f1
                         ty = 2.D0 * te
                         do l3 = 1, 3
                            dps = (Q(l3) - r(Nuc(jfunct),l3))  * dss + &
@@ -610,10 +575,8 @@ subroutine int3G(frc, calc_energy)
                            t12 = (pi0p - tj * pi1p) / Z2
                            t13 = pi1p / Z2a
 
-                           fock_ind = ifunct + Ll(l1) + l2-1 + Jx(jfunct + l3-1)
-                           RMM(M5 -1 + fock_ind) = RMM(M5 -1 + fock_ind) + &
-                                                   af(kfunct) * dps * ccoef / f1
-                           te = af(kfunct) * RMM(fock_ind) * ccoef/f1
+                           rho_ind = ifunct + Ll(l1) + l2-1 + Jx(jfunct + l3-1)
+                           te = af(kfunct) * rho_mat(rho_ind) * ccoef/f1
                            ty = 2.D0 * te
                            do l4 = 1, 3
                               dds = (Q(l4) - r(Nuc(jfunct),l4))  * dps + &
@@ -831,13 +794,9 @@ subroutine int3G(frc, calc_energy)
                               t24 = (d0pl - tj * d1pl) / Z2
                               t25 = d1pl / Z2a
 
-                              fock_ind = ifunct + Ll(l1) + l2 -1 + &
+                              rho_ind = ifunct + Ll(l1) + l2 -1 + &
                                          Jx(jfunct + Ll(l3) + l4 -1)
-                              RMM(M5 -1 + fock_ind) = RMM(M5 -1 + fock_ind) +  &
-                                                      af(kfunct) * dds * ccoef &
-                                                      / (f1 * f2)
-
-                              te = af(kfunct) * RMM(fock_ind) * ccoef / (f1 *f2)
+                              te = af(kfunct) * rho_mat(rho_ind) * ccoef/(f1*f2)
                               ty = 2.D0 * te
                               do l5 = 1, 3
                                  fds = (Q(l5) - r(Nuc(ifunct),l5) ) * dds + &
@@ -934,10 +893,8 @@ subroutine int3G(frc, calc_energy)
                      ss1p = t1 * ss2s
 
                      af_ind   = kfunct + l1-1
-                     fock_ind = ifunct + Jx(jfunct)
-                     RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + &
-                                            af(af_ind) * ssp * ccoef
-                     te = ccoef * RMM(fock_ind) * af(af_ind)
+                     rho_ind = ifunct + Jx(jfunct)
+                     te = ccoef * rho_mat(rho_ind) * af(af_ind)
                      ty = 2.D0*te
                      do l2 = 1, 3
                         ssd = (W(l2) - r(Nucd(kfunct),l2)) * ss1p
@@ -1031,10 +988,8 @@ subroutine int3G(frc, calc_energy)
 
                         af_ind=kfunct+l2-1
                         af_ind   = kfunct + l2 -1
-                        fock_ind = ifunct + l1 -1 + Jx(jfunct)
-                        RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + &
-                                               af(af_ind) * pi0spj * ccoef
-                        te = ccoef * RMM(fock_ind) * af(af_ind)
+                        rho_ind = ifunct + l1 -1 + Jx(jfunct)
+                        te = ccoef * rho_mat(rho_ind) * af(af_ind)
                         ty = 2.0D0 * te
                         do l3 = 1, 3
                            psd = (W(l3) - r(Nucd(kfunct),l3)) * pispj
@@ -1172,10 +1127,8 @@ subroutine int3G(frc, calc_energy)
                            t15 = (spp - tj * spjpk) / Z2
 
                            af_ind   = kfunct + l3 -1
-                           fock_ind = ifunct + l1 -1 + Jx(jfunct + l2 -1)
-                           RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + &
-                                                  af(af_ind) * ccoef * ppp
-                           te = ccoef * RMM(fock_ind) * af(af_ind)
+                           rho_ind = ifunct + l1 -1 + Jx(jfunct + l2 -1)
+                           te = ccoef * rho_mat(rho_ind) * af(af_ind)
                            ty = 2.0D0 * te
                            do l4 = 1, 3
                               ppd = (W(l4) - r(Nucd(kfunct),l4)) * pp1p
@@ -1324,10 +1277,8 @@ subroutine int3G(frc, calc_energy)
                            t13 = pi1p / Z2a
 
                            af_ind   = kfunct + l3 -1
-                           fock_ind = ifunct + Ll(l1) + l2 -1 + Jx(jfunct)
-                           RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + &
-                                                  af(af_ind) * dsp * ccoef / f1
-                           te = af(af_ind) * RMM(fock_ind) * ccoef / f1
+                           rho_ind = ifunct + Ll(l1) + l2 -1 + Jx(jfunct)
+                           te = af(af_ind) * rho_mat(rho_ind) * ccoef / f1
                            ty = 2.0D0 * te
 
                            do l4 = 1, 3
@@ -1541,11 +1492,9 @@ subroutine int3G(frc, calc_energy)
                               t25 = d1pl / Z2a
 
                               af_ind   = kfunct + l4 -1
-                              fock_ind = ifunct + Ll(l1) + l2 -1 + &
+                              rho_ind = ifunct + Ll(l1) + l2 -1 + &
                                          Jx(jfunct + l3 -1)
-                              RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + &
-                                                     af(af_ind) * dpp * ccoef/f1
-                              te = af(af_ind) * RMM(fock_ind) * ccoef / f1
+                              te = af(af_ind) * rho_mat(rho_ind) * ccoef / f1
                               ty = 2.0D0 * te
 
                               do l5 = 1, 3
@@ -1886,12 +1835,9 @@ subroutine int3G(frc, calc_energy)
                                  t27 = d1pkp / Z2a
 
                                  af_ind   = kfunct + l5 -1
-                                 fock_ind = ifunct + Ll(l1) + l2 -1 + &
+                                 rho_ind = ifunct + Ll(l1) + l2 -1 + &
                                             Jx(jfunct + Ll(l3) + l4 -1)
-                                 RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + &
-                                                        af(af_ind) * ddp *     &
-                                                        ccoef / (f1 * f2)
-                                 te = af(af_ind) * RMM(fock_ind) * ccoef &
+                                 te = af(af_ind) * rho_mat(rho_ind) * ccoef &
                                      / (f1 * f2)
                                  ty = 2.0D0 * te
                                  do l6 = 1, 3
@@ -2018,10 +1964,8 @@ subroutine int3G(frc, calc_energy)
                         endif
 
                         af_ind   = kfunct + Ll(l1) + l2 -1
-                        fock_ind = ifunct + Jx(jfunct)
-                        RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + &
-                                               af(af_ind) * ss0d * ccoef / f1
-                        te = af(af_ind) * RMM(fock_ind) * ccoef / f1
+                        rho_ind = ifunct + Jx(jfunct)
+                        te = af(af_ind) * rho_mat(rho_ind) * ccoef / f1
                         ty = 2.0D0 * te
                         do l3 = 1, 3
                            ssf = (W(l3) - r(Nucd(kfunct),l3)) * ss1d
@@ -2162,10 +2106,8 @@ subroutine int3G(frc, calc_energy)
                            t13 = (p0pk - ti * p1pk) / Zc
 
                            af_ind   = kfunct + Ll(l2) + l3 -1
-                           fock_ind = ifunct + l1 -1 + Jx(jfunct)
-                           RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + &
-                                                  af(af_ind) * ps0d * ccoef / f1
-                           te = af(af_ind) * RMM(fock_ind) * ccoef / f1
+                           rho_ind = ifunct + l1 -1 + Jx(jfunct)
+                           te = af(af_ind) * rho_mat(rho_ind) * ccoef / f1
                            ty = 2.0D0 * te
 
                            do l4 = 1, 3
@@ -2380,10 +2322,8 @@ subroutine int3G(frc, calc_energy)
                               t25 = (pp0pl - ti * pp1pl) / Zc
 
                               af_ind   = kfunct + Ll(l3) + l4 -1
-                              fock_ind = ifunct + l1 -1  + Jx(jfunct + l2 -1)
-                              RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + &
-                                                     af(af_ind) * pp0d *ccoef/f1
-                              te = af(af_ind) * RMM(fock_ind) * ccoef / f1
+                              rho_ind = ifunct + l1 -1  + Jx(jfunct + l2 -1)
+                              te = af(af_ind) * rho_mat(rho_ind) * ccoef / f1
                               ty = 2.0D0 * te
 
                               do l5 = 1, 3
@@ -2607,11 +2547,8 @@ subroutine int3G(frc, calc_energy)
                               t25 = (d0pl  - ti * d1pl) / Zc
 
                               af_ind   = kfunct + Ll(l3) + l4 -1
-                              fock_ind = ifunct + Ll(l1) + l2 -1 + Jx(jfunct)
-                              RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + &
-                                                     af(af_ind) * dsd * ccoef /&
-                                                     (f1 * f2)
-                              te = af(af_ind) * RMM(fock_ind) * ccoef / (f1 *f2)
+                              rho_ind = ifunct + Ll(l1) + l2 -1 + Jx(jfunct)
+                              te = af(af_ind) * rho_mat(rho_ind) * ccoef/(f1*f2)
                               ty = 2.0D0 * te
 
                               do l5 = 1, 3
@@ -2955,12 +2892,10 @@ subroutine int3G(frc, calc_energy)
                                  t37 = (dp0pm - ti * dp1pm) / Zc
 
                                  af_ind   = kfunct + Ll(l4) + l5 -1
-                                 fock_ind = ifunct + Ll(l1) + l2 -1 + &
+                                 rho_ind = ifunct + Ll(l1) + l2 -1 + &
                                             Jx(jfunct + l3 -1)
-                                 RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind) + &
-                                                        af(af_ind) * dpd * &
-                                                        ccoef / (f1 * f2)
-                                 te = af(af_ind) * RMM(fock_ind) * ccoef/(f1*f2)
+                                 te = af(af_ind) * rho_mat(rho_ind) * ccoef / &
+                                      (f1 * f2)
                                  ty = 2.0D0 * te
 
                                  do l6 = 1, 3
@@ -3521,13 +3456,9 @@ subroutine int3G(frc, calc_energy)
                                     y29 = (dd0pn - ti * dd1pn) / Zc
 
                                     af_ind   = kfunct + Ll(l5) + l6 -1
-                                    fock_ind = ifunct + Ll(l1) + l2 -1 + &
+                                    rho_ind = ifunct + Ll(l1) + l2 -1 + &
                                                Jx(jfunct + Ll(l3) + l4 -1)
-                                    RMM(M5-1 + fock_ind) = RMM(M5-1 + fock_ind)&
-                                                         + af(af_ind) * ddd    &
-                                                         * ccoef / (f1 * f2 *f3)
-
-                                    te = af(af_ind) * RMM(fock_ind) * ccoef / &
+                                    te = af(af_ind) * rho_mat(rho_ind) * ccoef/&
                                          (f1 * f2 * f3)
                                     ty = 2.0D0 * te
 
@@ -3600,7 +3531,7 @@ subroutine int3G(frc, calc_energy)
    enddo
    !print*, "dd|d", frc
 
-   deallocate(Jx)
+   deallocate(Jx, Ll, Q, W)
    call g2g_timer_stop('CoulG')
    call g2g_timer_sum_stop('Coulomb gradients')
    return

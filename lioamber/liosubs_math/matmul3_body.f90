@@ -8,6 +8,9 @@
    logical :: error_found
    allocate(Xmat(size(Bmat,1),size(Bmat,2)))
 
+   if (allocated(Dmat)) deallocate(Dmat)
+   allocate(Dmat(size(Bmat,1),size(Bmat,2)))
+
 !------------------------------------------------------------------------------!
    error_found = .false.
    error_found = (error_found) .or. ( size(Amat,2) /= size(Bmat,1) )

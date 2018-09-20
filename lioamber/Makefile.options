@@ -102,7 +102,7 @@ ifeq ($(intel),0)
   DEBUG02 = -g -Wall -Wextra -fcheck=all -fbacktrace -pedantic
   OPTIM0P = #TODO: no flags for parallelization using gfortran?
   OPTIM0I = #TODO: no flags for precision and inlining using gfortran?
-  HEAPFLG =
+
 
 else ifeq ($(intel),1)
   FC      = ifort
@@ -116,7 +116,7 @@ else ifeq ($(intel),1)
   DEBUG02 = -g -check bounds -traceback -check all -fp-stack-check
   OPTIM0P = -parallel
   OPTIM0I = -mp1 -ip
-  HEAPFLG = -no-heap-arrays
+
 
 else ifeq ($(intel),2)
   FC      = ifort
@@ -131,7 +131,6 @@ else ifeq ($(intel),2)
   DEBUG02 = -g -check bounds -traceback -check all -fp-stack-check
   OPTIM0P = -parallel
   OPTIM0I = -mp1 -ip
-  HEAPFLG = -no-heap-arrays
 
 else
   $(error Invalid value in option intel = $(intel))
@@ -211,10 +210,6 @@ tmplist += alg.o drive.o func.o grid.o dipmem.o jarz.o
 tmplist += subm_int1.o subm_int2.o subm_int2G.o subm_int3mem.o subm_intSG.o
 tmplist += garcha_mod.o cubegen.o density.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : private_flag := -O3 $(OPTIMI)
-
-tmplist :=
-tmplist += liosubs_math.o
-$(tmplist:%.o=$(OBJPATH)/%.o) : private_flag := -O3 $(HEAPFLG)
 
 FFLAGS += $(private_flag)
 

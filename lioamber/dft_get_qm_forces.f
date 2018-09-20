@@ -11,8 +11,7 @@
      &                       RMM, d, Iz, natom, ntatom, M, Md
 
        use ehrendata, only: nullify_forces
-       use faint_cpu, only: int1G, intSG
-       use faint_cpu77, only: int3G
+       use faint_cpu, only: int1G, intSG, int3G
        implicit none
        real*8,intent(out) :: dxyzqm(3,natom)
        real*8,allocatable :: ff1G(:,:),ffSG(:,:),ff3G(:,:)

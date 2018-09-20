@@ -9,6 +9,8 @@ module faint_cpu
 
    ! Gradients.
    use subm_int1G  , only: int1G
+   use subm_int2G  , only: int2G
+   use subm_int3G  , only: int3G
    use subm_intSG  , only: intSG
    use subm_intSolG, only: intSolG
 

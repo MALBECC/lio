@@ -102,6 +102,7 @@ ifeq ($(intel),0)
   DEBUG02 = -g -Wall -Wextra -fcheck=all -fbacktrace -pedantic
   OPTIM0P = #TODO: no flags for parallelization using gfortran?
   OPTIM0I = #TODO: no flags for precision and inlining using gfortran?
+  HEAPFLG =
 
 else ifeq ($(intel),1)
   FC      = ifort
@@ -115,6 +116,7 @@ else ifeq ($(intel),1)
   DEBUG02 = -g -check bounds -traceback -check all -fp-stack-check
   OPTIM0P = -parallel
   OPTIM0I = -mp1 -ip
+  HEAPFLG = -no-heap-arrays
 
 else ifeq ($(intel),2)
   FC      = ifort
@@ -129,6 +131,7 @@ else ifeq ($(intel),2)
   DEBUG02 = -g -check bounds -traceback -check all -fp-stack-check
   OPTIM0P = -parallel
   OPTIM0I = -mp1 -ip
+  HEAPFLG = -no-heap-arrays
 
 else
   $(error Invalid value in option intel = $(intel))
@@ -180,20 +183,20 @@ endif
 
 
 ################################################################################
-# PRIVATE FLAGS: 
+# PRIVATE FLAGS:
 #
 # The following section assigns to specific OBJECTS certain flags, such as
 # which level of optimization corresponds to each object. Intermediate flags
 # are used to store the private information and then these option is added
 # to the general compilation flags.
 
-private_flag := -O3 
+private_flag := -O3
 
 tmplist :=
 tmplist += dip.o SCFop.o
 tmplist += subm_intfld.o subm_int1G.o subm_int3G.o
 tmplist += subm_intsol.o subm_intsolG.o
-$(tmplist:%.o=$(OBJPATH)/%.o) : private_flag := -O1 
+$(tmplist:%.o=$(OBJPATH)/%.o) : private_flag := -O1
 
 tmplist :=
 tmplist += mathsubs.o matmuldiag.o subm_int3lu.o fock_commuts.o
@@ -208,6 +211,10 @@ tmplist += alg.o drive.o func.o grid.o dipmem.o jarz.o
 tmplist += subm_int1.o subm_int2.o subm_int2G.o subm_int3mem.o subm_intSG.o
 tmplist += garcha_mod.o cubegen.o density.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : private_flag := -O3 $(OPTIMI)
+
+tmplist :=
+tmplist += liosubs_math.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : private_flag := -O3 $(HEAPFLG)
 
 FFLAGS += $(private_flag)
 

@@ -4,16 +4,10 @@ subroutine int1G(ff, rho, d, r, Iz, natom, ntatom)
 !------------------------------------------------------------------------------!
 ! Calculates 1e gradients, to be used with MD, using the Obara-Saika recursive !
 ! method.                                                                      !
-! Loops over all basis functions, ordered according to the type (all s, then   !
-! all p, then all d). Inside each type, they are ordered in shells.            !
 ! Inputs : basis function and system information.                              !
 ! Outputs: forces (gradients) on nuclei.                                       !
 !                                                                              !
 ! Relevant internal variables:                                                 !
-! ns: marker for end of s functions.                                           !
-! np: marker for end of p functions.                                           !
-! nd: marker for end of d functions.                                           !
-! r(Nuc(ifunct),j): j component of position of nucleus for basis i (j=1,2,3).  !
 ! Original and debugged (or supposed to) by Dario Estrin on 28/07/1992         !
 ! Refactored by Federico Pedron on 25/07/2018                                  !
 !------------------------------------------------------------------------------!

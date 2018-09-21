@@ -258,7 +258,7 @@ subroutine intSG(ff, wgt_rho, r, d, natom, ntatom)
          Q(3)  = ti * r(Nuc(ifunct),3) + tj * r(Nuc(jfunct),3)
          rexp  = d(Nuc(ifunct),Nuc(jfunct)) * a(ifunct,nci) * a(jfunct,ncj) /Zij
          ss    = pi32 * exp(-rexp) / (Zij * sqrt(Zij))
-         t10   = ss / Z2
+         t0   = ss / Z2
 
          do l1 = 1, 3
             pis = ss * (Q(l1) - r(Nuc(ifunct),l1))
@@ -343,7 +343,7 @@ subroutine intSG(ff, wgt_rho, r, d, natom, ntatom)
          Q(3)  = ti * r(Nuc(ifunct),3) + tj * r(Nuc(jfunct),3)
          rexp  = d(Nuc(ifunct),Nuc(jfunct)) * a(ifunct,nci) * a(jfunct,ncj) /Zij
          ss    = pi32 * exp(-rexp) / (Zij * sqrt(Zij))
-         t10   = ss / Z2
+         t0    = ss / Z2
 
          do l1 = 1, 3
             pis = ss * (Q(l1) - r(Nuc(ifunct),l1))

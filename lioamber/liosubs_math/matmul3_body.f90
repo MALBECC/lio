@@ -6,6 +6,10 @@
 !  xxxxxxxxxx, intent(in) :: Cmat(:,:)
 !  xxxxxxxxxx             :: Dmat(:,:)
    logical :: error_found
+   allocate(Xmat(size(Bmat,1),size(Bmat,2)))
+
+   if (allocated(Dmat)) deallocate(Dmat)
+   allocate(Dmat(size(Bmat,1),size(Bmat,2)))
 
 !------------------------------------------------------------------------------!
    error_found = .false.
@@ -19,8 +23,9 @@
    endif
 
 !------------------------------------------------------------------------------!
-  Dmat = matmul( Amat, Bmat )
-  Dmat = matmul( Dmat, Cmat )
+  Xmat = matmul( Amat, Bmat )
+  Dmat = matmul( Xmat, Cmat )
+  deallocate(Xmat)
 
 !end function matmul3_ddd
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -7,10 +7,11 @@ module subm_int3G
 contains
 subroutine int3G(frc, calc_energy, rho_mat, r, d, natom, ntatom)
 
-   use subm_int2G, only: int2G
-   use liotemp   , only: FUNCT
-   use garcha_mod, only: a, c, nuc, nucd, ad, af, cd, ncont, ncontd, nshell, &
-                         nshelld, M, Md, NORM, pi52, rmax
+   use subm_int2G   , only: int2G
+   use liotemp      , only: FUNCT
+   use garcha_mod   , only: a, c, nuc, nucd, ad, af, cd, ncont, ncontd, nshell,&
+                            nshelld, M, Md, NORM, rmax
+   use constants_mod, only: pi52
 
    implicit none
 

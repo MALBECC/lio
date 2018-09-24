@@ -1,16 +1,16 @@
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% INT1G %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Calculates 1e gradients                                                      !
+!                                                                              !
+! Original and debugged (or supposed to) by Dario Estrin on 28/07/1992         !
+! Refactored by Federico Pedron on 25/07/2018                                  !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module subm_int1G
 contains
 subroutine int1G(ff, rho, d, r, Iz, natom, ntatom)
-!------------------------------------------------------------------------------!
-! Calculates 1e gradients, to be used with MD, using the Obara-Saika recursive !
-! method.                                                                      !
-! Inputs : basis function and system information.                              !
-! Outputs: forces (gradients) on nuclei.                                       !
-!                                                                              !
-! Relevant internal variables:                                                 !
-! Original and debugged (or supposed to) by Dario Estrin on 28/07/1992         !
-! Refactored by Federico Pedron on 25/07/2018                                  !
-!------------------------------------------------------------------------------!
+   ! Inputs : basis function and system information.                           !
+   ! Outputs: forces (gradients) on nuclei.                                    !
+
    use garcha_mod   , only: a, c, Nuc, ncont, nshell, NORM, M
    use liotemp      , only: FUNCT
    use constants_mod, only: pi, pi32
@@ -1680,3 +1680,4 @@ subroutine int1G(ff, rho, d, r, Iz, natom, ntatom)
    return
 end subroutine int1G
 end module subm_int1G
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

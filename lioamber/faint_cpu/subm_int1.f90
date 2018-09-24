@@ -1,32 +1,37 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% INT1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Calculates 1e integrals using the Obara-Saika recursive method. (See         !
+! Helgaker, "Molecular Electronic Structure Theory" (2000). pg 339).           !
+!                                                                              !
+! EXTERNAL INPUT: system information.                                          !
+!   · natom: number of QM atoms.                                               !
+!   · ntatom: total number of atoms (QM+MM)                                    !
+!   · r(ntatom,3): atoms' coordinates.                                         !
+!   · d(natom,natom): distances between QM atoms.                              !
+!   · Iz(natom): nuclear charge for each QM atom.                              !
+!                                                                              !
+! INTERNAL INPUT: basis set information.                                       !
+!   · M: number of basis functions (without contractions)                      !
+!   · ncont(M): number of contractions per function.                           !
+!   · a(M,nl): basis function exponents.                                       !
+!   · c(M,nl): basis function coefficients.                                    !
+!   · nshell(0:3): number of basis functions per shell (s,p,d).                !
+!   · Nuc(M): atomic index corresponding to function i.                        !
+!   · NORM: use custom normalization (now default and deprecated option)       !
+!                                                                              !
+! OUTPUTS:                                                                     !
+!   · Smat(M,M): the overlap matrix.                                           !
+!   · Fmat(M,M): 1e Fock matrix.                                               !
+!   · Hmat(M,M): 1e matrix elements.                                           !
+!   · En: electron-nuclei interaction energy.                                  !
+!                                                                              !
+! Original code:  Dario Estrin, Feb/1992.                                      !
+! First refactor: Diego Armiño, May/2018                                       !
+! Last refactor:  Federico Pedron, Aug/2018                                    !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module subm_int1
 contains
 subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
-!------------------------------------------------------------------------------!
-! Calculates 1e integrals using the Obara-Saika recursive method. (See         !
-! Helgaker, "Molecular Electronic Structure Theory" (2000). pg 339)            !
-!                                                                              !
-!      Input : basis function information                                      !
-!      Output: Energy, F matrix, and S matrix                                  !
-!-------------------------------------------------------------------------------
-!      INPUT AND OUTPUT VARIABLES
-!-------------------------------------------------------------------------------
-!        Smat ............. Overlap matrix
-!        Fmat ............. Only Fock/overlap are used here.
-!        Hmat ............. 1e matrix elements
-!        En ............... Electron-nucleus interaction.
-!        natom ............ Number of atoms
-!        d ................ Interatomic distances.
-!        r ................ Nuclear positions.
-!        a ................ Basis exponents.
-!        c ................ Basis coefficients.
-!        nshell ........... Number of basis functions per shell.
-!        Nuc(ifunct) ........... Nucleus corresponding to basis function i.
-!        Iz(i) ............ Atomic number Z of nucleus i.
-!        ncount(i) ........ Number of contractions of bais function i.
-!        M ................ Number of basis functions.
-!        NORM ............. Deprecated. Boolean indicating normalization.
-!-------------------------------------------------------------------------------
    use garcha_mod   , only: Nuc, a, c, ncont, NORM, M, nshell
    use liotemp      , only: FUNCT
    use constants_mod, only: pi, pi32
@@ -738,3 +743,4 @@ subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
    return;
 end subroutine
 end module subm_int1
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

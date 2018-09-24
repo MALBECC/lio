@@ -1,4 +1,16 @@
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!% MODULE FAINT_CPU %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! This modules contain all the CPU KS analytic integrals (i.e., all non-XC     !
+! integrals) and calculations for the density fitting sets, using the          !
+! Obara-Saika recursive method.                                                !
+! Edit at your own risk, it took two months to properly reformat this. Think   !
+! twice about wasting your time here unless it is strictly necessary.          !
+!                                                                              !
+! Original integrals: Dario Estrin, 1992                                       !
+! Original module:    Francisco Ramirez, Oct/2017                              !
+! First refactor:     Diego Armiño, May/2018                                   !
+! Full refactor:      Federico Pedron, Sep/2018                                !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module faint_cpu
    ! KS Integrals.
    use subm_int1   , only: int1
@@ -18,4 +30,4 @@ module faint_cpu
    use subm_intfld , only: intfld
    implicit none
 end module faint_cpu
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

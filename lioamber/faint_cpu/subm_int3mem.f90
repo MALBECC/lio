@@ -53,14 +53,18 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module subm_int3mem
 contains
-subroutine int3mem()
+subroutine int3mem(r, d, natom, ntatom)
    use liotemp   , only: FUNCT
    use garcha_mod, only: cool, cools, kkind, kkinds, Nuc, Nucd, a, c,          &
                          ad, cd, natomc, nns, nnp, nnd, nnps, nnpp, nnpd,      &
                          jatc, ncont, ncontd, nshell, nshelld, M, Md, rmax,    &
-                         rmaxs, NORM, kknums, kknumd, r, d
+                         rmaxs, NORM, kknums, kknumd
    use constants_mod, only: pi52
+
    implicit none
+   integer         , intent(in) :: natom, ntatom
+   double precision, intent(in) :: r(ntatom,3), d(natom,natom)
+
    integer, dimension(:), allocatable :: Jx
    double precision  :: Q(3), W(3)
    double precision  :: ccoef, f1, f2, f3, rexp, sq3, term, uf, Z2, Z2a, Zc, Zij

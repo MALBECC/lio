@@ -1,8 +1,38 @@
-! Integrals subroutine -Third part gradients
-! 2 e integrals, 3 index : wavefunction and density fitting functions
-! All of them are calculated
-! using the Obara-Saika recursive method.
-
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% INT3G %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! 2e integral gradients, 3 indexes: density fitting functions and wavefunction.!
+!                                                                              !
+! EXTERNAL INPUT: system information.                                          !
+!   · calc_energy: boolean indicating whether to perform XC calculation.       !
+!   · natom: number of QM atoms.                                               !
+!   · ntatom: total number of atoms (QM+MM)                                    !
+!   · r(ntatom,3): atoms' coordinates.                                         !
+!   · d(natom,natom): distances between QM atoms.                              !
+!   · rho_mat(M,M): density matrix.                                            !
+!                                                                              !
+! INTERNAL INPUT: basis set information.                                       !
+!   · M: number of basis functions (without contractions)                      !
+!   · ncont(M): number of contractions per function.                           !
+!   · a(M,nl): basis function exponents.                                       !
+!   · c(M,nl): basis function coefficients.                                    !
+!   · nshell(0:3): number of basis functions per shell (s,p,d).                !
+!   · Nuc(M): atomic index corresponding to function i.                        !
+!   · Md: number of auxiliary basis functions (without contractions)           !
+!   · ncontd(Md): number of contractions per auxiliary function.               !
+!   · ad(Md,nl): auxiliary basis function exponents.                           !
+!   · cd(Md,nl): auxiliary basis function coefficients.                        !
+!   · nshelld(0:3): number of auxiliary basis functions per shell (s,p,d).     !
+!   · Nucd(M): atomic index corresponding to auxiliary function i.             !
+!   · af(Md): variational coefficient for auxiliary function i.                !
+!   · NORM: use custom normalization (now default and deprecated option)       !
+!   · rmax: cutoff value (in Ångström) for maximum exponent in the integrals.  !
+!                                                                              !
+! OUTPUTS:                                                                     !
+!   · f(natom,3): QM gradients (= -forces)                                     !
+!                                                                              !
+! Original and debugged (or supposed to): Dario Estrin Jul/1992                !
+! Refactored:                             Federico Pedron Sep/2018             !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module subm_int3G
 contains
 subroutine int3G(frc, calc_energy, rho_mat, r, d, natom, ntatom)

@@ -1,22 +1,45 @@
-
-! GRADIENT VERSION
-! 1 e integrals
-! using the Obara - saika recursive method.
-! debugged ( or supposed to) 28-7-92
-! Dario Estrin
-
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% INTSOLG %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Calculates solvent interaction gradients.                                    !
+!                                                                              !
+! EXTERNAL INPUT: system information.                                          !
+!   · natom: number of QM atoms.                                               !
+!   · ntatom: total number of atoms (QM+MM)                                    !
+!   · r(ntatom,3): atoms' coordinates.                                         !
+!   · d(natom,natom): distances between QM atoms.                              !
+!   · Iz(natom): nuclear charge for each QM atom.                              !
+!   · pc(ntatom): partial charge for each MM atom.                             !
+!   · rho(M,M): density matrix.                                                !
+!                                                                              !
+! INTERNAL INPUT: basis set information.                                       !
+!   · M: number of basis functions (without contractions)                      !
+!   · ncont(M): number of contractions per function.                           !
+!   · a(M,nl): basis function exponents.                                       !
+!   · c(M,nl): basis function coefficients.                                    !
+!   · nshell(0:3): number of basis functions per shell (s,p,d).                !
+!   · Nuc(M): atomic index corresponding to function i.                        !
+!   · NORM: use custom normalization (now default and deprecated option)       !
+!   · rmax: cutoff value (in Ångström) for maximum exponent in the integrals.  !
+!                                                                              !
+! OUTPUTS:                                                                     !
+!   · frc_qm(natom,3): QM gradients (= -forces)                                !
+!   · frc_mm(nsol,3): MM gradients (= -forces)                                 !
+!                                                                              !
+! Original and debugged (or supposed to): Dario Estrin Jul/1992                !
+! Refactored:                             Federico Pedron Aug/2018             !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module subm_intsolG; contains
-subroutine intsolG(frc_qm, frc_mm, natom, ntatom, RMM, d, r, pc, Iz)
+subroutine intsolG(frc_qm, frc_mm, natom, ntatom, rho, d, r, pc, Iz)
 
-   use garcha_mod   , only: M, Md, a, c, Nuc, Ncont, nshell, rmax, NORM
+   use garcha_mod   , only: M, a, c, Nuc, Ncont, nshell, rmax, NORM
    use liotemp      , only: FUNCT
    use constants_mod, only: pi, pi32
 
    implicit none
    integer         , intent(in)    :: natom, ntatom, Iz(natom)
-   double precision, intent(in)    :: RMM(:), r(ntatom,3), d(natom,natom), &
+   double precision, intent(in)    :: rho(:), r(ntatom,3), d(natom,natom), &
                                       pc(ntatom)
-   double precision, intent(inout) :: frc_qm(natom,3), frc_mm(ntatom,3)
+   double precision, intent(inout) :: frc_qm(natom,3), frc_mm(ntatom-natom,3)
 
    integer          :: ns, np, nd, iatom, jatom, ifunct, jfunct, nci, ncj, MM, &
                        M2, rho_ind, lk, lij, l1, l2, l3, l4, l5, l12, l34, Ll(3)
@@ -116,7 +139,7 @@ subroutine intsolG(frc_qm, frc_mm, natom, ntatom, RMM, d, r, pc, Iz)
             enddo
 
             rho_ind = ifunct + ((M2 - jfunct) * (jfunct -1)) / 2
-            te = RMM(rho_ind) * ccoef
+            te = rho(rho_ind) * ccoef
             t4 = 2.D0 * te * a(ifunct,nci)
             t5 = 2.D0 * te * a(jfunct,ncj)
 
@@ -196,7 +219,7 @@ subroutine intsolG(frc_qm, frc_mm, natom, ntatom, RMM, d, r, pc, Iz)
                   dn(l1) = dn(l1) + s1s(iatom)
 
                   rho_ind = ifunct + l1-1 + ((M2 - jfunct) * (jfunct -1)) / 2
-                  te = RMM(rho_ind) * ccoef
+                  te = rho(rho_ind) * ccoef
                   t4 = 2.0D0 * te * a(ifunct, nci)
                   t5 = 2.0D0 * te * a(jfunct, ncj)
 
@@ -330,7 +353,7 @@ subroutine intsolG(frc_qm, frc_mm, natom, ntatom, RMM, d, r, pc, Iz)
 
                      rho_ind = ifunct + l1-1 + ((M2 - (jfunct + l2-1)) * &
                                (jfunct + l2-2)) / 2
-                     te = RMM(rho_ind) * ccoef
+                     te = rho(rho_ind) * ccoef
                      t4 = 2.0D0 * te * a(ifunct, nci)
                      t5 = 2.0D0 * te * a(jfunct, ncj)
 
@@ -465,7 +488,7 @@ subroutine intsolG(frc_qm, frc_mm, natom, ntatom, RMM, d, r, pc, Iz)
                      l12 = Ll(l1) + l2
                      rho_ind = ifunct + l12 -1 + ((M2 - jfunct) * (jfunct -1))/2
 
-                     te = RMM(rho_ind)* ccoef / f1
+                     te = rho(rho_ind)* ccoef / f1
                      t4 = 2.0D0 * te * a(ifunct,nci)
                      t5 = 2.0D0 * te * a(jfunct,ncj)
 
@@ -682,7 +705,7 @@ subroutine intsolG(frc_qm, frc_mm, natom, ntatom, RMM, d, r, pc, Iz)
                         l12 = Ll(l1) + l2
                         rho_ind = ifunct + l12 -1 + (M2 - jfunct - l3 +1) * &
                                                     (jfunct + l3 -2) / 2
-                        te = RMM(rho_ind) * ccoef / f1
+                        te = rho(rho_ind) * ccoef / f1
                         t4 = 2.0D0 * te * a(ifunct,nci)
                         t5 = 2.0D0 * te * a(jfunct,ncj)
 
@@ -1101,7 +1124,7 @@ subroutine intsolG(frc_qm, frc_mm, natom, ntatom, RMM, d, r, pc, Iz)
                            rho_ind = (M2 - jfunct - l34 +1) * &
                                       (jfunct + l34 -2) / 2 + ifunct + l12 -1
 
-                           te = RMM(rho_ind) * ccoef / (f1 * f2)
+                           te = rho(rho_ind) * ccoef / (f1 * f2)
                            t4 = 2.0D0 * te * a(ifunct,nci)
                            t5 = 2.0D0 * te * a(jfunct,ncj)
 
@@ -1157,3 +1180,4 @@ subroutine intsolG(frc_qm, frc_mm, natom, ntatom, RMM, d, r, pc, Iz)
 
 end subroutine
 end module subm_intsolG
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

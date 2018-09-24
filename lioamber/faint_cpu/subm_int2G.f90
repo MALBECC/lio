@@ -1,8 +1,30 @@
-! Integrals subroutine -Second part
-! Gradients only
-! 2 e integrals, 2 index : density fitting functions
-! All of them are calculated
-! using the Obara-Saika recursive method.
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% INT2G %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! 2e integral gradients, 2 indexes: density fitting functions.                 !
+!                                                                              !
+! EXTERNAL INPUT: system information.                                          !
+!   · natom: number of QM atoms.                                               !
+!   · ntatom: total number of atoms (QM+MM)                                    !
+!   · r(ntatom,3): atoms' coordinates.                                         !
+!   · d(natom,natom): distances between QM atoms.                              !
+!                                                                              !
+! INTERNAL INPUT: basis set information.                                       !
+!   · M: number of basis functions (without contractions)                      !
+!   · Md: number of auxiliary basis functions (without contractions)           !
+!   · ncontd(Md): number of contractions per auxiliary function.               !
+!   · ad(Md,nl): auxiliary basis function exponents.                           !
+!   · cd(Md,nl): auxiliary basis function coefficients.                        !
+!   · nshelld(0:3): number of auxiliary basis functions per shell (s,p,d).     !
+!   · Nucd(M): atomic index corresponding to auxiliary function i.             !
+!   · af(Md): variational coefficient for auxiliary function i.                !
+!   · NORM: use custom normalization (now default and deprecated option)       !
+!                                                                              !
+! OUTPUTS:                                                                     !
+!   · f(natom,3): QM gradients (= -forces)                                     !
+!                                                                              !
+! Original and debugged (or supposed to): Dario Estrin Jul/1992                !
+! Refactored:                             Federico Pedron Sep/2018             !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module subm_int2G
 contains
 subroutine int2G(f, natom, ntatom, r, d)
@@ -596,3 +618,4 @@ subroutine int2G(f, natom, ntatom, r, d)
    return
 end subroutine
 end module subm_int2G
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

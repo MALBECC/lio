@@ -25,7 +25,7 @@
 !   · Hmat(M,M): 1e matrix elements.                                           !
 !   · En: electron-nuclei interaction energy.                                  !
 !                                                                              !
-! Original code:  Dario Estrin, Feb/1992.                                      !
+! Original code:  Dario Estrin, Feb/1992                                       !
 ! First refactor: Diego Armiño, May/2018                                       !
 ! Last refactor:  Federico Pedron, Aug/2018                                    !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -1,17 +1,33 @@
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% INT2 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! 2e integrals subroutine, 2 indexes: density fitting functions.               !
+!                                                                              !
+! EXTERNAL INPUT: system information.                                          !
+!   · ntatom: total number of atoms (QM+MM)                                    !
+!   · r(ntatom,3): atoms' coordinates.                                         !
+!   · d(natom,natom): distances between QM atoms.                              !
+!   · rho(M,M): density matrix.                                                !
+!                                                                              !
+! INTERNAL INPUT: basis set information.                                       !
+!   · M: number of basis functions (without contractions)                      !
+!   · Md: number of auxiliary basis functions (without contractions)           !
+!   · ncontd(Md): number of contractions per auxiliary function.               !
+!   · ad(Md,nl): auxiliary basis function exponents.                           !
+!   · cd(Md,nl): auxiliary basis function coefficients.                        !
+!   · nshelld(0:3): number of auxiliary basis functions per shell (s,p,d).     !
+!   · Nucd(M): atomic index corresponding to auxiliary function i.             !
+!   · NORM: use custom normalization (now default and deprecated option)       !
+!                                                                              !
+! OUTPUTS:                                                                     !
+!   · Gmat(M,M): Coulomb G matrix.                                             !
+!   · Ginv(M,M): Inverted coulomb G matrix.                                    !
+!                                                                              !
+! Original and debugged (or supposed to): Dario Estrin Jul/1992                !
+! Refactored:                             Federico Pedron Sep/2018             !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module subm_int2
 contains
 subroutine int2(Gmat, Ginv, r, d, ntatom)
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Integrals subroutines - Int2                                                 !
-! 2e integrals subroutine, 2 indexes: density fitting functions. All of them   !
-! are calculated using the Obara-Saika recursive method, which loops over all  !
-! basis functions. Basis functions are supposed to be ordered according to the !
-! type, first all s, then all p, then all d... inside each type, they are      !
-! ordered in shells (px, py, pz, dxx, dxy, dyy, dzx, dzy, dzz).                !
-! Input: Density basis                                                         !
-! Output: G matrix, which should be inverted when evaluating Coulomb terms.    !
-! Refactored in 2018 by F. Pedron                                              !
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use garcha_mod   , only: M, Md, nshelld, ncontd, ad, cd, norm, Nucd
    use liotemp      , only: FUNCT
    use constants_mod, only: pi5
@@ -437,3 +453,4 @@ subroutine int2(Gmat, Ginv, r, d, ntatom)
    return
 end subroutine
 end module subm_int2
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

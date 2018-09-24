@@ -1,14 +1,36 @@
-!------------------------------------------------------------------------------!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% INTFLD %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Intfld subroutine evaluates the reaction field contribution to 1e matrix     !
 ! elements. The total dipole moment should be given in input (3 components).   !
-! Integrals are evaluated using Obara Saika method.                            !
 !                                                                              !
-! Input: density basis data, dipole moment components.                         !
-! Output: Fock matrix elements.                                                !
+! EXTERNAL INPUT: system and field information.                                !
+!   · natom: number of QM atoms.                                               !
+!   · ntatom: total number of atoms (QM+MM)                                    !
+!   · r(ntatom,3): atoms' coordinates.                                         !
+!   · d(natom,natom): distances between QM atoms.                              !
+!   · Iz(natom): nuclear charge for each QM atom.                              !
+!   · open_shell: boolean indicating open-shell calculation.                   !
+!   · g: symmetry factor (for cavities).                                       !
+!   · ux: x-component for the dipole moment.                                   !
+!   · uy: y-component for the dipole moment.                                   !
+!   · uz: z-component for the dipole moment.                                   !
 !                                                                              !
-! Written by D. Estrin: 19/01/1993                                             !
-! Refactored by F. Pedron: 08/2018                                             !
-!------------------------------------------------------------------------------!
+! INTERNAL INPUT: basis set information.                                       !
+!   · M: number of basis functions (without contractions)                      !
+!   · ncont(M): number of contractions per function.                           !
+!   · a(M,nl): basis function exponents.                                       !
+!   · c(M,nl): basis function coefficients.                                    !
+!   · nshell(0:3): number of basis functions per shell (s,p,d).                !
+!   · Nuc(M): atomic index corresponding to function i.                        !
+!   · NORM: use custom normalization (now default and deprecated option)       !
+!                                                                              !
+! EXTERNAL OUTPUTS:                                                            !
+!   · Fmat(M,M): Fock matrix (alpha in open shell).                            !
+!   · Fmat_b(M,M): Beta Fock matrix (ignored in closed shell).                 !
+!                                                                              !
+! Original:   Dario Estrin Jan/1993                                            !
+! Refactored: Federico Pedron Aug/2018                                         !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module subm_intfld
 contains
 subroutine intfld(Fmat, Fmat_b, r, d, Iz, natom, ntatom, open_shell, g, ux, uy,&

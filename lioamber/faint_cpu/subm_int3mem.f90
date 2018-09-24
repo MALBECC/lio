@@ -1,23 +1,64 @@
-module subm_int3mem
-contains
-subroutine int3mem()
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Integrals subroutine - 2e integrals with 3 indexes : wavefunction and density!
-! fitting functions, calculated using the Obara-Saika recursive method.        !
-! Input :  Standard basis and density basis                                    !
-! Output: Cool and Cools, terms used for Coulomb terms.                        !
-!                                                                              !
+!%% INT3MEM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! 2e integral gradients, 3 indexes: density fitting functions and wavefunction.!
 ! Precalculates integral terms and indexes for double (rmax) and single        !
 ! precision (rmaxs). If a term has a high value (r < rmaxs) it is calculated   !
 ! in single precision, if it has a lower valule (rmaxs < r < rmax) it is       !
 ! calculated in double precision. If its value is neglegible (rmax < r), it is !
 ! not calculated at all.                                                       !
+!                                                                              !
+! EXTERNAL INPUT: system information.                                          !
+!   · natom: number of QM atoms.                                               !
+!   · ntatom: total number of atoms (QM+MM)                                    !
+!   · r(ntatom,3): atoms' coordinates.                                         !
+!   · d(natom,natom): distances between QM atoms.                              !
+!                                                                              !
+! INTERNAL INPUT: basis set information.                                       !
+!   · M: number of basis functions (without contractions)                      !
+!   · ncont(M): number of contractions per function.                           !
+!   · a(M,nl): basis function exponents.                                       !
+!   · c(M,nl): basis function coefficients.                                    !
+!   · nshell(0:3): number of basis functions per shell (s,p,d).                !
+!   · Nuc(M): atomic index corresponding to function i.                        !
+!   · Md: number of auxiliary basis functions (without contractions)           !
+!   · ncontd(Md): number of contractions per auxiliary function.               !
+!   · ad(Md,nl): auxiliary basis function exponents.                           !
+!   · cd(Md,nl): auxiliary basis function coefficients.                        !
+!   · nshelld(0:3): number of auxiliary basis functions per shell (s,p,d).     !
+!   · Nucd(M): atomic index corresponding to auxiliary function i.             !
+!   · af(Md): variational coefficient for auxiliary function i.                !
+!   · NORM: use custom normalization (now default and deprecated option)       !
+!   · nns:                                                                     !
+!   · nnp:                                                                     !
+!   · nnd:                                                                     !
+!   · nnps:                                                                    !
+!   · nnpp:                                                                    !
+!   · nnpd:                                                                    !
+!   · jatc:                                                                    !
+!   · natomc:                                                                  !
+!   · rmax: cutoff value (in Ångström) for maximum exponent in the integrals.  !
+!   · rmaxs: cutoff value (in Ångström) for maximum exponent in the integrals  !
+!            for single-precision calculations.                                !
+!                                                                              !
+! INTERNAL OUTPUTS:                                                            !
+!   · cool: precalculated 2e terms in double precision.                        !
+!   · kkind: precalculated indexes for double precision Fock matrix elements.  !
+!   · kknumd: number of precalculated double precision Fock matrix elements.   !
+!   · cools: precalculated 2e terms in single precision.                       !
+!   · kkinds: precalculated indexes for single precision Fock matrix elements. !
+!   · kknums: number of precalculated single precision Fock matrix elements.   !
+!                                                                              !
+! Original and debugged (or supposed to): Dario Estrin Jul/1992                !
+! Refactored:                             Federico Pedron Sep/2018             !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+module subm_int3mem
+contains
+subroutine int3mem()
    use liotemp   , only: FUNCT
    use garcha_mod, only: cool, cools, kkind, kkinds, Nuc, Nucd, a, c,          &
-                         d, r, ad, cd, natomc, nns, nnp, nnd, nnps, nnpp, nnpd,&
+                         ad, cd, natomc, nns, nnp, nnd, nnps, nnpp, nnpd,      &
                          jatc, ncont, ncontd, nshell, nshelld, M, Md, rmax,    &
-                         rmaxs, NORM, kknums, kknumd
+                         rmaxs, NORM, kknums, kknumd, r, d
    use constants_mod, only: pi52
    implicit none
    integer, dimension(:), allocatable :: Jx
@@ -2376,3 +2417,4 @@ subroutine int3mem()
    return
 end subroutine int3mem
 end module subm_int3mem
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -1,21 +1,39 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% INT1G %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Calculates 1e gradients                                                      !
+! Calculates 1e gradients.                                                     !
 !                                                                              !
-! Original and debugged (or supposed to) by Dario Estrin on 28/07/1992         !
-! Refactored by Federico Pedron on 25/07/2018                                  !
+! EXTERNAL INPUT: system information.                                          !
+!   · natom: number of QM atoms.                                               !
+!   · ntatom: total number of atoms (QM+MM)                                    !
+!   · r(ntatom,3): atoms' coordinates.                                         !
+!   · d(natom,natom): distances between QM atoms.                              !
+!   · Iz(natom): nuclear charge for each QM atom.                              !
+!   · rho(M,M): density matrix.                                                !
+!                                                                              !
+! INTERNAL INPUT: basis set information.                                       !
+!   · M: number of basis functions (without contractions)                      !
+!   · ncont(M): number of contractions per function.                           !
+!   · a(M,nl): basis function exponents.                                       !
+!   · c(M,nl): basis function coefficients.                                    !
+!   · nshell(0:3): number of basis functions per shell (s,p,d).                !
+!   · Nuc(M): atomic index corresponding to function i.                        !
+!   · NORM: use custom normalization (now default and deprecated option)       !
+!                                                                              !
+! OUTPUTS:                                                                     !
+!   · ff(natom,3): QM gradients (= -forces)                                    !
+!                                                                              !
+! Original and debugged (or supposed to): Dario Estrin Jul/1992                !
+! Refactored:                             Federico Pedron Jul/2018             !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module subm_int1G
 contains
 subroutine int1G(ff, rho, d, r, Iz, natom, ntatom)
-   ! Inputs : basis function and system information.                           !
-   ! Outputs: forces (gradients) on nuclei.                                    !
-
-   use garcha_mod   , only: a, c, Nuc, ncont, nshell, NORM, M
+   use garcha_mod   , only: M, a, c, Nuc, ncont, nshell, NORM
    use liotemp      , only: FUNCT
    use constants_mod, only: pi, pi32
 
    implicit none
+
    ! Inputs and Outputs
    integer         , intent(in)  :: natom, ntatom, Iz(natom)
    double precision, intent(in)  :: d(natom,natom), r(ntatom,3), rho(:)

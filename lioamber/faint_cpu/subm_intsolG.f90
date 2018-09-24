@@ -39,7 +39,7 @@ subroutine intsolG(frc_qm, frc_mm, natom, ntatom, rho, d, r, pc, Iz)
    integer         , intent(in)    :: natom, ntatom, Iz(natom)
    double precision, intent(in)    :: rho(:), r(ntatom,3), d(natom,natom), &
                                       pc(ntatom)
-   double precision, intent(inout) :: frc_qm(natom,3), frc_mm(ntatom-natom,3)
+   double precision, intent(inout) :: frc_qm(natom,3), frc_mm(ntatom,3)
 
    integer          :: ns, np, nd, iatom, jatom, ifunct, jfunct, nci, ncj, MM, &
                        M2, rho_ind, lk, lij, l1, l2, l3, l4, l5, l12, l34, Ll(3)

@@ -68,8 +68,9 @@ subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
 
    integer :: iostat, max_f_per_atom
    integer, allocatable :: atom_count(:)
+   logical, allocatable :: atom_basis_chk(:), atom_fitting_chk(:)
 
-   allocate(atom_count(0:150), atom_basis(0:150), atom_fitting(0:150))
+   allocate(atom_count(0:120), atom_basis_chk(0:120), atom_fitting_chk(0:120))
    ! Precalculates the amount of atoms of a certain type, in order to
    ! correctly asses the sizes of M and Md
    atom_count = 0
@@ -77,34 +78,46 @@ subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
       atom_count(Iz(icount)) = atom_count(Iz(icount)) + 1
    enddo
 
-   call basis_set_size(M, Md, max_f_per_atom, max_c_per_atom, basis_name,      &
-                       fitting_name, atom_count, iostat, use_internal)
+   call basis_set_size(M, Md, max_f_per_atom, max_c_per_atom, atom_basis_chk,  &
+                       atom_fitting_chk, basis_name, fitting_name, atom_count, &
+                       atom_Z, n_atoms, use_internal, iostat)
    if (iostat .gt. 0) then
       out_stat = 1
       return
    endif
-   print*, "DBG ", "M = ", M, "Md = ", Md, "max_c = ", max_c_per_atom, &
-           "max_f = ", max_f_per_atom
+   !print*, "DBG ", "M = ", M, "Md = ", Md, "max_c = ", max_c_per_atom, &
+   !        "max_f = ", max_f_per_atom
 
-   call check_basis()
+   call check_basis(atom_basis_chk, atom_fitting_chk, iostat, n_atoms, atom_Z)
+   if (iostat .gt. 0) then
+      out_stat = 2
+      return
+   endif
+
+   if (int_basis) then
+      call read_basis_internal()
+   else
+      call read_basis_external()
+   endif
 
    ! allocatear ncf(max_c_per_atom+1), lt(max_c_per_atom+1)
    ! allocatear at(max_func), ct(max_func)
 
-
-   deallocate(atom_count)
+   deallocate(atom_count, atom_basis_chk, atom_fitting_chk)
 end subroutine basis_init
 
 subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
-                          basis_file, fitting_file, atom_count, use_internal,  &
-                          iostatus)
+                          basis_file, fitting_file, atom_count, atom_Z,        &
+                          n_atoms, use_internal, iostatus)
    use basis_data, only: ang_deg
    implicit none
-   integer         , intent(in)  :: n_atoms, max_f_per_atom, atom_Z(n_atoms)
+   integer         , intent(in)  :: n_atoms, max_f_per_atom, atom_Z(n_atoms), &
+                                    atom_count(0:120)
    logical         , intent(in)  :: use_internal
-   character(len=*), intent(in)  :: basis_name, fitting_name
+   character(len=*), intent(in)  :: basis_file, fitting_file
    integer         , intent(out) :: basis_size, aux_size, max_f_per_atom, &
                                     max_c_per_atom, iostatus
+   logical         , intent(out) :: atom_bas_done(0:120), atom_fit_done(0:120)
 
    logical              :: file_exists
    integer              :: file_iostat, icount
@@ -118,14 +131,14 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
 
    if (.not. use_internal) then
       ! Read basis from external input basis file.
-      inquire(file = basis_name, exist = file_exists)
+      inquire(file = basis_file, exist = file_exists)
       if (.not. file_exists) then
-         write(*,'(A)') "  Error: Basis set file ", trim(basis_name), &
+         write(*,'(A)') "  Error: Basis set file ", trim(basis_file), &
                         " not found."
          iostatus = 1
          return
       endif
-      open(unit = 9999, file= basis_name, iostat = file_iostat)
+      open(unit = 9999, file= basis_file, iostat = file_iostat)
       read(9999, '(A8)') start_str
 
       do while (start_str .ne. "endbasis")
@@ -140,11 +153,14 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          enddo
          do icount = 1, ncon
             read(9999,*) ang_mom
-            basis_size = basis_size + ang_deg(ang_mom) * atom_count(iatom)
+            if (any(atom_Z == iatom)) then
+               basis_size = basis_size + ang_deg(ang_mom) * atom_count(iatom)
+            endif
          enddo
          do icount = 1, nraw
             read(9999,*)
          enddo
+         atom_bas_done(iatom) = .true.
 
          ! Reads auxiliary basis set for an atom doing the same as before.
          read(9999,*) iatom, nraw, ncon
@@ -156,11 +172,15 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          enddo
          do icount = 1, ncon
             read(9999,*) ang_mom
-            aux_size = aux_size + ang_deg(ang_mom) * atom_count(iatom)
+            if (any(atom_Z == iatom)) then
+               aux_size = aux_size + ang_deg(ang_mom) * atom_count(iatom)
+            endif
          enddo
          do icount = 1, nraw
             read(9999,*)
          enddo
+         atom_fit_done(iatom) = .true.
+
          read(9999, '(A8)') start_str
       enddo
       close(9999)
@@ -174,20 +194,20 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          iostatus = 2
          return
       endif
-      basis_name   = trim(lio_dir) // "/dat/basis/" // basis_name
-      fitting_name = trim(lio_dir) // "/dat/basis/fitting/" // fitting_name
+      basis_file   = trim(lio_dir) // "/dat/basis/" // basis_file
+      fitting_file = trim(lio_dir) // "/dat/basis/fitting/" // fitting_file
 
       ! Checks file existence.
-      inquire(file = basis_name, exist = file_exists)
+      inquire(file = basis_file, exist = file_exists)
       if (.not. file_exists) then
-         write(*,'(A)') "  Error: Basis set file ", trim(basis_name), &
+         write(*,'(A)') "  Error: Basis set file ", trim(basis_file), &
                         " not found."
          iostatus = 1
          return
       endif
-      inquire(file = fitting_name, exist = file_exists)
+      inquire(file = fitting_file, exist = file_exists)
       if (.not. file_exists) then
-         write(*,'(A)') "  Error: Fitting set file ", trim(fitting_name), &
+         write(*,'(A)') "  Error: Fitting set file ", trim(fitting_file), &
                         " not found."
          iostatus = 1
          return
@@ -195,7 +215,7 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
 
       ! Reads basis set data.
       ! Skips empty lines and those starting with # (comments)
-      open(unit = 9999, file= basis_name, iostat = file_iostat)
+      open(unit = 9999, file= basis_file, iostat = file_iostat)
       line_read = ""
       do while (line_read == "")
          read(9999,*) line_read
@@ -216,11 +236,14 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          enddo
          do icount = 1, ncon
             read(9999,*) ang_mom
-            basis_size = basis_size + ang_deg(ang_mom) * atom_count(iatom)
+            if (any(atom_Z == iatom)) then
+               basis_size = basis_size + ang_deg(ang_mom) * atom_count(iatom)
+            endif
          enddo
          do icount = 1, nraw
             read(9999,*)
          enddo
+         atom_bas_done(iatom) = .true.
 
          ! Skips empty lines or those starting with #.
          line_read = ""
@@ -235,7 +258,7 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
 
       ! Reads fitting set data.
       ! Skips empty lines or those starting with #.
-      open(unit = 9999, file= basis_name, iostat = file_iostat)
+      open(unit = 9999, file= basis_file, iostat = file_iostat)
       line_read = ""
       do while (line_read == "")
          read(9999,*) line_read
@@ -256,11 +279,14 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          enddo
          do icount = 1, ncon
             read(9999,*) ang_mom
-            aux_size = aux_size + ang_deg(ang_mom) * atom_count(iatom)
+            if (any(atom_Z == iatom)) then
+               aux_size = aux_size + ang_deg(ang_mom) * atom_count(iatom)
+            endif
          enddo
          do icount = 1, nraw
             read(9999,*)
          enddo
+         atom_fit_done(iatom) = .true.
 
          ! Skips empty lines or those starting with #.
          line_read = ""
@@ -275,6 +301,33 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
    endif
 end subroutine basis_set_size
 
+subroutine check_basis(atom_bas, atom_fit, n_atoms, atom_Z, iostatus)
+   implicit none
+   integer, intent(in)  :: n_atoms, atom_z(n_atoms)
+   logical, intent(in)  :: atom_bas_done(0:120), atom_fit_done(0:120)
+   integer, intent(out) :: iostat
+
+   integer          :: iatom
+   character(len=3) :: iatom_name
+
+   iostatus = 0
+   do iatom = 1, n_atoms
+      if ( .not. atom_bas_done(atom_Z(iatom)) ) then
+         call atom_name(iatom, iatom_name)
+         write(*,'(A)') "  Error: Basis set not found for ", &
+                        trim(iatom_name), "."
+         iostatus = 1
+         return
+      endif
+      if ( .not. atom_fit_done(atom_Z(iatom)) ) then
+         call atom_name(iatom, iatom_name)
+         write(*,'(A)') "  Error: Fitting set not found for ", &
+                        trim(iatom_name), "."
+         iostatus = 1
+         return
+      endif
+   enddo
+end subroutine check_basis
 
 
 ! TAKE THIS TO OTHER MODULE

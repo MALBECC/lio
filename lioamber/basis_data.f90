@@ -13,28 +13,51 @@
 module basis_data
    implicit none
    ! Namelist inputfiles
+   ! int_basis : Use LIO internal basis (located in /dat)
+   ! rMax      : Maximum exponent for double-precision integrals.
+   ! rMaxs     : Maximum exponent for single-precision integrals.
+   ! norm      : Normalize integrals (deprecated).
    logical          :: int_basis = .true.
-   double precision :: rmax      = 16.0D0
-   double precision :: rmaxs     =  5.0D0
-   logical          :: NORM      = .true.
+   double precision :: rMax      = 16.0D0
+   double precision :: rMaxs     =  5.0D0
+   logical          :: norm      = .true.
 
    ! Single variables
+   ! M     : number of basis functions.
+   ! Md    : number of fitting functions.
+   ! kknums: number of single-precision two-center integrals.
+   ! kknumd: number of double-precision two-center integrals.
    integer          :: M      = 0
    integer          :: Md     = 0
    integer          :: kknums = 0
    integer          :: kknumd = 0
 
    ! Preset arrays
-   integer :: nShell(0:4)
-   integer :: nShelld(0:4)
+   ! nShell : Number of basis functions for each shell (s,p,d,f)
+   ! nShelld: Number of auxiliary basis functions for each shell (s,p,d,f)
+   integer :: nShell(0:3)
+   integer :: nShelld(0:3)
 
    ! Allocatable arrays
+   ! Nuc(i)   : Index of the atom containing function i.
+   ! Nucd(i)  : Index of the atom containing fitting function i.
+   ! nCont(i) : Number of contractions for function i.
+   ! nContd(i): Number of contractions for fitting function i.
+   ! a(i,j)   : Exponent for function i, contraction j.
+   ! c(i,j)   : Coefficient for function i, contraction j.
+   ! ad(i,j)  : Exponent for auxiliary function i, contraction j.
+   ! cd(i,j)  : Coefficient for auxiliary function i, contraction j.
+   ! atmin(i) : The minimum exponent found for atom i.
+   ! kkInd(:) : Index for double-precision two-center integrals.
+   ! kkInds(:): Index for single-precision two-center integrals.
+   ! cool(:)  : Temporary storage for two-center integrals in  double precision.
+   ! cools(:) : Temporary storage for two-center integrals in  single precision.
    integer         , allocatable :: Nuc(:)
    integer         , allocatable :: Nucd(:)
-   integer         , allocatable :: ncont(:)
-   integer         , allocatable :: ncontd(:)
-   integer         , allocatable :: kkind(:)
-   integer         , allocatable :: kkinds(:)
+   integer         , allocatable :: nCont(:)
+   integer         , allocatable :: nContd(:)
+   integer         , allocatable :: kkInd(:)
+   integer         , allocatable :: kkInds(:)
    integer         , allocatable :: natomc(:)
    integer         , allocatable :: nns(:)
    integer         , allocatable :: nnp(:)
@@ -48,15 +71,18 @@ module basis_data
    double precision, allocatable :: ad(:,:)
    double precision, allocatable :: cd(:,:)
    double precision, allocatable :: af(:)
+   double precision, allocatable :: atmin(:)
    double precision, allocatable :: cool(:)
    real            , allocatable :: cools(:)
 
    ! Degeneracy for each angular momentum
-   double precision :: ang_deg(0:4) = (/1, 3, 6, 10/)
+   double precision, parameter :: ang_deg(0:4) = (/1, 3, 6, 10/)
 contains
 end module basis_data
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module basis_subs
+   implicit none
+   integer, parameter :: TMP_OPEN_UID = 9999
 contains
 
 subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
@@ -99,9 +125,12 @@ subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
    else
       call read_basis_external()
    endif
+   if (iostat .gt. 0) then
+      out_stat = 3
+      return
+   endif
 
-   ! allocatear ncf(max_c_per_atom+1), lt(max_c_per_atom+1)
-   ! allocatear at(max_func), ct(max_func)
+   ! allocatear ncf(max_c_per_atom+1), ang_mom(max_c_per_atom+1)
 
    deallocate(atom_count, atom_basis_chk, atom_fitting_chk)
 end subroutine basis_init
@@ -111,15 +140,17 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
                           n_atoms, use_internal, iostatus)
    use basis_data, only: ang_deg
    implicit none
-   integer         , intent(in)  :: n_atoms, max_f_per_atom, atom_Z(n_atoms), &
-                                    atom_count(0:120)
-   logical         , intent(in)  :: use_internal
-   character(len=*), intent(in)  :: basis_file, fitting_file
-   integer         , intent(out) :: basis_size, aux_size, max_f_per_atom, &
-                                    max_c_per_atom, iostatus
-   logical         , intent(out) :: atom_bas_done(0:120), atom_fit_done(0:120)
+   integer         , intent(in)     :: n_atoms, max_f_per_atom, &
+                                       atom_Z(n_atoms), atom_count(0:120)
+   logical         , intent(in)     :: use_internal
+   integer         , intent(out)    :: basis_size, aux_size, max_f_per_atom, &
+                                       max_c_per_atom, iostatus
+   logical         , intent(out)    :: atom_bas_done(0:120), &
+                                       atom_fit_done(0:120)
+   character(len=*), intent(inout)  :: basis_file, fitting_file
 
    logical              :: file_exists
+   integer              :: file_uid = TMP_OPEN_UID
    integer              :: file_iostat, icount
    integer              :: iatom, nraw, ncon, ang_mom
    character(len=20)    :: start_str
@@ -138,52 +169,52 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          iostatus = 1
          return
       endif
-      open(unit = 9999, file= basis_file, iostat = file_iostat)
-      read(9999, '(A8)') start_str
+      open(unit = file_uid, file= basis_file, iostat = file_iostat)
+      read(file_uid, '(A8)') start_str
 
       do while (start_str .ne. "endbasis")
-         read(9999,*) iatom, nraw, ncon
+         read(file_uid,*) iatom, nraw, ncon
          if (max_f_per_atom .lt. nraw) max_f_per_atom = nraw
          if (max_c_per_atom .lt. ncon) max_c_per_atom = ncon
 
          ! Only needs to read angular momenta for each contraction, the rest is
          ! skipped.
          do icount = 1, ncon
-            read(9999,*)
+            read(file_uid,*)
          enddo
          do icount = 1, ncon
-            read(9999,*) ang_mom
+            read(file_uid,*) ang_mom
             if (any(atom_Z == iatom)) then
                basis_size = basis_size + ang_deg(ang_mom) * atom_count(iatom)
             endif
          enddo
          do icount = 1, nraw
-            read(9999,*)
+            read(file_uid,*)
          enddo
          atom_bas_done(iatom) = .true.
 
          ! Reads auxiliary basis set for an atom doing the same as before.
-         read(9999,*) iatom, nraw, ncon
+         read(file_uid,*) iatom, nraw, ncon
          if (max_f_per_atom .lt. nraw) max_f_per_atom = nraw
          if (max_c_per_atom .lt. ncon) max_c_per_atom = ncon
 
          do icount = 1, ncon
-            read(9999,*)
+            read(file_uid,*)
          enddo
          do icount = 1, ncon
-            read(9999,*) ang_mom
+            read(file_uid,*) ang_mom
             if (any(atom_Z == iatom)) then
                aux_size = aux_size + ang_deg(ang_mom) * atom_count(iatom)
             endif
          enddo
          do icount = 1, nraw
-            read(9999,*)
+            read(file_uid,*)
          enddo
          atom_fit_done(iatom) = .true.
 
-         read(9999, '(A8)') start_str
+         read(file_uid, '(A8)') start_str
       enddo
-      close(9999)
+      close(file_uid)
    else
       ! Reads from LIO internal basis set files.
       call getenv("LIOHOME", lio_dir)
@@ -215,89 +246,89 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
 
       ! Reads basis set data.
       ! Skips empty lines and those starting with # (comments)
-      open(unit = 9999, file= basis_file, iostat = file_iostat)
+      open(unit = file_uid, file= basis_file, iostat = file_iostat)
       line_read = ""
       do while (line_read == "")
-         read(9999,*) line_read
+         read(file_uid,*) line_read
          read(line_read, '(A1)') start_str
          if (start_str = "#") line_read = ""
       enddo
       read(line_read, '(A8)') start_str
 
       do while (start_str .ne. "endbasis")
-         read(9999,*) iatom, nraw, ncon
+         read(file_uid,*) iatom, nraw, ncon
          if (max_f_per_atom .lt. nraw) max_f_per_atom = nraw
          if (max_c_per_atom .lt. ncon) max_c_per_atom = ncon
 
          ! Only needs to read angular momenta for each contraction, the rest is
          ! skipped.
          do icount = 1, ncon
-            read(9999,*)
+            read(file_uid,*)
          enddo
          do icount = 1, ncon
-            read(9999,*) ang_mom
+            read(file_uid,*) ang_mom
             if (any(atom_Z == iatom)) then
                basis_size = basis_size + ang_deg(ang_mom) * atom_count(iatom)
             endif
          enddo
          do icount = 1, nraw
-            read(9999,*)
+            read(file_uid,*)
          enddo
          atom_bas_done(iatom) = .true.
 
          ! Skips empty lines or those starting with #.
          line_read = ""
          do while (line_read == "")
-            read(9999,*) line_read
+            read(file_uid,*) line_read
             read(line_read, '(A1)') start_str
             if (start_str = "#") line_read = ""
          enddo
          read(line_read, '(A8)') start_str
       enddo
-      close(9999)
+      close(file_uid)
 
       ! Reads fitting set data.
       ! Skips empty lines or those starting with #.
-      open(unit = 9999, file= basis_file, iostat = file_iostat)
+      open(unit = file_uid, file= basis_file, iostat = file_iostat)
       line_read = ""
       do while (line_read == "")
-         read(9999,*) line_read
+         read(file_uid,*) line_read
          read(line_read, '(A1)') start_str
          if (start_str = "#") line_read = ""
       enddo
       read(line_read, '(A8)') start_str
 
       do while (start_str .ne. "endbasis")
-         read(9999,*) iatom, nraw, ncon
+         read(file_uid,*) iatom, nraw, ncon
          if (max_f_per_atom .lt. nraw) max_f_per_atom = nraw
          if (max_c_per_atom .lt. ncon) max_c_per_atom = ncon
 
          ! Only needs to read angular momenta for each contraction, the rest is
          ! skipped.
          do icount = 1, ncon
-            read(9999,*)
+            read(file_uid,*)
          enddo
          do icount = 1, ncon
-            read(9999,*) ang_mom
+            read(file_uid,*) ang_mom
             if (any(atom_Z == iatom)) then
                aux_size = aux_size + ang_deg(ang_mom) * atom_count(iatom)
             endif
          enddo
          do icount = 1, nraw
-            read(9999,*)
+            read(file_uid,*)
          enddo
          atom_fit_done(iatom) = .true.
 
          ! Skips empty lines or those starting with #.
          line_read = ""
          do while (line_read == "")
-            read(9999,*) line_read
+            read(file_uid,*) line_read
             read(line_read, '(A1)') start_str
             if (start_str = "#") line_read = ""
          enddo
          read(line_read, '(A8)') start_str
       enddo
-      close(9999)
+      close(file_uid)
    endif
 end subroutine basis_set_size
 
@@ -329,7 +360,213 @@ subroutine check_basis(atom_bas, atom_fit, n_atoms, atom_Z, iostatus)
    enddo
 end subroutine check_basis
 
+subroutine read_basis_external(basis_file)
+   use basis_data, only: ang_deg
+   implicit none
+   ! IN: max_c, max_f, n_atoms(natom), basis_file(basis), atom_Z(Iz)
+   ! OUT: iostatus, min_atom_exp(atmin), atom_of_func(Nuc), coef(:,:), expo(:,:)
+   !      coefd(:,:), expod(:,:)
 
+   integer              :: file_uid = TMP_OPEN_UID
+   integer              :: iatom, nraw, ncon, file_iostat, atom, icont
+   integer              :: icount, jcount, l2
+   character(len=20)    :: start_str
+   character(len=*)     :: line_read
+
+   integer, allocatable          :: n_cont_func(:), ang_mom(:)
+   double precision, allocatable :: expo_temp(:), coef_temp(:)
+
+   allocate(n_cont_func(max_c_per_atom +1), ang_mom(max_c_per_atom +1))
+   allocate(expo_temp(max_f_per_atom), coef_temp(max_f_per_atom))
+   allocate(basis_done(n_atoms), fitting_done(n_atoms))
+   basis_done   = .false.
+   fitting_done = .false.
+   min_exp      = 100000.0D0
+   i_basis      = 0
+   n_orig       = 0
+
+   open(unit = file_uid, file= basis_file, iostat = file_iostat)
+   read(file_uid,'(A8)') start_str
+   do while (start_str .ne. 'endbasis')
+      i_basis = i_basis +1
+
+      ! Starts reading the basis set for an atom
+      read(file_uid,*) atom, nraw, ncon
+
+      ! Reads contraction scheme. The value for p/d/f should not be repeated
+      ! 3/6/10 times, just set them once. Also reads angular momentum for each
+      ! of the contractions.
+      do icount = 1, ncon
+         read(file_uid,*) n_cont_func(icount)
+      enddo
+      do icount = 1, ncon
+         read(file_uid,*) ang_mom(icount)
+      enddo
+      do icount = 1, nraw
+         read(file_uid,*) expo_temp(icount), coef_temp(icount)
+         if (expo_temp(icount) .lt. min_exp) min_exp = expo_temp(icount)
+      enddo
+
+      do iatom = 1, natom
+         if (atom_Z(iatom) .eq. atom .and. (.not. basis_done(iatom))) then
+            nnat(i_basis)       = nnat(i_basis) +1
+            basis_done(iatom)   = .true.
+            min_atom_exp(iatom) = min_exp
+
+            ! These are used for atoms that are near to each other.
+            nns(iatom) = 0
+            nnp(iatom) = 0
+            nnd(iatom) = 0
+
+            do icont, ncon
+              if (ang_mom(icont) .eq. 0) nns(iatom) = nns(iatom) + &
+                                                      ang_deg(ang_mom(icont))
+              if (ang_mom(icont) .eq. 1) nnp(iatom) = nnp(iatom) + &
+                                                      ang_deg(ang_mom(icont))
+              if (ang_mom(icont) .eq. 2) nnd(iatom) = nnd(iatom) + &
+                                                      ang_deg(ang_mom(icont))
+            enddo
+
+            ! Stores the exponents and coefficients, and normalizes them if
+            ! necessary.
+            index  = 0
+            do icont = 1, ncon
+               nshell(ang_mom(icont)) = nshell(ang_mom(icont)) + &
+                                        ang_deg(ang_mom(icont))
+               do l2 = 1, ang_deg(ang_mom(icont))
+                  n_orig = n_orig +1
+
+                  if (norm) then
+                     do icount =1, n_cont_func(icont)
+                        index = index +1
+                        select case (ang_mom(icont))
+                        case (0)
+                           coef(n_orig, icount) = dsqrt( dsqrt(8.0D0 * &
+                                                  (expo_temp(index)) ** 3 ) / &
+                                                  PI32) * coef_temp(index)
+                           expo(n_orig, icount) = expo_temp(index)
+                        case (1)
+                           coef(n_orig, icount) = dsqrt( dsqrt(8.0D0 * &
+                                                  (expo_temp(index)) ** 3 ) * &
+                                                  4.0D0 * expo_temp(index) /  &
+                                                  PI32) * coef_temp(index)
+                           expo(n_orig, icount) = expo_temp(index)
+                        case (2)
+                           coef(n_orig, icount) = dsqrt( dsqrt(8.0D0 * &
+                                                  (expo_temp(index)) ** 3 ) *  &
+                                                  16.0D0 * expo_temp(index)**2/&
+                                                  PI32) * coef_temp(index)
+                           expo(n_orig, icount) = expo_temp(index)
+                        case default
+                           iostatus = 1
+                           write(*,'(A)') "  ERROR: Basis set contains "    , &
+                                          "usupported angular momenta. LIO ", &
+                                          "uses only s, p and d-type orbitals."
+                           return
+                        end select
+                     enddo
+                  else
+                     do icount =1, n_cont_func(icont)
+                        index = index +1
+                        coef(n_orig, icount) = coef_temp(index)
+                        expo(n_orig, icount) = expo_temp(index)
+                     enddo
+                  endif
+
+                  ! Repeats the index for p, d and f
+                  if (l2 .ne. ang_deg(ang_mom(icont))) then
+                     index = index - n_cont_func(icont)
+                  endif
+
+                  atom_of_func(n_orig) = iatom
+                  ncont(n_orig)        = n_cont_func(icont)
+                  nlb(n_orig)          = ang_mom(icont)
+               enddo
+            enddo
+         endif
+      enddo
+
+      ! Starts reading the auxiliary basis for an atom. Same rules as before
+      ! are applied here.
+      read(file_uid,*) atom, nraw, ncon
+      do icount = 1, ncon
+         read(file_uid,*) n_cont_func(icount)
+      enddo
+      do icount = 1, ncon
+         read(file_uid,*) ang_mom(icount)
+      enddo
+      do icount = 1, nraw
+         read(file_uid,*) expo_temp(icount), coef_temp(icount)
+      enddo
+
+      do iatom = 1, natom
+         if (atom_Z(iatom) .eq. atom) then
+         done_fit(iatom) = .true.
+
+         index = 0
+         do icont = 1, ncon
+            nshelld(ang_mom(icont)) = nshelld(ang_mom(icont)) + &
+                                      ang_deg(ang_mom(icont))
+            do l2 = 1, ang_deg(ang_mom(icont))
+               n_aux = n_aux +1
+
+               if (norm) then
+                  do icount =1, n_cont_func(icont)
+                     index = index +1
+                     select case (ang_mom(icont))
+                     case (0)
+                        coefd(n_aux, icount) = dsqrt( dsqrt(8.0D0 * &
+                                               (expo_temp(index)) ** 3 ) / &
+                                               PI32) * coef_temp(index)
+                        expod(n_aux, icount) = expo_temp(index)
+                     case (1)
+                        coefd(n_aux, icount) = dsqrt( dsqrt(8.0D0 * &
+                                               (expo_temp(index)) ** 3 ) * &
+                                               4.0D0 * expo_temp(index) /  &
+                                               PI32) * coef_temp(index)
+                        expod(n_aux, icount) = expo_temp(index)
+                     case (2)
+                        coefd(n_aux, icount) = dsqrt( dsqrt(8.0D0 * &
+                                               (expo_temp(index)) ** 3 ) *   &
+                                               16.0D0 * expo_temp(index) **2/&
+                                               PI32) * coef_temp(index)
+                        expod(n_aux, icount) = expo_temp(index)
+                     case default
+                        iostatus = 1
+                        write(*,'(A)') "  ERROR: Basis set contains "    , &
+                                       "usupported angular momenta. LIO ", &
+                                       "uses only s, p and d-type orbitals."
+                        return
+                     end select
+                  enddo
+               else
+                  do icount =1, n_cont_func(icont)
+                     index = index +1
+                     coefd(n_orig, icount) = coef_temp(index)
+                     expod(n_orig, icount) = expo_temp(index)
+                  enddo
+               endif
+
+               if (l2 .ne. ang_deg(ang_mom(icont))) then
+                  index = index - n_cont_func(icont)
+               endif
+
+               atom_of_funcd(n_orig) = iatom
+               ncontd(n_orig)        = n_cont_func(icont)
+               nld(n_orig)           = ang_mom(icont)
+            enddo
+         enddo
+       endif
+   enddo
+   read(file_uid,'(A8)') start_str
+   enddo
+
+end subroutine read_basis_external
+
+
+
+
+!###############################################################################
 ! TAKE THIS TO OTHER MODULE
 subroutine atom_name(atom_Z, symb)
  ! Takes atomic number Z and translates it to its name.

@@ -3,6 +3,9 @@
 !
 ! Nicolas Foglia, 2017
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+module steepest_descent
+   implicit none
+   contains
 
 	SUBROUTINE do_steep(E)
 	USE garcha_mod, only : Force_cut, Energy_cut, minimzation_steep, n_min_steeps, OPEN, natom, r, rqm, lineal_search, n_points
@@ -244,3 +247,5 @@
         END DO
  5000 FORMAT(2x,i2,2x,3(f16.10,2x))
 	END SUBROUTINE save_traj
+
+end module

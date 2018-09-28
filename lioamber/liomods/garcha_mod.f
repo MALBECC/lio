@@ -95,7 +95,7 @@ c necessary)
 !-Variables for library reading.
       logical :: omit_bas
 !-Variables for property calculations.
-      logical :: fukui, dipole, lowdin, mulliken, print_coeffs
+      logical :: fukui, dipole, lowdin, mulliken, spinpop, print_coeffs
 
       integer :: nng, max_func
       integer, allocatable, dimension(:) :: ncf, lt
@@ -138,6 +138,22 @@ c necessary)
       integer :: charge
       logical :: lineal_search !enable lineal search
 
+! for properties calculation control
+      logical :: calc_propM
+
+! rho linear search
+      integer :: Rho_LS !linear sear in rho for convergention, 0 no LS, 1 LS only if energy increase, 2 full LS
+      double precision, dimension(:), allocatable :: rho_lambda1
+      double precision, dimension(:), allocatable :: rho_lambda0
+      double precision, dimension(:), allocatable :: rho_lambda1_alpha
+      double precision, dimension(:), allocatable :: rho_lambda0_alpha
+      double precision, dimension(:), allocatable :: rho_lambda1_betha
+      double precision, dimension(:), allocatable :: rho_lambda0_betha
+      double precision :: Pstepsize
+      logical :: P_oscilation_analisis
+      double precision, dimension(:,:), allocatable :: P_hist
+      double precision :: Elast
+      logical :: changed_to_LS
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       end module

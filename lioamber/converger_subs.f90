@@ -71,6 +71,7 @@ end subroutine converger_init
                           &  fock_damped, bcoef, EMAT2, conver_criter
    use typedef_operator, only: operator
    use fileio_data, only: verbose
+   use garcha_mod, only : changed_to_LS
    implicit none
    integer, intent(in)            :: niter
    real*8 , intent(in)            :: good, good_cut
@@ -180,7 +181,7 @@ end subroutine converger_init
 
       case(3)
 !        Damping until good enaugh, diis afterwards
-         if (good < good_cut) then
+         if (good < good_cut .and. .not. changed_to_LS) then
             if ( (.not. hagodiis) .and. (verbose .gt. 3) ) then
                write(6,'(A,I4)') "  Changing to DIIS at step: ", niter
             endif
@@ -192,6 +193,9 @@ end subroutine converger_init
          stop
 
     endselect
+
+    if (changed_to_LS) hagodiis=.false.
+!   turn off diis is calculation when change to lineal search, Nick
 !
 !
 !

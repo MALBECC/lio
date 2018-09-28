@@ -7,6 +7,7 @@
        use garcha_mod
        use ECP_mod, only : ecpmode
        use fileio_data, only : style
+       use linear_search, only: P_linearsearch_fin
        implicit none
        if (dipole) then
         if (style) write(69,8703)
@@ -39,6 +40,7 @@
 !--------------------------------------------------------------------!
        if (ecpmode) call intECP(4) !desalocatea variables de pseudopotenciales
 
+       call P_linearsearch_fin()
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Nuevos formatos, Nick

@@ -180,13 +180,9 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/debug_tools.mod
 
 ################################################################################
 OBJECTS += basis_data.o
-OBJECTS += basis_subs.o
 
 tmplist :=
 tmplist += ehrensubs.o init_lio.o
-$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/basis_subs.mod
-
-tmplist := basis_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/basis_data.mod
 
 
@@ -385,7 +381,7 @@ SRCDIRS += maskrmm
 OBJECTS += maskrmm.o
 
 tmplist :=
-tmplist += ehrensubs.o basis_subs.o
+tmplist += ehrensubs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/maskrmm.mod
 
 #

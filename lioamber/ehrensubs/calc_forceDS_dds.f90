@@ -5,7 +5,9 @@ subroutine calc_forceDS_dds( natoms, nbasis, pos, vel, Mat0, fterm )
 ! DESCRIPTION
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-  use basis_data
+  use basis_data, only: parent_atom=>nuc, angular_momentum=>ang_mom_ehren, &
+                        orbital_contractions=>nCont, gauss_coef=>c_ehren,  &
+                        gauss_expo=>a_ehren
   implicit none
   integer,intent(in)     :: natoms          ! Number of atoms
   integer,intent(in)     :: nbasis          ! Number of basis

@@ -10,6 +10,9 @@
 ! · funct()         : Boys function.                                           !
 !                                                                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+! TODO: INVERTIR LAS MATRICES C Y A: Asi barre más rapido los loops.
+! EN EHRENFEST YA ESTA INVERTIDO
 module basis_data
    implicit none
    ! Namelist inputfiles
@@ -39,23 +42,27 @@ module basis_data
    integer :: nShelld(0:3)
 
    ! Allocatable arrays
-   ! Nuc(i)   : Index of the atom containing function i.
-   ! Nucd(i)  : Index of the atom containing fitting function i.
-   ! nCont(i) : Number of contractions for function i.
-   ! nContd(i): Number of contractions for fitting function i.
-   ! a(i,j)   : Exponent for function i, contraction j.
-   ! c(i,j)   : Coefficient for function i, contraction j.
-   ! ad(i,j)  : Exponent for auxiliary function i, contraction j.
-   ! cd(i,j)  : Coefficient for auxiliary function i, contraction j.
-   ! atmin(i) : The minimum exponent found for atom i.
-   ! kkInd(:) : Index for double-precision two-center integrals.
-   ! kkInds(:): Index for single-precision two-center integrals.
-   ! cool(:)  : Temporary storage for two-center integrals in  double precision.
-   ! cools(:) : Temporary storage for two-center integrals in  single precision.
+   ! Nuc(i)     : Index of the atom containing function i.
+   ! Nucd(i)    : Index of the atom containing fitting function i.
+   ! nCont(i)   : Number of contractions for function i.
+   ! nContd(i)  : Number of contractions for fitting function i.
+   ! ang_mom(i) : Angular momentum of function i. Or an angry mother. Your choice.
+   ! ang_momd(i): Angular momentum of auxiliary function i.
+   ! a(i,j)     : Exponent for function i, contraction j.
+   ! c(i,j)     : Coefficient for function i, contraction j.
+   ! ad(i,j)    : Exponent for auxiliary function i, contraction j.
+   ! cd(i,j)    : Coefficient for auxiliary function i, contraction j.
+   ! atmin(i)   : The minimum exponent found for atom i.
+   ! kkInd(:)   : Index for double-precision two-center integrals.
+   ! kkInds(:)  : Index for single-precision two-center integrals.
+   ! cool(:)    : Storage for two-center integrals in  double precision.
+   ! cools(:)   : Storage for two-center integrals in  single precision.
    integer         , allocatable :: Nuc(:)
    integer         , allocatable :: Nucd(:)
    integer         , allocatable :: nCont(:)
    integer         , allocatable :: nContd(:)
+   integer         , allocatable :: ang_mom(:)
+   integer         , allocatable :: ang_momd(:)
    integer         , allocatable :: kkInd(:)
    integer         , allocatable :: kkInds(:)
    integer         , allocatable :: natomc(:)
@@ -75,8 +82,14 @@ module basis_data
    double precision, allocatable :: cool(:)
    real            , allocatable :: cools(:)
 
+
+   ! Temporary for EHRENFEST
+   double precision, allocatable :: a_ehren(:,:)
+   double precision, allocatable :: c_ehren(:,:)
+   integer         , allocatable :: ang_mom_ehren(:,:)
+
    ! Degeneracy for each angular momentum
-   double precision, parameter :: ang_deg(0:4) = (/1, 3, 6, 10/)
+   integer         , parameter :: ANG_DEG(0:3) = (/1, 3, 6, 10/)
 contains
 end module basis_data
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -86,13 +99,15 @@ module basis_subs
 contains
 
 subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
-   use basis_data, only: M, Md, int_basis
+   use basis_data, only: M, Md, int_basis, Nuc, Nucd, nCont, nContd, a, c, ad, &
+                         cd, atmin, nns, nnp, nnd, nshell, nshelld, norm,      &
+                         ang_mom, ang_momd, a_ehren, c_ehren, ang_mom_ehren
    implicit none
-   integer         , intent(in)  :: n_atoms, atom_Z(n_atoms)
-   character(len=*), intent(in)  :: basis_name, fitting_name
-   integer         , intent(out) :: out_stat
+   integer         , intent(in)    :: n_atoms, atom_Z(n_atoms)
+   integer         , intent(out)   :: out_stat
+   character(len=*), intent(inout) :: basis_name, fitting_name
 
-   integer :: iostat, max_f_per_atom
+   integer :: icount, iostat, max_f_per_atom, max_c_per_atom
    integer, allocatable :: atom_count(:)
    logical, allocatable :: atom_basis_chk(:), atom_fitting_chk(:)
 
@@ -101,47 +116,85 @@ subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
    ! correctly asses the sizes of M and Md
    atom_count = 0
    do icount = 1, n_atoms
-      atom_count(Iz(icount)) = atom_count(Iz(icount)) + 1
+      atom_count(atom_Z(icount)) = atom_count(atom_Z(icount)) + 1
    enddo
 
    call basis_set_size(M, Md, max_f_per_atom, max_c_per_atom, atom_basis_chk,  &
                        atom_fitting_chk, basis_name, fitting_name, atom_count, &
-                       atom_Z, n_atoms, use_internal, iostat)
+                       atom_Z, n_atoms, int_basis, iostat)
    if (iostat .gt. 0) then
       out_stat = 1
       return
    endif
    !print*, "DBG ", "M = ", M, "Md = ", Md, "max_c = ", max_c_per_atom, &
    !        "max_f = ", max_f_per_atom
-
-   call check_basis(atom_basis_chk, atom_fitting_chk, iostat, n_atoms, atom_Z)
+   call check_basis(atom_basis_chk, atom_fitting_chk, n_atoms, atom_Z, iostat)
    if (iostat .gt. 0) then
       out_stat = 2
       return
    endif
 
+   allocate(c(M, max_c_per_atom), a(M, max_c_per_atom), cd(Md, max_c_per_atom),&
+            ad(Md, max_c_per_atom), nCont(M), nContd(Md), ang_mom(M),        &
+            ang_momd(Md), Nuc(M), Nucd(M), atmin(n_atoms), nns(n_atoms),     &
+            nnp(n_atoms), nnd(n_atoms), c_ehren(max_c_per_atom,M), &
+            a_ehren(max_c_per_atom, M))
    if (int_basis) then
-      call read_basis_internal()
+      !call read_basis_internal()
    else
-      call read_basis_external()
+      call read_basis_external(basis_name, M, Md, n_atoms, norm, max_f_per_atom, &
+                               max_c_per_atom, atom_Z, c, a, cd, ad, nCont,    &
+                               nContd, ang_mom, ang_momd, Nuc, Nucd,       &
+                               atmin, nns, nnp, nnd, nshell, nshelld, iostat)
    endif
    if (iostat .gt. 0) then
       out_stat = 3
       return
    endif
 
-   ! allocatear ncf(max_c_per_atom+1), ang_mom(max_c_per_atom+1)
 
-   deallocate(atom_count, atom_basis_chk, atom_fitting_chk)
+
+
+   ! THINGS FOR EHRENFEST $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+   ! Transposes things for coefficients and exponents
+   do icount = 1, M
+      a_ehren(:,icount) = a(icount,:)
+      c_ehren(:,icount) = c(icount,:)
+   enddo
+
+   ! Calculates angular momenta and directions
+   allocate(ang_mom_ehren(3,M))
+   ang_mom_ehren = 0
+   do icount = nshell(0)+1, nshell(0)+nShell(1), 3
+      ang_mom_ehren(1, icount  ) = 1
+      ang_mom_ehren(2, icount+1) = 1
+      ang_mom_ehren(3, icount+2) = 1
+   enddo
+   do icount = nshell(0)+nShell(1)+1, nshell(0)+nShell(1)+nShell(2), 6
+      ang_mom_ehren(1,icount+0) = 2  ! dxx (x)
+      ang_mom_ehren(1,icount+1) = 1  ! dxy (x)
+      ang_mom_ehren(2,icount+1) = 1  ! dxy (y)
+      ang_mom_ehren(2,icount+2) = 2  ! dyy (y)
+      ang_mom_ehren(1,icount+3) = 1  ! dxz (x)
+      ang_mom_ehren(3,icount+3) = 1  ! dxz (z)
+      ang_mom_ehren(2,icount+4) = 1  ! dyz (y)
+      ang_mom_ehren(3,icount+4) = 1  ! dyz (z)
+      ang_mom_ehren(3,icount+5) = 2  ! dzz (z)
+   enddo
+   !$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+   deallocate(atom_count, atom_basis_chk, atom_fitting_chk, ang_mom, &
+              ang_momd, a_ehren, c_ehren)
 end subroutine basis_init
 
 subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
-                          basis_file, fitting_file, atom_count, atom_Z,        &
-                          n_atoms, use_internal, iostatus)
-   use basis_data, only: ang_deg
+                          atom_bas_done, atom_fit_done, basis_file,            &
+                          fitting_file, atom_count, atom_Z, n_atoms,           &
+                          use_internal, iostatus)
+   use basis_data, only: ANG_DEG
    implicit none
-   integer         , intent(in)     :: n_atoms, max_f_per_atom, &
-                                       atom_Z(n_atoms), atom_count(0:120)
+   integer         , intent(in)     :: n_atoms, atom_Z(n_atoms), &
+                                       atom_count(0:120)
    logical         , intent(in)     :: use_internal
    integer         , intent(out)    :: basis_size, aux_size, max_f_per_atom, &
                                        max_c_per_atom, iostatus
@@ -154,7 +207,7 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
    integer              :: file_iostat, icount
    integer              :: iatom, nraw, ncon, ang_mom
    character(len=20)    :: start_str
-   character(len=*)     :: lio_dir, line_read
+   character(len=100)   :: lio_dir, line_read
 
    iostatus   = 0
    basis_size = 0
@@ -185,7 +238,7 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          do icount = 1, ncon
             read(file_uid,*) ang_mom
             if (any(atom_Z == iatom)) then
-               basis_size = basis_size + ang_deg(ang_mom) * atom_count(iatom)
+               basis_size = basis_size + ANG_DEG(ang_mom) * atom_count(iatom)
             endif
          enddo
          do icount = 1, nraw
@@ -204,7 +257,7 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          do icount = 1, ncon
             read(file_uid,*) ang_mom
             if (any(atom_Z == iatom)) then
-               aux_size = aux_size + ang_deg(ang_mom) * atom_count(iatom)
+               aux_size = aux_size + ANG_DEG(ang_mom) * atom_count(iatom)
             endif
          enddo
          do icount = 1, nraw
@@ -218,7 +271,7 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
    else
       ! Reads from LIO internal basis set files.
       call getenv("LIOHOME", lio_dir)
-      if (lio_dir = "") then
+      if (lio_dir == "") then
          write(*,'(A)') "  Error: LIOHOME not set. Cannot use internal basis", &
                         " files. Either set LIOHOME to your LIO installation", &
                         " directory or use an external basis set file."
@@ -251,7 +304,7 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
       do while (line_read == "")
          read(file_uid,*) line_read
          read(line_read, '(A1)') start_str
-         if (start_str = "#") line_read = ""
+         if (start_str == "#") line_read = ""
       enddo
       read(line_read, '(A8)') start_str
 
@@ -268,7 +321,7 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          do icount = 1, ncon
             read(file_uid,*) ang_mom
             if (any(atom_Z == iatom)) then
-               basis_size = basis_size + ang_deg(ang_mom) * atom_count(iatom)
+               basis_size = basis_size + ANG_DEG(ang_mom) * atom_count(iatom)
             endif
          enddo
          do icount = 1, nraw
@@ -281,7 +334,7 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          do while (line_read == "")
             read(file_uid,*) line_read
             read(line_read, '(A1)') start_str
-            if (start_str = "#") line_read = ""
+            if (start_str == "#") line_read = ""
          enddo
          read(line_read, '(A8)') start_str
       enddo
@@ -294,7 +347,7 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
       do while (line_read == "")
          read(file_uid,*) line_read
          read(line_read, '(A1)') start_str
-         if (start_str = "#") line_read = ""
+         if (start_str == "#") line_read = ""
       enddo
       read(line_read, '(A8)') start_str
 
@@ -311,7 +364,7 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          do icount = 1, ncon
             read(file_uid,*) ang_mom
             if (any(atom_Z == iatom)) then
-               aux_size = aux_size + ang_deg(ang_mom) * atom_count(iatom)
+               aux_size = aux_size + ANG_DEG(ang_mom) * atom_count(iatom)
             endif
          enddo
          do icount = 1, nraw
@@ -324,7 +377,7 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          do while (line_read == "")
             read(file_uid,*) line_read
             read(line_read, '(A1)') start_str
-            if (start_str = "#") line_read = ""
+            if (start_str == "#") line_read = ""
          enddo
          read(line_read, '(A8)') start_str
       enddo
@@ -332,11 +385,11 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
    endif
 end subroutine basis_set_size
 
-subroutine check_basis(atom_bas, atom_fit, n_atoms, atom_Z, iostatus)
+subroutine check_basis(atom_bas_done, atom_fit_done, n_atoms, atom_Z, iostatus)
    implicit none
-   integer, intent(in)  :: n_atoms, atom_z(n_atoms)
+   integer, intent(in)  :: n_atoms, atom_Z(n_atoms)
    logical, intent(in)  :: atom_bas_done(0:120), atom_fit_done(0:120)
-   integer, intent(out) :: iostat
+   integer, intent(out) :: iostatus
 
    integer          :: iatom
    character(len=3) :: iatom_name
@@ -360,36 +413,53 @@ subroutine check_basis(atom_bas, atom_fit, n_atoms, atom_Z, iostatus)
    enddo
 end subroutine check_basis
 
-subroutine read_basis_external(basis_file)
-   use basis_data, only: ang_deg
+subroutine read_basis_external(basis_file, n_funcs, n_fits, n_atoms, normalize,&
+                               max_fun_per_atom, max_con_per_atom, atom_Z,     &
+                               coef, expo, coefd, expod, n_cont, n_contd,      &
+                               ang_mom_f, ang_mom_fd, atm_of_func,             &
+                               atm_of_funcd, min_atm_exp, nns, nnp, nnd,       &
+                               nShell, nShelld, iostatus)
+   use basis_data   , only: ANG_DEG
+   use constants_mod, only: PI32
    implicit none
-   ! IN: max_c, max_f, n_atoms(natom), basis_file(basis), atom_Z(Iz)
-   ! OUT: iostatus, min_atom_exp(atmin), atom_of_func(Nuc), coef(:,:), expo(:,:)
-   !      coefd(:,:), expod(:,:)
+   integer         , intent(in)  :: max_con_per_atom, max_fun_per_atom, &
+                                    n_atoms, atom_Z(n_atoms), n_funcs, n_fits
+   logical         , intent(in)  :: normalize
+   character(len=*), intent(in)  :: basis_file
+   integer         , intent(out) :: atm_of_func(n_funcs),atm_of_funcd(n_funcs),&
+                                    nns(n_atoms), nnp(n_atoms), nnd(n_atoms),  &
+                                    iostatus, n_cont(n_funcs), n_contd(n_fits),&
+                                    ang_mom_f(n_funcs),  ang_mom_fd(n_fits),   &
+                                    nShell(0:3), nShelld(0:3)
+   double precision, intent(out) :: coef(n_funcs,max_con_per_atom), &
+                                    expo(n_funcs,max_con_per_atom), &
+                                    coefd(n_fits,max_con_per_atom), &
+                                    expod(n_fits,max_con_per_atom), &
+                                    min_atm_exp(n_atoms)
 
-   integer              :: file_uid = TMP_OPEN_UID
-   integer              :: iatom, nraw, ncon, file_iostat, atom, icont
-   integer              :: icount, jcount, l2
-   character(len=20)    :: start_str
-   character(len=*)     :: line_read
+   integer            :: file_iostat, file_uid = TMP_OPEN_UID
+   integer            :: iatom, nraw, ncon, atom, icont, icount, l2, index,    &
+                         n_orig, n_aux
+   double precision   :: min_exp
+   character(len=20)  :: start_str
+   character(len=100) :: line_read
 
-   integer, allocatable          :: n_cont_func(:), ang_mom(:)
+   logical         , allocatable :: basis_done(:), fitting_done(:)
+   integer         , allocatable :: n_cont_func(:), ang_mom(:)
    double precision, allocatable :: expo_temp(:), coef_temp(:)
 
-   allocate(n_cont_func(max_c_per_atom +1), ang_mom(max_c_per_atom +1))
-   allocate(expo_temp(max_f_per_atom), coef_temp(max_f_per_atom))
-   allocate(basis_done(n_atoms), fitting_done(n_atoms))
+   allocate(n_cont_func(max_con_per_atom +1), ang_mom(max_con_per_atom +1), &
+            expo_temp(max_fun_per_atom)     , coef_temp(max_fun_per_atom) , &
+            basis_done(n_atoms)             , fitting_done(n_atoms))
    basis_done   = .false.
    fitting_done = .false.
    min_exp      = 100000.0D0
-   i_basis      = 0
    n_orig       = 0
+   n_aux        = 0
 
    open(unit = file_uid, file= basis_file, iostat = file_iostat)
    read(file_uid,'(A8)') start_str
    do while (start_str .ne. 'endbasis')
-      i_basis = i_basis +1
-
       ! Starts reading the basis set for an atom
       read(file_uid,*) atom, nraw, ncon
 
@@ -407,24 +477,26 @@ subroutine read_basis_external(basis_file)
          if (expo_temp(icount) .lt. min_exp) min_exp = expo_temp(icount)
       enddo
 
-      do iatom = 1, natom
+      do iatom = 1, n_atoms
          if (atom_Z(iatom) .eq. atom .and. (.not. basis_done(iatom))) then
-            nnat(i_basis)       = nnat(i_basis) +1
             basis_done(iatom)   = .true.
-            min_atom_exp(iatom) = min_exp
+            min_atm_exp(iatom) = min_exp
 
             ! These are used for atoms that are near to each other.
             nns(iatom) = 0
             nnp(iatom) = 0
             nnd(iatom) = 0
 
-            do icont, ncon
-              if (ang_mom(icont) .eq. 0) nns(iatom) = nns(iatom) + &
-                                                      ang_deg(ang_mom(icont))
-              if (ang_mom(icont) .eq. 1) nnp(iatom) = nnp(iatom) + &
-                                                      ang_deg(ang_mom(icont))
-              if (ang_mom(icont) .eq. 2) nnd(iatom) = nnd(iatom) + &
-                                                      ang_deg(ang_mom(icont))
+            do icont = 1, ncon
+               select case (ang_mom(icont))
+               case (0)
+                  nns(iatom) = nns(iatom) + ANG_DEG(ang_mom(icont))
+               case (2)
+                  nnp(iatom) = nnp(iatom) + ANG_DEG(ang_mom(icont))
+               case (3)
+                  nnd(iatom) = nnd(iatom) + ANG_DEG(ang_mom(icont))
+               case default
+               end select
             enddo
 
             ! Stores the exponents and coefficients, and normalizes them if
@@ -432,11 +504,11 @@ subroutine read_basis_external(basis_file)
             index  = 0
             do icont = 1, ncon
                nshell(ang_mom(icont)) = nshell(ang_mom(icont)) + &
-                                        ang_deg(ang_mom(icont))
-               do l2 = 1, ang_deg(ang_mom(icont))
+                                        ANG_DEG(ang_mom(icont))
+               do l2 = 1, ANG_DEG(ang_mom(icont))
                   n_orig = n_orig +1
 
-                  if (norm) then
+                  if (normalize) then
                      do icount =1, n_cont_func(icont)
                         index = index +1
                         select case (ang_mom(icont))
@@ -474,13 +546,12 @@ subroutine read_basis_external(basis_file)
                   endif
 
                   ! Repeats the index for p, d and f
-                  if (l2 .ne. ang_deg(ang_mom(icont))) then
-                     index = index - n_cont_func(icont)
-                  endif
+                  if (l2 .ne. ANG_DEG(ang_mom(icont))) index = index - &
+                                                              n_cont_func(icont)
 
-                  atom_of_func(n_orig) = iatom
-                  ncont(n_orig)        = n_cont_func(icont)
-                  nlb(n_orig)          = ang_mom(icont)
+                  atm_of_func(n_orig) = iatom
+                  n_cont(n_orig)       = n_cont_func(icont)
+                  ang_mom_f(n_orig)   = ang_mom(icont)
                enddo
             enddo
          endif
@@ -499,18 +570,18 @@ subroutine read_basis_external(basis_file)
          read(file_uid,*) expo_temp(icount), coef_temp(icount)
       enddo
 
-      do iatom = 1, natom
+      do iatom = 1, n_atoms
          if (atom_Z(iatom) .eq. atom) then
-         done_fit(iatom) = .true.
+         fitting_done(iatom) = .true.
 
          index = 0
          do icont = 1, ncon
             nshelld(ang_mom(icont)) = nshelld(ang_mom(icont)) + &
-                                      ang_deg(ang_mom(icont))
-            do l2 = 1, ang_deg(ang_mom(icont))
+                                      ANG_DEG(ang_mom(icont))
+            do l2 = 1, ANG_DEG(ang_mom(icont))
                n_aux = n_aux +1
 
-               if (norm) then
+               if (normalize) then
                   do icount =1, n_cont_func(icont)
                      index = index +1
                      select case (ang_mom(icont))
@@ -542,24 +613,27 @@ subroutine read_basis_external(basis_file)
                else
                   do icount =1, n_cont_func(icont)
                      index = index +1
-                     coefd(n_orig, icount) = coef_temp(index)
-                     expod(n_orig, icount) = expo_temp(index)
+                     coefd(n_aux, icount) = coef_temp(index)
+                     expod(n_aux, icount) = expo_temp(index)
                   enddo
                endif
 
-               if (l2 .ne. ang_deg(ang_mom(icont))) then
+               if (l2 .ne. ANG_DEG(ang_mom(icont))) then
                   index = index - n_cont_func(icont)
                endif
 
-               atom_of_funcd(n_orig) = iatom
-               ncontd(n_orig)        = n_cont_func(icont)
-               nld(n_orig)           = ang_mom(icont)
+               atm_of_funcd(n_aux) = iatom
+               n_contd(n_aux)      = n_cont_func(icont)
+               ang_mom_fd(n_aux)   = ang_mom(icont)
             enddo
          enddo
        endif
    enddo
    read(file_uid,'(A8)') start_str
    enddo
+
+   deallocate(n_cont_func, ang_mom, expo_temp, coef_temp, basis_done, &
+              fitting_done)
 
 end subroutine read_basis_external
 
@@ -571,7 +645,7 @@ end subroutine read_basis_external
 subroutine atom_name(atom_Z, symb)
  ! Takes atomic number Z and translates it to its name.
  implicit none
- integer         , intent(in)  :: atom_z
+ integer         , intent(in)  :: atom_Z
  character(LEN=3), intent(out) :: symb
 
  character(LEN=3) :: name(118)

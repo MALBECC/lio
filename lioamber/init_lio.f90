@@ -340,8 +340,6 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge_i, basis_i       &
                       &, nshell, nuc, ncont, a, c, charge
    use td_data, only: timedep, tdstep
 
-   use basis_subs, only: basis_data_set, basis_data_norm
-
    use lionml_data, only: ndyn_steps, edyn_steps
 
    use liosubs,    only: catch_error
@@ -379,7 +377,6 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge_i, basis_i       &
 
    if ( (ndyn_steps>0) .and. (edyn_steps>0) ) doing_ehrenfest=.true.
 
-   call basis_data_set(nshell(0),nshell(1),nshell(2),nuc,ncont,a,c)
 !   call basis_data_norm( M, size(c,2), c )
 
    tdstep = (dt_i) * (41341.3733366d0)

@@ -5,9 +5,9 @@
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        use garcha_mod
-       use ECP_mod, only : ecpmode
-       use fileio_data, only : style
-       use linear_search, only: P_linearsearch_fin
+       use ECP_mod     , only: ecpmode
+       use fileio_data , only: style
+       use converger_ls, only: P_linearsearch_fin
        implicit none
        if (dipole) then
         if (style) write(69,8703)

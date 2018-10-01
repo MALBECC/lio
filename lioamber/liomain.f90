@@ -18,10 +18,11 @@ subroutine liomain(E, dipxyz)
                           doing_ehrenfest, first_step, Eorbs, Eorbs_b, fukui, &
                           print_coeffs, steep,       MO_coef_at, MO_coef_at_b,&
                           NUnp, NCO, spinpop, calc_propM
-    use ecp_mod   , only: ecpmode, IzECP
-    use ehrensubs , only: ehrendyn_main
-    use fileio    , only: write_orbitals, write_orbitals_op
-    use steepest_descent, only: do_steep
+
+    use ecp_mod       , only: ecpmode, IzECP
+    use ehrensubs     , only: ehrendyn_main
+    use fileio        , only: write_orbitals, write_orbitals_op
+    use geometry_optim, only: do_steep
 
     implicit none
     REAL*8, intent(inout) :: dipxyz(3), E

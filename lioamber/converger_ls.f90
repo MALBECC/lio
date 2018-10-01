@@ -21,7 +21,7 @@
 ! V 1.01 September 2018 adaptation - FFR
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-module linear_search
+module converger_ls
    implicit none
 
 !------------------------------!
@@ -136,7 +136,7 @@ end subroutine P_linearsearch_fin
 subroutine P_linear_calc(Rho_LS, niter, En, E1, E2, Ex, xnano,  &
 may_conv, rho_a, rho_b)
    use garcha_mod, only : M, RMM, rhoalpha, rhobeta, OPEN
-   use steepest_descent, only: line_search
+   use liosubs, only: line_search
    implicit none
    integer, intent(in) :: Rho_LS, niter !type of lineal search criteria and step number
    double precision, intent(in) :: En
@@ -274,5 +274,5 @@ subroutine give_me_energy(E, En, E1, E2, Ex)
 end subroutine give_me_energy
 
 
-end module
+end module converger_ls
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

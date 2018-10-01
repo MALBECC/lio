@@ -72,7 +72,7 @@ subroutine SCF(E)
    use fileio_data  , only: verbose
    use lr_data, only: lresp
    use lrtddft, only: linear_response
-   use linear_search, only: Rho_LS, changed_to_LS, P_conver, P_linearsearch_init
+   use converger_ls , only: Rho_LS, changed_to_LS, P_conver, P_linearsearch_init
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 

@@ -7,10 +7,10 @@
 ! Reads LIO options from an input file.                                        !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine read_options(inputFile)
-    use field_subs   , only: read_fields
-    use lionml_subs  , only: lionml_read, lionml_write
-    use garcha_mod   , only: DIIS,hybrid_converg
-    use linear_search, only: Rho_LS
+    use field_subs  , only: read_fields
+    use lionml_subs , only: lionml_read, lionml_write
+    use garcha_mod  , only: DIIS, hybrid_converg
+    use converger_ls, only: Rho_LS
 
     implicit none
     character(len=20), intent(in)  :: inputFile

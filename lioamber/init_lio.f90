@@ -135,7 +135,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     use fileio    , only : lio_logo
     use fileio_data, only: style, verbose
     use lr_data, only: cbas, cbasx
-    use linear_search, only: Rho_LS, P_linearsearch_init
+    use converger_ls, only: Rho_LS, P_linearsearch_init
 
     implicit none
     integer , intent(in) :: nclatom, natomin, Izin(natomin), callfrom

@@ -3,12 +3,13 @@
 !
 ! Nicolas Foglia, 2017
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-module steepest_descent
+module geometry_optim
    implicit none
    contains
 
 	SUBROUTINE do_steep(E)
 	USE garcha_mod, only : Force_cut, Energy_cut, minimzation_steep, n_min_steeps, OPEN, natom, r, rqm, lineal_search, n_points
+        use liosubs, only: line_search
 	IMPLICIT NONE
 	real*8, intent(inout) :: E !energy
 	real*8 :: Emin, step_size, Fmax, d_E !Energy of previus steep, max displacement (Bohrs) of an atom in each steep, max |force| on an atoms, E(steep i)-E(steep i-1)
@@ -179,46 +180,6 @@ module steepest_descent
 
 
 
-        subroutine line_search(n_points,Energy, step_size, lambda )
-!if minimun value of E is E(n_points) return lambda = step_size * n_points
-!if minimun value of E is E(1) return lambda = 0.d0
-!else returns an expected lambda that minimice E(lambda) using a parabolic interpolation
-        implicit none
-        integer, intent(in) :: n_points
-        double precision, dimension(n_points), intent(in) :: Energy
-        double precision, intent(in) :: step_size
-        double precision, intent(out) :: lambda
-        integer :: i
-        integer :: min_Energy_position
-        double precision :: dE1, dE2, modif_fac
-
-        if (n_points .le. 2) then
-	  write(*,*) "wrong n_points in lineal search, n_points need to be > 2"
-	  stop
-	end if
-!find min value in Energy elements
-        min_Energy_position=1
-        do i=2, n_points
-           if (Energy(i) .lt. Energy(min_Energy_position)) min_Energy_position=i
-        end do
-
-        if (min_Energy_position .eq. 1) then
-          lambda=0.d0
-          return
-        elseif (min_Energy_position .eq. n_points) then
-          lambda=step_size*dble(n_points)
-          return
-        end if
-
-        dE2=abs(Energy(min_Energy_position) - Energy(min_Energy_position+1))
-        dE1=abs(Energy(min_Energy_position) - Energy(min_Energy_position-1))
-
-        modif_fac=step_size*(dE2-dE1)/(dE1+dE2)
-        lambda=step_size*dble(min_Energy_position) - 0.5d0 * modif_fac
-        return
-        end subroutine line_search
-
-
         SUBROUTINE move(lambda, Fmax, gradient) !calculate new positions
 	USE garcha_mod, only : r, rqm,  natom
         IMPLICIT NONE
@@ -248,4 +209,4 @@ module steepest_descent
  5000 FORMAT(2x,i2,2x,3(f16.10,2x))
 	END SUBROUTINE save_traj
 
-end module
+end module geometry_optim

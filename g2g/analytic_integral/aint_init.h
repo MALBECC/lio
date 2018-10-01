@@ -7,6 +7,7 @@ namespace AINT {
 
 struct FortranVars {
   uint clatoms;
+  int  gpu_level;
 
   /* ---DENSITY BASIS--- */
   uint gaussians_dens, s_gaussians_dens, p_gaussians_dens;

@@ -48,10 +48,6 @@ else
 endif
 endif
 
-ifneq ($(aint_gpu_level),)
-  CXXFLAGS     += -DAINT_GPU_LEVEL=$(aint_gpu_level)
-  NVCCFLAGS    += -DAINT_GPU_LEVEL=$(aint_gpu_level)
-endif
 ifeq ($(aint_mp),1)
   CXXFLAGS     += -DAINT_MP=1
   NVCCFLAGS    += -DAINT_MP=1

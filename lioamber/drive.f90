@@ -20,7 +20,7 @@
       Rm2, rqm, rmax, Nunp, nl, nt, ng, ngd, restart_freq,             &
       writexyz, number_restr, restr_pairs,restr_index,restr_k,restr_w,restr_r0,&
       mulliken, MO_coef_at, MO_coef_at_b, use_libxc, ex_functional_id, &
-      ec_functional_id
+      ec_functional_id, gpu_level
 
       USE ECP_mod, ONLY : ecpmode, asignacion
       USE fileio , ONLY : read_coef_restart, read_rho_restart
@@ -1062,12 +1062,11 @@
                              NCO,OPEN,Nunp,nopt,Iexch, &
                              e_, e_2, e3, wang, wang2, wang3, &
 			                    use_libxc, ex_functional_id, ec_functional_id)
-              call summon_ghosts(Iz, natom, verbose)
+      call summon_ghosts(Iz, natom, verbose)
 
-      call aint_query_gpu_level(igpu)
-      if (igpu.gt.1) then
-      call aint_parameter_init(Md, ncontd, nshelld, cd, ad, Nucd, &
-      af, RMM, M9, M11, STR, FAC, rmax, Iz)
+      if (gpu_level .ne. 0) then
+         call aint_parameter_init(Md, ncontd, nshelld, cd, ad, Nucd, af, RMM, &
+                                  M9, M11, STR, FAC, rmax, Iz, gpu_level)
       endif
       allocate(X(M,4*M))
 

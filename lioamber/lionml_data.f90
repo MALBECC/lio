@@ -20,7 +20,8 @@ module lionml_data
                                  Dbug, steep, Force_cut, Energy_cut, charge,   &
                                  minimzation_steep, n_min_steeps, n_points,    &
                                  lineal_search, timers, IGRID, IGRID2,         &
-                                 use_libxc, ex_functional_id, ec_functional_id
+                                 use_libxc, ex_functional_id, ec_functional_id,&
+                                 gpu_level
    use dftb_data         , only: dftb_calc, MTB, alfaTB, betaTB, gammaTB,      &
                                  Vbias_TB, end_bTB, start_tdtb, end_tdtb,      &
                                  TBsave, TBload
@@ -61,7 +62,7 @@ module lionml_data
                      eefld_timepos, eefld_timeamp,                             &
                      fockbias_is_active, fockbias_is_shaped, fockbias_readfile,&
                      fockbias_timegrow , fockbias_timefall , fockbias_timeamp0,&
-		     use_libxc, ex_functional_id, ec_functional_id
+		               use_libxc, ex_functional_id, ec_functional_id
 
    namelist /lio/ OPEN, NMAX, Nunp, VCINP, GOLD, told, Etold, rmax, rmaxs,     &
                   predcoef, writexyz, DIIS, ndiis, Iexch, igrid, igrid2,       &
@@ -104,7 +105,7 @@ module lionml_data
                    ! Libxc variables
                   use_libxc, ex_functional_id, ec_functional_id,               &
                   ! Variables for Ghost atoms:
-                  n_ghosts, ghost_atoms
+                  n_ghosts, ghost_atoms, gpu_level
 
    type lio_input_data
       ! COMMON
@@ -141,7 +142,7 @@ module lionml_data
                           cube_sqrt_orb
       ! GPU Options
       double precision :: free_global_memory, little_cube_size, sphere_radius
-      integer          :: min_points_per_cube, max_function_exponent
+      integer          :: min_points_per_cube, max_function_exponent, gpu_level
       logical          :: assign_all_functions, energy_all_iterations,         &
                           remove_zero_weights
       ! Transport and DFTB
@@ -237,6 +238,7 @@ subroutine get_namelist(lio_in)
    lio_in%assign_all_functions  = assign_all_functions
    lio_in%energy_all_iterations = energy_all_iterations
    lio_in%remove_zero_weights   = remove_zero_weights
+   lio_in%gpu_level             = gpu_level
    ! Transport and DFTB
    lio_in%driving_rate     = driving_rate    ; lio_in%alfaTB    = alfaTB
    lio_in%dftb_calc        = dftb_calc       ; lio_in%betaTB    = betaTB

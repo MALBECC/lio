@@ -12,10 +12,6 @@
 #include "qmmm_integral.h"
 #include "coulomb_integral.h"
 
-#ifndef AINT_GPU_LEVEL
-#define AINT_GPU_LEVEL AINT_DEFAULT_GPU_LEVEL
-#endif
-
 using std::cout;
 using std::endl;
 using std::boolalpha;
@@ -45,13 +41,19 @@ extern "C" void aint_parameter_init_(const unsigned int& Md,
                                      double* ad, unsigned int* Nucd, double* af,
                                      double* RMM, const unsigned int& M9,
                                      const unsigned int& M11, double* str,
-                                     double* fac, double& rmax, uint* atomZ_i) {
+                                     double* fac, double& rmax, uint* atomZ_i,
+                                     const int& level_of_gpu) {
   /* DENSITY BASIS SET */
   integral_vars.s_funcs_dens = nshelld[0];
   integral_vars.p_funcs_dens = nshelld[1] / 3;
   integral_vars.d_funcs_dens = nshelld[2] / 6;
   // Md =	# of contractions
   integral_vars.m_dens = Md;
+
+
+  integral_vars.gpu_level = level_of_gpu;
+  if (level_of_gpu < 0) integral_vars.gpu_level = 0;
+  if (level_of_gpu > 5) integral_vars.gpu_level = 5;
 
   if (G2G::verbose > 3) {
      cout << "AINT initialisation." << endl;
@@ -243,7 +245,7 @@ extern "C" void aint_qmmm_forces_(double* qm_forces, double* mm_forces) {
   }
 
   qmmm_integral.calc_nuc_gradient(qm_forces, mm_forces);
-  if (AINT_GPU_LEVEL > 3) {
+  if (integral_vars.gpu_level > 3) {
     if (integral_vars.clatoms > 0) {
       qmmm_integral.calc_gradient(qm_forces, mm_forces, true, true);
     } else {
@@ -285,7 +287,7 @@ extern "C" void aint_qmmm_fock_(double& Es, double& Ens) {
   }
 
   qmmm_integral.calc_nuc_energy(Ens);
-  if (AINT_GPU_LEVEL > 3) {
+  if (integral_vars.gpu_level > 3) {
     if (integral_vars.clatoms > 0) {
       qmmm_integral.calc_fock(Es, true, true);
     } else {
@@ -314,7 +316,7 @@ extern "C" void aint_coulomb_forces_(double* qm_forces) {
   if (cudaSetDevice(os_integral.my_device) != cudaSuccess)
     std::cout << "Error: can't set the device " << os_integral.my_device
               << std::endl;
-  if (AINT_GPU_LEVEL >= 5) {
+  if (integral_vars.gpu_level >= 5) {
     coulomb_integral.calc_gradient(qm_forces, false);
   } else {
     coulomb_integral.calc_gradient(qm_forces, true);
@@ -338,23 +340,22 @@ extern "C" void aint_coulomb_fock_(double& Es) {
 #endif
 }
 //===============================================================================================================
-extern "C" void aint_query_gpu_level_(int& gpu_level) {
+extern "C" void aint_query_gpu_level_(int& gpu_level_out) {
 #if !GPU_KERNELS
-  gpu_level = 0;
+  gpu_level_out = 0;
 #else
-
   // 0 - No GPU acceleration
   // 1 - Only XC on GPU (no difference from 0 for us here)
   // 2 - 1 + QM/MM energy and gradient terms on GPU
   // 3 - 1-2 + Coulomb gradient terms on GPU
   // 4 - 1-3 + Nuclear attraction gradient terms on GPU
   // 5 - 1-4 + Coulomb auxiliary basis fitting and energy terms on GPU
-  if (AINT_GPU_LEVEL < 0) {
-    gpu_level = 0;
-  } else if (AINT_GPU_LEVEL > 5) {
-    gpu_level = 5;
+  if (AINT::integral_vars.gpu_level < 0) {
+    gpu_level_out = 0;
+  } else if (AINT::integral_vars.gpu_level > 5) {
+    gpu_level_out = 5;
   } else {
-    gpu_level = AINT_GPU_LEVEL;
+    gpu_level_out = AINT::integral_vars.gpu_level;
   }
 #endif
 }

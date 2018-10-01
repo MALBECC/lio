@@ -33,8 +33,7 @@ subroutine lio_defaults()
                            lowdin, mulliken, print_coeffs, number_restr, Dbug, &
                            steep, Force_cut, Energy_cut, minimzation_steep,    &
                            n_min_steeps, lineal_search, n_points, timers,      &
-                           calc_propM, spinpop, Rho_LS, P_oscilation_analisis, &
-                           writexyz, IGRID2
+                           calc_propM, spinpop, writexyz, IGRID2
 
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,       &
                            local_nonlocal, ecp_debug, ecp_full_range_int,      &
@@ -56,7 +55,6 @@ subroutine lio_defaults()
     GOLD           = 10.           ; omit_bas           = .false.       ;
     charge         = 0             ;
     fitting_set    = "DZVP Coulomb Fitting" ;
-    Rho_LS         = 0             ; P_oscilation_analisis = .false.
 
 !   Effective Core Potential options.
     ecpmode        = .false.       ; cut2_0             = 15.d0         ;
@@ -137,7 +135,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     use fileio    , only : lio_logo
     use fileio_data, only: style, verbose
     use lr_data, only: cbas, cbasx
-    use linear_search, only: P_linearsearch_init
+    use linear_search, only: Rho_LS, P_linearsearch_init
 
     implicit none
     integer , intent(in) :: nclatom, natomin, Izin(natomin), callfrom
@@ -208,7 +206,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     ! reemplazos de RMM
     MM=M*(M+1)/2
     allocate(Fock_Hcore(MM), Fock_Overlap(MM), P_density(MM))
-    if ( (Rho_LS.gt.0)) call P_linearsearch_init()
+    if ( Rho_LS > 0 ) call P_linearsearch_init()
     call g2g_timer_stop('lio_init')
 
     return

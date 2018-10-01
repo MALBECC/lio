@@ -1,29 +1,61 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Lineal search subroutines
 !
-! This routines improve convergency in systems finding best lineal combinations
-! of density matrix in steps n and n-1
+! This procedure improve convergency in systems finding best lineal
+! combinations of density matrix in steps n and n-1. To do so, it
+! evaluates different combinations of rho(n) and rho(n-1), using the
+! variable lambda as a weight. The possibilities it evaluates also
+! depend on the performance of the algorithm in previous steps,
+! which is regulated by the parameters Elast and Pstepsize.
+!
+! FFR comments: Rho_LS, changed_to_LS and P_oscilation_analysis are
+! communication variables that appear here and in some external subs.
+! P_oscilation_analysis and changed_to_LS are not even used inside here.
+! These should be dealt with differently.
 !
 !------------------------------------------------------------------------------!
 ! LOG:
+!
 ! V 1.00 September 2018 Final version - Nicolas Foglia
+!
 ! V 1.01 September 2018 adaptation - FFR
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module linear_search
    implicit none
 
+!------------------------------!
+!  Linear search in rho for convergention:
+   integer          :: Rho_LS = 0
+!  IF Rho_LS=0 calculate convergence criteria for actual density matrix
+!  IF Rho_LS=1 do a lineal search for density matrix only if energy > energy of previus step
+!  IF Rho_LS=2 do a lineal search for density matrix in all steeps
+   logical          :: changed_to_LS
+   logical          :: P_oscilation_analisis = .false.
+!------------------------------!
+
+   double precision :: Elast
+   double precision :: Pstepsize
+
+   double precision, dimension(:)  , allocatable :: rho_lambda1
+   double precision, dimension(:)  , allocatable :: rho_lambda0
+   double precision, dimension(:)  , allocatable :: rho_lambda1_alpha
+   double precision, dimension(:)  , allocatable :: rho_lambda0_alpha
+   double precision, dimension(:)  , allocatable :: rho_lambda1_betha
+   double precision, dimension(:)  , allocatable :: rho_lambda0_betha
+   double precision, dimension(:,:), allocatable :: P_hist
+
 contains
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 
-subroutine P_conver(Rho_LS, niter, En, E1, E2, Ex, good, xnano, rho_a, rho_b)
+subroutine P_conver(niter, En, E1, E2, Ex, good, xnano, rho_a, rho_b)
 !  IF Rho_LS=0 calculate convergence criteria for actual density matrix
 !  IF Rho_LS=1 do a lineal search for density matrix only if energy > energy of previus step
 !  IF Rho_LS=2 do a lineal search for density matrix in all steeps
    use garcha_mod, only : M 
    implicit none
-   integer, intent(in) :: Rho_LS, niter !type of lineal search criteria and step number
+   integer, intent(in) :: niter !type of lineal search criteria and step number
    double precision, intent(out) :: good ! convergence criteria
    double precision, intent(in) :: En 
    double precision, intent(inout) :: E1, E2, Ex
@@ -69,11 +101,10 @@ end subroutine P_calc_fluctuation
 
 
 subroutine P_linearsearch_init()
-   use garcha_mod, only : M, Md, OPEN, rho_lambda1, rho_lambda0,   &
-   rho_lambda1_alpha, rho_lambda0_alpha, rho_lambda1_betha,        &
-   rho_lambda0_betha, RMM, rhoalpha, rhobeta, Elast
+   use garcha_mod, only : M, Md, OPEN, RMM, rhoalpha, rhobeta
    implicit none
-   integer :: MM !, MMd 
+   integer :: MM
+
    MM=M*(M+1)/2
    if (.not. allocated(rho_lambda1)) allocate(rho_lambda1(MM))
    if (.not. allocated(rho_lambda0)) allocate(rho_lambda0(MM))
@@ -92,12 +123,8 @@ end subroutine P_linearsearch_init
 
 
 subroutine P_linearsearch_fin()
-   use garcha_mod, only : OPEN, rho_lambda1, rho_lambda0,   &
-   rho_lambda1_alpha, rho_lambda0_alpha, rho_lambda1_betha,        &
-   rho_lambda0_betha, RMM, rhoalpha, rhobeta, Elast
-
-   if (allocated(rho_lambda1)) deallocate(rho_lambda1)
-   if (allocated(rho_lambda0)) deallocate(rho_lambda0)
+   if (allocated(rho_lambda1))       deallocate(rho_lambda1)
+   if (allocated(rho_lambda0))       deallocate(rho_lambda0)
    if (allocated(rho_lambda1_alpha)) deallocate(rho_lambda1_alpha)
    if (allocated(rho_lambda0_alpha)) deallocate(rho_lambda0_alpha)
    if (allocated(rho_lambda1_betha)) deallocate(rho_lambda1_betha)
@@ -108,9 +135,7 @@ end subroutine P_linearsearch_fin
 
 subroutine P_linear_calc(Rho_LS, niter, En, E1, E2, Ex, xnano,  &
 may_conv, rho_a, rho_b)
-   use garcha_mod, only : M, Pstepsize, rho_lambda1, rho_lambda0,  &
-   M, RMM, Elast, rho_lambda1_alpha, rho_lambda0_alpha,            &
-   rho_lambda1_betha, rho_lambda0_betha, rhoalpha, rhobeta, OPEN
+   use garcha_mod, only : M, RMM, rhoalpha, rhobeta, OPEN
    use steepest_descent, only: line_search
    implicit none
    integer, intent(in) :: Rho_LS, niter !type of lineal search criteria and step number
@@ -213,7 +238,7 @@ end subroutine P_linear_calc
 
 subroutine give_me_energy(E, En, E1, E2, Ex)
 !  return Energy components for a density matrix stored in RMM(1:MM)
-   use garcha_mod, only : M,Md, RMM, OPEN
+   use garcha_mod, only : M, Md, RMM, OPEN
    use faint_cpu, only: int3lu
    implicit none
    double precision, intent(out) :: E

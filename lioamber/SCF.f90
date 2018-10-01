@@ -37,7 +37,7 @@ subroutine SCF(E)
                           total_time, MO_coef_at, MO_coef_at_b, Smat, good_cut,&
                           ndiis, ncont, nshell, rhoalpha, rhobeta, OPEN,nshell,&
                           Nuc, a, c, d, NORM, ntatom, Eorbs_b, ad, cd, ncontd, &
-                          nucd, nshelld, Rho_LS, changed_to_LS
+                          nucd, nshelld
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
                        FOCK_ECP_read,FOCK_ECP_write,IzECP
    use field_data, only: field, fx, fy, fz
@@ -72,7 +72,7 @@ subroutine SCF(E)
    use fileio_data  , only: verbose
    use lr_data, only: lresp
    use lrtddft, only: linear_response
-   use linear_search, only: P_conver, P_linearsearch_init
+   use linear_search, only: Rho_LS, changed_to_LS, P_conver, P_linearsearch_init
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -854,8 +854,8 @@ subroutine SCF(E)
 !------------------------------------------------------------------------------!
 ! Convergence criteria and lineal search in P
 
-       IF (OPEN) call P_conver(Rho_LS, nniter, En, E1, E2, Ex, good, xnano, rho_a, rho_b)
-       IF (.not. OPEN) call P_conver(Rho_LS, nniter, En, E1, E2, Ex, good, xnano, rho_a, rho_a)
+       IF (OPEN) call P_conver(nniter, En, E1, E2, Ex, good, xnano, rho_a, rho_b)
+       IF (.not. OPEN) call P_conver(nniter, En, E1, E2, Ex, good, xnano, rho_a, rho_a)
 !------------------------------------------------------------------------------!
 
       deallocate ( xnano )

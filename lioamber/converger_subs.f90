@@ -71,7 +71,7 @@ end subroutine converger_init
                           &  fock_damped, bcoef, EMAT2, conver_criter
    use typedef_operator, only: operator
    use fileio_data, only: verbose
-   use garcha_mod, only : changed_to_LS
+   use linear_search, only : changed_to_LS
    implicit none
    integer, intent(in)            :: niter
    real*8 , intent(in)            :: good, good_cut

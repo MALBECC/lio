@@ -20,8 +20,7 @@ module lionml_data
                                  Dbug, steep, Force_cut, Energy_cut, charge,   &
                                  minimzation_steep, n_min_steeps, n_points,    &
                                  lineal_search, timers, IGRID, IGRID2,         &
-                                 use_libxc, ex_functional_id, ec_functional_id,&
-                                 Rho_LS, P_oscilation_analisis
+                                 use_libxc, ex_functional_id, ec_functional_id
    use dftb_data         , only: dftb_calc, MTB, alfaTB, betaTB, gammaTB,      &
                                  Vbias_TB, end_bTB, start_tdtb, end_tdtb,      &
                                  TBsave, TBload
@@ -51,7 +50,7 @@ module lionml_data
                                  save_charge_freq, driving_rate, Pop_Drive
    use ghost_atoms_data  , only: n_ghosts, ghost_atoms
    use lr_data           , only: lresp, nstates, root, FCA, nfo, nfv
-
+   use linear_search     , only: Rho_LS, P_oscilation_analisis
    implicit none
 
 !  Namelist definition

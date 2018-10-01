@@ -107,7 +107,8 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ghost_atoms.mod
 SRCDIRS +=
 OBJECTS += linear_search.o
 tmplist :=
-tmplist += init_lio.f90 lio_finalize.f SCF.f90
+tmplist += init_lio.o lio_finalize.o SCF.o converger_subs.o
+tmplist += lionml_data.o input_read.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/linear_search.mod
 
 ################################################################################

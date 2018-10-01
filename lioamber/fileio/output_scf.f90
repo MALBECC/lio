@@ -139,7 +139,7 @@ subroutine write_energy_convergence(step, energy, good, told, egood, etold)
 "════╝")
 
 8700 FORMAT(2x, "Step = ", I6, 1x, " - QM Energy = ", F15.5, 1x,        &
-            "- Rho diff (crit) = ", ES8.2, " (",ES8.2, &
-            ") - Energy diff (crit) = ", ES8.2, " (",ES8.2,")")
+            "- Rho diff (crit) = ", ES9.2, " (",ES9.2, &
+            ") - Energy diff (crit) = ", ES9.2, " (",ES9.2,")")
 8701 FORMAT(2x, "Step = ", I6, 1x, " - QM Energy = ", F15.5, 1x)
 end subroutine write_energy_convergence

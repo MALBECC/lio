@@ -56,10 +56,10 @@ subroutine liomain(E, dipxyz)
 
     if (calc_prop) then
 
-        if (mulliken.or.lowdin.or.spinpop) call do_population_analysis()
-        if (mulliken.or.lowdin) call do_population_analysis()
+        call do_population_analysis()
         if (dipole) call do_dipole(dipxyz, 69)
         if (fukui) call do_fukui()
+        
 
         if (writeforces) then
             if (ecpmode) stop "ECP does not feature forces calculation."
@@ -190,17 +190,13 @@ subroutine do_population_analysis()
        call g2g_timer_stop('Lowdin')
    endif
 
-   if (spinpop) then
-       if (.not. OPEN) then
-         write(*,*) "cant perform a spin population analysis in a close shell calculation"
-         return
-       end if
+   if (OPEN) then
        allocate (RealRho_alpha(M,M), RealRho_betha(M,M))
        call spunpack('L',M,rhoalpha(1),RealRho_alpha) !pasa vector a matriz
        call spunpack('L',M,rhobeta(1),RealRho_betha) !pasa vector a matriz
        q=0
        call spin_pop_calc(natom, M, RealRho_alpha, RealRho_betha, Smat, Nuc, q)
-       call write_population(natom, IzUsed, q, 2, 85)
+       call write_population(natom, IzUsed, q, 2, 86)
    end if
 
    return

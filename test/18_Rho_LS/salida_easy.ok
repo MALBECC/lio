@@ -1,0 +1,585 @@
+WELCOME TO LIO
+Mon Oct  1 15:29:05 ART 2018
+Error found in lionml namelist. Using defaults for namelist lionml.
+iostat =   -1
+ 
+LIO input variables
+ ! -- General and theory level: -- !
+  Natom =      2, Nsol =        0, charge =     0, Nunp =     2, open =  T,
+  Nmax =   500, int_basis =  F, basis_set = DZVP                     ,
+  fitting_set = DZVP Coulomb Fitting     , DIIS =  F, NDIIS =  30,
+  hybrid_converg =  F, Gold =     0.00000000, Told =     0.00000100,
+  Etold =     1.00000000, good_cut =     0.00001000, Rmax =    16.00000000,
+  RmaxS =     5.00000000, IExch =     9, IGrid =   2, IGrid2 =   2,
+  PredCoef =  F, initial_guess =   0, DBug =  F,
+  n_ghosts =     0
+ ! -- Input and output options: -- !
+  verbose =   4, style =  F, timers =   0, writeXYZ =  T, writeForces =  F,
+  dipole =  F, mulliken =  T, lowdin =  F, fukui =  F, print_coeffs =  F,
+  VCInp =  F, FRestartIn =      restart.in          , restart_freq =     0,
+  FRestart =      restart.out         , TDRestart =  F, writeDens =  F,
+  TD_rst_freq =    500, gaussian_convert =  F,
+  rst_dens =   0
+ ! -- TD-DFT and external field: -- !
+  timeDep =  0, NTDStep =          0, TDStep =     0.00200000, propagator =  1,
+  NBCH =   10, field =  F, a0 =  1000.00000000, epsilon =     1.00000000,
+  Fx =     0.00000000, Fy =     0.00000000, Fz =     0.00000000, n_fields_iso =     0,
+  n_fields_aniso =     0, field_iso_file =      field.in            ,
+  field_aniso_file =      fieldaniso.in       , td_do_pop =     0
+ ! -- Effective Core Potentials: -- !
+  ECPMode =  F, ECPTypes =   0, TipeECP = NOT-DEFINED              ,
+  Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    15.00000000,
+  cut3_0 =    12.00000000, verbose_ECP =  0, ECP_debug =  F, fullTimer_ECP =  F,
+  local_nonlocal =  0, ECP_full_range_int =  F
+  ZListECP = 
+ ! -- Minimizations and restraints: -- !
+  steep =  F, minimzation_steep =     0.05000000, energy_cut =     0.00010000,
+  force_cut =     0.00001000, n_min_steeps =   500, lineal_search =  T,
+  n_points =     5, number_restr =     0
+ ! -- CubeGen: -- !
+  CubeGen_only =  F, cube_res =    40, cube_sel =     0, cube_dens =  F,
+  cube_orb =  F, cube_elec =  F, cube_dens_file =      dens.cube           ,
+  cube_orb_file =      orb.cube            , cube_elec_file =      dens.cube           
+ ! -- GPU Options: -- !
+  energy_all_iterations =  T, assign_all_functions =  F, remove_zero_weights =  T,
+  max_function_exponent =    10, free_global_memory =     0.00000000,
+  sphere_radius =     0.50000000, little_cube_size =    15.50000000,
+  min_points_per_cube =     1
+ ! -- Transport and DFTB: -- !
+  transport_calc =  F, generate_rho0 =  F, driving_rate =     0.00100000,
+  gate_field =  F, pop_drive =   1, save_charge_freq =     1, DFTB_calc =  F,
+  MTB =     0, alfaTB =     0.00000000, betaTB =     0.00000000,
+  gammaTB =     0.00000000, VBias_TB =     0.00000000, start_TDTB =     0,
+  end_TDTB =     0, end_BTB =     0, TBLoad =  F, TBSave =  F
+  nbias=    0
+ ! -- Ehrenfest: -- !
+  ndyn_steps =      0, edyn_steps =      0, nullify_forces =  F,
+  wdip_nfreq =     0, wdip_fname = liorun.dip               , rsti_loads =  F,
+  rsto_saves =  F, rsto_nfreq =  F, rsti_fname = liorun.rsti              ,
+  rsto_fname = liorun.rsto              , eefld_on =  F, eefld_ampx =    0.00000000,
+  eefld_ampy =     0.00000000, eefld_ampz =     0.00000000,
+  eefld_timeamp =     0.20000000, eefld_timepos =     1.00000000,
+  eefld_timegfh =  F, eefld_timegih =  F, eefld_wavelen =     0.00000000
+ ! -- Fock Bias Potentials: -- !
+  fockbias_is_active =  F, fockbias_is_shaped =  F, fockbias_timeamp0 =     0.00000000,
+  fockbias_timegrow =     0.00000000, fockbias_timefall =     0.00000000,
+  fockbias_readfile = atombias.in              
+ 
+LIO initialisation.
+G2G initialisation.
+  GPU Device used: GeForce GTX 680
+  Using 3 CPU Threads and 1 GPU Threads.
+  QM atoms: 2 - MM atoms: 0
+  Total number of basis: 30 (s: 6 p: 4 d: 2)
+  Open shell calculation - Occupied MO(UP): 7 - Occupied MO(DOWN): 9
+AINT initialisation.
+  Density basis - s: 14 p: 6 d: 6 - Total (w/contractions): 68
+  Using device 0 for analytic integral calculations.
+ 
+Starting SCF cycles.
+ This step   -144.056438314965      last steep   0.000000000000000E+000
+ doing lineal interpolation in Rho
+ step            0 energy   -137.221859293801     
+ step            1 energy   -139.132831697301     
+ step            2 energy   -140.771023100494     
+ step            3 energy   -142.136433503379     
+ step            4 energy   -143.229062905957     
+ step            5 energy   -144.048911308227     
+ step            6 energy   -144.595978710190     
+ step            7 energy   -144.870265111845     
+ step            8 energy   -144.871770513192     
+ step            9 energy   -144.600494914232     
+ step           10 energy   -144.056438314965     
+ Best lambda   7.50551871774685     
+ Fluctuation:   0.750551871774685     
+  Step =      1  - QM Energy =      -144.90512 - Rho diff (crit) =  6.88E-01 ( 1.00E-06) - Energy diff (crit) =  1.45E+02 ( 1.00E+00)
+ This step   -149.531462004252      last steep   -144.905119591500     
+ doing lineal interpolation in Rho
+ step            0 energy   -144.905119591500     
+ step            1 energy   -145.534805971295     
+ step            2 energy   -146.129093977452     
+ step            3 energy   -146.686772763881     
+ step            4 energy   -147.206974314594     
+ step            5 energy   -147.689177534638     
+ step            6 energy   -148.133199276791     
+ step            7 energy   -148.539175837878     
+ step            8 energy   -148.907476330210     
+ step            9 energy   -149.238333453293     
+ step           10 energy   -149.531462004252     
+ Best lambda   10.0000000000000     
+ Fluctuation:    1.00000000000000     
+  Step =      2  - QM Energy =      -149.53146 - Rho diff (crit) =  3.27E-01 ( 1.00E-06) - Energy diff (crit) =  4.63E+00 ( 1.00E+00)
+ This step   -146.461633473722      last steep   -149.531462004252     
+ doing lineal interpolation in Rho
+ step            0 energy   -149.531462004252     
+ step            1 energy   -149.586846043691     
+ step            2 energy   -149.561602930728     
+ step            3 energy   -149.455937309893     
+ step            4 energy   -149.269874327210     
+ step            5 energy   -149.003217712535     
+ step            6 energy   -148.655823693574     
+ step            7 energy   -148.227696369108     
+ step            8 energy   -147.719014359946     
+ step            9 energy   -147.130142327184     
+ step           10 energy   -146.461633473722     
+ Best lambda   1.18691548428839     
+ Fluctuation:   0.118691548428839     
+  Step =      3  - QM Energy =      -149.58826 - Rho diff (crit) =  4.69E-02 ( 1.00E-06) - Energy diff (crit) =  5.68E-02 ( 1.00E+00)
+ This step   -150.052521061618      last steep   -149.588257500843     
+ doing lineal interpolation in Rho
+ step            0 energy   -149.588257500843     
+ step            1 energy   -149.628639355766     
+ step            2 energy   -149.667209273480     
+ step            3 energy   -149.703967931598     
+ step            4 energy   -149.738917196112     
+ step            5 energy   -149.772057779305     
+ step            6 energy   -149.803390880999     
+ step            7 energy   -149.832916769605     
+ step            8 energy   -149.860635629984     
+ step            9 energy   -149.886548626518     
+ step           10 energy   -149.910656057372     
+ Best lambda   10.0000000000000     
+ Fluctuation:   0.500000000000000     
+  Step =      4  - QM Energy =      -149.91066 - Rho diff (crit) =  8.70E-02 ( 1.00E-06) - Energy diff (crit) =  3.22E-01 ( 1.00E+00)
+ This step   -150.207158687470      last steep   -149.910656057372     
+ doing lineal interpolation in Rho
+ step            0 energy   -149.910656057372     
+ step            1 energy   -149.928582025772     
+ step            2 energy   -149.946490253154     
+ step            3 energy   -149.964381017287     
+ step            4 energy   -149.982255036608     
+ step            5 energy   -150.000111703993     
+ step            6 energy   -150.017951938582     
+ step            7 energy   -150.035773914472     
+ step            8 energy   -150.053578604650     
+ step            9 energy   -150.071366391908     
+ step           10 energy   -150.089136675524     
+ Best lambda   10.0000000000000     
+ Fluctuation:   0.600000000000000     
+  Step =      5  - QM Energy =      -150.08914 - Rho diff (crit) =  1.73E-02 ( 1.00E-06) - Energy diff (crit) =  1.78E-01 ( 1.00E+00)
+ This step   -150.209751521240      last steep   -150.089136675524     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.089136675524     
+ step            1 energy   -150.098273252106     
+ step            2 energy   -150.107339529305     
+ step            3 energy   -150.116335813641     
+ step            4 energy   -150.125261586798     
+ step            5 energy   -150.134117062686     
+ step            6 energy   -150.142902524624     
+ step            7 energy   -150.151617603949     
+ step            8 energy   -150.160263138732     
+ step            9 energy   -150.168838159466     
+ step           10 energy   -150.177342998750     
+ Best lambda   10.0000000000000     
+ Fluctuation:   0.720000000000000     
+  Step =      6  - QM Energy =      -150.17734 - Rho diff (crit) =  2.21E-02 ( 1.00E-06) - Energy diff (crit) =  8.82E-02 ( 1.00E+00)
+ This step   -150.211183851693      last steep   -150.177342998750     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.177342998750     
+ step            1 energy   -150.180519767208     
+ step            2 energy   -150.183647760365     
+ step            3 energy   -150.186729266086     
+ step            4 energy   -150.189761565192     
+ step            5 energy   -150.192746954001     
+ step            6 energy   -150.195684875917     
+ step            7 energy   -150.198574478917     
+ step            8 energy   -150.201416328731     
+ step            9 energy   -150.204210922072     
+ step           10 energy   -150.206957815859     
+ Best lambda   10.0000000000000     
+ Fluctuation:   0.864000000000000     
+  Step =      7  - QM Energy =      -150.20696 - Rho diff (crit) =  9.47E-03 ( 1.00E-06) - Energy diff (crit) =  2.96E-02 ( 1.00E+00)
+ This step   -150.210619222090      last steep   -150.206957815859     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.206957815859     
+ step            1 energy   -150.207723915787     
+ step            2 energy   -150.208400955496     
+ step            3 energy   -150.208988832289     
+ step            4 energy   -150.209488470605     
+ step            5 energy   -150.209898975786     
+ step            6 energy   -150.210220913270     
+ step            7 energy   -150.210453674274     
+ step            8 energy   -150.210597675216     
+ step            9 energy   -150.210652788304     
+ step           10 energy   -150.210619222090     
+ Best lambda   9.12148761396969     
+ Fluctuation:   0.912148761396969     
+  Step =      8  - QM Energy =      -150.21065 - Rho diff (crit) =  1.43E-02 ( 1.00E-06) - Energy diff (crit) =  3.70E-03 ( 1.00E+00)
+ This step   -150.209328167667      last steep   -150.210653616644     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.210653616644     
+ step            1 energy   -150.211093747666     
+ step            2 energy   -150.211406942722     
+ step            3 energy   -150.211592847666     
+ step            4 energy   -150.211651031799     
+ step            5 energy   -150.211582967407     
+ step            6 energy   -150.211386308789     
+ step            7 energy   -150.211063018013     
+ step            8 energy   -150.210612219673     
+ step            9 energy   -150.210033769743     
+ step           10 energy   -150.209328167667     
+ Best lambda   3.96086980372273     
+ Fluctuation:   0.396086980372273     
+  Step =      9  - QM Energy =      -150.21165 - Rho diff (crit) =  7.29E-03 ( 1.00E-06) - Energy diff (crit) =  9.98E-04 ( 1.00E+00)
+ This step   -150.213609626415      last steep   -150.211651388595     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.211651388595     
+ step            1 energy   -150.211749780311     
+ step            2 energy   -150.211848347538     
+ step            3 energy   -150.211946583955     
+ step            4 energy   -150.212045091045     
+ step            5 energy   -150.212143165836     
+ step            6 energy   -150.212241700727     
+ step            7 energy   -150.212339604684     
+ step            8 energy   -150.212437650318     
+ step            9 energy   -150.212535688142     
+ step           10 energy   -150.212633466712     
+ Best lambda   10.0000000000000     
+ Fluctuation:   0.500000000000000     
+  Step =     10  - QM Energy =      -150.21263 - Rho diff (crit) =  5.62E-04 ( 1.00E-06) - Energy diff (crit) =  9.82E-04 ( 1.00E+00)
+ This step   -150.213634740798      last steep   -150.212633466712     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.212633466712     
+ step            1 energy   -150.212697411220     
+ step            2 energy   -150.212760240863     
+ step            3 energy   -150.212822945771     
+ step            4 energy   -150.212885306751     
+ step            5 energy   -150.212947071628     
+ step            6 energy   -150.213008217050     
+ step            7 energy   -150.213068755694     
+ step            8 energy   -150.213129285216     
+ step            9 energy   -150.213189525304     
+ step           10 energy   -150.213248767975     
+ Best lambda   10.0000000000000     
+ Fluctuation:   0.600000000000000     
+  Step =     11  - QM Energy =      -150.21325 - Rho diff (crit) =  1.03E-03 ( 1.00E-06) - Energy diff (crit) =  6.15E-04 ( 1.00E+00)
+ This step   -150.213656633310      last steep   -150.213248767975     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.213248767975     
+ step            1 energy   -150.213279517554     
+ step            2 energy   -150.213309454222     
+ step            3 energy   -150.213339876343     
+ step            4 energy   -150.213369182857     
+ step            5 energy   -150.213399090192     
+ step            6 energy   -150.213428535442     
+ step            7 energy   -150.213457720915     
+ step            8 energy   -150.213487309450     
+ step            9 energy   -150.213516745715     
+ step           10 energy   -150.213545299996     
+ Best lambda   10.0000000000000     
+ Fluctuation:   0.720000000000000     
+  Step =     12  - QM Energy =      -150.21355 - Rho diff (crit) =  5.54E-04 ( 1.00E-06) - Energy diff (crit) =  2.97E-04 ( 1.00E+00)
+ This step   -150.213623843556      last steep   -150.213545299996     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.213545299996     
+ step            1 energy   -150.213556545380     
+ step            2 energy   -150.213566935714     
+ step            3 energy   -150.213576411827     
+ step            4 energy   -150.213585030435     
+ step            5 energy   -150.213592462607     
+ step            6 energy   -150.213599647206     
+ step            7 energy   -150.213606066969     
+ step            8 energy   -150.213611326325     
+ step            9 energy   -150.213615746131     
+ step           10 energy   -150.213619394922     
+ Best lambda   10.0000000000000     
+ Fluctuation:   0.864000000000000     
+  Step =     13  - QM Energy =      -150.21362 - Rho diff (crit) =  8.18E-04 ( 1.00E-06) - Energy diff (crit) =  7.41E-05 ( 1.00E+00)
+ This step   -150.213124040076      last steep   -150.213619394922     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.213619394922     
+ step            1 energy   -150.213627999341     
+ step            2 energy   -150.213623839682     
+ step            3 energy   -150.213607063154     
+ step            4 energy   -150.213576880824     
+ step            5 energy   -150.213533752102     
+ step            6 energy   -150.213477431990     
+ step            7 energy   -150.213408061528     
+ step            8 energy   -150.213326533473     
+ step            9 energy   -150.213231677736     
+ step           10 energy   -150.213124040076     
+ Best lambda   1.17411206418141     
+ Fluctuation:   0.117411206418141     
+  Step =     14  - QM Energy =      -150.21363 - Rho diff (crit) =  3.06E-04 ( 1.00E-06) - Energy diff (crit) =  9.60E-06 ( 1.00E+00)
+ This step   -150.213641634799      last steep   -150.213628993714     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.213628993714     
+ step            1 energy   -150.213630907538     
+ step            2 energy   -150.213633316407     
+ step            3 energy   -150.213635933368     
+ step            4 energy   -150.213637877240     
+ step            5 energy   -150.213639824970     
+ step            6 energy   -150.213641015421     
+ step            7 energy   -150.213642718949     
+ step            8 energy   -150.213643796978     
+ step            9 energy   -150.213644933088     
+ step           10 energy   -150.213645437018     
+ Best lambda   10.0000000000000     
+ Fluctuation:   0.500000000000000     
+  Step =     15  - QM Energy =      -150.21365 - Rho diff (crit) =  3.81E-04 ( 1.00E-06) - Energy diff (crit) =  1.64E-05 ( 1.00E+00)
+ This step   -150.213607226720      last steep   -150.213645437018     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.213645437018     
+ step            1 energy   -150.213647107167     
+ step            2 energy   -150.213648186658     
+ step            3 energy   -150.213649158807     
+ step            4 energy   -150.213649092759     
+ step            5 energy   -150.213648837001     
+ step            6 energy   -150.213647858980     
+ step            7 energy   -150.213646945958     
+ step            8 energy   -150.213644603793     
+ step            9 energy   -150.213642297269     
+ step           10 energy   -150.213639423862     
+ Best lambda   3.43638204500269     
+ Fluctuation:   0.206182922700161     
+  Step =     16  - QM Energy =      -150.21365 - Rho diff (crit) =  1.74E-04 ( 1.00E-06) - Energy diff (crit) =  3.97E-06 ( 1.00E+00)
+ This step   -150.213663964736      last steep   -150.213649409463     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.213649409463     
+ step            1 energy   -150.213649941988     
+ step            2 energy   -150.213650540265     
+ step            3 energy   -150.213650656614     
+ step            4 energy   -150.213651820831     
+ step            5 energy   -150.213651986495     
+ step            6 energy   -150.213652617955     
+ step            7 energy   -150.213653293450     
+ step            8 energy   -150.213653911166     
+ step            9 energy   -150.213653811162     
+ step           10 energy   -150.213654954971     
+ Best lambda   10.0000000000000     
+ Fluctuation:   0.300000000000000     
+  Step =     17  - QM Energy =      -150.21365 - Rho diff (crit) =  7.10E-05 ( 1.00E-06) - Energy diff (crit) =  5.55E-06 ( 1.00E+00)
+ This step   -150.213664413811      last steep   -150.213654954971     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.213654954971     
+ step            1 energy   -150.213655743864     
+ step            2 energy   -150.213655425933     
+ step            3 energy   -150.213656478979     
+ step            4 energy   -150.213656944816     
+ step            5 energy   -150.213657027515     
+ step            6 energy   -150.213657553623     
+ step            7 energy   -150.213657911310     
+ step            8 energy   -150.213658744380     
+ step            9 energy   -150.213659222273     
+ step           10 energy   -150.213659621923     
+ Best lambda   10.0000000000000     
+ Fluctuation:   0.360000000000000     
+  Step =     18  - QM Energy =      -150.21366 - Rho diff (crit) =  8.79E-05 ( 1.00E-06) - Energy diff (crit) =  4.67E-06 ( 1.00E+00)
+ This step   -150.213663466837      last steep   -150.213659621923     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.213659621923     
+ step            1 energy   -150.213659635095     
+ step            2 energy   -150.213660577584     
+ step            3 energy   -150.213660847552     
+ step            4 energy   -150.213661427718     
+ step            5 energy   -150.213661462366     
+ step            6 energy   -150.213662043473     
+ step            7 energy   -150.213662308284     
+ step            8 energy   -150.213662415874     
+ step            9 energy   -150.213662738080     
+ step           10 energy   -150.213662848539     
+ Best lambda   10.0000000000000     
+ Fluctuation:   0.432000000000000     
+  Step =     19  - QM Energy =      -150.21366 - Rho diff (crit) =  1.12E-04 ( 1.00E-06) - Energy diff (crit) =  3.23E-06 ( 1.00E+00)
+ This step   -150.213655943932      last steep   -150.213662848539     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.213662848539     
+ step            1 energy   -150.213663259417     
+ step            2 energy   -150.213663480060     
+ step            3 energy   -150.213663712971     
+ step            4 energy   -150.213664193607     
+ step            5 energy   -150.213664109484     
+ step            6 energy   -150.213663752329     
+ step            7 energy   -150.213664261260     
+ step            8 energy   -150.213663561983     
+ step            9 energy   -150.213663348435     
+ step           10 energy   -150.213663429054     
+ Best lambda   6.92122814302096     
+ Fluctuation:   0.358796466934207     
+  Step =     20  - QM Energy =      -150.21366 - Rho diff (crit) =  1.40E-04 ( 1.00E-06) - Energy diff (crit) =  6.12E-07 ( 1.00E+00)
+ This step   -150.213654115247      last steep   -150.213663460190     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.213663460190     
+ step            1 energy   -150.213664487444     
+ step            2 energy   -150.213664518602     
+ step            3 energy   -150.213664609921     
+ step            4 energy   -150.213664838781     
+ step            5 energy   -150.213665044309     
+ step            6 energy   -150.213664487704     
+ step            7 energy   -150.213664480848     
+ step            8 energy   -150.213664144773     
+ step            9 energy   -150.213663646323     
+ step           10 energy   -150.213662955940     
+ Best lambda   4.76967465755340     
+ Fluctuation:   0.247259934247568     
+  Step =     21  - QM Energy =      -150.21367 - Rho diff (crit) =  1.02E-04 ( 1.00E-06) - Energy diff (crit) =  1.59E-06 ( 1.00E+00)
+ This step   -150.213665575420      last steep   -150.213665051283     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.213665051283     
+ step            1 energy   -150.213665014400     
+ step            2 energy   -150.213665556459     
+ step            3 energy   -150.213664921788     
+ step            4 energy   -150.213665850407     
+ step            5 energy   -150.213665681313     
+ step            6 energy   -150.213665985933     
+ step            7 energy   -150.213665720518     
+ step            8 energy   -150.213666138167     
+ step            9 energy   -150.213666392516     
+ step           10 energy   -150.213666388732     
+ Best lambda   9.48534053815037     
+ Fluctuation:   0.491720053497715     
+  Step =     22  - QM Energy =      -150.21367 - Rho diff (crit) =  1.02E-04 ( 1.00E-06) - Energy diff (crit) =  1.27E-06 ( 1.00E+00)
+ This step   -150.213655679899      last steep   -150.213666318363     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.213666318363     
+ step            1 energy   -150.213666439135     
+ step            2 energy   -150.213666408770     
+ step            3 energy   -150.213666637247     
+ step            4 energy   -150.213666429993     
+ step            5 energy   -150.213666447151     
+ step            6 energy   -150.213666251943     
+ step            7 energy   -150.213665829634     
+ step            8 energy   -150.213664704472     
+ step            9 energy   -150.213664066606     
+ step           10 energy   -150.213663550858     
+ Best lambda   3.02435412452013     
+ Fluctuation:   0.188139021378148     
+  Step =     23  - QM Energy =      -150.21367 - Rho diff (crit) =  7.42E-05 ( 1.00E-06) - Energy diff (crit) =  3.48E-07 ( 1.00E+00)
+ This step   -150.213668806423      last steep   -150.213666665867     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.213666665867     
+ step            1 energy   -150.213666740750     
+ step            2 energy   -150.213666563993     
+ step            3 energy   -150.213667089538     
+ step            4 energy   -150.213666930297     
+ step            5 energy   -150.213667058429     
+ step            6 energy   -150.213667072166     
+ step            7 energy   -150.213667257679     
+ step            8 energy   -150.213667504724     
+ step            9 energy   -150.213666958276     
+ step           10 energy   -150.213667501438     
+ Best lambda   7.81133821216750     
+ Fluctuation:   0.242963863751258     
+  Step =     24  - QM Energy =      -150.21367 - Rho diff (crit) =  1.40E-05 ( 1.00E-06) - Energy diff (crit) =  6.43E-07 ( 1.00E+00)
+ This step   -150.213669197218      last steep   -150.213667309084     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.213667309084     
+ step            1 energy   -150.213667268210     
+ step            2 energy   -150.213667456430     
+ step            3 energy   -150.213667065088     
+ step            4 energy   -150.213667902180     
+ step            5 energy   -150.213667568545     
+ step            6 energy   -150.213667214279     
+ step            7 energy   -150.213667435650     
+ step            8 energy   -150.213667840372     
+ step            9 energy   -150.213668212492     
+ step           10 energy   -150.213667672433     
+ Best lambda   8.90794635911131     
+ Fluctuation:   0.277072763553798     
+  Step =     25  - QM Energy =      -150.21367 - Rho diff (crit) =  1.64E-05 ( 1.00E-06) - Energy diff (crit) =  8.18E-07 ( 1.00E+00)
+ This step   -150.213669075968      last steep   -150.213668127031     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.213668127031     
+ step            1 energy   -150.213667553567     
+ step            2 energy   -150.213667686883     
+ step            3 energy   -150.213668005115     
+ step            4 energy   -150.213668138938     
+ step            5 energy   -150.213667775613     
+ step            6 energy   -150.213668305763     
+ step            7 energy   -150.213668488346     
+ step            8 energy   -150.213668525566     
+ step            9 energy   -150.213668262463     
+ step           10 energy   -150.213668509329     
+ Best lambda   7.62393129593638     
+ Fluctuation:   0.284561710834566     
+  Step =     26  - QM Energy =      -150.21367 - Rho diff (crit) =  1.08E-05 ( 1.00E-06) - Energy diff (crit) =  3.91E-07 ( 1.00E+00)
+ This step   -150.213669312238      last steep   -150.213668518157     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.213668518157     
+ step            1 energy   -150.213668478023     
+ step            2 energy   -150.213668501811     
+ step            3 energy   -150.213668162359     
+ step            4 energy   -150.213668056024     
+ step            5 energy   -150.213668415609     
+ step            6 energy   -150.213668378880     
+ step            7 energy   -150.213668882119     
+ step            8 energy   -150.213668831861     
+ step            9 energy   -150.213668528519     
+ step           10 energy   -150.213668230478     
+ Best lambda   7.40919877517679     
+ Fluctuation:   0.276546862443719     
+  Step =     27  - QM Energy =      -150.21367 - Rho diff (crit) =  7.76E-06 ( 1.00E-06) - Energy diff (crit) =  2.69E-07 ( 1.00E+00)
+ This step   -150.213669304353      last steep   -150.213668787285     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.213668787285     
+ step            1 energy   -150.213668538479     
+ step            2 energy   -150.213668641116     
+ step            3 energy   -150.213668229659     
+ step            4 energy   -150.213668626999     
+ step            5 energy   -150.213668971604     
+ step            6 energy   -150.213668980900     
+ step            7 energy   -150.213668728422     
+ step            8 energy   -150.213668356592     
+ step            9 energy   -150.213668800514     
+ step           10 energy   -150.213668853932     
+ Best lambda   5.53551340154787     
+ Fluctuation:   0.206611930610094     
+  Step =     28  - QM Energy =      -150.21367 - Rho diff (crit) =  4.17E-06 ( 1.00E-06) - Energy diff (crit) =  2.84E-07 ( 1.00E+00)
+ This step   -150.213668771057      last steep   -150.213669071699     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.213669071699     
+ step            1 energy   -150.213668996356     
+ step            2 energy   -150.213668920447     
+ step            3 energy   -150.213669139565     
+ step            4 energy   -150.213669096212     
+ step            5 energy   -150.213669128871     
+ step            6 energy   -150.213669189014     
+ step            7 energy   -150.213669099391     
+ step            8 energy   -150.213669088682     
+ step            9 energy   -150.213669225095     
+ step           10 energy   -150.213669172853     
+ Best lambda   9.22308171388652     
+ Fluctuation:   0.344249680354472     
+  Step =     29  - QM Energy =      -150.21367 - Rho diff (crit) =  2.40E-06 ( 1.00E-06) - Energy diff (crit) =  1.60E-07 ( 1.00E+00)
+ This step   -150.213669261579      last steep   -150.213669231651     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.213669231651     
+ step            1 energy   -150.213669098533     
+ step            2 energy   -150.213669036739     
+ step            3 energy   -150.213669075691     
+ step            4 energy   -150.213668974972     
+ step            5 energy   -150.213668819056     
+ step            6 energy   -150.213669485971     
+ step            7 energy   -150.213669456898     
+ step            8 energy   -150.213669173427     
+ step            9 energy   -150.213669118373     
+ step           10 energy   -150.213669129169     
+ Best lambda   6.45822725897096     
+ Fluctuation:   0.289262448954767     
+  Step =     30  - QM Energy =      -150.21367 - Rho diff (crit) =  2.63E-06 ( 1.00E-06) - Energy diff (crit) =  3.89E-07 ( 1.00E+00)
+ This step   -150.213669365931      last steep   -150.213669620651     
+ doing lineal interpolation in Rho
+ step            0 energy   -150.213669620651     
+ step            1 energy   -150.213669491799     
+ step            2 energy   -150.213669508175     
+ step            3 energy   -150.213669623258     
+ step            4 energy   -150.213669023846     
+ step            5 energy   -150.213669073574     
+ step            6 energy   -150.213669162942     
+ step            7 energy   -150.213669074253     
+ step            8 energy   -150.213669117014     
+ step            9 energy   -150.213669031067     
+ step           10 energy   -150.213668940851     
+ Best lambda   2.66106862649785     
+ Fluctuation:   0.119188625124368     
+  Step =     31  - QM Energy =      -150.21367 - Rho diff (crit) =  6.92E-07 ( 1.00E-06) - Energy diff (crit) =  1.29E-07 ( 1.00E+00)
+  Convergence achieved in     31 iterations. Final energy   -150.2136695 A.U.
+ 
+Final Energy Contributions in A.U.
+  Total energy =  -150.213670
+  One electron =  -262.127273
+  Coulomb      =   100.549521
+  Nuclear      =    28.222773
+  Exch. Corr.  =   -16.858691
+ 
+G2G Deinitialisation.

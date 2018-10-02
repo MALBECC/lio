@@ -106,7 +106,8 @@ contains
 subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
    !use basis_data, only: M, Md, int_basis, Nuc, Nucd, nCont, nContd, a, c, ad, &
    use garcha_mod, only: M, Md, int_basis, Nuc, Nucd, nCont, nContd, a, c, ad, &
-                         cd, atmin, nns, nnp, nnd, nshell, nshelld, norm
+                         cd, atmin, nns, nnp, nnd, nshell, nshelld, norm,      &
+                         indexii, indexiid
    use basis_data, only: ang_mom, ang_momd, max_f_per_atom, max_c_per_atom
    implicit none
    integer         , intent(in)    :: n_atoms, atom_Z(n_atoms)
@@ -141,9 +142,9 @@ subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
    endif
 
    allocate(c(M, max_c_per_atom), a(M, max_c_per_atom), cd(Md, max_c_per_atom),&
-            ad(Md, max_c_per_atom), nCont(M), nContd(Md), ang_mom(M),        &
-            ang_momd(Md), Nuc(M), Nucd(M), atmin(n_atoms), nns(n_atoms),     &
-            nnp(n_atoms), nnd(n_atoms))
+            ad(Md, max_c_per_atom), nCont(M), nContd(Md), ang_mom(M),          &
+            ang_momd(Md), Nuc(M), Nucd(M), atmin(n_atoms), nns(n_atoms),       &
+            nnp(n_atoms), nnd(n_atoms), indexii(M), indexiid(M))
    if (int_basis) then
       call read_basis_internal(basis_name, fitting_name, M, Md, n_atoms, norm, &
                                max_f_per_atom, max_c_per_atom, atom_Z, c, a,   &
@@ -161,6 +162,11 @@ subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
       return
    endif
 
+   ! Reorders basis: first all s, then all p, then all d.
+   call reorder_basis(a, c, Nuc, nCont, indexii, M, max_c_per_atom, ang_mom, &
+                      nShell)
+   call reorder_basis(ad, cd, Nucd, nContd, indexiid, Md, max_c_per_atom,    &
+                      ang_momd, nShelld)
    deallocate(atom_count, atom_basis_chk, atom_fitting_chk, ang_mom, ang_momd)
 end subroutine basis_init
 
@@ -880,9 +886,65 @@ subroutine read_basis_internal(basis_file, fitting_file, n_funcs, n_fits,     &
 
 end subroutine read_basis_internal
 
+subroutine reorder_basis(expon, coeff, atom_of_funct, n_cont, mixed_index, &
+                         basis_size, max_cont, l_of_funct, n_shell)
+   implicit none
+   integer         , intent(in)    :: basis_size, max_cont, n_shell(0:3), &
+                                      l_of_funct(basis_size)
+   integer         , intent(inout) :: atom_of_funct(basis_size),   &
+                                      n_cont(basis_size)      ,    &
+                                      mixed_index(basis_size)
+   double precision, intent(inout) :: expon(basis_size, max_cont), &
+                                      coeff(basis_size, max_cont)
 
+   double precision, allocatable :: expo_t(:,:), coef_t(:,:)
+   integer         , allocatable :: atom_of_funct_t(:), n_cont_t(:), &
+                                    mixed_index_t(:)
+   integer :: ifunct, s_index, p_index, d_index
 
+   allocate(expo_t(basis_size, max_cont), coef_t(basis_size, max_cont), &
+            atom_of_funct_t(basis_size) , n_cont_t(basis_size))
 
+   s_index = 1
+   p_index = 1 + n_shell(0)
+   d_index = 1 + n_shell(0) + n_shell(1)
+
+   do ifunct = 1, basis_size
+      select case (l_of_funct(ifunct))
+      case (0) ! s function
+         atom_of_funct_t(s_index) = atom_of_funct(ifunct)
+         mixed_index(s_index)     = ifunct
+         n_cont_t(s_index)        = n_cont(ifunct)
+         expo_t(s_index,:)        = expon(ifunct,:)
+         coef_t(s_index,:)        = coeff(ifunct,:)
+
+         s_index = s_index +1
+      case (1) ! p functions
+         atom_of_funct_t(p_index) = atom_of_funct(ifunct)
+         mixed_index(p_index)     = ifunct
+         n_cont_t(p_index)        = n_cont(ifunct)
+         expo_t(p_index,:)        = expon(ifunct,:)
+         coef_t(p_index,:)        = coeff(ifunct,:)
+
+         p_index = p_index +1
+      case (2) ! d functions
+         atom_of_funct_t(d_index) = atom_of_funct(ifunct)
+         mixed_index(d_index)     = ifunct
+         n_cont_t(d_index)        = n_cont(ifunct)
+         expo_t(d_index,:)        = expon(ifunct,:)
+         coef_t(d_index,:)        = coeff(ifunct,:)
+
+         d_index = d_index +1
+      case default
+      end select
+   enddo
+
+   n_cont        = n_cont_t
+   atom_of_funct = atom_of_funct_t
+   expon         = expo_t
+   coeff         = coef_t
+   deallocate(expo_t, coef_t, atom_of_funct_t, n_cont_t)
+end subroutine reorder_basis
 !###############################################################################
 ! TAKE THIS TO OTHER MODULE
 subroutine atom_name(atom_Z, symb)

@@ -7,7 +7,6 @@
 ! · basis_read()    : Reads input basis functions.                             !
 ! · basis_init()    : Initializes basis data.                                  !
 ! · basis_deinit()  : Deinitializes basis data.                                !
-! · funct()         : Boys function.                                           !
 !                                                                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -106,8 +105,8 @@ contains
 subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
    !use basis_data, only: M, Md, int_basis, Nuc, Nucd, nCont, nContd, a, c, ad, &
    use garcha_mod, only: M, Md, int_basis, Nuc, Nucd, nCont, nContd, a, c, ad, &
-                         cd, atmin, nns, nnp, nnd, nshell, nshelld, norm,      &
-                         indexii, indexiid
+                         cd, atmin, nns, nnp, nnd, nshell, nshelld, norm, af,  &
+                         indexii, indexiid, natomc, jatc, nnps, nnpp, nnpd
    use basis_data, only: ang_mom, ang_momd, max_f_per_atom, max_c_per_atom
    implicit none
    integer         , intent(in)    :: n_atoms, atom_Z(n_atoms)
@@ -118,7 +117,9 @@ subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
    integer, allocatable :: atom_count(:)
    logical, allocatable :: atom_basis_chk(:), atom_fitting_chk(:)
 
+   out_stat = 0
    allocate(atom_count(0:120), atom_basis_chk(0:120), atom_fitting_chk(0:120))
+
    ! Precalculates the amount of atoms of a certain type, in order to
    ! correctly asses the sizes of M and Md
    atom_count = 0
@@ -133,8 +134,7 @@ subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
       out_stat = 1
       return
    endif
-   !print*, "DBG ", "M = ", M, "Md = ", Md, "max_c = ", max_c_per_atom, &
-   !        "max_f = ", max_f_per_atom
+
    call check_basis(atom_basis_chk, atom_fitting_chk, n_atoms, atom_Z, iostat)
    if (iostat .gt. 0) then
       out_stat = 2
@@ -143,19 +143,30 @@ subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
 
    allocate(c(M, max_c_per_atom), a(M, max_c_per_atom), cd(Md, max_c_per_atom),&
             ad(Md, max_c_per_atom), nCont(M), nContd(Md), ang_mom(M),          &
-            ang_momd(Md), Nuc(M), Nucd(M), atmin(n_atoms), nns(n_atoms),       &
-            nnp(n_atoms), nnd(n_atoms), indexii(M), indexiid(M))
+            ang_momd(Md), Nuc(M), Nucd(Md), indexii(M), indexiid(Md), af(Md))
+   allocate(atmin(n_atoms), nns(n_atoms), nnp(n_atoms), nnd(n_atoms),     &
+            nnps(n_atoms), nnpp(n_atoms), nnpd(n_atoms), natomc(n_atoms), &
+            jatc(n_atoms,n_atoms))
+
+   ! Initializes everything to 0.
+   c  = 0.0D0 ; a  = 0.0D0; nCont  = 0; ang_mom  = 0; nuc  = 0; af = 0.0D0
+   cd = 0.0D0 ; ad = 0.0D0; nContd = 0; ang_momd = 0; nucd = 0
+
+   nns  = 0 ; nnp  = 0  ; nnd  = 0 ; natomc = 0
+   nnps = 0 ; nnpp = 0  ; nnpd = 0 ; jatc   = 0
+
+
    if (int_basis) then
       call read_basis_internal(basis_name, fitting_name, M, Md, n_atoms, norm, &
                                max_f_per_atom, max_c_per_atom, atom_Z, c, a,   &
                                cd, ad, nCont, nContd, ang_mom, ang_momd, Nuc,  &
-                               Nucd, atmin, nns, nnp, nnd, nshell, nshelld,    &
+                               Nucd, atmin, nns, nnp, nnd, nShell, nShelld,    &
                                iostat)
    else
       call read_basis_external(basis_name, M,Md, n_atoms, norm, max_f_per_atom,&
                                max_c_per_atom, atom_Z, c, a, cd, ad, nCont,    &
                                nContd, ang_mom, ang_momd, Nuc, Nucd, atmin,    &
-                               nns, nnp, nnd, nshell, nshelld, iostat)
+                               nns, nnp, nnd, nShell, nShelld, iostat)
    endif
    if (iostat .gt. 0) then
       out_stat = 3
@@ -163,16 +174,16 @@ subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
    endif
 
    ! Reorders basis: first all s, then all p, then all d.
-   call reorder_basis(a, c, Nuc, nCont, indexii, M, max_c_per_atom, ang_mom, &
-                      nShell)
-   call reorder_basis(ad, cd, Nucd, nContd, indexiid, Md, max_c_per_atom,    &
+   call reorder_basis(a,  c,  Nuc,  nCont,  indexii,  M,  max_c_per_atom, &
+                      ang_mom,  nShell)
+   call reorder_basis(ad, cd, Nucd, nContd, indexiid, Md, max_c_per_atom, &
                       ang_momd, nShelld)
+
    deallocate(atom_count, atom_basis_chk, atom_fitting_chk, ang_mom, ang_momd)
 end subroutine basis_init
 
 subroutine basis_setup_ehren()
-   use basis_data, only: a_ehren, c_ehren, ang_mom_ehren, max_c_per_atom, &
-                         max_f_per_atom
+   use basis_data, only: a_ehren, c_ehren, ang_mom_ehren, max_c_per_atom
    use garcha_mod, only: a, c, nShell, M
 
    implicit none
@@ -253,11 +264,12 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          ! skipped.
          read(file_uid,*)
          do icount = 1, ncon
-            read(file_uid, *) l_of_func
+            read(file_uid, '(I2)', advance='no') l_of_func
             if (any(atom_Z == iatom)) then
                basis_size = basis_size + ANG_DEG(l_of_func) * atom_count(iatom)
             endif
          enddo
+         read(file_uid,*)
          do icount = 1, nraw
             read(file_uid,*)
          enddo
@@ -270,11 +282,12 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
 
          read(file_uid,*)
          do icount = 1, ncon
-            read(file_uid,*) l_of_func
+            read(file_uid, '(I2)', advance='no') l_of_func
             if (any(atom_Z == iatom)) then
                aux_size = aux_size + ANG_DEG(l_of_func) * atom_count(iatom)
             endif
          enddo
+         read(file_uid,*)
          do icount = 1, nraw
             read(file_uid,*)
          enddo
@@ -332,11 +345,12 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          ! skipped.
          read(file_uid,*)
          do icount = 1, ncon
-            read(file_uid,*) l_of_func
+            read(file_uid, '(I2)', advance='no') l_of_func
             if (any(atom_Z == iatom)) then
                basis_size = basis_size + ANG_DEG(l_of_func) * atom_count(iatom)
             endif
          enddo
+         read(file_uid,*)
          do icount = 1, nraw
             read(file_uid,*)
          enddo
@@ -355,7 +369,7 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
 
       ! Reads fitting set data.
       ! Skips empty lines or those starting with #.
-      open(unit = file_uid, file= basis_file, iostat = file_iostat)
+      open(unit = file_uid, file= fitting_file, iostat = file_iostat)
       line_read = ""
       do while (line_read == "")
          read(file_uid,*) line_read
@@ -373,7 +387,7 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          ! skipped.
          read(file_uid,*)
          do icount = 1, ncon
-            read(file_uid,*) l_of_func
+            read(file_uid, '(I2)', advance='no') l_of_func
             if (any(atom_Z == iatom)) then
                aux_size = aux_size + ANG_DEG(l_of_func) * atom_count(iatom)
             endif
@@ -438,7 +452,7 @@ subroutine read_basis_external(basis_file, n_funcs, n_fits, n_atoms, normalize,&
                                     n_atoms, atom_Z(n_atoms), n_funcs, n_fits
    logical         , intent(in)  :: normalize
    character(len=*), intent(in)  :: basis_file
-   integer         , intent(out) :: atm_of_func(n_funcs),atm_of_funcd(n_funcs),&
+   integer         , intent(out) :: atm_of_func(n_funcs), atm_of_funcd(n_fits),&
                                     nns(n_atoms), nnp(n_atoms), nnd(n_atoms),  &
                                     iostatus, n_cont(n_funcs), n_contd(n_fits),&
                                     ang_mom_f(n_funcs),  ang_mom_fd(n_fits),   &
@@ -454,13 +468,12 @@ subroutine read_basis_external(basis_file, n_funcs, n_fits, n_atoms, normalize,&
                          n_orig, n_aux
    double precision   :: min_exp
    character(len=20)  :: start_str
-   character(len=100) :: line_read
 
    logical         , allocatable :: basis_done(:), fitting_done(:)
    integer         , allocatable :: n_cont_func(:), ang_mom(:)
    double precision, allocatable :: expo_temp(:), coef_temp(:)
 
-   allocate(n_cont_func(max_con_per_atom +1), ang_mom(max_con_per_atom +1), &
+   allocate(n_cont_func(max_con_per_atom)   , ang_mom(max_con_per_atom)   , &
             expo_temp(max_fun_per_atom)     , coef_temp(max_fun_per_atom) , &
             basis_done(n_atoms)             , fitting_done(n_atoms))
    basis_done   = .false.
@@ -477,8 +490,8 @@ subroutine read_basis_external(basis_file, n_funcs, n_fits, n_atoms, normalize,&
       ! 3/6/10 times, just set them once. Also reads angular momentum for each
       ! of the contractions.
       read(file_uid,*) atom, nraw, ncon
-      read(file_uid,*) n_cont_func
-      read(file_uid,*) ang_mom
+      read(file_uid,*) n_cont_func(1:ncon)
+      read(file_uid,*) ang_mom(1:ncon)
       do icount = 1, nraw
          read(file_uid,*) expo_temp(icount), coef_temp(icount)
          if (expo_temp(icount) .lt. min_exp) min_exp = expo_temp(icount)
@@ -567,8 +580,8 @@ subroutine read_basis_external(basis_file, n_funcs, n_fits, n_atoms, normalize,&
       ! Starts reading the auxiliary basis for an atom. Same rules as before
       ! are applied here.
       read(file_uid,*) atom, nraw, ncon
-      read(file_uid,*) n_cont_func
-      read(file_uid,*) ang_mom
+      read(file_uid,*) n_cont_func(1:ncon)
+      read(file_uid,*) ang_mom(1:ncon)
       do icount = 1, nraw
          read(file_uid,*) expo_temp(icount), coef_temp(icount)
       enddo
@@ -649,7 +662,7 @@ subroutine read_basis_internal(basis_file, fitting_file, n_funcs, n_fits,     &
                                     n_atoms, atom_Z(n_atoms), n_funcs, n_fits
    logical         , intent(in)  :: normalize
    character(len=*), intent(in)  :: basis_file, fitting_file
-   integer         , intent(out) :: atm_of_func(n_funcs),atm_of_funcd(n_funcs),&
+   integer         , intent(out) :: atm_of_func(n_funcs), atm_of_funcd(n_fits),&
                                     nns(n_atoms), nnp(n_atoms), nnd(n_atoms),  &
                                     iostatus, n_cont(n_funcs), n_contd(n_fits),&
                                     ang_mom_f(n_funcs),  ang_mom_fd(n_fits),   &
@@ -696,8 +709,8 @@ subroutine read_basis_internal(basis_file, fitting_file, n_funcs, n_fits,     &
       ! 3/6/10 times, just set them once. Also reads angular momentum for each
       ! of the contractions.
       read(file_uid,*) atom, nraw, ncon
-      read(file_uid,*) n_cont_func
-      read(file_uid,*) ang_mom
+      read(file_uid,*) n_cont_func(1:ncon)
+      read(file_uid,*) ang_mom(1:ncon)
       do icount = 1, nraw
          read(file_uid,*) expo_temp(icount), coef_temp(icount)
          if (expo_temp(icount) .lt. min_exp) min_exp = expo_temp(icount)
@@ -808,8 +821,8 @@ subroutine read_basis_internal(basis_file, fitting_file, n_funcs, n_fits,     &
       ! Starts reading the auxiliary basis for an atom. Same rules as before
       ! are applied here.
       read(file_uid,*) atom, nraw, ncon
-      read(file_uid,*) n_cont_func
-      read(file_uid,*) ang_mom
+      read(file_uid,*) n_cont_func(1:ncon)
+      read(file_uid,*) ang_mom(1:ncon)
       do icount = 1, nraw
          read(file_uid,*) expo_temp(icount), coef_temp(icount)
       enddo
@@ -898,8 +911,7 @@ subroutine reorder_basis(expon, coeff, atom_of_funct, n_cont, mixed_index, &
                                       coeff(basis_size, max_cont)
 
    double precision, allocatable :: expo_t(:,:), coef_t(:,:)
-   integer         , allocatable :: atom_of_funct_t(:), n_cont_t(:), &
-                                    mixed_index_t(:)
+   integer         , allocatable :: atom_of_funct_t(:), n_cont_t(:)
    integer :: ifunct, s_index, p_index, d_index
 
    allocate(expo_t(basis_size, max_cont), coef_t(basis_size, max_cont), &

@@ -118,24 +118,25 @@ end subroutine lio_defaults
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
 
-    use garcha_mod, only : nunp, RMM, d, c, a, Nuc, ncont, cx,                 &
-                           ax, Nucx, ncontx, cd, ad, Nucd, ncontd, indexii,    &
-                           indexiid, r, v, rqm, Em, Rm, pc, nnat, af, B, Iz,   &
-                           natom, ng0, ngd0, ngrid, nl, norbit, ntatom,        &
+    use garcha_mod, only : nunp, RMM, d, c, a, r, v, rqm, Em, Rm, pc, nnat, B, &
+                           Iz, natom, ng0, ngd0, ngrid, norbit, ntatom,     &
                            free_global_memory, little_cube_size,&
                            assign_all_functions, energy_all_iterations,        &
                            remove_zero_weights, min_points_per_cube,           &
                            max_function_exponent, sphere_radius, M,Fock_Hcore, &
                            Fock_Overlap, P_density, OPEN, timers, MO_coef_at,  &
-                           MO_coef_at_b, charge
+                           MO_coef_at_b, charge, basis_set, fitting_set, Md,   &
+                            nl, basis, int_basis
     use ECP_mod,    only : Cnorm, ecpmode
     use field_data, only : chrg_sq
     use fileio    , only : lio_logo
     use fileio_data, only: style, verbose
+    use basis_data, only: max_c_per_atom
+    use basis_subs, only: basis_init
 
     implicit none
     integer , intent(in) :: nclatom, natomin, Izin(natomin), callfrom
-    integer              :: ng2, ngdDyn, ngDyn, ierr, ios, MM
+    integer              :: ng2, ngdDyn, ngDyn, ierr, ios, MM, iostat
 
     if (verbose .gt. 2) then
       write(*,*)
@@ -164,22 +165,32 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     ! large systems, ng2 may result in <0 due to overflow.                     !
 
     ! Sets the dimensions for important arrays.
-    call DIMdrive(ngDyn,ngdDyn)
+    !call DIMdrive(ngDyn,ngdDyn)
 
+    if (.not. int_basis) basis_set = basis
+    call basis_init(basis_set, fitting_set, natom, Iz, iostat)
+    if (iostat .gt. 0) then
+      return
+   endif
+
+    ngDyn = M; ngdDyn = Md
     ng2 = 5*ngDyn*(ngDyn+1)/2 + 3*ngdDyn*(ngdDyn+1)/2 + &
           ngDyn  + ngDyn*norbit + Ngrid
 
-    allocate(RMM(ng2)    , d(natom, natom), c(ngDyn,nl)   , a(ngDyn,nl)     ,&
-             Nuc(ngDyn)  , ncont(ngDyn)   , cd(ngdDyn,nl) , ad(ngdDyn,nl)   ,&
-             Nucd(ngdDyn), ncontd(ngdDyn) , indexii(ngDyn), indexiid(ngdDyn),&
-             v(ntatom,3) , Em(ntatom)     , Rm(ntatom)    , af(ngdDyn)      ,&
-             nnat(200)   , B(ngdDyn,3))
+    allocate(RMM(ng2) , d(natom, natom), v(ntatom,3), Em(ntatom), Rm(ntatom), &
+             nnat(200), B(ngdDyn,3))
 
-    if (ngdDyn .gt. ngDyn) Then
-       allocate(cx(ngdDyn,nl), ax(ngdDyn,nl), Nucx(ngdDyn), ncontx(ngdDyn))
-    else
-       allocate(cx(ngDyn,nl), ax(ngDyn,nl), Nucx(ngDyn), ncontx(ngDyn))
-    endif
+
+   !allocate(RMM(ng2)    , d(natom, natom), c(ngDyn,nl)   , a(ngDyn,nl)     ,&
+   !         Nuc(ngDyn)  , ncont(ngDyn)   , cd(ngdDyn,nl) , ad(ngdDyn,nl)   ,&
+   !         Nucd(ngdDyn), ncontd(ngdDyn) , indexii(ngDyn), indexiid(ngdDyn),&
+   !         v(ntatom,3) , Em(ntatom)     , Rm(ntatom)    , af(ngdDyn)      ,&
+   !         nnat(200) , B(ngdDyn,3))
+   !if (ngdDyn .gt. ngDyn) Then
+   !    allocate(cx(ngdDyn,nl), ax(ngdDyn,nl), Nucx(ngdDyn), ncontx(ngdDyn))
+    !else
+      ! allocate(cx(ngDyn,nl), ax(ngDyn,nl), Nucx(ngDyn), ncontx(ngDyn))
+    !endif
 
     ! Cnorm contains normalized coefficients of basis functions.
     ! Differentiate C for x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)

@@ -69,6 +69,7 @@
 !
 ! NORM true , expansion in normalized gaussians, so normalization factor
 ! included in coefficients
+
       nopt=0
 !
 ! calls generator of table for incomplete gamma functions
@@ -80,7 +81,11 @@
 !-----------------------------------------------------------------------
 
 ! reads input file
+   if (writexyz) open(unit=18,file=fcoord)
+   if ((mulliken).or.(td_do_pop.gt.0)) open(unit=85,file=fmulliken)
+   if (restart_freq.gt.0) open(unit=88,file=frestart)
 
+   if (.false.) then !KILLTHIS
       if (.not.int_basis) then
       inquire(file=basis,exist=exists)
       if (.not.exists) then
@@ -100,11 +105,6 @@
 !      open(unit=2,file=output)
       endif
       endif
-
-      if (writexyz) open(unit=18,file=fcoord)
-      if ((mulliken).or.(td_do_pop.gt.0)) open(unit=85,file=fmulliken)
-      if (restart_freq.gt.0) open(unit=88,file=frestart)
-
 !-------------------------------------------------------
       do i=1,natom
         done(i)=.false.
@@ -893,6 +893,8 @@
           ad(i,j)=ax(i,j)
         enddo
       enddo
+      print*, "NO TOY"
+      endif !KILLTHIS
 !c
 !c---------------------------------------------------------
 !c POINTERS -----------------------------------------------
@@ -933,6 +935,7 @@
 !c DIMENSION TESTS -----------------------------------------------
 !c
       Ndim=5*M*(M+1)/2+3*Md*(Md+1)/2+M+M*NCO!+M*Ngrid
+      iprob=0
       if (Ndim.gt.ng2) then
         write(*,*) 'DIMENSION PROBLEMS WITH DYNAMICAL VECTOR NG2',Ndim,ng2
         iprob=1
@@ -1054,7 +1057,7 @@
       ! End of restart.
 
 !c------- G2G Initialization ---------------------
-!c
+
       call g2g_parameter_init(NORM,natom,natom,ngDyn, &
                              rqm,Rm2,Iz,Nr,Nr2,Nuc, &
                              M,ncont,nshell,c,a, &
@@ -1070,7 +1073,6 @@
       endif
       allocate(X(M,4*M))
 
-
 !--------------------------------------------------------------------------------------
       IF (number_restr.GT.0) THEN
 ! Distance Restrain parameters read
@@ -1080,9 +1082,6 @@
         call read_restrain_params()
       END IF
 !--------------------------------------------------------------------------------------
-
-
-
 
  100  format (A8)
  200  format ('  Basis set corresponding to Z = ', I3,' was not used.')

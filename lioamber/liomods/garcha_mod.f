@@ -10,7 +10,7 @@
       integer restart_freq, energy_freq
       real*8 GOLD, TOLD
       character*20 basis,whatis
-      character*40 basis_set, fitting_set
+      character*100 basis_set, fitting_set
       logical int_basis
       character*20 fcoord,fmulliken,frestart,frestartin,solv,solv2
       logical exists,MEMO,predcoef

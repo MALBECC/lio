@@ -117,7 +117,6 @@ subroutine spin_pop_calc(N, M, RealRho_alpha, RealRho_betha, Smat, NofM, q)
     integer :: i, j, k
     real*8  :: qe
 
-!roberto
     do i=1,M
         do j=1,M
              qe = (RealRho_alpha(i,j) - RealRho_betha(i,j)) * Smat(i, j)

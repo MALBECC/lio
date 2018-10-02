@@ -129,7 +129,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
                            remove_zero_weights, min_points_per_cube,           &
                            max_function_exponent, sphere_radius, M,Fock_Hcore, &
                            Fock_Overlap, P_density, OPEN, timers, MO_coef_at,  &
-                           MO_coef_at_b, charge, Rho_LS
+                           MO_coef_at_b, charge
     use ECP_mod,    only : Cnorm, ecpmode
     use field_data, only : chrg_sq
     use fileio    , only : lio_logo

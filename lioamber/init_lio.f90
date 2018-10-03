@@ -163,10 +163,6 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     ! Ngrid : n° of grid points (LS-SCF part).                                 !
     ! NOTES: Ngrid may be set to 0  in the case of Numerical Integration. For  !
     ! large systems, ng2 may result in <0 due to overflow.                     !
-
-    ! Sets the dimensions for important arrays.
-    !call DIMdrive(ngDyn,ngdDyn)
-
     if (.not. int_basis) basis_set = basis
     call basis_init(basis_set, fitting_set, natom, Iz, iostat)
     if (iostat .gt. 0) then
@@ -179,18 +175,6 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
 
     allocate(RMM(ng2) , d(natom, natom), v(ntatom,3), Em(ntatom), Rm(ntatom), &
              nnat(200), B(ngdDyn,3))
-
-
-   !allocate(RMM(ng2)    , d(natom, natom), c(ngDyn,nl)   , a(ngDyn,nl)     ,&
-   !         Nuc(ngDyn)  , ncont(ngDyn)   , cd(ngdDyn,nl) , ad(ngdDyn,nl)   ,&
-   !         Nucd(ngdDyn), ncontd(ngdDyn) , indexii(ngDyn), indexiid(ngdDyn),&
-   !         v(ntatom,3) , Em(ntatom)     , Rm(ntatom)    , af(ngdDyn)      ,&
-   !         nnat(200) , B(ngdDyn,3))
-   !if (ngdDyn .gt. ngDyn) Then
-   !    allocate(cx(ngdDyn,nl), ax(ngdDyn,nl), Nucx(ngdDyn), ncontx(ngdDyn))
-    !else
-      ! allocate(cx(ngDyn,nl), ax(ngDyn,nl), Nucx(ngDyn), ncontx(ngDyn))
-    !endif
 
     ! Cnorm contains normalized coefficients of basis functions.
     ! Differentiate C for x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)

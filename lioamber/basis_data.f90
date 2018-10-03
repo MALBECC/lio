@@ -494,12 +494,13 @@ subroutine read_basis_external(basis_file, n_funcs, n_fits, n_atoms, normalize,&
       read(file_uid,*) ang_mom(1:ncon)
       do icount = 1, nraw
          read(file_uid,*) expo_temp(icount), coef_temp(icount)
-         if (expo_temp(icount) .lt. min_exp) min_exp = expo_temp(icount)
+         if ((expo_temp(icount) .lt. min_exp) .and. any(atom_Z == atom)) &
+                                                    min_exp = expo_temp(icount)
       enddo
 
       do iatom = 1, n_atoms
          if (atom_Z(iatom) .eq. atom .and. (.not. basis_done(iatom))) then
-            basis_done(iatom)   = .true.
+            basis_done(iatom)  = .true.
             min_atm_exp(iatom) = min_exp
 
             ! These are used for atoms that are near to each other.
@@ -511,9 +512,9 @@ subroutine read_basis_external(basis_file, n_funcs, n_fits, n_atoms, normalize,&
                select case (ang_mom(icont))
                case (0)
                   nns(iatom) = nns(iatom) + ANG_DEG(ang_mom(icont))
-               case (2)
+               case (1)
                   nnp(iatom) = nnp(iatom) + ANG_DEG(ang_mom(icont))
-               case (3)
+               case (2)
                   nnd(iatom) = nnd(iatom) + ANG_DEG(ang_mom(icont))
                case default
                end select
@@ -713,12 +714,13 @@ subroutine read_basis_internal(basis_file, fitting_file, n_funcs, n_fits,     &
       read(file_uid,*) ang_mom(1:ncon)
       do icount = 1, nraw
          read(file_uid,*) expo_temp(icount), coef_temp(icount)
-         if (expo_temp(icount) .lt. min_exp) min_exp = expo_temp(icount)
+         if ((expo_temp(icount) .lt. min_exp) .and. any(atom_Z == atom)) &
+                                                    min_exp = expo_temp(icount)
       enddo
 
       do iatom = 1, n_atoms
          if (atom_Z(iatom) .eq. atom .and. (.not. basis_done(iatom))) then
-            basis_done(iatom)   = .true.
+            basis_done(iatom)  = .true.
             min_atm_exp(iatom) = min_exp
 
             ! These are used for atoms that are near to each other.
@@ -730,9 +732,9 @@ subroutine read_basis_internal(basis_file, fitting_file, n_funcs, n_fits,     &
                select case (ang_mom(icont))
                case (0)
                   nns(iatom) = nns(iatom) + ANG_DEG(ang_mom(icont))
-               case (2)
+               case (1)
                   nnp(iatom) = nnp(iatom) + ANG_DEG(ang_mom(icont))
-               case (3)
+               case (2)
                   nnd(iatom) = nnd(iatom) + ANG_DEG(ang_mom(icont))
                case default
                end select

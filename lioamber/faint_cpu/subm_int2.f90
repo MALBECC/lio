@@ -30,9 +30,10 @@ subroutine int2(Gmat, Ginv, r, d, ntatom)
    integer          :: i_ind, j_ind, k_ind, ifunct, jfunct, nci, ncj, nsd, npd,&
                        ndd, lll, l12, l34, l1, l2, l3, l4, lij, lk, Md2
    ! Variables for Lapack
-   integer :: LA_WORK_SIZE, LA_INFO
+   integer                       :: LA_WORK_SIZE, LA_INFO
    integer         , allocatable :: LA_IWORK(:)
    double precision, allocatable :: LA_WORK(:)
+   double precision              :: LA_U(1), LA_VT(1)
 
    sq3 = 1.D0
    if (NORM) sq3 = sqrt(3.D0)
@@ -400,10 +401,10 @@ subroutine int2(Gmat, Ginv, r, d, ntatom)
 
    allocate(LA_IWORK(8*Md))
    call g2g_timer_sum_start('G condition')
-   call dgesdd('N', Md, Md, aux_mat, Md, Ginv, 0, 1, 0, 1, t0, -1, &
+   call dgesdd('N', Md, Md, aux_mat, Md, Ginv, LA_U, 1, LA_VT, 1, t0, -1, &
                LA_IWORK, LA_INFO)
    LA_WORK_SIZE = int(t0); allocate(LA_WORK(LA_WORK_SIZE))
-   call dgesdd('N', Md, Md, aux_mat, Md, Ginv, 0, 1, 0, 1, LA_WORK, &
+   call dgesdd('N', Md, Md, aux_mat, Md, Ginv, LA_U, 1, LA_VT, 1, LA_WORK, &
                LA_WORK_SIZE, LA_IWORK, LA_INFO)
    deallocate(LA_WORK)
    call g2g_timer_sum_stop('G condition')

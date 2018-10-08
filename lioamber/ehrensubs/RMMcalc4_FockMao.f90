@@ -78,7 +78,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
    call g2g_timer_stop('RMMcalc4-start')
    if (MEMO) then
       call g2g_timer_start('RMMcalc4-int3mem')
-      call int3mem()
+      call int3mem(r, d, natom, ntatom)
       call g2g_timer_stop('RMMcalc4-int3mem')
    endif
 

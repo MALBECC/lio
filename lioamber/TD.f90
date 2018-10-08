@@ -265,7 +265,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    ! Precalculate three-index (two in MO basis, one in density basis) matrix
    ! used in density fitting /Coulomb F element calculation here (t_i in Dunlap)
    call int2(RMM(M7:M7+MMd), RMM(M9:M9+MMd), r, d, ntatom)
-   call td_coulomb_precalc(igpu, MEMO)
+   call td_coulomb_precalc(igpu, MEMO, r, d, natom, ntatom)
 
    call g2g_timer_stop('td-inicio')
    ! End of TD initialization.
@@ -766,11 +766,12 @@ subroutine td_overlap_diag(M_in, M, Smat, eigenvalues, X_min, Xmat, Xtrans, Ymat
    return
 end subroutine td_overlap_diag
 
-subroutine td_coulomb_precalc(igpu, MEMO)
+subroutine td_coulomb_precalc(igpu, MEMO, r, d, natom, ntatom)
    use faint_cpu, only: int3mem
    implicit none
-   integer, intent(in)    :: igpu
-   logical, intent(inout) :: MEMO
+   integer         , intent(in)    :: igpu, natom, ntatom
+   double precision, intent(in)    :: r(ntatom,3), d(ntatom, ntatom)
+   logical         , intent(inout) :: MEMO
 
    if (igpu.gt.2) then
       call g2g_timer_start('Coulomb - precalc')
@@ -778,7 +779,7 @@ subroutine td_coulomb_precalc(igpu, MEMO)
       if (igpu.eq.5) MEMO = .false.
    endif
    if (MEMO) then
-      call int3mem()
+      call int3mem(r, d, natom, ntatom)
    endif
    call g2g_timer_stop('Coulomb - precalc')
 

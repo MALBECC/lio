@@ -1,3 +1,36 @@
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% INT3LU %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! 2e integral gradients, 3 indexes: density fitting functions and wavefunction.!
+! Calculates Coulomb elements for the Fock matrix, and 2e energy.              !
+!                                                                              !
+! EXTERNAL INPUT: system information.                                          !
+!   · rho(M,M): density matrix.                                                !
+!   · Fmat(M,M): Fock matrix (Fock alpha in open shell).                       !
+!   · Fmat_b(M,M): Fock beta matrix (ignored in closed shell).                 !
+!   · Gmat(M,M): Coulomb G matrix.                                             !
+!   · Ginv(M,M): Inverted coulomb G matrix.                                    !
+!   · Hmat(M,M): 1e matrix elements.                                           !
+!   · open_shell: boolean indicating open-shell calculation.                   !
+!                                                                              !
+! INTERNAL INPUT: basis set information.                                       !
+!   · M: number of basis functions (without contractions)                      !
+!   · Md: number of auxiliary basis functions (without contractions)           !
+!   · af(Md): variational coefficient for auxiliary function i.                !
+!   · MEMO: indicates if cool/kkind/kknum are stored in memory. This is not    !
+!           used when performing analytic integrals in GPU.                    !
+!   · cool: precalculated 2e terms in double precision.                        !
+!   · kkind: precalculated indexes for double precision Fock matrix elements.  !
+!   · kknumd: number of precalculated double precision Fock matrix elements.   !
+!   · cools: precalculated 2e terms in single precision.                       !
+!   · kkinds: precalculated indexes for single precision Fock matrix elements. !
+!   · kknums: number of precalculated single precision Fock matrix elements.   !
+!                                                                              !
+! EXTERNAL OUTPUTS:                                                            !
+!   · E2: 2e coulomb energy.                                                   !
+!                                                                              !
+! Original and debugged (or supposed to): Dario Estrin Jul/1992                !
+! Refactored:                             Federico Pedron Sep/2018             !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module subm_int3lu
 contains
 subroutine int3lu(E2, rho, Fmat_b, Fmat, Gmat, Ginv, Hmat, open_shell)
@@ -11,7 +44,7 @@ subroutine int3lu(E2, rho, Fmat_b, Fmat, Gmat, Ginv, Hmat, open_shell)
 ! Output: F updated with Coulomb part, also Coulomb energy.                    !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use garcha_mod, only: M, Md, cool, cools, kkind, kkinds, kknumd, kknums, af,&
-                         B, MEMO
+                         MEMO
    implicit none
    logical         , intent(in) :: open_shell
    double precision, intent(in) :: rho(:), Gmat(:), Ginv(:), Hmat(:)
@@ -42,7 +75,6 @@ subroutine int3lu(E2, rho, Fmat_b, Fmat, Gmat, Ginv, Hmat, open_shell)
    M11 = M9 + MMd ! Hmat
 
    if (MEMO) then
-      B = 0.0D0
       call g2g_timer_start('int3lu - start')
 
       do k_ind = 1, 3
@@ -174,3 +206,4 @@ subroutine int3lu(E2, rho, Fmat_b, Fmat, Gmat, Ginv, Hmat, open_shell)
    return
 end subroutine int3lu
 end module subm_int3lu
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

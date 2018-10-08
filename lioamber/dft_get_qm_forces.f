@@ -11,8 +11,7 @@
      &                       RMM, d, Iz, natom, ntatom, M, Md
 
        use ehrendata, only: nullify_forces
-       use faint_cpu, only: int1G, intSG
-       use faint_cpu77, only: int3G
+       use faint_cpu, only: int1G, intSG, int3G
        implicit none
        real*8,intent(out) :: dxyzqm(3,natom)
        real*8,allocatable :: ff1G(:,:),ffSG(:,:),ff3G(:,:)
@@ -61,7 +60,7 @@
        call g2g_timer_start('int3G')
        call g2g_timer_sum_start('Coulomb+Exchange-correlation')
        ff3G=0.0d0
-       call int3G(ff3G,.true.)
+       call int3G(ff3G, .true., RMM(1:MM), r, d, natom, ntatom)
        call g2g_timer_stop('int3G')
        call g2g_timer_sum_stop('Coulomb+Exchange-correlation')
 

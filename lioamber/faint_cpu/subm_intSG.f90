@@ -1,13 +1,31 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-! Calculates the gradients of overlap using the Obara-Saika recursive method.  !
-! This is used in forces calculation.                                          !
+!%% INTSG %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Calculates overlap matrix gradients.                                         !
 !                                                                              !
-! Input : basis function information, energy weighted density matrix.          !
-! Output: gradients from overlap                                               !
+! EXTERNAL INPUT: system information.                                          !
+!   · natom: number of QM atoms.                                               !
+!   · ntatom: total number of atoms (QM+MM)                                    !
+!   · r(ntatom,3): atoms' coordinates.                                         !
+!   · d(natom,natom): distances between QM atoms.                              !
+!   · Iz(natom): nuclear charge for each QM atom.                              !
+!   · wgt_rho(M,M): energy-weighted density matrix.                            !
 !                                                                              !
-! Debugged (or supposed to) 29-7-92 by Dario Estrin.                           !
-! Refactored by Federico Pedron 08/2018                                        !
+! INTERNAL INPUT: basis set information.                                       !
+!   · M: number of basis functions (without contractions)                      !
+!   · ncont(M): number of contractions per function.                           !
+!   · a(M,nl): basis function exponents.                                       !
+!   · c(M,nl): basis function coefficients.                                    !
+!   · nshell(0:3): number of basis functions per shell (s,p,d).                !
+!   · Nuc(M): atomic index corresponding to function i.                        !
+!   · NORM: use custom normalization (now default and deprecated option)       !
+!                                                                              !
+! OUTPUTS:                                                                     !
+!   · ff(natom,3): QM gradients (= -forces)                                    !
+!                                                                              !
+! Original and debugged (or supposed to): Dario Estrin Jul/1992                !
+! Refactored:                             Federico Pedron Aug/2018             !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
 module subm_intSG
 contains
 subroutine intSG(ff, wgt_rho, r, d, natom, ntatom)
@@ -454,3 +472,4 @@ subroutine intSG(ff, wgt_rho, r, d, natom, ntatom)
    return
 end subroutine intSG
 end module subm_intSG
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -495,9 +495,7 @@ subroutine SCF(E)
 !        Large elements of t_i put into double-precision cool here
 !        Size criteria based on size of pre-factor in Gaussian Product Theorem
 !        (applied to MO basis indices)
-         call int3mem()
-!        Small elements of t_i put into single-precision cools here
-!        call int3mems()
+         call int3mem(r, d, natom, ntatom)
          call g2g_timer_stop('int3mem')
          call g2g_timer_sum_stop('Coulomb precalc')
       endif

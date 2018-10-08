@@ -1,17 +1,42 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% INTSOL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! 1e integrals for the solvent point charges interaction with electronic       !
-! density. Calculates the Fock matrix elements vía the Obara-Saika recursive   !
-! methods. This is the same as nuclear attraction elements.                    !
+! density. This is the same as nuclear attraction elements.                    !
 !                                                                              !
-! Written by Dario Estrin, Buenos Aires, August 1994.                          !
-! Refactored by Federico Pedron, Buenos Aires, August 2018.                    !
+! EXTERNAL INPUT: system information.                                          !
+!   · natom: number of QM atoms.                                               !
+!   · ntatom: total number of atoms (QM+MM)                                    !
+!   · r(ntatom,3): atoms' coordinates.                                         !
+!   · d(natom,natom): distances between QM atoms.                              !
+!   · Iz(natom): nuclear charge for each QM atom.                              !
+!   · pc(ntatom): partial charge for each MM atom.                             !
+!   · rho(M,M): density matrix.                                                !
+!   · elec: boolean indicating electrical charge calculation (deprecated).     !
+!                                                                              !
+! INTERNAL INPUT: basis set information.                                       !
+!   · M: number of basis functions (without contractions)                      !
+!   · ncont(M): number of contractions per function.                           !
+!   · a(M,nl): basis function exponents.                                       !
+!   · c(M,nl): basis function coefficients.                                    !
+!   · nshell(0:3): number of basis functions per shell (s,p,d).                !
+!   · Nuc(M): atomic index corresponding to function i.                        !
+!   · NORM: use custom normalization (now default and deprecated option)       !
+!   · rmax: cutoff value (in Ångström) for maximum exponent in the integrals.  !
+!                                                                              !
+! OUTPUTS:                                                                     !
+!   · Hmat(M,M): 1e matrix elements.                                           !
+!   · E1s: electron-nuclei interaction energy.                                 !
+!   · Ens: nuclei-nuclei interaction energy.                                   !
+!                                                                              !
+! Original and debugged (or supposed to): Dario Estrin Aug/1994                !
+! Refactored:                             Federico Pedron Aug/2018             !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module subm_intsol
 contains
 subroutine intsol(Rho, Hmat, Iz, pc, r, d, natom, ntatom, E1s, Ens, elec)
 
    use liotemp      , only: FUNCT
-   use garcha_mod   , only: a, c, nuc, ncont, rmax, nshell, M, NORM, Md
+   use garcha_mod   , only: a, c, nuc, ncont, rmax, nshell, M, NORM
    use constants_mod, only: pi
 
    implicit none
@@ -21,10 +46,10 @@ subroutine intsol(Rho, Hmat, Iz, pc, r, d, natom, ntatom, E1s, Ens, elec)
    double precision, intent(out)   :: E1s, Ens
    double precision, intent(inout) :: Rho(:), Hmat(:)
 
-   integer           :: M11, ns, np, nd, iatom, jatom, ifunct, jfunct, nci, &
-                        ncj, Ll(3), lk, lij, l1, l2, l3, l4, M2, vecmat_ind
-   double precision  :: sq3, rexp, ccoef, term, tna, uf, Z2, Zij, t1, t2, f1, &
-                        f2, p3s, p2s, p1s, p0s, pj2s, pj1s, pj1p, pj0s, pj0p, &
+   integer           :: ns, np, nd, iatom, jatom, ifunct, jfunct, nci, ncj,    &
+                        Ll(3), lk, lij, l1, l2, l3, l4, M2, vecmat_ind
+   double precision  :: sq3, rexp, ccoef, term, tna, uf, Z2, Zij, t1, t2, f1,  &
+                        f2, p3s, p2s, p1s, p0s, pj2s, pj1s, pj1p, pj0s, pj0p,  &
                         pi1p, pi0p, dd2, d1s, d2s, d1p, d0s, d0p, Q(3)
    double precision, allocatable :: s0s(:), s1s(:), s2s(:), s3s(:), s4s(:)
 
@@ -37,7 +62,7 @@ subroutine intsol(Rho, Hmat, Iz, pc, r, d, natom, ntatom, E1s, Ens, elec)
    enddo
 
    ns = nshell(0); np = nshell(1); nd = nshell(2)
-   M2 = 2 * M; M11 = 1 + 3 * M * (M +1) / 2 + Md * (Md +1)
+   M2 = 2 * M
 
    ! Nuclear attraction / repulsion between nuclei and classical atomic
    ! charges.
@@ -445,3 +470,4 @@ subroutine intsol(Rho, Hmat, Iz, pc, r, d, natom, ntatom, E1s, Ens, elec)
    return
 end subroutine
 end module subm_intsol
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

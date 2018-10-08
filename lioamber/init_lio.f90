@@ -331,13 +331,11 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge_i, basis_i       &
            , Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i, dt_i        &
            )
 
-   use garcha_mod, only: M, first_step, doing_ehrenfest                        &
-                      &, nshell, nuc, ncont, a, c, charge
-   use td_data, only: timedep, tdstep
-
+   use garcha_mod , only: M, first_step, doing_ehrenfest
+   use basis_subs , only: basis_setup_ehren
+   use td_data    , only: timedep, tdstep
    use lionml_data, only: ndyn_steps, edyn_steps
-
-   use liosubs,    only: catch_error
+   use liosubs    , only: catch_error
 
 
    implicit none
@@ -366,7 +364,7 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge_i, basis_i       &
            , ntdstep_i, field_i, exter_i, a0_i, epsilon_i, Fx_i, Fy_i          &
            , Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i              &
            )
-
+   call basis_setup_ehren()
 
    first_step=.true.
 

@@ -3,10 +3,20 @@
 ! This file contains two modules: basis_data, containing basis set function    !
 ! data, and basis_subs, containing the following subroutines:                  !
 !                                                                              !
-! · basis_set_size(): Prereads data and sets array sizes                       !
-! · basis_read()    : Reads input basis functions.                             !
-! · basis_init()    : Initializes basis data.                                  !
-! · basis_deinit()  : Deinitializes basis data.                                !
+! External access:                                                             !
+! · basis_init()       : Initializes basis data.                               !
+!    --> Requires basis and fitting sets names (or basis file name), number of !
+!        atoms and nuclear atomic charges.                                     !
+! · basis_setup_ehren(): Initialises data for ehrenfest runs                   !
+!    --> No inputs required.                                                   !
+! · basis_deinit()     : Deallocates basis data.                               !
+!    --> No inputs required.                                                   !
+!                                                                              !
+! Intended for basis_subs internal-only access:                                !
+! · basis_read_internal(): Reads basis functions from /dat directory.          !
+! · basis_read_external(): Reads basis functions form a custom basis file.     !
+! · basis_set_size()     : Prereads data and sets array sizes                  !
+! · check_basis()        : Checks if all atoms have basis functions  assigned. !
 !                                                                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -109,6 +119,15 @@ subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
                          indexii, indexiid, natomc, jatc, nnps, nnpp, nnpd
    use basis_data, only: ang_mom, ang_momd, max_f_per_atom, max_c_per_atom
    implicit none
+   ! Inputs: 
+   !   n_atoms        : the number of atoms in the QM system.
+   !   atom_Z(n_atoms): nuclear atomic charge of said atoms.
+   !   basis_name     : the name of the basis set or basis file.
+   !   fitting_name   : the name of the fitting set (not used when int_basis is
+   !                    true).
+   ! Outputs:
+   !   out_stat       : Returns an iostat-like value for error handling.
+
    integer         , intent(in)    :: n_atoms, atom_Z(n_atoms)
    integer         , intent(out)   :: out_stat
    character(len=*), intent(inout) :: basis_name, fitting_name
@@ -181,6 +200,40 @@ subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
 
    deallocate(atom_count, atom_basis_chk, atom_fitting_chk, ang_mom, ang_momd)
 end subroutine basis_init
+
+subroutine basis_deinit()
+   !use basis_data, only: Nuc, Nucd, nCont, nContd, a, c, ad, cd, atmin, nns, &
+   use garcha_mod , only: Nuc, Nucd, nCont, nContd, a, c, ad, cd, atmin, nns, &
+                          nnp, nnd, af, indexii, indexiid, natomc, jatc, nnps,&
+                          nnpp, nnpd
+
+   implicit none
+
+   ! M or Md sized.
+   if (allocated(c))        deallocate(c)
+   if (allocated(a))        deallocate(a)
+   if (allocated(cd))       deallocate(cd)
+   if (allocated(ad))       deallocate(ad)
+   if (allocated(af))       deallocate(af)
+   if (allocated(ncont))    deallocate(ncont)
+   if (allocated(ncontd))   deallocate(ncontd)
+   if (allocated(nuc))      deallocate(nuc)
+   if (allocated(nucd))     deallocate(nucd)
+   if (allocated(indexii))  deallocate(indexii)
+   if (allocated(indexiid)) deallocate(indexiid)
+
+   ! natom sized.
+   if (allocated(atmin))  deallocate(atmin)
+   if (allocated(jatc))   deallocate(jatc)
+   if (allocated(natomc)) deallocate(natomc)
+   if (allocated(nns))    deallocate(nns)
+   if (allocated(nnp))    deallocate(nnp)
+   if (allocated(nnd))    deallocate(nnd)
+   if (allocated(nnps))   deallocate(nnps)
+   if (allocated(nnpp))   deallocate(nnpp)
+   if (allocated(nnpd))   deallocate(nnpd)
+
+end subroutine basis_deinit
 
 subroutine basis_setup_ehren()
    use basis_data, only: a_ehren, c_ehren, ang_mom_ehren, max_c_per_atom

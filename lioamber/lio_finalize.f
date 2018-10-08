@@ -5,9 +5,14 @@
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
        use garcha_mod
-       use ECP_mod, only : ecpmode
-       use fileio_data, only : style
+       use ECP_mod    , only: ecpmode
+       use fileio_data, only: style
+       use basis_subs , only: basis_deinit
+ 
        implicit none
+       call basis_deinit()
+
+       ! This should not be here.
        if (dipole) then
         if (style) write(69,8703)
         CLOSE(69)
@@ -24,11 +29,7 @@
 
 !--------------------------------------------------------------------!
        deallocate(r,v,rqm, Em, Rm)
-       deallocate(pc, Iz, cd, ad, c, a)
-       deallocate(Nuc,ncont,Nucd,ncontd, indexii, indexiid, RMM, X)
-       deallocate(nnat, B, af)
-       deallocate(natomc,nnps,nnpp,nnpd,nns)
-       deallocate(nnd,nnp,atmin,jatc,d)
+       deallocate(pc, Iz, RMM, X,d)
 
        call g2g_timer_summary()
        call g2g_deinit()

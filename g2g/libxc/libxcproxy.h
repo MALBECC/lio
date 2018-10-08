@@ -57,12 +57,18 @@ public:
                 T* ec,
                 T* y2a);
 
+    void doGGA (T dens,
+                T sigma,
+                T* v2rho2,
+                T v2rhosigma,
+                T v2sigma2);
+
     void doGGA (T* dens,
 		T* sigma,
                 const int number_of_points,
-		T *v2rho2,
-		T *v2rhosigma,
-		T *v2sigma2);
+		T* v2rho2,
+		T* v2rhosigma,
+		T* v2sigma2);
 
     void doGGA (T* dens,
                 const int number_of_points,
@@ -499,6 +505,46 @@ void LibxcProxy <T, width>::doGGA (T* rho,
     return;
 }
 
+template <class T, int width>
+void LibxcProxy <T, width>::doGGA (T rho,
+               T sigma,
+               T* v2rho2,
+               T v2rhosigma,
+               T v2sigma2)
+{
+    const double dens = rho;
+    const double sig = sigma;
+
+    // The outputs for exchange
+    double v2rho2X = 0.0;
+    double v2rhosigmaX = 0.0;
+    double v2sigma2X = 0.0;
+
+    // The outputs for correlation
+    double v2rho2C = 0.0;
+    double v2rhosigmaC = 0.0;
+    double v2sigma2C = 0.0;
+
+    // Exchange values
+    xc_gga_fxc (&funcForExchange,1,
+                &dens,
+                &sig,
+                &v2rho2X,
+                &v2rhosigmaX,
+                &v2sigma2X);
+
+    // Correlation values
+    xc_gga_fxc (&funcForCorrelation,1,
+                &dens,
+                &sig,
+                &v2rho2C,
+                &v2rhosigmaC,
+                &v2sigma2C);
+
+
+    *v2rho2 = v2rho2C + v2rho2X;
+    return;
+}
 
 #ifdef __CUDACC__
 

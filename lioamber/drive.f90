@@ -27,6 +27,7 @@
       use td_data    , only: td_do_pop
       use fileio_data, only: verbose, rst_dens
       use ghost_atoms_subs, only: summon_ghosts
+      use lr_data, only: cbas, cbasx
 
       IMPLICIT NONE
       LOGICAL :: basis_check
@@ -222,18 +223,21 @@
                       xnorm=sqrt(xnorm)
                       c(No,l)=ct(index)*xnorm
                       a(No,l)=at(index)
+                      cbas(No,l)=ct(index)
                     elseif(lt(k).eq.1) then
 !c
                       xnorm=sqrt((2.D0*at(index)/pi)**3)*4.D0*at(index)
                       xnorm=sqrt(xnorm)
                       c(No,l)=ct(index)*xnorm
                       a(No,l)=at(index)
+                      cbas(No,l)=ct(index)
                     elseif (lt(k).eq.2) then
 !c
                   xnorm=sqrt((2.D0*at(index)/pi)**3)*(4.D0*at(index))**2
                       xnorm=sqrt(xnorm)
                       c(No,l)=ct(index)*xnorm
                       a(No,l)=at(index)
+                      cbas(No,l)=ct(index)
                     endif
                   enddo
                 else
@@ -242,6 +246,7 @@
                     index=index+1
                     c(No,l)=ct(index)
                     a(No,l)=at(index)
+                    cbas(No,l)=ct(index)
                   enddo
                 endif
 
@@ -490,18 +495,21 @@
                       xnorm=sqrt(xnorm)
                       c(No,l)=ct(index)*xnorm
                       a(No,l)=at(index)
+                      cbas(No,l)=ct(index)
                     elseif(lt(k).eq.1) then
 !c
                       xnorm=sqrt((2.D0*at(index)/pi)**3)*4.D0*at(index)
                       xnorm=sqrt(xnorm)
                       c(No,l)=ct(index)*xnorm
                       a(No,l)=at(index)
+                      cbas(No,l)=ct(index)
                     elseif (lt(k).eq.2) then
 !c
                   xnorm=sqrt((2.D0*at(index)/pi)**3)*(4.D0*at(index))**2
                       xnorm=sqrt(xnorm)
                       c(No,l)=ct(index)*xnorm
                       a(No,l)=at(index)
+                      cbas(No,l)=ct(index)
                     else
                 write(*,*) "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
                       write(*,*) "The basis set ",trim(basis_set), &
@@ -517,6 +525,7 @@
                     index=index+1
                     c(No,l)=ct(index)
                     a(No,l)=at(index)
+                    cbas(No,l)=ct(index)
                   enddo
                 endif
 
@@ -760,6 +769,7 @@
         do j=1,ncontx(is)
           cx(is,j)=c(i,j)
           ax(is,j)=a(i,j)
+          cbasx(is,j)=cbas(i,j)
         enddo
 !c
         is=is+1
@@ -775,6 +785,7 @@
         do j=1,ncontx(ip)
           cx(ip,j)=c(i,j)
           ax(ip,j)=a(i,j)
+          cbasx(ip,j)=cbas(i,j)
         enddo
 !c
         ip=ip+1
@@ -792,6 +803,7 @@
 !c
           cx(id,j)=c(i,j)
           ax(id,j)=a(i,j)
+          cbasx(id,j)=cbas(i,j)
         enddo
 !c
         id=id+1
@@ -814,6 +826,7 @@
         do j=1,ncont(i)
           c(i,j)=cx(i,j)
           a(i,j)=ax(i,j)
+          cbas(i,j)=cbasx(i,j)
         enddo
       enddo
 

@@ -1,0 +1,2668 @@
+WELCOME TO LIO
+Wed Sep 26 11:16:53 ART 2018
+Error found in lionml namelist. Using defaults for namelist lionml.
+iostat =   -1
+ 
+LIO input variables
+ ! -- General and theory level: -- !
+  Natom =     64, Nsol =        0, charge =    -1, Nunp =     4, open =  T,
+  Nmax =   500, int_basis =  F, basis_set = DZVP                     ,
+  fitting_set = DZVP Coulomb Fitting     , DIIS =  F, NDIIS =  30,
+  hybrid_converg =  F, Gold =     5.00000000, Told =     0.00000100,
+  Etold =     1.00000000, good_cut =     0.00001000, Rmax =    16.00000000,
+  RmaxS =     5.00000000, IExch =     9, IGrid =   2, IGrid2 =   2,
+  PredCoef =  F, initial_guess =   0, DBug =  F,
+  n_ghosts =     0
+ ! -- Input and output options: -- !
+  verbose =   4, style =  F, timers =   1, writeXYZ =  T, writeForces =  F,
+  dipole =  F, mulliken =  F, lowdin =  F, fukui =  F, print_coeffs =  F,
+  VCInp =  T, FRestartIn =      restart.in          , restart_freq =     1,
+  FRestart =      restart.out         , TDRestart =  F, writeDens =  F,
+  TD_rst_freq =    500, gaussian_convert =  F,
+  rst_dens =   0
+ ! -- TD-DFT and external field: -- !
+  timeDep =  0, NTDStep =          0, TDStep =     0.00200000, propagator =  1,
+  NBCH =   10, field =  F, a0 =  1000.00000000, epsilon =     1.00000000,
+  Fx =     0.00000000, Fy =     0.00000000, Fz =     0.00000000, n_fields_iso =     0,
+  n_fields_aniso =     0, field_iso_file =      field.in            ,
+  field_aniso_file =      fieldaniso.in       , td_do_pop =     0
+ ! -- Effective Core Potentials: -- !
+  ECPMode =  F, ECPTypes =   0, TipeECP = NOT-DEFINED              ,
+  Fock_ECP_read =  F, Fock_ECP_write =  F, cutECP =  T, cut2_0 =    15.00000000,
+  cut3_0 =    12.00000000, verbose_ECP =  0, ECP_debug =  F, fullTimer_ECP =  F,
+  local_nonlocal =  0, ECP_full_range_int =  F
+  ZListECP = 
+ ! -- Minimizations and restraints: -- !
+  steep =  F, minimzation_steep =     0.05000000, energy_cut =     0.00010000,
+  force_cut =     0.00001000, n_min_steeps =   500, lineal_search =  T,
+  n_points =     5, number_restr =     0
+ ! -- CubeGen: -- !
+  CubeGen_only =  F, cube_res =    40, cube_sel =     0, cube_dens =  F,
+  cube_orb =  F, cube_elec =  F, cube_dens_file =      dens.cube           ,
+  cube_orb_file =      orb.cube            , cube_elec_file =      dens.cube           
+ ! -- GPU Options: -- !
+  energy_all_iterations =  T, assign_all_functions =  F, remove_zero_weights =  T,
+  max_function_exponent =    10, free_global_memory =     0.00000000,
+  sphere_radius =     0.50000000, little_cube_size =    15.50000000,
+  min_points_per_cube =     1
+ ! -- Transport and DFTB: -- !
+  transport_calc =  F, generate_rho0 =  F, driving_rate =     0.00100000,
+  gate_field =  F, pop_drive =   1, save_charge_freq =     1, DFTB_calc =  F,
+  MTB =     0, alfaTB =     0.00000000, betaTB =     0.00000000,
+  gammaTB =     0.00000000, VBias_TB =     0.00000000, start_TDTB =     0,
+  end_TDTB =     0, end_BTB =     0, TBLoad =  F, TBSave =  F
+  nbias=    0
+ ! -- Ehrenfest: -- !
+  ndyn_steps =      0, edyn_steps =      0, nullify_forces =  F,
+  wdip_nfreq =     0, wdip_fname = liorun.dip               , rsti_loads =  F,
+  rsto_saves =  F, rsto_nfreq =  F, rsti_fname = liorun.rsti              ,
+  rsto_fname = liorun.rsto              , eefld_on =  F, eefld_ampx =    0.00000000,
+  eefld_ampy =     0.00000000, eefld_ampz =     0.00000000,
+  eefld_timeamp =     0.20000000, eefld_timepos =     1.00000000,
+  eefld_timegfh =  F, eefld_timegih =  F, eefld_wavelen =     0.00000000
+ ! -- Fock Bias Potentials: -- !
+  fockbias_is_active =  F, fockbias_is_shaped =  F, fockbias_timeamp0 =     0.00000000,
+  fockbias_timegrow =     0.00000000, fockbias_timefall =     0.00000000,
+  fockbias_readfile = atombias.in              
+ 
+LIO initialisation.
+G2G initialisation.
+  GPU Device used: GeForce GTX 680
+  Using 3 CPU Threads and 1 GPU Threads.
+TIMER [restart_read]: 2s. 584587us.
+  QM atoms: 64 - MM atoms: 0
+  Total number of basis: 685 (s: 172 p: 85 d: 43)
+  Open shell calculation - Occupied MO(UP): 154 - Occupied MO(DOWN): 158
+AINT initialisation.
+  Density basis - s: 385 p: 128 d: 128 - Total (w/contractions): 1537
+  Using device 0 for analytic integral calculations.
+no existe timer! (lio_init)
+TIMER [lio_init]: 18446696601427219453s. 967894us.
+ 
+Starting SCF cycles.
+  Weights: 120157us.
+Functions: 176us.
+TIMER [aint_qmmm_fock]: 23895us.
+TIMER [int3mem]: 6s. 297038us.
+TIMER [int3lu - start]: 130455us.
+TIMER [int3lu]: 222085us.
+TIMER [int3lu - start]: 129979us.
+TIMER [int3lu]: 221834us.
+TIMER [int3lu - start]: 129539us.
+TIMER [int3lu]: 222036us.
+no existe timer! (dens_GPU)
+TIMER [dens_GPU]: 18446744073420772374s. 552878us.
+no existe timer! (otras cosas)
+TIMER [otras cosas]: 18446744073420772374s. 552894us.
+  Step =      1  - QM Energy =  -3131.72108 - Rho diff (crit) = 3.77E+00 (1.00E-06) - Energy diff (crit) = 3.13E+03 (1.00E+00)
+TIMER [Total iter]: 10s. 672584us.
+TIMER [int3lu - start]: 130532us.
+TIMER [int3lu]: 221917us.
+TIMER [int3lu - start]: 129908us.
+TIMER [int3lu]: 222535us.
+ This step   -3129.94193981844      last steep   -3131.72107793852     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129735us.
+TIMER [int3lu]: 222097us.
+ step            0 energy   -3131.72107793852     
+TIMER [int3lu - start]: 129936us.
+TIMER [int3lu]: 222045us.
+ step            1 energy   -3131.86992447697     
+TIMER [int3lu - start]: 129922us.
+TIMER [int3lu]: 221811us.
+ step            2 energy   -3131.94589509953     
+TIMER [int3lu - start]: 129851us.
+TIMER [int3lu]: 221639us.
+ step            3 energy   -3131.94904479023     
+TIMER [int3lu - start]: 129712us.
+TIMER [int3lu]: 221707us.
+ step            4 energy   -3131.87943900134     
+TIMER [int3lu - start]: 129656us.
+TIMER [int3lu]: 221725us.
+ step            5 energy   -3131.73723144278     
+TIMER [int3lu - start]: 129715us.
+TIMER [int3lu]: 222106us.
+ step            6 energy   -3131.52254915947     
+TIMER [int3lu - start]: 129934us.
+TIMER [int3lu]: 221902us.
+ step            7 energy   -3131.23548417214     
+TIMER [int3lu - start]: 130298us.
+TIMER [int3lu]: 221796us.
+ step            8 energy   -3130.87622696187     
+TIMER [int3lu - start]: 129555us.
+TIMER [int3lu]: 221916us.
+ step            9 energy   -3130.44497345847     
+TIMER [int3lu - start]: 129570us.
+TIMER [int3lu]: 222072us.
+ step           10 energy   -3129.94193981844     
+ Best lambda   2.54329145670306     
+ Fluctuation:   0.254329145670306     
+TIMER [int3lu - start]: 129627us.
+TIMER [int3lu]: 221883us.
+TIMER [dens_GPU]: 1331780s. 934794us.
+TIMER [otras cosas]: 1331780s. 934848us.
+  Step =      2  - QM Energy =  -3131.95662 - Rho diff (crit) = 6.89E-03 (1.00E-06) - Energy diff (crit) = 2.36E-01 (1.00E+00)
+TIMER [Total iter]: 45s. 381935us.
+TIMER [int3lu - start]: 130426us.
+TIMER [int3lu]: 222028us.
+TIMER [int3lu - start]: 129913us.
+TIMER [int3lu]: 221943us.
+ This step   -3128.78666283502      last steep   -3131.95661985141     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129556us.
+TIMER [int3lu]: 222075us.
+ step            0 energy   -3131.95661985141     
+TIMER [int3lu - start]: 129685us.
+TIMER [int3lu]: 221935us.
+ step            1 energy   -3131.99915150420     
+TIMER [int3lu - start]: 130140us.
+TIMER [int3lu]: 221801us.
+ step            2 energy   -3132.02053921968     
+TIMER [int3lu - start]: 130076us.
+TIMER [int3lu]: 221995us.
+ step            3 energy   -3132.02077435654     
+TIMER [int3lu - start]: 129625us.
+TIMER [int3lu]: 222387us.
+ step            4 energy   -3131.99985699671     
+TIMER [int3lu - start]: 129759us.
+TIMER [int3lu]: 222039us.
+ step            5 energy   -3131.95778714136     
+TIMER [int3lu - start]: 129856us.
+TIMER [int3lu]: 221829us.
+ step            6 energy   -3131.89454353878     
+TIMER [int3lu - start]: 129879us.
+TIMER [int3lu]: 221753us.
+ step            7 energy   -3131.81014765310     
+TIMER [int3lu - start]: 129875us.
+TIMER [int3lu]: 221780us.
+ step            8 energy   -3131.70459257807     
+TIMER [int3lu - start]: 129477us.
+TIMER [int3lu]: 222079us.
+ step            9 energy   -3131.57785440899     
+TIMER [int3lu - start]: 129707us.
+TIMER [int3lu]: 222191us.
+ step           10 energy   -3131.42995230642     
+ Best lambda   2.51111626980590     
+ Fluctuation:   0.125555813490295     
+TIMER [int3lu - start]: 130126us.
+TIMER [int3lu]: 221944us.
+TIMER [dens_GPU]: 1331826s. 302708us.
+TIMER [otras cosas]: 1331826s. 302761us.
+  Step =      3  - QM Energy =  -3132.02330 - Rho diff (crit) = 3.54E-03 (1.00E-06) - Energy diff (crit) = 6.67E-02 (1.00E+00)
+TIMER [Total iter]: 45s. 367906us.
+TIMER [int3lu - start]: 130483us.
+TIMER [int3lu]: 221844us.
+TIMER [int3lu - start]: 129952us.
+TIMER [int3lu]: 221899us.
+ This step   -3129.89439285402      last steep   -3132.02330350580     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129675us.
+TIMER [int3lu]: 221835us.
+ step            0 energy   -3132.02330350580     
+TIMER [int3lu - start]: 129853us.
+TIMER [int3lu]: 221969us.
+ step            1 energy   -3132.04569396603     
+TIMER [int3lu - start]: 130056us.
+TIMER [int3lu]: 222344us.
+ step            2 energy   -3132.06419927649     
+TIMER [int3lu - start]: 129441us.
+TIMER [int3lu]: 222120us.
+ step            3 energy   -3132.07883897005     
+TIMER [int3lu - start]: 129569us.
+TIMER [int3lu]: 221847us.
+ step            4 energy   -3132.08961099754     
+TIMER [int3lu - start]: 129840us.
+TIMER [int3lu]: 221915us.
+ step            5 energy   -3132.09651515299     
+TIMER [int3lu - start]: 129747us.
+TIMER [int3lu]: 221777us.
+ step            6 energy   -3132.09951744306     
+TIMER [int3lu - start]: 129578us.
+TIMER [int3lu]: 222259us.
+ step            7 energy   -3132.09866875420     
+TIMER [int3lu - start]: 129587us.
+TIMER [int3lu]: 222247us.
+ step            8 energy   -3132.09393760687     
+TIMER [int3lu - start]: 130022us.
+TIMER [int3lu]: 221891us.
+ step            9 energy   -3132.08530370742     
+TIMER [int3lu - start]: 129876us.
+TIMER [int3lu]: 221727us.
+ step           10 energy   -3132.07282034897     
+ Best lambda   6.27961737130818     
+ Fluctuation:   0.156990434282705     
+TIMER [int3lu - start]: 130181us.
+TIMER [int3lu]: 221830us.
+TIMER [dens_GPU]: 1331871s. 647048us.
+TIMER [otras cosas]: 1331871s. 647104us.
+  Step =      4  - QM Energy =  -3132.09967 - Rho diff (crit) = 7.20E-03 (1.00E-06) - Energy diff (crit) = 7.64E-02 (1.00E+00)
+TIMER [Total iter]: 45s. 344337us.
+TIMER [int3lu - start]: 130354us.
+TIMER [int3lu]: 222411us.
+TIMER [int3lu - start]: 129994us.
+TIMER [int3lu]: 222381us.
+ This step   -3131.69284697961      last steep   -3132.09967306725     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 130081us.
+TIMER [int3lu]: 221768us.
+ step            0 energy   -3132.09967306725     
+TIMER [int3lu - start]: 129804us.
+TIMER [int3lu]: 221771us.
+ step            1 energy   -3132.10928914725     
+TIMER [int3lu - start]: 129593us.
+TIMER [int3lu]: 222056us.
+ step            2 energy   -3132.11788997757     
+TIMER [int3lu - start]: 129646us.
+TIMER [int3lu]: 221929us.
+ step            3 energy   -3132.12548245854     
+TIMER [int3lu - start]: 129685us.
+TIMER [int3lu]: 221807us.
+ step            4 energy   -3132.13205086628     
+TIMER [int3lu - start]: 129818us.
+TIMER [int3lu]: 221973us.
+ step            5 energy   -3132.13759713202     
+TIMER [int3lu - start]: 129788us.
+TIMER [int3lu]: 222144us.
+ step            6 energy   -3132.14213540488     
+TIMER [int3lu - start]: 129659us.
+TIMER [int3lu]: 222271us.
+ step            7 energy   -3132.14565378595     
+TIMER [int3lu - start]: 129782us.
+TIMER [int3lu]: 221844us.
+ step            8 energy   -3132.14816443313     
+TIMER [int3lu - start]: 129738us.
+TIMER [int3lu]: 221737us.
+ step            9 energy   -3132.14965644599     
+TIMER [int3lu - start]: 129855us.
+TIMER [int3lu]: 221776us.
+ step           10 energy   -3132.15014929036     
+ Best lambda   10.0000000000000     
+ Fluctuation:   0.250000000000000     
+TIMER [int3lu - start]: 129849us.
+TIMER [int3lu]: 222345us.
+TIMER [dens_GPU]: 1331917s. 12681us.
+TIMER [otras cosas]: 1331917s. 12733us.
+  Step =      5  - QM Energy =  -3132.15015 - Rho diff (crit) = 5.49E-03 (1.00E-06) - Energy diff (crit) = 5.05E-02 (1.00E+00)
+TIMER [Total iter]: 45s. 365622us.
+TIMER [int3lu - start]: 130177us.
+TIMER [int3lu]: 222296us.
+TIMER [int3lu - start]: 130174us.
+TIMER [int3lu]: 221844us.
+ This step   -3131.99556211628      last steep   -3132.15014929036     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129930us.
+TIMER [int3lu]: 221802us.
+ step            0 energy   -3132.15014929036     
+TIMER [int3lu - start]: 129788us.
+TIMER [int3lu]: 221932us.
+ step            1 energy   -3132.15452644974     
+TIMER [int3lu - start]: 129711us.
+TIMER [int3lu]: 221904us.
+ step            2 energy   -3132.15835187741     
+TIMER [int3lu - start]: 129678us.
+TIMER [int3lu]: 222053us.
+ step            3 energy   -3132.16161028306     
+TIMER [int3lu - start]: 130188us.
+TIMER [int3lu]: 221896us.
+ step            4 energy   -3132.16432854357     
+TIMER [int3lu - start]: 129769us.
+TIMER [int3lu]: 222187us.
+ step            5 energy   -3132.16648460036     
+TIMER [int3lu - start]: 129552us.
+TIMER [int3lu]: 222553us.
+ step            6 energy   -3132.16807238772     
+TIMER [int3lu - start]: 129721us.
+TIMER [int3lu]: 221837us.
+ step            7 energy   -3132.16912304597     
+TIMER [int3lu - start]: 129777us.
+TIMER [int3lu]: 221808us.
+ step            8 energy   -3132.16959004833     
+TIMER [int3lu - start]: 129872us.
+TIMER [int3lu]: 222158us.
+ step            9 energy   -3132.16952819845     
+TIMER [int3lu - start]: 129962us.
+TIMER [int3lu]: 222260us.
+ step           10 energy   -3132.16888056372     
+ Best lambda   8.38304884409808     
+ Fluctuation:   0.251491465322942     
+TIMER [int3lu - start]: 130050us.
+TIMER [int3lu]: 221942us.
+TIMER [dens_GPU]: 1331962s. 367367us.
+TIMER [otras cosas]: 1331962s. 367424us.
+  Step =      6  - QM Energy =  -3132.16965 - Rho diff (crit) = 3.83E-03 (1.00E-06) - Energy diff (crit) = 1.95E-02 (1.00E+00)
+TIMER [Total iter]: 45s. 354681us.
+TIMER [int3lu - start]: 130153us.
+TIMER [int3lu]: 221813us.
+TIMER [int3lu - start]: 129954us.
+TIMER [int3lu]: 221994us.
+ This step   -3132.11596876348      last steep   -3132.16965378865     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129581us.
+TIMER [int3lu]: 221859us.
+ step            0 energy   -3132.16965378865     
+TIMER [int3lu - start]: 129808us.
+TIMER [int3lu]: 222013us.
+ step            1 energy   -3132.17337245143     
+TIMER [int3lu - start]: 130002us.
+TIMER [int3lu]: 221823us.
+ step            2 energy   -3132.17667417813     
+TIMER [int3lu - start]: 129936us.
+TIMER [int3lu]: 221930us.
+ step            3 energy   -3132.17956046898     
+TIMER [int3lu - start]: 129593us.
+TIMER [int3lu]: 222200us.
+ step            4 energy   -3132.18202650238     
+TIMER [int3lu - start]: 129584us.
+TIMER [int3lu]: 221905us.
+ step            5 energy   -3132.18406664544     
+TIMER [int3lu - start]: 129669us.
+TIMER [int3lu]: 221797us.
+ step            6 energy   -3132.18569288132     
+TIMER [int3lu - start]: 129933us.
+TIMER [int3lu]: 222039us.
+ step            7 energy   -3132.18687954453     
+TIMER [int3lu - start]: 130118us.
+TIMER [int3lu]: 221870us.
+ step            8 energy   -3132.18767062168     
+TIMER [int3lu - start]: 129612us.
+TIMER [int3lu]: 222019us.
+ step            9 energy   -3132.18801612396     
+TIMER [int3lu - start]: 130207us.
+TIMER [int3lu]: 221963us.
+ step           10 energy   -3132.18792124325     
+ Best lambda   9.28454955500345     
+ Fluctuation:   0.334243783980124     
+TIMER [int3lu - start]: 129981us.
+TIMER [int3lu]: 221753us.
+TIMER [dens_GPU]: 1332007s. 715273us.
+TIMER [otras cosas]: 1332007s. 715327us.
+  Step =      7  - QM Energy =  -3132.18803 - Rho diff (crit) = 6.11E-03 (1.00E-06) - Energy diff (crit) = 1.84E-02 (1.00E+00)
+TIMER [Total iter]: 45s. 347897us.
+TIMER [int3lu - start]: 130516us.
+TIMER [int3lu]: 221829us.
+TIMER [int3lu - start]: 130002us.
+TIMER [int3lu]: 222535us.
+ This step   -3130.77880423728      last steep   -3132.18802652550     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129984us.
+TIMER [int3lu]: 221890us.
+ step            0 energy   -3132.18802652550     
+TIMER [int3lu - start]: 129740us.
+TIMER [int3lu]: 221820us.
+ step            1 energy   -3132.21060441507     
+TIMER [int3lu - start]: 129840us.
+TIMER [int3lu]: 222048us.
+ step            2 energy   -3132.22561255966     
+TIMER [int3lu - start]: 129549us.
+TIMER [int3lu]: 222053us.
+ step            3 energy   -3132.23306700836     
+TIMER [int3lu - start]: 129755us.
+TIMER [int3lu]: 221979us.
+ step            4 energy   -3132.23296965832     
+TIMER [int3lu - start]: 129831us.
+TIMER [int3lu]: 222002us.
+ step            5 energy   -3132.22531527357     
+TIMER [int3lu - start]: 130051us.
+TIMER [int3lu]: 221825us.
+ step            6 energy   -3132.21011806858     
+TIMER [int3lu - start]: 129815us.
+TIMER [int3lu]: 222057us.
+ step            7 energy   -3132.18735968109     
+TIMER [int3lu - start]: 129592us.
+TIMER [int3lu]: 222228us.
+ step            8 energy   -3132.15707086312     
+TIMER [int3lu - start]: 129621us.
+TIMER [int3lu]: 221898us.
+ step            9 energy   -3132.11923423544     
+TIMER [int3lu - start]: 129853us.
+TIMER [int3lu]: 221827us.
+ step           10 energy   -3132.07386743666     
+ Best lambda   3.48710902509570     
+ Fluctuation:   0.150643109884134     
+TIMER [int3lu - start]: 129993us.
+TIMER [int3lu]: 221991us.
+TIMER [dens_GPU]: 1332053s. 99124us.
+TIMER [otras cosas]: 1332053s. 99176us.
+  Step =      8  - QM Energy =  -3132.23397 - Rho diff (crit) = 2.77E-03 (1.00E-06) - Energy diff (crit) = 4.59E-02 (1.00E+00)
+TIMER [Total iter]: 45s. 383838us.
+TIMER [int3lu - start]: 130538us.
+TIMER [int3lu]: 221861us.
+TIMER [int3lu - start]: 130044us.
+TIMER [int3lu]: 221899us.
+ This step   -3131.50838418026      last steep   -3132.23396671816     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129885us.
+TIMER [int3lu]: 221789us.
+ step            0 energy   -3132.23396671816     
+TIMER [int3lu - start]: 129948us.
+TIMER [int3lu]: 222036us.
+ step            1 energy   -3132.23444706356     
+TIMER [int3lu - start]: 129627us.
+TIMER [int3lu]: 222359us.
+ step            2 energy   -3132.23422199137     
+TIMER [int3lu - start]: 129609us.
+TIMER [int3lu]: 222092us.
+ step            3 energy   -3132.23329810594     
+TIMER [int3lu - start]: 129880us.
+TIMER [int3lu]: 221812us.
+ step            4 energy   -3132.23163350938     
+TIMER [int3lu - start]: 129940us.
+TIMER [int3lu]: 221776us.
+ step            5 energy   -3132.22926367645     
+TIMER [int3lu - start]: 129919us.
+TIMER [int3lu]: 221784us.
+ step            6 energy   -3132.22616253184     
+TIMER [int3lu - start]: 129690us.
+TIMER [int3lu]: 221910us.
+ step            7 energy   -3132.22237055982     
+TIMER [int3lu - start]: 129780us.
+TIMER [int3lu]: 221836us.
+ step            8 energy   -3132.21785372975     
+TIMER [int3lu - start]: 129712us.
+TIMER [int3lu]: 222020us.
+ step            9 energy   -3132.21262301335     
+TIMER [int3lu - start]: 130002us.
+TIMER [int3lu]: 221831us.
+ step           10 energy   -3132.20665855562     
+ Best lambda   1.18093765786186     
+ Fluctuation:   2.550825340981611E-002
+TIMER [int3lu - start]: 130069us.
+TIMER [int3lu]: 222011us.
+TIMER [dens_GPU]: 1332098s. 460821us.
+TIMER [otras cosas]: 1332098s. 460878us.
+  Step =      9  - QM Energy =  -3132.23447 - Rho diff (crit) = 3.89E-04 (1.00E-06) - Energy diff (crit) = 4.99E-04 (1.00E+00)
+TIMER [Total iter]: 45s. 361698us.
+TIMER [int3lu - start]: 130060us.
+TIMER [int3lu]: 222206us.
+TIMER [int3lu - start]: 130029us.
+TIMER [int3lu]: 221913us.
+ This step   -3131.99729862490      last steep   -3132.23446613889     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129875us.
+TIMER [int3lu]: 222276us.
+ step            0 energy   -3132.23446613889     
+TIMER [int3lu - start]: 129839us.
+TIMER [int3lu]: 222112us.
+ step            1 energy   -3132.23476266904     
+TIMER [int3lu - start]: 129644us.
+TIMER [int3lu]: 221867us.
+ step            2 energy   -3132.23499510539     
+TIMER [int3lu - start]: 129771us.
+TIMER [int3lu]: 221766us.
+ step            3 energy   -3132.23514511167     
+TIMER [int3lu - start]: 129684us.
+TIMER [int3lu]: 221770us.
+ step            4 energy   -3132.23525506197     
+TIMER [int3lu - start]: 129973us.
+TIMER [int3lu]: 221821us.
+ step            5 energy   -3132.23529416455     
+TIMER [int3lu - start]: 129971us.
+TIMER [int3lu]: 222257us.
+ step            6 energy   -3132.23526785188     
+TIMER [int3lu - start]: 129680us.
+TIMER [int3lu]: 222188us.
+ step            7 energy   -3132.23518747085     
+TIMER [int3lu - start]: 129675us.
+TIMER [int3lu]: 222229us.
+ step            8 energy   -3132.23504249684     
+TIMER [int3lu - start]: 129952us.
+TIMER [int3lu]: 221815us.
+ step            9 energy   -3132.23484347142     
+TIMER [int3lu - start]: 129849us.
+TIMER [int3lu]: 221844us.
+ step           10 energy   -3132.23455829472     
+ Best lambda   5.09775938326731     
+ Fluctuation:   5.505580133928696E-002
+TIMER [int3lu - start]: 130006us.
+TIMER [int3lu]: 221958us.
+TIMER [dens_GPU]: 1332143s. 840295us.
+TIMER [otras cosas]: 1332143s. 840349us.
+  Step =     10  - QM Energy =  -3132.23529 - Rho diff (crit) = 7.88E-04 (1.00E-06) - Energy diff (crit) = 8.23E-04 (1.00E+00)
+TIMER [Total iter]: 45s. 379463us.
+TIMER [int3lu - start]: 130051us.
+TIMER [int3lu]: 222118us.
+TIMER [int3lu - start]: 130568us.
+TIMER [int3lu]: 221895us.
+ This step   -3132.04707143322      last steep   -3132.23528937515     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 130163us.
+TIMER [int3lu]: 221990us.
+ step            0 energy   -3132.23528937515     
+TIMER [int3lu - start]: 129616us.
+TIMER [int3lu]: 222112us.
+ step            1 energy   -3132.23603117906     
+TIMER [int3lu - start]: 129792us.
+TIMER [int3lu]: 222032us.
+ step            2 energy   -3132.23672132290     
+TIMER [int3lu - start]: 129953us.
+TIMER [int3lu]: 221800us.
+ step            3 energy   -3132.23734576089     
+TIMER [int3lu - start]: 129684us.
+TIMER [int3lu]: 222110us.
+ step            4 energy   -3132.23791442200     
+TIMER [int3lu - start]: 130206us.
+TIMER [int3lu]: 221940us.
+ step            5 energy   -3132.23842312278     
+TIMER [int3lu - start]: 129750us.
+TIMER [int3lu]: 222134us.
+ step            6 energy   -3132.23886718514     
+TIMER [int3lu - start]: 129471us.
+TIMER [int3lu]: 221792us.
+ step            7 energy   -3132.23925455991     
+TIMER [int3lu - start]: 129686us.
+TIMER [int3lu]: 221767us.
+ step            8 energy   -3132.23957343446     
+TIMER [int3lu - start]: 129777us.
+TIMER [int3lu]: 221891us.
+ step            9 energy   -3132.23982693923     
+TIMER [int3lu - start]: 130122us.
+TIMER [int3lu]: 222068us.
+ step           10 energy   -3132.24004486906     
+ Best lambda   10.0000000000000     
+ Fluctuation:   0.108000000000000     
+TIMER [int3lu - start]: 130031us.
+TIMER [int3lu]: 222184us.
+TIMER [dens_GPU]: 1332189s. 225424us.
+TIMER [otras cosas]: 1332189s. 225470us.
+  Step =     11  - QM Energy =  -3132.24004 - Rho diff (crit) = 1.56E-03 (1.00E-06) - Energy diff (crit) = 4.76E-03 (1.00E+00)
+TIMER [Total iter]: 45s. 385112us.
+TIMER [int3lu - start]: 130207us.
+TIMER [int3lu]: 221838us.
+TIMER [int3lu - start]: 130070us.
+TIMER [int3lu]: 221902us.
+ This step   -3132.05902687943      last steep   -3132.24004486906     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129552us.
+TIMER [int3lu]: 222204us.
+ step            0 energy   -3132.24004486906     
+TIMER [int3lu - start]: 129859us.
+TIMER [int3lu]: 222005us.
+ step            1 energy   -3132.24019166387     
+TIMER [int3lu - start]: 129881us.
+TIMER [int3lu]: 221964us.
+ step            2 energy   -3132.24029200133     
+TIMER [int3lu - start]: 130307us.
+TIMER [int3lu]: 221854us.
+ step            3 energy   -3132.24033306460     
+TIMER [int3lu - start]: 129925us.
+TIMER [int3lu]: 221930us.
+ step            4 energy   -3132.24026980792     
+TIMER [int3lu - start]: 129542us.
+TIMER [int3lu]: 222083us.
+ step            5 energy   -3132.24017706986     
+TIMER [int3lu - start]: 129757us.
+TIMER [int3lu]: 221747us.
+ step            6 energy   -3132.24000486523     
+TIMER [int3lu - start]: 129699us.
+TIMER [int3lu]: 221824us.
+ step            7 energy   -3132.23977915526     
+TIMER [int3lu - start]: 129912us.
+TIMER [int3lu]: 222014us.
+ step            8 energy   -3132.23947481173     
+TIMER [int3lu - start]: 130246us.
+TIMER [int3lu]: 221847us.
+ step            9 energy   -3132.23910480897     
+TIMER [int3lu - start]: 129956us.
+TIMER [int3lu]: 222087us.
+ step           10 energy   -3132.23867444098     
+ Best lambda   2.89362816736983     
+ Fluctuation:   3.750142104911305E-002
+TIMER [int3lu - start]: 129888us.
+TIMER [int3lu]: 221765us.
+TIMER [dens_GPU]: 1332234s. 597250us.
+TIMER [otras cosas]: 1332234s. 597303us.
+  Step =     12  - QM Energy =  -3132.24032 - Rho diff (crit) = 5.11E-04 (1.00E-06) - Energy diff (crit) = 2.76E-04 (1.00E+00)
+TIMER [Total iter]: 45s. 371829us.
+TIMER [int3lu - start]: 130307us.
+TIMER [int3lu]: 222012us.
+TIMER [int3lu - start]: 130095us.
+TIMER [int3lu]: 222410us.
+ This step   -3132.08356797306      last steep   -3132.24032038645     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129865us.
+TIMER [int3lu]: 222123us.
+ step            0 energy   -3132.24032038645     
+TIMER [int3lu - start]: 129597us.
+TIMER [int3lu]: 221818us.
+ step            1 energy   -3132.24032699450     
+TIMER [int3lu - start]: 129606us.
+TIMER [int3lu]: 221777us.
+ step            2 energy   -3132.24033189382     
+TIMER [int3lu - start]: 129731us.
+TIMER [int3lu]: 221747us.
+ step            3 energy   -3132.24032250779     
+TIMER [int3lu - start]: 129922us.
+TIMER [int3lu]: 221631us.
+ step            4 energy   -3132.24030967012     
+TIMER [int3lu - start]: 129586us.
+TIMER [int3lu]: 222007us.
+ step            5 energy   -3132.24027176345     
+TIMER [int3lu - start]: 129701us.
+TIMER [int3lu]: 222269us.
+ step            6 energy   -3132.24022911319     
+TIMER [int3lu - start]: 129845us.
+TIMER [int3lu]: 221839us.
+ step            7 energy   -3132.24016533974     
+TIMER [int3lu - start]: 129776us.
+TIMER [int3lu]: 221923us.
+ step            8 energy   -3132.24008292206     
+TIMER [int3lu - start]: 129730us.
+TIMER [int3lu]: 221831us.
+ step            9 energy   -3132.23998733779     
+TIMER [int3lu - start]: 129507us.
+TIMER [int3lu]: 221819us.
+ step           10 energy   -3132.23989842148     
+ Best lambda   1.84296107532854     
+ Fluctuation:   1.194238776812894E-002
+TIMER [int3lu - start]: 129736us.
+TIMER [int3lu]: 221818us.
+TIMER [dens_GPU]: 1332279s. 982795us.
+TIMER [otras cosas]: 1332279s. 982851us.
+  Step =     13  - QM Energy =  -3132.24034 - Rho diff (crit) = 1.55E-04 (1.00E-06) - Energy diff (crit) = 1.49E-05 (1.00E+00)
+TIMER [Total iter]: 45s. 385541us.
+TIMER [int3lu - start]: 130210us.
+TIMER [int3lu]: 222057us.
+TIMER [int3lu - start]: 129975us.
+TIMER [int3lu]: 221989us.
+ This step   -3132.12306874411      last steep   -3132.24033524245     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129645us.
+TIMER [int3lu]: 222023us.
+ step            0 energy   -3132.24033524245     
+TIMER [int3lu - start]: 129719us.
+TIMER [int3lu]: 221818us.
+ step            1 energy   -3132.24035518515     
+TIMER [int3lu - start]: 129683us.
+TIMER [int3lu]: 221739us.
+ step            2 energy   -3132.24035714223     
+TIMER [int3lu - start]: 129884us.
+TIMER [int3lu]: 221761us.
+ step            3 energy   -3132.24038807486     
+TIMER [int3lu - start]: 129872us.
+TIMER [int3lu]: 222058us.
+ step            4 energy   -3132.24039259201     
+TIMER [int3lu - start]: 129662us.
+TIMER [int3lu]: 221807us.
+ step            5 energy   -3132.24039699271     
+TIMER [int3lu - start]: 129770us.
+TIMER [int3lu]: 221742us.
+ step            6 energy   -3132.24040315267     
+TIMER [int3lu - start]: 130010us.
+TIMER [int3lu]: 222011us.
+ step            7 energy   -3132.24038069843     
+TIMER [int3lu - start]: 129810us.
+TIMER [int3lu]: 221880us.
+ step            8 energy   -3132.24037903603     
+TIMER [int3lu - start]: 129602us.
+TIMER [int3lu]: 222233us.
+ step            9 energy   -3132.24037735564     
+TIMER [int3lu - start]: 129482us.
+TIMER [int3lu]: 222053us.
+ step           10 energy   -3132.24038529965     
+ Best lambda   5.71527637130399     
+ Fluctuation:   1.851749544302494E-002
+TIMER [int3lu - start]: 130030us.
+TIMER [int3lu]: 221860us.
+TIMER [dens_GPU]: 1332325s. 350259us.
+TIMER [otras cosas]: 1332325s. 350313us.
+  Step =     14  - QM Energy =  -3132.24039 - Rho diff (crit) = 2.28E-04 (1.00E-06) - Energy diff (crit) = 5.92E-05 (1.00E+00)
+TIMER [Total iter]: 45s. 367456us.
+TIMER [int3lu - start]: 130229us.
+TIMER [int3lu]: 221963us.
+TIMER [int3lu - start]: 129892us.
+TIMER [int3lu]: 221973us.
+ This step   -3132.10030145514      last steep   -3132.24039439664     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129704us.
+TIMER [int3lu]: 221873us.
+ step            0 energy   -3132.24039439664     
+TIMER [int3lu - start]: 129921us.
+TIMER [int3lu]: 222310us.
+ step            1 energy   -3132.24045928598     
+TIMER [int3lu - start]: 130280us.
+TIMER [int3lu]: 222259us.
+ step            2 energy   -3132.24053758990     
+TIMER [int3lu - start]: 129670us.
+TIMER [int3lu]: 222179us.
+ step            3 energy   -3132.24060281755     
+TIMER [int3lu - start]: 129698us.
+TIMER [int3lu]: 221792us.
+ step            4 energy   -3132.24066561127     
+TIMER [int3lu - start]: 129613us.
+TIMER [int3lu]: 221844us.
+ step            5 energy   -3132.24072778586     
+TIMER [int3lu - start]: 129908us.
+TIMER [int3lu]: 221767us.
+ step            6 energy   -3132.24078659540     
+TIMER [int3lu - start]: 129820us.
+TIMER [int3lu]: 221996us.
+ step            7 energy   -3132.24085198078     
+TIMER [int3lu - start]: 129830us.
+TIMER [int3lu]: 222063us.
+ step            8 energy   -3132.24090554640     
+TIMER [int3lu - start]: 129678us.
+TIMER [int3lu]: 222110us.
+ step            9 energy   -3132.24094810314     
+TIMER [int3lu - start]: 129877us.
+TIMER [int3lu]: 221860us.
+ step           10 energy   -3132.24100859595     
+ Best lambda   10.0000000000000     
+ Fluctuation:   3.240000000000000E-002
+TIMER [int3lu - start]: 129836us.
+TIMER [int3lu]: 221689us.
+TIMER [dens_GPU]: 1332370s. 718343us.
+TIMER [otras cosas]: 1332370s. 718401us.
+  Step =     15  - QM Energy =  -3132.24101 - Rho diff (crit) = 3.73E-04 (1.00E-06) - Energy diff (crit) = 6.14E-04 (1.00E+00)
+TIMER [Total iter]: 45s. 368081us.
+TIMER [int3lu - start]: 130306us.
+TIMER [int3lu]: 221876us.
+TIMER [int3lu - start]: 129958us.
+TIMER [int3lu]: 222522us.
+ This step   -3132.02732623490      last steep   -3132.24100859595     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129942us.
+TIMER [int3lu]: 222086us.
+ step            0 energy   -3132.24100859595     
+TIMER [int3lu - start]: 130108us.
+TIMER [int3lu]: 221890us.
+ step            1 energy   -3132.24105785068     
+TIMER [int3lu - start]: 129881us.
+TIMER [int3lu]: 221808us.
+ step            2 energy   -3132.24112011284     
+TIMER [int3lu - start]: 129542us.
+TIMER [int3lu]: 221807us.
+ step            3 energy   -3132.24118200121     
+TIMER [int3lu - start]: 129459us.
+TIMER [int3lu]: 222018us.
+ step            4 energy   -3132.24121852926     
+TIMER [int3lu - start]: 129725us.
+TIMER [int3lu]: 221982us.
+ step            5 energy   -3132.24126437458     
+TIMER [int3lu - start]: 129993us.
+TIMER [int3lu]: 221616us.
+ step            6 energy   -3132.24130656131     
+TIMER [int3lu - start]: 129917us.
+TIMER [int3lu]: 221796us.
+ step            7 energy   -3132.24133212331     
+TIMER [int3lu - start]: 129817us.
+TIMER [int3lu]: 221812us.
+ step            8 energy   -3132.24133431291     
+TIMER [int3lu - start]: 129588us.
+TIMER [int3lu]: 221847us.
+ step            9 energy   -3132.24135285731     
+TIMER [int3lu - start]: 130011us.
+TIMER [int3lu]: 221811us.
+ step           10 energy   -3132.24137057404     
+ Best lambda   10.0000000000000     
+ Fluctuation:   3.888000000000000E-002
+TIMER [int3lu - start]: 130923us.
+TIMER [int3lu]: 222065us.
+TIMER [dens_GPU]: 1332416s. 115921us.
+TIMER [otras cosas]: 1332416s. 115977us.
+  Step =     16  - QM Energy =  -3132.24137 - Rho diff (crit) = 4.94E-04 (1.00E-06) - Energy diff (crit) = 3.62E-04 (1.00E+00)
+TIMER [Total iter]: 45s. 397597us.
+TIMER [int3lu - start]: 130785us.
+TIMER [int3lu]: 221869us.
+TIMER [int3lu - start]: 130022us.
+TIMER [int3lu]: 221890us.
+ This step   -3132.20893322657      last steep   -3132.24137057404     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129719us.
+TIMER [int3lu]: 221885us.
+ step            0 energy   -3132.24137057404     
+TIMER [int3lu - start]: 130003us.
+TIMER [int3lu]: 221813us.
+ step            1 energy   -3132.24143689498     
+TIMER [int3lu - start]: 129527us.
+TIMER [int3lu]: 222211us.
+ step            2 energy   -3132.24150738512     
+TIMER [int3lu - start]: 129757us.
+TIMER [int3lu]: 221914us.
+ step            3 energy   -3132.24159765567     
+TIMER [int3lu - start]: 129891us.
+TIMER [int3lu]: 222224us.
+ step            4 energy   -3132.24165482103     
+TIMER [int3lu - start]: 130143us.
+TIMER [int3lu]: 221981us.
+ step            5 energy   -3132.24173595383     
+TIMER [int3lu - start]: 129818us.
+TIMER [int3lu]: 221761us.
+ step            6 energy   -3132.24180465108     
+TIMER [int3lu - start]: 129495us.
+TIMER [int3lu]: 221975us.
+ step            7 energy   -3132.24186019378     
+TIMER [int3lu - start]: 129535us.
+TIMER [int3lu]: 221923us.
+ step            8 energy   -3132.24191731360     
+TIMER [int3lu - start]: 130076us.
+TIMER [int3lu]: 222006us.
+ step            9 energy   -3132.24196944767     
+TIMER [int3lu - start]: 130120us.
+TIMER [int3lu]: 221869us.
+ step           10 energy   -3132.24204204666     
+ Best lambda   10.0000000000000     
+ Fluctuation:   4.665600000000000E-002
+TIMER [int3lu - start]: 130045us.
+TIMER [int3lu]: 221803us.
+TIMER [dens_GPU]: 1332461s. 492114us.
+TIMER [otras cosas]: 1332461s. 492164us.
+  Step =     17  - QM Energy =  -3132.24204 - Rho diff (crit) = 4.60E-04 (1.00E-06) - Energy diff (crit) = 6.71E-04 (1.00E+00)
+TIMER [Total iter]: 45s. 376150us.
+TIMER [int3lu - start]: 130107us.
+TIMER [int3lu]: 222083us.
+TIMER [int3lu - start]: 129972us.
+TIMER [int3lu]: 221896us.
+ This step   -3132.21413152496      last steep   -3132.24204204666     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129847us.
+TIMER [int3lu]: 221959us.
+ step            0 energy   -3132.24204204666     
+TIMER [int3lu - start]: 130204us.
+TIMER [int3lu]: 221769us.
+ step            1 energy   -3132.24212281835     
+TIMER [int3lu - start]: 129711us.
+TIMER [int3lu]: 221802us.
+ step            2 energy   -3132.24221752324     
+TIMER [int3lu - start]: 129517us.
+TIMER [int3lu]: 222168us.
+ step            3 energy   -3132.24229243888     
+TIMER [int3lu - start]: 129844us.
+TIMER [int3lu]: 221993us.
+ step            4 energy   -3132.24237887090     
+TIMER [int3lu - start]: 129831us.
+TIMER [int3lu]: 221829us.
+ step            5 energy   -3132.24246250339     
+TIMER [int3lu - start]: 129947us.
+TIMER [int3lu]: 222158us.
+ step            6 energy   -3132.24252685841     
+TIMER [int3lu - start]: 129832us.
+TIMER [int3lu]: 222029us.
+ step            7 energy   -3132.24260298645     
+TIMER [int3lu - start]: 129516us.
+TIMER [int3lu]: 222125us.
+ step            8 energy   -3132.24266418749     
+TIMER [int3lu - start]: 129718us.
+TIMER [int3lu]: 221899us.
+ step            9 energy   -3132.24272918955     
+TIMER [int3lu - start]: 129818us.
+TIMER [int3lu]: 221794us.
+ step           10 energy   -3132.24279607919     
+ Best lambda   10.0000000000000     
+ Fluctuation:   5.598719999999999E-002
+TIMER [int3lu - start]: 129515us.
+TIMER [int3lu]: 222052us.
+TIMER [dens_GPU]: 1332506s. 856929us.
+TIMER [otras cosas]: 1332506s. 856984us.
+  Step =     18  - QM Energy =  -3132.24280 - Rho diff (crit) = 5.19E-04 (1.00E-06) - Energy diff (crit) = 7.54E-04 (1.00E+00)
+TIMER [Total iter]: 45s. 364813us.
+TIMER [int3lu - start]: 129935us.
+TIMER [int3lu]: 222031us.
+TIMER [int3lu - start]: 130525us.
+TIMER [int3lu]: 221975us.
+ This step   -3132.06605137670      last steep   -3132.24279607919     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 130128us.
+TIMER [int3lu]: 221762us.
+ step            0 energy   -3132.24279607919     
+TIMER [int3lu - start]: 129522us.
+TIMER [int3lu]: 221998us.
+ step            1 energy   -3132.24286005613     
+TIMER [int3lu - start]: 129507us.
+TIMER [int3lu]: 222088us.
+ step            2 energy   -3132.24290797146     
+TIMER [int3lu - start]: 129795us.
+TIMER [int3lu]: 221888us.
+ step            3 energy   -3132.24293777368     
+TIMER [int3lu - start]: 129947us.
+TIMER [int3lu]: 221998us.
+ step            4 energy   -3132.24294010188     
+TIMER [int3lu - start]: 130275us.
+TIMER [int3lu]: 221753us.
+ step            5 energy   -3132.24292375923     
+TIMER [int3lu - start]: 129643us.
+TIMER [int3lu]: 221767us.
+ step            6 energy   -3132.24289390497     
+TIMER [int3lu - start]: 129707us.
+TIMER [int3lu]: 222008us.
+ step            7 energy   -3132.24285288827     
+TIMER [int3lu - start]: 129741us.
+TIMER [int3lu]: 221899us.
+ step            8 energy   -3132.24279973494     
+TIMER [int3lu - start]: 129863us.
+TIMER [int3lu]: 222006us.
+ step            9 energy   -3132.24272118486     
+TIMER [int3lu - start]: 129998us.
+TIMER [int3lu]: 222016us.
+ step           10 energy   -3132.24263935508     
+ Best lambda   3.62469708439160     
+ Fluctuation:   2.435239687238993E-002
+TIMER [int3lu - start]: 130200us.
+TIMER [int3lu]: 222119us.
+TIMER [dens_GPU]: 1332552s. 244446us.
+TIMER [otras cosas]: 1332552s. 244499us.
+  Step =     19  - QM Energy =  -3132.24294 - Rho diff (crit) = 4.24E-04 (1.00E-06) - Energy diff (crit) = 1.43E-04 (1.00E+00)
+TIMER [Total iter]: 45s. 387507us.
+TIMER [int3lu - start]: 130293us.
+TIMER [int3lu]: 222124us.
+TIMER [int3lu - start]: 129976us.
+TIMER [int3lu]: 221834us.
+ This step   -3132.21029765351      last steep   -3132.24293896480     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129497us.
+TIMER [int3lu]: 222017us.
+ step            0 energy   -3132.24293896480     
+TIMER [int3lu - start]: 129669us.
+TIMER [int3lu]: 222204us.
+ step            1 energy   -3132.24294254159     
+TIMER [int3lu - start]: 129707us.
+TIMER [int3lu]: 222143us.
+ step            2 energy   -3132.24296237107     
+TIMER [int3lu - start]: 129893us.
+TIMER [int3lu]: 222013us.
+ step            3 energy   -3132.24298214185     
+TIMER [int3lu - start]: 130019us.
+TIMER [int3lu]: 221775us.
+ step            4 energy   -3132.24298439852     
+TIMER [int3lu - start]: 129811us.
+TIMER [int3lu]: 222108us.
+ step            5 energy   -3132.24300709697     
+TIMER [int3lu - start]: 129534us.
+TIMER [int3lu]: 222052us.
+ step            6 energy   -3132.24301486565     
+TIMER [int3lu - start]: 129794us.
+TIMER [int3lu]: 221885us.
+ step            7 energy   -3132.24303360260     
+TIMER [int3lu - start]: 129886us.
+TIMER [int3lu]: 222046us.
+ step            8 energy   -3132.24302965392     
+TIMER [int3lu - start]: 130095us.
+TIMER [int3lu]: 221878us.
+ step            9 energy   -3132.24304492455     
+TIMER [int3lu - start]: 130112us.
+TIMER [int3lu]: 222056us.
+ step           10 energy   -3132.24305155121     
+ Best lambda   10.0000000000000     
+ Fluctuation:   3.359231999999999E-002
+TIMER [int3lu - start]: 129634us.
+TIMER [int3lu]: 222082us.
+TIMER [dens_GPU]: 1332597s. 612523us.
+TIMER [otras cosas]: 1332597s. 612578us.
+  Step =     20  - QM Energy =  -3132.24305 - Rho diff (crit) = 5.86E-04 (1.00E-06) - Energy diff (crit) = 1.13E-04 (1.00E+00)
+TIMER [Total iter]: 45s. 368073us.
+TIMER [int3lu - start]: 130136us.
+TIMER [int3lu]: 222005us.
+TIMER [int3lu - start]: 129976us.
+TIMER [int3lu]: 222445us.
+ This step   -3132.21999692214      last steep   -3132.24305155121     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129791us.
+TIMER [int3lu]: 222002us.
+ step            0 energy   -3132.24305155121     
+TIMER [int3lu - start]: 129605us.
+TIMER [int3lu]: 222028us.
+ step            1 energy   -3132.24307042394     
+TIMER [int3lu - start]: 129717us.
+TIMER [int3lu]: 221813us.
+ step            2 energy   -3132.24307771435     
+TIMER [int3lu - start]: 129815us.
+TIMER [int3lu]: 221785us.
+ step            3 energy   -3132.24310658819     
+TIMER [int3lu - start]: 129930us.
+TIMER [int3lu]: 221759us.
+ step            4 energy   -3132.24310951910     
+TIMER [int3lu - start]: 129520us.
+TIMER [int3lu]: 222212us.
+ step            5 energy   -3132.24311198600     
+TIMER [int3lu - start]: 129684us.
+TIMER [int3lu]: 222154us.
+ step            6 energy   -3132.24312668799     
+TIMER [int3lu - start]: 129667us.
+TIMER [int3lu]: 221831us.
+ step            7 energy   -3132.24314345457     
+TIMER [int3lu - start]: 129920us.
+TIMER [int3lu]: 221730us.
+ step            8 energy   -3132.24313362261     
+TIMER [int3lu - start]: 129763us.
+TIMER [int3lu]: 221762us.
+ step            9 energy   -3132.24314673857     
+TIMER [int3lu - start]: 129594us.
+TIMER [int3lu]: 222103us.
+ step           10 energy   -3132.24314859099     
+ Best lambda   10.0000000000000     
+ Fluctuation:   4.031078400000000E-002
+TIMER [int3lu - start]: 129616us.
+TIMER [int3lu]: 222094us.
+TIMER [dens_GPU]: 1332643s. 4950us.
+TIMER [otras cosas]: 1332643s. 5005us.
+  Step =     21  - QM Energy =  -3132.24315 - Rho diff (crit) = 7.12E-04 (1.00E-06) - Energy diff (crit) = 9.70E-05 (1.00E+00)
+TIMER [Total iter]: 45s. 392419us.
+TIMER [int3lu - start]: 130178us.
+TIMER [int3lu]: 222152us.
+TIMER [int3lu - start]: 129914us.
+TIMER [int3lu]: 221981us.
+ This step   -3132.19533355417      last steep   -3132.24314859099     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129600us.
+TIMER [int3lu]: 221952us.
+ step            0 energy   -3132.24314859099     
+TIMER [int3lu - start]: 129890us.
+TIMER [int3lu]: 221861us.
+ step            1 energy   -3132.24328513962     
+TIMER [int3lu - start]: 129839us.
+TIMER [int3lu]: 221783us.
+ step            2 energy   -3132.24340964692     
+TIMER [int3lu - start]: 129846us.
+TIMER [int3lu]: 222005us.
+ step            3 energy   -3132.24352351518     
+TIMER [int3lu - start]: 129936us.
+TIMER [int3lu]: 222061us.
+ step            4 energy   -3132.24364251501     
+TIMER [int3lu - start]: 129770us.
+TIMER [int3lu]: 221894us.
+ step            5 energy   -3132.24373832481     
+TIMER [int3lu - start]: 129977us.
+TIMER [int3lu]: 221809us.
+ step            6 energy   -3132.24385598379     
+TIMER [int3lu - start]: 130043us.
+TIMER [int3lu]: 222492us.
+ step            7 energy   -3132.24396355108     
+TIMER [int3lu - start]: 129523us.
+TIMER [int3lu]: 222068us.
+ step            8 energy   -3132.24406098735     
+TIMER [int3lu - start]: 129638us.
+TIMER [int3lu]: 222167us.
+ step            9 energy   -3132.24415742553     
+TIMER [int3lu - start]: 129911us.
+TIMER [int3lu]: 222078us.
+ step           10 energy   -3132.24424755077     
+ Best lambda   10.0000000000000     
+ Fluctuation:   4.837294079999999E-002
+TIMER [int3lu - start]: 129970us.
+TIMER [int3lu]: 221848us.
+TIMER [dens_GPU]: 1332688s. 336031us.
+TIMER [otras cosas]: 1332688s. 336078us.
+  Step =     22  - QM Energy =  -3132.24425 - Rho diff (crit) = 3.72E-04 (1.00E-06) - Energy diff (crit) = 1.10E-03 (1.00E+00)
+TIMER [Total iter]: 45s. 331076us.
+TIMER [int3lu - start]: 130402us.
+TIMER [int3lu]: 221829us.
+TIMER [int3lu - start]: 129938us.
+TIMER [int3lu]: 221901us.
+TIMER [int3lu - start]: 130137us.
+TIMER [int3lu]: 221827us.
+TIMER [dens_GPU]: 1332698s. 950614us.
+TIMER [otras cosas]: 1332698s. 950668us.
+  Step =     23  - QM Energy =  -3132.24523 - Rho diff (crit) = 6.16E-04 (1.00E-06) - Energy diff (crit) = 9.81E-04 (1.00E+00)
+TIMER [Total iter]: 10s. 614575us.
+TIMER [int3lu - start]: 130408us.
+TIMER [int3lu]: 222212us.
+TIMER [int3lu - start]: 129909us.
+TIMER [int3lu]: 221807us.
+ This step   -3132.24051195696      last steep   -3132.24522902848     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129877us.
+TIMER [int3lu]: 221849us.
+ step            0 energy   -3132.24522902848     
+TIMER [int3lu - start]: 130044us.
+TIMER [int3lu]: 221797us.
+ step            1 energy   -3132.24530910824     
+TIMER [int3lu - start]: 130048us.
+TIMER [int3lu]: 221811us.
+ step            2 energy   -3132.24537910419     
+TIMER [int3lu - start]: 129731us.
+TIMER [int3lu]: 222289us.
+ step            3 energy   -3132.24543494756     
+TIMER [int3lu - start]: 129820us.
+TIMER [int3lu]: 221972us.
+ step            4 energy   -3132.24549884570     
+TIMER [int3lu - start]: 129781us.
+TIMER [int3lu]: 221852us.
+ step            5 energy   -3132.24557260626     
+TIMER [int3lu - start]: 129925us.
+TIMER [int3lu]: 221949us.
+ step            6 energy   -3132.24561254696     
+TIMER [int3lu - start]: 130054us.
+TIMER [int3lu]: 221800us.
+ step            7 energy   -3132.24568550679     
+TIMER [int3lu - start]: 129795us.
+TIMER [int3lu]: 221931us.
+ step            8 energy   -3132.24574745364     
+TIMER [int3lu - start]: 129923us.
+TIMER [int3lu]: 221887us.
+ step            9 energy   -3132.24579160409     
+TIMER [int3lu - start]: 130024us.
+TIMER [int3lu]: 221992us.
+ step           10 energy   -3132.24584543652     
+ Best lambda   10.0000000000000     
+ Fluctuation:   6.965703475199998E-002
+TIMER [int3lu - start]: 130434us.
+TIMER [int3lu]: 221995us.
+TIMER [dens_GPU]: 1332744s. 312573us.
+TIMER [otras cosas]: 1332744s. 312628us.
+  Step =     24  - QM Energy =  -3132.24585 - Rho diff (crit) = 9.65E-04 (1.00E-06) - Energy diff (crit) = 6.16E-04 (1.00E+00)
+TIMER [Total iter]: 45s. 361952us.
+TIMER [int3lu - start]: 130401us.
+TIMER [int3lu]: 222343us.
+TIMER [int3lu - start]: 130020us.
+TIMER [int3lu]: 221876us.
+ This step   -3132.16452526441      last steep   -3132.24584543652     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 130099us.
+TIMER [int3lu]: 222045us.
+ step            0 energy   -3132.24584543652     
+TIMER [int3lu - start]: 129766us.
+TIMER [int3lu]: 221977us.
+ step            1 energy   -3132.24608326720     
+TIMER [int3lu - start]: 130093us.
+TIMER [int3lu]: 221949us.
+ step            2 energy   -3132.24627885556     
+TIMER [int3lu - start]: 129794us.
+TIMER [int3lu]: 222308us.
+ step            3 energy   -3132.24647986967     
+TIMER [int3lu - start]: 129785us.
+TIMER [int3lu]: 221794us.
+ step            4 energy   -3132.24665812049     
+TIMER [int3lu - start]: 129868us.
+TIMER [int3lu]: 221752us.
+ step            5 energy   -3132.24680415164     
+TIMER [int3lu - start]: 129623us.
+TIMER [int3lu]: 222054us.
+ step            6 energy   -3132.24695056037     
+TIMER [int3lu - start]: 129750us.
+TIMER [int3lu]: 222104us.
+ step            7 energy   -3132.24709837638     
+TIMER [int3lu - start]: 129600us.
+TIMER [int3lu]: 222059us.
+ step            8 energy   -3132.24720737381     
+TIMER [int3lu - start]: 129747us.
+TIMER [int3lu]: 221837us.
+ step            9 energy   -3132.24731702273     
+TIMER [int3lu - start]: 129817us.
+TIMER [int3lu]: 221763us.
+ step           10 energy   -3132.24740055304     
+ Best lambda   10.0000000000000     
+ Fluctuation:   8.358844170239997E-002
+TIMER [int3lu - start]: 129596us.
+TIMER [int3lu]: 222001us.
+TIMER [dens_GPU]: 1332789s. 671798us.
+TIMER [otras cosas]: 1332789s. 671855us.
+  Step =     25  - QM Energy =  -3132.24740 - Rho diff (crit) = 6.67E-04 (1.00E-06) - Energy diff (crit) = 1.56E-03 (1.00E+00)
+TIMER [Total iter]: 45s. 359219us.
+TIMER [int3lu - start]: 129915us.
+TIMER [int3lu]: 221987us.
+TIMER [int3lu - start]: 129971us.
+TIMER [int3lu]: 222425us.
+ This step   -3132.24523710310      last steep   -3132.24740055304     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 130038us.
+TIMER [int3lu]: 221772us.
+ step            0 energy   -3132.24740055304     
+TIMER [int3lu - start]: 129823us.
+TIMER [int3lu]: 222063us.
+ step            1 energy   -3132.24758263179     
+TIMER [int3lu - start]: 129504us.
+TIMER [int3lu]: 221836us.
+ step            2 energy   -3132.24777386688     
+TIMER [int3lu - start]: 129794us.
+TIMER [int3lu]: 221764us.
+ step            3 energy   -3132.24794262743     
+TIMER [int3lu - start]: 129779us.
+TIMER [int3lu]: 221768us.
+ step            4 energy   -3132.24810889450     
+TIMER [int3lu - start]: 129918us.
+TIMER [int3lu]: 222240us.
+ step            5 energy   -3132.24829185667     
+TIMER [int3lu - start]: 129886us.
+TIMER [int3lu]: 221929us.
+ step            6 energy   -3132.24845629211     
+TIMER [int3lu - start]: 129552us.
+TIMER [int3lu]: 221882us.
+ step            7 energy   -3132.24861492398     
+TIMER [int3lu - start]: 129847us.
+TIMER [int3lu]: 221745us.
+ step            8 energy   -3132.24876977367     
+TIMER [int3lu - start]: 129755us.
+TIMER [int3lu]: 221775us.
+ step            9 energy   -3132.24891726693     
+TIMER [int3lu - start]: 129678us.
+TIMER [int3lu]: 221982us.
+ step           10 energy   -3132.24907013669     
+ Best lambda   10.0000000000000     
+ Fluctuation:   0.100306130042880     
+TIMER [int3lu - start]: 129643us.
+TIMER [int3lu]: 222052us.
+TIMER [dens_GPU]: 1332835s. 48249us.
+TIMER [otras cosas]: 1332835s. 48300us.
+  Step =     26  - QM Energy =  -3132.24907 - Rho diff (crit) = 9.89E-04 (1.00E-06) - Energy diff (crit) = 1.67E-03 (1.00E+00)
+TIMER [Total iter]: 45s. 376437us.
+TIMER [int3lu - start]: 130204us.
+TIMER [int3lu]: 222025us.
+TIMER [int3lu - start]: 130008us.
+TIMER [int3lu]: 221862us.
+TIMER [int3lu - start]: 129576us.
+TIMER [int3lu]: 222196us.
+TIMER [dens_GPU]: 1332845s. 668318us.
+TIMER [otras cosas]: 1332845s. 668370us.
+  Step =     27  - QM Energy =  -3132.25066 - Rho diff (crit) = 9.63E-04 (1.00E-06) - Energy diff (crit) = 1.59E-03 (1.00E+00)
+TIMER [Total iter]: 10s. 620063us.
+TIMER [int3lu - start]: 129872us.
+TIMER [int3lu]: 221942us.
+TIMER [int3lu - start]: 130027us.
+TIMER [int3lu]: 222447us.
+ This step   -3132.20099055207      last steep   -3132.25065550604     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 130198us.
+TIMER [int3lu]: 222075us.
+ step            0 energy   -3132.25065550604     
+TIMER [int3lu - start]: 129660us.
+TIMER [int3lu]: 221898us.
+ step            1 energy   -3132.25084070310     
+TIMER [int3lu - start]: 129492us.
+TIMER [int3lu]: 221874us.
+ step            2 energy   -3132.25098638720     
+TIMER [int3lu - start]: 129621us.
+TIMER [int3lu]: 221773us.
+ step            3 energy   -3132.25111345415     
+TIMER [int3lu - start]: 129766us.
+TIMER [int3lu]: 221789us.
+ step            4 energy   -3132.25121011091     
+TIMER [int3lu - start]: 129937us.
+TIMER [int3lu]: 222056us.
+ step            5 energy   -3132.25127564651     
+TIMER [int3lu - start]: 129901us.
+TIMER [int3lu]: 221890us.
+ step            6 energy   -3132.25132213511     
+TIMER [int3lu - start]: 129590us.
+TIMER [int3lu]: 221836us.
+ step            7 energy   -3132.25134139489     
+TIMER [int3lu - start]: 129726us.
+TIMER [int3lu]: 221770us.
+ step            8 energy   -3132.25132950491     
+TIMER [int3lu - start]: 129667us.
+TIMER [int3lu]: 221937us.
+ step            9 energy   -3132.25128401023     
+TIMER [int3lu - start]: 129807us.
+TIMER [int3lu]: 221787us.
+ step           10 energy   -3132.25122073018     
+ Best lambda   7.11829632862549     
+ Fluctuation:   0.102817261040092     
+TIMER [int3lu - start]: 129736us.
+TIMER [int3lu]: 222386us.
+TIMER [dens_GPU]: 1332891s. 74448us.
+TIMER [otras cosas]: 1332891s. 74503us.
+  Step =     28  - QM Energy =  -3132.25133 - Rho diff (crit) = 1.02E-03 (1.00E-06) - Energy diff (crit) = 6.77E-04 (1.00E+00)
+TIMER [Total iter]: 45s. 406127us.
+TIMER [int3lu - start]: 130471us.
+TIMER [int3lu]: 222013us.
+TIMER [int3lu - start]: 129984us.
+TIMER [int3lu]: 221908us.
+ This step   -3132.03346209034      last steep   -3132.25133207820     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129762us.
+TIMER [int3lu]: 221936us.
+ step            0 energy   -3132.25133207820     
+TIMER [int3lu - start]: 129555us.
+TIMER [int3lu]: 221847us.
+ step            1 energy   -3132.25157462297     
+TIMER [int3lu - start]: 129768us.
+TIMER [int3lu]: 221962us.
+ step            2 energy   -3132.25170851687     
+TIMER [int3lu - start]: 129874us.
+TIMER [int3lu]: 222168us.
+ step            3 energy   -3132.25174505834     
+TIMER [int3lu - start]: 129916us.
+TIMER [int3lu]: 222104us.
+ step            4 energy   -3132.25168317847     
+TIMER [int3lu - start]: 129869us.
+TIMER [int3lu]: 222139us.
+ step            5 energy   -3132.25152361458     
+TIMER [int3lu - start]: 129571us.
+TIMER [int3lu]: 221842us.
+ step            6 energy   -3132.25125674477     
+TIMER [int3lu - start]: 129644us.
+TIMER [int3lu]: 222097us.
+ step            7 energy   -3132.25091479456     
+TIMER [int3lu - start]: 129778us.
+TIMER [int3lu]: 221787us.
+ step            8 energy   -3132.25044856452     
+TIMER [int3lu - start]: 130089us.
+TIMER [int3lu]: 222180us.
+ step            9 energy   -3132.24989189529     
+TIMER [int3lu - start]: 130115us.
+TIMER [int3lu]: 222037us.
+ step           10 energy   -3132.24923437040     
+ Best lambda   2.87127586963179     
+ Fluctuation:   4.147294619063078E-002
+TIMER [int3lu - start]: 129643us.
+TIMER [int3lu]: 221852us.
+TIMER [dens_GPU]: 1332936s. 457253us.
+TIMER [otras cosas]: 1332936s. 457310us.
+  Step =     29  - QM Energy =  -3132.25175 - Rho diff (crit) = 4.75E-04 (1.00E-06) - Energy diff (crit) = 4.16E-04 (1.00E+00)
+TIMER [Total iter]: 45s. 382800us.
+TIMER [int3lu - start]: 130104us.
+TIMER [int3lu]: 221876us.
+TIMER [int3lu - start]: 130063us.
+TIMER [int3lu]: 221899us.
+ This step   -3132.24152602530      last steep   -3132.25174791738     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129651us.
+TIMER [int3lu]: 222373us.
+ step            0 energy   -3132.25174791738     
+TIMER [int3lu - start]: 129726us.
+TIMER [int3lu]: 221768us.
+ step            1 energy   -3132.25181778523     
+TIMER [int3lu - start]: 129645us.
+TIMER [int3lu]: 221832us.
+ step            2 energy   -3132.25188194835     
+TIMER [int3lu - start]: 129904us.
+TIMER [int3lu]: 221735us.
+ step            3 energy   -3132.25194154113     
+TIMER [int3lu - start]: 129949us.
+TIMER [int3lu]: 221822us.
+ step            4 energy   -3132.25200915840     
+TIMER [int3lu - start]: 129584us.
+TIMER [int3lu]: 221942us.
+ step            5 energy   -3132.25206357479     
+TIMER [int3lu - start]: 129547us.
+TIMER [int3lu]: 221879us.
+ step            6 energy   -3132.25211634191     
+TIMER [int3lu - start]: 129789us.
+TIMER [int3lu]: 221938us.
+ step            7 energy   -3132.25216398156     
+TIMER [int3lu - start]: 129995us.
+TIMER [int3lu]: 222045us.
+ step            8 energy   -3132.25221464851     
+TIMER [int3lu - start]: 130096us.
+TIMER [int3lu]: 221865us.
+ step            9 energy   -3132.25225491330     
+TIMER [int3lu - start]: 129764us.
+TIMER [int3lu]: 222062us.
+ step           10 energy   -3132.25231035251     
+ Best lambda   10.0000000000000     
+ Fluctuation:   7.222041363087356E-002
+TIMER [int3lu - start]: 129810us.
+TIMER [int3lu]: 221764us.
+TIMER [dens_GPU]: 1332981s. 832787us.
+TIMER [otras cosas]: 1332981s. 832839us.
+  Step =     30  - QM Energy =  -3132.25231 - Rho diff (crit) = 6.68E-04 (1.00E-06) - Energy diff (crit) = 5.62E-04 (1.00E+00)
+TIMER [Total iter]: 45s. 375524us.
+TIMER [int3lu - start]: 130558us.
+TIMER [int3lu]: 221876us.
+TIMER [int3lu - start]: 130511us.
+TIMER [int3lu]: 221925us.
+ This step   -3132.24453897858      last steep   -3132.25231035251     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129620us.
+TIMER [int3lu]: 221795us.
+ step            0 energy   -3132.25231035251     
+TIMER [int3lu - start]: 129679us.
+TIMER [int3lu]: 221767us.
+ step            1 energy   -3132.25237891265     
+TIMER [int3lu - start]: 129791us.
+TIMER [int3lu]: 221842us.
+ step            2 energy   -3132.25245153978     
+TIMER [int3lu - start]: 129902us.
+TIMER [int3lu]: 221977us.
+ step            3 energy   -3132.25250435939     
+TIMER [int3lu - start]: 129640us.
+TIMER [int3lu]: 222307us.
+ step            4 energy   -3132.25256061997     
+TIMER [int3lu - start]: 129857us.
+TIMER [int3lu]: 221833us.
+ step            5 energy   -3132.25263047756     
+TIMER [int3lu - start]: 129794us.
+TIMER [int3lu]: 221907us.
+ step            6 energy   -3132.25268049498     
+TIMER [int3lu - start]: 129734us.
+TIMER [int3lu]: 222008us.
+ step            7 energy   -3132.25273239851     
+TIMER [int3lu - start]: 130019us.
+TIMER [int3lu]: 221770us.
+ step            8 energy   -3132.25278170572     
+TIMER [int3lu - start]: 129709us.
+TIMER [int3lu]: 222102us.
+ step            9 energy   -3132.25283103460     
+TIMER [int3lu - start]: 129750us.
+TIMER [int3lu]: 222004us.
+ step           10 energy   -3132.25288835747     
+ Best lambda   10.0000000000000     
+ Fluctuation:   8.666449635704827E-002
+TIMER [int3lu - start]: 130188us.
+TIMER [int3lu]: 221959us.
+TIMER [dens_GPU]: 1333027s. 216099us.
+TIMER [otras cosas]: 1333027s. 216151us.
+  Step =     31  - QM Energy =  -3132.25289 - Rho diff (crit) = 7.15E-04 (1.00E-06) - Energy diff (crit) = 5.78E-04 (1.00E+00)
+TIMER [Total iter]: 45s. 383301us.
+TIMER [int3lu - start]: 130184us.
+TIMER [int3lu]: 221828us.
+TIMER [int3lu - start]: 129962us.
+TIMER [int3lu]: 221886us.
+ This step   -3132.22926964720      last steep   -3132.25288835747     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129522us.
+TIMER [int3lu]: 221832us.
+ step            0 energy   -3132.25288835747     
+TIMER [int3lu - start]: 129907us.
+TIMER [int3lu]: 222015us.
+ step            1 energy   -3132.25303492813     
+TIMER [int3lu - start]: 130083us.
+TIMER [int3lu]: 222195us.
+ step            2 energy   -3132.25320288167     
+TIMER [int3lu - start]: 130280us.
+TIMER [int3lu]: 221886us.
+ step            3 energy   -3132.25335223622     
+TIMER [int3lu - start]: 129706us.
+TIMER [int3lu]: 221821us.
+ step            4 energy   -3132.25350311870     
+TIMER [int3lu - start]: 129650us.
+TIMER [int3lu]: 221782us.
+ step            5 energy   -3132.25364880418     
+TIMER [int3lu - start]: 130023us.
+TIMER [int3lu]: 221773us.
+ step            6 energy   -3132.25377301249     
+TIMER [int3lu - start]: 129879us.
+TIMER [int3lu]: 221815us.
+ step            7 energy   -3132.25388911601     
+TIMER [int3lu - start]: 130595us.
+TIMER [int3lu]: 222199us.
+ step            8 energy   -3132.25399119891     
+TIMER [int3lu - start]: 129862us.
+TIMER [int3lu]: 221840us.
+ step            9 energy   -3132.25409420614     
+TIMER [int3lu - start]: 129722us.
+TIMER [int3lu]: 221807us.
+ step           10 energy   -3132.25418108704     
+ Best lambda   10.0000000000000     
+ Fluctuation:   0.103997395628458     
+TIMER [int3lu - start]: 129767us.
+TIMER [int3lu]: 221810us.
+TIMER [dens_GPU]: 1333072s. 584409us.
+TIMER [otras cosas]: 1333072s. 584465us.
+  Step =     32  - QM Energy =  -3132.25418 - Rho diff (crit) = 5.31E-04 (1.00E-06) - Energy diff (crit) = 1.29E-03 (1.00E+00)
+TIMER [Total iter]: 45s. 368308us.
+TIMER [int3lu - start]: 130200us.
+TIMER [int3lu]: 221758us.
+TIMER [int3lu - start]: 129926us.
+TIMER [int3lu]: 222387us.
+ This step   -3132.24653133261      last steep   -3132.25418108704     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129795us.
+TIMER [int3lu]: 221929us.
+ step            0 energy   -3132.25418108704     
+TIMER [int3lu - start]: 129674us.
+TIMER [int3lu]: 221993us.
+ step            1 energy   -3132.25427576022     
+TIMER [int3lu - start]: 130023us.
+TIMER [int3lu]: 221678us.
+ step            2 energy   -3132.25433695649     
+TIMER [int3lu - start]: 129515us.
+TIMER [int3lu]: 222013us.
+ step            3 energy   -3132.25440707723     
+TIMER [int3lu - start]: 129568us.
+TIMER [int3lu]: 221794us.
+ step            4 energy   -3132.25445606647     
+TIMER [int3lu - start]: 129723us.
+TIMER [int3lu]: 222440us.
+ step            5 energy   -3132.25453007674     
+TIMER [int3lu - start]: 129698us.
+TIMER [int3lu]: 222375us.
+ step            6 energy   -3132.25456169987     
+TIMER [int3lu - start]: 129939us.
+TIMER [int3lu]: 221849us.
+ step            7 energy   -3132.25461973910     
+TIMER [int3lu - start]: 129572us.
+TIMER [int3lu]: 222055us.
+ step            8 energy   -3132.25467367703     
+TIMER [int3lu - start]: 129637us.
+TIMER [int3lu]: 221789us.
+ step            9 energy   -3132.25470738175     
+TIMER [int3lu - start]: 129713us.
+TIMER [int3lu]: 221757us.
+ step           10 energy   -3132.25475632848     
+ Best lambda   10.0000000000000     
+ Fluctuation:   0.124796874754150     
+TIMER [int3lu - start]: 129864us.
+TIMER [int3lu]: 221770us.
+TIMER [dens_GPU]: 1333117s. 954709us.
+TIMER [otras cosas]: 1333117s. 954766us.
+  Step =     33  - QM Energy =  -3132.25476 - Rho diff (crit) = 1.12E-03 (1.00E-06) - Energy diff (crit) = 5.75E-04 (1.00E+00)
+TIMER [Total iter]: 45s. 370295us.
+TIMER [int3lu - start]: 130492us.
+TIMER [int3lu]: 221830us.
+TIMER [int3lu - start]: 129941us.
+TIMER [int3lu]: 221878us.
+ This step   -3132.22723925400      last steep   -3132.25475632848     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129686us.
+TIMER [int3lu]: 222014us.
+ step            0 energy   -3132.25475632848     
+TIMER [int3lu - start]: 129834us.
+TIMER [int3lu]: 221956us.
+ step            1 energy   -3132.25491236453     
+TIMER [int3lu - start]: 129615us.
+TIMER [int3lu]: 222034us.
+ step            2 energy   -3132.25507466677     
+TIMER [int3lu - start]: 129657us.
+TIMER [int3lu]: 221982us.
+ step            3 energy   -3132.25521619087     
+TIMER [int3lu - start]: 129792us.
+TIMER [int3lu]: 221935us.
+ step            4 energy   -3132.25533473367     
+TIMER [int3lu - start]: 129782us.
+TIMER [int3lu]: 222288us.
+ step            5 energy   -3132.25542559627     
+TIMER [int3lu - start]: 129950us.
+TIMER [int3lu]: 221780us.
+ step            6 energy   -3132.25552436828     
+TIMER [int3lu - start]: 129566us.
+TIMER [int3lu]: 221786us.
+ step            7 energy   -3132.25558640406     
+TIMER [int3lu - start]: 129509us.
+TIMER [int3lu]: 221868us.
+ step            8 energy   -3132.25564101110     
+TIMER [int3lu - start]: 129704us.
+TIMER [int3lu]: 221733us.
+ step            9 energy   -3132.25567455245     
+TIMER [int3lu - start]: 129847us.
+TIMER [int3lu]: 222058us.
+ step           10 energy   -3132.25567849809     
+ Best lambda   10.0000000000000     
+ Fluctuation:   0.149756249704979     
+TIMER [int3lu - start]: 130178us.
+TIMER [int3lu]: 221859us.
+TIMER [dens_GPU]: 1333163s. 310276us.
+TIMER [otras cosas]: 1333163s. 310329us.
+  Step =     34  - QM Energy =  -3132.25568 - Rho diff (crit) = 6.88E-04 (1.00E-06) - Energy diff (crit) = 9.22E-04 (1.00E+00)
+TIMER [Total iter]: 45s. 355555us.
+TIMER [int3lu - start]: 130012us.
+TIMER [int3lu]: 221994us.
+TIMER [int3lu - start]: 129965us.
+TIMER [int3lu]: 221894us.
+ This step   -3132.24163409509      last steep   -3132.25567849809     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129854us.
+TIMER [int3lu]: 221831us.
+ step            0 energy   -3132.25567849809     
+TIMER [int3lu - start]: 129514us.
+TIMER [int3lu]: 222027us.
+ step            1 energy   -3132.25584536945     
+TIMER [int3lu - start]: 129785us.
+TIMER [int3lu]: 221787us.
+ step            2 energy   -3132.25598263825     
+TIMER [int3lu - start]: 129735us.
+TIMER [int3lu]: 222015us.
+ step            3 energy   -3132.25610701007     
+TIMER [int3lu - start]: 130246us.
+TIMER [int3lu]: 221842us.
+ step            4 energy   -3132.25623329483     
+TIMER [int3lu - start]: 129524us.
+TIMER [int3lu]: 222065us.
+ step            5 energy   -3132.25632008640     
+TIMER [int3lu - start]: 129549us.
+TIMER [int3lu]: 221955us.
+ step            6 energy   -3132.25639532492     
+TIMER [int3lu - start]: 129601us.
+TIMER [int3lu]: 222257us.
+ step            7 energy   -3132.25647565392     
+TIMER [int3lu - start]: 129791us.
+TIMER [int3lu]: 222144us.
+ step            8 energy   -3132.25652616282     
+TIMER [int3lu - start]: 130032us.
+TIMER [int3lu]: 221888us.
+ step            9 energy   -3132.25655538801     
+TIMER [int3lu - start]: 129612us.
+TIMER [int3lu]: 221993us.
+ step           10 energy   -3132.25658151688     
+ Best lambda   10.0000000000000     
+ Fluctuation:   0.179707499645975     
+TIMER [int3lu - start]: 129804us.
+TIMER [int3lu]: 221766us.
+TIMER [dens_GPU]: 1333208s. 655263us.
+TIMER [otras cosas]: 1333208s. 655320us.
+  Step =     35  - QM Energy =  -3132.25658 - Rho diff (crit) = 1.48E-03 (1.00E-06) - Energy diff (crit) = 9.03E-04 (1.00E+00)
+TIMER [Total iter]: 45s. 344984us.
+TIMER [int3lu - start]: 130181us.
+TIMER [int3lu]: 222069us.
+TIMER [int3lu - start]: 129869us.
+TIMER [int3lu]: 222443us.
+ This step   -3132.25047747441      last steep   -3132.25658151688     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129808us.
+TIMER [int3lu]: 222015us.
+ step            0 energy   -3132.25658151688     
+TIMER [int3lu - start]: 129606us.
+TIMER [int3lu]: 221853us.
+ step            1 energy   -3132.25663772190     
+TIMER [int3lu - start]: 129716us.
+TIMER [int3lu]: 221656us.
+ step            2 energy   -3132.25671843866     
+TIMER [int3lu - start]: 129841us.
+TIMER [int3lu]: 221859us.
+ step            3 energy   -3132.25675280886     
+TIMER [int3lu - start]: 129675us.
+TIMER [int3lu]: 222087us.
+ step            4 energy   -3132.25681074994     
+TIMER [int3lu - start]: 129612us.
+TIMER [int3lu]: 222087us.
+ step            5 energy   -3132.25682726260     
+TIMER [int3lu - start]: 129917us.
+TIMER [int3lu]: 221890us.
+ step            6 energy   -3132.25686939756     
+TIMER [int3lu - start]: 129836us.
+TIMER [int3lu]: 222018us.
+ step            7 energy   -3132.25687830672     
+TIMER [int3lu - start]: 130279us.
+TIMER [int3lu]: 221817us.
+ step            8 energy   -3132.25688637882     
+TIMER [int3lu - start]: 129515us.
+TIMER [int3lu]: 222029us.
+ step            9 energy   -3132.25687827841     
+TIMER [int3lu - start]: 129483us.
+TIMER [int3lu]: 221862us.
+ step           10 energy   -3132.25687207913     
+ Best lambda   7.99912450162727     
+ Fluctuation:   0.172500319625315     
+TIMER [int3lu - start]: 129803us.
+TIMER [int3lu]: 222180us.
+TIMER [dens_GPU]: 1333254s. 15517us.
+TIMER [otras cosas]: 1333254s. 15574us.
+  Step =     36  - QM Energy =  -3132.25689 - Rho diff (crit) = 1.08E-03 (1.00E-06) - Energy diff (crit) = 3.08E-04 (1.00E+00)
+TIMER [Total iter]: 45s. 360246us.
+TIMER [int3lu - start]: 130263us.
+TIMER [int3lu]: 222117us.
+TIMER [int3lu - start]: 129920us.
+TIMER [int3lu]: 221868us.
+ This step   -3132.17756571885      last steep   -3132.25688977154     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129673us.
+TIMER [int3lu]: 221974us.
+ step            0 energy   -3132.25688977154     
+TIMER [int3lu - start]: 129881us.
+TIMER [int3lu]: 222040us.
+ step            1 energy   -3132.25727129924     
+TIMER [int3lu - start]: 129902us.
+TIMER [int3lu]: 221940us.
+ step            2 energy   -3132.25756655814     
+TIMER [int3lu - start]: 129542us.
+TIMER [int3lu]: 222273us.
+ step            3 energy   -3132.25775388515     
+TIMER [int3lu - start]: 129867us.
+TIMER [int3lu]: 221845us.
+ step            4 energy   -3132.25787055986     
+TIMER [int3lu - start]: 129785us.
+TIMER [int3lu]: 221977us.
+ step            5 energy   -3132.25788974726     
+TIMER [int3lu - start]: 129849us.
+TIMER [int3lu]: 221875us.
+ step            6 energy   -3132.25781632253     
+TIMER [int3lu - start]: 129814us.
+TIMER [int3lu]: 221826us.
+ step            7 energy   -3132.25764390169     
+TIMER [int3lu - start]: 129628us.
+TIMER [int3lu]: 222563us.
+ step            8 energy   -3132.25739481207     
+TIMER [int3lu - start]: 129562us.
+TIMER [int3lu]: 222251us.
+ step            9 energy   -3132.25704060005     
+TIMER [int3lu - start]: 129791us.
+TIMER [int3lu]: 222056us.
+ step           10 energy   -3132.25659815703     
+ Best lambda   4.70718025966263     
+ Fluctuation:   0.101509871381624     
+TIMER [int3lu - start]: 129823us.
+TIMER [int3lu]: 221902us.
+TIMER [dens_GPU]: 1333299s. 348244us.
+TIMER [otras cosas]: 1333299s. 348300us.
+  Step =     37  - QM Energy =  -3132.25789 - Rho diff (crit) = 6.10E-04 (1.00E-06) - Energy diff (crit) = 1.00E-03 (1.00E+00)
+TIMER [Total iter]: 45s. 332720us.
+TIMER [int3lu - start]: 130065us.
+TIMER [int3lu]: 222168us.
+TIMER [int3lu - start]: 130041us.
+TIMER [int3lu]: 221887us.
+ This step   -3132.25185539609      last steep   -3132.25788960801     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129833us.
+TIMER [int3lu]: 221816us.
+ step            0 energy   -3132.25788960801     
+TIMER [int3lu - start]: 129513us.
+TIMER [int3lu]: 222310us.
+ step            1 energy   -3132.25801893261     
+TIMER [int3lu - start]: 129858us.
+TIMER [int3lu]: 222028us.
+ step            2 energy   -3132.25813240130     
+TIMER [int3lu - start]: 129723us.
+TIMER [int3lu]: 222032us.
+ step            3 energy   -3132.25821925899     
+TIMER [int3lu - start]: 129791us.
+TIMER [int3lu]: 221876us.
+ step            4 energy   -3132.25831478467     
+TIMER [int3lu - start]: 129839us.
+TIMER [int3lu]: 221823us.
+ step            5 energy   -3132.25839255859     
+TIMER [int3lu - start]: 129590us.
+TIMER [int3lu]: 222058us.
+ step            6 energy   -3132.25846185170     
+TIMER [int3lu - start]: 129633us.
+TIMER [int3lu]: 222094us.
+ step            7 energy   -3132.25850289562     
+TIMER [int3lu - start]: 129995us.
+TIMER [int3lu]: 222007us.
+ step            8 energy   -3132.25856997647     
+TIMER [int3lu - start]: 129813us.
+TIMER [int3lu]: 222552us.
+ step            9 energy   -3132.25860876705     
+TIMER [int3lu - start]: 129743us.
+TIMER [int3lu]: 221764us.
+ step           10 energy   -3132.25861175330     
+ Best lambda   10.0000000000000     
+ Fluctuation:   0.215648999575170     
+TIMER [int3lu - start]: 129645us.
+TIMER [int3lu]: 222500us.
+TIMER [dens_GPU]: 1333344s. 704616us.
+TIMER [otras cosas]: 1333344s. 704664us.
+  Step =     38  - QM Energy =  -3132.25861 - Rho diff (crit) = 1.20E-03 (1.00E-06) - Energy diff (crit) = 7.22E-04 (1.00E+00)
+TIMER [Total iter]: 45s. 356355us.
+TIMER [int3lu - start]: 130007us.
+TIMER [int3lu]: 222095us.
+TIMER [int3lu - start]: 129925us.
+TIMER [int3lu]: 222416us.
+ This step   -3132.24595156541      last steep   -3132.25861175330     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 130030us.
+TIMER [int3lu]: 221771us.
+ step            0 energy   -3132.25861175330     
+TIMER [int3lu - start]: 129569us.
+TIMER [int3lu]: 222026us.
+ step            1 energy   -3132.25867710243     
+TIMER [int3lu - start]: 129630us.
+TIMER [int3lu]: 222046us.
+ step            2 energy   -3132.25872593927     
+TIMER [int3lu - start]: 129622us.
+TIMER [int3lu]: 221863us.
+ step            3 energy   -3132.25874329964     
+TIMER [int3lu - start]: 129630us.
+TIMER [int3lu]: 221496us.
+ step            4 energy   -3132.25874237136     
+TIMER [int3lu - start]: 129720us.
+TIMER [int3lu]: 221622us.
+ step            5 energy   -3132.25872370971     
+TIMER [int3lu - start]: 129518us.
+TIMER [int3lu]: 221696us.
+ step            6 energy   -3132.25867908573     
+TIMER [int3lu - start]: 129650us.
+TIMER [int3lu]: 221572us.
+ step            7 energy   -3132.25861189056     
+TIMER [int3lu - start]: 129603us.
+TIMER [int3lu]: 221464us.
+ step            8 energy   -3132.25853840314     
+TIMER [int3lu - start]: 129769us.
+TIMER [int3lu]: 221440us.
+ step            9 energy   -3132.25843463566     
+TIMER [int3lu - start]: 129603us.
+TIMER [int3lu]: 221437us.
+ step           10 energy   -3132.25830069251     
+ Best lambda   3.44924250810524     
+ Fluctuation:   8.925908353980555E-002
+TIMER [int3lu - start]: 129747us.
+TIMER [int3lu]: 221820us.
+TIMER [dens_GPU]: 1333390s. 70076us.
+TIMER [otras cosas]: 1333390s. 70132us.
+  Step =     39  - QM Energy =  -3132.25874 - Rho diff (crit) = 4.46E-04 (1.00E-06) - Energy diff (crit) = 1.27E-04 (1.00E+00)
+TIMER [Total iter]: 45s. 365464us.
+TIMER [int3lu - start]: 130198us.
+TIMER [int3lu]: 221713us.
+TIMER [int3lu - start]: 129987us.
+TIMER [int3lu]: 221775us.
+ This step   -3132.13515806235      last steep   -3132.25873923972     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129640us.
+TIMER [int3lu]: 221634us.
+ step            0 energy   -3132.25873923972     
+TIMER [int3lu - start]: 129622us.
+TIMER [int3lu]: 221577us.
+ step            1 energy   -3132.25888084482     
+TIMER [int3lu - start]: 129683us.
+TIMER [int3lu]: 221576us.
+ step            2 energy   -3132.25897212192     
+TIMER [int3lu - start]: 129786us.
+TIMER [int3lu]: 221421us.
+ step            3 energy   -3132.25900809626     
+TIMER [int3lu - start]: 129620us.
+TIMER [int3lu]: 221431us.
+ step            4 energy   -3132.25901127098     
+TIMER [int3lu - start]: 129847us.
+TIMER [int3lu]: 221622us.
+ step            5 energy   -3132.25896551551     
+TIMER [int3lu - start]: 129815us.
+TIMER [int3lu]: 221601us.
+ step            6 energy   -3132.25889917061     
+TIMER [int3lu - start]: 129596us.
+TIMER [int3lu]: 221470us.
+ step            7 energy   -3132.25875191665     
+TIMER [int3lu - start]: 129695us.
+TIMER [int3lu]: 221445us.
+ step            8 energy   -3132.25856238876     
+TIMER [int3lu - start]: 129738us.
+TIMER [int3lu]: 221403us.
+ step            9 energy   -3132.25834427755     
+TIMER [int3lu - start]: 129605us.
+TIMER [int3lu]: 221587us.
+ step           10 energy   -3132.25808456017     
+ Best lambda   3.56488264887541     
+ Fluctuation:   4.612580260997193E-002
+TIMER [int3lu - start]: 129775us.
+TIMER [int3lu]: 221475us.
+TIMER [dens_GPU]: 1333435s. 425473us.
+TIMER [otras cosas]: 1333435s. 425526us.
+  Step =     40  - QM Energy =  -3132.25902 - Rho diff (crit) = 3.43E-04 (1.00E-06) - Energy diff (crit) = 2.85E-04 (1.00E+00)
+TIMER [Total iter]: 45s. 355386us.
+TIMER [int3lu - start]: 130378us.
+TIMER [int3lu]: 221519us.
+TIMER [int3lu - start]: 129960us.
+TIMER [int3lu]: 221816us.
+ This step   -3132.24619297253      last steep   -3132.25902411383     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129755us.
+TIMER [int3lu]: 221852us.
+ step            0 energy   -3132.25902411383     
+TIMER [int3lu - start]: 129732us.
+TIMER [int3lu]: 221430us.
+ step            1 energy   -3132.25902200333     
+TIMER [int3lu - start]: 129692us.
+TIMER [int3lu]: 221460us.
+ step            2 energy   -3132.25901050985     
+TIMER [int3lu - start]: 129653us.
+TIMER [int3lu]: 221412us.
+ step            3 energy   -3132.25900380187     
+TIMER [int3lu - start]: 129651us.
+TIMER [int3lu]: 221625us.
+ step            4 energy   -3132.25898830354     
+TIMER [int3lu - start]: 129663us.
+TIMER [int3lu]: 221594us.
+ step            5 energy   -3132.25897024817     
+TIMER [int3lu - start]: 129662us.
+TIMER [int3lu]: 221535us.
+ step            6 energy   -3132.25895592790     
+TIMER [int3lu - start]: 129772us.
+TIMER [int3lu]: 221433us.
+ step            7 energy   -3132.25895152414     
+TIMER [int3lu - start]: 129869us.
+TIMER [int3lu]: 221479us.
+ step            8 energy   -3132.25893918718     
+TIMER [int3lu - start]: 129920us.
+TIMER [int3lu]: 221589us.
+ step            9 energy   -3132.25892357764     
+TIMER [int3lu - start]: 129648us.
+TIMER [int3lu]: 221445us.
+ step           10 energy   -3132.25891173341     
+ Best lambda  0.000000000000000E+000
+ Fluctuation:   0.000000000000000E+000
+TIMER [int3lu - start]: 129958us.
+TIMER [int3lu]: 221406us.
+TIMER [dens_GPU]: 1333480s. 804267us.
+TIMER [otras cosas]: 1333480s. 804319us.
+  Step =     41  - QM Energy =  -3132.25902
+TIMER [Total iter]: 45s. 378783us.
+TIMER [int3lu - start]: 130093us.
+TIMER [int3lu]: 221654us.
+TIMER [int3lu - start]: 130481us.
+TIMER [int3lu]: 221815us.
+ This step   -3132.24365123844      last steep   -3132.25902411383     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129682us.
+TIMER [int3lu]: 221527us.
+ step            0 energy   -3132.25902411383     
+TIMER [int3lu - start]: 129773us.
+TIMER [int3lu]: 221394us.
+ step            1 energy   -3132.25902254883     
+TIMER [int3lu - start]: 129629us.
+TIMER [int3lu]: 221436us.
+ step            2 energy   -3132.25902040364     
+TIMER [int3lu - start]: 129660us.
+TIMER [int3lu]: 221596us.
+ step            3 energy   -3132.25902192617     
+TIMER [int3lu - start]: 129644us.
+TIMER [int3lu]: 221738us.
+ step            4 energy   -3132.25901288854     
+TIMER [int3lu - start]: 129737us.
+TIMER [int3lu]: 221478us.
+ step            5 energy   -3132.25901738610     
+TIMER [int3lu - start]: 129606us.
+TIMER [int3lu]: 221454us.
+ step            6 energy   -3132.25901306713     
+TIMER [int3lu - start]: 129905us.
+TIMER [int3lu]: 221752us.
+ step            7 energy   -3132.25900277680     
+TIMER [int3lu - start]: 129731us.
+TIMER [int3lu]: 222241us.
+ step            8 energy   -3132.25902322240     
+TIMER [int3lu - start]: 129746us.
+TIMER [int3lu]: 221961us.
+ step            9 energy   -3132.25900884920     
+TIMER [int3lu - start]: 129958us.
+TIMER [int3lu]: 222211us.
+ step           10 energy   -3132.25899399916     
+ Best lambda  0.000000000000000E+000
+ Fluctuation:   0.000000000000000E+000
+TIMER [int3lu - start]: 130060us.
+TIMER [int3lu]: 221845us.
+TIMER [dens_GPU]: 1333526s. 185701us.
+TIMER [otras cosas]: 1333526s. 185760us.
+  Step =     42  - QM Energy =  -3132.25902
+TIMER [Total iter]: 45s. 381435us.
+TIMER [int3lu - start]: 130603us.
+TIMER [int3lu]: 221767us.
+TIMER [int3lu - start]: 130050us.
+TIMER [int3lu]: 221766us.
+ This step   -3132.24151390611      last steep   -3132.25902411383     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129669us.
+TIMER [int3lu]: 221363us.
+ step            0 energy   -3132.25902411383     
+TIMER [int3lu - start]: 129822us.
+TIMER [int3lu]: 221391us.
+ step            1 energy   -3132.25901944275     
+TIMER [int3lu - start]: 129866us.
+TIMER [int3lu]: 222074us.
+ step            2 energy   -3132.25902382797     
+TIMER [int3lu - start]: 129599us.
+TIMER [int3lu]: 221552us.
+ step            3 energy   -3132.25901502511     
+TIMER [int3lu - start]: 129745us.
+TIMER [int3lu]: 221623us.
+ step            4 energy   -3132.25903329326     
+TIMER [int3lu - start]: 129616us.
+TIMER [int3lu]: 221441us.
+ step            5 energy   -3132.25903300920     
+TIMER [int3lu - start]: 129583us.
+TIMER [int3lu]: 221459us.
+ step            6 energy   -3132.25901451353     
+TIMER [int3lu - start]: 129599us.
+TIMER [int3lu]: 221614us.
+ step            7 energy   -3132.25902174259     
+TIMER [int3lu - start]: 129730us.
+TIMER [int3lu]: 221527us.
+ step            8 energy   -3132.25902484227     
+TIMER [int3lu - start]: 129886us.
+TIMER [int3lu]: 221441us.
+ step            9 energy   -3132.25902677519     
+TIMER [int3lu - start]: 129594us.
+TIMER [int3lu]: 221426us.
+ step           10 energy   -3132.25902350269     
+ Best lambda   4.48468858501285     
+ Fluctuation:   7.253389550731548E-003
+TIMER [int3lu - start]: 129781us.
+TIMER [int3lu]: 222061us.
+TIMER [dens_GPU]: 1333571s. 541957us.
+TIMER [otras cosas]: 1333571s. 542012us.
+  Step =     43  - QM Energy =  -3132.25903 - Rho diff (crit) = 4.68E-05 (1.00E-06) - Energy diff (crit) = 6.06E-06 (1.00E+00)
+TIMER [Total iter]: 45s. 356247us.
+TIMER [int3lu - start]: 130154us.
+TIMER [int3lu]: 221583us.
+TIMER [int3lu - start]: 130020us.
+TIMER [int3lu]: 221845us.
+ This step   -3132.24063030895      last steep   -3132.25903017325     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129927us.
+TIMER [int3lu]: 221903us.
+ step            0 energy   -3132.25903017325     
+TIMER [int3lu - start]: 129969us.
+TIMER [int3lu]: 221910us.
+ step            1 energy   -3132.25902895699     
+TIMER [int3lu - start]: 129646us.
+TIMER [int3lu]: 221751us.
+ step            2 energy   -3132.25902762101     
+TIMER [int3lu - start]: 129693us.
+TIMER [int3lu]: 221765us.
+ step            3 energy   -3132.25901544784     
+TIMER [int3lu - start]: 129899us.
+TIMER [int3lu]: 221760us.
+ step            4 energy   -3132.25902297461     
+TIMER [int3lu - start]: 130012us.
+TIMER [int3lu]: 222015us.
+ step            5 energy   -3132.25902421938     
+TIMER [int3lu - start]: 129618us.
+TIMER [int3lu]: 222000us.
+ step            6 energy   -3132.25902475164     
+TIMER [int3lu - start]: 129937us.
+TIMER [int3lu]: 221948us.
+ step            7 energy   -3132.25902613914     
+TIMER [int3lu - start]: 129870us.
+TIMER [int3lu]: 221720us.
+ step            8 energy   -3132.25901531096     
+TIMER [int3lu - start]: 129751us.
+TIMER [int3lu]: 221757us.
+ step            9 energy   -3132.25903952312     
+TIMER [int3lu - start]: 129551us.
+TIMER [int3lu]: 222155us.
+ step           10 energy   -3132.25903274772     
+ Best lambda   9.28135094304890     
+ Fluctuation:   1.501135534180919E-002
+TIMER [int3lu - start]: 129772us.
+TIMER [int3lu]: 221773us.
+TIMER [dens_GPU]: 1333616s. 897249us.
+TIMER [otras cosas]: 1333616s. 897301us.
+  Step =     44  - QM Energy =  -3132.25903 - Rho diff (crit) = 9.31E-05 (1.00E-06) - Energy diff (crit) = 2.30E-06 (1.00E+00)
+TIMER [Total iter]: 45s. 355281us.
+TIMER [int3lu - start]: 130205us.
+TIMER [int3lu]: 221959us.
+TIMER [int3lu - start]: 130247us.
+TIMER [int3lu]: 221891us.
+ This step   -3132.24108874783      last steep   -3132.25902786971     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129572us.
+TIMER [int3lu]: 222128us.
+ step            0 energy   -3132.25902786971     
+TIMER [int3lu - start]: 129548us.
+TIMER [int3lu]: 221795us.
+ step            1 energy   -3132.25903513213     
+TIMER [int3lu - start]: 129828us.
+TIMER [int3lu]: 221754us.
+ step            2 energy   -3132.25903037306     
+TIMER [int3lu - start]: 129827us.
+TIMER [int3lu]: 221844us.
+ step            3 energy   -3132.25902199851     
+TIMER [int3lu - start]: 129817us.
+TIMER [int3lu]: 221898us.
+ step            4 energy   -3132.25901545653     
+TIMER [int3lu - start]: 129743us.
+TIMER [int3lu]: 221952us.
+ step            5 energy   -3132.25901786431     
+TIMER [int3lu - start]: 129667us.
+TIMER [int3lu]: 221781us.
+ step            6 energy   -3132.25901848366     
+TIMER [int3lu - start]: 129796us.
+TIMER [int3lu]: 221741us.
+ step            7 energy   -3132.25902752235     
+TIMER [int3lu - start]: 129887us.
+TIMER [int3lu]: 221908us.
+ step            8 energy   -3132.25901711074     
+TIMER [int3lu - start]: 129953us.
+TIMER [int3lu]: 221707us.
+ step            9 energy   -3132.25902453338     
+TIMER [int3lu - start]: 129637us.
+TIMER [int3lu]: 221975us.
+ step           10 energy   -3132.25901302370     
+ Best lambda   1.10411960876881     
+ Fluctuation:   2.142920601380897E-003
+TIMER [int3lu - start]: 129885us.
+TIMER [int3lu]: 221802us.
+TIMER [dens_GPU]: 1333662s. 273453us.
+TIMER [otras cosas]: 1333662s. 273508us.
+  Step =     45  - QM Energy =  -3132.25903 - Rho diff (crit) = 1.28E-05 (1.00E-06) - Energy diff (crit) = 5.66E-07 (1.00E+00)
+TIMER [Total iter]: 45s. 376201us.
+TIMER [int3lu - start]: 130188us.
+TIMER [int3lu]: 221763us.
+TIMER [int3lu - start]: 129963us.
+TIMER [int3lu]: 221807us.
+ This step   -3132.24134350505      last steep   -3132.25902843598     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129645us.
+TIMER [int3lu]: 221813us.
+ step            0 energy   -3132.25902843598     
+TIMER [int3lu - start]: 129793us.
+TIMER [int3lu]: 221914us.
+ step            1 energy   -3132.25901804066     
+TIMER [int3lu - start]: 130018us.
+TIMER [int3lu]: 222067us.
+ step            2 energy   -3132.25902737583     
+TIMER [int3lu - start]: 130038us.
+TIMER [int3lu]: 221960us.
+ step            3 energy   -3132.25902136622     
+TIMER [int3lu - start]: 129546us.
+TIMER [int3lu]: 222043us.
+ step            4 energy   -3132.25902869344     
+TIMER [int3lu - start]: 129694us.
+TIMER [int3lu]: 221449us.
+ step            5 energy   -3132.25902093551     
+TIMER [int3lu - start]: 129619us.
+TIMER [int3lu]: 221489us.
+ step            6 energy   -3132.25902369524     
+TIMER [int3lu - start]: 129567us.
+TIMER [int3lu]: 221428us.
+ step            7 energy   -3132.25902400280     
+TIMER [int3lu - start]: 129612us.
+TIMER [int3lu]: 221845us.
+ step            8 energy   -3132.25902138836     
+TIMER [int3lu - start]: 129845us.
+TIMER [int3lu]: 221672us.
+ step            9 energy   -3132.25903567336     
+TIMER [int3lu - start]: 130099us.
+TIMER [int3lu]: 221404us.
+ step           10 energy   -3132.25901727052     
+ Best lambda   8.93701269320252     
+ Fluctuation:   8.672660309158751E-003
+TIMER [int3lu - start]: 129880us.
+TIMER [int3lu]: 221408us.
+TIMER [dens_GPU]: 1333707s. 629892us.
+TIMER [otras cosas]: 1333707s. 629945us.
+  Step =     46  - QM Energy =  -3132.25902 - Rho diff (crit) = 5.05E-05 (1.00E-06) - Energy diff (crit) = 3.65E-06 (1.00E+00)
+TIMER [Total iter]: 45s. 356431us.
+TIMER [int3lu - start]: 130072us.
+TIMER [int3lu]: 221431us.
+TIMER [int3lu - start]: 129895us.
+TIMER [int3lu]: 222316us.
+ This step   -3132.24214640359      last steep   -3132.25902478752     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129577us.
+TIMER [int3lu]: 221409us.
+ step            0 energy   -3132.25902478752     
+TIMER [int3lu - start]: 129906us.
+TIMER [int3lu]: 221395us.
+ step            1 energy   -3132.25902992820     
+TIMER [int3lu - start]: 129712us.
+TIMER [int3lu]: 221914us.
+ step            2 energy   -3132.25902890179     
+TIMER [int3lu - start]: 129780us.
+TIMER [int3lu]: 222186us.
+ step            3 energy   -3132.25903274068     
+TIMER [int3lu - start]: 129565us.
+TIMER [int3lu]: 221793us.
+ step            4 energy   -3132.25901974568     
+TIMER [int3lu - start]: 129713us.
+TIMER [int3lu]: 221875us.
+ step            5 energy   -3132.25903734153     
+TIMER [int3lu - start]: 129809us.
+TIMER [int3lu]: 221859us.
+ step            6 energy   -3132.25903448766     
+TIMER [int3lu - start]: 129895us.
+TIMER [int3lu]: 221771us.
+ step            7 energy   -3132.25902632828     
+TIMER [int3lu - start]: 129629us.
+TIMER [int3lu]: 221849us.
+ step            8 energy   -3132.25901488660     
+TIMER [int3lu - start]: 129599us.
+TIMER [int3lu]: 221771us.
+ step            9 energy   -3132.25901968531     
+TIMER [int3lu - start]: 129893us.
+TIMER [int3lu]: 221761us.
+ step           10 energy   -3132.25902301901     
+ Best lambda   5.36044447796845     
+ Fluctuation:   6.242262240341573E-003
+TIMER [int3lu - start]: 129961us.
+TIMER [int3lu]: 221834us.
+TIMER [dens_GPU]: 1333752s. 999822us.
+TIMER [otras cosas]: 1333752s. 999879us.
+  Step =     47  - QM Energy =  -3132.25903 - Rho diff (crit) = 3.54E-05 (1.00E-06) - Energy diff (crit) = 7.32E-06 (1.00E+00)
+TIMER [Total iter]: 45s. 369928us.
+TIMER [int3lu - start]: 130476us.
+TIMER [int3lu]: 221926us.
+TIMER [int3lu - start]: 130031us.
+TIMER [int3lu]: 221710us.
+ This step   -3132.24315283533      last steep   -3132.25903211118     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129695us.
+TIMER [int3lu]: 221751us.
+ step            0 energy   -3132.25903211118     
+TIMER [int3lu - start]: 129867us.
+TIMER [int3lu]: 221888us.
+ step            1 energy   -3132.25902360499     
+TIMER [int3lu - start]: 129571us.
+TIMER [int3lu]: 221827us.
+ step            2 energy   -3132.25903304310     
+TIMER [int3lu - start]: 129529us.
+TIMER [int3lu]: 222005us.
+ step            3 energy   -3132.25902059060     
+TIMER [int3lu - start]: 129969us.
+TIMER [int3lu]: 221842us.
+ step            4 energy   -3132.25902468396     
+TIMER [int3lu - start]: 129845us.
+TIMER [int3lu]: 221672us.
+ step            5 energy   -3132.25903486361     
+TIMER [int3lu - start]: 129953us.
+TIMER [int3lu]: 221591us.
+ step            6 energy   -3132.25901760227     
+TIMER [int3lu - start]: 129577us.
+TIMER [int3lu]: 221787us.
+ step            7 energy   -3132.25902296105     
+TIMER [int3lu - start]: 129642us.
+TIMER [int3lu]: 221789us.
+ step            8 energy   -3132.25901769066     
+TIMER [int3lu - start]: 129688us.
+TIMER [int3lu]: 222020us.
+ step            9 energy   -3132.25902495524     
+TIMER [int3lu - start]: 130013us.
+TIMER [int3lu]: 222102us.
+ step           10 energy   -3132.25901427560     
+ Best lambda   4.87096514176268     
+ Fluctuation:   5.672261302847910E-003
+TIMER [int3lu - start]: 129835us.
+TIMER [int3lu]: 222077us.
+TIMER [dens_GPU]: 1333798s. 345710us.
+TIMER [otras cosas]: 1333798s. 345767us.
+  Step =     48  - QM Energy =  -3132.25903 - Rho diff (crit) = 3.18E-05 (1.00E-06) - Energy diff (crit) = 3.28E-06 (1.00E+00)
+TIMER [Total iter]: 45s. 345881us.
+TIMER [int3lu - start]: 130072us.
+TIMER [int3lu]: 221826us.
+TIMER [int3lu - start]: 130028us.
+TIMER [int3lu]: 221779us.
+ This step   -3132.24433380059      last steep   -3132.25902883252     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129828us.
+TIMER [int3lu]: 221906us.
+ step            0 energy   -3132.25902883252     
+TIMER [int3lu - start]: 129602us.
+TIMER [int3lu]: 222319us.
+ step            1 energy   -3132.25902009593     
+TIMER [int3lu - start]: 129922us.
+TIMER [int3lu]: 221766us.
+ step            2 energy   -3132.25902435100     
+TIMER [int3lu - start]: 129720us.
+TIMER [int3lu]: 221758us.
+ step            3 energy   -3132.25902753185     
+TIMER [int3lu - start]: 129892us.
+TIMER [int3lu]: 221916us.
+ step            4 energy   -3132.25902613734     
+TIMER [int3lu - start]: 129810us.
+TIMER [int3lu]: 221975us.
+ step            5 energy   -3132.25901793566     
+TIMER [int3lu - start]: 129669us.
+TIMER [int3lu]: 221870us.
+ step            6 energy   -3132.25901623667     
+TIMER [int3lu - start]: 129623us.
+TIMER [int3lu]: 222238us.
+ step            7 energy   -3132.25901945386     
+TIMER [int3lu - start]: 129806us.
+TIMER [int3lu]: 222139us.
+ step            8 energy   -3132.25902128701     
+TIMER [int3lu - start]: 129705us.
+TIMER [int3lu]: 221860us.
+ step            9 energy   -3132.25902531838     
+TIMER [int3lu - start]: 129897us.
+TIMER [int3lu]: 221768us.
+ step           10 energy   -3132.25900820884     
+ Best lambda  0.000000000000000E+000
+ Fluctuation:   0.000000000000000E+000
+TIMER [int3lu - start]: 129664us.
+TIMER [int3lu]: 222154us.
+TIMER [dens_GPU]: 1333843s. 717737us.
+TIMER [otras cosas]: 1333843s. 717790us.
+  Step =     49  - QM Energy =  -3132.25903
+TIMER [Total iter]: 45s. 372015us.
+TIMER [int3lu - start]: 130178us.
+TIMER [int3lu]: 221829us.
+TIMER [int3lu - start]: 130033us.
+TIMER [int3lu]: 222377us.
+ This step   -3132.24527243511      last steep   -3132.25902883252     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129710us.
+TIMER [int3lu]: 222286us.
+ step            0 energy   -3132.25902883252     
+TIMER [int3lu - start]: 129601us.
+TIMER [int3lu]: 221857us.
+ step            1 energy   -3132.25901784499     
+TIMER [int3lu - start]: 129556us.
+TIMER [int3lu]: 221742us.
+ step            2 energy   -3132.25901307094     
+TIMER [int3lu - start]: 129712us.
+TIMER [int3lu]: 222356us.
+ step            3 energy   -3132.25902910009     
+TIMER [int3lu - start]: 129961us.
+TIMER [int3lu]: 221885us.
+ step            4 energy   -3132.25902396015     
+TIMER [int3lu - start]: 129641us.
+TIMER [int3lu]: 222003us.
+ step            5 energy   -3132.25902523113     
+TIMER [int3lu - start]: 129975us.
+TIMER [int3lu]: 221769us.
+ step            6 energy   -3132.25901923684     
+TIMER [int3lu - start]: 129722us.
+TIMER [int3lu]: 221850us.
+ step            7 energy   -3132.25902722057     
+TIMER [int3lu - start]: 129904us.
+TIMER [int3lu]: 222343us.
+ step            8 energy   -3132.25901425173     
+TIMER [int3lu - start]: 129855us.
+TIMER [int3lu]: 221773us.
+ step            9 energy   -3132.25902249577     
+TIMER [int3lu - start]: 129545us.
+TIMER [int3lu]: 221826us.
+ step           10 energy   -3132.25902038792     
+ Best lambda   3.25719592790135     
+ Fluctuation:   1.896509816835060E-003
+TIMER [int3lu - start]: 129761us.
+TIMER [int3lu]: 221940us.
+TIMER [dens_GPU]: 1333889s. 76807us.
+TIMER [otras cosas]: 1333889s. 76858us.
+  Step =     50  - QM Energy =  -3132.25902 - Rho diff (crit) = 1.05E-05 (1.00E-06) - Energy diff (crit) = 7.55E-06 (1.00E+00)
+TIMER [Total iter]: 45s. 359062us.
+TIMER [int3lu - start]: 130465us.
+TIMER [int3lu]: 221861us.
+TIMER [int3lu - start]: 129993us.
+TIMER [int3lu]: 221754us.
+ This step   -3132.24621528720      last steep   -3132.25902128506     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129693us.
+TIMER [int3lu]: 221747us.
+ step            0 energy   -3132.25902128506     
+TIMER [int3lu - start]: 129696us.
+TIMER [int3lu]: 221761us.
+ step            1 energy   -3132.25902676401     
+TIMER [int3lu - start]: 130041us.
+TIMER [int3lu]: 222146us.
+ step            2 energy   -3132.25902089569     
+TIMER [int3lu - start]: 129806us.
+TIMER [int3lu]: 222019us.
+ step            3 energy   -3132.25901387048     
+TIMER [int3lu - start]: 129770us.
+TIMER [int3lu]: 221776us.
+ step            4 energy   -3132.25902395173     
+TIMER [int3lu - start]: 129607us.
+TIMER [int3lu]: 221745us.
+ step            5 energy   -3132.25901807055     
+TIMER [int3lu - start]: 129852us.
+TIMER [int3lu]: 221928us.
+ step            6 energy   -3132.25902110126     
+TIMER [int3lu - start]: 129887us.
+TIMER [int3lu]: 221848us.
+ step            7 energy   -3132.25903266265     
+TIMER [int3lu - start]: 129657us.
+TIMER [int3lu]: 222009us.
+ step            8 energy   -3132.25902384307     
+TIMER [int3lu - start]: 129666us.
+TIMER [int3lu]: 222023us.
+ step            9 energy   -3132.25902255021     
+TIMER [int3lu - start]: 129975us.
+TIMER [int3lu]: 221756us.
+ step           10 energy   -3132.25902947247     
+ Best lambda   7.06726401328032     
+ Fluctuation:   2.057465359166631E-003
+TIMER [int3lu - start]: 130174us.
+TIMER [int3lu]: 221826us.
+TIMER [dens_GPU]: 1333934s. 433020us.
+TIMER [otras cosas]: 1333934s. 433071us.
+  Step =     51  - QM Energy =  -3132.25903 - Rho diff (crit) = 1.13E-05 (1.00E-06) - Energy diff (crit) = 5.99E-06 (1.00E+00)
+TIMER [Total iter]: 45s. 356206us.
+TIMER [int3lu - start]: 130328us.
+TIMER [int3lu]: 221845us.
+TIMER [int3lu - start]: 129951us.
+TIMER [int3lu]: 221861us.
+ This step   -3132.24717417654      last steep   -3132.25902727799     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129626us.
+TIMER [int3lu]: 222162us.
+ step            0 energy   -3132.25902727799     
+TIMER [int3lu - start]: 130061us.
+TIMER [int3lu]: 221936us.
+ step            1 energy   -3132.25902944846     
+TIMER [int3lu - start]: 129899us.
+TIMER [int3lu]: 221757us.
+ step            2 energy   -3132.25902421958     
+TIMER [int3lu - start]: 130054us.
+TIMER [int3lu]: 221773us.
+ step            3 energy   -3132.25902770697     
+TIMER [int3lu - start]: 129652us.
+TIMER [int3lu]: 221756us.
+ step            4 energy   -3132.25902002072     
+TIMER [int3lu - start]: 129797us.
+TIMER [int3lu]: 222410us.
+ step            5 energy   -3132.25902536116     
+TIMER [int3lu - start]: 130249us.
+TIMER [int3lu]: 221876us.
+ step            6 energy   -3132.25902369536     
+TIMER [int3lu - start]: 129648us.
+TIMER [int3lu]: 222251us.
+ step            7 energy   -3132.25901621967     
+TIMER [int3lu - start]: 129751us.
+TIMER [int3lu]: 221785us.
+ step            8 energy   -3132.25903794164     
+TIMER [int3lu - start]: 129641us.
+TIMER [int3lu]: 222002us.
+ step            9 energy   -3132.25902188258     
+TIMER [int3lu - start]: 129709us.
+TIMER [int3lu]: 221805us.
+ step           10 energy   -3132.25901441250     
+ Best lambda   8.07494382375179     
+ Fluctuation:   2.350827302243994E-003
+TIMER [int3lu - start]: 129960us.
+TIMER [int3lu]: 221752us.
+TIMER [dens_GPU]: 1333979s. 775269us.
+TIMER [otras cosas]: 1333979s. 775324us.
+  Step =     52  - QM Energy =  -3132.25902 - Rho diff (crit) = 1.29E-05 (1.00E-06) - Energy diff (crit) = 3.07E-06 (1.00E+00)
+TIMER [Total iter]: 45s. 342247us.
+TIMER [int3lu - start]: 130071us.
+TIMER [int3lu]: 221986us.
+TIMER [int3lu - start]: 130473us.
+TIMER [int3lu]: 221840us.
+ This step   -3132.24818471594      last steep   -3132.25902420518     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 130473us.
+TIMER [int3lu]: 221766us.
+ step            0 energy   -3132.25902420518     
+TIMER [int3lu - start]: 129651us.
+TIMER [int3lu]: 221988us.
+ step            1 energy   -3132.25902045236     
+TIMER [int3lu - start]: 129542us.
+TIMER [int3lu]: 221794us.
+ step            2 energy   -3132.25902245949     
+TIMER [int3lu - start]: 130168us.
+TIMER [int3lu]: 222402us.
+ step            3 energy   -3132.25902193399     
+TIMER [int3lu - start]: 129901us.
+TIMER [int3lu]: 222134us.
+ step            4 energy   -3132.25901159317     
+TIMER [int3lu - start]: 130080us.
+TIMER [int3lu]: 221829us.
+ step            5 energy   -3132.25900849177     
+TIMER [int3lu - start]: 129688us.
+TIMER [int3lu]: 222145us.
+ step            6 energy   -3132.25902297689     
+TIMER [int3lu - start]: 129832us.
+TIMER [int3lu]: 221737us.
+ step            7 energy   -3132.25902499170     
+TIMER [int3lu - start]: 129890us.
+TIMER [int3lu]: 222018us.
+ step            8 energy   -3132.25901683284     
+TIMER [int3lu - start]: 129965us.
+TIMER [int3lu]: 221822us.
+ step            9 energy   -3132.25902662317     
+TIMER [int3lu - start]: 130115us.
+TIMER [int3lu]: 221825us.
+ step           10 energy   -3132.25902615997     
+ Best lambda   9.45482545035556     
+ Fluctuation:   3.303056312233797E-003
+TIMER [int3lu - start]: 129937us.
+TIMER [int3lu]: 222048us.
+TIMER [dens_GPU]: 1334025s. 147515us.
+TIMER [otras cosas]: 1334025s. 147566us.
+  Step =     53  - QM Energy =  -3132.25903 - Rho diff (crit) = 1.80E-05 (1.00E-06) - Energy diff (crit) = 2.48E-06 (1.00E+00)
+TIMER [Total iter]: 45s. 372235us.
+TIMER [int3lu - start]: 130248us.
+TIMER [int3lu]: 221875us.
+TIMER [int3lu - start]: 130029us.
+TIMER [int3lu]: 221800us.
+ This step   -3132.24928755430      last steep   -3132.25902668760     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129795us.
+TIMER [int3lu]: 222638us.
+ step            0 energy   -3132.25902668760     
+TIMER [int3lu - start]: 129824us.
+TIMER [int3lu]: 221840us.
+ step            1 energy   -3132.25901554326     
+TIMER [int3lu - start]: 129946us.
+TIMER [int3lu]: 222166us.
+ step            2 energy   -3132.25903187660     
+TIMER [int3lu - start]: 130104us.
+TIMER [int3lu]: 221957us.
+ step            3 energy   -3132.25901385664     
+TIMER [int3lu - start]: 130254us.
+TIMER [int3lu]: 221516us.
+ step            4 energy   -3132.25902521359     
+TIMER [int3lu - start]: 129792us.
+TIMER [int3lu]: 221942us.
+ step            5 energy   -3132.25901434795     
+TIMER [int3lu - start]: 129722us.
+TIMER [int3lu]: 221819us.
+ step            6 energy   -3132.25902543758     
+TIMER [int3lu - start]: 129949us.
+TIMER [int3lu]: 221992us.
+ step            7 energy   -3132.25900509923     
+TIMER [int3lu - start]: 129956us.
+TIMER [int3lu]: 221707us.
+ step            8 energy   -3132.25902270501     
+TIMER [int3lu - start]: 129891us.
+TIMER [int3lu]: 221890us.
+ step            9 energy   -3132.25901819497     
+TIMER [int3lu - start]: 130008us.
+TIMER [int3lu]: 221802us.
+ step           10 energy   -3132.25902157178     
+ Best lambda   1.97545179289906     
+ Fluctuation:   8.281521703358485E-004
+TIMER [int3lu - start]: 129956us.
+TIMER [int3lu]: 222016us.
+TIMER [dens_GPU]: 1334070s. 497142us.
+TIMER [otras cosas]: 1334070s. 497192us.
+  Step =     54  - QM Energy =  -3132.25903 - Rho diff (crit) = 4.50E-06 (1.00E-06) - Energy diff (crit) = 1.61E-06 (1.00E+00)
+TIMER [Total iter]: 45s. 349619us.
+TIMER [int3lu - start]: 130372us.
+TIMER [int3lu]: 221929us.
+TIMER [int3lu - start]: 129963us.
+TIMER [int3lu]: 221935us.
+ This step   -3132.25027801988      last steep   -3132.25902829980     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129709us.
+TIMER [int3lu]: 221983us.
+ step            0 energy   -3132.25902829980     
+TIMER [int3lu - start]: 130182us.
+TIMER [int3lu]: 221852us.
+ step            1 energy   -3132.25902693808     
+TIMER [int3lu - start]: 129864us.
+TIMER [int3lu]: 221864us.
+ step            2 energy   -3132.25901642529     
+TIMER [int3lu - start]: 130087us.
+TIMER [int3lu]: 221477us.
+ step            3 energy   -3132.25901508548     
+TIMER [int3lu - start]: 129803us.
+TIMER [int3lu]: 222043us.
+ step            4 energy   -3132.25902326903     
+TIMER [int3lu - start]: 129874us.
+TIMER [int3lu]: 221720us.
+ step            5 energy   -3132.25901352729     
+TIMER [int3lu - start]: 129797us.
+TIMER [int3lu]: 221724us.
+ step            6 energy   -3132.25901013970     
+TIMER [int3lu - start]: 130012us.
+TIMER [int3lu]: 221756us.
+ step            7 energy   -3132.25901691236     
+TIMER [int3lu - start]: 130039us.
+TIMER [int3lu]: 221735us.
+ step            8 energy   -3132.25901494212     
+TIMER [int3lu - start]: 129613us.
+TIMER [int3lu]: 221983us.
+ step            9 energy   -3132.25901861723     
+TIMER [int3lu - start]: 129840us.
+TIMER [int3lu]: 222103us.
+ step           10 energy   -3132.25900840231     
+ Best lambda  0.000000000000000E+000
+ Fluctuation:   0.000000000000000E+000
+TIMER [int3lu - start]: 129916us.
+TIMER [int3lu]: 221908us.
+TIMER [dens_GPU]: 1334115s. 874162us.
+TIMER [otras cosas]: 1334115s. 874216us.
+  Step =     55  - QM Energy =  -3132.25903
+TIMER [Total iter]: 45s. 377015us.
+TIMER [int3lu - start]: 130358us.
+TIMER [int3lu]: 222097us.
+TIMER [int3lu - start]: 130438us.
+TIMER [int3lu]: 221781us.
+ This step   -3132.25115333549      last steep   -3132.25902829980     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129892us.
+TIMER [int3lu]: 221946us.
+ step            0 energy   -3132.25902829980     
+TIMER [int3lu - start]: 129982us.
+TIMER [int3lu]: 221847us.
+ step            1 energy   -3132.25902361123     
+TIMER [int3lu - start]: 129957us.
+TIMER [int3lu]: 221845us.
+ step            2 energy   -3132.25902461381     
+TIMER [int3lu - start]: 129876us.
+TIMER [int3lu]: 221805us.
+ step            3 energy   -3132.25902357673     
+TIMER [int3lu - start]: 129640us.
+TIMER [int3lu]: 222136us.
+ step            4 energy   -3132.25901554278     
+TIMER [int3lu - start]: 129975us.
+TIMER [int3lu]: 221975us.
+ step            5 energy   -3132.25902304985     
+TIMER [int3lu - start]: 129944us.
+TIMER [int3lu]: 221810us.
+ step            6 energy   -3132.25902469416     
+TIMER [int3lu - start]: 130147us.
+TIMER [int3lu]: 221728us.
+ step            7 energy   -3132.25902480594     
+TIMER [int3lu - start]: 129804us.
+TIMER [int3lu]: 222023us.
+ step            8 energy   -3132.25901574685     
+TIMER [int3lu - start]: 129725us.
+TIMER [int3lu]: 222116us.
+ step            9 energy   -3132.25901098529     
+TIMER [int3lu - start]: 129867us.
+TIMER [int3lu]: 221975us.
+ step           10 energy   -3132.25901297993     
+ Best lambda  0.000000000000000E+000
+ Fluctuation:   0.000000000000000E+000
+TIMER [int3lu - start]: 130206us.
+TIMER [int3lu]: 221944us.
+TIMER [dens_GPU]: 1334161s. 237811us.
+TIMER [otras cosas]: 1334161s. 237863us.
+  Step =     56  - QM Energy =  -3132.25903
+TIMER [Total iter]: 45s. 363640us.
+TIMER [int3lu - start]: 130687us.
+TIMER [int3lu]: 222082us.
+TIMER [int3lu - start]: 130121us.
+TIMER [int3lu]: 221765us.
+ This step   -3132.25189198414      last steep   -3132.25902829980     
+ doing lineal interpolation in Rho
+TIMER [int3lu - start]: 129885us.
+TIMER [int3lu]: 221827us.
+ step            0 energy   -3132.25902829980     
+TIMER [int3lu - start]: 129965us.
+TIMER [int3lu]: 221862us.
+ step            1 energy   -3132.25903242857     
+TIMER [int3lu - start]: 129563us.
+TIMER [int3lu]: 222203us.
+ step            2 energy   -3132.25902208832     
+TIMER [int3lu - start]: 129827us.
+TIMER [int3lu]: 221983us.
+ step            3 energy   -3132.25903526735     
+TIMER [int3lu - start]: 130068us.
+TIMER [int3lu]: 221814us.
+ step            4 energy   -3132.25902766779     
+TIMER [int3lu - start]: 129860us.
+TIMER [int3lu]: 221974us.
+ step            5 energy   -3132.25902538221     
+TIMER [int3lu - start]: 129997us.
+TIMER [int3lu]: 221826us.
+ step            6 energy   -3132.25902349875     
+TIMER [int3lu - start]: 129585us.
+TIMER [int3lu]: 221897us.
+ step            7 energy   -3132.25901479465     
+TIMER [int3lu - start]: 129528us.
+TIMER [int3lu]: 222167us.
+ step            8 energy   -3132.25901489956     
+TIMER [int3lu - start]: 129940us.
+TIMER [int3lu]: 221872us.
+ step            9 energy   -3132.25902295260     
+TIMER [int3lu - start]: 129760us.
+TIMER [int3lu]: 221822us.
+ step           10 energy   -3132.25902417285     
+ Best lambda   3.13426028422455     
+ Fluctuation:   1.642437230123950E-004
+TIMER [int3lu - start]: 129984us.
+TIMER [int3lu]: 221737us.
+TIMER [dens_GPU]: 1334206s. 585453us.
+TIMER [otras cosas]: 1334206s. 585507us.
+  Step =     57  - QM Energy =  -3132.25903 - Rho diff (crit) = 8.92E-07 (1.00E-06) - Energy diff (crit) = 3.29E-06 (1.00E+00)
+TIMER [Total iter]: 45s. 347640us.
+  Convergence achieved in     57 iterations. Final energy  -3132.2590316 A.U.
+ 
+Final Energy Contributions in A.U.
+  Total energy = -3132.259033
+  One electron = ************
+  Coulomb      =  7271.491526
+  Nuclear      =  5825.038514
+  Exch. Corr.  =  -309.244791
+ 
+TIMER [SCF]: 2498s. 6898us.
+TIMER [SCF_full]: 2498s. 6975us.
+G2G Deinitialisation.

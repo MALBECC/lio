@@ -97,6 +97,36 @@ subroutine mulliken_calc(N, M, RealRho, Smat, NofM, q)
 end subroutine mulliken_calc
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% SPIN_POP_CALC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Performs a spin Population Analysis for open shell systems                   !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine spin_pop_calc(N, M, RealRho_alpha, RealRho_betha, Smat, NofM, q)
+
+    ! RealRho_alpha   : Rho alpha written in atomic orbitals.          !
+    ! RealRho_betha   : Rho betha written in atomic orbitals.          !
+    ! q               : spin population.                               !
+    ! M, N, NofM, Smat: N° of basis functions, atoms, Nuclei belonging !
+    !                   to each function M, overlap matrix.            !
+    implicit none
+    integer, intent(in)  :: N, M, NofM(M)
+    real*8 , intent(in)  :: RealRho_alpha(M,M), RealRho_betha(M,M), Smat(M,M)
+    real*8 , intent(inout) :: q(N)
+
+    integer :: i, j, k
+    real*8  :: qe
+
+    do i=1,M
+        do j=1,M
+             qe = (RealRho_alpha(i,j) - RealRho_betha(i,j)) * Smat(i, j)
+             q(NofM(i)) = q(NofM(i)) - qe
+        enddo
+    enddo
+    return
+end subroutine spin_pop_calc
+
+
 !%% LOWDIN_CALC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs a Löwdin Population Analysis and outputs atomic charges.            !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

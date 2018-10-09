@@ -30,7 +30,8 @@ subroutine lio_defaults()
                            lowdin, mulliken, print_coeffs, number_restr, Dbug, &
                            steep, Force_cut, Energy_cut, minimzation_steep,    &
                            n_min_steeps, lineal_search, n_points, timers,      &
-                           writexyz, IGRID2, propagator, NBCH
+                           calc_propM, spinpop, writexyz, IGRID2, propagator,  &
+                           NBCH
 
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,       &
                            local_nonlocal, ecp_debug, ecp_full_range_int,      &
@@ -79,6 +80,8 @@ subroutine lio_defaults()
     restart_freq   = 0             ; writeforces        = .false.       ;
     fukui          = .false.       ; lowdin             = .false.       ;
     mulliken       = .false.       ; dipole             = .false.       ;
+    print_coeffs   = .false.       ; calc_propM         = .false.       ;
+    spinpop        = .false.       ;
 
 !   Old GPU_options
     max_function_exponent = 10     ; little_cube_size     = 8.0         ;
@@ -125,6 +128,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     use basis_data, only: M, basis_set, fitting_set, MM, MMd
     use basis_subs, only: basis_init
     use tbdft_data, only: MTB, tbdft_calc
+    use converger_ls, only: Rho_LS, P_linearsearch_init
 
     implicit none
     integer , intent(in) :: nclatom, natomin, Izin(natomin), callfrom
@@ -189,6 +193,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
       return
     endif
 
+    if ( Rho_LS > 0 ) call P_linearsearch_init()
     call g2g_timer_stop('lio_init')
 
     return
@@ -419,6 +424,11 @@ subroutine init_lio_hybrid(version_check, hyb_natom, mm_natom, chargein, iza, sp
     inputFile = 'lio.in'
     call read_options(inputFile, ierr)
     if (ierr > 0) return
+    !select spin case
+    Nunp_aux=int(spin)
+    if (Nunp_aux .ne. Nunp) STOP "lio.in have a different spin than *.fdf"
+    if (Nunp .ne. 0) OPEN=.true.
+    if (OPEN) write(*,*) "Runing hybrid open shell, with ", Nunp, "unpaired electrons"
 
     if (Nunp_aux .ne. Nunp) STOP "lio.in have a different spin than *.fdf"
     if (Nunp .ne. 0) OPEN=.true.

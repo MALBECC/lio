@@ -155,8 +155,13 @@ subroutine SCF(E)
 !carlos: Open shell, variables.
    real*8              :: ocupF
    integer             :: NCOa, NCOb
+
+! LINSEARCH
+   integer :: nniter
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    call g2g_timer_start('SCF_full')
+
+   changed_to_LS=.false. ! LINSEARCH
 
    if (verbose > 1) then
       write(*,*)
@@ -467,7 +472,12 @@ subroutine SCF(E)
         call g2g_timer_start('Total iter')
         call g2g_timer_sum_start('Iteration')
         call g2g_timer_sum_start('Fock integrals')
+
         niter=niter+1
+        nniter=niter
+        IF (changed_to_LS .and. niter.eq. (NMAX/2 +1)) nniter=1 
+!       (first steep of damping after NMAX steeps without convergence)
+
         E1=0.0D0
 
 !------------------------------------------------------------------------------!
@@ -586,10 +596,10 @@ subroutine SCF(E)
 !CLOSE SHELL OPTION |
 !%%%%%%%%%%%%%%%%%%%%
 #       ifdef CUBLAS
-           call conver(niter, good, good_cut, M_f, rho_aop, fock_aop,         &
+           call conver(nniter, good, good_cut, M_f, rho_aop, fock_aop,         &
                        dev_Xmat, dev_Ymat, 1)
 #       else
-           call conver(niter, good, good_cut, M_f, rho_aop, fock_aop, Xmat,   &
+           call conver(nniter, good, good_cut, M_f, rho_aop, fock_aop, Xmat,   &
                        Ymat, 1)
 #       endif
 
@@ -629,10 +639,10 @@ subroutine SCF(E)
 !%%%%%%%%%%%%%%%%%%%%
         call g2g_timer_sum_start('SCF acceleration')
 #       ifdef CUBLAS
-           call conver(niter, good, good_cut, M_f, rho_bop, fock_bop,         &
+           call conver(nniter, good, good_cut, M_f, rho_bop, fock_bop,         &
                        dev_Xmat, dev_Ymat, 2)
 #       else
-           call conver(niter, good, good_cut, M_f, rho_bop, fock_bop, Xmat,     &
+           call conver(nniter, good, good_cut, M_f, rho_bop, fock_bop, Xmat,     &
                        Ymat, 2)
 #       endif
 
@@ -718,18 +728,14 @@ subroutine SCF(E)
           end if
         end if
 !------------------------------------------------------------------------------!
-! TODO: convergence criteria should be a separated subroutine...
-        good = 0.0d0
-        do jj=1,M
-        do kk=jj,M
-          del=xnano(jj,kk)-(Pmat_vec(kk+(M2-jj)*(jj-1)/2))
-          del=del*sq2
-          good=good+del**2
-          Pmat_vec(kk+(M2-jj)*(jj-1)/2)=xnano(jj,kk)
-        enddo
-        enddo
-        good=sqrt(good)/float(M)
-        deallocate ( xnano )
+! Convergence criteria and lineal search in P
+
+       IF (OPEN) call P_conver(nniter, En, E1, E2, Ex, good, xnano, rho_a, rho_b)
+       IF (.not. OPEN) call P_conver(nniter, En, E1, E2, Ex, good, xnano, rho_a, rho_a)
+!------------------------------------------------------------------------------!
+
+      deallocate ( xnano )
+
 !------------------------------------------------------------------------------!
 ! TODO: finalization of the loop is a little bit messy. Also: "999 continue"??
 !       I think it is time we regularized this loop...
@@ -737,6 +743,19 @@ subroutine SCF(E)
         ! Damping factor update
         DAMP=DAMP0
         E=E1+E2+En
+
+!       write energy at every step
+        if (niter.eq.NMAX) then
+           if (Rho_LS .eq.0) then
+              write(6,*) 'NO CONVERGENCE AT ',NMAX,' ITERATIONS'
+              write(6,*) 'trying Lineal search'
+              Rho_LS=1
+              NMAX=2*NMAX
+              changed_to_LS=.true.
+              call P_linearsearch_init()
+           end if
+        end if
+
         Egood=abs(E+Ex-Evieja)
         Evieja=E+Ex
 
@@ -762,6 +781,12 @@ subroutine SCF(E)
          noconverge = 0
          converge   = converge + 1
       endif
+
+      if (changed_to_LS) then
+         changed_to_LS=.false.
+         NMAX=NMAX/2
+         Rho_LS=0
+      end if
 
       if (noconverge.gt.4) then
          write(6,'(A)')  'FATAL ERROR - No convergence achieved 4 times.'

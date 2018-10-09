@@ -4,6 +4,7 @@
 internal_files := liosubs.mk
 internal_files += liosubs.f90
 
+internal_files += line_search.f90
 internal_files += catch_error.f90
 internal_files += check_vecsize.header.f90 check_vecsize.proced.f90
 internal_files += check_matsize.header.f90 check_matsize.proced.f90

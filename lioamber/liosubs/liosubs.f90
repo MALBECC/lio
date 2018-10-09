@@ -50,6 +50,7 @@ module liosubs
 ! PROCEDURES GO HERE (INCLUDED)
 contains
 
+#  include "line_search.f90"
 #  include "catch_error.f90"
 #  include "check_vecsize.header.f90"
 #  include "check_matsize.header.f90"

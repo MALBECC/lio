@@ -50,7 +50,7 @@ module lionml_data
    use basis_data        , only: norm, int_basis, rmax, rmaxs, basis_set,      &
                                  fitting_set
    use lr_data           , only: lresp, nstates, root, FCA, nfo, nfv
-
+   use converger_ls      , only: Rho_LS, P_oscilation_analisis
    implicit none
 
 !  Namelist definition
@@ -103,12 +103,14 @@ module lionml_data
                   !Fockbias
                   fockbias_is_active, fockbias_is_shaped, fockbias_readfile,   &
                   fockbias_timegrow , fockbias_timefall , fockbias_timeamp0,   &
-                   ! Libxc variables
+                  ! Libxc variables
                   use_libxc, ex_functional_id, ec_functional_id,               &
                   ! Variables for Ghost atoms:
                   n_ghosts, ghost_atoms,                                       &
                   ! Variables for Linear Response
-                  lresp, nstates, root, FCA, nfo, nfv
+                  lresp, nstates, root, FCA, nfo, nfv,                         &
+                  ! linear search for rho
+                  Rho_LS, P_oscilation_analisis
 
    type lio_input_data
       ! COMMON

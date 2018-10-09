@@ -181,23 +181,26 @@ end subroutine ehren_in
 ! Performs SCF & forces calculation calls from hybrid                          !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
-subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_forces)
-    use garcha_mod, only : r,rqm,pc, Iz, natom, nsol, ntatom, v, Em, rm
+subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_forces, do_properties)
+    use garcha_mod, only : r,rqm,pc, Iz, natom, nsol, ntatom, v, Em, rm, calc_propM
     implicit none
     integer, intent(in) :: hyb_natom, mm_natom !number of QM and MM atoms
     double precision, intent(in) :: hyb_r(3,hyb_natom+mm_natom), Iz_cl(mm_natom) !positions and charge of MM atoms
     double precision, intent(out) :: E !total LIO energy
     double precision, intent(out) :: fdummy(3,hyb_natom+mm_natom) !forces
-    double precision :: fa(3,hyb_natom), fmm(3,mm_natom) !QM and MM forces
+    double precision, dimension(:,:), allocatable :: fa, fmm !QM and MM forces
     integer :: dummy !auxiliar variable
     REAL*8 :: dipxyz(3) !dipole
     integer :: i,j !auxiliar
-    logical :: do_SCF, do_QM_forces !SCF & forces control variable
+    logical, intent(in) :: do_SCF, do_QM_forces !SCF & forces control variable
+    logical, intent(in) :: do_properties !properties control
+
+    allocate(fa(3,hyb_natom), fmm(3,mm_natom))
+    calc_propM = do_properties
 
     nsol = mm_natom
     ntatom = nsol + natom 
 
-    write(*,*) "doing SCF_in"
     write(*,*) "atoms QM, MM, totals", natom, nsol, ntatom
     write(*,*) "doing SCF?", do_SCF
     write(*,*) "doing forces?", do_QM_forces
@@ -213,10 +216,10 @@ subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_f
     do i=1, ntatom
       do j=1, 3
         r(i,j)=hyb_r(j,i)
-        if (i .le. hyb_natom) rqm(i,j)=hyb_r(j,i) !posiciones qm
+        if (i .le. hyb_natom) rqm(i,j)=hyb_r(j,i) !positions on QM subsystem
       enddo
-        if (i .le. hyb_natom) pc(i)= Iz(i)
-        if (i .gt. hyb_natom) pc(i) = Iz_cl(i-hyb_natom) !cargas clasicas
+        if (i .le. hyb_natom) pc(i)= Iz(i) !nuclear charge
+        if (i .gt. hyb_natom) pc(i) = Iz_cl(i-hyb_natom) ! MM force-field charge
     end do
 
 ! Calls main procedures.
@@ -233,9 +236,9 @@ subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_f
       call  dft_get_mm_forces(fmm,fa)
     end if
 
-    fa=-2.d0*fa  ! - change gradient to forces 
+    fa=-1.d0*fa  ! - change gradient to forces 
                  ! 2 change units for hybrid
-    fmm=-2.d0*fmm
+    fmm=-1.d0*fmm
 
     do j=1, 3
       do i=1, hyb_natom
@@ -246,5 +249,6 @@ subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_f
       end do
     end do
 
+    deallocate(fa, fmm)
     return
 end  subroutine SCF_hyb

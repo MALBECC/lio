@@ -65,7 +65,7 @@ end subroutine converger_init
    use typedef_operator, only: operator
    use fileio_data     , only: verbose
    use linear_algebra  , only: matmuldiag
-
+   use converger_ls, only : changed_to_LS
    implicit none
    ! Spin allows to store correctly alpha or beta information. - Carlos
    integer         , intent(in)    :: niter, M_in, spin
@@ -152,9 +152,11 @@ end subroutine converger_init
 
       ! Damping until good enough, diis afterwards
       case(3)
-         if ((good < good_cut) .and. (niter > 2)) then
-            if ( (.not. hagodiis) .and. (verbose .gt. 3) ) &
-                     write(6,'(A,I4)') "  Changing to DIIS at step: ", niter
+!        Damping until good enaugh, diis afterwards
+         if ((good < good_cut) .and. (niter > 2) .and. (.not. changed_to_LS)) then
+            if ( (.not. hagodiis) .and. (verbose .gt. 3) ) then
+               write(6,'(A,I4)') "  Changing to DIIS at step: ", niter
+            endif
             hagodiis=.true.
          endif
 
@@ -162,6 +164,9 @@ end subroutine converger_init
          write(*,'(A,I4)') 'ERROR - Wrong conver_criter = ', conver_criter
          stop
    endselect
+
+   ! Turn off diis is calculation when change to lineal search, Nick
+   if (changed_to_LS) hagodiis = .false.
 
    ! THIS IS DAMPING
    ! If we are not doing diis this iteration, apply damping to F, save this
@@ -178,11 +183,11 @@ end subroutine converger_init
       call fock_op%Sets_data_AO(fock)
 
 #ifdef  CUBLAS
-      call fock_op%BChange_AOtoON(devPtrX, M_in, 'r')
+      call fock_op%BChange_AOtoON(devPtrX,M_in,'r')
 #else
-      call fock_op%BChange_AOtoON(Xmat   , M_in, 'r')
+      call fock_op%BChange_AOtoON(Xmat,M_in,'r')
 #endif
-   endif
+    endif
 
    ! DIIS
    if (conver_criter /= 1) then

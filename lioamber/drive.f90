@@ -104,6 +104,7 @@
 
       if (writexyz) open(unit=18,file=fcoord)
       if ((mulliken).or.(td_do_pop.gt.0)) open(unit=85,file=fmulliken)
+      if (OPEN) open(unit=86,file="le_espin_ohlala.out")
       if (restart_freq.gt.0) open(unit=88,file=frestart)
 
 !-------------------------------------------------------

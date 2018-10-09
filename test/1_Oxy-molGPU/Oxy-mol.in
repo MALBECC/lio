@@ -1,6 +1,7 @@
 &lio
  nsol=0
  natom=2
+ nmax=200
  charge=0
  vcinp=f
  open=t

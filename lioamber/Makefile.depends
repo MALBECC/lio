@@ -26,7 +26,6 @@
 ################################################################################
 OBJECTS += SCF.o
 OBJECTS += SCF_exter.o
-OBJECTS += steep.o
 OBJECTS += TD.o
 OBJECTS += liomain.o
 OBJECTS += dip.o
@@ -103,6 +102,21 @@ OBJECTS += ghost_atoms.o
 tmplist :=
 tmplist += drive.o lionml_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/ghost_atoms.mod
+
+################################################################################
+SRCDIRS +=
+OBJECTS += converger_ls.o
+tmplist :=
+tmplist += init_lio.o lio_finalize.o SCF.o converger_subs.o
+tmplist += lionml_data.o input_read.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/converger_ls.mod
+
+################################################################################
+SRCDIRS +=
+OBJECTS += geometry_optim.o
+tmplist :=
+tmplist += liomain.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/geometry_optim.mod
 
 ################################################################################
 OBJECTS += dftb_subs.o
@@ -221,6 +235,7 @@ modusrs :=
 modusrs += cublasmath.o ehrensubs.o liomain.o maskrmm.o
 modusrs += predictor.o SCF.o SCFop.o TD.o field_subs.o
 modusrs += dft_get_mm_forces.o dft_get_qm_forces.o
+modusrs += converger_ls.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/faint_cpu.mod
 
 ################################################################################
@@ -231,7 +246,7 @@ OBJECTS += fileio.o
 tmplist :=
 tmplist += converger_subs.o drive.o init_lio.o
 tmplist += get_restrain_energy_forces.o lio_finalize.o liomain.o lionml_subs.o
-tmplist += steep.o TD.o
+tmplist += geometry_optim.o TD.o converger_ls.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fileio.mod
 
 ################################################################################
@@ -389,8 +404,9 @@ tmplist += lio_finalize.o predictor.o
 tmplist += SCF.o SCF_in.o TD.o cubegen.o
 tmplist += maskrmm.o SCF_exter.o
 tmplist += intECP.o elec.o func.o tmpaux_SCF.o
-tmplist += faint_cpu77.o steep.o transport.o
+tmplist += faint_cpu77.o geometry_optim.o transport.o
 tmplist += liotemp.o lionml_subs.o
+tmplist += converger_ls
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
 
 
@@ -424,7 +440,7 @@ include liosubs/liosubs.mk
 tmplist :=
 tmplist += fockbias_subs.o
 tmplist += ehrensubs.o SCF.o init_lio.o
-tmplist += lionml_subs.o
+tmplist += lionml_subs.o geometry_optim.o converger_ls.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/liosubs.mod
 
 

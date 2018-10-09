@@ -17,13 +17,16 @@ subroutine liomain(E, dipxyz)
                           restart_freq, npas, sqsm, mulliken, lowdin, dipole, &
                           doing_ehrenfest, first_step, Eorbs, Eorbs_b, fukui, &
                           print_coeffs, steep,       MO_coef_at, MO_coef_at_b,&
-                          NUnp, NCO
-    use ecp_mod   , only: ecpmode, IzECP
-    use ehrensubs , only: ehrendyn_main
-    use fileio    , only: write_orbitals, write_orbitals_op
+                          NUnp, NCO, spinpop, calc_propM
+
+    use ecp_mod       , only: ecpmode, IzECP
+    use ehrensubs     , only: ehrendyn_main
+    use fileio        , only: write_orbitals, write_orbitals_op
+    use geometry_optim, only: do_steep
 
     implicit none
     REAL*8, intent(inout) :: dipxyz(3), E
+    logical :: calc_prop
 
     call g2g_timer_sum_start("Total")
 
@@ -48,10 +51,16 @@ subroutine liomain(E, dipxyz)
        call do_restart(88)
 
     ! Perform Mulliken and Lowdin analysis, get fukui functions and dipole.
-    if (MOD(npas, energy_freq).eq.0) then
-        if (mulliken.or.lowdin) call do_population_analysis()
+    calc_prop=.false.
+    if (MOD(npas, energy_freq).eq.0) calc_prop=.true.
+    if (calc_propM) calc_prop=.true.
+
+    if (calc_prop) then
+
+        call do_population_analysis()
         if (dipole) call do_dipole(dipxyz, 69)
         if (fukui) call do_fukui()
+        
 
         if (writeforces) then
             if (ecpmode) stop "ECP does not feature forces calculation."
@@ -137,13 +146,15 @@ end subroutine do_dipole
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_population_analysis()
    use garcha_mod, only: RMM, Smat, RealRho, M, Enucl, Nuc, Iz, natom, &
-                         mulliken, lowdin, sqsm, d, r, Md, ntatom
+                         mulliken, lowdin, sqsm, d, r, Md, ntatom,     &
+                         spinpop, OPEN, rhoalpha, rhobeta, Iz
    use ECP_mod   , only: ecpmode, IzECP
    use faint_cpu , only: int1
    use fileio    , only: write_population
 
    implicit none
    integer :: MM, M11, M5, IzUsed(natom), kk
+   real*8, allocatable, dimension(:,:)  :: RealRho_alpha, RealRho_betha
    real*8  :: q(natom), En
 
    ! Needed until we dispose of RMM.
@@ -179,6 +190,15 @@ subroutine do_population_analysis()
        call write_population(natom, IzUsed, q, 1, 85)
        call g2g_timer_stop('Lowdin')
    endif
+
+   if (OPEN) then
+       allocate (RealRho_alpha(M,M), RealRho_betha(M,M))
+       call spunpack('L',M,rhoalpha(1),RealRho_alpha) !pasa vector a matriz
+       call spunpack('L',M,rhobeta(1),RealRho_betha) !pasa vector a matriz
+       q=0
+       call spin_pop_calc(natom, M, RealRho_alpha, RealRho_betha, Smat, Nuc, q)
+       call write_population(natom, IzUsed, q, 2, 86)
+   end if
 
    return
 endsubroutine do_population_analysis

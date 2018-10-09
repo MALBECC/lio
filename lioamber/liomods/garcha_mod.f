@@ -70,7 +70,7 @@ c necessary)
       double precision :: Etold
 
 !-Variables for property calculations.
-      logical :: fukui, dipole, lowdin, mulliken, print_coeffs
+      logical :: fukui, dipole, lowdin, mulliken, spinpop, print_coeffs
 
       integer :: nng, max_func
 
@@ -104,6 +104,8 @@ c necessary)
       integer :: charge, gpu_level=4
       logical :: lineal_search !enable lineal search
 
+! for properties calculation control
+      logical :: calc_propM
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       end module

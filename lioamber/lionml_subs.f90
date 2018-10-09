@@ -106,6 +106,7 @@ subroutine lionml_write(extern_stat)
    integer, intent(out), optional :: extern_stat
    logical                        :: my_style
 
+   if ( present(extern_stat) ) extern_stat=0
    call get_style(my_style)
    if (my_style) then
       call lionml_write_style()

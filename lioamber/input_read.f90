@@ -6,9 +6,11 @@
 !%% READ_OPTIONS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Reads LIO options from an input file.                                        !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine read_options(inputFile, extern_stat)
-    use field_subs , only: read_fields
-    use lionml_subs, only: lionml_read, lionml_write
+subroutine read_options(inputFile)
+    use field_subs  , only: read_fields
+    use lionml_subs , only: lionml_read, lionml_write
+    use garcha_mod  , only: DIIS, hybrid_converg
+    use converger_ls, only: Rho_LS
 
     implicit none
     character(len=20), intent(in)    :: inputFile
@@ -31,6 +33,12 @@ subroutine read_options(inputFile, extern_stat)
        extern_stat = -3
        return
     endif
+
+    if (Rho_LS .gt. 0 .and. (DIIS .or. hybrid_converg)) then
+      hybrid_converg=.false.
+      DIIS=.false.
+      write(*,*) 'WARNING - read_options: turning off DIIS because of rho_linsearch.'
+    end if
 
     call read_fields()
 

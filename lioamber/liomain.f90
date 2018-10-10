@@ -30,6 +30,7 @@ subroutine liomain(E, dipxyz)
     logical :: calc_prop
 
     call g2g_timer_sum_start("Total")
+    npas = npas + 1
 
 !TBDFT: Updating M and NCO for TBDFT calculations
     if (tbdft_calc) then
@@ -82,6 +83,7 @@ subroutine liomain(E, dipxyz)
              call write_orbitals(M_f, NCO_f, Eorbs, MO_coef_at, 29)
           endif
         endif
+
     endif
 
     call g2g_timer_sum_pause("Total")
@@ -196,6 +198,18 @@ subroutine do_population_analysis(Pmat)
        call mulliken_calc(natom, M, RealRho, Smat, Nuc, q)
        call write_population(natom, IzUsed, q, 0, 85)
        call g2g_timer_stop('Mulliken')
+
+       if (OPEN) then
+           allocate (RealRho_alpha(M,M), RealRho_betha(M,M))
+           call spunpack('L',M,rhoalpha(1),RealRho_alpha) !pasa vector a matriz
+           call fixrho(M,RealRho_alpha)
+           call spunpack('L',M,rhobeta(1),RealRho_betha) !pasa vector a matriz
+           call fixrho(M,RealRho_betha)
+           q=0
+           call spin_pop_calc(natom, M, RealRho_alpha, RealRho_betha, Smat, Nuc, q)
+           call write_population(natom, IzUsed, q, 2, 86)
+       end if
+
    endif
 
    ! Performs Löwdin Population Analysis if required.
@@ -205,15 +219,6 @@ subroutine do_population_analysis(Pmat)
        call write_population(natom, IzUsed, q, 1, 85)
        call g2g_timer_stop('Lowdin')
    endif
-
-   if (OPEN) then
-       allocate (RealRho_alpha(M,M), RealRho_betha(M,M))
-       call spunpack('L',M,rhoalpha(1),RealRho_alpha) !pasa vector a matriz
-       call spunpack('L',M,rhobeta(1),RealRho_betha) !pasa vector a matriz
-       q=0
-       call spin_pop_calc(natom, M, RealRho_alpha, RealRho_betha, Smat, Nuc, q)
-       call write_population(natom, IzUsed, q, 2, 86)
-   end if
 
    return
 endsubroutine do_population_analysis

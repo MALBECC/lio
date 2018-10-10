@@ -70,7 +70,7 @@ c necessary)
       double precision :: Etold
 
 !-Variables for property calculations.
-      logical :: fukui, dipole, lowdin, mulliken, spinpop, print_coeffs
+      logical :: fukui, dipole, lowdin, mulliken, print_coeffs
 
       integer :: nng, max_func
 

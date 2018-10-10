@@ -210,7 +210,6 @@ subroutine SCF(E)
    call g2g_timer_sum_start('SCF')
    call g2g_timer_sum_start('Initialize SCF')
 
-   npas=npas+1
    E=0.0D0
    E1=0.0D0
    En=0.0D0

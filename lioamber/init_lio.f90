@@ -81,7 +81,6 @@ subroutine lio_defaults()
     fukui          = .false.       ; lowdin             = .false.       ;
     mulliken       = .false.       ; dipole             = .false.       ;
     print_coeffs   = .false.       ; calc_propM         = .false.       ;
-    spinpop        = .false.       ;
 
 !   Old GPU_options
     max_function_exponent = 10     ; little_cube_size     = 8.0         ;

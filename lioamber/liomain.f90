@@ -17,7 +17,7 @@ subroutine liomain(E, dipxyz)
                           restart_freq, npas, sqsm, mulliken, lowdin, dipole, &
                           doing_ehrenfest, first_step, Eorbs, Eorbs_b, fukui, &
                           print_coeffs, steep,       MO_coef_at, MO_coef_at_b,&
-                          NUnp, NCO, spinpop, calc_propM
+                          NUnp, NCO, calc_propM
 
     use ecp_mod       , only: ecpmode, IzECP
     use ehrensubs     , only: ehrendyn_main
@@ -29,12 +29,15 @@ subroutine liomain(E, dipxyz)
     logical :: calc_prop
 
     call g2g_timer_sum_start("Total")
+    npas = npas + 1
 
+!!! Shouldn't this be set up separatedly?
     if (.not.allocated(Smat))      allocate(Smat(M,M))
     if (.not.allocated(RealRho))   allocate(RealRho(M,M))
     if (.not.allocated(sqsm))      allocate(sqsm(M,M))
     if (.not.allocated(Eorbs))     allocate(Eorbs(M))
     if (.not.allocated(Eorbs_b))   allocate(Eorbs_b(M))
+!!!
 
     if (steep) then
       call do_steep(E)
@@ -47,8 +50,10 @@ subroutine liomain(E, dipxyz)
        call SCF(E)
     endif
 
-    if ( (restart_freq.gt.0) .and. (MOD(npas, restart_freq).eq.0) ) &
+    if ( ( restart_freq > 0 ) .and. ( MOD(npas, restart_freq) == 0 ) ) then
        call do_restart(88)
+    end if
+
 
     ! Perform Mulliken and Lowdin analysis, get fukui functions and dipole.
     calc_prop=.false.
@@ -74,6 +79,7 @@ subroutine liomain(E, dipxyz)
              call write_orbitals(M, NCO, Eorbs, MO_coef_at, 29)
           endif
         endif
+
     endif
 
     call g2g_timer_sum_pause("Total")
@@ -147,7 +153,7 @@ end subroutine do_dipole
 subroutine do_population_analysis()
    use garcha_mod, only: RMM, Smat, RealRho, M, Enucl, Nuc, Iz, natom, &
                          mulliken, lowdin, sqsm, d, r, Md, ntatom,     &
-                         spinpop, OPEN, rhoalpha, rhobeta, Iz
+                         OPEN, rhoalpha, rhobeta, Iz
    use ECP_mod   , only: ecpmode, IzECP
    use faint_cpu , only: int1
    use fileio    , only: write_population
@@ -181,6 +187,18 @@ subroutine do_population_analysis()
        call mulliken_calc(natom, M, RealRho, Smat, Nuc, q)
        call write_population(natom, IzUsed, q, 0, 85)
        call g2g_timer_stop('Mulliken')
+
+       if (OPEN) then
+           allocate (RealRho_alpha(M,M), RealRho_betha(M,M))
+           call spunpack('L',M,rhoalpha(1),RealRho_alpha) !pasa vector a matriz
+           call fixrho(M,RealRho_alpha)
+           call spunpack('L',M,rhobeta(1),RealRho_betha) !pasa vector a matriz
+           call fixrho(M,RealRho_betha)
+           q=0
+           call spin_pop_calc(natom, M, RealRho_alpha, RealRho_betha, Smat, Nuc, q)
+           call write_population(natom, IzUsed, q, 2, 86)
+       end if
+
    endif
 
    ! Performs Löwdin Population Analysis if required.
@@ -190,15 +208,6 @@ subroutine do_population_analysis()
        call write_population(natom, IzUsed, q, 1, 85)
        call g2g_timer_stop('Lowdin')
    endif
-
-   if (OPEN) then
-       allocate (RealRho_alpha(M,M), RealRho_betha(M,M))
-       call spunpack('L',M,rhoalpha(1),RealRho_alpha) !pasa vector a matriz
-       call spunpack('L',M,rhobeta(1),RealRho_betha) !pasa vector a matriz
-       q=0
-       call spin_pop_calc(natom, M, RealRho_alpha, RealRho_betha, Smat, Nuc, q)
-       call write_population(natom, IzUsed, q, 2, 86)
-   end if
 
    return
 endsubroutine do_population_analysis

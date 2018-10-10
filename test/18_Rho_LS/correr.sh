@@ -8,5 +8,6 @@ if [ -n "$1" ]
     SALIDA=$1
 fi
 
+export LIOHOME=../../
 $LIOBIN -i Oxy-mol.in -b DZVP  -c Oxy-mol.xyz -v > $SALIDA
 

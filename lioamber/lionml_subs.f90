@@ -157,7 +157,7 @@ subroutine lionml_write_dull()
                  inputs%remove_zero_weights
    write(*,8121) inputs%max_function_exponent, inputs%free_global_memory
    write(*,8122) inputs%sphere_radius, inputs%little_cube_size
-   write(*,8123) inputs%min_points_per_cube
+   write(*,8123) inputs%min_points_per_cube, inputs%gpu_level
    write(*,9000) " ! -- Transport and DFTB: -- !"
    write(*,8140) inputs%transport_calc, inputs%generate_rho0, &
                  inputs%driving_rate
@@ -242,7 +242,7 @@ subroutine lionml_write_dull()
 8121 FORMAT(2x, "max_function_exponent = ", I5, ", free_global_memory = ", &
             F14.8, ",")
 8122 FORMAT(2x, "sphere_radius = ", F14.8, ", little_cube_size = ", F14.8, ",")
-8123 FORMAT(2x, "min_points_per_cube = ", I5)
+8123 FORMAT(2x, "min_points_per_cube = ", I5, ", gpu_level = ", I5)
 ! Transport and DFTB
 8140 FORMAT(2x, "transport_calc = ", L2, ", generate_rho0 = ", L2, &
             ", driving_rate = ", F14.8, ",")
@@ -370,6 +370,7 @@ subroutine lionml_write_style()
    write(*,8425) inputs%little_cube_size
    write(*,8426) inputs%free_global_memory
    write(*,8427) inputs%sphere_radius
+   write(*,8428) inputs%gpu_level
    write(*,8003)
 
    ! Transport and DFTB
@@ -535,6 +536,7 @@ subroutine lionml_write_style()
 8425 FORMAT(4x,"║  little_cube_size    ║  ",9x,F14.8,2x,"║")
 8426 FORMAT(4x,"║  free_global_memory  ║  ",9x,F14.8,2x,"║")
 8427 FORMAT(4x,"║  sphere_radius       ║  ",9x,F14.8,2x,"║")
+8428 FORMAT(4x,"║  gpu_level           ║  ",18x,I5,2x,"║")
 ! Transport and DFTB
 8450 FORMAT(4x,"║  transport_calc      ║  ",21x,L2,2x,"║")
 8451 FORMAT(4x,"║  generate_rho0       ║  ",21x,L2,2x,"║")

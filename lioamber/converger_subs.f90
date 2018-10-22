@@ -317,7 +317,7 @@ end subroutine converger_init
 
 !        Construccion de la "nueva" matriz de fock como cl de las anteriores
 !        Eventualmente se puede probar con la matriz densidad
-         suma=0
+         suma=0.0D0
          do kk=1,ndiist
             kknew = kk + (ndiis-ndiist)
             do ii = 1, M_in

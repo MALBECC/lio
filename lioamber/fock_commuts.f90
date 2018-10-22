@@ -17,7 +17,7 @@ subroutine calc_fock_commuts(fock, rho, X, Y, scratch, scratch1, M)
     integer :: i, j, k
 
     ! X^T * F = scratch^T
-    scratch = 0
+    scratch = 0.0D0
     do i = 1, M
     do j = 1, M
     do k = 1, M
@@ -27,7 +27,7 @@ subroutine calc_fock_commuts(fock, rho, X, Y, scratch, scratch1, M)
     enddo
     
     ! Do *X for fockm.
-    fock=0
+    fock=0.0D0
     do i = 1, M
     do j = 1, M
     do k = 1, M
@@ -37,7 +37,7 @@ subroutine calc_fock_commuts(fock, rho, X, Y, scratch, scratch1, M)
     enddo
 
     ! * P = scratch1^T
-    scratch1=0
+    scratch1=0.0D0
     do i = 1, M
     do j = 1, M
     do k = 1, M
@@ -47,7 +47,7 @@ subroutine calc_fock_commuts(fock, rho, X, Y, scratch, scratch1, M)
     enddo
 
     ! * Y = scratch = scratch1^1
-    scratch=0
+    scratch=0.0D0
     do i = 1, M
     do j = 1, M
     do k = 1, M
@@ -56,7 +56,7 @@ subroutine calc_fock_commuts(fock, rho, X, Y, scratch, scratch1, M)
     enddo
     enddo
 
-    scratch1=0
+    scratch1=0.0D0
     do i = 1, M
     do j = 1, M
        scratch1(j,i) = scratch(i,j)

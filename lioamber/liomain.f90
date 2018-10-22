@@ -88,12 +88,12 @@ subroutine do_forces(uid)
     open(unit=uid, file='forces')
 
     allocate ( dxyzqm(3, natom) )
-    dxyzqm = 0.0
+    dxyzqm = 0.0D0
 
     call dft_get_qm_forces(dxyzqm)
     if (nsol.gt.0) then
         allocate ( dxyzcl(3, natom+nsol) )
-        dxyzcl = 0.0
+        dxyzcl = 0.0D0
         call dft_get_mm_forces(dxyzcl, dxyzqm)
     endif
 

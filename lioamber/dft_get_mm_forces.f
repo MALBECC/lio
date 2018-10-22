@@ -27,8 +27,8 @@ c       real*8 ftot(3)
          ! The old version of intsolG expected the MM force array to be
          ! padded in front with # QM atoms spots for some reason
          allocate(ff(natom,3), ffcl(ntatom,3))
-         ffcl=0
-         ff=0
+         ffcl=0.0D0
+         ff=0.0D0
 
          call g2g_timer_start('intsolG')
          call intsolG(ff,ffcl,natom, ntatom, RMM(1:MM), d, r, pc, Iz)
@@ -43,8 +43,8 @@ c       real*8 ftot(3)
          ! The GPU version of the QM/MM gradients only uses space for the MM
          ! forces in the MM force array
          allocate(ff(natom,3), ffcl(nsol,3))
-         ffcl=0
-         ff=0
+         ffcl=0.0D0
+         ff=0.0D0
 
          if (igpu.gt.3) call int1G(ff, RMM(1:MM), d, r, Iz, natom,
      >    ntatom)

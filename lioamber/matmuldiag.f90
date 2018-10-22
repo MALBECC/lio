@@ -9,7 +9,7 @@ subroutine matmuldiag(A, B, C, M)
     real*8,  intent(out) :: C(M,M)
     integer :: i, k
 
-    C = 0
+    C = 0.0D0
     do k = 1, M
     do i = 1, M
         C(i,i) = C(i,i) + A(i,k)*B(k,i)

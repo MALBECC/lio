@@ -131,7 +131,6 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     use field_data, only : chrg_sq
     use fileio    , only : lio_logo
     use fileio_data, only: style, verbose
-    use basis_data, only: max_c_per_atom
     use basis_subs, only: basis_init
 
     implicit none

@@ -5,7 +5,6 @@
 !  xxxxxxxxxx, intent(in) :: Bmat(:,:)
 !  xxxxxxxxxx, intent(in) :: Cmat(:,:)
 !  xxxxxxxxxx             :: Dmat(:,:)
-   logical :: error_found
    allocate(Xmat(size(Bmat,1),size(Bmat,2)))
 
    if (allocated(Dmat)) deallocate(Dmat)

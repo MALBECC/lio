@@ -102,8 +102,10 @@ module basis_data
    double precision, allocatable :: c_ehren(:,:)
    integer         , allocatable :: ang_mom_ehren(:,:)
 
+   ! GLOBAL PARAMETERS
    ! Degeneracy for each angular momentum
    integer         , parameter :: ANG_DEG(0:3) = (/1, 3, 6, 10/)
+   integer         , parameter :: MAX_CONTRACT = 15
 contains
 end module basis_data
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -278,7 +280,7 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
                           atom_bas_done, atom_fit_done, basis_file,            &
                           fitting_file, atom_count, atom_Z, n_atoms,           &
                           use_internal, iostatus)
-   use basis_data, only: ANG_DEG
+   use basis_data, only: ANG_DEG, MAX_CONTRACT
    implicit none
    integer         , intent(in)     :: n_atoms, atom_Z(n_atoms), &
                                        atom_count(0:120)
@@ -291,11 +293,13 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
 
    logical              :: file_exists
    integer              :: file_uid = TMP_OPEN_UID
-   integer              :: file_iostat, icount
-   integer              :: iatom, nraw, ncon, l_of_func
+   integer              :: file_iostat, icount, iatom, nraw, ncon
    character(len=20)    :: start_str
    character(len=100)   :: lio_dir, line_read
+   integer, allocatable :: l_of_func(:)
 
+   allocate(l_of_func(MAX_CONTRACT))
+   l_of_func  = 0
    iostatus   = 0
    basis_size = 0
    aux_size   = 0
@@ -320,13 +324,13 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          ! Only needs to read angular momenta for each contraction, the rest is
          ! skipped.
          read(file_uid,*)
-         do icount = 1, ncon
-            read(file_uid, '(I2)', advance='no') l_of_func
-            if (any(atom_Z == iatom)) then
-               basis_size = basis_size + ANG_DEG(l_of_func) * atom_count(iatom)
-            endif
-         enddo
-         read(file_uid,*)
+         read(file_uid,*) (l_of_func(icount), icount=1, ncon)
+         if (any(atom_Z == iatom)) then
+            do icount = 1, ncon
+               basis_size = basis_size &
+                          + ANG_DEG(l_of_func(icount)) * atom_count(iatom)
+            enddo
+         endif
          do icount = 1, nraw
             read(file_uid,*)
          enddo
@@ -338,13 +342,13 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          if (max_c_per_atom .lt. ncon) max_c_per_atom = ncon
 
          read(file_uid,*)
-         do icount = 1, ncon
-            read(file_uid, '(I2)', advance='no') l_of_func
-            if (any(atom_Z == iatom)) then
-               aux_size = aux_size + ANG_DEG(l_of_func) * atom_count(iatom)
-            endif
-         enddo
-         read(file_uid,*)
+         read(file_uid,*) (l_of_func(icount), icount=1, ncon)
+         if (any(atom_Z == iatom)) then
+            do icount = 1, ncon
+               aux_size = aux_size &
+                          + ANG_DEG(l_of_func(icount)) * atom_count(iatom)
+            enddo
+         endif
          do icount = 1, nraw
             read(file_uid,*)
          enddo
@@ -401,13 +405,13 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          ! Only needs to read angular momenta for each contraction, the rest is
          ! skipped.
          read(file_uid,*)
-         do icount = 1, ncon
-            read(file_uid, '(I2)', advance='no') l_of_func
-            if (any(atom_Z == iatom)) then
-               basis_size = basis_size + ANG_DEG(l_of_func) * atom_count(iatom)
-            endif
-         enddo
-         read(file_uid,*)
+         read(file_uid,*) (l_of_func(icount), icount=1, ncon)
+         if (any(atom_Z == iatom)) then
+            do icount = 1, ncon
+               basis_size = basis_size &
+                          + ANG_DEG(l_of_func(icount)) * atom_count(iatom)
+            enddo
+         endif
          do icount = 1, nraw
             read(file_uid,*)
          enddo
@@ -443,13 +447,13 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          ! Only needs to read angular momenta for each contraction, the rest is
          ! skipped.
          read(file_uid,*)
-         do icount = 1, ncon
-            read(file_uid, '(I2)', advance='no') l_of_func
-            if (any(atom_Z == iatom)) then
-               aux_size = aux_size + ANG_DEG(l_of_func) * atom_count(iatom)
-            endif
-         enddo
-         read(file_uid,*)
+         read(file_uid,*) (l_of_func(icount), icount=1, ncon)
+         if (any(atom_Z == iatom)) then
+            do icount = 1, ncon
+               aux_size = aux_size &
+                          + ANG_DEG(l_of_func(icount)) * atom_count(iatom)
+            enddo
+         endif
          do icount = 1, nraw
             read(file_uid,*)
          enddo
@@ -466,6 +470,7 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
       enddo
       close(file_uid)
    endif
+   deallocate(l_of_func)
 end subroutine basis_set_size
 
 subroutine check_basis(atom_bas_done, atom_fit_done, n_atoms, atom_Z, iostatus)

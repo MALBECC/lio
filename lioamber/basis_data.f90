@@ -105,7 +105,7 @@ module basis_data
    ! GLOBAL PARAMETERS
    ! Degeneracy for each angular momentum
    integer         , parameter :: ANG_DEG(0:3) = (/1, 3, 6, 10/)
-   integer         , parameter :: MAX_CONTRACT = 15
+   integer         , parameter :: MAX_CONTRACT = 50
 contains
 end module basis_data
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -320,6 +320,12 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          read(file_uid,*) iatom, nraw, ncon
          if (max_f_per_atom .lt. nraw) max_f_per_atom = nraw
          if (max_c_per_atom .lt. ncon) max_c_per_atom = ncon
+         if (ncon .gt. MAX_CONTRACT) then
+            write(*,'(A)') "  Error: Atom has more contractions than the "&
+                           &"maximum allowed (", MAX_CONTRACT,")."
+            iostatus = 2
+            return
+         endif
 
          ! Only needs to read angular momenta for each contraction, the rest is
          ! skipped.
@@ -340,6 +346,12 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          read(file_uid,*) iatom, nraw, ncon
          if (max_f_per_atom .lt. nraw) max_f_per_atom = nraw
          if (max_c_per_atom .lt. ncon) max_c_per_atom = ncon
+         if (ncon .gt. MAX_CONTRACT) then
+            write(*,'(A)') "  Error: Atom has more contractions than the "&
+                           &"maximum allowed (", MAX_CONTRACT,")."
+            iostatus = 2
+            return
+         endif
 
          read(file_uid,*)
          read(file_uid,*) (l_of_func(icount), icount=1, ncon)
@@ -401,6 +413,12 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          read(file_uid,*) iatom, nraw, ncon
          if (max_f_per_atom .lt. nraw) max_f_per_atom = nraw
          if (max_c_per_atom .lt. ncon) max_c_per_atom = ncon
+         if (ncon .gt. MAX_CONTRACT) then
+            write(*,'(A)') "  Error: Atom has more contractions than the "&
+                           &"maximum allowed (", MAX_CONTRACT,")."
+            iostatus = 2
+            return
+         endif
 
          ! Only needs to read angular momenta for each contraction, the rest is
          ! skipped.
@@ -443,7 +461,13 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          read(file_uid,*) iatom, nraw, ncon
          if (max_f_per_atom .lt. nraw) max_f_per_atom = nraw
          if (max_c_per_atom .lt. ncon) max_c_per_atom = ncon
-
+         if (ncon .gt. MAX_CONTRACT) then
+            write(*,'(A)') "  Error: Atom has more contractions than the "&
+                           &"maximum allowed (", MAX_CONTRACT,")."
+            iostatus = 2
+            return
+         endif
+         
          ! Only needs to read angular momenta for each contraction, the rest is
          ! skipped.
          read(file_uid,*)

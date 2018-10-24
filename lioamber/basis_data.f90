@@ -119,7 +119,7 @@ subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
                          indexii, indexiid, natomc, jatc, nnps, nnpp, nnpd
    use basis_data, only: ang_mom, ang_momd, max_f_per_atom, max_c_per_atom
    implicit none
-   ! Inputs: 
+   ! Inputs:
    !   n_atoms        : the number of atoms in the QM system.
    !   atom_Z(n_atoms): nuclear atomic charge of said atoms.
    !   basis_name     : the name of the basis set or basis file.
@@ -267,6 +267,10 @@ subroutine basis_setup_ehren()
       ang_mom_ehren(2,icount+4) = 1  ! dyz (y)
       ang_mom_ehren(3,icount+4) = 1  ! dyz (z)
       ang_mom_ehren(3,icount+5) = 2  ! dzz (z)
+
+      c_ehren(:,icount  ) = c_ehren(:,icount  ) / dsqrt(3.0D0)
+      c_ehren(:,icount+2) = c_ehren(:,icount+2) / dsqrt(3.0D0)
+      c_ehren(:,icount+5) = c_ehren(:,icount+5) / dsqrt(3.0D0)
    enddo
 end subroutine basis_setup_ehren
 

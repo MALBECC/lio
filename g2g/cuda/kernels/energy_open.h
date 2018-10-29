@@ -63,12 +63,10 @@ __global__ void gpu_compute_density_opened(
   __shared__ vec_type<scalar_type, 3> fh1j_sh[DENSITY_BLOCK_SIZE];
   __shared__ vec_type<scalar_type, 3> fh2j_sh[DENSITY_BLOCK_SIZE];
 
-  uint min_i2 = min_i;
-
   // Si nos vamos a pasar del bloque con el segundo puntero, hacemos que haga la
   // misma cuenta
   if (min_i > m) {
-    min_i2 = min_i - DENSITY_BLOCK_SIZE;
+    min_i  = min_i - DENSITY_BLOCK_SIZE;
   }
 
   if (valid_thread2) {
@@ -92,7 +90,7 @@ __global__ void gpu_compute_density_opened(
     }
   }
 
-  for (int bj = 0; bj <= min_i2; bj += DENSITY_BLOCK_SIZE) {
+  for (int bj = 0; bj <= min_i; bj += DENSITY_BLOCK_SIZE) {
     // Density deberia ser GET_DENSITY_BLOCK_SIZE
 
     __syncthreads();

@@ -8,7 +8,6 @@ program liomd
     use liosubs   , only : write_energy, write_geom, set_masses, nuclear_verlet
     use fileio_data, only: verbose
     use ehrensubs
-    use basis_data
 
     implicit none
     real*8  :: escf, dipxyz(3), timeStep, Kenergy, Uenergy

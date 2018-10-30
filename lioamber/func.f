@@ -10,50 +10,50 @@ c This is the version that should be included in definitive
 c program
 c 11 March 1992 -----------------------------------------------
 c
-      FUNCTION FUNCT(N,T)                                               
+      FUNCTION FUNCT(N,T)
       USE garcha_mod
-      IMPLICIT REAL*8 (A-H,O-Z)                                         
+      IMPLICIT REAL*8 (A-H,O-Z)
 !      COMMON /TABLE/ STR(880,0:21),FAC(0:16)
 C
       if (T.lt.0.0D0) then
        write(*,*) 'Problems',T
        T=abs(T)
       endif
-C                                                                       
-      IF (T.LE.43.975D0)   THEN                          
-       IT = 20.0D0 * (T + 0.025D0)                                        
-       TI = DFLOAT(IT)                                                   
-       IT=IT + 1                                                         
-       DELT = T - 0.05D0 * TI                                             
-       DELT3 = DELT * 0.333333333333333D0                                
-       DELT4 = 0.25D0 * DELT                                             
-       DELT2 = DELT4 + DELT4                                             
-       DELT5 = 0.20D0 * DELT                                             
+C
+      IF (T.LE.43.975D0)   THEN
+       IT = 20.0D0 * (T + 0.025D0)
+       TI = DFLOAT(IT)
+       IT=IT + 1
+       DELT = T - 0.05D0 * TI
+       DELT3 = DELT * 0.333333333333333D0
+       DELT4 = 0.25D0 * DELT
+       DELT2 = DELT4 + DELT4
+       DELT5 = 0.20D0 * DELT
 c
 c
 c
-       TF0 = STR(IT,N)                                                    
-       TF1 = STR(IT,N+1)                                                    
-       TF2 = STR(IT,N+2)                                                    
-       TF3 = STR(IT,N+3)                                                    
-       TF4 = STR(IT,N+4)                                                    
-       TF5 = STR(IT,N+5)                                                    
+       TF0 = STR(IT,N)
+       TF1 = STR(IT,N+1)
+       TF2 = STR(IT,N+2)
+       TF3 = STR(IT,N+3)
+       TF4 = STR(IT,N+4)
+       TF5 = STR(IT,N+5)
 c
-       FCAP=TF0-DELT*( TF1-DELT2*(TF2-DELT3*(TF3-DELT4*               
-     >    (TF4-DELT5*TF5))))                                           
-       FUNCT = FCAP                                                   
-       RETURN                                                            
-C                                                                       
-       
+       FCAP=TF0-DELT*( TF1-DELT2*(TF2-DELT3*(TF3-DELT4*
+     >    (TF4-DELT5*TF5))))
+       FUNCT = FCAP
+       RETURN
+C
+
        ELSE
       FUNCT=FAC(N)*1.D0/(T**N*dsqrt(T))
-     
+
       ENDIF
 c
-      END            
-  
+      END
 
-C ----------------------------------------------                        
+
+C ----------------------------------------------
 c subroutine for generating tables, used later on in the Taylor expansion
 c for the incomplete Gamma functions
 c-----------------------------------------------
@@ -61,6 +61,7 @@ c-----------------------------------------------
       USE garcha_mod
       IMPLICIT REAL*8 (A-H,O-Z)
       parameter (sqpi=1.77245385090551588D0)
+      integer icount
 !      COMMON /TABLE/ STR(880,0:21),FAC(0:16)
 c
 c loop over T values in the table ( 0. to 43.95 , interval 0.05)
@@ -74,10 +75,10 @@ c
 c loop over order of incomple Gamma functions ( 0 to 21, the ones
 c necessary for evaluating orders 0-16)
 c
-      DO 99 M=21,0,-1
-       W=2.D0*DFLOAT(M)+1.D0
-       STR(I,M) = (Y + U * F)/W
-       F=STR(I,M)
+      DO 99 icount=21,0,-1
+       W=2.D0*DFLOAT(icount)+1.D0
+       STR(I,icount) = (Y + U * F)/W
+       F=STR(I,icount)
   99  CONTINUE
 c
   799 CONTINUE
@@ -94,6 +95,7 @@ c
       SUBROUTINE GENERFS
       IMPLICIT REAL*4 (A-H,O-Z)
       parameter (sqpi=1.772453850905E0)
+      integer icount
       COMMON /TABLES/ STRS(880,0:21),FACS(0:16)
 c
 c loop over T values in the table ( 0. to 43.95 , interval 0.05)
@@ -107,10 +109,10 @@ c
 c loop over order of incomple Gamma functions ( 0 to 21, the ones
 c necessary for evaluating orders 0-16)
 c
-      DO 99 M=21,0,-1
-       W=2.E0*FLOAT(M)+1.E0
-       STRS(I,M) = (Y + U * F)/W
-       F=STRS(I,M)
+      DO 99 icount=21,0,-1
+       W=2.E0*FLOAT(icount)+1.E0
+       STRS(I,icount) = (Y + U * F)/W
+       F=STRS(I,icount)
   99  CONTINUE
 c
   799 CONTINUE
@@ -140,10 +142,10 @@ c
       TERM = TERM * X / (A + DFLOAT(I-1))
       PTLSUM = PTLSUM + TERM
       IF(TERM/PTLSUM.LT.1.0D-12)GO TO 12
-   11 CONTINUE 
-      STOP     
+   11 CONTINUE
+      STOP
    12 FMCH = 0.5D0 * PTLSUM * Y
-      RETURN   
+      RETURN
 c
    20 A = DFLOAT(M)
       B = A + 0.5D0
@@ -216,4 +218,3 @@ c
   999 FORMAT (24H0FMCHS DOES NOT CONVERGE,I6,1PE16.8)
       END
 C     -----------------------
-

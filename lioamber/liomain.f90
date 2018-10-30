@@ -149,10 +149,6 @@ subroutine do_population_analysis()
    ! Needed until we dispose of RMM.
    MM = M*(M+1)/2 ; M5 = 1 + MM*2; M11 = M5+MM+Md*(Md+1)
 
-   ! Iz used to write the population file.
-   IzUsed = Iz
-   if (ecpmode) IzUsed = IzECP
-
    ! Decompresses and fixes S and RealRho matrixes, which are needed for
    ! population analysis.
    call int1(En, RMM(M5:M5+MM), RMM(M11:M11+MM), Smat, d, r, Iz, natom, ntatom)
@@ -160,9 +156,14 @@ subroutine do_population_analysis()
    call spunpack('L',M,RMM(1),RealRho)
    call fixrho(M,RealRho)
 
+   ! Initial nuclear charge for Mulliken
    do kk=1,natom
-       q(kk) = real(IzUsed(kk))
+       q(kk) = real(Iz(kk))
    enddo
+
+   ! Iz used to write the population file.
+   IzUsed = Iz
+   if (ecpmode) IzUsed = IzECP
 
    ! Performs Mulliken Population Analysis if required.
    if (mulliken) then
@@ -188,18 +189,24 @@ endsubroutine do_population_analysis
 ! Performs Fukui function calls and printing.                                  !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_fukui()
-    use garcha_mod, only: X, NCO, M, natom, Nuc, Smat, Eorbs, Iz, OPEN
+    use garcha_mod, only: MO_coef_at, MO_coef_at_b, NCO, Nunp, M, natom, Nuc, &
+                          Smat, Eorbs, Eorbs_b, Iz, OPEN
     use fileio    , only: write_fukui
     implicit none
-    real*8  :: fukuim(natom), fukuin(natom), fukuip(natom), softness
+    double precision              :: softness
+    double precision, allocatable :: fukuim(:), fukuin(:), fukuip(:)
 
+    allocate(fukuim(natom), fukuin(natom), fukuip(natom))
 
     call g2g_timer_start("Fukui")
     if (OPEN) then
-        ! TO-DO
-        ! Add call fukui_calc_OS when openshell is available.
+        call fukui_calc_os(MO_coef_at, MO_coef_at_b, NCO, NCO+Nunp, M, natom, &
+                           Nuc, Smat, fukuim, fukuip, fukuin, Eorbs, Eorbs_b)
+        call get_softness(Eorbs(NCO-1), Eorbs(NCO), Eorbs_b(NCO+NUNP-1), &
+                          Eorbs(NCO+NUNP), softness)
+        call write_fukui(fukuim, fukuip, fukuin, natom, Iz, softness)
     else
-        call fukui_calc(X(1,M*2+1), NCO, M, natom, Nuc, Smat, fukuim, fukuip, &
+        call fukui_calc(MO_coef_at, NCO, M, natom, Nuc, Smat, fukuim, fukuip, &
                         fukuin, Eorbs)
         call get_softness(Eorbs(NCO-1), Eorbs(NCO), Eorbs(NCO-1), Eorbs(NCO), &
                           softness)
@@ -207,7 +214,7 @@ subroutine do_fukui()
     endif
     call g2g_timer_stop("Fukui")
 
-    return
+    deallocate(fukuim, fukuin, fukuip)
 end subroutine do_fukui
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 

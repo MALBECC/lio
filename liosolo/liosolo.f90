@@ -4,7 +4,7 @@
 program liosolo
 
     use garcha_mod , only : natom, nsol, Iz, basis, basis_set, fitting_set, &
-                             int_basis, omit_bas, writeforces
+                             int_basis, omit_bas, writeforces, writexyz
     use ECP_mod    , only : ecpmode
     use fileio_data, only : verbose
     use fileio     , only : lio_logo
@@ -44,9 +44,10 @@ program liosolo
     ! Prints LIO welcome message.
     call lio_logo()
 
-    ! Reads options and coordinates files.
+    ! Reads options and coordinates files. Previously sets writexyz to false in
+    ! order to avoid the qm.xyz file when not running MD.
+    writexyz = .false.
     call read_options(inpfile)
-
     call read_coords(inpcoords)
 
     ! Initializes LIO. The last argument indicates LIO is being used alone.

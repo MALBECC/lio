@@ -61,7 +61,7 @@ contains
       argument  = 0.0D0
 
       argument  = (in_time - phase) / period
-      shape_mag = sin(argument)
+      shape_mag = f_coord * sin(argument)
 
       return
    end function calc_s
@@ -76,7 +76,7 @@ contains
       argument  = 0.0D0
 
       argument  = (in_time - phase) / period
-      shape_mag = cos(argument)
+      shape_mag = f_coord * cos(argument)
 
       return
    end function calc_c

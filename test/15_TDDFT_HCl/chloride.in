@@ -12,7 +12,6 @@
  ntdstep    = 50000
  tdstep     = 0.004
  propagator = 2
- idip       = 0
  dipole     = f
  field      = t
  Fz         = 0.05

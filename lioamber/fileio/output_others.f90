@@ -127,16 +127,22 @@ subroutine write_fukui(fukuiNeg, fukuiPos, fukuiRad, N, Iz, soft)
    implicit none
    integer         , intent(in) :: N, Iz(N)
    double precision, intent(in) :: fukuiNeg(N), fukuiPos(N), fukuiRad(N), soft
-   integer :: i
+   integer :: icount
+   logical :: is_open
 
-   write(*,*) "Global Softness (A.U.):  ", soft
-   write(*,*) "N", "Fukui-", "Fukui+", "Fukui0", "Local Softness (A.U.)"
-   do i=1, N
-      write(*,*) Iz(i), fukuiNeg(i), fukuiPos(i), fukuiRad(i), &
-                 abs(soft*fukuiRad(i))
+   inquire(unit = 1984, opened = is_open)
+   if (.not. is_open) open(file = 'fukui', unit = 1984)
+
+   write(1984,'(A)') "Condensed to Atoms Fukui Function"
+   write(1984,'(A26,F14.7)') "Global Softness (A.U.): ", soft
+   write(1984,'(A)') "  N     Fukui-       Fukui+       Fukui0  &
+                     &  Local Softness (A.U.)"
+   do icount = 1, N
+      write(1984,'(I3,2x,F11.9,2x,F11.9,2x,F11.9,2x,F14.7)') Iz(icount),  &
+            fukuiNeg(icount), fukuiPos(icount), fukuiRad(icount), &
+            abs(soft*fukuiRad(icount))
    enddo
 
-   return
 end subroutine write_fukui
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 

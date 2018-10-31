@@ -33,7 +33,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module subm_intfld
 contains
-subroutine intfld(Fmat, Fmat_b, r, d, Iz, natom, ntatom, open_shell, g, ux, uy,&
+subroutine intfld(Fmat_b, Fmat, r, d, Iz, natom, ntatom, open_shell, g, ux, uy,&
                   uz)
    use garcha_mod, only: a, c, nuc, ncont, nshell, NORM, M, Md
    use constants_mod, only: pi32
@@ -72,7 +72,7 @@ subroutine intfld(Fmat, Fmat_b, r, d, Iz, natom, ntatom, open_shell, g, ux, uy,&
          ccoef = c(ifunct,nci) * c(jfunct,ncj)
          Zij   = a(ifunct,nci) + a(jfunct,ncj)
          ti    = a(ifunct,nci) / Zij
-         tj    = a(jfunct,nci) / Zij
+         tj    = a(jfunct,ncj) / Zij
 
          Q(1) = ti * r(Nuc(ifunct),1) + tj * r(Nuc(jfunct),1)
          Q(2) = ti * r(Nuc(ifunct),2) + tj * r(Nuc(jfunct),2)
@@ -102,7 +102,7 @@ subroutine intfld(Fmat, Fmat_b, r, d, Iz, natom, ntatom, open_shell, g, ux, uy,&
          Zij   = a(ifunct,nci) + a(jfunct,ncj)
          Z2    = 2.D0 * Zij
          ti    = a(ifunct,nci) / Zij
-         tj    = a(jfunct,nci) / Zij
+         tj    = a(jfunct,ncj) / Zij
 
          Q(1) = ti * r(Nuc(ifunct),1) + tj * r(Nuc(jfunct),1)
          Q(2) = ti * r(Nuc(ifunct),2) + tj * r(Nuc(jfunct),2)
@@ -141,7 +141,7 @@ subroutine intfld(Fmat, Fmat_b, r, d, Iz, natom, ntatom, open_shell, g, ux, uy,&
          Zij   = a(ifunct,nci) + a(jfunct,ncj)
          Z2    = 2.D0 * Zij
          ti    = a(ifunct,nci) / Zij
-         tj    = a(jfunct,nci) / Zij
+         tj    = a(jfunct,ncj) / Zij
 
          Q(1) = ti * r(Nuc(ifunct),1) + tj * r(Nuc(jfunct),1)
          Q(2) = ti * r(Nuc(ifunct),2) + tj * r(Nuc(jfunct),2)
@@ -201,7 +201,7 @@ subroutine intfld(Fmat, Fmat_b, r, d, Iz, natom, ntatom, open_shell, g, ux, uy,&
          Zij   = a(ifunct,nci) + a(jfunct,ncj)
          Z2    = 2.D0 * Zij
          ti    = a(ifunct,nci) / Zij
-         tj    = a(jfunct,nci) / Zij
+         tj    = a(jfunct,ncj) / Zij
 
          Q(1) = ti * r(Nuc(ifunct),1) + tj * r(Nuc(jfunct),1)
          Q(2) = ti * r(Nuc(ifunct),2) + tj * r(Nuc(jfunct),2)
@@ -256,7 +256,7 @@ subroutine intfld(Fmat, Fmat_b, r, d, Iz, natom, ntatom, open_shell, g, ux, uy,&
          Zij   = a(ifunct,nci) + a(jfunct,ncj)
          Z2    = 2.D0 * Zij
          ti    = a(ifunct,nci) / Zij
-         tj    = a(jfunct,nci) / Zij
+         tj    = a(jfunct,ncj) / Zij
 
          Q(1) = ti * r(Nuc(ifunct),1) + tj * r(Nuc(jfunct),1)
          Q(2) = ti * r(Nuc(ifunct),2) + tj * r(Nuc(jfunct),2)
@@ -337,7 +337,7 @@ subroutine intfld(Fmat, Fmat_b, r, d, Iz, natom, ntatom, open_shell, g, ux, uy,&
          Zij   = a(ifunct,nci) + a(jfunct,ncj)
          Z2    = 2.D0 * Zij
          ti    = a(ifunct,nci) / Zij
-         tj    = a(jfunct,nci) / Zij
+         tj    = a(jfunct,ncj) / Zij
 
          Q(1) = ti * r(Nuc(ifunct),1) + tj * r(Nuc(jfunct),1)
          Q(2) = ti * r(Nuc(ifunct),2) + tj * r(Nuc(jfunct),2)

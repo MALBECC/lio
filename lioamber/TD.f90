@@ -75,7 +75,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    integer :: MM, MMd, M2, M3 ,M5, M13, M15, M11, LWORK, igpu, info, istep,    &
               icount,jcount, M9, M7
    integer :: lpfrg_steps = 200, chkpntF1a = 185, chkpntF1b = 195
-   logical :: is_lpfrg, fock_restart
+   logical :: is_lpfrg = .false. , fock_restart = .false.
    character(len=20) :: restart_filename
 
    real*8 , allocatable, dimension(:)   :: factorial, WORK

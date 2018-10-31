@@ -317,7 +317,7 @@ subroutine intfld(Fmat_b, Fmat, r, d, Iz, natom, ntatom, open_shell, g, ux, uy,&
                   term     = g*ccoef * (aux3(1)*ux + aux3(2)*uy + aux3(3)*uz)/f1
 
                   fock_ind = ifunct + Ll(l1) + l2 -1 + &
-                             ((M2 - jfunct + l3 -1) * (jfunct + l3 -2)) / 2
+                             ((M2 - (jfunct + l3 -1)) * (jfunct + l3 -2)) / 2
                   Fmat(fock_ind) = Fmat(fock_ind) + term
                   if (open_shell) Fmat_b(fock_ind) = Fmat_b(fock_ind) + term
                enddo

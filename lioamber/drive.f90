@@ -14,8 +14,8 @@ subroutine drive(ng2,ngDyn,ngdDyn)
       nuc, ncont, nlb, nshelld, cd, ad, Nucd, ncontd, nld, Nucx, indexii,      &
       ncontx, cx, ax, indexiid, X, RMM, rhoalpha,rhobeta, af, charge,          &
       basis_set, fitting_set, e_, e_2, e3, exists, NORM, fcoord,               &
-      fmulliken, natom, frestart, M, FAC, Iexch, int_basis, max_func, &
-      frestartin, Md, NCO, nng, npas, Nr, used, STR, omit_bas, Nr2,   &
+      fmulliken, natom, frestart, M, Iexch, int_basis, max_func, &
+      frestartin, Md, NCO, nng, npas, Nr, used, omit_bas, Nr2,   &
       wang, wang2, wang3, VCINP, OPEN, whatis, Num, Iz, pi,             &
       Rm2, rqm, rmax, Nunp, nl, nt, ng, ngd, restart_freq,             &
       writexyz, number_restr, restr_pairs,restr_index,restr_k,restr_w,restr_r0,&
@@ -26,6 +26,8 @@ subroutine drive(ng2,ngDyn,ngdDyn)
       USE fileio , ONLY : read_coef_restart, read_rho_restart
       use td_data    , only: td_do_pop
       use fileio_data, only: verbose, rst_dens
+      use math_data, only: FAC, STR
+      use liosubs_math, only: init_math
       use ghost_atoms_subs, only: summon_ghosts
 
       IMPLICIT NONE
@@ -74,8 +76,7 @@ subroutine drive(ng2,ngDyn,ngdDyn)
 !
 ! calls generator of table for incomplete gamma functions
 !
-       call GENERF
-       call GENERFS
+       call init_math
        call GRIDLIO
        npas=0
 !-----------------------------------------------------------------------

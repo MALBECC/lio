@@ -54,8 +54,8 @@ contains
 
       do icount=1, n_ghosts
          if (ghost_atoms(icount) .lt. 1) then
-            write(*,'(A)') " ERROR - SUMMON_GHOSTS: Ghost_atoms(x) cannot be"&
-                 &" less than 1."
+            write(*,'(A)') " ERROR - SUMMON_GHOSTS: Ghost_atoms(x) cannot be &
+                 &less than 1."
          endif
          atom_Z(ghost_atoms(icount)) = 0
       enddo

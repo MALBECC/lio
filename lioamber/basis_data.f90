@@ -321,8 +321,8 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          if (max_f_per_atom .lt. nraw) max_f_per_atom = nraw
          if (max_c_per_atom .lt. ncon) max_c_per_atom = ncon
          if (ncon .gt. MAX_CONTRACT) then
-            write(*,'(A)') "  Error: Atom has more contractions than the "&
-                           &"maximum allowed (", MAX_CONTRACT,")."
+            write(*,'(A)') "  Error: Atom has more contractions than the &
+                           &maximum allowed (", MAX_CONTRACT,")."
             iostatus = 2
             return
          endif
@@ -347,8 +347,8 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          if (max_f_per_atom .lt. nraw) max_f_per_atom = nraw
          if (max_c_per_atom .lt. ncon) max_c_per_atom = ncon
          if (ncon .gt. MAX_CONTRACT) then
-            write(*,'(A)') "  Error: Atom has more contractions than the "&
-                           &"maximum allowed (", MAX_CONTRACT,")."
+            write(*,'(A)') "  Error: Atom has more contractions than the &
+                           &maximum allowed (", MAX_CONTRACT,")."
             iostatus = 2
             return
          endif
@@ -414,8 +414,8 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          if (max_f_per_atom .lt. nraw) max_f_per_atom = nraw
          if (max_c_per_atom .lt. ncon) max_c_per_atom = ncon
          if (ncon .gt. MAX_CONTRACT) then
-            write(*,'(A)') "  Error: Atom has more contractions than the "&
-                           &"maximum allowed (", MAX_CONTRACT,")."
+            write(*,'(A)') "  Error: Atom has more contractions than the &
+                           &maximum allowed (", MAX_CONTRACT,")."
             iostatus = 2
             return
          endif
@@ -462,12 +462,12 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
          if (max_f_per_atom .lt. nraw) max_f_per_atom = nraw
          if (max_c_per_atom .lt. ncon) max_c_per_atom = ncon
          if (ncon .gt. MAX_CONTRACT) then
-            write(*,'(A)') "  Error: Atom has more contractions than the "&
-                           &"maximum allowed (", MAX_CONTRACT,")."
+            write(*,'(A)') "  Error: Atom has more contractions than the &
+                           &maximum allowed (", MAX_CONTRACT,")."
             iostatus = 2
             return
          endif
-         
+
          ! Only needs to read angular momenta for each contraction, the rest is
          ! skipped.
          read(file_uid,*)

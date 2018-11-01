@@ -295,27 +295,27 @@ subroutine get_nco(atom_Z, n_atoms, n_orbitals, n_unpaired, charge, open_shell,&
 
    electrons = nuc_charge - charge
    if ((.not. open_shell) .and. (mod(electrons, 2) .ne. 0)) then
-      write(*,'(A)') "  ERROR - DRIVE: Odd number of electrons in a "&
-                     &"closed-shell calculation."
+      write(*,'(A)') "  ERROR - DRIVE: Odd number of electrons in a &
+                     &closed-shell calculation."
       write(*,'(A)') "  Please check system charge."
       ext_status = 1
       return
    endif
 
    if ((mod(electrons, 2) .eq. 0) .and. (mod(n_unpaired, 2) .ne. 0)) then
-      write(*,'(A)') "  ERROR - DRIVE: Even number of electrons but odd "&
-                     &"number of unpaired electrons."
-      write(*,'(A)') "  Please check system charge or number of unpaired "&
-                     &"electrons."
+      write(*,'(A)') "  ERROR - DRIVE: Even number of electrons but odd &
+                     &number of unpaired electrons."
+      write(*,'(A)') "  Please check system charge or number of unpaired &
+                     &electrons."
       ext_status = 2
       return
    endif
 
    if ((mod(electrons, 2) .ne. 0) .and. (mod(n_unpaired, 2) .eq. 0)) then
-      write(*,'(A)') "  ERROR - DRIVE: Odd number of electrons but even "&
-                     &"number of unpaired electrons."
-      write(*,'(A)') "  Please check system charge or number of unpaired "&
-                     &"electrons."
+      write(*,'(A)') "  ERROR - DRIVE: Odd number of electrons but even &
+                     &number of unpaired electrons."
+      write(*,'(A)') "  Please check system charge or number of unpaired &
+                     &electrons."
       ext_status = 2
       return
    endif

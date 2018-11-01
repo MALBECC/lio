@@ -165,6 +165,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     if (.not. int_basis) basis_set = basis
     call basis_init(basis_set, fitting_set, natom, Iz, iostat)
     if (iostat .gt. 0) then
+      stop
       return
    endif
 
@@ -184,7 +185,11 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     if (OPEN) allocate(MO_coef_at_b(ngDyn*ngDyn))
 
     ! Prints chosen options to output.
-    call drive(ng2, ngDyn, ngdDyn)
+    call drive(ng2, ngDyn, ngdDyn, iostat)
+    if (iostat .gt. 0) then
+      stop
+      return
+   endif
 
     ! reemplazos de RMM
     MM=M*(M+1)/2

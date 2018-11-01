@@ -51,7 +51,6 @@ OBJECTS += test_subs.o
 OBJECTS += esp_funct.o
 OBJECTS += readECP.o
 OBJECTS += intECP.o
-OBJECTS += fterm_biaspot.o
 OBJECTS += elec.o
 OBJECTS += properties.o
 OBJECTS += errlog.o

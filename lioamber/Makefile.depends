@@ -184,19 +184,6 @@ tmplist :=
 tmplist += ehrensubs.o init_lio.o lio_finalize.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/basis_data.mod
 
-
-################################################################################
-include liotemp/liotemp.mk
-SRCDIRS += liotemp
-OBJECTS += liotemp.o
-#
-modusrs := faint_cpu.o
-modusrs += subm_int1.o subm_int1G.o subm_int2.o subm_int2G.o
-modusrs += subm_int3lu.o subm_int3mem.o subm_int3G.o
-modusrs += subm_intSG.o subm_intfld.o subm_intsol.o subm_intsolG.o
-$(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/liotemp.mod
-
-
 ################################################################################
 include faint_cpu/faint_cpu.mk
 SRCDIRS += faint_cpu
@@ -256,6 +243,10 @@ OBJECTS += liosubs_math.o
 #
 modusrs :=
 modusrs += typedef_sop.o liosubs_dens.o initial_guess.o
+modusrs += faint_cpu.o
+modusrs += subm_int1.o subm_int1G.o subm_int2.o subm_int2G.o
+modusrs += subm_int3lu.o subm_int3mem.o subm_int3G.o
+modusrs += subm_intSG.o subm_intfld.o subm_intsol.o subm_intsolG.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/liosubs_math.mod
 
 
@@ -367,7 +358,7 @@ tmplist += SCF.o SCF_in.o TD.o cubegen.o
 tmplist += maskrmm.o SCF_exter.o
 tmplist += intECP.o elec.o func.o tmpaux_SCF.o
 tmplist += steep.o transport.o
-tmplist += liotemp.o lionml_subs.o
+tmplist += lionml_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
 
 

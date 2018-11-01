@@ -48,9 +48,9 @@ subroutine lio_defaults()
 !   Theory level options.
     OPEN           = .false.       ; told               = 1.0D-6        ;
     NMAX           = 100           ; Etold              = 1.0d0         ;
-    basis_set      = "DZVP"        ; hybrid_converg     = .false.       ;
+    basis_set      = "DZVP"        ; hybrid_converg     = .true.        ;
     int_basis      = .false.       ; good_cut           = 1D-5          ;
-    DIIS           = .true.        ; rmax               = 16            ;
+    DIIS           = .false.       ; rmax               = 16            ;
     ndiis          = 30            ; rmaxs              = 5             ;
     GOLD           = 10.           ; omit_bas           = .false.       ;
     charge         = 0             ;

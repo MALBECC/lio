@@ -35,7 +35,6 @@ OBJECTS += predictor.o
 OBJECTS += dft_get_mm_forces.o
 OBJECTS += dft_get_qm_forces.o
 OBJECTS += get_restrain_energy_forces.o
-OBJECTS += matmuldiag.o
 OBJECTS += fock_commuts.o
 OBJECTS += init_lio.o
 OBJECTS += lio_finalize.o
@@ -299,7 +298,7 @@ include linear_algebra/linear_algebra.mk
 SRCDIRS += linear_algebra
 OBJECTS += linear_algebra.o
 tmplist :=
-tmplist += SCF.o tmpaux_SCF.o typedef_operator.o
+tmplist += SCF.o tmpaux_SCF.o typedef_operator.o converger_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/linear_algebra.mod
 
 include mathsubs/mathsubs.mk

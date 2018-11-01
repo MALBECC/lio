@@ -60,6 +60,7 @@ end subroutine converger_init
                                fock_damped, bcoef, EMAT2, conver_criter
    use typedef_operator, only: operator
    use fileio_data     , only: verbose
+   use linear_algebra  , only: matmuldiag
 
    implicit none
    ! Spin allows to store correctly alpha or beta information. - Carlos

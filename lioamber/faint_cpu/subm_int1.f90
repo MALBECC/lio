@@ -33,7 +33,7 @@ module subm_int1
 contains
 subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
    use garcha_mod   , only: Nuc, a, c, ncont, NORM, M, nshell
-   use liotemp      , only: FUNCT
+   use liosubs_math , only: FUNCT
    use constants_mod, only: pi, pi32
    implicit none
 

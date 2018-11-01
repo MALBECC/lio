@@ -35,7 +35,7 @@ module subm_intsol
 contains
 subroutine intsol(Rho, Hmat, Iz, pc, r, d, natom, ntatom, E1s, Ens, elec)
 
-   use liotemp      , only: FUNCT
+   use liosubs_math , only: FUNCT
    use garcha_mod   , only: a, c, nuc, ncont, rmax, nshell, M, NORM
    use constants_mod, only: pi
 

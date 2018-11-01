@@ -21,6 +21,7 @@ module liosubs_math
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    contains
+#     include "funct.f90"
 #     include "matdcmp_cholesky.f90"
 #     include "matdcmp_svd.f90"
 #     include "matmul3_head.f90"

@@ -4,7 +4,7 @@
 internal_files := liotemp.mk
 internal_files += liotemp.f90
 
-internal_files += funct.f90
+#internal_files += funct.f90
 
 $(OBJPATH)/liotemp.o : $(internal_files)
 

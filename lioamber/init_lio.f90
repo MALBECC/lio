@@ -48,11 +48,11 @@ subroutine lio_defaults()
 !   Theory level options.
     OPEN           = .false.       ; told               = 1.0D-6        ;
     NMAX           = 100           ; Etold              = 1.0d0         ;
-    basis_set      = "DZVP"        ; hybrid_converg     = .true.        ;
-    int_basis      = .false.       ; good_cut           = 1D-5          ;
-    DIIS           = .false.       ; rmax               = 16            ;
-    ndiis          = 30            ; rmaxs              = 5             ;
-    GOLD           = 10.           ; omit_bas           = .false.       ;
+    basis_set      = "DZVP"        ; hybrid_converg     = .false.       ;
+    int_basis      = .false.       ; good_cut           = 1.0D-3        ;
+    DIIS           = .true.        ; rmax               = 16.0D0        ;
+    ndiis          = 30            ; rmaxs              = 5.0D0         ;
+    GOLD           = 10.0D0        ; omit_bas           = .false.       ;
     charge         = 0             ;
     fitting_set    = "DZVP Coulomb Fitting" ;
 

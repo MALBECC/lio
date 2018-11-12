@@ -8,7 +8,7 @@
 !
 !------------------------------------------------------------------------------!
 
-subroutine drive(ng2,ngDyn,ngdDyn)
+subroutine drive(ng2, ngDyn, ngdDyn, iostat)
       USE garcha_mod, ONLY : a,c, basis, done, done_fit, natomc, nnps,         &
       nnpp, nnpd, nns, nnp, nnd, atmin, jatc, ncf, lt, at, ct, nnat, nshell,   &
       nuc, ncont, nlb, nshelld, cd, ad, Nucd, ncontd, nld, Nucx, indexii,      &
@@ -37,6 +37,7 @@ subroutine drive(ng2,ngDyn,ngdDyn)
       CHARACTER*3 :: simb
 
       INTEGER, INTENT(IN) :: ng2, ngDyn, ngdDyn
+      INTEGER, INTENT(INOUT) :: iostat
       REAL*8 :: atmint, iprob
       REAL*8 :: xnorm
       REAL*8, ALLOCATABLE, DIMENSION(:,:) :: restart_coef, restart_coef_b, &
@@ -135,7 +136,7 @@ subroutine drive(ng2,ngDyn,ngdDyn)
 
       ! Gets the number of occupied orbitals in a closed shell system (or
       ! Spin Up in an open shell system).
-      call get_nco(Iz, natom, nco, NUNP, charge, OPEN)
+      call get_nco(Iz, natom, nco, NUNP, charge, OPEN, iostat)
 
       ! Allocates and initialises rhoalpha and rhobeta
       if(OPEN) then
@@ -275,30 +276,49 @@ subroutine drive(ng2,ngDyn,ngdDyn)
       return
 end subroutine drive
 
-subroutine get_nco(atom_Z, n_atoms, n_orbitals, n_unpaired, charge, open_shell)
+subroutine get_nco(atom_Z, n_atoms, n_orbitals, n_unpaired, charge, open_shell,&
+                   ext_status)
    use ghost_atoms_subs, only: adjust_ghost_charge
    implicit none
    integer, intent(in)  :: n_atoms, n_unpaired, charge, atom_Z(n_atoms)
    logical, intent(in)  :: open_shell
-   integer, intent(out) :: n_orbitals
+   integer, intent(out) :: n_orbitals, ext_status
 
    integer :: icount, nuc_charge, electrons
 
    nuc_charge = 0
+   ext_status = 0
    do icount = 1, n_atoms
       nuc_charge = nuc_charge + atom_Z(icount)
    enddo
    call adjust_ghost_charge(atom_Z, n_atoms, nuc_charge)
 
    electrons = nuc_charge - charge
-   if ((.not.open_shell) .and. (mod(electrons,2).ne.0)) then
-      write(*,'(A)') "  ERROR - DRIVE: Odd number of electrons in a "&
-                     &"closed-shell calculation."
+   if ((.not. open_shell) .and. (mod(electrons, 2) .ne. 0)) then
+      write(*,'(A)') "  ERROR - DRIVE: Odd number of electrons in a &
+                     &closed-shell calculation."
       write(*,'(A)') "  Please check system charge."
-      stop
+      ext_status = 1
+      return
    endif
 
-   n_orbitals = ((nuc_charge - charge) - n_unpaired)/2
+   if ((mod(electrons, 2) .eq. 0) .and. (mod(n_unpaired, 2) .ne. 0)) then
+      write(*,'(A)') "  ERROR - DRIVE: Even number of electrons but odd &
+                     &number of unpaired electrons."
+      write(*,'(A)') "  Please check system charge or number of unpaired &
+                     &electrons."
+      ext_status = 2
+      return
+   endif
 
-   return
+   if ((mod(electrons, 2) .ne. 0) .and. (mod(n_unpaired, 2) .eq. 0)) then
+      write(*,'(A)') "  ERROR - DRIVE: Odd number of electrons but even &
+                     &number of unpaired electrons."
+      write(*,'(A)') "  Please check system charge or number of unpaired &
+                     &electrons."
+      ext_status = 2
+      return
+   endif
+
+   n_orbitals = (electrons - n_unpaired) / 2
 end subroutine get_nco

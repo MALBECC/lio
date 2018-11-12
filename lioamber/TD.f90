@@ -267,6 +267,14 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    call int2(RMM(M7:M7+MMd), RMM(M9:M9+MMd), r, d, ntatom)
    call td_coulomb_precalc(igpu, MEMO, r, d, natom, ntatom)
 
+   ! Recalculate maximum number of TD steps.
+   if ((propagator .eq. 2) .and. (.not. fock_restart)) then
+      if (verbose .gt. 2) write(*,'(A)') "  Magnus propagator selected. &
+                                         &Adjusting maximum number of TD steps."
+      ntdstep = ntdstep + 9 * lpfrg_steps / 10
+   endif
+
+
    call g2g_timer_stop('td-inicio')
    ! End of TD initialization.
 

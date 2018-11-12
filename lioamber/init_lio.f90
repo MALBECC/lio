@@ -49,10 +49,10 @@ subroutine lio_defaults()
     OPEN           = .false.       ; told               = 1.0D-6        ;
     NMAX           = 100           ; Etold              = 1.0d0         ;
     basis_set      = "DZVP"        ; hybrid_converg     = .false.       ;
-    int_basis      = .false.       ; good_cut           = 1D-5          ;
-    DIIS           = .true.        ; rmax               = 16            ;
-    ndiis          = 30            ; rmaxs              = 5             ;
-    GOLD           = 10.           ; omit_bas           = .false.       ;
+    int_basis      = .false.       ; good_cut           = 1.0D-3        ;
+    DIIS           = .true.        ; rmax               = 16.0D0        ;
+    ndiis          = 30            ; rmaxs              = 5.0D0         ;
+    GOLD           = 10.0D0        ; omit_bas           = .false.       ;
     charge         = 0             ;
     fitting_set    = "DZVP Coulomb Fitting" ;
 
@@ -165,6 +165,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     if (.not. int_basis) basis_set = basis
     call basis_init(basis_set, fitting_set, natom, Iz, iostat)
     if (iostat .gt. 0) then
+      stop
       return
    endif
 
@@ -184,7 +185,11 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     if (OPEN) allocate(MO_coef_at_b(ngDyn*ngDyn))
 
     ! Prints chosen options to output.
-    call drive(ng2, ngDyn, ngdDyn)
+    call drive(ng2, ngDyn, ngdDyn, iostat)
+    if (iostat .gt. 0) then
+      stop
+      return
+   endif
 
     ! reemplazos de RMM
     MM=M*(M+1)/2

@@ -730,6 +730,7 @@ subroutine SCF(E)
 !%%%%%%%%%%%%%%%%%%%%
 !OPEN SHELL OPTION  |
 !%%%%%%%%%%%%%%%%%%%%
+        call g2g_timer_sum_start('SCF acceleration')
 #       ifdef CUBLAS
            call conver(niter, good, good_cut, M_in, rho_bop, fock_bop,         &
                        dev_Xmat, dev_Ymat, 2)

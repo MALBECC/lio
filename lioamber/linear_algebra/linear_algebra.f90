@@ -14,6 +14,11 @@ module linear_algebra
     module procedure matrix_diagon_d
   end interface
 
+  public :: matmuldiag
+  interface matmuldiag
+    module procedure matmuldiag
+  end interface
+
   public :: multiply_matrices
 # include "matmult_interface.f90"
 
@@ -31,5 +36,6 @@ contains
 
 # include "matmult_procedures.f90"
 # include "matcommut_procedures.f90"
+# include "matmuldiag.f90"
 end module
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

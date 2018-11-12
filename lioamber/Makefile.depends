@@ -35,13 +35,11 @@ OBJECTS += predictor.o
 OBJECTS += dft_get_mm_forces.o
 OBJECTS += dft_get_qm_forces.o
 OBJECTS += get_restrain_energy_forces.o
-OBJECTS += matmuldiag.o
 OBJECTS += fock_commuts.o
 OBJECTS += init_lio.o
 OBJECTS += lio_finalize.o
 OBJECTS += input_read.o
 OBJECTS += drive.o
-OBJECTS += func.o
 OBJECTS += grid.o
 OBJECTS += fix_mess_rho.o
 OBJECTS += packed_storage.o
@@ -51,7 +49,6 @@ OBJECTS += test_subs.o
 OBJECTS += esp_funct.o
 OBJECTS += readECP.o
 OBJECTS += intECP.o
-OBJECTS += fterm_biaspot.o
 OBJECTS += elec.o
 OBJECTS += properties.o
 OBJECTS += errlog.o
@@ -185,19 +182,6 @@ tmplist :=
 tmplist += ehrensubs.o init_lio.o lio_finalize.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/basis_data.mod
 
-
-################################################################################
-include liotemp/liotemp.mk
-SRCDIRS += liotemp
-OBJECTS += liotemp.o
-#
-modusrs := faint_cpu.o
-modusrs += subm_int1.o subm_int1G.o subm_int2.o subm_int2G.o
-modusrs += subm_int3lu.o subm_int3mem.o subm_int3G.o
-modusrs += subm_intSG.o subm_intfld.o subm_intsol.o subm_intsolG.o
-$(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/liotemp.mod
-
-
 ################################################################################
 include faint_cpu/faint_cpu.mk
 SRCDIRS += faint_cpu
@@ -257,6 +241,10 @@ OBJECTS += liosubs_math.o
 #
 modusrs :=
 modusrs += typedef_sop.o liosubs_dens.o initial_guess.o
+modusrs += faint_cpu.o elec.f
+modusrs += subm_int1.o subm_int1G.o subm_int2.o subm_int2G.o
+modusrs += subm_int3lu.o subm_int3mem.o subm_int3G.o
+modusrs += subm_intSG.o subm_intfld.o subm_intsol.o subm_intsolG.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/liosubs_math.mod
 
 
@@ -310,7 +298,7 @@ include linear_algebra/linear_algebra.mk
 SRCDIRS += linear_algebra
 OBJECTS += linear_algebra.o
 tmplist :=
-tmplist += SCF.o tmpaux_SCF.o typedef_operator.o
+tmplist += SCF.o tmpaux_SCF.o typedef_operator.o converger_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/linear_algebra.mod
 
 include mathsubs/mathsubs.mk
@@ -366,9 +354,9 @@ tmplist += dip.o dipmem.o drive.o grid.o init_amber.o init.o
 tmplist += lio_finalize.o predictor.o
 tmplist += SCF.o SCF_in.o TD.o cubegen.o
 tmplist += maskrmm.o SCF_exter.o
-tmplist += intECP.o elec.o func.o tmpaux_SCF.o
+tmplist += intECP.o elec.o tmpaux_SCF.o
 tmplist += steep.o transport.o
-tmplist += liotemp.o lionml_subs.o
+tmplist += lionml_subs.o basis_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
 
 

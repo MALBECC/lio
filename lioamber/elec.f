@@ -4,7 +4,7 @@ c the space
 c 1 e integrals
 c using the Obara-Saika recursive method.
 c Y calcula la densidad en los mismos puntos.
-c 
+c
 c loop over all basis functions
 c now the basis is supposed to be ordered according to the type,
 c all s, then all p, then all d, .....
@@ -21,12 +21,13 @@ c Output: F matrix, and S matrix
 c-------------------------------------------------------------------
       subroutine elec(NX,NY,NZ,deltax,xmin,ymin,zmin)
       use garcha_mod
+      use liosubs_math, only: funct
 c
       implicit real*8 (a-h,o-z)
 c auxiliar quantities
       dimension Q(3),xi(3)
       real*8, dimension (:), ALLOCATABLE :: pote
-c      parameter (deltax=.1D0)      
+c      parameter (deltax=.1D0)
 c      parameter (buffer=5.D0)
       parameter (Ar0=0.529177D0)
       real*8 VVV,deltax
@@ -115,7 +116,7 @@ c
         s0s=temp*FUNCT(0,u)
 c
       term=ccoef*s0s*RMM(kk)
-      pote(ntotal)=pote(ntotal)+ term 
+      pote(ntotal)=pote(ntotal)+ term
 
  202  continue
  201  continue
@@ -188,9 +189,9 @@ c
 c
  301   continue
 
- 300  continue       
+ 300  continue
 c-------------------------------------------------------------------
-c 
+c
 c (p|p) case
 c
       do 400 i=ns+1,ns+np,3
@@ -221,9 +222,9 @@ c
        do 406 nnx=1,NX
        do 406 nny=1,NY
        do 406 nnz=1,NZ
-        
+
         ntotal=ntotal+1
-        
+
         xi(1)=Xmin+(nnx-1)*deltax
         xi(2)=Ymin+(nny-1)*deltax
         xi(3)=Zmin+(nnz-1)*deltax
@@ -299,9 +300,9 @@ c
        do 506 nnx=1,NX
        do 506 nny=1,NY
        do 506 nnz=1,NZ
-        
+
         ntotal=ntotal+1
-        
+
         xi(1)=Xmin+(nnx-1)*deltax
         xi(2)=Ymin+(nny-1)*deltax
         xi(3)=Zmin+(nnz-1)*deltax
@@ -377,9 +378,9 @@ c
        do 606 nnx=1,NX
        do 606 nny=1,NY
        do 606 nnz=1,NZ
-        
+
         ntotal=ntotal+1
-        
+
         xi(1)=Xmin+(nnx-1)*deltax
         xi(2)=Ymin+(nny-1)*deltax
         xi(3)=Zmin+(nnz-1)*deltax
@@ -610,13 +611,13 @@ cccccccccccccc Ahora calculamos la densidad electrónica en la grilla
        dd=sqrt(dd)
        Vvv=Vvv-Iz(n)/dd
   11   continue
-      pote(ntotal)=pote(ntotal) + Vvv 
+      pote(ntotal)=pote(ntotal) + Vvv
  806   continue
 c       else
 
 c
 c
-C     WRITE A FORMATTED CUBEFILE VERY SIMILAR TO THOSE CREATED BY 
+C     WRITE A FORMATTED CUBEFILE VERY SIMILAR TO THOSE CREATED BY
 C     THE GAUSSIAN PROGRAM OR THE CUBEGEN UTILITY.
 C     THE FORMAT IS AS FOLLOWS (LAST CHECKED AGAINST GAUSSIAN 98):
 C
@@ -642,12 +643,12 @@ C     ALL COORDINATES ARE GIVEN IN ATOMIC UNITS.
        write(188,*) 'Elfield'
        write(188,*)
        write(188,678) natom,Xmin,Ymin,Zmin
-       write(188,678) NX,deltax,0.0D0,0.0D0 
-       write(188,678) NY,0.0D0, deltax,0.0D0 
+       write(188,678) NX,deltax,0.0D0,0.0D0
+       write(188,678) NY,0.0D0, deltax,0.0D0
        write(188,678) NZ,0.0D0,0.0D0,deltax
        do i=1,natom
        write(188,677) Iz(i),0.0D0,r(i,1),r(i,2),r(i,3)
-       enddo 
+       enddo
        write(188,679) pote
        close(188)
 677    format(I5,4(F12.6))
@@ -658,6 +659,3 @@ C     ALL COORDINATES ARE GIVEN IN ATOMIC UNITS.
       return
       end
 c-------------------------------------------------------------------
-
-
- 

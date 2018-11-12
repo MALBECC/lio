@@ -32,7 +32,7 @@ module subm_intsolG; contains
 subroutine intsolG(frc_qm, frc_mm, natom, ntatom, rho, d, r, pc, Iz)
 
    use garcha_mod   , only: M, a, c, Nuc, Ncont, nshell, rmax, NORM
-   use liotemp      , only: FUNCT
+   use liosubs_math , only: FUNCT
    use constants_mod, only: pi, pi32
 
    implicit none

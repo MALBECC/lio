@@ -1,4 +1,10 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+module math_data
+   implicit none
+   ! Arrays used for Boys function.
+   double precision :: STR(880,0:21) = 0.0D0, FAC(0:16) = 0.0D0
+end module math_data
+
 module liosubs_math
 !--------------------------------------------------------------------!
    implicit none
@@ -21,6 +27,7 @@ module liosubs_math
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    contains
+#     include "funct.f90"
 #     include "matdcmp_cholesky.f90"
 #     include "matdcmp_svd.f90"
 #     include "matmul3_head.f90"

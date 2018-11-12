@@ -29,7 +29,7 @@ module subm_int2G
 contains
 subroutine int2G(f, natom, ntatom, r, d)
 
-   use liotemp      , only: FUNCT
+   use liosubs_math , only: FUNCT
    use garcha_mod   , only: M, Md, NORM, af, nshelld, ad, Nucd, ncontd, cd
    use constants_mod, only: pi5
 

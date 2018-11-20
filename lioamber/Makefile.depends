@@ -187,7 +187,7 @@ SRCDIRS += faint_cpu
 OBJECTS += faint_cpu.o
 #
 modusrs :=
-modusrs += cublasmath.o ehrensubs.o liomain.o maskrmm.o
+modusrs += cublasmath.o ehrensubs.o liomain.o
 modusrs += predictor.o SCF.o SCFop.o TD.o field_subs.o
 modusrs += dft_get_mm_forces.o dft_get_qm_forces.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/faint_cpu.mod
@@ -220,7 +220,7 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/initial_guess.o
 ################################################################################
 
 tmplist :=
-tmplist += SCF.o TD.o init_lio.o cublasmath.o predictor.o maskrmm.o
+tmplist += SCF.o TD.o init_lio.o cublasmath.o predictor.o
 tmplist += lionml_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/field_subs.o
 
@@ -342,7 +342,7 @@ tmplist += get_restrain_energy_forces.o
 tmplist += dip.o dipmem.o drive.o grid.o init_amber.o init.o
 tmplist += lio_finalize.o predictor.o
 tmplist += SCF.o SCF_in.o TD.o cubegen.o
-tmplist += maskrmm.o SCF_exter.o
+tmplist += SCF_exter.o
 tmplist += intECP.o elec.o SCF_aux.o
 tmplist += steep.o transport.o
 tmplist += lionml_subs.o basis_data.o
@@ -352,16 +352,6 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
 ################################################################################
 # TO-DO: Erradicate RMM from the face of earth.
 ################################################################################
-#
-include maskrmm/maskrmm.mk
-SRCDIRS += maskrmm
-OBJECTS += maskrmm.o
-
-tmplist :=
-tmplist += ehrensubs.o
-$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/maskrmm.mod
-
-#
 OBJECTS += SCF_aux.o
 
 tmplist :=

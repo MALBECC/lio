@@ -21,6 +21,11 @@ included += ehrenaux_calckyn.f90
 included += ehrenaux_writedip.f90
 included += ehrenaux_updatevel.f90
 
+included += rmmget_dens.f90
+included += rmmget_fock.f90
+included += rmmput_dens.f90
+included += rmmput_fock.f90
+
 included += RMMcalc0_Init.f90
 included += RMMcalc1_Overlap.f90
 included += RMMcalc2_FockMao.f90

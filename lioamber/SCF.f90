@@ -58,7 +58,6 @@ subroutine SCF(E)
    use SCF_aux       , only: neighbour_list_2e, seek_nan, standard_coefs, &
                              messup_densmat, fix_densmat
    use liosubs_math  , only: transform
-   use liosubs_dens  , only: builds_densmat, messup_densmat
    use linear_algebra, only: matrix_diagon
    use converger_subs, only: converger_init, conver
    use mask_cublas   , only: cublas_setmat, cublas_release

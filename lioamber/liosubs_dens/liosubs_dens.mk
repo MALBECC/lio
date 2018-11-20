@@ -1,7 +1,0 @@
-######################################################################
-# INTERNAL DEPENDENCIES
-INCLUDES :=
-INCLUDES += builds_densmat.f90
-
-$(OBJPATH)/liosubs_dens.o : $(INCLUDES) liosubs_dens.mk
-######################################################################

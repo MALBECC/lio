@@ -155,7 +155,7 @@ subroutine do_population_analysis()
    call int1(En, RMM(M5:M5+MM), RMM(M11:M11+MM), Smat, d, r, Iz, natom, ntatom)
    call spunpack('L',M,RMM(M5),Smat)
    call spunpack('L',M,RMM(1),RealRho)
-   call fix_densmat(M,RealRho)
+   call fix_densmat(RealRho)
 
    ! Initial nuclear charge for Mulliken
    do kk=1,natom

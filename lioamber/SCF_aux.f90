@@ -48,7 +48,7 @@ subroutine neighbour_list_2e(natom, ntatom, r, d)
                           + (r(icount,2)-r(jcount,2))*(r(icount,2)-r(jcount,2))&
                           + (r(icount,3)-r(jcount,3))*(r(icount,3)-r(jcount,3))
          rexp = d(icount,jcount) * atmin(icount) * atmin(jcount) &
-              / atmin(icount) + atmin(jcount)
+                / (atmin(icount) + atmin(jcount))
          if (rexp .lt. rmax) then
             natomc(icount) = natomc(icount) +1
             jatc(natomc(icount),icount) = jcount
@@ -56,13 +56,13 @@ subroutine neighbour_list_2e(natom, ntatom, r, d)
       enddo
    enddo
 
-   do icount = 1, nshell(0)
+   do icount = nshell(0), 1, -1
      nnps(nuc(icount)) = icount
    enddo
-   do icount = nshell(0) +1, nshell(0) + nshell(1), nshell(0) +1
+   do icount = nshell(0) + nshell(1), nshell(0) +1, -1
      nnpp(nuc(icount)) = icount
    enddo
-   do icount = nshell(0) + nshell(1) +1, M
+   do icount = M, nshell(0) + nshell(1) +1, -1
      nnpd(nuc(icount)) = icount
    enddo
 end subroutine neighbour_list_2e
@@ -95,9 +95,9 @@ subroutine standard_coefs(coef_mat)
    integer :: icount, jcount
 
    do jcount = 1, size(coef_mat, 2)
-      if ( coef_mat(1,jcount) < 0.0d0 ) then
+      if ( coef_mat(1,jcount) < 0.0D0 ) then
          do icount = 1, size(coef_mat, 1)
-            coef_mat(icount,jcount) = (-1.0d0) * coef_mat(icount,jcount)
+            coef_mat(icount,jcount) = (-1.0D0) * coef_mat(icount,jcount)
          end do
       end if
    end do

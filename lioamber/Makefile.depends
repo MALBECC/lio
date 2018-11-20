@@ -44,7 +44,6 @@ OBJECTS += grid.o
 OBJECTS += packed_storage.o
 OBJECTS += sysdata.o
 OBJECTS += ECP_mod.o
-OBJECTS += test_subs.o
 OBJECTS += esp_funct.o
 OBJECTS += readECP.o
 OBJECTS += intECP.o

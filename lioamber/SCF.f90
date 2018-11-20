@@ -55,9 +55,9 @@ subroutine SCF(E)
    use mask_ecp      , only: ECP_init, ECP_fock, ECP_energy
    use typedef_sop   , only: sop              ! Testing SOP
    use fockbias_subs , only: fockbias_loads, fockbias_setmat, fockbias_apply
-   use SCF_aux       , only: neighbour_list_2e, seek_nan
+   use SCF_aux       , only: neighbour_list_2e, seek_nan, standard_coefs
    use liosubs_math  , only: transform
-   use liosubs_dens  , only: builds_densmat, messup_densmat, standard_coefs
+   use liosubs_dens  , only: builds_densmat, messup_densmat
    use linear_algebra, only: matrix_diagon
    use converger_subs, only: converger_init, conver
    use mask_cublas   , only: cublas_setmat, cublas_release

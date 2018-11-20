@@ -60,4 +60,19 @@ subroutine seek_nan(vecToTest, vecStart, vecEnd, phrase)
     enddo
 end subroutine seek_nan
 
+subroutine standard_coefs(coef_mat)
+   ! Standardises coefficient matrix.
+   implicit none
+   double precision, intent(inout) :: coef_mat(:,:)
+   integer :: icount, jcount
+
+   do jcount = 1, size(coef_mat, 2)
+      if ( coef_mat(1,jcount) < 0.0d0 ) then
+         do icount = 1, size(coef_mat, 1)
+            coef_mat(icount,jcount) = (-1.0d0) * coef_mat(icount,jcount)
+         end do
+      end if
+   end do
+end subroutine standard_coefs
+
 end module SCF_aux

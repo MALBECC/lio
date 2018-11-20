@@ -56,7 +56,7 @@ subroutine SCF(E)
    use typedef_sop   , only: sop              ! Testing SOP
    use fockbias_subs , only: fockbias_loads, fockbias_setmat, fockbias_apply
    use SCF_aux       , only: neighbour_list_2e, seek_nan, standard_coefs, &
-                             messup_densmat
+                             messup_densmat, fix_densmat
    use liosubs_math  , only: transform
    use liosubs_dens  , only: builds_densmat, messup_densmat
    use linear_algebra, only: matrix_diagon
@@ -1026,7 +1026,7 @@ subroutine SCF(E)
 !
       if (doing_ehrenfest) then
          call spunpack('L',M,RMM(M1),RealRho)
-         call fixrho(M,RealRho)
+         call fix_densmat(RealRho)
          call ehrendyn_init(natom, M, RealRho)
       endif
 

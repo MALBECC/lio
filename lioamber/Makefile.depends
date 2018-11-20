@@ -41,7 +41,6 @@ OBJECTS += lio_finalize.o
 OBJECTS += input_read.o
 OBJECTS += drive.o
 OBJECTS += grid.o
-OBJECTS += fix_mess_rho.o
 OBJECTS += packed_storage.o
 OBJECTS += sysdata.o
 OBJECTS += ECP_mod.o
@@ -374,7 +373,7 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/maskrmm.mod
 OBJECTS += SCF_aux.o
 
 tmplist :=
-tmplist += SCF.o
+tmplist += SCF.o liomain.o initial_guess.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/SCF_aux.mod
 
 ################################################################################

@@ -244,7 +244,7 @@ end subroutine initial_guess_aufbau
 ! density from the resulting orbitals.                                        !
 subroutine initial_guess_1e(Nmat, Nvec, NCO, ocupF, hmat_vec, Xmat, densat_vec)
    use liosubs_math, only: transform
-   use liosubs_dens, only: messup_densmat
+   use SCF_aux     , only: messup_densmat
 
    implicit none
    integer         , intent(in)    :: Nmat, Nvec, NCO

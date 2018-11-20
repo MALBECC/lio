@@ -1,6 +1,20 @@
 module SCF_aux
 contains
 
+subroutine messup_densmat( dens_mat )
+   ! Prepares density matrix for placement in RMM and usage in integrals.
+   implicit none
+   double precision, intent(inout) :: dens_mat(:, :)
+   integer :: icount, jcount
+
+   do jcount = 1, size(dens_mat, 2)
+   do icount = 1, size(dens_mat, 1)
+      if (icount /= jcount) &
+         dens_mat(icount,jcount) = 2.0D0 * dens_mat(icount,jcount)
+   enddo
+   enddo
+end subroutine messup_densmat
+
 subroutine neighbour_list_2e(natom, ntatom, r, d)
    ! Makes neighbour list for 2e integrals in order to give it linear
    ! scaling. Also calculates distance.

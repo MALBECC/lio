@@ -1,3 +1,16 @@
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+!%% SCF_AUX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! This module contains auxiliary subroutines used in the SCF cycle and related !
+! procedures.                                                                  !
+!                                                                              !
+! Subroutines included are:                                                    !
+!  * fix_densmat       (divides non-diagonal terms of a matrix by 2)           !
+!  * messup_densmat    (multiplies non-diagonal terms of a matrix by 2)        !
+!  * neighbour_list_2e (makes lists for 2e integrals)                          !
+!  * seek_NaN          (searches for NaNs in a vector)                         !
+!  * standard_coefs    (makes sure the first element of a matrix is positive)  !
+!                                                                              !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module SCF_aux
 contains
 
@@ -31,7 +44,7 @@ end subroutine messup_densmat
 
 subroutine neighbour_list_2e(natom, ntatom, r, d)
    ! Makes neighbour list for 2e integrals in order to give it linear
-   ! scaling. Also calculates distance.
+   ! scaling. Also calculates distances (squared) between atoms.
    use garcha_mod, only: natomc, jatc, rmax, nshell, atmin, nnps, nnpp, nnpd, &
                          M, nuc
    implicit none
@@ -89,7 +102,8 @@ subroutine seek_nan(vecToTest, vecStart, vecEnd, phrase)
 end subroutine seek_nan
 
 subroutine standard_coefs(coef_mat)
-   ! Standardises coefficient matrix.
+   ! Standardises coefficient matrix. Essentaly, it makes sure the first value
+   ! is always positive.
    implicit none
    double precision, intent(inout) :: coef_mat(:,:)
    integer :: icount, jcount

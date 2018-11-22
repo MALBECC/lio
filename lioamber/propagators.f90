@@ -49,7 +49,7 @@ end subroutine magnus
 
 subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
                      time, M_in, MTB, dim3)
-   ! This routine recives: F1a,F1b,rho2
+   ! This routine receives: F1a, F1b, rho2
    ! And gives: F5 = F(t+(deltat/2))
    use garcha_mod   , only: M, RMM, NBCH, rhoalpha, rhobeta, OPEN, Md, r, d, &
                             natom, ntatom, Iz
@@ -60,10 +60,10 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    use fockbias_subs, only: fockbias_apply
 
    implicit none
-   integer         , intent(in)    :: M_in, dim3
-   integer         , intent(in)    :: MTB ! Only used in DFTB, =0 otherwise.
-   double precision, intent(in)    :: Xtrans(M_in,M_in), timestep
-   double precision, intent(in)    :: factorial(NBCH), time
+   ! MTB is only used in DFTB, it equals 0 otherwise.
+   integer         , intent(in)    :: M_in, dim3, MTB
+   double precision, intent(in)    :: Xtrans(M_in,M_in), timestep, time, &
+                                      factorial(NBCH)
    double precision, intent(inout) :: F1a(M_in,M_in,dim3), F1b(M_in,M_in,dim3),&
                                       FON(M_in,M_in,dim3), Xmat(M_in,M_in)
 #ifdef TD_SIMPLE
@@ -208,11 +208,7 @@ subroutine cumagnusfac(Fock, RhoOld, RhoNew, M, N, dt, factorial)
 
       if (stat .ne. 0) then
          write(*,'(A)') " ERROR: ZGEM1 failed (magnus_cublas)"
-         call CUBLAS_FREE ( devPOmega )
-         call CUBLAS_FREE ( devPRho )
-         call CUBLAS_FREE ( devPNext )
-         call CUBLAS_FREE ( devPPrev )
-         call CUBLAS_SHUTDOWN()
+         call magnus_shutdown(devPOmega, devPRho, devPNext, devPPrev)
          stop
       endif
 
@@ -226,11 +222,7 @@ subroutine cumagnusfac(Fock, RhoOld, RhoNew, M, N, dt, factorial)
 #endif
       if (stat .ne. 0) then
          write(*,'(A)') " ERROR: ZGEM2 failed (magnus_cublas)"
-         call CUBLAS_FREE ( devPOmega )
-         call CUBLAS_FREE ( devPRho )
-         call CUBLAS_FREE ( devPNext )
-         call CUBLAS_FREE ( devPPrev )
-         call CUBLAS_SHUTDOWN()
+         call magnus_shutdown(devPOmega, devPRho, devPNext, devPPrev)
          stop
       endif
 
@@ -241,11 +233,7 @@ subroutine cumagnusfac(Fock, RhoOld, RhoNew, M, N, dt, factorial)
 #endif
       if (stat .ne. 0) then
          write(*,'(A)') " ERROR: CAXPY failed (magnus_cublas)"
-         call CUBLAS_FREE ( devPOmega )
-         call CUBLAS_FREE ( devPRho )
-         call CUBLAS_FREE ( devPNext )
-         call CUBLAS_FREE ( devPPrev )
-         call CUBLAS_SHUTDOWN()
+         call magnus_shutdown(devPOmega, devPRho, devPNext, devPPrev)
          stop
       endif
 
@@ -257,7 +245,7 @@ subroutine cumagnusfac(Fock, RhoOld, RhoNew, M, N, dt, factorial)
    stat = CUBLAS_GET_MATRIX(M, M, SIZEOF_COMPLEX, devPNext, M, Rhonew, M)
    if (stat .ne. 0) then
       write(*,'(A)') " ERROR: Get_matrix failed (magnus_cublas)"
-      call CUBLAS_SHUTDOWN()
+      call magnus_shutdown(devPOmega, devPRho, devPNext, devPPrev)
       stop
    endif
 
@@ -267,6 +255,86 @@ subroutine cumagnusfac(Fock, RhoOld, RhoNew, M, N, dt, factorial)
    call CUBLAS_FREE ( devPPrev )
    deallocate(Omega1)
 end subroutine cumagnusfac
+
+subroutine cupredictor(F1a, F1b, FON, rho2, devPtrX, factorial, devPtrXc, &
+                       timestep, time, M_in, MTB, dim3)
+   ! Predictor-Corrector Cheng, V.Vooris.PhysRevB.2006.74.155112
+   ! This routine receives: F1a, F1b, rho2
+   ! And gives: F5 = F(t+(deltat/2))
+   use garcha_mod   , only: M, RMM, NBCH, rhoalpha, rhobeta, OPEN, Md, r, d, &
+                            natom, ntatom, Iz
+   use field_data   , only: field
+   use field_subs   , only: field_calc
+   use cublasmath   , only: basechange_cublas
+   use faint_cpu    , only: int3lu
+   use fockbias_subs, only: fockbias_apply
+
+   implicit none
+   ! MTB is only used in DFTB, it equals 0 otherwise.
+   integer         , intent(in)    :: M_in, dim3, MTB
+   integer*8       , intent(in)    :: devPtrX, devPtrXc
+   double precision, intent(in)    :: timestep, factorial(NBCH), time
+   double precision, intent(inout) :: F1a(M_in,M_in,dim3), F1b(M_in,M_in,dim3),&
+                                      FON(M_in,M_in,dim3)
+#ifdef TD_SIMPLE
+   complex, intent(in)  :: rho2(M_in,M_in,dim3)
+   complex, allocatable :: rho4(:,:,:), rho2t(:,:,:)
+#else
+   double complex, intent(in)  :: rho2(M_in,M_in,dim3)
+   double complex, allocatable :: rho4(:,:,:), rho2t(:,:,:)
+#endif
+   integer :: M2, M3, M5, MM, MMd, M11, M7, M9
+   double precision :: E2, tdstep1, Ex, E1
+   double precision, allocatable :: F3(:,:,:), FBA(:,:,:)
+
+   allocate(rho4(M_in,M_in,dim3), rho2t(M_in,M_in,dim3), F3(M_in,M_in,dim3), &
+            FBA(M_in,M_in,dim3))
+
+   M2 = 2 * M    ;  MM  = M * (M +1)/2; MMd = Md * (Md+1)/2; M3  = MM +1
+   M5 = 2 * MM +1;  M7  = M5 + MM     ; M9  = M7 + MMd     ; M11 = M9 + MMd
+
+   ! Initializations and defaults
+   ! tdstep of the predictor is 0.5 * tdstep_magnus
+   ! F1a and F1b are used to extrapolate F3, then F3 is used to propagate rho.
+   ! Afterwards, rho4 is copied into RMM in order to calculate F5.
+   tdstep1 = timestep * 0.50D0
+   F3      = (7.D0 / 4.D0) * F1b - (3.D0 / 4.D0) * F1a
+   rho2t   = rho2
+
+   call cumagnusfac(F3(:,:,1), rho2(:,:,1), rho4(:,:,1), M_in, NBCH, tdstep1, &
+                    factorial)
+   if (OPEN) then
+      call cumagnusfac(F3(:,:,2), rho2(:,:,2), rho4(:,:,2), M_in, NBCH,tdstep1,&
+                       factorial)
+      rho2t(:,:,1) = basechange_cublas(M_in, rho4(:,:,1), devPtrXc, 'inv')
+      rho2t(:,:,2) = basechange_cublas(M_in, rho4(:,:,2), devPtrXc, 'inv')
+      call sprepack_ctr('L', M, rhoalpha, rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
+      call sprepack_ctr('L', M, rhobeta , rho2t(MTB+1:MTB+M,MTB+1:MTB+M,2))
+      RMM(1:MM) = rhoalpha + rhobeta
+   else
+      rho2t(:,:,1) = basechange_cublas(M_in, rho4(:,:,1), devPtrXc, 'inv')
+      call sprepack_ctr('L', M, RMM, rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
+   end if
+
+   call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), RMM(M7:M7+MMd), &
+               RMM(M9:M9+MMd), RMM(M11:M11+MMd), open)
+   call g2g_solve_groups(0, Ex, 0)
+   call field_calc(E1, time, RMM(M3:M3+MM), RMM(M5:M5+MM), r, d, Iz, natom, &
+                   ntatom, open)
+   FBA = FON
+   call spunpack('L', M, RMM(M5), FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
+
+   call fockbias_apply(time, FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
+   FON(:,:,1) = basechange_cublas(M_in, FBA(:,:,1), devPtrX, 'dir')
+
+   if (OPEN) then
+      call spunpack('L', M, RMM(M3), FBA(MTB+1:MTB+M,MTB+1:MTB+M,2))
+      call fockbias_apply(time, FBA(MTB+1:MTB+M,MTB+1:MTB+M,2))
+      FON(:,:,2) = basechange_cublas(M_in, FBA(:,:,2), devPtrX, 'dir')
+   end if
+
+   deallocate(rho4, rho2t, F3, FBA)
+end subroutine cupredictor
 
 subroutine magnus_cublas(Fock, RhoOld, RhoNew, M, N, dt, factorial)
    ! Propagator based in Baker-Campbell-Hausdorff Nth-order formula.
@@ -348,11 +416,7 @@ subroutine magnus_cublas(Fock, RhoOld, RhoNew, M, N, dt, factorial)
 #endif
       if (stat .ne. 0) then
          write(*,'(A)') " ERROR: ZGEM1 failed (magnus_cublas)"
-         call CUBLAS_FREE ( devPOmega )
-         call CUBLAS_FREE ( devPRho )
-         call CUBLAS_FREE ( devPNext )
-         call CUBLAS_FREE ( devPPrev )
-         call CUBLAS_SHUTDOWN()
+         call magnus_shutdown(devPOmega, devPRho, devPNext, devPPrev)
          stop
       endif
 
@@ -368,11 +432,7 @@ subroutine magnus_cublas(Fock, RhoOld, RhoNew, M, N, dt, factorial)
 #endif
       if (stat .ne. 0) then
          write(*,'(A)') " ERROR: ZGEM2 failed (magnus_cublas)"
-         call CUBLAS_FREE ( devPOmega )
-         call CUBLAS_FREE ( devPRho )
-         call CUBLAS_FREE ( devPNext )
-         call CUBLAS_FREE ( devPPrev )
-         call CUBLAS_SHUTDOWN()
+         call magnus_shutdown(devPOmega, devPRho, devPNext, devPPrev)
          stop
       endif
 
@@ -384,11 +444,7 @@ subroutine magnus_cublas(Fock, RhoOld, RhoNew, M, N, dt, factorial)
 #endif
          if (stat .ne. 0) then
             write(*,'(A)') " ERROR: ZCOPY failed (magnus_cublas)"
-            call CUBLAS_FREE ( devPOmega )
-            call CUBLAS_FREE ( devPRho )
-            call CUBLAS_FREE ( devPNext )
-            call CUBLAS_FREE ( devPPrev )
-            call CUBLAS_SHUTDOWN()
+            call magnus_shutdown(devPOmega, devPRho, devPNext, devPPrev)
             stop
          endif
       endif
@@ -397,7 +453,7 @@ subroutine magnus_cublas(Fock, RhoOld, RhoNew, M, N, dt, factorial)
    stat = CUBLAS_GET_MATRIX(M, M, SIZEOF_COMPLEX, devPNext, M, Rhonew, M)
    if (stat .ne. 0) then
       write(*,'(A)') " ERROR: Get_matrix failed (magnus_cublas)"
-      call CUBLAS_SHUTDOWN()
+      call magnus_shutdown(devPOmega, devPRho, devPNext, devPPrev)
       stop
    endif
 
@@ -408,5 +464,17 @@ subroutine magnus_cublas(Fock, RhoOld, RhoNew, M, N, dt, factorial)
    deallocate(Omega1)
 end subroutine magnus_cublas
 
+subroutine magnus_shutdown(PTR1, PTR2, PTR3, PTR4)
+   implicit none
+   external :: CUBLAS_FREE, CUBLAS_SHUTDOWN
+   integer*8, intent(in) :: PTR1, PTR2, PTR3, PTR4
+
+   call CUBLAS_FREE(PTR1)
+   call CUBLAS_FREE(PTR2)
+   call CUBLAS_FREE(PTR3)
+   call CUBLAS_FREE(PTR4)
+   call CUBLAS_SHUTDOWN()
+
+end subroutine magnus_shutdown
 #endif
 end module propagators

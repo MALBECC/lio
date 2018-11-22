@@ -14,13 +14,13 @@ subroutine magnus(fock, rhoOld, rhoNew, M, N, dt, factorial)
 #ifdef TD_SIMPLE
     complex         , intent(in)  :: RhoOld(M,M)
     complex         , intent(out) :: RhoNew(M,M)
-    complex, parameter   :: icmplx = CMPLX(0.0D0,1.0D0)
+    complex, parameter   :: ICMPLX = CMPLX(0.0D0,1.0D0)
     complex, allocatable :: Scratch(:,:), ConmPrev(:,:), ConmNext(:,:), &
                             Omega1(:,:)
 #else
     double complex  , intent(in)  :: RhoOld(M,M)
     double complex  , intent(out) :: RhoNew(M,M)
-    double complex, parameter   :: icmplx = CMPLX(0.0D0,1.0D0)
+    double complex, parameter   :: ICMPLX = CMPLX(0.0D0,1.0D0)
     double complex, allocatable :: Scratch(:,:), ConmPrev(:,:), ConmNext(:,:), &
                                    Omega1(:,:)
 #endif
@@ -32,7 +32,7 @@ subroutine magnus(fock, rhoOld, rhoNew, M, N, dt, factorial)
     RhoNew   = RhoOld
 
     ! Omega1 (=W) instantiation.
-    Omega1 = -1 * icmplx * Fock * dt
+    Omega1 = -1 * ICMPLX * Fock * dt
 
     ! Density matrix propagation
     do icount = 1, N
@@ -125,4 +125,132 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
 
    deallocate(rho4, rho2t, F3, FBA)
 end subroutine predictor
+
+#ifdef CUBLAS
+subroutine magnus_cublas(Fock, RhoOld, RhoNew, M, N, dt, factorial)
+   ! Propagator based in Baker-Campbell-Hausdorff Nth-order formula.
+   ! Everything is calculated in the ortonormal basis.
+   ! Input : Fock(t+(deltat/2)), rho(t)
+   ! Output: rho6 = rho(t+deltat)
+   implicit none
+   integer         , intent(in)  :: M, N
+   double precision, intent(in)  :: Fock(M,M), factorial(N), dt
+   double complex  , intent(in)  :: RhoOld(M,M)
+   double complex  , intent(out) :: RhoNew(M,M)
+
+   external :: CUBLAS_INIT, CUBLAS_SHUTDOWN, CUBLAS_SET_MATRIX, &
+               CUBLAS_GET_MATRIX, CUBLAS_ALLOC, CUBLAS_CAXPY,   &
+               CUBLAS_CGEMM, CUBLAS_ZCOPY
+   integer  :: CUBLAS_INIT, CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_ZCOPY, &
+               CUBLAS_GET_MATRIX, CUBLAS_ZGEMM, CUBLAS_ZAXPY
+
+   integer          :: stat, icount, jcount
+   integer*8        :: devPOmega, devPPrev, devPNext, devPRho, devPScratch
+   double precision :: Fact
+#ifdef TD_SIMPLE
+   complex   :: alpha , beta
+   complex, allocatable :: Omega1(:,:)
+   complex, parameter   :: ICMPLX = CMPLX(0.0D0, 1.0D0)
+   integer, parameter   :: SIZEOF_COMPLEX = 8
+#else
+   double complex   :: alpha , beta
+   double complex, allocatable :: Omega1(:,:)
+   double complex, parameter   :: ICMPLX = CMPLX(0.0D0, 1.0D0)
+   integer       , parameter   :: SIZEOF_COMPLEX = 16
+#endif
+   allocate(Omega1(M,M))
+   do icount = 1, M
+   do jcount = 1, M
+      Omega1(icount,jcount) = ICMPLX * Fock(icount,jcount) * dt
+   enddo
+   enddo
+   stat = CUBLAS_ALLOC(M*M, SIZEOF_COMPLEX, devPOmega)
+   stat = CUBLAS_ALLOC(M*M, SIZEOF_COMPLEX, devPPrev)
+   stat = CUBLAS_ALLOC(M*M, SIZEOF_COMPLEX, devPNext)
+   stat = CUBLAS_ALLOC(M*M, SIZEOF_COMPLEX, devPRho)
+
+   stat = CUBLAS_SET_MATRIX(M, M, SIZEOF_COMPLEX, Omega1, M, devPOmega, M)
+   if (stat .ne. 0) then
+      write(*,'(A)') "  ERROR: Omega1 allocation failed (magnus_cublas)."
+      call CUBLAS_SHUTDOWN()
+      stop
+   endif
+
+   stat = CUBLAS_SET_MATRIX(M, M, SIZEOF_COMPLEX, RhoOld, M, devPPrev, M)
+   if (stat .ne. 0) then
+      write(*,'(A)') "  ERROR: RhoOld allocation failed (magnus_cublas)."
+      call CUBLAS_SHUTDOWN()
+      stop
+   endif
+
+   stat = CUBLAS_ZCOPY(M*M, devPPrev, 1,devPNext , 1)
+   if (stat .ne. 0) then
+      write(*,'(A)') "  ERROR: Matrix copy failed (magnus_cublas)."
+      call CUBLAS_SHUTDOWN()
+      stop
+   endif
+
+   ! Density matrix propagation
+   Rhonew = RhoOld
+   alpha  = (1.0D0, 0.0D0)
+   beta   = (1.0D0, 0.0D0)
+   do icount = 1, N
+      Fact  = factorial(icount)
+      alpha = CMPLX(Fact, 0.0D0)
+      stat  = CUBLAS_ZGEMM('N', 'N', M, M, M, alpha, devPPrev, M, devPOmega,&
+                           M, beta, devPNext, M)
+
+      if (stat .ne. 0) then
+         write(*,'(A)') " ERROR: ZGEM1 failed (magnus_cublas)"
+         call CUBLAS_FREE ( devPOmega )
+         call CUBLAS_FREE ( devPRho )
+         call CUBLAS_FREE ( devPNext )
+         call CUBLAS_FREE ( devPPrev )
+         call CUBLAS_SHUTDOWN()
+         stop
+      endif
+
+      Fact  = -1.0D0 * Fact
+      alpha = CMPLX(Fact, 0.0D0)
+      stat  = CUBLAS_ZGEMM('N', 'N', M, M, M, alpha, devPOmega, M, devPPrev,&
+                           M, beta, devPNext, M)
+      if (stat .ne. 0) then
+         write(*,'(A)') " ERROR: ZGEM2 failed (magnus_cublas)"
+         call CUBLAS_FREE ( devPOmega )
+         call CUBLAS_FREE ( devPRho )
+         call CUBLAS_FREE ( devPNext )
+         call CUBLAS_FREE ( devPPrev )
+         call CUBLAS_SHUTDOWN()
+         stop
+      endif
+
+      if(icount .ne. N) then
+         stat = CUBLAS_ZCOPY(M*M, devPNext, 1, devPPrev , 1)
+         if (stat .ne. 0) then
+            write(*,'(A)') " ERROR: ZCOPY failed (magnus_cublas)"
+            call CUBLAS_FREE ( devPOmega )
+            call CUBLAS_FREE ( devPRho )
+            call CUBLAS_FREE ( devPNext )
+            call CUBLAS_FREE ( devPPrev )
+            call CUBLAS_SHUTDOWN()
+            stop
+         endif
+      endif
+   enddo
+
+   stat = CUBLAS_GET_MATRIX(M, M, SIZEOF_COMPLEX, devPNext, M, Rhonew, M)
+   if (stat .ne. 0) then
+      write(*,'(A)') " ERROR: Get_matrix failed (magnus_cublas)"
+      call CUBLAS_SHUTDOWN()
+      stop
+   endif
+
+   call CUBLAS_FREE ( devPOmega )
+   call CUBLAS_FREE ( devPRho )
+   call CUBLAS_FREE ( devPNext )
+   call CUBLAS_FREE ( devPPrev )
+   deallocate(Omega1)
+end subroutine magnus_cublas
+
+#endif
 end module propagators

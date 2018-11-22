@@ -63,9 +63,9 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    ! MTB is only used in DFTB, it equals 0 otherwise.
    integer         , intent(in)    :: M_in, dim3, MTB
    double precision, intent(in)    :: Xtrans(M_in,M_in), timestep, time, &
-                                      factorial(NBCH)
+                                      factorial(NBCH), Xmat(M_in,M_in)
    double precision, intent(inout) :: F1a(M_in,M_in,dim3), F1b(M_in,M_in,dim3),&
-                                      FON(M_in,M_in,dim3), Xmat(M_in,M_in)
+                                      FON(M_in,M_in,dim3)
 #ifdef TD_SIMPLE
    complex, intent(in)  :: rho2(M_in,M_in,dim3)
    complex, allocatable :: rho4(:,:,:), rho2t(:,:,:)
@@ -135,15 +135,19 @@ subroutine cumagnusfac(Fock, RhoOld, RhoNew, M, N, dt, factorial)
    implicit none
    integer         , intent(in)  :: M, N
    double precision, intent(in)  :: Fock(M,M), factorial(N), dt
+#ifdef TD_SIMPLE
+   complex         , intent(in)  :: RhoOld(M,M)
+   complex         , intent(out) :: RhoNew(M,M)
+#else
    double complex  , intent(in)  :: RhoOld(M,M)
    double complex  , intent(out) :: RhoNew(M,M)
-
+#endif
    external :: CUBLAS_INIT, CUBLAS_SHUTDOWN, CUBLAS_SET_MATRIX, &
                CUBLAS_GET_MATRIX, CUBLAS_ALLOC, CUBLAS_CAXPY,   &
                CUBLAS_CGEMM, CUBLAS_ZCOPY
-   integer  :: CUBLAS_INIT, CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_ZCOPY, &
-               CUBLAS_GET_MATRIX, CUBLAS_ZGEMM, CUBLAS_ZAXPY
-
+   integer  :: CUBLAS_INIT, CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_ZCOPY,  &
+               CUBLAS_GET_MATRIX, CUBLAS_ZGEMM, CUBLAS_ZAXPY, CUBLAS_CAXPY, &
+               CUBLAS_CGEMM
    integer          :: stat, icount, jcount
    integer*8        :: devPOmega, devPPrev, devPNext, devPRho, devPScratch
    double precision :: Fact
@@ -350,8 +354,9 @@ subroutine magnus_cublas(Fock, RhoOld, RhoNew, M, N, dt, factorial)
    external :: CUBLAS_INIT, CUBLAS_SHUTDOWN, CUBLAS_SET_MATRIX, &
                CUBLAS_GET_MATRIX, CUBLAS_ALLOC, CUBLAS_CAXPY,   &
                CUBLAS_CGEMM, CUBLAS_ZCOPY
-   integer  :: CUBLAS_INIT, CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_ZCOPY, &
-               CUBLAS_GET_MATRIX, CUBLAS_ZGEMM, CUBLAS_ZAXPY
+   integer  :: CUBLAS_INIT, CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_ZCOPY,  &
+               CUBLAS_GET_MATRIX, CUBLAS_ZGEMM, CUBLAS_ZAXPY, CUBLAS_CAXPY, &
+               CUBLAS_CGEMM
 
    integer          :: stat, icount, jcount
    integer*8        :: devPOmega, devPPrev, devPNext, devPRho, devPScratch

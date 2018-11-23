@@ -152,7 +152,7 @@ subroutine cumagnusfac(Fock, RhoOld, RhoNew, M, N, dt, factorial)
    integer*8        :: devPOmega, devPPrev, devPNext, devPRho, devPScratch
    double precision :: Fact
 #ifdef TD_SIMPLE
-   complex   :: alpha , beta
+   complex          :: alpha , beta
    complex, allocatable :: Omega1(:,:)
    complex, parameter   :: ICMPLX = CMPLX(0.0D0, 1.0D0)
    integer, parameter   :: SIZEOF_COMPLEX = 8
@@ -246,7 +246,7 @@ subroutine cumagnusfac(Fock, RhoOld, RhoNew, M, N, dt, factorial)
       devPNext    = devPScratch
    enddo
 
-   stat = CUBLAS_GET_MATRIX(M, M, SIZEOF_COMPLEX, devPNext, M, Rhonew, M)
+   stat = CUBLAS_GET_MATRIX(M, M, SIZEOF_COMPLEX, devPRho, M, Rhonew, M)
    if (stat .ne. 0) then
       write(*,'(A)') " ERROR: Get_matrix failed (magnus_cublas)"
       call magnus_shutdown(devPOmega, devPRho, devPNext, devPPrev)
@@ -407,9 +407,9 @@ subroutine magnus_cublas(Fock, RhoOld, RhoNew, M, N, dt, factorial)
    ! Density matrix propagation
    Rhonew = RhoOld
    alpha  = (1.0D0, 0.0D0)
-   beta   = (1.0D0, 0.0D0)
    do icount = 1, N
       Fact  = factorial(icount)
+      beta   = (0.0D0, 0.0D0)
 #ifdef TD_SIMPLE
       alpha = CMPLX(Fact, 0.0D0)
       stat  = CUBLAS_CGEMM('N', 'N', M, M, M, alpha, devPPrev, M, devPOmega,&
@@ -425,7 +425,7 @@ subroutine magnus_cublas(Fock, RhoOld, RhoNew, M, N, dt, factorial)
          stop
       endif
 
-      Fact  = -1.0D0 * Fact
+      beta   = (-1.0D0, 0.0D0)
 #ifdef TD_SIMPLE
       alpha = CMPLX(Fact, 0.0D0)
       stat  = CUBLAS_CGEMM('N', 'N', M, M, M, alpha, devPOmega, M, devPPrev, &
@@ -443,9 +443,9 @@ subroutine magnus_cublas(Fock, RhoOld, RhoNew, M, N, dt, factorial)
 
       if (icount .ne. N) then
 #ifdef TD_SIMPLE
-         stat = CUBLAS_CAXPY(M*M, 1.0E0, devPNext, 1, devPPrev, 1)
+         stat = CUBLAS_CAXPY(M*M, CMPLX(1.0D0,0.0D0), devPNext, 1, devPRho, 1)
 #else
-         stat = CUBLAS_ZCOPY(M*M, devPNext, 1, devPPrev , 1)
+         stat = CUBLAS_ZAXPY(M*M, DCMPLX(1.0D0,0.0D0), devPNext, 1, devPRho, 1)
 #endif
          if (stat .ne. 0) then
             write(*,'(A)') " ERROR: ZCOPY failed (magnus_cublas)"
@@ -453,9 +453,12 @@ subroutine magnus_cublas(Fock, RhoOld, RhoNew, M, N, dt, factorial)
             stop
          endif
       endif
+      devPScratch = devPPrev
+      devPPrev    = devPNext
+      devPNext    = devPScratch
    enddo
 
-   stat = CUBLAS_GET_MATRIX(M, M, SIZEOF_COMPLEX, devPNext, M, Rhonew, M)
+   stat = CUBLAS_GET_MATRIX(M, M, SIZEOF_COMPLEX, devPRho, M, Rhonew, M)
    if (stat .ne. 0) then
       write(*,'(A)') " ERROR: Get_matrix failed (magnus_cublas)"
       call magnus_shutdown(devPOmega, devPRho, devPNext, devPPrev)

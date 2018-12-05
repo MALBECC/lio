@@ -1,4 +1,4 @@
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+do icount = !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% GRID.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Dario Original - 12/February/1993                                            !
 ! This is a subroutine to generate and store angular grids points and weights  !
@@ -8,9 +8,9 @@ subroutine gridlio
    use garcha_mod, only : e_, e_2, e3, Rm2, Nr, Nr2, wang, wang2, wang3, pi
    implicit none
 
-   real*8, dimension(0:54) :: Rm2t, Nrt, Nr2t
-   real*8 :: el, emgrid, p1, pi4, q1, r1, sq2, ssq3, u1, w1
-   integer :: i, k
+   double precision, dimension(0:54) :: Rm2t, Nrt, Nr2t
+   double precision :: el, emgrid, p1, pi4, q1, r1, sq2, ssq3, u1, w1
+   integer :: icount
 
    ! Slater's radii
    data Rm2t /1.00, 0.35, 0.93, 1.45, 1.05, 0.85, 0.70, 0.65, 0.60, 0.50, 0.71,&
@@ -30,10 +30,10 @@ subroutine gridlio
               45, 45, 45, 45, 45, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, &
               50, 50, 50, 50, 50, 50, 50/
 
-   do i = 0, 54
-      Rm2(i) = Rm2t(i) / (2.D0*0.529177D0)
-      Nr(i)  = Nrt(i)
-      Nr2(i) = Nr2t(i)
+   do icount = 0, 54
+      Rm2(icount) = Rm2t(icount) / (2.D0 * 0.529177D0)
+      Nr(icount)  = Nrt(icount)
+      Nr2(icount) = Nr2t(icount)
    enddo
 
    pi4  = 4.D0 * pi
@@ -42,18 +42,18 @@ subroutine gridlio
    e_   = 0.0D0
    e_2  = 0.0D0
    e3   = 0.0D0
-   
+
 
 
    ! Construction of angular grid #1 : 50 angular points per shell.
    ! Lebedev , Zh.Mat. Mat. Fiz. 15,1,48 (1975)
    emgrid = 0.904534033733D0
    el     = 0.301511344578D0
-   
-   do i = 1 , 6  ; wang(i) = 0.0126984126985D0 ; enddo
-   do i = 7 , 18 ; wang(i) = 0.0225749559083D0 ; enddo
-   do i = 19, 26 ; wang(i) = 0.02109375D0      ; enddo
-   do i = 27, 50 ; wang(i) = 0.0201733355379D0 ; enddo
+
+   do icount = 1 , 6  ; wang(icount) = 0.0126984126985D0 ; enddo
+   do icount = 7 , 18 ; wang(icount) = 0.0225749559083D0 ; enddo
+   do icount = 19, 26 ; wang(icount) = 0.02109375D0      ; enddo
+   do icount = 27, 50 ; wang(icount) = 0.0201733355379D0 ; enddo
    wang = wang*pi4
 
    e_(1,3) =  1.D0 ; e_(2,3) = -1.D0 ; e_(3,2) =  1.D0
@@ -67,7 +67,7 @@ subroutine gridlio
    e_(14,3) =  sq2 ; e_(15,2) =  sq2 ; e_(15,3) =  sq2
    e_(16,2) =  sq2 ; e_(16,3) = -sq2 ; e_(17,2) = -sq2
    e_(17,3) = -sq2 ; e_(18,2) = -sq2 ; e_(18,3) =  sq2
- 
+
    e_(19,1) =  ssq3 ; e_(19,2) =  ssq3 ; e_(19,3) =  ssq3
    e_(20,1) = -ssq3 ; e_(20,2) =  ssq3 ; e_(20,3) =  ssq3
    e_(21,1) = -ssq3 ; e_(21,2) = -ssq3 ; e_(21,3) =  ssq3
@@ -76,7 +76,7 @@ subroutine gridlio
    e_(24,1) =  ssq3 ; e_(24,2) = -ssq3 ; e_(24,3) =  ssq3
    e_(25,1) =  ssq3 ; e_(25,2) =  ssq3 ; e_(25,3) = -ssq3
    e_(26,1) = -ssq3 ; e_(26,2) =  ssq3 ; e_(26,3) = -ssq3
- 
+
    e_(27,1) =  el ; e_(27,2) =  el ; e_(27,3) =  emgrid
    e_(28,1) = -el ; e_(28,2) =  el ; e_(28,3) =  emgrid
    e_(29,1) = -el ; e_(29,2) = -el ; e_(29,3) =  emgrid
@@ -110,14 +110,14 @@ subroutine gridlio
    el     = 0.162263300152D0
    e_2    = 0.0D0
 
-   do i = 1 , 12 ; wang2(i) = 0.00200918797730D0; enddo
-   do i = 13, 20 ; wang2(i) = 0.00988550016044D0; enddo
-   do i = 21, 44 ; wang2(i) = 0.00844068048232D0; enddo
-   do i = 45, 68 ; wang2(i) = 0.00987390742389D0; enddo
-   do i = 69, 92 ; wang2(i) = 0.0093573216900D0 ; enddo
-   do i = 93, 116; wang2(i) = 0.00969499636166D0; enddo
+   do icount = 1 , 12 ; wang2(icount) = 0.00200918797730D0; enddo
+   do icount = 13, 20 ; wang2(icount) = 0.00988550016044D0; enddo
+   do icount = 21, 44 ; wang2(icount) = 0.00844068048232D0; enddo
+   do icount = 45, 68 ; wang2(icount) = 0.00987390742389D0; enddo
+   do icount = 69, 92 ; wang2(icount) = 0.0093573216900D0 ; enddo
+   do icount = 93, 116; wang2(icount) = 0.00969499636166D0; enddo
    wang2 = wang2 * pi4
- 
+
    e_2(1 ,1) =  sq2 ; e_2(1 ,2) =  sq2 ; e_2(2 ,1) =  sq2
    e_2(2 ,2) = -sq2 ; e_2(3 ,1) = -sq2 ; e_2(3 ,2) = -sq2
    e_2(4 ,1) = -sq2 ; e_2(4 ,2) =  sq2 ; e_2(5 ,1) =  sq2
@@ -165,7 +165,7 @@ subroutine gridlio
 
    emgrid = 0.840255982384D0
    el     = 0.383386152638D0
- 
+
    e_2(45,1) =  el ; e_2(45,2) =  el ; e_2(45,3) =  emgrid
    e_2(46,1) = -el ; e_2(46,2) =  el ; e_2(46,3) =  emgrid
    e_2(47,1) = -el ; e_2(47,2) = -el ; e_2(47,3) =  emgrid
@@ -234,7 +234,7 @@ subroutine gridlio
    e_2(100,3) =  q1 ; e_2(101,2) =  p1 ; e_2(101,3) =  q1
    e_2(102,2) =  p1 ; e_2(102,3) = -q1 ; e_2(103,2) = -p1
    e_2(103,3) = -q1 ; e_2(104,2) = -p1 ; e_2(104,3) =  q1
- 
+
    e_2(105,1) =  q1 ; e_2(105,2) =  p1 ; e_2(106,1) =  q1
    e_2(106,2) = -p1 ; e_2(107,1) = -q1 ; e_2(107,2) = -p1
    e_2(108,1) = -q1 ; e_2(108,2) =  p1 ; e_2(109,1) =  q1
@@ -246,17 +246,17 @@ subroutine gridlio
 
    ! Construction of angular grid #3 : 194 angular points per shell.
    ! Lebedev , Zh.Mat. Mat. Fiz. 16,2,293 (1976)
-   do i = 1  , 6  ; wang3(i) = 0.00178234044724D0 ; enddo
-   do i = 7  , 18 ; wang3(i) = 0.00571690594988D0 ; enddo
-   do i = 19 , 26 ; wang3(i) = 0.00557338317884D0 ; enddo
-   do i = 27 , 50 ; wang3(i) = 0.00551877146727D0 ; enddo
-   do i = 51 , 74 ; wang3(i) = 0.00515823771181D0 ; enddo
-   do i = 75 , 98 ; wang3(i) = 0.00560870408259D0 ; enddo
-   do i = 99 , 122; wang3(i) = 0.00410677702817D0 ; enddo
-   do i = 123, 146; wang3(i) = 0.00505184606462D0 ; enddo
-   do i = 147, 194; wang3(i) = 0.00553024891623D0 ; enddo
+   do icount = 1  , 6  ; wang3(icount) = 0.00178234044724D0 ; enddo
+   do icount = 7  , 18 ; wang3(icount) = 0.00571690594988D0 ; enddo
+   do icount = 19 , 26 ; wang3(icount) = 0.00557338317884D0 ; enddo
+   do icount = 27 , 50 ; wang3(icount) = 0.00551877146727D0 ; enddo
+   do icount = 51 , 74 ; wang3(icount) = 0.00515823771181D0 ; enddo
+   do icount = 75 , 98 ; wang3(icount) = 0.00560870408259D0 ; enddo
+   do icount = 99 , 122; wang3(icount) = 0.00410677702817D0 ; enddo
+   do icount = 123, 146; wang3(icount) = 0.00505184606462D0 ; enddo
+   do icount = 147, 194; wang3(icount) = 0.00553024891623D0 ; enddo
    wang3 = wang3 * pi4
- 
+
    e3(1,3) =  1.D0 ; e3(2,3)= -1.D0 ; e3(3,2) =  1.D0
    e3(4,2) = -1.D0 ; e3(5,1)=  1.D0 ; e3(6,1) = -1.D0
 
@@ -438,7 +438,7 @@ subroutine gridlio
    e3(160,1) = -r1 ; e3(160,2) =  w1 ; e3(160,3) = -u1
    e3(161,1) = -r1 ; e3(161,2) = -w1 ; e3(161,3) =  u1
    e3(162,1) = -r1 ; e3(162,2) = -w1 ; e3(162,3) = -u1
- 
+
    e3(163,1) =  u1 ; e3(163,2) =  r1 ; e3(163,3) =  w1
    e3(164,1) =  u1 ; e3(164,2) =  r1 ; e3(164,3) = -w1
    e3(165,1) =  u1 ; e3(165,2) = -r1 ; e3(165,3) =  w1
@@ -464,7 +464,7 @@ subroutine gridlio
    e3(184,1) = -w1 ; e3(184,2) =  u1 ; e3(184,3) = -r1
    e3(185,1) = -w1 ; e3(185,2) = -u1 ; e3(185,3) =  r1
    e3(186,1) = -w1 ; e3(186,2) = -u1 ; e3(186,3) = -r1
- 
+
    e3(187,1) =  w1 ; e3(187,2) =  r1 ; e3(187,3) =  u1
    e3(188,1) =  w1 ; e3(188,2) =  r1 ; e3(188,3) = -u1
    e3(189,1) =  w1 ; e3(189,2) = -r1 ; e3(189,3) =  u1

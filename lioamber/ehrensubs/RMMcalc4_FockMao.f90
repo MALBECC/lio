@@ -5,8 +5,6 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
 ! DESCRIPTION (Time is in ps?fs?)
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-   use maskrmm
-
    use faint_cpu  , only: int2, int3mem, int3lu, intsol, intfld
 
    use field_data , only: epsilon, a0

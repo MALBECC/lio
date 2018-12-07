@@ -55,9 +55,9 @@ subroutine SCF(E)
    use mask_ecp      , only: ECP_init, ECP_fock, ECP_energy
    use typedef_sop   , only: sop              ! Testing SOP
    use fockbias_subs , only: fockbias_loads, fockbias_setmat, fockbias_apply
-   use tmpaux_SCF    , only: neighbor_list_2e
+   use SCF_aux       , only: neighbour_list_2e, seek_nan, standard_coefs, &
+                             messup_densmat, fix_densmat
    use liosubs_math  , only: transform
-   use liosubs_dens  , only: builds_densmat, messup_densmat, standard_coefs
    use linear_algebra, only: matrix_diagon
    use converger_subs, only: converger_init, conver
    use mask_cublas   , only: cublas_setmat, cublas_release
@@ -313,7 +313,7 @@ subroutine SCF(E)
 ! Nano: calculating neighbour list helps to make 2 electrons integral scale
 ! linearly with natoms/basis
 !
-      call neighbor_list_2e()
+      call neighbour_list_2e(natom, ntatom, r, d)
 
 ! Goes straight to TD if a restart is used.
       if ((timedep.eq.1).and.(tdrestart)) then
@@ -1025,7 +1025,7 @@ subroutine SCF(E)
 !
       if (doing_ehrenfest) then
          call spunpack('L',M,RMM(M1),RealRho)
-         call fixrho(M,RealRho)
+         call fix_densmat(RealRho)
          call ehrendyn_init(natom, M, RealRho)
       endif
 

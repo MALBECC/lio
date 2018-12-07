@@ -41,11 +41,9 @@ OBJECTS += lio_finalize.o
 OBJECTS += input_read.o
 OBJECTS += drive.o
 OBJECTS += grid.o
-OBJECTS += fix_mess_rho.o
 OBJECTS += packed_storage.o
 OBJECTS += sysdata.o
 OBJECTS += ECP_mod.o
-OBJECTS += test_subs.o
 OBJECTS += esp_funct.o
 OBJECTS += readECP.o
 OBJECTS += intECP.o
@@ -122,7 +120,7 @@ OBJECTS += converger_data.o
 OBJECTS += converger_subs.o
 
 tmplist :=
-tmplist += SCF.o tmpaux_SCF.o
+tmplist += SCF.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/converger_subs.mod
 
 tmplist := converger_subs.o
@@ -188,7 +186,7 @@ SRCDIRS += faint_cpu
 OBJECTS += faint_cpu.o
 #
 modusrs :=
-modusrs += cublasmath.o ehrensubs.o liomain.o maskrmm.o
+modusrs += cublasmath.o ehrensubs.o liomain.o
 modusrs += predictor.o SCF.o SCFop.o TD.o field_subs.o
 modusrs += dft_get_mm_forces.o dft_get_qm_forces.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/faint_cpu.mod
@@ -221,17 +219,9 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/initial_guess.o
 ################################################################################
 
 tmplist :=
-tmplist += SCF.o TD.o init_lio.o cublasmath.o predictor.o maskrmm.o
+tmplist += SCF.o TD.o init_lio.o cublasmath.o predictor.o
 tmplist += lionml_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/field_subs.o
-
-################################################################################
-include liosubs_dens/liosubs_dens.mk
-SRCDIRS += liosubs_dens
-OBJECTS += liosubs_dens.o
-#
-modusrs := tmpaux_SCF.o typedef_operator.o initial_guess.o
-$(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/liosubs_dens.mod
 
 
 ################################################################################
@@ -240,7 +230,7 @@ SRCDIRS += liosubs_math
 OBJECTS += liosubs_math.o
 #
 modusrs :=
-modusrs += typedef_sop.o liosubs_dens.o initial_guess.o
+modusrs += typedef_sop.o initial_guess.o
 modusrs += faint_cpu.o elec.f
 modusrs += subm_int1.o subm_int1G.o subm_int2.o subm_int2G.o
 modusrs += subm_int3lu.o subm_int3mem.o subm_int3G.o
@@ -298,7 +288,7 @@ include linear_algebra/linear_algebra.mk
 SRCDIRS += linear_algebra
 OBJECTS += linear_algebra.o
 tmplist :=
-tmplist += SCF.o tmpaux_SCF.o typedef_operator.o converger_subs.o
+tmplist += SCF.o typedef_operator.o converger_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/linear_algebra.mod
 
 include mathsubs/mathsubs.mk
@@ -306,7 +296,6 @@ SRCDIRS += mathsubs
 OBJECTS += mathsubs.o
 tmplist :=
 tmplist += SCF.o predictor.o typedef_operator.o transport.o
-tmplist += tmpaux_SCF.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/mathsubs.mod
 
 
@@ -330,7 +319,6 @@ ifeq ($(use_cublas),1)
 
   tmplist :=
   tmplist += SCF.o TD.o typedef_operator.o transport.o
-  tmplist += tmpaux_SCF.o
   $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/cublasmath.mod
 
   $(OBJPATH)/fortran.o: $(CUDA_HOME)/src/fortran.c
@@ -353,8 +341,8 @@ tmplist += get_restrain_energy_forces.o
 tmplist += dip.o dipmem.o drive.o grid.o init_amber.o init.o
 tmplist += lio_finalize.o predictor.o
 tmplist += SCF.o SCF_in.o TD.o cubegen.o
-tmplist += maskrmm.o SCF_exter.o
-tmplist += intECP.o elec.o tmpaux_SCF.o
+tmplist += SCF_exter.o
+tmplist += intECP.o elec.o SCF_aux.o
 tmplist += steep.o transport.o
 tmplist += lionml_subs.o basis_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
@@ -363,21 +351,11 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
 ################################################################################
 # TO-DO: Erradicate RMM from the face of earth.
 ################################################################################
-#
-include maskrmm/maskrmm.mk
-SRCDIRS += maskrmm
-OBJECTS += maskrmm.o
+OBJECTS += SCF_aux.o
 
 tmplist :=
-tmplist += ehrensubs.o
-$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/maskrmm.mod
-
-#
-OBJECTS += tmpaux_SCF.o
-
-tmplist :=
-tmplist += SCF.o
-$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/tmpaux_SCF.mod
+tmplist += SCF.o liomain.o initial_guess.o
+$(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/SCF_aux.mod
 
 ################################################################################
 # TO-DO: Unify the two general purpose modules.

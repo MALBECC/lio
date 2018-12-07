@@ -5,9 +5,6 @@ subroutine RMMcalc2_FockMao( FockMao, Energy )
 ! DESCRIPTION (Time is in ps?fs?)
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-   use maskrmm,     only: rmmput_fock, rmmget_fock
-
-
    use faint_cpu  , only: int2, int3mem, intsol
 
    use garcha_mod,  only: M, Md, RMM, kkind, kkinds, cool, cools, igrid2, MEMO,&

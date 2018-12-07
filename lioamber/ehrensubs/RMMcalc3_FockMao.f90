@@ -5,8 +5,6 @@ subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
 ! DESCRIPTION (Time is in ps?fs?)
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-   use maskrmm,     only: rmmput_dens, rmmput_fock, rmmget_fock
-
    use faint_cpu  , only: intfld, int3lu
 
    use garcha_mod,  only: M, natom, Iz, NCO, Nunp, total_time, RMM, Md, open, &

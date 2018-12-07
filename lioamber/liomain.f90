@@ -140,6 +140,7 @@ subroutine do_population_analysis()
                          mulliken, lowdin, sqsm, d, r, Md, ntatom
    use ECP_mod   , only: ecpmode, IzECP
    use faint_cpu , only: int1
+   use SCF_aux   , only: fix_densmat
    use fileio    , only: write_population
 
    implicit none
@@ -154,7 +155,7 @@ subroutine do_population_analysis()
    call int1(En, RMM(M5:M5+MM), RMM(M11:M11+MM), Smat, d, r, Iz, natom, ntatom)
    call spunpack('L',M,RMM(M5),Smat)
    call spunpack('L',M,RMM(1),RealRho)
-   call fixrho(M,RealRho)
+   call fix_densmat(RealRho)
 
    ! Initial nuclear charge for Mulliken
    do kk=1,natom

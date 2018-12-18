@@ -1145,7 +1145,8 @@ subroutine td_magnus_cu(M, dim3, OPEN,fock_aop, F1a, F1b, rho_aop, rhonew,     &
                         transport_calc, Nuc, Iz, istep, overlap, sqsm,         &
                         devPtrY, time, M_in, nshell,ncont, fock_bop,           &
                         rho_bop)
-   use cublasmath    ,   only: cupredictor, cumagnusfac, basechange_cublas
+   use cublasmath    ,   only: basechange_cublas
+   use propagators   ,   only: cupredictor, cumagnusfac
    use transport_subs,   only: transport_propagate_cu
    use dftb_data,        only: dftb_calc,MTB, rhold_AOTB, rhonew_AOTB
    use dftb_subs,        only: chimeraDFTB_evol
@@ -1388,10 +1389,11 @@ subroutine td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew,       &
                      Iz, istep, overlap, sqsm, Xmat, Ymat, Xtrans, time, M_in, &
                      nshell, ncont, fock_bop, rho_bop)
    use transport_subs,   only: transport_propagate
-   use dftb_data,        only:dftb_calc,MTB, rhold_AOTB, rhonew_AOTB
-   use dftb_subs,        only:chimeraDFTB_evol
-   use mathsubs,         only:basechange_gemm
-   use typedef_operator, only:operator
+   use dftb_data,        only: dftb_calc, MTB, rhold_AOTB, rhonew_AOTB
+   use dftb_subs,        only: chimeraDFTB_evol
+   use mathsubs,         only: basechange_gemm
+   use propagators,      only: predictor, magnus
+   use typedef_operator, only: operator
    implicit none
 
    type(operator), intent(inout)           :: fock_aop, rho_aop

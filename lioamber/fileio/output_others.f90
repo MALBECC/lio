@@ -4,6 +4,7 @@
 ! * write_dipole     (handles dipole moment printing)                          !
 ! * write_dipole_td  (handles dipole moment printing in TD)                    !
 ! * write_forces     (handles grandient printing to output)                    !
+! * write_force_log  (prints forces components to a Forces.log file)           !
 ! * write_fukui      (handles Fukui function printing to output)               !
 ! * write_orbitals   (prints orbitals and energies to output)                  !
 ! * write_orbitals_op(prints orbitals and energies to output, open shell)      !
@@ -115,6 +116,56 @@ subroutine write_forces(dxyz, natom, offset, uid)
    return
 100 format (I5,2x,f10.6,2x,f10.6,2x,f10.6)
 end subroutine write_forces
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%% WRITE_FORCE_LOG %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Prints the forces componets to output. ff1G are the 1e gradients, ffSG are   !
+! the overlap gradients and ff3G are the 2e gradients (coulomb/XC). natom is   !
+! the number of atoms and fileunit is the output file unit. ffT is the total   !
+! transposed (because amber).                                                  !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine write_force_log(ffT, ff1G, ffSG, ff3G, natom, fileunit, first_step)
+   implicit none
+   integer         , intent(in) :: natom, fileunit
+   logical         , intent(in) :: first_step
+   double precision, intent(in) :: ff1G(natom,3), ffSG(natom,3), ff3G(natom,3),&
+                                   ffT(3,natom)
+   character(len=40) :: outfmt
+   integer           :: kcount
+
+   outfmt = '(1X, A4, 1X, I4, 3(2X,E14.7))'
+
+   if (first_step) then
+      open(unit = fileunit, file='Forces.log')
+   else
+      open(unit = fileunit, file='Forces.log', access='APPEND' )
+   endif
+
+   write(fileunit,'(A)') &
+      '------------------------------------------------------------'
+
+   do kcount = 1, natom
+      write(fileunit, outfmt) 'TOTS', kcount, ffT(1,kcount), ffT(2,kcount), &
+                              ffT(3,kcount)
+   enddo
+
+   write(fileunit,'(A)') &
+      '------------------------------------------------------------'
+   write(fileunit,*)
+
+   do kcount = 1, natom
+      write(fileunit, outfmt) 'FF1G', kcount, ff1G(kcount,1), ff1G(kcount,2), &
+                              ff1G(kcount,3)
+      write(fileunit, outfmt) 'FFSG', kcount, ffSG(kcount,1), ffSG(kcount,2), &
+                              ffSG(kcount,3)
+      write(fileunit, outfmt) 'FF3G', kcount, ff3G(kcount,1), ff3G(kcount,2), &
+                              ff3G(kcount,3)
+      write(fileunit,*)
+   enddo
+   write(fileunit,*)
+   close(fileunit)
+
+end subroutine write_force_log
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%% WRITE_FUKUI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

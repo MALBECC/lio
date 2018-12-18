@@ -67,6 +67,8 @@ module basis_data
    ! ad(i,j)    : Exponent for auxiliary function i, contraction j.
    ! cd(i,j)    : Coefficient for auxiliary function i, contraction j.
    ! atmin(i)   : The minimum exponent found for atom i.
+   ! indexii(i) : Function index after reordering by s, p, d.
+   ! indexiid(i): Auxiliary function index after reordering by s, p, d.
    ! kkInd(:)   : Index for double-precision two-center integrals.
    ! kkInds(:)  : Index for single-precision two-center integrals.
    ! cool(:)    : Storage for two-center integrals in  double precision.
@@ -77,6 +79,8 @@ module basis_data
    integer         , allocatable :: nContd(:)
    integer         , allocatable :: ang_mom(:)
    integer         , allocatable :: ang_momd(:)
+   integer         , allocatable :: indexii(:)
+   integer         , allocatable :: indexiid(:)
    integer         , allocatable :: kkInd(:)
    integer         , allocatable :: kkInds(:)
    integer         , allocatable :: natomc(:)

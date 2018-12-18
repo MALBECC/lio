@@ -125,8 +125,8 @@ end subroutine ehren_in
 ! Performs SCF setup and routine calls from GROMACS.                           !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       subroutine SCF_gro(E, qmcoords, clcoords, clcharge, nsolin)
-      use garcha_mod, only : nsol, ntatom, natom, r, v, Em, Rm, pc, nnat, &
-                             writexyz, rqm, Iz
+      use garcha_mod, only : nsol, ntatom, natom, r, v, Em, Rm, pc, rqm, Iz, &
+                             writexyz
 
           implicit none
           real*8 , intent(in) :: qmcoords(3*natom), clcoords(3*nsolin), &

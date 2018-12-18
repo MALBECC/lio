@@ -4,7 +4,9 @@
 ! DEALLOCATION OF GLOBAL VARIABLES
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-       use garcha_mod
+       use garcha_mod , only: dipole, Smat, RealRho, sqsm, Eorbs, 
+     >                        Eorbs_b, MO_coef_at, MO_coef_at_b, r,
+     >                        v, rqm, Em, Rm, pc, Iz, RMM, X, d
        use ECP_mod    , only: ecpmode
        use fileio_data, only: style
        use basis_subs , only: basis_deinit

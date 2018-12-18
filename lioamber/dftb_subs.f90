@@ -229,7 +229,7 @@ subroutine build_chimera_DFTB (M_in,fock_in, fock_DFTB, natom, nshell, ncont)
 
    integer, intent(in)  :: M_in
    integer, intent(in)  :: natom
-   integer, intent(in)  :: nshell (0:4)
+   integer, intent(in)  :: nshell (0:3)
    integer, intent(in)  :: ncont(M_in)
    real*8, intent(in)   :: fock_in (M_in, M_in)
    real*8, intent(out)  :: fock_DFTB (MDFTB, MDFTB)
@@ -415,7 +415,7 @@ subroutine chimeraDFTB_evol(M_in,fock_in, fock_DFTB, natom, nshell,ncont, istep)
    integer, intent(in)  :: natom
    integer, intent(in)  :: ncont(M_in)
    integer, intent(in)  :: istep
-   integer, intent(in)  :: nshell (0:4)
+   integer, intent(in)  :: nshell (0:3)
    real*8, intent(in)   :: fock_in (M_in, M_in)
    real*8, intent(out)  :: fock_DFTB (MDFTB, MDFTB) !temporal dimensions
    real*8               :: pi=4.0D0*atan(1.0D0)

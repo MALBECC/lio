@@ -2,16 +2,15 @@
 !
 module lionml_data
 
-   use garcha_mod        , only: natom, nsol, basis, fmulliken, fcoord,&
-                                 OPEN, NMAX, basis_set, fitting_set, int_basis,&
+   use garcha_mod        , only: natom, nsol, basis, fmulliken, fcoord, OPEN,  &
+                                 NMAX, basis_set, fitting_set, hybrid_converg, &
                                  DIIS, ndiis, GOLD, told, Etold, good_cut,     &
-                                 hybrid_converg, rmax, rmaxs, omit_bas, NBCH,  &
                                  propagator, VCINP, restart_freq, writexyz,    &
                                  Iexch, frestartin, frestart, predcoef,        &
                                  cubegen_only, cube_res, cube_dens, cube_orb,  &
                                  cube_sel, cube_orb_file, cube_dens_file,      &
                                  cube_elec, cube_elec_file, energy_freq, NUNP, &
-                                 writeforces, cube_sqrt_orb,    &
+                                 writeforces, cube_sqrt_orb, NBCH,             &
                                  fukui, little_cube_size, min_points_per_cube, &
                                  max_function_exponent, assign_all_functions,  &
                                  remove_zero_weights, energy_all_iterations,   &
@@ -50,6 +49,7 @@ module lionml_data
    use transport_data    , only: transport_calc, generate_rho0, nbias,         &
                                  save_charge_freq, driving_rate, Pop_Drive
    use ghost_atoms_data  , only: n_ghosts, ghost_atoms
+   use basis_data        , only: norm, int_basis, rmax, rmaxs
    implicit none
 
 !  Namelist definition

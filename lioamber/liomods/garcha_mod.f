@@ -30,7 +30,7 @@
 
       real*8, dimension (:,:), ALLOCATABLE :: r,v,rqm,d
       real*8, dimension (:), ALLOCATABLE ::  Em, Rm, pc
-      integer, dimension (:), ALLOCATABLE :: Iz, nnat
+      integer, dimension (:), ALLOCATABLE :: Iz
 
       real*8 :: Rm2(0:54)
 c Everything is dimensioned for 2 basis, normal and density
@@ -92,8 +92,6 @@ c necessary)
       double precision :: good_cut
       double precision :: Etold
 
-!-Variables for library reading.
-      logical :: omit_bas
 !-Variables for property calculations.
       logical :: fukui, dipole, lowdin, mulliken, print_coeffs
 

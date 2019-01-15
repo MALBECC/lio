@@ -1,6 +1,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% WRITE_OUTPUT.F90 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! This file contains several output-file printing routines. Currently includes:!
+! * atom_name        (gets atomic number and returns atomic symbol)            !
 ! * write_dipole     (handles dipole moment printing)                          !
 ! * write_dipole_td  (handles dipole moment printing in TD)                    !
 ! * write_forces     (handles grandient printing to output)                    !
@@ -9,6 +10,32 @@
 ! * write_orbitals   (prints orbitals and energies to output)                  !
 ! * write_orbitals_op(prints orbitals and energies to output, open shell)      !
 ! * write_population (handles population/charge printing to output)            !
+! * io_finish_outpúts(closes output files)                                     !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%% ATOM_NAME %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Takes atomic number Z and translates it to its symbol.                       !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine atom_name(atom_Z, symb)
+ implicit none
+ integer         , intent(in)  :: atom_Z
+ character(LEN=3), intent(out) :: symb
+
+ character(LEN=3) :: name(118)
+ name = (/'H  ','HE ','LI ','BE ','B  ','C  ','N  ','O  ','F  ','NE ','NA ', &
+          'MG ','AL ','SI ','P  ','S  ','CL ','AR ','K  ','CA ','SC ','TI ', &
+          'V  ','CR ','MN ','FE ','CO ','NI ','CU ','ZN ','GA ','GE ','AS ', &
+          'SE ','BR ','KR ','RB ','SR ','Y  ','ZR ','NB ','MO ','TC ','RU ', &
+          'RH ','PD ','AG ','CD ','IN ','SN ','SB ','TE ','I  ','XE ','CS ', &
+          'BA ','LA ','CE ','PR ','ND ','PM ','SM ','EU ','GD ','TB ','DY ', &
+          'HO ','ER ','TM ','YB ','LU ','HF ','TA ','W  ','RE ','OS ','IR ', &
+          'PT ','AU ','HG ','TL ','PB ','BI ','PO ','AT ','RN ','FR ','RA ', &
+          'AC ','TH ','PA ','U  ','NP ','PU ','AM ','CM ','BK ','CF ','ES ', &
+          'FM ','MD ','NO ','LR ','RF ','DB ','SG ','BH ','HS ','MT ','DS ', &
+          'UUU','UUB','UUT','UUQ','UUP','UUH','UUS','UUO'/)
+ symb = name(atom_Z)
+
+end subroutine atom_name
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 !%% WRITE_DIPOLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
@@ -326,4 +353,26 @@ subroutine write_population(N, q0, q, pop, UID)
 401 FORMAT(2x,"Total Charge = ", F10.7)
 402 FORMAT(A)
 end subroutine write_population
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+
+!%% IO_FINISH_OUTPUTS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Finishes and closes output files when requested. Currently only affects      !
+! the dipole moment file.                                                      !
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine io_finish_outputs(is_dipole, uid_dipole)
+   use fileio_data, only: style
+   logical, intent(in) :: is_dipole
+   integer, intent(in) :: uid_dipole
+
+   ! Closes dipole moment file.
+   if (is_dipole) then
+      if (style) write(uid_dipole,8703)
+      close(uid_dipole)
+   end if
+
+8703 FORMAT(4x,"╚═══════════════╩", &
+     "═══════════════╩═════",       &
+     "══════════╩══════════",       &
+     "═════╝")
+end subroutine io_finish_outputs
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

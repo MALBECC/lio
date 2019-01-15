@@ -505,6 +505,8 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
 end subroutine basis_set_size
 
 subroutine check_basis(atom_bas_done, atom_fit_done, n_atoms, atom_Z, iostatus)
+   use fileio, only: atom_name
+
    implicit none
    integer, intent(in)  :: n_atoms, atom_Z(n_atoms)
    logical, intent(in)  :: atom_bas_done(0:120), atom_fit_done(0:120)
@@ -1052,29 +1054,5 @@ subroutine reorder_basis(expon, coeff, atom_of_funct, n_cont, mixed_index, &
    coeff         = coef_t
    deallocate(expo_t, coef_t, atom_of_funct_t, n_cont_t)
 end subroutine reorder_basis
-!###############################################################################
-! TAKE THIS TO OTHER MODULE
-subroutine atom_name(atom_Z, symb)
- ! Takes atomic number Z and translates it to its name.
- implicit none
- integer         , intent(in)  :: atom_Z
- character(LEN=3), intent(out) :: symb
-
- character(LEN=3) :: name(118)
- name = (/'H  ','HE ','LI ','BE ','B  ','C  ','N  ','O  ','F  ','NE ','NA ', &
-          'MG ','AL ','SI ','P  ','S  ','CL ','AR ','K  ','CA ','SC ','TI ', &
-          'V  ','CR ','MN ','FE ','CO ','NI ','CU ','ZN ','GA ','GE ','AS ', &
-          'SE ','BR ','KR ','RB ','SR ','Y  ','ZR ','NB ','MO ','TC ','RU ', &
-          'RH ','PD ','AG ','CD ','IN ','SN ','SB ','TE ','I  ','XE ','CS ', &
-          'BA ','LA ','CE ','PR ','ND ','PM ','SM ','EU ','GD ','TB ','DY ', &
-          'HO ','ER ','TM ','YB ','LU ','HF ','TA ','W  ','RE ','OS ','IR ', &
-          'PT ','AU ','HG ','TL ','PB ','BI ','PO ','AT ','RN ','FR ','RA ', &
-          'AC ','TH ','PA ','U  ','NP ','PU ','AM ','CM ','BK ','CF ','ES ', &
-          'FM ','MD ','NO ','LR ','RF ','DB ','SG ','BH ','HS ','MT ','DS ', &
-          'UUU','UUB','UUT','UUQ','UUP','UUH','UUS','UUO'/)
- symb = name(atom_Z)
-
-end subroutine atom_name
-
 end module basis_subs
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

@@ -209,7 +209,7 @@ OBJECTS += fileio.o
 tmplist :=
 tmplist += converger_subs.o drive.o init_lio.o dft_get_qm_forces.o
 tmplist += get_restrain_energy_forces.o lio_finalize.o liomain.o lionml_subs.o
-tmplist += steep.o TD.o
+tmplist += steep.o TD.o basis_data.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/fileio.mod
 
 ################################################################################

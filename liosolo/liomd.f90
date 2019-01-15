@@ -4,7 +4,7 @@ program liomd
 ! Make an NVE ensamble MD.
 
     use garcha_mod, only : basis, basis_set, fitting_set, natom, ntatom, nsol, &
-                           Iz, r, rqm, int_basis, omit_bas
+                           Iz, r, rqm, int_basis
     use liosubs   , only : write_energy, write_geom, set_masses, nuclear_verlet
     use fileio_data, only: verbose
     use ehrensubs
@@ -32,7 +32,6 @@ program liomd
             case("-b")
                 call get_command_argument(ii + 1, basis)
             case("-bs")
-                omit_bas = .true.
                 call get_command_argument(ii + 1, basis_set)
             case("-fs")
                 call get_command_argument(ii + 1, fitting_set)

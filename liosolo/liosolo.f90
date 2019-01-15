@@ -4,7 +4,7 @@
 program liosolo
 
     use garcha_mod , only : natom, nsol, Iz, basis, basis_set, fitting_set, &
-                             int_basis, omit_bas, writeforces, writexyz
+                             int_basis, writeforces, writexyz
     use ECP_mod    , only : ecpmode
     use fileio_data, only : verbose
     use fileio     , only : lio_logo
@@ -27,7 +27,6 @@ program liosolo
             case("-b")
                 call get_command_argument(i+1,basis)
             case("-bs")
-                omit_bas=.true.
                 call get_command_argument(i+1,basis_set)
             case("-fs")
                 call get_command_argument(i+1,fitting_set)

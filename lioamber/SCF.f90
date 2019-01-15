@@ -31,7 +31,7 @@ subroutine SCF(E)
                           igrid, energy_freq, converge, noconverge, lowdin,    &
                           cubegen_only, VCINP, primera, Nunp, GOLD, igrid2,    &
                           predcoef, nsol, r, pc, DIIS, told, Etold, Enucl, Iz, &
-                          Eorbs, NMAX,Dbug, doing_ehrenfest, first_step, NORM, &
+                          Eorbs, NMAX,Dbug, doing_ehrenfest, first_step,       &
                           total_time, MO_coef_at, MO_coef_at_b, Smat, good_cut,&
                           ndiis, rhoalpha, rhobeta, OPEN, RealRho, d, ntatom,  &
                           Eorbs_b, npas, RMM, X, npasw

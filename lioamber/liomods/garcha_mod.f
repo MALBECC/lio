@@ -2,20 +2,16 @@
        module garcha_mod
       implicit none
       INCLUDE 'param.f'
-      integer M,Md,natom,ntatom,NMAX,NCO,NUNP,igrid,igrid2
+      integer natom,ntatom,NMAX,NCO,NUNP,igrid,igrid2
      >  ,Iexch,nsol,npas,npasw,watermod,noconverge,
      > converge,ndiis,nang,propagator,NBCH
       integer ex_functional_id, ec_functional_id
       logical use_libxc
       integer restart_freq, energy_freq
       real*8 GOLD, TOLD
-      character*20 basis,whatis
-      character*100 basis_set, fitting_set
-      logical int_basis
       character*20 fcoord,fmulliken,frestart,frestartin,solv,solv2
-      logical exists,MEMO,predcoef
-      logical done(ntq),used,NORM,OPEN,DIRECT,VCINP,DIIS
-      logical done_fit(ntq)
+      logical MEMO,predcoef
+      logical OPEN,DIRECT,VCINP,DIIS
       logical sol
       logical primera,writexyz
       logical writeforces
@@ -35,15 +31,6 @@
       real*8 :: Rm2(0:54)
 c Everything is dimensioned for 2 basis, normal and density
 c ncf, lt,at,ct parameters for atomic basis sets
-      integer :: nshell(0:4)
-      integer :: Num(0:3),nlb(ng),nld(ngd),nshelld(0:4)
-       integer Ll(3)
-
-       real*8, dimension (:), ALLOCATABLE :: af
-       real*8, dimension (:,:), ALLOCATABLE :: c,a,cx,ax,cd,ad,B
-       integer, dimension (:), ALLOCATABLE :: Nuc,ncont,Nucx,ncontx,Nucd
-     >  ,ncontd
-        integer, dimension (:), ALLOCATABLE :: indexii, indexiid
 
        real*8, dimension (:), ALLOCATABLE :: RMM
        real*8, dimension (:), ALLOCATABLE :: rhoalpha,rhobeta
@@ -61,17 +48,6 @@ c ncf, lt,at,ct parameters for atomic basis sets
 
 c Angular momenta : up to f functions ( could be easily extended if
 c necessary)
-      Data Num /1,3,6,10/
-
-      integer, dimension(:), ALLOCATABLE :: natomc,nnps,nnpp,nnpd,nns
-      integer, dimension(:), ALLOCATABLE :: nnd,nnp
-      real*8, dimension (:), ALLOCATABLE :: atmin
-      integer, dimension(:,:), ALLOCATABLE :: jatc
-      integer kknums,kknumd
-      integer, dimension (:), ALLOCATABLE :: kkind,kkinds
-      real*8     rmax, rmaxs
-      real*8, dimension (:), ALLOCATABLE :: cool
-      real*4, dimension (:), ALLOCATABLE :: cools
 
 ! FFR - My global variables
 !------------------------------------------------------------------------------!
@@ -96,11 +72,6 @@ c necessary)
       logical :: fukui, dipole, lowdin, mulliken, print_coeffs
 
       integer :: nng, max_func
-      integer, allocatable, dimension(:) :: ncf, lt
-      real*8, allocatable, dimension(:) :: at, ct
-
-!      dimension ncf(nng),lt(nng)
-!      dimension at(nng),ct(nng)
 
 ! GPU OPTIONS
       logical :: assign_all_functions, remove_zero_weights,

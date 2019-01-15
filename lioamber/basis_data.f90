@@ -26,14 +26,18 @@
 module basis_data
    implicit none
    ! Namelist inputfiles
-   ! int_basis : Use LIO internal basis (located in /dat)
-   ! rMax      : Maximum exponent for double-precision integrals.
-   ! rMaxs     : Maximum exponent for single-precision integrals.
-   ! norm      : Normalize integrals (deprecated).
-   logical          :: int_basis = .true.
-   double precision :: rMax      = 16.0D0
-   double precision :: rMaxs     =  5.0D0
-   logical          :: norm      = .true.
+   ! basis_set  : The name of the basis set or basis_set file.
+   ! fitting_set: The name of the fitting set.
+   ! int_basis  : Use LIO internal basis (located in /dat)
+   ! rMax       : Maximum exponent for double-precision integrals.
+   ! rMaxs      : Maximum exponent for single-precision integrals.
+   ! norm       : Normalize integrals (deprecated).
+   character(len=100) :: basis_set   = "DZVP"
+   character(len=100) :: fitting_set = "DZVP Coulomb Fitting"
+   logical            :: int_basis   = .false.
+   double precision   :: rMax        = 16.0D0
+   double precision   :: rMaxs       =  5.0D0
+   logical            :: norm        = .true.
 
    ! Single variables
    ! M     : number of basis functions.
@@ -119,7 +123,6 @@ module basis_subs
 contains
 
 subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
-   !use basis_data, only: M, Md, int_basis, Nuc, Nucd, nCont, nContd, a, c, ad, &
    use basis_data, only: M, Md, int_basis, Nuc, Nucd, nCont, nContd, a, c, ad, &
                          cd, atmin, nns, nnp, nnd, nshell, nshelld, norm, af,  &
                          indexii, indexiid, natomc, jatc, nnps, nnpp, nnpd,    &

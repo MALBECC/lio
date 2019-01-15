@@ -8,7 +8,7 @@ if [ -n "$1" ]
     SALIDA=$1
 fi
 
-$LIOBIN -i hemo.in -ib -bs 'SBKJC' -fs 'DZVP Coulomb Fitting' -b basis -c hem.xyz -v > $SALIDA
+$LIOBIN -i hemo.in -ib -bs 'SBKJC' -fs 'DZVP Coulomb Fitting' -c hem.xyz -v > $SALIDA
 
 
 

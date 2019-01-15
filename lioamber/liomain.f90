@@ -191,8 +191,9 @@ endsubroutine do_population_analysis
 ! Performs Fukui function calls and printing.                                  !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_fukui()
-    use garcha_mod, only: MO_coef_at, MO_coef_at_b, NCO, Nunp, M, natom, Nuc, &
+    use garcha_mod, only: MO_coef_at, MO_coef_at_b, NCO, Nunp, natom, Smat,   &
                           Smat, Eorbs, Eorbs_b, Iz, OPEN
+    use basis_data, only: M, Nuc
     use fileio    , only: write_fukui
     implicit none
     double precision              :: softness
@@ -224,8 +225,9 @@ end subroutine do_fukui
 ! Performs Fukui function calls and printing.                                  !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_restart(UID)
-   use garcha_mod , only: RMM, OPEN, NCO, NUNP, M, MO_coef_at, MO_coef_at_b, &
-                          indexii, rhoalpha, rhobeta
+   use garcha_mod , only: RMM, OPEN, NCO, NUNP, MO_coef_at, MO_coef_at_b, &
+                          rhoalpha, rhobeta
+   use basis_data , only: M, indexii
    use fileio_data, only: rst_dens
    use fileio     , only: write_coef_restart, write_rho_restart
    implicit none

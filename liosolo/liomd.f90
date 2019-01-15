@@ -3,9 +3,9 @@ program liomd
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Make an NVE ensamble MD.
 
-    use garcha_mod, only : basis, basis_set, fitting_set, natom, ntatom, nsol, &
-                           Iz, r, rqm, int_basis
+    use garcha_mod, only : natom, ntatom, nsol, Iz, r, rqm
     use liosubs   , only : write_energy, write_geom, set_masses, nuclear_verlet
+    use basis_data , only : basis_set, fitting_set, int_basis
     use fileio_data, only: verbose
     use ehrensubs
 
@@ -30,7 +30,7 @@ program liomd
             case("-i")
                 call get_command_argument(ii + 1, inpfile)
             case("-b")
-                call get_command_argument(ii + 1, basis)
+                call get_command_argument(ii + 1, basis_set)
             case("-bs")
                 call get_command_argument(ii + 1, basis_set)
             case("-fs")

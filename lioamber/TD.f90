@@ -42,10 +42,10 @@ module time_dependent
 contains
 
 subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
-   use garcha_mod    , only: M, Md, NBCH, propagator, RMM, NCO, Iz, igrid2, r, &
-                             Nuc, nsol, pc, X, Smat, MEMO, sol, natom, sqsm,   &
-                             Nunp, ntatom, ncont, nshell, a, c, d, NORM,OPEN, &
-                             rhoalpha, rhobeta, ad, cd, ncontd, nucd, nshelld
+   use garcha_mod    , only: NBCH, propagator, RMM, NCO, Iz, igrid2, r, nsol, &
+                             pc, X, Smat, MEMO, sol, ntatom, sqsm, Nunp, OPEN,&
+                             natom, d, rhoalpha, rhobeta
+   use basis_data    , only: M, Md, Nuc, ncont, nshell, a, c, Norm
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, &
                              writedens, pert_time
    use field_data    , only: field, fx, fy, fz
@@ -1035,7 +1035,7 @@ subroutine td_bc_fock_cu(M_in,M, MM, RMM5, fock_op, devPtrX, natom, nshell,    &
    integer, intent(in)  :: natom
    integer, intent(in)  :: ncont(M)
    integer, intent(in)  :: istep
-   integer, intent(in)  :: nshell (0:4)
+   integer, intent(in)  :: nshell (0:3)
 
    call g2g_timer_start('fock')
    call spunpack('L', M, RMM5, fock_0)
@@ -1162,7 +1162,7 @@ subroutine td_magnus_cu(M, dim3, OPEN,fock_aop, F1a, F1b, rho_aop, rhonew,     &
    integer  , intent(in)         :: M_in, dim3
    integer*8, intent(in)         :: devPtrX, devPtrXc, devPtrY
    real*8   , intent(in)         :: dt_magnus, factorial(NBCH), time
-   integer  , intent(in)         :: nshell (0:4), ncont(M)
+   integer  , intent(in)         :: nshell (0:3), ncont(M)
    real*8   , intent(inout)      :: F1a(M_in,M_in,dim3), F1b(M_in,M_in,dim3),  &
                                     overlap(:,:), sqsm(M,M)
 #ifdef TD_SIMPLE
@@ -1268,7 +1268,7 @@ subroutine td_bc_fock(M_in, M, MM, RMM5, fock_op, Xmm, natom, nshell,ncont,    &
    integer, intent(in)  :: natom
    integer, intent(in)  :: ncont(M)
    integer, intent(in)  :: istep
-   integer, intent(in)  :: nshell (0:4)
+   integer, intent(in)  :: nshell (0:3)
    real*8, intent(in)   :: time
 
    allocate(fock(M_in,M_in),Xtemp(M_in,M_in),fock_0(M,M))

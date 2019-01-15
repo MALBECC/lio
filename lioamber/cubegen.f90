@@ -80,9 +80,12 @@ module cubegen
 
 !------------------------------------------------------------------------------!
    subroutine cubegen_write( MO_v )
-   use garcha_mod
+   use garcha_mod, only: RMM, natom, r, nco, Iz,  cube_dens, cube_orb, &
+                         cube_elec, cube_sel, cube_orb_file, cube_res, &
+                         cube_dens_file, cube_sqrt_orb
+   use basis_data, only: M, Md, a, c, ncont, nuc, nshell
 
-   implicit real*8 (a-h,o-z)
+   implicit none
 
    real*8, dimension(M,M) :: MO_v
    real*8 :: min_exps(120),x0(3),x1(3),origin(3),eval_p(3)
@@ -93,7 +96,7 @@ module cubegen
    integer :: ivox, ivoxx, ivoxy, ivoxz, kk_dens, kk_orb
    integer :: MM, MMd, M1, M2, M3, M5, M7, M9, M11, M13, M15
 
-   parameter(expmax=10)
+   real, parameter :: expmax = 10
 
    MM  = M *  (M+1)  / 2
    MMd = Md * (Md+1) / 2

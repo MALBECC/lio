@@ -120,10 +120,10 @@ contains
 
 subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
    !use basis_data, only: M, Md, int_basis, Nuc, Nucd, nCont, nContd, a, c, ad, &
-   use garcha_mod, only: M, Md, int_basis, Nuc, Nucd, nCont, nContd, a, c, ad, &
+   use basis_data, only: M, Md, int_basis, Nuc, Nucd, nCont, nContd, a, c, ad, &
                          cd, atmin, nns, nnp, nnd, nshell, nshelld, norm, af,  &
-                         indexii, indexiid, natomc, jatc, nnps, nnpp, nnpd
-   use basis_data, only: ang_mom, ang_momd, max_f_per_atom, max_c_per_atom
+                         indexii, indexiid, natomc, jatc, nnps, nnpp, nnpd,    &
+                         ang_mom, ang_momd, max_f_per_atom, max_c_per_atom
    implicit none
    ! Inputs:
    !   n_atoms        : the number of atoms in the QM system.
@@ -209,9 +209,9 @@ end subroutine basis_init
 
 subroutine basis_deinit()
    !use basis_data, only: Nuc, Nucd, nCont, nContd, a, c, ad, cd, atmin, nns, &
-   use garcha_mod , only: Nuc, Nucd, nCont, nContd, a, c, ad, cd, atmin, nns, &
-                          nnp, nnd, af, indexii, indexiid, natomc, jatc, nnps,&
-                          nnpp, nnpd
+   use basis_data, only: Nuc, Nucd, nCont, nContd, a, c, ad, cd, atmin, nns, &
+                         nnp, nnd, af, indexii, indexiid, natomc, jatc, nnps,&
+                         nnpp, nnpd
 
    implicit none
 
@@ -242,8 +242,8 @@ subroutine basis_deinit()
 end subroutine basis_deinit
 
 subroutine basis_setup_ehren()
-   use basis_data, only: a_ehren, c_ehren, ang_mom_ehren, max_c_per_atom
-   use garcha_mod, only: a, c, nShell, M
+   use basis_data, only: a_ehren, c_ehren, ang_mom_ehren, max_c_per_atom, &
+                         a, c, nShell, M
 
    implicit none
    integer :: icount

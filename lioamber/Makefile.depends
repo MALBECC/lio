@@ -182,8 +182,10 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/debug_tools.mod
 ################################################################################
 OBJECTS += basis_data.o
 
-tmplist := lionml_data.o SCF.o drive.o
-tmplist += ehrensubs.o init_lio.o lio_finalize.o
+tmplist := lionml_data.o SCF.o drive.o cubegen.o TD.o SCF_aux.o
+tmplist += dft_get_mm_forces.o dft_get_qm_forces.o dip.o liomain.o
+tmplist += ehrensubs.o init_lio.o lio_finalize.o propagators.o
+tmplist += elec.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/basis_data.mod
 
 ################################################################################
@@ -350,7 +352,7 @@ tmplist += SCF.o SCF_in.o TD.o cubegen.o
 tmplist += SCF_exter.o
 tmplist += intECP.o elec.o SCF_aux.o
 tmplist += steep.o transport.o
-tmplist += lionml_subs.o basis_data.o
+tmplist += lionml_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
 
 
@@ -403,5 +405,6 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/translation.mod
 ################################################################################
 OBJECTS += constants_mod.o
 #
-modusrs := subm_int1.o subm_int1G.o subm_int2.o subm_int3mem.o subm_int3lu.o
+modusrs := subm_int1.o subm_int1G.o subm_int2.o subm_int3mem.o subm_int3lu.o dip.o
+modusrs := elec.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/constants_mod.mod

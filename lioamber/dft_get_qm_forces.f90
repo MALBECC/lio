@@ -1,9 +1,10 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Calculates the forces in the QM region.
 subroutine dft_get_qm_forces(dxyzqm)
-   use garcha_mod , only: natom, ntatom, nsol, r, d, Iz, M, Md, first_step, &
-                          cubegen_only, number_restr, doing_ehrenfest,      &
+   use garcha_mod , only: natom, ntatom, nsol, r, d, Iz, first_step,   &
+                          cubegen_only, number_restr, doing_ehrenfest, &
                           qm_forces_ds, qm_forces_total, RMM
+   use basis_data , only: M, Md
    use ehrendata  , only: nullify_forces
    use faint_cpu  , only: int1G, intSG, int3G
    use fileio_data, only: verbose

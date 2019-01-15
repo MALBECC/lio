@@ -15,8 +15,9 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine dip(uDip)
 
-    use garcha_mod, only : RMM, NCO, Nunp, nuc, Iz, a, c, r, ncont, M, pc, d,  &
-                           nshell, norm, natom, nsol, pi32, pi5, sol
+    use garcha_mod   , only: RMM, NCO, Nunp, Iz, r, pc, d, natom, nsol, sol
+    use basis_data   , only: a, c, Nuc, ncont, M, nshell, norm
+    use constants_mod, only: pi32, pi5
 
     implicit none
     real*8, intent(inout) :: uDip(3)

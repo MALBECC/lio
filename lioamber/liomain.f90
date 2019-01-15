@@ -13,11 +13,11 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 subroutine liomain(E, dipxyz)
-    use garcha_mod, only: M, Smat, RealRho, OPEN, writeforces, energy_freq,   &
+    use garcha_mod, only: Smat, RealRho, OPEN, writeforces, energy_freq, NCO, &
                           restart_freq, npas, sqsm, mulliken, lowdin, dipole, &
                           doing_ehrenfest, first_step, Eorbs, Eorbs_b, fukui, &
-                          print_coeffs, steep,       MO_coef_at, MO_coef_at_b,&
-                          NUnp, NCO
+                          print_coeffs, steep, NUNP, MO_coef_at, MO_coef_at_b
+    use basis_data, only: M
     use ecp_mod   , only: ecpmode, IzECP
     use ehrensubs , only: ehrendyn_main
     use fileio    , only: write_orbitals, write_orbitals_op
@@ -136,8 +136,9 @@ end subroutine do_dipole
 ! Performs the different population analyisis available.                       !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_population_analysis()
-   use garcha_mod, only: RMM, Smat, RealRho, M, Enucl, Nuc, Iz, natom, &
-                         mulliken, lowdin, sqsm, d, r, Md, ntatom
+   use garcha_mod, only: RMM, Smat, RealRho, Enucl, Iz, natom, &
+                         mulliken, lowdin, sqsm, d, r, ntatom
+   use basis_data, only: M, Md, Nuc
    use ECP_mod   , only: ecpmode, IzECP
    use faint_cpu , only: int1
    use SCF_aux   , only: fix_densmat

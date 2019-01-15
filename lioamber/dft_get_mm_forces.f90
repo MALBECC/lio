@@ -1,7 +1,8 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Calculates the QMMM forces in the QM and the MM regions.
 subroutine dft_get_mm_forces(dxyzcl, dxyzqm)
-   use garcha_mod, only: M, natom, ntatom, r, d, pc, Iz, RMM, cubegen_only, nsol
+   use garcha_mod, only: natom, ntatom, r, d, pc, Iz, RMM, cubegen_only, nsol
+   use basis_data, only: M
    use faint_cpu , only: int1G, intsolG
 
    implicit none

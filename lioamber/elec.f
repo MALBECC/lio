@@ -20,18 +20,29 @@ c Input : basis function information
 c Output: F matrix, and S matrix
 c-------------------------------------------------------------------
       subroutine elec(NX,NY,NZ,deltax,xmin,ymin,zmin)
-      use garcha_mod
+      use garcha_mod, only: r, d, natom, cube_elec_file, rmm, Iz
+      use constants_mod, only: pi, pi32
+      use basis_data, only: M, Norm, nshell, ncont, nuc, a, c
       use liosubs_math, only: funct
 c
-      implicit real*8 (a-h,o-z)
-c auxiliar quantities
-      dimension Q(3),xi(3)
+      implicit none
+      real*8 :: NX, NY, NZ, deltax, xmin, ymin, zmin 
+      real*8 :: Q(3),xi(3)
       real*8, dimension (:), ALLOCATABLE :: pote
-c      parameter (deltax=.1D0)
-c      parameter (buffer=5.D0)
-      parameter (Ar0=0.529177D0)
-      real*8 VVV,deltax
-      integer n_graf
+      real*8, parameter :: Ar0 = 0.529177D0
+      real*8 :: VVV, rmax, u, term, tna, temp, sq3, Z2, Zij, ccoef,
+     >          rexp
+  
+      real*8 :: t1, t2, alf, alf2, cc, dd, f1, f2
+      real*8 :: ss, s0s, s1s, s2s, s3s, s4s
+      real*8 :: pj0s, pj0p, pj1s, pj1p, p0s, p1s, p2s, p3s, pi0p,
+     >          pi1p, pj2s
+      real*8 :: d0s, d0p, d1s, d1p, d2s
+
+      integer :: i, j, ii, jj, kk, l, l1, l2, l3, l4, l34, lk, lij
+      integer :: n, ni, nj, nnx, nny, nnz, ntot, ntotal, k, l12
+      integer :: m2, mm
+      integer :: n_graf, ns, np, nd, ll(3)
 c
       rmax=3.
       do 1 l=1,3
@@ -47,22 +58,8 @@ c
       np=nshell(1)
       nd=nshell(2)
       MM=M*(M+1)/2
-      MMd=Md*(Md+1)/2
       M2=2*M
-c
-      M1=1
-c now Pnew
-      M3=M1+MM
-c now S, F also uses the same position after S was used
-      M5=M3+MM
-c now G
-      M7=M5+MM
-c now Gm
-      M9=M7+MMd
-      M11=M9+MMd
-c
-      M15=M11+3*Npoint+1
-c
+
       do 50 i=1,natom
       do 50 j=1,natom
        d(i,j)=(r(i,1)-r(j,1))**2+(r(i,2)-r(j,2))**2+

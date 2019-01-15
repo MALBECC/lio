@@ -26,13 +26,13 @@ c-------------------------------------------------------------------
       use liosubs_math, only: funct
 c
       implicit none
-      real*8 :: NX, NY, NZ, deltax, xmin, ymin, zmin 
+      real*8 :: NX, NY, NZ, deltax, xmin, ymin, zmin
       real*8 :: Q(3),xi(3)
       real*8, dimension (:), ALLOCATABLE :: pote
       real*8, parameter :: Ar0 = 0.529177D0
       real*8 :: VVV, rmax, u, term, tna, temp, sq3, Z2, Zij, ccoef,
      >          rexp
-  
+
       real*8 :: t1, t2, alf, alf2, cc, dd, f1, f2
       real*8 :: ss, s0s, s1s, s2s, s3s, s4s
       real*8 :: pj0s, pj0p, pj1s, pj1p, p0s, p1s, p2s, p3s, pi0p,

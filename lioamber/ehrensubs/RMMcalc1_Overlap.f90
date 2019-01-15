@@ -4,7 +4,8 @@ subroutine RMMcalc1_Overlap(Ovlap,Energy)
 ! DESCRIPTION
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-  use garcha_mod  , only: RMM, Smat, Nuc, a, c, d, r, Iz, ncont, NORM, natom, M, Md, nshell, ntatom
+  use garcha_mod  , only: RMM, Smat, d, r, Iz, natom, ntatom
+  use basis_data  , only: M, Md
   use faint_cpu   , only: int1
   implicit none
   real*8,intent(out) :: Ovlap(M,M)

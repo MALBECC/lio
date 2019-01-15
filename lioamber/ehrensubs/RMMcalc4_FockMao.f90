@@ -10,8 +10,10 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
    use field_data , only: epsilon, a0
 
    use garcha_mod, &
-   &only: M, Md, RMM, kkind, kkinds, cool, cools, igrid2                       &
-       &, natom, Iz, NCO, Nunp, total_time, d, ntatom, r, open, pc
+   &only: RMM, igrid2, natom, Iz, NCO, Nunp, total_time, d, ntatom, r, open, pc
+
+   use basis_data, &
+   &only: M, Md, kkind, kkinds, cool, cools
 
    use ehrendata, &
    &only: eefld_on, eefld_ampx, eefld_ampy, eefld_ampz, eefld_wavelen          &

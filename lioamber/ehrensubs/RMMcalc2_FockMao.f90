@@ -7,8 +7,8 @@ subroutine RMMcalc2_FockMao( FockMao, Energy )
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use faint_cpu  , only: int2, int3mem, intsol
 
-   use garcha_mod,  only: M, Md, RMM, kkind, kkinds, cool, cools, igrid2, MEMO,&
-                          nshelld, r, d, ntatom, Iz, pc, natom
+   use garcha_mod,  only: RMM, igrid2, MEMO, r, d, ntatom, Iz, pc, natom
+   use basis_data,  only: M, Md, kkind, kkinds, cool, cools, nshelld
 
    implicit none
    real*8,intent(out)    :: FockMao(M,M)

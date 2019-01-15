@@ -7,8 +7,10 @@ subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use faint_cpu  , only: intfld, int3lu
 
-   use garcha_mod,  only: M, natom, Iz, NCO, Nunp, total_time, RMM, Md, open, &
+   use garcha_mod,  only: natom, Iz, NCO, Nunp, total_time, RMM, open, &
                           r, d, ntatom, MEMO
+   
+   use basis_data, only: M, Md
 
    use field_data,  only: epsilon, a0
 

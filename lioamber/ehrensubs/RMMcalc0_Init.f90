@@ -5,8 +5,9 @@ subroutine RMMcalc0_Init()
 ! DESCRIPTION
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-  use garcha_mod, only: M, igrid2, nuc, natom, natomc, d, r, atmin, &
-                        rmax, jatc, nnps, nnpp, nnpd, nshell
+  use garcha_mod, only: igrid2, natom, d, r
+  use basis_data, only: nuc, nshell, atmin, natomc,  rmax, jatc, nnps, nnpp, &
+                        nnpd, M
   implicit none
   real*8   :: alf,rexp
   integer  :: zij,ti,tj

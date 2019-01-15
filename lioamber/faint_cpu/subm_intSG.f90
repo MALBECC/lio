@@ -29,7 +29,7 @@
 module subm_intSG
 contains
 subroutine intSG(ff, wgt_rho, r, d, natom, ntatom)
-   use garcha_mod   , only: a, c, Nuc, ncont, nshell, M, Md, NORM
+   use basis_data   , only: a, c, Nuc, ncont, nshell, M, Md, NORM
    use constants_mod, only: pi32
    implicit none
 

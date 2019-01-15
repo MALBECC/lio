@@ -28,7 +28,7 @@
 module subm_int2
 contains
 subroutine int2(Gmat, Ginv, r, d, ntatom)
-   use garcha_mod   , only: M, Md, nshelld, ncontd, ad, cd, norm, Nucd
+   use basis_data   , only: M, Md, nshelld, ncontd, ad, cd, norm, Nucd
    use liosubs_math , only: FUNCT
    use constants_mod, only: pi5
 

@@ -52,7 +52,7 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    ! This routine receives: F1a, F1b, rho2
    ! And gives: F5 = F(t+(deltat/2))
    use garcha_mod   , only: RMM, NBCH, rhoalpha, rhobeta, OPEN, r, d, natom, &
-                            ntatom, Iz
+                            ntatom, Iz, MEMO
    use field_data   , only: field
    use field_subs   , only: field_calc
    use mathsubs     , only: basechange
@@ -108,7 +108,7 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    end if
 
    call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), RMM(M7:M7+MMd), &
-               RMM(M9:M9+MMd), RMM(M11:M11+MMd), open)
+               RMM(M9:M9+MMd), RMM(M11:M11+MMd), open, MEMO)
    call g2g_solve_groups(0, Ex, 0)
    call field_calc(E1, time, RMM(M3:M3+MM), RMM(M5:M5+MM), r, d, Iz, natom, &
                    ntatom, open)
@@ -267,7 +267,7 @@ subroutine cupredictor(F1a, F1b, FON, rho2, devPtrX, factorial, devPtrXc, &
    ! This routine receives: F1a, F1b, rho2
    ! And gives: F5 = F(t+(deltat/2))
    use garcha_mod   , only: RMM, NBCH, rhoalpha, rhobeta, OPEN, r, d, natom, &
-                            ntatom, Iz
+                            ntatom, Iz, MEMO
    use field_data   , only: field
    use field_subs   , only: field_calc
    use cublasmath   , only: basechange_cublas
@@ -323,7 +323,7 @@ subroutine cupredictor(F1a, F1b, FON, rho2, devPtrX, factorial, devPtrXc, &
    end if
 
    call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), RMM(M7:M7+MMd), &
-               RMM(M9:M9+MMd), RMM(M11:M11+MMd), open)
+               RMM(M9:M9+MMd), RMM(M11:M11+MMd), open, MEMO)
    call g2g_solve_groups(0, Ex, 0)
    call field_calc(E1, time, RMM(M3:M3+MM), RMM(M5:M5+MM), r, d, Iz, natom, &
                    ntatom, open)

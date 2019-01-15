@@ -293,7 +293,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
       call td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM(M11:MM),is_lpfrg,&
                           transport_calc, sol, t/0.024190D0, M, Md, open, r, d,&
-                          Iz, natom, ntatom)
+                          Iz, natom, ntatom, MEMO)
 
       call g2g_timer_sum_pause("TD - TD Step Energy")
       if (verbose .gt. 2) write(*,'(A,I6,A,F12.6,A,F12.6,A)') "  TD Step: ", &
@@ -839,7 +839,7 @@ end subroutine td_check_prop
 
 subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
                           transport_calc, sol, time, M, Md, open_shell, r, d, &
-                          Iz, natom, ntatom)
+                          Iz, natom, ntatom, MEMO)
    use faint_cpu , only: int3lu
    use field_subs, only: field_calc
    implicit none
@@ -848,7 +848,7 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
    real*8 , intent(in)    :: time, r(ntatom,3), d(natom,natom)
    real*8 , intent(inout) :: E, E1, E2, En, Ex, Es, RMM(:), RMM11(:)
    integer         , intent(in) :: M, Md
-   logical         , intent(in) :: open_shell
+   logical         , intent(in) :: open_shell, MEMO
    integer :: icount, MMd, M3, M5, M7, M9, M11
 
    MMd=Md*(Md+1)/2
@@ -862,7 +862,7 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
    if (is_lpfrg) then
       call g2g_timer_sum_start("TD - Coulomb")
       call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), RMM(M7:M7+MMd), &
-                  RMM(M9:M9+MMd), RMM(M11:M11+MMd), open_shell)
+                  RMM(M9:M9+MMd), RMM(M11:M11+MMd), open_shell, MEMO)
       call g2g_timer_sum_pause("TD - Coulomb")
       call g2g_timer_sum_start("TD - Exc")
       call g2g_solve_groups(0,Ex,0)

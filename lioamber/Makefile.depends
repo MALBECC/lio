@@ -45,7 +45,6 @@ OBJECTS += ECP_mod.o
 OBJECTS += esp_funct.o
 OBJECTS += readECP.o
 OBJECTS += intECP.o
-OBJECTS += elec.o
 OBJECTS += properties.o
 OBJECTS += errlog.o
 OBJECTS += field_subs.o
@@ -184,9 +183,9 @@ OBJECTS += basis_data.o
 
 tmplist := lionml_data.o SCF.o drive.o cubegen.o TD.o SCF_aux.o
 tmplist += dft_get_mm_forces.o dft_get_qm_forces.o dip.o liomain.o
-tmplist += ehrensubs.o init_lio.o lio_finalize.o propagators.o elec.o
+tmplist += ehrensubs.o init_lio.o lio_finalize.o propagators.o
 tmplist += subm_int1.o  subm_int1G.o  subm_int2.o  subm_int2G.o  subm_int3G.o
-tmplist += subm_int3lu.o  subm_int3mem.o  subm_intfld.o  subm_intSG.o  
+tmplist += subm_int3lu.o  subm_int3mem.o  subm_intfld.o  subm_intSG.o
 tmplist += subm_intsol.o  subm_intsolG.o  intECP.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/basis_data.mod
 
@@ -241,7 +240,7 @@ OBJECTS += liosubs_math.o
 #
 modusrs :=
 modusrs += typedef_sop.o initial_guess.o
-modusrs += faint_cpu.o elec.o
+modusrs += faint_cpu.o cubegen.o
 modusrs += subm_int1.o subm_int1G.o subm_int2.o subm_int2G.o
 modusrs += subm_int3lu.o subm_int3mem.o subm_int3G.o
 modusrs += subm_intSG.o subm_intfld.o subm_intsol.o subm_intsolG.o
@@ -352,7 +351,7 @@ tmplist += dip.o dipmem.o drive.o grid.o init_amber.o init.o
 tmplist += lio_finalize.o propagators.o
 tmplist += SCF.o SCF_in.o TD.o cubegen.o
 tmplist += SCF_exter.o
-tmplist += intECP.o elec.o SCF_aux.o
+tmplist += intECP.o SCF_aux.o
 tmplist += steep.o transport.o
 tmplist += lionml_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/garcha_mod.mod
@@ -408,5 +407,5 @@ $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/translation.mod
 OBJECTS += constants_mod.o
 #
 modusrs := subm_int1.o subm_int1G.o subm_int2.o subm_int3mem.o subm_int3lu.o dip.o
-modusrs := elec.o basis_data.o
+modusrs := cubegen.o basis_data.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/constants_mod.mod

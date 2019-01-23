@@ -74,18 +74,3 @@ test/tests_engine/*.pyc
 # Profiling
 ###########################################################
 test/profiling/*
-###########################################################
-# Latex
-############################################################
-!docs/manual/*.aux
-!docs/manual/*.lof
-!docs/manual/*.log
-!docs/manual/*.lot
-!docs/manual/*.fls
-!docs/manual/*.out
-!docs/manual/*.toc
-!docs/manual/*.fmt
-!docs/manual/*.fot
-!docs/manual/*.cb
-!docs/manual/*.cb2
-!docs/manual/.*.lb

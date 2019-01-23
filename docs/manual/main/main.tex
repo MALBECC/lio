@@ -1,0 +1,95 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CLASS AND PACKAGES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[ 12pt, a4paper, twoside ]{memoir}
+
+\usepackage{graphics}
+\usepackage{dcolumn}
+\usepackage{longtable}
+\usepackage{graphicx}
+\usepackage{chemfig}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{comment}
+\usepackage{soul}
+\usepackage[flushleft]{threeparttable}
+\usepackage{multirow}
+
+\usepackage{booktabs}
+\usepackage{titlesec}
+
+\usepackage[T1]{fontenc}
+% Necessary for _ to be displayed correctly
+\usepackage{etoolbox}
+% Necessary for \csuse, \csdef, \ifcsdef and \forcsvlist
+\usepackage{tabularx}
+% For code snipets
+\usepackage{listings}
+
+%For Hyperlinks in TOC
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\hypersetup{
+    colorlinks,
+    linkcolor={black!80!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}
+
+
+\input{../src/config_tikz}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% GENERAL SETTINGS AND MACROS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setulmarginsandblock{3.0cm}{3.0cm}{*}
+\setlrmarginsandblock{3.5cm}{2.0cm}{*}
+
+%\setlength{\textfloatsep}{1pt}
+%\setlength{\intextsep}{0.1pt}
+\renewcommand{\baselinestretch}{1.5}
+
+\checkandfixthelayout 
+
+\newcommand{\Hquad}{\hspace{0.5em}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% INCLUDE CONTENT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{LIO User Guide}
+\author{NaN}
+
+\begin{document}
+
+\frontmatter
+\input{../src/chap00_cover}
+\cleardoublepage
+\tableofcontents
+\newpage
+
+\mainmatter
+%\addtocontents{toc}{\protect\newpage}
+\input{../src/chap01_intro}
+\newpage
+%\addtocontents{toc}{\protect\newpage}
+\input{../src/chap02_settings}
+\newpage
+%\addtocontents{toc}{\protect\newpage}
+\input{../src/chap03_hmodel}
+\newpage
+%\addtocontents{toc}{\protect\newpage}
+\input{../src/chap04_bornopen}
+\newpage
+\addtocontents{toc}{\protect\newpage}
+\input{../src/chap05_elecdyn}
+\newpage
+%\addtocontents{toc}{\protect\newpage}
+\input{../src/chap06_postproc}
+\newpage
+%\addtocontents{toc}{\protect\newpage}
+\input{../src/chap07_reference}
+\newpage
+
+\backmatter
+
+\end{document}

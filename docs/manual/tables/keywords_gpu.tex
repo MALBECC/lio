@@ -1,0 +1,71 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{Spacing}{1.0}
+\begin{longtable}{ p{.35\textwidth} p{.60\textwidth} }
+
+   \toprule
+   \textbf{Variable} & Description \\*
+   \midrule \\*
+   \endhead
+
+   \bottomrule
+   \caption{GPU Options}
+   \endfoot
+
+   \textbf{gpu\_level}
+   &  \textit{default = 4}
+   \\*\textit{integer}
+   & Determines which calculations are performed by
+   the GPU.\\*
+   &     0 = none.\\* \\
+
+   \textbf{max\_function\_exponent}
+   &  \textit{default = 10}
+   \\*\textit{integer}
+   & Ignore functions with $\lvert exponent \rvert > 
+   max\_function\_exponent$.\\* \\
+
+   \textbf{little\_cube\_size}
+   &  \textit{default = 8.0d0}
+   \\*\textit{double precision}
+   & Small cube-type point group size.\\* \\
+
+   \textbf{min\_points\_per\_cube}
+   &  \textit{default = 1}
+   \\*\textit{integer}
+   & Minimum number of grid points in a cube.\\* \\
+
+   \textbf{assign\_all\_functions}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Calculate all functions (ignores
+   $max\_function\_exponent$).\\* \\
+
+   \textbf{sphere\_radius}
+   &  \textit{default = 0.6d0}
+   \\*\textit{double precision}
+   & Radius of the sphere-type point groups. 0 means
+   there are no sphere-type groups, 1 means all points
+   are contained in sphere-type groups.\\* \\
+
+   \textbf{remove\_zero\_weights}
+   &  \textit{default = .true. }
+   \\*\textit{logical}
+   & Discard functions for those whose weight is zero
+   (.false. option only remains as a debug option).
+   \\* \\
+
+   \textbf{energy\_all\_iterations}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Calculate Exc energy in all SCF iterations.\\* \\
+
+   \textbf{free\_global\_memory}
+   &  \textit{default = 0.0d0}
+   \\*\textit{double precision}
+   & Fraction of GPU memory available for the calculation
+   (1 means 100\%).\\* \\
+
+
+\end{longtable}
+\end{Spacing}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

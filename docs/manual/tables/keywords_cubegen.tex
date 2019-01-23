@@ -1,0 +1,67 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{Spacing}{1.0}
+\begin{longtable}{ p{.25\textwidth} p{.70\textwidth} }
+
+   \toprule
+   \textbf{Variable} & Description \\*
+   \midrule \\*
+   \endhead
+
+   \bottomrule
+   \caption{CubeGen}
+   \endfoot
+
+   \textbf{cube\_dens}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Prints the electronic density.\\* \\
+
+   \textbf{cubeGen\_only}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Avoid running SCF, only do cubeGen from a restart.\\* \\
+
+   \textbf{cube\_res}
+   &  \textit{default = 40}
+   \\*\textit{integer}
+   & Number of voxels per dimension (resolution).\\* \\
+
+   \textbf{cube\_sel}
+   &  \textit{default = 0}
+   \\*\textit{integer}
+   & Select only a particular orbital for printing (0 = all).\\* \\
+
+   \textbf{cube\_dens\_file}
+   &  \textit{default = 'dens.cube'}
+   \\*\textit{character*20}
+   & File containing the electronic density.\\* \\
+
+   \textbf{cube\_orb}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Prints orbital shapes.\\* \\
+
+   \textbf{cube\_sqrt\_orb}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Prints the orbitals' square root.\\* \\
+
+   \textbf{cube\_orb\_file}
+   &  \textit{default = 'orb.cube'}
+   \\*\textit{character*20}
+   & File containing the orbital shapes.\\* \\
+
+   \textbf{cube\_elec}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Prints the electric field.\\* \\
+
+   \textbf{cube\_elec\_file}
+   &  \textit{default = 'field.cube'}
+   \\*\textit{character*20}
+   & File containing the electrical field.\\* \\
+
+
+\end{longtable}
+\end{Spacing}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

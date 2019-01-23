@@ -1,0 +1,309 @@
+\chapter{Ground State Calculations}
+
+
+\section{Single-point and BO-MD}
+
+Single-point calculations consist in finding the ground state density that minimizes the energy
+for a given nuclei distribution. Once found, the program can also calculate the force field of
+that density for the MD-engine to move the nuclei. This method of 
+
+    \subsection{Relevant Keywords}
+
+    \begin{table}
+        \begin{center}
+        \begin{tabular}{l l}
+
+           \toprule
+           \textbf{Variable}    & \textbf{Description} ( $ Type = Default $ ) \\
+           \midrule
+
+           timedep & $ integer = 0 $ \\
+           & Determines how the electronic structure will be calculated.\\
+           & A value of 0 indicates that an SCF will be performed with each call \\
+           & to LIO. Other values are reserved for electron dynamics. \\ \\
+           told  & $ double \Hquad precision = 1.0d-6 $ \\
+           & Criteria for the maximal square deviation of the density matrix to \\
+           & consider that the convergence has been achieved. \\
+           \\
+           etold & $ double \Hquad precision = 1.0d0 $ \\
+           & Criteria for the maximal energy difference to consider that the con-\\
+           & -vergence has been achieved. \\
+           & \\
+           \\
+           DIIS  & $ logical = .true. $\\
+           & \\
+           \\
+           nDIIS & $ integer = 30 $ \\
+           & \\
+           \\
+           gold & $ double \Hquad precision = 1.0d+1 $\\
+           & Determines the weight of the previous density matrix in the linear \\
+           & combination with the new one when using the damping convergence \\
+           & method ( DIIS = .false. / hybrid\_converg ).\\
+           \\
+           hybrid\_converg & $ logical = .false. $\\
+           & \\
+           \\
+           good\_cut & $ double \Hquad precision = 1.0d-3 $\\
+           & \\
+           \\
+           VCInp & $ logical = .false. $ \\
+           & Reads a MO coefficient restart.\\
+           \\
+           restart\_freq & $ integer = 1 $ \\
+           & Writes a MO coefficient restart every restart\_freq iterations.\\
+           \\
+           frestart & $ char*20 = 'restart.out' $ \\
+           & Output restart file. \\
+           \\
+           frestartin & $ char*20 = 'restart.in' $ \\
+           & Input restart file. \\
+           \\
+           \bottomrule
+         \end{tabular}
+         \end{center}
+        \label{lio.fileio.var}
+    \end{table}
+
+    \subsection{Examples}
+
+
+
+
+\section{Geometry optimizations}
+
+Geometry optimizations or energy minimization is the process of finding an atomic arrangement in space where the force on each atom is acceptably close to zero.
+
+    \subsection{Implemenation}
+    
+    LIO has a simple steepest-descent algorithm. The idea is to move the system in the force direction, at a $\lambda$ step value.
+    
+    \begin{equation}
+      \vec{r}^i_{new}=\vec{r}^i + \lambda  \vec{F}^i  
+      \label{new_force}
+    \end{equation}
+    
+    Without a linear search algorithm $\lambda$ is obtained as $\frac{steep\_ size}{|\vec{F}_{max}|}$. If the energy decreases with the movement, the step is accepted; but if the energy increases with the step, the steep is rejected and $\lambda$ is reduced. Each accepted move increases step size a 20\% and each rejected move decreases step size a 50\%.
+    
+    In a linear search algorithm the system scans the energy as function of $\lambda$ and predicts the best value of $\lambda$ to move the system in the gradient direction.
+    
+    \begin{table}  [H]
+      \begin{center}
+      \begin{tabular}{ c c }
+
+    \textbf{No Linear Search algorithm} & \textbf{Linear Search algorithm} \\
+
+    \begin{tikzpicture}[node distance=2cm]
+      \node (start) [startstop] {$\vec{r}$, E};
+      \node (forces) [element, below of=start ] {Calculate $\vec{F}$};
+      \node (fmax) [element, below of=forces ] {Obtain  $|\vec{F}|_{max}$};
+      \node (Enew) [element, below of=fmax ] {move and calculate $E_{new}$};
+      \node (Edescend) [decision, below of=Enew, yshift=-0.5cm ] {$E_{new} < E$ ?};
+      \node (yes2) [yes, below of=Edescend, xshift=-1.5cm ] {yes};
+      \node (no2) [no, below of=Edescend, xshift=1.5cm ] {no};
+      \node (increase) [element, below of=yes2, xshift=-1.0cm ] {accept $\vec{r}$, increase steep size 20\%};
+      \node (decrease) [element, below of=no2, xshift=1.0cm ] {reject $\vec{r}$, decrease steep size 50\%};
+      \node (converge) [decision, below of=increase, yshift=-0.5cm ] {converged?};
+      \node (yes1) [yes, below of=converge, yshift=-0.5cm ] {yes};
+      \node (no1) [no, right of=converge, xshift=5.5cm ] {no};
+      \node (finish) [startstop, below of=yes1 ] {End};
+
+      \draw [arrow] (start) -- (forces);
+      \draw [arrow] (forces) -- (fmax);
+      \draw [arrow] (fmax) -- (Enew);
+      \draw [arrow] (Enew) -- (Edescend);
+      \draw [arrow] (Edescend) -- (yes2);
+      \draw [arrow] (Edescend) -- (no2);
+      \draw [arrow] (yes2) -- (increase);
+      \draw [arrow] (increase) -- (converge);
+      \draw [arrow] (no2) -- (decrease);
+      \draw [arrow] (decrease) |- (Enew);
+      \draw [arrow] (converge) -- (yes1);
+      \draw [arrow] (converge) -- (no1);
+      \draw [arrow] (yes1) -- (finish);
+      \draw [arrow] (no1) |- (forces);
+    \end{tikzpicture}
+    
+    &
+
+    \begin{tikzpicture}[node distance=2cm]
+      \node (start) [startstop] {$\vec{r}$, E};
+      \node (forces) [element, below of=start ] {Calculate $\vec{F}$};
+      \node (fmax) [element, below of=forces ] {Obtain  $|\vec{F}|_{max}$};
+      \node (Elamb) [element, below of=fmax ] {Obtain  E($\lambda$)};
+      \node (lamb) [element, below of=Elamb ] {Obtain best $\lambda$};
+      \node (newr) [element, below of=lamb ] {move and recalculate E};
+      \node (converge) [decision, below of=newr, yshift=-0.5cm ] {converged?};
+      \node (yes1) [yes, below of=converge, yshift=-0.5cm ] {yes};
+      \node (no1) [no, right of=converge, xshift=0.5cm ] {no};
+      \node (finish) [startstop, below of=yes1 ] {End};
+
+      \draw [arrow] (start) -- (forces);
+      \draw [arrow] (forces) -- (fmax);
+      \draw [arrow] (fmax) -- (Elamb);
+      \draw [arrow] (Elamb) -- (lamb);
+      \draw [arrow] (lamb) -- (newr);
+      \draw [arrow] (newr) -- (converge);
+      \draw [arrow] (converge) -- (yes1);
+      \draw [arrow] (converge) -- (no1);
+      \draw [arrow] (yes1) -- (finish);
+      \draw [arrow] (no1) |- (forces);
+    \end{tikzpicture}
+
+       \end{tabular}
+       \end{center}
+      \label{steep-algorithm}
+    \end{table}   
+    
+Best $\lambda$ in lineal search algorithm is obtained by a quadratic function ajusted using minimum energy of the scan and previous and next points.
+
+    \subsection{Using geometry optimizations}
+    
+    Adding steep=t in LIO input enables geometry optimization (steepest descent, lineal search by default).
+    Convergence criteria are set by Force\_cut and Energy\_cut (5E-4 Hartree/bohr and 1E-4 Hartree by Default).
+    The number of minimization steeps is set by n\_min\_steps (500 by default) and initial distance steep is set by minimzation\_steep (by default 0.05 bohr)\\
+    It is highly advisable to compile LIO in double precision in order to minimise the error in exchange-correlation forces (precision=1).
+        Outputs of geometry optimizations are traj.xyz (atoms coordinates in each steepes descent movement) and optimization.out (steep, energy and others). If verbose=true optimization.out includes the energy of each linear search point.
+    
+    \subsection{Examples}
+    
+    Examples of geometry optimization are made in lio/test/13\_geom\_optim.
+    
+\newpage
+\section{Restraints}
+LIO may add an extra potential term to the Hamiltonian in order to restrain the distance between specified pairs of atoms.
+
+    \subsection{Implemenation}
+    The implementation is a simple harmonic potential over a generalized coordinate $r$.
+
+    \begin{equation}
+      U=\frac{1}{2} k [r - l_0]^2  
+      \label{E_restrain}
+    \end{equation}
+
+    $r$ may be defined as a weighted combination of distances between pairs of atoms.
+
+    \begin{equation}
+      r=  \sum_{i} \sum_{j>i} w_{ij} |\vec{r_i} - \vec{r_j}|
+      \label{gen_coord}
+    \end{equation}
+
+    In this formulation the force over an atom l is:
+
+    \begin{equation}
+      \vec{F_l}= -k [r - l_0] \sum_{i} \sum_{j>i} w_{ij} \frac{\vec{r_{ij}}}{r_{ij}} \eta_{ijl}     
+      \label{rest_force}
+    \end{equation}
+
+    Where $\eta_{ijl}$ is defined as:
+
+    \begin{equation*}
+      \eta_{ijl} =
+       \begin{cases}
+          1 & \text{if $l=i$}\\
+         -1 & \text{if $l=j$}\\
+          0 & \text{in other case}
+       \end{cases}
+       \label{eta}
+    \end{equation*}
+
+
+    \subsection{Using Restraints}
+
+    The number of pairs of atoms to be added in the restraint potential(s) is defined by setting the variable number\_restr, and a list of distance restrains have to be added to in an additional lio.restrain file. For example:
+
+    \begin{table}  [H]
+      \begin{center}
+      \begin{tabular}{ l c c c c c}
+         $a_i$ & $a_j$ & index &   k  &    $w_{ij}$   &  $l_0$    \\
+         1  &  2 &   0   &  0.1 &    1.0   & 7.86   \\
+         3  &  4 &   0   &  0.1 &   -1.0   & 7.86   \\
+         7  &  9 &   1   &  0.4 &    2.0   & -2.3   \\
+         13 &  1 &   1   &  0.4 &    1.0   & -2.3   \\
+         14 &  3 &   1   &  0.4 &   -3.0   & -2.3   \\
+         14 &  2 &   2   &  0.2 &    1.0   & 0.5    \\
+         8  &  5 &   3   &  0.3 &    1.0   & 3.2    \\
+       \end{tabular}
+       \end{center}
+      \label{lio.restrain}
+    \end{table}
+
+Columns $a_i$ and $a_j$ contain the atom numbers in the QM system to be restrained, while the index number determines which distances contribute to a same generalized reaction coordinate. The remaining columns are the force constants (k), weights of that distance in the generalized coordinate ($w_{ij}$) and equilibrium positions in atomic units ($l_0$).
+
+    \subsection{Examples}
+
+    \textbf{1)In lio.in:}
+    
+    number\_restr = 1
+    
+        \textbf{in lio.restrain:}
+
+    \begin{table}  [H]
+      \begin{center}
+      \begin{tabular}{ l c c c c c}
+         $a_i$ & $a_j$ & index &   k  &    $w_{ij}$   &  $l_0$   \\
+         1  &  2 &   0   &  0.1 &    1.0   & 7.86   \\
+       \end{tabular}
+       \end{center}
+      \label{Tex1}
+    \end{table}
+
+    \textbf{Potential added to system:}
+
+    \begin{equation}
+      U=\frac{1}{2} 0.1 \Big{[} 1.0 |\vec{r_1} - \vec{r_2}| - 7.86\Big{]}^2  
+      \label{Ex1}
+    \end{equation}
+
+
+    \textbf{2)In lio.in:}
+
+    number\_restr = 2
+
+    \textbf{in lio.restrain:}
+
+    \begin{table}  [H]
+      \begin{center}
+      \begin{tabular}{ l c c c c c}
+         $a_i$ & $a_j$ & index &   k  &    $w_{ij}$   &  $l_0$    \\
+         1  &  2 &   0   &  0.1 &    1.0   & 7.86   \\
+         3  &  4 &   0   &  0.1 &   -1.0   & 7.86   \\
+       \end{tabular}
+       \end{center}
+      \label{Tex2}
+    \end{table}
+
+    \textbf{Potential added to system:}
+
+    \begin{equation}
+      U=\frac{1}{2} 0.1 \Big{[} 1.0 |\vec{r_1} - \vec{r_2}| - 1.0 |\vec{r_3} - \vec{r_4}| - 7.86\Big{]}^2  
+      \label{Ex2}
+    \end{equation}
+
+
+    \textbf{3)In lio.in:}
+
+    number\_restr = 4
+
+    \textbf{in lio.restrain:}
+
+    \begin{table}  [H]
+      \begin{center}
+      \begin{tabular}{ l c c c c c}
+         $a_i$ & $a_j$ & index &   k  &    $w_{ij}$   &  $l_0$    \\
+         1  &  2 &   0   &  0.1 &    1.0   & 7.86   \\
+         3  &  4 &   0   &  0.1 &   -1.0   & 7.86   \\
+         1  &  3 &   1   &  0.3 &    3.5   & -2.31   \\
+         7  &  8 &   1   &  0.3 &   -2.2   & -2.31   \\
+       \end{tabular}
+       \end{center}
+      \label{Tex3}
+    \end{table}
+
+    \textbf{Potential added to system:}
+
+    \begin{equation}
+      U=\frac{1}{2} 0.1 \Big{[} 1.0 |\vec{r_1} - \vec{r_2}| - 1.0 |\vec{r_3} - \vec{r_4}| - 7.86\Big{]}^2 + \frac{1}{2} 0.3 \Big{[} 3.5 |\vec{r_1} - \vec{r_3}| - 2.2 |\vec{r_7} - \vec{r_8}| +2.31\Big{]}^2 
+      \label{Ex3}
+    \end{equation}
+

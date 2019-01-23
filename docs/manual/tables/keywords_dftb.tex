@@ -1,0 +1,78 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{Spacing}{1.0}
+\begin{longtable}{ p{.25\textwidth} p{.70\textwidth} }
+
+   \toprule
+   \textbf{Variable} & Description \\*
+   \midrule \\*
+   \endhead
+
+   \bottomrule
+   \caption{DFTB Embedding}
+   \endfoot
+
+   \textbf{dftb\_calc}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Activates the TB embedding of the system.\\* \\
+
+   \textbf{MTB}
+   &  \textit{default = 0}
+   \\*\textit{integer}
+   & TODO Size of the two tight-binding subatrices.\\* \\
+
+   \textbf{end\_bTB}
+   &  \textit{default = 0}
+   \\*\textit{integer}
+   & TODO Index matrix size.\\* \\
+
+   \textbf{start\_tdtb}
+   &  \textit{default = 0}
+   \\*\textit{integer}
+   & TODO Initial time step for evolution of diagonal TB 
+   terms (????).\\* \\
+
+   \textbf{end\_tdtb}
+   &  \textit{default = 0}
+   \\*\textit{integer}
+   & TODO Final time step for evolution of diagonal TB
+   terms (????).\\* \\
+
+   \textbf{alfaTB}
+   &  \textit{default = UNSET}
+   \\*\textit{double precision}
+   & Manually sets the on-site energies (diagonal values)
+   for the TB part of the Hamiltonian.\\* \\
+
+   \textbf{betaTB}
+   &  \textit{default = UNSET}
+   \\*\textit{double precision}
+   & Manually sets the hopping terms for the TB part of
+   the Hamiltonian (ie, the non-diagonal nearest neighbour
+   terms for TB - TB interactions).\\* \\
+
+   \textbf{gammaTB}
+   &  \textit{default = UNSET}
+   \\*\textit{double precision}
+   & Manually sets the hopping terms for the interaction
+   between TB atoms and DFT atoms.\\* \\
+
+   \textbf{Vbias\_TB}
+   &  \textit{default = UNSET}
+   \\*\textit{double precision}
+   & Sets a bias for the on-site energies to simulate
+   electrodes.\\* \\
+
+   \textbf{TBload}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & TODO.\\* \\
+
+   \textbf{TBsave}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & TODO.\\* \\
+
+\end{longtable}
+\end{Spacing}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,0 +1,89 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{Spacing}{1.0}
+\begin{longtable}{ p{.25\textwidth} p{.70\textwidth} }
+
+   \toprule
+   \textbf{Variable} & Description \\*
+   \midrule \\*
+   \endhead
+
+   \bottomrule
+   \caption{Fields and Biases}
+   \endfoot
+
+   \textbf{field}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Use an external field (perturbation in TD).\\* \\
+
+   \textbf{a0}
+   &  \textit{default = 1.0d3}
+   \\*\textit{double precision}
+   & TODO: WTF IS THIS?.\\* \\
+
+   \textbf{epsilon}
+   &  \textit{default = 1.0d0}
+   \\*\textit{double precision}
+   & Relative permitivity of the medium.\\* \\
+
+   \textbf{Fx, Fy, Fz}
+   &  \textit{default = 0.05d0}
+   \\*\textit{double precision}
+   & The value of the external electric field in the
+   x, y and z directions.\\* \\
+
+   \textbf{nfields\_iso}
+   &  \textit{default = 0}
+   \\*\textit{integer}
+   & Number of shape-isotropic fields. If $nfields\_iso > 0$,
+   the inputs in $field\_iso\_file$ are ignored..\\* \\
+
+   \textbf{field\_iso\_file}
+   &  \textit{default = 'field.in'}
+   \\*\textit{character*20}
+   & Isotropic fields input file.\\* \\
+
+   \textbf{nfields\_aniso}
+   &  \textit{default = 0}
+   \\*\textit{integer}
+   & Number of shape-anisotropic fields. If $nfields\_aniso > 0$, 
+   the inputs in $field\_aniso\_file$ are ignored..\\* \\
+
+   \textbf{field\_aniso\_file}
+   &  \textit{default = 'field.in'}
+   \\*\textit{character*20}
+   & Anisotropic fields input file.\\* \\
+
+   \textbf{fockbias\_is\_active}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & TODO.\\* \\
+
+   \textbf{fockbias\_is\_shaped}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & TODO.\\* \\
+
+   \textbf{fockbias\_readfile}
+   &  \textit{default = 'atombias.in'}
+   \\*\textit{character*80}
+   & Atomic bias input file.\\* \\
+
+   \textbf{fockbias\_timeamp0}
+   &  \textit{default = UNSET}
+   \\*\textit{double precision}
+   & TODO.\\* \\
+
+   \textbf{fockbias\_timefall}
+   &  \textit{default = UNSET}
+   \\*\textit{double precision}
+   & TODO.\\* \\
+
+   \textbf{fockbias\_timegrow}
+   &  \textit{default = UNSET}
+   \\*\textit{double precision}
+   & TODO.\\* \\
+
+\end{longtable}
+\end{Spacing}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

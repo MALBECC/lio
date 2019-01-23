@@ -1,0 +1,104 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{Spacing}{1.0}
+\begin{longtable}{ p{.25\textwidth} p{.70\textwidth} }
+
+   \toprule
+   \textbf{Variable} & Description \\*
+   \midrule \\*
+   \endhead
+
+   \bottomrule
+   \caption{Self Consistent Field}
+   \endfoot
+
+   \textbf{initial\_guess}
+   &  \textit{default = 0}
+   \\*\textit{integer}
+   & Method for generating the initial guess for the
+   SCF.\\* \\
+
+   \textbf{nMax}
+   &  \textit{default = 100}
+   \\*\textit{integer}
+   & Maximum number of SCF steps.\\* \\
+
+   \textbf{told}
+   &  \textit{default = 1.0d-6}
+   \\*\textit{double precision}
+   & Tolerance threshold for density matrix convergence.\\* \\
+
+   \textbf{Etold}
+   &  \textit{default = 1.0d0}
+   \\*\textit{double precision}
+   & Tolerance threshold for energy convergence.\\* \\
+
+   \textbf{DIIS}
+   &  \textit{default = .true. }
+   \\*\textit{logical}
+   & Use DIIS convergence accelerator if true, or damping
+   convergence accelerator if false.\\* \\
+
+   \textbf{nDIIS}
+   &  \textit{default = 30}
+   \\*\textit{integer}
+   & Number of DIIS convergence iterations.\\* \\
+
+   \textbf{gold}
+   &  \textit{default = 1.0d1}
+   \\*\textit{double precision}
+   & Proportion of old matrix to use when using the damping
+   mixture (gold = X means that it will use an 1:X new to
+   old proportion).\\* \\
+
+   \textbf{hybrid\_converg}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Use Hybrid convergence accelerator.\\* \\
+
+   \textbf{good\_cut}
+   &  \textit{default = 1.0d-5}
+   \\*\textit{double precision}
+   & Tolerance threshold for damped convergence, switch to
+   DIIS afterwards.\\* \\
+
+   \textbf{vcinp}
+   &  \textit{default = .false. }
+   \\*\textit{logical}
+   & Reads the molecular orbital coefficients from $frestart$
+   and uses that as the starting guess for the first SCF
+   cycle.\\* \\
+
+   \textbf{rst\_dens}
+   &  \textit{default = 0}
+   \\*\textit{integer}
+   & Restart option for how to write/read restart files.\\*
+   &     0 = reads/writes coefficients and builds density.\\*
+   &     1 = reads density but writes coefficients.\\*
+   &     2 = reads and writes density.\\*
+   \\
+
+   \textbf{frestartin}
+   &  \textit{default = 'restart.in'}
+   \\*\textit{character*20}
+   & Filename for the input containing the molecular orbital
+   coefficients to be used as starting guess when $vcinp =
+   .true.$.\\* \\
+
+   \textbf{frestart}
+   &  \textit{default = 'restart.out'}
+   \\*\textit{character*20}
+   & Filename for the output containing the molecular orbital 
+   coefficients.\\* \\
+
+   \textbf{restart\_freq}
+   &  \textit{default = 0}
+   \\*\textit{integer}
+   & Indicates the frequency for writing the restart: it will
+   do so every set number of calls to LIO (that is, number of
+   steps of nuclear moves performed by the MD-engine.\\* \\
+
+
+
+\end{longtable}
+\end{Spacing}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

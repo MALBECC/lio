@@ -1,0 +1,6 @@
+&inputgen
+  output_type  = "full_ground",
+  output_xyz   = "diazi2.xyz",
+  output_rst   = "diazi2.rst",
+  inpname_fchk = "diazi2.fchk",
+&end

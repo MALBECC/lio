@@ -32,7 +32,7 @@ subroutine reads_data()
 
 
 !  SETUP PROCEDURES
-   select case( output_type )
+   select case( trim(output_type) )
       case ( "full_ground" )
          density_state = 0
 

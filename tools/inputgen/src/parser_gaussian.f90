@@ -14,13 +14,14 @@ subroutine gaufchk_atoms( fname, natoms )
    implicit none
    character(len=*), intent(in)  :: fname
    integer         , intent(out) :: natoms
-   
+
+   integer            :: scrap0
    character(len=100) :: dataline
-   character(len=100) :: crap(4)
+   character(len=100) :: scrap(4)
 
    call safe_open( 200, fname )
-   call goto_word( 200, 'Atomic numbers', dataline )
-   read( unit=dataline, fmt=*) crap(1:4), natoms
+   call goto_word( 200, 'Atomic numbers', dataline, scrap0 )
+   read( unit=dataline, fmt=*) scrap(1:4), natoms
    call safe_close( 200 )
 
 end subroutine gaufchk_atoms
@@ -33,12 +34,13 @@ subroutine gaufchk_basis( fname, mbasis )
    character(len=*), intent(in)  :: fname
    integer         , intent(out) :: mbasis
 
+   integer            :: scrap0
    character(len=100) :: dataline
-   character(len=100) :: crap(5)
+   character(len=100) :: scrap(5)
 
    call safe_open( 200, fname )
-   call goto_word( 200, 'Number of basis functions', dataline )
-   read( unit=dataline, fmt=*) crap(1:5), mbasis
+   call goto_word( 200, 'Number of basis functions', dataline, scrap0 )
+   read( unit=dataline, fmt=*) scrap(1:5), mbasis
    call safe_close( 200 )
 
 end subroutine gaufchk_basis
@@ -53,6 +55,7 @@ subroutine gaufchk_atoms_info( fname, natoms, atomnum, atompos )
    integer         , intent(out) :: atomnum(natoms)
    real*8          , intent(out) :: atompos(3,natoms)
 
+   integer             :: scrap0
    character(len=100)  :: dataline
    integer             :: kline, ki, kf, kk, ii, jj
    real*8, allocatable :: posvec(:)
@@ -61,14 +64,14 @@ subroutine gaufchk_atoms_info( fname, natoms, atomnum, atompos )
 
    call safe_open( 200, fname )
 
-   call goto_word( 200, 'Atomic numbers', dataline )
+   call goto_word( 200, 'Atomic numbers', dataline, scrap0 )
    do kline = 1, 1 + (natoms / 6 )
       ki = (kline-1) * 6+1
       kf = min( natoms, kline*6 )
       read( unit=200, fmt=* ) atomnum(ki:kf)
    end do
 
-   call goto_word( 200, 'Current cartesian coordinates', dataline )
+   call goto_word( 200, 'Current cartesian coordinates', dataline, scrap0 )
    allocate( posvec( 3*natoms ) )
    do kline = 1, 1 + ( 3*natoms / 5 )
       ki = (kline-1) * 5 + 1
@@ -99,15 +102,16 @@ subroutine gaufchk_basis_info( fname, mbasis, atom_ofba, angm_ofba )
    integer         , intent(out) :: atom_ofba(mbasis)
    integer         , intent(out) :: angm_ofba(mbasis)
 
-   character(len=100)   :: dataline, crap(4)
+   character(len=100)   :: dataline, scrap(4)
 
+   integer              :: scrap0
    integer              :: nshells
    integer, allocatable :: shell_mvec(:), shell_nvec(:)
    integer              :: kline, ki, kf, kk, indx, ki_extra
 
    call safe_open( 200, fname )
-   call goto_word( 200, 'Shell types', dataline )
-   read( unit=dataline, fmt=*) crap(1:4), nshells
+   call goto_word( 200, 'Shell types', dataline, scrap0 )
+   read( unit=dataline, fmt=*) scrap(1:4), nshells
    allocate( shell_mvec(nshells) )
    allocate( shell_nvec(nshells) )
 
@@ -117,7 +121,7 @@ subroutine gaufchk_basis_info( fname, mbasis, atom_ofba, angm_ofba )
       read( unit=200, fmt=* ) shell_mvec(ki:kf)
    end do
 
-   call goto_word( 200, 'Shell to atom map', dataline )
+   call goto_word( 200, 'Shell to atom map', dataline, scrap0 )
    do kline = 1, 1 + (nshells / 6 )
       ki = (kline-1) * 6+1
       kf = min( nshells, kline*6 )
@@ -186,7 +190,8 @@ subroutine gaufchk_densmat( fname, mbasis, elecstate, densmat )
    integer         , intent(in)  :: mbasis
    real*8          , intent(out) :: densmat(mbasis,mbasis)
 
-   character(len=100)  :: dataline, crap(4)
+   integer             :: scrap0
+   character(len=100)  :: dataline, scrap(4)
    integer             :: vecsize
    real*8, allocatable :: vecdens(:)
    integer             :: kline, ki, kf, indx, ii, jj
@@ -194,10 +199,10 @@ subroutine gaufchk_densmat( fname, mbasis, elecstate, densmat )
    call safe_open( 200, fname )
    select case( elecstate )
       case (0)
-         call goto_word( 200, 'Total SCF Density', dataline )
+         call goto_word( 200, 'Total SCF Density', dataline, scrap0 )
 
       case (1)
-         call goto_word( 200, 'Total CI Density', dataline )
+         call goto_word( 200, 'Total CI Density', dataline, scrap0 )
 
       case default
          print*, "ERROR - Unidentified kind of electronic state..."

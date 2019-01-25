@@ -58,16 +58,34 @@ end subroutine safe_rewind
 
 !------------------------------------------------------------------------------!
 
-subroutine goto_word( funit, dataword, dataline  )
+subroutine goto_line( funit, nlines )
+   implicit none
+   integer         , intent(in)  :: funit
+   integer         , intent(in)  :: nlines
+   integer                       :: nn
+   character(len=80)             :: dataline
+
+   do nn = 1, nlines - 1
+      read( unit=funit, fmt='(A)' ) dataline
+   end do
+
+end subroutine goto_line
+
+!------------------------------------------------------------------------------!
+
+subroutine goto_word( funit, dataword, dataline, wordline )
    implicit none
    integer         , intent(in)  :: funit
    character(len=*), intent(in)  :: dataword
    character(len=*), intent(out) :: dataline
+   integer         , intent(out) :: wordline
 
    logical :: keep_looking
 
+   wordline = 0
    keep_looking = .true.
    do while (keep_looking)
+      wordline = wordline + 1
       read( unit=funit, fmt='(A)' ) dataline
       if ( index( dataline, trim(dataword) ) > 0 ) then
          keep_looking = .false.

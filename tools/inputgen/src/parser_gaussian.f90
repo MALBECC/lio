@@ -57,6 +57,8 @@ subroutine gaufchk_atoms_info( fname, natoms, atomnum, atompos )
    integer             :: kline, ki, kf, kk, ii, jj
    real*8, allocatable :: posvec(:)
 
+   real*8, parameter :: ANG_IN_BOHR = 0.529177d0
+
    call safe_open( 200, fname )
 
    call goto_word( 200, 'Atomic numbers', dataline )
@@ -78,7 +80,7 @@ subroutine gaufchk_atoms_info( fname, natoms, atomnum, atompos )
    do jj = 1, natoms
    do ii = 1, 3
       kk = kk+1
-      atompos(ii,jj) = posvec(kk)
+      atompos(ii,jj) = posvec(kk) * ANG_IN_BOHR
    end do
    end do
 

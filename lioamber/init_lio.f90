@@ -121,7 +121,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     use field_data, only : chrg_sq
     use fileio    , only : lio_logo
     use fileio_data, only: style, verbose
-    use basis_data, only: M, Md, int_basis, basis_set, fitting_set
+    use basis_data, only: M, Md, basis_set, fitting_set
     use basis_subs, only: basis_init
 
     implicit none
@@ -274,7 +274,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
     inputFile = 'lio.in'
     call read_options(inputFile)
 
-    basis_set      = basis_i        ;
+    if (.not. int_basis) basis_set = basis_i
     fcoord         = fcoord_i       ; fmulliken     = fmulliken_i    ;
     frestart       = frestart_i     ; frestartin    = frestartin_i   ;
     OPEN           = OPEN_i         ;

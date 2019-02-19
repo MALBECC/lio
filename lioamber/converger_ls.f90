@@ -53,7 +53,7 @@ subroutine P_conver(niter, En, E1, E2, Ex, good, xnano, rho_a, rho_b)
 !  IF Rho_LS=0 calculate convergence criteria for actual density matrix
 !  IF Rho_LS=1 do a lineal search for density matrix only if energy > energy of previus step
 !  IF Rho_LS=2 do a lineal search for density matrix in all steeps
-   use garcha_mod, only : M 
+   use basis_data, only : M 
    implicit none
    integer, intent(in) :: niter !type of lineal search criteria and step number
    double precision, intent(out) :: good ! convergence criteria
@@ -79,7 +79,8 @@ end subroutine P_conver
 
 subroutine P_calc_fluctuation(good, xnano)
 !  calculates convergence criteria in density matrix, and store new density matrix in RMM(1:MM)
-   use garcha_mod, only : RMM, M
+   use garcha_mod, only : RMM
+   use basis_data, only : M
    double precision, intent(out) :: good
    real*8, dimension(M,M), intent(in) :: xnano
    integer :: jj,kk, Rposition, M2
@@ -101,7 +102,8 @@ end subroutine P_calc_fluctuation
 
 
 subroutine P_linearsearch_init()
-   use garcha_mod, only : M, Md, OPEN, RMM, rhoalpha, rhobeta
+   use garcha_mod, only : OPEN, RMM, rhoalpha, rhobeta
+   use basis_data, only : M, Md
    implicit none
    integer :: MM
 
@@ -135,7 +137,8 @@ end subroutine P_linearsearch_fin
 
 subroutine P_linear_calc(Rho_LS, niter, En, E1, E2, Ex, xnano,  &
 may_conv, rho_a, rho_b)
-   use garcha_mod, only : M, RMM, rhoalpha, rhobeta, OPEN
+   use garcha_mod, only : RMM, rhoalpha, rhobeta, OPEN
+   use basis_data, only : M
    use liosubs, only: line_search
    implicit none
    integer, intent(in) :: Rho_LS, niter !type of lineal search criteria and step number
@@ -238,7 +241,8 @@ end subroutine P_linear_calc
 
 subroutine give_me_energy(E, En, E1, E2, Ex)
 !  return Energy components for a density matrix stored in RMM(1:MM)
-   use garcha_mod, only : M, Md, RMM, OPEN
+   use garcha_mod, only : RMM, OPEN, MEMO
+   use basis_data, only : M, Md
    use faint_cpu, only: int3lu
    implicit none
    double precision, intent(out) :: E
@@ -267,7 +271,7 @@ subroutine give_me_energy(E, En, E1, E2, Ex)
    enddo
    ! Computes Coulomb part of Fock, and energy on E2
    call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), RMM(M7:M7+MMd), &
-        RMM(M9:M9+MMd), RMM(M11:M11+MMd), OPEN)
+        RMM(M9:M9+MMd), RMM(M11:M11+MMd), OPEN, MEMO)
    call g2g_solve_groups(0,Ex,0) ! Computes XC integration / Fock elements
    E=E1+E2+En+Ex
 

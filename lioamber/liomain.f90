@@ -17,7 +17,7 @@ subroutine liomain(E, dipxyz)
                           restart_freq, npas, sqsm, mulliken, lowdin, dipole, &
                           doing_ehrenfest, first_step, Eorbs, Eorbs_b, fukui, &
                           print_coeffs, steep, NUNP, MO_coef_at, MO_coef_at_b,&
-                          spinpop, calc_propM, Pmat_vec
+                          calc_propM, Pmat_vec
     use basis_data    , only: M, MM
     use ecp_mod       , only: ecpmode, IzECP
     use ehrensubs     , only: ehrendyn_main
@@ -159,7 +159,7 @@ end subroutine do_dipole
 subroutine do_population_analysis(Pmat)
    use garcha_mod, only: Smat, RealRho, Enucl, Iz, natom,      &
                          mulliken, lowdin, sqsm, d, r, ntatom, &
-                         spinpop, OPEN, rhoalpha, rhobeta
+                         OPEN, rhoalpha, rhobeta
    use basis_data, only: M, Md, Nuc, MM
    use ECP_mod   , only: ecpmode, IzECP
    use faint_cpu , only: int1
@@ -202,9 +202,9 @@ subroutine do_population_analysis(Pmat)
        if (OPEN) then
            allocate (RealRho_alpha(M,M), RealRho_betha(M,M))
            call spunpack('L',M,rhoalpha(1),RealRho_alpha) !pasa vector a matriz
-           call fixrho(M,RealRho_alpha)
+           call fix_densmat(RealRho_alpha)
            call spunpack('L',M,rhobeta(1),RealRho_betha) !pasa vector a matriz
-           call fixrho(M,RealRho_betha)
+           call fix_densmat(RealRho_betha)
            q=0
            call spin_pop_calc(natom, M, RealRho_alpha, RealRho_betha, Smat, Nuc, q)
            call write_population(natom, IzUsed, q, 2, 86)

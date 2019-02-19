@@ -156,9 +156,10 @@ end subroutine do_dipole
 ! Performs the different population analyisis available.                       !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine do_population_analysis(Pmat)
-   use garcha_mod, only: Smat, RealRho, Iz, natom, &
-                         mulliken, lowdin, sqsm, d, r, ntatom
-   use basis_data, only: M, Nuc, MM
+   use garcha_mod, only: Smat, RealRho, Enucl, Iz, natom,      &
+                         mulliken, lowdin, sqsm, d, r, ntatom, &
+                         OPEN, rhoalpha, rhobeta
+   use basis_data, only: M, Md, Nuc, MM
    use ECP_mod   , only: ecpmode, IzECP
    use faint_cpu , only: int1
    use SCF_aux   , only: fix_densmat
@@ -200,9 +201,9 @@ subroutine do_population_analysis(Pmat)
        if (OPEN) then
            allocate (RealRho_alpha(M,M), RealRho_betha(M,M))
            call spunpack('L',M,rhoalpha(1),RealRho_alpha) !pasa vector a matriz
-           call fixrho(M,RealRho_alpha)
+           call fix_densmat(RealRho_alpha)
            call spunpack('L',M,rhobeta(1),RealRho_betha) !pasa vector a matriz
-           call fixrho(M,RealRho_betha)
+           call fix_densmat(RealRho_betha)
            q=0
            call spin_pop_calc(natom, M, RealRho_alpha, RealRho_betha, Smat, Nuc, q)
            call write_population(natom, IzUsed, q, 2, 86)

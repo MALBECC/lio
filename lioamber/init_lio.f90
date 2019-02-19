@@ -30,8 +30,7 @@ subroutine lio_defaults()
                            lowdin, mulliken, print_coeffs, number_restr, Dbug, &
                            steep, Force_cut, Energy_cut, minimzation_steep,    &
                            n_min_steeps, lineal_search, n_points, timers,      &
-                           calc_propM, spinpop, writexyz, IGRID2, propagator,  &
-                           NBCH
+                           calc_propM, writexyz, IGRID2, propagator, NBCH
 
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,       &
                            local_nonlocal, ecp_debug, ecp_full_range_int,      &

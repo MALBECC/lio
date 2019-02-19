@@ -1,6 +1,8 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   subroutine rmmput_fock_r(FockMao)
-  use garcha_mod, only:M,RMM
+  use garcha_mod, only: RMM
+  use basis_data, only: M
+
   implicit none
   real*4,intent(in) :: FockMao(M,M)
   integer           :: ii,jj,idx,idx0
@@ -16,7 +18,9 @@
   return; end subroutine
 !--------------------------------------------------------------------!
   subroutine rmmput_fock_d(FockMao)
-  use garcha_mod, only:M,RMM
+  use garcha_mod, only: RMM
+  use basis_data, only: M
+
   implicit none
   real*8,intent(in) :: FockMao(M,M)
   integer           :: ii,jj,idx,idx0

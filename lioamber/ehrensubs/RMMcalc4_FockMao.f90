@@ -10,8 +10,10 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
    use field_data , only: epsilon, a0
 
    use garcha_mod, &
-   &only: M, Md, RMM, kkind, kkinds, cool, cools, igrid2                       &
-       &, natom, Iz, NCO, Nunp, total_time, d, ntatom, r, open, pc
+   &only: RMM, igrid2, natom, Iz, NCO, Nunp, total_time, d, ntatom, r, open, pc
+
+   use basis_data, &
+   &only: M, Md, kkind, kkinds, cool, cools
 
    use ehrendata, &
    &only: eefld_on, eefld_ampx, eefld_ampy, eefld_ampz, eefld_wavelen          &
@@ -86,7 +88,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
    call g2g_timer_start('RMMcalc4-solve3lu')
    call rmmput_dens(DensMao)
    call int3lu(Energy_Coulomb, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM),        &
-               RMM(M7:M7+MMd), RMM(M9:M9+MMd), RMM(M11:M11+MMd), open)
+               RMM(M7:M7+MMd), RMM(M9:M9+MMd), RMM(M11:M11+MMd), open, MEMO)
    call g2g_solve_groups(0,Energy_Exchange,0)
    call g2g_timer_stop('RMMcalc4-solve3lu')
 

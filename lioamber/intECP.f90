@@ -124,7 +124,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
         SUBROUTINE intECPAAA !calcula los terminos de Fock para bases y pseudopotenciales en el mismo atomo
-        USE garcha_mod, ONLY : a,ncont, nshell, nuc
+        USE basis_data, ONLY : a,ncont, nshell, nuc
 !a(i,ni) exponente de la funcion de base i, contraccion ni
 !c(i,ni) coeficiente de la funcion de base i, contraccion ni
 !ncont(i) cantidad de contracciones de la funcion de base i
@@ -207,7 +207,7 @@
 
 !los coef de la base se multiplican en la rutina que llama a esta
 
-        USE garcha_mod, ONLY : a,nshell
+        USE basis_data, ONLY : a,nshell
         USE ECP_mod, ONLY :nECP,bECP, aECP, ZlistECP, Lmax, expnumbersECP, angularint
 !nECP, bECP, aECP valores del pseudo potencial
 ! V = Σ aECP * r^b * exp(-bECP r^2)
@@ -247,7 +247,7 @@
 
 !los coef de la base se multiplican en la rutina que llama a esta
 
-        USE garcha_mod, ONLY : a
+        USE basis_data, ONLY : a
         USE ECP_mod, ONLY :ZlistECP,Lmax,aECP,nECP,bECP, expnumbersECP
 
         IMPLICIT NONE
@@ -306,7 +306,7 @@
 
 
         SUBROUTINE intECPAAB()
-        USE garcha_mod, ONLY : nshell,nuc,a,ncont
+        USE basis_data, ONLY : nshell,nuc,a,ncont
 !nshell(i) cantidad de funciones i=1 s, i=2, p, i=3, d
 !nuc(i) atomo al que corresponde la base i
 !a(i,ni) exponente de la funcion de base i, contraccion ni
@@ -445,7 +445,7 @@
 
 ! los coef de la base se multiplican en la rutina que llama a esta
 
-        USE garcha_mod, ONLY : a !a(i,ni) exponente de la funcion de base i, contrccion ni
+        USE basis_data, ONLY : a !a(i,ni) exponente de la funcion de base i, contrccion ni
         USE ECP_mod, ONLY :ZlistECP,Lmax,aECP,nECP,bECP, expnumbersECP,Qnl,Fulltimer_ECP,tsemilocal,tQ1
 ! ZlistECP(k) carga del atomo k con ECP
 ! Lmax(Z) maximo momento angular del pseudopotencial para el atomo con carga nuclear Z
@@ -561,7 +561,7 @@
 !i,j funcion de base
 !ii,ji numero de contraccion de la funcion de base
 !k atomo con ECP
-        USE garcha_mod, ONLY : a
+        USE basis_data, ONLY : a
         USE ECP_mod, ONLY :nECP,bECP, aECP, ZlistECP, Lmax, expnumbersECP, Qnl, angularint,Fulltimer_ECP,tlocal,tQ1
 ! Vl= Σ aECP * r^nECP * exp(-bECP r^2)
 ! ZlistECP(k) carga del atomo k con ECP
@@ -663,7 +663,8 @@
 
 
 	SUBROUTINE intECPABC()
-	USE garcha_mod, ONLY : nshell,nuc,ncont,natom,a
+	USE basis_data, ONLY : nshell,nuc,ncont,a
+        USE garcha_mod, ONLY : natom
 ! nshell(i) cantidad de funciones i=1 s, i=2, p, i=3, d
 ! nuc(i) atomo al que corresponde la base i
 ! ncont(i) cantidad de contracciones de la funcion de base i
@@ -785,7 +786,7 @@
 
 
 	DOUBLE PRECISION FUNCTION ABC_LOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dx1,dy1,dz1,dx2,dy2,dz2)
-	USE garcha_mod, ONLY : a,c
+	USE basis_data, ONLY : a,c
 	USE ECP_mod, ONLY :expnumbersECP, Qnl,bECP,IzECP,angularint,pi,Fulltimer_ECP,tlocal,tQ1,Lmax,necp,aECP
 	IMPLICIT NONE
         INTEGER, INTENT(IN) :: i,j,ii,ji !terminos de la base
@@ -887,7 +888,7 @@
 	END FUNCTION ABC_LOCAL
 
 	DOUBLE PRECISION FUNCTION ABC_SEMILOCAL(i,j,ii,ji,k,lxi,lyi,lzi,lxj,lyj,lzj,dxi,dyi,dzi,dxj,dyj,dzj)
-        USE garcha_mod, ONLY : a
+        USE basis_data, ONLY : a
         USE ECP_mod, ONLY : Qnl1l2,necp,bECP,IzECP,pi,Fulltimer_ECP,tsemilocal,tQ2,Taux,Lmax,expnumbersECP,aECP
 	IMPLICIT NONE
 	INTEGER, INTENT(IN) :: i,j,ii,ji,k
@@ -1419,7 +1420,8 @@
 
         SUBROUTINE allocate_ECP
 !alocatea todas las variables que van a necesitar los pseudopotenciales
-        USE garcha_mod, ONLY :nshell, natom
+        USE garcha_mod, ONLY : natom
+        USE basis_data, ONLY : nshell
 !        USE ECP_mod, ONLY :VAAAcuadrada,VAABcuadrada, VBACcuadrada
         USE ECP_mod, ONLY :VAAA,VAAB,VBAC,term1e,distx, disty, distz, IzECP,Lxyz,Cnorm
 !term1e terminos de fock de 1 electron sin agregarles VAAA
@@ -1460,7 +1462,7 @@
         END SUBROUTINE deallocateV
 
 	SUBROUTINE norm_C() !Escribe la matriz C corrigiendo la normalizacion de las funciones d
-        USE garcha_mod, ONLY :nshell,c,ncont
+        USE basis_data, ONLY :nshell,c,ncont
 	USE ECP_mod, ONLY :Cnorm
 	IMPLICIT NONE
 	INTEGER :: i,j,ns,np,nd
@@ -1502,7 +1504,7 @@
 !        SUBROUTINE correctbasis(r)
 !cambia el coeficiente de las funciones d x^2, y^2 y z^2
 !esta rutina ya no se usa, se reemplazo por norm_C
-!        USE garcha_mod, ONLY :nshell,c,ncont
+!        USE basis_data, ONLY :nshell,c,ncont
 !        IMPLICIT NONE
 !        INTEGER :: i,j,ns,np,nd
 !        INTEGER, INTENT(IN) :: r
@@ -1536,7 +1538,8 @@
         SUBROUTINE ReasignZ
 !cambia la carga de los nucleos con pseudopotenciales sacandole la carga del core y guarda las cargas originales en IzECP
 !tambien corrige la cantidad de electrones restando los que van al core
-        USE garcha_mod, ONLY :Iz,nuc,nshell, natom, NCO
+        USE garcha_mod, ONLY : Iz, natom, NCO
+        USE basis_data, ONLY : nuc, nshell
         USE ECP_mod, ONLY : ZlistECP,IzECP,Zcore,ecptypes,asignacion
         IMPLICIT NONE
 	CHARACTER  :: simb*3
@@ -1593,7 +1596,7 @@
 !arma una matriz que contenga los exponentes de la parte angular de la base
 ! |x> = A x^lx y^ly z^lz *e^-ar^2
 ! angularL(i,j) j=1 => lx, j=2 => ly, j=3 => lz para la funcion i de la base
-        USE garcha_mod, ONLY : nshell
+        USE basis_data, ONLY : nshell
         USE ECP_mod, ONLY : Lxyz
         IMPLICIT NONE
         INTEGER :: i,resto
@@ -1650,7 +1653,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 	SUBROUTINE READ_ECP()
-	USE garcha_mod, ONLY :nshell
+	USE basis_data, ONLY :nshell
 	USE ECP_mod, ONLY : VAAA, VAAB, VBAC
 	IMPLICIT NONE
 	INTEGER :: ns,np,nd,k,M,MM
@@ -1676,7 +1679,7 @@
 	END SUBROUTINE READ_ECP
 
 	SUBROUTINE WRITE_ECP()
-	USE garcha_mod, ONLY :nshell
+	USE basis_data, ONLY :nshell
 	USE ECP_mod, ONLY : VAAA, VAAB, VBAC
 	IMPLICIT NONE
 	INTEGER :: ns,np,nd,k,M,MM
@@ -1740,7 +1743,7 @@
 
 	SUBROUTINE WRITE_BASIS()
 !luego agregar para q escriba el atomo, y el momento angular, y que USE los coeficiente d bien normalizados
-	USE garcha_mod, ONLY : nshell,a,c,ncont
+	USE basis_data, ONLY : nshell,a,c,ncont
 	IMPLICIT NONE
 	INTEGER :: i,j,M
 	M=nshell(0)+nshell(1)+nshell(2)
@@ -1772,7 +1775,7 @@
 
 	SUBROUTINE WRITE_FOCK_ECP_TERMS() !escribe los terminos de Fock del pseudopotencial
 	USE ECP_mod, ONLY : VAAA, VAAB, VBAC
-	USE garcha_mod, ONLY : nshell
+	USE basis_data, ONLY : nshell
 	IMPLICIT NONE
 	INTEGER :: i,j,k,M
 	logical :: no_zero
@@ -1817,7 +1820,7 @@
 
 	SUBROUTINE WRITE_FOCK_ECP()
 	        USE ECP_mod, ONLY : VAAA, VAAB, VBAC
-        USE garcha_mod, ONLY : nshell
+        USE basis_data, ONLY : nshell
         IMPLICIT NONE
         INTEGER :: i,j,k,M
         logical :: no_zero
@@ -1855,7 +1858,7 @@
 !escribe el exponente de la parte angular de la funcion de base:
 !xi(x,y,z)= x^nx * y^ny * z^nz *f(r)
 	USE ECP_mod, ONLY :lxyz
-	USE garcha_mod, ONLY : nshell,nuc
+	USE basis_data, ONLY : nshell,nuc
 	IMPLICIT NONE
 	INTEGER :: i
 
@@ -1986,7 +1989,7 @@
 
 	SUBROUTINE SEARCH_NAN()
 	USE ECP_mod, ONLY : VAAA,VAAB,VBAC
-	USE garcha_mod, ONLY : nshell
+	USE basis_data, ONLY : nshell
 	IMPLICIT NONE
 	INTEGER :: M,MM,i
 	M=nshell(0)+nshell(1)+nshell(2)
@@ -2001,7 +2004,7 @@
 
 !	SUBROUTINE TEST_SYMMETRY()
 !        USE ECP_mod, ONLY : VAAAcuadrada,VAABcuadrada,VBACcuadrada
-!        USE garcha_mod, ONLY : nshell,nuc
+!        USE basis_data, ONLY : nshell,nuc
 !	IMPLICIT NONE
 !	INTEGER :: i,j,M
 !	logical :: Er
@@ -2052,7 +2055,7 @@
 !	SUBROUTINE TEST_COPY_FOCK
 !testea que la matriz cuadrada y la matriz guardada como vector sean iguales
 !	USE ECP_mod, ONLY : VAAAcuadrada,VAABcuadrada,VBACcuadrada,VAAA,VAAB,VBAC
-!	USE garcha_mod, ONLY : nshell
+!	USE basis_data, ONLY : nshell
 !	IMPLICIT NONE
 !	INTEGER :: pos,i,j,M
 !	logical :: Er1,Er2,Er3

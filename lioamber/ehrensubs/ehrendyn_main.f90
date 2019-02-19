@@ -7,8 +7,10 @@ subroutine ehrendyn_main( energy_o, dipmom_o )
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use garcha_mod, &
-   &  only: M, natom, atom_mass, nucpos, nucvel, qm_forces_ds, qm_forces_total &
+   &  only: natom, atom_mass, nucpos, nucvel, qm_forces_ds, qm_forces_total    &
    &      , first_step, propagator
+   use basis_data, &
+   &  only: M
 
    use td_data, &
    &  only: tdstep

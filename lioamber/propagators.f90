@@ -51,13 +51,14 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
                      time, M_in, MTB, dim3)
    ! This routine receives: F1a, F1b, rho2
    ! And gives: F5 = F(t+(deltat/2))
-   use garcha_mod   , only: M, RMM, NBCH, rhoalpha, rhobeta, OPEN, Md, r, d, &
-                            natom, ntatom, Iz
+   use garcha_mod   , only: RMM, NBCH, rhoalpha, rhobeta, OPEN, r, d, natom, &
+                            ntatom, Iz, MEMO
    use field_data   , only: field
    use field_subs   , only: field_calc
    use mathsubs     , only: basechange
    use faint_cpu    , only: int3lu
    use fockbias_subs, only: fockbias_apply
+   use basis_data   , only: M, Md
 
    implicit none
    ! MTB is only used in DFTB, it equals 0 otherwise.
@@ -107,7 +108,7 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    end if
 
    call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), RMM(M7:M7+MMd), &
-               RMM(M9:M9+MMd), RMM(M11:M11+MMd), open)
+               RMM(M9:M9+MMd), RMM(M11:M11+MMd), open, MEMO)
    call g2g_solve_groups(0, Ex, 0)
    call field_calc(E1, time, RMM(M3:M3+MM), RMM(M5:M5+MM), r, d, Iz, natom, &
                    ntatom, open)
@@ -265,13 +266,14 @@ subroutine cupredictor(F1a, F1b, FON, rho2, devPtrX, factorial, devPtrXc, &
    ! Predictor-Corrector Cheng, V.Vooris.PhysRevB.2006.74.155112
    ! This routine receives: F1a, F1b, rho2
    ! And gives: F5 = F(t+(deltat/2))
-   use garcha_mod   , only: M, RMM, NBCH, rhoalpha, rhobeta, OPEN, Md, r, d, &
-                            natom, ntatom, Iz
+   use garcha_mod   , only: RMM, NBCH, rhoalpha, rhobeta, OPEN, r, d, natom, &
+                            ntatom, Iz, MEMO
    use field_data   , only: field
    use field_subs   , only: field_calc
    use cublasmath   , only: basechange_cublas
    use faint_cpu    , only: int3lu
    use fockbias_subs, only: fockbias_apply
+   use basis_data   , only: M, Md
 
    implicit none
    ! MTB is only used in DFTB, it equals 0 otherwise.
@@ -321,7 +323,7 @@ subroutine cupredictor(F1a, F1b, FON, rho2, devPtrX, factorial, devPtrXc, &
    end if
 
    call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), RMM(M7:M7+MMd), &
-               RMM(M9:M9+MMd), RMM(M11:M11+MMd), open)
+               RMM(M9:M9+MMd), RMM(M11:M11+MMd), open, MEMO)
    call g2g_solve_groups(0, Ex, 0)
    call field_calc(E1, time, RMM(M3:M3+MM), RMM(M5:M5+MM), r, d, Iz, natom, &
                    ntatom, open)

@@ -74,8 +74,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine ehren_in( qmcoords, qmvels, clcoords, nsolin, dipxyz, E)
 
-   use garcha_mod,  only: M, natom, nucpos, nucvel, RealRho, Smat, atom_mass  &
-                    &   , Iz
+   use garcha_mod,  only: natom, nucpos, nucvel, atom_mass, Iz
    use td_data,     only: tdstep
    use ehrensubs,   only: ehrenaux_masses
    use debug_tools, only: Check_posvel
@@ -108,8 +107,6 @@ subroutine ehren_in( qmcoords, qmvels, clcoords, nsolin, dipxyz, E)
 
    call Check_posvel( tdstep, natom, nucpos, nucvel, 'Check_posvel.log' )
 
-   if (.not.allocated(RealRho)) allocate(RealRho(M,M))
-   if (.not.allocated(Smat))    allocate(Smat(M,M))
    if (allocated(atom_mass)) deallocate(atom_mass)
    allocate(atom_mass(natom))
    call ehrenaux_masses( natom, Iz, atom_mass )
@@ -125,8 +122,8 @@ end subroutine ehren_in
 ! Performs SCF setup and routine calls from GROMACS.                           !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
       subroutine SCF_gro(E, qmcoords, clcoords, clcharge, nsolin)
-      use garcha_mod, only : nsol, ntatom, natom, r, v, Em, Rm, pc, nnat, &
-                             writexyz, rqm, Iz
+      use garcha_mod, only : nsol, ntatom, natom, r, v, Em, Rm, pc, rqm, Iz, &
+                             writexyz
 
           implicit none
           real*8 , intent(in) :: qmcoords(3*natom), clcoords(3*nsolin), &

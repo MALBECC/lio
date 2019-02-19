@@ -35,7 +35,7 @@ module subm_intfld
 contains
 subroutine intfld(Fmat_b, Fmat, r, d, Iz, natom, ntatom, open_shell, g, ux, uy,&
                   uz)
-   use garcha_mod, only: a, c, nuc, ncont, nshell, NORM, M, Md
+   use basis_data, only: a, c, nuc, ncont, nshell, NORM, M, Md
    use constants_mod, only: pi32
    implicit none
    integer         , intent(in)    :: natom, ntatom, Iz(natom)

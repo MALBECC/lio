@@ -26,14 +26,18 @@
 module basis_data
    implicit none
    ! Namelist inputfiles
-   ! int_basis : Use LIO internal basis (located in /dat)
-   ! rMax      : Maximum exponent for double-precision integrals.
-   ! rMaxs     : Maximum exponent for single-precision integrals.
-   ! norm      : Normalize integrals (deprecated).
-   logical          :: int_basis = .true.
-   double precision :: rMax      = 16.0D0
-   double precision :: rMaxs     =  5.0D0
-   logical          :: norm      = .true.
+   ! basis_set  : The name of the basis set or basis_set file.
+   ! fitting_set: The name of the fitting set.
+   ! int_basis  : Use LIO internal basis (located in /dat)
+   ! rMax       : Maximum exponent for double-precision integrals.
+   ! rMaxs      : Maximum exponent for single-precision integrals.
+   ! norm       : Normalize integrals (deprecated).
+   character(len=100) :: basis_set   = "DZVP"
+   character(len=100) :: fitting_set = "DZVP Coulomb Fitting"
+   logical            :: int_basis   = .false.
+   double precision   :: rMax        = 16.0D0
+   double precision   :: rMaxs       =  5.0D0
+   logical            :: norm        = .true.
 
    ! Single variables
    ! M     : number of basis functions.
@@ -67,6 +71,8 @@ module basis_data
    ! ad(i,j)    : Exponent for auxiliary function i, contraction j.
    ! cd(i,j)    : Coefficient for auxiliary function i, contraction j.
    ! atmin(i)   : The minimum exponent found for atom i.
+   ! indexii(i) : Function index after reordering by s, p, d.
+   ! indexiid(i): Auxiliary function index after reordering by s, p, d.
    ! kkInd(:)   : Index for double-precision two-center integrals.
    ! kkInds(:)  : Index for single-precision two-center integrals.
    ! cool(:)    : Storage for two-center integrals in  double precision.
@@ -77,6 +83,8 @@ module basis_data
    integer         , allocatable :: nContd(:)
    integer         , allocatable :: ang_mom(:)
    integer         , allocatable :: ang_momd(:)
+   integer         , allocatable :: indexii(:)
+   integer         , allocatable :: indexiid(:)
    integer         , allocatable :: kkInd(:)
    integer         , allocatable :: kkInds(:)
    integer         , allocatable :: natomc(:)
@@ -115,11 +123,10 @@ module basis_subs
 contains
 
 subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
-   !use basis_data, only: M, Md, int_basis, Nuc, Nucd, nCont, nContd, a, c, ad, &
-   use garcha_mod, only: M, Md, int_basis, Nuc, Nucd, nCont, nContd, a, c, ad, &
+   use basis_data, only: M, Md, int_basis, Nuc, Nucd, nCont, nContd, a, c, ad, &
                          cd, atmin, nns, nnp, nnd, nshell, nshelld, norm, af,  &
-                         indexii, indexiid, natomc, jatc, nnps, nnpp, nnpd
-   use basis_data, only: ang_mom, ang_momd, max_f_per_atom, max_c_per_atom
+                         indexii, indexiid, natomc, jatc, nnps, nnpp, nnpd,    &
+                         ang_mom, ang_momd, max_f_per_atom, max_c_per_atom
    implicit none
    ! Inputs:
    !   n_atoms        : the number of atoms in the QM system.
@@ -205,9 +212,9 @@ end subroutine basis_init
 
 subroutine basis_deinit()
    !use basis_data, only: Nuc, Nucd, nCont, nContd, a, c, ad, cd, atmin, nns, &
-   use garcha_mod , only: Nuc, Nucd, nCont, nContd, a, c, ad, cd, atmin, nns, &
-                          nnp, nnd, af, indexii, indexiid, natomc, jatc, nnps,&
-                          nnpp, nnpd
+   use basis_data, only: Nuc, Nucd, nCont, nContd, a, c, ad, cd, atmin, nns, &
+                         nnp, nnd, af, indexii, indexiid, natomc, jatc, nnps,&
+                         nnpp, nnpd
 
    implicit none
 
@@ -238,8 +245,8 @@ subroutine basis_deinit()
 end subroutine basis_deinit
 
 subroutine basis_setup_ehren()
-   use basis_data, only: a_ehren, c_ehren, ang_mom_ehren, max_c_per_atom
-   use garcha_mod, only: a, c, nShell, M
+   use basis_data, only: a_ehren, c_ehren, ang_mom_ehren, max_c_per_atom, &
+                         a, c, nShell, M
 
    implicit none
    integer :: icount
@@ -498,6 +505,8 @@ subroutine basis_set_size(basis_size, aux_size, max_f_per_atom, max_c_per_atom,&
 end subroutine basis_set_size
 
 subroutine check_basis(atom_bas_done, atom_fit_done, n_atoms, atom_Z, iostatus)
+   use fileio, only: atom_name
+
    implicit none
    integer, intent(in)  :: n_atoms, atom_Z(n_atoms)
    logical, intent(in)  :: atom_bas_done(0:120), atom_fit_done(0:120)
@@ -1045,29 +1054,5 @@ subroutine reorder_basis(expon, coeff, atom_of_funct, n_cont, mixed_index, &
    coeff         = coef_t
    deallocate(expo_t, coef_t, atom_of_funct_t, n_cont_t)
 end subroutine reorder_basis
-!###############################################################################
-! TAKE THIS TO OTHER MODULE
-subroutine atom_name(atom_Z, symb)
- ! Takes atomic number Z and translates it to its name.
- implicit none
- integer         , intent(in)  :: atom_Z
- character(LEN=3), intent(out) :: symb
-
- character(LEN=3) :: name(118)
- name = (/'H  ','HE ','LI ','BE ','B  ','C  ','N  ','O  ','F  ','NE ','NA ', &
-          'MG ','AL ','SI ','P  ','S  ','CL ','AR ','K  ','CA ','SC ','TI ', &
-          'V  ','CR ','MN ','FE ','CO ','NI ','CU ','ZN ','GA ','GE ','AS ', &
-          'SE ','BR ','KR ','RB ','SR ','Y  ','ZR ','NB ','MO ','TC ','RU ', &
-          'RH ','PD ','AG ','CD ','IN ','SN ','SB ','TE ','I  ','XE ','CS ', &
-          'BA ','LA ','CE ','PR ','ND ','PM ','SM ','EU ','GD ','TB ','DY ', &
-          'HO ','ER ','TM ','YB ','LU ','HF ','TA ','W  ','RE ','OS ','IR ', &
-          'PT ','AU ','HG ','TL ','PB ','BI ','PO ','AT ','RN ','FR ','RA ', &
-          'AC ','TH ','PA ','U  ','NP ','PU ','AM ','CM ','BK ','CF ','ES ', &
-          'FM ','MD ','NO ','LR ','RF ','DB ','SG ','BH ','HS ','MT ','DS ', &
-          'UUU','UUB','UUT','UUQ','UUP','UUH','UUS','UUO'/)
- symb = name(atom_Z)
-
-end subroutine atom_name
-
 end module basis_subs
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

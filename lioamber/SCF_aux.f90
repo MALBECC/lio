@@ -45,7 +45,7 @@ end subroutine messup_densmat
 subroutine neighbour_list_2e(natom, ntatom, r, d)
    ! Makes neighbour list for 2e integrals in order to give it linear
    ! scaling. Also calculates distances (squared) between atoms.
-   use garcha_mod, only: natomc, jatc, rmax, nshell, atmin, nnps, nnpp, nnpd, &
+   use basis_data, only: natomc, jatc, rmax, nshell, atmin, nnps, nnpp, nnpd, &
                          M, nuc
    implicit none
    integer         , intent(in)    :: natom, ntatom

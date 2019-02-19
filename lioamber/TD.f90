@@ -42,10 +42,10 @@ module time_dependent
 contains
 
 subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
-   use garcha_mod    , only: M, Md, NBCH, propagator, RMM, NCO, Iz, igrid2, r, &
-                             Nuc, nsol, pc, X, Smat, MEMO, sol, natom, sqsm,   &
-                             Nunp, ntatom, ncont, nshell, a, c, d, NORM,OPEN, &
-                             rhoalpha, rhobeta, ad, cd, ncontd, nucd, nshelld
+   use garcha_mod    , only: NBCH, propagator, RMM, NCO, Iz, igrid2, r, nsol, &
+                             pc, X, Smat, MEMO, sol, ntatom, sqsm, Nunp, OPEN,&
+                             natom, d, rhoalpha, rhobeta
+   use basis_data    , only: M, Md, Nuc, ncont, nshell, a, c, Norm
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, &
                              writedens, pert_time
    use field_data    , only: field, fx, fy, fz
@@ -293,7 +293,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
       call td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM(M11:MM),is_lpfrg,&
                           transport_calc, sol, t/0.024190D0, M, Md, open, r, d,&
-                          Iz, natom, ntatom)
+                          Iz, natom, ntatom, MEMO)
 
       call g2g_timer_sum_pause("TD - TD Step Energy")
       if (verbose .gt. 2) write(*,'(A,I6,A,F12.6,A,F12.6,A)') "  TD Step: ", &
@@ -839,7 +839,7 @@ end subroutine td_check_prop
 
 subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
                           transport_calc, sol, time, M, Md, open_shell, r, d, &
-                          Iz, natom, ntatom)
+                          Iz, natom, ntatom, MEMO)
    use faint_cpu , only: int3lu
    use field_subs, only: field_calc
    implicit none
@@ -848,7 +848,7 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
    real*8 , intent(in)    :: time, r(ntatom,3), d(natom,natom)
    real*8 , intent(inout) :: E, E1, E2, En, Ex, Es, RMM(:), RMM11(:)
    integer         , intent(in) :: M, Md
-   logical         , intent(in) :: open_shell
+   logical         , intent(in) :: open_shell, MEMO
    integer :: icount, MMd, M3, M5, M7, M9, M11
 
    MMd=Md*(Md+1)/2
@@ -862,7 +862,7 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
    if (is_lpfrg) then
       call g2g_timer_sum_start("TD - Coulomb")
       call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), RMM(M7:M7+MMd), &
-                  RMM(M9:M9+MMd), RMM(M11:M11+MMd), open_shell)
+                  RMM(M9:M9+MMd), RMM(M11:M11+MMd), open_shell, MEMO)
       call g2g_timer_sum_pause("TD - Coulomb")
       call g2g_timer_sum_start("TD - Exc")
       call g2g_solve_groups(0,Ex,0)
@@ -1035,7 +1035,7 @@ subroutine td_bc_fock_cu(M_in,M, MM, RMM5, fock_op, devPtrX, natom, nshell,    &
    integer, intent(in)  :: natom
    integer, intent(in)  :: ncont(M)
    integer, intent(in)  :: istep
-   integer, intent(in)  :: nshell (0:4)
+   integer, intent(in)  :: nshell (0:3)
 
    call g2g_timer_start('fock')
    call spunpack('L', M, RMM5, fock_0)
@@ -1162,7 +1162,7 @@ subroutine td_magnus_cu(M, dim3, OPEN,fock_aop, F1a, F1b, rho_aop, rhonew,     &
    integer  , intent(in)         :: M_in, dim3
    integer*8, intent(in)         :: devPtrX, devPtrXc, devPtrY
    real*8   , intent(in)         :: dt_magnus, factorial(NBCH), time
-   integer  , intent(in)         :: nshell (0:4), ncont(M)
+   integer  , intent(in)         :: nshell (0:3), ncont(M)
    real*8   , intent(inout)      :: F1a(M_in,M_in,dim3), F1b(M_in,M_in,dim3),  &
                                     overlap(:,:), sqsm(M,M)
 #ifdef TD_SIMPLE
@@ -1268,7 +1268,7 @@ subroutine td_bc_fock(M_in, M, MM, RMM5, fock_op, Xmm, natom, nshell,ncont,    &
    integer, intent(in)  :: natom
    integer, intent(in)  :: ncont(M)
    integer, intent(in)  :: istep
-   integer, intent(in)  :: nshell (0:4)
+   integer, intent(in)  :: nshell (0:3)
    real*8, intent(in)   :: time
 
    allocate(fock(M_in,M_in),Xtemp(M_in,M_in),fock_0(M,M))

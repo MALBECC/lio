@@ -27,17 +27,14 @@ subroutine SCF(E)
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use ehrensubs , only: ehrendyn_init
-   use garcha_mod, only : M,Md, NCO,natom,Nang, number_restr, hybrid_converg,  &
-                          MEMO, npas, RMM, X, npasw,                           &
+   use garcha_mod, only : NCO, natom, Nang, number_restr, hybrid_converg, MEMO,&
                           igrid, energy_freq, converge, noconverge, lowdin,    &
                           cubegen_only, VCINP, primera, Nunp, GOLD, igrid2,    &
-                          predcoef, nsol, r, pc, DIIS, told, Etold, Enucl,     &
-                          Eorbs, kkind,kkinds,cool,cools,NMAX,Dbug, Iz,        &
-                          nuc, doing_ehrenfest, first_step, RealRho,           &
+                          predcoef, nsol, r, pc, DIIS, told, Etold, Enucl, Iz, &
+                          Eorbs, NMAX,Dbug, doing_ehrenfest, first_step,       &
                           total_time, MO_coef_at, MO_coef_at_b, Smat, good_cut,&
-                          ndiis, ncont, nshell, rhoalpha, rhobeta, OPEN,nshell,&
-                          Nuc, a, c, d, NORM, ntatom, Eorbs_b, ad, cd, ncontd, &
-                          nucd, nshelld
+                          ndiis, rhoalpha, rhobeta, OPEN, RealRho, d, ntatom,  &
+                          Eorbs_b, npas, RMM, X, npasw
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
                        FOCK_ECP_read,FOCK_ECP_write,IzECP
    use field_data, only: field, fx, fy, fz
@@ -70,6 +67,8 @@ subroutine SCF(E)
    use fileio       , only: write_energies, write_energy_convergence, &
                             write_final_convergence
    use fileio_data  , only: verbose
+   use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, ncont, a, & 
+                            c, M, Md
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -555,7 +554,7 @@ subroutine SCF(E)
 !       Computes Coulomb part of Fock, and energy on E2
         call g2g_timer_sum_start('Coulomb fit + Fock')
         call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), &
-                    RMM(M7:M7+MMd), RMM(M9:M9+MMd), RMM(M11:M11+MMd), open)
+                    RMM(M7:M7+MMd), RMM(M9:M9+MMd), RMM(M11:M11+MMd),open,MEMO)
         call g2g_timer_sum_pause('Coulomb fit + Fock')
 
 !       Test for NaN

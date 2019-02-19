@@ -55,10 +55,10 @@ module subm_int3mem
 contains
 subroutine int3mem(r, d, natom, ntatom)
    use liosubs_math, only: FUNCT
-   use garcha_mod, only: cool, cools, kkind, kkinds, Nuc, Nucd, a, c,          &
-                         ad, cd, natomc, nns, nnp, nnd, nnps, nnpp, nnpd,      &
-                         jatc, ncont, ncontd, nshell, nshelld, M, Md, rmax,    &
-                         rmaxs, NORM, kknums, kknumd
+   use basis_data  , only: cool, cools, kkind, kkinds, Nuc, Nucd, a, c,        &
+                           ad, cd, natomc, nns, nnp, nnd, nnps, nnpp, nnpd,    &
+                           jatc, ncont, ncontd, nshell, nshelld, M, Md, rmax,  &
+                           rmaxs, NORM, kknums, kknumd
    use constants_mod, only: pi52
 
    implicit none

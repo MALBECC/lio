@@ -28,7 +28,7 @@
 module subm_int1G
 contains
 subroutine int1G(ff, rho, d, r, Iz, natom, ntatom)
-   use garcha_mod   , only: M, a, c, Nuc, ncont, nshell, NORM
+   use basis_data   , only: M, a, c, Nuc, ncont, nshell, NORM
    use liosubs_math , only: FUNCT
    use constants_mod, only: pi, pi32
 

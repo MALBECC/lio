@@ -16,16 +16,13 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine lio_defaults()
 
-    use garcha_mod, only : basis, fmulliken, fcoord, OPEN, NMAX,               &
-                           basis_set, fitting_set, int_basis, DIIS, ndiis,     &
-                           GOLD, told, Etold, hybrid_converg, good_cut, rmax,  &
-                           rmaxs, omit_bas, propagator, NBCH, VCINP, Iexch,    &
+    use garcha_mod, only : fmulliken, fcoord, OPEN, NMAX, DIIS, ndiis, VCINP,  &
+                           GOLD, told, Etold, hybrid_converg, good_cut, Iexch, &
                            restart_freq, frestartin, IGRID, frestart, predcoef,&
                            cubegen_only, cube_res, cube_dens, cube_orb,        &
                            cube_sel, cube_orb_file, cube_dens_file, NUNP,      &
-                           energy_freq, writeforces, charge,                   &
+                           energy_freq, writeforces, charge, sol, primera,     &
                            cube_elec, cube_elec_file, cube_sqrt_orb, MEMO,     &
-                           NORM, sol, primera,               &
                            watermod, fukui, little_cube_size, sphere_radius,   &
                            max_function_exponent, min_points_per_cube,         &
                            assign_all_functions, remove_zero_weights,          &
@@ -33,7 +30,7 @@ subroutine lio_defaults()
                            lowdin, mulliken, print_coeffs, number_restr, Dbug, &
                            steep, Force_cut, Energy_cut, minimzation_steep,    &
                            n_min_steeps, lineal_search, n_points, timers,      &
-                           writexyz, IGRID2
+                           writexyz, IGRID2, propagator, NBCH
 
     use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,       &
                            local_nonlocal, ecp_debug, ecp_full_range_int,      &
@@ -42,19 +39,14 @@ subroutine lio_defaults()
     implicit none
 
 !   Names of files used for input and output.
-    basis          = 'basis'       ; fmulliken      = 'mulliken'    ;
-    fcoord         = 'qm.xyz'      ;
+    fmulliken      = 'mulliken'    ; fcoord             = 'qm.xyz'      ;
 
 !   Theory level options.
     OPEN           = .false.       ; told               = 1.0D-6        ;
     NMAX           = 100           ; Etold              = 1.0d0         ;
-    basis_set      = "DZVP"        ; hybrid_converg     = .false.       ;
-    int_basis      = .false.       ; good_cut           = 1.0D-3        ;
-    DIIS           = .true.        ; rmax               = 16.0D0        ;
-    ndiis          = 30            ; rmaxs              = 5.0D0         ;
-    GOLD           = 10.0D0        ; omit_bas           = .false.       ;
-    charge         = 0             ;
-    fitting_set    = "DZVP Coulomb Fitting" ;
+    good_cut       = 1.0D-3        ; DIIS               = .true.        ;
+    ndiis          = 30            ; GOLD               = 10.0D0        ;
+    charge         = 0             ; hybrid_converg     = .false.       ;
 
 !   Effective Core Potential options.
     ecpmode        = .false.       ; cut2_0             = 15.d0         ;
@@ -102,7 +94,7 @@ subroutine lio_defaults()
     cube_orb_file  = "orb.cube"    ; cube_dens_file     = 'dens.cube'   ;
     IGRID          = 2             ; cube_elec          = .false.       ;
     IGRID2         = 2             ; cube_elec_file     = 'field.cube'  ;
-    timers         = 0             ; NORM               = .true.        ;
+    timers         = 0             ; 
     NUNP           = 0             ; energy_freq        = 1             ;
     cube_sqrt_orb  = .false.       ; MEMO               = .true.        ;
     sol            = .false.       ;
@@ -118,19 +110,18 @@ end subroutine lio_defaults
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
 
-    use garcha_mod, only : nunp, RMM, d, c, a, r, v, rqm, Em, Rm, pc, nnat, B, &
-                           Iz, natom, ng0, ngd0, ngrid, norbit, ntatom,     &
-                           free_global_memory, little_cube_size,&
+    use garcha_mod, only : nunp, RMM, d, r, v, rqm, Em, Rm, pc, Iz, natom, ng0,&
+                           ngd0, ngrid, norbit, ntatom, free_global_memory,    &
                            assign_all_functions, energy_all_iterations,        &
                            remove_zero_weights, min_points_per_cube,           &
-                           max_function_exponent, sphere_radius, M,Fock_Hcore, &
-                           Fock_Overlap, P_density, OPEN, timers, MO_coef_at,  &
-                           MO_coef_at_b, charge, basis_set, fitting_set, Md,   &
-                            nl, basis, int_basis
+                           max_function_exponent, little_cube_size,            &
+                           sphere_radius, Fock_Hcore, Fock_Overlap, P_density, &
+                           OPEN, timers, MO_coef_at, MO_coef_at_b, charge
     use ECP_mod,    only : Cnorm, ecpmode
     use field_data, only : chrg_sq
     use fileio    , only : lio_logo
     use fileio_data, only: style, verbose
+    use basis_data, only: M, Md, basis_set, fitting_set
     use basis_subs, only: basis_init
 
     implicit none
@@ -162,7 +153,6 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     ! Ngrid : n° of grid points (LS-SCF part).                                 !
     ! NOTES: Ngrid may be set to 0  in the case of Numerical Integration. For  !
     ! large systems, ng2 may result in <0 due to overflow.                     !
-    if (.not. int_basis) basis_set = basis
     call basis_init(basis_set, fitting_set, natom, Iz, iostat)
     if (iostat .gt. 0) then
       stop
@@ -173,12 +163,11 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     ng2 = 5*ngDyn*(ngDyn+1)/2 + 3*ngdDyn*(ngdDyn+1)/2 + &
           ngDyn  + ngDyn*norbit + Ngrid
 
-    allocate(RMM(ng2) , d(natom, natom), v(ntatom,3), Em(ntatom), Rm(ntatom), &
-             nnat(200), B(ngdDyn,3))
+    allocate(RMM(ng2) , d(natom, natom), v(ntatom,3), Em(ntatom), Rm(ntatom))
 
     ! Cnorm contains normalized coefficients of basis functions.
     ! Differentiate C for x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)
-    if (ecpmode) allocate (Cnorm(ngDyn,nl))
+    if (ecpmode) allocate (Cnorm(ngDyn,13))
 
     call g2g_init()
     allocate(MO_coef_at(ngDyn*ngDyn))
@@ -248,20 +237,16 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
            , Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i              &
            )
 
-    use garcha_mod, only : basis, fmulliken, fcoord, OPEN, NMAX,             &
-                           basis_set, fitting_set, int_basis, DIIS, ndiis,   &
+    use garcha_mod , only: fmulliken, fcoord, OPEN, NMAX, charge, DIIS,ndiis,&
                            GOLD, told, Etold, hybrid_converg, good_cut,      &
-                           rmax, rmaxs, omit_bas, propagator, NBCH,          &
-                           VCINP, restart_freq, writexyz, frestartin,        &
-                           frestart, predcoef, Iexch,                        &
-                           cubegen_only, cube_res, cube_dens, cube_orb,      &
-                           cube_sel, cube_orb_file, cube_dens_file, NUNP,    &
-                           energy_freq, cube_elec_file,       &
-                           cube_elec, cube_sqrt_orb, IGRID, IGRID2, charge
-    use td_data   , only : tdrestart, tdstep, ntdstep, timedep, writedens
-    use field_data, only : field, a0, epsilon, Fx, Fy, Fz
+                           propagator, NBCH, VCINP, restart_freq, writexyz,  &
+                           frestart, predcoef, frestartin, energy_freq,      &
+                           IGRID, IGRID2, nunp, iexch
+    use td_data    , only: tdrestart, tdstep, ntdstep, timedep, writedens
+    use field_data , only: field, a0, epsilon, Fx, Fy, Fz
+    use basis_data , only: int_basis, rmax, rmaxs, basis_set
     use fileio_data, only: verbose
-    use ECP_mod   , only : ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,     &
+    use ECP_mod    , only: ecpmode, ecptypes, tipeECP, ZlistECP, cutECP,     &
                            local_nonlocal, ecp_debug, ecp_full_range_int,    &
                            verbose_ECP, Cnorm, FOCK_ECP_read, FOCK_ECP_write,&
                            Fulltimer_ECP, cut2_0, cut3_0
@@ -289,7 +274,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
     inputFile = 'lio.in'
     call read_options(inputFile)
 
-    basis          = basis_i        ;
+    if (.not. int_basis) basis_set = basis_i
     fcoord         = fcoord_i       ; fmulliken     = fmulliken_i    ;
     frestart       = frestart_i     ; frestartin    = frestartin_i   ;
     OPEN           = OPEN_i         ;
@@ -335,7 +320,7 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge_i, basis_i       &
            , Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i, dt_i        &
            )
 
-   use garcha_mod , only: M, first_step, doing_ehrenfest
+   use garcha_mod , only: first_step, doing_ehrenfest
    use basis_subs , only: basis_setup_ehren
    use td_data    , only: timedep, tdstep
    use lionml_data, only: ndyn_steps, edyn_steps
@@ -374,11 +359,8 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge_i, basis_i       &
 
    if ( (ndyn_steps>0) .and. (edyn_steps>0) ) doing_ehrenfest=.true.
 
-!   call basis_data_norm( M, size(c,2), c )
-
    tdstep = (dt_i) * (41341.3733366d0)
-!  tdstep = (dt_i) / ( (20.455d0) * (2.418884326505E-5) )
-!
+
 !  Amber should have time units in 1/20.455 ps, but apparently it has time
 !  in ps. Just have to transform to atomic units
 !  ( AU = 2.418884326505 x 10e-17 s )

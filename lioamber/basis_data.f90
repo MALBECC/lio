@@ -58,8 +58,8 @@ module basis_data
    ! nShelld: Number of auxiliary basis functions for each shell (s,p,d,f)
    ! max_c_per_atom: Maximum number of contractions for a single function.
    ! max_f_per_atom: Maximum number of functions for a single atom.
-   integer :: nShell(0:3)
-   integer :: nShelld(0:3)
+   integer :: nShell(0:4)
+   integer :: nShelld(0:4)
    integer :: max_c_per_atom
    integer :: max_f_per_atom
 
@@ -565,7 +565,7 @@ subroutine read_basis_external(basis_file, n_funcs, n_fits, n_atoms, normalize,&
                                     nns(n_atoms), nnp(n_atoms), nnd(n_atoms),  &
                                     iostatus, n_cont(n_funcs), n_contd(n_fits),&
                                     ang_mom_f(n_funcs),  ang_mom_fd(n_fits),   &
-                                    nShell(0:3), nShelld(0:3)
+                                    nShell(0:4), nShelld(0:4)
    double precision, intent(out) :: coef(n_funcs,max_con_per_atom), &
                                     craw(n_funcs,max_con_per_atom), &
                                     expo(n_funcs,max_con_per_atom), &
@@ -781,7 +781,7 @@ subroutine read_basis_internal(basis_file, fitting_file, n_funcs, n_fits,     &
                                     nns(n_atoms), nnp(n_atoms), nnd(n_atoms),  &
                                     iostatus, n_cont(n_funcs), n_contd(n_fits),&
                                     ang_mom_f(n_funcs),  ang_mom_fd(n_fits),   &
-                                    nShell(0:3), nShelld(0:3)
+                                    nShell(0:4), nShelld(0:4)
    double precision, intent(out) :: coef(n_funcs,max_con_per_atom), &
                                     craw(n_funcs,max_con_per_atom), &
                                     expo(n_funcs,max_con_per_atom), &

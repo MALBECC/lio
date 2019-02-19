@@ -31,8 +31,8 @@ contains
    use lr_data, only: Nvirt,dim,nstates,eigenval,&
                       eigenvec,cbas,root,FCA,nfo,nfv,&
                       NCOlr, Mlr
-   use garcha_mod, only: NCO, M, c, a
-   use basis_data, only: c_raw, max_c_per_atom
+   use garcha_mod, only: NCO
+   use basis_data, only: c_raw, max_c_per_atom, a, c, M
 
    implicit none
 
@@ -230,7 +230,8 @@ contains
 !PFat = ground state density matrix in AO basis
 !dPat = diference density matrix in AO basis
    use lr_data, only: Mlr, NCOlr, Nvirt
-   use garcha_mod, only: M, RMM
+   use garcha_mod, only: RMM
+   use basis_data, only: M
    implicit none
 
    integer, intent(in) :: N

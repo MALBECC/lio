@@ -270,11 +270,6 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
     ! Gives default values to variables.
     call lio_defaults()
 
-    ! Checks if input file exists and writes data to namelist variables.
-    inputFile = 'lio.in'
-    call read_options(inputFile)
-
-    if (.not. int_basis) basis_set = basis_i
     fcoord         = fcoord_i       ; fmulliken     = fmulliken_i    ;
     frestart       = frestart_i     ; frestartin    = frestartin_i   ;
     OPEN           = OPEN_i         ;
@@ -294,8 +289,15 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
     Fz             = Fz_i           ; NBCH          = NBCH_i         ;
     propagator     = propagator_i   ; writedens     = writedens_i    ;
     charge         = charge_i       ;
-
     if (verbose_i) verbose = 1
+
+    ! Checks if input file exists and writes data to namelist variables. 
+    ! Previous options are overwritten.
+    inputFile = 'lio.in'
+    call read_options(inputFile)
+    if ((.not. int_basis) .and. (basis_i .ne. 'basis')) basis_set = basis_i
+
+
     ! Initializes LIO. The last argument indicates LIO is not being used alone.
     call init_lio_common(natomin, Izin, nclatom, 1)
 

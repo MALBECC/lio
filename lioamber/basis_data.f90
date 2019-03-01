@@ -644,20 +644,20 @@ subroutine read_basis_external(basis_file, n_funcs, n_fits, n_atoms, normalize,&
                         index = index +1
                         select case (ang_mom(icont))
                         case (0)
-                           craw(n_orig, icount) = coef(n_orig, icount)
+                           craw(n_orig, icount) = coef_temp(index)
                            coef(n_orig, icount) = dsqrt( dsqrt(8.0D0 * &
                                                   (expo_temp(index)) ** 3 ) / &
                                                   PI32) * coef_temp(index)
                            expo(n_orig, icount) = expo_temp(index)
                         case (1)
-                           craw(n_orig, icount) = coef(n_orig, icount)
+                           craw(n_orig, icount) = coef_temp(index)
                            coef(n_orig, icount) = dsqrt( dsqrt(8.0D0 * &
                                                   (expo_temp(index)) ** 3 ) * &
                                                   4.0D0 * expo_temp(index) /  &
                                                   PI32) * coef_temp(index)
                            expo(n_orig, icount) = expo_temp(index)
                         case (2)
-                           craw(n_orig, icount) = coef(n_orig, icount)
+                           craw(n_orig, icount) = coef_temp(index)
                            coef(n_orig, icount) = dsqrt( dsqrt(8.0D0 * &
                                                   (expo_temp(index)) ** 3 ) *  &
                                                   16.0D0 * expo_temp(index)**2/&
@@ -869,20 +869,20 @@ subroutine read_basis_internal(basis_file, fitting_file, n_funcs, n_fits,     &
                         index = index +1
                         select case (ang_mom(icont))
                         case (0)
-                           craw(n_orig, icount) = coef(n_orig, icount)
+                           craw(n_orig, icount) = coef_temp(index)
                            coef(n_orig, icount) = dsqrt( dsqrt(8.0D0 * &
                                                   (expo_temp(index)) ** 3 ) / &
                                                   PI32) * coef_temp(index)
                            expo(n_orig, icount) = expo_temp(index)
                         case (1)
-                           craw(n_orig, icount) = coef(n_orig, icount)
+                           craw(n_orig, icount) = coef_temp(index)
                            coef(n_orig, icount) = dsqrt( dsqrt(8.0D0 * &
                                                   (expo_temp(index)) ** 3 ) * &
                                                   4.0D0 * expo_temp(index) /  &
                                                   PI32) * coef_temp(index)
                            expo(n_orig, icount) = expo_temp(index)
                         case (2)
-                           craw(n_orig, icount) = coef(n_orig, icount)
+                           craw(n_orig, icount) = coef_temp(index)
                            coef(n_orig, icount) = dsqrt( dsqrt(8.0D0 * &
                                                   (expo_temp(index)) ** 3 ) *  &
                                                   16.0D0 * expo_temp(index)**2/&

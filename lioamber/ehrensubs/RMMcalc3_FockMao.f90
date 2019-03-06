@@ -55,7 +55,7 @@ subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
 !  Calculate unfixed Fock in RMM - electric field
 !------------------------------------------------------------------------------!
    call g2g_timer_start('RMMcalc3-field')
-   call dip( DipMom(1), DipMom(2), DipMom(3) )
+   call dip( DipMom, RMM(1:MM) )
    write(666,*) eefld_on
    if (eefld_on) then
       g = 1.0d0

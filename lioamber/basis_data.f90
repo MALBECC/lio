@@ -42,10 +42,14 @@ module basis_data
    ! Single variables
    ! M     : number of basis functions.
    ! Md    : number of fitting functions.
+   ! MM    : M*(M+1), used for vectorized matrices.
+   ! MMd   : Md*(Md+1), used for vectorized matrices.
    ! kknums: number of single-precision two-center integrals.
    ! kknumd: number of double-precision two-center integrals.
    integer          :: M      = 0
    integer          :: Md     = 0
+   integer          :: MM     = 0
+   integer          :: MMd    = 0
    integer          :: kknums = 0
    integer          :: kknumd = 0
 
@@ -126,7 +130,8 @@ subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
    use basis_data, only: M, Md, int_basis, Nuc, Nucd, nCont, nContd, a, c, ad, &
                          cd, atmin, nns, nnp, nnd, nshell, nshelld, norm, af,  &
                          indexii, indexiid, natomc, jatc, nnps, nnpp, nnpd,    &
-                         ang_mom, ang_momd, max_f_per_atom, max_c_per_atom
+                         ang_mom, ang_momd, max_f_per_atom, max_c_per_atom, MM,&
+                         MMd
    implicit none
    ! Inputs:
    !   n_atoms        : the number of atoms in the QM system.
@@ -206,6 +211,9 @@ subroutine basis_init(basis_name, fitting_name, n_atoms, atom_Z, out_stat)
                       ang_mom,  nShell)
    call reorder_basis(ad, cd, Nucd, nContd, indexiid, Md, max_c_per_atom, &
                       ang_momd, nShelld)
+
+   ! Sets MM and MMd
+   MM = M *(M +1) / 2 ; MMd = Md *(Md +1) / 2 
 
    deallocate(atom_count, atom_basis_chk, atom_fitting_chk, ang_mom, ang_momd)
 end subroutine basis_init

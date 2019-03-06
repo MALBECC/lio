@@ -110,8 +110,8 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), RMM(M7:M7+MMd), &
                RMM(M9:M9+MMd), RMM(M11:M11+MMd), open, MEMO)
    call g2g_solve_groups(0, Ex, 0)
-   call field_calc(E1, time, RMM(M3:M3+MM), RMM(M5:M5+MM), r, d, Iz, natom, &
-                   ntatom, open)
+   call field_calc(E1, time, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), r, d, &
+                   Iz, natom, ntatom, open)
    FBA = FON
    call spunpack('L', M, RMM(M5), FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
 
@@ -325,8 +325,8 @@ subroutine cupredictor(F1a, F1b, FON, rho2, devPtrX, factorial, devPtrXc, &
    call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), RMM(M7:M7+MMd), &
                RMM(M9:M9+MMd), RMM(M11:M11+MMd), open, MEMO)
    call g2g_solve_groups(0, Ex, 0)
-   call field_calc(E1, time, RMM(M3:M3+MM), RMM(M5:M5+MM), r, d, Iz, natom, &
-                   ntatom, open)
+   call field_calc(E1, time, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), r, d, &
+                   Iz, natom, ntatom, open)
    FBA = FON
    call spunpack('L', M, RMM(M5), FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
 

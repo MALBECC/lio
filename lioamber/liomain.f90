@@ -16,14 +16,15 @@ subroutine liomain(E, dipxyz)
     use garcha_mod, only: Smat, RealRho, OPEN, writeforces, energy_freq, NCO, &
                           restart_freq, npas, sqsm, mulliken, lowdin, dipole, &
                           doing_ehrenfest, first_step, Eorbs, Eorbs_b, fukui, &
-                          print_coeffs, steep, NUNP, MO_coef_at, MO_coef_at_b
-    use basis_data, only: M
+                          print_coeffs, steep, NUNP, MO_coef_at, MO_coef_at_b,&
+                          RMM
+    use basis_data, only: M, MM
     use ecp_mod   , only: ecpmode, IzECP
     use ehrensubs , only: ehrendyn_main
     use fileio    , only: write_orbitals, write_orbitals_op
 
     implicit none
-    REAL*8, intent(inout) :: dipxyz(3), E
+    double precision, intent(inout) :: dipxyz(3), E
 
     call g2g_timer_sum_start("Total")
 
@@ -45,12 +46,12 @@ subroutine liomain(E, dipxyz)
     endif
 
     if ( (restart_freq.gt.0) .and. (MOD(npas, restart_freq).eq.0) ) &
-       call do_restart(88)
+       call do_restart(88, RMM(1:MM))
 
     ! Perform Mulliken and Lowdin analysis, get fukui functions and dipole.
     if (MOD(npas, energy_freq).eq.0) then
-        if (mulliken.or.lowdin) call do_population_analysis()
-        if (dipole) call do_dipole(dipxyz, 69)
+        if (mulliken .or. lowdin) call do_population_analysis(RMM(1:MM))
+        if (dipole) call do_dipole(RMM(1:MM), dipxyz, 69)
         if (fukui) call do_fukui()
 
         if (writeforces) then
@@ -113,15 +114,17 @@ end subroutine do_forces
 !%% DO_DIPOLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Sets variables up and calls dipole calculation.                              !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine do_dipole(dipxyz, uid)
-    use fileio, only: write_dipole
+subroutine do_dipole(rho, dipxyz, uid)
+    use fileio    , only: write_dipole
+    use basis_data, only: MM
     implicit none
-    integer, intent(in)    :: uid
-    real*8 , intent(inout) :: dipxyz(3)
-    real*8                 :: u
+    integer         , intent(in)    :: uid
+    double precision, intent(in)    :: rho(MM)
+    double precision, intent(inout) :: dipxyz(3)
+    double precision :: u
 
     call g2g_timer_start('Dipole')
-    call dip(dipxyz)
+    call dip(dipxyz, rho)
     u = sqrt(dipxyz(1)**2 + dipxyz(2)**2 + dipxyz(3)**2)
 
     call write_dipole(dipxyz, u, uid, .true.)
@@ -135,27 +138,29 @@ end subroutine do_dipole
 !%% DO_POPULATION_ANALYSIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs the different population analyisis available.                       !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine do_population_analysis()
-   use garcha_mod, only: RMM, Smat, RealRho, Enucl, Iz, natom, &
+subroutine do_population_analysis(RMM)
+   use garcha_mod, only: Smat, RealRho, Enucl, Iz, natom, &
                          mulliken, lowdin, sqsm, d, r, ntatom
-   use basis_data, only: M, Md, Nuc
+   use basis_data, only: M, Md, Nuc, MM
    use ECP_mod   , only: ecpmode, IzECP
    use faint_cpu , only: int1
    use SCF_aux   , only: fix_densmat
    use fileio    , only: write_population
 
    implicit none
-   integer :: MM, M11, M5, IzUsed(natom), kk
-   real*8  :: q(natom), En
+   double precision, intent(in) :: RMM(MM)
+   double precision, allocatable :: Fock_1e(:), Hmat(:)
+   double precision :: q(natom), En
+   integer          :: IzUsed(natom), kk
 
-   ! Needed until we dispose of RMM.
-   MM = M*(M+1)/2 ; M5 = 1 + MM*2; M11 = M5+MM+Md*(Md+1)
-
+   
    ! Decompresses and fixes S and RealRho matrixes, which are needed for
    ! population analysis.
-   call int1(En, RMM(M5:M5+MM), RMM(M11:M11+MM), Smat, d, r, Iz, natom, ntatom)
-   call spunpack('L',M,RMM(M5),Smat)
-   call spunpack('L',M,RMM(1),RealRho)
+   allocate(Fock_1e(MM), Hmat(MM))
+   call int1(En, Fock_1e, Hmat, Smat, d, r, Iz, natom, ntatom)
+   call spunpack('L', M, Fock_1e, Smat)
+   call spunpack('L', M, RMM(1), RealRho)
+   deallocate(Fock_1e, Hmat)
    call fix_densmat(RealRho)
 
    ! Initial nuclear charge for Mulliken
@@ -224,21 +229,23 @@ end subroutine do_fukui
 !%% DO_FUKUI %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs Fukui function calls and printing.                                  !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine do_restart(UID)
-   use garcha_mod , only: RMM, OPEN, NCO, NUNP, MO_coef_at, MO_coef_at_b, &
+subroutine do_restart(UID, rho_total)
+   use garcha_mod , only: OPEN, NCO, NUNP, MO_coef_at, MO_coef_at_b, &
                           rhoalpha, rhobeta
-   use basis_data , only: M, indexii
+   use basis_data , only: M, MM, indexii
    use fileio_data, only: rst_dens
    use fileio     , only: write_coef_restart, write_rho_restart
    implicit none
-   integer, intent(in) :: UID
-   integer             :: NCOb, icount, jcount, coef_ind
-   real*8, allocatable :: coef(:,:), coef_b(:,:), tmp_rho(:,:), tmp_rho_b(:,:)
+   integer         , intent(in) :: UID
+   double precision, intent(in) :: rho_total(MM)
+   double precision, allocatable :: coef(:,:), coef_b(:,:), tmp_rho(:,:), &
+                                    tmp_rho_b(:,:)
+   integer :: NCOb, icount, jcount, coef_ind
 
    if ( rst_dens .eq. 2 ) then
       allocate(tmp_rho(M,M))
       if (.not. OPEN) then
-         call spunpack('L', M, RMM(1), tmp_rho)
+         call spunpack('L', M, rho_total, tmp_rho)
          call write_rho_restart(tmp_rho, M, uid)
       else
          allocate(tmp_rho_b(M,M))

@@ -466,7 +466,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
       if (transport_calc) call transport_rho_trace(M, dim3, rho)
 
       ! Dipole Moment calculation.
-      call td_dipole(t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, 134)
+      call td_dipole(RMM, t, tdstep, Fx, Fy, Fz, istep, propagator,is_lpfrg,134)
       call td_population(M, natom, rho_aux, Smat_initial, sqsm, Nuc, Iz, OPEN, &
                          istep, propagator, is_lpfrg)
 
@@ -870,8 +870,8 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
    endif
 
    ! ELECTRIC FIELD CASE - Perturbation type: Gaussian (default).
-   call field_calc(E1, time, RMM(M3:M3+MM), RMM(M5:M5+MM), r, d, Iz, natom, &
-                   ntatom, open_shell)
+   call field_calc(E1, time, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), r, d, Iz, &
+                   natom, ntatom, open_shell)
 
    ! Add 1e contributions to E1.
    do icount = 1, MM
@@ -883,13 +883,14 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
    return
 end subroutine td_calc_energy
 
-subroutine td_dipole(t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, uid)
+subroutine td_dipole(rho, t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, &
+                     uid)
    use fileio, only: write_dipole_td, write_dipole_td_header
    implicit none
-   integer, intent(in)    :: istep, propagator, uid
-   logical, intent(in)    :: is_lpfrg
-   real*8 , intent(in)    :: Fx, Fy, Fz, t, tdstep
-   real*8 :: dipxyz(3)
+   integer         , intent(in) :: istep, propagator, uid
+   logical         , intent(in) :: is_lpfrg
+   double precision, intent(in) :: Fx, Fy, Fz, t, tdstep, rho(:)
+   double precision :: dipxyz(3)
 
    if(istep.eq.1) then
       call write_dipole_td_header(tdstep, Fx, Fy, Fz, uid)
@@ -897,13 +898,13 @@ subroutine td_dipole(t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, uid)
    if ((propagator.gt.1).and.(is_lpfrg)) then
       if (mod ((istep-1),10) == 0) then
          call g2g_timer_start('DIPOLE_TD')
-         call dip(dipxyz)
+         call dip(dipxyz, rho)
          call g2g_timer_stop('DIPOLE_TD')
          call write_dipole_td(dipxyz, t, uid)
       endif
    else
       call g2g_timer_start('DIPOLE_TD')
-      call dip(dipxyz)
+      call dip(dipxyz, rho)
       call g2g_timer_stop('DIPOLE_TD')
       call write_dipole_td(dipxyz, t, uid)
    endif

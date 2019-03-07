@@ -94,7 +94,7 @@ module cubegen
    integer :: i,j,k,ii,jj,kk,iii,jjj,kkk
    integer :: ns, np, ni
    integer :: ivox, ivoxx, ivoxy, ivoxz, kk_dens, kk_orb
-   integer :: MM, MMd, M1, M2, M7, M13, M15
+   integer :: MM, MMd, M1, M2, M13, M15
 
    real, parameter :: expmax = 10
 
@@ -102,8 +102,7 @@ module cubegen
    MMd = Md * (Md+1) / 2
 
    M1  = 1         ! first P
-   M7  = M1  + MM  + MM  + MM  ! now G
-   M13 = M7  + MMd  + MMd + MM  ! W ( eigenvalues ), also this space is used in least squares
+   M13 = 1 + 4*MM + 2*MMd ! W ( eigenvalues ), also this space is used in least squares
    M15 = M13 + M   ! aux ( vector for ESSl)
 
    if (cube_dens) open(unit=4242,file=cube_dens_file)

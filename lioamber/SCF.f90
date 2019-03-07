@@ -35,7 +35,7 @@ subroutine SCF(E)
                           total_time, MO_coef_at, MO_coef_at_b, Smat, good_cut,&
                           ndiis, rhoalpha, rhobeta, OPEN, RealRho, d, ntatom,  &
                           Eorbs_b, npas, RMM, X, npasw, Fmat_vec, Fmat_vec2,   &
-                          Ginv_vec, Hmat_vec
+                          Ginv_vec, Gmat_vec, Hmat_vec
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
                        FOCK_ECP_read,FOCK_ECP_write,IzECP
    use field_data, only: field, fx, fy, fz
@@ -156,7 +156,7 @@ subroutine SCF(E)
 ! TODO : Variables to eliminate...
    real*8, allocatable :: xnano(:,:)
    integer :: MM, MM2, MMd, Md2
-   integer :: M1, M2, M7, M13, M15, M17,M18,M18b, M19, M20, M22
+   integer :: M1, M2, M13, M15
 
    real*8, allocatable :: Y(:,:)
    real*8, allocatable :: Ytrans(:,:)
@@ -250,20 +250,8 @@ subroutine SCF(E)
       end if
 
       M1=1 ! first P
-      M7=M1+MM+MM+MM! now G
-      M13=M7+MMd+MMd+MM! W ( eigenvalues ), also this space is used in least squares
+      M13=1 + 4*MM + 2*MMd ! W ( eigenvalues ), also this space is used in least squares
       M15=M13+M! aux ( vector for ESSl)
-      M17=M15+MM! Least squares
-      M18=M17+MMd! vectors of MO
-      M19=M18+M*NCO! weights (in case of using option )
-      M20 = M19 + natom*50*Nang ! RAM storage of two-electron integrals (if MEMO=T)
-
-   if (OPEN) then
-      M18b=M18+M*NCOa
-      M19=M18b+M*NCOb
-      M20 = M19 + natom*50*Nang
-      M22 = M20 +2*MM !W ( beta eigenvalues )
-   end if
 
 !------------------------------------------------------------------------------!
 ! TODO: I don't like ending timers inside a conditional...
@@ -468,11 +456,10 @@ subroutine SCF(E)
 
 !----------------------------------------------------------!
 ! Precalculate two-index (density basis) "G" matrix used in density fitting
-! here (S_ij in Dunlap, et al JCP 71(8) 1979) into RMM(M7)
+! here (S_ij in Dunlap, et al JCP 71(8) 1979).
 ! Also, pre-calculate G^-1 if G is not ill-conditioned.
-!
       call g2g_timer_sum_start('Coulomb G matrix')
-      call int2(RMM(M7:M7+MMd), Ginv_vec, r, d, ntatom)
+      call int2(Gmat_vec, Ginv_vec, r, d, ntatom)
       call g2g_timer_sum_stop('Coulomb G matrix')
 
 ! Precalculate three-index (two in MO basis, one in density basis) matrix
@@ -550,8 +537,8 @@ subroutine SCF(E)
 
 !       Computes Coulomb part of Fock, and energy on E2
         call g2g_timer_sum_start('Coulomb fit + Fock')
-        call int3lu(E2, RMM(1:MM), Fmat_vec2, Fmat_vec, &
-                    RMM(M7:M7+MMd), Ginv_vec, Hmat_vec,open,MEMO)
+        call int3lu(E2, RMM(1:MM), Fmat_vec2, Fmat_vec, Gmat_vec, Ginv_vec, &
+                    Hmat_vec, open, MEMO)
         call g2g_timer_sum_pause('Coulomb fit + Fock')
 
 !       Test for NaN

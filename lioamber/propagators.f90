@@ -53,13 +53,13 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    ! And gives: F5 = F(t+(deltat/2))
    use garcha_mod   , only: RMM, NBCH, rhoalpha, rhobeta, OPEN, r, d, natom, &
                             ntatom, Iz, MEMO, Fmat_vec, Fmat_vec2, Ginv_vec, &
-                            Hmat_vec
+                            Hmat_vec, Gmat_vec
    use field_data   , only: field
    use field_subs   , only: field_calc
    use mathsubs     , only: basechange
    use faint_cpu    , only: int3lu
    use fockbias_subs, only: fockbias_apply
-   use basis_data   , only: M, Md
+   use basis_data   , only: M, Md, MM, MMd
 
    implicit none
    ! MTB is only used in DFTB, it equals 0 otherwise.
@@ -75,15 +75,13 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    double complex, intent(in)  :: rho2(M_in,M_in,dim3)
    double complex, allocatable :: rho4(:,:,:), rho2t(:,:,:)
 #endif
-   integer :: i,j,k,kk, M2, MM, MMd, M7
+   integer :: i,j,k,kk, M2
    double precision :: E2, tdstep1, Ex, E1
    double precision, allocatable :: F3(:,:,:), FBA(:,:,:)
 
    allocate(rho4(M_in,M_in,dim3), rho2t(M_in,M_in,dim3), F3(M_in,M_in,dim3), &
             FBA(M_in,M_in,dim3))
-
-   M2 = 2 * M    ; MM  = M * (M +1)/2; MMd = Md * (Md+1)/2
-   M7 = 3 * MM +1
+   M2 = 2 * M
 
    ! Initializations and defaults
    ! tdstep of the predictor is 0.5 * tdstep_magnus
@@ -108,8 +106,8 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
       call sprepack_ctr('L', M, RMM, rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
    end if
 
-   call int3lu(E2, RMM(1:MM), Fmat_vec2, Fmat_vec, RMM(M7:M7+MMd), &
-               Ginv_vec, Hmat_vec, open, MEMO)
+   call int3lu(E2, RMM(1:MM), Fmat_vec2, Fmat_vec, Gmat_vec, Ginv_vec, &
+               Hmat_vec, open, MEMO)
    call g2g_solve_groups(0, Ex, 0)
    call field_calc(E1, time, RMM(1:MM), Fmat_vec2, Fmat_vec, r, d, &
                    Iz, natom, ntatom, open)
@@ -269,13 +267,13 @@ subroutine cupredictor(F1a, F1b, FON, rho2, devPtrX, factorial, devPtrXc, &
    ! And gives: F5 = F(t+(deltat/2))
    use garcha_mod   , only: RMM, NBCH, rhoalpha, rhobeta, OPEN, r, d, natom, &
                             ntatom, Iz, MEMO, Fmat_vec, Fmat_vec2, Ginv_vec, &
-                            Hmat_vec
+                            Hmat_vec, Gmat_vec
    use field_data   , only: field
    use field_subs   , only: field_calc
    use cublasmath   , only: basechange_cublas
    use faint_cpu    , only: int3lu
    use fockbias_subs, only: fockbias_apply
-   use basis_data   , only: M, Md
+   use basis_data   , only: M, Md, MM, MMd
 
    implicit none
    ! MTB is only used in DFTB, it equals 0 otherwise.
@@ -291,15 +289,14 @@ subroutine cupredictor(F1a, F1b, FON, rho2, devPtrX, factorial, devPtrXc, &
    double complex, intent(in)  :: rho2(M_in,M_in,dim3)
    double complex, allocatable :: rho4(:,:,:), rho2t(:,:,:)
 #endif
-   integer :: M2, MM, MMd, M7
+   integer :: M2
    double precision :: E2, tdstep1, Ex, E1
    double precision, allocatable :: F3(:,:,:), FBA(:,:,:)
 
    allocate(rho4(M_in,M_in,dim3), rho2t(M_in,M_in,dim3), F3(M_in,M_in,dim3), &
             FBA(M_in,M_in,dim3))
 
-   M2 = 2 * M    ; MM  = M * (M +1)/2; MMd = Md * (Md+1)/2;
-   M7 = 3 * MM +1
+   M2 = 2 * M
 
    ! Initializations and defaults
    ! tdstep of the predictor is 0.5 * tdstep_magnus
@@ -324,8 +321,8 @@ subroutine cupredictor(F1a, F1b, FON, rho2, devPtrX, factorial, devPtrXc, &
       call sprepack_ctr('L', M, RMM, rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
    end if
 
-   call int3lu(E2, RMM(1:MM), Fmat_vec2, Fmat_vec, RMM(M7:M7+MMd), &
-               Ginv_vec, Hmat_vec, open, MEMO)
+   call int3lu(E2, RMM(1:MM), Fmat_vec2, Fmat_vec, Gmat_vec, Ginv_vec, &
+               Hmat_vec, open, MEMO)
    call g2g_solve_groups(0, Ex, 0)
    call field_calc(E1, time, RMM(1:MM), Fmat_vec2, Fmat_vec, r, d, &
                    Iz, natom, ntatom, open)

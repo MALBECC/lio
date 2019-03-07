@@ -19,7 +19,7 @@ subroutine RMMcalc2_FockMao( FockMao, Energy )
    real*8   :: Energy_Coulomb
    real*8   :: Energy_SolvT,Energy_SolvF
 
-   integer  :: kk, igpu, M7
+   integer  :: kk, igpu
 !
 !
 !  Initializations
@@ -36,7 +36,6 @@ subroutine RMMcalc2_FockMao( FockMao, Energy )
    call aint_query_gpu_level(igpu)
    if (igpu.gt.1) call aint_new_step()
    call g2g_timer_stop('RMMcalc2-init')
-   M7  = 1 + 3*MM
 !
 !
 ! Calculate fixed-parts of fock
@@ -49,7 +48,7 @@ subroutine RMMcalc2_FockMao( FockMao, Energy )
       call aint_qmmm_fock(Energy_SolvF,Energy_SolvT)
    endif
 
-   call int2(RMM(M7:M7+MMd), Gmat_vec, r, d, ntatom)
+   call int2(Gmat_vec, Ginv_vec, r, d, ntatom)
    if (igpu.gt.2) call aint_coulomb_init()
    if (igpu.eq.5) MEMO = .false.
    call g2g_timer_stop('RMMcalc2-sol2coul')

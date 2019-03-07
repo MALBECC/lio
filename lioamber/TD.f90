@@ -45,8 +45,8 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    use garcha_mod    , only: NBCH, propagator, RMM, NCO, Iz, igrid2, r, nsol, &
                              pc, X, Smat, MEMO, ntatom, sqsm, Nunp, OPEN,     &
                              natom, d, rhoalpha, rhobeta, Fmat_vec, Fmat_vec2,&
-                             Ginv_vec, Hmat_vec
-   use basis_data    , only: M, Md, Nuc, ncont, nshell, a, c, Norm
+                             Ginv_vec, Hmat_vec, Gmat_vec
+   use basis_data    , only: M, Md, Nuc, ncont, nshell, a, c, Norm, MM, MMd
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, &
                              writedens, pert_time
    use field_data    , only: field, fx, fy, fz
@@ -73,8 +73,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    type(operator), intent(inout), optional :: rho_bop, fock_bop
 
    real*8  :: E, En, E1, E2, E1s, Es, Ens = 0.0D0, Ex, t, dt_magnus, dt_lpfrg
-   integer :: MM, MMd, M2, M13, M15, LWORK, igpu, info, istep,    &
-              icount,jcount, M7
+   integer :: M2, M13, LWORK, igpu, info, istep, icount, jcount
    integer :: lpfrg_steps = 200, chkpntF1a = 185, chkpntF1b = 195
    logical :: is_lpfrg = .false. , fock_restart = .false.
    character(len=20) :: restart_filename
@@ -124,13 +123,9 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
    ! RMM initializations
-   ! M7 - G
-   ! M13 - W (matrix eigenvalues),  M15 - Aux vector for ESSL. M17 - Used
-   ! in least squares, M18 - MO vectors (deprecated), M19 - weights (optional),
-   ! M20 - 2e integrals if MEMO=t
-   MM  = M *(M+1) /2 ; MMd = Md*(Md+1)/2
-   M2  = 2*M         ; M7  = 1 + 3*MM
-   M13 = 1 + 3*MM + 2*MMd + MM    ; M15 = M13 + M
+   ! M13 - W (matrix eigenvalues),
+   M2  = 2*M
+   M13 = 1 + 3*MM + 2*MMd + MM    
 
    call g2g_timer_start('TD')
    call g2g_timer_start('td-inicio')
@@ -263,7 +258,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 #endif
    ! Precalculate three-index (two in MO basis, one in density basis) matrix
    ! used in density fitting /Coulomb F element calculation here (t_i in Dunlap)
-   call int2(RMM(M7:M7+MMd), Ginv_vec, r, d, ntatom)
+   call int2(Gmat_vec, Ginv_vec, r, d, ntatom)
    call td_coulomb_precalc(igpu, MEMO, r, d, natom, ntatom)
 
    ! Recalculate maximum number of TD steps.
@@ -291,9 +286,9 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
       call g2g_timer_sum_start("TD - TD Step Energy")
 
       call td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, Fmat_vec, Fmat_vec2,&
-                          Ginv_vec, Hmat_vec, is_lpfrg, transport_calc,     &
-                          t/0.024190D0, M, Md, open, r, d, Iz, natom, ntatom, &
-                          MEMO)
+                          Gmat_vec, Ginv_vec, Hmat_vec, is_lpfrg,             &
+                          transport_calc, t/0.024190D0, M, Md, open, r, d, Iz,&
+                          natom, ntatom, MEMO)
 
       call g2g_timer_sum_pause("TD - TD Step Energy")
       if (verbose .gt. 2) write(*,'(A,I6,A,F12.6,A,F12.6,A)') "  TD Step: ", &
@@ -837,8 +832,8 @@ subroutine td_check_prop(is_lpfrg, propagator, istep, lpfrg_steps, fock_rst,&
    return
 end subroutine td_check_prop
 
-subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, Fmat, Fmat2, &
-                          Ginv, Hmat, is_lpfrg ,transport_calc, time, &
+subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, Fmat, Fmat2,     &
+                          Gmat, Ginv, Hmat, is_lpfrg ,transport_calc, time,&
                           M, Md, open_shell, r, d, Iz, natom, ntatom, MEMO)
    use faint_cpu , only: int3lu
    use field_subs, only: field_calc
@@ -847,19 +842,16 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, Fmat, Fmat2, &
    logical, intent(in)    :: is_lpfrg, transport_calc
    real*8 , intent(in)    :: time, r(ntatom,3), d(natom,natom)
    real*8 , intent(inout) :: E, E1, E2, En, Ex, Es, RMM(:), Hmat(:), &
-                             Fmat(:), Fmat2(:), Ginv(:)
+                             Fmat(:), Fmat2(:), Ginv(:), Gmat(:)
    integer         , intent(in) :: M, Md
    logical         , intent(in) :: open_shell, MEMO
-   integer :: icount, MMd, M7
-
-   MMd=Md*(Md+1)/2
-   M7=1+3*MM ! G matrix
+   integer :: icount
 
    E1 = 0.0D0; E = 0.0D0
    if (is_lpfrg) then
       call g2g_timer_sum_start("TD - Coulomb")
-      call int3lu(E2, RMM(1:MM), Fmat2, Fmat, RMM(M7:M7+MMd), &
-                  Ginv, Hmat, open_shell, MEMO)
+      call int3lu(E2, RMM(1:MM), Fmat2, Fmat, Gmat, Ginv, Hmat, open_shell,&
+                  MEMO)
       call g2g_timer_sum_pause("TD - Coulomb")
       call g2g_timer_sum_start("TD - Exc")
       call g2g_solve_groups(0,Ex,0)

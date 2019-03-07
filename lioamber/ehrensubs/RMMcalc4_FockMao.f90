@@ -11,7 +11,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
 
    use garcha_mod, &
    &only: RMM, igrid2, natom, Iz, NCO, Nunp, total_time, d, ntatom, r, open, &
-          pc, Fmat_vec, Ginv_vec, Hmat_vec
+          pc, Fmat_vec, Fmat_vec2, Ginv_vec, Hmat_vec
 
    use basis_data, &
    &only: M, Md, kkind, kkinds, cool, cools, MM, MMd

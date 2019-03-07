@@ -9,7 +9,7 @@
 
   do jj=1,M
   do ii=jj,M
-     idx=ii+(2*M-jj)*(jj-1)/2+idx0
+     idx=ii+(2*M-jj)*(jj-1)/2
      FockMao(ii,jj)=Fmat_vec(idx)
      FockMao(jj,ii)=Fmat_vec(idx)
   enddo
@@ -23,7 +23,7 @@
 
   implicit none
   real*8,intent(out) :: FockMao(M,M)
-  integer            :: ii,jj,idx,idx0
+  integer            :: ii,jj,idx
 
   do jj=1,M
   do ii=jj,M

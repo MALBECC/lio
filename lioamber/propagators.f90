@@ -52,7 +52,7 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    ! This routine receives: F1a, F1b, rho2
    ! And gives: F5 = F(t+(deltat/2))
    use garcha_mod   , only: RMM, NBCH, rhoalpha, rhobeta, OPEN, r, d, natom, &
-                            ntatom, Iz, MEMO, Fmat_vec, Fmat_vec2
+                            ntatom, Iz, MEMO, Fmat_vec, Fmat_vec2, Ginv_vec
    use field_data   , only: field
    use field_subs   , only: field_calc
    use mathsubs     , only: basechange
@@ -74,15 +74,15 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    double complex, intent(in)  :: rho2(M_in,M_in,dim3)
    double complex, allocatable :: rho4(:,:,:), rho2t(:,:,:)
 #endif
-   integer :: i,j,k,kk, M2, MM, MMd, M11, M7, M9
+   integer :: i,j,k,kk, M2, MM, MMd, M11, M7
    double precision :: E2, tdstep1, Ex, E1
    double precision, allocatable :: F3(:,:,:), FBA(:,:,:)
 
    allocate(rho4(M_in,M_in,dim3), rho2t(M_in,M_in,dim3), F3(M_in,M_in,dim3), &
             FBA(M_in,M_in,dim3))
 
-   M2 = 2 * M    ;  MM  = M * (M +1)/2; MMd = Md * (Md+1)/2
-   M7 = 3 * MM +1; M9  = M7 + MMd     ; M11 = M9 + MMd
+   M2 = 2 * M    ; MM  = M * (M +1)/2; MMd = Md * (Md+1)/2
+   M7 = 3 * MM +1; M11 = M7 + MMd + MMd
 
    ! Initializations and defaults
    ! tdstep of the predictor is 0.5 * tdstep_magnus
@@ -108,7 +108,7 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    end if
 
    call int3lu(E2, RMM(1:MM), Fmat_vec2, Fmat_vec, RMM(M7:M7+MMd), &
-               RMM(M9:M9+MMd), RMM(M11:M11+MMd), open, MEMO)
+               Ginv_vec, RMM(M11:M11+MMd), open, MEMO)
    call g2g_solve_groups(0, Ex, 0)
    call field_calc(E1, time, RMM(1:MM), Fmat_vec2, Fmat_vec, r, d, &
                    Iz, natom, ntatom, open)
@@ -267,7 +267,7 @@ subroutine cupredictor(F1a, F1b, FON, rho2, devPtrX, factorial, devPtrXc, &
    ! This routine receives: F1a, F1b, rho2
    ! And gives: F5 = F(t+(deltat/2))
    use garcha_mod   , only: RMM, NBCH, rhoalpha, rhobeta, OPEN, r, d, natom, &
-                            ntatom, Iz, MEMO, Fmat_vec, Fmat_vec2
+                            ntatom, Iz, MEMO, Fmat_vec, Fmat_vec2, Ginv_vec
    use field_data   , only: field
    use field_subs   , only: field_calc
    use cublasmath   , only: basechange_cublas
@@ -289,15 +289,15 @@ subroutine cupredictor(F1a, F1b, FON, rho2, devPtrX, factorial, devPtrXc, &
    double complex, intent(in)  :: rho2(M_in,M_in,dim3)
    double complex, allocatable :: rho4(:,:,:), rho2t(:,:,:)
 #endif
-   integer :: M2, MM, MMd, M11, M7, M9
+   integer :: M2, MM, MMd, M11, M7
    double precision :: E2, tdstep1, Ex, E1
    double precision, allocatable :: F3(:,:,:), FBA(:,:,:)
 
    allocate(rho4(M_in,M_in,dim3), rho2t(M_in,M_in,dim3), F3(M_in,M_in,dim3), &
             FBA(M_in,M_in,dim3))
 
-   M2 = 2 * M    ;  MM  = M * (M +1)/2; MMd = Md * (Md+1)/2;
-   M7 = 3 * MM +1; M9  = M7 + MMd     ; M11 = M9 + MMd
+   M2 = 2 * M    ; MM  = M * (M +1)/2; MMd = Md * (Md+1)/2;
+   M7 = 3 * MM +1; M11 = M7 + MMd + MMd
 
    ! Initializations and defaults
    ! tdstep of the predictor is 0.5 * tdstep_magnus
@@ -323,7 +323,7 @@ subroutine cupredictor(F1a, F1b, FON, rho2, devPtrX, factorial, devPtrXc, &
    end if
 
    call int3lu(E2, RMM(1:MM), Fmat_vec2, Fmat_vec, RMM(M7:M7+MMd), &
-               RMM(M9:M9+MMd), RMM(M11:M11+MMd), open, MEMO)
+               Ginv_vec, RMM(M11:M11+MMd), open, MEMO)
    call g2g_solve_groups(0, Ex, 0)
    call field_calc(E1, time, RMM(1:MM), Fmat_vec2, Fmat_vec, r, d, &
                    Iz, natom, ntatom, open)

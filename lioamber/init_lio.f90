@@ -116,7 +116,9 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
                            remove_zero_weights, min_points_per_cube,           &
                            max_function_exponent, little_cube_size,            &
                            sphere_radius, Fock_Hcore, Fock_Overlap, P_density, &
-                           OPEN, timers, MO_coef_at, MO_coef_at_b, charge
+                           OPEN, timers, MO_coef_at, MO_coef_at_b, charge,     &
+                           Fmat_vec, Fmat_vec2, Pmat_vec, Hmat_vec, Ginv_vec,  &
+                           Gmat_vec
     use ECP_mod,    only : Cnorm, ecpmode
     use field_data, only : chrg_sq
     use fileio    , only : lio_logo
@@ -183,7 +185,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     ! reemplazos de RMM
     MM=M*(M+1)/2
     allocate(Fmat_vec(MM), Fmat_vec2(MM), Pmat_vec(MM), Hmat_vec(MM), &
-             Ginv_vec(MM))
+             Ginv_vec(MM), Gmat_vec(MM))
     call g2g_timer_stop('lio_init')
 
     return

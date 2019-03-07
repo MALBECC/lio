@@ -2,7 +2,8 @@ subroutine lio_finalize()
 ! Deallocation and finalizations.
    use garcha_mod , only: dipole, Smat, RealRho, sqsm, Eorbs, Eorbs_b, &
                           MO_coef_at, MO_coef_at_b, r, v, rqm, Em, Rm, &
-                          pc, Iz, RMM, X, d
+                          pc, Iz, RMM, X, d, Fmat_vec, Fmat_vec2,      &
+                          Pmat_vec, Hmat_vec, Ginv_vec, Gmat_vec
    use ECP_mod    , only: ecpmode
    use fileio     , only: io_finish_outputs
    use basis_subs , only: basis_deinit
@@ -22,7 +23,7 @@ subroutine lio_finalize()
    if (allocated(MO_coef_at_b)) deallocate(MO_coef_at_b)
 
 
-   deallocate(Fmat_vec, Fmat_vec2, Pmat_vec, Hmat_vec, Ginv_vec)
+   deallocate(Fmat_vec, Fmat_vec2, Pmat_vec, Hmat_vec, Ginv_vec, Gmat_vec)
 
    deallocate(r, v, rqm, Em, Rm, pc, Iz, RMM, X, d)
 

@@ -8,7 +8,7 @@ subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
    use faint_cpu  , only: intfld, int3lu
 
    use garcha_mod,  only: natom, Iz, NCO, Nunp, total_time, RMM, open, &
-                          r, d, ntatom, MEMO, Fmat_vec, Fmat_vec2
+                          r, d, ntatom, MEMO, Fmat_vec, Fmat_vec2, Ginv_vec
    
    use basis_data, only: M, Md
 
@@ -26,7 +26,7 @@ subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
    real*8   :: Energy_Coulomb
    real*8   :: Energy_Exchange
    real*8   :: Energy_Efield
-   integer  :: kk, MM, MMd, M7, M9, M11
+   integer  :: kk, MM, MMd, M7, M11
 
 !  For electric field
    real*8   :: factor, g, Qc
@@ -38,14 +38,13 @@ subroutine RMMcalc3_FockMao( DensMao, ElecField, FockMao, DipMom, Energy )
    MM =M *(M+1)/2
    MMd=Md*(Md+1)/2
    M7=1 + 3*MM ! G matrix
-   M9=M7+MMd ! G inverted
-   M11=M9+MMd ! Hmat
+   M11=M7+MMd+MMd ! Hmat
 
    call g2g_timer_start('RMMcalc3-solve3lu')
    call rmmput_fock( FockMao )
    call rmmput_dens( DensMao )
    call int3lu(Energy_Coulomb, RMM(1:MM), Fmat_vec2, Fmat_vec, &
-               RMM(M7:M7+MMd), RMM(M9:M9+MMd), RMM(M11:M11+MMd), open, MEMO)
+               RMM(M7:M7+MMd), Ginv_vec, RMM(M11:M11+MMd), open, MEMO)
    call g2g_solve_groups( 0, Energy_Exchange, 0 )
    call g2g_timer_stop('RMMcalc3-solve3lu')
 !

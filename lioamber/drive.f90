@@ -16,7 +16,7 @@ subroutine drive(ng2, ngDyn, ngdDyn, iostat)
                          number_restr, restr_pairs, restr_index, restr_k,      &
                          restr_w, restr_r0, mulliken, MO_coef_at, MO_coef_at_b,&
                          use_libxc, ex_functional_id, ec_functional_id,        &
-                         pi, Fmat_vec, Fmat_vec2
+                         pi, Fmat_vec, Fmat_vec2, Ginv_vec
    use basis_data, only: nshell, nshelld, ncont, ncontd, indexii, a, c, ad, cd,&
                          af, M, Md, rmax, norm, nuc, nucd
    use ECP_mod     , only: ecpmode
@@ -34,7 +34,7 @@ subroutine drive(ng2, ngDyn, ngdDyn, iostat)
    double precision, allocatable :: restart_coef(:,:), restart_coef_b(:,:), &
                                     restart_dens(:,:), restart_adens(:,:),  &
                                     restart_bdens(:,:)
-   integer :: NCOa, NCOb, M9, M11, MM, MMd
+   integer :: NCOa, NCOb, M11, MM, MMd
    integer :: icount, kcount, jcount
   
    ! Calls generator of table for incomplete gamma functions
@@ -50,7 +50,7 @@ subroutine drive(ng2, ngDyn, ngdDyn, iostat)
    MM  = M  * (M  +1) / 2
    MMd = Md * (Md +1) / 2
 
-   M9 = MM +1 + MM + MM + MMd; M11 = M9 + MMd ! Gmat (M9) and Hmat (M11)
+   M11 = MM +1 + MM + MM + MMd + MMd ! Hmat (M11)
 
    if (ecpmode) then !agregadas por Nick para lectura de ECP
       call lecturaECP()   !lee parametros
@@ -176,7 +176,7 @@ subroutine drive(ng2, ngDyn, ngdDyn, iostat)
    call summon_ghosts(Iz, natom, verbose)
 
    if (gpu_level .ne. 0) call aint_parameter_init(Md, ncontd, nshelld, cd, ad,&
-                                                  Nucd, af, RMM(M9), RMM(M11),&
+                                                  Nucd, af, Ginv_vec, RMM(M11),&
                                                   STR, FAC, rmax, Iz, gpu_level)
   ! TO-DO: Relocate this.
   allocate(X(M , 4*M))

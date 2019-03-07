@@ -43,8 +43,9 @@ contains
 
 subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    use garcha_mod    , only: NBCH, propagator, RMM, NCO, Iz, igrid2, r, nsol, &
-                             pc, X, Smat, MEMO, ntatom, sqsm, Nunp, OPEN,&
-                             natom, d, rhoalpha, rhobeta, Fmat_vec
+                             pc, X, Smat, MEMO, ntatom, sqsm, Nunp, OPEN,     &
+                             natom, d, rhoalpha, rhobeta, Fmat_vec, Fmat_vec2,&
+                             Ginv_vec, Hmat_vec
    use basis_data    , only: M, Md, Nuc, ncont, nshell, a, c, Norm
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, &
                              writedens, pert_time
@@ -72,7 +73,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    type(operator), intent(inout), optional :: rho_bop, fock_bop
 
    real*8  :: E, En, E1, E2, E1s, Es, Ens = 0.0D0, Ex, t, dt_magnus, dt_lpfrg
-   integer :: MM, MMd, M2, M13, M15, M11, LWORK, igpu, info, istep,    &
+   integer :: MM, MMd, M2, M13, M15, LWORK, igpu, info, istep,    &
               icount,jcount, M7
    integer :: lpfrg_steps = 200, chkpntF1a = 185, chkpntF1b = 195
    logical :: is_lpfrg = .false. , fock_restart = .false.
@@ -123,14 +124,13 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
    ! RMM initializations
-   ! M7 - G, M11 - H
+   ! M7 - G
    ! M13 - W (matrix eigenvalues),  M15 - Aux vector for ESSL. M17 - Used
    ! in least squares, M18 - MO vectors (deprecated), M19 - weights (optional),
    ! M20 - 2e integrals if MEMO=t
    MM  = M *(M+1) /2 ; MMd = Md*(Md+1)/2
    M2  = 2*M         ; M7  = 1 + 3*MM
-   M11 = 1 + 3*MM + 2*MMd
-   M13 = M11 + MM    ; M15 = M13 + M
+   M13 = 1 + 3*MM + 2*MMd + MM    ; M15 = M13 + M
 
    call g2g_timer_start('TD')
    call g2g_timer_start('td-inicio')
@@ -227,7 +227,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    if (field) call field_setup_old(pert_time, 1, fx, fy, fz)
    call td_integration_setup(igrid2, igpu)
    call td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, Fmat_vec, &
-                       RMM(M11), r, pc, ntatom, natom, Smat, d, Iz, M)
+                       Hmat_vec, r, pc, ntatom, natom, Smat, d, Iz, M)
    call spunpack('L', M, Fmat_vec, Smat_initial)
 
    ! Initialises transport if required.
@@ -291,7 +291,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
       call g2g_timer_sum_start("TD - TD Step Energy")
 
       call td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, Fmat_vec, Fmat_vec2,&
-                          Ginv_vec, RMM(M11:MM),is_lpfrg, transport_calc,     &
+                          Ginv_vec, Hmat_vec, is_lpfrg, transport_calc,     &
                           t/0.024190D0, M, Md, open, r, d, Iz, natom, ntatom, &
                           MEMO)
 
@@ -644,7 +644,7 @@ subroutine td_integration_setup(igrid2, igpu)
    return
 end subroutine td_integration_setup
 
-subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, Fmat, RMM11,  &
+subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, Fmat, Hmat,  &
                           r, pc, ntatom, natom, Smat, d, Iz, M)
    use faint_cpu, only: int1, intsol
    use mask_ecp , only: ECP_fock
@@ -652,7 +652,7 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, Fmat, RMM11,  &
 
    double precision, intent(in) :: pc(ntatom), r(ntatom,3)
    integer         , intent(in) :: M, MM, igpu, nsol, natom, ntatom, Iz(natom)
-   double precision, intent(inout) :: Fmat(MM), RMM11(MM), E1, En, E1s, Ens
+   double precision, intent(inout) :: Fmat(MM), Hmat(MM), E1, En, E1s, Ens
    double precision, allocatable, intent(in)    :: d(:,:)
    double precision, allocatable, intent(inout) :: RMM(:), Smat(:,:)
 
@@ -661,9 +661,9 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, Fmat, RMM11,  &
    E1 = 0.0D0 ; En = 0.0D0
    call g2g_timer_sum_start('TD - 1-e Fock')
    call g2g_timer_sum_start('TD - Nuclear attraction')
-   call int1(En, Fmat, RMM11, Smat, d, r, Iz, natom, ntatom)
+   call int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom)
 
-   call ECP_fock(MM, RMM11)
+   call ECP_fock(MM, Hmat)
    call g2g_timer_sum_stop('TD - Nuclear attraction')
 
    ! 1e terms - QMMM terms.
@@ -671,7 +671,7 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, Fmat, RMM11,  &
       call g2g_timer_sum_start('TD - QM/MM')
       if (igpu.le.1) then
          call g2g_timer_start('intsol')
-         call intsol(RMM, RMM11, Iz, pc, r, d, natom, ntatom, E1s, Ens, .true.)
+         call intsol(RMM, Hmat, Iz, pc, r, d, natom, ntatom, E1s, Ens, .true.)
          call g2g_timer_stop('intsol')
       else
          call aint_qmmm_init(nsol, r, pc)
@@ -684,7 +684,7 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, Fmat, RMM11,  &
 
    E1=0.D0
    do icount = 1, MM
-      E1 = E1 + RMM(icount) * RMM11(icount)
+      E1 = E1 + RMM(icount) * Hmat(icount)
    enddo
    call g2g_timer_sum_stop('TD - 1-e Fock')
    return
@@ -838,7 +838,7 @@ subroutine td_check_prop(is_lpfrg, propagator, istep, lpfrg_steps, fock_rst,&
 end subroutine td_check_prop
 
 subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, Fmat, Fmat2, &
-                          Ginv, RMM11, is_lpfrg ,transport_calc, time, &
+                          Ginv, Hmat, is_lpfrg ,transport_calc, time, &
                           M, Md, open_shell, r, d, Iz, natom, ntatom, MEMO)
    use faint_cpu , only: int3lu
    use field_subs, only: field_calc
@@ -846,21 +846,20 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, Fmat, Fmat2, &
    integer, intent(in)    :: MM, natom, ntatom, Iz(natom)
    logical, intent(in)    :: is_lpfrg, transport_calc
    real*8 , intent(in)    :: time, r(ntatom,3), d(natom,natom)
-   real*8 , intent(inout) :: E, E1, E2, En, Ex, Es, RMM(:), RMM11(:), &
+   real*8 , intent(inout) :: E, E1, E2, En, Ex, Es, RMM(:), Hmat(:), &
                              Fmat(:), Fmat2(:), Ginv(:)
    integer         , intent(in) :: M, Md
    logical         , intent(in) :: open_shell, MEMO
-   integer :: icount, MMd, M7, M11
+   integer :: icount, MMd, M7
 
    MMd=Md*(Md+1)/2
    M7=1+3*MM ! G matrix
-   M11=M7+MMd+MMd ! Hmat
 
    E1 = 0.0D0; E = 0.0D0
    if (is_lpfrg) then
       call g2g_timer_sum_start("TD - Coulomb")
       call int3lu(E2, RMM(1:MM), Fmat2, Fmat, RMM(M7:M7+MMd), &
-                  Ginv, RMM(M11:M11+MMd), open_shell, MEMO)
+                  Ginv, Hmat, open_shell, MEMO)
       call g2g_timer_sum_pause("TD - Coulomb")
       call g2g_timer_sum_start("TD - Exc")
       call g2g_solve_groups(0,Ex,0)
@@ -873,7 +872,7 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, Fmat, Fmat2, &
 
    ! Add 1e contributions to E1.
    do icount = 1, MM
-      E1 = E1 + RMM(icount)*RMM11(icount)
+      E1 = E1 + RMM(icount) * Hmat(icount)
    enddo
    E = E1 + E2 + En + Ex
    if (ntatom > natom) E = E + Es

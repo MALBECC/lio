@@ -16,9 +16,9 @@ subroutine drive(ng2, ngDyn, ngdDyn, iostat)
                          number_restr, restr_pairs, restr_index, restr_k,      &
                          restr_w, restr_r0, mulliken, MO_coef_at, MO_coef_at_b,&
                          use_libxc, ex_functional_id, ec_functional_id,        &
-                         pi, Fmat_vec, Fmat_vec2, Ginv_vec
+                         pi, Fmat_vec, Fmat_vec2, Ginv_vec, Hmat_vec
    use basis_data, only: nshell, nshelld, ncont, ncontd, indexii, a, c, ad, cd,&
-                         af, M, Md, rmax, norm, nuc, nucd
+                         af, M, Md, rmax, norm, nuc, nucd, MM, MMd
    use ECP_mod     , only: ecpmode
    use fileio      , only: read_coef_restart, read_rho_restart
    use td_data     , only: td_do_pop
@@ -34,7 +34,7 @@ subroutine drive(ng2, ngDyn, ngdDyn, iostat)
    double precision, allocatable :: restart_coef(:,:), restart_coef_b(:,:), &
                                     restart_dens(:,:), restart_adens(:,:),  &
                                     restart_bdens(:,:)
-   integer :: NCOa, NCOb, M11, MM, MMd
+   integer :: NCOa, NCOb
    integer :: icount, kcount, jcount
   
    ! Calls generator of table for incomplete gamma functions
@@ -45,12 +45,6 @@ subroutine drive(ng2, ngDyn, ngdDyn, iostat)
    if (writexyz) open(unit = 18,file = fcoord)
    if ((mulliken) .or. (td_do_pop .gt. 0)) open(unit = 85,file = fmulliken)
    if (restart_freq .gt. 0) open(unit = 88, file = frestart)
-
-   ! RMM pointers and quantities.
-   MM  = M  * (M  +1) / 2
-   MMd = Md * (Md +1) / 2
-
-   M11 = MM +1 + MM + MM + MMd + MMd ! Hmat (M11)
 
    if (ecpmode) then !agregadas por Nick para lectura de ECP
       call lecturaECP()   !lee parametros
@@ -175,8 +169,8 @@ subroutine drive(ng2, ngDyn, ngdDyn, iostat)
                            ex_functional_id, ec_functional_id)
    call summon_ghosts(Iz, natom, verbose)
 
-   if (gpu_level .ne. 0) call aint_parameter_init(Md, ncontd, nshelld, cd, ad,&
-                                                  Nucd, af, Ginv_vec, RMM(M11),&
+   if (gpu_level .ne. 0) call aint_parameter_init(Md, ncontd, nshelld, cd, ad, &
+                                                  Nucd, af, Ginv_vec, Hmat_vec,&
                                                   STR, FAC, rmax, Iz, gpu_level)
   ! TO-DO: Relocate this.
   allocate(X(M , 4*M))

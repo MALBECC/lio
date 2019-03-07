@@ -35,7 +35,7 @@ subroutine SCF(E)
                           total_time, MO_coef_at, MO_coef_at_b, Smat, good_cut,&
                           ndiis, rhoalpha, rhobeta, OPEN, RealRho, d, ntatom,  &
                           Eorbs_b, npas, RMM, X, npasw, Fmat_vec, Fmat_vec2,   &
-                          Ginv_vec
+                          Ginv_vec, Hmat_vec
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
                        FOCK_ECP_read,FOCK_ECP_write,IzECP
    use field_data, only: field, fx, fy, fz
@@ -156,7 +156,7 @@ subroutine SCF(E)
 ! TODO : Variables to eliminate...
    real*8, allocatable :: xnano(:,:)
    integer :: MM, MM2, MMd, Md2
-   integer :: M1, M2, M7, M11, M13, M15, M17,M18,M18b, M19, M20, M22
+   integer :: M1, M2, M7, M13, M15, M17,M18,M18b, M19, M20, M22
 
    real*8, allocatable :: Y(:,:)
    real*8, allocatable :: Ytrans(:,:)
@@ -251,8 +251,7 @@ subroutine SCF(E)
 
       M1=1 ! first P
       M7=M1+MM+MM+MM! now G
-      M11=M7+MMd+MMd! now H
-      M13=M11+MM! W ( eigenvalues ), also this space is used in least squares
+      M13=M7+MMd+MMd+MM! W ( eigenvalues ), also this space is used in least squares
       M15=M13+M! aux ( vector for ESSl)
       M17=M15+MM! Least squares
       M18=M17+MMd! vectors of MO
@@ -342,9 +341,9 @@ subroutine SCF(E)
 !
       call g2g_timer_sum_start('1-e Fock')
       call g2g_timer_sum_start('Nuclear attraction')
-      call int1(En, Fmat_vec, RMM(M11:M11+MM), Smat, d, r, Iz, natom, &
+      call int1(En, Fmat_vec, Hmat_vec, Smat, d, r, Iz, natom, &
                 ntatom)
-      call ECP_fock( MM, RMM(M11) )
+      call ECP_fock( MM, Hmat_vec )
 
 ! Other terms
 !
@@ -353,7 +352,7 @@ subroutine SCF(E)
           call g2g_timer_sum_start('QM/MM')
        if (igpu.le.1) then
           call g2g_timer_start('intsol')
-          call intsol(RMM(1:MM), RMM(M11:M11+MM), Iz, pc, r, d, natom, ntatom, &
+          call intsol(RMM(1:MM), Hmat_vec, Iz, pc, r, d, natom, ntatom, &
                       E1s, Ens, .true.)
           call g2g_timer_stop('intsol')
         else
@@ -371,7 +370,7 @@ subroutine SCF(E)
 !
       E1=0.D0
       do kk=1,MM
-        E1=E1+RMM(kk)*RMM(M11+kk-1)
+        E1=E1+RMM(kk)*Hmat_vec(kk)
       enddo
       call g2g_timer_sum_stop('1-e Fock')
 
@@ -462,7 +461,7 @@ subroutine SCF(E)
 !
    if ( (.not.VCINP) .and. primera ) then
       call get_initial_guess(M, MM, NCO, NCOb, Xmat(MTB+1:MTB+M,MTB+1:MTB+M),  &
-                             RMM(M11:MM), RMM(M1:MM), rhoalpha, rhobeta, OPEN, &
+                             Hmat_vec, RMM(M1:MM), rhoalpha, rhobeta, OPEN, &
                              natom, Iz, nshell, Nuc)
       primera = .false.
    end if
@@ -552,7 +551,7 @@ subroutine SCF(E)
 !       Computes Coulomb part of Fock, and energy on E2
         call g2g_timer_sum_start('Coulomb fit + Fock')
         call int3lu(E2, RMM(1:MM), Fmat_vec2, Fmat_vec, &
-                    RMM(M7:M7+MMd), Ginv_vec, RMM(M11:M11+MMd),open,MEMO)
+                    RMM(M7:M7+MMd), Ginv_vec, Hmat_vec,open,MEMO)
         call g2g_timer_sum_pause('Coulomb fit + Fock')
 
 !       Test for NaN
@@ -582,12 +581,12 @@ subroutine SCF(E)
                            r, d, Iz, natom, ntatom, open)
 
            do kk=1,MM
-               E1=E1+RMM(kk)*RMM(M11+kk-1)
+               E1 = E1 + RMM(kk) * Hmat_vec(kk)
            enddo
         else
 !          E1 includes solvent 1 electron contributions
            do kk=1,MM
-              E1=E1+RMM(kk)*RMM(M11+kk-1)
+              E1 = E1 + RMM(kk) * Hmat_vec(kk)
            enddo
 
         endif
@@ -935,7 +934,7 @@ subroutine SCF(E)
         Es=Ens
 
 !       One electron Kinetic (with aint >3) or Kinetic + Nuc-elec (aint >=3)
-        call int1(En, Fmat_vec, RMM(M11:M11+MM), Smat, d, r, Iz, natom, &
+        call int1(En, Fmat_vec, Hmat_vec, Smat, d, r, Iz, natom, &
                   ntatom)
 
 !       Computing the E1-fock without the MM atoms
@@ -948,7 +947,7 @@ subroutine SCF(E)
 !       E1s (here) is the 1e-energy without the MM contribution
         E1s=0.D0
         do kk=1,MM
-          E1s=E1s+RMM(kk)*RMM(M11+kk-1)
+          E1s = E1s + RMM(kk) * Hmat_vec(kk)
         enddo
 
 !       Es is the QM/MM energy computated as total 1e - E1s + QMnuc-MMcharges

@@ -43,7 +43,7 @@ contains
 
 subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    use garcha_mod    , only: NBCH, propagator, RMM, NCO, Iz, igrid2, r, nsol, &
-                             pc, X, Smat, MEMO, sol, ntatom, sqsm, Nunp, OPEN,&
+                             pc, X, Smat, MEMO, ntatom, sqsm, Nunp, OPEN,&
                              natom, d, rhoalpha, rhobeta, Fmat_vec
    use basis_data    , only: M, Md, Nuc, ncont, nshell, a, c, Norm
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, &
@@ -72,7 +72,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    type(operator), intent(inout), optional :: rho_bop, fock_bop
 
    real*8  :: E, En, E1, E2, E1s, Es, Ens = 0.0D0, Ex, t, dt_magnus, dt_lpfrg
-   integer :: MM, MMd, M2, M3 ,M13, M15, M11, LWORK, igpu, info, istep,    &
+   integer :: MM, MMd, M2, M13, M15, M11, LWORK, igpu, info, istep,    &
               icount,jcount, M9, M7
    integer :: lpfrg_steps = 200, chkpntF1a = 185, chkpntF1b = 195
    logical :: is_lpfrg = .false. , fock_restart = .false.
@@ -123,13 +123,12 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
    ! RMM initializations
-   ! M3 - Fold, M7 - G, M9 - Gm, M11 - H
+   ! M7 - G, M9 - Gm, M11 - H
    ! M13 - W (matrix eigenvalues),  M15 - Aux vector for ESSL. M17 - Used
    ! in least squares, M18 - MO vectors (deprecated), M19 - weights (optional),
    ! M20 - 2e integrals if MEMO=t
    MM  = M *(M+1) /2 ; MMd = Md*(Md+1)/2
-   M2  = 2*M         ; 
-   M3  = 1+MM        ; M7  = 1 + 3*MM
+   M2  = 2*M         ; M7  = 1 + 3*MM
    M9  = M7 + MMd    ; M11 = 1 + 3*MM + 2*MMd
    M13 = M11 + MM    ; M15 = M13 + M
 
@@ -291,10 +290,9 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
       call g2g_timer_sum_start("TD - TD Step Energy")
 
-      call td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, Fmat_vec,  &
-                          RMM(M11:MM),is_lpfrg, transport_calc, sol, &
-                          t/0.024190D0, M, Md, open, r, d, Iz, natom,&
-                          ntatom, MEMO)
+      call td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, Fmat_vec, Fmat_vec2,&
+                          RMM(M11:MM),is_lpfrg, transport_calc, t/0.024190D0, &
+                          M, Md, open, r, d, Iz, natom, ntatom, MEMO)
 
       call g2g_timer_sum_pause("TD - TD Step Energy")
       if (verbose .gt. 2) write(*,'(A,I6,A,F12.6,A,F12.6,A)') "  TD Step: ", &
@@ -323,7 +321,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
          if (OPEN) then
 
-            call td_bc_fock_cu(M_in,M, MM, RMM(M3), fock_bop, devPtrX, natom,  &
+            call td_bc_fock_cu(M_in,M, MM, Fmat_vec2, fock_bop, devPtrX, natom,  &
                                nshell,ncont, istep, t/0.024190D0)
             call td_verlet_cu(M, M_in, dim3, OPEN, fock_aop, rhold, rho_aop,   &
                               rhonew, istep, Im, dt_lpfrg, transport_calc,     &
@@ -370,7 +368,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
          call td_bc_fock(M_in, M, MM, Fmat_vec, fock_aop,Xmat, natom, nshell,    &
                          ncont, istep,t/0.024190D0)
          if (OPEN) then
-            call td_bc_fock(M_in, M, MM, RMM(M3), fock_bop,Xmat, natom, nshell, &
+            call td_bc_fock(M_in, M, MM, Fmat_vec2, fock_bop,Xmat, natom, nshell,&
                             ncont, istep,t/0.024190D0)
 
             call td_verlet(M, M_in, dim3, OPEN, fock_aop, rhold, rho_aop,      &
@@ -838,31 +836,30 @@ subroutine td_check_prop(is_lpfrg, propagator, istep, lpfrg_steps, fock_rst,&
    return
 end subroutine td_check_prop
 
-subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, Fmat, RMM11, &
-                          is_lpfrg ,transport_calc, sol, time, M, Md,  &
+subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, Fmat, Fmat2, &
+                          RMM11, is_lpfrg ,transport_calc, time, M, Md,&
                           open_shell, r, d, Iz, natom, ntatom, MEMO)
    use faint_cpu , only: int3lu
    use field_subs, only: field_calc
    implicit none
    integer, intent(in)    :: MM, natom, ntatom, Iz(natom)
-   logical, intent(in)    :: is_lpfrg, transport_calc, sol
+   logical, intent(in)    :: is_lpfrg, transport_calc
    real*8 , intent(in)    :: time, r(ntatom,3), d(natom,natom)
    real*8 , intent(inout) :: E, E1, E2, En, Ex, Es, RMM(:), RMM11(:), &
-                             Fmat(:)
+                             Fmat(:), Fmat2(:)
    integer         , intent(in) :: M, Md
    logical         , intent(in) :: open_shell, MEMO
-   integer :: icount, MMd, M3, M7, M9, M11
+   integer :: icount, MMd, M7, M9, M11
 
    MMd=Md*(Md+1)/2
-   M3=1+MM ! Pew
-   M7=M3+MM+MM ! G matrix
+   M7=1+3*MM ! G matrix
    M9=M7+MMd ! G inverted
    M11=M9+MMd ! Hmat
 
    E1 = 0.0D0; E = 0.0D0
    if (is_lpfrg) then
       call g2g_timer_sum_start("TD - Coulomb")
-      call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), Fmat, RMM(M7:M7+MMd), &
+      call int3lu(E2, RMM(1:MM), Fmat2, Fmat, RMM(M7:M7+MMd), &
                   RMM(M9:M9+MMd), RMM(M11:M11+MMd), open_shell, MEMO)
       call g2g_timer_sum_pause("TD - Coulomb")
       call g2g_timer_sum_start("TD - Exc")
@@ -871,7 +868,7 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, Fmat, RMM11, &
    endif
 
    ! ELECTRIC FIELD CASE - Perturbation type: Gaussian (default).
-   call field_calc(E1, time, RMM(1:MM), RMM(M3:M3+MM), Fmat, r, d, Iz, &
+   call field_calc(E1, time, RMM(1:MM), Fmat2, Fmat, r, d, Iz, &
                    natom, ntatom, open_shell)
 
    ! Add 1e contributions to E1.
@@ -879,7 +876,7 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, Fmat, RMM11, &
       E1 = E1 + RMM(icount)*RMM11(icount)
    enddo
    E = E1 + E2 + En + Ex
-   if (sol) E = E + Es
+   if (ntatom > natom) E = E + Es
 
    return
 end subroutine td_calc_energy

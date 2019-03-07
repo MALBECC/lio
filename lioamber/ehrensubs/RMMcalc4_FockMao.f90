@@ -33,7 +33,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
    real*8   :: Energy_Efield
 
    integer  :: kk, idx0
-   integer  :: MM, MMd, igpu, M7, M9, M3, M11
+   integer  :: MM, MMd, igpu, M7, M9, M11
    logical  :: MEMO
 
 !  For electric field application
@@ -44,7 +44,6 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
 
    MM=M*(M+1)/2
    MMd=Md*(Md+1)/2
-   M3=1+MM
    M7  = 1 + 3*MM
    M9  = M7 + MMd
    M11=M9+MMd ! Hmat
@@ -87,7 +86,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
 !------------------------------------------------------------------------------!
    call g2g_timer_start('RMMcalc4-solve3lu')
    call rmmput_dens(DensMao)
-   call int3lu(Energy_Coulomb, RMM(1:MM), RMM(M3:M3+MM), Fmat_vec,        &
+   call int3lu(Energy_Coulomb, RMM(1:MM), Fmat_vec2, Fmat_vec,        &
                RMM(M7:M7+MMd), RMM(M9:M9+MMd), RMM(M11:M11+MMd), open, MEMO)
    call g2g_solve_groups(0,Energy_Exchange,0)
    call g2g_timer_stop('RMMcalc4-solve3lu')
@@ -126,7 +125,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
      FieldNow(2) = eefld_ampy * field_shape
      FieldNow(3) = eefld_ampz * field_shape
      call dip( DipMom, RMM(1:MM) )
-     call intfld(RMM(M3:M3+MM), Fmat_vec, r, d, Iz, natom, ntatom, open, &
+     call intfld(Fmat_vec2, Fmat_vec, r, d, Iz, natom, ntatom, open, &
                  g, FieldNow(1), FieldNow(2), FieldNow(3))
 
      dip_times_field = 0.0d0

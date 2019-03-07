@@ -155,7 +155,7 @@ subroutine SCF(E)
 ! TODO : Variables to eliminate...
    real*8, allocatable :: xnano(:,:)
    integer :: MM, MM2, MMd, Md2
-   integer :: M1, M2, M3, M7, M9, M11, M13, M15, M17,M18,M18b, M19, M20, M22
+   integer :: M1, M2, M7, M9, M11, M13, M15, M17,M18,M18b, M19, M20, M22
 
    real*8, allocatable :: Y(:,:)
    real*8, allocatable :: Ytrans(:,:)
@@ -249,8 +249,7 @@ subroutine SCF(E)
       end if
 
       M1=1 ! first P
-      M3=M1+MM ! now Pnew
-      M7=M3+MM+MM! now G
+      M7=M1+MM+MM+MM! now G
       M9=M7+MMd ! now Gm
       M11=M9+MMd! now H
       M13=M11+MM! W ( eigenvalues ), also this space is used in least squares
@@ -552,7 +551,7 @@ subroutine SCF(E)
 
 !       Computes Coulomb part of Fock, and energy on E2
         call g2g_timer_sum_start('Coulomb fit + Fock')
-        call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), Fmat_vec, &
+        call int3lu(E2, RMM(1:MM), Fmat_vec2, Fmat_vec, &
                     RMM(M7:M7+MMd), RMM(M9:M9+MMd), RMM(M11:M11+MMd),open,MEMO)
         call g2g_timer_sum_pause('Coulomb fit + Fock')
 
@@ -579,7 +578,7 @@ subroutine SCF(E)
 !
         if ( generate_rho0 ) then
            if (field) call field_setup_old(1.0D0, 0, fx, fy, fz)
-           call field_calc(E1, 0.0D0, RMM(1:MM), RMM(M3:M3+MM), Fmat_vec, &
+           call field_calc(E1, 0.0D0, RMM(1:MM), Fmat_vec2, Fmat_vec, &
                            r, d, Iz, natom, ntatom, open)
 
            do kk=1,MM
@@ -607,7 +606,7 @@ subroutine SCF(E)
            call spunpack_rho('L',M,rhoalpha,rho_a0)
            call spunpack('L', M, Fmat_vec, fock_a0)
            call spunpack_rho('L',M,rhobeta,rho_b0)
-           call spunpack('L', M, RMM(M3), fock_b0)
+           call spunpack('L', M, Fmat_vec2, fock_b0)
            call fockbias_apply( 0.0d0, fock_a0)
            call fockbias_apply( 0.0d0, fock_b0)
         else

@@ -34,7 +34,7 @@ subroutine drive(ng2, ngDyn, ngdDyn, iostat)
    double precision, allocatable :: restart_coef(:,:), restart_coef_b(:,:), &
                                     restart_dens(:,:), restart_adens(:,:),  &
                                     restart_bdens(:,:)
-   integer :: NCOa, NCOb, M3, M9, M11, MM, MMd
+   integer :: NCOa, NCOb, M9, M11, MM, MMd
    integer :: icount, kcount, jcount
   
    ! Calls generator of table for incomplete gamma functions
@@ -50,8 +50,7 @@ subroutine drive(ng2, ngDyn, ngdDyn, iostat)
    MM  = M  * (M  +1) / 2
    MMd = Md * (Md +1) / 2
 
-   M3 = MM +1
-   M9 = M3 + MM + MM + MMd; M11 = M9 + MMd ! Gmat (M9) and Hmat (M11)
+   M9 = MM +1 + MM + MM + MMd; M11 = M9 + MMd ! Gmat (M9) and Hmat (M11)
 
    if (ecpmode) then !agregadas por Nick para lectura de ECP
       call lecturaECP()   !lee parametros
@@ -170,9 +169,9 @@ subroutine drive(ng2, ngDyn, ngdDyn, iostat)
 
    ! G2G and AINT(GPU) Initializations
    call g2g_parameter_init(NORM, natom, natom, ngDyn, rqm, Rm2, Iz, Nr, Nr2,  &
-                           Nuc, M, ncont, nshell, c, a, RMM, Fmat_vec, RMM(M3),&
-                           rhoalpha, rhobeta, NCO, OPEN, Nunp, 0, Iexch,      &
-                           e_, e_2, e3, wang, wang2, wang3, use_libxc,        &
+                           Nuc, M, ncont, nshell, c, a, RMM, Fmat_vec,        &
+                           Fmat_vec2, rhoalpha, rhobeta, NCO, OPEN, Nunp, 0,  &
+                           Iexch, e_, e_2, e3, wang, wang2, wang3, use_libxc, &
                            ex_functional_id, ec_functional_id)
    call summon_ghosts(Iz, natom, verbose)
 

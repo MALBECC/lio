@@ -60,7 +60,6 @@ subroutine intfld(Fmat_b, Fmat, r, d, Iz, natom, ntatom, open_shell, g, ux, uy,&
       Ll(l1) = l1 * (l1 -1) / 2
    enddo
 
-   ! M3 is Fock alpha, M5 is Fock beta
    M2 = 2 * M    ;
    ns = nshell(0); np = nshell(1)         ; nd = nshell(2)
 

@@ -21,6 +21,9 @@ subroutine lio_finalize()
    if (allocated(MO_coef_at))   deallocate(MO_coef_at)
    if (allocated(MO_coef_at_b)) deallocate(MO_coef_at_b)
 
+
+   deallocate(Fmat_vec, Fmat_vec2, Pmat_vec, Hmat_vec, Ginv_vec)
+
    deallocate(r, v, rqm, Em, Rm, pc, Iz, RMM, X, d)
 
    ! GPU code finalization.

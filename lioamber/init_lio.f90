@@ -182,7 +182,8 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
 
     ! reemplazos de RMM
     MM=M*(M+1)/2
-    allocate(Fock_Hcore(MM), Fock_Overlap(MM), P_density(MM))
+    allocate(Fmat_vec(MM), Fmat_vec2(MM), Pmat_vec(MM), Hmat_vec(MM), &
+             Ginv_vec(MM))
     call g2g_timer_stop('lio_init')
 
     return

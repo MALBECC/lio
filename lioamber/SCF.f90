@@ -34,7 +34,7 @@ subroutine SCF(E)
                           Eorbs, NMAX,Dbug, doing_ehrenfest, first_step,       &
                           total_time, MO_coef_at, MO_coef_at_b, Smat, good_cut,&
                           ndiis, rhoalpha, rhobeta, OPEN, RealRho, d, ntatom,  &
-                          Eorbs_b, npas, RMM, X, npasw
+                          Eorbs_b, npas, RMM, X, npasw, Fmat_vec, Fmat_vec2
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
                        FOCK_ECP_read,FOCK_ECP_write,IzECP
    use field_data, only: field, fx, fy, fz
@@ -155,7 +155,7 @@ subroutine SCF(E)
 ! TODO : Variables to eliminate...
    real*8, allocatable :: xnano(:,:)
    integer :: MM, MM2, MMd, Md2
-   integer :: M1, M2, M3, M5, M7, M9, M11, M13, M15, M17,M18,M18b, M19, M20, M22
+   integer :: M1, M2, M3, M7, M9, M11, M13, M15, M17,M18,M18b, M19, M20, M22
 
    real*8, allocatable :: Y(:,:)
    real*8, allocatable :: Ytrans(:,:)
@@ -250,8 +250,7 @@ subroutine SCF(E)
 
       M1=1 ! first P
       M3=M1+MM ! now Pnew
-      M5=M3+MM! now S, F also uses the same position after S was used
-      M7=M5+MM! now G
+      M7=M3+MM+MM! now G
       M9=M7+MMd ! now Gm
       M11=M9+MMd! now H
       M13=M11+MM! W ( eigenvalues ), also this space is used in least squares
@@ -344,7 +343,7 @@ subroutine SCF(E)
 !
       call g2g_timer_sum_start('1-e Fock')
       call g2g_timer_sum_start('Nuclear attraction')
-      call int1(En, RMM(M5:M5+MM), RMM(M11:M11+MM), Smat, d, r, Iz, natom, &
+      call int1(En, Fmat_vec, RMM(M11:M11+MM), Smat, d, r, Iz, natom, &
                 ntatom)
       call ECP_fock( MM, RMM(M11) )
 
@@ -549,17 +548,17 @@ subroutine SCF(E)
 
 !       Test for NaN
         if (Dbug) call SEEK_NaN(RMM,1,MM,"RHO Start")
-        if (Dbug) call SEEK_NaN(RMM,M5-1,M5-1+MM,"FOCK Start")
+        if (Dbug) call SEEK_NaN(Fmat_vec,1,MM,"FOCK Start")
 
 !       Computes Coulomb part of Fock, and energy on E2
         call g2g_timer_sum_start('Coulomb fit + Fock')
-        call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), &
+        call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), Fmat_vec, &
                     RMM(M7:M7+MMd), RMM(M9:M9+MMd), RMM(M11:M11+MMd),open,MEMO)
         call g2g_timer_sum_pause('Coulomb fit + Fock')
 
 !       Test for NaN
         if (Dbug) call SEEK_NaN(RMM,1,MM,"RHO Coulomb")
-        if (Dbug) call SEEK_NaN(RMM,M5-1,M5-1+MM,"FOCK Coulomb")
+        if (Dbug) call SEEK_NaN(Fmat_vec,1,MM,"FOCK Coulomb")
 
 !       XC integration / Fock elements
         call g2g_timer_sum_start('Exchange-correlation Fock')
@@ -568,7 +567,7 @@ subroutine SCF(E)
 
 !       Test for NaN
         if (Dbug) call SEEK_NaN(RMM,1,MM,"RHO Ex-Corr")
-        if (Dbug) call SEEK_NaN(RMM,M5-1,M5-1+MM,"FOCK Ex-Corr")
+        if (Dbug) call SEEK_NaN(Fmat_vec,1,MM,"FOCK Ex-Corr")
 
 
 !------------------------------------------------------------------------------!
@@ -580,7 +579,7 @@ subroutine SCF(E)
 !
         if ( generate_rho0 ) then
            if (field) call field_setup_old(1.0D0, 0, fx, fy, fz)
-           call field_calc(E1, 0.0D0, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), &
+           call field_calc(E1, 0.0D0, RMM(1:MM), RMM(M3:M3+MM), Fmat_vec, &
                            r, d, Iz, natom, ntatom, open)
 
            do kk=1,MM
@@ -606,14 +605,14 @@ subroutine SCF(E)
 !carlos: extractions for Open Shell and Close Shell.
         if (OPEN) then
            call spunpack_rho('L',M,rhoalpha,rho_a0)
-           call spunpack('L', M, RMM(M5), fock_a0)
+           call spunpack('L', M, Fmat_vec, fock_a0)
            call spunpack_rho('L',M,rhobeta,rho_b0)
            call spunpack('L', M, RMM(M3), fock_b0)
            call fockbias_apply( 0.0d0, fock_a0)
            call fockbias_apply( 0.0d0, fock_b0)
         else
            call spunpack_rho('L',M,RMM(M1),rho_a0)
-           call spunpack('L', M, RMM(M5), fock_a0)
+           call spunpack('L', M, Fmat_vec, fock_a0)
            call fockbias_apply( 0.0d0, fock_a0 )
         end if
 
@@ -937,7 +936,7 @@ subroutine SCF(E)
         Es=Ens
 
 !       One electron Kinetic (with aint >3) or Kinetic + Nuc-elec (aint >=3)
-        call int1(En, RMM(M5:M5+MM), RMM(M11:M11+MM), Smat, d, r, Iz, natom, &
+        call int1(En, Fmat_vec, RMM(M11:M11+MM), Smat, d, r, Iz, natom, &
                   ntatom)
 
 !       Computing the E1-fock without the MM atoms

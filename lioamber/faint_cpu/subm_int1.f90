@@ -45,7 +45,7 @@ subroutine int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom )
 
    integer           :: my_natom, igpu, i_ind, j_ind, k_ind, ifunct, jfunct, &
                         iatom, jatom, nci, ncj, l1, l2, l3, l4, l12, l34,    &
-                        MM, ns, np, M2, M5, M11
+                        MM, ns, np, M2
    double precision  :: ovlap, uf, cc_f, Q(3), temp, sq3, alf, alf2, ccoef,    &
                         t0, t1, t2, f1, f2, tn, tna, Z2, Zij, ss, ps, dd, sks, &
                         p0s, p1s, p2s, p3s, pi0p, pi1p, piks, pikpk, pipk,     &

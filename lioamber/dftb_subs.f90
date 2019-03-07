@@ -22,7 +22,7 @@ subroutine dftb_init(M, OPEN)
 end subroutine dftb_init
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-subroutine dftb_td_init (M,rho, rho_0, overlap, RMM5, dim3)
+subroutine dftb_td_init (M,rho, rho_0, overlap, S_vec, dim3)
 
    use dftb_data, only: MTB, MDFTB, rho_aDFTB, rho_bDFTB, rhold_AOTB,          &
                         rhonew_AOTB
@@ -31,7 +31,7 @@ subroutine dftb_td_init (M,rho, rho_0, overlap, RMM5, dim3)
 !carlos: dim3 is to declare the 3th dimension of matrices
    integer, intent(in)       :: dim3
    real*8, allocatable, intent(inout) :: overlap(:,:)
-   real*8 , intent(in)  :: RMM5(M*(M+1)/2)
+   real*8 , intent(in)  :: S_vec(M*(M+1)/2)
 #ifdef TD_SIMPLE
    complex*8, intent(in)     :: rho_0(M,M,dim3)
    complex*8, intent(out)  :: rho(MDFTB,MDFTB,dim3)
@@ -48,7 +48,7 @@ subroutine dftb_td_init (M,rho, rho_0, overlap, RMM5, dim3)
    rhold_AOTB=0.0d0
    rhonew_AOTB=0.0d0
 
-   call spunpack('L', M, RMM5, overlap)
+   call spunpack('L', M, S_vec, overlap)
 
       do jj=1, MDFTB
       do ii=1, MDFTB

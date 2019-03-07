@@ -94,7 +94,7 @@ module cubegen
    integer :: i,j,k,ii,jj,kk,iii,jjj,kkk
    integer :: ns, np, ni
    integer :: ivox, ivoxx, ivoxy, ivoxz, kk_dens, kk_orb
-   integer :: MM, MMd, M1, M2, M3, M5, M7, M9, M11, M13, M15
+   integer :: MM, MMd, M1, M2, M3, M7, M9, M11, M13, M15
 
    real, parameter :: expmax = 10
 
@@ -103,8 +103,7 @@ module cubegen
 
    M1  = 1         ! first P
    M3  = M1  + MM  ! now Pnew
-   M5  = M3  + MM  ! now S, F also uses the same position after S was used
-   M7  = M5  + MM  ! now G
+   M7  = M3  + MM  + MM  ! now G
    M9  = M7  + MMd ! now Gm
    M11 = M9  + MMd ! now H
    M13 = M11 + MM  ! W ( eigenvalues ), also this space is used in least squares

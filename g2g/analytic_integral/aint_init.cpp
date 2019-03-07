@@ -95,10 +95,10 @@ extern "C" void aint_parameter_init_(const unsigned int& Md,
       cd, integral_vars.m_dens, MAX_CONTRACTIONS, num_dens_gauss);
   // 1e Fock matrix
   integral_vars.rmm_1e_output = G2G::FortranMatrix<double>(
-      Hmat_vec, integral_vars.m_dens, integral_vars.m_dens, integral_vars.m_dens);
+      Hmat_vec, (G2G::fortran_vars.m * (G2G::fortran_vars.m + 1)) / 2 );
   // Inverse of G matrix for Coulomb fitting
   integral_vars.Ginv_input = G2G::FortranMatrix<double>(
-      G_inv, integral_vars.m_dens, integral_vars.m_dens, integral_vars.m_dens);
+      G_inv, (integral_vars.m_dens * (integral_vars.m_dens + 1)) / 2 );
   // Fitted density in density basis
   integral_vars.af_input_ndens1 =
       G2G::FortranMatrix<double>(af, integral_vars.m_dens);

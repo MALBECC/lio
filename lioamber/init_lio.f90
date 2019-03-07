@@ -122,12 +122,12 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     use field_data, only : chrg_sq
     use fileio    , only : lio_logo
     use fileio_data, only: style, verbose
-    use basis_data, only: M, Md, basis_set, fitting_set
+    use basis_data, only: M, Md, basis_set, fitting_set, MM, MMd
     use basis_subs, only: basis_init
 
     implicit none
     integer , intent(in) :: nclatom, natomin, Izin(natomin), callfrom
-    integer              :: ng2, ngdDyn, ngDyn, ierr, ios, MM, iostat
+    integer              :: ng2, ngdDyn, ngDyn, ierr, ios, iostat
 
     if (verbose .gt. 2) then
       write(*,*)
@@ -165,7 +165,8 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
           ngDyn  + ngDyn*norbit + Ngrid
 
     allocate(RMM(ng2) , d(natom, natom), v(ntatom,3), Em(ntatom), Rm(ntatom))
-
+    allocate(Fmat_vec(MM), Fmat_vec2(MM), Pmat_vec(MM), Hmat_vec(MM), &
+             Ginv_vec(MMd), Gmat_vec(MMd))
     ! Cnorm contains normalized coefficients of basis functions.
     ! Differentiate C for x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)
     if (ecpmode) allocate (Cnorm(ngDyn,13))
@@ -179,12 +180,8 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     if (iostat .gt. 0) then
       stop
       return
-   endif
+    endif
 
-    ! reemplazos de RMM
-    MM=M*(M+1)/2
-    allocate(Fmat_vec(MM), Fmat_vec2(MM), Pmat_vec(MM), Hmat_vec(MM), &
-             Ginv_vec(MM), Gmat_vec(MM))
     call g2g_timer_stop('lio_init')
 
     return

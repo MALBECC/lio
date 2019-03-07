@@ -173,9 +173,9 @@ extern "C" void g2g_parameter_init_(
 
     //  Matriz de fock
     fortran_vars.rmm_output_a = FortranMatrix<double>(
-        fock_vec, fortran_vars.m, fortran_vars.m, fortran_vars.m);
+        fock_vec,  (fortran_vars.m * (fortran_vars.m + 1) / 2));
     fortran_vars.rmm_output_b = FortranMatrix<double>(
-        fockb_vec, fortran_vars.m, fortran_vars.m, fortran_vars.m);
+        fockb_vec, (fortran_vars.m * (fortran_vars.m + 1) / 2));
   } else {
     if (verbose > 2) cout << "  Closed shell calculation - Occupied MO: "
          << fortran_vars.nco << endl;
@@ -184,7 +184,7 @@ extern "C" void g2g_parameter_init_(
         rho_vec, fortran_vars.m, fortran_vars.m, fortran_vars.m);
     // matriz de Fock
     fortran_vars.rmm_output = FortranMatrix<double>(
-        fock_vec, fortran_vars.m, fortran_vars.m, fortran_vars.m);
+        fock_vec,  (fortran_vars.m * (fortran_vars.m + 1) / 2));
   }
 
   fortran_vars.e1 =

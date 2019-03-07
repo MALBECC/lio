@@ -18,7 +18,7 @@ subroutine drive(ng2, ngDyn, ngdDyn, iostat)
                          use_libxc, ex_functional_id, ec_functional_id,        &
                          pi, Fmat_vec, Fmat_vec2, Ginv_vec, Hmat_vec
    use basis_data, only: nshell, nshelld, ncont, ncontd, indexii, a, c, ad, cd,&
-                         af, M, Md, rmax, norm, nuc, nucd, MM, MMd
+                         af, M, Md, rmax, norm, nuc, nucd
    use ECP_mod     , only: ecpmode
    use fileio      , only: read_coef_restart, read_rho_restart
    use td_data     , only: td_do_pop
@@ -160,7 +160,7 @@ subroutine drive(ng2, ngDyn, ngdDyn, iostat)
       call g2g_timer_stop('restart_read')
    endif
    ! End of restart.
-
+   
    ! G2G and AINT(GPU) Initializations
    call g2g_parameter_init(NORM, natom, natom, ngDyn, rqm, Rm2, Iz, Nr, Nr2,  &
                            Nuc, M, ncont, nshell, c, a, RMM, Fmat_vec,        &

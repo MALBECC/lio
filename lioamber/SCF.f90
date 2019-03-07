@@ -35,7 +35,7 @@ subroutine SCF(E)
                           total_time, MO_coef_at, MO_coef_at_b, Smat, good_cut,&
                           ndiis, rhoalpha, rhobeta, OPEN, RealRho, d, ntatom,  &
                           Eorbs_b, npas, RMM, X, npasw, Fmat_vec, Fmat_vec2,   &
-                          Ginv_vec, Gmat_vec, Hmat_vec
+                          Ginv_vec, Gmat_vec, Hmat_vec, Pmat_en_wgt
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
                        FOCK_ECP_read,FOCK_ECP_write,IzECP
    use field_data, only: field, fx, fy, fz
@@ -155,7 +155,7 @@ subroutine SCF(E)
 ! TODO : Variables to eliminate...
    real*8, allocatable :: xnano(:,:)
    integer :: MM, MM2, MMd, Md2
-   integer :: M1, M2, M15
+   integer :: M1, M2
 
    real*8, allocatable :: Y(:,:)
    real*8, allocatable :: Ytrans(:,:)
@@ -249,7 +249,6 @@ subroutine SCF(E)
       end if
 
       M1=1 ! first P
-      M15=1 + 4*MM + 2*MMd + M! aux ( vector for ESSl)
 
 !------------------------------------------------------------------------------!
 ! TODO: I don't like ending timers inside a conditional...
@@ -943,7 +942,7 @@ subroutine SCF(E)
       do jj=1,M
       do ii=jj,M
          kkk=kkk+1
-         RMM(M15+kkk-1)=0.D0
+         Pmat_en_wgt = 0.0D0
 !
          if (ii.eq.jj) then
             factor=2.D0
@@ -951,8 +950,8 @@ subroutine SCF(E)
             factor=4.D0
          endif
          do kk=1,NCO
-            RMM(M15+kkk-1)= &
-            RMM(M15+kkk-1)-Eorbs(kk)*factor*X(ii,M2+kk)*X(jj,M2+kk)
+            Pmat_en_wgt(kkk) =  Pmat_en_wgt(kkk) - Eorbs(kk) * factor * &
+                                X(ii,M2+kk) * X(jj,M2+kk)
          enddo
       enddo
       enddo

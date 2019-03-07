@@ -3,8 +3,9 @@
 subroutine dft_get_qm_forces(dxyzqm)
    use garcha_mod , only: natom, ntatom, nsol, r, d, Iz, first_step,   &
                           cubegen_only, number_restr, doing_ehrenfest, &
-                          qm_forces_ds, qm_forces_total, RMM
-   use basis_data , only: M, Md
+                          qm_forces_ds, qm_forces_total, Pmat_en_wgt,  &
+                          RMM
+   use basis_data , only: M, Md, MM, MMd
    use ehrendata  , only: nullify_forces
    use faint_cpu  , only: int1G, intSG, int3G
    use fileio_data, only: verbose
@@ -12,12 +13,8 @@ subroutine dft_get_qm_forces(dxyzqm)
    implicit none
    double precision, intent(out) :: dxyzqm(3,natom)
    double precision, allocatable :: ff1G(:,:),ffSG(:,:),ff3G(:,:)
-   integer            :: fileunit, igpu, MM, M15, MMd, katm, icrd
+   integer            :: fileunit, igpu, katm, icrd
    double precision   :: f_r ! For restraints
-
-   MM  = M  * (M  +1) / 2
-   MMd = Md * (Md +1) / 2
-   M15 = 1 + M + 4*MM + 2*MMd
 
    if (cubegen_only) return
    call g2g_timer_sum_start('Forces')
@@ -45,7 +42,7 @@ subroutine dft_get_qm_forces(dxyzqm)
    if (doing_ehrenfest) then
       ffSG = -transpose(qm_forces_ds)
    else
-      call intSG(ffSG, RMM(M15:M15+MM), r, d, natom, ntatom)
+      call intSG(ffSG, Pmat_en_wgt, r, d, natom, ntatom)
    endif
    call g2g_timer_sum_stop('Overlap gradients')
    call g2g_timer_stop('intSG')

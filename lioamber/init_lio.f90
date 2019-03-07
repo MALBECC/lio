@@ -117,7 +117,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
                            max_function_exponent, little_cube_size,            &
                            OPEN, timers, MO_coef_at, MO_coef_at_b, charge,     &
                            Fmat_vec, Fmat_vec2, Pmat_vec, Hmat_vec, Ginv_vec,  &
-                           Gmat_vec, sphere_radius
+                           Gmat_vec, Pmat_en_wgt, sphere_radius
     use ECP_mod,    only : Cnorm, ecpmode
     use field_data, only : chrg_sq
     use fileio    , only : lio_logo
@@ -166,7 +166,7 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
 
     allocate(RMM(ng2) , d(natom, natom), v(ntatom,3), Em(ntatom), Rm(ntatom))
     allocate(Fmat_vec(MM), Fmat_vec2(MM), Pmat_vec(MM), Hmat_vec(MM), &
-             Ginv_vec(MMd), Gmat_vec(MMd))
+             Ginv_vec(MMd), Gmat_vec(MMd), Pmat_en_wgt(MM))
     ! Cnorm contains normalized coefficients of basis functions.
     ! Differentiate C for x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)
     if (ecpmode) allocate (Cnorm(ngDyn,13))

@@ -82,7 +82,7 @@ module cubegen
    subroutine cubegen_write( MO_v )
    use garcha_mod, only: RMM, natom, r, nco, Iz,  cube_dens, cube_orb, &
                          cube_elec, cube_sel, cube_orb_file, cube_res, &
-                         cube_dens_file, cube_sqrt_orb
+                         cube_dens_file, cube_sqrt_orb, Pmat_en_wgt
    use basis_data, only: M, Md, a, c, ncont, nuc, nshell, MM, MMd
 
    implicit none
@@ -94,12 +94,11 @@ module cubegen
    integer :: i,j,k,ii,jj,kk,iii,jjj,kkk
    integer :: ns, np, ni
    integer :: ivox, ivoxx, ivoxy, ivoxz, kk_dens, kk_orb
-   integer :: M1, M2, M15
+   integer :: M1, M2
 
    real, parameter :: expmax = 10
 
    M1  = 1         ! first P
-   M15 = 1 + 4*MM + 2*MMd + M   ! aux ( vector for ESSl)
 
    if (cube_dens) open(unit=4242,file=cube_dens_file)
    if (cube_orb) open(unit=4243,file=cube_orb_file)
@@ -200,7 +199,7 @@ module cubegen
        do k=1,ivoxz
          eval_p(3) = origin(3) + (k-1) * vox_dim
            p_val = 0.D0
-         ! calculate function values at this voxel, store in RMM(M15)
+         ! calculate function values at this voxel, store in energy weighted Rho.
          ! s functions
          do ii=1,ns
            p_dist = 0.D0
@@ -212,7 +211,7 @@ module cubegen
             if(a(ii,ni)*p_dist.lt.expmax) p_func = p_func + c(ii,ni) * exp(-a(ii,ni)*p_dist)
            enddo
 
-           RMM(M15+ii-1) = p_func
+           Pmat_en_wgt(ii) = p_func
          enddo
 
          ! p functions
@@ -227,7 +226,7 @@ module cubegen
            enddo
 
            do jj = 1,3
-             RMM(M15+ii+jj-2) = p_func * (eval_p(jj)-r(Nuc(ii),jj))
+            Pmat_en_wgt(ii+jj) = p_func * (eval_p(jj)-r(Nuc(ii),jj))
            enddo
          enddo
 
@@ -246,7 +245,7 @@ module cubegen
            do jj = 1,3
              do jjj = 1,jj
                kkk = kkk + 1
-               RMM(M15+ii+kkk-2)=p_func*(eval_p(jj)-r(Nuc(ii),jj))*(eval_p(jjj)-r(Nuc(ii),jjj))
+               Pmat_en_wgt(ii+kkk)=p_func*(eval_p(jj)-r(Nuc(ii),jj))*(eval_p(jjj)-r(Nuc(ii),jjj))
              enddo
            enddo
          enddo
@@ -258,7 +257,7 @@ module cubegen
            do ii=1,M
              do jj=ii,M
                kkk = kkk + 1
-               p_val=p_val+RMM(kkk)*RMM(M15+ii-1)*RMM(M15+jj-1)
+               p_val=p_val+RMM(kkk)*Pmat_en_wgt(ii)*Pmat_en_wgt(jj)
              enddo
            enddo
            write(4242,'(E13.5)',advance='no') p_val
@@ -275,12 +274,12 @@ module cubegen
                p_val = 0.D0
                do ii=1,M
                  do jj=ii+1,M
-                   Morb=2.D0*MO_v(kk,ii)*RMM(M15+ii-1)
-                   if (cube_sqrt_orb) Morb=Morb*MO_v(kk,ii)*RMM(M15+ii-1)
+                   Morb=2.D0*MO_v(kk,ii)*Pmat_en_wgt(ii)
+                   if (cube_sqrt_orb) Morb=Morb*MO_v(kk,ii)*Pmat_en_wgt(ii)
                    p_val=p_val+Morb
                  enddo
-                   Morb=MO_v(kk,ii)*RMM(M15+ii-1)
-                   if (cube_sqrt_orb) Morb=Morb*MO_v(kk,ii)*RMM(M15+ii-1)
+                   Morb=MO_v(kk,ii)*Pmat_en_wgt(ii)
+                   if (cube_sqrt_orb) Morb=Morb*MO_v(kk,ii)*Pmat_en_wgt(ii)
                    p_val=p_val+Morb
                enddo
                write(4243,'(E13.5)',advance='no') p_val
@@ -294,12 +293,12 @@ module cubegen
              p_val = 0.D0
              do ii=1,M
                do jj=ii+1,M
-                 Morb=2.D0*MO_v(cube_sel,ii)*RMM(M15+ii-1)
-                 if (cube_sqrt_orb) Morb=Morb*MO_v(cube_sel,jj)*RMM(M15+jj-1)
+                 Morb=2.D0*MO_v(cube_sel,ii)*Pmat_en_wgt(ii)
+                 if (cube_sqrt_orb) Morb=Morb*MO_v(cube_sel,jj)*Pmat_en_wgt(jj)
                  p_val=p_val+Morb
                enddo
-                 Morb=MO_v(cube_sel,ii)*RMM(M15+ii-1)
-                 if (cube_sqrt_orb) Morb=Morb*MO_v(cube_sel,ii)*RMM(M15+ii-1)
+                 Morb=MO_v(cube_sel,ii)*Pmat_en_wgt(ii)
+                 if (cube_sqrt_orb) Morb=Morb*MO_v(cube_sel,ii)*Pmat_en_wgt(ii)
                  p_val=p_val+Morb
              enddo
              write(4243,'(E13.5)',advance='no') p_val

@@ -83,7 +83,7 @@ module cubegen
    use garcha_mod, only: RMM, natom, r, nco, Iz,  cube_dens, cube_orb, &
                          cube_elec, cube_sel, cube_orb_file, cube_res, &
                          cube_dens_file, cube_sqrt_orb
-   use basis_data, only: M, Md, a, c, ncont, nuc, nshell
+   use basis_data, only: M, Md, a, c, ncont, nuc, nshell, MM, MMd
 
    implicit none
 
@@ -94,16 +94,12 @@ module cubegen
    integer :: i,j,k,ii,jj,kk,iii,jjj,kkk
    integer :: ns, np, ni
    integer :: ivox, ivoxx, ivoxy, ivoxz, kk_dens, kk_orb
-   integer :: MM, MMd, M1, M2, M13, M15
+   integer :: M1, M2, M15
 
    real, parameter :: expmax = 10
 
-   MM  = M *  (M+1)  / 2
-   MMd = Md * (Md+1) / 2
-
    M1  = 1         ! first P
-   M13 = 1 + 4*MM + 2*MMd ! W ( eigenvalues ), also this space is used in least squares
-   M15 = M13 + M   ! aux ( vector for ESSl)
+   M15 = 1 + 4*MM + 2*MMd + M   ! aux ( vector for ESSl)
 
    if (cube_dens) open(unit=4242,file=cube_dens_file)
    if (cube_orb) open(unit=4243,file=cube_orb_file)

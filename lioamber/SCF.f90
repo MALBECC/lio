@@ -115,7 +115,6 @@ subroutine SCF(E)
    type(sop)           :: overop
    real*8, allocatable :: Xmat(:,:)
    real*8, allocatable :: Ymat(:,:)
-   real*8, allocatable :: Dvec(:)
    real*8, allocatable :: sqsmat(:,:)
    real*8, allocatable :: tmpmat(:,:)
 
@@ -156,7 +155,7 @@ subroutine SCF(E)
 ! TODO : Variables to eliminate...
    real*8, allocatable :: xnano(:,:)
    integer :: MM, MM2, MMd, Md2
-   integer :: M1, M2, M13, M15
+   integer :: M1, M2, M15
 
    real*8, allocatable :: Y(:,:)
    real*8, allocatable :: Ytrans(:,:)
@@ -250,8 +249,7 @@ subroutine SCF(E)
       end if
 
       M1=1 ! first P
-      M13=1 + 4*MM + 2*MMd ! W ( eigenvalues ), also this space is used in least squares
-      M15=M13+M! aux ( vector for ESSl)
+      M15=1 + 4*MM + 2*MMd + M! aux ( vector for ESSl)
 
 !------------------------------------------------------------------------------!
 ! TODO: I don't like ending timers inside a conditional...
@@ -387,23 +385,6 @@ subroutine SCF(E)
         else
            call overop%Gets_orthog_4m( 1, 0.0d0, X_min, Y_min, X_min_trans, Y_min_trans)
         end if
-
-! TODO: replace X,Y,Xtrans,Ytrans with Xmat, Ymat, Xtrp, Ytrp
-!        do ii=1,M
-!        do jj=1,M
-!           X(ii,jj)      = Xmat(ii,jj)
-!           Y(ii,jj)      = Ymat(ii,jj)
-!          Xtrans(ii,jj) = Xtrp(ii,jj)
-!          Ytrans(ii,jj) = Ytrp(ii,jj)
-!        end do
-!        end do
-
-        if ( allocated(Dvec) ) deallocate(Dvec)
-        allocate( Dvec(M) )
-        call overop%Gets_eigens_v( 0.0d0, Dvec )
-        do kk = 1, M
-           RMM(M13+kk-1) = Dvec(kk)
-        end do
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !
@@ -691,12 +672,7 @@ subroutine SCF(E)
         call rho_aop%Gets_data_AO(rho_a)
         call messup_densmat( rho_a )
 
-!carlos: Alpha Energy (or Close Shell) is stored.
         Eorbs = morb_energy
-!charly: RMM is storing only alpha energy when we are working with open shell
-        do kk=1,M
-          RMM(M13+kk-1) = morb_energy(kk)
-        end do
 
         i0 = 0
         if (dftb_calc) i0=MTB
@@ -974,10 +950,9 @@ subroutine SCF(E)
          else
             factor=4.D0
          endif
-!charly: as M13 doesn't store energy any more, this could be not working
          do kk=1,NCO
             RMM(M15+kkk-1)= &
-            RMM(M15+kkk-1)-RMM(M13+kk-1)*factor*X(ii,M2+kk)*X(jj,M2+kk)
+            RMM(M15+kkk-1)-Eorbs(kk)*factor*X(ii,M2+kk)*X(jj,M2+kk)
          enddo
       enddo
       enddo

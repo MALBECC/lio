@@ -73,7 +73,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    type(operator), intent(inout), optional :: rho_bop, fock_bop
 
    real*8  :: E, En, E1, E2, E1s, Es, Ens = 0.0D0, Ex, t, dt_magnus, dt_lpfrg
-   integer :: M2, M13, LWORK, igpu, info, istep, icount, jcount
+   integer :: M2, LWORK, igpu, info, istep, icount, jcount
    integer :: lpfrg_steps = 200, chkpntF1a = 185, chkpntF1b = 195
    logical :: is_lpfrg = .false. , fock_restart = .false.
    character(len=20) :: restart_filename
@@ -121,12 +121,6 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% TD INITIALIZATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
-   ! RMM initializations
-   ! M13 - W (matrix eigenvalues),
-   M2  = 2*M
-   M13 = 1 + 3*MM + 2*MMd + MM    
-
    call g2g_timer_start('TD')
    call g2g_timer_start('td-inicio')
    open(unit = 134, file = "dipole_moment_td")
@@ -143,6 +137,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 !carlos: dim3 is the 3th dimension of all matrix involve in open shell
 !        calculation
 
+   M2  = 2*M
    NCOa = NCO
    dim3 = 1
    if (open) then
@@ -231,8 +226,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
    ! Diagonalizes Smat, stores transformation matrix Xmm and calculates the
    ! transposed matrices Xtrans and Ytrans
-   call td_overlap_diag(M_in, M, Smat, RMM(M13), X, Xmat ,Xtrans, Ymat, Ytrans,&
-                        Xmm)
+   call td_overlap_diag(M_in, M, Smat, X, Xmat ,Xtrans, Ymat, Ytrans, Xmm)
 
    ! Here rho_aux is used as an auxiliar matrix for CUBLAS. Then we need to
    ! restore its original value. Rho is then transformed to the orthonormal
@@ -685,7 +679,7 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, Fmat, Hmat,  &
    return
 end subroutine td_integral_1e
 
-subroutine td_overlap_diag(M_in, M, Smat, eigenvalues, X_min, Xmat, Xtrans, Ymat, &
+subroutine td_overlap_diag(M_in, M, Smat, X_min, Xmat, Xtrans, Ymat, &
                            Ytrans, Xmm)
 
    use dftb_data, only:dftb_calc, MTB
@@ -697,15 +691,15 @@ subroutine td_overlap_diag(M_in, M, Smat, eigenvalues, X_min, Xmat, Xtrans, Ymat
    real*8 , intent(in)    :: Smat(M,M)
    real*8 , intent(inout) :: X_min(M,M)
    real*8 , intent(out)   :: Xtrans(M_in,M_in), Ytrans(M_in,M_in), &
-                             Xmm(M_in,M_in),eigenvalues(M)
+                             Xmm(M_in,M_in)
    real*8 , intent(inout) :: Xmat(M_in,M_in), Ymat(M_in,M_in)
    real*8                 :: Y_min(M,M)
 
    integer :: icount, jcount, LWORK, info
-   real*8, allocatable :: WORK(:)
+   real*8, allocatable :: WORK(:), eigenvalues(:)
 
-   ! Diagonalization of S matrix, both with ESSL or LAPACK.
-   ! The S matrix is stored in RMM(M13, M13+1, ..., M13+MM).
+   allocate(eigenvalues(M))
+   ! Diagonalization of S matrix (LAPACK).
    do icount = 1, M
    do jcount = 1, M
       X_min(icount, jcount) = Smat(icount, jcount)
@@ -766,7 +760,8 @@ subroutine td_overlap_diag(M_in, M, Smat, eigenvalues, X_min, Xmat, Xtrans, Ymat
    enddo
    enddo
 
-   return
+   deallocate(eigenvalues)
+
 end subroutine td_overlap_diag
 
 subroutine td_coulomb_precalc(igpu, MEMO, r, d, natom, ntatom)

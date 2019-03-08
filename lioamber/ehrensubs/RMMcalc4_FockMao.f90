@@ -10,8 +10,8 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
    use field_data , only: epsilon, a0
 
    use garcha_mod, &
-   &only: RMM, igrid2, natom, Iz, NCO, Nunp, total_time, d, ntatom, r, open, &
-          pc, Fmat_vec, Fmat_vec2, Ginv_vec, Hmat_vec, Gmat_vec
+   &only: igrid2, natom, Iz, NCO, Nunp, total_time, d, ntatom, r, open, &
+          pc, Fmat_vec, Fmat_vec2, Ginv_vec, Hmat_vec, Gmat_vec, Pmat_vec
 
    use basis_data, &
    &only: M, Md, kkind, kkinds, cool, cools, MM, MMd
@@ -57,7 +57,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
    if (igpu.gt.1) call aint_new_step()
 
    if (igpu.le.1) then
-      call intsol(RMM(1:MM), Hmat_vec, Iz, pc, r, d, natom, &
+      call intsol(Pmat_vec, Hmat_vec, Iz, pc, r, d, natom, &
                   ntatom, Energy_SolvF, Energy_SolvT, .true.)
    else
       call aint_qmmm_fock(Energy_SolvF,Energy_SolvT)
@@ -79,7 +79,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
 !------------------------------------------------------------------------------!
    call g2g_timer_start('RMMcalc4-solve3lu')
    call rmmput_dens(DensMao)
-   call int3lu(Energy_Coulomb, RMM(1:MM), Fmat_vec2, Fmat_vec, Gmat_vec, &
+   call int3lu(Energy_Coulomb, Pmat_vec, Fmat_vec2, Fmat_vec, Gmat_vec, &
                Ginv_vec, Hmat_vec, open, MEMO)
    call g2g_solve_groups(0,Energy_Exchange,0)
    call g2g_timer_stop('RMMcalc4-solve3lu')
@@ -117,7 +117,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
      FieldNow(1) = eefld_ampx * field_shape
      FieldNow(2) = eefld_ampy * field_shape
      FieldNow(3) = eefld_ampz * field_shape
-     call dip( DipMom, RMM(1:MM) )
+     call dip( DipMom, Pmat_vec )
      call intfld(Fmat_vec2, Fmat_vec, r, d, Iz, natom, ntatom, open, &
                  g, FieldNow(1), FieldNow(2), FieldNow(3))
 
@@ -140,7 +140,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
    call g2g_timer_start('RMMcalc4-exit')
    Energy_1e=0.0d0
    do kk=1,MM
-      Energy_1e = Energy_1e + RMM(kk) * Hmat_vec(kk)
+      Energy_1e = Energy_1e + Pmat_vec(kk) * Hmat_vec(kk)
    enddo
 
 !  Energy=0.0d0

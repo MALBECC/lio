@@ -80,7 +80,7 @@ module cubegen
 
 !------------------------------------------------------------------------------!
    subroutine cubegen_write( MO_v )
-   use garcha_mod, only: RMM, natom, r, nco, Iz,  cube_dens, cube_orb, &
+   use garcha_mod, only: natom, r, nco, Iz,  cube_dens, cube_orb, Pmat_vec, &
                          cube_elec, cube_sel, cube_orb_file, cube_res, &
                          cube_dens_file, cube_sqrt_orb, Pmat_en_wgt
    use basis_data, only: M, Md, a, c, ncont, nuc, nshell, MM, MMd
@@ -257,7 +257,7 @@ module cubegen
            do ii=1,M
              do jj=ii,M
                kkk = kkk + 1
-               p_val=p_val+RMM(kkk)*Pmat_en_wgt(ii)*Pmat_en_wgt(jj)
+               p_val=p_val+Pmat_vec(kkk)*Pmat_en_wgt(ii)*Pmat_en_wgt(jj)
              enddo
            enddo
            write(4242,'(E13.5)',advance='no') p_val
@@ -338,7 +338,7 @@ module cubegen
 !                                                                              !
 !##############################################################################!
 subroutine elec(NX, NY, NZ, deltax, xMin, yMin, zMin)
-   use garcha_mod   , only: r, d, natom, cube_elec_file, RMM, Iz
+   use garcha_mod   , only: r, d, natom, cube_elec_file, Pmat_vec, Iz
    use constants_mod, only: PI, PI32
    use basis_data   , only: M, norm, nShell, nCont, nuc, a, c
    use liosubs_math , only: funct
@@ -414,7 +414,7 @@ subroutine elec(NX, NY, NZ, deltax, xMin, yMin, zMin)
                         (Q(3) - xi(3)) * (Q(3) - xi(3))) * Zij
                s0s   = temp * FUNCT(0,uf)
 
-               pote(ntotal) = pote(ntotal) + ccoef * RMM(rho_ind) * s0s
+               pote(ntotal) = pote(ntotal) + ccoef * Pmat_vec(rho_ind) * s0s
             enddo
             enddo
             enddo
@@ -463,7 +463,7 @@ subroutine elec(NX, NY, NZ, deltax, xMin, yMin, zMin)
                             (Q(l2) - xi(l2)           ) * s1s
                   rho_ind = ifunct + l2 -1 + ((M2 - jfunct) * (jfunct -1)) / 2
 
-                  pote(ntotal) = pote(ntotal) + ccoef * tna * RMM(rho_ind)
+                  pote(ntotal) = pote(ntotal) + ccoef * tna * Pmat_vec(rho_ind)
                enddo
             enddo
             enddo
@@ -532,7 +532,8 @@ subroutine elec(NX, NY, NZ, deltax, xMin, yMin, zMin)
                      j_ind   = jfunct + l2 -1
                      rho_ind = i_ind + ((M2 - j_ind) * (j_ind -1)) / 2
 
-                     pote(ntotal) = pote(ntotal) + tna * ccoef * RMM(rho_ind)
+                     pote(ntotal) = pote(ntotal) + tna * ccoef * &
+                                    Pmat_vec(rho_ind)
                   enddo
                enddo
             enddo
@@ -601,7 +602,8 @@ subroutine elec(NX, NY, NZ, deltax, xMin, yMin, zMin)
                      i_ind   = ifunct + ll(l1) + l2 -1
                      rho_ind = i_ind + ((M2 - jfunct) * (jfunct -1)) / 2
 
-                     pote(ntotal) = pote(ntotal) + tna * RMM(rho_ind) * ccoef/f1
+                     pote(ntotal) = pote(ntotal) + tna * Pmat_vec(rho_ind) *&
+                                    ccoef / f1
                   enddo
                enddo
             enddo
@@ -685,7 +687,7 @@ subroutine elec(NX, NY, NZ, deltax, xMin, yMin, zMin)
                         j_ind   = jfunct + l3 -1
                         rho_ind = i_ind + ((M2 - j_ind) * (j_ind -1)) / 2
 
-                        pote(ntotal) = pote(ntotal) + tna * RMM(rho_ind) * &
+                        pote(ntotal) = pote(ntotal) + tna * Pmat_vec(rho_ind)*&
                                        ccoef / f1
                      enddo
                   enddo
@@ -808,8 +810,8 @@ subroutine elec(NX, NY, NZ, deltax, xMin, yMin, zMin)
                            j_ind   = jfunct + ll(l3) + l4 -1
                            rho_ind = i_ind + ((M2 - j_ind) * (j_ind -1)) / 2
 
-                           pote(ntotal) = pote(ntotal) + RMM(rho_ind) * tna * &
-                                          ccoef / (f1 * f2)
+                           pote(ntotal) = pote(ntotal) + Pmat_vec(rho_ind) * &
+                                          tna * ccoef / (f1 * f2)
                         enddo
                      enddo
                   enddo

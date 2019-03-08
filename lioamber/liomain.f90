@@ -17,7 +17,7 @@ subroutine liomain(E, dipxyz)
                           restart_freq, npas, sqsm, mulliken, lowdin, dipole, &
                           doing_ehrenfest, first_step, Eorbs, Eorbs_b, fukui, &
                           print_coeffs, steep, NUNP, MO_coef_at, MO_coef_at_b,&
-                          RMM
+                          Pmat_vec
     use basis_data, only: M, MM
     use ecp_mod   , only: ecpmode, IzECP
     use ehrensubs , only: ehrendyn_main
@@ -46,12 +46,12 @@ subroutine liomain(E, dipxyz)
     endif
 
     if ( (restart_freq.gt.0) .and. (MOD(npas, restart_freq).eq.0) ) &
-       call do_restart(88, RMM(1:MM))
+       call do_restart(88, Pmat_vec)
 
     ! Perform Mulliken and Lowdin analysis, get fukui functions and dipole.
     if (MOD(npas, energy_freq).eq.0) then
-        if (mulliken .or. lowdin) call do_population_analysis(RMM(1:MM))
-        if (dipole) call do_dipole(RMM(1:MM), dipxyz, 69)
+        if (mulliken .or. lowdin) call do_population_analysis(Pmat_vec)
+        if (dipole) call do_dipole(Pmat_vec, dipxyz, 69)
         if (fukui) call do_fukui()
 
         if (writeforces) then
@@ -138,7 +138,7 @@ end subroutine do_dipole
 !%% DO_POPULATION_ANALYSIS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Performs the different population analyisis available.                       !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine do_population_analysis(RMM)
+subroutine do_population_analysis(Pmat)
    use garcha_mod, only: Smat, RealRho, Enucl, Iz, natom, &
                          mulliken, lowdin, sqsm, d, r, ntatom
    use basis_data, only: M, Md, Nuc, MM
@@ -148,7 +148,7 @@ subroutine do_population_analysis(RMM)
    use fileio    , only: write_population
 
    implicit none
-   double precision, intent(in) :: RMM(MM)
+   double precision, intent(in) :: Pmat(MM)
    double precision, allocatable :: Fock_1e(:), Hmat(:)
    double precision :: q(natom), En
    integer          :: IzUsed(natom), kk
@@ -159,7 +159,7 @@ subroutine do_population_analysis(RMM)
    allocate(Fock_1e(MM), Hmat(MM))
    call int1(En, Fock_1e, Hmat, Smat, d, r, Iz, natom, ntatom)
    call spunpack('L', M, Fock_1e, Smat)
-   call spunpack('L', M, RMM(1), RealRho)
+   call spunpack('L', M, Pmat(1), RealRho)
    deallocate(Fock_1e, Hmat)
    call fix_densmat(RealRho)
 

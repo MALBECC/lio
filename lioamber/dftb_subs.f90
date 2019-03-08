@@ -116,12 +116,12 @@ subroutine getXY_DFTB(M_in,x_in,y_in,xmat,ymat)
 end subroutine
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-subroutine read_rhoDFTB(M, MM, RMM1, rhoalpha, rhobeta, OPEN)
+subroutine read_rhoDFTB(M, MM, rhototal, rhoalpha, rhobeta, OPEN)
    use dftb_data, only: MTB, MDFTB, rho_aDFTB, rho_bDFTB
 
    implicit none
    integer, intent(in)    :: M, MM
-   real*8, intent(inout)  :: RMM1(MM)
+   real*8, intent(inout)  :: rhototal(MM)
    real*8, intent(inout)  :: rhoalpha(MM), rhobeta(MM)
    logical, intent(in)    :: OPEN
    integer                :: ii, jj, kk
@@ -138,7 +138,7 @@ subroutine read_rhoDFTB(M, MM, RMM1, rhoalpha, rhobeta, OPEN)
 
       do jj=1,M
       do kk=jj,M
-               RMM1(kk+(2*M-jj)*(jj-1)/2)=rho_aDFTB(jj+MTB,kk+MTB)
+               rhototal(kk+(2*M-jj)*(jj-1)/2)=rho_aDFTB(jj+MTB,kk+MTB)
       enddo
       enddo
 
@@ -157,7 +157,7 @@ subroutine read_rhoDFTB(M, MM, RMM1, rhoalpha, rhobeta, OPEN)
       enddo
       enddo
 
-      RMM1 = rhoalpha+rhobeta
+      rhototal = rhoalpha+rhobeta
 
       write(*,*) 'RHOTB readed'
 

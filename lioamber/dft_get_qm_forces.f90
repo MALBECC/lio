@@ -4,8 +4,8 @@ subroutine dft_get_qm_forces(dxyzqm)
    use garcha_mod , only: natom, ntatom, nsol, r, d, Iz, first_step,   &
                           cubegen_only, number_restr, doing_ehrenfest, &
                           qm_forces_ds, qm_forces_total, Pmat_en_wgt,  &
-                          RMM
-   use basis_data , only: M, Md, MM, MMd
+                          Pmat_vec
+   use basis_data , only: M, Md
    use ehrendata  , only: nullify_forces
    use faint_cpu  , only: int1G, intSG, int3G
    use fileio_data, only: verbose
@@ -26,11 +26,11 @@ subroutine dft_get_qm_forces(dxyzqm)
    call aint_query_gpu_level(igpu)
    if (igpu .lt. 4) then
       call g2g_timer_sum_start('Nuclear attraction gradients')
-      call int1G(ff1G, RMM(1:MM), d, r, Iz, natom, ntatom)
+      call int1G(ff1G, Pmat_vec, d, r, Iz, natom, ntatom)
       call g2g_timer_sum_stop('Nuclear attraction gradients')
    elseif (nsol .le. 0) then
       call g2g_timer_sum_start('Nuclear attraction gradients')
-      call int1G(ff1G, RMM(1:MM), d, r, Iz, natom, ntatom)
+      call int1G(ff1G, Pmat_vec, d, r, Iz, natom, ntatom)
       call aint_qmmm_forces(ff1G,0)
       call g2g_timer_sum_stop('Nuclear attraction gradients')
    endif
@@ -50,7 +50,7 @@ subroutine dft_get_qm_forces(dxyzqm)
    ! 2e and 3e gradients.
    call g2g_timer_start('int3G')
    call g2g_timer_sum_start('Coulomb+Exchange-correlation')
-   call int3G(ff3G, .true., RMM(1:MM), r, d, natom, ntatom)
+   call int3G(ff3G, .true., Pmat_vec, r, d, natom, ntatom)
    call g2g_timer_stop('int3G')
    call g2g_timer_sum_stop('Coulomb+Exchange-correlation')
 

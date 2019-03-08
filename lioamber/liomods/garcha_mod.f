@@ -34,7 +34,6 @@ c ncf, lt,at,ct parameters for atomic basis sets
 
       real*8, dimension (:), ALLOCATABLE :: Fmat_vec, Fmat_vec2,
      > Pmat_vec, Hmat_vec, Ginv_vec, Gmat_vec, Pmat_en_wgt
-       real*8, dimension (:), ALLOCATABLE :: RMM
        real*8, dimension (:), ALLOCATABLE :: rhoalpha,rhobeta
        real*8, dimension (:,:), ALLOCATABLE :: X
 

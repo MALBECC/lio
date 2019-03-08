@@ -51,15 +51,15 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
                      time, M_in, MTB, dim3)
    ! This routine receives: F1a, F1b, rho2
    ! And gives: F5 = F(t+(deltat/2))
-   use garcha_mod   , only: RMM, NBCH, rhoalpha, rhobeta, OPEN, r, d, natom, &
+   use garcha_mod   , only: NBCH, rhoalpha, rhobeta, OPEN, r, d, natom,      &
                             ntatom, Iz, MEMO, Fmat_vec, Fmat_vec2, Ginv_vec, &
-                            Hmat_vec, Gmat_vec
+                            Hmat_vec, Gmat_vec, Pmat_vec
    use field_data   , only: field
    use field_subs   , only: field_calc
    use mathsubs     , only: basechange
    use faint_cpu    , only: int3lu
    use fockbias_subs, only: fockbias_apply
-   use basis_data   , only: M, Md, MM, MMd
+   use basis_data   , only: M, Md
 
    implicit none
    ! MTB is only used in DFTB, it equals 0 otherwise.
@@ -86,7 +86,7 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    ! Initializations and defaults
    ! tdstep of the predictor is 0.5 * tdstep_magnus
    ! F1a and F1b are used to extrapolate F3, then F3 is used to propagate rho.
-   ! Afterwards, rho4 is copied into RMM in order to calculate F5.
+   ! Afterwards, rho4 is copied into Pmat_vec in order to calculate F5.
    tdstep1 = timestep * 0.50D0
    F3      = (7.D0 / 4.D0) * F1b - (3.D0 / 4.D0) * F1a
    rho2t   = rho2
@@ -100,16 +100,16 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
       rho2t(:,:,2) = basechange(M_in, Xmat, rho4(:,:,2), Xtrans)
       call sprepack_ctr('L', M, rhoalpha, rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
       call sprepack_ctr('L', M, rhobeta , rho2t(MTB+1:MTB+M,MTB+1:MTB+M,2))
-      RMM(1:MM) = rhoalpha + rhobeta
+      Pmat_vec = rhoalpha + rhobeta
    else
       rho2t(:,:,1) = basechange(M_in, Xmat, rho4(:,:,1), Xtrans)
-      call sprepack_ctr('L', M, RMM, rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
+      call sprepack_ctr('L', M, Pmat_vec, rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
    end if
 
-   call int3lu(E2, RMM(1:MM), Fmat_vec2, Fmat_vec, Gmat_vec, Ginv_vec, &
+   call int3lu(E2, Pmat_vec, Fmat_vec2, Fmat_vec, Gmat_vec, Ginv_vec, &
                Hmat_vec, open, MEMO)
    call g2g_solve_groups(0, Ex, 0)
-   call field_calc(E1, time, RMM(1:MM), Fmat_vec2, Fmat_vec, r, d, &
+   call field_calc(E1, time, Pmat_vec, Fmat_vec2, Fmat_vec, r, d, &
                    Iz, natom, ntatom, open)
    FBA = FON
    call spunpack('L', M, Fmat_vec, FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
@@ -265,15 +265,15 @@ subroutine cupredictor(F1a, F1b, FON, rho2, devPtrX, factorial, devPtrXc, &
    ! Predictor-Corrector Cheng, V.Vooris.PhysRevB.2006.74.155112
    ! This routine receives: F1a, F1b, rho2
    ! And gives: F5 = F(t+(deltat/2))
-   use garcha_mod   , only: RMM, NBCH, rhoalpha, rhobeta, OPEN, r, d, natom, &
+   use garcha_mod   , only: NBCH, rhoalpha, rhobeta, OPEN, r, d, natom,      &
                             ntatom, Iz, MEMO, Fmat_vec, Fmat_vec2, Ginv_vec, &
-                            Hmat_vec, Gmat_vec
+                            Hmat_vec, Gmat_vec, Pmat_vec
    use field_data   , only: field
    use field_subs   , only: field_calc
    use cublasmath   , only: basechange_cublas
    use faint_cpu    , only: int3lu
    use fockbias_subs, only: fockbias_apply
-   use basis_data   , only: M, Md, MM, MMd
+   use basis_data   , only: M, Md
 
    implicit none
    ! MTB is only used in DFTB, it equals 0 otherwise.
@@ -301,7 +301,7 @@ subroutine cupredictor(F1a, F1b, FON, rho2, devPtrX, factorial, devPtrXc, &
    ! Initializations and defaults
    ! tdstep of the predictor is 0.5 * tdstep_magnus
    ! F1a and F1b are used to extrapolate F3, then F3 is used to propagate rho.
-   ! Afterwards, rho4 is copied into RMM in order to calculate F5.
+   ! Afterwards, rho4 is copied into Pmat_vec in order to calculate F5.
    tdstep1 = timestep * 0.50D0
    F3      = (7.D0 / 4.D0) * F1b - (3.D0 / 4.D0) * F1a
    rho2t   = rho2
@@ -315,16 +315,16 @@ subroutine cupredictor(F1a, F1b, FON, rho2, devPtrX, factorial, devPtrXc, &
       rho2t(:,:,2) = basechange_cublas(M_in, rho4(:,:,2), devPtrXc, 'inv')
       call sprepack_ctr('L', M, rhoalpha, rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
       call sprepack_ctr('L', M, rhobeta , rho2t(MTB+1:MTB+M,MTB+1:MTB+M,2))
-      RMM(1:MM) = rhoalpha + rhobeta
+      Pmat_vec = rhoalpha + rhobeta
    else
       rho2t(:,:,1) = basechange_cublas(M_in, rho4(:,:,1), devPtrXc, 'inv')
-      call sprepack_ctr('L', M, RMM, rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
+      call sprepack_ctr('L', M, Pmat_vec, rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
    end if
 
-   call int3lu(E2, RMM(1:MM), Fmat_vec2, Fmat_vec, Gmat_vec, Ginv_vec, &
+   call int3lu(E2, Pmat_vec, Fmat_vec2, Fmat_vec, Gmat_vec, Ginv_vec, &
                Hmat_vec, open, MEMO)
    call g2g_solve_groups(0, Ex, 0)
-   call field_calc(E1, time, RMM(1:MM), Fmat_vec2, Fmat_vec, r, d, &
+   call field_calc(E1, time, Pmat_vec, Fmat_vec2, Fmat_vec, r, d, &
                    Iz, natom, ntatom, open)
    FBA = FON
    call spunpack('L', M, Fmat_vec, FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))

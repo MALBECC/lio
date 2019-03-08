@@ -8,8 +8,8 @@
 !
 !------------------------------------------------------------------------------!
 
-subroutine drive(ng2, ngDyn, ngdDyn, iostat)
-   use garcha_mod, only: X, RMM, rhoalpha, rhobeta,  charge, e_, e_2, e3,      &
+subroutine drive(iostat)
+   use garcha_mod, only: X, rhoalpha, rhobeta,  charge, e_, e_2, e3, Pmat_vec, &
                          fcoord, fmulliken, natom, frestart, Iexch, frestartin,&
                          NCO, npas, Nr, Nr2, wang, wang2, wang3, VCINP, OPEN,  &
                          Iz, Rm2, rqm, Nunp, restart_freq, writexyz, gpu_level,&
@@ -28,7 +28,6 @@ subroutine drive(ng2, ngDyn, ngdDyn, iostat)
    use ghost_atoms_subs, only: summon_ghosts
 
    implicit none
-   integer, intent(in)    :: ng2, ngDyn, ngdDyn ! ngDyn/ngdDyn are no longer used.
    integer, intent(inout) :: iostat
 
    double precision, allocatable :: restart_coef(:,:), restart_coef_b(:,:), &
@@ -76,12 +75,12 @@ subroutine drive(ng2, ngDyn, ngdDyn, iostat)
          allocate(restart_dens(M, M))
          if (.not. OPEN) then
             call read_rho_restart(restart_dens, M, 89)
-            call sprepack('L', M, RMM(1), restart_dens)
+            call sprepack('L', M, Pmat_vec, restart_dens)
          else
             allocate(restart_adens(M,M), restart_bdens(M,M))
             call read_rho_restart(restart_adens, restart_bdens, M, 89)
             restart_dens = restart_adens + restart_bdens
-            call sprepack('L', M, RMM(1)  , restart_dens)
+            call sprepack('L', M, Pmat_vec, restart_dens)
             call sprepack('L', M, rhoalpha, restart_adens)
             call sprepack('L', M, rhobeta , restart_bdens)
             deallocate(restart_adens, restart_bdens)
@@ -131,9 +130,9 @@ subroutine drive(ng2, ngDyn, ngdDyn, iostat)
          do jcount = 1     , M
          do icount = jcount, M
             kcount = kcount + 1
-            RMM(kcount) = restart_dens(indexii(icount), indexii(jcount))
+            Pmat_vec(kcount) = restart_dens(indexii(icount), indexii(jcount))
             if (icount .ne. jcount) then
-               RMM(kcount) = RMM(kcount) * 2.0D0
+               Pmat_vec(kcount) = Pmat_vec(kcount) * 2.0D0
             endif
          enddo
          enddo
@@ -162,8 +161,8 @@ subroutine drive(ng2, ngDyn, ngdDyn, iostat)
    ! End of restart.
    
    ! G2G and AINT(GPU) Initializations
-   call g2g_parameter_init(NORM, natom, natom, ngDyn, rqm, Rm2, Iz, Nr, Nr2,  &
-                           Nuc, M, ncont, nshell, c, a, RMM, Fmat_vec,        &
+   call g2g_parameter_init(NORM, natom, natom, M, rqm, Rm2, Iz, Nr, Nr2,  &
+                           Nuc, M, ncont, nshell, c, a, Pmat_vec, Fmat_vec,   &
                            Fmat_vec2, rhoalpha, rhobeta, NCO, OPEN, Nunp, 0,  &
                            Iexch, e_, e_2, e3, wang, wang2, wang3, use_libxc, &
                            ex_functional_id, ec_functional_id)

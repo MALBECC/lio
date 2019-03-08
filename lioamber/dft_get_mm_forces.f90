@@ -1,7 +1,8 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Calculates the QMMM forces in the QM and the MM regions.
 subroutine dft_get_mm_forces(dxyzcl, dxyzqm)
-   use garcha_mod, only: natom, ntatom, r, d, pc, Iz, RMM, cubegen_only, nsol
+   use garcha_mod, only: natom, ntatom, r, d, pc, Iz, cubegen_only, nsol,&
+                         Pmat_vec
    use basis_data, only: M
    use faint_cpu , only: int1G, intsolG
 
@@ -25,7 +26,7 @@ subroutine dft_get_mm_forces(dxyzcl, dxyzqm)
       ff   = 0.0D0
 
       call g2g_timer_start('intsolG')
-      call intsolG(ff, ffcl, natom, ntatom, RMM(1:MM), d, r, pc, Iz)
+      call intsolG(ff, ffcl, natom, ntatom, Pmat_vec, d, r, pc, Iz)
       call g2g_timer_stop('intsolG')
 
       do jatom = 1, nsol
@@ -40,7 +41,7 @@ subroutine dft_get_mm_forces(dxyzcl, dxyzqm)
       ffcl = 0.0D0
       ff   = 0.0D0
 
-      if (igpu.gt.3) call int1G(ff, RMM(1:MM), d, r, Iz, natom, ntatom)
+      if (igpu.gt.3) call int1G(ff, Pmat_vec, d, r, Iz, natom, ntatom)
       call g2g_timer_start('aint_qmmm_forces')
       call aint_qmmm_forces(ff, ffcl)
       call g2g_timer_stop('aint_qmmm_forces')

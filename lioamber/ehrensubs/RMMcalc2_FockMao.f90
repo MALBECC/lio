@@ -7,9 +7,9 @@ subroutine RMMcalc2_FockMao( FockMao, Energy )
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use faint_cpu  , only: int2, int3mem, intsol
 
-   use garcha_mod,  only: RMM, igrid2, MEMO, r, d, ntatom, Iz, pc, natom, &
-                          Gmat_vec, Ginv_vec, Hmat_vec
-   use basis_data,  only: M, Md, kkind, kkinds, cool, cools, nshelld, MM, MMd
+   use garcha_mod,  only: igrid2, MEMO, r, d, ntatom, Iz, pc, natom, &
+                          Gmat_vec, Ginv_vec, Hmat_vec, Pmat_vec
+   use basis_data,  only: M, kkind, kkinds, cool, cools, MM
 
    implicit none
    real*8,intent(out)    :: FockMao(M,M)
@@ -42,7 +42,7 @@ subroutine RMMcalc2_FockMao( FockMao, Energy )
 !------------------------------------------------------------------------------!
    call g2g_timer_start('RMMcalc2-sol2coul')
    if (igpu.le.1) then
-      call intsol(RMM(1:MM), Hmat_vec, Iz, pc, r, d, natom, &
+      call intsol(Pmat_vec, Hmat_vec, Iz, pc, r, d, natom, &
                   ntatom, Energy_SolvF, Energy_SolvT, .true.)
    else
       call aint_qmmm_fock(Energy_SolvF,Energy_SolvT)
@@ -65,7 +65,7 @@ subroutine RMMcalc2_FockMao( FockMao, Energy )
    call g2g_timer_start('RMMcalc2-exit')
    Energy_1e=0.0d0
    do kk=1,MM
-      Energy_1e = Energy_1e + RMM(kk) * Hmat_vec(kk)
+      Energy_1e = Energy_1e + Pmat_vec(kk) * Hmat_vec(kk)
    enddo
 
 !  Energy=0.0d0

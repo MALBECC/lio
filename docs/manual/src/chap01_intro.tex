@@ -28,21 +28,107 @@ and click on \textit{Download ZIP}.
 For the second one, you can directly run the following
 command:
 
-\lstset{language=bash}
+\lstset{language=bash, keywordstyle=\color{violet}, 
+morekeywords={clone}}
 \begin{lstlisting}
    git clone https://github.com/MALBECC/lio.git .
 \end{lstlisting}
 
 
-
-
 \subsection{Pre-requisites}
+In addition to an UNIX-like OS, fortran and c++ compilers,
+LIO depends on LAPACK \textbf{\textit{\href{http://www.netlib.org/lapack/}
+{LAPACK}}} and BLAS libraries for linear algebra calculations.
+In addition, \textbf{\textit{\href{https://developer.nvidia.com/cuda-downloads}
+{CUDA 6.5 or higher}}} is required for GPU calculations,
+which unleash LIO's true potential. As of the writing of
+this manual, LIO has not yet been tested with CUDA 9.0.
+
+In addition, \textbf{\textit{\href{https://tddft.org/programs/libxc/}
+{libxc}}} is required for its usage, although said library
+is CPU-only. This is entirely optional as LIO can run
+without libxc, using only the PBE functional.
 
 \subsection{Compilation}
 
+By default, LIO compiles with GPU options enabled. It is highly
+recommended to specify the GPU architecture as a compilation
+option, since the compiler performs additional enhancements.
+After compilation, LIOHOME environment variable should be set
+to the current LIO installation directory:
+
+\lstset{language=bash, keywordstyle=\color{violet}, 
+morekeywords={export}}
+\begin{lstlisting}
+   export LIOHOME=/dir/to/lio/
+\end{lstlisting}
+
+For a CPU-only compilation, use:
+
+\lstset{language=bash, keywordstyle=\color{violet}, 
+morekeywords={make}}
+\begin{lstlisting}
+   make cuda=0
+\end{lstlisting}
+
+If INTEL compilers are present, they can be used by setting
+the \textit{intel} option to 1, or to 2 if INTEL MKL usage is
+also desired. 
+
+\lstset{language=bash, keywordstyle=\color{violet}, 
+morekeywords={make}}
+\begin{lstlisting}
+   make intel=2
+\end{lstlisting}
+
+The following is a list of available compilation and their meanings.
+They can be used in any combination possible (including several GPU
+architectures for greater compatibility). For example, the default
+LIO compilation could be written as:
+
+\lstset{language=bash, keywordstyle=\color{violet}, 
+morekeywords={make}}
+\begin{lstlisting}
+   make cuda=2 sm30=1 sm52=1 sm61=1
+\end{lstlisting}
+
+\input{../tables/compile_options.tex}
+
 \subsection{MD-Engine Interfacing}
+LIO can be linked with  \textbf{\textit{\href{http://ambermd.org/index.php}
+{AMBER}}}, our own \textbf{\textit{\href{https://github.com/MALBECC/gromacs}
+{GROMACS fork}}}, our own \textbf{\textit{\href{https://github.com/MALBECC/hybrid}
+{HYBRID}}} code for QM/MM calculations.
 
+In all three cases, the LIOHOME environment variable should be
+set to the current LIO installation directory. In addition
+to this section, please refer to each of the software packages'
+installation manual for further clarifications.
 
+In order to compile AMBER with LIO, AMBER should be compiled
+after LIO with the following options set:
+
+\lstset{language=bash, keywordstyle=\color{violet}, 
+morekeywords={make, export}}
+\begin{lstlisting}
+   export AMBERHOME=/dir/to/amber/
+   ./configure -lio -noX11 -netcdfstatic gnu
+   make clean
+   make install
+\end{lstlisting}
+
+For a GROMACS-LIO compilation, GROMACS should be compiled 
+after LIO with the following options:
+
+\lstset{language=bash, breaklines=true, breakatwhitespace=true,
+showstringspaces=false, stringstyle=\color{olive},
+keywordstyle=\color{violet}, morekeywords={cmake, make}}
+\begin{lstlisting}
+   cd gromacs_compilation_directory/
+   cmake gromacs_src_dir/ -DGMX_QMMM=1 -DGMX_QMMM_PROGRAM="lio" -DLIO_LINK_FLAGS="-L/usr/lib -L/usr/lib64 -L$LIOHOME/g2g -L$LIOHOME/lioamber -lg2g -llio-g2g" -DGMX_GPU=0 -DGMX_THREAD_MPI=0
+   make
+   make install
+\end{lstlisting}
 
 \section{Tips and tricks - Optimizing your runs}
 

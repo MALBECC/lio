@@ -1,0 +1,56 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{Spacing}{1.0}
+\begin{longtable}{ p{.25\textwidth} p{.70\textwidth} }
+
+   \toprule
+   \textbf{Variable} & Description \\*
+   \midrule \\*
+   \endhead
+
+   \bottomrule
+   \caption{Compilation options}
+   \endfoot
+
+   \textbf{cuda}
+   &  \textit{default cuda=2}
+   \\*\textit{0, 1, 2}
+   & Sets the level of GPU dependencies. cuda=0 means a 
+   CPU-only compilation, =1 enables GPU, and =2 includes
+   CUBLAS usage for linear algebra operations. \\* \\
+
+   \textbf{intel}
+   &  \textit{default intel=0}
+   \\*\textit{0, 1, 2}
+   & Sets the usage of INTEL compilers. intel=0 means only
+   GNU compilers, =1 means INTEL, and =2 uses INTEL MKL 
+   instead of BLAS/LAPACK routines. \\* \\
+
+   \textbf{precision}
+   &  \textit{default precision=0}
+   \\*\textit{0, 1}
+   & Sets level of precision in XC calculations. By default
+   LIO uses mixed precision; precision=1 sets everything in
+   double precision. This is specially useful when attempting
+   high-precision geometry optimizations.\\* \\
+
+   \textbf{analytics}
+   &  \textit{default analytics=0}
+   \\*\textit{0, 1, 2, 3}
+   & Setting analytics = 1 specifies a profiling compilation,
+   while analytics = 2 and 3 set higher levels of debugging
+   information (for usage with gdb, for example).
+   \\* \\
+
+   \textbf{smXX}
+   &  \textit{default sm30=1 sm52=1 sm61=1}
+   \\*\textit{0, 1}
+   & Sets a specific GPU architecture for compilation. 
+   Available options are sm30, sm35 (Kepler, CUDA $\geq$ 
+   5.0), sm50, sm52 (Maxwell and GeForce 980, CUDA $\geq$
+   6.5), sm60 and sm61 (Pascal and GeForce 1080, CUDA $\geq$
+   8.0).
+   \\* \\
+
+\end{longtable}
+\end{Spacing}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

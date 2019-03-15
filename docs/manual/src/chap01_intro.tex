@@ -10,10 +10,8 @@ functional theory.
 
 \section{Instalation}
 
-If you are reading this manual, you probably already have
-a version of lio ready to compile. If you don't, or if
-you want to make sure you have the most up-to-date version
-of the code, all you need to do is either download it
+If you are reading this manual, you probably already have a version of lio ready to compile. If you don't, or if
+you want to make sure you have the most up-to-date version of the code, all you need to do is either download it
 from the git repository online or use git to clone a copy.
 
 For the first option, go to
@@ -36,26 +34,23 @@ morekeywords={clone}}
 
 
 \subsection{Pre-requisites}
-In addition to an UNIX-like OS, fortran and c++ compilers,
-LIO depends on LAPACK \textbf{\textit{\href{http://www.netlib.org/lapack/}
-{LAPACK}}} and BLAS libraries for linear algebra calculations.
-In addition, \textbf{\textit{\href{https://developer.nvidia.com/cuda-downloads}
-{CUDA 6.5 or higher}}} is required for GPU calculations,
-which unleash LIO's true potential. As of the writing of
+In addition to an UNIX-like OS, fortran and c++ compilers, LIO depends on LAPACK 
+\textit{\href{http://www.netlib.org/lapack/}{LAPACK}} and BLAS libraries for 
+linear algebra calculations. In addition, 
+\textit{\href{https://developer.nvidia.com/cuda-downloads}{CUDA 6.5 or higher}}
+is required for GPU calculations,which unleash LIO's true potential. As of the writing of
 this manual, LIO has not yet been tested with CUDA 9.0.
 
-In addition, \textbf{\textit{\href{https://tddft.org/programs/libxc/}
-{libxc}}} is required for its usage, although said library
-is CPU-only. This is entirely optional as LIO can run
-without libxc, using only the PBE functional.
+In addition, \textit{\href{https://tddft.org/programs/libxc/}{libxc}} is
+required for its usage, although said library is CPU-only. This is entirely optional
+as LIO can run without libxc, using only the PBE functional.
 
 \subsection{Compilation}
 
-By default, LIO compiles with GPU options enabled. It is highly
-recommended to specify the GPU architecture as a compilation
-option, since the compiler performs additional enhancements.
-After compilation, LIOHOME environment variable should be set
-to the current LIO installation directory:
+By default, LIO compiles with GPU options enabled. It is highly recommended to specify
+the GPU architecture as a compilation option, since the compiler performs additional
+enhancements. After compilation, LIOHOME environment variable should be set to the
+current LIO installation directory:
 
 \lstset{language=bash, keywordstyle=\color{violet}, 
 morekeywords={export}}
@@ -71,9 +66,8 @@ morekeywords={make}}
    make cuda=0
 \end{lstlisting}
 
-If INTEL compilers are present, they can be used by setting
-the \textit{intel} option to 1, or to 2 if INTEL MKL usage is
-also desired. 
+If INTEL compilers are present, they can be used by setting the \textit{intel}
+option to 1, or to 2 if INTEL MKL usage is also desired. 
 
 \lstset{language=bash, keywordstyle=\color{violet}, 
 morekeywords={make}}
@@ -81,10 +75,9 @@ morekeywords={make}}
    make intel=2
 \end{lstlisting}
 
-The following is a list of available compilation and their meanings.
-They can be used in any combination possible (including several GPU
-architectures for greater compatibility). For example, the default
-LIO compilation could be written as:
+The following is a list of available compilation and their meanings. They can be
+used in any combination possible (including several GPU architectures for greater
+compatibility). For example, the default LIO compilation could be written as:
 
 \lstset{language=bash, keywordstyle=\color{violet}, 
 morekeywords={make}}
@@ -95,18 +88,17 @@ morekeywords={make}}
 \input{../tables/compile_options.tex}
 
 \subsection{MD-Engine Interfacing}
-LIO can be linked with  \textbf{\textit{\href{http://ambermd.org/index.php}
-{AMBER}}}, our own \textbf{\textit{\href{https://github.com/MALBECC/gromacs}
-{GROMACS fork}}}, our own \textbf{\textit{\href{https://github.com/MALBECC/hybrid}
-{HYBRID}}} code for QM/MM calculations.
+LIO can be linked with  \textit{\href{http://ambermd.org/index.php}{AMBER}},
+our own \textit{\href{https://github.com/MALBECC/gromacs}{GROMACS}} fork, 
+our own \textit{\href{https://github.com/MALBECC/hybrid}{HYBRID}} code for 
+QM/MM calculations.
 
-In all three cases, the LIOHOME environment variable should be
-set to the current LIO installation directory. In addition
-to this section, please refer to each of the software packages'
-installation manual for further clarifications.
+In all three cases, the LIOHOME environment variable should be set to the current
+LIO installation directory. In addition to this section, please refer to each
+of the software packages' installation manual for further clarifications.
 
-In order to compile AMBER with LIO, AMBER should be compiled
-after LIO with the following options set:
+In order to compile AMBER with LIO, AMBER should be compiled after LIO with the
+following options set:
 
 \lstset{language=bash, keywordstyle=\color{violet}, 
 morekeywords={make, export}}
@@ -117,8 +109,8 @@ morekeywords={make, export}}
    make install
 \end{lstlisting}
 
-For a GROMACS-LIO compilation, GROMACS should be compiled 
-after LIO with the following options:
+For a GROMACS-LIO compilation, GROMACS should be compiled after LIO with the 
+following options:
 
 \lstset{language=bash, breaklines=true, breakatwhitespace=true,
 showstringspaces=false, stringstyle=\color{olive},
@@ -131,6 +123,30 @@ keywordstyle=\color{violet}, morekeywords={cmake, make}}
 \end{lstlisting}
 
 \section{Tips and tricks - Optimizing your runs}
+There are several ways to optimize your production runs, and it is highly recommended
+to fine tune these settings if the same system or very similar systems are going to
+run for extended periods of time. Please see the corresponding sections in this manual
+for a more detailed explanation of these variables.
+
+The first set to tune is \textliovar{rmax} and \textliovar{rmaxs}, which are
+related to the integral cut-offs used in both Coulomb and fitting set integrals. The
+\textit{higher} the value of \textliovar{rmaxs} and the \textit{lower} the value
+of \textliovar{rmax}, the calculations will run faster. Keep in mind, however,
+that \textliovar{rmax} should \textit{never} be lower that \textliovar{rmaxs},
+and that tuning those values for a faster calculation will certainly result in a loss
+of precision. Therefore, the idea is to decrease  \textliovar{rmax} and increase
+\textliovar{rmaxs} until the difference in energies and forces stops being
+negligible.
+
+Next is the set of options available for the GPU library which performs the exchange-
+correlation calculations. The option \textliovar{max\_function\_exponent} indicates
+the maximum exponent considered for a fuction in a point of the grid; it should be 
+tweaked taking into account the aforementioned criterium: the faster the calculation
+is performed, the lesser precision is achieved. 
+There are also three other options whose optimal values depend on the GPU architecture
+available: \textliovar{little\_cube\_size}, \textliovar{min\_points\_per\_cube},
+and \textliovar{sphere\_radius}. These can be tweaked for maximum speed without
+worrying about the resulting precision.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

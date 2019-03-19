@@ -38,14 +38,17 @@ subroutine lionml_read(file_unit, extern_stat )
    integer, intent(in)            :: file_unit
    integer, intent(out), optional :: extern_stat
    integer                        :: intern_stat
+   logical                        :: main_nml_found = .true.
+
+   if ( present(extern_stat) ) extern_stat = 0
 
    ! Old lio namelist.
    intern_stat = 0
    rewind( unit = file_unit, iostat = intern_stat )
    if ( intern_stat /= 0 ) then
       write(*,'(A)') &
-         "Cannot rewind LIO input file. Using defaults for namelist lio."
-      if (verbose .gt. 3) write(*,'(A,I4)') "iostat = ", intern_stat
+         "Cannot rewind LIO input file."
+      if (verbose > 3) write(*,'(A,I4)') "iostat = ", intern_stat
       if ( present(extern_stat) ) extern_stat = 1
       return
    end if
@@ -53,10 +56,17 @@ subroutine lionml_read(file_unit, extern_stat )
    intern_stat = 0
    read( unit = file_unit, nml = lio, iostat = intern_stat )
    if ( intern_stat /= 0 ) then
-      write(*,'(A)') &
-         "Error found in lio namelist. Using defaults for namelist lio."
-      if (verbose .gt. 3) write(*,'(A,I4)') "iostat = ", intern_stat
-      if ( present(extern_stat) ) extern_stat = 2
+      if (intern_stat == -1) then 
+         write(*,'(A)') "Namelist &lio not found." 
+         main_nml_found = .false.
+         if ( present(extern_stat) ) extern_stat = -1
+      else 
+         write(*,'(A)') &
+            "Error found in lio namelist."
+         if (verbose > 3) write(*,'(A,I4)') "iostat = ", intern_stat
+         if ( present(extern_stat) ) extern_stat = 2
+         return
+      endif
    end if
 
    ! New lionml namelist.
@@ -64,8 +74,8 @@ subroutine lionml_read(file_unit, extern_stat )
    rewind( unit = file_unit, iostat = intern_stat )
    if ( intern_stat /= 0 ) then
       write(*,'(A)') &
-         "Cannot rewind LIO input file. Using defaults for namelist lionml."
-      if (verbose .gt. 3) write(*,'(A,I4)') "iostat = ", intern_stat
+         "Cannot rewind LIO input file."
+      if (verbose > 3) write(*,'(A,I4)') "iostat = ", intern_stat
       if ( present(extern_stat) ) extern_stat = 1
       return
    end if
@@ -73,15 +83,20 @@ subroutine lionml_read(file_unit, extern_stat )
    intern_stat = 0
    read( unit = file_unit, nml = lionml, iostat = intern_stat )
    if ( intern_stat /= 0 ) then
-      write(*,'(A)') &
-         "Error found in lionml namelist. Using defaults for namelist lionml."
-      if (verbose .gt. 3) write(*,'(A,I4)') "iostat = ", intern_stat
-      if ( present(extern_stat) ) extern_stat = 2
-      return
+      if (intern_stat == -1) then 
+         write(*,'(A)') "Namelist &lionml not found." 
+         if ( present(extern_stat) ) then
+            extern_stat = -2
+            if (.not. main_nml_found) extern_stat = -4
+         endif
+      else 
+         write(*,'(A)') &
+            "Error found in lionml namelist."
+         if (verbose > 3) write(*,'(A,I4)') "iostat = ", intern_stat
+         if ( present(extern_stat) ) extern_stat = 3
+         return
+      endif
    end if
-
-   if ( present(extern_stat) ) extern_stat = 0
-   return
 end subroutine lionml_read
 
 

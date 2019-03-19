@@ -201,7 +201,7 @@ subroutine init_lio_gromacs(natomin, Izin, nclatom, chargein)
 
     implicit none
     integer,  intent(in) :: chargein, nclatom, natomin, Izin(natomin)
-    integer              :: dummy
+    integer              :: ierr
     character(len=20)    :: inputFile
 
     ! Gives default values to runtime variables.
@@ -210,12 +210,11 @@ subroutine init_lio_gromacs(natomin, Izin, nclatom, chargein)
 
     ! Checks if input file exists and writes data to namelist variables.
     inputFile = 'lio.in'
-    call read_options(inputFile)
+    call read_options(inputFile, ierr)
+    if (ierr > 0) return
 
     ! Initializes LIO. The last argument indicates LIO is not being used alone.
     call init_lio_common(natomin, Izin, nclatom, 1)
-
-    return
 end subroutine init_lio_gromacs
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -258,7 +257,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
     logical           :: verbose_i, OPEN_i, VCINP_i, predcoef_i, writexyz_i,   &
                          DIIS_i, field_i, exter_i, writedens_i, tdrestart_i
     integer           :: NMAX_i, NUNP_i, ndiis_i, Iexch_i, IGRID_i, IGRID2_i,  &
-                         timedep_i, ntdstep_i, NBCH_i, propagator_i, dummy
+                         timedep_i, ntdstep_i, NBCH_i, propagator_i, ierr
     real*8            :: GOLD_i, told_i, rmax_i, rmaxs_i, tdstep_i,  &
                          a0_i, epsilon_i, Fx_i, Fy_i, Fz_i
     ! Deprecated or removed variables
@@ -294,7 +293,8 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
     ! Checks if input file exists and writes data to namelist variables. 
     ! Previous options are overwritten.
     inputFile = 'lio.in'
-    call read_options(inputFile)
+    call read_options(inputFile, ierr)
+    if (ierr > 0) return
     if ((.not. int_basis) .and. (basis_i .ne. 'basis')) basis_set = basis_i
 
 
@@ -340,7 +340,7 @@ subroutine init_lioamber_ehren(natomin, Izin, nclatom, charge_i, basis_i       &
            &, tdrestart_i
 
    integer :: NMAX_i, NUNP_i, idip_i, ndiis_i, Iexch_i, IGRID_i, IGRID2_i      &
-           &, timedep_i, ntdstep_i, NBCH_i, propagator_i, dummy
+           &, timedep_i, ntdstep_i, NBCH_i, propagator_i
 
    real*8  :: GOLD_i, told_i, rmax_i, rmaxs_i, dgtrig_i, tdstep_i, a0_i        &
            &, epsilon_i, Fx_i, Fy_i, Fz_i, dt_i
@@ -382,7 +382,7 @@ subroutine init_lio_hybrid(hyb_natom, mm_natom, chargein, iza)
     implicit none
     integer, intent(in) :: hyb_natom !number of total atoms
     integer, intent(in) :: mm_natom  !number of MM atoms
-    integer             :: dummy
+    integer             :: ierr
     character(len=20)   :: inputFile
     integer, intent(in) :: chargein   !total charge of QM system
     integer, dimension(hyb_natom), intent(in) :: iza  !array of charges of all QM/MM atoms
@@ -393,7 +393,8 @@ subroutine init_lio_hybrid(hyb_natom, mm_natom, chargein, iza)
 
     ! Checks if input file exists and writes data to namelist variables.
     inputFile = 'lio.in'
-    call read_options(inputFile)
+    call read_options(inputFile, ierr)
+    if (ierr > 0) return
 
     ! Initializes LIO. The last argument indicates LIO is not being used alone.
     call init_lio_common(hyb_natom, Iza, mm_natom, 1)

@@ -46,7 +46,21 @@ program liosolo
     ! Reads options and coordinates files. Previously sets writexyz to false in
     ! order to avoid the qm.xyz file when not running MD.
     writexyz = .false.
-    call read_options(inpfile)
+    ierr = 0
+    call read_options(inpfile, ierr)
+    select case (ierr)
+        case (-1,-4)
+            write(*,'(A)')
+            write(*,'(A)') "ERROR: &lio namelist is required for LIO-only runs."
+            return
+        case (-3)
+            write(*,'(A)') "ERROR: input file not found."
+            return
+        case (1:) ! If .ge.1, there was an error in namelists.
+            return
+        case default
+    end select
+
     call read_coords(inpcoords)
 
     ! Initializes LIO. The last argument indicates LIO is being used alone.

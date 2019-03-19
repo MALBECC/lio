@@ -6,24 +6,30 @@
 !%% READ_OPTIONS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Reads LIO options from an input file.                                        !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine read_options(inputFile)
+subroutine read_options(inputFile, extern_stat)
     use field_subs , only: read_fields
     use lionml_subs, only: lionml_read, lionml_write
 
     implicit none
-    character(len=20), intent(in)  :: inputFile
+    character(len=20), intent(in)    :: inputFile
+    integer, optional, intent(inout) :: extern_stat
 
-    integer :: ios
+    integer :: ios, intern_stat
     logical :: fileExists
 
+    extern_stat = 0
     inquire(file = inputFile, exist = fileExists)
     if(fileExists) then
        open(unit = 100, file = inputFile, iostat = ios)
-       call lionml_read( 100 )
+       call lionml_read(100, intern_stat)
        close(unit = 100)
+       extern_stat = intern_stat
+       if (intern_stat > 1) return
        call lionml_write
     else
-       write(*,*) 'File ', adjustl(inputFile), ' not found. Using defaults.'
+       write(*,*) 'File ', trim(inputFile), ' not found.'
+       extern_stat = -3
+       return
     endif
 
     call read_fields()

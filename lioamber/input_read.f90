@@ -48,20 +48,42 @@ subroutine read_coords(inputCoord)
 
     character(len=20), intent(in) :: inputCoord
 
-    integer :: ios
+    integer :: ios, whitespace_count, word_count
     logical :: fileExists
+    character(len=1)  :: char_read
 
     inquire(file=inputCoord,exist=fileExists)
     if(fileExists) then
         open(unit=101,file=inputCoord,iostat=ios)
     else
-        write(*,*) 'Input coordinates file ',adjustl(inputCoord),' not found.'
+        write(*,*) 'Input coordinates file ', trim(inputCoord),' not found.'
         stop
     endif
 
     ! Reads coordinates file.
     ntatom = natom + nsol
     allocate (iz(natom), r(ntatom,3), rqm(natom,3), pc(ntatom))
+
+    ! This is to compatibilize old LIO formats with proper XYZ files.
+    whitespace_count = 0
+    word_count       = 0
+    do while (.true.)
+        read(101, '(A1)', advance='no', iostat=ios) char_read
+        if (ios /= 0) exit
+        if (char_read == " ") then
+            whitespace_count = whitespace_count +1
+        else if (whitespace_count > 0) then
+            word_count       = word_count +1
+            whitespace_count = 0
+        endif
+    enddo
+    if ( word_count > 2 ) then
+        rewind(101)
+    else
+        read(101,*)
+    endif
+
+    ! Finally reads atomic number / partial charge and coordinates.
     do i=1,natom
         read(101,*) iz(i), r(i,1:3)
         rqm(i,1:3) = r(i,1:3)
@@ -72,5 +94,5 @@ subroutine read_coords(inputCoord)
     r  = r   / 0.529177D0
     rqm= rqm / 0.529177D0
 
-    return
+    close(101)
 end subroutine read_coords

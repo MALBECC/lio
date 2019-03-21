@@ -26,7 +26,8 @@ subroutine liomain(E, dipxyz)
     use geometry_optim, only: do_steep
 
     implicit none
-    REAL*8, intent(inout) :: dipxyz(3), E
+    real(kind=8), intent(inout) :: dipxyz(3), E
+    integer :: M_f, NCO_f
     logical :: calc_prop
 
     call g2g_timer_sum_start("Total")

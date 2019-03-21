@@ -63,7 +63,7 @@ subroutine SCF(E)
 #  endif
    use initial_guess_subs, only: get_initial_guess
    use fileio       , only: write_energies, write_energy_convergence, &
-                            write_final_convergence
+                            write_final_convergence, write_ls_convergence
    use fileio_data  , only: verbose
    use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, M, Md
 
@@ -746,8 +746,7 @@ subroutine SCF(E)
 !       write energy at every step
         if (niter.eq.NMAX) then
            if (Rho_LS .eq.0) then
-              write(6,*) 'NO CONVERGENCE AT ',NMAX,' ITERATIONS'
-              write(6,*) 'trying Lineal search'
+              call write_ls_convergence(NMAX)
               Rho_LS=1
               NMAX=2*NMAX
               changed_to_LS=.true.
@@ -771,7 +770,7 @@ subroutine SCF(E)
 !------------------------------------------------------------------------------!
 !     Checks of convergence
 !
-      if (niter.ge.NMAX) then
+      if ((niter.ge.NMAX) .and. (.not. changed_to_LS)) then
          call write_final_convergence(.false., NMAX, Evieja)
          noconverge = noconverge + 1
          converge   = 0

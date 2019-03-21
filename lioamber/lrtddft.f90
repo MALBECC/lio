@@ -230,7 +230,7 @@ contains
 !PFat = ground state density matrix in AO basis
 !dPat = diference density matrix in AO basis
    use lr_data, only: Mlr, NCOlr, Nvirt
-   use garcha_mod, only: RMM
+   use garcha_mod, only: Pmat_vec
    use basis_data, only: M
    implicit none
 
@@ -286,7 +286,7 @@ contains
 
 ! Extract Rho of ground state
    allocate(PFat(M,M),PEat(M,M))
-   call spunpack_rho('L',M,RMM,PFat)
+   call spunpack_rho('L',M,Pmat_vec,PFat)
 
 !Form Unrelaxed Excited State Density Matrix in AO basis
    do i=1,M

@@ -49,8 +49,8 @@ as LIO can run without libxc, using only the PBE functional.
 
 By default, LIO compiles with GPU options enabled. It is highly recommended to specify
 the GPU architecture as a compilation option, since the compiler performs additional
-enhancements. After compilation, LIOHOME environment variable should be set to the
-current LIO installation directory:
+enhancements. After compilation, \textcolor{lioteal}{LIOHOME} environment variable 
+should be set to the current LIO installation directory:
 
 \lstset{language=bash, keywordstyle=\color{violet}, 
 morekeywords={export}}
@@ -93,15 +93,15 @@ our own \textit{\href{https://github.com/MALBECC/gromacs}{GROMACS}} fork,
 our own \textit{\href{https://github.com/MALBECC/hybrid}{HYBRID}} code for 
 QM/MM calculations.
 
-In all three cases, the LIOHOME environment variable should be set to the current
-LIO installation directory. In addition to this section, please refer to each
-of the software packages' installation manual for further clarifications.
+In all three cases, the \textcolor{lioteal}{LIOHOME} environment variable 
+should be set to the current LIO installation directory. In addition to 
+this section, please refer to each of the software packages' installation
+manual for further clarifications.
 
 In order to compile AMBER with LIO, AMBER should be compiled after LIO with the
 following options set:
 
-\lstset{language=bash, keywordstyle=\color{violet}, 
-morekeywords={make, export}}
+\lstset{language=bash, keywordstyle=\color{violet}, morekeywords={make, export}}
 \begin{lstlisting}
    export AMBERHOME=/dir/to/amber/
    ./configure -lio -noX11 -netcdfstatic gnu
@@ -121,6 +121,35 @@ keywordstyle=\color{violet}, morekeywords={cmake, make}}
    make
    make install
 \end{lstlisting}
+
+\section{Running LIO}
+In order to run LIO as a QM stand-alone program, you must first set the 
+\textcolor{lioteal}{LIOHOME} environment variable to that of the current 
+LIO installation path (if it was not set before), and add /liosolo folder
+to the current excecutable paths.
+
+\lstset{language=bash, keywordstyle=\color{violet}, morekeywords={export}}
+\begin{lstlisting}
+   export LIOHOME=/dir/to/lio/
+   export PATH=$PATH:$LIOHOME/liosolo
+\end{lstlisting}
+
+Then, LIO can be excecuted as follows:
+\lstset{language=bash, keywordstyle=\color{violet}, 
+morekeywords={liosolo}}
+\begin{lstlisting}
+   liosolo -i input_file -c coords.xyz
+\end{lstlisting}
+Where input\_file contains the input options and coords.xyz contains the 
+coordinates in XYZ format. For more options, please refer to Chapter 2.
+
+
+When running LIO with AMBER, you only need to specify '\textliovar{qm\_theory=extern}'
+in the \&qmmm section of the code (please refer to the AmberTools manual for further 
+\&qmmm options), in addition to specifying both the QM system and its charge. 
+When running with GROMACS, you only need to specify the QM system and its charge.
+In both cases, additional LIO options will be read from a '\textcolor{liopurple}{lio.in}'
+file in the working directory.
 
 \section{Tips and tricks - Optimizing your runs}
 There are several ways to optimize your production runs, and it is highly recommended

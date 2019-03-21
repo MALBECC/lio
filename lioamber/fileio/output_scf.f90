@@ -13,13 +13,23 @@ subroutine write_final_convergence(converged, iterations, energy)
       write(*,7001) iterations, energy
    endif
 
-   return;
-
 7000 FORMAT("  Convergence achieved in ", I6, " iterations. Final energy ", &
             F14.7, " A.U.")
 7001 FORMAT("  No convergence achieved in ", I6, " iterations. Final energy ", &
             F14.7, " A.U.")
 end subroutine write_final_convergence
+
+subroutine write_ls_convergence(iterations)
+   use fileio_data, only: verbose
+
+   implicit none
+   integer, intent(in) :: iterations
+
+   if (verbose .lt. 1) return;
+   write(*,7001) iterations
+   
+7001 FORMAT("  No convergence achieved in ", I6, " iterations. Attepting linear search.")
+end subroutine write_ls_convergence
 
 subroutine write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain, &
                           number_restr, nsol)

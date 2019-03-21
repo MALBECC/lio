@@ -190,8 +190,8 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
       stop
       return
     endif
-
     if ( Rho_LS > 0 ) call P_linearsearch_init()
+
     call g2g_timer_stop('lio_init')
 
     return

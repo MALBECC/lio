@@ -6,7 +6,7 @@
 !%% READ_OPTIONS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Reads LIO options from an input file.                                        !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine read_options(inputFile)
+subroutine read_options(inputFile, extern_stat)
     use field_subs  , only: read_fields
     use lionml_subs , only: lionml_read, lionml_write
     use garcha_mod  , only: DIIS, hybrid_converg

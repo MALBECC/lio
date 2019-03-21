@@ -78,8 +78,8 @@ end subroutine P_conver
 
 
 subroutine P_calc_fluctuation(good, xnano)
-!  calculates convergence criteria in density matrix, and store new density matrix in RMM(1:MM)
-   use garcha_mod, only : RMM
+!  calculates convergence criteria in density matrix, and store new density matrix in Pmat_vec
+   use garcha_mod, only : Pmat_vec
    use basis_data, only : M
    double precision, intent(out) :: good
    real*8, dimension(M,M), intent(in) :: xnano
@@ -90,10 +90,10 @@ subroutine P_calc_fluctuation(good, xnano)
    do jj=1,M
      do kk=jj,M
        Rposition=kk+(M2-jj)*(jj-1)/2
-       del=xnano(jj,kk)-RMM(Rposition)
+       del=xnano(jj,kk)-Pmat_vec(Rposition)
        del=del*sqrt(2.d0)
        good=good+del**2
-       RMM(kk+(M2-jj)*(jj-1)/2)=xnano(jj,kk)
+       Pmat_vec(kk+(M2-jj)*(jj-1)/2)=xnano(jj,kk)
      enddo
    enddo
    good=sqrt(good)/float(M)
@@ -102,7 +102,7 @@ end subroutine P_calc_fluctuation
 
 
 subroutine P_linearsearch_init()
-   use garcha_mod, only : OPEN, RMM, rhoalpha, rhobeta
+   use garcha_mod, only : OPEN, rhoalpha, rhobeta
    use basis_data, only : M, Md
    implicit none
    integer :: MM
@@ -137,7 +137,7 @@ end subroutine P_linearsearch_fin
 
 subroutine P_linear_calc(Rho_LS, niter, En, E1, E2, Ex, xnano,  &
 may_conv, rho_a, rho_b)
-   use garcha_mod, only : RMM, rhoalpha, rhobeta, OPEN
+   use garcha_mod, only : Pmat_vec, rhoalpha, rhobeta, OPEN
    use basis_data, only : M
    use liosubs, only: line_search
    implicit none
@@ -155,7 +155,7 @@ may_conv, rho_a, rho_b)
    MM=M*(M+1)/2
    if (niter .eq. 1)  then
      Pstepsize=1.d0
-     rho_lambda0(1:MM)=RMM(1:MM)
+     rho_lambda0(1:MM)=Pmat_vec(1:MM)
      if (OPEN) rho_lambda0_alpha(1:MM)=rhoalpha(1:MM)
      if (OPEN) rho_lambda0_betha(1:MM)=rhobeta(1:MM)
    end if
@@ -171,7 +171,7 @@ may_conv, rho_a, rho_b)
      enddo
    enddo
    
-   RMM(1:MM)=rho_lambda1(1:MM)
+   Pmat_vec(1:MM)=rho_lambda1(1:MM)
    if (OPEN)rhoalpha(1:MM)=rho_lambda1_alpha(1:MM)
    if (OPEN)rhobeta(1:MM)=rho_lambda1_betha(1:MM)
    
@@ -183,7 +183,7 @@ may_conv, rho_a, rho_b)
      do ilambda=0, 10
        dlambda=Pstepsize*dble(ilambda)/10.d0
        if (dlambda .gt. 1.d0) STOP "dlambda > 1.d0"
-       RMM(1:MM)=rho_lambda0(1:MM)*(1.d0-dlambda)+rho_lambda1(1:MM)*dlambda 
+       Pmat_vec(1:MM)=rho_lambda0(1:MM)*(1.d0-dlambda)+rho_lambda1(1:MM)*dlambda 
        if(OPEN) rhoalpha(1:MM)=rho_lambda0_alpha(1:MM)*(1.d0-dlambda)+rho_lambda1_alpha(1:MM)*dlambda
        if(OPEN) rhobeta(1:MM)=rho_lambda0_betha(1:MM)*(1.d0-dlambda)+rho_lambda1_betha(1:MM)*dlambda
        call give_me_energy(E_lambda(ilambda), En, E1, E2, Ex)
@@ -200,14 +200,14 @@ may_conv, rho_a, rho_b)
      Blambda=Pstepsize
    end if
    
-   RMM(1:MM)=rho_lambda0(1:MM)*(1.d0-Blambda)+rho_lambda1(1:MM)*Blambda
+   Pmat_vec(1:MM)=rho_lambda0(1:MM)*(1.d0-Blambda)+rho_lambda1(1:MM)*Blambda
    if(OPEN) rhoalpha(1:MM)=rho_lambda0_alpha(1:MM)*(1.d0-Blambda)+rho_lambda1_alpha(1:MM)*Blambda
    if(OPEN) rhobeta(1:MM)=rho_lambda0_betha(1:MM)*(1.d0-Blambda)+rho_lambda1_betha(1:MM)*Blambda
    
    do jj=1,M
      do kk=jj,M
        Rposition=kk+(M2-jj)*(jj-1)/2
-       xnano(jj,kk)=RMM(Rposition)
+       xnano(jj,kk)=Pmat_vec(Rposition)
        if(OPEN) rho_a(jj,kk)=rhoalpha(Rposition)
        if(OPEN) rho_b(jj,kk)=rhobeta(Rposition)
      enddo
@@ -215,8 +215,8 @@ may_conv, rho_a, rho_b)
    call give_me_energy(Elast, En, E1, E2, Ex)
    
    
-   RMM_temp(1:MM)=RMM(1:MM)
-   RMM(1:MM)=rho_lambda0(1:MM)
+   RMM_temp(1:MM)=Pmat_vec(1:MM)
+   Pmat_vec(1:MM)=rho_lambda0(1:MM)
    rho_lambda0(1:MM)=RMM_temp(1:MM)
    
    if(OPEN) then
@@ -240,38 +240,28 @@ end subroutine P_linear_calc
 
 
 subroutine give_me_energy(E, En, E1, E2, Ex)
-!  return Energy components for a density matrix stored in RMM(1:MM)
-   use garcha_mod, only : RMM, OPEN, MEMO
-   use basis_data, only : M, Md
+!  return Energy components for a density matrix stored in Pmat_vec
+   use garcha_mod, only : Pmat_vec, OPEN, MEMO, Fmat_vec2, Fmat_vec, &
+                          Gmat_vec, Ginv_vec, Hmat_vec
+   use basis_data, only : M, Md, MM
    use faint_cpu, only: int3lu
    implicit none
    double precision, intent(out) :: E
    double precision, intent(in) :: En
    double precision, intent(out) :: E1, E2, Ex
-   integer :: kk, MM, MMd, M1, M3, M5, M7, M9, M11
-   MM=M*(M+1)/2
-   MMd=Md*(Md+1)/2
-   
-   M1=1 ! first P
-   M3=M1+MM ! now Pnew
-   M5=M3+MM! now S, F also uses the same position after S was used
-   M7=M5+MM! now G
-   M9=M7+MMd ! now Gm
-   M11=M9+MMd! now H
-   
-   
+   integer :: kk
+      
    E=0.d0
    E1=0.D0
    E2=0.d0
    Ex=0.d0
-   M11=1+3*MM+2*MMd
    
    do kk=1,MM
-     E1=E1+RMM(kk)*RMM(M11+kk-1) !Computes 1e energy
+     E1 = E1 + Pmat_vec(kk) * Hmat_vec(kk) !Computes 1e energy
    enddo
    ! Computes Coulomb part of Fock, and energy on E2
-   call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), RMM(M7:M7+MMd), &
-        RMM(M9:M9+MMd), RMM(M11:M11+MMd), OPEN, MEMO)
+   call int3lu(E2, Pmat_vec, Fmat_vec2, Fmat_vec, Gmat_vec, Ginv_vec, &
+               Hmat_vec, OPEN, MEMO)
    call g2g_solve_groups(0,Ex,0) ! Computes XC integration / Fock elements
    E=E1+E2+En+Ex
 

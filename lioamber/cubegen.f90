@@ -80,10 +80,10 @@ module cubegen
 
 !------------------------------------------------------------------------------!
    subroutine cubegen_write( MO_v )
-   use garcha_mod, only: RMM, natom, r, nco, Iz,  cube_dens, cube_orb, &
+   use garcha_mod, only: natom, r, nco, Iz,  cube_dens, cube_orb, Pmat_vec, &
                          cube_elec, cube_sel, cube_orb_file, cube_res, &
-                         cube_dens_file, cube_sqrt_orb
-   use basis_data, only: M, Md, a, c, ncont, nuc, nshell
+                         cube_dens_file, cube_sqrt_orb, Pmat_en_wgt
+   use basis_data, only: M, Md, a, c, ncont, nuc, nshell, MM, MMd
 
    implicit none
 
@@ -94,21 +94,11 @@ module cubegen
    integer :: i,j,k,ii,jj,kk,iii,jjj,kkk
    integer :: ns, np, ni
    integer :: ivox, ivoxx, ivoxy, ivoxz, kk_dens, kk_orb
-   integer :: MM, MMd, M1, M2, M3, M5, M7, M9, M11, M13, M15
+   integer :: M1, M2
 
    real, parameter :: expmax = 10
 
-   MM  = M *  (M+1)  / 2
-   MMd = Md * (Md+1) / 2
-
    M1  = 1         ! first P
-   M3  = M1  + MM  ! now Pnew
-   M5  = M3  + MM  ! now S, F also uses the same position after S was used
-   M7  = M5  + MM  ! now G
-   M9  = M7  + MMd ! now Gm
-   M11 = M9  + MMd ! now H
-   M13 = M11 + MM  ! W ( eigenvalues ), also this space is used in least squares
-   M15 = M13 + M   ! aux ( vector for ESSl)
 
    if (cube_dens) open(unit=4242,file=cube_dens_file)
    if (cube_orb) open(unit=4243,file=cube_orb_file)
@@ -209,7 +199,7 @@ module cubegen
        do k=1,ivoxz
          eval_p(3) = origin(3) + (k-1) * vox_dim
            p_val = 0.D0
-         ! calculate function values at this voxel, store in RMM(M15)
+         ! calculate function values at this voxel, store in energy weighted Rho.
          ! s functions
          do ii=1,ns
            p_dist = 0.D0
@@ -221,7 +211,7 @@ module cubegen
             if(a(ii,ni)*p_dist.lt.expmax) p_func = p_func + c(ii,ni) * exp(-a(ii,ni)*p_dist)
            enddo
 
-           RMM(M15+ii-1) = p_func
+           Pmat_en_wgt(ii) = p_func
          enddo
 
          ! p functions
@@ -236,7 +226,7 @@ module cubegen
            enddo
 
            do jj = 1,3
-             RMM(M15+ii+jj-2) = p_func * (eval_p(jj)-r(Nuc(ii),jj))
+            Pmat_en_wgt(ii+jj) = p_func * (eval_p(jj)-r(Nuc(ii),jj))
            enddo
          enddo
 
@@ -255,7 +245,7 @@ module cubegen
            do jj = 1,3
              do jjj = 1,jj
                kkk = kkk + 1
-               RMM(M15+ii+kkk-2)=p_func*(eval_p(jj)-r(Nuc(ii),jj))*(eval_p(jjj)-r(Nuc(ii),jjj))
+               Pmat_en_wgt(ii+kkk)=p_func*(eval_p(jj)-r(Nuc(ii),jj))*(eval_p(jjj)-r(Nuc(ii),jjj))
              enddo
            enddo
          enddo
@@ -267,7 +257,7 @@ module cubegen
            do ii=1,M
              do jj=ii,M
                kkk = kkk + 1
-               p_val=p_val+RMM(kkk)*RMM(M15+ii-1)*RMM(M15+jj-1)
+               p_val=p_val+Pmat_vec(kkk)*Pmat_en_wgt(ii)*Pmat_en_wgt(jj)
              enddo
            enddo
            write(4242,'(E13.5)',advance='no') p_val
@@ -284,12 +274,12 @@ module cubegen
                p_val = 0.D0
                do ii=1,M
                  do jj=ii+1,M
-                   Morb=2.D0*MO_v(kk,ii)*RMM(M15+ii-1)
-                   if (cube_sqrt_orb) Morb=Morb*MO_v(kk,ii)*RMM(M15+ii-1)
+                   Morb=2.D0*MO_v(kk,ii)*Pmat_en_wgt(ii)
+                   if (cube_sqrt_orb) Morb=Morb*MO_v(kk,ii)*Pmat_en_wgt(ii)
                    p_val=p_val+Morb
                  enddo
-                   Morb=MO_v(kk,ii)*RMM(M15+ii-1)
-                   if (cube_sqrt_orb) Morb=Morb*MO_v(kk,ii)*RMM(M15+ii-1)
+                   Morb=MO_v(kk,ii)*Pmat_en_wgt(ii)
+                   if (cube_sqrt_orb) Morb=Morb*MO_v(kk,ii)*Pmat_en_wgt(ii)
                    p_val=p_val+Morb
                enddo
                write(4243,'(E13.5)',advance='no') p_val
@@ -303,12 +293,12 @@ module cubegen
              p_val = 0.D0
              do ii=1,M
                do jj=ii+1,M
-                 Morb=2.D0*MO_v(cube_sel,ii)*RMM(M15+ii-1)
-                 if (cube_sqrt_orb) Morb=Morb*MO_v(cube_sel,jj)*RMM(M15+jj-1)
+                 Morb=2.D0*MO_v(cube_sel,ii)*Pmat_en_wgt(ii)
+                 if (cube_sqrt_orb) Morb=Morb*MO_v(cube_sel,jj)*Pmat_en_wgt(jj)
                  p_val=p_val+Morb
                enddo
-                 Morb=MO_v(cube_sel,ii)*RMM(M15+ii-1)
-                 if (cube_sqrt_orb) Morb=Morb*MO_v(cube_sel,ii)*RMM(M15+ii-1)
+                 Morb=MO_v(cube_sel,ii)*Pmat_en_wgt(ii)
+                 if (cube_sqrt_orb) Morb=Morb*MO_v(cube_sel,ii)*Pmat_en_wgt(ii)
                  p_val=p_val+Morb
              enddo
              write(4243,'(E13.5)',advance='no') p_val
@@ -348,7 +338,7 @@ module cubegen
 !                                                                              !
 !##############################################################################!
 subroutine elec(NX, NY, NZ, deltax, xMin, yMin, zMin)
-   use garcha_mod   , only: r, d, natom, cube_elec_file, RMM, Iz
+   use garcha_mod   , only: r, d, natom, cube_elec_file, Pmat_vec, Iz
    use constants_mod, only: PI, PI32
    use basis_data   , only: M, norm, nShell, nCont, nuc, a, c
    use liosubs_math , only: funct
@@ -424,7 +414,7 @@ subroutine elec(NX, NY, NZ, deltax, xMin, yMin, zMin)
                         (Q(3) - xi(3)) * (Q(3) - xi(3))) * Zij
                s0s   = temp * FUNCT(0,uf)
 
-               pote(ntotal) = pote(ntotal) + ccoef * RMM(rho_ind) * s0s
+               pote(ntotal) = pote(ntotal) + ccoef * Pmat_vec(rho_ind) * s0s
             enddo
             enddo
             enddo
@@ -473,7 +463,7 @@ subroutine elec(NX, NY, NZ, deltax, xMin, yMin, zMin)
                             (Q(l2) - xi(l2)           ) * s1s
                   rho_ind = ifunct + l2 -1 + ((M2 - jfunct) * (jfunct -1)) / 2
 
-                  pote(ntotal) = pote(ntotal) + ccoef * tna * RMM(rho_ind)
+                  pote(ntotal) = pote(ntotal) + ccoef * tna * Pmat_vec(rho_ind)
                enddo
             enddo
             enddo
@@ -542,7 +532,8 @@ subroutine elec(NX, NY, NZ, deltax, xMin, yMin, zMin)
                      j_ind   = jfunct + l2 -1
                      rho_ind = i_ind + ((M2 - j_ind) * (j_ind -1)) / 2
 
-                     pote(ntotal) = pote(ntotal) + tna * ccoef * RMM(rho_ind)
+                     pote(ntotal) = pote(ntotal) + tna * ccoef * &
+                                    Pmat_vec(rho_ind)
                   enddo
                enddo
             enddo
@@ -611,7 +602,8 @@ subroutine elec(NX, NY, NZ, deltax, xMin, yMin, zMin)
                      i_ind   = ifunct + ll(l1) + l2 -1
                      rho_ind = i_ind + ((M2 - jfunct) * (jfunct -1)) / 2
 
-                     pote(ntotal) = pote(ntotal) + tna * RMM(rho_ind) * ccoef/f1
+                     pote(ntotal) = pote(ntotal) + tna * Pmat_vec(rho_ind) *&
+                                    ccoef / f1
                   enddo
                enddo
             enddo
@@ -695,7 +687,7 @@ subroutine elec(NX, NY, NZ, deltax, xMin, yMin, zMin)
                         j_ind   = jfunct + l3 -1
                         rho_ind = i_ind + ((M2 - j_ind) * (j_ind -1)) / 2
 
-                        pote(ntotal) = pote(ntotal) + tna * RMM(rho_ind) * &
+                        pote(ntotal) = pote(ntotal) + tna * Pmat_vec(rho_ind)*&
                                        ccoef / f1
                      enddo
                   enddo
@@ -818,8 +810,8 @@ subroutine elec(NX, NY, NZ, deltax, xMin, yMin, zMin)
                            j_ind   = jfunct + ll(l3) + l4 -1
                            rho_ind = i_ind + ((M2 - j_ind) * (j_ind -1)) / 2
 
-                           pote(ntotal) = pote(ntotal) + RMM(rho_ind) * tna * &
-                                          ccoef / (f1 * f2)
+                           pote(ntotal) = pote(ntotal) + Pmat_vec(rho_ind) * &
+                                          tna * ccoef / (f1 * f2)
                         enddo
                      enddo
                   enddo

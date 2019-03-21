@@ -28,14 +28,14 @@ module transport_subs
    implicit none
 contains
 
-subroutine transport_init(M, dim3, natom, Nuc, RMM5, overlap, rho, OPEN)
+subroutine transport_init(M, dim3, natom, Nuc, fock_mat, overlap, rho, OPEN)
    use transport_data, only: GammaMagnus, GammaVerlet, nbias, group, rhofirst,&
                              driving_rate, pop_drive, pop_uid, drive_uid,     &
                              mapmat, timestep_init
    implicit none
    logical, intent(in)  :: OPEN
    integer, intent(in)  :: M, natom, Nuc(M), dim3
-   real*8 , intent(in)  :: RMM5(M*(M+1)/2)
+   real*8 , intent(in)  :: fock_mat(M*(M+1)/2)
    real*8 , allocatable, intent(inout) :: overlap(:,:)
 #ifdef TD_SIMPLE
    complex*8 , allocatable, intent(inout) :: rho(:,:,:)
@@ -71,7 +71,7 @@ subroutine transport_init(M, dim3, natom, Nuc, RMM5, overlap, rho, OPEN)
 
    if (allocated(overlap)) deallocate(overlap)
    allocate(overlap(M,M))
-   call spunpack('L', M, RMM5, overlap)
+   call spunpack('L', M, fock_mat, overlap)
    call transport_generate_rho(M, rho, OPEN)
 
    return

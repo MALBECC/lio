@@ -34,7 +34,8 @@ subroutine SCF(E)
                           Eorbs, NMAX,Dbug, doing_ehrenfest, first_step,       &
                           total_time, MO_coef_at, MO_coef_at_b, Smat, good_cut,&
                           ndiis, rhoalpha, rhobeta, OPEN, RealRho, d, ntatom,  &
-                          Eorbs_b, npas, RMM, X, npasw
+                          Eorbs_b, npas, X, npasw, Fmat_vec, Fmat_vec2,        &
+                          Ginv_vec, Gmat_vec, Hmat_vec, Pmat_en_wgt, Pmat_vec
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
                        FOCK_ECP_read,FOCK_ECP_write,IzECP
    use field_data, only: field, fx, fy, fz
@@ -114,7 +115,6 @@ subroutine SCF(E)
    type(sop)           :: overop
    real*8, allocatable :: Xmat(:,:)
    real*8, allocatable :: Ymat(:,:)
-   real*8, allocatable :: Dvec(:)
    real*8, allocatable :: sqsmat(:,:)
    real*8, allocatable :: tmpmat(:,:)
 
@@ -155,7 +155,7 @@ subroutine SCF(E)
 ! TODO : Variables to eliminate...
    real*8, allocatable :: xnano(:,:)
    integer :: MM, MM2, MMd, Md2
-   integer :: M1, M2, M3, M5, M7, M9, M11, M13, M15, M17,M18,M18b, M19, M20, M22
+   integer :: M1, M2
 
    real*8, allocatable :: Y(:,:)
    real*8, allocatable :: Ytrans(:,:)
@@ -226,10 +226,6 @@ subroutine SCF(E)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 
-!------------------------------------------------------------------------------!
-! TODO: RMM should no longer exist. As a first step, maybe we should
-!       put all these pointers inside the maskrmm module instead of
-!       having them around all subroutines...
       sq2=sqrt(2.D0)
       MM=M*(M+1)/2
       MM2=M**2
@@ -249,24 +245,6 @@ subroutine SCF(E)
       end if
 
       M1=1 ! first P
-      M3=M1+MM ! now Pnew
-      M5=M3+MM! now S, F also uses the same position after S was used
-      M7=M5+MM! now G
-      M9=M7+MMd ! now Gm
-      M11=M9+MMd! now H
-      M13=M11+MM! W ( eigenvalues ), also this space is used in least squares
-      M15=M13+M! aux ( vector for ESSl)
-      M17=M15+MM! Least squares
-      M18=M17+MMd! vectors of MO
-      M19=M18+M*NCO! weights (in case of using option )
-      M20 = M19 + natom*50*Nang ! RAM storage of two-electron integrals (if MEMO=T)
-
-   if (OPEN) then
-      M18b=M18+M*NCOa
-      M19=M18b+M*NCOb
-      M20 = M19 + natom*50*Nang
-      M22 = M20 +2*MM !W ( beta eigenvalues )
-   end if
 
 !------------------------------------------------------------------------------!
 ! TODO: I don't like ending timers inside a conditional...
@@ -344,9 +322,9 @@ subroutine SCF(E)
 !
       call g2g_timer_sum_start('1-e Fock')
       call g2g_timer_sum_start('Nuclear attraction')
-      call int1(En, RMM(M5:M5+MM), RMM(M11:M11+MM), Smat, d, r, Iz, natom, &
+      call int1(En, Fmat_vec, Hmat_vec, Smat, d, r, Iz, natom, &
                 ntatom)
-      call ECP_fock( MM, RMM(M11) )
+      call ECP_fock( MM, Hmat_vec )
 
 ! Other terms
 !
@@ -355,7 +333,7 @@ subroutine SCF(E)
           call g2g_timer_sum_start('QM/MM')
        if (igpu.le.1) then
           call g2g_timer_start('intsol')
-          call intsol(RMM(1:MM), RMM(M11:M11+MM), Iz, pc, r, d, natom, ntatom, &
+          call intsol(Pmat_vec, Hmat_vec, Iz, pc, r, d, natom, ntatom, &
                       E1s, Ens, .true.)
           call g2g_timer_stop('intsol')
         else
@@ -373,7 +351,7 @@ subroutine SCF(E)
 !
       E1=0.D0
       do kk=1,MM
-        E1=E1+RMM(kk)*RMM(M11+kk-1)
+        E1 = E1 + Pmat_vec(kk) * Hmat_vec(kk)
       enddo
       call g2g_timer_sum_stop('1-e Fock')
 
@@ -402,23 +380,6 @@ subroutine SCF(E)
         else
            call overop%Gets_orthog_4m( 1, 0.0d0, X_min, Y_min, X_min_trans, Y_min_trans)
         end if
-
-! TODO: replace X,Y,Xtrans,Ytrans with Xmat, Ymat, Xtrp, Ytrp
-!        do ii=1,M
-!        do jj=1,M
-!           X(ii,jj)      = Xmat(ii,jj)
-!           Y(ii,jj)      = Ymat(ii,jj)
-!          Xtrans(ii,jj) = Xtrp(ii,jj)
-!          Ytrans(ii,jj) = Ytrp(ii,jj)
-!        end do
-!        end do
-
-        if ( allocated(Dvec) ) deallocate(Dvec)
-        allocate( Dvec(M) )
-        call overop%Gets_eigens_v( 0.0d0, Dvec )
-        do kk = 1, M
-           RMM(M13+kk-1) = Dvec(kk)
-        end do
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !
@@ -464,18 +425,17 @@ subroutine SCF(E)
 !
    if ( (.not.VCINP) .and. primera ) then
       call get_initial_guess(M, MM, NCO, NCOb, Xmat(MTB+1:MTB+M,MTB+1:MTB+M),  &
-                             RMM(M11:MM), RMM(M1:MM), rhoalpha, rhobeta, OPEN, &
+                             Hmat_vec, Pmat_vec, rhoalpha, rhobeta, OPEN, &
                              natom, Iz, nshell, Nuc)
       primera = .false.
    end if
 
 !----------------------------------------------------------!
 ! Precalculate two-index (density basis) "G" matrix used in density fitting
-! here (S_ij in Dunlap, et al JCP 71(8) 1979) into RMM(M7)
-! Also, pre-calculate G^-1 if G is not ill-conditioned into RMM(M9)
-!
+! here (S_ij in Dunlap, et al JCP 71(8) 1979).
+! Also, pre-calculate G^-1 if G is not ill-conditioned.
       call g2g_timer_sum_start('Coulomb G matrix')
-      call int2(RMM(M7:M7+MMd), RMM(M9:M9+MMd), r, d, ntatom)
+      call int2(Gmat_vec, Ginv_vec, r, d, ntatom)
       call g2g_timer_sum_stop('Coulomb G matrix')
 
 ! Precalculate three-index (two in MO basis, one in density basis) matrix
@@ -525,7 +485,7 @@ subroutine SCF(E)
 !------------------------------------------------------------------------------!
 
 !DFTB: the density for DFTB is readed from an external file.
-   if (dftb_calc.and.TBload) call read_rhoDFTB(M, MM, RMM(M1), rhoalpha, rhobeta, &
+   if (dftb_calc.and.TBload) call read_rhoDFTB(M, MM, Pmat_vec, rhoalpha, rhobeta, &
                                                OPEN)
 
 !------------------------------------------------------------------------------!
@@ -548,18 +508,18 @@ subroutine SCF(E)
 !       calls is a more systematic way.
 
 !       Test for NaN
-        if (Dbug) call SEEK_NaN(RMM,1,MM,"RHO Start")
-        if (Dbug) call SEEK_NaN(RMM,M5-1,M5-1+MM,"FOCK Start")
+        if (Dbug) call SEEK_NaN(Pmat_vec,1,MM,"RHO Start")
+        if (Dbug) call SEEK_NaN(Fmat_vec,1,MM,"FOCK Start")
 
 !       Computes Coulomb part of Fock, and energy on E2
         call g2g_timer_sum_start('Coulomb fit + Fock')
-        call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), &
-                    RMM(M7:M7+MMd), RMM(M9:M9+MMd), RMM(M11:M11+MMd),open,MEMO)
+        call int3lu(E2, Pmat_vec, Fmat_vec2, Fmat_vec, Gmat_vec, Ginv_vec, &
+                    Hmat_vec, open, MEMO)
         call g2g_timer_sum_pause('Coulomb fit + Fock')
 
 !       Test for NaN
-        if (Dbug) call SEEK_NaN(RMM,1,MM,"RHO Coulomb")
-        if (Dbug) call SEEK_NaN(RMM,M5-1,M5-1+MM,"FOCK Coulomb")
+        if (Dbug) call SEEK_NaN(Pmat_vec,1,MM,"RHO Coulomb")
+        if (Dbug) call SEEK_NaN(Fmat_vec,1,MM,"FOCK Coulomb")
 
 !       XC integration / Fock elements
         call g2g_timer_sum_start('Exchange-correlation Fock')
@@ -567,8 +527,8 @@ subroutine SCF(E)
         call g2g_timer_sum_pause('Exchange-correlation Fock')
 
 !       Test for NaN
-        if (Dbug) call SEEK_NaN(RMM,1,MM,"RHO Ex-Corr")
-        if (Dbug) call SEEK_NaN(RMM,M5-1,M5-1+MM,"FOCK Ex-Corr")
+        if (Dbug) call SEEK_NaN(Pmat_vec,1,MM,"RHO Ex-Corr")
+        if (Dbug) call SEEK_NaN(Fmat_vec,1,MM,"FOCK Ex-Corr")
 
 
 !------------------------------------------------------------------------------!
@@ -580,40 +540,35 @@ subroutine SCF(E)
 !
         if ( generate_rho0 ) then
            if (field) call field_setup_old(1.0D0, 0, fx, fy, fz)
-           call field_calc(E1, 0.0D0, RMM(M3:M3+MM), RMM(M5:M5+MM), r, d, Iz, &
-                           natom, ntatom, open)
+           call field_calc(E1, 0.0D0, Pmat_vec(1:MM), Fmat_vec2, Fmat_vec, &
+                           r, d, Iz, natom, ntatom, open)
 
            do kk=1,MM
-               E1=E1+RMM(kk)*RMM(M11+kk-1)
+               E1 = E1 + Pmat_vec(kk) * Hmat_vec(kk)
            enddo
         else
 !          E1 includes solvent 1 electron contributions
            do kk=1,MM
-              E1=E1+RMM(kk)*RMM(M11+kk-1)
+              E1 = E1 + Pmat_vec(kk) * Hmat_vec(kk)
            enddo
 
         endif
-        call g2g_timer_start('actualiza rmm')
         call g2g_timer_sum_pause('Fock integrals')
 
 
 !------------------------------------------------------------------------------!
 ! DFTB: we extract rho and fock before conver routine
-!
-! TODO: extraction of fock an rho via subroutines from maskrmm as a first step,
-!       total removal once rmm is gone.
-
 !carlos: extractions for Open Shell and Close Shell.
         if (OPEN) then
            call spunpack_rho('L',M,rhoalpha,rho_a0)
-           call spunpack('L', M, RMM(M5), fock_a0)
+           call spunpack('L', M, Fmat_vec, fock_a0)
            call spunpack_rho('L',M,rhobeta,rho_b0)
-           call spunpack('L', M, RMM(M3), fock_b0)
+           call spunpack('L', M, Fmat_vec2, fock_b0)
            call fockbias_apply( 0.0d0, fock_a0)
            call fockbias_apply( 0.0d0, fock_b0)
         else
-           call spunpack_rho('L',M,RMM(M1),rho_a0)
-           call spunpack('L', M, RMM(M5), fock_a0)
+           call spunpack_rho('L',M,Pmat_vec,rho_a0)
+           call spunpack('L', M, Fmat_vec, fock_a0)
            call fockbias_apply( 0.0d0, fock_a0 )
         end if
 
@@ -707,12 +662,7 @@ subroutine SCF(E)
         call rho_aop%Gets_data_AO(rho_a)
         call messup_densmat( rho_a )
 
-!carlos: Alpha Energy (or Close Shell) is stored.
         Eorbs = morb_energy
-!charly: RMM is storing only alpha energy when we are working with open shell
-        do kk=1,M
-          RMM(M13+kk-1) = morb_energy(kk)
-        end do
 
         i0 = 0
         if (dftb_calc) i0=MTB
@@ -841,10 +791,10 @@ subroutine SCF(E)
         good = 0.0d0
         do jj=1,M
         do kk=jj,M
-          del=xnano(jj,kk)-(RMM(kk+(M2-jj)*(jj-1)/2))
+          del=xnano(jj,kk)-(Pmat_vec(kk+(M2-jj)*(jj-1)/2))
           del=del*sq2
           good=good+del**2
-          RMM(kk+(M2-jj)*(jj-1)/2)=xnano(jj,kk)
+          Pmat_vec(kk+(M2-jj)*(jj-1)/2)=xnano(jj,kk)
         enddo
         enddo
         good=sqrt(good)/float(M)
@@ -937,7 +887,7 @@ subroutine SCF(E)
         Es=Ens
 
 !       One electron Kinetic (with aint >3) or Kinetic + Nuc-elec (aint >=3)
-        call int1(En, RMM(M5:M5+MM), RMM(M11:M11+MM), Smat, d, r, Iz, natom, &
+        call int1(En, Fmat_vec, Hmat_vec, Smat, d, r, Iz, natom, &
                   ntatom)
 
 !       Computing the E1-fock without the MM atoms
@@ -950,7 +900,7 @@ subroutine SCF(E)
 !       E1s (here) is the 1e-energy without the MM contribution
         E1s=0.D0
         do kk=1,MM
-          E1s=E1s+RMM(kk)*RMM(M11+kk-1)
+          E1s = E1s + Pmat_vec(kk) * Hmat_vec(kk)
         enddo
 
 !       Es is the QM/MM energy computated as total 1e - E1s + QMnuc-MMcharges
@@ -965,7 +915,7 @@ subroutine SCF(E)
         if (npas.eq.1) npasw = 0
 
         if (npas.gt.npasw) then
-           call ECP_energy( MM, RMM(M1), Eecp, Es )
+           call ECP_energy( MM, Pmat_vec, Eecp, Es )
            call write_energies(E1, E2, En, Ens, Eecp, Exc, ecpmode, E_restrain,&
                                number_restr, nsol)
            npasw=npas+10
@@ -983,17 +933,16 @@ subroutine SCF(E)
       do jj=1,M
       do ii=jj,M
          kkk=kkk+1
-         RMM(M15+kkk-1)=0.D0
+         Pmat_en_wgt = 0.0D0
 !
          if (ii.eq.jj) then
             factor=2.D0
          else
             factor=4.D0
          endif
-!charly: as M13 doesn't store energy any more, this could be not working
          do kk=1,NCO
-            RMM(M15+kkk-1)= &
-            RMM(M15+kkk-1)-RMM(M13+kk-1)*factor*X(ii,M2+kk)*X(jj,M2+kk)
+            Pmat_en_wgt(kkk) =  Pmat_en_wgt(kkk) - Eorbs(kk) * factor * &
+                                X(ii,M2+kk) * X(jj,M2+kk)
          enddo
       enddo
       enddo
@@ -1006,10 +955,10 @@ subroutine SCF(E)
       allocate(rho_exc(M,M))
       call translation(M,rho_exc)   ! Reorganizes Rho to LIO format.
 
-      do jj=1,M                     ! Stores matrix in RMM
-         RMM(jj + (M2-jj)*(jj-1)/2) = rho_exc(jj,jj)
+      do jj=1,M                     ! Stores matrix in vector form.
+         Pmat_vec(jj + (M2-jj)*(jj-1)/2) = rho_exc(jj,jj)
          do kk = jj+1, M
-            RMM( kk + (M2-jj)*(jj-1)/2) = rho_exc(jj,kk) * 2.0D0
+            Pmat_vec( kk + (M2-jj)*(jj-1)/2) = rho_exc(jj,kk) * 2.0D0
          enddo
       enddo
 
@@ -1023,7 +972,7 @@ subroutine SCF(E)
 !       Remove all of this.
 !
       if (doing_ehrenfest) then
-         call spunpack('L',M,RMM(M1),RealRho)
+         call spunpack('L',M,Pmat_vec,RealRho)
          call fix_densmat(RealRho)
          call ehrendyn_init(natom, M, RealRho)
       endif

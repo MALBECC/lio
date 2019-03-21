@@ -39,8 +39,7 @@ extern "C" void aint_parameter_init_(const unsigned int& Md,
                                      unsigned int* ncontd,
                                      const unsigned int* nshelld, double* cd,
                                      double* ad, unsigned int* Nucd, double* af,
-                                     double* RMM, const unsigned int& M9,
-                                     const unsigned int& M11, double* str,
+                                     double* G_inv, double* Hmat_vec, double* str,
                                      double* fac, double& rmax, uint* atomZ_i,
                                      const int& level_of_gpu) {
   /* DENSITY BASIS SET */
@@ -96,10 +95,10 @@ extern "C" void aint_parameter_init_(const unsigned int& Md,
       cd, integral_vars.m_dens, MAX_CONTRACTIONS, num_dens_gauss);
   // 1e Fock matrix
   integral_vars.rmm_1e_output = G2G::FortranMatrix<double>(
-      RMM + (M11 - 1), (G2G::fortran_vars.m * (G2G::fortran_vars.m + 1)) / 2);
+      Hmat_vec, (G2G::fortran_vars.m * (G2G::fortran_vars.m + 1)) / 2 );
   // Inverse of G matrix for Coulomb fitting
   integral_vars.Ginv_input = G2G::FortranMatrix<double>(
-      RMM + (M9 - 1), (integral_vars.m_dens * (integral_vars.m_dens + 1)) / 2);
+      G_inv, (integral_vars.m_dens * (integral_vars.m_dens + 1)) / 2 );
   // Fitted density in density basis
   integral_vars.af_input_ndens1 =
       G2G::FortranMatrix<double>(af, integral_vars.m_dens);

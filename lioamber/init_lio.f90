@@ -110,23 +110,24 @@ end subroutine lio_defaults
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
 
-    use garcha_mod, only : nunp, RMM, d, r, v, rqm, Em, Rm, pc, Iz, natom, ng0,&
+    use garcha_mod, only : nunp, d, r, v, rqm, Em, Rm, pc, Iz, natom, ng0,     &
                            ngd0, ngrid, norbit, ntatom, free_global_memory,    &
                            assign_all_functions, energy_all_iterations,        &
                            remove_zero_weights, min_points_per_cube,           &
                            max_function_exponent, little_cube_size,            &
-                           sphere_radius, Fock_Hcore, Fock_Overlap, P_density, &
-                           OPEN, timers, MO_coef_at, MO_coef_at_b, charge
+                           OPEN, timers, MO_coef_at, MO_coef_at_b, charge,     &
+                           Fmat_vec, Fmat_vec2, Pmat_vec, Hmat_vec, Ginv_vec,  &
+                           Gmat_vec, Pmat_en_wgt, sphere_radius
     use ECP_mod,    only : Cnorm, ecpmode
     use field_data, only : chrg_sq
     use fileio    , only : lio_logo
     use fileio_data, only: style, verbose
-    use basis_data, only: M, Md, basis_set, fitting_set
+    use basis_data, only: M, Md, basis_set, fitting_set, MM, MMd
     use basis_subs, only: basis_init
 
     implicit none
     integer , intent(in) :: nclatom, natomin, Izin(natomin), callfrom
-    integer              :: ng2, ngdDyn, ngDyn, ierr, ios, MM, iostat
+    integer              :: ierr, ios, iostat
 
     if (verbose .gt. 2) then
       write(*,*)
@@ -157,32 +158,26 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     if (iostat .gt. 0) then
       stop
       return
-   endif
+   endif    
 
-    ngDyn = M; ngdDyn = Md
-    ng2 = 5*ngDyn*(ngDyn+1)/2 + 3*ngdDyn*(ngdDyn+1)/2 + &
-          ngDyn  + ngDyn*norbit + Ngrid
-
-    allocate(RMM(ng2) , d(natom, natom), v(ntatom,3), Em(ntatom), Rm(ntatom))
-
+    allocate(d(natom, natom), v(ntatom,3), Em(ntatom), Rm(ntatom))
+    allocate(Fmat_vec(MM), Fmat_vec2(MM), Pmat_vec(MM), Hmat_vec(MM), &
+             Ginv_vec(MMd), Gmat_vec(MMd), Pmat_en_wgt(MM))
     ! Cnorm contains normalized coefficients of basis functions.
     ! Differentiate C for x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)
-    if (ecpmode) allocate (Cnorm(ngDyn,13))
+    if (ecpmode) allocate (Cnorm(M,13))
 
     call g2g_init()
-    allocate(MO_coef_at(ngDyn*ngDyn))
-    if (OPEN) allocate(MO_coef_at_b(ngDyn*ngDyn))
+    allocate(MO_coef_at(M*M))
+    if (OPEN) allocate(MO_coef_at_b(M*M))
 
     ! Prints chosen options to output.
-    call drive(ng2, ngDyn, ngdDyn, iostat)
+    call drive(iostat)
     if (iostat .gt. 0) then
       stop
       return
-   endif
+    endif
 
-    ! reemplazos de RMM
-    MM=M*(M+1)/2
-    allocate(Fock_Hcore(MM), Fock_Overlap(MM), P_density(MM))
     call g2g_timer_stop('lio_init')
 
     return

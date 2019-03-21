@@ -10,13 +10,14 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
    use field_data , only: epsilon, a0
 
    use garcha_mod, &
-   &only: RMM, igrid2, natom, Iz, NCO, Nunp, total_time, d, ntatom, r, open, pc
+   &only: igrid2, natom, Iz, NCO, Nunp, total_time, d, ntatom, r, open, &
+          pc, Fmat_vec, Fmat_vec2, Ginv_vec, Hmat_vec, Gmat_vec, Pmat_vec
 
    use basis_data, &
-   &only: M, Md, kkind, kkinds, cool, cools
+   &only: M, Md, kkind, kkinds, cool, cools, MM, MMd
 
    use ehrendata, &
-   &only: eefld_on, eefld_ampx, eefld_ampy, eefld_ampz, eefld_wavelen          &
+   &only: eefld_on, eefld_ampx, eefld_ampy, eefld_ampz, eefld_wavelen        &
        &, eefld_timegih, eefld_timegfh, eefld_timepos, eefld_timeamp
 
    implicit none
@@ -31,8 +32,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
    real*8   :: Energy_Exchange
    real*8   :: Energy_Efield
 
-   integer  :: kk, idx0
-   integer  :: MM, MMd, igpu, M7, M9, M3, M5, M11
+   integer  :: kk, igpu
    logical  :: MEMO
 
 !  For electric field application
@@ -41,13 +41,6 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
    real*8   :: dip_times_field, strange_term
    real*8   :: field_shape, time_fact, time_dist, laser_freq
 
-   MM=M*(M+1)/2
-   MMd=Md*(Md+1)/2
-   M3=1+MM ! Pew
-   M5=M3+MM ! now S, also F later
-   M7  = 1 + 3*MM
-   M9  = M7 + MMd
-   M11=M9+MMd ! Hmat
 !
 !
 ! Calculate fixed-parts of fock
@@ -63,15 +56,14 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
    call aint_query_gpu_level(igpu)
    if (igpu.gt.1) call aint_new_step()
 
-   idx0=3*MM+2*MMd
    if (igpu.le.1) then
-      call intsol(RMM(1:MM), RMM(idx0+1:idx0+MM+1), Iz, pc, r, d, natom, &
+      call intsol(Pmat_vec, Hmat_vec, Iz, pc, r, d, natom, &
                   ntatom, Energy_SolvF, Energy_SolvT, .true.)
    else
       call aint_qmmm_fock(Energy_SolvF,Energy_SolvT)
    endif
 
-   call int2(RMM(M7:M7+MMd), RMM(M9:M9+MMd), r, d, ntatom)
+   call int2(Gmat_vec, Ginv_vec, r, d, ntatom)
    if (igpu.gt.2) call aint_coulomb_init()
    MEMO = .true.
    if (igpu.eq.5) MEMO = .false.
@@ -87,8 +79,8 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
 !------------------------------------------------------------------------------!
    call g2g_timer_start('RMMcalc4-solve3lu')
    call rmmput_dens(DensMao)
-   call int3lu(Energy_Coulomb, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM),        &
-               RMM(M7:M7+MMd), RMM(M9:M9+MMd), RMM(M11:M11+MMd), open, MEMO)
+   call int3lu(Energy_Coulomb, Pmat_vec, Fmat_vec2, Fmat_vec, Gmat_vec, &
+               Ginv_vec, Hmat_vec, open, MEMO)
    call g2g_solve_groups(0,Energy_Exchange,0)
    call g2g_timer_stop('RMMcalc4-solve3lu')
 
@@ -125,8 +117,8 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
      FieldNow(1) = eefld_ampx * field_shape
      FieldNow(2) = eefld_ampy * field_shape
      FieldNow(3) = eefld_ampz * field_shape
-     call dip( DipMom(1), DipMom(2), DipMom(3) )
-     call intfld(RMM(M3:M3+MM), RMM(M5:M5+MM), r, d, Iz, natom, ntatom, open, &
+     call dip( DipMom, Pmat_vec )
+     call intfld(Fmat_vec2, Fmat_vec, r, d, Iz, natom, ntatom, open, &
                  g, FieldNow(1), FieldNow(2), FieldNow(3))
 
      dip_times_field = 0.0d0
@@ -146,10 +138,9 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
 ! Calculate Energy
 !------------------------------------------------------------------------------!
    call g2g_timer_start('RMMcalc4-exit')
-   idx0=3*MM+2*MMd
    Energy_1e=0.0d0
    do kk=1,MM
-      Energy_1e=Energy_1e+RMM(kk)*RMM(idx0+kk)
+      Energy_1e = Energy_1e + Pmat_vec(kk) * Hmat_vec(kk)
    enddo
 
 !  Energy=0.0d0

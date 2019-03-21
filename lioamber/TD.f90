@@ -42,10 +42,11 @@ module time_dependent
 contains
 
 subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
-   use garcha_mod    , only: NBCH, propagator, RMM, NCO, Iz, igrid2, r, nsol, &
-                             pc, X, Smat, MEMO, sol, ntatom, sqsm, Nunp, OPEN,&
-                             natom, d, rhoalpha, rhobeta
-   use basis_data    , only: M, Md, Nuc, ncont, nshell, a, c, Norm
+   use garcha_mod    , only: NBCH, propagator, NCO, Iz, igrid2, r, nsol,      &
+                             pc, X, Smat, MEMO, ntatom, sqsm, Nunp, OPEN,     &
+                             natom, d, rhoalpha, rhobeta, Fmat_vec, Fmat_vec2,&
+                             Ginv_vec, Hmat_vec, Gmat_vec, Pmat_vec
+   use basis_data    , only: M, Md, Nuc, ncont, nshell, a, c, Norm, MM, MMd
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, &
                              writedens, pert_time
    use field_data    , only: field, fx, fy, fz
@@ -72,8 +73,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    type(operator), intent(inout), optional :: rho_bop, fock_bop
 
    real*8  :: E, En, E1, E2, E1s, Es, Ens = 0.0D0, Ex, t, dt_magnus, dt_lpfrg
-   integer :: MM, MMd, M2, M3 ,M5, M13, M15, M11, LWORK, igpu, info, istep,    &
-              icount,jcount, M9, M7
+   integer :: M2, LWORK, igpu, info, istep, icount, jcount
    integer :: lpfrg_steps = 200, chkpntF1a = 185, chkpntF1b = 195
    logical :: is_lpfrg = .false. , fock_restart = .false.
    character(len=20) :: restart_filename
@@ -121,18 +121,6 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%% TD INITIALIZATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-
-   ! RMM initializations
-   ! M3 - Fold, M5 - S and then F, M7 - G, M9 - Gm, M11 - H
-   ! M13 - W (matrix eigenvalues),  M15 - Aux vector for ESSL. M17 - Used
-   ! in least squares, M18 - MO vectors (deprecated), M19 - weights (optional),
-   ! M20 - 2e integrals if MEMO=t
-   MM  = M *(M+1) /2 ; MMd = Md*(Md+1)/2
-   M2  = 2*M         ; M5  = 1 + 2*MM
-   M3  = 1+MM        ; M7  = 1 + 3*MM
-   M9  = M7 + MMd    ; M11 = M5 + MM + 2*MMd
-   M13 = M11 + MM    ; M15 = M13 + M
-
    call g2g_timer_start('TD')
    call g2g_timer_start('td-inicio')
    open(unit = 134, file = "dipole_moment_td")
@@ -149,6 +137,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 !carlos: dim3 is the 3th dimension of all matrix involve in open shell
 !        calculation
 
+   M2  = 2*M
    NCOa = NCO
    dim3 = 1
    if (open) then
@@ -186,7 +175,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
          endif
          call sprepack_ctr('L', M, rhoalpha, rho_0(MTB+1:MTB+M,MTB+1:MTB+M,1))
          call sprepack_ctr('L', M, rhobeta , rho_0(MTB+1:MTB+M,MTB+1:MTB+M,2))
-         RMM(1:MM) = rhoalpha + rhobeta
+         Pmat_vec = rhoalpha + rhobeta
       else
          restart_filename = 'td_in.restart'
          if (propagator.eq.2) then
@@ -195,23 +184,23 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
          else
             call read_td_restart_verlet(rho_0(:,:,1), M_in, restart_filename)
          endif
-         call sprepack_ctr('L', M, RMM, rho_0(MTB+1:MTB+M,MTB+1:MTB+M,1))
+         call sprepack_ctr('L', M, Pmat_vec, rho_0(MTB+1:MTB+M,MTB+1:MTB+M,1))
       end if
    else
-      ! Read the density matrix stored in RMM(1,2,3,...,MM) into rho matrix.
+      ! Read the density matrix stored in Pmat_vec(1,2,3,...,MM) into rho matrix.
       !For Open Shell, this is read from rhoalpha and rhobeta
       if (OPEN) then
          call spunpack_rtc('L', M, rhoalpha, rho_0(:,:,1))
          call spunpack_rtc('L', M, rhobeta, rho_0(:,:,2))
       else
-         call spunpack_rtc('L', M, RMM, rho_0(:,:,1))
+         call spunpack_rtc('L', M, Pmat_vec, rho_0(:,:,1))
        end if
    endif
 
 !------------------------------------------------------------------------------!
 ! DFTB: Initialize DFTB variables for TD
    if (dftb_calc) then
-      call dftb_td_init (M , rho, rho_0, overlap, RMM(M5),dim3)
+      call dftb_td_init (M , rho, rho_0, overlap, Fmat_vec, dim3)
    else
       rho=rho_0
    end if
@@ -227,18 +216,17 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    ! and significant functions to groups, also calculating point weights.
    if (field) call field_setup_old(pert_time, 1, fx, fy, fz)
    call td_integration_setup(igrid2, igpu)
-   call td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM(M5), &
-                       RMM(M11), r, pc, ntatom, natom, Smat, d, Iz, M)
-   call spunpack('L', M, RMM(M5), Smat_initial)
+   call td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, Pmat_vec, Fmat_vec, &
+                       Hmat_vec, r, pc, ntatom, natom, Smat, d, Iz, M)
+   call spunpack('L', M, Fmat_vec, Smat_initial)
 
    ! Initialises transport if required.
-   if (transport_calc) call transport_init(M, dim3, natom, Nuc, RMM(M5),       &
+   if (transport_calc) call transport_init(M, dim3, natom, Nuc, Fmat_vec, &
                                            overlap, rho,OPEN)
 
    ! Diagonalizes Smat, stores transformation matrix Xmm and calculates the
    ! transposed matrices Xtrans and Ytrans
-   call td_overlap_diag(M_in, M, Smat, RMM(M13), X, Xmat ,Xtrans, Ymat, Ytrans,&
-                        Xmm)
+   call td_overlap_diag(M_in, M, Smat, X, Xmat ,Xtrans, Ymat, Ytrans, Xmm)
 
    ! Here rho_aux is used as an auxiliar matrix for CUBLAS. Then we need to
    ! restore its original value. Rho is then transformed to the orthonormal
@@ -264,7 +252,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 #endif
    ! Precalculate three-index (two in MO basis, one in density basis) matrix
    ! used in density fitting /Coulomb F element calculation here (t_i in Dunlap)
-   call int2(RMM(M7:M7+MMd), RMM(M9:M9+MMd), r, d, ntatom)
+   call int2(Gmat_vec, Ginv_vec, r, d, ntatom)
    call td_coulomb_precalc(igpu, MEMO, r, d, natom, ntatom)
 
    ! Recalculate maximum number of TD steps.
@@ -291,9 +279,10 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
       call g2g_timer_sum_start("TD - TD Step Energy")
 
-      call td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM(M11:MM),is_lpfrg,&
-                          transport_calc, sol, t/0.024190D0, M, Md, open, r, d,&
-                          Iz, natom, ntatom, MEMO)
+      call td_calc_energy(E, E1, E2, En, Ex, Es, MM, Pmat_vec, Fmat_vec,      &
+                          Fmat_vec2, Gmat_vec, Ginv_vec, Hmat_vec, is_lpfrg,  &
+                          transport_calc, t/0.024190D0, M, Md, open, r, d, Iz,&
+                          natom, ntatom, MEMO)
 
       call g2g_timer_sum_pause("TD - TD Step Energy")
       if (verbose .gt. 2) write(*,'(A,I6,A,F12.6,A,F12.6,A)') "  TD Step: ", &
@@ -317,12 +306,12 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
       call g2g_timer_sum_start("TD - Propagation")
 #ifdef CUBLAS
       if (is_lpfrg) then
-         call td_bc_fock_cu(M_in,M, MM, RMM(M5), fock_aop, devPtrX,natom,      &
+         call td_bc_fock_cu(M_in,M, MM, Fmat_vec, fock_aop, devPtrX,natom,     &
                             nshell,ncont, istep, t/0.024190D0)
 
          if (OPEN) then
 
-            call td_bc_fock_cu(M_in,M, MM, RMM(M3), fock_bop, devPtrX, natom,  &
+            call td_bc_fock_cu(M_in,M, MM, Fmat_vec2, fock_bop, devPtrX, natom,  &
                                nshell,ncont, istep, t/0.024190D0)
             call td_verlet_cu(M, M_in, dim3, OPEN, fock_aop, rhold, rho_aop,   &
                               rhonew, istep, Im, dt_lpfrg, transport_calc,     &
@@ -366,10 +355,10 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
 #else
       if (is_lpfrg) then
-         call td_bc_fock(M_in, M, MM, RMM(M5), fock_aop,Xmat, natom, nshell,    &
+         call td_bc_fock(M_in, M, MM, Fmat_vec, fock_aop,Xmat, natom, nshell,    &
                          ncont, istep,t/0.024190D0)
          if (OPEN) then
-            call td_bc_fock(M_in, M, MM, RMM(M3), fock_bop,Xmat, natom, nshell, &
+            call td_bc_fock(M_in, M, MM, Fmat_vec2, fock_bop,Xmat, natom, nshell,&
                             ncont, istep,t/0.024190D0)
 
             call td_verlet(M, M_in, dim3, OPEN, fock_aop, rhold, rho_aop,      &
@@ -410,18 +399,18 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 #endif
       call g2g_timer_sum_pause("TD - Propagation")
 
-      ! The real part of the density matrix in the atomic orbital basis is
-      ! copied in RMM(1,2,3,...,MM) to compute the corresponding Fock matrix.
+      ! The real part of the density matrix in the atomic orbital basis is copied
+      ! in Pmat_vec(1,2,3,...,MM) to compute the corresponding Fock matrix.
       if (OPEN) then
          call rho_aop%Gets_dataC_AO(rho_aux(:,:,1))
          call rho_bop%Gets_dataC_AO(rho_aux(:,:,2))
          call sprepack_ctr('L', M, rhoalpha, rho_aux(MTB+1:MTB+M,MTB+1:MTB+M,1))
          call sprepack_ctr('L', M, rhobeta, rho_aux(MTB+1:MTB+M,MTB+1:MTB+M,2))
 
-         RMM(1:MM) = rhoalpha + rhobeta
+         Pmat_vec = rhoalpha + rhobeta
       else
          call rho_aop%Gets_dataC_AO(rho_aux(:,:,1))
-         call sprepack_ctr('L', M, RMM, rho_aux(MTB+1:MTB+M,MTB+1:MTB+M,1))
+         call sprepack_ctr('L', M, Pmat_vec, rho_aux(MTB+1:MTB+M,MTB+1:MTB+M,1))
       end if
 
 !DFTB: temporary DFTB don't store restarts
@@ -466,7 +455,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
       if (transport_calc) call transport_rho_trace(M, dim3, rho)
 
       ! Dipole Moment calculation.
-      call td_dipole(t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, 134)
+      call td_dipole(Pmat_vec, t, tdstep, Fx, Fy, Fz, istep, propagator,is_lpfrg,134)
       call td_population(M, natom, rho_aux, Smat_initial, sqsm, Nuc, Iz, OPEN, &
                          istep, propagator, is_lpfrg)
 
@@ -644,7 +633,7 @@ subroutine td_integration_setup(igrid2, igpu)
    return
 end subroutine td_integration_setup
 
-subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM5, RMM11,  &
+subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, Pmat, Fmat, Hmat,&
                           r, pc, ntatom, natom, Smat, d, Iz, M)
    use faint_cpu, only: int1, intsol
    use mask_ecp , only: ECP_fock
@@ -652,18 +641,18 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM5, RMM11,  &
 
    double precision, intent(in) :: pc(ntatom), r(ntatom,3)
    integer         , intent(in) :: M, MM, igpu, nsol, natom, ntatom, Iz(natom)
-   double precision, intent(inout) :: RMM5(MM), RMM11(MM), E1, En, E1s, Ens
+   double precision, intent(inout) :: Fmat(MM), Hmat(MM), E1, En, E1s, Ens
    double precision, allocatable, intent(in)    :: d(:,:)
-   double precision, allocatable, intent(inout) :: RMM(:), Smat(:,:)
+   double precision, allocatable, intent(inout) :: Pmat(:), Smat(:,:)
 
    integer :: icount
 
    E1 = 0.0D0 ; En = 0.0D0
    call g2g_timer_sum_start('TD - 1-e Fock')
    call g2g_timer_sum_start('TD - Nuclear attraction')
-   call int1(En, RMM5, RMM11, Smat, d, r, Iz, natom, ntatom)
+   call int1(En, Fmat, Hmat, Smat, d, r, Iz, natom, ntatom)
 
-   call ECP_fock(MM, RMM11)
+   call ECP_fock(MM, Hmat)
    call g2g_timer_sum_stop('TD - Nuclear attraction')
 
    ! 1e terms - QMMM terms.
@@ -671,7 +660,7 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM5, RMM11,  &
       call g2g_timer_sum_start('TD - QM/MM')
       if (igpu.le.1) then
          call g2g_timer_start('intsol')
-         call intsol(RMM, RMM11, Iz, pc, r, d, natom, ntatom, E1s, Ens, .true.)
+         call intsol(Pmat, Hmat, Iz, pc, r, d, natom, ntatom, E1s, Ens, .true.)
          call g2g_timer_stop('intsol')
       else
          call aint_qmmm_init(nsol, r, pc)
@@ -684,13 +673,13 @@ subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, RMM, RMM5, RMM11,  &
 
    E1=0.D0
    do icount = 1, MM
-      E1 = E1 + RMM(icount) * RMM11(icount)
+      E1 = E1 + Pmat(icount) * Hmat(icount)
    enddo
    call g2g_timer_sum_stop('TD - 1-e Fock')
    return
 end subroutine td_integral_1e
 
-subroutine td_overlap_diag(M_in, M, Smat, eigenvalues, X_min, Xmat, Xtrans, Ymat, &
+subroutine td_overlap_diag(M_in, M, Smat, X_min, Xmat, Xtrans, Ymat, &
                            Ytrans, Xmm)
 
    use dftb_data, only:dftb_calc, MTB
@@ -702,15 +691,15 @@ subroutine td_overlap_diag(M_in, M, Smat, eigenvalues, X_min, Xmat, Xtrans, Ymat
    real*8 , intent(in)    :: Smat(M,M)
    real*8 , intent(inout) :: X_min(M,M)
    real*8 , intent(out)   :: Xtrans(M_in,M_in), Ytrans(M_in,M_in), &
-                             Xmm(M_in,M_in),eigenvalues(M)
+                             Xmm(M_in,M_in)
    real*8 , intent(inout) :: Xmat(M_in,M_in), Ymat(M_in,M_in)
    real*8                 :: Y_min(M,M)
 
    integer :: icount, jcount, LWORK, info
-   real*8, allocatable :: WORK(:)
+   real*8, allocatable :: WORK(:), eigenvalues(:)
 
-   ! Diagonalization of S matrix, both with ESSL or LAPACK.
-   ! The S matrix is stored in RMM(M13, M13+1, ..., M13+MM).
+   allocate(eigenvalues(M))
+   ! Diagonalization of S matrix (LAPACK).
    do icount = 1, M
    do jcount = 1, M
       X_min(icount, jcount) = Smat(icount, jcount)
@@ -771,7 +760,8 @@ subroutine td_overlap_diag(M_in, M, Smat, eigenvalues, X_min, Xmat, Xtrans, Ymat
    enddo
    enddo
 
-   return
+   deallocate(eigenvalues)
+
 end subroutine td_overlap_diag
 
 subroutine td_coulomb_precalc(igpu, MEMO, r, d, natom, ntatom)
@@ -837,32 +827,25 @@ subroutine td_check_prop(is_lpfrg, propagator, istep, lpfrg_steps, fock_rst,&
    return
 end subroutine td_check_prop
 
-subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
-                          transport_calc, sol, time, M, Md, open_shell, r, d, &
-                          Iz, natom, ntatom, MEMO)
+subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, Pmat, Fmat, Fmat2,    &
+                          Gmat, Ginv, Hmat, is_lpfrg ,transport_calc, time,&
+                          M, Md, open_shell, r, d, Iz, natom, ntatom, MEMO)
    use faint_cpu , only: int3lu
    use field_subs, only: field_calc
    implicit none
-   integer, intent(in)    :: MM, natom, ntatom, Iz(natom)
-   logical, intent(in)    :: is_lpfrg, transport_calc, sol
+   integer, intent(in)    :: MM, natom, ntatom, Iz(natom), M, Md
+   logical, intent(in)    :: is_lpfrg, transport_calc
    real*8 , intent(in)    :: time, r(ntatom,3), d(natom,natom)
-   real*8 , intent(inout) :: E, E1, E2, En, Ex, Es, RMM(:), RMM11(:)
-   integer         , intent(in) :: M, Md
+   real*8 , intent(inout) :: E, E1, E2, En, Ex, Es, Hmat(MM), Pmat(MM), &
+                             Fmat(MM), Fmat2(MM), Ginv(:), Gmat(:)
    logical         , intent(in) :: open_shell, MEMO
-   integer :: icount, MMd, M3, M5, M7, M9, M11
-
-   MMd=Md*(Md+1)/2
-   M3=1+MM ! Pew
-   M5=M3+MM ! now S, also F later
-   M7=M5+MM ! G matrix
-   M9=M7+MMd ! G inverted
-   M11=M9+MMd ! Hmat
+   integer :: icount
 
    E1 = 0.0D0; E = 0.0D0
    if (is_lpfrg) then
       call g2g_timer_sum_start("TD - Coulomb")
-      call int3lu(E2, RMM(1:MM), RMM(M3:M3+MM), RMM(M5:M5+MM), RMM(M7:M7+MMd), &
-                  RMM(M9:M9+MMd), RMM(M11:M11+MMd), open_shell, MEMO)
+      call int3lu(E2, Pmat, Fmat2, Fmat, Gmat, Ginv, Hmat, open_shell,&
+                  MEMO)
       call g2g_timer_sum_pause("TD - Coulomb")
       call g2g_timer_sum_start("TD - Exc")
       call g2g_solve_groups(0,Ex,0)
@@ -870,26 +853,27 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, RMM, RMM11, is_lpfrg, &
    endif
 
    ! ELECTRIC FIELD CASE - Perturbation type: Gaussian (default).
-   call field_calc(E1, time, RMM(M3:M3+MM), RMM(M5:M5+MM), r, d, Iz, natom, &
-                   ntatom, open_shell)
+   call field_calc(E1, time, Pmat, Fmat2, Fmat, r, d, Iz, &
+                   natom, ntatom, open_shell)
 
    ! Add 1e contributions to E1.
    do icount = 1, MM
-      E1 = E1 + RMM(icount)*RMM11(icount)
+      E1 = E1 + Pmat(icount) * Hmat(icount)
    enddo
    E = E1 + E2 + En + Ex
-   if (sol) E = E + Es
+   if (ntatom > natom) E = E + Es
 
    return
 end subroutine td_calc_energy
 
-subroutine td_dipole(t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, uid)
+subroutine td_dipole(rho, t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, &
+                     uid)
    use fileio, only: write_dipole_td, write_dipole_td_header
    implicit none
-   integer, intent(in)    :: istep, propagator, uid
-   logical, intent(in)    :: is_lpfrg
-   real*8 , intent(in)    :: Fx, Fy, Fz, t, tdstep
-   real*8 :: dipxyz(3)
+   integer         , intent(in) :: istep, propagator, uid
+   logical         , intent(in) :: is_lpfrg
+   double precision, intent(in) :: Fx, Fy, Fz, t, tdstep, rho(:)
+   double precision :: dipxyz(3)
 
    if(istep.eq.1) then
       call write_dipole_td_header(tdstep, Fx, Fy, Fz, uid)
@@ -897,13 +881,13 @@ subroutine td_dipole(t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, uid)
    if ((propagator.gt.1).and.(is_lpfrg)) then
       if (mod ((istep-1),10) == 0) then
          call g2g_timer_start('DIPOLE_TD')
-         call dip(dipxyz)
+         call dip(dipxyz, rho)
          call g2g_timer_stop('DIPOLE_TD')
          call write_dipole_td(dipxyz, t, uid)
       endif
    else
       call g2g_timer_start('DIPOLE_TD')
-      call dip(dipxyz)
+      call dip(dipxyz, rho)
       call g2g_timer_stop('DIPOLE_TD')
       call write_dipole_td(dipxyz, t, uid)
    endif
@@ -1018,7 +1002,7 @@ subroutine td_finalise_cublas(devPtrX, devPtrY, devPtrXc)
    call CUBLAS_SHUTDOWN()
 end subroutine td_finalise_cublas
 
-subroutine td_bc_fock_cu(M_in,M, MM, RMM5, fock_op, devPtrX, natom, nshell,    &
+subroutine td_bc_fock_cu(M_in,M, MM, Fmat, fock_op, devPtrX, natom, nshell, &
                          ncont, istep, time)
    use dftb_data,        only:dftb_calc, MTB
    use dftb_subs,        only:chimeraDFTB_evol
@@ -1029,7 +1013,7 @@ subroutine td_bc_fock_cu(M_in,M, MM, RMM5, fock_op, devPtrX, natom, nshell,    &
    integer  , intent(in)      :: M, MM, M_in
    integer*8, intent(in)      :: devPtrX
    real*8   , intent(in)      :: time
-   real*8   , intent(inout)   :: RMM5(MM)
+   real*8   , intent(inout)   :: Fmat(MM)
    real*8 :: fock_0(M,M), fock(M_in,M_in)
    real*8 :: Xtemp(M_in,M_in)
    integer, intent(in)  :: natom
@@ -1038,7 +1022,7 @@ subroutine td_bc_fock_cu(M_in,M, MM, RMM5, fock_op, devPtrX, natom, nshell,    &
    integer, intent(in)  :: nshell (0:3)
 
    call g2g_timer_start('fock')
-   call spunpack('L', M, RMM5, fock_0)
+   call spunpack('L', M, Fmat, fock_0)
 
    if (dftb_calc) then
       call chimeraDFTB_evol(M,fock_0, fock, natom, nshell,ncont, istep)
@@ -1051,7 +1035,7 @@ subroutine td_bc_fock_cu(M_in,M, MM, RMM5, fock_op, devPtrX, natom, nshell,    &
    call fock_op%Sets_data_AO(fock)
    call fock_op%BChange_AOtoON(devPtrX, M_in,'r')
    call fock_op%Gets_data_ON(fock)
-   call sprepack('L', M, RMM5, fock(MTB+1:MTB+M,MTB+1:MTB+M))
+   call sprepack('L', M, Fmat, fock(MTB+1:MTB+M,MTB+1:MTB+M))
    call g2g_timer_stop('fock')
 
    return
@@ -1251,7 +1235,7 @@ end subroutine td_magnus_cu
 
 #else
 
-subroutine td_bc_fock(M_in, M, MM, RMM5, fock_op, Xmm, natom, nshell,ncont,    &
+subroutine td_bc_fock(M_in, M, MM, Fmat, fock_op, Xmm, natom, nshell,ncont,    &
                       istep, time)
 
    use dftb_data,        only:dftb_calc,MTB
@@ -1261,7 +1245,7 @@ subroutine td_bc_fock(M_in, M, MM, RMM5, fock_op, Xmm, natom, nshell,ncont,    &
    implicit none
    type(operator), intent(inout) :: fock_op
    integer, intent(in)    :: M, MM, M_in
-   real*8 , intent(inout) :: RMM5(MM), Xmm(M_in,M_in)
+   real*8 , intent(inout) :: Fmat(MM), Xmm(M_in,M_in)
    real*8 , allocatable   :: fock(:,:)
    real*8 , allocatable   :: Xtemp(:,:)
    real*8 , allocatable   :: fock_0(:,:)
@@ -1274,7 +1258,7 @@ subroutine td_bc_fock(M_in, M, MM, RMM5, fock_op, Xmm, natom, nshell,ncont,    &
    allocate(fock(M_in,M_in),Xtemp(M_in,M_in),fock_0(M,M))
 
    call g2g_timer_start('fock')
-   call spunpack('L', M, RMM5, fock_0)
+   call spunpack('L', M, Fmat, fock_0)
 
    if (dftb_calc) then
       call chimeraDFTB_evol(M,fock_0, fock, natom, nshell,ncont, istep)
@@ -1288,7 +1272,7 @@ subroutine td_bc_fock(M_in, M, MM, RMM5, fock_op, Xmm, natom, nshell,ncont,    &
    call fock_op%BChange_AOtoON(Xmm, M_in,'r')
    call fock_op%Gets_data_ON(fock)
 !carlos: why the ON fock most be store?
-   call sprepack('L', M, RMM5, fock(MTB+1:MTB+M,MTB+1:MTB+M))
+   call sprepack('L', M, Fmat, fock(MTB+1:MTB+M,MTB+1:MTB+M))
    call g2g_timer_stop('fock')
 
    return

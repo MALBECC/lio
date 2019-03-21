@@ -73,8 +73,8 @@ extern "C" void g2g_parameter_init_(
     double* r, double* Rm, const unsigned int* Iz, const unsigned int* Nr,
     const unsigned int* Nr2, unsigned int* Nuc, const unsigned int& M,
     unsigned int* ncont, const unsigned int* nshell, double* c, double* a,
-    double* RMM, const unsigned int& M5,
-    const unsigned int& M3, double* rhoalpha, double* rhobeta,
+    double* rho_vec, double* fock_vec, double* fockb_vec,
+    double* rhoalpha, double* rhobeta,
     const unsigned int& nco, bool& OPEN, const unsigned int& nunp,
     const unsigned int& nopt, const unsigned int& Iexch, double* e, double* e2,
     double* e3, double* wang, double* wang2, double* wang3,
@@ -169,22 +169,22 @@ extern "C" void g2g_parameter_init_(
     fortran_vars.rmm_dens_b = FortranMatrix<double>(
         rhobeta, fortran_vars.m, fortran_vars.m, fortran_vars.m);
     fortran_vars.rmm_input_ndens1 = FortranMatrix<double>(
-        RMM, fortran_vars.m, fortran_vars.m, fortran_vars.m);
+        rho_vec, fortran_vars.m, fortran_vars.m, fortran_vars.m);
 
     //  Matriz de fock
     fortran_vars.rmm_output_a = FortranMatrix<double>(
-        RMM + (M5 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
+        fock_vec,  (fortran_vars.m * (fortran_vars.m + 1) / 2));
     fortran_vars.rmm_output_b = FortranMatrix<double>(
-        RMM + (M3 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
+        fockb_vec, (fortran_vars.m * (fortran_vars.m + 1) / 2));
   } else {
     if (verbose > 2) cout << "  Closed shell calculation - Occupied MO: "
          << fortran_vars.nco << endl;
     // matriz densidad
     fortran_vars.rmm_input_ndens1 = FortranMatrix<double>(
-        RMM, fortran_vars.m, fortran_vars.m, fortran_vars.m);
+        rho_vec, fortran_vars.m, fortran_vars.m, fortran_vars.m);
     // matriz de Fock
     fortran_vars.rmm_output = FortranMatrix<double>(
-        RMM + (M5 - 1), (fortran_vars.m * (fortran_vars.m + 1)) / 2);
+        fock_vec,  (fortran_vars.m * (fortran_vars.m + 1) / 2));
   }
 
   fortran_vars.e1 =

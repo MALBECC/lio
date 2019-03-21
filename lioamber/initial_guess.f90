@@ -150,14 +150,14 @@ end subroutine get_initial_guess
 
 
 ! Perfoms the initial guess using a modified aufbau principle.
-subroutine initial_guess_aufbau(M, MM, RMM, rhoalpha, rhobeta, natom, NCO, &
+subroutine initial_guess_aufbau(M, MM, rhototal, rhoalpha, rhobeta, natom, NCO, &
                                 NCOb, Iz, nshell, Nuc, openshell)
    use initial_guess_data, only: atomic_eec, initialise_eec
    implicit none
    integer         , intent(in)  :: M, MM, natom, NCO, NCOb, nshell(0:2), &
                                     Iz(natom),Nuc(M)
    logical         , intent(in)  :: openshell
-   double precision, intent(out) :: RMM(MM), rhoalpha(MM), rhobeta(MM)
+   double precision, intent(out) :: rhototal(MM), rhoalpha(MM), rhobeta(MM)
 
    double precision, allocatable :: start_dens(:,:), start_dens_alpha(:,:), &
                                     start_dens_beta(:,:)
@@ -234,7 +234,7 @@ subroutine initial_guess_aufbau(M, MM, RMM, rhoalpha, rhobeta, natom, NCO, &
       start_dens(:,:) = start_dens(:,:) * dble(NCO*2) / dble(total_iz)
    endif
 
-   call sprepack('L', M, RMM, start_dens)
+   call sprepack('L', M, rhototal, start_dens)
    deallocate(start_dens, start_dens_alpha, start_dens_beta, n_elecs)
    return
 end subroutine initial_guess_aufbau

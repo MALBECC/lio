@@ -13,21 +13,21 @@
 ! ns, np, nd are markers for the end of s, p and d sections respectively.      !
 ! r(Nuc(i),j) is j component of position of nucleus i, j = 1..3.               !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine dip(uDip)
+subroutine dip(uDip, P_density)
 
-    use garcha_mod   , only: RMM, NCO, Nunp, Iz, r, pc, d, natom, nsol, sol
+    use garcha_mod   , only: NCO, Nunp, Iz, r, pc, d, natom, nsol
     use basis_data   , only: a, c, Nuc, ncont, M, nshell, norm
     use constants_mod, only: pi32, pi5
 
     implicit none
-    real*8, intent(inout) :: uDip(3)
+    double precision, intent(in)    :: P_density(M*(M+1)/2)
+    double precision, intent(inout) :: uDip(3)
 
-    real*8  :: P_density(M*(M+1)/2)  ! Until we get rid of RMM.
-    real*8  :: aux(3), aux1(3), aux2(3), aux3(3), aux4(3), aux5(3), aux6(3),   &
-               srs(3), Q(3), uDipAt(3)
-    real*8  :: sq3, alf, alf2, cc, cCoef, dd, dp, dijs, f1, f2, factor, z2,    &
-               zij, Qc, ps, pis, pjs, ss, t0, t1
-    integer :: M2, ns, np, nd, i, j, k, ii, jj, l1, l2, l3, l4, l12, l34, n,   &
+    double precision :: aux(3), aux1(3), aux2(3), aux3(3), aux4(3), aux5(3), &
+                        aux6(3), srs(3), Q(3), uDipAt(3)
+    double precision :: sq3, alf, alf2, cc, cCoef, dd, dp, dijs, f1, f2,     &
+                        factor, z2, zij, Qc, ps, pis, pjs, ss, t0, t1
+    integer :: M2, ns, np, nd, i, j, k, ii, jj, l1, l2, l3, l4, l12, l34, n, &
                ni, nj, iCrd, nElec
      
     ! Constants
@@ -39,12 +39,6 @@ subroutine dip(uDip)
     sq3  = 1.D0  
     if (NORM) sq3 = sqrt( 3.D0 )
     nElec = 2*NCO + Nunp
-    
-    ! This is until we get rid of RMM.
-    k = M*(M+1) /2
-    do i=1, k
-       P_density(i) = RMM(i)
-    enddo 
 
     ! First Loop: <s|s> case.
     do i=1, ns
@@ -411,7 +405,7 @@ subroutine dip(uDip)
    enddo
 
    Qc=Qc-nElec
-   if (sol) then
+   if (Nsol > 0) then
        do k=1,Nsol
            Qc = Qc + pc(k)
        enddo

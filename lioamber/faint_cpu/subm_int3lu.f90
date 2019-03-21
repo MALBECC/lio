@@ -43,7 +43,8 @@ subroutine int3lu(E2, rho, Fmat_b, Fmat, Gmat, Ginv, Hmat, open_shell, memo)
 ! storing the integrals separately.                                            !
 ! Output: F updated with Coulomb part, also Coulomb energy.                    !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-   use basis_data, only: M, Md, cool, cools, kkind, kkinds, kknumd, kknums, af
+   use basis_data, only: M, Md, cool, cools, kkind, kkinds, kknumd, kknums, &
+                         af, MM, MMd
 
    implicit none
    logical         , intent(in) :: open_shell, memo
@@ -52,8 +53,7 @@ subroutine int3lu(E2, rho, Fmat_b, Fmat, Gmat, Ginv, Hmat, open_shell, memo)
 
    double precision, allocatable :: Rc(:), aux(:)
    double precision :: Ea, Eb, term
-   integer          :: M3, M5, M7, M9, M11, MM, MMd, ll(3), iikk, k_ind, &
-                       kk_ind, m_ind
+   integer          :: ll(3), iikk, k_ind, kk_ind, m_ind
 
    ! 16 loops for all combinations - 1-2: for wavefunction basis, 3 for the
    ! density fitting.
@@ -67,12 +67,6 @@ subroutine int3lu(E2, rho, Fmat_b, Fmat, Gmat, Ginv, Hmat, open_shell, memo)
 
    MM=M*(M+1)/2
    MMd=Md*(Md+1)/2
-
-   M3  = 1  + MM ! Pew
-   M5  = M3 + MM ! now S, also F later
-   M7  = M5 + MM ! G matrix
-   M9  = M7 + MMd ! G inverted
-   M11 = M9 + MMd ! Hmat
 
    if (MEMO) then
       call g2g_timer_start('int3lu - start')

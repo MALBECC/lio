@@ -3,7 +3,8 @@
 subroutine dft_get_qm_forces(dxyzqm)
    use garcha_mod , only: natom, ntatom, nsol, r, d, Iz, first_step,   &
                           cubegen_only, number_restr, doing_ehrenfest, &
-                          qm_forces_ds, qm_forces_total, RMM
+                          qm_forces_ds, qm_forces_total, Pmat_en_wgt,  &
+                          Pmat_vec
    use basis_data , only: M, Md
    use ehrendata  , only: nullify_forces
    use faint_cpu  , only: int1G, intSG, int3G
@@ -12,12 +13,8 @@ subroutine dft_get_qm_forces(dxyzqm)
    implicit none
    double precision, intent(out) :: dxyzqm(3,natom)
    double precision, allocatable :: ff1G(:,:),ffSG(:,:),ff3G(:,:)
-   integer            :: fileunit, igpu, MM, M15, MMd, katm, icrd
+   integer            :: fileunit, igpu, katm, icrd
    double precision   :: f_r ! For restraints
-
-   MM  = M  * (M  +1) / 2
-   MMd = Md * (Md +1) / 2
-   M15 = 1 + M + 4*MM + 2*MMd
 
    if (cubegen_only) return
    call g2g_timer_sum_start('Forces')
@@ -29,11 +26,11 @@ subroutine dft_get_qm_forces(dxyzqm)
    call aint_query_gpu_level(igpu)
    if (igpu .lt. 4) then
       call g2g_timer_sum_start('Nuclear attraction gradients')
-      call int1G(ff1G, RMM(1:MM), d, r, Iz, natom, ntatom)
+      call int1G(ff1G, Pmat_vec, d, r, Iz, natom, ntatom)
       call g2g_timer_sum_stop('Nuclear attraction gradients')
    elseif (nsol .le. 0) then
       call g2g_timer_sum_start('Nuclear attraction gradients')
-      call int1G(ff1G, RMM(1:MM), d, r, Iz, natom, ntatom)
+      call int1G(ff1G, Pmat_vec, d, r, Iz, natom, ntatom)
       call aint_qmmm_forces(ff1G,0)
       call g2g_timer_sum_stop('Nuclear attraction gradients')
    endif
@@ -45,7 +42,7 @@ subroutine dft_get_qm_forces(dxyzqm)
    if (doing_ehrenfest) then
       ffSG = -transpose(qm_forces_ds)
    else
-      call intSG(ffSG, RMM(M15:M15+MM), r, d, natom, ntatom)
+      call intSG(ffSG, Pmat_en_wgt, r, d, natom, ntatom)
    endif
    call g2g_timer_sum_stop('Overlap gradients')
    call g2g_timer_stop('intSG')
@@ -53,7 +50,7 @@ subroutine dft_get_qm_forces(dxyzqm)
    ! 2e and 3e gradients.
    call g2g_timer_start('int3G')
    call g2g_timer_sum_start('Coulomb+Exchange-correlation')
-   call int3G(ff3G, .true., RMM(1:MM), r, d, natom, ntatom)
+   call int3G(ff3G, .true., Pmat_vec, r, d, natom, ntatom)
    call g2g_timer_stop('int3G')
    call g2g_timer_sum_stop('Coulomb+Exchange-correlation')
 

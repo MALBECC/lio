@@ -8,15 +8,15 @@
 !
 !------------------------------------------------------------------------------!
 
-subroutine drive(ng2, ngDyn, ngdDyn, iostat)
-   use garcha_mod, only: X, RMM, rhoalpha, rhobeta,  charge, e_, e_2, e3,      &
+subroutine drive(iostat)
+   use garcha_mod, only: X, rhoalpha, rhobeta,  charge, e_, e_2, e3, Pmat_vec, &
                          fcoord, fmulliken, natom, frestart, Iexch, frestartin,&
                          NCO, npas, Nr, Nr2, wang, wang2, wang3, VCINP, OPEN,  &
                          Iz, Rm2, rqm, Nunp, restart_freq, writexyz, gpu_level,&
                          number_restr, restr_pairs, restr_index, restr_k,      &
                          restr_w, restr_r0, mulliken, MO_coef_at, MO_coef_at_b,&
                          use_libxc, ex_functional_id, ec_functional_id,        &
-                         pi
+                         pi, Fmat_vec, Fmat_vec2, Ginv_vec, Hmat_vec
    use basis_data, only: nshell, nshelld, ncont, ncontd, indexii, a, c, ad, cd,&
                          af, M, Md, rmax, norm, nuc, nucd
    use ECP_mod     , only: ecpmode
@@ -28,13 +28,12 @@ subroutine drive(ng2, ngDyn, ngdDyn, iostat)
    use ghost_atoms_subs, only: summon_ghosts
 
    implicit none
-   integer, intent(in)    :: ng2, ngDyn, ngdDyn ! ngDyn/ngdDyn are no longer used.
    integer, intent(inout) :: iostat
 
    double precision, allocatable :: restart_coef(:,:), restart_coef_b(:,:), &
                                     restart_dens(:,:), restart_adens(:,:),  &
                                     restart_bdens(:,:)
-   integer :: NCOa, NCOb, M3, M5, M9, M11, MM, MMd
+   integer :: NCOa, NCOb
    integer :: icount, kcount, jcount
   
    ! Calls generator of table for incomplete gamma functions
@@ -45,13 +44,6 @@ subroutine drive(ng2, ngDyn, ngdDyn, iostat)
    if (writexyz) open(unit = 18,file = fcoord)
    if ((mulliken) .or. (td_do_pop .gt. 0)) open(unit = 85,file = fmulliken)
    if (restart_freq .gt. 0) open(unit = 88, file = frestart)
-
-   ! RMM pointers and quantities.
-   MM  = M  * (M  +1) / 2
-   MMd = Md * (Md +1) / 2
-
-   M3 = MM +1        ; M5  = M3 + MM  !F beta (M3) and alpha (M5)
-   M9 = M5 + MM + MMd; M11 = M9 + MMd ! Gmat (M9) and Hmat (M11)
 
    if (ecpmode) then !agregadas por Nick para lectura de ECP
       call lecturaECP()   !lee parametros
@@ -83,12 +75,12 @@ subroutine drive(ng2, ngDyn, ngdDyn, iostat)
          allocate(restart_dens(M, M))
          if (.not. OPEN) then
             call read_rho_restart(restart_dens, M, 89)
-            call sprepack('L', M, RMM(1), restart_dens)
+            call sprepack('L', M, Pmat_vec, restart_dens)
          else
             allocate(restart_adens(M,M), restart_bdens(M,M))
             call read_rho_restart(restart_adens, restart_bdens, M, 89)
             restart_dens = restart_adens + restart_bdens
-            call sprepack('L', M, RMM(1)  , restart_dens)
+            call sprepack('L', M, Pmat_vec, restart_dens)
             call sprepack('L', M, rhoalpha, restart_adens)
             call sprepack('L', M, rhobeta , restart_bdens)
             deallocate(restart_adens, restart_bdens)
@@ -138,9 +130,9 @@ subroutine drive(ng2, ngDyn, ngdDyn, iostat)
          do jcount = 1     , M
          do icount = jcount, M
             kcount = kcount + 1
-            RMM(kcount) = restart_dens(indexii(icount), indexii(jcount))
+            Pmat_vec(kcount) = restart_dens(indexii(icount), indexii(jcount))
             if (icount .ne. jcount) then
-               RMM(kcount) = RMM(kcount) * 2.0D0
+               Pmat_vec(kcount) = Pmat_vec(kcount) * 2.0D0
             endif
          enddo
          enddo
@@ -167,18 +159,18 @@ subroutine drive(ng2, ngDyn, ngdDyn, iostat)
       call g2g_timer_stop('restart_read')
    endif
    ! End of restart.
-
+   
    ! G2G and AINT(GPU) Initializations
-   call g2g_parameter_init(NORM, natom, natom, ngDyn, rqm, Rm2, Iz, Nr, Nr2,  &
-                           Nuc, M, ncont, nshell, c, a, RMM, M5, M3, rhoalpha,&
-                           rhobeta, NCO, OPEN, Nunp, 0, Iexch, e_, e_2, e3,   &
-                           wang, wang2, wang3, use_libxc, ex_functional_id,   &
-                           ec_functional_id)
+   call g2g_parameter_init(NORM, natom, natom, M, rqm, Rm2, Iz, Nr, Nr2,  &
+                           Nuc, M, ncont, nshell, c, a, Pmat_vec, Fmat_vec,   &
+                           Fmat_vec2, rhoalpha, rhobeta, NCO, OPEN, Nunp, 0,  &
+                           Iexch, e_, e_2, e3, wang, wang2, wang3, use_libxc, &
+                           ex_functional_id, ec_functional_id)
    call summon_ghosts(Iz, natom, verbose)
 
-   if (gpu_level .ne. 0) call aint_parameter_init(Md, ncontd, nshelld, cd, ad,&
-                                                  Nucd, af, RMM, M9, M11, STR,&
-                                                  FAC, rmax, Iz, gpu_level)
+   if (gpu_level .ne. 0) call aint_parameter_init(Md, ncontd, nshelld, cd, ad, &
+                                                  Nucd, af, Ginv_vec, Hmat_vec,&
+                                                  STR, FAC, rmax, Iz, gpu_level)
   ! TO-DO: Relocate this.
   allocate(X(M , 4*M))
   npas = 0

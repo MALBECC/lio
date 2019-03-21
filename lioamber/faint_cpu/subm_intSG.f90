@@ -38,7 +38,7 @@ subroutine intSG(ff, wgt_rho, r, d, natom, ntatom)
    double precision, intent(inout) :: ff(natom,3)
 
    integer           :: ifunct, jfunct, en_wgt_ind, nci, ncj, lk, lij, l1, l2, &
-                        l3, l4, l5, l12, l34, ns, np, nd, M2, M15, ll(3)
+                        l3, l4, l5, l12, l34, ns, np, nd, M2, ll(3)
 
    double precision  :: ovlap, fsp, sq3, ccoef, rexp, Zij, Z2, fs, fd, f1, f2, &
                         ti, tj, te, t0, t1, t2, t4, t5, t10, t11, t12, t13,    &
@@ -55,9 +55,7 @@ subroutine intSG(ff, wgt_rho, r, d, natom, ntatom)
    enddo
 
    M2 = 2 * M
-   ! Energy weighted density matrix
-   M15 = 1 + 2 * (M * (M +1)) + Md * (Md +1) + M
-
+   
    ! (s|s)
    do ifunct = 1, ns
    do jfunct = 1, ifunct

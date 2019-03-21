@@ -32,7 +32,8 @@
 c Everything is dimensioned for 2 basis, normal and density
 c ncf, lt,at,ct parameters for atomic basis sets
 
-       real*8, dimension (:), ALLOCATABLE :: RMM
+      real*8, dimension (:), ALLOCATABLE :: Fmat_vec, Fmat_vec2,
+     > Pmat_vec, Hmat_vec, Ginv_vec, Gmat_vec, Pmat_en_wgt
        real*8, dimension (:), ALLOCATABLE :: rhoalpha,rhobeta
        real*8, dimension (:,:), ALLOCATABLE :: X
 
@@ -94,10 +95,6 @@ c necessary)
       Logical :: Dbug
       integer :: timers
 
-!-Arrays that going to reemplaze RMM
-      real*8, dimension (:), ALLOCATABLE :: Fock_Hcore !contains core-Hamiltonian matrix, reemplaze RMM(M11)
-      real*8, dimension (:), ALLOCATABLE :: Fock_Overlap ! reemplaze RMM(M5)
-      real*8, dimension (:), ALLOCATABLE :: P_density ! reemplaze RMM(M1)
       real*8, dimension (:), ALLOCATABLE :: MO_coef_at, MO_coef_at_b
 !Geometry optimizations
       logical :: steep !enables steepest decend algorithm

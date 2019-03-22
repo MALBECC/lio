@@ -38,56 +38,41 @@
    &  \textit{default = .true. }
    \\*\textit{logical}
    & If true, looks for the internal basis indicated in
-   variables $basis\_set$ and $fitting\_set$ (defaults
-   are $'DZVP'$ and$'DZVP Coulomb Fitting'$.\\*
-   & If false, an external basis file must be provided in
-   the keyword $basis$.\\* \\
+   variables $basis\_set$ and $fitting\_set$; if false, 
+   an external basis file must be provided. \\* \\
 
    \textbf{basis\_set}
    &  \textit{default = 'DZVP'}
    \\*\textit{character*20}
-   & Name of the basis set used in the calculation when
-   $int\_basis$ is set to true.\\* \\
+   & Name of the basis set used, or the name of the
+   custom basis set file.\\* \\
 
    \textbf{fitting\_set}
    &  \textit{default = 'DZVP Coulomb Fitting'}
-   \\*\textit{character*20}
-   & Name of the fitting set used in the calculation when
-   $int\_basis$ is set to true.\\* \\
-
-   \textbf{basis}
-   &  \textit{default = 'basis'}
-   \\*\textit{character*20}
-   & Name of the input file containing the information
-   of the basis set (useful for custom or mixed basis
-   sets).\\*
-   & Please check the formats section for further
-   information.\\* \\
+   \\*\textit{character*100}
+   & Name of the fitting set used in the calculation.\\* \\
 
    \textbf{n\_ghosts}
    &  \textit{default = 0}
    \\*\textit{integer}
-   & TODO: Number of ghost atoms.\\* \\
+   & Number of ghost atoms.\\* \\
 
    \textbf{ghost\_atoms}
    &  \textit{default = 0}
    \\*\textit{integer}
-   & TODO: ?\\* \\
+   & A list containing the ghost atom indeces. \\* \\
 
    \textbf{rmax}
    &  \textit{default = 16.0d0}
    \\*\textit{double precision}
-   & Maximum exponent in 3-center integrals. If exponent
-   is greater than $rmax$, the current term is ignored.
+   & Maximum exponent in 3-center integrals.
    \\* \\
 
    \textbf{rmaxs}
    &  \textit{default = 5.0d0}
    \\*\textit{double precision}
-   & If the exponent in 3-center integral is within
-   $rmax$ and $rmaxs$, calculation is performed using
-    single precision.\\*
-   & This is ignored when using the AINT module. \\* \\
+   & Maximum exponent for 3-center integrals in single
+   precision.\\* \\
 
    \textbf{iGrid}
    &  \textit{default = 2}

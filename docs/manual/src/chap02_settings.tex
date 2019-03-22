@@ -95,8 +95,26 @@ that you might be interested in using.
       \\
       print\_coeffs   & $ logical = .false. $\\
       & Prints coefficients and energies for each molecular orbital. \\
+      \\      
+      VCInp & $ logical = .false. $ \\
+      & Reads a MO coefficient restart from frestartin.\\
       \\
-
+      restart\_freq & $ integer = 1 $ \\
+      & Writes a MO coefficient restart every restart\_freq iterations into 
+      frestart.\\
+      \\
+      frestart & $ char*20 = 'restart.out' $ \\
+      & Name of the output density or coefficient restart file. \\
+      \\
+      frestartin & $ char*20 = 'restart.in' $ \\
+      & Name of the input density or coefficient restart file. \\
+      \\
+      rst\_dens & $ integer = 0 $ \\
+      & When rst\_dens >= 1, the restart read by VCInp must be a density
+      matrix (not coefficient matrix) restart. Likewise, when rst\_dens = 2,
+      the restart written with restart\_freq is a density matrix restart
+      (instead of a coefficient matrix restart). \\
+      \\
    \end{longtable}
 \end{Spacing}
 

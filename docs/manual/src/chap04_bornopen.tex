@@ -1,70 +1,69 @@
 \chapter{Ground State Calculations}
 
 
-\section{Single-point and BO-MD}
+\section{Single-point and Born-Oppenheimer Molecular Dynamics}
 
 Single-point calculations consist in finding the ground state density that minimizes the energy
 for a given nuclei distribution. Once found, the program can also calculate the force field of
-that density for the MD-engine to move the nuclei. This method of 
+that density for the MD-engine to move the nuclei.
 
-    \subsection{Relevant Keywords}
+\begin{Spacing}{1.0}
+  \begin{longtable}{ p{.25\textwidth} p{.70\textwidth} }
+  
+      \toprule
+      \textbf{Variable} & Description \\*
+      \midrule \\*
+      \endhead
+  
+      \bottomrule
+      \caption{BO-MD useful settings.}
+      \endfoot
+        initial\_guess & $ integer = 0 $ \\
+        & Selects the method for calculating a starting guess. This is 
+        only useful for the first MD step, since after that the starting
+        guess is the electron density from the previous step.\\
+        \\
+        nMax & $ integer = 100 $ \\
+        & Maximum number of SCF iteration steps.\\
+        \\
+        told  & $ double \Hquad precision = 1.0d-6 $ \\
+        & Criterium for density matrix convergence. \\
+        \\
+        etold & $ double \Hquad precision = 1.0d0 $ \\
+        & Criterium for energy convergence. \\
+        \\
+        DIIS  & $ logical = .true. $\\
+        & Uses DIIS algorithm for convergence. \\
+        \\
+        hybrid\_converg & $ logical = .false. $\\
+        & Uses the hybrid convergence algorithm. \\
+        \\
+        good\_cut & $ double \Hquad precision = 1.0d-3 $\\
+        & Sets the threshold to start DIIS when activating hybrid convergence. \\
+        \\
+        VCInp & $ logical = .false. $ \\
+        & Reads a MO coefficient restart.\\
+        \\
+        restart\_freq & $ integer = 1 $ \\
+        & Writes a MO coefficient restart every restart\_freq steps.\\
+        \\
+        frestart & $ char*20 = 'restart.out' $ \\
+        & Name of the output restart file. \\
+        \\
+        frestartin & $ char*20 = 'restart.in' $ \\
+        & Name of the input restart file. \\
+        \\
+        rst\_dens & $ integer = 0 $ \\
+        & rst\_dens = 1 reads a density matrix restart, while rst\_dens = 2
+        both reads and writes a density matrix restart. \\
+        \\
+        basis\_set & $ char*20 = 'DZVP' $ \\
+        & Name of the basis set used in the calculation.\\
+        \\
 
-    \begin{table}
-        \begin{center}
-        \begin{tabular}{l l}
-
-           \toprule
-           \textbf{Variable}    & \textbf{Description} ( $ Type = Default $ ) \\
-           \midrule
-
-           timedep & $ integer = 0 $ \\
-           & Determines how the electronic structure will be calculated.\\
-           & A value of 0 indicates that an SCF will be performed with each call \\
-           & to LIO. Other values are reserved for electron dynamics. \\ \\
-           told  & $ double \Hquad precision = 1.0d-6 $ \\
-           & Criteria for the maximal square deviation of the density matrix to \\
-           & consider that the convergence has been achieved. \\
-           \\
-           etold & $ double \Hquad precision = 1.0d0 $ \\
-           & Criteria for the maximal energy difference to consider that the con-\\
-           & -vergence has been achieved. \\
-           & \\
-           \\
-           DIIS  & $ logical = .true. $\\
-           & \\
-           \\
-           nDIIS & $ integer = 30 $ \\
-           & \\
-           \\
-           gold & $ double \Hquad precision = 1.0d+1 $\\
-           & Determines the weight of the previous density matrix in the linear \\
-           & combination with the new one when using the damping convergence \\
-           & method ( DIIS = .false. / hybrid\_converg ).\\
-           \\
-           hybrid\_converg & $ logical = .false. $\\
-           & \\
-           \\
-           good\_cut & $ double \Hquad precision = 1.0d-3 $\\
-           & \\
-           \\
-           VCInp & $ logical = .false. $ \\
-           & Reads a MO coefficient restart.\\
-           \\
-           restart\_freq & $ integer = 1 $ \\
-           & Writes a MO coefficient restart every restart\_freq iterations.\\
-           \\
-           frestart & $ char*20 = 'restart.out' $ \\
-           & Output restart file. \\
-           \\
-           frestartin & $ char*20 = 'restart.in' $ \\
-           & Input restart file. \\
-           \\
-           \bottomrule
-         \end{tabular}
-         \end{center}
-        \label{lio.fileio.var}
-    \end{table}
-
+  \end{longtable}
+\end{Spacing}
+    
 
 \section{Geometry optimizations}
 
@@ -83,7 +82,7 @@ Geometry optimizations or energy minimization is the process of finding an atomi
     
     In a linear search algorithm the system scans the energy as function of $\lambda$ and predicts the best value of $\lambda$ to move the system in the gradient direction.
     
-    \begin{table}  [H]
+    \begin{table}  [h!]
       \begin{center}
       \begin{tabular}{ c c }
 

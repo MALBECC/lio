@@ -71,10 +71,8 @@
    \textbf{rst\_dens}
    &  \textit{default = 0}
    \\*\textit{integer}
-   & Restart option for how to write/read restart files.\\*
-   &     0 = reads/writes coefficients and builds density.\\*
-   &     1 = reads density but writes coefficients.\\*
-   &     2 = reads and writes density.\\*
+   & rst\_dens = 1 reads a density matrix restart, while rst\_dens = 2
+        both reads and writes a density matrix restart. \\
    \\
 
    \textbf{frestartin}
@@ -96,8 +94,6 @@
    & Indicates the frequency for writing the restart: it will
    do so every set number of calls to LIO (that is, number of
    steps of nuclear moves performed by the MD-engine.\\* \\
-
-
 
 \end{longtable}
 \end{Spacing}

@@ -1019,7 +1019,7 @@ subroutine td_bc_fock_cu(M_in,M, MM, Fmat, fock_op, devPtrX, natom, nshell, &
    integer, intent(in)  :: natom
    integer, intent(in)  :: ncont(M)
    integer, intent(in)  :: istep
-   integer, intent(in)  :: nshell (0:3)
+   integer, intent(in)  :: nshell(0:3)
 
    call g2g_timer_start('fock')
    call spunpack('L', M, Fmat, fock_0)
@@ -1146,7 +1146,7 @@ subroutine td_magnus_cu(M, dim3, OPEN,fock_aop, F1a, F1b, rho_aop, rhonew,     &
    integer  , intent(in)         :: M_in, dim3
    integer*8, intent(in)         :: devPtrX, devPtrXc, devPtrY
    real*8   , intent(in)         :: dt_magnus, factorial(NBCH), time
-   integer  , intent(in)         :: nshell (0:3), ncont(M)
+   integer  , intent(in)         :: nshell(0:3), ncont(M)
    real*8   , intent(inout)      :: F1a(M_in,M_in,dim3), F1b(M_in,M_in,dim3),  &
                                     overlap(:,:), sqsm(M,M)
 #ifdef TD_SIMPLE
@@ -1252,7 +1252,7 @@ subroutine td_bc_fock(M_in, M, MM, Fmat, fock_op, Xmm, natom, nshell,ncont,    &
    integer, intent(in)  :: natom
    integer, intent(in)  :: ncont(M)
    integer, intent(in)  :: istep
-   integer, intent(in)  :: nshell (0:3)
+   integer, intent(in)  :: nshell(0:3)
    real*8, intent(in)   :: time
 
    allocate(fock(M_in,M_in),Xtemp(M_in,M_in),fock_0(M,M))
@@ -1390,7 +1390,7 @@ subroutine td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew,       &
    real*8   , intent(in)      :: Xmat(M_in, M_in), Ymat(M_in,M_in)
    real*8   , intent(inout)   :: F1a(M_in,M_in, dim3), F1b(M_in,M_in, dim3),   &
                                  overlap(:,:), sqsm(M,M)
-   integer, intent(in)        :: nshell (0:4)
+   integer, intent(in)        :: nshell(0:3)
    integer, intent(in)        :: ncont(M)
 #ifdef TD_SIMPLE
    complex*8 , intent(inout)  :: rhonew(M_in,M_in,dim3)

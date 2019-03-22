@@ -113,12 +113,13 @@ subroutine lowdin_calc(M, N, rhomat, sqsmat, atomorb, atomicq)
 
     do k=1, M
         natom=atomorb(k)
+        newterm = 0
         do i=1, M
             do j=1, M
-                newterm = sqsmat(k, i) * rhomat(i, j) * sqsmat(j, k)
-                atomicq(natom) = atomicq(natom) - newterm
+                newterm = newterm + sqsmat(k, i) * rhomat(i, j) * sqsmat(j, k)
             enddo
         enddo
+        atomicq(natom) = atomicq(natom) - newterm
     enddo
 
     return

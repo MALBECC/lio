@@ -7,30 +7,218 @@ These will be necessary or useful for any of the features of the code
 that you might be interested in using.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{System Description}
+\section{General System Description}
 
-%\keywordtable{System Description}
-%{natom, nsol, charge, open, nunp, fCoord}
+\begin{Spacing}{1.0}
+   \begin{longtable}{ p{.25\textwidth} p{.70\textwidth} }
+   
+      \toprule
+      \textbf{Variable} & Description \\*
+      \midrule \\*
+      \endhead
+   
+      \bottomrule
+      \caption{General setup}
+      \endfoot
+
+       natom  & $ integer = 0 $ \\
+       & Sets the number of atoms only in the QM region. This is ignored when
+       calling LIO from another MM engine.\\
+       \\
+       nsol   & $ integer = 0 $ \\
+       & Sets the number of "solvent" atoms, meaning atoms in the MM region. 
+       This is also ignored when calling LIO externally. \\
+       \\
+       charge & $ integer = 0 $ \\
+       & Sets the total charge for the QM region. \\
+       \\
+       OPEN   & $ logical = .false. $\\
+       & Indicates whether an open-shell calculation should be performed.\\
+       \\
+       nUnp   & $ integer = 0 $ \\
+       & Indicates the number of unpaired electrons for an open-shell calculation, 
+       in a closed-shell calculation this variable is ignored. Keep in mind that 
+       the number of unpaired electrons is NOT the multiplicity, rather nUnp = Mult+1.\\
+       \\
+
+   \end{longtable}
+\end{Spacing}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Common Inputs and Outputs}
+
+\begin{Spacing}{1.0}
+   \begin{longtable}{ p{.25\textwidth} p{.70\textwidth} }
+   
+      \toprule
+      \textbf{Variable} & Description \\*
+      \midrule \\*
+      \endhead
+   
+      \bottomrule
+      \caption{Common inputs and outputs}
+      \endfoot
+
+      style  & $ logical = .false. $ \\
+      & Activates a more stylish version of the output. \\
+      \\
+      verbose & $ integer = 0 $ \\
+      & Sets verbose level for output. \\
+      &     0 = Nothing is printed save for a small LIO start message.\\
+      &     1 = only the input namelist and the final convergence results \\
+      &         are printed.\\
+      &     2 = information for each iteration is added.\\
+      &     3 = GPU module information is added.\\
+      &     4 = additional miscellaneous information is printed.\\
+      \\
+      writeXYZ & $ logical = .false. $\\
+      & Writes and xyz file containing the QM region, using the filename
+      specified in fcoord. This file is written in each of the MD steps 
+      when LIO is used with AMBER/GROMACS/HYBRID. \\
+      \\
+      fCoord & $ character*20 = 'qm.xyz' $\\
+      & Output file containing the QM region. \\
+      \\
+      timers & $ integer = 0 $ \\
+      & Sets the timer level for benchmarking and profiling. \\
+      &     0 = no timers. \\
+      &     1 = only timers in certain subroutines. \\
+      &     2 = full timer summary. \\
+      \\
+      dBug   & $ logical = .false. $\\
+      & Checks for NaNs in Fock and Rho matrices.\\
+      \\
+      gaussian\_convert & $ logical = .false. $ \\
+      & Reads an electron density from Gaussian09 as starting guess. 
+      This feature is still experimental. \\
+      \\
+      print\_coeffs   & $ logical = .false. $\\
+      & Prints coefficients and energies for each molecular orbital. \\
+      \\
+
+   \end{longtable}
+\end{Spacing}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Properties Calculations}
 
-%\keywordtable{Properties}
-%{output, style, writexyz, verbose,
-%timers, dbug, writeDens, writeForces, dipole,
-%mulliken, lowdin, fukui, gaussian_convert,
-%print_coeffs}
 
+\begin{Spacing}{1.0}
+   \begin{longtable}{ p{.25\textwidth} p{.70\textwidth} }
+   
+      \toprule
+      \textbf{Variable} & Description \\*
+      \midrule \\*
+      \endhead
+   
+      \bottomrule
+      \caption{Common inputs and outputs}
+      \endfoot
+
+      writeForces  & $ logical = .false. $ \\
+      & Performs forces calculation and prints the result to a file named
+      "forces". \\
+      \\
+      dipole & $ logical = .false. $ \\
+      & Performs dipole calculation and prints the result to a file named
+      "dipole". \\
+      \\
+      mulliken & $ logical = .false. $ \\
+      & Performs a Mulliken population analysis and outputs the result to
+      a file called "mulliken".\\
+      lowdin & $ logical = .false. $ \\
+      & Performs a Lowdin population analysis and outputs the result to
+      a file called "mulliken".\\
+      fukui & $ logical = .false. $ \\
+      & Calculates the condensed-to-atoms Fukui function for the system, 
+      calculating the spin-polarized version in open-shell systems.\\
+   \end{longtable}
+\end{Spacing}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{GPU Options}
 
-%\keywordtable{GPU Options}
-%{gpu_level, max_function_exponent,
-%little_cube_size, min_points_per_cube,
-%assign_all_functions, sphere_radius,
-%remove_zero_weights, energy_all_iterations,
-%free_global_memory}
+These options affect the calculations in the GPU module. For the exchange
+correlation integrals, the integration grid is separated into cubes and spheres,
+with the smaller cubes (less points per cube) being calculated in CPU while the
+rest is calculated in GPU. Most of these options should be tweaked for optimal
+performance in a given system.
 
+\begin{Spacing}{1.0}
+   \begin{longtable}{ p{.35\textwidth} p{.60\textwidth} }
+   
+      \toprule
+      \textbf{Variable} & Description \\*
+      \midrule \\*
+      \endhead
+   
+      \bottomrule
+      \caption{GPU Module Options}
+      \endfoot
+   
+      \textbf{gpu\_level}
+      &  \textit{default = 4}
+      \\*\textit{integer}
+      & Determines which calculations are performed by the GPU, only
+      available when compiled with cuda > 0.\\*
+      &     0/1 = only exchange-correlation integrals.\\
+      &     2 = adds QM/MM interaction energies and gradients.\\
+      &     3 = adds Coulomb energies and gradients.\\
+      &     4 = adds nuclear attraction energies and gradients.\\
+      &     5 = adds Coulomb basis fitting energies and gradients.\\
+      \\
+   
+      \textbf{max\_function\_exponent}
+      &  \textit{default = 10}
+      \\*\textit{integer}
+      & Ignores functions with $\lvert exponent \rvert > 
+      max\_function\_exponent$. This is only for the exchange-correlation
+      calculations.\\* \\
+   
+      \textbf{little\_cube\_size}
+      &  \textit{default = 8.0d0}
+      \\*\textit{double precision}
+      & Small cube-type point group size (in Angstrom).\\* \\
+   
+      \textbf{min\_points\_per\_cube}
+      &  \textit{default = 1}
+      \\*\textit{integer}
+      & Minimum number of grid points in a cube.\\* \\
+   
+      \textbf{assign\_all\_functions}
+      &  \textit{default = .false. }
+      \\*\textit{logical}
+      & Calculate \textbf{all} functions (ignores $max\_function\_exponent$).
+      This is intended only as a debug option and its usage is not recommended.\\* \\
+   
+      \textbf{sphere\_radius}
+      &  \textit{default = 0.6d0}
+      \\*\textit{double precision}
+      & Radius of the sphere-type point groups. 0 means there are no sphere-type
+      groups, 1 means all points are contained in sphere-type groups.\\* \\
+   
+      \textbf{remove\_zero\_weights}
+      &  \textit{default = .true. }
+      \\*\textit{logical}
+      & Discard functions for those whose weight is zero
+      (.false. option only remains as a debug option).
+      \\* \\
+   
+      \textbf{energy\_all\_iterations}
+      &  \textit{default = .false. }
+      \\*\textit{logical}
+      & Calculate Exc energy in all SCF iterations. Usually, XC energy is only
+      calculated in the final step in order to accelerate calculations. \\* \\
+   
+      \textbf{free\_global\_memory}
+      &  \textit{default = 0.0d0}
+      \\*\textit{double precision}
+      & Fraction of global GPU memory available for the calculation
+      (1 means 100\%).\\* \\
+   
+   
+   \end{longtable}
+   \end{Spacing}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

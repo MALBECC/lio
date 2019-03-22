@@ -15,8 +15,7 @@
    &  \textit{default = 4}
    \\*\textit{integer}
    & Determines which calculations are performed by
-   the GPU.\\*
-   &     0 = none.\\* \\
+   the GPU. (0 = only XC, 5 = everything).\\*\\
 
    \textbf{max\_function\_exponent}
    &  \textit{default = 10}
@@ -43,15 +42,12 @@
    \textbf{sphere\_radius}
    &  \textit{default = 0.6d0}
    \\*\textit{double precision}
-   & Radius of the sphere-type point groups. 0 means
-   there are no sphere-type groups, 1 means all points
-   are contained in sphere-type groups.\\* \\
+   & Proportion of points contained in sphere-type groups (from 0 to 1).\\* \\
 
    \textbf{remove\_zero\_weights}
    &  \textit{default = .true. }
    \\*\textit{logical}
-   & Discard functions for those whose weight is zero
-   (.false. option only remains as a debug option).
+   & Discard functions for those whose weight is zero.
    \\* \\
 
    \textbf{energy\_all\_iterations}
@@ -64,7 +60,6 @@
    \\*\textit{double precision}
    & Fraction of global GPU memory available for the
    calculation (1 means 100\%).\\* \\
-
 
 \end{longtable}
 \end{Spacing}

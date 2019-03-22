@@ -14,14 +14,12 @@
    \textbf{natom}
    &  \textit{default = 0 }
    \\*\textit{integer}
-   & Number of QM atoms in the system (Ignored when
-   running from AMBER/GROMACS).\\* \\
+   & Number of QM atoms in the system.\\* \\
 
    \textbf{nsol}
    &  \textit{default = 0 }
    \\*\textit{integer}
-   & Number of classical atoms in the system (Ignored
-   when running from AMBER/GROMACS).\\* \\
+   & Number of classical atoms in the system.\\* \\
 
    \textbf{charge}
    &  \textit{default = 0 }
@@ -48,47 +46,33 @@
    &  \textit{default = 'qm.xyz' }
    \\*\textit{character*20}
    & Name of the output file for the coordinates of the
-   QM system. Please check the formats section for further
-   information.\\* \\
+   QM system.\\* \\
 
    \textbf{writexyz}
    &  \textit{default = .false. }
    \\*\textit{logical}
-   & Writes an xyz file containing the QM system
-   coordinates at each step of the MD-engine
-   (AMBER/GROMACS/Hybrid).\\* \\
+   & Writes an xyz file containing the QM system.\\* \\
 
    \textbf{verbose}
    &  \textit{default = 1 }
    \\*\textit{integer}
-   & Determines de level of verbosity: that is, the
-   ammount of    information that will be returned by
-   the program.\\*
-   &     0 = only the end results required.\\*
-   &     1 = basic information about how is running:
-   description pending.\\* \\
+   & Determines the amount of information printed, from 
+   0 (nothing) to 5 (everything). \\* \\
 
    \textbf{timers}
    &  \textit{default = 0}
    \\*\textit{integer}
-   & Activates timers for several parts of the code.\\*
-   &     0 = timers are off.\\* \\
+   & Activates timers (=1 or =2).\\* \\
 
    \textbf{dbug}
    &  \textit{default = .false. }
    \\*\textit{logical}
-   & Activates debug options in the code.\\* \\
+   & Checks for NaNs. \\* \\
 
-   \textbf{writeDens}
+    \textbf{writeForces}
    &  \textit{default = .false. }
    \\*\textit{logical}
-   & Writes electronic density to an output file after
-   having finished the calculations.\\* \\
-
-   \textbf{writeForces}
-   &  \textit{default = .false. }
-   \\*\textit{logical}
-   & Writes final forces to output.\\* \\
+   & Writes final forces to an output file.\\* \\
 
    \textbf{dipole}
    &  \textit{default = .false. }
@@ -108,14 +92,12 @@
    \textbf{fukui}
    &  \textit{default = .false. }
    \\*\textit{logical}
-   & Calculates condensed-to-atoms Fukui function (Spin
-   Polarized Fukui in open-shell systems).\\* \\
+   & Calculates atomic Fukui function.\\* \\
 
    \textbf{gaussian\_convert}
    &  \textit{default = .false. }
    \\*\textit{logical}
-   & Reads a density matrix restart as formated by
-   gaussian09.\\* \\
+   & Reads a Gaussian09 density matrix.\\* \\
 
    \textbf{print\_coeffs}
    &  \textit{default = .false. }

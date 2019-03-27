@@ -52,12 +52,12 @@ program liosolo
         case (-1,-4)
             write(*,'(A)')
             write(*,'(A)') "ERROR: &lio namelist is required for LIO-only runs."
-            return
+            stop
         case (-3)
             write(*,'(A)') "ERROR: input file not found."
-            return
+            stop
         case (1:) ! If .ge.1, there was an error in namelists.
-            return
+            stop
         case default
     end select
 

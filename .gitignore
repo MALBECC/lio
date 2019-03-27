@@ -11,6 +11,10 @@
 *.bak
 *~
 liosolo/liosolo
+tools/bdens
+tools/average_spectra
+tools/tdanalyze
+tools/inputgen
 #
 ###########################################################
 ## Ignoring outputs from test runs
@@ -22,17 +26,6 @@ fort.*
 mulliken
 qm.xyz
 salida
-#
-###########################################################
-# What is this?
-###########################################################
-fortran/garcha-g2g
-fortran/garcha
-fortran/hibrido-g2g
-fortran/hibrido
-fortran/obj
-ecuaciones.pdf
-/g2g/nbproject/private/
 #
 ###########################################################
 # Isn't this redundant?

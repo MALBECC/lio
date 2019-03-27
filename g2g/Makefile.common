@@ -10,7 +10,7 @@ ifeq ($(intel),0)
 else
   CXX          := icc
   OPTIMIZECPU  := -Ofast -xHost -no-prec-div -ipo
-  CXXFLAGS     := $(CXXFLAGS) -qopt-report=3
+  CXXFLAGS     := $(CXXFLAGS) -opt-report 3
 endif
 
 # Debug/release configuration

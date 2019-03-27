@@ -53,7 +53,6 @@ program build_dens
 
    deallocate(rho_alpha_a, rho_beta_a, rho_alpha_b, rho_beta_b)
    deallocate(rho_alpha_t, rho_beta_t)
-   return
 contains
 
    ! Reads input options and parameters.

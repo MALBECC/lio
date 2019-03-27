@@ -51,9 +51,11 @@ inputgen.o: $(OBJECTS)
 
 inputgen.x : inputgen.o $(OBJECTS)
 	$(LC) $^ $(LFLAGS) $(LIBS) -o $@
+	cp inputgen.x ../../inputgen
 
 .PHONY: clean
 clean:
 	rm -rf inputgen.x *.o *.mod
+	rm ../../inputgen
 
 ################################################################################

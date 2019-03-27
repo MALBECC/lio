@@ -12,7 +12,9 @@ endif
 tdanalyze:
 	$(FC) -o tdanalyze.x tdanalyze.f90
 	$(FC) -o average_spectra.x average_spectra.f90
+	cp tdanalyze.x ../../tdanalyze
+	cp average_spectra.x ../../average_spectra
 
 clean:
-	rm -rf average_spectra
-	rm -rf tdanalyze
+	rm -rf average_spectra.x ../../average_spectra
+	rm -rf tdanalyze.x ../../tdanalyze

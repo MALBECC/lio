@@ -1,19 +1,19 @@
 ################################################################################
 
-all: inputgen tdanalize
+all: tdanalyze inputgen
 
 
 .PHONY: inputgen
 inputgen:
-	$(MAKE) -C inputgen
+	$(MAKE) -C src/inputgen
 
-.PHONY: tdanalize
-tdanalize:
-	$(MAKE) -C tdanalize
+.PHONY: tdanalyze
+tdanalyze:
+	$(MAKE) -C src/tdanalyze
 
 .PHONY: clean
 clean:
-	$(MAKE) clean -C inputgen
-	$(MAKE) clean -C tdanalize
+	$(MAKE) clean -C src/inputgen
+	$(MAKE) clean -C src/tdanalyze
 
 ################################################################################

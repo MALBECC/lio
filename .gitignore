@@ -69,10 +69,7 @@ test/integration_test/iteration/main_gpu
 ###########################################################
 # Stress test
 ###########################################################
-test/stress_test/0_aguaGPU/*
-test/stress_tess/2_hemoGPU/*
-test/stress_test/5_caffeineGPU/*
-tess/stress_test/9_carotenoGPU/*
+test/tests_engine/*.pyc
 ###########################################################
 # Profiling
 ###########################################################

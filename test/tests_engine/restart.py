@@ -1,0 +1,35 @@
+#!/usr/bin/env python2.7
+import os
+import re
+
+def read_restart(file_in):
+   is_file = os.path.isfile("restart.in")
+   if is_file == False:
+      print "The restart.in file doesn't exist"
+      return -1
+
+   for line in file_in.readlines():
+      m = re.match("\s+VCInp =\s+(\w)",line)
+      if m:
+        rest = "".join(m.group(1))
+        if rest == "T":
+           return 0
+        else:
+           print "The test didn't read restart.in file"
+           return -1
+
+def Check():
+   # Output
+   is_file = os.path.isfile("salida")
+   if is_file == False:
+      print "The salida file is missing"
+      return -1
+
+   f = open("salida","r")
+   
+   error = read_restart(f)
+   if error != 0:
+      print "Test Restart:   ERROR"
+   else:
+      print "Test Restart:   OK"
+

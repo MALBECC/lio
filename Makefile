@@ -23,12 +23,16 @@ g2g:
 tools:
 	$(MAKE) -C tools
 
+.PHONY: check
+check:
+	$(MAKE) check -C test/tests_engine
 
 .PHONY: clean
 clean:
 	$(MAKE) clean -C liosolo
 	$(MAKE) clean -C lioamber
 	$(MAKE) clean -C g2g
+	$(MAKE) clean -C test/tests_engine
 	$(MAKE) clean -C tools
 
 ################################################################################

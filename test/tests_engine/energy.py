@@ -51,7 +51,10 @@ def error(ene,ene_ok):
 
    for num in range(dim1):
       value = abs(ene[num] - ene_ok[num])
-      if value > 1e-4:
+      thre = 1e-2
+      if tipo[num] == "Total energy":
+         thre = 1e-4
+      if value > thre:
          scr = -1
          print "Error in",tipo[num]
          print "Value in salida",ene[num]

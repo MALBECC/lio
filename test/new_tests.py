@@ -16,7 +16,7 @@ def lio_env():
     prev = lioenv["LD_LIBRARY_PATH"]
     dirs = ["../g2g", "../lioamber"]
     lioenv["LD_LIBRARY_PATH"] = ":".join([prev] + [os.path.abspath(p) for p in dirs])
-    lioenv["LIOHOME"] = os.path.abspath("../..")
+    lioenv["LIOHOME"] = os.path.abspath("../")
     return lioenv
 
 

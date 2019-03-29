@@ -13,6 +13,7 @@ module converger_data
 
    real*8, allocatable :: fock_damped(:,:,:)
    real*8, allocatable :: bcoef (:,:)
+   real*8, allocatable :: bcoef_t(:)
    real*8, allocatable :: fockm (:,:,:,:)
    real*8, allocatable :: FP_PFm (:,:,:,:)
    real*8, allocatable :: EMAT2 (:,:,:)

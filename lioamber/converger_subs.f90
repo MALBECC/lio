@@ -7,7 +7,7 @@ contains
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 subroutine converger_init( M_in, ndiis_in, factor_in, do_diis, do_hybrid, OPshell )
-   use converger_data, only: fockm, FP_PFm, conver_criter, fock_damped, &
+   use converger_data, only: fockm, FP_PFm, conver_criter, fock_damped, bcoef_t, &
                              hagodiis, damping_factor, bcoef, ndiis, EMAT2
 
    implicit none
@@ -32,7 +32,8 @@ subroutine converger_init( M_in, ndiis_in, factor_in, do_diis, do_hybrid, OPshel
       if(OPshell) then
          if (.not. allocated(fockm)  ) allocate(fockm (M_in, M_in, ndiis, 2))
          if (.not. allocated(FP_PFm) ) allocate(FP_PFm(M_in, M_in, ndiis, 2))
-         if (.not. allocated(bcoef)  ) allocate(bcoef (ndiis+1, 2) )
+         if (.not. allocated(bcoef)  ) allocate(bcoef(ndiis+1, 2) )
+         if (.not. allocated(bcoef_t)) allocate(bcoef_t(ndiis+1) )
          if (.not.allocated(EMAT2)   ) allocate(EMAT2(ndiis+1,ndiis+1,2))
       else
          if (.not. allocated(fockm) )  allocate(fockm (M_in, M_in, ndiis, 1))
@@ -40,6 +41,11 @@ subroutine converger_init( M_in, ndiis_in, factor_in, do_diis, do_hybrid, OPshel
          if (.not. allocated(bcoef) )  allocate(bcoef (ndiis+1, 1))
          if (.not.allocated(EMAT2) )   allocate(EMAT2(ndiis+1,ndiis+1,1))
       end if
+      fockm   = 0.0D0
+      FP_PFm  = 0.0D0
+      bcoef   = 0.0D0
+      bcoef_t = 0.0D0
+      EMAT2   = 0.0D0
    endif
 
    if(OPshell) then
@@ -57,7 +63,7 @@ end subroutine converger_init
                       Xmat, Ymat, spin)
 #endif
    use converger_data  , only: damping_factor, hagodiis, fockm, FP_PFm, ndiis, &
-                               fock_damped, bcoef, EMAT2, conver_criter
+                               fock_damped, bcoef, EMAT2, conver_criter, bcoef_t
    use typedef_operator, only: operator
    use fileio_data     , only: verbose
    use linear_algebra  , only: matmuldiag
@@ -92,6 +98,9 @@ end subroutine converger_init
 ! BASE CHANGE HAPPENS INSIDE OF FOCK_COMMUTS
 
    allocate(fock00(M_in,M_in), fock(M_in,M_in), rho(M_in,M_in), work(1000))
+   fock00 = 0.0D0
+   fock   = 0.0D0
+   rho    = 0.0D0
 
    ! Saving rho and the first fock AO
    call rho_op%Gets_data_AO(rho)
@@ -101,6 +110,10 @@ end subroutine converger_init
    if (conver_criter /= 1) then
       allocate( suma(M_in, M_in), diag1(M_in, M_in) )
       allocate( scratch1(M_in, M_in), scratch2(M_in, M_in) )
+      suma = 0.0D0
+      diag1 = 0.0D0
+      scratch1 = 0.0D0
+      scratch2 = 0.0D0
 
 
 ! If DIIS is turned on, update fockm with the current transformed F' (into ON
@@ -141,10 +154,9 @@ end subroutine converger_init
 
       ! Damping until good enough, diis afterwards
       case(3)
-         if (good < good_cut) then
-            if ( (.not. hagodiis) .and. (verbose .gt. 3) ) then
-               write(6,'(A,I4)') "  Changing to DIIS at step: ", niter
-            endif
+         if ((good < good_cut) .and. (niter > 2)) then
+            if ( (.not. hagodiis) .and. (verbose .gt. 3) ) &
+                     write(6,'(A,I4)') "  Changing to DIIS at step: ", niter
             hagodiis=.true.
          endif
 
@@ -158,7 +170,7 @@ end subroutine converger_init
    ! F in fock_damped for next iteration's damping and put F' = X^T * F * X in
    ! fock the newly constructed damped matrix is stored, for next iteration in
    ! fock_damped
-   if (.not.hagodiis) then
+   if (.not. hagodiis) then
       fock = fock00
 
       if (niter > 1) &
@@ -236,17 +248,18 @@ end subroutine converger_init
             bcoef(ii,spin) = 0.0d0
          enddo
          bcoef(ndiist+1,spin) = -1.0d0
+         bcoef_t = bcoef(:,spin)
 
          ! First call to DGELS sets optimal WORK size. Second call solves the
          ! A*X = B (EMAT * Ci = bCoef) problem, with bCoef also storing the
          ! result.
          LWORK = -1
          CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT, &
-                     ndiist+1, bcoef(:,spin), ndiist+1, WORK, LWORK, INFO )
+                     ndiist+1, bcoef_t, ndiist+1, WORK, LWORK, INFO )
 
          LWORK = MIN( 1000, INT( WORK( 1 ) ) )
          CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT, &
-                     ndiist+1, bcoef(:,spin), ndiist+1, WORK, LWORK, INFO )
+                     ndiist+1, bcoef_t, ndiist+1, WORK, LWORK, INFO )
 
          ! Build new Fock as a linear combination of previous steps.
          suma = 0.0D0
@@ -254,7 +267,7 @@ end subroutine converger_init
             kknew = kk + (ndiis - ndiist)
             do ii = 1, M_in
             do jj = 1, M_in
-               suma(ii,jj) = suma(ii,jj) + bcoef(kk,spin) * &
+               suma(ii,jj) = suma(ii,jj) + bcoef_t(kk) * &
                                            fockm(ii,jj,kknew,spin)
             enddo
             enddo

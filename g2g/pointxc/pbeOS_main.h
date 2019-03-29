@@ -62,68 +62,44 @@ __host__ __device__ void pbeOS_main(
    vcpbe_a = (scalar_type)0.0f;
    vcpbe_b = (scalar_type)0.0f;
 
-   // Density Up
-   scalar_type twodens = (scalar_type)2.0f * dens_a;
-   scalar_type twodens2 = twodens * twodens;
-   scalar_type twodens5 = twodens2 * twodens2 * twodens;
-
-   scalar_type flt_minimum = (scalar_type) (100.0 * MIN_PRECISION);
-   if (twodens5 < flt_minimum) {
-     expbe_a = (scalar_type)0.0f;
-     vxpbe_a = (scalar_type)0.0f;
-     small_dens = true;
-   } else {
-     rho13 = cbrt(twodens);
-     fk1 = cbrt((scalar_type)EASYPBE_PI32);
-     fk = fk1 * rho13;
-
-     twofk = (scalar_type)2.0f * fk;
-     twofk2 = twofk * twofk;
-     twofk3 = twofk * twofk2;
-
-     s = ((scalar_type)2.0f * dgrad_a)   / (twodens * twofk);
-     v = ((scalar_type)2.0f * rlap_a)    / (twodens * twofk2);
-     u = ((scalar_type)4.0f * delgrad_a) / (twodens2 * twofk3);
-     pbeOS_exch(twodens, s, u, v, expbe_a, vxpbe_a);
-   }
-
-   // Density Down
-   twodens = (scalar_type)2.0f * dens_b;
-   twodens2 = twodens * twodens;
-   twodens5 = twodens2 * twodens2 * twodens;
-
-   if (twodens5 < flt_minimum) {
-     expbe_a = (scalar_type)0.0f;
-     vxpbe_a = (scalar_type)0.0f;
-     ecpbe   = (scalar_type)0.0f;
-     if (!small_dens) {
-        expbe = expbe_a;
-     }
-     return;
-   } else {
-     rho13 = cbrt((scalar_type)twodens);
-     fk1 = cbrt((scalar_type)EASYPBE_PI32);
-     fk = fk1 * rho13;
-
-     twofk = (scalar_type)2.0f * fk;
-     twofk2 = twofk * twofk;
-     twofk3 = twofk * twofk2;
  
-     s = ((scalar_type)2.0f * dgrad_b)   / (twodens * twofk);
-     v = ((scalar_type)2.0f * rlap_b)    / (twodens * twofk2);
-     u = ((scalar_type)4.0f * delgrad_b) / (twodens2 * twofk3);
-     pbeOS_exch(twodens, s, u, v, expbe_b, vxpbe_b);
-   }
+  scalar_type twodens = (scalar_type)2.0f * dens_a;
+  scalar_type twodens2 = twodens * twodens;
 
-   if (small_dens) {
-      expbe = expbe_b;
-      ecpbe = (scalar_type)0.0f;
-      return;
-   }
+  rho13 = cbrt(twodens);
+  fk1 = cbrt((scalar_type)EASYPBE_PI32);
+  fk = fk1 * rho13;
 
-   // Construct total density and contribution to Ex
-   scalar_type rho = dens_a + dens_b;
-   expbe = (expbe_a * dens_a + expbe_b * dens_b) / rho;
+  twofk = (scalar_type)2.0f * fk;
+  twofk2 = twofk * twofk;
+  twofk3 = twofk * twofk2;
+
+  s = ((scalar_type)2.0f * dgrad_a)   / (twodens * twofk);
+  v = ((scalar_type)2.0f * rlap_a)    / (twodens * twofk2);
+  u = ((scalar_type)4.0f * delgrad_a) / (twodens2 * twofk3);
+  pbeOS_exch(twodens, s, u, v, expbe_a, vxpbe_a);
+
+
+  // Density Down
+  twodens = (scalar_type)2.0f * dens_b;
+  twodens2 = twodens * twodens;
+
+  rho13 = cbrt((scalar_type)twodens);
+  fk1 = cbrt((scalar_type)EASYPBE_PI32);
+  fk = fk1 * rho13;
+
+  twofk = (scalar_type)2.0f * fk;
+  twofk2 = twofk * twofk;
+  twofk3 = twofk * twofk2;
+
+  s = ((scalar_type)2.0f * dgrad_b)   / (twodens * twofk);
+  v = ((scalar_type)2.0f * rlap_b)    / (twodens * twofk2);
+  u = ((scalar_type)4.0f * delgrad_b) / (twodens2 * twofk3);
+  pbeOS_exch(twodens, s, u, v, expbe_b, vxpbe_b);
+
+  // Construct total density and contribution to Ex
+  scalar_type rho = dens_a + dens_b;
+  expbe = (expbe_a * dens_a + expbe_b * dens_b) / rho;
 
   /*-------------------------------------------------------------//
   // PBE correlation

@@ -99,7 +99,7 @@ void PointGroupCPU<scalar_type>::solve_closed(
         }
         partial_density += Fi * w;
       }
-      scalar_type exc = 0, corr = 0, y2a = 0;
+      scalar_type exc = 0.0, corr = 0.0, y2a = 0.0;
 
       calc_ldaCS_in(partial_density, exc, corr, y2a, iexch);
 
@@ -132,10 +132,10 @@ void PointGroupCPU<scalar_type>::solve_closed(
       const scalar_type* hizv = hIZ.row(point);
 
       for (int i = 0; i < group_m; i++) {
-        scalar_type w = 0;
-        scalar_type w3xc = 0, w3yc = 0, w3zc = 0;
-        scalar_type ww1xc = 0, ww1yc = 0, ww1zc = 0;
-        scalar_type ww2xc = 0, ww2yc = 0, ww2zc = 0;
+        scalar_type w = 0.0;
+        scalar_type ww1xc = 0.0, ww1yc = 0.0, ww1zc = 0.0;
+        scalar_type ww2xc = 0.0, ww2yc = 0.0, ww2zc = 0.0;
+        scalar_type w3xc = 0.0, w3yc = 0.0, w3zc = 0.0;
 
         const scalar_type* rm = rmm_input.row(i);
 #if INTEL_COMP
@@ -176,7 +176,7 @@ void PointGroupCPU<scalar_type>::solve_closed(
       }
 
       /** energy / potential **/
-      scalar_type exc = 0, corr = 0, y2a = 0;
+      scalar_type exc = 0.0, corr = 0.0, y2a = 0.0;
       const vec_type3 dxyz(tdx, tdy, tdz);
       const vec_type3 dd1(tdd1x, tdd1y, tdd1z);
       const vec_type3 dd2(tdd2x, tdd2y, tdd2z);
@@ -224,7 +224,7 @@ void PointGroupCPU<scalar_type>::solve_closed(
       for (int i = 0, ii = 0; i < this->total_functions_simple(); i++) {
         uint nuc = this->func2local_nuc(ii);
         uint inc_i = this->small_function_type(i);
-        scalar_type tddx = 0, tddy = 0, tddz = 0;
+        scalar_type tddx = 0.0, tddy = 0.0, tddz = 0.0;
         for (uint k = 0; k < inc_i; k++, ii++) {
           scalar_type w = 0.0;
           for (uint j = 0; j < group_m; j++) {
@@ -276,7 +276,7 @@ void PointGroupCPU<scalar_type>::solve_closed(
       int bi = this->rmm_bigs[i], row = this->rmm_rows[i],
           col = this->rmm_cols[i];
 
-      double res = 0;
+      double res = 0.0;
       const scalar_type* fvr = function_values_transposed.row(row);
       const scalar_type* fvc = function_values_transposed.row(col);
 
@@ -374,9 +374,9 @@ void PointGroupCPU<scalar_type>::solve_opened(
           tdd2z_b;  // dxy, dxz, dyz
 
       pd_a = tdx_a = tdy_a = tdz_a = tdd1x_a = tdd1y_a = tdd1z_a = tdd2x_a =
-          tdd2y_a = tdd2z_a = 0;
+          tdd2y_a = tdd2z_a = (scalar_type) 0.0;
       pd_b = tdx_b = tdy_b = tdz_b = tdd1x_b = tdd1y_b = tdd1z_b = tdd2x_b =
-          tdd2y_b = tdd2z_b = 0;
+          tdd2y_b = tdd2z_b = (scalar_type) 0.0;
 
       // Evaluated basis functions, derivatives and gradient for the point
       const scalar_type* fv = function_values.row(point);
@@ -467,8 +467,8 @@ void PointGroupCPU<scalar_type>::solve_opened(
       }
 
       /** energy / potential **/
-      scalar_type exc_corr = 0, corr1 = 0, corr2 = 0;
-      scalar_type exc = 0, corr = 0, y2a = 0, y2b = 0;
+      scalar_type exc_corr = 0.0, corr1 = 0.0, corr2 = 0.0;
+      scalar_type exc = 0.0, corr = 0.0, y2a = 0.0, y2b = 0.0;
       const vec_type3 dxyz_a(tdx_a, tdy_a, tdz_a), dxyz_b(tdx_b, tdy_b, tdz_b);
       const vec_type3 dd1_a(tdd1x_a, tdd1y_a, tdd1z_a),
           dd1_b(tdd1x_b, tdd1y_b, tdd1z_b);
@@ -517,8 +517,8 @@ void PointGroupCPU<scalar_type>::solve_opened(
       for (int i = 0, ii = 0; i < this->total_functions_simple(); i++) {
         uint nuc = this->func2local_nuc(ii);
         uint inc_i = this->small_function_type(i);
-        scalar_type tddx_a = 0, tddy_a = 0, tddz_a = 0;
-        scalar_type tddx_b = 0, tddy_b = 0, tddz_b = 0;
+        scalar_type tddx_a = 0.0, tddy_a = 0.0, tddz_a = 0.0;
+        scalar_type tddx_b = 0.0, tddy_b = 0.0, tddz_b = 0.0;
         for (uint k = 0; k < inc_i; k++, ii++) {
           scalar_type w_a = 0.0, w_b = 0.0;
           for (uint j = 0; j < group_m; j++) {
@@ -587,7 +587,7 @@ void PointGroupCPU<scalar_type>::solve_opened(
       int bi = this->rmm_bigs[i], row = this->rmm_rows[i],
           col = this->rmm_cols[i];
 
-      double res_a = 0, res_b = 0;
+      double res_a = 0.0, res_b = 0.0;
       const scalar_type* fvr = function_values_transposed.row(row);
       const scalar_type* fvc = function_values_transposed.row(col);
 

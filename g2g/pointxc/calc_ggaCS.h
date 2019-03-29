@@ -40,15 +40,15 @@ __host__ __device__ void calc_ggaCS(scalar_type dens,
                                     scalar_type& ex, scalar_type& ec,
                                     scalar_type& y2a) {
   // hess1: xx, yy, zz  || hess2: xy, xz, yz
-  const scalar_type MINIMUM_DENSITY_VALUE = 1e-13f;
+  const scalar_type MINIMUM_DENSITY_VALUE = 1e-10;
   if (dens < MINIMUM_DENSITY_VALUE) {
-    ex = ec = 0;
+    ex = ec = (scalar_type) 0.0f;
     return;
   }
 
   scalar_type y = cbrt((scalar_type)dens);  // rho^(1/3)
   scalar_type grad2 = grad.x * grad.x + grad.y * grad.y + grad.z * grad.z;
-  if (grad2 == 0) grad2 = (scalar_type)MIN_PRECISION;
+  if (grad2 < MIN_PRECISION) grad2 = (scalar_type)MIN_PRECISION;
   scalar_type dgrad = sqrt(grad2);
 
   scalar_type d0 = hess1.x + hess1.y + hess1.z;

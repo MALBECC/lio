@@ -56,11 +56,11 @@ subroutine lionml_read(file_unit, extern_stat )
    intern_stat = 0
    read( unit = file_unit, nml = lio, iostat = intern_stat )
    if ( intern_stat /= 0 ) then
-      if (intern_stat == -1) then 
-         write(*,'(A)') "Namelist &lio not found." 
+      if (intern_stat == -1) then
+         write(*,'(A)') "Namelist &lio not found."
          main_nml_found = .false.
          if ( present(extern_stat) ) extern_stat = -1
-      else 
+      else
          write(*,'(A)') &
             "Error found in lio namelist."
          if (verbose > 3) write(*,'(A,I4)') "iostat = ", intern_stat
@@ -83,13 +83,13 @@ subroutine lionml_read(file_unit, extern_stat )
    intern_stat = 0
    read( unit = file_unit, nml = lionml, iostat = intern_stat )
    if ( intern_stat /= 0 ) then
-      if (intern_stat == -1) then 
-         write(*,'(A)') "Namelist &lionml not found." 
+      if (intern_stat == -1) then
+         write(*,'(A)') "Namelist &lionml not found."
          if ( present(extern_stat) ) then
             extern_stat = -2
             if (.not. main_nml_found) extern_stat = -4
          endif
-      else 
+      else
          write(*,'(A)') &
             "Error found in lionml namelist."
          if (verbose > 3) write(*,'(A,I4)') "iostat = ", intern_stat
@@ -173,14 +173,14 @@ subroutine lionml_write_dull()
    write(*,8121) inputs%max_function_exponent, inputs%free_global_memory
    write(*,8122) inputs%sphere_radius, inputs%little_cube_size
    write(*,8123) inputs%min_points_per_cube, inputs%gpu_level
-   write(*,9000) " ! -- Transport and DFTB: -- !"
+   write(*,9000) " ! -- Transport and TBDFT: -- !"
    write(*,8140) inputs%transport_calc, inputs%generate_rho0, &
                  inputs%driving_rate
    write(*,8141) inputs%gate_field, inputs%pop_drive, inputs%save_charge_freq, &
-                 inputs%dftb_calc
+                 inputs%tbdft_calc
    write(*,8142) inputs%MTB, inputs%alfaTB, inputs%betaTB
    write(*,8143) inputs%gammaTB, inputs%Vbias_TB, inputs%start_tdtb
-   write(*,8144) inputs%end_tdtb, inputs%end_bTB, inputs%TBload, inputs%TBsave
+   write(*,8144) inputs%end_tdtb, inputs%end_bTB
    write(*,8145) inputs%nbias
    write(*,9000) " ! -- Ehrenfest: -- !"
    write(*,8160) inputs%ndyn_steps, inputs%edyn_steps, inputs%nullify_forces
@@ -258,16 +258,15 @@ subroutine lionml_write_dull()
             F14.8, ",")
 8122 FORMAT(2x, "sphere_radius = ", F14.8, ", little_cube_size = ", F14.8, ",")
 8123 FORMAT(2x, "min_points_per_cube = ", I5, ", gpu_level = ", I5)
-! Transport and DFTB
+! Transport and TBDFT
 8140 FORMAT(2x, "transport_calc = ", L2, ", generate_rho0 = ", L2, &
             ", driving_rate = ", F14.8, ",")
 8141 FORMAT(2x, "gate_field = ", L2, ", pop_drive = ", I3, &
-            ", save_charge_freq = ", I5, ", DFTB_calc = ", L2, ",")
+            ", save_charge_freq = ", I5, ", TBDFT_calc = ", L2, ",")
 8142 FORMAT(2x, "MTB = ", I5, ", alfaTB = ", F14.8, ", betaTB = ", F14.8, ",")
 8143 FORMAT(2x, "gammaTB = ", F14.8, ", VBias_TB = ", F14.8, ", start_TDTB = ",&
             I5, ",")
-8144 FORMAT(2x, "end_TDTB = ", I5, ", end_BTB = ", I5, ", TBLoad = ", L2, &
-            ", TBSave = ", L2)
+8144 FORMAT(2x, "end_TDTB = ", I5, ", end_BTB = ", I5)
 8145 FORMAT(2x, "nbias=",I5)
 ! Ehrenfest
 8160 FORMAT(2x, "ndyn_steps = ", I6, ", edyn_steps = ", I6, &
@@ -388,17 +387,16 @@ subroutine lionml_write_style()
    write(*,8428) inputs%gpu_level
    write(*,8003)
 
-   ! Transport and DFTB
+   ! Transport and TBDFT
    write(*,8000); write(*,8108); write(*,8002)
    write(*,8450) inputs%transport_calc; write(*,8451) inputs%generate_rho0
    write(*,8452) inputs%driving_rate  ; write(*,8453) inputs%gate_field
    write(*,8454) inputs%pop_drive     ; write(*,8455) inputs%save_charge_freq
-   write(*,8456) inputs%dftb_calc     ; write(*,8457) inputs%MTB
+   write(*,8456) inputs%tbdft_calc    ; write(*,8457) inputs%MTB
    write(*,8458) inputs%alfaTB        ; write(*,8459) inputs%betaTB
    write(*,8460) inputs%gammaTB       ; write(*,8461) inputs%Vbias_TB
    write(*,8462) inputs%start_tdtb    ; write(*,8463) inputs%end_tdtb
-   write(*,8464) inputs%end_bTB       ; write(*,8465) inputs%TBload
-   write(*,8466) inputs%TBsave
+   write(*,8464) inputs%end_bTB
    write(*,8003)
 
    ! Ehrenfest
@@ -442,7 +440,7 @@ subroutine lionml_write_style()
 8105 FORMAT(4x,"║            Minimization and Restraints           ║")
 8106 FORMAT(4x,"║                     CubeGen                      ║")
 8107 FORMAT(4x,"║                   GPU Options                    ║")
-8108 FORMAT(4x,"║                Transport and DFTB                ║")
+8108 FORMAT(4x,"║                Transport and TBDFT                ║")
 8109 FORMAT(4x,"║                Ehrenfest Dynamics                ║")
 8110 FORMAT(4x,"║               Fock Bias Potentials               ║")
 
@@ -552,14 +550,14 @@ subroutine lionml_write_style()
 8426 FORMAT(4x,"║  free_global_memory  ║  ",9x,F14.8,2x,"║")
 8427 FORMAT(4x,"║  sphere_radius       ║  ",9x,F14.8,2x,"║")
 8428 FORMAT(4x,"║  gpu_level           ║  ",18x,I5,2x,"║")
-! Transport and DFTB
+! Transport and TBDFT
 8450 FORMAT(4x,"║  transport_calc      ║  ",21x,L2,2x,"║")
 8451 FORMAT(4x,"║  generate_rho0       ║  ",21x,L2,2x,"║")
 8452 FORMAT(4x,"║  driving_rate        ║  ",9x,F14.8,2x,"║")
 8453 FORMAT(4x,"║  gate_field          ║  ",21x,L2,2x,"║")
 8454 FORMAT(4x,"║  pop_drive           ║  ",20x,I3,2x,"║")
 8455 FORMAT(4x,"║  save_charge_freq    ║  ",18x,I5,2x,"║")
-8456 FORMAT(4x,"║  dftb_calc           ║  ",21x,L2,2x,"║")
+8456 FORMAT(4x,"║  tbdft_calc          ║  ",21x,L2,2x,"║")
 8457 FORMAT(4x,"║  MTB                 ║  ",18x,I5,2x,"║")
 8458 FORMAT(4x,"║  alfaTB              ║  ",9x,F14.8,2x,"║")
 8459 FORMAT(4x,"║  betaTB              ║  ",9x,F14.8,2x,"║")
@@ -568,8 +566,6 @@ subroutine lionml_write_style()
 8462 FORMAT(4x,"║  start_tdtb          ║  ",18x,I5,2x,"║")
 8463 FORMAT(4x,"║  end_tdtb            ║  ",18x,I5,2x,"║")
 8464 FORMAT(4x,"║  end_bTB             ║  ",18x,I5,2x,"║")
-8465 FORMAT(4x,"║  TBload              ║  ",21x,L2,2x,"║")
-8466 FORMAT(4x,"║  TBsave              ║  ",21x,L2,2x,"║")
 ! Ehrenfest
 8500 FORMAT(4x,"║  ndyn_steps          ║  ",17x,I6,2x,"║")
 8501 FORMAT(4x,"║  edyn_steps          ║  ",17x,I6,2x,"║")

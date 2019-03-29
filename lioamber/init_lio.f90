@@ -94,7 +94,7 @@ subroutine lio_defaults()
     cube_orb_file  = "orb.cube"    ; cube_dens_file     = 'dens.cube'   ;
     IGRID          = 2             ; cube_elec          = .false.       ;
     IGRID2         = 2             ; cube_elec_file     = 'field.cube'  ;
-    timers         = 0             ; 
+    timers         = 0             ;
     NUNP           = 0             ; energy_freq        = 1             ;
     cube_sqrt_orb  = .false.       ; MEMO               = .true.        ;
     sol            = .false.       ;
@@ -124,10 +124,12 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     use fileio_data, only: style, verbose
     use basis_data, only: M, Md, basis_set, fitting_set, MM, MMd
     use basis_subs, only: basis_init
+    use tbdft_data, only: MTB, tbdft_calc
 
     implicit none
     integer , intent(in) :: nclatom, natomin, Izin(natomin), callfrom
     integer              :: ierr, ios, iostat
+    integer              :: M_f
 
     if (verbose .gt. 2) then
       write(*,*)
@@ -155,10 +157,14 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     ! NOTES: Ngrid may be set to 0  in the case of Numerical Integration. For  !
     ! large systems, ng2 may result in <0 due to overflow.                     !
     call basis_init(basis_set, fitting_set, natom, Iz, iostat)
+!TBDFT: Updating M for TBDFT calculations
+    M_f = M
+    if (tbdft_calc) M_f = M+2*MTB
+
     if (iostat .gt. 0) then
       stop
       return
-   endif    
+   endif
 
     allocate(d(natom, natom), v(ntatom,3), Em(ntatom), Rm(ntatom))
     allocate(Fmat_vec(MM), Fmat_vec2(MM), Pmat_vec(MM), Hmat_vec(MM), &
@@ -168,8 +174,8 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     if (ecpmode) allocate (Cnorm(M,13))
 
     call g2g_init()
-    allocate(MO_coef_at(M*M))
-    if (OPEN) allocate(MO_coef_at_b(M*M))
+    allocate(MO_coef_at(M_f*M_f))
+    if (OPEN) allocate(MO_coef_at_b(M_f*M_f))
 
     ! Prints chosen options to output.
     call drive(iostat)
@@ -285,7 +291,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
     charge         = charge_i       ;
     if (verbose_i) verbose = 1
 
-    ! Checks if input file exists and writes data to namelist variables. 
+    ! Checks if input file exists and writes data to namelist variables.
     ! Previous options are overwritten.
     inputFile = 'lio.in'
     call read_options(inputFile, ierr)

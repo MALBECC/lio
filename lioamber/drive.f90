@@ -26,6 +26,8 @@ subroutine drive(iostat)
    use math_data   , only: FAC, STR
    use liosubs_math, only: init_math
    use ghost_atoms_subs, only: summon_ghosts
+   use tbdft_data  , only: MTB, tbdft_calc
+
 
    implicit none
    integer, intent(inout) :: iostat
@@ -34,8 +36,9 @@ subroutine drive(iostat)
                                     restart_dens(:,:), restart_adens(:,:),  &
                                     restart_bdens(:,:)
    integer :: NCOa, NCOb
+   integer :: M_f, NCO_f,i0
    integer :: icount, kcount, jcount
-  
+
    ! Calls generator of table for incomplete gamma functions
    call init_math()
    call GRIDLIO()
@@ -54,6 +57,17 @@ subroutine drive(iostat)
    ! Gets the number of occupied orbitals in a closed shell system (or
    ! Spin Up in an open shell system).
    call get_nco(Iz, natom, nco, NUNP, charge, OPEN, iostat)
+
+!TBDFT: Updating M and NCO for TBDFT calculations
+    if (tbdft_calc) then
+       M_f = M+2*MTB
+       NCO_f=NCO+MTB
+       i0 = MTB
+    else
+       M_f = M
+       NCO_f=NCO
+       i0=0
+    end if
 
    ! Allocates and initialises rhoalpha and rhobeta
    if (OPEN) then
@@ -87,20 +101,21 @@ subroutine drive(iostat)
          endif
          deallocate(restart_dens)
       else
-         allocate(restart_dens(M, M), restart_coef(M, NCO))
+         allocate(restart_dens(M, M), restart_coef(M, NCO_f))
          if (.not. OPEN) then
-            call read_coef_restart(restart_coef, restart_dens, M, NCO, 89)
-
+            call read_coef_restart(restart_coef, restart_dens, M, NCO_f, 89)
             kcount = 0
-            do icount = 1, NCO
+            do icount = 1, NCO_f
+               kcount=kcount+i0
             do jcount = 1, M
                kcount = kcount + 1
                MO_coef_at(kcount) = restart_coef(indexii(jcount), icount)
             enddo
+               kcount=kcount+i0
             enddo
          else
-            NCOa = NCO
-            NCOb = NCO + Nunp
+            NCOa = NCO_f
+            NCOb = NCO_f + Nunp
             allocate(restart_coef_b(M, NCOb), restart_adens(M,M), &
                      restart_bdens(M,M))
 
@@ -109,18 +124,22 @@ subroutine drive(iostat)
                                    restart_bdens, M, NCOa, NCOb, 89)
             kcount = 0
             do icount = 1, NCOa
+               kcount=kcount+i0
             do jcount = 1, M
                kcount = kcount + 1
                MO_coef_at(kcount) = restart_coef(indexii(jcount), icount)
             enddo
+               kcount=kcount+i0
             enddo
 
             kcount = 0
             do icount = 1, NCOb
+               kcount=kcount+i0
             do jcount = 1, M
                kcount = kcount + 1
                MO_coef_at_b(kcount) = restart_coef_b(indexii(jcount), icount)
             enddo
+               kcount=kcount+i0
             enddo
             deallocate(restart_coef_b)
          endif
@@ -130,7 +149,7 @@ subroutine drive(iostat)
          do jcount = 1     , M
          do icount = jcount, M
             kcount = kcount + 1
-            Pmat_vec(kcount) = restart_dens(indexii(icount), indexii(jcount))
+            Pmat_vec(kcount) = restart_dens(indexii(icount),indexii(jcount))
             if (icount .ne. jcount) then
                Pmat_vec(kcount) = Pmat_vec(kcount) * 2.0D0
             endif
@@ -142,8 +161,8 @@ subroutine drive(iostat)
             do jcount = 1     , M
             do icount = jcount, M
                kcount = kcount + 1
-               rhoalpha(kcount) = restart_adens(indexii(icount), indexii(jcount))
-               rhobeta(kcount)  = restart_bdens(indexii(icount), indexii(jcount))
+               rhoalpha(kcount) = restart_adens(indexii(icount),indexii(jcount))
+               rhobeta(kcount)  = restart_bdens(indexii(icount),indexii(jcount))
                if (icount .ne. jcount) then
                   rhoalpha(kcount) = rhoalpha(kcount) * 2.0D0
                   rhobeta(kcount)  = rhobeta(kcount)  * 2.0D0
@@ -159,7 +178,7 @@ subroutine drive(iostat)
       call g2g_timer_stop('restart_read')
    endif
    ! End of restart.
-   
+
    ! G2G and AINT(GPU) Initializations
    call g2g_parameter_init(NORM, natom, natom, M, rqm, Rm2, Iz, Nr, Nr2,  &
                            Nuc, M, ncont, nshell, c, a, Pmat_vec, Fmat_vec,   &

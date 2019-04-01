@@ -52,7 +52,15 @@ __host__ __device__ void pbeOS_main(
   //-----------------------------------------------------*/
    scalar_type expbe_a, expbe_b;
    scalar_type rho13, fk1, fk, twodens2, twofk, twofk2, twofk3, s, u, v;
+
+   // The limit 1e-18 is the one set in PBE's original paper, which
+   // works in double precision. For single precision, we take 1e-12
+   // so that rho^3 is still within precision.
+#if FULL_DOUBLE
    const scalar_type MINIMUM_DENSITY_VALUE = (scalar_type) 1e-18;
+#else
+   const scalar_type MINIMUM_DENSITY_VALUE = (scalar_type) 1e-12;
+#endif
 
    // Output initialization
    expbe = (scalar_type)0.0f;

@@ -321,7 +321,7 @@ void g2g_iteration(bool compute_energy, double* fort_energy_ptr,
 #ifdef _DEBUG 
   feenableexcept(FE_INVALID);
   feenableexcept(FE_DIVBYZERO);
-  feenableexcept(FE_UNDERFLOW);
+  //feenableexcept(FE_UNDERFLOW);
   feenableexcept(FE_OVERFLOW);
 #endif
   partition.solve(timers, compute_rmm, lda, compute_forces, compute_energy,
@@ -329,7 +329,7 @@ void g2g_iteration(bool compute_energy, double* fort_energy_ptr,
 #ifdef _DEBUG 
   fedisableexcept(FE_INVALID);
   fedisableexcept(FE_DIVBYZERO);
-  fedisableexcept(FE_UNDERFLOW);
+  //fedisableexcept(FE_UNDERFLOW);
   fedisableexcept(FE_OVERFLOW);
 #endif
 }

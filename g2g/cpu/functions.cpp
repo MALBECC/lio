@@ -66,7 +66,10 @@ void PointGroupCPU<scalar_type>::compute_functions(bool forces, bool gga) {
         scalar_type a = fortran_vars.a_values(global_func, contraction);
         scalar_type c = fortran_vars.c_values(global_func, contraction);
         scalar_type expon = a * dist;
-        if (expon >  100.0f) continue;
+        // e^(-84) results in a number close to 10^(-37), which is the
+        // minimum precision for floats. 70 was chosen in order to take
+        // into account the contribution of c to t0.
+        if (expon >  70.0) continue;
         scalar_type t0 = exp(-expon) * c;
         t += t0;
         if (forces || gga) tg += t0 * a;

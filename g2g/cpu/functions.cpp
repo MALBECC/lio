@@ -59,13 +59,15 @@ void PointGroupCPU<scalar_type>::compute_functions(bool forces, bool gga) {
                         vec_type3(fortran_vars.atom_positions(nuc)));
       scalar_type dist = v.length2();
 
-      scalar_type t = 0, tg = 0, th = 0;
+      scalar_type t = 0.0, tg = 0.0, th = 0.0;
       uint global_func = this->local2global_func[i];
       uint contractions = fortran_vars.contractions(global_func);
       for (uint contraction = 0; contraction < contractions; contraction++) {
         scalar_type a = fortran_vars.a_values(global_func, contraction);
         scalar_type c = fortran_vars.c_values(global_func, contraction);
-        scalar_type t0 = exp(-(a * dist)) * c;
+        scalar_type expon = a * dist;
+        if (expon >  100.0f) continue;
+        scalar_type t0 = exp(-expon) * c;
         t += t0;
         if (forces || gga) tg += t0 * a;
         if (gga) th += t0 * (a * a);

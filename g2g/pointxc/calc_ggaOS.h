@@ -36,7 +36,7 @@ __host__ __device__ void calc_ggaOS(scalar_type dens_a, scalar_type dens_b,
   scalar_type rlap_b    = 0.0f;
   scalar_type dgrad     = 0.0f;
   scalar_type delgrad   = 0.0f;
-  const scalar_type MINIMUM_DENSITY_VALUE = (scalar_type) 1e-10;
+  const scalar_type MINIMUM_DENSITY_VALUE = (scalar_type) 1e-18;
 
   if ((dens_a > MINIMUM_DENSITY_VALUE) || (dens_b > MINIMUM_DENSITY_VALUE)){
     if (Vxc_id == 9) {  // PBE

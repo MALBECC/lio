@@ -22,11 +22,9 @@ template <class scalar_type>
 __host__ __device__ void gcorc1(scalar_type rtrs, scalar_type& gg,
                                 scalar_type& grrs) {
   scalar_type Q0 = -2.0f * GCORC_A0_1 * (1.0f + GCORC_A1_1 * rtrs * rtrs);
-  scalar_type Q1 =
-      2.0f * GCORC_A0_1 * rtrs *
-      (GCORC_B1_1 +
-       rtrs * (GCORC_B2_1 + rtrs * (GCORC_B3_1 + GCORC_B4_1 * rtrs)));
-  scalar_type Q2 = logf(1.0f + 1.0f / Q1);
+  scalar_type Q1 = 2.0f * GCORC_A0_1 * rtrs *
+      (GCORC_B1_1 + rtrs * (GCORC_B2_1 + rtrs * (GCORC_B3_1 + GCORC_B4_1 * rtrs)));
+  scalar_type Q2 = log(1.0f + 1.0f / Q1);
   gg = Q0 * Q2;
   scalar_type Q3 =
       GCORC_A0_1 * (GCORC_B1_1 / rtrs + 2.0f * GCORC_B2_1 +
@@ -48,7 +46,7 @@ __host__ __device__ void gcorc2(scalar_type rtrs, scalar_type& gg,
       2.0f * GCORC_A0_2 * rtrs *
       (GCORC_B1_2 +
        rtrs * (GCORC_B2_2 + rtrs * (GCORC_B3_2 + GCORC_B4_2 * rtrs)));
-  scalar_type Q2 = logf(1.0f + 1.0f / Q1);
+  scalar_type Q2 = log(1.0f + 1.0f / Q1);
   gg = Q0 * Q2;
   scalar_type Q3 =
       GCORC_A0_2 * (GCORC_B1_2 / rtrs + 2.0f * GCORC_B2_2 +
@@ -70,7 +68,7 @@ __host__ __device__ void gcorc3(scalar_type rtrs, scalar_type& gg,
       2.0f * GCORC_A0_3 * rtrs *
       (GCORC_B1_3 +
        rtrs * (GCORC_B2_3 + rtrs * (GCORC_B3_3 + GCORC_B4_3 * rtrs)));
-  scalar_type Q2 = logf(1.0f + 1.0f / Q1);
+  scalar_type Q2 = log(1.0f + 1.0f / Q1);
   gg = Q0 * Q2;
   scalar_type Q3 =
       GCORC_A0_3 * (GCORC_B1_3 / rtrs + 2.0f * GCORC_B2_3 +

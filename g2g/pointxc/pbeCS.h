@@ -33,7 +33,6 @@ __host__ __device__ void pbeCS(scalar_type rho, scalar_type agrad,
                                scalar_type& ecpbe, scalar_type& vcpbe) {
 
   scalar_type rho2 = rho * rho;
-  scalar_type rho5 = rho2*rho2*rho;
   /*----------------------------------//
   // PBE exchange
   //----------------------------------//

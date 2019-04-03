@@ -63,7 +63,7 @@ __host__ __device__ void calc_ldaCS(scalar_type dens, scalar_type& ex,
         vc = (scalar_type)0.0111 * x1 * (scalar_type)0.5;
       } else {
         scalar_type t1 = ((scalar_type)1.0 + x1 * x1 * x1);
-        scalar_type t2 = logf((scalar_type)1.0 + (scalar_type)1.0 / x1);
+        scalar_type t2 = log((scalar_type)1.0 + (scalar_type)1.0 / x1);
         scalar_type t3 = x1 * x1;
         ec = (scalar_type)-0.0333 * (t1 * t2 - t3 + (scalar_type)0.5 * x1 -
                                      (scalar_type)0.33333333333333);
@@ -83,7 +83,7 @@ __host__ __device__ void calc_ldaCS(scalar_type dens, scalar_type& ex,
       scalar_type t3 = atan(POT_VOSKO_Q / t1);
       scalar_type t5 = (POT_VOSKO_B1 * x1 + POT_VOSKO_2C1) / x1;
 
-      ec = ((scalar_type)2.0 * logf(x1) - t2 + POT_VOSKO_2B1Q * t3 -
+      ec = ((scalar_type)2.0 * log(x1) - t2 + POT_VOSKO_2B1Q * t3 -
             POT_T4 * ((scalar_type)2.0 * log(x1 - POT_VOSKO_X0) - t2 +
                       POT_VOSKO_B2X0Q * t3)) *
            POT_VOSKO_A1;

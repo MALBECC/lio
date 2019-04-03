@@ -89,6 +89,8 @@ subroutine read_coef_restart_od(coef_a, coef_b, dens_t, dens_a, dens_b,        &
    coef_a = 0.0D0
    coef_b = 0.0D0
    dens_t = 0.0D0
+   dens_a = 0.0D0
+   dens_b = 0.0D0
    rewind(UID)
    call read_matrix(coef_a, M, NCOa, 1, 1, UID)
    call read_matrix(coef_b, M, NCOb, 1, 1, UID)
@@ -128,6 +130,8 @@ subroutine read_coef_restart_os(coef_a, coef_b, dens_t, dens_a, dens_b,        &
    coef_a = 0.0D0
    coef_b = 0.0D0
    dens_t = 0.0D0
+   dens_a = 0.0D0
+   dens_b = 0.0D0
    rewind(UID)
    call read_matrix(coef_a, M, NCOa, 1, 1, UID)
    call read_matrix(coef_b, M, NCOb, 1, 1, UID)

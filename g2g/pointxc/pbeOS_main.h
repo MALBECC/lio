@@ -69,6 +69,8 @@ __host__ __device__ void pbeOS_main(
    corr2 = (scalar_type)0.0f;
    vcpbe_a = (scalar_type)0.0f;
    vcpbe_b = (scalar_type)0.0f;
+   vxpbe_a = (scalar_type)0.0f;
+   vxpbe_b = (scalar_type)0.0f;
 
  
   scalar_type twodens = (scalar_type)2.0f * dens_a;
@@ -95,8 +97,7 @@ __host__ __device__ void pbeOS_main(
   twodens = (scalar_type)2.0f * dens_b;
   if (twodens > MINIMUM_DENSITY_VALUE) {
     twodens2 = twodens * twodens;
-
-    rho13 = cbrt((scalar_type)twodens);
+    rho13 = cbrt(twodens);
     fk1 = cbrt((scalar_type)EASYPBE_PI32);
     fk = fk1 * rho13;
 
@@ -115,7 +116,7 @@ __host__ __device__ void pbeOS_main(
 
   // Construct total density and contribution to Ex
   scalar_type rho = dens_a + dens_b;
-  expbe = (expbe_a * dens_a + expbe_b * dens_b) / rho;
+  expbe = (expbe_a * (dens_a / rho) + expbe_b * (dens_b/rho));
   if (rho < MINIMUM_DENSITY_VALUE) { return; };
 
   /*-------------------------------------------------------------//

@@ -169,6 +169,11 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     allocate(d(natom, natom), v(ntatom,3), Em(ntatom), Rm(ntatom))
     allocate(Fmat_vec(MM), Fmat_vec2(MM), Pmat_vec(MM), Hmat_vec(MM), &
              Ginv_vec(MMd), Gmat_vec(MMd), Pmat_en_wgt(MM))
+
+    d  = 0.0D0 ; v  = 0.0D0 ; Em = 0.0D0 ; Rm = 0.0D0
+    Pmat_vec    = 0.0D0 ; Hmat_vec  = 0.0D0 ; Fmat_vec  = 0.0D0
+    Fmat_vec2   = 0.0D0 ; Gmat_vec  = 0.0D0 ; Ginv_vec  = 0.0D0
+    Pmat_en_wgt = 0.0D0
     ! Cnorm contains normalized coefficients of basis functions.
     ! Differentiate C for x^2,y^2,z^2 and  xy,xz,yx (3^0.5 factor)
     if (ecpmode) allocate (Cnorm(M,13))

@@ -1,13 +1,6 @@
 WELCOME TO LIO
-lun mar 11 10:14:31 -03 2019
-  Using 4 CPU Threads and 0 GPU Threads.
-  QM atoms: 19 - MM atoms: 0
-  Total number of basis: 140 (s: 47 p: 15 d: 8)
-  Open shell calculation - Occupied MO(UP): 41 - Occupied MO(DOWN): 42
-AINT initialisation.
-  Density basis - s: 100 p: 23 d: 23 - Total (w/contractions): 307
-Error found in lionml namelist. Using defaults for namelist lionml.
-iostat =   -1
+Wed Apr  3 09:12:22 -03 2019
+Namelist &lionml not found.
 
 LIO input variables
  ! -- General and theory level: -- !
@@ -72,41 +65,28 @@ LIO input variables
   fockbias_readfile = atombias.in              
 
 LIO initialisation.
+  Using 1 CPU Threads and 0 GPU Threads.
+  QM atoms: 19 - MM atoms: 0
+  Total number of basis: 140 (s: 47 p: 15 d: 8)
+  Open shell calculation - Occupied MO(UP): 41 - Occupied MO(DOWN): 42
+AINT initialisation.
+  Density basis - s: 100 p: 23 d: 23 - Total (w/contractions): 307
 
 Starting SCF cycles.
-  Step =      1  - QM Energy =     -1720.35614 - Rho diff (crit) =  2.97E-04 ( 1.00E-06) - Energy diff (crit) =  1.72E+03 ( 1.00E+00)
-  Step =      2  - QM Energy =     -1720.35611 - Rho diff (crit) =  1.03E-04 ( 1.00E-06) - Energy diff (crit) =  3.29E-05 ( 1.00E+00)
-  Step =      3  - QM Energy =     -1720.35615 - Rho diff (crit) =  1.07E-04 ( 1.00E-06) - Energy diff (crit) =  3.73E-05 ( 1.00E+00)
-G2G Deinitialisation.
-  Step =      4  - QM Energy =     -1720.35615 - Rho diff (crit) =  2.27E-05 ( 1.00E-06) - Energy diff (crit) =  4.14E-06 ( 1.00E+00)
-  Step =      5  - QM Energy =     -1720.35615 - Rho diff (crit) =  1.82E-05 ( 1.00E-06) - Energy diff (crit) =  7.96E-08 ( 1.00E+00)
-  Step =      6  - QM Energy =     -1720.35615 - Rho diff (crit) =  8.87E-06 ( 1.00E-06) - Energy diff (crit) =  2.10E-06 ( 1.00E+00)
-  Step =      7  - QM Energy =     -1720.35615 - Rho diff (crit) =  3.91E-06 ( 1.00E-06) - Energy diff (crit) =  9.72E-07 ( 1.00E+00)
-  Step =      8  - QM Energy =     -1720.35615 - Rho diff (crit) =  5.93E-06 ( 1.00E-06) - Energy diff (crit) =  1.98E-07 ( 1.00E+00)
-  Step =      9  - QM Energy =     -1720.35615 - Rho diff (crit) =  1.27E-05 ( 1.00E-06) - Energy diff (crit) =  1.03E-06 ( 1.00E+00)
-  Step =     10  - QM Energy =     -1720.35615 - Rho diff (crit) =  5.19E-05 ( 1.00E-06) - Energy diff (crit) =  6.75E-07 ( 1.00E+00)
-  Step =     11  - QM Energy =     -1720.35615 - Rho diff (crit) =  8.42E-06 ( 1.00E-06) - Energy diff (crit) =  1.77E-06 ( 1.00E+00)
-  Step =     12  - QM Energy =     -1720.35615 - Rho diff (crit) =  5.93E-06 ( 1.00E-06) - Energy diff (crit) =  5.35E-07 ( 1.00E+00)
-  Step =     13  - QM Energy =     -1720.35615 - Rho diff (crit) =  6.38E-06 ( 1.00E-06) - Energy diff (crit) =  6.02E-07 ( 1.00E+00)
-  Step =     14  - QM Energy =     -1720.35615 - Rho diff (crit) =  1.39E-05 ( 1.00E-06) - Energy diff (crit) =  5.11E-07 ( 1.00E+00)
-  Step =     15  - QM Energy =     -1720.35615 - Rho diff (crit) =  1.08E-05 ( 1.00E-06) - Energy diff (crit) =  1.25E-06 ( 1.00E+00)
-  Step =     16  - QM Energy =     -1720.35615 - Rho diff (crit) =  5.96E-06 ( 1.00E-06) - Energy diff (crit) =  7.93E-07 ( 1.00E+00)
-  Step =     17  - QM Energy =     -1720.35615 - Rho diff (crit) =  5.32E-06 ( 1.00E-06) - Energy diff (crit) =  3.93E-07 ( 1.00E+00)
-  Step =     18  - QM Energy =     -1720.35615 - Rho diff (crit) =  6.26E-06 ( 1.00E-06) - Energy diff (crit) =  2.70E-07 ( 1.00E+00)
-  Step =     19  - QM Energy =     -1720.35615 - Rho diff (crit) =  3.73E-06 ( 1.00E-06) - Energy diff (crit) =  5.64E-07 ( 1.00E+00)
-  Step =     20  - QM Energy =     -1720.35615 - Rho diff (crit) =  1.31E-05 ( 1.00E-06) - Energy diff (crit) =  2.95E-07 ( 1.00E+00)
-  Step =     21  - QM Energy =     -1720.35616 - Rho diff (crit) =  9.60E-06 ( 1.00E-06) - Energy diff (crit) =  6.86E-07 ( 1.00E+00)
-  Step =     22  - QM Energy =     -1720.35616 - Rho diff (crit) =  1.05E-05 ( 1.00E-06) - Energy diff (crit) =  4.95E-07 ( 1.00E+00)
-  Step =     23  - QM Energy =     -1720.35616 - Rho diff (crit) =  1.25E-05 ( 1.00E-06) - Energy diff (crit) =  9.08E-07 ( 1.00E+00)
-  Step =     24  - QM Energy =     -1720.35616 - Rho diff (crit) =  6.31E-05 ( 1.00E-06) - Energy diff (crit) =  2.11E-07 ( 1.00E+00)
-  Step =     25  - QM Energy =     -1720.35616 - Rho diff (crit) =  7.56E-05 ( 1.00E-06) - Energy diff (crit) =  1.60E-06 ( 1.00E+00)
-  Step =     26  - QM Energy =     -1720.35615 - Rho diff (crit) =  2.40E-07 ( 1.00E-06) - Energy diff (crit) =  1.02E-05 ( 1.00E+00)
-  Convergence achieved in     26 iterations. Final energy  -1720.3561481 A.U.
+  Step =      1  - QM Energy =  -1720.35616 - Rho diff (crit) = 8.05E-06 (1.00E-06) - Energy diff (crit) = 1.72E+03 (1.00E+00)
+  Step =      2  - QM Energy =  -1720.35616 - Rho diff (crit) = 1.67E-06 (1.00E-06) - Energy diff (crit) = 2.64E-08 (1.00E+00)
+  Step =      3  - QM Energy =  -1720.35616 - Rho diff (crit) = 3.27E-06 (1.00E-06) - Energy diff (crit) = 1.90E-08 (1.00E+00)
+  Step =      4  - QM Energy =  -1720.35616 - Rho diff (crit) = 1.75E-06 (1.00E-06) - Energy diff (crit) = 1.27E-08 (1.00E+00)
+  Step =      5  - QM Energy =  -1720.35616 - Rho diff (crit) = 4.89E-06 (1.00E-06) - Energy diff (crit) = 2.00E-09 (1.00E+00)
+  Step =      6  - QM Energy =  -1720.35616 - Rho diff (crit) = 4.82E-06 (1.00E-06) - Energy diff (crit) = 2.70E-08 (1.00E+00)
+  Step =      7  - QM Energy =  -1720.35616 - Rho diff (crit) = 5.51E-07 (1.00E-06) - Energy diff (crit) = 2.97E-08 (1.00E+00)
+  Convergence achieved in      7 iterations. Final energy  -1720.3561615 A.U.
 
 Final Energy Contributions in A.U.
-  Total energy = -1720.356149
-  One electron = -3717.952683
-  Coulomb      =  1409.978821
+  Total energy = -1720.356160
+  One electron = -3717.861808
+  Coulomb      =  1409.886993
   Nuclear      =   697.367454
-  Exch. Corr.  =  -109.749740
+  Exch. Corr.  =  -109.748799
 
+G2G Deinitialisation.

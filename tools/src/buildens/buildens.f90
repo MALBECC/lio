@@ -169,7 +169,7 @@ contains
                                        rho_ab(M,M), rho_bb(M,M)
       double precision, intent(out) :: rho_at(M,M), rho_bt(M,M)
       integer :: Mt, icount, jcount
-      
+
       rho_at = 0.0D0
       rho_bt = 0.0D0
 

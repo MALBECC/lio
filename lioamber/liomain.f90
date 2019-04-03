@@ -22,17 +22,29 @@ subroutine liomain(E, dipxyz)
     use ecp_mod   , only: ecpmode, IzECP
     use ehrensubs , only: ehrendyn_main
     use fileio    , only: write_orbitals, write_orbitals_op
+    use tbdft_data, only: MTB, tbdft_calc
+
 
     implicit none
     double precision, intent(inout) :: dipxyz(3), E
+    integer         :: M_f, NCO_f
 
     call g2g_timer_sum_start("Total")
+
+!TBDFT: Updating M and NCO for TBDFT calculations
+    if (tbdft_calc) then
+       M_f = M+2*MTB
+       NCO_f=NCO+MTB
+    else
+       M_f = M
+       NCO_f=NCO
+    end if
 
     if (.not.allocated(Smat))      allocate(Smat(M,M))
     if (.not.allocated(RealRho))   allocate(RealRho(M,M))
     if (.not.allocated(sqsm))      allocate(sqsm(M,M))
-    if (.not.allocated(Eorbs))     allocate(Eorbs(M))
-    if (.not.allocated(Eorbs_b))   allocate(Eorbs_b(M))
+    if (.not.allocated(Eorbs))     allocate(Eorbs(M_f))
+    if (.not.allocated(Eorbs_b))   allocate(Eorbs_b(M_f))
 
     if (steep) then
       call do_steep(E)
@@ -44,10 +56,8 @@ subroutine liomain(E, dipxyz)
     else
        call SCF(E)
     endif
-
     if ( (restart_freq.gt.0) .and. (MOD(npas, restart_freq).eq.0) ) &
        call do_restart(88, Pmat_vec)
-
     ! Perform Mulliken and Lowdin analysis, get fukui functions and dipole.
     if (MOD(npas, energy_freq).eq.0) then
         if (mulliken .or. lowdin) call do_population_analysis(Pmat_vec)
@@ -60,10 +70,10 @@ subroutine liomain(E, dipxyz)
         endif
         if (print_coeffs) then
            if (open) then
-             call write_orbitals_op(M, NCO, NUnp, Eorbs, Eorbs_b, MO_coef_at,  &
-                                    MO_coef_at_b, 29)
+             call write_orbitals_op(M_f, NCO_f, NUnp, Eorbs, Eorbs_b,          &
+                                    MO_coef_at, MO_coef_at_b, 29)
           else
-             call write_orbitals(M, NCO, Eorbs, MO_coef_at, 29)
+             call write_orbitals(M_f, NCO_f, Eorbs, MO_coef_at, 29)
           endif
         endif
     endif
@@ -153,7 +163,7 @@ subroutine do_population_analysis(Pmat)
    double precision :: q(natom), En
    integer          :: IzUsed(natom), kk
 
-   
+
    ! Decompresses and fixes S and RealRho matrixes, which are needed for
    ! population analysis.
    allocate(Fock_1e(MM), Hmat(MM))
@@ -235,13 +245,25 @@ subroutine do_restart(UID, rho_total)
    use basis_data , only: M, MM, indexii
    use fileio_data, only: rst_dens
    use fileio     , only: write_coef_restart, write_rho_restart
+   use tbdft_data,  only: MTB, tbdft_calc
+
    implicit none
    integer         , intent(in) :: UID
    double precision, intent(in) :: rho_total(MM)
    double precision, allocatable :: coef(:,:), coef_b(:,:), tmp_rho(:,:), &
                                     tmp_rho_b(:,:)
    integer :: NCOb, icount, jcount, coef_ind
-
+   integer :: M_f, NCO_f, i0
+!TBDFT: Updating M for TBDFT calculations
+   if (tbdft_calc) then
+      M_f = M+2*MTB
+      NCO_f=NCO+MTB
+      i0=MTB
+   else
+      M_f = M
+      NCO_f=NCO
+      i0=0
+   end if
    if ( rst_dens .eq. 2 ) then
       allocate(tmp_rho(M,M))
       if (.not. OPEN) then
@@ -256,29 +278,28 @@ subroutine do_restart(UID, rho_total)
       endif
       deallocate(tmp_rho)
    else
-      allocate(coef(M, NCO))
+
+      allocate(coef(M, NCO_f))
       do icount=1, M
-      do jcount=1, NCO
-         coef_ind = icount + M*(jcount-1)
+      do jcount=1, NCO_f
+         coef_ind = i0 + icount + M_f*(jcount-1)
          coef(indexii(icount), jcount) = MO_coef_at(coef_ind)
       enddo
       enddo
-
       if (OPEN) then
-         NCOb = NCO + NUNP
+         NCOb = NCO_f + NUNP
          allocate(coef_b(M, NCOb))
 
          do icount=1, M
          do jcount=1, NCOb
-            coef_ind = icount + M*(jcount-1)
+            coef_ind = i0 + icount + M_f*(jcount-1)
             coef_b(indexii(icount), jcount) = MO_coef_at_b(coef_ind)
          enddo
          enddo
-
-         call write_coef_restart(coef, coef_b, M, NCO, NCOb, UID)
+         call write_coef_restart(coef, coef_b, M, NCO_f, NCOb, UID)
          deallocate(coef_b)
       else
-         call write_coef_restart(coef, M, NCO, UID)
+         call write_coef_restart(coef, M, NCO_f, UID)
       endif
       deallocate(coef)
    endif

@@ -20,9 +20,8 @@ module lionml_data
                                  lineal_search, timers, IGRID, IGRID2,         &
                                  use_libxc, ex_functional_id, ec_functional_id,&
                                  gpu_level, NMAX, hybrid_converg
-   use dftb_data         , only: dftb_calc, MTB, alfaTB, betaTB, gammaTB,      &
-                                 Vbias_TB, end_bTB, start_tdtb, end_tdtb,      &
-                                 TBsave, TBload
+   use tbdft_data         , only: tbdft_calc, MTB, alfaTB, betaTB, gammaTB,      &
+                                 Vbias_TB, end_bTB, start_tdtb, end_tdtb
    use ECP_mod           , only: ecpmode, ecptypes, tipeECP, ZlistECP,         &
                                  verbose_ECP, cutECP, local_nonlocal,          &
                                  ecp_debug, FOCK_ECP_read, FOCK_ECP_write,     &
@@ -96,9 +95,9 @@ module lionml_data
                   ! Variables for Transport
                   transport_calc, generate_rho0, nbias,                        &
                   save_charge_freq, driving_rate, Pop_Drive,                   &
-                  ! Variables for DFTB
-                  dftb_calc, MTB, alfaTB, betaTB, gammaTB, Vbias_TB, end_bTB,  &
-                  start_tdtb, end_tdtb, TBsave, TBload,                        &
+                  ! Variables for TBDFT
+                  tbdft_calc, MTB, alfaTB, betaTB, gammaTB, Vbias_TB, end_bTB,  &
+                  start_tdtb, end_tdtb,                                        &
                   !Fockbias
                   fockbias_is_active, fockbias_is_shaped, fockbias_readfile,   &
                   fockbias_timegrow , fockbias_timefall , fockbias_timeamp0,   &
@@ -145,10 +144,9 @@ module lionml_data
       integer          :: min_points_per_cube, max_function_exponent, gpu_level
       logical          :: assign_all_functions, energy_all_iterations,         &
                           remove_zero_weights
-      ! Transport and DFTB
+      ! Transport and TBDFT
       double precision :: alfaTB, betaTB, driving_rate, gammaTB, Vbias_TB
-      logical          :: dftb_calc, gate_field, generate_rho0, TBload, TBsave,&
-                          transport_calc
+      logical          :: tbdft_calc, gate_field, generate_rho0, transport_calc
       integer          :: end_bTB, end_tdtb, MTB, pop_drive, save_charge_freq, &
                           start_tdtb, nbias
       ! Ehrenfest
@@ -239,16 +237,15 @@ subroutine get_namelist(lio_in)
    lio_in%energy_all_iterations = energy_all_iterations
    lio_in%remove_zero_weights   = remove_zero_weights
    lio_in%gpu_level             = gpu_level
-   ! Transport and DFTB
+   ! Transport and TBDFT
    lio_in%driving_rate     = driving_rate    ; lio_in%alfaTB    = alfaTB
-   lio_in%dftb_calc        = dftb_calc       ; lio_in%betaTB    = betaTB
+   lio_in%tbdft_calc        = tbdft_calc       ; lio_in%betaTB    = betaTB
    lio_in%nbias            = nbias           ; lio_in%gammaTB   = gammaTB
    lio_in%generate_rho0    = generate_rho0   ; lio_in%Vbias_TB  = Vbias_TB
    lio_in%transport_calc   = transport_calc  ; lio_in%end_bTB   = end_bTB
    lio_in%end_tdtb         = end_tdtb        ; lio_in%pop_drive = pop_drive
    lio_in%save_charge_freq = save_charge_freq; lio_in%MTB       = MTB
-   lio_in%start_tdtb       = start_tdtb      ; lio_in%TBload    = TBload
-   lio_in%TBsave           = TBsave
+   lio_in%start_tdtb       = start_tdtb
    ! Ghost atoms
    lio_in%n_ghosts = n_ghosts ; lio_in%ghost_atoms = ghost_atoms
 

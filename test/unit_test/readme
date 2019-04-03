@@ -1,6 +1,0 @@
-# Esta carpeta con tiene test de unidad para probar la funcionalidad de las clases
-
-- libxc_proxy: test para probar el componente que se comunica con Libxc.
-- matrix: test sobre la clase Matrix.
-- timers: test sobre la clase Timers.
-- commons: contiene archivos de uso comun para todos los test.

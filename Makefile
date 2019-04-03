@@ -1,6 +1,5 @@
 ################################################################################
-# LIO MAKEFILE
-################################################################################
+# LIO MAKEFILE ################################################################################
 
 all: liosolo liblio g2g tools
 
@@ -23,12 +22,20 @@ g2g:
 tools:
 	$(MAKE) -C tools
 
+.PHONY: check
+check:
+	$(MAKE) check -C test
+
+.PHONY: compile
+compile:
+	$(MAKE) compile -C test
 
 .PHONY: clean
 clean:
 	$(MAKE) clean -C liosolo
 	$(MAKE) clean -C lioamber
 	$(MAKE) clean -C g2g
+	$(MAKE) clean -C test
 	$(MAKE) clean -C tools
 
 ################################################################################

@@ -16,5 +16,5 @@ tdanalyze:
 	cp average_spectra.x ../../average_spectra
 
 clean:
-	rm -rf average_spectra.x ../../average_spectra
-	rm -rf tdanalyze.x ../../tdanalyze
+	rm -f average_spectra.x ../../average_spectra
+	rm -f tdanalyze.x ../../tdanalyze

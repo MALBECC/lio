@@ -56,6 +56,6 @@ inputgen.x : inputgen.o $(OBJECTS)
 .PHONY: clean
 clean:
 	rm -rf inputgen.x *.o *.mod
-	rm ../../inputgen
+	rm -f ../../inputgen
 
 ################################################################################

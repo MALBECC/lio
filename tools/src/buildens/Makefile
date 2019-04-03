@@ -14,4 +14,4 @@ buildens:
 	cp buildens.x ../../bdens
 
 clean:
-	rm -rf buildens.x ../../bdens
+	rm -f buildens.x ../../bdens

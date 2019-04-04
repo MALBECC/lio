@@ -50,11 +50,11 @@ if __name__ == "__main__":
    filterrx = args.filter_rx
 
    # This obtain tests folder
-   subdirs = list(os.walk('testLIO/'))[0][1]
+   subdirs = list(os.walk('LIO_test/'))[0][1]
    dirs_with_tests = sorted([d for d in subdirs if re.search(filterrx,d)])
-   total = len(dirs_with_tests) - 1
+   total = len(dirs_with_tests)
    for i in range(0,total):
-      dirs_with_tests[i] = "testLIO/" + dirs_with_tests[i]
+      dirs_with_tests[i] = "LIO_test/" + dirs_with_tests[i]
 
    # Run lio
    filed = run_lio(dirs_with_tests)

@@ -46,7 +46,7 @@ def error(ene,ene_ok):
    dim2 = len(ene_ok)
    scr = 0
    if dim1 != dim2:
-      print "There are different energies in both outputs"
+      print "There are different energies in both outputs."
       return -1
 
    for num in range(dim1):
@@ -67,7 +67,7 @@ def Check():
    # Output
    is_file = os.path.isfile("output")
    if is_file == False:
-      print "The output file is missing"
+      print "The output file is missing."
       return -1
 
    f = open("output","r")
@@ -75,13 +75,13 @@ def Check():
    energies = obtain_energies(f)
    f.close()
    if not energies:
-      print "Error in reading energies in output"
+      print "Error in reading energies in output."
       return -1
 
    # Ideal Output
    is_file = os.path.isfile("output.ok")
    if is_file == False:
-      print "The output.ok file is missing"
+      print "The output.ok file is missing."
       return -1
 
    f = open("output.ok","r")
@@ -89,7 +89,7 @@ def Check():
    energiesok = obtain_energies(f)
    f.close()
    if not energiesok:
-      print "Error in reading energies in output.ok"
+      print "Error in reading energies in output.ok."
       return -1
 
    ok_output = error(energies,energiesok)

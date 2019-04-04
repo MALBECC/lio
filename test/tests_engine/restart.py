@@ -5,7 +5,7 @@ import re
 def read_restart(file_in):
    is_file = os.path.isfile("restart.in")
    if is_file == False:
-      print "The restart.in file doesn't exist"
+      print "The restart.in file doesn't exist."
       return -1
 
    for line in file_in.readlines():
@@ -15,14 +15,14 @@ def read_restart(file_in):
         if rest == "T":
            return 0
         else:
-           print "The test didn't read restart.in file"
+           print "The test didn't read restart.in file."
            return -1
 
 def Check():
    # Output
    is_file = os.path.isfile("output")
    if is_file == False:
-      print "The output file is missing"
+      print "The output file is missing."
       return -1
 
    f = open("output","r")

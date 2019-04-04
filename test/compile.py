@@ -44,13 +44,13 @@ if __name__ == "__main__":
       print "Compiling LIO with Options: %s" % opts.rstrip()
       error = compilar(opts)
       if not error:
-         print "\tSuccessfully compiled"
+         print "\tSuccessfully compiled."
       else:
          print "\tError!"
  
       error = run_lio()
       if not error:
-         print "run_lio successfully finished"
+         print "run_lio successfully finished."
       else:
          print "run_lio Error!"
          exit(-1)

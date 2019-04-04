@@ -7,7 +7,7 @@ import subprocess
 
 def lio_env():
     """"
-    Set lio enviroment variables, including adding g2g and
+    Sets lio enviroment variables, adding g2g and
     lioamber to LD_LIBRARY_PATH.
     """
 
@@ -21,7 +21,7 @@ def lio_env():
 
 
 def run_lio(dirs_with_tests):
-   "Run all Tests"
+   "Runs all Tests"
    lioenv = lio_env()
 
    for dir in dirs_with_tests:
@@ -33,14 +33,14 @@ def run_lio(dirs_with_tests):
         process = subprocess.Popen(execpath, env=lioenv, cwd=os.path.abspath(dir))
         process.wait()
         if process.returncode != 0:
-           print "Error in this folder"
+           print "Error in this folder."
            continue
         else:
            execpath = ["./check_test.py"]
            check = subprocess.Popen(execpath, env=lioenv, cwd=os.path.abspath(dir))
            check.wait()
       else:
-	print("Nothing to do")
+	print("Nothing to do.")
 
 
 if __name__ == "__main__":

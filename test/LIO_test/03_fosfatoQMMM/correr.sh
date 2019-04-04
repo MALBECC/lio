@@ -8,5 +8,5 @@ if [ -n "$1" ]
     SALIDA=$1
 fi
 
-$LIOBIN -i fos.in  -c  fos.xyz -b basis  -v > $SALIDA
+$LIOBIN -i fos.in -c fos.xyz -b basis -v > $SALIDA
 

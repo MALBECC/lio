@@ -8,5 +8,5 @@ if [ -n "$1" ]
     SALIDA=$1
 fi
 
-$LIOBIN -i fe3h2o.in -b DZVP  -c fe3h2o.xyz -v > $SALIDA
+$LIOBIN -i fe3h2o.in -c fe3h2o.xyz -v > $SALIDA
 

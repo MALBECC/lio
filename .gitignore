@@ -24,6 +24,7 @@ test/*/*.out
 dtest/*/*.xyz
 fort.*
 mulliken
+dipole_moment
 qm.xyz
 salida
 #

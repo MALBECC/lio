@@ -66,7 +66,7 @@ def Check():
    ok_output = error(fuk,fukok)
   
    if ok_output != 0:
-      print "Test Fukui:   ERROR"
+      print "Test Fukui:      ERROR"
    else:
-      print "Test Fukui:   OK"
+      print "Test Fukui:      OK"
 

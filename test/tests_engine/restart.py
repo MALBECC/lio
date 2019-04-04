@@ -29,7 +29,7 @@ def Check():
    
    error = read_restart(f)
    if error != 0:
-      print "Test Restart:   ERROR"
+      print "Test Restart:    ERROR"
    else:
-      print "Test Restart:   OK"
+      print "Test Restart:    OK"
 

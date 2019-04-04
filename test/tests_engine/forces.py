@@ -61,6 +61,6 @@ def Check():
 
    ok_output = error(fc,fcok)
    if ok_output != 0:
-      print "Test Forces:   ERROR"
+      print "Test Forces:     ERROR"
    else:
-      print "Test Forces:   OK"
+      print "Test Forces:     OK"

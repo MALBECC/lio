@@ -74,6 +74,6 @@ def Check(*opt):
 
    ok_output = error(dip,dipok)
    if ok_output != 0:
-      print "Test Dipole:   ERROR"
+      print "Test Dipole:     ERROR"
    else:
-      print "Test Dipole:   OK"
+      print "Test Dipole:     OK"

@@ -19,12 +19,13 @@ tools/inputgen
 ###########################################################
 ## Ignoring outputs from test runs
 ###########################################################
-test/*/*/*.xyz
-test/*/*/fort.*
 test/*/*/mulliken
+test/*/*/forces
+test/*/*/fukui
 test/*/*/dipole_moment
+test/*/*/dipole_moment_td
 test/*/*/qm.xyz
-test/*/*/salida
+test/*/*/output
 #
 ###########################################################
 # Isn't this redundant?

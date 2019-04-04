@@ -57,8 +57,8 @@ def error(ene,ene_ok):
       if value > thre:
          scr = -1
          print "Error in",tipo[num]
-         print "Value in output",ene[num]
-         print "Value in output.ok",ene_ok[num]
+         print "Value in output", ene[num]
+         print "Value in output.ok", ene_ok[num]
 
    return scr
 
@@ -95,6 +95,6 @@ def Check():
    ok_output = error(energies,energiesok)
    
    if ok_output != 0:
-      print "Test Energy:   ERROR"
+      print "Test Energy:     ERROR"
    else:
-      print "Test Energy:   OK"
+      print "Test Energy:     OK"

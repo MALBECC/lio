@@ -25,11 +25,11 @@ def run_lio(dirs_with_tests):
    lioenv = lio_env()
 
    for dir in dirs_with_tests:
-      is_file = os.path.isfile(os.path.abspath(dir) + "/correr.sh")
+      is_file = os.path.isfile(os.path.abspath(dir) + "/run.sh")
       print "Running LIO in",dir
 
       if is_file:
-        execpath = ["./correr.sh"]
+        execpath = ["./run.sh"]
         process = subprocess.Popen(execpath, env=lioenv, cwd=os.path.abspath(dir))
         process.wait()
         if process.returncode != 0:
@@ -45,7 +45,7 @@ def run_lio(dirs_with_tests):
 
 if __name__ == "__main__":
    parser = argparse.ArgumentParser()
-   parser.add_argument("--filter_rx", help="Expresion regular para filtrar que tests se corren", default=".*")
+   parser.add_argument("--filter_rx", help="RegExp used to filter which tests are run.", default=".*")
    args = parser.parse_args()
    filterrx = args.filter_rx
 

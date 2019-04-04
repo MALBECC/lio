@@ -166,8 +166,15 @@ ifeq ($(sm61),1)
   GENCODE_FLAGS   += $(GENCODE_SM61)
 endif
 
-GENCODE_FLAGS   ?= $(GENCODE_SM30) $(GENCODE_SM52) $(GENCODE_SM61)
-NVCCFLAGS += $(GENCODE_FLAGS)
+# Checks for versions older than 8.0
+CUDA_OLD := $(shell echo "`nvcc --version | tail -n 1 | awk -F',' '{ print $$2 }' | awk '{ print $$2 }'` < 8" | bc)
+ifeq ($(CUDA_OLD),1)
+  GENCODE_FLAGS ?= $(GENCODE_SM30)
+else
+  GENCODE_FLAGS ?= $(GENCODE_SM30) $(GENCODE_SM52) $(GENCODE_SM61)
+endif
+
+NVCCFLAGS     += $(GENCODE_FLAGS)
 
 ifneq ($(subscript_warn),1)
   NVCCFLAGS += -Xcudafe "--diag_suppress=subscript_out_of_range"

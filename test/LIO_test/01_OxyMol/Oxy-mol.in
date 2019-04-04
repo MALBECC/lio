@@ -1,0 +1,15 @@
+&lio
+ natom         = 2
+ charge        = 0
+ open          = t
+ nunp          = 2
+ int_basis     = t
+ initial_guess = 1
+ nmax          = 200
+ mulliken      = t
+ writeforces   = t
+
+ little_cube_size      = 15.5 
+ sphere_radius         = 0.5 
+ energy_all_iterations = t
+&end

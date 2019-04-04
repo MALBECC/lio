@@ -46,7 +46,7 @@ def error(ene,ene_ok):
    dim2 = len(ene_ok)
    scr = 0
    if dim1 != dim2:
-      print "There are different energies in both outputs"
+      print "There are different energies in both outputs."
       return -1
 
    for num in range(dim1):
@@ -57,44 +57,44 @@ def error(ene,ene_ok):
       if value > thre:
          scr = -1
          print "Error in",tipo[num]
-         print "Value in salida",ene[num]
-         print "Value in salida.ok",ene_ok[num]
+         print "Value in output", ene[num]
+         print "Value in output.ok", ene_ok[num]
 
    return scr
 
 
 def Check():
    # Output
-   is_file = os.path.isfile("salida")
+   is_file = os.path.isfile("output")
    if is_file == False:
-      print "The salida file is missing"
+      print "The output file is missing."
       return -1
 
-   f = open("salida","r")
+   f = open("output","r")
    energies = []
    energies = obtain_energies(f)
    f.close()
    if not energies:
-      print "Error in reading energies in salida"
+      print "Error in reading energies in output."
       return -1
 
    # Ideal Output
-   is_file = os.path.isfile("salida.ok")
+   is_file = os.path.isfile("output.ok")
    if is_file == False:
-      print "The salida.ok file is missing"
+      print "The output.ok file is missing."
       return -1
 
-   f = open("salida.ok","r")
+   f = open("output.ok","r")
    energiesok = []
    energiesok = obtain_energies(f)
    f.close()
    if not energiesok:
-      print "Error in reading energies in salida.ok"
+      print "Error in reading energies in output.ok."
       return -1
 
    ok_output = error(energies,energiesok)
    
    if ok_output != 0:
-      print "Test Energy:   ERROR"
+      print "Test Energy:     ERROR"
    else:
-      print "Test Energy:   OK"
+      print "Test Energy:     OK"

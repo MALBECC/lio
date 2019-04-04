@@ -18,14 +18,14 @@ def error(fc,fc_ok):
    dim2 = len(fc_ok)
    scr = 0
    if dim1 != dim2:
-      print "La cantidad de forces en ambos outputs es diferente"
+      print "Amount of forces in forces and forces.ok is different."
       return -1
 
    for num in range(dim1):
       value = abs(fc[num] - fc_ok[num])
       if value > 1e-3:
          scr = -1
-         print "Error detected in Forces"
+         print "Error detected in Forces:"
          print "Value in forces",fc[num]
          print "Value in forces.ok",fc_ok[num]
 
@@ -36,19 +36,19 @@ def Check():
    fc = []
    is_file = os.path.isfile("forces")
    if is_file == False:
-      print "The forces file is missing"
+      print "The forces file is missing."
       return -1
 
    f = open("forces","r")
    fc = obtain_forces(f)
    f.close()
    if not fc:
-      print "Error reading in forces"
+      print "Error reading in forces."
       return -1
 
    is_file = os.path.isfile("forces.ok")
    if is_file == False:
-      print "The forces.ok file is missing"
+      print "The forces.ok file is missing."
       return -1
 
    fcok = []
@@ -56,11 +56,11 @@ def Check():
    fcok = obtain_forces(f)
    f.close()
    if not fcok:
-      print "Error reading in forces.ok"
+      print "Error reading in forces.ok."
       return -1
 
    ok_output = error(fc,fcok)
    if ok_output != 0:
-      print "Test Forces:   ERROR"
+      print "Test Forces:     ERROR"
    else:
-      print "Test Forces:   OK"
+      print "Test Forces:     OK"

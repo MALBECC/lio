@@ -1,0 +1,14 @@
+&lio
+ natom      = 2
+ charge     = 0
+ int_basis  = t
+ VCINP      = t
+
+ timedep    = 1
+ ntdstep    = 100000
+ tdstep     = 0.002
+ propagator = 1
+
+ nfields_iso    = 1
+ field_iso_file = 'inputfield.fld'
+&end

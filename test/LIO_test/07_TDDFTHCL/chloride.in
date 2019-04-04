@@ -1,0 +1,14 @@
+&lio
+open      = t
+natom     = 2
+charge    = 0
+int_basis = t
+
+timedep    = 1
+ntdstep    = 50000
+tdstep     = 0.004
+propagator = 2
+
+little_cube_size = 15.5 
+sphere_radius    = 0.5 
+&end

@@ -20,12 +20,12 @@ def read_restart(file_in):
 
 def Check():
    # Output
-   is_file = os.path.isfile("salida")
+   is_file = os.path.isfile("output")
    if is_file == False:
-      print "The salida file is missing"
+      print "The output file is missing"
       return -1
 
-   f = open("salida","r")
+   f = open("output","r")
    
    error = read_restart(f)
    if error != 0:

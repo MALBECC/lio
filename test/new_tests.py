@@ -6,18 +6,21 @@ import argparse
 import subprocess
 
 def lio_env():
-    """"
-    Sets lio enviroment variables, adding g2g and
-    lioamber to LD_LIBRARY_PATH.
-    """
+   """"
+   Sets lio enviroment variables, adding g2g and
+   lioamber to LD_LIBRARY_PATH.
+   """
 
-    lioenv = os.environ.copy()
-    lioenv["LIOBIN"] = os.path.abspath("../liosolo/liosolo")
-    prev = lioenv["LD_LIBRARY_PATH"]
-    dirs = ["../g2g", "../lioamber"]
-    lioenv["LD_LIBRARY_PATH"] = ":".join([prev] + [os.path.abspath(p) for p in dirs])
-    lioenv["LIOHOME"] = os.path.abspath("../")
-    return lioenv
+   lioenv = os.environ.copy()
+   lioenv["LIOBIN"] = os.path.abspath("../liosolo/liosolo")
+   dirs = ["../g2g", "../lioamber"]
+   try:
+      prev = lioenv["LD_LIBRARY_PATH"]
+   except:
+      prev = ""
+   lioenv["LD_LIBRARY_PATH"] = ":".join([prev] + [os.path.abspath(p) for p in dirs])
+   lioenv["LIOHOME"] = os.path.abspath("../")
+   return lioenv
 
 
 def run_lio(dirs_with_tests):

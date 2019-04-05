@@ -49,6 +49,7 @@ subroutine write_dipole(dipxyz, u, uid, header)
    double precision, intent(in) :: dipxyz(3), u
    integer         , intent(in) :: uid
    logical         , intent(in) :: header
+   character(len=40) :: out_fmt = '(4(2x,F13.9))'
 
    open(unit = uid, file = "dipole_moment")
    if (style) then
@@ -64,10 +65,10 @@ subroutine write_dipole(dipxyz, u, uid, header)
    else
       if (header) then
          write(UID,*)
-         write(UID,*) '#DIPOLE MOMENT, X Y Z COMPONENTS AND NORM (DEBYES)'
+         write(UID,'(A)') '#DIPOLE MOMENT, X Y Z COMPONENTS AND NORM (DEBYES)'
          write(UID,*)
       else
-         write(UID,*) dipxyz(1), dipxyz(2), dipxyz(3), u
+         write(UID,out_fmt) dipxyz(1), dipxyz(2), dipxyz(3), u
       endif
    endif
 

@@ -11,7 +11,7 @@ def set_options(flag):
    return options
 
 
-def compilar(options):
+def compile_lio(options):
    liodir = os.path.abspath("../")
    devnull = open(os.devnull, "w")
    cmd = ["tests_engine/build.sh", liodir, options]
@@ -26,23 +26,45 @@ def run_lio():
    process.wait()
    return process.returncode
 
+# Verifies if CUDA is installed. Returns
+def cuda_is_installed():
+   devnull = open(os.devnull, 'wb')
+   process = subprocess.Popen(["nvcc --version"], shell=True, stdout=devnull, stderr=devnull)
+   try:
+        stdout, stderr = process.communicate()
+   except:
+        process.kill()
+        process.wait()
+        raise
+   retcode = process.poll()
+
+   is_installed = False
+   if (retcode == 0):
+      is_installed = True
+
+   return is_installed
 
 if __name__ == "__main__":
-   comp = ["cuda","intel","precision"]
+   if (cuda_is_installed()):
+      print "CUDA Libraries detected."
+      comp = ["cuda","intel","precision"]
+   else:
+      print "CUDA libraries not detected. Will attempt CPU-only compilations."
+      comp = ["intel","precision"]
    seq = list(itertools.product(["0","1"],repeat=len(comp)))
    all_sets = []
 
    for cases in seq:
       compile_opts = dict([(comp[i],cases[i]) for i in xrange(0,len(comp))])
       if compile_opts["cuda"] == "1":
-         compile_opts["cuda"] = "2"
+         compile_opts["cuda"] =  "2"
 
       all_sets.append(compile_opts)
 
    for flag_set in all_sets:
       opts = set_options(flag_set)
       print "Compiling LIO with Options: %s" % opts.rstrip()
-      error = compilar(opts)
+      error = compile_lio(opts)
       if not error:
          print "\tSuccessfully compiled."
       else:

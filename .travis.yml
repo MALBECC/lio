@@ -1,5 +1,6 @@
 language: cpp
 sudo: required
 before_install:
-  - sudo apt-get install gfortran liblapack-dev libblas-dev
-script: ./configure && make -j cpu=1 cuda=0
+  - sudo apt-get install gfortran liblapack-dev libblas-dev python2.7
+before_script: ./configure && make -j cpu=1 cuda=0 && cd test
+script: travis_wait ./run_travis_test.py

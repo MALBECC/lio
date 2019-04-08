@@ -869,10 +869,10 @@ subroutine SCF(E)
 !
       call g2g_timer_sum_start('energy-weighted density')
       kkk=0
+      Pmat_en_wgt = 0.0D0
       do jj=1,M
       do ii=jj,M
          kkk=kkk+1
-         Pmat_en_wgt = 0.0D0
 !
          if (ii.eq.jj) then
             factor=2.D0

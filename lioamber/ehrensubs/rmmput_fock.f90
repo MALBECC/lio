@@ -22,12 +22,11 @@
 
   implicit none
   real*8,intent(in) :: FockMao(M,M)
-  integer           :: ii,jj,idx,idx0
+  integer           :: ii,jj,idx
 
-  idx0=M*(M+1)
   do jj=1,M
   do ii=jj,M
-     idx=ii+(2*M-jj)*(jj-1)/2+idx0
+     idx=ii+(2*M-jj)*(jj-1)/2
      Fmat_vec(idx) = FockMao(jj,ii)
   enddo
   enddo

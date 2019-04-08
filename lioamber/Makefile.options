@@ -189,13 +189,13 @@ endif
 # are used to store the private information and then these option is added
 # to the general compilation flags.
 
-private_flag := -O3
+private_flag := -O3 
 
 tmplist :=
 tmplist += dip.o SCFop.o
 tmplist += subm_intfld.o subm_int1G.o subm_int3G.o
 tmplist += subm_intsol.o subm_intsolG.o
-$(tmplist:%.o=$(OBJPATH)/%.o) : private_flag := -O1
+$(tmplist:%.o=$(OBJPATH)/%.o) : private_flag := -O1 
 
 tmplist :=
 tmplist += mathsubs.o matmuldiag.o subm_int3lu.o fock_commuts.o

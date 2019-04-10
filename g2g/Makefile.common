@@ -10,7 +10,15 @@ ifeq ($(intel),0)
 else
   CXX          := icc
   OPTIMIZECPU  := -Ofast -xHost -no-prec-div -ipo
-  CXXFLAGS     := $(CXXFLAGS) -opt-report 3
+
+# Checks for ICC versions older than 16.0
+INTEL_OLD := $(shell echo "`icc --version | head -n 1 | awk -F'.' '{ print $$1 }' | awk '{ print $$3 }'` < 16" | bc)
+ifeq ($(INTEL_OLD),1)
+  CXXFLAGS     := $(CXXFLAGS) -opt-report 3 
+else
+  CXXFLAGS     := $(CXXFLAGS) -qopt-report 3
+endif
+
 endif
 
 # Debug/release configuration

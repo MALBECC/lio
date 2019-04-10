@@ -173,6 +173,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
   CudaMatrix<scalar_type> factors_gpu;
   if (compute_rmm || compute_forces) {
     factors_gpu.resize(this->number_of_points);
+    factors_gpu.zero();
   }
 
   int transposed_width = COALESCED_DIMENSION(this->number_of_points);
@@ -416,6 +417,7 @@ void PointGroupGPU<scalar_type>::solve_closed(
 
     timers.forces.start_and_sync();
     CudaMatrix<vec_type4> forces_gpu(this->total_nucleii());
+    forces_gpu.zero();
 
     threads = dim3(this->total_nucleii());
     threadBlock = dim3(FORCE_BLOCK_SIZE);
@@ -565,6 +567,8 @@ void PointGroupGPU<scalar_type>::solve_opened(
   if (compute_rmm || compute_forces) {
     factors_a_gpu.resize(this->number_of_points);
     factors_b_gpu.resize(this->number_of_points);
+    factors_a_gpu.zero();
+    factors_b_gpu.zero();
   }
 
   HostMatrix<scalar_type> rmm_input_a_cpu(COALESCED_DIMENSION(group_m), group_m+DENSITY_BLOCK_SIZE);
@@ -703,6 +707,8 @@ void PointGroupGPU<scalar_type>::solve_opened(
     timers.forces.start_and_sync();
     CudaMatrix<vec_type4> forces_gpu_a(this->total_nucleii());
     CudaMatrix<vec_type4> forces_gpu_b(this->total_nucleii());
+    forces_gpu_a.zero();
+    forces_gpu_b.zero();
 
     threads = dim3(this->total_nucleii());
     threadBlock = dim3(FORCE_BLOCK_SIZE);

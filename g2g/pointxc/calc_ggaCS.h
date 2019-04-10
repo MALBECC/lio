@@ -40,15 +40,19 @@ __host__ __device__ void calc_ggaCS(scalar_type dens,
                                     scalar_type& ex, scalar_type& ec,
                                     scalar_type& y2a) {
   // hess1: xx, yy, zz  || hess2: xy, xz, yz
-  const scalar_type MINIMUM_DENSITY_VALUE = 1e-13f;
+#if FULL_DOUBLE
+  const scalar_type MINIMUM_DENSITY_VALUE = (scalar_type) 1e-18;
+#else
+  const scalar_type MINIMUM_DENSITY_VALUE = (scalar_type) 1e-12;
+#endif
   if (dens < MINIMUM_DENSITY_VALUE) {
-    ex = ec = 0;
+    ex = ec = (scalar_type) 0.0f;
     return;
   }
 
   scalar_type y = cbrt((scalar_type)dens);  // rho^(1/3)
   scalar_type grad2 = grad.x * grad.x + grad.y * grad.y + grad.z * grad.z;
-  if (grad2 == 0) grad2 = (scalar_type)MIN_PRECISION;
+  if (grad2 < MIN_PRECISION) grad2 = (scalar_type)MIN_PRECISION;
   scalar_type dgrad = sqrt(grad2);
 
   scalar_type d0 = hess1.x + hess1.y + hess1.z;
@@ -214,7 +218,7 @@ __host__ __device__ void calc_ggaCS(scalar_type dens,
              iexch == 8) {  // Correlation - LYP: PRB 37 785 (1988)
     scalar_type rom13 = 1 / cbrt(dens);
     scalar_type rom53 = cbrt(pow(dens, 5));
-    scalar_type ecro = expf(-POT_CLYP * rom13);
+    scalar_type ecro = exp(-POT_CLYP * rom13);
     scalar_type f1 = 1.0f / (1.0f + POT_DLYP * rom13);
     scalar_type tw = 1.0f / 8.0f * (grad2 / dens - d0);
     scalar_type term = (tw / 9.0f + d0 / 18.0f) - 2.0f * tw + POT_CF * rom53;

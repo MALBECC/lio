@@ -19,8 +19,13 @@ static __device__ __host__ void compute_function(
   if (do_gga) th = 0.0f;
 
   for (uint contraction = 0; contraction < contractions; contraction++) {
+    scalar_type exponent = factor_a_sh[contraction] * dist;
+    // e^(-84) results in a number close to 10^(-37), which is the
+    // minimum precision for floats. 70 was chosen in order to take
+    // into account the contribution of c to t0.
+    if (exponent >  70.0) continue;
     scalar_type t0 =
-        expf(-(factor_a_sh[contraction] * dist)) * factor_c_sh[contraction];
+        exp(-exponent) * factor_c_sh[contraction];
     t += t0;
     if (do_forces || do_gga) tg += t0 * factor_a_sh[contraction];
     if (do_gga)

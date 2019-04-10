@@ -33,15 +33,6 @@ __host__ __device__ void pbeCS(scalar_type rho, scalar_type agrad,
                                scalar_type& ecpbe, scalar_type& vcpbe) {
 
   scalar_type rho2 = rho * rho;
-  scalar_type rho5 = rho2*rho2*rho;
-  scalar_type flt_minimum = 100.0 * (scalar_type)MIN_PRECISION;
-  if (rho5 < flt_minimum) {
-    expbe = (scalar_type)0.0f;
-    vxpbe = (scalar_type)0.0f;
-    ecpbe = (scalar_type)0.0f;
-    vcpbe = (scalar_type)0.0f;
-    return;
-  }
   /*----------------------------------//
   // PBE exchange
   //----------------------------------//
@@ -132,7 +123,6 @@ __host__ __device__ void pbeCS(scalar_type rho, scalar_type agrad,
 
   scalar_type ec, eurs;
   gcorc1(rtrs, ec, eurs);
-  if (ec == (scalar_type)0.0f) ec = (scalar_type)MIN_PRECISION;
   scalar_type eclda = ec;
   scalar_type ecrs = eurs;
   scalar_type vclda = eclda - rs * (1.0f / 3.0f) * ecrs;

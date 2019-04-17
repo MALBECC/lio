@@ -8,6 +8,7 @@ if [ -n "$1" ]
     SALIDA=$1
 fi
 
+source ../../../liohome.sh
 $LIOBIN -i cl2.in -c cl2.xyz -v > $SALIDA
 
 

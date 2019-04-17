@@ -1,5 +1,5 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine calc_gintmat( mni, mnj, ai, aj, ri, rj, IntMat )
+subroutine calc_gintmat( ai, aj, ri, rj, IntMat )
 !------------------------------------------------------------------------------!
 !
 ! IntMat(i,j) contains the integral of the product fa[i]*fb[j]
@@ -16,12 +16,11 @@ subroutine calc_gintmat( mni, mnj, ai, aj, ri, rj, IntMat )
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
   implicit none
-  integer,intent(in) :: mni,mnj
   real*8,intent(in)  :: ai,aj
   real*8,intent(in)  :: ri(3),rj(3)
   real*8,intent(out) :: IntMat(3,4,4)
 
-  integer             :: ntot,ii,jj,kk
+  integer             :: ii,jj,kk
   real*8              :: a0,b1,b2,b3,b5,b7
   real*8              :: theta,PRE(3),r0(3)
   real*8              :: GI0,GI2,GI4,GI6

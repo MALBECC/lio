@@ -30,7 +30,7 @@ contains
 subroutine int2G(f, natom, ntatom, r, d)
 
    use liosubs_math , only: FUNCT
-   use basis_data   , only: M, Md, NORM, af, nshelld, ad, Nucd, ncontd, cd
+   use basis_data   , only: Md, NORM, af, nshelld, ad, Nucd, ncontd, cd
    use constants_mod, only: pi5
 
    implicit none
@@ -46,7 +46,7 @@ subroutine int2G(f, natom, ntatom, r, d)
                         pi0d, pj0s, pj0p, pj0d, p1p, pi2s, pi2p, pi3s, pi4s,  &
                         pj2s, pj2p, pj3s
    double precision  :: ds, dp, dpl, dsd, d0p, d0pl, d1d, d1p, d1s, d2s, d3s, &
-                        dd, df
+                        df
    double precision  :: fs, fp, fd
    double precision  :: ti, tj, t0, t1, t2, t10, t11, t12, t12b, t13, t13a,    &
                         t13b, t14, t14a, t14b, t15, t15a, t15b, t16, t16b, t17,&

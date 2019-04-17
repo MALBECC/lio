@@ -48,7 +48,7 @@ subroutine transport_init(M, dim3, natom, Nuc, fock_mat, overlap, rho, OPEN)
 
    allocate(group(natom), mapmat(M,M))
    call transport_read_groups(natom)
-   call mat_map(Nuc, M, natom)
+   call mat_map(Nuc, M)
 
    do icount = 1, size(orb_group)
       orb_group(icount) = group( Nuc(icount) )
@@ -201,8 +201,8 @@ end subroutine transport_rho_trace
 
 subroutine transport_propagate(M, dim3, natom, Nuc, Iz, propagator, istep, &
                                overlap, sqsm, rho1, Ymat ,OPEN)
-   use transport_data, only: save_charge_freq, pop_drive, GammaMagnus, &
-                             GammaVerlet, nbias, group, timestep_init, nbias
+   use transport_data, only: save_charge_freq, GammaMagnus, &
+                             GammaVerlet, nbias, timestep_init, nbias
    use mathsubs,       only: basechange_gemm
    implicit none
    logical   , intent(in)    :: OPEN
@@ -245,8 +245,8 @@ subroutine transport_propagate(M, dim3, natom, Nuc, Iz, propagator, istep, &
    end do
 
 
-   call electrostat(rho1(:,:,1), overlap, scratchgamma, M,Nuc, 1)
-   if (OPEN) call electrostat(rho1(:,:,2), overlap, scratchgamma, M, Nuc, 2)
+   call electrostat(rho1(:,:,1), scratchgamma, M,Nuc, 1)
+   if (OPEN) call electrostat(rho1(:,:,2), scratchgamma, M, Nuc, 2)
    if (mod( istep-1 , save_freq) == 0) then
       call drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, sqsm, 1,   &
                             OPEN)
@@ -263,7 +263,7 @@ end subroutine transport_propagate
 subroutine transport_propagate_cu(M, dim3, natom, Nuc, Iz, propagator, istep, &
                                   overlap, sqsm, rho1, devPtrY, OPEN)
    use cublasmath    , only: basechange_cublas
-   use transport_data, only: nbias, group, save_charge_freq, GammaMagnus, &
+   use transport_data, only: nbias, save_charge_freq, GammaMagnus, &
                              GammaVerlet, timestep_init
    implicit none
    logical, intent(in)       :: OPEN
@@ -305,8 +305,8 @@ subroutine transport_propagate_cu(M, dim3, natom, Nuc, Iz, propagator, istep, &
       endif
    end do
 
-   call electrostat(rho1(:,:,1), overlap, scratchgamma, M,Nuc, 1)
-   if (OPEN) call electrostat(rho1(:,:,2), overlap, scratchgamma, M,Nuc, 2)
+   call electrostat(rho1(:,:,1), scratchgamma, M,Nuc, 1)
+   if (OPEN) call electrostat(rho1(:,:,2), scratchgamma, M,Nuc, 2)
 
    if (mod( istep-1 , save_freq) == 0) then
       call drive_population(M, dim3, natom, Nuc, Iz, rho1, overlap, sqsm, 1,   &
@@ -350,7 +350,7 @@ subroutine transport_population(M, dim3, natom, Nuc, Iz, rho1, overlap, smat, &
 end subroutine transport_population
 
 
-subroutine mat_map(Nuc, M, natom)
+subroutine mat_map(Nuc, M)
 ! This subroutine classify each element of the matrix density in three cases
 ! whichs correspond to the three cases present in the driving term of Drive
 ! Liouville von Neuman, this cases will be use in electrostat. The cases are:
@@ -359,7 +359,7 @@ subroutine mat_map(Nuc, M, natom)
 !         3) if i and j /= 0
    use transport_data, only: group, nbias ,mapmat
    implicit none
-   integer, intent(in)   :: M, natom, Nuc(M)
+   integer, intent(in)   :: M, Nuc(M)
    integer               :: i, j, group_n(nbias+1)
 
    mapmat = 0
@@ -386,14 +386,14 @@ subroutine mat_map(Nuc, M, natom)
 end subroutine mat_map
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-subroutine electrostat(rho1, overlap, Gamma0, M,Nuc, spin)
+subroutine electrostat(rho1, Gamma0, M,Nuc, spin)
    ! This subroutine modifies the density matrix according to the group
    ! containing the basis function indexes.
    use transport_data, only: mapmat, rhofirst, nbias, group
    implicit none
    integer, intent(in) :: M, spin
    integer, intent(in) :: Nuc(M)
-   real*8,  intent(in) :: overlap(M,M), Gamma0(nbias)
+   real*8,  intent(in) :: Gamma0(nbias)
    integer :: i, j
    real*8  :: GammaIny, GammaAbs, tempgamma, tempgamma2
 

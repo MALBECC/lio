@@ -126,7 +126,6 @@ end subroutine errlog_Checkin
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine errlog_Checkout( last_errid )
    integer, intent(out), optional :: last_errid
-   integer                        :: nn
 
 
    if ( present(last_errid) ) last_errid=0

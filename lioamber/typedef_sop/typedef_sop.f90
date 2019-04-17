@@ -35,7 +35,6 @@ module typedef_sop
       procedure, pass   :: Rebase_densao
 
       procedure, nopass :: Drop_ldvals
-      procedure, nopass :: Calc_smat
       procedure, nopass :: Calc_fulldcmp_4m
       procedure, nopass :: Calc_fulldcmp_7m
 
@@ -51,7 +50,6 @@ contains
 #  include "Gets_eigens_v.f90"
 #  include "Rebase_bothxx.f90"
 #  include "Drop_ldvals.f90"
-#  include "Calc_smat.f90"
 #  include "Calc_fulldcmp_4m.f90"
 #  include "Calc_fulldcmp_7m.f90"
 

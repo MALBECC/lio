@@ -73,7 +73,7 @@ subroutine int3G(frc, calc_energy, rho_mat, r, d, natom, ntatom)
                        sp3js, spd, spjpk, spjs, spk, spp, sps, ss0d, ss0p,     &
                        ss0pj, ss1d, ss1p, ss1pj, ss1pk, ss1s, ss2p, ss2pj,     &
                        ss2pk, ss2s, ss3s, ss4s, ss5s, ss6s, ss7s, ssd, ssf,    &
-                       ssp, sspj, sspk, sss, spf
+                       ssp, sspj, sspk, sss
    double precision :: p1s, p2s, p3s, p4s, p5s, p6s, p0pk, p1pk, pi0dd, pi0d,  &
                        pds, pdp, pdd, pi0sd, pi0pp, pi0p, pi0dp, pi0dkl, pi1dp,&
                        pi1dkl, pi1dd, pi0spj, pi1pl, pi1pkpm, pi1pk, pi1d,     &
@@ -102,7 +102,7 @@ subroutine int3G(frc, calc_energy, rho_mat, r, d, natom, ntatom)
                        d2spm, d2s, d2pl, d2pk
    double precision :: fdp, fdd, fss, fsp, fsd, fps, fpp, fpd, fds
 
-   double precision :: ta, tb, ti, tj, te, ty, t0, t1, t2, t2a, t2b, t3, t3a,  &
+   double precision :: ta, tb, ti, tj, te, ty, t0, t1, t2, t3, t3a,  &
                        t3b, t4, t4b,  t5, t5a, t5b, t5x, t5y, t6, t6a, t6b,    &
                        t6c, t6d, t7, t7a, t7b, t7c, t7d, t8, t8a, t8b, t9, t9b,&
                        t10, t10a, t10b, t11, t11a, t11b, t12, t12a, t12b, t13, &

@@ -11,7 +11,7 @@
       REAL*8, intent(out) :: C(M,M)
       REAL*8 alpha,beta
       REAL*8, dimension (:,:), ALLOCATABLE :: scratch1,scratch2
-      integer i,j,stat
+      integer stat
       external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
       external CUBLAS_SHUTDOWN, CUBLAS_ALLOC, CUBLAS_DGEMM
       integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX

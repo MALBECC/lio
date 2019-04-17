@@ -46,7 +46,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
                              pc, X, Smat, MEMO, ntatom, sqsm, Nunp, OPEN,     &
                              natom, d, rhoalpha, rhobeta, Fmat_vec, Fmat_vec2,&
                              Ginv_vec, Hmat_vec, Gmat_vec, Pmat_vec
-   use basis_data    , only: M, Md, Nuc, ncont, nshell, a, c, Norm, MM, MMd
+   use basis_data    , only: M, Nuc, MM
    use td_data       , only: td_rst_freq, tdstep, ntdstep, tdrestart, &
                              writedens, pert_time
    use field_data    , only: field, fx, fy, fz
@@ -73,12 +73,12 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    type(operator), intent(inout), optional :: rho_bop, fock_bop
 
    real*8  :: E, En, E1, E2, E1s, Es, Ens = 0.0D0, Ex, t, dt_magnus, dt_lpfrg
-   integer :: M2, LWORK, igpu, info, istep, icount, jcount
+   integer :: M2, igpu, istep
    integer :: lpfrg_steps = 200, chkpntF1a = 185, chkpntF1b = 195
    logical :: is_lpfrg = .false. , fock_restart = .false.
    character(len=20) :: restart_filename
 
-   real*8 , allocatable, dimension(:)   :: factorial, WORK
+   real*8 , allocatable, dimension(:)   :: factorial
    real*8 , allocatable, dimension(:,:) :: Xmm, Xmat,Xtrans, Ytrans, overlap,  &
                                            Ymat, Smat_initial
 !carlos: the next variables have 3 dimensions, the 3th one is asociated with the
@@ -113,7 +113,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 #endif
 !TBDFT: M_f controls de size of the bigest matrices for TBDFT, ii and jj are only
 !counters, and traza is for the control of the trace of density matrix
-   integer :: M_f, ii,jj
+   integer :: M_f
 !carlos: Open Shell variables
 
    integer :: NCOa, NCOb
@@ -221,7 +221,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
    if (field) call field_setup_old(pert_time, 1, fx, fy, fz)
    call td_integration_setup(igrid2, igpu)
    call td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, Pmat_vec, Fmat_vec, &
-                       Hmat_vec, r, pc, ntatom, natom, Smat, d, Iz, M)
+                       Hmat_vec, r, pc, ntatom, natom, Smat, d, Iz)
    call spunpack('L', M, Fmat_vec, Smat_initial)
 
    ! Initialises transport if required.
@@ -285,8 +285,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
       call td_calc_energy(E, E1, E2, En, Ex, Es, MM, Pmat_vec, Fmat_vec,      &
                           Fmat_vec2, Gmat_vec, Ginv_vec, Hmat_vec, is_lpfrg,  &
-                          transport_calc, t/0.024190D0, M, Md, open, r, d, Iz,&
-                          natom, ntatom, MEMO)
+                          t/0.024190D0, open, r, d, natom, ntatom, MEMO)
 
       call g2g_timer_sum_pause("TD - TD Step Energy")
       if (verbose .gt. 2) write(*,'(A,I6,A,F12.6,A,F12.6,A)') "  TD Step: ", &
@@ -311,12 +310,12 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 #ifdef CUBLAS
       if (is_lpfrg) then
          call td_bc_fock_cu(M_f,M, MM, Fmat_vec, fock_aop, devPtrX,natom,     &
-                            nshell,ncont, istep, t/0.024190D0)
+                            istep, t/0.024190D0)
 
          if (OPEN) then
 
             call td_bc_fock_cu(M_f,M, MM, Fmat_vec2, fock_bop, devPtrX, natom,  &
-                               nshell,ncont, istep, t/0.024190D0)
+                               istep, t/0.024190D0)
             call td_verlet_cu(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop,   &
                               rhonew, istep, Im, dt_lpfrg, transport_calc,     &
                               natom, Nuc, Iz, overlap, sqsm, devPtrY,devPtrXc, &
@@ -341,14 +340,13 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
                               rhonew,devPtrX, devPtrXc, factorial, NBCH,       &
                               dt_magnus, natom, transport_calc, Nuc, Iz,       &
                               istep, overlap,sqsm, devPtrY,                    &
-                              t/0.024190D0, M_f, nshell, ncont, fock_bop,     &
-                              rho_bop)
+                              t/0.024190D0, M_f, fock_bop, rho_bop)
          else
             call td_magnus_cu(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop,      &
                               rhonew, devPtrX, devPtrXc, factorial, NBCH,      &
                               dt_magnus, natom, transport_calc, Nuc, Iz,       &
                               istep, overlap, sqsm, devPtrY,                   &
-                              t/0.024190D0, M_f, nshell, ncont)
+                              t/0.024190D0, M_f)
          endif
       end if
 
@@ -359,20 +357,20 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
 
 #else
       if (is_lpfrg) then
-         call td_bc_fock(M_f, M, MM, Fmat_vec, fock_aop,Xmat, natom, nshell,    &
-                         ncont, istep,t/0.024190D0)
+         call td_bc_fock(M_f, M, MM, Fmat_vec, fock_aop,Xmat, natom, istep,    &
+                         t/0.024190D0)
          if (OPEN) then
-            call td_bc_fock(M_f, M, MM, Fmat_vec2, fock_bop,Xmat, natom, nshell,&
-                            ncont, istep,t/0.024190D0)
+            call td_bc_fock(M_f, M, MM, Fmat_vec2, fock_bop,Xmat, natom, istep,&
+                            t/0.024190D0)
 
             call td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop,      &
                            rhonew, istep, Im, dt_lpfrg, transport_calc, natom, &
-                           Nuc, Iz, overlap, sqsm, Xmat, Ymat, Xtrans,         &
+                           Nuc, Iz, overlap, sqsm, Ymat, Xtrans,         &
                            fock_bop, rho_bop)
          else
             call td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop,      &
                            rhonew, istep, Im, dt_lpfrg, transport_calc, natom, &
-                           Nuc, Iz, overlap, sqsm, Xmat, Ymat, Xtrans)
+                           Nuc, Iz, overlap, sqsm, Ymat, Xtrans)
          end if
 
          if (propagator.eq.2) then
@@ -387,12 +385,12 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
             call td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew, &
                            factorial,NBCH, dt_magnus, natom, transport_calc,   &
                            Nuc, Iz, istep, overlap, sqsm, Xmat, Ymat, Xtrans,  &
-                           t/0.024190D0, M_f, nshell, ncont, fock_bop, rho_bop)
+                           t/0.024190D0, M_f, fock_bop, rho_bop)
          else
             call td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew, &
                            factorial,NBCH, dt_magnus, natom, transport_calc,   &
                            Nuc, Iz, istep, overlap, sqsm, Xmat, Ymat, Xtrans,  &
-                           t/0.024190D0, M_f, nshell, ncont)
+                           t/0.024190D0, M_f)
          end if
       endif
 
@@ -461,8 +459,7 @@ subroutine TD(fock_aop, rho_aop, fock_bop, rho_bop)
       ! Dipole Moment calculation.
       call td_dipole(Pmat_vec, t, tdstep, Fx, Fy, Fz, istep, propagator,is_lpfrg,134)
       call td_population(M, natom, rho_aux(MTB+1:MTB+M,MTB+1:MTB+M,:),           &
-                         Smat_initial, sqsm, Nuc, Iz, OPEN, istep, propagator, &
-                         is_lpfrg)
+                         Smat_initial, Nuc, Iz, OPEN, istep, propagator, is_lpfrg)
 
       ! Population analysis.
       if (transport_calc) call transport_population(M, dim3, natom, Nuc, Iz,   &
@@ -639,13 +636,13 @@ subroutine td_integration_setup(igrid2, igpu)
 end subroutine td_integration_setup
 
 subroutine td_integral_1e(E1, En, E1s, Ens, MM, igpu, nsol, Pmat, Fmat, Hmat,&
-                          r, pc, ntatom, natom, Smat, d, Iz, M)
+                          r, pc, ntatom, natom, Smat, d, Iz)
    use faint_cpu, only: int1, intsol
    use mask_ecp , only: ECP_fock
    implicit none
 
-   double precision, intent(in) :: pc(ntatom), r(ntatom,3)
-   integer         , intent(in) :: M, MM, igpu, nsol, natom, ntatom, Iz(natom)
+   double precision, intent(in)    :: pc(ntatom), r(ntatom,3)
+   integer         , intent(in)    :: MM, igpu, nsol, natom, ntatom, Iz(natom)
    double precision, intent(inout) :: Fmat(MM), Hmat(MM), E1, En, E1s, Ens
    double precision, allocatable, intent(in)    :: d(:,:)
    double precision, allocatable, intent(inout) :: Pmat(:), Smat(:,:)
@@ -687,7 +684,7 @@ end subroutine td_integral_1e
 subroutine td_overlap_diag(M_f, M, Smat, X_min, Xmat, Xtrans, Ymat, &
                            Ytrans, Xmm)
 
-   use tbdft_data, only:tbdft_calc, MTB
+   use tbdft_data, only:tbdft_calc
    use tbdft_subs, only:getXY_TBDFT
 
    implicit none
@@ -833,13 +830,13 @@ subroutine td_check_prop(is_lpfrg, propagator, istep, lpfrg_steps, fock_rst,&
 end subroutine td_check_prop
 
 subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, Pmat, Fmat, Fmat2,    &
-                          Gmat, Ginv, Hmat, is_lpfrg ,transport_calc, time,&
-                          M, Md, open_shell, r, d, Iz, natom, ntatom, MEMO)
+                          Gmat, Ginv, Hmat, is_lpfrg , time, open_shell, r,&
+                          d, natom, ntatom, MEMO)
    use faint_cpu , only: int3lu
    use field_subs, only: field_calc
    implicit none
-   integer, intent(in)    :: MM, natom, ntatom, Iz(natom), M, Md
-   logical, intent(in)    :: is_lpfrg, transport_calc
+   integer, intent(in)    :: MM, natom, ntatom
+   logical, intent(in)    :: is_lpfrg
    real*8 , intent(in)    :: time, r(ntatom,3), d(natom,natom)
    real*8 , intent(inout) :: E, E1, E2, En, Ex, Es, Hmat(MM), Pmat(MM), &
                              Fmat(MM), Fmat2(MM), Ginv(:), Gmat(:)
@@ -858,7 +855,7 @@ subroutine td_calc_energy(E, E1, E2, En, Ex, Es, MM, Pmat, Fmat, Fmat2,    &
    endif
 
    ! ELECTRIC FIELD CASE - Perturbation type: Gaussian (default).
-   call field_calc(E1, time, Pmat, Fmat2, Fmat, r, d, Iz, &
+   call field_calc(E1, time, Pmat, Fmat2, Fmat, r, d, &
                    natom, ntatom, open_shell)
 
    ! Add 1e contributions to E1.
@@ -900,7 +897,7 @@ subroutine td_dipole(rho, t, tdstep, Fx, Fy, Fz, istep, propagator, is_lpfrg, &
    return
 end subroutine td_dipole
 
-subroutine td_population(M, natom, rho, Smat_init, sqsm, Nuc, Iz, open_shell, &
+subroutine td_population(M, natom, rho, Smat_init, Nuc, Iz, open_shell, &
                          nstep, propagator, is_lpfrg)
    use td_data, only: td_do_pop
    use fileio , only: write_population
@@ -908,7 +905,7 @@ subroutine td_population(M, natom, rho, Smat_init, sqsm, Nuc, Iz, open_shell, &
    integer         , intent(in) :: M, natom, Nuc(M), Iz(natom), nstep, &
                                    propagator
    logical         , intent(in) :: open_shell, is_lpfrg
-   double precision, intent(in) :: Smat_init(M,M), sqsm(M,M)
+   double precision, intent(in) :: Smat_init(M,M)
 #ifdef TD_SIMPLE
    complex*8       , intent(in) :: rho(:,:,:)
 #else
@@ -1007,8 +1004,8 @@ subroutine td_finalise_cublas(devPtrX, devPtrY, devPtrXc)
    call CUBLAS_SHUTDOWN()
 end subroutine td_finalise_cublas
 
-subroutine td_bc_fock_cu(M_f,M, MM, Fmat, fock_op, devPtrX, natom, nshell, &
-                         ncont, istep, time)
+subroutine td_bc_fock_cu(M_f,M, MM, Fmat, fock_op, devPtrX, natom, &
+                         istep, time)
    use tbdft_data,        only:tbdft_calc, MTB
    use tbdft_subs,        only:chimeraTBDFT_evol
    use fockbias_subs   , only: fockbias_apply
@@ -1020,11 +1017,8 @@ subroutine td_bc_fock_cu(M_f,M, MM, Fmat, fock_op, devPtrX, natom, nshell, &
    real*8   , intent(in)      :: time
    real*8   , intent(inout)   :: Fmat(MM)
    real*8 :: fock_0(M,M), fock(M_f,M_f)
-   real*8 :: Xtemp(M_f,M_f)
    integer, intent(in)  :: natom
-   integer, intent(in)  :: ncont(M)
    integer, intent(in)  :: istep
-   integer, intent(in)  :: nshell(0:3)
 
    call g2g_timer_start('fock')
    call spunpack('L', M, Fmat, fock_0)
@@ -1074,7 +1068,6 @@ subroutine td_verlet_cu(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew, &
                                  rhonew(M_f,M_f,dim3)
    complex*16, allocatable    :: rho(:,:,:), rho_aux(:,:,:)
 #endif
-   integer :: icount, jcount
 
    allocate(rho(M_f, M_f, dim3), rho_aux(M_f,M_f,dim3))
 
@@ -1132,8 +1125,7 @@ end subroutine td_verlet_cu
 subroutine td_magnus_cu(M, dim3, OPEN,fock_aop, F1a, F1b, rho_aop, rhonew,     &
                         devPtrX, devPtrXc, factorial, NBCH, dt_magnus, natom,  &
                         transport_calc, Nuc, Iz, istep, overlap, sqsm,         &
-                        devPtrY, time, M_f, nshell,ncont, fock_bop,           &
-                        rho_bop)
+                        devPtrY, time, M_f, fock_bop, rho_bop)
    use cublasmath    ,   only: basechange_cublas
    use propagators   ,   only: cupredictor, cumagnusfac
    use transport_subs,   only: transport_propagate_cu
@@ -1151,7 +1143,6 @@ subroutine td_magnus_cu(M, dim3, OPEN,fock_aop, F1a, F1b, rho_aop, rhonew,     &
    integer  , intent(in)         :: M_f, dim3
    integer*8, intent(in)         :: devPtrX, devPtrXc, devPtrY
    real*8   , intent(in)         :: dt_magnus, factorial(NBCH), time
-   integer  , intent(in)         :: nshell(0:3), ncont(M)
    real*8   , intent(inout)      :: F1a(M_f,M_f,dim3), F1b(M_f,M_f,dim3),  &
                                     overlap(:,:), sqsm(M,M)
 #ifdef TD_SIMPLE
@@ -1240,8 +1231,7 @@ end subroutine td_magnus_cu
 
 #else
 
-subroutine td_bc_fock(M_f, M, MM, Fmat, fock_op, Xmm, natom, nshell,ncont,    &
-                      istep, time)
+subroutine td_bc_fock(M_f, M, MM, Fmat, fock_op, Xmm, natom, istep, time)
 
    use tbdft_data,        only:tbdft_calc,MTB
    use tbdft_subs,        only:chimeraTBDFT_evol
@@ -1252,15 +1242,12 @@ subroutine td_bc_fock(M_f, M, MM, Fmat, fock_op, Xmm, natom, nshell,ncont,    &
    integer, intent(in)    :: M, MM, M_f
    real*8 , intent(inout) :: Fmat(MM), Xmm(M_f,M_f)
    real*8 , allocatable   :: fock(:,:)
-   real*8 , allocatable   :: Xtemp(:,:)
    real*8 , allocatable   :: fock_0(:,:)
    integer, intent(in)  :: natom
-   integer, intent(in)  :: ncont(M)
    integer, intent(in)  :: istep
-   integer, intent(in)  :: nshell(0:3)
    real*8, intent(in)   :: time
 
-   allocate(fock(M_f,M_f),Xtemp(M_f,M_f),fock_0(M,M))
+   allocate(fock(M_f,M_f),fock_0(M,M))
 
    call g2g_timer_start('fock')
    call spunpack('L', M, Fmat, fock_0)
@@ -1285,7 +1272,7 @@ end subroutine td_bc_fock
 
 subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew,    &
                      istep, Im, dt_lpfrg, transport_calc, natom, Nuc, Iz,      &
-                     overlap, sqsm, Xmat, Ymat, Xtrans, fock_bop, rho_bop)
+                     overlap, sqsm, Ymat, Xtrans, fock_bop, rho_bop)
    use transport_subs,   only : transport_propagate
    use tbdft_data     ,   only : tbdft_calc, rhold_AOTB, rhonew_AOTB
    use mathsubs      ,   only : basechange_gemm
@@ -1299,8 +1286,7 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew,    &
    integer   , intent(in)        :: M, M_f, istep, natom, Nuc(M), Iz(natom),  &
                                     dim3
    real*8    , intent(in)        :: dt_lpfrg
-   real*8    , intent(in)        :: Xmat(M_f, M_f), Xtrans(M_f, M_f),      &
-                                    Ymat(M_f, M_f)
+   real*8    , intent(in)        :: Xtrans(M_f, M_f), Ymat(M_f, M_f)
    logical   , intent(in)        :: transport_calc
    real*8    , intent(inout)     :: overlap(:,:), sqsm(M,M)
 #ifdef TD_SIMPLE
@@ -1312,8 +1298,6 @@ subroutine td_verlet(M, M_f, dim3, OPEN, fock_aop, rhold, rho_aop, rhonew,    &
                                     rhonew(M_f,M_f, dim3)
    complex*16, allocatable       :: rho(:,:,:), rho_aux(:,:,:)
 #endif
-   integer :: icount, jcount
-   real*8 :: traza
 
    allocate(rho(M_f, M_f, dim3), rho_aux(M_f, M_f, dim3))
 
@@ -1376,7 +1360,7 @@ end subroutine td_verlet
 subroutine td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew,       &
                      factorial, NBCH, dt_magnus, natom, transport_calc, Nuc,   &
                      Iz, istep, overlap, sqsm, Xmat, Ymat, Xtrans, time, M_f, &
-                     nshell, ncont, fock_bop, rho_bop)
+                     fock_bop, rho_bop)
    use transport_subs,   only: transport_propagate
    use tbdft_data,        only: tbdft_calc, MTB, rhold_AOTB, rhonew_AOTB
    use tbdft_subs,        only: chimeraTBDFT_evol
@@ -1395,8 +1379,6 @@ subroutine td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew,       &
    real*8   , intent(in)      :: Xmat(M_f, M_f), Ymat(M_f,M_f)
    real*8   , intent(inout)   :: F1a(M_f,M_f, dim3), F1b(M_f,M_f, dim3),   &
                                  overlap(:,:), sqsm(M,M)
-   integer, intent(in)        :: nshell(0:3)
-   integer, intent(in)        :: ncont(M)
 #ifdef TD_SIMPLE
    complex*8 , intent(inout)  :: rhonew(M_f,M_f,dim3)
    complex*8, allocatable     :: rho(:,:,:), rho_aux(:,:,:), rho_aux0(:,:)
@@ -1405,7 +1387,6 @@ subroutine td_magnus(M, dim3, OPEN, fock_aop, F1a, F1b, rho_aop, rhonew,       &
    complex*16, allocatable    :: rho(:,:,:),rho_aux(:,:,:), rho_aux0(:,:)
 #endif
    real*8, allocatable        :: fock_aux(:,:,:), fock(:,:,:)
-   integer :: ii, jj
 
    allocate(rho(M_f,M_f,dim3), rho_aux(M_f,M_f,dim3),                      &
             fock_aux(M_f,M_f, dim3), fock(M_f, M_f, dim3),rho_aux0(M_f,M_f))

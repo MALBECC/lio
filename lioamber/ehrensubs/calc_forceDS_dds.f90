@@ -41,7 +41,7 @@ subroutine calc_forceDS_dds( natoms, nbasis, pos, vel, Mat0, fterm )
       ai=gauss_expo(ni,ii)
       aj=gauss_expo(nj,jj)
       cij=gauss_coef(ni,ii)*gauss_coef(nj,jj)
-      call calc_gintmat( 0, 1, ai, aj, ri, rj, IMTX )
+      call calc_gintmat( ai, aj, ri, rj, IMTX )
 
       do kj=1,3
       do ki=1,3

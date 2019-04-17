@@ -52,14 +52,13 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    ! This routine receives: F1a, F1b, rho2
    ! And gives: F5 = F(t+(deltat/2))
    use garcha_mod   , only: NBCH, rhoalpha, rhobeta, OPEN, r, d, natom,      &
-                            ntatom, Iz, MEMO, Fmat_vec, Fmat_vec2, Ginv_vec, &
+                            ntatom, MEMO, Fmat_vec, Fmat_vec2, Ginv_vec, &
                             Hmat_vec, Gmat_vec, Pmat_vec
-   use field_data   , only: field
    use field_subs   , only: field_calc
    use mathsubs     , only: basechange
    use faint_cpu    , only: int3lu
    use fockbias_subs, only: fockbias_apply
-   use basis_data   , only: M, Md
+   use basis_data   , only: M
 
    implicit none
    ! MTB is only used in DFTB, it equals 0 otherwise.
@@ -75,7 +74,7 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    double complex, intent(in)  :: rho2(M_in,M_in,dim3)
    double complex, allocatable :: rho4(:,:,:), rho2t(:,:,:)
 #endif
-   integer :: i,j,k,kk, M2
+   integer :: M2
    double precision :: E2, tdstep1, Ex, E1
    double precision, allocatable :: F3(:,:,:), FBA(:,:,:)
 
@@ -96,13 +95,13 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
    if (OPEN) then
       call magnus(F3(:,:,2), rho2(:,:,2), rho4(:,:,2), M_in, NBCH, tdstep1, &
                   factorial)
-      rho2t(:,:,1) = basechange(M_in, Xmat, rho4(:,:,1), Xtrans)
-      rho2t(:,:,2) = basechange(M_in, Xmat, rho4(:,:,2), Xtrans)
+      rho2t(:,:,1) = basechange(M_in, Xmat, rho4(:,:,1))
+      rho2t(:,:,2) = basechange(M_in, Xmat, rho4(:,:,2))
       call sprepack_ctr('L', M, rhoalpha, rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
       call sprepack_ctr('L', M, rhobeta , rho2t(MTB+1:MTB+M,MTB+1:MTB+M,2))
       Pmat_vec = rhoalpha + rhobeta
    else
-      rho2t(:,:,1) = basechange(M_in, Xmat, rho4(:,:,1), Xtrans)
+      rho2t(:,:,1) = basechange(M_in, Xmat, rho4(:,:,1))
       call sprepack_ctr('L', M, Pmat_vec, rho2t(MTB+1:MTB+M,MTB+1:MTB+M,1))
    end if
 
@@ -110,17 +109,17 @@ subroutine predictor(F1a, F1b, FON, rho2, factorial, Xmat, Xtrans, timestep, &
                Hmat_vec, open, MEMO)
    call g2g_solve_groups(0, Ex, 0)
    call field_calc(E1, time, Pmat_vec, Fmat_vec2, Fmat_vec, r, d, &
-                   Iz, natom, ntatom, open)
+                   natom, ntatom, open)
    FBA = FON
    call spunpack('L', M, Fmat_vec, FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
 
    call fockbias_apply(time, FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
-   FON(:,:,1) = basechange(M_in, Xtrans, FBA(:,:,1), Xmat)
+   FON(:,:,1) = basechange(M_in, Xtrans, FBA(:,:,1))
 
    if (OPEN) then
       call spunpack('L', M, Fmat_vec2, FBA(MTB+1:MTB+M,MTB+1:MTB+M,2))
       call fockbias_apply(time, FBA(MTB+1:MTB+M,MTB+1:MTB+M,2))
-      FON(:,:,2) = basechange(M_in, Xtrans, FBA(:,:,2), Xmat)
+      FON(:,:,2) = basechange(M_in, Xtrans, FBA(:,:,2))
    end if
 
    deallocate(rho4, rho2t, F3, FBA)
@@ -265,15 +264,14 @@ subroutine cupredictor(F1a, F1b, FON, rho2, devPtrX, factorial, devPtrXc, &
    ! Predictor-Corrector Cheng, V.Vooris.PhysRevB.2006.74.155112
    ! This routine receives: F1a, F1b, rho2
    ! And gives: F5 = F(t+(deltat/2))
-   use garcha_mod   , only: NBCH, rhoalpha, rhobeta, OPEN, r, d, natom,      &
-                            ntatom, Iz, MEMO, Fmat_vec, Fmat_vec2, Ginv_vec, &
+   use garcha_mod   , only: NBCH, rhoalpha, rhobeta, OPEN, r, d, natom,  &
+                            ntatom, MEMO, Fmat_vec, Fmat_vec2, Ginv_vec, &
                             Hmat_vec, Gmat_vec, Pmat_vec
-   use field_data   , only: field
    use field_subs   , only: field_calc
    use cublasmath   , only: basechange_cublas
    use faint_cpu    , only: int3lu
    use fockbias_subs, only: fockbias_apply
-   use basis_data   , only: M, Md
+   use basis_data   , only: M
 
    implicit none
    ! MTB is only used in DFTB, it equals 0 otherwise.
@@ -325,7 +323,7 @@ subroutine cupredictor(F1a, F1b, FON, rho2, devPtrX, factorial, devPtrXc, &
                Hmat_vec, open, MEMO)
    call g2g_solve_groups(0, Ex, 0)
    call field_calc(E1, time, Pmat_vec, Fmat_vec2, Fmat_vec, r, d, &
-                   Iz, natom, ntatom, open)
+                   natom, ntatom, open)
    FBA = FON
    call spunpack('L', M, Fmat_vec, FBA(MTB+1:MTB+M,MTB+1:MTB+M,1))
 

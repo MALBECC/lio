@@ -87,7 +87,7 @@ subroutine ehren_in( qmcoords, qmvels, clcoords, nsolin, dipxyz, E)
    real*8,  intent(inout) :: dipxyz(3)
    real*8,  intent(inout) :: E
 
-   integer :: ii, kk, funit
+   integer :: ii, kk
 
    if (allocated(nucpos)) deallocate(nucpos)
    if (allocated(nucvel)) deallocate(nucvel)
@@ -182,14 +182,13 @@ end subroutine ehren_in
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
 subroutine SCF_hyb (hyb_natom, mm_natom, hyb_r, E, fdummy, Iz_cl,do_SCF, do_QM_forces)
-    use garcha_mod, only : r,rqm,pc, Iz, natom, nsol, ntatom, v, Em, rm
+    use garcha_mod, only : r,rqm,pc, Iz, natom, nsol, ntatom
     implicit none
     integer, intent(in) :: hyb_natom, mm_natom !number of QM and MM atoms
     double precision, intent(in) :: hyb_r(3,hyb_natom+mm_natom), Iz_cl(mm_natom) !positions and charge of MM atoms
     double precision, intent(out) :: E !total LIO energy
     double precision, intent(out) :: fdummy(3,hyb_natom+mm_natom) !forces
     double precision :: fa(3,hyb_natom), fmm(3,mm_natom) !QM and MM forces
-    integer :: dummy !auxiliar variable
     REAL*8 :: dipxyz(3) !dipole
     integer :: i,j !auxiliar
     logical :: do_SCF, do_QM_forces !SCF & forces control variable

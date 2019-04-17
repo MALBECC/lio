@@ -77,8 +77,6 @@ end subroutine converger_init
 #else
    double precision, intent(in) :: Xmat(M_in,M_in), Ymat(M_in,M_in)
 #endif
-
-   double precision :: damp
    integer          :: ndiist, ii, jj, kk, kknew, lwork, info
    double precision, allocatable :: fock00(:,:), EMAT(:,:), diag1(:,:),      &
                                     suma(:,:), scratch1(:,:), scratch2(:,:), &

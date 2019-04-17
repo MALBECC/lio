@@ -83,7 +83,7 @@ module cubegen
    use garcha_mod, only: natom, r, nco, Iz,  cube_dens, cube_orb, Pmat_vec, &
                          cube_elec, cube_sel, cube_orb_file, cube_res, &
                          cube_dens_file, cube_sqrt_orb, Pmat_en_wgt
-   use basis_data, only: M, Md, a, c, ncont, nuc, nshell, MM, MMd
+   use basis_data, only: M, a, c, ncont, nuc, nshell
 
    implicit none
 
@@ -91,14 +91,11 @@ module cubegen
    real*8 :: min_exps(120),x0(3),x1(3),origin(3),eval_p(3)
    real*8 :: max_radius, max_dim, vox_dim, p_val, p_func
    real*8 :: p_dist, Morb
-   integer :: i,j,k,ii,jj,kk,iii,jjj,kkk
+   integer :: i,j,k,ii,jj,kk,jjj,kkk
    integer :: ns, np, ni
    integer :: ivox, ivoxx, ivoxy, ivoxz, kk_dens, kk_orb
-   integer :: M1, M2
 
    real, parameter :: expmax = 10
-
-   M1  = 1         ! first P
 
    if (cube_dens) open(unit=4242,file=cube_dens_file)
    if (cube_orb) open(unit=4243,file=cube_orb_file)
@@ -339,7 +336,7 @@ module cubegen
 !##############################################################################!
 subroutine elec(NX, NY, NZ, deltax, xMin, yMin, zMin)
    use garcha_mod   , only: r, d, natom, cube_elec_file, Pmat_vec, Iz
-   use constants_mod, only: PI, PI32
+   use constants_mod, only: PI
    use basis_data   , only: M, norm, nShell, nCont, nuc, a, c
    use liosubs_math , only: funct
 

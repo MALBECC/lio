@@ -169,7 +169,7 @@ end subroutine construct_rhoTBDFT
 subroutine build_chimera_TBDFT (M_in,fock_in, fock_TBDFT, natom)
 
    use tbdft_data, only: MTBDFT, MTB, Iend_TB, end_bTB, alfaTB, betaTB, &
-                         gammaTB, Vbias_TB, gammaW
+                         gammaTB, gammaW
 
    integer     , intent(in)  :: M_in
    integer     , intent(in)  :: natom
@@ -367,7 +367,6 @@ subroutine tbdft_td_output(M_in, thrddim, rho_aux, overlap, istep, Iz, natom, &
    integer      :: ii
    real(kind=8) :: I_TB_A(thrddim), I_TB_B(thrddim), I_TB_M(thrddim)
    real(kind=8) :: chargeA_TB, chargeB_TB, chargeM_TB
-   real(kind=8) :: orb_charge, tot_orb_charge
    real(kind=8) :: qe(natom)
    real(kind=8) :: rhoscratch(M_in,M_in)
 

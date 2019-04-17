@@ -17,7 +17,7 @@ subroutine dip(uDip, P_density)
 
     use garcha_mod   , only: NCO, Nunp, Iz, r, pc, d, natom, nsol
     use basis_data   , only: a, c, Nuc, ncont, M, nshell, norm
-    use constants_mod, only: pi32, pi5
+    use constants_mod, only: pi32
 
     implicit none
     double precision, intent(in)    :: P_density(M*(M+1)/2)
@@ -27,7 +27,7 @@ subroutine dip(uDip, P_density)
                         aux6(3), srs(3), Q(3), uDipAt(3)
     double precision :: sq3, alf, alf2, cc, cCoef, dd, dp, dijs, f1, f2,     &
                         factor, z2, zij, Qc, ps, pis, pjs, ss, t0, t1
-    integer :: M2, ns, np, nd, i, j, k, ii, jj, l1, l2, l3, l4, l12, l34, n, &
+    integer :: M2, ns, np, nd, i, j, k, ii, jj, l1, l2, l3, l4, l12, l34,    &
                ni, nj, iCrd, nElec
      
     ! Constants

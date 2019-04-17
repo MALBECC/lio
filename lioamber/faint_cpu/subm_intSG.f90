@@ -29,7 +29,7 @@
 module subm_intSG
 contains
 subroutine intSG(ff, wgt_rho, r, d, natom, ntatom)
-   use basis_data   , only: a, c, Nuc, ncont, nshell, M, Md, NORM
+   use basis_data   , only: a, c, Nuc, ncont, nshell, M, NORM
    use constants_mod, only: pi32
    implicit none
 
@@ -42,9 +42,9 @@ subroutine intSG(ff, wgt_rho, r, d, natom, ntatom)
 
    double precision  :: ovlap, fsp, sq3, ccoef, rexp, Zij, Z2, fs, fd, f1, f2, &
                         ti, tj, te, t0, t1, t2, t4, t5, t10, t11, t12, t13,    &
-                        t14, t15, t16, t17, ss, spi, spj, spk, ps, pp, pd,     &
-                        pidkl, pipk, pis, pjdkl, pjpk, pjs, ds, dp, dd, df,    &
-                        dsd, dijpk, dijpl, dijs, Q(3)
+                        t14, t15, t16, t17, ss, spj, spk, pp, pd, pidkl, pipk, &
+                        pis, pjdkl, pjpk, pjs, ds, dp, dd, df, dsd, dijpk,     &
+                        dijpl, dijs, Q(3)
 
    sq3 = 1.D0
    if (NORM) sq3 = sqrt(3.D0)

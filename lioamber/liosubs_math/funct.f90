@@ -52,7 +52,6 @@ function FMCH(M,X)
    double precision :: Y, A, PTLSUM, TERM, B, XD, APPROX, FIMULT, FMCH, FIPROP,&
                        NOTRMS
    integer          :: I
-   double precision, parameter :: SQPI = 1.77245385090551588D0
 
    Y = DEXP(-X)
 

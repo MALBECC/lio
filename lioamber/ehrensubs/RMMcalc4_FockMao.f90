@@ -14,7 +14,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
           pc, Fmat_vec, Fmat_vec2, Ginv_vec, Hmat_vec, Gmat_vec, Pmat_vec
 
    use basis_data, &
-   &only: M, Md, kkind, kkinds, cool, cools, MM, MMd
+   &only: M, kkind, kkinds, cool, cools, MM
 
    use ehrendata, &
    &only: eefld_on, eefld_ampx, eefld_ampy, eefld_ampz, eefld_wavelen        &
@@ -118,7 +118,7 @@ subroutine RMMcalc4_FockMao( DensMao, FockMao, DipMom, Energy )
      FieldNow(2) = eefld_ampy * field_shape
      FieldNow(3) = eefld_ampz * field_shape
      call dip( DipMom, Pmat_vec )
-     call intfld(Fmat_vec2, Fmat_vec, r, d, Iz, natom, ntatom, open, &
+     call intfld(Fmat_vec2, Fmat_vec, r, d, natom, ntatom, open, &
                  g, FieldNow(1), FieldNow(2), FieldNow(3))
 
      dip_times_field = 0.0d0

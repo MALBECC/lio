@@ -27,25 +27,23 @@ subroutine SCF(E)
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use ehrensubs , only: ehrendyn_init
-   use garcha_mod, only : NCO, natom, Nang, number_restr, hybrid_converg, MEMO,&
+   use garcha_mod, only : NCO, natom, number_restr, hybrid_converg, MEMO,&
                           igrid, energy_freq, converge, noconverge, lowdin,    &
                           cubegen_only, VCINP, primera, Nunp, GOLD, igrid2,    &
-                          predcoef, nsol, r, pc, DIIS, told, Etold, Enucl, Iz, &
-                          Eorbs, NMAX,Dbug, doing_ehrenfest, first_step,       &
-                          total_time, MO_coef_at, MO_coef_at_b, Smat, good_cut,&
+                          nsol, r, pc, DIIS, told, Etold, Iz, &
+                          Eorbs, NMAX,Dbug, doing_ehrenfest, &
+                          MO_coef_at, MO_coef_at_b, Smat, good_cut,&
                           ndiis, rhoalpha, rhobeta, OPEN, RealRho, d, ntatom,  &
                           Eorbs_b, npas, X, npasw, Fmat_vec, Fmat_vec2,        &
                           Ginv_vec, Gmat_vec, Hmat_vec, Pmat_en_wgt, Pmat_vec
-   use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
-                       FOCK_ECP_read,FOCK_ECP_write,IzECP
+   use ECP_mod, only : ecpmode
    use field_data, only: field, fx, fy, fz
    use field_subs, only: field_calc, field_setup_old
-   use td_data, only: timedep, tdrestart, tdstep
+   use td_data, only: timedep, tdrestart
    use transport_data, only : generate_rho0
    use time_dependent, only : TD
    use faint_cpu, only: int1, intsol, int2, int3mem, int3lu
-   use tbdft_data, only : tbdft_calc, MTBDFT, MTB, chargeA_TB, chargeB_TB,     &
-                         rhoa_tbdft, rhob_tbdft
+   use tbdft_data, only : tbdft_calc, MTBDFT, MTB, rhoa_tbdft, rhob_tbdft
    use tbdft_subs, only : tbdft_init, getXY_TBDFT, build_chimera_TBDFT,        &
                           extract_rhoDFT, construct_rhoTBDFT, tbdft_scf_output
    use cubegen       , only: cubegen_vecin, cubegen_matin, cubegen_write
@@ -67,8 +65,7 @@ subroutine SCF(E)
    use fileio       , only: write_energies, write_energy_convergence, &
                             write_final_convergence
    use fileio_data  , only: verbose
-   use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, ncont, a, &
-                            c, M, Md
+   use basis_data   , only: kkinds, kkind, cools, cool, Nuc, nshell, M, Md
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -85,10 +82,6 @@ subroutine SCF(E)
 !  The following two variables are in a part of the code that is never
 !  used. Check if these must be taken out...
    real*8  :: factor
-   integer :: IDAMP
-
-   real*8, allocatable :: rho_test(:,:)
-   real*8, allocatable :: fockat(:,:)
    real*8, allocatable :: morb_coefon(:,:)
 
 !------------------------------------------------------------------------------!
@@ -117,11 +110,8 @@ subroutine SCF(E)
    real*8, allocatable :: sqsmat(:,:)
    real*8, allocatable :: tmpmat(:,:)
 
-   real*8              :: dipxyz(3)
-
 ! FIELD variables (maybe temporary)
-   real*8  :: Qc, Qc2, g
-   integer :: ng2
+   real*8  :: Qc, Qc2
 
 !------------------------------------------------------------------------------!
 ! Energy contributions and convergence
@@ -155,10 +145,6 @@ subroutine SCF(E)
    real*8, allocatable :: xnano(:,:)
    integer :: MM, MM2, MMd, Md2
    integer :: M1, M2
-
-   real*8, allocatable :: Y(:,:)
-   real*8, allocatable :: Ytrans(:,:)
-   real*8, allocatable :: Xtrans(:,:)
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 !carlos: Operators for matrices with alpha and beta spins.
@@ -524,7 +510,7 @@ subroutine SCF(E)
         if ( generate_rho0 ) then
            if (field) call field_setup_old(1.0D0, 0, fx, fy, fz)
            call field_calc(E1, 0.0D0, Pmat_vec(1:MM), Fmat_vec2, Fmat_vec, &
-                           r, d, Iz, natom, ntatom, open)
+                           r, d, natom, ntatom, open)
 
            do kk=1,MM
                E1 = E1 + Pmat_vec(kk) * Hmat_vec(kk)

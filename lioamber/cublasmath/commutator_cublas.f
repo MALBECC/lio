@@ -17,7 +17,7 @@
        integer*8 devPtrC
        parameter(sizeof_real=8)
        REAL*8 alpha,beta
-       integer i,j,stat
+       integer stat
        external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
        external CUBLAS_SHUTDOWN, CUBLAS_ALLOC, CUBLAS_DGEMM
        integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
@@ -321,7 +321,7 @@
        integer*8 devPtrA
        integer*8 devPtrB
        integer*8 devPtrC
-       integer i,j,stat
+       integer stat
        external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
        external CUBLAS_SHUTDOWN, CUBLAS_ALLOC, CUBLAS_ZGEMM
        integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
@@ -633,7 +633,7 @@
        integer*8 devPtrA
        integer*8 devPtrB
        integer*8 devPtrC
-       integer i,j,stat
+       integer stat
        external CUBLAS_INIT, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX
        external CUBLAS_SHUTDOWN, CUBLAS_ALLOC, CUBLAS_CGEMM
        integer CUBLAS_ALLOC, CUBLAS_SET_MATRIX, CUBLAS_GET_MATRIX

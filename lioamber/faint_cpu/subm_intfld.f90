@@ -8,7 +8,6 @@
 !   · ntatom: total number of atoms (QM+MM)                                    !
 !   · r(ntatom,3): atoms' coordinates.                                         !
 !   · d(natom,natom): distances between QM atoms.                              !
-!   · Iz(natom): nuclear charge for each QM atom.                              !
 !   · open_shell: boolean indicating open-shell calculation.                   !
 !   · g: symmetry factor (for cavities).                                       !
 !   · ux: x-component for the dipole moment.                                   !
@@ -33,12 +32,12 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 module subm_intfld
 contains
-subroutine intfld(Fmat_b, Fmat, r, d, Iz, natom, ntatom, open_shell, g, ux, uy,&
+subroutine intfld(Fmat_b, Fmat, r, d, natom, ntatom, open_shell, g, ux, uy,&
                   uz)
-   use basis_data, only: a, c, nuc, ncont, nshell, NORM, M, Md
+   use basis_data, only: a, c, nuc, ncont, nshell, NORM, M
    use constants_mod, only: pi32
    implicit none
-   integer         , intent(in)    :: natom, ntatom, Iz(natom)
+   integer         , intent(in)    :: natom, ntatom
    logical         , intent(in)    :: open_shell
    double precision, intent(in)    :: g, ux, uy, uz, r(ntatom,3), d(natom,natom)
    double precision, intent(inout) :: Fmat(:), Fmat_b(:)
@@ -47,7 +46,7 @@ subroutine intfld(Fmat_b, Fmat, r, d, Iz, natom, ntatom, open_shell, g, ux, uy,&
    double precision :: aux(3) , aux1(3), aux2(3), aux3(3), aux4(3), aux5(3), &
                        aux6(3), Q(3)
 
-   integer          :: MM, M2, l1, l2, l3, l4, Ll(3), ns, np, nd, ifunct, &
+   integer          :: M2, l1, l2, l3, l4, Ll(3), ns, np, nd, ifunct, &
                        jfunct, nci, ncj, i_ind, j_ind, fock_ind
 
    double precision :: ss, ps, pp, pis, pjs, dp, dijs, sxs, sys, szs, t1, ti, &

@@ -118,7 +118,7 @@ __host__ __device__ void pbeOS_main(
   // Construct total density and contribution to Ex
   scalar_type rho = dens_a + dens_b;
   expbe = (expbe_a * (dens_a / rho) + expbe_b * (dens_b/rho));
-  if (rho < (MINIMUM_DENSITY_VALUE / (scalar_type) 100.0)) { return; };
+  if (rho < (MINIMUM_DENSITY_VALUE * (scalar_type) 1E5)) { return; };
 
   /*-------------------------------------------------------------//
   // PBE correlation

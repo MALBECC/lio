@@ -607,10 +607,10 @@ subroutine SCF(E)
 !CLOSE SHELL OPTION |
 !%%%%%%%%%%%%%%%%%%%%
 #       ifdef CUBLAS
-           call conver(nniter, good, M_f, rho_aop, fock_aop, 1, E, &
+           call conver(nniter, good, M_f, rho_aop, fock_aop, 1, E, NCOa_f,&
                        dev_Xmat, dev_Ymat)
 #       else
-           call conver(nniter, good, M_f, rho_aop, fock_aop, 1, E, &
+           call conver(nniter, good, M_f, rho_aop, fock_aop, 1, E, NCOa_f,&
                        Xmat, Ymat)
 #       endif
 
@@ -650,10 +650,10 @@ subroutine SCF(E)
 !%%%%%%%%%%%%%%%%%%%%
         call g2g_timer_sum_start('SCF acceleration')
 #       ifdef CUBLAS
-           call conver(nniter, good, M_f, rho_bop, fock_bop, 2, E, &
+           call conver(nniter, good, M_f, rho_bop, fock_bop, 2, E, NCOb_f,&
            dev_Xmat, dev_Ymat)
 #       else
-           call conver(nniter, good, M_f, rho_bop, fock_bop, 2, E, &
+           call conver(nniter, good, M_f, rho_bop, fock_bop, 2, E, NCOb_f,&
            Xmat, Ymat)
 #       endif
 

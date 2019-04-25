@@ -63,7 +63,7 @@ subroutine converger_init( M_in, OPshell )
    fock_damped(:,:,:) = 0.0D0
 end subroutine converger_init
 
-   subroutine conver (niter, good, M_in, rho_op, fock_op, spin, energy, &
+   subroutine conver (niter, good, M_in, rho_op, fock_op, spin, energy, n_orbs,&
 #ifdef CUBLAS
                       devPtrX, devPtrY)
 #else
@@ -71,28 +71,27 @@ end subroutine converger_init
 #endif
    use converger_data  , only: damping_factor, hagodiis, fockm, FP_PFm, ndiis, &
                                fock_damped, bcoef, EMAT2, conver_criter,       &
-                               good_cut, energy_list, DIIS_bias
+                               good_cut, energy_list, DIIS_bias, level_shift,  &
+                               lvl_shift_en, lvl_shift_cut
    use typedef_operator, only: operator
    use fileio_data     , only: verbose
    use linear_algebra  , only: matmuldiag
    use converger_ls    , only: changed_to_LS
    implicit none
    ! Spin allows to store correctly alpha or beta information. - Carlos
-   integer         , intent(in)    :: niter, M_in, spin
-   double precision, intent(in)    :: good, energy
-   type(operator)  , intent(inout) :: rho_op, fock_op
-
+   integer       , intent(in)    :: niter, M_in, spin, n_orbs   
 #ifdef  CUBLAS
-   integer*8       , intent(in) :: devPtrX, devPtrY
+   integer*8     , intent(in)    :: devPtrX, devPtrY
 #else
-   double precision, intent(in) :: Xmat(M_in,M_in), Ymat(M_in,M_in)
+   real(kind=8)  , intent(in)    :: Xmat(M_in,M_in), Ymat(M_in,M_in)
 #endif
+   real(kind=8)  , intent(in)    :: good, energy
+   type(operator), intent(inout) :: rho_op, fock_op
 
-   double precision :: damp
-   integer          :: ndiist, ii, jj, kk, kknew, lwork, info, Emin_index
-   double precision, allocatable :: fock00(:,:), EMAT(:,:), diag1(:,:),      &
-                                    suma(:,:), scratch1(:,:), scratch2(:,:), &
-                                    fock(:,:), rho(:,:), work(:)
+   integer      :: ndiist, ii, jj, kk, kknew, lwork, info, Emin_index
+   real(kind=8), allocatable :: fock00(:,:), EMAT(:,:), diag1(:,:),      &
+                                suma(:,:), scratch1(:,:), scratch2(:,:), &
+                                fock(:,:), rho(:,:), work(:)
 
 
 ! INITIALIZATION
@@ -114,39 +113,8 @@ end subroutine converger_init
    call rho_op%Gets_data_AO(rho)
    call fock_op%Gets_data_AO(fock00)
 
-   ndiist = min( niter, ndiis )
-   if (conver_criter /= 1) then
-      allocate( suma(M_in, M_in), diag1(M_in, M_in) )
-      allocate( scratch1(M_in, M_in), scratch2(M_in, M_in) )
-      suma = 0.0D0
-      diag1 = 0.0D0
-      scratch1 = 0.0D0
-      scratch2 = 0.0D0
 
-
-! If DIIS is turned on, update fockm with the current transformed F' (into ON
-! basis) and update FP_PFm with the current transformed [F',P']
-
-      do jj = ndiis-(ndiist-1), ndiis-1
-         fockm(:,:,jj,spin)  = fockm(:,:,jj+1,spin)
-         FP_PFm(:,:,jj,spin) = FP_PFm(:,:,jj+1,spin)
-      enddo
-
-#ifdef CUBLAS
-      call rho_op%BChange_AOtoON(devPtrY, M_in, 'r')
-      call fock_op%BChange_AOtoON(devPtrX, M_in, 'r')
-#else
-      call rho_op%BChange_AOtoON(Ymat, M_in, 'r')
-      call fock_op%BChange_AOtoON(Xmat,M_in, 'r')
-#endif
-      call rho_op%Gets_data_ON(rho)
-      call fock_op%Commut_data_r(rho, scratch1, M_in)
-
-      FP_PFm(:,:,ndiis,spin) = scratch1(:,:)
-      call fock_op%Gets_data_ON( fockm(:,:,ndiis,spin) )
-
-   endif
-
+   ! Checks convergence criteria.
    select case (conver_criter)
       ! Always do damping
       case (1)
@@ -162,7 +130,6 @@ end subroutine converger_init
 
       ! Damping until good enough, diis afterwards
       case(3,5)
-!        Damping until good enaugh, diis afterwards
          if ((good < good_cut) .and. (niter > 2) .and. (.not. changed_to_LS)) then
             if ( (.not. hagodiis) .and. (verbose .gt. 3) ) &
                write(6,'(A,I4)') "  Changing to DIIS at step: ", niter
@@ -177,7 +144,39 @@ end subroutine converger_init
    ! Turn off diis is calculation when change to lineal search, Nick
    if (changed_to_LS) hagodiis = .false.
 
-   ! THIS IS DAMPING
+   ndiist = min( niter, ndiis )
+   if (conver_criter /= 1) then      
+      allocate( suma(M_in, M_in), diag1(M_in, M_in) )
+      allocate( scratch1(M_in, M_in), scratch2(M_in, M_in) )
+      suma = 0.0D0
+      diag1 = 0.0D0
+      scratch1 = 0.0D0
+      scratch2 = 0.0D0
+      
+      ! If DIIS is turned on, update fockm with the current transformed F' (into ON
+      ! basis) and update FP_PFm with the current transformed [F',P']
+
+      do jj = ndiis-(ndiist-1), ndiis-1
+         fockm(:,:,jj,spin)  = fockm(:,:,jj+1,spin)
+         FP_PFm(:,:,jj,spin) = FP_PFm(:,:,jj+1,spin)
+      enddo
+      
+#ifdef CUBLAS
+      call rho_op%BChange_AOtoON(devPtrY, M_in, 'r')
+      call fock_op%BChange_AOtoON(devPtrX, M_in, 'r')
+#else
+      call rho_op%BChange_AOtoON(Ymat, M_in, 'r')
+      call fock_op%BChange_AOtoON(Xmat,M_in, 'r')
+#endif
+      call rho_op%Gets_data_ON(rho)
+      call fock_op%Commut_data_r(rho, scratch1, M_in)
+
+      FP_PFm(:,:,ndiis,spin) = scratch1(:,:)
+      call fock_op%Gets_data_ON( fockm(:,:,ndiis,spin) )
+   endif
+
+   ! THIS IS DAMPING 
+   ! THIS IS SPARTA!
    ! If we are not doing diis this iteration, apply damping to F, save this
    ! F in fock_damped for next iteration's damping and put F' = X^T * F * X in
    ! fock the newly constructed damped matrix is stored, for next iteration in
@@ -191,12 +190,12 @@ end subroutine converger_init
       fock_damped(:,:,spin) = fock
       call fock_op%Sets_data_AO(fock)
 
-#ifdef  CUBLAS
+#ifdef CUBLAS
       call fock_op%BChange_AOtoON(devPtrX,M_in,'r')
 #else
       call fock_op%BChange_AOtoON(Xmat,M_in,'r')
 #endif
-    endif
+   endif
 
    ! DIIS
    if (conver_criter /= 1) then
@@ -237,10 +236,10 @@ end subroutine converger_init
          call matmuldiag( scratch1, scratch2, diag1, M_in )
          EMAT(ndiist,kk) = 0.0d0
 
-         if (kk.ne.ndiist) EMAT(kk,ndiist) = 0.0d0
+         if (kk /= ndiist) EMAT(kk,ndiist) = 0.0d0
          do ii = 1, M_in
             EMAT(ndiist,kk) = EMAT(ndiist,kk) + diag1(ii,ii)
-            if (kk.ne.ndiist) then
+            if (kk /= ndiist) then
                EMAT(kk,ndiist) = EMAT(ndiist,kk)
             endif
          enddo
@@ -261,9 +260,7 @@ end subroutine converger_init
       !      |     .            .      ...     . |
       !      |   -1.0         -1.0     ...    0. |
       !   WHERE <E(I)*E(J)> IS THE SCALAR PRODUCT OF [F*P] FOR ITERATION I
-      !   TIMES [F*P] FOR ITERATION J.
-            
-
+      !   TIMES [F*P] FOR ITERATION J.   
 
       if (hagodiis) then
          if ((conver_criter == 4) .or. (conver_criter == 5)) then
@@ -314,7 +311,12 @@ end subroutine converger_init
 
       endif
    endif
+
+   if ((good > lvl_shift_cut) .and. (level_shift)) then
+       call fock_op%Shift_diag_ON(lvl_shift_en, n_orbs+1)
+   endif
    deallocate (work)
+   
 end subroutine conver
 
 end module converger_subs

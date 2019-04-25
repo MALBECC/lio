@@ -138,7 +138,6 @@ subroutine SCF(E)
    real*8 :: Ens         ! MM point charge-nuclear interaction
    real*8 :: Es          ! ???
    real*8 :: E_restrain  ! distance restrain
-   real*8 :: Ex          ! exchange-correlation inside SCF loop
    real*8 :: Exc         ! exchange-correlation
    real*8 :: Etrash      ! auxiliar variable
    real*8 :: Egood       !
@@ -514,7 +513,7 @@ subroutine SCF(E)
 
 !       XC integration / Fock elements
         call g2g_timer_sum_start('Exchange-correlation Fock')
-        call g2g_solve_groups(0,Ex,0)
+        call g2g_solve_groups(0,Exc,0)
         call g2g_timer_sum_pause('Exchange-correlation Fock')
 !       Test for NaN
         if (Dbug) call SEEK_NaN(Pmat_vec,1,MM,"RHO Ex-Corr")
@@ -543,6 +542,7 @@ subroutine SCF(E)
            enddo
 
         endif
+        E = E1 + E2 + En + Exc
         call g2g_timer_sum_pause('Fock integrals')
 
 !------------------------------------------------------------------------------!
@@ -607,11 +607,11 @@ subroutine SCF(E)
 !CLOSE SHELL OPTION |
 !%%%%%%%%%%%%%%%%%%%%
 #       ifdef CUBLAS
-           call conver(nniter, good, M_f, rho_aop, fock_aop,         &
-                       dev_Xmat, dev_Ymat, 1)
+           call conver(nniter, good, M_f, rho_aop, fock_aop, 1, E, &
+                       dev_Xmat, dev_Ymat)
 #       else
-           call conver(nniter, good, M_f, rho_aop, fock_aop, Xmat,   &
-                       Ymat, 1)
+           call conver(nniter, good, M_f, rho_aop, fock_aop, 1, E, &
+                       Xmat, Ymat)
 #       endif
 
         call g2g_timer_sum_pause('SCF acceleration')
@@ -650,11 +650,11 @@ subroutine SCF(E)
 !%%%%%%%%%%%%%%%%%%%%
         call g2g_timer_sum_start('SCF acceleration')
 #       ifdef CUBLAS
-           call conver(nniter, good, M_f, rho_bop, fock_bop,         &
-                       dev_Xmat, dev_Ymat, 2)
+           call conver(nniter, good, M_f, rho_bop, fock_bop, 2, E, &
+           dev_Xmat, dev_Ymat)
 #       else
-           call conver(nniter, good, M_f, rho_bop, fock_bop, Xmat,     &
-                       Ymat, 2)
+           call conver(nniter, good, M_f, rho_bop, fock_bop, 2, E, &
+           Xmat, Ymat)
 #       endif
 
         call g2g_timer_sum_pause('SCF acceleration')
@@ -745,8 +745,8 @@ subroutine SCF(E)
 !------------------------------------------------------------------------------!
 ! Convergence criteria and lineal search in P
 
-       IF (OPEN) call P_conver(nniter, En, E1, E2, Ex, good, xnano, rho_a, rho_b)
-       IF (.not. OPEN) call P_conver(nniter, En, E1, E2, Ex, good, xnano, rho_a, rho_a)
+       IF (OPEN) call P_conver(nniter, En, E1, E2, Exc, good, xnano, rho_a, rho_b)
+       IF (.not. OPEN) call P_conver(nniter, En, E1, E2, Exc, good, xnano, rho_a, rho_a)
 !------------------------------------------------------------------------------!
 
       deallocate ( xnano )
@@ -754,8 +754,6 @@ subroutine SCF(E)
 !------------------------------------------------------------------------------!
 ! TODO: finalization of the loop is a little bit messy. Also: "999 continue"??
 !       I think it is time we regularized this loop...
-        E=E1+E2+En
-
 !       write energy at every step
         if (niter.eq.NMAX) then
            if (Rho_LS .eq.0) then
@@ -767,8 +765,8 @@ subroutine SCF(E)
            end if
         end if
 
-        Egood=abs(E+Ex-Evieja)
-        Evieja=E+Ex
+        Egood  = abs(E - Evieja)
+        Evieja = E
 
         ! Write energy at every step
         call write_energy_convergence(niter, Evieja, good, told, egood, etold)

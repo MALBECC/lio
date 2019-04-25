@@ -5,6 +5,7 @@ module converger_data
 
 !  Covergence methods and criteria, as per input file.
 !  Fock damping = 1, DIIS = 2, Hybrid convergence = 3, Biased DIIS = 4
+!  Biased DIIS + Hybrid convergence = 5
 
    integer      :: conver_criter  = 2
    integer      :: nDIIS          = 15
@@ -25,6 +26,7 @@ module converger_data
    real(kind=8), allocatable :: FP_PFm(:,:,:,:)
    real(kind=8), allocatable :: bcoef(:,:)
    real(kind=8), allocatable :: EMAT2(:,:,:)
+   real(kind=8), allocatable :: energy_list(:)
 
 end module converger_data
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

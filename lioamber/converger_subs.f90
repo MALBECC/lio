@@ -9,7 +9,7 @@ contains
 subroutine converger_init( M_in, OPshell )
    use converger_data, only: fockm, FP_PFm, conver_criter, fock_damped, hagodiis, &
                              damping_factor, bcoef, ndiis, EMAT2, gOld, diis,     &
-                             hybrid_converg
+                             hybrid_converg, energy_list
 
    implicit none
    integer         , intent(in) :: M_in
@@ -18,13 +18,18 @@ subroutine converger_init( M_in, OPshell )
    hagodiis       = .false.
    damping_factor = gOld
 
-   if (hybrid_converg) then
-      diis          = .true.
-      conver_criter = 3
-   else if (diis) then
-      conver_criter = 2
-   else
-      conver_criter = 1
+   ! Performs conver_criter overrides if necessary.
+   if (conver_criter == 2) then
+      if (hybrid_converg) then
+         diis          = .true.
+         conver_criter = 3
+      else if (diis) then
+         conver_criter = 2
+      else
+         conver_criter = 1
+      endif
+   else if (conver_criter /= 1) then
+      diis = .true.
    endif
 
    ! Added to change from damping to DIIS. - Nick
@@ -33,17 +38,21 @@ subroutine converger_init( M_in, OPshell )
          if (.not. allocated(fockm)  ) allocate(fockm (M_in, M_in, ndiis, 2))
          if (.not. allocated(FP_PFm) ) allocate(FP_PFm(M_in, M_in, ndiis, 2))
          if (.not. allocated(bcoef)  ) allocate(bcoef(ndiis+1, 2) )
-         if (.not.allocated(EMAT2)   ) allocate(EMAT2(ndiis+1,ndiis+1,2))
+         if (.not. allocated(EMAT2)  ) allocate(EMAT2(ndiis+1,ndiis+1,2))
       else
-         if (.not. allocated(fockm) )  allocate(fockm (M_in, M_in, ndiis, 1))
+         if (.not. allocated(fockm)  ) allocate(fockm (M_in, M_in, ndiis, 1))
          if (.not. allocated(FP_PFm) ) allocate(FP_PFm(M_in, M_in, ndiis, 1))
-         if (.not. allocated(bcoef) )  allocate(bcoef (ndiis+1, 1))
-         if (.not.allocated(EMAT2) )   allocate(EMAT2(ndiis+1,ndiis+1,1))
+         if (.not. allocated(bcoef)  ) allocate(bcoef (ndiis+1, 1))
+         if (.not. allocated(EMAT2)  ) allocate(EMAT2(ndiis+1,ndiis+1,1))
       end if
       fockm   = 0.0D0
       FP_PFm  = 0.0D0
       bcoef   = 0.0D0
       EMAT2   = 0.0D0
+      if (conver_criter == 4) then
+         if (.not. allocated(energy_list)) allocate(energy_list(ndiis))
+         energy_list = 0.0D0
+      endif
    endif
 
    if(OPshell) then
@@ -54,23 +63,23 @@ subroutine converger_init( M_in, OPshell )
    fock_damped(:,:,:) = 0.0D0
 end subroutine converger_init
 
-   subroutine conver (niter, good, M_in, rho_op, fock_op, &
+   subroutine conver (niter, good, M_in, rho_op, fock_op, spin, energy, &
 #ifdef CUBLAS
-                      devPtrX, devPtrY, spin)
+                      devPtrX, devPtrY)
 #else
-                      Xmat, Ymat, spin)
+                      Xmat, Ymat)
 #endif
    use converger_data  , only: damping_factor, hagodiis, fockm, FP_PFm, ndiis, &
                                fock_damped, bcoef, EMAT2, conver_criter,       &
-                               good_cut
+                               good_cut, energy_list, DIIS_bias
    use typedef_operator, only: operator
    use fileio_data     , only: verbose
    use linear_algebra  , only: matmuldiag
-   use converger_ls, only : changed_to_LS
+   use converger_ls    , only: changed_to_LS
    implicit none
    ! Spin allows to store correctly alpha or beta information. - Carlos
    integer         , intent(in)    :: niter, M_in, spin
-   double precision, intent(in)    :: good
+   double precision, intent(in)    :: good, energy
    type(operator)  , intent(inout) :: rho_op, fock_op
 
 #ifdef  CUBLAS
@@ -80,7 +89,7 @@ end subroutine converger_init
 #endif
 
    double precision :: damp
-   integer          :: ndiist, ii, jj, kk, kknew, lwork, info
+   integer          :: ndiist, ii, jj, kk, kknew, lwork, info, Emin_index
    double precision, allocatable :: fock00(:,:), EMAT(:,:), diag1(:,:),      &
                                     suma(:,:), scratch1(:,:), scratch2(:,:), &
                                     fock(:,:), rho(:,:), work(:)
@@ -144,7 +153,7 @@ end subroutine converger_init
          hagodiis = .false.
 
       ! Damping the first two steps, diis afterwards
-      case (2)
+      case (2,4)
          if (niter > 2) then
             hagodiis = .true.
          else
@@ -152,13 +161,12 @@ end subroutine converger_init
          endif
 
       ! Damping until good enough, diis afterwards
-      case(3)
+      case(3,5)
 !        Damping until good enaugh, diis afterwards
          if ((good < good_cut) .and. (niter > 2) .and. (.not. changed_to_LS)) then
-            if ( (.not. hagodiis) .and. (verbose .gt. 3) ) then
+            if ( (.not. hagodiis) .and. (verbose .gt. 3) ) &
                write(6,'(A,I4)') "  Changing to DIIS at step: ", niter
-            endif
-            hagodiis=.true.
+            hagodiis = .true.
          endif
 
       case default
@@ -248,6 +256,29 @@ end subroutine converger_init
       !   TIMES [F*P] FOR ITERATION J.
 
       if (hagodiis) then
+         if ((conver_criter == 4) .or. (conver_criter == 5)) then
+            if (spin == 1) then
+               do ii = 1, ndiis -1
+                  energy_list(ii) = energy_list(ii+1)
+               enddo
+               energy_list(ndiis) = energy
+            endif
+
+            if (niter > ndiis) then
+               Emin_index = minloc(energy_list,1)
+            else
+               Emin_index = minloc(energy_list((ndiis - ndiist +1):ndiis),1)
+            endif
+
+            do ii = 1, Emin_index -1
+               Emat(ii,ii) = Emat(ii,ii) * DIIS_bias
+            enddo
+            do ii = Emin_index +1, ndiist
+               Emat(ii,ii) = Emat(ii,ii) * DIIS_bias
+            enddo
+         endif
+
+
          do ii = 1, ndiist
             bcoef(ii,spin) = 0.0d0
          enddo

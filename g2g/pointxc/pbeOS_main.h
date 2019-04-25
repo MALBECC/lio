@@ -56,6 +56,7 @@ __host__ __device__ void pbeOS_main(
    // The limit 1e-18 is the one set in PBE's original paper, which
    // works in double precision. For single precision, we take 1e-12
    // so that rho^3 is still within precision.
+   // For Ec calculation, the limit is a bit lower (1e-10).
 #if FULL_DOUBLE
    const scalar_type MINIMUM_DENSITY_VALUE = (scalar_type) 1e-18;
 #else
@@ -72,7 +73,7 @@ __host__ __device__ void pbeOS_main(
    vxpbe_a = (scalar_type)0.0f;
    vxpbe_b = (scalar_type)0.0f;
 
- 
+
   scalar_type twodens = (scalar_type)2.0f * dens_a;
   if (twodens > MINIMUM_DENSITY_VALUE) {
     twodens2 = twodens * twodens;
@@ -117,7 +118,7 @@ __host__ __device__ void pbeOS_main(
   // Construct total density and contribution to Ex
   scalar_type rho = dens_a + dens_b;
   expbe = (expbe_a * (dens_a / rho) + expbe_b * (dens_b/rho));
-  if (rho < MINIMUM_DENSITY_VALUE) { return; };
+  if (rho < (MINIMUM_DENSITY_VALUE * (scalar_type) 1E5)) { return; };
 
   /*-------------------------------------------------------------//
   // PBE correlation
@@ -187,14 +188,16 @@ __host__ __device__ void pbeOS_main(
   vcpbe_a = vc_a + dvc_a;
   vcpbe_b = vc_b + dvc_b;
 
-// if (expbe_a != expbe_a) { printf("NaN in expbe_a \n");};
-// if (expbe_b != expbe_b) { printf("NaN in expbe_b \n");};
-// if (ec != ec) { printf("NaN in ec \n");};
-// if (h != h) { printf("NaN in h \n");};
-// if (vc_a != vc_a) { printf("NaN in vc_a \n");};
-// if (dvc_a != dvc_a) { printf("NaN in dvc_a \n");};
-// if (vc_b != vc_b) { printf("NaN in vc_b \n");};
-// if (dvc_b!= dvc_b) { printf("NaN in dvc_b \n");};
+#ifdef _DEBUG
+if (expbe_a != expbe_a) { printf("NaN in expbe_a \n");};
+if (expbe_b != expbe_b) { printf("NaN in expbe_b \n");};
+if (ec != ec)           { printf("NaN in ec \n");};
+if (h != h)             { printf("NaN in h \n");};
+if (vc_a != vc_a)       { printf("NaN in vc_a \n");};
+if (dvc_a != dvc_a)     { printf("NaN in dvc_a \n");};
+if (vc_b != vc_b)       { printf("NaN in vc_b \n");};
+if (dvc_b!= dvc_b)      { printf("NaN in dvc_b \n");};
+#endif
 }  // pbeOS_main
 
 #undef EASYPBE_PI

@@ -136,6 +136,7 @@ subroutine lionml_write_dull()
    write(*,8005) inputs%RmaxS, inputs%Iexch, inputs%Igrid, inputs%Igrid2
    write(*,8006) inputs%PredCoef, inputs%initial_guess, inputs%dbug
    write(*,8007) inputs%conver_criter, inputs%DIIS_bias, inputs%n_ghosts
+   write(*,8008) inputs%level_shift, inputs%lvl_shift_en, inputs%lvl_shift_cut
    write(*,9000) " ! -- Input and output options: -- !"
    write(*,8020) inputs%verbose, inputs%style, inputs%timers, inputs%writexyz, &
                  inputs%WriteForces
@@ -213,7 +214,9 @@ subroutine lionml_write_dull()
 8006 FORMAT(2x, "PredCoef = ", L2, ", initial_guess = ", I3, ", DBug = ", L2, &
             ",")
 8007 FORMAT(2x, "conver_criter = ", I2, ", DIIS_bias = ", F14.8, &
-            ", n_ghosts = ", I5)
+            ", n_ghosts = ", I4, ",")
+8008 FORMAT(2x,"level_shift = ", L2, ", lvl_shift_en = ", F14.8, &
+            ", lvl_shift_cut = ", F14.8)
 ! I/O Control
 8020 FORMAT(2x, "verbose = ", I3, ", style = ", L2, ", timers = ", I3, &
             ", writeXYZ = ", L2, ", writeForces = ", L2, ",")

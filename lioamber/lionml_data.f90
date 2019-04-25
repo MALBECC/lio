@@ -3,7 +3,6 @@
 module lionml_data
 
    use garcha_mod        , only: natom, nsol, fmulliken, fcoord, OPEN,         &
-                                 DIIS, ndiis, GOLD, told, Etold, good_cut,     &
                                  propagator, VCINP, restart_freq, writexyz,    &
                                  Iexch, frestartin, frestart, predcoef,        &
                                  cubegen_only, cube_res, cube_dens, cube_orb,  &
@@ -19,7 +18,7 @@ module lionml_data
                                  minimzation_steep, n_min_steeps, n_points,    &
                                  lineal_search, timers, IGRID, IGRID2,         &
                                  use_libxc, ex_functional_id, ec_functional_id,&
-                                 gpu_level, NMAX, hybrid_converg
+                                 gpu_level, NMAX
    use tbdft_data         , only: tbdft_calc, MTB, alfaTB, betaTB, gammaTB,      &
                                  Vbias_TB, end_bTB, start_tdtb, end_tdtb
    use ECP_mod           , only: ecpmode, ecptypes, tipeECP, ZlistECP,         &
@@ -50,6 +49,8 @@ module lionml_data
    use basis_data        , only: norm, int_basis, rmax, rmaxs, basis_set,      &
                                  fitting_set
    use lr_data           , only: lresp, nstates, root, FCA, nfo, nfv
+   use converger_data    , only: DIIS, ndiis, GOLD, told, Etold, good_cut,     &
+                                 hybrid_converg, DIIS_bias, conver_criter
    use converger_ls      , only: Rho_LS, P_oscilation_analisis
    implicit none
 
@@ -68,6 +69,7 @@ module lionml_data
    namelist /lio/ OPEN, NMAX, Nunp, VCINP, GOLD, told, Etold, rmax, rmaxs,     &
                   predcoef, writexyz, DIIS, ndiis, Iexch, igrid, igrid2,       &
                   good_cut, hybrid_converg, initial_guess, natom, nsol, charge,&
+                  diis_bias, conver_criter,                                    &
                   ! File Input/Output.
                   frestartin, style, frestart, fukui, dipole, lowdin, verbose, &
                   mulliken, writeforces, int_basis, fitting_set, basis_set,    &
@@ -114,9 +116,9 @@ module lionml_data
 
    type lio_input_data
       ! COMMON
-      double precision :: etold, gold, good_cut, rmax, rmaxs, told
+      double precision :: etold, gold, good_cut, rmax, rmaxs, told, DIIS_bias
       integer          :: charge, iexch, igrid, igrid2, initial_guess, natom,  &
-                          ndiis, nmax, nsol, nunp
+                          ndiis, nmax, nsol, nunp, conver_criter
       logical          :: diis, hybrid_converg, open, predcoef, vcinp, writexyz
       ! FILE IO
       character*20     :: frestartin, frestart
@@ -180,17 +182,17 @@ subroutine get_namelist(lio_in)
    type(lio_input_data), intent(out) :: lio_in
 
    ! General
-   lio_in%etold          = etold         ; lio_in%gold   = gold
-   lio_in%good_cut       = good_cut      ; lio_in%rmax   = rmax
-   lio_in%rmaxs          = rmaxs         ; lio_in%told   = told
-   lio_in%charge         = charge        ; lio_in%iexch  = iexch
-   lio_in%igrid          = igrid         ; lio_in%igrid2 = igrid2
-   lio_in%initial_guess  = initial_guess ; lio_in%natom  = natom
-   lio_in%ndiis          = ndiis         ; lio_in%nmax   = nmax
-   lio_in%nsol           = nsol          ; lio_in%nunp   = nunp
-   lio_in%diis           = diis          ; lio_in%open   = open
-   lio_in%hybrid_converg = hybrid_converg;
-   lio_in%predcoef       = predcoef      ;
+   lio_in%etold          = etold         ; lio_in%gold      = gold
+   lio_in%good_cut       = good_cut      ; lio_in%rmax      = rmax
+   lio_in%rmaxs          = rmaxs         ; lio_in%told      = told
+   lio_in%charge         = charge        ; lio_in%iexch     = iexch
+   lio_in%igrid          = igrid         ; lio_in%igrid2    = igrid2
+   lio_in%initial_guess  = initial_guess ; lio_in%natom     = natom
+   lio_in%ndiis          = ndiis         ; lio_in%nmax      = nmax
+   lio_in%nsol           = nsol          ; lio_in%nunp      = nunp
+   lio_in%diis           = diis          ; lio_in%open      = open
+   lio_in%hybrid_converg = hybrid_converg; lio_in%diis_bias = diis_bias
+   lio_in%conver_criter  = conver_criter ; lio_in%predcoef  = predcoef
 
    ! Fileio
    lio_in%vcinp            = vcinp           ; lio_in%writexyz    = writexyz

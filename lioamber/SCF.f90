@@ -27,13 +27,13 @@ subroutine SCF(E)
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    use ehrensubs , only: ehrendyn_init
-   use garcha_mod, only : NCO, natom, Nang, number_restr, hybrid_converg, MEMO,&
+   use garcha_mod, only : NCO, natom, Nang, number_restr, MEMO,&
                           igrid, energy_freq, converge, noconverge, lowdin,    &
-                          cubegen_only, VCINP, primera, Nunp, GOLD, igrid2,    &
-                          predcoef, nsol, r, pc, DIIS, told, Etold, Enucl, Iz, &
+                          cubegen_only, VCINP, primera, Nunp, igrid2,    &
+                          predcoef, nsol, r, pc, Enucl, Iz, &
                           Eorbs, NMAX,Dbug, doing_ehrenfest, first_step,       &
-                          total_time, MO_coef_at, MO_coef_at_b, Smat, good_cut,&
-                          ndiis, rhoalpha, rhobeta, OPEN, RealRho, d, ntatom,  &
+                          total_time, MO_coef_at, MO_coef_at_b, Smat, &
+                          rhoalpha, rhobeta, OPEN, RealRho, d, ntatom,  &
                           Eorbs_b, npas, X, npasw, Fmat_vec, Fmat_vec2,        &
                           Ginv_vec, Gmat_vec, Hmat_vec, Pmat_en_wgt, Pmat_vec
    use ECP_mod, only : ecpmode, term1e, VAAA, VAAB, VBAC, &
@@ -56,6 +56,7 @@ subroutine SCF(E)
                              messup_densmat, fix_densmat
    use liosubs_math  , only: transform
    use linear_algebra, only: matrix_diagon
+   use converger_data, only: told, Etold
    use converger_subs, only: converger_init, conver
    use mask_cublas   , only: cublas_setmat, cublas_release
    use typedef_operator, only: operator !Testing operator
@@ -81,14 +82,11 @@ subroutine SCF(E)
    real*8  :: sq2
    real*8  :: good
    real*8  :: del
-   real*8  :: DAMP0
-   real*8  :: DAMP
    integer :: igpu
 
 !  The following two variables are in a part of the code that is never
 !  used. Check if these must be taken out...
    real*8  :: factor
-   integer :: IDAMP
 
    real*8, allocatable :: rho_test(:,:)
    real*8, allocatable :: fockat(:,:)
@@ -272,8 +270,6 @@ subroutine SCF(E)
       Evieja=0.d0
 
       niter=0
-      DAMP0=GOLD
-      DAMP=DAMP0
 
       Qc=0.0D0
       do ii=1,natom
@@ -478,7 +474,6 @@ subroutine SCF(E)
 ! only at the end of the SCF, the density matrix and the
 ! vectors are 'coherent'
 
-      if (hybrid_converg) DIIS=.true. ! cambio para convergencia damping-diis
       call g2g_timer_sum_stop('Initialize SCF')
 
 !------------------------------------------------------------------------------!
@@ -604,7 +599,7 @@ subroutine SCF(E)
 !  Convergence accelerator processing
         call g2g_timer_sum_start('SCF acceleration')
         if (niter==1) then
-           call converger_init( M_f, ndiis, DAMP, DIIS, hybrid_converg, OPEN )
+           call converger_init( M_f, OPEN )
         end if
 !carlos: this is repeted twice for open shell
 
@@ -612,10 +607,10 @@ subroutine SCF(E)
 !CLOSE SHELL OPTION |
 !%%%%%%%%%%%%%%%%%%%%
 #       ifdef CUBLAS
-           call conver(nniter, good, good_cut, M_f, rho_aop, fock_aop,         &
+           call conver(nniter, good, M_f, rho_aop, fock_aop,         &
                        dev_Xmat, dev_Ymat, 1)
 #       else
-           call conver(nniter, good, good_cut, M_f, rho_aop, fock_aop, Xmat,   &
+           call conver(nniter, good, M_f, rho_aop, fock_aop, Xmat,   &
                        Ymat, 1)
 #       endif
 
@@ -655,10 +650,10 @@ subroutine SCF(E)
 !%%%%%%%%%%%%%%%%%%%%
         call g2g_timer_sum_start('SCF acceleration')
 #       ifdef CUBLAS
-           call conver(nniter, good, good_cut, M_f, rho_bop, fock_bop,         &
+           call conver(nniter, good, M_f, rho_bop, fock_bop,         &
                        dev_Xmat, dev_Ymat, 2)
 #       else
-           call conver(nniter, good, good_cut, M_f, rho_bop, fock_bop, Xmat,     &
+           call conver(nniter, good, M_f, rho_bop, fock_bop, Xmat,     &
                        Ymat, 2)
 #       endif
 
@@ -759,9 +754,6 @@ subroutine SCF(E)
 !------------------------------------------------------------------------------!
 ! TODO: finalization of the loop is a little bit messy. Also: "999 continue"??
 !       I think it is time we regularized this loop...
-
-        ! Damping factor update
-        DAMP=DAMP0
         E=E1+E2+En
 
 !       write energy at every step

@@ -6,22 +6,22 @@ contains
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-subroutine converger_init( M_in, ndiis_in, factor_in, do_diis, do_hybrid, OPshell )
-   use converger_data, only: fockm, FP_PFm, conver_criter, fock_damped, &
-                             hagodiis, damping_factor, bcoef, ndiis, EMAT2
+subroutine converger_init( M_in, OPshell )
+   use converger_data, only: fockm, FP_PFm, conver_criter, fock_damped, hagodiis, &
+                             damping_factor, bcoef, ndiis, EMAT2, gOld, diis,     &
+                             hybrid_converg
 
    implicit none
-   double precision, intent(in) :: factor_in
-   integer         , intent(in) :: M_in, ndiis_in
-   logical         , intent(in) :: do_diis, do_hybrid, OPshell
+   integer         , intent(in) :: M_in
+   logical         , intent(in) :: OPshell
 
    hagodiis       = .false.
-   damping_factor = factor_in
-   ndiis          = ndiis_in
+   damping_factor = gOld
 
-   if (do_hybrid) then
+   if (hybrid_converg) then
+      diis          = .true.
       conver_criter = 3
-   else if (do_diis) then
+   else if (diis) then
       conver_criter = 2
    else
       conver_criter = 1
@@ -54,14 +54,15 @@ subroutine converger_init( M_in, ndiis_in, factor_in, do_diis, do_hybrid, OPshel
    fock_damped(:,:,:) = 0.0D0
 end subroutine converger_init
 
-   subroutine conver (niter, good, good_cut, M_in, rho_op, fock_op, &
+   subroutine conver (niter, good, M_in, rho_op, fock_op, &
 #ifdef CUBLAS
                       devPtrX, devPtrY, spin)
 #else
                       Xmat, Ymat, spin)
 #endif
    use converger_data  , only: damping_factor, hagodiis, fockm, FP_PFm, ndiis, &
-                               fock_damped, bcoef, EMAT2, conver_criter
+                               fock_damped, bcoef, EMAT2, conver_criter,       &
+                               good_cut
    use typedef_operator, only: operator
    use fileio_data     , only: verbose
    use linear_algebra  , only: matmuldiag
@@ -69,7 +70,7 @@ end subroutine converger_init
    implicit none
    ! Spin allows to store correctly alpha or beta information. - Carlos
    integer         , intent(in)    :: niter, M_in, spin
-   double precision, intent(in)    :: good, good_cut
+   double precision, intent(in)    :: good
    type(operator)  , intent(inout) :: rho_op, fock_op
 
 #ifdef  CUBLAS

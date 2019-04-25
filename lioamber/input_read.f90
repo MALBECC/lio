@@ -9,7 +9,7 @@
 subroutine read_options(inputFile, extern_stat)
     use field_subs  , only: read_fields
     use lionml_subs , only: lionml_read, lionml_write
-    use garcha_mod  , only: DIIS, hybrid_converg
+    use converger_data, only: DIIS, hybrid_converg
     use converger_ls, only: Rho_LS
 
     implicit none

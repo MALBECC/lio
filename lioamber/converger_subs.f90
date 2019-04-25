@@ -49,7 +49,7 @@ subroutine converger_init( M_in, OPshell )
       FP_PFm  = 0.0D0
       bcoef   = 0.0D0
       EMAT2   = 0.0D0
-      if (conver_criter == 4) then
+      if ((conver_criter == 4) .or. (conver_criter == 5)) then
          if (.not. allocated(energy_list)) allocate(energy_list(ndiis))
          energy_list = 0.0D0
       endif
@@ -200,10 +200,18 @@ end subroutine converger_init
 
    ! DIIS
    if (conver_criter /= 1) then
+      if (((conver_criter == 4) .or. (conver_criter == 5)) .and. (spin == 1) &
+          .and. (niter > 1)) then
+         do ii = 1, ndiis -1
+            energy_list(ii) = energy_list(ii+1)
+         enddo
+         energy_list(ndiis) = energy
+      endif
+
       allocate(EMAT(ndiist+1,ndiist+1))
 
       ! Before ndiis iterations, we just start from the old EMAT
-      if ((niter .gt. 1) .and. (niter .le. ndiis)) then
+      if ((niter > 1) .and. (niter <= ndiis)) then
          EMAT = 0.0D0
          do jj = 1, ndiist-1
          do ii = 1, ndiist-1
@@ -211,7 +219,7 @@ end subroutine converger_init
          enddo
          enddo
       ! After ndiis iterations, we start shifting the oldest iteration stored
-      else if (niter.gt.ndiis) then
+      else if (niter > ndiis) then
          EMAT = 0.0D0
          do jj = 1, ndiist-1
          do ii = 1, ndiist-1
@@ -254,16 +262,11 @@ end subroutine converger_init
       !      |   -1.0         -1.0     ...    0. |
       !   WHERE <E(I)*E(J)> IS THE SCALAR PRODUCT OF [F*P] FOR ITERATION I
       !   TIMES [F*P] FOR ITERATION J.
+            
+
 
       if (hagodiis) then
          if ((conver_criter == 4) .or. (conver_criter == 5)) then
-            if (spin == 1) then
-               do ii = 1, ndiis -1
-                  energy_list(ii) = energy_list(ii+1)
-               enddo
-               energy_list(ndiis) = energy
-            endif
-
             if (niter > ndiis) then
                Emin_index = minloc(energy_list,1)
             else

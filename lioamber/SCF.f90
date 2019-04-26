@@ -745,10 +745,10 @@ subroutine SCF(E)
 !------------------------------------------------------------------------------!
 ! Convergence criteria and lineal search in P
 
-       IF (OPEN) call P_conver(M, nniter, En, E1, E2, Exc, good, xnano, rho_a, rho_b,&
+       IF (OPEN) call P_conver(nniter, En, E1, E2, Exc, good, xnano, rho_a, rho_b,&
        rhoalpha, rhobeta, Pmat_vec, Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec,  &
                         open, memo)
-       IF (.not. OPEN) call P_conver(M, nniter, En, E1, E2, Exc, good, xnano, rho_a, rho_a,&
+       IF (.not. OPEN) call P_conver(nniter, En, E1, E2, Exc, good, xnano, rho_a, rho_a,&
        rhoalpha, rhobeta, Pmat_vec, Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec,  &
        open, memo)
 !------------------------------------------------------------------------------!

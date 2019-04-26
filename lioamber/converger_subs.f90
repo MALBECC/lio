@@ -80,6 +80,25 @@ subroutine converger_init( M_in, OPshell )
    fock_damped(:,:,:) = 0.0D0
 end subroutine converger_init
 
+subroutine converger_finalise()
+   use converger_data, only: fockm, FP_PFm, conver_criter, fock_damped, &
+                             hagodiis, bcoef, ndiis, EMAT2, energy_list
+   implicit none
+   
+   if (conver_criter /= 1) then
+      if (allocated(fockm) ) deallocate(fockm )
+      if (allocated(FP_PFm)) deallocate(FP_PFm)
+      if (allocated(bcoef) ) deallocate(bcoef )
+      if (allocated(EMAT2) ) deallocate(EMAT2 )
+      if ((conver_criter == 4) .or. (conver_criter == 5)) then
+         if (allocated(energy_list)) deallocate(energy_list)
+      endif
+   endif
+
+   if (allocated(fock_damped)) deallocate(fock_damped)
+   call P_linearsearch_fin()
+end subroutine converger_finalise
+
 subroutine conver (niter, good, M_in, rho_op, fock_op, spin, energy, n_orbs,&
 #ifdef CUBLAS
                       devPtrX, devPtrY)
@@ -395,7 +414,7 @@ subroutine P_linearsearch_fin()
    if (allocated(rho_lambda0_betha)) deallocate(rho_lambda0_betha)
 end subroutine P_linearsearch_fin
 
-subroutine P_conver(M, niter, En, E1, E2, Ex, good, xnano, rho_a, rho_b, &
+subroutine P_conver(niter, En, E1, E2, Ex, good, xnano, rho_a, rho_b, &
    rhoalpha, rhobeta, Pmat_vec, Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec,  &
                     open_shell, int_memo)
    ! rho_LS values:
@@ -406,9 +425,10 @@ subroutine P_conver(M, niter, En, E1, E2, Ex, good, xnano, rho_a, rho_b, &
 
    implicit none
    ! Step number and energies.
-   integer     , intent(in)    :: niter, M
+   integer     , intent(in)    :: niter
    real(kind=8), intent(in)    :: En 
    real(kind=8), intent(inout) :: E1, E2, Ex
+   
    ! Main data
    logical     , intent(in)    :: open_shell, int_memo
    real(kind=8), intent(inout) :: Pmat_vec(:), Hmat_vec(:), Fmat_vec(:), &
@@ -417,20 +437,20 @@ subroutine P_conver(M, niter, En, E1, E2, Ex, good, xnano, rho_a, rho_b, &
    ! Convergence criteria
    real(kind=8), intent(out)   :: good
    ! Density matrices of current step
-   real(kind=8), intent(inout) :: xnano(M,M), rho_a(M,M), rho_b(M,M)
+   real(kind=8), intent(inout) :: xnano(:,:), rho_a(:,:), rho_b(:,:)
    ! True if predicted density != density of previous steep
    logical :: may_conv = .true.
 
    select case (Rho_LS)
-   case (0,-1)
-   case (1,3)
-      call P_linear_calc(M, niter, En, E1, E2, Ex, xnano, may_conv, rho_a, rho_b,rhoalpha, rhobeta, &
-                         Pmat_vec, Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec,&
-                        open_shell, int_memo)
-   case default
-      write(*,'(A,I2)') &
-           "ERROR - P_conver: Wrong Rho_LS value, current value is ", Rho_LS
-      stop
+      case (0,-1)
+      case (1, 2)
+         call P_linear_calc(niter, En, E1, E2, Ex, xnano, may_conv, rho_a, rho_b, &
+                            rhoalpha, rhobeta, Pmat_vec, Hmat_vec, Fmat_vec,      &
+                            Fmat_vec2, Gmat_vec, Ginv_vec, open_shell, int_memo)
+      case default
+         write(*,'(A,I2)') &
+            "ERROR - P_conver: Wrong Rho_LS value, current value is ", Rho_LS
+         stop
    end select
       
    call P_calc_fluctuation(Pmat_vec, good, xnano)
@@ -439,7 +459,8 @@ end subroutine P_conver
 
 ! The following subs are only internal.
 subroutine P_calc_fluctuation(rho_vec, good, xnano)
-   !  calculates convergence criteria in density matrix, and store new density matrix in Pmat_vec
+   ! Calculates convergence criteria in density matrix, and
+   ! store new density matrix in Pmat_vec.
    real(kind=8), intent(in)    :: xnano(:,:)
    real(kind=8), intent(out)   :: good
    real(kind=8), intent(inout) :: rho_vec(:)
@@ -459,26 +480,25 @@ subroutine P_calc_fluctuation(rho_vec, good, xnano)
       enddo
    enddo
    good = sqrt(good) / dble(size(xnano,1))
-
 end subroutine P_calc_fluctuation
 
-subroutine P_linear_calc(Rho_LS, niter, En, E1, E2, Ex, xnano,  &
+subroutine P_linear_calc(niter, En, E1, E2, Ex, xnano,  &
    may_conv, rho_a, rho_b, rhoalpha, rhobeta, Pmat_vec, Hmat_vec, Fmat_vec, &
    Fmat_vec2, Gmat_vec, Ginv_vec, open_shell, int_memo)
    use basis_data, only : M, MM
    use liosubs, only: line_search
    use converger_data, only:rho_lambda0, rho_lambda1, rho_lambda0_alpha, &
                             rho_lambda1_alpha, rho_lambda0_betha, rho_lambda1_betha, &
-                            Elast, pstepsize
+                            Elast, pstepsize, rho_LS
    implicit none
-   integer, intent(in) :: Rho_LS, niter !type of lineal search criteria and step number
-   logical     , intent(in)    :: open_shell, int_memo
+   integer     , intent(in) :: niter !type of lineal search criteria and step number
+   logical     , intent(in) :: open_shell, int_memo
    real(kind=8), intent(in) :: En
    real(kind=8), intent(inout) :: Pmat_vec(:), Hmat_vec(:), Fmat_vec(:), &
    Fmat_vec2(:), Gmat_vec(:), Ginv_vec(:), rhoalpha(:), rhobeta(:)
 
    real(kind=8), intent(inout) :: E1, E2, Ex 
-   real(kind=8), intent(inout) :: xnano(M,M), rho_a(M,M), rho_b(M,M) ! density matrices of actual steep
+   real(kind=8), intent(inout) :: xnano(:,:), rho_a(:,:), rho_b(:,:) ! density matrices of actual steep
    real(kind=8) :: dlambda, Blambda !values for combination of density matrices 
    logical, intent(inout) :: may_conv !true if predicted density != previus step density
    real(kind=8), allocatable :: RMM_temp(:),E_lambda(:) ! auxiliar

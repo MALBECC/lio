@@ -47,7 +47,7 @@ subroutine converger_init( M_in, OPshell )
    integer         , intent(in) :: M_in
    logical         , intent(in) :: OPshell
 
-   hagodiis       = .false.
+   hagodiis = .false.
    
    ! Added to change from damping to DIIS. - Nick
    if (conver_criter /= 1) then
@@ -414,9 +414,9 @@ subroutine P_linearsearch_fin()
    if (allocated(rho_lambda0_betha)) deallocate(rho_lambda0_betha)
 end subroutine P_linearsearch_fin
 
-subroutine P_conver(niter, En, E1, E2, Ex, good, xnano, rho_a, rho_b, &
-   rhoalpha, rhobeta, Pmat_vec, Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec,  &
-                    open_shell, int_memo)
+subroutine P_conver(niter, En, E1, E2, Ex, good, rho_new, rho_old, Hmat_vec, &
+                    Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, int_memo,       &
+                    rhoa_new, rhob_new, rhoa_old, rhob_old)
    ! rho_LS values:
    !   = 0 calculate convergence criteria for actual density matrix.
    !   = 1 do linear search for density matrix if energy > previous energy.
@@ -426,171 +426,200 @@ subroutine P_conver(niter, En, E1, E2, Ex, good, xnano, rho_a, rho_b, &
    implicit none
    ! Step number and energies.
    integer     , intent(in)    :: niter
-   real(kind=8), intent(in)    :: En 
-   real(kind=8), intent(inout) :: E1, E2, Ex
+   real(kind=8), intent(inout) :: E1, E2, Ex, En
    
-   ! Main data
-   logical     , intent(in)    :: open_shell, int_memo
-   real(kind=8), intent(inout) :: Pmat_vec(:), Hmat_vec(:), Fmat_vec(:), &
-                                  Fmat_vec2(:), Gmat_vec(:), Ginv_vec(:), &
-                                  rhoalpha(:), rhobeta(:)
+   ! Variables for electron integrals.
+   logical     , intent(in)    :: int_memo
+   real(kind=8), intent(inout) :: Hmat_vec(:), Fmat_vec(:), Fmat_vec2(:), &
+                                  Gmat_vec(:), Ginv_vec(:)
+
    ! Convergence criteria
    real(kind=8), intent(out)   :: good
-   ! Density matrices of current step
-   real(kind=8), intent(inout) :: xnano(:,:), rho_a(:,:), rho_b(:,:)
+
+   ! Density matrices of current and previous step. Due to how SCF works,
+   ! the current step is in matrix form and the previous in vector form.
+   real(kind=8), intent(inout) :: rho_old(:)
+   real(kind=8), intent(inout) :: rho_new(:,:)
+   real(kind=8), optional, intent(inout) :: rhoa_old(:)  , rhob_old(:)
+   real(kind=8), optional, intent(inout) :: rhoa_new(:,:), rhob_new(:,:)
+
    ! True if predicted density != density of previous steep
    logical :: may_conv = .true.
 
-   select case (Rho_LS)
+   select case (rho_LS)
       case (0,-1)
       case (1, 2)
-         call P_linear_calc(niter, En, E1, E2, Ex, xnano, may_conv, rho_a, rho_b, &
-                            rhoalpha, rhobeta, Pmat_vec, Hmat_vec, Fmat_vec,      &
-                            Fmat_vec2, Gmat_vec, Ginv_vec, open_shell, int_memo)
+
+         ! Makes separate calls for open and closed shell.
+         if (present(rhoa_old)) then
+            call P_linear_calc(niter, En, E1, E2, Ex, may_conv, rho_new, &
+                               rho_old, Hmat_vec, Fmat_vec, Fmat_vec2,   &
+                               Gmat_vec, Ginv_vec, int_memo)
+         else
+            call P_linear_calc(niter, En, E1, E2, Ex, may_conv, rho_new, &
+                               rho_old, Hmat_vec, Fmat_vec, Fmat_vec2,   &
+                               Gmat_vec, Ginv_vec, int_memo,             &
+                               rhoa_new, rhob_new, rhoa_old, rhob_old)
+         endif
       case default
          write(*,'(A,I2)') &
             "ERROR - P_conver: Wrong Rho_LS value, current value is ", Rho_LS
          stop
    end select
       
-   call P_calc_fluctuation(Pmat_vec, good, xnano)
+   call P_calc_fluctuation(rho_old, rho_new, good)
    if (.not. may_conv) good = -1.0D0
 end subroutine P_conver
 
 ! The following subs are only internal.
-subroutine P_calc_fluctuation(rho_vec, good, xnano)
+subroutine P_calc_fluctuation(rho_old, rho_new, good)
    ! Calculates convergence criteria in density matrix, and
    ! store new density matrix in Pmat_vec.
-   real(kind=8), intent(in)    :: xnano(:,:)
+   real(kind=8), intent(in)    :: rho_new(:,:), rho_old(:)
    real(kind=8), intent(out)   :: good
-   real(kind=8), intent(inout) :: rho_vec(:)
 
    integer      :: jj, kk, Rposition, M2
    real(kind=8) :: del
    
-   M2   = 2 * size(xnano,1)
+   M2   = 2 * size(rho_new,1)
    good = 0.0D0
 
-   do jj = 1 , size(xnano,1)
-   do kk = jj, size(xnano,1)
+   do jj = 1 , size(rho_new,1)
+   do kk = jj, size(rho_new,1)
          Rposition = kk + (M2 - jj) * (jj -1) / 2
-         del  = (xnano(jj,kk) - rho_vec(Rposition)) * sqrt(2.0D0)
+         del  = (rho_new(jj,kk) - rho_old(Rposition)) * sqrt(2.0D0)
          good = good + del * del
-         rho_vec(kk + (M2-jj)*(jj-1)/2) = xnano(jj,kk)
       enddo
    enddo
-   good = sqrt(good) / dble(size(xnano,1))
+   good = sqrt(good) / dble(size(rho_new,1))
 end subroutine P_calc_fluctuation
 
-subroutine P_linear_calc(niter, En, E1, E2, Ex, xnano,  &
-   may_conv, rho_a, rho_b, rhoalpha, rhobeta, Pmat_vec, Hmat_vec, Fmat_vec, &
-   Fmat_vec2, Gmat_vec, Ginv_vec, open_shell, int_memo)
-   use basis_data, only : M, MM
-   use liosubs, only: line_search
-   use converger_data, only:rho_lambda0, rho_lambda1, rho_lambda0_alpha, &
-                            rho_lambda1_alpha, rho_lambda0_betha, rho_lambda1_betha, &
-                            Elast, pstepsize, rho_LS
+subroutine P_linear_calc(niter, En, E1, E2, Ex, may_conv, rho_new, rho_old, &
+                         Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, &
+                         int_memo, rhoa_new, rhob_new, rhoa_old, rhob_old)
+   use liosubs       , only: line_search
+   use converger_data, only: rho_lambda0, rho_lambda1, rho_lambda0_alpha,   &
+                             rho_lambda1_alpha, rho_lambda0_betha,          &
+                             rho_lambda1_betha, Elast, pstepsize, rho_LS
    implicit none
-   integer     , intent(in) :: niter !type of lineal search criteria and step number
-   logical     , intent(in) :: open_shell, int_memo
-   real(kind=8), intent(in) :: En
-   real(kind=8), intent(inout) :: Pmat_vec(:), Hmat_vec(:), Fmat_vec(:), &
-   Fmat_vec2(:), Gmat_vec(:), Ginv_vec(:), rhoalpha(:), rhobeta(:)
+   integer     , intent(in)    :: niter
+   logical     , intent(in)    :: int_memo
+   logical     , intent(inout) :: may_conv
+   real(kind=8), intent(inout) :: En, E1, E2, Ex
+   real(kind=8), intent(inout) :: Hmat_vec(:), Fmat_vec(:), Fmat_vec2(:), &
+                                  Gmat_vec(:), Ginv_vec(:)
+   ! Density matrices of the current and previous steps.
+   real(kind=8), intent(inout) :: rho_old(:)
+   real(kind=8), intent(inout) :: rho_new(:,:)
+   real(kind=8), optional, intent(inout) :: rhoa_old(:)  , rhob_old(:)
+   real(kind=8), optional, intent(inout) :: rhoa_new(:,:), rhob_new(:,:)
 
-   real(kind=8), intent(inout) :: E1, E2, Ex 
-   real(kind=8), intent(inout) :: xnano(:,:), rho_a(:,:), rho_b(:,:) ! density matrices of actual steep
-   real(kind=8) :: dlambda, Blambda !values for combination of density matrices 
-   logical, intent(inout) :: may_conv !true if predicted density != previus step density
-   real(kind=8), allocatable :: RMM_temp(:),E_lambda(:) ! auxiliar
-   integer :: M2, jj, kk, Rposition, ilambda !auxiliars
+   ! Values for combination of density matrices 
+   real(kind=8) :: dlambda, Blambda 
+   
+   ! Auxiliars
+   integer :: M, MM, M2, jj, kk, Rposition, ilambda
+   logical :: open_shell = .false.
+   real(kind=8), allocatable :: RMM_temp(:),E_lambda(:)
+
+   M  = size(rho_new,1)
+   MM = size(rho_old,1)
+   M2 = 2 * M
+   if (present(rhoa_old)) open_shell = .true.
 
    allocate(E_lambda(0:10))
-   M2=2*M
-   if (niter .eq. 1)  then
-      Pstepsize=1.d0
-      rho_lambda0=Pmat_vec
-      if (open_shell) rho_lambda0_alpha=rhoalpha
-      if (open_shell) rho_lambda0_betha=rhobeta
-   end if
-   
    allocate(RMM_temp(1:MM))
-   
+
+   if (niter == 1)  then
+      Pstepsize   = 1.d0
+      rho_lambda0 = rho_old
+      if (open_shell) rho_lambda0_alpha = rhoa_old
+      if (open_shell) rho_lambda0_betha = rhob_old
+   end if
+      
    do jj=1,M
-      do kk=jj,M
-         Rposition=kk+(M2-jj)*(jj-1)/2
-         rho_lambda1(Rposition)=xnano(jj,kk)
-         if (open_shell) rho_lambda1_alpha(Rposition)=rho_a(jj,kk)
-         if (open_shell) rho_lambda1_betha(Rposition)=rho_b(jj,kk)
-      enddo
+   do kk=jj,M
+      Rposition = kk + (M2 - jj) * (jj - 1) / 2
+      rho_lambda1(Rposition) = rho_new(jj,kk)
+      if (open_shell) rho_lambda1_alpha(Rposition) = rhoa_new(jj,kk)
+      if (open_shell) rho_lambda1_betha(Rposition) = rhob_new(jj,kk)
+   enddo
    enddo
    
-   Pmat_vec=rho_lambda1
-   if (open_shell)rhoalpha=rho_lambda1_alpha
-   if (open_shell)rhobeta=rho_lambda1_betha
+   rho_old = rho_lambda1
+   if (open_shell) rhoa_old = rho_lambda1_alpha
+   if (open_shell) rhob_old = rho_lambda1_betha
    
-   call give_me_energy(E_lambda(10), En, E1, E2, Ex, Pmat_vec, Hmat_vec, Fmat_vec, &
-                      Fmat_vec2, Gmat_vec, Ginv_vec, open_shell, int_memo)
+   call give_me_energy(E_lambda(10), En, E1, E2, Ex, rho_old, Hmat_vec,    &
+                       Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, open_shell,&
+                       int_memo)
    
-   if (Elast.lt. E_lambda(10) .or. Rho_LS.eq.2) then
-      write(*,*) "This step ", E_lambda(10), "last steep ", Elast
-      write(*,*) "doing lineal interpolation in Rho"
-      do ilambda=0, 10
-         dlambda=Pstepsize*dble(ilambda)/10.d0
-         if (dlambda .gt. 1.d0) STOP "dlambda > 1.d0"
-         Pmat_vec=rho_lambda0*(1.d0-dlambda)+rho_lambda1*dlambda 
-         if(open_shell) rhoalpha=rho_lambda0_alpha*(1.d0-dlambda)+rho_lambda1_alpha*dlambda
-         if(open_shell) rhobeta=rho_lambda0_betha*(1.d0-dlambda)+rho_lambda1_betha*dlambda
-         call give_me_energy(E_lambda(ilambda), En, E1, E2, Ex, Pmat_vec, Hmat_vec, Fmat_vec, &
-                             Fmat_vec2, Gmat_vec, Ginv_vec, open_shell, int_memo)
-   
-         write(*,*) "step ",ilambda, "energy ", E_lambda(ilambda)
+   if ((Elast < E_lambda(10)) .or. (Rho_LS == 2)) then
+      write(*,*) "Lambda this step: ", E_lambda(10), ", last step: ", Elast
+      write(*,*) "Doing lineal interpolation in Rho."
+      do ilambda = 0, 10
+         dlambda = Pstepsize * dble(ilambda) / 10.d0
+         if (dlambda > 1.d0) STOP "dlambda > 1.d0"
+
+         rho_old = rho_lambda0 * (1.d0 - dlambda) + rho_lambda1 * dlambda 
+         if (open_shell) rhoa_old = rho_lambda0_alpha * (1.d0 - dlambda) + &
+                                    rho_lambda1_alpha * dlambda
+         if (open_shell) rhob_old = rho_lambda0_betha * (1.d0 - dlambda) + &
+                                    rho_lambda1_betha * dlambda
+         call give_me_energy(E_lambda(ilambda), En, E1, E2, Ex, rho_old,       &
+                             Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec,&
+                             open_shell, int_memo)
+         write(*,*) "Step n°", ilambda, ", energy: ", E_lambda(ilambda)
       end do
    
-      call line_search(11,E_lambda, 1d0, Blambda )
-      if (Blambda .ge. 1.d0) Blambda=Blambda-1.0d0
-      write(*,*) "Best lambda", Blambda
-      Blambda=Blambda*Pstepsize/10.d0
+      call line_search(11, E_lambda, 1d0, Blambda)
+      if (Blambda >= 1.d0) Blambda = Blambda - 1.0d0
+      write(*,*) "Best lambda: ", Blambda
+      Blambda = Blambda * Pstepsize / 10.d0
       write(*,*) "Fluctuation: ", Blambda
    else
-      Blambda=Pstepsize
+      Blambda = Pstepsize
    end if
    
-   Pmat_vec=rho_lambda0*(1.d0-Blambda)+rho_lambda1*Blambda
-   if (open_shell) rhoalpha=rho_lambda0_alpha*(1.d0-Blambda)+rho_lambda1_alpha*Blambda
-   if (open_shell) rhobeta=rho_lambda0_betha*(1.d0-Blambda)+rho_lambda1_betha*Blambda
+   rho_old = rho_lambda0 * (1.d0 - Blambda) + rho_lambda1 * Blambda
+   if (open_shell) rhoa_old = rho_lambda0_alpha * (1.d0 - Blambda) + &
+                              rho_lambda1_alpha * Blambda
+   if (open_shell) rhob_old = rho_lambda0_betha * (1.d0 - Blambda) + &
+                              rho_lambda1_betha * Blambda
    
-   do jj=1,M
-      do kk=jj,M
-         Rposition=kk+(M2-jj)*(jj-1)/2
-         xnano(jj,kk)=Pmat_vec(Rposition)
-         if (open_shell) rho_a(jj,kk)=rhoalpha(Rposition)
-         if (open_shell) rho_b(jj,kk)=rhobeta(Rposition)
+   do jj = 1, M
+      do kk = jj, M
+         Rposition = kk + (M2 - jj) * (jj -1) / 2
+         rho_new(jj,kk) = rho_old(Rposition)
+         if (open_shell) rhoa_new(jj,kk) = rhoa_old(Rposition)
+         if (open_shell) rhob_new(jj,kk) = rhob_old(Rposition)
       enddo
    enddo
-   call give_me_energy(Elast, En, E1, E2, Ex, Pmat_vec, Hmat_vec, Fmat_vec, &
-   Fmat_vec2, Gmat_vec, Ginv_vec, open_shell, int_memo)
+
+   call give_me_energy(Elast, En, E1, E2, Ex, rho_old, Hmat_vec, &
+                       Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec,  &
+                       open_shell, int_memo)
       
-   RMM_temp=Pmat_vec
-   Pmat_vec=rho_lambda0
-   rho_lambda0=RMM_temp
+   RMM_temp    = rho_old
+   rho_old     = rho_lambda0
+   rho_lambda0 = RMM_temp
    
-   if(open_shell) then
-      RMM_temp=rhoalpha
-      rhoalpha=rho_lambda0_alpha
-      rho_lambda0_alpha=RMM_temp
+   if (open_shell) then
+      RMM_temp          = rhoa_old
+      rhoa_old          = rho_lambda0_alpha
+      rho_lambda0_alpha = RMM_temp
    
-      RMM_temp=rhobeta
-      rhobeta=rho_lambda0_betha
-      rho_lambda0_betha=RMM_temp
+      RMM_temp          = rhob_old
+      rhob_old          = rho_lambda0_betha
+      rho_lambda0_betha = RMM_temp
    end if
    
-   deallocate(RMM_temp)
-   if (Blambda .le. 4.d-1*Pstepsize) Pstepsize=Pstepsize*0.5d0 
-   if (Blambda .ge. 8.d-1*Pstepsize) Pstepsize=Pstepsize*1.2d0
-   if (Pstepsize .gt. 1.d0) Pstepsize=1.d0
-   if (Blambda .le. 2.d-1*Pstepsize .and. Pstepsize .gt. 1d-4) may_conv=.false.
+   if (Blambda <= 4.d-1 * Pstepsize) Pstepsize = Pstepsize * 0.5d0 
+   if (Blambda >= 8.d-1 * Pstepsize) Pstepsize = Pstepsize * 1.2d0
+   if (Pstepsize > 1.d0) Pstepsize = 1.d0
+   if ((Blambda <= 2.d-1*Pstepsize) .and. (Pstepsize > 1d-4)) may_conv = .false.
 
-   deallocate(E_lambda)
+   deallocate(E_lambda, RMM_temp)
 end subroutine P_linear_calc
 
 subroutine give_me_energy(E, En, E1, E2, Ex, Pmat_vec, Hmat_vec, Fmat_vec, &
@@ -598,11 +627,11 @@ subroutine give_me_energy(E, En, E1, E2, Ex, Pmat_vec, Hmat_vec, Fmat_vec, &
    !  return Energy components for a density matrix stored in Pmat_vec
    use faint_cpu, only: int3lu
    implicit none
-   real(kind=8), intent(in)  :: En
-   logical, intent(in) :: open_shell, int_memo
+   logical     , intent(in)    :: open_shell, int_memo
+   real(kind=8), intent(in)    :: En
+   real(kind=8), intent(out)   :: E, E1, E2, Ex
    real(kind=8), intent(inout) :: Pmat_vec(:), Hmat_vec(:), Fmat_vec(:), &
-   Fmat_vec2(:), Gmat_vec(:), Ginv_vec(:)
-   real(kind=8), intent(out) :: E, E1, E2, Ex
+                                  Fmat_vec2(:), Gmat_vec(:), Ginv_vec(:)
    integer :: kk
       
    E  = 0.0D0; E1 = 0.0D0

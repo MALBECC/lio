@@ -719,40 +719,47 @@ subroutine SCF(E)
         allocate ( xnano(M,M) )
 
         if (tbdft_calc) then
-          rhoa_TBDFT = rho_a
-          call extract_rhoDFT(M, rho_a, rho_a0)
+         rhoa_TBDFT = rho_a
+         call extract_rhoDFT(M, rho_a, rho_a0)
 
-          if (OPEN) then
-              rhob_TBDFT = rho_b
-              call extract_rhoDFT(M, rho_b, rho_b0)
-              call sprepack('L',M,rhoalpha,rho_a0)
-              call sprepack('L',M,rhobeta,rho_b0)
-              xnano=rho_a0+rho_b0
-          else
-              xnano=rho_a0
-          end if
-
-        else
-
-          if (OPEN) then
-             call sprepack('L',M,rhoalpha,rho_a)
-             call sprepack('L',M,rhobeta,rho_b)
-             xnano=rho_a+rho_b
-          else
-              xnano=rho_a
-          end if
-        end if
+         if (OPEN) then
+             rhob_TBDFT = rho_b
+             call extract_rhoDFT(M, rho_b, rho_b0)
+             xnano = rho_a0 + rho_b0
+         else
+             xnano = rho_a0
+         end if
+       else
+         if (OPEN) then
+            xnano = rho_a + rho_b
+         else
+            xnano = rho_a
+         end if
+      end if
+        
 !------------------------------------------------------------------------------!
 ! Convergence criteria and lineal search in P
-
-       IF (OPEN) call P_conver(nniter, En, E1, E2, Exc, good, xnano, rho_a, rho_b,&
-       rhoalpha, rhobeta, Pmat_vec, Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec,  &
-                        open, memo)
-       IF (.not. OPEN) call P_conver(nniter, En, E1, E2, Exc, good, xnano, rho_a, rho_a,&
-       rhoalpha, rhobeta, Pmat_vec, Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec,  &
-       open, memo)
-!------------------------------------------------------------------------------!
-
+      if (open) then
+         call P_conver(nniter, En, E1, E2, Exc, good, xnano, Pmat_vec,         &
+                       Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, memo,&
+                       rho_a, rho_b, rhoalpha, rhobeta)
+      else
+         call P_conver(nniter, En, E1, E2, Exc, good, xnano, Pmat_vec,         &
+                       Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, memo)
+      endif
+ 
+      
+      ! Overwrites old density matrix with new one.
+      call sprepack('L', M, Pmat_vec, xnano)
+      if (OPEN) then
+         if (tbdft_calc) then
+            call sprepack('L', M, rhoalpha, rho_a0)
+            call sprepack('L', M, rhobeta , rho_b0)
+         else
+            call sprepack('L', M, rhoalpha, rho_a)
+            call sprepack('L', M, rhobeta , rho_b)
+         endif
+      endif
       deallocate ( xnano )
 
 !------------------------------------------------------------------------------!

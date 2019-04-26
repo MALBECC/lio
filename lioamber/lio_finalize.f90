@@ -7,7 +7,7 @@ subroutine lio_finalize()
    use ECP_mod    , only: ecpmode
    use fileio     , only: io_finish_outputs
    use basis_subs , only: basis_deinit
-   use converger_ls, only: P_linearsearch_fin
+   use converger_subs, only: P_linearsearch_fin
  
    implicit none
    call basis_deinit() ! Deallocates basis variables.

@@ -1,24 +1,21 @@
 module converger_subs
 
    implicit none
-
 contains
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+subroutine converger_options_check(energ_all_iter)
+   use converger_data, only: damping_factor, gOld, DIIS, hybrid_converg, nDIIS,&
+                             conver_criter, rho_LS
+   
+   logical, intent(inout) :: energ_all_iter
 
-subroutine converger_init( M_in, OPshell )
-   use converger_data, only: fockm, FP_PFm, conver_criter, fock_damped, hagodiis, &
-                             damping_factor, bcoef, ndiis, EMAT2, gOld, diis,     &
-                             hybrid_converg, energy_list
+   if (abs(gOld - 10.0D0) > 1e-12) then
+      damping_factor = gOld
+   else if (abs(damping_factor - 10.0D0) > 1e-12) then
+      gOld = damping_factor
+   endif
 
-   implicit none
-   integer         , intent(in) :: M_in
-   logical         , intent(in) :: OPshell
-
-   hagodiis       = .false.
-   damping_factor = gOld
-
-   ! Performs conver_criter overrides if necessary.
    if (conver_criter == 2) then
       if (hybrid_converg) then
          diis          = .true.
@@ -32,6 +29,26 @@ subroutine converger_init( M_in, OPshell )
       diis = .true.
    endif
 
+   if (Rho_LS > 0 .and. (conver_criter /=1)) then
+      hybrid_converg = .false.
+      DIIS           = .false.
+      conver_criter  = 1
+      write(*,'(A)') &
+      '  WARNING - Turning to damping-only convergence (linear search).'
+    end if
+   
+
+end subroutine converger_options_check
+
+subroutine converger_init( M_in, OPshell )
+   use converger_data, only: fockm, FP_PFm, conver_criter, fock_damped, &
+                             hagodiis, bcoef, ndiis, EMAT2, energy_list
+   implicit none
+   integer         , intent(in) :: M_in
+   logical         , intent(in) :: OPshell
+
+   hagodiis       = .false.
+   
    ! Added to change from damping to DIIS. - Nick
    if (conver_criter /= 1) then
       if(OPshell) then
@@ -63,7 +80,7 @@ subroutine converger_init( M_in, OPshell )
    fock_damped(:,:,:) = 0.0D0
 end subroutine converger_init
 
-   subroutine conver (niter, good, M_in, rho_op, fock_op, spin, energy, n_orbs,&
+subroutine conver (niter, good, M_in, rho_op, fock_op, spin, energy, n_orbs,&
 #ifdef CUBLAS
                       devPtrX, devPtrY)
 #else
@@ -72,11 +89,10 @@ end subroutine converger_init
    use converger_data  , only: damping_factor, hagodiis, fockm, FP_PFm, ndiis, &
                                fock_damped, bcoef, EMAT2, conver_criter,       &
                                good_cut, energy_list, DIIS_bias, level_shift,  &
-                               lvl_shift_en, lvl_shift_cut
+                               lvl_shift_en, lvl_shift_cut, changed_to_LS
    use typedef_operator, only: operator
    use fileio_data     , only: verbose
    use linear_algebra  , only: matmuldiag
-   use converger_ls    , only: changed_to_LS
    implicit none
    ! Spin allows to store correctly alpha or beta information. - Carlos
    integer       , intent(in)    :: niter, M_in, spin, n_orbs   
@@ -130,10 +146,13 @@ end subroutine converger_init
 
       ! Damping until good enough, diis afterwards
       case(3,5)
-         if ((good < good_cut) .and. (niter > 2) .and. (.not. changed_to_LS)) then
-            if ( (.not. hagodiis) .and. (verbose .gt. 3) ) &
-               write(6,'(A,I4)') "  Changing to DIIS at step: ", niter
-            hagodiis = .true.
+         if (.not. hagodiis) then
+            if ((good < good_cut) .and. (niter > 2) .and. &
+               (.not. changed_to_LS)) then
+               if (verbose > 3) &
+                  write(6,'(A,I4)') "  Changing to DIIS at step: ", niter
+               hagodiis = .true.
+            endif
          endif
 
       case default
@@ -278,7 +297,6 @@ end subroutine converger_init
             enddo
          endif
 
-
          do ii = 1, ndiist
             bcoef(ii,spin) = 0.0d0
          enddo
@@ -297,7 +315,7 @@ end subroutine converger_init
 
          ! Build new Fock as a linear combination of previous steps.
          suma = 0.0D0
-         do kk=1,ndiist
+         do kk = 1, ndiist
             kknew = kk + (ndiis - ndiist)
             do ii = 1, M_in
             do jj = 1, M_in
@@ -313,10 +331,277 @@ end subroutine converger_init
    endif
 
    if ((good > lvl_shift_cut) .and. (level_shift)) then
+   if (hagodiis) &
        call fock_op%Shift_diag_ON(lvl_shift_en, n_orbs+1)
    endif
    deallocate (work)
    
 end subroutine conver
 
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+! Lineal search subroutines
+!
+! This procedure improve convergency in systems finding best lineal
+! combinations of density matrix in steps n and n-1. To do so, it
+! evaluates different combinations of rho(n) and rho(n-1), using the
+! variable lambda as a weight. The possibilities it evaluates also
+! depend on the performance of the algorithm in previous steps,
+! which is regulated by the parameters Elast and Pstepsize.
+!
+! FFR comments: Rho_LS, changed_to_LS and P_oscilation_analysis are
+! communication variables that appear here and in some external subs.
+! P_oscilation_analysis and changed_to_LS are not even used inside here.
+! These should be dealt with differently.
+!
+!------------------------------------------------------------------------------!
+! LOG:
+! V 1.00 September 2018 Final version - Nicolas Foglia
+! V 1.01 September 2018 adaptation - FFR
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
+subroutine P_linearsearch_init(MM, open_shell, rho_alp, rho_bet)
+   use converger_data, only: rho_lambda0, rho_lambda1, rho_lambda0_alpha, &
+                             rho_lambda1_alpha, rho_lambda0_betha,        &
+                             rho_lambda1_betha, rho_LS
+   implicit none
+   integer     , intent(in) :: MM
+   logical     , intent(in) :: open_shell
+   real(kind=8), intent(in) :: rho_alp(MM), rho_bet(MM)
+
+   if (rho_LS < 1) return
+
+   if (.not. allocated(rho_lambda1)) allocate(rho_lambda1(MM))
+   if (.not. allocated(rho_lambda0)) allocate(rho_lambda0(MM))
+   if (open_shell) then
+      if (.not. allocated(rho_lambda1_alpha)) allocate(rho_lambda1_alpha(MM))
+      if (.not. allocated(rho_lambda0_alpha)) allocate(rho_lambda0_alpha(MM))
+      if (.not. allocated(rho_lambda1_betha)) allocate(rho_lambda1_betha(MM))
+      if (.not. allocated(rho_lambda0_betha)) allocate(rho_lambda0_betha(MM))
+      rho_lambda0_alpha = rho_alp
+      rho_lambda0_betha = rho_bet
+   end if
+end subroutine P_linearsearch_init
+
+subroutine P_linearsearch_fin()
+   use converger_data, only: rho_lambda0, rho_lambda1, rho_lambda0_alpha, &
+                             rho_lambda1_alpha, rho_lambda0_betha,        &
+                             rho_lambda1_betha, rho_LS
+   
+   if (rho_LS < 1) return
+   if (allocated(rho_lambda1))       deallocate(rho_lambda1)
+   if (allocated(rho_lambda0))       deallocate(rho_lambda0)
+   if (allocated(rho_lambda1_alpha)) deallocate(rho_lambda1_alpha)
+   if (allocated(rho_lambda0_alpha)) deallocate(rho_lambda0_alpha)
+   if (allocated(rho_lambda1_betha)) deallocate(rho_lambda1_betha)
+   if (allocated(rho_lambda0_betha)) deallocate(rho_lambda0_betha)
+end subroutine P_linearsearch_fin
+
+subroutine P_conver(M, niter, En, E1, E2, Ex, good, xnano, rho_a, rho_b, &
+   rhoalpha, rhobeta, Pmat_vec, Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec,  &
+                    open_shell, int_memo)
+   ! rho_LS values:
+   !   = 0 calculate convergence criteria for actual density matrix.
+   !   = 1 do linear search for density matrix if energy > previous energy.
+   !   = 2 do linear search for density matrix in all steps.
+   use converger_data, only: rho_LS
+
+   implicit none
+   ! Step number and energies.
+   integer     , intent(in)    :: niter, M
+   real(kind=8), intent(in)    :: En 
+   real(kind=8), intent(inout) :: E1, E2, Ex
+   ! Main data
+   logical     , intent(in)    :: open_shell, int_memo
+   real(kind=8), intent(inout) :: Pmat_vec(:), Hmat_vec(:), Fmat_vec(:), &
+                                  Fmat_vec2(:), Gmat_vec(:), Ginv_vec(:), &
+                                  rhoalpha(:), rhobeta(:)
+   ! Convergence criteria
+   real(kind=8), intent(out)   :: good
+   ! Density matrices of current step
+   real(kind=8), intent(inout) :: xnano(M,M), rho_a(M,M), rho_b(M,M)
+   ! True if predicted density != density of previous steep
+   logical :: may_conv = .true.
+
+   select case (Rho_LS)
+   case (0,-1)
+   case (1,3)
+      call P_linear_calc(M, niter, En, E1, E2, Ex, xnano, may_conv, rho_a, rho_b,rhoalpha, rhobeta, &
+                         Pmat_vec, Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec,&
+                        open_shell, int_memo)
+   case default
+      write(*,'(A,I2)') &
+           "ERROR - P_conver: Wrong Rho_LS value, current value is ", Rho_LS
+      stop
+   end select
+      
+   call P_calc_fluctuation(Pmat_vec, good, xnano)
+   if (.not. may_conv) good = -1.0D0
+end subroutine P_conver
+
+! The following subs are only internal.
+subroutine P_calc_fluctuation(rho_vec, good, xnano)
+   !  calculates convergence criteria in density matrix, and store new density matrix in Pmat_vec
+   real(kind=8), intent(in)    :: xnano(:,:)
+   real(kind=8), intent(out)   :: good
+   real(kind=8), intent(inout) :: rho_vec(:)
+
+   integer      :: jj, kk, Rposition, M2
+   real(kind=8) :: del
+   
+   M2   = 2 * size(xnano,1)
+   good = 0.0D0
+
+   do jj = 1 , size(xnano,1)
+   do kk = jj, size(xnano,1)
+         Rposition = kk + (M2 - jj) * (jj -1) / 2
+         del  = (xnano(jj,kk) - rho_vec(Rposition)) * sqrt(2.0D0)
+         good = good + del * del
+         rho_vec(kk + (M2-jj)*(jj-1)/2) = xnano(jj,kk)
+      enddo
+   enddo
+   good = sqrt(good) / dble(size(xnano,1))
+
+end subroutine P_calc_fluctuation
+
+subroutine P_linear_calc(Rho_LS, niter, En, E1, E2, Ex, xnano,  &
+   may_conv, rho_a, rho_b, rhoalpha, rhobeta, Pmat_vec, Hmat_vec, Fmat_vec, &
+   Fmat_vec2, Gmat_vec, Ginv_vec, open_shell, int_memo)
+   use basis_data, only : M, MM
+   use liosubs, only: line_search
+   use converger_data, only:rho_lambda0, rho_lambda1, rho_lambda0_alpha, &
+                            rho_lambda1_alpha, rho_lambda0_betha, rho_lambda1_betha, &
+                            Elast, pstepsize
+   implicit none
+   integer, intent(in) :: Rho_LS, niter !type of lineal search criteria and step number
+   logical     , intent(in)    :: open_shell, int_memo
+   real(kind=8), intent(in) :: En
+   real(kind=8), intent(inout) :: Pmat_vec(:), Hmat_vec(:), Fmat_vec(:), &
+   Fmat_vec2(:), Gmat_vec(:), Ginv_vec(:), rhoalpha(:), rhobeta(:)
+
+   real(kind=8), intent(inout) :: E1, E2, Ex 
+   real(kind=8), intent(inout) :: xnano(M,M), rho_a(M,M), rho_b(M,M) ! density matrices of actual steep
+   real(kind=8) :: dlambda, Blambda !values for combination of density matrices 
+   logical, intent(inout) :: may_conv !true if predicted density != previus step density
+   real(kind=8), allocatable :: RMM_temp(:),E_lambda(:) ! auxiliar
+   integer :: M2, jj, kk, Rposition, ilambda !auxiliars
+
+   allocate(E_lambda(0:10))
+   M2=2*M
+   if (niter .eq. 1)  then
+      Pstepsize=1.d0
+      rho_lambda0=Pmat_vec
+      if (open_shell) rho_lambda0_alpha=rhoalpha
+      if (open_shell) rho_lambda0_betha=rhobeta
+   end if
+   
+   allocate(RMM_temp(1:MM))
+   
+   do jj=1,M
+      do kk=jj,M
+         Rposition=kk+(M2-jj)*(jj-1)/2
+         rho_lambda1(Rposition)=xnano(jj,kk)
+         if (open_shell) rho_lambda1_alpha(Rposition)=rho_a(jj,kk)
+         if (open_shell) rho_lambda1_betha(Rposition)=rho_b(jj,kk)
+      enddo
+   enddo
+   
+   Pmat_vec=rho_lambda1
+   if (open_shell)rhoalpha=rho_lambda1_alpha
+   if (open_shell)rhobeta=rho_lambda1_betha
+   
+   call give_me_energy(E_lambda(10), En, E1, E2, Ex, Pmat_vec, Hmat_vec, Fmat_vec, &
+                      Fmat_vec2, Gmat_vec, Ginv_vec, open_shell, int_memo)
+   
+   if (Elast.lt. E_lambda(10) .or. Rho_LS.eq.2) then
+      write(*,*) "This step ", E_lambda(10), "last steep ", Elast
+      write(*,*) "doing lineal interpolation in Rho"
+      do ilambda=0, 10
+         dlambda=Pstepsize*dble(ilambda)/10.d0
+         if (dlambda .gt. 1.d0) STOP "dlambda > 1.d0"
+         Pmat_vec=rho_lambda0*(1.d0-dlambda)+rho_lambda1*dlambda 
+         if(open_shell) rhoalpha=rho_lambda0_alpha*(1.d0-dlambda)+rho_lambda1_alpha*dlambda
+         if(open_shell) rhobeta=rho_lambda0_betha*(1.d0-dlambda)+rho_lambda1_betha*dlambda
+         call give_me_energy(E_lambda(ilambda), En, E1, E2, Ex, Pmat_vec, Hmat_vec, Fmat_vec, &
+                             Fmat_vec2, Gmat_vec, Ginv_vec, open_shell, int_memo)
+   
+         write(*,*) "step ",ilambda, "energy ", E_lambda(ilambda)
+      end do
+   
+      call line_search(11,E_lambda, 1d0, Blambda )
+      if (Blambda .ge. 1.d0) Blambda=Blambda-1.0d0
+      write(*,*) "Best lambda", Blambda
+      Blambda=Blambda*Pstepsize/10.d0
+      write(*,*) "Fluctuation: ", Blambda
+   else
+      Blambda=Pstepsize
+   end if
+   
+   Pmat_vec=rho_lambda0*(1.d0-Blambda)+rho_lambda1*Blambda
+   if (open_shell) rhoalpha=rho_lambda0_alpha*(1.d0-Blambda)+rho_lambda1_alpha*Blambda
+   if (open_shell) rhobeta=rho_lambda0_betha*(1.d0-Blambda)+rho_lambda1_betha*Blambda
+   
+   do jj=1,M
+      do kk=jj,M
+         Rposition=kk+(M2-jj)*(jj-1)/2
+         xnano(jj,kk)=Pmat_vec(Rposition)
+         if (open_shell) rho_a(jj,kk)=rhoalpha(Rposition)
+         if (open_shell) rho_b(jj,kk)=rhobeta(Rposition)
+      enddo
+   enddo
+   call give_me_energy(Elast, En, E1, E2, Ex, Pmat_vec, Hmat_vec, Fmat_vec, &
+   Fmat_vec2, Gmat_vec, Ginv_vec, open_shell, int_memo)
+      
+   RMM_temp=Pmat_vec
+   Pmat_vec=rho_lambda0
+   rho_lambda0=RMM_temp
+   
+   if(open_shell) then
+      RMM_temp=rhoalpha
+      rhoalpha=rho_lambda0_alpha
+      rho_lambda0_alpha=RMM_temp
+   
+      RMM_temp=rhobeta
+      rhobeta=rho_lambda0_betha
+      rho_lambda0_betha=RMM_temp
+   end if
+   
+   deallocate(RMM_temp)
+   if (Blambda .le. 4.d-1*Pstepsize) Pstepsize=Pstepsize*0.5d0 
+   if (Blambda .ge. 8.d-1*Pstepsize) Pstepsize=Pstepsize*1.2d0
+   if (Pstepsize .gt. 1.d0) Pstepsize=1.d0
+   if (Blambda .le. 2.d-1*Pstepsize .and. Pstepsize .gt. 1d-4) may_conv=.false.
+
+   deallocate(E_lambda)
+end subroutine P_linear_calc
+
+subroutine give_me_energy(E, En, E1, E2, Ex, Pmat_vec, Hmat_vec, Fmat_vec, &
+                          Fmat_vec2, Gmat_vec, Ginv_vec, open_shell, int_memo)
+   !  return Energy components for a density matrix stored in Pmat_vec
+   use faint_cpu, only: int3lu
+   implicit none
+   real(kind=8), intent(in)  :: En
+   logical, intent(in) :: open_shell, int_memo
+   real(kind=8), intent(inout) :: Pmat_vec(:), Hmat_vec(:), Fmat_vec(:), &
+   Fmat_vec2(:), Gmat_vec(:), Ginv_vec(:)
+   real(kind=8), intent(out) :: E, E1, E2, Ex
+   integer :: kk
+      
+   E  = 0.0D0; E1 = 0.0D0
+   E2 = 0.0D0; Ex = 0.0D0
+   
+   do kk = 1, size(Pmat_vec,1)
+      E1 = E1 + Pmat_vec(kk) * Hmat_vec(kk) !Computes 1e energy
+   enddo
+
+   ! Computes Coulomb part of Fock, and energy on E2.
+   call int3lu(E2, Pmat_vec, Fmat_vec2, Fmat_vec, Gmat_vec, Ginv_vec, &
+               Hmat_vec, open_shell, int_memo)
+
+   ! Computes XC integration / Fock elements.
+   call g2g_solve_groups(0,Ex,0)
+
+   ! Adds all energy components.
+   E = E1 + E2 + En + Ex
+
+end subroutine give_me_energy
+   
 end module converger_subs

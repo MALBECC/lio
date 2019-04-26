@@ -123,7 +123,6 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
     use basis_data, only: M, Md, basis_set, fitting_set, MM, MMd
     use basis_subs, only: basis_init
     use tbdft_data, only: MTB, tbdft_calc
-    use converger_ls, only: Rho_LS, P_linearsearch_init
 
     implicit none
     integer , intent(in) :: nclatom, natomin, Izin(natomin), callfrom
@@ -187,7 +186,6 @@ subroutine init_lio_common(natomin, Izin, nclatom, callfrom)
       stop
       return
     endif
-    if ( Rho_LS > 0 ) call P_linearsearch_init()
 
     call g2g_timer_stop('lio_init')
 

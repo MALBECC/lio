@@ -51,8 +51,8 @@ module lionml_data
    use lr_data           , only: lresp, nstates, root, FCA, nfo, nfv
    use converger_data    , only: DIIS, ndiis, GOLD, told, Etold, good_cut,     &
                                  hybrid_converg, DIIS_bias, conver_criter,     &
-                                 level_shift, lvl_shift_cut, lvl_shift_en
-   use converger_ls      , only: Rho_LS, P_oscilation_analisis
+                                 level_shift, lvl_shift_cut, lvl_shift_en,     &
+                                 Rho_LS, P_oscilation_analisis
    implicit none
 
 !  Namelist definition

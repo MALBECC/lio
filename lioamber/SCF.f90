@@ -56,14 +56,14 @@ subroutine SCF(E)
                              messup_densmat, fix_densmat
    use liosubs_math  , only: transform
    use linear_algebra, only: matrix_diagon
-   use converger_data, only: told, Etold
-   use converger_subs, only: converger_init, conver
+   use converger_data, only: told, Etold, Rho_LS, changed_to_LS
+   use converger_subs, only: converger_init, conver, P_conver, P_linearsearch_init
    use mask_cublas   , only: cublas_setmat, cublas_release
    use typedef_operator, only: operator !Testing operator
    use trans_Data    , only: gaussian_convert, rho_exc, translation
-#  ifdef  CUBLAS
-      use cublasmath , only: cumxp_r
-#  endif
+#ifdef  CUBLAS
+   use cublasmath , only: cumxp_r
+#endif
    use initial_guess_subs, only: get_initial_guess
    use fileio       , only: write_energies, write_energy_convergence, &
                             write_final_convergence, write_ls_convergence
@@ -72,7 +72,6 @@ subroutine SCF(E)
                             c, M, Md
    use lr_data, only: lresp
    use lrtddft, only: linear_response
-   use converger_ls , only: Rho_LS, changed_to_LS, P_conver, P_linearsearch_init
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 
@@ -202,6 +201,7 @@ subroutine SCF(E)
 
 !------------------------------------------------------------------------------!
    call ECP_init()
+   call P_linearsearch_init(MM, open, rhoalpha, rhobeta)
 
    call g2g_timer_start('SCF')
    call g2g_timer_sum_start('SCF')
@@ -745,8 +745,12 @@ subroutine SCF(E)
 !------------------------------------------------------------------------------!
 ! Convergence criteria and lineal search in P
 
-       IF (OPEN) call P_conver(nniter, En, E1, E2, Exc, good, xnano, rho_a, rho_b)
-       IF (.not. OPEN) call P_conver(nniter, En, E1, E2, Exc, good, xnano, rho_a, rho_a)
+       IF (OPEN) call P_conver(M, nniter, En, E1, E2, Exc, good, xnano, rho_a, rho_b,&
+       rhoalpha, rhobeta, Pmat_vec, Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec,  &
+                        open, memo)
+       IF (.not. OPEN) call P_conver(M, nniter, En, E1, E2, Exc, good, xnano, rho_a, rho_a,&
+       rhoalpha, rhobeta, Pmat_vec, Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec,  &
+       open, memo)
 !------------------------------------------------------------------------------!
 
       deallocate ( xnano )
@@ -761,7 +765,7 @@ subroutine SCF(E)
               Rho_LS=1
               NMAX=2*NMAX
               changed_to_LS=.true.
-              call P_linearsearch_init()
+              call P_linearsearch_init(MM, open, rhoalpha, rhobeta)
            end if
         end if
 

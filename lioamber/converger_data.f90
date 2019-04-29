@@ -29,9 +29,9 @@ module converger_data
    real(kind=8) :: tolD           = 1.0D-6
    real(kind=8) :: EtolD          = 1.0D-1
 
-   ! Options for linear search. Rho_LS = 0 activates
-   ! linear search after failed convergence, =-1 never
-   ! activates it.
+   ! Options for linear search. Rho_LS =1 activates
+   ! linear search after failed convergence, =2 means
+   ! only attempt linear search.
    integer      :: Rho_LS = 0
 
    ! Internal variables

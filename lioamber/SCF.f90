@@ -724,7 +724,7 @@ subroutine SCF(E)
          endif
       endif
 
-      if (rho_LS > 0) then
+      if (rho_LS > 1) then
          ! Performs a linear search in Rho if activated. This uses the
          ! vector-form densities as the old densities, and matrix-form
          ! densities as the new ones.
@@ -740,7 +740,7 @@ subroutine SCF(E)
 
       ! Checks convergence criteria and starts linear search if able.
       call check_convergence(Pmat_vec, xnano, Evieja, E, niter, converged)
-      if ((rho_LS == 0) .and. (niter == nMax) .and. (.not. converged)) &
+      if ((rho_LS == 1) .and. (niter == nMax) .and. (.not. converged)) &
          call rho_ls_switch(open, rhoalpha, rhobeta, changed_to_LS)
       
       ! Updates old density matrices with the new ones and updates energy.
@@ -778,7 +778,7 @@ subroutine SCF(E)
    if (changed_to_LS) then
       changed_to_LS = .false.
       nMax          = nMax / 2
-      Rho_LS        = 0
+      Rho_LS        = 1
    endif
 
    if (noconverge.gt.4) then

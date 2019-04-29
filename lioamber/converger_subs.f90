@@ -29,7 +29,7 @@ subroutine converger_options_check(energ_all_iter)
       diis = .true.
    endif
 
-   if (Rho_LS > 0 .and. (conver_criter /=1)) then
+   if ((Rho_LS > 1) .and. (conver_criter /=1)) then
       hybrid_converg = .false.
       DIIS           = .false.
       conver_criter  = 1
@@ -173,7 +173,7 @@ subroutine conver_fock(niter, M_in, rho_op, fock_op, spin, energy, n_orbs, &
       ! Damping until good enough, diis afterwards
       case(3,5)
          if (.not. hagodiis) then
-            if ((rho_diff < good_cut) .and. (niter > 2) .and. (rho_LS < 1)) then
+            if ((rho_diff < good_cut) .and. (niter > 2) .and. (rho_LS < 2)) then
                if (verbose > 3) &
                   write(6,'(A,I4)') "  Changing to DIIS at step: ", niter
                hagodiis = .true.
@@ -186,7 +186,7 @@ subroutine conver_fock(niter, M_in, rho_op, fock_op, spin, energy, n_orbs, &
    endselect
 
    ! Turn off diis is calculation when change to lineal search, Nick
-   if (rho_ls > 0) hagodiis = .false.
+   if (rho_ls > 1) hagodiis = .false.
 
    ndiist = min( niter, ndiis )
    if (conver_criter /= 1) then      
@@ -432,7 +432,7 @@ subroutine rho_ls_init(open_shell, rho_alp, rho_bet)
 
    integer :: MM
 
-   if (rho_LS < 1) return
+   if (rho_LS < 2) return
    MM = size(rho_alp,1)
 
    if (.not. allocated(rho_lambda1)) allocate(rho_lambda1(MM))
@@ -457,7 +457,7 @@ subroutine rho_ls_switch(open_shell, rho_alp, rho_bet, switch_LS)
 
    call write_ls_convergence(NMAX)
 
-   Rho_LS    = 1
+   Rho_LS    = 3
    NMAX      = 2 * NMAX
    switch_LS = .true.
    call rho_ls_init(open_shell, rho_alp, rho_bet)
@@ -506,25 +506,16 @@ subroutine do_rho_ls(niter, En, E1, E2, Ex, rho_new, rho_old, Hmat_vec, &
    ! True if predicted density != density of previous steep
    may_conv = .true.
 
-   select case (rho_LS)
-      case (0,-1)
-      case (1, 2)
-         ! Makes separate calls for open and closed shell.
-         if (present(rhoa_old)) then
-            call rho_linear_calc(niter, En, E1, E2, Ex, may_conv, rho_new, &
-                                 rho_old, Hmat_vec, Fmat_vec, Fmat_vec2,   &
-                                 Gmat_vec, Ginv_vec, int_memo)
-         else
-            call rho_linear_calc(niter, En, E1, E2, Ex, may_conv, rho_new, &
-                                 rho_old, Hmat_vec, Fmat_vec, Fmat_vec2,   &
-                                 Gmat_vec, Ginv_vec, int_memo, rhoa_new,   &
-                                 rhob_new, rhoa_old, rhob_old)
-         endif
-      case default
-         write(*,'(A,I2)') &
-            "ERROR - P_conver: Wrong Rho_LS value, current value is ", Rho_LS
-         stop
-   end select
+   ! Makes separate calls for open and closed shell.
+   if (present(rhoa_old)) then
+      call rho_linear_calc(niter, En, E1, E2, Ex, may_conv, rho_new, rho_old, &
+                           Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, &
+                           int_memo)
+   else
+      call rho_linear_calc(niter, En, E1, E2, Ex, may_conv, rho_new, rho_old, &
+                           Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, &
+                           int_memo, rhoa_new, rhob_new, rhoa_old, rhob_old)
+   endif  
 end subroutine do_rho_ls
 
 ! The following subs are only internal.

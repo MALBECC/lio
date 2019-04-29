@@ -37,7 +37,8 @@ subroutine converger_options_check(energ_all_iter)
       '  WARNING - Turning to damping-only convergence for linear search.'
     end if
    
-
+   ! For biased DIIS, full energy is needed.
+   if ((conver_criter == 4) .or. (conver_criter == 5)) energ_all_iter = .true.
 end subroutine converger_options_check
 
 subroutine converger_init( M_in, OPshell )
@@ -679,7 +680,7 @@ subroutine give_me_energy(E, En, E1, E2, Ex, Pmat_vec, Hmat_vec, Fmat_vec, &
                Hmat_vec, open_shell, int_memo)
 
    ! Computes XC integration / Fock elements.
-   call g2g_solve_groups(0,Ex,0)
+   call g2g_solve_groups(1,Ex,0)
 
    ! Adds all energy components.
    E = E1 + E2 + En + Ex

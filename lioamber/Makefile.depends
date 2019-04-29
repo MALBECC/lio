@@ -202,7 +202,7 @@ SRCDIRS += faint_cpu
 OBJECTS += faint_cpu.o
 #
 modusrs :=
-modusrs += cublasmath.o ehrensubs.o liomain.o
+modusrs += cublasmath.o ehrensubs.o liomain.o converger_subs.o
 modusrs += propagators.o SCF.o SCFop.o TD.o field_subs.o
 modusrs += dft_get_mm_forces.o dft_get_qm_forces.o
 $(modusrs:%.o=$(OBJPATH)/%.o) : ${OBJPATH}/faint_cpu.mod

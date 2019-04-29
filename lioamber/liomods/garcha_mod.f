@@ -2,7 +2,7 @@
        module garcha_mod
       implicit none
       INCLUDE 'param.f'
-      integer natom,ntatom,NMAX,NCO,NUNP,igrid,igrid2
+      integer natom,ntatom,NCO,NUNP,igrid,igrid2
      >  ,Iexch,nsol,npas,npasw,watermod,noconverge,
      > converge,nang,propagator,NBCH
       integer ex_functional_id, ec_functional_id

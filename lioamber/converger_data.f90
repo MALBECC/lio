@@ -25,17 +25,18 @@ module converger_data
    real(kind=8) :: lvl_shift_cut  = 1.0D0
  
    ! Tolerace for SCF convergence
+   integer      :: nMax           = 100
    real(kind=8) :: tolD           = 1.0D-6
    real(kind=8) :: EtolD          = 1.0D-1
 
-   ! Options for linear search
+   ! Options for linear search. Rho_LS = 0 activates
+   ! linear search after failed convergence, =-1 never
+   ! activates it.
    integer      :: Rho_LS = 0
-   logical      :: P_oscilation_analisis = .false.
 
-
-
-   ! Internal variables for Damping
+   ! Internal variables
    real(kind=8), allocatable :: fock_damped(:,:,:)
+   real(kind=8)              :: rho_diff = 1.0D0
 
    ! Internal variables for DIIS (and variants)
    logical                   :: hagodiis = .false.
@@ -46,7 +47,7 @@ module converger_data
    real(kind=8), allocatable :: energy_list(:)
 
    ! Internal variables for Linear Search
-   logical                                   :: changed_to_LS = .false.
+   logical                                   :: may_conv      = .true.
    real(kind=8)                              :: Elast         = 0.0D0
    real(kind=8)                              :: Pstepsize     = 0.0D0
    real(kind=8), dimension(:)  , allocatable :: rho_lambda1

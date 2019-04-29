@@ -31,7 +31,7 @@ subroutine SCF(E)
                           igrid, energy_freq, converge, noconverge, lowdin,    &
                           cubegen_only, VCINP, primera, Nunp, igrid2,    &
                           predcoef, nsol, r, pc, Enucl, Iz, &
-                          Eorbs, NMAX,Dbug, doing_ehrenfest, first_step,       &
+                          Eorbs, Dbug, doing_ehrenfest, first_step,       &
                           total_time, MO_coef_at, MO_coef_at_b, Smat, &
                           rhoalpha, rhobeta, OPEN, RealRho, d, ntatom,  &
                           Eorbs_b, npas, X, npasw, Fmat_vec, Fmat_vec2,        &
@@ -56,8 +56,9 @@ subroutine SCF(E)
                              messup_densmat, fix_densmat
    use liosubs_math  , only: transform
    use linear_algebra, only: matrix_diagon
-   use converger_data, only: told, Etold, Rho_LS, changed_to_LS
-   use converger_subs, only: converger_init, conver, P_conver, P_linearsearch_init
+   use converger_data, only: told, Etold, Rho_LS, nMax
+   use converger_subs, only: converger_init, conver_fock, check_convergence, &
+                             rho_ls_init, do_rho_ls, rho_ls_switch
    use mask_cublas   , only: cublas_setmat, cublas_release
    use typedef_operator, only: operator !Testing operator
    use trans_Data    , only: gaussian_convert, rho_exc, translation
@@ -78,9 +79,9 @@ subroutine SCF(E)
    implicit none
    integer :: Nel
    integer :: niter
+   logical :: converged     = .false.
+   logical :: changed_to_LS = .false.
    real*8  :: sq2
-   real*8  :: good
-   real*8  :: del
    integer :: igpu
 
 !  The following two variables are in a part of the code that is never
@@ -139,7 +140,6 @@ subroutine SCF(E)
    real*8 :: E_restrain  ! distance restrain
    real*8 :: Exc         ! exchange-correlation
    real*8 :: Etrash      ! auxiliar variable
-   real*8 :: Egood       !
    real*8 :: Evieja      !
 
 
@@ -176,11 +176,6 @@ subroutine SCF(E)
 
    changed_to_LS=.false. ! LINSEARCH
 
-   if (verbose > 1) then
-      write(*,*)
-      write(*,'(A)') "Starting SCF cycles."
-   endif
-
 !------------------------------------------------------------------------------!
 !TBDFT: initialisation of variable that could depend of TB.
    allocate (fock_a0(M,M), rho_a0(M,M))
@@ -201,7 +196,7 @@ subroutine SCF(E)
 
 !------------------------------------------------------------------------------!
    call ECP_init()
-   call P_linearsearch_init(MM, open, rhoalpha, rhobeta)
+   call rho_ls_init(open, rhoalpha, rhobeta)
 
    call g2g_timer_start('SCF')
    call g2g_timer_sum_start('SCF')
@@ -263,11 +258,7 @@ subroutine SCF(E)
 ! TODO: convergence criteria should be set at namelist/keywords setting
 
       Nel=2*NCO+Nunp
-!
-      good=1.00D0
-      Egood=1.00D0
       Evieja=0.d0
-
       niter=0
 
       Qc=0.0D0
@@ -478,21 +469,26 @@ subroutine SCF(E)
 !------------------------------------------------------------------------------!
 ! TODO: Maybe evaluate conditions for loop continuance at the end of loop
 !       and condense in a single "keep_iterating" or something like that.
-      do 999 while ((good.ge.told.or.Egood.ge.Etold).and.niter.le.NMAX)
+   if (verbose > 1) then
+      write(*,*)
+      write(*,'(A)') "Starting SCF cycles."
+   endif
+
+   converged = .false.
+   call converger_init( M_f, OPEN )
+
+   do 999 while ((.not. converged) .and. (niter <= nMax))
         call g2g_timer_start('Total iter')
         call g2g_timer_sum_start('Iteration')
         call g2g_timer_sum_start('Fock integrals')
 
-        niter=niter+1
-        nniter=niter
-        IF (changed_to_LS .and. niter.eq. (NMAX/2 +1)) nniter=1 
-!       (first steep of damping after NMAX steeps without convergence)
-
-        E1=0.0D0
+        niter  = niter +1
+        nniter = niter
+        if (changed_to_LS .and. (niter == (NMAX / 2 +1))) nniter = 1 
+!       (first step of damping after NMAX steps without convergence)
 
 !------------------------------------------------------------------------------!
 !       Fit density basis to current MO coeff and calculate Coulomb F elements
-!
 ! TODO: Calculation of fock terms should be separated. Also, maybe it would be
 !       convenient to add the NaN checks and the timers inside the subroutine
 !       calls is a more systematic way.
@@ -527,6 +523,7 @@ subroutine SCF(E)
 !       module and only appear here as a subroutine, or be included in the
 !       separated fock calculation subroutine...
 !
+        E1 = 0.0D0
         if ( generate_rho0 ) then
            if (field) call field_setup_old(1.0D0, 0, fx, fy, fz)
            call field_calc(E1, 0.0D0, Pmat_vec(1:MM), Fmat_vec2, Fmat_vec, &
@@ -598,20 +595,17 @@ subroutine SCF(E)
 !------------------------------------------------------------------------------!
 !  Convergence accelerator processing
         call g2g_timer_sum_start('SCF acceleration')
-        if (niter==1) then
-           call converger_init( M_f, OPEN )
-        end if
 !carlos: this is repeted twice for open shell
 
 !%%%%%%%%%%%%%%%%%%%%
 !CLOSE SHELL OPTION |
 !%%%%%%%%%%%%%%%%%%%%
 #       ifdef CUBLAS
-           call conver(nniter, good, M_f, rho_aop, fock_aop, 1, E, NCOa_f,&
-                       dev_Xmat, dev_Ymat)
+           call conver_fock(nniter, M_f, rho_aop, fock_aop, 1, E, NCOa_f, &
+                            dev_Xmat, dev_Ymat)
 #       else
-           call conver(nniter, good, M_f, rho_aop, fock_aop, 1, E, NCOa_f,&
-                       Xmat, Ymat)
+           call conver_fock(nniter, M_f, rho_aop, fock_aop, 1, E, NCOa_f, &
+                            Xmat, Ymat)
 #       endif
 
         call g2g_timer_sum_pause('SCF acceleration')
@@ -650,11 +644,11 @@ subroutine SCF(E)
 !%%%%%%%%%%%%%%%%%%%%
         call g2g_timer_sum_start('SCF acceleration')
 #       ifdef CUBLAS
-           call conver(nniter, good, M_f, rho_bop, fock_bop, 2, E, NCOb_f,&
-           dev_Xmat, dev_Ymat)
+           call conver_fock(nniter, M_f, rho_bop, fock_bop, 2, E, NCOb_f, &
+                            dev_Xmat, dev_Ymat)
 #       else
-           call conver(nniter, good, M_f, rho_bop, fock_bop, 2, E, NCOb_f,&
-           Xmat, Ymat)
+           call conver_fock(nniter, M_f, rho_bop, fock_bop, 2, E, NCOb_f, &
+                            Xmat, Ymat)
 #       endif
 
         call g2g_timer_sum_pause('SCF acceleration')
@@ -700,56 +694,56 @@ subroutine SCF(E)
 
 !carlos: this is not working with openshell. morb_coefat is not depending of
 !        the spin factor.
-        do ii=1,M
-!         do jj=1,NCO
+      do ii=1,M
           do jj=1,M
             X( ii, M2+jj ) = morb_coefat( i0+ii, jj )
           enddo
-!         do jj=NCO,M
-!           X( ii, M2+jj ) = morb_coefat( i0+ii, jj+2*MTB )
-!         enddo
-        enddo
+      enddo
 
-!------------------------------------------------------------------------------!
-! carlos: added to separate from rho the DFT part
-!
-! TODO: again, this should be handled differently...
-! TODO: make xnano go away...only remains here
-!
-        allocate ( xnano(M,M) )
 
-        if (tbdft_calc) then
-         rhoa_TBDFT = rho_a
-         call extract_rhoDFT(M, rho_a, rho_a0)
 
-         if (OPEN) then
-             rhob_TBDFT = rho_b
-             call extract_rhoDFT(M, rho_b, rho_b0)
-             xnano = rho_a0 + rho_b0
-         else
-             xnano = rho_a0
-         end if
-       else
-         if (OPEN) then
-            xnano = rho_a + rho_b
-         else
-            xnano = rho_a
-         end if
-      end if
-        
-!------------------------------------------------------------------------------!
-! Convergence criteria and lineal search in P
-      if (open) then
-         call P_conver(nniter, En, E1, E2, Exc, good, xnano, Pmat_vec,         &
-                       Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, memo,&
-                       rho_a, rho_b, rhoalpha, rhobeta)
-      else
-         call P_conver(nniter, En, E1, E2, Exc, good, xnano, Pmat_vec,         &
-                       Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, memo)
+      ! Perfoms TBDFT checks and extracts density matrices.
+      ! Allocates xnano, which contains the total (alpha+beta)
+      ! density.
+      allocate ( xnano(M,M) )
+
+      if (.not. tbdft_calc) then
+         xnano = rho_a
+         if (OPEN) xnano = xnano + rho_b
+
+         if (tbdft_calc) then
+            rhoa_TBDFT = rho_a
+            call extract_rhoDFT(M, rho_a, rho_a0)
+            xnano = rho_a0
+
+            if (OPEN) then
+               rhob_TBDFT = rho_b
+               call extract_rhoDFT(M, rho_b, rho_b0)
+               xnano = xnano + rho_b0
+            endif
+         endif
       endif
- 
+
+      if (rho_LS > 0) then
+         ! Performs a linear search in Rho if activated. This uses the
+         ! vector-form densities as the old densities, and matrix-form
+         ! densities as the new ones.
+         if (open) then
+            call do_rho_ls(nniter, En, E1, E2, Exc, xnano, Pmat_vec, Hmat_vec,&
+                           Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, memo,     &
+                           rho_a, rho_b, rhoalpha, rhobeta)
+         else
+            call do_rho_ls(nniter, En, E1, E2, Exc, xnano, Pmat_vec, Hmat_vec,&
+                           Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, memo)
+         endif
+      endif
+
+      ! Checks convergence criteria and starts linear search if able.
+      call check_convergence(Pmat_vec, xnano, Evieja, E, niter, converged)
+      if ((rho_LS == 0) .and. (niter == nMax) .and. (.not. converged)) &
+         call rho_ls_switch(open, rhoalpha, rhobeta, changed_to_LS)
       
-      ! Overwrites old density matrix with new one.
+      ! Updates old density matrices with the new ones and updates energy.
       call sprepack('L', M, Pmat_vec, xnano)
       if (OPEN) then
          if (tbdft_calc) then
@@ -761,61 +755,40 @@ subroutine SCF(E)
          endif
       endif
       deallocate ( xnano )
+      Evieja = E
 
-!------------------------------------------------------------------------------!
-! TODO: finalization of the loop is a little bit messy. Also: "999 continue"??
-!       I think it is time we regularized this loop...
-!       write energy at every step
-        if (niter.eq.NMAX) then
-           if (Rho_LS .eq.0) then
-              call write_ls_convergence(NMAX)
-              Rho_LS=1
-              NMAX=2*NMAX
-              changed_to_LS=.true.
-              call P_linearsearch_init(MM, open, rhoalpha, rhobeta)
-           end if
-        end if
-
-        Egood  = abs(E - Evieja)
-        Evieja = E
-
-        ! Write energy at every step
-        call write_energy_convergence(niter, Evieja, good, told, egood, etold)
-
-        call g2g_timer_stop('Total iter')
-        call g2g_timer_sum_pause('Iteration')
+      call g2g_timer_stop('Total iter')
+      call g2g_timer_sum_pause('Iteration')
 
  999  continue
 
-      call g2g_timer_sum_start('Finalize SCF')
+   call g2g_timer_sum_start('Finalize SCF')
 
-!------------------------------------------------------------------------------!
-!     Checks of convergence
-!
-      if ((niter.ge.NMAX) .and. (.not. changed_to_LS)) then
-         call write_final_convergence(.false., NMAX, Evieja)
-         noconverge = noconverge + 1
-         converge   = 0
-      else
-         call write_final_convergence(.true., niter, Evieja)
-         noconverge = 0
-         converge   = converge + 1
-      endif
+   ! Checks of convergence
+   if ((niter >= nMax) .and. (.not. changed_to_LS)) then
+      call write_final_convergence(.false., nMax, Evieja)
+      noconverge = noconverge + 1
+      converge   = 0
+   else
+      call write_final_convergence(.true., niter, Evieja)
+      converge   = converge + 1
+      noconverge = 0
+   endif
 
-      if (changed_to_LS) then
-         changed_to_LS=.false.
-         NMAX=NMAX/2
-         Rho_LS=0
-      end if
+   if (changed_to_LS) then
+      changed_to_LS = .false.
+      nMax          = nMax / 2
+      Rho_LS        = 0
+   endif
 
-      if (noconverge.gt.4) then
-         write(6,'(A)')  'FATAL ERROR - No convergence achieved 4 times.'
-         stop
-      endif
-!------------------------------------------------------------------------------!
+   if (noconverge.gt.4) then
+      write(6,'(A)') "FATAL ERROR - No convergence achieved "&
+                    &"4 consecutive times."
+      stop
+   endif
 
-!TBDFT: Mulliken analysis of TB part
-   if (tbdft_calc) call tbdft_scf_output(M,OPEN)
+   ! TBDFT: Mulliken analysis of TB part
+   if (tbdft_calc) call tbdft_scf_output(M, OPEN)
 
    if (MOD(npas,energy_freq).eq.0) then
 !       Resolve with last density to get XC energy

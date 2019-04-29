@@ -34,21 +34,27 @@ subroutine converger_options_check(energ_all_iter)
       DIIS           = .false.
       conver_criter  = 1
       write(*,'(A)') &
-      '  WARNING - Turning to damping-only convergence (linear search).'
+      '  WARNING - Turning to damping-only convergence for linear search.'
     end if
    
 
 end subroutine converger_options_check
 
 subroutine converger_init( M_in, OPshell )
-   use converger_data, only: fockm, FP_PFm, conver_criter, fock_damped, &
-                             hagodiis, bcoef, ndiis, EMAT2, energy_list
+   use converger_data, only: fockm, FP_PFm, conver_criter, fock_damped,  &
+                             hagodiis, bcoef, ndiis, EMAT2, energy_list, &
+                             told, etold
    implicit none
    integer         , intent(in) :: M_in
    logical         , intent(in) :: OPshell
 
    hagodiis = .false.
-   
+
+   write(*,'(2x,A)') "Convergence criteria are: "
+   write(*,'(2x,ES8.2,A33,ES8.2,A26)')                 &
+            told, " in Rho mean squared difference, ", &
+            Etold, " Eh in energy differences."
+
    ! Added to change from damping to DIIS. - Nick
    if (conver_criter /= 1) then
       if(OPshell) then
@@ -96,10 +102,10 @@ subroutine converger_finalise()
    endif
 
    if (allocated(fock_damped)) deallocate(fock_damped)
-   call P_linearsearch_fin()
+   call rho_ls_finalise()
 end subroutine converger_finalise
 
-subroutine conver (niter, good, M_in, rho_op, fock_op, spin, energy, n_orbs,&
+subroutine conver_fock(niter, M_in, rho_op, fock_op, spin, energy, n_orbs, &
 #ifdef CUBLAS
                       devPtrX, devPtrY)
 #else
@@ -108,7 +114,7 @@ subroutine conver (niter, good, M_in, rho_op, fock_op, spin, energy, n_orbs,&
    use converger_data  , only: damping_factor, hagodiis, fockm, FP_PFm, ndiis, &
                                fock_damped, bcoef, EMAT2, conver_criter,       &
                                good_cut, energy_list, DIIS_bias, level_shift,  &
-                               lvl_shift_en, lvl_shift_cut, changed_to_LS
+                               lvl_shift_en, lvl_shift_cut, rho_ls, rho_diff
    use typedef_operator, only: operator
    use fileio_data     , only: verbose
    use linear_algebra  , only: matmuldiag
@@ -120,7 +126,7 @@ subroutine conver (niter, good, M_in, rho_op, fock_op, spin, energy, n_orbs,&
 #else
    real(kind=8)  , intent(in)    :: Xmat(M_in,M_in), Ymat(M_in,M_in)
 #endif
-   real(kind=8)  , intent(in)    :: good, energy
+   real(kind=8)  , intent(in)    :: energy
    type(operator), intent(inout) :: rho_op, fock_op
 
    integer      :: ndiist, ii, jj, kk, kknew, lwork, info, Emin_index
@@ -166,8 +172,7 @@ subroutine conver (niter, good, M_in, rho_op, fock_op, spin, energy, n_orbs,&
       ! Damping until good enough, diis afterwards
       case(3,5)
          if (.not. hagodiis) then
-            if ((good < good_cut) .and. (niter > 2) .and. &
-               (.not. changed_to_LS)) then
+            if ((rho_diff < good_cut) .and. (niter > 2) .and. (rho_LS < 1)) then
                if (verbose > 3) &
                   write(6,'(A,I4)') "  Changing to DIIS at step: ", niter
                hagodiis = .true.
@@ -180,7 +185,7 @@ subroutine conver (niter, good, M_in, rho_op, fock_op, spin, energy, n_orbs,&
    endselect
 
    ! Turn off diis is calculation when change to lineal search, Nick
-   if (changed_to_LS) hagodiis = .false.
+   if (rho_ls > 0) hagodiis = .false.
 
    ndiist = min( niter, ndiis )
    if (conver_criter /= 1) then      
@@ -349,13 +354,52 @@ subroutine conver (niter, good, M_in, rho_op, fock_op, spin, energy, n_orbs,&
       endif
    endif
 
-   if ((good > lvl_shift_cut) .and. (level_shift)) then
+   if ((rho_diff > lvl_shift_cut) .and. (level_shift)) then
    if (hagodiis) &
        call fock_op%Shift_diag_ON(lvl_shift_en, n_orbs+1)
    endif
    deallocate (work)
    
-end subroutine conver
+end subroutine conver_fock
+
+! The following subs are only internal.
+subroutine check_convergence(rho_old, rho_new, energy_old, energy_new,&
+                             n_iterations, is_converged)
+   use fileio        , only: write_energy_convergence
+   use converger_data, only: told, Etold, nMax, rho_ls, may_conv, &
+                             rho_diff
+   ! Calculates convergence criteria in density matrix, and
+   ! store new density matrix in Pmat_vec.
+   integer     , intent(in)  :: n_iterations
+   real(kind=8), intent(in)  :: energy_old, energy_new
+   real(kind=8), intent(in)  :: rho_new(:,:), rho_old(:)
+   logical     , intent(out) :: is_converged
+
+   integer      :: jj, kk, Rposition, M2
+   real(kind=8) :: del, e_diff
+   
+   M2       = 2 * size(rho_new,1)
+   e_diff   = abs(energy_new - energy_old)
+
+   rho_diff = 0.0D0
+   do jj = 1 , size(rho_new,1)
+   do kk = jj, size(rho_new,1)
+         Rposition = kk + (M2 - jj) * (jj -1) / 2
+         del       = (rho_new(jj,kk) - rho_old(Rposition)) * sqrt(2.0D0)
+         rho_diff  = rho_diff + del * del
+      enddo
+   enddo
+   rho_diff = sqrt(rho_diff) / dble(size(rho_new,1))
+
+   if (.not. may_conv) rho_diff = -1.0D0
+
+   is_converged = .false.
+   if ((rho_diff < told) .and. (e_diff < Etold)) is_converged = .true.
+   call write_energy_convergence(n_iterations, energy_new, rho_diff, told, &
+                                 e_diff, etold)
+
+   if (.not. may_conv) rho_diff = 100.0D0
+end subroutine check_convergence
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 ! Lineal search subroutines
@@ -377,16 +421,18 @@ end subroutine conver
 ! V 1.00 September 2018 Final version - Nicolas Foglia
 ! V 1.01 September 2018 adaptation - FFR
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-subroutine P_linearsearch_init(MM, open_shell, rho_alp, rho_bet)
+subroutine rho_ls_init(open_shell, rho_alp, rho_bet)
    use converger_data, only: rho_lambda0, rho_lambda1, rho_lambda0_alpha, &
                              rho_lambda1_alpha, rho_lambda0_betha,        &
                              rho_lambda1_betha, rho_LS
    implicit none
-   integer     , intent(in) :: MM
    logical     , intent(in) :: open_shell
-   real(kind=8), intent(in) :: rho_alp(MM), rho_bet(MM)
+   real(kind=8), intent(in) :: rho_alp(:), rho_bet(:)
+
+   integer :: MM
 
    if (rho_LS < 1) return
+   MM = size(rho_alp,1)
 
    if (.not. allocated(rho_lambda1)) allocate(rho_lambda1(MM))
    if (.not. allocated(rho_lambda0)) allocate(rho_lambda0(MM))
@@ -398,9 +444,25 @@ subroutine P_linearsearch_init(MM, open_shell, rho_alp, rho_bet)
       rho_lambda0_alpha = rho_alp
       rho_lambda0_betha = rho_bet
    end if
-end subroutine P_linearsearch_init
+end subroutine rho_ls_init
 
-subroutine P_linearsearch_fin()
+subroutine rho_ls_switch(open_shell, rho_alp, rho_bet, switch_LS)
+   use fileio        , only: write_ls_convergence
+   use converger_data, only: nMax, rho_ls
+
+   real(kind=8), intent(in)  :: rho_alp(:), rho_bet(:)
+   logical     , intent(in)  :: open_shell
+   logical     , intent(out) :: switch_LS
+
+   call write_ls_convergence(NMAX)
+
+   Rho_LS    = 1
+   NMAX      = 2 * NMAX
+   switch_LS = .true.
+   call rho_ls_init(open_shell, rho_alp, rho_bet)
+end subroutine rho_ls_switch
+
+subroutine rho_ls_finalise()
    use converger_data, only: rho_lambda0, rho_lambda1, rho_lambda0_alpha, &
                              rho_lambda1_alpha, rho_lambda0_betha,        &
                              rho_lambda1_betha, rho_LS
@@ -412,16 +474,16 @@ subroutine P_linearsearch_fin()
    if (allocated(rho_lambda0_alpha)) deallocate(rho_lambda0_alpha)
    if (allocated(rho_lambda1_betha)) deallocate(rho_lambda1_betha)
    if (allocated(rho_lambda0_betha)) deallocate(rho_lambda0_betha)
-end subroutine P_linearsearch_fin
+end subroutine rho_ls_finalise
 
-subroutine P_conver(niter, En, E1, E2, Ex, good, rho_new, rho_old, Hmat_vec, &
-                    Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, int_memo,       &
-                    rhoa_new, rhob_new, rhoa_old, rhob_old)
+subroutine do_rho_ls(niter, En, E1, E2, Ex, rho_new, rho_old, Hmat_vec, &
+                     Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, int_memo, &
+                     rhoa_new, rhob_new, rhoa_old, rhob_old)
    ! rho_LS values:
    !   = 0 calculate convergence criteria for actual density matrix.
    !   = 1 do linear search for density matrix if energy > previous energy.
    !   = 2 do linear search for density matrix in all steps.
-   use converger_data, only: rho_LS
+   use converger_data, only: rho_LS, may_conv
 
    implicit none
    ! Step number and energies.
@@ -433,9 +495,6 @@ subroutine P_conver(niter, En, E1, E2, Ex, good, rho_new, rho_old, Hmat_vec, &
    real(kind=8), intent(inout) :: Hmat_vec(:), Fmat_vec(:), Fmat_vec2(:), &
                                   Gmat_vec(:), Ginv_vec(:)
 
-   ! Convergence criteria
-   real(kind=8), intent(out)   :: good
-
    ! Density matrices of current and previous step. Due to how SCF works,
    ! the current step is in matrix form and the previous in vector form.
    real(kind=8), intent(inout) :: rho_old(:)
@@ -444,57 +503,31 @@ subroutine P_conver(niter, En, E1, E2, Ex, good, rho_new, rho_old, Hmat_vec, &
    real(kind=8), optional, intent(inout) :: rhoa_new(:,:), rhob_new(:,:)
 
    ! True if predicted density != density of previous steep
-   logical :: may_conv = .true.
+   may_conv = .true.
 
    select case (rho_LS)
       case (0,-1)
       case (1, 2)
-
          ! Makes separate calls for open and closed shell.
          if (present(rhoa_old)) then
-            call P_linear_calc(niter, En, E1, E2, Ex, may_conv, rho_new, &
-                               rho_old, Hmat_vec, Fmat_vec, Fmat_vec2,   &
-                               Gmat_vec, Ginv_vec, int_memo)
+            call rho_linear_calc(niter, En, E1, E2, Ex, may_conv, rho_new, &
+                                 rho_old, Hmat_vec, Fmat_vec, Fmat_vec2,   &
+                                 Gmat_vec, Ginv_vec, int_memo)
          else
-            call P_linear_calc(niter, En, E1, E2, Ex, may_conv, rho_new, &
-                               rho_old, Hmat_vec, Fmat_vec, Fmat_vec2,   &
-                               Gmat_vec, Ginv_vec, int_memo,             &
-                               rhoa_new, rhob_new, rhoa_old, rhob_old)
+            call rho_linear_calc(niter, En, E1, E2, Ex, may_conv, rho_new, &
+                                 rho_old, Hmat_vec, Fmat_vec, Fmat_vec2,   &
+                                 Gmat_vec, Ginv_vec, int_memo, rhoa_new,   &
+                                 rhob_new, rhoa_old, rhob_old)
          endif
       case default
          write(*,'(A,I2)') &
             "ERROR - P_conver: Wrong Rho_LS value, current value is ", Rho_LS
          stop
    end select
-      
-   call P_calc_fluctuation(rho_old, rho_new, good)
-   if (.not. may_conv) good = -1.0D0
-end subroutine P_conver
+end subroutine do_rho_ls
 
 ! The following subs are only internal.
-subroutine P_calc_fluctuation(rho_old, rho_new, good)
-   ! Calculates convergence criteria in density matrix, and
-   ! store new density matrix in Pmat_vec.
-   real(kind=8), intent(in)    :: rho_new(:,:), rho_old(:)
-   real(kind=8), intent(out)   :: good
-
-   integer      :: jj, kk, Rposition, M2
-   real(kind=8) :: del
-   
-   M2   = 2 * size(rho_new,1)
-   good = 0.0D0
-
-   do jj = 1 , size(rho_new,1)
-   do kk = jj, size(rho_new,1)
-         Rposition = kk + (M2 - jj) * (jj -1) / 2
-         del  = (rho_new(jj,kk) - rho_old(Rposition)) * sqrt(2.0D0)
-         good = good + del * del
-      enddo
-   enddo
-   good = sqrt(good) / dble(size(rho_new,1))
-end subroutine P_calc_fluctuation
-
-subroutine P_linear_calc(niter, En, E1, E2, Ex, may_conv, rho_new, rho_old, &
+subroutine rho_linear_calc(niter, En, E1, E2, Ex, may_conv, rho_new, rho_old, &
                          Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, &
                          int_memo, rhoa_new, rhob_new, rhoa_old, rhob_old)
    use liosubs       , only: line_search
@@ -620,7 +653,7 @@ subroutine P_linear_calc(niter, En, E1, E2, Ex, may_conv, rho_new, rho_old, &
    if ((Blambda <= 2.d-1*Pstepsize) .and. (Pstepsize > 1d-4)) may_conv = .false.
 
    deallocate(E_lambda, RMM_temp)
-end subroutine P_linear_calc
+end subroutine rho_linear_calc
 
 subroutine give_me_energy(E, En, E1, E2, Ex, Pmat_vec, Hmat_vec, Fmat_vec, &
                           Fmat_vec2, Gmat_vec, Ginv_vec, open_shell, int_memo)

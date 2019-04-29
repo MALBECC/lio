@@ -18,7 +18,7 @@ module lionml_data
                                  minimzation_steep, n_min_steeps, n_points,    &
                                  lineal_search, timers, IGRID, IGRID2,         &
                                  use_libxc, ex_functional_id, ec_functional_id,&
-                                 gpu_level, NMAX
+                                 gpu_level
    use tbdft_data         , only: tbdft_calc, MTB, alfaTB, betaTB, gammaTB,      &
                                  Vbias_TB, end_bTB, start_tdtb, end_tdtb
    use ECP_mod           , only: ecpmode, ecptypes, tipeECP, ZlistECP,         &
@@ -52,7 +52,7 @@ module lionml_data
    use converger_data    , only: DIIS, ndiis, GOLD, told, Etold, good_cut,     &
                                  hybrid_converg, DIIS_bias, conver_criter,     &
                                  level_shift, lvl_shift_cut, lvl_shift_en,     &
-                                 Rho_LS, P_oscilation_analisis
+                                 Rho_LS, nMax
    implicit none
 
 !  Namelist definition
@@ -114,7 +114,7 @@ module lionml_data
                   ! Variables for Linear Response
                   lresp, nstates, root, FCA, nfo, nfv,                         &
                   ! linear search for rho
-                  Rho_LS, P_oscilation_analisis
+                  Rho_LS
 
    type lio_input_data
       ! COMMON

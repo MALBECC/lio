@@ -16,7 +16,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
 subroutine lio_defaults()
 
-    use garcha_mod, only : fmulliken, fcoord, OPEN, NMAX, VCINP,               &
+    use garcha_mod, only : fmulliken, fcoord, OPEN, VCINP,                     &
                            Iexch, restart_freq, frestartin, IGRID, frestart,   &
                            cubegen_only, cube_res, cube_dens, cube_orb,        &
                            cube_sel, cube_orb_file, cube_dens_file, NUNP,      &
@@ -42,8 +42,7 @@ subroutine lio_defaults()
     fmulliken      = 'mulliken'    ; fcoord             = 'qm.xyz'      ;
 
 !   Theory level options.
-    OPEN           = .false.       ;    NMAX           = 100           ;
-    charge         = 0             ;
+    OPEN           = .false.       ; charge             = 0             ;
 
 !   Effective Core Potential options.
     ecpmode        = .false.       ; cut2_0             = 15.d0         ;
@@ -240,10 +239,9 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
            , Fz_i, NBCH_i, propagator_i, writedens_i, tdrestart_i              &
            )
 
-    use garcha_mod , only: fmulliken, fcoord, OPEN, NMAX, charge,            &
-                           propagator, NBCH, VCINP, restart_freq, writexyz,  &
-                           frestart, predcoef, frestartin, energy_freq,      &
-                           IGRID, IGRID2, nunp, iexch
+    use garcha_mod , only: fmulliken, fcoord, OPEN, charge, propagator, NBCH, &
+                           VCINP, restart_freq, writexyz, frestart, predcoef, &
+                           frestartin, energy_freq, IGRID, IGRID2, nunp, iexch
     use td_data    , only: tdrestart, tdstep, ntdstep, timedep, writedens
     use field_data , only: field, a0, epsilon, Fx, Fy, Fz
     use basis_data , only: int_basis, rmax, rmaxs, basis_set
@@ -253,7 +251,7 @@ subroutine init_lio_amber(natomin, Izin, nclatom, charge_i, basis_i            &
                            verbose_ECP, Cnorm, FOCK_ECP_read, FOCK_ECP_write,&
                            Fulltimer_ECP, cut2_0, cut3_0
     use converger_data, only: DIIS, nDIIS, gOld, tolD, EtolD, hybrid_converg, &
-                              good_cut
+                              good_cut, nMax
 
     implicit none
     integer , intent(in) :: charge_i, nclatom, natomin, Izin(natomin)

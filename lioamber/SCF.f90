@@ -228,16 +228,22 @@ subroutine SCF(E)
       Md2=2*Md
       M2=2*M
 
-!carlos: ocupation factor
-      ocupF = 2.0d0
-!carlos:NCOa works in open shell and close shell
-      NCOa=NCO
+      !carlos: ocupation factor
+      !carlos: NCOa works in open shell and close shell
+      NCOa   = NCO
+      NCOa_f = NCOa
+      ocupF  = 2.0d0
       if (OPEN) then
 !Number of OM down
-         NCOb=NCO+Nunp
-         ocupF=1.0d0
+         NCOb   = NCO + Nunp
+         NCOb_f = NCOb
+         ocupF = 1.0d0
          allocate(rho_b0(M,M),fock_b0(M,M))
       end if
+      if (tbdft_calc) then
+         NCOa_f = NCOa + MTB
+         if (OPEN) NCOb_f = NCOb + MTB
+      endif
 
       M1=1 ! first P
 
@@ -477,250 +483,212 @@ subroutine SCF(E)
    converged = .false.
    call converger_init( M_f, OPEN )
 
-   do 999 while ((.not. converged) .and. (niter <= nMax))
-        call g2g_timer_start('Total iter')
-        call g2g_timer_sum_start('Iteration')
-        call g2g_timer_sum_start('Fock integrals')
+   do 999 while ( (.not. converged) .and. (niter <= nMax) )
+      call g2g_timer_start('Total iter')
+      call g2g_timer_sum_start('Iteration')
+      call g2g_timer_sum_start('Fock integrals')
 
-        niter  = niter +1
-        nniter = niter
-        if (changed_to_LS .and. (niter == (NMAX / 2 +1))) nniter = 1 
-!       (first step of damping after NMAX steps without convergence)
+      niter  = niter +1
+      nniter = niter
+      ! (first step of damping after NMAX steps without convergence)
+      if (changed_to_LS .and. (niter == (NMAX / 2 +1))) nniter = 1
 
-!------------------------------------------------------------------------------!
-!       Fit density basis to current MO coeff and calculate Coulomb F elements
-! TODO: Calculation of fock terms should be separated. Also, maybe it would be
-!       convenient to add the NaN checks and the timers inside the subroutine
-!       calls is a more systematic way.
+      ! Test for NaN
+      if (Dbug) call SEEK_NaN(Pmat_vec,1,MM,"RHO Start")
+      if (Dbug) call SEEK_NaN(Fmat_vec,1,MM,"FOCK Start")
 
-!       Test for NaN
-        if (Dbug) call SEEK_NaN(Pmat_vec,1,MM,"RHO Start")
-        if (Dbug) call SEEK_NaN(Fmat_vec,1,MM,"FOCK Start")
+      ! Computes Coulomb part of Fock, and energy on E2
+      call g2g_timer_sum_start('Coulomb fit + Fock')
+      E2 = 0.0D0
+      call int3lu(E2, Pmat_vec, Fmat_vec2, Fmat_vec, Gmat_vec, Ginv_vec, &
+                  Hmat_vec, open, MEMO)
+      call g2g_timer_sum_pause('Coulomb fit + Fock')
 
-!       Computes Coulomb part of Fock, and energy on E2
-        call g2g_timer_sum_start('Coulomb fit + Fock')
-        call int3lu(E2, Pmat_vec, Fmat_vec2, Fmat_vec, Gmat_vec, Ginv_vec, &
-                    Hmat_vec, open, MEMO)
-        call g2g_timer_sum_pause('Coulomb fit + Fock')
+      if (Dbug) then
+         call SEEK_NaN(Fmat_vec,1,MM,"FOCK Coulomb")
+         if (open) call SEEK_NaN(Fmat_vec,1,MM,"FOCK B Coulomb")
+      endif
 
-!       Test for NaN
-        if (Dbug) call SEEK_NaN(Pmat_vec,1,MM,"RHO Coulomb")
-        if (Dbug) call SEEK_NaN(Fmat_vec,1,MM,"FOCK Coulomb")
+      ! XC integration / Fock elements
+      call g2g_timer_sum_start('Exchange-correlation Fock')
+      Exc = 0.0D0
+      call g2g_solve_groups(0,Exc,0)
+      call g2g_timer_sum_pause('Exchange-correlation Fock')
 
-!       XC integration / Fock elements
-        call g2g_timer_sum_start('Exchange-correlation Fock')
-        call g2g_solve_groups(0,Exc,0)
-        call g2g_timer_sum_pause('Exchange-correlation Fock')
-!       Test for NaN
-        if (Dbug) call SEEK_NaN(Pmat_vec,1,MM,"RHO Ex-Corr")
-        if (Dbug) call SEEK_NaN(Fmat_vec,1,MM,"FOCK Ex-Corr")
+      ! Test for NaN
+      if (Dbug) then
+         call SEEK_NaN(Fmat_vec,1,MM,"FOCK Ex-Corr")
+         if (open) call SEEK_NaN(Fmat_vec,1,MM,"FOCK B Ex-Corr")
+      endif
 
 
-!------------------------------------------------------------------------------!
-! REACTION FIELD CASE
-!
-! TODO: what is reaction field?? in any case, it should be either in its own
-!       module and only appear here as a subroutine, or be included in the
-!       separated fock calculation subroutine...
-!
-        E1 = 0.0D0
-        if ( generate_rho0 ) then
-           if (field) call field_setup_old(1.0D0, 0, fx, fy, fz)
-           call field_calc(E1, 0.0D0, Pmat_vec(1:MM), Fmat_vec2, Fmat_vec, &
-                           r, d, Iz, natom, ntatom, open)
+      ! Calculates 1e energy contributions (including solvent)
+      E1 = 0.0D0
+      if (generate_rho0) then
+         ! REACTION FIELD CASE
+         if (field) call field_setup_old(1.0D0, 0, fx, fy, fz)
+         call field_calc(E1, 0.0D0, Pmat_vec, Fmat_vec2, Fmat_vec, r, d, Iz,&
+                         natom, ntatom, open)
+         do kk = 1, MM
+            E1 = E1 + Pmat_vec(kk) * Hmat_vec(kk)
+         enddo
+      else
+         do kk=1,MM
+            E1 = E1 + Pmat_vec(kk) * Hmat_vec(kk)
+         enddo
+      endif
 
-           do kk=1,MM
-               E1 = E1 + Pmat_vec(kk) * Hmat_vec(kk)
-           enddo
-        else
-!          E1 includes solvent 1 electron contributions
-           do kk=1,MM
-              E1 = E1 + Pmat_vec(kk) * Hmat_vec(kk)
-           enddo
+      ! Calculates total energy
+      E = E1 + E2 + En + Exc
+      call g2g_timer_sum_pause('Fock integrals')
 
-        endif
-        E = E1 + E2 + En + Exc
-        call g2g_timer_sum_pause('Fock integrals')
 
-!------------------------------------------------------------------------------!
-! TBDFT: we extract rho and fock before conver routine
-!carlos: extractions for Open Shell and Close Shell.
-        if (OPEN) then
-           call spunpack_rho('L',M,rhoalpha,rho_a0)
-           call spunpack('L', M, Fmat_vec, fock_a0)
-           call spunpack_rho('L',M,rhobeta,rho_b0)
-           call spunpack('L', M, Fmat_vec2, fock_b0)
-           call fockbias_apply( 0.0d0, fock_a0)
-           call fockbias_apply( 0.0d0, fock_b0)
-        else
-           call spunpack_rho('L',M,Pmat_vec,rho_a0)
-           call spunpack('L', M, Fmat_vec, fock_a0)
-           call fockbias_apply( 0.0d0, fock_a0 )
-        end if
+      if (OPEN) then
+         call spunpack_rho('L', M, rhoalpha , rho_a0)
+         call spunpack_rho('L', M, rhobeta  , rho_b0)
+         call spunpack(    'L', M, Fmat_vec , fock_a0)
+         call spunpack(    'L', M, Fmat_vec2, fock_b0)
+         call fockbias_apply( 0.0d0, fock_a0)
+         call fockbias_apply( 0.0d0, fock_b0)
+      else
+         call spunpack_rho('L', M, Pmat_vec, rho_a0)
+         call spunpack(    'L', M, Fmat_vec, fock_a0)
+         call fockbias_apply(0.0d0, fock_a0)
+      end if
 
-!------------------------------------------------------------------------------!
-! TBDFT: Fock and Rho for TBDFT are builded.
-!
-! TODO: this should be wrapped inside a single dftb subroutine. Also, two
-!       consecutive tbdft_calc switches? really?
-!
-      if (tbdft_calc) then
-         NCOa_f = NCOa + MTB
+      if (.not. tbdft_calc) then
+         fock_a = fock_a0
+         rho_a  = rho_a0
+         if (OPEN) fock_b = fock_b0
+         if (OPEN) rho_b  = rho_b0
+      else
+         ! TBDFT: We extract rho and fock before convergence acceleration
+         ! routines. Then, Fock and Rho for TBDFT are builded.
          call build_chimera_TBDFT (M, fock_a0, fock_a, natom)
          call construct_rhoTBDFT(M, rho_a, rho_a0 ,rhoa_tbdft, niter,OPEN)
          if (OPEN) then
-            NCOb_f = NCOb + MTB
             call build_chimera_TBDFT(M, fock_b0, fock_b, natom)
             call construct_rhoTBDFT(M, rho_b, rho_b0 ,rhob_tbdft,niter, OPEN)
          end if
-      else
-         NCOa_f = NCOa
-         fock_a=fock_a0
-         rho_a=rho_a0
-         if (OPEN) then
-            NCOb_f = NCOb
-            fock_b=fock_b0
-            rho_b=rho_b0
-         end if
       endif
-!carlos: storing rho and fock in operator.
 
-   call rho_aop%Sets_data_AO(rho_a)
-   call fock_aop%Sets_data_AO(fock_a)
+      ! Stores matrices in operators.
+      call rho_aop%Sets_data_AO(rho_a)
+      call fock_aop%Sets_data_AO(fock_a)
 
-   if (OPEN) then
-      call rho_bop%Sets_data_AO(rho_b)
-      call fock_bop%Sets_data_AO(fock_b)
-   end if
-!------------------------------------------------------------------------------!
-!  Convergence accelerator processing
-        call g2g_timer_sum_start('SCF acceleration')
-!carlos: this is repeted twice for open shell
+      if (OPEN) call rho_bop%Sets_data_AO(rho_b)
+      if (OPEN) call fock_bop%Sets_data_AO(fock_b)
 
-!%%%%%%%%%%%%%%%%%%%%
-!CLOSE SHELL OPTION |
-!%%%%%%%%%%%%%%%%%%%%
-#       ifdef CUBLAS
-           call conver_fock(nniter, M_f, rho_aop, fock_aop, 1, E, NCOa_f, &
-                            dev_Xmat, dev_Ymat)
-#       else
-           call conver_fock(nniter, M_f, rho_aop, fock_aop, 1, E, NCOa_f, &
-                            Xmat, Ymat)
-#       endif
 
-        call g2g_timer_sum_pause('SCF acceleration')
-!------------------------------------------------------------------------------!
-!  Fock(ON) diagonalization
-        if ( allocated(morb_coefon) ) deallocate(morb_coefon)
-        allocate( morb_coefon(M_f,M_f) )
-        call g2g_timer_sum_start('SCF - Fock Diagonalization (sum)')
-        call fock_aop%Diagon_datamat( morb_coefon, morb_energy )
-        call g2g_timer_sum_pause('SCF - Fock Diagonalization (sum)')
-!
-!
-!------------------------------------------------------------------------------!
-!  Base change of coeficients ( (X^-1)*C ) and construction of new density
-!  matrix
-        call g2g_timer_sum_start('SCF - MOC base change (sum)')
-#       ifdef CUBLAS
-           call cumxp_r( morb_coefon, dev_Xmat, morb_coefat, M_f)
-#       else
-           morb_coefat = matmul( Xmat, morb_coefon )
-#       endif
-        call standard_coefs( morb_coefat )
-        call g2g_timer_sum_pause('SCF - MOC base change (sum)')
+      ! Convergence accelerator processing.
+      ! In closed shell, rho_a is the total density matrix; in open shell,
+      ! it is the alpha density.
+      call g2g_timer_sum_start('SCF acceleration')
 
-        if ( allocated(morb_coefon) ) deallocate(morb_coefon)
-        call rho_aop%Dens_build(M_f, NCOa_f, ocupF, morb_coefat)
-        call rho_aop%Gets_data_AO(rho_a)
-        call messup_densmat( rho_a )
+#ifdef CUBLAS
+      call conver_fock(nniter, M_f, rho_aop, fock_aop, 1, E, NCOa_f, &
+                       dev_Xmat, dev_Ymat)
+#else
+      call conver_fock(nniter, M_f, rho_aop, fock_aop, 1, E, NCOa_f, &
+                       Xmat, Ymat)
+#endif
 
-        Eorbs      = morb_energy
-        MO_coef_at = morb_coefat
-        
-    if (OPEN) then
-!%%%%%%%%%%%%%%%%%%%%
-!OPEN SHELL OPTION  |
-!%%%%%%%%%%%%%%%%%%%%
-        call g2g_timer_sum_start('SCF acceleration')
-#       ifdef CUBLAS
-           call conver_fock(nniter, M_f, rho_bop, fock_bop, 2, E, NCOb_f, &
-                            dev_Xmat, dev_Ymat)
-#       else
-           call conver_fock(nniter, M_f, rho_bop, fock_bop, 2, E, NCOb_f, &
-                            Xmat, Ymat)
-#       endif
+      call g2g_timer_sum_pause('SCF acceleration')
 
-        call g2g_timer_sum_pause('SCF acceleration')
+      ! Fock(ON) diagonalization
+      if ( allocated(morb_coefon) ) deallocate(morb_coefon)
+      allocate( morb_coefon(M_f,M_f) )
+      call g2g_timer_sum_start('SCF - Fock Diagonalization (sum)')
+      call fock_aop%Diagon_datamat( morb_coefon, morb_energy )
+      call g2g_timer_sum_pause('SCF - Fock Diagonalization (sum)')
 
-!------------------------------------------------------------------------------!
-!  Fock(ON) diagonalization
-        if ( allocated(morb_coefon) ) deallocate(morb_coefon)
-        allocate( morb_coefon(M_f,M_f) )
+      ! Base change of coeficients ( (X^-1)*C ) and construction of new
+      ! density matrix.
+      call g2g_timer_sum_start('SCF - MOC base change (sum)')
+#ifdef CUBLAS
+      call cumxp_r( morb_coefon, dev_Xmat, morb_coefat, M_f)
+#else
+      morb_coefat = matmul( Xmat, morb_coefon )
+#endif
+      call standard_coefs( morb_coefat )
+      call g2g_timer_sum_pause('SCF - MOC base change (sum)')
 
-        call g2g_timer_sum_start('SCF - Fock Diagonalization (sum)')
-        call fock_bop%Diagon_datamat( morb_coefon, morb_energy )
-        call g2g_timer_sum_pause('SCF - Fock Diagonalization (sum)')
-!
-!
-!------------------------------------------------------------------------------!
-!  Base change of coeficients ( (X^-1)*C ) and construction of new density
-!  matrix
-        call g2g_timer_sum_start('SCF - MOC base change (sum)')
-#       ifdef CUBLAS
-           call cumxp_r( morb_coefon, dev_Xmat, morb_coefat, M_f)
-#       else
-           morb_coefat = matmul( Xmat, morb_coefon )
-#       endif
-        call standard_coefs( morb_coefat )
-        call g2g_timer_sum_pause('SCF - MOC base change (sum)')
+      if ( allocated(morb_coefon) ) deallocate(morb_coefon)
+      call rho_aop%Dens_build(M_f, NCOa_f, ocupF, morb_coefat)
+      call rho_aop%Gets_data_AO(rho_a)
+      call messup_densmat(rho_a)
 
-        if ( allocated(morb_coefon) ) deallocate(morb_coefon)
-        call rho_bop%Dens_build(M_f, NCOb_f, ocupF, morb_coefat)
-        call rho_bop%Gets_data_AO(rho_b)
-        call messup_densmat( rho_b )
+      Eorbs      = morb_energy
+      MO_coef_at = morb_coefat
 
-        Eorbs_b      = morb_energy
-        MO_coef_at_b = morb_coefat
-        
-    end if!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!------------------------------------------------------------------------------!
-!carlos: storing matrices
-!------------------------------------------------------------------------------!
-!  We are not sure how to translate the sumation over molecular orbitals
-!  and energies when changing from TBDFT system to DFT subsystem. Forces
-!  may be broken due to this.
-!  This should not be affecting normal DFT calculations.
+      if (OPEN) then
+         ! In open shell, performs the previous operations for beta operators.
+         call g2g_timer_sum_start('SCF acceleration')
+#ifdef CUBLAS
+         call conver_fock(nniter, M_f, rho_bop, fock_bop, 2, E, NCOb_f, &
+                          dev_Xmat, dev_Ymat)
+#else
+         call conver_fock(nniter, M_f, rho_bop, fock_bop, 2, E, NCOb_f, &
+                          Xmat, Ymat)
+#endif
+         call g2g_timer_sum_pause('SCF acceleration')
 
-!carlos: this is not working with openshell. morb_coefat is not depending of
-!        the spin factor.
+         ! Fock(ON) diagonalization
+         if ( allocated(morb_coefon) ) deallocate(morb_coefon)
+         allocate( morb_coefon(M_f,M_f) )
+
+         call g2g_timer_sum_start('SCF - Fock Diagonalization (sum)')
+         call fock_bop%Diagon_datamat( morb_coefon, morb_energy )
+         call g2g_timer_sum_pause('SCF - Fock Diagonalization (sum)')
+
+         ! Base change of coeficients ( (X^-1)*C ) and construction of new
+         ! density matrix.
+         call g2g_timer_sum_start('SCF - MOC base change (sum)')
+#ifdef CUBLAS
+         call cumxp_r( morb_coefon, dev_Xmat, morb_coefat, M_f)
+#else
+         morb_coefat = matmul( Xmat, morb_coefon )
+#endif
+         call standard_coefs( morb_coefat )
+         call g2g_timer_sum_pause('SCF - MOC base change (sum)')
+
+         if ( allocated(morb_coefon) ) deallocate(morb_coefon)
+         call rho_bop%Dens_build(M_f, NCOb_f, ocupF, morb_coefat)
+         call rho_bop%Gets_data_AO(rho_b)
+         call messup_densmat( rho_b )
+
+         Eorbs_b      = morb_energy
+         MO_coef_at_b = morb_coefat
+      endif
+
+      ! We are not sure how to translate the sumation over molecular orbitals
+      ! and energies when changing from TBDFT system to DFT subsystem. Forces
+      ! may be broken due to this. This should not be affecting normal DFT
+      ! calculations.
+
+      ! X is DEPRECATED
       do ii=1,M
-          do jj=1,M
-            X( ii, M2+jj ) = morb_coefat( i0+ii, jj )
-          enddo
+      do jj=1,M
+         X( ii, M2+jj ) = morb_coefat( i0+ii, jj )
+      enddo
       enddo
 
-
-
-      ! Perfoms TBDFT checks and extracts density matrices.
-      ! Allocates xnano, which contains the total (alpha+beta)
-      ! density.
+      ! Perfoms TBDFT checks and extracts density matrices. Allocates xnano,
+      ! which contains the total (alpha+beta) density matrix.
       allocate ( xnano(M,M) )
 
       if (.not. tbdft_calc) then
          xnano = rho_a
          if (OPEN) xnano = xnano + rho_b
+      else
+         rhoa_TBDFT = rho_a
+         call extract_rhoDFT(M, rho_a, rho_a0)
+         xnano = rho_a0
 
-         if (tbdft_calc) then
-            rhoa_TBDFT = rho_a
-            call extract_rhoDFT(M, rho_a, rho_a0)
-            xnano = rho_a0
-
-            if (OPEN) then
-               rhob_TBDFT = rho_b
-               call extract_rhoDFT(M, rho_b, rho_b0)
-               xnano = xnano + rho_b0
-            endif
+         if (OPEN) then
+            rhob_TBDFT = rho_b
+            call extract_rhoDFT(M, rho_b, rho_b0)
+            xnano = xnano + rho_b0
          endif
       endif
 
@@ -742,7 +710,7 @@ subroutine SCF(E)
       call check_convergence(Pmat_vec, xnano, Evieja, E, niter, converged)
       if ((rho_LS == 1) .and. (niter == nMax) .and. (.not. converged)) &
          call rho_ls_switch(open, rhoalpha, rhobeta, changed_to_LS)
-      
+
       ! Updates old density matrices with the new ones and updates energy.
       call sprepack('L', M, Pmat_vec, xnano)
       if (OPEN) then
@@ -759,8 +727,7 @@ subroutine SCF(E)
 
       call g2g_timer_stop('Total iter')
       call g2g_timer_sum_pause('Iteration')
-
- 999  continue
+999 continue
 
    call g2g_timer_sum_start('Finalize SCF')
 
@@ -870,7 +837,7 @@ subroutine SCF(E)
                enddo
             enddo
          enddo
-         
+
       else
          ! Open shell
          do jj = 1 , M_f

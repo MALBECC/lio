@@ -18,12 +18,17 @@ module converger_data
    ! Hybrid convergence
    logical      :: hybrid_converg = .false.
    real(kind=8) :: good_cut       = 1.0D-3
-   
+      
    ! Level shifting
    logical      :: level_shift    = .true.
    real(kind=8) :: lvl_shift_en   = 0.1D0
+
+   ! Rho squared difference cut for each convergence strategy:
    real(kind=8) :: lvl_shift_cut  = 1.0D0
- 
+   real(kind=8) :: EDIIS_start    = 1.0D0
+   real(kind=8) :: DIIS_start     = 1D-5
+   real(kind=8) :: bDIIS_start    = 1D-10
+
    ! Tolerace for SCF convergence
    integer      :: nMax           = 100
    real(kind=8) :: tolD           = 1.0D-6
@@ -39,7 +44,6 @@ module converger_data
    real(kind=8)              :: rho_diff = 1.0D0
 
    ! Internal variables for DIIS (and variants)
-   logical                   :: hagodiis = .false.
    real(kind=8), allocatable :: fockm(:,:,:,:)
    real(kind=8), allocatable :: FP_PFm(:,:,:,:)
    real(kind=8), allocatable :: bcoef(:,:)
@@ -47,14 +51,11 @@ module converger_data
    real(kind=8), allocatable :: energy_list(:)
 
    ! Internal variables for EDIIS
-   integer                   :: nediis      = 70
-   integer                   :: step_nediis = 0
-   real(kind=8)              :: damp_ediis  = 0.8D0
-   real(kind=8), allocatable :: fock_ediis_mat(:,:,:,:)
-   real(kind=8), allocatable :: rho_ediis_mat(:,:,:,:)
+   integer                   :: nediis = 15
+   real(kind=8), allocatable :: ediis_fock(:,:,:,:)
+   real(kind=8), allocatable :: ediis_dens(:,:,:,:)
    real(kind=8), allocatable :: BMAT(:,:,:)
    real(kind=8), allocatable :: EDIIS_E(:)
-   real(kind=8), allocatable :: fock_damp(:,:,:)
 
    ! Internal variables for Linear Search
    logical                                   :: may_conv      = .true.

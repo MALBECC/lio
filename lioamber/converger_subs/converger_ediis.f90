@@ -1,227 +1,139 @@
-subroutine EDIIS_init(M_in, OP_shell)
-
-   use converger_data, only: nediis, damp_ediis, fock_ediis_mat, rho_ediis_mat,&
-                             BMAT, EDIIS_E, fock_damp
+subroutine ediis_init(M_in, open_shell)
+   use converger_data, only: nediis, ediis_fock, ediis_dens, BMAT, EDIIS_E
 
    implicit none
-   logical, intent(in) :: OP_shell
+   logical, intent(in) :: open_shell
    integer, intent(in) :: M_in
 
-   if (OP_shell) then
-      allocate(fock_ediis_mat(M_in,M_in,nediis,2),                             &
-               rho_ediis_mat(M_in,M_in,nediis,2), BMAT(nediis,nediis,2),       &
-               EDIIS_E(nediis), fock_damp(M_in,M_in,2))
+   if (.not. allocated(EDIIS_E)) allocate(EDIIS_E(nediis))
+   if (.not. open_shell) then
+      if (.not. allocated(ediis_fock)) allocate(ediis_fock(M_in,M_in,nediis,1))
+      if (.not. allocated(ediis_dens)) allocate(ediis_dens(M_in,M_in,nediis,1))
+      if (.not. allocated(BMAT)      ) allocate(BMAT(nediis,nediis,1))
    else
-      allocate(fock_ediis_mat(M_in,M_in,nediis,1),                             &
-               rho_ediis_mat(M_in,M_in,nediis,1), BMAT(nediis,nediis,1),       &
-               EDIIS_E(nediis), fock_damp(M_in,M_in,1))
+      if (.not. allocated(ediis_fock)) allocate(ediis_fock(M_in,M_in,nediis,2))
+      if (.not. allocated(ediis_dens)) allocate(ediis_dens(M_in,M_in,nediis,2))
+      if (.not. allocated(BMAT)      ) allocate(BMAT(nediis,nediis,2))
    endif
 
-   BMAT           = 0.0d0
-   fock_ediis_mat = 0.0d0
-   rho_ediis_mat  = 0.0d0
-   EDIIS_E        = 0.0d0
-   fock_damp      = 0.0d0
+   BMAT       = 0.0d0
+   ediis_fock = 0.0d0
+   ediis_dens = 0.0d0
+   EDIIS_E    = 0.0d0
+end subroutine ediis_init
 
-end subroutine EDIIS_init
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-#ifdef CUBLAS
-subroutine ediis_conver(niter, M_in, energy, devPtrX, devPTrY, open_shell, &
-                        fock_aop, dens_aop, fock_bop, dens_bop)
-#else
-subroutine ediis_conver(niter, M_in, energy ,Xmat, Ymat, open_shell, &
-                        fock_aop, dens_aop, fock_bop, dens_bop)
-#endif
-
-   use converger_data  , only: nediis, damp_ediis, fock_ediis_mat,        &
-                               rho_ediis_mat, BMAT, step_nediis, EDIIS_E, &
-                               fock_damp
-   use typedef_operator, only: operator
-
+subroutine ediis_finalise()
+   use converger_data, only: ediis_fock, ediis_dens, BMAT, EDIIS_E, &
+                             conver_criter
    implicit none
 
-   type(operator), intent(inout)           :: fock_aop, dens_aop
-   type(operator), intent(inout), optional :: fock_bop, dens_bop
+   if (conver_criter < 6) return
+   if (allocated(EDIIS_E)   ) deallocate(EDIIS_E)
+   if (allocated(ediis_fock)) deallocate(ediis_fock)
+   if (allocated(ediis_dens)) deallocate(ediis_dens)
+   if (allocated(BMAT)      ) deallocate(BMAT)
 
-   logical     , intent(in) :: open_shell
-   integer     , intent(in) :: niter
-   integer     , intent(in) :: M_in
-   real(kind=8), intent(in)  :: energy
+end subroutine ediis_finalise
 
-   logical                   :: acceptable
-   integer                   :: position, ii, jj, kk
-   real(kind=8)              :: trace
-   real(kind=8)              :: norm_factor
-   real(kind=8), allocatable :: mat_aux1(:,:,:), mat_aux2(:,:,:)
-   real(kind=8), allocatable :: fock_new(:,:,:)
-   real(kind=8), allocatable :: BMAT_aux(:,:,:)
-   real(kind=8), allocatable :: EDIIS_coef(:,:)
+subroutine ediis_update_energy_fock_rho(energy, fock_op, dens_op, position, &
+                                        spin, niter)
+   use converger_data  , only: EDIIS_E, ediis_fock, ediis_dens, nediis
+   use typedef_operator, only: operator
+   
+   integer       , intent(in) :: position, spin, niter
+   real(kind=8)  , intent(in) :: energy
+   type(operator), intent(in) :: fock_op, dens_op
+   integer :: ii
 
-#ifdef  CUBLAS
-   integer*8   , intent(in) :: devPtrX
-   integer*8   , intent(in) :: devPtrY
-#else
-   real(kind=8), intent(in) :: Xmat(M_in,M_in)
-   real(kind=8), intent(in) :: Ymat(M_in,M_in)
-#endif
-
-   step_nediis = niter
-   position    = min(step_nediis, nediis)
-
-   if (allocated(mat_aux1)  ) deallocate(mat_aux1)
-   if (allocated(mat_aux2)  ) deallocate(mat_aux2)
-   if (allocated(EDIIS_coef)) deallocate(EDIIS_coef)
-   if (allocated(fock_new)  ) deallocate(fock_new)
-
-
-   if (open_shell) then
-      allocate(mat_aux1(M_in,M_in,2),mat_aux2(M_in,M_in,2), &
-               EDIIS_coef(position,2), fock_new(M_in,M_in,2))
-   else
-      allocate(mat_aux1(M_in,M_in,1),mat_aux2(M_in,M_in,1), &
-               EDIIS_coef(position,1),fock_new(M_in,M_in,1))
-   endif
-
-   mat_aux1   = 0.0d0
-   mat_aux2   = 0.0d0
-   EDIIS_coef = 0.0d0
-   fock_new   = 0.0d0
-   acceptable = .true.
-
-
-   ! Updating Fock, rho and the energy:
-   if (step_nediis > nediis) then
+   if (niter > nediis) then
       do ii = 1, nediis
-         fock_ediis_mat(:,:,ii,1) = fock_ediis_mat(:,:,ii+1,1)
-         rho_ediis_mat(:,:,ii,1)  = rho_ediis_mat(:,:,ii+1,1)
-         if (open_shell) then
-            fock_ediis_mat(:,:,ii,2) = fock_ediis_mat(:,:,ii+1,2)
-            rho_ediis_mat(:,:,ii,2)  = rho_ediis_mat(:,:,ii+1,2)
-         endif
+         ediis_fock(:,:,ii,spin) = ediis_fock(:,:,ii+1,spin)
+         ediis_dens(:,:,ii,spin) = ediis_dens(:,:,ii+1,spin)
          EDIIS_E(ii) = EDIIS_E(ii+1)
       enddo
    endif
 
-#ifdef CUBLAS
-    call dens_aop%BChange_AOtoON(devPtrY, M_in, 'r')
-    call fock_aop%BChange_AOtoON(devPtrX, M_in, 'r')
-    if(open_shell)then
-      call dens_bop%BChange_AOtoON(devPtrY, M_in, 'r')
-      call fock_bop%BChange_AOtoON(devPtrX, M_in, 'r')
-    endif
-#else
-    call dens_aop%BChange_AOtoON(Ymat, M_in, 'r')
-    call fock_aop%BChange_AOtoON(Xmat, M_in, 'r')
-    if (open_shell) then
-       call dens_bop%BChange_AOtoON(Ymat, M_in, 'r')
-       call fock_bop%BChange_AOtoON(Xmat, M_in, 'r')
-    endif
-#endif
-
-   call fock_aop%Gets_data_ON(mat_aux1(:,:,1))
-   call dens_aop%Gets_data_ON(mat_aux2(:,:,1))
-
-   fock_ediis_mat(:,:,position,1) = mat_aux1(:,:,1)
-   rho_ediis_mat(:,:,position,1)  = mat_aux2(:,:,1)
-
-   if (open_shell) then
-      call fock_bop%Gets_data_ON(mat_aux1(:,:,2))
-      call dens_bop%Gets_data_ON(mat_aux2(:,:,2))
-
-      fock_ediis_mat(:,:,position,1) = mat_aux1(:,:,2)
-      rho_ediis_mat(:,:,position,1)  = mat_aux2(:,:,2)
-   endif
-
-
+   call fock_op%Gets_data_ON(ediis_fock(:,:,position,spin))
+   call dens_op%Gets_data_ON(ediis_dens(:,:,position,spin))
    EDIIS_E(position) = energy
+endsubroutine ediis_update_energy_fock_rho
 
+subroutine ediis_update_bmat(BMAT_aux, position, niter, M_in, spin)
+   use converger_data  , only: nediis, ediis_fock, ediis_dens, BMAT
+   use typedef_operator, only: operator
 
-   ! First and second steps
-   if (step_nediis == 1) then
-      fock_new  = mat_aux1
-      fock_damp = fock_new
-   else if (step_nediis == 2) then
-      fock_new  = (mat_aux1 + 80.0d0 * fock_damp) / 81.0d0
-      fock_damp = fock_new
-   endif
+   implicit none
+   integer     , intent(in)    :: niter, position, spin, M_in
+   real(kind=8), intent(inout) :: BMAT_aux(:,:)
+
+   integer                   :: ii, jj
+   real(kind=8)              :: trace
+   real(kind=8), allocatable :: mat_aux1(:,:), mat_aux2(:,:)
+
+   allocate(mat_aux1(M_in,M_in),mat_aux2(M_in,M_in))
+   mat_aux1   = 0.0d0
+   mat_aux2   = 0.0d0
 
    ! Updating BMAT
-   if (allocated(BMAT_aux)) deallocate(BMAT_aux)
-   if (open_shell) then
-      allocate(BMAT_aux(position,position,2))
-   else
-      allocate(BMAT_aux(position,position,1))
-   endif
-
-   BMAT_aux = 0.0d0
-   if ((step_nediis > 1) .and. (step_nediis <= nediis)) then
+   BMAT_aux = 0.0D0
+   if (niter > nediis) then
       do jj = 1, position-1
       do ii = 1, position-1
-         BMAT_aux(ii,jj,1) = BMAT(ii,jj,1)
-         if (open_shell) BMAT_aux(ii,jj,2) = BMAT(ii,jj,2)
+         BMAT_aux(ii,jj) = BMAT(ii+1,jj+1,spin)
       enddo
       enddo
-
-   else if (step_nediis > nediis) then
+   else if (niter > 1) then
       do jj = 1, position-1
       do ii = 1, position-1
-         BMAT_aux(ii,jj,1) = BMAT(ii+1,jj+1,1)
-         if (open_shell) BMAT_aux(ii,jj,2) = BMAT(ii+1,jj+1,2)
+         BMAT_aux(ii,jj) = BMAT(ii,jj,spin)
       enddo
       enddo
    endif
-
-   mat_aux1 = 0.0d0
-   mat_aux2 = 0.0d0
 
    do jj = 1, position-1
-      mat_aux1(:,:,1) = fock_ediis_mat(:,:,jj,1) - &
-                        fock_ediis_mat(:,:,position,1)
-      mat_aux2(:,:,1) = rho_ediis_mat(:,:,jj,1)  - &
-                        rho_ediis_mat(:,:,position,1)
+      mat_aux1(:,:) = ediis_fock(:,:,jj,spin) - &
+                      ediis_fock(:,:,position,spin)
+      mat_aux2(:,:) = ediis_dens(:,:,jj,spin)  - &
+                      ediis_dens(:,:,position,spin)
 
-      call matmul_trace(mat_aux1(:,:,1), mat_aux2(:,:,1), M_in, trace)
-      BMAT_aux(jj,position,1) = trace
-
-      if (open_shell) then
-         mat_aux1(:,:,2) = fock_ediis_mat(:,:,jj,2) - &
-                           fock_ediis_mat(:,:,position,2)
-         mat_aux2(:,:,2) = rho_ediis_mat(:,:,jj,2)  - &
-                           rho_ediis_mat(:,:,position, 2)
-         call matmul_trace(mat_aux1(:,:,2), mat_aux2(:,:,2), M_in, trace)
-         BMAT_aux(jj,position,2) = trace
-      endif
-      BMAT_aux(position, jj,:) = BMAT_aux(jj, position,:)
+      call matmul_trace(mat_aux1(:,:), mat_aux2(:,:), M_in, trace)
+      BMAT_aux(jj,position) = trace
+      BMAT_aux(position,jj) = BMAT_aux(jj,position)
    enddo
 
+   BMAT(1:position,1:position,spin) = BMAT_aux(1:position,1:position)
 
-   BMAT(1:position,1:position,:) = BMAT_aux(1:position,1:position,:)
+   deallocate(mat_aux1,mat_aux2)
+
+end subroutine ediis_update_bmat
+
+subroutine ediis_get_new_fock(fock, BMAT_aux, position, spin)
+   use converger_data, only: EDIIS_E, ediis_fock
+
+   implicit none
+   integer     , intent(in)  :: position, spin
+   real(kind=8), intent(in)  :: BMAT_aux(:,:)
+   real(kind=8), intent(out) :: fock(:,:)
+
+   integer :: ii
+   real(kind=8), allocatable :: EDIIS_coef(:)
+
+
+   allocate(EDIIS_coef(position))
    do ii = 1, position
-      EDIIS_coef(ii,:) = EDIIS_E(ii)
+      EDIIS_coef(ii) = EDIIS_E(ii)
    enddo
-
 
    ! Solving linear equation and getting new Fock matrix:
-   if (step_nediis > 2) then
-      call solve_linear_constraints(EDIIS_coef(:,1), EDIIS_E(1:position), &
-                                    BMAT_aux(:,:,1), position)
-      if (open_shell) call solve_linear_constraints(EDIIS_coef(:,2),      &
-                                              EDIIS_E(1:position),        &
-                                              BMAT_aux(:,:,2), position)
+   fock = 0.0D0
+   call solve_linear_constraints(EDIIS_coef(:), EDIIS_E(1:position), &
+                                 BMAT_aux(:,:), position)
+   do ii = 1, position
+      fock(:,:) = fock(:,:) + EDIIS_coef(ii) * ediis_fock(:,:,ii,spin)
+   enddo
 
-      do ii = 1, position
-         fock_new(:,:,1) = fock_new(:,:,1) + EDIIS_coef(ii,1) * &
-                           fock_ediis_mat(:,:,ii,1)
-         if (open_shell) fock_new(:,:,2) = fock_new(:,:,2) + EDIIS_coef(ii,2) *&
-                                           fock_ediis_mat(:,:,ii,2)
-      enddo
-   endif
-
-   call fock_aop%Sets_data_ON(fock_new(:,:,1))
-   if (open_shell) call fock_bop%Sets_data_ON(fock_new(:,:,2))
-end subroutine ediis_conver
+   deallocate(EDIIS_coef)
+end subroutine ediis_get_new_fock
 
 subroutine matmul_trace(mat1,mat2, M_in, trace)
    implicit none

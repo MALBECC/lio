@@ -1,18 +1,8 @@
-subroutine diis_fock_commut(dens_op, fock_op, dens, M_in, spin, ndiist, &
-#ifdef CUBLAS   
-                            devPtrX, devPtrY)
-#else
-                            Xmat, Ymat)
-#endif
+subroutine diis_fock_commut(dens_op, fock_op, dens, M_in, spin, ndiist)
    use converger_data  , only: fockm, FP_PFm, ndiis
    use typedef_operator, only: operator
    
    implicit none
-#ifdef  CUBLAS
-   integer*8     , intent(in)    :: devPtrX, devPtrY
-#else
-   real(kind=8)  , intent(in)    :: Xmat(M_in,M_in), Ymat(M_in,M_in)
-#endif
    integer       , intent(in)    :: M_in, ndiist, spin
    real(kind=8)  , intent(inout) :: dens(:,:)
    type(operator), intent(inout) :: dens_op, fock_op
@@ -26,18 +16,27 @@ subroutine diis_fock_commut(dens_op, fock_op, dens, M_in, spin, ndiist, &
       FP_PFm(:,:,jj,spin) = FP_PFm(:,:,jj+1,spin)
    enddo
    
-#ifdef CUBLAS
-   call dens_op%BChange_AOtoON(devPtrY, M_in, 'r')
-   call fock_op%BChange_AOtoON(devPtrX, M_in, 'r')
-#else
-   call dens_op%BChange_AOtoON(Ymat, M_in, 'r')
-   call fock_op%BChange_AOtoON(Xmat, M_in, 'r')
-#endif
    call dens_op%Gets_data_ON(dens)
    call fock_op%Commut_data_r(dens, FP_PFm(:,:,ndiis,spin), M_in)
    call fock_op%Gets_data_ON( fockm(:,:,ndiis,spin) )
 
 end subroutine diis_fock_commut
+
+subroutine diis_update_energy(energy, spin)
+   use converger_data, only: energy_list, ndiis
+   implicit none
+   integer     , intent(in) :: spin
+   real(kind=8), intent(in) :: energy
+   integer :: ii
+   
+   if (spin > 1) return
+
+   do ii = 1, ndiis -1
+      energy_list(ii) = energy_list(ii+1)
+   enddo
+
+   energy_list(ndiis) = energy
+end subroutine diis_update_energy
 
 subroutine diis_update_emat(EMAT, niter, ndiist, spin, M_in)
    use converger_data, only: EMAT2, ndiis, FP_PFm

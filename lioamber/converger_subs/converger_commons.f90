@@ -39,13 +39,10 @@ end subroutine converger_options_check
 
 subroutine converger_init( M_in, OPshell )
    use converger_data, only: fockm, FP_PFm, conver_criter, fock_damped,  &
-                             hagodiis, bcoef, ndiis, EMAT2, energy_list, &
-                             told, etold
+                             bcoef, ndiis, EMAT2, energy_list, told, etold
    implicit none
    integer         , intent(in) :: M_in
    logical         , intent(in) :: OPshell
-
-   hagodiis = .false.
 
    write(*,'(2x,A)') "Convergence criteria are: "
    write(*,'(2x,ES8.2,A33,ES8.2,A26)')                 &
@@ -75,6 +72,8 @@ subroutine converger_init( M_in, OPshell )
       endif
    endif
 
+   if (conver_criter > 5) call ediis_init(M_in, OPshell)
+
    if(OPshell) then
       if (.not. allocated(fock_damped) ) allocate(fock_damped(M_in, M_in, 2))
    else
@@ -85,7 +84,7 @@ end subroutine converger_init
 
 subroutine converger_finalise()
    use converger_data, only: fockm, FP_PFm, conver_criter, fock_damped, &
-                             hagodiis, bcoef, ndiis, EMAT2, energy_list
+                             bcoef, ndiis, EMAT2, energy_list
    implicit none
    
    if (conver_criter /= 1) then
@@ -99,19 +98,21 @@ subroutine converger_finalise()
    endif
 
    if (allocated(fock_damped)) deallocate(fock_damped)
+   call ediis_finalise()
    call rho_ls_finalise()
 end subroutine converger_finalise
 
-subroutine conver_fock(niter, M_in, rho_op, fock_op, spin, energy, n_orbs, &
+subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
 #ifdef CUBLAS
                       devPtrX, devPtrY)
 #else
                       Xmat, Ymat)
 #endif
-   use converger_data  , only: damping_factor, hagodiis, fockm, FP_PFm, ndiis, &
-                               fock_damped, bcoef, EMAT2, conver_criter,       &
-                               good_cut, energy_list, DIIS_bias, level_shift,  &
-                               lvl_shift_en, lvl_shift_cut, rho_ls, rho_diff
+   use converger_data  , only: damping_factor, fockm, FP_PFm, ndiis,     &
+                               fock_damped, bcoef, EMAT2, conver_criter, &
+                               good_cut, level_shift, lvl_shift_en,      &
+                               lvl_shift_cut, rho_ls, rho_diff, nediis,  &
+                               EDIIS_start, bDIIS_start, DIIS_start
    use typedef_operator, only: operator
    use fileio_data     , only: verbose
    
@@ -124,11 +125,12 @@ subroutine conver_fock(niter, M_in, rho_op, fock_op, spin, energy, n_orbs, &
    real(kind=8)  , intent(in)    :: Xmat(M_in,M_in), Ymat(M_in,M_in)
 #endif
    real(kind=8)  , intent(in)    :: energy
-   type(operator), intent(inout) :: rho_op, fock_op
+   type(operator), intent(inout) :: dens_op, fock_op
 
-   integer      :: ndiist, ii
+   logical :: diis_on, ediis_on, bdiis_on
+   integer :: ndiist, nediist, ii
    real(kind=8), allocatable :: fock00(:,:), EMAT(:,:), suma(:,:), &
-                                fock(:,:), rho(:,:)
+                                fock(:,:), rho(:,:), BMAT(:,:)
 
 
 ! INITIALIZATION
@@ -147,48 +149,64 @@ subroutine conver_fock(niter, M_in, rho_op, fock_op, spin, energy, n_orbs, &
    rho    = 0.0D0
 
    ! Saving rho and the first fock AO
-   call rho_op%Gets_data_AO(rho)
+   call dens_op%Gets_data_AO(rho)
    call fock_op%Gets_data_AO(fock00)
 
+   diis_on  = .false.
+   ediis_on = .false.
+   bdiis_on = .false.
    ! Checks convergence criteria.
    select case (conver_criter)
       ! Always do damping
       case (1)
-         hagodiis = .false.
 
       ! Damping the first two steps, diis afterwards
-      case (2,4)
-         if (niter > 2) then
-            hagodiis = .true.
-         else
-            hagodiis = .false.
-         endif
+      case (2)
+         if (niter > 2) diis_on = .true.
+      case (4)
+         bdiis_on = .true.
+         if (niter > 2) diis_on  = .true.
 
       ! Damping until good enough, diis afterwards
-      case(3,5)
-         if (.not. hagodiis) then
-            if ((rho_diff < good_cut) .and. (niter > 2) .and. (rho_LS < 2)) then
-               if (verbose > 3) &
-                  write(6,'(A,I4)') "  Changing to DIIS at step: ", niter
-               hagodiis = .true.
-            endif
+      case(3)
+         if ((rho_diff < good_cut) .and. (niter > 2) .and. (rho_LS < 2)) &
+            diis_on = .true.
+      case(5)
+         bdiis_on = .true.
+         if ((rho_diff < good_cut) .and. (niter > 2) .and. (rho_LS < 2)) &
+            diis_on = .true.
+      ! Mix of all criteria, according to rho_diff value.
+      case(6:)
+         if (rho_diff  < EDIIS_start) ediis_on = .true.
+         if ((rho_diff < bDIIS_start) .or. (rho_diff < DIIS_start)) then
+            ediis_on = .false.
+            diis_on  = .true.
          endif
-
+         if ((rho_diff < bDIIS_start) .and. (rho_diff > DIIS_start)) &
+            bdiis_on = .true.
       case default
          write(*,'(A,I4)') 'ERROR - Wrong conver_criter = ', conver_criter
          stop
    endselect
 
    ! Turn off diis is calculation when change to lineal search, Nick
-   if (rho_ls > 1) hagodiis = .false.
+   if (rho_ls > 1) then 
+      diis_on  = .false.
+      ediis_on = .false.
+   endif
 
-   ndiist = min( niter, ndiis )
-   if (conver_criter /= 1) call diis_fock_commut(rho_op, fock_op, rho, M_in, &
+   ndiist  = min(niter, ndiis )
+   nediist = min(niter, nediis)
+   if (conver_criter /= 1) then
 #ifdef CUBLAS
-      spin, ndiist, devPtrX, devPtrY)
+      call dens_op%BChange_AOtoON(devPtrY, M_in, 'r')
+      call fock_op%BChange_AOtoON(devPtrX, M_in, 'r')
 #else
-      spin, ndiist, Xmat, Ymat)
+      call dens_op%BChange_AOtoON(Ymat, M_in, 'r')
+      call fock_op%BChange_AOtoON(Xmat, M_in, 'r')
 #endif
+      call diis_fock_commut(dens_op, fock_op, rho, M_in, spin, ndiist)
+   endif
 
    ! THIS IS DAMPING 
    ! THIS IS SPARTA!
@@ -196,7 +214,7 @@ subroutine conver_fock(niter, M_in, rho_op, fock_op, spin, energy, n_orbs, &
    ! F in fock_damped for next iteration's damping and put F' = X^T * F * X in
    ! fock the newly constructed damped matrix is stored, for next iteration in
    ! fock_damped
-   if (.not. hagodiis) then
+   if ((.not. diis_on) .and. (.not. ediis_on)) then
       fock = fock00
 
       if (niter > 1) &
@@ -212,32 +230,43 @@ subroutine conver_fock(niter, M_in, rho_op, fock_op, spin, energy, n_orbs, &
 #endif
    endif
 
-   ! DIIS
-   if (conver_criter /= 1) then
-      if (((conver_criter == 4) .or. (conver_criter == 5)) .and. (spin == 1) &
-          .and. (niter > 1)) then
-         do ii = 1, ndiis -1
-            energy_list(ii) = energy_list(ii+1)
-         enddo
-         energy_list(ndiis) = energy
-      endif
+   ! DIIS and EDIIS
+   if (conver_criter > 1) then
 
+      ! DIIS
       allocate(EMAT(ndiist+1,ndiist+1))
       call diis_update_emat(EMAT, niter, ndiist, spin, M_in)
+      ! Stores energy for bDIIS
+      if ((conver_criter > 3) .and. (niter > 1)) call diis_update_energy(energy, spin)
    
-
-      if (hagodiis) then
-         if ((conver_criter == 4) .or. (conver_criter == 5)) &
-            call diis_emat_bias(EMAT, ndiist)
+      if (diis_on) then
+         if (bdiis_on) call diis_emat_bias(EMAT, ndiist)
 
          call diis_get_new_fock(fock, EMAT, ndiist, M_in, spin)
          call fock_op%Sets_data_ON(fock)
       endif
+      deallocate(EMAT)
+
+      ! EDIIS
+      if (conver_criter > 5) then
+
+         allocate(BMAT(nediist, nediist))
+         call ediis_update_energy_fock_rho(energy, fock_op, dens_op, nediist, &
+                                           spin, niter)
+         call ediis_update_bmat(BMAT, nediist, niter, M_in, spin)
+
+
+         if (ediis_on) then
+            call ediis_get_new_fock(fock, BMAT, nediist, spin)
+            call fock_op%Sets_data_ON(fock)
+         endif
+
+         deallocate(BMAT)
+      endif
    endif
 
    if ((rho_diff > lvl_shift_cut) .and. (level_shift)) then
-   if (hagodiis) &
-       call fock_op%Shift_diag_ON(lvl_shift_en, n_orbs+1)
+      call fock_op%Shift_diag_ON(lvl_shift_en, n_orbs+1)
    endif
    
 end subroutine conver_fock

@@ -114,8 +114,7 @@ subroutine conver_fock(niter, M_in, rho_op, fock_op, spin, energy, n_orbs, &
                                lvl_shift_en, lvl_shift_cut, rho_ls, rho_diff
    use typedef_operator, only: operator
    use fileio_data     , only: verbose
-   use linear_algebra  , only: matmuldiag
- 
+   
    implicit none
    ! Spin allows to store correctly alpha or beta information. - Carlos
    integer       , intent(in)    :: niter, M_in, spin, n_orbs   
@@ -127,10 +126,9 @@ subroutine conver_fock(niter, M_in, rho_op, fock_op, spin, energy, n_orbs, &
    real(kind=8)  , intent(in)    :: energy
    type(operator), intent(inout) :: rho_op, fock_op
 
-   integer      :: ndiist, ii, jj, kk, kknew, lwork, info, Emin_index
-   real(kind=8), allocatable :: fock00(:,:), EMAT(:,:), diag1(:,:),      &
-                                suma(:,:), scratch1(:,:), scratch2(:,:), &
-                                fock(:,:), rho(:,:), work(:)
+   integer      :: ndiist, ii
+   real(kind=8), allocatable :: fock00(:,:), EMAT(:,:), suma(:,:), &
+                                fock(:,:), rho(:,:)
 
 
 ! INITIALIZATION
@@ -143,7 +141,7 @@ subroutine conver_fock(niter, M_in, rho_op, fock_op, spin, energy, n_orbs, &
 ! [F',P'] = A - A^T
 ! BASE CHANGE HAPPENS INSIDE OF FOCK_COMMUTS
 
-   allocate(fock00(M_in,M_in), fock(M_in,M_in), rho(M_in,M_in), work(1000))
+   allocate(fock00(M_in,M_in), fock(M_in,M_in), rho(M_in,M_in))
    fock00 = 0.0D0
    fock   = 0.0D0
    rho    = 0.0D0
@@ -151,7 +149,6 @@ subroutine conver_fock(niter, M_in, rho_op, fock_op, spin, energy, n_orbs, &
    ! Saving rho and the first fock AO
    call rho_op%Gets_data_AO(rho)
    call fock_op%Gets_data_AO(fock00)
-
 
    ! Checks convergence criteria.
    select case (conver_criter)
@@ -186,35 +183,12 @@ subroutine conver_fock(niter, M_in, rho_op, fock_op, spin, energy, n_orbs, &
    if (rho_ls > 1) hagodiis = .false.
 
    ndiist = min( niter, ndiis )
-   if (conver_criter /= 1) then      
-      allocate( suma(M_in, M_in), diag1(M_in, M_in) )
-      allocate( scratch1(M_in, M_in), scratch2(M_in, M_in) )
-      suma = 0.0D0
-      diag1 = 0.0D0
-      scratch1 = 0.0D0
-      scratch2 = 0.0D0
-      
-      ! If DIIS is turned on, update fockm with the current transformed F' (into ON
-      ! basis) and update FP_PFm with the current transformed [F',P']
-
-      do jj = ndiis-(ndiist-1), ndiis-1
-         fockm(:,:,jj,spin)  = fockm(:,:,jj+1,spin)
-         FP_PFm(:,:,jj,spin) = FP_PFm(:,:,jj+1,spin)
-      enddo
-      
+   if (conver_criter /= 1) call diis_fock_commut(rho_op, fock_op, rho, M_in, &
 #ifdef CUBLAS
-      call rho_op%BChange_AOtoON(devPtrY, M_in, 'r')
-      call fock_op%BChange_AOtoON(devPtrX, M_in, 'r')
+      spin, ndiist, devPtrX, devPtrY)
 #else
-      call rho_op%BChange_AOtoON(Ymat, M_in, 'r')
-      call fock_op%BChange_AOtoON(Xmat,M_in, 'r')
+      spin, ndiist, Xmat, Ymat)
 #endif
-      call rho_op%Gets_data_ON(rho)
-      call fock_op%Commut_data_r(rho, scratch1, M_in)
-
-      FP_PFm(:,:,ndiis,spin) = scratch1(:,:)
-      call fock_op%Gets_data_ON( fockm(:,:,ndiis,spin) )
-   endif
 
    ! THIS IS DAMPING 
    ! THIS IS SPARTA!
@@ -249,106 +223,15 @@ subroutine conver_fock(niter, M_in, rho_op, fock_op, spin, energy, n_orbs, &
       endif
 
       allocate(EMAT(ndiist+1,ndiist+1))
-
-      ! Before ndiis iterations, we just start from the old EMAT
-      if ((niter > 1) .and. (niter <= ndiis)) then
-         EMAT = 0.0D0
-         do jj = 1, ndiist-1
-         do ii = 1, ndiist-1
-            EMAT(ii,jj) = EMAT2(ii,jj,spin)
-         enddo
-         enddo
-      ! After ndiis iterations, we start shifting the oldest iteration stored
-      else if (niter > ndiis) then
-         EMAT = 0.0D0
-         do jj = 1, ndiist-1
-         do ii = 1, ndiist-1
-            EMAT(ii,jj) = EMAT2(ii+1,jj+1,spin)
-         enddo
-         enddo
-      endif
-
-      ! scratch1 and scratch2 store the commutations from different iterations.
-      do kk = 1, ndiist
-         kknew = kk + (ndiis - ndiist)
-         scratch1(:,:) = FP_PFm(:,:,ndiis,spin)
-         scratch2(:,:) = FP_PFm(:,:,kknew,spin)
-
-         call matmuldiag( scratch1, scratch2, diag1, M_in )
-         EMAT(ndiist,kk) = 0.0d0
-
-         if (kk /= ndiist) EMAT(kk,ndiist) = 0.0d0
-         do ii = 1, M_in
-            EMAT(ndiist,kk) = EMAT(ndiist,kk) + diag1(ii,ii)
-            if (kk /= ndiist) then
-               EMAT(kk,ndiist) = EMAT(ndiist,kk)
-            endif
-         enddo
-      enddo
-
-      do kk = 1, ndiist
-         EMAT(kk,ndiist+1) = -1.0d0
-         EMAT(ndiist+1,kk) = -1.0d0
-      enddo
-      EMAT(ndiist+1, ndiist+1)= 0.0d0
-      EMAT2(1:ndiist+1,1:ndiist+1,spin) = EMAT
-
-      !   THE MATRIX EMAT SHOULD HAVE THE FOLLOWING SHAPE:
-      !      |<E(1)*E(1)>  <E(1)*E(2)> ...   -1.0|
-      !      |<E(2)*E(1)>  <E(2)*E(2)> ...   -1.0|
-      !      |<E(3)*E(1)>  <E(3)*E(2)> ...   -1.0|
-      !      |<E(4)*E(1)>  <E(4)*E(2)> ...   -1.0|
-      !      |     .            .      ...     . |
-      !      |   -1.0         -1.0     ...    0. |
-      !   WHERE <E(I)*E(J)> IS THE SCALAR PRODUCT OF [F*P] FOR ITERATION I
-      !   TIMES [F*P] FOR ITERATION J.   
+      call diis_update_emat(EMAT, niter, ndiist, spin, M_in)
+   
 
       if (hagodiis) then
-         if ((conver_criter == 4) .or. (conver_criter == 5)) then
-            if (niter > ndiis) then
-               Emin_index = minloc(energy_list,1)
-            else
-               Emin_index = minloc(energy_list((ndiis - ndiist +1):ndiis),1)
-            endif
+         if ((conver_criter == 4) .or. (conver_criter == 5)) &
+            call diis_emat_bias(EMAT, ndiist)
 
-            do ii = 1, Emin_index -1
-               Emat(ii,ii) = Emat(ii,ii) * DIIS_bias
-            enddo
-            do ii = Emin_index +1, ndiist
-               Emat(ii,ii) = Emat(ii,ii) * DIIS_bias
-            enddo
-         endif
-
-         do ii = 1, ndiist
-            bcoef(ii,spin) = 0.0d0
-         enddo
-         bcoef(ndiist+1,spin) = -1.0d0
-
-         ! First call to DGELS sets optimal WORK size. Second call solves the
-         ! A*X = B (EMAT * Ci = bCoef) problem, with bCoef also storing the
-         ! result.
-         LWORK = -1
-         CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT, &
-                     ndiist+1, bcoef(:,spin), ndiist+1, WORK, LWORK, INFO )
-
-         LWORK = MIN( 1000, INT( WORK( 1 ) ) )
-         CALL DGELS( 'No transpose',ndiist+1, ndiist+1, 1, EMAT, &
-                     ndiist+1, bcoef(:,spin), ndiist+1, WORK, LWORK, INFO )
-
-         ! Build new Fock as a linear combination of previous steps.
-         suma = 0.0D0
-         do kk = 1, ndiist
-            kknew = kk + (ndiis - ndiist)
-            do ii = 1, M_in
-            do jj = 1, M_in
-               suma(ii,jj) = suma(ii,jj) + bcoef(kk,spin) * &
-                                           fockm(ii,jj,kknew,spin)
-            enddo
-            enddo
-         enddo
-         fock = suma
+         call diis_get_new_fock(fock, EMAT, ndiist, M_in, spin)
          call fock_op%Sets_data_ON(fock)
-
       endif
    endif
 
@@ -356,7 +239,6 @@ subroutine conver_fock(niter, M_in, rho_op, fock_op, spin, energy, n_orbs, &
    if (hagodiis) &
        call fock_op%Shift_diag_ON(lvl_shift_en, n_orbs+1)
    endif
-   deallocate (work)
    
 end subroutine conver_fock
 

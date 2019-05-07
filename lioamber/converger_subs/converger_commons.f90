@@ -38,8 +38,7 @@ subroutine converger_options_check(energ_all_iter)
 end subroutine converger_options_check
 
 subroutine converger_init( M_in, OPshell )
-   use converger_data, only: fockm, FP_PFm, conver_criter, fock_damped,  &
-                             bcoef, ndiis, EMAT2, energy_list, told, etold
+   use converger_data, only: fock_damped, told, etold
    implicit none
    integer         , intent(in) :: M_in
    logical         , intent(in) :: OPshell
@@ -49,37 +48,15 @@ subroutine converger_init( M_in, OPshell )
             told, " in Rho mean squared difference, ", &
             Etold, " Eh in energy differences."
 
-   ! Added to change from damping to DIIS. - Nick
-   if (conver_criter /= 1) then
-      if(OPshell) then
-         if (.not. allocated(fockm)  ) allocate(fockm (M_in, M_in, ndiis, 2))
-         if (.not. allocated(FP_PFm) ) allocate(FP_PFm(M_in, M_in, ndiis, 2))
-         if (.not. allocated(bcoef)  ) allocate(bcoef(ndiis+1, 2) )
-         if (.not. allocated(EMAT2)  ) allocate(EMAT2(ndiis+1,ndiis+1,2))
-      else
-         if (.not. allocated(fockm)  ) allocate(fockm (M_in, M_in, ndiis, 1))
-         if (.not. allocated(FP_PFm) ) allocate(FP_PFm(M_in, M_in, ndiis, 1))
-         if (.not. allocated(bcoef)  ) allocate(bcoef (ndiis+1, 1))
-         if (.not. allocated(EMAT2)  ) allocate(EMAT2(ndiis+1,ndiis+1,1))
-      end if
-      fockm   = 0.0D0
-      FP_PFm  = 0.0D0
-      bcoef   = 0.0D0
-      EMAT2   = 0.0D0
-      if ((conver_criter == 4) .or. (conver_criter == 5)) then
-         if (.not. allocated(energy_list)) allocate(energy_list(ndiis))
-         energy_list = 0.0D0
-      endif
-   endif
-
-   if (conver_criter > 5) call ediis_init(M_in, OPshell)
-
    if(OPshell) then
       if (.not. allocated(fock_damped) ) allocate(fock_damped(M_in, M_in, 2))
    else
       if (.not. allocated(fock_damped) ) allocate(fock_damped(M_in, M_in, 1))
    end if
    fock_damped(:,:,:) = 0.0D0
+
+   call diis_init(M_in, OPshell)
+   call ediis_init(M_in, OPshell)
 end subroutine converger_init
 
 subroutine converger_finalise()
@@ -87,17 +64,9 @@ subroutine converger_finalise()
                              bcoef, ndiis, EMAT2, energy_list
    implicit none
    
-   if (conver_criter /= 1) then
-      if (allocated(fockm) ) deallocate(fockm )
-      if (allocated(FP_PFm)) deallocate(FP_PFm)
-      if (allocated(bcoef) ) deallocate(bcoef )
-      if (allocated(EMAT2) ) deallocate(EMAT2 )
-      if ((conver_criter == 4) .or. (conver_criter == 5)) then
-         if (allocated(energy_list)) deallocate(energy_list)
-      endif
-   endif
-
    if (allocated(fock_damped)) deallocate(fock_damped)
+
+   call diis_finalise()
    call ediis_finalise()
    call rho_ls_finalise()
 end subroutine converger_finalise

@@ -25,7 +25,7 @@ module converger_data
 
    ! Rho squared difference cut for each convergence strategy:
    real(kind=8) :: lvl_shift_cut  = 1.0D0
-   real(kind=8) :: EDIIS_start    = 1.0D0
+   real(kind=8) :: EDIIS_start    = 0.1D0
    real(kind=8) :: DIIS_start     = 1D-5
    real(kind=8) :: bDIIS_start    = 1D-10
 

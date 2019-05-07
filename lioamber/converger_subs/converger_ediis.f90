@@ -1,10 +1,12 @@
 subroutine ediis_init(M_in, open_shell)
-   use converger_data, only: nediis, ediis_fock, ediis_dens, BMAT, EDIIS_E
+   use converger_data, only: nediis, ediis_fock, ediis_dens, BMAT, EDIIS_E,&
+                             conver_criter
 
    implicit none
    logical, intent(in) :: open_shell
    integer, intent(in) :: M_in
 
+   if (conver_criter < 6) return
    if (.not. allocated(EDIIS_E)) allocate(EDIIS_E(nediis))
    if (.not. open_shell) then
       if (.not. allocated(ediis_fock)) allocate(ediis_fock(M_in,M_in,nediis,1))
@@ -46,7 +48,7 @@ subroutine ediis_update_energy_fock_rho(energy, fock_op, dens_op, position, &
    integer :: ii
 
    if (niter > nediis) then
-      do ii = 1, nediis
+      do ii = 1, nediis-1
          ediis_fock(:,:,ii,spin) = ediis_fock(:,:,ii+1,spin)
          ediis_dens(:,:,ii,spin) = ediis_dens(:,:,ii+1,spin)
          EDIIS_E(ii) = EDIIS_E(ii+1)

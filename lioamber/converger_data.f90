@@ -46,6 +46,16 @@ module converger_data
    real(kind=8), allocatable :: EMAT2(:,:,:)
    real(kind=8), allocatable :: energy_list(:)
 
+   ! Internal variables for EDIIS
+   integer                   :: nediis      = 70
+   integer                   :: step_nediis = 0
+   real(kind=8)              :: damp_ediis  = 0.8D0
+   real(kind=8), allocatable :: fock_ediis_mat(:,:,:,:)
+   real(kind=8), allocatable :: rho_ediis_mat(:,:,:,:)
+   real(kind=8), allocatable :: BMAT(:,:,:)
+   real(kind=8), allocatable :: EDIIS_E(:)
+   real(kind=8), allocatable :: fock_damp(:,:,:)
+
    ! Internal variables for Linear Search
    logical                                   :: may_conv      = .true.
    real(kind=8)                              :: Elast         = 0.0D0

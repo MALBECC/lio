@@ -164,7 +164,7 @@ subroutine diis_get_new_fock(fock, EMAT, ndiist, M_in, spin)
       do ii = 1, M_in
       do jj = 1, M_in
          fock(ii,jj) = fock(ii,jj) + bcoef(kk,spin) * &
-                                    fockm(ii,jj,kknew,spin)
+                                     fockm(ii,jj,kknew,spin)
       enddo
       enddo
    enddo

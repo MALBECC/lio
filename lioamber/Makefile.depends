@@ -128,8 +128,10 @@ tmplist += tbdft_subs.o
 $(tmplist:%.o=$(OBJPATH)/%.o) : $(OBJPATH)/properties.mod
 
 ################################################################################
+include converger_subs/conver.mk
 OBJECTS += converger_data.o
 OBJECTS += converger_subs.o
+SRCDIRS += converger_subs
 
 tmplist :=
 tmplist += SCF.o lio_finalize.o

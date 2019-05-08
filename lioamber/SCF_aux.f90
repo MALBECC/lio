@@ -15,17 +15,17 @@ module SCF_aux
 contains
 
 subroutine fix_densmat(dens_mat)
-       ! Fixes density matrix non-diagonal terms.
-       implicit none
-       double precision, intent(inout) :: dens_mat(:,:)
-       integer :: icount, jcount
+   ! Fixes density matrix non-diagonal terms.
+   implicit none
+   double precision, intent(inout) :: dens_mat(:,:)
+   integer :: icount, jcount
 
-       do jcount = 1, size(dens_mat, 2)
-       do icount = 1, size(dens_mat, 1)
-          if (icount /= jcount) &
-             dens_mat(icount,jcount) = dens_mat(icount,jcount) / 2.0D0
-       enddo
-       enddo
+   do jcount = 1, size(dens_mat, 2)
+   do icount = 1, size(dens_mat, 1)
+      if (icount /= jcount) &
+         dens_mat(icount,jcount) = dens_mat(icount,jcount) / 2.0D0
+   enddo
+   enddo
 end subroutine fix_densmat
 
 subroutine messup_densmat(dens_mat)

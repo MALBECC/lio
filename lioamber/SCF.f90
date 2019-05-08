@@ -121,7 +121,7 @@ subroutine SCF(E)
    real*8              :: dipxyz(3)
 
 ! FIELD variables (maybe temporary)
-   real*8  :: Qc, Qc2, g
+   real*8  :: Qc, Qc2, g, HL_gap = 10.0D0
    integer :: ng2
 
 !------------------------------------------------------------------------------!
@@ -586,10 +586,10 @@ subroutine SCF(E)
       call g2g_timer_sum_start('SCF acceleration')
 
 #ifdef CUBLAS
-      call conver_fock(nniter, M_f, rho_aop, fock_aop, 1, E, NCOa_f, &
+      call conver_fock(nniter, M_f, rho_aop, fock_aop, 1, E, NCOa_f, HL_gap,&
                        dev_Xmat, dev_Ymat)
 #else
-      call conver_fock(nniter, M_f, rho_aop, fock_aop, 1, E, NCOa_f, &
+      call conver_fock(nniter, M_f, rho_aop, fock_aop, 1, E, NCOa_f, HL_gap,&
                        Xmat, Ymat)
 #endif
 
@@ -625,10 +625,10 @@ subroutine SCF(E)
          ! In open shell, performs the previous operations for beta operators.
          call g2g_timer_sum_start('SCF acceleration')
 #ifdef CUBLAS
-         call conver_fock(nniter, M_f, rho_bop, fock_bop, 2, E, NCOb_f, &
+         call conver_fock(nniter, M_f, rho_bop, fock_bop, 2, E, NCOb_f, HL_gap,&
                           dev_Xmat, dev_Ymat)
 #else
-         call conver_fock(nniter, M_f, rho_bop, fock_bop, 2, E, NCOb_f, &
+         call conver_fock(nniter, M_f, rho_bop, fock_bop, 2, E, NCOb_f, HL_gap,&
                           Xmat, Ymat)
 #endif
          call g2g_timer_sum_pause('SCF acceleration')
@@ -660,6 +660,11 @@ subroutine SCF(E)
          Eorbs_b      = morb_energy
          MO_coef_at_b = morb_coefat
       endif
+
+      ! Calculates HOMO-LUMO gap.
+      HL_gap = abs(Eorbs(NCOa_f+1) - Eorbs(NCOa_f))
+      if (OPEN) HL_gap = abs(min(Eorbs(NCOa_f+1),Eorbs_b(NCOb_f+1)) &
+                             - max(Eorbs(NCOa_f),Eorbs_b(NCOb_f)))
 
       ! We are not sure how to translate the sumation over molecular orbitals
       ! and energies when changing from TBDFT system to DFT subsystem. Forces

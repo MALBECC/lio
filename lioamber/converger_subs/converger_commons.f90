@@ -48,7 +48,7 @@ subroutine converger_init( M_in, OPshell )
             told, " in Rho mean squared difference, ", &
             Etold, " Eh in energy differences."
 
-   if(OPshell) then
+   if (OPshell) then
       if (.not. allocated(fock_damped) ) allocate(fock_damped(M_in, M_in, 2))
    else
       if (.not. allocated(fock_damped) ) allocate(fock_damped(M_in, M_in, 1))
@@ -72,9 +72,9 @@ end subroutine converger_finalise
 
 subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
 #ifdef CUBLAS
-                      devPtrX, devPtrY)
+                       HL_gap, devPtrX, devPtrY)
 #else
-                      Xmat, Ymat)
+                       HL_gap, Xmat, Ymat)
 #endif
    use converger_data  , only: damping_factor, ndiis, fock_damped,           &
                                conver_method, good_cut, level_shift,         &
@@ -90,7 +90,7 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
 #else
    real(kind=8)   , intent(in)    :: Xmat(M_in,M_in), Ymat(M_in,M_in)
 #endif
-   real(kind=8)   , intent(in)    :: energy
+   real(kind=8)   , intent(in)    :: energy, HL_gap
    type(operator) , intent(inout) :: dens_op, fock_op
 
    logical :: diis_on, ediis_on, bdiis_on
@@ -236,9 +236,9 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
       endif
    endif
 
-   if ((rho_diff > lvl_shift_cut) .and. (level_shift)) then
+   ! Level shifting works weird when using DIIS-only methods, so it is disabled.
+   if ((HL_gap < lvl_shift_cut) .and. (level_shift) .and. (conver_method /= 2)) &
       call fock_op%Shift_diag_ON(lvl_shift_en, n_orbs+1)
-   endif
    
 end subroutine conver_fock
 

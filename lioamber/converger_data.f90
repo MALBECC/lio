@@ -21,10 +21,10 @@ module converger_data
       
    ! Level shifting
    logical      :: level_shift    = .true.
-   real(kind=8) :: lvl_shift_en   = 0.1D0
+   real(kind=8) :: lvl_shift_en   = 0.25D0
+   real(kind=8) :: lvl_shift_cut  = 0.05D0
 
    ! Rho squared difference cut for each convergence strategy:
-   real(kind=8) :: lvl_shift_cut  = 1.0D0
    real(kind=8) :: DIIS_start     = 1.0D0
    real(kind=8) :: bDIIS_start    = 1D-4
    real(kind=8) :: EDIIS_start    = 1D-20
@@ -58,16 +58,16 @@ module converger_data
    real(kind=8), allocatable :: EDIIS_E(:)
 
    ! Internal variables for Linear Search
-   logical                                   :: may_conv      = .true.
-   real(kind=8)                              :: Elast         = 0.0D0
-   real(kind=8)                              :: Pstepsize     = 0.0D0
-   real(kind=8), dimension(:)  , allocatable :: rho_lambda1
-   real(kind=8), dimension(:)  , allocatable :: rho_lambda0
-   real(kind=8), dimension(:)  , allocatable :: rho_lambda1_alpha
-   real(kind=8), dimension(:)  , allocatable :: rho_lambda0_alpha
-   real(kind=8), dimension(:)  , allocatable :: rho_lambda1_betha
-   real(kind=8), dimension(:)  , allocatable :: rho_lambda0_betha
-   real(kind=8), dimension(:,:), allocatable :: P_hist
+   logical                   :: may_conv  = .true.
+   real(kind=8)              :: Elast     = 0.0D0
+   real(kind=8)              :: Pstepsize = 0.0D0
+   real(kind=8), allocatable :: rho_lambda1(:)
+   real(kind=8), allocatable :: rho_lambda0(:)
+   real(kind=8), allocatable :: rho_lambda1_alpha(:)
+   real(kind=8), allocatable :: rho_lambda0_alpha(:)
+   real(kind=8), allocatable :: rho_lambda1_betha(:)
+   real(kind=8), allocatable :: rho_lambda0_betha(:)
+   real(kind=8), allocatable :: P_hist(:,:)
 
 end module converger_data
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!

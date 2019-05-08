@@ -51,7 +51,8 @@ subroutine diis_fock_commut(dens_op, fock_op, dens, M_in, spin, ndiist)
    real(kind=8)  , intent(inout) :: dens(:,:)
    type(operator), intent(inout) :: dens_op, fock_op
 
-   integer :: jj
+   integer :: jj, ii
+   real(kind=8) :: diis_err
 
    ! If DIIS is turned on, update fockm with the current transformed F' (into ON
    ! basis) and update FP_PFm with the current transformed [F',P']
@@ -64,6 +65,16 @@ subroutine diis_fock_commut(dens_op, fock_op, dens, M_in, spin, ndiist)
    call fock_op%Commut_data_r(dens, FP_PFm(:,:,ndiis,spin), M_in)
    call fock_op%Gets_data_ON( fockm(:,:,ndiis,spin) )
 
+   diis_err = 0.0D0
+   do ii = 1, M_in
+   do jj = 1, M_in
+      diis_err = diis_err + FP_PFm(ii,jj,ndiis,spin) * FP_PFm(ii,jj,ndiis,spin)
+   enddo
+   enddo
+   diis_err = sqrt(diis_err)
+   
+   if (spin == 1) print*, "Alpha DIIS error: ", diis_err
+   if (spin == 2) print*, "Beta  DIIS error: ", diis_err
 end subroutine diis_fock_commut
 
 subroutine diis_update_energy(energy, spin)

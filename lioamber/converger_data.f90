@@ -6,7 +6,7 @@ module converger_data
 !  Covergence methods and criteria, as per input file.
 !  Fock damping = 1, DIIS = 2, Hybrid convergence = 3, Biased DIIS = 4
 !  Biased DIIS + Hybrid convergence = 5
-   integer      :: conver_criter  = 2
+   integer      :: conver_method  = 2
    real(kind=8) :: gOld           = 10.0D0
    real(kind=8) :: damping_factor = 10.0D0
 

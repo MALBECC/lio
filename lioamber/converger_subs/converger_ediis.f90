@@ -1,12 +1,12 @@
 subroutine ediis_init(M_in, open_shell)
    use converger_data, only: nediis, ediis_fock, ediis_dens, BMAT, EDIIS_E,&
-                             conver_criter
+                             conver_method
 
    implicit none
    logical, intent(in) :: open_shell
    integer, intent(in) :: M_in
 
-   if (conver_criter < 6) return
+   if (conver_method < 6) return
    if (.not. allocated(EDIIS_E)) allocate(EDIIS_E(nediis))
    if (.not. open_shell) then
       if (.not. allocated(ediis_fock)) allocate(ediis_fock(M_in,M_in,nediis,1))
@@ -26,10 +26,10 @@ end subroutine ediis_init
 
 subroutine ediis_finalise()
    use converger_data, only: ediis_fock, ediis_dens, BMAT, EDIIS_E, &
-                             conver_criter
+                             conver_method
    implicit none
 
-   if (conver_criter < 6) return
+   if (conver_method < 6) return
    if (allocated(EDIIS_E)   ) deallocate(EDIIS_E)
    if (allocated(ediis_fock)) deallocate(ediis_fock)
    if (allocated(ediis_dens)) deallocate(ediis_dens)

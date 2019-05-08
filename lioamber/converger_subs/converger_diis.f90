@@ -1,11 +1,11 @@
 subroutine diis_init(M_in, OPshell)
-   use converger_data, only: fockm, FP_PFm, conver_criter, bcoef, ndiis, &
+   use converger_data, only: fockm, FP_PFm, conver_method, bcoef, ndiis, &
                              EMAT2, energy_list
    implicit none
    integer, intent(in) :: M_in
    logical, intent(in) :: OPshell
 
-   if (conver_criter < 1) return
+   if (conver_method < 1) return
    if(OPshell) then
       if (.not. allocated(fockm)  ) allocate(fockm (M_in, M_in, ndiis, 2))
       if (.not. allocated(FP_PFm) ) allocate(FP_PFm(M_in, M_in, ndiis, 2))
@@ -22,23 +22,23 @@ subroutine diis_init(M_in, OPshell)
    bcoef   = 0.0D0
    EMAT2   = 0.0D0
 
-   if (conver_criter > 3) then
+   if (conver_method > 3) then
       if (.not. allocated(energy_list)) allocate(energy_list(ndiis))
       energy_list = 0.0D0
    endif
 end subroutine diis_init
 
 subroutine diis_finalise()
-   use converger_data, only: fockm, FP_PFm, conver_criter, bcoef, EMAT2, &
+   use converger_data, only: fockm, FP_PFm, conver_method, bcoef, EMAT2, &
                              energy_list
 
-   if (conver_criter < 1) return
+   if (conver_method < 1) return
 
    if (allocated(fockm) ) deallocate(fockm )
    if (allocated(FP_PFm)) deallocate(FP_PFm)
    if (allocated(bcoef) ) deallocate(bcoef )
    if (allocated(EMAT2) ) deallocate(EMAT2 )
-   if ((conver_criter > 3) .and. allocated(energy_list)) deallocate(energy_list)
+   if ((conver_method > 3) .and. allocated(energy_list)) deallocate(energy_list)
 
 end subroutine diis_finalise
 

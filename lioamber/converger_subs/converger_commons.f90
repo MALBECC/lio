@@ -2,7 +2,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 subroutine converger_options_check(energ_all_iter)
    use converger_data, only: damping_factor, gOld, DIIS, hybrid_converg, &
-                             conver_criter, rho_LS
+                             conver_method, rho_LS
    
    logical, intent(inout) :: energ_all_iter
 
@@ -12,29 +12,29 @@ subroutine converger_options_check(energ_all_iter)
       gOld = damping_factor
    endif
 
-   if (conver_criter == 2) then
+   if (conver_method == 2) then
       if (hybrid_converg) then
          diis          = .true.
-         conver_criter = 3
+         conver_method = 3
       else if (diis) then
-         conver_criter = 2
+         conver_method = 2
       else
-         conver_criter = 1
+         conver_method = 1
       endif
-   else if (conver_criter /= 1) then
+   else if (conver_method /= 1) then
       diis = .true.
    endif
 
-   if ((Rho_LS > 1) .and. (conver_criter /=1)) then
+   if ((Rho_LS > 1) .and. (conver_method /=1)) then
       hybrid_converg = .false.
       DIIS           = .false.
-      conver_criter  = 1
+      conver_method  = 1
       write(*,'(A)') &
       '  WARNING - Turning to damping-only convergence for linear search.'
     end if
    
    ! For biased DIIS, full energy is needed.
-   if ((conver_criter == 4) .or. (conver_criter == 5)) energ_all_iter = .true.
+   if ((conver_method == 4) .or. (conver_method == 5)) energ_all_iter = .true.
 end subroutine converger_options_check
 
 subroutine converger_init( M_in, OPshell )
@@ -77,7 +77,7 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
                       Xmat, Ymat)
 #endif
    use converger_data  , only: damping_factor, ndiis, fock_damped,           &
-                               conver_criter, good_cut, level_shift,         &
+                               conver_method, good_cut, level_shift,         &
                                lvl_shift_en, lvl_shift_cut, rho_ls, rho_diff,&
                                nediis, EDIIS_start, bDIIS_start, DIIS_start
    use typedef_operator, only: operator
@@ -122,7 +122,7 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
    ediis_on = .false.
    bdiis_on = .false.
    ! Checks convergence criteria.
-   select case (conver_criter)
+   select case (conver_method)
       ! Always do damping
       case (1)
 
@@ -156,7 +156,7 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
             bdiis_on = .true.
          endif
       case default
-         write(*,'(A,I4)') 'ERROR - Wrong conver_criter = ', conver_criter
+         write(*,'(A,I4)') 'ERROR - Wrong conver_method = ', conver_method
          stop
    endselect
 
@@ -168,7 +168,7 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
 
    ndiist  = min(niter, ndiis )
    nediist = min(niter, nediis)
-   if (conver_criter /= 1) then
+   if (conver_method /= 1) then
 #ifdef CUBLAS
       call dens_op%BChange_AOtoON(devPtrY, M_in, 'r')
       call fock_op%BChange_AOtoON(devPtrX, M_in, 'r')
@@ -202,13 +202,13 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
    endif
 
    ! DIIS and EDIIS
-   if (conver_criter > 1) then
+   if (conver_method > 1) then
 
       ! DIIS
       allocate(EMAT(ndiist+1,ndiist+1))
       call diis_update_emat(EMAT, niter, ndiist, spin, M_in)
       ! Stores energy for bDIIS
-      if ((conver_criter > 3) .and. (niter > 1)) call diis_update_energy(energy, spin)
+      if ((conver_method > 3) .and. (niter > 1)) call diis_update_energy(energy, spin)
    
       if (diis_on) then
          if (bdiis_on) call diis_emat_bias(EMAT, ndiist)
@@ -219,7 +219,7 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
       deallocate(EMAT)
 
       ! EDIIS
-      if (conver_criter > 5) then
+      if (conver_method > 5) then
 
          allocate(BMAT(nediist, nediist))
          call ediis_update_energy_fock_rho(energy, fock_op, dens_op, nediist, &

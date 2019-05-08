@@ -50,7 +50,7 @@ module lionml_data
                                  fitting_set
    use lr_data           , only: lresp, nstates, root, FCA, nfo, nfv
    use converger_data    , only: DIIS, ndiis, GOLD, told, Etold, good_cut,     &
-                                 hybrid_converg, DIIS_bias, conver_criter,     &
+                                 hybrid_converg, DIIS_bias, conver_method,     &
                                  level_shift, lvl_shift_cut, lvl_shift_en,     &
                                  Rho_LS, nMax, DIIS_start, BDIIS_start
    implicit none
@@ -71,7 +71,7 @@ module lionml_data
                   Iexch, igrid, igrid2, initial_guess, natom, nsol, charge,    &
                   ! Convergence acceleration.
                   GOLD, told, Etold, good_cut, DIIS, ndiis, hybrid_converg,    &
-                  diis_bias, conver_criter, level_shift, lvl_shift_cut,        &
+                  diis_bias, conver_method, level_shift, lvl_shift_cut,        &
                   lvl_shift_en, DIIS_start, BDIIS_start,                       &
                   ! File Input/Output.
                   frestartin, style, frestart, fukui, dipole, lowdin, verbose, &
@@ -197,7 +197,7 @@ subroutine get_namelist(lio_in)
    lio_in%nsol           = nsol          ; lio_in%nunp       = nunp
    lio_in%diis           = diis          ; lio_in%open       = open
    lio_in%hybrid_converg = hybrid_converg; lio_in%diis_bias  = diis_bias
-   lio_in%conver_method  = conver_criter ; lio_in%predcoef   = predcoef
+   lio_in%conver_method  = conver_method ; lio_in%predcoef   = predcoef
    lio_in%level_shift    = level_shift   ; lio_in%diis_start = diis_start
    lio_in%lvl_shift_en   = lvl_shift_en  ; lio_in%bdiis_start= bdiis_start
    lio_in%lvl_shift_cut  = lvl_shift_cut ;

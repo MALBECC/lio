@@ -82,7 +82,7 @@ subroutine do_rho_ls(niter, En, E1, E2, Ex, rho_new, rho_old, Hmat_vec, &
    !   = 0 calculate convergence criteria for actual density matrix.
    !   = 1 do linear search for density matrix if energy > previous energy.
    !   = 2 do linear search for density matrix in all steps.
-   use converger_data, only: rho_LS, may_conv
+   use converger_data, only: may_conv
 
    implicit none
    ! Step number and energies.

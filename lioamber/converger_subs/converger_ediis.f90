@@ -105,7 +105,7 @@ subroutine ediis_update_bmat(BMAT_aux, position, niter, M_in, spin)
 
    BMAT(1:position,1:position,spin) = BMAT_aux(1:position,1:position)
 
-   deallocate(mat_aux1,mat_aux2)
+   deallocate(mat_aux1, mat_aux2)
 
 end subroutine ediis_update_bmat
 
@@ -166,7 +166,7 @@ subroutine solve_linear_constraints(coef, Ener, BMAT, ndim)
    real(kind=8), intent(in)  :: Ener(ndim), BMAT(ndim,ndim)
    real(kind=8), intent(out) :: coef(ndim)
    logical      :: converged, big_alpha1, big_alpha2, update
-   integer      :: ii, jj, conv_steps, yind, zind(ndim-1), lastindex, newindex
+   integer      :: ii, conv_steps, yind, zind(ndim-1), lastindex, newindex
    real(kind=8) :: aux_coef(ndim), new_coef(ndim), grad(ndim), delta(ndim), &
                    r_grad(ndim-1), alpha1, alpha2, alpha3, alpha_aux,       &
                    vec_alpha2(ndim-1), result1, result2, result3
@@ -189,7 +189,8 @@ subroutine solve_linear_constraints(coef, Ener, BMAT, ndim)
    do ii = 2, ndim
       zind(ii-1) = ii
    enddo
-
+   
+   ! Main algorithm.
    do while (converged .and. (conv_steps <= 100000))
       conv_steps = conv_steps +1
 
@@ -296,7 +297,7 @@ subroutine gradient(coef, grad, Ener, BMAT ,ndim)
    grad = 0.0d0
    do ii = 1, ndim
       do jj = 1, ndim
-         grad(ii) = - BMAT(ii,jj) * coef(jj) + grad(ii)
+         grad(ii) = grad(ii) - BMAT(ii,jj) * coef(jj)
       enddo
       grad(ii) = grad(ii) + Ener(ii)
    enddo

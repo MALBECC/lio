@@ -29,8 +29,8 @@ subroutine diis_init(M_in, OPshell)
 end subroutine diis_init
 
 subroutine diis_finalise()
-   use converger_data, only: fockm, FP_PFm, conver_criter, bcoef, ndiis, &
-                             EMAT2, energy_list
+   use converger_data, only: fockm, FP_PFm, conver_criter, bcoef, EMAT2, &
+                             energy_list
 
    if (conver_criter < 1) return
 
@@ -120,22 +120,19 @@ subroutine diis_update_emat(EMAT, niter, ndiist, spin, M_in)
       ! iterations.
       call matmuldiag( FP_PFm(:,:, ndiis, spin), FP_PFm(:,:, jj   , spin), &
                        diag1, M_in )
+                       
       EMAT(ndiist,ii) = 0.0d0
-
-      if (ii /= ndiist) EMAT(ii,ndiist) = 0.0d0
       do jj = 1, M_in
          EMAT(ndiist,ii) = EMAT(ndiist,ii) + diag1(jj,jj)
-         if (ii /= ndiist) then
-            EMAT(ii,ndiist) = EMAT(ndiist,ii)
-         endif
       enddo
+      EMAT(ii,ndiist) = EMAT(ndiist,ii)
    enddo
 
    do ii = 1, ndiist
-      EMAT(ii,ndiist+1) = -1.0d0
-      EMAT(ndiist+1,ii) = -1.0d0
+      EMAT(ii,ndiist+1) = -1.0D0
+      EMAT(ndiist+1,ii) = -1.0D0
    enddo
-   EMAT(ndiist+1, ndiist+1)= 0.0d0
+   EMAT(ndiist+1, ndiist+1) = 0.0D0
    EMAT2(1:ndiist+1,1:ndiist+1,spin) = EMAT
 
    !   THE MATRIX EMAT SHOULD HAVE THE FOLLOWING SHAPE:

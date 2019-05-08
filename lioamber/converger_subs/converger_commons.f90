@@ -1,7 +1,7 @@
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 subroutine converger_options_check(energ_all_iter)
-   use converger_data, only: damping_factor, gOld, DIIS, hybrid_converg, nDIIS,&
+   use converger_data, only: damping_factor, gOld, DIIS, hybrid_converg, &
                              conver_criter, rho_LS
    
    logical, intent(inout) :: energ_all_iter
@@ -60,8 +60,7 @@ subroutine converger_init( M_in, OPshell )
 end subroutine converger_init
 
 subroutine converger_finalise()
-   use converger_data, only: fockm, FP_PFm, conver_criter, fock_damped, &
-                             bcoef, ndiis, EMAT2, energy_list
+   use converger_data, only: fock_damped
    implicit none
    
    if (allocated(fock_damped)) deallocate(fock_damped)
@@ -77,29 +76,27 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
 #else
                       Xmat, Ymat)
 #endif
-   use converger_data  , only: damping_factor, fockm, FP_PFm, ndiis,     &
-                               fock_damped, bcoef, EMAT2, conver_criter, &
-                               good_cut, level_shift, lvl_shift_en,      &
-                               lvl_shift_cut, rho_ls, rho_diff, nediis,  &
-                               EDIIS_start, bDIIS_start, DIIS_start
+   use converger_data  , only: damping_factor, ndiis, fock_damped,           &
+                               conver_criter, good_cut, level_shift,         &
+                               lvl_shift_en, lvl_shift_cut, rho_ls, rho_diff,&
+                               nediis, EDIIS_start, bDIIS_start, DIIS_start
    use typedef_operator, only: operator
-   use fileio_data     , only: verbose
    
    implicit none
    ! Spin allows to store correctly alpha or beta information. - Carlos
-   integer       , intent(in)    :: niter, M_in, spin, n_orbs   
+   integer        , intent(in)    :: niter, M_in, spin, n_orbs   
 #ifdef  CUBLAS
-   integer*8     , intent(in)    :: devPtrX, devPtrY
+   integer(kind=8), intent(in)    :: devPtrX, devPtrY
 #else
-   real(kind=8)  , intent(in)    :: Xmat(M_in,M_in), Ymat(M_in,M_in)
+   real(kind=8)   , intent(in)    :: Xmat(M_in,M_in), Ymat(M_in,M_in)
 #endif
-   real(kind=8)  , intent(in)    :: energy
-   type(operator), intent(inout) :: dens_op, fock_op
+   real(kind=8)   , intent(in)    :: energy
+   type(operator) , intent(inout) :: dens_op, fock_op
 
    logical :: diis_on, ediis_on, bdiis_on
-   integer :: ndiist, nediist, ii
-   real(kind=8), allocatable :: fock00(:,:), EMAT(:,:), suma(:,:), &
-                                fock(:,:), rho(:,:), BMAT(:,:)
+   integer :: ndiist, nediist
+   real(kind=8), allocatable :: fock00(:,:), EMAT(:,:), fock(:,:), rho(:,:),&
+                                BMAT(:,:)
 
 
 ! INITIALIZATION
@@ -146,13 +143,19 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
             diis_on = .true.
       ! Mix of all criteria, according to rho_diff value.
       case(6:)
-         if (rho_diff  < EDIIS_start) ediis_on = .true.
+         if (rho_diff  < EDIIS_start) then
+            print*, "EDIIS"
+            ediis_on = .true.
+         endif
          if ((rho_diff < bDIIS_start) .or. (rho_diff < DIIS_start)) then
+            print*, "DIIS"
             ediis_on = .false.
             diis_on  = .true.
          endif
-         if ((rho_diff < bDIIS_start) .and. (rho_diff > DIIS_start)) &
+         if ((rho_diff < bDIIS_start) .and. (rho_diff > DIIS_start)) then
+            print*, "BDIIS"
             bdiis_on = .true.
+         endif
       case default
          write(*,'(A,I4)') 'ERROR - Wrong conver_criter = ', conver_criter
          stop
@@ -244,8 +247,8 @@ end subroutine conver_fock
 subroutine check_convergence(rho_old, rho_new, energy_old, energy_new,&
                              n_iterations, is_converged)
    use fileio        , only: write_energy_convergence
-   use converger_data, only: told, Etold, nMax, rho_ls, may_conv, &
-                             rho_diff
+   use converger_data, only: told, Etold, may_conv, rho_diff
+
    ! Calculates convergence criteria in density matrix, and
    ! store new density matrix in Pmat_vec.
    implicit none

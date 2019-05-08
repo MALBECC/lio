@@ -52,7 +52,7 @@ module lionml_data
    use converger_data    , only: DIIS, ndiis, GOLD, told, Etold, good_cut,     &
                                  hybrid_converg, DIIS_bias, conver_criter,     &
                                  level_shift, lvl_shift_cut, lvl_shift_en,     &
-                                 Rho_LS, nMax
+                                 Rho_LS, nMax, DIIS_start, BDIIS_start
    implicit none
 
 !  Namelist definition
@@ -67,11 +67,12 @@ module lionml_data
                      fockbias_timegrow , fockbias_timefall , fockbias_timeamp0,&
 		               use_libxc, ex_functional_id, ec_functional_id
 
-   namelist /lio/ OPEN, NMAX, Nunp, VCINP, GOLD, told, Etold, rmax, rmaxs,     &
-                  predcoef, writexyz, DIIS, ndiis, Iexch, igrid, igrid2,       &
-                  good_cut, hybrid_converg, initial_guess, natom, nsol, charge,&
+   namelist /lio/ OPEN, NMAX, Nunp, VCINP, rmax, rmaxs, predcoef, writexyz,    &
+                  Iexch, igrid, igrid2, initial_guess, natom, nsol, charge,    &
+                  ! Convergence acceleration.
+                  GOLD, told, Etold, good_cut, DIIS, ndiis, hybrid_converg,    &
                   diis_bias, conver_criter, level_shift, lvl_shift_cut,        &
-                  lvl_shift_en,                                                &
+                  lvl_shift_en, DIIS_start, BDIIS_start,                       &
                   ! File Input/Output.
                   frestartin, style, frestart, fukui, dipole, lowdin, verbose, &
                   mulliken, writeforces, int_basis, fitting_set, basis_set,    &
@@ -119,9 +120,9 @@ module lionml_data
    type lio_input_data
       ! COMMON
       double precision :: etold, gold, good_cut, rmax, rmaxs, told, DIIS_bias, &
-                          lvl_shift_cut, lvl_shift_en
+                          lvl_shift_cut, lvl_shift_en, DIIS_start, bDIIS_start
       integer          :: charge, iexch, igrid, igrid2, initial_guess, natom,  &
-                          ndiis, nmax, nsol, nunp, conver_criter
+                          ndiis, nmax, nsol, nunp, conver_method
       logical          :: diis, hybrid_converg, open, predcoef, vcinp, &
                           writexyz, level_shift
       ! FILE IO
@@ -186,19 +187,19 @@ subroutine get_namelist(lio_in)
    type(lio_input_data), intent(out) :: lio_in
 
    ! General
-   lio_in%etold          = etold         ; lio_in%gold      = gold
-   lio_in%good_cut       = good_cut      ; lio_in%rmax      = rmax
-   lio_in%rmaxs          = rmaxs         ; lio_in%told      = told
-   lio_in%charge         = charge        ; lio_in%iexch     = iexch
-   lio_in%igrid          = igrid         ; lio_in%igrid2    = igrid2
-   lio_in%initial_guess  = initial_guess ; lio_in%natom     = natom
-   lio_in%ndiis          = ndiis         ; lio_in%nmax      = nmax
-   lio_in%nsol           = nsol          ; lio_in%nunp      = nunp
-   lio_in%diis           = diis          ; lio_in%open      = open
-   lio_in%hybrid_converg = hybrid_converg; lio_in%diis_bias = diis_bias
-   lio_in%conver_criter  = conver_criter ; lio_in%predcoef  = predcoef
-   lio_in%level_shift    = level_shift   ;
-   lio_in%lvl_shift_en   = lvl_shift_en  ; 
+   lio_in%etold          = etold         ; lio_in%gold       = gold
+   lio_in%good_cut       = good_cut      ; lio_in%rmax       = rmax
+   lio_in%rmaxs          = rmaxs         ; lio_in%told       = told
+   lio_in%charge         = charge        ; lio_in%iexch      = iexch
+   lio_in%igrid          = igrid         ; lio_in%igrid2     = igrid2
+   lio_in%initial_guess  = initial_guess ; lio_in%natom      = natom
+   lio_in%ndiis          = ndiis         ; lio_in%nmax       = nmax
+   lio_in%nsol           = nsol          ; lio_in%nunp       = nunp
+   lio_in%diis           = diis          ; lio_in%open       = open
+   lio_in%hybrid_converg = hybrid_converg; lio_in%diis_bias  = diis_bias
+   lio_in%conver_method  = conver_criter ; lio_in%predcoef   = predcoef
+   lio_in%level_shift    = level_shift   ; lio_in%diis_start = diis_start
+   lio_in%lvl_shift_en   = lvl_shift_en  ; lio_in%bdiis_start= bdiis_start
    lio_in%lvl_shift_cut  = lvl_shift_cut ;
 
    ! Fileio

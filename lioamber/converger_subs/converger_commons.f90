@@ -131,7 +131,7 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
          if (niter > 2) diis_on = .true.
       case (4)
          bdiis_on = .true.
-         if (niter > 2) diis_on  = .true.
+         if (niter > 2) diis_on = .true.
 
       ! Damping until good enough, diis afterwards
       case(3)
@@ -143,17 +143,16 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
             diis_on = .true.
       ! Mix of all criteria, according to rho_diff value.
       case(6:)
-         if (rho_diff  < EDIIS_start) then
-            print*, "EDIIS"
+         if (rho_diff < EDIIS_start) then
             ediis_on = .true.
          endif
-         if ((rho_diff < bDIIS_start) .or. (rho_diff < DIIS_start)) then
-            print*, "DIIS"
+         if (rho_diff < DIIS_start) then
             ediis_on = .false.
             diis_on  = .true.
          endif
-         if ((rho_diff < bDIIS_start) .and. (rho_diff > DIIS_start)) then
-            print*, "BDIIS"
+         if (rho_diff < bDIIS_start) then
+            ediis_on = .false.
+            diis_on  = .true.
             bdiis_on = .true.
          endif
       case default

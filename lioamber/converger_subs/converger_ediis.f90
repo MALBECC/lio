@@ -189,7 +189,15 @@ subroutine solve_linear_constraints(coef, Ener, BMAT, ndim)
    do ii = 2, ndim
       zind(ii-1) = ii
    enddo
-   
+
+   ! Initial guess
+   coef = 0.0D0
+   coef(ndim) = 1.0D0
+   do ii = ndim, 2, -1
+      coef(ii)   = coef(ii) / 2.0D0
+      coef(ii-1) = coef(ii)
+   enddo
+
    ! Main algorithm.
    do while (converged .and. (conv_steps <= 100000))
       conv_steps = conv_steps +1
@@ -275,15 +283,20 @@ subroutine solve_linear_constraints(coef, Ener, BMAT, ndim)
       endif
 
       ! Checking the restriction.
-      result1 = 0.0d0
-      do ii = 1, ndim
-         result1 = coef(ii) + result1
-      enddo
-      if (abs(result1-1.0d0) > 1.0d-8) then
+      if (abs(sum(coef) - 1.0D0) > 1.0D-8) then
          print*,"EDIIS restriction not complied."
          stop
       endif
    enddo
+
+   if (coef(ndim) < 1e-37) then
+      coef = 0.0D0
+      coef(ndim) = 1.0D0
+      do ii = ndim, 2, -1
+         coef(ii)   = coef(ii) / 2.0D0
+         coef(ii-1) = coef(ii)
+      enddo
+   endif
 end subroutine solve_linear_constraints
 
 subroutine gradient(coef, grad, Ener, BMAT ,ndim)

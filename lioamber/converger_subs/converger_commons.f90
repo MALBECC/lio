@@ -134,7 +134,7 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
       call fock_op%BChange_AOtoON(Xmat, M_in, 'r')
 #endif
       call diis_fock_commut(dens_op, fock_op, rho, M_in, spin, ndiist)
-      call diis_get_error(diis_error, M_in, spin)
+      call diis_get_error(diis_error, M_in, spin, verbose)
    endif
 
    call select_methods(diis_on, ediis_on, bdiis_on, niter, diis_error)

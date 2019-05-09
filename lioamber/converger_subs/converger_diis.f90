@@ -74,7 +74,7 @@ subroutine diis_get_error(diis_err, M_in, spin, verbose)
    integer      :: ii, jj
    real(kind=8) :: max_error, avg_error
    
-   max_err = maxval(abs(FP_PFm(:,:,ndiis,spin)))
+   max_error = maxval(abs(FP_PFm(:,:,ndiis,spin)))
 
    avg_error = 0.0D0
    do ii=1, M_in

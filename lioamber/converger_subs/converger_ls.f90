@@ -121,8 +121,8 @@ subroutine rho_linear_calc(niter, En, E1, E2, Ex, may_conv, rho_new, rho_old, &
                          Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, &
                          int_memo, rhoa_new, rhob_new, rhoa_old, rhob_old)
    use liosubs       , only: line_search
-   use converger_data, only: rho_lambda0, rho_lambda1, rho_lambda0_alpha,   &
-                             rho_lambda1_alpha, rho_lambda0_betha,          &
+   use converger_data, only: rho_lambda0, rho_lambda1, rho_lambda0_alpha, &
+                             rho_lambda1_alpha, rho_lambda0_betha, nMax,  &
                              rho_lambda1_betha, Elast, pstepsize, rho_LS
    implicit none
    integer     , intent(in)    :: niter
@@ -141,19 +141,21 @@ subroutine rho_linear_calc(niter, En, E1, E2, Ex, may_conv, rho_new, rho_old, &
    real(kind=8) :: dlambda, Blambda 
    
    ! Auxiliars
-   integer :: M, MM, M2, jj, kk, Rposition, ilambda
-   logical :: open_shell = .false.
+   integer :: M, MM, M2, jj, kk, Rposition, ilambda, n_cycles
+   logical :: open_shell, exit_cycle
    real(kind=8), allocatable :: RMM_temp(:),E_lambda(:)
 
    M  = size(rho_new,1)
    MM = size(rho_old,1)
    M2 = 2 * M
+   open_shell = .false.
    if (present(rhoa_old)) open_shell = .true.
 
    allocate(E_lambda(0:10))
    allocate(RMM_temp(1:MM))
 
-   if (niter == 1)  then
+   if (niter == (nMax / 2 +1))  then
+      Elast = En + E1 + E2 + Ex
       Pstepsize   = 1.d0
       rho_lambda0 = rho_old
       if (open_shell) rho_lambda0_alpha = rhoa_old
@@ -176,30 +178,49 @@ subroutine rho_linear_calc(niter, En, E1, E2, Ex, may_conv, rho_new, rho_old, &
    call give_me_energy(E_lambda(10), En, E1, E2, Ex, rho_old, Hmat_vec,    &
                        Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, open_shell,&
                        int_memo)
-   
+ 
+   exit_cycle = .false.
+   n_cycles   = 0
    if ((Elast < E_lambda(10)) .or. (Rho_LS == 2)) then
-      write(*,*) "Lambda this step: ", E_lambda(10), ", last step: ", Elast
-      write(*,*) "Doing lineal interpolation in Rho."
-      do ilambda = 0, 10
-         dlambda = Pstepsize * dble(ilambda) / 10.d0
-         if (dlambda > 1.d0) STOP "dlambda > 1.d0"
+      do while (.not. exit_cycle)
+         n_cycles = n_cycles +1
+         write(*,*) "Lambda this step: ", E_lambda(10), ", last step: ", Elast
+         write(*,*) "Doing lineal interpolation in Rho."
+         do ilambda = 0, 10
+            dlambda = Pstepsize * dble(ilambda) / 10.d0
+            if (dlambda > 1.d0) STOP "dlambda > 1.d0"
 
-         rho_old = rho_lambda0 * (1.d0 - dlambda) + rho_lambda1 * dlambda 
-         if (open_shell) rhoa_old = rho_lambda0_alpha * (1.d0 - dlambda) + &
-                                    rho_lambda1_alpha * dlambda
-         if (open_shell) rhob_old = rho_lambda0_betha * (1.d0 - dlambda) + &
-                                    rho_lambda1_betha * dlambda
-         call give_me_energy(E_lambda(ilambda), En, E1, E2, Ex, rho_old,       &
-                             Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec,&
-                             open_shell, int_memo)
-         write(*,*) "Step n°", ilambda, ", energy: ", E_lambda(ilambda)
-      end do
+            rho_old = rho_lambda0 * (1.d0 - dlambda) + rho_lambda1 * dlambda 
+            if (open_shell) rhoa_old = rho_lambda0_alpha * (1.d0 - dlambda) + &
+                                       rho_lambda1_alpha * dlambda
+            if (open_shell) rhob_old = rho_lambda0_betha * (1.d0 - dlambda) + &
+                                       rho_lambda1_betha * dlambda
+            call give_me_energy(E_lambda(ilambda), En, E1, E2, Ex, rho_old,   &
+                                Hmat_vec, Fmat_vec, Fmat_vec2, Gmat_vec,      &
+                                Ginv_vec, open_shell, int_memo)
+            write(*,*) "Step n°", ilambda, ", energy: ", E_lambda(ilambda)
+         enddo
    
-      call line_search(11, E_lambda, 1d0, Blambda)
-      if (Blambda >= 1.d0) Blambda = Blambda - 1.0d0
-      write(*,*) "Best lambda: ", Blambda
-      Blambda = Blambda * Pstepsize / 10.d0
-      write(*,*) "Fluctuation: ", Blambda
+         call line_search(11, E_lambda, 1d0, Blambda)
+         if (Blambda >= 1.0D0) Blambda = Blambda - 1.0d0
+
+         write(*,*) "Best lambda: ", Blambda
+         Blambda = Blambda * Pstepsize / 10.d0
+         write(*,*) "Fluctuation: ", Blambda
+
+         if ((Blambda > 2.0D-1 * Pstepsize) .and. &
+             (Blambda < 8.0D-1 * Pstepsize)) then
+            exit_cycle = .true.
+         else if (Blambda <= 2.0D-1 * Pstepsize) then
+            if (Pstepsize > 1.0D-4) may_conv = .false.
+            Pstepsize = Pstepsize * 0.5D0
+         else
+            Pstepsize = Pstepsize * 1.2D0
+         endif
+         if (Pstepsize > 1.0D0) Pstepsize = 1.0D0
+         if (n_cycles > 10) exit_cycle = .true.
+
+      enddo
    else
       Blambda = Pstepsize
    end if
@@ -236,11 +257,6 @@ subroutine rho_linear_calc(niter, En, E1, E2, Ex, may_conv, rho_new, rho_old, &
       rhob_old          = rho_lambda0_betha
       rho_lambda0_betha = RMM_temp
    end if
-   
-   if (Blambda <= 4.d-1 * Pstepsize) Pstepsize = Pstepsize * 0.5d0 
-   if (Blambda >= 8.d-1 * Pstepsize) Pstepsize = Pstepsize * 1.2d0
-   if (Pstepsize > 1.d0) Pstepsize = 1.d0
-   if ((Blambda <= 2.d-1*Pstepsize) .and. (Pstepsize > 1d-4)) may_conv = .false.
 
    deallocate(E_lambda, RMM_temp)
 end subroutine rho_linear_calc

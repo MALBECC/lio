@@ -93,8 +93,9 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
    real(kind=8)   , intent(in)    :: energy, HL_gap
    type(operator) , intent(inout) :: dens_op, fock_op
 
-   logical :: diis_on, ediis_on, bdiis_on
-   integer :: ndiist, nediist
+   logical      :: diis_on, ediis_on, bdiis_on
+   integer      :: ndiist, nediist
+   real(kind=8) :: diis_error
    real(kind=8), allocatable :: fock00(:,:), EMAT(:,:), fock(:,:), rho(:,:),&
                                 BMAT(:,:)
 
@@ -160,14 +161,10 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
          stop
    endselect
 
-   ! Turn off diis is calculation when change to lineal search, Nick
-   if (rho_ls > 1) then 
-      diis_on  = .false.
-      ediis_on = .false.
-   endif
-
    ndiist  = min(niter, ndiis )
    nediist = min(niter, nediis)
+
+   ! Gets [F,P] and therefore the DIIS error.
    if (conver_method /= 1) then
 #ifdef CUBLAS
       call dens_op%BChange_AOtoON(devPtrY, M_in, 'r')
@@ -177,6 +174,7 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
       call fock_op%BChange_AOtoON(Xmat, M_in, 'r')
 #endif
       call diis_fock_commut(dens_op, fock_op, rho, M_in, spin, ndiist)
+      call diis_get_error(diis_error, M_in, spin)
    endif
 
    ! THIS IS DAMPING 

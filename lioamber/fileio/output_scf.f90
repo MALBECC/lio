@@ -147,5 +147,5 @@ subroutine write_energy_convergence(step, energy, good, told, egood, etold)
 
 8700 FORMAT(2x, "Step = ", I4, " | Energy = ", F13.6, &
             " Eh | ΔRho = ", ES8.2, " - ΔEnergy = ", ES8.2)
-8701 FORMAT(2x, "Step = ", I4, 1x, " - QM Energy = ", F14.7, 1x)
+8701 FORMAT(2x, "Step = ", I4, " | Energy = ", F13.6, " Eh")
 end subroutine write_energy_convergence

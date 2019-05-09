@@ -51,8 +51,7 @@ subroutine diis_fock_commut(dens_op, fock_op, dens, M_in, spin, ndiist)
    real(kind=8)  , intent(inout) :: dens(:,:)
    type(operator), intent(inout) :: dens_op, fock_op
 
-   integer :: jj, ii
-   real(kind=8) :: diis_err
+   integer :: jj
 
    ! If DIIS is turned on, update fockm with the current transformed F' (into ON
    ! basis) and update FP_PFm with the current transformed [F',P']
@@ -64,18 +63,23 @@ subroutine diis_fock_commut(dens_op, fock_op, dens, M_in, spin, ndiist)
    call dens_op%Gets_data_ON(dens)
    call fock_op%Commut_data_r(dens, FP_PFm(:,:,ndiis,spin), M_in)
    call fock_op%Gets_data_ON( fockm(:,:,ndiis,spin) )
-
-   diis_err = 0.0D0
-   do ii = 1, M_in
-   do jj = 1, M_in
-      diis_err = diis_err + FP_PFm(ii,jj,ndiis,spin) * FP_PFm(ii,jj,ndiis,spin)
-   enddo
-   enddo
-   diis_err = sqrt(diis_err)
    
-   if (spin == 1) print*, "Alpha DIIS error: ", diis_err
-   if (spin == 2) print*, "Beta  DIIS error: ", diis_err
 end subroutine diis_fock_commut
+
+subroutine diis_get_error(diis_err, M_in, spin)
+   use converger_data, only: ndiis, FP_PFm
+   integer     , intent(in)  :: M_in, spin
+   real(kind=8), intent(out) :: diis_err
+
+   integer      :: ii, jj
+   
+   diis_err = maxval(abs(FP_PFm(:,:,ndiis,spin)))
+   !if (spin == 1) print*, "Max Alpha DIIS error: ", diis_err
+   !if (spin == 2) print*, "Max Beta  DIIS error: ", diis_err
+
+end subroutine diis_get_error
+
+
 
 subroutine diis_update_energy(energy, spin)
    use converger_data, only: energy_list, ndiis

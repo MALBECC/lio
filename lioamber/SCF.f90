@@ -169,8 +169,6 @@ subroutine SCF(E)
    real*8              :: ocupF
    integer             :: NCOa, NCOb
 
-! LINSEARCH
-   integer :: nniter
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
    call g2g_timer_start('SCF_full')
 
@@ -489,9 +487,6 @@ subroutine SCF(E)
       call g2g_timer_sum_start('Fock integrals')
 
       niter  = niter +1
-      nniter = niter
-      ! (first step of damping after NMAX steps without convergence)
-      if (changed_to_LS .and. (niter == (NMAX / 2 +1))) nniter = 1
 
       ! Test for NaN
       if (Dbug) call SEEK_NaN(Pmat_vec,1,MM,"RHO Start")
@@ -506,7 +501,7 @@ subroutine SCF(E)
 
       if (Dbug) then
          call SEEK_NaN(Fmat_vec,1,MM,"FOCK Coulomb")
-         if (open) call SEEK_NaN(Fmat_vec,1,MM,"FOCK B Coulomb")
+         if (open) call SEEK_NaN(Fmat_vec2,1,MM,"FOCK B Coulomb")
       endif
 
       ! XC integration / Fock elements
@@ -518,7 +513,7 @@ subroutine SCF(E)
       ! Test for NaN
       if (Dbug) then
          call SEEK_NaN(Fmat_vec,1,MM,"FOCK Ex-Corr")
-         if (open) call SEEK_NaN(Fmat_vec,1,MM,"FOCK B Ex-Corr")
+         if (open) call SEEK_NaN(Fmat_vec2,1,MM,"FOCK B Ex-Corr")
       endif
 
 
@@ -586,10 +581,10 @@ subroutine SCF(E)
       call g2g_timer_sum_start('SCF acceleration')
 
 #ifdef CUBLAS
-      call conver_fock(nniter, M_f, rho_aop, fock_aop, 1, E, NCOa_f, HL_gap,&
+      call conver_fock(niter, M_f, rho_aop, fock_aop, 1, E, NCOa_f, HL_gap, &
                        dev_Xmat, dev_Ymat)
 #else
-      call conver_fock(nniter, M_f, rho_aop, fock_aop, 1, E, NCOa_f, HL_gap,&
+      call conver_fock(niter, M_f, rho_aop, fock_aop, 1, E, NCOa_f, HL_gap, &
                        Xmat, Ymat)
 #endif
 
@@ -625,10 +620,10 @@ subroutine SCF(E)
          ! In open shell, performs the previous operations for beta operators.
          call g2g_timer_sum_start('SCF acceleration')
 #ifdef CUBLAS
-         call conver_fock(nniter, M_f, rho_bop, fock_bop, 2, E, NCOb_f, HL_gap,&
+         call conver_fock(niter, M_f, rho_bop, fock_bop, 2, E, NCOb_f, HL_gap, &
                           dev_Xmat, dev_Ymat)
 #else
-         call conver_fock(nniter, M_f, rho_bop, fock_bop, 2, E, NCOb_f, HL_gap,&
+         call conver_fock(niter, M_f, rho_bop, fock_bop, 2, E, NCOb_f, HL_gap, &
                           Xmat, Ymat)
 #endif
          call g2g_timer_sum_pause('SCF acceleration')
@@ -702,11 +697,11 @@ subroutine SCF(E)
          ! vector-form densities as the old densities, and matrix-form
          ! densities as the new ones.
          if (open) then
-            call do_rho_ls(nniter, En, E1, E2, Exc, xnano, Pmat_vec, Hmat_vec,&
-                           Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, memo,     &
+            call do_rho_ls(niter, En, E1, E2, Exc, xnano, Pmat_vec, Hmat_vec,&
+                           Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, memo,    &
                            rho_a, rho_b, rhoalpha, rhobeta)
          else
-            call do_rho_ls(nniter, En, E1, E2, Exc, xnano, Pmat_vec, Hmat_vec,&
+            call do_rho_ls(niter, En, E1, E2, Exc, xnano, Pmat_vec, Hmat_vec,&
                            Fmat_vec, Fmat_vec2, Gmat_vec, Ginv_vec, memo)
          endif
       endif

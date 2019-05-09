@@ -20,14 +20,16 @@ module converger_data
    real(kind=8) :: good_cut       = 1.0D-3
       
    ! Level shifting
-   logical      :: level_shift    = .true.
+   logical      :: level_shift    = .false.
    real(kind=8) :: lvl_shift_en   = 0.25D0
-   real(kind=8) :: lvl_shift_cut  = 0.05D0
+   real(kind=8) :: lvl_shift_cut  = 0.005D0
 
    ! Rho squared difference cut for each convergence strategy:
-   real(kind=8) :: DIIS_start     = 1.0D0
-   real(kind=8) :: bDIIS_start    = 1D-4
+   real(kind=8) :: DIIS_start     = 0.2D0
+   real(kind=8) :: bDIIS_start    = 1D-3
    real(kind=8) :: EDIIS_start    = 1D-20
+   logical      :: DIIS_on        = .false.
+   logical      :: EDIIS_on       = .false.
 
    ! Tolerace for SCF convergence
    integer      :: nMax           = 100

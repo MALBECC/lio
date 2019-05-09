@@ -66,17 +66,35 @@ subroutine diis_fock_commut(dens_op, fock_op, dens, M_in, spin, ndiist)
    
 end subroutine diis_fock_commut
 
-subroutine diis_get_error(diis_err, M_in, spin)
+subroutine diis_get_error(diis_err, M_in, spin, verbose)
    use converger_data, only: ndiis, FP_PFm
-   integer     , intent(in)  :: M_in, spin
+   integer     , intent(in)  :: M_in, spin, verbose
    real(kind=8), intent(out) :: diis_err
 
    integer      :: ii, jj
+   real(kind=8) :: max_error, avg_error
    
-   diis_err = maxval(abs(FP_PFm(:,:,ndiis,spin)))
-   !if (spin == 1) print*, "Max Alpha DIIS error: ", diis_err
-   !if (spin == 2) print*, "Max Beta  DIIS error: ", diis_err
+   max_err = maxval(abs(FP_PFm(:,:,ndiis,spin)))
 
+   avg_error = 0.0D0
+   do ii=1, M_in
+   do jj=1, M_in
+      avg_error = avg_error + &
+                  FP_PFm(ii,jj,ndiis,spin) * FP_PFm(ii,jj,ndiis,spin)
+   enddo
+   enddo
+   avg_error = sqrt(avg_error) / M_in
+
+   if (verbose > 3) then
+      if (spin == 1) write(*,'(2x,A22,ES8.5,A18,ES8.5)')        &
+                           "Max Alpha DIIS error: ", max_error, &
+                           " | Average error: ", avg_error
+      if (spin == 2) write(*,'(2x,A22,ES8.5,A18,ES8.5)')        &
+                           "Max Beta  DIIS error: ", max_error, &
+                           " | Average error: ", avg_error
+   endif
+
+   diis_err = avg_error
 end subroutine diis_get_error
 
 

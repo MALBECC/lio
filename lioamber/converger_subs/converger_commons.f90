@@ -38,7 +38,7 @@ subroutine converger_options_check(energ_all_iter)
 end subroutine converger_options_check
 
 subroutine converger_init( M_in, OPshell )
-   use converger_data, only: fock_damped, told, etold
+   use converger_data, only: fock_damped, told, etold, diis_on, ediis_on
    implicit none
    integer         , intent(in) :: M_in
    logical         , intent(in) :: OPshell
@@ -55,6 +55,8 @@ subroutine converger_init( M_in, OPshell )
    end if
    fock_damped(:,:,:) = 0.0D0
 
+   diis_on  = .false.
+   ediis_on = .false.
    call diis_init(M_in, OPshell)
    call ediis_init(M_in, OPshell)
 end subroutine converger_init
@@ -76,10 +78,10 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
 #else
                        HL_gap, Xmat, Ymat)
 #endif
-   use converger_data  , only: damping_factor, ndiis, fock_damped,           &
-                               conver_method, good_cut, level_shift,         &
-                               lvl_shift_en, lvl_shift_cut, rho_ls, rho_diff,&
-                               nediis, EDIIS_start, bDIIS_start, DIIS_start
+   use converger_data  , only: damping_factor, fock_damped, conver_method, &
+                               level_shift, lvl_shift_en, lvl_shift_cut,   &
+                               ndiis, nediis, diis_on, ediis_on
+   use fileio_data     , only: verbose
    use typedef_operator, only: operator
    
    implicit none
@@ -93,22 +95,22 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
    real(kind=8)   , intent(in)    :: energy, HL_gap
    type(operator) , intent(inout) :: dens_op, fock_op
 
-   logical      :: diis_on, ediis_on, bdiis_on
+   logical      :: bdiis_on
    integer      :: ndiist, nediist
    real(kind=8) :: diis_error
    real(kind=8), allocatable :: fock00(:,:), EMAT(:,:), fock(:,:), rho(:,:),&
                                 BMAT(:,:)
 
 
-! INITIALIZATION
-! If DIIS is turned on, update fockm with the current transformed F' (into ON
-! basis) and update FP_PFm with the current transformed [F',P']
-!
-! (1)     Calculate F' and [F',P']
-!       update fockm with F'
-! now, scratch1 = A = F' * P'; scratch2 = A^T
-! [F',P'] = A - A^T
-! BASE CHANGE HAPPENS INSIDE OF FOCK_COMMUTS
+   ! INITIALIZATION
+   ! If DIIS is turned on, update fockm with the current transformed F' (into
+   ! ON basis) and update FP_PFm with the current transformed [F',P']
+   !
+   ! (1)     Calculate F' and [F',P']
+   !       update fockm with F'
+   ! now, scratch1 = A = F' * P'; scratch2 = A^T
+   ! [F',P'] = A - A^T
+   ! BASE CHANGE HAPPENS INSIDE OF FOCK_COMMUTS
 
    allocate(fock00(M_in,M_in), fock(M_in,M_in), rho(M_in,M_in))
    fock00 = 0.0D0
@@ -118,48 +120,6 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
    ! Saving rho and the first fock AO
    call dens_op%Gets_data_AO(rho)
    call fock_op%Gets_data_AO(fock00)
-
-   diis_on  = .false.
-   ediis_on = .false.
-   bdiis_on = .false.
-   ! Checks convergence criteria.
-   select case (conver_method)
-      ! Always do damping
-      case (1)
-
-      ! Damping the first two steps, diis afterwards
-      case (2)
-         if (niter > 2) diis_on = .true.
-      case (4)
-         bdiis_on = .true.
-         if (niter > 2) diis_on = .true.
-
-      ! Damping until good enough, diis afterwards
-      case(3)
-         if ((rho_diff < good_cut) .and. (niter > 2) .and. (rho_LS < 2)) &
-            diis_on = .true.
-      case(5)
-         bdiis_on = .true.
-         if ((rho_diff < good_cut) .and. (niter > 2) .and. (rho_LS < 2)) &
-            diis_on = .true.
-      ! Mix of all criteria, according to rho_diff value.
-      case(6:)
-         if (rho_diff < EDIIS_start) then
-            ediis_on = .true.
-         endif
-         if (rho_diff < DIIS_start) then
-            ediis_on = .false.
-            diis_on  = .true.
-         endif
-         if (rho_diff < bDIIS_start) then
-            ediis_on = .false.
-            diis_on  = .true.
-            bdiis_on = .true.
-         endif
-      case default
-         write(*,'(A,I4)') 'ERROR - Wrong conver_method = ', conver_method
-         stop
-   endselect
 
    ndiist  = min(niter, ndiis )
    nediist = min(niter, nediis)
@@ -176,6 +136,8 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
       call diis_fock_commut(dens_op, fock_op, rho, M_in, spin, ndiist)
       call diis_get_error(diis_error, M_in, spin)
    endif
+
+   call select_methods(diis_on, ediis_on, bdiis_on, niter, diis_error)
 
    ! THIS IS DAMPING 
    ! THIS IS SPARTA!
@@ -209,6 +171,7 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
       if ((conver_method > 3) .and. (niter > 1)) call diis_update_energy(energy, spin)
    
       if (diis_on) then
+         if (verbose > 3) write(*,'(2x,A)') "  Doing DIIS."
          if (bdiis_on) call diis_emat_bias(EMAT, ndiist)
 
          call diis_get_new_fock(fock, EMAT, ndiist, M_in, spin)
@@ -226,6 +189,7 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
 
 
          if (ediis_on) then
+            if (verbose > 3) write(*,'(2x,A)') "  Doing EDIIS."
             call ediis_get_new_fock(fock, BMAT, nediist, spin)
             call fock_op%Sets_data_ON(fock)
          endif
@@ -235,10 +199,68 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
    endif
 
    ! Level shifting works weird when using DIIS-only methods, so it is disabled.
-   if ((HL_gap < lvl_shift_cut) .and. (level_shift) .and. (conver_method /= 2)) &
-      call fock_op%Shift_diag_ON(lvl_shift_en, n_orbs+1)
-   
+   if ((HL_gap < lvl_shift_cut) .and. (level_shift) .and. &
+      (.not. diis_on) .and. (.not. ediis_on)) then
+         call fock_op%Shift_diag_ON(lvl_shift_en, n_orbs+1)
+         if (verbose > 3) write(*,'(2x,A)') "Applying level shift."
+   endif
 end subroutine conver_fock
+
+subroutine select_methods(diis_on, ediis_on, bdiis_on, niter, diis_error)
+   use converger_data, only: good_cut, rho_diff, rho_LS, EDIIS_start, &
+                             DIIS_start, bDIIS_start, conver_method
+   implicit none
+   integer, intent(in)      :: niter
+   real(kind=8), intent(in) :: diis_error
+   logical, intent(out)     :: diis_on, ediis_on, bdiis_on
+
+   bdiis_on = .false.
+   ! Checks convergence criteria.
+   select case (conver_method)
+      ! Always do damping
+      case (1)
+
+      ! Damping the first two steps, diis afterwards
+      case (2)
+         if (niter > 2) diis_on = .true.
+      case (4)
+         bdiis_on = .true.
+         if (niter > 2) diis_on = .true.
+
+      ! Damping until good enough, diis afterwards
+      case(3)
+         if ((rho_diff < good_cut) .and. (niter > 2) .and. (rho_LS < 2)) &
+            diis_on = .true.
+      case(5)
+         bdiis_on = .true.
+         if ((rho_diff < good_cut) .and. (niter > 2) .and. (rho_LS < 2)) &
+            diis_on = .true.
+
+      ! Mix of all criteria, according to DIIS error value.
+      case(6)
+         if (diis_error < EDIIS_start) then
+            ediis_on = .true.
+            diis_on  = .false.
+         endif
+         if (diis_error < DIIS_start) then
+            ediis_on = .false.
+            diis_on  = .true.
+         endif
+         if (diis_error < bDIIS_start) then
+            ediis_on = .false.
+            diis_on  = .true.
+            bdiis_on = .true.
+         endif
+      case default
+         write(*,'(A,I4)') 'ERROR - Wrong conver_method = ', conver_method
+         stop
+   endselect
+
+   if (rho_LS > 1) then
+      ediis_on = .false.
+      diis_on  = .false.
+   endif
+end subroutine select_methods
 
 ! The following subs are only internal.
 subroutine check_convergence(rho_old, rho_new, energy_old, energy_new,&

@@ -213,12 +213,12 @@ subroutine rho_linear_calc(niter, En, E1, E2, Ex, may_conv, rho_new, rho_old, &
             exit_cycle = .true.
          else if (Blambda <= 2.0D-1 * Pstepsize) then
             if (Pstepsize > 1.0D-4) may_conv = .false.
-            Pstepsize = Pstepsize * 0.5D0
+            Pstepsize = Pstepsize * 0.2D0
          else
             Pstepsize = Pstepsize * 1.2D0
          endif
-         if (Pstepsize > 1.0D0) Pstepsize = 1.0D0
-         if (n_cycles > 10) exit_cycle = .true.
+         if (Pstepsize > 1.0D0) Pstepsize  = 1.0D0
+         if (n_cycles  > 4    ) exit_cycle = .true.
 
       enddo
    else

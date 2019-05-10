@@ -60,9 +60,10 @@ module converger_data
    real(kind=8), allocatable :: EDIIS_E(:)
 
    ! Internal variables for Linear Search
-   logical                   :: may_conv  = .true.
-   real(kind=8)              :: Elast     = 0.0D0
-   real(kind=8)              :: Pstepsize = 0.0D0
+   logical                   :: may_conv   = .true.
+   real(kind=8)              :: Elast      = 1000.0D0
+   real(kind=8)              :: Pstepsize  = 0.0D0
+   real(kind=8)              :: Pstepsize2 = 0.0D0
    real(kind=8), allocatable :: rho_lambda1(:)
    real(kind=8), allocatable :: rho_lambda0(:)
    real(kind=8), allocatable :: rho_lambda1_alpha(:)

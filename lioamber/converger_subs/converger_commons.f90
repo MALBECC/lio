@@ -286,16 +286,15 @@ subroutine check_convergence(rho_old, rho_new, energy_old, energy_new,&
    do jj = 1 , size(rho_new,1)
    do kk = jj, size(rho_new,1)
          Rposition = kk + (M2 - jj) * (jj -1) / 2
-         del       = (rho_new(jj,kk) - rho_old(Rposition)) * sqrt(2.0D0)
-         rho_diff  = rho_diff + del * del
+         del       = (rho_new(jj,kk) - rho_old(Rposition))
+         rho_diff  = rho_diff + 2.0D0 * del * del
       enddo
    enddo
    rho_diff = sqrt(rho_diff) / dble(size(rho_new,1))
 
-   if (.not. may_conv) rho_diff = -1.0D0
-
    is_converged = .false.
    if ((rho_diff < told) .and. (e_diff < Etold)) is_converged = .true.
+   if (.not. may_conv) rho_diff = -1.0D0
    call write_energy_convergence(n_iterations, energy_new, rho_diff, told, &
                                  e_diff, etold)
 

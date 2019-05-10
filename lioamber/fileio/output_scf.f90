@@ -124,7 +124,7 @@ subroutine write_energy_convergence(step, energy, good, told, egood, etold)
       write(*, 8605) egood, etold
       write(*, 8606)
    else
-      if (GOOD > 0.d0) then
+      if (.not. (GOOD < 0.d0)) then
         write(*, 8700) step, energy, good, egood
       else
         write(*, 8701) step, energy

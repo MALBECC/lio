@@ -194,7 +194,7 @@ subroutine SCF(E)
 
 !------------------------------------------------------------------------------!
    call ECP_init()
-   call rho_ls_init(open, rhoalpha, rhobeta)
+   call rho_ls_init(open, Pmat_vec, rhobeta)
 
    call g2g_timer_start('SCF')
    call g2g_timer_sum_start('SCF')
@@ -692,7 +692,7 @@ subroutine SCF(E)
          endif
       endif
 
-      if (rho_LS > 1) then
+      if ((rho_LS > 1) .and. (niter > 10)) then
          ! Performs a linear search in Rho if activated. This uses the
          ! vector-form densities as the old densities, and matrix-form
          ! densities as the new ones.

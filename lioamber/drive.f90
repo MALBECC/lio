@@ -102,18 +102,17 @@ subroutine drive(iostat)
          deallocate(restart_dens)
       else
          allocate(restart_dens(M, M), restart_coef(M, NCO_f))
+         MO_coef_at = 0.0D0
          if (.not. OPEN) then
             call read_coef_restart(restart_coef, restart_dens, M, NCO_f, 89)
-            kcount = 0
-            do icount = 1, NCO_f
-               kcount=kcount+i0
-            do jcount = 1, M
-               kcount = kcount + 1
-               MO_coef_at(kcount) = restart_coef(indexii(jcount), icount)
+            do icount = 1, M
+            do jcount = 1, NCO_f
+               MO_coef_at(i0+icount, jcount) = &
+                                restart_coef(indexii(icount), jcount)
             enddo
-               kcount=kcount+i0
             enddo
          else
+            MO_coef_at_b = 0.0D0
             NCOa = NCO_f
             NCOb = NCO_f + Nunp
             allocate(restart_coef_b(M, NCOb), restart_adens(M,M), &
@@ -122,24 +121,18 @@ subroutine drive(iostat)
             call read_coef_restart(restart_coef, restart_coef_b, &
                                    restart_dens, restart_adens,  &
                                    restart_bdens, M, NCOa, NCOb, 89)
-            kcount = 0
-            do icount = 1, NCOa
-               kcount=kcount+i0
-            do jcount = 1, M
-               kcount = kcount + 1
-               MO_coef_at(kcount) = restart_coef(indexii(jcount), icount)
+            do icount = 1, M
+            do jcount = 1, NCOa
+               MO_coef_at(i0+icount, jcount) = &
+                                restart_coef(indexii(icount), jcount)
             enddo
-               kcount=kcount+i0
             enddo
 
-            kcount = 0
-            do icount = 1, NCOb
-               kcount=kcount+i0
-            do jcount = 1, M
-               kcount = kcount + 1
-               MO_coef_at_b(kcount) = restart_coef_b(indexii(jcount), icount)
+            do icount = 1, M
+            do jcount = 1, NCOb
+               MO_coef_at_b(i0+icount, jcount) = &
+                                restart_coef_b(indexii(icount), jcount)
             enddo
-               kcount=kcount+i0
             enddo
             deallocate(restart_coef_b)
          endif

@@ -634,16 +634,9 @@ subroutine SCF(E)
         call rho_aop%Gets_data_AO(rho_a)
         call messup_densmat( rho_a )
 
-        Eorbs = morb_energy
-
-        kkk = 0
-        do kk=1,M_f
-        do ii=1,M_f
-          kkk = kkk+1
-          MO_coef_at(kkk) = morb_coefat( ii, kk )
-        enddo
-        enddo
-
+        Eorbs      = morb_energy
+        MO_coef_at = morb_coefat
+        
     if (OPEN) then
 !%%%%%%%%%%%%%%%%%%%%
 !OPEN SHELL OPTION  |
@@ -686,16 +679,9 @@ subroutine SCF(E)
         call rho_bop%Gets_data_AO(rho_b)
         call messup_densmat( rho_b )
 
-         Eorbs_b=morb_energy
-
-        kkk = 0
-        do kk=1,M_f
-        do ii=1,M_f
-          kkk = kkk+1
-          MO_coef_at_b(kkk) = morb_coefat( ii, kk )
-        enddo
-        enddo
-
+        Eorbs_b      = morb_energy
+        MO_coef_at_b = morb_coefat
+        
     end if!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !------------------------------------------------------------------------------!
 !carlos: storing matrices
@@ -862,29 +848,55 @@ subroutine SCF(E)
       endif ! npas
 
 
-!------------------------------------------------------------------------------!
-! calculation of energy weighted density matrix
-!
-! TODO: this should be a separated subroutine...
-!
+
+      ! Calculation of energy weighted density matrix
       call g2g_timer_sum_start('energy-weighted density')
-      kkk=0
+      kkk = 0
       Pmat_en_wgt = 0.0D0
-      do jj=1,M
-      do ii=jj,M
-         kkk=kkk+1
-!
-         if (ii.eq.jj) then
-            factor=2.D0
-         else
-            factor=4.D0
-         endif
-         do kk=1,NCO
-            Pmat_en_wgt(kkk) =  Pmat_en_wgt(kkk) - Eorbs(kk) * factor * &
-                                X(ii,M2+kk) * X(jj,M2+kk)
+      if (.not. OPEN) then
+         ! Closed shell
+         do jj = 1 , M_f
+            kkk = kkk +1
+            do kk = 1, NCOa_f
+               Pmat_en_wgt(kkk) = Pmat_en_wgt(kkk) - 2.0D0 * Eorbs(kk) * &
+                                  MO_coef_at(jj,kk) * MO_coef_at(jj,kk)
+            enddo
+
+            do ii = jj+1, M_f
+               kkk = kkk +1
+               do kk = 1, NCOa_f
+                  Pmat_en_wgt(kkk) = Pmat_en_wgt(kkk) - 4.0D0 * Eorbs(kk) * &
+                                     MO_coef_at(ii,kk) * MO_coef_at(jj,kk)
+               enddo
+            enddo
          enddo
-      enddo
-      enddo
+         
+      else
+         ! Open shell
+         do jj = 1 , M_f
+            kkk = kkk +1
+            do kk = 1, NCOa_f
+               Pmat_en_wgt(kkk) = Pmat_en_wgt(kkk) - 2.0D0 * Eorbs(kk) * &
+                                  MO_coef_at(jj,kk) * MO_coef_at(jj,kk)
+            enddo
+            do kk = 1, NCOb_f
+               Pmat_en_wgt(kkk) = Pmat_en_wgt(kkk) - 2.0D0 * Eorbs_b(kk) * &
+                                  MO_coef_at_b(jj,kk) * MO_coef_at_b(jj,kk)
+            enddo
+
+            do ii = jj+1, M_f
+               kkk = kkk +1
+               do kk=1, NCOa_f
+                  Pmat_en_wgt(kkk) = Pmat_en_wgt(kkk) - 4.0D0 * Eorbs(kk) * &
+                                     MO_coef_at(ii,kk) * MO_coef_at(jj,kk)
+               enddo
+               do kk=1, NCOb_f
+                  Pmat_en_wgt(kkk) = Pmat_en_wgt(kkk) - 4.0D0 * Eorbs_b(kk) * &
+                                     MO_coef_at_b(ii,kk) * MO_coef_at_b(jj,kk)
+               enddo
+            enddo
+         enddo
+      endif
 
       call g2g_timer_sum_stop('energy-weighted density')
 

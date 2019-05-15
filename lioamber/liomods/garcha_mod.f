@@ -95,7 +95,7 @@ c necessary)
       Logical :: Dbug
       integer :: timers
 
-      real*8, dimension (:), ALLOCATABLE :: MO_coef_at, MO_coef_at_b
+      real*8, dimension (:,:), ALLOCATABLE :: MO_coef_at, MO_coef_at_b
 !Geometry optimizations
       logical :: steep !enables steepest decend algorithm
       real*8 :: Force_cut, Energy_cut, minimzation_steep !energy and force convergence crit and initial steep

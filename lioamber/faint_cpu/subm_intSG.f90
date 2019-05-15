@@ -119,8 +119,8 @@ subroutine intSG(ff, wgt_rho, r, d, natom, ntatom)
                pp = (Q(l2) - r(Nuc(jfunct),l2)) * t1
                if (l1 .eq. l2) then
                   ff(Nuc(ifunct),l2) = ff(Nuc(ifunct),l2) - te
-                  ds = ds + t10
-                  pp = pp + t10
+                  ds = ds + 1 / Z2
+                  pp = pp + 1 / Z2
                endif
                ff(Nuc(ifunct),l2) = ff(Nuc(ifunct),l2) + t4 * ds
                ff(Nuc(jfunct),l2) = ff(Nuc(jfunct),l2) + t5 * pp
@@ -274,7 +274,7 @@ subroutine intSG(ff, wgt_rho, r, d, natom, ntatom)
          Q(3)  = ti * r(Nuc(ifunct),3) + tj * r(Nuc(jfunct),3)
          rexp  = d(Nuc(ifunct),Nuc(jfunct)) * a(ifunct,nci) * a(jfunct,ncj) /Zij
          ss    = pi32 * exp(-rexp) / (Zij * sqrt(Zij))
-         t0    = ss / Z2
+         t0   = ss / Z2
 
          do l1 = 1, 3
             pis = ss * (Q(l1) - r(Nuc(ifunct),l1))

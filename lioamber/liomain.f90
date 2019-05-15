@@ -209,25 +209,35 @@ subroutine do_fukui()
     use garcha_mod, only: MO_coef_at, MO_coef_at_b, NCO, Nunp, natom, Smat,   &
                           Smat, Eorbs, Eorbs_b, Iz, OPEN
     use basis_data, only: M, Nuc
+    use tbdft_data, only: MTB, tbdft_calc
     use fileio    , only: write_fukui
     implicit none
     double precision              :: softness
     double precision, allocatable :: fukuim(:), fukuin(:), fukuip(:)
+    integer :: M_f, NCO_f
+
+    M_f   = M
+    NCO_f = NCO
+    if (tbdft_calc) then
+      M_f   = M_f   + MTB
+      NCO_f = NCO_f + MTB
+    endif
 
     allocate(fukuim(natom), fukuin(natom), fukuip(natom))
 
     call g2g_timer_start("Fukui")
     if (OPEN) then
-        call fukui_calc_os(MO_coef_at, MO_coef_at_b, NCO, NCO+Nunp, M, natom, &
-                           Nuc, Smat, fukuim, fukuip, fukuin, Eorbs, Eorbs_b)
-        call get_softness(Eorbs(NCO-1), Eorbs(NCO), Eorbs_b(NCO+NUNP-1), &
-                          Eorbs(NCO+NUNP), softness)
+        call fukui_calc_os(MO_coef_at, MO_coef_at_b, NCO_f, NCO_f+Nunp, M_f, &
+                           natom, Nuc, Smat, fukuim, fukuip, fukuin, Eorbs,  &
+                           Eorbs_b)
+        call get_softness(Eorbs(NCO_f-1), Eorbs(NCO_f), Eorbs_b(NCO_f+NUNP-1),&
+                          Eorbs(NCO_f+NUNP), softness)
         call write_fukui(fukuim, fukuip, fukuin, natom, Iz, softness)
     else
-        call fukui_calc(MO_coef_at, NCO, M, natom, Nuc, Smat, fukuim, fukuip, &
-                        fukuin, Eorbs)
-        call get_softness(Eorbs(NCO-1), Eorbs(NCO), Eorbs(NCO-1), Eorbs(NCO), &
-                          softness)
+        call fukui_calc(MO_coef_at, NCO_f, M_f, natom, Nuc, Smat, fukuim, &
+                        fukuip, fukuin, Eorbs)
+        call get_softness(Eorbs(NCO_f-1), Eorbs(NCO_f), Eorbs(NCO_f-1),   &
+                          Eorbs(NCO_f), softness)
         call write_fukui(fukuim, fukuip, fukuin, natom, Iz, softness)
     endif
     call g2g_timer_stop("Fukui")
@@ -253,18 +263,17 @@ subroutine do_restart(UID, rho_total)
    double precision, allocatable :: coef(:,:), coef_b(:,:), tmp_rho(:,:), &
                                     tmp_rho_b(:,:)
    integer :: NCOb, icount, jcount, coef_ind
-   integer :: M_f, NCO_f, i0
+   integer :: NCO_f, i0
 !TBDFT: Updating M for TBDFT calculations
    if (tbdft_calc) then
-      M_f = M+2*MTB
-      NCO_f=NCO+MTB
-      i0=MTB
+      NCO_f = NCO + MTB
+      i0    = MTB
    else
-      M_f = M
-      NCO_f=NCO
-      i0=0
+      NCO_f = NCO
+      i0    = 0
    end if
-   if ( rst_dens .eq. 2 ) then
+
+   if ( rst_dens == 2 ) then
       allocate(tmp_rho(M,M))
       if (.not. OPEN) then
          call spunpack('L', M, rho_total, tmp_rho)
@@ -278,12 +287,10 @@ subroutine do_restart(UID, rho_total)
       endif
       deallocate(tmp_rho)
    else
-
       allocate(coef(M, NCO_f))
       do icount=1, M
       do jcount=1, NCO_f
-         coef_ind = i0 + icount + M_f*(jcount-1)
-         coef(indexii(icount), jcount) = MO_coef_at(coef_ind)
+         coef(indexii(icount), jcount) = MO_coef_at(i0+icount,jcount)
       enddo
       enddo
       if (OPEN) then
@@ -292,8 +299,7 @@ subroutine do_restart(UID, rho_total)
 
          do icount=1, M
          do jcount=1, NCOb
-            coef_ind = i0 + icount + M_f*(jcount-1)
-            coef_b(indexii(icount), jcount) = MO_coef_at_b(coef_ind)
+            coef_b(indexii(icount), jcount) = MO_coef_at_b(i0+icount,jcount)
          enddo
          enddo
          call write_coef_restart(coef, coef_b, M, NCO_f, NCOb, UID)

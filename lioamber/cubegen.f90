@@ -6,14 +6,12 @@ module cubegen
 ! Performs orbital/density plots.
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%!
-   subroutine cubegen_vecin( Msize, Nocc, coef_vec )
+   subroutine cubegen_vecin(Msize, coef_mat)
       use garcha_mod, only: cube_dens, cube_orb, cube_elec, cubegen_only, VCINP
       implicit none
       integer, intent(in)  :: Msize
-      integer, intent(in)  :: Nocc
-      real*8 , intent(in)  :: coef_vec( Msize*(Msize+1)/2 )
-      real*8 , allocatable :: coef_mat( :, : )
-      integer              :: ii, jj, kk
+      real*8 , intent(in)  :: coef_mat(:,:)
+      integer              :: ii, jj
 
 
       if ( .not. (cube_dens.or.cube_orb.or.cube_elec) ) return
@@ -23,23 +21,9 @@ module cubegen
          stop
       end if
 
-      if (allocated(coef_mat)) deallocate(coef_mat)
-      allocate( coef_mat(Msize, Msize) )
-
-!     Can't this copy the whole array?
-      kk = 0
-      do ii = 1, Nocc
-      do jj = 1, Msize
-         kk=kk+1
-         coef_mat(ii,jj) = coef_vec(kk)
-      enddo
-      enddo
-
       call g2g_timer_sum_start('cube gen')
       call cubegen_write( coef_mat )
       call g2g_timer_sum_stop('cube gen')
-
-      deallocate( coef_mat )
    end subroutine cubegen_vecin
 
 

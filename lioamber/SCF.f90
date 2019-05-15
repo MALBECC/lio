@@ -245,7 +245,7 @@ subroutine SCF(E)
 !------------------------------------------------------------------------------!
 ! TODO: I don't like ending timers inside a conditional...
        if (cubegen_only) then
-          call cubegen_vecin( M, NCO, MO_coef_at )
+          call cubegen_vecin( M, MO_coef_at )
           call g2g_timer_sum_stop('Initialize SCF')
           call g2g_timer_sum_stop('SCF')
           return
@@ -876,22 +876,22 @@ subroutine SCF(E)
          do jj = 1 , M_f
             kkk = kkk +1
             do kk = 1, NCOa_f
-               Pmat_en_wgt(kkk) = Pmat_en_wgt(kkk) - 2.0D0 * Eorbs(kk) * &
+               Pmat_en_wgt(kkk) = Pmat_en_wgt(kkk) - Eorbs(kk) * &
                                   MO_coef_at(jj,kk) * MO_coef_at(jj,kk)
             enddo
             do kk = 1, NCOb_f
-               Pmat_en_wgt(kkk) = Pmat_en_wgt(kkk) - 2.0D0 * Eorbs_b(kk) * &
+               Pmat_en_wgt(kkk) = Pmat_en_wgt(kkk) - Eorbs_b(kk) * &
                                   MO_coef_at_b(jj,kk) * MO_coef_at_b(jj,kk)
             enddo
 
             do ii = jj+1, M_f
                kkk = kkk +1
                do kk=1, NCOa_f
-                  Pmat_en_wgt(kkk) = Pmat_en_wgt(kkk) - 4.0D0 * Eorbs(kk) * &
+                  Pmat_en_wgt(kkk) = Pmat_en_wgt(kkk) - 2.0D0 * Eorbs(kk) * &
                                      MO_coef_at(ii,kk) * MO_coef_at(jj,kk)
                enddo
                do kk=1, NCOb_f
-                  Pmat_en_wgt(kkk) = Pmat_en_wgt(kkk) - 4.0D0 * Eorbs_b(kk) * &
+                  Pmat_en_wgt(kkk) = Pmat_en_wgt(kkk) - 2.0D0 * Eorbs_b(kk) * &
                                      MO_coef_at_b(ii,kk) * MO_coef_at_b(jj,kk)
                enddo
             enddo

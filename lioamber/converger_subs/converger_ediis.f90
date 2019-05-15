@@ -166,10 +166,10 @@ subroutine solve_linear_constraints(coef, Ener, BMAT, ndim)
    real(kind=8), intent(in)  :: Ener(ndim), BMAT(ndim,ndim)
    real(kind=8), intent(out) :: coef(ndim)
    logical      :: converged, big_alpha1, big_alpha2, update
-   integer      :: ii, conv_steps, yind, zind(ndim-1), lastindex, newindex
+   integer      :: ii, jj, conv_steps, yind, zind(ndim-1), lastindex, newindex
+   real(kind=8) :: alpha1, alpha2, alpha3, alpha_aux, result1, result2
    real(kind=8) :: aux_coef(ndim), new_coef(ndim), grad(ndim), delta(ndim), &
-                   r_grad(ndim-1), alpha1, alpha2, alpha3, alpha_aux,       &
-                   vec_alpha2(ndim-1), result1, result2, result3
+                   r_grad(ndim-1), vec_alpha2(ndim-1)
 
    coef       = 1.0d0 / dble(ndim)
    new_coef   = 0.0d0
@@ -191,12 +191,21 @@ subroutine solve_linear_constraints(coef, Ener, BMAT, ndim)
    enddo
 
    ! Initial guess
-   coef = 0.0D0
-   coef(ndim) = 1.0D0
-   do ii = ndim, 2, -1
-      coef(ii)   = coef(ii) / 2.0D0
-      coef(ii-1) = coef(ii)
+   coef = 0.0d0
+   jj = 1
+   do ii = 2, ndim
+      result1 = Ener(ii) - 0.5D0*BMAT(ii,ii)
+      result2 = Ener(jj) - 0.5D0*BMAT(jj,jj)
+      if (result1 < result2) jj = ii
    enddo
+   coef(jj) = 0.9D0
+   do ii = 1, jj-1
+      coef(ii) = (1.0D0 - coef(jj)) / (ndim - 1)
+   enddo
+   do ii = jj+1, ndim
+      coef(ii) = (1.0D0 - coef(jj)) / (ndim - 1)
+   enddo
+   coef = coef / sum(coef)
 
    ! Main algorithm.
    do while (converged .and. (conv_steps <= 100000))
@@ -236,14 +245,13 @@ subroutine solve_linear_constraints(coef, Ener, BMAT, ndim)
       call min_alpha(Ener,BMAT, coef,delta, alpha3, ndim)
 
       if (big_alpha1 .and. big_alpha2) then
-         call f_coef(Ener,BMAT, coef+alpha3*delta, result1, ndim)
-         call f_coef(Ener,BMAT, coef, result2, ndim)
+         call f_coef(Ener,BMAT, coef + alpha3 * delta, result1, ndim)
+         call f_coef(Ener,BMAT, coef                 , result2, ndim)
 
       else if (big_alpha1) then
          if (alpha3 > alpha2) alpha3 = alpha2
          call f_coef(Ener, BMAT, coef + alpha2 * delta, result1, ndim)
          call f_coef(Ener, BMAT, coef + alpha3 * delta, result2, ndim)
-         call f_coef(Ener, BMAT, coef                 , result3, ndim)
          if (result1 < result2) alpha3 = alpha2
 
       else if (big_alpha2) then
@@ -253,7 +261,6 @@ subroutine solve_linear_constraints(coef, Ener, BMAT, ndim)
          endif
          call f_coef(Ener, BMAT, coef + alpha1 * delta, result1, ndim)
          call f_coef(Ener, BMAT, coef + alpha3 * delta, result2, ndim)
-         call f_coef(Ener, BMAT, coef                 , result3, ndim)
          if (result1 < result2) then
             alpha3 = alpha1
             update = .true.
@@ -265,7 +272,6 @@ subroutine solve_linear_constraints(coef, Ener, BMAT, ndim)
 
          call f_coef(Ener,BMAT, coef + alpha_aux * delta, result1, ndim)
          call f_coef(Ener,BMAT, coef + alpha3    * delta, result2, ndim)
-         call f_coef(Ener,BMAT, coef                    , result3, ndim)
          if (result1 < result2) alpha3 = alpha_aux
          if (alpha3  >= alpha1) update = .true.
       endif
@@ -288,14 +294,15 @@ subroutine solve_linear_constraints(coef, Ener, BMAT, ndim)
          stop
       endif
    enddo
-
-   if (coef(ndim) < 1e-37) then
-      coef = 0.0D0
-      coef(ndim) = 1.0D0
-      do ii = ndim, 2, -1
-         coef(ii)   = coef(ii) / 2.0D0
-         coef(ii-1) = coef(ii)
-      enddo
+   
+   ! Makes something ridiculous if the last coefficient is zero.
+   ! This avoids repeating the same fock matrix in the previous
+   ! step.
+   if (coef(ndim) < 1.0D-6) then
+      print*, coef
+      coef(ndim) = 1.0D-6
+      coef(maxloc(coef)) = coef(maxloc(coef)) - 1.0D-6
+      print*, coef
    endif
 end subroutine solve_linear_constraints
 

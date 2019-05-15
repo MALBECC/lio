@@ -66,10 +66,9 @@ subroutine diis_fock_commut(dens_op, fock_op, dens, M_in, spin, ndiist)
    
 end subroutine diis_fock_commut
 
-subroutine diis_get_error(diis_err, M_in, spin, verbose)
-   use converger_data, only: ndiis, FP_PFm
+subroutine diis_get_error(M_in, spin, verbose)
+   use converger_data, only: ndiis, FP_PFm, diis_error
    integer     , intent(in)  :: M_in, spin, verbose
-   real(kind=8), intent(out) :: diis_err
 
    integer      :: ii, jj
    real(kind=8) :: max_error, avg_error
@@ -93,8 +92,9 @@ subroutine diis_get_error(diis_err, M_in, spin, verbose)
                            "Max Beta  DIIS error: ", max_error, &
                            " | Average error: ", avg_error
    endif
+   !print*, "DIISERR", avg_error
 
-   diis_err = avg_error
+   diis_error = avg_error
 end subroutine diis_get_error
 
 

@@ -97,7 +97,6 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
 
    logical      :: bdiis_on
    integer      :: ndiist, nediist
-   real(kind=8) :: diis_error
    real(kind=8), allocatable :: fock00(:,:), EMAT(:,:), fock(:,:), rho(:,:),&
                                 BMAT(:,:)
 
@@ -134,10 +133,10 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
       call fock_op%BChange_AOtoON(Xmat, M_in, 'r')
 #endif
       call diis_fock_commut(dens_op, fock_op, rho, M_in, spin, ndiist)
-      call diis_get_error(diis_error, M_in, spin, verbose)
+      call diis_get_error(M_in, spin, verbose)
    endif
 
-   call select_methods(diis_on, ediis_on, bdiis_on, niter, diis_error)
+   call select_methods(diis_on, ediis_on, bdiis_on, niter)
 
    ! THIS IS DAMPING 
    ! THIS IS SPARTA!
@@ -206,12 +205,12 @@ subroutine conver_fock(niter, M_in, dens_op, fock_op, spin, energy, n_orbs, &
    endif
 end subroutine conver_fock
 
-subroutine select_methods(diis_on, ediis_on, bdiis_on, niter, diis_error)
+subroutine select_methods(diis_on, ediis_on, bdiis_on, niter)
    use converger_data, only: good_cut, rho_diff, rho_LS, EDIIS_start, &
-                             DIIS_start, bDIIS_start, conver_method
+                             DIIS_start, bDIIS_start, conver_method,  &
+                             ediis_started, diis_started, diis_error
    implicit none
    integer, intent(in)      :: niter
-   real(kind=8), intent(in) :: diis_error
    logical, intent(out)     :: diis_on, ediis_on, bdiis_on
 
    bdiis_on = .false.
@@ -238,17 +237,24 @@ subroutine select_methods(diis_on, ediis_on, bdiis_on, niter, diis_error)
 
       ! Mix of all criteria, according to DIIS error value.
       case(6)
-         if (diis_error < EDIIS_start) then
-            ediis_on = .true.
-            diis_on  = .false.
+         if ((diis_error < EDIIS_start) .and. (.not. ediis_started)) then
+            ediis_started = .true.
          endif
-         if (diis_error < DIIS_start) then
+         if ((diis_error < DIIS_start) .and. (.not. diis_started)) then
+            diis_started = .true.
+         endif
+         if ((diis_error < bDIIS_start) .and. (.not. diis_started)) then
+            diis_started = .true.
+         endif
+         
+         if (ediis_started)  then
+            ediis_on = .true.
+         endif
+         if (diis_started) then
             ediis_on = .false.
             diis_on  = .true.
          endif
          if (diis_error < bDIIS_start) then
-            ediis_on = .false.
-            diis_on  = .true.
             bdiis_on = .true.
          endif
       case default
@@ -266,7 +272,7 @@ end subroutine select_methods
 subroutine check_convergence(rho_old, rho_new, energy_old, energy_new,&
                              n_iterations, is_converged)
    use fileio        , only: write_energy_convergence
-   use converger_data, only: told, Etold, may_conv, rho_diff
+   use converger_data, only: told, Etold, may_conv, rho_diff, diis_error
 
    ! Calculates convergence criteria in density matrix, and
    ! store new density matrix in Pmat_vec.
@@ -293,7 +299,8 @@ subroutine check_convergence(rho_old, rho_new, energy_old, energy_new,&
    rho_diff = sqrt(rho_diff) / dble(size(rho_new,1))
 
    is_converged = .false.
-   if ((rho_diff < told) .and. (e_diff < Etold)) is_converged = .true.
+   if ((rho_diff < told) .and. (e_diff < Etold) .and. (diis_error < 1D-4)) &
+                is_converged = .true.
    if (.not. may_conv) rho_diff = -1.0D0
    call write_energy_convergence(n_iterations, energy_new, rho_diff, told, &
                                  e_diff, etold)
